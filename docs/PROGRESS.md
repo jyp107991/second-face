@@ -24,6 +24,15 @@ Read this first in every session. Update + commit + push after every step.
 - [x] M1.8 Wristlog UI (inventory, stats, equip, use items) — CRT style
 - [x] M1.9 Audio: Web Audio synth (ambience beds, footsteps, gunshots, UI blips)
 
+### M1.10 — Realistic humans (owner feedback: procedural heads/bodies unacceptable — must look human) ⚠ PRIORITY
+Source: MakeHuman 1.2.0 CC0 assets (base mesh, targets, skins, rigs, eyes, brows, lashes, hair, teeth, clothes,
+expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemeral). No AGPL code used.
+- [ ] M1.10a Asset build script `tools/mh/build_human.py` → `public/assets/human/` (base mesh w/ UV split, macro
+      targets PCA, sparse detail targets, modifiers, skeleton + weights, proxies, downscaled textures) + CREDITS
+- [ ] M1.10b Runtime `src/engine/assets/human/` (loader, morph, joints→bones, skinned body, proxy fitting, skin shader)
+- [ ] M1.10c Replace Humanoid with HumanFigure (procedural anim on MH bones), Appearance → MH params, creator sliders
+- [ ] M1.10d Visual QA close-ups + iso view, performance (LOD / draw calls), ageing for the photo
+
 ### M2 — Systems II
 - [ ] M2.1 Dialogue engine (data schema, conditions, effects, skill checks, memory-aware options) + tests
 - [ ] M2.2 Dialogue UI (talking-head close-up via PortraitStage, option list, check tags, history)
@@ -36,9 +45,7 @@ Read this first in every session. Update + commit + push after every step.
 - [ ] M2.9 Companions core (recruit, follow, approval reactions, banter triggers, combat AI as allies)
 
 ## Next action
-M2.1 — dialogue engine in `src/engine/dialogue/` (types.ts, conditions.ts, effects.ts, runner.ts). Conditions read a
-WorldView (flags, quests, items, skills/attrs, reputation, NPC memory/trust, time). Effects go through one
-`applyEffect` dispatcher shared with quests. Validator: every node/next/quest/item/npc reference.
+M1.10a — write tools/mh/build_human.py (inspect formats in .mh_src/data first).
 
 ## Known issues / polish backlog (engine)
 - Tall interior walls hide a lot; consider Fallout-style lower walls or full-wall fade when room is entered.
