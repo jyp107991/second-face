@@ -53,13 +53,13 @@ export class Humanoid {
 
   constructor(look: HumanoidLook) {
     const app = look.appearance, o = look.outfit;
-    this.skin = makeSkinTexture(app, look.lod === 'low' ? 512 : 1024);
+    this.skin = makeSkinTexture(app, look.lod === 'low' ? 1024 : 2048);
     const clothes: { name: string; tint?: number }[] = [];
     if (o.suit) clothes.push({ name: o.suit, tint: o.suitTint });
     if (o.shoes) clothes.push({ name: o.shoes, tint: o.shoeTint });
     this.figure = new HumanFigure({
       shape: app.shape, skin: this.skin, eyes: app.eyes, brows: app.brows, hair: app.hair, clothes, lod: look.lod,
-      browColor: app.hair.color,
+      browColor: app.hair.color, facialHair: app.facialHair,
     });
     this.root = this.figure.root;
     this.eyeHeight = this.figure.eyeHeight;

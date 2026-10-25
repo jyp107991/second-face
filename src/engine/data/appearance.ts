@@ -6,7 +6,7 @@ import { defaultShape, type ShapeParams } from '../assets/human/shape';
  * Facial hair, freckles, scars and tattoos are painted into the per-character skin texture.
  */
 
-export const HAIR_STYLES = ['none', 'short01', 'short02', 'short03', 'short04', 'bob01', 'bob02', 'long01', 'ponytail01', 'braid01', 'afro01'] as const;
+export const HAIR_STYLES = ['none', 'short01', 'short02', 'short04', 'bob02', 'long01', 'ponytail01', 'afro01'] as const;
 export type HairStyle = (typeof HAIR_STYLES)[number];
 
 export const BROW_STYLES = ['eyebrow001', 'eyebrow002', 'eyebrow003', 'eyebrow004', 'eyebrow005', 'eyebrow006', 'eyebrow007', 'eyebrow008', 'eyebrow009', 'eyebrow010', 'eyebrow011', 'eyebrow012'] as const;
@@ -85,7 +85,7 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   a.skinTone = clamp(s.african * 0.95 + s.asian * 0.25 + s.caucasian * 0.05 + gauss() * 0.12);
   a.skinVariant = r.int(0, 2);
   a.eyes = a.skinTone > 0.6 ? r.pick(['brown', 'brown', 'brownlight'] as const) : r.pick(EYE_COLORS);
-  const hairPool: HairStyle[] = masc ? ['short01', 'short02', 'short03', 'short04', 'none', 'afro01', 'ponytail01'] : ['bob01', 'bob02', 'long01', 'ponytail01', 'braid01', 'short03', 'afro01'];
+  const hairPool: HairStyle[] = masc ? ['short01', 'short02', 'short04', 'none', 'afro01', 'ponytail01'] : ['bob02', 'long01', 'ponytail01', 'short04', 'afro01'];
   a.hair = { style: r.pick(hairPool), color: a.skinTone > 0.55 ? r.pick(HAIR_COLORS.slice(0, 2)) : r.pick(HAIR_COLORS.slice(0, 9)) };
   a.brows = r.pick(BROW_STYLES);
   a.facialHair = masc && r.chance(0.6) ? r.pick(FACIAL_HAIR.slice(1)) : 'none';

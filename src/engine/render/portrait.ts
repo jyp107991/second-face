@@ -1,5 +1,17 @@
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { Humanoid, type HumanoidLook } from '../assets/humanoid';
+
+let envTex: THREE.Texture | undefined;
+/** Neutral studio environment (reflections in eyes and skin). Built once per renderer. */
+export function portraitEnvironment(renderer: THREE.WebGLRenderer): THREE.Texture {
+  if (!envTex) {
+    const pm = new THREE.PMREMGenerator(renderer);
+    envTex = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+    pm.dispose();
+  }
+  return envTex;
+}
 
 /**
  * A small lit stage for close-ups of one character (creator, dialogue "talking heads", the photo).
@@ -23,13 +35,23 @@ export class PortraitStage {
   constructor(background = 0x15120e) {
     this.scene.background = new THREE.Color(background);
     this.scene.fog = new THREE.Fog(background, 4, 9);
-    this.key = new THREE.DirectionalLight(0xffe2b8, 3.2);
-    this.key.position.set(1.4, 2.4, 2.2);
-    const rim = new THREE.DirectionalLight(0x8ab0ff, 1.6);
-    rim.position.set(-2, 1.8, -1.5);
-    const fill = new THREE.HemisphereLight(0xb0a090, 0x2a2018, 1.1);
+    // Cinematic three-point lighting: warm soft key with shadows (nose, brow, jaw), dim warm fill,
+    // cool rim to separate the head from the background.
+    this.key = new THREE.DirectionalLight(0xffe4c4, 2.4);
+    this.key.position.set(1.6, 2.2, 2.4);
+    this.key.castShadow = true;
+    this.key.shadow.mapSize.set(2048, 2048);
+    const sc = this.key.shadow.camera;
+    sc.left = -0.6; sc.right = 0.6; sc.top = 0.6; sc.bottom = -0.6; sc.near = 0.5; sc.far = 8;
+    this.key.shadow.bias = -0.0002;
+    this.key.shadow.normalBias = 0.004;
+    this.key.shadow.radius = 4;
+    const rim = new THREE.DirectionalLight(0xa8c4ff, 1.6);
+    rim.position.set(-2.2, 1.9, -1.8);
+    const fill = new THREE.HemisphereLight(0xc8b4a0, 0x1e1812, 0.25);
     const floor = new THREE.Mesh(new THREE.CircleGeometry(1.4, 32).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x2a241c, roughness: 1 }));
-    this.scene.add(this.key, rim, fill, floor);
+    floor.receiveShadow = true;
+    this.scene.add(this.key, this.key.target, rim, fill, floor);
   }
 
   setLook(look: HumanoidLook): void {
@@ -37,6 +59,12 @@ export class PortraitStage {
     this.figure = new Humanoid(look);
     this.figure.root.rotation.y = this.yaw;
     this.scene.add(this.figure.root);
+  }
+
+  /** Attach the studio environment (call once with the game renderer). */
+  useEnvironment(renderer: THREE.WebGLRenderer, intensity = 0.28): void {
+    this.scene.environment = portraitEnvironment(renderer);
+    this.scene.environmentIntensity = intensity;
   }
 
   setFraming(f: number, snap = false): void {
@@ -69,6 +97,14 @@ export class PortraitStage {
     target.y -= this.offsetY * visH;
     this.camera.position.set(0, target.y + 0.04 + this.framing * 0.4, dist);
     this.camera.lookAt(target);
+    // Keep the key light's shadow frustum on the subject's head/body.
+    const k = this.key;
+    k.target.position.copy(target);
+    k.position.copy(target).add(new THREE.Vector3(1.6, 2.2, 2.4));
+    k.target.updateMatrixWorld();
+    const half = THREE.MathUtils.lerp(0.35, 1.3, this.framing);
+    const sc = k.shadow.camera;
+    if (sc.right !== half) { sc.left = -half; sc.right = half; sc.top = half; sc.bottom = -half; sc.updateProjectionMatrix(); }
     const fog = this.scene.fog as THREE.Fog;
     fog.near = dist + 1.5;
     fog.far = dist + 6;

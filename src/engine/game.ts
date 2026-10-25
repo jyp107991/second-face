@@ -39,7 +39,7 @@ export type GameEvents = {
 };
 
 /** Cistern-issue coveralls and boots. */
-export const PLAYER_OUTFIT = { suit: 'male_worksuit01', suitTint: 0xa8b0a0, shoes: 'shoes06', shoeTint: 0x8a8070 };
+export const PLAYER_OUTFIT = { suit: 'male_worksuit01', suitTint: 0x8a9088, shoes: 'shoes06', shoeTint: 0x8a8070 };
 
 /** Real seconds → game minutes. 1 real second = 1/3 game minute while exploring (24h ≈ 72 min). */
 const GAME_MINUTES_PER_SEC = 1 / 3;
@@ -582,9 +582,19 @@ export class Game extends EventBus<GameEvents> {
     this.cursor.rotation.y += dt;
     this.fx.update(dt);
     if (this.portrait) {
+      // Close-ups: softer grade so skin tones read naturally; shadows always on.
+      const s = this.post.settings;
+      s.grade = 0.22; s.grain = 0.025; s.vignette = 0.55; s.bloom = 0.15; s.exposure = 0.85;
+      this.renderer.shadowMap.enabled = true;
+      if (!this.portrait.scene.environment) this.portrait.useEnvironment(this.renderer);
       this.portrait.update(dt);
       this.post.render(this.portrait.scene, this.portrait.camera, this.time);
-    } else this.post.render(this.scene, this.cam.camera, this.time);
+    } else {
+      const s = this.post.settings;
+      s.grain = 0.06; s.vignette = 0.75; s.bloom = 0.6; s.exposure = 1;
+      this.renderer.shadowMap.enabled = QUALITY[this.quality].shadowSize > 0;
+      this.post.render(this.scene, this.cam.camera, this.time);
+    }
     if (this.thumbWaiters.length) this.resolveThumbs();
 
     this.fpsAcc += realDt; this.fpsFrames++;

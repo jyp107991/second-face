@@ -241,6 +241,7 @@ for f in sorted(os.listdir(os.path.join(SRC, 'skins/textures'))):
         age, tone, sex, var = mt.groups()
         key = f"{age}_{tone}_{sex}{var}"
         skins[key] = tex(os.path.join(SRC, 'skins/textures', f), 'skin_' + key, 1024, 85)
+        tex(os.path.join(SRC, 'skins/textures', f), 'skin_' + key + '_hi', 2048, 88)  # close-ups (loaded on demand)
 print('skins', len(skins))
 
 

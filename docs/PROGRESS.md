@@ -24,7 +24,8 @@ Read this first in every session. Update + commit + push after every step.
 - [x] M1.8 Wristlog UI (inventory, stats, equip, use items) — CRT style
 - [x] M1.9 Audio: Web Audio synth (ambience beds, footsteps, gunshots, UI blips)
 
-### M1.10 — Realistic humans (owner feedback: procedural heads/bodies unacceptable — must look human) ⚠ PRIORITY
+### M1.10 — Realistic humans (owner benchmark: Fallout 4 / Skyrim SE faces; approach: rendering upgrade; faces before gameplay)
+### (old heading) (owner feedback: procedural heads/bodies unacceptable — must look human) ⚠ PRIORITY
 Source: MakeHuman 1.2.0 CC0 assets (base mesh, targets, skins, rigs, eyes, brows, lashes, hair, teeth, clothes,
 expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemeral). No AGPL code used.
 - [x] M1.10a Asset build script `tools/mh/build_human.py` → `public/assets/human/` (base mesh w/ UV split, macro
@@ -45,12 +46,12 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
 - [ ] M2.9 Companions core (recruit, follow, approval reactions, banter triggers, combat AI as allies)
 
 ## Next action
-M1.10c/d — realistic humans are in (HumanFigure + Humanoid wrapper, skin painting, creator tabs rewritten).
-Remaining: screenshot-QA the creator tabs (face sliders, body, hair/marks) on desktop + phone; ageing check for
-the photo (agedAppearance +20y); LOD for iso view (MH proxy meshes male1591/female1605 + low-poly eyes, no lashes)
-— currently ~40k tris/character; wasteland clothing (retint/grime shader or new textures); expressions for dialogue.
-Gotchas learned: skin weights must be renormalised (bytes); Skeleton.calculateInverses() after posing bones;
-eye texture needs alphaTest.
+Face realism pass in progress (owner said faces still unacceptable; chose FO4-level via rendering upgrade, faces first).
+Done this pass: anatomical beard zones (rig landmarks), strand-shell facial hair geometry, 2048 close-up skins,
+skin SSS (wrapped diffuse patch in shading.ts), bump from skin photo, cavity AO vertex colours, sheen, studio
+3-point lighting w/ shadows + PMREM env, portrait grade, two-pass hair, pruned bad hair styles.
+Next: show owner faces7-style renders and get verdict; then candidates: light moustache contrast, hair anisotropic
+spec, eye wet line/cornea highlight, expressions; LOD for iso view; then M2.
 
 ## Known issues / polish backlog (engine)
 - Tall interior walls hide a lot; consider Fallout-style lower walls or full-wall fade when room is entered.
