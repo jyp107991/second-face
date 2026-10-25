@@ -45,6 +45,14 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
 - [ ] M2.9 Companions core (recruit, follow, approval reactions, banter triggers, combat AI as allies)
 
 ## Next action
+**Current step (owner asked: realistic ethnic diversity, realistic hair, beard options incl. simple stubble):**
+- [ ] D1 Skin tone model: calibrated tone ladder (Monk scale) + undertone; ancestry presets (shape blend, tone,
+      undertone, eye/hair colour, hair texture) drive randomAppearance; creator ancestry picker.
+- [ ] D2 Painted stubble levels (light / 5 o'clock / heavy) with shadow tint + stubs; '+' combos with moustaches.
+- [ ] D3 Hair: painted scalp layer (soft hairline under meshes; buzz, shaved, close coils, cornrows), hair shader
+      (anisotropic highlight), ancestry-appropriate style pools.
+- [ ] D4 Gallery QA (scratchpad faces.cjs), commit, report to owner.
+
 Face realism pass (owner benchmark FO4/Skyrim SE). Owner rejected procedural beards → switched to the
 "automated middle ground": MakeHuman community packs (`tools/mh/fetch_community.sh`, then
 `python3 -I tools/mh/build_human.py <mh_data> public/assets/human <community_root>`).
