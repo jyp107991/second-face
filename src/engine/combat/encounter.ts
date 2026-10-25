@@ -17,6 +17,7 @@ export interface Unit {
   /** Hostile to the player's team. */
   hostile: boolean;
   fled?: boolean;
+  surrendered?: boolean;
   leader?: boolean;
 }
 
@@ -279,6 +280,26 @@ export class Encounter extends EventBus<EncounterEvents> {
       await wait(burstDelay(w.kind, shots));
     }
     if (res.hits.every((h) => !h.hit) && res.roundsFired > 0) this.host.fx.floatText(to.clone().setY(2.1), 'miss', '#c0c0c0');
+    // Explosives and fire splash around the impact point (a miss scatters to a neighbouring tile).
+    const splashKilled: Unit[] = [];
+    if (w.area && (w.dmgType === 'explosive' || w.dmgType === 'fire')) {
+      const hitT = res.hits.some((h) => h.hit);
+      const cx = def.c.x + (hitT ? 0 : this.host.rng.int(-1, 1)), cy = def.c.y + (hitT ? 0 : this.host.rng.int(-1, 1));
+      this.host.fx.explosion(new THREE.Vector3(cx + 0.5, 0.3, cy + 0.5), w.area);
+      this.host.shake(w.dmgType === 'explosive' ? 0.6 : 0.3);
+      for (const o of this.units) {
+        if (!this.alive(o) || (o === def && hitT)) continue;
+        const d = chebyshev(o.c.x, o.c.y, cx, cy);
+        if (d > w.area) continue;
+        const dr = derived(o.c.sheet).dr;
+        const dmg = Math.max(1, Math.round(this.host.rng.int(w.dmg[0], w.dmg[1]) * (d === 0 ? 1 : 0.5) * (1 - dr / 100)));
+        o.c.sheet.hp = Math.max(0, o.c.sheet.hp - dmg);
+        o.actor.body.flinch = 1;
+        this.host.fx.floatText(o.actor.object.position.clone().setY(2.1), `${dmg}`, '#ff9050');
+        this.log(`${o.c.name} is caught in the blast (${dmg}).`);
+        if (o.c.sheet.hp <= 0) splashKilled.push(o);
+      }
+    }
     for (const m of res.messages) this.log(m);
     for (const h of res.hits) if (h.crippled) this.log(`${def.c.name}'s ${partName(h.crippled)} is crippled!`);
     att.actor.body.aim = 0;
@@ -287,6 +308,7 @@ export class Encounter extends EventBus<EncounterEvents> {
       moraleEvent(def.c, hpFrac < 0.3 ? 'badly_hurt' : 'hurt', hasFlag(att.c.sheet, 'terrifying'));
     }
     if (res.killed) await this.onKilled(def, att);
+    for (const k of splashKilled) if (k !== def || !res.killed) await this.onKilled(k, att);
     this.busy = false;
     if (att.c.isPlayer) this.showReach();
     this.emit('changed', {});

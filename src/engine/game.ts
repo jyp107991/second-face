@@ -19,6 +19,7 @@ import type { ExitDef } from './data/types';
 import { SaveManager, type SaveFile, type SlotId } from './save/saves';
 import { createBackend } from './save/storage';
 import { Encounter, type Unit } from './combat/encounter';
+import { utilityAi } from './combat/ai';
 import type { Combatant } from './combat/rules';
 import { Rng } from './core/rng';
 import { Fx } from './render/fx';
@@ -120,6 +121,7 @@ export class Game extends EventBus<GameEvents> {
       showReach: (t) => this.showReach(t),
       now: () => this.state.minutes,
     });
+    this.encounter.ai = utilityAi;
     this.encounter.on('end', ({ outcome }) => {
       if (outcome === 'defeat') this.emit('gameOver', {});
       this.syncNpcState();
