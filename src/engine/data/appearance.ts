@@ -115,12 +115,21 @@ export function agedAppearance(a: Appearance, years: number): Appearance {
   b.shape.weight = clamp(b.shape.weight + years * 0.004);
   b.shape.muscle = clamp(b.shape.muscle - Math.max(0, b.shape.age - 45) * 0.006);
   b.shape.breastFirmness = clamp(b.shape.breastFirmness - years * 0.01);
+  // Greying starts in the late thirties.
+  const grey = clamp((b.shape.age - 38) / 35) * 0.75;
+  if (grey > 0) b.hair.color = mixHex(a.hair.color, 0xb8b6ae, grey);
   return b;
 }
 
 /** 0 (young) .. 1 (very old): greying, wrinkles. */
 export function ageFactor(age: number): number {
   return clamp((age - 30) / 50);
+}
+
+function mixHex(a: number, b: number, t: number): number {
+  const ch = (x: number, s: number) => (x >> s) & 255;
+  const m = (s: number) => Math.round(ch(a, s) + (ch(b, s) - ch(a, s)) * t) << s;
+  return m(16) | m(8) | m(0);
 }
 
 function clamp(v: number, lo = 0, hi = 1) { return Math.max(lo, Math.min(hi, v)); }
