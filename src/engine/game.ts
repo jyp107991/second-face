@@ -11,9 +11,13 @@ import { QUALITY, detectQuality, type QualityLevel } from './render/quality';
 import { Actor } from './scene/actor';
 import { buildLocation, type BuiltLocation } from './scene/location';
 import type { ExitDef } from './data/types';
+import { SaveManager, type SaveFile, type SlotId } from './save/saves';
+import { createBackend } from './save/storage';
 
 export type GameEvents = {
   locationChanged: { id: string; name: string };
+  saved: { slot: SlotId };
+  loaded: { slot?: SlotId };
   tick: { dt: number };
   message: { text: string };
 };
@@ -40,6 +44,10 @@ export class Game extends EventBus<GameEvents> {
   private transitioning = false;
   /** Multiplier on the game clock (dev "skip time"). */
   timeScale = 1;
+  /** When true the simulation is frozen (menus open); rendering continues. */
+  paused = false;
+  saves?: SaveManager;
+  private thumbWaiters: ((url: string) => void)[] = [];
   fps = 0;
   private fpsAcc = 0;
   private fpsFrames = 0;
@@ -68,6 +76,7 @@ export class Game extends EventBus<GameEvents> {
     this.scene.add(this.cursor, this.pathMarker);
 
     this.state = newGameState('dev_yard', 15, 9);
+    createBackend().then((b) => (this.saves = new SaveManager(b)));
     this.bindInput();
     window.addEventListener('resize', () => this.resize());
     this.resize();
@@ -167,6 +176,7 @@ export class Game extends EventBus<GameEvents> {
     this.loadLocation(to.location, to.spawn);
     await fade(0);
     this.transitioning = false;
+    void this.save('auto');
   }
 
   /** Screen → tile under pointer (ground plane). */
@@ -185,7 +195,7 @@ export class Game extends EventBus<GameEvents> {
     const i = this.input;
     i.on('tap', ({ x, y }) => {
       const t = this.pickTile(x, y);
-      if (!t || !this.player || !this.loc || this.transitioning) return;
+      if (!t || !this.player || !this.loc || this.transitioning || this.paused) return;
       const p = this.player;
       const path = this.loc.grid.findPath(p.tx, p.ty, t.x, t.y, { ignore: p.id, adjacentOk: true });
       if (path && path.length) {
@@ -206,9 +216,60 @@ export class Game extends EventBus<GameEvents> {
     i.on('rotate', ({ rad }) => this.cam.rotateBy(rad));
     i.on('rotateStep', ({ dir }) => this.cam.rotateStep(dir));
     i.on('key', ({ code }) => {
+      if (code === 'F5') void this.save('quick');
+      if (code === 'F9') void this.loadSlot('quick');
       if (code === 'Space') this.cam.recentre();
       if (code === 'KeyR' && this.player) this.player.running = !this.player.running;
     });
+  }
+
+  // --- Save / load ---------------------------------------------------------
+
+  async save(slot: SlotId, label?: string): Promise<void> {
+    if (!this.saves || !this.loc) return;
+    const thumb = await this.captureThumb();
+    await this.saves.write(slot, {
+      label: label ?? (slot === 'auto' ? 'Autosave' : slot === 'quick' ? 'Quicksave' : this.loc.map.name),
+      locationId: this.state.locationId,
+      locationName: this.loc.map.name,
+      minutes: this.state.minutes,
+      playtimeSec: this.state.playtimeSec,
+      thumb,
+    }, this.state);
+    this.emit('saved', { slot });
+    if (slot !== 'auto') this.emit('message', { text: 'Game saved' });
+  }
+
+  async loadSlot(slot: SlotId): Promise<boolean> {
+    const f = await this.saves?.read(slot);
+    if (!f) { this.emit('message', { text: 'No save in that slot' }); return false; }
+    await this.loadFile(f, slot);
+    return true;
+  }
+
+  async loadFile(f: SaveFile, slot?: SlotId): Promise<void> {
+    await fade(1, 200);
+    this.state = structuredClone(f.state);
+    this.loadLocation(this.state.locationId, { x: this.state.player.x, y: this.state.player.y });
+    this.emit('loaded', { slot });
+    await fade(0, 300);
+  }
+
+  /** Small JPEG of the current frame, captured right after the next render. */
+  captureThumb(): Promise<string> {
+    return new Promise((r) => this.thumbWaiters.push(r));
+  }
+
+  private resolveThumbs(): void {
+    const src = this.renderer.domElement;
+    const c = document.createElement('canvas');
+    c.width = 192; c.height = 108;
+    const ctx = c.getContext('2d')!;
+    const sw = src.width, sh = src.height, ar = 16 / 9;
+    const cw = Math.min(sw, sh * ar), ch = cw / ar;
+    ctx.drawImage(src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, c.width, c.height);
+    const url = c.toDataURL('image/jpeg', 0.6);
+    for (const w of this.thumbWaiters.splice(0)) w(url);
   }
 
   start(): void {
@@ -221,8 +282,9 @@ export class Game extends EventBus<GameEvents> {
     this.lastFrame = now;
     this.renderer.info.reset();
     this.time += dt;
-    this.state.playtimeSec += dt;
-    this.state.minutes += dt * GAME_MINUTES_PER_SEC * this.timeScale;
+    const simDt = this.paused ? 0 : dt;
+    this.state.playtimeSec += simDt;
+    this.state.minutes += simDt * GAME_MINUTES_PER_SEC * this.timeScale;
 
     // Keyboard camera pan
     const held = this.input.held, panSpeed = 600 * dt;
@@ -231,7 +293,7 @@ export class Game extends EventBus<GameEvents> {
     if (held.has('KeyA') || held.has('ArrowLeft')) this.cam.panScreen(panSpeed, 0, 800);
     if (held.has('KeyD') || held.has('ArrowRight')) this.cam.panScreen(-panSpeed, 0, 800);
 
-    for (const a of this.actors.values()) a.update(dt);
+    for (const a of this.actors.values()) a.update(simDt);
     if (this.player) {
       this.cam.target.copy(this.player.object.position);
       this.state.player.facing = this.player.facing;
@@ -247,6 +309,7 @@ export class Game extends EventBus<GameEvents> {
     this.atmosphere.update(dt, this.time, this.cam.focus, this.post.settings);
     this.cursor.rotation.y += dt;
     this.post.render(this.scene, this.cam.camera, this.time);
+    if (this.thumbWaiters.length) this.resolveThumbs();
 
     this.fpsAcc += realDt; this.fpsFrames++;
     if (this.fpsAcc >= 0.5) { this.fps = this.fpsFrames / this.fpsAcc; this.fpsAcc = 0; this.fpsFrames = 0; }

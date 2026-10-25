@@ -2,17 +2,28 @@
 
 Read this first in every session. Update + commit + push after every step.
 
-## Current milestone: M0 — Foundations
+## Current milestone: M1 — Systems I
 
-### Steps
+### M0 — Foundations ✅
 - [x] M0.1 Repo + CLAUDE.md + resume protocol
 - [x] M0.2 DESIGN.md, ROADMAP.md, story plan (secret)
-- [x] M0.3 Project scaffold (Vite + TS + three), `npm run check`, Pages deploy workflow
-- [x] M0.4 Engine core: renderer, iso camera, scene loader, input (mouse + touch), test scene
-- [ ] M0.5 Save/load (versioned, slots, export/import), dev overlay
+- [x] M0.3 Project scaffold, `npm run check`, deploy workflow (template in docs/setup/deploy.yml — owner must add via GitHub UI)
+- [x] M0.4 Engine core: renderer, post FX, iso camera, atmosphere, input, grid/A*, location builder, humanoid, test maps
+- [x] M0.5 Save/load (IndexedDB, versioned, 5 slots, export/import, thumbnails), dev overlay, menus
+
+### M1 — Systems I
+- [ ] M1.1 Stats model: attributes, skills, traits, perks, derived stats, XP/levels (pure TS + tests) — `src/engine/stats/`
+- [ ] M1.2 Items & inventory model: item schema, weight, condition, ammo, equipment; validator coverage — `src/engine/inventory/`
+- [ ] M1.3 Face sculptor: parametric head (sliders, age), hair/scars/tattoos, body build; humanoid uses Appearance
+- [ ] M1.4 Character creation UI (name, appearance, attributes, tag skills, traits, summary)
+- [ ] M1.5 Combat rules: turn order, AP, hit chance, damage, crits, aimed shots, crippling (pure TS + tests) — `src/engine/combat/`
+- [ ] M1.6 Combat in scene: enter/exit combat, AP bar, targeting, aimed-shot UI, FX (muzzle flash, tracers, blood), floating text
+- [ ] M1.7 Enemy AI: utility scoring, cover, flanking, retreat-to-heal, flee/surrender, morale
+- [ ] M1.8 Wristlog UI (inventory, stats, equip, use items) — CRT style
+- [ ] M1.9 Audio: Web Audio synth (ambience beds, footsteps, gunshots, UI blips)
 
 ## Next action
-M0.5: save/load (IndexedDB w/ localStorage fallback, versioned, 3 slots + quick + auto, export/import) + title/pause menu.
+M1.1 — stats model.
 
 ## Known issues / polish backlog (engine)
 - Tall interior walls hide a lot; consider Fallout-style lower walls or full-wall fade when room is entered.
