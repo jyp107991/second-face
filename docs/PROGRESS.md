@@ -12,7 +12,7 @@ Read this first in every session. Update + commit + push after every step.
 - [x] M0.5 Save/load (IndexedDB, versioned, 5 slots, export/import, thumbnails), dev overlay, menus
 
 ### M1 — Systems I
-- [ ] M1.1 Stats model: attributes, skills, traits, perks, derived stats, XP/levels (pure TS + tests) — `src/engine/stats/`
+- [x] M1.1 Stats model: attributes, skills, traits, perks, derived stats, XP/levels (pure TS + tests) — `src/engine/stats/`
 - [ ] M1.2 Items & inventory model: item schema, weight, condition, ammo, equipment; validator coverage — `src/engine/inventory/`
 - [ ] M1.3 Face sculptor: parametric head (sliders, age), hair/scars/tattoos, body build; humanoid uses Appearance
 - [ ] M1.4 Character creation UI (name, appearance, attributes, tag skills, traits, summary)
@@ -23,7 +23,8 @@ Read this first in every session. Update + commit + push after every step.
 - [ ] M1.9 Audio: Web Audio synth (ambience beds, footsteps, gunshots, UI blips)
 
 ## Next action
-M1.1 — stats model.
+M1.2 — items & inventory model (`src/engine/inventory/`), item content for Ch1 basics, validator coverage, tests.
+Note: context-dependent traits (night_owl, cistern_pale, one_hand, hesitant) are flags only — systems must apply them (combat/world).
 
 ## Known issues / polish backlog (engine)
 - Tall interior walls hide a lot; consider Fallout-style lower walls or full-wall fade when room is entered.
