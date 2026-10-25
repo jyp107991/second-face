@@ -6,6 +6,7 @@ import {
   BROW_STYLES, EYE_COLORS, FACIAL_HAIR, HAIR_COLORS, HAIR_STYLES, SCARS, TATTOOS, defaultAppearance, randomAppearance, type Appearance,
 } from '../data/appearance';
 import { humanData } from '../assets/human/data';
+import { ANCESTRIES, ancestry, skinSwatches } from '../data/ancestry';
 import { PLAYER_OUTFIT } from '../game';
 import type { Game } from '../game';
 import { PortraitStage } from '../render/portrait';
@@ -32,12 +33,15 @@ const STYLE_NAMES: Record<string, string> = {
   none: 'None',
   elvs_scruffy_beard1: 'Long goatee', 'grinsegold_full_beard+grinsegold_moustache': 'Full beard', 'grinsegold_full_beard+rehmanpolanski_moustache_viking': 'Full beard, drooping moustache', grinsegold_beard_sigmund_wip: 'Trimmed beard',
   grinsegold_moustache: 'Moustache', rehmanpolanski_moustache_viking: 'Drooping moustache',
+  stubble_light: 'Light stubble', stubble_heavy: 'Heavy stubble', 'stubble+grinsegold_moustache': 'Stubble & moustache',
+  'stubble_light+rehmanpolanski_moustache_viking': 'Drooping moustache & stubble',
   culturalibre_hair_01: 'Long, parted', culturalibre_hair_02: 'Swept back',
   toigo_inverted_bob: 'Inverted bob', toigo_blunt_bob: 'Blunt bob',
   rehmanpolanski_hair_bun_brown: 'Bun', elvs_unkempt_french_braid: 'Braid', faydaen_hair_1: 'Tied back',
   sonntag78_junglebook_hair: 'Wild', stubble: 'Stubble', moustache: 'Moustache', goatee: 'Goatee', short_beard: 'Short beard', full_beard: 'Full beard', chops: 'Sideburns', long_beard: 'Long beard',
   brow_cut: 'Split brow', cheek_slash: 'Cheek slash', lip_split: 'Split lip', eye_scar: 'Eye scar', burn_left: 'Burn (left)', burn_right: 'Burn (right)', forehead_x: 'Cross brand', chin_nick: 'Chin nick',
   nine_neck: 'Cistern nine', tear: 'Teardrop', chin_lines: 'Chin lines', brow_dots: 'Brow dots', cheek_tribal: 'Cheek whorl', temple_spiral: 'Temple spiral', cheek_cross: 'Cheek cross', jaw_stripes: 'Jaw stripes', forehead_star: 'Brow star', eye_band: 'Eye band',
+  ...Object.fromEntries(ANCESTRIES.map((a) => [a.id, a.label])),
 };
 
 const hex = (n: number) => '#' + n.toString(16).padStart(6, '0');
@@ -324,12 +328,26 @@ export class Creator {
     this.slider(b, 'Muscle', sh.muscle, 0, 1, 0.01, (v) => (sh.muscle = v));
     this.slider(b, 'Bust size', sh.breastSize, 0, 1, 0.01, (v) => (sh.breastSize = v));
     this.slider(b, 'Bust firmness', sh.breastFirmness, 0, 1, 0.01, (v) => (sh.breastFirmness = v));
-    this.h(b, 'Ancestry (blend)');
+    this.h(b, 'Ancestry');
+    this.chips(b, ANCESTRIES.map((x) => x.id), (id) => this.app.ancestry === id, (id) => {
+      const p = ancestry(id)!;
+      this.app.ancestry = id;
+      sh.african = p.shape.african; sh.asian = p.shape.asian; sh.caucasian = p.shape.caucasian;
+      this.app.skinTone = (p.tone[0] + p.tone[1]) / 2;
+      this.app.skinUndertone = (p.undertone[0] + p.undertone[1]) / 2;
+      this.app.eyes = p.eyes[0][0];
+      this.app.hair.color = p.hair[0][0];
+    });
+    this.h(b, 'Features (fine blend)');
     this.slider(b, 'African', sh.african, 0, 1, 0.01, (v) => (sh.african = v));
     this.slider(b, 'East Asian', sh.asian, 0, 1, 0.01, (v) => (sh.asian = v));
     this.slider(b, 'European', sh.caucasian, 0, 1, 0.01, (v) => (sh.caucasian = v));
     this.h(b, 'Skin');
-    this.slider(b, 'Skin tone', this.app.skinTone, 0, 1, 0.01, (v) => (this.app.skinTone = v));
+    const sw = skinSwatches();
+    const near = sw[Math.round(this.app.skinTone * (sw.length - 1))];
+    this.swatches(b, sw, near, (c) => (this.app.skinTone = sw.indexOf(c) / (sw.length - 1)));
+    this.slider(b, 'Skin tone (fine)', this.app.skinTone, 0, 1, 0.01, (v) => (this.app.skinTone = v));
+    this.slider(b, 'Undertone: rosy ↔ golden', this.app.skinUndertone ?? 0, -1, 1, 0.05, (v) => (this.app.skinUndertone = v));
     this.chips(b, ['0', '1', '2'] as const, (s) => Number(s) === this.app.skinVariant, (s) => (this.app.skinVariant = Number(s)));
     this.modifierSliders(b, ['torso', 'hip', 'stomach', 'buttocks', 'armslegs'], (id) => !/fingers|trans|valgus|pregnant|navel/.test(id));
   }

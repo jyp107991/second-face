@@ -3,10 +3,12 @@ import { Rng, hash2 } from '../../core/rng';
 import type { Appearance, ScarId, TattooId } from '../../data/appearance';
 import { humanData } from './data';
 import { loadImage } from './textures';
+import { skinAlbedo } from '../../data/ancestry';
 
 /**
- * Per-character skin texture: blends the light/dark MakeHuman skin photos for the chosen tone,
- * then paints facial hair, freckles, scars and tattoos in UV space. Painting positions come from
+ * Per-character skin texture: blends the light/dark MakeHuman skin photos for texture character,
+ * regrades the result so the face averages the calibrated albedo for the chosen tone and undertone
+ * (keeping the photo's regional colour and pore detail as ratios), then paints facial hair, freckles, scars and tattoos in UV space. Painting positions come from
  * the base mesh geometry (head-local coordinates calibrated on the eye joints), so marks land on
  * the right part of the face regardless of texture layout.
  */
@@ -62,7 +64,16 @@ function headTriangles(): Uint32Array {
   return (headTris = new Uint32Array(out));
 }
 
-const needsPaint = (a: Appearance) => a.facialHair === 'stubble' || a.freckles > 0 || a.scars.length > 0 || a.tattoos.length > 0;
+/** Painted stubble level 0..3 (explicit stubble part; mesh beards get a medium shadow underneath). */
+export function stubbleLevel(facialHair: string): number {
+  const parts = facialHair.split('+');
+  if (parts.includes('stubble_heavy')) return 3;
+  if (parts.includes('stubble')) return 2;
+  if (parts.includes('stubble_light')) return 1;
+  return parts.some((x) => x.includes('beard')) ? 2 : 0;
+}
+
+const needsPaint = (a: Appearance) => stubbleLevel(a.facialHair) > 0 || a.freckles > 0 || a.scars.length > 0 || a.tattoos.length > 0;
 
 /** Build the skin texture. Resolves synchronously if images are preloaded; updates in place otherwise. */
 export function makeSkinTexture(a: Appearance, size = 1024): THREE.CanvasTexture {
@@ -73,15 +84,91 @@ export function makeSkinTexture(a: Appearance, size = 1024): THREE.CanvasTexture
   tex.anisotropy = 4;
   const { light, dark } = skinTextureKeys(a, size >= 2048);
   void Promise.all([loadImage(light), loadImage(dark)]).then(([li, di]) => {
-    const ctx = canvas.getContext('2d', { willReadFrequently: needsPaint(a) })!;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
     ctx.drawImage(li, 0, 0, size, size);
-    ctx.globalAlpha = Math.max(0, Math.min(1, a.skinTone));
+    ctx.globalAlpha = darkMix(a.skinTone);
     ctx.drawImage(di, 0, 0, size, size);
     ctx.globalAlpha = 1;
+    regrade(ctx, size, a);
     if (needsPaint(a)) paintMarks(ctx, size, a);
     tex.needsUpdate = true;
   });
   return tex;
+}
+
+/** How much of the dark-skin photo to use for the texture's character (redness, contrast). */
+function darkMix(tone: number): number {
+  return Math.max(0, Math.min(1, (tone - 0.4) / 0.45));
+}
+
+interface SkinSamples { face: Float32Array; body: Float32Array; head: [number, number, number, number]; }
+let samples: SkinSamples | undefined;
+
+/**
+ * Sample UVs (0..1, image space) for measuring mean skin colour: points on the face (cheeks, forehead)
+ * and on the torso, plus the bounding box of the head's UV island. The photos' head and body islands
+ * differ in colour, so each is normalised on its own.
+ */
+function skinSamples(): SkinSamples {
+  if (samples) return samples;
+  const d = humanData(), f = frame();
+  const face: number[] = [], body: number[] = [];
+  const head = [1, 1, 0, 0] as [number, number, number, number];
+  const p = new V(), q = new V();
+  for (let t = 0; t < d.bodyIndex.length; t += 3) {
+    p.set(0, 0, 0); let u = 0, v = 0;
+    for (let k = 0; k < 3; k++) {
+      const ri = d.bodyIndex[t + k];
+      p.add(q.fromArray(d.base, d.bodyMap[ri] * 3).sub(f.c).divideScalar(f.r));
+      u += d.bodyUv[ri * 2]; v += 1 - d.bodyUv[ri * 2 + 1];
+    }
+    p.divideScalar(3); u /= 3; v /= 3;
+    if (p.y > -0.9 && p.length() < 1.6) {
+      head[0] = Math.min(head[0], u); head[1] = Math.min(head[1], v); head[2] = Math.max(head[2], u); head[3] = Math.max(head[3], v);
+      // Cheeks, forehead: skip eyes, lips, brows.
+      const cheek = p.z > 0.55 && p.y < 0.0 && p.y > -0.5 && Math.abs(p.x) > 0.25 && Math.abs(p.x) < 0.7;
+      const brow = p.z > 0.6 && p.y > 0.45 && p.y < 0.8 && Math.abs(p.x) < 0.4;
+      if (cheek || brow) face.push(u, v);
+    } else if (p.y < -3 && p.y > -5 && p.z > 0 && Math.abs(p.x) < 1.6) body.push(u, v);
+  }
+  return (samples = { face: new Float32Array(face), body: new Float32Array(body), head });
+}
+
+/**
+ * Regrade the texture so face and body average the calibrated albedo. Brightness follows the photo
+ * exactly (pores, shading, regional darkening); colour deviations from the island mean (lips, flush,
+ * veins) are kept at reduced strength so regions never drift off-hue.
+ */
+function regrade(ctx: CanvasRenderingContext2D, size: number, a: Appearance): void {
+  const img = ctx.getImageData(0, 0, size, size), px = img.data, S = skinSamples();
+  const lum = (x: number, y: number, z: number) => 0.3 * x + 0.55 * y + 0.15 * z + 1e-3;
+  const mean = (uv: Float32Array) => {
+    let r = 0, g = 0, b = 0;
+    const n = uv.length / 2 || 1;
+    for (let i = 0; i < uv.length; i += 2) {
+      const x = Math.min(size - 1, Math.floor(uv[i] * size)), y = Math.min(size - 1, Math.floor(uv[i + 1] * size));
+      const j = (y * size + x) * 4;
+      r += px[j]; g += px[j + 1]; b += px[j + 2];
+    }
+    const L = lum(r / n, g / n, b / n);
+    return { L, r: r / n / L, g: g / n / L, b: b / n / L };
+  };
+  const mf = mean(S.face), mb = S.body.length ? mean(S.body) : mf;
+  const [tr, tg, tb] = skinAlbedo(a.skinTone, a.skinUndertone ?? 0);
+  const K = 0.5;
+  const [hx0, hy0, hx1, hy1] = S.head.map((v) => v * size);
+  for (let y = 0; y < size; y++) {
+    const inY = y >= hy0 - 2 && y <= hy1 + 2;
+    for (let x = 0; x < size; x++) {
+      const m = inY && x >= hx0 - 2 && x <= hx1 + 2 ? mf : mb;
+      const j = (y * size + x) * 4;
+      const L = lum(px[j], px[j + 1], px[j + 2]), k = L / m.L;
+      px[j] = tr * k * Math.pow(px[j] / L / m.r, K);
+      px[j + 1] = tg * k * Math.pow(px[j + 1] / L / m.g, K);
+      px[j + 2] = tb * k * Math.pow(px[j + 2] / L / m.b, K);
+    }
+  }
+  ctx.putImageData(img, 0, 0);
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -136,43 +223,57 @@ function tattooAt(id: TattooId, p: THREE.Vector3): number {
 }
 
 /**
- * Facial-hair zones in head-frame coordinates (unnormalised; landmarks measured from the rig's face
- * bones: nose base y≈-0.35, upper lip -0.47..-0.69, lower lip -0.69..-0.9, chin -0.9..-1.2, face plane z≈1.1).
+ * Natural beard-growth area in head-frame coordinates, built from the base mesh's landmarks (1 unit ≈ the
+ * head radius; eyes at y≈0.1, under the nose y≈-0.47, mouth corners (±0.22, -0.69), lower lip -0.92,
+ * chin bottom -1.22, under-chin folding back to the throat at z≈0.3, earlobes y≈-0.35, ear beyond |x|≈0.89).
+ * Uses the angle around the vertical axis (0° = front, 90° = side) so cheek and sideburn lines are
+ * well defined. Returns growth density 0..1.
  */
-export const BEARD_ZONES = {
-  lipTop: -0.58, lipBottom: -0.86, mouthHalfWidth: 0.25, noseBase: -0.36,
-};
-
-function beardZones(p: THREE.Vector3): { tache: number; chin: number; jaw: number; sideburn: number; lips: number } {
-  const ax = Math.abs(p.x);
-  const Z = BEARD_ZONES;
-  // Lips: an ellipse around the mouth — never covered.
-  const lips = 1 - smoothstep(0.85, 1.05, Math.hypot(ax / (Z.mouthHalfWidth + 0.02), (p.y - (Z.lipTop + Z.lipBottom) / 2) / ((Z.lipTop - Z.lipBottom) / 2 + 0.02)));
-  const front = smoothstep(0.55, 0.8, p.z);
-  // Moustache: between nose base and upper lip, as wide as the mouth.
-  const tache = 0.8 * front * smoothstep(Z.mouthHalfWidth + 0.1, Z.mouthHalfWidth, ax) * smoothstep(Z.noseBase - 0.01, Z.noseBase - 0.06, p.y) * smoothstep(Z.lipTop - 0.03, Z.lipTop + 0.03, p.y);
-  // Chin: below the lower lip down to under the jaw.
-  const chin = smoothstep(0.42, 0.3, ax) * smoothstep(Z.lipBottom + 0.02, Z.lipBottom - 0.05, p.y) * smoothstep(-1.32, -1.2, p.y) * smoothstep(0.2, 0.45, p.z);
-  // Jaw & lower cheeks: below a line rising from the mouth corner toward the earlobe.
-  const cheekLine = -0.62 + Math.max(0, ax - 0.28) * 1.05;
-  const jaw = smoothstep(cheekLine + 0.04, cheekLine - 0.06, p.y) * smoothstep(-1.3, -1.17, p.y) * smoothstep(-0.25, 0.1, p.z) * smoothstep(0.22, 0.32, ax);
-  // Sideburns: in front of the ear.
-  const sideburn = smoothstep(0.7, 0.82, ax) * smoothstep(0.3, 0.15, p.y) * smoothstep(-0.55, -0.35, p.y) * smoothstep(-0.15, 0.1, p.z) * smoothstep(0.75, 0.5, p.z);
-  return { tache, chin, jaw, sideburn, lips };
+function beardMask(p: THREE.Vector3): number {
+  const ax = Math.abs(p.x), y = p.y;
+  if (y > 0.3 || y < -1.9) return 0;
+  const th = (Math.atan2(ax, p.z) * 180) / Math.PI;
+  if (th > 92) return 0;
+  // Ears are never covered.
+  if (ax > 0.89 && y > -0.5) return 0;
+  // Top boundary: moustache under the nose (following the nostril wings and smile lines), then the cheek
+  // line rising from just outside the mouth corner to the sideburn base, then the sideburn.
+  const wobble = 0.022 * Math.sin(th * 0.31) + 0.012 * Math.sin(th * 0.87 + 1.3);
+  const tacheTop = -0.47 - Math.max(0, ax - 0.16) * 1.25;
+  const tc = smoothstep(14, 22, th);
+  const cheekTop = -0.66 + 0.34 * smoothstep(18, 70, th) + wobble;
+  let top = tacheTop * (1 - tc) + cheekTop * tc;
+  const sideburn = smoothstep(66, 71, th) * smoothstep(84, 80, th);
+  top = top * (1 - sideburn) + 0.12 * sideburn;
+  const topEdge = 0.035 + 0.05 * tc;
+  // Bottom boundary: neckline from the throat (front) rising to behind the jaw angle.
+  const bottom = -1.4 + 0.47 * Math.pow(Math.min(1, th / 84), 1.3) + 0.5 * wobble;
+  let m = smoothstep(top + topEdge, top - topEdge, y) * smoothstep(bottom - 0.07, bottom + 0.09, y) * smoothstep(90, 82, th);
+  // Lips stay clear right up to their border.
+  const lip = Math.hypot(ax / 0.235, (y + 0.715) / 0.205);
+  m *= smoothstep(0.92, 1.08, lip);
+  // Slightly sparser growth on the upper cheeks and the neck than on chin and moustache.
+  const sparse = 1 - 0.18 * smoothstep(24, 50, th) * smoothstep(-0.95, -0.7, y) - 0.2 * smoothstep(-1.25, -1.45, y);
+  return m * sparse;
 }
 
-/** Painted facial hair coverage 0..1 at head-frame point p (only stubble is painted; beards are meshes). */
-function beardAt(style: Appearance['facialHair'], p: THREE.Vector3): number {
-  if (style !== 'stubble') return 0;
-  const z = beardZones(p);
-  return Math.max(z.tache, z.chin, z.jaw * 0.9, z.sideburn) * 0.42 * (1 - z.lips);
+/** Painted stubble density 0..1 at head-frame point p. */
+function stubbleAt(p: THREE.Vector3): number {
+  return beardMask(p);
 }
 
 function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance): void {
   const d = humanData(), f = frame(), tris = headTriangles();
   const img = ctx.getImageData(0, 0, size, size);
   const px = img.data;
+  // Each texel is painted once (triangles sharing an edge would otherwise both blend into it).
+  const done = new Uint8Array(size * size);
   const hair = new THREE.Color().setHex(a.hair.color, THREE.LinearSRGBColorSpace);
+  const lvl = stubbleLevel(a.facialHair);
+  // Short hairs read darker and greyer than the same hair grown long.
+  const hl = hair.r * 0.3 + hair.g * 0.55 + hair.b * 0.15;
+  const stub = hair.clone().lerp(new THREE.Color(hl, hl, hl), 0.45).multiplyScalar(0.62).lerp(new THREE.Color(0.08, 0.08, 0.09), 0.25);
+  const SHADOW = [0, 0.11, 0.24, 0.28], STUBS = [0, 0.38, 0.64, 0.66];
   const ink = new THREE.Color().setHex(a.tattooColor, THREE.LinearSRGBColorSpace);
   const scarC = new THREE.Color().setHex(0xd8a592, THREE.LinearSRGBColorSpace);
   const burnC = new THREE.Color().setHex(0xb87666, THREE.LinearSRGBColorSpace);
@@ -200,12 +301,21 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
         const b1 = ((W[2] - W[0]) * (cx - U[2]) + (U[0] - U[2]) * (cy - W[2])) / den;
         const b2 = 1 - b0 - b1;
         if (b0 < -0.01 || b1 < -0.01 || b2 < -0.01) continue;
+        if (done[y * size + x]) continue;
+        done[y * size + x] = 1;
         p.set(0, 0, 0).addScaledVector(P[0], b0).addScaledVector(P[1], b1).addScaledVector(P[2], b2);
         const dir = p.clone().normalize();
         const i = (y * size + x) * 4;
         // Facial hair base: a soft shadow under the strands (strands are stroked afterwards).
-        const bh = beardAt(a.facialHair, p);
-        if (bh > 0) blend(i, hair, bh * (a.facialHair === 'stubble' ? 0.12 : 0.5) * (0.85 + 0.3 * hash2(x, y, 53)));
+        // Stubble: a follicle shadow (hair seen through skin) plus individual dark stubs.
+        if (lvl > 0) {
+          const st = stubbleAt(p);
+          if (st > 0) {
+            blend(i, stub, st * SHADOW[lvl] * (0.92 + 0.16 * hash2(x, y, 53)));
+            // Fine stubs: many faint dots rather than few strong ones (strong dots read as a rash).
+            if (hash2(x, y, 57) < st * STUBS[lvl]) blend(i, stub, 0.1 + 0.14 * hash2(x, y, 58));
+          }
+        }
         // Freckles
         if (a.freckles > 0 && dir.z > 0.35 && dir.y > -0.45 && dir.y < 0.35) {
           const fr = hash2(Math.floor(dir.x * 140), Math.floor(dir.y * 140 + 77), 7);
@@ -233,19 +343,7 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
     }
   }
   ctx.putImageData(img, 0, 0);
-  if (a.facialHair === 'stubble') strokeHair(ctx, size, a);
-}
-
-/** Facial-hair coverage (0..1) at a base-mesh vertex position (MakeHuman units). */
-export function beardCoverageAt(style: Appearance['facialHair'], x: number, y: number, z: number): number {
-  const f = frame();
-  return beardAt(style, new V(x, y, z).sub(f.c).divideScalar(f.r));
-}
-
-/** Head-frame coordinates of a base-mesh position (for planar strand UVs). */
-export function headFrameOf(x: number, y: number, z: number, out = new V()): THREE.Vector3 {
-  const f = frame();
-  return out.set(x, y, z).sub(f.c).divideScalar(f.r);
+  if (lvl >= 3) strokeHair(ctx, size, a);
 }
 
 /**
@@ -255,10 +353,9 @@ export function headFrameOf(x: number, y: number, z: number, out = new V()): THR
 function strokeHair(ctx: CanvasRenderingContext2D, size: number, a: Appearance): void {
   const d = humanData(), f = frame(), tris = headTriangles();
   const rng = new Rng(Math.round(a.hair.color + a.shape.age * 1000 + a.skinTone * 1e6));
-  const stubble = a.facialHair === 'stubble';
   const scale = size / 2048;
-  const density = (stubble ? 0.35 : 0.85) * scale * scale;
-  const len3 = stubble ? 0.009 : 0.045;
+  const density = 0.4 * scale * scale;
+  const len3 = 0.014;
   const col = new THREE.Color(a.hair.color);
   const P = [new V(), new V(), new V()], U = [new THREE.Vector2(), new THREE.Vector2(), new THREE.Vector2()];
   const e1 = new V(), e2 = new V(), p = new V(), dir = new V();
@@ -271,7 +368,7 @@ function strokeHair(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
     }
     // Quick reject: triangle centroid far from any beard zone.
     p.copy(P[0]).add(P[1]).add(P[2]).divideScalar(3);
-    if (beardAt(a.facialHair, p) <= 0.01 && beardAt(a.facialHair, P[0]) <= 0.01) continue;
+    if (stubbleAt(p) <= 0.01 && stubbleAt(P[0]) <= 0.01) continue;
     const t1x = U[1].x - U[0].x, t1y = U[1].y - U[0].y, t2x = U[2].x - U[0].x, t2y = U[2].y - U[0].y;
     const area = Math.abs(t1x * t2y - t2x * t1y) / 2;
     e1.subVectors(P[1], P[0]); e2.subVectors(P[2], P[0]);
@@ -282,7 +379,7 @@ function strokeHair(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
       let b1 = rng.next(), b2 = rng.next();
       if (b1 + b2 > 1) { b1 = 1 - b1; b2 = 1 - b2; }
       p.copy(P[0]).addScaledVector(e1, b1).addScaledVector(e2, b2);
-      const cov = beardAt(a.facialHair, p);
+      const cov = stubbleAt(p);
       if (rng.next() > cov * cov) continue;
       // Hair flows down, slightly outward on the cheeks and away from the philtrum on the lip.
       dir.set(Math.sign(p.x) * (p.y > -0.55 ? 0.45 : 0.15) + (rng.next() - 0.5) * 0.5, -1, 0.15).normalize().multiplyScalar(len3 * (0.6 + rng.next() * 0.8));
@@ -292,8 +389,8 @@ function strokeHair(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
       const ux = U[0].x + t1x * b1 + t2x * b2, uy = U[0].y + t1y * b1 + t2y * b2;
       const dx = t1x * ca + t2x * cb, dy = t1y * ca + t2y * cb;
       const shade = 0.85 + rng.next() * 0.65;
-      ctx.strokeStyle = `rgba(${Math.min(255, col.r * 255 * shade) | 0},${Math.min(255, col.g * 255 * shade) | 0},${Math.min(255, col.b * 255 * shade) | 0},${((stubble ? 0.22 : 0.28) + 0.32 * cov).toFixed(2)})`;
-      ctx.lineWidth = (stubble ? 0.7 : 0.85) * scale + rng.next() * 0.3;
+      ctx.strokeStyle = `rgba(${Math.min(255, col.r * 255 * shade) | 0},${Math.min(255, col.g * 255 * shade) | 0},${Math.min(255, col.b * 255 * shade) | 0},${(0.12 + 0.22 * cov).toFixed(2)})`;
+      ctx.lineWidth = 0.7 * scale + rng.next() * 0.3;
       ctx.beginPath();
       ctx.moveTo(ux, uy);
       ctx.quadraticCurveTo(ux + dx * 0.5 + (rng.next() - 0.5) * 1.5 * scale, uy + dy * 0.5, ux + dx, uy + dy);

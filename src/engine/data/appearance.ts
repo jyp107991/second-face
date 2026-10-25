@@ -1,5 +1,6 @@
 import { Rng } from '../core/rng';
 import { defaultShape, type ShapeParams } from '../assets/human/shape';
+import { ANCESTRIES, weighted, type AncestryPreset, type HairTexture } from './ancestry';
 
 /**
  * A character's look: body/face shape (MakeHuman-compatible), skin, eyes, hair and painted marks.
@@ -15,9 +16,13 @@ export type BrowStyle = (typeof BROW_STYLES)[number];
 export const EYE_COLORS = ['brown', 'brownlight', 'green', 'bluegreen', 'blue', 'lightblue', 'deepblue', 'grey', 'ice'] as const;
 export type EyeColor = (typeof EYE_COLORS)[number];
 
-/** Facial hair: painted stubble, or artist-made beard meshes (MakeHuman community, CC0/CC-BY). */
+/** Facial hair: painted stubble levels and/or artist-made beard meshes (MakeHuman community, CC0/CC-BY). */
 /** '+' layers several meshes (e.g. a beard without moustache plus a moustache). */
-export const FACIAL_HAIR = ['none', 'stubble', 'grinsegold_beard_sigmund_wip', 'grinsegold_full_beard+grinsegold_moustache', 'grinsegold_full_beard+rehmanpolanski_moustache_viking', 'elvs_scruffy_beard1', 'grinsegold_moustache', 'rehmanpolanski_moustache_viking'] as const;
+export const FACIAL_HAIR = [
+  'none', 'stubble_light', 'stubble', 'stubble_heavy', 'stubble+grinsegold_moustache', 'stubble_light+rehmanpolanski_moustache_viking',
+  'grinsegold_beard_sigmund_wip', 'grinsegold_full_beard+grinsegold_moustache', 'grinsegold_full_beard+rehmanpolanski_moustache_viking',
+  'elvs_scruffy_beard1', 'grinsegold_moustache', 'rehmanpolanski_moustache_viking',
+] as const;
 export type FacialHair = (typeof FACIAL_HAIR)[number];
 
 export const SCARS = ['brow_cut', 'cheek_slash', 'lip_split', 'eye_scar', 'burn_left', 'burn_right', 'forehead_x', 'chin_nick'] as const;
@@ -32,6 +37,10 @@ export interface Appearance {
   shape: ShapeParams;
   /** 0 = lightest skin .. 1 = darkest */
   skinTone: number;
+  /** -1 rosy/cool .. 0 neutral .. +1 golden/olive. */
+  skinUndertone?: number;
+  /** Ancestry preset this look was generated from (informational; see data/ancestry.ts). */
+  ancestry?: string;
   /** Texture variant 0..2 (subtle differences in skin detail). */
   skinVariant: number;
   eyes: EyeColor;
@@ -63,6 +72,8 @@ export function defaultAppearance(): Appearance {
 export interface RandomLookOptions {
   frame?: 'broad' | 'narrow';
   age?: number;
+  /** Force an ancestry preset id (no mixing). */
+  ancestry?: string;
   over?: Partial<Omit<Appearance, 'shape'>> & { shape?: Partial<ShapeParams> };
 }
 
@@ -78,28 +89,67 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   s.muscle = clamp(0.5 + gauss() * 0.35);
   s.weight = clamp(0.45 + gauss() * 0.3);
   s.height = clamp(0.5 + gauss() * 0.35);
-  // Ninety years after the Burn people are thoroughly mixed: random ethnic blend.
-  const e = [r.next() ** 2, r.next() ** 2, r.next() ** 2];
-  const es = e[0] + e[1] + e[2];
-  s.african = e[0] / es; s.asian = e[1] / es; s.caucasian = e[2] / es;
+  // Most people come from one ancestry cluster; about a fifth are visibly mixed.
+  const next = () => r.next();
+  const pool = ANCESTRIES.map((x) => [x, x.weight] as [AncestryPreset, number]);
+  const forced = ANCESTRIES.find((x) => x.id === opts.ancestry);
+  const pa = forced ?? weighted(next, pool);
+  const pb = !forced && r.chance(0.22) ? weighted(next, pool) : pa;
+  const w = pb === pa ? 1 : r.range(0.35, 0.65);
+  const mixv = (fa: number, fb: number) => fa * w + fb * (1 - w);
+  const jitter = () => r.range(-0.06, 0.06);
+  s.african = Math.max(0, mixv(pa.shape.african, pb.shape.african) + jitter());
+  s.asian = Math.max(0, mixv(pa.shape.asian, pb.shape.asian) + jitter());
+  s.caucasian = Math.max(0, mixv(pa.shape.caucasian, pb.shape.caucasian) + jitter());
+  const es = s.african + s.asian + s.caucasian || 1;
+  s.african /= es; s.asian /= es; s.caucasian /= es;
   s.breastSize = clamp(0.5 + gauss() * 0.3);
   s.breastFirmness = clamp(0.6 - (s.age - 25) / 100 + gauss() * 0.15);
-  a.skinTone = clamp(s.african * 0.95 + s.asian * 0.25 + s.caucasian * 0.05 + gauss() * 0.12);
+  a.ancestry = pa === pb ? pa.id : `${pa.id}+${pb.id}`;
+  a.skinTone = clamp(mixv(r.range(...pa.tone), r.range(...pb.tone)));
+  a.skinUndertone = mixv(r.range(...pa.undertone), r.range(...pb.undertone));
   a.skinVariant = r.int(0, 2);
-  a.eyes = a.skinTone > 0.6 ? r.pick(['brown', 'brown', 'brownlight'] as const) : r.pick(EYE_COLORS);
-  const hairPool: HairStyle[] = masc
-    ? ['short01', 'short02', 'short04', 'culturalibre_hair_02', 'none', 'afro01', 'ponytail01', 'culturalibre_hair_01']
-    : ['bob02', 'toigo_inverted_bob', 'toigo_blunt_bob', 'long01', 'culturalibre_hair_01', 'ponytail01', 'rehmanpolanski_hair_bun_brown', 'elvs_unkempt_french_braid', 'faydaen_hair_1', 'afro01'];
-  a.hair = { style: r.pick(hairPool), color: a.skinTone > 0.55 ? r.pick(HAIR_COLORS.slice(0, 2)) : r.pick(HAIR_COLORS.slice(0, 9)) };
+  const src = () => (r.chance(w) ? pa : pb);
+  a.eyes = weighted(next, src().eyes);
+  const texture = weighted(next, src().texture);
+  let hairColor = weighted(next, src().hair);
+  // Greying from the late thirties.
+  const grey = clamp((s.age - 38) / 35) * 0.75 * r.range(0.6, 1.2);
+  if (grey > 0) hairColor = mixHex(hairColor, 0xb8b6ae, clamp(grey));
+  a.hair = { style: r.pick(hairPool(texture, masc)), color: hairColor };
   a.brows = r.pick(BROW_STYLES.slice(0, 14));
-  a.facialHair = masc && r.chance(0.6) ? r.pick(FACIAL_HAIR.slice(1)) : 'none';
-  a.freckles = a.skinTone < 0.4 && r.chance(0.2) ? r.range(0.2, 0.8) : 0;
+  a.facialHair = masc && r.chance(0.65) ? r.pick(FACIAL_HAIR.slice(1)) : 'none';
+  a.freckles = r.chance(mixv(pa.freckleChance, pb.freckleChance)) ? r.range(0.2, 0.8) : 0;
   if (r.chance(0.3)) a.scars = [r.pick(SCARS)];
   if (r.chance(0.15)) a.tattoos = [r.pick(TATTOOS)];
   // Individual facial variation: a handful of modifiers nudged off average.
   for (const id of FACE_VARIATION) if (r.chance(0.6)) s.modifiers[id] = gauss() * 0.45;
   const o = opts.over ?? {};
   return { ...a, ...o, shape: { ...s, ...(o.shape ?? {}), modifiers: { ...s.modifiers, ...(o.shape?.modifiers ?? {}) } } } as Appearance;
+}
+
+/** Hairstyles that suit each hair texture (random NPC generation). */
+export const HAIR_BY_TEXTURE: Record<HairTexture, { masc: HairStyle[]; fem: HairStyle[] }> = {
+  straight: {
+    masc: ['short01', 'short02', 'short04', 'culturalibre_hair_02', 'none', 'ponytail01', 'culturalibre_hair_01'],
+    fem: ['bob02', 'toigo_inverted_bob', 'toigo_blunt_bob', 'long01', 'culturalibre_hair_01', 'ponytail01', 'rehmanpolanski_hair_bun_brown', 'elvs_unkempt_french_braid'],
+  },
+  wavy: {
+    masc: ['short01', 'short02', 'short04', 'culturalibre_hair_02', 'none', 'sonntag78_junglebook_hair'],
+    fem: ['bob02', 'long01', 'ponytail01', 'rehmanpolanski_hair_bun_brown', 'faydaen_hair_1', 'elvs_unkempt_french_braid', 'culturalibre_hair_01'],
+  },
+  curly: {
+    masc: ['short02', 'short01', 'afro01', 'none'],
+    fem: ['afro01', 'rehmanpolanski_hair_bun_brown', 'ponytail01', 'faydaen_hair_1'],
+  },
+  coily: {
+    masc: ['afro01', 'none'],
+    fem: ['afro01', 'rehmanpolanski_hair_bun_brown', 'elvs_unkempt_french_braid'],
+  },
+};
+
+function hairPool(t: HairTexture, masc: boolean): HairStyle[] {
+  return masc ? HAIR_BY_TEXTURE[t].masc : HAIR_BY_TEXTURE[t].fem;
 }
 
 /** Modifiers used for random facial individuality (symmetric ones). */

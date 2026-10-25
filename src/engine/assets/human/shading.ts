@@ -22,7 +22,11 @@ export function applySkinScatter(m: THREE.MeshStandardMaterial): void {
       #else
         reflectedLight.directDiffuse += irradiance * BRDF_Lambert( material.diffuseContribution ) * ( 1.0 - F );
       #endif`,
-    );
+    )
+      // Light that reaches skin indirectly has scattered through it: keep shadows warm, never grey-green.
+      .replace('reflectedLight.indirectDiffuse += diffuse;', 'reflectedLight.indirectDiffuse += diffuse * SKIN_AMBIENT_TINT;')
+      .replace('reflectedLight.indirectDiffuse += indirectDiffuse;', 'reflectedLight.indirectDiffuse += indirectDiffuse * SKIN_AMBIENT_TINT;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <lights_physical_pars_fragment>', '#ifdef SKIN_SSS\n#define SKIN_AMBIENT_TINT vec3( 1.14, 0.95, 0.84 )\n#else\n#define SKIN_AMBIENT_TINT vec3( 1.0 )\n#endif\n#include <lights_physical_pars_fragment>');
     sh.fragmentShader = sh.fragmentShader.replace('#include <lights_physical_pars_fragment>', chunk);
   };
   m.customProgramCacheKey = () => 'skinSSS';
