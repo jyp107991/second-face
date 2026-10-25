@@ -16,18 +16,19 @@ Read this first in every session. Update + commit + push after every step.
 - [x] M1.2 Items & inventory model: item schema, weight, condition, ammo, equipment; validator coverage — `src/engine/inventory/`
 - [x] M1.3 Face sculptor: parametric head (sliders, age), hair/scars/tattoos, body build; humanoid uses Appearance
 - [x] M1.4 Character creation UI (name, appearance, attributes, tag skills, traits, summary)
-- [ ] M1.5 Combat rules: turn order, AP, hit chance, damage, crits, aimed shots, crippling (pure TS + tests) — `src/engine/combat/`
+- [x] M1.5 Combat rules: turn order, AP, hit chance, damage, crits, aimed shots, crippling (pure TS + tests) — `src/engine/combat/`
 - [ ] M1.6 Combat in scene: enter/exit combat, AP bar, targeting, aimed-shot UI, FX (muzzle flash, tracers, blood), floating text
 - [ ] M1.7 Enemy AI: utility scoring, cover, flanking, retreat-to-heal, flee/surrender, morale
 - [ ] M1.8 Wristlog UI (inventory, stats, equip, use items) — CRT style
 - [ ] M1.9 Audio: Web Audio synth (ambience beds, footsteps, gunshots, UI blips)
 
 ## Next action
-M1.5 — combat rules as pure TS in `src/engine/combat/rules.ts` + tests: Combatant interface (sheet-backed for player,
-statblock for NPCs), turn order by initiative, AP costs, hit chance (skill, range vs sightRange, cover, darkness, aimed
-part, modifiers incl. flags one_hand/hesitant/cistern_pale, tool t_lamp), damage (weapon roll × ammo mult, DT/DR with
-ammo pen, crit tables per body part, crit_dmg mods), crippling, weapon wear/jams, burst & area. Deterministic via Rng.
-Then M1.6 combat in scene.
+M1.6 — combat in scene: `src/engine/combat/encounter.ts` (CombatManager: enter/exit, turn loop, player actions via
+input, AP-limited movement with path preview, attack/aim UI, end turn), `src/engine/ui/combatHud.ts` (AP pips, HP,
+weapon/ammo, target panel w/ hit %, aimed-shot body picker, log), FX (muzzle flash, tracer, hit sparks/blood decal,
+floating damage text, camera shake). Need NPC actors with sheets: add `src/engine/npc/spawn.ts` minimal enemy defs
+(content `src/content/npcs/dev_enemies.ts`) for testing in dev_yard (dev overlay "Spawn raiders").
+AI (M1.7) can start as simple 'approach & attack' then be replaced.
 
 ## Known issues / polish backlog (engine)
 - Tall interior walls hide a lot; consider Fallout-style lower walls or full-wall fade when room is entered.
