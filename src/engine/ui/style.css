@@ -1,0 +1,39 @@
+:root {
+  --amber: #e8b45a;
+  --amber-dim: #9a7436;
+  --crt: #8affb0;
+  --crt-dim: #3a8a5a;
+  --ink: #1a1610;
+  --panel: rgba(20, 17, 12, 0.88);
+  --font: 'Courier New', ui-monospace, Menlo, Consolas, monospace;
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--ink); overflow: hidden; color: var(--amber); font-family: var(--font); -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+#app { position: fixed; inset: 0; }
+.game-canvas { display: block; width: 100%; height: 100%; }
+#fade { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 50; }
+
+.hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+.hud > * { pointer-events: auto; }
+.hud-top { position: absolute; top: calc(8px + var(--safe-t)); left: calc(10px + var(--safe-l)); font-size: 13px; text-shadow: 0 1px 2px #000; line-height: 1.4; pointer-events: none; }
+.hud-top .loc { font-size: 15px; letter-spacing: 2px; text-transform: uppercase; }
+.hud-buttons { position: absolute; right: calc(10px + var(--safe-r)); bottom: calc(10px + var(--safe-b)); display: flex; gap: 8px; }
+.btn { min-width: 48px; min-height: 48px; padding: 6px 12px; font-family: var(--font); font-size: 14px; color: var(--amber); background: var(--panel); border: 2px solid var(--amber-dim); border-radius: 4px; cursor: pointer; }
+.btn:active, .btn.on { background: #3a2e1a; border-color: var(--amber); }
+
+.toast { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); padding: 8px 14px; background: var(--panel); border: 1px solid var(--amber-dim); font-size: 14px; pointer-events: none; transition: opacity .4s; }
+
+/* CRT panel styling (wrist computer, terminals) */
+.crt { position: relative; background: #07120b; color: var(--crt); border: 3px solid #2a3a2e; border-radius: 10px; box-shadow: inset 0 0 40px rgba(60,255,140,.12), 0 0 0 2px #000, 0 8px 30px rgba(0,0,0,.7); text-shadow: 0 0 4px rgba(120,255,170,.6); overflow: hidden; }
+.crt::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.25) 2px 3px); animation: crt-flicker 6s infinite; }
+@keyframes crt-flicker { 0%,100% { opacity: .9 } 50% { opacity: 1 } 51% { opacity: .85 } }
+
+.dev { position: fixed; top: calc(8px + var(--safe-t)); right: calc(10px + var(--safe-r)); z-index: 40; width: min(320px, 90vw); padding: 10px; font-size: 12px; }
+.dev h3 { margin: 0 0 6px; font-size: 13px; letter-spacing: 2px; }
+.dev .row { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; align-items: center; }
+.dev button, .dev select, .dev input { font-family: var(--font); font-size: 12px; background: #0e2216; color: var(--crt); border: 1px solid var(--crt-dim); padding: 4px 6px; }
+.dev pre { margin: 0; white-space: pre-wrap; }

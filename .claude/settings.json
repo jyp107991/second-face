@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '=== RESUME: docs/PROGRESS.md ==='; cat \"$CLAUDE_PROJECT_DIR/docs/PROGRESS.md\"; echo; git -C \"$CLAUDE_PROJECT_DIR\" log --oneline -5; git -C \"$CLAUDE_PROJECT_DIR\" status --short | head -20"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,49 @@
+import type { MapDef } from '../../engine/data/types';
+
+/** Developer test map: indoor shelter rooms. Not part of the story. */
+export const dev_bunker: MapDef = {
+  id: 'dev_bunker',
+  name: 'Test Bunker',
+  seed: 11,
+  layout: [
+    '#####################',
+    '#mmmmmm#ttttttt#gggg#',
+    '#mmmmmm#ttttttt#gggg#',
+    '#mmmmmm.ttttttt.gggg#',
+    '#mmmmmm#ttttttt#gggg#',
+    '###.#######.#####.###',
+    '#___________________#',
+    '#___________________#',
+    '###.#######.#####.###',
+    '#mmmmm#   #__#  #ttt#',
+    '#mmmmm#   #__#  #ttt#',
+    '#######   #__#  #####',
+    '          ####       ',
+  ],
+  legend: {
+    '#': { wall: 'metal', floor: 'metal', wallHeight: 2.8 },
+    '_': { floor: 'concrete' },
+    m: { floor: 'metal' },
+    t: { floor: 'tile' },
+    g: { floor: 'grate' },
+    '.': { floor: 'concrete' },
+    ' ': { empty: true },
+  },
+  props: [
+    { kind: 'bed', x: 1, y: 1 }, { kind: 'bed', x: 3, y: 1 }, { kind: 'locker', x: 6, y: 1 }, { kind: 'locker', x: 6, y: 2 },
+    { kind: 'table', x: 10, y: 3 }, { kind: 'chair', x: 9, y: 3, rot: 1 }, { kind: 'chair', x: 11, y: 3, rot: 3 },
+    { kind: 'planter', x: 8, y: 1 }, { kind: 'planter', x: 9, y: 1 }, { kind: 'planter', x: 13, y: 1 }, { kind: 'planter', x: 14, y: 1 },
+    { kind: 'machine', x: 17, y: 1 }, { kind: 'machine', x: 19, y: 1 }, { kind: 'terminal', x: 18, y: 4, rot: 2 },
+    { kind: 'shelf', x: 1, y: 9, rot: 1 }, { kind: 'crate', x: 4, y: 10 }, { kind: 'cot', x: 18, y: 9 },
+    { kind: 'barrel', x: 2, y: 7 }, { kind: 'crate', x: 19, y: 6 },
+  ],
+  lights: [
+    { x: 3, y: 3, height: 2.5, color: 0xffd8a0, intensity: 3, range: 6, flicker: 0.1 },
+    { x: 11, y: 2, height: 2.5, color: 0xd8ffe8, intensity: 3, range: 7 },
+    { x: 10, y: 7, height: 2.5, color: 0xffe0b0, intensity: 3, range: 8, flicker: 0.25 },
+    { x: 18, y: 3, height: 2.5, color: 0x9affc0, intensity: 2.5, range: 6 },
+  ],
+  spawns: [{ id: 'entry', x: 11, y: 10 }],
+  exits: [{ x: 11, y: 11, w: 2, h: 1, to: { location: 'dev_yard', spawn: 'from_bunker' }, label: 'Outside' }],
+  ambience: { indoor: true, fogColor: 0x0c0c0a, fogDensity: 0.03, dust: 0.5, grade: 0.65, ambient: { color: 0x8a8478, intensity: 0.5 }, sound: 'hum' },
+};
