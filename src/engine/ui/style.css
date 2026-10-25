@@ -170,3 +170,5 @@ body.in-combat .hud-buttons { display: none; }
   .wl .col { overflow: visible; }
   .wl .col + .col { border-left: none; border-top: 1px dashed #1a3a24; }
 }
+
+.loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; letter-spacing: 6px; font-size: 14px; color: var(--amber); background: var(--ink); z-index: 60; }

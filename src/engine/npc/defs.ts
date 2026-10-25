@@ -1,5 +1,5 @@
 import type { Outfit } from '../assets/humanoid';
-import type { Appearance } from '../data/appearance';
+import type { RandomLookOptions } from '../data/appearance';
 import type { WeaponDef } from '../inventory/items';
 import type { AttributeId, SkillId } from '../stats/rules';
 
@@ -11,7 +11,7 @@ export interface NpcDef {
   id: string;
   name: string;
   /** Appearance: a generator seed plus explicit overrides. */
-  look: { seed: number; frame?: 'broad' | 'narrow'; over?: Partial<Appearance> };
+  look: { seed: number; frame?: 'broad' | 'narrow'; age?: number; over?: RandomLookOptions['over'] };
   outfit: Outfit;
   level: number;
   attrs?: Partial<Record<AttributeId, number>>;

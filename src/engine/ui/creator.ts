@@ -3,9 +3,10 @@ import { lookFrom } from '../assets/humanoid';
 import { Rng } from '../core/rng';
 import type { Pronouns } from '../core/state';
 import {
-  EYE_COLORS, FACE_PARAMS, FACE_PARAM_INFO, FACIAL_HAIR, HAIR_COLORS, HAIR_STYLES, SCARS, SKIN_TONES, TATTOOS,
-  defaultAppearance, randomAppearance, type Appearance, type FaceParam,
+  BROW_STYLES, EYE_COLORS, FACIAL_HAIR, HAIR_COLORS, HAIR_STYLES, SCARS, TATTOOS, defaultAppearance, randomAppearance, type Appearance,
 } from '../data/appearance';
+import { humanData } from '../assets/human/data';
+import { PLAYER_OUTFIT } from '../game';
 import type { Game } from '../game';
 import { PortraitStage } from '../render/portrait';
 import { ATTRIBUTES, ATTRIBUTE_INFO, ATTR_MAX, ATTR_MIN, SKILLS, SKILL_INFO, TAG_COUNT } from '../stats/rules';
@@ -26,14 +27,30 @@ const TABS: { id: Tab; label: string; framing: number }[] = [
 ];
 
 const STYLE_NAMES: Record<string, string> = {
-  bald: 'Bald', buzz: 'Buzzed', short: 'Short', side_part: 'Side part', curly: 'Curly', afro: 'Afro', long: 'Long', long_wavy: 'Long wavy',
-  ponytail: 'Ponytail', bun: 'Bun', braids: 'Braids', mohawk: 'Crest', undercut: 'Undercut', locs: 'Locs',
+  short01: 'Cropped', short02: 'Short', short03: 'Tousled', short04: 'Swept', bob01: 'Bob', bob02: 'Long bob', long01: 'Long',
+  ponytail01: 'Ponytail', braid01: 'Braid', afro01: 'Afro',
   none: 'None', stubble: 'Stubble', moustache: 'Moustache', goatee: 'Goatee', short_beard: 'Short beard', full_beard: 'Full beard', chops: 'Sideburns', long_beard: 'Long beard',
   brow_cut: 'Split brow', cheek_slash: 'Cheek slash', lip_split: 'Split lip', eye_scar: 'Eye scar', burn_left: 'Burn (left)', burn_right: 'Burn (right)', forehead_x: 'Cross brand', chin_nick: 'Chin nick',
   nine_neck: 'Cistern nine', tear: 'Teardrop', chin_lines: 'Chin lines', brow_dots: 'Brow dots', cheek_tribal: 'Cheek whorl', temple_spiral: 'Temple spiral', cheek_cross: 'Cheek cross', jaw_stripes: 'Jaw stripes', forehead_star: 'Brow star', eye_band: 'Eye band',
 };
 
 const hex = (n: number) => '#' + n.toString(16).padStart(6, '0');
+
+const GROUP_NAMES: Record<string, string> = {
+  head: 'Head shape', forehead: 'Forehead', eyebrows: 'Brow', eyes: 'Eyes', nose: 'Nose', mouth: 'Mouth', cheek: 'Cheeks', chin: 'Chin & jaw',
+  ears: 'Ears', neck: 'Neck', torso: 'Torso', hip: 'Hips', stomach: 'Stomach', buttocks: 'Buttocks', armslegs: 'Arms & legs',
+};
+const FACE_GROUP_PREFIXES = ['head', 'forehead', 'eyebrows', 'eye', 'nose', 'mouth', 'cheek', 'chin', 'ear', 'neck'];
+const WORDS: Record<string, string> = { horiz: 'width', vert: 'height', depth: 'depth', trans: 'position', scale: '', decr: '', incr: '' };
+
+/** "sym:eye-scale|decr|incr" → "Scale"; "nose-trans|down|up" → "Position (down–up)". */
+function modLabel(id: string, group: string): string {
+  const [name, min, max] = id.replace('sym:', '').split('|');
+  let base = name.replace(new RegExp(`^(${group}|${group.replace(/s$/, '')})-`), '');
+  base = base.split('-').map((w) => WORDS[w] ?? w).filter(Boolean).join(' ') || 'size';
+  base = base.charAt(0).toUpperCase() + base.slice(1);
+  return min && min !== 'decr' ? `${base} (${min}–${max})` : base;
+}
 
 /** Character creation screen with live 3D preview. */
 export class Creator {
@@ -80,7 +97,7 @@ export class Creator {
     window.addEventListener('resize', onResize);
     this.offs.push(() => window.removeEventListener('resize', onResize));
     const loop = () => {
-      if (this.dirty) { this.dirty = false; this.stage.setLook(lookFrom(this.app, { shirt: 0x5a6a62, pants: 0x4a4a40, boots: 0x2a221a })); }
+      if (this.dirty) { this.dirty = false; this.stage.setLook(lookFrom(this.app, PLAYER_OUTFIT)); }
       this.raf = requestAnimationFrame(loop);
     };
     loop();
@@ -135,7 +152,7 @@ export class Creator {
     if (a === 'rand') {
       const seed = (Math.random() * 1e9) | 0;
       const frame = new Rng(seed).chance(0.5) ? 'broad' : 'narrow';
-      this.app = randomAppearance(seed, { frame, age: this.app.age });
+      this.app = randomAppearance(seed, { frame, age: this.app.shape.age });
       this.dirty = true;
       this.renderBody();
     }
@@ -232,21 +249,34 @@ export class Creator {
     }
   }
 
-  private faceTab(b: HTMLElement): void {
-    let group = '';
-    for (const p of FACE_PARAMS) {
-      const info = FACE_PARAM_INFO[p];
-      if (info.group !== group) { group = info.group; this.h(b, group); }
-      this.slider(b, info.label, this.app.face[p], -1, 1, 0.05, (v) => (this.app.face[p as FaceParam] = v));
+  /** Modifier sliders for the given groups; left/right pairs are merged into one "sym:" slider. */
+  private modifierSliders(b: HTMLElement, groups: string[], filter?: (id: string) => boolean): void {
+    const mods = humanData().m.modifiers;
+    const mv = this.app.shape.modifiers;
+    for (const g of groups) {
+      const seen = new Set<string>();
+      let header = false;
+      for (const m of mods) {
+        if (m.group !== g) continue;
+        const side = m.id.startsWith('l-') || m.id.startsWith('r-');
+        const id = side ? 'sym:' + m.id.slice(2) : m.id;
+        if (seen.has(id) || (filter && !filter(id))) continue;
+        seen.add(id);
+        if (!header) { this.h(b, GROUP_NAMES[g] ?? g); header = true; }
+        this.slider(b, modLabel(id, g), mv[id] ?? 0, m.min ? -1 : 0, 1, 0.05, (v) => { if (v === 0) delete mv[id]; else mv[id] = v; });
+      }
     }
-    this.h(b, 'Skin');
-    this.swatches(b, SKIN_TONES, this.app.skin, (c) => (this.app.skin = c));
-    this.h(b, 'Eyes');
-    this.swatches(b, EYE_COLORS, this.app.eyes, (c) => (this.app.eyes = c));
+  }
+
+  private faceTab(b: HTMLElement): void {
     const reset = document.createElement('button');
-    reset.className = 'b'; reset.textContent = 'Reset face sliders';
-    reset.onclick = () => { for (const p of FACE_PARAMS) this.app.face[p] = 0; this.dirty = true; this.renderBody(); };
-    b.append(document.createElement('br'), reset);
+    reset.className = 'b'; reset.textContent = 'Reset face';
+    reset.onclick = () => {
+      for (const k of Object.keys(this.app.shape.modifiers)) if (FACE_GROUP_PREFIXES.some((p) => k.replace('sym:', '').startsWith(p))) delete this.app.shape.modifiers[k];
+      this.dirty = true; this.renderBody();
+    };
+    b.append(reset);
+    this.modifierSliders(b, ['head', 'forehead', 'eyebrows', 'eyes', 'nose', 'mouth', 'cheek', 'chin', 'ears', 'neck']);
   }
 
   private hairTab(b: HTMLElement): void {
@@ -254,10 +284,13 @@ export class Creator {
     this.chips(b, HAIR_STYLES, (s) => s === this.app.hair.style, (s) => (this.app.hair.style = s));
     this.h(b, 'Hair colour');
     this.swatches(b, HAIR_COLORS, this.app.hair.color, (c) => (this.app.hair.color = c));
+    this.h(b, 'Eyebrows');
+    this.chips(b, BROW_STYLES, (s) => s === this.app.brows, (s) => (this.app.brows = s));
+    this.h(b, 'Eyes');
+    this.chips(b, EYE_COLORS, (s) => s === this.app.eyes, (s) => (this.app.eyes = s));
     this.h(b, 'Facial hair');
     this.chips(b, FACIAL_HAIR, (s) => s === this.app.facialHair, (s) => (this.app.facialHair = s));
-    this.h(b, 'Brows & skin');
-    this.slider(b, 'Brow weight', this.app.brows, -1, 1, 0.05, (v) => (this.app.brows = v));
+    this.h(b, 'Skin');
     this.slider(b, 'Freckles', this.app.freckles, 0, 1, 0.05, (v) => (this.app.freckles = v));
     this.h(b, 'Scars (up to 3)');
     this.chips(b, SCARS, (s) => this.app.scars.includes(s), (s) => {
@@ -272,20 +305,27 @@ export class Creator {
   }
 
   private bodyTab(b: HTMLElement): void {
+    const sh = this.app.shape;
     this.h(b, 'Build');
-    const body = this.app.body;
-    this.slider(b, 'Height', body.height, -1, 1, 0.05, (v) => (body.height = v));
-    this.slider(b, 'Weight', body.mass, -1, 1, 0.05, (v) => (body.mass = v));
-    this.slider(b, 'Muscle', body.muscle, -1, 1, 0.05, (v) => (body.muscle = v));
-    this.slider(b, 'Shoulders', body.shoulders, -1, 1, 0.05, (v) => (body.shoulders = v));
-    this.slider(b, 'Hips', body.hips, -1, 1, 0.05, (v) => (body.hips = v));
-    this.slider(b, 'Chest', body.chest, -1, 1, 0.05, (v) => (body.chest = v));
-    this.h(b, 'Age');
+    this.slider(b, 'Feminine ↔ Masculine', sh.gender, 0, 1, 0.01, (v) => (sh.gender = v));
     const ageRow = document.createElement('div');
     ageRow.className = 'desc';
-    ageRow.textContent = `${this.app.age} years`;
-    this.slider(b, 'Age', this.app.age, 18, 40, 1, (v) => { this.app.age = v; ageRow.textContent = `${v} years`; });
+    ageRow.textContent = `Age ${sh.age}`;
+    this.slider(b, 'Age', sh.age, 18, 40, 1, (v) => { sh.age = v; ageRow.textContent = `Age ${v}`; });
     b.append(ageRow);
+    this.slider(b, 'Height', sh.height, 0, 1, 0.01, (v) => (sh.height = v));
+    this.slider(b, 'Weight', sh.weight, 0, 1, 0.01, (v) => (sh.weight = v));
+    this.slider(b, 'Muscle', sh.muscle, 0, 1, 0.01, (v) => (sh.muscle = v));
+    this.slider(b, 'Bust size', sh.breastSize, 0, 1, 0.01, (v) => (sh.breastSize = v));
+    this.slider(b, 'Bust firmness', sh.breastFirmness, 0, 1, 0.01, (v) => (sh.breastFirmness = v));
+    this.h(b, 'Ancestry (blend)');
+    this.slider(b, 'African', sh.african, 0, 1, 0.01, (v) => (sh.african = v));
+    this.slider(b, 'East Asian', sh.asian, 0, 1, 0.01, (v) => (sh.asian = v));
+    this.slider(b, 'European', sh.caucasian, 0, 1, 0.01, (v) => (sh.caucasian = v));
+    this.h(b, 'Skin');
+    this.slider(b, 'Skin tone', this.app.skinTone, 0, 1, 0.01, (v) => (this.app.skinTone = v));
+    this.chips(b, ['0', '1', '2'] as const, (s) => Number(s) === this.app.skinVariant, (s) => (this.app.skinVariant = Number(s)));
+    this.modifierSliders(b, ['torso', 'hip', 'stomach', 'buttocks', 'armslegs'], (id) => !/fingers|trans|valgus|pregnant|navel/.test(id));
   }
 
   private attrTab(b: HTMLElement): void {

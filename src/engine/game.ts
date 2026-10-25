@@ -38,6 +38,9 @@ export type GameEvents = {
   openTransfer: { inv: import('./inventory/inventory').Inventory; name: string };
 };
 
+/** Cistern-issue coveralls and boots. */
+export const PLAYER_OUTFIT = { suit: 'male_worksuit01', suitTint: 0xa8b0a0, shoes: 'shoes06', shoeTint: 0x8a8070 };
+
 /** Real seconds → game minutes. 1 real second = 1/3 game minute while exploring (24h ≈ 72 min). */
 const GAME_MINUTES_PER_SEC = 1 / 3;
 
@@ -206,7 +209,7 @@ export class Game extends EventBus<GameEvents> {
     this.state.locationId = id;
     this.player = new Actor({
       id: 'player', x: sx, y: sy, facing: this.state.player.facing,
-      look: lookFrom(this.state.pc.appearance, { shirt: 0x5a6a62, pants: 0x4a4a40, boots: 0x2a221a }),
+      look: lookFrom(this.state.pc.appearance, PLAYER_OUTFIT),
     }, this.loc.grid);
     this.player.onArriveTile = (x, y) => this.onPlayerTile(x, y);
     this.player.onPathDone = () => {

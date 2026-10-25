@@ -48,8 +48,8 @@ export function spawnNpc(p: NpcPlacement, grid: Grid): NpcRuntime {
   const def = NPCS[p.def];
   if (!def) throw new Error(`Unknown NPC ${p.def}`);
   const id = p.id ?? def.id;
-  const app = randomAppearance(def.look.seed, { frame: def.look.frame, ...(def.look.over ?? {}) });
-  const actor = new Actor({ id, x: p.x, y: p.y, facing: p.facing ?? 0, look: lookFrom(app, def.outfit) }, grid);
+  const app = randomAppearance(def.look.seed, { frame: def.look.frame, age: def.look.age, over: def.look.over });
+  const actor = new Actor({ id, x: p.x, y: p.y, facing: p.facing ?? 0, look: lookFrom(app, def.outfit, 'low') }, grid);
   const { sheet, inv } = buildNpcStats(def);
   const combatant: Combatant = {
     id, name: def.name, team: def.team, sheet, inv, x: p.x, y: p.y, ap: 0, morale: initialMorale(def.courage), evasion: 0,
