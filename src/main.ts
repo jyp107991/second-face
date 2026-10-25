@@ -3,6 +3,7 @@ import { Game } from './engine/game';
 import { Hud } from './engine/ui/hud';
 import { DevOverlay } from './engine/dev/overlay';
 import { Menu } from './engine/ui/menu';
+import { Creator } from './engine/ui/creator';
 import { PortraitStage } from './engine/render/portrait';
 import { lookFrom } from './engine/assets/humanoid';
 import { agedAppearance, defaultAppearance, randomAppearance } from './engine/data/appearance';
@@ -12,8 +13,11 @@ const game = new Game(app);
 const hud = new Hud(game);
 const menu = new Menu(game);
 hud.onMenu = () => menu.open('pause');
-// New Game: character creation goes here (M1); for now start in the test yard.
-menu.onNewGame = () => game.loadLocation('dev_yard', 'start');
+menu.onNewGame = () => {
+  new Creator(game, (r) => {
+    game.newGame(r.sheet, r.appearance, r.pronouns);
+  }, () => menu.open('title'));
+};
 const dev = import.meta.env.DEV || new URLSearchParams(location.search).has('dev');
 if (dev) {
   new DevOverlay(game);

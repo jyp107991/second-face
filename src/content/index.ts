@@ -4,6 +4,7 @@ import { registerItems } from '../engine/inventory/items';
 import { ITEMS } from './items';
 import { PERKS } from './rules/perks';
 import { TRAITS } from './rules/traits';
+import { ORIGINS } from './rules/origins';
 import { dev_bunker } from './maps/dev_bunker';
 import { dev_yard } from './maps/dev_yard';
 
@@ -13,6 +14,6 @@ export const MAPS: Record<string, MapDef> = {
   dev_bunker,
 };
 
-export { TRAITS, PERKS, ITEMS };
+export { TRAITS, PERKS, ITEMS, ORIGINS };
 registerRules({ traits: TRAITS, perks: PERKS });
 registerItems(ITEMS);

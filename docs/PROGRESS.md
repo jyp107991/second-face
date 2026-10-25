@@ -15,7 +15,7 @@ Read this first in every session. Update + commit + push after every step.
 - [x] M1.1 Stats model: attributes, skills, traits, perks, derived stats, XP/levels (pure TS + tests) — `src/engine/stats/`
 - [x] M1.2 Items & inventory model: item schema, weight, condition, ammo, equipment; validator coverage — `src/engine/inventory/`
 - [x] M1.3 Face sculptor: parametric head (sliders, age), hair/scars/tattoos, body build; humanoid uses Appearance
-- [ ] M1.4 Character creation UI (name, appearance, attributes, tag skills, traits, summary)
+- [x] M1.4 Character creation UI (name, appearance, attributes, tag skills, traits, summary)
 - [ ] M1.5 Combat rules: turn order, AP, hit chance, damage, crits, aimed shots, crippling (pure TS + tests) — `src/engine/combat/`
 - [ ] M1.6 Combat in scene: enter/exit combat, AP bar, targeting, aimed-shot UI, FX (muzzle flash, tracers, blood), floating text
 - [ ] M1.7 Enemy AI: utility scoring, cover, flanking, retreat-to-heal, flee/surrender, morale
@@ -23,11 +23,11 @@ Read this first in every session. Update + commit + push after every step.
 - [ ] M1.9 Audio: Web Audio synth (ambience beds, footsteps, gunshots, UI blips)
 
 ## Next action
-M1.4 — character creation UI (`src/engine/ui/creator.ts`): tabs Identity (name, pronouns), Face (slider groups, presets,
-randomize), Hair & Marks (hair style/colour, facial hair, brows, freckles, scars, tattoos), Body (height, mass, muscle,
-shoulders, hips, chest, age), Attributes (7, 12 points), Skills (tag 3), Traits (≤2), Summary. Uses PortraitStage
-(game.portrait) for live preview; framing switches face/body by tab. Player appearance + sheet go into GameState.
-Visual polish backlog for heads: hands, rounder shoulders, mouth expressions, better lighting in portrait.
+M1.5 — combat rules as pure TS in `src/engine/combat/rules.ts` + tests: Combatant interface (sheet-backed for player,
+statblock for NPCs), turn order by initiative, AP costs, hit chance (skill, range vs sightRange, cover, darkness, aimed
+part, modifiers incl. flags one_hand/hesitant/cistern_pale, tool t_lamp), damage (weapon roll × ammo mult, DT/DR with
+ammo pen, crit tables per body part, crit_dmg mods), crippling, weapon wear/jams, burst & area. Deterministic via Rng.
+Then M1.6 combat in scene.
 
 ## Known issues / polish backlog (engine)
 - Tall interior walls hide a lot; consider Fallout-style lower walls or full-wall fade when room is entered.

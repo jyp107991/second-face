@@ -16,7 +16,7 @@ export class DevOverlay {
 
   constructor(private game: Game) {
     const toggle = document.createElement('button');
-    toggle.className = 'btn';
+    toggle.className = 'btn dev-toggle';
     toggle.textContent = 'DEV';
     toggle.style.cssText = 'position:fixed;left:calc(10px + var(--safe-l));bottom:calc(10px + var(--safe-b));z-index:41;min-width:40px;min-height:40px;font-size:11px';
     toggle.onclick = () => this.toggle();

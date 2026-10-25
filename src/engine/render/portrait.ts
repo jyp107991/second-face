@@ -15,6 +15,8 @@ export class PortraitStage {
   yaw = 0;
   /** Horizontal offset of the subject in view (to leave room for side panels), -1..1. */
   offsetX = 0;
+  /** Vertical offset (positive = subject higher on screen, for bottom panels). */
+  offsetY = 0;
   private key: THREE.DirectionalLight;
   private time = 0;
 
@@ -42,7 +44,10 @@ export class PortraitStage {
     if (snap) this.framing = f;
   }
 
+  private aspect = 1;
+
   setAspect(aspect: number): void {
+    this.aspect = aspect;
     this.camera.aspect = aspect;
     this.camera.updateProjectionMatrix();
   }
@@ -56,10 +61,20 @@ export class PortraitStage {
     f.animate(dt, 0);
     const eye = f.eyeHeight;
     const target = new THREE.Vector3(0, THREE.MathUtils.lerp(eye - 0.03, 0.95, this.framing), 0);
-    const dist = THREE.MathUtils.lerp(1.15, 6.2, this.framing);
+    // Narrow (portrait) screens need more distance to fit the subject's width.
+    const narrow = Math.max(1, 0.85 / this.aspect);
+    const dist = THREE.MathUtils.lerp(1.15, 6.2, this.framing) * THREE.MathUtils.lerp(narrow * 1.15, narrow, this.framing);
+    // Raise the subject on screen by aiming lower (fraction of visible height).
+    const visH = 2 * dist * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
+    target.y -= this.offsetY * visH;
     this.camera.position.set(0, target.y + 0.04 + this.framing * 0.4, dist);
     this.camera.lookAt(target);
+    const fog = this.scene.fog as THREE.Fog;
+    fog.near = dist + 1.5;
+    fog.far = dist + 6;
     // Shift subject sideways in screen space.
-    this.camera.setViewOffset(1000, 1000, -this.offsetX * 250, 0, 1000, 1000);
+    // Note: setViewOffset derives the camera aspect from fullWidth/fullHeight.
+    const fw = 1000 * this.aspect;
+    this.camera.setViewOffset(fw, 1000, -this.offsetX * fw * 0.25, 0, fw, 1000);
   }
 }

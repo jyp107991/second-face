@@ -2,7 +2,10 @@ import * as THREE from 'three';
 import { MAPS } from '../content';
 import { cutawayUniforms } from './assets/materials';
 import { EventBus } from './core/events';
-import { hourOf, newGameState, type GameState } from './core/state';
+import { hourOf, newGameState, type GameState, type Pronouns } from './core/state';
+import type { Appearance } from './data/appearance';
+import type { CharacterSheet } from './stats/sheet';
+import { addItem, emptyInventory, equip, makeItem, syncGear } from './inventory/inventory';
 import { Input } from './input/input';
 import { Atmosphere } from './render/atmosphere';
 import { IsoCamera } from './render/camera';
@@ -11,7 +14,6 @@ import { QUALITY, detectQuality, type QualityLevel } from './render/quality';
 import { Actor } from './scene/actor';
 import { lookFrom } from './assets/humanoid';
 import type { PortraitStage } from './render/portrait';
-import type { Appearance } from './data/appearance';
 import { buildLocation, type BuiltLocation } from './scene/location';
 import type { ExitDef } from './data/types';
 import { SaveManager, type SaveFile, type SlotId } from './save/saves';
@@ -49,8 +51,6 @@ export class Game extends EventBus<GameEvents> {
   timeScale = 1;
   /** When true the simulation is frozen (menus open); rendering continues. */
   paused = false;
-  /** Player appearance (set by character creation; part of the save in M1.4). */
-  playerAppearance?: Appearance;
   /** When set, this stage is rendered instead of the world (creator, dialogue close-ups). */
   portrait?: PortraitStage;
   saves?: SaveManager;
@@ -150,7 +150,7 @@ export class Game extends EventBus<GameEvents> {
     this.state.locationId = id;
     this.player = new Actor({
       id: 'player', x: sx, y: sy, facing: this.state.player.facing,
-      look: lookFrom(this.playerAppearance, { shirt: 0x5a6a62, pants: 0x4a4a40, boots: 0x2a221a }),
+      look: lookFrom(this.state.pc.appearance, { shirt: 0x5a6a62, pants: 0x4a4a40, boots: 0x2a221a }),
     }, this.loc.grid);
     this.player.onArriveTile = (x, y) => this.onPlayerTile(x, y);
     this.player.onPathDone = () => { this.pathMarker.visible = false; };
@@ -229,6 +229,21 @@ export class Game extends EventBus<GameEvents> {
       if (code === 'Space') this.cam.recentre();
       if (code === 'KeyR' && this.player) this.player.running = !this.player.running;
     });
+  }
+
+  /** Start a fresh game with a newly created character. */
+  newGame(sheet: CharacterSheet, appearance: Appearance, pronouns: Pronouns): void {
+    const inventory = emptyInventory();
+    // Starting kit (Cistern issue). Kept deliberately thin: scarcity starts at the door.
+    for (const [id, n] of [['r_jumpsuit', 1], ['w_shiv', 1], ['c_knitkit', 1], ['c_algae', 3], ['c_water', 2]] as const) addItem(inventory, makeItem(id, n));
+    equip(inventory, inventory.items.findIndex((i) => i.def === 'r_jumpsuit'));
+    equip(inventory, inventory.items.findIndex((i) => i.def === 'w_shiv'));
+    inventory.tolls = 0;
+    syncGear(sheet, inventory);
+    this.state = newGameState('dev_yard', 15, 9, { sheet, appearance, pronouns, inventory });
+    this.paused = false;
+    this.loadLocation('dev_yard', 'start');
+    void this.save('auto');
   }
 
   // --- Save / load ---------------------------------------------------------
