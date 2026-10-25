@@ -33,7 +33,7 @@ export class Game extends EventBus<GameEvents> {
   loc?: BuiltLocation;
   player?: Actor;
   readonly actors = new Map<string, Actor>();
-  private clock = new THREE.Clock();
+  private lastFrame = 0;
   private time = 0;
   private cursor: THREE.Mesh;
   private pathMarker: THREE.Mesh;
@@ -49,7 +49,7 @@ export class Game extends EventBus<GameEvents> {
     this.quality = (localStorage.getItem('sf.quality') as QualityLevel) || detectQuality();
     this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     // Several passes per frame (scene + post); stats are reset once per frame in frame().
     this.renderer.info.autoReset = false;
@@ -122,6 +122,8 @@ export class Game extends EventBus<GameEvents> {
     this.atmosphere.load(this.loc);
 
     let sx = this.state.player.x, sy = this.state.player.y;
+    // Changing map without an explicit spawn → use the map's first spawn point.
+    if (spawn === undefined && id !== this.state.locationId) spawn = map.spawns[0].id;
     if (typeof spawn === 'string') {
       const s = map.spawns.find((p) => p.id === spawn) ?? map.spawns[0];
       sx = s.x; sy = s.y;
@@ -210,12 +212,13 @@ export class Game extends EventBus<GameEvents> {
   }
 
   start(): void {
-    this.clock.start();
-    this.renderer.setAnimationLoop(() => this.frame());
+    this.renderer.setAnimationLoop((t) => this.frame(t));
   }
 
-  private frame(): void {
-    const dt = Math.min(0.05, this.clock.getDelta());
+  private frame(now: number): void {
+    const realDt = this.lastFrame ? Math.max(0, (now - this.lastFrame) / 1000) : 0;
+    const dt = Math.min(0.05, realDt);
+    this.lastFrame = now;
     this.renderer.info.reset();
     this.time += dt;
     this.state.playtimeSec += dt;
@@ -240,11 +243,12 @@ export class Game extends EventBus<GameEvents> {
     this.cam.forward(cutawayUniforms.uCamDir.value);
 
     this.atmosphere.hour = hourOf(this.state.minutes);
+    this.atmosphere.focusDistance = this.cam.distance;
     this.atmosphere.update(dt, this.time, this.cam.focus, this.post.settings);
     this.cursor.rotation.y += dt;
     this.post.render(this.scene, this.cam.camera, this.time);
 
-    this.fpsAcc += dt; this.fpsFrames++;
+    this.fpsAcc += realDt; this.fpsFrames++;
     if (this.fpsAcc >= 0.5) { this.fps = this.fpsFrames / this.fpsAcc; this.fpsAcc = 0; this.fpsFrames = 0; }
     this.emit('tick', { dt });
   }

@@ -124,7 +124,7 @@ function buildWall(b: GeoBuilder, kind: WallKind, h: number, x: number, y: numbe
       const color = kind === 'concrete' ? 0xd8d2c4 : kind === 'metal' ? 0xc0c4c0 : 0xffffff;
       b.box(1, h, 1, wx, h / 2, wz, surf, color, 0, { cutaway: true });
       // Detail: trim at the top and a darker skirting at the base.
-      b.box(1.04, 0.1, 1.04, wx, h - 0.05, wz, surf, 0x9a948a, 0, { cutaway: true });
+      b.box(1.0, 0.14, 1.0, wx, h + 0.03, wz, surf, 0x9a948a, 0, { cutaway: true });
       b.box(1.02, 0.18, 1.02, wx, 0.09, wz, surf, 0x6a645a, 0, { cutaway: true });
       if (kind === 'scrap' && rng.chance(0.4)) b.box(0.9, 0.5, 0.05, wx, h * 0.6, wz + 0.52, 'rust', 0xa06a40, rng.range(-0.2, 0.2), { cutaway: true });
       if ((kind === 'concrete' || kind === 'brick') && rng.chance(0.08)) b.box(0.15, 0.6, 0.06, wx, h * 0.55, wz + 0.52, 'metal', 0x4a4e50, 0, { cutaway: true });

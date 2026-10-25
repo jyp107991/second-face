@@ -42,8 +42,10 @@ export const dev_bunker: MapDef = {
     { x: 11, y: 2, height: 2.5, color: 0xd8ffe8, intensity: 3, range: 7 },
     { x: 10, y: 7, height: 2.5, color: 0xffe0b0, intensity: 3, range: 8, flicker: 0.25 },
     { x: 18, y: 3, height: 2.5, color: 0x9affc0, intensity: 2.5, range: 6 },
+    { x: 11, y: 10, height: 2.5, color: 0xffc890, intensity: 2.5, range: 5, flicker: 0.15 },
+    { x: 3, y: 9, height: 2.5, color: 0xffd8a0, intensity: 2, range: 5 },
   ],
   spawns: [{ id: 'entry', x: 11, y: 10 }],
   exits: [{ x: 11, y: 11, w: 2, h: 1, to: { location: 'dev_yard', spawn: 'from_bunker' }, label: 'Outside' }],
-  ambience: { indoor: true, fogColor: 0x0c0c0a, fogDensity: 0.03, dust: 0.5, grade: 0.65, ambient: { color: 0x8a8478, intensity: 0.5 }, sound: 'hum' },
+  ambience: { indoor: true, fogColor: 0x0c0c0a, fogDensity: 0.012, dust: 0.5, grade: 0.65, ambient: { color: 0x9a9488, intensity: 0.75 }, sound: 'hum' },
 };

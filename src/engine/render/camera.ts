@@ -24,12 +24,16 @@ export class IsoCamera {
   maxView = 30;
   private aspect = 1;
   private shake = 0;
+  /** Distance from the camera to the focus point. */
+  readonly distance = 60;
 
   constructor() {
     this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -100, 300);
   }
 
   setAspect(aspect: number): void {
+    // Portrait screens see little width: start further out.
+    if ((aspect < 1) !== (this.aspect < 1) || this.aspect === 1) this.viewGoal = this.viewHeight = aspect < 1 ? 24 : 16;
     this.aspect = aspect;
     this.updateProjection();
   }
@@ -77,9 +81,8 @@ export class IsoCamera {
     this.viewHeight += (this.viewGoal - this.viewHeight) * k;
     const goal = this.target.clone().add(this.pan);
     this.focus.lerp(goal, 1 - Math.exp(-dt * 6));
-    const dist = 60;
     const dir = this.forward();
-    this.camera.position.copy(this.focus).addScaledVector(dir, -dist);
+    this.camera.position.copy(this.focus).addScaledVector(dir, -this.distance);
     if (this.shake > 0) {
       this.camera.position.x += (Math.random() - 0.5) * this.shake * 0.4;
       this.camera.position.z += (Math.random() - 0.5) * this.shake * 0.4;

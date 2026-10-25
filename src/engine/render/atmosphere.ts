@@ -16,6 +16,9 @@ const KEY_TIMES: { h: number; sun: number; sunI: number; sky: number; ground: nu
   { h: 24, sun: 0x4a5a8a, sunI: 0.25, sky: 0x1a2030, ground: 0x0e0c0a, ambI: 0.35, fog: 0x14161c },
 ];
 
+/** Content light intensities are authored on a 0–10 scale; this maps them to physical units. */
+const LIGHT_SCALE = 5;
+
 const ca = new THREE.Color(), cb = new THREE.Color();
 function lerpHex(a: number, b: number, t: number, out: THREE.Color) { return out.copy(ca.setHex(a)).lerp(cb.setHex(b), t); }
 
@@ -23,7 +26,9 @@ function lerpHex(a: number, b: number, t: number, out: THREE.Color) { return out
 export class Atmosphere {
   readonly sun: THREE.DirectionalLight;
   readonly hemi: THREE.HemisphereLight;
-  readonly fog: THREE.FogExp2;
+  readonly fog: THREE.Fog;
+  /** Camera→focus distance, so fog starts around the focus plane (ortho camera sits far back). */
+  focusDistance = 60;
   private pool: THREE.PointLight[] = [];
   private sources: LightSource[] = [];
   private dust?: THREE.Points;
@@ -45,7 +50,7 @@ export class Atmosphere {
     scene.add(this.sun, this.sun.target);
     this.hemi = new THREE.HemisphereLight(0xc8bca0, 0x4a3a28, 0.8);
     scene.add(this.hemi);
-    this.fog = new THREE.FogExp2(0xc0aa88, 0.02);
+    this.fog = new THREE.Fog(0xc0aa88, 60, 100);
     scene.fog = this.fog;
     for (let i = 0; i < quality.pointLights; i++) {
       const l = new THREE.PointLight(0xffffff, 0, 8, 1.6);
@@ -59,16 +64,15 @@ export class Atmosphere {
     this.ambience = loc.map.ambience;
     this.sources = [];
     for (const l of loc.map.lights ?? []) {
-      this.sources.push({ pos: new THREE.Vector3(l.x + 0.5, l.height ?? 2.2, l.y + 0.5), color: new THREE.Color(l.color), intensity: l.intensity, range: l.range, flicker: l.flicker ?? 0, phase: Math.random() * 10 });
+      this.sources.push({ pos: new THREE.Vector3(l.x + 0.5, l.height ?? 2.2, l.y + 0.5), color: new THREE.Color(l.color), intensity: l.intensity * LIGHT_SCALE, range: l.range * 1.4, flicker: l.flicker ?? 0, phase: Math.random() * 10 });
     }
     for (const f of loc.features) {
       const base = { pos: new THREE.Vector3(f.wx + f.x, f.y, f.wz + f.z), color: new THREE.Color(f.color), phase: Math.random() * 10 };
-      if (f.kind === 'fire') this.sources.push({ ...base, intensity: 6, range: 7, flicker: 0.35 });
-      else if (f.kind === 'lamp') this.sources.push({ ...base, intensity: 5, range: 9, flicker: 0.05 });
-      else this.sources.push({ ...base, intensity: 1.2, range: 3, flicker: 0.04 });
+      if (f.kind === 'fire') this.sources.push({ ...base, intensity: 6 * LIGHT_SCALE, range: 9, flicker: 0.35 });
+      else if (f.kind === 'lamp') this.sources.push({ ...base, intensity: 5 * LIGHT_SCALE, range: 11, flicker: 0.05 });
+      else this.sources.push({ ...base, intensity: 1.2 * LIGHT_SCALE, range: 4, flicker: 0.04 });
     }
     this.buildDust(loc);
-    this.fog.density = this.ambience.fogDensity;
   }
 
   private buildDust(loc: BuiltLocation): void {
@@ -118,7 +122,7 @@ export class Atmosphere {
       this.sun.intensity = 0;
       this.hemi.color.setHex(a.ambient?.color ?? 0x8a8070);
       this.hemi.groundColor.setHex(0x1a1612);
-      this.hemi.intensity = a.ambient?.intensity ?? 0.6;
+      this.hemi.intensity = (a.ambient?.intensity ?? 0.6) * 2.2;
       this.fog.color.setHex(a.fogColor);
       this.scene.background = this.fog.color;
     } else {
@@ -144,6 +148,10 @@ export class Atmosphere {
       this.sun.target.position.copy(focus);
     }
     post.grade = a.grade ?? 0.75;
+    // fogDensity 0.02 ≈ fog fully opaque ~30 m beyond the focus point; starts a little in front of it.
+    const span = 0.6 / Math.max(0.002, a.fogDensity);
+    this.fog.near = this.focusDistance - 6;
+    this.fog.far = this.focusDistance + span;
 
     // Assign pooled point lights to the nearest sources.
     const sorted = this.sources
