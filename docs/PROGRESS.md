@@ -17,18 +17,17 @@ Read this first in every session. Update + commit + push after every step.
 - [x] M1.3 Face sculptor: parametric head (sliders, age), hair/scars/tattoos, body build; humanoid uses Appearance
 - [x] M1.4 Character creation UI (name, appearance, attributes, tag skills, traits, summary)
 - [x] M1.5 Combat rules: turn order, AP, hit chance, damage, crits, aimed shots, crippling (pure TS + tests) — `src/engine/combat/`
-- [ ] M1.6 Combat in scene: enter/exit combat, AP bar, targeting, aimed-shot UI, FX (muzzle flash, tracers, blood), floating text
+- [x] M1.6 Combat in scene: enter/exit combat, AP bar, targeting, aimed-shot UI, FX (muzzle flash, tracers, blood), floating text
 - [ ] M1.7 Enemy AI: utility scoring, cover, flanking, retreat-to-heal, flee/surrender, morale
 - [ ] M1.8 Wristlog UI (inventory, stats, equip, use items) — CRT style
 - [ ] M1.9 Audio: Web Audio synth (ambience beds, footsteps, gunshots, UI blips)
 
 ## Next action
-M1.6 — combat in scene: `src/engine/combat/encounter.ts` (CombatManager: enter/exit, turn loop, player actions via
-input, AP-limited movement with path preview, attack/aim UI, end turn), `src/engine/ui/combatHud.ts` (AP pips, HP,
-weapon/ammo, target panel w/ hit %, aimed-shot body picker, log), FX (muzzle flash, tracer, hit sparks/blood decal,
-floating damage text, camera shake). Need NPC actors with sheets: add `src/engine/npc/spawn.ts` minimal enemy defs
-(content `src/content/npcs/dev_enemies.ts`) for testing in dev_yard (dev overlay "Spawn raiders").
-AI (M1.7) can start as simple 'approach & attack' then be replaced.
+M1.7 — utility AI in `src/engine/combat/ai.ts` replacing `simpleAi` (set `encounter.ai`): score candidate actions
+(attack each target w/ hit%×dmg, move to cover tiles within AP that keep LOS, flank, retreat & heal with knit-kit when
+HP<35%, flee when morale<20 → move away & leave combat when out of sight, surrender (stop attacking, flag) when
+morale<10 & hp low; throw grenades at clusters; melee closes distance). Unit tests with a small grid.
+Also: thrown weapons/explosion area damage not yet implemented in Encounter.attack (fx.explosion exists).
 
 ## Known issues / polish backlog (engine)
 - Tall interior walls hide a lot; consider Fallout-style lower walls or full-wall fade when room is entered.
@@ -36,11 +35,7 @@ AI (M1.7) can start as simple 'approach & attack' then be replaced.
 - Bundle is ~600 kB (three.js); split later.
 
 ## Half-finished work
-M1.6 in progress. Done: npc/defs.ts, npc/spawn.ts, content/npcs/dev_enemies.ts, render/fx.ts, combat/encounter.ts
-(turn loop, player actions, simple AI, reachable tiles), Actor.walk/kill.
-Remaining: Game integration (npcs map, spawn from MapDef.npcs + dev overlay 'spawn raiders', player Combatant from
-state.pc, hostility detection → encounter.start, input routing in combat, reach/path overlays, context() darkness,
-game over), combat HUD (ui/combatHud.ts), screenshot test.
+(none)
 
 ## Notes for owner (how to run/test)
 (none yet)

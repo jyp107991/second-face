@@ -3,6 +3,8 @@ import { cutawayUniforms } from '../assets/materials';
 import { clockString } from '../core/state';
 import type { Game } from '../game';
 import type { QualityLevel } from '../render/quality';
+import { addItem, equip, makeItem, reload } from '../inventory/inventory';
+import { derived } from '../stats/sheet';
 
 /**
  * Developer overlay: stats, teleport, location jump, time skip, flags, quality.
@@ -34,7 +36,8 @@ export class DevOverlay {
         <button data-a="fast">x60</button></div>
       <div class="row">Flag: <input class="fk" placeholder="key" size="10"><input class="fv" placeholder="value" size="6"><button data-a="flag">Set</button></div>
       <div class="row">Quality: <select class="q"><option>low</option><option>medium</option><option>high</option></select>
-        <button data-a="cut">Cutaway</button></div>`;
+        <button data-a="cut">Cutaway</button></div>
+      <div class="row">Combat: <button data-a="raiders">Spawn raiders</button><button data-a="heal">Heal</button><button data-a="guns">Give guns</button></div>`;
     document.body.appendChild(this.el);
     this.stats = this.el.querySelector('.stats')!;
     (this.el.querySelector('.q') as HTMLSelectElement).value = game.quality;
@@ -82,6 +85,26 @@ export class DevOverlay {
       case 't6': g.state.minutes += 360; break;
       case 't24': g.state.minutes += 1440; break;
       case 'fast': g.timeScale = g.timeScale === 1 ? 60 : 1; break;
+      case 'raiders': {
+        const p = g.player!;
+        const spots = [[6, -4], [7, -2], [5, -6]];
+        ['dev_raider_boss', 'dev_raider', 'dev_raider_knife'].forEach((def, i) => {
+          for (let r = 0; r < 6; r++) {
+            const x = p.tx + spots[i][0] + r, y = p.ty + spots[i][1];
+            if (g.loc?.grid.passable(x, y)) { g.spawn({ def, x, y, id: `${def}_${Date.now() % 10000}` }); break; }
+          }
+        });
+        break;
+      }
+      case 'heal': g.state.pc.sheet.hp = derived(g.state.pc.sheet).maxHp; g.state.pc.sheet.crippled = {}; break;
+      case 'guns': {
+        const inv = g.state.pc.inventory;
+        for (const [id, n] of [['w_pistol9', 1], ['a_9mm', 60], ['w_smg9', 1], ['w_frag', 3], ['c_knitkit', 5]] as const) addItem(inv, makeItem(id, n));
+        equip(inv, inv.items.findIndex((i) => i.def === 'w_pistol9'), 'primary');
+        reload(inv, 'primary');
+        g.emit('message', { text: 'Pistol equipped + supplies' });
+        break;
+      }
       case 'cut': cutawayUniforms.uCutEnabled.value = 1 - cutawayUniforms.uCutEnabled.value; break;
       case 'flag': {
         const k = (this.el.querySelector('.fk') as HTMLInputElement).value.trim();

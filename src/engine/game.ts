@@ -18,6 +18,12 @@ import { buildLocation, type BuiltLocation } from './scene/location';
 import type { ExitDef } from './data/types';
 import { SaveManager, type SaveFile, type SlotId } from './save/saves';
 import { createBackend } from './save/storage';
+import { Encounter, type Unit } from './combat/encounter';
+import type { Combatant } from './combat/rules';
+import { Rng } from './core/rng';
+import { Fx } from './render/fx';
+import { spawnNpc, type NpcRuntime } from './npc/spawn';
+import { derived } from './stats/sheet';
 
 export type GameEvents = {
   locationChanged: { id: string; name: string };
@@ -25,6 +31,7 @@ export type GameEvents = {
   loaded: { slot?: SlotId };
   tick: { dt: number };
   message: { text: string };
+  gameOver: Record<string, never>;
 };
 
 /** Real seconds → game minutes. 1 real second = 1/3 game minute while exploring (24h ≈ 72 min). */
@@ -55,6 +62,15 @@ export class Game extends EventBus<GameEvents> {
   portrait?: PortraitStage;
   saves?: SaveManager;
   private thumbWaiters: ((url: string) => void)[] = [];
+  readonly npcs = new Map<string, NpcRuntime>();
+  readonly fx: Fx;
+  readonly encounter: Encounter;
+  rng = new Rng(1);
+  /** The player's combat view of state.pc (rebuilt on load). */
+  pc!: Combatant;
+  private reachMesh: THREE.InstancedMesh;
+  private pathMesh: THREE.InstancedMesh;
+  private hostilityTimer = 0;
   fps = 0;
   private fpsAcc = 0;
   private fpsFrames = 0;
@@ -81,6 +97,33 @@ export class Game extends EventBus<GameEvents> {
     this.pathMarker.position.y = 0.03;
     this.pathMarker.visible = false;
     this.scene.add(this.cursor, this.pathMarker);
+
+    // Combat overlays: reachable tiles and the AP path preview.
+    const tileGeo = new THREE.PlaneGeometry(0.92, 0.92).rotateX(-Math.PI / 2);
+    this.reachMesh = new THREE.InstancedMesh(tileGeo, new THREE.MeshBasicMaterial({ color: 0x60c080, transparent: true, opacity: 0.16, depthWrite: false, toneMapped: false }), 600);
+    this.reachMesh.count = 0;
+    this.reachMesh.frustumCulled = false;
+    const dotGeo = new THREE.CircleGeometry(0.14, 10).rotateX(-Math.PI / 2);
+    this.pathMesh = new THREE.InstancedMesh(dotGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false, toneMapped: false }), 64);
+    this.pathMesh.count = 0;
+    this.pathMesh.frustumCulled = false;
+    this.scene.add(this.reachMesh, this.pathMesh);
+    this.fx = new Fx(this.scene, () => this.cam.camera);
+    const game = this;
+    this.encounter = new Encounter({
+      get grid() { return game.loc!.grid; },
+      get rng() { return game.rng; },
+      fx: this.fx,
+      shake: (a) => this.cam.addShake(a),
+      context: (x, y) => ({ indoor: !!this.loc?.map.ambience.indoor, night: hourOf(this.state.minutes) < 6 || hourOf(this.state.minutes) > 20, darkness: 1 - this.atmosphere.lightAt(x + 0.5, y + 0.5) }),
+      previewPath: (p, ap) => this.showPath(p, ap),
+      showReach: (t) => this.showReach(t),
+      now: () => this.state.minutes,
+    });
+    this.encounter.on('end', ({ outcome }) => {
+      if (outcome === 'defeat') this.emit('gameOver', {});
+      this.syncNpcState();
+    });
 
     this.state = newGameState('dev_yard', 15, 9);
     createBackend().then((b) => (this.saves = new SaveManager(b)));
@@ -131,8 +174,11 @@ export class Game extends EventBus<GameEvents> {
       this.scene.remove(this.loc.root);
       this.loc.root.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
     }
-    for (const a of this.actors.values()) this.scene.remove(a.object);
+    if (this.loc) this.syncNpcState();
+    for (const a of this.actors.values()) { this.scene.remove(a.object); a.body.dispose(); }
     this.actors.clear();
+    this.npcs.clear();
+    this.fx.clearDecals();
 
     this.loc = buildLocation(map);
     this.scene.add(this.loc.root);
@@ -155,10 +201,97 @@ export class Game extends EventBus<GameEvents> {
     this.player.onArriveTile = (x, y) => this.onPlayerTile(x, y);
     this.player.onPathDone = () => { this.pathMarker.visible = false; };
     this.addActor(this.player);
+    this.rng.state = this.state.rngState;
+    this.pc = { id: 'player', name: this.state.pc.sheet.name || 'You', team: 'player', sheet: this.state.pc.sheet, inv: this.state.pc.inventory, x: sx, y: sy, ap: 0, morale: 100, evasion: 0, isPlayer: true };
+    for (const p of map.npcs ?? []) this.spawn(p);
     this.cam.target.copy(this.player.object.position);
     this.cam.recentre();
     this.cam.snapToTarget();
     this.emit('locationChanged', { id, name: map.name });
+  }
+
+  /** Spawn an NPC placement on the current map, applying persisted state. */
+  spawn(p: import('./npc/defs').NpcPlacement): NpcRuntime | undefined {
+    if (!this.loc) return;
+    const key = `${this.state.locationId}/${p.id ?? p.def}`;
+    const saved = this.state.npcs[key];
+    const pos = saved?.x !== undefined ? { ...p, x: saved.x, y: saved.y! } : p;
+    if (!this.loc.grid.passable(pos.x, pos.y)) return;
+    const rt = spawnNpc(pos, this.loc.grid);
+    if (saved?.hp !== undefined) rt.combatant.sheet.hp = saved.hp;
+    if (saved?.hostile !== undefined) rt.hostile = saved.hostile;
+    if (saved?.inventory) rt.combatant.inv = saved.inventory;
+    this.npcs.set(rt.id, rt);
+    this.addActor(rt.actor);
+    if (saved?.dead) { rt.combatant.sheet.hp = 0; rt.actor.kill(true); }
+    return rt;
+  }
+
+  /** Persist NPC positions/health/inventories for the current map. */
+  syncNpcState(): void {
+    for (const n of this.npcs.values()) {
+      const key = `${this.state.locationId}/${n.id}`;
+      const dead = n.combatant.sheet.hp <= 0;
+      this.state.npcs[key] = { dead, hp: n.combatant.sheet.hp, x: n.actor.tx, y: n.actor.ty, hostile: n.hostile, inventory: n.combatant.inv };
+    }
+    this.state.rngState = this.rng.state;
+  }
+
+  startCombat(target?: NpcRuntime): void {
+    if (this.encounter.active || !this.player || !this.loc) return;
+    this.player.stop();
+    this.pathMarker.visible = false;
+    this.pc.x = this.player.tx; this.pc.y = this.player.ty;
+    const units: Unit[] = [{ c: this.pc, actor: this.player, hostile: false }];
+    for (const n of this.npcs.values()) {
+      if (n.combatant.sheet.hp <= 0) continue;
+      if (Math.max(Math.abs(n.actor.tx - this.player.tx), Math.abs(n.actor.ty - this.player.ty)) > 24 && !n.hostile) continue;
+      if (!n.hostile && n !== target) continue;
+      if (n === target) n.hostile = true;
+      units.push({ c: n.combatant, actor: n.actor, hostile: n.hostile, leader: n.def.leader });
+    }
+    if (units.length < 2) return;
+    this.encounter.start(units);
+    if (target) this.encounter.target = units.find((u) => u.c.id === target.id);
+  }
+
+  private showReach(tiles: { x: number; y: number }[] | null): void {
+    const m = new THREE.Matrix4();
+    const list = tiles ?? [];
+    this.reachMesh.count = Math.min(list.length, 600);
+    for (let i = 0; i < this.reachMesh.count; i++) this.reachMesh.setMatrixAt(i, m.makeTranslation(list[i].x + 0.5, 0.015, list[i].y + 0.5));
+    this.reachMesh.instanceMatrix.needsUpdate = true;
+  }
+
+  private showPath(path: { x: number; y: number }[] | null, affordable: number): void {
+    const m = new THREE.Matrix4();
+    const list = (path ?? []).slice(0, 64);
+    this.pathMesh.count = list.length;
+    const c = new THREE.Color();
+    for (let i = 0; i < list.length; i++) {
+      this.pathMesh.setMatrixAt(i, m.makeTranslation(list[i].x + 0.5, 0.025, list[i].y + 0.5));
+      this.pathMesh.setColorAt(i, c.setHex(i < affordable ? 0x80ffa0 : 0xff6050));
+    }
+    this.pathMesh.instanceMatrix.needsUpdate = true;
+    if (this.pathMesh.instanceColor) this.pathMesh.instanceColor.needsUpdate = true;
+  }
+
+  /** Hostile NPCs that can see the player start combat. */
+  private checkHostility(): void {
+    if (this.encounter.active || !this.player || this.transitioning) return;
+    for (const n of this.npcs.values()) {
+      if (!n.hostile || n.combatant.sheet.hp <= 0) continue;
+      const d = Math.max(Math.abs(n.actor.tx - this.player.tx), Math.abs(n.actor.ty - this.player.ty));
+      if (d <= derived(n.combatant.sheet).sightRange && this.loc!.grid.lineOfSight(n.actor.tx, n.actor.ty, this.player.tx, this.player.ty)) {
+        this.emit('message', { text: `${n.def.name} spots you!` });
+        this.startCombat();
+        return;
+      }
+    }
+  }
+
+  npcAt(x: number, y: number): NpcRuntime | undefined {
+    for (const n of this.npcs.values()) if (n.actor.tx === x && n.actor.ty === y && n.combatant.sheet.hp > 0) return n;
   }
 
   addActor(a: Actor): void {
@@ -201,9 +334,12 @@ export class Game extends EventBus<GameEvents> {
 
   private bindInput(): void {
     const i = this.input;
-    i.on('tap', ({ x, y }) => {
+    i.on('tap', ({ x, y, mouse }) => {
       const t = this.pickTile(x, y);
       if (!t || !this.player || !this.loc || this.transitioning || this.paused) return;
+      if (this.encounter.active) { this.encounter.tapTile(t.x, t.y, mouse); return; }
+      const npc = this.npcAt(t.x, t.y);
+      if (npc && npc.hostile) { this.startCombat(npc); return; }
       const p = this.player;
       const path = this.loc.grid.findPath(p.tx, p.ty, t.x, t.y, { ignore: p.id, adjacentOk: true });
       if (path && path.length) {
@@ -218,6 +354,7 @@ export class Game extends EventBus<GameEvents> {
       const t = this.pickTile(x, y);
       this.cursor.visible = !!t && !!this.loc?.grid.get(t.x, t.y)?.walkable;
       if (t) this.cursor.position.set(t.x + 0.5, 0.02, t.y + 0.5);
+      if (t && this.encounter.active) this.encounter.hoverTile(t.x, t.y);
     });
     i.on('pan', ({ dx, dy }) => this.cam.panScreen(dx, dy, this.renderer.domElement.clientHeight));
     i.on('zoom', ({ factor }) => this.cam.zoomBy(factor));
@@ -227,7 +364,8 @@ export class Game extends EventBus<GameEvents> {
       if (code === 'F5') void this.save('quick');
       if (code === 'F9') void this.loadSlot('quick');
       if (code === 'Space') this.cam.recentre();
-      if (code === 'KeyR' && this.player) this.player.running = !this.player.running;
+      if (code === 'KeyR' && this.player && !this.encounter.active) this.player.running = !this.player.running;
+      if (this.encounter.active && (code === 'Enter' || code === 'KeyT')) this.encounter.endTurn();
     });
   }
 
@@ -250,6 +388,8 @@ export class Game extends EventBus<GameEvents> {
 
   async save(slot: SlotId, label?: string): Promise<void> {
     if (!this.saves || !this.loc) return;
+    if (this.encounter.active) { this.emit('message', { text: 'Cannot save during combat' }); return; }
+    this.syncNpcState();
     const thumb = await this.captureThumb();
     await this.saves.write(slot, {
       label: label ?? (slot === 'auto' ? 'Autosave' : slot === 'quick' ? 'Quicksave' : this.loc.map.name),
@@ -307,7 +447,9 @@ export class Game extends EventBus<GameEvents> {
     this.time += dt;
     const simDt = this.paused ? 0 : dt;
     this.state.playtimeSec += simDt;
-    this.state.minutes += simDt * GAME_MINUTES_PER_SEC * this.timeScale;
+    if (!this.encounter.active) this.state.minutes += simDt * GAME_MINUTES_PER_SEC * this.timeScale;
+    this.hostilityTimer += simDt;
+    if (this.hostilityTimer > 0.3) { this.hostilityTimer = 0; this.checkHostility(); }
 
     // Keyboard camera pan
     const held = this.input.held, panSpeed = 600 * dt;
@@ -317,7 +459,9 @@ export class Game extends EventBus<GameEvents> {
     if (held.has('KeyD') || held.has('ArrowRight')) this.cam.panScreen(-panSpeed, 0, 800);
 
     for (const a of this.actors.values()) a.update(simDt);
-    if (this.player) {
+    const cur = this.encounter.active ? this.encounter.current : undefined;
+    if (cur && !cur.c.isPlayer) this.cam.target.copy(cur.actor.object.position);
+    else if (this.player) {
       this.cam.target.copy(this.player.object.position);
       this.state.player.facing = this.player.facing;
     }
@@ -331,6 +475,7 @@ export class Game extends EventBus<GameEvents> {
     this.atmosphere.focusDistance = this.cam.distance;
     this.atmosphere.update(dt, this.time, this.cam.focus, this.post.settings);
     this.cursor.rotation.y += dt;
+    this.fx.update(dt);
     if (this.portrait) {
       this.portrait.update(dt);
       this.post.render(this.portrait.scene, this.portrait.camera, this.time);

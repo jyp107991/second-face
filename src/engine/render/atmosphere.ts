@@ -114,6 +114,21 @@ export class Atmosphere {
     this.scene.add(this.dust);
   }
 
+  /** 0 (dark) .. 1 (lit) at a world position: sun/ambient plus nearby light sources. */
+  lightAt(x: number, z: number): number {
+    let l = 0;
+    if (this.ambience?.indoor) l = 0.35;
+    else {
+      const h = ((this.hour % 24) + 24) % 24;
+      l = h >= 7 && h <= 18 ? 1 : h >= 5.5 && h <= 20 ? 0.6 : 0.25;
+    }
+    for (const s of this.sources) {
+      const d = Math.hypot(s.pos.x - x, s.pos.z - z);
+      if (d < s.range) l = Math.max(l, Math.min(1, (1 - d / s.range) * 1.4));
+    }
+    return Math.min(1, l);
+  }
+
   /** Per-frame update. `focus` is where the camera looks (shadow frustum follows it). */
   update(_dt: number, time: number, focus: THREE.Vector3, post: { grade: number; tint: THREE.Color; exposure: number }): void {
     const a = this.ambience;

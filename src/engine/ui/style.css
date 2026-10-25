@@ -99,3 +99,42 @@ html, body { margin: 0; height: 100%; background: var(--ink); overflow: hidden; 
 }
 
 body.fullscreen-ui .hud, body.fullscreen-ui .dev-toggle { display: none; }
+
+/* Combat HUD */
+body.in-combat .hud-buttons { display: none; }
+.chud { position: fixed; inset: 0; pointer-events: none; z-index: 12; display: none; font-size: 13px; }
+.chud.on { display: block; }
+.chud > * { pointer-events: auto; }
+.chud .banner { position: absolute; top: calc(10px + var(--safe-t)); left: 50%; transform: translateX(-50%); padding: 6px 16px; letter-spacing: 3px; font-size: 13px; background: var(--panel); border: 1px solid var(--amber-dim); pointer-events: none; white-space: nowrap; }
+.chud .banner.you { color: #9affb8; border-color: #3a8a5a; }
+.chud .bar { position: absolute; left: 50%; bottom: calc(8px + var(--safe-b)); transform: translateX(-50%); width: min(720px, calc(100% - 16px)); display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; background: var(--panel); border: 2px solid var(--amber-dim); border-radius: 6px; }
+.chud .vit { display: flex; flex-direction: column; gap: 4px; min-width: 120px; }
+.chud .hpbar { height: 10px; background: #2a1a12; border: 1px solid #5a3a2a; }
+.chud .hpbar i { display: block; height: 100%; background: linear-gradient(#d0503a, #8a2a1a); }
+.chud .pips { display: flex; gap: 3px; flex-wrap: wrap; }
+.chud .pips i { width: 11px; height: 11px; border-radius: 50%; background: #2a3a2a; border: 1px solid #4a6a4a; }
+.chud .pips i.on { background: #8affa0; box-shadow: 0 0 5px #5aff8a; }
+.chud .pips i.cost { background: #ffcf60; box-shadow: 0 0 5px #ffaa30; }
+.chud .wpn { font-size: 12px; line-height: 1.35; overflow: hidden; }
+.chud .wpn b { color: #f0d090; }
+.chud .acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.chud button { font-family: var(--font); font-size: 13px; min-height: 44px; min-width: 44px; padding: 6px 10px; color: var(--amber); background: #241c12; border: 1px solid var(--amber-dim); border-radius: 4px; cursor: pointer; }
+.chud button:disabled { opacity: .35; }
+.chud button.end { color: #9affb8; border-color: #3a8a5a; background: #12261a; }
+.chud .target { position: absolute; top: calc(48px + var(--safe-t)); left: 50%; transform: translateX(-50%); width: min(420px, calc(100% - 16px)); padding: 10px; background: var(--panel); border: 2px solid #8a4a3a; border-radius: 6px; display: none; }
+.chud .target.on { display: block; }
+.chud .target .tn { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.chud .target .row { display: flex; gap: 6px; flex-wrap: wrap; }
+.chud .aim { display: none; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+.chud .aim.on { display: grid; }
+.chud .aim button { font-size: 12px; padding: 6px 4px; }
+.chud .log { position: absolute; left: calc(10px + var(--safe-l)); bottom: calc(92px + var(--safe-b)); width: min(360px, 70vw); font-size: 12px; line-height: 1.45; text-shadow: 0 1px 2px #000, 0 0 4px #000; pointer-events: none; }
+.chud .log div { opacity: .9; }
+.gameover { position: fixed; inset: 0; z-index: 45; display: flex; align-items: center; justify-content: center; background: rgba(30,4,2,.75); }
+.gameover .box { text-align: center; padding: 24px; }
+.gameover h1 { font-weight: normal; letter-spacing: 8px; color: #e06040; margin: 0 0 16px; }
+@media (max-width: 600px) {
+  .chud .bar { grid-template-columns: 1fr auto; }
+  .chud .wpn { grid-column: 1 / -1; order: -1; }
+  .chud .log { bottom: calc(150px + var(--safe-b)); }
+}

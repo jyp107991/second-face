@@ -4,6 +4,7 @@ import { Hud } from './engine/ui/hud';
 import { DevOverlay } from './engine/dev/overlay';
 import { Menu } from './engine/ui/menu';
 import { Creator } from './engine/ui/creator';
+import { CombatHud } from './engine/ui/combatHud';
 import { PortraitStage } from './engine/render/portrait';
 import { lookFrom } from './engine/assets/humanoid';
 import { agedAppearance, defaultAppearance, randomAppearance } from './engine/data/appearance';
@@ -13,6 +14,9 @@ const game = new Game(app);
 const hud = new Hud(game);
 const menu = new Menu(game);
 hud.onMenu = () => menu.open('pause');
+const chud = new CombatHud(game);
+chud.onLoad = async () => { const l = await game.saves?.latest(); if (l) await game.loadSlot(l.slot); else menu.open('title'); };
+chud.onTitle = () => menu.open('title');
 menu.onNewGame = () => {
   new Creator(game, (r) => {
     game.newGame(r.sheet, r.appearance, r.pronouns);

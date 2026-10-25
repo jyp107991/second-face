@@ -2,7 +2,7 @@ import { EventBus } from '../core/events';
 
 export type InputEvents = {
   /** Primary action at screen coords (tap / left click). */
-  tap: { x: number; y: number };
+  tap: { x: number; y: number; mouse: boolean };
   /** Secondary action (long-press / right click): examine, context menu. */
   alt: { x: number; y: number };
   hover: { x: number; y: number };
@@ -110,7 +110,7 @@ export class Input extends EventBus<InputEvents> {
     if (!ptr) return;
     if (this.pointers.size === 0 && !this.moved) {
       if (e.pointerType === 'mouse' && ptr.button === 2) this.emit('alt', { x: ptr.x, y: ptr.y });
-      else if (ptr.button === 0 || e.pointerType !== 'mouse') this.emit('tap', { x: ptr.x, y: ptr.y });
+      else if (ptr.button === 0 || e.pointerType !== 'mouse') this.emit('tap', { x: ptr.x, y: ptr.y, mouse: e.pointerType === 'mouse' });
     }
     if (this.pointers.size < 2) this.gesture = undefined;
   };
