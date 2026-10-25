@@ -39,6 +39,8 @@ export interface EncounterHost {
   previewPath(path: { x: number; y: number }[] | null, affordable: number): void;
   showReach(tiles: { x: number; y: number }[] | null): void;
   now(): number;
+  /** Positional sound effect. */
+  sound(id: import('../audio/audio').SfxId, at?: THREE.Vector3): void;
 }
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -141,6 +143,7 @@ export class Encounter extends EventBus<EncounterEvents> {
     if (p && outcome !== 'defeat' && this.xpEarned) {
       const levels = addXp(p.c.sheet, this.xpEarned);
       this.log(`+${this.xpEarned} XP${levels ? ' — LEVEL UP!' : ''}`);
+      if (levels) this.host.sound('levelup');
     }
     this.emit('end', { outcome, xp: this.xpEarned });
   }
@@ -264,6 +267,10 @@ export class Encounter extends EventBus<EncounterEvents> {
     const shots = Math.max(1, res.roundsFired);
     for (let i = 0; i < shots; i++) {
       const h = res.hits[i];
+      this.host.sound(w.kind === 'unarmed' ? 'unarmed' : w.kind, from);
+      if (h?.hit) this.host.sound('impact', to);
+      else if (!isMelee(w)) this.host.sound('miss', to);
+      if (h?.hit && def.c.isPlayer) this.host.sound('hurt', to);
       if (!isMelee(w)) {
         this.host.fx.muzzle(from.clone().addScaledVector(dir, 0.5), dir);
         const miss = !h?.hit;
@@ -286,6 +293,7 @@ export class Encounter extends EventBus<EncounterEvents> {
       const hitT = res.hits.some((h) => h.hit);
       const cx = def.c.x + (hitT ? 0 : this.host.rng.int(-1, 1)), cy = def.c.y + (hitT ? 0 : this.host.rng.int(-1, 1));
       this.host.fx.explosion(new THREE.Vector3(cx + 0.5, 0.3, cy + 0.5), w.area);
+      this.host.sound('explosion', new THREE.Vector3(cx + 0.5, 0.3, cy + 0.5));
       this.host.shake(w.dmgType === 'explosive' ? 0.6 : 0.3);
       for (const o of this.units) {
         if (!this.alive(o) || (o === def && hitT)) continue;
@@ -333,6 +341,7 @@ export class Encounter extends EventBus<EncounterEvents> {
     const n = reload(u.c.inv);
     if (!n) { if (u.c.isPlayer) this.log('No ammo to load.'); return false; }
     u.c.ap -= ap;
+    this.host.sound('reload', u.actor.object.position);
     this.log(`${u.c.name} reloads.`);
     this.emit('changed', {});
     return true;

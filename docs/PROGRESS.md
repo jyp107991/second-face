@@ -2,7 +2,9 @@
 
 Read this first in every session. Update + commit + push after every step.
 
-## Current milestone: M1 — Systems I
+## Current milestone: M2 — Systems II
+
+### M1 — Systems I ✅
 
 ### M0 — Foundations ✅
 - [x] M0.1 Repo + CLAUDE.md + resume protocol
@@ -20,13 +22,23 @@ Read this first in every session. Update + commit + push after every step.
 - [x] M1.6 Combat in scene: enter/exit combat, AP bar, targeting, aimed-shot UI, FX (muzzle flash, tracers, blood), floating text
 - [x] M1.7 Enemy AI: utility scoring, cover, flanking, retreat-to-heal, flee/surrender, morale
 - [x] M1.8 Wristlog UI (inventory, stats, equip, use items) — CRT style
-- [ ] M1.9 Audio: Web Audio synth (ambience beds, footsteps, gunshots, UI blips)
+- [x] M1.9 Audio: Web Audio synth (ambience beds, footsteps, gunshots, UI blips)
+
+### M2 — Systems II
+- [ ] M2.1 Dialogue engine (data schema, conditions, effects, skill checks, memory-aware options) + tests
+- [ ] M2.2 Dialogue UI (talking-head close-up via PortraitStage, option list, check tags, history)
+- [ ] M2.3 Quest engine (stages, state-based objectives, timers, journal) + Wristlog QUESTS tab + tests
+- [ ] M2.4 NPC personality, memory, trust/affection, gossip propagation + tests
+- [ ] M2.5 NPC schedules & ambient behaviour (time-of-day locations/activities, barks)
+- [ ] M2.6 Factions & karma (respect/fear axes, labels, reactions) + tests
+- [ ] M2.7 Barter UI + pricing (skill, reputation, saturation, merchant cash/restock) + tests
+- [ ] M2.8 Economy simulation script (`npm run econ`) with budget tables
+- [ ] M2.9 Companions core (recruit, follow, approval reactions, banter triggers, combat AI as allies)
 
 ## Next action
-M1.9 — audio (`src/engine/audio/audio.ts`): Web Audio synth, master/music/sfx gains, unlock on first gesture.
-Ambience beds by map ambience.sound ('wind', 'hum', later 'town', 'camp'), footsteps by floor kind, gunshot/melee/
-explosion/impact SFX keyed by weapon kind, UI blips (CRT), low drone music layer. Settings sliders in menu.
-Then: report M1 to owner, start M2 (dialogue, quests, NPC memory/gossip/schedules, factions, barter, economy sim).
+M2.1 — dialogue engine in `src/engine/dialogue/` (types.ts, conditions.ts, effects.ts, runner.ts). Conditions read a
+WorldView (flags, quests, items, skills/attrs, reputation, NPC memory/trust, time). Effects go through one
+`applyEffect` dispatcher shared with quests. Validator: every node/next/quest/item/npc reference.
 
 ## Known issues / polish backlog (engine)
 - Tall interior walls hide a lot; consider Fallout-style lower walls or full-wall fade when room is entered.
@@ -37,4 +49,5 @@ Then: report M1 to owner, start M2 (dialogue, quests, NPC memory/gossip/schedule
 (none)
 
 ## Notes for owner (how to run/test)
-(none yet)
+- Run locally: `npm install` then `npm run dev`, open the printed URL (add `?dev` on a deployed build for the DEV console).
+- Deploy: add `docs/setup/deploy.yml` as `.github/workflows/deploy.yml` via GitHub web UI; Settings → Pages → Source: GitHub Actions.

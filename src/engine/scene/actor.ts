@@ -25,6 +25,8 @@ export class Actor {
   running = false;
   private velocity = 0;
   onArriveTile?: (x: number, y: number) => void;
+  /** Footstep hook (audio). */
+  onStep?: (x: number, y: number) => void;
   onPathDone?: () => void;
 
   constructor(opts: ActorOpts, private grid: Grid) {
@@ -111,6 +113,7 @@ export class Actor {
         if (step >= dist) {
           pos.x = goalX; pos.z = goalZ;
           this.path.shift();
+          this.onStep?.(next.x, next.y);
           this.onArriveTile?.(next.x, next.y);
           if (!this.path.length) { this.velocity = 0; this.onPathDone?.(); }
         } else {

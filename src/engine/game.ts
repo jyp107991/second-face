@@ -26,6 +26,7 @@ import { Fx } from './render/fx';
 import { spawnNpc, type NpcRuntime } from './npc/spawn';
 import { addXp, derived } from './stats/sheet';
 import { skillCheck } from './stats/checks';
+import { AudioEngine, stepSoundFor, type SfxId } from './audio/audio';
 
 export type GameEvents = {
   locationChanged: { id: string; name: string };
@@ -76,6 +77,7 @@ export class Game extends EventBus<GameEvents> {
   private hostilityTimer = 0;
   private pendingInteract?: { x: number; y: number; run: () => void };
   private pileGroup = new THREE.Group();
+  readonly audio = new AudioEngine();
   fps = 0;
   private fpsAcc = 0;
   private fpsFrames = 0;
@@ -124,6 +126,7 @@ export class Game extends EventBus<GameEvents> {
       previewPath: (p, ap) => this.showPath(p, ap),
       showReach: (t) => this.showReach(t),
       now: () => this.state.minutes,
+      sound: (id, at) => this.soundAt(id, at),
     });
     this.encounter.ai = utilityAi;
     this.encounter.on('end', ({ outcome }) => {
@@ -189,6 +192,7 @@ export class Game extends EventBus<GameEvents> {
     this.loc = buildLocation(map);
     this.scene.add(this.loc.root);
     this.atmosphere.load(this.loc);
+    this.audio.setAmbience(map.ambience.sound);
 
     let sx = this.state.player.x, sy = this.state.player.y;
     // Changing map without an explicit spawn → use the map's first spawn point.
@@ -377,7 +381,20 @@ export class Game extends EventBus<GameEvents> {
     for (const n of this.npcs.values()) if (n.actor.tx === x && n.actor.ty === y && n.combatant.sheet.hp > 0) return n;
   }
 
+  /** Play a sound at a world position: panned by screen position, attenuated by distance from view. */
+  soundAt(id: SfxId, at?: THREE.Vector3, gain = 1): void {
+    if (!at) { this.audio.play(id, 0, gain); return; }
+    const v = at.clone().project(this.cam.camera);
+    const d = Math.hypot(at.x - this.cam.focus.x, at.z - this.cam.focus.z);
+    const g = gain * Math.max(0, Math.min(1, 1 - (d - 8) / 22));
+    this.audio.play(id, v.x * 0.8, g);
+  }
+
   addActor(a: Actor): void {
+    a.onStep = (x, y) => {
+      const t = this.loc?.grid.get(x, y);
+      this.soundAt(stepSoundFor(t?.def.floor ?? (this.loc?.map.ambience.indoor ? 'concrete' : 'sand')), a.object.position, a.id === 'player' ? 0.6 : 0.35);
+    };
     this.actors.set(a.id, a);
     this.scene.add(a.object);
   }

@@ -17,7 +17,7 @@ const map: MapDef = {
 
 function setup() {
   const grid = new Grid(map);
-  const host = { grid, rng: new Rng(1), fx: {} as never, shake() {}, context: () => ({ indoor: false, night: false, darkness: 0 }), previewPath() {}, showReach() {}, now: () => 0 } as EncounterHost;
+  const host = { grid, rng: new Rng(1), fx: {} as never, shake() {}, context: () => ({ indoor: false, night: false, darkness: 0 }), previewPath() {}, showReach() {}, now: () => 0, sound() {} } as EncounterHost;
   const enc = new Encounter(host);
   const mk = (id: string, x: number, y: number, hostile: boolean, weapon?: string, ammo?: string): Unit => {
     const inv = emptyInventory();

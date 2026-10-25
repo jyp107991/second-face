@@ -122,6 +122,14 @@ export class Menu {
       const sel = panel.querySelector('.q') as HTMLSelectElement;
       sel.value = this.game.quality;
       sel.onchange = () => this.game.applyQuality(sel.value as QualityLevel);
+      for (const [k, label] of [['master', 'Master volume'], ['music', 'Music'], ['ambience', 'Ambience'], ['sfx', 'Effects']] as const) {
+        const l = document.createElement('label');
+        l.className = 'opt';
+        l.innerHTML = `${label} <input type="range" min="0" max="1" step="0.05" value="${this.game.audio.vol[k]}" style="width:50%;accent-color:#5aff9a">`;
+        const inp = l.querySelector('input')!;
+        inp.oninput = () => this.game.audio.setVolumes({ [k]: Number(inp.value) });
+        panel.append(l);
+      }
       const row = document.createElement('div');
       row.className = 'row';
       const back = document.createElement('button');
