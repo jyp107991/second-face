@@ -8,6 +8,7 @@ export class Hud {
   private toastEl: HTMLElement;
   private toastTimer?: number;
   onMenu?: () => void;
+  onWrist?: () => void;
 
   constructor(game: Game) {
     this.el = document.createElement('div');
@@ -20,6 +21,7 @@ export class Hud {
         <button class="btn" data-a="centre" aria-label="Centre camera">◎</button>
         <button class="btn" data-a="rotR" aria-label="Rotate right">⟳</button>
         <button class="btn" data-a="run" aria-label="Toggle run">RUN</button>
+        <button class="btn" data-a="wrist" aria-label="Wristlog">◫</button>
         <button class="btn" data-a="menu" aria-label="Menu">☰</button>
       </div>`;
     document.body.appendChild(this.el);
@@ -31,6 +33,7 @@ export class Hud {
       if (a === 'rotR') game.cam.rotateStep(1);
       if (a === 'centre') game.cam.recentre();
       if (a === 'menu') this.onMenu?.();
+      if (a === 'wrist') this.onWrist?.();
       if (a === 'run' && game.player) {
         game.player.running = !game.player.running;
         (e.target as HTMLElement).classList.toggle('on', game.player.running);

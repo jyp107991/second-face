@@ -30,6 +30,8 @@ export interface GameState {
   pc: PlayerCharacter;
   /** Persistent per-NPC state keyed by `${locationId}/${npcId}`. */
   npcs: Record<string, NpcSave>;
+  /** Opened containers' current contents keyed by `${locationId}/${containerId}`. */
+  containers: Record<string, Inventory>;
   /** Game clock in minutes since day 1, 00:00. */
   minutes: number;
   flags: Record<string, number | string | boolean>;
@@ -45,6 +47,7 @@ export function newGameState(locationId: string, x: number, y: number, pc?: Play
     player: { x, y, facing: 0 },
     pc: pc ?? { sheet: emptySheet(), appearance: defaultAppearance(), pronouns: 'they', inventory: emptyInventory() },
     npcs: {},
+    containers: {},
     minutes: START_MINUTES,
     flags: {},
     rngState: (Math.random() * 2 ** 32) >>> 0,

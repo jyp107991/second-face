@@ -84,6 +84,14 @@ export interface AmbienceDef {
   sound?: string;
 }
 
+export interface ContainerDef {
+  name: string;
+  items: [string, number][];
+  tolls?: number;
+  /** Lock difficulty (Locks skill needed); absent = unlocked. */
+  lock?: number;
+}
+
 export interface MapDef {
   id: string;
   name: string;
@@ -96,6 +104,8 @@ export interface MapDef {
   exits?: ExitDef[];
   ambience: AmbienceDef;
   npcs?: NpcPlacement[];
+  /** Container contents keyed by prop `id`. */
+  containers?: Record<string, ContainerDef>;
   /** Seed for procedural detail (scatter, texture variation). */
   seed?: number;
 }

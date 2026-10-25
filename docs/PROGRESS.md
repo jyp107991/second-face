@@ -19,15 +19,14 @@ Read this first in every session. Update + commit + push after every step.
 - [x] M1.5 Combat rules: turn order, AP, hit chance, damage, crits, aimed shots, crippling (pure TS + tests) — `src/engine/combat/`
 - [x] M1.6 Combat in scene: enter/exit combat, AP bar, targeting, aimed-shot UI, FX (muzzle flash, tracers, blood), floating text
 - [x] M1.7 Enemy AI: utility scoring, cover, flanking, retreat-to-heal, flee/surrender, morale
-- [ ] M1.8 Wristlog UI (inventory, stats, equip, use items) — CRT style
+- [x] M1.8 Wristlog UI (inventory, stats, equip, use items) — CRT style
 - [ ] M1.9 Audio: Web Audio synth (ambience beds, footsteps, gunshots, UI blips)
 
 ## Next action
-M1.8 — Wristlog UI (`src/engine/ui/wristlog.ts`, CRT style, opened by HUD button / I / Tab): tabs STATUS (attributes,
-derived, effects, crippled, level/XP, spend skill points, pick perks), GEAR (inventory list with weight/value, equip,
-unequip, use, drop, compare), plus a LOOT/TRANSFER panel (`src/engine/ui/transfer.ts`) for corpses & containers
-(tap a dead NPC or container prop with `id` → transfer UI; take all). Containers need content: PropPlacement.id +
-MapDef.containers?: Record<id, [item, qty][]> persisted in state.containers.
+M1.9 — audio (`src/engine/audio/audio.ts`): Web Audio synth, master/music/sfx gains, unlock on first gesture.
+Ambience beds by map ambience.sound ('wind', 'hum', later 'town', 'camp'), footsteps by floor kind, gunshot/melee/
+explosion/impact SFX keyed by weapon kind, UI blips (CRT), low drone music layer. Settings sliders in menu.
+Then: report M1 to owner, start M2 (dialogue, quests, NPC memory/gossip/schedules, factions, barter, economy sim).
 
 ## Known issues / polish backlog (engine)
 - Tall interior walls hide a lot; consider Fallout-style lower walls or full-wall fade when room is entered.

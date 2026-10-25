@@ -24,7 +24,8 @@ import type { Combatant } from './combat/rules';
 import { Rng } from './core/rng';
 import { Fx } from './render/fx';
 import { spawnNpc, type NpcRuntime } from './npc/spawn';
-import { derived } from './stats/sheet';
+import { addXp, derived } from './stats/sheet';
+import { skillCheck } from './stats/checks';
 
 export type GameEvents = {
   locationChanged: { id: string; name: string };
@@ -33,6 +34,7 @@ export type GameEvents = {
   tick: { dt: number };
   message: { text: string };
   gameOver: Record<string, never>;
+  openTransfer: { inv: import('./inventory/inventory').Inventory; name: string };
 };
 
 /** Real seconds → game minutes. 1 real second = 1/3 game minute while exploring (24h ≈ 72 min). */
@@ -72,6 +74,8 @@ export class Game extends EventBus<GameEvents> {
   private reachMesh: THREE.InstancedMesh;
   private pathMesh: THREE.InstancedMesh;
   private hostilityTimer = 0;
+  private pendingInteract?: { x: number; y: number; run: () => void };
+  private pileGroup = new THREE.Group();
   fps = 0;
   private fpsAcc = 0;
   private fpsFrames = 0;
@@ -108,7 +112,7 @@ export class Game extends EventBus<GameEvents> {
     this.pathMesh = new THREE.InstancedMesh(dotGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false, toneMapped: false }), 64);
     this.pathMesh.count = 0;
     this.pathMesh.frustumCulled = false;
-    this.scene.add(this.reachMesh, this.pathMesh);
+    this.scene.add(this.reachMesh, this.pathMesh, this.pileGroup);
     this.fx = new Fx(this.scene, () => this.cam.camera);
     const game = this;
     this.encounter = new Encounter({
@@ -201,11 +205,20 @@ export class Game extends EventBus<GameEvents> {
       look: lookFrom(this.state.pc.appearance, { shirt: 0x5a6a62, pants: 0x4a4a40, boots: 0x2a221a }),
     }, this.loc.grid);
     this.player.onArriveTile = (x, y) => this.onPlayerTile(x, y);
-    this.player.onPathDone = () => { this.pathMarker.visible = false; };
+    this.player.onPathDone = () => {
+      this.pathMarker.visible = false;
+      const pi = this.pendingInteract;
+      if (pi && this.player && Math.max(Math.abs(pi.x - this.player.tx), Math.abs(pi.y - this.player.ty)) <= 1) {
+        this.pendingInteract = undefined;
+        this.player.faceTowards(pi.x + 0.5, pi.y + 0.5);
+        pi.run();
+      }
+    };
     this.addActor(this.player);
     this.rng.state = this.state.rngState;
     this.pc = { id: 'player', name: this.state.pc.sheet.name || 'You', team: 'player', sheet: this.state.pc.sheet, inv: this.state.pc.inventory, x: sx, y: sy, ap: 0, morale: 100, evasion: 0, isPlayer: true };
     for (const p of map.npcs ?? []) this.spawn(p);
+    this.groundPilesChanged();
     this.cam.target.copy(this.player.object.position);
     this.cam.recentre();
     this.cam.snapToTarget();
@@ -292,6 +305,74 @@ export class Game extends EventBus<GameEvents> {
     }
   }
 
+  /** Corpse, container or ground pile at a tile → walk over and open it. Returns true if handled. */
+  tryInteract(x: number, y: number): boolean {
+    const target = this.interactableAt(x, y);
+    if (!target || !this.player || !this.loc) return false;
+    const run = target;
+    const p = this.player;
+    if (Math.max(Math.abs(x - p.tx), Math.abs(y - p.ty)) <= 1) { p.faceTowards(x + 0.5, y + 0.5); run(); return true; }
+    const path = this.loc.grid.findPath(p.tx, p.ty, x, y, { ignore: p.id, adjacentOk: true });
+    if (!path) return false;
+    this.pendingInteract = { x, y, run };
+    p.setPath(path);
+    return true;
+  }
+
+  private interactableAt(x: number, y: number): (() => void) | undefined {
+    const loc = this.state.locationId;
+    for (const n of this.npcs.values()) {
+      if (n.combatant.sheet.hp > 0 || n.actor.tx !== x || n.actor.ty !== y) continue;
+      return () => {
+        const inv = n.combatant.inv;
+        for (const slot of ['primary', 'secondary', 'body', 'head'] as const) { const e = inv.equipped[slot]; if (e) { delete inv.equipped[slot]; inv.items.push(e); } }
+        this.emit('openTransfer', { inv, name: `${n.def.name} (dead)` });
+      };
+    }
+    const pileKey = `${loc}/ground_${x}_${y}`;
+    if (this.state.containers[pileKey] && (this.state.containers[pileKey].items.length || this.state.containers[pileKey].tolls)) {
+      return () => this.emit('openTransfer', { inv: this.state.containers[pileKey], name: 'Ground' });
+    }
+    const prop = this.loc?.map.props?.find((p) => p.x === x && p.y === y && p.id && this.loc!.map.containers?.[p.id]);
+    if (prop) {
+      const def = this.loc!.map.containers![prop.id!];
+      const key = `${loc}/${prop.id}`;
+      return () => {
+        const unlockedFlag = `unlocked:${key}`;
+        if (def.lock && !this.state.flags[unlockedFlag]) {
+          const r = skillCheck(this.state.pc.sheet, this.state.pc.inventory, 'locks', def.lock, this.rng);
+          this.state.minutes += 2;
+          if (!r.success) { this.emit('message', { text: `Locked. Your Locks ${r.value}% isn't enough (needs ${r.dc}).` }); return; }
+          this.state.flags[unlockedFlag] = true;
+          const xp = 10 + Math.round(def.lock / 2);
+          addXp(this.state.pc.sheet, xp);
+          this.emit('message', { text: `Lock picked. +${xp} XP` });
+        }
+        if (!this.state.containers[key]) {
+          const inv = emptyInventory();
+          for (const [id, n] of def.items) addItem(inv, makeItem(id, n));
+          inv.tolls = def.tolls ?? 0;
+          this.state.containers[key] = inv;
+        }
+        this.emit('openTransfer', { inv: this.state.containers[key], name: def.name });
+      };
+    }
+  }
+
+  /** Rebuild the little sack meshes for dropped items on this map. */
+  groundPilesChanged(): void {
+    this.pileGroup.clear();
+    const prefix = `${this.state.locationId}/ground_`;
+    for (const [k, inv] of Object.entries(this.state.containers)) {
+      if (!k.startsWith(prefix) || (!inv.items.length && !inv.tolls)) continue;
+      const [x, y] = k.slice(prefix.length).split('_').map(Number);
+      const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.18, 0).scale(1, 0.7, 1), new THREE.MeshStandardMaterial({ color: 0x8a7a5a, flatShading: true }));
+      m.position.set(x + 0.5, 0.12, y + 0.5);
+      m.castShadow = true;
+      this.pileGroup.add(m);
+    }
+  }
+
   npcAt(x: number, y: number): NpcRuntime | undefined {
     for (const n of this.npcs.values()) if (n.actor.tx === x && n.actor.ty === y && n.combatant.sheet.hp > 0) return n;
   }
@@ -342,6 +423,8 @@ export class Game extends EventBus<GameEvents> {
       if (this.encounter.active) { this.encounter.tapTile(t.x, t.y, mouse); return; }
       const npc = this.npcAt(t.x, t.y);
       if (npc && npc.hostile) { this.startCombat(npc); return; }
+      if (this.tryInteract(t.x, t.y)) return;
+      this.pendingInteract = undefined;
       const p = this.player;
       const path = this.loc.grid.findPath(p.tx, p.ty, t.x, t.y, { ignore: p.id, adjacentOk: true });
       if (path && path.length) {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Grid } from '../src/engine/scene/grid';
 import type { MapDef } from '../src/engine/data/types';
-import { ITEMS, MAPS, PERKS, TRAITS } from '../src/content';
+import { ITEMS, MAPS, NPCS, PERKS, TRAITS } from '../src/content';
 import { validateContent } from '../src/engine/data/validate';
 import { Rng } from '../src/engine/core/rng';
 
@@ -47,6 +47,6 @@ describe('Rng', () => {
 
 describe('Content', () => {
   it('validates', () => {
-    expect(validateContent({ maps: MAPS, items: ITEMS, perks: PERKS, traits: TRAITS })).toEqual([]);
+    expect(validateContent({ maps: MAPS, items: ITEMS, perks: PERKS, traits: TRAITS, npcs: NPCS })).toEqual([]);
   });
 });

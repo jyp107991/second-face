@@ -2,6 +2,7 @@ import type { MapDef } from './types';
 import type { ItemDef } from '../inventory/items';
 import type { PerkDef, TraitDef } from '../stats/sheet';
 import { ATTRIBUTES, SKILLS } from '../stats/rules';
+import type { NpcDef } from '../npc/defs';
 import { Grid } from '../scene/grid';
 
 export interface ContentBundle {
@@ -9,6 +10,7 @@ export interface ContentBundle {
   items?: Record<string, ItemDef>;
   traits?: Record<string, TraitDef>;
   perks?: Record<string, PerkDef>;
+  npcs?: Record<string, NpcDef>;
 }
 
 /**
@@ -35,6 +37,12 @@ export function validateContent(c: ContentBundle): string[] {
       if (!grid.inBounds(p.x, p.y)) errs.push(`${where}: prop ${p.kind} at ${p.x},${p.y} out of bounds`);
       else if (map.legend[map.layout[p.y][p.x]]?.wall) errs.push(`${where}: prop ${p.kind} at ${p.x},${p.y} is inside a wall`);
     }
+    const propIds = new Set((map.props ?? []).map((p) => p.id).filter(Boolean));
+    for (const [cid, cdef] of Object.entries(map.containers ?? {})) {
+      if (!propIds.has(cid)) errs.push(`${where}: container "${cid}" has no prop with that id`);
+      for (const [item] of cdef.items) if (c.items && !c.items[item]) errs.push(`${where}: container "${cid}" unknown item ${item}`);
+    }
+    for (const p of map.npcs ?? []) if (c.npcs && !c.npcs[p.def]) errs.push(`${where}: unknown npc ${p.def}`);
     for (const e of map.exits ?? []) {
       let reachable = false;
       for (let y = e.y; y < e.y + (e.h ?? 1); y++) for (let x = e.x; x < e.x + (e.w ?? 1); x++) if (grid.get(x, y)?.walkable) reachable = true;
@@ -71,5 +79,11 @@ export function validateContent(c: ContentBundle): string[] {
     for (const t of p.req.notTraits ?? []) if (!(t in (c.traits ?? {}))) errs.push(`perk ${key}: unknown trait ${t}`);
   }
   for (const [key, t] of Object.entries(c.traits ?? {})) if (t.id !== key) errs.push(`trait ${key}: id mismatch`);
+  for (const [key, n] of Object.entries(c.npcs ?? {})) {
+    if (n.id !== key) errs.push(`npc ${key}: id mismatch`);
+    for (const [item] of n.inventory ?? []) if (c.items && !c.items[item]) errs.push(`npc ${key}: unknown item ${item}`);
+    for (const item of n.equip ?? []) if (c.items && !c.items[item]) errs.push(`npc ${key}: unknown equip ${item}`);
+    for (const t of n.traits ?? []) if (c.traits && !c.traits[t]) errs.push(`npc ${key}: unknown trait ${t}`);
+  }
   return errs;
 }

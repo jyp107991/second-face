@@ -48,7 +48,7 @@ export const dev_yard: MapDef = {
     { kind: 'car_wreck', x: 21, y: 13, rot: 0 },
     { kind: 'car_wreck', x: 27, y: 18, rot: 1 },
     { kind: 'barrel_rust', x: 4, y: 8 }, { kind: 'barrel', x: 5, y: 8 }, { kind: 'barrel_rust', x: 4, y: 9 },
-    { kind: 'crate', x: 25, y: 3 }, { kind: 'crate', x: 26, y: 3 }, { kind: 'shelf', x: 27, y: 4, rot: 3 },
+    { kind: 'crate', x: 25, y: 3, id: 'crate_a' }, { kind: 'crate', x: 26, y: 3 }, { kind: 'shelf', x: 27, y: 4, rot: 3, id: 'shelf_a' },
     { kind: 'fire_barrel', x: 14, y: 4, id: 'fire1' },
     { kind: 'campfire', x: 13, y: 13 },
     { kind: 'cot', x: 12, y: 12 }, { kind: 'tent', x: 16, y: 12 },
@@ -61,6 +61,10 @@ export const dev_yard: MapDef = {
     { kind: 'debris', x: 22, y: 7 }, { kind: 'pipe_h', x: 10, y: 21 }, { kind: 'terminal', x: 12, y: 22, rot: 2 },
   ],
   lights: [{ x: 12, y: 22, height: 2.2, color: 0x9affc0, intensity: 1.5, range: 4 }],
+  containers: {
+    crate_a: { name: 'Supply Crate', items: [['a_38', 12], ['c_bandage', 2], ['j_scrap', 3]], tolls: 6 },
+    shelf_a: { name: 'Rusty Shelf', items: [['c_tin', 1], ['j_wiring', 2], ['t_picks', 1]], lock: 30 },
+  },
   spawns: [
     { id: 'start', x: 15, y: 9 },
     { id: 'from_bunker', x: 13, y: 20 },
