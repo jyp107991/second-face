@@ -21,11 +21,11 @@ export function loadImage(rel: string): Promise<HTMLImageElement> {
 }
 
 /** Shared GPU texture for a human asset (hair, eyes, clothes...). */
-export function humanTexture(rel: string): THREE.Texture {
+export function humanTexture(rel: string, srgb = true): THREE.Texture {
   let t = textures.get(rel);
   if (!t) {
     t = new THREE.Texture();
-    t.colorSpace = THREE.SRGBColorSpace;
+    t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
     t.anisotropy = 4;
     const tex = t;
     void loadImage(rel).then((img) => { tex.image = img; tex.needsUpdate = true; });

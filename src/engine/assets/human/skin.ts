@@ -62,7 +62,7 @@ function headTriangles(): Uint32Array {
   return (headTris = new Uint32Array(out));
 }
 
-const needsPaint = (a: Appearance) => a.facialHair !== 'none' || a.freckles > 0 || a.scars.length > 0 || a.tattoos.length > 0;
+const needsPaint = (a: Appearance) => a.facialHair === 'stubble' || a.freckles > 0 || a.scars.length > 0 || a.tattoos.length > 0;
 
 /** Build the skin texture. Resolves synchronously if images are preloaded; updates in place otherwise. */
 export function makeSkinTexture(a: Appearance, size = 1024): THREE.CanvasTexture {
@@ -161,20 +161,11 @@ function beardZones(p: THREE.Vector3): { tache: number; chin: number; jaw: numbe
   return { tache, chin, jaw, sideburn, lips };
 }
 
-/** Facial hair coverage 0..1 at head-frame point p. */
+/** Painted facial hair coverage 0..1 at head-frame point p (only stubble is painted; beards are meshes). */
 function beardAt(style: Appearance['facialHair'], p: THREE.Vector3): number {
-  if (style === 'none') return 0;
+  if (style !== 'stubble') return 0;
   const z = beardZones(p);
-  let c = 0;
-  switch (style) {
-    case 'stubble': c = Math.max(z.tache, z.chin, z.jaw * 0.9, z.sideburn) * 0.42; break;
-    case 'moustache': c = z.tache; break;
-    case 'goatee': c = Math.max(z.tache, z.chin * smoothstep(0.32, 0.2, Math.abs(p.x))); break;
-    case 'short_beard': c = Math.max(z.tache, z.chin, z.jaw, z.sideburn) * 0.75; break;
-    case 'full_beard': c = Math.max(z.tache, z.chin, z.jaw, z.sideburn); break;
-    case 'chops': c = Math.max(z.sideburn, z.jaw * smoothstep(0.45, 0.6, Math.abs(p.x))); break;
-  }
-  return c * (1 - z.lips);
+  return Math.max(z.tache, z.chin, z.jaw * 0.9, z.sideburn) * 0.42 * (1 - z.lips);
 }
 
 function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance): void {
@@ -267,7 +258,7 @@ function strokeHair(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
   const stubble = a.facialHair === 'stubble';
   const scale = size / 2048;
   const density = (stubble ? 0.35 : 0.85) * scale * scale;
-  const len3 = stubble ? 0.009 : a.facialHair === 'full_beard' ? 0.075 : 0.045;
+  const len3 = stubble ? 0.009 : 0.045;
   const col = new THREE.Color(a.hair.color);
   const P = [new V(), new V(), new V()], U = [new THREE.Vector2(), new THREE.Vector2(), new THREE.Vector2()];
   const e1 = new V(), e2 = new V(), p = new V(), dir = new V();

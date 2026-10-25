@@ -3,7 +3,7 @@ import type { NpcDef } from '../../engine/npc/defs';
 /** Developer test enemies. Not part of the story. */
 export const DEV_NPCS: NpcDef[] = [
   {
-    id: 'dev_raider_boss', name: 'Scrap Boss', look: { seed: 901, frame: 'broad', age: 38, over: { facialHair: 'full_beard' } },
+    id: 'dev_raider_boss', name: 'Scrap Boss', look: { seed: 901, frame: 'broad', age: 38, over: { facialHair: 'grinsegold_full_beard+grinsegold_moustache' } },
     outfit: { suit: 'male_casualsuit04', suitTint: 0x8a7a68, shoes: 'shoes05', shoeTint: 0x6a5a4a }, level: 4,
     attrs: { brawn: 7, reflex: 6, grit: 6, senses: 6 }, skills: { firearms: 30 },
     inventory: [['a_12ga', 12], ['c_knitkit', 1], ['tolls', 35]], equip: ['w_sawnoff', 'r_scrap'], team: 'dev_raiders', hostile: true, courage: 75, leader: true,

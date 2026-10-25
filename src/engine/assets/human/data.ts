@@ -6,11 +6,13 @@
 type ViewType = 'float32' | 'int16' | 'uint16' | 'uint8' | 'uint32';
 
 export interface ProxyMeta {
-  kind: 'eyes' | 'brows' | 'lashes' | 'teeth' | 'tongue' | 'hair' | 'clothes';
+  kind: 'eyes' | 'brows' | 'lashes' | 'teeth' | 'tongue' | 'hair' | 'clothes' | 'beard';
   name: string;
   verts: number;
   scale: Partial<Record<'x' | 'y' | 'z', [number, number, number]>>;
   texture: string | null;
+  /** Tangent-space normal map, if the asset has one. */
+  normal?: string | null;
   transparent: boolean;
   zDepth: number;
   delete: boolean;
@@ -32,6 +34,8 @@ export interface HumanManifest {
   bones: BoneMeta[];
   joints: Record<string, number[]>;
   skins: Record<string, string>;
+  /** Shared skin detail maps (all skins share one UV layout). */
+  skinDetail?: Partial<Record<'normal_m' | 'spec_m' | 'normal_old' | 'spec_old', string>>;
   eyes: Record<string, string>;
   proxies: Record<string, ProxyMeta>;
   expressions: Record<string, Record<string, number>>;

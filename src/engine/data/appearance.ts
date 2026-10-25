@@ -6,16 +6,18 @@ import { defaultShape, type ShapeParams } from '../assets/human/shape';
  * Facial hair, freckles, scars and tattoos are painted into the per-character skin texture.
  */
 
-export const HAIR_STYLES = ['none', 'short01', 'short02', 'short04', 'bob02', 'long01', 'ponytail01', 'afro01'] as const;
+export const HAIR_STYLES = ['none', 'short01', 'short02', 'short04', 'culturalibre_hair_02', 'culturalibre_hair_01', 'bob02', 'toigo_inverted_bob', 'toigo_blunt_bob', 'long01', 'ponytail01', 'rehmanpolanski_hair_bun_brown', 'elvs_unkempt_french_braid', 'faydaen_hair_1', 'sonntag78_junglebook_hair', 'afro01'] as const;
 export type HairStyle = (typeof HAIR_STYLES)[number];
 
-export const BROW_STYLES = ['eyebrow001', 'eyebrow002', 'eyebrow003', 'eyebrow004', 'eyebrow005', 'eyebrow006', 'eyebrow007', 'eyebrow008', 'eyebrow009', 'eyebrow010', 'eyebrow011', 'eyebrow012'] as const;
+export const BROW_STYLES = ['mindfront_eyebrows_01', 'mindfront_eyebrows_02', 'mindfront_eyebrows_03', 'mindfront_eyebrows_04', 'mindfront_eyebrows_05', 'mindfront_eyebrows_06', 'mindfront_eyebrows_07', 'mindfront_eyebrows_08', 'mindfront_eyebrows_09', 'mindfront_eyebrows_10', 'mindfront_eyebrows_11', 'mindfront_eyebrows_12', 'mindfront_eyebrows_13', 'mindfront_eyebrows_14', 'eyebrow001', 'eyebrow002', 'eyebrow003', 'eyebrow004', 'eyebrow005', 'eyebrow006', 'eyebrow007', 'eyebrow008', 'eyebrow009', 'eyebrow010', 'eyebrow011', 'eyebrow012'] as const;
 export type BrowStyle = (typeof BROW_STYLES)[number];
 
 export const EYE_COLORS = ['brown', 'brownlight', 'green', 'bluegreen', 'blue', 'lightblue', 'deepblue', 'grey', 'ice'] as const;
 export type EyeColor = (typeof EYE_COLORS)[number];
 
-export const FACIAL_HAIR = ['none', 'stubble', 'moustache', 'goatee', 'short_beard', 'full_beard', 'chops'] as const;
+/** Facial hair: painted stubble, or artist-made beard meshes (MakeHuman community, CC0/CC-BY). */
+/** '+' layers several meshes (e.g. a beard without moustache plus a moustache). */
+export const FACIAL_HAIR = ['none', 'stubble', 'grinsegold_beard_sigmund_wip', 'grinsegold_full_beard+grinsegold_moustache', 'grinsegold_full_beard+rehmanpolanski_moustache_viking', 'elvs_scruffy_beard1', 'grinsegold_moustache', 'rehmanpolanski_moustache_viking'] as const;
 export type FacialHair = (typeof FACIAL_HAIR)[number];
 
 export const SCARS = ['brow_cut', 'cheek_slash', 'lip_split', 'eye_scar', 'burn_left', 'burn_right', 'forehead_x', 'chin_nick'] as const;
@@ -49,7 +51,7 @@ export function defaultAppearance(): Appearance {
     skinVariant: 0,
     eyes: 'brown',
     hair: { style: 'short02', color: HAIR_COLORS[2] },
-    brows: 'eyebrow001',
+    brows: 'mindfront_eyebrows_01',
     facialHair: 'none',
     freckles: 0,
     scars: [],
@@ -85,9 +87,11 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   a.skinTone = clamp(s.african * 0.95 + s.asian * 0.25 + s.caucasian * 0.05 + gauss() * 0.12);
   a.skinVariant = r.int(0, 2);
   a.eyes = a.skinTone > 0.6 ? r.pick(['brown', 'brown', 'brownlight'] as const) : r.pick(EYE_COLORS);
-  const hairPool: HairStyle[] = masc ? ['short01', 'short02', 'short04', 'none', 'afro01', 'ponytail01'] : ['bob02', 'long01', 'ponytail01', 'short04', 'afro01'];
+  const hairPool: HairStyle[] = masc
+    ? ['short01', 'short02', 'short04', 'culturalibre_hair_02', 'none', 'afro01', 'ponytail01', 'culturalibre_hair_01']
+    : ['bob02', 'toigo_inverted_bob', 'toigo_blunt_bob', 'long01', 'culturalibre_hair_01', 'ponytail01', 'rehmanpolanski_hair_bun_brown', 'elvs_unkempt_french_braid', 'faydaen_hair_1', 'afro01'];
   a.hair = { style: r.pick(hairPool), color: a.skinTone > 0.55 ? r.pick(HAIR_COLORS.slice(0, 2)) : r.pick(HAIR_COLORS.slice(0, 9)) };
-  a.brows = r.pick(BROW_STYLES);
+  a.brows = r.pick(BROW_STYLES.slice(0, 14));
   a.facialHair = masc && r.chance(0.6) ? r.pick(FACIAL_HAIR.slice(1)) : 'none';
   a.freckles = a.skinTone < 0.4 && r.chance(0.2) ? r.range(0.2, 0.8) : 0;
   if (r.chance(0.3)) a.scars = [r.pick(SCARS)];

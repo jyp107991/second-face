@@ -22,6 +22,8 @@ import numpy as np
 from PIL import Image
 
 SRC, OUT = sys.argv[1], sys.argv[2]
+# Optional: root of extracted MakeHuman community asset packs (CC0 / CC-BY), see tools/mh/fetch_community.sh
+COMMUNITY = sys.argv[3] if len(sys.argv) > 3 else None
 os.makedirs(os.path.join(OUT, 'tex'), exist_ok=True)
 
 blob = bytearray()
@@ -284,8 +286,8 @@ def read_mhclo(path):
 proxies = {}
 
 
-def add_proxy(kind, folder, name, mat_override=None, tex_size=512):
-    d = os.path.join(SRC, folder, name)
+def add_proxy(kind, folder, name, mat_override=None, tex_size=512, root=None):
+    d = os.path.join(root or SRC, folder, name)
     meta, refs, deletes = read_mhclo(os.path.join(d, name + '.mhclo'))
     pv, pvt, pf = read_obj(os.path.join(d, meta['obj_file'][0]))
     rv, rvt, rtris = uv_split(pf)
@@ -309,9 +311,15 @@ def add_proxy(kind, folder, name, mat_override=None, tex_size=512):
         tp = os.path.join(os.path.dirname(mat_path), mat['diffuseTexture'])
         if os.path.exists(tp):
             texture = tex(tp, key, tex_size)
+    normal = None
+    for nk in ('normalmapTexture', 'bumpTexture'):
+        if nk in mat and not normal:
+            tp = os.path.join(os.path.dirname(mat_path), mat[nk])
+            if os.path.exists(tp):
+                normal = tex(tp, key + '_n', tex_size, 90)
     if deletes:
         put(key + '_delete', np.array(deletes, np.uint16))
-    proxies[key] = {'kind': kind, 'name': name, 'verts': int(len(rv)), 'scale': scale, 'texture': texture,
+    proxies[key] = {'kind': kind, 'name': name, 'verts': int(len(rv)), 'scale': scale, 'texture': texture, 'normal': normal,
                     'transparent': mat.get('transparent', 'False') == 'True', 'zDepth': int(meta.get('z_depth', [0])[0]),
                     'delete': bool(deletes)}
 
@@ -336,6 +344,39 @@ for n in ['male_worksuit01', 'male_casualsuit01', 'male_casualsuit02', 'male_cas
           'male_casualsuit06', 'female_casualsuit01', 'female_casualsuit02', 'female_sportsuit01', 'shoes01', 'shoes02', 'shoes03',
           'shoes04', 'shoes05', 'shoes06']:
     add_proxy('clothes', 'clothes', n, tex_size=1024)
+# ---------------------------------------------------------------------------------------------
+# Community assets (CC0 unless noted; CC-BY authors credited in docs/CREDITS.md)
+# ---------------------------------------------------------------------------------------------
+skin_detail = {}
+if COMMUNITY:
+    C = COMMUNITY
+    beards = [
+        ('bodyparts05_cc0', 'wdg_scruffy_beard'), ('bodyparts05_cc0', 'rehmanpolanski_beard_viking'),
+        ('bodyparts05_cc0', 'rehmanpolanski_moustache_viking'), ('bodyparts05_cc0', 'grinsegold_beard_sigmund_wip'),
+        ('bodyparts06_cc-by', 'grinsegold_full_beard'), ('bodyparts06_cc-by', 'grinsegold_moustache'),
+        ('bodyparts06_cc-by', 'elvs_scruffy_beard1'),
+    ]
+    for pack, n in beards:
+        add_proxy('beard', 'clothes', n, root=os.path.join(C, pack), tex_size=1024)
+    for i in range(1, 15):
+        add_proxy('brows', 'eyebrows', f'mindfront_eyebrows_{i:02d}', root=os.path.join(C, 'eyebrows01_cc0'), tex_size=512)
+    for i in range(1, 6):
+        add_proxy('lashes', 'eyelashes', f'mindfront_eyelashes_{i:02d}', root=os.path.join(C, 'eyelashes01_cc0'), tex_size=256)
+    for n in ['cortu_short_messy_hair', 'culturalibre_hair_01', 'culturalibre_hair_02', 'culturalibre_hair_05', 'culturalibre_hair_06',
+              'o4saken_long01', 'toigo_inverted_bob', 'toigo_blunt_bob', 'rehmanpolanski_hair_bun_brown', 'elvs_unkempt_french_braid',
+              'elvs_french_braid_variation', 'faydaen_hair_1', 'sonntag78_junglebook_hair']:
+        p = os.path.join(C, 'hair01_cc0', 'hair', n)
+        if os.path.isdir(p):
+            add_proxy('hair', 'hair', n, root=os.path.join(C, 'hair01_cc0'), tex_size=1024)
+    # Shared skin detail maps (all MakeHuman skins share one UV layout): pores, creases, oiliness.
+    md = os.path.join(C, 'skins02_cc0', 'skins')
+    skin_detail = {
+        'normal_m': tex(os.path.join(md, 'mindfront_aksel_skin', 'Aksel_Skin_NRM.png'), 'skin_detail_normal_m', 2048, 92),
+        'spec_m': tex(os.path.join(md, 'mindfront_aksel_skin', 'Aksel_Skin_SPEC.png'), 'skin_detail_spec_m', 1024, 85),
+        'normal_old': tex(os.path.join(md, 'mindfront_skin_male_african_middleage', 'skin_male_african_middleage_NRM.png'), 'skin_detail_normal_old', 2048, 92),
+        'spec_old': tex(os.path.join(md, 'mindfront_skin_male_african_middleage', 'skin_male_african_middleage_SPEC.png'), 'skin_detail_spec_old', 1024, 85),
+    }
+
 print('proxies', len(proxies))
 
 # ---------------------------------------------------------------------------------------------
@@ -360,6 +401,7 @@ manifest = {
     'bones': bones,
     'joints': joints,
     'skins': skins,
+    'skinDetail': skin_detail,
     'eyes': eye_tex,
     'proxies': proxies,
     'expressions': expressions,

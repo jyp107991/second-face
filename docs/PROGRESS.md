@@ -25,7 +25,6 @@ Read this first in every session. Update + commit + push after every step.
 - [x] M1.9 Audio: Web Audio synth (ambience beds, footsteps, gunshots, UI blips)
 
 ### M1.10 — Realistic humans (owner benchmark: Fallout 4 / Skyrim SE faces; approach: rendering upgrade; faces before gameplay)
-### (old heading) (owner feedback: procedural heads/bodies unacceptable — must look human) ⚠ PRIORITY
 Source: MakeHuman 1.2.0 CC0 assets (base mesh, targets, skins, rigs, eyes, brows, lashes, hair, teeth, clothes,
 expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemeral). No AGPL code used.
 - [x] M1.10a Asset build script `tools/mh/build_human.py` → `public/assets/human/` (base mesh w/ UV split, macro
@@ -46,12 +45,16 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
 - [ ] M2.9 Companions core (recruit, follow, approval reactions, banter triggers, combat AI as allies)
 
 ## Next action
-Face realism pass in progress (owner said faces still unacceptable; chose FO4-level via rendering upgrade, faces first).
-Done this pass: anatomical beard zones (rig landmarks), strand-shell facial hair geometry, 2048 close-up skins,
-skin SSS (wrapped diffuse patch in shading.ts), bump from skin photo, cavity AO vertex colours, sheen, studio
-3-point lighting w/ shadows + PMREM env, portrait grade, two-pass hair, pruned bad hair styles.
-Next: show owner faces7-style renders and get verdict; then candidates: light moustache contrast, hair anisotropic
-spec, eye wet line/cornea highlight, expressions; LOD for iso view; then M2.
+Face realism pass (owner benchmark FO4/Skyrim SE). Owner rejected procedural beards → switched to the
+"automated middle ground": MakeHuman community packs (`tools/mh/fetch_community.sh`, then
+`python3 -I tools/mh/build_human.py <mh_data> public/assets/human <community_root>`).
+Done: artist beard meshes (layered with '+' in FACIAL_HAIR), Mindfront skin normal maps (DirectX → flipped Y;
+strength scales with age/gender), Mindfront brows/lashes, community hairstyles (bad ones pruned after visual QA),
+duplicate beard mesh bug fixed. Latest gallery: scratchpad gallery_v9 (regenerate via faces.cjs).
+Next: owner verdict on the new gallery. Known remaining gaps: hair looks solid/matte (needs anisotropic spec +
+better alpha), moustache centre seam, eye wetness/lip spec, faces look similar (more shape variation), no teeth.
+Then: remove pruned assets from build_human.py + split human.bin into lazily loaded per-proxy files (35 MB),
+LOD for iso view, expressions, wasteland clothing; then M2.
 
 ## Known issues / polish backlog (engine)
 - Tall interior walls hide a lot; consider Fallout-style lower walls or full-wall fade when room is entered.

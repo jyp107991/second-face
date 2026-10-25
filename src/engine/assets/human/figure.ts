@@ -2,8 +2,7 @@ import * as THREE from 'three';
 import { humanData, type HumanData, type ProxyMeta } from './data';
 import { evaluateShape, type ShapeParams } from './shape';
 import { humanTexture } from './textures';
-import { applySkinScatter, cavityAO, strandTexture } from './shading';
-import { beardCoverageAt, headFrameOf } from './skin';
+import { applySkinScatter, cavityAO } from './shading';
 import type { FacialHair } from '../../data/appearance';
 
 /**
@@ -24,6 +23,11 @@ export interface FigureSpec {
   /** Proxy names (e.g. 'male_worksuit01', 'shoes02') with optional tints. */
   clothes: { name: string; tint?: number }[];
   facialHair?: FacialHair;
+  beardColor?: number;
+  /** Skin detail set: 'old' uses deeper creases. */
+  skinDetail?: 'm' | 'old';
+  /** Strength of the skin detail (creases, pores) normal map, 0..1. */
+  skinDetailStrength?: number;
   /** Low detail: no teeth/tongue/lashes (iso view). */
   lod?: 'high' | 'low';
 }
@@ -113,8 +117,7 @@ export class HumanFigure {
       const key = `clothes_${c.name}`;
       if (d.m.proxies[key]?.delete) for (const v of d.view<Uint16Array>(key + '_delete')) deleted.add(v);
     }
-    this.addBody(d, P, minY, spec.skin, deleted, spec.lod ?? 'high');
-    if (spec.facialHair && spec.facialHair !== 'none' && spec.facialHair !== 'stubble') this.addFacialHair(d, spec.facialHair, spec.hair?.color ?? 0x2b1d14);
+    this.addBody(d, P, minY, spec.skin, deleted, spec.lod ?? 'high', spec.skinDetail ?? 'm', spec.skinDetailStrength ?? 0.7);
 
     // --- Proxies
     const lod = spec.lod ?? 'high';
@@ -130,6 +133,14 @@ export class HumanFigure {
       const key = `hair_${spec.hair.style}`;
       if (d.m.proxies[key]) this.addProxy(d, P, minY, key, hairMaterial(d.m.proxies[key], spec.hair.color), lod === 'high' ? hairMaterial(d.m.proxies[key], spec.hair.color, true) : undefined);
     }
+    // Facial hair meshes (artist-made; stubble is painted into the skin instead). '+' layers several.
+    if (spec.facialHair && spec.facialHair !== 'none' && spec.facialHair !== 'stubble') {
+      const col = spec.beardColor ?? spec.hair?.color ?? 0x2b1d14;
+      for (const part of spec.facialHair.split('+')) {
+        const key = `beard_${part}`, meta = d.m.proxies[key];
+        if (meta) this.addProxy(d, P, minY, key, hairMaterial(meta, col), hairMaterial(meta, col, true));
+      }
+    }
     for (const c of spec.clothes) {
       const key = `clothes_${c.name}`;
       if (d.m.proxies[key]) this.addProxy(d, P, minY, key, plainMaterial(d.m.proxies[key], c.tint ?? 0xffffff, 0.92));
@@ -140,7 +151,7 @@ export class HumanFigure {
     this.height = (Math.max(...Array.from({ length: d.bodyMap.length }, (_, i) => P[d.bodyMap[i] * 3 + 1])) - minY) * SCALE;
   }
 
-  private addBody(d: HumanData, P: Float32Array, minY: number, skin: THREE.Texture, deleted: Set<number>, lod: 'high' | 'low'): void {
+  private addBody(d: HumanData, P: Float32Array, minY: number, skin: THREE.Texture, deleted: Set<number>, lod: 'high' | 'low', detail: 'm' | 'old', detailStrength: number): void {
     const n = d.bodyMap.length;
     const pos = new Float32Array(n * 3), nrm = new Float32Array(n * 3);
     const skinIndex = new Uint16Array(n * 4), skinWeight = new Float32Array(n * 4);
@@ -183,72 +194,12 @@ export class HumanFigure {
     const mat = lod === 'high'
       ? new THREE.MeshPhysicalMaterial({
         map: skin, vertexColors: true, roughness: 0.5, metalness: 0, specularIntensity: 0.55,
-        // The skin photo doubles as a bump map: its real pores and creases catch the light.
-        bumpMap: skin, bumpScale: 0.9,
+        ...skinDetailMaps(d, detail, detailStrength),
         sheen: 0.35, sheenRoughness: 0.55, sheenColor: new THREE.Color(0x6a4a40),
       })
       : new THREE.MeshStandardMaterial({ map: skin, vertexColors: true, roughness: 0.58, metalness: 0 });
     applySkinScatter(mat);
     this.addMesh(g, mat);
-  }
-
-  /**
-   * Facial hair as two strand shells lifted off the skin (volume + soft edges), built from the body's
-   * head triangles where the beard zone has coverage; skinned exactly like the skin underneath.
-   */
-  private addFacialHair(d: HumanData, style: FacialHair, color: number): void {
-    const body = this.meshes[0].geometry;
-    const bpos = body.getAttribute('position') as THREE.BufferAttribute, bnrm = body.getAttribute('normal') as THREE.BufferAttribute;
-    const bsi = body.getAttribute('skinIndex') as THREE.BufferAttribute, bsw = body.getAttribute('skinWeight') as THREE.BufferAttribute;
-    const idx = body.getIndex()!;
-    const cov = new Float32Array(bpos.count).fill(-1);
-    const coverage = (ri: number) => {
-      if (cov[ri] < 0) { const vi = d.bodyMap[ri]; cov[ri] = beardCoverageAt(style, d.base[vi * 3], d.base[vi * 3 + 1], d.base[vi * 3 + 2]); }
-      return cov[ri];
-    };
-    const tris: number[] = [];
-    for (let t = 0; t < idx.count; t += 3) {
-      const a = idx.getX(t), b = idx.getX(t + 1), c = idx.getX(t + 2);
-      if (coverage(a) + coverage(b) + coverage(c) > 0.05) tris.push(a, b, c);
-    }
-    if (!tris.length) return;
-    const used = [...new Set(tris)];
-    const remap = new Map(used.map((v, i) => [v, i]));
-    const thick = style === 'full_beard' ? 0.0065 : style === 'short_beard' ? 0.0035 : 0.004;
-    const tmp = new THREE.Vector3();
-    for (const [layer, lift, alphaK] of [[0, 0.45, 1.0], [1, 1.0, 0.75]] as const) {
-      const n = used.length;
-      const pos = new Float32Array(n * 3), col = new Float32Array(n * 4), uv = new Float32Array(n * 2);
-      const si = new Uint16Array(n * 4), sw = new Float32Array(n * 4);
-      used.forEach((ri, i) => {
-        const c = coverage(ri);
-        const off = thick * lift * (0.35 + 0.65 * c);
-        for (let k = 0; k < 3; k++) pos[i * 3 + k] = bpos.getComponent(ri, k) + bnrm.getComponent(ri, k) * off;
-        const vi = d.bodyMap[ri];
-        headFrameOf(d.base[vi * 3], d.base[vi * 3 + 1], d.base[vi * 3 + 2], tmp);
-        // Planar strand UVs (strands run down the face); offset per layer to avoid repeating.
-        uv[i * 2] = tmp.x * 2.4 + tmp.z * 0.8 + layer * 0.37;
-        uv[i * 2 + 1] = tmp.y * 2.4 + layer * 0.21;
-        col[i * 4] = col[i * 4 + 1] = col[i * 4 + 2] = 1;
-        col[i * 4 + 3] = Math.min(1, c * 1.6) * alphaK;
-        for (let k = 0; k < 4; k++) { si[i * 4 + k] = bsi.getComponent(ri, k); sw[i * 4 + k] = bsw.getComponent(ri, k); }
-      });
-      const g = new THREE.BufferGeometry();
-      g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(used.flatMap((ri) => [bnrm.getX(ri), bnrm.getY(ri), bnrm.getZ(ri)])), 3));
-      g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-      g.setAttribute('color', new THREE.BufferAttribute(col, 4));
-      g.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4));
-      g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
-      g.setIndex(tris.map((v) => remap.get(v)!));
-      const m = new THREE.MeshStandardMaterial({
-        map: strandTexture(), color, vertexColors: true, transparent: true, depthWrite: false, alphaTest: 0.03,
-        roughness: 0.75, metalness: 0, envMapIntensity: 0.1,
-      });
-      const mesh = this.addMesh(g, m);
-      mesh.renderOrder = 6 + layer;
-      mesh.castShadow = false;
-    }
   }
 
   private addProxy(d: HumanData, P: Float32Array, minY: number, key: string, mat: THREE.Material, blendEdges?: THREE.Material): void {
@@ -376,6 +327,7 @@ function eyeMaterial(color: string): THREE.Material {
 function hairMaterial(meta: ProxyMeta | undefined, color: number, blended = false): THREE.Material {
   const m = new THREE.MeshStandardMaterial({
     map: meta?.texture ? humanTexture(meta.texture) : null, color, roughness: 0.72, metalness: 0, envMapIntensity: 0.12,
+    normalMap: meta?.normal ? humanTexture(meta.normal, false) : null,
     side: THREE.DoubleSide,
     ...(blended ? { transparent: true, depthWrite: false, alphaTest: 0.02 } : { alphaTest: 0.55 }),
   });
@@ -391,6 +343,13 @@ function hairMaterial(meta: ProxyMeta | undefined, color: number, blended = fals
   };
   m.customProgramCacheKey = () => 'hairTint' + (blended ? 'B' : 'O');
   return m;
+}
+
+/** Pores/creases (normal) for skin from the shared community detail maps; falls back to a photo bump. */
+// Mindfront normal maps use the DirectX (green-down) convention, hence the flipped Y.
+function skinDetailMaps(d: HumanData, detail: 'm' | 'old', k: number): Partial<THREE.MeshPhysicalMaterialParameters> {
+  const n = d.m.skinDetail?.[detail === 'old' ? 'normal_old' : 'normal_m'];
+  return n ? { normalMap: humanTexture(n, false), normalScale: new THREE.Vector2(k, -k) } : {};
 }
 
 function plainMaterial(meta: ProxyMeta | undefined, tint: number, roughness: number): THREE.Material {

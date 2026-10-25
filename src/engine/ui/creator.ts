@@ -29,7 +29,13 @@ const TABS: { id: Tab; label: string; framing: number }[] = [
 const STYLE_NAMES: Record<string, string> = {
   short01: 'Cropped', short02: 'Short', short03: 'Tousled', short04: 'Swept', bob01: 'Bob', bob02: 'Long bob', long01: 'Long',
   ponytail01: 'Ponytail', braid01: 'Braid', afro01: 'Afro',
-  none: 'None', stubble: 'Stubble', moustache: 'Moustache', goatee: 'Goatee', short_beard: 'Short beard', full_beard: 'Full beard', chops: 'Sideburns', long_beard: 'Long beard',
+  none: 'None',
+  elvs_scruffy_beard1: 'Long goatee', 'grinsegold_full_beard+grinsegold_moustache': 'Full beard', 'grinsegold_full_beard+rehmanpolanski_moustache_viking': 'Full beard, drooping moustache', grinsegold_beard_sigmund_wip: 'Trimmed beard',
+  grinsegold_moustache: 'Moustache', rehmanpolanski_moustache_viking: 'Drooping moustache',
+  culturalibre_hair_01: 'Long, parted', culturalibre_hair_02: 'Swept back',
+  toigo_inverted_bob: 'Inverted bob', toigo_blunt_bob: 'Blunt bob',
+  rehmanpolanski_hair_bun_brown: 'Bun', elvs_unkempt_french_braid: 'Braid', faydaen_hair_1: 'Tied back',
+  sonntag78_junglebook_hair: 'Wild', stubble: 'Stubble', moustache: 'Moustache', goatee: 'Goatee', short_beard: 'Short beard', full_beard: 'Full beard', chops: 'Sideburns', long_beard: 'Long beard',
   brow_cut: 'Split brow', cheek_slash: 'Cheek slash', lip_split: 'Split lip', eye_scar: 'Eye scar', burn_left: 'Burn (left)', burn_right: 'Burn (right)', forehead_x: 'Cross brand', chin_nick: 'Chin nick',
   nine_neck: 'Cistern nine', tear: 'Teardrop', chin_lines: 'Chin lines', brow_dots: 'Brow dots', cheek_tribal: 'Cheek whorl', temple_spiral: 'Temple spiral', cheek_cross: 'Cheek cross', jaw_stripes: 'Jaw stripes', forehead_star: 'Brow star', eye_band: 'Eye band',
 };
