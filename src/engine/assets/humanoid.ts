@@ -1,53 +1,69 @@
 import * as THREE from 'three';
-import { flatMaterial } from './materials';
+import { defaultAppearance, type Appearance } from '../data/appearance';
+import { buildHead, paintFace, WHITE_UV } from './head';
 
-/** Visual parameters for a humanoid. Expanded by the character creator (face sculptor) in M1. */
-export interface HumanoidLook {
-  skin: number;
-  hair: number;
+/** Clothing/gear colours worn over the body. */
+export interface Outfit {
   shirt: number;
   pants: number;
   boots: number;
-  /** 0.85..1.15 */
-  height?: number;
-  /** 0.8..1.3 body mass */
-  mass?: number;
-  hairStyle?: 'none' | 'short' | 'long' | 'mohawk' | 'bun';
-  /** Gear accents */
-  mask?: boolean;
   coat?: number;
+  /** Gas mask over the face. */
+  mask?: boolean;
+  gloves?: number;
+  /** Armour plates over torso/shoulders. */
+  plates?: number;
+  hood?: number;
+}
+
+export interface HumanoidLook {
+  appearance: Appearance;
+  outfit: Outfit;
 }
 
 export const BONES = ['root', 'hips', 'spine', 'head', 'armUL', 'armLL', 'armUR', 'armLR', 'legUL', 'legLL', 'legUR', 'legLR'] as const;
 export type BoneName = (typeof BONES)[number];
 
-interface Part { bone: BoneName; geo: THREE.BufferGeometry; color: number; }
+interface Part { bone: BoneName; geo: THREE.BufferGeometry; color: number; skin?: boolean; }
 
 function boxAt(w: number, h: number, d: number, x: number, y: number, z: number): THREE.BufferGeometry {
   return new THREE.BoxGeometry(w, h, d).translate(x, y, z);
 }
 
+export function lookFrom(appearance: Partial<Appearance> | undefined, outfit: Outfit): HumanoidLook {
+  return { appearance: { ...defaultAppearance(), ...(appearance ?? {}) } as Appearance, outfit };
+}
+
 /**
  * A rigidly-skinned humanoid: every body part is bound to one bone, merged into a single
- * SkinnedMesh so each character costs one draw call.
+ * SkinnedMesh so each character costs one draw call. The material's map is a small per-character
+ * atlas (painted face in the top half, a white texel for vertex-coloured parts).
  */
 export class Humanoid {
   readonly mesh: THREE.SkinnedMesh;
   readonly bones: Record<BoneName, THREE.Bone>;
   readonly root: THREE.Group;
+  /** World-space height of the eyes in rest pose (camera framing for portraits). */
+  readonly eyeHeight: number;
   private walkPhase = 0;
   private breathe = Math.random() * 10;
-  /** 0 = idle, 1 = full walk cycle blend. */
   moveBlend = 0;
   aim = 0;
   dead = 0;
   flinch = 0;
   private readonly restHipY: number;
+  private texture: THREE.CanvasTexture;
 
   constructor(look: HumanoidLook) {
-    const H = look.height ?? 1, M = look.mass ?? 1;
-    const hipY = 0.92 * H, headY = 0.5 * H, shoulderX = 0.24 * M;
-    // Rest pose bone layout (positions relative to parent).
+    const app = look.appearance, o = look.outfit, body = app.body;
+    const H = 1 + 0.08 * body.height;
+    const M = 1 + 0.15 * body.mass;
+    const mus = 1 + 0.12 * body.muscle;
+    const stoop = Math.max(0, app.age - 60) / 30;
+    const hipY = 0.92 * H, headY = 0.5 * H;
+    const shoulderX = (0.22 + 0.035 * body.shoulders) * M * mus;
+    const hipX = (0.1 + 0.018 * body.hips) * M;
+
     const b = {} as Record<BoneName, THREE.Bone>;
     for (const n of BONES) { b[n] = new THREE.Bone(); b[n].name = n; }
     b.hips.position.set(0, hipY, 0);
@@ -58,9 +74,9 @@ export class Humanoid {
     b.armLL.position.set(0, -0.3 * H, 0);
     b.armUR.position.set(shoulderX, 0.46 * H, 0);
     b.armLR.position.set(0, -0.3 * H, 0);
-    b.legUL.position.set(-0.1 * M, -0.02, 0);
+    b.legUL.position.set(-hipX, -0.02, 0);
     b.legLL.position.set(0, -0.44 * H, 0);
-    b.legUR.position.set(0.1 * M, -0.02, 0);
+    b.legUR.position.set(hipX, -0.02, 0);
     b.legLR.position.set(0, -0.44 * H, 0);
     b.root.add(b.hips);
     b.hips.add(b.spine, b.legUL, b.legUR);
@@ -69,63 +85,70 @@ export class Humanoid {
     b.legUL.add(b.legLL); b.legUR.add(b.legLR);
     this.bones = b;
 
-    // Body parts in model space (rest pose).
-    const sY = hipY + 0.05; // spine origin world y
+    const sY = hipY + 0.05;
     const parts: Part[] = [];
-    const torsoW = 0.42 * M, torsoD = 0.24 * M;
-    parts.push({ bone: 'hips', geo: boxAt(0.38 * M, 0.18, 0.22 * M, 0, hipY, 0), color: look.pants });
-    parts.push({ bone: 'spine', geo: boxAt(torsoW, 0.34 * H, torsoD, 0, sY + 0.2 * H, 0), color: look.shirt });
-    parts.push({ bone: 'spine', geo: boxAt(torsoW * 0.92, 0.12 * H, torsoD * 0.95, 0, sY + 0.06 * H, 0), color: look.shirt });
-    // Chest taper / shoulders
-    parts.push({ bone: 'spine', geo: boxAt(torsoW * 1.08, 0.1 * H, torsoD * 1.02, 0, sY + 0.4 * H, 0), color: look.coat ?? look.shirt });
-    if (look.coat !== undefined) {
-      parts.push({ bone: 'spine', geo: boxAt(torsoW * 1.06, 0.5 * H, torsoD * 1.1, 0, sY + 0.16 * H, 0.005), color: look.coat });
-      parts.push({ bone: 'hips', geo: boxAt(torsoW * 1.0, 0.36 * H, torsoD * 1.1, 0, hipY - 0.12 * H, 0.005), color: look.coat });
+    const torsoW = (0.36 + 0.04 * body.shoulders) * M * mus, torsoD = 0.22 * M;
+    const waistW = (0.32 + 0.04 * body.hips - 0.02 * body.shoulders) * M;
+    const top = o.coat ?? o.shirt;
+    parts.push({ bone: 'hips', geo: boxAt((0.34 + 0.05 * body.hips) * M, 0.2, 0.22 * M, 0, hipY, 0), color: o.pants });
+    parts.push({ bone: 'spine', geo: boxAt(waistW, 0.18 * H, torsoD * 0.95, 0, sY + 0.08 * H, 0), color: o.shirt });
+    parts.push({ bone: 'spine', geo: boxAt(torsoW, 0.24 * H, torsoD, 0, sY + 0.28 * H, 0), color: o.shirt });
+    parts.push({ bone: 'spine', geo: boxAt(torsoW * 1.08 + 0.04, 0.09 * H, torsoD * 1.02, 0, sY + 0.43 * H, 0), color: top });
+    if (body.chest > 0.05) {
+      const cs = 0.06 + 0.05 * body.chest;
+      for (const s of [-1, 1]) parts.push({ bone: 'spine', geo: new THREE.SphereGeometry(cs, 7, 5).scale(1, 0.85, 0.9).translate(s * torsoW * 0.24, sY + 0.3 * H, torsoD * (o.coat !== undefined ? 0.5 : 0.42)), color: top });
     }
-    parts.push({ bone: 'spine', geo: boxAt(0.1, 0.07 * H, 0.1, 0, sY + 0.48 * H, 0), color: look.skin }); // neck
-    // Head
+    if (o.coat !== undefined) {
+      parts.push({ bone: 'spine', geo: boxAt(torsoW * 1.08, 0.5 * H, torsoD * 1.14, 0, sY + 0.2 * H, 0.004), color: o.coat });
+      parts.push({ bone: 'hips', geo: boxAt(waistW * 1.15, 0.42 * H, torsoD * 1.16, 0, hipY - 0.14 * H, 0.004), color: o.coat });
+    }
+    if (o.plates !== undefined) {
+      parts.push({ bone: 'spine', geo: boxAt(torsoW * 0.9, 0.3 * H, 0.04, 0, sY + 0.27 * H, torsoD * 0.6), color: o.plates });
+      for (const s of [-1, 1]) parts.push({ bone: 'spine', geo: boxAt(0.14, 0.05, 0.2, s * shoulderX, sY + 0.48 * H, 0), color: o.plates });
+    }
+    const neckW = 0.07 * (1 + 0.25 * app.face.neckWidth) * mus;
+    parts.push({ bone: 'spine', geo: new THREE.CylinderGeometry(neckW * 0.62, neckW * 0.7, 0.11 * H, 7).translate(0, sY + 0.5 * H, 0.0), color: app.skin });
+    if (o.hood !== undefined) parts.push({ bone: 'spine', geo: boxAt(torsoW * 0.75, 0.08, torsoD * 1.1, 0, sY + 0.48 * H, -0.02), color: o.hood });
+
+    // Head (unit head space → world): radius ≈ 0.112.
     const hY = sY + headY + 0.05;
-    const headGeo = new THREE.IcosahedronGeometry(0.13, 1).scale(0.95, 1.12, 1.0).translate(0, hY + 0.1, 0.01);
-    parts.push({ bone: 'head', geo: headGeo, color: look.skin });
-    parts.push({ bone: 'head', geo: boxAt(0.05, 0.05, 0.05, 0, hY + 0.08, 0.135), color: shade(look.skin, 0.9) }); // nose
-    parts.push({ bone: 'head', geo: boxAt(0.035, 0.02, 0.01, -0.045, hY + 0.13, 0.12), color: 0x1a1410 }); // eyes
-    parts.push({ bone: 'head', geo: boxAt(0.035, 0.02, 0.01, 0.045, hY + 0.13, 0.12), color: 0x1a1410 });
-    const style = look.hairStyle ?? 'short';
-    if (style !== 'none') {
-      const cap = new THREE.SphereGeometry(0.138, 8, 5, 0, Math.PI * 2, 0, Math.PI * 0.55).scale(1, 1.1, 1.05).translate(0, hY + 0.13, -0.005);
-      parts.push({ bone: 'head', geo: cap, color: look.hair });
-      if (style === 'long') parts.push({ bone: 'head', geo: boxAt(0.26, 0.3, 0.08, 0, hY - 0.02, -0.1), color: look.hair });
-      if (style === 'mohawk') parts.push({ bone: 'head', geo: boxAt(0.04, 0.1, 0.26, 0, hY + 0.27, -0.01), color: look.hair });
-      if (style === 'bun') parts.push({ bone: 'head', geo: new THREE.IcosahedronGeometry(0.06, 0).translate(0, hY + 0.2, -0.13), color: look.hair });
+    const R = 0.105 * (1 + 0.04 * body.height);
+    const headM = new THREE.Matrix4().compose(new THREE.Vector3(0, hY + 0.08, 0.015), new THREE.Quaternion().setFromEuler(new THREE.Euler(stoop * 0.2, 0, 0)), new THREE.Vector3(R, R, R));
+    for (const hp of buildHead(app)) parts.push({ bone: 'head', geo: hp.geo.applyMatrix4(headM), color: hp.color, skin: hp.skin });
+    this.eyeHeight = hY + 0.08 + 0.1 * R;
+    if (o.mask) {
+      const fz = hY + 0.08;
+      parts.push({ bone: 'head', geo: boxAt(0.2, 0.15, 0.07, 0, fz - 0.03, 0.1), color: 0x4a4a42 });
+      parts.push({ bone: 'head', geo: new THREE.CylinderGeometry(0.035, 0.045, 0.07, 6).rotateX(Math.PI / 2).translate(0, fz - 0.07, 0.15), color: 0x2a2a26 });
+      for (const s of [-1, 1]) parts.push({ bone: 'head', geo: new THREE.CylinderGeometry(0.03, 0.03, 0.03, 8).rotateX(Math.PI / 2).translate(s * 0.045, fz + 0.015, 0.13), color: 0x8a9a7a });
+      parts.push({ bone: 'head', geo: boxAt(0.25, 0.03, 0.24, 0, fz + 0.015, 0.0), color: 0x2a2a26 });
     }
-    if (look.mask) {
-      parts.push({ bone: 'head', geo: boxAt(0.24, 0.16, 0.06, 0, hY + 0.06, 0.12), color: 0x4a4a42 });
-      parts.push({ bone: 'head', geo: new THREE.CylinderGeometry(0.04, 0.05, 0.07, 6).rotateX(Math.PI / 2).translate(0, hY + 0.02, 0.17), color: 0x2a2a26 });
-      parts.push({ bone: 'head', geo: boxAt(0.07, 0.05, 0.02, -0.055, hY + 0.13, 0.155), color: 0x8a9a7a });
-      parts.push({ bone: 'head', geo: boxAt(0.07, 0.05, 0.02, 0.055, hY + 0.13, 0.155), color: 0x8a9a7a });
-    }
+
     // Arms
-    const armW = 0.1 * Math.sqrt(M);
+    const armW = 0.085 * Math.sqrt(M) * mus;
     for (const side of [-1, 1] as const) {
       const sx = side * shoulderX, uy = sY + 0.46 * H;
       const u: BoneName = side < 0 ? 'armUL' : 'armUR', l: BoneName = side < 0 ? 'armLL' : 'armLR';
-      parts.push({ bone: u, geo: boxAt(armW, 0.3 * H, armW, sx, uy - 0.15 * H, 0), color: look.coat ?? look.shirt });
-      parts.push({ bone: l, geo: boxAt(armW * 0.9, 0.26 * H, armW * 0.9, sx, uy - 0.3 * H - 0.13 * H, 0), color: look.skin });
-      parts.push({ bone: l, geo: boxAt(armW, 0.08, armW * 1.1, sx, uy - 0.6 * H, 0.01), color: shade(look.skin, 0.92) });
+      parts.push({ bone: u, geo: boxAt(armW * 1.1, 0.3 * H, armW * 1.1, sx, uy - 0.15 * H, 0), color: top });
+      parts.push({ bone: l, geo: boxAt(armW * 0.92, 0.25 * H, armW * 0.92, sx, uy - 0.3 * H - 0.125 * H, 0), color: o.coat !== undefined ? o.coat : app.skin });
+      parts.push({ bone: l, geo: boxAt(armW * 0.95, 0.085, armW * 1.15, sx, uy - 0.59 * H, 0.01), color: o.gloves ?? app.skin });
     }
     // Legs
-    const legW = 0.13 * Math.sqrt(M);
+    const legW = 0.12 * Math.sqrt(M) * mus;
     for (const side of [-1, 1] as const) {
-      const lx = side * 0.1 * M, ly = hipY - 0.02;
+      const lx = side * hipX, ly = hipY - 0.02;
       const u: BoneName = side < 0 ? 'legUL' : 'legUR', l: BoneName = side < 0 ? 'legLL' : 'legLR';
-      parts.push({ bone: u, geo: boxAt(legW, 0.44 * H, legW, lx, ly - 0.22 * H, 0), color: look.pants });
-      parts.push({ bone: l, geo: boxAt(legW * 0.9, 0.36 * H, legW * 0.9, lx, ly - 0.44 * H - 0.18 * H, 0), color: look.pants });
-      parts.push({ bone: l, geo: boxAt(legW * 1.0, 0.1, 0.24, lx, 0.05, 0.04), color: look.boots });
+      parts.push({ bone: u, geo: boxAt(legW, 0.44 * H, legW * 1.05, lx, ly - 0.22 * H, 0), color: o.pants });
+      parts.push({ bone: l, geo: boxAt(legW * 0.88, 0.3 * H, legW * 0.92, lx, ly - 0.44 * H - 0.15 * H, 0), color: o.pants });
+      parts.push({ bone: l, geo: boxAt(legW * 0.98, 0.14, 0.24, lx, 0.07, 0.035), color: o.boots });
     }
 
+    this.texture = new THREE.CanvasTexture(paintFace(app));
+    this.texture.colorSpace = THREE.SRGBColorSpace;
+    const mat = new THREE.MeshStandardMaterial({ map: this.texture, vertexColors: true, flatShading: true, roughness: 0.82, metalness: 0.02 });
     const geo = mergeParts(parts);
     const skeleton = new THREE.Skeleton(BONES.map((n) => b[n]));
-    this.mesh = new THREE.SkinnedMesh(geo, flatMaterial());
+    this.mesh = new THREE.SkinnedMesh(geo, mat);
     this.mesh.add(b.root);
     this.mesh.updateMatrixWorld(true);
     this.mesh.bind(skeleton);
@@ -133,6 +156,13 @@ export class Humanoid {
     this.mesh.frustumCulled = false;
     this.root = new THREE.Group();
     this.root.add(this.mesh);
+    if (stoop > 0) b.spine.rotation.x = stoop * 0.15;
+  }
+
+  dispose(): void {
+    this.mesh.geometry.dispose();
+    (this.mesh.material as THREE.Material).dispose();
+    this.texture.dispose();
   }
 
   /** Advance procedural animation. `speed` is world units/sec of locomotion. */
@@ -151,7 +181,6 @@ export class Humanoid {
     b.armUL.rotation.x = -s * 0.5 * w;
     b.armUL.rotation.z = -0.08 - breath;
     b.armLL.rotation.x = -0.25 - 0.2 * w;
-    // Right arm: aims forward when aim > 0.
     b.armUR.rotation.x = THREE.MathUtils.lerp(s * 0.5 * w, -1.45, this.aim);
     b.armUR.rotation.z = 0.08 + breath;
     b.armLR.rotation.x = THREE.MathUtils.lerp(-0.25 - 0.2 * w, -0.1, this.aim);
@@ -160,9 +189,8 @@ export class Humanoid {
     b.spine.rotation.y = s * 0.08 * w;
     b.head.rotation.x = -0.04 * w + this.flinch * 0.3;
     this.flinch = Math.max(0, this.flinch - dt * 4);
-    // Death: topple backwards.
     if (this.dead > 0) {
-      b.root.rotation.x = -Math.PI / 2 * easeOut(this.dead);
+      b.root.rotation.x = (-Math.PI / 2) * easeOut(this.dead);
       b.root.position.y = 0.15 * easeOut(this.dead);
       b.root.position.z = -0.4 * easeOut(this.dead);
     }
@@ -172,23 +200,24 @@ export class Humanoid {
 function easeOut(t: number) { return 1 - Math.pow(1 - Math.min(1, t), 3); }
 
 export function shade(hex: number, k: number): number {
-  const c = new THREE.Color(hex).multiplyScalar(k);
-  return c.getHex();
+  return new THREE.Color(hex).multiplyScalar(k).getHex();
 }
 
 function mergeParts(parts: Part[]): THREE.BufferGeometry {
-  const positions: number[] = [], normals: number[] = [], colors: number[] = [], skinIdx: number[] = [], skinW: number[] = [];
+  const positions: number[] = [], normals: number[] = [], colors: number[] = [], uvs: number[] = [], skinIdx: number[] = [], skinW: number[] = [];
   const col = new THREE.Color();
   for (const p of parts) {
     const g = p.geo.index ? p.geo.toNonIndexed() : p.geo;
-    g.computeVertexNormals();
-    const pos = g.getAttribute('position'), nrm = g.getAttribute('normal');
+    if (!p.skin) g.computeVertexNormals();
+    const pos = g.getAttribute('position'), nrm = g.getAttribute('normal'), uv = g.getAttribute('uv');
     col.setHex(p.color);
     const bi = BONES.indexOf(p.bone);
     for (let i = 0; i < pos.count; i++) {
       positions.push(pos.getX(i), pos.getY(i), pos.getZ(i));
       normals.push(nrm.getX(i), nrm.getY(i), nrm.getZ(i));
       colors.push(col.r, col.g, col.b);
+      if (p.skin && uv) uvs.push(uv.getX(i), uv.getY(i));
+      else uvs.push(WHITE_UV.x, WHITE_UV.y);
       skinIdx.push(bi, 0, 0, 0);
       skinW.push(1, 0, 0, 0);
     }
@@ -197,6 +226,7 @@ function mergeParts(parts: Part[]): THREE.BufferGeometry {
   geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
   geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
   geo.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(skinIdx, 4));
   geo.setAttribute('skinWeight', new THREE.Float32BufferAttribute(skinW, 4));
   return geo;

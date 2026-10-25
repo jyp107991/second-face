@@ -9,6 +9,9 @@ import { IsoCamera } from './render/camera';
 import { PostFX } from './render/postfx';
 import { QUALITY, detectQuality, type QualityLevel } from './render/quality';
 import { Actor } from './scene/actor';
+import { lookFrom } from './assets/humanoid';
+import type { PortraitStage } from './render/portrait';
+import type { Appearance } from './data/appearance';
 import { buildLocation, type BuiltLocation } from './scene/location';
 import type { ExitDef } from './data/types';
 import { SaveManager, type SaveFile, type SlotId } from './save/saves';
@@ -46,6 +49,10 @@ export class Game extends EventBus<GameEvents> {
   timeScale = 1;
   /** When true the simulation is frozen (menus open); rendering continues. */
   paused = false;
+  /** Player appearance (set by character creation; part of the save in M1.4). */
+  playerAppearance?: Appearance;
+  /** When set, this stage is rendered instead of the world (creator, dialogue close-ups). */
+  portrait?: PortraitStage;
   saves?: SaveManager;
   private thumbWaiters: ((url: string) => void)[] = [];
   fps = 0;
@@ -111,6 +118,7 @@ export class Game extends EventBus<GameEvents> {
     const pr = this.renderer.getPixelRatio();
     this.post?.setSize(Math.floor(w * pr), Math.floor(h * pr));
     this.cam.setAspect(w / h);
+    this.portrait?.setAspect(w / h);
     // Phones in portrait see less width; zoom out a bit.
     this.cam.maxView = w < h ? 34 : 30;
   }
@@ -142,7 +150,7 @@ export class Game extends EventBus<GameEvents> {
     this.state.locationId = id;
     this.player = new Actor({
       id: 'player', x: sx, y: sy, facing: this.state.player.facing,
-      look: { skin: 0xc89a78, hair: 0x3a2a1e, shirt: 0x5a6a7a, pants: 0x4a4038, boots: 0x2a221a, hairStyle: 'short' },
+      look: lookFrom(this.playerAppearance, { shirt: 0x5a6a62, pants: 0x4a4a40, boots: 0x2a221a }),
     }, this.loc.grid);
     this.player.onArriveTile = (x, y) => this.onPlayerTile(x, y);
     this.player.onPathDone = () => { this.pathMarker.visible = false; };
@@ -308,7 +316,10 @@ export class Game extends EventBus<GameEvents> {
     this.atmosphere.focusDistance = this.cam.distance;
     this.atmosphere.update(dt, this.time, this.cam.focus, this.post.settings);
     this.cursor.rotation.y += dt;
-    this.post.render(this.scene, this.cam.camera, this.time);
+    if (this.portrait) {
+      this.portrait.update(dt);
+      this.post.render(this.portrait.scene, this.portrait.camera, this.time);
+    } else this.post.render(this.scene, this.cam.camera, this.time);
     if (this.thumbWaiters.length) this.resolveThumbs();
 
     this.fpsAcc += realDt; this.fpsFrames++;
