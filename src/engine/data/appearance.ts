@@ -7,7 +7,8 @@ import { ANCESTRIES, weighted, type AncestryPreset, type HairTexture } from './a
  * Facial hair, freckles, scars and tattoos are painted into the per-character skin texture.
  */
 
-export const HAIR_STYLES = ['none', 'short01', 'short02', 'short04', 'culturalibre_hair_02', 'culturalibre_hair_01', 'bob02', 'toigo_inverted_bob', 'toigo_blunt_bob', 'long01', 'ponytail01', 'rehmanpolanski_hair_bun_brown', 'elvs_unkempt_french_braid', 'faydaen_hair_1', 'sonntag78_junglebook_hair', 'afro01'] as const;
+/** Hair meshes, plus 'paint_*' styles painted into the scalp (short cuts, coils, cornrows). */
+export const HAIR_STYLES = ['none', 'paint_shaved', 'paint_buzz', 'paint_fade', 'paint_coils', 'paint_cornrows', 'short01', 'short02', 'short04', 'culturalibre_hair_02', 'culturalibre_hair_01', 'bob02', 'toigo_inverted_bob', 'toigo_blunt_bob', 'long01', 'ponytail01', 'elvs_unkempt_french_braid'] as const;
 export type HairStyle = (typeof HAIR_STYLES)[number];
 
 export const BROW_STYLES = ['mindfront_eyebrows_01', 'mindfront_eyebrows_02', 'mindfront_eyebrows_03', 'mindfront_eyebrows_04', 'mindfront_eyebrows_05', 'mindfront_eyebrows_06', 'mindfront_eyebrows_07', 'mindfront_eyebrows_08', 'mindfront_eyebrows_09', 'mindfront_eyebrows_10', 'mindfront_eyebrows_11', 'mindfront_eyebrows_12', 'mindfront_eyebrows_13', 'mindfront_eyebrows_14', 'eyebrow001', 'eyebrow002', 'eyebrow003', 'eyebrow004', 'eyebrow005', 'eyebrow006', 'eyebrow007', 'eyebrow008', 'eyebrow009', 'eyebrow010', 'eyebrow011', 'eyebrow012'] as const;
@@ -24,6 +25,13 @@ export const FACIAL_HAIR = [
   'elvs_scruffy_beard1', 'grinsegold_moustache', 'rehmanpolanski_moustache_viking',
 ] as const;
 export type FacialHair = (typeof FACIAL_HAIR)[number];
+
+/** How common each option is among generated men (few razors after the Burn: stubble is the norm). */
+const FACIAL_HAIR_WEIGHTS: [FacialHair, number][] = [
+  ['none', 30], ['stubble_light', 12], ['stubble', 14], ['stubble_heavy', 14], ['stubble+grinsegold_moustache', 5],
+  ['stubble_light+rehmanpolanski_moustache_viking', 3], ['grinsegold_beard_sigmund_wip', 6], ['grinsegold_full_beard+grinsegold_moustache', 5],
+  ['grinsegold_full_beard+rehmanpolanski_moustache_viking', 3], ['elvs_scruffy_beard1', 3], ['grinsegold_moustache', 3], ['rehmanpolanski_moustache_viking', 2],
+];
 
 export const SCARS = ['brow_cut', 'cheek_slash', 'lip_split', 'eye_scar', 'burn_left', 'burn_right', 'forehead_x', 'chin_nick'] as const;
 export type ScarId = (typeof SCARS)[number];
@@ -46,6 +54,8 @@ export interface Appearance {
   eyes: EyeColor;
   hair: { style: HairStyle; color: number };
   brows: BrowStyle;
+  /** Brow colour; defaults to the hair colour. */
+  browColor?: number;
   facialHair: FacialHair;
   freckles: number;
   scars: ScarId[];
@@ -113,12 +123,15 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   a.eyes = weighted(next, src().eyes);
   const texture = weighted(next, src().texture);
   let hairColor = weighted(next, src().hair);
+  const natural = hairColor;
   // Greying from the late thirties.
   const grey = clamp((s.age - 38) / 35) * 0.75 * r.range(0.6, 1.2);
   if (grey > 0) hairColor = mixHex(hairColor, 0xb8b6ae, clamp(grey));
   a.hair = { style: r.pick(hairPool(texture, masc)), color: hairColor };
+  // Brows grey later and less than scalp hair.
+  a.browColor = grey > 0.3 ? mixHex(natural, 0xb8b6ae, clamp((grey - 0.3) * 0.6)) : natural;
   a.brows = r.pick(BROW_STYLES.slice(0, 14));
-  a.facialHair = masc && r.chance(0.65) ? r.pick(FACIAL_HAIR.slice(1)) : 'none';
+  a.facialHair = masc ? weighted(next, FACIAL_HAIR_WEIGHTS) : 'none';
   a.freckles = r.chance(mixv(pa.freckleChance, pb.freckleChance)) ? r.range(0.2, 0.8) : 0;
   if (r.chance(0.3)) a.scars = [r.pick(SCARS)];
   if (r.chance(0.15)) a.tattoos = [r.pick(TATTOOS)];
@@ -131,20 +144,20 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
 /** Hairstyles that suit each hair texture (random NPC generation). */
 export const HAIR_BY_TEXTURE: Record<HairTexture, { masc: HairStyle[]; fem: HairStyle[] }> = {
   straight: {
-    masc: ['short01', 'short02', 'short04', 'culturalibre_hair_02', 'none', 'ponytail01', 'culturalibre_hair_01'],
-    fem: ['bob02', 'toigo_inverted_bob', 'toigo_blunt_bob', 'long01', 'culturalibre_hair_01', 'ponytail01', 'rehmanpolanski_hair_bun_brown', 'elvs_unkempt_french_braid'],
+    masc: ['short01', 'short02', 'short04', 'culturalibre_hair_02', 'paint_buzz', 'paint_fade', 'paint_shaved', 'ponytail01', 'culturalibre_hair_01'],
+    fem: ['bob02', 'toigo_inverted_bob', 'toigo_blunt_bob', 'long01', 'culturalibre_hair_01', 'ponytail01', 'elvs_unkempt_french_braid'],
   },
   wavy: {
-    masc: ['short01', 'short02', 'short04', 'culturalibre_hair_02', 'none', 'sonntag78_junglebook_hair'],
-    fem: ['bob02', 'long01', 'ponytail01', 'rehmanpolanski_hair_bun_brown', 'faydaen_hair_1', 'elvs_unkempt_french_braid', 'culturalibre_hair_01'],
+    masc: ['short01', 'short02', 'short04', 'culturalibre_hair_02', 'paint_buzz', 'paint_fade'],
+    fem: ['bob02', 'long01', 'ponytail01', 'elvs_unkempt_french_braid', 'culturalibre_hair_01'],
   },
   curly: {
-    masc: ['short02', 'short01', 'afro01', 'none'],
-    fem: ['afro01', 'rehmanpolanski_hair_bun_brown', 'ponytail01', 'faydaen_hair_1'],
+    masc: ['short02', 'short01', 'paint_buzz', 'paint_fade', 'paint_coils'],
+    fem: ['paint_coils', 'ponytail01'],
   },
   coily: {
-    masc: ['afro01', 'none'],
-    fem: ['afro01', 'rehmanpolanski_hair_bun_brown', 'elvs_unkempt_french_braid'],
+    masc: ['paint_coils', 'paint_coils', 'paint_fade', 'paint_buzz', 'paint_cornrows', 'paint_shaved'],
+    fem: ['paint_cornrows', 'paint_cornrows', 'paint_coils', 'paint_coils', 'elvs_unkempt_french_braid'],
   },
 };
 

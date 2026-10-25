@@ -30,7 +30,7 @@ const TABS: { id: Tab; label: string; framing: number }[] = [
 const STYLE_NAMES: Record<string, string> = {
   short01: 'Cropped', short02: 'Short', short03: 'Tousled', short04: 'Swept', bob01: 'Bob', bob02: 'Long bob', long01: 'Long',
   ponytail01: 'Ponytail', braid01: 'Braid', afro01: 'Afro',
-  none: 'None',
+  none: 'None', paint_shaved: 'Shaved', paint_buzz: 'Buzz cut', paint_fade: 'Fade', paint_coils: 'Short coils', paint_cornrows: 'Cornrows',
   elvs_scruffy_beard1: 'Long goatee', 'grinsegold_full_beard+grinsegold_moustache': 'Full beard', 'grinsegold_full_beard+rehmanpolanski_moustache_viking': 'Full beard, drooping moustache', grinsegold_beard_sigmund_wip: 'Trimmed beard',
   grinsegold_moustache: 'Moustache', rehmanpolanski_moustache_viking: 'Drooping moustache',
   stubble_light: 'Light stubble', stubble_heavy: 'Heavy stubble', 'stubble+grinsegold_moustache': 'Stubble & moustache',
@@ -293,7 +293,7 @@ export class Creator {
     this.h(b, 'Hair');
     this.chips(b, HAIR_STYLES, (s) => s === this.app.hair.style, (s) => (this.app.hair.style = s));
     this.h(b, 'Hair colour');
-    this.swatches(b, HAIR_COLORS, this.app.hair.color, (c) => (this.app.hair.color = c));
+    this.swatches(b, HAIR_COLORS, this.app.hair.color, (c) => { this.app.hair.color = c; this.app.browColor = undefined; });
     this.h(b, 'Eyebrows');
     this.chips(b, BROW_STYLES, (s) => s === this.app.brows, (s) => (this.app.brows = s));
     this.h(b, 'Eyes');
@@ -337,6 +337,7 @@ export class Creator {
       this.app.skinUndertone = (p.undertone[0] + p.undertone[1]) / 2;
       this.app.eyes = p.eyes[0][0];
       this.app.hair.color = p.hair[0][0];
+      this.app.browColor = undefined;
     });
     this.h(b, 'Features (fine blend)');
     this.slider(b, 'African', sh.african, 0, 1, 0.01, (v) => (sh.african = v));

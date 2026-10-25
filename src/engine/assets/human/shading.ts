@@ -16,7 +16,7 @@ export function applySkinScatter(m: THREE.MeshStandardMaterial): void {
       `#ifdef SKIN_SSS
         float ndlRaw = dot( geometryNormal, directLight.direction );
         float wrapD = saturate( ( ndlRaw + 0.45 ) / 1.45 );
-        vec3 scatter = vec3( 1.0, 0.38, 0.25 ) * max( 0.0, wrapD - saturate( ndlRaw ) ) * 1.15;
+        vec3 scatter = vec3( 1.0, 0.38, 0.25 ) * max( 0.0, wrapD - saturate( ndlRaw ) ) * 1.15 * ( 1.0 - skinHairMask );
         vec3 skinIrr = ( vec3( saturate( ndlRaw ) ) + scatter ) * directLight.color;
         reflectedLight.directDiffuse += skinIrr * BRDF_Lambert( material.diffuseContribution ) * ( 1.0 - F );
       #else
@@ -27,7 +27,23 @@ export function applySkinScatter(m: THREE.MeshStandardMaterial): void {
       .replace('reflectedLight.indirectDiffuse += diffuse;', 'reflectedLight.indirectDiffuse += diffuse * SKIN_AMBIENT_TINT;')
       .replace('reflectedLight.indirectDiffuse += indirectDiffuse;', 'reflectedLight.indirectDiffuse += indirectDiffuse * SKIN_AMBIENT_TINT;');
     sh.fragmentShader = sh.fragmentShader.replace('#include <lights_physical_pars_fragment>', '#ifdef SKIN_SSS\n#define SKIN_AMBIENT_TINT vec3( 1.14, 0.95, 0.84 )\n#else\n#define SKIN_AMBIENT_TINT vec3( 1.0 )\n#endif\n#include <lights_physical_pars_fragment>');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <lights_physical_pars_fragment>', chunk);
+    sh.fragmentShader = sh.fragmentShader.replace('#include <lights_physical_pars_fragment>', 'float skinHairMask = 0.0;\n' + chunk);
+    // The skin texture's alpha marks hair painted into it (scalp styles, stubble): 255 = bare skin,
+    // lower = hair. Hair is matte, has no skin sheen and does not scatter light like skin.
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <map_fragment>', `#include <map_fragment>
+        #if defined( USE_MAP ) && defined( SKIN_SSS )
+          skinHairMask = saturate( ( 1.0 - texture2D( map, vMapUv ).a ) * 2.0 );
+          diffuseColor.a = opacity;
+        #endif`)
+      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+        roughnessFactor = mix( roughnessFactor, 0.93, skinHairMask );`)
+      .replace('#include <lights_physical_fragment>', `#include <lights_physical_fragment>
+        material.specularColor *= 1.0 - 0.7 * skinHairMask;
+        material.specularColorBlended *= 1.0 - 0.7 * skinHairMask;
+        #ifdef USE_SHEEN
+          material.sheenColor *= 1.0 - skinHairMask;
+        #endif`);
   };
   m.customProgramCacheKey = () => 'skinSSS';
 }

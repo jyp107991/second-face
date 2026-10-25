@@ -50,9 +50,12 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
       undertone, eye/hair colour, hair texture) drive randomAppearance; creator ancestry picker.
 - [x] D2 Painted stubble levels (light / 5 o'clock / heavy); beard area built from mesh landmarks (skin.ts beardMask,
       verified with a red mask debug render front/3-4/side); '+' combos with moustaches.
-- [ ] D3 Hair: painted scalp layer (soft hairline under meshes; buzz, shaved, close coils, cornrows), hair shader
-      (anisotropic highlight), ancestry-appropriate style pools.
-- [ ] D4 Gallery QA (scratchpad faces.cjs), commit, report to owner.
+- [x] D3 Hair: painted scalp layer (skin.ts scalpMask/paintScalp; soft hairline under meshes; shaved, buzz, fade,
+      short coils, cornrows), hair mask in skin-texture alpha makes painted hair matte (shading.ts), sheen on hair
+      meshes, ancestry style pools; pruned broken meshes (afro01, bun, faydaen, junglebook).
+- [x] D4 Gallery QA (scratchpad faces.cjs, gal.py, sheet.py), commit, report to owner.
+  Known gaps: women's faces look alike/slightly masculine (face-shape variation), mesh hair edges still hard on
+  some styles, few good long/curly hair meshes; awaiting owner verdict.
 
 Face realism pass (owner benchmark FO4/Skyrim SE). Owner rejected procedural beards → switched to the
 "automated middle ground": MakeHuman community packs (`tools/mh/fetch_community.sh`, then

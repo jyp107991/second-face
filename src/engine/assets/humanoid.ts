@@ -59,7 +59,7 @@ export class Humanoid {
     if (o.shoes) clothes.push({ name: o.shoes, tint: o.shoeTint });
     this.figure = new HumanFigure({
       shape: app.shape, skin: this.skin, eyes: app.eyes, brows: app.brows, hair: app.hair, clothes, lod: look.lod,
-      browColor: app.hair.color, facialHair: app.facialHair, skinDetail: app.shape.age > 45 ? 'old' : 'm',
+      browColor: app.browColor ?? app.hair.color, facialHair: app.facialHair, skinDetail: app.shape.age > 45 ? 'old' : 'm',
       // Creases deepen with age; the source maps are from adult men, so soften them for young/feminine faces.
       skinDetailStrength: Math.min(0.8, Math.max(0.2, 0.2 + (app.shape.age - 20) / 60)) * (0.7 + 0.3 * app.shape.gender),
     });

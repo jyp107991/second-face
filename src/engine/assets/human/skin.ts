@@ -73,7 +73,7 @@ export function stubbleLevel(facialHair: string): number {
   return parts.some((x) => x.includes('beard')) ? 2 : 0;
 }
 
-const needsPaint = (a: Appearance) => stubbleLevel(a.facialHair) > 0 || a.freckles > 0 || a.scars.length > 0 || a.tattoos.length > 0;
+const needsPaint = (a: Appearance) => a.hair.style !== 'none' || stubbleLevel(a.facialHair) > 0 || a.freckles > 0 || a.scars.length > 0 || a.tattoos.length > 0;
 
 /** Build the skin texture. Resolves synchronously if images are preloaded; updates in place otherwise. */
 export function makeSkinTexture(a: Appearance, size = 1024): THREE.CanvasTexture {
@@ -238,7 +238,7 @@ function beardMask(p: THREE.Vector3): number {
   if (ax > 0.89 && y > -0.5) return 0;
   // Top boundary: moustache under the nose (following the nostril wings and smile lines), then the cheek
   // line rising from just outside the mouth corner to the sideburn base, then the sideburn.
-  const wobble = 0.022 * Math.sin(th * 0.31) + 0.012 * Math.sin(th * 0.87 + 1.3);
+  const wobble = 0.022 * Math.sin(th * 0.13) + 0.012 * Math.sin(th * 0.29 + 1.3);
   const tacheTop = -0.47 - Math.max(0, ax - 0.16) * 1.25;
   const tc = smoothstep(14, 22, th);
   const cheekTop = -0.66 + 0.34 * smoothstep(18, 70, th) + wobble;
@@ -255,6 +255,30 @@ function beardMask(p: THREE.Vector3): number {
   // Slightly sparser growth on the upper cheeks and the neck than on chin and moustache.
   const sparse = 1 - 0.18 * smoothstep(24, 50, th) * smoothstep(-0.95, -0.7, y) - 0.2 * smoothstep(-1.25, -1.45, y);
   return m * sparse;
+}
+
+/**
+ * Scalp-hair growth area (same head frame as beardMask): front hairline above the forehead, temples,
+ * down in front of the ears, over the ears, behind them to the nape. Returns density 0..1 with a soft,
+ * slightly irregular hairline (fine short hairs thin out over a few millimetres).
+ */
+function scalpMask(p: THREE.Vector3, recede = 0, drop = 0): number {
+  const ax = Math.abs(p.x), y = p.y;
+  if (y < -1.1) return 0;
+  const th = (Math.atan2(ax, p.z) * 180) / Math.PI;
+  // Ears are never covered.
+  if (ax > 0.86 && y > -0.42 && y < 0.32 && th > 70 && th < 115) return 0;
+  const wobble = 0.025 * Math.sin(th * 0.11 + 0.7) + 0.012 * Math.sin(th * 0.23 + 2);
+  // Hairline height by angle around the head: forehead, temple corner (recedes with age), temple drop
+  // in front of the ear, over the ear, behind it, nape.
+  const K: [number, number][] = [[0, 0.95 + recede * 0.3], [30, 0.92 + recede * 0.35], [48, 0.82 + recede * 0.4], [60, 0.62], [68, 0.3], [76, 0.1], [84, 0.22], [96, 0.36], [108, 0.15], [122, -0.45], [150, -0.72], [180, -0.78]];
+  let line = K[K.length - 1][1];
+  for (let i = 0; i < K.length - 1; i++) {
+    if (th <= K[i + 1][0]) { const f = (th - K[i][0]) / (K[i + 1][0] - K[i][0]); line = K[i][1] + (K[i + 1][1] - K[i][1]) * (f * f * (3 - 2 * f)); break; }
+  }
+  line += wobble - drop;
+  const edge = th < 60 ? 0.07 : 0.045;
+  return smoothstep(line - edge, line + edge, y);
 }
 
 /** Painted stubble density 0..1 at head-frame point p. */
@@ -274,6 +298,10 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
   const hl = hair.r * 0.3 + hair.g * 0.55 + hair.b * 0.15;
   const stub = hair.clone().lerp(new THREE.Color(hl, hl, hl), 0.45).multiplyScalar(0.62).lerp(new THREE.Color(0.08, 0.08, 0.09), 0.25);
   const SHADOW = [0, 0.11, 0.24, 0.28], STUBS = [0, 0.38, 0.64, 0.66];
+  const hairStyle = a.hair.style;
+  const hairC = new THREE.Color().setHex(a.hair.color, THREE.LinearSRGBColorSpace);
+  // Hairline recedes at the temples with age for masculine faces.
+  const recede = Math.max(0, Math.min(1, (a.shape.age - 32) / 40)) * Math.max(0, a.shape.gender - 0.5) * 2 * 0.5;
   const ink = new THREE.Color().setHex(a.tattooColor, THREE.LinearSRGBColorSpace);
   const scarC = new THREE.Color().setHex(0xd8a592, THREE.LinearSRGBColorSpace);
   const burnC = new THREE.Color().setHex(0xb87666, THREE.LinearSRGBColorSpace);
@@ -307,11 +335,17 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
         const dir = p.clone().normalize();
         const i = (y * size + x) * 4;
         // Facial hair base: a soft shadow under the strands (strands are stroked afterwards).
+        // Scalp hair: painted styles, or an under-layer beneath hair meshes so their edges meet a real hairline.
+        if (hairStyle !== 'none') {
+          const m = scalpMask(p, recede, hairStyle.startsWith('paint_') ? 0 : 0.09);
+          if (m > 0) paintScalp(px, i, x, y, p, m, hairStyle, hairC, stub);
+        }
         // Stubble: a follicle shadow (hair seen through skin) plus individual dark stubs.
         if (lvl > 0) {
           const st = stubbleAt(p);
           if (st > 0) {
             blend(i, stub, st * SHADOW[lvl] * (0.92 + 0.16 * hash2(x, y, 53)));
+            px[i + 3] = Math.min(px[i + 3], 255 - 127 * st * lvl * 0.2);
             // Fine stubs: many faint dots rather than few strong ones (strong dots read as a rash).
             if (hash2(x, y, 57) < st * STUBS[lvl]) blend(i, stub, 0.1 + 0.14 * hash2(x, y, 58));
           }
@@ -342,8 +376,80 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
       }
     }
   }
+  bleed(px, done, size, 2);
   ctx.putImageData(img, 0, 0);
   if (lvl >= 3) strokeHair(ctx, size, a);
+}
+
+/** Copy painted texels outward into unpainted neighbours so UV seams never show the unpainted photo. */
+function bleed(px: Uint8ClampedArray, done: Uint8Array, size: number, passes: number): void {
+  for (let pass = 0; pass < passes; pass++) {
+    const mark = pass + 2;
+    for (let y = 1; y < size - 1; y++) {
+      for (let x = 1; x < size - 1; x++) {
+        const k = y * size + x;
+        if (done[k]) continue;
+        const n = done[k - 1] && done[k - 1] < mark ? k - 1 : done[k + 1] && done[k + 1] < mark ? k + 1 : done[k - size] && done[k - size] < mark ? k - size : done[k + size] && done[k + size] < mark ? k + size : -1;
+        if (n < 0) continue;
+        px[k * 4] = px[n * 4]; px[k * 4 + 1] = px[n * 4 + 1]; px[k * 4 + 2] = px[n * 4 + 2]; px[k * 4 + 3] = px[n * 4 + 3];
+        done[k] = mark;
+      }
+    }
+  }
+}
+
+const tc = new THREE.Color();
+
+/** Paint scalp hair at texel i (head-frame point p, scalp density m) for the given style. */
+function paintScalp(px: Uint8ClampedArray, i: number, x: number, y: number, p: THREE.Vector3, m: number, style: string, hair: THREE.Color, stub: THREE.Color): void {
+  const mix = (c: THREE.Color, k: number) => {
+    px[i] += (c.r * 255 - px[i]) * k; px[i + 1] += (c.g * 255 - px[i + 1]) * k; px[i + 2] += (c.b * 255 - px[i + 2]) * k;
+  };
+  const cover = style === 'paint_shaved' ? 0.3 : 1;
+  px[i + 3] = Math.min(px[i + 3], 255 - 127 * m * cover);
+  const fine = hash2(x, y, 61);
+  switch (style) {
+    case 'paint_shaved':
+      mix(stub, m * 0.2 * (0.92 + 0.16 * fine));
+      if (hash2(x, y, 62) < m * 0.6) mix(stub, 0.12 + 0.12 * hash2(x, y, 63));
+      return;
+    case 'paint_buzz':
+    case 'paint_fade': {
+      // A fade runs from near-bare skin low on the sides to full length on top.
+      const k = style === 'paint_fade' ? 0.04 + 0.96 * smoothstep(0.3, 0.85, p.y) : 1;
+      if (k < 0.5) mix(stub, m * 0.18 * (1 - k));
+      mix(tc.copy(hair).multiplyScalar(0.8).addScalar(0.03 * fine), m * k * 0.62 * (0.9 + 0.2 * fine));
+      if (hash2(x, y, 64) < m * (0.35 + 0.4 * k)) mix(tc.copy(hair).multiplyScalar(0.55), 0.25 + 0.2 * hash2(x, y, 65));
+      return;
+    }
+    case 'paint_coils': {
+      // Short natural coils: clumped texture (cells of a few texels), crisp lined-up edge.
+      const d = smoothstep(0.15, 0.55, m);
+      const cell = hash2(x >> 2, y >> 2, 66), cell2 = hash2((x + 2) >> 2, (y + 1) >> 2, 67);
+      const shade = 0.55 + 0.35 * cell + 0.25 * cell2 + 0.15 * fine;
+      // Even black hair shows soft highlights on the tops of the coils.
+      const lift = Math.max(0, shade - 0.95) * 0.35;
+      mix(tc.copy(hair).multiplyScalar(Math.min(1.25, shade)).addScalar(lift), d * 0.97);
+      return;
+    }
+    case 'paint_cornrows': {
+      // Rows run front to back (planes of constant x), about 1.3 cm apart, with braided stitches.
+      const W = 0.15;
+      const u = (p.x / W + 100.5) % 1; // 0..1 across a row
+      const across = Math.abs(u - 0.5) * 2; // 0 centre .. 1 part
+      const arc = Math.atan2(p.y, p.z) * Math.hypot(p.y, p.z);
+      const st = (arc / 0.075 + across * 0.55 * (u < 0.5 ? 1 : -1) + 100) % 1;
+      const ridge = Math.cos(Math.min(1, across) * Math.PI * 0.5);
+      const shade = (0.45 + 0.7 * ridge) * (0.78 + 0.32 * smoothstep(0.1, 0.5, st) * smoothstep(0.95, 0.6, st)) * (0.92 + 0.16 * fine);
+      const part = smoothstep(0.78, 0.9, across);
+      mix(tc.copy(hair).multiplyScalar(shade).addScalar(Math.max(0, shade - 0.85) * 0.3), m * (1 - part) * 0.97);
+      if (part > 0) mix(stub, m * part * 0.12);
+      return;
+    }
+    default:
+      // Under a hair mesh: hair colour with fine strand noise; the soft edge forms the visible hairline.
+      mix(tc.copy(hair).multiplyScalar(0.72 + 0.3 * fine), m * 0.88);
+  }
 }
 
 /**

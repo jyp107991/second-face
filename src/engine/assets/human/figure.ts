@@ -131,7 +131,7 @@ export class HumanFigure {
     }
     if (spec.hair && spec.hair.style !== 'none') {
       const key = `hair_${spec.hair.style}`;
-      if (d.m.proxies[key]) this.addProxy(d, P, minY, key, hairMaterial(d.m.proxies[key], spec.hair.color), lod === 'high' ? hairMaterial(d.m.proxies[key], spec.hair.color, true) : undefined);
+      if (d.m.proxies[key]) this.addProxy(d, P, minY, key, hairMaterial(d.m.proxies[key], spec.hair.color, false, true), lod === 'high' ? hairMaterial(d.m.proxies[key], spec.hair.color, true, true) : undefined);
     }
     // Facial hair meshes (artist-made; stubble is painted into the skin instead). '+' layers several.
     if (spec.facialHair && spec.facialHair !== 'none' && spec.facialHair !== 'stubble') {
@@ -324,9 +324,11 @@ function eyeMaterial(color: string): THREE.Material {
  * Strand textures (hair, brows, lashes): desaturated and tinted to the hair colour. The opaque pass
  * keeps only solid texels (writes depth); the optional blended pass draws the soft fringes on top.
  */
-function hairMaterial(meta: ProxyMeta | undefined, color: number, blended = false): THREE.Material {
-  const m = new THREE.MeshStandardMaterial({
+function hairMaterial(meta: ProxyMeta | undefined, color: number, blended = false, sheen = false): THREE.Material {
+  // Sheen gives the soft fibre highlight that keeps hair cards from reading as a solid shell.
+  const m = new THREE.MeshPhysicalMaterial({
     map: meta?.texture ? humanTexture(meta.texture) : null, color, roughness: 0.72, metalness: 0, envMapIntensity: 0.12,
+    ...(sheen ? { sheen: 0.6, sheenRoughness: 0.32, sheenColor: new THREE.Color(color).lerp(new THREE.Color(0xd8cfc0), 0.35) } : {}),
     normalMap: meta?.normal ? humanTexture(meta.normal, false) : null,
     side: THREE.DoubleSide,
     ...(blended ? { transparent: true, depthWrite: false, alphaTest: 0.02 } : { alphaTest: 0.55 }),
@@ -341,7 +343,7 @@ function hairMaterial(meta: ProxyMeta | undefined, color: number, blended = fals
         diffuseColor.a *= texelColor.a;
       #endif`);
   };
-  m.customProgramCacheKey = () => 'hairTint' + (blended ? 'B' : 'O');
+  m.customProgramCacheKey = () => 'hairTint' + (blended ? 'B' : 'O') + (sheen ? 'S' : '');
   return m;
 }
 
