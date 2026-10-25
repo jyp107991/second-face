@@ -1,0 +1,31 @@
+import type { ItemDef } from '../../engine/inventory/items';
+
+/** Healing, chems, food. Healing is scarce early by design (DESIGN §5). */
+export const CONSUMABLES: ItemDef[] = [
+  { id: 'c_knitkit', name: 'Knit-Kit', desc: 'A syringe of clotting gel and fast-acting regenerant. Pre-Burn formula, post-Burn quality.', category: 'consumable', weight: 0.1, value: 35,
+    consumable: { ap: 2, effects: [{ kind: 'heal', amount: 20 }] } },
+  { id: 'c_bandage', name: 'Boiled Bandage', desc: 'Clean-ish strips of cloth. Better than bleeding.', category: 'consumable', weight: 0.1, value: 6,
+    consumable: { ap: 3, effects: [{ kind: 'heal', amount: 6 }], skill: 'medicine' } },
+  { id: 'c_splint', name: 'Splint Kit', desc: 'Rods and wraps to set a broken limb.', category: 'consumable', weight: 0.5, value: 40,
+    consumable: { ap: 4, effects: [{ kind: 'cureCripple' }, { kind: 'heal', amount: 4 }], skill: 'medicine' } },
+  { id: 'c_radflush', name: 'Flush', desc: 'A bitter purgative that drags radiation out of you. And everything else.', category: 'consumable', weight: 0.1, value: 50,
+    consumable: { effects: [{ kind: 'rads', amount: -150 }, { kind: 'effect', id: 'flush_weak', name: 'Purged', mods: [{ target: 'attr:grit', add: -1 }], minutes: 120 }] } },
+  { id: 'c_iodine', name: 'Iodine Tabs', desc: 'Take before exposure.', category: 'consumable', weight: 0.05, value: 25,
+    consumable: { effects: [{ kind: 'effect', id: 'iodine', name: 'Iodine', mods: [{ target: 'derived:radResist', add: 40 }], minutes: 360 }] } },
+  { id: 'c_kick', name: 'Kick', desc: 'A paper twist of grey powder. Snorted, it makes the world slow down.', category: 'consumable', weight: 0.02, value: 30,
+    consumable: { effects: [{ kind: 'effect', id: 'kick', name: 'Kick', mods: [{ target: 'derived:ap', add: 2 }, { target: 'derived:initiative', add: 4 }], minutes: 60 }, { kind: 'addiction', chance: 0.15, effectId: 'kick_addict' }] } },
+  { id: 'c_stillwater', name: 'Stillwater', desc: 'A Choir-brewed tincture. Steadies the hands and quiets the mind.', category: 'consumable', weight: 0.1, value: 30,
+    consumable: { effects: [{ kind: 'effect', id: 'still', name: 'Stillwater', mods: [{ target: 'hit_ranged', add: 10 }, { target: 'derived:initiative', add: -2 }], minutes: 90 }] } },
+  { id: 'c_bitters', name: 'Rot Bitters', desc: 'Home-distilled spirit. Courage in a jar; aim not included.', category: 'consumable', weight: 0.5, value: 12,
+    consumable: { effects: [{ kind: 'effect', id: 'drunk', name: 'Drunk', mods: [{ target: 'attr:presence', add: 1 }, { target: 'attr:wits', add: -1 }, { target: 'hit_ranged', add: -5 }], minutes: 120 }, { kind: 'addiction', chance: 0.05, effectId: 'drink_addict' }] } },
+  { id: 'c_water', name: 'Clean Water', desc: 'A capped bottle of filtered water.', category: 'consumable', weight: 0.5, value: 8,
+    consumable: { effects: [{ kind: 'water', amount: 1 }, { kind: 'heal', amount: 2 }] } },
+  { id: 'c_dirtywater', name: 'Well Water', desc: 'Cloudy. Probably fine.', category: 'consumable', weight: 0.5, value: 2,
+    consumable: { effects: [{ kind: 'water', amount: 1 }, { kind: 'rads', amount: 10 }] } },
+  { id: 'c_jerky', name: 'Lizard Jerky', desc: 'Salted, smoked, chewy as a boot.', category: 'consumable', weight: 0.2, value: 5,
+    consumable: { effects: [{ kind: 'food', amount: 1 }, { kind: 'heal', amount: 3 }] } },
+  { id: 'c_algae', name: 'Algae Cake', desc: 'Cistern hydroponic ration. Green, dense, nutritious, joyless.', category: 'consumable', weight: 0.2, value: 4,
+    consumable: { effects: [{ kind: 'food', amount: 1 }, { kind: 'heal', amount: 2 }] } },
+  { id: 'c_tin', name: 'Pre-Burn Tin', desc: 'An unlabelled tin. Could be peaches. Could be anything.', category: 'consumable', weight: 0.4, value: 10,
+    consumable: { effects: [{ kind: 'food', amount: 2 }, { kind: 'heal', amount: 5 }, { kind: 'rads', amount: 5 }] } },
+];

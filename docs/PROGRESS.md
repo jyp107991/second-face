@@ -13,7 +13,7 @@ Read this first in every session. Update + commit + push after every step.
 
 ### M1 — Systems I
 - [x] M1.1 Stats model: attributes, skills, traits, perks, derived stats, XP/levels (pure TS + tests) — `src/engine/stats/`
-- [ ] M1.2 Items & inventory model: item schema, weight, condition, ammo, equipment; validator coverage — `src/engine/inventory/`
+- [x] M1.2 Items & inventory model: item schema, weight, condition, ammo, equipment; validator coverage — `src/engine/inventory/`
 - [ ] M1.3 Face sculptor: parametric head (sliders, age), hair/scars/tattoos, body build; humanoid uses Appearance
 - [ ] M1.4 Character creation UI (name, appearance, attributes, tag skills, traits, summary)
 - [ ] M1.5 Combat rules: turn order, AP, hit chance, damage, crits, aimed shots, crippling (pure TS + tests) — `src/engine/combat/`
@@ -23,8 +23,10 @@ Read this first in every session. Update + commit + push after every step.
 - [ ] M1.9 Audio: Web Audio synth (ambience beds, footsteps, gunshots, UI blips)
 
 ## Next action
-M1.2 — items & inventory model (`src/engine/inventory/`), item content for Ch1 basics, validator coverage, tests.
-Note: context-dependent traits (night_owl, cistern_pale, one_hand, hesitant) are flags only — systems must apply them (combat/world).
+M1.3 — face sculptor: parametric head geometry in `src/engine/assets/head.ts` (sliders + age), Appearance type in
+`src/engine/data/appearance.ts`, Humanoid takes Appearance. Then M1.4 creation UI.
+Notes: tool bonuses (t_picks +15 Locks, t_docbag +15 Medicine, t_lamp darkness) must be applied by skill-check/combat code.
+Context traits (night_owl, cistern_pale, one_hand, hesitant) are flags only — apply in combat/world systems.
 
 ## Known issues / polish backlog (engine)
 - Tall interior walls hide a lot; consider Fallout-style lower walls or full-wall fade when room is entered.

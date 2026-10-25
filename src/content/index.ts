@@ -1,5 +1,7 @@
 import type { MapDef } from '../engine/data/types';
 import { registerRules } from '../engine/stats/sheet';
+import { registerItems } from '../engine/inventory/items';
+import { ITEMS } from './items';
 import { PERKS } from './rules/perks';
 import { TRAITS } from './rules/traits';
 import { dev_bunker } from './maps/dev_bunker';
@@ -11,5 +13,6 @@ export const MAPS: Record<string, MapDef> = {
   dev_bunker,
 };
 
-export { TRAITS, PERKS };
+export { TRAITS, PERKS, ITEMS };
 registerRules({ traits: TRAITS, perks: PERKS });
+registerItems(ITEMS);

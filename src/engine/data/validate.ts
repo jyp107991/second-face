@@ -1,8 +1,14 @@
 import type { MapDef } from './types';
+import type { ItemDef } from '../inventory/items';
+import type { PerkDef, TraitDef } from '../stats/sheet';
+import { ATTRIBUTES, SKILLS } from '../stats/rules';
 import { Grid } from '../scene/grid';
 
 export interface ContentBundle {
   maps: Record<string, MapDef>;
+  items?: Record<string, ItemDef>;
+  traits?: Record<string, TraitDef>;
+  perks?: Record<string, PerkDef>;
 }
 
 /**
@@ -40,5 +46,30 @@ export function validateContent(c: ContentBundle): string[] {
       }
     }
   }
+  // Items
+  const items = c.items ?? {};
+  const ammoTypes = new Set(Object.values(items).filter((d) => d.ammo).map((d) => d.ammo!.type));
+  for (const [key, d] of Object.entries(items)) {
+    const where = `item ${key}`;
+    if (d.id !== key) errs.push(`${where}: id mismatch`);
+    if (!(d.weight >= 0) || !(d.value >= 0)) errs.push(`${where}: bad weight/value`);
+    if (d.category === 'weapon' && !d.weapon) errs.push(`${where}: weapon without weapon stats`);
+    if (d.weapon) {
+      const w = d.weapon;
+      if (!SKILLS.includes(w.skill)) errs.push(`${where}: unknown skill ${w.skill}`);
+      if (w.dmg[0] > w.dmg[1]) errs.push(`${where}: dmg min > max`);
+      if (w.ammo && !ammoTypes.has(w.ammo)) errs.push(`${where}: no ammo item of type ${w.ammo}`);
+      if (w.magazine && !w.ammo) errs.push(`${where}: magazine without ammo type`);
+    }
+    if (d.category === 'armor' && !d.armor) errs.push(`${where}: armor without armor stats`);
+  }
+  // Rules
+  for (const [key, p] of Object.entries(c.perks ?? {})) {
+    if (p.id !== key) errs.push(`perk ${key}: id mismatch`);
+    for (const a of Object.keys(p.req.attrs ?? {})) if (!ATTRIBUTES.includes(a as never)) errs.push(`perk ${key}: unknown attribute ${a}`);
+    for (const k of Object.keys(p.req.skills ?? {})) if (!SKILLS.includes(k as never)) errs.push(`perk ${key}: unknown skill ${k}`);
+    for (const t of p.req.notTraits ?? []) if (!(t in (c.traits ?? {}))) errs.push(`perk ${key}: unknown trait ${t}`);
+  }
+  for (const [key, t] of Object.entries(c.traits ?? {})) if (t.id !== key) errs.push(`trait ${key}: id mismatch`);
   return errs;
 }
