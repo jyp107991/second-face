@@ -36,7 +36,11 @@ AI (M1.7) can start as simple 'approach & attack' then be replaced.
 - Bundle is ~600 kB (three.js); split later.
 
 ## Half-finished work
-(none)
+M1.6 in progress. Done: npc/defs.ts, npc/spawn.ts, content/npcs/dev_enemies.ts, render/fx.ts, combat/encounter.ts
+(turn loop, player actions, simple AI, reachable tiles), Actor.walk/kill.
+Remaining: Game integration (npcs map, spawn from MapDef.npcs + dev overlay 'spawn raiders', player Combatant from
+state.pc, hostility detection → encounter.start, input routing in combat, reach/path overlays, context() darkness,
+game over), combat HUD (ui/combatHud.ts), screenshot test.
 
 ## Notes for owner (how to run/test)
 (none yet)

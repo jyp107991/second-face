@@ -1,3 +1,5 @@
+import type { NpcPlacement } from '../npc/defs';
+
 /**
  * Content schemas. Everything under src/content is plain data typed by these interfaces;
  * the engine never needs to change to add content.
@@ -93,6 +95,7 @@ export interface MapDef {
   spawns: SpawnDef[];
   exits?: ExitDef[];
   ambience: AmbienceDef;
+  npcs?: NpcPlacement[];
   /** Seed for procedural detail (scatter, texture variation). */
   seed?: number;
 }

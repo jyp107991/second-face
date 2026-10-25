@@ -47,9 +47,29 @@ export class Actor {
     this.path = path.slice();
   }
 
+  /** Walk a path and resolve when finished (or blocked). */
+  walk(path: { x: number; y: number }[]): Promise<void> {
+    return new Promise((resolve) => {
+      if (!path.length) return resolve();
+      const prev = this.onPathDone;
+      this.onPathDone = () => { this.onPathDone = prev; prev?.(); resolve(); };
+      this.setPath(path);
+    });
+  }
+
   stop(): void {
     this.path.length = Math.min(this.path.length, 1);
   }
+
+  /** Dead: play the fall and stop blocking the tile (corpse stays). */
+  kill(instant = false): void {
+    this.path = [];
+    this.grid.occupied.delete(this.grid.index(this.tx, this.ty));
+    this.dying = instant ? 1 : 0.0001;
+    if (instant) this.body.dead = 1;
+  }
+  private dying = 0;
+  get isDead(): boolean { return this.dying > 0; }
 
   /** Teleport (no animation). */
   place(x: number, y: number): void {
@@ -101,6 +121,7 @@ export class Actor {
       }
     }
     this.object.rotation.y = this.facing;
+    if (this.dying > 0 && this.dying < 1) { this.dying = Math.min(1, this.dying + dt * 1.6); this.body.dead = this.dying; }
     this.body.animate(dt, speedNow);
   }
 }
