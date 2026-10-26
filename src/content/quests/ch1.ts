@@ -34,6 +34,10 @@ export const q_ch1_door: QuestDef = {
       objectives: [{ id: 'out', text: 'Leave Cistern 9', done: { flag: 'c9_left' } }],
       next: [{ if: { flag: 'c9_left' }, stage: 'done' }],
     },
-    done: { journal: 'I left Cistern 9.', end: 'done' },
+    done: {
+      journal: 'I left Cistern 9. The track north leads to Shale, the nearest town, if the old maps are right — and the stranger came from somewhere.',
+      end: 'done',
+      onEnter: [{ news: { tag: 'cistern_opened', text: 'someone walked out of the old shelter at the salt cut', valence: 5, size: 5, at: 'cistern9' } }],
+    },
   },
 };

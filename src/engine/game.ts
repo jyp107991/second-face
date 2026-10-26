@@ -16,9 +16,9 @@ import { lookFrom, outfitProxyKeys } from './assets/humanoid';
 import { ensureProxies } from './assets/human/data';
 import type { PortraitStage } from './render/portrait';
 import { QuestEngine } from './quest/quest';
-import { runTimers, type LogicHost } from './world/logic';
+import { apply, runTimers, test, type LogicHost } from './world/logic';
 import { runWorldEvents, spreadNews } from './world/frontier';
-import { QUESTS, SETTLEMENTS, WORLD_EVENTS } from '../content';
+import { QUESTS, SETTLEMENTS, WORLD_EVENTS, WORLD_MAP } from '../content';
 import { buildLocation, type BuiltLocation } from './scene/location';
 import type { ExitDef } from './data/types';
 import { SaveManager, type SaveFile, type SlotId } from './save/saves';
@@ -46,9 +46,11 @@ export type GameEvents = {
   message: { text: string };
   gameOver: Record<string, never>;
   openTransfer: { inv: import('./inventory/inventory').Inventory; name: string };
-  openDialogue: { npc: NpcRuntime };
+  /** A person, or a tree with a named speaker (terminal, sealed door, a body). */
+  openDialogue: { npc?: NpcRuntime; tree?: string; name?: string };
   openBarter: { npc: NpcRuntime };
   openCamp: Record<string, never>;
+  openMap: Record<string, never>;
   openDust: { npc: NpcRuntime; stake: number };
   journal: { questId: string; title: string; line: string };
 };
@@ -342,13 +344,17 @@ export class Game extends EventBus<GameEvents> {
     this.addActor(this.player);
     this.rng.state = this.state.rngState;
     this.pc = { id: 'player', name: this.state.pc.sheet.name || 'You', team: 'player', sheet: this.state.pc.sheet, inv: this.state.pc.inventory, x: sx, y: sy, ap: 0, morale: 100, evasion: 0, isPlayer: true };
-    for (const p of map.npcs ?? []) this.spawn(p);
+    for (const p of map.npcs ?? []) if (test(p.if, this.state)) this.spawn(p);
     this.spawnParty(sx, sy);
     this.groundPilesChanged();
     this.cam.target.copy(this.player.object.position);
     this.cam.recentre();
     this.cam.snapToTarget();
+    this.state.flags[`visited_${id}`] = true;
+    const known = (this.state.world.knownLocations ??= []);
+    for (const l of Object.values(WORLD_MAP.locations)) if (l.map === id && !known.includes(l.id)) known.push(l.id);
     this.emit('locationChanged', { id, name: map.name });
+    this.quests.update();
   }
 
   /** Spawn an NPC placement on the current map, applying persisted state. */
@@ -361,6 +367,7 @@ export class Game extends EventBus<GameEvents> {
     const rt = spawnNpc(pos, this.loc.grid);
     if (saved?.hp !== undefined) rt.combatant.sheet.hp = saved.hp;
     if (saved?.hostile !== undefined) rt.hostile = saved.hostile;
+    if (rt.def.hostileIf && test(rt.def.hostileIf, this.state)) rt.hostile = true;
     if (saved?.inventory) rt.combatant.inv = saved.inventory;
     this.npcs.set(rt.id, rt);
     this.addActor(rt.actor);
@@ -596,6 +603,8 @@ export class Game extends EventBus<GameEvents> {
     }
     const fire = this.loc?.map.props?.find((p) => p.x === x && p.y === y && (p.kind === 'campfire' || p.kind === 'fire_barrel'));
     if (fire) return () => this.emit('openCamp', {});
+    const talker = this.loc?.map.props?.find((p) => p.x === x && p.y === y && p.id && this.loc!.map.talk?.[p.id]);
+    if (talker) { const t = this.loc!.map.talk![talker.id!]; return () => this.emit('openDialogue', { tree: t.dialogue, name: t.name }); }
     const prop = this.loc?.map.props?.find((p) => p.x === x && p.y === y && p.id && this.loc!.map.containers?.[p.id]);
     if (prop) {
       const def = this.loc!.map.containers![prop.id!];
@@ -661,13 +670,36 @@ export class Game extends EventBus<GameEvents> {
   private onPlayerTile(x: number, y: number): void {
     this.state.player.x = x;
     this.state.player.y = y;
-    const exit = this.loc?.map.exits?.find((e) => inExit(e, x, y));
+    const map = this.loc?.map;
+    if (!map) return;
+    for (const t of map.triggers ?? []) {
+      if (!inExit(t, x, y) || !test(t.if, this.state)) continue;
+      const key = `trigger:${map.id}/${t.id}`;
+      if (t.once !== false && this.state.flags[key]) continue;
+      this.state.flags[key] = true;
+      if (t.text) this.emit('message', { text: t.text });
+      apply(t.effects, this.state, this.logicHost);
+      this.quests.update();
+    }
+    const exit = map.exits?.find((e) => inExit(e, x, y) && test(e.if, this.state));
     if (exit && !this.transitioning) this.useExit(exit);
   }
 
+  /** Re-evaluate conditional hostility (after conversations and flag changes). Returns NPCs that just turned. */
+  refreshHostility(): NpcRuntime[] {
+    const turned: NpcRuntime[] = [];
+    for (const n of this.npcs.values()) {
+      if (n.hostile || !n.def.hostileIf || n.combatant.sheet.hp <= 0) continue;
+      if (test(n.def.hostileIf, this.state)) { n.hostile = true; turned.push(n); }
+    }
+    return turned;
+  }
+
   private async useExit(exit: ExitDef): Promise<void> {
+    apply(exit.effects, this.state, this.logicHost);
+    this.quests.update();
     if (!('location' in exit.to)) {
-      this.emit('message', { text: 'The world map is not built yet.' });
+      this.emit('openMap', {});
       return;
     }
     this.transitioning = true;
@@ -747,10 +779,12 @@ export class Game extends EventBus<GameEvents> {
     equip(inventory, inventory.items.findIndex((i) => i.def === 'w_shiv'));
     inventory.tolls = 0;
     syncGear(sheet, inventory);
-    this.state = newGameState('dev_yard', 15, 9, { sheet, appearance, pronouns, inventory });
+    const start = MAPS.cistern9 ? 'cistern9' : 'dev_yard';
+    this.state = newGameState(start, 15, 9, { sheet, appearance, pronouns, inventory });
     this.state.origin = origin;
     this.paused = false;
-    void this.loadLocation('dev_yard', 'start').then(() => this.save('auto'));
+    if (QUESTS.q_ch1_door) this.quests.questStart('q_ch1_door');
+    void this.loadLocation(start, 'start').then(() => this.save('auto'));
   }
 
   // --- Save / load ---------------------------------------------------------
@@ -900,7 +934,7 @@ export class Game extends EventBus<GameEvents> {
   }
 }
 
-function inExit(e: ExitDef, x: number, y: number): boolean {
+function inExit(e: { x: number; y: number; w?: number; h?: number }, x: number, y: number): boolean {
   return x >= e.x && y >= e.y && x < e.x + (e.w ?? 1) && y < e.y + (e.h ?? 1);
 }
 

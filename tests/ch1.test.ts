@@ -46,6 +46,31 @@ describe('Chapter One opening', () => {
     expect(r.view()!.options.some((o) => o.text.includes('Larkspur'))).toBe(true);
   });
 
+  it('the pump-run hatch is a quiet way out for a Pump Hand', () => {
+    const g = newGameState('c9', 0, 0);
+    g.origin = 'pump_hand';
+    const q = new QuestEngine(QUESTS, g);
+    q.questStart('q_ch1_door');
+    g.flags.c9_examined = true; g.flags.c9_council_done = true;
+    q.update();
+    expect(g.world.quests.q_ch1_door.stage).toBe('door');
+    talk('d_c9_shaft', g, q, ['You\'ve cycled this hatch', '(Leave it open.)']);
+    expect(g.flags.c9_shaft_open).toBe(true);
+    expect(g.world.quests.q_ch1_door.stage).toBe('leave');
+    expect(g.world.decisions.map((d) => d.id)).toContain('c9_shaft');
+  });
+
+  it('MOTHER yields leads to a clerk, and the leads conclude', () => {
+    const g = newGameState('c9', 0, 0);
+    g.origin = 'archive_clerk';
+    g.pc.sheet.baseAttrs.wits = 9;
+    g.world.knowledge.stranger_mark = true;
+    const q = new QuestEngine(QUESTS, g);
+    talk('d_c9_mother', g, q, ['I have questions', '(Read the log display.)', 'Another question', 'Did he come from the city?', 'Another question']);
+    expect(g.world.leads.l_mother_sealed).toBe(true);
+    expect(g.world.leads.l_mother_city).toBe(true);
+  });
+
   it('refusing sends Tamsin alone, with a recorded decision', () => {
     const g = newGameState('c9', 0, 0);
     g.flags.c9_examined = true;

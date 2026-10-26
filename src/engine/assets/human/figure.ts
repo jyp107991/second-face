@@ -156,14 +156,15 @@ export class HumanFigure {
       const g = strandGeometry(d, body, beardField(spec.facialHair)!, layers, SCALE);
       if (g) {
         // Short stubs read darker and ashier than grown hair; longer beards keep the hair colour.
-        const base = new THREE.Color(spec.beardColor ?? spec.hair?.color ?? 0x2b1d14);
+        // Beards run darker and more mixed than scalp hair; a grey beard is salt-and-pepper, never white paint.
+        const base = new THREE.Color(spec.beardColor ?? spec.hair?.color ?? 0x2b1d14).lerp(new THREE.Color(0x3a3230), 0.3);
         const lum = base.r * 0.3 + base.g * 0.55 + base.b * 0.15;
         const grown = [beard.tache, beard.chin, beard.corner, beard.cheek, beard.jaw, beard.burn].filter((l) => l > 0);
         const stubby = Math.min(...grown) <= 4;
-        const col = stubby ? base.clone().lerp(new THREE.Color(lum, lum, lum), 0.4).multiplyScalar(0.42) : base.clone().multiplyScalar(0.85);
+        const col = stubby ? base.clone().lerp(new THREE.Color(lum, lum, lum), 0.4).multiplyScalar(0.42) : base.clone().multiplyScalar(0.8);
         const look = stubby
           ? { color: col.getHex(), cell: 0.016, radius: 0.0009, rootShade: 0.1, wave: 0.05, opacity: 0.9 }
-          : { color: col.getHex(), cell: 0.012, radius: 0.0021, rootShade: 0.3, wave: longest > 6 ? 0.3 : 0.1 };
+          : { color: col.getHex(), cell: 0.012, radius: 0.0019, rootShade: 0.35, wave: longest > 6 ? 0.3 : 0.1, opacity: 0.82 };
         const mesh = this.addMesh(g, strandMaterial(look), 'beard');
         mesh.castShadow = false;
         mesh.renderOrder = 2;

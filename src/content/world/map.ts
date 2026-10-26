@@ -7,7 +7,7 @@ import type { LocationDef, NetworkDef, RouteDef, WorldMap } from '../../engine/w
  */
 const L: LocationDef[] = [
   // The Sallow
-  { id: 'cistern9', name: 'Cistern 9', region: 'sallow', x: 470, y: 382, kind: 'major', settlement: 'cistern9' },
+  { id: 'cistern9', name: 'Cistern 9', region: 'sallow', x: 470, y: 382, kind: 'major', settlement: 'cistern9', map: 'c9_mouth' },
   { id: 'shale', name: 'Shale', region: 'sallow', x: 455, y: 360, kind: 'major', settlement: 'shale' },
   { id: 'drywells', name: 'Dry Wells', region: 'sallow', x: 500, y: 395, kind: 'minor', settlement: 'drywells' },
   { id: 'rustdogs', name: 'the overpass', region: 'sallow', x: 430, y: 335, kind: 'major', settlement: 'rustdogs' },

@@ -1,4 +1,5 @@
 import type { NpcPlacement } from '../npc/defs';
+import type { Cond, Effect } from '../world/logic';
 
 /**
  * Content schemas. Everything under src/content is plain data typed by these interfaces;
@@ -68,6 +69,24 @@ export interface ExitDef {
   h?: number;
   to: { location: string; spawn: string } | { worldMap: true };
   label?: string;
+  /** Usable only while this holds (a hatch you have opened, a gate you are allowed through). */
+  if?: Cond;
+  /** Applied when taken (flags such as "left home"). */
+  effects?: Effect[];
+}
+
+/** Something that happens when the player steps on a tile: a message, flags, a quest beat, an ambush. */
+export interface TriggerDef {
+  id: string;
+  x: number;
+  y: number;
+  w?: number;
+  h?: number;
+  if?: Cond;
+  /** Fire only the first time (default true). */
+  once?: boolean;
+  text?: string;
+  effects?: Effect[];
 }
 
 export interface AmbienceDef {
@@ -112,4 +131,7 @@ export interface MapDef {
   settlement?: string;
   /** Named tiles for schedules and scripts (e.g. 'bar', 'bed_03'). */
   spots?: Record<string, { x: number; y: number }>;
+  triggers?: TriggerDef[];
+  /** Props (by id) that open a conversation when used: terminals, a sealed door, a body to examine. */
+  talk?: Record<string, { dialogue: string; name: string }>;
 }

@@ -121,7 +121,8 @@ export function test(c: Cond | undefined, g: GameState): boolean {
   if ('origin' in c) return g.origin === c.origin;
   if ('pronouns' in c) return g.pc.pronouns === c.pronouns;
   if ('seen' in c) return !!w.seen[c.seen];
-  if ('dead' in c) return !!g.npcs[c.dead]?.dead;
+  // NPC state is keyed by map ("shale/npc_sh_02"); a bare id matches on any map.
+  if ('dead' in c) return Object.entries(g.npcs).some(([k, v]) => (k === c.dead || k.endsWith('/' + c.dead)) && !!v.dead);
   if ('hour' in c) { const h = (g.minutes % 1440) / 60; return c.hour.from <= c.hour.to ? h >= c.hour.from && h < c.hour.to : h >= c.hour.from || h < c.hour.to; }
   if ('lead' in c) return !!w.leads[c.lead];
   if ('concluded' in c) return !!w.conclusions[c.concluded];

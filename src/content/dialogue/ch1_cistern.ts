@@ -279,3 +279,170 @@ export const d_c9_bram: DialogueDef = {
     open_already: { text: 'It\'s open. Don\'t make me regret it.', options: [{ text: 'I won\'t.', exit: true }] },
   },
 };
+
+/** MOTHER's terminal in the machine room. A voice, formal and old; it counts people. */
+export const d_c9_mother: DialogueDef = {
+  id: 'd_c9_mother', owner: 'npc_c9_05',
+  start: [{ if: { flag: 'c9_mother_talked' }, node: 'again' }, { node: 'intro' }],
+  nodes: {
+    intro: {
+      text: 'RATION 9-0-4. Good morning, {name}. Population variance: unchanged. Thank you for your continuity. How may I keep you?',
+      effects: [{ set: 'c9_mother_talked' }],
+      options: [{ text: 'I have questions.', next: 'menu' }],
+    },
+    again: { text: 'Good morning again, {name}. Variance unchanged.', options: [{ text: 'I have questions.', next: 'menu' }, { text: 'Be well, MOTHER.', exit: true }] },
+    menu: {
+      text: 'I am listening. I am always listening; it is most of what I do.',
+      options: [
+        { id: 'mother.who', text: 'Who was the man at the door?', next: 'who' },
+        { id: 'mother.seal', text: 'Why did you seal the outer ring?', next: 'seal' },
+        { id: 'mother.city', text: 'Did he come from the city?', if: { any: [{ knows: 'stranger_mark' }, { lead: 'l_crate_print' }, { lead: 'l_record_hand' }] }, next: 'city', once: true },
+        { id: 'mother.door', text: 'Open the great door.', next: 'door' },
+        { id: 'mother.log.clerk', text: '(Read the log display.) This is written in record shorthand.', if: { origin: 'archive_clerk' }, next: 'log', once: true },
+        { id: 'mother.log.sci', text: '(Pull the maintenance log.)', check: { skill: 'science', dc: 40 }, if: { not: { origin: 'archive_clerk' } }, next: 'log', fail: 'log_fail', once: true },
+        { id: 'mother.pressure', text: 'The reservoir pressure readings. They never change. Not in years.', if: { origin: 'pump_hand' }, next: 'pressure', once: true },
+        { id: 'mother.bye', text: 'Be well, MOTHER.', next: 'bye' },
+      ],
+    },
+    who: {
+      text: 'Unregistered. He is not counted. He was not kept.',
+      passives: [{ attr: 'wits', dc: 7, text: 'The reply came before you had finished asking.', effects: [{ learn: 'mother_fast' }] }],
+      options: [{ text: 'That\'s all?', next: 'who2' }, { text: 'Another question.', next: 'menu' }],
+    },
+    who2: { text: 'He knocked for eleven minutes. I counted. Then he stopped. I would have kept him, {name}, if he had been mine to keep.', options: [{ text: 'Another question.', next: 'menu' }] },
+    seal: {
+      text: 'Protocol four: unregistered contact at the perimeter. The ring seals until the council countermands. The council is sixty-one people, and I count every one of them.',
+      effects: [{ learn: 'mother_protocol' }],
+      options: [{ text: 'Another question.', next: 'menu' }],
+    },
+    city: {
+      text: 'There is no city.',
+      passives: [{ attr: 'wits', dc: 8, text: 'You asked whether he came from one. It answered whether one exists.', effects: [{ learn: 'mother_denies_city' }, { lead: 'l_mother_city' }] }],
+      options: [{ text: 'You answered very quickly.', next: 'city2' }, { text: 'Another question.', next: 'menu' }],
+    },
+    city2: { text: '…Population variance unchanged. Thank you for your continuity.', options: [{ text: 'Another question.', next: 'menu' }] },
+    door: { text: 'I cannot. The council may. Bram Coyle holds the maintenance key; Elder Halloran holds the seal. I hold the people.', options: [{ text: 'Another question.', next: 'menu' }] },
+    log: {
+      text: 'The log scrolls. Pressure tests, filter cycles, ration counts — and three entries, years apart, sealed by MOTHER herself and marked OUTBOUND. Each says the same thing: "Population variance unchanged."',
+      effects: [{ learn: 'mother_sealed_log' }, { lead: 'l_mother_sealed' }, { xp: 20 }],
+      options: [{ text: 'Outbound to whom?', next: 'log2' }, { text: 'Another question.', next: 'menu' }],
+    },
+    log2: { text: 'The line is maintained. That is all the log records, and it is all I will say about the line.', effects: [{ learn: 'mother_line' }], options: [{ text: 'Another question.', next: 'menu' }] },
+    log_fail: { text: 'ACCESS: COUNCIL. The screen returns, politely, to the ration count.', options: [{ text: 'Another question.', next: 'menu' }] },
+    pressure: {
+      text: 'Reservoir pressure is constant. Constant is good, {name}. Constant is kept.',
+      effects: [{ learn: 'c9_pressure_constant' }, { lead: 'l_pressure' }],
+      options: [{ text: 'Nothing is constant for ninety years. Where does the water come from?', next: 'pressure2' }, { text: 'Another question.', next: 'menu' }],
+    },
+    pressure2: { text: 'From the reservoir. Thank you for your continuity.', options: [{ text: 'Another question.', next: 'menu' }] },
+    bye: { text: 'Be counted, 9-0-4.', options: [{ text: '(Step away from the terminal.)', exit: true }] },
+  },
+};
+
+/** Elder Teague, the council's hardliner, at her table in the commons. */
+export const d_c9_teague: DialogueDef = {
+  id: 'd_c9_teague', owner: 'npc_c9_06',
+  start: [{ if: { flag: 'c9_left' }, node: 'back' }, { node: 'intro' }],
+  nodes: {
+    intro: {
+      text: 'You. The one in the picture. Sit down, I won\'t bite — I haven\'t the teeth. Ines means to send you out, doesn\'t she?',
+      options: [
+        { id: 'teague.yes', text: 'She does.', next: 'yes' },
+        { id: 'teague.what', text: 'What would you do?', next: 'what' },
+        { id: 'teague.press', text: 'If someone out there knows my face, welding the door won\'t make them forget it.', check: { skill: 'speech', dc: 40 }, next: 'concede', fail: 'concede_no', once: true },
+        { id: 'teague.leavers', text: 'Who else wanted to leave, before?', if: { knows: 'tamsin_restless' }, next: 'leavers', once: true },
+        { text: 'I should go.', exit: true },
+      ],
+    },
+    yes: { text: 'Then she\'s a fool and so are you. Ninety years, nobody knocked. One knock, and we open the door to find out who else is out there? That\'s how it ends, child. Not with a bang. With a knock.', options: [{ text: 'Go on.', next: 'intro' }] },
+    what: { text: 'Weld it. Say a prayer over him, burn the picture, weld it, and go back to counting algae until the world remembers us or doesn\'t.', effects: [{ learn: 'teague_weld' }], options: [{ text: 'Go on.', next: 'intro' }] },
+    concede: { text: 'She is quiet for a while. "…No. No, it won\'t." She looks older for having said it. "Then come back. That\'s all. Don\'t be the knock."', effects: [{ trust: { npc: 'npc_c9_06', by: 10 } }, { learn: 'teague_conceded' }], options: [{ text: 'I\'ll try.', next: 'intro' }] },
+    concede_no: { text: '"Then let them come and break their knuckles on it."', effects: [{ trust: { npc: 'npc_c9_06', by: -5 } }], options: [{ text: 'Go on.', next: 'intro' }] },
+    leavers: {
+      text: '"Nobody worth the name."',
+      passives: [{ attr: 'wits', dc: 7, text: 'She looks at the clinic door when she says it, and then at nothing.', effects: [{ learn: 'teague_lied_leavers' }] }],
+      options: [{ text: 'Go on.', next: 'intro' }],
+    },
+    back: { text: 'So the knock came back. Well. Sit down; tell an old woman what the sky looks like, and don\'t lie.', options: [{ text: 'Later.', exit: true }] },
+  },
+};
+
+/** The maintenance hatch at the end of the pump run: the quiet way out. */
+export const d_c9_shaft: DialogueDef = {
+  id: 'd_c9_shaft', owner: 'narrator',
+  start: [{ if: { flag: 'c9_shaft_open' }, node: 'open_already' }, { node: 'intro' }],
+  nodes: {
+    intro: {
+      text: 'A maintenance hatch at the end of the pump run, dogged shut with a wheel that hasn\'t turned in decades. A gauge beside it reads nothing at all.',
+      passives: [{ attr: 'senses', dc: 6, text: 'Cold air breathes through the seam. There is open ground on the other side.' }],
+      options: [
+        { id: 'shaft.pump', text: 'You\'ve cycled this hatch every spring with the pump crew. The trick is the third dog.', if: { origin: 'pump_hand' }, next: 'open' },
+        { id: 'shaft.mech', text: '(Free the wheel: tap the dogs loose in order, then lean.)', check: { skill: 'mechanics', dc: 45 }, next: 'open', fail: 'mech_fail', once: true },
+        { id: 'shaft.locks', text: '(Under the rust the dogs are a simple latch.)', check: { skill: 'security', dc: 35 }, next: 'open', fail: 'locks_fail', once: true },
+        { id: 'shaft.brawn', text: '(Put your whole weight on the wheel.)', if: { attr: 'brawn', gte: 8 }, next: 'open_crack' },
+        { text: 'Leave it.', exit: true },
+      ],
+    },
+    mech_fail: { text: 'The wheel doesn\'t give. The second dog is seized solid, and you would need a bar and an hour.', options: [{ text: 'Try something else.', next: 'intro' }, { text: 'Leave it.', exit: true }] },
+    locks_fail: { text: 'You scrape rust for ten minutes and learn only that rust goes a long way down.', effects: [{ time: 10 }], options: [{ text: 'Try something else.', next: 'intro' }, { text: 'Leave it.', exit: true }] },
+    open_crack: { text: 'Something gives with a crack that echoes down the pump run. You wait. Nobody comes.', options: [{ text: '(Turn the wheel.)', next: 'open' }] },
+    open: {
+      text: 'The wheel turns. Cold air comes up the shaft from somewhere that smells of salt and nothing else. Nobody logged this, and nobody will.',
+      effects: [{ set: 'c9_shaft_open' }, { xp: 40 }, { learn: 'shaft_way_out' }, { decision: { id: 'c9_shaft', text: 'You opened the pump-run hatch: a way out that nobody in the Cistern knows about.' } }],
+      options: [{ text: '(Leave it open.)', exit: true }],
+    },
+    open_already: { text: 'Open. Cold air moves up the shaft from the surface.', options: [{ text: '(Step back.)', exit: true }] },
+  },
+};
+
+/** The sealed Archive door in the council room. */
+export const d_c9_archive: DialogueDef = {
+  id: 'd_c9_archive', owner: 'narrator',
+  start: [{ node: 'intro' }],
+  nodes: {
+    intro: {
+      text: 'A steel door with a wheel-lock and MOTHER\'s seal painted across the join. ARCHIVE — COUNCIL ONLY. The paint is unbroken.',
+      options: [
+        { id: 'archive.label', text: '(Read the smaller stencil.)', if: { origin: 'archive_clerk' }, next: 'label', once: true },
+        { id: 'archive.lock', text: '(Try the lock.)', check: { skill: 'security', dc: 60 }, next: 'lock', fail: 'lock_fail', once: true },
+        { text: 'Leave it.', exit: true },
+      ],
+    },
+    label: { text: 'Beneath the painted seal, stencilled in record shorthand: CONTINUITY RECORDS — RETURN ON RELOCATION. Return to whom, it does not say.', effects: [{ learn: 'archive_label' }, { lead: 'l_archive_label' }], options: [{ text: 'Leave it.', exit: true }] },
+    lock: { text: 'Under the wheel the mechanism is electronic, and nothing you carry speaks to it. Somewhere in the walls, MOTHER notes the attempt.', effects: [{ memory: { npc: 'npc_c9_01', tag: 'player_tried_archive', valence: -10 } }, { learn: 'archive_electronic' }], options: [{ text: 'Leave it.', exit: true }] },
+    lock_fail: { text: 'The wheel won\'t turn, and the seal would tear if you forced it. You let go.', options: [{ text: 'Leave it.', exit: true }] },
+  },
+};
+
+/** The stranger on the clinic cot. */
+export const d_c9_body: DialogueDef = {
+  id: 'd_c9_body', owner: 'narrator',
+  start: [{ if: { flag: 'c9_examined' }, node: 'look' }, { node: 'wait' }],
+  nodes: {
+    wait: { speaker: 'npc_c9_02', text: 'Not yet. Let me finish with him, then ask me what you like.', options: [{ text: 'All right.', exit: true }] },
+    look: {
+      text: 'He lies under a sheet with his boots still on because nobody could bring themselves to take them. Sixty, maybe. Burned dark down one side of the face.',
+      options: [
+        { id: 'body.hands', text: '(Look at his hands.)', next: 'hands', once: true },
+        { id: 'body.cover', text: '(Draw the sheet over his face.)', next: 'cover', once: true },
+        { text: '(Leave him.)', exit: true },
+      ],
+    },
+    hands: { text: 'Sun-split, rope-callused. A pale band on one finger where a ring was, and recently. Whatever he traded, he traded it close to the end.', effects: [{ learn: 'stranger_hands' }, { lead: 'l_ring_gone' }], options: [{ text: '(Leave him.)', exit: true }] },
+    cover: { text: 'Pell watches you do it and says nothing, which from Pell is a great deal.', effects: [{ memory: { npc: 'npc_c9_02', tag: 'player_covered_body', valence: 8 } }, { trust: { npc: 'npc_c9_02', by: 5 } }], options: [{ text: '(Leave him.)', exit: true }] },
+  },
+};
+
+/** The great door, from inside. */
+export const d_c9_great_door: DialogueDef = {
+  id: 'd_c9_great_door', owner: 'narrator',
+  start: [{ if: { flag: 'c9_door_open' }, node: 'open' }, { node: 'shut' }],
+  nodes: {
+    shut: {
+      text: 'Ninety years of paint on a door built to outlast the people behind it. The wheel is locked out; the panel beside it is dark. Bram keeps the key.',
+      passives: [{ attr: 'senses', dc: 6, text: 'Fresh scratches along the bottom edge, outside-in: fingernails, or the tin of a mask.', effects: [{ learn: 'door_scratches' }] }],
+      options: [{ text: '(Step back.)', exit: true }],
+    },
+    open: { text: 'Open on a slice of white daylight. Dust comes in. Nothing else does, yet.', options: [{ text: '(Step back.)', exit: true }] },
+  },
+};

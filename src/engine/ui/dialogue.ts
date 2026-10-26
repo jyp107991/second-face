@@ -1,5 +1,5 @@
 import type { Game } from '../game';
-import { DIALOGUES } from '../../content';
+import { DIALOGUES, NPCS } from '../../content';
 import { lookFrom } from '../assets/humanoid';
 import { DialogueRunner, type NodeView } from '../dialogue/dialogue';
 import type { NpcRuntime } from '../npc/spawn';
@@ -16,10 +16,12 @@ export class DialogueUi {
   private el?: HTMLElement;
   private runner?: DialogueRunner;
   private npc?: NpcRuntime;
+  /** Speaker name for tree-only conversations (terminals, examined things). */
+  private title = '';
   private history: { who: string; text: string; pc?: boolean }[] = [];
 
   constructor(private game: Game) {
-    game.on('openDialogue', ({ npc }) => this.open(npc));
+    game.on('openDialogue', ({ npc, tree, name }) => { if (npc) this.open(npc); else if (tree) this.openTree(tree, name ?? ''); });
     window.addEventListener('keydown', (e) => {
       if (!this.el) return;
       const n = Number(e.key);
@@ -27,17 +29,35 @@ export class DialogueUi {
     }, true);
   }
 
+  /** A conversation with no face: a terminal, a sealed door, a body on a cot. */
+  openTree(tree: string, name: string): void {
+    const def = DIALOGUES[tree];
+    if (!def) return;
+    this.close();
+    this.npc = undefined;
+    this.title = name;
+    this.history = [];
+    this.runner = new DialogueRunner(def, this.game.state, { ...this.hostFns(), checkXp: 15 });
+    if (this.runner.ended) { this.runner = undefined; return; }
+    this.game.paused = true;
+    this.el = document.createElement('div');
+    this.el.className = 'dlg noface';
+    document.body.appendChild(this.el);
+    this.render();
+  }
+
   open(npc: NpcRuntime): void {
     const def = npc.def.dialogue ? DIALOGUES[npc.def.dialogue] : undefined;
     if (!def) return;
     this.close();
     this.npc = npc;
+    this.title = npc.def.name;
     this.history = [];
     this.runner = new DialogueRunner(def, this.game.state, { ...this.hostFns(), checkXp: 15 });
     const stage = new PortraitStage(0x0f0c09);
     stage.setLook(lookFrom(npc.appearance, npc.outfit));
     stage.setFraming(0, true);
-    stage.offsetY = 0.22;
+    stage.offsetY = 0.1;
     stage.yaw = -0.25;
     this.game.portrait = stage;
     this.game.paused = true;
@@ -75,6 +95,8 @@ export class DialogueUi {
         if (name === 'barter' && this.npc) { const npc = this.npc; window.setTimeout(() => { this.close(); this.game.openBarter(npc); }); return; }
         if (name === 'dust' && this.npc) { const npc = this.npc, stake = Number((data as { stake?: number } | undefined)?.stake ?? 5); window.setTimeout(() => { this.close(); this.game.emit('openDust', { npc, stake }); }); return; }
         if (name === 'camp') { window.setTimeout(() => { this.close(); this.game.openCamp(); }); return; }
+        if (name === 'fight' && this.npc) { const npc = this.npc; window.setTimeout(() => { this.close(); npc.hostile = true; this.game.refreshHostility(); this.game.startCombat(npc); }); return; }
+        if (name === 'map') { window.setTimeout(() => { this.close(); this.game.emit('openMap', {}); }); return; }
         this.game.logicHost.event?.(name, data);
       },
     };
@@ -88,6 +110,9 @@ export class DialogueUi {
     this.game.portrait = undefined;
     this.game.paused = false;
     this.game.quests.update();
+    // A conversation can turn a camp hostile ("get out before I change my mind").
+    const turned = this.game.refreshHostility();
+    if (turned.length && !this.game.encounter.active) this.game.startCombat(turned[0]);
   }
 
   private pick(i: number): void {
@@ -153,7 +178,8 @@ export class DialogueUi {
   private speakerName(id: string): string {
     if (id === 'narrator') return '';
     if (id === 'pc') return this.game.state.pc.sheet.name || 'You';
-    return this.npc && (id === this.npc.def.id || id === this.npc.id) ? this.npc.def.name : id;
+    if (this.npc && (id === this.npc.def.id || id === this.npc.id)) return this.npc.def.name;
+    return NPCS[id]?.name ?? (id === this.runner?.def.owner ? this.title : id);
   }
 }
 

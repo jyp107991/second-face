@@ -108,7 +108,10 @@ session). Engine decision: see `docs/TECH_EVALUATION.md` (recommendation: stay o
 Each slice ends playable and polished before the next starts. Definition of v1 done: creation → every
 ending without dev tools; ~60+ h; validate + per-quest route tests green; saves migrate; perf budget on a
 mid-range Android phone; deployed to Pages.
-- [ ] B1 **Chapter One slice**: Cistern 9 map (cast placed, MOTHER terminal, maintenance shaft, exit), Shale
+- [~] B1 **Chapter One slice** (B1.1 DONE: `maps/cistern9` + `maps/c9_mouth` from `tools/maps/gen_ch1.py`, MOTHER
+      terminal/Archive door/hatch/body as prop dialogues (`MapDef.talk`), tile `triggers`, conditional exits and
+      placements, `hostileIf`, dialogue events `fight`/`map`, new game starts in the Cistern with q_ch1_door;
+      smoke `tools/qa/c9.cjs`. NEXT: B1.2 Shale map + cast): Cistern 9 map (cast placed, MOTHER terminal, maintenance shaft, exit), Shale
       (well-town map, ~12 NPCs incl. the plan's cast, saloon, sheriff, trading post, Choir tent, wells),
       Rust Dogs overpass camp; quests q_ch1_door/shale/tribute/debts/prisoner/map/oldface; 2 companions;
       first scheduled event; letters; barter; map screen with travel between the three. ~5 h.
@@ -132,7 +135,7 @@ mid-range Android phone; deployed to Pages.
 ### Content tracker (spoiler-free counts; update as slices land)
 | Area | Maps | NPCs | Dialogues | Quests | Status |
 |---|---|---|---|---|---|
-| Cistern 9 | 0/1 | 4/6 | 4/6 | 1/1 | opening dialogues only |
+| Cistern 9 | 2/2 | 10/10 | 10/10 | 1/1 | playable; shaft + door routes |
 | Shale | 0/3 | 0/12 | 0/12 | 0/5 | — |
 | Rust Dogs camp | 0/1 | 0/6 | 0/6 | 0/2 | — |
 | Act 1 wilds | 0/5 | 0/15 | 0/15 | 0/6 | — |

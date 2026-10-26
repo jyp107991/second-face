@@ -13,6 +13,8 @@ import { CH1_CISTERN } from './npcs/ch1_cistern';
 import { dev_bunker } from './maps/dev_bunker';
 import { dev_yard } from './maps/dev_yard';
 import { bench_crowd } from './maps/bench_crowd';
+import { cistern9 } from './maps/cistern9';
+import { c9_mouth } from './maps/c9_mouth';
 import { BENCH_NPCS } from './npcs/bench';
 import { DIALOGUES } from './dialogue';
 import { QUESTS } from './quests';
@@ -27,6 +29,8 @@ import { registerFactions } from '../engine/world/factions';
 
 /** Content registry: the engine looks everything up through here. */
 export const MAPS: Record<string, MapDef> = {
+  cistern9,
+  c9_mouth,
   dev_yard,
   dev_bunker,
   bench_crowd,

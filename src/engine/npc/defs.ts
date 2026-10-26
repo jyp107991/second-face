@@ -5,6 +5,7 @@ import type { MerchantDef } from '../inventory/barter';
 import type { ScheduleEntry } from './schedule';
 import type { WeaponDef } from '../inventory/items';
 import type { AttributeId, SkillId } from '../stats/rules';
+import type { Cond } from '../world/logic';
 
 /**
  * NPC definition (content). Personality, memory, schedules and dialogue are added in M2;
@@ -33,6 +34,8 @@ export interface NpcDef {
   /** Combat side. Same team = allies. 'player' is the player's side. */
   team: string;
   hostile?: boolean;
+  /** Hostile while this holds (a camp that turns on you once a flag is set). */
+  hostileIf?: Cond;
   /** 0..100 */
   courage?: number;
   /** Creature attack when unarmed. */
@@ -61,4 +64,6 @@ export interface NpcPlacement {
   facing?: number;
   /** Instance id (defaults to def id; must be unique on the map). */
   id?: string;
+  /** Present only while this holds (a prisoner until freed, visitors on a certain day). */
+  if?: Cond;
 }
