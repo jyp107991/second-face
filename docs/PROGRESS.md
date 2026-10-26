@@ -46,9 +46,9 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
 
 ## Next action
 **Current step (owner: less Fallout, more creative modern frontier features; rework story core; notebook UI):**
-- [ ] F1 Docs: owner decisions (CLAUDE.md), DESIGN frontier systems (local reputation & news, leads board,
+- [x] F1 Docs: owner decisions (CLAUDE.md), DESIGN frontier systems (local reputation & news, leads board,
       scheduled world events, frontier justice, journeys), drop karma; reframe DESIGN §2 row 1
-- [ ] F2 Secret: rework the story's central truth (story/ only) + update Chapter One content to fit
+- [x] F2 Secret: rework the story's central truth (story/ only) + update Chapter One content to fit
 - [ ] F3 Field notebook UI replacing the wristlog (journal, people with sketched portraits, leads, map, gear)
 - [ ] F4 Systems: local reputation + news propagation, leads/deductions engine, scheduled world events
 - (Previous pass G1–G5 done; G5 remaining items: Cistern 9 map, Shale content.)

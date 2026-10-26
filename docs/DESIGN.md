@@ -4,11 +4,14 @@
 1. **Reactivity over volume.** The world notices: NPCs remember, gossip spreads, factions shift, and
    companions comment. Every quest has at least two real solutions (fight / talk / sneak / science).
 2. **Characters with weight.** Personality-driven NPCs with goals that can collide with the player's.
-3. **Scarcity that rewards.** Every bullet, stimpack-equivalent and coin matters early. Power grows
+3. **Scarcity that rewards.** Every bullet, bandage and coin matters early. Power grows
    steadily and visibly, never flooding.
-4. **Atmosphere.** Dust, fog, sepia grading, lonely synth drones, CRT terminals and a wrist computer.
+4. **Atmosphere.** Dust, fog, sepia grading, lonely synth drones, old terminals, and a battered field notebook.
 5. **Respect the player.** Clear rules, readable checks, no hidden failure states, generous saves,
    accessible on a phone.
+6. **A frontier, not a theme park.** Lawless, but with its own customs: reputation travels with people, disputes
+   are settled by whoever is present, and the world keeps moving when you are elsewhere. Genre conventions are
+   borrowed only where they serve that; we prefer fresh, coherent systems to Fallout habits.
 
 ## 2. What acclaimed RPGs have in common (research synthesis) → our rules
 Studied: Fallout 1/2, Fallout: New Vegas, Planescape: Torment, Arcanum, Baldur's Gate 1–3, Disco Elysium,
@@ -17,7 +20,7 @@ Sources (design talks/interviews/reviews) are listed in §13.
 
 | # | Common denominator | Evidence | Our rule |
 |---|---|---|---|
-| 1 | A personal mystery tied to identity | Torment, KOTOR, Disco Elysium | The photo hook; the story's thematic question is asked of every major character |
+| 1 | A personal stake in a question bigger than the hero | Disco Elysium (a city's history), New Vegas (a region's future), Witcher 3 | The photo is the hook, but the story is about the frontier and who decides its future — **no "who am I really" or chosen-one core**; the thematic question is asked of every major character |
 | 2 | Factions with legible, defensible ideologies | New Vegas (NCR vs Legion clarity), Witcher 3 | Each faction states what it wants, why, and what it costs others; none is simply evil |
 | 3 | Important choices never have an obvious answer | Witcher 3 (story director Blacha), Bloody Baron | Major choices trade one good for another; we review every major choice for a "dominant" option and remove it |
 | 4 | Several real solutions per quest; a non-combat path that finishes the game | Fallout 1/2, New Vegas, Age of Decadence, Deus Ex | Every quest: ≥2 solutions, critical path: ≥3 incl. one non-violent; build-coverage validated by script (§3.8) |
@@ -36,6 +39,20 @@ Sources (design talks/interviews/reviews) are listed in §13.
 Existing borrowed practices retained: tag-memory dialogue (Torment), environmental combat (D:OS2),
 camp scenes (Dragon Age/BG3), journal clarity (Witcher 3/Pillars), light meaningful crafting, QoL
 (highlight interactables, AP cost preview, quicksave, combat speed).
+
+## 2b. Frontier systems (beyond Fallout conventions)
+Coherent features drawn from modern games, chosen because they make a lawless frontier feel lived-in.
+| System | Inspiration | How it works here |
+|---|---|---|
+| **Reputation travels with people** (no global karma) | Kenshi, Mount & Blade, Red Dead Redemption 2 | Each settlement and faction has its own opinion of you, built from what its people *witnessed* or *heard*. News moves along roads with caravans, travellers and gossip at travel speed; places you haven't reached haven't heard yet. Rumours distort. You can arrive ahead of your reputation, or send a story ahead of you. |
+| **Faces, masks and recognition** | Hitman, Assassin's Creed notoriety (inverted for RPG) | People attach news to a *face*. Masks, hoods, dirt and changed hair stop recognition (news attaches to "a masked stranger" instead). Some places admit only the known, some only the masked. Your sculpted face matters to the world. |
+| **Leads board** | Return of the Obra Dinn, Shadows of Doubt, Disco Elysium thoughts | Clues (things seen, said, read) go on a board in the notebook. Linking the right clues forms a *conclusion* that unlocks dialogue, routes and check bonuses. Wrong links are allowed and cost nothing but time. |
+| **Scheduled world events** | Pathologic, Majora's Mask, Citizen Sleeper | Some things will happen on a given day whether or not you are there (a raid, a hanging, a toll rise). Some can be learned in advance from rumours or documents and prevented, exploited or sold. Ignored crises resolve, often badly, and stay resolved. Clear in-game warnings; never a hidden fail state for the main path. |
+| **Frontier justice** | Frostpunk, This War of Mine, Pentiment | When you hold standing in a town you are asked to settle disputes (water rights, debts, thefts, a killing) and, later, to set town rules (curfew, tribute, who may draw from the well). Rulings change the town, its people's opinions and later events. |
+| **Journeys are decisions** | 80 Days, Sunless Sea, Oregon Trail, Death Stranding | Travel between places consumes food and water, risks weather (dust storms close roads, cut visibility) and offers route choices (fast and exposed vs slow and hidden). Caravans can be joined, hired or robbed. |
+| **Letters** | Pentiment, epistolary games | Write to people at home and elsewhere via caravans; replies arrive days later and carry news, help, guilt and consequences. |
+| **Camp** | Red Dead Redemption 2, Dragon Age | Campfire scenes with companions: talk, mend, cook, write, plan; also where letters are read. |
+| **Field notebook** (UI) | — | Journal in hand-writing, people you've met with sketched portraits and what you know about them, the leads board, a folded map you annotate, gear. |
 
 ## 3. Character system
 ### 3.1 Attributes (7, range 1–10; base 3 + 12 points at creation; creation cap 8)
@@ -213,7 +230,7 @@ DialogueTree { id, start: NodeId | Condition-ordered starts, nodes: { [id]: Node
 Node { speaker, text, conditions?, effects?, options: Option[], interjections? }
 Option { text, conditions?, check?: { skill|attr, dc, hidden? }, effects?, next, onFail? }
 Effect = setFlag | addMemory | trust/affection | approval | reputation | giveItem | startQuest |
-         advanceQuest | combat | barter | joinParty | time | karma | ...
+         advanceQuest | combat | barter | joinParty | time | ...
 ```
 - Text supports variables (`{player.name}`) and gendered/appearance-aware variants.
 - Options remember being chosen (greyed + "asked before"), and NPCs react to repeated questions.
