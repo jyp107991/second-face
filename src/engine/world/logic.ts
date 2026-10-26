@@ -67,7 +67,9 @@ export type Effect =
   /** Join a faction (expels conflicting memberships unless `cover` names the faction you really serve). */
   | { enlist: string; rank?: string; cover?: string }
   | { promote: { faction: string; rank: string } }
-  | { expel: string; status?: MembershipStatus };
+  | { expel: string; status?: MembershipStatus }
+  /** Mail arrives (letters.ts schedules replies through this). */
+  | { post: { from: string; text: string } };
 
 /** Hooks the game provides for effects that reach outside world data (quests, combat, UI). */
 export interface LogicHost {
@@ -177,6 +179,7 @@ export function apply(effects: Effect[] | undefined, g: GameState, host: LogicHo
       syncMembership(g, defs);
     } else if ('promote' in e) { setRank(g, factionDefs(), e.promote.faction, e.promote.rank); syncMembership(g, factionDefs()); }
     else if ('expel' in e) { expel(g, e.expel, e.status); syncMembership(g, factionDefs()); }
+    else if ('post' in e) (w.post ??= []).push({ from: e.post.from, text: e.post.text, day: dayOf(g.minutes) });
   }
 }
 

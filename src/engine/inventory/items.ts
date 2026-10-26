@@ -73,6 +73,8 @@ export interface ItemDef {
   ammo?: AmmoDef;
   armor?: ArmorDef;
   consumable?: { effects: ConsumableEffect[]; ap?: number; skill?: SkillId };
+  /** Raw food: cooking at a camp turns it into this item. */
+  cookTo?: string;
   /** Junk breakdown into crafting parts. */
   parts?: Record<string, number>;
   tags?: string[];

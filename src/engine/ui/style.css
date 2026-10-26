@@ -255,3 +255,25 @@ body.in-combat .hud-buttons { display: none; }
 .wl .nb-foot button, .wl .nb .item .w button { font-family: var(--font); font-size: 13px; min-width: 36px; min-height: 36px; padding: 4px 10px; color: #2b2318; background: rgba(255,250,235,.7); border: 1px solid #8a6a48; border-radius: 4px; cursor: pointer; }
 .wl .nb-foot button:disabled { opacity: .4; cursor: default; }
 .wl .nb .item.dim { opacity: .5; cursor: default; }
+
+/* Settings: text scale and high contrast */
+:root { --ui-scale: 1; }
+.wl .nb, .dlg .dlg-panel, .menu, .chud .bar { font-size: calc(14px * var(--ui-scale)); }
+.dlg .dlg-text { font-size: calc(17px * var(--ui-scale)); }
+body.hc .wl .nb { color: #140e08; background: #fbf4e4; }
+body.hc .wl .nb .dim, body.hc .wl .nb .desc { opacity: .95; color: #3a2a18; }
+body.hc .dlg .dlg-panel { background: #0b0906; color: #fff; }
+body.hc .dlg .chk.ok { color: #7cff9c; } body.hc .dlg .chk.bad { color: #ff8a7a; text-decoration: underline; }
+.menu button.key { font-family: var(--font); font-size: 13px; min-width: 64px; min-height: 36px; color: var(--crt); background: #2a2016; border: 1px solid var(--crt-dim); cursor: pointer; }
+/* HUD: undo, pinned objective, mail */
+.hud .undo { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(14px + var(--safe-b)); font-size: 22px; }
+.hud-top .pin { margin-top: 4px; font-size: 13px; color: #ffe3a8; max-width: 60vw; }
+.hud-top .mail { font-size: 12px; color: #ffd070; }
+/* Dialogue skip */
+.dlg .skip { float: right; font-family: var(--font); font-size: 11px; color: var(--amber); background: transparent; border: 1px solid var(--amber-dim); padding: 2px 8px; cursor: pointer; }
+/* Camp and Dust panels */
+.wl .nb-body.one { grid-template-columns: 1fr; }
+.wl .nb .acts.sub { gap: 6px; margin-bottom: 8px; }
+.wl .nb .acts.sub button.on { background: rgba(181,82,42,.25); }
+.wl .nb.dust .dice { font-size: 40px; letter-spacing: 6px; min-height: 52px; margin: 6px 0; }
+.wl .nb.dust .log { max-height: 180px; overflow-y: auto; }

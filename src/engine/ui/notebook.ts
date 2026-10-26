@@ -1,4 +1,6 @@
-import { CONCLUSIONS, LEADS, NPCS, PERKS, SETTLEMENTS, TRAITS } from '../../content';
+import { CONCLUSIONS, LEADS, LETTERS, NPCS, PERKS, SETTLEMENTS, TRAITS } from '../../content';
+import { availableLetters, sendLetter } from '../world/letters';
+import { keyAction } from './settings';
 import { dayOf } from '../core/state';
 import { standing, tryConclude } from '../world/frontier';
 import { clockString } from '../core/state';
@@ -48,11 +50,12 @@ export class Notebook {
   constructor(private game: Game) {
     window.addEventListener('keydown', (e) => {
       if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
-      if (e.code === 'KeyI' || e.code === 'Tab') { e.preventDefault(); this.toggle(e.code === 'KeyI' ? 'gear' : undefined); }
-      if (e.code === 'KeyC') this.toggle('status');
-      if (e.code === 'KeyJ') this.toggle('journal');
-      if (e.code === 'KeyL') this.toggle('leads');
-      if (e.code === 'KeyP') this.toggle('people');
+      const a = keyAction(e.code);
+      if (e.code === 'KeyI' || a === 'notebook') { e.preventDefault(); this.toggle(e.code === 'KeyI' ? 'gear' : undefined); }
+      if (a === 'self') this.toggle('status');
+      if (a === 'journal') this.toggle('journal');
+      if (a === 'leads') this.toggle('leads');
+      if (a === 'people') this.toggle('people');
       if (e.code === 'Escape' && this.el) { e.stopImmediatePropagation(); this.close(); }
     }, true);
   }
@@ -172,19 +175,39 @@ export class Notebook {
     }).join('') : '<p class="dim">Nothing about you has reached them.</p>');
   }
 
-  /** Quests (active first) with objectives and history; decisions you've made. */
+  private journalView: 'quests' | 'letters' | 'log' = 'quests';
+  /** Quests (active first) with objectives and history; decisions; letters; the conversation log. */
   private journal(a: HTMLElement, b: HTMLElement): void {
-    const all = this.game.quests.journal();
+    const g = this.game, w = g.state.world;
+    const all = g.quests.journal();
     const order = { active: 0, done: 1, failed: 2 } as Record<string, number>;
     all.sort((x, y) => order[x.status] - order[y.status]);
     const sel = all[this.sel ?? 0];
-    a.innerHTML = `<h4>Quests</h4>` + (all.length ? all.map((q, i) => `<div class="row ${i === (this.sel ?? 0) ? 'sel' : ''} ${q.status}" data-q="${i}">${q.status === 'done' ? '✓ ' : q.status === 'failed' ? '✗ ' : '▸ '}${esc(q.title)}</div>`).join('') : '<p class="dim">Nothing yet.</p>');
-    a.querySelectorAll<HTMLElement>('[data-q]').forEach((el) => el.addEventListener('click', () => { this.sel = Number(el.dataset.q); this.render(); }));
-    const dec = this.game.state.world.decisions;
-    b.innerHTML = (sel ? `<h4>${esc(sel.title)}</h4>
-      ${sel.objectives.map((o) => `<div class="obj ${o.done ? 'done' : ''}">${o.done ? '☑' : '☐'} ${esc(o.text)}${o.optional ? ' (optional)' : ''}</div>`).join('')}
-      ${sel.log.slice().reverse().map((l) => `<p class="log">${esc(l)}</p>`).join('')}` : '')
-      + (dec.length ? `<h4>Decisions</h4>${dec.map((d) => `<p class="log">${esc(d.text)}</p>`).join('')}` : '');
+    const unread = (w.post ?? []).filter((p) => !p.read).length;
+    const sub = `<div class="acts sub"><button data-v="quests" class="${this.journalView === 'quests' ? 'on' : ''}">Quests</button><button data-v="letters" class="${this.journalView === 'letters' ? 'on' : ''}">Letters${unread ? ` (${unread})` : ''}</button><button data-v="log" class="${this.journalView === 'log' ? 'on' : ''}">Log</button></div>`;
+    if (this.journalView === 'letters') {
+      const post = (w.post ?? []).slice().reverse(), sent = (w.letters ?? []).slice().reverse();
+      const can = g.loc?.map.settlement ? availableLetters(g.state, LETTERS) : [];
+      a.innerHTML = sub + `<h4>Received</h4>` + (post.length ? post.map((p) => `<div class="row"><b>${esc(NPCS[p.from]?.name ?? p.from)}</b> <span class="dim">day ${p.day}${p.read ? '' : ' · new'}</span><p class="log">${esc(p.text)}</p></div>`).join('') : '<p class="dim">No letters yet.</p>');
+      for (const p of w.post ?? []) p.read = true;
+      b.innerHTML = `<h4>Sent</h4>` + (sent.length ? sent.map((l) => `<p class="log">To ${esc(NPCS[l.to]?.name ?? l.to)}, day ${l.day}${l.arrives > dayOf(g.state.minutes) ? ` — reply expected about day ${l.arrives}` : ''}: ${esc(LETTERS[l.id]?.text ?? '')}</p>`).join('') : '<p class="dim">Nothing sent.</p>')
+        + `<h4>Write</h4>` + (g.loc?.map.settlement ? (can.length ? can.map((l) => `<div class="row" data-letter="${l.id}"><b>${esc(NPCS[l.to]?.name ?? l.to)}</b> — ${esc(l.topic)}</div>`).join('') : '<p class="dim">No one to write to, or nothing to say yet.</p>') : '<p class="dim">Letters leave with caravans: write from a town.</p>');
+      b.querySelectorAll<HTMLElement>('[data-letter]').forEach((el) => el.addEventListener('click', () => { const def = LETTERS[el.dataset.letter!]; sendLetter(g.state, def, g.quests); g.emit('message', { text: `Your letter to ${NPCS[def.to]?.name ?? def.to} goes with the next caravan.` }); this.render(); }));
+    } else if (this.journalView === 'log') {
+      const lines = (w.log ?? []).slice(-80).reverse();
+      a.innerHTML = sub + `<h4>Said lately</h4>` + (lines.length ? lines.map((l) => `<p class="log"><b>${esc(l.who)}:</b> ${esc(l.text)}</p>`).join('') : '<p class="dim">Nothing yet.</p>');
+      b.innerHTML = '';
+    } else {
+      a.innerHTML = sub + `<h4>Quests</h4>` + (all.length ? all.map((q, i) => `<div class="row ${i === (this.sel ?? 0) ? 'sel' : ''} ${q.status}" data-q="${i}">${q.status === 'done' ? '✓ ' : q.status === 'failed' ? '✗ ' : w.pinned === q.id ? '📌 ' : '▸ '}${esc(q.title)}</div>`).join('') : '<p class="dim">Nothing yet.</p>');
+      a.querySelectorAll<HTMLElement>('[data-q]').forEach((el) => el.addEventListener('click', () => { this.sel = Number(el.dataset.q); this.render(); }));
+      const dec = w.decisions;
+      b.innerHTML = (sel ? `<h4>${esc(sel.title)}${sel.status === 'active' ? ` <button class="plus" data-pin="${sel.id}" title="Pin to the screen">${w.pinned === sel.id ? 'unpin' : 'pin'}</button>` : ''}</h4>
+        ${sel.objectives.map((o) => `<div class="obj ${o.done ? 'done' : ''}">${o.done ? '☑' : '☐'} ${esc(o.text)}${o.optional ? ' (optional)' : ''}</div>`).join('')}
+        ${sel.log.slice().reverse().map((l) => `<p class="log">${esc(l)}</p>`).join('')}` : '')
+        + (dec.length ? `<h4>Decisions</h4>${dec.map((d) => `<p class="log">${esc(d.text)}</p>`).join('')}` : '');
+      b.querySelector('[data-pin]')?.addEventListener('click', (e) => { const id = (e.target as HTMLElement).dataset.pin!; w.pinned = w.pinned === id ? undefined : id; this.render(); });
+    }
+    a.querySelectorAll<HTMLElement>('[data-v]').forEach((el) => el.addEventListener('click', () => { this.journalView = el.dataset.v as typeof this.journalView; this.render(); }));
   }
 
   private status(a: HTMLElement, b: HTMLElement): void {
@@ -275,7 +298,15 @@ export class Notebook {
     const it = this.sel !== undefined ? inv.items[this.sel] : undefined;
     if (!it) { b.innerHTML = `<div class="desc">Select an item.</div>`; return; }
     const d = itemDef(it.def);
-    b.innerHTML = `<h4>${esc(d.name)}</h4><div class="desc">${esc(d.desc)}</div><p>${itemSummary(it)}</p>
+    // Compare with what is equipped in the slot this would take.
+    let compare = '';
+    const cur = d.weapon ? inv.equipped[inv.active] : d.armor ? inv.equipped[d.armor.slot] : undefined;
+    if (cur && cur.def !== it.def) {
+      const cd = itemDef(cur.def);
+      if (d.weapon && cd.weapon) { const a = (d.weapon.dmg[0] + d.weapon.dmg[1]) / 2, c = (cd.weapon.dmg[0] + cd.weapon.dmg[1]) / 2; compare = `vs ${esc(cd.name)}: damage ${a >= c ? '+' : ''}${(a - c).toFixed(1)} · AP ${d.weapon.ap - cd.weapon.ap >= 0 ? '+' : ''}${d.weapon.ap - cd.weapon.ap} · range ${d.weapon.range - cd.weapon.range >= 0 ? '+' : ''}${d.weapon.range - cd.weapon.range}`; }
+      if (d.armor && cd.armor) compare = `vs ${esc(cd.name)}: DT ${d.armor.dt - cd.armor.dt >= 0 ? '+' : ''}${d.armor.dt - cd.armor.dt} · DR ${d.armor.dr - cd.armor.dr >= 0 ? '+' : ''}${d.armor.dr - cd.armor.dr}%`;
+    }
+    b.innerHTML = `<h4>${esc(d.name)}</h4><div class="desc">${esc(d.desc)}</div><p>${itemSummary(it)}</p>${compare ? `<p class="dim">${compare}</p>` : ''}
       <div class="desc">Weight ${d.weight} kg · Value ${d.value} Tolls${it.qty > 1 ? ` each` : ''}</div><div class="acts"></div>`;
     const acts = b.querySelector('.acts')!;
     const btn = (label: string, fn: () => void) => { const x = document.createElement('button'); x.textContent = label; x.onclick = fn; acts.append(x); };

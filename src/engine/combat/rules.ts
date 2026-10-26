@@ -99,6 +99,10 @@ export function canAttack(c: Combatant, burst = false): { ok: boolean; reason?: 
 
 export interface AttackOpts {
   aimed?: BodyPart | 'weapon';
+  /** Flat hit-chance change (difficulty). */
+  hitMod?: number;
+  /** Damage multiplier (difficulty). */
+  dmgMul?: number;
   burst?: boolean;
   cover?: Cover;
   ctx?: CombatContext;
@@ -142,6 +146,7 @@ export function hitChance(att: Combatant, def: Combatant, opts: AttackOpts = {})
   if (ctx && hasFlag(s, 'cistern_pale')) chance += ctx.indoor ? 10 : !ctx.night ? -5 : 0;
   if (hasFlag(s, 'last_stand') && s.hp < derived(s).maxHp * 0.25) chance += 10;
   if (s.crippled.eyes) chance -= 15;
+  chance += opts.hitMod ?? 0;
   return Math.round(Math.max(5, Math.min(95, chance)));
 }
 
@@ -212,7 +217,7 @@ export function resolveAttack(rng: Rng, att: Combatant, def: Combatant, opts: At
     }
     const isCrit = roll < chance * (crit / 100);
     const part: BodyPart = opts.aimed && opts.aimed !== 'weapon' ? opts.aimed : rng.pick(RANDOM_PARTS);
-    const h = applyHit(rng, att, def, w, item, part, isCrit, opts.aimed === 'weapon');
+    const h = applyHit(rng, att, def, w, item, part, isCrit, opts.aimed === 'weapon', opts.dmgMul ?? 1);
     res.hits.push(h);
     res.damage += h.damage;
     if (h.killed) res.killed = true;
@@ -242,7 +247,7 @@ export function resolveAttack(rng: Rng, att: Combatant, def: Combatant, opts: At
   return res;
 }
 
-function applyHit(rng: Rng, att: Combatant, def: Combatant, w: WeaponDef, item: ItemInst | undefined, part: BodyPart, isCrit: boolean, atWeapon: boolean): HitResult {
+function applyHit(rng: Rng, att: Combatant, def: Combatant, w: WeaponDef, item: ItemInst | undefined, part: BodyPart, isCrit: boolean, atWeapon: boolean, dmgMul = 1): HitResult {
   const as = att.sheet, ds = def.sheet;
   const mods = allMods(as);
   let dmg = rng.int(w.dmg[0], w.dmg[1]);
@@ -254,6 +259,7 @@ function applyHit(rng: Rng, att: Combatant, def: Combatant, w: WeaponDef, item: 
     dmg = modValue(mods, 'dmg_ranged', dmg);
     if (ammo) dmg *= ammo.dmgMult;
   }
+  dmg *= dmgMul;
   const dd = derived(ds);
   let dt = Math.max(0, dd.dt - (ammo?.dtPen ?? 0));
   let dr = Math.max(0, Math.min(90, dd.dr + (ammo?.drMod ?? 0)));

@@ -27,6 +27,7 @@ export interface ContentBundle {
   regions?: Record<string, { id: string; bounds: [number, number, number, number] }>;
   worldMap?: WorldMap;
   factions?: Record<string, FactionDef>;
+  letters?: Record<string, { id: string; to: string; if?: unknown; effects?: unknown; reply?: { effects?: unknown } }>;
   chrome?: Record<string, ChromeDef>;
 }
 
@@ -224,6 +225,11 @@ export function validateContent(c: ContentBundle): string[] {
   for (const [key, st] of Object.entries(c.settlements ?? {})) for (const to of Object.keys(st.roads)) {
     if (!c.settlements![to]) errs.push(`settlement ${key}: road to unknown ${to}`);
     else if (!(key in c.settlements![to].roads)) errs.push(`settlement ${key}: road to ${to} is one-way`);
+  }
+  for (const [key, l] of Object.entries(c.letters ?? {})) {
+    if (l.id !== key) errs.push(`letter ${key}: id mismatch`);
+    if (c.npcs && !c.npcs[l.to]) errs.push(`letter ${key}: unknown recipient ${l.to}`);
+    refs(`letter ${key}`, l.if); refs(`letter ${key}`, l.effects); refs(`letter ${key} reply`, l.reply?.effects);
   }
   for (const [key, f] of Object.entries(c.factions ?? {})) {
     if (f.id !== key) errs.push(`faction ${key}: id mismatch`);

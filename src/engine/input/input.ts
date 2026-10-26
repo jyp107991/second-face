@@ -130,8 +130,6 @@ export class Input extends EventBus<InputEvents> {
     if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'TEXTAREA') return;
     this.held.add(e.code);
     if (e.repeat) return;
-    if (e.code === 'KeyQ') this.emit('rotateStep', { dir: -1 });
-    if (e.code === 'KeyE') this.emit('rotateStep', { dir: 1 });
     this.emit('key', { code: e.code, shift: e.shiftKey, ctrl: e.ctrlKey || e.metaKey });
     if (['F5', 'F9'].includes(e.code)) e.preventDefault();
   };

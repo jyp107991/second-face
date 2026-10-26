@@ -212,6 +212,11 @@ export function useConsumable(inv: Inventory, index: number, s: CharacterSheet, 
 }
 
 /** Wear a weapon/armour piece by a small amount; returns true if it broke this time. */
+/** Restore condition (repair kits, Menders). */
+export function repair(it: ItemInst, amount: number): void {
+  if (it.cond !== undefined) it.cond = Math.min(1, it.cond + amount);
+}
+
 export function wear(it: ItemInst, amount = 1): boolean {
   const d = itemDef(it.def);
   const dur = d.weapon?.durability ?? d.armor?.durability;

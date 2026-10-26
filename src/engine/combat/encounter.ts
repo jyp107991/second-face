@@ -43,7 +43,9 @@ export interface EncounterHost {
   sound(id: import('../audio/audio').SfxId, at?: THREE.Vector3): void;
 }
 
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** Animation pacing; the settings' combat speed divides every pause. */
+export const pacing = { speed: 1, enemy: { hitMod: 0, dmgMul: 1 } };
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms / pacing.speed));
 
 /**
  * Turn-based combat over the live scene. The player acts through methods called by the HUD/input;
@@ -234,7 +236,8 @@ export class Encounter extends EventBus<EncounterEvents> {
   }
 
   attackOpts(att: Unit, def: Unit, extra: { aimed?: BodyPart | 'weapon'; burst?: boolean } = {}): AttackOpts {
-    return { ...extra, cover: isMelee(weaponOf(att.c).def) ? 'none' : this.coverBetween(att.c, def.c), ctx: this.host.context(def.c.x, def.c.y) };
+    const diff = att.hostile ? pacing.enemy : { hitMod: 0, dmgMul: 1 };
+    return { ...extra, ...diff, cover: isMelee(weaponOf(att.c).def) ? 'none' : this.coverBetween(att.c, def.c), ctx: this.host.context(def.c.x, def.c.y) };
   }
 
   /** Whether `att` could attack `def` right now and at what odds/cost. */

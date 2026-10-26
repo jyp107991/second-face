@@ -2,6 +2,7 @@ import type { Game } from '../game';
 import { clockString } from '../core/state';
 import { SLOTS, exportSave, pickSaveFile, type SlotId } from '../save/saves';
 import type { QualityLevel } from '../render/quality';
+import { DEFAULT_KEYS, KEY_ACTION_NAMES, keyLabel, settings, updateSettings, type Difficulty, type KeyAction } from './settings';
 
 type Screen = 'title' | 'pause' | 'save' | 'load' | 'settings';
 
@@ -130,11 +131,44 @@ export class Menu {
         inp.oninput = () => this.game.audio.setVolumes({ [k]: Number(inp.value) });
         panel.append(l);
       }
+      const st = settings();
+      const sel2 = (label: string, opts: [string, string][], value: string, on: (v: string) => void) => {
+        const l = document.createElement('label'); l.className = 'opt';
+        l.innerHTML = `${label} <select>${opts.map(([v, t]) => `<option value="${v}" ${v === value ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
+        const se = l.querySelector('select')!; se.onchange = () => on(se.value); panel.append(l);
+      };
+      const tog = (label: string, value: boolean, on: (v: boolean) => void) => {
+        const l = document.createElement('label'); l.className = 'opt';
+        l.innerHTML = `${label} <input type="checkbox" ${value ? 'checked' : ''} style="width:24px;height:24px;accent-color:#5aff9a">`;
+        const inp = l.querySelector('input')!; inp.onchange = () => on(inp.checked); panel.append(l);
+      };
+      panel.insertAdjacentHTML('beforeend', '<h2 style="margin-top:14px">Play</h2>');
+      sel2('Difficulty (enemy aim and damage only)', [['story', 'Story'], ['normal', 'Normal'], ['hard', 'Hard']], st.difficulty, (v) => { updateSettings({ difficulty: v as Difficulty }); this.game.syncPacing(); });
+      sel2('Combat speed', [['1', 'Normal'], ['1.5', 'Fast'], ['2.5', 'Very fast']], String(st.combatSpeed), (v) => { updateSettings({ combatSpeed: Number(v) }); this.game.syncPacing(); });
+      tog('Skip button through lines already heard', st.skipSeen, (v) => updateSettings({ skipSeen: v }));
+      tog('Show tips', st.tips, (v) => updateSettings({ tips: v }));
+      panel.insertAdjacentHTML('beforeend', '<h2 style="margin-top:14px">Display</h2>');
+      sel2('Text size', [['1', 'Normal'], ['1.15', 'Large'], ['1.3', 'Larger']], String(st.textScale), (v) => updateSettings({ textScale: Number(v) }));
+      tog('High contrast', st.highContrast, (v) => updateSettings({ highContrast: v }));
+      panel.insertAdjacentHTML('beforeend', '<h2 style="margin-top:14px">Keys</h2><p class="sub" style="text-align:left">Click a key, then press the new one.</p>');
+      for (const a of Object.keys(KEY_ACTION_NAMES) as KeyAction[]) {
+        const l = document.createElement('label'); l.className = 'opt';
+        l.innerHTML = `${KEY_ACTION_NAMES[a]} <button class="key">${keyLabel(st.keys[a])}</button>`;
+        const b = l.querySelector('button')!;
+        b.onclick = () => {
+          b.textContent = '…';
+          const once = (e: KeyboardEvent) => { e.preventDefault(); e.stopImmediatePropagation(); window.removeEventListener('keydown', once, true); if (e.code !== 'Escape') updateSettings({ keys: { ...settings().keys, [a]: e.code } }); b.textContent = keyLabel(settings().keys[a]); };
+          window.addEventListener('keydown', once, true);
+        };
+        panel.append(l);
+      }
       const row = document.createElement('div');
       row.className = 'row';
+      const reset = document.createElement('button');
+      reset.textContent = 'Reset keys'; reset.onclick = () => { updateSettings({ keys: { ...DEFAULT_KEYS } }); void this.render(); };
       const back = document.createElement('button');
       back.textContent = 'Back'; back.onclick = () => this.back();
-      row.append(back);
+      row.append(reset, back);
       panel.append(row);
     }
     (panel.querySelector('button:not([disabled])') as HTMLElement | null)?.focus({ preventScroll: true });

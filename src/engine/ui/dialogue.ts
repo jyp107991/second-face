@@ -5,6 +5,7 @@ import { DialogueRunner, type NodeView } from '../dialogue/dialogue';
 import type { NpcRuntime } from '../npc/spawn';
 import { PortraitStage } from '../render/portrait';
 import { dayOf } from '../core/state';
+import { settings, tipOnce } from './settings';
 
 /**
  * Conversation screen: the speaker in a lit close-up (portrait stage) with the exchange below.
@@ -46,6 +47,8 @@ export class DialogueUi {
     this.game.resize();
     this.render();
     this.remember(npc);
+    const tip = tipOnce('dialogue', 'Checks like [Speech 50] are fixed thresholds — no dice. Green ✓ means you meet it; red ✗ still leads somewhere.');
+    if (tip) this.game.emit('message', { text: tip });
   }
 
   /** Note the person in the notebook and sketch them from the close-up. */
@@ -70,6 +73,8 @@ export class DialogueUi {
       xp: (amount: number, levels: number) => this.game.logicHost.xp?.(amount, levels),
       event: (name: string, data?: unknown) => {
         if (name === 'barter' && this.npc) { const npc = this.npc; window.setTimeout(() => { this.close(); this.game.openBarter(npc); }); return; }
+        if (name === 'dust' && this.npc) { const npc = this.npc, stake = Number((data as { stake?: number } | undefined)?.stake ?? 5); window.setTimeout(() => { this.close(); this.game.emit('openDust', { npc, stake }); }); return; }
+        if (name === 'camp') { window.setTimeout(() => { this.close(); this.game.openCamp(); }); return; }
         this.game.logicHost.event?.(name, data);
       },
     };
@@ -90,6 +95,7 @@ export class DialogueUi {
     if (!r || !v || !v.options[i] || v.options[i].locked) return;
     const o = v.options[i];
     this.history.push({ who: this.game.state.pc.sheet.name || 'You', text: o.text, pc: true });
+    this.log(this.game.state.pc.sheet.name || 'You', o.text);
     const passed = r.choose(o.id);
     if (o.checkLabel) this.history.push({ who: '', text: passed ? `[${o.checkLabel} — passed]` : `[${o.checkLabel} — failed]` });
     this.game.quests.update();
@@ -105,17 +111,35 @@ export class DialogueUi {
     this.el.innerHTML = `
       <div class="dlg-panel">
         <div class="dlg-hist">${this.history.slice(-8, -1).map((h) => `<p class="${h.pc ? 'pc' : h.who ? '' : 'sys'}">${h.who ? `<b>${esc(h.who)}:</b> ` : ''}${esc(h.text)}</p>`).join('')}</div>
-        <div class="dlg-name">${esc(name)}</div>
+        <div class="dlg-name">${esc(name)}${v.seen && settings().skipSeen && v.options.length === 1 && !v.options[0].checkLabel ? ' <button class="skip" data-skip="1">skip ▸▸</button>' : ''}</div>
         <div class="dlg-text">${esc(v.text)}</div>
         ${v.passives.map((p) => `<div class="dlg-passive"><b>${esc(p.label)}</b> — ${esc(p.text)}</div>`).join('')}
         <ol class="dlg-opts">${v.options.map((o, i) => `
           <li class="${o.locked ? 'locked' : ''} ${o.seen ? 'seen' : ''}" data-i="${i}">
             <span class="n">${i + 1}.</span>
-            ${o.checkLabel ? `<span class="chk ${o.checkMet ? 'ok' : 'bad'}">[${esc(o.checkLabel)}]</span> ` : ''}${esc(o.text)}
+            ${o.checkLabel ? `<span class="chk ${o.checkMet ? 'ok' : 'bad'}">[${esc(o.checkLabel)} ${o.checkMet ? '✓' : '✗'}]</span> ` : ''}${esc(o.text)}
             ${o.checkNotes.length ? `<span class="why">${o.checkNotes.map(esc).join(' · ')}</span>` : ''}
           </li>`).join('')}</ol>
       </div>`;
     this.el.querySelectorAll<HTMLElement>('.dlg-opts li').forEach((li) => li.addEventListener('click', () => this.pick(Number(li.dataset.i))));
+    this.el.querySelector('[data-skip]')?.addEventListener('click', () => this.skip());
+  }
+
+  /** Run through lines already heard: single uncheck options, until a real choice or new text. */
+  private skip(): void {
+    for (let guard = 0; guard < 12; guard++) {
+      const v = this.runner?.view();
+      if (!v || !v.seen || v.options.length !== 1 || v.options[0].checkLabel || v.options[0].locked) break;
+      this.pick(0);
+      if (!this.el) return;
+    }
+    this.render();
+  }
+
+  private log(who: string, text: string): void {
+    const w = this.game.state.world;
+    (w.log ??= []).push({ who, text, minutes: this.game.state.minutes });
+    if (w.log.length > 300) w.log.splice(0, w.log.length - 300);
   }
 
   private lastText = '';
@@ -123,6 +147,7 @@ export class DialogueUi {
     if (v.text === this.lastText) return;
     this.lastText = v.text;
     this.history.push({ who: this.speakerName(v.speaker), text: v.text });
+    this.log(this.speakerName(v.speaker), v.text);
   }
 
   private speakerName(id: string): string {

@@ -65,6 +65,15 @@ export interface WorldState {
   met?: Record<string, { name: string; day: number; where?: string }>;
   /** Faction memberships by faction id (world/factions.ts). */
   membership: Record<string, import('./factions').Membership>;
+  /** Letters sent (world/letters.ts) and mail received. */
+  letters?: import('./letters').SentLetter[];
+  post?: import('./letters').Post[];
+  /** Conversation log (last few hundred lines). */
+  log?: { who: string; text: string; minutes: number }[];
+  /** Quest pinned to the HUD. */
+  pinned?: string;
+  /** Dialogue nodes visited, by `${tree}.${node}` (for skipping seen lines). */
+  visited?: Record<string, number>;
 }
 
 export function emptyWorld(): WorldState {

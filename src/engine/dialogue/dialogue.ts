@@ -80,6 +80,8 @@ export interface OptionView {
 export interface NodeView {
   speaker: string;
   text: string;
+  /** This node has been read before (skippable). */
+  seen: boolean;
   /** Passive interjections that fired: label + text. */
   passives: { label: string; text: string }[];
   options: OptionView[];
@@ -136,6 +138,8 @@ export class DialogueRunner {
   private enter(id: string): void {
     const n = this.def.nodes[id];
     if (!n) throw new Error(`Dialogue ${this.def.id}: unknown node ${id}`);
+    const key = `${this.def.id}.${id}`;
+    (this.g.world.visited ??= {})[key] = (this.g.world.visited[key] ?? 0) + 1;
     apply(n.effects, this.g, this.host);
   }
 
@@ -165,7 +169,7 @@ export class DialogueRunner {
       }
       options.push({ id, text: render(o.text, this.g), checkLabel, checkMet, checkNotes, locked: !ok, seen: !!this.g.world.seen[id] });
     });
-    return { speaker: n.speaker ?? this.def.owner, text: render(n.text, this.g), passives, options };
+    return { speaker: n.speaker ?? this.def.owner, text: render(n.text, this.g), seen: (this.g.world.visited?.[`${this.def.id}.${this.node}`] ?? 0) > 1, passives, options };
   }
 
   /** Choose an option by id. Returns whether a check passed (true when there was none). */

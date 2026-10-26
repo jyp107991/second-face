@@ -35,6 +35,8 @@ import { addXp, attr, derived } from './stats/sheet';
 import { chromeDef, settleDrift, tickChromeUpkeep } from './stats/chrome';
 import { skillCheck } from './stats/checks';
 import { AudioEngine, stepSoundFor, type SfxId } from './audio/audio';
+import { difficultyMods, keyAction, settings, tipOnce } from './ui/settings';
+import { pacing } from './combat/encounter';
 
 export type GameEvents = {
   locationChanged: { id: string; name: string };
@@ -46,6 +48,8 @@ export type GameEvents = {
   openTransfer: { inv: import('./inventory/inventory').Inventory; name: string };
   openDialogue: { npc: NpcRuntime };
   openBarter: { npc: NpcRuntime };
+  openCamp: Record<string, never>;
+  openDust: { npc: NpcRuntime; stake: number };
   journal: { questId: string; title: string; line: string };
 };
 
@@ -178,10 +182,40 @@ export class Game extends EventBus<GameEvents> {
     });
 
     this.state = newGameState('dev_yard', 15, 9);
+    this.syncPacing();
     createBackend().then((b) => (this.saves = new SaveManager(b)));
     this.bindInput();
     window.addEventListener('resize', () => this.resize());
     this.resize();
+  }
+
+  /** Combat speed and difficulty from settings (call after the settings screen changes them). */
+  syncPacing(): void {
+    pacing.speed = settings().combatSpeed;
+    pacing.enemy = difficultyMods();
+  }
+
+  /** Where the player stood before the last tap-to-walk, for a quick undo. */
+  private lastStand?: { x: number; y: number; until: number };
+  get canUndo(): boolean { return !!this.lastStand && performance.now() < this.lastStand.until && !this.encounter.active; }
+  undoMove(): void {
+    const p = this.player, ls = this.lastStand;
+    if (!p || !ls || !this.loc || !this.canUndo) return;
+    const path = this.loc.grid.findPath(p.tx, p.ty, ls.x, ls.y, { ignore: p.id });
+    this.lastStand = undefined;
+    this.pendingInteract = undefined;
+    if (path) { p.setPath(path); this.pathMarker.visible = false; }
+  }
+
+  /** Make camp here (outdoors, or at a campfire). */
+  openCamp(): void {
+    if (this.encounter.active || !this.loc) return;
+    if (this.loc.map.ambience.indoor && !this.nearCampfire()) { this.emit('message', { text: 'Not here. Find a fire or open sky.' }); return; }
+    this.emit('openCamp', {});
+  }
+  private nearCampfire(): boolean {
+    const p = this.player;
+    return !!p && !!this.loc?.map.props?.some((pr) => (pr.kind === 'campfire' || pr.kind === 'fire_barrel') && Math.max(Math.abs(pr.x - p.tx), Math.abs(pr.y - p.ty)) <= 1);
   }
 
   applyQuality(level: QualityLevel): void {
@@ -443,6 +477,8 @@ export class Game extends EventBus<GameEvents> {
       units.push({ c: n.combatant, actor: n.actor, hostile: n.hostile, leader: n.def.leader });
     }
     if (units.length < 2) return;
+    const tip = tipOnce('combat', 'Turn-based: move costs 1 AP a tile, shooting 4–5. Aim at body parts to cripple. End turn with T.');
+    if (tip) this.emit('message', { text: tip });
     this.encounter.start(units);
     if (target) this.encounter.target = units.find((u) => u.c.id === target.id);
   }
@@ -516,6 +552,8 @@ export class Game extends EventBus<GameEvents> {
     if (this.state.containers[pileKey] && (this.state.containers[pileKey].items.length || this.state.containers[pileKey].tolls)) {
       return () => this.emit('openTransfer', { inv: this.state.containers[pileKey], name: 'Ground' });
     }
+    const fire = this.loc?.map.props?.find((p) => p.x === x && p.y === y && (p.kind === 'campfire' || p.kind === 'fire_barrel'));
+    if (fire) return () => this.emit('openCamp', {});
     const prop = this.loc?.map.props?.find((p) => p.x === x && p.y === y && p.id && this.loc!.map.containers?.[p.id]);
     if (prop) {
       const def = this.loc!.map.containers![prop.id!];
@@ -624,6 +662,9 @@ export class Game extends EventBus<GameEvents> {
       const p = this.player;
       const path = this.loc.grid.findPath(p.tx, p.ty, t.x, t.y, { ignore: p.id, adjacentOk: true });
       if (path && path.length) {
+        this.lastStand = { x: p.tx, y: p.ty, until: performance.now() + 8000 + path.length * 400 };
+        const tip = tipOnce('move', 'Tapped the wrong place? Undo (↶) walks you back for a few seconds.');
+        if (tip) this.emit('message', { text: tip });
         p.setPath(path);
         const end = path[path.length - 1];
         this.pathMarker.position.set(end.x + 0.5, 0.03, end.y + 0.5);
@@ -642,11 +683,16 @@ export class Game extends EventBus<GameEvents> {
     i.on('rotate', ({ rad }) => this.cam.rotateBy(rad));
     i.on('rotateStep', ({ dir }) => this.cam.rotateStep(dir));
     i.on('key', ({ code }) => {
-      if (code === 'F5') void this.save('quick');
-      if (code === 'F9') void this.loadSlot('quick');
-      if (code === 'Space') this.cam.recentre();
-      if (code === 'KeyR' && this.player && !this.encounter.active) this.player.running = !this.player.running;
-      if (this.encounter.active && (code === 'Enter' || code === 'KeyT')) this.encounter.endTurn();
+      const a = keyAction(code);
+      if (a === 'quicksave') void this.save('quick');
+      if (a === 'quickload') void this.loadSlot('quick');
+      if (a === 'centre') this.cam.recentre();
+      if (a === 'rotateL') this.cam.rotateStep(-1);
+      if (a === 'rotateR') this.cam.rotateStep(1);
+      if (a === 'run' && this.player && !this.encounter.active) this.player.running = !this.player.running;
+      if (a === 'undo') this.undoMove();
+      if (a === 'camp') this.openCamp();
+      if (this.encounter.active && (code === 'Enter' || a === 'endTurn')) this.encounter.endTurn();
     });
   }
 

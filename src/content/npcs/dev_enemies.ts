@@ -23,6 +23,8 @@ export const DEV_NPCS: NpcDef[] = [
   {
     id: 'dev_guide', name: 'Rook', look: { seed: 911, frame: 'broad', age: 61, over: { facialHair: 'stubble_heavy' } },
     role: 'trader', level: 3, team: 'neutral', courage: 40,
-    dialogue: 'd_dev_guide', inventory: [['t_picks', 1]],
+    dialogue: 'd_dev_guide', inventory: [['t_picks', 1]], tolls: 40,
+    merchant: { buys: 'all', cash: 120, restockDays: 3, stock: [['c_water', 6], ['c_jerky', 4], ['a_38', 24], ['c_bandage', 3], ['t_repair', 1]] },
+    barks: ['Dust\'s up again.', 'You buying or looking?', 'Rook knows a man.'],
   },
 ];
