@@ -25,7 +25,6 @@ describe('SaveManager', () => {
   });
 });
 
-import { migrate } from '../src/engine/save/migrations';
 
 describe('save migrations', () => {
   it('1 → 2 folds old skills into the consolidated twelve and refunds gambling', () => {
