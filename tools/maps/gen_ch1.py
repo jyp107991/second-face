@@ -234,6 +234,7 @@ c9_mouth = {
         {'id': 'door', 'x': 10, 'y': 17, 'facing': 0},
         {'id': 'shaft', 'x': 22, 'y': 13, 'facing': 3},
         {'id': 'road', 'x': 12, 'y': 1, 'facing': 2},
+        {'id': 'from_shale', 'x': 12, 'y': 2, 'facing': 2},
     ],
     'exits': [
         {'x': 11, 'y': 0, 'w': 3, 'h': 1, 'to': {'worldMap': True}, 'label': 'The track north'},

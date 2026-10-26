@@ -113,7 +113,10 @@ mid-range Android phone; deployed to Pages.
       placements, `hostileIf`, dialogue events `fight`/`map`, new game starts in the Cistern with q_ch1_door;
       smoke `tools/qa/c9.cjs`. B1.2 DONE: `maps/shale` from `tools/maps/gen_shale.py`, 16 NPCs (`npcs/shale.ts`) with
       schedules/barks/merchants, first conversations + services (`dialogue/shale.ts`: room via `d_sh_room` → camp,
-      Dust at the bar, healer event `heal`), 3 letters, Shale leads/conclusions. NEXT: B1.3 q_ch1_shale): Cistern 9 map (cast placed, MOTHER terminal, maintenance shaft, exit), Shale
+      Dust at the bar, healer event `heal`), 3 letters, Shale leads/conclusions. B1.3 DONE: `q_ch1_shale` (5 routes,
+      tests). B1.6a DONE: field map `ui/worldmap.ts` (known places = visited + `loc_<id>` knowledge; trip planner;
+      `Game.travelTo` passes time, runs timers/events, arrives at `from_<origin>` spawn; HUD ⌖ / key M; smoke
+      `tools/qa/travel.cjs`). NEXT: B1.4 overpass map + Rust Dogs + q_ch1_map): Cistern 9 map (cast placed, MOTHER terminal, maintenance shaft, exit), Shale
       (well-town map, ~12 NPCs incl. the plan's cast, saloon, sheriff, trading post, Choir tent, wells),
       Rust Dogs overpass camp; quests q_ch1_door/shale/tribute/debts/prisoner/map/oldface; 2 companions;
       first scheduled event; letters; barter; map screen with travel between the three. ~5 h.

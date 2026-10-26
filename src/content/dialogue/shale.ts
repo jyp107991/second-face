@@ -43,7 +43,7 @@ export const d_sh_mags: DialogueDef = {
     },
     stranger_tell: {
       text: '"He asked Nell — not me, Nell — what the Dogs paid for water, and whether Kessler could read. Then he took out a folded paper, looked at it like it was a face, and put it away. He said, to nobody, \'they\'ll give me water for this.\' And he went west in the morning, toward the overpass, walking like a man who\'d been shot."',
-      effects: [{ learn: 'mags_saw_stranger' }, { learn: 'kessler_has_map' }, { lead: 'l_map_traded' }, { xp: 30 }],
+      effects: [{ learn: 'mags_saw_stranger' }, { learn: 'kessler_has_map' }, { lead: 'l_map_traded' }, { learn: 'loc_rustdogs' }, { xp: 30 }],
       options: [{ text: 'Thank you.', next: 'menu' }],
     },
     stranger_no: { text: '"Then it\'s five Tolls, love, same as everyone." Not unkind.', options: [{ text: 'Fine.', next: 'stranger' }, { text: 'Never mind.', next: 'menu' }] },
@@ -58,7 +58,7 @@ export const d_sh_mags: DialogueDef = {
     },
     teo: {
       text: 'Teo Marsh. Trader, partner, the one who could count. The Dogs have him, under the overpass, for a debt he says isn\'t his and they say is. They want sixty Tolls or a wagon of something. I\'ve got a bar.',
-      effects: [{ learn: 'teo_prisoner' }, { lead: 'l_teo_held' }],
+      effects: [{ learn: 'teo_prisoner' }, { lead: 'l_teo_held' }, { learn: 'loc_rustdogs' }],
       options: [{ text: 'I\'ll keep an ear open.', next: 'menu' }],
     },
   },
@@ -136,7 +136,7 @@ export const d_sh_ada: DialogueDef = {
     lie_no: { text: '"No, you\'re not." Flat. "You came out of the salt cut; Pardo saw you on the ridge. Don\'t lie to me in my own office; it wastes both our mornings."', effects: [{ trust: { npc: 'npc_sh_01', by: -5 } }], options: [{ text: 'Fine. Cistern 9.', next: 'cut' }] },
     dogs: { text: '"Then I\'d ask you to leave the gun on the counter and I\'d watch you walk back out." She doesn\'t reach for anything. "Are you saying it?"', options: [{ text: 'No. The salt cut.', next: 'cut' }, { text: 'Passing through.', next: 'rules' }] },
     name: { text: '"He didn\'t, and I asked twice. He had a way of not hearing questions. Pike at the Tollmen post talked to him longer than I did — ask him what it cost."', effects: [{ learn: 'pike_met_stranger' }], options: [{ text: 'What\'s at the overpass?', next: 'overpass' }, { text: 'Thanks.', next: 'rules' }] },
-    overpass: { text: '"The Rust Dogs. Forty, fifty of them under a dead highway, with the water they take from us and the people they take from the road. Kessler runs them; he\'s a thief with manners. His lieutenant has none." She looks at you. "If you go, go in daylight, hands empty, and don\'t say my name like it\'s a password."', effects: [{ learn: 'overpass_dogs' }, { learn: 'kessler_name' }], options: [{ text: 'Noted.', next: 'rules' }] },
+    overpass: { text: '"The Rust Dogs. Forty, fifty of them under a dead highway, with the water they take from us and the people they take from the road. Kessler runs them; he\'s a thief with manners. His lieutenant has none." She looks at you. "If you go, go in daylight, hands empty, and don\'t say my name like it\'s a password."', effects: [{ learn: 'overpass_dogs' }, { learn: 'kessler_name' }, { learn: 'loc_rustdogs' }], options: [{ text: 'Noted.', next: 'rules' }] },
     rules: {
       text: 'Rules: no guns drawn in town, no stealing water, no fighting the Dogs on my street unless I start it. Break one and you\'re in the cell. Break two and you\'re on the road. We\'re thin here; I can\'t afford trouble I didn\'t choose.',
       options: [{ text: 'Understood.', exit: true }, { id: 'ada.help', text: 'You look like someone who needs hands.', next: 'help', once: true }],
@@ -185,7 +185,7 @@ export const d_sh_issa: DialogueDef = {
       ],
     },
     shoot: { text: '"Then you\'re the fifth rifle." She looks you over once, properly. "Ada will say no. Ada says no to everything until she says yes."', effects: [{ learn: 'issa_counts_you' }, { trust: { npc: 'npc_sh_11', by: 8 } }], options: [{ text: 'We\'ll see.', next: 'intro' }] },
-    dogs: { text: '"Tribute\'s due. Half a year since the last. They come with a truck, they take water and whatever Mags has brewed, and this time they\'ll want more because Kessler\'s lieutenant counts. Vasha. Say the name to Ada and watch her face."', effects: [{ learn: 'tribute_due' }, { learn: 'vasha_name' }], options: [{ text: 'Noted.', next: 'intro' }] },
+    dogs: { text: '"Tribute\'s due. Half a year since the last. They come with a truck, they take water and whatever Mags has brewed, and this time they\'ll want more because Kessler\'s lieutenant counts. Vasha. Say the name to Ada and watch her face."', effects: [{ learn: 'tribute_due' }, { learn: 'vasha_name' }, { learn: 'loc_rustdogs' }], options: [{ text: 'Noted.', next: 'intro' }] },
   },
 };
 
@@ -210,7 +210,7 @@ export const d_sh_pike: DialogueDef = {
     },
     stranger_tell: {
       text: '"He asked the price of water at the overpass. I said Kessler sells it by the life. He said he had a paper Kessler would want more than a life — a map, with names on it — and asked whether the Tollmen would pay better. I quoted him. He laughed, which hurt him, and went west." Pike straightens a ledger that was straight. "I reported the conversation, as per."',
-      effects: [{ learn: 'pike_saw_stranger' }, { learn: 'kessler_has_map' }, { lead: 'l_map_traded' }, { learn: 'pike_reported' }, { lead: 'l_pike_reported' }, { xp: 30 }],
+      effects: [{ learn: 'pike_saw_stranger' }, { learn: 'kessler_has_map' }, { lead: 'l_map_traded' }, { learn: 'pike_reported' }, { lead: 'l_pike_reported' }, { learn: 'loc_rustdogs' }, { learn: 'loc_tollhouse' }, { xp: 30 }],
       options: [{ text: 'Reported to whom?', next: 'reported' }, { text: 'Noted.', next: 'intro' }],
     },
     reported: { text: '"To the post east. As per." The ledger closes.', options: [{ text: 'Noted.', next: 'intro' }] },
@@ -283,7 +283,7 @@ export const d_sh_hollis: DialogueDef = {
     stranger_cold: { text: '"Lots of men sit here, pup. I don\'t remember the ones who don\'t bring a bottle."', options: [{ text: 'Fair.', next: 'intro' }] },
     stranger: {
       text: '"Him." The old man goes quiet in a way he hasn\'t been. "He sat where you are. We didn\'t talk. We didn\'t need to — I knew the mask, pup, and he knew I knew it. He had a map. Folded small, kept close, the way you keep a thing you\'ve already decided to sell. He asked me if the Dogs kept their word on water. I said Kessler does. He nodded like a man picking a grave."',
-      effects: [{ learn: 'hollis_saw_stranger' }, { learn: 'kessler_has_map' }, { lead: 'l_map_traded' }, { learn: 'hollis_knew_mask' }, { xp: 30 }],
+      effects: [{ learn: 'hollis_saw_stranger' }, { learn: 'kessler_has_map' }, { lead: 'l_map_traded' }, { learn: 'hollis_knew_mask' }, { learn: 'loc_rustdogs' }, { xp: 30 }],
       options: [{ text: 'You knew the mask?', next: 'mask' }, { text: 'Thank you.', exit: true }],
     },
     mask: { text: '"I knew a man who wore one like it. Forty years ago, in a place with boards." He won\'t say more; he turns his cup over. "Ask me again when I\'m drunker, pup. Or soberer. One of the two."', effects: [{ lead: 'l_hollis_knew_mask' }], options: [{ text: 'I will.', exit: true }] },
@@ -381,7 +381,7 @@ export const d_sh_tracks: DialogueDef = {
     look: {
       text: 'A board on a post: SHALE — WATER BY THE CUP — NO DOGS. The road runs west into hardpan, toward the salt cut and, further, the line of a dead highway against the sky.',
       passives: [
-        { skill: 'survival', dc: 40, text: 'Old prints in the crust at the road\'s edge, kept by three dry weeks: one man, boots worn on the outer edge, a long drag on the right leg. He went west — not toward the salt cut, but north-west, toward the highway. And he was alone.', effects: [{ learn: 'tracks_read' }, { lead: 'l_tracks_overpass' }, { xp: 30 }] },
+        { skill: 'survival', dc: 40, text: 'Old prints in the crust at the road\'s edge, kept by three dry weeks: one man, boots worn on the outer edge, a long drag on the right leg. He went west — not toward the salt cut, but north-west, toward the highway. And he was alone.', effects: [{ learn: 'tracks_read' }, { lead: 'l_tracks_overpass' }, { learn: 'loc_rustdogs' }, { xp: 30 }] },
         { attr: 'senses', dc: 8, text: 'Scuffs where somebody sat down hard against the post, and a dark stain in the dust that the wind hasn\'t taken yet.', effects: [{ learn: 'tracks_blood' }] },
       ],
       options: [{ text: '(Move on.)', exit: true }],

@@ -152,6 +152,10 @@ shale = {
         {'id': 'start', 'x': 31, 'y': 25, 'facing': 0},
         {'id': 'west', 'x': 2, 'y': 25, 'facing': 1},
         {'id': 'east', 'x': 61, 'y': 25, 'facing': 3},
+        {'id': 'from_cistern9', 'x': 2, 'y': 25, 'facing': 1},
+        {'id': 'from_rustdogs', 'x': 2, 'y': 24, 'facing': 1},
+        {'id': 'from_drywells', 'x': 61, 'y': 25, 'facing': 3},
+        {'id': 'from_tollhouse', 'x': 61, 'y': 26, 'facing': 3},
     ],
     'exits': [
         {'x': 0, 'y': 24, 'w': 1, 'h': 3, 'to': {'worldMap': True}, 'label': 'The west road'},

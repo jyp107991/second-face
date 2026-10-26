@@ -65,6 +65,8 @@ export interface WorldState {
   met?: Record<string, { name: string; day: number; where?: string }>;
   /** World-map locations the player has been to or been told of. */
   knownLocations?: string[];
+  /** World-map location the player is at (or last was). */
+  at?: string;
   /** Faction memberships by faction id (world/factions.ts). */
   membership: Record<string, import('./factions').Membership>;
   /** Letters sent (world/letters.ts) and mail received. */

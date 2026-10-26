@@ -25,6 +25,7 @@ export class Hud {
         <button class="btn" data-a="rotR" aria-label="Rotate right">⟳</button>
         <button class="btn" data-a="run" aria-label="Toggle run">RUN</button>
         <button class="btn" data-a="camp" aria-label="Make camp">△</button>
+        <button class="btn" data-a="map" aria-label="Field map">⌖</button>
         <button class="btn" data-a="wrist" aria-label="Notebook">◫</button>
         <button class="btn" data-a="menu" aria-label="Menu">☰</button>
       </div>`;
@@ -40,6 +41,7 @@ export class Hud {
       if (a === 'menu') this.onMenu?.();
       if (a === 'wrist') this.onWrist?.();
       if (a === 'camp') game.openCamp();
+      if (a === 'map') game.emit('openMap', {});
       if (a === 'run' && game.player) {
         game.player.running = !game.player.running;
         (e.target as HTMLElement).classList.toggle('on', game.player.running);

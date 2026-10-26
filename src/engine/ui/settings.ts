@@ -4,7 +4,7 @@
  */
 
 export type Difficulty = 'story' | 'normal' | 'hard';
-export type KeyAction = 'notebook' | 'journal' | 'leads' | 'people' | 'self' | 'run' | 'rotateL' | 'rotateR' | 'centre' | 'endTurn' | 'quicksave' | 'quickload' | 'undo' | 'camp';
+export type KeyAction = 'notebook' | 'journal' | 'leads' | 'people' | 'self' | 'run' | 'rotateL' | 'rotateR' | 'centre' | 'endTurn' | 'quicksave' | 'quickload' | 'undo' | 'camp' | 'map';
 
 export interface Settings {
   textScale: number;
@@ -19,12 +19,12 @@ export interface Settings {
 
 export const DEFAULT_KEYS: Record<KeyAction, string> = {
   notebook: 'Tab', journal: 'KeyJ', leads: 'KeyL', people: 'KeyP', self: 'KeyC', run: 'KeyR', rotateL: 'KeyQ', rotateR: 'KeyE',
-  centre: 'Space', endTurn: 'KeyT', quicksave: 'F5', quickload: 'F9', undo: 'KeyZ', camp: 'KeyK',
+  centre: 'Space', endTurn: 'KeyT', quicksave: 'F5', quickload: 'F9', undo: 'KeyZ', camp: 'KeyK', map: 'KeyM',
 };
 
 export const KEY_ACTION_NAMES: Record<KeyAction, string> = {
   notebook: 'Open notebook', journal: 'Journal', leads: 'Leads', people: 'People', self: 'Self', run: 'Toggle run', rotateL: 'Rotate left',
-  rotateR: 'Rotate right', centre: 'Centre camera', endTurn: 'End turn', quicksave: 'Quick save', quickload: 'Quick load', undo: 'Undo last move', camp: 'Make camp',
+  rotateR: 'Rotate right', centre: 'Centre camera', endTurn: 'End turn', quicksave: 'Quick save', quickload: 'Quick load', undo: 'Undo last move', camp: 'Make camp', map: 'Field map',
 };
 
 const DEFAULTS: Settings = { textScale: 1, highContrast: false, combatSpeed: 1, difficulty: 'normal', skipSeen: true, tips: true, keys: { ...DEFAULT_KEYS } };

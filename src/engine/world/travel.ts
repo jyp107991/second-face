@@ -58,7 +58,7 @@ export interface NetworkDef {
 
 /** Moving hours per day and km/h by mode; terrain multiplies speed (0 = impassable for that mode). */
 export const MODE: Record<OverlandMode, { kmh: number; hoursPerDay: number; terrain: Record<Terrain, number>; noise: number; discovery: number }> = {
-  foot: { kmh: 3, hoursPerDay: 10, terrain: { road: 1, track: 0.85, rough: 0.6, mountain: 0.4, marsh: 0.45, glass: 0.7 }, noise: 0.8, discovery: 1 },
+  foot: { kmh: 4, hoursPerDay: 10, terrain: { road: 1, track: 0.85, rough: 0.6, mountain: 0.4, marsh: 0.45, glass: 0.7 }, noise: 0.8, discovery: 1 },
   mount: { kmh: 4, hoursPerDay: 10, terrain: { road: 1, track: 0.9, rough: 0.65, mountain: 0.35, marsh: 0.4, glass: 0.6 }, noise: 1, discovery: 0.7 },
   vehicle: { kmh: 18, hoursPerDay: 12, terrain: { road: 1, track: 0.7, rough: 0.35, mountain: 0, marsh: 0, glass: 0.5 }, noise: 1.4, discovery: 0.3 },
 };

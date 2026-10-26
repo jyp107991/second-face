@@ -182,6 +182,12 @@ export const c9_mouth: MapDef = {
       x: 12,
       y: 1,
       facing: 2
+    },
+    {
+      id: "from_shale",
+      x: 12,
+      y: 2,
+      facing: 2
     }
   ],
   exits: [

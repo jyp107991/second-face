@@ -78,6 +78,7 @@ export class Game extends EventBus<GameEvents> {
   private cursor: THREE.Mesh;
   private pathMarker: THREE.Mesh;
   private transitioning = false;
+  private loadSeq = 0;
   /** Multiplier on the game clock (dev "skip time"). */
   timeScale = 1;
   /** When true the simulation is frozen (menus open); rendering continues. */
@@ -252,6 +253,36 @@ export class Game extends EventBus<GameEvents> {
   }
 
   /** Make camp here (outdoors, or at a campfire). */
+  /**
+   * Overland travel between world-map places: the clock runs for the trip, the world moves, and you arrive
+   * at the destination's map (by the spawn named for where you came from, else its first spawn).
+   */
+  async travelTo(to: string, from: string, trip: import('./world/travel').Trip): Promise<void> {
+    const loc = WORLD_MAP.locations[to];
+    if (!loc || this.transitioning) return;
+    this.transitioning = true;
+    await fade(1);
+    this.state.minutes += Math.round(trip.hours * 60);
+    runTimers(this.state, this.quests);
+    runWorldEvents(this.state, WORLD_EVENTS, this.quests);
+    spreadNews(this.state, SETTLEMENTS);
+    this.dailyBody();
+    this.state.world.at = to;
+    const known = (this.state.world.knownLocations ??= []);
+    if (!known.includes(to)) known.push(to);
+    this.state.flags[`visited_${to}`] = true;
+    if (loc.map && MAPS[loc.map]) {
+      const spawn = MAPS[loc.map].spawns.some((sp) => sp.id === `from_${from}`) ? `from_${from}` : undefined;
+      await this.loadLocation(loc.map, spawn);
+    } else {
+      this.emit('message', { text: `${loc.name}: nothing here yet but the road.` });
+    }
+    this.quests.update();
+    await fade(0);
+    this.transitioning = false;
+    void this.save('auto');
+  }
+
   openCamp(): void {
     if (this.encounter.active || !this.loc) return;
     if (this.loc.map.ambience.indoor && !this.nearCampfire()) { this.emit('message', { text: 'Not here. Find a fire or open sky.' }); return; }
@@ -301,7 +332,10 @@ export class Game extends EventBus<GameEvents> {
     const map = MAPS[id];
     if (!map) throw new Error(`Unknown location ${id}`);
     const outfits = (map.npcs ?? []).flatMap((p) => (NPCS[p.def] ? [npcLook(NPCS[p.def]).outfit] : []));
+    const seq = ++this.loadSeq;
     await ensureProxies(outfitProxyKeys(PLAYER_OUTFIT, ...outfits)).catch((e) => console.warn(e));
+    // A newer load started while the clothing was fetching: let it win.
+    if (seq !== this.loadSeq) return;
     if (this.loc) {
       this.scene.remove(this.loc.root);
       this.loc.root.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
@@ -780,6 +814,7 @@ export class Game extends EventBus<GameEvents> {
       if (a === 'run' && this.player && !this.encounter.active) this.player.running = !this.player.running;
       if (a === 'undo') this.undoMove();
       if (a === 'camp') this.openCamp();
+      if (a === 'map' && !this.encounter.active) this.emit('openMap', {});
       if (this.encounter.active && (code === 'Enter' || a === 'endTurn')) this.encounter.endTurn();
     });
   }
@@ -798,6 +833,9 @@ export class Game extends EventBus<GameEvents> {
     this.state.origin = origin;
     this.paused = false;
     if (QUESTS.q_ch1_door) this.quests.questStart('q_ch1_door');
+    // The Cistern's atlases know the nearest town.
+    this.state.world.knownLocations = ['cistern9', 'shale'];
+    this.state.world.at = 'cistern9';
     void this.loadLocation(start, 'start').then(() => this.save('auto'));
   }
 

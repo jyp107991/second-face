@@ -929,6 +929,30 @@ export const shale: MapDef = {
       x: 61,
       y: 25,
       facing: 3
+    },
+    {
+      id: "from_cistern9",
+      x: 2,
+      y: 25,
+      facing: 1
+    },
+    {
+      id: "from_rustdogs",
+      x: 2,
+      y: 24,
+      facing: 1
+    },
+    {
+      id: "from_drywells",
+      x: 61,
+      y: 25,
+      facing: 3
+    },
+    {
+      id: "from_tollhouse",
+      x: 61,
+      y: 26,
+      facing: 3
     }
   ],
   exits: [
