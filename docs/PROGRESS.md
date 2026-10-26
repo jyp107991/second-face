@@ -143,7 +143,12 @@ mid-range Android phone; deployed to Pages.
       Perpetua / the chain-link at night / the gate terminal / Vasha's raid with Dogs placed as allies), `q_a1_ledger` (the
       ledger page → Ada or Pike), the outriders' confession, the debtor's cage, the caravan master; Act 1 starts when the
       first name is read (title card on a timer); `MapDef` exits take `if`; smoke `tools/qa/tollhouse.cjs`; tests
-      `tests/a1.test.ts`. NEXT: B2.2 Signal Hill.) Remaining: Signal Hill, Jonah's month + Ilya, Dry Wells finale, Burnt
+      `tests/a1.test.ts`. B2.2 DONE: Signal Hill — hill map `tools/maps/gen_signalhill.py` (track, terraces, a gully
+      round the camp, the station, the mast), the Hollow (3), `q_a1_signal` (pay / board / speech / Wren / gully / fight;
+      the relay's log, an identity choice, a grid-link route for `ch_neural_link`; `RouteKind` gains `chrome`),
+      `q_a1_broadcast` (silence or amplify the voice that reads the second name; news reaches the overpass), the
+      stranger's cot, the mast view discovers two places; smoke `tools/qa/signalhill.cjs`; tests. NEXT: B2.3 Jonah's
+      month + Militia Drills + Ilya.) Remaining: Signal Hill, Jonah's month + Ilya, Dry Wells finale, Burnt
       Orchard/salt pans/hunting/road encounters/camps, Mender + chrome surgery, the Wheel, Act 1 side quests and smoke. ~8 h.
 - [ ] B3 **Meridian**: 9 districts, the Loop, Brokers' gigs (~25), the Masque, High Water, Static, Turf,
       Court of Accounts, citizenship hearing, Archive Spire, flat, fight pits, reverie dens, races,
@@ -166,6 +171,7 @@ mid-range Android phone; deployed to Pages.
 | Shale | 1/1 | 16/16 | 16/16 | 3/5 | playable; arrival, Tribute Day, the first name |
 | Rust Dogs camp | 1/1 | 13/13 | 13/13 | 2/2 | playable; The Paper, Teo |
 | Tollhouse 9 | 1/1 | 11/11 | 13/13 | 2/2 | playable; six ways through |
+| Signal Hill | 1/1 | 3/3 | 7/7 | 2/2 | playable; relay, voice, gully |
 | Act 1 wilds | 0/5 | 0/15 | 0/15 | 0/6 | — |
 | Meridian | 0/12 | 0/60 | 0/60 | 0/30 | — |
 | Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |

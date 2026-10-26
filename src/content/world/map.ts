@@ -12,6 +12,7 @@ const L: LocationDef[] = [
   { id: 'drywells', name: 'Dry Wells', region: 'sallow', x: 500, y: 395, kind: 'minor', settlement: 'drywells' },
   { id: 'rustdogs', name: 'the overpass', region: 'sallow', x: 430, y: 335, kind: 'major', settlement: 'rustdogs', map: 'overpass' },
   { id: 'tollhouse', name: 'Tollhouse 9', region: 'sallow', x: 420, y: 300, kind: 'major', settlement: 'tollhouse', map: 'tollhouse' },
+  { id: 'signalhill', name: 'Signal Hill', region: 'sallow', x: 402, y: 286, kind: 'minor', map: 'signalhill' },
   { id: 'lm_sallow_01', name: 'Salt-pan wreck', region: 'sallow', x: 442, y: 372, kind: 'landmark', hidden: true },
   { id: 'lm_sallow_02', name: 'Windpump graveyard', region: 'sallow', x: 488, y: 345, kind: 'landmark', hidden: true },
   // The Glass Flats
@@ -47,6 +48,7 @@ const R: RouteDef[] = [
   { a: 'shale', b: 'tollhouse', terrain: 'road', danger: 0.25 },
   { a: 'rustdogs', b: 'tollhouse', terrain: 'road', danger: 0.4 },
   { a: 'tollhouse', b: 'ninebridge', terrain: 'road', danger: 0.25 },
+  { a: 'tollhouse', b: 'signalhill', terrain: 'rough', danger: 0.3 },
   { a: 'tollhouse', b: 'junction', terrain: 'road', danger: 0.3 },
   { a: 'ninebridge', b: 'openfield', terrain: 'track', danger: 0.15 },
   { a: 'ninebridge', b: 'sump', terrain: 'glass', danger: 0.45 },

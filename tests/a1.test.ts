@@ -163,3 +163,95 @@ describe('Tollhouse Ledger', () => {
     expect(g.world.leads.l_pike_paid).toBeTruthy();
   });
 });
+
+function atSignalHill(hour = 12) {
+  const g = newGameState('c9', 0, 0);
+  g.minutes = 12 * 1440 + hour * 60;
+  g.locationId = 'signalhill';
+  g.flags.visited_signalhill = true;
+  const q = new QuestEngine(QUESTS, g);
+  q.questStart('q_a1_signal');
+  return { g, q };
+}
+
+describe('The Hill with the Mast', () => {
+  it('passing the wall starts the hill, and the hill ends pointing at Dry Wells', () => {
+    const { g, q } = atTollhouse();
+    g.pc.inventory.tolls = 20;
+    talk('d_th_gate', g, q, ['(Pay. 20 Tolls)', '(Go through.)']);
+    expect(g.world.quests.q_a1_signal?.stage).toBe('track');
+    g.locationId = 'signalhill'; g.flags.visited_signalhill = true;
+    g.pc.sheet.skillBought.speech = 90;
+    talk('d_sg_camp', g, q, ['I\'m not here for copper', '(Go up.)']);
+    expect(g.flags.sg_camp_passed).toBe(true);
+  });
+
+  it('the camp: pay, a board, speech, Wren, or the gully', () => {
+    let s = atSignalHill();
+    s.g.pc.inventory.tolls = 15;
+    talk('d_sg_camp', s.g, s.q, ['(Pay the track toll. 15 Tolls)', '(Go up.)']);
+    expect(s.g.flags.sg_camp_passed).toBe(true);
+    s = atSignalHill();
+    addItem(s.g.pc.inventory, makeItem('j_electronics'));
+    talk('d_sg_camp', s.g, s.q, ['(Hold up a circuit board.)', '(Go up.)']);
+    expect(s.g.flags.sg_traded).toBe(true);
+    s = atSignalHill();
+    s.g.pc.sheet.skillBought.speech = 90;
+    talk('d_sg_camp', s.g, s.q, ['I\'m not here for copper', '(Go up.)']);
+    expect(s.g.flags.sg_talked).toBe(true);
+    s = atSignalHill();
+    s.g.world.party.push('npc_rd_03');
+    talk('d_sg_camp', s.g, s.q, ['Wren Calloway walks with me', '(Go up.)']);
+    expect(s.g.flags.sg_wren).toBe(true);
+    s = atSignalHill(2);
+    s.g.pc.sheet.skillBought.stealth = 90;
+    talk('d_sg_gully', s.g, s.q, ['(Go up quietly.)', '(Go on.)']);
+    expect(s.g.flags.sg_sneaked).toBe(true);
+    // A loud failure makes the camp alert and the price doubles.
+    s = atSignalHill(12);
+    for (const k of Object.keys(s.g.pc.sheet.baseAttrs) as (keyof typeof s.g.pc.sheet.baseAttrs)[]) s.g.pc.sheet.baseAttrs[k] = 1;
+    s.g.pc.sheet.skillBought.stealth = 0;
+    s.g.pc.inventory.tolls = 30;
+    talk('d_sg_gully', s.g, s.q, ['(Go up quietly.)', '(Down.)']);
+    expect(s.g.flags.sg_alert).toBe(true);
+    const r = new DialogueRunner(DIALOGUES.d_sg_camp, s.g, s.q);
+    expect(r.view()!.options.some((o) => o.text.includes('30 Tolls'))).toBe(true);
+  });
+
+  it('the relay answers east, feeds a line west, and takes a name', () => {
+    const { g, q } = atSignalHill();
+    g.flags.sg_camp_passed = true; g.flags.sg_station = true; q.update();
+    expect(g.world.quests.q_a1_signal.stage).toBe('station');
+    g.pc.sheet.skillBought.science = 90;
+    talk('d_sg_relay', g, q, ['(Read the traffic log.)', '(Type at the cursor.)', '(Type a name that isn\'t yours.)', '(Step back.)']);
+    expect(g.world.knowledge.relay_answers_city).toBe(true);
+    expect(g.world.leads.l_relay_west_line).toBeTruthy();
+    expect(g.flags.relay_named).toBe('false');
+    expect(g.world.quests.q_a1_signal.status).toBe('done');
+    expect(g.world.knowledge.loc_drywells).toBe(true);
+  });
+
+  it('the grid link option exists only with the implant', () => {
+    const { g, q } = atSignalHill();
+    const r = new DialogueRunner(DIALOGUES.d_sg_relay, g, q);
+    expect(r.view()!.options.some((o) => o.text.includes('Listen through the link'))).toBe(false);
+    g.pc.sheet.chrome = { neural: { id: 'ch_neural_link', condition: 1, installedDay: 1 } };
+    talk('d_sg_relay', g, q, ['(Listen through the link.)', '(Pull out.)']);
+    expect(g.world.knowledge.relay_grid_heard).toBe(true);
+    expect(g.flags.relay_grid_filed).toBe(true);
+  });
+
+  it('the voice names the second pin; cut it or put it on the mast', () => {
+    let s = atSignalHill();
+    s.g.pc.sheet.skillBought.mechanics = 90;
+    talk('d_sg_speaker', s.g, s.q, ['(Cut the speaker wire.)', '(Done.)']);
+    expect(s.g.world.knowledge.name2_heard).toBe(true);
+    expect(s.g.world.quests.q_a1_broadcast.stage).toBe('silenced');
+    s = atSignalHill();
+    s.g.pc.sheet.skillBought.science = 90;
+    talk('d_sg_speaker', s.g, s.q, ['(Patch the speaker line', '(Done.)']);
+    expect(s.g.flags.broadcast_amplified).toBe(true);
+    expect(s.g.world.quests.q_a1_broadcast.status).toBe('done');
+    expect(s.g.world.news.some((n) => n.tag === 'broadcast_kessler')).toBe(true);
+  });
+});

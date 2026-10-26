@@ -19,7 +19,7 @@ export interface StageDef {
   end?: 'done' | 'failed';
 }
 
-export type RouteKind = 'fight' | 'talk' | 'stealth' | 'tech' | 'barter' | 'knowledge' | 'survival' | 'medicine';
+export type RouteKind = 'fight' | 'talk' | 'stealth' | 'tech' | 'barter' | 'knowledge' | 'survival' | 'medicine' | 'chrome';
 
 export interface RouteDef { id: string; kind: RouteKind; label: string; requires?: Cond }
 

@@ -26,7 +26,7 @@ export const q_a1_tollhouse: QuestDef = {
     through: {
       journal: 'Through the wall, one way or another. The guild thanks you for your custom, or will send someone to count what you cost it. The highway runs east toward a hill with a mast on it — the next pin on the map.',
       end: 'done',
-      onEnter: [{ learn: 'loc_signalhill' }, { news: { tag: 'passed_tollhouse', text: 'someone from the salt cut went east through Tollhouse 9', valence: 0, size: 3, at: 'tollhouse' } }],
+      onEnter: [{ learn: 'loc_signalhill' }, { quest: 'q_a1_signal', start: true }, { news: { tag: 'passed_tollhouse', text: 'someone from the salt cut went east through Tollhouse 9', valence: 0, size: 3, at: 'tollhouse' } }],
     },
   },
 };
@@ -62,5 +62,63 @@ export const q_a1_ledger: QuestDef = {
     },
     shown: { journal: 'Ada Vey read the page twice and folded it into her shirt. Pike is still at his post. Shale is a small town and the guild is not; but the sheriff knows now what the guild is for.', end: 'done' },
     sold: { journal: 'Pike bought his own page back, courteously, at the posted rate, and burned it in front of you. He will remember the courtesy. So will the guild.', end: 'done' },
+  },
+};
+
+export const q_a1_signal: QuestDef = {
+  id: 'q_a1_signal', title: 'The Hill with the Mast', act: 'a1', critical: true, start: 'track', xp: 300,
+  routes: [
+    { id: 'pay', kind: 'barter', label: 'Pay the Hollow their track toll (or a circuit board)' },
+    { id: 'talk', kind: 'talk', label: 'Tell the Hollow the voice is your problem', requires: { skill: 'speech', gte: 40 } },
+    { id: 'gully', kind: 'stealth', label: 'Climb the gully past the camp', requires: { skill: 'stealth', gte: 40 } },
+    { id: 'fight', kind: 'fight', label: 'Clear the track' },
+    { id: 'relay', kind: 'tech', label: 'Read the relay\'s traffic log', requires: { skill: 'science', gte: 35 } },
+    { id: 'grid', kind: 'chrome', label: 'Listen through a grid link', requires: { chrome: 'ch_neural_link' } },
+  ],
+  stages: {
+    track: {
+      journal: 'The next pin on the map is a hill with a mast, a day east of Tollhouse 9 and north of the highway. The guild does not go up there. Something up there still answers the city.',
+      objectives: [
+        { id: 'reach', text: 'Find the track to Signal Hill', done: { flag: 'visited_signalhill' } },
+        { id: 'camp', text: 'Get past the camp on the track', done: { flag: 'sg_camp_passed' } },
+        { id: 'top', text: 'Reach the station', done: { flag: 'sg_station' } },
+      ],
+      next: [{ if: { flag: 'sg_station' }, stage: 'station' }],
+    },
+    station: {
+      journal: 'A dead station with a live relay and a voice that reads the same list every night. Whatever the stranger\'s map is, this is where it is read from.',
+      objectives: [
+        { id: 'relay', text: 'Find out what the relay still answers', done: { knows: 'relay_answers_city' } },
+        { id: 'voice', text: 'Listen to the voice in the station', done: { knows: 'name2_heard' }, optional: true },
+        { id: 'cot', text: 'Someone slept here. Who?', done: { knows: 'stranger_slept_here' }, optional: true },
+      ],
+      next: [{ if: { knows: 'relay_answers_city' }, stage: 'done' }],
+    },
+    done: {
+      journal: 'The relay at Signal Hill talks to something east and relays a nightly list west — to a pump station in the Sallow marked DW-4. Dry Wells. The map\'s road runs back toward home before it runs on.',
+      end: 'done',
+      onEnter: [{ learn: 'loc_drywells' }, { lead: 'l_relay_west_line' }],
+    },
+  },
+};
+
+export const q_a1_broadcast: QuestDef = {
+  id: 'q_a1_broadcast', title: 'Signal Hill\'s Last Broadcast', act: 'a1', start: 'voice', xp: 120,
+  routes: [
+    { id: 'silence', kind: 'tech', label: 'Cut the speaker', requires: { skill: 'mechanics', gte: 30 } },
+    { id: 'amplify', kind: 'tech', label: 'Put it on the mast for the whole Sallow', requires: { skill: 'science', gte: 45 } },
+    { id: 'leave', kind: 'talk', label: 'Leave it reading' },
+  ],
+  stages: {
+    voice: {
+      journal: 'The voice in the station is reading the stranger\'s list aloud: the overpass, Kessler, day forty-five, killed by Vasha\'s hand. It will read it every night to nobody — unless it reads it to everybody.',
+      objectives: [
+        { id: 'cut', text: 'Silence it', done: { flag: 'broadcast_silenced' }, optional: true },
+        { id: 'amp', text: 'Amplify it', done: { flag: 'broadcast_amplified' }, optional: true },
+      ],
+      next: [{ if: { flag: 'broadcast_silenced' }, stage: 'silenced' }, { if: { flag: 'broadcast_amplified' }, stage: 'amplified' }],
+    },
+    silenced: { journal: 'The speaker is cut. The list is still being sent; nobody on this hill will hear it read again.', end: 'done' },
+    amplified: { journal: 'Every dead radio in the Sallow says the same five words at night now. The overpass will have heard it by morning. Kessler will have heard it. So will Vasha.', end: 'done' },
   },
 };
