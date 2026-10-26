@@ -1,6 +1,7 @@
 /**
  * Loader for the converted MakeHuman (CC0) human assets in public/assets/human (built by
- * tools/mh/build_human.py). Loaded once at startup; figures are then built synchronously.
+ * tools/mh/build_human.py). The core set is loaded once at startup; garments live in their own files and are
+ * fetched on demand with ensureProxies() before the figures that wear them are built (figures build synchronously).
  */
 
 type ViewType = 'float32' | 'int16' | 'uint16' | 'uint8' | 'uint32';
@@ -16,6 +17,8 @@ export interface ProxyMeta {
   transparent: boolean;
   zDepth: number;
   delete: boolean;
+  /** Lazily loaded data file (garments); absent for the core set in human.bin. */
+  file?: string;
 }
 
 export interface BoneMeta { name: string; parent: string | null; head: string; tail: string; plane: [string, string, string] | null; }
@@ -25,7 +28,7 @@ export interface HumanManifest {
   version: number;
   unitScale: number;
   vertexCount: number;
-  views: Record<string, { offset: number; length: number; type: ViewType }>;
+  views: Record<string, { offset: number; length: number; type: ViewType; file?: string }>;
   heightTargets: string[];
   pca: { k: number; scale: number[]; proj: number[][] };
   /** name → [offset, count, scale] into detail_idx / detail_val. */
@@ -58,6 +61,9 @@ export interface HumanData {
 }
 
 let cached: Promise<HumanData> | undefined;
+/** Lazily loaded data files by published path. */
+const files = new Map<string, ArrayBuffer>();
+const pending = new Map<string, Promise<void>>();
 let ready: HumanData | undefined;
 
 const CTORS = { float32: Float32Array, int16: Int16Array, uint16: Uint16Array, uint8: Uint8Array, uint32: Uint32Array };
@@ -78,7 +84,9 @@ export function loadHumanData(baseUrl = import.meta.env.BASE_URL + 'assets/human
     const view = <T extends ArrayBufferView>(name: string): T => {
       const v = m.views[name];
       if (!v) throw new Error(`Missing human data view ${name}`);
-      return new CTORS[v.type](buf, v.offset, v.length) as unknown as T;
+      const b = v.file ? files.get(v.file) : buf;
+      if (!b) throw new Error(`Human data ${name} not loaded (ensureProxies first)`);
+      return new CTORS[v.type](b, v.offset, v.length) as unknown as T;
     };
     ready = {
       m,
@@ -91,4 +99,30 @@ export function loadHumanData(baseUrl = import.meta.env.BASE_URL + 'assets/human
     return ready;
   })();
   return cached;
+}
+
+/** True when a proxy exists and its data is in memory. */
+export function proxyLoaded(key: string): boolean {
+  const meta = ready?.m.proxies[key];
+  return !!meta && (!meta.file || files.has(meta.file));
+}
+
+/** Fetch the data files of lazily loaded proxies (unknown keys are ignored). */
+export async function ensureProxies(keys: Iterable<string>): Promise<void> {
+  const d = await loadHumanData();
+  const jobs: Promise<void>[] = [];
+  for (const k of keys) {
+    const f = d.m.proxies[k]?.file;
+    if (!f || files.has(f)) continue;
+    let p = pending.get(f);
+    if (!p) {
+      p = fetch(d.url(f)).then(async (r) => {
+        if (!r.ok) throw new Error(`Failed to load ${f}`);
+        files.set(f, await r.arrayBuffer());
+      }).finally(() => pending.delete(f));
+      pending.set(f, p);
+    }
+    jobs.push(p);
+  }
+  await Promise.all(jobs);
 }

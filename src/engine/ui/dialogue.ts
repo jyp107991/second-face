@@ -34,7 +34,7 @@ export class DialogueUi {
     this.history = [];
     this.runner = new DialogueRunner(def, this.game.state, { ...this.hostFns(), checkXp: 15 });
     const stage = new PortraitStage(0x0f0c09);
-    stage.setLook(lookFrom(npc.appearance, npc.def.outfit));
+    stage.setLook(lookFrom(npc.appearance, npc.outfit));
     stage.setFraming(0, true);
     stage.offsetY = 0.22;
     stage.yaw = -0.25;

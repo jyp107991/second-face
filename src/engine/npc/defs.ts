@@ -1,5 +1,6 @@
 import type { Outfit } from '../assets/humanoid';
 import type { RandomLookOptions } from '../data/appearance';
+import type { OutfitRole } from '../data/outfits';
 import type { WeaponDef } from '../inventory/items';
 import type { AttributeId, SkillId } from '../stats/rules';
 
@@ -12,7 +13,10 @@ export interface NpcDef {
   name: string;
   /** Appearance: a generator seed plus explicit overrides. */
   look: { seed: number; frame?: 'broad' | 'narrow'; age?: number; over?: RandomLookOptions['over'] };
-  outfit: Outfit;
+  /** Who they are, for generated clothing, build and grime (data/outfits.ts). Default 'settler'. */
+  role?: OutfitRole;
+  /** Explicit outfit; generated from the role when absent. */
+  outfit?: Outfit;
   level: number;
   attrs?: Partial<Record<AttributeId, number>>;
   /** Percentage points added on top of attribute-derived skill bases. */

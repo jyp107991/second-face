@@ -28,16 +28,21 @@ os.makedirs(os.path.join(OUT, 'tex'), exist_ok=True)
 
 blob = bytearray()
 views = {}
+# Lazily loaded assets (garments) go to their own file: (bytearray, published path) while one is being written.
+lazy_target = None
 
 
 def put(name, arr):
     """Append a numpy array to the binary blob (4-byte aligned) and record a view."""
     global blob
     arr = np.ascontiguousarray(arr)
-    while len(blob) % 4:
-        blob.append(0)
-    views[name] = {'offset': len(blob), 'length': int(arr.size), 'type': str(arr.dtype)}
-    blob += arr.tobytes()
+    b = lazy_target[0] if lazy_target else blob
+    while len(b) % 4:
+        b.append(0)
+    views[name] = {'offset': len(b), 'length': int(arr.size), 'type': str(arr.dtype)}
+    if lazy_target:
+        views[name]['file'] = lazy_target[1]
+    b += arr.tobytes()
 
 
 # ---------------------------------------------------------------------------------------------
@@ -216,7 +221,11 @@ print('bones', len(bones))
 def tex(src, name, size, quality=82):
     dst = os.path.join(OUT, 'tex', name + '.webp')
     if not os.path.exists(dst):
-        im = Image.open(src)
+        try:
+            im = Image.open(src)
+        except Exception as e:  # a few community textures are broken files: build the piece untextured
+            print('  skip texture', src, e)
+            return None
         if im.mode not in ('RGB', 'RGBA'):
             im = im.convert('RGBA')
         if max(im.size) > size:
@@ -286,7 +295,22 @@ def read_mhclo(path):
 proxies = {}
 
 
-def add_proxy(kind, folder, name, mat_override=None, tex_size=512, root=None):
+def add_proxy(kind, folder, name, mat_override=None, tex_size=512, root=None, lazy=False):
+    global lazy_target
+    if lazy:
+        lazy_target = (bytearray(), f'proxy/{kind}_{name}.bin')
+        try:
+            _add_proxy(kind, folder, name, mat_override, tex_size, root)
+            os.makedirs(os.path.join(OUT, 'proxy'), exist_ok=True)
+            open(os.path.join(OUT, lazy_target[1]), 'wb').write(bytes(lazy_target[0]))
+            proxies[f'{kind}_{name}']['file'] = lazy_target[1]
+        finally:
+            lazy_target = None
+    else:
+        _add_proxy(kind, folder, name, mat_override, tex_size, root)
+
+
+def _add_proxy(kind, folder, name, mat_override=None, tex_size=512, root=None):
     d = os.path.join(root or SRC, folder, name)
     meta, refs, deletes = read_mhclo(os.path.join(d, name + '.mhclo'))
     pv, pvt, pf = read_obj(os.path.join(d, meta['obj_file'][0]))
@@ -348,6 +372,49 @@ for n in ['male_worksuit01', 'male_casualsuit01', 'male_casualsuit02', 'male_cas
 # Community assets (CC0 unless noted; CC-BY authors credited in docs/CREDITS.md)
 # ---------------------------------------------------------------------------------------------
 skin_detail = {}
+GARMENTS = {
+    'shirts01_cc0': ['elvs_crude_t-shirt_male', 'joepal_crude_t-shirt_female', 'toigo_basic_tucked_t-shirt', 'namuhekam_male_polo_shirt',
+                     'toigo_fisherman_sweater', 'toigo_keyhole_tank_top'],
+    'shirts02_cc-by': ['elvs_hooded_sweat_jacket1', 'elvs_male_shirt_tie_tucked1', 'elvs_male_shirt_untucked_bd1', 'elvs_male_boho_top1',
+                       'janexx_old_female_sweater', 'mindfront_cardigan_long_open_front', 'mindfront_knitted_sweater_01',
+                       'mindfront_knitted_sweater_02', 'punkduck_lace_up_blouse', 'ews_striped_shirt'],
+    'shirts03_cc-by': ['drednicolson_asymmetric_tunic_and_sash', 'drednicolson_short-tail_camo_tee', 'elvs_lara_tank1', 'elvs_male_muscle_shirt1',
+                       'elvs_male_tankshirt1', 'mindfront_tank_top_01', 'punkduck_high_neck_crop_top', 'punkduck_sleeveless_shirt',
+                       'punkduck_v_neck_top', 'punkduck_retro_top', 'elvs_ruffle_sleeve_peasant_blouse_1', 'punkduck_sleeveless_crop_top'],
+    'pants01_cc0': ['cortu_cargo_pants', 'cortu_jeans_shorts', 'toigo_wool_pants', 'toigo_harem_pants'],
+    'pants02_cc-by': ['elvs_jeans_bootcut', 'elvs_jeans_straight_leg', 'elvs_male_trouser', 'mindfront_female_trousers_1', 'mindfront_male_trousers_1',
+                      'mindfront_male_trousers_2', 'punkduck_female_tight_jeans', 'punkduck_male_classic_jeans'],
+    'skirts01_cc0': ['toigo_long_full_skirt', 'frankyaye_mini_skirt_01', 'toigo_tiered_skirt'],
+    'dress01_cc0': ['toigo_shift_dress', 'toigo_halter_dress_midi', 'mindfront_kimono', 'aethelraed_flapper_dress', 'toigo_cut_out_dress'],
+    'shoes01_cc0': ['toigo_ankle_boots_male', 'toigo_ankle_boots_female', 'culturalibre_hero_boots_1', 'culturalibre_hero_boots_2',
+                    'culturalibre_heroine_boots_2', 'toigo_mj_cloth_shoes', 'scailman_gogo_platform_boots'],
+    'shoes02_cc-by': ['mindfront_shoes_oxford_male', 'mindfront_shoes_oxford_female', 'punkduck_running_shoes_01', 'punkduck_tennis_shoes',
+                      'culturalibre_sneakers', 'punkduck_comfortable_sneakers', 'dressupdoc_sandals1'],
+    'shoes03_cc-by': ['maciekg_leather_boots', 'madmanny_tight_leather_boots', 'mindfront_shoes_biker_boots_male', 'mindfront_shoes_biker_boots_female',
+                      'punkduck_winter_boots', 'punkduck_female_half-boots', 'punkduck_riding_boots', 'punkduck_medieval_boots',
+                      'scailman_low-heeled_boots'],
+    'hats01_cc0': ['jujube_newsboy_cap', 'jujube_bag_on_head', 'grinsegold_uncle_joshis_hat'],
+    'hats02_cc0': ['culturalibre_skull_helmet', 'culturalibre_warrior_helmet'],
+    'hats03_cc-by': ['elvs_slouchy_beanie1', 'mindfront_knitted_hat_01', 'elvs_male_flat_cap1', 'mindfront_patrol_cap', 'mindfront_fishing_hat_01',
+                     'mindfront_sherpa_hat', 'culturalibre_cl_bowler_hat', 'elvs_tophat1', 'punkduck_sun_visor_sports_visor', 'elvs_charity_veil1',
+                     'culturalibre_cl_don_quixote_hat'],
+    'gloves01_cc0': ['toigo_gloves_short', 'toigo_gloves_medium', 'learning_mma_fighting_gloves', 'culturalibre_hero-heroine_gloves_1',
+                     'culturalibre_hero-heroine_gloves_5'],
+    'glasses01_cc0': ['spamrakuen_sagerfrogs_glasses_01', 'spamrakuen_sagerfrogs_glasses_02', 'spamrakuen_tbm_glasses_frames_01',
+                      'frankyaye_glasses_library_male', 'kwnet_at_optical_glasses'],
+    'glasses02_cc-by': ['punkduck_goggles', 'elvs_covid_goggles1', 'punkduck_sport-sunglasses', 'elvs_ladies_sunglass1', 'punkduck_glasses_modern_form'],
+    'masks01_cc0': ['joepal_medical_mouth_protection', 'culturalibre_hero-heroine_hood_1', 'culturalibre_hero-heroine_hood_2',
+                    'culturalibre_hero_mask_3', 'culturalibre_hero_mask_4'],
+    'masks02_cc-by': ['gredal_gas_mask', 'culturalibre_bandana_mask', 'elvs_covid_mask', 'elvs_plague_doctor_mask'],
+    'suits02_cc0': ['donitz_monk_robe', 'donitz_monk_robe_hood', 'donitz_monk_robe_hood_down', 'joachip_cyborg_suit',
+                    'matcreator_mc-skinsuit_2022',
+                    'rehmanpolanski_viking_tunic', 'rehmanpolanski_viking_pants', 'rehmanpolanski_viking_boots',
+                    'thegreatengineer_galactic_warrior_uniform'],
+    'suits03_cc-by': ['elvs_male_coveralls_1', 'elvs_emt_uniform_pants_male',
+                      'elvs_emt_uniform_pants_female', 'elvs_racing_fire_suit_male1', 'elvs_racing_fire_suit_female1', 'mindfront_m_suit_01', 'punkduck_wetsuit', 'punkduck_diver_suit', 'mindfront_f_ninja', 'elvs_halter_style_pantsuit1',
+                      'elvs_sporty_tracksuit_hoodie_dress1'],
+    'equipment03_cc-by': ['mindfront_tactical_vest_male', 'mindfront_tactical_vest_female', 'punkduck_wireless_headset', 'punkduck_stethoscope'],
+}
 if COMMUNITY:
     C = COMMUNITY
     beards = [
@@ -376,6 +443,12 @@ if COMMUNITY:
         'normal_old': tex(os.path.join(md, 'mindfront_skin_male_african_middleage', 'skin_male_african_middleage_NRM.png'), 'skin_detail_normal_old', 2048, 92),
         'spec_old': tex(os.path.join(md, 'mindfront_skin_male_african_middleage', 'skin_male_african_middleage_SPEC.png'), 'skin_detail_spec_old', 1024, 85),
     }
+
+    # Garments (lazily loaded per piece; catalogue with slots/tags in src/engine/data/garments.ts).
+    small = ('hats', 'gloves', 'glasses', 'masks', 'shoes')
+    for pack, names in GARMENTS.items():
+        for n in names:
+            add_proxy('clothes', 'clothes', n, root=os.path.join(C, pack), tex_size=512 if pack.startswith(small) else 1024, lazy=True)
 
 print('proxies', len(proxies))
 

@@ -65,7 +65,7 @@ function headTriangles(): Uint32Array {
   return (headTris = new Uint32Array(out));
 }
 
-const needsPaint = (a: Appearance) => a.hair.style !== 'none' || a.facialHair !== 'none' || a.freckles > 0 || a.scars.length > 0 || a.tattoos.length > 0;
+const needsPaint = (a: Appearance) => a.hair.style !== 'none' || a.facialHair !== 'none' || a.freckles > 0 || a.scars.length > 0 || a.tattoos.length > 0 || (a.grime ?? 0) > 0;
 
 /** Build the skin texture. Resolves synchronously if images are preloaded; updates in place otherwise. */
 export function makeSkinTexture(a: Appearance, size = 1024): THREE.CanvasTexture {
@@ -257,6 +257,8 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
   const ink = new THREE.Color().setHex(a.tattooColor, THREE.LinearSRGBColorSpace);
   const scarC = new THREE.Color().setHex(0xd8a592, THREE.LinearSRGBColorSpace);
   const burnC = new THREE.Color().setHex(0xb87666, THREE.LinearSRGBColorSpace);
+  const grime = a.grime ?? 0;
+  const dirtC = new THREE.Color().setHex(0x4a3a2a, THREE.LinearSRGBColorSpace);
   const P = [new V(), new V(), new V()];
   const U = [0, 0, 0], W = [0, 0, 0];
   const p = new V();
@@ -315,6 +317,12 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
             else if (dd < sc.w * 2) { px[i] *= 0.9; px[i + 1] *= 0.88; px[i + 2] *= 0.88; }
           }
         }
+        // Grime: patchy dust and soot, heaviest on the cheeks, jaw and brow; worn into the creases.
+        if (grime > 0) {
+          const n = valueNoise3(dir.x * 5, dir.y * 5, dir.z * 5) * 0.65 + valueNoise3(dir.x * 17, dir.y * 17, dir.z * 17) * 0.35;
+          const k = grime * Math.max(0, Math.min(1, (n - 0.42) * 2.6)) * (0.6 + 0.4 * Math.max(0, -dir.y + 0.3));
+          if (k > 0) blend(i, dirtC, 0.55 * k);
+        }
         // Tattoos (slightly faded ink)
         for (const tt of a.tattoos) {
           const k = tattooAt(tt, dir);
@@ -325,6 +333,18 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
   }
   bleed(px, done, size, 2);
   ctx.putImageData(img, 0, 0);
+}
+
+/** Smooth 3D value noise in 0..1 (lattice hashed with hash2). */
+function valueNoise3(x: number, y: number, z: number): number {
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  const fx = x - xi, fy = y - yi, fz = z - zi;
+  const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy), sz = fz * fz * (3 - 2 * fz);
+  const h = (i: number, j: number, k: number) => hash2(xi + i + (zi + k) * 57, yi + j, 91);
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+  const z0 = lerp(lerp(h(0, 0, 0), h(1, 0, 0), sx), lerp(h(0, 1, 0), h(1, 1, 0), sx), sy);
+  const z1 = lerp(lerp(h(0, 0, 1), h(1, 0, 1), sx), lerp(h(0, 1, 1), h(1, 1, 1), sx), sy);
+  return lerp(z0, z1, sz);
 }
 
 /** Copy painted texels outward into unpainted neighbours so UV seams never show the unpainted photo. */

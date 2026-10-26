@@ -58,6 +58,8 @@ export interface Appearance {
   scars: ScarId[];
   tattoos: TattooId[];
   tattooColor: number;
+  /** 0..1 dirt and sun on the skin (painted). */
+  grime?: number;
 }
 
 export function defaultAppearance(): Appearance {
@@ -76,9 +78,18 @@ export function defaultAppearance(): Appearance {
   };
 }
 
+/** How someone has lived: shapes body (hunger, labour, comfort) and how much grime they carry. */
+export type Lifestyle = 'starved' | 'hard' | 'settled' | 'soft' | 'pampered';
+
+/** Dye colours seen on city heads (bleach, neon, ink). */
+export const HAIR_DYES = [0xe6d9b0, 0xf0ece2, 0xd23a8c, 0x9b3fd1, 0x2fb9c4, 0x3a62d8, 0xd8452c, 0x56c45a, 0x15161c, 0xb9b9c8] as const;
+
 export interface RandomLookOptions {
   frame?: 'broad' | 'narrow';
   age?: number;
+  life?: Lifestyle;
+  /** Chance of dyed hair (city youth and the Crown's fashionable). */
+  dyeChance?: number;
   /** Force an ancestry preset id (no mixing). */
   ancestry?: string;
   over?: Partial<Omit<Appearance, 'shape'>> & { shape?: Partial<ShapeParams> };
@@ -96,6 +107,16 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   s.muscle = clamp(0.5 + gauss() * 0.35);
   s.weight = clamp(0.45 + gauss() * 0.3);
   s.height = clamp(0.5 + gauss() * 0.35);
+  // Body extremes: hunger, heavy labour, comfort; plus the occasional very tall/short or heavy person.
+  const life = opts.life ?? 'settled';
+  const LIFE: Record<Lifestyle, [number, number]> = { starved: [-0.3, -0.15], hard: [-0.1, 0.15], settled: [0, 0], soft: [0.15, -0.15], pampered: [0.1, -0.1] };
+  s.weight = clamp(s.weight + LIFE[life][0]);
+  s.muscle = clamp(s.muscle + LIFE[life][1]);
+  const body = r.next();
+  if (body < 0.07) { s.weight = r.range(0.85, 1); s.muscle = r.range(0.2, 0.6); }
+  else if (body < 0.14 && life !== 'pampered') { s.weight = r.range(0, 0.12); s.muscle = r.range(0.1, 0.45); }
+  else if (body < 0.2) { s.muscle = r.range(0.8, 1); s.weight = r.range(0.4, 0.7); }
+  if (r.chance(0.08)) s.height = r.chance(0.5) ? r.range(0.9, 1) : r.range(0, 0.1);
   // Most people come from one ancestry cluster; about a fifth are visibly mixed.
   const next = () => r.next();
   const pool = ANCESTRIES.map((x) => [x, x.weight] as [AncestryPreset, number]);
@@ -125,6 +146,7 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   const grey = clamp((s.age - 38) / 35) * 0.75 * r.range(0.6, 1.2);
   if (grey > 0) hairColor = mixHex(hairColor, 0xb8b6ae, clamp(grey));
   a.hair = { style: r.pick(hairPool(texture, masc)), color: hairColor };
+  if (opts.dyeChance && s.age < 50 && r.chance(opts.dyeChance)) a.hair.color = r.pick(HAIR_DYES);
   // Brows grey later and less than scalp hair.
   a.browColor = grey > 0.3 ? mixHex(natural, 0xb8b6ae, clamp((grey - 0.3) * 0.6)) : natural;
   a.brows = r.pick(BROW_STYLES.slice(0, 14));
@@ -133,7 +155,13 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   if (r.chance(0.3)) a.scars = [r.pick(SCARS)];
   if (r.chance(0.15)) a.tattoos = [r.pick(TATTOOS)];
   // Individual facial variation: a handful of modifiers nudged off average.
-  for (const id of FACE_VARIATION) if (r.chance(0.6)) s.modifiers[id] = gauss() * 0.45;
+  for (const id of FACE_VARIATION) if (r.chance(0.7)) s.modifiers[id] = gauss() * 0.6;
+  // One or two distinctive features (a strong nose, heavy jaw, wide mouth...) make faces memorable.
+  for (let k = r.int(1, 2); k > 0; k--) s.modifiers[r.pick(FACE_VARIATION)] = (r.chance(0.5) ? 1 : -1) * r.range(0.75, 1);
+  // Weathering: outdoor lives show in the face before the body.
+  if (life === 'starved' || life === 'hard') s.modifiers['head-age|decr|incr'] = Math.max(s.modifiers['head-age|decr|incr'] ?? 0, r.range(0.05, 0.3));
+  if (life === 'starved') s.modifiers['sym:cheek-volume|decr|incr'] = -r.range(0.4, 0.9);
+  a.grime = { starved: r.range(0.4, 0.8), hard: r.range(0.2, 0.55), settled: r.range(0, 0.25), soft: 0, pampered: 0 }[life];
   const o = opts.over ?? {};
   return { ...a, ...o, shape: { ...s, ...(o.shape ?? {}), modifiers: { ...s.modifiers, ...(o.shape?.modifiers ?? {}) } } } as Appearance;
 }
@@ -169,6 +197,12 @@ const FACE_VARIATION = [
   'nose-point-width|decr|incr', 'mouth-scale-horiz|decr|incr', 'mouth-lowerlip-height|decr|incr', 'mouth-upperlip-height|decr|incr',
   'chin-prominent|decr|incr', 'chin-width|decr|incr', 'chin-height|decr|incr', 'sym:cheek-bones|decr|incr', 'forehead-scale-vert|decr|incr',
   'eyebrows-trans|down|up', 'neck-scale-horiz|decr|incr', 'sym:eye-scale|decr|incr', 'sym:eye-trans|in|out', 'sym:ear-scale|decr|incr',
+  'head-rectangular', 'head-triangular', 'head-invertedtriangular', 'head-diamond', 'head-fat|decr|incr', 'nose-curve|concave|convex',
+  'nose-greek|decr|incr', 'nose-volume|decr|incr', 'nose-point|down|up', 'nose-width1|decr|incr', 'nose-width2|decr|incr',
+  'mouth-upperlip-volume|decr|incr', 'mouth-lowerlip-volume|decr|incr', 'mouth-cupidsbow|decr|incr', 'mouth-angles|down|up',
+  'chin-bones|decr|incr', 'chin-prognathism|decr|incr', 'chin-cleft|decr|incr', 'sym:cheek-volume|decr|incr', 'sym:cheek-inner|decr|incr',
+  'sym:eye-bag|decr|incr', 'sym:eye-eyefold-angle|down|up', 'sym:eye-corner1|down|up', 'sym:eye-height2|decr|incr',
+  'sym:eye-epicanthus|in|out', 'forehead-trans|backward|forward', 'eyebrows-angle|down|up', 'sym:ear-lobe|decr|incr', 'sym:ear-wing|decr|incr',
 ];
 
 /** The same person, older (used for the photograph and epilogues). */

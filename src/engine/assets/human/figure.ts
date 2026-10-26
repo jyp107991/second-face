@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { humanData, type HumanData, type ProxyMeta } from './data';
+import { humanData, proxyLoaded, type HumanData, type ProxyMeta } from './data';
 import { evaluateShape, type ShapeParams } from './shape';
 import { humanTexture } from './textures';
 import { applySkinScatter, cavityAO } from './shading';
@@ -16,6 +16,19 @@ import type { FacialHair } from '../../data/appearance';
  * per-character skin texture. Every part shares one Skeleton.
  */
 
+/** One worn garment and how it looks. */
+export interface GarmentLook {
+  name: string;
+  /** Multiplies the texture colour. */
+  tint?: number;
+  /** Re-dye: the fabric keeps its weave/shading but takes this colour. */
+  dye?: number;
+  /** 0..1 dirt, heaviest towards the hem and feet. */
+  grime?: number;
+  /** 0..1 sun-fading and wear. */
+  wear?: number;
+}
+
 export interface FigureSpec {
   shape: ShapeParams;
   /** Skin texture (already composited canvas) or null for the default. */
@@ -25,8 +38,8 @@ export interface FigureSpec {
   lashes?: string;
   hair?: { style: string; color: number };
   browColor?: number;
-  /** Proxy names (e.g. 'male_worksuit01', 'shoes02') with optional tints. */
-  clothes: { name: string; tint?: number }[];
+  /** Garments (proxy names, e.g. 'male_worksuit01', 'cortu_cargo_pants') with colour and wear. */
+  clothes: GarmentLook[];
   facialHair?: FacialHair;
   beardColor?: number;
   /** Skin detail set: 'old' uses deeper creases. */
@@ -118,7 +131,9 @@ export class HumanFigure {
 
     // --- Body
     const deleted = new Set<number>();
-    for (const c of spec.clothes) {
+    // Garments whose data has not been fetched are left off (callers preload with ensureProxies).
+    const clothes = spec.clothes.filter((c) => proxyLoaded(`clothes_${c.name}`));
+    for (const c of clothes) {
       const key = `clothes_${c.name}`;
       if (d.m.proxies[key]?.delete) for (const v of d.view<Uint16Array>(key + '_delete')) deleted.add(v);
     }
@@ -177,9 +192,9 @@ export class HumanFigure {
       const key = `hair_${spec.hair.style}`;
       if (d.m.proxies[key]) this.addProxy(d, P, minY, key, hairMaterial(d.m.proxies[key], spec.hair.color, false, true), lod === 'high' ? hairMaterial(d.m.proxies[key], spec.hair.color, true, true) : undefined);
     }
-    for (const c of spec.clothes) {
+    for (const c of clothes) {
       const key = `clothes_${c.name}`;
-      if (d.m.proxies[key]) this.addProxy(d, P, minY, key, plainMaterial(d.m.proxies[key], c.tint ?? 0xffffff, 0.92));
+      this.addProxy(d, P, minY, key, clothMaterial(d.m.proxies[key], c));
     }
 
     const eye = this.restWorld.get('eye.L');
@@ -391,9 +406,63 @@ function skinDetailMaps(d: HumanData, detail: 'm' | 'old', k: number): Partial<T
   return n ? { normalMap: humanTexture(n, false), normalScale: new THREE.Vector2(k, -k) } : {};
 }
 
-function plainMaterial(meta: ProxyMeta | undefined, tint: number, roughness: number): THREE.Material {
-  return new THREE.MeshStandardMaterial({
-    map: meta?.texture ? humanTexture(meta.texture) : null, color: tint, roughness, metalness: 0,
+/**
+ * Cloth: the garment texture, optionally re-dyed, faded and dirtied. Dirt follows the rest-pose height
+ * (boots and hems get the worst of it) broken up by noise so no two pieces wear the same way.
+ */
+function clothMaterial(meta: ProxyMeta | undefined, g: GarmentLook): THREE.Material {
+  const mat = new THREE.MeshStandardMaterial({
+    map: meta?.texture ? humanTexture(meta.texture) : null, color: g.tint ?? 0xffffff, roughness: 0.92, metalness: 0,
     alphaTest: meta?.transparent ? 0.4 : 0, side: meta?.transparent ? THREE.DoubleSide : THREE.FrontSide,
   });
+  // Outer layers (higher MakeHuman z-depth) win depth ties against the layers beneath them.
+  const z = meta?.zDepth ?? 0;
+  if (z) { mat.polygonOffset = true; mat.polygonOffsetFactor = -z / 25; mat.polygonOffsetUnits = -z / 5; }
+  const dye = g.dye !== undefined ? new THREE.Color(g.dye) : undefined;
+  if (!dye && !g.grime && !g.wear) return mat;
+  const seed = hashName(g.name);
+  mat.onBeforeCompile = (sh) => {
+    sh.uniforms.uDye = { value: dye ?? new THREE.Color(1, 1, 1) };
+    sh.uniforms.uDyeAmt = { value: dye ? 1 : 0 };
+    sh.uniforms.uGrime = { value: g.grime ?? 0 };
+    sh.uniforms.uWear = { value: g.wear ?? 0 };
+    sh.uniforms.uSeed = { value: seed };
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vRest;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRest = position;');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', `#include <common>
+varying vec3 vRest;
+uniform vec3 uDye; uniform float uDyeAmt, uGrime, uWear, uSeed;
+float gHash(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719)) + uSeed) * 43758.5453); }
+float gNoise(vec3 p) {
+  vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(gHash(i), gHash(i + vec3(1,0,0)), f.x), mix(gHash(i + vec3(0,1,0)), gHash(i + vec3(1,1,0)), f.x), f.y),
+             mix(mix(gHash(i + vec3(0,0,1)), gHash(i + vec3(1,0,1)), f.x), mix(gHash(i + vec3(0,1,1)), gHash(i + vec3(1,1,1)), f.x), f.y), f.z);
+}`)
+      .replace('#include <map_fragment>', `#include <map_fragment>
+{
+  vec3 c = diffuseColor.rgb;
+  float l = dot(c, vec3(0.3, 0.55, 0.15));
+  c = mix(c, uDye * clamp(0.25 + l * 1.9, 0.0, 1.6), uDyeAmt);
+  float n = gNoise(vRest * 9.0) * 0.6 + gNoise(vRest * 31.0) * 0.4;
+  // Sun-faded: desaturate and lift towards a dusty grey.
+  float lw = dot(c, vec3(0.3, 0.55, 0.15));
+  c = mix(c, vec3(lw) * 0.85 + vec3(0.07, 0.065, 0.055), uWear * (0.45 + 0.35 * n));
+  // Dirt: worst at the feet and hems, patchy everywhere.
+  float low = 1.0 - smoothstep(0.0, 1.1, vRest.y);
+  float gm = uGrime * clamp((0.25 + 0.9 * low) * smoothstep(0.25, 0.75, n + low * 0.3), 0.0, 1.0);
+  c = mix(c, vec3(0.20, 0.165, 0.12) * (0.7 + 0.6 * n), gm * 0.75);
+  diffuseColor.rgb = c;
+}`);
+  };
+  mat.customProgramCacheKey = () => 'cloth';
+  return mat;
 }
+
+function hashName(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 9973;
+  return h / 97;
+}
+

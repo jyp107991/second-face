@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { MAPS } from '../content';
+import { MAPS, NPCS } from '../content';
 import { cutawayUniforms } from './assets/materials';
 import { EventBus } from './core/events';
 import { hourOf, newGameState, type GameState, type Pronouns } from './core/state';
@@ -12,7 +12,8 @@ import { IsoCamera } from './render/camera';
 import { PostFX } from './render/postfx';
 import { QUALITY, detectQuality, type QualityLevel } from './render/quality';
 import { Actor } from './scene/actor';
-import { lookFrom } from './assets/humanoid';
+import { lookFrom, outfitProxyKeys } from './assets/humanoid';
+import { ensureProxies } from './assets/human/data';
 import type { PortraitStage } from './render/portrait';
 import { QuestEngine } from './quest/quest';
 import { runTimers, type LogicHost } from './world/logic';
@@ -27,7 +28,7 @@ import { utilityAi } from './combat/ai';
 import type { Combatant } from './combat/rules';
 import { Rng } from './core/rng';
 import { Fx } from './render/fx';
-import { spawnNpc, type NpcRuntime } from './npc/spawn';
+import { npcLook, spawnNpc, type NpcRuntime } from './npc/spawn';
 import { addXp, derived } from './stats/sheet';
 import { skillCheck } from './stats/checks';
 import { AudioEngine, stepSoundFor, type SfxId } from './audio/audio';
@@ -204,10 +205,12 @@ export class Game extends EventBus<GameEvents> {
     this.cam.maxView = w < h ? 34 : 30;
   }
 
-  /** Load a location and place the player at a spawn point (or explicit tile). */
-  loadLocation(id: string, spawn?: string | { x: number; y: number }): void {
+  /** Load a location and place the player at a spawn point (or explicit tile). Fetches the clothing worn there first. */
+  async loadLocation(id: string, spawn?: string | { x: number; y: number }): Promise<void> {
     const map = MAPS[id];
     if (!map) throw new Error(`Unknown location ${id}`);
+    const outfits = (map.npcs ?? []).flatMap((p) => (NPCS[p.def] ? [npcLook(NPCS[p.def]).outfit] : []));
+    await ensureProxies(outfitProxyKeys(PLAYER_OUTFIT, ...outfits)).catch((e) => console.warn(e));
     if (this.loc) {
       this.scene.remove(this.loc.root);
       this.loc.root.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
@@ -447,7 +450,7 @@ export class Game extends EventBus<GameEvents> {
     this.transitioning = true;
     const to = exit.to;
     await fade(1);
-    this.loadLocation(to.location, to.spawn);
+    await this.loadLocation(to.location, to.spawn);
     await fade(0);
     this.transitioning = false;
     void this.save('auto');
@@ -516,8 +519,7 @@ export class Game extends EventBus<GameEvents> {
     this.state = newGameState('dev_yard', 15, 9, { sheet, appearance, pronouns, inventory });
     this.state.origin = origin;
     this.paused = false;
-    this.loadLocation('dev_yard', 'start');
-    void this.save('auto');
+    void this.loadLocation('dev_yard', 'start').then(() => this.save('auto'));
   }
 
   // --- Save / load ---------------------------------------------------------
@@ -549,7 +551,7 @@ export class Game extends EventBus<GameEvents> {
   async loadFile(f: SaveFile, slot?: SlotId): Promise<void> {
     await fade(1, 200);
     this.state = structuredClone(f.state);
-    this.loadLocation(this.state.locationId, { x: this.state.player.x, y: this.state.player.y });
+    await this.loadLocation(this.state.locationId, { x: this.state.player.x, y: this.state.player.y });
     this.emit('loaded', { slot });
     await fade(0, 300);
   }

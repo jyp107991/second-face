@@ -1,7 +1,9 @@
 import { NPCS } from '../../content';
 import { lookFrom } from '../assets/humanoid';
 import { initialMorale, type Combatant } from '../combat/rules';
-import { randomAppearance } from '../data/appearance';
+import { randomAppearance, type Appearance } from '../data/appearance';
+import { dressFor, roleLook } from '../data/outfits';
+import type { Outfit } from '../assets/humanoid';
 import { addItem, emptyInventory, equip, makeItem, reload, syncGear, type Inventory } from '../inventory/inventory';
 import { itemDef } from '../inventory/items';
 import { Actor } from '../scene/actor';
@@ -39,7 +41,8 @@ export function buildNpcStats(def: NpcDef): { sheet: CharacterSheet; inv: Invent
 export interface NpcRuntime {
   id: string;
   def: NpcDef;
-  appearance: import('../data/appearance').Appearance;
+  appearance: Appearance;
+  outfit: Outfit;
   actor: Actor;
   combatant: Combatant;
   hostile: boolean;
@@ -49,12 +52,20 @@ export function spawnNpc(p: NpcPlacement, grid: Grid): NpcRuntime {
   const def = NPCS[p.def];
   if (!def) throw new Error(`Unknown NPC ${p.def}`);
   const id = p.id ?? def.id;
-  const app = randomAppearance(def.look.seed, { frame: def.look.frame, age: def.look.age, over: def.look.over });
-  const actor = new Actor({ id, x: p.x, y: p.y, facing: p.facing ?? 0, look: lookFrom(app, def.outfit, 'low') }, grid);
+  const { app, outfit } = npcLook(def);
+  const actor = new Actor({ id, x: p.x, y: p.y, facing: p.facing ?? 0, look: lookFrom(app, outfit, 'low') }, grid);
   const { sheet, inv } = buildNpcStats(def);
   const combatant: Combatant = {
     id, name: def.name, team: def.team, sheet, inv, x: p.x, y: p.y, ap: 0, morale: initialMorale(def.courage), evasion: 0,
     natural: def.natural, courage: def.courage,
   };
-  return { id, def, appearance: app, actor, combatant, hostile: !!def.hostile };
+  return { id, def, appearance: app, outfit, actor, combatant, hostile: !!def.hostile };
+}
+
+/** An NPC's appearance and clothing: generated from seed + role unless the definition fixes them. */
+export function npcLook(def: NpcDef): { app: Appearance; outfit: Outfit } {
+  const role = def.role ?? 'settler';
+  const app = randomAppearance(def.look.seed, { frame: def.look.frame, age: def.look.age, over: def.look.over, ...roleLook(role) });
+  const fit = def.look.frame ? (def.look.frame === 'broad' ? 'm' : 'f') : app.shape.gender > 0.5 ? 'm' : 'f';
+  return { app, outfit: def.outfit ?? dressFor(def.look.seed, role, fit) };
 }

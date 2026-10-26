@@ -51,7 +51,13 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
 - [x] W2 DESIGN: bionics (+ Drift), city systems (districts, gigs, grid-riding, reveries), inequality as play,
       settlement types, world scale, transport & fast travel; ROADMAP re-plan
 - [x] W3 Secret plot pass 3 (cities, corporation, bionics woven into the Plan story)
-- [ ] W4 NPC appearance variance (roles/class outfits, accessories, body extremes, stronger faces, dyes, grime)
+- [~] W4 NPC appearance variance — done: 125 layered community garments (lazy per-piece files, `ensureProxies`;
+      `loadLocation` preloads what a map's cast wears), garment catalogue `data/garments.ts` (slot/fit/style/dye/hair),
+      15 outfit roles `data/outfits.ts` (`dressFor`, palettes, grime/wear; NpcDef `role`, outfit optional), cloth shader
+      (re-dye, sun-fade, hem-heavy dirt), hats crop/hide hair, lifestyle bodies (starved..pampered) + rare extremes,
+      1–2 distinctive face features + ~50 face modifiers, city hair dyes, painted face grime. QA sheets in scratchpad
+      (garm.cjs, roles.cjs). **Remaining W4b:** merge a low-LOD figure's garments into one mesh with a runtime texture
+      atlas (dye/grime as vertex attributes) — a dressed NPC is ~10 draw calls now, budget needs ~3; eyepatch piece.
 - [ ] W5 Data models + validators: settlement types, bionics (engine + tests), world map regions/routes/transport
 
 **Current step (owner: less Fallout, more creative modern frontier features; rework story core; notebook UI):**

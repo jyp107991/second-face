@@ -11,14 +11,15 @@ import { Notebook } from './engine/ui/notebook';
 import { Transfer } from './engine/ui/transfer';
 import { PortraitStage } from './engine/render/portrait';
 import { DialogueUi } from './engine/ui/dialogue';
-import { lookFrom } from './engine/assets/humanoid';
+import { lookFrom, outfitProxyKeys } from './engine/assets/humanoid';
 import { agedAppearance, defaultAppearance, randomAppearance } from './engine/data/appearance';
 import { loadHumanData } from './engine/assets/human/data';
 import { preloadHumanTextures } from './engine/assets/human/textures';
 import { PLAYER_OUTFIT } from './engine/game';
 import { HumanFigure } from './engine/assets/human/figure';
 import { evaluateShape } from './engine/assets/human/shape';
-import { humanData } from './engine/assets/human/data';
+import { humanData, ensureProxies } from './engine/assets/human/data';
+import { dressFor, roleLook } from './engine/data/outfits';
 import * as THREE from 'three';
 
 const app = document.getElementById('app')!;
@@ -51,9 +52,9 @@ const dev = import.meta.env.DEV || new URLSearchParams(location.search).has('dev
 if (dev) {
   new DevOverlay(game);
   // Dev helpers for the browser console / automated screenshots.
-  (window as unknown as Record<string, unknown>).SF = { PortraitStage, lookFrom, randomAppearance, agedAppearance, defaultAppearance, PLAYER_OUTFIT, HumanFigure, THREE, evaluateShape, humanData };
+  (window as unknown as Record<string, unknown>).SF = { PortraitStage, lookFrom, randomAppearance, agedAppearance, defaultAppearance, PLAYER_OUTFIT, HumanFigure, THREE, evaluateShape, humanData, ensureProxies, outfitProxyKeys, dressFor, roleLook };
 }
-game.loadLocation(game.state.locationId, 'start');
+await game.loadLocation(game.state.locationId, 'start');
 game.start();
 menu.open('title');
 

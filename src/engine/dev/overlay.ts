@@ -79,7 +79,7 @@ export class DevOverlay {
   private onClick(a?: string): void {
     const g = this.game;
     switch (a) {
-      case 'go': g.loadLocation((this.el.querySelector('.loc') as HTMLSelectElement).value); break;
+      case 'go': void g.loadLocation((this.el.querySelector('.loc') as HTMLSelectElement).value); break;
       case 'tp': this.teleportMode = true; g.emit('message', { text: 'Tap a tile to teleport' }); break;
       case 't1': g.state.minutes += 60; break;
       case 't6': g.state.minutes += 360; break;

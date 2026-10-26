@@ -1,9 +1,13 @@
 import * as THREE from 'three';
 import { defaultAppearance, type Appearance } from '../data/appearance';
-import { HumanFigure } from './human/figure';
+import { HumanFigure, type GarmentLook } from './human/figure';
 import { makeSkinTexture } from './human/skin';
+import { outfitHairMode } from '../data/outfits';
 
-/** What a character wears. Suits/shoes are fitted clothing meshes; tints recolour them. */
+/**
+ * What a character wears. Suits/shoes are the base full outfits; `layers` are separate garments (see
+ * data/garments.ts) worn inner to outer. `grime`/`wear` apply to every garment that does not set its own.
+ */
 export interface Outfit {
   suit?: string;
   suitTint?: number;
@@ -11,6 +15,23 @@ export interface Outfit {
   shoeTint?: number;
   /** Gas mask over the face. */
   mask?: boolean;
+  layers?: GarmentLook[];
+  grime?: number;
+  wear?: number;
+}
+
+/** Every garment an outfit puts on the figure, in draw order. */
+export function outfitGarments(o: Outfit): GarmentLook[] {
+  const out: GarmentLook[] = [];
+  if (o.suit) out.push({ name: o.suit, tint: o.suitTint });
+  if (o.shoes) out.push({ name: o.shoes, tint: o.shoeTint });
+  for (const g of o.layers ?? []) out.push(g);
+  return out.map((g) => ({ ...g, grime: g.grime ?? o.grime, wear: g.wear ?? o.wear }));
+}
+
+/** Proxy keys to fetch (ensureProxies) before building figures wearing these outfits. */
+export function outfitProxyKeys(...outfits: Outfit[]): string[] {
+  return [...new Set(outfits.flatMap((o) => outfitGarments(o).map((g) => `clothes_${g.name}`)))];
 }
 
 export interface HumanoidLook {
@@ -21,6 +42,12 @@ export interface HumanoidLook {
 
 export function lookFrom(appearance: Appearance | undefined, outfit: Outfit, lod?: 'high' | 'low'): HumanoidLook {
   return { appearance: appearance ?? defaultAppearance(), outfit, lod };
+}
+
+/** Hair under a hat or helmet: hidden entirely, or cropped to the painted hairline. */
+function underHeadwear(a: Appearance, mode: 'hide' | 'crop' | undefined): Appearance {
+  if (!mode || a.hair.style === 'none' || a.hair.style.startsWith('paint_')) return a;
+  return { ...a, hair: { ...a.hair, style: mode === 'hide' ? 'none' : 'paint_buzz' } };
 }
 
 const X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0);
@@ -52,11 +79,10 @@ export class Humanoid {
   private rootRestY: number;
 
   constructor(look: HumanoidLook) {
-    const app = look.appearance, o = look.outfit;
+    const o = look.outfit;
+    const app = underHeadwear(look.appearance, outfitHairMode(o));
     this.skin = makeSkinTexture(app, look.lod === 'low' ? 1024 : 2048);
-    const clothes: { name: string; tint?: number }[] = [];
-    if (o.suit) clothes.push({ name: o.suit, tint: o.suitTint });
-    if (o.shoes) clothes.push({ name: o.shoes, tint: o.shoeTint });
+    const clothes = outfitGarments(o);
     this.figure = new HumanFigure({
       shape: app.shape, skin: this.skin, eyes: app.eyes, brows: app.brows, hair: app.hair, clothes, lod: look.lod,
       browColor: app.browColor ?? app.hair.color, facialHair: app.facialHair, skinDetail: app.shape.age > 45 ? 'old' : 'm',

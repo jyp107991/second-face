@@ -1,0 +1,184 @@
+/**
+ * Garment catalogue: the separate clothing pieces built from the MakeHuman community packs
+ * (tools/mh/build_human.py GARMENTS). Each has a body slot, a fit, style tags that outfit roles draw from
+ * (data/outfits.ts), whether it takes a re-dye, and what it does to the hair beneath it.
+ */
+
+export type GarmentSlot = 'full' | 'top' | 'over' | 'legs' | 'feet' | 'head' | 'eyes' | 'face' | 'hands' | 'gear';
+/** Cut: masculine, feminine or either. */
+export type GarmentFit = 'm' | 'f' | 'u';
+export type GarmentStyle =
+  | 'rag' | 'work' | 'casual' | 'formal' | 'rich' | 'street' | 'raider' | 'military' | 'medical' | 'faith'
+  | 'tech' | 'corp' | 'water' | 'cold' | 'sport' | 'nomad' | 'vault';
+
+export interface GarmentDef {
+  slot: GarmentSlot;
+  fit: GarmentFit;
+  tags: GarmentStyle[];
+  /** Plain enough fabric to be re-dyed to a palette colour (otherwise only tinted/faded). */
+  dye?: boolean;
+  /** Head pieces: 'hide' removes hair entirely (helmets, hoods), 'crop' keeps only the painted hairline (caps, beanies). */
+  hair?: 'hide' | 'crop';
+  /** A full piece that leaves the legs to separate trousers (tunics, long jackets). */
+  legsFree?: boolean;
+}
+
+export const GARMENTS: Record<string, GarmentDef> = {
+  // Tops
+  'elvs_crude_t-shirt_male': { slot: 'top', fit: 'm', tags: ['rag', 'work', 'casual', 'raider'], dye: true },
+  'joepal_crude_t-shirt_female': { slot: 'top', fit: 'f', tags: ['rag', 'work', 'casual', 'raider'], dye: true },
+  'toigo_basic_tucked_t-shirt': { slot: 'top', fit: 'u', tags: ['casual', 'work', 'street', 'vault'], dye: true },
+  namuhekam_male_polo_shirt: { slot: 'top', fit: 'm', tags: ['casual', 'corp', 'vault'], dye: true },
+  toigo_fisherman_sweater: { slot: 'top', fit: 'u', tags: ['cold', 'work', 'water', 'casual'], dye: true },
+  toigo_keyhole_tank_top: { slot: 'top', fit: 'f', tags: ['street', 'casual'] },
+  elvs_hooded_sweat_jacket1: { slot: 'top', fit: 'u', tags: ['street', 'casual', 'cold'], dye: true },
+  elvs_male_shirt_tie_tucked1: { slot: 'top', fit: 'm', tags: ['formal', 'corp', 'rich'], dye: true },
+  elvs_male_shirt_untucked_bd1: { slot: 'top', fit: 'm', tags: ['casual', 'formal', 'street'], dye: true },
+  elvs_male_boho_top1: { slot: 'top', fit: 'm', tags: ['faith', 'casual', 'nomad'], dye: true },
+  janexx_old_female_sweater: { slot: 'top', fit: 'f', tags: ['cold', 'casual', 'rag'], dye: true },
+  mindfront_cardigan_long_open_front: { slot: 'top', fit: 'f', tags: ['cold', 'casual', 'faith'], dye: true },
+  mindfront_knitted_sweater_01: { slot: 'top', fit: 'u', tags: ['cold', 'casual', 'work'], dye: true },
+  mindfront_knitted_sweater_02: { slot: 'top', fit: 'u', tags: ['cold', 'casual', 'work'], dye: true },
+  punkduck_lace_up_blouse: { slot: 'top', fit: 'f', tags: ['faith', 'casual', 'rich'], dye: true },
+  ews_striped_shirt: { slot: 'top', fit: 'f', tags: ['street', 'casual'] },
+  'drednicolson_asymmetric_tunic_and_sash': { slot: 'top', fit: 'f', tags: ['nomad', 'faith', 'rag'] },
+  'drednicolson_short-tail_camo_tee': { slot: 'top', fit: 'f', tags: ['military', 'raider', 'work'] },
+  elvs_lara_tank1: { slot: 'top', fit: 'f', tags: ['work', 'raider', 'street', 'sport'], dye: true },
+  elvs_male_muscle_shirt1: { slot: 'top', fit: 'm', tags: ['work', 'raider', 'street'], dye: true },
+  elvs_male_tankshirt1: { slot: 'top', fit: 'm', tags: ['work', 'raider', 'rag'], dye: true },
+  mindfront_tank_top_01: { slot: 'top', fit: 'f', tags: ['work', 'raider', 'sport'], dye: true },
+  punkduck_high_neck_crop_top: { slot: 'top', fit: 'f', tags: ['street', 'rich'], dye: true },
+  punkduck_sleeveless_shirt: { slot: 'top', fit: 'f', tags: ['casual', 'work', 'faith'], dye: true },
+  punkduck_v_neck_top: { slot: 'top', fit: 'f', tags: ['casual', 'street'], dye: true },
+  punkduck_retro_top: { slot: 'top', fit: 'f', tags: ['casual', 'street'] },
+  elvs_ruffle_sleeve_peasant_blouse_1: { slot: 'top', fit: 'f', tags: ['faith', 'casual', 'rich'], dye: true },
+  punkduck_sleeveless_crop_top: { slot: 'top', fit: 'f', tags: ['street', 'sport', 'raider'], dye: true },
+  rehmanpolanski_viking_tunic: { slot: 'top', fit: 'm', tags: ['rag', 'nomad', 'raider', 'faith'] },
+
+  // Over layers and gear
+  mindfront_tactical_vest_male: { slot: 'over', fit: 'm', tags: ['military', 'raider', 'corp'] },
+  mindfront_tactical_vest_female: { slot: 'over', fit: 'f', tags: ['military', 'raider', 'corp'] },
+  punkduck_wireless_headset: { slot: 'gear', fit: 'u', tags: ['tech', 'corp', 'street'] },
+  punkduck_stethoscope: { slot: 'gear', fit: 'u', tags: ['medical'] },
+
+  // Legs
+  cortu_cargo_pants: { slot: 'legs', fit: 'u', tags: ['work', 'military', 'raider', 'casual'], dye: true },
+  cortu_jeans_shorts: { slot: 'legs', fit: 'u', tags: ['rag', 'street', 'water'] },
+  toigo_wool_pants: { slot: 'legs', fit: 'm', tags: ['work', 'formal', 'cold'], dye: true },
+  toigo_harem_pants: { slot: 'legs', fit: 'u', tags: ['nomad', 'faith', 'street'], dye: true },
+  elvs_jeans_bootcut: { slot: 'legs', fit: 'm', tags: ['work', 'casual', 'raider'] },
+  elvs_jeans_straight_leg: { slot: 'legs', fit: 'm', tags: ['work', 'casual', 'street'] },
+  elvs_male_trouser: { slot: 'legs', fit: 'm', tags: ['formal', 'corp', 'rich'], dye: true },
+  mindfront_female_trousers_1: { slot: 'legs', fit: 'f', tags: ['work', 'casual', 'formal'], dye: true },
+  mindfront_male_trousers_1: { slot: 'legs', fit: 'm', tags: ['work', 'casual'], dye: true },
+  mindfront_male_trousers_2: { slot: 'legs', fit: 'm', tags: ['formal', 'corp', 'casual'], dye: true },
+  punkduck_female_tight_jeans: { slot: 'legs', fit: 'f', tags: ['casual', 'street', 'work', 'raider'] },
+  punkduck_male_classic_jeans: { slot: 'legs', fit: 'm', tags: ['casual', 'work', 'street'] },
+  rehmanpolanski_viking_pants: { slot: 'legs', fit: 'm', tags: ['rag', 'nomad', 'raider'] },
+  elvs_emt_uniform_pants_male: { slot: 'legs', fit: 'm', tags: ['medical', 'work', 'vault'], dye: true },
+  elvs_emt_uniform_pants_female: { slot: 'legs', fit: 'f', tags: ['medical', 'work', 'vault'], dye: true },
+  toigo_long_full_skirt: { slot: 'legs', fit: 'f', tags: ['faith', 'rag', 'nomad', 'casual'], dye: true },
+  frankyaye_mini_skirt_01: { slot: 'legs', fit: 'f', tags: ['street'] },
+  toigo_tiered_skirt: { slot: 'legs', fit: 'f', tags: ['faith', 'casual', 'rich'], dye: true },
+
+  // Full outfits
+  toigo_shift_dress: { slot: 'full', fit: 'f', tags: ['casual', 'faith', 'rich'], dye: true },
+  toigo_halter_dress_midi: { slot: 'full', fit: 'f', tags: ['rich', 'formal', 'street'], dye: true },
+  mindfront_kimono: { slot: 'full', fit: 'u', tags: ['rich', 'faith'], dye: true },
+  aethelraed_flapper_dress: { slot: 'full', fit: 'f', tags: ['rich', 'formal'], dye: true },
+  toigo_cut_out_dress: { slot: 'full', fit: 'f', tags: ['rich', 'street'] },
+  donitz_monk_robe: { slot: 'full', fit: 'u', tags: ['faith', 'rag', 'nomad'], dye: true },
+  joachip_cyborg_suit: { slot: 'full', fit: 'u', tags: ['tech', 'work', 'vault'] },
+  'matcreator_mc-skinsuit_2022': { slot: 'full', fit: 'u', tags: ['tech'], dye: true },
+  thegreatengineer_galactic_warrior_uniform: { slot: 'full', fit: 'f', tags: ['corp', 'military', 'tech'] },
+  elvs_male_coveralls_1: { slot: 'full', fit: 'm', tags: ['work', 'vault', 'tech'], dye: true },
+  elvs_racing_fire_suit_male1: { slot: 'full', fit: 'm', tags: ['nomad', 'sport', 'work'] },
+  elvs_racing_fire_suit_female1: { slot: 'full', fit: 'f', tags: ['nomad', 'sport', 'work'] },
+  mindfront_m_suit_01: { slot: 'full', fit: 'm', tags: ['formal', 'rich', 'corp'], dye: true },
+  punkduck_wetsuit: { slot: 'full', fit: 'u', tags: ['water', 'sport'] },
+  punkduck_diver_suit: { slot: 'full', fit: 'u', tags: ['water', 'work'] },
+  mindfront_f_ninja: { slot: 'full', fit: 'f', tags: ['street', 'military', 'raider'], dye: true },
+  elvs_halter_style_pantsuit1: { slot: 'full', fit: 'f', tags: ['rich', 'formal'], dye: true },
+  elvs_sporty_tracksuit_hoodie_dress1: { slot: 'full', fit: 'f', tags: ['street', 'sport', 'casual'], dye: true },
+
+  // Feet
+  toigo_ankle_boots_male: { slot: 'feet', fit: 'm', tags: ['work', 'casual', 'raider', 'vault'] },
+  toigo_ankle_boots_female: { slot: 'feet', fit: 'f', tags: ['work', 'casual', 'raider', 'vault'] },
+  culturalibre_hero_boots_1: { slot: 'feet', fit: 'm', tags: ['military', 'raider'] },
+  culturalibre_hero_boots_2: { slot: 'feet', fit: 'm', tags: ['military', 'work'] },
+  culturalibre_heroine_boots_2: { slot: 'feet', fit: 'f', tags: ['military', 'raider', 'street'] },
+  toigo_mj_cloth_shoes: { slot: 'feet', fit: 'u', tags: ['rag', 'faith', 'casual'] },
+  scailman_gogo_platform_boots: { slot: 'feet', fit: 'f', tags: ['street', 'rich'] },
+  mindfront_shoes_oxford_male: { slot: 'feet', fit: 'm', tags: ['formal', 'rich', 'corp'] },
+  mindfront_shoes_oxford_female: { slot: 'feet', fit: 'f', tags: ['formal', 'rich', 'corp'] },
+  punkduck_running_shoes_01: { slot: 'feet', fit: 'u', tags: ['sport', 'street', 'casual'] },
+  punkduck_tennis_shoes: { slot: 'feet', fit: 'u', tags: ['sport', 'casual', 'vault'] },
+  culturalibre_sneakers: { slot: 'feet', fit: 'u', tags: ['street', 'casual'] },
+  punkduck_comfortable_sneakers: { slot: 'feet', fit: 'f', tags: ['casual', 'street'] },
+  dressupdoc_sandals1: { slot: 'feet', fit: 'u', tags: ['faith', 'rag', 'water'] },
+  maciekg_leather_boots: { slot: 'feet', fit: 'u', tags: ['work', 'raider', 'nomad'] },
+  madmanny_tight_leather_boots: { slot: 'feet', fit: 'u', tags: ['raider', 'street', 'nomad'] },
+  mindfront_shoes_biker_boots_male: { slot: 'feet', fit: 'm', tags: ['raider', 'nomad', 'street', 'military'] },
+  mindfront_shoes_biker_boots_female: { slot: 'feet', fit: 'f', tags: ['raider', 'nomad', 'street', 'military'] },
+  punkduck_winter_boots: { slot: 'feet', fit: 'f', tags: ['cold', 'work'] },
+  'punkduck_female_half-boots': { slot: 'feet', fit: 'f', tags: ['casual', 'work'] },
+  punkduck_riding_boots: { slot: 'feet', fit: 'f', tags: ['rich', 'nomad', 'formal'] },
+  punkduck_medieval_boots: { slot: 'feet', fit: 'u', tags: ['rag', 'nomad', 'faith'] },
+  'scailman_low-heeled_boots': { slot: 'feet', fit: 'u', tags: ['casual', 'work'] },
+  rehmanpolanski_viking_boots: { slot: 'feet', fit: 'm', tags: ['rag', 'nomad', 'raider', 'cold'] },
+
+  // Head
+  jujube_newsboy_cap: { slot: 'head', fit: 'u', tags: ['work', 'casual', 'street'], dye: true, hair: 'crop' },
+  jujube_bag_on_head: { slot: 'head', fit: 'u', tags: ['raider'], hair: 'hide' },
+  grinsegold_uncle_joshis_hat: { slot: 'head', fit: 'u', tags: ['work', 'nomad'], hair: 'crop' },
+  culturalibre_skull_helmet: { slot: 'head', fit: 'u', tags: ['raider'], hair: 'hide' },
+  culturalibre_warrior_helmet: { slot: 'head', fit: 'u', tags: ['raider', 'military'], hair: 'hide' },
+  elvs_slouchy_beanie1: { slot: 'head', fit: 'u', tags: ['street', 'cold', 'casual'], dye: true, hair: 'crop' },
+  mindfront_knitted_hat_01: { slot: 'head', fit: 'u', tags: ['cold', 'work', 'water'], dye: true, hair: 'crop' },
+  elvs_male_flat_cap1: { slot: 'head', fit: 'm', tags: ['work', 'casual'], hair: 'crop' },
+  mindfront_patrol_cap: { slot: 'head', fit: 'u', tags: ['military', 'corp'], dye: true, hair: 'crop' },
+  mindfront_fishing_hat_01: { slot: 'head', fit: 'u', tags: ['water', 'work', 'nomad'], dye: true, hair: 'crop' },
+  mindfront_sherpa_hat: { slot: 'head', fit: 'u', tags: ['cold', 'nomad'], hair: 'hide' },
+  culturalibre_cl_bowler_hat: { slot: 'head', fit: 'u', tags: ['formal', 'rich'], hair: 'crop' },
+  elvs_tophat1: { slot: 'head', fit: 'u', tags: ['rich', 'formal'], hair: 'crop' },
+  punkduck_sun_visor_sports_visor: { slot: 'head', fit: 'u', tags: ['sport', 'work'] },
+  elvs_charity_veil1: { slot: 'head', fit: 'f', tags: ['faith'], hair: 'crop' },
+  culturalibre_cl_don_quixote_hat: { slot: 'head', fit: 'u', tags: ['nomad', 'work'], hair: 'crop' },
+  donitz_monk_robe_hood: { slot: 'head', fit: 'u', tags: ['faith'], hair: 'hide' },
+  donitz_monk_robe_hood_down: { slot: 'gear', fit: 'u', tags: ['faith'] },
+  'culturalibre_hero-heroine_hood_1': { slot: 'head', fit: 'u', tags: ['street', 'raider'], hair: 'hide' },
+  'culturalibre_hero-heroine_hood_2': { slot: 'head', fit: 'u', tags: ['street', 'raider'], hair: 'hide' },
+
+  // Eyes
+  spamrakuen_sagerfrogs_glasses_01: { slot: 'eyes', fit: 'u', tags: ['casual', 'formal'] },
+  spamrakuen_sagerfrogs_glasses_02: { slot: 'eyes', fit: 'u', tags: ['casual', 'formal'] },
+  spamrakuen_tbm_glasses_frames_01: { slot: 'eyes', fit: 'u', tags: ['formal', 'corp', 'medical'] },
+  frankyaye_glasses_library_male: { slot: 'eyes', fit: 'u', tags: ['formal', 'casual', 'tech'] },
+  kwnet_at_optical_glasses: { slot: 'eyes', fit: 'u', tags: ['casual', 'tech', 'medical'] },
+  punkduck_goggles: { slot: 'eyes', fit: 'u', tags: ['nomad', 'work', 'raider', 'tech'] },
+  elvs_covid_goggles1: { slot: 'eyes', fit: 'u', tags: ['medical', 'work', 'tech'] },
+  'punkduck_sport-sunglasses': { slot: 'eyes', fit: 'u', tags: ['street', 'sport', 'raider', 'nomad'] },
+  elvs_ladies_sunglass1: { slot: 'eyes', fit: 'u', tags: ['rich', 'street'] },
+  punkduck_glasses_modern_form: { slot: 'eyes', fit: 'u', tags: ['rich', 'corp', 'street'] },
+
+  // Face
+  joepal_medical_mouth_protection: { slot: 'face', fit: 'u', tags: ['medical', 'work'] },
+  elvs_covid_mask: { slot: 'face', fit: 'u', tags: ['medical', 'street', 'work'], dye: true },
+  gredal_gas_mask: { slot: 'face', fit: 'u', tags: ['raider', 'military', 'work', 'tech'] },
+  culturalibre_bandana_mask: { slot: 'face', fit: 'u', tags: ['raider', 'nomad', 'rag'], dye: true },
+  elvs_plague_doctor_mask: { slot: 'face', fit: 'u', tags: ['rich', 'faith'] },
+  culturalibre_hero_mask_3: { slot: 'face', fit: 'u', tags: ['street', 'raider'] },
+  culturalibre_hero_mask_4: { slot: 'face', fit: 'u', tags: ['street', 'raider', 'rich'] },
+
+  // Hands
+  toigo_gloves_short: { slot: 'hands', fit: 'u', tags: ['work', 'formal', 'cold'], dye: true },
+  toigo_gloves_medium: { slot: 'hands', fit: 'u', tags: ['rich', 'formal'], dye: true },
+  learning_mma_fighting_gloves: { slot: 'hands', fit: 'u', tags: ['raider', 'street', 'sport'] },
+  'culturalibre_hero-heroine_gloves_1': { slot: 'hands', fit: 'u', tags: ['military', 'raider', 'work'] },
+  'culturalibre_hero-heroine_gloves_5': { slot: 'hands', fit: 'u', tags: ['military', 'tech'] },
+};
+
+/** Garments for a slot that suit a fit (unisex pieces suit both). */
+export function garmentsFor(slot: GarmentSlot, fit: 'm' | 'f'): string[] {
+  return Object.entries(GARMENTS).filter(([, g]) => g.slot === slot && (g.fit === 'u' || g.fit === fit)).map(([id]) => id);
+}

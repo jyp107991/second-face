@@ -25,5 +25,27 @@ beards/moustaches from bodyparts05 (grinsegold "Beard Sigmund", rehmanpolanski "
 These are used modified (refit to the game's body, recoloured, resampled textures).
 License: https://creativecommons.org/licenses/by/4.0/
 
+## Clothing — MakeHuman community asset packs
+Garments from the shirts, pants, skirts, dress, shoes, hats, gloves, glasses, masks, suits and equipment packs,
+fetched by `tools/mh/fetch_community.sh` and refit, recoloured and resampled by `tools/mh/build_human.py`.
+
+CC0 1.0 (credited with thanks): aethelraed, cortu, culturalibre, donitz, elvs, frankyaye, grinsegold, joachip, joepal, jujube, kwnet, learning, matcreator, mindfront, namuhekam, rehmanpolanski, scailman, spamrakuen, thegreatengineer, toigo.
+
+**CC BY 4.0 — attribution required** (author handle as published on the MakeHuman community site; asset ids in brackets):
+- **culturalibre**: `culturalibre_sneakers`, `culturalibre_cl_bowler_hat`, `culturalibre_cl_don_quixote_hat`, `culturalibre_bandana_mask`
+- **drednicolson**: `drednicolson_asymmetric_tunic_and_sash`, `drednicolson_short-tail_camo_tee`
+- **dressupdoc**: `dressupdoc_sandals1`
+- **Elvaerwyn**: `elvs_hooded_sweat_jacket1`, `elvs_male_shirt_tie_tucked1`, `elvs_male_shirt_untucked_bd1`, `elvs_male_boho_top1`, `elvs_lara_tank1`, `elvs_male_muscle_shirt1`, `elvs_male_tankshirt1`, `elvs_ruffle_sleeve_peasant_blouse_1`, `elvs_jeans_bootcut`, `elvs_jeans_straight_leg`, `elvs_male_trouser`, `elvs_slouchy_beanie1`, `elvs_male_flat_cap1`, `elvs_tophat1`, `elvs_charity_veil1`, `elvs_covid_goggles1`, `elvs_ladies_sunglass1`, `elvs_covid_mask`, `elvs_plague_doctor_mask`, `elvs_male_coveralls_1`, `elvs_emt_uniform_pants_male`, `elvs_emt_uniform_pants_female`, `elvs_racing_fire_suit_male1`, `elvs_racing_fire_suit_female1`, `elvs_halter_style_pantsuit1`, `elvs_sporty_tracksuit_hoodie_dress1`
+- **ews**: `ews_striped_shirt`
+- **gredal**: `gredal_gas_mask`
+- **janexx**: `janexx_old_female_sweater`
+- **maciekg**: `maciekg_leather_boots`
+- **madmanny**: `madmanny_tight_leather_boots`
+- **mindfront**: `mindfront_cardigan_long_open_front`, `mindfront_knitted_sweater_01`, `mindfront_knitted_sweater_02`, `mindfront_tank_top_01`, `mindfront_female_trousers_1`, `mindfront_male_trousers_1`, `mindfront_male_trousers_2`, `mindfront_shoes_oxford_male`, `mindfront_shoes_oxford_female`, `mindfront_shoes_biker_boots_male`, `mindfront_shoes_biker_boots_female`, `mindfront_knitted_hat_01`, `mindfront_patrol_cap`, `mindfront_fishing_hat_01`, `mindfront_sherpa_hat`, `mindfront_m_suit_01`, `mindfront_f_ninja`, `mindfront_tactical_vest_male`, `mindfront_tactical_vest_female`
+- **punkduck**: `punkduck_lace_up_blouse`, `punkduck_high_neck_crop_top`, `punkduck_sleeveless_shirt`, `punkduck_v_neck_top`, `punkduck_retro_top`, `punkduck_sleeveless_crop_top`, `punkduck_female_tight_jeans`, `punkduck_male_classic_jeans`, `punkduck_running_shoes_01`, `punkduck_tennis_shoes`, `punkduck_comfortable_sneakers`, `punkduck_winter_boots`, `punkduck_female_half-boots`, `punkduck_riding_boots`, `punkduck_medieval_boots`, `punkduck_sun_visor_sports_visor`, `punkduck_goggles`, `punkduck_sport-sunglasses`, `punkduck_glasses_modern_form`, `punkduck_wetsuit`, `punkduck_diver_suit`, `punkduck_wireless_headset`, `punkduck_stethoscope`
+- **scailman**: `scailman_low-heeled_boots`
+
+Used modified (refit to the game's bodies, re-dyed, weathered, resampled textures). License: https://creativecommons.org/licenses/by/4.0/
+
 ## Libraries
 - three.js (MIT)
