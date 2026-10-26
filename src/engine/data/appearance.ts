@@ -54,6 +54,8 @@ export interface Appearance {
   /** Brow colour; defaults to the hair colour. */
   browColor?: number;
   facialHair: FacialHair;
+  /** Explicit beard meshes (dev/creator override of the style's default pieces). */
+  beardProxies?: string[];
   freckles: number;
   scars: ScarId[];
   tattoos: TattooId[];

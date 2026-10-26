@@ -31,6 +31,8 @@ export interface FigureSpec {
   /** Garments (proxy names, e.g. 'male_worksuit01', 'cortu_cargo_pants') with colour and wear. */
   clothes: GarmentLook[];
   facialHair?: FacialHair;
+  /** Beard meshes to fit (proxy keys); when given, no beard strands are grown. */
+  beardProxies?: string[];
   beardColor?: number;
   /** Skin detail set: 'old' uses deeper creases. */
   skinDetail?: 'm' | 'old';
@@ -150,7 +152,8 @@ export class HumanFigure {
     }
     // Facial hair: individual strands grown from the skin (stubble to trimmed beards).
     const beard = spec.facialHair ? BEARD_STYLES[spec.facialHair] : undefined;
-    if (beard && spec.facialHair) {
+    const beardProxies = (spec.beardProxies ?? []).filter((k) => d.m.proxies[k]);
+    if (beard && spec.facialHair && !beardProxies.length) {
       const longest = Math.max(beard.tache, beard.chin, beard.corner, beard.cheek, beard.jaw, beard.burn);
       const layers = (spec.lod ?? 'high') === 'high' ? (longest <= 4 ? 6 : 14) : 2;
       const g = strandGeometry(d, body, beardField(spec.facialHair)!, layers, SCALE);
@@ -173,6 +176,14 @@ export class HumanFigure {
 
     // --- Proxies
     const lod = spec.lod ?? 'high';
+    // Beard meshes: tinted like hair, a little darker and duller than the scalp.
+    if (beardProxies.length) {
+      // Very dark hair would tint the mesh to a flat black mask: lift it so the strand texture still reads.
+      const base = new THREE.Color(spec.beardColor ?? spec.hair?.color ?? 0x2b1d14);
+      const lum = base.r * 0.3 + base.g * 0.55 + base.b * 0.15;
+      const bc = base.lerp(new THREE.Color(0x4a3f36), lum < 0.1 ? 0.55 : lum < 0.2 ? 0.35 : 0.2).getHex();
+      for (const key of beardProxies) this.addProxy(d, P, minY, key, hairMaterial(d.m.proxies[key], bc, false, true), lod === 'high' ? hairMaterial(d.m.proxies[key], bc, true, true) : undefined);
+    }
     const faceStart = this.meshes.length;
     this.addProxy(d, P, minY, 'eyes_high-poly', eyeMaterial(spec.eyes));
     if (spec.brows) {

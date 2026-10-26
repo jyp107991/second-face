@@ -71,6 +71,9 @@ export type Effect =
   /** Mail arrives (letters.ts schedules replies through this). */
   | { post: { from: string; text: string } };
 
+/** A Dust game played for something other than Tolls: what each side has put on the table. */
+export interface DustPrize { label: string; win: Effect[]; lose: Effect[] }
+
 /** Hooks the game provides for effects that reach outside world data (quests, combat, UI). */
 export interface LogicHost {
   questStart?(id: string): void;

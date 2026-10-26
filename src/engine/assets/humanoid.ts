@@ -5,6 +5,7 @@ import type { GarmentLook } from './human/cloth';
 import { makeSkinTexture } from './human/skin';
 import { outfitHairMode } from '../data/outfits';
 import { addGear, type GearLook } from './human/gear';
+import { BEARD_PROXY } from './human/facialHair';
 
 /**
  * What a character wears. Suits/shoes are the base full outfits; `layers` are separate garments (see
@@ -58,7 +59,8 @@ const X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0);
 const qAxis = (axis: THREE.Vector3, a: number) => new THREE.Quaternion().setFromAxisAngle(axis, a);
 
 const ANIMATED = ['root', 'spine05', 'spine03', 'neck01', 'head', 'upperleg01.L', 'lowerleg01.L', 'foot.L', 'upperleg01.R', 'lowerleg01.R', 'foot.R',
-  'upperarm01.L', 'lowerarm01.L', 'upperarm01.R', 'lowerarm01.R'];
+  'upperarm01.L', 'lowerarm01.L', 'wrist.L', 'upperarm01.R', 'lowerarm01.R', 'wrist.R'];
+const Z = new THREE.Vector3(0, 0, 1);
 
 /**
  * A character body: a realistic HumanFigure plus procedural animation (walk, idle breathing,
@@ -76,8 +78,8 @@ export class Humanoid {
   dead = 0;
   flinch = 0;
   private skin: THREE.Texture;
-  private armDown: { L: THREE.Quaternion; R: THREE.Quaternion };
-  private aimRot: THREE.Quaternion;
+  /** Per-person idle timing offsets so a crowd never moves in unison. */
+  private idleSeed = Math.random() * 100;
   private parentAnimated = new Map<string, string | undefined>();
   private W = new Map<string, THREE.Quaternion>();
   private rootRestY: number;
@@ -91,7 +93,7 @@ export class Humanoid {
     const clothes = outfitGarments(o);
     this.figure = new HumanFigure({
       shape: app.shape, skin: this.skin, eyes: app.eyes, brows: app.brows, hair: app.hair, clothes, lod: look.lod,
-      browColor: app.browColor ?? app.hair.color, facialHair: app.facialHair, skinDetail: app.shape.age > 40 ? 'old' : 'm',
+      browColor: app.browColor ?? app.hair.color, facialHair: app.facialHair, beardProxies: app.beardProxies ?? BEARD_PROXY[app.facialHair], skinDetail: app.shape.age > 40 ? 'old' : 'm',
       // Creases deepen with age and sun; the source maps are from adult men, so soften them for young/feminine faces.
       skinDetailStrength: Math.min(0.85, Math.max(0.2, 0.25 + (app.shape.age - 20) / 60 + (app.weathering ?? 0) * 0.3)) * (0.7 + 0.3 * app.shape.gender),
     });
@@ -99,12 +101,6 @@ export class Humanoid {
     this.eyeHeight = this.figure.eyeHeight;
     this.posture = app.posture ?? 0;
     const f = this.figure;
-    // Arms hang from the A-pose rest: aim each upper arm slightly out from straight down.
-    this.armDown = {
-      L: f.aimRotation('upperarm01.L', new THREE.Vector3(0.1, -1, 0.03)).clone(),
-      R: f.aimRotation('upperarm01.R', new THREE.Vector3(-0.1, -1, 0.03)).clone(),
-    };
-    this.aimRot = f.aimRotation('upperarm01.R', new THREE.Vector3(-0.05, 0.05, 1)).clone();
     for (const n of ANIMATED) this.parentAnimated.set(n, nearestAnimatedAncestor(f, n));
     this.rootRestY = f.bones.get('root')!.position.y;
     if (o.mask) this.addMask();
@@ -155,40 +151,53 @@ export class Humanoid {
     const w = this.moveBlend;
     const breath = Math.sin(this.breathe * 1.5);
     const W = this.W;
-    W.set('root', new THREE.Quaternion());
+    const t = this.breathe + this.idleSeed;
+    // Idle: weight shifts slowly from foot to foot; the pelvis and shoulders counter-tilt; the head wanders.
+    const shift = Math.sin(t * 0.35) * (1 - w);
+    W.set('root', qAxis(Z, shift * 0.025).multiply(qAxis(Y, s * 0.05 * w)));
     // Posture: a slouch rounds the upper back and the head comes forward and up to compensate.
     const sl = this.posture;
-    W.set('spine05', qAxis(X, 0.04 * w - this.flinch * 0.25 + sl * 0.07));
-    W.set('spine03', qAxis(Y, s * 0.06 * w).multiply(qAxis(X, breath * 0.012 + sl * 0.08)));
+    W.set('spine05', qAxis(X, 0.04 * w - this.flinch * 0.25 + sl * 0.07).multiply(qAxis(Z, -shift * 0.02)));
+    W.set('spine03', qAxis(Y, -s * 0.08 * w).multiply(qAxis(X, breath * 0.012 + sl * 0.08)).multiply(qAxis(Z, -shift * 0.02)));
     W.set('neck01', qAxis(X, -0.03 * w + this.flinch * 0.2 - sl * 0.09));
-    W.set('head', qAxis(Y, Math.sin(this.breathe * 0.31) * 0.08 * (1 - w)).multiply(qAxis(X, -sl * 0.05)));
-    // Legs: forward swing is a negative rotation about X (figure faces +Z).
+    const look = Math.sin(t * 0.31) * 0.09 + Math.sin(t * 0.07) * 0.06;
+    W.set('head', qAxis(Y, look * (1 - w)).multiply(qAxis(X, -sl * 0.05 + Math.sin(t * 0.19) * 0.02 * (1 - w))).multiply(qAxis(Z, Math.sin(t * 0.13) * 0.02 * (1 - w))));
+    // Legs: forward swing is a negative rotation about X (figure faces +Z). Idle: the unweighted knee softens.
     for (const [side, sign] of [['L', 1], ['R', -1]] as const) {
       const upper = qAxis(X, -s * sign * 0.55 * w);
-      const knee = Math.max(0, sign * c) * 0.9 * w + 0.03;
+      const soft = Math.max(0, -shift * sign) * 0.06;
+      const knee = Math.max(0, sign * c) * 0.9 * w + 0.03 + soft;
       W.set(`upperleg01.${side}`, upper);
       W.set(`lowerleg01.${side}`, upper.clone().multiply(qAxis(X, knee)));
       W.set(`foot.${side}`, upper.clone().multiply(qAxis(X, knee * 0.4)));
     }
-    // Arms: hang, swing opposite to legs; right arm can aim forward.
+    // Arms hang beside the thighs with a soft elbow; the forearm and hand are aimed explicitly, since the
+    // rest pose (A-pose, forearms bent forward, hands flat) would otherwise leave the hands sticking out.
+    // Walking swings them opposite to the legs; the right arm can come up to aim.
     for (const [side, sign] of [['L', 1], ['R', -1]] as const) {
-      let upper = qAxis(X, s * sign * 0.4 * w + breath * 0.015).multiply(this.armDown[side]);
-      let elbow = 0.18 + 0.25 * w;
+      const swing = qAxis(X, s * sign * 0.45 * w + breath * 0.012 + Math.sin(t * 0.23 + sign) * 0.01 * (1 - w));
+      let upperDir = new THREE.Vector3(sign * 0.07, -1, 0.04).normalize().applyQuaternion(swing);
+      let elbow = 0.2 + 0.35 * w;
       if (side === 'R' && this.aim > 0) {
-        upper = upper.clone().slerp(this.aimRot, this.aim);
+        upperDir = upperDir.lerp(new THREE.Vector3(-0.05, 0.05, 1).normalize(), this.aim).normalize();
         elbow *= 1 - this.aim;
       }
-      W.set(`upperarm01.${side}`, upper);
-      W.set(`lowerarm01.${side}`, qAxis(X, -elbow).multiply(upper));
+      const lowerDir = upperDir.clone().applyQuaternion(qAxis(X, -elbow));
+      // The hand continues the forearm, turned a little in toward the thigh and relaxed.
+      const handDir = lowerDir.clone().applyQuaternion(qAxis(Z, -sign * 0.12)).applyQuaternion(qAxis(X, -0.08 * (1 - this.aim)));
+      W.set(`upperarm01.${side}`, f.aimRotation(`upperarm01.${side}`, upperDir).clone());
+      W.set(`lowerarm01.${side}`, f.aimRotation(`lowerarm01.${side}`, lowerDir).clone());
+      W.set(`wrist.${side}`, f.aimRotation(`wrist.${side}`, handDir).clone());
     }
     for (const n of ANIMATED) {
       const wq = W.get(n)!;
       const pa = this.parentAnimated.get(n);
       f.rotateFigure(n, pa ? W.get(pa)!.clone().invert().multiply(wq) : wq);
     }
-    // Body bob and death fall.
+    // Body bob, the idle weight shift, and the death fall.
     const rootB = f.bones.get('root')!;
     rootB.position.y = this.rootRestY + Math.abs(c) * 0.03 * w - 0.01 * w;
+    rootB.position.x = shift * 0.012;
     if (this.dead > 0) {
       const t = 1 - Math.pow(1 - Math.min(1, this.dead), 3);
       f.rotateFigure('root', qAxis(X, (-Math.PI / 2) * t));

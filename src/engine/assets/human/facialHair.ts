@@ -113,6 +113,19 @@ export function beardField(styleId: string): StrandField | null {
   };
 }
 
+/**
+ * Grown styles are real beard meshes (CC0 MakeHuman community assets) fitted to the face; stubble stays
+ * painted + short strands. Keys are proxy ids in human.json; a style may stack two pieces.
+ */
+export const BEARD_PROXY: Record<string, string[]> = {
+  short_beard: ['beard_grinsegold_full_beard'],
+  full_beard: ['beard_wdg_scruffy_beard'],
+  goatee: ['beard_grinsegold_beard_sigmund_wip'],
+  van_dyke: ['beard_grinsegold_beard_sigmund_wip', 'beard_grinsegold_moustache'],
+  moustache: ['beard_grinsegold_moustache'],
+  moustache_stubble: ['beard_grinsegold_moustache'],
+};
+
 /** Painted follicle-shadow density under a style at p (0 where shaved). */
 export function beardShadowAt(styleId: string, p: THREE.Vector3): number {
   const st = BEARD_STYLES[styleId];

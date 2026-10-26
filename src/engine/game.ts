@@ -51,7 +51,7 @@ export type GameEvents = {
   openBarter: { npc: NpcRuntime };
   openCamp: Record<string, never>;
   openMap: Record<string, never>;
-  openDust: { npc: NpcRuntime; stake: number };
+  openDust: { npc: NpcRuntime; stake: number; prize?: import('./world/logic').DustPrize };
   journal: { questId: string; title: string; line: string };
 };
 

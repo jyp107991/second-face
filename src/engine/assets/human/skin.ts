@@ -300,10 +300,14 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
           const m = scalpMask(p, recede, hairStyle.startsWith('paint_') || hairStyle.startsWith('coily_') || hairStyle.startsWith('cut_') ? 0 : 0.09);
           if (m > 0) paintScalp(px, i, x, y, p, m, hairStyle, hairC, stub);
         }
-        // Beard follicle shadow under strand-rendered facial hair.
+        // Beard follicle shadow: always a darkening of the skin (grey hair gives a faint ashy tint, never paint).
         if (a.facialHair !== 'none') {
           const sh = beardShadowAt(a.facialHair, p);
-          if (sh > 0) blend(i, stub, sh * (0.45 + 0.55 * dark) * (0.94 + 0.12 * hash2(x, y, 53)));
+          if (sh > 0) {
+            const k = sh * (0.55 + 0.45 * dark) * (0.92 + 0.16 * hash2(x, y, 53));
+            px[i] *= 1 - 0.4 * k; px[i + 1] *= 1 - 0.43 * k; px[i + 2] *= 1 - 0.38 * k;
+            if (dark < 0.6) blend(i, stub, k * 0.1);
+          }
         }
         // Freckles
         if (a.freckles > 0 && dir.z > 0.35 && dir.y > -0.45 && dir.y < 0.35) {
