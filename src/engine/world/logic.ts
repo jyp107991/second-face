@@ -5,6 +5,7 @@ import { attr, addXp, hasFlag, skill } from '../stats/sheet';
 import type { AttributeId, SkillId } from '../stats/rules';
 import { clamp100, relation, rep, type Memory } from './world';
 import { addNews, heard, standing } from './frontier';
+import { enlist, expel, factionDefs, isMember, setRank, syncMembership, type MembershipStatus } from './factions';
 
 /**
  * Conditions and effects: the shared data language of dialogue, quests and triggers.
@@ -39,7 +40,9 @@ export type Cond =
   | { masked: boolean }
   /** Has this chrome piece installed (working or not), or anything in this slot. */
   | { chrome: string } | { chromeSlot: string }
-  | { drift: { gte?: number; lte?: number } };
+  | { drift: { gte?: number; lte?: number } }
+  /** Live member of a faction (at `rank` or higher); or a past member with the given status. */
+  | { member: string; rank?: string; status?: MembershipStatus };
 
 export type Effect =
   | { set: string; value?: number | string | boolean }
@@ -60,7 +63,11 @@ export type Effect =
   | { after: { minutes: number; id: string; effects: Effect[] } }
   | { join: string } | { leave: string }
   | { time: number }
-  | { event: string; data?: unknown };
+  | { event: string; data?: unknown }
+  /** Join a faction (expels conflicting memberships unless `cover` names the faction you really serve). */
+  | { enlist: string; rank?: string; cover?: string }
+  | { promote: { faction: string; rank: string } }
+  | { expel: string; status?: MembershipStatus };
 
 /** Hooks the game provides for effects that reach outside world data (quests, combat, UI). */
 export interface LogicHost {
@@ -121,6 +128,10 @@ export function test(c: Cond | undefined, g: GameState): boolean {
   if ('chrome' in c) return Object.values(sh.chrome ?? {}).some((p) => p?.id === c.chrome);
   if ('chromeSlot' in c) return !!sh.chrome?.[c.chromeSlot as keyof typeof sh.chrome];
   if ('drift' in c) return inRange(sh.drift ?? 0, c.drift.gte, c.drift.lte);
+  if ('member' in c) {
+    if (c.status && c.status !== 'member') return w.membership[c.member]?.status === c.status;
+    return isMember(g, factionDefs(), c.member, c.rank);
+  }
   return false;
 }
 
@@ -156,6 +167,14 @@ export function apply(effects: Effect[] | undefined, g: GameState, host: LogicHo
     else if ('leave' in e) w.party = w.party.filter((p) => p !== e.leave);
     else if ('time' in e) g.minutes += e.time;
     else if ('event' in e) host.event?.(e.event, e.data);
+    else if ('enlist' in e) {
+      const defs = factionDefs();
+      for (const out of enlist(g, defs, e.enlist, { rank: e.rank, cover: e.cover })) {
+        w.decisions.push({ id: `expelled_${out}_for_${e.enlist}`, text: `Joining ${defs[e.enlist].name} cost you your place with ${defs[out].name}.`, minutes: g.minutes });
+      }
+      syncMembership(g, defs);
+    } else if ('promote' in e) { setRank(g, factionDefs(), e.promote.faction, e.promote.rank); syncMembership(g, factionDefs()); }
+    else if ('expel' in e) { expel(g, e.expel, e.status); syncMembership(g, factionDefs()); }
   }
 }
 

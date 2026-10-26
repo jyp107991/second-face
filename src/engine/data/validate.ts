@@ -11,6 +11,7 @@ import { GARMENTS } from './garments';
 import { OUTFIT_ROLES } from './outfits';
 import { SETTLEMENT_TYPES, type SettlementType } from '../world/settlementTypes';
 import { planTrip, type WorldMap } from '../world/travel';
+import type { FactionDef } from '../world/factions';
 
 export interface ContentBundle {
   maps: Record<string, MapDef>;
@@ -25,6 +26,7 @@ export interface ContentBundle {
   settlements?: Record<string, { id: string; roads: Record<string, number>; type?: SettlementType; region?: string; prosperity?: number }>;
   regions?: Record<string, { id: string; bounds: [number, number, number, number] }>;
   worldMap?: WorldMap;
+  factions?: Record<string, FactionDef>;
   chrome?: Record<string, ChromeDef>;
 }
 
@@ -159,6 +161,17 @@ export function validateContent(c: ContentBundle): string[] {
     if (typeof o.trait === 'string' && c.traits && !c.traits[o.trait]) errs.push(`${where}: unknown trait ${o.trait}`);
     if (typeof o.perk === 'string' && c.perks && !c.perks[o.perk]) errs.push(`${where}: unknown perk ${o.perk}`);
     if (typeof o.chrome === 'string' && c.chrome && !c.chrome[o.chrome]) errs.push(`${where}: unknown chrome ${o.chrome}`);
+    for (const k of ['member', 'enlist', 'expel'] as const) {
+      if (typeof o[k] !== 'string' || !c.factions) continue;
+      const f = c.factions[o[k] as string];
+      if (!f) errs.push(`${where}: unknown faction ${o[k]}`);
+      else if (typeof o.rank === 'string' && !f.ranks.some((r) => r.id === o.rank)) errs.push(`${where}: faction ${o[k]} has no rank ${o.rank}`);
+    }
+    if (o.promote && typeof o.promote === 'object' && c.factions) {
+      const p = o.promote as { faction: string; rank: string };
+      if (!c.factions[p.faction]) errs.push(`${where}: unknown faction ${p.faction}`);
+      else if (!c.factions[p.faction].ranks.some((r) => r.id === p.rank)) errs.push(`${where}: faction ${p.faction} has no rank ${p.rank}`);
+    }
     if (typeof o.chromeSlot === 'string' && !CHROME_SLOTS.includes(o.chromeSlot as never)) errs.push(`${where}: unknown chrome slot ${o.chromeSlot}`);
     if (typeof o.lead === 'string' && c.leads && !c.leads[o.lead]) errs.push(`${where}: unknown lead ${o.lead}`);
     if (typeof o.concluded === 'string' && c.conclusions && !c.conclusions[o.concluded]) errs.push(`${where}: unknown conclusion ${o.concluded}`);
@@ -202,6 +215,15 @@ export function validateContent(c: ContentBundle): string[] {
   for (const [key, st] of Object.entries(c.settlements ?? {})) for (const to of Object.keys(st.roads)) {
     if (!c.settlements![to]) errs.push(`settlement ${key}: road to unknown ${to}`);
     else if (!(key in c.settlements![to].roads)) errs.push(`settlement ${key}: road to ${to} is one-way`);
+  }
+  for (const [key, f] of Object.entries(c.factions ?? {})) {
+    if (f.id !== key) errs.push(`faction ${key}: id mismatch`);
+    if (!f.ranks.length) errs.push(`faction ${key}: no ranks`);
+    if (new Set(f.ranks.map((r) => r.id)).size !== f.ranks.length) errs.push(`faction ${key}: duplicate rank ids`);
+    for (const o of f.conflicts ?? []) if (!c.factions![o]) errs.push(`faction ${key}: unknown conflict ${o}`);
+    if (f.home && c.settlements && !c.settlements[f.home] && !c.worldMap?.locations[f.home]) errs.push(`faction ${key}: unknown home ${f.home}`);
+    if (f.initiation && c.quests && !c.quests[f.initiation]) errs.push(`faction ${key}: unknown initiation quest ${f.initiation}`);
+    for (const r of f.ranks) refs(`faction ${key} rank ${r.id}`, r.requires);
   }
   return errs;
 }

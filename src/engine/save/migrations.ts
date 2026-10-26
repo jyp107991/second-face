@@ -2,7 +2,7 @@
  * Save format migrations. Each entry upgrades a raw save object from version N to N+1.
  * NEVER edit a published migration; add a new one and bump CURRENT_SAVE_VERSION.
  */
-export const CURRENT_SAVE_VERSION = 4;
+export const CURRENT_SAVE_VERSION = 5;
 
 type RawSave = { version: number; [k: string]: unknown };
 
@@ -36,6 +36,12 @@ export const MIGRATIONS: Record<number, (s: RawSave) => RawSave> = {
     delete state.world.karma;
     state.world.news ??= []; state.world.leads ??= {}; state.world.conclusions ??= {}; state.world.events ??= {};
     return { ...s, version: 4, state };
+  },
+  // 4 → 5: faction membership.
+  4: (s) => {
+    const state = structuredClone(s.state) as { world: Record<string, unknown> };
+    state.world.membership ??= {};
+    return { ...s, version: 5, state };
   },
 };
 

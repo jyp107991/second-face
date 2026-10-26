@@ -19,6 +19,8 @@ import { CONCLUSIONS, LEADS } from './world/leads';
 import { WORLD_EVENTS } from './world/events';
 import { REGIONS } from './world/regions';
 import { WORLD_MAP } from './world/map';
+import { FACTIONS } from './factions';
+import { registerFactions } from '../engine/world/factions';
 
 /** Content registry: the engine looks everything up through here. */
 export const MAPS: Record<string, MapDef> = {
@@ -28,7 +30,8 @@ export const MAPS: Record<string, MapDef> = {
 
 export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN].map((n) => [n.id, n]));
 
-export { WORLD_MAP, REGIONS, TRAITS, PERKS, CHROME, ITEMS, ORIGINS, DIALOGUES, QUESTS, SETTLEMENTS, LEADS, CONCLUSIONS, WORLD_EVENTS };
+export { FACTIONS, WORLD_MAP, REGIONS, TRAITS, PERKS, CHROME, ITEMS, ORIGINS, DIALOGUES, QUESTS, SETTLEMENTS, LEADS, CONCLUSIONS, WORLD_EVENTS };
 registerRules({ traits: TRAITS, perks: PERKS });
 registerChrome(CHROME);
+registerFactions(FACTIONS);
 registerItems(ITEMS);

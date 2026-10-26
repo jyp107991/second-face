@@ -43,10 +43,10 @@ session). Engine decision: see `docs/TECH_EVALUATION.md` (recommendation: stay o
       delayed/distant consequence list ≥30% (tracked in the secret plan).
 
 ### A2 Play like the best RPGs
-- [ ] A2.1 DESIGN §2d–§2h: joinable factions (membership, initiation, ranks, politics, perks, gear, base,
+- [x] A2.1 DESIGN §2d–§2h: joinable factions (membership, initiation, ranks, politics, perks, gear, base,
       conflicts, infiltration/betrayal), side-quest standard, side activities (each with mechanics + reward
       loop), nonlinearity rules (entry routes, region order, tiered loot), QoL list.
-- [ ] A2.2 Engine: faction membership model (`world/factions.ts`: ranks, conditions `member`, effects
+- [x] A2.2 Engine: faction membership model (`world/factions.ts`, content `content/factions/`, 14 factions, save v5) (`world/factions.ts`: ranks, conditions `member`, effects
       `join`/`rank`/`expel`, conflicts), validator + tests.
 - [ ] A2.3 Engine: companions core (follow, party in scene, approval reactions UI, banter triggers, combat
       allies), camp scene (talk/cook/mend/letters/rest).
@@ -75,7 +75,7 @@ session). Engine decision: see `docs/TECH_EVALUATION.md` (recommendation: stay o
       regressions; sheets sent to owner.
 
 ### A4 Technology and performance
-- [ ] A4.1 `docs/TECH_EVALUATION.md`: Godot 4, Bevy, Babylon.js, PlayCanvas, three.js WebGPU, pipelines
+- [x] A4.1 `docs/TECH_EVALUATION.md`: Godot 4, Bevy, Babylon.js, PlayCanvas, three.js WebGPU, pipelines
       (glTF+meshopt/Draco, KTX2/Basis, baked lighting, instancing, LOD/impostors, forward+, AgX tonemap,
       GTAO, volumetric fog, decals) — quality ceiling, mobile perf, Pages deploy, migration cost, risk;
       recommendation; owner asked (no migration without approval).

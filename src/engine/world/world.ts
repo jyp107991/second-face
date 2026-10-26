@@ -63,10 +63,12 @@ export interface WorldState {
   masked?: boolean;
   /** People the player has spoken with. */
   met?: Record<string, { name: string; day: number; where?: string }>;
+  /** Faction memberships by faction id (world/factions.ts). */
+  membership: Record<string, import('./factions').Membership>;
 }
 
 export function emptyWorld(): WorldState {
-  return { quests: {}, memories: {}, relations: {}, approval: {}, party: [], reputation: {}, knowledge: {}, seen: {}, decisions: [], timers: [], news: [], leads: {}, conclusions: {}, events: {} };
+  return { quests: {}, memories: {}, relations: {}, approval: {}, party: [], reputation: {}, knowledge: {}, seen: {}, decisions: [], timers: [], news: [], leads: {}, conclusions: {}, events: {}, membership: {} };
 }
 
 export function relation(w: WorldState, npc: string): { trust: number; affection: number } {

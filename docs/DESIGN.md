@@ -96,6 +96,73 @@ What we take from cyberpunk (tabletop to 2077) and how scarcity changes it:
 - **Density over sprawl:** a city is ~8–10 handcrafted districts, each a dense map with interiors, verticality and
   30–60 minutes of content; transit (the Loop) links them.
 
+## 2d. Joinable factions (membership, not just reputation)
+Reputation is what people *think* of you (per settlement/faction, §2b). **Membership** is a door you walked
+through: an initiation, a rank, obligations, perks and enemies. Every major power can be joined; most gangs
+too. Membership is exclusive where loyalties collide, and can be faked.
+- **Initiation** is a quest with a catch (the Walk across the pens; a contract run with a hidden cargo; the Sky
+  Rite; an arrest; a duel). It can be refused without closing the main path.
+- **Ranks** (3–4 per faction) are earned through that faction's questline and standing. Each rank carries
+  **perks**: modifiers, verbs (flags), prices with the faction's merchants, **access** to doors, districts and
+  services, and gear issued once. Perks accumulate up the ladder.
+- **Politics:** every faction has two camps; the player's choices tip which leads, and the questline's content
+  changes the faction and its region (a union that strikes vs one that arms; a town that stays free vs sells).
+- **Conflicts:** joining a faction that conflicts with one you belong to expels you from the old one (logged
+  as a decision; news travels). **Infiltration:** you may join under cover for another faction; cover can be
+  blown by what you do in front of witnesses. **Betrayal** is always possible and always costs: expulsion,
+  standing, and people who remember.
+- **Home base:** each faction has a place with storage, rest, a notice board and its merchants.
+- Data: `FactionDef { id, name, ranks: RankDef[], conflicts, home }` in `content/factions/`; engine
+  `world/factions.ts`; conditions `member`, effects `enlist` / `promote` / `expel`.
+
+## 2e. Side-quest standard (the Witcher 3 bar)
+Every authored side quest passes this checklist before it ships; `AUDIT_SECRET.md` tracks exceptions.
+1. **A hook with a wrinkle** — the request is not quite what it seems, and the giver has a reason to lie.
+2. **Investigation** — at least one clue step with two ways to learn it (talk / look / read / track).
+3. **The turn** — new information that changes the question being asked.
+4. **The choice** — at least two outcomes, each with a cost; at least one non-violent; no dominant option.
+5. **A visible outcome** — the world, an NPC, prices, news or a later scene change; a Decisions entry.
+6. **A second reading** — it says something about the world or the theme, without anyone saying it.
+7. **No filler** — no plain fetch, no kill-ten. Systemic gigs and bounties come from templates with
+   **complications** (the package is a person; the victim doesn't want rescuing; the bounty is innocent; the
+   site is guarded by a remnant machine; the client's rival is the real target) rolled per gig.
+
+## 2f. Side activities (each its own mechanic and reward loop, tuned to scarcity)
+| Activity | Mechanic | Reward loop | Where |
+|---|---|---|---|
+| **Dust** (dice) | Push-your-luck: roll and add; a 1 "dusts" your run; bank or push; first to 30 takes the pot. Opponent AI plays by greed/courage. | Tolls, saloon standing, losers talk (leads) | saloons, the overpass, Lantern Row, the Skirts |
+| **Fight pits** | Combat rules variant: unarmed/melee, no items, crowd morale, injuries persist; bet on yourself. | Tolls, fear/respect, invitations to bigger pits | Lantern Row, the Skirts |
+| **Races** | Dog races: bet or fix. Buggy races: segments with push/hold/cut choices (Reflex, Mechanics, vehicle condition), crash risk. | Tolls, a vehicle, rivalries | overpass, Dead Ring |
+| **Hunting & trapping** | Animals on wild maps; tracks (Survival passive); set traps at camp that yield over days. | food, hides, Survival XP, a reason to walk | Sallow, Teeth, Northern Wet |
+| **Fishing** | Timing minigame at water; Survival widens the window; catch tables per region. | food, barter | Drowned Shore, the Docks |
+| **Salvage dives** | Air meter (Grit), flooded rooms, loot tier, machine hazards; respirator/filter lungs help. | rare loot, controllers | the Rigs, the Sump |
+| **Caravan escort** | Travel event chain with authored encounters and choices. | pay, Tollmen/Wheel standing | the roads |
+| **Chrome surgery** | Mender/clinic screen: install/repair/remove, risk up front, upkeep. | abilities, Drift | Shale (Act 1), the Sink, Halcyon |
+| **Reverie dens** | Playable recorded memories: short scenes with choices; clue sources; a vice with a cost. | leads, Drift tone, story | Lantern Row, the Crown |
+| **Camp** | Campfire scene: talk, cook, mend, write letters, rest, plan; banter fires here. | healing, companion arcs | any wilds |
+| **Letters** | Write to anyone you've met at a settlement; caravans carry them; replies arrive days later. | news, help, guilt, consequences | settlements with traffic |
+| **Sketching** | Landmarks and people sketched into the notebook on discovery. | a record; some people buy sketches | everywhere |
+| **Safehouses** | Rent or claim; storage, rest, letters, fast-travel node, upgrades (bed, still, bench, lockbox). | a home | Shale, the Stacks, the Skirts, Ninebridge |
+| **Court defence** | Trial as dialogue with evidence (items, leads); verdicts set precedent. | standing, law, the Magistrate's shadow | the Precinct |
+| **Heists** | Plan (approach, crew, gear) then execute on a map with several routes. | loot, chrome, standing | the Crown, Halcyon |
+
+## 2g. Nonlinearity rules
+- **Entry routes:** every story place has at least three of: talk (standing or papers), sneak (a mapped
+  route), force, bribe, disguise (outfit or mask), chrome (spring legs, grid link), knowledge (a lead or
+  password). The validator reads these from `MapDef.entries` once maps exist.
+- **Order:** regions can be played in different orders. Locations carry a **tier** (1–5) that sets enemy
+  bands and loot; the critical path gates only on *information* (leads, names), never on level walls.
+- **Kinds of experience:** every act contains at least one of each: investigation, heist, negotiation, chase,
+  trial, rescue, rite or festival, disaster. Not just talk-then-fight.
+- **Discovery:** hidden places, shortcuts and alternative entries are found on foot and through people.
+
+## 2h. Quality of life (modern baseline)
+Autosave + manual slots · undo the last move outside combat · quick-loot and take-all everywhere · tooltips
+with equip comparison · notebook pins · dialogue log · skip seen dialogue · text speed, size and contrast ·
+colour-blind-safe check tags (icons and words, not colour alone) · remappable keys · touch gestures · difficulty
+options that never touch the scarcity design (enemy accuracy/health, check leniency off by design) · optional
+tips · settings persisted · combat speed · AP cost preview · highlight interactables.
+
 ## 3. Character system
 ### 3.1 Attributes (7, range 1–10; base 3 + 12 points at creation; creation cap 8)
 Each attribute has a **combat**, **exploration** and **dialogue** use, so none is a dump stat.

@@ -79,6 +79,9 @@ export interface CharacterSheet {
   effects: ActiveEffect[];
   /** Extra modifiers from equipped gear (recomputed by inventory). */
   gearMods?: Modifier[];
+  /** Perks from faction ranks (world/factions.ts syncMembership). */
+  factionMods?: Modifier[];
+  factionFlags?: string[];
   /** Installed chrome by slot (stats/chrome.ts). */
   chrome?: Partial<Record<ChromeSlot, InstalledChrome>>;
   /** Current Drift 0..100. */
@@ -107,6 +110,7 @@ export function allMods(s: CharacterSheet): Modifier[] {
   for (const e of s.effects) out.push(...e.mods);
   if (s.gearMods) out.push(...s.gearMods);
   if (s.chrome) out.push(...chromeMods(s));
+  if (s.factionMods) out.push(...s.factionMods);
   // Crippled limbs
   if (s.crippled.legL || s.crippled.legR) out.push({ target: 'derived:ap', add: -1 });
   if (s.crippled.armL || s.crippled.armR) out.push({ target: 'hit_ranged', add: -15 }, { target: 'hit_melee', add: -10 });
@@ -135,6 +139,7 @@ export function modSum(s: CharacterSheet, target: ModTarget): number {
 export function hasFlag(s: CharacterSheet, flag: string): boolean {
   if (s.traits.some((t) => db.traits[t]?.flags?.includes(flag)) || Object.keys(s.perks).some((p) => db.perks[p]?.flags?.includes(flag))) return true;
   if (s.chrome && flag.startsWith('chrome_') && chromeAbilities(s).includes(flag)) return true;
+  if (s.factionFlags?.includes(flag)) return true;
   // Skill masteries (verbs at 50 and 100).
   if (flag.startsWith('m_')) {
     for (const k of SKILLS) {
