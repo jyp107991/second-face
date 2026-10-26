@@ -1,9 +1,10 @@
 import * as THREE from 'three';
-import { Rng, hash2 } from '../../core/rng';
+import { hash2 } from '../../core/rng';
 import type { Appearance, ScarId, TattooId } from '../../data/appearance';
 import { humanData } from './data';
 import { loadImage } from './textures';
 import { skinAlbedo } from '../../data/ancestry';
+import { beardShadowAt } from './facialHair';
 
 /**
  * Per-character skin texture: blends the light/dark MakeHuman skin photos for texture character,
@@ -64,16 +65,7 @@ function headTriangles(): Uint32Array {
   return (headTris = new Uint32Array(out));
 }
 
-/** Painted stubble level 0..3 (explicit stubble part; mesh beards get a medium shadow underneath). */
-export function stubbleLevel(facialHair: string): number {
-  const parts = facialHair.split('+');
-  if (parts.includes('stubble_heavy')) return 3;
-  if (parts.includes('stubble')) return 2;
-  if (parts.includes('stubble_light')) return 1;
-  return parts.some((x) => x.includes('beard')) ? 2 : 0;
-}
-
-const needsPaint = (a: Appearance) => a.hair.style !== 'none' || stubbleLevel(a.facialHair) > 0 || a.freckles > 0 || a.scars.length > 0 || a.tattoos.length > 0;
+const needsPaint = (a: Appearance) => a.hair.style !== 'none' || a.facialHair !== 'none' || a.freckles > 0 || a.scars.length > 0 || a.tattoos.length > 0;
 
 /** Build the skin texture. Resolves synchronously if images are preloaded; updates in place otherwise. */
 export function makeSkinTexture(a: Appearance, size = 1024): THREE.CanvasTexture {
@@ -223,41 +215,6 @@ function tattooAt(id: TattooId, p: THREE.Vector3): number {
 }
 
 /**
- * Natural beard-growth area in head-frame coordinates, built from the base mesh's landmarks (1 unit ≈ the
- * head radius; eyes at y≈0.1, under the nose y≈-0.47, mouth corners (±0.22, -0.69), lower lip -0.92,
- * lips -0.57..-0.86, chin bottom -1.22, earlobes y≈-0.35, ear beyond |x|≈0.89).
- * Uses the angle around the vertical axis (0° = front, 90° = side) so cheek and sideburn lines are
- * well defined. Returns growth density 0..1.
- */
-function beardMask(p: THREE.Vector3): number {
-  const ax = Math.abs(p.x), y = p.y;
-  if (y > 0.3 || y < -1.9) return 0;
-  const th = (Math.atan2(ax, p.z) * 180) / Math.PI;
-  if (th > 92) return 0;
-  // Ears are never covered.
-  if (ax > 0.89 && y > -0.5) return 0;
-  // Top boundary: moustache under the nose (following the nostril wings and smile lines), then the cheek
-  // line rising from just outside the mouth corner to the sideburn base, then the sideburn.
-  const wobble = 0.022 * Math.sin(th * 0.13) + 0.012 * Math.sin(th * 0.29 + 1.3);
-  const tacheTop = -0.42 - Math.max(0, ax - 0.17) * 1.0;
-  const tc = smoothstep(14, 22, th);
-  const cheekTop = -0.66 + 0.34 * smoothstep(18, 70, th) + wobble;
-  let top = tacheTop * (1 - tc) + cheekTop * tc;
-  const sideburn = smoothstep(66, 71, th) * smoothstep(84, 80, th);
-  top = top * (1 - sideburn) + 0.12 * sideburn;
-  const topEdge = 0.035 + 0.05 * tc;
-  // Bottom boundary: the jawline (chin bottom at the front rising to the jaw angle); no neck growth.
-  const bottom = -1.24 + 0.39 * Math.pow(Math.min(1, th / 78), 1.6);
-  let m = smoothstep(top + topEdge, top - topEdge, y) * smoothstep(bottom - 0.03, bottom + 0.05, y) * smoothstep(90, 82, th);
-  // Lips (vermilion -0.57..-0.86, corners ±0.22) stay clear right up to their border.
-  const lip = Math.hypot(ax / 0.225, (y + 0.715) / 0.145);
-  m *= smoothstep(0.95, 1.06, lip);
-  // Moustache and chin grow densest; the upper cheeks are sparser.
-  const sparse = 1 - 0.28 * smoothstep(22, 45, th) * smoothstep(-0.95, -0.7, y);
-  return m * sparse;
-}
-
-/**
  * Scalp-hair growth area (same head frame as beardMask): front hairline above the forehead, temples,
  * down in front of the ears, over the ears, behind them to the nape. Returns density 0..1 with a soft,
  * slightly irregular hairline (fine short hairs thin out over a few millimetres).
@@ -281,11 +238,6 @@ export function scalpMask(p: THREE.Vector3, recede = 0, drop = 0): number {
   return smoothstep(line - edge, line + edge, y);
 }
 
-/** Painted stubble density 0..1 at head-frame point p. */
-function stubbleAt(p: THREE.Vector3): number {
-  return beardMask(p);
-}
-
 function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance): void {
   const d = humanData(), f = frame(), tris = headTriangles();
   const img = ctx.getImageData(0, 0, size, size);
@@ -293,11 +245,11 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
   // Each texel is painted once (triangles sharing an edge would otherwise both blend into it).
   const done = new Uint8Array(size * size);
   const hair = new THREE.Color().setHex(a.hair.color, THREE.LinearSRGBColorSpace);
-  const lvl = stubbleLevel(a.facialHair);
   const hl = hair.r * 0.3 + hair.g * 0.55 + hair.b * 0.15;
-  // Short hairs read darker and ashier than the same hair grown long (no ginger cast on light browns).
-  const stub = hair.clone().lerp(new THREE.Color(hl, hl, hl), 0.6).multiplyScalar(0.6).lerp(new THREE.Color(0.08, 0.08, 0.09), 0.3);
-  const SHADOW = [0, 0.11, 0.24, 0.28], STUBS = [0, 0.38, 0.64, 0.66];
+  // Follicles seen through the skin: darker and ashier than the hair itself.
+  // Dark hair gives the classic blue-grey shadow; light hair a faint, warmer one.
+  const dark = Math.max(0, Math.min(1, 1 - hl * 1.6));
+  const stub = hair.clone().multiplyScalar(0.55).lerp(new THREE.Color(0.1, 0.11, 0.14), 0.55 * dark);
   const hairStyle = a.hair.style;
   const hairC = new THREE.Color().setHex(a.hair.color, THREE.LinearSRGBColorSpace);
   // Hairline recedes at the temples with age for masculine faces.
@@ -340,15 +292,10 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
           const m = scalpMask(p, recede, hairStyle.startsWith('paint_') || hairStyle.startsWith('coily_') ? 0 : 0.09);
           if (m > 0) paintScalp(px, i, x, y, p, m, hairStyle, hairC, stub);
         }
-        // Stubble: a follicle shadow (hair seen through skin) plus individual dark stubs.
-        if (lvl > 0) {
-          const st = stubbleAt(p);
-          if (st > 0) {
-            blend(i, stub, st * SHADOW[lvl] * (0.92 + 0.16 * hash2(x, y, 53)));
-            px[i + 3] = Math.min(px[i + 3], 255 - 127 * st * lvl * 0.2);
-            // Fine stubs: many faint dots rather than few strong ones (strong dots read as a rash).
-            if (hash2(x, y, 57) < st * STUBS[lvl]) blend(i, stub, 0.1 + 0.14 * hash2(x, y, 58));
-          }
+        // Beard follicle shadow under strand-rendered facial hair.
+        if (a.facialHair !== 'none') {
+          const sh = beardShadowAt(a.facialHair, p);
+          if (sh > 0) blend(i, stub, sh * (0.45 + 0.55 * dark) * (0.94 + 0.12 * hash2(x, y, 53)));
         }
         // Freckles
         if (a.freckles > 0 && dir.z > 0.35 && dir.y > -0.45 && dir.y < 0.35) {
@@ -378,7 +325,6 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
   }
   bleed(px, done, size, 2);
   ctx.putImageData(img, 0, 0);
-  if (lvl >= 3) strokeHair(ctx, size, a);
 }
 
 /** Copy painted texels outward into unpainted neighbours so UV seams never show the unpainted photo. */
@@ -452,58 +398,5 @@ function paintScalp(px: Uint8ClampedArray, i: number, x: number, y: number, p: T
     default:
       // Under a hair mesh: hair colour with fine strand noise; the soft edge forms the visible hairline.
       mix(tc.copy(hair).multiplyScalar(0.72 + 0.3 * fine), m * 0.88);
-  }
-}
-
-/**
- * Draw facial hair as individual anti-aliased strands in UV space. Each strand starts at a random
- * point on a head triangle and points "down the face" in 3D, mapped into that triangle's UV frame.
- */
-function strokeHair(ctx: CanvasRenderingContext2D, size: number, a: Appearance): void {
-  const d = humanData(), f = frame(), tris = headTriangles();
-  const rng = new Rng(Math.round(a.hair.color + a.shape.age * 1000 + a.skinTone * 1e6));
-  const scale = size / 2048;
-  const density = 0.4 * scale * scale;
-  const len3 = 0.014;
-  const col = new THREE.Color(a.hair.color);
-  const P = [new V(), new V(), new V()], U = [new THREE.Vector2(), new THREE.Vector2(), new THREE.Vector2()];
-  const e1 = new V(), e2 = new V(), p = new V(), dir = new V();
-  ctx.lineCap = 'round';
-  for (let t = 0; t < tris.length; t += 3) {
-    for (let k = 0; k < 3; k++) {
-      const ri = tris[t + k];
-      P[k].fromArray(d.base, d.bodyMap[ri] * 3).sub(f.c).divideScalar(f.r);
-      U[k].set(d.bodyUv[ri * 2] * size, (1 - d.bodyUv[ri * 2 + 1]) * size);
-    }
-    // Quick reject: triangle centroid far from any beard zone.
-    p.copy(P[0]).add(P[1]).add(P[2]).divideScalar(3);
-    if (stubbleAt(p) <= 0.01 && stubbleAt(P[0]) <= 0.01) continue;
-    const t1x = U[1].x - U[0].x, t1y = U[1].y - U[0].y, t2x = U[2].x - U[0].x, t2y = U[2].y - U[0].y;
-    const area = Math.abs(t1x * t2y - t2x * t1y) / 2;
-    e1.subVectors(P[1], P[0]); e2.subVectors(P[2], P[0]);
-    const g11 = e1.dot(e1), g12 = e1.dot(e2), g22 = e2.dot(e2), det = g11 * g22 - g12 * g12;
-    if (det < 1e-12) continue;
-    const n = Math.floor(area * density + rng.next());
-    for (let s = 0; s < n; s++) {
-      let b1 = rng.next(), b2 = rng.next();
-      if (b1 + b2 > 1) { b1 = 1 - b1; b2 = 1 - b2; }
-      p.copy(P[0]).addScaledVector(e1, b1).addScaledVector(e2, b2);
-      const cov = stubbleAt(p);
-      if (rng.next() > cov * cov) continue;
-      // Hair flows down, slightly outward on the cheeks and away from the philtrum on the lip.
-      dir.set(Math.sign(p.x) * (p.y > -0.55 ? 0.45 : 0.15) + (rng.next() - 0.5) * 0.5, -1, 0.15).normalize().multiplyScalar(len3 * (0.6 + rng.next() * 0.8));
-      // Express dir in the triangle basis (least squares), then map to UV.
-      const r1 = dir.dot(e1), r2 = dir.dot(e2);
-      const ca = (r1 * g22 - r2 * g12) / det, cb = (r2 * g11 - r1 * g12) / det;
-      const ux = U[0].x + t1x * b1 + t2x * b2, uy = U[0].y + t1y * b1 + t2y * b2;
-      const dx = t1x * ca + t2x * cb, dy = t1y * ca + t2y * cb;
-      const shade = 0.85 + rng.next() * 0.65;
-      ctx.strokeStyle = `rgba(${Math.min(255, col.r * 255 * shade) | 0},${Math.min(255, col.g * 255 * shade) | 0},${Math.min(255, col.b * 255 * shade) | 0},${(0.12 + 0.22 * cov).toFixed(2)})`;
-      ctx.lineWidth = 0.7 * scale + rng.next() * 0.3;
-      ctx.beginPath();
-      ctx.moveTo(ux, uy);
-      ctx.quadraticCurveTo(ux + dx * 0.5 + (rng.next() - 0.5) * 1.5 * scale, uy + dy * 0.5, ux + dx, uy + dy);
-      ctx.stroke();
-    }
   }
 }

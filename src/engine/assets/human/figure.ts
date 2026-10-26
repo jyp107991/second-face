@@ -4,6 +4,8 @@ import { evaluateShape, type ShapeParams } from './shape';
 import { humanTexture } from './textures';
 import { applySkinScatter, cavityAO } from './shading';
 import { coilyGeometry, coilyMaterial, type BodySurface } from './coily';
+import { strandGeometry, strandMaterial } from './strands';
+import { BEARD_STYLES, beardField } from './facialHair';
 import type { FacialHair } from '../../data/appearance';
 
 /**
@@ -124,6 +126,27 @@ export class HumanFigure {
       const g = coilyGeometry(d, body, spec.hair.style, (spec.lod ?? 'high') === 'high' ? 0 : 7, SCALE);
       if (g) this.addMesh(g, coilyMaterial(spec.hair.color));
     }
+    // Facial hair: individual strands grown from the skin (stubble to trimmed beards).
+    const beard = spec.facialHair ? BEARD_STYLES[spec.facialHair] : undefined;
+    if (beard && spec.facialHair) {
+      const longest = Math.max(beard.tache, beard.chin, beard.corner, beard.cheek, beard.jaw, beard.burn);
+      const layers = (spec.lod ?? 'high') === 'high' ? (longest <= 4 ? 6 : 14) : 3;
+      const g = strandGeometry(d, body, beardField(spec.facialHair)!, layers, SCALE);
+      if (g) {
+        // Short stubs read darker and ashier than grown hair; longer beards keep the hair colour.
+        const base = new THREE.Color(spec.beardColor ?? spec.hair?.color ?? 0x2b1d14);
+        const lum = base.r * 0.3 + base.g * 0.55 + base.b * 0.15;
+        const grown = [beard.tache, beard.chin, beard.corner, beard.cheek, beard.jaw, beard.burn].filter((l) => l > 0);
+        const stubby = Math.min(...grown) <= 4;
+        const col = stubby ? base.clone().lerp(new THREE.Color(lum, lum, lum), 0.4).multiplyScalar(0.42) : base.clone().multiplyScalar(0.85);
+        const look = stubby
+          ? { color: col.getHex(), cell: 0.016, radius: 0.0009, rootShade: 0.1, wave: 0.05, opacity: 0.9 }
+          : { color: col.getHex(), cell: 0.012, radius: 0.0021, rootShade: 0.3, wave: longest > 6 ? 0.3 : 0.1 };
+        const mesh = this.addMesh(g, strandMaterial(look));
+        mesh.castShadow = false;
+        mesh.renderOrder = 2;
+      }
+    }
 
     // --- Proxies
     const lod = spec.lod ?? 'high';
@@ -138,14 +161,6 @@ export class HumanFigure {
     if (spec.hair && spec.hair.style !== 'none') {
       const key = `hair_${spec.hair.style}`;
       if (d.m.proxies[key]) this.addProxy(d, P, minY, key, hairMaterial(d.m.proxies[key], spec.hair.color, false, true), lod === 'high' ? hairMaterial(d.m.proxies[key], spec.hair.color, true, true) : undefined);
-    }
-    // Facial hair meshes (artist-made; stubble is painted into the skin instead). '+' layers several.
-    if (spec.facialHair && spec.facialHair !== 'none' && spec.facialHair !== 'stubble') {
-      const col = spec.beardColor ?? spec.hair?.color ?? 0x2b1d14;
-      for (const part of spec.facialHair.split('+')) {
-        const key = `beard_${part}`, meta = d.m.proxies[key];
-        if (meta) this.addProxy(d, P, minY, key, hairMaterial(meta, col), hairMaterial(meta, col, true));
-      }
     }
     for (const c of spec.clothes) {
       const key = `clothes_${c.name}`;

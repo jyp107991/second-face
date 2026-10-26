@@ -46,8 +46,8 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
 
 ## Next action
 **Current step (owner: facial hair blocky, stubble length/coverage off; wants real modern haircuts):**
-- [ ] S1 `strands.ts`: directional strand shells (screen-res tapered hairs, growth-direction + length fields, AA)
-- [ ] S2 `facialHair.ts`: zones + style table (stubble light/med/heavy, short/full beard, goatee, moustache,
+- [x] S1 `strands.ts`: directional strand shells (screen-res tapered hairs, growth-direction + length fields, AA)
+- [x] S2 `facialHair.ts`: zones + style table (stubble light/med/heavy, short/full beard, goatee, moustache,
       van dyke, chin strap) → strand shells; painted skin keeps only a faint follicle shadow; mesh beards dropped
 - [ ] S3 Scalp haircuts via strands (crew, crop, side part, slick back, quiff, curtains, fades) + coily high-top
 - [ ] S4 QA close-ups, commit, report

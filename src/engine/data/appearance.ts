@@ -17,20 +17,17 @@ export type BrowStyle = (typeof BROW_STYLES)[number];
 export const EYE_COLORS = ['brown', 'brownlight', 'green', 'bluegreen', 'blue', 'lightblue', 'deepblue', 'grey', 'ice'] as const;
 export type EyeColor = (typeof EYE_COLORS)[number];
 
-/** Facial hair: painted stubble levels and/or artist-made beard meshes (MakeHuman community, CC0/CC-BY). */
-/** '+' layers several meshes (e.g. a beard without moustache plus a moustache). */
+/** Facial hair styles (strand-rendered; see assets/human/facialHair.ts). */
 export const FACIAL_HAIR = [
-  'none', 'stubble_light', 'stubble', 'stubble_heavy', 'stubble+grinsegold_moustache', 'stubble_light+rehmanpolanski_moustache_viking',
-  'grinsegold_beard_sigmund_wip', 'grinsegold_full_beard+grinsegold_moustache', 'grinsegold_full_beard+rehmanpolanski_moustache_viking',
-  'elvs_scruffy_beard1', 'grinsegold_moustache', 'rehmanpolanski_moustache_viking',
+  'none', 'stubble_light', 'stubble', 'stubble_heavy', 'short_beard', 'full_beard', 'goatee', 'van_dyke', 'moustache',
+  'moustache_stubble', 'chin_strap',
 ] as const;
 export type FacialHair = (typeof FACIAL_HAIR)[number];
 
 /** How common each option is among generated men (few razors after the Burn: stubble is the norm). */
 const FACIAL_HAIR_WEIGHTS: [FacialHair, number][] = [
-  ['none', 30], ['stubble_light', 12], ['stubble', 14], ['stubble_heavy', 14], ['stubble+grinsegold_moustache', 5],
-  ['stubble_light+rehmanpolanski_moustache_viking', 3], ['grinsegold_beard_sigmund_wip', 6], ['grinsegold_full_beard+grinsegold_moustache', 5],
-  ['grinsegold_full_beard+rehmanpolanski_moustache_viking', 3], ['elvs_scruffy_beard1', 3], ['grinsegold_moustache', 3], ['rehmanpolanski_moustache_viking', 2],
+  ['none', 28], ['stubble_light', 12], ['stubble', 14], ['stubble_heavy', 12], ['short_beard', 10], ['full_beard', 6],
+  ['goatee', 5], ['van_dyke', 3], ['moustache', 3], ['moustache_stubble', 5], ['chin_strap', 2],
 ];
 
 export const SCARS = ['brow_cut', 'cheek_slash', 'lip_split', 'eye_scar', 'burn_left', 'burn_right', 'forehead_x', 'chin_nick'] as const;
