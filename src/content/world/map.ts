@@ -11,7 +11,7 @@ const L: LocationDef[] = [
   { id: 'shale', name: 'Shale', region: 'sallow', x: 455, y: 360, kind: 'major', settlement: 'shale', map: 'shale' },
   { id: 'drywells', name: 'Dry Wells', region: 'sallow', x: 500, y: 395, kind: 'minor', settlement: 'drywells' },
   { id: 'rustdogs', name: 'the overpass', region: 'sallow', x: 430, y: 335, kind: 'major', settlement: 'rustdogs', map: 'overpass' },
-  { id: 'tollhouse', name: 'Tollhouse 9', region: 'sallow', x: 420, y: 300, kind: 'major', settlement: 'tollhouse' },
+  { id: 'tollhouse', name: 'Tollhouse 9', region: 'sallow', x: 420, y: 300, kind: 'major', settlement: 'tollhouse', map: 'tollhouse' },
   { id: 'lm_sallow_01', name: 'Salt-pan wreck', region: 'sallow', x: 442, y: 372, kind: 'landmark', hidden: true },
   { id: 'lm_sallow_02', name: 'Windpump graveyard', region: 'sallow', x: 488, y: 345, kind: 'landmark', hidden: true },
   // The Glass Flats

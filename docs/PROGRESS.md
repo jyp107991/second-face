@@ -138,9 +138,13 @@ mid-range Android phone; deployed to Pages.
       scrap plates, chrome: eye/neural/forearms/legs/spine/skin) sit on the measured body (`HumanFigure.metrics`), a
       live draggable figure sits beside the Pack and Self tabs (`render/figureView.ts`, own renderer), the Self tab
       lists chrome by slot; smoke `tools/qa/wardrobe.cjs`. NEXT: B2 Act 1 (below).)
-- [ ] B2 **Act 1**: Tollhouse 9, Signal Hill, Dry Wells crisis, Burnt Orchard, salt pans; Shale/Rust Dogs/
-      Tollmen/Choir lines to Act 1 end; 3rd companion; first Mender + chrome; world map with encounters,
-      discoveries, camps, hunting/fishing; nomad camp (the Wheel). ~8 h.
+- [~] B2 **Act 1** (B2.1 DONE: Tollhouse 9 — toll-fort map `tools/maps/gen_tollhouse.py`, 11 Tollmen (`npcs/tollhouse.ts`),
+      `q_a1_tollhouse` with six ways through the wall (pay / courier contract with a nine-day timer / forged pass from Teo or
+      Perpetua / the chain-link at night / the gate terminal / Vasha's raid with Dogs placed as allies), `q_a1_ledger` (the
+      ledger page → Ada or Pike), the outriders' confession, the debtor's cage, the caravan master; Act 1 starts when the
+      first name is read (title card on a timer); `MapDef` exits take `if`; smoke `tools/qa/tollhouse.cjs`; tests
+      `tests/a1.test.ts`. NEXT: B2.2 Signal Hill.) Remaining: Signal Hill, Jonah's month + Ilya, Dry Wells finale, Burnt
+      Orchard/salt pans/hunting/road encounters/camps, Mender + chrome surgery, the Wheel, Act 1 side quests and smoke. ~8 h.
 - [ ] B3 **Meridian**: 9 districts, the Loop, Brokers' gigs (~25), the Masque, High Water, Static, Turf,
       Court of Accounts, citizenship hearing, Archive Spire, flat, fight pits, reverie dens, races,
       gambling, safehouse; gangs joinable; Ledger line; companions 4–6. ~16 h.
@@ -161,6 +165,7 @@ mid-range Android phone; deployed to Pages.
 | Cistern 9 | 2/2 | 10/10 | 10/10 | 1/1 | playable; shaft + door routes |
 | Shale | 1/1 | 16/16 | 16/16 | 3/5 | playable; arrival, Tribute Day, the first name |
 | Rust Dogs camp | 1/1 | 13/13 | 13/13 | 2/2 | playable; The Paper, Teo |
+| Tollhouse 9 | 1/1 | 11/11 | 13/13 | 2/2 | playable; six ways through |
 | Act 1 wilds | 0/5 | 0/15 | 0/15 | 0/6 | — |
 | Meridian | 0/12 | 0/60 | 0/60 | 0/30 | — |
 | Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |

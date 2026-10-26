@@ -183,6 +183,7 @@ export const d_rd_vasha: DialogueDef = {
         { id: 'vasha.map', text: 'The paper Kessler took off the old man.', if: { all: [{ not: HAVE_MAP }, { any: [{ knows: 'kessler_has_map' }, { knows: 'kessler_met_stranger' }] }] }, next: 'map' },
         { id: 'vasha.shale', text: 'What do you want with Shale?', next: 'shale', once: true },
         { id: 'vasha.kessler', text: 'You and Kessler.', next: 'kessler', once: true },
+        { id: 'vasha.raid', text: 'Tollhouse 9. I want through it, and I don\'t want to pay.', if: { all: [{ quest: 'q_a1_tollhouse' }, { not: { flag: 'rd_raid_agreed' } }, { not: { flag: 'th_passed' } }, { not: { flag: 'th_raided' } }] }, next: 'raid' },
         bye,
       ],
     },
@@ -211,6 +212,15 @@ export const d_rd_vasha: DialogueDef = {
     betrayed: { text: 'She looks at you the way she looks at the pens. "You told him." Nothing else. The thumb is on the safety.', options: [{ text: '(Leave.)', exit: true }] },
     shale: { text: '"A well with people around it. I\'m going to take the well. The people can stay if they\'re useful."', effects: [{ learn: 'vasha_wants_shale' }], options: [{ text: 'Noted.', next: 'menu' }] },
     kessler: { text: '"He keeps a list of who he hasn\'t robbed. I keep count of who\'s hungry. Guess which list is longer."', options: [{ text: 'Noted.', next: 'menu' }] },
+    raid: {
+      text: '"The guild pays Kessler to leave the highway alone. The guild has never paid me." She looks east, where the wall is. "Four Dogs and me, at the verge, when you walk up to the gate. You start it. We finish it. The warehouse is ours, the road is yours, and the guild learns the Sallow has teeth." A beat. "Kessler won\'t know until it\'s done."',
+      options: [
+        { id: 'vasha.raid.yes', text: 'Done.', effects: [{ set: 'rd_raid_agreed' }, { decision: { id: 'rd_raid_agreed', text: 'You agreed to hit Tollhouse 9 with Vasha and four Dogs.' } }, { memory: { npc: 'npc_rd_02', tag: 'raid_agreed', valence: 15, strength: 80 } }, { lead: 'l_raid_plan' }], next: 'raid_yes' },
+        { id: 'vasha.raid.no', text: 'No. Too many of them.', effects: [{ memory: { npc: 'npc_rd_02', tag: 'refused_raid', valence: -5 } }], next: 'raid_no' },
+      ],
+    },
+    raid_yes: { text: '"We leave tonight. Walk the highway like you own it; we\'ll be in the salt. Don\'t pay them. If you pay them I\'ll know what you are."', options: [{ text: '(Go.)', exit: true }] },
+    raid_no: { text: '"Then pay them. Everyone does."', options: [{ text: '(Leave.)', exit: true }] },
   },
 };
 
@@ -272,8 +282,16 @@ export const d_rd_wren: DialogueDef = {
 
 export const d_rd_teo: DialogueDef = {
   id: 'd_rd_teo', owner: 'npc_sh_07',
-  start: [{ if: { flag: 'teo_freed' }, node: 'free' }, { node: 'intro' }],
+  start: [{ if: { all: [{ flag: 'teo_freed' }, { at: 'shale' }] }, node: 'home' }, { if: { flag: 'teo_freed' }, node: 'free' }, { node: 'intro' }],
   nodes: {
+    home: {
+      text: '"Home." He says it like a sum that finally came out. "Mags shouted for an hour and then fed me for two. I owe you a count, and I keep my counts." He is already behind the bar, where the books are.',
+      options: [
+        { id: 'teo.pass', text: 'The Tollmen\'s wall on the highway. Could you write a pass the gate would take?', if: { all: [{ quest: 'q_a1_tollhouse' }, { not: { item: 'k_pass_forged' } }, { not: { flag: 'th_passed' } }] }, next: 'pass' },
+        { text: 'Keep your counts.', exit: true },
+      ],
+    },
+    pass: { text: '"I kept Kessler\'s books and Kessler keeps the guild\'s waybills, because he can\'t read them and likes the paper." He takes a sheet from under the bar, and writes for a minute in a hand that isn\'t his. "Bearer and goods. Hold it like you\'ve had it for years."', effects: [{ give: 'k_pass_forged' }, { learn: 'teo_forged' }, { lead: 'l_pass_hands' }, { trust: { npc: 'npc_sh_07', by: 5 } }], options: [{ text: '(Take it.)', exit: true }] },
     intro: {
       text: 'You\'re not a Dog. You\'re — are you from Shale? Did Mags send you? Tell her I\'m fine. Tell her it\'s forty, not sixty, and I can prove it, I\'ve got the whole thing in my head —',
       effects: [{ learn: 'teo_seen' }],
@@ -336,9 +354,19 @@ export const d_rd_perpetua: DialogueDef = {
         { id: 'perp.stranger', text: 'The man with the mask.', if: { any: [{ knows: 'kessler_met_stranger' }, { knows: 'wren_found_stranger' }, { knows: 'kessler_has_map' }] }, next: 'stranger', once: true },
         { id: 'perp.teo', text: 'Teo Marsh.', if: { all: [{ knows: 'teo_prisoner' }, { not: { flag: 'teo_freed' } }] }, next: 'teo' },
         { id: 'perp.races', text: 'The races?', next: 'races', once: true },
+        { id: 'perp.pass', text: 'The Tollmen\'s wall. Can you write a pass the gate would take?', if: { all: [{ quest: 'q_a1_tollhouse' }, { not: { item: 'k_pass_forged' } }, { not: { flag: 'th_passed' } }] }, next: 'pass' },
         bye,
       ],
     },
+    pass: {
+      text: '"I kept the guild\'s books at Ninebridge for six years before I kept the Dogs\'. I know the paper and I know the hand." She holds out her own, palm up. "Thirty Tolls. Or nothing, if you\'re the one who got my bookkeeper out of that cage."',
+      options: [
+        { id: 'perp.pass.free', text: 'I got Teo out.', if: { flag: 'teo_freed' }, effects: [{ give: 'k_pass_forged' }, { learn: 'perpetua_forged' }, { trust: { npc: 'npc_rd_05', by: 5 } }], next: 'pass_done' },
+        { id: 'perp.pass.pay', text: '(Pay. 30 Tolls)', if: { item: 'tolls', count: 30 }, effects: [{ take: 'tolls', count: 30 }, { give: 'k_pass_forged' }, { learn: 'perpetua_forged' }], next: 'pass_done' },
+        { text: 'Not now.', exit: true },
+      ],
+    },
+    pass_done: { text: 'She writes it on the back of a guild waybill she has had for six years, folds it twice, and gives it to you warm. "Hold it like it\'s yours. The sergeant looks at hands, not paper."', effects: [{ lead: 'l_pass_hands' }], options: [{ text: '(Take it.)', exit: true }] },
     stranger: { text: '"Wren brought him in across Biter. He paid Kessler in paper and me in a story, and the story was worth more." She waits to be asked.', options: [{ text: 'What story?', next: 'story' }, bye] },
     story: { text: '"That the city counts us. All of us, out here, under a road. That it has a list, and the paper is the list, and the names on it have dates." She shrugs. "I\'m sixty. My date\'s whatever it is. But I\'d like to know Kessler\'s."', effects: [{ learn: 'perpetua_story' }, { lead: 'l_city_counts' }], options: [bye] },
     teo: { text: '"Forty with me; sixty with Kessler, who adds the keeping. He taught me to keep books, that one, and then he kept them too well." She looks at the cage. "Pay me forty and I\'ll say I lost the count. I\'ve lost worse."', options: [{ id: 'perp.pay', text: '(Pay. 40 Tolls)', if: { item: 'tolls', count: 40 }, effects: [{ take: 'tolls', count: 40 }, { set: 'teo_freed' }, { set: 'teo_freed_paid' }, { decision: { id: 'teo_freed_perpetua', text: 'You paid Perpetua forty Tolls to lose the count on Teo Marsh\'s debt.' } }, { trust: { npc: 'npc_rd_05', by: 10 } }, { news: { tag: 'freed_teo', text: 'the Dog-mother let Teo Marsh go', valence: 10, size: 4, at: 'rustdogs' } }], next: 'paid' }, { text: 'Later.', exit: true }] },

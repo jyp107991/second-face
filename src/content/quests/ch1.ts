@@ -199,7 +199,7 @@ export const q_ch1_name: QuestDef = {
     read: {
       journal: 'Jonah Reese. Shale. Thirty days, counted from the morning the stranger died at our door. A man walked across the waste to bring me a list with the deputy\'s name on it, and mine was never on it at all — or it is, further east, where the road goes.',
       end: 'done',
-      onEnter: [{ set: 'ch1_done' }, { decision: { id: 'ch1_done', text: 'Chapter One ended with the first name read: Jonah Reese, thirty days.' } }, { news: { tag: 'stranger_map_read', text: 'the salt-cut stranger has been asking what the deputy\'s name is worth', valence: -5, size: 3, at: 'shale' } }],
+      onEnter: [{ set: 'ch1_done' }, { quest: 'q_a1_tollhouse', start: true }, { after: { minutes: 4, id: 'act1_card', effects: [{ event: 'title', data: { text: 'ACT ONE\nTHE MONTH' } }] } }, { decision: { id: 'ch1_done', text: 'Chapter One ended with the first name read: Jonah Reese, thirty days.' } }, { news: { tag: 'stranger_map_read', text: 'the salt-cut stranger has been asking what the deputy\'s name is worth', valence: -5, size: 3, at: 'shale' } }],
     },
   },
 };

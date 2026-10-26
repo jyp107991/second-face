@@ -12,6 +12,7 @@ import { DEV_NPCS } from './npcs/dev_enemies';
 import { CH1_CISTERN } from './npcs/ch1_cistern';
 import { SHALE_NPCS } from './npcs/shale';
 import { RUSTDOG_NPCS } from './npcs/rustdogs';
+import { TOLLHOUSE_NPCS } from './npcs/tollhouse';
 import { dev_bunker } from './maps/dev_bunker';
 import { dev_yard } from './maps/dev_yard';
 import { bench_crowd } from './maps/bench_crowd';
@@ -19,6 +20,7 @@ import { cistern9 } from './maps/cistern9';
 import { c9_mouth } from './maps/c9_mouth';
 import { shale } from './maps/shale';
 import { overpass } from './maps/overpass';
+import { tollhouse } from './maps/tollhouse';
 import { BENCH_NPCS } from './npcs/bench';
 import { DIALOGUES } from './dialogue';
 import { QUESTS } from './quests';
@@ -39,10 +41,10 @@ export const MAPS: Record<string, MapDef> = {
   overpass,
   dev_yard,
   dev_bunker,
-  bench_crowd,
+  bench_crowd, tollhouse,
 };
 
-export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...BENCH_NPCS].map((n) => [n.id, n]));
+export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...TOLLHOUSE_NPCS, ...BENCH_NPCS].map((n) => [n.id, n]));
 
 export { LETTERS, FACTIONS, WORLD_MAP, REGIONS, TRAITS, PERKS, CHROME, ITEMS, ORIGINS, DIALOGUES, QUESTS, SETTLEMENTS, LEADS, CONCLUSIONS, WORLD_EVENTS };
 registerRules({ traits: TRAITS, perks: PERKS });

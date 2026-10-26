@@ -142,6 +142,11 @@ export const d_sh_ada: DialogueDef = {
     dogs: { text: '"Then I\'d ask you to leave the gun on the counter and I\'d watch you walk back out." She doesn\'t reach for anything. "Are you saying it?"', options: [{ text: 'No. The salt cut.', next: 'cut' }, { text: 'Passing through.', next: 'rules' }] },
     name: { text: '"He didn\'t, and I asked twice. He had a way of not hearing questions. Pike at the Tollmen post talked to him longer than I did — ask him what it cost."', effects: [{ learn: 'pike_met_stranger' }], options: [{ text: 'What\'s at the overpass?', next: 'overpass' }, { text: 'Thanks.', next: 'rules' }] },
     overpass: { text: '"The Rust Dogs. Forty, fifty of them under a dead highway, with the water they take from us and the people they take from the road. Kessler runs them; he\'s a thief with manners. His lieutenant has none." She looks at you. "If you go, go in daylight, hands empty, and don\'t say my name like it\'s a password."', effects: [{ learn: 'overpass_dogs' }, { learn: 'kessler_name' }, { learn: 'loc_rustdogs' }], options: [{ text: 'Noted.', next: 'rules' }] },
+    ledger_page: {
+      text: 'She reads it twice, and the second time her lips move on the name. "Post nine-west." She folds it into her shirt, not her pocket. "He sells us water. He stands in my street." A breath. "This stays with me. If I use it, it\'ll be when it costs him more than it costs Shale, and I don\'t know when that is yet."',
+      effects: [{ take: 'k_ledger_page' }, { set: 'ledger_shown_ada' }, { decision: { id: 'ledger_shown_ada', text: 'You gave Sheriff Vey the ledger page proving Pike paid for the stranger\'s shooting.' } }, { trust: { npc: 'npc_sh_01', by: 15 } }, { rep: { faction: 'shale_militia', respect: 10 } }, { rep: { faction: 'tollmen', respect: -10 } }, { memory: { npc: 'npc_sh_01', tag: 'pike_page', valence: 20, strength: 100 } }, { xp: 60 }],
+      options: [{ text: 'Noted.', exit: true }],
+    },
     rules: {
       text: 'Rules: no guns drawn in town, no stealing water, no fighting the Dogs on my street unless I start it. Break one and you\'re in the cell. Break two and you\'re on the road. We\'re thin here; I can\'t afford trouble I didn\'t choose.',
       options: [{ text: 'Understood.', exit: true }, { id: 'ada.help', text: 'You look like someone who needs hands.', next: 'help', once: true }],
@@ -155,6 +160,7 @@ export const d_sh_ada: DialogueDef = {
         { id: 'ada.tribute', text: 'Tribute Day. What are you going to do?', if: { all: [{ quest: 'q_ch1_tribute' }, { not: { knows: 'ada_will_pay' } }] }, next: 'tribute' },
         { id: 'ada.terms', text: 'Kessler\'s terms: half of last time, in water. I carried them myself.', if: { all: [{ flag: 'rd_terms_carried' }, { not: { flag: 'ada_terms_decided' } }] }, next: 'terms' },
         { id: 'ada.exodus', text: 'Some of the Dogs want out — Wren Calloway and her people. Would Shale have them?', if: { all: [{ any: [{ knows: 'wren_wants_out' }, { knows: 'wren_leaving' }] }, { not: { flag: 'shale_exodus_decided' } }] }, next: 'exodus' },
+        { id: 'ada.ledger', text: 'Pike paid the outriders who shot the masked man. (Show her the ledger page.)', if: { item: 'k_ledger_page' }, next: 'ledger_page' },
         { text: 'Nothing. Just checking in.', exit: true },
       ],
     },
@@ -231,7 +237,16 @@ export const d_sh_pike: DialogueDef = {
       passives: [{ attr: 'wits', dc: 8, text: 'A list on the wall behind him: SEED — ANY VARIETY — ANY QUANTITY — PAID IN TOLLS OR SCRIP. The prices are absurd.', effects: [{ learn: 'pike_buys_seed' }] }],
       options: [{ text: 'Let\'s see the stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed', text: 'You\'re buying seed.', if: { knows: 'pike_buys_seed' }, next: 'seed', once: true }, { id: 'pike.who', text: 'Who are the Tollmen?', next: 'who', once: true }, { id: 'pike.stranger', text: 'A masked man came through three weeks ago. You spoke with him.', if: { quest: 'q_ch1_shale' }, next: 'stranger', once: true }, bye],
     },
-    again: { text: 'As per. Stock, or something else?', options: [{ text: 'Stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed.again', text: 'About the seed.', if: { all: [{ knows: 'pike_buys_seed' }, { not: { seen: 'pike.seed' } }] }, next: 'seed' }, { id: 'pike.stranger.again', text: 'About the masked man.', if: { all: [{ quest: 'q_ch1_shale' }, { not: { seen: 'pike.stranger' } }] }, next: 'stranger' }, { id: 'pike.key', text: 'Do the Tollmen read this hand?', if: { all: [{ item: 'k_map' }, { not: { item: 'k_cipher_key' } }] }, next: 'key' }, bye] },
+    again: { text: 'As per. Stock, or something else?', options: [{ text: 'Stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed.again', text: 'About the seed.', if: { all: [{ knows: 'pike_buys_seed' }, { not: { seen: 'pike.seed' } }] }, next: 'seed' }, { id: 'pike.stranger.again', text: 'About the masked man.', if: { all: [{ quest: 'q_ch1_shale' }, { not: { seen: 'pike.stranger' } }] }, next: 'stranger' }, { id: 'pike.key', text: 'Do the Tollmen read this hand?', if: { all: [{ item: 'k_map' }, { not: { item: 'k_cipher_key' } }] }, next: 'key' }, { id: 'pike.ledger', text: '(Put the Tollhouse ledger page on the counter.)', if: { item: 'k_ledger_page' }, next: 'ledger_page' }, bye] },
+    ledger_page: {
+      text: 'He reads it the way he reads rates. "Post nine\'s hand. A road contract, confirmed and paid, as per." He looks up with the top half of his face. "Guild paper, removed from a guild ledger. There is a buy-back rate for that. Sixty." A pause exactly as long as a courtesy. "I don\'t ask what you\'d do with it otherwise. I know."',
+      options: [
+        { id: 'pike.ledger.sell', text: '(Sell it. 60 Tolls)', effects: [{ take: 'k_ledger_page' }, { give: 'tolls', count: 60 }, { set: 'ledger_sold' }, { decision: { id: 'ledger_sold', text: 'You sold the Tollhouse ledger page back to Pike for sixty Tolls, and he burned it.' } }, { memory: { npc: 'npc_sh_04', tag: 'bought_page', valence: 15, strength: 90 } }, { rep: { faction: 'tollmen', respect: 10 } }], next: 'ledger_burn' },
+        { id: 'pike.ledger.keep', text: 'I\'ll keep it.', effects: [{ memory: { npc: 'npc_sh_04', tag: 'kept_page', valence: -25, strength: 90 } }, { set: 'pike_knows_page' }], next: 'ledger_keep' },
+      ],
+    },
+    ledger_burn: { text: 'He counts sixty onto the counter, takes the page, and holds it to the lamp until it is gone. "As per." He wipes the ash off the counter with his sleeve.', options: [bye] },
+    ledger_keep: { text: '"Then we both know what it says." He goes back to his rates. "Good day."', options: [bye] },
     key: {
       text: 'He looks at the map for exactly as long as it takes to see what it is, and then not at all. "Not here. But the post sells the key to it — a cipher wheel, forty Tolls, as per. The Tollmen sell keys to everything, {name}. It is how we know what is locked."',
       effects: [{ learn: 'pike_sells_key' }, { lead: 'l_pike_saw_map' }, { memory: { npc: 'npc_sh_04', tag: 'saw_the_map', valence: 0, strength: 100 } }, { news: { tag: 'map_seen_by_tollmen', text: 'the salt-cut stranger showed a Tollman a map covered in cipher', valence: -5, size: 4, at: 'shale' } }],
@@ -253,7 +268,7 @@ export const d_sh_pike: DialogueDef = {
     },
     reported: { text: '"To the post east. As per." The ledger closes.', options: [{ text: 'Noted.', next: 'intro' }] },
     stranger_no: { text: '"Fifteen. The rate does not move because the buyer is clever."', options: [{ text: 'Fine.', next: 'stranger' }, { text: 'Not today.', next: 'intro' }] },
-    who: { text: '"A guild. We hold the roads between the posts, we carry, we insure, we lend. The Reach moves because we move it." He smiles with the top half of his face. "Everything you own came through a Tollhouse, or it was stolen from someone whose did."', effects: [{ learn: 'tollmen_guild' }], options: [{ text: 'Noted.', next: 'intro' }] },
+    who: { text: '"A guild. We hold the roads between the posts, we carry, we insure, we lend. The Reach moves because we move it." He smiles with the top half of his face. "Everything you own came through a Tollhouse, or it was stolen from someone whose did."', effects: [{ learn: 'loc_tollhouse' }, { learn: 'tollmen_guild' }], options: [{ text: 'Noted.', next: 'intro' }] },
     seed: {
       text: '"Any variety. Any quantity. Viable, which I test." He does not explain who wants it. "You came from the salt cut, I\'m told. A shelter like that keeps a seed bank, or it wouldn\'t have lasted the first winter. I would pay very well. I would pay in advance."',
       effects: [{ learn: 'pike_seed_offer' }, { lead: 'l_seed_buyer' }],

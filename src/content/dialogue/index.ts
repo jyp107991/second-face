@@ -4,10 +4,12 @@ import { d_sh_ada, d_sh_calla, d_sh_dov, d_sh_hollis, d_sh_issa, d_sh_jonah, d_s
 import { d_rd_brindle, d_rd_cage, d_rd_chest, d_rd_gate, d_rd_jack, d_rd_kessler, d_rd_perpetua, d_rd_table, d_rd_tank, d_rd_teo, d_rd_vasha, d_rd_wren } from './overpass';
 import { d_rd_truck, d_tribute } from './tribute';
 import { d_map } from './decode';
+import { d_th_bikes, d_th_caravan, d_th_clerk, d_th_debtor, d_th_fence, d_th_gate, d_th_ledger, d_th_outrider_a, d_th_outrider_b, d_th_quartermaster, d_th_rates, d_th_sergeant, d_th_terminal } from './tollhouse';
 import { d_c9_archive, d_c9_body, d_c9_bram, d_c9_great_door, d_c9_ines, d_c9_mother, d_c9_pell, d_c9_shaft, d_c9_tamsin, d_c9_teague } from './ch1_cistern';
 
 export const DIALOGUES: Record<string, DialogueDef> = Object.fromEntries([
   d_dev_guide, d_c9_pell, d_c9_ines, d_c9_tamsin, d_c9_bram, d_c9_mother, d_c9_teague, d_c9_shaft, d_c9_archive, d_c9_body, d_c9_great_door,
   d_sh_mags, d_sh_room, d_sh_pumps, d_sh_nell, d_sh_ada, d_sh_jonah, d_sh_issa, d_sh_pike, d_sh_calla, d_sh_hollis, d_sh_yusra, d_sh_dov, d_sh_pardo, d_sh_ruth, d_sh_tracks,
   d_rd_gate, d_rd_brindle, d_rd_kessler, d_rd_vasha, d_rd_wren, d_rd_teo, d_rd_cage, d_rd_table, d_rd_perpetua, d_rd_jack, d_rd_tank, d_rd_chest, d_tribute, d_rd_truck, d_map,
+  d_th_gate, d_th_sergeant, d_th_clerk, d_th_ledger, d_th_terminal, d_th_fence, d_th_rates, d_th_bikes, d_th_outrider_a, d_th_outrider_b, d_th_quartermaster, d_th_debtor, d_th_caravan,
 ].map((d) => [d.id, d]));
