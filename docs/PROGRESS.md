@@ -1,160 +1,161 @@
-# Progress log (spoiler-free)
+# Progress log (spoiler-free) — READ FIRST, every session
 
-Read this first in every session. Update + commit + push after every step.
+This file is the single source of truth for where the project stands. Update it, run `npm run check`,
+commit and push after every step. Another model with no memory of past sessions must be able to continue
+from here without guessing. Story-sensitive detail lives only in `story/` (never here).
 
-## Current milestone: M2 — Systems II
+## 0. How to resume
+1. Read this file top to bottom, then `CLAUDE.md`, `docs/DESIGN.md`, `docs/WORLD.md`, `docs/ROADMAP.md`,
+   and everything in `story/` (secret; never quote to the owner).
+2. Find the first unticked step in §2/§3 below (steps are ordered). Its line says what it is and, where
+   needed, how to do it. "Half-finished work" (§5) says what is mid-flight.
+3. Work in small steps (≤ ~1 h). After each: `npm run check` → tick/update here → commit → `git push origin main`.
+4. Visual work needs the dev server: run `npx vite --port 5173 --host 127.0.0.1` as a **background task
+   with the longest timeout** (it dies after 2 h; restart it). Headless Chromium is ~2 fps (swiftshader):
+   fine for screenshots and draw-call counts, useless for frame-time; measure frame time on a real device.
+5. Render QA scripts (Playwright, node) are in the session scratchpad and may be gone — recreate from
+   `tools/qa/` (committed copies, see §4) when needed.
 
-### M1 — Systems I ✅
+## 1. Where things stand (one paragraph)
+Engine is substantial (render, iso camera, turn-based combat + AI, stats/perks/chrome, inventory, dialogue,
+quests, world logic, local reputation/news/leads/events, settlement types, world-map travel model, human
+figures with layered garments). Content is tiny: Cistern 9 opening (4 NPCs, 4 dialogues, 1 quest), 2 dev
+maps, ~68 items, 64 perks, 15 chrome pieces, a 25-place map skeleton. Nothing beyond the test yard is
+playable yet. Current work: **Phase A quality/depth pass → Phase B full v1 build** (owner direction, this
+session). Engine decision: see `docs/TECH_EVALUATION.md` (recommendation: stay on three.js; owner to confirm).
 
-### M0 — Foundations ✅
-- [x] M0.1 Repo + CLAUDE.md + resume protocol
-- [x] M0.2 DESIGN.md, ROADMAP.md, story plan (secret)
-- [x] M0.3 Project scaffold, `npm run check`, deploy workflow (template in docs/setup/deploy.yml — owner must add via GitHub UI)
-- [x] M0.4 Engine core: renderer, post FX, iso camera, atmosphere, input, grid/A*, location builder, humanoid, test maps
-- [x] M0.5 Save/load (IndexedDB, versioned, 5 slots, export/import, thumbnails), dev overlay, menus
+## 2. PHASE A — quality and depth pass
+### A0 Plan
+- [x] A0 This plan written; old milestone logs compressed into §6.
 
-### M1 — Systems I
-- [x] M1.1 Stats model: attributes, skills, traits, perks, derived stats, XP/levels (pure TS + tests) — `src/engine/stats/`
-- [x] M1.2 Items & inventory model: item schema, weight, condition, ammo, equipment; validator coverage — `src/engine/inventory/`
-- [x] M1.3 Face sculptor: parametric head (sliders, age), hair/scars/tattoos, body build; humanoid uses Appearance
-- [x] M1.4 Character creation UI (name, appearance, attributes, tag skills, traits, summary)
-- [x] M1.5 Combat rules: turn order, AP, hit chance, damage, crits, aimed shots, crippling (pure TS + tests) — `src/engine/combat/`
-- [x] M1.6 Combat in scene: enter/exit combat, AP bar, targeting, aimed-shot UI, FX (muzzle flash, tracers, blood), floating text
-- [x] M1.7 Enemy AI: utility scoring, cover, flanking, retreat-to-heal, flee/surrender, morale
-- [x] M1.8 Wristlog UI (inventory, stats, equip, use items) — CRT style
-- [x] M1.9 Audio: Web Audio synth (ambience beds, footsteps, gunshots, UI blips)
+### A1 Grounded world and coherent story
+- [ ] A1.1 History rework (public `docs/WORLD.md` §1, §4): the Burn follows from real trends — compute/chip
+      race between blocs, AI-administered charter cities, automation and autonomous weapons, surveillance
+      scoring, climate stress, supply-chain autarky, geopolitical fragmentation. Add "remnant machines"
+      (autonomous machines that outlived their owners) to the world and the bestiary.
+- [ ] A1.2 Secret history and plot consolidated (`story/WORLD_SECRET.md`, `story/STORY_PLAN_SECRET.md`
+      rewritten as a clean v3; superseded passes removed; change log kept).
+- [ ] A1.3 Character bible (`story/CHARACTERS_SECRET.md`): companions and key NPCs with wants, fears,
+      contradictions, voice, secrets, opinions of each other, arc stages, red lines, romance notes.
+- [ ] A1.4 Coherence audit of existing content (dialogue, quests, items, leads, origins, perks/traits text)
+      → fixes committed; findings log in `story/AUDIT_SECRET.md`.
+- [ ] A1.5 Hard-choice review rule applied to every major choice listed in the plan (no dominant option);
+      delayed/distant consequence list ≥30% (tracked in the secret plan).
 
-### M1.10 — Realistic humans (owner benchmark: Fallout 4 / Skyrim SE faces; approach: rendering upgrade; faces before gameplay)
-Source: MakeHuman 1.2.0 CC0 assets (base mesh, targets, skins, rigs, eyes, brows, lashes, hair, teeth, clothes,
-expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemeral). No AGPL code used.
-- [x] M1.10a Asset build script `tools/mh/build_human.py` → `public/assets/human/` (base mesh w/ UV split, macro
-      targets PCA, sparse detail targets, modifiers, skeleton + weights, proxies, downscaled textures) + CREDITS
-- [x] M1.10b Runtime `src/engine/assets/human/` (loader, morph, joints→bones, skinned body, proxy fitting, skin shader)
-- [ ] M1.10c Replace Humanoid with HumanFigure (procedural anim on MH bones), Appearance → MH params, creator sliders
-- [ ] M1.10d Visual QA close-ups + iso view, performance (LOD / draw calls), ageing for the photo
+### A2 Play like the best RPGs
+- [ ] A2.1 DESIGN §2d–§2h: joinable factions (membership, initiation, ranks, politics, perks, gear, base,
+      conflicts, infiltration/betrayal), side-quest standard, side activities (each with mechanics + reward
+      loop), nonlinearity rules (entry routes, region order, tiered loot), QoL list.
+- [ ] A2.2 Engine: faction membership model (`world/factions.ts`: ranks, conditions `member`, effects
+      `join`/`rank`/`expel`, conflicts), validator + tests.
+- [ ] A2.3 Engine: companions core (follow, party in scene, approval reactions UI, banter triggers, combat
+      allies), camp scene (talk/cook/mend/letters/rest).
+- [ ] A2.4 Engine: barter UI + pricing (skill, standing, saturation, merchant cash/restock); economy sim script.
+- [ ] A2.5 Engine: NPC schedules + ambient behaviour + barks.
+- [ ] A2.6 Activities v1 (each a real system): dice game "Dust", fight pit (combat rules variant + bets),
+      letters (caravan delay timers), hunting/trapping + fishing (Survival; procedural animals), reverie
+      vignettes (dialogue-tree based with sensory framing), safehouse (storage/rest/fast-travel point).
+      Later: races, salvage dives, caravan escort, court defence, heists (B phase as content demands).
+- [ ] A2.7 QoL: undo last move (outside combat), quick-loot/take-all everywhere, tooltips + equip
+      comparison, pins in notebook, dialogue log tab, skip-seen-dialogue, text size/speed/contrast,
+      colour-blind-safe check tags (icons not just colour), remappable keys, difficulty options (never
+      touching scarcity design), optional tips, settings persisted.
 
-### M2 — Systems II
-- [ ] M2.1 Dialogue engine (data schema, conditions, effects, skill checks, memory-aware options) + tests
-- [ ] M2.2 Dialogue UI (talking-head close-up via PortraitStage, option list, check tags, history)
-- [ ] M2.3 Quest engine (stages, state-based objectives, timers, journal) + Wristlog QUESTS tab + tests
-- [ ] M2.4 NPC personality, memory, trust/affection, gossip propagation + tests
-- [ ] M2.5 NPC schedules & ambient behaviour (time-of-day locations/activities, barks)
-- [ ] M2.6 Factions & karma (respect/fear axes, labels, reactions) + tests
-- [ ] M2.7 Barter UI + pricing (skill, reputation, saturation, merchant cash/restock) + tests
-- [ ] M2.8 Economy simulation script (`npm run econ`) with budget tables
-- [ ] M2.9 Companions core (recruit, follow, approval reactions, banter triggers, combat AI as allies)
+### A3 Look and feel: people
+- [ ] A3.1 Clothing: cull out-of-place garments (dresses, florals, clean fashion → restricted to the Crown/
+      Halcyon or removed); gritty retexture pass (worn canvas/leather/synthetic atlases, patches, stains);
+      new procedural pieces (poncho, duster, hood/wrap, scrap plates, harness/webbing, respirator, goggles
+      strap); faction/gang looks (colours, markers) recognisable at iso distance. CREDITS kept complete.
+- [ ] A3.2 Bodies: lean/wiry/gaunt defaults, rare heavy (rich or specific); proportion variation (limb
+      length, shoulder/hip, neck, posture slouch) via MakeHuman measure/torso/armslegs modifiers + anim.
+- [ ] A3.3 Faces: research + adopt better open resources (community skin packs skins01/02/03 full diffuse
+      variety, asymmetry via l-/r- modifiers, weathering/sun damage/chapped lips, eye wetness/lip spec,
+      ageing wrinkle strength, female-specific shape variation, world-fitting hairstyles only).
+- [ ] A3.4 Before/after comparison sheets (portrait + iso) for each of A3.1–A3.3, judged honestly; revert
+      regressions; sheets sent to owner.
 
-## Next action
-**Current step (owner: cyberpunk semi-overhaul; NPC variance; settlement variety; cities; map/transport):**
-- [x] W1 Worldbuilding: docs/WORLD.md (public, spoiler-safe history/geography/cities/tech/culture) +
-      story/WORLD_SECRET.md (hidden history) — BEFORE design changes
-- [x] W2 DESIGN: bionics (+ Drift), city systems (districts, gigs, grid-riding, reveries), inequality as play,
-      settlement types, world scale, transport & fast travel; ROADMAP re-plan
-- [x] W3 Secret plot pass 3 (cities, corporation, bionics woven into the Plan story)
-- [x] W4 NPC appearance variance — 125 layered community garments (lazy per-piece files, `ensureProxies`;
-      `loadLocation` preloads what a map's cast wears), catalogue `data/garments.ts` (slot/fit/style/dye/hair),
-      15 outfit roles `data/outfits.ts` (`dressFor`, palettes, grime/wear; NpcDef `role`, outfit optional), cloth shader
-      (`assets/human/cloth.ts`: re-dye, fade/yellowing, hem-heavy dirt), hats crop/hide hair, lifestyle bodies + rare
-      extremes, 1–2 distinctive face features + ~50 face modifiers, city hair dyes, painted face grime.
-      W4b: low-LOD figures merge all garments into one mesh with a per-figure atlas (5–6 meshes per NPC, was 8–10);
-      no face shadow casters at low LOD. QA scripts in scratchpad: garm.cjs, roles.cjs, meshcount.cjs, iso.cjs.
-      Backlog: eyepatch piece; visible chrome comes with W5 bionics.
-- [x] W5 Data models + validators:
-  - [x] W5a Chrome engine `stats/chrome.ts` (8 slots, old/dark/Concern grades, mods + `chrome_*` ability flags via
-        allMods/hasFlag, surgery risk & rejection, upkeep items `u_holdfast`/`u_powercell` + degradation, Drift baseline/
-        settle/bands/episode chance), catalogue `content/chrome/catalogue.ts` (15 pieces), conds `chrome`/`chromeSlot`/
-        `drift`, daily body tick in game (`dailyBody`), validator + tests. Not yet: Mender/clinic UI, ability effects in
-        combat/maps, chrome visuals on models (eye glow, metal limbs), Drift dialogue content.
-  - [x] W5b Settlement types `world/settlementTypes.ts` (12 types: layout, kits, size, law, services, role mix, prosperity,
-        crises, nomads move), `generateSettlement` (minor places), `residentRoles` (prosperity-shifted → `dressFor`);
-        SettlementDef gains type/region/prosperity/kit/owner/crisis; `content/world/regions.ts` (8 regions, km bounds);
-        validator + tests. Not yet: layout generators that build maps from a type.
-  - [x] W5c World map `world/travel.ts`: locations (major/minor/landmark, hidden until known), routes (terrain, danger,
-        km), overland modes (foot/mount/vehicle: speed, nights, terrain limits, noise, discovery), networks (rail/barge/
-        caravan/transit/runner/air: stops, leg hours, fares, timetables), `planTrip` (Dijkstra incl. waits), `fastTravel`
-        (networks only), `discoveriesAlong`; starter content `content/world/map.ts` (25 places, the Line, barges,
-        Tollmen caravan); validator (refs, region bounds, reachability, settlements on map) + tests.
-        To reconcile in M4: derive SettlementDef.roads (gossip days) from the map instead of hand values.
+### A4 Technology and performance
+- [ ] A4.1 `docs/TECH_EVALUATION.md`: Godot 4, Bevy, Babylon.js, PlayCanvas, three.js WebGPU, pipelines
+      (glTF+meshopt/Draco, KTX2/Basis, baked lighting, instancing, LOD/impostors, forward+, AgX tonemap,
+      GTAO, volumetric fog, decals) — quality ceiling, mobile perf, Pages deploy, migration cost, risk;
+      recommendation; owner asked (no migration without approval).
+- [ ] A4.2 Perf overlay (frame ms, draws, tris, textures MB, geometry MB, load ms) + benchmark scenes
+      (`bench_crowd` 40 NPCs, `bench_combat`, world map) + `tools/qa/bench.cjs` recording numbers to
+      `docs/PERF.md`.
+- [ ] A4.3 Pareto improvements measured one by one: skin texture cache/hash + smaller iso skins, worker
+      thread for skin compositing, KTX2 for static textures, atlas merge of static props, LOD distances,
+      shader simplification at low tier, lazy chunks (code splitting), adaptive resolution tiers.
+      Numbers before/after in `docs/PERF.md`.
 
-**Next (pick up here):**
-- [ ] N1 Chrome visible on models (eye glow/lens, metal limb material on skin regions, ports) + a Mender service UI
-      (install/repair/remove, prices, surgery risk shown up front)
-- [ ] N2 World map screen in the notebook (Road tab): regions, known places, routes, plan a trip, fast travel when
-      networks allow; time/food/fare applied; encounter + discovery rolls per leg
-- [ ] N3 Cistern 9 map with the cast placed, MOTHER terminal dialogue, maintenance-shaft route, exit trigger (G5)
-- [ ] N4 Shale map from the well-town type + residents by `residentRoles`; first scheduled event + news; letters
-- [ ] N5 Implement perk flags in systems; HUD restyle + title art
+## 3. PHASE B — build the complete game to a playable v1 (vertical slices)
+Each slice ends playable and polished before the next starts. Definition of v1 done: creation → every
+ending without dev tools; ~60+ h; validate + per-quest route tests green; saves migrate; perf budget on a
+mid-range Android phone; deployed to Pages.
+- [ ] B1 **Chapter One slice**: Cistern 9 map (cast placed, MOTHER terminal, maintenance shaft, exit), Shale
+      (well-town map, ~12 NPCs incl. the plan's cast, saloon, sheriff, trading post, Choir tent, wells),
+      Rust Dogs overpass camp; quests q_ch1_door/shale/tribute/debts/prisoner/map/oldface; 2 companions;
+      first scheduled event; letters; barter; map screen with travel between the three. ~5 h.
+- [ ] B2 **Act 1**: Tollhouse 9, Signal Hill, Dry Wells crisis, Burnt Orchard, salt pans; Shale/Rust Dogs/
+      Tollmen/Choir lines to Act 1 end; 3rd companion; first Mender + chrome; world map with encounters,
+      discoveries, camps, hunting/fishing; nomad camp (the Wheel). ~8 h.
+- [ ] B3 **Meridian**: 9 districts, the Loop, Brokers' gigs (~25), the Masque, High Water, Static, Turf,
+      Court of Accounts, citizenship hearing, Archive Spire, flat, fight pits, reverie dens, races,
+      gambling, safehouse; gangs joinable; Ledger line; companions 4–6. ~16 h.
+- [ ] B4 **Halcyon & the Skirts**: arcology, Skirts, the Shift, Contract, Spare Parts, the Leash, the
+      Long-Lived; Concern chrome; 7th companion. ~10 h.
+- [ ] B5 **Act 2 wilds**: Glass Flats (Ninebridge, Openfield, the Sump, Cistern 4), Rail Corridor (the
+      Line, Junction, halts, rail bandits), Drowned Shore (stilt villages, Rigs, salvage dives), Teeth
+      mines, Northern Wet (barges, Dam, timber), Ashlands (remnant machines); Long Night alliance. ~12 h.
+- [ ] B6 **Act 3 + endings**: return, lockdown, Spire, finale, endings A–E + modifiers, epilogue slides.
+- [ ] B7 **Systemic depth + presentation**: ruins templates, bounty/gig templates, rare encounters, music
+      and ambience, title art, menus, credits, settings, tips.
+- [ ] B8 **Balance, performance, deploy**: economy sim pass, difficulty, accessibility, Android perf
+      budget verified, Pages deploy, v1 tag.
 
-**Current step (owner: less Fallout, more creative modern frontier features; rework story core; notebook UI):**
-- [x] F1 Docs: owner decisions (CLAUDE.md), DESIGN frontier systems (local reputation & news, leads board,
-      scheduled world events, frontier justice, journeys), drop karma; reframe DESIGN §2 row 1
-- [x] F2 Secret: rework the story's central truth (story/ only) + update Chapter One content to fit
-- [x] F3 Field notebook UI replacing the wristlog (journal, people with sketched portraits, leads, map, gear)
-- [x] F4 Systems: local reputation + news propagation, leads/deductions engine, scheduled world events
-- [x] F5 Restyle panels to leather & brass (no green CRT). Later: proper title art, HUD icons.
-- NEXT: Cistern 9 map with the cast placed (M3), MOTHER terminal dialogue, maintenance-shaft route, exit trigger;
-  then Shale (first scheduled world event + news), frontier justice dispute, letters; perk flags into systems.
+### Content tracker (spoiler-free counts; update as slices land)
+| Area | Maps | NPCs | Dialogues | Quests | Status |
+|---|---|---|---|---|---|
+| Cistern 9 | 0/1 | 4/6 | 4/6 | 1/1 | opening dialogues only |
+| Shale | 0/3 | 0/12 | 0/12 | 0/5 | — |
+| Rust Dogs camp | 0/1 | 0/6 | 0/6 | 0/2 | — |
+| Act 1 wilds | 0/5 | 0/15 | 0/15 | 0/6 | — |
+| Meridian | 0/12 | 0/60 | 0/60 | 0/30 | — |
+| Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |
+| Act 2 wilds | 0/14 | 0/40 | 0/40 | 0/16 | — |
+| Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |
+| Companions | — | 0/7 | 0/7 arcs | 0/7 | design only |
+| Factions joinable | — | — | — | 0/9 | design pending |
 
-**Current step (owner: develop plot, functionality, dialogue, questlines; research acclaimed-RPG common denominators;
-replayability, meaningful choice, viable builds, best perk/skill/attribute configuration):**
-- [x] G1 DESIGN.md: research synthesis (§2), revised character system (12 skills, perks every 2 levels, skill
-      mastery perks, deterministic visible checks, every skill/attribute used in dialogue), build archetypes,
-      choice & consequence rules, replayability levers, build-coverage validation
-- [x] G2 Code: skills 16→12, skill cap 100, perks every 2 levels, mastery perks, check rules; update tests/creator
-- [x] G3 Secret story plan: full act/quest structure, faction lines, companions, endings matrix (story/ only)
-- [x] G4 Dialogue engine + quest engine (M2.1, M2.3) with tests — world/world.ts, world/logic.ts (conditions/effects/timers),
-      dialogue/dialogue.ts (runner), quest/quest.ts; save v3. UI + game wiring still to do (G4b).
-- [x] G4b Dialogue UI (portrait stage, options with [Skill N] tags, passives, history) + journal tab + game wiring
-- [~] G5 Chapter One content: Cistern 9 opening done (4 NPCs, 4 dialogues, q_ch1_door, key items) + scripted
-      playthrough tests + build-coverage validator (content/rules/builds.ts, engine/data/coverage.ts).
-      Next: Cistern 9 map (M3) with the cast placed, terminal dialogue (MOTHER), maintenance shaft prop route,
-      exit trigger setting c9_left; then Shale content. Perks now 64 (verb flags declared; systems implement them as combat/dialogue features land).
+## 4. Conventions and tools (keep current)
+- Engine `src/engine/**`; content `src/content/**` (typed data; adding content never needs engine changes).
+- Content registry `src/content/index.ts`; validator `scripts/validate.ts` → `src/engine/data/validate.ts`
+  (every cross-reference, map walkability, build coverage via `content/rules/builds.ts`).
+- Narrative data language: `world/logic.ts` (`Cond`/`Effect`), dialogue `dialogue/dialogue.ts`, quests
+  `quest/quest.ts` (state-based objectives + `routes` for coverage), frontier systems `world/frontier.ts`
+  (news, standing, leads/conclusions, scheduled events), chrome `stats/chrome.ts`, travel `world/travel.ts`,
+  settlement types `world/settlementTypes.ts`, outfits `data/outfits.ts` + `data/garments.ts`.
+- Humans: MakeHuman CC0 + community packs → `tools/mh/fetch_makehuman.sh`, `tools/mh/fetch_community.sh`,
+  `python3 -I tools/mh/build_human.py <mh_data> public/assets/human <community_root>` (garments are lazy
+  per-piece files under `public/assets/human/proxy/`). Credits in `docs/CREDITS.md`.
+- Tests `tests/*.test.ts` (vitest). Scripted playthroughs: `tests/ch1.test.ts` pattern (`talk()` helper).
+- QA renders: `tools/qa/*.cjs` (Playwright against the dev server; see file headers). Dev helpers on
+  `window.SF` and `window.game` (see `src/main.ts`).
+- Save format versioned in `src/engine/save/migrations.ts` (bump + migrate on any GameState change).
 
-**Current step (owner: facial hair blocky, stubble length/coverage off; wants real modern haircuts):**
-- [x] S1 `strands.ts`: directional strand shells (screen-res tapered hairs, growth-direction + length fields, AA)
-- [x] S2 `facialHair.ts`: zones + style table (stubble light/med/heavy, short/full beard, goatee, moustache,
-      van dyke, chin strap) → strand shells; painted skin keeps only a faint follicle shadow; mesh beards dropped
-- [x] S3 Haircuts as procedural hair cards (hairCards.ts traces cards along the scalp from haircuts.ts fields):
-      crew, crop, side part, slick back, quiff, messy, pixie (curtains dropped: looked like a wig). Shell haircuts
-      were tried and failed (long lying hair projects wrongly) — strands.ts is for facial hair only.
-- [x] S4 QA close-ups, commit, report
-  Known gaps: grey hair cards look cool/strippy under the blue rim light; beards slightly flat on the shadow side;
-  long women's styles still use the older meshes.
-
-**Current step (owner asked: realistic ethnic diversity, realistic hair, beard options incl. simple stubble):**
-- [x] D1 Skin tone model: calibrated tone ladder (Monk scale) + undertone; ancestry presets (shape blend, tone,
-      undertone, eye/hair colour, hair texture) drive randomAppearance; creator ancestry picker.
-- [x] D2 Painted stubble levels (light / 5 o'clock / heavy); beard area built from mesh landmarks (skin.ts beardMask,
-      verified with a red mask debug render front/3-4/side); '+' combos with moustaches.
-- [x] D3 Hair: painted scalp layer (skin.ts scalpMask/paintScalp; soft hairline under meshes; shaved, buzz, fade,
-      short coils, cornrows), hair mask in skin-texture alpha makes painted hair matte (shading.ts), sheen on hair
-      meshes, ancestry style pools; pruned broken meshes (afro01, bun, faydaen, junglebook).
-- [x] D4 Gallery QA (scratchpad faces.cjs, gal.py, sheet.py), commit, report to owner.
-  - [x] D5 Owner feedback: moustache stubble full height (lip exclusion matched to mesh), no neck stubble, ashier
-        stubble; volumetric afro-textured hair (coily.ts shells: coily_twa/afro/afro_big), African ancestries
-        always get afro-textured styles. Perf note: big afro = 48 shells, portrait LOD only (iso uses 7).
-  Known gaps: women's faces look alike/slightly masculine (face-shape variation), mesh hair edges still hard on
-  some styles, few good long/curly hair meshes; awaiting owner verdict.
-
-Face realism pass (owner benchmark FO4/Skyrim SE). Owner rejected procedural beards → switched to the
-"automated middle ground": MakeHuman community packs (`tools/mh/fetch_community.sh`, then
-`python3 -I tools/mh/build_human.py <mh_data> public/assets/human <community_root>`).
-Done: artist beard meshes (layered with '+' in FACIAL_HAIR), Mindfront skin normal maps (DirectX → flipped Y;
-strength scales with age/gender), Mindfront brows/lashes, community hairstyles (bad ones pruned after visual QA),
-duplicate beard mesh bug fixed. Latest gallery: scratchpad gallery_v9 (regenerate via faces.cjs).
-Next: owner verdict on the new gallery. Known remaining gaps: hair looks solid/matte (needs anisotropic spec +
-better alpha), moustache centre seam, eye wetness/lip spec, faces look similar (more shape variation), no teeth.
-Then: remove pruned assets from build_human.py + split human.bin into lazily loaded per-proxy files (35 MB),
-LOD for iso view, expressions, wasteland clothing; then M2.
-
-## Known issues / polish backlog (engine)
-- Tall interior walls hide a lot; consider Fallout-style lower walls or full-wall fade when room is entered.
-- Headless Chromium (swiftshader) renders ~2 fps; game time runs in slow motion there (dt clamp). Use real browser for feel.
-- Bundle is ~600 kB (three.js); split later.
-
-## Half-finished work
+## 5. Half-finished work
 (none)
 
-## Notes for owner (how to run/test)
-- Run locally: `npm install` then `npm run dev`, open the printed URL (add `?dev` on a deployed build for the DEV console).
-- Deploy: add `docs/setup/deploy.yml` as `.github/workflows/deploy.yml` via GitHub web UI; Settings → Pages → Source: GitHub Actions.
+## 6. History (compressed; details in git log)
+M0 foundations · M1 systems I (stats, creation, inventory, combat, AI, audio) · M1.10 realistic humans
+(MakeHuman pipeline, skin/hair/beard work, ancestry presets, haircuts as cards, community packs) ·
+G1–G5 research-driven design + dialogue/quest engines + Cistern 9 opening · F1–F5 frontier systems + field
+notebook UI · W1–W5 worldbuilding (cities, chrome, settlement types, world map/travel) + NPC variance
+(layered garments, outfit roles, cloth shader, merged low-LOD clothes).
+Engine polish backlog: tall interior walls hide a lot (consider wall fade); bundle ~600 kB (split later);
+derive gossip road days from the world map in B2.
+
+## 7. Notes for owner (how to run/test)
+- Run locally: `npm install` then `npm run dev`, open the printed URL (add `?dev` on a deployed build for
+  the DEV console).
+- Deploy: add `docs/setup/deploy.yml` as `.github/workflows/deploy.yml` via GitHub web UI; Settings →
+  Pages → Source: GitHub Actions.
