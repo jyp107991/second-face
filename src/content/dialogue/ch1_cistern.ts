@@ -32,12 +32,12 @@ export const d_c9_pell: DialogueDef = {
     },
     cause: {
       text: 'Thirst, mostly. A rifle wound in the hip that went bad weeks ago. He walked on it a long way — boots worn through on the outer edge, sunburn down one side of his face only. West-bound, into the afternoon sun, for a long time.',
-      effects: [{ learn: 'stranger_walked_west' }],
+      effects: [{ learn: 'stranger_walked_west' }, { lead: 'l_walked_west' }],
       options: [backToPell],
     },
     wounds: {
       text: 'Pell steps back and lets you work. Under the rot, the old wound was closed once — not stitched: sealed, with a clear line of something like glass that has melted into the skin. "Machine work," Pell says quietly. "I\'ve only ever read about it. Somewhere out there, someone still has a real hospital."',
-      effects: [{ learn: 'stranger_stitches' }, { memory: { npc: 'npc_c9_02', tag: 'player_examined_body', valence: 15 } }],
+      effects: [{ learn: 'stranger_stitches' }, { lead: 'l_sealed_wound' }, { memory: { npc: 'npc_c9_02', tag: 'player_examined_body', valence: 15 } }],
       options: [{ text: 'A hospital? Out there?', next: 'stitches_q' }, backToPell],
     },
     stitches_q: {
@@ -50,10 +50,10 @@ export const d_c9_pell: DialogueDef = {
     },
     arm: {
       text: 'Pell holds your eyes for a moment, then folds the sheet back. On the inside of the forearm, a neat square burn, deliberate and old, and at its edge a few lines of tiny printed marks the fire didn\'t reach. "He burned something off himself," Pell says. "Carefully. On purpose. Leave it be."',
-      effects: [{ learn: 'stranger_mark' }, { memory: { npc: 'npc_c9_02', tag: 'player_saw_mark', valence: -5 } }],
+      effects: [{ learn: 'stranger_mark' }, { lead: 'l_burned_mark' }, { memory: { npc: 'npc_c9_02', tag: 'player_saw_mark', valence: -5 } }],
       options: [
         { id: 'pell.arm.press', text: 'You recognise it.', check: { skill: 'speech', dc: 50, mods: [{ if: { trust: { npc: 'npc_c9_02', gte: 10 } }, dc: -15, why: 'Pell trusts you' }] },
-          effects: [{ learn: 'pell_uneasy' }, { trust: { npc: 'npc_c9_02', by: 10 } }], next: 'arm_yes', fail: 'arm_no' },
+          effects: [{ learn: 'pell_uneasy' }, { lead: 'l_crate_print' }, { trust: { npc: 'npc_c9_02', by: 10 } }], next: 'arm_yes', fail: 'arm_no' },
         backToPell,
       ],
     },
@@ -64,7 +64,7 @@ export const d_c9_pell: DialogueDef = {
         { if: { knows: 'mask_scratches' }, text: 'Half a sun with no ground under it — or an open hand, depending how you hold it. Painted with care. And yes, I saw the scratches inside. Initials, maybe. Worn too smooth to read.' },
         { text: 'Half a sun with no ground under it — or an open hand, depending how you hold it. Painted with care. Somebody loved that sign.' },
       ],
-      effects: [{ learn: 'sigil_seen' }],
+      effects: [{ learn: 'sigil_seen' }, { lead: 'l_sigil' }],
       options: [backToPell],
     },
     pack: {
@@ -135,7 +135,7 @@ export const d_c9_ines: DialogueDef = {
     },
     notebook: {
       text: 'You read a line aloud before you understand it: "Road east of the salt. Sell the map to the dog-men if you must, but keep the face." Ines goes very still. "Where did a stranger learn the hand our records are kept in?"',
-      effects: [{ learn: 'notebook_read' }, { learn: 'map_sold' }, { memory: { npc: 'npc_c9_01', tag: 'player_read_notebook', valence: -10, strength: 90 } }],
+      effects: [{ learn: 'notebook_read' }, { learn: 'map_sold' }, { lead: 'l_record_hand' }, { memory: { npc: 'npc_c9_01', tag: 'player_read_notebook', valence: -10, strength: 90 } }],
       options: [{ text: 'You tell me.', next: 'notebook_deflect' }],
     },
     notebook_deflect: { text: 'I can\'t. Which is exactly why you\'re going outside, and I am staying here to keep sixty people calm. Don\'t read that hand aloud in the ring.', options: [{ text: 'Back to the matter of leaving.', next: 'council' }] },

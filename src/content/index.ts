@@ -12,6 +12,9 @@ import { dev_bunker } from './maps/dev_bunker';
 import { dev_yard } from './maps/dev_yard';
 import { DIALOGUES } from './dialogue';
 import { QUESTS } from './quests';
+import { SETTLEMENTS } from './world/settlements';
+import { CONCLUSIONS, LEADS } from './world/leads';
+import { WORLD_EVENTS } from './world/events';
 
 /** Content registry: the engine looks everything up through here. */
 export const MAPS: Record<string, MapDef> = {
@@ -21,6 +24,6 @@ export const MAPS: Record<string, MapDef> = {
 
 export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN].map((n) => [n.id, n]));
 
-export { TRAITS, PERKS, ITEMS, ORIGINS, DIALOGUES, QUESTS };
+export { TRAITS, PERKS, ITEMS, ORIGINS, DIALOGUES, QUESTS, SETTLEMENTS, LEADS, CONCLUSIONS, WORLD_EVENTS };
 registerRules({ traits: TRAITS, perks: PERKS });
 registerItems(ITEMS);

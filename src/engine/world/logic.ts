@@ -4,6 +4,7 @@ import { addItem, countItem, makeItem, removeItem } from '../inventory/inventory
 import { attr, addXp, hasFlag, skill } from '../stats/sheet';
 import type { AttributeId, SkillId } from '../stats/rules';
 import { clamp100, relation, rep, type Memory } from './world';
+import { addNews, heard, standing } from './frontier';
 
 /**
  * Conditions and effects: the shared data language of dialogue, quests and triggers.
@@ -30,7 +31,12 @@ export type Cond =
   | { seen: string }
   | { dead: string }
   | { hour: { from: number; to: number } }
-  | { karma: { gte?: number; lte?: number } };
+  | { lead: string }
+  | { concluded: string }
+  | { heard: { settlement: string; tag: string } }
+  | { standing: { settlement: string; gte?: number; lte?: number } }
+  | { event: string; is?: 'happened' | 'prevented' }
+  | { masked: boolean };
 
 export type Effect =
   | { set: string; value?: number | string | boolean }
@@ -44,7 +50,8 @@ export type Effect =
   | { give: string; count?: number }
   | { take: string; count?: number }
   | { xp: number }
-  | { karma: number }
+  | { lead: string }
+  | { news: { tag: string; valence: number; size?: number; at: string } }
   | { quest: string; start?: boolean; stage?: string; done?: boolean; fail?: boolean }
   | { decision: { id: string; text: string } }
   | { after: { minutes: number; id: string; effects: Effect[] } }
@@ -102,7 +109,12 @@ export function test(c: Cond | undefined, g: GameState): boolean {
   if ('seen' in c) return !!w.seen[c.seen];
   if ('dead' in c) return !!g.npcs[c.dead]?.dead;
   if ('hour' in c) { const h = (g.minutes % 1440) / 60; return c.hour.from <= c.hour.to ? h >= c.hour.from && h < c.hour.to : h >= c.hour.from || h < c.hour.to; }
-  if ('karma' in c) return inRange(w.karma, c.karma.gte, c.karma.lte);
+  if ('lead' in c) return !!w.leads[c.lead];
+  if ('concluded' in c) return !!w.conclusions[c.concluded];
+  if ('heard' in c) return heard(g, c.heard.settlement, c.heard.tag);
+  if ('standing' in c) return inRange(standing(g, c.standing.settlement), c.standing.gte, c.standing.lte);
+  if ('event' in c) return c.is ? w.events[c.event] === c.is : !!w.events[c.event];
+  if ('masked' in c) return !!w.masked === c.masked;
   return false;
 }
 
@@ -125,7 +137,8 @@ export function apply(effects: Effect[] | undefined, g: GameState, host: LogicHo
     else if ('give' in e) addItem(g.pc.inventory, makeItem(e.give, e.count ?? 1));
     else if ('take' in e) removeItem(g.pc.inventory, e.take, e.count ?? 1);
     else if ('xp' in e) { const lv = addXp(g.pc.sheet, e.xp); host.xp?.(e.xp, lv); }
-    else if ('karma' in e) w.karma += e.karma;
+    else if ('lead' in e) w.leads[e.lead] = true;
+    else if ('news' in e) addNews(g, { tag: e.news.tag, valence: e.news.valence, size: e.news.size ?? 4, origin: e.news.at, about: w.masked ? 'masked' : 'player' });
     else if ('quest' in e) {
       if (e.start) host.questStart?.(e.quest);
       if (e.stage) host.questStage?.(e.quest, e.stage);

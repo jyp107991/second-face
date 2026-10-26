@@ -50,7 +50,7 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
       scheduled world events, frontier justice, journeys), drop karma; reframe DESIGN §2 row 1
 - [x] F2 Secret: rework the story's central truth (story/ only) + update Chapter One content to fit
 - [ ] F3 Field notebook UI replacing the wristlog (journal, people with sketched portraits, leads, map, gear)
-- [ ] F4 Systems: local reputation + news propagation, leads/deductions engine, scheduled world events
+- [x] F4 Systems: local reputation + news propagation, leads/deductions engine, scheduled world events
 - (Previous pass G1–G5 done; G5 remaining items: Cistern 9 map, Shale content.)
 
 **Current step (owner: develop plot, functionality, dialogue, questlines; research acclaimed-RPG common denominators;

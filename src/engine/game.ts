@@ -16,7 +16,8 @@ import { lookFrom } from './assets/humanoid';
 import type { PortraitStage } from './render/portrait';
 import { QuestEngine } from './quest/quest';
 import { runTimers, type LogicHost } from './world/logic';
-import { QUESTS } from '../content';
+import { runWorldEvents, spreadNews } from './world/frontier';
+import { QUESTS, SETTLEMENTS, WORLD_EVENTS } from '../content';
 import { buildLocation, type BuiltLocation } from './scene/location';
 import type { ExitDef } from './data/types';
 import { SaveManager, type SaveFile, type SlotId } from './save/saves';
@@ -586,6 +587,8 @@ export class Game extends EventBus<GameEvents> {
     if (this.questTick > 0.5) {
       this.questTick = 0;
       runTimers(this.state, this.quests);
+      runWorldEvents(this.state, WORLD_EVENTS, this.quests);
+      spreadNews(this.state, SETTLEMENTS);
       this.quests.update();
     }
     this.hostilityTimer += simDt;

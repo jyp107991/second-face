@@ -15,6 +15,9 @@ export interface ContentBundle {
   npcs?: Record<string, NpcDef>;
   dialogues?: Record<string, DialogueDef>;
   quests?: Record<string, QuestDef>;
+  leads?: Record<string, { id: string }>;
+  conclusions?: Record<string, { id: string; from: string[] }>;
+  settlements?: Record<string, { id: string; roads: Record<string, number> }>;
 }
 
 /**
@@ -108,6 +111,10 @@ export function validateContent(c: ContentBundle): string[] {
     if (typeof o.attr === 'string' && !ATTRIBUTES.includes(o.attr as never)) errs.push(`${where}: unknown attribute ${o.attr}`);
     if (typeof o.trait === 'string' && c.traits && !c.traits[o.trait]) errs.push(`${where}: unknown trait ${o.trait}`);
     if (typeof o.perk === 'string' && c.perks && !c.perks[o.perk]) errs.push(`${where}: unknown perk ${o.perk}`);
+    if (typeof o.lead === 'string' && c.leads && !c.leads[o.lead]) errs.push(`${where}: unknown lead ${o.lead}`);
+    if (typeof o.concluded === 'string' && c.conclusions && !c.conclusions[o.concluded]) errs.push(`${where}: unknown conclusion ${o.concluded}`);
+    const place = (o.news as { at?: string } | undefined)?.at ?? (o.heard as { settlement?: string } | undefined)?.settlement ?? (o.standing as { settlement?: string } | undefined)?.settlement;
+    if (place && c.settlements && !c.settlements[place]) errs.push(`${where}: unknown settlement ${place}`);
     for (const v of Object.values(o)) if (v && typeof v === 'object') refs(where, v);
   };
   for (const [key, d] of Object.entries(c.dialogues ?? {})) {
@@ -137,6 +144,15 @@ export function validateContent(c: ContentBundle): string[] {
     }
     if (!Object.values(q.stages).some((st) => st.end)) errs.push(`${where}: no ending stage`);
     refs(`${where}/routes`, q.routes);
+  }
+  for (const [key, cn] of Object.entries(c.conclusions ?? {})) {
+    if (cn.id !== key) errs.push(`conclusion ${key}: id mismatch`);
+    for (const l of cn.from) if (c.leads && !c.leads[l]) errs.push(`conclusion ${key}: unknown lead ${l}`);
+    if (cn.from.length < 2) errs.push(`conclusion ${key}: needs at least two leads`);
+  }
+  for (const [key, st] of Object.entries(c.settlements ?? {})) for (const to of Object.keys(st.roads)) {
+    if (!c.settlements![to]) errs.push(`settlement ${key}: road to unknown ${to}`);
+    else if (!(key in c.settlements![to].roads)) errs.push(`settlement ${key}: road to ${to} is one-way`);
   }
   return errs;
 }

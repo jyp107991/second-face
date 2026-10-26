@@ -50,11 +50,19 @@ export interface WorldState {
   seen: Record<string, number>;
   decisions: Decision[];
   timers: Timer[];
-  karma: number;
+  /** Stories about the player travelling between settlements (local reputation). */
+  news: import('./frontier').NewsItem[];
+  /** Clues collected for the leads board. */
+  leads: Record<string, true>;
+  conclusions: Record<string, true>;
+  /** Scheduled world events that have resolved. */
+  events: Record<string, 'happened' | 'prevented'>;
+  /** Whether the player currently hides their face (news attaches to a masked stranger). */
+  masked?: boolean;
 }
 
 export function emptyWorld(): WorldState {
-  return { quests: {}, memories: {}, relations: {}, approval: {}, party: [], reputation: {}, knowledge: {}, seen: {}, decisions: [], timers: [], karma: 0 };
+  return { quests: {}, memories: {}, relations: {}, approval: {}, party: [], reputation: {}, knowledge: {}, seen: {}, decisions: [], timers: [], news: [], leads: {}, conclusions: {}, events: {} };
 }
 
 export function relation(w: WorldState, npc: string): { trust: number; affection: number } {

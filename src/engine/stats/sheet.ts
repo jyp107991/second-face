@@ -7,7 +7,7 @@ import {
 // Modifiers: the common currency of traits, perks, chems, injuries and gear.
 // ---------------------------------------------------------------------------------------------
 
-export type ModTarget = `attr:${AttributeId}` | `skill:${SkillId}` | `derived:${keyof Derived}` | `skills:all` | 'xp' | 'price_buy' | 'price_sell' | 'karma_gain' | 'dmg_melee' | 'dmg_ranged' | 'hit_ranged' | 'hit_melee' | 'crit_dmg' | 'ap_cost_ranged' | 'heal_items';
+export type ModTarget = `attr:${AttributeId}` | `skill:${SkillId}` | `derived:${keyof Derived}` | `skills:all` | 'xp' | 'price_buy' | 'price_sell' | 'dmg_melee' | 'dmg_ranged' | 'hit_ranged' | 'hit_melee' | 'crit_dmg' | 'ap_cost_ranged' | 'heal_items';
 
 export interface Modifier {
   target: ModTarget;
