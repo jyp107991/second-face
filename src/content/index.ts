@@ -7,6 +7,7 @@ import { TRAITS } from './rules/traits';
 import { ORIGINS } from './rules/origins';
 import type { NpcDef } from '../engine/npc/defs';
 import { DEV_NPCS } from './npcs/dev_enemies';
+import { CH1_CISTERN } from './npcs/ch1_cistern';
 import { dev_bunker } from './maps/dev_bunker';
 import { dev_yard } from './maps/dev_yard';
 import { DIALOGUES } from './dialogue';
@@ -18,7 +19,7 @@ export const MAPS: Record<string, MapDef> = {
   dev_bunker,
 };
 
-export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS].map((n) => [n.id, n]));
+export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN].map((n) => [n.id, n]));
 
 export { TRAITS, PERKS, ITEMS, ORIGINS, DIALOGUES, QUESTS };
 registerRules({ traits: TRAITS, perks: PERKS });

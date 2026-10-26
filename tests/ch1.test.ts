@@ -1,0 +1,73 @@
+import { describe, expect, it } from 'vitest';
+import { DIALOGUES, QUESTS } from '../src/content';
+import { REFERENCE_BUILDS } from '../src/content/rules/builds';
+import { newGameState } from '../src/engine/core/state';
+import { checkCoverage, projectBuild } from '../src/engine/data/coverage';
+import { DialogueRunner } from '../src/engine/dialogue/dialogue';
+import { QuestEngine, type QuestDef } from '../src/engine/quest/quest';
+import { countItem } from '../src/engine/inventory/inventory';
+
+/** Play a conversation by choosing options whose text starts with the given prefixes, in order. */
+function talk(id: string, g: ReturnType<typeof newGameState>, q: QuestEngine, picks: string[]): void {
+  const r = new DialogueRunner(DIALOGUES[id], g, q);
+  for (const p of picks) {
+    const v = r.view();
+    if (!v) throw new Error(`${id}: ended before "${p}"`);
+    const o = v.options.find((x) => x.text.startsWith(p));
+    if (!o) throw new Error(`${id}: no option "${p}" in [${v.options.map((x) => x.text).join(' | ')}]`);
+    r.choose(o.id);
+    q.update();
+  }
+}
+
+describe('Chapter One opening', () => {
+  it('a character with no useful skills can still get out (critical path never gated)', () => {
+    const g = newGameState('c9', 0, 0);
+    for (const k of Object.keys(g.pc.sheet.baseAttrs) as (keyof typeof g.pc.sheet.baseAttrs)[]) g.pc.sheet.baseAttrs[k] = 1;
+    const q = new QuestEngine(QUESTS, g);
+    q.questStart('q_ch1_door');
+    talk('d_c9_pell', g, q, ['Who was he', 'Did he carry', '(Look at', 'I need to see']);
+    expect(countItem(g.pc.inventory, 'k_photo')).toBe(1);
+    talk('d_c9_ines', g, q, ['I\'ll go.', 'I\'ll make do']);
+    expect(g.world.quests.q_ch1_door.stage).toBe('door');
+    talk('d_c9_bram', g, q, ['(Hand him', 'Open it', '(Step into']);
+    expect(g.world.quests.q_ch1_door.stage).toBe('leave');
+    g.flags.c9_left = true;
+    q.update();
+    expect(g.world.quests.q_ch1_door.status).toBe('done');
+  });
+
+  it('origins change lines and open routes', () => {
+    const g = newGameState('c9', 0, 0);
+    g.origin = 'door_watch';
+    g.flags.c9_examined = true;
+    const r = new DialogueRunner(DIALOGUES.d_c9_ines, g);
+    expect(r.view()!.text).toContain('You were on the door');
+    expect(r.view()!.options.some((o) => o.text.includes('Larkspur'))).toBe(true);
+  });
+
+  it('refusing sends Tamsin alone, with a recorded decision', () => {
+    const g = newGameState('c9', 0, 0);
+    g.flags.c9_examined = true;
+    const q = new QuestEngine(QUESTS, g);
+    talk('d_c9_ines', g, q, ['I won\'t go', 'Send her', '…Give me the order', 'I\'ll make do']);
+    expect(g.flags.c9_tamsin_sent_alone).toBe(true);
+    expect(g.world.decisions.map((d) => d.id)).toContain('c9_tamsin_alone');
+    expect(g.world.approval.npc_c9_03).toBeLessThan(0);
+  });
+});
+
+describe('build coverage', () => {
+  it('projects builds into specialists', () => {
+    const s = projectBuild(REFERENCE_BUILDS.find((b) => b.id === 'technician')!, 16);
+    expect(s.skillBought.science).toBeGreaterThan(40);
+    expect(s.skillBought.melee).toBe(0);
+  });
+  it('flags critical quests that some build cannot pass', () => {
+    const gated: QuestDef = { id: 'q_gated', title: 'Gated', act: 'ch1', critical: true, start: 's', stages: { s: { journal: '', end: 'done' } },
+      routes: [{ id: 'x', kind: 'tech', label: 'science only', requires: { skill: 'science', gte: 60 } }] };
+    const errs = checkCoverage({ q_gated: gated }, REFERENCE_BUILDS, { ch1: 2 });
+    expect(errs.length).toBeGreaterThan(5);
+    expect(errs.some((e) => e.includes('bruiser'))).toBe(true);
+  });
+});

@@ -42,7 +42,7 @@ chud.onLoad = async () => { const l = await game.saves?.latest(); if (l) await g
 chud.onTitle = () => menu.open('title');
 menu.onNewGame = () => {
   new Creator(game, (r) => {
-    game.newGame(r.sheet, r.appearance, r.pronouns);
+    game.newGame(r.sheet, r.appearance, r.pronouns, r.origin);
   }, () => menu.open('title'));
 };
 const dev = import.meta.env.DEV || new URLSearchParams(location.search).has('dev');

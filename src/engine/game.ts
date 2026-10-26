@@ -503,7 +503,7 @@ export class Game extends EventBus<GameEvents> {
   }
 
   /** Start a fresh game with a newly created character. */
-  newGame(sheet: CharacterSheet, appearance: Appearance, pronouns: Pronouns): void {
+  newGame(sheet: CharacterSheet, appearance: Appearance, pronouns: Pronouns, origin?: string): void {
     const inventory = emptyInventory();
     // Starting kit (Cistern issue). Kept deliberately thin: scarcity starts at the door.
     for (const [id, n] of [['r_jumpsuit', 1], ['w_shiv', 1], ['c_knitkit', 1], ['c_algae', 3], ['c_water', 2]] as const) addItem(inventory, makeItem(id, n));
@@ -512,6 +512,7 @@ export class Game extends EventBus<GameEvents> {
     inventory.tolls = 0;
     syncGear(sheet, inventory);
     this.state = newGameState('dev_yard', 15, 9, { sheet, appearance, pronouns, inventory });
+    this.state.origin = origin;
     this.paused = false;
     this.loadLocation('dev_yard', 'start');
     void this.save('auto');

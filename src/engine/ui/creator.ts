@@ -14,7 +14,9 @@ import { PortraitStage } from '../render/portrait';
 import { ATTRIBUTES, ATTRIBUTE_INFO, ATTR_CREATION_MAX, ATTR_MIN, SKILLS, SKILL_INFO, TAG_COUNT } from '../stats/rules';
 import { attrs, creationPointsLeft, derived, emptySheet, skills, validateCreation, type CharacterSheet } from '../stats/sheet';
 
-export interface CreatorResult { sheet: CharacterSheet; appearance: Appearance; pronouns: Pronouns; }
+export interface CreatorResult { sheet: CharacterSheet; appearance: Appearance; pronouns: Pronouns;   /** Chosen Cistern role (origin preset id). */
+  origin: string;
+}
 
 type Tab = 'identity' | 'face' | 'hair' | 'body' | 'attributes' | 'skills' | 'traits' | 'done';
 const TABS: { id: Tab; label: string; framing: number }[] = [
@@ -129,8 +131,12 @@ export class Creator {
     if (this.game.portrait === this.stage) this.game.portrait = undefined;
   }
 
+  /** Chosen Cistern role; kept even when stats are customised afterwards (content reacts to it). */
+  private origin = ORIGINS[0].id;
+
   private applyOrigin(id: string, keepLook = true): void {
     const o = ORIGINS.find((x) => x.id === id)!;
+    this.origin = id;
     const name = this.sheet.name;
     this.sheet = emptySheet(name);
     this.sheet.baseAttrs = { ...o.attrs };
@@ -172,7 +178,7 @@ export class Creator {
     if (errs.length) { this.renderBody(); return; }
     this.sheet.hp = derived(this.sheet).maxHp;
     this.destroy();
-    this.onDone({ sheet: this.sheet, appearance: this.app, pronouns: this.pronouns });
+    this.onDone({ sheet: this.sheet, appearance: this.app, pronouns: this.pronouns, origin: this.origin });
   }
 
   private renderTabs(): void {

@@ -55,7 +55,10 @@ replayability, meaningful choice, viable builds, best perk/skill/attribute confi
 - [x] G4 Dialogue engine + quest engine (M2.1, M2.3) with tests — world/world.ts, world/logic.ts (conditions/effects/timers),
       dialogue/dialogue.ts (runner), quest/quest.ts; save v3. UI + game wiring still to do (G4b).
 - [x] G4b Dialogue UI (portrait stage, options with [Skill N] tags, passives, history) + journal tab + game wiring
-- [ ] G5 Chapter One dialogue + quests as content data; build-coverage validator in `npm run validate`
+- [~] G5 Chapter One content: Cistern 9 opening done (4 NPCs, 4 dialogues, q_ch1_door, key items) + scripted
+      playthrough tests + build-coverage validator (content/rules/builds.ts, engine/data/coverage.ts).
+      Next: Cistern 9 map (M3) with the cast placed, terminal dialogue (MOTHER), maintenance shaft prop route,
+      exit trigger setting c9_left; then Shale content; perks 32→~60.
 
 **Current step (owner: facial hair blocky, stubble length/coverage off; wants real modern haircuts):**
 - [x] S1 `strands.ts`: directional strand shells (screen-res tapered hairs, growth-direction + length fields, AA)

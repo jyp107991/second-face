@@ -1,7 +1,12 @@
 import { DIALOGUES, ITEMS, MAPS, NPCS, PERKS, QUESTS, TRAITS } from '../src/content';
 import { validateContent } from '../src/engine/data/validate';
+import { checkCoverage } from '../src/engine/data/coverage';
+import { ACT_LEVEL, REFERENCE_BUILDS } from '../src/content/rules/builds';
 
-const errs = validateContent({ maps: MAPS, items: ITEMS, perks: PERKS, traits: TRAITS, npcs: NPCS, dialogues: DIALOGUES, quests: QUESTS });
+const errs = [
+  ...validateContent({ maps: MAPS, items: ITEMS, perks: PERKS, traits: TRAITS, npcs: NPCS, dialogues: DIALOGUES, quests: QUESTS }),
+  ...checkCoverage(QUESTS, REFERENCE_BUILDS, ACT_LEVEL),
+];
 if (errs.length) {
   console.error(`Content validation failed (${errs.length}):`);
   for (const e of errs) console.error('  - ' + e);

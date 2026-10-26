@@ -11,7 +11,7 @@ export const MISC: ItemDef[] = [
   { id: 'j_fuel', name: 'Fuel Can', desc: 'A dented can, a third full.', category: 'junk', weight: 2, value: 10 },
   { id: 'j_powder', name: 'Black Powder', desc: 'For hand-loading, or for bad ideas.', category: 'junk', weight: 0.2, value: 6 },
   { id: 'j_casings', name: 'Spent Casings', desc: 'Brass for reloading.', category: 'junk', weight: 0.01, value: 0.2 },
-  { id: 't_picks', name: 'Lock Picks', desc: 'A ring of tension wrenches and hooks. +15 Locks while carried.', category: 'tool', weight: 0.1, value: 30, stack: true },
+  { id: 't_picks', name: 'Lock Picks', desc: 'A ring of tension wrenches and hooks. +15 Security while carried.', category: 'tool', weight: 0.1, value: 30, stack: true },
   { id: 't_repair', name: 'Repair Kit', desc: 'Files, wire, glue and patience. Restores weapon or armour condition.', category: 'tool', weight: 1, value: 60, stack: true },
   { id: 't_docbag', name: "Doctor's Bag", desc: 'Scalpels, sutures, a battered stethoscope. +15 Medicine when treating wounds.', category: 'tool', weight: 1.5, value: 120 },
   { id: 't_lamp', name: 'Hand Lamp', desc: 'A wind-up flashlight. Reduces darkness penalties.', category: 'tool', weight: 0.4, value: 25 },
