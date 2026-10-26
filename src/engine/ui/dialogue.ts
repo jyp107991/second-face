@@ -4,6 +4,7 @@ import { lookFrom } from '../assets/humanoid';
 import { DialogueRunner, type NodeView } from '../dialogue/dialogue';
 import type { NpcRuntime } from '../npc/spawn';
 import { PortraitStage } from '../render/portrait';
+import { dayOf } from '../core/state';
 
 /**
  * Conversation screen: the speaker in a lit close-up (portrait stage) with the exchange below.
@@ -44,6 +45,20 @@ export class DialogueUi {
     document.body.appendChild(this.el);
     this.game.resize();
     this.render();
+    this.remember(npc);
+  }
+
+  /** Note the person in the notebook and sketch them from the close-up. */
+  private remember(npc: NpcRuntime): void {
+    const st = this.game.state, w = st.world;
+    (w.met ??= {})[npc.def.id] ??= { name: npc.def.name, day: dayOf(st.minutes), where: this.game.locationName };
+    if (st.sketches?.[npc.def.id]) return;
+    window.setTimeout(() => {
+      if (!this.el) return;
+      void this.game.captureFrame({ x: 0.3, y: 0.0, w: 0.4, h: 0.62 }, 150, 190).then((c) => {
+        (st.sketches ??= {})[npc.def.id] = sketchify(c);
+      });
+    }, 1200);
   }
 
   private hostFns() {
@@ -112,6 +127,32 @@ export class DialogueUi {
     if (id === 'pc') return this.game.state.pc.sheet.name || 'You';
     return this.npc && (id === this.npc.def.id || id === this.npc.id) ? this.npc.def.name : id;
   }
+}
+
+/** Turn a portrait grab into a pencil sketch: soft graphite tone plus darkened edges, on warm paper. */
+export function sketchify(c: HTMLCanvasElement): string {
+  const ctx = c.getContext('2d')!;
+  const { width: w, height: h } = c;
+  const img = ctx.getImageData(0, 0, w, h), px = img.data;
+  const lum = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) lum[i] = (0.3 * px[i * 4] + 0.59 * px[i * 4 + 1] + 0.11 * px[i * 4 + 2]) / 255;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x;
+    const l = (dx: number, dy: number) => lum[Math.min(h - 1, Math.max(0, y + dy)) * w + Math.min(w - 1, Math.max(0, x + dx))];
+    const gx = l(1, 0) - l(-1, 0) + 0.5 * (l(1, 1) - l(-1, 1) + l(1, -1) - l(-1, -1));
+    const gy = l(0, 1) - l(0, -1) + 0.5 * (l(1, 1) - l(1, -1) + l(-1, 1) - l(-1, -1));
+    const edge = Math.min(1, Math.hypot(gx, gy) * 3);
+    // Light tonal wash (lifted shadows) under the edge strokes; dark background fades to paper.
+    const tone = Math.min(1, 0.55 + lum[i] * 0.9);
+    let v = Math.max(0, tone - edge * 0.75);
+    // The dark studio background becomes blank paper.
+    const bg = Math.max(0, Math.min(1, (0.16 - lum[i]) / 0.08));
+    v = v * (1 - bg) + bg;
+    const paper = [233, 223, 199];
+    px[i * 4] = paper[0] * v; px[i * 4 + 1] = paper[1] * v; px[i * 4 + 2] = paper[2] * v * 0.97;
+  }
+  ctx.putImageData(img, 0, 0);
+  return c.toDataURL('image/jpeg', 0.7);
 }
 
 function esc(s: string): string {

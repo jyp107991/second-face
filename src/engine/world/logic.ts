@@ -51,7 +51,7 @@ export type Effect =
   | { take: string; count?: number }
   | { xp: number }
   | { lead: string }
-  | { news: { tag: string; valence: number; size?: number; at: string } }
+  | { news: { tag: string; text?: string; valence: number; size?: number; at: string } }
   | { quest: string; start?: boolean; stage?: string; done?: boolean; fail?: boolean }
   | { decision: { id: string; text: string } }
   | { after: { minutes: number; id: string; effects: Effect[] } }
@@ -138,7 +138,7 @@ export function apply(effects: Effect[] | undefined, g: GameState, host: LogicHo
     else if ('take' in e) removeItem(g.pc.inventory, e.take, e.count ?? 1);
     else if ('xp' in e) { const lv = addXp(g.pc.sheet, e.xp); host.xp?.(e.xp, lv); }
     else if ('lead' in e) w.leads[e.lead] = true;
-    else if ('news' in e) addNews(g, { tag: e.news.tag, valence: e.news.valence, size: e.news.size ?? 4, origin: e.news.at, about: w.masked ? 'masked' : 'player' });
+    else if ('news' in e) addNews(g, { tag: e.news.tag, text: e.news.text, valence: e.news.valence, size: e.news.size ?? 4, origin: e.news.at, about: w.masked ? 'masked' : 'player' });
     else if ('quest' in e) {
       if (e.start) host.questStart?.(e.quest);
       if (e.stage) host.questStage?.(e.quest, e.stage);

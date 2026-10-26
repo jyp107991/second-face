@@ -17,6 +17,8 @@ export interface NewsItem {
   id: string;
   /** What happened (content tag, e.g. 'saved_deputy'). */
   tag: string;
+  /** How people tell it; '{who}' becomes 'you' or 'a masked stranger'. */
+  text?: string;
   /** Who it is about: the player by face, or an unrecognised masked stranger. */
   about: 'player' | 'masked';
   /** -100..100 how it reflects on them. */

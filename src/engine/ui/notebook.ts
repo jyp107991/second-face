@@ -1,4 +1,6 @@
-import { PERKS, TRAITS } from '../../content';
+import { CONCLUSIONS, LEADS, NPCS, PERKS, SETTLEMENTS, TRAITS } from '../../content';
+import { dayOf } from '../core/state';
+import { standing, tryConclude } from '../world/frontier';
 import { clockString } from '../core/state';
 import type { Game } from '../game';
 import {
@@ -9,7 +11,9 @@ import { itemDef } from '../inventory/items';
 import { ATTRIBUTES, ATTRIBUTE_INFO, SKILLS, SKILL_INFO, xpForLevel } from '../stats/rules';
 import { attrs, derived, perkAvailable, raiseCost, raiseSkill, skills, takePerk } from '../stats/sheet';
 
-type Tab = 'status' | 'gear' | 'journal';
+type Tab = 'journal' | 'people' | 'leads' | 'road' | 'status' | 'gear';
+
+const TABS: [Tab, string][] = [['journal', 'Journal'], ['people', 'People'], ['leads', 'Leads'], ['road', 'Road'], ['status', 'Self'], ['gear', 'Pack']];
 
 const SLOT_NAMES: Record<EquipSlot, string> = { primary: 'Hand 1', secondary: 'Hand 2', body: 'Body', head: 'Head' };
 
@@ -30,10 +34,14 @@ export function itemSummary(it: ItemInst): string {
   return bits.filter(Boolean).join(' · ');
 }
 
-/** The wrist computer: character status and gear. */
-export class Wristlog {
+/**
+ * The field notebook: journal, people you've met (sketched), leads board, word on the road, yourself, your pack.
+ */
+export class Notebook {
   private el?: HTMLElement;
-  private tab: Tab = 'status';
+  private tab: Tab = 'journal';
+  private leadSel = new Set<string>();
+  private leadMsg = '';
   private sel?: number;
   onClose?: () => void;
 
@@ -43,6 +51,8 @@ export class Wristlog {
       if (e.code === 'KeyI' || e.code === 'Tab') { e.preventDefault(); this.toggle(e.code === 'KeyI' ? 'gear' : undefined); }
       if (e.code === 'KeyC') this.toggle('status');
       if (e.code === 'KeyJ') this.toggle('journal');
+      if (e.code === 'KeyL') this.toggle('leads');
+      if (e.code === 'KeyP') this.toggle('people');
       if (e.code === 'Escape' && this.el) { e.stopImmediatePropagation(); this.close(); }
     }, true);
   }
@@ -80,22 +90,86 @@ export class Wristlog {
   render(): void {
     if (!this.el) return;
     const g = this.game, pc = g.state.pc;
-    this.el.innerHTML = `<div class="dev-frame crt">
-      <div class="wl-top"><span class="brand">WRISTLOG · C9</span>
-        <button data-t="status" class="${this.tab === 'status' ? 'on' : ''}">STATUS</button>
-        <button data-t="gear" class="${this.tab === 'gear' ? 'on' : ''}">GEAR</button>
-        <button data-t="journal" class="${this.tab === 'journal' ? 'on' : ''}">JOURNAL</button>
+    this.el.innerHTML = `<div class="nb">
+      <div class="nb-top">${TABS.map(([t, label]) => `<button data-t="${t}" class="${this.tab === t ? 'on' : ''}">${label}</button>`).join('')}
         <button class="x" data-t="close" aria-label="Close">✕</button></div>
-      <div class="wl-body"><div class="col a"></div><div class="col b"></div></div></div>`;
-    this.el.querySelector('.wl-top')!.addEventListener('click', (e) => {
+      <div class="nb-body"><div class="col a"></div><div class="col b"></div></div></div>`;
+    this.el.querySelector('.nb-top')!.addEventListener('click', (e) => {
       const t = (e.target as HTMLElement).dataset.t;
       if (t === 'close') this.close();
-      else if (t) { this.tab = t as Tab; this.sel = undefined; this.render(); }
+      else if (t) { this.tab = t as Tab; this.sel = undefined; this.leadMsg = ''; this.render(); }
     });
     const a = this.el.querySelector('.col.a') as HTMLElement, b = this.el.querySelector('.col.b') as HTMLElement;
     if (this.tab === 'status') this.status(a, b);
     else if (this.tab === 'journal') this.journal(a, b);
+    else if (this.tab === 'people') this.people(a, b);
+    else if (this.tab === 'leads') this.leads(a, b);
+    else if (this.tab === 'road') this.road(a, b);
     else this.gear(a, b, pc.inventory);
+  }
+
+  /** Everyone you've spoken to, with a sketch and where you stand with them. */
+  private people(a: HTMLElement, b: HTMLElement): void {
+    const w = this.game.state.world, met = Object.entries(w.met ?? {});
+    const sel = met[this.sel ?? 0];
+    a.innerHTML = `<h4>People</h4>` + (met.length ? met.map(([, m], i) => `<div class="row ${i === (this.sel ?? 0) ? 'sel' : ''}" data-p="${i}">${esc(m.name)}</div>`).join('') : '<p class="dim">You haven\'t met anyone worth writing down.</p>');
+    a.querySelectorAll<HTMLElement>('[data-p]').forEach((el) => el.addEventListener('click', () => { this.sel = Number(el.dataset.p); this.render(); }));
+    if (!sel) { b.innerHTML = ''; return; }
+    const [id, m] = sel;
+    const r = w.relations[id] ?? { trust: 0, affection: 0 };
+    const feel = (v: number, pos: string, neg: string) => v >= 40 ? `very ${pos}` : v >= 10 ? pos : v <= -40 ? `very ${neg}` : v <= -10 ? neg : 'unsure of you';
+    const sketch = this.game.state.sketches?.[id];
+    const approval = w.approval[id];
+    b.innerHTML = `${sketch ? `<img class="sketch" src="${sketch}" alt="">` : '<div class="sketch empty">no sketch</div>'}
+      <h4>${esc(m.name)}</h4>
+      <p class="log">Met on day ${m.day}${m.where ? ` at ${esc(m.where)}` : ''}.</p>
+      <p class="log">Trust: ${feel(r.trust, 'trusting', 'wary')}. Warmth: ${feel(r.affection, 'fond', 'cold')}.</p>
+      ${approval !== undefined ? `<p class="log">As a companion: ${feel(approval, 'approving', 'disapproving')}.</p>` : ''}
+      ${w.party.includes(id) ? '<p class="log"><b>Travelling with you.</b></p>' : ''}
+      ${NPCS[id]?.faction ? `<p class="dim">${esc(NPCS[id]!.faction!)}</p>` : ''}`;
+  }
+
+  /** Clues pinned to the board; pick two or three and try to connect them. */
+  private leads(a: HTMLElement, b: HTMLElement): void {
+    const w = this.game.state.world;
+    const have = Object.keys(w.leads).filter((l) => LEADS[l]);
+    a.innerHTML = `<h4>Leads</h4><p class="dim">Pick clues that belong together, then connect them.</p>` + (have.length ? `<div class="leads">${have.map((l) => `<button class="lead ${this.leadSel.has(l) ? 'on' : ''}" data-l="${l}"><b>${esc(LEADS[l].label)}</b><span>${esc(LEADS[l].text)}</span></button>`).join('')}</div>` : '<p class="dim">Nothing pinned yet.</p>');
+    a.querySelectorAll<HTMLElement>('[data-l]').forEach((el) => el.addEventListener('click', () => {
+      const l = el.dataset.l!;
+      if (this.leadSel.has(l)) this.leadSel.delete(l); else if (this.leadSel.size < 4) this.leadSel.add(l);
+      this.leadMsg = '';
+      this.render();
+    }));
+    const done = Object.keys(w.conclusions).filter((c) => CONCLUSIONS[c]);
+    b.innerHTML = `<h4>Connect</h4>
+      <div class="acts"><button data-a="link" ${this.leadSel.size >= 2 ? '' : 'disabled'}>Connect ${this.leadSel.size || ''} clue${this.leadSel.size === 1 ? '' : 's'}</button>${this.leadSel.size ? '<button data-a="clear">Clear</button>' : ''}</div>
+      ${this.leadMsg ? `<p class="log">${this.leadMsg}</p>` : ''}
+      <h4>Conclusions</h4>${done.length ? done.map((c) => `<p class="log">✓ ${esc(CONCLUSIONS[c].text)}</p>`).join('') : '<p class="dim">None yet.</p>'}`;
+    b.querySelector('[data-a=link]')?.addEventListener('click', () => {
+      const c = tryConclude(this.game.state, [...this.leadSel], CONCLUSIONS, this.game.quests);
+      this.leadMsg = c ? `<b>It fits.</b> ${esc(c.text)}` : 'You turn it over for a while. It doesn\'t fit together — not like that.';
+      if (c) this.leadSel.clear();
+      this.game.quests.update();
+      this.render();
+    });
+    b.querySelector('[data-a=clear]')?.addEventListener('click', () => { this.leadSel.clear(); this.render(); });
+  }
+
+  /** Word on the road: what each place has heard about you. */
+  private road(a: HTMLElement, b: HTMLElement): void {
+    const g = this.game.state, places = Object.values(SETTLEMENTS);
+    const word = (v: number) => v >= 50 ? 'speaks well of you' : v >= 15 ? 'has heard good things' : v <= -50 ? 'wants you gone' : v <= -15 ? 'has heard bad things' : 'doesn\'t know your name';
+    const sel = places[this.sel ?? 0];
+    a.innerHTML = `<h4>Word on the road</h4>` + places.map((p, i) => `<div class="row ${i === (this.sel ?? 0) ? 'sel' : ''}" data-r="${i}">${esc(p.name)} <span class="dim">— ${word(standing(g, p.id))}</span></div>`).join('');
+    a.querySelectorAll<HTMLElement>('[data-r]').forEach((el) => el.addEventListener('click', () => { this.sel = Number(el.dataset.r); this.render(); }));
+    if (!sel) { b.innerHTML = ''; return; }
+    const stories = g.world.news.filter((n) => n.heard[sel.id]);
+    b.innerHTML = `<h4>${esc(sel.name)}</h4>` + (stories.length ? stories.map((n) => {
+      const h = n.heard[sel.id];
+      const who = n.about === 'masked' ? 'a masked stranger' : 'you';
+      const told = h.distortion > 0.3 ? ' (the story has grown in the telling)' : '';
+      return `<p class="log">${esc((n.text ?? n.tag.replace(/_/g, ' ')).replace('{who}', who))}${told} <span class="dim">— heard day ${h.day}${dayOf(g.minutes) - h.day > 0 ? `, ${dayOf(g.minutes) - h.day} days ago` : ''}</span></p>`;
+    }).join('') : '<p class="dim">Nothing about you has reached them.</p>');
   }
 
   /** Quests (active first) with objectives and history; decisions you've made. */
@@ -104,13 +178,13 @@ export class Wristlog {
     const order = { active: 0, done: 1, failed: 2 } as Record<string, number>;
     all.sort((x, y) => order[x.status] - order[y.status]);
     const sel = all[this.sel ?? 0];
-    a.innerHTML = `<h4>Quests</h4>` + (all.length ? all.map((q, i) => `<div class="row ${i === (this.sel ?? 0) ? 'sel' : ''} ${q.status}" data-q="${i}">${q.status === 'done' ? '✓ ' : q.status === 'failed' ? '✗ ' : '▸ '}${escapeHtml(q.title)}</div>`).join('') : '<p class="dim">Nothing yet.</p>');
+    a.innerHTML = `<h4>Quests</h4>` + (all.length ? all.map((q, i) => `<div class="row ${i === (this.sel ?? 0) ? 'sel' : ''} ${q.status}" data-q="${i}">${q.status === 'done' ? '✓ ' : q.status === 'failed' ? '✗ ' : '▸ '}${esc(q.title)}</div>`).join('') : '<p class="dim">Nothing yet.</p>');
     a.querySelectorAll<HTMLElement>('[data-q]').forEach((el) => el.addEventListener('click', () => { this.sel = Number(el.dataset.q); this.render(); }));
     const dec = this.game.state.world.decisions;
-    b.innerHTML = (sel ? `<h4>${escapeHtml(sel.title)}</h4>
-      ${sel.objectives.map((o) => `<div class="obj ${o.done ? 'done' : ''}">${o.done ? '☑' : '☐'} ${escapeHtml(o.text)}${o.optional ? ' (optional)' : ''}</div>`).join('')}
-      ${sel.log.slice().reverse().map((l) => `<p class="log">${escapeHtml(l)}</p>`).join('')}` : '')
-      + (dec.length ? `<h4>Decisions</h4>${dec.map((d) => `<p class="log">${escapeHtml(d.text)}</p>`).join('')}` : '');
+    b.innerHTML = (sel ? `<h4>${esc(sel.title)}</h4>
+      ${sel.objectives.map((o) => `<div class="obj ${o.done ? 'done' : ''}">${o.done ? '☑' : '☐'} ${esc(o.text)}${o.optional ? ' (optional)' : ''}</div>`).join('')}
+      ${sel.log.slice().reverse().map((l) => `<p class="log">${esc(l)}</p>`).join('')}` : '')
+      + (dec.length ? `<h4>Decisions</h4>${dec.map((d) => `<p class="log">${esc(d.text)}</p>`).join('')}` : '');
   }
 
   private status(a: HTMLElement, b: HTMLElement): void {
@@ -150,7 +224,7 @@ export class Wristlog {
     b.append(kv);
     const perks = Object.entries(s.perks);
     b.insertAdjacentHTML('beforeend', `<h4>Perks ${s.pendingPerks ? `· <span class="warn">${s.pendingPerks} to choose</span>` : ''}</h4>
-      <div class="desc">${perks.map(([p, r]) => `<b>${PERKS[p]?.name}</b>${r > 1 ? ` ×${r}` : ''} — ${PERKS[p]?.desc}`).join('<br>') || 'None yet. A new perk every 3 levels.'}</div>`);
+      <div class="desc">${perks.map(([p, r]) => `<b>${PERKS[p]?.name}</b>${r > 1 ? ` ×${r}` : ''} — ${PERKS[p]?.desc}`).join('<br>') || 'None yet. A new perk every 2 levels.'}</div>`);
     if (s.pendingPerks > 0) {
       for (const p of Object.values(PERKS).filter((p) => perkAvailable(s, p.id))) {
         const div = document.createElement('div');
@@ -180,7 +254,6 @@ export class Wristlog {
         btn.className = 'plus';
         btn.textContent = '✕';
         btn.title = 'Unequip';
-        btn.style.cssText = 'font-family:var(--font);min-width:36px;min-height:36px;color:var(--crt);background:#0e2216;border:1px solid var(--crt-dim)';
         btn.onclick = () => { if (this.spendAp(1)) { unequip(inv, slot); syncGear(s, inv); this.render(); } };
         row.append(btn);
       }
@@ -262,6 +335,3 @@ function esc(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 }
 
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
-}

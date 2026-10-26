@@ -40,6 +40,8 @@ export interface GameState {
   world: WorldState;
   /** Creation origin preset id (if any); content reacts to it. */
   origin?: string;
+  /** Notebook sketches of people met (small JPEG data URLs). */
+  sketches?: Record<string, string>;
   rngState: number;
   playtimeSec: number;
 }

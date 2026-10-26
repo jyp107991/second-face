@@ -21,7 +21,7 @@ export class Hud {
         <button class="btn" data-a="centre" aria-label="Centre camera">◎</button>
         <button class="btn" data-a="rotR" aria-label="Rotate right">⟳</button>
         <button class="btn" data-a="run" aria-label="Toggle run">RUN</button>
-        <button class="btn" data-a="wrist" aria-label="Wristlog">◫</button>
+        <button class="btn" data-a="wrist" aria-label="Notebook">◫</button>
         <button class="btn" data-a="menu" aria-label="Menu">☰</button>
       </div>`;
     document.body.appendChild(this.el);

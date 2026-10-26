@@ -94,6 +94,7 @@ export class Game extends EventBus<GameEvents> {
   portrait?: PortraitStage;
   saves?: SaveManager;
   private thumbWaiters: ((url: string) => void)[] = [];
+  private captureWaiters: { crop: { x: number; y: number; w: number; h: number }; w: number; h: number; done: (c: HTMLCanvasElement) => void }[] = [];
   readonly npcs = new Map<string, NpcRuntime>();
   readonly fx: Fx;
   readonly encounter: Encounter;
@@ -570,6 +571,24 @@ export class Game extends EventBus<GameEvents> {
     for (const w of this.thumbWaiters.splice(0)) w(url);
   }
 
+  /** Display name of the current location. */
+  get locationName(): string | undefined { return this.loc?.map.name; }
+
+  /** Grab part of the next rendered frame (crop in 0..1 of the canvas) into a w×h canvas. */
+  captureFrame(crop: { x: number; y: number; w: number; h: number }, w: number, h: number): Promise<HTMLCanvasElement> {
+    return new Promise((done) => this.captureWaiters.push({ crop, w, h, done }));
+  }
+
+  private resolveCaptures(): void {
+    const src = this.renderer.domElement;
+    for (const c of this.captureWaiters.splice(0)) {
+      const out = document.createElement('canvas');
+      out.width = c.w; out.height = c.h;
+      out.getContext('2d')!.drawImage(src, c.crop.x * src.width, c.crop.y * src.height, c.crop.w * src.width, c.crop.h * src.height, 0, 0, c.w, c.h);
+      c.done(out);
+    }
+  }
+
   start(): void {
     this.renderer.setAnimationLoop((t) => this.frame(t));
   }
@@ -634,6 +653,7 @@ export class Game extends EventBus<GameEvents> {
       this.post.render(this.scene, this.cam.camera, this.time);
     }
     if (this.thumbWaiters.length) this.resolveThumbs();
+    if (this.captureWaiters.length) this.resolveCaptures();
 
     this.fpsAcc += realDt; this.fpsFrames++;
     if (this.fpsAcc >= 0.5) { this.fps = this.fpsFrames / this.fpsAcc; this.fpsAcc = 0; this.fpsFrames = 0; }

@@ -59,6 +59,8 @@ export interface WorldState {
   events: Record<string, 'happened' | 'prevented'>;
   /** Whether the player currently hides their face (news attaches to a masked stranger). */
   masked?: boolean;
+  /** People the player has spoken with. */
+  met?: Record<string, { name: string; day: number; where?: string }>;
 }
 
 export function emptyWorld(): WorldState {

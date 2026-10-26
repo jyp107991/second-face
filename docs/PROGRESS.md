@@ -49,8 +49,9 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
 - [x] F1 Docs: owner decisions (CLAUDE.md), DESIGN frontier systems (local reputation & news, leads board,
       scheduled world events, frontier justice, journeys), drop karma; reframe DESIGN §2 row 1
 - [x] F2 Secret: rework the story's central truth (story/ only) + update Chapter One content to fit
-- [ ] F3 Field notebook UI replacing the wristlog (journal, people with sketched portraits, leads, map, gear)
+- [x] F3 Field notebook UI replacing the wristlog (journal, people with sketched portraits, leads, map, gear)
 - [x] F4 Systems: local reputation + news propagation, leads/deductions engine, scheduled world events
+- [ ] F5 Restyle HUD + title/menus + dialogue/loot panels to the frontier look (no green CRT)
 - (Previous pass G1–G5 done; G5 remaining items: Cistern 9 map, Shale content.)
 
 **Current step (owner: develop plot, functionality, dialogue, questlines; research acclaimed-RPG common denominators;
