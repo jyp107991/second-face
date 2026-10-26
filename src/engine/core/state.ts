@@ -1,6 +1,7 @@
 import { defaultAppearance, type Appearance } from '../data/appearance';
 import { emptyInventory, type Inventory } from '../inventory/inventory';
 import { emptySheet, type CharacterSheet } from '../stats/sheet';
+import { emptyWorld, type WorldState } from '../world/world';
 
 export type Pronouns = 'he' | 'she' | 'they';
 
@@ -35,6 +36,10 @@ export interface GameState {
   /** Game clock in minutes since day 1, 00:00. */
   minutes: number;
   flags: Record<string, number | string | boolean>;
+  /** Quests, memories, relationships, reputation, knowledge, decisions, timers. */
+  world: WorldState;
+  /** Creation origin preset id (if any); content reacts to it. */
+  origin?: string;
   rngState: number;
   playtimeSec: number;
 }
@@ -50,6 +55,7 @@ export function newGameState(locationId: string, x: number, y: number, pc?: Play
     containers: {},
     minutes: START_MINUTES,
     flags: {},
+    world: emptyWorld(),
     rngState: (Math.random() * 2 ** 32) >>> 0,
     playtimeSec: 0,
   };

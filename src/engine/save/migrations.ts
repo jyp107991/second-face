@@ -2,7 +2,7 @@
  * Save format migrations. Each entry upgrades a raw save object from version N to N+1.
  * NEVER edit a published migration; add a new one and bump CURRENT_SAVE_VERSION.
  */
-export const CURRENT_SAVE_VERSION = 2;
+export const CURRENT_SAVE_VERSION = 3;
 
 type RawSave = { version: number; [k: string]: unknown };
 
@@ -28,6 +28,8 @@ export const MIGRATIONS: Record<number, (s: RawSave) => RawSave> = {
     }
     return { ...s, version: 2, state };
   },
+  // 2 → 3: narrative world state (quests, memories, relations, reputation, knowledge, timers).
+  2: (s) => ({ ...s, version: 3, state: { world: { quests: {}, memories: {}, relations: {}, approval: {}, party: [], reputation: {}, knowledge: {}, seen: {}, decisions: [], timers: [], karma: 0 }, ...(s.state as object) } }),
 };
 
 export function migrate(raw: RawSave): RawSave {
