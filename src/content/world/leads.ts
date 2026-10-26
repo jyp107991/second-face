@@ -14,6 +14,19 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_mother_sealed', label: 'Outbound entries', text: 'MOTHER\'s log holds three sealed entries marked OUTBOUND, years apart, each saying "population variance unchanged".' },
   { id: 'l_pressure', label: 'Constant pressure', text: 'The reservoir pressure has not changed in years. Reservoirs drop. This one is being fed.' },
   { id: 'l_archive_label', label: 'Return on relocation', text: 'The Archive door is stencilled CONTINUITY RECORDS — RETURN ON RELOCATION.' },
+  { id: 'l_teo_held', label: 'Teo held', text: 'Mags\'s partner Teo Marsh is held by the Rust Dogs under the overpass for a debt.' },
+  { id: 'l_stranger_shale', label: 'Through Shale', text: 'The masked stranger passed through Shale three weeks ago, bought water with a ring, and asked for the overpass.' },
+  { id: 'l_pumps_remote', label: 'Pumps driven remotely', text: 'Shale\'s pumps have no working switch; they are driven from somewhere north along the pipe.' },
+  { id: 'l_pumps_clock', label: 'The water clock', text: 'The pumps run at fixed hours that changed once for two months, as if someone far away turned a dial.' },
+  { id: 'l_pump_manual', label: 'Pump manual', text: 'Dov Reese has the pumps\' manual; half of it is in a print nobody in Shale can read.' },
+  { id: 'l_pump_manual_hand', label: 'Manual in city print', text: 'The unreadable half of the pump manual is the same print as MOTHER\'s crates: SUPPLY — NETWORK 4.' },
+  { id: 'l_pressure_shale', label: 'Shale\'s pressure', text: 'Shale\'s pump pressure is as constant as the Cistern\'s. Both are fed from the same somewhere.' },
+  { id: 'l_seed_buyer', label: 'Seed at any price', text: 'Factor Pike buys viable seed at absurd prices, in advance, for a client he will not name.' },
+  { id: 'l_sigil_shale', label: 'Sign at the mission', text: 'The half-sun sign from the stranger\'s mask is painted on the Choir tent-pole in Shale.' },
+  { id: 'l_larkspur_calla', label: 'Calla knew the word', text: 'Sister Calla knew the dead man\'s word, and said a man at Openfield would know more.' },
+  { id: 'l_hollis_city', label: 'The boards', text: 'Hollis Crane lived in a city with screens that showed who paid, who owed, and who was next.' },
+  { id: 'l_ring_shale', label: 'The ring', text: 'The stranger\'s ring, bought back from Pardo: two letters and a half-sun inside the band.' },
+  { id: 'l_ines_burned', label: 'Burned letter', text: 'Ines burned your letter about the city and would not say why.' },
   { id: 'l_ring_gone', label: 'Missing ring', text: 'The stranger had worn a ring until shortly before he died. He traded or lost it near the end.' },
 ] as LeadDef[]).map((l) => [l.id, l]));
 
@@ -22,5 +35,7 @@ export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
   { id: 'c_same_makers', from: ['l_burned_mark', 'l_crate_print', 'l_record_hand'], text: 'Whoever marked him also made our crates and our records. Cistern 9 and his city share an owner.' },
   { id: 'c_photo_made', from: ['l_photo_light', 'l_photo_grain'], text: 'The photograph was never taken. Something made it — and made it of me.' },
   { id: 'c_mother_answers', from: ['l_mother_sealed', 'l_mother_city'], text: 'MOTHER has been answering someone outside for years — and the answer has always been no.' },
+  { id: 'c_same_water', from: ['l_pumps_remote', 'l_pumps_clock', 'l_pump_manual_hand'], text: 'Shale\'s water is run from the same network that feeds the Cistern — by someone who changes the schedule from far away.' },
+  { id: 'c_stranger_route', from: ['l_stranger_shale', 'l_ring_shale', 'l_walked_west'], text: 'He came west through Shale with nothing left to trade but a ring, and went to the Rust Dogs on purpose.' },
   { id: 'c_fed_from_outside', from: ['l_pressure', 'l_archive_label'], text: 'The Cistern was built to be collected. Its water comes from outside, and so, one day, will its people\'s orders.' },
 ] as ConclusionDef[]).map((c) => [c.id, c]));

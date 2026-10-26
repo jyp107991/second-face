@@ -111,7 +111,9 @@ mid-range Android phone; deployed to Pages.
 - [~] B1 **Chapter One slice** (B1.1 DONE: `maps/cistern9` + `maps/c9_mouth` from `tools/maps/gen_ch1.py`, MOTHER
       terminal/Archive door/hatch/body as prop dialogues (`MapDef.talk`), tile `triggers`, conditional exits and
       placements, `hostileIf`, dialogue events `fight`/`map`, new game starts in the Cistern with q_ch1_door;
-      smoke `tools/qa/c9.cjs`. NEXT: B1.2 Shale map + cast): Cistern 9 map (cast placed, MOTHER terminal, maintenance shaft, exit), Shale
+      smoke `tools/qa/c9.cjs`. B1.2 DONE: `maps/shale` from `tools/maps/gen_shale.py`, 16 NPCs (`npcs/shale.ts`) with
+      schedules/barks/merchants, first conversations + services (`dialogue/shale.ts`: room via `d_sh_room` → camp,
+      Dust at the bar, healer event `heal`), 3 letters, Shale leads/conclusions. NEXT: B1.3 q_ch1_shale): Cistern 9 map (cast placed, MOTHER terminal, maintenance shaft, exit), Shale
       (well-town map, ~12 NPCs incl. the plan's cast, saloon, sheriff, trading post, Choir tent, wells),
       Rust Dogs overpass camp; quests q_ch1_door/shale/tribute/debts/prisoner/map/oldface; 2 companions;
       first scheduled event; letters; barter; map screen with travel between the three. ~5 h.
@@ -136,7 +138,7 @@ mid-range Android phone; deployed to Pages.
 | Area | Maps | NPCs | Dialogues | Quests | Status |
 |---|---|---|---|---|---|
 | Cistern 9 | 2/2 | 10/10 | 10/10 | 1/1 | playable; shaft + door routes |
-| Shale | 0/3 | 0/12 | 0/12 | 0/5 | — |
+| Shale | 1/1 | 16/16 | 14/16 | 0/5 | town playable; quests next |
 | Rust Dogs camp | 0/1 | 0/6 | 0/6 | 0/2 | — |
 | Act 1 wilds | 0/5 | 0/15 | 0/15 | 0/6 | — |
 | Meridian | 0/12 | 0/60 | 0/60 | 0/30 | — |

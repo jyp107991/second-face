@@ -375,6 +375,20 @@ export class Game extends EventBus<GameEvents> {
     return rt;
   }
 
+  /** A healer's work: the player and any companions back to full, wounds cleared. */
+  healParty(): void {
+    const pc = this.state.pc.sheet;
+    pc.hp = derived(pc).maxHp;
+    pc.crippled = {};
+    for (const id of this.state.world.party) {
+      const c = this.state.companions?.[id];
+      if (c) { c.sheet.hp = derived(c.sheet).maxHp; c.sheet.crippled = {}; }
+      const n = this.npcs.get(id);
+      if (n) { n.combatant.sheet.hp = derived(n.combatant.sheet).maxHp; n.combatant.sheet.crippled = {}; }
+    }
+    this.emit('message', { text: 'You are patched up.' });
+  }
+
   /** Once per game day: chrome draws its upkeep from the pack (or degrades) and Drift settles. */
   private dailyBody(): void {
     const w = this.state.world, pc = this.state.pc, today = dayOf(this.state.minutes);

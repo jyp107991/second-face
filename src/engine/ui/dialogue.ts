@@ -97,6 +97,7 @@ export class DialogueUi {
         if (name === 'camp') { window.setTimeout(() => { this.close(); this.game.openCamp(); }); return; }
         if (name === 'fight' && this.npc) { const npc = this.npc; window.setTimeout(() => { this.close(); npc.hostile = true; this.game.refreshHostility(); this.game.startCombat(npc); }); return; }
         if (name === 'map') { window.setTimeout(() => { this.close(); this.game.emit('openMap', {}); }); return; }
+        if (name === 'heal') { this.game.healParty(); return; }
         this.game.logicHost.event?.(name, data);
       },
     };
