@@ -76,6 +76,59 @@ export const q_ch1_shale: QuestDef = {
       ],
       next: [{ if: { flag: 'visited_overpass' }, stage: 'done' }],
     },
-    done: { journal: 'I found the Rust Dogs\' camp under the dead highway. If he traded here, Kessler has what he traded.', end: 'done' },
+    done: { journal: 'I found the Rust Dogs\' camp under the dead highway. If he traded here, Kessler has what he traded.', end: 'done', onEnter: [{ quest: 'q_ch1_map', start: true }] },
+  },
+};
+
+export const q_ch1_map: QuestDef = {
+  id: 'q_ch1_map', title: 'The Paper', act: 'ch1', critical: true, start: 'camp', xp: 300,
+  routes: [
+    { id: 'buy', kind: 'barter', label: 'Buy it from Kessler (80 Tolls or the bolt rifle)' },
+    { id: 'wager', kind: 'talk', label: 'Win it at Dust' },
+    { id: 'fear', kind: 'talk', label: 'Convince Kessler the paper is a danger (Pike reported him)', requires: { skill: 'speech', gte: 45 } },
+    { id: 'terms', kind: 'talk', label: 'Carry his tribute terms to Shale', requires: { skill: 'speech', gte: 50 } },
+    { id: 'wren', kind: 'stealth', label: 'Wren steals it for a place at your side' },
+    { id: 'lift', kind: 'stealth', label: 'Lift it from under his lamp at night', requires: { skill: 'stealth', gte: 45 } },
+    { id: 'coup', kind: 'fight', label: 'Vasha\'s coup: kill Kessler in his hall' },
+    { id: 'exodus', kind: 'talk', label: 'Wren\'s exodus, with the sheriff\'s word' },
+  ],
+  stages: {
+    camp: {
+      journal: 'He traded the paper to Kessler for water. Kessler can\'t read it, won\'t sell it to the Tollmen, and keeps it under his lamp. There are more ways into a thing like that than through the front of it.',
+      objectives: [
+        { id: 'kessler', text: 'Speak with Kessler', done: { flag: 'rd_kessler_met' } },
+        { id: 'map', text: 'Get the stranger\'s map', done: { flag: 'have_map' } },
+        { id: 'vasha', text: 'Hear Vasha out', done: { flag: 'rd_vasha_met' }, optional: true },
+        { id: 'wren', text: 'Talk to the scout who found him', done: { flag: 'rd_wren_met' }, optional: true },
+      ],
+      next: [{ if: { flag: 'have_map' }, stage: 'done' }],
+    },
+    done: { journal: 'The map is mine: twelve places pricked on a road, and beside each a block of marks I can\'t read. Yet.', end: 'done' },
+  },
+};
+
+export const q_sh_prisoner: QuestDef = {
+  id: 'q_sh_prisoner', title: 'Teo\'s Numbers', act: 'ch1', start: 'held', xp: 120,
+  routes: [
+    { id: 'pay', kind: 'barter', label: 'Pay the debt (Kessler 60, or Perpetua 40)' },
+    { id: 'terms', kind: 'talk', label: 'Trade Kessler the tribute errand for him', requires: { skill: 'speech', gte: 45 } },
+    { id: 'pick', kind: 'stealth', label: 'Pick the cage at night', requires: { skill: 'security', gte: 40 } },
+    { id: 'fight', kind: 'fight', label: 'Take him out by force' },
+  ],
+  stages: {
+    held: {
+      journal: 'Mags\'s partner Teo Marsh is in the Rust Dogs\' cage over a debt he says isn\'t his. The Dogs want sixty Tolls or something better.',
+      objectives: [
+        { id: 'find', text: 'Find Teo at the overpass', done: { knows: 'teo_seen' } },
+        { id: 'free', text: 'Get him out', done: { flag: 'teo_freed' } },
+      ],
+      next: [{ if: { flag: 'teo_freed' }, stage: 'home' }],
+    },
+    home: {
+      journal: 'Teo is out. He is walking home to Shale on legs he doesn\'t trust.',
+      objectives: [{ id: 'mags', text: 'Tell Mags', done: { flag: 'mags_told_teo' } }],
+      next: [{ if: { flag: 'mags_told_teo' }, stage: 'done' }],
+    },
+    done: { journal: 'Teo is back behind the bar, counting. Mags has not stopped shouting at him, which is how she says thank you.', end: 'done' },
   },
 };

@@ -1370,6 +1370,15 @@ export const shale: MapDef = {
       facing: 1
     },
     {
+      def: "npc_sh_07",
+      x: 16,
+      y: 18,
+      facing: 0,
+      if: {
+        flag: "teo_freed"
+      }
+    },
+    {
       def: "npc_sh_15",
       x: 34,
       y: 21,

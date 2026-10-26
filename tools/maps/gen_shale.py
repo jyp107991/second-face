@@ -196,7 +196,7 @@ shale = {
         {'def': 'npc_sh_03', 'x': 12, 'y': 14, 'facing': 2}, {'def': 'npc_sh_10', 'x': 14, 'y': 14, 'facing': 2}, {'def': 'npc_sh_06', 'x': 6, 'y': 23, 'facing': 1},
         {'def': 'npc_sh_04', 'x': 46, 'y': 33, 'facing': 0}, {'def': 'npc_sh_05', 'x': 13, 'y': 35, 'facing': 2}, {'def': 'npc_sh_08', 'x': 57, 'y': 17, 'facing': 2},
         {'def': 'npc_sh_09', 'x': 26, 'y': 9, 'facing': 2}, {'def': 'npc_sh_12', 'x': 30, 'y': 20, 'facing': 1}, {'def': 'npc_sh_13', 'x': 57, 'y': 34, 'facing': 0},
-        {'def': 'npc_sh_14', 'x': 12, 'y': 25, 'facing': 1}, {'def': 'npc_sh_15', 'x': 34, 'y': 21, 'facing': 3}, {'def': 'npc_sh_16', 'x': 50, 'y': 25, 'facing': 3},
+        {'def': 'npc_sh_14', 'x': 12, 'y': 25, 'facing': 1}, {'def': 'npc_sh_07', 'x': 16, 'y': 18, 'facing': 0, 'if': {'flag': 'teo_freed'}}, {'def': 'npc_sh_15', 'x': 34, 'y': 21, 'facing': 3}, {'def': 'npc_sh_16', 'x': 50, 'y': 25, 'facing': 3},
     ],
     'triggers': [
         {'id': 'arrive_w', 'x': 1, 'y': 23, 'w': 4, 'h': 5, 'text': 'Shale. Mud-brick and scrap around two pumps, a saloon, a flag that was a sheet once. Twenty-odd houses and a lot of empty ones.', 'effects': [{'learn': 'seen_shale'}]},

@@ -635,7 +635,7 @@ export class Game extends EventBus<GameEvents> {
       if (n.actor.tx !== x || n.actor.ty !== y || n.away) continue;
       if (n.combatant.sheet.hp > 0) {
         if (n.hostile || this.encounter.active) continue;
-        if (n.def.dialogue) return () => this.emit('openDialogue', { npc: n });
+        if (n.dialogue ?? n.def.dialogue) return () => this.emit('openDialogue', { npc: n });
         if (n.def.merchant) return () => this.openBarter(n);
         continue;
       }

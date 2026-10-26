@@ -116,7 +116,10 @@ mid-range Android phone; deployed to Pages.
       Dust at the bar, healer event `heal`), 3 letters, Shale leads/conclusions. B1.3 DONE: `q_ch1_shale` (5 routes,
       tests). B1.6a DONE: field map `ui/worldmap.ts` (known places = visited + `loc_<id>` knowledge; trip planner;
       `Game.travelTo` passes time, runs timers/events, arrives at `from_<origin>` spawn; HUD ⌖ / key M; smoke
-      `tools/qa/travel.cjs`). NEXT: B1.4 overpass map + Rust Dogs + q_ch1_map): Cistern 9 map (cast placed, MOTHER terminal, maintenance shaft, exit), Shale
+      `tools/qa/travel.cjs`). B1.4 DONE: `maps/overpass` (`tools/maps/gen_overpass.py`), 13 Rust Dogs (`npcs/rustdogs.ts`,
+      camp-wide `hostileIf`), gate trigger conversation, `q_ch1_map` with 8 routes (buy/rifle/wager with a Dust prize/
+      fear/terms/Wren steals/lift at night/Vasha's coup/exodus), `q_sh_prisoner` (Teo: pay/terms/pick/fight; comes home to
+      the bar), Wren joins as companion; tests. NEXT: B1.5 Tribute Day): Cistern 9 map (cast placed, MOTHER terminal, maintenance shaft, exit), Shale
       (well-town map, ~12 NPCs incl. the plan's cast, saloon, sheriff, trading post, Choir tent, wells),
       Rust Dogs overpass camp; quests q_ch1_door/shale/tribute/debts/prisoner/map/oldface; 2 companions;
       first scheduled event; letters; barter; map screen with travel between the three. ~5 h.
@@ -142,7 +145,7 @@ mid-range Android phone; deployed to Pages.
 |---|---|---|---|---|---|
 | Cistern 9 | 2/2 | 10/10 | 10/10 | 1/1 | playable; shaft + door routes |
 | Shale | 1/1 | 16/16 | 14/16 | 0/5 | town playable; quests next |
-| Rust Dogs camp | 0/1 | 0/6 | 0/6 | 0/2 | — |
+| Rust Dogs camp | 1/1 | 13/13 | 12/13 | 2/2 | playable; Tribute Day next |
 | Act 1 wilds | 0/5 | 0/15 | 0/15 | 0/6 | — |
 | Meridian | 0/12 | 0/60 | 0/60 | 0/30 | — |
 | Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |

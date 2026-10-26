@@ -15,7 +15,7 @@ export interface NpcDef {
   id: string;
   name: string;
   /** Appearance: a generator seed plus explicit overrides. */
-  look: { seed: number; frame?: 'broad' | 'narrow'; age?: number; over?: RandomLookOptions['over'] };
+  look: { seed: number; frame?: 'broad' | 'narrow'; age?: number; ancestry?: string; over?: RandomLookOptions['over'] };
   /** Who they are, for generated clothing, build and grime (data/outfits.ts). Default 'settler'. */
   role?: OutfitRole;
   /** Explicit outfit; generated from the role when absent. */
@@ -66,4 +66,6 @@ export interface NpcPlacement {
   id?: string;
   /** Present only while this holds (a prisoner until freed, visitors on a certain day). */
   if?: Cond;
+  /** Conversation for this placement (the same person says different things in a different place). */
+  dialogue?: string;
 }

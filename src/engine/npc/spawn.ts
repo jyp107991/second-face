@@ -50,6 +50,8 @@ export interface NpcRuntime {
   companion?: boolean;
   /** Off the map for now (schedule says 'away'). */
   away?: boolean;
+  /** Placement-specific conversation (overrides the def's). */
+  dialogue?: string;
 }
 
 export function spawnNpc(p: NpcPlacement, grid: Grid, keep?: { sheet: CharacterSheet; inv: Inventory }): NpcRuntime {
@@ -63,13 +65,13 @@ export function spawnNpc(p: NpcPlacement, grid: Grid, keep?: { sheet: CharacterS
     id, name: def.name, team: def.team, sheet, inv, x: p.x, y: p.y, ap: 0, morale: initialMorale(def.courage), evasion: 0,
     natural: def.natural, courage: def.courage,
   };
-  return { id, def, appearance: app, outfit, actor, combatant, hostile: !!def.hostile };
+  return { id, def, appearance: app, outfit, actor, combatant, hostile: !!def.hostile, dialogue: p.dialogue };
 }
 
 /** An NPC's appearance and clothing: generated from seed + role unless the definition fixes them. */
 export function npcLook(def: NpcDef): { app: Appearance; outfit: Outfit } {
   const role = def.role ?? 'settler';
-  const app = randomAppearance(def.look.seed, { frame: def.look.frame, age: def.look.age, over: def.look.over, ...roleLook(role) });
+  const app = randomAppearance(def.look.seed, { frame: def.look.frame, age: def.look.age, ancestry: def.look.ancestry, over: def.look.over, ...roleLook(role) });
   const fit = def.look.frame ? (def.look.frame === 'broad' ? 'm' : 'f') : app.shape.gender > 0.5 ? 'm' : 'f';
   return { app, outfit: def.outfit ?? dressFor(def.look.seed, role, fit, def.faction) };
 }

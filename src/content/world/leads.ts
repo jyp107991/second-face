@@ -31,6 +31,10 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_hollis_knew_mask', label: 'Hollis knew the mask', text: 'Hollis Crane recognised the half-sun mask from a man he knew forty years ago, in the city.' },
   { id: 'l_pike_reported', label: 'Pike reported him', text: 'Factor Pike reported the stranger\'s conversation to the Tollmen post east, as per.' },
   { id: 'l_tracks_overpass', label: 'Tracks to the highway', text: 'His tracks leave Shale north-west, toward the dead highway, alone.' },
+  { id: 'l_kessler_stranger', label: '"Tell the bunker"', text: 'The stranger\'s last words to Kessler were "tell the bunker" — he knew where he was going, and that it was ours.' },
+  { id: 'l_wren_found', label: 'Shot by paid men', text: 'Wren found him: he said he was shot by people who were paid to shoot him, and would rather give the paper to a thief than a bank.' },
+  { id: 'l_city_counts', label: 'The city counts us', text: 'The stranger told Perpetua the city counts everyone out here, keeps a list with dates, and that the paper is the list.' },
+  { id: 'l_wren_page', label: 'Torn page', text: 'Wren kept a page the stranger dropped while burning his notebook. Same cipher.' },
   { id: 'l_ring_gone', label: 'Missing ring', text: 'The stranger had worn a ring until shortly before he died. He traded or lost it near the end.' },
 ] as LeadDef[]).map((l) => [l.id, l]));
 
@@ -41,5 +45,6 @@ export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
   { id: 'c_mother_answers', from: ['l_mother_sealed', 'l_mother_city'], text: 'MOTHER has been answering someone outside for years — and the answer has always been no.' },
   { id: 'c_same_water', from: ['l_pumps_remote', 'l_pumps_clock', 'l_pump_manual_hand'], text: 'Shale\'s water is run from the same network that feeds the Cistern — by someone who changes the schedule from far away.' },
   { id: 'c_stranger_route', from: ['l_stranger_shale', 'l_ring_shale', 'l_walked_west'], text: 'He came west through Shale with nothing left to trade but a ring, and went to the Rust Dogs on purpose.' },
+  { id: 'c_list_of_names', from: ['l_map_traded', 'l_city_counts', 'l_wren_found'], text: 'The map is a list of people, with places and dates, that someone paid men to stop him carrying west. He carried it to us anyway.' },
   { id: 'c_fed_from_outside', from: ['l_pressure', 'l_archive_label'], text: 'The Cistern was built to be collected. Its water comes from outside, and so, one day, will its people\'s orders.' },
 ] as ConclusionDef[]).map((c) => [c.id, c]));

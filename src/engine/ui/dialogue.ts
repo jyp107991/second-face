@@ -47,7 +47,8 @@ export class DialogueUi {
   }
 
   open(npc: NpcRuntime): void {
-    const def = npc.def.dialogue ? DIALOGUES[npc.def.dialogue] : undefined;
+    const tree = npc.dialogue ?? npc.def.dialogue;
+    const def = tree ? DIALOGUES[tree] : undefined;
     if (!def) return;
     this.close();
     this.npc = npc;

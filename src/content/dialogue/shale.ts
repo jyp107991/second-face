@@ -17,7 +17,12 @@ export const d_sh_mags: DialogueDef = {
       passives: [{ attr: 'senses', dc: 6, text: 'Her eyes go to your boots, your hands, your belt — pricing you — before they get to your face.' }],
       options: [{ text: 'What have you got?', next: 'menu' }],
     },
-    again: { text: [{ if: { flag: 'shale_room' }, text: 'Your room\'s where you left it, love. What else?' }, { text: 'Back again. Drink, bed, or trouble?' }], options: [{ text: 'Let\'s see.', next: 'menu' }] },
+    again: { text: [{ if: { all: [{ flag: 'teo_freed' }, { not: { flag: 'mags_told_teo' } }] }, text: 'You. Nell says — is it true? Is he —' }, { if: { flag: 'shale_room' }, text: 'Your room\'s where you left it, love. What else?' }, { text: 'Back again. Drink, bed, or trouble?' }], options: [{ id: 'mags.teo.back', text: 'Teo\'s out. He\'s walking home. He says the count was right.', if: { all: [{ flag: 'teo_freed' }, { not: { flag: 'mags_told_teo' } }] }, next: 'teo_back' }, { text: 'Let\'s see.', next: 'menu' }] },
+    teo_back: {
+      text: 'She doesn\'t cry; she hits the bar with the flat of her hand hard enough to jump the glasses, twice, and then pours you something that isn\'t rot. "The count was right. Of course it was right." She pushes thirty Tolls across. "That\'s on the house. All of it. Forever. Don\'t argue with me, love."',
+      effects: [{ set: 'mags_told_teo' }, { give: 'tolls', count: 30 }, { trust: { npc: 'npc_sh_03', by: 25 } }, { set: 'shale_room' }, { news: { tag: 'teo_home', text: 'Teo Marsh is back behind the bar at the Dry Well', valence: 15, size: 5, at: 'shale' } }, { xp: 40 }],
+      options: [{ text: 'I won\'t.', next: 'menu' }],
+    },
     menu: {
       text: 'Drink\'s on the house — the first one. Water\'s two. The back room\'s ten a night, and nobody\'ll touch your things because nobody wants to find out what I\'d do. And there\'s always a game on.',
       options: [
@@ -58,7 +63,7 @@ export const d_sh_mags: DialogueDef = {
     },
     teo: {
       text: 'Teo Marsh. Trader, partner, the one who could count. The Dogs have him, under the overpass, for a debt he says isn\'t his and they say is. They want sixty Tolls or a wagon of something. I\'ve got a bar.',
-      effects: [{ learn: 'teo_prisoner' }, { lead: 'l_teo_held' }, { learn: 'loc_rustdogs' }],
+      effects: [{ learn: 'teo_prisoner' }, { lead: 'l_teo_held' }, { learn: 'loc_rustdogs' }, { quest: 'q_sh_prisoner', start: true }],
       options: [{ text: 'I\'ll keep an ear open.', next: 'menu' }],
     },
   },

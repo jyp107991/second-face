@@ -133,3 +133,44 @@ describe('Shale: tracing the stranger', () => {
     expect(g2.world.knowledge.mags_saw_stranger).toBe(true);
   });
 });
+
+describe('The Paper (overpass)', () => {
+  it('Kessler sells the map, and the quest ends', () => {
+    const g = newGameState('c9', 0, 0);
+    const q = new QuestEngine(QUESTS, g);
+    q.questStart('q_ch1_map');
+    g.pc.inventory.tolls = 100;
+    talk('d_rd_kessler', g, q, ['Both. I\'m from the salt cut', 'Fair. Tell me about the paper.', 'Name a price.', '(Pay. 80 Tolls)', '(Put it away.)']);
+    expect(countItem(g.pc.inventory, 'k_map')).toBe(1);
+    expect(g.pc.inventory.tolls).toBe(20);
+    expect(g.world.quests.q_ch1_map.status).toBe('done');
+  });
+
+  it('fear works with Pike\'s report and enough Speech; terms free Teo', () => {
+    const g = newGameState('c9', 0, 0);
+    const q = new QuestEngine(QUESTS, g);
+    q.questStart('q_ch1_map'); q.questStart('q_sh_prisoner');
+    g.world.knowledge.pike_reported = true; g.world.knowledge.kessler_has_map = true; g.world.knowledge.teo_prisoner = true; g.world.knowledge.tribute_due = true;
+    g.pc.sheet.skillBought.speech = 60;
+    talk('d_rd_kessler', g, q, ['Manners.', 'You\'re holding Teo Marsh.', 'A better offer', 'I will.', 'The map he carried', 'The Tollmen know you have it', 'Fair.', '(Put it away.)']);
+    expect(g.flags.teo_freed).toBe(true);
+    expect(g.flags.have_map).toBe(true);
+    expect(g.world.quests.q_sh_prisoner.stage).toBe('home');
+    g.flags.sh_mags_met = true;
+    talk('d_sh_mags', g, q, ['Teo\'s out.', 'I won\'t.', 'Later.']);
+    expect(g.world.quests.q_sh_prisoner.status).toBe('done');
+  });
+
+  it('Wren steals it at night and joins', () => {
+    const g = newGameState('c9', 0, 0);
+    const q = new QuestEngine(QUESTS, g);
+    q.questStart('q_ch1_map');
+    g.world.knowledge.kessler_has_map = true;
+    talk('d_rd_wren', g, q, ['What did he say?', 'More.', 'The paper. I want it.', 'Deal.', '(Nod.)']);
+    expect(g.flags.wren_deal).toBe(true);
+    g.minutes = 23 * 60;
+    talk('d_rd_wren', g, q, ['Let\'s go.']);
+    expect(g.flags.have_map).toBe(true);
+    expect(g.world.party).toContain('npc_rd_03');
+  });
+});
