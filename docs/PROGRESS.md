@@ -29,17 +29,17 @@ session). Engine decision: see `docs/TECH_EVALUATION.md` (recommendation: stay o
 - [x] A0 This plan written; old milestone logs compressed into §6.
 
 ### A1 Grounded world and coherent story
-- [ ] A1.1 History rework (public `docs/WORLD.md` §1, §4): the Burn follows from real trends — compute/chip
+- [x] A1.1 History rework (public `docs/WORLD.md` §1, §4): the Burn follows from real trends — compute/chip
       race between blocs, AI-administered charter cities, automation and autonomous weapons, surveillance
       scoring, climate stress, supply-chain autarky, geopolitical fragmentation. Add "remnant machines"
       (autonomous machines that outlived their owners) to the world and the bestiary.
-- [ ] A1.2 Secret history and plot consolidated (`story/WORLD_SECRET.md`, `story/STORY_PLAN_SECRET.md`
+- [x] A1.2 Secret history and plot consolidated (`story/WORLD_SECRET.md`, `story/STORY_PLAN_SECRET.md`
       rewritten as a clean v3; superseded passes removed; change log kept).
-- [ ] A1.3 Character bible (`story/CHARACTERS_SECRET.md`): companions and key NPCs with wants, fears,
+- [x] A1.3 Character bible (`story/CHARACTERS_SECRET.md`): companions and key NPCs with wants, fears,
       contradictions, voice, secrets, opinions of each other, arc stages, red lines, romance notes.
-- [ ] A1.4 Coherence audit of existing content (dialogue, quests, items, leads, origins, perks/traits text)
+- [x] A1.4 Coherence audit of existing content (dialogue, quests, items, leads, origins, perks/traits text)
       → fixes committed; findings log in `story/AUDIT_SECRET.md`.
-- [ ] A1.5 Hard-choice review rule applied to every major choice listed in the plan (no dominant option);
+- [x] A1.5 Hard-choice review rule applied to every major choice listed in the plan (no dominant option);
       delayed/distant consequence list ≥30% (tracked in the secret plan).
 
 ### A2 Play like the best RPGs

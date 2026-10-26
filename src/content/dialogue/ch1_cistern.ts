@@ -74,6 +74,10 @@ export const d_c9_pell: DialogueDef = {
     },
     photo: {
       text: 'It\'s you. Older — forty, forty-five — with a city of broken towers behind you, squinting into the wind. On the back, in pencil: a date forty-one years gone. "I\'ve been staring at it for an hour," Pell says. "It\'s you. I don\'t care how."',
+      passives: [
+        { attr: 'senses', dc: 8, text: 'The shadow under your chin falls to the left. The shadows of the towers behind you fall to the right.', effects: [{ lead: 'l_photo_light' }, { learn: 'photo_shadows' }] },
+        { skill: 'science', dc: 45, text: 'Every print you have ever seen has grain in it. This has none — the dust in the air is drawn, not caught.', effects: [{ lead: 'l_photo_grain' }, { learn: 'photo_no_grain' }] },
+      ],
       options: [
         { id: 'pell.photo.no', text: 'It can\'t be me. I wasn\'t born.', next: 'photo_denial' },
         { id: 'pell.photo.where', text: 'Where was it taken?', next: 'photo_place' },
@@ -200,7 +204,7 @@ export const d_c9_tamsin: DialogueDef = {
       ],
     },
     photo: {
-      text: 'She takes it like it might bite. "That\'s your nose. That\'s your stupid ear." A long look. "Older though. And there — a scar over the eye. Where are you going to get a scar like that?" She hands it back too quickly.',
+      text: 'She takes it like it might bite. "That\'s your nose. That\'s your stupid ear." A long look. "Older, though. Tired. And you\'re standing like Ines stands — like somebody who gives orders. Where are you going to learn to stand like that?" She hands it back too quickly.',
       effects: [{ approval: { companion: 'npc_c9_03', by: 5 } }],
       options: [{ text: 'Somewhere out there, apparently.', next: 'intro' }],
     },

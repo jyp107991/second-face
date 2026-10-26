@@ -130,7 +130,7 @@ export class CombatHud {
   private gameOver(): void {
     const d = document.createElement('div');
     d.className = 'gameover';
-    d.innerHTML = `<div class="box crt"><h1>YOU DIED</h1><p>The wasteland keeps what it takes.</p>
+    d.innerHTML = `<div class="box crt"><h1>YOU DIED</h1><p>The Reach keeps what it takes.</p>
       <div class="row" style="display:flex;gap:8px;justify-content:center"><button class="btn" data-a="load">Load last save</button><button class="btn" data-a="title">Title</button></div></div>`;
     d.addEventListener('click', (e) => {
       const a = (e.target as HTMLElement).dataset.a;

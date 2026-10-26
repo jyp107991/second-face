@@ -8,9 +8,12 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_crate_print', label: 'Crate print', text: 'The marks at the burn\'s edge match the print on MOTHER\'s old crates.' },
   { id: 'l_record_hand', label: 'Record shorthand', text: 'His notebook is written in the same shorthand as the Cistern\'s records.' },
   { id: 'l_sigil', label: 'Half-sun sign', text: 'His mask bears a painted sign: half a sun with no ground, or an open hand.' },
+  { id: 'l_photo_light', label: 'Wrong shadows', text: 'In the photograph the shadows on your face and on the towers fall different ways.' },
+  { id: 'l_photo_grain', label: 'No grain', text: 'The photograph has no grain at all. The dust in it is drawn, not caught.' },
 ] as LeadDef[]).map((l) => [l.id, l]));
 
 export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
   { id: 'c_from_a_city', from: ['l_walked_west', 'l_sealed_wound'], text: 'He came from the east, from somewhere with a working hospital — a city that still runs.' },
   { id: 'c_same_makers', from: ['l_burned_mark', 'l_crate_print', 'l_record_hand'], text: 'Whoever marked him also made our crates and our records. Cistern 9 and his city share an owner.' },
+  { id: 'c_photo_made', from: ['l_photo_light', 'l_photo_grain'], text: 'The photograph was never taken. Something made it — and made it of me.' },
 ] as ConclusionDef[]).map((c) => [c.id, c]));
