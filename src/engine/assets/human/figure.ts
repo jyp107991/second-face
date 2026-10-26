@@ -8,6 +8,7 @@ import { strandGeometry, strandMaterial } from './strands';
 import { BEARD_STYLES, beardField } from './facialHair';
 import { HAIRCUTS, haircutField } from './haircuts';
 import { hairCardGeometry, hairCardMaterial } from './hairCards';
+import { clothMaterial, mergeClothes, type GarmentLook } from './cloth';
 import type { FacialHair } from '../../data/appearance';
 
 /**
@@ -16,18 +17,7 @@ import type { FacialHair } from '../../data/appearance';
  * per-character skin texture. Every part shares one Skeleton.
  */
 
-/** One worn garment and how it looks. */
-export interface GarmentLook {
-  name: string;
-  /** Multiplies the texture colour. */
-  tint?: number;
-  /** Re-dye: the fabric keeps its weave/shading but takes this colour. */
-  dye?: number;
-  /** 0..1 dirt, heaviest towards the hem and feet. */
-  grime?: number;
-  /** 0..1 sun-fading and wear. */
-  wear?: number;
-}
+export type { GarmentLook } from './cloth';
 
 export interface FigureSpec {
   shape: ShapeParams;
@@ -180,11 +170,14 @@ export class HumanFigure {
 
     // --- Proxies
     const lod = spec.lod ?? 'high';
+    const faceStart = this.meshes.length;
     this.addProxy(d, P, minY, 'eyes_high-poly', eyeMaterial(spec.eyes));
     if (spec.brows) {
       const meta = d.m.proxies[`brows_${spec.brows}`], c = spec.browColor ?? spec.hair?.color ?? 0x2a1e16;
       this.addProxy(d, P, minY, `brows_${spec.brows}`, hairMaterial(meta, c), hairMaterial(meta, c, true));
     }
+    // From the iso camera eyes and brows are a few pixels: no shadow pass for them.
+    if (lod === 'low') for (const m of this.meshes.slice(faceStart)) m.castShadow = false;
     if (lod === 'high') {
       this.addProxy(d, P, minY, `lashes_${spec.lashes ?? 'eyelashes01'}`, hairMaterial(d.m.proxies[`lashes_${spec.lashes ?? 'eyelashes01'}`], 0x1a1410));
     }
@@ -192,9 +185,18 @@ export class HumanFigure {
       const key = `hair_${spec.hair.style}`;
       if (d.m.proxies[key]) this.addProxy(d, P, minY, key, hairMaterial(d.m.proxies[key], spec.hair.color, false, true), lod === 'high' ? hairMaterial(d.m.proxies[key], spec.hair.color, true, true) : undefined);
     }
-    for (const c of clothes) {
-      const key = `clothes_${c.name}`;
-      this.addProxy(d, P, minY, key, clothMaterial(d.m.proxies[key], c));
+    if (lod === 'low' && clothes.length > 1) {
+      // Iso view: every garment in one mesh with a small texture atlas (one draw call).
+      const parts = clothes.map((c) => ({ key: `clothes_${c.name}`, look: c }))
+        .map(({ key, look }) => ({ geo: this.proxyGeometry(d, P, minY, key), meta: d.m.proxies[key], look }));
+      const { geo, mat } = mergeClothes(parts);
+      for (const p of parts) p.geo.dispose();
+      this.addMesh(geo, mat);
+    } else {
+      for (const c of clothes) {
+        const key = `clothes_${c.name}`;
+        this.addProxy(d, P, minY, key, clothMaterial(d.m.proxies[key], c));
+      }
     }
 
     const eye = this.restWorld.get('eye.L');
@@ -257,6 +259,20 @@ export class HumanFigure {
   private addProxy(d: HumanData, P: Float32Array, minY: number, key: string, mat: THREE.Material, blendEdges?: THREE.Material): void {
     const meta = d.m.proxies[key];
     if (!meta) return;
+    const g = this.proxyGeometry(d, P, minY, key);
+    const mesh = this.addMesh(g, mat);
+    mesh.renderOrder = meta.zDepth;
+    // Strand edges: a second, alpha-blended pass over the same geometry for soft hair edges.
+    if (blendEdges) {
+      const edge = this.addMesh(g, blendEdges);
+      edge.renderOrder = meta.zDepth + 10;
+      edge.castShadow = false;
+    }
+  }
+
+  /** A proxy (hair, garment...) fitted to this body and skinned to its skeleton. */
+  private proxyGeometry(d: HumanData, P: Float32Array, minY: number, key: string): THREE.BufferGeometry {
+    const meta = d.m.proxies[key];
     const ref = d.view<Uint16Array>(key + '_ref'), w = d.view<Float32Array>(key + '_w'), off = d.view<Float32Array>(key + '_off');
     const n = meta.verts;
     const s = { x: 1, y: 1, z: 1 };
@@ -293,14 +309,7 @@ export class HumanFigure {
     g.setAttribute('skinWeight', new THREE.BufferAttribute(skinWeight, 4));
     g.setIndex(new THREE.BufferAttribute(new Uint16Array(d.view<Uint16Array>(key + '_index')), 1));
     smoothNormals(g);
-    const mesh = this.addMesh(g, mat);
-    mesh.renderOrder = meta.zDepth;
-    // Strand edges: a second, alpha-blended pass over the same geometry for soft hair edges.
-    if (blendEdges) {
-      const edge = this.addMesh(g, blendEdges);
-      edge.renderOrder = meta.zDepth + 10;
-      edge.castShadow = false;
-    }
+    return g;
   }
 
   private addMesh(g: THREE.BufferGeometry, mat: THREE.Material): THREE.SkinnedMesh {
@@ -406,63 +415,4 @@ function skinDetailMaps(d: HumanData, detail: 'm' | 'old', k: number): Partial<T
   return n ? { normalMap: humanTexture(n, false), normalScale: new THREE.Vector2(k, -k) } : {};
 }
 
-/**
- * Cloth: the garment texture, optionally re-dyed, faded and dirtied. Dirt follows the rest-pose height
- * (boots and hems get the worst of it) broken up by noise so no two pieces wear the same way.
- */
-function clothMaterial(meta: ProxyMeta | undefined, g: GarmentLook): THREE.Material {
-  const mat = new THREE.MeshStandardMaterial({
-    map: meta?.texture ? humanTexture(meta.texture) : null, color: g.tint ?? 0xffffff, roughness: 0.92, metalness: 0,
-    alphaTest: meta?.transparent ? 0.4 : 0, side: meta?.transparent ? THREE.DoubleSide : THREE.FrontSide,
-  });
-  // Outer layers (higher MakeHuman z-depth) win depth ties against the layers beneath them.
-  const z = meta?.zDepth ?? 0;
-  if (z) { mat.polygonOffset = true; mat.polygonOffsetFactor = -z / 25; mat.polygonOffsetUnits = -z / 5; }
-  const dye = g.dye !== undefined ? new THREE.Color(g.dye) : undefined;
-  if (!dye && !g.grime && !g.wear) return mat;
-  const seed = hashName(g.name);
-  mat.onBeforeCompile = (sh) => {
-    sh.uniforms.uDye = { value: dye ?? new THREE.Color(1, 1, 1) };
-    sh.uniforms.uDyeAmt = { value: dye ? 1 : 0 };
-    sh.uniforms.uGrime = { value: g.grime ?? 0 };
-    sh.uniforms.uWear = { value: g.wear ?? 0 };
-    sh.uniforms.uSeed = { value: seed };
-    sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vRest;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRest = position;');
-    sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', `#include <common>
-varying vec3 vRest;
-uniform vec3 uDye; uniform float uDyeAmt, uGrime, uWear, uSeed;
-float gHash(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719)) + uSeed) * 43758.5453); }
-float gNoise(vec3 p) {
-  vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-  return mix(mix(mix(gHash(i), gHash(i + vec3(1,0,0)), f.x), mix(gHash(i + vec3(0,1,0)), gHash(i + vec3(1,1,0)), f.x), f.y),
-             mix(mix(gHash(i + vec3(0,0,1)), gHash(i + vec3(1,0,1)), f.x), mix(gHash(i + vec3(0,1,1)), gHash(i + vec3(1,1,1)), f.x), f.y), f.z);
-}`)
-      .replace('#include <map_fragment>', `#include <map_fragment>
-{
-  vec3 c = diffuseColor.rgb;
-  float l = dot(c, vec3(0.3, 0.55, 0.15));
-  c = mix(c, uDye * clamp(0.25 + l * 1.9, 0.0, 1.6), uDyeAmt);
-  float n = gNoise(vRest * 9.0) * 0.6 + gNoise(vRest * 31.0) * 0.4;
-  // Sun-faded: desaturate and lift towards a dusty grey.
-  float lw = dot(c, vec3(0.3, 0.55, 0.15));
-  c = mix(c, vec3(lw) * 0.85 + vec3(0.07, 0.065, 0.055), uWear * (0.45 + 0.35 * n));
-  // Dirt: worst at the feet and hems, patchy everywhere.
-  float low = 1.0 - smoothstep(0.0, 1.1, vRest.y);
-  float gm = uGrime * clamp((0.25 + 0.9 * low) * smoothstep(0.25, 0.75, n + low * 0.3), 0.0, 1.0);
-  c = mix(c, vec3(0.20, 0.165, 0.12) * (0.7 + 0.6 * n), gm * 0.75);
-  diffuseColor.rgb = c;
-}`);
-  };
-  mat.customProgramCacheKey = () => 'cloth';
-  return mat;
-}
-
-function hashName(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 9973;
-  return h / 97;
-}
 

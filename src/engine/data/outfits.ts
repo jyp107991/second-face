@@ -1,6 +1,6 @@
 import { Rng } from '../core/rng';
 import type { Outfit } from '../assets/humanoid';
-import type { GarmentLook } from '../assets/human/figure';
+import type { GarmentLook } from '../assets/human/cloth';
 import { GARMENTS, garmentsFor, type GarmentSlot, type GarmentStyle } from './garments';
 import type { Lifestyle } from './appearance';
 

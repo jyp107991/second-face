@@ -53,7 +53,7 @@ export const GARMENTS: Record<string, GarmentDef> = {
   punkduck_retro_top: { slot: 'top', fit: 'f', tags: ['casual', 'street'] },
   elvs_ruffle_sleeve_peasant_blouse_1: { slot: 'top', fit: 'f', tags: ['faith', 'casual', 'rich'], dye: true },
   punkduck_sleeveless_crop_top: { slot: 'top', fit: 'f', tags: ['street', 'sport', 'raider'], dye: true },
-  rehmanpolanski_viking_tunic: { slot: 'top', fit: 'm', tags: ['rag', 'nomad', 'raider', 'faith'] },
+  rehmanpolanski_viking_tunic: { slot: 'top', fit: 'm', tags: ['rag', 'nomad', 'raider'] },
 
   // Over layers and gear
   mindfront_tactical_vest_male: { slot: 'over', fit: 'm', tags: ['military', 'raider', 'corp'] },

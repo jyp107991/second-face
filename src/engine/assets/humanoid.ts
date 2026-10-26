@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { defaultAppearance, type Appearance } from '../data/appearance';
-import { HumanFigure, type GarmentLook } from './human/figure';
+import { HumanFigure } from './human/figure';
+import type { GarmentLook } from './human/cloth';
 import { makeSkinTexture } from './human/skin';
 import { outfitHairMode } from '../data/outfits';
 
