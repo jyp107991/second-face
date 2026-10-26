@@ -68,7 +68,7 @@ export class Notebook {
   }
 
   open(tab: Tab = this.tab): void {
-    if (document.querySelector('.creator') || document.querySelector('.overlay:not(.hidden)')) return;
+    if (document.querySelector('.creator') || document.querySelector('.overlay:not(.hidden)') || document.querySelector('.dlg')) return;
     this.tab = tab;
     if (!this.el) {
       this.el = document.createElement('div');

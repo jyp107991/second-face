@@ -186,7 +186,7 @@ export class AudioEngine {
 
   /** Play a sound. `pan` -1..1, `gain` 0..1 (distance attenuation done by caller). */
   play(id: SfxId, pan = 0, gain = 1): void {
-    if (!this.ctx || gain <= 0.01) return;
+    if (!this.ctx || gain <= 0.01 || !Number.isFinite(gain) || !Number.isFinite(pan)) return;
     const ctx = this.ctx, t = ctx.currentTime;
     const out = ctx.createGain();
     out.gain.value = gain;

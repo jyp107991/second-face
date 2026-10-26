@@ -34,7 +34,7 @@ export class WorldMapUi {
   }
 
   open(): void {
-    if (this.el || this.game.encounter.active) return;
+    if (this.el || this.game.encounter.active || document.querySelector('.dlg')) return;
     this.selected = undefined;
     this.el = document.createElement('div');
     this.el.className = 'wl';
@@ -78,7 +78,8 @@ export class WorldMapUi {
     const region = sel ? REGIONS[sel.region]?.name ?? sel.region : '';
     const side = sel
       ? `<h4>${esc(sel.name)}</h4><p class="dim">${esc(region)}${sel.settlement ? ' · settlement' : sel.kind === 'landmark' ? ' · landmark' : ''}</p>
-         ${this.selected === here ? '<p>You are here.</p>' : trip
+         ${this.selected === here ? '<p>You are here.</p>' : this.game.loc?.map.interior
+          ? '<p class="dim">You will have to get outside first.</p>' : trip
           ? `<p>On foot: <b>${fmtHours(hours)}</b>${hours >= 10 ? ' (with a night on the road)' : ''}.<br>Arrive day ${arriveDay}, about ${String(arriveHour).padStart(2, '0')}:00.<br>Trouble on the way: <b>${risk < 15 ? 'unlikely' : risk < 40 ? 'possible' : 'likely'}</b>.</p>
              <div class="acts"><button data-a="travel">Set out</button></div>`
           : '<p class="dim">No road you know leads there.</p>'}`

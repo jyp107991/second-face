@@ -73,6 +73,8 @@ export interface OptionView {
   checkMet: boolean;
   /** Why the DC changed, if it did. */
   checkNotes: string[];
+  /** Picking it ends the conversation (Escape takes the first such option). */
+  exit: boolean;
   locked: boolean;
   seen: boolean;
 }
@@ -167,7 +169,7 @@ export class DialogueRunner {
         checkMet = checkValue(o.check, this.g) >= dc;
         checkNotes = notes;
       }
-      options.push({ id, text: render(o.text, this.g), checkLabel, checkMet, checkNotes, locked: !ok, seen: !!this.g.world.seen[id] });
+      options.push({ id, text: render(o.text, this.g), checkLabel, checkMet, checkNotes, locked: !ok, seen: !!this.g.world.seen[id], exit: !!o.exit && !o.check });
     });
     return { speaker: n.speaker ?? this.def.owner, text: render(n.text, this.g), seen: (this.g.world.visited?.[`${this.def.id}.${this.node}`] ?? 0) > 1, passives, options };
   }

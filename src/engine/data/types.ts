@@ -134,4 +134,6 @@ export interface MapDef {
   triggers?: TriggerDef[];
   /** Props (by id) that open a conversation when used: terminals, a sealed door, a body to examine. */
   talk?: Record<string, { dialogue: string; name: string }>;
+  /** Under a roof or under the ground: the field map opens but you cannot set out from here. */
+  interior?: boolean;
 }

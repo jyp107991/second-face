@@ -285,5 +285,6 @@ body.hc .dlg .chk.ok { color: #7cff9c; } body.hc .dlg .chk.bad { color: #ff8a7a;
 .map-side { width: 250px; flex: none; overflow: auto; }
 @media (max-width: 720px) { .map-body { flex-direction: column; } .map-side { width: auto; } .map-canvas { min-height: 240px; } }
 
-.title-card { position: absolute; left: 50%; top: 38%; transform: translateX(-50%); text-align: center; font-family: var(--serif, Georgia, serif); font-size: 30px; letter-spacing: .12em; color: #e8dcc0; text-shadow: 0 2px 18px rgba(0,0,0,.9); pointer-events: none; transition: opacity 1.2s; }
-.title-card div + div { font-size: 16px; letter-spacing: .3em; margin-top: 10px; color: var(--amber-dim, #b89a60); }
+.title-card { position: absolute; left: 0; right: 0; top: 30%; padding: 48px 0; text-align: center; font-family: var(--serif, Georgia, serif); font-size: 34px; letter-spacing: .14em; color: #efe4c8; text-shadow: 0 2px 18px rgba(0,0,0,.9); pointer-events: none; transition: opacity 1.2s;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.72) 25%, rgba(0,0,0,.72) 75%, rgba(0,0,0,0) 100%); }
+.title-card div + div { font-size: 17px; letter-spacing: .34em; margin-top: 12px; color: #d8b878; }

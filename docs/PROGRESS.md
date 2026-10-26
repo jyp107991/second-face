@@ -125,8 +125,13 @@ mid-range Android phone; deployed to Pages.
       smoke `tools/qa/tribute.cjs`. B1.6b DONE: `q_ch1_name` — the map is read from the pack (`ItemDef.read` → notebook
       Read button opens a tree dialogue), four ways into the cipher (Science with cribs / origin / a key bought from
       Pike / Hollis), a 30-day timer the Act 1 slice resolves, HUD title card (`title` event) closes Chapter One;
-      tests. NEXT: B1.7 playtest Cistern → Shale → overpass → Tribute Day → the map end to end via Playwright,
-      fix what breaks, polish (camp screen, companion barks on the road), then open B2.)
+      tests. B1.7 DONE: `tools/qa/ch1.cjs` plays the whole chapter through the real UI (clinic → Elder → door → mouth →
+      field map → Shale → sheriff → overpass gate → Kessler paid route → Wren → Pike's key → Read from the pack → title
+      card → Tribute Day paid → save/load round trip; ALL PASS, 0 page errors). Fixes from it: Escape leaves a
+      conversation (first exit option), `MapDef.interior` (no setting out from inside the Cistern), map/notebook refuse
+      to open over a conversation, chapter card waits for the conversation to close and sits on a dark band, audio
+      ignores non-finite gain/pan. NEXT: B1.8 visual equipment (owner): live figure in the Pack/Self tabs that
+      changes with equip/unequip, every item with a visual, bionics shown on the figure.)
 - [ ] B2 **Act 1**: Tollhouse 9, Signal Hill, Dry Wells crisis, Burnt Orchard, salt pans; Shale/Rust Dogs/
       Tollmen/Choir lines to Act 1 end; 3rd companion; first Mender + chrome; world map with encounters,
       discoveries, camps, hunting/fishing; nomad camp (the Wheel). ~8 h.

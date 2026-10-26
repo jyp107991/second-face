@@ -24,6 +24,11 @@ export class DialogueUi {
     game.on('openDialogue', ({ npc, tree, name }) => { if (npc) this.open(npc); else if (tree) this.openTree(tree, name ?? ''); });
     window.addEventListener('keydown', (e) => {
       if (!this.el) return;
+      if (e.code === 'Escape') {
+        const i = this.runner?.view()?.options.findIndex((o) => o.exit && !o.locked) ?? -1;
+        if (i >= 0) { e.preventDefault(); e.stopImmediatePropagation(); this.pick(i); }
+        return;
+      }
       const n = Number(e.key);
       if (n >= 1 && n <= 9) { e.preventDefault(); this.pick(n - 1); }
     }, true);

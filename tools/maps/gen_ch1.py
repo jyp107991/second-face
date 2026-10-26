@@ -65,7 +65,7 @@ carve(g, 23, 15, 23, 15, 'A')   # the sealed Archive: a door tile in the council
 carve(g, 5, 0, 7, 0, 'D')       # the great door itself (in the north wall)
 
 cistern9 = {
-    'id': 'cistern9', 'name': 'Cistern 9', 'seed': 9, 'settlement': 'cistern9',
+    'id': 'cistern9', 'name': 'Cistern 9', 'seed': 9, 'settlement': 'cistern9', 'interior': True,
     'layout': rows(g),
     'legend': {
         '#': {'wall': 'concrete', 'floor': 'concrete', 'wallHeight': 2.8},

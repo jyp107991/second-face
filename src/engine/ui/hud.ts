@@ -68,6 +68,8 @@ export class Hud {
 
   /** A chapter card: large, centred, slow to fade. */
   title(text: string, ms = 5000): void {
+    // Wait for the conversation that raised it to close, so the card stands alone.
+    if (document.querySelector('.dlg')) { window.setTimeout(() => this.title(text, ms), 300); return; }
     const el = this.el.querySelector('.title-card') as HTMLElement;
     el.innerHTML = text.split('\n').map((l) => `<div>${l.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!)}</div>`).join('');
     el.style.opacity = '1';

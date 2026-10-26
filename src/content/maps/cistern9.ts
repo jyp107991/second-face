@@ -6,6 +6,7 @@ export const cistern9: MapDef = {
   name: "Cistern 9",
   seed: 9,
   settlement: "cistern9",
+  interior: true,
   layout: [
     "#####DDD######################################",
     "#...........##mmmmmmmmmm##ttttttttttttttttttt#",
