@@ -225,7 +225,7 @@ function tattooAt(id: TattooId, p: THREE.Vector3): number {
 /**
  * Natural beard-growth area in head-frame coordinates, built from the base mesh's landmarks (1 unit ≈ the
  * head radius; eyes at y≈0.1, under the nose y≈-0.47, mouth corners (±0.22, -0.69), lower lip -0.92,
- * chin bottom -1.22, under-chin folding back to the throat at z≈0.3, earlobes y≈-0.35, ear beyond |x|≈0.89).
+ * lips -0.57..-0.86, chin bottom -1.22, earlobes y≈-0.35, ear beyond |x|≈0.89).
  * Uses the angle around the vertical axis (0° = front, 90° = side) so cheek and sideburn lines are
  * well defined. Returns growth density 0..1.
  */
@@ -239,21 +239,21 @@ function beardMask(p: THREE.Vector3): number {
   // Top boundary: moustache under the nose (following the nostril wings and smile lines), then the cheek
   // line rising from just outside the mouth corner to the sideburn base, then the sideburn.
   const wobble = 0.022 * Math.sin(th * 0.13) + 0.012 * Math.sin(th * 0.29 + 1.3);
-  const tacheTop = -0.47 - Math.max(0, ax - 0.16) * 1.25;
+  const tacheTop = -0.42 - Math.max(0, ax - 0.17) * 1.0;
   const tc = smoothstep(14, 22, th);
   const cheekTop = -0.66 + 0.34 * smoothstep(18, 70, th) + wobble;
   let top = tacheTop * (1 - tc) + cheekTop * tc;
   const sideburn = smoothstep(66, 71, th) * smoothstep(84, 80, th);
   top = top * (1 - sideburn) + 0.12 * sideburn;
   const topEdge = 0.035 + 0.05 * tc;
-  // Bottom boundary: neckline from the throat (front) rising to behind the jaw angle.
-  const bottom = -1.4 + 0.47 * Math.pow(Math.min(1, th / 84), 1.3) + 0.5 * wobble;
-  let m = smoothstep(top + topEdge, top - topEdge, y) * smoothstep(bottom - 0.07, bottom + 0.09, y) * smoothstep(90, 82, th);
-  // Lips stay clear right up to their border.
-  const lip = Math.hypot(ax / 0.235, (y + 0.715) / 0.205);
-  m *= smoothstep(0.92, 1.08, lip);
-  // Slightly sparser growth on the upper cheeks and the neck than on chin and moustache.
-  const sparse = 1 - 0.18 * smoothstep(24, 50, th) * smoothstep(-0.95, -0.7, y) - 0.2 * smoothstep(-1.25, -1.45, y);
+  // Bottom boundary: the jawline (chin bottom at the front rising to the jaw angle); no neck growth.
+  const bottom = -1.24 + 0.39 * Math.pow(Math.min(1, th / 78), 1.6);
+  let m = smoothstep(top + topEdge, top - topEdge, y) * smoothstep(bottom - 0.03, bottom + 0.05, y) * smoothstep(90, 82, th);
+  // Lips (vermilion -0.57..-0.86, corners ±0.22) stay clear right up to their border.
+  const lip = Math.hypot(ax / 0.225, (y + 0.715) / 0.145);
+  m *= smoothstep(0.95, 1.06, lip);
+  // Moustache and chin grow densest; the upper cheeks are sparser.
+  const sparse = 1 - 0.28 * smoothstep(22, 45, th) * smoothstep(-0.95, -0.7, y);
   return m * sparse;
 }
 
@@ -294,9 +294,9 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
   const done = new Uint8Array(size * size);
   const hair = new THREE.Color().setHex(a.hair.color, THREE.LinearSRGBColorSpace);
   const lvl = stubbleLevel(a.facialHair);
-  // Short hairs read darker and greyer than the same hair grown long.
   const hl = hair.r * 0.3 + hair.g * 0.55 + hair.b * 0.15;
-  const stub = hair.clone().lerp(new THREE.Color(hl, hl, hl), 0.45).multiplyScalar(0.62).lerp(new THREE.Color(0.08, 0.08, 0.09), 0.25);
+  // Short hairs read darker and ashier than the same hair grown long (no ginger cast on light browns).
+  const stub = hair.clone().lerp(new THREE.Color(hl, hl, hl), 0.6).multiplyScalar(0.6).lerp(new THREE.Color(0.08, 0.08, 0.09), 0.3);
   const SHADOW = [0, 0.11, 0.24, 0.28], STUBS = [0, 0.38, 0.64, 0.66];
   const hairStyle = a.hair.style;
   const hairC = new THREE.Color().setHex(a.hair.color, THREE.LinearSRGBColorSpace);
