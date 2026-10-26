@@ -55,19 +55,24 @@ function cardTexture(): THREE.Texture {
   const rng = new Rng(77);
   g.clearRect(0, 0, W, H);
   g.lineCap = 'round';
-  for (let i = 0; i < 260; i++) {
-    const x = 4 + rng.next() * (W - 8), start = rng.next() * 0.08 * H, end = H * (0.55 + 0.45 * rng.next());
-    const v = 150 + rng.next() * 105, drift = (rng.next() - 0.5) * 10;
-    const grad = g.createLinearGradient(0, start, 0, end);
-    grad.addColorStop(0, `rgba(${v},${v},${v},0.95)`);
-    grad.addColorStop(0.75, `rgba(${v},${v},${v},0.8)`);
-    grad.addColorStop(1, `rgba(${v},${v},${v},0)`);
-    g.strokeStyle = grad;
-    g.lineWidth = 1 + rng.next() * 1.6;
-    g.beginPath();
-    g.moveTo(x, start);
-    g.quadraticCurveTo(x + drift, (start + end) / 2, x + drift * 0.4, end);
-    g.stroke();
+  // Strands gathered in a few clumps with gaps between them, so cards read as hair, not ribbons.
+  const clumps = 5;
+  for (let cI = 0; cI < clumps; cI++) {
+    const cx = (cI + 0.5) / clumps * W + (rng.next() - 0.5) * 8, cw = 8 + rng.next() * 10;
+    for (let i = 0; i < 34; i++) {
+      const x = cx + (rng.next() - 0.5) * cw, start = rng.next() * 0.1 * H, end = H * (0.5 + 0.5 * rng.next());
+      const v = 120 + rng.next() * 135, drift = (rng.next() - 0.5) * 8;
+      const grad = g.createLinearGradient(0, start, 0, end);
+      grad.addColorStop(0, `rgba(${v},${v},${v},0.95)`);
+      grad.addColorStop(0.7, `rgba(${v},${v},${v},0.85)`);
+      grad.addColorStop(1, `rgba(${v},${v},${v},0)`);
+      g.strokeStyle = grad;
+      g.lineWidth = 0.8 + rng.next() * 1.2;
+      g.beginPath();
+      g.moveTo(x, start);
+      g.quadraticCurveTo(x + drift, (start + end) / 2, x + drift * 0.5 - (x - cx) * 0.3, end);
+      g.stroke();
+    }
   }
   strandTex = new THREE.CanvasTexture(c);
   strandTex.colorSpace = THREE.SRGBColorSpace;
@@ -128,39 +133,46 @@ export function hairCardGeometry(d: HumanData, body: BodySurface, field: StrandF
     const lenM = root.len * metres * (0.75 + 0.3 * rng.next());
     const layer = 0.25 + 0.75 * Math.sqrt(rng.next()); // stacking height within the volume (more near the top)
     const width = (0.0025 + 0.0022 * rng.next()) * Math.min(1, root.len * 89 / 25 + 0.4);
-    let sample = root;
-    const base = P.length / 3;
-    let nearest = grid.nearest(pt);
+    // Trace the hair along the comb direction, hugging the head. A barber's cut is an envelope: the
+    // hair ends where it has travelled further than the cut length allows at that spot, and it lies
+    // as close to the head as the local length does (no top volume carried over short sides).
+    const pts: THREE.Vector3[] = [], nrms: THREE.Vector3[] = [], dirs: THREE.Vector3[] = [], srcs: number[] = [];
+    let sample = root, nearest = grid.nearest(pt), travelled = 0;
+    const stepM = lenM / S;
     for (let s = 0; s <= S; s++) {
       const t = s / S;
       if (nearest >= 0) { vpos.fromArray(body.pos, nearest * 3); vn.fromArray(body.nrm, nearest * 3); } else vn.set(0, 1, 0);
-      // Height above the skin: rises from the root, then the hair lies along the volume.
-      const h = sample.lift * metres * layer * Math.sin(Math.min(1, t * 2.2) * Math.PI * 0.5) + 0.0006;
-      // Snap to the surface (tangential position kept) at this height.
+      const h = Math.min(root.lift, sample.lift) * metres * layer * Math.sin(Math.min(1, t * 2.2) * Math.PI * 0.5) + 0.0006;
       if (nearest >= 0) { const off = tmpA.copy(pt).sub(vpos); pt.copy(vpos).add(off.addScaledVector(vn, -off.dot(vn))).addScaledVector(vn, h); }
       dirW.copy(sample.dir).addScaledVector(vn, -sample.dir.dot(vn)).normalize();
-      side.crossVectors(vn, dirW).normalize();
-      const w = width * (1 - 0.55 * t);
-      for (const sgn of [-1, 1]) {
-        P.push(pt.x + side.x * w * 0.5 * sgn, pt.y + side.y * w * 0.5 * sgn, pt.z + side.z * w * 0.5 * sgn);
-        N.push(vn.x, vn.y, vn.z);
-        UV.push(sgn < 0 ? 0 : 1, t);
-        TAN.push(dirW.x, dirW.y, dirW.z);
-        const src = nearest >= 0 ? nearest : a;
-        for (let q = 0; q < 4; q++) { SI.push(body.skinIndex[src * 4 + q]); SW.push(body.skinWeight[src * 4 + q]); }
-      }
-      if (s < S) {
-        const i0 = base + s * 2;
-        IDX.push(i0, i0 + 1, i0 + 2, i0 + 1, i0 + 3, i0 + 2);
-        // Step along the comb direction; re-sample the field where the hair now is.
-        pt.addScaledVector(dirW, lenM / S);
-        nearest = grid.nearest(pt);
-        if (nearest >= 0) {
-          headP.fromArray(hp, nearest * 3);
-          const ns = field(headP, vn.fromArray(body.nrm, nearest * 3));
-          if (ns) sample = { ...ns, lift: sample.lift };
+      pts.push(pt.clone()); nrms.push(vn.clone()); dirs.push(dirW.clone()); srcs.push(nearest >= 0 ? nearest : a);
+      if (s === S) break;
+      pt.addScaledVector(dirW, stepM);
+      travelled += stepM;
+      nearest = grid.nearest(pt);
+      if (nearest >= 0) {
+        headP.fromArray(hp, nearest * 3);
+        const ns = field(headP, tmpB.fromArray(body.nrm, nearest * 3));
+        if (ns) {
+          sample = ns;
+          if (travelled > ns.len * metres * 1.1 + stepM * 0.5) { pts.push(pt.clone()); nrms.push(tmpB.clone()); dirs.push(dirW.clone()); srcs.push(nearest); break; }
         }
       }
+    }
+    if (pts.length < 2) continue;
+    const base = P.length / 3, last = pts.length - 1;
+    for (let s = 0; s <= last; s++) {
+      const t = s / last;
+      side.crossVectors(nrms[s], dirs[s]).normalize();
+      const w = width * (1 - 0.55 * t);
+      for (const sgn of [-1, 1]) {
+        P.push(pts[s].x + side.x * w * 0.5 * sgn, pts[s].y + side.y * w * 0.5 * sgn, pts[s].z + side.z * w * 0.5 * sgn);
+        N.push(nrms[s].x, nrms[s].y, nrms[s].z);
+        UV.push(sgn < 0 ? 0 : 1, t);
+        TAN.push(dirs[s].x, dirs[s].y, dirs[s].z);
+        for (let q = 0; q < 4; q++) { SI.push(body.skinIndex[srcs[s] * 4 + q]); SW.push(body.skinWeight[srcs[s] * 4 + q]); }
+      }
+      if (s < last) { const i0 = base + s * 2; IDX.push(i0, i0 + 1, i0 + 2, i0 + 1, i0 + 3, i0 + 2); }
     }
   }
   if (!IDX.length) return null;

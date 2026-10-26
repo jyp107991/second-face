@@ -132,7 +132,7 @@ export class HumanFigure {
     const cut = spec.hair ? HAIRCUTS[spec.hair.style] : undefined;
     if (cut && spec.hair) {
       const high = (spec.lod ?? 'high') === 'high';
-      const g = hairCardGeometry(d, body, haircutField(spec.hair.style)!, SCALE, { cards: high ? 3200 : 600, segments: high ? 8 : 4, minLengthMM: 12, seed: 4242 });
+      const g = hairCardGeometry(d, body, haircutField(spec.hair.style)!, SCALE, { cards: high ? 3200 : 600, segments: high ? 8 : 4, minLengthMM: 8, seed: 4242 });
       if (g) {
         // Lit cards read darker than the painted scalp layer of the same colour: lift to match.
         const hc = new THREE.Color(spec.hair.color), hl = hc.r * 0.3 + hc.g * 0.55 + hc.b * 0.15;

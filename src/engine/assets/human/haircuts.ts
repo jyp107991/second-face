@@ -28,12 +28,12 @@ export interface Haircut {
 }
 
 export const HAIRCUTS: Record<string, Haircut> = {
-  cut_crew: { label: 'Crew cut', top: 22, sides: 7, back: 9, comb: 'forward', volume: 0.45, fade: { to: 3, low: 0.1, high: 0.55 } },
-  cut_crop: { label: 'Textured crop', top: 32, sides: 6, back: 10, comb: 'forward', volume: 0.5, fade: { to: 1.5, low: 0.15, high: 0.6 }, wave: 0.6 },
+  cut_crew: { label: 'Crew cut', top: 20, sides: 6, back: 8, comb: 'back', volume: 0.6, fade: { to: 2.5, low: 0.1, high: 0.55 } },
+  cut_crop: { label: 'Textured crop', top: 42, sides: 5, back: 9, comb: 'messy', volume: 0.7, fade: { to: 1.5, low: 0.2, high: 0.62 }, wave: 1.2 },
   cut_sidepart: { label: 'Side part', top: 60, sides: 14, back: 18, comb: 'side', volume: 0.22, part: 1 },
   cut_slickback: { label: 'Slicked back', top: 95, sides: 5, back: 30, comb: 'back', volume: 0.16, fade: { to: 2, low: 0.25, high: 0.6 } },
   cut_quiff: { label: 'Quiff', top: 65, sides: 8, back: 14, comb: 'quiff', volume: 0.42, fade: { to: 3, low: 0.15, high: 0.6 } },
-  cut_messy: { label: 'Messy medium', top: 60, sides: 35, back: 40, comb: 'messy', volume: 0.4, wave: 1 },
+  cut_messy: { label: 'Messy medium', top: 85, sides: 55, back: 60, comb: 'messy', volume: 0.45, wave: 1.4 },
   cut_pixie: { label: 'Pixie', top: 55, sides: 22, back: 25, comb: 'side', volume: 0.25, part: -1, wave: 0.3 },
 };
 
@@ -80,9 +80,12 @@ export function haircutField(id: string): StrandField | null {
         break;
       }
     }
-    const len = mm * MM;
+    // At the hairline hair grows out of the skin short and fine; full length a couple of cm in.
+    let ramp = 0;
+    for (let k = 1; k <= 3; k++) ramp += scalpMask(p, 0, -0.08 * k) / 3;
+    const len = mm * MM * (0.45 + 0.55 * ramp);
     // Short hair stands up; longer hair lies down (volume caps the thickness).
     const lift = Math.min(len * cut.volume, (6 + mm * 0.12) * MM) * (cut.comb === 'quiff' ? 1 + smoothstep(0.2, 0.75, p.z) * top * 1.4 : 1);
-    return { len, lift, dens: Math.min(1, dens * 1.3), dir };
+    return { len, lift: lift * (0.3 + 0.7 * ramp), dens: Math.min(1, dens * 1.3), dir };
   };
 }
