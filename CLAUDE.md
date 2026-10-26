@@ -54,6 +54,11 @@ The owner wants to play unspoiled.
   prefer creative, coherent modern features over Fallout conventions. Avoid trite "who am I really / chosen one"
   story cores. Keep: XP levels + perks, classic turn-based combat. UI: field notebook & map (not a wrist computer).
   No global karma — reputation is local and travels with people.
+- **Cyberpunk integration** (owner, design pass 3): fuse cyberpunk themes/tech into the post-apocalypse to be
+  distinct from both Fallout and Cyberpunk — rare superhuman bionics (scarcity), a couple of deep surviving
+  megacities (Night City-like bastions with lawlessness/corruption and extreme inequality: decadent ultra-rich vs
+  destitute), coherent world history first, expansive content-dense map rewarding nonlinear exploration, clever
+  transport + fast travel. NPCs need strong visual variance; settlement types must vary. Quality/depth over size.
 
 ## 3. Engineering conventions
 - Engine code in `src/engine/**`, game content in `src/content/**` (typed TS data modules).

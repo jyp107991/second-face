@@ -45,6 +45,15 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
 - [ ] M2.9 Companions core (recruit, follow, approval reactions, banter triggers, combat AI as allies)
 
 ## Next action
+**Current step (owner: cyberpunk semi-overhaul; NPC variance; settlement variety; cities; map/transport):**
+- [ ] W1 Worldbuilding: docs/WORLD.md (public, spoiler-safe history/geography/cities/tech/culture) +
+      story/WORLD_SECRET.md (hidden history) — BEFORE design changes
+- [ ] W2 DESIGN: bionics (+ Drift), city systems (districts, gigs, grid-riding, reveries), inequality as play,
+      settlement types, world scale, transport & fast travel; ROADMAP re-plan
+- [ ] W3 Secret plot pass 3 (cities, corporation, bionics woven into the Plan story)
+- [ ] W4 NPC appearance variance (roles/class outfits, accessories, body extremes, stronger faces, dyes, grime)
+- [ ] W5 Data models + validators: settlement types, bionics (engine + tests), world map regions/routes/transport
+
 **Current step (owner: less Fallout, more creative modern frontier features; rework story core; notebook UI):**
 - [x] F1 Docs: owner decisions (CLAUDE.md), DESIGN frontier systems (local reputation & news, leads board,
       scheduled world events, frontier justice, journeys), drop karma; reframe DESIGN §2 row 1
