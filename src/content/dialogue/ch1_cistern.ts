@@ -36,12 +36,12 @@ export const d_c9_pell: DialogueDef = {
       options: [backToPell],
     },
     wounds: {
-      text: 'Pell steps back and lets you work. Under the rot, the old wound was closed once — and well. Tight, even stitches, eight to a thumb-width, the knot tucked under the skin. "That\'s how I stitch," Pell says quietly. "It\'s how I was taught. Here."',
+      text: 'Pell steps back and lets you work. Under the rot, the old wound was closed once — not stitched: sealed, with a clear line of something like glass that has melted into the skin. "Machine work," Pell says quietly. "I\'ve only ever read about it. Somewhere out there, someone still has a real hospital."',
       effects: [{ learn: 'stranger_stitches' }, { memory: { npc: 'npc_c9_02', tag: 'player_examined_body', valence: 15 } }],
-      options: [{ text: 'Someone from here stitched him?', next: 'stitches_q' }, backToPell],
+      options: [{ text: 'A hospital? Out there?', next: 'stitches_q' }, backToPell],
     },
     stitches_q: {
-      text: 'Someone who learned from the same book I did. There\'s only one copy of that book, {name}, and it\'s on my shelf. So no. Coincidence. The waste is full of good surgeons, I\'m sure.',
+      text: 'A city, maybe. Somewhere with power and clean hands and patience. He walked away from it with this in him, and kept walking until he reached us. You\'d have to want something badly to do that.',
       options: [backToPell],
     },
     wounds_fail: {
@@ -49,7 +49,7 @@ export const d_c9_pell: DialogueDef = {
       options: [backToPell],
     },
     arm: {
-      text: 'Pell holds your eyes for a moment, then folds the sheet back. On the inside of the forearm, old ink gone blue and blurred: a looping figure, then numbers lost under a burn scar. "Prisoners mark themselves out there, Ines says. Leave it be."',
+      text: 'Pell holds your eyes for a moment, then folds the sheet back. On the inside of the forearm, a neat square burn, deliberate and old, and at its edge a few lines of tiny printed marks the fire didn\'t reach. "He burned something off himself," Pell says. "Carefully. On purpose. Leave it be."',
       effects: [{ learn: 'stranger_mark' }, { memory: { npc: 'npc_c9_02', tag: 'player_saw_mark', valence: -5 } }],
       options: [
         { id: 'pell.arm.press', text: 'You recognise it.', check: { skill: 'speech', dc: 50, mods: [{ if: { trust: { npc: 'npc_c9_02', gte: 10 } }, dc: -15, why: 'Pell trusts you' }] },
@@ -57,7 +57,7 @@ export const d_c9_pell: DialogueDef = {
         backToPell,
       ],
     },
-    arm_yes: { text: 'I recognise the shape of a nine. That\'s all. And I would rather not have, so let\'s both forget it, the way we forget most things down here.', options: [backToPell] },
+    arm_yes: { text: 'The marks at the edge are the same print as the labels on MOTHER\'s old crates. I don\'t know what that means and I would rather not guess out loud. Not here.', options: [backToPell] },
     arm_no: { text: 'I recognise a man who has been dead since dawn. Help me or go.', effects: [{ trust: { npc: 'npc_c9_02', by: -5 } }], options: [backToPell] },
     mask: {
       text: [
@@ -129,12 +129,12 @@ export const d_c9_ines: DialogueDef = {
       effects: [{ give: 'k_notebook' }, { give: 'k_mask' }, { set: 'c9_pack_given' }],
       passives: [{ skill: 'science', dc: 40, text: 'The marks in the notebook repeat in blocks of five. A cipher, not a language.', effects: [{ learn: 'notebook_cipher' }] }],
       options: [
-        { id: 'ines.notebook', text: '(Read the notebook.) These are the Cistern copy-hand\'s marks — the ones we use in the record room.', if: { origin: 'archive_clerk' }, next: 'notebook', once: true },
+        { id: 'ines.notebook', text: '(Read the notebook.) This is record shorthand — the same hand as our own record room.', if: { origin: 'archive_clerk' }, next: 'notebook', once: true },
         { text: 'Thank you.', next: 'council' },
       ],
     },
     notebook: {
-      text: 'You read a line aloud before you understand it: "Road east of the salt. Sell the map to the dog-men if you must, but keep the face." Ines goes very still. "Where did a stranger learn our record-hand?"',
+      text: 'You read a line aloud before you understand it: "Road east of the salt. Sell the map to the dog-men if you must, but keep the face." Ines goes very still. "Where did a stranger learn the hand our records are kept in?"',
       effects: [{ learn: 'notebook_read' }, { learn: 'map_sold' }, { memory: { npc: 'npc_c9_01', tag: 'player_read_notebook', valence: -10, strength: 90 } }],
       options: [{ text: 'You tell me.', next: 'notebook_deflect' }],
     },
