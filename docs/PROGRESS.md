@@ -48,10 +48,14 @@ session). Engine decision: see `docs/TECH_EVALUATION.md` (recommendation: stay o
       loop), nonlinearity rules (entry routes, region order, tiered loot), QoL list.
 - [x] A2.2 Engine: faction membership model (`world/factions.ts`, content `content/factions/`, 14 factions, save v5) (`world/factions.ts`: ranks, conditions `member`, effects
       `join`/`rank`/`expel`, conflicts), validator + tests.
-- [ ] A2.3 Engine: companions core (follow, party in scene, approval reactions UI, banter triggers, combat
-      allies), camp scene (talk/cook/mend/letters/rest).
-- [ ] A2.4 Engine: barter UI + pricing (skill, standing, saturation, merchant cash/restock); economy sim script.
-- [ ] A2.5 Engine: NPC schedules + ambient behaviour + barks.
+- [~] A2.3 Engine: companions core DONE (`npc/party.ts` + game: party spawns with you, follows, fights as
+      allies, goes down and gets up wounded, sheets/packs kept across maps, dismissed companions wait where
+      left; approval toasts). TODO: camp scene (talk/cook/mend/letters/rest), banter triggers.
+- [~] A2.4 Engine: barter DONE (`inventory/barter.ts` pricing by Barter/standing/membership, saturation,
+      merchant cash + restock; `ui/barter.ts` screen; NpcDef.merchant; dialogue effect `{event:'barter'}`).
+      TODO: economy sim script.
+- [x] A2.5 Engine: NPC schedules (`npc/schedule.ts`, NpcDef.schedule + MapDef.spots, 'away' leaves the
+      map) + barks (NpcDef.barks as floating text near the player).
 - [ ] A2.6 Activities v1 (each a real system): dice game "Dust", fight pit (combat rules variant + bets),
       letters (caravan delay timers), hunting/trapping + fishing (Survival; procedural animals), reverie
       vignettes (dialogue-tree based with sensory framing), safehouse (storage/rest/fast-travel point).

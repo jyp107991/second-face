@@ -46,15 +46,19 @@ export interface NpcRuntime {
   actor: Actor;
   combatant: Combatant;
   hostile: boolean;
+  /** Travelling with the player: follows, fights alongside, kept across maps. */
+  companion?: boolean;
+  /** Off the map for now (schedule says 'away'). */
+  away?: boolean;
 }
 
-export function spawnNpc(p: NpcPlacement, grid: Grid): NpcRuntime {
+export function spawnNpc(p: NpcPlacement, grid: Grid, keep?: { sheet: CharacterSheet; inv: Inventory }): NpcRuntime {
   const def = NPCS[p.def];
   if (!def) throw new Error(`Unknown NPC ${p.def}`);
   const id = p.id ?? def.id;
   const { app, outfit } = npcLook(def);
   const actor = new Actor({ id, x: p.x, y: p.y, facing: p.facing ?? 0, look: lookFrom(app, outfit, 'low') }, grid);
-  const { sheet, inv } = buildNpcStats(def);
+  const { sheet, inv } = keep ?? buildNpcStats(def);
   const combatant: Combatant = {
     id, name: def.name, team: def.team, sheet, inv, x: p.x, y: p.y, ap: 0, morale: initialMorale(def.courage), evasion: 0,
     natural: def.natural, courage: def.courage,

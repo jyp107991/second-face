@@ -77,6 +77,8 @@ export interface LogicHost {
   event?(name: string, data?: unknown): void;
   /** Called after XP is granted (UI toasts). */
   xp?(amount: number, levels: number): void;
+  /** A companion's approval changed (UI reactions). */
+  approval?(npc: string, by: number): void;
 }
 
 const inRange = (v: number, gte?: number, lte?: number) => (gte === undefined || v >= gte) && (lte === undefined || v <= lte);
@@ -149,7 +151,7 @@ export function apply(effects: Effect[] | undefined, g: GameState, host: LogicHo
       if (old) Object.assign(old, m); else list.push(m);
     } else if ('trust' in e) { const r = relation(w, e.trust.npc); r.trust = clamp100(r.trust + e.trust.by); }
     else if ('affection' in e) { const r = relation(w, e.affection.npc); r.affection = clamp100(r.affection + e.affection.by); }
-    else if ('approval' in e) w.approval[e.approval.companion] = clamp100((w.approval[e.approval.companion] ?? 0) + e.approval.by);
+    else if ('approval' in e) { w.approval[e.approval.companion] = clamp100((w.approval[e.approval.companion] ?? 0) + e.approval.by); host.approval?.(e.approval.companion, e.approval.by); }
     else if ('rep' in e) { const r = rep(w, e.rep.faction); r.respect = clamp100(r.respect + (e.rep.respect ?? 0), 0); r.fear = clamp100(r.fear + (e.rep.fear ?? 0), 0); }
     else if ('give' in e) addItem(g.pc.inventory, makeItem(e.give, e.count ?? 1));
     else if ('take' in e) removeItem(g.pc.inventory, e.take, e.count ?? 1);

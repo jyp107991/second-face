@@ -68,7 +68,10 @@ export class DialogueUi {
       questStage: (id: string, s: string) => q.questStage(id, s),
       questEnd: (id: string, st: 'done' | 'failed') => q.questEnd(id, st),
       xp: (amount: number, levels: number) => this.game.logicHost.xp?.(amount, levels),
-      event: (name: string, data?: unknown) => this.game.logicHost.event?.(name, data),
+      event: (name: string, data?: unknown) => {
+        if (name === 'barter' && this.npc) { const npc = this.npc; window.setTimeout(() => { this.close(); this.game.openBarter(npc); }); return; }
+        this.game.logicHost.event?.(name, data);
+      },
     };
   }
 

@@ -39,6 +39,8 @@ export function validateContent(c: ContentBundle): string[] {
   for (const [key, map] of Object.entries(c.maps)) {
     const where = `map ${key}`;
     if (map.id !== key) errs.push(`${where}: id "${map.id}" does not match registry key`);
+    if (map.settlement && c.settlements && !c.settlements[map.settlement]) errs.push(`${where}: unknown settlement ${map.settlement}`);
+    for (const [sid, sp] of Object.entries(map.spots ?? {})) if (!new Grid(map).inBounds(sp.x, sp.y)) errs.push(`${where}: spot ${sid} out of bounds`);
     const used = new Set(map.layout.join(''));
     for (const ch of used) if (!(ch in map.legend) && ch !== ' ') errs.push(`${where}: layout char "${ch}" missing from legend`);
     const grid = new Grid(map);
@@ -61,6 +63,7 @@ export function validateContent(c: ContentBundle): string[] {
     }
     for (const p of map.npcs ?? []) {
       if (c.npcs && !c.npcs[p.def]) errs.push(`${where}: unknown npc ${p.def}`);
+      for (const e of c.npcs?.[p.def]?.schedule ?? []) if (e.spot && !map.spots?.[e.spot]) errs.push(`${where}: npc ${p.def} schedule spot ${e.spot} missing from map.spots`);
       if (!grid.passable(p.x, p.y)) errs.push(`${where}: npc ${p.def} at ${p.x},${p.y} is not on a free walkable tile`);
     }
     for (const e of map.exits ?? []) {
@@ -106,6 +109,12 @@ export function validateContent(c: ContentBundle): string[] {
     for (const t of n.traits ?? []) if (c.traits && !c.traits[t]) errs.push(`npc ${key}: unknown trait ${t}`);
     if (n.dialogue && c.dialogues && !c.dialogues[n.dialogue]) errs.push(`npc ${key}: unknown dialogue ${n.dialogue}`);
     if (n.role && !OUTFIT_ROLES.includes(n.role)) errs.push(`npc ${key}: unknown role ${n.role}`);
+    for (const [item] of n.merchant?.stock ?? []) if (c.items && !c.items[item]) errs.push(`npc ${key}: merchant stocks unknown item ${item}`);
+    for (const e of n.schedule ?? []) {
+      if (!(e.from >= 0 && e.from <= 24 && e.to >= 0 && e.to <= 24)) errs.push(`npc ${key}: schedule hours out of range`);
+      if (!e.spot && !e.at && e.activity !== 'away') errs.push(`npc ${key}: schedule entry has no spot`);
+    }
+    if (n.settlement && c.settlements && !c.settlements[n.settlement]) errs.push(`npc ${key}: unknown settlement ${n.settlement}`);
     for (const g of n.outfit?.layers ?? []) if (!GARMENTS[g.name]) errs.push(`npc ${key}: unknown garment ${g.name}`);
   }
   for (const [key, st] of Object.entries(c.settlements ?? {})) {

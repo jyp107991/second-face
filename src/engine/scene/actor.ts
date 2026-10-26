@@ -73,6 +73,13 @@ export class Actor {
   private dying = 0;
   get isDead(): boolean { return this.dying > 0; }
 
+  /** Back on their feet (companions who went down). Re-occupies the tile. */
+  revive(): void {
+    this.dying = 0;
+    this.body.dead = 0;
+    this.grid.occupied.set(this.grid.index(this.tx, this.ty), this.id);
+  }
+
   /** Teleport (no animation). */
   place(x: number, y: number): void {
     this.grid.occupied.delete(this.grid.index(this.tx, this.ty));

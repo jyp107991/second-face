@@ -2,6 +2,7 @@ import { defaultAppearance, type Appearance } from '../data/appearance';
 import { emptyInventory, type Inventory } from '../inventory/inventory';
 import { emptySheet, type CharacterSheet } from '../stats/sheet';
 import { emptyWorld, type WorldState } from '../world/world';
+import type { CompanionSave } from '../npc/party';
 
 export type Pronouns = 'he' | 'she' | 'they';
 
@@ -42,6 +43,10 @@ export interface GameState {
   origin?: string;
   /** Notebook sketches of people met (small JPEG data URLs). */
   sketches?: Record<string, string>;
+  /** Companions' sheets and packs (kept across maps), keyed by NPC id. */
+  companions?: Record<string, CompanionSave>;
+  /** Merchants' stock, cash and recent sales, keyed by NPC id. */
+  merchants?: Record<string, import('../inventory/barter').MerchantState>;
   rngState: number;
   playtimeSec: number;
 }

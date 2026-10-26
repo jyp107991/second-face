@@ -1,6 +1,8 @@
 import type { Outfit } from '../assets/humanoid';
 import type { RandomLookOptions } from '../data/appearance';
 import type { OutfitRole } from '../data/outfits';
+import type { MerchantDef } from '../inventory/barter';
+import type { ScheduleEntry } from './schedule';
 import type { WeaponDef } from '../inventory/items';
 import type { AttributeId, SkillId } from '../stats/rules';
 
@@ -41,6 +43,14 @@ export interface NpcDef {
   dialogue?: string;
   /** Faction id for reputation effects. */
   faction?: string;
+  /** Sells and buys (opens the barter screen from dialogue or directly). */
+  merchant?: MerchantDef;
+  /** Daily routine (spots on the map they are placed on). */
+  schedule?: ScheduleEntry[];
+  /** Lines muttered when the player is near. */
+  barks?: string[];
+  /** Settlement whose standing sets their prices (defaults to the map's settlement). */
+  settlement?: string;
 }
 
 /** Placement of an NPC on a map. */

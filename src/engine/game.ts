@@ -29,6 +29,8 @@ import type { Combatant } from './combat/rules';
 import { Rng } from './core/rng';
 import { Fx } from './render/fx';
 import { npcLook, spawnNpc, type NpcRuntime } from './npc/spawn';
+import { followPath, freeTileNear, reviveDowned, shouldFollow } from './npc/party';
+import { scheduleAt, scheduleTile } from './npc/schedule';
 import { addXp, attr, derived } from './stats/sheet';
 import { chromeDef, settleDrift, tickChromeUpkeep } from './stats/chrome';
 import { skillCheck } from './stats/checks';
@@ -43,6 +45,7 @@ export type GameEvents = {
   gameOver: Record<string, never>;
   openTransfer: { inv: import('./inventory/inventory').Inventory; name: string };
   openDialogue: { npc: NpcRuntime };
+  openBarter: { npc: NpcRuntime };
   journal: { questId: string; title: string; line: string };
 };
 
@@ -80,6 +83,11 @@ export class Game extends EventBus<GameEvents> {
   readonly logicHost: LogicHost = {
     xp: (amount) => this.emit('message', { text: `+${amount} XP` }),
     event: (name) => this.emit('message', { text: name }),
+    approval: (npc, by) => {
+      const name = NPCS[npc]?.name ?? npc;
+      const word = by >= 15 ? 'strongly approves' : by > 0 ? 'approves' : by <= -15 ? 'strongly disapproves' : 'disapproves';
+      this.emit('message', { text: `${name} ${word}.` });
+    },
   };
 
   /** Quest engine bound to the current game state (rebuilt after loading). */
@@ -162,6 +170,10 @@ export class Game extends EventBus<GameEvents> {
     this.encounter.ai = utilityAi;
     this.encounter.on('end', ({ outcome }) => {
       if (outcome === 'defeat') this.emit('gameOver', {});
+      // Companions who went down get back up, wounded.
+      for (const n of this.npcs.values()) {
+        if (n.companion && reviveDowned(n.combatant.sheet, this.state.minutes)) { n.actor.revive(); this.emit('message', { text: `${n.def.name} gets back up.` }); }
+      }
       this.syncNpcState();
     });
 
@@ -255,6 +267,7 @@ export class Game extends EventBus<GameEvents> {
     this.rng.state = this.state.rngState;
     this.pc = { id: 'player', name: this.state.pc.sheet.name || 'You', team: 'player', sheet: this.state.pc.sheet, inv: this.state.pc.inventory, x: sx, y: sy, ap: 0, morale: 100, evasion: 0, isPlayer: true };
     for (const p of map.npcs ?? []) this.spawn(p);
+    this.spawnParty(sx, sy);
     this.groundPilesChanged();
     this.cam.target.copy(this.player.object.position);
     this.cam.recentre();
@@ -292,14 +305,126 @@ export class Game extends EventBus<GameEvents> {
     w.bodyDay = today;
   }
 
-  /** Persist NPC positions/health/inventories for the current map. */
+  /** Persist NPC positions/health/inventories for the current map; companions' sheets and packs globally. */
   syncNpcState(): void {
     for (const n of this.npcs.values()) {
       const key = `${this.state.locationId}/${n.id}`;
       const dead = n.combatant.sheet.hp <= 0;
       this.state.npcs[key] = { dead, hp: n.combatant.sheet.hp, x: n.actor.tx, y: n.actor.ty, hostile: n.hostile, inventory: n.combatant.inv };
+      if (n.companion || this.state.companions?.[n.id]) {
+        const c = ((this.state.companions ??= {})[n.id] ??= { sheet: n.combatant.sheet, inv: n.combatant.inv });
+        c.sheet = n.combatant.sheet; c.inv = n.combatant.inv;
+      }
     }
     this.state.rngState = this.rng.state;
+  }
+
+  /**
+   * Put the party on the map: members already placed here are adopted; the rest appear beside the player.
+   * Dismissed companions waiting at this location are spawned where they were left.
+   */
+  private spawnParty(px: number, py: number): void {
+    if (!this.loc) return;
+    const saved = (this.state.companions ??= {});
+    for (const id of this.state.world.party) {
+      const def = NPCS[id];
+      if (!def) continue;
+      let rt = this.npcs.get(id);
+      if (!rt) {
+        const at = freeTileNear(this.loc.grid, px, py, 'player') ?? { x: px, y: py };
+        rt = spawnNpc({ def: id, x: at.x, y: at.y, facing: this.state.player.facing }, this.loc.grid, saved[id]);
+        this.npcs.set(rt.id, rt);
+        this.addActor(rt.actor);
+      } else if (saved[id]) { rt.combatant.sheet = saved[id].sheet; rt.combatant.inv = saved[id].inv; }
+      rt.companion = true;
+      rt.hostile = false;
+      delete saved[id]?.waitingAt;
+    }
+    for (const [id, c] of Object.entries(saved)) {
+      if (this.state.world.party.includes(id) || c.waitingAt?.location !== this.state.locationId || this.npcs.has(id)) continue;
+      const at = freeTileNear(this.loc.grid, c.waitingAt.x, c.waitingAt.y) ?? c.waitingAt;
+      const rt = spawnNpc({ def: id, x: at.x, y: at.y }, this.loc.grid, c);
+      this.npcs.set(rt.id, rt);
+      this.addActor(rt.actor);
+    }
+  }
+
+  /** Reconcile party membership changed by dialogue (join/leave) with the actors on the map. */
+  private syncParty(): void {
+    for (const n of this.npcs.values()) {
+      const inParty = this.state.world.party.includes(n.id);
+      if (inParty && !n.companion) { n.companion = true; n.hostile = false; (this.state.companions ??= {})[n.id] = { sheet: n.combatant.sheet, inv: n.combatant.inv }; }
+      else if (!inParty && n.companion) {
+        n.companion = false;
+        const c = (this.state.companions ??= {})[n.id] ??= { sheet: n.combatant.sheet, inv: n.combatant.inv };
+        c.waitingAt = { location: this.state.locationId, x: n.actor.tx, y: n.actor.ty };
+      }
+    }
+  }
+
+  private scheduleTick = 0;
+  private barkTick = 0;
+  /** Walk NPCs to where their routine says they should be; take 'away' NPCs off the map. */
+  private updateSchedules(dt: number): void {
+    if (this.encounter.active || !this.loc || this.paused) return;
+    this.scheduleTick += dt;
+    if (this.scheduleTick < 2) return;
+    this.scheduleTick = 0;
+    const hour = hourOf(this.state.minutes), grid = this.loc.grid;
+    for (const n of this.npcs.values()) {
+      if (!n.def.schedule || n.companion || n.hostile || n.actor.isDead) continue;
+      const e = scheduleAt(n.def.schedule, hour);
+      const away = e?.activity === 'away';
+      if (away !== !!n.away) {
+        n.away = away;
+        n.actor.object.visible = !away;
+        if (away) grid.occupied.delete(grid.index(n.actor.tx, n.actor.ty));
+        else { const at = freeTileNear(grid, n.actor.tx, n.actor.ty) ?? { x: n.actor.tx, y: n.actor.ty }; n.actor.place(at.x, at.y); }
+      }
+      if (away || !e || n.actor.moving) continue;
+      const t = scheduleTile(e, this.loc.map.spots);
+      if (!t || (t.x === n.actor.tx && t.y === n.actor.ty)) continue;
+      const goal = grid.passable(t.x, t.y, n.id) ? t : freeTileNear(grid, t.x, t.y, n.id);
+      if (!goal) continue;
+      const path = grid.findPath(n.actor.tx, n.actor.ty, goal.x, goal.y, { ignore: n.id, maxCost: 120 });
+      if (path && path.length) n.actor.setPath(path);
+    }
+  }
+
+  /** Idle lines from people near the player. */
+  private updateBarks(dt: number): void {
+    if (this.encounter.active || !this.player || this.paused) return;
+    this.barkTick += dt;
+    if (this.barkTick < 4) return;
+    this.barkTick = 0;
+    for (const n of this.npcs.values()) {
+      if (!n.def.barks?.length || n.away || n.actor.isDead || n.hostile) continue;
+      if (Math.max(Math.abs(n.actor.tx - this.player.tx), Math.abs(n.actor.ty - this.player.ty)) > 7 || !this.rng.chance(0.08)) continue;
+      this.fx.floatText(n.actor.object.position.clone().setY(2.1), this.rng.pick(n.def.barks), '#e8d8b0');
+    }
+  }
+
+  /** Open trade with a merchant NPC (from dialogue or a tap). */
+  openBarter(npc: NpcRuntime): void {
+    if (!npc.def.merchant) return;
+    this.emit('openBarter', { npc });
+  }
+
+  private followTick = 0;
+  /** Companions trail the player outside combat. */
+  private updateFollowers(dt: number): void {
+    if (this.encounter.active || !this.player || !this.loc || this.paused) return;
+    this.followTick += dt;
+    if (this.followTick < 0.3) return;
+    this.followTick = 0;
+    const p = this.player;
+    for (const n of this.npcs.values()) {
+      if (!n.companion || n.actor.isDead || n.actor.moving) continue;
+      const dist = Math.max(Math.abs(n.actor.tx - p.tx), Math.abs(n.actor.ty - p.ty));
+      if (!shouldFollow(dist, p.moving)) continue;
+      const path = followPath(this.loc.grid, { id: n.id, x: n.actor.tx, y: n.actor.ty }, { x: p.tx, y: p.ty, facing: p.facing });
+      if (path && path.length) { n.actor.running = p.running || dist > 5; n.actor.setPath(path); }
+    }
   }
 
   startCombat(target?: NpcRuntime): void {
@@ -309,7 +434,9 @@ export class Game extends EventBus<GameEvents> {
     this.pc.x = this.player.tx; this.pc.y = this.player.ty;
     const units: Unit[] = [{ c: this.pc, actor: this.player, hostile: false }];
     for (const n of this.npcs.values()) {
-      if (n.combatant.sheet.hp <= 0) continue;
+      if (n.combatant.sheet.hp <= 0 || n.away) continue;
+      n.combatant.x = n.actor.tx; n.combatant.y = n.actor.ty;
+      if (n.companion) { units.push({ c: n.combatant, actor: n.actor, hostile: false }); continue; }
       if (Math.max(Math.abs(n.actor.tx - this.player.tx), Math.abs(n.actor.ty - this.player.ty)) > 24 && !n.hostile) continue;
       if (!n.hostile && n !== target) continue;
       if (n === target) n.hostile = true;
@@ -345,7 +472,7 @@ export class Game extends EventBus<GameEvents> {
   private checkHostility(): void {
     if (this.encounter.active || !this.player || this.transitioning) return;
     for (const n of this.npcs.values()) {
-      if (!n.hostile || n.combatant.sheet.hp <= 0) continue;
+      if (!n.hostile || n.combatant.sheet.hp <= 0 || n.away) continue;
       const d = Math.max(Math.abs(n.actor.tx - this.player.tx), Math.abs(n.actor.ty - this.player.ty));
       if (d <= derived(n.combatant.sheet).sightRange && this.loc!.grid.lineOfSight(n.actor.tx, n.actor.ty, this.player.tx, this.player.ty)) {
         this.emit('message', { text: `${n.def.name} spots you!` });
@@ -372,10 +499,12 @@ export class Game extends EventBus<GameEvents> {
   private interactableAt(x: number, y: number): (() => void) | undefined {
     const loc = this.state.locationId;
     for (const n of this.npcs.values()) {
-      if (n.actor.tx !== x || n.actor.ty !== y) continue;
+      if (n.actor.tx !== x || n.actor.ty !== y || n.away) continue;
       if (n.combatant.sheet.hp > 0) {
-        if (n.hostile || !n.def.dialogue || this.encounter.active) continue;
-        return () => this.emit('openDialogue', { npc: n });
+        if (n.hostile || this.encounter.active) continue;
+        if (n.def.dialogue) return () => this.emit('openDialogue', { npc: n });
+        if (n.def.merchant) return () => this.openBarter(n);
+        continue;
       }
       return () => {
         const inv = n.combatant.inv;
@@ -626,7 +755,11 @@ export class Game extends EventBus<GameEvents> {
       spreadNews(this.state, SETTLEMENTS);
       this.dailyBody();
       this.quests.update();
+      this.syncParty();
     }
+    this.updateFollowers(simDt);
+    this.updateSchedules(simDt);
+    this.updateBarks(simDt);
     this.hostilityTimer += simDt;
     if (this.hostilityTimer > 0.3) { this.hostilityTimer = 0; this.checkHostility(); }
 

@@ -108,4 +108,8 @@ export interface MapDef {
   containers?: Record<string, ContainerDef>;
   /** Seed for procedural detail (scatter, texture variation). */
   seed?: number;
+  /** Settlement this map belongs to (prices, standing, news). */
+  settlement?: string;
+  /** Named tiles for schedules and scripts (e.g. 'bar', 'bed_03'). */
+  spots?: Record<string, { x: number; y: number }>;
 }
