@@ -335,3 +335,58 @@ inside: becoming the forecast by choice while changing what it means (needs Ledg
 9. Theme question replaced.
 10. Endings replaced (A–E).
 11. Companions' angles remapped; roster and personal-quest slots unchanged.
+
+===================================================================================================
+## 8. PASS 3 — cyberpunk integration (owner direction; builds on §7)
+Owner wants cyberpunk themes fused into the post-apocalypse: rare superhuman bionics, two deep Night City-like
+megacities with extreme inequality, coherent history (see story/WORLD_SECRET.md + docs/WORLD.md), expansive
+nonlinear map. Everything in §7 stands; this adds the Concern and deepens the cities.
+
+### 8.1 The three futures (theme sharpened)
+"Is a future yours if someone else has already written it?" now has three writers:
+the **Ledger** (a plan), the **Concern** (a contract and a leash), the **market** (Tollmen futures) — and the
+Choir's answer: nobody. The player's chrome choices put this in their own body: Concern chrome is better and
+leashed; dark chrome is crude and free; no chrome is human and limited.
+
+### 8.2 Endings (revised)
+A **The Plan** · B **Unwritten** · C **The Concern** (replaces "Futures": the forecasting core goes to Halcyon via the
+Tollmen; corporate future, the Long-Lived endure) · D **Open Sky** · E **Magistrate's Amendment**.
+Modifiers: **the Leash** (cut / kept / seized by you), **the Sink** (flooded / saved), **Halcyon** (stands / opened /
+burned), each with epilogue slides.
+
+### 8.3 Meridian — city questlines (deep; ~18–22 h of the playthrough)
+| Line | Hook | Outcomes |
+|---|---|---|
+| **Main** | Citizenship hearing (the Ledger knows your face), Archive Spire, MOTHER's refusals, the Plan | §7 |
+| **The Masque** (Crown) | A Tenured succession fought by duel, poison and reverie blackmail; masquerade infiltration; the Tenured court you as future Magistrate | which house rises; Crown–Concern ties exposed or kept |
+| **High Water** (Sink) | Spring flood; organ market; Mender **Ocho**'s free clinic; the pumps' schedule | Sink saved (Precinct pays) / flooded / riots |
+| **Static** (Saints of Static) | A Saint prophesies true things; she is hearing the Ledger | Saints as forecast source / silenced / turned into grid-riders |
+| **Turf** (gangs) | Gilt vs Pale vs Rustmouths over Bridgeward and Old Market | ally, broker peace, or burn them |
+| **Brokers' gigs** | ~25 contracts across districts (heists, rescues, courier, bounties on Drifters) | money, chrome, standing |
+| **Court of Accounts** | Defend people before the Ledger's courts (frontier justice, city edition) | precedent changes the Ledger's rulings later |
+Activities: Lantern Row fight pits, reverie dens (playable short memories = vignettes and clue sources),
+Dead Ring buggy races, gambling, the citizenship exam, renting/buying a Stacks flat (safehouse + Loop fast travel).
+
+### 8.4 Halcyon & the Skirts — city questlines (~10–12 h)
+| Line | Hook | Outcomes |
+|---|---|---|
+| **The Shift** | Miners' union strike after a cave-in; scabs, Concern security, sabotage | strike won / broken / armed revolt |
+| **Contract** | Earn (or forge) a contract to enter the arcology | citizen / infiltrator / guest of the Board |
+| **Spare Parts** | Missing Skirts debtors; the Clinic floors | exposed / covered / you profit |
+| **The Leash** | A grid-rider discovers the backdoor | cut it (mass Drift fits, Concern loses control), sell it, or keep it |
+| **The Long-Lived** | Rejuvenation ball; the Chair; what the Board wants from Meridian | ties into ending C and the Long Night |
+Activities: ripper clinics (new chrome), the arcology gardens and labs (heists), Skirts markets, mine runs.
+
+### 8.5 New companion (7th): **Kestrel "Kes" Oyelaran**
+Skirts-born grid-rider (the netrunner archetype), 26, Concern spine-link she can't afford to remove (leashed).
+Answer to the theme: "I'll take a future written by me in bad handwriting over theirs in gold." Likes: cleverness,
+loyalty, defiance of bosses; dislikes: cruelty to the poor, bootlickers. Personal quest: **Slack** — cut her Leash
+(it may cost her the chrome or her life). Romanceable. Conflicts: Nine (law), Odile (she hates Tollmen debt).
+
+### 8.6 Chrome in the story
+- The player can be fitted from Act 1 (a Mender in Shale with one piece of old chrome; expensive). Cities have
+  real clinics. Concern chrome shows up in Act 2 (Halcyon, Crown).
+- Leash: Concern chrome lets the Concern locate/numb the player at scripted moments (unless cut or dark).
+- Forecasts: networked chrome sharpens the Ledger's forecast of you (ties to masks: chrome is identifying).
+- Drift: heavy chrome changes dialogue (cold-logic options, empathy options lost), companion reactions, and
+  can trigger a Drift episode at story beats.
