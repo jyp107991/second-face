@@ -14,10 +14,17 @@ const { chromium } = require('playwright');
   const out = { quality, scenes: {} };
   for (const scene of ['dev_yard', 'bench_crowd', 'combat']) {
     if (scene === 'combat') {
-      await page.evaluate(async () => { await game.loadLocation('dev_yard', 'start'); for (let k = 0; k < 4; k++) document.querySelector('.dev-toggle') && game.spawn({ def: 'dev_raider', x: 10 + k, y: 6, id: 'r' + k }); });
+      await page.evaluate(async () => {
+        await game.loadLocation('dev_yard', 'start');
+        const p = game.player, defs = ['dev_raider_boss', 'dev_raider', 'dev_raider_knife', 'dev_raider'];
+        defs.forEach((def, i) => { for (let r = 0; r < 8; r++) { const x = p.tx + 5 + i, y = p.ty - 4 + r; if (game.loc.grid.passable(x, y)) { game.spawn({ def, x, y, id: 'bench_r' + i }); break; } } });
+        game.startCombat();
+      });
     } else await page.evaluate(async (s) => { await game.loadLocation(s, 'start'); }, scene);
+    // Wall time of a second load of the same scene (assets cached): figure building + scene setup.
+    const loadSceneMs = scene === 'combat' ? 0 : await page.evaluate(async (s) => { const t = performance.now(); await game.loadLocation(s, 'start'); return Math.round(performance.now() - t); }, scene);
     await page.waitForTimeout(8000);
-    out.scenes[scene] = await page.evaluate(() => game.perf());
+    out.scenes[scene] = { ...(await page.evaluate(() => game.perf())), loadSceneMs };
   }
   console.log(JSON.stringify(out, null, 1));
   await browser.close();

@@ -79,7 +79,7 @@ session). Engine decision: see `docs/TECH_EVALUATION.md` (recommendation: stay o
       community skins 13 entries in `tools/mh/build_human.py`, hair contexts + RICH_DYES in `appearance.ts`): research + adopt better open resources (community skin packs skins01/02/03 full diffuse
       variety, asymmetry via l-/r- modifiers, weathering/sun damage/chapped lips, eye wetness/lip spec,
       ageing wrinkle strength, female-specific shape variation, world-fitting hairstyles only).
-- [~] A3.4 (portrait sheets done, judged: gear reads at portrait, bodies varied; iso-distance sheet TODO) Before/after comparison sheets (portrait + iso) for each of A3.1–A3.3, judged honestly; revert
+- [x] A3.4 (portrait sheets for faces/bodies + crowd iso sheets `tools/qa/crowd.cjs`; sent to owner 2026-10-26) Before/after comparison sheets (portrait + iso) for each of A3.1–A3.3, judged honestly; revert
       regressions; sheets sent to owner.
 
 ### A4 Technology and performance
@@ -87,11 +87,14 @@ session). Engine decision: see `docs/TECH_EVALUATION.md` (recommendation: stay o
       (glTF+meshopt/Draco, KTX2/Basis, baked lighting, instancing, LOD/impostors, forward+, AgX tonemap,
       GTAO, volumetric fog, decals) — quality ceiling, mobile perf, Pages deploy, migration cost, risk;
       recommendation; owner asked (no migration without approval).
-- [~] A4.2 (`game.perf()` snapshot + DEV overlay line, `bench_crowd` map + 40 bench NPCs, `tools/qa/bench.cjs`;
-      TODO run and write `docs/PERF.md`) Perf overlay (frame ms, draws, tris, textures MB, geometry MB, load ms) + benchmark scenes
+- [x] A4.2 (`game.perf()` snapshot + DEV overlay line, `bench_crowd` map + 40 bench NPCs, `tools/qa/bench.cjs`,
+      baseline in `docs/PERF.md`) Perf overlay (frame ms, draws, tris, textures MB, geometry MB, load ms) + benchmark scenes
       (`bench_crowd` 40 NPCs, `bench_combat`, world map) + `tools/qa/bench.cjs` recording numbers to
       `docs/PERF.md`.
-- [ ] A4.3 Pareto improvements measured one by one: skin texture cache/hash + smaller iso skins, worker
+- [~] A4.3 DONE step 1 (`docs/PERF.md`): decimated iso LOD (`tools/mh/decimate.mjs`, `npm run decimate`,
+      `_index_lo` views), plane brows at iso, 512² iso skins, frustum culling → crowd −83 % tris, −31 % draws,
+      −44 % tex MB, −68 % geo MB. Remaining (do when a real town exists to measure, B1/B8): PERF.md backlog.
+      Pareto improvements measured one by one: skin texture cache/hash + smaller iso skins, worker
       thread for skin compositing, KTX2 for static textures, atlas merge of static props, LOD distances,
       shader simplification at low tier, lazy chunks (code splitting), adaptive resolution tiers.
       Numbers before/after in `docs/PERF.md`.
@@ -145,7 +148,9 @@ mid-range Android phone; deployed to Pages.
   settlement types `world/settlementTypes.ts`, outfits `data/outfits.ts` + `data/garments.ts`.
 - Humans: MakeHuman CC0 + community packs → `tools/mh/fetch_makehuman.sh`, `tools/mh/fetch_community.sh`,
   `python3 -I tools/mh/build_human.py <mh_data> public/assets/human <community_root>` (garments are lazy
-  per-piece files under `public/assets/human/proxy/`). Credits in `docs/CREDITS.md`.
+  per-piece files under `public/assets/human/proxy/`), **then `npm run decimate`** (iso LOD indices; the
+  runtime falls back to full meshes if they are missing). Credits in `docs/CREDITS.md`.
+- Perf: `node tools/qa/bench.cjs <low|medium|high>` → numbers into `docs/PERF.md` before/after any perf change.
 - Tests `tests/*.test.ts` (vitest). Scripted playthroughs: `tests/ch1.test.ts` pattern (`talk()` helper).
 - QA renders: `tools/qa/*.cjs` (Playwright against the dev server; see file headers). Dev helpers on
   `window.SF` and `window.game` (see `src/main.ts`).
@@ -160,7 +165,7 @@ M0 foundations · M1 systems I (stats, creation, inventory, combat, AI, audio) �
 G1–G5 research-driven design + dialogue/quest engines + Cistern 9 opening · F1–F5 frontier systems + field
 notebook UI · W1–W5 worldbuilding (cities, chrome, settlement types, world map/travel) + NPC variance
 (layered garments, outfit roles, cloth shader, merged low-LOD clothes).
-Engine polish backlog: tall interior walls hide a lot (consider wall fade); bundle ~600 kB (split later);
+Engine polish backlog: tall interior walls hide a lot (consider wall fade); bundle ~1.1 MB (split later, PERF.md);
 derive gossip road days from the world map in B2.
 
 ## 7. Notes for owner (how to run/test)

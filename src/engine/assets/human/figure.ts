@@ -58,9 +58,11 @@ export class HumanFigure {
   readonly eyeHeight: number;
   readonly height: number;
   private materials: THREE.Material[] = [];
+  private readonly lod: 'high' | 'low';
 
   constructor(spec: FigureSpec) {
     const d = humanData();
+    this.lod = spec.lod ?? 'high';
     const P = evaluateShape(d, spec.shape);
     // Ground the figure: lowest body vertex at y = 0.
     let minY = Infinity;
@@ -150,7 +152,7 @@ export class HumanFigure {
     const beard = spec.facialHair ? BEARD_STYLES[spec.facialHair] : undefined;
     if (beard && spec.facialHair) {
       const longest = Math.max(beard.tache, beard.chin, beard.corner, beard.cheek, beard.jaw, beard.burn);
-      const layers = (spec.lod ?? 'high') === 'high' ? (longest <= 4 ? 6 : 14) : 3;
+      const layers = (spec.lod ?? 'high') === 'high' ? (longest <= 4 ? 6 : 14) : 2;
       const g = strandGeometry(d, body, beardField(spec.facialHair)!, layers, SCALE);
       if (g) {
         // Short stubs read darker and ashier than grown hair; longer beards keep the hair colour.
@@ -162,7 +164,7 @@ export class HumanFigure {
         const look = stubby
           ? { color: col.getHex(), cell: 0.016, radius: 0.0009, rootShade: 0.1, wave: 0.05, opacity: 0.9 }
           : { color: col.getHex(), cell: 0.012, radius: 0.0021, rootShade: 0.3, wave: longest > 6 ? 0.3 : 0.1 };
-        const mesh = this.addMesh(g, strandMaterial(look));
+        const mesh = this.addMesh(g, strandMaterial(look), 'beard');
         mesh.castShadow = false;
         mesh.renderOrder = 2;
       }
@@ -173,8 +175,11 @@ export class HumanFigure {
     const faceStart = this.meshes.length;
     this.addProxy(d, P, minY, 'eyes_high-poly', eyeMaterial(spec.eyes));
     if (spec.brows) {
-      const meta = d.m.proxies[`brows_${spec.brows}`], c = spec.browColor ?? spec.hair?.color ?? 0x2a1e16;
-      this.addProxy(d, P, minY, `brows_${spec.brows}`, hairMaterial(meta, c), hairMaterial(meta, c, true));
+      // Strand-modelled brows run to ~30k vertices: from the iso camera a textured plane is the same two pixels.
+      let key = `brows_${spec.brows}`;
+      if (lod === 'low' && (d.m.proxies[key]?.verts ?? 0) > 2000 && d.m.proxies.brows_eyebrow001) key = 'brows_eyebrow001';
+      const meta = d.m.proxies[key], c = spec.browColor ?? spec.hair?.color ?? 0x2a1e16;
+      this.addProxy(d, P, minY, key, hairMaterial(meta, c), lod === 'high' ? hairMaterial(meta, c, true) : undefined);
     }
     // From the iso camera eyes and brows are a few pixels: no shadow pass for them.
     if (lod === 'low') for (const m of this.meshes.slice(faceStart)) m.castShadow = false;
@@ -191,7 +196,7 @@ export class HumanFigure {
         .map(({ key, look }) => ({ geo: this.proxyGeometry(d, P, minY, key), meta: d.m.proxies[key], look }));
       const { geo, mat } = mergeClothes(parts);
       for (const p of parts) p.geo.dispose();
-      this.addMesh(geo, mat);
+      this.addMesh(geo, mat, 'clothes');
     } else {
       for (const c of clothes) {
         const key = `clothes_${c.name}`;
@@ -221,6 +226,16 @@ export class HumanFigure {
       e1.subVectors(b, a).cross(e2.subVectors(c, a));
       for (const vi of [i0, i1, i2]) { bn[vi * 3] += e1.x; bn[vi * 3 + 1] += e1.y; bn[vi * 3 + 2] += e1.z; }
     }
+    // Iso figures draw the decimated body (tools/mh/decimate.mjs); hair and beards still grow on the full surface.
+    let drawIndex: number[] = keep;
+    if (lod === 'low' && d.has('body_index_lo')) {
+      const lo = d.view<Uint16Array | Uint32Array>('body_index_lo');
+      drawIndex = [];
+      for (let t = 0; t < lo.length; t += 3) {
+        if (deleted.has(d.bodyMap[lo[t]]) || deleted.has(d.bodyMap[lo[t + 1]]) || deleted.has(d.bodyMap[lo[t + 2]])) continue;
+        drawIndex.push(lo[t], lo[t + 1], lo[t + 2]);
+      }
+    }
     for (let i = 0; i < n; i++) {
       const vi = d.bodyMap[i];
       pos[i * 3] = P[vi * 3] * SCALE; pos[i * 3 + 1] = (P[vi * 3 + 1] - minY) * SCALE; pos[i * 3 + 2] = P[vi * 3 + 2] * SCALE;
@@ -238,12 +253,13 @@ export class HumanFigure {
     g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(d.bodyUv), 2));
     g.setAttribute('skinIndex', new THREE.BufferAttribute(skinIndex, 4));
     g.setAttribute('skinWeight', new THREE.BufferAttribute(skinWeight, 4));
-    g.setIndex(keep);
+    g.setIndex(drawIndex);
     // Cavity occlusion as vertex colours (eye sockets, nostrils, lip corners, ear folds).
     const ao = cavityAO(pos, nrm, keep, n);
     const col = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) { const v = ao[i]; col[i * 3] = v; col[i * 3 + 1] = v * 0.97; col[i * 3 + 2] = v * 0.96; }
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    if (drawIndex !== keep) compactGeometry(g);
     const mat = lod === 'high'
       ? new THREE.MeshPhysicalMaterial({
         map: skin, vertexColors: true, roughness: 0.5, metalness: 0, specularIntensity: 0.55,
@@ -252,7 +268,7 @@ export class HumanFigure {
       })
       : new THREE.MeshStandardMaterial({ map: skin, vertexColors: true, roughness: 0.58, metalness: 0 });
     applySkinScatter(mat);
-    this.addMesh(g, mat);
+    this.addMesh(g, mat, 'body');
     return { pos, nrm, index: keep, skinIndex, skinWeight };
   }
 
@@ -260,11 +276,11 @@ export class HumanFigure {
     const meta = d.m.proxies[key];
     if (!meta) return;
     const g = this.proxyGeometry(d, P, minY, key);
-    const mesh = this.addMesh(g, mat);
+    const mesh = this.addMesh(g, mat, meta.kind);
     mesh.renderOrder = meta.zDepth;
     // Strand edges: a second, alpha-blended pass over the same geometry for soft hair edges.
     if (blendEdges) {
-      const edge = this.addMesh(g, blendEdges);
+      const edge = this.addMesh(g, blendEdges, meta.kind);
       edge.renderOrder = meta.zDepth + 10;
       edge.castShadow = false;
     }
@@ -307,16 +323,21 @@ export class HumanFigure {
     g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(d.view<Float32Array>(key + '_uv')), 2));
     g.setAttribute('skinIndex', new THREE.BufferAttribute(skinIndex, 4));
     g.setAttribute('skinWeight', new THREE.BufferAttribute(skinWeight, 4));
-    g.setIndex(new THREE.BufferAttribute(new Uint16Array(d.view<Uint16Array>(key + '_index')), 1));
+    const lo = this.lod === 'low' && d.has(key + '_index_lo');
+    g.setIndex(new THREE.BufferAttribute(new Uint16Array(d.view<Uint16Array>(key + (lo ? '_index_lo' : '_index'))), 1));
+    if (lo) compactGeometry(g);
     smoothNormals(g);
     return g;
   }
 
-  private addMesh(g: THREE.BufferGeometry, mat: THREE.Material): THREE.SkinnedMesh {
+  private addMesh(g: THREE.BufferGeometry, mat: THREE.Material, name = ''): THREE.SkinnedMesh {
     const mesh = new THREE.SkinnedMesh(g, mat);
+    mesh.name = name;
     mesh.castShadow = true;
     mesh.receiveShadow = true;
-    mesh.frustumCulled = false;
+    // Skinned meshes are culled by this generous sphere (a standing or fallen figure fits inside it).
+    mesh.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.9, 0), 2);
+    mesh.frustumCulled = true;
     this.root.add(mesh);
     mesh.bind(this.skeleton, new THREE.Matrix4());
     this.meshes.push(mesh);
@@ -353,6 +374,26 @@ export class HumanFigure {
     for (const m of this.meshes) m.geometry.dispose();
     for (const m of this.materials) m.dispose();
   }
+}
+
+/** Drop vertices the index never references (after swapping in a decimated index). */
+function compactGeometry(g: THREE.BufferGeometry): void {
+  const idx = g.index;
+  if (!idx) return;
+  const n = g.getAttribute('position').count;
+  const map = new Int32Array(n).fill(-1);
+  const src = idx.array;
+  const out = new Uint32Array(src.length);
+  let m = 0;
+  for (let i = 0; i < src.length; i++) { const v = src[i]; if (map[v] < 0) map[v] = m++; out[i] = map[v]; }
+  if (m === n) return;
+  for (const [name, attr] of Object.entries(g.attributes)) {
+    const a = attr as THREE.BufferAttribute, sz = a.itemSize, arr = a.array;
+    const packed = new (arr.constructor as new (n: number) => typeof arr)(m * sz);
+    for (let v = 0; v < n; v++) { const t = map[v]; if (t < 0) continue; for (let k = 0; k < sz; k++) packed[t * sz + k] = arr[v * sz + k]; }
+    g.setAttribute(name, new THREE.BufferAttribute(packed, sz, a.normalized));
+  }
+  g.setIndex(new THREE.BufferAttribute(m < 65536 ? new Uint16Array(out) : out, 1));
 }
 
 function smoothNormals(g: THREE.BufferGeometry): void {

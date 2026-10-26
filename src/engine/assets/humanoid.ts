@@ -86,7 +86,8 @@ export class Humanoid {
   constructor(look: HumanoidLook) {
     const o = look.outfit;
     const app = underHeadwear(look.appearance, outfitHairMode(o));
-    this.skin = makeSkinTexture(app, look.lod === 'low' ? 1024 : 2048);
+    // Iso figures are a few hundred pixels tall at most: 512² is plenty and a quarter of the memory and compositing.
+    this.skin = makeSkinTexture(app, look.lod === 'low' ? 512 : 2048);
     const clothes = outfitGarments(o);
     this.figure = new HumanFigure({
       shape: app.shape, skin: this.skin, eyes: app.eyes, brows: app.brows, hair: app.hair, clothes, lod: look.lod,
