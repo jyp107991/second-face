@@ -347,7 +347,7 @@ export class Game extends EventBus<GameEvents> {
       return () => {
         const unlockedFlag = `unlocked:${key}`;
         if (def.lock && !this.state.flags[unlockedFlag]) {
-          const r = skillCheck(this.state.pc.sheet, this.state.pc.inventory, 'locks', def.lock, this.rng);
+          const r = skillCheck(this.state.pc.sheet, this.state.pc.inventory, 'security', def.lock, this.rng);
           this.state.minutes += 2;
           if (!r.success) { this.emit('message', { text: `Locked. Your Locks ${r.value}% isn't enough (needs ${r.dc}).` }); return; }
           this.state.flags[unlockedFlag] = true;

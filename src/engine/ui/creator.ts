@@ -11,7 +11,7 @@ import { HAIRCUTS } from '../assets/human/haircuts';
 import { PLAYER_OUTFIT } from '../game';
 import type { Game } from '../game';
 import { PortraitStage } from '../render/portrait';
-import { ATTRIBUTES, ATTRIBUTE_INFO, ATTR_MAX, ATTR_MIN, SKILLS, SKILL_INFO, TAG_COUNT } from '../stats/rules';
+import { ATTRIBUTES, ATTRIBUTE_INFO, ATTR_CREATION_MAX, ATTR_MIN, SKILLS, SKILL_INFO, TAG_COUNT } from '../stats/rules';
 import { attrs, creationPointsLeft, derived, emptySheet, skills, validateCreation, type CharacterSheet } from '../stats/sheet';
 
 export interface CreatorResult { sheet: CharacterSheet; appearance: Appearance; pronouns: Pronouns; }
@@ -367,7 +367,7 @@ export class Creator {
       row.querySelectorAll('button').forEach((btn) => (btn.onclick = () => {
         const d = Number(btn.dataset.d);
         const v = this.sheet.baseAttrs[a] + d;
-        if (v < ATTR_MIN || v > ATTR_MAX || (d > 0 && creationPointsLeft(this.sheet.baseAttrs) <= 0)) return;
+        if (v < ATTR_MIN || v > ATTR_CREATION_MAX || (d > 0 && creationPointsLeft(this.sheet.baseAttrs) <= 0)) return;
         this.sheet.baseAttrs[a] = v;
         this.renderBody();
       }));

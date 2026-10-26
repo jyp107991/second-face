@@ -5,7 +5,7 @@ import { skill, type CharacterSheet } from './sheet';
 
 /** Tools that boost a skill while carried. */
 export const TOOL_BONUS: Partial<Record<SkillId, [string, number]>> = {
-  locks: ['t_picks', 15],
+  security: ['t_picks', 15],
   medicine: ['t_docbag', 15],
   mechanics: ['t_repair', 10],
 };

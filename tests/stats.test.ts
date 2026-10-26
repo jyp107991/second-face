@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import '../src/content';
 import {
-  addXp, attr, creationPointsLeft, derived, emptySheet, perkAvailable, raiseSkill, skill, takePerk, validateCreation,
+  addXp, attr, creationPointsLeft, derived, emptySheet, hasFlag, perkAvailable, raiseSkill, skill, takePerk, validateCreation,
 } from '../src/engine/stats/sheet';
 import { xpForLevel } from '../src/engine/stats/rules';
 
@@ -12,15 +12,24 @@ describe('Character sheet', () => {
     s.tagged = ['firearms', 'speech', 'science'];
     expect(validateCreation(s)).toEqual([]);
   });
-  it('tagging adds 20% and doubles growth', () => {
+  it('tagging adds 15 and doubles growth', () => {
     const s = emptySheet();
     const before = skill(s, 'speech');
     s.tagged = ['speech'];
-    expect(skill(s, 'speech')).toBe(before + 20);
+    expect(skill(s, 'speech')).toBe(before + 15);
     s.unspentSkill = 3;
     raiseSkill(s, 'speech');
-    expect(skill(s, 'speech')).toBe(before + 22);
+    expect(skill(s, 'speech')).toBe(before + 17);
     expect(s.unspentSkill).toBe(2);
+  });
+  it('skills cap at 100 and masteries unlock at 50 and 100', () => {
+    const s = emptySheet();
+    s.skillBought.security = 200;
+    expect(skill(s, 'security')).toBe(100);
+    expect(hasFlag(s, 'm_sec_salvage')).toBe(true);
+    expect(hasFlag(s, 'm_sec_rearm')).toBe(true);
+    s.skillBought.security = 0;
+    expect(hasFlag(s, 'm_sec_salvage')).toBe(false);
   });
   it('traits modify stats', () => {
     const s = emptySheet();
@@ -28,7 +37,7 @@ describe('Character sheet', () => {
     s.traits = ['steady'];
     expect(derived(s).ap).toBe(ap - 1);
     s.traits = ['bookish'];
-    expect(derived(s).skillPointsPerLevel).toBe(5 + 2 * attr(s, 'wits') + 3);
+    expect(derived(s).skillPointsPerLevel).toBe(8 + attr(s, 'wits') + 3);
   });
   it('levels up with skill points, hp and perk picks', () => {
     const s = emptySheet();
@@ -36,7 +45,7 @@ describe('Character sheet', () => {
     const gained = addXp(s, xpForLevel(3));
     expect(gained).toBe(2);
     expect(s.level).toBe(3);
-    expect(s.pendingPerks).toBe(1);
+    expect(s.pendingPerks).toBe(1); // perk at level 2
     expect(s.unspentSkill).toBe(2 * derived(s).skillPointsPerLevel);
     expect(derived(s).maxHp).toBeGreaterThan(hp0);
     expect(s.hp).toBe(derived(s).maxHp);

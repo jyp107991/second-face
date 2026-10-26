@@ -50,7 +50,7 @@ replayability, meaningful choice, viable builds, best perk/skill/attribute confi
 - [x] G1 DESIGN.md: research synthesis (§2), revised character system (12 skills, perks every 2 levels, skill
       mastery perks, deterministic visible checks, every skill/attribute used in dialogue), build archetypes,
       choice & consequence rules, replayability levers, build-coverage validation
-- [ ] G2 Code: skills 16→12, skill cap 100, perks every 2 levels, mastery perks, check rules; update tests/creator
+- [x] G2 Code: skills 16→12, skill cap 100, perks every 2 levels, mastery perks, check rules; update tests/creator
 - [ ] G3 Secret story plan: full act/quest structure, faction lines, companions, endings matrix (story/ only)
 - [ ] G4 Dialogue engine + quest engine (M2.1, M2.3) with tests
 - [ ] G5 Chapter One dialogue + quests as content data; build-coverage validator in `npm run validate`

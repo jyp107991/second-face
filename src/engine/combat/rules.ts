@@ -34,7 +34,7 @@ export interface CombatContext {
   darkness: number;
 }
 
-export const FIST: WeaponDef = { skill: 'unarmed', kind: 'unarmed', hands: 1, dmg: [1, 4], dmgType: 'blunt', ap: 3, range: 1, durability: 0 };
+export const FIST: WeaponDef = { skill: 'melee', kind: 'unarmed', hands: 1, dmg: [1, 4], dmgType: 'blunt', ap: 3, range: 1, durability: 0 };
 
 export const AIM_PENALTY: Record<BodyPart, number> = { torso: 0, head: 40, eyes: 60, armL: 30, armR: 30, legL: 20, legR: 20, groin: 30 };
 export const AIM_CRIT: Record<BodyPart, number> = { torso: 0, head: 15, eyes: 30, armL: 5, armR: 5, legL: 5, legR: 5, groin: 15 };

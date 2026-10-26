@@ -24,3 +24,22 @@ describe('SaveManager', () => {
     expect(migrate(s)).toEqual(s);
   });
 });
+
+import { migrate } from '../src/engine/save/migrations';
+
+describe('save migrations', () => {
+  it('1 → 2 folds old skills into the consolidated twelve and refunds gambling', () => {
+    const raw = { version: 1, state: { pc: { sheet: { skillBought: { heavy: 4, firearms: 6, unarmed: 3, locks: 5, sleight: 2, gambling: 7, speech: 1 }, tagged: ['locks', 'gambling', 'speech'], unspentSkill: 0 } } } };
+    const s = migrate(raw) as unknown as { version: number; state: { pc: { sheet: { skillBought: Record<string, number>; tagged: string[]; unspentSkill: number } } } };
+    const sh = s.state.pc.sheet;
+    expect(s.version).toBe(2);
+    expect(sh.skillBought.firearms).toBe(10);
+    expect(sh.skillBought.melee).toBe(3);
+    expect(sh.skillBought.security).toBe(5);
+    expect(sh.skillBought.stealth).toBe(2);
+    expect(sh.unspentSkill).toBe(7);
+    expect(sh.tagged).toHaveLength(3);
+    expect(sh.tagged).toContain('security');
+    expect('gambling' in sh.skillBought).toBe(false);
+  });
+});

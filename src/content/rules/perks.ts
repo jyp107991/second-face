@@ -1,7 +1,7 @@
 import type { PerkDef } from '../../engine/stats/sheet';
 
 /**
- * Perks, one pick every 3 levels. Prefer perks that unlock new verbs (flags handled by systems)
+ * Perks, one pick every 2 levels. Prefer perks that unlock new verbs (flags handled by systems)
  * over flat bonuses.
  */
 export const PERKS: Record<string, PerkDef> = {
@@ -9,7 +9,7 @@ export const PERKS: Record<string, PerkDef> = {
   quick_draw: { id: 'quick_draw', name: 'Quick Draw', desc: 'Swapping weapons and reloading cost 1 AP less.', req: { level: 3, attrs: { reflex: 5 } }, flags: ['quick_draw'] },
   marksman: { id: 'marksman', name: 'Marksman', desc: 'Range penalties start 4 tiles further out.', ranks: 2, req: { level: 3, attrs: { senses: 6 } }, mods: [{ target: 'derived:sightRange', add: 4 }] },
   brute: { id: 'brute', name: 'Brute', desc: '+3 melee damage and you can shove enemies back a tile (2 AP).', ranks: 2, req: { level: 3, attrs: { brawn: 6 } }, mods: [{ target: 'dmg_melee', add: 3 }], flags: ['shove'] },
-  bonebreaker: { id: 'bonebreaker', name: 'Bonebreaker', desc: 'Aimed melee and unarmed attacks cripple limbs twice as easily.', req: { level: 6, skills: { unarmed: 60 } }, flags: ['easy_cripple_melee'] },
+  bonebreaker: { id: 'bonebreaker', name: 'Bonebreaker', desc: 'Aimed melee and unarmed attacks cripple limbs twice as easily.', req: { level: 6, skills: { melee: 60 } }, flags: ['easy_cripple_melee'] },
   sniper_eye: { id: 'sniper_eye', name: 'Eye for Weakness', desc: '+5% critical chance on aimed shots.', ranks: 2, req: { level: 6, attrs: { senses: 7, fortune: 4 } }, flags: ['aimed_crit'] },
   mechanics_eye: { id: 'mechanics_eye', name: "Mechanic's Eye", desc: "See enemies' weapon condition; an aimed shot at a worn weapon can jam it.", req: { level: 6, skills: { mechanics: 60 } }, flags: ['see_condition', 'jam_shot'] },
   gunslinger: { id: 'gunslinger', name: 'Gunslinger', desc: 'Pistol shots cost 1 AP less.', req: { level: 9, skills: { firearms: 75 } }, flags: ['pistol_ap'] },

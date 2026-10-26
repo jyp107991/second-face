@@ -1,5 +1,5 @@
 import {
-  ATTRIBUTES, ATTR_BASE, ATTR_CREATION_POINTS, ATTR_MAX, ATTR_MIN, LEVEL_CAP, PERK_EVERY, SKILLS, SKILL_INFO, SKILL_MAX,
+  ATTRIBUTES, ATTR_BASE, ATTR_CREATION_MAX, ATTR_CREATION_POINTS, ATTR_MAX, ATTR_MIN, LEVEL_CAP, MASTERIES, PERK_EVERY, SKILLS, SKILL_INFO, SKILL_MAX,
   TAG_BONUS, TAG_COUNT, xpForLevel, type AttributeId, type Derived, type SkillId,
 } from './rules';
 
@@ -127,7 +127,16 @@ export function modSum(s: CharacterSheet, target: ModTarget): number {
 }
 
 export function hasFlag(s: CharacterSheet, flag: string): boolean {
-  return s.traits.some((t) => db.traits[t]?.flags?.includes(flag)) || Object.keys(s.perks).some((p) => db.perks[p]?.flags?.includes(flag));
+  if (s.traits.some((t) => db.traits[t]?.flags?.includes(flag)) || Object.keys(s.perks).some((p) => db.perks[p]?.flags?.includes(flag))) return true;
+  // Skill masteries (verbs at 50 and 100).
+  if (flag.startsWith('m_')) {
+    for (const k of SKILLS) {
+      const [m50, m100] = MASTERIES[k];
+      if (m50.flag === flag) return skill(s, k) >= 50;
+      if (m100.flag === flag) return skill(s, k) >= 100;
+    }
+  }
+  return false;
 }
 
 export function attr(s: CharacterSheet, a: AttributeId, mods = allMods(s)): number {
@@ -168,7 +177,7 @@ export function derived(s: CharacterSheet): Derived {
     poisonResist: 5 * a.grit,
     sightRange: 2 * a.senses + 4,
     companions: Math.max(1, Math.min(3, Math.floor(a.presence / 4) + 1)),
-    skillPointsPerLevel: 5 + 2 * a.wits,
+    skillPointsPerLevel: 8 + a.wits,
   };
   const out = { ...base };
   for (const k of Object.keys(base) as (keyof Derived)[]) out[k] = Math.round(modValue(mods, `derived:${k}`, base[k]));
@@ -189,7 +198,7 @@ export function validateCreation(s: CharacterSheet): string[] {
   const errs: string[] = [];
   if (!s.name.trim()) errs.push('Choose a name.');
   if (creationPointsLeft(s.baseAttrs) !== 0) errs.push('Distribute all attribute points.');
-  for (const a of ATTRIBUTES) if (s.baseAttrs[a] < ATTR_MIN || s.baseAttrs[a] > ATTR_MAX) errs.push(`Attribute out of range: ${a}`);
+  for (const a of ATTRIBUTES) if (s.baseAttrs[a] < ATTR_MIN || s.baseAttrs[a] > ATTR_CREATION_MAX) errs.push(`Attribute out of range: ${a}`);
   if (s.tagged.length !== TAG_COUNT) errs.push(`Tag exactly ${TAG_COUNT} skills.`);
   if (s.traits.length > 2) errs.push('At most two traits.');
   return errs;
@@ -197,9 +206,7 @@ export function validateCreation(s: CharacterSheet): string[] {
 
 /** Skill points needed to raise a skill by one step, and the step size. */
 export function raiseCost(s: CharacterSheet, k: SkillId): { cost: number; gain: number } {
-  const v = skill(s, k);
-  const cost = v < 100 ? 1 : v < 125 ? 2 : 3;
-  return { cost, gain: s.tagged.includes(k) ? 2 : 1 };
+  return { cost: 1, gain: s.tagged.includes(k) ? 2 : 1 };
 }
 
 export function raiseSkill(s: CharacterSheet, k: SkillId): boolean {
