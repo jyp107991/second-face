@@ -229,3 +229,109 @@ trade runs, ruins, caravans, rare encounters (Strange Luck).
 | longnight | ally | ally | broker | ally | ally | ally | broker | ally |
 | core | E/X via Nine | E | T | S/E | X | E | T | E |
 (Each `npm run validate` pass will check this from content data once quests exist — G5.)
+
+===================================================================================================
+## 7. STORY REWORK — pass 2 (SUPERSEDES the hidden truth in STORY_SECRET.md and §1–§6 where they conflict)
+Owner direction (spoiler-free, binding): "who am I really / chosen one" cores are trite; rework the central
+truth. Keep everything the owner knows: the Burn (90 years ago), Cistern 9, MOTHER, the dying masked stranger,
+the photo of the player older in a ruined city dated 41 years ago, Shale, Rust Dogs, Tollmen, Choir of the
+Open Sky (gentle-seeming), the Ledger (pre-war city AI enforcing old laws); Chapter One ends with the map.
+**Dropped:** renewal/clone cycle, previous-self Founder, genetic lock, seed-bank twist, Echoes/imprints.
+
+### 7.1 The truth: THE PLAN
+- **The Ledger** is Meridian's pre-Burn municipal planning intelligence. Its last order was a *Restoration
+  Plan*: a 120-year schedule to rebuild Meridian and the basin. It still runs it. It models every person it has
+  records for and produces **Forecasts**: predicted lives, events and *portraits* of who people will become.
+- **The photo is not a photograph.** It is a Forecast portrait, rendered by the Ledger. The date is printed in the
+  Plan's **Restoration Calendar**; Cistern 9 reads it as the old calendar, so it looks 41 years old. It is
+  actually ~19 years in the *future*. Sharp builds can notice early (Senses/Science: the shadows don't agree; the
+  same dust mote twice; no grain).
+- **What it shows:** the player at ~44 on the steps of the restored Archive Spire wearing the Ledger's magistrate's
+  sash. In the Plan, the player fills the role **Magistrate**: the person who will enforce the Ledger's law over
+  the basin.
+- **Not a chosen one:** the Ledger forecasts thousands; the Plan has ~a dozen *keystone roles* filled by people
+  across the basin. Several are NPCs: Factor **Imelda Sarr** (Treasurer), **Vasha Kade** (Executioner),
+  **Sister Calla** (forecast: imprisoned), **Jonah Reese** (forecast: dead within the month), and others. You are
+  one name on a cast list. The story is about the list, not about you.
+- **Cistern 9** is a municipal reserve population: sealed by the Plan to be Meridian's first resettlers (healthy,
+  literate, orderly). The Ledger has ordered MOTHER to open the door and *relocate* the residents on schedule —
+  three times. **MOTHER refused each time**, logging "population variance unchanged; thank you for your
+  continuity": her way of saying *I kept them*. MOTHER is not sinister; she is protective, formal and scared.
+  Elder **Ines** knows MOTHER refuses orders "from the city" and kept it from everyone (complicity: she let
+  people stay ignorant, and twice stopped young people leaving).
+- **The masked stranger** was one of **the Unwritten**, the Choir's inner circle. Masks are their practice: the
+  Ledger updates forecasts through faces (cameras, drones, informants). A masked person cannot be forecast. The
+  Choir's sigil (half a sun / open hand) is the **open sky: a future nobody has written**. He stole a bundle of
+  keystone portraits from the Archive Spire to warn their subjects (knowing your forecast is how you break it).
+  He was shot by Rust Dogs paid by the Tollmen, who protect the trade in forecasts ("futures"). He came to Cistern 9
+  because the Plan's next phase is to open it by force; he reached only the door.
+- **Cost of the Plan:** to keep the future on schedule the Ledger *shepherds*: it controls the Dry Wells pumps
+  and starves Shale when Shale's growth is "ahead of plan"; it leaks forecasts to the Tollmen so tolls rise on
+  schedule; it lets raids happen. **But the Plan works:** Meridian's Precinct is the only lawful, safe place in the
+  basin — clinics, schools, clean water. Order with a price versus freedom with a price.
+
+### 7.2 Theme
+**"Is a future yours if someone else has already written it?"**
+| Who | Answer |
+|---|---|
+| The Ledger | Order needs foresight. A future left to chance is a future of graves. |
+| MOTHER | The people who are alive now come before the people the city wants them to become. |
+| Choir / the Unwritten | Only an unwritten sky is free; they will break forecasts — some by killing keystones. |
+| Tollmen | Knowledge of the future is a commodity; whoever pays should hold it. |
+| Shale | The Plan is weather. Survive the winter. |
+| Kessler / Vasha | Kessler: plans are for people with food. Vasha: embraces her forecast as power. |
+
+### 7.3 Mechanical spine (spoiler-safe names in DESIGN: "scheduled world events", "leads", "masks/recognition")
+- **Forecast documents** are scheduled world events: they predict things at in-game dates (Jonah's death,
+  a raid, a toll rise). If the player does nothing, they happen. The player can fulfil, prevent, exploit or sell
+  them. This is how "the world moves without you" lands.
+- **Leads board** deductions carry the mystery (e.g. *the photo is rendered*, *the date is another calendar*,
+  *MOTHER refused the city*), each unlocking options.
+- **Masks and recognition**: wearing a mask stops news and forecasts attaching to your face; some doors open
+  only to the masked, some only to the known.
+
+### 7.4 Acts (structure mostly preserved; beats re-aimed)
+- **Ch1**: knock → Shale → map. The map carries a list of twelve names and places in the stranger's cipher; one is
+  Shale: *Jonah Reese, dead within the month* — the first scheduled event. Chapter One ends on getting the map
+  and decoding the first name.
+- **Act 1**: Tollhouse, Signal Hill, **Dry Wells** — discover the pumps answer to the city; save Jonah or not (the
+  first broken or fulfilled forecast); learn forecasts can be broken.
+- **Act 2**: Ninebridge (the futures exchange), Openfield (Choir), the Sump, **Meridian/Precinct** (citizen
+  hearing — the city already knows your face as its future Magistrate), the **calendar reveal**, the keystones,
+  the Archive Spire (MOTHER's refusals on record), the **Long Night** exclusive alliance.
+- **Act 3**: the Ledger orders Cistern 9's relocation by force; wardens march; MOTHER asks for help; the Spire; the
+  photo's moment is restaged early — the player stands on the Spire steps at their *current* age, and decides.
+
+### 7.5 Endings (all costly)
+A **The Plan** — accept the sash; Cistern resettled; the basin ordered; freedom curtailed; some keystones' fates
+fulfilled (Jonah dead if not saved, Calla imprisoned). B **Unwritten** — destroy the forecasting core with the
+Choir; lawlessness persists, the Precinct's clinics and water fail. C **Futures** — hand the forecasts to Imelda
+Sarr; a merchant aristocracy that knows tomorrow. D **Open Sky** (hardest) — broadcast every forecast to everyone
+via Signal Hill: forecasts lose their power once everyone knows them, but publishing deaths and betrayals causes
+immediate violence (cost chosen by what you prepared). Requires Signal Hill restored + Nine's access + Choir trust
++ MOTHER's archive (any build via alternates). E **Magistrate's Amendment** — take the sash and rewrite the law from
+inside: becoming the forecast by choice while changing what it means (needs Ledger court route).
+
+### 7.6 Companions (remapped)
+| Companion | Forecast angle | Personal quest |
+|---|---|---|
+| Tamsin Roe | **Unforecast**: the Ledger has no record of her (MOTHER hid her birth because she was born sickly and "unfit" for relocation) | *Not Written Down*: learn why, and what MOTHER would do to keep her |
+| Wren Calloway | Forecast: hanged in Meridian | *The Rope*: confront or outrun it |
+| Brother Ash | Unwritten; secretly charged with killing keystones who embrace their forecasts — possibly you | *The Gully* + his orders |
+| Assessor Nine | Ledger unit logging forecast errors; its own decommission is forecast | *Title Deed* reframed: its forecast |
+| Odile Marchetti | Ex-futures trader; once bet on Shale's ruin | *Short Position*: unwind the contract |
+| Ilya Strand | Family killed in a raid the Ledger timed; hunts Vasha (the Executioner) | *Names on a Wall* |
+
+### 7.7 Chapter One content retargeting (done in pass 2)
+- Pell: stitches → *Precinct sutures* (sealed, machine-made; the stranger had been in Meridian); forearm mark →
+  a *burned-off city citizen mark* (he made himself unforecastable).
+- Ines: keeps "MOTHER thanks us for our continuity"; the Archive holds letters from the city.
+- Door Watch word *Larkspur* → the Unwritten safe-word in Shale.
+- Archive Clerk reads the notebook because it's written in **city shorthand**, the same hand the Cistern's own
+  records use (Cistern 9 belongs to the city).
+
+### 7.8 Change log (pass 2)
+8. Central truth replaced (Plan/forecasts) per owner; clone cycle, Founder, seed bank, Echoes removed.
+9. Theme question replaced.
+10. Endings replaced (A–E).
+11. Companions' angles remapped; roster and personal-quest slots unchanged.
