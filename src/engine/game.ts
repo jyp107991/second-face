@@ -44,6 +44,8 @@ export type GameEvents = {
   loaded: { slot?: SlotId };
   tick: { dt: number };
   message: { text: string };
+  /** A chapter or location card. */
+  title: { text: string };
   gameOver: Record<string, never>;
   openTransfer: { inv: import('./inventory/inventory').Inventory; name: string };
   /** A person, or a tree with a named speaker (terminal, sealed door, a body). */
@@ -94,6 +96,7 @@ export class Game extends EventBus<GameEvents> {
       if (name === 'dialogue' && d.tree) { window.setTimeout(() => this.emit('openDialogue', { tree: d.tree, name: d.name ?? '' })); return; }
       if (name === 'talk') { const n = this.npcs.get(d.npc ?? ''); if (n) window.setTimeout(() => this.emit('openDialogue', { npc: n })); return; }
       if (name === 'combat') { const turned = this.refreshHostility(); if (turned.length && !this.encounter.active) this.startCombat(turned[0]); return; }
+      if (name === 'title') { this.emit('title', { text: (d as { text?: string }).text ?? '' }); return; }
       this.emit('message', { text: name });
     },
     approval: (npc, by) => {

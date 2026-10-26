@@ -19,6 +19,7 @@ export class Hud {
       <div class="hud-top"><div class="loc"></div><div class="clock"></div><div class="pin"></div><div class="mail"></div></div>
       <button class="btn undo" data-a="undo" aria-label="Undo last move" style="display:none">↶</button>
       <div class="toast" style="opacity:0"></div>
+      <div class="title-card" style="opacity:0"></div>
       <div class="hud-buttons">
         <button class="btn" data-a="rotL" aria-label="Rotate left">⟲</button>
         <button class="btn" data-a="centre" aria-label="Centre camera">◎</button>
@@ -49,6 +50,7 @@ export class Hud {
     });
     game.on('locationChanged', ({ name }) => { (this.info.querySelector('.loc') as HTMLElement).textContent = name; });
     game.on('message', ({ text }) => this.toast(text));
+    game.on('title', ({ text }) => this.title(text));
     let acc = 0;
     game.on('tick', ({ dt }) => {
       acc += dt;
@@ -62,6 +64,14 @@ export class Hud {
       const mail = unreadPost(game.state);
       (this.info.querySelector('.mail') as HTMLElement).textContent = mail ? `✉ ${mail} unread` : '';
     });
+  }
+
+  /** A chapter card: large, centred, slow to fade. */
+  title(text: string, ms = 5000): void {
+    const el = this.el.querySelector('.title-card') as HTMLElement;
+    el.innerHTML = text.split('\n').map((l) => `<div>${l.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!)}</div>`).join('');
+    el.style.opacity = '1';
+    window.setTimeout(() => (el.style.opacity = '0'), ms);
   }
 
   toast(text: string, ms = 2500): void {

@@ -231,7 +231,13 @@ export const d_sh_pike: DialogueDef = {
       passives: [{ attr: 'wits', dc: 8, text: 'A list on the wall behind him: SEED — ANY VARIETY — ANY QUANTITY — PAID IN TOLLS OR SCRIP. The prices are absurd.', effects: [{ learn: 'pike_buys_seed' }] }],
       options: [{ text: 'Let\'s see the stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed', text: 'You\'re buying seed.', if: { knows: 'pike_buys_seed' }, next: 'seed', once: true }, { id: 'pike.who', text: 'Who are the Tollmen?', next: 'who', once: true }, { id: 'pike.stranger', text: 'A masked man came through three weeks ago. You spoke with him.', if: { quest: 'q_ch1_shale' }, next: 'stranger', once: true }, bye],
     },
-    again: { text: 'As per. Stock, or something else?', options: [{ text: 'Stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed.again', text: 'About the seed.', if: { all: [{ knows: 'pike_buys_seed' }, { not: { seen: 'pike.seed' } }] }, next: 'seed' }, { id: 'pike.stranger.again', text: 'About the masked man.', if: { all: [{ quest: 'q_ch1_shale' }, { not: { seen: 'pike.stranger' } }] }, next: 'stranger' }, bye] },
+    again: { text: 'As per. Stock, or something else?', options: [{ text: 'Stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed.again', text: 'About the seed.', if: { all: [{ knows: 'pike_buys_seed' }, { not: { seen: 'pike.seed' } }] }, next: 'seed' }, { id: 'pike.stranger.again', text: 'About the masked man.', if: { all: [{ quest: 'q_ch1_shale' }, { not: { seen: 'pike.stranger' } }] }, next: 'stranger' }, { id: 'pike.key', text: 'Do the Tollmen read this hand?', if: { all: [{ item: 'k_map' }, { not: { item: 'k_cipher_key' } }] }, next: 'key' }, bye] },
+    key: {
+      text: 'He looks at the map for exactly as long as it takes to see what it is, and then not at all. "Not here. But the post sells the key to it — a cipher wheel, forty Tolls, as per. The Tollmen sell keys to everything, {name}. It is how we know what is locked."',
+      effects: [{ learn: 'pike_sells_key' }, { lead: 'l_pike_saw_map' }, { memory: { npc: 'npc_sh_04', tag: 'saw_the_map', valence: 0, strength: 100 } }, { news: { tag: 'map_seen_by_tollmen', text: 'the salt-cut stranger showed a Tollman a map covered in cipher', valence: -5, size: 4, at: 'shale' } }],
+      options: [{ id: 'pike.key.buy', text: '(Buy the wheel. 40 Tolls)', if: { item: 'tolls', count: 40 }, effects: [{ take: 'tolls', count: 40 }, { give: 'k_cipher_key' }], next: 'key_bought' }, { text: 'Not today.', next: 'intro' }],
+    },
+    key_bought: { text: '"Set the inner rim to the first letter of the nearest town. They always start with the nearest town." He has already turned back to the ledger.', options: [{ text: 'Noted.', exit: true }] },
     stranger: {
       text: '"Information is a good, and goods have rates." He does not smile. "Fifteen Tolls. For that you get what he asked me and what I told him, verbatim; the Tollmen do not embroider."',
       options: [
@@ -308,6 +314,7 @@ export const d_sh_hollis: DialogueDef = {
         { id: 'hollis.boards', text: 'What are "the boards"?', next: 'boards', once: true },
         { id: 'hollis.kite', text: 'What\'s a kite day?', next: 'kite', once: true },
         { id: 'hollis.stranger', text: 'A masked man sat here three weeks ago. Tall, old, hurt.', if: { all: [{ quest: 'q_ch1_shale' }, { any: [{ knows: 'hollis_likes_you' }, { trust: { npc: 'npc_sh_06', gte: 10 } }] }] }, next: 'stranger', once: true },
+        { id: 'hollis.map', text: '(Show him the map.) Can you read this hand?', if: { all: [{ item: 'k_map' }, { not: { knows: 'hollis_read_map' } }, { any: [{ knows: 'hollis_likes_you' }, { trust: { npc: 'npc_sh_06', gte: 10 } }] }] }, next: 'map' },
         { id: 'hollis.stranger.cold', text: 'A masked man sat here three weeks ago.', if: { all: [{ quest: 'q_ch1_shale' }, { not: { knows: 'hollis_likes_you' } }, { trust: { npc: 'npc_sh_06', lte: 9 } }] }, next: 'stranger_cold', once: true },
         bye,
       ],
@@ -323,6 +330,11 @@ export const d_sh_hollis: DialogueDef = {
     gift_b: { text: '"Mags\'s rot." He drinks it anyway. "That\'s not a kindness, pup, but I\'ll take the thought."', options: [{ text: 'What are "the boards"?', next: 'boards' }, bye] },
     boards: { text: '"City boards. Screens, pup, tall as a house, with your face on \'em if you were worth a line. Said who paid, who owed, who was next." He laughs, dry as the street. "I had a line once. A short one."', effects: [{ learn: 'hollis_city_boards' }, { lead: 'l_hollis_city' }], options: [{ text: 'Which city?', next: 'which' }, bye] },
     which: { text: '"The only one that counts, pup. West, past the glass, where it rains." He won\'t say the name; he mouths it and looks at the Tollmen post. "Forty years. They don\'t let you out, you know. You leave."', effects: [{ learn: 'hollis_was_in_city' }], options: [{ text: 'Thanks, old man.', exit: true }] },
+    map: {
+      text: 'He holds it a long way from his face, then very close. "Boards hand," he says. "City hand. Blocks of five and a turn of the wheel each name — they taught us that so we couldn\'t read our own files." His finger finds the nearest pin. "Reese. Jonah. Shale. A month." The next. "Vey. Ada. Shale. Four months." He stops reading. "That\'s two I know. Don\'t show me the rest, pup. I\'m old; I\'d like to stay surprised."',
+      effects: [{ learn: 'hollis_read_map' }, { learn: 'name1_decoded' }, { learn: 'name3_decoded' }, { set: 'jonah_named' }, { lead: 'l_name_jonah' }, { lead: 'l_name_vey' }, { xp: 80 }, { trust: { npc: 'npc_sh_06', by: 10 } }, { decision: { id: 'read_first_name', text: 'Hollis Crane read the first names on the stranger\'s map for you: Jonah Reese within the month; Ada Vey in four.' } }, { after: { minutes: 30 * 1440, id: 'jonah_month', effects: [{ set: 'jonah_month_over' }] } }, { quest: 'q_ch1_name', stage: 'read' }, { event: 'title', data: { text: 'CHAPTER ONE\nTHE KNOCK' } }],
+      options: [{ text: '(Fold the map.)', exit: true }],
+    },
     kite: { text: '"Machines, pup. Big wings, no bird in \'em, from before. They come up from the south when the wind\'s wrong and they look at you." He taps his nose. "Smell the air. Ozone. That\'s a kite day."', effects: [{ learn: 'kite_days' }], options: [{ text: 'Right.', next: 'intro' }] },
   },
 };

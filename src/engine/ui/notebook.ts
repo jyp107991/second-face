@@ -328,6 +328,7 @@ export class Notebook {
       this.sel = undefined;
       this.render();
     });
+    if (d.read) btn('Read', () => { const tree = d.read!, name = d.name; this.close(); window.setTimeout(() => this.game.emit('openDialogue', { tree, name })); });
     btn('Drop 1', () => { this.drop(inv, it, 1); });
     if (it.qty > 1) btn('Drop all', () => { this.drop(inv, it, it.qty); });
   }

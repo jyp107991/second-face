@@ -35,6 +35,10 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_wren_found', label: 'Shot by paid men', text: 'Wren found him: he said he was shot by people who were paid to shoot him, and would rather give the paper to a thief than a bank.' },
   { id: 'l_city_counts', label: 'The city counts us', text: 'The stranger told Perpetua the city counts everyone out here, keeps a list with dates, and that the paper is the list.' },
   { id: 'l_wren_page', label: 'Torn page', text: 'Wren kept a page the stranger dropped while burning his notebook. Same cipher.' },
+  { id: 'l_name_jonah', label: 'Jonah Reese — thirty days', text: 'The first name on the map: Jonah Reese, Shale, with a count of thirty days from the day the stranger died.' },
+  { id: 'l_name_vey', label: 'Ada Vey — four months', text: 'The second name Hollis read: Ada Vey, Shale, four months.' },
+  { id: 'l_name_vey_partial', label: 'V-E-Y-A', text: 'The second block on the map half-read: V, E, Y, A. Someone else in Shale.' },
+  { id: 'l_pike_saw_map', label: 'Pike saw the map', text: 'Factor Pike has seen the stranger\'s map in your hands and sold you the key to it. The Tollmen will know by the next caravan.' },
   { id: 'l_ring_gone', label: 'Missing ring', text: 'The stranger had worn a ring until shortly before he died. He traded or lost it near the end.' },
 ] as LeadDef[]).map((l) => [l.id, l]));
 

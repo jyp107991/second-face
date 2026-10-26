@@ -103,7 +103,7 @@ export const q_ch1_map: QuestDef = {
       ],
       next: [{ if: { flag: 'have_map' }, stage: 'done' }],
     },
-    done: { journal: 'The map is mine: twelve places pricked on a road, and beside each a block of marks I can\'t read. Yet.', end: 'done' },
+    done: { journal: 'The map is mine: twelve places pricked on a road, and beside each a block of marks I can\'t read. Yet.', end: 'done', onEnter: [{ quest: 'q_ch1_name', start: true }] },
   },
 };
 
@@ -175,5 +175,31 @@ export const q_ch1_tribute: QuestDef = {
       onEnter: [{ set: 'tribute_resolved' }, { set: 'tribute_outcome', value: 'fought' }, { set: 'tribute_day', value: false }, { news: { tag: 'shale_fought', text: 'Shale fought the Rust Dogs at the wells on Tribute Day and held them off', valence: 20, size: 8, at: 'shale' } }, { rep: { faction: 'rust_dogs', fear: 20 } }, { rep: { faction: 'shale_militia', respect: 20 } }],
     },
     settled: { journal: 'Tribute Day came and went without me. Shale paid, and Deputy Reese took a beating for arguing the count. People have noticed who was not there.', end: 'done' },
+  },
+};
+
+
+export const q_ch1_name: QuestDef = {
+  id: 'q_ch1_name', title: 'The First Name', act: 'ch1', critical: true, start: 'cipher', xp: 300,
+  routes: [
+    { id: 'science', kind: 'tech', label: 'Work the cipher yourself', requires: { skill: 'science', gte: 50 } },
+    { id: 'clerk', kind: 'knowledge', label: 'Read it as record shorthand (Archive Clerk)', requires: { origin: 'archive_clerk' } },
+    { id: 'key', kind: 'barter', label: 'Buy the Tollmen\'s cipher wheel from Pike' },
+    { id: 'hollis', kind: 'talk', label: 'Hollis Crane knows the hand' },
+  ],
+  stages: {
+    cipher: {
+      journal: 'Twelve places on a road, a block of marks beside each, and the nearest pin is Shale. Somebody can read this: a clerk, a drifter who has seen the hand, the Tollmen who sell keys to everything — or me, with time and a crib.',
+      objectives: [
+        { id: 'read', text: 'Read the first name on the map', done: { knows: 'name1_decoded' } },
+        { id: 'key', text: 'Get a key to the cipher', done: { any: [{ item: 'k_cipher_key' }, { knows: 'hollis_read_map' }] }, optional: true },
+      ],
+      next: [{ if: { knows: 'name1_decoded' }, stage: 'read' }],
+    },
+    read: {
+      journal: 'Jonah Reese. Shale. Thirty days, counted from the morning the stranger died at our door. A man walked across the waste to bring me a list with the deputy\'s name on it, and mine was never on it at all — or it is, further east, where the road goes.',
+      end: 'done',
+      onEnter: [{ set: 'ch1_done' }, { decision: { id: 'ch1_done', text: 'Chapter One ended with the first name read: Jonah Reese, thirty days.' } }, { news: { tag: 'stranger_map_read', text: 'the salt-cut stranger has been asking what the deputy\'s name is worth', valence: -5, size: 3, at: 'shale' } }],
+    },
   },
 };

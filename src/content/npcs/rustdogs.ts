@@ -18,6 +18,7 @@ export const RUSTDOG_NPCS: NpcDef[] = [
   },
   {
     id: 'npc_rd_02', name: 'Vasha Kade', look: { seed: 3102, frame: 'narrow', age: 33, over: { hair: { style: 'paint_shaved', color: 0x120e0b }, scars: ['cheek_slash'] } }, role: 'raider',
+    outfit: { layers: [{ name: 'punkduck_female_tight_jeans', grime: 0.5, wear: 0.7 }, { name: 'elvs_lara_tank1', tint: 0x1d1b19, grime: 0.4, wear: 0.6 }, { name: 'mindfront_tactical_vest_female', grime: 0.5, wear: 0.8 }, { name: 'culturalibre_heroine_boots_2', grime: 0.6, wear: 0.8 }], gear: [{ kind: 'armband', color: 0x7a1f1a }], grime: 0.5, wear: 0.7 },
     level: 7, ...RD, courage: 95, dialogue: 'd_rd_vasha', attrs: { reflex: 8, presence: 8, brawn: 6, wits: 7 }, skills: { firearms: 45, melee: 45, speech: 30 }, tolls: 40,
     equip: ['w_smg9', 'r_scrap'], inventory: [['a_9mm', 40]],
     schedule: [{ from: 6, to: 12, spot: 'vasha', activity: 'idle' }, { from: 12, to: 18, spot: 'lookout', activity: 'patrol' }, { from: 18, to: 24, spot: 'vasha_fire', activity: 'drink' }, sleep('tent_c', 0, 6)],

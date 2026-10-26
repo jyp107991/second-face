@@ -208,3 +208,39 @@ describe('Tribute Day', () => {
     expect(g.world.quests.q_ch1_tribute.stage).toBe('negotiated');
   });
 });
+
+describe('The First Name (Chapter One end)', () => {
+  it('a technician works the cipher from the pack and the chapter ends', () => {
+    const g = newGameState('c9', 0, 0);
+    const q = new QuestEngine(QUESTS, g);
+    q.questStart('q_ch1_map');
+    g.flags.have_map = true; q.update();
+    expect(g.world.quests.q_ch1_name?.stage).toBe('cipher');
+    g.pc.sheet.skillBought.science = 60;
+    talk('d_map', g, q, ['(Work the cipher', 'Jonah Reese.', '(Fold the map.)']);
+    expect(g.world.knowledge.name1_decoded).toBe(true);
+    expect(g.world.quests.q_ch1_name.status).toBe('done');
+    expect(g.flags.ch1_done).toBe(true);
+    expect(g.world.timers.some((t) => t.id === 'jonah_month')).toBe(true);
+  });
+
+  it('the Tollmen sell the key; Hollis reads two names', () => {
+    const g = newGameState('c9', 0, 0);
+    const q = new QuestEngine(QUESTS, g);
+    q.questStart('q_ch1_name');
+    g.pc.inventory.tolls = 50; g.flags.sh_pike_met = true;
+    g.pc.inventory.items.push({ def: 'k_map', qty: 1 });
+    talk('d_sh_pike', g, q, ['Do the Tollmen read this hand?', '(Buy the wheel. 40 Tolls)', 'Noted.']);
+    expect(countItem(g.pc.inventory, 'k_cipher_key')).toBe(1);
+    talk('d_map', g, q, ['(Set the Tollmen', 'Jonah Reese.', '(Fold the map.)']);
+    expect(g.world.quests.q_ch1_name.status).toBe('done');
+    const g2 = newGameState('c9', 0, 0);
+    const q2 = new QuestEngine(QUESTS, g2);
+    q2.questStart('q_ch1_name');
+    g2.pc.inventory.items.push({ def: 'k_map', qty: 1 });
+    g2.world.knowledge.hollis_likes_you = true;
+    talk('d_sh_hollis', g2, q2, ['(Show him the map.)', '(Fold the map.)']);
+    expect(g2.world.knowledge.name3_decoded).toBe(true);
+    expect(g2.world.quests.q_ch1_name.status).toBe('done');
+  });
+});

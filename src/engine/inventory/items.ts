@@ -75,6 +75,8 @@ export interface ItemDef {
   consumable?: { effects: ConsumableEffect[]; ap?: number; skill?: SkillId };
   /** Raw food: cooking at a camp turns it into this item. */
   cookTo?: string;
+  /** Notes and papers: the conversation tree opened by "Read" in the pack (the text, the cipher, the choices). */
+  read?: string;
   /** Junk breakdown into crafting parts. */
   parts?: Record<string, number>;
   tags?: string[];
