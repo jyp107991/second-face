@@ -166,7 +166,8 @@ export const overpass: MapDef = {
       kind: "car_wreck",
       x: 17,
       y: 19,
-      rot: 1
+      rot: 1,
+      id: "dog_truck"
     },
     {
       kind: "table",
@@ -554,6 +555,10 @@ export const overpass: MapDef = {
     cage_lock: {
       dialogue: "d_rd_cage",
       name: "The cage"
+    },
+    dog_truck: {
+      dialogue: "d_rd_truck",
+      name: "The Dogs' truck"
     }
   },
   containers: {

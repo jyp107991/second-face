@@ -36,6 +36,8 @@ export interface NpcDef {
   hostile?: boolean;
   /** Hostile while this holds (a camp that turns on you once a flag is set). */
   hostileIf?: Cond;
+  /** Fights on your side in encounters on their map while this holds (a town's militia on the day). */
+  ally?: Cond;
   /** 0..100 */
   courage?: number;
   /** Creature attack when unarmed. */
@@ -68,4 +70,6 @@ export interface NpcPlacement {
   if?: Cond;
   /** Conversation for this placement (the same person says different things in a different place). */
   dialogue?: string;
+  /** Routine for this placement (empty = stays put; overrides the def's). */
+  schedule?: ScheduleEntry[];
 }

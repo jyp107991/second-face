@@ -64,7 +64,7 @@ export function validateContent(c: ContentBundle): string[] {
     }
     for (const p of map.npcs ?? []) {
       if (c.npcs && !c.npcs[p.def]) errs.push(`${where}: unknown npc ${p.def}`);
-      for (const e of c.npcs?.[p.def]?.schedule ?? []) if (e.spot && !map.spots?.[e.spot]) errs.push(`${where}: npc ${p.def} schedule spot ${e.spot} missing from map.spots`);
+      for (const e of p.schedule ?? c.npcs?.[p.def]?.schedule ?? []) if (e.spot && !map.spots?.[e.spot]) errs.push(`${where}: npc ${p.def} schedule spot ${e.spot} missing from map.spots`);
       if (!grid.passable(p.x, p.y)) errs.push(`${where}: npc ${p.def} at ${p.x},${p.y} is not on a free walkable tile`);
     }
     for (const e of map.exits ?? []) {

@@ -119,7 +119,10 @@ mid-range Android phone; deployed to Pages.
       `tools/qa/travel.cjs`). B1.4 DONE: `maps/overpass` (`tools/maps/gen_overpass.py`), 13 Rust Dogs (`npcs/rustdogs.ts`,
       camp-wide `hostileIf`), gate trigger conversation, `q_ch1_map` with 8 routes (buy/rifle/wager with a Dust prize/
       fear/terms/Wren steals/lift at night/Vasha's coup/exodus), `q_sh_prisoner` (Teo: pay/terms/pick/fight; comes home to
-      the bar), Wren joins as companion; tests. NEXT: B1.5 Tribute Day): Cistern 9 map (cast placed, MOTHER terminal, maintenance shaft, exit), Shale
+      the bar), Wren joins as companion; tests. B1.5 DONE: scheduled events `tribute_day`/`tribute_settled` (day 5; default
+      outcome if absent), the party placed in Shale by condition, `d_tribute` (terms accepted / talk down / truck cut at the
+      overpass / pay / sheriff pays / fight with the militia as `ally` units), Ada's terms + exodus decisions; tests;
+      smoke `tools/qa/tribute.cjs`. NEXT: B1.6b q_ch1_name (decode) + Chapter One end): Cistern 9 map (cast placed, MOTHER terminal, maintenance shaft, exit), Shale
       (well-town map, ~12 NPCs incl. the plan's cast, saloon, sheriff, trading post, Choir tent, wells),
       Rust Dogs overpass camp; quests q_ch1_door/shale/tribute/debts/prisoner/map/oldface; 2 companions;
       first scheduled event; letters; barter; map screen with travel between the three. ~5 h.

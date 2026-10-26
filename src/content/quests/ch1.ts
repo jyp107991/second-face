@@ -132,3 +132,48 @@ export const q_sh_prisoner: QuestDef = {
     done: { journal: 'Teo is back behind the bar, counting. Mags has not stopped shouting at him, which is how she says thank you.', end: 'done' },
   },
 };
+
+
+export const q_ch1_tribute: QuestDef = {
+  id: 'q_ch1_tribute', title: 'Tribute Day', act: 'ch1', critical: true, start: 'due', xp: 250,
+  routes: [
+    { id: 'pay', kind: 'barter', label: 'Pay the tithe (or let Shale pay it)' },
+    { id: 'terms', kind: 'talk', label: 'Carry Kessler\'s terms and have the sheriff accept them' },
+    { id: 'talk_down', kind: 'talk', label: 'Talk Vasha down to nothing', requires: { skill: 'speech', gte: 60 } },
+    { id: 'sabotage', kind: 'tech', label: 'Cut the Dogs\' truck at the overpass beforehand', requires: { any: [{ skill: 'mechanics', gte: 40 }, { skill: 'security', gte: 35 }] } },
+    { id: 'fight', kind: 'fight', label: 'Fight beside the militia' },
+  ],
+  stages: {
+    due: {
+      journal: 'Twice a year the Rust Dogs come into Shale for a tithe of water and drink, and twice a year Shale pays it and hates itself. The next one is days away. Everyone knows the day; nobody says it.',
+      objectives: [
+        { id: 'ada', text: 'Hear what the sheriff means to do', done: { any: [{ knows: 'ada_will_pay' }, { flag: 'ada_terms_decided' }] }, optional: true },
+        { id: 'terms', text: 'Put Kessler\'s terms to the sheriff', done: { flag: 'ada_terms_decided' }, optional: true, hidden: true },
+        { id: 'truck', text: 'Do something about the Dogs\' truck', done: { flag: 'truck_sabotaged' }, optional: true, hidden: true },
+      ],
+      next: [{ if: { flag: 'tribute_day' }, stage: 'day' }, { if: { flag: 'tribute_resolved' }, stage: 'settled' }],
+    },
+    day: {
+      journal: 'They are here. Vasha Kade and four Dogs at the wells, and the whole town leaning toward them the way it leans toward the pumps.',
+      objectives: [{ id: 'wells', text: 'Face the Dogs at the wells', done: { flag: 'tribute_resolved' } }],
+      next: [
+        { if: { flag: 'tribute_outcome', eq: 'fought' }, stage: 'fought' },
+        { if: { flag: 'tribute_outcome', eq: 'negotiated' }, stage: 'negotiated' },
+        { if: { flag: 'tribute_outcome', eq: 'sabotaged' }, stage: 'sabotaged' },
+        { if: { flag: 'tribute_outcome', eq: 'paid' }, stage: 'paid' },
+        { if: { all: [{ flag: 'tribute_fight' }, { dead: 'tribute_vasha' }] }, stage: 'fought' },
+        { if: { all: [{ flag: 'tribute_fight' }, { dead: 'tribute_t1' }, { dead: 'tribute_t2' }, { dead: 'tribute_t3' }, { dead: 'tribute_t4' }] }, stage: 'fought' },
+        { if: { flag: 'tribute_resolved' }, stage: 'settled' },
+      ],
+    },
+    paid: { journal: 'Shale paid. The water went up the west road on the Dogs\' cart, and nobody died, and the sheriff has not looked at anyone since.', end: 'done', onEnter: [{ set: 'tribute_day', value: false }] },
+    negotiated: { journal: 'Half of what they took last time, in water, and Vasha Kade walked out of Shale with less than she came for. She will remember whose doing that was.', end: 'done', onEnter: [{ set: 'tribute_day', value: false }] },
+    sabotaged: { journal: 'They walked in and they walked out, carrying what they could carry, which was not much. Vasha knows somebody cut the truck. She does not know who. Yet.', end: 'done', onEnter: [{ set: 'tribute_day', value: false }] },
+    fought: {
+      journal: 'Shale fought. The street is quiet and the wells are Shale\'s, and the price of that is going to arrive from the overpass one night soon.',
+      end: 'done',
+      onEnter: [{ set: 'tribute_resolved' }, { set: 'tribute_outcome', value: 'fought' }, { set: 'tribute_day', value: false }, { news: { tag: 'shale_fought', text: 'Shale fought the Rust Dogs at the wells on Tribute Day and held them off', valence: 20, size: 8, at: 'shale' } }, { rep: { faction: 'rust_dogs', fear: 20 } }, { rep: { faction: 'shale_militia', respect: 20 } }],
+    },
+    settled: { journal: 'Tribute Day came and went without me. Shale paid, and Deputy Reese took a beating for arguing the count. People have noticed who was not there.', end: 'done' },
+  },
+};

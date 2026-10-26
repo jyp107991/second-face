@@ -174,3 +174,37 @@ describe('The Paper (overpass)', () => {
     expect(g.world.party).toContain('npc_rd_03');
   });
 });
+
+describe('Tribute Day', () => {
+  it('fires on day 5 once Shale is known, and settles by default when nobody faces it', async () => {
+    const { runWorldEvents } = await import('../src/engine/world/frontier');
+    const { WORLD_EVENTS } = await import('../src/content');
+    const g = newGameState('c9', 0, 0);
+    const q = new QuestEngine(QUESTS, g);
+    g.minutes = 4 * 1440 + 12 * 60;
+    expect(runWorldEvents(g, WORLD_EVENTS, q)).toEqual([]);
+    g.flags.visited_shale = true;
+    expect(runWorldEvents(g, WORLD_EVENTS, q)).toEqual(['tribute_day']);
+    expect(g.flags.tribute_day).toBe(true);
+    expect(g.world.quests.q_ch1_tribute?.stage).toBe('day');
+    g.minutes = 4 * 1440 + 19 * 60;
+    expect(runWorldEvents(g, WORLD_EVENTS, q)).toEqual(['tribute_settled']);
+    q.update();
+    expect(g.flags.tribute_outcome).toBe('default');
+    expect(g.world.quests.q_ch1_tribute.status).toBe('done');
+  });
+
+  it('Kessler\'s terms, accepted by the sheriff, halve the tithe', () => {
+    const g = newGameState('c9', 0, 0);
+    const q = new QuestEngine(QUESTS, g);
+    q.questStart('q_ch1_tribute');
+    g.flags.rd_terms_carried = true; g.flags.sh_ada_met = true; g.world.knowledge.kessler_no_lives = true;
+    g.pc.sheet.skillBought.speech = 30;
+    talk('d_sh_ada', g, q, ['Kessler\'s terms', 'Because he keeps a list', 'Noted.']);
+    expect(g.flags.ada_terms_accepted).toBe(true);
+    g.flags.tribute_day = true; q.update();
+    talk('d_tribute', g, q, ['(Listen.)', '(Listen.)', '(Answer.)', 'Kessler\'s terms were half of last time, in water. The sheriff', '(Watch them go.)']);
+    expect(g.flags.tribute_outcome).toBe('negotiated');
+    expect(g.world.quests.q_ch1_tribute.stage).toBe('negotiated');
+  });
+});

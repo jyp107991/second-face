@@ -58,7 +58,7 @@ export const d_sh_mags: DialogueDef = {
     room_no: { text: '"Everybody\'s good for it, love. That\'s why I\'ve got a wall of names." Come back with Tolls.', options: [{ text: 'Fair.', next: 'menu' }] },
     town: {
       text: 'Two pumps, one sheriff, one saloon, one Tollman, one Choir tent full of people who\'ll bandage you for free and pray at you for less. The Dogs under the overpass take a tithe twice a year and the rest of the time we pretend they don\'t. And my Teo — my partner — went east with a wagon of salt five weeks ago and the wagon came back without him.',
-      effects: [{ learn: 'mags_teo' }, { learn: 'shale_tribute' }],
+      effects: [{ learn: 'mags_teo' }, { learn: 'shale_tribute' }, { quest: 'q_ch1_tribute', start: true }],
       options: [{ text: 'Who\'s Teo?', next: 'teo' }, { text: 'Thanks.', next: 'menu' }],
     },
     teo: {
@@ -152,9 +152,36 @@ export const d_sh_ada: DialogueDef = {
       options: [
         { id: 'ada.stranger.again', text: 'About the man with the mask.', if: { not: { knows: 'ada_saw_stranger' } }, next: 'cut' },
         { id: 'ada.overpass.again', text: 'Tell me about the overpass.', if: { not: { knows: 'overpass_dogs' } }, next: 'overpass' },
+        { id: 'ada.tribute', text: 'Tribute Day. What are you going to do?', if: { all: [{ quest: 'q_ch1_tribute' }, { not: { knows: 'ada_will_pay' } }] }, next: 'tribute' },
+        { id: 'ada.terms', text: 'Kessler\'s terms: half of last time, in water. I carried them myself.', if: { all: [{ flag: 'rd_terms_carried' }, { not: { flag: 'ada_terms_decided' } }] }, next: 'terms' },
+        { id: 'ada.exodus', text: 'Some of the Dogs want out — Wren Calloway and her people. Would Shale have them?', if: { all: [{ any: [{ knows: 'wren_wants_out' }, { knows: 'wren_leaving' }] }, { not: { flag: 'shale_exodus_decided' } }] }, next: 'exodus' },
         { text: 'Nothing. Just checking in.', exit: true },
       ],
     },
+    tribute: {
+      text: '"I\'m going to pay, and hate it, and count the rifles while I do." She says it like a verdict. "Unless somebody gives me a reason not to that doesn\'t end with Jonah in the dirt."',
+      effects: [{ learn: 'ada_will_pay' }],
+      options: [{ id: 'ada.tribute.fight', text: 'The militia would fight if you let them.', next: 'tribute_fight', once: true }, { text: 'Noted.', exit: true }],
+    },
+    tribute_fight: { text: '"Issa would. Jonah would, which is why I won\'t." A breath. "If it comes to it, and you\'re standing there, I\'ll say the word and you\'ll hear it. Don\'t make it come to it."', effects: [{ learn: 'ada_would_fight' }], options: [{ text: 'Understood.', exit: true }] },
+    terms: {
+      text: '"Half." She doesn\'t say it twice. "Half of forty is twenty measures I don\'t have, from a man who\'s never once asked for less than everything." She looks at you. "Why would he?"',
+      options: [
+        { id: 'ada.terms.yes', text: 'Because he keeps a list of who he hasn\'t robbed, and he\'d like you on it. He doesn\'t take lives; Vasha would.', check: { skill: 'speech', dc: 40, mods: [{ if: { knows: 'kessler_no_lives' }, dc: -15, why: 'you know what Kessler says of himself' }, { if: { knows: 'vasha_would_be_chief' }, dc: -10, why: 'you know what Shale fighting would make of Vasha' }] }, next: 'terms_yes', fail: 'terms_no' },
+        { text: 'I don\'t know. I carried the message.', next: 'terms_no' },
+      ],
+    },
+    terms_yes: { text: '"…Half, then. In water, and I count it." She writes it on the blotter, over the cup. "If she asks for more, you\'ll be standing there. Noted?"', effects: [{ set: 'ada_terms_decided' }, { set: 'ada_terms_accepted' }, { trust: { npc: 'npc_sh_01', by: 10 } }, { decision: { id: 'ada_terms_accepted', text: 'Sheriff Vey agreed to pay the Dogs half, on Kessler\'s terms you carried.' } }], options: [{ text: 'Noted.', exit: true }] },
+    terms_no: { text: '"Then I\'ll hear it from Vasha on the day, and decide then." The cup goes back on the letter.', effects: [{ set: 'ada_terms_decided' }, { set: 'ada_terms_refused' }], options: [{ text: 'Fine.', exit: true }] },
+    exodus: {
+      text: '"Rust Dogs. In my town." She lets the words sit. "Under my law? If one of them steals a cup of water, I hang the lot, and they\'d know it. Would they still come?"',
+      options: [
+        { id: 'ada.exodus.yes', text: 'Wren would. She keeps her word to the letter and expects the same. That\'s more than you get from most of Shale.', check: { skill: 'speech', dc: 45, mods: [{ if: { knows: 'wren_wanted_release' }, dc: -10, why: 'you know she argued to let the stranger go' }] }, next: 'exodus_yes', fail: 'exodus_no' },
+        { text: 'I don\'t know.', next: 'exodus_no' },
+      ],
+    },
+    exodus_yes: { text: '"Then tell her: under my law, as townsfolk, and the first one who looks at the pumps wrong answers to me." She almost smiles. "Noted. God help me."', effects: [{ set: 'shale_exodus_decided' }, { set: 'shale_exodus_ok' }, { decision: { id: 'shale_exodus_ok', text: 'Sheriff Vey agreed to take in Wren\'s people under Shale\'s law.' } }], options: [{ text: 'I\'ll tell her.', exit: true }] },
+    exodus_no: { text: '"Then no. I\'ve enough people I can\'t feed."', effects: [{ set: 'shale_exodus_decided' }], options: [{ text: 'Fine.', exit: true }] },
   },
 };
 
@@ -190,7 +217,7 @@ export const d_sh_issa: DialogueDef = {
       ],
     },
     shoot: { text: '"Then you\'re the fifth rifle." She looks you over once, properly. "Ada will say no. Ada says no to everything until she says yes."', effects: [{ learn: 'issa_counts_you' }, { trust: { npc: 'npc_sh_11', by: 8 } }], options: [{ text: 'We\'ll see.', next: 'intro' }] },
-    dogs: { text: '"Tribute\'s due. Half a year since the last. They come with a truck, they take water and whatever Mags has brewed, and this time they\'ll want more because Kessler\'s lieutenant counts. Vasha. Say the name to Ada and watch her face."', effects: [{ learn: 'tribute_due' }, { learn: 'vasha_name' }, { learn: 'loc_rustdogs' }], options: [{ text: 'Noted.', next: 'intro' }] },
+    dogs: { text: '"Tribute\'s due. Half a year since the last. They come with a truck, they take water and whatever Mags has brewed, and this time they\'ll want more because Kessler\'s lieutenant counts. Vasha. Say the name to Ada and watch her face."', effects: [{ learn: 'tribute_due' }, { learn: 'vasha_name' }, { learn: 'loc_rustdogs' }, { quest: 'q_ch1_tribute', start: true }], options: [{ text: 'Noted.', next: 'intro' }] },
   },
 };
 

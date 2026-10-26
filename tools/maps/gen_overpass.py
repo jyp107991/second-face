@@ -72,7 +72,7 @@ props = [
     {'kind': 'table', 'x': 25, 'y': 19, 'id': 'kessler_table'}, {'kind': 'chair', 'x': 26, 'y': 19, 'rot': 3}, {'kind': 'chair', 'x': 24, 'y': 19, 'rot': 1},
     {'kind': 'cot', 'x': 21, 'y': 18}, {'kind': 'locker', 'x': 29, 'y': 18, 'id': 'kessler_chest'}, {'kind': 'shelf', 'x': 30, 'y': 21, 'rot': 3},
     {'kind': 'barrel', 'x': 21, 'y': 22}, {'kind': 'crate', 'x': 22, 'y': 22, 'id': 'hall_crate'}, {'kind': 'lamp_post', 'x': 28, 'y': 22},
-    {'kind': 'car_wreck', 'x': 33, 'y': 18, 'rot': 0}, {'kind': 'car_wreck', 'x': 17, 'y': 19, 'rot': 1},
+    {'kind': 'car_wreck', 'x': 33, 'y': 18, 'rot': 0}, {'kind': 'car_wreck', 'x': 17, 'y': 19, 'rot': 1, 'id': 'dog_truck'},
     # Jack's bench
     {'kind': 'table', 'x': 43, 'y': 18}, {'kind': 'shelf', 'x': 41, 'y': 17, 'rot': 1, 'id': 'jack_shelf'}, {'kind': 'machine', 'x': 45, 'y': 17}, {'kind': 'crate', 'x': 45, 'y': 19, 'id': 'jack_crate'},
     # the pens: Perpetua's post, troughs, the race line
@@ -130,6 +130,7 @@ overpass = {
         'kessler_chest': {'dialogue': 'd_rd_chest', 'name': 'Kessler\'s chest'},
         'kessler_table': {'dialogue': 'd_rd_table', 'name': 'Kessler\'s table'},
         'cage_lock': {'dialogue': 'd_rd_cage', 'name': 'The cage'},
+        'dog_truck': {'dialogue': 'd_rd_truck', 'name': 'The Dogs\' truck'},
     },
     'containers': {
         'hall_crate': {'name': 'Hall Crate', 'items': [['c_jerky', 2], ['c_bitters', 1], ['a_38', 6]], 'lock': 30},

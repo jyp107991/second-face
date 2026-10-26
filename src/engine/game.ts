@@ -89,7 +89,13 @@ export class Game extends EventBus<GameEvents> {
   /** Narrative host: XP toasts and journal notifications for dialogue/quest effects. */
   readonly logicHost: LogicHost = {
     xp: (amount) => this.emit('message', { text: `+${amount} XP` }),
-    event: (name) => this.emit('message', { text: name }),
+    event: (name, data) => {
+      const d = (data ?? {}) as { tree?: string; name?: string; npc?: string };
+      if (name === 'dialogue' && d.tree) { window.setTimeout(() => this.emit('openDialogue', { tree: d.tree, name: d.name ?? '' })); return; }
+      if (name === 'talk') { const n = this.npcs.get(d.npc ?? ''); if (n) window.setTimeout(() => this.emit('openDialogue', { npc: n })); return; }
+      if (name === 'combat') { const turned = this.refreshHostility(); if (turned.length && !this.encounter.active) this.startCombat(turned[0]); return; }
+      this.emit('message', { text: name });
+    },
     approval: (npc, by) => {
       const name = NPCS[npc]?.name ?? npc;
       const word = by >= 15 ? 'strongly approves' : by > 0 ? 'approves' : by <= -15 ? 'strongly disapproves' : 'disapproves';
@@ -495,6 +501,22 @@ export class Game extends EventBus<GameEvents> {
 
   private scheduleTick = 0;
   private barkTick = 0;
+  /** Conditional placements on the current map appear or leave as the world changes (an event fired, a flag set). */
+  syncPlacements(): void {
+    const map = this.loc?.map;
+    if (!map || this.encounter.active) return;
+    const grid = this.loc!.grid;
+    for (const p of map.npcs ?? []) {
+      if (!p.if) continue;
+      const id = p.id ?? p.def;
+      const n = this.npcs.get(id);
+      const want = test(p.if, this.state);
+      if (want && !n) this.spawn(p);
+      else if (want && n?.away && !n.companion) { n.away = false; n.actor.object.visible = true; grid.occupied.set(grid.index(n.actor.tx, n.actor.ty), n.id); }
+      else if (!want && n && !n.away && !n.companion && n.combatant.sheet.hp > 0) { n.away = true; n.actor.object.visible = false; grid.occupied.delete(grid.index(n.actor.tx, n.actor.ty)); }
+    }
+  }
+
   /** Walk NPCs to where their routine says they should be; take 'away' NPCs off the map. */
   private updateSchedules(dt: number): void {
     if (this.encounter.active || !this.loc || this.paused) return;
@@ -503,8 +525,9 @@ export class Game extends EventBus<GameEvents> {
     this.scheduleTick = 0;
     const hour = hourOf(this.state.minutes), grid = this.loc.grid;
     for (const n of this.npcs.values()) {
-      if (!n.def.schedule || n.companion || n.hostile || n.actor.isDead) continue;
-      const e = scheduleAt(n.def.schedule, hour);
+      const sched = n.schedule ?? n.def.schedule;
+      if (!sched || n.companion || n.hostile || n.actor.isDead) continue;
+      const e = scheduleAt(sched, hour);
       const away = e?.activity === 'away';
       if (away !== !!n.away) {
         n.away = away;
@@ -568,8 +591,13 @@ export class Game extends EventBus<GameEvents> {
       if (n.combatant.sheet.hp <= 0 || n.away) continue;
       n.combatant.x = n.actor.tx; n.combatant.y = n.actor.ty;
       if (n.companion) { units.push({ c: n.combatant, actor: n.actor, hostile: false }); continue; }
-      if (Math.max(Math.abs(n.actor.tx - this.player.tx), Math.abs(n.actor.ty - this.player.ty)) > 24 && !n.hostile) continue;
-      if (!n.hostile && n !== target) continue;
+      const near = Math.max(Math.abs(n.actor.tx - this.player.tx), Math.abs(n.actor.ty - this.player.ty)) <= 24;
+      if (!near && !n.hostile) continue;
+      if (!n.hostile && n !== target) {
+        // A town's militia (or anyone whose `ally` condition holds) fights beside you.
+        if (n.def.ally && test(n.def.ally, this.state)) units.push({ c: n.combatant, actor: n.actor, hostile: false });
+        continue;
+      }
       if (n === target) n.hostile = true;
       units.push({ c: n.combatant, actor: n.actor, hostile: n.hostile, leader: n.def.leader });
     }
@@ -926,11 +954,12 @@ export class Game extends EventBus<GameEvents> {
     if (this.questTick > 0.5) {
       this.questTick = 0;
       runTimers(this.state, this.quests);
-      runWorldEvents(this.state, WORLD_EVENTS, this.quests);
+      const fired = runWorldEvents(this.state, WORLD_EVENTS, this.quests);
       spreadNews(this.state, SETTLEMENTS);
       this.dailyBody();
       this.quests.update();
       this.syncParty();
+      if (fired.length) this.syncPlacements();
     }
     this.updateFollowers(simDt);
     this.updateSchedules(simDt);

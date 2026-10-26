@@ -52,6 +52,8 @@ export interface NpcRuntime {
   away?: boolean;
   /** Placement-specific conversation (overrides the def's). */
   dialogue?: string;
+  /** Placement-specific routine (overrides the def's). */
+  schedule?: import('./schedule').ScheduleEntry[];
 }
 
 export function spawnNpc(p: NpcPlacement, grid: Grid, keep?: { sheet: CharacterSheet; inv: Inventory }): NpcRuntime {
@@ -65,7 +67,7 @@ export function spawnNpc(p: NpcPlacement, grid: Grid, keep?: { sheet: CharacterS
     id, name: def.name, team: def.team, sheet, inv, x: p.x, y: p.y, ap: 0, morale: initialMorale(def.courage), evasion: 0,
     natural: def.natural, courage: def.courage,
   };
-  return { id, def, appearance: app, outfit, actor, combatant, hostile: !!def.hostile, dialogue: p.dialogue };
+  return { id, def, appearance: app, outfit, actor, combatant, hostile: !!def.hostile, dialogue: p.dialogue, schedule: p.schedule };
 }
 
 /** An NPC's appearance and clothing: generated from seed + role unless the definition fixes them. */

@@ -1379,6 +1379,103 @@ export const shale: MapDef = {
       }
     },
     {
+      def: "npc_rd_02",
+      id: "tribute_vasha",
+      x: 32,
+      y: 22,
+      facing: 2,
+      dialogue: "d_tribute",
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "tribute_day"
+          },
+          {
+            not: {
+              flag: "tribute_resolved"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_rd_t1",
+      id: "tribute_t1",
+      x: 30,
+      y: 23,
+      facing: 2,
+      if: {
+        all: [
+          {
+            flag: "tribute_day"
+          },
+          {
+            not: {
+              flag: "tribute_resolved"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_rd_t2",
+      id: "tribute_t2",
+      x: 34,
+      y: 23,
+      facing: 2,
+      if: {
+        all: [
+          {
+            flag: "tribute_day"
+          },
+          {
+            not: {
+              flag: "tribute_resolved"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_rd_t3",
+      id: "tribute_t3",
+      x: 33,
+      y: 24,
+      facing: 2,
+      if: {
+        all: [
+          {
+            flag: "tribute_day"
+          },
+          {
+            not: {
+              flag: "tribute_resolved"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_rd_t4",
+      id: "tribute_t4",
+      x: 31,
+      y: 24,
+      facing: 2,
+      if: {
+        all: [
+          {
+            flag: "tribute_day"
+          },
+          {
+            not: {
+              flag: "tribute_resolved"
+            }
+          }
+        ]
+      }
+    },
+    {
       def: "npc_sh_15",
       x: 34,
       y: 21,
@@ -1428,6 +1525,39 @@ export const shale: MapDef = {
       effects: [
         {
           learn: "pumps_on_a_clock"
+        }
+      ]
+    },
+    {
+      id: "tribute",
+      x: 24,
+      y: 16,
+      w: 16,
+      h: 14,
+      once: false,
+      if: {
+        all: [
+          {
+            flag: "tribute_day"
+          },
+          {
+            not: {
+              flag: "tribute_resolved"
+            }
+          },
+          {
+            not: {
+              flag: "tribute_opened"
+            }
+          }
+        ]
+      },
+      effects: [
+        {
+          event: "talk",
+          data: {
+            npc: "tribute_vasha"
+          }
         }
       ]
     }
