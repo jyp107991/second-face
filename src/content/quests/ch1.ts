@@ -37,7 +37,45 @@ export const q_ch1_door: QuestDef = {
     done: {
       journal: 'I left Cistern 9. The track north leads to Shale, the nearest town, if the old maps are right — and the stranger came from somewhere.',
       end: 'done',
-      onEnter: [{ news: { tag: 'cistern_opened', text: 'someone walked out of the old shelter at the salt cut', valence: 5, size: 5, at: 'cistern9' } }],
+      onEnter: [
+        { news: { tag: 'cistern_opened', text: 'someone walked out of the old shelter at the salt cut', valence: 5, size: 5, at: 'cistern9' } },
+        { quest: 'q_ch1_shale', start: true },
+      ],
     },
+  },
+};
+
+export const q_ch1_shale: QuestDef = {
+  id: 'q_ch1_shale', title: 'A Man With a Mask', act: 'ch1', critical: true, start: 'road', xp: 200,
+  routes: [
+    { id: 'sheriff', kind: 'talk', label: 'Ask Sheriff Vey; she saw him' },
+    { id: 'rumour', kind: 'barter', label: 'Buy the rumour from Mags or Pike' },
+    { id: 'tracks', kind: 'survival', label: 'Read his tracks on the west road', requires: { skill: 'survival', gte: 40 } },
+    { id: 'notebook', kind: 'knowledge', label: 'Read the notebook line (Archive Clerk)', requires: { origin: 'archive_clerk' } },
+    { id: 'drifter', kind: 'talk', label: 'Earn Hollis Crane\'s goodwill and ask him' },
+  ],
+  stages: {
+    road: {
+      journal: 'He walked west for weeks on a wound that should have killed him, and he came to our door on purpose. Shale is the only town for a day in any direction. Someone there will have seen a masked man with a bad hip.',
+      objectives: [
+        { id: 'shale', text: 'Reach Shale', done: { flag: 'visited_shale' } },
+        { id: 'seen', text: 'Find someone who saw him', done: { any: [{ knows: 'ada_saw_stranger' }, { knows: 'pardo_has_ring' }, { knows: 'hollis_saw_stranger' }, { knows: 'mags_saw_stranger' }, { knows: 'pike_saw_stranger' }, { knows: 'tracks_read' }] } },
+        { id: 'where', text: 'Learn where he went from here', done: { any: [{ knows: 'ada_saw_stranger' }, { knows: 'kessler_has_map' }, { knows: 'map_sold' }, { knows: 'tracks_read' }] } },
+        { id: 'carried', text: 'Learn what he carried', done: { any: [{ knows: 'kessler_has_map' }, { knows: 'map_sold' }] }, optional: true },
+        { id: 'ring', text: 'Buy back his ring', done: { item: 'k_ring' }, optional: true },
+      ],
+      next: [{ if: { all: [{ flag: 'visited_shale' }, { any: [{ knows: 'ada_saw_stranger' }, { knows: 'kessler_has_map' }, { knows: 'map_sold' }, { knows: 'tracks_read' }] }] }, stage: 'overpass' }],
+    },
+    overpass: {
+      journal: [
+        'He went to the Rust Dogs under the overpass, and he went knowing what they were. Whatever he carried, he meant to trade it there — and he reached us with only the photograph.',
+      ].join(''),
+      objectives: [
+        { id: 'go', text: 'Go to the overpass', done: { flag: 'visited_overpass' } },
+        { id: 'carried', text: 'Learn what he carried', done: { any: [{ knows: 'kessler_has_map' }, { knows: 'map_sold' }] }, optional: true },
+      ],
+      next: [{ if: { flag: 'visited_overpass' }, stage: 'done' }],
+    },
+    done: { journal: 'I found the Rust Dogs\' camp under the dead highway. If he traded here, Kessler has what he traded.', end: 'done' },
   },
 };

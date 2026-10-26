@@ -28,9 +28,25 @@ export const d_sh_mags: DialogueDef = {
         { id: 'mags.trade', text: 'Let me see what you\'re selling.', effects: [{ event: 'barter' }], exit: true },
         { id: 'mags.town', text: 'Tell me about Shale.', next: 'town' },
         { id: 'mags.teo', text: 'Who\'s Teo?', if: { any: [{ knows: 'mags_teo' }, { seen: 'mags.town' }] }, next: 'teo', once: true },
+        { id: 'mags.stranger', text: 'A tall old man with a mask on a cord. Three weeks back. Did he drink here?', if: { quest: 'q_ch1_shale' }, next: 'stranger', once: true },
         bye,
       ],
     },
+    stranger: {
+      text: '"Everybody drinks here, love; it\'s the only here." She polishes the same glass. "I remember. He sat by the door where Hollis sits and he didn\'t say ten words. What he said, and who he said it to — that\'s worth something. Gossip\'s my second trade."',
+      options: [
+        { id: 'mags.stranger.pay', text: '(Pay her. 5 Tolls)', if: { item: 'tolls', count: 5 }, effects: [{ take: 'tolls', count: 5 }], next: 'stranger_tell' },
+        { id: 'mags.stranger.trust', text: 'I\'m not here to buy. His people are my people.', check: { skill: 'speech', dc: 35, mods: [{ if: { trust: { npc: 'npc_sh_03', gte: 5 } }, dc: -10, why: 'she likes you' }] }, next: 'stranger_tell', fail: 'stranger_no' },
+        { id: 'mags.stranger.teo', text: 'Tell me, and I\'ll ask after Teo at the overpass.', if: { knows: 'teo_prisoner' }, effects: [{ set: 'promised_mags_teo' }, { decision: { id: 'promised_mags_teo', text: 'You promised Mags you would ask after Teo at the overpass.' } }], next: 'stranger_tell' },
+        { text: 'Never mind.', next: 'menu' },
+      ],
+    },
+    stranger_tell: {
+      text: '"He asked Nell — not me, Nell — what the Dogs paid for water, and whether Kessler could read. Then he took out a folded paper, looked at it like it was a face, and put it away. He said, to nobody, \'they\'ll give me water for this.\' And he went west in the morning, toward the overpass, walking like a man who\'d been shot."',
+      effects: [{ learn: 'mags_saw_stranger' }, { learn: 'kessler_has_map' }, { lead: 'l_map_traded' }, { xp: 30 }],
+      options: [{ text: 'Thank you.', next: 'menu' }],
+    },
+    stranger_no: { text: '"Then it\'s five Tolls, love, same as everyone." Not unkind.', options: [{ text: 'Fine.', next: 'stranger' }, { text: 'Never mind.', next: 'menu' }] },
     drink: { text: 'She pours something brown that smells of fruit and lamp oil. "Rot bitters. Don\'t ask what rotted." It goes down like a decision you\'ll regret.', effects: [{ give: 'c_bitters' }, { trust: { npc: 'npc_sh_03', by: 3 } }], options: [{ text: 'Obliged.', next: 'menu' }] },
     room: { text: 'Back through there, past the barrels. Bed, a locker, a door that locks from the inside and a window that doesn\'t open. Welcome to Shale, love.', options: [{ text: 'Thanks.', next: 'menu' }] },
     room_owed: { text: 'She looks at you a long moment. "Teo used to say that. All right. You owe me ten, and I don\'t forget." She writes it on the wall behind the bar with a stub of pencil.', options: [{ text: 'I\'m good for it.', next: 'menu' }] },
@@ -181,9 +197,24 @@ export const d_sh_pike: DialogueDef = {
       text: 'Good day. Factor Pike, Tollmen post nine-west. Rates are posted; delivery is guaranteed between posts; water is sold by the measure and I do not haggle, as it wastes the time of the person who would have paid.',
       effects: [{ set: 'sh_pike_met' }],
       passives: [{ attr: 'wits', dc: 8, text: 'A list on the wall behind him: SEED — ANY VARIETY — ANY QUANTITY — PAID IN TOLLS OR SCRIP. The prices are absurd.', effects: [{ learn: 'pike_buys_seed' }] }],
-      options: [{ text: 'Let\'s see the stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed', text: 'You\'re buying seed.', if: { knows: 'pike_buys_seed' }, next: 'seed', once: true }, { id: 'pike.who', text: 'Who are the Tollmen?', next: 'who', once: true }, bye],
+      options: [{ text: 'Let\'s see the stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed', text: 'You\'re buying seed.', if: { knows: 'pike_buys_seed' }, next: 'seed', once: true }, { id: 'pike.who', text: 'Who are the Tollmen?', next: 'who', once: true }, { id: 'pike.stranger', text: 'A masked man came through three weeks ago. You spoke with him.', if: { quest: 'q_ch1_shale' }, next: 'stranger', once: true }, bye],
     },
-    again: { text: 'As per. Stock, or something else?', options: [{ text: 'Stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed.again', text: 'About the seed.', if: { all: [{ knows: 'pike_buys_seed' }, { not: { seen: 'pike.seed' } }] }, next: 'seed' }, bye] },
+    again: { text: 'As per. Stock, or something else?', options: [{ text: 'Stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed.again', text: 'About the seed.', if: { all: [{ knows: 'pike_buys_seed' }, { not: { seen: 'pike.seed' } }] }, next: 'seed' }, { id: 'pike.stranger.again', text: 'About the masked man.', if: { all: [{ quest: 'q_ch1_shale' }, { not: { seen: 'pike.stranger' } }] }, next: 'stranger' }, bye] },
+    stranger: {
+      text: '"Information is a good, and goods have rates." He does not smile. "Fifteen Tolls. For that you get what he asked me and what I told him, verbatim; the Tollmen do not embroider."',
+      options: [
+        { id: 'pike.stranger.pay', text: '(Pay. 15 Tolls)', if: { item: 'tolls', count: 15 }, effects: [{ take: 'tolls', count: 15 }], next: 'stranger_tell' },
+        { id: 'pike.stranger.haggle', text: 'You said yourself: he\'s not your client. Ten.', check: { skill: 'barter', dc: 40 }, if: { item: 'tolls', count: 10 }, effects: [{ take: 'tolls', count: 10 }], next: 'stranger_tell', fail: 'stranger_no' },
+        { text: 'Not today.', next: 'intro' },
+      ],
+    },
+    stranger_tell: {
+      text: '"He asked the price of water at the overpass. I said Kessler sells it by the life. He said he had a paper Kessler would want more than a life — a map, with names on it — and asked whether the Tollmen would pay better. I quoted him. He laughed, which hurt him, and went west." Pike straightens a ledger that was straight. "I reported the conversation, as per."',
+      effects: [{ learn: 'pike_saw_stranger' }, { learn: 'kessler_has_map' }, { lead: 'l_map_traded' }, { learn: 'pike_reported' }, { lead: 'l_pike_reported' }, { xp: 30 }],
+      options: [{ text: 'Reported to whom?', next: 'reported' }, { text: 'Noted.', next: 'intro' }],
+    },
+    reported: { text: '"To the post east. As per." The ledger closes.', options: [{ text: 'Noted.', next: 'intro' }] },
+    stranger_no: { text: '"Fifteen. The rate does not move because the buyer is clever."', options: [{ text: 'Fine.', next: 'stranger' }, { text: 'Not today.', next: 'intro' }] },
     who: { text: '"A guild. We hold the roads between the posts, we carry, we insure, we lend. The Reach moves because we move it." He smiles with the top half of his face. "Everything you own came through a Tollhouse, or it was stolen from someone whose did."', effects: [{ learn: 'tollmen_guild' }], options: [{ text: 'Noted.', next: 'intro' }] },
     seed: {
       text: '"Any variety. Any quantity. Viable, which I test." He does not explain who wants it. "You came from the salt cut, I\'m told. A shelter like that keeps a seed bank, or it wouldn\'t have lasted the first winter. I would pay very well. I would pay in advance."',
@@ -244,9 +275,18 @@ export const d_sh_hollis: DialogueDef = {
         { id: 'hollis.bitters', text: '(Give him the bitters.)', if: { item: 'c_bitters' }, effects: [{ take: 'c_bitters' }, { trust: { npc: 'npc_sh_06', by: 5 } }], next: 'gift_b', once: true },
         { id: 'hollis.boards', text: 'What are "the boards"?', next: 'boards', once: true },
         { id: 'hollis.kite', text: 'What\'s a kite day?', next: 'kite', once: true },
+        { id: 'hollis.stranger', text: 'A masked man sat here three weeks ago. Tall, old, hurt.', if: { all: [{ quest: 'q_ch1_shale' }, { any: [{ knows: 'hollis_likes_you' }, { trust: { npc: 'npc_sh_06', gte: 10 } }] }] }, next: 'stranger', once: true },
+        { id: 'hollis.stranger.cold', text: 'A masked man sat here three weeks ago.', if: { all: [{ quest: 'q_ch1_shale' }, { not: { knows: 'hollis_likes_you' } }, { trust: { npc: 'npc_sh_06', lte: 9 } }] }, next: 'stranger_cold', once: true },
         bye,
       ],
     },
+    stranger_cold: { text: '"Lots of men sit here, pup. I don\'t remember the ones who don\'t bring a bottle."', options: [{ text: 'Fair.', next: 'intro' }] },
+    stranger: {
+      text: '"Him." The old man goes quiet in a way he hasn\'t been. "He sat where you are. We didn\'t talk. We didn\'t need to — I knew the mask, pup, and he knew I knew it. He had a map. Folded small, kept close, the way you keep a thing you\'ve already decided to sell. He asked me if the Dogs kept their word on water. I said Kessler does. He nodded like a man picking a grave."',
+      effects: [{ learn: 'hollis_saw_stranger' }, { learn: 'kessler_has_map' }, { lead: 'l_map_traded' }, { learn: 'hollis_knew_mask' }, { xp: 30 }],
+      options: [{ text: 'You knew the mask?', next: 'mask' }, { text: 'Thank you.', exit: true }],
+    },
+    mask: { text: '"I knew a man who wore one like it. Forty years ago, in a place with boards." He won\'t say more; he turns his cup over. "Ask me again when I\'m drunker, pup. Or soberer. One of the two."', effects: [{ lead: 'l_hollis_knew_mask' }], options: [{ text: 'I will.', exit: true }] },
     gift: { text: 'He drinks it like a man checking the time. "Pup. Pup, you\'re all right." His eyes go somewhere far east. "Ask me something. Quick, while I like you."', effects: [{ learn: 'hollis_likes_you' }], options: [{ text: 'What are "the boards"?', next: 'boards' }, { text: 'Later.', exit: true }] },
     gift_b: { text: '"Mags\'s rot." He drinks it anyway. "That\'s not a kindness, pup, but I\'ll take the thought."', options: [{ text: 'What are "the boards"?', next: 'boards' }, bye] },
     boards: { text: '"City boards. Screens, pup, tall as a house, with your face on \'em if you were worth a line. Said who paid, who owed, who was next." He laughs, dry as the street. "I had a line once. A short one."', effects: [{ learn: 'hollis_city_boards' }, { lead: 'l_hollis_city' }], options: [{ text: 'Which city?', next: 'which' }, bye] },
@@ -330,5 +370,21 @@ export const d_sh_ruth: DialogueDef = {
     },
     letters: { text: '"Write it where you sleep — Mags\'s room, a camp, anywhere with a table. I carry it. If the person\'s where you say they are, you get an answer in a few days. If they aren\'t, you get the letter back, eventually, with dust on it."', effects: [{ learn: 'letters_how' }], options: [{ text: 'Thanks.', next: 'intro' }] },
     wheel: { text: '"Nomads. Two hundred wagons across the Reach, in rings of forty. Neutral, armed, owed by everyone. We go where the Tollmen don\'t tax and we tax ourselves." She shrugs. "If you ever need to be somewhere else, and I mean *else*, the Wheel is how."', effects: [{ learn: 'wheel_what' }], options: [{ text: 'Noted.', next: 'intro' }] },
+  },
+};
+
+/** The west road out of Shale: a sign, ruts, and three-week-old boot prints for anyone who can read ground. */
+export const d_sh_tracks: DialogueDef = {
+  id: 'd_sh_tracks', owner: 'narrator',
+  start: [{ node: 'look' }],
+  nodes: {
+    look: {
+      text: 'A board on a post: SHALE — WATER BY THE CUP — NO DOGS. The road runs west into hardpan, toward the salt cut and, further, the line of a dead highway against the sky.',
+      passives: [
+        { skill: 'survival', dc: 40, text: 'Old prints in the crust at the road\'s edge, kept by three dry weeks: one man, boots worn on the outer edge, a long drag on the right leg. He went west — not toward the salt cut, but north-west, toward the highway. And he was alone.', effects: [{ learn: 'tracks_read' }, { lead: 'l_tracks_overpass' }, { xp: 30 }] },
+        { attr: 'senses', dc: 8, text: 'Scuffs where somebody sat down hard against the post, and a dark stain in the dust that the wind hasn\'t taken yet.', effects: [{ learn: 'tracks_blood' }] },
+      ],
+      options: [{ text: '(Move on.)', exit: true }],
+    },
   },
 };

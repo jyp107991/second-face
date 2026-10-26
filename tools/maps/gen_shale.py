@@ -122,7 +122,7 @@ props = [
     {'kind': 'cactus', 'x': 35, 'y': 40}, {'kind': 'rock', 'x': 2, 'y': 48}, {'kind': 'rock_small', 'x': 50, 'y': 24}, {'kind': 'rock_small', 'x': 36, 'y': 14}, {'kind': 'debris', 'x': 24, 'y': 16},
     {'kind': 'debris', 'x': 52, 'y': 39}, {'kind': 'car_wreck', 'x': 20, 'y': 8, 'rot': 1}, {'kind': 'tire_pile', 'x': 3, 'y': 20}, {'kind': 'barrel_rust', 'x': 35, 'y': 26}, {'kind': 'fire_barrel', 'x': 34, 'y': 28},
     {'kind': 'lamp_post', 'x': 20, 'y': 28}, {'kind': 'lamp_post', 'x': 10, 'y': 22}, {'kind': 'lamp_post', 'x': 38, 'y': 28}, {'kind': 'sandbags', 'x': 2, 'y': 23}, {'kind': 'sandbags', 'x': 2, 'y': 27},
-    {'kind': 'sandbags', 'x': 61, 'y': 23}, {'kind': 'sandbags', 'x': 61, 'y': 27}, {'kind': 'sign', 'x': 3, 'y': 24},
+    {'kind': 'sandbags', 'x': 61, 'y': 23}, {'kind': 'sandbags', 'x': 61, 'y': 27}, {'kind': 'sign', 'x': 3, 'y': 24, 'id': 'west_sign'},
 ]
 
 shale = {
@@ -161,6 +161,7 @@ shale = {
         'room_bed': {'dialogue': 'd_sh_room', 'name': 'The back room'},
         'pump_a': {'dialogue': 'd_sh_pumps', 'name': 'The pumps'},
         'pump_b': {'dialogue': 'd_sh_pumps', 'name': 'The pumps'},
+        'west_sign': {'dialogue': 'd_sh_tracks', 'name': 'The west road'},
     },
     'containers': {
         'bar_shelf': {'name': 'Bar Shelf', 'items': [['c_bitters', 2], ['c_dirtywater', 2], ['j_glass', 3]], 'lock': 15},

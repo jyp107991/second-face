@@ -27,6 +27,10 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_hollis_city', label: 'The boards', text: 'Hollis Crane lived in a city with screens that showed who paid, who owed, and who was next.' },
   { id: 'l_ring_shale', label: 'The ring', text: 'The stranger\'s ring, bought back from Pardo: two letters and a half-sun inside the band.' },
   { id: 'l_ines_burned', label: 'Burned letter', text: 'Ines burned your letter about the city and would not say why.' },
+  { id: 'l_map_traded', label: 'The map for water', text: 'He carried a folded map with names on it, and meant to trade it to Kessler for water.' },
+  { id: 'l_hollis_knew_mask', label: 'Hollis knew the mask', text: 'Hollis Crane recognised the half-sun mask from a man he knew forty years ago, in the city.' },
+  { id: 'l_pike_reported', label: 'Pike reported him', text: 'Factor Pike reported the stranger\'s conversation to the Tollmen post east, as per.' },
+  { id: 'l_tracks_overpass', label: 'Tracks to the highway', text: 'His tracks leave Shale north-west, toward the dead highway, alone.' },
   { id: 'l_ring_gone', label: 'Missing ring', text: 'The stranger had worn a ring until shortly before he died. He traded or lost it near the end.' },
 ] as LeadDef[]).map((l) => [l.id, l]));
 

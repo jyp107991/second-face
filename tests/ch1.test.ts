@@ -96,3 +96,40 @@ describe('build coverage', () => {
     expect(errs.some((e) => e.includes('bruiser'))).toBe(true);
   });
 });
+
+describe('Shale: tracing the stranger', () => {
+  it('starts when the Cistern quest ends and advances on the sheriff\'s word', () => {
+    const g = newGameState('c9', 0, 0);
+    const q = new QuestEngine(QUESTS, g);
+    q.questStart('q_ch1_door');
+    g.flags.c9_examined = true; g.flags.c9_council_done = true; g.flags.c9_door_open = true; g.flags.c9_left = true;
+    q.update();
+    expect(g.world.quests.q_ch1_door.status).toBe('done');
+    expect(g.world.quests.q_ch1_shale?.stage).toBe('road');
+    g.flags.visited_shale = true;
+    talk('d_sh_ada', g, q, ['The salt cut.', 'Did he say his name?', 'Thanks.', 'Understood.']);
+    expect(g.world.quests.q_ch1_shale.stage).toBe('overpass');
+    g.flags.visited_overpass = true;
+    q.update();
+    expect(g.world.quests.q_ch1_shale.status).toBe('done');
+  });
+
+  it('the rumour can be bought from Pike, and Mags takes a promise instead of coin', () => {
+    const g = newGameState('c9', 0, 0);
+    const q = new QuestEngine(QUESTS, g);
+    q.questStart('q_ch1_shale');
+    g.flags.visited_shale = true;
+    g.pc.inventory.tolls = 20;
+    talk('d_sh_pike', g, q, ['A masked man came through', '(Pay. 15 Tolls)', 'Noted.']);
+    expect(g.pc.inventory.tolls).toBe(5);
+    expect(g.world.knowledge.kessler_has_map).toBe(true);
+    expect(g.world.quests.q_ch1_shale.stage).toBe('overpass');
+    const g2 = newGameState('c9', 0, 0);
+    const q2 = new QuestEngine(QUESTS, g2);
+    q2.questStart('q_ch1_shale');
+    g2.world.knowledge.teo_prisoner = true;
+    talk('d_sh_mags', g2, q2, ['What have you got', 'A tall old man with a mask', 'Tell me, and I\'ll ask after Teo', 'Thank you.']);
+    expect(g2.world.decisions.map((d) => d.id)).toContain('promised_mags_teo');
+    expect(g2.world.knowledge.mags_saw_stranger).toBe(true);
+  });
+});

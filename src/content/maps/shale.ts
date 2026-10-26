@@ -837,7 +837,8 @@ export const shale: MapDef = {
     {
       kind: "sign",
       x: 3,
-      y: 24
+      y: 24,
+      id: "west_sign"
     }
   ],
   lights: [
@@ -964,6 +965,10 @@ export const shale: MapDef = {
     pump_b: {
       dialogue: "d_sh_pumps",
       name: "The pumps"
+    },
+    west_sign: {
+      dialogue: "d_sh_tracks",
+      name: "The west road"
     }
   },
   containers: {
