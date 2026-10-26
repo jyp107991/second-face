@@ -378,7 +378,8 @@ function smoothNormals(g: THREE.BufferGeometry): void {
 function eyeMaterial(color: string): THREE.Material {
   const d = humanData();
   const rel = d.m.eyes[color] ?? d.m.eyes.brown;
-  return new THREE.MeshStandardMaterial({ map: humanTexture(rel), roughness: 0.15, metalness: 0, alphaTest: 0.5 });
+  // A wet eye: a glossy clearcoat over the iris texture gives the small bright catchlight real eyes have.
+  return new THREE.MeshPhysicalMaterial({ map: humanTexture(rel), roughness: 0.22, metalness: 0, alphaTest: 0.5, clearcoat: 1, clearcoatRoughness: 0.08 });
 }
 
 /**

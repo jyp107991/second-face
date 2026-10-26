@@ -34,6 +34,22 @@ vec3 clothLook(vec3 c, vec3 dye, float dyeAmt, float grime, float wear, float se
   float lw = dot(c, vec3(0.3, 0.55, 0.15));
   // Faded and yellowed: whites go dingy, colours lose their saturation.
   c = mix(c, vec3(lw) * vec3(0.82, 0.78, 0.68) + vec3(0.05, 0.045, 0.035), wear * (0.45 + 0.35 * n));
+  // Patches: a few cells of different cloth sewn over worn spots; shown once wear passes a third.
+  // Patch cells are small (≈6 cm), skewed so they don't line up, and only some cells become patches.
+  vec3 pr = rest * 16.0 + vec3(rest.y * 3.1, rest.z * 2.3, rest.x * 1.7) + vec3(seed);
+  vec3 cell = floor(pr);
+  vec3 cf = fract(pr);
+  float pc = gHash(cell, seed + 3.0);
+  float pt = step(1.0 - clamp((wear - 0.4) * 0.2, 0.0, 0.1), pc);
+  // Stitched edge: a faint darker rim just inside the cell.
+  float rim = 1.0 - smoothstep(0.0, 0.1, min(min(cf.x, 1.0 - cf.x), min(cf.y, 1.0 - cf.y)));
+  float lum = dot(c, vec3(0.3, 0.55, 0.15));
+  vec3 other = mix(vec3(0.3, 0.26, 0.2), vec3(0.42, 0.4, 0.36), gHash(cell, seed + 9.0)) * clamp(lum * 1.6 + 0.3, 0.4, 1.1);
+  vec3 patchCol = mix(c * 0.7, other, 0.6) * (1.0 - 0.2 * rim);
+  c = mix(c, patchCol, pt * 0.85);
+  // Stains: oily blotches, more with grime.
+  float st = smoothstep(0.62, 0.8, gNoise(rest * 5.5 + vec3(seed * 0.3), seed + 5.0));
+  c = mix(c, c * vec3(0.45, 0.4, 0.35), st * clamp(grime * 1.4, 0.0, 0.9));
   float low = 1.0 - smoothstep(0.0, 1.1, rest.y);
   float gm = grime * clamp((0.4 + 0.8 * low) * smoothstep(0.25, 0.75, n + low * 0.3), 0.0, 1.0);
   return mix(c, vec3(0.20, 0.165, 0.12) * (0.7 + 0.6 * n), gm * 0.75);

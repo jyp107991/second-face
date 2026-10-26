@@ -48,34 +48,38 @@ session). Engine decision: see `docs/TECH_EVALUATION.md` (recommendation: stay o
       loop), nonlinearity rules (entry routes, region order, tiered loot), QoL list.
 - [x] A2.2 Engine: faction membership model (`world/factions.ts`, content `content/factions/`, 14 factions, save v5) (`world/factions.ts`: ranks, conditions `member`, effects
       `join`/`rank`/`expel`, conflicts), validator + tests.
-- [~] A2.3 Engine: companions core DONE (`npc/party.ts` + game: party spawns with you, follows, fights as
-      allies, goes down and gets up wounded, sheets/packs kept across maps, dismissed companions wait where
-      left; approval toasts). TODO: camp scene (talk/cook/mend/letters/rest), banter triggers.
+- [x] A2.3 Engine: companions core (`npc/party.ts` + game: party spawns with you, follows, fights as allies,
+      goes down and gets up wounded, sheets/packs kept across maps, dismissed companions wait where left;
+      approval toasts) + camp scene (`ui/camp.ts`: rest with water/food costs, talk, cook `cookTo`, mend with
+      repair kits, write letters; `game.openCamp()`, campfire props, HUD △). Banter is content-driven at camp
+      (dialogue starts can test flag `at_camp`).
 - [~] A2.4 Engine: barter DONE (`inventory/barter.ts` pricing by Barter/standing/membership, saturation,
       merchant cash + restock; `ui/barter.ts` screen; NpcDef.merchant; dialogue effect `{event:'barter'}`).
       TODO: economy sim script.
 - [x] A2.5 Engine: NPC schedules (`npc/schedule.ts`, NpcDef.schedule + MapDef.spots, 'away' leaves the
       map) + barks (NpcDef.barks as floating text near the player).
-- [ ] A2.6 Activities v1 (each a real system): dice game "Dust", fight pit (combat rules variant + bets),
-      letters (caravan delay timers), hunting/trapping + fishing (Survival; procedural animals), reverie
-      vignettes (dialogue-tree based with sensory framing), safehouse (storage/rest/fast-travel point).
-      Later: races, salvage dives, caravan escort, court defence, heists (B phase as content demands).
-- [ ] A2.7 QoL: undo last move (outside combat), quick-loot/take-all everywhere, tooltips + equip
-      comparison, pins in notebook, dialogue log tab, skip-seen-dialogue, text size/speed/contrast,
-      colour-blind-safe check tags (icons not just colour), remappable keys, difficulty options (never
-      touching scarcity design), optional tips, settings persisted.
-
-### A3 Look and feel: people
-- [ ] A3.1 Clothing: cull out-of-place garments (dresses, florals, clean fashion → restricted to the Crown/
+- [~] A2.6 Activities v1: DONE Dust dice (`minigames/dust.ts` + `ui/dust.ts`; dialogue `{event:'dust', data:{stake}}`),
+      letters (`world/letters.ts`, content `content/world/letters.ts`, replies via timers, notebook Letters view,
+      HUD unread badge). TODO with their content slices: fight pit (B3), hunting/trapping + fishing + animals (B2),
+      reverie vignettes (B3), safehouses (B1 Shale room), races/dives/escort/court/heists (B2–B4).
+- [x] A2.7 QoL: undo last move (HUD ↶ / key), take-all (existing), equip comparison in Pack, quest pins (HUD
+      objective line), dialogue Log view, Skip ▸▸ through heard lines, text size + high contrast, ✓/✗ glyphs on
+      checks, remappable keys (`ui/settings.ts`), difficulty (enemy aim/damage only), combat speed, one-time
+      tips, settings persisted. Smoke test: `node tools/qa/smoke.cjs <outdir>`.
+- [x] A3.1 Clothing (`data/garments.ts` cull + elite retags, `assets/human/cloth.ts` dye/fade/dirt/patches/stains,
+      `assets/human/gear.ts` procedural respirator/goggles/bandana/headwrap/neck wrap/plates/harness, `data/outfits.ts`
+      `dressFor(seed, role, fit, faction)` + FACTION_LOOK): cull out-of-place garments (dresses, florals, clean fashion → restricted to the Crown/
       Halcyon or removed); gritty retexture pass (worn canvas/leather/synthetic atlases, patches, stains);
       new procedural pieces (poncho, duster, hood/wrap, scrap plates, harness/webbing, respirator, goggles
       strap); faction/gang looks (colours, markers) recognisable at iso distance. CREDITS kept complete.
-- [ ] A3.2 Bodies: lean/wiry/gaunt defaults, rare heavy (rich or specific); proportion variation (limb
+- [x] A3.2 Bodies (`data/appearance.ts` lean distributions, LIFE table, BODY_VARIATION, ASYMMETRY, posture;
+      `assets/humanoid.ts` applies them): lean/wiry/gaunt defaults, rare heavy (rich or specific); proportion variation (limb
       length, shoulder/hip, neck, posture slouch) via MakeHuman measure/torso/armslegs modifiers + anim.
-- [ ] A3.3 Faces: research + adopt better open resources (community skin packs skins01/02/03 full diffuse
+- [x] A3.3 Faces (`assets/human/skin.ts` 8 skin variants + weathering paint, `figure.ts` eye clearcoat,
+      community skins 13 entries in `tools/mh/build_human.py`, hair contexts + RICH_DYES in `appearance.ts`): research + adopt better open resources (community skin packs skins01/02/03 full diffuse
       variety, asymmetry via l-/r- modifiers, weathering/sun damage/chapped lips, eye wetness/lip spec,
       ageing wrinkle strength, female-specific shape variation, world-fitting hairstyles only).
-- [ ] A3.4 Before/after comparison sheets (portrait + iso) for each of A3.1–A3.3, judged honestly; revert
+- [~] A3.4 (portrait sheets done, judged: gear reads at portrait, bodies varied; iso-distance sheet TODO) Before/after comparison sheets (portrait + iso) for each of A3.1–A3.3, judged honestly; revert
       regressions; sheets sent to owner.
 
 ### A4 Technology and performance
@@ -83,7 +87,8 @@ session). Engine decision: see `docs/TECH_EVALUATION.md` (recommendation: stay o
       (glTF+meshopt/Draco, KTX2/Basis, baked lighting, instancing, LOD/impostors, forward+, AgX tonemap,
       GTAO, volumetric fog, decals) — quality ceiling, mobile perf, Pages deploy, migration cost, risk;
       recommendation; owner asked (no migration without approval).
-- [ ] A4.2 Perf overlay (frame ms, draws, tris, textures MB, geometry MB, load ms) + benchmark scenes
+- [~] A4.2 (`game.perf()` snapshot + DEV overlay line, `bench_crowd` map + 40 bench NPCs, `tools/qa/bench.cjs`;
+      TODO run and write `docs/PERF.md`) Perf overlay (frame ms, draws, tris, textures MB, geometry MB, load ms) + benchmark scenes
       (`bench_crowd` 40 NPCs, `bench_combat`, world map) + `tools/qa/bench.cjs` recording numbers to
       `docs/PERF.md`.
 - [ ] A4.3 Pareto improvements measured one by one: skin texture cache/hash + smaller iso skins, worker

@@ -124,6 +124,48 @@ export class Game extends EventBus<GameEvents> {
   fps = 0;
   private fpsAcc = 0;
   private fpsFrames = 0;
+  /** Recent real frame times (ms) for the perf snapshot. */
+  private frameMs: number[] = [];
+  /** Set by main.ts: ms from page start to the first playable frame. */
+  loadMs = 0;
+
+  /** Performance snapshot for the dev overlay and tools/qa/bench.cjs. Memory figures are estimates from the scene. */
+  perf(): { fps: number; frameAvgMs: number; frameP95Ms: number; draws: number; tris: number; textures: number; textureMB: number; geometries: number; geometryMB: number; heapMB: number; loadMs: number; npcs: number } {
+    const ms = this.frameMs.slice().sort((a, b) => a - b);
+    const avg = ms.length ? ms.reduce((t, v) => t + v, 0) / ms.length : 0;
+    const p95 = ms.length ? ms[Math.min(ms.length - 1, Math.floor(ms.length * 0.95))] : 0;
+    const texSeen = new Set<THREE.Texture>(); let texBytes = 0;
+    const geoSeen = new Set<THREE.BufferGeometry>(); let geoBytes = 0;
+    const scan = (root: THREE.Object3D) => root.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.geometry && !geoSeen.has(m.geometry)) {
+        geoSeen.add(m.geometry);
+        for (const a of Object.values(m.geometry.attributes)) geoBytes += (a as THREE.BufferAttribute).array.byteLength;
+        if (m.geometry.index) geoBytes += m.geometry.index.array.byteLength;
+      }
+      for (const mat of [m.material].flat()) {
+        if (!mat) continue;
+        for (const v of Object.values(mat as unknown as Record<string, unknown>)) {
+          const t = v as THREE.Texture;
+          if (t && (t as THREE.Texture).isTexture && !texSeen.has(t)) {
+            texSeen.add(t);
+            const img = t.image as { width?: number; height?: number } | undefined;
+            if (img?.width && img?.height) texBytes += img.width * img.height * 4 * 1.33;
+          }
+        }
+      }
+    });
+    scan(this.scene);
+    if (this.portrait) scan(this.portrait.scene);
+    const mem = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory;
+    const info = this.renderer.info;
+    return {
+      fps: Math.round(this.fps), frameAvgMs: Math.round(avg * 100) / 100, frameP95Ms: Math.round(p95 * 100) / 100,
+      draws: info.render.calls, tris: info.render.triangles, textures: info.memory.textures, textureMB: Math.round(texBytes / 1048576),
+      geometries: info.memory.geometries, geometryMB: Math.round(geoBytes / 1048576 * 10) / 10, heapMB: mem ? Math.round(mem.usedJSHeapSize / 1048576) : -1,
+      loadMs: Math.round(this.loadMs), npcs: this.npcs.size,
+    };
+  }
 
   constructor(private container: HTMLElement) {
     super();
@@ -786,6 +828,7 @@ export class Game extends EventBus<GameEvents> {
 
   private frame(now: number): void {
     const realDt = this.lastFrame ? Math.max(0, (now - this.lastFrame) / 1000) : 0;
+    if (this.lastFrame) { this.frameMs.push(realDt * 1000); if (this.frameMs.length > 180) this.frameMs.shift(); }
     const dt = Math.min(0.05, realDt);
     this.lastFrame = now;
     this.renderer.info.reset();

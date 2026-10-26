@@ -22,11 +22,14 @@ function ageKey(age: number) { return age < 36 ? 'young' : age < 56 ? 'middleage
 export function skinTextureKeys(a: Appearance, hi = false): { light: string; dark: string } {
   const d = humanData();
   const age = ageKey(a.shape.age), sex = a.shape.gender >= 0.5 ? 'male' : 'female';
-  const variants = ['', '2', '3'];
+  const variants = ['', '2', '3', '4', '5', '6', '7', '8'];
   let light = `${age}_light_${sex}${variants[a.skinVariant] ?? ''}`;
+  if (!d.m.skins[light]) light = `${age}_light_${sex}${variants[a.skinVariant % 3] ?? ''}`;
   if (!d.m.skins[light]) light = `${age}_light_${sex}`;
+  let dark = `${age}_dark_${sex}${variants[a.skinVariant] ?? ''}`;
+  if (!d.m.skins[dark]) dark = `${age}_dark_${sex}`;
   const sfx = (rel: string) => (hi ? rel.replace('.webp', '_hi.webp') : rel);
-  return { light: sfx(d.m.skins[light]), dark: sfx(d.m.skins[`${age}_dark_${sex}`]) };
+  return { light: sfx(d.m.skins[light]), dark: sfx(d.m.skins[dark]) };
 }
 
 export interface HeadFrame { c: THREE.Vector3; r: number; }
@@ -65,7 +68,7 @@ function headTriangles(): Uint32Array {
   return (headTris = new Uint32Array(out));
 }
 
-const needsPaint = (a: Appearance) => a.hair.style !== 'none' || a.facialHair !== 'none' || a.freckles > 0 || a.scars.length > 0 || a.tattoos.length > 0 || (a.grime ?? 0) > 0;
+const needsPaint = (a: Appearance) => a.hair.style !== 'none' || a.facialHair !== 'none' || a.freckles > 0 || a.scars.length > 0 || a.tattoos.length > 0 || (a.grime ?? 0) > 0 || (a.weathering ?? 0) > 0;
 
 /** Build the skin texture. Resolves synchronously if images are preloaded; updates in place otherwise. */
 export function makeSkinTexture(a: Appearance, size = 1024): THREE.CanvasTexture {
@@ -257,8 +260,9 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
   const ink = new THREE.Color().setHex(a.tattooColor, THREE.LinearSRGBColorSpace);
   const scarC = new THREE.Color().setHex(0xd8a592, THREE.LinearSRGBColorSpace);
   const burnC = new THREE.Color().setHex(0xb87666, THREE.LinearSRGBColorSpace);
-  const grime = a.grime ?? 0;
+  const grime = a.grime ?? 0, weather = a.weathering ?? 0;
   const dirtC = new THREE.Color().setHex(0x4a3a2a, THREE.LinearSRGBColorSpace);
+  const sunC = new THREE.Color().setHex(0x9a4e3e, THREE.LinearSRGBColorSpace);
   const P = [new V(), new V(), new V()];
   const U = [0, 0, 0], W = [0, 0, 0];
   const p = new V();
@@ -316,6 +320,13 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
             if (dd < sc.w) blend(i, scarC, 0.6 * (1 - dd / sc.w) + 0.2);
             else if (dd < sc.w * 2) { px[i] *= 0.9; px[i + 1] *= 0.88; px[i + 2] *= 0.88; }
           }
+        }
+        // Weathering: the high points that face the sun (nose, cheekbones, brow) go ruddy and blotchy.
+        if (weather > 0 && dir.z > 0.45) {
+          const n = valueNoise3(dir.x * 11 + 3, dir.y * 11, dir.z * 11) * 0.6 + valueNoise3(dir.x * 29, dir.y * 29 + 5, dir.z * 29) * 0.4;
+          const band = dir.y > -0.55 && dir.y < 0.55 ? 1 : 0.35;
+          const k = weather * Math.min(1, (dir.z - 0.45) * 2.6) * band * Math.max(0, n - 0.3) * 1.3;
+          if (k > 0.02) blend(i, sunC, Math.min(0.45, k * 0.55));
         }
         // Grime: patchy dust and soot, heaviest on the cheeks, jaw and brow; worn into the creases.
         if (grime > 0) {

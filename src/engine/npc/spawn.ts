@@ -71,5 +71,5 @@ export function npcLook(def: NpcDef): { app: Appearance; outfit: Outfit } {
   const role = def.role ?? 'settler';
   const app = randomAppearance(def.look.seed, { frame: def.look.frame, age: def.look.age, over: def.look.over, ...roleLook(role) });
   const fit = def.look.frame ? (def.look.frame === 'broad' ? 'm' : 'f') : app.shape.gender > 0.5 ? 'm' : 'f';
-  return { app, outfit: def.outfit ?? dressFor(def.look.seed, role, fit) };
+  return { app, outfit: def.outfit ?? dressFor(def.look.seed, role, fit, def.faction) };
 }

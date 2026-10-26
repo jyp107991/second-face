@@ -62,9 +62,10 @@ export class DevOverlay {
       acc = 0;
       const info = game.renderer.info;
       const p = game.player;
+      const pf = game.perf();
       this.stats.textContent =
-        `FPS ${game.fps.toFixed(0)}  draws ${info.render.calls}  tris ${(info.render.triangles / 1000).toFixed(1)}k\n` +
-        `geo ${info.memory.geometries}  tex ${info.memory.textures}  q=${game.quality}\n` +
+        `FPS ${game.fps.toFixed(0)} (${pf.frameAvgMs}ms avg, ${pf.frameP95Ms}ms p95)  draws ${info.render.calls}  tris ${(info.render.triangles / 1000).toFixed(1)}k\n` +
+        `geo ${info.memory.geometries} (${pf.geometryMB}MB)  tex ${info.memory.textures} (~${pf.textureMB}MB)  heap ${pf.heapMB}MB  load ${pf.loadMs}ms  q=${game.quality}\n` +
         `loc ${game.state.locationId}  tile ${p?.tx},${p?.ty}\n` +
         `${clockString(game.state.minutes)}  x${game.timeScale}\n` +
         `flags ${JSON.stringify(game.state.flags)}`;

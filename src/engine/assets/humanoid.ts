@@ -4,6 +4,7 @@ import { HumanFigure } from './human/figure';
 import type { GarmentLook } from './human/cloth';
 import { makeSkinTexture } from './human/skin';
 import { outfitHairMode } from '../data/outfits';
+import { addGear, type GearLook } from './human/gear';
 
 /**
  * What a character wears. Suits/shoes are the base full outfits; `layers` are separate garments (see
@@ -17,6 +18,8 @@ export interface Outfit {
   /** Gas mask over the face. */
   mask?: boolean;
   layers?: GarmentLook[];
+  /** Procedural pieces (poncho, wraps, goggles, plates…) from assets/human/gear.ts. */
+  gear?: GearLook[];
   grime?: number;
   wear?: number;
 }
@@ -78,6 +81,7 @@ export class Humanoid {
   private parentAnimated = new Map<string, string | undefined>();
   private W = new Map<string, THREE.Quaternion>();
   private rootRestY: number;
+  private posture = 0;
 
   constructor(look: HumanoidLook) {
     const o = look.outfit;
@@ -88,10 +92,11 @@ export class Humanoid {
       shape: app.shape, skin: this.skin, eyes: app.eyes, brows: app.brows, hair: app.hair, clothes, lod: look.lod,
       browColor: app.browColor ?? app.hair.color, facialHair: app.facialHair, skinDetail: app.shape.age > 45 ? 'old' : 'm',
       // Creases deepen with age; the source maps are from adult men, so soften them for young/feminine faces.
-      skinDetailStrength: Math.min(0.8, Math.max(0.2, 0.2 + (app.shape.age - 20) / 60)) * (0.7 + 0.3 * app.shape.gender),
+      skinDetailStrength: Math.min(0.9, Math.max(0.2, 0.2 + (app.shape.age - 20) / 60 + (app.weathering ?? 0) * 0.25)) * (0.7 + 0.3 * app.shape.gender),
     });
     this.root = this.figure.root;
     this.eyeHeight = this.figure.eyeHeight;
+    this.posture = app.posture ?? 0;
     const f = this.figure;
     // Arms hang from the A-pose rest: aim each upper arm slightly out from straight down.
     this.armDown = {
@@ -102,6 +107,10 @@ export class Humanoid {
     for (const n of ANIMATED) this.parentAnimated.set(n, nearestAnimatedAncestor(f, n));
     this.rootRestY = f.bones.get('root')!.position.y;
     if (o.mask) this.addMask();
+    for (const g of o.gear ?? []) {
+      const meshes = addGear(this.figure, { grime: o.grime, wear: o.wear, ...g });
+      if (look.lod === 'low') for (const m of meshes) m.castShadow = false;
+    }
     this.animate(0, 0);
   }
 
@@ -146,10 +155,12 @@ export class Humanoid {
     const breath = Math.sin(this.breathe * 1.5);
     const W = this.W;
     W.set('root', new THREE.Quaternion());
-    W.set('spine05', qAxis(X, 0.04 * w - this.flinch * 0.25));
-    W.set('spine03', qAxis(Y, s * 0.06 * w).multiply(qAxis(X, breath * 0.012)));
-    W.set('neck01', qAxis(X, -0.03 * w + this.flinch * 0.2));
-    W.set('head', qAxis(Y, Math.sin(this.breathe * 0.31) * 0.08 * (1 - w)));
+    // Posture: a slouch rounds the upper back and the head comes forward and up to compensate.
+    const sl = this.posture;
+    W.set('spine05', qAxis(X, 0.04 * w - this.flinch * 0.25 + sl * 0.07));
+    W.set('spine03', qAxis(Y, s * 0.06 * w).multiply(qAxis(X, breath * 0.012 + sl * 0.08)));
+    W.set('neck01', qAxis(X, -0.03 * w + this.flinch * 0.2 - sl * 0.09));
+    W.set('head', qAxis(Y, Math.sin(this.breathe * 0.31) * 0.08 * (1 - w)).multiply(qAxis(X, -sl * 0.05)));
     // Legs: forward swing is a negative rotation about X (figure faces +Z).
     for (const [side, sign] of [['L', 1], ['R', -1]] as const) {
       const upper = qAxis(X, -s * sign * 0.55 * w);

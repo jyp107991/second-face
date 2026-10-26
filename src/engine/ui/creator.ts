@@ -354,7 +354,7 @@ export class Creator {
     this.swatches(b, sw, near, (c) => (this.app.skinTone = sw.indexOf(c) / (sw.length - 1)));
     this.slider(b, 'Skin tone (fine)', this.app.skinTone, 0, 1, 0.01, (v) => (this.app.skinTone = v));
     this.slider(b, 'Undertone: rosy ↔ golden', this.app.skinUndertone ?? 0, -1, 1, 0.05, (v) => (this.app.skinUndertone = v));
-    this.chips(b, ['0', '1', '2'] as const, (s) => Number(s) === this.app.skinVariant, (s) => (this.app.skinVariant = Number(s)));
+    this.chips(b, ['0', '1', '2', '3', '4', '5', '6', '7'] as const, (s) => Number(s) === this.app.skinVariant, (s) => (this.app.skinVariant = Number(s)));
     this.modifierSliders(b, ['torso', 'hip', 'stomach', 'buttocks', 'armslegs'], (id) => !/fingers|trans|valgus|pregnant|navel/.test(id));
   }
 

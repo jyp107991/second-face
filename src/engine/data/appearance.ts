@@ -60,6 +60,10 @@ export interface Appearance {
   tattooColor: number;
   /** 0..1 dirt and sun on the skin (painted). */
   grime?: number;
+  /** 0..1 sun and wind damage: ruddy, blotchy high points, deeper creases. */
+  weathering?: number;
+  /** -1 (drawn up straight) .. 1 (slouched); 0 neutral. */
+  posture?: number;
 }
 
 export function defaultAppearance(): Appearance {
@@ -81,8 +85,13 @@ export function defaultAppearance(): Appearance {
 /** How someone has lived: shapes body (hunger, labour, comfort) and how much grime they carry. */
 export type Lifestyle = 'starved' | 'hard' | 'settled' | 'soft' | 'pampered';
 
+/** Which world a head belongs to: frontier hair is practical, street hair is shaved/dyed, rich hair is styled. */
+export type HairContext = 'frontier' | 'street' | 'rich';
+
 /** Dye colours seen on city heads (bleach, neon, ink). */
 export const HAIR_DYES = [0xe6d9b0, 0xf0ece2, 0xd23a8c, 0x9b3fd1, 0x2fb9c4, 0x3a62d8, 0xd8452c, 0x56c45a, 0x15161c, 0xb9b9c8] as const;
+/** The Crown dyes to statement, not to shock: bleach, platinum, ink, violet, grey. */
+export const RICH_DYES = [0xe6d9b0, 0xf0ece2, 0x15161c, 0x9b3fd1, 0xb9b9c8, 0x6a1f3a] as const;
 
 export interface RandomLookOptions {
   frame?: 'broad' | 'narrow';
@@ -90,6 +99,8 @@ export interface RandomLookOptions {
   life?: Lifestyle;
   /** Chance of dyed hair (city youth and the Crown's fashionable). */
   dyeChance?: number;
+  /** Hairstyle world (default 'frontier'). */
+  hair?: HairContext;
   /** Force an ancestry preset id (no mixing). */
   ancestry?: string;
   over?: Partial<Omit<Appearance, 'shape'>> & { shape?: Partial<ShapeParams> };
@@ -104,19 +115,26 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   const s = a.shape;
   s.gender = masc ? 0.8 + r.next() * 0.2 : r.next() * 0.2;
   s.age = opts.age ?? Math.round(19 + Math.pow(r.next(), 1.5) * 52);
-  s.muscle = clamp(0.5 + gauss() * 0.35);
-  s.weight = clamp(0.45 + gauss() * 0.3);
+  // A scarcity world is lean: wiry, gaunt and labour-built bodies; soft ones mark the comfortable.
+  s.muscle = clamp(0.5 + gauss() * 0.3);
+  s.weight = clamp(0.36 + gauss() * 0.2);
   s.height = clamp(0.5 + gauss() * 0.35);
-  // Body extremes: hunger, heavy labour, comfort; plus the occasional very tall/short or heavy person.
   const life = opts.life ?? 'settled';
-  const LIFE: Record<Lifestyle, [number, number]> = { starved: [-0.3, -0.15], hard: [-0.1, 0.15], settled: [0, 0], soft: [0.15, -0.15], pampered: [0.1, -0.1] };
+  const LIFE: Record<Lifestyle, [number, number]> = { starved: [-0.28, -0.12], hard: [-0.08, 0.18], settled: [-0.02, 0], soft: [0.18, -0.15], pampered: [0.14, -0.1] };
   s.weight = clamp(s.weight + LIFE[life][0]);
   s.muscle = clamp(s.muscle + LIFE[life][1]);
   const body = r.next();
-  if (body < 0.07) { s.weight = r.range(0.85, 1); s.muscle = r.range(0.2, 0.6); }
-  else if (body < 0.14 && life !== 'pampered') { s.weight = r.range(0, 0.12); s.muscle = r.range(0.1, 0.45); }
-  else if (body < 0.2) { s.muscle = r.range(0.8, 1); s.weight = r.range(0.4, 0.7); }
+  const comfortable = life === 'soft' || life === 'pampered';
+  if (body < (comfortable ? 0.08 : 0.015)) { s.weight = r.range(0.78, 0.95); s.muscle = r.range(0.2, 0.5); }
+  else if (body < (life === 'starved' || life === 'hard' ? 0.18 : 0.07)) { s.weight = r.range(0, 0.1); s.muscle = r.range(0.1, 0.4); }
+  else if (body < 0.26 && !comfortable) { s.muscle = r.range(0.8, 1); s.weight = r.range(0.35, 0.6); }
   if (r.chance(0.08)) s.height = r.chance(0.5) ? r.range(0.9, 1) : r.range(0, 0.1);
+  // Proportions vary independently of mass: limb lengths, shoulders and hips, neck, hands.
+  for (const id of BODY_VARIATION) if (r.chance(0.75)) s.modifiers[id] = gauss() * 0.5;
+  if (life === 'hard') { s.modifiers['sym:upperarm-muscle|decr|incr'] = r.range(0.1, 0.5); s.modifiers['torso-muscle-dorsi|decr|incr'] = r.range(0, 0.4); }
+  if (life === 'starved') { s.modifiers['torso-scale-horiz|decr|incr'] = -r.range(0.15, 0.4); s.modifiers['stomach-tone|decr|incr'] = -r.range(0.1, 0.4); }
+  if (comfortable) s.modifiers['stomach-tone|decr|incr'] = -r.range(0.1, 0.5);
+  a.posture = clamp(gauss() * 0.5 + (life === 'starved' ? 0.35 : life === 'hard' ? 0.15 : life === 'pampered' ? -0.25 : 0), -1, 1);
   // Most people come from one ancestry cluster; about a fifth are visibly mixed.
   const next = () => r.next();
   const pool = ANCESTRIES.map((x) => [x, x.weight] as [AncestryPreset, number]);
@@ -136,7 +154,7 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   a.ancestry = pa === pb ? pa.id : `${pa.id}+${pb.id}`;
   a.skinTone = clamp(mixv(r.range(...pa.tone), r.range(...pb.tone)));
   a.skinUndertone = mixv(r.range(...pa.undertone), r.range(...pb.undertone));
-  a.skinVariant = r.int(0, 2);
+  a.skinVariant = r.int(0, 7);
   const src = () => (r.chance(w) ? pa : pb);
   a.eyes = weighted(next, src().eyes);
   const texture = weighted(next, src().texture);
@@ -145,8 +163,8 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   // Greying from the late thirties.
   const grey = clamp((s.age - 38) / 35) * 0.75 * r.range(0.6, 1.2);
   if (grey > 0) hairColor = mixHex(hairColor, 0xb8b6ae, clamp(grey));
-  a.hair = { style: r.pick(hairPool(texture, masc)), color: hairColor };
-  if (opts.dyeChance && s.age < 50 && r.chance(opts.dyeChance)) a.hair.color = r.pick(HAIR_DYES);
+  a.hair = { style: r.pick(hairPool(texture, masc, opts.hair ?? 'frontier')), color: hairColor };
+  if (opts.dyeChance && s.age < 50 && r.chance(opts.dyeChance)) a.hair.color = r.pick(opts.hair === 'rich' ? RICH_DYES : HAIR_DYES);
   // Brows grey later and less than scalp hair.
   a.browColor = grey > 0.3 ? mixHex(natural, 0xb8b6ae, clamp((grey - 0.3) * 0.6)) : natural;
   a.brows = r.pick(BROW_STYLES.slice(0, 14));
@@ -162,6 +180,10 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   if (life === 'starved' || life === 'hard') s.modifiers['head-age|decr|incr'] = Math.max(s.modifiers['head-age|decr|incr'] ?? 0, r.range(0.05, 0.3));
   if (life === 'starved') s.modifiers['sym:cheek-volume|decr|incr'] = -r.range(0.4, 0.9);
   a.grime = { starved: r.range(0.4, 0.8), hard: r.range(0.2, 0.55), settled: r.range(0, 0.25), soft: 0, pampered: 0 }[life];
+  // Sun and wind: anyone who lives outdoors is weathered early.
+  a.weathering = clamp({ starved: r.range(0.5, 0.9), hard: r.range(0.4, 0.8), settled: r.range(0.15, 0.45), soft: r.range(0, 0.15), pampered: 0 }[life] + Math.max(0, (s.age - 35) / 100));
+  // Faces are not symmetric: each side drifts a little on its own.
+  for (const id of ASYMMETRY) s.modifiers[id] = gauss() * 0.2;
   const o = opts.over ?? {};
   return { ...a, ...o, shape: { ...s, ...(o.shape ?? {}), modifiers: { ...s.modifiers, ...(o.shape?.modifiers ?? {}) } } } as Appearance;
 }
@@ -186,8 +208,18 @@ export const HAIR_BY_TEXTURE: Record<HairTexture, { masc: HairStyle[]; fem: Hair
   },
 };
 
-function hairPool(t: HairTexture, masc: boolean): HairStyle[] {
-  return masc ? HAIR_BY_TEXTURE[t].masc : HAIR_BY_TEXTURE[t].fem;
+/** Styles that fit each world (WORLD.md §7): nobody on the frontier has a salon cut. */
+const HAIR_BY_CONTEXT: Record<HairContext, HairStyle[]> = {
+  frontier: ['cut_crew', 'cut_crop', 'cut_messy', 'cut_pixie', 'paint_buzz', 'paint_fade', 'paint_shaved', 'paint_coils', 'paint_cornrows', 'coily_twa', 'coily_afro', 'ponytail01', 'elvs_unkempt_french_braid', 'short01', 'short02', 'short04'],
+  street: ['cut_crop', 'cut_messy', 'cut_quiff', 'cut_pixie', 'paint_buzz', 'paint_fade', 'paint_shaved', 'paint_coils', 'paint_cornrows', 'coily_twa', 'coily_afro', 'coily_afro_big', 'ponytail01', 'bob02', 'toigo_inverted_bob', 'culturalibre_hair_02', 'short02'],
+  rich: ['cut_sidepart', 'cut_slickback', 'cut_quiff', 'cut_crop', 'cut_pixie', 'toigo_blunt_bob', 'toigo_inverted_bob', 'long01', 'ponytail01', 'culturalibre_hair_01', 'culturalibre_hair_02', 'coily_afro', 'coily_afro_big', 'paint_coils', 'paint_cornrows', 'elvs_unkempt_french_braid'],
+};
+
+function hairPool(t: HairTexture, masc: boolean, ctx: HairContext): HairStyle[] {
+  const base = masc ? HAIR_BY_TEXTURE[t].masc : HAIR_BY_TEXTURE[t].fem;
+  const allowed = HAIR_BY_CONTEXT[ctx];
+  const pool = base.filter((s) => allowed.includes(s));
+  return pool.length ? pool : base;
 }
 
 /** Modifiers used for random facial individuality (symmetric ones). */
@@ -203,6 +235,20 @@ const FACE_VARIATION = [
   'chin-bones|decr|incr', 'chin-prognathism|decr|incr', 'chin-cleft|decr|incr', 'sym:cheek-volume|decr|incr', 'sym:cheek-inner|decr|incr',
   'sym:eye-bag|decr|incr', 'sym:eye-eyefold-angle|down|up', 'sym:eye-corner1|down|up', 'sym:eye-height2|decr|incr',
   'sym:eye-epicanthus|in|out', 'forehead-trans|backward|forward', 'eyebrows-angle|down|up', 'sym:ear-lobe|decr|incr', 'sym:ear-wing|decr|incr',
+];
+
+/** Body proportion modifiers jittered per person (independent of weight/muscle). */
+const BODY_VARIATION = [
+  'torso-scale-vert|decr|incr', 'torso-scale-horiz|decr|incr', 'torso-vshape|decr|incr', 'hip-scale-horiz|decr|incr',
+  'neck-scale-vert|decr|incr', 'neck-scale-horiz|decr|incr', 'upperlegs-height|decr|incr', 'lowerlegs-height|decr|incr',
+  'sym:upperarm-scale-vert|decr|incr', 'sym:lowerarm-scale-vert|decr|incr', 'sym:upperleg-muscle|decr|incr',
+  'sym:lowerleg-muscle|decr|incr', 'buttocks-volume|decr|incr', 'sym:hand-scale|decr|incr', 'torso-muscle-pectoral|decr|incr',
+];
+
+/** Left/right features jittered independently (small, so faces stop being mirror images). */
+const ASYMMETRY = [
+  'l-eye-trans|down|up', 'r-eye-trans|down|up', 'l-eye-scale|decr|incr', 'r-eye-scale|decr|incr', 'l-eye-corner1|down|up', 'r-eye-corner1|down|up',
+  'l-ear-scale|decr|incr', 'r-ear-scale|decr|incr', 'l-cheek-volume|decr|incr', 'r-cheek-volume|decr|incr', 'l-cheek-bones|decr|incr', 'r-cheek-bones|decr|incr',
 ];
 
 /** The same person, older (used for the photograph and epilogues). */

@@ -253,6 +253,34 @@ for f in sorted(os.listdir(os.path.join(SRC, 'skins/textures'))):
         key = f"{age}_{tone}_{sex}{var}"
         skins[key] = tex(os.path.join(SRC, 'skins/textures', f), 'skin_' + key, 1024, 85)
         tex(os.path.join(SRC, 'skins/textures', f), 'skin_' + key + '_hi', 2048, 88)  # close-ups (loaded on demand)
+# Community skins (CC0): more faces per age/tone/sex group, numbered on from the base variants ('', 2, 3).
+COMMUNITY_SKINS = [
+    ('skins01_cc0', 'callharvey3d_midtoned_female', 'harvey_midtoned_female_diffuse.png', 'young', 'light', 'female'),
+    ('skins01_cc0', 'darthfurby_caucasian_female', 'darthfurby_caucasian_female.png', 'young', 'light', 'female'),
+    ('skins01_cc0', 'skalldyrssuppe_creamy_female', 'creamy_female_diffuse.png', 'young', 'light', 'female'),
+    ('skins01_cc0', 'toigo_light_skin_female_freckles', 'young_lightskinned_female_diffuse_freckles.png', 'young', 'light', 'female'),
+    ('skins01_cc0', 'onlytheghosts_young_eurasian_female', 'young_eurasian_female_diffuse.png', 'young', 'light', 'female'),
+    ('skins01_cc0', 'onlytheghosts_middle_aged_eurasian_female', 'middleage_eurasian_female_diffuse.png', 'middleage', 'light', 'female'),
+    ('skins01_cc0', 'onlytheghosts_old_eurasian_female', 'old_eurasian_female_diffuse.png', 'old', 'light', 'female'),
+    ('skins01_cc0', 'cutoff3d_indian_female_skin', 'indian_skin2e.png', 'young', 'dark', 'female'),
+    ('skins02_cc0', 'mindfront_aksel_skin', 'Aksel_Skin_diffuse.png', 'young', 'light', 'male'),
+    ('skins02_cc0', 'toigo_light_skin_male_freckles', 'young_lightskinned_male_diffuse_Freckles.png', 'young', 'light', 'male'),
+    ('skins02_cc0', 'toigo_light_skin_male_bronze', 'young_lightskinned_male_diffuse_Bronze.png', 'young', 'light', 'male'),
+    ('skins02_cc0', 'onlytheghosts_old_eurasian_male', 'old_eurasian_male_diffuse.png', 'old', 'light', 'male'),
+    ('skins02_cc0', 'mindfront_skin_male_african_middleage', 'skin_male_african_middleage.png', 'middleage', 'dark', 'male'),
+]
+if COMMUNITY:
+    counters = {}
+    for pack, d, f, age, tone, sex in COMMUNITY_SKINS:
+        src = os.path.join(COMMUNITY, pack, 'skins', d, f)
+        if not os.path.exists(src):
+            print('  missing community skin', src)
+            continue
+        grp = f"{age}_{tone}_{sex}"
+        counters[grp] = counters.get(grp, 3) + 1
+        key = f"{grp}{counters[grp]}"
+        skins[key] = tex(src, 'skin_' + key, 1024, 85)
+        tex(src, 'skin_' + key + '_hi', 2048, 88)
 print('skins', len(skins))
 
 
@@ -374,18 +402,17 @@ for n in ['male_worksuit01', 'male_casualsuit01', 'male_casualsuit02', 'male_cas
 skin_detail = {}
 GARMENTS = {
     'shirts01_cc0': ['elvs_crude_t-shirt_male', 'joepal_crude_t-shirt_female', 'toigo_basic_tucked_t-shirt', 'namuhekam_male_polo_shirt',
-                     'toigo_fisherman_sweater', 'toigo_keyhole_tank_top'],
+                     'toigo_fisherman_sweater'],
     'shirts02_cc-by': ['elvs_hooded_sweat_jacket1', 'elvs_male_shirt_tie_tucked1', 'elvs_male_shirt_untucked_bd1', 'elvs_male_boho_top1',
                        'janexx_old_female_sweater', 'mindfront_cardigan_long_open_front', 'mindfront_knitted_sweater_01',
-                       'mindfront_knitted_sweater_02', 'punkduck_lace_up_blouse', 'ews_striped_shirt'],
-    'shirts03_cc-by': ['drednicolson_asymmetric_tunic_and_sash', 'drednicolson_short-tail_camo_tee', 'elvs_lara_tank1', 'elvs_male_muscle_shirt1',
+                       'mindfront_knitted_sweater_02'],
+    'shirts03_cc-by': ['drednicolson_short-tail_camo_tee', 'elvs_lara_tank1', 'elvs_male_muscle_shirt1',
                        'elvs_male_tankshirt1', 'mindfront_tank_top_01', 'punkduck_high_neck_crop_top', 'punkduck_sleeveless_shirt',
-                       'punkduck_v_neck_top', 'punkduck_retro_top', 'elvs_ruffle_sleeve_peasant_blouse_1', 'punkduck_sleeveless_crop_top'],
+                       'punkduck_v_neck_top', 'punkduck_sleeveless_crop_top'],
     'pants01_cc0': ['cortu_cargo_pants', 'cortu_jeans_shorts', 'toigo_wool_pants', 'toigo_harem_pants'],
     'pants02_cc-by': ['elvs_jeans_bootcut', 'elvs_jeans_straight_leg', 'elvs_male_trouser', 'mindfront_female_trousers_1', 'mindfront_male_trousers_1',
                       'mindfront_male_trousers_2', 'punkduck_female_tight_jeans', 'punkduck_male_classic_jeans'],
-    'skirts01_cc0': ['toigo_long_full_skirt', 'frankyaye_mini_skirt_01', 'toigo_tiered_skirt'],
-    'dress01_cc0': ['toigo_shift_dress', 'toigo_halter_dress_midi', 'mindfront_kimono', 'aethelraed_flapper_dress', 'toigo_cut_out_dress'],
+    'dress01_cc0': ['mindfront_kimono'],
     'shoes01_cc0': ['toigo_ankle_boots_male', 'toigo_ankle_boots_female', 'culturalibre_hero_boots_1', 'culturalibre_hero_boots_2',
                     'culturalibre_heroine_boots_2', 'toigo_mj_cloth_shoes', 'scailman_gogo_platform_boots'],
     'shoes02_cc-by': ['mindfront_shoes_oxford_male', 'mindfront_shoes_oxford_female', 'punkduck_running_shoes_01', 'punkduck_tennis_shoes',
@@ -396,15 +423,13 @@ GARMENTS = {
     'hats01_cc0': ['jujube_newsboy_cap', 'jujube_bag_on_head', 'grinsegold_uncle_joshis_hat'],
     'hats02_cc0': ['culturalibre_skull_helmet', 'culturalibre_warrior_helmet'],
     'hats03_cc-by': ['elvs_slouchy_beanie1', 'mindfront_knitted_hat_01', 'elvs_male_flat_cap1', 'mindfront_patrol_cap', 'mindfront_fishing_hat_01',
-                     'mindfront_sherpa_hat', 'culturalibre_cl_bowler_hat', 'elvs_tophat1', 'punkduck_sun_visor_sports_visor', 'elvs_charity_veil1',
+                     'mindfront_sherpa_hat', 'culturalibre_cl_bowler_hat', 'elvs_tophat1', 'elvs_charity_veil1',
                      'culturalibre_cl_don_quixote_hat'],
-    'gloves01_cc0': ['toigo_gloves_short', 'toigo_gloves_medium', 'learning_mma_fighting_gloves', 'culturalibre_hero-heroine_gloves_1',
-                     'culturalibre_hero-heroine_gloves_5'],
+    'gloves01_cc0': ['toigo_gloves_short', 'toigo_gloves_medium', 'learning_mma_fighting_gloves'],
     'glasses01_cc0': ['spamrakuen_sagerfrogs_glasses_01', 'spamrakuen_sagerfrogs_glasses_02', 'spamrakuen_tbm_glasses_frames_01',
                       'frankyaye_glasses_library_male', 'kwnet_at_optical_glasses'],
     'glasses02_cc-by': ['punkduck_goggles', 'elvs_covid_goggles1', 'punkduck_sport-sunglasses', 'elvs_ladies_sunglass1', 'punkduck_glasses_modern_form'],
-    'masks01_cc0': ['joepal_medical_mouth_protection', 'culturalibre_hero-heroine_hood_1', 'culturalibre_hero-heroine_hood_2',
-                    'culturalibre_hero_mask_3', 'culturalibre_hero_mask_4'],
+    'masks01_cc0': ['joepal_medical_mouth_protection', 'culturalibre_hero-heroine_hood_1', 'culturalibre_hero-heroine_hood_2'],
     'masks02_cc-by': ['gredal_gas_mask', 'culturalibre_bandana_mask', 'elvs_covid_mask', 'elvs_plague_doctor_mask'],
     'suits02_cc0': ['donitz_monk_robe', 'donitz_monk_robe_hood', 'donitz_monk_robe_hood_down', 'joachip_cyborg_suit',
                     'matcreator_mc-skinsuit_2022',

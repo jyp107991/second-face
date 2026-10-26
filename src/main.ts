@@ -26,6 +26,7 @@ import { humanData, ensureProxies } from './engine/assets/human/data';
 import { dressFor, roleLook } from './engine/data/outfits';
 import * as THREE from 'three';
 
+const t0 = performance.now();
 const app = document.getElementById('app')!;
 // Human assets (~8 MB) must be loaded before any character is built.
 const loading = document.createElement('div');
@@ -63,6 +64,7 @@ if (dev) {
   (window as unknown as Record<string, unknown>).SF = { PortraitStage, lookFrom, randomAppearance, agedAppearance, defaultAppearance, PLAYER_OUTFIT, HumanFigure, THREE, evaluateShape, humanData, ensureProxies, outfitProxyKeys, dressFor, roleLook };
 }
 await game.loadLocation(game.state.locationId, 'start');
+game.loadMs = performance.now() - t0;
 game.start();
 menu.open('title');
 

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { GARMENTS } from '../src/engine/data/garments';
-import { dressFor, OUTFIT_ROLES, outfitHairMode } from '../src/engine/data/outfits';
+import { dressFor, FACTION_LOOK, OUTFIT_ROLES, outfitHairMode } from '../src/engine/data/outfits';
 
 describe('outfits', () => {
   it('dresses every role and fit completely from catalogued garments', () => {
@@ -33,6 +33,18 @@ describe('outfits', () => {
     expect(outfitHairMode({ layers: [{ name: 'culturalibre_skull_helmet' }] })).toBe('hide');
     expect(outfitHairMode({ layers: [{ name: 'jujube_newsboy_cap' }, { name: 'cortu_cargo_pants' }] })).toBe('crop');
     expect(outfitHairMode({ layers: [{ name: 'cortu_cargo_pants' }] })).toBeUndefined();
+  });
+
+  it('faction looks add a marker piece and recolour; gear never doubles up a region', () => {
+    let marked = 0;
+    for (let s = 0; s < 30; s++) {
+      const o = dressFor(s, 'raider', 'm', 'rust_dogs');
+      if (o.gear!.some((g) => g.kind === 'armband' && g.color === FACTION_LOOK.rust_dogs.marker!.color)) marked++;
+      const regions = o.gear!.map((g) => g.kind === 'goggles_up' ? 'goggles' : g.kind === 'respirator' ? 'bandana' : g.kind);
+      expect(new Set(regions).size).toBe(regions.length);
+    }
+    expect(marked).toBeGreaterThan(12);
+    expect(outfitHairMode({ gear: [{ kind: 'headwrap' }] })).toBe('hide');
   });
 
   it('catalogue matches the built garment assets', () => {
