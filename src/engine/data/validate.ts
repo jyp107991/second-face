@@ -10,6 +10,7 @@ import { CHROME_SLOTS, type ChromeDef } from '../stats/chrome';
 import { GARMENTS } from './garments';
 import { OUTFIT_ROLES } from './outfits';
 import { SETTLEMENT_TYPES, type SettlementType } from '../world/settlementTypes';
+import { planTrip, type WorldMap } from '../world/travel';
 
 export interface ContentBundle {
   maps: Record<string, MapDef>;
@@ -22,7 +23,8 @@ export interface ContentBundle {
   leads?: Record<string, { id: string }>;
   conclusions?: Record<string, { id: string; from: string[] }>;
   settlements?: Record<string, { id: string; roads: Record<string, number>; type?: SettlementType; region?: string; prosperity?: number }>;
-  regions?: Record<string, { id: string }>;
+  regions?: Record<string, { id: string; bounds: [number, number, number, number] }>;
+  worldMap?: WorldMap;
   chrome?: Record<string, ChromeDef>;
 }
 
@@ -108,6 +110,32 @@ export function validateContent(c: ContentBundle): string[] {
     if (st.type && !SETTLEMENT_TYPES[st.type]) errs.push(`settlement ${key}: unknown type ${st.type}`);
     if (st.region && c.regions && !c.regions[st.region]) errs.push(`settlement ${key}: unknown region ${st.region}`);
     if (st.prosperity !== undefined && !(st.prosperity >= 0 && st.prosperity <= 1)) errs.push(`settlement ${key}: prosperity outside 0..1`);
+  }
+  if (c.worldMap) {
+    const m = c.worldMap, locs = m.locations;
+    for (const [key, l] of Object.entries(locs)) {
+      const where = `location ${key}`;
+      if (l.id !== key) errs.push(`${where}: id mismatch`);
+      const reg = c.regions?.[l.region];
+      if (c.regions && !reg) errs.push(`${where}: unknown region ${l.region}`);
+      else if (reg && (l.x < reg.bounds[0] || l.y < reg.bounds[1] || l.x > reg.bounds[2] || l.y > reg.bounds[3])) errs.push(`${where}: (${l.x},${l.y}) outside ${l.region}`);
+      if (l.settlement && c.settlements && !c.settlements[l.settlement]) errs.push(`${where}: unknown settlement ${l.settlement}`);
+      if (l.map && !c.maps[l.map]) errs.push(`${where}: unknown map ${l.map}`);
+    }
+    for (const r of m.routes) {
+      if (!locs[r.a] || !locs[r.b]) errs.push(`route ${r.a}-${r.b}: unknown endpoint`);
+      if (!(r.danger >= 0 && r.danger <= 1)) errs.push(`route ${r.a}-${r.b}: danger outside 0..1`);
+    }
+    for (const [key, n] of Object.entries(m.networks)) {
+      for (const s of n.stops) if (!locs[s]) errs.push(`network ${key}: unknown stop ${s}`);
+      if (n.legHours.length !== n.stops.length - 1) errs.push(`network ${key}: needs ${n.stops.length - 1} leg times`);
+    }
+    // Every place must be reachable on foot from the first location (hidden ones once known).
+    const start = Object.keys(locs)[0];
+    if (start) for (const k of Object.keys(locs)) {
+      if (!planTrip(m, start, k, { modes: [], networks: [], known: () => true, hour: 8 })) errs.push(`location ${k}: unreachable on foot from ${start}`);
+    }
+    for (const key of Object.keys(c.settlements ?? {})) if (!Object.values(locs).some((l) => l.settlement === key)) errs.push(`settlement ${key}: not on the world map`);
   }
   for (const [key, ch] of Object.entries(c.chrome ?? {})) {
     if (ch.id !== key) errs.push(`chrome ${key}: id mismatch`);

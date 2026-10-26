@@ -59,7 +59,7 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
       W4b: low-LOD figures merge all garments into one mesh with a per-figure atlas (5–6 meshes per NPC, was 8–10);
       no face shadow casters at low LOD. QA scripts in scratchpad: garm.cjs, roles.cjs, meshcount.cjs, iso.cjs.
       Backlog: eyepatch piece; visible chrome comes with W5 bionics.
-- [~] W5 Data models + validators:
+- [x] W5 Data models + validators:
   - [x] W5a Chrome engine `stats/chrome.ts` (8 slots, old/dark/Concern grades, mods + `chrome_*` ability flags via
         allMods/hasFlag, surgery risk & rejection, upkeep items `u_holdfast`/`u_powercell` + degradation, Drift baseline/
         settle/bands/episode chance), catalogue `content/chrome/catalogue.ts` (15 pieces), conds `chrome`/`chromeSlot`/
@@ -69,8 +69,21 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
         crises, nomads move), `generateSettlement` (minor places), `residentRoles` (prosperity-shifted → `dressFor`);
         SettlementDef gains type/region/prosperity/kit/owner/crisis; `content/world/regions.ts` (8 regions, km bounds);
         validator + tests. Not yet: layout generators that build maps from a type.
-  - [ ] W5c World map model: regions, locations (major/minor/landmark), routes (terrain/danger), transport networks
-        (rail/barge/caravan/Loop/safehouses) with schedules + fares, travel planner, fast-travel rules; tests
+  - [x] W5c World map `world/travel.ts`: locations (major/minor/landmark, hidden until known), routes (terrain, danger,
+        km), overland modes (foot/mount/vehicle: speed, nights, terrain limits, noise, discovery), networks (rail/barge/
+        caravan/transit/runner/air: stops, leg hours, fares, timetables), `planTrip` (Dijkstra incl. waits), `fastTravel`
+        (networks only), `discoveriesAlong`; starter content `content/world/map.ts` (25 places, the Line, barges,
+        Tollmen caravan); validator (refs, region bounds, reachability, settlements on map) + tests.
+        To reconcile in M4: derive SettlementDef.roads (gossip days) from the map instead of hand values.
+
+**Next (pick up here):**
+- [ ] N1 Chrome visible on models (eye glow/lens, metal limb material on skin regions, ports) + a Mender service UI
+      (install/repair/remove, prices, surgery risk shown up front)
+- [ ] N2 World map screen in the notebook (Road tab): regions, known places, routes, plan a trip, fast travel when
+      networks allow; time/food/fare applied; encounter + discovery rolls per leg
+- [ ] N3 Cistern 9 map with the cast placed, MOTHER terminal dialogue, maintenance-shaft route, exit trigger (G5)
+- [ ] N4 Shale map from the well-town type + residents by `residentRoles`; first scheduled event + news; letters
+- [ ] N5 Implement perk flags in systems; HUD restyle + title art
 
 **Current step (owner: less Fallout, more creative modern frontier features; rework story core; notebook UI):**
 - [x] F1 Docs: owner decisions (CLAUDE.md), DESIGN frontier systems (local reputation & news, leads board,
