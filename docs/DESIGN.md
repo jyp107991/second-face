@@ -54,6 +54,48 @@ Coherent features drawn from modern games, chosen because they make a lawless fr
 | **Camp** | Red Dead Redemption 2, Dragon Age | Campfire scenes with companions: talk, mend, cook, write, plan; also where letters are read. |
 | **Field notebook** (UI) | — | Journal in hand-writing, people you've met with sketched portraits and what you know about them, the leads board, a folded map you annotate, gear. |
 
+## 2c. Chrome and cities (cyberpunk fused with the frontier — see docs/WORLD.md)
+What we take from cyberpunk (tabletop to 2077) and how scarcity changes it:
+| Cyberpunk element | Our version |
+|---|---|
+| Cyberware everywhere | **Chrome is rare**: most people have none; a piece of chrome is a life-changing purchase or find |
+| Ripperdocs | **Menders** (back-street, dark chrome) and **Concern clinics** (new, licensed, networked) |
+| Humanity / cyberpsychosis | **Drift**: a gauge that rises with chrome; changes dialogue, relationships and can trigger episodes |
+| Netrunning | **Riding the grid** in cities only (local grids, not a global net): doors, cameras, turrets, records |
+| Braindance | **Reveries**: recorded memories — playable vignettes, investigative scrubbing for clues, a vice |
+| Fixers & gigs | **Brokers** in each district with contracts; reputation with Brokers unlocks better work |
+| Megacorps vs street | **The Concern** and the **Tenured** vs gangs, unions, Menders and the destitute |
+| Night City | **Meridian** and **Halcyon**: deep, dense, vertical bastion cities ringed by ruins and shanties |
+| Style over substance | Clothing, masks and visible chrome change how people treat you (recognition, class, fear) |
+
+### 2c.1 Chrome system
+- **Slots:** eyes · neural · arms (L/R) · legs · spine · skin · organs. One piece per slot.
+- **Grades:** *old* (salvaged pre-Burn, varies), *dark* (Mender-built, crude, cheap-ish, unnetworked),
+  *Concern* (new, excellent, networked — advantages and hidden risks).
+- **Abilities are superhuman verbs**, e.g.: optics that show enemy weak points and through-wall heat; reflex
+  wiring for a burst of extra actions; breaker arms that tear doors and armour; spring legs that leap to rooftops
+  (vertical routes on maps); subdermal plating; a neural link that rides the grid; lungs that ignore dust storms
+  and gas; a backup heart that restarts you once; a voice box that mimics voices.
+- **Costs:** price (hundreds to thousands of Tolls), surgery time and recovery, a rejection check (Grit/Medicine of
+  the surgeon), upkeep (power cells, *holdfast* drugs) — miss upkeep and chrome degrades.
+- **Drift (0–100):** each piece adds Drift; Grit and companions' bonds slow it; holdfast and rest calm it. Bands
+  change dialogue (cold-logic options appear; some empathy options vanish), reactions (awe, fear, contempt), and
+  can trigger Drift episodes at high levels. No hard "game over" — a Drifted character is a valid ending tone.
+- **Visibility:** chrome is visible on the character model and recognised; hidden chrome costs more.
+- **Rarity budget:** a full playthrough offers ~10–14 chrome pieces in total; a player can carry ~4–6 before Drift
+  bites hard. Choosing is the point.
+
+### 2c.2 City play
+- **Districts** with their own law level, prices, Broker, gangs, schedules, sounds and lighting (neon, smog, rain).
+- **Class is spatial:** access to the Crown/arcology needs invitations, contracts, disguise or force; the Sink and
+  Skirts are open to all and dangerous to all. Prices, laws and NPC behaviour differ by district.
+- **Inequality you play:** the same problem looks different from the top and the bottom (a flood, an epidemic, a
+  strike); many city quests ask whom the solution serves.
+- **Activities:** fight pits, races, reverie dens, gambling, bounties (Drifter hunts), heists, Broker gigs, court
+  defences, housing (rent/buy flats = safehouses and fast-travel points), clubs and salons.
+- **Density over sprawl:** a city is ~8–10 handcrafted districts, each a dense map with interiors, verticality and
+  30–60 minutes of content; transit (the Loop) links them.
+
 ## 3. Character system
 ### 3.1 Attributes (7, range 1–10; base 3 + 12 points at creation; creation cap 8)
 Each attribute has a **combat**, **exploration** and **dialogue** use, so none is a dump stat.
@@ -279,6 +321,52 @@ delayed consequences.
 - Disco Elysium passive/active checks and failure-as-content (community analysis).
 - Pillars of Eternity attribute goal ("every attribute should matter").
 - CRPG choice design (mutually exclusive choices, fairness): Heroic Fantasy Games essay.
+
+## 13b. Settlement types (variety by design)
+Each type sets layout grammar, building kit, population mix, services, law and schedules. Every named place is
+handcrafted on top of its type; minor places can be generated from the type plus a seed.
+| Type | Look & layout | People | Services & law | Examples |
+|---|---|---|---|---|
+| **Shelter** (cistern) | Concrete rings underground, hydroponics, steel doors | One community, uniform clothes | Rationing, council | Cistern 9 |
+| **Well town** | Adobe and scrap around a well; main street; windpumps | Farmers, traders, a sheriff | Saloon, store, Mender (rare), local justice | Shale |
+| **Raider camp** | Wreck walls, overpass decks, cages, banners | Gang members, captives | Trade by force; chief's law | Rust Dogs' overpass |
+| **Toll fort** | Walls across the road, gate, tower, warehouse | Tollmen guards, clerks | Tolls, contracts, debt law | Tollhouse 9 |
+| **Rail halt** | Platform, water tower, sheds; town hugs the line | Railworkers, drifters | Tickets, telegraph, timetable law | Line halts, the Junction |
+| **Bridge/trade town** | Built on infrastructure (bridge decks, ship hulls); vertical stalls | Merchants, porters, guards | Markets, banks, brokers | Ninebridge |
+| **Commune** | Fields, long halls, shrines, open-sky burial grounds | Choir families | Healers, communal law | Openfield |
+| **Nomad camp** | Wagons in a ring, tents; **moves on the world map** over days | Wheel clans | Trade, horses/bikes, honour law | the Wheel |
+| **Salvage/mining camp** | Spoil heaps, cranes, cabins, bunkhouses | Labourers, foremen | Company store, scrip, no law but the foreman | Teeth mines, Dead Ring yards |
+| **Stilt village** | Houses on stilts and hulls over water; boats as streets | Fisher families | Barter, boat law | Drowned Shore |
+| **Dead town** | Abandoned; scavengers, squatters, secrets | Few or none | None | Ruins everywhere |
+| **Bastion city** | Districts (see §2c.2) | Everyone | Everything; corruption | Meridian, Halcyon |
+Generated minor places vary by: size, prosperity, faction ownership, current crisis (drought, raid, plague, feud),
+architecture kit (adobe/scrap/containers/concrete/timber/stilts), and population mix by ancestry and class.
+
+## 13c. World scale, travel and fast travel
+- **The map:** the Western Reach (~700 × 500 km), 8 regions (WORLD.md §2). The world map is a region graph of
+  ~120 locations: ~25 major handcrafted locations, ~60 minor locations (handcrafted or type-generated), and ~35
+  landmark/discovery sites, plus roaming encounters. Target density: something worth stopping for every ~10–15
+  real minutes of overland travel.
+- **Exploration rewards:** discoveries reveal map, chrome caches, unique weapons, leads, reveries, companions'
+  backstories, shortcuts, and alternative routes into story places (non-linear entry to most cities and dungeons).
+- **Overland travel:** pick a destination on the map; the route is drawn along known roads/paths; time passes;
+  food and water are consumed; weather and encounters can interrupt. Unknown terrain is slower but discovers more.
+- **Transport tiers** (each is unlocked through play and has a cost):
+  | Mode | Speed | Cost / catch |
+  |---|---|---|
+  | Foot | slow | free; most discoveries; you carry everything |
+  | Mule / horse | +30% | feed, theft, can carry loot |
+  | Caravan | scheduled | pay or work your passage; safer; you go where it goes |
+  | Motorbike / buggy | ×5 | fuel, repairs, noise draws raiders; vehicle storage; can be stolen |
+  | The Line (rail) | a day between stations | tickets, timetables, rail-bandit events, checks at gates |
+  | River barge | scheduled | cheap, slow, smuggling routes |
+  | City transit (Loop, lifts) | instant between stations | fares, district access rules |
+  | Tiltrotor (late) | anywhere with a pad | earned, stolen or borrowed in Act 3 |
+- **Fast travel rules:** no free teleporting. Fast travel = using a network you have access to (rail stations, barge
+  docks, Loop stations, caravan schedules, your own safehouses linked by a hired runner). Time still passes; events
+  can fire en route; it costs money. Walking stays worthwhile because discoveries happen on foot.
+- **Safehouses:** rent or claim flats/rooms in towns and cities: storage, rest, letters, and fast-travel points
+  for the networks that reach them.
 
 ## 14. Tech plan
 - TypeScript, Vite, three.js; vitest for tests; GitHub Actions → GitHub Pages; installable (PWA).

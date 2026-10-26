@@ -48,7 +48,7 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
 **Current step (owner: cyberpunk semi-overhaul; NPC variance; settlement variety; cities; map/transport):**
 - [x] W1 Worldbuilding: docs/WORLD.md (public, spoiler-safe history/geography/cities/tech/culture) +
       story/WORLD_SECRET.md (hidden history) — BEFORE design changes
-- [ ] W2 DESIGN: bionics (+ Drift), city systems (districts, gigs, grid-riding, reveries), inequality as play,
+- [x] W2 DESIGN: bionics (+ Drift), city systems (districts, gigs, grid-riding, reveries), inequality as play,
       settlement types, world scale, transport & fast travel; ROADMAP re-plan
 - [x] W3 Secret plot pass 3 (cities, corporation, bionics woven into the Plan story)
 - [ ] W4 NPC appearance variance (roles/class outfits, accessories, body extremes, stronger faces, dyes, grime)
