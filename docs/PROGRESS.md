@@ -58,7 +58,7 @@ replayability, meaningful choice, viable builds, best perk/skill/attribute confi
 - [~] G5 Chapter One content: Cistern 9 opening done (4 NPCs, 4 dialogues, q_ch1_door, key items) + scripted
       playthrough tests + build-coverage validator (content/rules/builds.ts, engine/data/coverage.ts).
       Next: Cistern 9 map (M3) with the cast placed, terminal dialogue (MOTHER), maintenance shaft prop route,
-      exit trigger setting c9_left; then Shale content; perks 32→~60.
+      exit trigger setting c9_left; then Shale content. Perks now 64 (verb flags declared; systems implement them as combat/dialogue features land).
 
 **Current step (owner: facial hair blocky, stubble length/coverage off; wants real modern haircuts):**
 - [x] S1 `strands.ts`: directional strand shells (screen-res tapered hairs, growth-direction + length fields, AA)
