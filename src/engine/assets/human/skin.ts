@@ -289,7 +289,7 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
         // Facial hair base: a soft shadow under the strands (strands are stroked afterwards).
         // Scalp hair: painted styles, or an under-layer beneath hair meshes so their edges meet a real hairline.
         if (hairStyle !== 'none') {
-          const m = scalpMask(p, recede, hairStyle.startsWith('paint_') || hairStyle.startsWith('coily_') ? 0 : 0.09);
+          const m = scalpMask(p, recede, hairStyle.startsWith('paint_') || hairStyle.startsWith('coily_') || hairStyle.startsWith('cut_') ? 0 : 0.09);
           if (m > 0) paintScalp(px, i, x, y, p, m, hairStyle, hairC, stub);
         }
         // Beard follicle shadow under strand-rendered facial hair.
@@ -360,8 +360,17 @@ function paintScalp(px: Uint8ClampedArray, i: number, x: number, y: number, p: T
       if (hash2(x, y, 62) < m * 0.6) mix(stub, 0.12 + 0.12 * hash2(x, y, 63));
       return;
     case 'paint_buzz':
-    case 'paint_fade': {
-      // A fade runs from near-bare skin low on the sides to full length on top.
+    case 'paint_fade':
+    default: {
+      if (!style.startsWith('paint_') && !style.startsWith('cut_')) {
+        // Under a hair mesh: hair colour with fine strand noise; the soft edge forms the visible hairline.
+        mix(tc.copy(hair).multiplyScalar(0.72 + 0.3 * fine), m * 0.88);
+        return;
+      }
+      // Short cut texture (buzz, under hair cards); a fade runs from near-bare skin low on the sides to full length on top.
+      // Under hair cards the painted layer is the shadowed depth of the hair: darker, less saturated.
+      const under = style.startsWith('cut_') ? 0.55 : 1;
+      if (under < 1) { const l = hair.r * 0.3 + hair.g * 0.55 + hair.b * 0.15; tc.copy(hair).lerp(new THREE.Color(l, l, l), 0.3).multiplyScalar(under); mix(tc, m * 0.75); return; }
       const k = style === 'paint_fade' ? 0.04 + 0.96 * smoothstep(0.3, 0.85, p.y) : 1;
       if (k < 0.5) mix(stub, m * 0.18 * (1 - k));
       mix(tc.copy(hair).multiplyScalar(0.8).addScalar(0.03 * fine), m * k * 0.62 * (0.9 + 0.2 * fine));
@@ -395,8 +404,5 @@ function paintScalp(px: Uint8ClampedArray, i: number, x: number, y: number, p: T
       if (part > 0) mix(stub, m * part * 0.12);
       return;
     }
-    default:
-      // Under a hair mesh: hair colour with fine strand noise; the soft edge forms the visible hairline.
-      mix(tc.copy(hair).multiplyScalar(0.72 + 0.3 * fine), m * 0.88);
   }
 }

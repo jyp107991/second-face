@@ -49,8 +49,12 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
 - [x] S1 `strands.ts`: directional strand shells (screen-res tapered hairs, growth-direction + length fields, AA)
 - [x] S2 `facialHair.ts`: zones + style table (stubble light/med/heavy, short/full beard, goatee, moustache,
       van dyke, chin strap) → strand shells; painted skin keeps only a faint follicle shadow; mesh beards dropped
-- [ ] S3 Scalp haircuts via strands (crew, crop, side part, slick back, quiff, curtains, fades) + coily high-top
-- [ ] S4 QA close-ups, commit, report
+- [x] S3 Haircuts as procedural hair cards (hairCards.ts traces cards along the scalp from haircuts.ts fields):
+      crew, crop, side part, slick back, quiff, messy, pixie (curtains dropped: looked like a wig). Shell haircuts
+      were tried and failed (long lying hair projects wrongly) — strands.ts is for facial hair only.
+- [x] S4 QA close-ups, commit, report
+  Known gaps: grey hair cards look cool/strippy under the blue rim light; beards slightly flat on the shadow side;
+  long women's styles still use the older meshes.
 
 **Current step (owner asked: realistic ethnic diversity, realistic hair, beard options incl. simple stubble):**
 - [x] D1 Skin tone model: calibrated tone ladder (Monk scale) + undertone; ancestry presets (shape blend, tone,

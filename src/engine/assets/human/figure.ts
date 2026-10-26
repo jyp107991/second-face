@@ -6,6 +6,8 @@ import { applySkinScatter, cavityAO } from './shading';
 import { coilyGeometry, coilyMaterial, type BodySurface } from './coily';
 import { strandGeometry, strandMaterial } from './strands';
 import { BEARD_STYLES, beardField } from './facialHair';
+import { HAIRCUTS, haircutField } from './haircuts';
+import { hairCardGeometry, hairCardMaterial } from './hairCards';
 import type { FacialHair } from '../../data/appearance';
 
 /**
@@ -125,6 +127,19 @@ export class HumanFigure {
     if (spec.hair?.style.startsWith('coily_')) {
       const g = coilyGeometry(d, body, spec.hair.style, (spec.lod ?? 'high') === 'high' ? 0 : 7, SCALE);
       if (g) this.addMesh(g, coilyMaterial(spec.hair.color));
+    }
+    // Haircuts: procedural hair cards combed along the cut's direction (short areas are painted).
+    const cut = spec.hair ? HAIRCUTS[spec.hair.style] : undefined;
+    if (cut && spec.hair) {
+      const high = (spec.lod ?? 'high') === 'high';
+      const g = hairCardGeometry(d, body, haircutField(spec.hair.style)!, SCALE, { cards: high ? 3200 : 600, segments: high ? 8 : 4, minLengthMM: 12, seed: 4242 });
+      if (g) {
+        // Lit cards read darker than the painted scalp layer of the same colour: lift to match.
+        const hc = new THREE.Color(spec.hair.color), hl = hc.r * 0.3 + hc.g * 0.55 + hc.b * 0.15;
+        const col = hc.multiplyScalar(Math.max(1, Math.min(2, 2 - hl * 4))).getHex();
+        this.addMesh(g, hairCardMaterial(col, false));
+        if (high) this.addMesh(g, hairCardMaterial(col, true)).renderOrder = 2;
+      }
     }
     // Facial hair: individual strands grown from the skin (stubble to trimmed beards).
     const beard = spec.facialHair ? BEARD_STYLES[spec.facialHair] : undefined;

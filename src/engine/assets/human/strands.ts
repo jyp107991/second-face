@@ -40,7 +40,7 @@ export interface StrandLook {
 }
 
 /** Build strand shells from the body surface. Returns null when the field covers nothing. */
-export function strandGeometry(d: HumanData, body: BodySurface, field: StrandField, layers: number, scale: number): THREE.BufferGeometry | null {
+export function strandGeometry(d: HumanData, body: BodySurface, field: StrandField, layers: number, scale: number, extendRings = 2): THREE.BufferGeometry | null {
   const f = frame();
   const n = d.bodyMap.length;
   const samples: (StrandSample | null)[] = new Array(n).fill(null);
@@ -49,7 +49,7 @@ export function strandGeometry(d: HumanData, body: BodySurface, field: StrandFie
   for (let i = 0; i < n; i++) {
     p.fromArray(d.base, d.bodyMap[i] * 3).sub(f.c).divideScalar(f.r);
     hp[i * 3] = p.x; hp[i * 3 + 1] = p.y; hp[i * 3 + 2] = p.z;
-    if (p.y < -1.6 || p.length() > 2.2) continue;
+    if (p.y < -1.6 || p.length() > 2.4) continue;
     nn.fromArray(body.nrm, i * 3);
     const s = field(p, nn);
     if (s && s.dens > 0.01 && s.len > 0) {
@@ -62,7 +62,7 @@ export function strandGeometry(d: HumanData, body: BodySurface, field: StrandFie
   }
   // Grow the shell a few rings past the last roots (no new roots there) so hairs that travel beyond
   // the growth area are not clipped at the shell's edge.
-  for (let ring = 0; ring < 2; ring++) {
+  for (let ring = 0; ring < extendRings; ring++) {
     const add: [number, StrandSample][] = [];
     for (let t = 0; t < body.index.length; t += 3) {
       const tri = [body.index[t], body.index[t + 1], body.index[t + 2]];
@@ -191,7 +191,7 @@ export function strandMaterial(look: StrandLook): THREE.Material {
             float s1 = pow(sqrt(max(0.0, 1.0 - th1 * th1)), 60.0);
             float s2 = pow(sqrt(max(0.0, 1.0 - th2 * th2)), 24.0);
             float vis = smoothstep(-0.1, 0.4, dot(normal, L));
-            outgoingLight += directionalLights[i].color * vis * (0.12 * s1 + 0.06 * s2 * (0.5 + diffuseColor.rgb * 3.0)) * (0.3 + 1.2 * strandVar * strandVar) * (0.3 + 0.7 * strandAlong);
+            outgoingLight += directionalLights[i].color * vis * (0.07 * s1 + 0.05 * s2 * (0.5 + diffuseColor.rgb * 3.0)) * (0.3 + 1.2 * strandVar * strandVar) * (0.3 + 0.7 * strandAlong);
           }
         }
         #endif

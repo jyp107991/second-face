@@ -7,6 +7,7 @@ import {
 } from '../data/appearance';
 import { humanData } from '../assets/human/data';
 import { ANCESTRIES, ancestry, skinSwatches } from '../data/ancestry';
+import { HAIRCUTS } from '../assets/human/haircuts';
 import { PLAYER_OUTFIT } from '../game';
 import type { Game } from '../game';
 import { PortraitStage } from '../render/portrait';
@@ -30,6 +31,7 @@ const TABS: { id: Tab; label: string; framing: number }[] = [
 const STYLE_NAMES: Record<string, string> = {
   short01: 'Cropped', short02: 'Short', short03: 'Tousled', short04: 'Swept', bob01: 'Bob', bob02: 'Long bob', long01: 'Long',
   ponytail01: 'Ponytail', braid01: 'Braid', afro01: 'Afro',
+  ...Object.fromEntries(Object.entries(HAIRCUTS).map(([k, v]) => [k, v.label])),
   none: 'None', coily_twa: 'Short natural', coily_afro: 'Afro', coily_afro_big: 'Big afro', paint_shaved: 'Shaved', paint_buzz: 'Buzz cut', paint_fade: 'Fade', paint_coils: 'Short coils', paint_cornrows: 'Cornrows',
   culturalibre_hair_01: 'Long, parted', culturalibre_hair_02: 'Swept back',
   toigo_inverted_bob: 'Inverted bob', toigo_blunt_bob: 'Blunt bob',
