@@ -3,6 +3,7 @@ import { humanData, type HumanData, type ProxyMeta } from './data';
 import { evaluateShape, type ShapeParams } from './shape';
 import { humanTexture } from './textures';
 import { applySkinScatter, cavityAO } from './shading';
+import { coilyGeometry, coilyMaterial, type BodySurface } from './coily';
 import type { FacialHair } from '../../data/appearance';
 
 /**
@@ -117,7 +118,12 @@ export class HumanFigure {
       const key = `clothes_${c.name}`;
       if (d.m.proxies[key]?.delete) for (const v of d.view<Uint16Array>(key + '_delete')) deleted.add(v);
     }
-    this.addBody(d, P, minY, spec.skin, deleted, spec.lod ?? 'high', spec.skinDetail ?? 'm', spec.skinDetailStrength ?? 0.7);
+    const body = this.addBody(d, P, minY, spec.skin, deleted, spec.lod ?? 'high', spec.skinDetail ?? 'm', spec.skinDetailStrength ?? 0.7);
+    // Afro-textured hair: volumetric coil shells grown from the scalp.
+    if (spec.hair?.style.startsWith('coily_')) {
+      const g = coilyGeometry(d, body, spec.hair.style, (spec.lod ?? 'high') === 'high' ? 0 : 7, SCALE);
+      if (g) this.addMesh(g, coilyMaterial(spec.hair.color));
+    }
 
     // --- Proxies
     const lod = spec.lod ?? 'high';
@@ -151,7 +157,7 @@ export class HumanFigure {
     this.height = (Math.max(...Array.from({ length: d.bodyMap.length }, (_, i) => P[d.bodyMap[i] * 3 + 1])) - minY) * SCALE;
   }
 
-  private addBody(d: HumanData, P: Float32Array, minY: number, skin: THREE.Texture, deleted: Set<number>, lod: 'high' | 'low', detail: 'm' | 'old', detailStrength: number): void {
+  private addBody(d: HumanData, P: Float32Array, minY: number, skin: THREE.Texture, deleted: Set<number>, lod: 'high' | 'low', detail: 'm' | 'old', detailStrength: number): BodySurface {
     const n = d.bodyMap.length;
     const pos = new Float32Array(n * 3), nrm = new Float32Array(n * 3);
     const skinIndex = new Uint16Array(n * 4), skinWeight = new Float32Array(n * 4);
@@ -200,6 +206,7 @@ export class HumanFigure {
       : new THREE.MeshStandardMaterial({ map: skin, vertexColors: true, roughness: 0.58, metalness: 0 });
     applySkinScatter(mat);
     this.addMesh(g, mat);
+    return { pos, nrm, index: keep, skinIndex, skinWeight };
   }
 
   private addProxy(d: HumanData, P: Float32Array, minY: number, key: string, mat: THREE.Material, blendEdges?: THREE.Material): void {

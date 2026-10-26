@@ -7,8 +7,8 @@ import { ANCESTRIES, weighted, type AncestryPreset, type HairTexture } from './a
  * Facial hair, freckles, scars and tattoos are painted into the per-character skin texture.
  */
 
-/** Hair meshes, plus 'paint_*' styles painted into the scalp (short cuts, coils, cornrows). */
-export const HAIR_STYLES = ['none', 'paint_shaved', 'paint_buzz', 'paint_fade', 'paint_coils', 'paint_cornrows', 'short01', 'short02', 'short04', 'culturalibre_hair_02', 'culturalibre_hair_01', 'bob02', 'toigo_inverted_bob', 'toigo_blunt_bob', 'long01', 'ponytail01', 'elvs_unkempt_french_braid'] as const;
+/** Hair meshes, 'coily_*' volumetric afro-textured hair, and 'paint_*' styles painted into the scalp. */
+export const HAIR_STYLES = ['none', 'coily_twa', 'coily_afro', 'coily_afro_big', 'paint_shaved', 'paint_buzz', 'paint_fade', 'paint_coils', 'paint_cornrows', 'short01', 'short02', 'short04', 'culturalibre_hair_02', 'culturalibre_hair_01', 'bob02', 'toigo_inverted_bob', 'toigo_blunt_bob', 'long01', 'ponytail01', 'elvs_unkempt_french_braid'] as const;
 export type HairStyle = (typeof HAIR_STYLES)[number];
 
 export const BROW_STYLES = ['mindfront_eyebrows_01', 'mindfront_eyebrows_02', 'mindfront_eyebrows_03', 'mindfront_eyebrows_04', 'mindfront_eyebrows_05', 'mindfront_eyebrows_06', 'mindfront_eyebrows_07', 'mindfront_eyebrows_08', 'mindfront_eyebrows_09', 'mindfront_eyebrows_10', 'mindfront_eyebrows_11', 'mindfront_eyebrows_12', 'mindfront_eyebrows_13', 'mindfront_eyebrows_14', 'eyebrow001', 'eyebrow002', 'eyebrow003', 'eyebrow004', 'eyebrow005', 'eyebrow006', 'eyebrow007', 'eyebrow008', 'eyebrow009', 'eyebrow010', 'eyebrow011', 'eyebrow012'] as const;
@@ -152,12 +152,12 @@ export const HAIR_BY_TEXTURE: Record<HairTexture, { masc: HairStyle[]; fem: Hair
     fem: ['bob02', 'long01', 'ponytail01', 'elvs_unkempt_french_braid', 'culturalibre_hair_01'],
   },
   curly: {
-    masc: ['short02', 'short01', 'paint_buzz', 'paint_fade', 'paint_coils'],
-    fem: ['paint_coils', 'ponytail01'],
+    masc: ['short02', 'short01', 'paint_buzz', 'paint_fade', 'coily_twa'],
+    fem: ['coily_twa', 'coily_afro', 'ponytail01'],
   },
   coily: {
-    masc: ['paint_coils', 'paint_coils', 'paint_fade', 'paint_buzz', 'paint_cornrows', 'paint_shaved'],
-    fem: ['paint_cornrows', 'paint_cornrows', 'paint_coils', 'paint_coils', 'elvs_unkempt_french_braid'],
+    masc: ['coily_twa', 'coily_twa', 'coily_twa', 'paint_fade', 'paint_fade', 'paint_buzz', 'paint_cornrows', 'coily_afro', 'paint_shaved'],
+    fem: ['coily_twa', 'coily_twa', 'coily_afro', 'coily_afro', 'coily_afro_big', 'paint_cornrows', 'paint_cornrows'],
   },
 };
 

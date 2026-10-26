@@ -33,12 +33,12 @@ export const ANCESTRIES: AncestryPreset[] = [
   {
     id: 'west_african', label: 'West / Central African', shape: { african: 0.95, asian: 0, caucasian: 0.05 },
     tone: [0.72, 1], undertone: [-0.2, 0.5], eyes: [['brown', 9], ['brownlight', 1]],
-    hair: [[BLACK, 7], [DARK, 3]], texture: [['coily', 9], ['curly', 1]], freckleChance: 0.02, weight: 14,
+    hair: [[BLACK, 7], [DARK, 3]], texture: [['coily', 10]], freckleChance: 0.02, weight: 14,
   },
   {
     id: 'east_african', label: 'East African', shape: { african: 0.7, asian: 0, caucasian: 0.3 },
     tone: [0.66, 0.92], undertone: [0, 0.6], eyes: [['brown', 9], ['brownlight', 1]],
-    hair: [[BLACK, 7], [DARK, 3]], texture: [['coily', 7], ['curly', 3]], freckleChance: 0.02, weight: 5,
+    hair: [[BLACK, 7], [DARK, 3]], texture: [['coily', 10]], freckleChance: 0.02, weight: 5,
   },
   {
     id: 'north_european', label: 'Northern European', shape: { african: 0, asian: 0, caucasian: 1 },

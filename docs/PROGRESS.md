@@ -54,6 +54,9 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
       short coils, cornrows), hair mask in skin-texture alpha makes painted hair matte (shading.ts), sheen on hair
       meshes, ancestry style pools; pruned broken meshes (afro01, bun, faydaen, junglebook).
 - [x] D4 Gallery QA (scratchpad faces.cjs, gal.py, sheet.py), commit, report to owner.
+  - [x] D5 Owner feedback: moustache stubble full height (lip exclusion matched to mesh), no neck stubble, ashier
+        stubble; volumetric afro-textured hair (coily.ts shells: coily_twa/afro/afro_big), African ancestries
+        always get afro-textured styles. Perf note: big afro = 48 shells, portrait LOD only (iso uses 7).
   Known gaps: women's faces look alike/slightly masculine (face-shape variation), mesh hair edges still hard on
   some styles, few good long/curly hair meshes; awaiting owner verdict.
 

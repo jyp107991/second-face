@@ -28,12 +28,12 @@ export function skinTextureKeys(a: Appearance, hi = false): { light: string; dar
   return { light: sfx(d.m.skins[light]), dark: sfx(d.m.skins[`${age}_dark_${sex}`]) };
 }
 
-interface HeadFrame { c: THREE.Vector3; r: number; }
+export interface HeadFrame { c: THREE.Vector3; r: number; }
 let headFrame: HeadFrame | undefined;
 let headTris: Uint32Array | undefined;
 
 /** Head-local frame from the base mesh's eye joints: eyes land at (±0.36, 0.1, ~0.88). */
-function frame(): HeadFrame {
+export function frame(): HeadFrame {
   if (headFrame) return headFrame;
   const d = humanData();
   const jp = (name: string) => {
@@ -262,7 +262,7 @@ function beardMask(p: THREE.Vector3): number {
  * down in front of the ears, over the ears, behind them to the nape. Returns density 0..1 with a soft,
  * slightly irregular hairline (fine short hairs thin out over a few millimetres).
  */
-function scalpMask(p: THREE.Vector3, recede = 0, drop = 0): number {
+export function scalpMask(p: THREE.Vector3, recede = 0, drop = 0): number {
   const ax = Math.abs(p.x), y = p.y;
   if (y < -1.1) return 0;
   const th = (Math.atan2(ax, p.z) * 180) / Math.PI;
@@ -337,7 +337,7 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
         // Facial hair base: a soft shadow under the strands (strands are stroked afterwards).
         // Scalp hair: painted styles, or an under-layer beneath hair meshes so their edges meet a real hairline.
         if (hairStyle !== 'none') {
-          const m = scalpMask(p, recede, hairStyle.startsWith('paint_') ? 0 : 0.09);
+          const m = scalpMask(p, recede, hairStyle.startsWith('paint_') || hairStyle.startsWith('coily_') ? 0 : 0.09);
           if (m > 0) paintScalp(px, i, x, y, p, m, hairStyle, hairC, stub);
         }
         // Stubble: a follicle shadow (hair seen through skin) plus individual dark stubs.
@@ -422,7 +422,10 @@ function paintScalp(px: Uint8ClampedArray, i: number, x: number, y: number, p: T
       if (hash2(x, y, 64) < m * (0.35 + 0.4 * k)) mix(tc.copy(hair).multiplyScalar(0.55), 0.25 + 0.2 * hash2(x, y, 65));
       return;
     }
-    case 'paint_coils': {
+    case 'paint_coils':
+    case 'coily_twa':
+    case 'coily_afro':
+    case 'coily_afro_big': {
       // Short natural coils: clumped texture (cells of a few texels), crisp lined-up edge.
       const d = smoothstep(0.15, 0.55, m);
       const cell = hash2(x >> 2, y >> 2, 66), cell2 = hash2((x + 2) >> 2, (y + 1) >> 2, 67);

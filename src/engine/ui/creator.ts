@@ -30,7 +30,7 @@ const TABS: { id: Tab; label: string; framing: number }[] = [
 const STYLE_NAMES: Record<string, string> = {
   short01: 'Cropped', short02: 'Short', short03: 'Tousled', short04: 'Swept', bob01: 'Bob', bob02: 'Long bob', long01: 'Long',
   ponytail01: 'Ponytail', braid01: 'Braid', afro01: 'Afro',
-  none: 'None', paint_shaved: 'Shaved', paint_buzz: 'Buzz cut', paint_fade: 'Fade', paint_coils: 'Short coils', paint_cornrows: 'Cornrows',
+  none: 'None', coily_twa: 'Short natural', coily_afro: 'Afro', coily_afro_big: 'Big afro', paint_shaved: 'Shaved', paint_buzz: 'Buzz cut', paint_fade: 'Fade', paint_coils: 'Short coils', paint_cornrows: 'Cornrows',
   elvs_scruffy_beard1: 'Long goatee', 'grinsegold_full_beard+grinsegold_moustache': 'Full beard', 'grinsegold_full_beard+rehmanpolanski_moustache_viking': 'Full beard, drooping moustache', grinsegold_beard_sigmund_wip: 'Trimmed beard',
   grinsegold_moustache: 'Moustache', rehmanpolanski_moustache_viking: 'Drooping moustache',
   stubble_light: 'Light stubble', stubble_heavy: 'Heavy stubble', 'stubble+grinsegold_moustache': 'Stubble & moustache',
