@@ -45,6 +45,14 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
 - [ ] M2.9 Companions core (recruit, follow, approval reactions, banter triggers, combat AI as allies)
 
 ## Next action
+**Current step (owner: less Fallout, more creative modern frontier features; rework story core; notebook UI):**
+- [ ] F1 Docs: owner decisions (CLAUDE.md), DESIGN frontier systems (local reputation & news, leads board,
+      scheduled world events, frontier justice, journeys), drop karma; reframe DESIGN §2 row 1
+- [ ] F2 Secret: rework the story's central truth (story/ only) + update Chapter One content to fit
+- [ ] F3 Field notebook UI replacing the wristlog (journal, people with sketched portraits, leads, map, gear)
+- [ ] F4 Systems: local reputation + news propagation, leads/deductions engine, scheduled world events
+- (Previous pass G1–G5 done; G5 remaining items: Cistern 9 map, Shale content.)
+
 **Current step (owner: develop plot, functionality, dialogue, questlines; research acclaimed-RPG common denominators;
 replayability, meaningful choice, viable builds, best perk/skill/attribute configuration):**
 - [x] G1 DESIGN.md: research synthesis (§2), revised character system (12 skills, perks every 2 levels, skill

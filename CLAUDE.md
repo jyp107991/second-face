@@ -50,6 +50,10 @@ The owner wants to play unspoiled.
 - Live AI dialogue (later): Claude API with the player's own key, browser-side, optional; dialogue trees
   must always work offline.
 - Deploy: GitHub Pages via GitHub Actions on push to `main`.
+- **Not a Fallout clone in mechanics** (owner, design pass 2): keep the post-apocalyptic, lawless frontier vibe, but
+  prefer creative, coherent modern features over Fallout conventions. Avoid trite "who am I really / chosen one"
+  story cores. Keep: XP levels + perks, classic turn-based combat. UI: field notebook & map (not a wrist computer).
+  No global karma — reputation is local and travels with people.
 
 ## 3. Engineering conventions
 - Engine code in `src/engine/**`, game content in `src/content/**` (typed TS data modules).
