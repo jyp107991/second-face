@@ -2,10 +2,10 @@ import * as THREE from 'three';
 import { MAPS, NPCS } from '../content';
 import { cutawayUniforms } from './assets/materials';
 import { EventBus } from './core/events';
-import { hourOf, newGameState, type GameState, type Pronouns } from './core/state';
+import { dayOf, hourOf, newGameState, type GameState, type Pronouns } from './core/state';
 import type { Appearance } from './data/appearance';
 import type { CharacterSheet } from './stats/sheet';
-import { addItem, emptyInventory, equip, makeItem, syncGear } from './inventory/inventory';
+import { addItem, emptyInventory, equip, makeItem, removeItem, syncGear } from './inventory/inventory';
 import { Input } from './input/input';
 import { Atmosphere } from './render/atmosphere';
 import { IsoCamera } from './render/camera';
@@ -29,7 +29,8 @@ import type { Combatant } from './combat/rules';
 import { Rng } from './core/rng';
 import { Fx } from './render/fx';
 import { npcLook, spawnNpc, type NpcRuntime } from './npc/spawn';
-import { addXp, derived } from './stats/sheet';
+import { addXp, attr, derived } from './stats/sheet';
+import { chromeDef, settleDrift, tickChromeUpkeep } from './stats/chrome';
 import { skillCheck } from './stats/checks';
 import { AudioEngine, stepSoundFor, type SfxId } from './audio/audio';
 
@@ -276,6 +277,19 @@ export class Game extends EventBus<GameEvents> {
     this.addActor(rt.actor);
     if (saved?.dead) { rt.combatant.sheet.hp = 0; rt.actor.kill(true); }
     return rt;
+  }
+
+  /** Once per game day: chrome draws its upkeep from the pack (or degrades) and Drift settles. */
+  private dailyBody(): void {
+    const w = this.state.world, pc = this.state.pc, today = dayOf(this.state.minutes);
+    if (w.bodyDay === undefined) { w.bodyDay = today; return; }
+    for (let day = w.bodyDay + 1; day <= today; day++) {
+      if (!pc.sheet.chrome) continue;
+      const missed = tickChromeUpkeep(pc.sheet, day, (item) => removeItem(pc.inventory, item, 1) > 0);
+      for (const slot of missed) this.emit('message', { text: `Your ${chromeDef(pc.sheet.chrome[slot]!.id)?.name ?? 'chrome'} needs upkeep.` });
+      settleDrift(pc.sheet, attr(pc.sheet, 'grit'));
+    }
+    w.bodyDay = today;
   }
 
   /** Persist NPC positions/health/inventories for the current map. */
@@ -610,6 +624,7 @@ export class Game extends EventBus<GameEvents> {
       runTimers(this.state, this.quests);
       runWorldEvents(this.state, WORLD_EVENTS, this.quests);
       spreadNews(this.state, SETTLEMENTS);
+      this.dailyBody();
       this.quests.update();
     }
     this.hostilityTimer += simDt;

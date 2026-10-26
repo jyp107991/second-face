@@ -59,7 +59,16 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
       W4b: low-LOD figures merge all garments into one mesh with a per-figure atlas (5–6 meshes per NPC, was 8–10);
       no face shadow casters at low LOD. QA scripts in scratchpad: garm.cjs, roles.cjs, meshcount.cjs, iso.cjs.
       Backlog: eyepatch piece; visible chrome comes with W5 bionics.
-- [ ] W5 Data models + validators: settlement types, bionics (engine + tests), world map regions/routes/transport
+- [~] W5 Data models + validators:
+  - [x] W5a Chrome engine `stats/chrome.ts` (8 slots, old/dark/Concern grades, mods + `chrome_*` ability flags via
+        allMods/hasFlag, surgery risk & rejection, upkeep items `u_holdfast`/`u_powercell` + degradation, Drift baseline/
+        settle/bands/episode chance), catalogue `content/chrome/catalogue.ts` (15 pieces), conds `chrome`/`chromeSlot`/
+        `drift`, daily body tick in game (`dailyBody`), validator + tests. Not yet: Mender/clinic UI, ability effects in
+        combat/maps, chrome visuals on models (eye glow, metal limbs), Drift dialogue content.
+  - [ ] W5b Settlement types (engine table: layout kit, services, law, population role mix → `dressFor`), SettlementDef
+        gains type/region/prosperity/owner/crisis; validator + tests
+  - [ ] W5c World map model: regions, locations (major/minor/landmark), routes (terrain/danger), transport networks
+        (rail/barge/caravan/Loop/safehouses) with schedules + fares, travel planner, fast-travel rules; tests
 
 **Current step (owner: less Fallout, more creative modern frontier features; rework story core; notebook UI):**
 - [x] F1 Docs: owner decisions (CLAUDE.md), DESIGN frontier systems (local reputation & news, leads board,

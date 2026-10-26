@@ -1,5 +1,7 @@
 import type { MapDef } from '../engine/data/types';
 import { registerRules } from '../engine/stats/sheet';
+import { registerChrome } from '../engine/stats/chrome';
+import { CHROME } from './chrome/catalogue';
 import { registerItems } from '../engine/inventory/items';
 import { ITEMS } from './items';
 import { PERKS } from './rules/perks';
@@ -24,6 +26,7 @@ export const MAPS: Record<string, MapDef> = {
 
 export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN].map((n) => [n.id, n]));
 
-export { TRAITS, PERKS, ITEMS, ORIGINS, DIALOGUES, QUESTS, SETTLEMENTS, LEADS, CONCLUSIONS, WORLD_EVENTS };
+export { TRAITS, PERKS, CHROME, ITEMS, ORIGINS, DIALOGUES, QUESTS, SETTLEMENTS, LEADS, CONCLUSIONS, WORLD_EVENTS };
 registerRules({ traits: TRAITS, perks: PERKS });
+registerChrome(CHROME);
 registerItems(ITEMS);

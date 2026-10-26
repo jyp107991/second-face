@@ -36,7 +36,10 @@ export type Cond =
   | { heard: { settlement: string; tag: string } }
   | { standing: { settlement: string; gte?: number; lte?: number } }
   | { event: string; is?: 'happened' | 'prevented' }
-  | { masked: boolean };
+  | { masked: boolean }
+  /** Has this chrome piece installed (working or not), or anything in this slot. */
+  | { chrome: string } | { chromeSlot: string }
+  | { drift: { gte?: number; lte?: number } };
 
 export type Effect =
   | { set: string; value?: number | string | boolean }
@@ -115,6 +118,9 @@ export function test(c: Cond | undefined, g: GameState): boolean {
   if ('standing' in c) return inRange(standing(g, c.standing.settlement), c.standing.gte, c.standing.lte);
   if ('event' in c) return c.is ? w.events[c.event] === c.is : !!w.events[c.event];
   if ('masked' in c) return !!w.masked === c.masked;
+  if ('chrome' in c) return Object.values(sh.chrome ?? {}).some((p) => p?.id === c.chrome);
+  if ('chromeSlot' in c) return !!sh.chrome?.[c.chromeSlot as keyof typeof sh.chrome];
+  if ('drift' in c) return inRange(sh.drift ?? 0, c.drift.gte, c.drift.lte);
   return false;
 }
 

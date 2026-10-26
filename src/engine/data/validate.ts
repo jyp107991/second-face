@@ -6,6 +6,9 @@ import type { NpcDef } from '../npc/defs';
 import { Grid } from '../scene/grid';
 import type { DialogueDef } from '../dialogue/dialogue';
 import type { QuestDef } from '../quest/quest';
+import { CHROME_SLOTS, type ChromeDef } from '../stats/chrome';
+import { GARMENTS } from './garments';
+import { OUTFIT_ROLES } from './outfits';
 
 export interface ContentBundle {
   maps: Record<string, MapDef>;
@@ -18,6 +21,7 @@ export interface ContentBundle {
   leads?: Record<string, { id: string }>;
   conclusions?: Record<string, { id: string; from: string[] }>;
   settlements?: Record<string, { id: string; roads: Record<string, number> }>;
+  chrome?: Record<string, ChromeDef>;
 }
 
 /**
@@ -95,6 +99,14 @@ export function validateContent(c: ContentBundle): string[] {
     for (const item of n.equip ?? []) if (c.items && !c.items[item]) errs.push(`npc ${key}: unknown equip ${item}`);
     for (const t of n.traits ?? []) if (c.traits && !c.traits[t]) errs.push(`npc ${key}: unknown trait ${t}`);
     if (n.dialogue && c.dialogues && !c.dialogues[n.dialogue]) errs.push(`npc ${key}: unknown dialogue ${n.dialogue}`);
+    if (n.role && !OUTFIT_ROLES.includes(n.role)) errs.push(`npc ${key}: unknown role ${n.role}`);
+    for (const g of n.outfit?.layers ?? []) if (!GARMENTS[g.name]) errs.push(`npc ${key}: unknown garment ${g.name}`);
+  }
+  for (const [key, ch] of Object.entries(c.chrome ?? {})) {
+    if (ch.id !== key) errs.push(`chrome ${key}: id mismatch`);
+    if (!CHROME_SLOTS.includes(ch.slot)) errs.push(`chrome ${key}: unknown slot ${ch.slot}`);
+    if (ch.upkeep && c.items && !c.items[ch.upkeep.item]) errs.push(`chrome ${key}: unknown upkeep item ${ch.upkeep.item}`);
+    if (!(ch.drift > 0 && ch.drift <= 30)) errs.push(`chrome ${key}: drift ${ch.drift} outside 1..30`);
   }
   // Narrative: walk every condition/effect object for references.
   const refs = (where: string, x: unknown): void => {
@@ -111,6 +123,8 @@ export function validateContent(c: ContentBundle): string[] {
     if (typeof o.attr === 'string' && !ATTRIBUTES.includes(o.attr as never)) errs.push(`${where}: unknown attribute ${o.attr}`);
     if (typeof o.trait === 'string' && c.traits && !c.traits[o.trait]) errs.push(`${where}: unknown trait ${o.trait}`);
     if (typeof o.perk === 'string' && c.perks && !c.perks[o.perk]) errs.push(`${where}: unknown perk ${o.perk}`);
+    if (typeof o.chrome === 'string' && c.chrome && !c.chrome[o.chrome]) errs.push(`${where}: unknown chrome ${o.chrome}`);
+    if (typeof o.chromeSlot === 'string' && !CHROME_SLOTS.includes(o.chromeSlot as never)) errs.push(`${where}: unknown chrome slot ${o.chromeSlot}`);
     if (typeof o.lead === 'string' && c.leads && !c.leads[o.lead]) errs.push(`${where}: unknown lead ${o.lead}`);
     if (typeof o.concluded === 'string' && c.conclusions && !c.conclusions[o.concluded]) errs.push(`${where}: unknown conclusion ${o.concluded}`);
     const place = (o.news as { at?: string } | undefined)?.at ?? (o.heard as { settlement?: string } | undefined)?.settlement ?? (o.standing as { settlement?: string } | undefined)?.settlement;

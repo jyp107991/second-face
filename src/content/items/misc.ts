@@ -3,6 +3,9 @@ import type { ItemDef } from '../../engine/inventory/items';
 /** Junk (crafting parts), tools, and the currency pseudo-item. */
 export const MISC: ItemDef[] = [
   { id: 'tolls', name: 'Tolls', desc: 'Stamped tin chits issued by the Tollmen. Good anywhere the roads go.', category: 'misc', weight: 0, value: 1, stack: true },
+  // Chrome upkeep (stats/chrome.ts): miss it and the pieces degrade.
+  { id: 'u_holdfast', name: 'Holdfast', desc: 'Grey tablets that keep flesh and implant on speaking terms. Menders sell them by the strip.', category: 'misc', weight: 0.02, value: 30, stack: true },
+  { id: 'u_powercell', name: 'Implant Cell', desc: 'A thumb-sized charge cell for chrome that draws more than a body makes.', category: 'misc', weight: 0.05, value: 45, stack: true },
   { id: 'j_scrap', name: 'Scrap Metal', desc: 'Bent sheet, bolts, wire.', category: 'junk', weight: 1, value: 2 },
   { id: 'j_wiring', name: 'Copper Wiring', desc: 'Stripped from walls and dead machines.', category: 'junk', weight: 0.3, value: 4 },
   { id: 'j_cloth', name: 'Cloth', desc: 'Rags, sacking, a torn shirt.', category: 'junk', weight: 0.2, value: 1 },

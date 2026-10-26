@@ -34,6 +34,8 @@ export interface Timer {
 export interface Decision { id: string; text: string; minutes: number }
 
 export interface WorldState {
+  /** Last day the daily body tick ran (chrome upkeep, Drift). */
+  bodyDay?: number;
   quests: Record<string, QuestState>;
   memories: Record<string, Memory[]>;
   /** Per NPC: trust and affection toward the player (-100..100). */

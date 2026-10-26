@@ -2,6 +2,7 @@ import {
   ATTRIBUTES, ATTR_BASE, ATTR_CREATION_MAX, ATTR_CREATION_POINTS, ATTR_MAX, ATTR_MIN, LEVEL_CAP, MASTERIES, PERK_EVERY, SKILLS, SKILL_INFO, SKILL_MAX,
   TAG_BONUS, TAG_COUNT, xpForLevel, type AttributeId, type Derived, type SkillId,
 } from './rules';
+import { chromeAbilities, chromeMods, type ChromeSlot, type InstalledChrome } from './chrome';
 
 // ---------------------------------------------------------------------------------------------
 // Modifiers: the common currency of traits, perks, chems, injuries and gear.
@@ -78,6 +79,10 @@ export interface CharacterSheet {
   effects: ActiveEffect[];
   /** Extra modifiers from equipped gear (recomputed by inventory). */
   gearMods?: Modifier[];
+  /** Installed chrome by slot (stats/chrome.ts). */
+  chrome?: Partial<Record<ChromeSlot, InstalledChrome>>;
+  /** Current Drift 0..100. */
+  drift?: number;
 }
 
 export function emptySheet(name = 'Resident'): CharacterSheet {
@@ -101,6 +106,7 @@ export function allMods(s: CharacterSheet): Modifier[] {
   for (const [p, rank] of Object.entries(s.perks)) for (let i = 0; i < rank; i++) out.push(...(db.perks[p]?.mods ?? []));
   for (const e of s.effects) out.push(...e.mods);
   if (s.gearMods) out.push(...s.gearMods);
+  if (s.chrome) out.push(...chromeMods(s));
   // Crippled limbs
   if (s.crippled.legL || s.crippled.legR) out.push({ target: 'derived:ap', add: -1 });
   if (s.crippled.armL || s.crippled.armR) out.push({ target: 'hit_ranged', add: -15 }, { target: 'hit_melee', add: -10 });
@@ -128,6 +134,7 @@ export function modSum(s: CharacterSheet, target: ModTarget): number {
 
 export function hasFlag(s: CharacterSheet, flag: string): boolean {
   if (s.traits.some((t) => db.traits[t]?.flags?.includes(flag)) || Object.keys(s.perks).some((p) => db.perks[p]?.flags?.includes(flag))) return true;
+  if (s.chrome && flag.startsWith('chrome_') && chromeAbilities(s).includes(flag)) return true;
   // Skill masteries (verbs at 50 and 100).
   if (flag.startsWith('m_')) {
     for (const k of SKILLS) {
