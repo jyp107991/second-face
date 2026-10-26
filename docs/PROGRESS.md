@@ -51,8 +51,9 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
 - [x] F2 Secret: rework the story's central truth (story/ only) + update Chapter One content to fit
 - [x] F3 Field notebook UI replacing the wristlog (journal, people with sketched portraits, leads, map, gear)
 - [x] F4 Systems: local reputation + news propagation, leads/deductions engine, scheduled world events
-- [ ] F5 Restyle HUD + title/menus + dialogue/loot panels to the frontier look (no green CRT)
-- (Previous pass G1–G5 done; G5 remaining items: Cistern 9 map, Shale content.)
+- [x] F5 Restyle panels to leather & brass (no green CRT). Later: proper title art, HUD icons.
+- NEXT: Cistern 9 map with the cast placed (M3), MOTHER terminal dialogue, maintenance-shaft route, exit trigger;
+  then Shale (first scheduled world event + news), frontier justice dispute, letters; perk flags into systems.
 
 **Current step (owner: develop plot, functionality, dialogue, questlines; research acclaimed-RPG common denominators;
 replayability, meaningful choice, viable builds, best perk/skill/attribute configuration):**
