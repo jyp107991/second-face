@@ -122,10 +122,11 @@ mid-range Android phone; deployed to Pages.
       the bar), Wren joins as companion; tests. B1.5 DONE: scheduled events `tribute_day`/`tribute_settled` (day 5; default
       outcome if absent), the party placed in Shale by condition, `d_tribute` (terms accepted / talk down / truck cut at the
       overpass / pay / sheriff pays / fight with the militia as `ally` units), Ada's terms + exodus decisions; tests;
-      smoke `tools/qa/tribute.cjs`. NEXT: B1.6b q_ch1_name (decode) + Chapter One end): Cistern 9 map (cast placed, MOTHER terminal, maintenance shaft, exit), Shale
-      (well-town map, ~12 NPCs incl. the plan's cast, saloon, sheriff, trading post, Choir tent, wells),
-      Rust Dogs overpass camp; quests q_ch1_door/shale/tribute/debts/prisoner/map/oldface; 2 companions;
-      first scheduled event; letters; barter; map screen with travel between the three. ~5 h.
+      smoke `tools/qa/tribute.cjs`. B1.6b DONE: `q_ch1_name` — the map is read from the pack (`ItemDef.read` → notebook
+      Read button opens a tree dialogue), four ways into the cipher (Science with cribs / origin / a key bought from
+      Pike / Hollis), a 30-day timer the Act 1 slice resolves, HUD title card (`title` event) closes Chapter One;
+      tests. NEXT: B1.7 playtest Cistern → Shale → overpass → Tribute Day → the map end to end via Playwright,
+      fix what breaks, polish (camp screen, companion barks on the road), then open B2.)
 - [ ] B2 **Act 1**: Tollhouse 9, Signal Hill, Dry Wells crisis, Burnt Orchard, salt pans; Shale/Rust Dogs/
       Tollmen/Choir lines to Act 1 end; 3rd companion; first Mender + chrome; world map with encounters,
       discoveries, camps, hunting/fishing; nomad camp (the Wheel). ~8 h.
@@ -147,14 +148,14 @@ mid-range Android phone; deployed to Pages.
 | Area | Maps | NPCs | Dialogues | Quests | Status |
 |---|---|---|---|---|---|
 | Cistern 9 | 2/2 | 10/10 | 10/10 | 1/1 | playable; shaft + door routes |
-| Shale | 1/1 | 16/16 | 14/16 | 0/5 | town playable; quests next |
-| Rust Dogs camp | 1/1 | 13/13 | 12/13 | 2/2 | playable; Tribute Day next |
+| Shale | 1/1 | 16/16 | 16/16 | 3/5 | playable; arrival, Tribute Day, the first name |
+| Rust Dogs camp | 1/1 | 13/13 | 13/13 | 2/2 | playable; The Paper, Teo |
 | Act 1 wilds | 0/5 | 0/15 | 0/15 | 0/6 | — |
 | Meridian | 0/12 | 0/60 | 0/60 | 0/30 | — |
 | Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |
 | Act 2 wilds | 0/14 | 0/40 | 0/40 | 0/16 | — |
 | Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |
-| Companions | — | 0/7 | 0/7 arcs | 0/7 | design only |
+| Companions | — | 2/7 | 0/7 arcs | 0/7 | two can join in Chapter One; arcs in B2+ |
 | Factions joinable | — | — | — | 0/9 | design pending |
 
 ## 4. Conventions and tools (keep current)
