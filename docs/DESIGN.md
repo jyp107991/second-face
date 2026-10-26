@@ -10,52 +10,83 @@
 5. **Respect the player.** Clear rules, readable checks, no hidden failure states, generous saves,
    accessible on a phone.
 
-## 2. Best practices borrowed from leading RPGs (mechanics only)
-| Practice | Source of inspiration (genre) | Our implementation |
-|---|---|---|
-| Visible skill checks, some hidden "passive" ones | Disco Elysium, BG3 | Dialogue options tagged `[Speech 45]`; passive Senses/Wits checks fire unprompted interjections |
-| Failure is content, not a dead end | Disco Elysium, Pentiment | Failed checks branch to new paths; no quest is lost to a single roll |
-| Companion approval + personal arcs + banter | Mass Effect, Dragon Age, BG3 | Approval per companion, arcs gated by approval/story, banter on travel/rest/location triggers |
-| Companions with their own red lines | Baldur's Gate, New Vegas | Companions leave, turn hostile, or intervene depending on values |
-| Faction reputation with gradients | New Vegas | Two axes per faction: **Respect** and **Fear** → labels (Idolized, Feared, Despised…) |
-| Many quest solutions + emergent ones | Deus Ex, Arcanum | Objectives are state-based (e.g. "door open"), not scripted-action-based |
-| Environmental interaction in combat | Divinity: Original Sin 2 | Explosive barrels, oil/fire, smoke, doors, high ground, darkness |
-| Consequences shown later | Witcher 3 | Delayed consequences scheduled via quest engine timers/flags |
-| Epilogue for places and people | Classic iso RPGs | Ending slides built from world state |
-| Crafting light, meaningful | New Vegas, Pathfinder | Repair, ammo reloading, chems, food — no junk-spam crafting |
-| Journal clarity | Witcher 3, Pillars | Journal with entries, objectives, optional markers (toggle), notes |
-| Rest/camp scenes | Dragon Age, BG3 | Camp on the world map: banter, romance beats, crafting, healing at cost of time/food |
-| Builds that feel different | Fallout-likes, Arcanum | Traits with downsides, perks that unlock new verbs (not just +5%) |
-| Tag-based "remember what you did" dialogue | Planescape | Memory tags feed dialogue conditions |
-| Quality of life | modern standard | Highlight interactables (hold), auto-loot rules, item compare, quicksave, combat speed, AP cost preview before committing a move |
+## 2. What acclaimed RPGs have in common (research synthesis) → our rules
+Studied: Fallout 1/2, Fallout: New Vegas, Planescape: Torment, Arcanum, Baldur's Gate 1–3, Disco Elysium,
+The Witcher 3, Mass Effect 1–2, KOTOR, Pillars of Eternity, Pentiment, Age of Decadence, Deus Ex, Divinity OS2.
+Sources (design talks/interviews/reviews) are listed in §13.
+
+| # | Common denominator | Evidence | Our rule |
+|---|---|---|---|
+| 1 | A personal mystery tied to identity | Torment, KOTOR, Disco Elysium | The photo hook; the story's thematic question is asked of every major character |
+| 2 | Factions with legible, defensible ideologies | New Vegas (NCR vs Legion clarity), Witcher 3 | Each faction states what it wants, why, and what it costs others; none is simply evil |
+| 3 | Important choices never have an obvious answer | Witcher 3 (story director Blacha), Bloody Baron | Major choices trade one good for another; we review every major choice for a "dominant" option and remove it |
+| 4 | Several real solutions per quest; a non-combat path that finishes the game | Fallout 1/2, New Vegas, Age of Decadence, Deus Ex | Every quest: ≥2 solutions, critical path: ≥3 incl. one non-violent; build-coverage validated by script (§3.8) |
+| 5 | Failure is content, not a dead end | Disco Elysium, Pentiment | A failed check opens a different (often worse, never empty) branch |
+| 6 | Readable checks, no save-scum rolls | Age of Decadence (static checks), BG3 players' complaints about rerolling | Dialogue checks are deterministic thresholds shown up front; only combat and gambling roll dice |
+| 7 | The world reacts to who you are | BG3 (200+ lines for one subclass), Fallout low-INT dialogue | Lines react to origin, traits, appearance (age, scars), reputation, very low/high attributes |
+| 8 | Consequences arrive later and far away | Witcher 3 | ≥30% of consequences are delayed or surface in another location; tracked via world flags + timers |
+| 9 | Companions with opinions, arcs, red lines, conflicts | Baldur's Gate, Mass Effect, New Vegas | 6 companions; approval by values; personal quests; companion-vs-companion conflicts; leave/betray/intervene |
+| 10 | Endings assembled from the whole game, not the last hour | Fallout epilogues; criticism of BG3's final act and of single late choices | Epilogue slides computed from ~40 world variables across all acts |
+| 11 | Almost anyone can die; the story survives it | BG3 ("you will want to kill someone"), Fallout | Killable NPCs by default; every critical fact has ≥2 sources (person + record/terminal/item) |
+| 12 | Specialization: viable is not the same as optimal | Josh Sawyer (New Vegas) | Skill points too few to master everything; tags; few permanent boosts; all builds viable |
+| 13 | Perks that change what you can do | Sawyer's Van Buren notes, FNV, BG3 feats | Perks unlock verbs; flat +% perks are the exception |
+| 14 | Mutually exclusive content drives replays | ADOM-style exclusive quests, faction routes | Faction alliances lock others out; companions conflict; origins and builds see different content |
+| 15 | Every attribute matters to every build | Pillars of Eternity design goal | Each attribute has combat, exploration and dialogue uses; diminishing returns above 8 |
+
+Existing borrowed practices retained: tag-memory dialogue (Torment), environmental combat (D:OS2),
+camp scenes (Dragon Age/BG3), journal clarity (Witcher 3/Pillars), light meaningful crafting, QoL
+(highlight interactables, AP cost preview, quicksave, combat speed).
 
 ## 3. Character system
-### 3.1 Attributes (7, range 1–10, 33 points to distribute, base 3 each + 12 free)
-| Attribute | Governs |
-|---|---|
-| **Brawn** | carry weight, melee damage, heavy weapons, HP |
-| **Senses** | range penalties, spotting traps/stealthers, passive perception checks, night vision |
-| **Grit** | HP, radiation/poison resistance, healing rate, stamina for travel |
-| **Presence** | dialogue options, companion slots, barter, faction gain rate |
-| **Wits** | skill points per level, science/medicine, dialogue insight checks |
-| **Reflex** | AP, initiative, evasion, stealth, firearms |
-| **Fortune** | criticals, random encounter odds, loot quality rolls, gambling, odd events |
+### 3.1 Attributes (7, range 1–10; base 3 + 12 points at creation; creation cap 8)
+Each attribute has a **combat**, **exploration** and **dialogue** use, so none is a dump stat.
+| Attribute | Combat | Exploration | Dialogue / checks |
+|---|---|---|---|
+| **Brawn** | melee damage, heavy-weapon handling | carry weight, forcing doors/lifting | intimidation, feats of strength |
+| **Senses** | range, spotting hidden enemies | traps, hidden caches, passive "you notice…" checks | reading tells, noticing details in scenes |
+| **Grit** | HP, resistances | travel endurance, healing | enduring pain/interrogation, drinking contests, withstanding fear |
+| **Presence** | morale of allies, companion slots | prices, faction gains | persuasion, leadership, seduction |
+| **Wits** | arc/explosive accuracy | skill points, science/medicine base | insight options; very low Wits gives simple-minded dialogue (with its own solutions) |
+| **Reflex** | AP, initiative, evasion | stealth, sleight of hand | quick reactions in tense scenes (snatch, dodge, draw first) |
+| **Fortune** | criticals | odd encounters, loot rolls, gambling | rare "lucky guess" options; fate's small mercies |
+Very low (≤2) and very high (≥9) values unlock distinctive lines and occasional unique solutions.
 
-### 3.2 Skills (16, 0–150%)
-Combat: **Firearms, Heavy Arms, Arc Weapons** (pre-war energy), **Melee, Unarmed, Throwing**
-Active: **Medicine, Mechanics** (repair, traps disarm, locks with tools), **Science** (terminals, chems, electronics), **Stealth, Sleight** (pickpocket/plant), **Locks**
-Social/world: **Speech, Barter, Survival** (travel, food, tracking, camp), **Gambling**
-- Tag 3 skills: +20% and double growth.
-- Skill points per level: 5 + 2×Wits.
+### 3.2 Skills (12, range 0–100)
+Consolidated from 16: the old Gambling, Throwing, Sleight, Heavy Arms and Unarmed were niche "trap" picks.
+| Group | Skill | Covers |
+|---|---|---|
+| Combat | **Firearms** | pistols, rifles, shotguns, SMGs, machine guns (heavy guns need Brawn) |
+| Combat | **Arc Weapons** | pre-Burn energy weapons |
+| Combat | **Melee** | blades, clubs, spears, fists and grapples |
+| Combat | **Explosives** | grenades, thrown weapons, mines, launchers; disarming bombs |
+| Active | **Medicine** | healing, surgery, chems, diagnosing the sick |
+| Active | **Mechanics** | repair, crafting, ammo, machines and vehicles |
+| Active | **Science** | terminals, electronics, chemistry, old-world records |
+| Active | **Security** | locks, safes, alarms, traps |
+| Active | **Stealth** | sneaking, pickpocketing, planting items |
+| Social | **Speech** | persuade, deceive, intimidate (with Brawn), calm |
+| Social | **Barter** | prices, appraisal, deals and contracts |
+| Social | **Survival** | travel, tracking, food, camps, animals, reading the land |
+- **Every skill has dialogue checks** (e.g. Medicine to diagnose, Mechanics to understand a machine someone
+  describes, Firearms to identify a weapon by sound, Survival to read tracks a witness describes).
+- **Tags:** 3 tagged skills start +15 and gain +1 extra point each time you invest.
+- **Skill points per level:** 8 + Wits (≈ 450 points by level 30 → ~4 skills at 100, several at 50).
+- **Check tiers** used by all content: 25 / 50 / 75 / 100 (Novice, Adept, Expert, Master).
+- Gambling is a Fortune + Wits minigame, not a skill.
 
-### 3.3 Traits (pick up to 2 at creation, ~14 total) — each with an upside and a downside
-e.g. *Heavy-Handed* (+melee dmg, −crit chance), *Twitchy* (+initiative, −aim), *Bookish* (+skill points,
-−HP), *Sweet-Talker* (+Speech, NPCs distrust your honesty), *Night Owl*, *Glutton*, *Cistern-Pale*
-(bonus indoors, penalty in harsh sun), *One Hand* (bonus one-handed, no two-handed), *Old Debts*…
+### 3.3 Traits (pick up to 2 at creation) — each with an upside and a downside
+Kept as designed (≈14). Additionally, **Marks** are traits earned through play from repeated or
+defining acts (e.g. sparing many enemies, killing many, lying often, eating questionable meat). Marks
+change dialogue and give a small bonus with a cost; the player can see what is building toward a Mark.
 
-### 3.4 Perks
-Every 3 levels (level cap 30 → 10 perks). Perks unlock **verbs** where possible: "Mechanic's Eye — see
-weapon condition of enemies; aim at weapon to jam it", "Confessor — NPCs with Trust ≥ 50 reveal one secret".
+### 3.4 Perks — one every 2 levels (15 by level 30)
+- ~60 perks in families (gunplay, close quarters, explosives, tech, stealth, social, survival, leadership,
+  fortune, body). Most unlock **verbs** (new actions or new dialogue/exploration options); ranked perks
+  are capped at 2–3 ranks.
+- **Skill masteries** (free, automatic): every skill unlocks a verb at 50 and another at 100
+  (e.g. Security 50: salvage parts from disarmed traps; Security 100: re-arm traps against enemies).
+  These reward specialization without spending perk picks.
+- Perk requirements combine level + attribute or skill, so builds open different perk menus.
 
 ### 3.5 Derived stats
 HP = 15 + 2×Brawn + 3×Grit + (Grit/2 per level); AP = 5 + Reflex/2; Carry = 25 + 15×Brawn (kg);
@@ -64,7 +95,32 @@ Initiative = 2×Senses + Reflex; Crit% = Fortune; Heal rate; Resistances (rad, p
 ### 3.6 Progression curve (60 h single playthrough)
 XP to level n = 750 × n × (n−1) / 2 (soft curve). Targets: level 5 by end of Chapter One (~4–5 h),
 level 12 mid-Act 1 end, level 20 end Act 2, level 26–30 at the finale. Kill XP is low; quest/discovery/
-check XP is high (non-combat builds level at the same pace).
+check XP is high (non-combat builds level at the same pace). Passing a check gives XP once per check.
+
+### 3.7 Checks
+- **Dialogue / scene checks:** deterministic: `value ≥ DC` passes. Shown as `[Speech 50]`, green when met,
+  red when not. Modifiers are explicit: knowledge you've learned (−10/−25 DC), evidence items, companion
+  present, reputation, chems (temporary, with a cost).
+- **Passive checks** (Senses/Wits): fire automatically as interjections. They add information or options but
+  never gate the critical path.
+- **World checks** (locks, repairs, terminals): deterministic at or above DC; just below DC, a costly attempt
+  is possible (breaks picks, burns parts, triggers alarms), never a free reroll.
+- **Combat and gambling** remain random.
+
+### 3.8 Build archetypes and coverage (validated by script)
+Reference builds that must each reach every ending they qualify for and ≥70% of side content:
+| Build | Core | Plays like |
+|---|---|---|
+| Gunslinger | Reflex, Senses · Firearms, Stealth | precise ranged fights, overwatch, quick draws |
+| Bruiser | Brawn, Grit · Melee, Explosives | front-line, shoves, intimidation |
+| Silver Tongue | Presence, Wits · Speech, Barter | talks through the critical path with near-zero kills |
+| Shadow | Reflex, Fortune · Stealth, Security | infiltration, theft, avoidance |
+| Technician | Wits · Science, Mechanics, Arc | terminals, robots, crafting, energy weapons |
+| Survivor-Medic | Grit, Senses · Survival, Medicine | travel, companions, attrition, healing |
+| Leader | Presence · Speech + companions | three companions, morale, delegation |
+| Wildcard | Fortune · Explosives, Barter | criticals, odd events, gambling |
+`npm run validate` runs each reference build's projected skills at each act against every quest's solution
+requirements and fails if a build has no route through a critical-path quest.
 
 ## 4. Character creation
 - Origin presets (3 ready-made Cistern residents) or full custom.
@@ -178,7 +234,36 @@ delayed consequences.
 - World map: hex/region graph with travel time, terrain danger, random encounter tables, discoverable
   sites, procedural ruins (assembled from room templates + loot tier).
 
-## 11. Tech plan
+## 11. Choice & consequence rules
+- Each major choice is logged as a world variable with a human-readable description (journal "Decisions").
+- Choices are reviewed for dominance: if one option is best for everyone in every way, the choice is rewritten.
+- Consequences: immediate (scene), local (NPC memory/gossip), delayed (timers, later acts), distant (other
+  locations, epilogue). At least 30% are delayed or distant.
+- No "invisible failure": when a door closes because of a choice, the journal records it.
+- Kill anyone: if a key NPC dies, their knowledge survives in records, notes, terminals, or another person.
+- Endings: assembled from faction states, companion fates, key decisions, and reputation (≈40 variables),
+  presented as epilogue slides per place and person.
+
+## 12. Replayability levers
+1. **Origins** (3 backgrounds) with unique opening solutions, dialogue lines and one exclusive questline each.
+2. **Exclusive faction alliances** in Act 2 (full alliance with one locks out others' endgame lines).
+3. **Companion conflicts** (some companions cannot coexist; some leave over choices).
+4. **Build-gated content** (routes, areas and scenes only some builds reach).
+5. **Multiple endings** plus a hidden one, with combinatorial epilogues.
+6. **Knowledge carried between runs** (codes, routes, secrets usable from the start by a player who knows).
+7. **Systemic content** (world-map events, ruins, bounties) that varies per run.
+
+## 13. Research sources (design reference)
+- New Vegas faction clarity and choice: reviews/retrospectives (GameBanshee, PC Gamer).
+- Josh Sawyer on viable vs optimal builds and perk design: Designer Notes #63; RPG Codex interviews; Van Buren notes.
+- Larian on reactivity ("weird Dungeon Masters", killable NPCs, ending-path spreadsheets): BAFTA event report.
+- Witcher 3 quest design (Bloody Baron; "an important choice should never have an obvious answer").
+- Age of Decadence: static checks, specialization, non-combat route (GameBanshee reviews).
+- Disco Elysium passive/active checks and failure-as-content (community analysis).
+- Pillars of Eternity attribute goal ("every attribute should matter").
+- CRPG choice design (mutually exclusive choices, fairness): Heroic Fantasy Games essay.
+
+## 14. Tech plan
 - TypeScript, Vite, three.js; vitest for tests; GitHub Actions → GitHub Pages; installable (PWA).
 - Modules: `engine/render` (renderer, post FX: bloom, grade, grain, vignette, fog; quality presets),
   `engine/assets` (procedural meshes/textures, prop kit, character builder), `engine/scene`
@@ -192,12 +277,12 @@ delayed consequences.
 - Performance: instanced/merged props, ≤150 draw calls, shadow map only for key light, DPR cap on
   mobile, post FX half-res on Low.
 
-## 12. Save format
+## 15. Save format
 `{ version, meta: {slot, name, playtime, location, timestamp, portrait}, state: GameState }`, stored in
 IndexedDB (fallback localStorage). Migrations keyed by version. 3 manual + quicksave + autosave slots.
 Export/import as file.
 
-## 13. Live AI dialogue (later milestone)
+## 16. Live AI dialogue (later milestone)
 - Toggle in settings; player supplies their own Claude API key (stored locally only).
 - Prompt per NPC = personality, role, current memories of player, knowledge tags (what they know at this
   point in the story), forbidden topics (spoiler limits), speech style. The model returns text plus

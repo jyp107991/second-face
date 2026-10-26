@@ -47,7 +47,7 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
 ## Next action
 **Current step (owner: develop plot, functionality, dialogue, questlines; research acclaimed-RPG common denominators;
 replayability, meaningful choice, viable builds, best perk/skill/attribute configuration):**
-- [ ] G1 DESIGN.md: research synthesis (§2), revised character system (12 skills, perks every 2 levels, skill
+- [x] G1 DESIGN.md: research synthesis (§2), revised character system (12 skills, perks every 2 levels, skill
       mastery perks, deterministic visible checks, every skill/attribute used in dialogue), build archetypes,
       choice & consequence rules, replayability levers, build-coverage validation
 - [ ] G2 Code: skills 16→12, skill cap 100, perks every 2 levels, mastery perks, check rules; update tests/creator
