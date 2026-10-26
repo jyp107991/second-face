@@ -45,6 +45,16 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
 - [ ] M2.9 Companions core (recruit, follow, approval reactions, banter triggers, combat AI as allies)
 
 ## Next action
+**Current step (owner: develop plot, functionality, dialogue, questlines; research acclaimed-RPG common denominators;
+replayability, meaningful choice, viable builds, best perk/skill/attribute configuration):**
+- [ ] G1 DESIGN.md: research synthesis (§2), revised character system (12 skills, perks every 2 levels, skill
+      mastery perks, deterministic visible checks, every skill/attribute used in dialogue), build archetypes,
+      choice & consequence rules, replayability levers, build-coverage validation
+- [ ] G2 Code: skills 16→12, skill cap 100, perks every 2 levels, mastery perks, check rules; update tests/creator
+- [ ] G3 Secret story plan: full act/quest structure, faction lines, companions, endings matrix (story/ only)
+- [ ] G4 Dialogue engine + quest engine (M2.1, M2.3) with tests
+- [ ] G5 Chapter One dialogue + quests as content data; build-coverage validator in `npm run validate`
+
 **Current step (owner: facial hair blocky, stubble length/coverage off; wants real modern haircuts):**
 - [x] S1 `strands.ts`: directional strand shells (screen-res tapered hairs, growth-direction + length fields, AA)
 - [x] S2 `facialHair.ts`: zones + style table (stubble light/med/heavy, short/full beard, goatee, moustache,
