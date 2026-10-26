@@ -262,9 +262,10 @@ export class HumanFigure {
     if (drawIndex !== keep) compactGeometry(g);
     const mat = lod === 'high'
       ? new THREE.MeshPhysicalMaterial({
-        map: skin, vertexColors: true, roughness: 0.5, metalness: 0, specularIntensity: 0.55,
+        // Skin is matte with a soft, broad highlight; a glossy forehead reads as plastic.
+        map: skin, vertexColors: true, roughness: 0.6, metalness: 0, specularIntensity: 0.4,
         ...skinDetailMaps(d, detail, detailStrength),
-        sheen: 0.35, sheenRoughness: 0.55, sheenColor: new THREE.Color(0x6a4a40),
+        sheen: 0.2, sheenRoughness: 0.6, sheenColor: new THREE.Color(0x6a4a40),
       })
       : new THREE.MeshStandardMaterial({ map: skin, vertexColors: true, roughness: 0.58, metalness: 0 });
     applySkinScatter(mat);

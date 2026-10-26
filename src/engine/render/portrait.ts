@@ -37,8 +37,8 @@ export class PortraitStage {
     this.scene.fog = new THREE.Fog(background, 4, 9);
     // Cinematic three-point lighting: warm soft key with shadows (nose, brow, jaw), dim warm fill,
     // cool rim to separate the head from the background.
-    this.key = new THREE.DirectionalLight(0xffe4c4, 2.4);
-    this.key.position.set(1.6, 2.2, 2.4);
+    this.key = new THREE.DirectionalLight(0xffe4c4, 1.5);
+    this.key.position.set(1.5, 2.1, 2.3);
     this.key.castShadow = true;
     this.key.shadow.mapSize.set(2048, 2048);
     const sc = this.key.shadow.camera;
@@ -46,12 +46,15 @@ export class PortraitStage {
     this.key.shadow.bias = -0.0002;
     this.key.shadow.normalBias = 0.004;
     this.key.shadow.radius = 4;
-    const rim = new THREE.DirectionalLight(0xa8c4ff, 1.6);
+    const rim = new THREE.DirectionalLight(0xa8c4ff, 0.9);
     rim.position.set(-2.2, 1.9, -1.8);
-    const fill = new THREE.HemisphereLight(0xc8b4a0, 0x1e1812, 0.25);
+    // A soft fill from camera-left lifts the shadow side so the face keeps its shape without going hot.
+    const fill = new THREE.DirectionalLight(0xd8d0c8, 0.32);
+    fill.position.set(-2, 1.2, 2.5);
+    const ambient = new THREE.HemisphereLight(0xc8b4a0, 0x1e1812, 0.28);
     const floor = new THREE.Mesh(new THREE.CircleGeometry(1.4, 32).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x2a241c, roughness: 1 }));
     floor.receiveShadow = true;
-    this.scene.add(this.key, this.key.target, rim, fill, floor);
+    this.scene.add(this.key, this.key.target, rim, fill, ambient, floor);
   }
 
   setLook(look: HumanoidLook): void {
@@ -62,7 +65,7 @@ export class PortraitStage {
   }
 
   /** Attach the studio environment (call once with the game renderer). */
-  useEnvironment(renderer: THREE.WebGLRenderer, intensity = 0.28): void {
+  useEnvironment(renderer: THREE.WebGLRenderer, intensity = 0.22): void {
     this.scene.environment = portraitEnvironment(renderer);
     this.scene.environmentIntensity = intensity;
   }
@@ -100,7 +103,7 @@ export class PortraitStage {
     // Keep the key light's shadow frustum on the subject's head/body.
     const k = this.key;
     k.target.position.copy(target);
-    k.position.copy(target).add(new THREE.Vector3(1.6, 2.2, 2.4));
+    k.position.copy(target).add(new THREE.Vector3(1.5, 2.1, 2.3));
     k.target.updateMatrixWorld();
     const half = THREE.MathUtils.lerp(0.35, 1.3, this.framing);
     const sc = k.shadow.camera;

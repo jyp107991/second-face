@@ -76,7 +76,12 @@ session). Engine decision: see `docs/TECH_EVALUATION.md` (recommendation: stay o
       `assets/humanoid.ts` applies them): lean/wiry/gaunt defaults, rare heavy (rich or specific); proportion variation (limb
       length, shoulder/hip, neck, posture slouch) via MakeHuman measure/torso/armslegs modifiers + anim.
 - [x] A3.3 Faces (`assets/human/skin.ts` 8 skin variants + weathering paint, `figure.ts` eye clearcoat,
-      community skins 13 entries in `tools/mh/build_human.py`, hair contexts + RICH_DYES in `appearance.ts`): research + adopt better open resources (community skin packs skins01/02/03 full diffuse
+      community skins 13 entries in `tools/mh/build_human.py`, hair contexts + RICH_DYES in `appearance.ts`;
+      **face pass v2 after owner feedback 2026-10-26**: `randomAppearance` uses one head-shape target + bounded
+      FACE_SCALE/FACE_FEATURES/DISTINCTIVE tables (stacked ±0.6 modifiers had made alien skulls), textured
+      brows only, weathering/grime low-frequency and faint, regrade K 0.72, matte skin material, softer
+      portrait rig (key 1.9 + fill 0.55); procedural neck wrap/headwrap/bandana removed from role pools —
+      library face masks instead; poncho without collar ring): research + adopt better open resources (community skin packs skins01/02/03 full diffuse
       variety, asymmetry via l-/r- modifiers, weathering/sun damage/chapped lips, eye wetness/lip spec,
       ageing wrinkle strength, female-specific shape variation, world-fitting hairstyles only).
 - [x] A3.4 (portrait sheets for faces/bodies + crowd iso sheets `tools/qa/crowd.cjs`; sent to owner 2026-10-26) Before/after comparison sheets (portrait + iso) for each of A3.1–A3.3, judged honestly; revert

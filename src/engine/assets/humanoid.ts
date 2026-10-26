@@ -91,9 +91,9 @@ export class Humanoid {
     const clothes = outfitGarments(o);
     this.figure = new HumanFigure({
       shape: app.shape, skin: this.skin, eyes: app.eyes, brows: app.brows, hair: app.hair, clothes, lod: look.lod,
-      browColor: app.browColor ?? app.hair.color, facialHair: app.facialHair, skinDetail: app.shape.age > 45 ? 'old' : 'm',
-      // Creases deepen with age; the source maps are from adult men, so soften them for young/feminine faces.
-      skinDetailStrength: Math.min(0.9, Math.max(0.2, 0.2 + (app.shape.age - 20) / 60 + (app.weathering ?? 0) * 0.25)) * (0.7 + 0.3 * app.shape.gender),
+      browColor: app.browColor ?? app.hair.color, facialHair: app.facialHair, skinDetail: app.shape.age > 40 ? 'old' : 'm',
+      // Creases deepen with age and sun; the source maps are from adult men, so soften them for young/feminine faces.
+      skinDetailStrength: Math.min(0.85, Math.max(0.2, 0.25 + (app.shape.age - 20) / 60 + (app.weathering ?? 0) * 0.3)) * (0.7 + 0.3 * app.shape.gender),
     });
     this.root = this.figure.root;
     this.eyeHeight = this.figure.eyeHeight;

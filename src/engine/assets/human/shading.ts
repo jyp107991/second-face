@@ -108,7 +108,7 @@ export function cavityAO(pos: Float32Array, nrm: Float32Array, index: ArrayLike<
     if (!deg[i]) { ao[i] = 1; continue; }
     const cx = sum[i * 3] / deg[i] - pos[i * 3], cy = sum[i * 3 + 1] / deg[i] - pos[i * 3 + 1], cz = sum[i * 3 + 2] / deg[i] - pos[i * 3 + 2];
     const concave = (cx * nrm[i * 3] + cy * nrm[i * 3 + 1] + cz * nrm[i * 3 + 2]) / (edge[i] / deg[i] + 1e-6);
-    ao[i] = Math.max(0.45, Math.min(1, 1 - Math.max(0, concave) * 1.6));
+    ao[i] = Math.max(0.38, Math.min(1, 1 - Math.max(0, concave) * 1.9));
   }
   // Smooth twice over the same adjacency.
   for (let it = 0; it < 2; it++) {

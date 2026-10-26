@@ -104,7 +104,7 @@ let samples: SkinSamples | undefined;
  * and on the torso, plus the bounding box of the head's UV island. The photos' head and body islands
  * differ in colour, so each is normalised on its own.
  */
-function skinSamples(): SkinSamples {
+export function skinSamples(): SkinSamples {
   if (samples) return samples;
   const d = humanData(), f = frame();
   const face: number[] = [], body: number[] = [];
@@ -150,7 +150,8 @@ function regrade(ctx: CanvasRenderingContext2D, size: number, a: Appearance): vo
   };
   const mf = mean(S.face), mb = S.body.length ? mean(S.body) : mf;
   const [tr, tg, tb] = skinAlbedo(a.skinTone, a.skinUndertone ?? 0);
-  const K = 0.5;
+  // Keep most of the photo's own colour variation (lips, flush, veins): halving it left faces waxy.
+  const K = 0.72;
   const [hx0, hy0, hx1, hy1] = S.head.map((v) => v * size);
   for (let y = 0; y < size; y++) {
     const inY = y >= hy0 - 2 && y <= hy1 + 2;
@@ -237,7 +238,8 @@ export function scalpMask(p: THREE.Vector3, recede = 0, drop = 0): number {
     if (th <= K[i + 1][0]) { const f = (th - K[i][0]) / (K[i + 1][0] - K[i][0]); line = K[i][1] + (K[i + 1][1] - K[i][1]) * (f * f * (3 - 2 * f)); break; }
   }
   line += wobble - drop;
-  const edge = th < 60 ? 0.07 : 0.045;
+  // A real hairline thins over a centimetre or so; a hard edge reads as a painted cap.
+  const edge = th < 60 ? 0.11 : 0.07;
   return smoothstep(line - edge, line + edge, y);
 }
 
@@ -262,7 +264,7 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
   const burnC = new THREE.Color().setHex(0xb87666, THREE.LinearSRGBColorSpace);
   const grime = a.grime ?? 0, weather = a.weathering ?? 0;
   const dirtC = new THREE.Color().setHex(0x4a3a2a, THREE.LinearSRGBColorSpace);
-  const sunC = new THREE.Color().setHex(0x9a4e3e, THREE.LinearSRGBColorSpace);
+  const sunC = new THREE.Color().setHex(0xa8655a, THREE.LinearSRGBColorSpace);
   const P = [new V(), new V(), new V()];
   const U = [0, 0, 0], W = [0, 0, 0];
   const p = new V();
@@ -321,18 +323,20 @@ function paintMarks(ctx: CanvasRenderingContext2D, size: number, a: Appearance):
             else if (dd < sc.w * 2) { px[i] *= 0.9; px[i + 1] *= 0.88; px[i + 2] *= 0.88; }
           }
         }
-        // Weathering: the high points that face the sun (nose, cheekbones, brow) go ruddy and blotchy.
-        if (weather > 0 && dir.z > 0.45) {
-          const n = valueNoise3(dir.x * 11 + 3, dir.y * 11, dir.z * 11) * 0.6 + valueNoise3(dir.x * 29, dir.y * 29 + 5, dir.z * 29) * 0.4;
+        // Weathering: the high points that face the sun (nose, cheekbones, brow) go a little ruddy. Broad,
+        // low-frequency patches only — fine blotching read as disease, not sun.
+        if (weather > 0 && dir.z > 0.5) {
+          const n = valueNoise3(dir.x * 7 + 3, dir.y * 7, dir.z * 7);
           const band = dir.y > -0.55 && dir.y < 0.55 ? 1 : 0.35;
-          const k = weather * Math.min(1, (dir.z - 0.45) * 2.6) * band * Math.max(0, n - 0.3) * 1.3;
-          if (k > 0.02) blend(i, sunC, Math.min(0.45, k * 0.55));
+          const k = weather * Math.min(1, (dir.z - 0.5) * 2.4) * band * Math.max(0, n - 0.35) * 1.2;
+          if (k > 0.02) blend(i, sunC, Math.min(0.2, k * 0.3));
         }
-        // Grime: patchy dust and soot, heaviest on the cheeks, jaw and brow; worn into the creases.
+        // Grime: dust and soot settle low on the face (jaw, neck) and along the hairline, in broad patches.
         if (grime > 0) {
-          const n = valueNoise3(dir.x * 5, dir.y * 5, dir.z * 5) * 0.65 + valueNoise3(dir.x * 17, dir.y * 17, dir.z * 17) * 0.35;
-          const k = grime * Math.max(0, Math.min(1, (n - 0.42) * 2.6)) * (0.6 + 0.4 * Math.max(0, -dir.y + 0.3));
-          if (k > 0) blend(i, dirtC, 0.55 * k);
+          const n = valueNoise3(dir.x * 4, dir.y * 4, dir.z * 4);
+          const low = Math.max(0, -dir.y - 0.25) * 1.2 + Math.max(0, dir.y - 0.75) * 1.5;
+          const k = grime * Math.max(0, Math.min(1, (n - 0.4) * 2.2)) * Math.min(1, 0.25 + low);
+          if (k > 0) blend(i, dirtC, 0.32 * k);
         }
         // Tattoos (slightly faded ink)
         for (const tt of a.tattoos) {
@@ -404,8 +408,9 @@ function paintScalp(px: Uint8ClampedArray, i: number, x: number, y: number, p: T
       if (under < 1) { const l = hair.r * 0.3 + hair.g * 0.55 + hair.b * 0.15; tc.copy(hair).lerp(new THREE.Color(l, l, l), 0.3).multiplyScalar(under); mix(tc, m * 0.75); return; }
       const k = style === 'paint_fade' ? 0.04 + 0.96 * smoothstep(0.3, 0.85, p.y) : 1;
       if (k < 0.5) mix(stub, m * 0.18 * (1 - k));
-      mix(tc.copy(hair).multiplyScalar(0.8).addScalar(0.03 * fine), m * k * 0.62 * (0.9 + 0.2 * fine));
-      if (hash2(x, y, 64) < m * (0.35 + 0.4 * k)) mix(tc.copy(hair).multiplyScalar(0.55), 0.25 + 0.2 * hash2(x, y, 65));
+      // Buzzed hair is skin seen through short stubble: scalp shows through, the colour is the follicle shadow.
+      mix(tc.copy(hair).multiplyScalar(0.8).addScalar(0.03 * fine), m * k * 0.5 * (0.9 + 0.2 * fine));
+      if (hash2(x, y, 64) < m * (0.3 + 0.35 * k)) mix(tc.copy(hair).multiplyScalar(0.55), 0.22 + 0.2 * hash2(x, y, 65));
       return;
     }
     case 'paint_coils':

@@ -167,23 +167,39 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   if (opts.dyeChance && s.age < 50 && r.chance(opts.dyeChance)) a.hair.color = r.pick(opts.hair === 'rich' ? RICH_DYES : HAIR_DYES);
   // Brows grey later and less than scalp hair.
   a.browColor = grey > 0.3 ? mixHex(natural, 0xb8b6ae, clamp((grey - 0.3) * 0.6)) : natural;
-  a.brows = r.pick(BROW_STYLES.slice(0, 14));
+  // Textured brows: the strand-modelled sets read as black slashes at portrait distance.
+  a.brows = r.pick(BROW_STYLES.slice(14));
   a.facialHair = masc ? weighted(next, FACIAL_HAIR_WEIGHTS) : 'none';
   a.freckles = r.chance(mixv(pa.freckleChance, pb.freckleChance)) ? r.range(0.2, 0.8) : 0;
   if (r.chance(0.3)) a.scars = [r.pick(SCARS)];
   if (r.chance(0.15)) a.tattoos = [r.pick(TATTOOS)];
-  // Individual facial variation: a handful of modifiers nudged off average.
-  for (const id of FACE_VARIATION) if (r.chance(0.7)) s.modifiers[id] = gauss() * 0.6;
-  // One or two distinctive features (a strong nose, heavy jaw, wide mouth...) make faces memorable.
-  for (let k = r.int(1, 2); k > 0; k--) s.modifiers[r.pick(FACE_VARIATION)] = (r.chance(0.5) ? 1 : -1) * r.range(0.75, 1);
-  // Weathering: outdoor lives show in the face before the body.
-  if (life === 'starved' || life === 'hard') s.modifiers['head-age|decr|incr'] = Math.max(s.modifiers['head-age|decr|incr'] ?? 0, r.range(0.05, 0.3));
-  if (life === 'starved') s.modifiers['sym:cheek-volume|decr|incr'] = -r.range(0.4, 0.9);
+  // Individual facial variation, kept inside human ranges: one head-shape target at a modest value, a little
+  // skull/forehead/neck drift, feature drift around the ancestry mean, and one distinctive feature.
+  // (Stacking many head-shape targets at large values produced tall, narrow, alien skulls.)
+  s.modifiers[r.pick(HEAD_SHAPES)] = r.range(0.15, 0.5);
+  for (const [id, lo, hi] of FACE_SCALE) if (r.chance(0.7)) s.modifiers[id] = r.range(lo, hi);
+  for (const [id, lo, hi] of FACE_FEATURES) if (r.chance(0.65)) s.modifiers[id] = clamp(gauss() * 0.4, lo, hi);
+  const [did, dlo, dhi] = r.pick(DISTINCTIVE);
+  s.modifiers[did] = clamp((r.chance(0.5) ? 1 : -1) * r.range(0.45, 0.7), dlo * 1.6, dhi * 1.6);
+  // The ancestry's characteristic features sit on top of the drift (mixed people get a weighted blend).
+  const bias: Record<string, number> = {};
+  for (const [pp, pw] of [[pa, w], [pb, 1 - w]] as [AncestryPreset, number][]) {
+    if (pw <= 0) continue;
+    for (const [id, [lo, hi]] of Object.entries(pp.features ?? {})) bias[id] = (bias[id] ?? 0) + r.range(lo, hi) * pw;
+  }
+  for (const [id, v] of Object.entries(bias)) s.modifiers[id] = clamp((s.modifiers[id] ?? 0) * 0.5 + v, -1, 1);
+  // Scarcity shows in the face before the body: the bone sits close under the skin — cheekbones, hollow
+  // cheeks and temples, a defined jaw, shadowed eyes. The comfortable keep their softness.
+  if (life === 'starved' || life === 'hard') s.modifiers['head-age|decr|incr'] = Math.max(s.modifiers['head-age|decr|incr'] ?? 0, r.range(0.1, 0.3));
+  const gaunt = r.range(...({ starved: [0.55, 0.9], hard: [0.3, 0.65], settled: [0.12, 0.4], soft: [0, 0.1], pampered: [0, 0] } as Record<Lifestyle, [number, number]>)[life]);
+  const add = (id: string, v: number) => (s.modifiers[id] = clamp((s.modifiers[id] ?? 0) + v, -1, 1));
+  add('sym:cheek-bones|decr|incr', 0.5 * gaunt); add('sym:cheek-volume|decr|incr', -0.6 * gaunt); add('sym:cheek-inner|decr|incr', -0.3 * gaunt);
+  add('chin-bones|decr|incr', 0.35 * gaunt); add('head-fat|decr|incr', -0.35 * gaunt); add('sym:eye-bag|decr|incr', 0.3 * gaunt);
   a.grime = { starved: r.range(0.4, 0.8), hard: r.range(0.2, 0.55), settled: r.range(0, 0.25), soft: 0, pampered: 0 }[life];
   // Sun and wind: anyone who lives outdoors is weathered early.
   a.weathering = clamp({ starved: r.range(0.5, 0.9), hard: r.range(0.4, 0.8), settled: r.range(0.15, 0.45), soft: r.range(0, 0.15), pampered: 0 }[life] + Math.max(0, (s.age - 35) / 100));
   // Faces are not symmetric: each side drifts a little on its own.
-  for (const id of ASYMMETRY) s.modifiers[id] = gauss() * 0.2;
+  for (const id of ASYMMETRY) s.modifiers[id] = gauss() * 0.12;
   const o = opts.over ?? {};
   return { ...a, ...o, shape: { ...s, ...(o.shape ?? {}), modifiers: { ...s.modifiers, ...(o.shape?.modifiers ?? {}) } } } as Appearance;
 }
@@ -222,20 +238,37 @@ function hairPool(t: HairTexture, masc: boolean, ctx: HairContext): HairStyle[] 
   return pool.length ? pool : base;
 }
 
-/** Modifiers used for random facial individuality (symmetric ones). */
-const FACE_VARIATION = [
-  'head-oval', 'head-square', 'head-round', 'head-scale-horiz|decr|incr', 'head-scale-vert|decr|incr',
-  'nose-scale-horiz|decr|incr', 'nose-scale-vert|decr|incr', 'nose-hump|decr|incr', 'nose-nostrils-width|decr|incr',
-  'nose-point-width|decr|incr', 'mouth-scale-horiz|decr|incr', 'mouth-lowerlip-height|decr|incr', 'mouth-upperlip-height|decr|incr',
-  'chin-prominent|decr|incr', 'chin-width|decr|incr', 'chin-height|decr|incr', 'sym:cheek-bones|decr|incr', 'forehead-scale-vert|decr|incr',
-  'eyebrows-trans|down|up', 'neck-scale-horiz|decr|incr', 'sym:eye-scale|decr|incr', 'sym:eye-trans|in|out', 'sym:ear-scale|decr|incr',
-  'head-rectangular', 'head-triangular', 'head-invertedtriangular', 'head-diamond', 'head-fat|decr|incr', 'nose-curve|concave|convex',
-  'nose-greek|decr|incr', 'nose-volume|decr|incr', 'nose-point|down|up', 'nose-width1|decr|incr', 'nose-width2|decr|incr',
-  'mouth-upperlip-volume|decr|incr', 'mouth-lowerlip-volume|decr|incr', 'mouth-cupidsbow|decr|incr', 'mouth-angles|down|up',
-  'chin-bones|decr|incr', 'chin-prognathism|decr|incr', 'chin-cleft|decr|incr', 'sym:cheek-volume|decr|incr', 'sym:cheek-inner|decr|incr',
-  'sym:eye-bag|decr|incr', 'sym:eye-eyefold-angle|down|up', 'sym:eye-corner1|down|up', 'sym:eye-height2|decr|incr',
-  'sym:eye-epicanthus|in|out', 'forehead-trans|backward|forward', 'eyebrows-angle|down|up', 'sym:ear-lobe|decr|incr', 'sym:ear-wing|decr|incr',
+/** Single-target head shapes: one per face, never stacked. */
+const HEAD_SHAPES = ['head-oval', 'head-square', 'head-round', 'head-rectangular', 'head-triangular', 'head-invertedtriangular', 'head-diamond'];
+
+/** Skull, forehead and neck proportions: [modifier, min, max] — small, uniform drift. */
+const FACE_SCALE: [string, number, number][] = [
+  ['head-scale-horiz|decr|incr', -0.15, 0.15], ['head-scale-vert|decr|incr', -0.12, 0.1], ['head-fat|decr|incr', -0.15, 0.25],
+  ['forehead-scale-vert|decr|incr', -0.15, 0.15], ['forehead-trans|backward|forward', -0.2, 0.2], ['neck-scale-horiz|decr|incr', -0.12, 0.3],
 ];
+
+/** Features drift (gaussian) around the ancestry mean within these bounds; lips and eyes never shrink away. */
+const FACE_FEATURES: [string, number, number][] = [
+  ['nose-scale-horiz|decr|incr', -0.35, 0.4], ['nose-scale-vert|decr|incr', -0.3, 0.3], ['nose-hump|decr|incr', -0.3, 0.5], ['nose-nostrils-width|decr|incr', -0.3, 0.4],
+  ['nose-point-width|decr|incr', -0.3, 0.4], ['nose-curve|concave|convex', -0.35, 0.35], ['nose-greek|decr|incr', -0.3, 0.4], ['nose-volume|decr|incr', -0.3, 0.4],
+  ['nose-point|down|up', -0.3, 0.3], ['nose-width1|decr|incr', -0.3, 0.3], ['nose-width2|decr|incr', -0.3, 0.3],
+  ['mouth-scale-horiz|decr|incr', -0.3, 0.35], ['mouth-lowerlip-height|decr|incr', -0.2, 0.35], ['mouth-upperlip-height|decr|incr', -0.2, 0.35],
+  ['mouth-upperlip-volume|decr|incr', -0.2, 0.5], ['mouth-lowerlip-volume|decr|incr', -0.2, 0.5], ['mouth-cupidsbow|decr|incr', -0.3, 0.4], ['mouth-angles|down|up', -0.2, 0.3],
+  ['chin-prominent|decr|incr', -0.3, 0.4], ['chin-width|decr|incr', -0.3, 0.35], ['chin-height|decr|incr', -0.25, 0.25], ['chin-bones|decr|incr', -0.3, 0.35],
+  ['chin-prognathism|decr|incr', -0.2, 0.25], ['chin-cleft|decr|incr', 0, 0.5],
+  ['sym:cheek-bones|decr|incr', -0.3, 0.45], ['sym:cheek-volume|decr|incr', -0.35, 0.3], ['sym:cheek-inner|decr|incr', -0.3, 0.3],
+  ['sym:eye-scale|decr|incr', -0.15, 0.3], ['sym:eye-trans|in|out', -0.3, 0.3], ['sym:eye-height2|decr|incr', -0.3, 0.3], ['sym:eye-epicanthus|in|out', -0.3, 0.3],
+  ['sym:eye-eyefold-angle|down|up', -0.3, 0.3], ['sym:eye-corner1|down|up', -0.3, 0.3], ['sym:eye-bag|decr|incr', 0, 0.4],
+  ['eyebrows-trans|down|up', -0.3, 0.3], ['eyebrows-angle|down|up', -0.25, 0.25],
+  ['sym:ear-scale|decr|incr', -0.25, 0.3], ['sym:ear-lobe|decr|incr', -0.3, 0.4], ['sym:ear-wing|decr|incr', -0.2, 0.4],
+];
+
+/** Features that can be pushed harder to make a face memorable (a strong nose, heavy jaw, wide mouth...). */
+const DISTINCTIVE: [string, number, number][] = FACE_FEATURES.filter(([id]) => [
+  'nose-scale-horiz|decr|incr', 'nose-hump|decr|incr', 'nose-volume|decr|incr', 'nose-point-width|decr|incr', 'nose-greek|decr|incr',
+  'mouth-scale-horiz|decr|incr', 'mouth-upperlip-volume|decr|incr', 'mouth-lowerlip-volume|decr|incr', 'chin-prominent|decr|incr',
+  'chin-width|decr|incr', 'chin-cleft|decr|incr', 'sym:cheek-bones|decr|incr', 'sym:eye-scale|decr|incr', 'sym:ear-scale|decr|incr',
+].includes(id));
 
 /** Body proportion modifiers jittered per person (independent of weight/muscle). */
 const BODY_VARIATION = [

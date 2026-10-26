@@ -24,7 +24,15 @@ export interface AncestryPreset {
   freckleChance: number;
   /** Share of the general population (relative). */
   weight: number;
+  /**
+   * Typical feature biases (modifier → [min, max]), added on top of the MakeHuman ethnic macro so the
+   * preset's characteristic features survive random drift (full lips, nose width, cheekbones, eye folds).
+   */
+  features?: Record<string, [number, number]>;
 }
+
+const LIPS_FULL: Record<string, [number, number]> = { 'mouth-upperlip-volume|decr|incr': [0.25, 0.5], 'mouth-lowerlip-volume|decr|incr': [0.25, 0.5] };
+const LIPS_MED: Record<string, [number, number]> = { 'mouth-upperlip-volume|decr|incr': [0.1, 0.3], 'mouth-lowerlip-volume|decr|incr': [0.1, 0.3] };
 
 const BLACK = 0x120e0b, DARK = 0x2b1d14, BROWN = 0x46301f, MID = 0x6a4a30, LIGHT = 0x8f6c45, DIRTY = 0xb8935f;
 const BLOND = 0xd9c18e, AUBURN = 0x7a3418, RED = 0xa65126;
@@ -32,13 +40,16 @@ const BLOND = 0xd9c18e, AUBURN = 0x7a3418, RED = 0xa65126;
 export const ANCESTRIES: AncestryPreset[] = [
   {
     id: 'west_african', label: 'West / Central African', shape: { african: 0.95, asian: 0, caucasian: 0.05 },
-    tone: [0.72, 1], undertone: [-0.2, 0.5], eyes: [['brown', 9], ['brownlight', 1]],
+    tone: [0.75, 1], undertone: [-0.2, 0.5], eyes: [['brown', 9], ['brownlight', 1]],
     hair: [[BLACK, 7], [DARK, 3]], texture: [['coily', 10]], freckleChance: 0.02, weight: 14,
+    features: { ...LIPS_FULL, 'nose-nostrils-width|decr|incr': [0.25, 0.5], 'nose-point-width|decr|incr': [0.15, 0.4], 'nose-scale-horiz|decr|incr': [0.1, 0.35], 'sym:cheek-bones|decr|incr': [0.1, 0.3], 'chin-prognathism|decr|incr': [0.05, 0.25] },
   },
   {
-    id: 'east_african', label: 'East African', shape: { african: 0.7, asian: 0, caucasian: 0.3 },
-    tone: [0.66, 0.92], undertone: [0, 0.6], eyes: [['brown', 9], ['brownlight', 1]],
+    id: 'east_african', label: 'East African', shape: { african: 0.75, asian: 0, caucasian: 0.25 },
+    tone: [0.74, 0.96], undertone: [0, 0.6], eyes: [['brown', 9], ['brownlight', 1]],
     hair: [[BLACK, 7], [DARK, 3]], texture: [['coily', 10]], freckleChance: 0.02, weight: 5,
+    // Horn-of-Africa faces: narrow to medium nose, full lips, high cheekbones, long oval face.
+    features: { ...LIPS_FULL, 'nose-scale-horiz|decr|incr': [-0.1, 0.15], 'nose-nostrils-width|decr|incr': [0, 0.2], 'sym:cheek-bones|decr|incr': [0.25, 0.5], 'head-oval': [0.3, 0.5], 'chin-prominent|decr|incr': [0, 0.2] },
   },
   {
     id: 'north_european', label: 'Northern European', shape: { african: 0, asian: 0, caucasian: 1 },
@@ -46,36 +57,43 @@ export const ANCESTRIES: AncestryPreset[] = [
     eyes: [['blue', 4], ['lightblue', 2], ['grey', 2], ['green', 2], ['bluegreen', 2], ['brownlight', 2], ['brown', 2]],
     hair: [[BLOND, 3], [DIRTY, 3], [LIGHT, 3], [MID, 3], [BROWN, 2], [AUBURN, 1], [RED, 1]],
     texture: [['straight', 6], ['wavy', 4]], freckleChance: 0.3, weight: 14,
+    features: { 'nose-hump|decr|incr': [0, 0.25], 'nose-scale-vert|decr|incr': [0, 0.2], 'mouth-upperlip-volume|decr|incr': [-0.15, 0.1] },
   },
   {
     id: 'mediterranean', label: 'Mediterranean / Middle Eastern', shape: { african: 0.08, asian: 0.04, caucasian: 0.88 },
     tone: [0.25, 0.5], undertone: [0.2, 0.9], eyes: [['brown', 7], ['brownlight', 2], ['green', 1], ['bluegreen', 1]],
     hair: [[BLACK, 4], [DARK, 5], [BROWN, 3]], texture: [['wavy', 5], ['curly', 3], ['straight', 2]], freckleChance: 0.05, weight: 12,
+    features: { 'nose-hump|decr|incr': [0.1, 0.4], 'nose-scale-vert|decr|incr': [0.1, 0.3], 'nose-volume|decr|incr': [0.05, 0.3], ...LIPS_MED },
   },
   {
     id: 'south_asian', label: 'South Asian', shape: { african: 0.15, asian: 0.18, caucasian: 0.67 },
     tone: [0.42, 0.78], undertone: [0.2, 0.8], eyes: [['brown', 9], ['brownlight', 1]],
     hair: [[BLACK, 7], [DARK, 3]], texture: [['straight', 4], ['wavy', 5], ['curly', 1]], freckleChance: 0.02, weight: 11,
+    features: { ...LIPS_MED, 'nose-hump|decr|incr': [0, 0.3], 'sym:eye-scale|decr|incr': [0.05, 0.25] },
   },
   {
     id: 'east_asian', label: 'East Asian', shape: { african: 0, asian: 0.95, caucasian: 0.05 },
     tone: [0.12, 0.38], undertone: [0.3, 0.9], eyes: [['brown', 8], ['brownlight', 2]],
     hair: [[BLACK, 7], [DARK, 3]], texture: [['straight', 9], ['wavy', 1]], freckleChance: 0.03, weight: 12,
+    features: { 'sym:eye-epicanthus|in|out': [0.2, 0.5], 'sym:eye-eyefold-angle|down|up': [0.1, 0.4], 'nose-hump|decr|incr': [-0.25, 0], 'sym:cheek-bones|decr|incr': [0.1, 0.3], 'head-round': [0.1, 0.3] },
   },
   {
     id: 'southeast_asian', label: 'Southeast Asian / Pacific', shape: { african: 0.1, asian: 0.75, caucasian: 0.15 },
     tone: [0.35, 0.65], undertone: [0.3, 0.9], eyes: [['brown', 9], ['brownlight', 1]],
     hair: [[BLACK, 7], [DARK, 3]], texture: [['straight', 6], ['wavy', 3], ['curly', 1]], freckleChance: 0.02, weight: 7,
+    features: { ...LIPS_MED, 'nose-nostrils-width|decr|incr': [0.1, 0.35], 'sym:eye-epicanthus|in|out': [0.1, 0.35], 'sym:cheek-bones|decr|incr': [0.1, 0.3] },
   },
   {
     id: 'indigenous_american', label: 'Indigenous American', shape: { african: 0.03, asian: 0.6, caucasian: 0.37 },
     tone: [0.35, 0.62], undertone: [0.1, 0.7], eyes: [['brown', 9], ['brownlight', 1]],
     hair: [[BLACK, 8], [DARK, 2]], texture: [['straight', 9], ['wavy', 1]], freckleChance: 0.02, weight: 7,
+    features: { 'sym:cheek-bones|decr|incr': [0.25, 0.5], 'nose-scale-vert|decr|incr': [0.1, 0.3], 'nose-hump|decr|incr': [0.1, 0.35], 'chin-width|decr|incr': [0.05, 0.3], ...LIPS_MED },
   },
   {
     id: 'latin_american', label: 'Latin American (mestizo)', shape: { african: 0.12, asian: 0.3, caucasian: 0.58 },
     tone: [0.28, 0.6], undertone: [0.1, 0.8], eyes: [['brown', 8], ['brownlight', 2], ['green', 1]],
     hair: [[BLACK, 5], [DARK, 4], [BROWN, 2]], texture: [['straight', 4], ['wavy', 5], ['curly', 1]], freckleChance: 0.04, weight: 12,
+    features: { ...LIPS_MED, 'sym:cheek-bones|decr|incr': [0.1, 0.3], 'nose-scale-vert|decr|incr': [0, 0.2] },
   },
 ];
 

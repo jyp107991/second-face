@@ -151,7 +151,7 @@ export const GARMENTS: Record<string, GarmentDef> = {
   joepal_medical_mouth_protection: { slot: 'face', fit: 'u', tags: ['medical', 'work'] },
   elvs_covid_mask: { slot: 'face', fit: 'u', tags: ['medical', 'street', 'work'], dye: true },
   gredal_gas_mask: { slot: 'face', fit: 'u', tags: ['raider', 'military', 'work', 'tech'] },
-  culturalibre_bandana_mask: { slot: 'face', fit: 'u', tags: ['raider', 'nomad', 'rag'], dye: true },
+  culturalibre_bandana_mask: { slot: 'face', fit: 'u', tags: ['raider', 'nomad', 'rag', 'work', 'street'], dye: true },
   elvs_plague_doctor_mask: { slot: 'face', fit: 'u', tags: ['rich', 'faith'] },
 
   // Hands

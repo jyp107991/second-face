@@ -15,7 +15,9 @@ import { BarterUi } from './engine/ui/barter';
 import { CampUi } from './engine/ui/camp';
 import { DustUi } from './engine/ui/dust';
 import { applySettings } from './engine/ui/settings';
-import { lookFrom, outfitProxyKeys } from './engine/assets/humanoid';
+import { Humanoid, lookFrom, outfitProxyKeys } from './engine/assets/humanoid';
+import { skinSamples } from './engine/assets/human/skin';
+import { skinAlbedo } from './engine/data/ancestry';
 import { agedAppearance, defaultAppearance, randomAppearance } from './engine/data/appearance';
 import { loadHumanData } from './engine/assets/human/data';
 import { preloadHumanTextures } from './engine/assets/human/textures';
@@ -61,7 +63,7 @@ const dev = import.meta.env.DEV || new URLSearchParams(location.search).has('dev
 if (dev) {
   new DevOverlay(game);
   // Dev helpers for the browser console / automated screenshots.
-  (window as unknown as Record<string, unknown>).SF = { PortraitStage, lookFrom, randomAppearance, agedAppearance, defaultAppearance, PLAYER_OUTFIT, HumanFigure, THREE, evaluateShape, humanData, ensureProxies, outfitProxyKeys, dressFor, roleLook };
+  (window as unknown as Record<string, unknown>).SF = { PortraitStage, lookFrom, randomAppearance, agedAppearance, defaultAppearance, PLAYER_OUTFIT, HumanFigure, Humanoid, THREE, evaluateShape, humanData, ensureProxies, outfitProxyKeys, dressFor, roleLook, skinSamples, skinAlbedo };
 }
 await game.loadLocation(game.state.locationId, 'start');
 game.loadMs = performance.now() - t0;

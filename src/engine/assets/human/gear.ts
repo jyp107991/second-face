@@ -86,9 +86,11 @@ export function addGear(fig: HumanFigure, look: GearLook): THREE.Mesh[] {
       break;
     }
     case 'bandana': {
-      at = new THREE.Vector3(0, L.eye.y - 0.062, L.eye.z - 0.062);
-      parts.push({ geo: new THREE.SphereGeometry(0.079, 16, 8, 0, Math.PI * 2, Math.PI * 0.5, Math.PI * 0.33).scale(1.0, 1.0, 0.98), mat: 'cloth' });
-      parts.push({ geo: box(0.045, 0.1, 0.015, 0.01, -0.04, -0.072, 0.25), mat: 'cloth' });
+      // Over nose and mouth: the front of a sphere's lower half, centred just below the eyes, hugging the face.
+      // The nose tip sits ~0.045 in front of the eyes: centre the cap forward so the cloth clears the face.
+      at = new THREE.Vector3(0, L.eye.y - 0.02, L.eye.z - 0.018);
+      parts.push({ geo: new THREE.SphereGeometry(0.084, 16, 8, -Math.PI * 0.18, Math.PI * 1.36, Math.PI * 0.5, Math.PI * 0.4).scale(1.0, 1.1, 1.0), mat: 'cloth' });
+      parts.push({ geo: box(0.045, 0.1, 0.015, 0.01, -0.03, -0.125, 0.25), mat: 'cloth' });
       break;
     }
     case 'headwrap': {
@@ -108,8 +110,8 @@ export function addGear(fig: HumanFigure, look: GearLook): THREE.Mesh[] {
     }
     case 'poncho': {
       bone = 'spine03';
-      at = new THREE.Vector3(0, L.neck.y + 0.02, L.neck.z - 0.01);
-      const cone = new THREE.ConeGeometry(0.47, 0.62, 12, 1, true).translate(0, -0.31, 0).scale(1, 1, 0.78);
+      at = new THREE.Vector3(0, L.neck.y - 0.03, L.neck.z - 0.01);
+      const cone = new THREE.ConeGeometry(0.47, 0.6, 12, 1, true).translate(0, -0.3, 0).scale(1, 1, 0.78);
       // Hang slightly longer at the back; a few creases from the open hem.
       const pos = cone.attributes.position as THREE.BufferAttribute;
       for (let i = 0; i < pos.count; i++) {
@@ -118,7 +120,6 @@ export function addGear(fig: HumanFigure, look: GearLook): THREE.Mesh[] {
       }
       cone.computeVertexNormals();
       parts.push({ geo: cone, mat: 'cloth' });
-      parts.push({ geo: new THREE.TorusGeometry(0.085, 0.025, 7, 16).rotateX(Math.PI / 2).translate(0, 0.01, 0), mat: 'cloth' });
       break;
     }
     case 'plates': {
