@@ -20,4 +20,9 @@ export const DEV_NPCS: NpcDef[] = [
     attrs: { reflex: 7, brawn: 5 }, skills: { melee: 25 },
     inventory: [['c_kick', 1], ['tolls', 5]], equip: ['w_shiv', 'r_duster'], team: 'dev_raiders', hostile: true, courage: 55,
   },
+  {
+    id: 'dev_guide', name: 'Rook', look: { seed: 911, frame: 'broad', age: 61, over: { facialHair: 'stubble_heavy' } },
+    outfit: { suit: 'male_casualsuit02', suitTint: 0x7a6a58, shoes: 'shoes02' }, level: 3, team: 'neutral', courage: 40,
+    dialogue: 'd_dev_guide', inventory: [['t_picks', 1]],
+  },
 ];

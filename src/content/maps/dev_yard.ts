@@ -65,6 +65,7 @@ export const dev_yard: MapDef = {
     crate_a: { name: 'Supply Crate', items: [['a_38', 12], ['c_bandage', 2], ['j_scrap', 3]], tolls: 6 },
     shelf_a: { name: 'Rusty Shelf', items: [['c_tin', 1], ['j_wiring', 2], ['t_picks', 1]], lock: 30 },
   },
+  npcs: [{ def: 'dev_guide', x: 14, y: 10, facing: 2 }],
   spawns: [
     { id: 'start', x: 15, y: 9 },
     { id: 'from_bunker', x: 13, y: 20 },

@@ -4,6 +4,8 @@ import type { PerkDef, TraitDef } from '../stats/sheet';
 import { ATTRIBUTES, SKILLS } from '../stats/rules';
 import type { NpcDef } from '../npc/defs';
 import { Grid } from '../scene/grid';
+import type { DialogueDef } from '../dialogue/dialogue';
+import type { QuestDef } from '../quest/quest';
 
 export interface ContentBundle {
   maps: Record<string, MapDef>;
@@ -11,6 +13,8 @@ export interface ContentBundle {
   traits?: Record<string, TraitDef>;
   perks?: Record<string, PerkDef>;
   npcs?: Record<string, NpcDef>;
+  dialogues?: Record<string, DialogueDef>;
+  quests?: Record<string, QuestDef>;
 }
 
 /**
@@ -42,7 +46,10 @@ export function validateContent(c: ContentBundle): string[] {
       if (!propIds.has(cid)) errs.push(`${where}: container "${cid}" has no prop with that id`);
       for (const [item] of cdef.items) if (c.items && !c.items[item]) errs.push(`${where}: container "${cid}" unknown item ${item}`);
     }
-    for (const p of map.npcs ?? []) if (c.npcs && !c.npcs[p.def]) errs.push(`${where}: unknown npc ${p.def}`);
+    for (const p of map.npcs ?? []) {
+      if (c.npcs && !c.npcs[p.def]) errs.push(`${where}: unknown npc ${p.def}`);
+      if (!grid.passable(p.x, p.y)) errs.push(`${where}: npc ${p.def} at ${p.x},${p.y} is not on a free walkable tile`);
+    }
     for (const e of map.exits ?? []) {
       let reachable = false;
       for (let y = e.y; y < e.y + (e.h ?? 1); y++) for (let x = e.x; x < e.x + (e.w ?? 1); x++) if (grid.get(x, y)?.walkable) reachable = true;
@@ -84,6 +91,52 @@ export function validateContent(c: ContentBundle): string[] {
     for (const [item] of n.inventory ?? []) if (c.items && !c.items[item]) errs.push(`npc ${key}: unknown item ${item}`);
     for (const item of n.equip ?? []) if (c.items && !c.items[item]) errs.push(`npc ${key}: unknown equip ${item}`);
     for (const t of n.traits ?? []) if (c.traits && !c.traits[t]) errs.push(`npc ${key}: unknown trait ${t}`);
+    if (n.dialogue && c.dialogues && !c.dialogues[n.dialogue]) errs.push(`npc ${key}: unknown dialogue ${n.dialogue}`);
+  }
+  // Narrative: walk every condition/effect object for references.
+  const refs = (where: string, x: unknown): void => {
+    if (!x || typeof x !== 'object') return;
+    if (Array.isArray(x)) { x.forEach((v) => refs(where, v)); return; }
+    const o = x as Record<string, unknown>;
+    for (const k of ['item', 'give', 'take'] as const) if (typeof o[k] === 'string' && c.items && !c.items[o[k] as string]) errs.push(`${where}: unknown item ${o[k]}`);
+    if (typeof o.quest === 'string' && c.quests) {
+      const q = c.quests[o.quest];
+      if (!q) errs.push(`${where}: unknown quest ${o.quest}`);
+      else for (const st of [o.stage].flat()) if (typeof st === 'string' && !q.stages[st]) errs.push(`${where}: quest ${o.quest} has no stage ${st}`);
+    }
+    if (typeof o.skill === 'string' && !SKILLS.includes(o.skill as never)) errs.push(`${where}: unknown skill ${o.skill}`);
+    if (typeof o.attr === 'string' && !ATTRIBUTES.includes(o.attr as never)) errs.push(`${where}: unknown attribute ${o.attr}`);
+    if (typeof o.trait === 'string' && c.traits && !c.traits[o.trait]) errs.push(`${where}: unknown trait ${o.trait}`);
+    if (typeof o.perk === 'string' && c.perks && !c.perks[o.perk]) errs.push(`${where}: unknown perk ${o.perk}`);
+    for (const v of Object.values(o)) if (v && typeof v === 'object') refs(where, v);
+  };
+  for (const [key, d] of Object.entries(c.dialogues ?? {})) {
+    const where = `dialogue ${key}`;
+    if (d.id !== key) errs.push(`${where}: id mismatch`);
+    for (const s of d.start) if (!d.nodes[s.node]) errs.push(`${where}: start node ${s.node} missing`);
+    if (!d.start.some((s) => !s.if)) errs.push(`${where}: needs an unconditional start entry`);
+    const seenIds = new Set<string>();
+    for (const [nid, n] of Object.entries(d.nodes)) {
+      if (!n.options.length) errs.push(`${where}/${nid}: node has no options (add an exit)`);
+      n.options.forEach((o, i) => {
+        if (o.next && !d.nodes[o.next]) errs.push(`${where}/${nid}#${i}: next ${o.next} missing`);
+        if (o.fail && !d.nodes[o.fail]) errs.push(`${where}/${nid}#${i}: fail ${o.fail} missing`);
+        if (!o.next && !o.exit) errs.push(`${where}/${nid}#${i}: option needs next or exit`);
+        if (o.id) { if (seenIds.has(o.id)) errs.push(`${where}: duplicate option id ${o.id}`); seenIds.add(o.id); }
+      });
+      refs(`${where}/${nid}`, n);
+    }
+  }
+  for (const [key, q] of Object.entries(c.quests ?? {})) {
+    const where = `quest ${key}`;
+    if (q.id !== key) errs.push(`${where}: id mismatch`);
+    if (!q.stages[q.start]) errs.push(`${where}: start stage ${q.start} missing`);
+    for (const [sid, st] of Object.entries(q.stages)) {
+      for (const t of st.next ?? []) if (!q.stages[t.stage]) errs.push(`${where}/${sid}: next stage ${t.stage} missing`);
+      refs(`${where}/${sid}`, st);
+    }
+    if (!Object.values(q.stages).some((st) => st.end)) errs.push(`${where}: no ending stage`);
+    refs(`${where}/routes`, q.routes);
   }
   return errs;
 }

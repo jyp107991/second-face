@@ -172,3 +172,28 @@ body.in-combat .hud-buttons { display: none; }
 }
 
 .loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; letter-spacing: 6px; font-size: 14px; color: var(--amber); background: var(--ink); z-index: 60; }
+
+/* Dialogue: speaker close-up above, exchange below. */
+.dlg { position: fixed; left: 0; right: 0; bottom: 0; z-index: 27; display: flex; justify-content: center; padding: 0 calc(8px + var(--safe-r)) calc(8px + var(--safe-b)) calc(8px + var(--safe-l)); pointer-events: none; }
+.dlg-panel { pointer-events: auto; width: min(860px, 100%); max-height: 46vh; overflow-y: auto; background: linear-gradient(180deg, rgba(14,11,8,.82), rgba(10,8,6,.96)); border: 1px solid #4a3c2a; border-radius: 10px; padding: 12px 16px 10px; color: #e8dcc4; font: 15px/1.45 Georgia, 'Times New Roman', serif; box-shadow: 0 -6px 30px rgba(0,0,0,.6); }
+.dlg-hist p { margin: 2px 0; color: #9a8c74; font-size: 13px; }
+.dlg-hist p.pc { color: #b4a888; font-style: italic; }
+.dlg-hist p.sys { color: #7a8a6a; font-size: 12px; }
+.dlg-name { margin-top: 6px; color: #e2b86a; font: 600 13px/1.2 system-ui, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+.dlg-text { margin: 4px 0 8px; font-size: 16px; }
+.dlg-passive { margin: 4px 0; padding-left: 10px; border-left: 2px solid #6a8aa0; color: #a8c4d8; font-style: italic; font-size: 14px; }
+.dlg-passive b { font: 600 11px system-ui, sans-serif; letter-spacing: .1em; color: #8ab4d0; font-style: normal; }
+.dlg-opts { list-style: none; margin: 6px 0 0; padding: 0; }
+.dlg-opts li { padding: 7px 8px; border-radius: 6px; cursor: pointer; color: #e8dcc4; }
+.dlg-opts li:hover { background: rgba(226,184,106,.12); }
+.dlg-opts li.seen { color: #9a8c74; }
+.dlg-opts li.locked { color: #6a5e4e; cursor: default; }
+.dlg-opts .n { color: #e2b86a; margin-right: 4px; font-family: system-ui, sans-serif; }
+.dlg-opts .chk { font: 600 12px system-ui, sans-serif; }
+.dlg-opts .chk.ok { color: #8fd18a; }
+.dlg-opts .chk.bad { color: #e07a62; }
+.dlg-opts .why { display: block; margin-left: 22px; color: #8a9c7c; font-size: 12px; font-family: system-ui, sans-serif; }
+.wl .obj { margin: 4px 0; }
+.wl .obj.done { opacity: .6; text-decoration: line-through; }
+.wl p.log { margin: 6px 0; opacity: .85; }
+.wl .row.done, .wl .row.failed { opacity: .6; }

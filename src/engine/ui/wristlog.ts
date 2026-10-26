@@ -9,7 +9,7 @@ import { itemDef } from '../inventory/items';
 import { ATTRIBUTES, ATTRIBUTE_INFO, SKILLS, SKILL_INFO, xpForLevel } from '../stats/rules';
 import { attrs, derived, perkAvailable, raiseCost, raiseSkill, skills, takePerk } from '../stats/sheet';
 
-type Tab = 'status' | 'gear';
+type Tab = 'status' | 'gear' | 'journal';
 
 const SLOT_NAMES: Record<EquipSlot, string> = { primary: 'Hand 1', secondary: 'Hand 2', body: 'Body', head: 'Head' };
 
@@ -42,6 +42,7 @@ export class Wristlog {
       if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
       if (e.code === 'KeyI' || e.code === 'Tab') { e.preventDefault(); this.toggle(e.code === 'KeyI' ? 'gear' : undefined); }
       if (e.code === 'KeyC') this.toggle('status');
+      if (e.code === 'KeyJ') this.toggle('journal');
       if (e.code === 'Escape' && this.el) { e.stopImmediatePropagation(); this.close(); }
     }, true);
   }
@@ -83,6 +84,7 @@ export class Wristlog {
       <div class="wl-top"><span class="brand">WRISTLOG · C9</span>
         <button data-t="status" class="${this.tab === 'status' ? 'on' : ''}">STATUS</button>
         <button data-t="gear" class="${this.tab === 'gear' ? 'on' : ''}">GEAR</button>
+        <button data-t="journal" class="${this.tab === 'journal' ? 'on' : ''}">JOURNAL</button>
         <button class="x" data-t="close" aria-label="Close">✕</button></div>
       <div class="wl-body"><div class="col a"></div><div class="col b"></div></div></div>`;
     this.el.querySelector('.wl-top')!.addEventListener('click', (e) => {
@@ -92,7 +94,23 @@ export class Wristlog {
     });
     const a = this.el.querySelector('.col.a') as HTMLElement, b = this.el.querySelector('.col.b') as HTMLElement;
     if (this.tab === 'status') this.status(a, b);
+    else if (this.tab === 'journal') this.journal(a, b);
     else this.gear(a, b, pc.inventory);
+  }
+
+  /** Quests (active first) with objectives and history; decisions you've made. */
+  private journal(a: HTMLElement, b: HTMLElement): void {
+    const all = this.game.quests.journal();
+    const order = { active: 0, done: 1, failed: 2 } as Record<string, number>;
+    all.sort((x, y) => order[x.status] - order[y.status]);
+    const sel = all[this.sel ?? 0];
+    a.innerHTML = `<h4>Quests</h4>` + (all.length ? all.map((q, i) => `<div class="row ${i === (this.sel ?? 0) ? 'sel' : ''} ${q.status}" data-q="${i}">${q.status === 'done' ? '✓ ' : q.status === 'failed' ? '✗ ' : '▸ '}${escapeHtml(q.title)}</div>`).join('') : '<p class="dim">Nothing yet.</p>');
+    a.querySelectorAll<HTMLElement>('[data-q]').forEach((el) => el.addEventListener('click', () => { this.sel = Number(el.dataset.q); this.render(); }));
+    const dec = this.game.state.world.decisions;
+    b.innerHTML = (sel ? `<h4>${escapeHtml(sel.title)}</h4>
+      ${sel.objectives.map((o) => `<div class="obj ${o.done ? 'done' : ''}">${o.done ? '☑' : '☐'} ${escapeHtml(o.text)}${o.optional ? ' (optional)' : ''}</div>`).join('')}
+      ${sel.log.slice().reverse().map((l) => `<p class="log">${escapeHtml(l)}</p>`).join('')}` : '')
+      + (dec.length ? `<h4>Decisions</h4>${dec.map((d) => `<p class="log">${escapeHtml(d.text)}</p>`).join('')}` : '');
   }
 
   private status(a: HTMLElement, b: HTMLElement): void {
@@ -242,4 +260,8 @@ export class Wristlog {
 
 function esc(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 }

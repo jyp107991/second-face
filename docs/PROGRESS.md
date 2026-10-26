@@ -54,7 +54,7 @@ replayability, meaningful choice, viable builds, best perk/skill/attribute confi
 - [x] G3 Secret story plan: full act/quest structure, faction lines, companions, endings matrix (story/ only)
 - [x] G4 Dialogue engine + quest engine (M2.1, M2.3) with tests — world/world.ts, world/logic.ts (conditions/effects/timers),
       dialogue/dialogue.ts (runner), quest/quest.ts; save v3. UI + game wiring still to do (G4b).
-- [ ] G4b Dialogue UI (portrait stage, options with [Skill N] tags, passives, history) + journal tab + game wiring
+- [x] G4b Dialogue UI (portrait stage, options with [Skill N] tags, passives, history) + journal tab + game wiring
 - [ ] G5 Chapter One dialogue + quests as content data; build-coverage validator in `npm run validate`
 
 **Current step (owner: facial hair blocky, stubble length/coverage off; wants real modern haircuts):**

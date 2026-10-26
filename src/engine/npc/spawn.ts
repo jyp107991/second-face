@@ -39,6 +39,7 @@ export function buildNpcStats(def: NpcDef): { sheet: CharacterSheet; inv: Invent
 export interface NpcRuntime {
   id: string;
   def: NpcDef;
+  appearance: import('../data/appearance').Appearance;
   actor: Actor;
   combatant: Combatant;
   hostile: boolean;
@@ -55,5 +56,5 @@ export function spawnNpc(p: NpcPlacement, grid: Grid): NpcRuntime {
     id, name: def.name, team: def.team, sheet, inv, x: p.x, y: p.y, ap: 0, morale: initialMorale(def.courage), evasion: 0,
     natural: def.natural, courage: def.courage,
   };
-  return { id, def, actor, combatant, hostile: !!def.hostile };
+  return { id, def, appearance: app, actor, combatant, hostile: !!def.hostile };
 }

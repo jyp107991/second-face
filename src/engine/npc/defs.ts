@@ -33,6 +33,10 @@ export interface NpcDef {
   natural?: WeaponDef;
   /** Leader of their team (morale hit when they fall). */
   leader?: boolean;
+  /** Dialogue tree id (talk on tap when not hostile). */
+  dialogue?: string;
+  /** Faction id for reputation effects. */
+  faction?: string;
 }
 
 /** Placement of an NPC on a map. */

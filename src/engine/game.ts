@@ -14,6 +14,9 @@ import { QUALITY, detectQuality, type QualityLevel } from './render/quality';
 import { Actor } from './scene/actor';
 import { lookFrom } from './assets/humanoid';
 import type { PortraitStage } from './render/portrait';
+import { QuestEngine } from './quest/quest';
+import { runTimers, type LogicHost } from './world/logic';
+import { QUESTS } from '../content';
 import { buildLocation, type BuiltLocation } from './scene/location';
 import type { ExitDef } from './data/types';
 import { SaveManager, type SaveFile, type SlotId } from './save/saves';
@@ -36,6 +39,8 @@ export type GameEvents = {
   message: { text: string };
   gameOver: Record<string, never>;
   openTransfer: { inv: import('./inventory/inventory').Inventory; name: string };
+  openDialogue: { npc: NpcRuntime };
+  journal: { questId: string; title: string; line: string };
 };
 
 /** Cistern-issue coveralls and boots. */
@@ -65,6 +70,25 @@ export class Game extends EventBus<GameEvents> {
   timeScale = 1;
   /** When true the simulation is frozen (menus open); rendering continues. */
   paused = false;
+  private questCache?: { g: GameState; e: QuestEngine };
+  private questTick = 0;
+
+  /** Narrative host: XP toasts and journal notifications for dialogue/quest effects. */
+  readonly logicHost: LogicHost = {
+    xp: (amount) => this.emit('message', { text: `+${amount} XP` }),
+    event: (name) => this.emit('message', { text: name }),
+  };
+
+  /** Quest engine bound to the current game state (rebuilt after loading). */
+  get quests(): QuestEngine {
+    if (!this.questCache || this.questCache.g !== this.state) {
+      const e = new QuestEngine(QUESTS, this.state, this.logicHost);
+      e.onJournal = (questId, line) => this.emit('journal', { questId, title: QUESTS[questId]?.title ?? questId, line });
+      e.onEnd = (questId, status) => this.emit('message', { text: `${status === 'done' ? 'Completed' : 'Failed'}: ${QUESTS[questId]?.title ?? questId}` });
+      this.questCache = { g: this.state, e };
+    }
+    return this.questCache.e;
+  }
   /** When set, this stage is rendered instead of the world (creator, dialogue close-ups). */
   portrait?: PortraitStage;
   saves?: SaveManager;
@@ -167,7 +191,7 @@ export class Game extends EventBus<GameEvents> {
     this.resize();
   }
 
-  private resize(): void {
+  resize(): void {
     const w = this.container.clientWidth, h = this.container.clientHeight;
     this.renderer.setSize(w, h);
     const pr = this.renderer.getPixelRatio();
@@ -329,7 +353,11 @@ export class Game extends EventBus<GameEvents> {
   private interactableAt(x: number, y: number): (() => void) | undefined {
     const loc = this.state.locationId;
     for (const n of this.npcs.values()) {
-      if (n.combatant.sheet.hp > 0 || n.actor.tx !== x || n.actor.ty !== y) continue;
+      if (n.actor.tx !== x || n.actor.ty !== y) continue;
+      if (n.combatant.sheet.hp > 0) {
+        if (n.hostile || !n.def.dialogue || this.encounter.active) continue;
+        return () => this.emit('openDialogue', { npc: n });
+      }
       return () => {
         const inv = n.combatant.inv;
         for (const slot of ['primary', 'secondary', 'body', 'head'] as const) { const e = inv.equipped[slot]; if (e) { delete inv.equipped[slot]; inv.items.push(e); } }
@@ -553,6 +581,12 @@ export class Game extends EventBus<GameEvents> {
     const simDt = this.paused ? 0 : dt;
     this.state.playtimeSec += simDt;
     if (!this.encounter.active) this.state.minutes += simDt * GAME_MINUTES_PER_SEC * this.timeScale;
+    this.questTick += dt;
+    if (this.questTick > 0.5) {
+      this.questTick = 0;
+      runTimers(this.state, this.quests);
+      this.quests.update();
+    }
     this.hostilityTimer += simDt;
     if (this.hostilityTimer > 0.3) { this.hostilityTimer = 0; this.checkHostility(); }
 
