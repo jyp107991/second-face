@@ -173,11 +173,11 @@ const fs = require('fs');
   await shot('map_read');
   await pick('(Set the Tollmen\'s cipher wheel to the first block.)');
   await pick('Jonah Reese. The deputy.');
-  await page.waitForTimeout(900);
+  await pick('(Fold the map.)');
+  await page.waitForTimeout(1500);
   const card = await page.evaluate(() => { const t = document.querySelector('.title-card'); return t ? `${t.textContent.replace(/\n/g, ' / ')} opacity=${getComputedStyle(t).opacity}` : 'none'; });
   console.log('title card:', card);
   await shot('title_card');
-  await pick('(Fold the map.)');
   check('Chapter One ends', (await flags('ch1_done')).includes('true'), `${await quest('q_ch1_name')} card=${card}`);
   check('month timer set', await page.evaluate(() => (game.state.world.timers ?? []).some((t) => t.id === 'jonah_month')), await page.evaluate(() => JSON.stringify((game.state.world.timers ?? []).map((t) => t.id))));
 

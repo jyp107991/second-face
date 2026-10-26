@@ -2,15 +2,18 @@ import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { Humanoid, type HumanoidLook } from '../assets/humanoid';
 
-let envTex: THREE.Texture | undefined;
+const envByRenderer = new WeakMap<THREE.WebGLRenderer, THREE.Texture>();
 /** Neutral studio environment (reflections in eyes and skin). Built once per renderer. */
 export function portraitEnvironment(renderer: THREE.WebGLRenderer): THREE.Texture {
-  if (!envTex) {
+  // One per renderer: a PMREM texture belongs to the context that generated it.
+  let tex = envByRenderer.get(renderer);
+  if (!tex) {
     const pm = new THREE.PMREMGenerator(renderer);
-    envTex = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+    tex = pm.fromScene(new RoomEnvironment(), 0.04).texture;
     pm.dispose();
+    envByRenderer.set(renderer, tex);
   }
-  return envTex;
+  return tex;
 }
 
 /**
@@ -29,6 +32,8 @@ export class PortraitStage {
   offsetX = 0;
   /** Vertical offset (positive = subject higher on screen, for bottom panels). */
   offsetY = 0;
+  /** When set, the camera backs off just enough to fit this many metres of height (narrow columns), ignoring framing. */
+  fitHeight = 0;
   private key: THREE.DirectionalLight;
   private time = 0;
 
@@ -94,7 +99,9 @@ export class PortraitStage {
     const target = new THREE.Vector3(0, THREE.MathUtils.lerp(eye - 0.03, 0.95, this.framing), 0);
     // Narrow (portrait) screens need more distance to fit the subject's width.
     const narrow = Math.max(1, 0.85 / this.aspect);
-    const dist = THREE.MathUtils.lerp(1.15, 6.2, this.framing) * THREE.MathUtils.lerp(narrow * 1.15, narrow, this.framing);
+    const dist = this.fitHeight
+      ? this.fitHeight / (2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2))) * Math.max(1, 0.5 / this.aspect)
+      : THREE.MathUtils.lerp(1.15, 6.2, this.framing) * THREE.MathUtils.lerp(narrow * 1.15, narrow, this.framing);
     // Raise the subject on screen by aiming lower (fraction of visible height).
     const visH = 2 * dist * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
     target.y -= this.offsetY * visH;

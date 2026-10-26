@@ -13,7 +13,7 @@ export interface ActorOpts {
 /** A character placed on the grid with smooth movement between tiles. */
 export class Actor {
   readonly id: string;
-  readonly body: Humanoid;
+  body: Humanoid;
   readonly object: THREE.Group;
   tx: number;
   ty: number;
@@ -35,10 +35,23 @@ export class Actor {
     this.ty = opts.y;
     this.facing = opts.facing ?? 0;
     this.body = new Humanoid(opts.look);
-    this.object = this.body.root;
+    // A stable wrapper: the body inside can be rebuilt (new clothes, a weapon drawn) without anything losing the actor.
+    this.object = new THREE.Group();
+    this.object.add(this.body.root);
     this.object.position.set(opts.x + 0.5, 0, opts.y + 0.5);
     this.object.userData.actorId = opts.id;
     grid.occupied.set(grid.index(opts.x, opts.y), opts.id);
+  }
+
+  /** Rebuild the body for a new look (equipment, chrome), keeping place, facing and state. */
+  setLook(look: HumanoidLook): void {
+    const old = this.body;
+    this.body = new Humanoid(look);
+    this.body.dead = old.dead;
+    this.object.remove(old.root);
+    old.dispose();
+    this.object.add(this.body.root);
+    this.body.animate(0, 0);
   }
 
   get moving(): boolean {

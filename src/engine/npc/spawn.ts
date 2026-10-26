@@ -10,6 +10,7 @@ import { Actor } from '../scene/actor';
 import type { Grid } from '../scene/grid';
 import { derived, emptySheet, type CharacterSheet } from '../stats/sheet';
 import { ATTRIBUTES, xpForLevel } from '../stats/rules';
+import { wardrobeOutfit } from '../inventory/wardrobe';
 import type { NpcDef, NpcPlacement } from './defs';
 
 /** Build an NPC's character sheet + inventory from its definition. */
@@ -60,9 +61,11 @@ export function spawnNpc(p: NpcPlacement, grid: Grid, keep?: { sheet: CharacterS
   const def = NPCS[p.def];
   if (!def) throw new Error(`Unknown NPC ${p.def}`);
   const id = p.id ?? def.id;
-  const { app, outfit } = npcLook(def);
-  const actor = new Actor({ id, x: p.x, y: p.y, facing: p.facing ?? 0, look: lookFrom(app, outfit, 'low') }, grid);
+  const { app, outfit: dressed } = npcLook(def);
   const { sheet, inv } = keep ?? buildNpcStats(def);
+  // Worn armour and the weapon in hand show on the body.
+  const outfit = wardrobeOutfit({ sheet, inventory: inv, appearance: app }, dressed);
+  const actor = new Actor({ id, x: p.x, y: p.y, facing: p.facing ?? 0, look: lookFrom(app, outfit, 'low') }, grid);
   const combatant: Combatant = {
     id, name: def.name, team: def.team, sheet, inv, x: p.x, y: p.y, ap: 0, morale: initialMorale(def.courage), evasion: 0,
     natural: def.natural, courage: def.courage,

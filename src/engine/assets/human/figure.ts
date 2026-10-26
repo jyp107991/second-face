@@ -49,6 +49,13 @@ export const ANIM_BONES = ['root', 'spine05', 'spine04', 'spine03', 'spine02', '
   'upperarm01.L', 'upperarm01.R', 'lowerarm01.L', 'lowerarm01.R', 'upperleg01.L', 'upperleg01.R', 'lowerleg01.L', 'lowerleg01.R',
   'foot.L', 'foot.R', 'clavicle.L', 'clavicle.R', 'jaw'] as const;
 
+export interface BodyBand { y: number; front: number; back: number; halfW: number }
+export interface BodyMetrics {
+  chest: BodyBand; upperBack: BodyBand; belly: BodyBand; hip: BodyBand; shoulder: BodyBand;
+  /** Skin radius around each limb bone at mid-length (upper arms, forearms, lower legs). */
+  limb: Record<string, number>;
+}
+
 export class HumanFigure {
   readonly root = new THREE.Group();
   readonly skeleton: THREE.Skeleton;
@@ -59,6 +66,8 @@ export class HumanFigure {
   readonly meshes: THREE.SkinnedMesh[] = [];
   readonly eyeHeight: number;
   readonly height: number;
+  /** Where the skin is, so gear and chrome can sit on it whatever the build. */
+  readonly metrics: BodyMetrics;
   private materials: THREE.Material[] = [];
   private readonly lod: 'high' | 'low';
 
@@ -131,6 +140,7 @@ export class HumanFigure {
       const key = `clothes_${c.name}`;
       if (d.m.proxies[key]?.delete) for (const v of d.view<Uint16Array>(key + '_delete')) deleted.add(v);
     }
+    this.metrics = this.measure(d, P, minY);
     const body = this.addBody(d, P, minY, spec.skin, deleted, spec.lod ?? 'high', spec.skinDetail ?? 'm', spec.skinDetailStrength ?? 0.7);
     // Afro-textured hair: volumetric coil shells grown from the scalp.
     if (spec.hair?.style.startsWith('coily_')) {
@@ -341,6 +351,41 @@ export class HumanFigure {
     if (lo) compactGeometry(g);
     smoothNormals(g);
     return g;
+  }
+
+  /** One pass over the body: torso depth/width at a few heights and the thickness of each limb at mid-length. */
+  private measure(d: HumanData, P: Float32Array, minY: number): BodyMetrics {
+    const rw = (n: string) => this.restWorld.get(n)!;
+    const band = (y: number): BodyBand => ({ y, front: -Infinity, back: Infinity, halfW: 0 });
+    const chest = rw('spine03').head, neck = rw('neck01').head, root = rw('root').head, clL = rw('clavicle.L').tail;
+    const bands = { chest: band(chest.y), upperBack: band((chest.y + neck.y) / 2), belly: band((chest.y + root.y) / 2), hip: band(root.y - 0.03), shoulder: band(clL.y - 0.02) };
+    // Each limb is two bones in this rig (…01 then …02): measure along the whole span.
+    const limbs = ['upperarm01.L', 'upperarm01.R', 'lowerarm01.L', 'lowerarm01.R', 'lowerleg01.L', 'lowerleg01.R'].filter((n) => this.restWorld.has(n)).map((n) => {
+      const b = rw(n), b2 = this.restWorld.get(n.replace('01', '02'));
+      const tail = b2?.tail ?? b.tail, dir = tail.clone().sub(b.head), len = dir.length();
+      return { n, head: b.head, dir: dir.normalize(), len, r: 0, reach: n.startsWith('upperarm') ? 0.09 : 0.12 };
+    });
+    const v = new THREE.Vector3(), t = new THREE.Vector3();
+    for (let i = 0; i < d.bodyMap.length; i++) {
+      const vi = d.bodyMap[i];
+      v.set(P[vi * 3] * SCALE, (P[vi * 3 + 1] - minY) * SCALE, P[vi * 3 + 2] * SCALE);
+      for (const b of Object.values(bands)) {
+        if (Math.abs(v.y - b.y) >= 0.05) continue;
+        if (Math.abs(v.x) < 0.1) { b.front = Math.max(b.front, v.z); b.back = Math.min(b.back, v.z); }
+        if (Math.abs(v.x) < 0.26) b.halfW = Math.max(b.halfW, Math.abs(v.x));
+      }
+      for (const s of limbs) {
+        t.copy(v).sub(s.head);
+        const along = t.dot(s.dir);
+        if (along < s.len * 0.3 || along > s.len * 0.7) continue;
+        const perp = Math.sqrt(Math.max(0, t.lengthSq() - along * along));
+        if (perp < s.reach) s.r = Math.max(s.r, perp);
+      }
+    }
+    for (const b of Object.values(bands)) if (!Number.isFinite(b.front)) { b.front = 0.12; b.back = -0.12; }
+    const limb: Record<string, number> = {};
+    for (const s of limbs) limb[s.n] = s.r;
+    return { ...bands, limb };
   }
 
   private addMesh(g: THREE.BufferGeometry, mat: THREE.Material, name = ''): THREE.SkinnedMesh {

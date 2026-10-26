@@ -1,4 +1,5 @@
 import type { SkillId } from '../stats/rules';
+import type { GearKind } from '../assets/human/gear';
 import type { Modifier } from '../stats/sheet';
 
 export type ItemCategory = 'weapon' | 'ammo' | 'armor' | 'consumable' | 'junk' | 'tool' | 'key' | 'note' | 'misc';
@@ -80,9 +81,29 @@ export interface ItemDef {
   /** Junk breakdown into crafting parts. */
   parts?: Record<string, number>;
   tags?: string[];
-  /** Procedural icon recipe key. */
+  /** Ink-sketch icon recipe (ui/icons.ts); inferred from the category and visuals when absent. */
   icon?: string;
+  /** What the item puts on the body when worn (armor). */
+  wear?: WearVisual;
+  /** The shape in the hand when it is the active weapon. */
+  held?: HeldShape;
 }
+
+/** Worn visuals: a catalogue garment (replacing the base clothes of its slot) and/or procedural pieces. */
+export interface WearVisual {
+  /** Garment proxy name, or one per fit: a full garment replaces the base suit, anything else goes over it. */
+  garment?: string | { m: string; f: string };
+  tint?: number;
+  /** A whole set of clothes instead of the base suit (a coat over trousers, say), in draw order. */
+  garments?: { name: string | { m: string; f: string }; tint?: number; dye?: number; grime?: number; wear?: number }[];
+  gear?: { kind: GearKind; color?: number }[];
+  /** The gas mask. */
+  mask?: boolean;
+}
+
+export type HeldShape =
+  | 'knife' | 'pipe' | 'machete' | 'spear' | 'knuckles' | 'sledge' | 'bottle' | 'can' | 'spike'
+  | 'zip' | 'revolver' | 'pistol' | 'smg' | 'sawnoff' | 'shotgun' | 'rifle' | 'carbine' | 'arc';
 
 export function isStackable(d: ItemDef): boolean {
   return d.stack ?? ['ammo', 'consumable', 'junk'].includes(d.category);

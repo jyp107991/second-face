@@ -83,6 +83,7 @@ export function validateContent(c: ContentBundle): string[] {
   const ammoTypes = new Set(Object.values(items).filter((d) => d.ammo).map((d) => d.ammo!.type));
   for (const [key, d] of Object.entries(items)) {
     const where = `item ${key}`;
+    if (d.armor && !d.wear) errs.push(`${where}: armour has no wear visual (what it looks like on the body)`);
     if (d.id !== key) errs.push(`${where}: id mismatch`);
     if (!(d.weight >= 0) || !(d.value >= 0)) errs.push(`${where}: bad weight/value`);
     if (d.category === 'weapon' && !d.weapon) errs.push(`${where}: weapon without weapon stats`);
@@ -91,6 +92,7 @@ export function validateContent(c: ContentBundle): string[] {
       if (!SKILLS.includes(w.skill)) errs.push(`${where}: unknown skill ${w.skill}`);
       if (w.dmg[0] > w.dmg[1]) errs.push(`${where}: dmg min > max`);
       if (w.ammo && !ammoTypes.has(w.ammo)) errs.push(`${where}: no ammo item of type ${w.ammo}`);
+      if (!d.held) errs.push(`${where}: weapon has no held shape (what it looks like in the hand)`);
       if (w.magazine && !w.ammo) errs.push(`${where}: magazine without ammo type`);
     }
     if (d.category === 'armor' && !d.armor) errs.push(`${where}: armor without armor stats`);

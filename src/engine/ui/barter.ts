@@ -1,3 +1,4 @@
+import { itemIcon } from './icons';
 import type { Game } from '../game';
 import { dayOf } from '../core/state';
 import { itemDef } from '../inventory/items';
@@ -74,7 +75,7 @@ export class BarterUi {
       const ok = side === 'buy' || merchantBuys(mdef, it.def);
       const price = side === 'buy' ? buyPrice(unit, c) : sellPrice(unit, c, saturation(ms, it.def, day));
       return `<div class="item ${q ? 'sel' : ''} ${ok ? '' : 'dim'}" data-s="${side}" data-i="${i}" title="${esc(itemSummary(it))}">
-        <span>${esc(d.name)}${it.qty > 1 ? ` ×${it.qty}` : ''}${q ? ` <b>(${q})</b>` : ''}</span>
+        <span><img class="ico" src="${itemIcon(d)}" alt="">${esc(d.name)}${it.qty > 1 ? ` ×${it.qty}` : ''}${q ? ` <b>(${q})</b>` : ''}</span>
         <span class="w">${ok ? `${price}T` : 'won\'t buy'}</span>
         <span class="w">${ok ? `<button data-b="-1">−</button><button data-b="1">+</button>` : ''}</span></div>`;
     }).join('') || '<div class="desc">Nothing.</div>';

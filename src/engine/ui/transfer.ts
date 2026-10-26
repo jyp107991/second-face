@@ -1,3 +1,4 @@
+import { itemIcon } from './icons';
 import type { Game } from '../game';
 import { addItem, itemValue, takeAt, type Inventory } from '../inventory/inventory';
 import { itemDef } from '../inventory/items';
@@ -53,7 +54,7 @@ export class Transfer {
         const d = itemDef(it.def);
         const row = document.createElement('div');
         row.className = 'item';
-        row.innerHTML = `<span>${esc(d.name)}${it.qty > 1 ? ` ×${it.qty}` : ''}</span><span class="w">${itemValue(it)}T</span><span class="w">${verb}</span>`;
+        row.innerHTML = `<span><img class="ico" src="${itemIcon(d)}" alt="">${esc(d.name)}${it.qty > 1 ? ` ×${it.qty}` : ''}</span><span class="w">${itemValue(it)}T</span><span class="w">${verb}</span>`;
         row.onclick = () => { addItem(to, takeAt(from, i)!); this.render(theirs, name); };
         col.append(row);
       });

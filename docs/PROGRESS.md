@@ -130,8 +130,14 @@ mid-range Android phone; deployed to Pages.
       card → Tribute Day paid → save/load round trip; ALL PASS, 0 page errors). Fixes from it: Escape leaves a
       conversation (first exit option), `MapDef.interior` (no setting out from inside the Cistern), map/notebook refuse
       to open over a conversation, chapter card waits for the conversation to close and sits on a dark band, audio
-      ignores non-finite gain/pan. NEXT: B1.8 visual equipment (owner): live figure in the Pack/Self tabs that
-      changes with equip/unequip, every item with a visual, bionics shown on the figure.)
+      ignores non-finite gain/pan. B1.8 DONE (owner request): equipment is visual — every item has an ink-sketch icon
+      (`ui/icons.ts`, recipes inferred from held/wear/icon; validator requires weapons `held` and armour `wear`), worn
+      armour and the active weapon change the body (`inventory/wardrobe.ts` builds the outfit from inventory + chrome;
+      `Game.refreshPlayerLook` rebuilds the world figure when the wardrobe key changes; NPCs get the same at spawn),
+      held weapons are procedural meshes in a closed fist (`assets/human/weapons.ts`), new gear kinds (hard hat,
+      scrap plates, chrome: eye/neural/forearms/legs/spine/skin) sit on the measured body (`HumanFigure.metrics`), a
+      live draggable figure sits beside the Pack and Self tabs (`render/figureView.ts`, own renderer), the Self tab
+      lists chrome by slot; smoke `tools/qa/wardrobe.cjs`. NEXT: B2 Act 1 (below).)
 - [ ] B2 **Act 1**: Tollhouse 9, Signal Hill, Dry Wells crisis, Burnt Orchard, salt pans; Shale/Rust Dogs/
       Tollmen/Choir lines to Act 1 end; 3rd companion; first Mender + chrome; world map with encounters,
       discoveries, camps, hunting/fishing; nomad camp (the Wheel). ~8 h.

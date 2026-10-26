@@ -12,7 +12,8 @@ import { IsoCamera } from './render/camera';
 import { PostFX } from './render/postfx';
 import { QUALITY, detectQuality, type QualityLevel } from './render/quality';
 import { Actor } from './scene/actor';
-import { lookFrom, outfitProxyKeys } from './assets/humanoid';
+import { lookFrom, outfitProxyKeys, type Outfit } from './assets/humanoid';
+import { BASE_OUTFIT, wardrobeKey, wardrobeOutfit, wearProxyKeys } from './inventory/wardrobe';
 import { ensureProxies } from './assets/human/data';
 import type { PortraitStage } from './render/portrait';
 import { QuestEngine } from './quest/quest';
@@ -46,6 +47,8 @@ export type GameEvents = {
   message: { text: string };
   /** A chapter or location card. */
   title: { text: string };
+  /** The player's body was rebuilt (clothes, weapon, chrome). */
+  lookChanged: object;
   gameOver: Record<string, never>;
   openTransfer: { inv: import('./inventory/inventory').Inventory; name: string };
   /** A person, or a tree with a named speaker (terminal, sealed door, a body). */
@@ -58,7 +61,8 @@ export type GameEvents = {
 };
 
 /** Cistern-issue coveralls and boots. */
-export const PLAYER_OUTFIT = { suit: 'male_worksuit01', suitTint: 0x8a9088, shoes: 'shoes06', shoeTint: 0x8a8070 };
+/** The clothes everyone from the Cistern walks out in (worn armour and chrome change it: inventory/wardrobe.ts). */
+export const PLAYER_OUTFIT = BASE_OUTFIT;
 
 /** Real seconds → game minutes. 1 real second = 1/3 game minute while exploring (24h ≈ 72 min). */
 const GAME_MINUTES_PER_SEC = 1 / 3;
@@ -342,7 +346,9 @@ export class Game extends EventBus<GameEvents> {
     if (!map) throw new Error(`Unknown location ${id}`);
     const outfits = (map.npcs ?? []).flatMap((p) => (NPCS[p.def] ? [npcLook(NPCS[p.def]).outfit] : []));
     const seq = ++this.loadSeq;
-    await ensureProxies(outfitProxyKeys(PLAYER_OUTFIT, ...outfits)).catch((e) => console.warn(e));
+    const outfit = this.playerOutfit();
+    this.lookKey = wardrobeKey(this.state.pc);
+    await ensureProxies([...outfitProxyKeys(outfit, ...outfits), ...wearProxyKeys()]).catch((e) => console.warn(e));
     // A newer load started while the clothing was fetching: let it win.
     if (seq !== this.loadSeq) return;
     if (this.loc) {
@@ -372,7 +378,7 @@ export class Game extends EventBus<GameEvents> {
     this.state.locationId = id;
     this.player = new Actor({
       id: 'player', x: sx, y: sy, facing: this.state.player.facing,
-      look: lookFrom(this.state.pc.appearance, PLAYER_OUTFIT),
+      look: lookFrom(this.state.pc.appearance, outfit),
     }, this.loc.grid);
     this.player.onArriveTile = (x, y) => this.onPlayerTile(x, y);
     this.player.onPathDone = () => {
@@ -518,6 +524,25 @@ export class Game extends EventBus<GameEvents> {
       else if (want && n?.away && !n.companion) { n.away = false; n.actor.object.visible = true; grid.occupied.set(grid.index(n.actor.tx, n.actor.ty), n.id); }
       else if (!want && n && !n.away && !n.companion && n.combatant.sheet.hp > 0) { n.away = true; n.actor.object.visible = false; grid.occupied.delete(grid.index(n.actor.tx, n.actor.ty)); }
     }
+  }
+
+  /** The player's outfit as the inventory and chrome currently have it. */
+  playerOutfit(): Outfit {
+    return wardrobeOutfit(this.state.pc);
+  }
+
+  private lookKey = '';
+
+  /** Rebuild the player's body when something worn, held or installed changed. */
+  async refreshPlayerLook(): Promise<void> {
+    const key = wardrobeKey(this.state.pc);
+    this.lookKey = key;
+    const outfit = this.playerOutfit();
+    await ensureProxies(outfitProxyKeys(outfit)).catch((e) => console.warn(e));
+    // Changed again while the clothes were loading: the next tick picks that up.
+    if (!this.player || wardrobeKey(this.state.pc) !== key) return;
+    this.player.setLook(lookFrom(this.state.pc.appearance, outfit));
+    this.emit('lookChanged', {});
   }
 
   /** Walk NPCs to where their routine says they should be; take 'away' NPCs off the map. */
@@ -964,6 +989,7 @@ export class Game extends EventBus<GameEvents> {
       this.syncParty();
       if (fired.length) this.syncPlacements();
     }
+    if (this.player && wardrobeKey(this.state.pc) !== this.lookKey) void this.refreshPlayerLook();
     this.updateFollowers(simDt);
     this.updateSchedules(simDt);
     this.updateBarks(simDt);

@@ -5,6 +5,8 @@ import type { GarmentLook } from './human/cloth';
 import { makeSkinTexture } from './human/skin';
 import { outfitHairMode } from '../data/outfits';
 import { addGear, type GearLook } from './human/gear';
+import { addHeld, closeFist } from './human/weapons';
+import type { HeldShape } from '../inventory/items';
 import { BEARD_PROXY } from './human/facialHair';
 
 /**
@@ -21,6 +23,8 @@ export interface Outfit {
   layers?: GarmentLook[];
   /** Procedural pieces (poncho, wraps, goggles, plates…) from assets/human/gear.ts. */
   gear?: GearLook[];
+  /** The weapon in the right hand (assets/human/weapons.ts). */
+  held?: HeldShape;
   grime?: number;
   wear?: number;
 }
@@ -106,6 +110,11 @@ export class Humanoid {
     if (o.mask) this.addMask();
     for (const g of o.gear ?? []) {
       const meshes = addGear(this.figure, { grime: o.grime, wear: o.wear, ...g });
+      if (look.lod === 'low') for (const m of meshes) m.castShadow = false;
+    }
+    if (o.held) {
+      const meshes = addHeld(this.figure, o.held);
+      if (meshes.length) closeFist(this.figure, 'R');
       if (look.lod === 'low') for (const m of meshes) m.castShadow = false;
     }
     this.animate(0, 0);

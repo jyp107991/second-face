@@ -10,12 +10,20 @@ import {
   useConsumable, type EquipSlot, type Inventory, type ItemInst,
 } from '../inventory/inventory';
 import { itemDef } from '../inventory/items';
+import { wardrobeKey, wardrobeOutfit } from '../inventory/wardrobe';
+import { lookFrom, outfitProxyKeys } from '../assets/humanoid';
+import { ensureProxies } from '../assets/human/data';
+import { FigureView } from '../render/figureView';
+import { itemIcon } from './icons';
+import { CHROME_SLOTS, chromeDef, type ChromeSlot } from '../stats/chrome';
 import { ATTRIBUTES, ATTRIBUTE_INFO, SKILLS, SKILL_INFO, xpForLevel } from '../stats/rules';
 import { attrs, derived, perkAvailable, raiseCost, raiseSkill, skills, takePerk } from '../stats/sheet';
 
 type Tab = 'journal' | 'people' | 'leads' | 'road' | 'status' | 'gear';
 
 const TABS: [Tab, string][] = [['journal', 'Journal'], ['people', 'People'], ['leads', 'Leads'], ['road', 'Road'], ['status', 'Self'], ['gear', 'Pack']];
+
+const CHROME_SLOT_NAMES: Record<ChromeSlot, string> = { eyes: 'Eyes', neural: 'Neural', armL: 'Left arm', armR: 'Right arm', legs: 'Legs', spine: 'Spine', skin: 'Skin', organs: 'Organs' };
 
 const SLOT_NAMES: Record<EquipSlot, string> = { primary: 'Hand 1', secondary: 'Hand 2', body: 'Body', head: 'Head' };
 
@@ -81,6 +89,9 @@ export class Notebook {
   }
 
   close(): void {
+    this.fig?.dispose();
+    this.fig = undefined;
+    this.figKey = '';
     this.el?.remove();
     this.el = undefined;
     this.sel = undefined;
@@ -90,13 +101,34 @@ export class Notebook {
 
   private get inCombat(): boolean { return this.game.encounter.active; }
 
+  /** The live figure beside the pack and the self sheet (one renderer, kept across re-renders). */
+  private fig?: FigureView;
+  private figKey = '';
+
+  private mountFigure(): void {
+    const col = this.el?.querySelector('.col.fig') as HTMLElement | null;
+    if (!col) { this.fig?.dispose(); this.fig = undefined; this.figKey = ''; return; }
+    if (!this.fig) this.fig = new FigureView(col);
+    else col.append(this.fig.canvas);
+    const pc = this.game.state.pc;
+    const held = pc.inventory.equipped[pc.inventory.active];
+    col.insertAdjacentHTML('beforeend', `<div class="cap">${this.tab === 'status' ? 'Drag to turn. Chrome shows where it was fitted.' : held ? `In hand: ${esc(itemDef(held.def).name)}. Drag to turn.` : 'Empty-handed. Drag to turn.'}</div>`);
+    const key = wardrobeKey(pc);
+    if (key !== this.figKey) {
+      this.figKey = key;
+      const outfit = wardrobeOutfit(pc);
+      void ensureProxies(outfitProxyKeys(outfit)).catch(() => undefined).then(() => { if (this.fig && this.figKey === key) this.fig.setLook(lookFrom(pc.appearance, outfit)); });
+    }
+    this.fig.resize();
+  }
+
   render(): void {
     if (!this.el) return;
     const g = this.game, pc = g.state.pc;
     this.el.innerHTML = `<div class="nb">
       <div class="nb-top">${TABS.map(([t, label]) => `<button data-t="${t}" class="${this.tab === t ? 'on' : ''}">${label}</button>`).join('')}
         <button class="x" data-t="close" aria-label="Close">✕</button></div>
-      <div class="nb-body"><div class="col a"></div><div class="col b"></div></div></div>`;
+      <div class="nb-body${this.tab === 'gear' || this.tab === 'status' ? ' with-figure' : ''}">${this.tab === 'gear' || this.tab === 'status' ? '<div class="col fig"></div>' : ''}<div class="col a"></div><div class="col b"></div></div></div>`;
     this.el.querySelector('.nb-top')!.addEventListener('click', (e) => {
       const t = (e.target as HTMLElement).dataset.t;
       if (t === 'close') this.close();
@@ -109,6 +141,7 @@ export class Notebook {
     else if (this.tab === 'leads') this.leads(a, b);
     else if (this.tab === 'road') this.road(a, b);
     else this.gear(a, b, pc.inventory);
+    this.mountFigure();
   }
 
   /** Everyone you've spoken to, with a sketch and where you stand with them. */
@@ -223,6 +256,7 @@ export class Notebook {
       <span>Damage threshold / resist</span><span>${d.dt} / ${d.dr}%</span><span></span>
       <span>Carry</span><span>${totalWeight(this.game.state.pc.inventory)} / ${d.carry} kg</span><span></span>
       <span>Initiative · Crit</span><span>${d.initiative} · ${d.crit}%</span><span></span></div>
+      <h4>Chrome</h4><div class="chrome">${CHROME_SLOTS.map((slot) => { const c = s.chrome?.[slot], d = c && chromeDef(c.id); return `<span class="desc">${CHROME_SLOT_NAMES[slot]}</span><span>${d ? `<b>${esc(d.name)}</b> <span class="w">${d.grade} · ${Math.round(c.condition * 100)}%${d.visible ? '' : ' · hidden'}</span>` : '<span class="none">—</span>'}</span>`; }).join('')}</div>
       <h4>Attributes</h4><div class="kv">${ATTRIBUTES.map((x) => `<span>${ATTRIBUTE_INFO[x].name}</span><span>${at[x]}</span><span></span>`).join('')}</div>
       <h4>Condition</h4><div class="desc">${[
         ...Object.keys(s.crippled).filter((k) => s.crippled[k as keyof typeof s.crippled]).map((k) => `<span class="warn">Crippled: ${k}</span>`),
@@ -271,7 +305,7 @@ export class Notebook {
       const row = document.createElement('div');
       row.className = 'slot2';
       row.innerHTML = `<span class="desc">${SLOT_NAMES[slot]}${(slot === 'primary' || slot === 'secondary') && inv.active === slot ? ' ●' : ''}</span>
-        <span>${it ? esc(itemDef(it.def).name) : '—'}<div class="desc">${it ? itemSummary(it) : ''}</div></span>`;
+        <span>${it ? `<img class="ico" src="${itemIcon(itemDef(it.def))}" alt="">${esc(itemDef(it.def).name)}` : '—'}<div class="desc">${it ? itemSummary(it) : ''}</div></span>`;
       if (it) {
         const btn = document.createElement('button');
         btn.className = 'plus';
@@ -289,7 +323,7 @@ export class Notebook {
       const d = itemDef(it.def);
       const row = document.createElement('div');
       row.className = 'item' + (this.sel === i ? ' sel' : '');
-      row.innerHTML = `<span>${esc(d.name)}${it.qty > 1 ? ` ×${it.qty}` : ''}${it.cond !== undefined ? ` <span class="w">${Math.round(it.cond * 100)}%</span>` : ''}</span><span class="w">${itemWeight(it).toFixed(1)}kg</span><span class="w">${itemValue(it)}T</span>`;
+      row.innerHTML = `<span><img class="ico" src="${itemIcon(d)}" alt="">${esc(d.name)}${it.qty > 1 ? ` ×${it.qty}` : ''}${it.cond !== undefined ? ` <span class="w">${Math.round(it.cond * 100)}%</span>` : ''}</span><span class="w">${itemWeight(it).toFixed(1)}kg</span><span class="w">${itemValue(it)}T</span>`;
       row.onclick = () => { this.sel = i; this.render(); };
       a.append(row);
     }
@@ -306,7 +340,7 @@ export class Notebook {
       if (d.weapon && cd.weapon) { const a = (d.weapon.dmg[0] + d.weapon.dmg[1]) / 2, c = (cd.weapon.dmg[0] + cd.weapon.dmg[1]) / 2; compare = `vs ${esc(cd.name)}: damage ${a >= c ? '+' : ''}${(a - c).toFixed(1)} · AP ${d.weapon.ap - cd.weapon.ap >= 0 ? '+' : ''}${d.weapon.ap - cd.weapon.ap} · range ${d.weapon.range - cd.weapon.range >= 0 ? '+' : ''}${d.weapon.range - cd.weapon.range}`; }
       if (d.armor && cd.armor) compare = `vs ${esc(cd.name)}: DT ${d.armor.dt - cd.armor.dt >= 0 ? '+' : ''}${d.armor.dt - cd.armor.dt} · DR ${d.armor.dr - cd.armor.dr >= 0 ? '+' : ''}${d.armor.dr - cd.armor.dr}%`;
     }
-    b.innerHTML = `<h4>${esc(d.name)}</h4><div class="desc">${esc(d.desc)}</div><p>${itemSummary(it)}</p>${compare ? `<p class="dim">${compare}</p>` : ''}
+    b.innerHTML = `<img class="ico big" src="${itemIcon(d, 64)}" alt=""><h4>${esc(d.name)}</h4><div class="desc">${esc(d.desc)}</div><p>${itemSummary(it)}</p>${compare ? `<p class="dim">${compare}</p>` : ''}
       <div class="desc">Weight ${d.weight} kg · Value ${d.value} Tolls${it.qty > 1 ? ` each` : ''}</div><div class="acts"></div>`;
     const acts = b.querySelector('.acts')!;
     const btn = (label: string, fn: () => void) => { const x = document.createElement('button'); x.textContent = label; x.onclick = fn; acts.append(x); };
