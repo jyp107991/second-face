@@ -65,8 +65,10 @@ expressions). Fetch: `tools/mh/fetch_makehuman.sh <dir>` (scratchpad is ephemera
         settle/bands/episode chance), catalogue `content/chrome/catalogue.ts` (15 pieces), conds `chrome`/`chromeSlot`/
         `drift`, daily body tick in game (`dailyBody`), validator + tests. Not yet: Mender/clinic UI, ability effects in
         combat/maps, chrome visuals on models (eye glow, metal limbs), Drift dialogue content.
-  - [ ] W5b Settlement types (engine table: layout kit, services, law, population role mix → `dressFor`), SettlementDef
-        gains type/region/prosperity/owner/crisis; validator + tests
+  - [x] W5b Settlement types `world/settlementTypes.ts` (12 types: layout, kits, size, law, services, role mix, prosperity,
+        crises, nomads move), `generateSettlement` (minor places), `residentRoles` (prosperity-shifted → `dressFor`);
+        SettlementDef gains type/region/prosperity/kit/owner/crisis; `content/world/regions.ts` (8 regions, km bounds);
+        validator + tests. Not yet: layout generators that build maps from a type.
   - [ ] W5c World map model: regions, locations (major/minor/landmark), routes (terrain/danger), transport networks
         (rail/barge/caravan/Loop/safehouses) with schedules + fares, travel planner, fast-travel rules; tests
 

@@ -1,6 +1,7 @@
 import type { GameState } from '../core/state';
 import { dayOf } from '../core/state';
 import { apply, test, type Cond, type Effect, type LogicHost } from './logic';
+import type { BuildKit, Crisis, SettlementType } from './settlementTypes';
 
 /**
  * Frontier systems: news that travels with people, leads → conclusions, and scheduled world events.
@@ -11,7 +12,25 @@ import { apply, test, type Cond, type Effect, type LogicHost } from './logic';
 // News & local reputation
 // --------------------------------------------------------------------------------------------
 
-export interface SettlementDef { id: string; name: string; /** Neighbours and travel days along the road. */ roads: Record<string, number>; /** 0..1 how fast gossip moves (caravan traffic). */ traffic: number }
+export interface SettlementDef {
+  id: string;
+  name: string;
+  /** Neighbours and travel days along the road. */
+  roads: Record<string, number>;
+  /** 0..1 how fast gossip moves (caravan traffic). */
+  traffic: number;
+  /** Settlement type (world/settlementTypes.ts): layout, people, services, law. */
+  type?: SettlementType;
+  /** Region id (content/world/regions.ts). */
+  region?: string;
+  /** 0..1 starving .. rich (shifts who lives there and what is for sale). */
+  prosperity?: number;
+  kit?: BuildKit;
+  /** Faction that runs the place, if any. */
+  owner?: string;
+  /** Trouble at game start (can change through play). */
+  crisis?: Crisis;
+}
 
 export interface NewsItem {
   id: string;

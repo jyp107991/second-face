@@ -9,6 +9,7 @@ import type { QuestDef } from '../quest/quest';
 import { CHROME_SLOTS, type ChromeDef } from '../stats/chrome';
 import { GARMENTS } from './garments';
 import { OUTFIT_ROLES } from './outfits';
+import { SETTLEMENT_TYPES, type SettlementType } from '../world/settlementTypes';
 
 export interface ContentBundle {
   maps: Record<string, MapDef>;
@@ -20,7 +21,8 @@ export interface ContentBundle {
   quests?: Record<string, QuestDef>;
   leads?: Record<string, { id: string }>;
   conclusions?: Record<string, { id: string; from: string[] }>;
-  settlements?: Record<string, { id: string; roads: Record<string, number> }>;
+  settlements?: Record<string, { id: string; roads: Record<string, number>; type?: SettlementType; region?: string; prosperity?: number }>;
+  regions?: Record<string, { id: string }>;
   chrome?: Record<string, ChromeDef>;
 }
 
@@ -101,6 +103,11 @@ export function validateContent(c: ContentBundle): string[] {
     if (n.dialogue && c.dialogues && !c.dialogues[n.dialogue]) errs.push(`npc ${key}: unknown dialogue ${n.dialogue}`);
     if (n.role && !OUTFIT_ROLES.includes(n.role)) errs.push(`npc ${key}: unknown role ${n.role}`);
     for (const g of n.outfit?.layers ?? []) if (!GARMENTS[g.name]) errs.push(`npc ${key}: unknown garment ${g.name}`);
+  }
+  for (const [key, st] of Object.entries(c.settlements ?? {})) {
+    if (st.type && !SETTLEMENT_TYPES[st.type]) errs.push(`settlement ${key}: unknown type ${st.type}`);
+    if (st.region && c.regions && !c.regions[st.region]) errs.push(`settlement ${key}: unknown region ${st.region}`);
+    if (st.prosperity !== undefined && !(st.prosperity >= 0 && st.prosperity <= 1)) errs.push(`settlement ${key}: prosperity outside 0..1`);
   }
   for (const [key, ch] of Object.entries(c.chrome ?? {})) {
     if (ch.id !== key) errs.push(`chrome ${key}: id mismatch`);
