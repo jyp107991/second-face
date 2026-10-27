@@ -341,3 +341,21 @@ export const q_orchard: QuestDef = {
     let_go: { journal: 'They went over the wall with the sack. Anselm leaves the green ones on the wall now and calls it a tithe. The sky is open; so is the wall.', end: 'done' },
   },
 };
+
+/** Riding beside a wagon with a gun and not shooting it: the Wheel's salt to Tollhouse 9. */
+export const q_a1_escort: QuestDef = {
+  id: 'q_a1_escort', title: 'Salt to the Tollhouse', act: 'a1', start: 'ride', xp: 150,
+  routes: [{ id: 'ride', kind: 'survival', label: 'Keep the wagon in your eye to Tollhouse 9' }],
+  stages: {
+    ride: {
+      journal: 'The Wheel\'s salt wagon goes to Tollhouse 9 with the Tollmen\'s caravan, and the guild\'s guards guard the guild\'s wagons. Walk the Tollhouse road from Shale beside it; whatever the road asks for, it is asking the Wheel. Sixty Tolls at the gate.',
+      objectives: [{ id: 'arrive', text: 'Reach Tollhouse 9 with the wagon', done: { at: 'tollhouse' } }],
+      next: [{ if: { at: 'tollhouse' }, stage: 'paid' }],
+    },
+    paid: {
+      journal: 'The salt is weighed at the gate and the Wheel\'s wagon goes in on the guild\'s count. Sixty Tolls, and the Wheel remembers who rode.',
+      onEnter: [{ give: 'tolls', count: 60 }, { rep: { faction: 'wheel', respect: 8 } }, { rep: { faction: 'tollmen', respect: 3 } }, { set: 'escort_active', value: false }, { learn: 'escort_done' }, { news: { tag: 'escort_wheel', text: 'The Wheel\'s salt got to the Tollhouse with a stranger walking beside it.', valence: 1, at: 'tollhouse' } }],
+      end: 'done',
+    },
+  },
+};

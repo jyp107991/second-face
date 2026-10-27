@@ -194,12 +194,12 @@ The owner road-tests Act 1 while the build continues. Plan:
   clean / complication / rejected (fee lost, piece kept), time passes, a title line. Chrome pieces exist as items
   (`ItemDef.chrome`) so they can be found, bought, carried, removed. Yusra fits; the Signal Hill chrome route and a
   Mender stock piece give the first ones. Tests + a smoke (`tools/qa/surgery.cjs`).
-- **B2.6b The Wheel**: world location `wheel` (kind camp) that moves between four Sallow waypoints every few days
+- [x] **B2.6b The Wheel** DONE (`LocationDef.moves` + `placeMoving`/`Game.placeCamps`, `flags.wheel_near`; `gen_wheel.py`, props `wagon`/`horse`/`blanket`; cast `npcs/wheel.ts`, talk `dialogue/wheel.ts`; Ruth at Shale's caravan post says where it is camped): world location `wheel` (kind camp) that moves between four Sallow waypoints every few days
   (position from the day; a lead or news tells where it is camped); map `gen_wheel.py` (wagons in a ring — new prop
   `wagon` — tents, a horse line — new prop `horse` — a fire, trade blankets), cast: the caravan-mother, her son, a
   horse-master, a trader; nomad extras; faction `wheel` standing (guest → road-kin); trade; shallow talk about the
   road; the escort job (B2.6c) offered here too.
-- **B2.6c Caravan escort basics**: `q_a1_escort` from Shale's caravan post keeper or the Wheel: ride with a caravan
+- [x] **B2.6c Caravan escort basics** DONE (`q_a1_escort` from Ruth or Sefa; `re_escort_axle` and `re_escort_shakedown` fire on Sallow legs while `escort_active` is set, one per trip; the gate pays 60 and standing; smoke `tools/qa/wheel.cjs`, evidence `docs/evidence/b26/wheel_*.png`): `q_a1_escort` from Shale's caravan post keeper or the Wheel: ride with a caravan
   to Tollhouse 9 or the Wheel's next camp; while escorting (`flag escort_active`) two authored road encounters can
   fire (a broken axle: mechanics or hours; a shakedown: talk, pay or fight); arrival pays Tolls and standing. Then the
   flag clears. Repeatable once per Act.

@@ -228,6 +228,42 @@ const P: Record<PropKind, PropFn> = {
   fence_post: (b) => {
     b.box(0.1, 1.3, 0.1, 0, 0.65, 0, 'wood', C.darkWood);
   },
+  wagon: (b, r) => {
+    // A road wagon: plank bed on two axles, hooped canvas over the back, a shaft forward, a water keg and a lamp.
+    const col = r.pick([0x8a6a48, 0x7a5a3a, 0x9a7a52]), canvas = r.pick([0xa89a7a, 0x9a8a6a, 0xb0a080]);
+    b.box(1.4, 0.12, 2.6, 0, 0.62, 0, 'wood', col);
+    for (const [x, z] of [[-0.72, -0.9], [0.72, -0.9], [-0.72, 0.9], [0.72, 0.9]]) b.cyl(0.36, 0.36, 0.1, 10, x, 0.36, z, 'wood', C.darkWood, { rz: Math.PI / 2 });
+    for (const z of [-0.9, 0.9]) b.cyl(0.04, 0.04, 1.5, 6, 0, 0.36, z, 'metal', C.darkMetal, { rz: Math.PI / 2 });
+    b.box(1.44, 0.5, 0.06, 0, 0.93, -1.3, 'wood', col);
+    b.box(0.06, 0.5, 2.6, -0.7, 0.93, 0, 'wood', col);
+    b.box(0.06, 0.5, 2.6, 0.7, 0.93, 0, 'wood', col);
+    // Hooped cover: strips rising to a ridge.
+    b.box(0.5, 0.04, 2.3, -0.6, 1.5, 0.1, 'fabric', canvas, 0, { rz: 0.95 });
+    b.box(0.5, 0.04, 2.3, 0.6, 1.5, 0.1, 'fabric', canvas, 0, { rz: -0.95 });
+    b.box(0.9, 0.04, 2.3, 0, 1.8, 0.1, 'fabric', canvas);
+    b.box(0.5, 0.04, 2.3, -0.38, 1.72, 0.1, 'fabric', canvas, 0, { rz: 0.42 });
+    b.box(0.5, 0.04, 2.3, 0.38, 1.72, 0.1, 'fabric', canvas, 0, { rz: -0.42 });
+    b.box(0.08, 0.08, 1.6, 0.3, 0.5, 2.0, 'wood', C.darkWood, 0, { rx: 0.1 });
+    b.cyl(0.2, 0.2, 0.4, 8, 0.55, 0.85, -1.0, 'wood', C.darkWood, { rz: Math.PI / 2 });
+    b.box(0.12, 0.16, 0.12, -0.6, 1.2, -1.32, 'glow', 0xffd890);
+    return [{ kind: 'lamp', x: -0.6, y: 1.2, z: -1.4, color: 0xffc080 }];
+  },
+  horse: (b, r) => {
+    // A horse at the line: barrel body, neck and head, four legs, tail; a blanket on its back.
+    const coat = r.pick([0x5a3a22, 0x3a2a1e, 0x8a6a48, 0x2a2420, 0xb09a80]);
+    b.cyl(0.3, 0.32, 1.2, 10, 0, 1.05, 0, 'flat', coat, { rx: Math.PI / 2 });
+    b.box(0.26, 0.6, 0.3, 0, 1.45, 0.62, 'flat', coat, 0, { rx: -0.5 });
+    b.box(0.2, 0.22, 0.46, 0, 1.78, 0.88, 'flat', coat, 0, { rx: 0.35 });
+    for (const [x, z] of [[-0.16, -0.42], [0.16, -0.42], [-0.16, 0.42], [0.16, 0.42]]) b.cyl(0.06, 0.05, 1.0, 6, x, 0.5, z, 'flat', coat);
+    b.box(0.08, 0.5, 0.08, 0, 0.9, -0.66, 'flat', 0x1c1a18, 0, { rx: 0.3 });
+    b.box(0.44, 0.03, 0.6, 0, 1.33, -0.05, 'fabric', r.pick([0x8a3a2a, 0x6b6b45, 0x4a6a7a]));
+    b.box(0.12, 0.16, 0.04, 0, 1.92, 0.78, 'flat', coat);
+  },
+  blanket: (b, r) => {
+    // A trade blanket on the ground with goods set out on it.
+    b.box(1.6, 0.03, 1.2, 0, 0.015, 0, 'fabric', r.pick([0x8a3a2a, 0x4a6a7a, 0x9a8a40, 0x6b6b45]), r.next() * 0.3, { shadow: false });
+    for (let i = 0; i < 5; i++) b.box(r.range(0.12, 0.3), r.range(0.08, 0.2), r.range(0.12, 0.3), r.range(-0.6, 0.6), 0.08, r.range(-0.4, 0.4), r.pick(['metal', 'wood', 'rust', 'fabric'] as const), r.pick([0x8a9090, 0x8a6a48, 0xa0603a, 0xa89a7a]), r.next() * 2);
+  },
   pump: (b) => {
     // A well pump: cast-iron column and head on a concrete plinth, a long lever, a spout over a trough, a drive wheel.
     b.box(1.0, 0.22, 1.0, 0, 0.11, 0, 'concrete', 0x9a9488);

@@ -18,6 +18,7 @@ import { DRYWELLS_NPCS } from './npcs/drywells';
 import { WILDS_NPCS } from './npcs/wilds';
 import { LANDMARK_NPCS } from './npcs/landmarks';
 import { ORCHARD_NPCS } from './npcs/orchard';
+import { WHEEL_NPCS } from './npcs/wheel';
 import { dev_bunker } from './maps/dev_bunker';
 import { dev_yard } from './maps/dev_yard';
 import { bench_crowd } from './maps/bench_crowd';
@@ -33,6 +34,7 @@ import { wild_rough } from './maps/wild_rough';
 import { windpumps } from './maps/windpumps';
 import { saltpan } from './maps/saltpan';
 import { orchard } from './maps/orchard';
+import { wheel } from './maps/wheel';
 import { BENCH_NPCS } from './npcs/bench';
 import { DIALOGUES } from './dialogue';
 import { QUESTS } from './quests';
@@ -54,10 +56,10 @@ export const MAPS: Record<string, MapDef> = {
   overpass,
   dev_yard,
   dev_bunker,
-  bench_crowd, tollhouse, signalhill, drywells, wild_track, wild_rough, windpumps, saltpan, orchard,
+  bench_crowd, tollhouse, signalhill, drywells, wild_track, wild_rough, windpumps, saltpan, orchard, wheel,
 };
 
-export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...TOLLHOUSE_NPCS, ...SIGNALHILL_NPCS, ...DRYWELLS_NPCS, ...WILDS_NPCS, ...LANDMARK_NPCS, ...ORCHARD_NPCS, ...BENCH_NPCS].map((n) => [n.id, n]));
+export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...TOLLHOUSE_NPCS, ...SIGNALHILL_NPCS, ...DRYWELLS_NPCS, ...WILDS_NPCS, ...LANDMARK_NPCS, ...ORCHARD_NPCS, ...WHEEL_NPCS, ...BENCH_NPCS].map((n) => [n.id, n]));
 
 export { LETTERS, FACTIONS, WORLD_MAP, REGIONS, TRAITS, PERKS, CHROME, ITEMS, ORIGINS, DIALOGUES, QUESTS, SETTLEMENTS, LEADS, CONCLUSIONS, WORLD_EVENTS, ROAD_ENCOUNTERS };
 registerRules({ traits: TRAITS, perks: PERKS });

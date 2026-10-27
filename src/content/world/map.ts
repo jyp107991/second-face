@@ -15,6 +15,9 @@ const L: LocationDef[] = [
   { id: 'signalhill', name: 'Signal Hill', region: 'sallow', x: 402, y: 286, kind: 'minor', map: 'signalhill' },
   { id: 'lm_sallow_01', name: 'Salt-pan wreck', region: 'sallow', x: 442, y: 372, kind: 'landmark', hidden: true, map: 'saltpan' },
   { id: 'orchard', name: 'the Burnt Orchard', region: 'sallow', x: 452, y: 349, kind: 'minor', map: 'orchard' },
+  // The Wheel: a nomad camp that stands four days at each of its stops round the Sallow, then turns.
+  { id: 'wheel', name: 'the Wheel', region: 'sallow', x: 446, y: 371, kind: 'minor', settlement: 'wheel', map: 'wheel', hidden: true,
+    moves: { days: 4, route: [{ x: 446, y: 371, near: 'shale' }, { x: 489, y: 384, near: 'drywells' }, { x: 458, y: 338, near: 'orchard' }, { x: 437, y: 349, near: 'rustdogs' }] } },
   { id: 'lm_sallow_02', name: 'Windpump graveyard', region: 'sallow', x: 488, y: 345, kind: 'landmark', hidden: true, map: 'windpumps' },
   // The Glass Flats
   { id: 'ninebridge', name: 'Ninebridge', region: 'glass_flats', x: 320, y: 300, kind: 'major', settlement: 'ninebridge' },
@@ -72,6 +75,11 @@ const R: RouteDef[] = [
   { a: 'shale', b: 'lm_sallow_01', terrain: 'rough', danger: 0.3 },
   { a: 'rustdogs', b: 'lm_sallow_01', terrain: 'rough', danger: 0.3 },
   { a: 'shale', b: 'orchard', terrain: 'track', danger: 0.05 },
+  // The Wheel is reached across the pan from wherever it has stopped (lengths follow its position).
+  { a: 'wheel', b: 'shale', terrain: 'track', danger: 0.15 },
+  { a: 'wheel', b: 'drywells', terrain: 'track', danger: 0.15 },
+  { a: 'wheel', b: 'orchard', terrain: 'track', danger: 0.1 },
+  { a: 'wheel', b: 'rustdogs', terrain: 'track', danger: 0.3 },
   { a: 'drywells', b: 'lm_sallow_02', terrain: 'rough', danger: 0.3 },
   { a: 'ninebridge', b: 'lm_flats_01', terrain: 'glass', danger: 0.4 },
 ];

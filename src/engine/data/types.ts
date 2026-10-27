@@ -16,7 +16,7 @@ export type PropKind =
   | 'pipe_h' | 'lamp_post' | 'car_wreck' | 'rock' | 'rock_small' | 'tire_pile' | 'tank' | 'vault_door'
   | 'dead_tree' | 'sandbags' | 'shelf' | 'stove' | 'fire_barrel' | 'campfire' | 'cactus' | 'sign'
   | 'counter' | 'planter' | 'machine' | 'cot' | 'tent' | 'fence_post' | 'debris'
-  | 'windpump' | 'hound_dormant' | 'pump';
+  | 'windpump' | 'hound_dormant' | 'pump' | 'wagon' | 'horse' | 'blanket';
 
 export type Cover = 'none' | 'half' | 'full';
 

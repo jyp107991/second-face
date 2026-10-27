@@ -22,6 +22,24 @@ export interface LocationDef {
   map?: string;
   /** Not on the map until discovered (found on foot nearby, told of, or read about). */
   hidden?: boolean;
+  /** A camp that moves: it stands at each stop of its route for `days` days in turn (position set from the day by
+   *  `placeMoving`; `near` names the settlement the stop is close to, for talk and news). */
+  moves?: { route: { x: number; y: number; near: string }[]; days: number };
+}
+
+/**
+ * Put every moving location where the day says it is. A location the player is at does not move under them
+ * (`freeze`). Returns, per moved location, the settlement it is near.
+ */
+export function placeMoving(m: WorldMap, day: number, freeze?: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const loc of Object.values(m.locations)) {
+    if (!loc.moves || !loc.moves.route.length) continue;
+    const stop = loc.moves.route[Math.floor(Math.max(0, day) / Math.max(1, loc.moves.days)) % loc.moves.route.length];
+    if (loc.id !== freeze) { loc.x = stop.x; loc.y = stop.y; }
+    out[loc.id] = loc.moves.route.find((r) => r.x === loc.x && r.y === loc.y)?.near ?? stop.near;
+  }
+  return out;
 }
 
 export type Terrain = 'road' | 'track' | 'rough' | 'mountain' | 'marsh' | 'glass';

@@ -8,6 +8,7 @@ import { Hud } from './engine/ui/hud';
 import { DevOverlay } from './engine/dev/overlay';
 import { Menu } from './engine/ui/menu';
 import { Creator } from './engine/ui/creator';
+import { MAPS, WORLD_MAP } from './content';
 import { CombatHud } from './engine/ui/combatHud';
 import { Notebook } from './engine/ui/notebook';
 import { Transfer } from './engine/ui/transfer';
@@ -69,7 +70,7 @@ const dev = import.meta.env.DEV || new URLSearchParams(location.search).has('dev
 if (dev) {
   new DevOverlay(game);
   // Dev helpers for the browser console / automated screenshots.
-  (window as unknown as Record<string, unknown>).SF = { PortraitStage, lookFrom, randomAppearance, agedAppearance, defaultAppearance, PLAYER_OUTFIT, HumanFigure, Humanoid, THREE, evaluateShape, humanData, ensureProxies, outfitProxyKeys, dressFor, roleLook, skinSamples, skinAlbedo, addItem, makeItem, equip, unequip, wardrobeOutfit };
+  (window as unknown as Record<string, unknown>).SF = { PortraitStage, lookFrom, randomAppearance, agedAppearance, defaultAppearance, PLAYER_OUTFIT, HumanFigure, Humanoid, THREE, evaluateShape, humanData, ensureProxies, outfitProxyKeys, dressFor, roleLook, skinSamples, skinAlbedo, addItem, makeItem, equip, unequip, wardrobeOutfit , WORLD_MAP, MAPS };
 }
 await game.loadLocation(game.state.locationId, 'start');
 game.loadMs = performance.now() - t0;

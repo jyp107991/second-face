@@ -27,6 +27,17 @@ export const ROAD_ENCOUNTERS: Record<string, RoadEncounterDef> = Object.fromEntr
     text: 'A ring of stones by the track, and in it the ash of a fire nobody has lit for years, and a tin cup with a bullet hole through it, set upright on a rock as if someone meant to come back for it.',
     effects: [{ give: 'j_scrap', count: 2 }, { learn: 'seen_old_camp' }, { xp: 10 }],
   },
+  // --- Riding escort for the Wheel's wagon (q_a1_escort): the road asks twice.
+  {
+    id: 're_escort_axle', regions: ['sallow'], terrain: ['road', 'track'], weight: 14, once: true, map: 'wild_track', dialogue: 'd_re_axle',
+    if: { flag: 'escort_active', eq: 'wheel' },
+    npcs: [{ def: 'npc_w_wheel', spot: 'ahead', facing: 2 }],
+  },
+  {
+    id: 're_escort_shakedown', regions: ['sallow'], terrain: ['road', 'track'], weight: 14, once: true, map: 'wild_track', dialogue: 'd_re_shakedown',
+    if: { flag: 'escort_active', eq: 'wheel' },
+    npcs: [{ def: 'npc_w_scout_a', spot: 'ahead', facing: 3 }, { def: 'npc_w_scout_b', spot: 'ahead2', facing: 3 }, { def: 'npc_w_wheel', spot: 'fire', facing: 0 }],
+  },
   // --- The Sallow: things that stop you
   {
     id: 're_patrol', regions: ['sallow'], terrain: ['road', 'track'], weight: 4, map: 'wild_track', dialogue: 'd_re_patrol',

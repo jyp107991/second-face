@@ -22,6 +22,7 @@ import { runWorldEvents, spreadNews } from './world/frontier';
 import { discoveriesOnLeg, rollEncounter } from './world/roads';
 import { makeExtras, spotIdle } from './npc/extras';
 import { moodSound, weatherFor, type WeatherKind } from './world/weather';
+import { placeMoving } from './world/travel';
 import { inHours as inHoursOf } from './npc/schedule';
 import { QUESTS, ROAD_ENCOUNTERS, SETTLEMENTS, WORLD_EVENTS, WORLD_MAP } from '../content';
 import { buildLocation, type BuiltLocation } from './scene/location';
@@ -347,6 +348,12 @@ export class Game extends EventBus<GameEvents> {
   }
 
   /** Today's weather where the player is. */
+  /** Camps that move (the Wheel) stand where the day puts them; `flags.<id>_near` names the settlement they are by. */
+  placeCamps(): void {
+    const near = placeMoving(WORLD_MAP, dayOf(this.state.minutes), this.state.world.at);
+    for (const [id, n] of Object.entries(near)) this.state.flags[`${id}_near`] = n;
+  }
+
   /** Dev/QA: force a weather kind regardless of the day. */
   weatherOverride?: WeatherKind;
   /** Dev/QA: roll no road encounters (forced ones still happen), so a scripted journey arrives where it set out for. */
@@ -1156,6 +1163,7 @@ export class Game extends EventBus<GameEvents> {
       const fired = runWorldEvents(this.state, WORLD_EVENTS, this.quests);
       spreadNews(this.state, SETTLEMENTS);
       this.dailyBody();
+      this.placeCamps();
       this.quests.update();
       this.syncParty();
       if (fired.length) this.syncPlacements();

@@ -564,6 +564,8 @@ export const d_sh_ruth: DialogueDef = {
       text: 'Caravan post. Ruth Avel; I ride with the Wheel when they pass and sit here when they don\'t. Goods, ammunition, and letters — a wagon leaves when a wagon leaves. Pay in Tolls or in something a wagon wants.',
       options: [
         { text: 'Let me see your goods.', effects: [{ event: 'barter' }], exit: true },
+        { id: 'ruth.wheel_where', text: 'Where is the Wheel camped?', next: 'wheel_where' },
+        { id: 'ruth.escort', text: 'Any work riding beside a wagon?', if: { not: { quest: 'q_a1_escort', status: 'done' } }, next: 'escort' },
         { id: 'ruth.letters', text: 'How do letters work?', next: 'letters', once: true },
         { id: 'ruth.wheel', text: 'The Wheel?', next: 'wheel', once: true },
         bye,
@@ -571,6 +573,27 @@ export const d_sh_ruth: DialogueDef = {
     },
     letters: { text: '"Write it where you sleep — Mags\'s room, a camp, anywhere with a table. I carry it. If the person\'s where you say they are, you get an answer in a few days. If they aren\'t, you get the letter back, eventually, with dust on it."', effects: [{ learn: 'letters_how' }], options: [{ text: 'Thanks.', next: 'intro' }] },
     wheel: { text: '"Nomads. Two hundred wagons across the Reach, in rings of forty. Neutral, armed, owed by everyone. We go where the Tollmen don\'t tax and we tax ourselves." She shrugs. "If you ever need to be somewhere else, and I mean *else*, the Wheel is how."', effects: [{ learn: 'wheel_what' }], options: [{ text: 'Noted.', next: 'intro' }] },
+    escort: {
+      text: [
+        { if: { quest: 'q_a1_escort', status: 'active' }, text: '"You\'ve got it. The salt wagon, Tollhouse 9, the guild road. Keep it in your eye."' },
+        { text: '"Sefa\'s salt wagon goes to Tollhouse 9 with the Tollmen\'s caravan, and the guild guards the guild\'s wagons and nobody else\'s. Sixty Tolls at the gate for walking beside it with a gun. It\'s the Wheel\'s job to give, but I can put your name on it; she\'ll have heard of you by the time you get there."' },
+      ],
+      options: [
+        { id: 'ruth.escort.yes', text: 'Put my name on it.', if: { not: { quest: 'q_a1_escort', status: 'active' } }, effects: [{ quest: 'q_a1_escort', start: true }, { set: 'escort_active', value: 'wheel' }, { learn: 'escort_via_ruth' }], next: 'escort_yes' },
+        { text: 'Not now.', next: 'intro' },
+      ],
+    },
+    escort_yes: { text: '"Done. Walk the Tollhouse road from here; the wagon leaves when you do. If the road asks for something, it\'s asking the Wheel."', options: [{ text: 'Understood.', exit: true }] },
+    wheel_where: {
+      text: [
+        { if: { flag: 'wheel_near', eq: 'shale' }, text: '"Close. On the pan south-west of town, where the old road was. Four days, then they turn east toward Dry Wells." She marks it on your map with a thumbnail. "Walk out before noon and you\'ll eat with them."' },
+        { if: { flag: 'wheel_near', eq: 'drywells' }, text: '"Out on the Dry Wells pans this week, east. Four days, then north under the orchard." She marks it on your map. "Say Ruth sent you and Sefa will feed you before she asks what you want."' },
+        { if: { flag: 'wheel_near', eq: 'orchard' }, text: '"North, under the Burnt Orchard. Four days, then the overpass side, which nobody likes." She marks it on your map. "Go by the orchard lane; the Choir will point you on."' },
+        { text: '"The overpass side this week, where the Dogs can count them. Four days, then back by Shale." She marks it on your map. "Go in daylight and go slow. Sefa likes slow."' },
+      ],
+      effects: [{ learn: 'loc_wheel' }, { learn: 'wheel_told' }],
+      options: [{ text: 'Thanks.', next: 'intro' }],
+    },
   },
 };
 
