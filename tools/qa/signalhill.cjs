@@ -48,7 +48,8 @@ const fs = require('fs');
   check('past the camp', await page.evaluate(() => game.state.flags.sg_camp_passed === true));
   // The top: the station and the mast.
   await page.evaluate(() => { game.player.place(20, 16); game.cam.recentre(); game.player.setPath(game.loc.grid.findPath(20, 16, 25, 13, { ignore: 'player', adjacentOk: false })); });
-  await page.waitForTimeout(8000);
+  await page.waitForFunction(() => game.state.flags.sg_station === true, null, { timeout: 90000 }).catch(() => {});
+  await page.waitForTimeout(1500);
   check('reached the station', await page.evaluate(() => game.state.flags.sg_station === true), await page.evaluate(() => `quest=${game.state.world.quests.q_a1_signal?.stage} windpumps=${!!game.state.world.knowledge.loc_lm_sallow_02}`));
   await page.evaluate(() => { game.cam.zoomBy(0.7); });
   await page.waitForTimeout(1500);
