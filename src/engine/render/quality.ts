@@ -11,8 +11,8 @@ export interface QualityPreset {
 
 export const QUALITY: Record<QualityLevel, QualityPreset> = {
   low: { pixelRatio: 1, shadowSize: 0, bloom: false, msaa: 0, pointLights: 2, dust: 150 },
-  medium: { pixelRatio: 1.5, shadowSize: 1024, bloom: true, msaa: 0, pointLights: 4, dust: 400 },
-  high: { pixelRatio: 2, shadowSize: 2048, bloom: true, msaa: 4, pointLights: 6, dust: 900 },
+  medium: { pixelRatio: 1.5, shadowSize: 2048, bloom: true, msaa: 0, pointLights: 4, dust: 400 },
+  high: { pixelRatio: 2, shadowSize: 4096, bloom: true, msaa: 4, pointLights: 6, dust: 900 },
 };
 
 /** Pick a sensible default from the device. */

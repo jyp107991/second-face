@@ -7,6 +7,11 @@ import type { Appearance } from './data/appearance';
 import type { CharacterSheet } from './stats/sheet';
 import { addItem, emptyInventory, equip, makeItem, removeItem, syncGear } from './inventory/inventory';
 import { Input } from './input/input';
+import { ensurePbr, groundLayersFor, setPbrDetail } from './assets/pbr';
+import { portraitEnvironment } from './render/portrait';
+import { SURFACE_PBR_KEYS } from './assets/materials';
+import { groundKeys } from './scene/ground';
+import { Grid } from './scene/grid';
 import { Atmosphere } from './render/atmosphere';
 import { IsoCamera } from './render/camera';
 import { PostFX } from './render/postfx';
@@ -224,7 +229,7 @@ export class Game extends EventBus<GameEvents> {
     this.quality = (localStorage.getItem('sf.quality') as QualityLevel) || detectQuality();
     this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     // Several passes per frame (scene + post); stats are reset once per frame in frame().
     this.renderer.info.autoReset = false;
@@ -232,6 +237,9 @@ export class Game extends EventBus<GameEvents> {
     this.renderer.domElement.className = 'game-canvas';
     this.input = new Input(this.renderer.domElement);
     this.applyQuality(this.quality);
+    // A neutral environment gives metal and wet surfaces something to reflect; the atmosphere scales it by the hour.
+    this.scene.environment = portraitEnvironment(this.renderer);
+    this.scene.environmentIntensity = 0.3;
 
     // Tile cursor + path destination marker.
     const ring = new THREE.RingGeometry(0.36, 0.46, 24).rotateX(-Math.PI / 2);
@@ -439,6 +447,7 @@ export class Game extends EventBus<GameEvents> {
   }
 
   applyQuality(level: QualityLevel): void {
+    setPbrDetail(level === 'high' ? 'high' : 'medium');
     this.quality = level;
     localStorage.setItem('sf.quality', level);
     const q = QUALITY[level];
@@ -495,7 +504,11 @@ export class Game extends EventBus<GameEvents> {
     this.npcs.clear();
     this.fx.clearDecals();
 
-    this.loc = buildLocation(map);
+    // The photographed surfaces the walls and the ground need, then the ground's layer arrays.
+    await ensurePbr(SURFACE_PBR_KEYS).catch(() => undefined);
+    const layers = await groundLayersFor(groundKeys(map, new Grid(map))).catch(() => undefined);
+    if (seq !== this.loadSeq) return;
+    this.loc = buildLocation(map, layers);
     this.scene.add(this.loc.root);
     this.atmosphere.load(this.loc);
     this.soundBed = undefined;
@@ -1356,7 +1369,7 @@ export class Game extends EventBus<GameEvents> {
       this.post.render(this.portrait.scene, this.portrait.camera, this.time);
     } else {
       const s = this.post.settings;
-      s.grain = 0.06; s.vignette = 0.75; s.bloom = 0.6; s.exposure = 1;
+      s.grain = 0.03; s.vignette = 0.5; s.bloom = 0.45; s.exposure = 1;
       this.renderer.shadowMap.enabled = QUALITY[this.quality].shadowSize > 0;
       this.post.render(this.scene, this.cam.camera, this.time);
     }

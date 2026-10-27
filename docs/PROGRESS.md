@@ -238,6 +238,8 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
 - [ ] U1 Foundation: CC0 asset pipeline (`tools/assets/`), PBR material library, blended terrain ground per map (no
       tile seams), real wall/roof materials, re-lit sun/sky/fog (lit palette; dust and sepia only as weather/mood),
       AO, soft shadows. Folded in: typefaces (no cursive), default outfit, reroll variance, portrait pre-warming. NEXT.
+      U1a DONE (materials, blended ground, re-lit palette; evidence docs/evidence/u1); U1b (quick asks) and U1c (AO,
+      polish) to go.
 - [ ] U2 Open world: world coordinates, continuous terrain by region climate, places stamped at their positions,
       roads/rails, chunk streaming with detail rings, pathfinding over terrain, persistence, instant interiors, world
       map as a map, vehicles as fast travel, save migration. No exits, no loading screens.

@@ -59,30 +59,30 @@ export interface SkyLook {
 /** How a weather kind and a mood change the light. */
 export function skyLook(weather: WeatherKind, mood: Mood | undefined): SkyLook {
   const table: Record<WeatherKind, Pick<SkyLook, 'sun' | 'clarity' | 'dust' | 'grade' | 'blue'>> = {
-    clear: { sun: 1.15, clarity: 1.7, dust: 0.45, grade: -0.15, blue: 1 },
-    haze: { sun: 0.9, clarity: 0.85, dust: 0.9, grade: 0.05, blue: 0.35 },
+    clear: { sun: 1.15, clarity: 1.9, dust: 0.35, grade: -0.12, blue: 1 },
+    haze: { sun: 0.92, clarity: 0.95, dust: 0.7, grade: 0.03, blue: 0.45 },
     dust: { sun: 0.65, clarity: 0.45, dust: 2.2, grade: 0.2, blue: 0 },
     storm: { sun: 0.4, clarity: 0.3, dust: 3.2, grade: 0.3, blue: 0 },
   };
   const w = table[weather];
   const m: Record<Mood, Partial<SkyLook>> = {
-    bright: { grade: -0.1, clarity: 1.2, exposure: 1.08, tint: [1.02, 0.99, 0.9], fogMul: 1.04 },
-    peaceful: { grade: -0.05, exposure: 1.02, tint: [1.06, 0.98, 0.8] },
+    bright: { grade: -0.1, clarity: 1.2, exposure: 1.08, tint: [1.0, 1.0, 0.97], fogMul: 1.04 },
+    peaceful: { grade: -0.05, exposure: 1.02, tint: [1.03, 0.99, 0.92] },
     bustling: { grade: -0.05, exposure: 1.0 },
     haze: { grade: 0.05, clarity: 0.8, exposure: 0.95, fogMul: 0.92, fogCool: 0.15 },
-    grim: { grade: 0.12, clarity: 0.9, exposure: 0.82, tint: [0.96, 0.94, 0.86], fogMul: 0.72, fogCool: 0.45 },
+    grim: { grade: 0.12, clarity: 0.9, exposure: 0.86, tint: [0.96, 0.95, 0.9], fogMul: 0.78, fogCool: 0.45 },
   };
   const mm = mood ? m[mood] : {};
   // Dust and storm darken the air whatever the mood.
   const wFog = weather === 'storm' ? 0.78 : weather === 'dust' ? 0.9 : 1;
   return {
     sun: w.sun, clarity: w.clarity * (mm.clarity ?? 1), dust: w.dust, grade: w.grade + (mm.grade ?? 0), blue: w.blue,
-    fogMul: (mm.fogMul ?? 1) * wFog, fogCool: mm.fogCool ?? 0, exposure: mm.exposure ?? 1, tint: mm.tint ?? [1.08, 0.95, 0.74],
+    fogMul: (mm.fogMul ?? 1) * wFog, fogCool: mm.fogCool ?? 0, exposure: mm.exposure ?? 1, tint: mm.tint ?? [1.03, 0.99, 0.93],
   };
 }
 
 /** The base grade (sepia wash) a mood asks for when the map does not set one. */
-export const MOOD_GRADE: Record<Mood, number> = { bright: 0.35, peaceful: 0.42, bustling: 0.48, haze: 0.62, grim: 0.78 };
+export const MOOD_GRADE: Record<Mood, number> = { bright: 0.12, peaceful: 0.18, bustling: 0.22, haze: 0.36, grim: 0.52 };
 
 /** The sound bed a mood wants at an hour, given the weather. */
 export function moodSound(mood: Mood | undefined, weather: WeatherKind, hour: number, fallback: string | undefined): string | undefined {

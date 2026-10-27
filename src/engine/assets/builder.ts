@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { applyWorldUVs, flatMaterial, roofDepthMaterial, surfaceMaterial } from './materials';
+import { applyWorldUVs, flatMaterial, pbrKeyFor, roofDepthMaterial, surfaceMaterial } from './materials';
+import { materialScale, pbrMapsSync } from './pbr';
 import type { SurfaceKind } from './textures';
 import type { Rng } from '../core/rng';
 
@@ -11,6 +12,7 @@ interface Bucket { surface: Surface; cutaway: boolean; shadow: boolean; roof: bo
 export interface AddOpts { cutaway?: boolean; shadow?: boolean; jitter?: number; /** Roof piece of this building (hidden while the player is inside). */ building?: number; }
 
 const tmpColor = new THREE.Color();
+const WHITE = new THREE.Color(0xffffff);
 
 /**
  * Accumulates transformed, vertex-coloured geometry and merges it into one mesh per material.
@@ -34,13 +36,17 @@ export class GeoBuilder {
     const n = g.getAttribute('position').count;
     const colors = new Float32Array(n * 3);
     tmpColor.setHex(color);
+    // A photographed surface carries its own colour: the authored tint becomes a light wash, not a paint job.
+    const pbrKey = surface !== 'flat' && surface !== 'glow' ? pbrKeyFor(surface) : undefined;
+    const photographed = !!pbrKey && !!pbrMapsSync(pbrKey);
+    if (photographed) tmpColor.lerp(WHITE, 0.6);
     const j = opts.jitter ?? 0.06;
     const v = this.rng ? 1 + (this.rng.next() - 0.5) * 2 * j : 1;
     for (let i = 0; i < n; i++) {
       colors[i * 3] = tmpColor.r * v; colors[i * 3 + 1] = tmpColor.g * v; colors[i * 3 + 2] = tmpColor.b * v;
     }
     g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    if (surface !== 'flat' && surface !== 'glow') applyWorldUVs(g, surface === 'grate' || surface === 'tile' || surface === 'brick' || surface === 'tin' ? 1 : 2);
+    if (surface !== 'flat' && surface !== 'glow') applyWorldUVs(g, materialScale(pbrKey ?? surface, surface === 'grate' || surface === 'tile' || surface === 'brick' || surface === 'tin' ? 1 : 2));
     else g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(n * 2), 2));
     const roof = opts.building !== undefined;
     if (roof) g.setAttribute('aBld', new THREE.BufferAttribute(new Float32Array(n).fill(opts.building!), 1));

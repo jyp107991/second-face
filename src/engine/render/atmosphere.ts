@@ -8,14 +8,14 @@ import { MOOD_GRADE, skyLook, type WeatherKind } from '../world/weather';
 interface LightSource { pos: THREE.Vector3; color: THREE.Color; intensity: number; range: number; flicker: number; phase: number; /** Lamps are lit at dusk and put out at dawn; fires and screens burn all day. */ lamp?: boolean; }
 
 const KEY_TIMES: { h: number; sun: number; sunI: number; sky: number; ground: number; ambI: number; fog: number }[] = [
-  { h: 0, sun: 0x4a5a8a, sunI: 0.25, sky: 0x1a2030, ground: 0x0e0c0a, ambI: 0.35, fog: 0x14161c },
-  { h: 5, sun: 0x8a6a6a, sunI: 0.3, sky: 0x2a2a38, ground: 0x18140e, ambI: 0.4, fog: 0x2a2626 },
-  { h: 7, sun: 0xffb070, sunI: 1.6, sky: 0x9a8a7a, ground: 0x4a3a28, ambI: 0.6, fog: 0x9a8270 },
-  { h: 12, sun: 0xfff2dc, sunI: 2.8, sky: 0xc8bca0, ground: 0x6a5a40, ambI: 0.85, fog: 0xc4b094 },
-  { h: 17, sun: 0xffc890, sunI: 2.0, sky: 0xb09a80, ground: 0x5a4a34, ambI: 0.7, fog: 0xb09070 },
-  { h: 19.5, sun: 0xff7a40, sunI: 1.0, sky: 0x6a4a48, ground: 0x2a1e18, ambI: 0.5, fog: 0x6a4a3a },
-  { h: 21, sun: 0x5a5a8a, sunI: 0.3, sky: 0x22243a, ground: 0x100e0c, ambI: 0.38, fog: 0x1a1a24 },
-  { h: 24, sun: 0x4a5a8a, sunI: 0.25, sky: 0x1a2030, ground: 0x0e0c0a, ambI: 0.35, fog: 0x14161c },
+  { h: 0, sun: 0x6a7ab0, sunI: 0.4, sky: 0x2c3650, ground: 0x141618, ambI: 0.5, fog: 0x1e2434 },
+  { h: 5, sun: 0xb89488, sunI: 0.55, sky: 0x505a78, ground: 0x2c2824, ambI: 0.55, fog: 0x4e5060 },
+  { h: 7, sun: 0xffcc98, sunI: 2.2, sky: 0xaabbd4, ground: 0x6e5e4c, ambI: 0.75, fog: 0xcfc4b6 },
+  { h: 12, sun: 0xfff7ec, sunI: 3.4, sky: 0xbcd2ee, ground: 0x8c7c64, ambI: 1.0, fog: 0xdedad2 },
+  { h: 17, sun: 0xffdcb0, sunI: 2.5, sky: 0xb8c6da, ground: 0x7e6e56, ambI: 0.85, fog: 0xd4c8b8 },
+  { h: 19.5, sun: 0xff9c62, sunI: 1.3, sky: 0x7c6a7c, ground: 0x3c302c, ambI: 0.6, fog: 0x8e7464 },
+  { h: 21, sun: 0x7c88b8, sunI: 0.5, sky: 0x303858, ground: 0x18181a, ambI: 0.5, fog: 0x282c3c },
+  { h: 24, sun: 0x6a7ab0, sunI: 0.4, sky: 0x2c3650, ground: 0x141618, ambI: 0.5, fog: 0x1e2434 },
 ];
 
 /** Content light intensities are authored on a 0–10 scale; this maps them to physical units. */
@@ -54,7 +54,7 @@ export class Atmosphere {
       this.sun.shadow.normalBias = 0.03;
     }
     scene.add(this.sun, this.sun.target);
-    this.hemi = new THREE.HemisphereLight(0xc8bca0, 0x4a3a28, 0.8);
+    this.hemi = new THREE.HemisphereLight(0xbcd2ee, 0x8c7c64, 0.9);
     scene.add(this.hemi);
     this.fog = new THREE.Fog(0xc0aa88, 60, 100);
     scene.fog = this.fog;
@@ -170,7 +170,7 @@ export class Atmosphere {
       this.hemi.intensity = k0.ambI + (k1.ambI - k0.ambI) * t;
       lerpHex(k0.fog, k1.fog, t, this.fog.color);
       // Map fog colour: blend the time-of-day fog with the map's own tint.
-      this.fog.color.lerp(ca.setHex(a.fogColor), 0.3);
+      this.fog.color.lerp(ca.setHex(a.fogColor), 0.2);
       // Weather and mood: a clear day is harder-lit, cooler from above and far-seeing; dust and storm close in.
       const look = skyLook(this.weather, a.mood);
       const noon = Math.max(0, 1 - Math.abs(h - 13) / 6);
@@ -199,13 +199,15 @@ export class Atmosphere {
       this.sun.position.copy(focus).addScaledVector(dir, 40);
       this.sun.target.position.copy(focus);
     }
+    // Reflections follow the daylight (metal and wet ground at noon, little at night).
+    this.scene.environmentIntensity = a.indoor ? 0.22 : 0.08 + 0.1 * Math.min(3.4, this.sun.intensity);
     const look = a.indoor ? undefined : skyLook(this.weather, a.mood);
     post.grade = THREE.MathUtils.clamp((a.mood ? MOOD_GRADE[a.mood] : a.grade ?? 0.75) + (look ? look.grade : 0), 0.1, 0.88);
     post.exposure = look ? look.exposure : 1;
     const tint = look ? look.tint : [1.08, 0.95, 0.74];
     post.tint.setRGB(tint[0], tint[1], tint[2]);
     // fogDensity 0.02 ≈ fog fully opaque ~30 m beyond the focus point; starts a little in front of it. Weather scales it.
-    const span = (0.6 / Math.max(0.002, a.fogDensity)) * (a.indoor ? 1 : this.clarity);
+    const span = (1.1 / Math.max(0.002, a.fogDensity)) * (a.indoor ? 1 : this.clarity);
     this.fog.near = this.focusDistance - 6;
     this.fog.far = this.focusDistance + span;
 

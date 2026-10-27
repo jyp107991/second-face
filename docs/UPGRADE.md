@@ -83,3 +83,14 @@ Content building (B3.11 onwards) is paused until U1–U5 are in.
 
 ## 4. Log
 (Each U-step appends a dated note here when it lands: what changed, what the evidence shows, what is left.)
+
+- **2026-10-27 U1a — materials, ground, light.** `tools/assets/materials.py` fetches 30 CC0 Poly Haven surfaces
+  (floors, walls, biomes) as WebP 1024/512 with a credits file; `assets/pbr.ts` serves them as 2D PBR maps (colour,
+  normal, ARM) and as 512 px texture arrays; `scene/ground.ts` replaces the per-tile floor planes with one mesh whose
+  vertices blend up to four surfaces (hard floors keep edges; a macro noise breaks the repeat); walls, roofs and props
+  use the photographed surfaces with their tints softened to a wash; the sun/sky/fog curves are re-lit (blue sky
+  fill at noon, warm dawn and dusk, clearer air), the sepia grade and film grain reduced to a light tint, shadows soft
+  and larger, an environment map for metal and wet surfaces. Evidence `docs/evidence/u1/` (Shale, Dry Wells, the
+  orchard, Ninebridge, Old Market, Lantern Row, the Crown). Left for U1b/c: typefaces, default outfit, reroll
+  variance, portrait pre-warm, AO, rock walls (still faceted blobs until U3's real rocks), draw-call budget (Shale
+  239 with shadows; U2/U3 restructure rendering anyway).

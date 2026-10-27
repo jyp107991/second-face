@@ -1,0 +1,335 @@
+{
+ "materials": {
+  "sand": {
+   "id": "aerial_sand",
+   "scale": 3.0,
+   "hard": false,
+   "note": "desert sand",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "dirt": {
+   "id": "dirt_aerial_02",
+   "scale": 3.0,
+   "hard": false,
+   "note": "dry earth",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "rubble": {
+   "id": "concrete_debris",
+   "scale": 2.5,
+   "hard": false,
+   "note": "broken concrete and rubble",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "asphalt": {
+   "id": "asphalt_02",
+   "scale": 3.0,
+   "hard": false,
+   "note": "old road surface",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "concrete": {
+   "id": "concrete_floor_worn_001",
+   "scale": 2.0,
+   "hard": true,
+   "note": "worn concrete floor",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "concrete_wall": {
+   "id": "concrete_wall_006",
+   "scale": 2.0,
+   "hard": true,
+   "note": "concrete wall",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "tile": {
+   "id": "floor_tiles_06",
+   "scale": 1.5,
+   "hard": true,
+   "note": "floor tiles",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "metal": {
+   "id": "metal_plate",
+   "scale": 1.5,
+   "hard": true,
+   "note": "steel plate",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "wood": {
+   "id": "wood_floor_worn",
+   "scale": 2.0,
+   "hard": true,
+   "note": "worn wooden floor",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "planks": {
+   "id": "weathered_planks",
+   "scale": 2.0,
+   "hard": true,
+   "note": "weathered planks (walls, fences)",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "grate": {
+   "id": "rusty_metal_grid",
+   "scale": 1.0,
+   "hard": true,
+   "note": "metal grating",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "brick": {
+   "id": "brick_wall_02",
+   "scale": 2.0,
+   "hard": true,
+   "note": "brick wall",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "rust": {
+   "id": "rusty_metal_02",
+   "scale": 1.5,
+   "hard": true,
+   "note": "rusted steel",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "scrap": {
+   "id": "rusty_metal_sheet",
+   "scale": 1.5,
+   "hard": true,
+   "note": "scrap sheet",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "adobe": {
+   "id": "clay_plaster",
+   "scale": 2.0,
+   "hard": true,
+   "note": "clay plaster",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "tin": {
+   "id": "corrugated_iron_02",
+   "scale": 1.0,
+   "hard": true,
+   "note": "corrugated iron",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "paint": {
+   "id": "painted_concrete",
+   "scale": 2.0,
+   "hard": true,
+   "note": "painted concrete",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "fabric": {
+   "id": "denim_fabric_03",
+   "scale": 1.0,
+   "hard": true,
+   "note": "canvas and tarps",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "rock": {
+   "id": "aerial_rocks_02",
+   "scale": 3.0,
+   "hard": false,
+   "note": "rock and cliff",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "grass": {
+   "id": "aerial_grass_rock",
+   "scale": 4.0,
+   "hard": false,
+   "note": "grass over rock",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "grass_dry": {
+   "id": "grass_path_2",
+   "scale": 3.0,
+   "hard": false,
+   "note": "dry grass and path",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "mud": {
+   "id": "brown_mud_02",
+   "scale": 3.0,
+   "hard": false,
+   "note": "wet mud",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "forest": {
+   "id": "forest_floor",
+   "scale": 3.0,
+   "hard": false,
+   "note": "forest floor",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "gravel": {
+   "id": "gravel",
+   "scale": 2.0,
+   "hard": false,
+   "note": "gravel",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "snow": {
+   "id": "snow_02",
+   "scale": 3.0,
+   "hard": false,
+   "note": "snow",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "burned": {
+   "id": "burned_ground_01",
+   "scale": 3.0,
+   "hard": false,
+   "note": "burned ground",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "salt": {
+   "id": "dry_mud_field_001",
+   "scale": 4.0,
+   "hard": false,
+   "note": "salt pan (tinted)",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   },
+   "tint": "e8e4da"
+  },
+  "moss": {
+   "id": "concrete_moss",
+   "scale": 2.0,
+   "hard": false,
+   "note": "overgrown concrete",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "coast": {
+   "id": "coast_sand_01",
+   "scale": 3.0,
+   "hard": false,
+   "note": "wet coastal sand",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  },
+  "cracked": {
+   "id": "cracked_red_ground",
+   "scale": 3.0,
+   "hard": false,
+   "note": "cracked earth",
+   "maps": {
+    "d": true,
+    "n": true,
+    "a": true
+   }
+  }
+ }
+}

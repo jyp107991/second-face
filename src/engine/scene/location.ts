@@ -1,11 +1,14 @@
 import * as THREE from 'three';
 import { GeoBuilder } from '../assets/builder';
+import { applyWorldUVs } from '../assets/materials';
 import { buildProp, type PropFeature } from '../assets/props';
 import { Rng, hash2 } from '../core/rng';
 import type { FloorKind, MapDef, WallKind } from '../data/types';
 import { Grid } from './grid';
 import type { SurfaceKind } from '../assets/textures';
 import { buildRoofs, buildWalls, detectBuildings, type Buildings } from './buildings';
+import { buildGround, groundKeys } from './ground';
+import { pbrMapsSync, type GroundLayers } from '../assets/pbr';
 
 export interface BuiltLocation {
   map: MapDef;
@@ -39,7 +42,7 @@ export function worldToTile(p: THREE.Vector3): { x: number; y: number } {
   return { x: Math.floor(p.x), y: Math.floor(p.z) };
 }
 
-export function buildLocation(map: MapDef): BuiltLocation {
+export function buildLocation(map: MapDef, layers?: GroundLayers): BuiltLocation {
   const grid = new Grid(map);
   const rng = new Rng(map.seed ?? 1234);
   const b = new GeoBuilder(rng);
@@ -52,8 +55,8 @@ export function buildLocation(map: MapDef): BuiltLocation {
     if (def.empty) continue;
     const wx = x + 0.5, wz = y + 0.5;
     const floor = def.floor ?? (map.ambience.indoor ? 'concrete' : 'sand');
-    const m = new THREE.Matrix4().makeTranslation(wx, 0, wz);
-    b.add(floorGeo, FLOOR_SURFACE[floor], FLOOR_TINT[floor], m, { shadow: false, jitter: 0.04 });
+    // Floors are one blended ground mesh (below); only water keeps a plane of its own shader.
+    if (floor === 'water') b.add(floorGeo, FLOOR_SURFACE[floor], FLOOR_TINT[floor], new THREE.Matrix4().makeTranslation(wx, 0, wz), { shadow: false, jitter: 0.04 });
 
     if (def.wall === 'rock' || def.wall === 'fence') buildWall(b, def.wall, def.wallHeight ?? 2.6, x, y, grid, rng);
 
@@ -91,13 +94,17 @@ export function buildLocation(map: MapDef): BuiltLocation {
   buildWalls(b, grid, map, buildings, rng);
   buildRoofs(b, grid, map, buildings, rng);
   const root = b.build();
+  root.add(buildGround(map, grid, layers));
 
-  // Outdoor maps: a wide ground skirt beyond the playable bounds that fades into fog.
+  // Outdoor maps: a wide ground skirt beyond the playable bounds that fades into fog, in the outside surface.
   if (!map.ambience.indoor) {
-    const skirt = new THREE.Mesh(
-      new THREE.PlaneGeometry(400, 400).rotateX(-Math.PI / 2),
-      new THREE.MeshStandardMaterial({ color: 0x9a8462, roughness: 1 }),
-    );
+    const outside = pbrMapsSync(groundKeys(map, grid)[0]);
+    const skirtMat = outside
+      ? new THREE.MeshStandardMaterial({ map: outside.map, normalMap: outside.normalMap, roughnessMap: outside.arm, aoMap: outside.arm, roughness: 1, metalness: 0, color: 0xd8d0c0 })
+      : new THREE.MeshStandardMaterial({ color: 0x9a8462, roughness: 1 });
+    const skirtGeo = new THREE.PlaneGeometry(400, 400).rotateX(-Math.PI / 2);
+    applyWorldUVs(skirtGeo, 3);
+    const skirt = new THREE.Mesh(skirtGeo, skirtMat);
     skirt.position.set(grid.width / 2, -0.02, grid.height / 2);
     skirt.receiveShadow = true;
     root.add(skirt);

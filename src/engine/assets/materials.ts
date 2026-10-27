@@ -1,5 +1,12 @@
 import * as THREE from 'three';
 import { surfaceTexture, type SurfaceKind } from './textures';
+import { pbrMapsSync } from './pbr';
+
+/** Surface → material library key (walls and props; the ground maps floors itself). Water keeps its own shader. */
+const PBR_KEY: Partial<Record<SurfaceKind, string>> = { concrete: 'concrete_wall', wood: 'planks' };
+export function pbrKeyFor(kind: SurfaceKind): string | undefined { return kind === 'water' ? undefined : PBR_KEY[kind] ?? kind; }
+/** Every library key the builders may ask for (fetched before a map is built). */
+export const SURFACE_PBR_KEYS = ['sand', 'dirt', 'rubble', 'asphalt', 'concrete', 'concrete_wall', 'tile', 'metal', 'wood', 'planks', 'grate', 'brick', 'rust', 'scrap', 'adobe', 'tin', 'paint', 'fabric', 'rock'];
 
 /**
  * Shared uniforms for the "cutaway": geometry between the camera and the focus point
@@ -30,17 +37,26 @@ const cache = new Map<string, THREE.MeshStandardMaterial>();
 export const roofUniforms = { uHideBld: { value: -1 } };
 
 export function surfaceMaterial(kind: SurfaceKind, opts: { cutaway?: boolean; roof?: boolean } = {}): THREE.MeshStandardMaterial {
-  const key = `${kind}|${opts.cutaway ? 1 : 0}|${opts.roof ? 1 : 0}`;
+  const pbrKey = pbrKeyFor(kind);
+  const pbr = pbrKey ? pbrMapsSync(pbrKey) : undefined;
+  const key = `${kind}|${opts.cutaway ? 1 : 0}|${opts.roof ? 1 : 0}|${pbr ? 'pbr' : 'proc'}`;
   const hit = cache.get(key);
   if (hit) return hit;
   const p = PARAMS[kind] ?? { roughness: 0.92, metalness: 0 };
-  const m = new THREE.MeshStandardMaterial({
-    map: surfaceTexture(kind),
-    roughness: p.roughness,
-    metalness: p.metalness,
-    vertexColors: true,
-    flatShading: true,
-  });
+  const m = pbr
+    ? new THREE.MeshStandardMaterial({
+      // Photographed surface: colour, normal and the ARM map driving occlusion, roughness and metalness.
+      map: pbr.map, normalMap: pbr.normalMap, normalScale: new THREE.Vector2(0.8, 0.8),
+      roughnessMap: pbr.arm, metalnessMap: pbr.arm, aoMap: pbr.arm, aoMapIntensity: 0.8,
+      roughness: 1, metalness: 1, vertexColors: true, flatShading: false,
+    })
+    : new THREE.MeshStandardMaterial({
+      map: surfaceTexture(kind),
+      roughness: p.roughness,
+      metalness: p.metalness,
+      vertexColors: true,
+      flatShading: true,
+    });
   if (opts.cutaway) applyCutaway(m);
   if (opts.roof) applyRoofHide(m);
   cache.set(key, m);
