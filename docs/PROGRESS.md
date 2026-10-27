@@ -29,7 +29,8 @@ the Pages workflow). **Act 2 part 1 is under way**: Ninebridge, Openfield, the S
 Precinct, Old Market, the Sink, Lantern Row, the Stacks, Bridgeward and the Crown are playable (29 maps, 347 dialogues, 54 quests,
 147 items;
 six companions can join; a flat in the Stacks is a safehouse; four gangs joinable one at a time; the Crown has five ways in).
-Current work: **Phase B, B3 Meridian** (Act 2's first megacity), next the Archive Spire and the Court of Accounts (B3.11). Still open from the presentation
+**Content building is PAUSED by the owner's directive of 2026-10-27 (pass 5): the upgrade in `docs/UPGRADE.md` comes first
+(§2c below), U1 next; then B3.11.** Still open from the presentation
 pass: A5.9's remaining items (combat hover card, crowd yielding, indoor sound, camera ease, Tab reveal) — fold them in
 as B3 touches the same code. Binding owner rules: see `CLAUDE.md` §2 (no time limits; spoiler rule; not a Fallout
 clone; cyberpunk fusion).
@@ -227,6 +228,28 @@ The owner road-tests Act 1 while the build continues. Plan:
   to Tollhouse 9 or the Wheel's next camp; while escorting (`flag escort_active`) two authored road encounters can
   fire (a broken axle: mechanics or hours; a shakedown: talk, pay or fight); arrival pays Tolls and standing. Then the
   flag clears. Repeatable once per Act.
+
+## 2c. OWNER DIRECTIVE (2026-10-27, pass 5, binding): aesthetics and ONE OPEN WORLD — see `docs/UPGRADE.md`
+The owner judged the Act 2 build (blocky, barren, dark and dusty, square maps with loading screens, people who do not
+look or move like people, puzzle ground, cursive, dungarees, flat names, looping talk, two-finger camera, timid
+rerolls, slow portraits) and ordered a dramatic upgrade, actioned sequentially in logical order, before content
+continues. Engine decision: stay on three.js and upgrade renderer, world model and assets (reasons in UPGRADE §1).
+Steps (each a commit with `npm run check` green and screenshots under `docs/evidence/u*/`):
+- [ ] U1 Foundation: CC0 asset pipeline (`tools/assets/`), PBR material library, blended terrain ground per map (no
+      tile seams), real wall/roof materials, re-lit sun/sky/fog (lit palette; dust and sepia only as weather/mood),
+      AO, soft shadows. Folded in: typefaces (no cursive), default outfit, reroll variance, portrait pre-warming. NEXT.
+- [ ] U2 Open world: world coordinates, continuous terrain by region climate, places stamped at their positions,
+      roads/rails, chunk streaming with detail rings, pathfinding over terrain, persistence, instant interiors, world
+      map as a map, vehicles as fast travel, save migration. No exits, no loading screens.
+- [ ] U3 Living world: biome vegetation and surviving greenery, rocks and ruins, real props, water and shores,
+      weather by region, background life.
+- [ ] U4 People: captured motion retargeted to the human rig, locomotion blending, skin/cloth/hair materials, close
+      LOD, outfits per role/region, visual variance, cached portraits.
+- [ ] U5 Camera and touch: one-finger turn, tap move, pinch zoom, two-finger pan, compass/recentre.
+- [ ] U6 Naming bible and rename pass (ids stay; names change everywhere the player reads them).
+- [ ] U7 Conversation system: memory, exhaustion, state-aware greetings, interjections, no loops; pass over trees.
+- [ ] U8 Characters and relationships: motive bibles, arcs, romances rewritten; natural talk over exposition.
+- Then B3.11+ resumes (the content tracker below is unchanged; the maps become places in the one world).
 
 ## 3. PHASE B — build the complete game to a playable v1 (vertical slices)
 Each slice ends playable and polished before the next starts. Definition of v1 done: creation → every
@@ -465,7 +488,7 @@ mid-range Android phone; deployed to Pages.
             reel. Thirteen named NPCs + wardens, guards and extras. Tests `tests/a2.test.ts` (+9, 240 total). Smoke
             `tools/qa/crown.cjs` all green, evidence `docs/evidence/b310/` (169 draws headless; B8 budget pass). The map is
             lit as an interior (its own ambient under the domes, no weather) so the terraces read at any hour.
-      - [ ] B3.11 **Archive Spire and the Court of Accounts** (~2 h) NEXT: the archive beats `q_a2_calendar` and `q_a2_spire`;
+      - [ ] B3.11 **Archive Spire and the Court of Accounts** (~2 h, after the upgrade U1–U5): the archive beats `q_a2_calendar` and `q_a2_spire`;
             the court (ENGINE: trial as dialogue with evidence; precedent flags); *Court Case: the Squatter*. Smoke.
       - [ ] B3.12 **Dead Ring, races, wrap** (~1.5 h): the ruined outer ring; buggy races (segments: push / hold / cut);
             the Loop complete; Meridian end-to-end smoke in `tools/qa/act2.sh`; PROGRESS; a second test version

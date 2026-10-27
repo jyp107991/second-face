@@ -7,7 +7,8 @@ The full brief is `docs/BRIEF.md`. Design: `docs/DESIGN.md`. Milestones: `docs/R
 Sessions can be cut off at any moment by usage limits. Work is structured so nothing is lost:
 
 1. **On session start, read `docs/PROGRESS.md` before anything else.** It names the current
-   milestone, the step in progress, what is done, and the exact next action.
+   milestone, the step in progress, what is done, and the exact next action. Then `docs/UPGRADE.md` (the owner's
+   directive and the order of work that overrides the content roadmap until it is done).
 2. Work in **small steps** (≤ ~1 hour of work each). After each step:
    - run `npm run check` (typecheck + validate content + tests) when code exists,
    - update `docs/PROGRESS.md` (tick the step, write the next action),
@@ -40,8 +41,7 @@ The owner wants to play unspoiled.
   player's back because days passed. Scheduled events wait for the player (`WorldEventDef.at: { hour, where }`),
   keystone outcomes resolve on story milestones, and only durations are allowed (drills take days, cooldowns, travel).
 - **60+ hours = one single playthrough** (not completionist).
-- Visual style: detailed low-poly, orthographic iso camera, rotatable/zoomable, heavy atmosphere.
-- Touch: tap-to-act (tap move, tap target → radial menu, pinch zoom, two-finger twist rotate).
+- Touch: tap-to-act (tap move, tap target → radial menu, pinch zoom); the camera turns with ONE finger (see the upgrade directive).
 - Character creation: **fuller face sculptor** + several aesthetic options (body, skin, hair, scars,
   tattoos, clothing colours, voice-less). The photo in the story uses the player's own face, aged.
 - Romance: full, following genre best practice (opt-in, consent-forward, companion-specific, can fail).
@@ -62,6 +62,15 @@ The owner wants to play unspoiled.
   megacities (Night City-like bastions with lawlessness/corruption and extreme inequality: decadent ultra-rich vs
   destitute), coherent world history first, expansive content-dense map rewarding nonlinear exploration, clever
   transport + fast travel. NPCs need strong visual variance; settlement types must vary. Quality/depth over size.
+
+- **The upgrade directive** (owner, pass 5, 2026-10-27; plan in `docs/UPGRADE.md`, binding): ONE OPEN WORLD, no
+  loading screens between places (streamed, one continuous terrain; interiors open instantly) — non-negotiable; the
+  visual bar is a modern isometric RPG on a 2026 phone (DOS2 as the aspiration): PBR, real terrain with many surfaces
+  and surviving greenery, lit palette (not dark/dusty by default), dense living places; humans that look and move like
+  humans (captured motion); no cursive, no farmer's dungarees; names that feel found, not "the [noun]"; conversations
+  that progress and never loop; one-finger camera turn on touch; rerolls with real variance; portraits without a wait;
+  characters with distinct, rational motives and deep relationships. Content building pauses until U1–U5 are in.
+- Visual style (superseded where the upgrade directive says otherwise): orthographic iso camera, rotatable/zoomable.
 
 ## 3. Engineering conventions
 - Engine code in `src/engine/**`, game content in `src/content/**` (typed TS data modules).
