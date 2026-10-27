@@ -158,7 +158,7 @@ const SHADERS: Record<SurfaceKind, Shader> = {
     const n = fbm(u, v, 3, 38), d = fbm(u, v, 10, 39);
     const ripple = Math.sin((u * 7 + v * 3 + n * 2) * Math.PI * 2) * 0.5 + 0.5;
     const scum = smooth(Math.max(0, fbm(u, v, 5, 40) - 0.62) * 3);
-    const c = mix(mix([16, 26, 28], [34, 52, 54], n * 0.6 + ripple * 0.25 + d * 0.15), [58, 66, 40], scum * 0.6);
+    const c = mix(mix([24, 40, 46], [56, 84, 90], n * 0.6 + ripple * 0.25 + d * 0.15), [78, 88, 52], scum * 0.6);
     return c;
   },
 };

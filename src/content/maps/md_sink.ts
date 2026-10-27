@@ -589,24 +589,24 @@ export const md_sink: MapDef = {
       y: 2,
       height: 3.4,
       color: 0xa0c8ff,
-      intensity: 2.2,
-      range: 10
+      intensity: 3.3,
+      range: 13
     },
     {
       x: 64,
       y: 2,
       height: 3.4,
       color: 0xa0c8ff,
-      intensity: 2.0,
-      range: 10
+      intensity: 3.0,
+      range: 13
     },
     {
       x: 20,
       y: 3,
       height: 3.0,
       color: 0xa0c8ff,
-      intensity: 1.6,
-      range: 8,
+      intensity: 2.4,
+      range: 11,
       flicker: 0.2
     },
     {
@@ -623,8 +623,8 @@ export const md_sink: MapDef = {
       y: 12,
       height: 3.0,
       color: 0xa0c8ff,
-      intensity: 1.6,
-      range: 8,
+      intensity: 2.4,
+      range: 11,
       flicker: 0.3
     },
     {
@@ -632,8 +632,8 @@ export const md_sink: MapDef = {
       y: 18,
       height: 3.2,
       color: 0x80b0e0,
-      intensity: 1.6,
-      range: 9,
+      intensity: 2.4,
+      range: 12,
       flicker: 0.25
     },
     {
@@ -641,8 +641,8 @@ export const md_sink: MapDef = {
       y: 34,
       height: 3.2,
       color: 0x80b0e0,
-      intensity: 1.6,
-      range: 9,
+      intensity: 2.4,
+      range: 12,
       flicker: 0.25
     },
     {
@@ -650,8 +650,8 @@ export const md_sink: MapDef = {
       y: 26,
       height: 3.2,
       color: 0x80b0e0,
-      intensity: 1.4,
-      range: 8,
+      intensity: 2.1,
+      range: 11,
       flicker: 0.3
     },
     {
@@ -659,8 +659,8 @@ export const md_sink: MapDef = {
       y: 27,
       height: 3.2,
       color: 0x80b0e0,
-      intensity: 1.4,
-      range: 8,
+      intensity: 2.1,
+      range: 11,
       flicker: 0.3
     },
     {
@@ -668,8 +668,62 @@ export const md_sink: MapDef = {
       y: 18,
       height: 3.2,
       color: 0x80b0e0,
-      intensity: 1.2,
-      range: 7,
+      intensity: 1.8,
+      range: 10,
+      flicker: 0.3
+    },
+    {
+      x: 20,
+      y: 27,
+      height: 3.2,
+      color: 0x80b0e0,
+      intensity: 2.2,
+      range: 11,
+      flicker: 0.2
+    },
+    {
+      x: 40,
+      y: 26,
+      height: 3.2,
+      color: 0x80b0e0,
+      intensity: 2.2,
+      range: 11,
+      flicker: 0.2
+    },
+    {
+      x: 57,
+      y: 27,
+      height: 3.2,
+      color: 0x80b0e0,
+      intensity: 2.2,
+      range: 11,
+      flicker: 0.2
+    },
+    {
+      x: 36,
+      y: 40,
+      height: 3.2,
+      color: 0x80b0e0,
+      intensity: 2.2,
+      range: 11,
+      flicker: 0.2
+    },
+    {
+      x: 37,
+      y: 12,
+      height: 3.2,
+      color: 0x80b0e0,
+      intensity: 2.2,
+      range: 11,
+      flicker: 0.2
+    },
+    {
+      x: 8,
+      y: 33,
+      height: 3.0,
+      color: 0x80b0e0,
+      intensity: 1.8,
+      range: 9,
       flicker: 0.3
     },
     {
@@ -1434,14 +1488,14 @@ export const md_sink: MapDef = {
   ],
   ambience: {
     indoor: true,
-    fogColor: 0x141a22,
-    fogDensity: 0.028,
-    dust: 0.08,
+    fogColor: 0x1a2028,
+    fogDensity: 0.014,
+    dust: 0.12,
     ambient: {
-      color: 0x4a5a74,
-      intensity: 0.5
+      color: 0x7e8ea4,
+      intensity: 1.0
     },
-    grade: 0.2,
+    grade: 0.25,
     mood: "grim"
   }
 };
