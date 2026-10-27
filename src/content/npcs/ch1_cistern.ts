@@ -1,8 +1,8 @@
 import type { NpcDef } from '../../engine/npc/defs';
 
 /** Cistern 9 residents (Chapter One). Everyone wears Cistern issue; nobody has seen the sun. */
-const C9_SUIT = { suit: 'male_worksuit01', suitTint: 0x8a9088, shoes: 'shoes06', shoeTint: 0x8a8070, grime: 0.1, wear: 0.4 };
-const C9_SUIT_F = { suit: 'female_casualsuit01', suitTint: 0x8a9088, shoes: 'shoes03', shoeTint: 0x8a8070, grime: 0.1, wear: 0.4 };
+const C9_SUIT = { layers: [{ name: 'cortu_cargo_pants', dye: 0x5a5e54, grime: 0.2 }, { name: 'toigo_basic_tucked_t-shirt', dye: 0x8a8c80, grime: 0.15 }, { name: 'maciekg_leather_boots', grime: 0.25 }], grime: 0.2 };
+const C9_SUIT_F = { layers: [{ name: 'cortu_cargo_pants', dye: 0x5e5a58, grime: 0.2 }, { name: 'toigo_basic_tucked_t-shirt', dye: 0x9a9488, grime: 0.15 }, { name: 'maciekg_leather_boots', grime: 0.25 }], grime: 0.2 };
 const C9 = { team: 'cistern9', faction: 'cistern9', settlement: 'cistern9' } as const;
 const sleep = (spot: string) => ({ from: 22, to: 6, spot, activity: 'sleep' as const });
 

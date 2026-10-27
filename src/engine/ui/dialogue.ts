@@ -1,10 +1,25 @@
 import type { Game } from '../game';
 import { DIALOGUES, NPCS } from '../../content';
-import { lookFrom } from '../assets/humanoid';
 import { DialogueRunner, type NodeView } from '../dialogue/dialogue';
 import type { NpcRuntime } from '../npc/spawn';
 import { FigureView } from '../render/figureView';
-import { GARMENTS } from '../data/garments';
+import { portraitLook } from '../render/portrait';
+
+/** One figure view for every conversation: its renderer, environment and compiled programs persist between them. */
+let sharedFace: FigureView | undefined;
+
+/** Build the shared view ahead of the first conversation and compile its programs on a warmed figure, off screen. */
+export function warmConversationView(look: import('../assets/humanoid').HumanoidLook): void {
+  if (sharedFace) return;
+  const host = document.createElement('div');
+  host.style.cssText = 'position:fixed;left:-1000px;top:0;width:200px;height:240px;pointer-events:none;opacity:0';
+  document.body.append(host);
+  sharedFace = new FigureView(host, 0, 0x1a1512);
+  sharedFace.setLook(look, true);
+  sharedFace.renderOnce();
+  sharedFace.pause();
+  host.remove();
+}
 import { dayOf } from '../core/state';
 import { settings, tipOnce } from './settings';
 
@@ -72,12 +87,13 @@ export class DialogueUi {
     this.el.className = 'dlg';
     this.el.innerHTML = '<div class="dlg-panel"><div class="dlg-face"></div><div class="dlg-body"></div></div>';
     document.body.appendChild(this.el);
-    // The speaker, lit, beside the panel; eyewear comes off so the face reads.
-    const outfit = { ...npc.outfit, layers: (npc.outfit.layers ?? []).filter((l) => GARMENTS[l.name]?.slot !== 'eyes'), gear: (npc.outfit.gear ?? []).filter((g) => g.kind !== 'goggles') };
-    this.face = new FigureView(this.el.querySelector('.dlg-face')!, 0, 0x1a1512);
+    // The speaker, lit, beside the panel: the figure the game warmed up as you approached (built now if it did not).
+    const host = this.el.querySelector<HTMLElement>('.dlg-face')!;
+    if (sharedFace) sharedFace.resume(host); else sharedFace = new FigureView(host, 0, 0x1a1512);
+    this.face = sharedFace;
     this.face.stage.offsetY = 0.02;
     this.face.stage.yaw = -0.22;
-    this.face.setLook(lookFrom(npc.appearance, outfit));
+    this.face.setLook(portraitLook(npc.appearance, npc.outfit), true);
     this.frameSpeakers(npc);
     this.render();
     this.remember(npc);
@@ -143,7 +159,7 @@ export class DialogueUi {
     this.el.remove();
     this.el = undefined;
     this.runner = undefined;
-    this.face?.dispose();
+    this.face?.pause();
     this.face = undefined;
     if (this.npc) { this.npc.talking = false; this.npc.actor.idle = 'stand'; }
     if (this.game.player) this.game.player.idle = 'stand';

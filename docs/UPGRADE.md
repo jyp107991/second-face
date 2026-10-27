@@ -94,3 +94,13 @@ Content building (B3.11 onwards) is paused until U1–U5 are in.
   orchard, Ninebridge, Old Market, Lantern Row, the Crown). Left for U1b/c: typefaces, default outfit, reroll
   variance, portrait pre-warm, AO, rock walls (still faceted blobs until U3's real rocks), draw-call budget (Shale
   239 with shadows; U2/U3 restructure rendering anyway).
+- **2026-10-27 U1b — the quick asks.** Typefaces: IBM Plex Mono for text and data, Barlow Condensed for headings,
+  buttons and names, Special Elite (typewriter) in the notebook; the cursive is gone from the UI, the notebook and the
+  world map. The default clothes are work trousers, a shirt and boots (`BASE_OUTFIT`, the Cistern issue item and the
+  Cistern residents); no coverall. Rerolls are wide: each attribute lands between two below base and five above, so
+  a roll's pool runs from well below the standard twelve to far above it (the player keeps the best). Conversation
+  portraits: the figure a conversation needs is built during idle frames as you approach (cache of eight), one
+  renderer is shared by every conversation and pre-created off screen, skin maps for close-ups are 1024 px. In the
+  software-GL rig a cold open fell from 9.7 s to 0.37 s, a warmed one to 0.19 s, a reopen to 6 ms; on a phone GPU
+  the cold case is a fraction of that. Ambient occlusion is deferred to U3 (it belongs with the renderer
+  restructuring the streamed world needs). U1 is complete apart from that.

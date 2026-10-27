@@ -47,6 +47,8 @@ export interface HumanoidLook {
   appearance: Appearance;
   outfit: Outfit;
   lod?: 'high' | 'low';
+  /** Skin texture size; defaults to 2048 for close-ups and 512 for the iso view. */
+  skinSize?: number;
 }
 
 export function lookFrom(appearance: Appearance | undefined, outfit: Outfit, lod?: 'high' | 'low'): HumanoidLook {
@@ -106,7 +108,7 @@ export class Humanoid {
     const o = look.outfit;
     const app = underHeadwear(look.appearance, outfitHairMode(o));
     // Iso figures are a few hundred pixels tall at most: 512² is plenty and a quarter of the memory and compositing.
-    this.skin = makeSkinTexture(app, look.lod === 'low' ? 512 : 2048);
+    this.skin = makeSkinTexture(app, look.skinSize ?? (look.lod === 'low' ? 512 : 2048));
     const clothes = outfitGarments(o);
     this.figure = new HumanFigure({
       shape: app.shape, skin: this.skin, eyes: app.eyes, brows: app.brows, hair: app.hair, clothes, lod: look.lod,

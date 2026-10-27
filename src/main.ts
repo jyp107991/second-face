@@ -1,7 +1,12 @@
 import { addItem, equip, makeItem, unequip } from './engine/inventory/inventory';
 import { wardrobeOutfit } from './engine/inventory/wardrobe';
-import '@fontsource/caveat/400.css';
-import '@fontsource/caveat/600.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
+import '@fontsource/ibm-plex-mono/600.css';
+import '@fontsource/barlow-condensed/500.css';
+import '@fontsource/barlow-condensed/600.css';
+import '@fontsource/barlow-condensed/700.css';
+import '@fontsource/special-elite/400.css';
 import './engine/ui/style.css';
 import { Game } from './engine/game';
 import { Hud } from './engine/ui/hud';

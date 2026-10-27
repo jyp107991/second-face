@@ -371,7 +371,7 @@ export class Creator {
     roll.className = 'roll';
     roll.innerHTML = `<div class="desc">Roll a fresh set of attributes: how many points above base you get varies from roll to roll (the standard start has 12). Roll as often as you like, keep a roll you like, then move points between attributes.</div>
       <div class="rollbar"><button class="b" data-r="roll">Roll</button><button class="b" data-r="keep" ${rolled ? '' : 'disabled'}>Keep this roll</button><button class="b" data-r="recall" ${this.bestRoll ? '' : 'disabled'}>Recall kept${this.bestRoll ? ` (+${this.bestRoll.pool})` : ''}</button><button class="b" data-r="standard" ${rolled ? '' : 'disabled'}>Standard start</button></div>
-      <div class="pts">${rolled ? `This roll: <b>+${pool}</b> above base.` : 'Standard start: <b>+12</b> above base.'} Points remaining: <b>${left}</b></div>`;
+      <div class="pts">${rolled ? `This roll: <b>${pool >= 0 ? '+' : ''}${pool}</b> ${pool >= 0 ? 'above' : 'below'} base.` : 'Standard start: <b>+12</b> above base.'} Points remaining: <b>${left}</b></div>`;
     roll.querySelectorAll('button').forEach((btn) => (btn.onclick = () => {
       const r = btn.dataset.r;
       if (r === 'roll') { const x = rollAttributes(this.roller); this.sheet.baseAttrs = x.attrs; this.sheet.creationPool = x.pool; }

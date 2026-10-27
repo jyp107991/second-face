@@ -210,16 +210,18 @@ export function creationPointsLeft(baseAttrs: Record<AttributeId, number>, pool 
 }
 
 /**
- * Roll a start, the old way: each attribute gets base plus a small weighted roll, so the pool above base runs from
- * nothing to a great deal (mean a little over the standard 12, 18+ about one roll in thirty). The player rerolls as
- * often as they like, keeps the best, and moves points about within the roll's total.
+ * Roll a start, the old way: each attribute gets base plus a wide roll (two below to five above), so the pool runs
+ * from well below the standard 12 to far above it. The player rerolls as often as they like, keeps the best, and
+ * moves points about within the roll's total.
  */
 export function rollAttributes(rng: Rng): { attrs: Record<AttributeId, number>; pool: number } {
   const attrs = {} as Record<AttributeId, number>;
   let pool = 0;
   for (const a of ATTRIBUTES) {
-    const d = rng.int(0, 2) + rng.pick([0, 0, 1, 1, 2]);
-    attrs[a] = Math.min(ATTR_CREATION_MAX, ATTR_BASE + d);
+    // Wide: each attribute can land two below base or five above it (mean a little under +2), so a whole roll runs
+    // from a cripplingly poor start to a superb one. The player rerolls as often as they like and keeps the best.
+    const d = rng.int(-2, 2) + rng.int(0, 3) + rng.pick([0, 0, 1]);
+    attrs[a] = Math.max(ATTR_MIN, Math.min(ATTR_CREATION_MAX, ATTR_BASE + d));
     pool += attrs[a] - ATTR_BASE;
   }
   return { attrs, pool };

@@ -124,7 +124,7 @@ export class WorldMapUi {
     g.fillStyle = '#d9c9a3'; g.fillRect(0, 0, W, H);
     for (let i = 0; i < 400; i++) { g.fillStyle = `rgba(90,70,40,${0.03 + (i % 7) * 0.004})`; g.fillRect((i * 7919) % W, (i * 104729) % H, 2 + (i % 5), 1 + (i % 3)); }
     // Regions (faint) and their names
-    g.font = '600 13px "Caveat", cursive'; g.textAlign = 'center';
+    g.font = '600 12px "Barlow Condensed", sans-serif'; g.textAlign = 'center';
     for (const r of Object.values(REGIONS)) {
       const a = P(r.bounds[0], r.bounds[1]), b = P(r.bounds[2], r.bounds[3]);
       if (b.x < 0 || a.x > W || b.y < 0 || a.y > H) continue;
@@ -142,7 +142,7 @@ export class WorldMapUi {
     g.setLineDash([]);
     // Places
     this.pts.clear();
-    g.font = '15px "Caveat", cursive';
+    g.font = '600 14px "Barlow Condensed", sans-serif';
     for (const l of known) {
       const p = P(l.x, l.y);
       this.pts.set(l.id, p);
@@ -157,7 +157,7 @@ export class WorldMapUi {
     // Scale bar: 20 km
     const bar = 20 * s;
     g.strokeStyle = '#2a1d10'; g.lineWidth = 2; g.beginPath(); g.moveTo(16, H - 14); g.lineTo(16 + bar, H - 14); g.stroke();
-    g.font = '12px "Caveat", cursive'; g.textAlign = 'left'; g.fillText('20 km', 16, H - 18);
+    g.font = '11px "IBM Plex Mono", monospace'; g.textAlign = 'left'; g.fillText('20 km', 16, H - 18);
   }
 }
 

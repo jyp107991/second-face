@@ -8,7 +8,8 @@ import type { CharacterSheet } from './stats/sheet';
 import { addItem, emptyInventory, equip, makeItem, removeItem, syncGear } from './inventory/inventory';
 import { Input } from './input/input';
 import { ensurePbr, groundLayersFor, setPbrDetail } from './assets/pbr';
-import { portraitEnvironment } from './render/portrait';
+import { portraitCached, portraitEnvironment, portraitLook, warmPortrait } from './render/portrait';
+import { warmConversationView } from './ui/dialogue';
 import { SURFACE_PBR_KEYS } from './assets/materials';
 import { groundKeys } from './scene/ground';
 import { Grid } from './scene/grid';
@@ -1109,6 +1110,25 @@ export class Game extends EventBus<GameEvents> {
     if (exit && !this.transitioning) this.useExit(exit);
   }
 
+  private warmTimer = 0;
+  private warming = false;
+  /** Build the conversation portrait of the nearest person who has none yet, in an idle moment, so talking opens at once. */
+  private warmPortraits(): void {
+    if (this.warming || this.talking || this.paused || !this.player || this.encounter.active) return;
+    const pp = this.player.object.position;
+    let best: NpcRuntime | undefined, bestD = 12 * 12;
+    for (const n of this.npcs.values()) {
+      if (n.def.minor || n.away || n.hostile || !(n.dialogue ?? n.def.dialogue)) continue;
+      const d = n.actor.object.position.distanceToSquared(pp);
+      if (d < bestD && !portraitCached(portraitLook(n.appearance, n.outfit))) { best = n; bestD = d; }
+    }
+    if (!best) return;
+    const look = portraitLook(best.appearance, best.outfit);
+    this.warming = true;
+    const run = () => { try { warmPortrait(look); warmConversationView(look); } catch (e) { console.warn('portrait', e); } this.warming = false; };
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 1500 }); else window.setTimeout(run, 0);
+  }
+
   /** Re-evaluate conditional hostility (after conversations and flag changes). Returns NPCs that just turned. */
   refreshHostility(): NpcRuntime[] {
     const turned: NpcRuntime[] = [];
@@ -1310,6 +1330,8 @@ export class Game extends EventBus<GameEvents> {
     this.updateBarks(simDt);
     this.hostilityTimer += simDt;
     if (this.hostilityTimer > 0.3) { this.hostilityTimer = 0; this.checkHostility(); }
+    this.warmTimer += dt;
+    if (this.warmTimer > 0.7) { this.warmTimer = 0; this.warmPortraits(); }
 
     // Keyboard camera pan
     const held = this.input.held, panSpeed = 600 * dt;

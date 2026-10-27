@@ -1,6 +1,46 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { Humanoid, type HumanoidLook } from '../assets/humanoid';
+import { Humanoid, lookFrom, type HumanoidLook, type Outfit } from '../assets/humanoid';
+import { GARMENTS } from '../data/garments';
+import type { Appearance } from '../data/appearance';
+
+/**
+ * Portrait figures are costly to build (a composited skin, fitted clothes, hair), so the ones a conversation needs
+ * are built ahead of time during idle frames and kept: opening a conversation then costs nothing visible.
+ */
+const PORTRAIT_SKIN = 1024;
+const cache = new Map<string, Humanoid>();
+const inUse = new Set<Humanoid>();
+const CACHE_MAX = 8;
+
+export function portraitKey(look: HumanoidLook): string {
+  return JSON.stringify([look.appearance, look.outfit, look.skinSize ?? 0]);
+}
+
+/** The look a person shows in a conversation: their clothes, eyewear off so the face reads. */
+export function portraitLook(appearance: Appearance | undefined, outfit: Outfit): HumanoidLook {
+  const o = { ...outfit, layers: (outfit.layers ?? []).filter((l) => GARMENTS[l.name]?.slot !== 'eyes'), gear: (outfit.gear ?? []).filter((g) => g.kind !== 'goggles') };
+  return { ...lookFrom(appearance, o), skinSize: PORTRAIT_SKIN };
+}
+
+export function portraitCached(look: HumanoidLook): boolean { return cache.has(portraitKey(look)); }
+
+/** Build (or fetch) the figure for a look. Evicts the oldest unused figure past the cache size. */
+export function warmPortrait(look: HumanoidLook): Humanoid {
+  const key = portraitKey(look);
+  let f = cache.get(key);
+  if (f) { cache.delete(key); cache.set(key, f); return f; }
+  f = new Humanoid(look);
+  cache.set(key, f);
+  if (cache.size > CACHE_MAX) {
+    for (const [k, old] of cache) {
+      if (inUse.has(old)) continue;
+      cache.delete(k); old.dispose();
+      if (cache.size <= CACHE_MAX) break;
+    }
+  }
+  return f;
+}
 
 const envByRenderer = new WeakMap<THREE.WebGLRenderer, THREE.Texture>();
 /** Neutral studio environment (reflections in eyes and skin). Built once per renderer. */
@@ -62,11 +102,24 @@ export class PortraitStage {
     this.scene.add(this.key, this.key.target, rim, fill, ambient, floor);
   }
 
-  setLook(look: HumanoidLook): void {
-    if (this.figure) { this.scene.remove(this.figure.root); this.figure.dispose(); }
-    this.figure = new Humanoid(look);
+  private cached = false;
+
+  /** Show a look; `cached` takes (or builds and keeps) the figure from the portrait cache instead of building one. */
+  setLook(look: HumanoidLook, cached = false): void {
+    this.release();
+    this.cached = cached;
+    this.figure = cached ? warmPortrait(look) : new Humanoid(look);
+    if (cached) inUse.add(this.figure);
     this.figure.root.rotation.y = this.yaw;
     this.scene.add(this.figure.root);
+  }
+
+  /** Take the figure off the stage: disposed if it was built for this stage, kept if it came from the cache. */
+  release(): void {
+    if (!this.figure) return;
+    this.scene.remove(this.figure.root);
+    if (this.cached) inUse.delete(this.figure); else this.figure.dispose();
+    this.figure = undefined;
   }
 
   /** Attach the studio environment (call once with the game renderer). */

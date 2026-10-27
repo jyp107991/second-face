@@ -41,8 +41,8 @@ export class FigureView {
     this.raf = requestAnimationFrame(this.frame);
   }
 
-  setLook(look: HumanoidLook): void {
-    this.stage.setLook(look);
+  setLook(look: HumanoidLook, cached = false): void {
+    this.stage.setLook(look, cached);
   }
 
   /** Match the canvas to its CSS box (call after layout changes). */
@@ -66,6 +66,12 @@ export class FigureView {
     this.raf = requestAnimationFrame(this.frame);
   };
 
+  /** Draw one frame now (compiles the programs the figure needs). */
+  renderOnce(): void {
+    this.stage.update(0);
+    this.renderer.render(this.stage.scene, this.stage.camera);
+  }
+
   /** A copy of the current frame (rendered now, so it is never blank), scaled to w×h. */
   snapshot(w: number, h: number): HTMLCanvasElement {
     this.stage.update(0);
@@ -80,10 +86,26 @@ export class FigureView {
     return out;
   }
 
+  /** Stop drawing and leave the page, keeping the renderer and its compiled programs for the next conversation. */
+  pause(): void {
+    cancelAnimationFrame(this.raf);
+    this.raf = 0;
+    this.stage.release();
+    this.canvas.remove();
+  }
+
+  /** Back onto a page: attach the canvas and draw again. */
+  resume(parent: HTMLElement): void {
+    parent.append(this.canvas);
+    this.resize();
+    this.last = performance.now();
+    if (!this.raf) this.raf = requestAnimationFrame(this.frame);
+  }
+
   dispose(): void {
     this.disposed = true;
     cancelAnimationFrame(this.raf);
-    this.stage.figure?.dispose();
+    this.stage.release();
     this.renderer.dispose();
     this.canvas.remove();
   }

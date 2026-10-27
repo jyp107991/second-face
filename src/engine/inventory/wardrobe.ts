@@ -13,7 +13,7 @@ import type { Inventory } from './inventory';
  */
 
 /** What everyone from the Cistern walks out in. */
-export const BASE_OUTFIT: Outfit = { suit: 'male_worksuit01', suitTint: 0x8a9088, shoes: 'shoes06', shoeTint: 0x8a8070 };
+export const BASE_OUTFIT: Outfit = { layers: [{ name: 'cortu_cargo_pants', dye: 0x5a5e54, grime: 0.25 }, { name: 'toigo_basic_tucked_t-shirt', dye: 0x8a8c80, grime: 0.2 }, { name: 'maciekg_leather_boots', grime: 0.3 }] };
 
 export interface Wearer { sheet: CharacterSheet; inventory: Inventory; appearance?: Appearance }
 

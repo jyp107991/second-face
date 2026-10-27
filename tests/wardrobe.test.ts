@@ -34,13 +34,16 @@ describe('wardrobe: what is worn shows on the body', () => {
     expect(o.mask).toBe(true);
   });
 
-  it('a full garment replaces the base suit; a vest goes over it', () => {
+  it('the base clothes stay under a vest; the vest goes over them', () => {
     const w = wearer();
     addItem(w.inventory, makeItem('r_riot'));
     equip(w.inventory, 0);
     const o = wardrobeOutfit(w);
     expect(o.suit).toBe(BASE_OUTFIT.suit);
-    expect(o.layers?.[0]?.name).toMatch(/tactical_vest/);
+    // The base clothes (trousers, shirt, boots) stay underneath; the vest goes on over them, last in draw order.
+    expect(o.layers?.[0]?.name).toBe(BASE_OUTFIT.layers?.[0]?.name);
+    expect(o.layers?.some((l) => /tactical_vest/.test(l.name))).toBe(true);
+    expect(o.layers?.findIndex((l) => /tactical_vest/.test(l.name))).toBeGreaterThan(0);
   });
 
   it('visible chrome adds parts; hidden chrome shows nothing', () => {

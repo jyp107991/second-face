@@ -235,12 +235,11 @@ look or move like people, puzzle ground, cursive, dungarees, flat names, looping
 rerolls, slow portraits) and ordered a dramatic upgrade, actioned sequentially in logical order, before content
 continues. Engine decision: stay on three.js and upgrade renderer, world model and assets (reasons in UPGRADE §1).
 Steps (each a commit with `npm run check` green and screenshots under `docs/evidence/u*/`):
-- [ ] U1 Foundation: CC0 asset pipeline (`tools/assets/`), PBR material library, blended terrain ground per map (no
-      tile seams), real wall/roof materials, re-lit sun/sky/fog (lit palette; dust and sepia only as weather/mood),
-      AO, soft shadows. Folded in: typefaces (no cursive), default outfit, reroll variance, portrait pre-warming. NEXT.
-      U1a DONE (materials, blended ground, re-lit palette; evidence docs/evidence/u1); U1b (quick asks) and U1c (AO,
-      polish) to go.
-- [ ] U2 Open world: world coordinates, continuous terrain by region climate, places stamped at their positions,
+- [x] U1 Foundation DONE 2026-10-27: CC0 asset pipeline (`tools/assets/materials.py`), PBR material library, blended
+      terrain ground per map (no tile seams), real wall/roof materials, re-lit sun/sky/fog (lit palette; dust and sepia
+      only as weather/mood), soft shadows; typefaces (no cursive), default outfit, reroll variance, portrait
+      pre-warming (evidence `docs/evidence/u1/`). AO moved to U3 (with the renderer restructuring for streaming).
+- [ ] U2 Open world (NEXT): world coordinates, continuous terrain by region climate, places stamped at their positions,
       roads/rails, chunk streaming with detail rings, pathfinding over terrain, persistence, instant interiors, world
       map as a map, vehicles as fast travel, save migration. No exits, no loading screens.
 - [ ] U3 Living world: biome vegetation and surviving greenery, rocks and ruins, real props, water and shores,

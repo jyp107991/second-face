@@ -1,7 +1,7 @@
 import type { ItemDef } from '../../engine/inventory/items';
 
 export const ARMOR: ItemDef[] = [
-  { id: 'r_jumpsuit', wear: { garment: 'male_worksuit01', tint: 0x8a9088 }, name: 'Cistern Coverall', desc: 'Grey-green coverall with a faded "9" on the back. Barely armour.', category: 'armor', weight: 1.5, value: 15,
+  { id: 'r_jumpsuit', icon: 'coverall', wear: { garments: [{ name: 'cortu_cargo_pants', dye: 0x5a5e54, grime: 0.25 }, { name: 'toigo_basic_tucked_t-shirt', dye: 0x8a8c80, grime: 0.2 }, { name: 'maciekg_leather_boots', grime: 0.3 }] }, name: 'Cistern Issue', desc: 'Grey-green work trousers, a shirt with a stencilled "9" at the shoulder, boots resoled twice. Barely armour.', category: 'armor', weight: 1.5, value: 20,
     armor: { slot: 'body', dt: 0, dr: 5, durability: 200 } },
   { id: 'r_duster', icon: 'coat', wear: { garments: [{ name: 'cortu_cargo_pants', dye: 0x3a3530, grime: 0.4 }, { name: { m: 'elvs_male_tankshirt1', f: 'elvs_lara_tank1' }, dye: 0x8a8478, grime: 0.3 }, { name: 'mindfront_cardigan_long_open_front', tint: 0x5a3a24, wear: 0.1, grime: 0.35 }] }, name: 'Leather Duster', desc: 'Long coat of cured hide. Turns a knife, mostly.', category: 'armor', weight: 4, value: 160,
     armor: { slot: 'body', dt: 2, dr: 15, durability: 300 } },
