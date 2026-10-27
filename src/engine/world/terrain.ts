@@ -235,8 +235,10 @@ export function buildFar(fx: number, fz: number): THREE.Mesh {
     for (let i = 0; i < n; i++) {
       const k = j * n + i;
       const wx = x0 + i * FAR_STEP, wz = z0 + j * FAR_STEP;
-      const h = heightAt(wx, wz);
-      pos[k * 3] = wx; pos[k * 3 + 1] = Math.max(h, WATER_LEVEL - 0.3) - 0.9; pos[k * 3 + 2] = wz;
+      // The lowest ground in the cell, so the coarse mesh never shows through the fine one on a slope.
+      let h = heightAt(wx, wz);
+      for (const [ox, oz] of [[FAR_STEP / 2, 0], [-FAR_STEP / 2, 0], [0, FAR_STEP / 2], [0, -FAR_STEP / 2]]) h = Math.min(h, heightAt(wx + ox, wz + oz));
+      pos[k * 3] = wx; pos[k * 3 + 1] = Math.max(h, WATER_LEVEL - 0.3) - 1.2; pos[k * 3 + 2] = wz;
       const nn = normalAt(wx, wz);
       nrm[k * 3] = nn[0]; nrm[k * 3 + 1] = nn[1]; nrm[k * 3 + 2] = nn[2];
       const biome = biomeAt(wx, wz);

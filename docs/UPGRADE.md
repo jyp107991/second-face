@@ -193,3 +193,44 @@ Content building (B3.11 onwards) is paused until U1–U5 are in.
   with the fare paid). The caravan's timetable (every three days) makes a long wait of a short ride: the networks'
   schedules are content for M4 to tune. U2b is complete; U2c (budgets and phone profiling) follows U3's
   instancing, since the same work settles both.
+- **2026-10-27 U3.1 — what grows and lies on the land.** A model library of CC0 plants, trees and rocks from Poly
+  Haven (`tools/assets/models.py`: 25 assets fetched as glTF, decimated to phone counts — trees ≤ 1.5–2.5 k
+  triangles, shrubs ≤ 400, grass ≤ 150, rocks ≤ 300–500 — textures at 512 px WebP, meshopt-compressed; 4.7 MB in
+  all; `public/assets/world/MODEL_CREDITS.md`). `assets/models.ts` loads them (quantised positions read back to
+  floats; a Poly Haven set laid out side by side is split into variants, each stood on the ground). `world/flora.ts`
+  sows each region by rules — the Sallow's dry shrubs, quiver trees, dead trunks and stones; the Line's grass, weeds
+  and bushy trees; the Shore's grass, nettles and dead trees; the Wet's ferns, celandine, broadleaf and big trees,
+  firs; the Teeth's firs, boulders and scree; the Ashlands' dead scrub and black rock — in patches, thicker by the
+  water (grass follows the waterline even in the dry country), never on a place's pad, a way, the water or a cliff.
+  Each loaded chunk places its own; one instanced mesh per model variant and part draws what lies within 120 m of
+  the player, rebuilt as chunks come and go and as the player moves; trees cast shadows; trees, boulders and stumps
+  block walking. Trees are a different animal: Poly Haven's trees are photoscans of a million triangles with every
+  leaf as geometry, and decimated to phone counts the leaves come apart. So trees are impostors
+  (`tools/assets/impostors.py`, `tools/assets/bake/impostor.html`): each tree is rendered from eight directions at
+  the game camera's pitch, from the full-detail model with its leaf alpha maps folded in, lit nearly flat, into one
+  atlas (384 px tall cells, 30–125 KB a tree, eight trees in 0.7 MB); in the world each tree is a card that turns to
+  face the camera and shows the view nearest its angle, lit by the game's sun on a normal that leans up and toward
+  the camera, casting a tree-shaped shadow from its silhouette (`world/impostors.ts`). Two triangles a tree, so
+  stands are cheap. At the Cistern mouth: ~5 000 things placed over nine chunks, ~620 k triangles drawn with
+  shadows, 60 draw calls. Evidence `docs/evidence/u2/flora_closeup.png`, `flora_tree_closeup.png`, `relief_*.png`.
+  Left to tune with eyes on a phone: densities per region, tree stands, a grass LOD that drops the far tufts, and
+  the card's shading (a baked normal or a second atlas of lighting from the sun's side would give the canopy
+  real form).
+- **2026-10-27 U3.2 — the water and its edge.** The water is a moving surface: its normal is stirred by three
+  drifting noise fields, so the sun lays a wandering glint across it and the shore's edge wobbles
+  (`scene/stream.ts waterMaterial`). The ground has a waterline: wet, darker ground in the first metre above the
+  water, a thin pale line of dried foam at the level, and the drowned ground seen through the water darker and bluer
+  the deeper it lies (`scene/ground.ts`). The far ring takes the lowest ground in each cell and every surface's
+  colour, so it no longer shows through the fine ground on a mountainside.
+- **2026-10-27 U3.3 — real things in places.** Twenty-two CC0 prop models join the library (`tools/assets/models.py`
+  `p_*`: steel drums, a rusted drum, a crate and a cardboard box, plastic and wooden chairs, a table and a picnic
+  table, steel shelves, two street lamps, a car under a tarp, a tyre, a stone fire pit, a barrel stove, a power
+  box, a bin, a tool chest, a bucket, a concrete barrier; 300–2 500 triangles each, 7 MB for the whole library).
+  `assets/propModels.ts` says which built box props they stand in for (barrels, crates, chairs, tables, shelves,
+  lamp posts, car wrecks, tyre piles, campfires, stoves, machines, rocks and dead trees); a place built from its
+  map places the model instead of the boxes, keeps the boxes' features where they matter (a lamp's light, a fire),
+  and once the models are loaded merges everything that shares a material into one static mesh, so a town of sixty
+  props costs a dozen draws (`scene/stream.ts attachModelProps`). Signs, cots, counters, lockers, tents, debris and
+  the rest stay built for now. Evidence `docs/evidence/u2/props_*.png` (Shale, the Old Market, the Overpass, Dry
+  Wells); `tools/qa/props.cjs`. The Overpass's deck still reads as a pale slab from the terrain side (its map was
+  drawn for a closed room); that is a map fix for the content pass, not the engine.

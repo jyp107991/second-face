@@ -3,12 +3,14 @@ import { GeoBuilder } from '../assets/builder';
 import { applyWorldUVs } from '../assets/materials';
 import { buildProp, type PropFeature } from '../assets/props';
 import { Rng, hash2 } from '../core/rng';
-import type { FloorKind, MapDef, WallKind } from '../data/types';
+import type { FloorKind, MapDef, PropKind, WallKind } from '../data/types';
 import { Grid } from './grid';
 import type { SurfaceKind } from '../assets/textures';
 import { buildRoofs, buildWalls, detectBuildings, type Buildings } from './buildings';
 import { buildGround, groundKeys } from './ground';
 import { pbrMapsSync, type GroundLayers } from '../assets/pbr';
+import { modelEntries } from '../assets/models';
+import { PROP_MODELS, type ModelProp } from '../assets/propModels';
 
 export interface BuiltLocation {
   map: MapDef;
@@ -21,6 +23,8 @@ export interface BuiltLocation {
   bounds: THREE.Box3;
   /** The rooms the walls enclose (roofs hide while the player is in one). */
   buildings: Buildings;
+  /** Props drawn as real models (attached by the world once their models are loaded). */
+  modelProps: ModelProp[];
 }
 
 const FLOOR_SURFACE: Record<FloorKind, SurfaceKind> = {
@@ -50,8 +54,23 @@ export function buildLocation(map: MapDef, layers?: GroundLayers, opts: { stripR
   const rng = new Rng(map.seed ?? 1234);
   const b = new GeoBuilder(rng);
   const features: BuiltLocation['features'] = [];
+  const modelProps: ModelProp[] = [];
   const floorGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
   const buildings = detectBuildings(grid, rng);
+  const scratch = new GeoBuilder(rng);
+  // A prop with a model of its own: the model is placed instead of the boxes; the boxes' features (a lamp's light,
+  // a fire) are kept when the rule says so. Returns false when the prop is to be built the old way.
+  const placeModel = (kind: PropKind, wx: number, wz: number, ry: number, scale: number, collect: (f: PropFeature) => void): boolean => {
+    const rule = PROP_MODELS[kind];
+    if (!rule) return false;
+    const keys = rule.keys.filter((k) => modelEntries()[k]);
+    if (!keys.length) return false;
+    const key = keys[Math.floor(rng.next() * keys.length)];
+    const s = scale * (rule.scale ? rule.scale[0] + rng.next() * (rule.scale[1] - rule.scale[0]) : 1);
+    modelProps.push({ key, x: wx, z: wz, ry, scale: s, pick: rng.next(), stack: rule.stack ? 1 + Math.floor(rng.next() * rule.stack) : 1 });
+    if (rule.features) for (const f of buildProp(kind, scratch, rng)) collect(f);
+    return true;
+  };
 
   for (const t of grid.tiles) {
     const { x, y, def } = t;
@@ -64,11 +83,14 @@ export function buildLocation(map: MapDef, layers?: GroundLayers, opts: { stripR
     if (def.wall === 'rock' || def.wall === 'fence') buildWall(b, def.wall, def.wallHeight ?? 2.6, x, y, grid, rng);
 
     if (def.prop) {
-      b.cutawayDefault = true;
-      b.at(wx, wz, ((def.propRot ?? 0) * Math.PI) / 2, 1, () => {
-        for (const f of buildProp(def.prop!, b, rng)) features.push({ ...f, wx, wz });
-      });
-      b.cutawayDefault = false;
+      const ry = ((def.propRot ?? 0) * Math.PI) / 2;
+      if (!placeModel(def.prop, wx, wz, ry, 1, (f) => features.push({ ...f, wx, wz }))) {
+        b.cutawayDefault = true;
+        b.at(wx, wz, ry, 1, () => {
+          for (const f of buildProp(def.prop!, b, rng)) features.push({ ...f, wx, wz });
+        });
+        b.cutawayDefault = false;
+      }
     }
 
     // Outdoor ground scatter: pebbles and dry tufts on open sand/dirt.
@@ -84,6 +106,7 @@ export function buildLocation(map: MapDef, layers?: GroundLayers, opts: { stripR
   for (const p of map.props ?? []) {
     const wx = p.x + 0.5, wz = p.y + 0.5;
     const ry = p.rad ? p.rot ?? 0 : ((p.rot ?? 0) * Math.PI) / 2;
+    if (placeModel(p.kind, wx, wz, ry, p.scale ?? 1, (f) => { const c = Math.cos(ry), sn = Math.sin(ry); features.push({ ...f, x: f.x * c + f.z * sn, z: -f.x * sn + f.z * c, wx, wz }); })) continue;
     b.cutawayDefault = true;
     b.at(wx, wz, ry, p.scale ?? 1, () => {
       for (const f of buildProp(p.kind, b, rng)) {
@@ -114,7 +137,7 @@ export function buildLocation(map: MapDef, layers?: GroundLayers, opts: { stripR
   }
 
   const bounds = new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(grid.width, 3, grid.height));
-  return { map, grid, bldBase, root, features, bounds, buildings };
+  return { map, grid, bldBase, root, features, bounds, buildings, modelProps };
 }
 
 function buildWall(b: GeoBuilder, kind: WallKind, h: number, x: number, y: number, grid: Grid, rng: Rng): void {

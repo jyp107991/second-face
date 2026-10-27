@@ -65,7 +65,7 @@ const fs = require('fs');
   check('new game in the Cistern', true, await quest('q_ch1_door'));
   await shot('c9_wake');
   await page.evaluate(() => game.emit('openMap', {}));
-  await page.waitForTimeout(800);
+  await page.waitForTimeout(2500);
   const inside = await page.evaluate(() => { const c = document.querySelector('.map-canvas'); if (!c) return 'no map'; const r = c.getBoundingClientRect();
     for (let y = 10; y < r.height; y += 6) for (let x = 10; x < r.width; x += 6) { c.dispatchEvent(new MouseEvent('click', { clientX: r.left + x, clientY: r.top + y, bubbles: true })); if ((document.querySelector('.map-side h4')?.textContent ?? '') === 'Shale') return document.querySelector('.map-side')?.textContent?.replace(/\s+/g, ' ').slice(0, 90) + ' travel=' + !!document.querySelector('.map-side [data-a=travel]'); } return 'shale not selectable'; });
   check('no setting out from inside the Cistern', inside.includes('travel=false'), inside);

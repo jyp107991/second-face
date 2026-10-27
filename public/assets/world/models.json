@@ -1,0 +1,511 @@
+{
+ "models": {
+  "shrub_dry_b": {
+   "file": "models/shrub_dry_b.glb",
+   "id": "shrub_03",
+   "kind": "shrub",
+   "scale": 1.2,
+   "blocks": false,
+   "biomes": [
+    "sallow",
+    "glass_flats"
+   ],
+   "note": "dry shrub"
+  },
+  "quiver_tree": {
+   "file": "models/quiver_tree.glb",
+   "id": "quiver_tree_01",
+   "kind": "tree",
+   "scale": 1.3,
+   "blocks": true,
+   "biomes": [
+    "sallow",
+    "glass_flats"
+   ],
+   "note": "quiver tree"
+  },
+  "quiver_tree_2": {
+   "file": "models/quiver_tree_2.glb",
+   "id": "quiver_tree_02",
+   "kind": "tree",
+   "scale": 1.4,
+   "blocks": true,
+   "biomes": [
+    "sallow"
+   ],
+   "note": "quiver tree, younger"
+  },
+  "dead_quiver": {
+   "file": "models/dead_quiver.glb",
+   "id": "dead_quiver_trunk",
+   "kind": "tree",
+   "scale": 1.3,
+   "blocks": true,
+   "biomes": [
+    "sallow",
+    "glass_flats",
+    "ashlands"
+   ],
+   "note": "dead quiver trunk"
+  },
+  "dry_branches": {
+   "file": "models/dry_branches.glb",
+   "id": "dry_branches_medium_01",
+   "kind": "shrub",
+   "scale": 1.1,
+   "blocks": false,
+   "biomes": [
+    "sallow",
+    "glass_flats",
+    "ashlands"
+   ],
+   "note": "dead scrub"
+  },
+  "shrub_dry_a": {
+   "file": "models/shrub_dry_a.glb",
+   "id": "shrub_02",
+   "kind": "shrub",
+   "scale": 0.9,
+   "blocks": false,
+   "biomes": [
+    "sallow",
+    "rail_corridor"
+   ],
+   "note": "dry shrub"
+  },
+  "shrub_dry_c": {
+   "file": "models/shrub_dry_c.glb",
+   "id": "shrub_04",
+   "kind": "shrub",
+   "scale": 1.4,
+   "blocks": false,
+   "biomes": [
+    "sallow",
+    "rail_corridor",
+    "ashlands"
+   ],
+   "note": "dry shrub"
+  },
+  "stones": {
+   "file": "models/stones.glb",
+   "id": "namaqualand_stones_01",
+   "kind": "rock",
+   "scale": 3.0,
+   "blocks": false,
+   "biomes": [
+    "sallow",
+    "glass_flats",
+    "teeth"
+   ],
+   "note": "scattered stones"
+  },
+  "boulder_desert": {
+   "file": "models/boulder_desert.glb",
+   "id": "namaqualand_boulder_02",
+   "kind": "rock",
+   "scale": 1.5,
+   "blocks": true,
+   "biomes": [
+    "sallow",
+    "glass_flats",
+    "ashlands"
+   ],
+   "note": "desert boulder"
+  },
+  "boulder": {
+   "file": "models/boulder.glb",
+   "id": "namaqualand_boulder_03",
+   "kind": "rock",
+   "scale": 1.3,
+   "blocks": true,
+   "biomes": [
+    "teeth",
+    "rail_corridor",
+    "northern_wet"
+   ],
+   "note": "boulder"
+  },
+  "rock_small": {
+   "file": "models/rock_small.glb",
+   "id": "rock_09",
+   "kind": "rock",
+   "scale": 6.0,
+   "blocks": false,
+   "biomes": [
+    "sallow",
+    "teeth",
+    "rail_corridor"
+   ],
+   "note": "small rock"
+  },
+  "rock_ash": {
+   "file": "models/rock_ash.glb",
+   "id": "moon_rock_01",
+   "kind": "rock",
+   "scale": 4.0,
+   "blocks": true,
+   "biomes": [
+    "ashlands"
+   ],
+   "note": "ash-black rock"
+  },
+  "grass": {
+   "file": "models/grass.glb",
+   "id": "grass_medium_02",
+   "kind": "grass",
+   "scale": 0.6,
+   "blocks": false,
+   "biomes": [
+    "rail_corridor",
+    "northern_wet",
+    "drowned_shore",
+    "meridian"
+   ],
+   "note": "grass clump"
+  },
+  "shrub_green": {
+   "file": "models/shrub_green.glb",
+   "id": "shrub_01",
+   "kind": "shrub",
+   "scale": 1.3,
+   "blocks": false,
+   "biomes": [
+    "rail_corridor",
+    "northern_wet",
+    "drowned_shore"
+   ],
+   "note": "green shrub"
+  },
+  "fern": {
+   "file": "models/fern.glb",
+   "id": "fern_02",
+   "kind": "grass",
+   "scale": 1.0,
+   "blocks": false,
+   "biomes": [
+    "northern_wet"
+   ],
+   "note": "fern"
+  },
+  "nettle": {
+   "file": "models/nettle.glb",
+   "id": "nettle_plant",
+   "kind": "grass",
+   "scale": 1.4,
+   "blocks": false,
+   "biomes": [
+    "northern_wet",
+    "drowned_shore",
+    "meridian"
+   ],
+   "note": "nettles"
+  },
+  "weed": {
+   "file": "models/weed.glb",
+   "id": "weed_plant_02",
+   "kind": "grass",
+   "scale": 1.2,
+   "blocks": false,
+   "biomes": [
+    "rail_corridor",
+    "meridian",
+    "drowned_shore"
+   ],
+   "note": "weeds"
+  },
+  "stump": {
+   "file": "models/stump.glb",
+   "id": "tree_stump_01",
+   "kind": "rock",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [
+    "northern_wet",
+    "rail_corridor"
+   ],
+   "note": "tree stump"
+  },
+  "dead_tree": {
+   "file": "models/dead_tree.glb",
+   "id": "dead_tree_trunk_02",
+   "kind": "tree",
+   "scale": 1.4,
+   "blocks": true,
+   "biomes": [
+    "rail_corridor",
+    "drowned_shore",
+    "ashlands",
+    "sallow"
+   ],
+   "note": "dead tree"
+  },
+  "bush_tree": {
+   "file": "models/bush_tree.glb",
+   "id": "othonna_cerarioides",
+   "kind": "tree",
+   "scale": 1.7,
+   "blocks": true,
+   "biomes": [
+    "rail_corridor",
+    "glass_flats"
+   ],
+   "note": "bushy tree"
+  },
+  "broadleaf": {
+   "file": "models/broadleaf.glb",
+   "id": "searsia_lucida",
+   "kind": "tree",
+   "scale": 1.9,
+   "blocks": true,
+   "biomes": [
+    "northern_wet",
+    "drowned_shore"
+   ],
+   "note": "broadleaf tree"
+  },
+  "big_tree": {
+   "file": "models/big_tree.glb",
+   "id": "island_tree_02",
+   "kind": "tree",
+   "scale": 2.2,
+   "blocks": true,
+   "biomes": [
+    "northern_wet"
+   ],
+   "note": "big broadleaf"
+  },
+  "rock_moss": {
+   "file": "models/rock_moss.glb",
+   "id": "rock_moss_set_01",
+   "kind": "rock",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [
+    "northern_wet",
+    "teeth"
+   ],
+   "note": "mossy rocks"
+  },
+  "celandine": {
+   "file": "models/celandine.glb",
+   "id": "celandine_01",
+   "kind": "grass",
+   "scale": 0.9,
+   "blocks": false,
+   "biomes": [
+    "northern_wet"
+   ],
+   "note": "ground cover"
+  },
+  "fir": {
+   "file": "models/fir.glb",
+   "id": "fir_sapling",
+   "kind": "tree",
+   "scale": 3.0,
+   "blocks": true,
+   "biomes": [
+    "teeth",
+    "northern_wet"
+   ],
+   "note": "fir"
+  },
+  "p_barrel": {
+   "file": "models/p_barrel.glb",
+   "id": "Barrel_01",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "steel drum"
+  },
+  "p_barrel_2": {
+   "file": "models/p_barrel_2.glb",
+   "id": "Barrel_02",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "steel drum, dented"
+  },
+  "p_barrel_rust": {
+   "file": "models/p_barrel_rust.glb",
+   "id": "barrel_03",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "rusted drum"
+  },
+  "p_crate": {
+   "file": "models/p_crate.glb",
+   "id": "wooden_crate_02",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "wooden crate"
+  },
+  "p_box": {
+   "file": "models/p_box.glb",
+   "id": "cardboard_box_01",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "cardboard box"
+  },
+  "p_chair": {
+   "file": "models/p_chair.glb",
+   "id": "plastic_monobloc_chair_01",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "plastic chair"
+  },
+  "p_chair_wood": {
+   "file": "models/p_chair_wood.glb",
+   "id": "painted_wooden_chair_01",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "wooden chair"
+  },
+  "p_table": {
+   "file": "models/p_table.glb",
+   "id": "WoodenTable_01",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "wooden table"
+  },
+  "p_picnic": {
+   "file": "models/p_picnic.glb",
+   "id": "wooden_picnic_table",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "picnic table"
+  },
+  "p_shelf": {
+   "file": "models/p_shelf.glb",
+   "id": "steel_frame_shelves_01",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "steel shelves"
+  },
+  "p_lamp": {
+   "file": "models/p_lamp.glb",
+   "id": "street_lamp_01",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "street lamp"
+  },
+  "p_lamp_2": {
+   "file": "models/p_lamp_2.glb",
+   "id": "street_lamp_02",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "street lamp, older"
+  },
+  "p_car": {
+   "file": "models/p_car.glb",
+   "id": "covered_car",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "car under a tarp"
+  },
+  "p_tyre": {
+   "file": "models/p_tyre.glb",
+   "id": "old_tyre",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": false,
+   "biomes": [],
+   "note": "old tyre"
+  },
+  "p_firepit": {
+   "file": "models/p_firepit.glb",
+   "id": "stone_fire_pit",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "stone fire pit"
+  },
+  "p_stove": {
+   "file": "models/p_stove.glb",
+   "id": "barrel_stove",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "barrel stove"
+  },
+  "p_machine": {
+   "file": "models/p_machine.glb",
+   "id": "power_box_01",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "power box"
+  },
+  "p_bin": {
+   "file": "models/p_bin.glb",
+   "id": "metal_trash_can",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "metal bin"
+  },
+  "p_toolchest": {
+   "file": "models/p_toolchest.glb",
+   "id": "metal_tool_chest",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "tool chest"
+  },
+  "p_bucket": {
+   "file": "models/p_bucket.glb",
+   "id": "wooden_bucket_01",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": false,
+   "biomes": [],
+   "note": "wooden bucket"
+  },
+  "p_barrier": {
+   "file": "models/p_barrier.glb",
+   "id": "concrete_road_barrier_02",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "concrete barrier"
+  },
+  "p_stool": {
+   "file": "models/p_stool.glb",
+   "id": "wooden_stool_02",
+   "kind": "prop",
+   "scale": 1.0,
+   "blocks": true,
+   "biomes": [],
+   "note": "wooden stool"
+  }
+ }
+}

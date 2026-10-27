@@ -8,3 +8,5 @@ dist
 /*.png
 # Act 1 runner screenshots are large and regenerated each run; only its logs are kept
 docs/evidence/act1/*.png
+public/tmp_impostor/
+tools/assets/__pycache__/

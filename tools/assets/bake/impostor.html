@@ -1,0 +1,68 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>impostor bake</title>
+<style>html,body{margin:0;background:#000}canvas{display:block}</style></head>
+<body><script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
+// Renders a model from N azimuths at the game camera's pitch into an atlas (albedo + alpha), lit flat so the
+// game's own light can shade the billboard. Driven by tools/assets/impostors.py through window.bake(...).
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NoToneMapping;
+document.body.appendChild(renderer.domElement);
+
+window.bake = async (url, { cells = 8, cell = 512, pitch = 0.769, scale = 1 } = {}) => {
+  const loader = new GLTFLoader();
+  const gltf = await loader.loadAsync(url);
+  const root = gltf.scene;
+  root.updateMatrixWorld(true);
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    for (const m of mats) { m.side = THREE.DoubleSide; if (m.transparent || m.alphaMode === 'BLEND') { m.transparent = false; m.alphaTest = 0.5; m.depthWrite = true; } }
+  });
+  root.scale.setScalar(scale);
+  root.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(root);
+  const size = box.getSize(new THREE.Vector3());
+  const centre = box.getCenter(new THREE.Vector3());
+  // Frame: the model's footprint diagonal across, its height (foreshortened) plus its footprint's depth down; the
+  // cell is not square, so the quad in game is `spanW` wide and `spanH` tall (half-sizes).
+  const radius = Math.hypot(size.x, size.z) / 2;
+  const spanW = radius * 1.04;
+  const spanH = (size.y * Math.cos(pitch) + radius * 2 * Math.sin(pitch)) / 2 * 1.04;
+  const scene = new THREE.Scene();
+  scene.add(root);
+  // Lit nearly flat: the game's own sun and sky shade the card, so the bake keeps the albedo and only a little form.
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xc8c0b0, 1.05));
+  const key = new THREE.DirectionalLight(0xffffff, 0.35); key.position.set(1, 2.2, 1); scene.add(key);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.15); fill.position.set(-1, 1, -0.5); scene.add(fill);
+  const cam = new THREE.OrthographicCamera(-spanW, spanW, spanH, -spanH, 0.1, 1000);
+  const cellW = Math.round(cell * spanW / spanH), cellH = cell;
+  renderer.setSize(cellW, cellH, false);
+  const atlas = document.createElement('canvas');
+  atlas.width = cellW * cells; atlas.height = cellH;
+  const ctx = atlas.getContext('2d');
+  // The quad in game: width = 2*span, height = 2*span, its bottom at the model's base. Where the base sits in the
+  // cell is needed so the billboard stands on the ground: the centre of the frame is at `centre`.
+  const dist = 100;
+  for (let i = 0; i < cells; i++) {
+    const az = (i / cells) * Math.PI * 2;
+    const dir = new THREE.Vector3(Math.sin(az) * Math.cos(pitch), Math.sin(pitch), Math.cos(az) * Math.cos(pitch));
+    // Look-at centre, at the height that keeps the whole model in frame: the frame's middle.
+    const look = centre.clone();
+    cam.position.copy(look).addScaledVector(dir, dist);
+    cam.lookAt(look);
+    cam.updateProjectionMatrix();
+    renderer.setClearColor(0x000000, 0);
+    renderer.render(scene, cam);
+    ctx.drawImage(renderer.domElement, i * cellW, 0);
+  }
+  // Where the base (y = box.min.y) lands vertically in the frame, as a fraction from the bottom of the cell.
+  const baseOffset = (centre.y - box.min.y) * Math.cos(pitch);
+  const baseFrac = 0.5 - baseOffset / (2 * spanH);
+  return { png: atlas.toDataURL('image/png'), spanW, spanH, baseFrac, height: size.y, radius, cells };
+};
+window.ready = true;
+</script></body></html>

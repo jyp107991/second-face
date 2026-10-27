@@ -16,7 +16,10 @@ export const FLOOR_KEY: Record<Exclude<FloorKind, 'water'>, string> = {
 };
 const OUTDOOR = new Set<FloorKind>(['sand', 'dirt', 'rubble', 'asphalt']);
 /** Vertex-colour stand-ins when the library is not loaded (tests, offline). */
-export const FALLBACK: Record<string, number> = { sand: 0xc9ac7e, dirt: 0x8a7050, concrete: 0x9a968c, metal: 0x7a7e80, wood: 0x8a6a48, grate: 0x6a6e70, asphalt: 0x5a5a58, rubble: 0x8a8278, tile: 0xb0aca0 };
+export const FALLBACK: Record<string, number> = {
+  sand: 0xc9ac7e, dirt: 0x8a7050, concrete: 0x9a968c, metal: 0x7a7e80, wood: 0x8a6a48, grate: 0x6a6e70, asphalt: 0x5a5a58, rubble: 0x8a8278, tile: 0xb0aca0,
+  rock: 0x8a7a68, grass: 0x7a8a4a, grass_dry: 0xa8a060, mud: 0x6a5a48, forest: 0x5a5a38, gravel: 0x8a8478, snow: 0xe0e4e8, burned: 0x4a4440, salt: 0xd8d4c8, moss: 0x6a7a50, coast: 0xb0a890, cracked: 0x9a7a58,
+};
 
 /** The surface keys a map's ground needs, in a stable order (the first is the kind that stands in for the outside). */
 export function groundKeys(map: MapDef, grid: Grid): string[] {
@@ -127,15 +130,17 @@ export function splatMaterial(layers: GroundLayers, slotKeys: string[]): THREE.M
     shader.uniforms.uHard = { value: hard };
     shader.uniforms.uTint = { value: tints };
     shader.uniforms.uSlot = { value: slots };
+    shader.uniforms.uWater = { value: 0 };
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nattribute vec4 aWeight; attribute vec4 aWeight2; attribute float aOcc; varying vec4 vW; varying vec4 vW2; varying vec2 vGUv; varying float vOcc;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvW = aWeight; vW2 = aWeight2; vOcc = aOcc; vGUv = (modelMatrix * vec4(position, 1.0)).xz;');
+      .replace('#include <common>', '#include <common>\nattribute vec4 aWeight; attribute vec4 aWeight2; attribute float aOcc; varying vec4 vW; varying vec4 vW2; varying vec2 vGUv; varying float vOcc; varying float vGH;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvW = aWeight; vW2 = aWeight2; vOcc = aOcc; vec4 gWP = modelMatrix * vec4(position, 1.0); vGUv = gWP.xz; vGH = gWP.y;');
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
 precision highp sampler2DArray;
 uniform sampler2DArray uDiff; uniform sampler2DArray uNor; uniform sampler2DArray uArm;
 uniform float uScale[${MAX_LAYERS}]; uniform float uHard[${MAX_LAYERS}]; uniform vec3 uTint[${MAX_LAYERS}]; uniform float uSlot[${SLOTS}];
-varying vec4 vW; varying vec4 vW2; varying vec2 vGUv; varying float vOcc;
+varying vec4 vW; varying vec4 vW2; varying vec2 vGUv; varying float vOcc; varying float vGH;
+uniform float uWater;
 float gHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float gNoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(gHash(i), gHash(i + vec2(1.0, 0.0)), f.x), mix(gHash(i + vec2(0.0, 1.0)), gHash(i + vec2(1.0, 1.0)), f.x), f.y); }
 mat3 gTangentFrame(vec3 eye_pos, vec3 surf_norm, vec2 uv) {
@@ -189,7 +194,16 @@ gSum = max(gSum, 1e-4); gDiff /= gSum; gNor /= gSum; gArm /= gSum;
 float gM1 = gNoise(vGUv * 0.045 + 7.0), gM2 = gNoise(vGUv * 0.19 + 3.0);
 float gMacro = 0.9 + 0.16 * gM1 + 0.06 * gM2;
 vec3 gWarm = mix(vec3(0.97, 0.98, 1.02), vec3(1.03, 1.0, 0.95), gNoise(vGUv * 0.03 + 11.0));
-diffuseColor.rgb *= gDiff * gMacro * gWarm * vOcc;`)
+diffuseColor.rgb *= gDiff * gMacro * gWarm * vOcc;
+// The waterline: wet, darker ground just above the water, a thin pale line of dried foam, and the drowned ground
+// seen through the water darker and bluer the deeper it lies.
+float gAbove = vGH - uWater;
+float gWet = 1.0 - smoothstep(0.05, 0.9, gAbove);
+diffuseColor.rgb *= mix(1.0, 0.62, gWet * step(0.0, gAbove));
+float gFoam = (1.0 - smoothstep(0.0, 0.16, abs(gAbove - 0.08))) * (0.55 + 0.45 * gNoise(vGUv * 1.7 + vec2(gM1 * 3.0)));
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.84, 0.78), gFoam * 0.7);
+float gDeep = clamp(-gAbove / 4.0, 0.0, 1.0);
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.16, 0.24, 0.27), gDeep * 0.7 * step(gAbove, 0.0));`)
       .replace('#include <roughnessmap_fragment>', 'float roughnessFactor = roughness * clamp(gArm.g, 0.25, 1.0);')
       .replace('#include <metalnessmap_fragment>', 'float metalnessFactor = metalness * gArm.b;')
       .replace('#include <normal_fragment_maps>', 'normal = normalize(gTangentFrame(-vViewPosition, normal, vGUv) * normalize(vec3(gNor.xy * 0.9, max(gNor.z, 0.2))));')

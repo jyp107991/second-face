@@ -1,9 +1,13 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { worldLayers, type GroundLayers } from '../assets/pbr';
 import { openSites, sitePlacement, type SitePlacement } from '../world/sites';
 import { BIOMES, CHUNK, FAR, FEATHER, buildChunk, buildFar, chunkKey, regionAt, type NearSite } from '../world/terrain';
 import { WorldGrid } from '../world/worldGrid';
 import { heightAt, siteLevel, tileWalkable, WATER_LEVEL } from '../world/height';
+import { Flora } from '../world/flora';
+import { impostorView } from '../world/impostors';
+import { loadModel, loadModelManifest } from '../assets/models';
 import { outsideKey } from './ground';
 import { Grid } from './grid';
 import { buildLocation, type BuiltLocation } from './location';
@@ -43,6 +47,8 @@ export class WorldScene {
 
   /** The sea and the drowned ground: one plane at the water level, following the focus. */
   private water: THREE.Mesh;
+  /** What grows and lies on the land round the loaded chunks. */
+  readonly flora: Flora;
   /** Coarse ground beyond the near chunks, rebuilt as the player moves on. */
   private far?: THREE.Mesh;
   private farAt = { x: NaN, z: NaN };
@@ -50,9 +56,10 @@ export class WorldScene {
   constructor(scene: THREE.Scene, private hooks: StreamHooks) {
     this.root.name = 'world';
     scene.add(this.root);
-    this.grid.blocked = (x, y) => !tileWalkable(x, y);
-    const wm = new THREE.MeshStandardMaterial({ color: 0x4a6a70, roughness: 0.18, metalness: 0.1, transparent: true, opacity: 0.86 });
-    this.water = new THREE.Mesh(new THREE.PlaneGeometry(900, 900).rotateX(-Math.PI / 2), wm);
+    this.flora = new Flora(this.root);
+    void loadModelManifest();
+    this.grid.blocked = (x, y) => !tileWalkable(x, y) || this.flora.obstacle(x, y);
+    this.water = new THREE.Mesh(new THREE.PlaneGeometry(900, 900).rotateX(-Math.PI / 2), waterMaterial());
     this.water.position.y = WATER_LEVEL;
     this.water.receiveShadow = true;
     this.water.name = 'water';
@@ -123,6 +130,7 @@ export class WorldScene {
     this.inFlight.add(place.id);
     try {
       await this.hooks.prepare(place);
+      await loadModelManifest();
       const layers = await this.layers();
       // Put away while it was loading (left the area, entered a cell): drop it.
       if (this.mode === 'cell' ? this.cell !== place.id : place.kind === 'cell') return undefined;
@@ -132,6 +140,7 @@ export class WorldScene {
       this.root.add(built.root);
       const site: LoadedSite = { place, built, level };
       this.sites.set(place.id, site);
+      void this.attachModelProps(site);
       this.grid.addSite(place, built.grid);
       this.hooks.loaded(site);
       this.hooks.changed();
@@ -139,6 +148,55 @@ export class WorldScene {
     } finally {
       this.inFlight.delete(place.id);
     }
+  }
+
+  /** The place's model props, once their models are loaded: one instanced mesh per model variant and part. */
+  private async attachModelProps(site: LoadedSite): Promise<void> {
+    const byKey = new Map<string, typeof site.built.modelProps>();
+    for (const p of site.built.modelProps) { let l = byKey.get(p.key); if (!l) { l = []; byKey.set(p.key, l); } l.push(p); }
+    if (!byKey.size) return;
+    const models = await Promise.all([...byKey.keys()].map((k) => loadModel(k)));
+    if (this.sites.get(site.place.id) !== site) return;
+    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), pos = new THREE.Vector3(), sc = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
+    const buckets = new Map<string, { material: THREE.Material; geos: THREE.BufferGeometry[]; key: string; count: number }>();
+    let i = 0;
+    for (const [, props] of byKey) {
+      const model = models[i++];
+      if (!model) continue;
+      // Group by variant.
+      const byVariant = new Map<number, THREE.Matrix4[]>();
+      for (const p of props) {
+        const v = Math.min(model.variants.length - 1, Math.floor(p.pick * model.variants.length));
+        const variant = model.variants[v];
+        let l = byVariant.get(v); if (!l) { l = []; byVariant.set(v, l); }
+        for (let k = 0; k < p.stack; k++) {
+          q.setFromAxisAngle(up, p.ry + (k ? (p.pick * 7 + k) % 1.2 : 0));
+          m.compose(pos.set(p.x, k * variant.height * p.scale * 0.92, p.z), q, sc.set(p.scale, p.scale, p.scale));
+          l.push(m.clone());
+        }
+      }
+      // A place's props never move: everything that shares a material is merged into one mesh, so a town of
+      // sixty props costs a dozen draws, not a hundred.
+      for (const [v, mats] of byVariant) {
+        for (const part of model.variants[v].parts) {
+          const id = (part.material as THREE.Material).uuid;
+          let bucket = buckets.get(id);
+          if (!bucket) { bucket = { material: part.material, geos: [], key: model.key, count: 0 }; buckets.set(id, bucket); }
+          for (const mm of mats) { bucket.geos.push(part.geometry.clone().applyMatrix4(mm)); bucket.count++; }
+        }
+      }
+    }
+    for (const b of buckets.values()) {
+      const g = mergeGeometries(b.geos);
+      for (const x of b.geos) x.dispose();
+      if (!g) continue;
+      const mesh = new THREE.Mesh(g, b.material);
+      mesh.castShadow = true; mesh.receiveShadow = true;
+      mesh.name = `prop ${b.key}`;
+      mesh.userData.count = b.count;
+      site.built.root.add(mesh);
+    }
+    this.hooks.changed();
   }
 
   private unload(id: string): void {
@@ -155,6 +213,7 @@ export class WorldScene {
   private clearChunks(): void {
     for (const m of this.chunks.values()) { this.root.remove(m); m.geometry.dispose(); }
     this.chunks.clear();
+    this.flora.clear();
   }
 
   /** Whether the ring of ground round a point is built (what a fade should wait for). */
@@ -171,6 +230,9 @@ export class WorldScene {
   }
 
   /** Stream round a focus (the player). Builds at most one site and `burst` chunks per call. */
+  /** The water's clock (ripples move) and the camera's yaw (tree cards turn to face it). */
+  tick(time: number, camYaw: number): void { waterTime.value = time; impostorView.yaw = camYaw; }
+
   async update(fx: number, fz: number, burst = 1): Promise<void> {
     this.water.visible = this.mode === 'open';
     this.water.position.x = fx; this.water.position.z = fz;
@@ -194,7 +256,7 @@ export class WorldScene {
       const cx = Math.floor(fx / CHUNK), cz = Math.floor(fz / CHUNK);
       for (const [k, m] of this.chunks) {
         const [x, z] = k.split(',').map(Number);
-        if (Math.max(Math.abs(x - cx), Math.abs(z - cz)) > CHUNK_KEEP) { this.chunks.delete(k); this.root.remove(m); m.geometry.dispose(); }
+        if (Math.max(Math.abs(x - cx), Math.abs(z - cz)) > CHUNK_KEEP) { this.chunks.delete(k); this.root.remove(m); m.geometry.dispose(); this.flora.removeChunk(x, z); }
       }
       let built = 0;
       outer: for (let r = 0; r <= CHUNK_RING; r++) {
@@ -211,11 +273,13 @@ export class WorldScene {
           const m = buildChunk(cx + dx, cz + dz, layers, near);
           this.chunks.set(k, m);
           this.root.add(m);
+          void this.flora.addChunk(cx + dx, cz + dz).then(() => this.flora.rebuild(fx, fz));
           if (++built >= burst) break outer;
         }
       }
     } finally {
       this.streaming = false;
+      this.flora.rebuild(fx, fz);
     }
   }
 
@@ -224,4 +288,34 @@ export class WorldScene {
     const s = this.siteAt(x, z);
     return s ? s.built.map.ambience : (BIOMES[regionAt(x, z)] ?? BIOMES.sallow).ambience;
   }
+}
+
+const waterTime = { value: 0 };
+
+/**
+ * Still water seen from above: a dark, slightly see-through surface whose normal is stirred by two drifting
+ * noise fields, so the sun lays a moving glint across it and the shore's edge wobbles.
+ */
+function waterMaterial(): THREE.MeshStandardMaterial {
+  const m = new THREE.MeshStandardMaterial({ color: 0x33555c, roughness: 0.12, metalness: 0.05, transparent: true, opacity: 0.8, depthWrite: false });
+  m.onBeforeCompile = (shader) => {
+    shader.uniforms.uTime = waterTime;
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec2 vWUv;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWUv = (modelMatrix * vec4(position, 1.0)).xz;');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>
+uniform float uTime; varying vec2 vWUv;
+float wHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float wNoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(wHash(i), wHash(i + vec2(1.0, 0.0)), f.x), mix(wHash(i + vec2(0.0, 1.0)), wHash(i + vec2(1.0, 1.0)), f.x), f.y); }
+float wHeight(vec2 p) { return wNoise(p * 0.9 + vec2(uTime * 0.05, uTime * 0.03)) * 0.6 + wNoise(p * 2.7 - vec2(uTime * 0.07, -uTime * 0.04)) * 0.3 + wNoise(p * 7.0 + vec2(-uTime * 0.11, uTime * 0.09)) * 0.1; }`)
+      .replace('#include <normal_fragment_maps>', `
+float wE = 0.25;
+float wH0 = wHeight(vWUv), wHx = wHeight(vWUv + vec2(wE, 0.0)), wHz = wHeight(vWUv + vec2(0.0, wE));
+vec3 wN = normalize(vec3((wH0 - wHx) * 1.6, wE, (wH0 - wHz) * 1.6));
+normal = normalize(normal * 0.35 + wN * 0.65);`)
+      .replace('#include <map_fragment>', '#include <map_fragment>\ndiffuseColor.rgb *= 0.92 + 0.16 * wNoise(vWUv * 0.08 + uTime * 0.01);');
+  };
+  m.customProgramCacheKey = () => 'water_surface';
+  return m;
 }

@@ -1669,6 +1669,7 @@ export class Game extends EventBus<GameEvents> {
       if (now - this.streamTick > 250) { this.streamTick = now; void this.world.update(this.player.tx, this.player.ty); }
     }
 
+    this.world.tick(this.time, this.cam.yaw);
     this.atmosphere.hour = hourOf(this.state.minutes);
     this.atmosphere.weather = this.weatherNow();
     this.atmosphere.focusDistance = this.cam.distance;

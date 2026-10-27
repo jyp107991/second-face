@@ -261,8 +261,19 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
             time (`journey.cjs`). Taps work in the open country.
       - [ ] U2c (after U3): detail rings/LOD, memory and draw-call budget, phone profiling.
 
-- [ ] U3 Living world: biome vegetation and surviving greenery, rocks and ruins, real props, water and shores,
-      weather by region, background life.
+- [ ] U3 Living world (IN PROGRESS): biome vegetation and surviving greenery, rocks and ruins, real props, water and
+      shores, weather by region, background life.
+      - [x] U3.1 DONE 2026-10-27: CC0 model library (`tools/assets/models.py`, 25 plants/rocks, phone-sized),
+            `src/engine/assets/models.ts`, `src/engine/world/flora.ts` (regional rules, patches, exclusions,
+            instancing within 120 m, obstacles); trees as eight-view impostor cards baked from the full models
+            (`tools/assets/impostors.py`, `src/engine/world/impostors.ts`). Tune densities with eyes on a phone.
+      - [x] U3.2 DONE 2026-10-27: rippled water surface with a glint; waterline on the ground (wet band, foam line,
+            drowned tint); far ring fixed on slopes.
+      - [x] U3.3 DONE 2026-10-27: 22 CC0 prop models; `src/engine/assets/propModels.ts` maps built box props to
+            them; places merge their model props by material (`props.cjs`). Roadside detail along the ways folds
+            into U3.4.
+      - [ ] U3.4: weather by region in the open (dust in the Sallow, rain and fog in the Wet and on the Shore, snow in
+            the Teeth), background life (birds, dust devils, smoke from places), a grass LOD.
 - [ ] U4 People: captured motion retargeted to the human rig, locomotion blending, skin/cloth/hair materials, close
       LOD, outfits per role/region, visual variance, cached portraits.
 - [ ] U5 Camera and touch: one-finger turn, tap move, pinch zoom, two-finger pan, compass/recentre.

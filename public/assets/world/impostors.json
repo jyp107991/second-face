@@ -1,0 +1,132 @@
+{
+ "impostors": {
+  "quiver_tree": {
+   "file": "impostors/quiver_tree.webp",
+   "id": "quiver_tree_01",
+   "cells": 8,
+   "spanW": 1.0326042173670495,
+   "spanH": 2.0371820529995466,
+   "baseFrac": 0.1886981076406754,
+   "height": 3.5300469785928725,
+   "radius": 0.9928886705452398,
+   "blocks": true,
+   "biomes": [
+    "sallow",
+    "glass_flats"
+   ],
+   "note": "quiver tree"
+  },
+  "big_tree": {
+   "file": "impostors/big_tree.webp",
+   "id": "island_tree_02",
+   "cells": 8,
+   "spanW": 6.697599578482971,
+   "spanH": 7.458146635330391,
+   "baseFrac": 0.3194719208455699,
+   "height": 7.494532753154636,
+   "radius": 6.4399995946951645,
+   "blocks": true,
+   "biomes": [
+    "northern_wet"
+   ],
+   "note": "big broadleaf"
+  },
+  "broadleaf": {
+   "file": "impostors/broadleaf.webp",
+   "id": "searsia_lucida",
+   "cells": 8,
+   "spanW": 5.490005001000834,
+   "spanH": 5.478436236098638,
+   "baseFrac": 0.3542718681921039,
+   "height": 4.443947212584317,
+   "radius": 5.278850962500801,
+   "blocks": true,
+   "biomes": [
+    "northern_wet",
+    "drowned_shore"
+   ],
+   "note": "broadleaf tree"
+  },
+  "bush_tree": {
+   "file": "impostors/bush_tree.webp",
+   "id": "othonna_cerarioides",
+   "cells": 8,
+   "spanW": 3.8522587488759377,
+   "spanH": 3.930102435835742,
+   "baseFrac": 0.3469436681232537,
+   "height": 3.348297618329525,
+   "radius": 3.704094950842247,
+   "blocks": true,
+   "biomes": [
+    "rail_corridor",
+    "glass_flats"
+   ],
+   "note": "bushy tree"
+  },
+  "quiver_tree_2": {
+   "file": "impostors/quiver_tree_2.webp",
+   "id": "quiver_tree_02",
+   "cells": 8,
+   "spanW": 0.9021319515008787,
+   "spanH": 1.3957856969379354,
+   "baseFrac": 0.2353200763071281,
+   "height": 2.0564048871397973,
+   "radius": 0.8674345687508449,
+   "blocks": true,
+   "biomes": [
+    "sallow"
+   ],
+   "note": "quiver tree, younger"
+  },
+  "fir": {
+   "file": "impostors/fir.webp",
+   "id": "fir_sapling",
+   "cells": 8,
+   "spanW": 13.405986747783281,
+   "spanH": 13.697234308739475,
+   "baseFrac": 0.346456809064009,
+   "height": 11.706641793251038,
+   "radius": 12.890371872868538,
+   "blocks": true,
+   "biomes": [
+    "teeth",
+    "northern_wet"
+   ],
+   "note": "fir"
+  },
+  "tree_small": {
+   "file": "impostors/tree_small.webp",
+   "id": "tree_small_02",
+   "cells": 8,
+   "spanW": 4.317791342578288,
+   "spanH": 5.727052269270049,
+   "baseFrac": 0.2712957189331203,
+   "height": 7.290785545110703,
+   "radius": 4.151722444786816,
+   "blocks": true,
+   "biomes": [
+    "rail_corridor",
+    "northern_wet",
+    "drowned_shore"
+   ],
+   "note": "small tree"
+  },
+  "thorn_tree": {
+   "file": "impostors/thorn_tree.webp",
+   "id": "searsia_burchellii",
+   "cells": 8,
+   "spanW": 5.838284897547866,
+   "spanH": 5.455355651736793,
+   "baseFrac": 0.3770339283820808,
+   "height": 3.73402525242418,
+   "radius": 5.61373547841141,
+   "blocks": true,
+   "biomes": [
+    "sallow",
+    "glass_flats",
+    "rail_corridor"
+   ],
+   "note": "thorn tree"
+  }
+ }
+}
