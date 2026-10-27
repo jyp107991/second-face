@@ -113,6 +113,7 @@ export function validateContent(c: ContentBundle): string[] {
     if (n.dialogue && c.dialogues && !c.dialogues[n.dialogue]) errs.push(`npc ${key}: unknown dialogue ${n.dialogue}`);
     if (n.role && !OUTFIT_ROLES.includes(n.role)) errs.push(`npc ${key}: unknown role ${n.role}`);
     for (const [item] of n.merchant?.stock ?? []) if (c.items && !c.items[item]) errs.push(`npc ${key}: merchant stocks unknown item ${item}`);
+    for (const id of n.surgeon?.stock ?? []) if (c.chrome && !c.chrome[id]) errs.push(`npc ${key}: surgeon stocks unknown chrome ${id}`);
     for (const e of n.schedule ?? []) {
       if (!(e.from >= 0 && e.from <= 24 && e.to >= 0 && e.to <= 24)) errs.push(`npc ${key}: schedule hours out of range`);
       if (!e.spot && !e.at && e.activity !== 'away') errs.push(`npc ${key}: schedule entry has no spot`);

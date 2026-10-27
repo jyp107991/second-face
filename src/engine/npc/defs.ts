@@ -11,6 +11,13 @@ import type { Cond } from '../world/logic';
  * NPC definition (content). Personality, memory, schedules and dialogue are added in M2;
  * this is the physical + combat core.
  */
+/** A surgeon's table: the pieces they have to sell and fit (each once per game), and the fee their work costs. */
+export interface SurgeonDef {
+  stock: string[];
+  /** Base fee for an operation in Tolls (plus the piece's difficulty). Default 40. */
+  fee?: number;
+}
+
 export interface NpcDef {
   id: string;
   name: string;
@@ -50,6 +57,8 @@ export interface NpcDef {
   faction?: string;
   /** Sells and buys (opens the barter screen from dialogue or directly). */
   merchant?: MerchantDef;
+  /** Fits, repairs and removes chrome (the surgery screen, from dialogue). */
+  surgeon?: SurgeonDef;
   /** Daily routine (spots on the map they are placed on). */
   schedule?: ScheduleEntry[];
   /** Background person: not noted in the notebook, no sketch, generated rather than written. */

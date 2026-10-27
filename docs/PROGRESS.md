@@ -186,6 +186,24 @@ The owner road-tests Act 1 while the build continues. Plan:
   what is in, what to report. Later test versions are new tags; the old one stays until replaced.
 - **Then straight on** to Act 2 (B3) without waiting for feedback; feedback is folded in as it arrives.
 
+### B2.6 plan (written before coding; spoiler-free)
+- [x] **B2.6a Chrome surgery** DONE (engine + content; `world/surgery.ts` rules, `ui/surgery.ts` screen, `tests/surgery.test.ts`, smoke `tools/qa/surgery.cjs`, evidence `docs/evidence/b26/surgery_*.png`): `NpcDef.surgeon { stock: chromeId[], fee }`; dialogue effect
+  `{ event: 'surgery' }` opens `ui/surgery.ts`: left the patient's eight slots (piece, make, condition, upkeep due;
+  Repair / Remove), right what can be fitted (the surgeon's stock to buy-and-fit, boxed pieces in the pack to fit) with
+  price, fee, risk % (`surgeryRisk`), hours, Drift it adds, what it gives, upkeep. Fit → roll (`installChrome`) →
+  clean / complication / rejected (fee lost, piece kept), time passes, a title line. Chrome pieces exist as items
+  (`ItemDef.chrome`) so they can be found, bought, carried, removed. Yusra fits; the Signal Hill chrome route and a
+  Mender stock piece give the first ones. Tests + a smoke (`tools/qa/surgery.cjs`).
+- **B2.6b The Wheel**: world location `wheel` (kind camp) that moves between four Sallow waypoints every few days
+  (position from the day; a lead or news tells where it is camped); map `gen_wheel.py` (wagons in a ring — new prop
+  `wagon` — tents, a horse line — new prop `horse` — a fire, trade blankets), cast: the caravan-mother, her son, a
+  horse-master, a trader; nomad extras; faction `wheel` standing (guest → road-kin); trade; shallow talk about the
+  road; the escort job (B2.6c) offered here too.
+- **B2.6c Caravan escort basics**: `q_a1_escort` from Shale's caravan post keeper or the Wheel: ride with a caravan
+  to Tollhouse 9 or the Wheel's next camp; while escorting (`flag escort_active`) two authored road encounters can
+  fire (a broken axle: mechanics or hours; a shakedown: talk, pay or fight); arrival pays Tolls and standing. Then the
+  flag clears. Repeatable once per Act.
+
 ## 3. PHASE B — build the complete game to a playable v1 (vertical slices)
 Each slice ends playable and polished before the next starts. Definition of v1 done: creation → every
 ending without dev tools; ~60+ h; validate + per-quest route tests green; saves migrate; perf budget on a

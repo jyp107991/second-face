@@ -56,6 +56,7 @@ export const SHALE_NPCS: NpcDef[] = [
     id: 'npc_sh_08', name: 'Mender Yusra Hadid', look: { seed: 2108, frame: 'narrow', age: 39, over: { hair: { style: 'paint_cornrows', color: 0x120e0b } } }, role: 'medic',
     level: 5, ...SH, courage: 50, dialogue: 'd_sh_yusra', attrs: { wits: 8, reflex: 7 }, skills: { medicine: 60, science: 40, mechanics: 35 }, tolls: 45,
     merchant: { buys: ['tool', 'junk'], cash: 60, restockDays: 5, markup: 1.3, stock: [['t_repair', 2], ['c_bandage', 3], ['c_splint', 2], ['j_electronics', 2], ['u_holdfast', 1]] },
+    surgeon: { stock: ['ch_arm_steady', 'ch_eye_heat'], fee: 40 },
     schedule: [{ from: 7, to: 22, spot: 'mender', activity: 'work' }, home('mender_cot', 22, 7)],
     barks: ['Hold still.', 'The work is the work. Who wears it is your business.', 'Don\'t touch that. It\'s charged.'],
   },

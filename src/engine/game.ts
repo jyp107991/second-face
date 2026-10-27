@@ -59,6 +59,7 @@ export type GameEvents = {
   /** A person, or a tree with a named speaker (terminal, sealed door, a body). */
   openDialogue: { npc?: NpcRuntime; tree?: string; name?: string };
   openBarter: { npc: NpcRuntime };
+  openSurgery: { npc: NpcRuntime };
   openCamp: Record<string, never>;
   openMap: Record<string, never>;
   openDust: { npc: NpcRuntime; stake: number; prize?: import('./world/logic').DustPrize };
@@ -747,6 +748,12 @@ export class Game extends EventBus<GameEvents> {
   openBarter(npc: NpcRuntime): void {
     if (!npc.def.merchant) return;
     this.emit('openBarter', { npc });
+  }
+
+  /** Open a surgeon's table (from dialogue). */
+  openSurgery(npc: NpcRuntime): void {
+    if (!npc.def.surgeon) return;
+    this.emit('openSurgery', { npc });
   }
 
   private followTick = 0;

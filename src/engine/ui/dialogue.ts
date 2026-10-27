@@ -122,6 +122,7 @@ export class DialogueUi {
       xp: (amount: number, levels: number) => this.game.logicHost.xp?.(amount, levels),
       event: (name: string, data?: unknown) => {
         if (name === 'barter' && this.npc) { const npc = this.npc; window.setTimeout(() => { this.close(); this.game.openBarter(npc); }); return; }
+        if (name === 'surgery' && this.npc) { const npc = this.npc; window.setTimeout(() => { this.close(); this.game.openSurgery(npc); }); return; }
         if (name === 'dust' && this.npc) { const npc = this.npc, d = (data ?? {}) as { stake?: number; prize?: import('../world/logic').DustPrize }; window.setTimeout(() => { this.close(); this.game.emit('openDust', { npc, stake: Number(d.stake ?? 5), prize: d.prize }); }); return; }
         if (name === 'camp') { window.setTimeout(() => { this.close(); this.game.openCamp(); }); return; }
         if (name === 'fight' && this.npc) { const npc = this.npc; window.setTimeout(() => { this.close(); npc.hostile = true; this.game.refreshHostility(); this.game.startCombat(npc); }); return; }

@@ -87,6 +87,8 @@ export interface ItemDef {
   wear?: WearVisual;
   /** The shape in the hand when it is the active weapon. */
   held?: HeldShape;
+  /** A boxed chrome piece (stats/chrome catalogue id): carried until a surgeon fits it. */
+  chrome?: string;
 }
 
 /** Worn visuals: a catalogue garment (replacing the base clothes of its slot) and/or procedural pieces. */
