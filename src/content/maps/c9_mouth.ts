@@ -265,6 +265,7 @@ export const c9_mouth: MapDef = {
     fogDensity: 0.02,
     dust: 0.9,
     grade: 0.7,
+    mood: "bright",
     sound: "wind"
   }
 };

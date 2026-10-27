@@ -503,6 +503,7 @@ export const windpumps: MapDef = {
     fogDensity: 0.018,
     dust: 0.6,
     grade: 0.7,
+    mood: "bright",
     sound: "wind"
   },
   hunting: 0.6

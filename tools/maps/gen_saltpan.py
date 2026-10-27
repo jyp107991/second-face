@@ -86,7 +86,7 @@ saltpan = {
         {'id': 'arrive', 'x': 1, 'y': 17, 'w': 7, 'h': 6, 'text': 'The pan. White to the edge of the world, and in the middle of it, where nothing should be, a truck on its side with its load spilled, and a dark scar in the crust behind it half a mile long. Nothing moves. The glare makes your eyes water.', 'effects': [{'learn': 'seen_saltpan'}, {'quest': 'q_sw_wreck', 'start': True}, {'xp': 30}]},
         {'id': 'ring', 'x': 13, 'y': 8, 'w': 11, 'h': 9, 'text': 'A ring pressed into the crust, forty feet across, the salt fused glassy at the rim. Something heavy sat here. In the middle of it, something smaller still does.', 'effects': [{'learn': 'sp_ring'}, {'lead': 'l_kite_on_the_pan'}]},
     ],
-    'ambience': {'indoor': False, 'fogColor': 'hex:0xe8e2d2', 'fogDensity': 0.014, 'dust': 0.3, 'grade': 0.55, 'sound': 'wind'},
+    'ambience': {'indoor': False, 'fogColor': 'hex:0xe8e2d2', 'fogDensity': 0.014, 'dust': 0.3, 'grade': 0.55, 'mood': 'bright', 'sound': 'wind'},
     'hunting': 0.1,
 }
 

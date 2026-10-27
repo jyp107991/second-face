@@ -607,6 +607,7 @@ export const orchard: MapDef = {
     fogDensity: 0.018,
     dust: 0.3,
     grade: 0.62,
+    mood: "peaceful",
     sound: "wind"
   },
   hunting: 0.2

@@ -1689,6 +1689,7 @@ export const shale: MapDef = {
     fogDensity: 0.016,
     dust: 0.8,
     grade: 0.7,
+    mood: "bustling",
     sound: "wind"
   }
 };

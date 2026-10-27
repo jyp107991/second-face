@@ -58,7 +58,7 @@ export const bench_crowd: MapDef = {
   lights: [{ x: 18, y: 21, height: 0.8, color: 0xffb070, intensity: 1.6, range: 7, flicker: 0.3 }, { x: 14, y: 14, height: 3, color: 0xffd8a0, intensity: 1.2, range: 7, flicker: 0.1 }, { x: 30, y: 20, height: 3, color: 0xffd8a0, intensity: 1.2, range: 7, flicker: 0.1 }],
   spawns: [{ id: 'start', x: 22, y: 20 }],
   spots,
-  ambience: { indoor: false, fogColor: 0xc9b08a, fogDensity: 0.012, dust: 0.4, grade: 0.4, sound: 'wind' },
+  ambience: { indoor: false, fogColor: 0xc9b08a, fogDensity: 0.012, dust: 0.4, grade: 0.4, mood: 'bustling', sound: 'wind' },
   npcs: [],
   extras: [
     // Vendors behind their counters, people sitting, leaning and talking in pairs, a queue at the well.

@@ -194,6 +194,7 @@ export const wild_rough: MapDef = {
     fogDensity: 0.022,
     dust: 0.6,
     grade: 0.72,
+    mood: "bright",
     sound: "wind"
   },
   hunting: 0.5

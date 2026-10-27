@@ -102,6 +102,8 @@ export interface AmbienceDef {
   grade?: number;
   /** Ambient sound bed id. */
   sound?: string;
+  /** The feel of the place: sets the grade and the sound bed unless overridden (bright, peaceful, bustling, haze, grim). */
+  mood?: import('../world/weather').Mood;
 }
 
 export interface ContainerDef {

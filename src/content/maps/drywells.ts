@@ -802,6 +802,7 @@ export const drywells: MapDef = {
     fogDensity: 0.02,
     dust: 0.8,
     grade: 0.75,
+    mood: "haze",
     sound: "wind"
   }
 };

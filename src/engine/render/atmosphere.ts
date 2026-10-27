@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { softSprite } from '../assets/textures';
 import type { AmbienceDef } from '../data/types';
 import type { BuiltLocation } from '../scene/location';
+import { MOOD_GRADE, skyLook, type WeatherKind } from '../world/weather';
 
 interface LightSource { pos: THREE.Vector3; color: THREE.Color; intensity: number; range: number; flicker: number; phase: number; }
 
@@ -9,7 +10,7 @@ const KEY_TIMES: { h: number; sun: number; sunI: number; sky: number; ground: nu
   { h: 0, sun: 0x4a5a8a, sunI: 0.25, sky: 0x1a2030, ground: 0x0e0c0a, ambI: 0.35, fog: 0x14161c },
   { h: 5, sun: 0x8a6a6a, sunI: 0.3, sky: 0x2a2a38, ground: 0x18140e, ambI: 0.4, fog: 0x2a2626 },
   { h: 7, sun: 0xffb070, sunI: 1.6, sky: 0x9a8a7a, ground: 0x4a3a28, ambI: 0.6, fog: 0x9a8270 },
-  { h: 12, sun: 0xfff0d8, sunI: 2.6, sky: 0xc8bca0, ground: 0x6a5a40, ambI: 0.8, fog: 0xc0aa88 },
+  { h: 12, sun: 0xfff2dc, sunI: 2.8, sky: 0xc8bca0, ground: 0x6a5a40, ambI: 0.85, fog: 0xc4b094 },
   { h: 17, sun: 0xffc890, sunI: 2.0, sky: 0xb09a80, ground: 0x5a4a34, ambI: 0.7, fog: 0xb09070 },
   { h: 19.5, sun: 0xff7a40, sunI: 1.0, sky: 0x6a4a48, ground: 0x2a1e18, ambI: 0.5, fog: 0x6a4a3a },
   { h: 21, sun: 0x5a5a8a, sunI: 0.3, sky: 0x22243a, ground: 0x100e0c, ambI: 0.38, fog: 0x1a1a24 },
@@ -32,10 +33,14 @@ export class Atmosphere {
   private pool: THREE.PointLight[] = [];
   private sources: LightSource[] = [];
   private dust?: THREE.Points;
+  private clarity = 1;
+  private dustMul = 1;
   private dustMat?: THREE.ShaderMaterial;
   private ambience!: AmbienceDef;
   /** Hour of day 0..24. */
   hour = 10;
+  /** Today's weather where the player is (set by the game each frame). */
+  weather: WeatherKind = 'clear';
 
   constructor(private scene: THREE.Scene, private quality: { shadowSize: number; pointLights: number; dust: number }) {
     this.sun = new THREE.DirectionalLight(0xffffff, 2);
@@ -90,9 +95,9 @@ export class Atmosphere {
     g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
     this.dustMat ??= new THREE.ShaderMaterial({
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-      uniforms: { uTime: { value: 0 }, uSize: { value: 40 }, uColor: { value: new THREE.Color(0xffe8c0) }, uMap: { value: softSprite() }, uBounds: { value: new THREE.Vector2(w, h) }, uWind: { value: new THREE.Vector2(0.35, 0.1) } },
+      uniforms: { uTime: { value: 0 }, uSize: { value: 40 }, uColor: { value: new THREE.Color(0xffe8c0) }, uMap: { value: softSprite() }, uBounds: { value: new THREE.Vector2(w, h) }, uWind: { value: new THREE.Vector2(0.35, 0.1) }, uDensity: { value: 1 } },
       vertexShader: /* glsl */ `
-        attribute float aSeed; uniform float uTime; uniform float uSize; uniform vec2 uBounds; uniform vec2 uWind;
+        attribute float aSeed; uniform float uTime; uniform float uSize; uniform vec2 uBounds; uniform vec2 uWind; uniform float uDensity;
         varying float vA;
         void main() {
           vec3 p = position;
@@ -101,8 +106,11 @@ export class Atmosphere {
           p.y += sin(uTime * 0.7 + aSeed * 40.0) * 0.3;
           vec4 mv = modelViewMatrix * vec4(p, 1.0);
           gl_Position = projectionMatrix * mv;
-          gl_PointSize = uSize * (0.3 + aSeed * 0.7) * projectionMatrix[1][1];
+          // Weather thins the dust (a clear day shows only the motes with a low seed) or thickens it (bigger, denser motes).
+          float thick = max(uDensity - 1.0, 0.0);
+          gl_PointSize = uSize * (0.3 + aSeed * 0.7) * (1.0 + 0.25 * thick) * projectionMatrix[1][1];
           vA = 0.18 + 0.25 * sin(uTime * 1.3 + aSeed * 20.0) * 0.5 + 0.12;
+          vA *= (1.0 + 0.35 * thick) * step(aSeed, uDensity);
         }`,
       fragmentShader: /* glsl */ `
         uniform sampler2D uMap; uniform vec3 uColor; varying float vA;
@@ -154,6 +162,26 @@ export class Atmosphere {
       lerpHex(k0.fog, k1.fog, t, this.fog.color);
       // Map fog colour: blend the time-of-day fog with the map's own tint.
       this.fog.color.lerp(ca.setHex(a.fogColor), 0.3);
+      // Weather and mood: a clear day is harder-lit, cooler from above and far-seeing; dust and storm close in.
+      const look = skyLook(this.weather, a.mood);
+      const noon = Math.max(0, 1 - Math.abs(h - 13) / 6);
+      this.sun.intensity *= look.sun;
+      if (look.blue > 0 && noon > 0) {
+        // Clear sky: a whiter sun, blue fill from above (shadows go cool), paler distance.
+        const b = look.blue * noon;
+        this.sun.color.lerp(cb.setHex(0xfffaf2), 0.6 * b);
+        this.hemi.color.lerp(cb.setHex(0x8fb0dc), 0.8 * b);
+        this.fog.color.lerp(cb.setHex(0xd8d4cc), 0.45 * b);
+        this.hemi.intensity *= 1 + 0.3 * b;
+      }
+      if (this.weather === 'dust' || this.weather === 'storm') {
+        this.fog.color.lerp(cb.setHex(0xb08a5a), this.weather === 'storm' ? 0.55 : 0.35);
+        this.sun.color.lerp(cb.setHex(0xe8a060), 0.4);
+      }
+      if (look.fogCool > 0) this.fog.color.lerp(cb.setHex(0x8c8a88), look.fogCool);
+      this.fog.color.multiplyScalar(look.fogMul);
+      this.clarity = look.clarity;
+      this.dustMul = look.dust;
       this.scene.background = this.fog.color;
       // Sun arc: rises east (+x), sets west. At night the "sun" becomes moonlight from above.
       const day = h >= 6 && h <= 20;
@@ -162,9 +190,13 @@ export class Atmosphere {
       this.sun.position.copy(focus).addScaledVector(dir, 40);
       this.sun.target.position.copy(focus);
     }
-    post.grade = a.grade ?? 0.75;
-    // fogDensity 0.02 ≈ fog fully opaque ~30 m beyond the focus point; starts a little in front of it.
-    const span = 0.6 / Math.max(0.002, a.fogDensity);
+    const look = a.indoor ? undefined : skyLook(this.weather, a.mood);
+    post.grade = THREE.MathUtils.clamp((a.mood ? MOOD_GRADE[a.mood] : a.grade ?? 0.75) + (look ? look.grade : 0), 0.1, 0.88);
+    post.exposure = look ? look.exposure : 1;
+    const tint = look ? look.tint : [1.08, 0.95, 0.74];
+    post.tint.setRGB(tint[0], tint[1], tint[2]);
+    // fogDensity 0.02 ≈ fog fully opaque ~30 m beyond the focus point; starts a little in front of it. Weather scales it.
+    const span = (0.6 / Math.max(0.002, a.fogDensity)) * (a.indoor ? 1 : this.clarity);
     this.fog.near = this.focusDistance - 6;
     this.fog.far = this.focusDistance + span;
 
@@ -186,6 +218,7 @@ export class Atmosphere {
 
     if (this.dustMat) {
       this.dustMat.uniforms.uTime.value = time;
+      this.dustMat.uniforms.uDensity.value = a.indoor ? 1 : this.dustMul;
       this.dustMat.uniforms.uColor.value.copy(a.indoor ? ca.setHex(0xa09888) : this.sun.color).multiplyScalar(a.indoor ? 0.5 : 0.6);
     }
   }

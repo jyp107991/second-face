@@ -591,6 +591,7 @@ export const signalhill: MapDef = {
     fogDensity: 0.016,
     dust: 0.5,
     grade: 0.7,
+    mood: "haze",
     sound: "wind"
   }
 };

@@ -21,6 +21,7 @@ export class AudioEngine {
   private brown!: AudioBuffer;
   private ambNodes: AudioNode[] = [];
   private ambId?: string;
+  private ambTimer?: number;
   private musicTimer?: number;
   vol: Volumes;
 
@@ -99,6 +100,7 @@ export class AudioEngine {
     const ctx = this.ctx, t = ctx.currentTime;
     for (const n of this.ambNodes) { try { (n as AudioScheduledSourceNode).stop?.(t + 1.5); } catch { /* already stopped */ } }
     this.ambNodes = [];
+    if (this.ambTimer) { clearTimeout(this.ambTimer); this.ambTimer = undefined; }
     if (!id) return;
     const out = ctx.createGain();
     out.gain.setValueAtTime(0, t);
@@ -139,6 +141,57 @@ export class AudioEngine {
       const g = ctx.createGain(); g.gain.value = 0.02;
       n.connect(hp).connect(g).connect(out); n.start();
       this.ambNodes.push(n);
+    }
+    if (id === 'birds') {
+      // A peaceful day: a light breeze under scattered birdsong (short two- or three-note chirps, far and near).
+      const n = this.noiseSrc(true, true);
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 500; bp.Q.value = 0.8;
+      const g = ctx.createGain(); g.gain.value = 0.18;
+      n.connect(bp).connect(g).connect(out); n.start();
+      this.ambNodes.push(n);
+      const chirp = () => {
+        if (this.ambId !== 'birds') return;
+        const t0 = ctx.currentTime + 0.05, base = 1800 + Math.random() * 2200, far = 0.25 + Math.random() * 0.75;
+        const notes = 2 + Math.floor(Math.random() * 2);
+        for (let i = 0; i < notes; i++) {
+          const o = ctx.createOscillator(); o.type = 'sine';
+          const eg = ctx.createGain(); eg.gain.value = 0;
+          const s = t0 + i * (0.09 + Math.random() * 0.06), f = base * (1 + (Math.random() - 0.5) * 0.3);
+          o.frequency.setValueAtTime(f, s); o.frequency.exponentialRampToValueAtTime(f * (Math.random() < 0.5 ? 1.35 : 0.8), s + 0.07);
+          eg.gain.setValueAtTime(0, s); eg.gain.linearRampToValueAtTime(0.05 * far, s + 0.015); eg.gain.exponentialRampToValueAtTime(0.0005, s + 0.09);
+          o.connect(eg).connect(out); o.start(s); o.stop(s + 0.12);
+        }
+        this.ambTimer = window.setTimeout(chirp, 900 + Math.random() * 3500);
+      };
+      this.ambTimer = window.setTimeout(chirp, 600);
+    }
+    if (id === 'murmur') {
+      // A bustling place: wind under a crowd's voices (a vowel-band of noise that swells), and the odd knock of trade.
+      const n = this.noiseSrc(true, true);
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 350; bp.Q.value = 0.6;
+      const g = ctx.createGain(); g.gain.value = 0.3;
+      n.connect(bp).connect(g).connect(out); n.start();
+      const v = this.noiseSrc(false, true);
+      const vb = ctx.createBiquadFilter(); vb.type = 'bandpass'; vb.frequency.value = 900; vb.Q.value = 2.5;
+      const vg = ctx.createGain(); vg.gain.value = 0.045;
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.23;
+      const lfoG = ctx.createGain(); lfoG.gain.value = 0.02;
+      lfo.connect(lfoG).connect(vg.gain);
+      const lfo2 = ctx.createOscillator(); lfo2.frequency.value = 0.9;
+      const lfo2G = ctx.createGain(); lfo2G.gain.value = 300;
+      lfo2.connect(lfo2G).connect(vb.frequency);
+      v.connect(vb).connect(vg).connect(out); v.start(); lfo.start(); lfo2.start();
+      this.ambNodes.push(n, v, lfo, lfo2);
+      const knock = () => {
+        if (this.ambId !== 'murmur') return;
+        const s = ctx.currentTime + 0.02;
+        const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.setValueAtTime(160 + Math.random() * 120, s);
+        o.frequency.exponentialRampToValueAtTime(70, s + 0.08);
+        const eg = ctx.createGain(); eg.gain.setValueAtTime(0.06 * (0.3 + Math.random() * 0.7), s); eg.gain.exponentialRampToValueAtTime(0.0005, s + 0.12);
+        o.connect(eg).connect(out); o.start(s); o.stop(s + 0.14);
+        this.ambTimer = window.setTimeout(knock, 2500 + Math.random() * 6000);
+      };
+      this.ambTimer = window.setTimeout(knock, 1500);
     }
   }
 

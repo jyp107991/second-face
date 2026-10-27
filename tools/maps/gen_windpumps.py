@@ -113,7 +113,7 @@ windpumps = {
         {'id': 'troughs', 'x': 26, 'y': 22, 'w': 13, 'h': 4, 'text': 'The troughs are dry, but the sand around them is written over with tracks: hare, something with hooves, something with claws that walks on two toes. Game still comes here out of habit, at dawn and dusk.', 'effects': [{'learn': 'wp_troughs'}]},
         {'id': 'ruts', 'x': 44, 'y': 18, 'w': 6, 'h': 4, 'text': 'Cart ruts, many and deep, going east off the pan toward a long low hill. Horse dung, not old. Something with a lot of wheels camps that way.', 'effects': [{'learn': 'wheel_tracks'}, {'lead': 'l_wheel_where'}]},
     ],
-    'ambience': {'indoor': False, 'fogColor': 'hex:0xcfc0a4', 'fogDensity': 0.018, 'dust': 0.6, 'grade': 0.7, 'sound': 'wind'},
+    'ambience': {'indoor': False, 'fogColor': 'hex:0xcfc0a4', 'fogDensity': 0.018, 'dust': 0.6, 'grade': 0.7, 'mood': 'bright', 'sound': 'wind'},
     'hunting': 0.6,
 }
 

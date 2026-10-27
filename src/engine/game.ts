@@ -21,6 +21,7 @@ import { apply, runTimers, test, type LogicHost } from './world/logic';
 import { runWorldEvents, spreadNews } from './world/frontier';
 import { discoveriesOnLeg, rollEncounter } from './world/roads';
 import { makeExtras, spotIdle } from './npc/extras';
+import { moodSound, weatherFor, type WeatherKind } from './world/weather';
 import { inHours as inHoursOf } from './npc/schedule';
 import { QUESTS, ROAD_ENCOUNTERS, SETTLEMENTS, WORLD_EVENTS, WORLD_MAP } from '../content';
 import { buildLocation, type BuiltLocation } from './scene/location';
@@ -344,6 +345,24 @@ export class Game extends EventBus<GameEvents> {
     void this.save('auto');
   }
 
+  /** Today's weather where the player is. */
+  /** Dev/QA: force a weather kind regardless of the day. */
+  weatherOverride?: WeatherKind;
+  weatherNow(): WeatherKind {
+    if (this.weatherOverride) return this.weatherOverride;
+    const region = WORLD_MAP.locations[this.state.world.at ?? '']?.region ?? 'sallow';
+    return weatherFor(region, dayOf(this.state.minutes), this.state.rngState % 97);
+  }
+
+  private soundBed?: string;
+  /** The ambient sound follows the map's mood, the hour and the weather. */
+  private updateSoundBed(): void {
+    const a = this.loc?.map.ambience;
+    if (!a) return;
+    const id = a.indoor ? a.sound : moodSound(a.mood, this.atmosphere.weather, hourOf(this.state.minutes), a.sound);
+    if (id !== this.soundBed) { this.soundBed = id; this.audio.setAmbience(id); }
+  }
+
   /** Dev and smoke hook: the next trip meets this encounter instead of rolling. */
   forceEncounter?: string;
 
@@ -422,7 +441,8 @@ export class Game extends EventBus<GameEvents> {
     this.loc = buildLocation(map);
     this.scene.add(this.loc.root);
     this.atmosphere.load(this.loc);
-    this.audio.setAmbience(map.ambience.sound);
+    this.soundBed = undefined;
+    this.updateSoundBed();
 
     let sx = this.state.player.x, sy = this.state.player.y;
     // Changing map without an explicit spawn → use the map's first spawn point.
@@ -1159,7 +1179,9 @@ export class Game extends EventBus<GameEvents> {
     this.cam.forward(cutawayUniforms.uCamDir.value);
 
     this.atmosphere.hour = hourOf(this.state.minutes);
+    this.atmosphere.weather = this.weatherNow();
     this.atmosphere.focusDistance = this.cam.distance;
+    this.updateSoundBed();
     this.atmosphere.update(dt, this.time, this.cam.focus, this.post.settings);
     this.cursor.rotation.y += dt;
     this.fx.update(dt);

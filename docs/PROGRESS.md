@@ -22,9 +22,11 @@ quests, world logic, local reputation/news/leads/events, scheduled events that w
 types, world-map travel, human figures with layered garments, equipment and chrome shown on the body, camp,
 letters, Dust). Content: Chapter One and Act 1 through its finale are playable end to end — the Cistern, Shale,
 the overpass, Tollhouse 9, Signal Hill, Jonah's month, Dry Wells (10 maps, ~60 NPCs, ~75 dialogues, 15
-quests, ~80 items); three companions can join. Phase A is closed. Current work: **Phase B** (B2 Act 1: next
-the wilds, then the Mender and the Wheel, then the Act 1 wrap). Binding owner rules: see `CLAUDE.md` §2
-(no time limits; spoiler rule; not a Fallout clone; cyberpunk fusion).
+quests, ~80 items); three companions can join; the wilds (orchard, saltpan, windpumps, road encounters, hunting)
+are in. Current work: the **A5 presentation pass** (owner feedback; A5.1–A5.6 done: in-world dialogue, masks out,
+dimorphism, fluid movement and idles, background extras, weather and mood) — next A5.7 buildings, A5.8 bionics,
+A5.9 immersion sweep — then back to **Phase B** (B2.6 the Mender and the Wheel, B2.7 the Act 1 wrap). Binding
+owner rules: see `CLAUDE.md` §2 (no time limits; spoiler rule; not a Fallout clone; cyberpunk fusion).
 
 ## 2. PHASE A — quality and depth pass
 ### A0 Plan
@@ -131,9 +133,14 @@ such presentation decisions against modern CRPG practice. Each step: evidence sh
 - [x] A5.5 **Alive places** (~3 h): `MapDef.extras` → generated background people (looks, routes between spots,
       pauses, short generic talk, barks), clusters of two or three talking, vendors behind counters, sitters on
       crates and steps, children; the crowd bench becomes a real market (stalls, awnings, goods, a well, a queue).
-- [ ] A5.6 **Weather and mood** (~2 h): per-day weather in a region (clear / haze / dust / storm), a true clear noon
-      (blue sky, hard warm light, light fog), per-map mood (bright, peaceful, bustling, grim) that sets grade and
-      sound; birdsong at the orchard, crowd murmur in Shale's market hours.
+- [x] A5.6 **Weather and mood** (~2 h): `engine/world/weather.ts` — one weather kind per region per day (clear /
+      haze / dust / storm, in spells, fixed by seed so a save reloads the same sky; `weatherFor`, `skyLook`); a true
+      clear noon (whiter sun, blue fill from above so shadows go cool, far fog, thin dust); `AmbienceDef.mood`
+      (bright / peaceful / bustling / haze / grim) sets grade, exposure, tint and fog (grim = darker, colder, closer);
+      dust thins or thickens with weather (`uDensity`); sound bed follows mood and hour (`birds` and `murmur` beds
+      synthesised in `audio.ts`; storm/dust fall back to wind). Dev: `game.weatherOverride`. Evidence
+      `docs/evidence/a5/{shale_clear_noon,shale_dust_noon,shale_storm_evening,orchard_peaceful_morning,windpumps_bright,
+      overpass_grim_haze}.png` via `tools/qa/weather.cjs`. Moods set per map in the generators.
 - [ ] A5.7 **Buildings that read as buildings** (~4 h): buildings detected as wall components; roofs with overhang,
       parapet and clutter; wall faces by material (adobe: rounded tops, beam ends; scrap: overlapping tilted panels,
       corrugation; concrete: seams, stains, rebar; brick courses); doorways get lintels and frames, long walls get

@@ -870,6 +870,7 @@ export const overpass: MapDef = {
     fogDensity: 0.02,
     dust: 0.9,
     grade: 0.75,
+    mood: "grim",
     sound: "wind"
   }
 };

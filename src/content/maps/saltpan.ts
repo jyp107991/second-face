@@ -369,6 +369,7 @@ export const saltpan: MapDef = {
     fogDensity: 0.014,
     dust: 0.3,
     grade: 0.55,
+    mood: "bright",
     sound: "wind"
   },
   hunting: 0.1

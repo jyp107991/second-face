@@ -201,6 +201,7 @@ export const wild_track: MapDef = {
     fogDensity: 0.02,
     dust: 0.7,
     grade: 0.7,
+    mood: "bright",
     sound: "wind"
   },
   hunting: 0.3

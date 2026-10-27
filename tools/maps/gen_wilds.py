@@ -61,7 +61,7 @@ track = {
     'spots': {'here': {'x': 8, 'y': 11}, 'ahead': {'x': 13, 'y': 11}, 'ahead2': {'x': 14, 'y': 12}, 'side': {'x': 15, 'y': 14}, 'side2': {'x': 20, 'y': 17}, 'fire': {'x': 21, 'y': 15}, 'far': {'x': 24, 'y': 12}},
     'npcs': [],
     'triggers': [],
-    'ambience': {'indoor': False, 'fogColor': 'hex:0xc8b89c', 'fogDensity': 0.02, 'dust': 0.7, 'grade': 0.7, 'sound': 'wind'},
+    'ambience': {'indoor': False, 'fogColor': 'hex:0xc8b89c', 'fogDensity': 0.02, 'dust': 0.7, 'grade': 0.7, 'mood': 'bright', 'sound': 'wind'},
     'hunting': 0.3,
 }
 write(track)
@@ -96,7 +96,7 @@ rough = {
     'spots': {'here': {'x': 6, 'y': 12}, 'ahead': {'x': 12, 'y': 12}, 'ahead2': {'x': 13, 'y': 13}, 'side': {'x': 22, 'y': 17}, 'side2': {'x': 20, 'y': 19}, 'fire': {'x': 21, 'y': 17}, 'far': {'x': 22, 'y': 13}},
     'npcs': [],
     'triggers': [],
-    'ambience': {'indoor': False, 'fogColor': 'hex:0xb8a890', 'fogDensity': 0.022, 'dust': 0.6, 'grade': 0.72, 'sound': 'wind'},
+    'ambience': {'indoor': False, 'fogColor': 'hex:0xb8a890', 'fogDensity': 0.022, 'dust': 0.6, 'grade': 0.72, 'mood': 'bright', 'sound': 'wind'},
     'hunting': 0.5,
 }
 write(rough)
