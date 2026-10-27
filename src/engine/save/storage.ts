@@ -15,7 +15,8 @@ export class MemoryBackend implements SaveBackend {
 }
 
 export class LocalStorageBackend implements SaveBackend {
-  constructor(private prefix = 'sf.save.') {}
+  /** Saves are namespaced per build (`VITE_SAVE_NS`), so a playtest version on the same origin keeps its own slots. */
+  constructor(private prefix = `sf.${import.meta.env.VITE_SAVE_NS ? `${import.meta.env.VITE_SAVE_NS}.` : ''}save.`) {}
   async get(k: string) { return localStorage.getItem(this.prefix + k) ?? undefined; }
   async set(k: string, v: string) { localStorage.setItem(this.prefix + k, v); }
   async remove(k: string) { localStorage.removeItem(this.prefix + k); }

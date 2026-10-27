@@ -157,9 +157,14 @@ such presentation decisions against modern CRPG practice. Each step: evidence sh
       shed, the orchard house, Dry Wells hall and sheds). Tests `tests/buildings.test.ts`. Draw calls unchanged
       (roofs merge into ~6 buckets). Known: the wall cutaway can open a dark hole into a roofed room when the player
       stands against its outer corner — tighten the cut cylinder in A5.9.
-- [ ] A5.8 **Bionics that look like the future** (~2.5 h): chrome redrawn as segmented matte-polymer plating with
-      brushed-metal seams and a thin emissive accent (amber old / red dark / cyan Concern): forearm sleeves and
-      knuckle plates, shin plates, an optic ring with a lit iris, a nape port, a lit spine ridge, subdermal seams.
+- [x] A5.8 **Bionics that look like the future** (~2.5 h): `assets/human/gear.ts` chrome cases redrawn — matte
+      polymer plating in the make's finish (gunmetal old / matte black Mender / pearl Concern) over a dark under-layer,
+      brushed-steel seams and collars, a lit accent line that dims as condition falls (amber / red / cyan): segmented
+      forearm sleeves (a hydraulic ram on Mender arms), knee dome + shin and calf plates, an optic housing with a lit
+      iris ring and brow plates (both eyes for Concern optics), a hexagonal temple port with lit data pins and a cable
+      channel, a nape port over a vertebra ridge, steel collarbone seams and sternum hex plates. `wardrobe.ts` passes
+      plating/accent/grade/wear per piece. Evidence `docs/evidence/a5_before/chrome_*` → `docs/evidence/a5/chrome_*`
+      (`tools/qa/chrome.cjs`).
 - [ ] A5.9 **Immersion sweep 2** (~3 h): `docs/IMMERSION_AUDIT.md` against Disco Elysium / BG3 / Pillars / Wasteland
       3 / Rogue Trader (camera, hover and prompts, feedback, sound, NPC reactions, lighting, UI motion); the top
       ten implemented (hover highlights, footsteps by surface, head-turn to the player, ambient beds, prompt text).
@@ -167,9 +172,11 @@ Total ~22 h. Then B2.6. v1 estimate = this + the Phase B remainder (~66 h) ≈ 9
 
 ## 2b. OWNER REQUEST (2026-10-27, binding): standalone Act 1 test version
 The owner road-tests Act 1 while the build continues. Plan:
-- **Reroll first.** Character creation gets a Baldur's Gate 2-style roll: a random pool of attribute points is rolled
-  (so each playthrough starts differently), the player can reroll as often as they like, keep the best roll, and
-  move points between attributes within the roll's total. The fixed point-buy stays as "standard".
+- [x] **Reroll first.** DONE: character creation's Attributes tab has *Roll your start* — `rollAttributes` (sheet.ts)
+  rolls each attribute base + a small weighted roll (pool above base averages ~12.6, 0–28, 18+ about one roll in
+  thirty), Roll / Keep this roll / Recall kept / Standard start; points move between attributes within the roll's
+  pool (`CharacterSheet.creationPool`, validation honours it). Tests `tests/creation.test.ts`; evidence
+  `docs/evidence/a5/creator_attributes_{standard,rolled}.png` (`tools/qa/creator.cjs`).
 - **Then finish Act 1**: B2.6 (the Mender and chrome surgery, the Wheel, caravan escort basics) and B2.7 (faction
   lines to Act 1 end, side quests, the end-to-end Act 1 smoke), with A5.8 (bionics) and the top items of A5.9
   (hover labels, head-turns, combat card, hit feedback, lamps by hour, panel motion) folded in.

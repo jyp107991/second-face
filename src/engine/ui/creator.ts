@@ -11,8 +11,8 @@ import { HAIRCUTS } from '../assets/human/haircuts';
 import { PLAYER_OUTFIT } from '../game';
 import type { Game } from '../game';
 import { PortraitStage } from '../render/portrait';
-import { ATTRIBUTES, ATTRIBUTE_INFO, ATTR_CREATION_MAX, ATTR_MIN, SKILLS, SKILL_INFO, TAG_COUNT } from '../stats/rules';
-import { attrs, creationPointsLeft, derived, emptySheet, skills, validateCreation, type CharacterSheet } from '../stats/sheet';
+import { ATTRIBUTES, ATTRIBUTE_INFO, ATTR_CREATION_MAX, ATTR_CREATION_POINTS, ATTR_MIN, SKILLS, SKILL_INFO, TAG_COUNT, type AttributeId } from '../stats/rules';
+import { attrs, creationPointsLeft, derived, emptySheet, rollAttributes, skills, validateCreation, type CharacterSheet } from '../stats/sheet';
 
 export interface CreatorResult { sheet: CharacterSheet; appearance: Appearance; pronouns: Pronouns;   /** Chosen Cistern role (origin preset id). */
   origin: string;
@@ -358,12 +358,30 @@ export class Creator {
     this.modifierSliders(b, ['torso', 'hip', 'stomach', 'buttocks', 'armslegs'], (id) => !/fingers|trans|valgus|pregnant|navel/.test(id));
   }
 
+  /** The dice for a rolled start, and the roll the player chose to keep. */
+  private roller = new Rng();
+  private bestRoll?: { attrs: Record<AttributeId, number>; pool: number };
+
   private attrTab(b: HTMLElement): void {
-    const left = creationPointsLeft(this.sheet.baseAttrs);
-    const pts = document.createElement('div');
-    pts.className = 'pts';
-    pts.textContent = `Points remaining: ${left}`;
-    b.append(pts);
+    const rolled = this.sheet.creationPool !== undefined;
+    const pool = this.sheet.creationPool ?? ATTR_CREATION_POINTS;
+    const left = creationPointsLeft(this.sheet.baseAttrs, pool);
+    this.h(b, 'Roll your start');
+    const roll = document.createElement('div');
+    roll.className = 'roll';
+    roll.innerHTML = `<div class="desc">Roll a fresh set of attributes: how many points above base you get varies from roll to roll (the standard start has 12). Roll as often as you like, keep a roll you like, then move points between attributes.</div>
+      <div class="rollbar"><button class="b" data-r="roll">Roll</button><button class="b" data-r="keep" ${rolled ? '' : 'disabled'}>Keep this roll</button><button class="b" data-r="recall" ${this.bestRoll ? '' : 'disabled'}>Recall kept${this.bestRoll ? ` (+${this.bestRoll.pool})` : ''}</button><button class="b" data-r="standard" ${rolled ? '' : 'disabled'}>Standard start</button></div>
+      <div class="pts">${rolled ? `This roll: <b>+${pool}</b> above base.` : 'Standard start: <b>+12</b> above base.'} Points remaining: <b>${left}</b></div>`;
+    roll.querySelectorAll('button').forEach((btn) => (btn.onclick = () => {
+      const r = btn.dataset.r;
+      if (r === 'roll') { const x = rollAttributes(this.roller); this.sheet.baseAttrs = x.attrs; this.sheet.creationPool = x.pool; }
+      else if (r === 'keep') this.bestRoll = { attrs: { ...this.sheet.baseAttrs }, pool: pool };
+      else if (r === 'recall' && this.bestRoll) { this.sheet.baseAttrs = { ...this.bestRoll.attrs }; this.sheet.creationPool = this.bestRoll.pool; }
+      else if (r === 'standard') { const o = ORIGINS.find((x) => x.id === this.origin); if (o) this.sheet.baseAttrs = { ...o.attrs }; delete this.sheet.creationPool; }
+      this.sheet.hp = derived(this.sheet).maxHp;
+      this.renderBody();
+    }));
+    b.append(roll);
     for (const a of ATTRIBUTES) {
       const info = ATTRIBUTE_INFO[a];
       const row = document.createElement('div');
@@ -373,7 +391,7 @@ export class Creator {
       row.querySelectorAll('button').forEach((btn) => (btn.onclick = () => {
         const d = Number(btn.dataset.d);
         const v = this.sheet.baseAttrs[a] + d;
-        if (v < ATTR_MIN || v > ATTR_CREATION_MAX || (d > 0 && creationPointsLeft(this.sheet.baseAttrs) <= 0)) return;
+        if (v < ATTR_MIN || v > ATTR_CREATION_MAX || (d > 0 && creationPointsLeft(this.sheet.baseAttrs, pool) <= 0)) return;
         this.sheet.baseAttrs[a] = v;
         this.renderBody();
       }));

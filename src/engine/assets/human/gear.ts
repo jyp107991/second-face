@@ -15,14 +15,18 @@ export type GearKind = 'poncho' | 'wrap' | 'headwrap' | 'bandana' | 'goggles' | 
   // Chrome that shows: the parts of a body that were replaced or plated.
   | 'chrome_eye' | 'chrome_neural' | 'chrome_arm_l' | 'chrome_arm_r' | 'chrome_leg_l' | 'chrome_leg_r' | 'chrome_spine' | 'chrome_skin';
 
-export interface GearLook { kind: GearKind; color?: number; grime?: number; wear?: number }
+export interface GearLook {
+  kind: GearKind; color?: number; grime?: number; wear?: number;
+  /** Chrome: the lit accent colour and the make (plating finish differs by grade). */
+  accent?: number; grade?: 'old' | 'dark' | 'concern';
+}
 
 const ALONG_BONE: GearKind[] = ['armband', 'chrome_arm_l', 'chrome_arm_r', 'chrome_leg_l', 'chrome_leg_r', 'coat_sleeve_ul', 'coat_sleeve_ur', 'coat_sleeve_ll', 'coat_sleeve_lr'];
 
 /** Gear that covers the hair. */
 export const GEAR_HIDES_HAIR: GearKind[] = ['headwrap', 'hardhat'];
 
-type Part = { geo: THREE.BufferGeometry; mat: 'cloth' | 'leather' | 'metal' | 'glass' | 'rubber' | 'plastic' | 'chrome' | 'scrap' };
+type Part = { geo: THREE.BufferGeometry; mat: 'cloth' | 'leather' | 'metal' | 'glass' | 'rubber' | 'plastic' | 'chrome' | 'scrap' | 'polymer' | 'steel' | 'accent' | 'dark' };
 
 function box(w: number, h: number, d: number, x: number, y: number, z: number, rz = 0, ry = 0): THREE.BufferGeometry {
   return new THREE.BoxGeometry(w, h, d).rotateZ(rz).rotateY(ry).translate(x, y, z);
@@ -39,6 +43,12 @@ function materialFor(kind: Part['mat'], look: GearLook, seedName: string): THREE
     case 'plastic': return new THREE.MeshStandardMaterial({ color: look.color ?? 0xb08a30, roughness: 0.55, metalness: 0.05 });
     case 'chrome': return new THREE.MeshStandardMaterial({ color: look.color ?? 0x8a8c88, roughness: 0.35, metalness: 0.85 });
     case 'scrap': return new THREE.MeshStandardMaterial({ color: look.color ?? 0x7a7268, roughness: 0.5, metalness: 0.7, flatShading: true });
+    // Chrome of the future: matte polymer plating in the make's finish, brushed-steel seams, a lit accent line that
+    // dims as the piece fails, and a dark under-layer showing between the plates.
+    case 'polymer': return new THREE.MeshStandardMaterial({ color: look.color ?? 0x6c7074, roughness: look.grade === 'concern' ? 0.3 : look.grade === 'dark' ? 0.62 : 0.5, metalness: look.grade === 'concern' ? 0.25 : 0.4 });
+    case 'steel': return new THREE.MeshStandardMaterial({ color: 0x9aa0a4, roughness: 0.28, metalness: 0.95 });
+    case 'accent': { const c = look.accent ?? 0xffa030; return new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 1.6 * Math.max(0.15, 1 - wear), roughness: 0.4, metalness: 0.1 }); }
+    case 'dark': return new THREE.MeshStandardMaterial({ color: 0x1c1e22, roughness: 0.85, metalness: 0.1 });
   }
 }
 
@@ -225,20 +235,31 @@ export function addGear(fig: HumanFigure, look: GearLook): THREE.Mesh[] {
       break;
     }
     case 'chrome_eye': {
-      // A ring set into the socket of the left eye, a lens, a small plate let into the brow above it.
-      at = new THREE.Vector3(L.eye.x, L.eye.y, L.eye.z + 0.006);
-      parts.push({ geo: new THREE.TorusGeometry(0.02, 0.006, 6, 16), mat: 'chrome' });
-      parts.push({ geo: new THREE.CylinderGeometry(0.015, 0.015, 0.008, 12).rotateX(Math.PI / 2), mat: 'glass' });
-      parts.push({ geo: box(0.042, 0.011, 0.008, 0, 0.03, -0.004), mat: 'chrome' });
-      parts.push({ geo: new THREE.CylinderGeometry(0.004, 0.004, 0.006, 6).rotateX(Math.PI / 2).translate(Math.sign(L.eye.x) * 0.026, 0.0, 0.0), mat: 'rubber' });
+      // A lens housing flush in the socket, a lit iris ring round a glass lens, three small brow plates and a seam
+      // to the temple. Concern optics replace both eyes.
+      at = new THREE.Vector3(0, L.eye.y, L.eye.z + 0.004);
+      const sides = look.grade === 'concern' ? [1, -1] : [Math.sign(L.eye.x) || 1];
+      for (const s of sides) {
+        const x = s * Math.abs(L.eye.x);
+        parts.push({ geo: new THREE.CylinderGeometry(0.019, 0.021, 0.012, 16).rotateX(Math.PI / 2).translate(x, 0, 0), mat: 'polymer' });
+        parts.push({ geo: new THREE.TorusGeometry(0.0115, 0.0025, 6, 20).translate(x, 0, 0.007), mat: 'accent' });
+        parts.push({ geo: new THREE.CylinderGeometry(0.0095, 0.0095, 0.004, 14).rotateX(Math.PI / 2).translate(x, 0, 0.008), mat: 'glass' });
+        for (let k = 0; k < 3; k++) parts.push({ geo: box(0.013, 0.008, 0.007, x - 0.016 + k * 0.016, 0.027, -0.003), mat: 'polymer' });
+        parts.push({ geo: box(0.028, 0.003, 0.005, x + s * 0.034, 0.012, -0.012), mat: 'steel' });
+        parts.push({ geo: box(0.006, 0.0025, 0.0035, x + s * 0.044, 0.02, -0.018), mat: 'accent' });
+      }
       break;
     }
     case 'chrome_neural': {
-      // A port at the right temple with a short cable down behind the ear.
-      at = new THREE.Vector3(-headR - 0.002, L.eye.y + 0.025, L.eye.z - 0.045);
-      parts.push({ geo: new THREE.CylinderGeometry(0.016, 0.018, 0.01, 10).rotateZ(Math.PI / 2), mat: 'chrome' });
-      parts.push({ geo: new THREE.CylinderGeometry(0.006, 0.006, 0.008, 8).rotateZ(Math.PI / 2).translate(-0.008, 0, 0), mat: 'rubber' });
-      parts.push({ geo: box(0.008, 0.05, 0.008, -0.004, -0.03, -0.012, 0.3), mat: 'rubber' });
+      // A hexagonal port plate behind the right temple: three lit data ports, a steel rim, a cable channel down the
+      // neck under a clip, and a hairline seam along the jaw.
+      at = new THREE.Vector3(-headR - 0.002, L.eye.y + 0.02, L.eye.z - 0.05);
+      parts.push({ geo: new THREE.CylinderGeometry(0.02, 0.02, 0.008, 6).rotateZ(Math.PI / 2), mat: 'polymer' });
+      parts.push({ geo: new THREE.TorusGeometry(0.019, 0.002, 5, 6).rotateY(Math.PI / 2).translate(-0.004, 0, 0), mat: 'steel' });
+      for (let k = 0; k < 3; k++) parts.push({ geo: new THREE.CylinderGeometry(0.0028, 0.0028, 0.004, 6).rotateZ(Math.PI / 2).translate(-0.005, 0.007 - k * 0.007, 0.004), mat: 'accent' });
+      parts.push({ geo: box(0.006, 0.06, 0.009, -0.003, -0.045, -0.012, 0.22), mat: 'dark' });
+      parts.push({ geo: box(0.009, 0.008, 0.013, -0.003, -0.07, -0.017), mat: 'steel' });
+      parts.push({ geo: box(0.002, 0.032, 0.002, -0.001, -0.024, 0.012, 0, 0.35), mat: 'accent' });
       break;
     }
     case 'chrome_arm_l':
@@ -247,12 +268,24 @@ export function addGear(fig: HumanFigure, look: GearLook): THREE.Mesh[] {
       const b = limbSpan(fig, bone);
       at = b.mid;
       const len = b.len, r = (fig.metrics.limb[bone] ?? 0.04) + 0.004;
-      // Plated forearm: an elbow segment and a wrist segment with a seam, collars at both ends, a cable.
-      parts.push({ geo: new THREE.CylinderGeometry(r * 0.95, r * 1.05, len * 0.42, 12).translate(0, -len * 0.24, 0), mat: 'chrome' });
-      parts.push({ geo: new THREE.CylinderGeometry(r * 0.8, r * 0.95, len * 0.4, 12).translate(0, len * 0.2, 0), mat: 'chrome' });
-      parts.push({ geo: new THREE.TorusGeometry(r * 0.97, 0.006, 6, 16).rotateX(Math.PI / 2), mat: 'rubber' });
-      parts.push({ geo: new THREE.TorusGeometry(r * 0.82, 0.007, 6, 16).rotateX(Math.PI / 2).translate(0, len * 0.42, 0), mat: 'rubber' });
-      parts.push({ geo: new THREE.CylinderGeometry(0.005, 0.005, len * 0.5, 6).translate(r * 0.9, 0, r * 0.35), mat: 'rubber' });
+      // A plated forearm: a dark under-sleeve, four tapering polymer plates with the under-layer showing in the gaps,
+      // a steel elbow cap and wrist ring, a lit line down the outside. Mender work carries a hydraulic ram besides.
+      parts.push({ geo: new THREE.CylinderGeometry(r * 0.97, r * 0.82, len * 0.9, 12), mat: 'dark' });
+      const n = 4, seg = (len * 0.84) / n;
+      for (let k = 0; k < n; k++) {
+        const t0 = k / n, t1 = (k + 1) / n;
+        const rt = r * (1.04 - 0.2 * t0), rb = r * (1.04 - 0.2 * t1);
+        parts.push({ geo: new THREE.CylinderGeometry(rb + 0.003, rt + 0.003, seg - 0.007, 12).translate(0, -len * 0.42 + seg * (k + 0.5), 0), mat: 'polymer' });
+      }
+      parts.push({ geo: new THREE.CylinderGeometry(r * 1.08, r * 1.02, 0.018, 12).translate(0, -len * 0.45, 0), mat: 'steel' });
+      parts.push({ geo: new THREE.TorusGeometry(r * 0.86, 0.004, 6, 16).rotateX(Math.PI / 2).translate(0, len * 0.42, 0), mat: 'steel' });
+      parts.push({ geo: box(0.005, len * 0.7, 0.0035, r * 0.94, 0, 0), mat: 'accent' });
+      parts.push({ geo: box(0.03, 0.028, 0.006, 0, len * 0.3, r * 0.9), mat: 'polymer' });
+      if (look.grade === 'dark') {
+        parts.push({ geo: new THREE.CylinderGeometry(0.006, 0.006, len * 0.5, 8).translate(-r * 0.95, -len * 0.08, r * 0.35), mat: 'steel' });
+        parts.push({ geo: box(0.017, len * 0.26, 0.017, -r * 0.95, -len * 0.28, r * 0.35), mat: 'polymer' });
+      }
+      if (look.grade === 'concern') parts.push({ geo: box(0.004, len * 0.5, 0.003, -r * 0.94, len * 0.05, 0), mat: 'accent' });
       break;
     }
     case 'chrome_leg_l':
@@ -261,31 +294,59 @@ export function addGear(fig: HumanFigure, look: GearLook): THREE.Mesh[] {
       const b = limbSpan(fig, bone);
       at = b.mid;
       const len = b.len, r = (fig.metrics.limb[bone] ?? 0.055) * 0.9 + 0.012;
-      // Spring frames over the trouser leg: knee and ankle collars, a strut down the shin, a piston behind the calf.
+      // Over the trouser leg: a knee dome, three shin plates and a calf plate in polymer, steel collars at knee and
+      // ankle, a lit line down the shin; Mender frames add a ram behind the calf.
       const f = new THREE.Vector3(0, 0, 1).applyQuaternion(b.q.clone().invert());
-      parts.push({ geo: new THREE.TorusGeometry(r + 0.006, 0.011, 6, 16).rotateX(Math.PI / 2).translate(0, -len * 0.42, 0), mat: 'chrome' });
-      parts.push({ geo: new THREE.TorusGeometry(r * 0.62 + 0.006, 0.01, 6, 16).rotateX(Math.PI / 2).translate(0, len * 0.42, 0), mat: 'chrome' });
-      parts.push({ geo: new THREE.BoxGeometry(0.03, len * 0.84, 0.024).translate(f.x * (r + 0.01), 0, f.z * (r + 0.01)), mat: 'chrome' });
-      parts.push({ geo: new THREE.CylinderGeometry(0.012, 0.012, len * 0.5, 8).translate(-f.x * (r + 0.012), len * 0.05, -f.z * (r + 0.012)), mat: 'rubber' });
-      parts.push({ geo: new THREE.CylinderGeometry(0.02, 0.02, len * 0.25, 8).translate(-f.x * (r + 0.012), -len * 0.2, -f.z * (r + 0.012)), mat: 'chrome' });
+      const ang = Math.atan2(f.x, f.z);
+      const front = (d: number) => [f.x * d, f.z * d] as const;
+      parts.push({ geo: new THREE.SphereGeometry(r * 0.78, 10, 8).scale(1, 0.85, 0.9).translate(...[front(r * 0.5)[0], -len * 0.42, front(r * 0.5)[1]]), mat: 'polymer' });
+      for (let k = 0; k < 3; k++) {
+        const [px, pz] = front(r + 0.006);
+        parts.push({ geo: new THREE.BoxGeometry(r * 1.15, len * 0.19, 0.014).rotateY(ang).translate(px, -len * 0.24 + k * len * 0.22, pz), mat: 'polymer' });
+      }
+      {
+        const [px, pz] = front(-(r + 0.004));
+        parts.push({ geo: new THREE.BoxGeometry(r * 0.95, len * 0.46, 0.012).rotateY(ang).translate(px, 0, pz), mat: 'polymer' });
+      }
+      {
+        const [px, pz] = front(r + 0.015);
+        parts.push({ geo: new THREE.BoxGeometry(0.004, len * 0.62, 0.003).rotateY(ang).translate(px, -len * 0.02, pz), mat: 'accent' });
+      }
+      parts.push({ geo: new THREE.TorusGeometry(r + 0.004, 0.006, 6, 16).rotateX(Math.PI / 2).translate(0, -len * 0.3, 0), mat: 'steel' });
+      parts.push({ geo: new THREE.TorusGeometry(r * 0.7 + 0.004, 0.005, 6, 16).rotateX(Math.PI / 2).translate(0, len * 0.42, 0), mat: 'steel' });
+      if (look.grade !== 'concern') {
+        const [px, pz] = front(-(r + 0.018));
+        parts.push({ geo: new THREE.CylinderGeometry(0.008, 0.008, len * 0.45, 8).translate(px, len * 0.02, pz), mat: 'steel' });
+        parts.push({ geo: new THREE.CylinderGeometry(0.014, 0.014, len * 0.2, 8).translate(px, -len * 0.2, pz), mat: 'polymer' });
+      }
       break;
     }
     case 'chrome_spine': {
       bone = 'spine03';
       const M = fig.metrics;
       at = new THREE.Vector3(0, L.neck.y - 0.02, M.upperBack.back - 0.008);
-      // A plate down the upper spine with vertebra ports.
-      parts.push({ geo: box(0.055, 0.2, 0.014, 0, -0.08, 0), mat: 'chrome' });
-      for (const y of [-0.01, -0.06, -0.11, -0.16]) parts.push({ geo: new THREE.CylinderGeometry(0.011, 0.011, 0.012, 8).rotateX(Math.PI / 2).translate(0, y, -0.01), mat: 'rubber' });
+      // A nape port over a ridge of five vertebra plates, lit between, on two steel rails.
+      parts.push({ geo: new THREE.CylinderGeometry(0.012, 0.012, 0.01, 8).rotateX(Math.PI / 2).translate(0, 0, -0.004), mat: 'steel' });
+      parts.push({ geo: new THREE.CylinderGeometry(0.006, 0.006, 0.004, 8).rotateX(Math.PI / 2).translate(0, 0, -0.01), mat: 'accent' });
+      for (let k = 0; k < 5; k++) {
+        const y = -0.035 - k * 0.038;
+        parts.push({ geo: box(0.044 - k * 0.003, 0.03, 0.012, 0, y, -0.004), mat: 'polymer' });
+        parts.push({ geo: box(0.012, 0.004, 0.004, 0, y + 0.019, -0.009), mat: 'accent' });
+      }
+      for (const s of [-1, 1]) parts.push({ geo: box(0.004, 0.2, 0.006, s * 0.027, -0.1, -0.004), mat: 'steel' });
       break;
     }
     case 'chrome_skin': {
       bone = 'spine03';
       at = L.chest.clone();
       const M = fig.metrics;
-      // Subdermal plate: seams let into the skin along both collarbones and a sternum panel, flush with the surface.
-      for (const s of [-1, 1]) parts.push({ geo: box(0.12, 0.012, 0.006, s * 0.065, M.shoulder.y - at.y - 0.012, M.shoulder.front - at.z - 0.004, 0, s * 0.2), mat: 'chrome' });
-      parts.push({ geo: box(0.04, 0.1, 0.006, 0, -0.03, M.chest.front - at.z - 0.002), mat: 'chrome' });
+      // Subdermal plate: steel seams along both collarbones with a hairline of light, three hexagonal plates down the
+      // sternum, flush with the skin.
+      for (const s of [-1, 1]) {
+        parts.push({ geo: box(0.12, 0.006, 0.005, s * 0.065, M.shoulder.y - at.y - 0.012, M.shoulder.front - at.z - 0.004, 0, s * 0.2), mat: 'steel' });
+        parts.push({ geo: box(0.1, 0.002, 0.004, s * 0.065, M.shoulder.y - at.y - 0.017, M.shoulder.front - at.z - 0.004, 0, s * 0.2), mat: 'accent' });
+      }
+      for (let k = 0; k < 3; k++) parts.push({ geo: new THREE.CylinderGeometry(0.015, 0.015, 0.005, 6).rotateX(Math.PI / 2).translate(0, 0.0 - k * 0.03, M.chest.front - at.z - 0.001), mat: 'polymer' });
       break;
     }
   }

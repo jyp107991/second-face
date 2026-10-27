@@ -2,7 +2,7 @@ import type { Outfit } from '../assets/humanoid';
 import type { GearLook } from '../assets/human/gear';
 import type { Appearance } from '../data/appearance';
 import { GARMENTS } from '../data/garments';
-import { installedChrome, type ChromeSlot } from '../stats/chrome';
+import { installedChrome, type ChromeGrade, type ChromeSlot } from '../stats/chrome';
 import type { CharacterSheet } from '../stats/sheet';
 import { allItems, itemDef } from './items';
 import type { Inventory } from './inventory';
@@ -16,6 +16,11 @@ import type { Inventory } from './inventory';
 export const BASE_OUTFIT: Outfit = { suit: 'male_worksuit01', suitTint: 0x8a9088, shoes: 'shoes06', shoeTint: 0x8a8070 };
 
 export interface Wearer { sheet: CharacterSheet; inventory: Inventory; appearance?: Appearance }
+
+/** Plating finish and the lit accent by make: salvaged pre-Burn (gunmetal, amber), Mender-built (matte black, red),
+ *  Concern (pearl, cyan). */
+const CHROME_PLATE: Record<ChromeGrade, number> = { old: 0x6c7074, dark: 0x26282c, concern: 0xd6d8da };
+const CHROME_ACCENT: Record<ChromeGrade, number> = { old: 0xffa030, dark: 0xff3838, concern: 0x3fe0ff };
 
 const CHROME_GEAR: Record<ChromeSlot, GearLook['kind'][]> = {
   eyes: ['chrome_eye'], neural: ['chrome_neural'], armL: ['chrome_arm_l'], armR: ['chrome_arm_r'],
@@ -49,7 +54,10 @@ export function wardrobeOutfit(pc: Wearer, base: Outfit = BASE_OUTFIT): Outfit {
   }
   const active = inv.equipped[inv.active];
   o.held = active ? itemDef(active.def).held : undefined;
-  for (const c of installedChrome(pc.sheet)) if (c.def.visible) for (const kind of CHROME_GEAR[c.slot]) o.gear!.push({ kind });
+  for (const c of installedChrome(pc.sheet)) {
+    if (!c.def.visible) continue;
+    for (const kind of CHROME_GEAR[c.slot]) o.gear!.push({ kind, color: CHROME_PLATE[c.def.grade], accent: CHROME_ACCENT[c.def.grade], grade: c.def.grade, wear: 1 - c.piece.condition });
+  }
   return o;
 }
 

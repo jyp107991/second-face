@@ -87,6 +87,9 @@ html, body { margin: 0; height: 100%; background: var(--ink); overflow: hidden; 
 .creator .row2 .v { min-width: 28px; text-align: center; font-size: 16px; }
 .creator .desc { font-size: 11px; opacity: .7; }
 .creator .pts { font-size: 14px; margin-bottom: 8px; }
+.creator .roll { margin-bottom: 10px; }
+.creator .rollbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.creator .rollbar button[disabled] { opacity: .45; cursor: default; }
 .creator .derived { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; font-size: 12px; margin-top: 10px; }
 .creator .skill { display: grid; grid-template-columns: 1fr auto; padding: 8px 6px; border-bottom: 1px dashed #3a2e20; cursor: pointer; }
 .creator .skill.on { background: rgba(226,184,106,.12); }

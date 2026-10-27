@@ -1,3 +1,4 @@
+import { Rng } from '../core/rng';
 import {
   ATTRIBUTES, ATTR_BASE, ATTR_CREATION_MAX, ATTR_CREATION_POINTS, ATTR_MAX, ATTR_MIN, LEVEL_CAP, MASTERIES, PERK_EVERY, SKILLS, SKILL_INFO, SKILL_MAX,
   TAG_BONUS, TAG_COUNT, xpForLevel, type AttributeId, type Derived, type SkillId,
@@ -66,6 +67,8 @@ export interface CharacterSheet {
   level: number;
   xp: number;
   baseAttrs: Record<AttributeId, number>;
+  /** Attribute points above base this character may spend at creation: the standard 12, or whatever was rolled. */
+  creationPool?: number;
   /** Percentage points bought with skill points (not the points themselves). */
   skillBought: Record<SkillId, number>;
   tagged: SkillId[];
@@ -200,16 +203,32 @@ export function derived(s: CharacterSheet): Derived {
 // Creation & progression
 // ---------------------------------------------------------------------------------------------
 
-/** Remaining creation points given base attributes (base 3 each + 12). */
-export function creationPointsLeft(baseAttrs: Record<AttributeId, number>): number {
+/** Remaining creation points given base attributes (base 3 each, plus the pool: the standard 12 or a roll). */
+export function creationPointsLeft(baseAttrs: Record<AttributeId, number>, pool = ATTR_CREATION_POINTS): number {
   const spent = ATTRIBUTES.reduce((n, a) => n + (baseAttrs[a] - ATTR_BASE), 0);
-  return ATTR_CREATION_POINTS - spent;
+  return pool - spent;
+}
+
+/**
+ * Roll a start, the old way: each attribute gets base plus a small weighted roll, so the pool above base runs from
+ * nothing to a great deal (mean a little over the standard 12, 18+ about one roll in thirty). The player rerolls as
+ * often as they like, keeps the best, and moves points about within the roll's total.
+ */
+export function rollAttributes(rng: Rng): { attrs: Record<AttributeId, number>; pool: number } {
+  const attrs = {} as Record<AttributeId, number>;
+  let pool = 0;
+  for (const a of ATTRIBUTES) {
+    const d = rng.int(0, 2) + rng.pick([0, 0, 1, 1, 2]);
+    attrs[a] = Math.min(ATTR_CREATION_MAX, ATTR_BASE + d);
+    pool += attrs[a] - ATTR_BASE;
+  }
+  return { attrs, pool };
 }
 
 export function validateCreation(s: CharacterSheet): string[] {
   const errs: string[] = [];
   if (!s.name.trim()) errs.push('Choose a name.');
-  if (creationPointsLeft(s.baseAttrs) !== 0) errs.push('Distribute all attribute points.');
+  if (creationPointsLeft(s.baseAttrs, s.creationPool ?? ATTR_CREATION_POINTS) !== 0) errs.push('Distribute all attribute points.');
   for (const a of ATTRIBUTES) if (s.baseAttrs[a] < ATTR_MIN || s.baseAttrs[a] > ATTR_CREATION_MAX) errs.push(`Attribute out of range: ${a}`);
   if (s.tagged.length !== TAG_COUNT) errs.push(`Tag exactly ${TAG_COUNT} skills.`);
   if (s.traits.length > 2) errs.push('At most two traits.');
