@@ -26,8 +26,8 @@ wilds, Dry Wells, the Mender's table, the Wheel, the escort, four Act 1 side lin
 22 quests, 104 items); three companions can join. Character creation has a rolled start (owner's reroll request).
 **Act 1 is cut as a playtest version** (frozen branch `act1-test-1`, see §2b and `docs/PLAYTEST.md`; the owner installed
 the Pages workflow). **Act 2 part 1 is under way**: Ninebridge, Openfield, the Sump and Cistern 4, Meridian's gate, the
-Precinct, Old Market and the Sink are playable (23 maps, 248 dialogues, 44 quests, 130 items; six companions can join).
-Current work: **Phase B, B3 Meridian** (Act 2's first megacity), next district Lantern Row (B3.7). Still open from the presentation
+Precinct, Old Market, the Sink and Lantern Row are playable (24 maps, 273 dialogues, 46 quests, 133 items; six
+companions can join). Current work: **Phase B, B3 Meridian** (Act 2's first megacity), next the Stacks (B3.8). Still open from the presentation
 pass: A5.9's remaining items (combat hover card, crowd yielding, indoor sound, camera ease, Tab reveal) — fold them in
 as B3 touches the same code. Binding owner rules: see `CLAUDE.md` §2 (no time limits; spoiler rule; not a Fallout
 clone; cyberpunk fusion).
@@ -410,9 +410,18 @@ mid-range Android phone; deployed to Pages.
             Vash's cold box, from the Pale's cold store (paid open or picked), or a dark-chrome Second Heart; Ocho asks
             where it came from, the patient decides. Fifteen named NPCs + extras. Tests `tests/a2.test.ts` (+10).
             Smoke `tools/qa/sink.cjs`, evidence `docs/evidence/b36/`.
-      - [ ] B3.7 **Lantern Row** (~2 h) NEXT: canal pleasure district; fight pits (ENGINE: combat variant — unarmed/melee,
-            crowd morale, bets); reverie dens (ENGINE: short playable memory scenes); Dust; *Reverie of a Stranger*. Smoke.
-      - [ ] B3.8 **The Stacks** (~1.5 h): megablock map with floors; a flat to rent or buy (safehouse: storage, rest,
+      - [x] B3.7 **Lantern Row** DONE 2026-10-27: ENGINE — pit bouts on the real combat system
+            (`{ event: 'fight', data: { pit: { win, lose } } }`: you and the other fighter only, fists and blades only,
+            nobody dies; both stand back up and the stake pays by effects; crowd morale deferred) and reveries
+            (`{ event: 'reverie', data: { tree } }` plays a memory as a dialogue tree with a cold, washed, grainy picture
+            until it ends). Map `md_lantern` on the canal (the Loop stop, the Gilt's bar, the Dust hall, the Velvet, the
+            reverie den, the pit in its fence ring, two bridges and a boat), reached from Old Market's east street and
+            the Loop (all three boards now sell seats). *The Pit*: the fixed undercard, Anvil against all comers, the
+            house's dive. *Reverie of a Stranger*: the evidence reel (bought, traded for a memory of your own, or picked
+            from the locker) and a playable memory scrubbed for three leads and a conclusion. Dust at the hall; a Masque
+            chit in the house cage (B3.10 hook); the Gilt's invitation (B3.9 hook). Twelve named NPCs + extras. Tests
+            `tests/a2.test.ts` (+8). Smoke `tools/qa/lantern.cjs` (fights the bout headless), evidence `docs/evidence/b37/`.
+      - [ ] B3.8 **The Stacks** (~1.5 h) NEXT: megablock map with floors; a flat to rent or buy (safehouse: storage, rest,
             letters, Loop node); *Rooftop Gardens* floor war. Smoke.
       - [ ] B3.9 **Bridgeward and Turf** (~2 h): gang turf map; the four gangs (one joinable at a time, gang-specific
             initiations); *Static* line; *Turf* outcomes; the Rust Dogs' old haunt. Smoke.
@@ -445,7 +454,7 @@ mid-range Android phone; deployed to Pages.
 | Signal Hill | 1/1 | 3/3 | 7/7 | 2/2 | playable; relay, voice, gully |
 | Dry Wells | 1/1 | 6/6 | 13/13 | 2/2 | playable; the Act 1 finale, the family |
 | Act 1 wilds | 5/5 | 15/15 | 17/17 | 2/2 | playable; ten road encounters, discoveries on foot, hunting and traps, the windpumps, the wreck, the orchard |
-| Meridian | 3/12 | 40/60 | 61/70 | 13/30 | the gate, the Precinct, Old Market and the Sink playable; the Loop runs between the first two, stairs to the third |
+| Meridian | 4/12 | 56/70 | 86/100 | 15/30 | the gate, the Precinct, Old Market, the Sink and Lantern Row playable; the Loop joins three of them, stairs the fourth |
 | Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |
 | Act 2 wilds | 4/14 | 38/50 | 64/80 | 9/16 | Ninebridge, Openfield, the Sump and Cistern 4 playable (counts approximate) |
 | Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |

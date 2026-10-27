@@ -16,9 +16,10 @@ export const d_mk_loop: DialogueDef = {
   id: 'd_mk_loop', owner: 'narrator', start: [{ node: 'board' }],
   nodes: {
     board: {
-      text: 'THE LOOP — OLD MARKET. The tram on the rail with its doors open. PRECINCT 2 · LANTERN ROW 2 · THE STACKS 3 · BRIDGEWARD 3 · THE DOCKS 4. Chalk through every name but the first: WORKS.',
+      text: 'THE LOOP — OLD MARKET. The tram on the rail with its doors open. PRECINCT 2 · LANTERN ROW 2 · THE STACKS 3 · BRIDGEWARD 3 · THE DOCKS 4. Chalk through every name but the first two: WORKS.',
       options: [
         { id: 'mkloop.precinct', text: 'The Precinct. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_precinct', spawn: 'loop', minutes: 15 } }], exit: true },
+        { id: 'mkloop.lantern', text: 'Lantern Row. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_lantern', spawn: 'loop', minutes: 10 } }], exit: true },
         { text: '(Leave it.)', exit: true },
       ],
     },

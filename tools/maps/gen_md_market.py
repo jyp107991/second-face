@@ -129,6 +129,7 @@ md_market = {
     'exits': [
         {'x': 0, 'y': 26, 'w': 1, 'h': 6, 'to': {'location': 'md_precinct', 'spawn': 'loop'}, 'label': 'The avenue west, to the Precinct'},
         {'x': 36, 'y': 55, 'w': 2, 'h': 1, 'to': {'location': 'md_sink', 'spawn': 'from_market'}, 'label': 'The stair down to the Sink'},
+        {'x': 71, 'y': 26, 'w': 1, 'h': 6, 'to': {'location': 'md_lantern', 'spawn': 'from_market'}, 'label': 'The east street, to Lantern Row'},
     ],
     'talk': {
         'mk_loop_sign': {'dialogue': 'd_mk_loop', 'name': 'The Loop — Old Market'},

@@ -462,3 +462,43 @@ export const q_sk_code: QuestDef = {
     apprentice: { journal: 'Apprentice, by the Menders\' Code. Ocho said the words over a table with a man still open on it, which Pell says is how he says everything. Menders\' prices are yours now, where there are Menders, and so is the thing the Code asks: fit only what the patient can bear.', end: 'done' },
   },
 };
+
+// ---------------------------------------------------------------- Lantern Row
+
+export const q_lr_pits: QuestDef = {
+  id: 'q_lr_pits', title: 'The Pit', act: 'a2', start: 'card', xp: 120,
+  routes: [
+    { id: 'under', kind: 'knowledge', label: 'Read the undercard before the house does' },
+    { id: 'comer', kind: 'fight', label: 'Stand against Anvil: hands and iron, nobody dies' },
+    { id: 'dive', kind: 'barter', label: 'Take the house\'s sixty to fall in the second' },
+  ],
+  stages: {
+    card: {
+      journal: 'Lantern Row\'s pit: Teague against Doubt on the undercard at two to one, and Anvil against all comers — thirty to enter, ninety if you are standing at the end. Nobody has stood since spring. Mab Corrigan keeps the slate and the guns.',
+      objectives: [
+        { id: 'under', text: 'Bet on the undercard', done: { flag: 'lr_under_paid' }, optional: true },
+        { id: 'comer', text: 'Stand against Anvil, or fall for the house', done: { any: [{ flag: 'lr_bout_paid' }, { flag: 'lr_dive_done' }] } },
+      ],
+      next: [{ if: { flag: 'lr_bout_paid' }, stage: 'standing' }, { if: { flag: 'lr_dive_done' }, stage: 'fallen' }],
+    },
+    standing: { journal: 'Standing, at the end, with Anvil on the floor he keeps so clean and the crowd losing money by the fistful. Ninety from the cash-box, and a pit token the Skirts\' pits and the Crown\'s will honour.', end: 'done' },
+    fallen: { journal: 'Down in the second, as agreed, and sixty from Mab after, which on the Row counts as a deal kept. The crowd knew. The crowd always knows.', end: 'done' },
+  },
+};
+
+export const q_lr_reverie: QuestDef = {
+  id: 'q_lr_reverie', title: 'Reverie of a Stranger', act: 'a2', start: 'shelf', xp: 150,
+  routes: [
+    { id: 'buy', kind: 'barter', label: 'Two hundred, because wardens' },
+    { id: 'trade', kind: 'talk', label: 'An hour on the cot: a memory of yours for his' },
+    { id: 'take', kind: 'stealth', label: 'The Lantern\'s locker, after hours', requires: { skill: 'security', gte: 45 } },
+  ],
+  stages: {
+    shelf: {
+      journal: 'The Lantern\'s evidence shelf holds a reel a Rustmouth took off a warden: a man with no face in it recorded his last day in the city, start to end, a season ago, and went west before dawn. Ysolde Marr wants two hundred for it, or something of yours.',
+      objectives: [{ id: 'reel', text: 'Get the reel', done: { item: 'k_lr_reel' } }, { id: 'play', text: 'Live his day, on a cot in the Lantern', done: { flag: 'lr_reel_seen' } }],
+      next: [{ if: { flag: 'lr_reel_seen' }, stage: 'seen' }],
+    },
+    seen: { journal: 'You lived the stranger\'s last day in the city through his eyes: a long stair, something flat carried against the ribs, this cot, a bowl of noodles eaten standing, and a gate at dawn with somebody on the road beyond it who was waiting. What you made of it is in the notebook\'s leads.', end: 'done' },
+  },
+};

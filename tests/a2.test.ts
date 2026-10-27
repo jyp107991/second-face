@@ -762,3 +762,121 @@ describe('The Sink: high water, the clinic, the Pale', () => {
     expect(cond({ lead: 'l_sato_numbers' }, g)).toBe(true);
   });
 });
+
+function atLantern(hour = 21) {
+  const g = newGameState('c9', 0, 0);
+  g.minutes = 35 * 1440 + hour * 60;
+  g.locationId = 'md_lantern';
+  g.flags.visited_md_lantern = true;
+  g.flags.ch1_done = true;
+  g.flags.md_inside = true; g.flags.md_market_open = true; g.flags.md_lantern_open = true; g.flags.md_status = 'citizen';
+  const q = new QuestEngine(QUESTS, g);
+  return { g, q };
+}
+
+describe('Lantern Row: the pit, the Lantern, the Row', () => {
+  it('the Loop runs to Lantern Row from both boards, and back', () => {
+    const { g, q } = atLantern();
+    g.pc.inventory.tolls = 10;
+    g.locationId = 'md_precinct';
+    talk('d_md_loop', g, q, ['Lantern Row. (2 Tolls)']);
+    g.locationId = 'md_market';
+    talk('d_mk_loop', g, q, ['Lantern Row. (2 Tolls)']);
+    g.locationId = 'md_lantern';
+    talk('d_lr_loop', g, q, ['The Precinct. (2 Tolls)']);
+    expect(g.pc.inventory.tolls).toBe(4);
+  });
+
+  it('the undercard is fixed and the small one wins at two to one', () => {
+    const { g, q } = atLantern();
+    g.pc.inventory.tolls = 50;
+    talk('d_lr_mab', g, q, ['Twenty on the undercard.', 'Teague.', '(Collect. Forty.)', 'That\'s all.']);
+    expect(g.pc.inventory.tolls).toBe(70);
+    expect(g.flags.lr_under_paid).toBe(true);
+    expect(g.world.knowledge.lr_doubt_fixed).toBe(true);
+    expect(g.world.quests.q_lr_pits?.stage).toBe('card');
+  });
+
+  it('thirty to enter; a bout won collects ninety and the token', () => {
+    const { g, q } = atLantern();
+    g.pc.inventory.tolls = 100;
+    talk('d_lr_mab', g, q, ['Thirty, and I\'m the comer.', '(Pay. 30 Tolls)', '(The ring.)']);
+    expect(g.flags.lr_comer_paid).toBe(true);
+    expect(g.pc.inventory.tolls).toBe(70);
+    const r = talk('d_lr_anvil', g, q, []);
+    expect(r.view()?.options.some((o) => o.text === '(Fight.)')).toBe(true);
+    g.flags.lr_bout_won = true;
+    talk('d_lr_mab', g, q, ['(Take it.)']);
+    expect(g.pc.inventory.tolls).toBe(160);
+    expect(countItem(g.pc.inventory, 'k_lr_token')).toBe(1);
+    expect(g.world.quests.q_lr_pits.status).toBe('done');
+    expect(g.world.quests.q_lr_pits.stage).toBe('standing');
+    talk('d_lr_anvil', g, q, ['That\'s all.']);
+    expect(g.world.knowledge.anvil_beaten).toBe(true);
+  });
+
+  it('a dive in the second pays the house\'s sixty', () => {
+    const { g, q } = atLantern();
+    g.pc.inventory.tolls = 40;
+    talk('d_lr_mab', g, q, ['What would the house pay for the comer to fall in the second?', 'Done.', 'That\'s all.']);
+    expect(g.flags.lr_dive_deal).toBe(true);
+    talk('d_lr_mab', g, q, ['Thirty, and I\'m the comer.', '(Pay. 30 Tolls)', '(The ring.)']);
+    g.flags.lr_bout_lost = true; g.flags.lr_comer_paid = false;
+    talk('d_lr_mab', g, q, ['(Take the sixty.)']);
+    expect(g.pc.inventory.tolls).toBe(70);
+    expect(g.flags.lr_dive_done).toBe(true);
+    expect(g.world.quests.q_lr_pits.stage).toBe('fallen');
+  });
+
+  it('the shelf: bought, jacked in, the day scrubbed for its leads', () => {
+    const { g, q } = atLantern();
+    g.pc.inventory.tolls = 250;
+    talk('d_lr_ysolde', g, q, ['The evidence shelf.', '(Pay. 200 Tolls)', 'Later.']);
+    expect(countItem(g.pc.inventory, 'k_lr_reel')).toBe(1);
+    expect(g.world.quests.q_lr_reverie?.stage).toBe('shelf');
+    g.pc.sheet.baseAttrs.wits = 10; g.pc.sheet.baseAttrs.senses = 10;
+    talk('d_lr_reverie', g, q, ['(Listen. He is counting.)', '(Look down, at what the hand is pressing flat.)', '(Let the day run.)', '(The gate. Look at who is looking.)', '(Wake.)', '(Sit up.)']);
+    expect(cond({ lead: 'l_rev_spire' }, g)).toBe(true);
+    expect(cond({ lead: 'l_rev_bundle' }, g)).toBe(true);
+    expect(cond({ lead: 'l_rev_gate' }, g)).toBe(true);
+    expect(g.flags.lr_reel_seen).toBe(true);
+    expect(g.world.quests.q_lr_reverie.status).toBe('done');
+    expect(g.world.quests.q_lr_reverie.stage).toBe('seen');
+  });
+
+  it('the trade: a memory of the Cistern for his', () => {
+    const { g, q } = atLantern();
+    talk('d_lr_ysolde', g, q, ['The evidence shelf.', 'What would you take instead?', '(Give her the Cistern.)', 'Later.']);
+    expect(countItem(g.pc.inventory, 'k_lr_reel')).toBe(1);
+    expect(g.flags.lr_cistern_sold).toBe(true);
+    expect(g.flags.lr_reel_how).toBe('traded');
+  });
+
+  it('a hand in your pocket on the bridge, caught or not', () => {
+    const { g, q } = atLantern();
+    g.pc.inventory.tolls = 20;
+    g.pc.sheet.baseAttrs.senses = 10;
+    talk('d_lr_kit', g, q, ['Hand it back.', 'That\'s all.']);
+    expect(g.pc.inventory.tolls).toBe(20);
+    const h = atLantern();
+    h.g.pc.inventory.tolls = 20;
+    h.g.pc.sheet.baseAttrs.senses = 1;
+    const r = talk('d_lr_kit', h.g, h.q, []);
+    expect(h.g.pc.inventory.tolls).toBe(15);
+    expect(r.view()?.options.some((o) => o.text.startsWith('Hand it back'))).toBe(false);
+  });
+
+  it('a Crown boy\'s Masque chit is in the house cage, and the Gilt want trouble', () => {
+    const { g, q } = atLantern();
+    talk('d_lr_fenwick', g, q, ['A chit for what?', 'That\'s all.']);
+    expect(g.world.knowledge.fenwick_chit).toBe(true);
+    g.pc.inventory.tolls = 150;
+    talk('d_lr_dolour', g, q, ['A Crown boy lost a chit here.', '(Pay. 100 Tolls)', 'That\'s all.']);
+    expect(countItem(g.pc.inventory, 'k_masque_chit')).toBe(1);
+    expect(g.pc.inventory.tolls).toBe(50);
+    talk('d_lr_pip', g, q, ['Trouble. What kind do you pay for?', 'That\'s all.']);
+    expect(g.flags.gilt_invite).toBe(true);
+    talk('d_lr_madame', g, q, ['You dress the Crown\'s girls, they say.', 'That\'s all.']);
+    expect(g.world.knowledge.masque_velvet).toBe(true);
+  });
+});

@@ -67,6 +67,8 @@ export class Encounter extends EventBus<EncounterEvents> {
   private xpEarned = 0;
   /** Pluggable AI; defaults to the simple approach-and-attack behaviour. */
   ai: (enc: Encounter, u: Unit) => Promise<void> = simpleAi;
+  /** A pit bout: melee and fists only, nobody dies (the game stands both fighters back up when it ends). */
+  pit = false;
 
   constructor(readonly host: EncounterHost) { super(); }
 
@@ -78,9 +80,10 @@ export class Encounter extends EventBus<EncounterEvents> {
     return this.units.filter((o) => this.alive(o) && !o.fled && (u.hostile ? !o.hostile : o.hostile));
   }
 
-  start(units: Unit[]): void {
+  start(units: Unit[], opts: { pit?: boolean } = {}): void {
     if (this.active) return;
     this.active = true;
+    this.pit = !!opts.pit;
     this.units = units;
     this.round = 1;
     this.xpEarned = 0;
@@ -248,6 +251,7 @@ export class Encounter extends EventBus<EncounterEvents> {
     const ap = attackAp(att.c, { aimed: !!extra.aimed, burst: extra.burst });
     const ca = canAttack(att.c, extra.burst);
     if (!ca.ok) return { ok: false, reason: ca.reason, chance: 0, ap };
+    if (this.pit && !isMelee(w)) return { ok: false, reason: 'No guns in the pit', chance: 0, ap };
     const dist = chebyshev(att.c.x, att.c.y, def.c.x, def.c.y);
     if (isMelee(w) && dist > w.range) return { ok: false, reason: 'Out of reach', chance: 0, ap };
     if (!isMelee(w) && !this.host.grid.lineOfSight(att.c.x, att.c.y, def.c.x, def.c.y)) return { ok: false, reason: 'No line of sight', chance: 0, ap };
@@ -330,6 +334,7 @@ export class Encounter extends EventBus<EncounterEvents> {
 
   private async onKilled(dead: Unit, killer: Unit): Promise<void> {
     dead.actor.kill();
+    if (this.pit) { this.log(`${dead.c.name} goes down.`); if (this.target === dead) this.target = undefined; await wait(300); return; }
     if (killer.c.isPlayer || !killer.hostile) this.xpEarned += killXp(dead.c);
     moraleEvent(killer.c, 'scored_kill');
     for (const u of this.units) {

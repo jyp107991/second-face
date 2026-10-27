@@ -17,7 +17,7 @@ import { BASE_OUTFIT, wardrobeKey, wardrobeOutfit, wearProxyKeys } from './inven
 import { ensureProxies } from './assets/human/data';
 import type { PortraitStage } from './render/portrait';
 import { QuestEngine } from './quest/quest';
-import { apply, runTimers, test, type LogicHost } from './world/logic';
+import { apply, runTimers, test, type Effect, type LogicHost } from './world/logic';
 import { runWorldEvents, spreadNews } from './world/frontier';
 import { discoveriesOnLeg, rollEncounter } from './world/roads';
 import { makeExtras, spotIdle } from './npc/extras';
@@ -103,6 +103,20 @@ export class Game extends EventBus<GameEvents> {
   paused = false;
   /** A conversation is open: the world holds still for play, but people keep breathing and the camera moves. */
   talking = false;
+  /** A pit bout in progress: who you are fighting and what the stake pays either way (nobody dies). */
+  pitBout?: { npc: NpcRuntime; win?: Effect[]; lose?: Effect[] };
+  private reverieOn = false;
+  private postBase?: { vignette: number; grain: number; bloom: number };
+  /** Inside a recorded memory: the picture goes cold, washed and grainy until the reverie ends. */
+  get reverie(): boolean { return this.reverieOn; }
+  set reverie(v: boolean) {
+    if (v === this.reverieOn) return;
+    this.reverieOn = v;
+    const s = this.post?.settings;
+    if (!s) return;
+    if (v) this.postBase = { vignette: s.vignette, grain: s.grain, bloom: s.bloom };
+    else if (this.postBase) { s.vignette = this.postBase.vignette; s.grain = this.postBase.grain; s.bloom = this.postBase.bloom; this.postBase = undefined; }
+  }
   private questCache?: { g: GameState; e: QuestEngine };
   private questTick = 0;
 
@@ -254,6 +268,21 @@ export class Game extends EventBus<GameEvents> {
     });
     this.encounter.ai = utilityAi;
     this.encounter.on('end', ({ outcome }) => {
+      if (this.pitBout) {
+        // A pit bout: both fighters get back up, the loser hurt; the stake pays out through the dialogue's effects.
+        const b = this.pitBout;
+        this.pitBout = undefined;
+        const won = outcome === 'victory';
+        const standUp = (sheet: CharacterSheet, actor: Actor) => { if (sheet.hp <= 0) { sheet.hp = Math.max(1, Math.round(derived(sheet).maxHp * 0.3)); actor.revive(); } };
+        standUp(b.npc.combatant.sheet, b.npc.actor);
+        b.npc.hostile = false;
+        if (this.player) standUp(this.pc.sheet, this.player);
+        if (outcome === 'victory' || outcome === 'defeat') apply(won ? b.win : b.lose, this.state, this.logicHost);
+        this.quests.update();
+        this.syncNpcState();
+        this.emit('message', { text: won ? 'The pit is yours.' : outcome === 'defeat' ? 'You wake on the pit floor.' : 'The bout is called off.' });
+        return;
+      }
       if (outcome === 'defeat') this.emit('gameOver', {});
       // Companions who went down get back up, wounded.
       for (const n of this.npcs.values()) {
@@ -805,12 +834,22 @@ export class Game extends EventBus<GameEvents> {
     }
   }
 
-  startCombat(target?: NpcRuntime): void {
+  startCombat(target?: NpcRuntime, pit?: { win?: Effect[]; lose?: Effect[] }): void {
     if (this.encounter.active || !this.player || !this.loc) return;
     this.player.stop();
     this.pathMarker.visible = false;
     this.pc.x = this.player.tx; this.pc.y = this.player.ty;
     const units: Unit[] = [{ c: this.pc, actor: this.player, hostile: false }];
+    if (pit && target) {
+      // A pit bout: you and the other fighter, nobody else, fists and blades only, nobody dies.
+      target.hostile = true;
+      target.combatant.x = target.actor.tx; target.combatant.y = target.actor.ty;
+      units.push({ c: target.combatant, actor: target.actor, hostile: true });
+      this.pitBout = { npc: target, win: pit.win, lose: pit.lose };
+      this.encounter.start(units, { pit: true });
+      this.encounter.target = units[1];
+      return;
+    }
     for (const n of this.npcs.values()) {
       if (n.combatant.sheet.hp <= 0 || n.away) continue;
       n.combatant.x = n.actor.tx; n.combatant.y = n.actor.ty;
@@ -1297,6 +1336,11 @@ export class Game extends EventBus<GameEvents> {
     this.atmosphere.focusDistance = this.cam.distance;
     this.updateSoundBed();
     this.atmosphere.update(dt, this.time, this.cam.focus, this.post.settings);
+    if (this.reverieOn) {
+      // A recorded memory: cold, washed, grainy, the edges closing in.
+      const s = this.post.settings;
+      s.grade = 0.95; s.exposure = 1.18; s.tint.setRGB(0.82, 0.96, 1.14); s.vignette = 1.05; s.grain = 0.2; s.bloom = 0.9;
+    }
     this.cursor.rotation.y += dt;
     this.hoverTick += dt;
     if (this.hoverTick > 0.25 && this.lastPointer && !this.paused) { this.hoverTick = 0; this.updateHover(this.lastPointer.x, this.lastPointer.y); }

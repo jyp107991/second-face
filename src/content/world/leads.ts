@@ -129,6 +129,10 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_sink_numbers', label: 'The drowned\'s numbers', text: 'The tally wall in the Sink keeps the citizen numbers of the drowned beside their names, and somebody sells the numbers up the stair every spring.' },
   { id: 'l_sato_numbers', label: 'A dead woman\'s card', text: 'Sato\'s forged cards carry the numbers of people who died in the Sink; he says the Sink gives him a few every spring.' },
   { id: 'l_pale_harvest', label: 'What the cold box holds', text: 'Vash\'s cold box fills from the Pale\'s store, and the Pale take from people who owe them, who walk back off the east bank lighter.' },
+  // Lantern Row: the stranger's reel
+  { id: 'l_rev_spire', label: 'Ninety-one landings', text: 'In the reel the stranger came down a stair of ninety-odd landings lit with the city\'s own tubes. One house in Meridian has that many floors above a stair.' },
+  { id: 'l_rev_bundle', label: 'Twelve faces', text: 'He carried a bundle of photographs with cipher under each, and a sheet of twelve lines in the same cipher. The fourth face was yours, older.' },
+  { id: 'l_rev_gate', label: 'A rider at the gate', text: 'At dawn a guild rider waited on the road west of the Wall with a brand on the saddle you have seen at Tollhouse 9. The stranger saw the rider waiting, and went west anyway.' },
 ] as LeadDef[]).map((l) => [l.id, l]));
 
 export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
@@ -144,4 +148,5 @@ export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
   { id: 'c_same_hand_everywhere', from: ['l_dw_log_hand', 'l_record_hand', 'l_pump_manual_hand'], text: 'The Cistern\'s records, the pump manual and the Dry Wells log are all kept in one hand. One keeper.' },
   { id: 'c_fed_from_outside', from: ['l_pressure', 'l_archive_label'], text: 'The Cistern was built to be collected. Its water comes from outside, and so, one day, will its people\'s orders.' },
   { id: 'c_dead_numbers', from: ['l_sink_numbers', 'l_sato_numbers'], text: 'The Sink\'s drowned go on living in the city\'s file: their numbers come up the stair each spring and are sold to people who need to be someone the lens has not seen.' },
+  { id: 'c_rev_last_day', from: ['l_rev_spire', 'l_rev_bundle', 'l_rev_gate'], text: 'The stranger walked out of the city\'s highest house with twelve faces under his coat, and somebody at the gate already knew to wait for him on the road.' },
 ] as ConclusionDef[]).map((c) => [c.id, c]));

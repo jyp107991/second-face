@@ -854,6 +854,17 @@ export const md_market: MapDef = {
         spawn: "from_market"
       },
       label: "The stair down to the Sink"
+    },
+    {
+      x: 71,
+      y: 26,
+      w: 1,
+      h: 6,
+      to: {
+        location: "md_lantern",
+        spawn: "from_market"
+      },
+      label: "The east street, to Lantern Row"
     }
   ],
   talk: {

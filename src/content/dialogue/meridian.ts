@@ -117,6 +117,7 @@ export const d_md_loop: DialogueDef = {
       effects: [{ learn: 'md_loop_seen' }],
       options: [
         { id: 'loop.market', text: 'Old Market. (2 Tolls)', if: { all: [{ flag: 'md_market_open' }, { item: 'tolls', count: 2 }] }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_market', spawn: 'loop', minutes: 15 } }], exit: true },
+        { id: 'loop.lantern', text: 'Lantern Row. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_lantern', spawn: 'loop', minutes: 15 } }], exit: true },
         { id: 'loop.works', text: '(The lines through the names.)', next: 'works' },
         { text: '(Leave it.)', exit: true },
       ],

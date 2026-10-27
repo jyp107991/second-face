@@ -125,7 +125,10 @@ export class DialogueUi {
         if (name === 'surgery' && this.npc) { const npc = this.npc; window.setTimeout(() => { this.close(); this.game.openSurgery(npc); }); return; }
         if (name === 'dust' && this.npc) { const npc = this.npc, d = (data ?? {}) as { stake?: number; prize?: import('../world/logic').DustPrize }; window.setTimeout(() => { this.close(); this.game.emit('openDust', { npc, stake: Number(d.stake ?? 5), prize: d.prize }); }); return; }
         if (name === 'camp') { window.setTimeout(() => { this.close(); this.game.openCamp(); }); return; }
-        if (name === 'fight' && this.npc) { const npc = this.npc; window.setTimeout(() => { this.close(); npc.hostile = true; this.game.refreshHostility(); this.game.startCombat(npc); }); return; }
+        // A fight with the person you are talking to; `{ pit: { win, lose } }` makes it a pit bout (nobody dies; the stake pays by effects).
+        if (name === 'fight' && this.npc) { const npc = this.npc, d = (data ?? {}) as { pit?: { win?: import('../world/logic').Effect[]; lose?: import('../world/logic').Effect[] } }; window.setTimeout(() => { this.close(); if (d.pit) { this.game.startCombat(npc, d.pit); return; } npc.hostile = true; this.game.refreshHostility(); this.game.startCombat(npc); }); return; }
+        // A recorded memory: close this conversation, turn the picture cold, and play the memory's tree.
+        if (name === 'reverie') { const d = (data ?? {}) as { tree: string; name?: string }; window.setTimeout(() => { this.close(); this.game.reverie = true; this.openTree(d.tree, d.name ?? 'Reverie'); }); return; }
         if (name === 'map') { window.setTimeout(() => { this.close(); this.game.emit('openMap', {}); }); return; }
         // District transit and other scripted moves between maps of the same place: { location, spawn?, minutes? }.
         if (name === 'goto') { const d = (data ?? {}) as { location: string; spawn?: string; minutes?: number }; window.setTimeout(() => { this.close(); if (d.minutes) this.game.state.minutes += d.minutes; void this.game.loadLocation(d.location, d.spawn); }); return; }
@@ -146,6 +149,7 @@ export class DialogueUi {
     if (this.game.player) this.game.player.idle = 'stand';
     if (this.framed) { this.game.cam.zoomBy(1 / 0.78); this.game.cam.recentre(); this.framed = false; }
     this.game.talking = false;
+    this.game.reverie = false;
     this.game.paused = false;
     this.game.quests.update();
     this.game.syncParty();
