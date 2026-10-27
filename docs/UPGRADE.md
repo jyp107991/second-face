@@ -263,3 +263,14 @@ Content building (B3.11 onwards) is paused until U1–U5 are in.
   companion matches the player. Standing people stretch or yawn now and then. Evidence
   `docs/evidence/u4/clips/*.png`, `docs/evidence/u4/motion_*.png`. Not yet captured: a death (the database's falls
   are stunts), getting up, a turn in place; they stay procedural for now.
+- **2026-10-27 App directive (owner, pass 6).** The release must be an installable app running full screen, no
+  browser bar, in landscape — not a web page. Speed is to be improved wherever it costs nothing in aesthetics or
+  experience, by modern mobile best practice. Because the output is an app, alternative engines are to be weighed
+  again if the only case against them was build size and poor browser running. Assessment given to the owner the
+  same day (engine kept or ported is the owner's call; see the session's write-up). Work items opened either way:
+  **U9 App shell** — a native shell around the game (Capacitor: Android APK/AAB first, iOS when a Mac and an Apple
+  account are available), landscape locked, immersive full screen, splash, hardware back, saves in app storage,
+  built by CI and attached to releases; the web build stays as the dev/test harness. **U2c Performance pass** moves
+  up: on-device profiling through the shell, WebGL2 as the production path (WebGPU in the Android WebView is still
+  behind a flag in 2026), KTX2/Basis texture compression, resolution scaling, draw-call and skinned-mesh budgets,
+  allocation-free hot loops, workers for chunk building, LOD rings.

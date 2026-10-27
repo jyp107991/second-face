@@ -70,6 +70,11 @@ The owner wants to play unspoiled.
   humans (captured motion); no cursive, no farmer's dungarees; names that feel found, not "the [noun]"; conversations
   that progress and never loop; one-finger camera turn on touch; rerolls with real variance; portraits without a wait;
   characters with distinct, rational motives and deep relationships. Content building pauses until U1–U5 are in.
+- **Installable app, not a web page** (owner, pass 6, 2026-10-27): the release is an installable app that runs full
+  screen (no browser bar) in landscape. Performance is a first-class goal: wherever the game can run faster without
+  losing aesthetic or experience, it must, in line with modern mobile best practice. The engine choice is to be
+  re-examined on that basis (see `docs/UPGRADE.md` "App directive"); until the owner decides, the TS/three.js
+  codebase continues and ships through a native shell.
 - Visual style (superseded where the upgrade directive says otherwise): orthographic iso camera, rotatable/zoomable.
 
 ## 3. Engineering conventions
