@@ -8,6 +8,7 @@ export const MISC: ItemDef[] = [
   { id: 'u_powercell', icon: 'battery', name: 'Implant Cell', desc: 'A thumb-sized charge cell for chrome that draws more than a body makes.', category: 'misc', weight: 0.05, value: 45, stack: true },
   { id: 'j_scrap', icon: 'scrap', name: 'Scrap Metal', desc: 'Bent sheet, bolts, wire.', category: 'junk', weight: 1, value: 2 },
   { id: 'j_wiring', icon: 'wiring', name: 'Copper Wiring', desc: 'Stripped from walls and dead machines.', category: 'junk', weight: 0.3, value: 4 },
+  { id: 'j_hide', icon: 'cloth', name: 'Hide', desc: 'A hare\'s, or something\'s. Scraped and salted. Someone with a needle will want it.', category: 'junk', weight: 0.5, value: 4 },
   { id: 'j_cloth', icon: 'cloth', name: 'Cloth', desc: 'Rags, sacking, a torn shirt.', category: 'junk', weight: 0.2, value: 1 },
   { id: 'j_glass', icon: 'glass', name: 'Glass Bottle', desc: 'Empty. Useful.', category: 'junk', weight: 0.3, value: 1 },
   { id: 'j_electronics', icon: 'board', name: 'Circuit Board', desc: 'Pre-Burn electronics. Someone always wants these.', category: 'junk', weight: 0.2, value: 12 },

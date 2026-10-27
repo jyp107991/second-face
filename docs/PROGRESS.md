@@ -18,11 +18,13 @@ from here without guessing. Story-sensitive detail lives only in `story/` (never
 
 ## 1. Where things stand (one paragraph)
 Engine is substantial (render, iso camera, turn-based combat + AI, stats/perks/chrome, inventory, dialogue,
-quests, world logic, local reputation/news/leads/events, settlement types, world-map travel model, human
-figures with layered garments). Content is tiny: Cistern 9 opening (4 NPCs, 4 dialogues, 1 quest), 2 dev
-maps, ~68 items, 64 perks, 15 chrome pieces, a 25-place map skeleton. Nothing beyond the test yard is
-playable yet. Current work: **Phase A quality/depth pass → Phase B full v1 build** (owner direction, this
-session). Engine decision: see `docs/TECH_EVALUATION.md` (recommendation: stay on three.js; owner to confirm).
+quests, world logic, local reputation/news/leads/events, scheduled events that wait for the player, settlement
+types, world-map travel, human figures with layered garments, equipment and chrome shown on the body, camp,
+letters, Dust). Content: Chapter One and Act 1 through its finale are playable end to end — the Cistern, Shale,
+the overpass, Tollhouse 9, Signal Hill, Jonah's month, Dry Wells (10 maps, ~60 NPCs, ~75 dialogues, 15
+quests, ~80 items); three companions can join. Phase A is closed. Current work: **Phase B** (B2 Act 1: next
+the wilds, then the Mender and the Wheel, then the Act 1 wrap). Binding owner rules: see `CLAUDE.md` §2
+(no time limits; spoiler rule; not a Fallout clone; cyberpunk fusion).
 
 ## 2. PHASE A — quality and depth pass
 ### A0 Plan
@@ -163,8 +165,16 @@ mid-range Android phone; deployed to Pages.
       no, the road, or leave them), the Pump Hand origin's thread pays off at the console, `PassiveDef` takes `if`;
       smoke `tools/qa/drywells.cjs`; tests. **No day limits (owner)**: the month resolves when the finale does (no
       thirty-day timer), the courier packet has no clock, drills put pairs on the street at once, Tribute Day waits for
-      the player (`WorldEventDef.at: { hour, where }`), all day-count wording rewritten. NEXT: B2.5 Wilds.) Remaining:
-      Burnt Orchard/salt pans/hunting/road encounters/camps, Mender + chrome surgery, the Wheel, Act 1 side quests and smoke. ~7 h.
+      the player (`WorldEventDef.at: { hour, where }`), all day-count wording rewritten. B2.5a DONE: the road —
+      road encounters (`engine/world/roads.ts`, `content/world/encounters.ts`: ten for the Sallow, four passing things and
+      six that stop the trip on a roadside map `tools/maps/gen_wilds.py` → `wild_track`/`wild_rough`, the cast in
+      `npcs/wilds.ts`, the talks in `dialogue/wilds.ts`; `Game.travelTo` rolls each leg, `world.trip` holds the rest of
+      the trip and the roadside map's exit continues it; `game.forceEncounter` for smokes), discoveries on foot (hidden
+      landmarks near a leg found by Survival, DC by distance), camp hunting and trap lines (`engine/world/hunting.ts`,
+      `MapDef.hunting`, items `c_meat`/`j_hide`), the windpump graveyard map `tools/maps/gen_windpumps.py` with its
+      scavenger and valve house (`npcs/landmarks.ts`, `dialogue/landmarks.ts`); smoke `tools/qa/wilds.cjs`; tests
+      `tests/roads.test.ts`, `tests/wilds.test.ts`. NEXT: B2.5b the salt-pan wreck and the orchard (see §5).) Remaining:
+      the wreck and the orchard with their side quests, Mender + chrome surgery, the Wheel, Act 1 side quests and smoke. ~6 h.
 - [ ] B3 **Meridian**: 9 districts, the Loop, Brokers' gigs (~25), the Masque, High Water, Static, Turf,
       Court of Accounts, citizenship hearing, Archive Spire, flat, fight pits, reverie dens, races,
       gambling, safehouse; gangs joinable; Ledger line; companions 4–6. ~16 h.
@@ -188,7 +198,7 @@ mid-range Android phone; deployed to Pages.
 | Tollhouse 9 | 1/1 | 11/11 | 13/13 | 2/2 | playable; six ways through |
 | Signal Hill | 1/1 | 3/3 | 7/7 | 2/2 | playable; relay, voice, gully |
 | Dry Wells | 1/1 | 6/6 | 13/13 | 2/2 | playable; the Act 1 finale, the family |
-| Act 1 wilds | 0/5 | 0/15 | 0/15 | 0/6 | — |
+| Act 1 wilds | 3/5 | 10/15 | 9/15 | 0/6 | road encounters, discoveries, hunting, the windpumps playable; wreck + orchard maps generated, unregistered |
 | Meridian | 0/12 | 0/60 | 0/60 | 0/30 | — |
 | Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |
 | Act 2 wilds | 0/14 | 0/40 | 0/40 | 0/16 | — |
@@ -215,7 +225,24 @@ mid-range Android phone; deployed to Pages.
 - Save format versioned in `src/engine/save/migrations.ts` (bump + migrate on any GameState change).
 
 ## 5. Half-finished work
-(none)
+**B2.5b — the salt-pan wreck and the burnt orchard (drafted, not wired).** Done: generators
+`tools/maps/gen_saltpan.py` (→ `maps/saltpan.ts`: the truck on the white, its locked cab with the controller and the
+manifest, the thing that sat down beside it as a `machine` prop `hound`, a trigger that starts `q_sw_wreck`) and
+`tools/maps/gen_orchard.py` (→ `maps/orchard.ts`: burnt rows, a dozen living trees, seedbeds, a well, tents, a shed,
+a gap in the north wall; placements `npc_or_01..05`, the thieves only at night while `or_stakeout`; a night trigger
+on the beds → `d_or_thieves`); items `c_fruit`, `k_hound_controller`, `k_convoy_manifest` exist. To do, in order:
+1. `dialogue/saltpan.ts`: `d_sp_hound` (a dormant machine, Concern-made; with the controller: wake it for Shale
+   (science 40) / leave it; without: a senses passive that it is not dead), `d_sp_truck` (the manifest, the skid);
+   `q_sw_wreck` "The Saltpan Wreck" in `quests/a1.ts` (found → the cab → the controller understood (science 35 or
+   the manifest) → wake / sell to Pike 150 / to Marit or the Wheel 80 / keep); Pike hook `pike.controller`; Ada
+   line when it is woken for Shale (`hound_for_shale`; the machine itself is not modelled yet — note in §2 A4).
+2. `npcs/orchard.ts` (Brother Anselm the keeper, novices Petra and Dun, the two half-grown Rust Dog thieves Kip
+   and Mote) + `dialogue/orchard.ts` (`d_or_anselm` hook → `q_orchard` "Orchard Thieves": the leavings at the wall
+   (survival/senses) → a stake-out at night (`or_stakeout`) → `d_or_thieves`: return them to the Dogs / the Choir
+   keeps them / the sheriff's cell / let them keep stealing; `d_or_shrine`, `d_or_well`, `d_or_leavings`, Calla's
+   hook in Shale `calla.orchard`); a world-map location `orchard` (near Shale, route `track`, not hidden) and
+   `lm_sallow_01` gets `map: 'saltpan'`; register maps/NPCs/dialogues/quests; leads; tests; extend
+   `tools/qa/wilds.cjs`. Then B2.6.
 
 ## 6. History (compressed; details in git log)
 M0 foundations · M1 systems I (stats, creation, inventory, combat, AI, audio) · M1.10 realistic humans

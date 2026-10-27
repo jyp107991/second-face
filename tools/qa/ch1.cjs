@@ -39,14 +39,15 @@ const fs = require('fs');
   const travel = async (to) => {
     await page.evaluate(() => game.emit('openMap', {}));
     await page.waitForTimeout(800);
-    const found = await page.evaluate((to) => {
+    let found = 'not found';
+    for (let tries = 0; tries < 40 && found === 'not found'; tries++) { await page.waitForTimeout(750); found = await page.evaluate((to) => {
       const c = document.querySelector('.map-canvas'); if (!c) return 'no canvas'; const r = c.getBoundingClientRect();
       for (let y = 10; y < r.height; y += 6) for (let x = 10; x < r.width; x += 6) {
         c.dispatchEvent(new MouseEvent('click', { clientX: r.left + x, clientY: r.top + y, bubbles: true }));
         if ((document.querySelector('.map-side h4')?.textContent ?? '').toLowerCase() === to.toLowerCase()) return `${x},${y}`;
       }
       return 'not found';
-    }, to);
+    }, to); }
     console.log(`map: ${to} ${found}; side: ${await page.evaluate(() => document.querySelector('.map-side')?.textContent?.replace(/\s+/g, ' ').slice(0, 120))}`);
     const before = await page.evaluate(() => game.state.world.at);
     await page.evaluate(() => document.querySelector('.map-side [data-a=travel]')?.click());

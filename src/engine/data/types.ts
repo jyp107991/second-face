@@ -136,4 +136,6 @@ export interface MapDef {
   talk?: Record<string, { dialogue: string; name: string }>;
   /** Under a roof or under the ground: the field map opens but you cannot set out from here. */
   interior?: boolean;
+  /** How much game there is to hunt or trap at camp (0..1); none when absent. */
+  hunting?: number;
 }

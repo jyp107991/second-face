@@ -67,6 +67,12 @@ export interface WorldState {
   knownLocations?: string[];
   /** World-map location the player is at (or last was). */
   at?: string;
+  /** Road encounters that have happened (the once-only ones do not repeat). */
+  roadSeen?: Record<string, true>;
+  /** A trip stopped by a road encounter; leaving its roadside map continues it. */
+  trip?: import('./roads').PendingTrip;
+  /** Trap lines left at camps, by map id. */
+  traps?: Record<string, import('./hunting').TrapLine>;
   /** Faction memberships by faction id (world/factions.ts). */
   membership: Record<string, import('./factions').Membership>;
   /** Letters sent (world/letters.ts) and mail received. */

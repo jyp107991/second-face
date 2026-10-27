@@ -19,9 +19,11 @@ import type { PortraitStage } from './render/portrait';
 import { QuestEngine } from './quest/quest';
 import { apply, runTimers, test, type LogicHost } from './world/logic';
 import { runWorldEvents, spreadNews } from './world/frontier';
-import { QUESTS, SETTLEMENTS, WORLD_EVENTS, WORLD_MAP } from '../content';
+import { discoveriesOnLeg, rollEncounter } from './world/roads';
+import { QUESTS, ROAD_ENCOUNTERS, SETTLEMENTS, WORLD_EVENTS, WORLD_MAP } from '../content';
 import { buildLocation, type BuiltLocation } from './scene/location';
-import type { ExitDef } from './data/types';
+import type { ExitDef, MapDef } from './data/types';
+import type { NpcPlacement } from './npc/defs';
 import { SaveManager, type SaveFile, type SlotId } from './save/saves';
 import { createBackend } from './save/storage';
 import { Encounter, type Unit } from './combat/encounter';
@@ -275,6 +277,44 @@ export class Game extends EventBus<GameEvents> {
     if (!loc || this.transitioning) return;
     this.transitioning = true;
     await fade(1);
+    // On the way: hidden places noticed from the track, passing things, or an encounter that stops the trip on a
+    // roadside map (its exit continues the trip).
+    const notes: string[] = [];
+    const isKnown = (id: string) => (this.state.world.knownLocations ?? []).includes(id) || !!this.state.world.knowledge[`loc_${id}`];
+    let spent = 0;
+    for (const leg of trip.legs) {
+      for (const d of discoveriesOnLeg(this.state, WORLD_MAP, leg, isKnown)) {
+        this.state.world.knowledge[`loc_${d.id}`] = true;
+        notes.push(`From the way you make out ${d.name}, ${d.km} km off. It is on your map now.`);
+      }
+      const forced = this.forceEncounter ? ROAD_ENCOUNTERS[this.forceEncounter] : undefined;
+      this.forceEncounter = undefined;
+      const enc = forced ?? rollEncounter(this.state, WORLD_MAP, leg, ROAD_ENCOUNTERS, this.rng);
+      if (!enc) { spent += leg.hours; continue; }
+      (this.state.world.roadSeen ??= {})[enc.id] = true;
+      if (!enc.map) {
+        spent += leg.hours;
+        apply(enc.effects, this.state, this.logicHost);
+        if (enc.text) notes.push(enc.text);
+        continue;
+      }
+      const half = leg.hours / 2;
+      this.state.minutes += Math.round((spent + half) * 60);
+      runTimers(this.state, this.quests);
+      runWorldEvents(this.state, WORLD_EVENTS, this.quests);
+      spreadNews(this.state, SETTLEMENTS);
+      this.dailyBody();
+      const roadside = MAPS[enc.map];
+      const npcs = (enc.npcs ?? []).map((n) => { const sp = roadside.spots?.[n.spot] ?? roadside.spawns[0]; return { def: n.def, id: n.id, x: sp.x, y: sp.y, facing: n.facing, dialogue: n.dialogue, schedule: [] }; });
+      this.state.world.trip = { to, from, hoursLeft: Math.max(0, trip.hours - spent - half), map: enc.map, encounter: enc.id, npcs };
+      await this.loadLocation(enc.map, 'here');
+      this.quests.update();
+      await fade(0);
+      this.transitioning = false;
+      this.tellNotes(notes);
+      if (enc.dialogue) window.setTimeout(() => this.emit('openDialogue', { tree: enc.dialogue!, name: '' }), 500);
+      return;
+    }
     this.state.minutes += Math.round(trip.hours * 60);
     runTimers(this.state, this.quests);
     runWorldEvents(this.state, WORLD_EVENTS, this.quests);
@@ -293,7 +333,16 @@ export class Game extends EventBus<GameEvents> {
     this.quests.update();
     await fade(0);
     this.transitioning = false;
+    this.tellNotes(notes);
     void this.save('auto');
+  }
+
+  /** Dev and smoke hook: the next trip meets this encounter instead of rolling. */
+  forceEncounter?: string;
+
+  /** What happened on the way, told one thing at a time once the road is behind you. */
+  private tellNotes(notes: string[]): void {
+    notes.forEach((text, i) => window.setTimeout(() => this.emit('message', { text }), 300 + i * 5000));
   }
 
   openCamp(): void {
@@ -344,7 +393,7 @@ export class Game extends EventBus<GameEvents> {
   async loadLocation(id: string, spawn?: string | { x: number; y: number }): Promise<void> {
     const map = MAPS[id];
     if (!map) throw new Error(`Unknown location ${id}`);
-    const outfits = (map.npcs ?? []).flatMap((p) => (NPCS[p.def] ? [npcLook(NPCS[p.def]).outfit] : []));
+    const outfits = this.placements(map).flatMap((p) => (NPCS[p.def] ? [npcLook(NPCS[p.def]).outfit] : []));
     const seq = ++this.loadSeq;
     const outfit = this.playerOutfit();
     this.lookKey = wardrobeKey(this.state.pc);
@@ -393,7 +442,7 @@ export class Game extends EventBus<GameEvents> {
     this.addActor(this.player);
     this.rng.state = this.state.rngState;
     this.pc = { id: 'player', name: this.state.pc.sheet.name || 'You', team: 'player', sheet: this.state.pc.sheet, inv: this.state.pc.inventory, x: sx, y: sy, ap: 0, morale: 100, evasion: 0, isPlayer: true };
-    for (const p of map.npcs ?? []) if (test(p.if, this.state)) this.spawn(p);
+    for (const p of this.placements(map)) if (test(p.if, this.state)) this.spawn(p);
     this.spawnParty(sx, sy);
     this.groundPilesChanged();
     this.cam.target.copy(this.player.object.position);
@@ -512,11 +561,17 @@ export class Game extends EventBus<GameEvents> {
   private scheduleTick = 0;
   private barkTick = 0;
   /** Conditional placements on the current map appear or leave as the world changes (an event fired, a flag set). */
+  /** A map's placements, plus the people a road encounter put on it. */
+  private placements(map: MapDef): NpcPlacement[] {
+    const trip = this.state.world.trip;
+    return [...(map.npcs ?? []), ...(trip && trip.map === map.id ? trip.npcs : [])];
+  }
+
   syncPlacements(): void {
     const map = this.loc?.map;
     if (!map || this.encounter.active) return;
     const grid = this.loc!.grid;
-    for (const p of map.npcs ?? []) {
+    for (const p of this.placements(map)) {
       if (!p.if) continue;
       const id = p.id ?? p.def;
       const n = this.npcs.get(id);
@@ -806,6 +861,13 @@ export class Game extends EventBus<GameEvents> {
     apply(exit.effects, this.state, this.logicHost);
     this.quests.update();
     if (!('location' in exit.to)) {
+      const trip = this.state.world.trip;
+      if (trip && this.loc?.map.id === trip.map) {
+        // Back on the road: the rest of the trip, time already half spent.
+        this.state.world.trip = undefined;
+        void this.travelTo(trip.to, trip.from, { legs: [], hours: trip.hoursLeft, fare: 0, fast: false });
+        return;
+      }
       this.emit('openMap', {});
       return;
     }

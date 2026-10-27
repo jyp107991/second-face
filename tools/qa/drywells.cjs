@@ -29,7 +29,8 @@ const fs = require('fs');
   check('the hill done started the water clock', await page.evaluate(() => game.state.world.quests.q_a1_drywells?.stage === 'track' && !!game.state.world.leads.l_relay_west_line), await page.evaluate(() => JSON.stringify(Object.keys(game.state.world.quests))));
   await page.evaluate(() => game.emit('openMap', {}));
   await page.waitForTimeout(800);
-  const found = await page.evaluate(() => { const c = document.querySelector('.map-canvas'); const r = c.getBoundingClientRect(); for (let y = 10; y < r.height; y += 6) for (let x = 10; x < r.width; x += 6) { c.dispatchEvent(new MouseEvent('click', { clientX: r.left + x, clientY: r.top + y, bubbles: true })); if ((document.querySelector('.map-side h4')?.textContent ?? '') === 'Dry Wells') return document.querySelector('.map-side')?.textContent?.replace(/\s+/g, ' ').slice(0, 120); } return 'not found'; });
+  let found = 'not found';
+  for (let tries = 0; tries < 40 && found === 'not found'; tries++) { await page.waitForTimeout(750); found = await page.evaluate(() => { const c = document.querySelector('.map-canvas'); const r = c.getBoundingClientRect(); for (let y = 10; y < r.height; y += 6) for (let x = 10; x < r.width; x += 6) { c.dispatchEvent(new MouseEvent('click', { clientX: r.left + x, clientY: r.top + y, bubbles: true })); if ((document.querySelector('.map-side h4')?.textContent ?? '') === 'Dry Wells') return document.querySelector('.map-side')?.textContent?.replace(/\s+/g, ' ').slice(0, 120); } return 'not found'; }); }
   console.log('map:', found);
   await page.evaluate(() => document.querySelector('.map-side [data-a=travel]')?.click());
   await page.waitForFunction((to) => game.state.locationId === to && !game.transitioning && game.npcs.size > 0, 'drywells', { timeout: 90000 }).catch(() => {});

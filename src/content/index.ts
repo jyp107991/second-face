@@ -15,6 +15,8 @@ import { RUSTDOG_NPCS } from './npcs/rustdogs';
 import { TOLLHOUSE_NPCS } from './npcs/tollhouse';
 import { SIGNALHILL_NPCS } from './npcs/signalhill';
 import { DRYWELLS_NPCS } from './npcs/drywells';
+import { WILDS_NPCS } from './npcs/wilds';
+import { LANDMARK_NPCS } from './npcs/landmarks';
 import { dev_bunker } from './maps/dev_bunker';
 import { dev_yard } from './maps/dev_yard';
 import { bench_crowd } from './maps/bench_crowd';
@@ -25,12 +27,16 @@ import { overpass } from './maps/overpass';
 import { tollhouse } from './maps/tollhouse';
 import { signalhill } from './maps/signalhill';
 import { drywells } from './maps/drywells';
+import { wild_track } from './maps/wild_track';
+import { wild_rough } from './maps/wild_rough';
+import { windpumps } from './maps/windpumps';
 import { BENCH_NPCS } from './npcs/bench';
 import { DIALOGUES } from './dialogue';
 import { QUESTS } from './quests';
 import { SETTLEMENTS } from './world/settlements';
 import { CONCLUSIONS, LEADS } from './world/leads';
 import { WORLD_EVENTS } from './world/events';
+import { ROAD_ENCOUNTERS } from './world/encounters';
 import { REGIONS } from './world/regions';
 import { WORLD_MAP } from './world/map';
 import { FACTIONS } from './factions';
@@ -45,12 +51,12 @@ export const MAPS: Record<string, MapDef> = {
   overpass,
   dev_yard,
   dev_bunker,
-  bench_crowd, tollhouse, signalhill, drywells,
+  bench_crowd, tollhouse, signalhill, drywells, wild_track, wild_rough, windpumps,
 };
 
-export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...TOLLHOUSE_NPCS, ...SIGNALHILL_NPCS, ...DRYWELLS_NPCS, ...BENCH_NPCS].map((n) => [n.id, n]));
+export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...TOLLHOUSE_NPCS, ...SIGNALHILL_NPCS, ...DRYWELLS_NPCS, ...WILDS_NPCS, ...LANDMARK_NPCS, ...BENCH_NPCS].map((n) => [n.id, n]));
 
-export { LETTERS, FACTIONS, WORLD_MAP, REGIONS, TRAITS, PERKS, CHROME, ITEMS, ORIGINS, DIALOGUES, QUESTS, SETTLEMENTS, LEADS, CONCLUSIONS, WORLD_EVENTS };
+export { LETTERS, FACTIONS, WORLD_MAP, REGIONS, TRAITS, PERKS, CHROME, ITEMS, ORIGINS, DIALOGUES, QUESTS, SETTLEMENTS, LEADS, CONCLUSIONS, WORLD_EVENTS, ROAD_ENCOUNTERS };
 registerRules({ traits: TRAITS, perks: PERKS });
 registerChrome(CHROME);
 registerFactions(FACTIONS);

@@ -30,7 +30,8 @@ const fs = require('fs');
   // Field map → Tollhouse 9.
   await page.evaluate(() => game.emit('openMap', {}));
   await page.waitForTimeout(800);
-  const found = await page.evaluate(() => { const c = document.querySelector('.map-canvas'); const r = c.getBoundingClientRect(); for (let y = 10; y < r.height; y += 6) for (let x = 10; x < r.width; x += 6) { c.dispatchEvent(new MouseEvent('click', { clientX: r.left + x, clientY: r.top + y, bubbles: true })); if ((document.querySelector('.map-side h4')?.textContent ?? '') === 'Tollhouse 9') return document.querySelector('.map-side')?.textContent?.replace(/\s+/g, ' ').slice(0, 120); } return 'not found'; });
+  let found = 'not found';
+  for (let tries = 0; tries < 40 && found === 'not found'; tries++) { await page.waitForTimeout(750); found = await page.evaluate(() => { const c = document.querySelector('.map-canvas'); const r = c.getBoundingClientRect(); for (let y = 10; y < r.height; y += 6) for (let x = 10; x < r.width; x += 6) { c.dispatchEvent(new MouseEvent('click', { clientX: r.left + x, clientY: r.top + y, bubbles: true })); if ((document.querySelector('.map-side h4')?.textContent ?? '') === 'Tollhouse 9') return document.querySelector('.map-side')?.textContent?.replace(/\s+/g, ' ').slice(0, 120); } return 'not found'; }); }
   console.log('map:', found);
   await shot('th_0_map');
   await page.evaluate(() => document.querySelector('.map-side [data-a=travel]')?.click());
