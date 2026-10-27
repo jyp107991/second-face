@@ -1,7 +1,11 @@
 import { REGIONS, WORLD_MAP } from '../../content';
+import { WORLD_SCALE } from '../../content/world/sites';
 import { hourOf } from '../core/state';
 import type { Game } from '../game';
+import { worldToKm } from '../world/sites';
 import { planTrip, type Trip } from '../world/travel';
+import { ways } from '../world/ways';
+import { KM_PER_PX, mapImage } from './mapImage';
 
 /**
  * The field map (DESIGN §13c): the places you know, the roads between them, and a trip planner. Travel is
@@ -14,9 +18,12 @@ export class WorldMapUi {
   private canvas?: HTMLCanvasElement;
   private selected?: string;
   private pts = new Map<string, { x: number; y: number }>();
+  private redraw?: number;
 
   constructor(private game: Game) {
     game.on('openMap', () => this.open());
+    // The picture of the land is built in idle time from the start, so the map is ready when first opened.
+    mapImage();
     window.addEventListener('keydown', (e) => { if (e.code === 'Escape' && this.el) { e.stopImmediatePropagation(); this.close(); } }, true);
   }
 
@@ -47,7 +54,16 @@ export class WorldMapUi {
     this.el?.remove();
     this.el = undefined;
     this.canvas = undefined;
+    if (this.redraw) { clearTimeout(this.redraw); this.redraw = undefined; }
     this.game.paused = false;
+  }
+
+  /** Where the player stands, in km: their tile in the open world; the place they are in when inside. */
+  private me(): { x: number; y: number } {
+    const g = this.game;
+    if (g.world.mode === 'open' && g.player) return worldToKm(g.player.tx + 0.5, g.player.ty + 0.5);
+    const l = WORLD_MAP.locations[this.here()];
+    return l ? { x: l.x, y: l.y } : { x: 0, y: 0 };
   }
 
   private trip(to: string): Trip | undefined {
@@ -111,17 +127,33 @@ export class WorldMapUi {
     g.scale(dpr, dpr);
     const known = Object.values(WORLD_MAP.locations).filter((l) => this.known(l.id));
     const here = this.here();
-    // Fit the known places with a margin; never zoom closer than ~120 km across.
-    let x0 = Math.min(...known.map((l) => l.x)) - 40, x1 = Math.max(...known.map((l) => l.x)) + 40;
-    let y0 = Math.min(...known.map((l) => l.y)) - 40, y1 = Math.max(...known.map((l) => l.y)) + 40;
+    const me = this.me();
+    // Fit the known places and where you stand, with a margin; never zoom closer than ~120 km across.
+    const xs = [...known.map((l) => l.x), me.x], ys = [...known.map((l) => l.y), me.y];
+    let x0 = Math.min(...xs) - 40, x1 = Math.max(...xs) + 40;
+    let y0 = Math.min(...ys) - 40, y1 = Math.max(...ys) + 40;
     if (x1 - x0 < 120) { const m = (x0 + x1) / 2; x0 = m - 60; x1 = m + 60; }
     if (y1 - y0 < 120) { const m = (y0 + y1) / 2; y0 = m - 60; y1 = m + 60; }
     const sx = W / (x1 - x0), sy = H / (y1 - y0), s = Math.min(sx, sy);
     const ox = (W - (x1 - x0) * s) / 2, oy = (H - (y1 - y0) * s) / 2;
     const P = (x: number, y: number) => ({ x: ox + (x - x0) * s, y: oy + (y - y0) * s });
-    // Paper
+    // Paper, and on it the land as the surveyors drew it: relief, the sea, the drowned ground.
     g.fillStyle = '#d9c9a3'; g.fillRect(0, 0, W, H);
+    const img = mapImage();
+    g.imageSmoothingEnabled = true;
+    g.drawImage(img.canvas, 0, 0, img.width, img.height, ox - x0 * s, oy - y0 * s, img.width * KM_PER_PX * s, img.height * KM_PER_PX * s);
+    g.fillStyle = 'rgba(217,201,163,0.42)'; g.fillRect(0, 0, W, H);
     for (let i = 0; i < 400; i++) { g.fillStyle = `rgba(90,70,40,${0.03 + (i % 7) * 0.004})`; g.fillRect((i * 7919) % W, (i * 104729) % H, 2 + (i % 5), 1 + (i % 3)); }
+    // While the map is open the picture is finished in earnest, a slice a tick, and redrawn as it grows.
+    if (!img.done) { this.redraw = window.setTimeout(() => { this.redraw = undefined; img.step(40); this.draw(); }, 60); }
+    // The river and the Line are drawn as the land is: everyone knows where they run.
+    const km = (p: [number, number]) => P(p[0] / WORLD_SCALE, p[1] / WORLD_SCALE);
+    const polyline = (pts: [number, number][]) => { g.beginPath(); pts.forEach((p, i) => { const q = km(p); if (i) g.lineTo(q.x, q.y); else g.moveTo(q.x, q.y); }); g.stroke(); };
+    for (const w of ways()) {
+      if (w.kind === 'river') { g.strokeStyle = 'rgba(70,100,110,.85)'; g.lineWidth = 2.2; g.setLineDash([]); polyline(w.pts); }
+      else if (w.kind === 'rail') { g.strokeStyle = 'rgba(40,34,28,.7)'; g.lineWidth = 1.4; g.setLineDash([3, 2]); polyline(w.pts); }
+    }
+    g.setLineDash([]);
     // Regions (faint) and their names
     g.font = '600 12px "Barlow Condensed", sans-serif'; g.textAlign = 'center';
     for (const r of Object.values(REGIONS)) {
@@ -130,10 +162,16 @@ export class WorldMapUi {
       g.fillStyle = 'rgba(80,60,30,.55)';
       g.fillText(r.name.toUpperCase(), Math.max(50, Math.min(W - 50, (a.x + b.x) / 2)), Math.max(16, Math.min(H - 8, a.y + 18)));
     }
-    // Roads between known places
-    g.strokeStyle = 'rgba(70,50,25,.75)'; g.lineWidth = 1.5; g.setLineDash([6, 4]);
+    // Roads and tracks between known places, as they wander.
+    for (const w of ways()) {
+      if (!w.a || !w.b || !this.known(w.a) || !this.known(w.b)) continue;
+      g.strokeStyle = 'rgba(70,50,25,.8)'; g.lineWidth = w.kind === 'road' ? 2 : 1.4; g.setLineDash(w.kind === 'road' ? [] : w.kind === 'track' ? [6, 4] : [2, 4]);
+      polyline(w.pts);
+    }
+    // Routes without a way drawn (to the moving camp): a faint line.
+    g.strokeStyle = 'rgba(70,50,25,.45)'; g.lineWidth = 1; g.setLineDash([2, 5]);
     for (const r of WORLD_MAP.routes) {
-      if (!this.known(r.a) || !this.known(r.b)) continue;
+      if ((r.a !== 'wheel' && r.b !== 'wheel') || !this.known(r.a) || !this.known(r.b)) continue;
       const a = WORLD_MAP.locations[r.a], b = WORLD_MAP.locations[r.b];
       const pa = P(a.x, a.y), pb = P(b.x, b.y);
       g.beginPath(); g.moveTo(pa.x, pa.y); g.lineTo(pb.x, pb.y); g.stroke();
@@ -153,6 +191,10 @@ export class WorldMapUi {
       g.fillStyle = '#2a1d10'; g.textAlign = 'left';
       g.fillText(l.name, p.x + 9, p.y + 5);
     }
+    // You: where you stand, to the kilometre.
+    const mp = P(me.x, me.y);
+    g.strokeStyle = '#8a2a1a'; g.lineWidth = 2; g.beginPath(); g.arc(mp.x, mp.y, 6, 0, Math.PI * 2); g.stroke();
+    g.fillStyle = '#8a2a1a'; g.beginPath(); g.arc(mp.x, mp.y, 2.2, 0, Math.PI * 2); g.fill();
     // Scale bar: 20 km
     const bar = 20 * s;
     g.strokeStyle = '#2a1d10'; g.lineWidth = 2; g.beginPath(); g.moveTo(16, H - 14); g.lineTo(16 + bar, H - 14); g.stroke();

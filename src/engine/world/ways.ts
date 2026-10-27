@@ -8,7 +8,7 @@ import { fbm } from './terrain';
  * the surface along it, the heightfield carves the river and the sea, and walking follows it over steep ground.
  */
 export type WayKind = 'road' | 'track' | 'rough' | 'rail' | 'river';
-export interface Way { kind: WayKind; key: string; width: number; pts: [number, number][]; bbox: [number, number, number, number] }
+export interface Way { kind: WayKind; key: string; width: number; pts: [number, number][]; bbox: [number, number, number, number]; /** The places it joins (a route), or the network it belongs to. */ a?: string; b?: string; net?: string }
 
 const SURFACE: Record<string, { kind: WayKind; key: string; width: number } | undefined> = {
   road: { kind: 'road', key: 'asphalt', width: 5 },
@@ -64,7 +64,7 @@ export function ways(): Way[] {
     const a = km(r.a), b = km(r.b);
     if (!s || !a || !b) continue;
     const pts = bend(a, b, seed);
-    out.push({ kind: s.kind, key: s.key, width: s.width, pts, bbox: bboxOf(pts, s.width + 6) });
+    out.push({ kind: s.kind, key: s.key, width: s.width, pts, bbox: bboxOf(pts, s.width + 6), a: r.a, b: r.b });
   }
   for (const n of Object.values(WORLD_MAP.networks)) {
     if (n.kind !== 'rail' && n.kind !== 'barge') continue;
@@ -77,8 +77,8 @@ export function ways(): Way[] {
     for (let i = 0; i + 1 < stops.length; i++) {
       seed++;
       const pts = bend(stops[i], stops[i + 1], seed, n.kind === 'rail' ? 0.04 : 0.12);
-      if (n.kind === 'rail') out.push({ kind: 'rail', key: 'gravel', width: 3.6, pts, bbox: bboxOf(pts, 10) });
-      else out.push({ kind: 'river', key: 'mud', width: 18, pts, bbox: bboxOf(pts, 40) });
+      if (n.kind === 'rail') out.push({ kind: 'rail', key: 'gravel', width: 3.6, pts, bbox: bboxOf(pts, 10), net: n.id });
+      else out.push({ kind: 'river', key: 'mud', width: 18, pts, bbox: bboxOf(pts, 40), net: n.id });
     }
   }
   cache = out;

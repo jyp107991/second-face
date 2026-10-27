@@ -254,9 +254,10 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
       - [x] U2b.3 DONE 2026-10-27: ways (`src/engine/world/ways.ts`): roads, tracks, rails with sleepers and rails
             laid, the river carved to the sea, the sea west of the coast, walkability along ways, a far ground ring
             (`ways.cjs`).
-      - [ ] U2b.4 NEXT: the world map drawn from the world (terrain, sea, river, ways, places; "you are here" from the
-            player's tile); vehicles as fast travel (the Line, the barges, the caravan board at their stops; on foot
-            = walking the ways, with the trip's clock and encounters kept).
+      - [x] U2b.4a DONE 2026-10-27: the field map drawn from the world (`src/engine/ui/mapImage.ts`: relief, sea,
+            river, the Line, wandering roads, "you are here" from the player's tile) (`fieldmap.cjs`).
+      - [ ] U2b.4b NEXT: travel from the map — on foot = walking the ways (auto-walk, clock ×60, encounters and
+            discoveries kept); vehicles (the Line, the barges, the caravan) board at their stops with fare and time.
       - [ ] U2c: detail rings/LOD, memory and draw-call budget, phone profiling.
 - [ ] U3 Living world: biome vegetation and surviving greenery, rocks and ruins, real props, water and shores,
       weather by region, background life.

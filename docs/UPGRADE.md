@@ -171,3 +171,12 @@ Content building (B3.11 onwards) is paused until U1–U5 are in.
   Known and left for U3: the water is a flat tinted plane (a water shader with shore foam and depth comes with the
   shores work); the Overpass's old flat highway deck shows from afar as a cream slab (real props); the Drowned Shore
   sits largely at or below the water, as marsh should, but Gull Stilts and the Rigs will want stilts and causeways.
+- **2026-10-27 U2b.4a — the field map is a map of the world.** `ui/mapImage.ts` samples the heightfield over the
+  whole Reach (3 km to a pixel), colours it by region, lights it from the north-west, paints the sea and the drowned
+  ground as water and the high Teeth as snow, built in idle time from the first frame and finished in earnest while
+  the map is open. The map screen draws it under the paper, the river and the Line as the land is (everyone knows
+  where they run), roads and tracks between known places as they actually wander (the same polylines the terrain
+  lays), and a mark where you stand, to the kilometre, from your tile in the open world. Evidence
+  `docs/evidence/u2/map_1_early.png` (the Cistern and Shale known, standing on the track between them) and
+  `map_2_reach.png` (the Reach known); `tools/qa/fieldmap.cjs`. Next U2b.4b: travel from the map — on foot means
+  walking the ways with the clock running fast, vehicles (the Line, the barges, the caravan) board at their stops.
