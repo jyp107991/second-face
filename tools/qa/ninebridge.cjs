@@ -29,11 +29,11 @@ const fs = require('fs');
   await page.waitForTimeout(7000);
   console.log('npcs:', await page.evaluate(() => [...game.npcs.keys()].join(',')));
   check('the road east is on and Ninebridge is peopled', await page.evaluate(() => game.state.world.quests.q_a2_ninebridge?.stage === 'road' && game.npcs.has('npc_nb_01') && game.npcs.has('npc_nb_03') && game.npcs.has('npc_nb_05') && game.npcs.size >= 15), await page.evaluate(() => `npcs=${game.npcs.size}`));
-  await page.evaluate(() => { game.player.place(6, 21); game.cam.recentre(); game.cam.zoomBy(0.7); });
+  await page.evaluate(() => { game.placeLocal(6, 21); game.cam.recentre(); game.cam.zoomBy(0.7); });
   await page.waitForTimeout(1500);
   await shot('nb_1_west_bank');
   // Walk into the toll trigger at the sandbags.
-  await page.evaluate(() => { game.player.place(20, 22); game.cam.recentre(); game.walkTo(22, 22); });
+  await page.evaluate(() => { game.placeLocal(20, 22); game.cam.recentre(); game.walkLocal(22, 22); });
   await page.waitForFunction(() => !!document.querySelector('.dlg'), null, { timeout: 90000 }).catch(() => {});
   await page.waitForTimeout(800);
   console.log('toll:', await dlg());
@@ -42,20 +42,20 @@ const fs = require('fs');
   await pick('(Cross.)');
   check('paid the crossing', await page.evaluate(() => game.state.flags.nb_toll_paid === true && game.state.pc.inventory.tolls === 288));
   // The deck.
-  await page.evaluate(() => { game.player.place(32, 22); game.cam.recentre(); game.cam.zoomBy(1 / 0.7); });
+  await page.evaluate(() => { game.placeLocal(32, 22); game.cam.recentre(); game.cam.zoomBy(1 / 0.7); });
   await page.waitForTimeout(1800);
   await shot('nb_2_deck');
   console.log('perf:', JSON.stringify(await page.evaluate(() => game.perf())));
   // The hall door: courier.
   // Headless frames are ~1/s, so one tile of walking is several seconds; start at the door's threshold.
-  await page.evaluate(() => { game.player.place(37, 26); game.cam.recentre(); game.walkTo(37, 25); });
+  await page.evaluate(() => { game.placeLocal(37, 26); game.cam.recentre(); game.walkLocal(37, 25); });
   await page.waitForFunction(() => !!document.querySelector('.dlg'), null, { timeout: 90000 }).catch(() => {});
   await page.waitForTimeout(800);
   console.log('hall:', await dlg());
   await pick('(Show the sealed packet.)');
   await pick('(In.)');
   check('the floor opened to a courier', await page.evaluate(() => game.state.flags.nb_floor_ok === true && game.state.flags.nb_office_ok === true));
-  await page.evaluate(() => { game.player.place(36, 21); game.cam.recentre(); game.cam.zoomBy(0.6); });
+  await page.evaluate(() => { game.placeLocal(36, 21); game.cam.recentre(); game.cam.zoomBy(0.6); });
   await page.waitForTimeout(1500);
   await shot('nb_3_floor');
   // The Grand Factor: the packet, then the line.
@@ -71,7 +71,7 @@ const fs = require('fs');
   await pick('That\'s all.');
   check('the Exchange beat ends on the bought line', await page.evaluate(() => game.state.world.quests.q_a2_ninebridge?.status === 'done' && game.state.world.quests.q_a2_ninebridge?.stage === 'paid' && !!game.state.world.knowledge.nb_paid_truth), await page.evaluate(() => JSON.stringify(game.state.world.quests.q_a2_ninebridge)));
   // The block on the east bank.
-  await page.evaluate(() => { game.player.place(56, 14); game.cam.recentre(); game.cam.zoomBy(1 / 0.6); });
+  await page.evaluate(() => { game.placeLocal(56, 14); game.cam.recentre(); game.cam.zoomBy(1 / 0.6); });
   await page.waitForTimeout(1500);
   await shot('nb_5_block');
   await talk('npc_nb_02');
@@ -79,7 +79,7 @@ const fs = require('fs');
   await pick('That\'s all.');
   check('lot four is a quest', await page.evaluate(() => game.state.world.quests.q_nb_auction?.stage === 'block'));
   // The Span: Odile.
-  await page.evaluate(() => { game.player.place(27, 18); game.cam.recentre(); game.cam.zoomBy(0.6); });
+  await page.evaluate(() => { game.placeLocal(27, 18); game.cam.recentre(); game.cam.zoomBy(0.6); });
   await page.waitForTimeout(1500);
   await talk('npc_nb_03');
   await shot('nb_6_odile');

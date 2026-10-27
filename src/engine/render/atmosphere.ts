@@ -20,6 +20,8 @@ const KEY_TIMES: { h: number; sun: number; sunI: number; sky: number; ground: nu
 
 /** Content light intensities are authored on a 0–10 scale; this maps them to physical units. */
 const LIGHT_SCALE = 5;
+/** The dust field is a box this wide that rides with the camera's focus. */
+const DUST_BOX = 90;
 
 const ca = new THREE.Color(), cb = new THREE.Color();
 function lerpHex(a: number, b: number, t: number, out: THREE.Color) { return out.copy(ca.setHex(a)).lerp(cb.setHex(b), t); }
@@ -66,35 +68,45 @@ export class Atmosphere {
     }
   }
 
-  load(loc: BuiltLocation): void {
-    this.ambience = loc.map.ambience;
+  /** Rebuild the light sources from the loaded sites (each placed at its world offset). */
+  setSites(sites: { place: { x: number; z: number }; built: BuiltLocation }[]): void {
     this.sources = [];
-    // A light inside a roofed room stays under the roof (a lamp post's head would otherwise light the roof's top).
-    const under = (x: number, z: number, y: number) => {
-      if (loc.map.ambience.indoor) return y;
-      const tx = Math.floor(x), tz = Math.floor(z);
-      if (!loc.grid.inBounds(tx, tz)) return y;
-      const id = loc.buildings.at[loc.grid.index(tx, tz)];
-      return id >= 0 ? Math.min(y, roofBase(loc.buildings.list[id]) - 0.25) : y;
-    };
-    for (const l of loc.map.lights ?? []) {
-      this.sources.push({ pos: new THREE.Vector3(l.x + 0.5, under(l.x + 0.5, l.y + 0.5, l.height ?? 2.2), l.y + 0.5), color: new THREE.Color(l.color), intensity: l.intensity * LIGHT_SCALE, range: l.range * 1.4, flicker: l.flicker ?? 0, phase: Math.random() * 10, lamp: (l.flicker ?? 0) < 0.25 });
+    for (const { place, built: loc } of sites) {
+      const ox = place.x, oz = place.z;
+      // A light inside a roofed room stays under the roof (a lamp post's head would otherwise light the roof's top).
+      const under = (x: number, z: number, y: number) => {
+        if (loc.map.ambience.indoor) return y;
+        const tx = Math.floor(x), tz = Math.floor(z);
+        if (!loc.grid.inBounds(tx, tz)) return y;
+        const id = loc.buildings.at[loc.grid.index(tx, tz)];
+        return id >= 0 ? Math.min(y, roofBase(loc.buildings.list[id]) - 0.25) : y;
+      };
+      for (const l of loc.map.lights ?? []) {
+        this.sources.push({ pos: new THREE.Vector3(ox + l.x + 0.5, under(l.x + 0.5, l.y + 0.5, l.height ?? 2.2), oz + l.y + 0.5), color: new THREE.Color(l.color), intensity: l.intensity * LIGHT_SCALE, range: l.range * 1.4, flicker: l.flicker ?? 0, phase: Math.random() * 10, lamp: true });
+      }
+      for (const f of loc.features) {
+        const base = { pos: new THREE.Vector3(ox + f.wx + f.x, under(f.wx + f.x, f.wz + f.z, f.y), oz + f.wz + f.z), color: new THREE.Color(f.color), phase: Math.random() * 10 };
+        if (f.kind === 'fire') this.sources.push({ ...base, intensity: 6 * LIGHT_SCALE, range: 9, flicker: 0.35 });
+        else if (f.kind === 'lamp') this.sources.push({ ...base, intensity: 5 * LIGHT_SCALE, range: 11, flicker: 0.05, lamp: true });
+        else this.sources.push({ ...base, intensity: 1.2 * LIGHT_SCALE, range: 4, flicker: 0.04 });
+      }
     }
-    for (const f of loc.features) {
-      const base = { pos: new THREE.Vector3(f.wx + f.x, under(f.wx + f.x, f.wz + f.z, f.y), f.wz + f.z), color: new THREE.Color(f.color), phase: Math.random() * 10 };
-      if (f.kind === 'fire') this.sources.push({ ...base, intensity: 6 * LIGHT_SCALE, range: 9, flicker: 0.35 });
-      else if (f.kind === 'lamp') this.sources.push({ ...base, intensity: 5 * LIGHT_SCALE, range: 11, flicker: 0.05, lamp: true });
-      else this.sources.push({ ...base, intensity: 1.2 * LIGHT_SCALE, range: 4, flicker: 0.04 });
-    }
-    this.buildDust(loc);
   }
 
-  private buildDust(loc: BuiltLocation): void {
-    if (this.dust) { this.scene.remove(this.dust); this.dust.geometry.dispose(); }
-    const count = Math.floor(this.quality.dust * loc.map.ambience.dust);
+  /** The ambience where the player is (a site's, or the open country's); dust is rebuilt when its density changes. */
+  setAmbience(a: AmbienceDef): void {
+    if (this.ambience === a) return;
+    const rebuild = !this.ambience || this.ambience.dust !== a.dust || this.ambience.indoor !== a.indoor;
+    this.ambience = a;
+    if (rebuild) this.buildDust(a);
+  }
+
+  private buildDust(a: AmbienceDef): void {
+    if (this.dust) { this.scene.remove(this.dust); this.dust.geometry.dispose(); this.dust = undefined; }
+    const count = Math.floor(this.quality.dust * a.dust);
     if (count <= 0) return;
     const pos = new Float32Array(count * 3), seed = new Float32Array(count);
-    const w = loc.grid.width, h = loc.grid.height;
+    const w = DUST_BOX, h = DUST_BOX;
     for (let i = 0; i < count; i++) {
       pos[i * 3] = Math.random() * w; pos[i * 3 + 1] = Math.random() * 4; pos[i * 3 + 2] = Math.random() * h;
       seed[i] = Math.random();
@@ -104,18 +116,18 @@ export class Atmosphere {
     g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
     this.dustMat ??= new THREE.ShaderMaterial({
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-      uniforms: { uTime: { value: 0 }, uSize: { value: 40 }, uColor: { value: new THREE.Color(0xffe8c0) }, uMap: { value: softSprite() }, uBounds: { value: new THREE.Vector2(w, h) }, uWind: { value: new THREE.Vector2(0.35, 0.1) }, uDensity: { value: 1 } },
+      uniforms: { uTime: { value: 0 }, uSize: { value: 40 }, uColor: { value: new THREE.Color(0xffe8c0) }, uMap: { value: softSprite() }, uBounds: { value: new THREE.Vector2(w, h) }, uOrigin: { value: new THREE.Vector2(0, 0) }, uWind: { value: new THREE.Vector2(0.3, 0.1) }, uDensity: { value: 1 } },
       vertexShader: /* glsl */ `
-        attribute float aSeed; uniform float uTime; uniform float uSize; uniform vec2 uBounds; uniform vec2 uWind; uniform float uDensity;
+        attribute float aSeed; uniform float uTime; uniform float uSize; uniform vec2 uBounds; uniform vec2 uOrigin; uniform vec2 uWind; uniform float uDensity;
         varying float vA;
         void main() {
           vec3 p = position;
-          p.x = mod(p.x + uWind.x * uTime * (0.6 + aSeed), uBounds.x);
-          p.z = mod(p.z + uWind.y * uTime * (0.6 + aSeed), uBounds.y);
+          // The box of motes rides with the camera's focus; motes wrap inside it as the wind carries them.
+          p.x = mod(p.x + uWind.x * uTime * (0.6 + aSeed) - uOrigin.x, uBounds.x) + uOrigin.x;
+          p.z = mod(p.z + uWind.y * uTime * (0.6 + aSeed) - uOrigin.y, uBounds.y) + uOrigin.y;
           p.y += sin(uTime * 0.7 + aSeed * 40.0) * 0.3;
           vec4 mv = modelViewMatrix * vec4(p, 1.0);
           gl_Position = projectionMatrix * mv;
-          // Weather thins the dust (a clear day shows only the motes with a low seed) or thickens it (bigger, denser motes).
           float thick = max(uDensity - 1.0, 0.0);
           gl_PointSize = uSize * (0.3 + aSeed * 0.7) * (1.0 + 0.25 * thick) * projectionMatrix[1][1];
           vA = 0.18 + 0.25 * sin(uTime * 1.3 + aSeed * 20.0) * 0.5 + 0.12;
@@ -125,7 +137,6 @@ export class Atmosphere {
         uniform sampler2D uMap; uniform vec3 uColor; varying float vA;
         void main() { gl_FragColor = vec4(uColor, texture2D(uMap, gl_PointCoord).a * vA); }`,
     });
-    this.dustMat.uniforms.uBounds.value.set(w, h);
     this.dust = new THREE.Points(g, this.dustMat);
     this.dust.frustumCulled = false;
     this.scene.add(this.dust);
@@ -232,6 +243,7 @@ export class Atmosphere {
 
     if (this.dustMat) {
       this.dustMat.uniforms.uTime.value = time;
+      this.dustMat.uniforms.uOrigin.value.set(focus.x - DUST_BOX / 2, focus.z - DUST_BOX / 2);
       this.dustMat.uniforms.uDensity.value = a.indoor ? 1 : this.dustMul;
       this.dustMat.uniforms.uColor.value.copy(a.indoor ? ca.setHex(0xa09888) : this.sun.color).multiplyScalar(a.indoor ? 0.5 : 0.6);
     }

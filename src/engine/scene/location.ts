@@ -13,6 +13,8 @@ import { pbrMapsSync, type GroundLayers } from '../assets/pbr';
 export interface BuiltLocation {
   map: MapDef;
   grid: Grid;
+  /** Added to building ids in the roof geometry so several loaded sites can hide roofs independently. */
+  bldBase: number;
   /** Static merged geometry. */
   root: THREE.Group;
   features: (PropFeature & { wx: number; wz: number })[];
@@ -42,8 +44,9 @@ export function worldToTile(p: THREE.Vector3): { x: number; y: number } {
   return { x: Math.floor(p.x), y: Math.floor(p.z) };
 }
 
-export function buildLocation(map: MapDef, layers?: GroundLayers): BuiltLocation {
-  const grid = new Grid(map);
+export function buildLocation(map: MapDef, layers?: GroundLayers, opts: { stripRim?: boolean; bldBase?: number } = {}): BuiltLocation {
+  const grid = new Grid(map, { stripRim: opts.stripRim });
+  const bldBase = opts.bldBase ?? 0;
   const rng = new Rng(map.seed ?? 1234);
   const b = new GeoBuilder(rng);
   const features: BuiltLocation['features'] = [];
@@ -92,7 +95,7 @@ export function buildLocation(map: MapDef, layers?: GroundLayers): BuiltLocation
   }
 
   buildWalls(b, grid, map, buildings, rng);
-  buildRoofs(b, grid, map, buildings, rng);
+  buildRoofs(b, grid, map, buildings, rng, bldBase);
   const root = b.build();
   root.add(buildGround(map, grid, layers));
 
@@ -111,7 +114,7 @@ export function buildLocation(map: MapDef, layers?: GroundLayers): BuiltLocation
   }
 
   const bounds = new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(grid.width, 3, grid.height));
-  return { map, grid, root, features, bounds, buildings };
+  return { map, grid, bldBase, root, features, bounds, buildings };
 }
 
 function buildWall(b: GeoBuilder, kind: WallKind, h: number, x: number, y: number, grid: Grid, rng: Rng): void {

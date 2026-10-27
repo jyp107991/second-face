@@ -370,7 +370,7 @@ export class Notebook {
   private drop(inv: Inventory, it: ItemInst, n: number): void {
     // Dropped items go into a per-map ground pile so they can be picked up again.
     const g = this.game;
-    const key = `${g.state.locationId}/ground_${g.state.player.x}_${g.state.player.y}`;
+    const key = g.pileKey(g.state.player.x, g.state.player.y);
     const pile = (g.state.containers[key] ??= { items: [], equipped: {}, active: 'primary', tolls: 0 });
     const idx = inv.items.indexOf(it);
     const taken = takeAt(inv, idx, n);

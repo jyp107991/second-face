@@ -17,8 +17,8 @@ const fs = require('fs');
   const dlg = () => page.evaluate(() => (document.querySelector('.dlg-name')?.textContent ?? 'none') + ' | ' + (document.querySelector('.dlg-text')?.textContent ?? '').replace(/\s+/g, ' ').slice(0, 110));
   const pick = async (sub) => { const ok = await page.evaluate((sub) => { const li = [...document.querySelectorAll('.dlg-opts li')].find((l) => l.textContent.includes(sub)); if (!li) return false; li.click(); return true; }, sub); await page.waitForTimeout(500); console.log(`  > ${sub} → ${ok ? await dlg() : 'NO OPTION: ' + await page.evaluate(() => [...document.querySelectorAll('.dlg-opts li')].map((l) => l.textContent.trim()).join(' | '))}`); return ok; };
   const talk = async (id) => { await page.evaluate((id) => { const n = game.npcs.get(id); if (!n) throw new Error('no npc ' + id); game.player.place(n.actor.tx, n.actor.ty + 1); game.cam.recentre(); game.emit('openDialogue', { npc: n }); }, id); await page.waitForTimeout(1200); console.log(`${id}:`, await dlg()); };
-  const prop = async (px, py, sx, sy) => { await page.evaluate(([px, py, sx, sy]) => { game.player.place(sx, sy); game.cam.recentre(); game.tryInteract(px, py); }, [px, py, sx, sy]); await page.waitForTimeout(1500); console.log(`prop ${px},${py}:`, await dlg()); };
-  const walk = async (fx, fy, tx, ty, until) => { await page.evaluate(([fx, fy, tx, ty]) => { game.player.place(fx, fy); game.cam.recentre(); game.walkTo(tx, ty); }, [fx, fy, tx, ty]); await page.waitForFunction(until, null, { timeout: 90000 }).catch(() => {}); await page.waitForTimeout(1200); };
+  const prop = async (px, py, sx, sy) => { await page.evaluate(([px, py, sx, sy]) => { game.placeLocal(sx, sy); game.cam.recentre(); game.interactLocal(px, py); }, [px, py, sx, sy]); await page.waitForTimeout(1500); console.log(`prop ${px},${py}:`, await dlg()); };
+  const walk = async (fx, fy, tx, ty, until) => { await page.evaluate(([fx, fy, tx, ty]) => { game.placeLocal(fx, fy); game.cam.recentre(); game.walkLocal(tx, ty); }, [fx, fy, tx, ty]); await page.waitForFunction(until, null, { timeout: 90000 }).catch(() => {}); await page.waitForTimeout(1200); };
   const fails = [];
   const check = (name, ok, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ' — ' + detail : ''}`); if (!ok) fails.push(name); };
   const has = (id) => page.evaluate((id) => JSON.stringify(game.state.pc.inventory.items).includes(`"${id}"`), id);
@@ -46,7 +46,7 @@ const fs = require('fs');
   // the stilt-walk and the spring line
   await walk(36, 9, 36, 12, () => game.state.world.quests.q_sk_highwater?.stage === 'queue' || !!game.state.world.quests.q_sk_highwater);
   check('the spring line opened High Water', await page.evaluate(() => game.state.world.quests.q_sk_highwater?.stage === 'rising'), await page.evaluate(() => `player=${game.player.tx},${game.player.ty}`));
-  await page.evaluate(() => { game.player.place(36, 20); game.cam.recentre(); });
+  await page.evaluate(() => { game.placeLocal(36, 20); game.cam.recentre(); });
   await page.waitForTimeout(1500);
   await shot('sk_2_walk');
   // the pump house: the board, the keeper, the dial
@@ -59,7 +59,7 @@ const fs = require('fs');
   await pick('Then let me at the dial.');
   await pick('That\'s all.');
   check('the keeper gave her leave', await page.evaluate(() => game.state.flags.sk_pump_leave === true));
-  await page.evaluate(() => { game.player.place(15, 25); game.cam.recentre(); game.cam.zoomBy(1 / 0.7); });
+  await page.evaluate(() => { game.placeLocal(15, 25); game.cam.recentre(); game.cam.zoomBy(1 / 0.7); });
   await page.waitForTimeout(1500);
   await shot('sk_3_pumps');
   await prop(5, 22, 5, 23);
@@ -67,7 +67,7 @@ const fs = require('fs');
   await pick('(Leave it running.)');
   check('the pumps were retimed and the spring is settled', await page.evaluate(() => game.state.flags.sk_pumps === 'retimed' && game.state.world.quests.q_sk_highwater?.status === 'done'));
   // the clinic
-  await page.evaluate(() => { game.player.place(36, 46); game.cam.recentre(); });
+  await page.evaluate(() => { game.placeLocal(36, 46); game.cam.recentre(); });
   await page.waitForTimeout(1500);
   await shot('sk_4_clinic');
   await talk('npc_sk_02');

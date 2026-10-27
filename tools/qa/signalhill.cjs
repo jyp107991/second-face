@@ -37,7 +37,7 @@ const fs = require('fs');
   check('reached Signal Hill', (await page.evaluate(() => game.state.locationId)) === 'signalhill');
   await shot('sg_1_foot');
   // Up the first climb to the camp trigger.
-  await page.evaluate(() => { game.player.place(33, 38); game.cam.recentre(); game.player.setPath(game.loc.grid.findPath(33, 38, 33, 34, { ignore: 'player', adjacentOk: false })); });
+  await page.evaluate(() => { game.placeLocal(33, 38); game.cam.recentre(); game.player.setPath(game.findPathLocal(33, 38, 33, 34, { ignore: 'player', adjacentOk: false })); });
   await page.waitForFunction(() => !!document.querySelector('.dlg'), null, { timeout: 60000 }).catch(() => {});
   await page.waitForTimeout(800);
   console.log('camp:', await dlg());
@@ -47,7 +47,7 @@ const fs = require('fs');
   await pick('(Go up.)');
   check('past the camp', await page.evaluate(() => game.state.flags.sg_camp_passed === true));
   // The top: the station and the mast.
-  await page.evaluate(() => { game.player.place(20, 16); game.cam.recentre(); game.player.setPath(game.loc.grid.findPath(20, 16, 25, 13, { ignore: 'player', adjacentOk: false })); });
+  await page.evaluate(() => { game.placeLocal(20, 16); game.cam.recentre(); game.player.setPath(game.findPathLocal(20, 16, 25, 13, { ignore: 'player', adjacentOk: false })); });
   await page.waitForFunction(() => game.state.flags.sg_station === true, null, { timeout: 90000 }).catch(() => {});
   await page.waitForTimeout(1500);
   check('reached the station', await page.evaluate(() => game.state.flags.sg_station === true), await page.evaluate(() => `quest=${game.state.world.quests.q_a1_signal?.stage} windpumps=${!!game.state.world.knowledge.loc_lm_sallow_02}`));
@@ -55,7 +55,7 @@ const fs = require('fs');
   await page.waitForTimeout(1500);
   await shot('sg_3_top');
   // Inside: the relay.
-  await page.evaluate(() => { game.player.place(23, 8); game.cam.recentre(); game.tryInteract(23, 6); });
+  await page.evaluate(() => { game.placeLocal(23, 8); game.cam.recentre(); game.interactLocal(23, 6); });
   await page.waitForTimeout(2500);
   console.log('relay:', await dlg());
   await shot('sg_4_relay');
@@ -64,7 +64,7 @@ const fs = require('fs');
   await pick('(Type nothing.');
   await pick('(Step back.)');
   check('the relay was read and the hill quest ended', await page.evaluate(() => game.state.world.quests.q_a1_signal?.status === 'done' && !!game.state.world.knowledge.loc_drywells));
-  await page.evaluate(() => { game.player.place(29, 7); game.tryInteract(29, 6); });
+  await page.evaluate(() => { game.placeLocal(29, 7); game.interactLocal(29, 6); });
   await page.waitForTimeout(2500);
   console.log('speaker:', await dlg());
   await pick('(Patch the speaker line');

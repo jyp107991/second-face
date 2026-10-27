@@ -45,7 +45,7 @@ const fs = require('fs');
   await page.waitForTimeout(1200);
   const party = await page.evaluate(() => { const n = game.npcs.get('dev_guide'); return { companion: !!n?.companion, dist: Math.max(Math.abs(n.actor.tx - game.player.tx), Math.abs(n.actor.ty - game.player.ty)) }; });
   console.log('party', JSON.stringify(party));
-  await page.evaluate(() => { const p = game.player; const path = game.loc.grid.findPath(p.tx, p.ty, p.tx + 6, p.ty, { ignore: p.id, adjacentOk: true }); p.setPath(path); });
+  await page.evaluate(() => { const p = game.player; const path = game.grid.findPath(p.tx, p.ty, p.tx + 6, p.ty, { ignore: p.id, adjacentOk: true }); p.setPath(path); });
   await page.waitForTimeout(6000);
   const after = await page.evaluate(() => { const n = game.npcs.get('dev_guide'); return { dist: Math.max(Math.abs(n.actor.tx - game.player.tx), Math.abs(n.actor.ty - game.player.ty)), moving: n.actor.moving }; });
   console.log('after walk', JSON.stringify(after));

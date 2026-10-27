@@ -41,7 +41,7 @@ const fs = require('fs');
   await page.waitForTimeout(1500);
   check('Ilya joined the party', await page.evaluate(() => game.state.world.party.includes('npc_sh_17') && game.npcs.get('npc_sh_17')?.companion === true), await page.evaluate(() => JSON.stringify(game.state.world.party)));
   // He follows: walk ten tiles and look where he is.
-  await page.evaluate(() => { game.player.place(30, 25); game.cam.recentre(); game.player.setPath(game.loc.grid.findPath(30, 25, 24, 25, { ignore: 'player', adjacentOk: false })); });
+  await page.evaluate(() => { game.placeLocal(30, 25); game.cam.recentre(); game.player.setPath(game.findPathLocal(30, 25, 24, 25, { ignore: 'player', adjacentOk: false })); });
   const distAt = () => page.evaluate(() => { const n = game.npcs.get('npc_sh_17'); return Math.abs(n.actor.tx - game.player.tx) + Math.abs(n.actor.ty - game.player.ty); });
   const d0 = await distAt();
   await page.waitForTimeout(15000);

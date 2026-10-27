@@ -58,7 +58,7 @@ const fs = require('fs');
   await page.evaluate(() => { const inv = game.state.pc.inventory; const i = inv.items.findIndex((x) => x.def === 'w_bolt308'); SF.equip(inv, i, 'primary'); const j = inv.items.findIndex((x) => x.def === 'r_duster'); SF.equip(inv, j); });
   await page.keyboard.press('Escape');
   await page.waitForTimeout(500);
-  await page.evaluate(() => { game.player.place(6, 15); game.cam.recentre(); game.cam.zoomBy(0.35); });
+  await page.evaluate(() => { game.placeLocal(6, 15); game.cam.recentre(); game.cam.zoomBy(0.35); });
   await page.waitForTimeout(6000);
   console.log('world:', await page.evaluate(() => `held=${!!game.player.body.root.getObjectByName('held_rifle')} meshes=${game.player.object.children.length}`));
   await shot('wardrobe_7_world');

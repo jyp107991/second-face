@@ -37,7 +37,7 @@ const path = require('path');
   await page.evaluate(async () => { game.state.world.at = 'wheel'; await game.loadLocation('wheel', 'start'); });
   await page.waitForFunction(() => game.state.locationId === 'wheel' && game.npcs.size >= 4, null, { timeout: 120000 });
   await page.waitForTimeout(5000);
-  await page.evaluate(() => { game.player.place(22, 23); game.cam.recentre(); game.cam.viewGoal = 13; game.cam.viewHeight = 13; });
+  await page.evaluate(() => { game.placeLocal(22, 23); game.cam.recentre(); game.cam.viewGoal = 13; game.cam.viewHeight = 13; });
   await page.waitForTimeout(3000);
   console.log('camp:', await page.evaluate(() => `npcs=${game.npcs.size} rooms=${game.loc.buildings.list.length} ${JSON.stringify(game.perf()).slice(0, 90)}`));
   await shot('wheel_1_camp');
@@ -74,7 +74,7 @@ const path = require('path');
     await page.waitForTimeout(1500);
   };
   const walkOut = async () => {
-    await page.evaluate(() => { game.player.place(37, 11); game.cam.recentre(); game.player.setPath(game.loc.grid.findPath(37, 11, 39, 11, { ignore: 'player', adjacentOk: false })); });
+    await page.evaluate(() => { game.placeLocal(37, 11); game.cam.recentre(); game.player.setPath(game.findPathLocal(37, 11, 39, 11, { ignore: 'player', adjacentOk: false })); });
     await page.waitForFunction(() => game.state.locationId !== 'wild_track' || !!document.querySelector('.dlg'), null, { timeout: 120000 }).catch(() => {});
     await page.waitForTimeout(1500);
   };

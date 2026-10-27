@@ -46,7 +46,7 @@ const path = require('path');
   await pick('Slow it is.');
   await pick('Take care.');
   check('the tent job is on', (await quest('q_a1_tents')) === 'active/tend', await quest('q_a1_tents'));
-  await page.evaluate(() => { game.player.place(12, 37); game.cam.recentre(); game.cam.viewGoal = 8; game.cam.viewHeight = 8; });
+  await page.evaluate(() => { game.placeLocal(12, 37); game.cam.recentre(); game.cam.viewGoal = 8; game.cam.viewHeight = 8; });
   await page.waitForTimeout(2500);
   await shot('sides_1_tent');
   await talk('npc_sh_20');

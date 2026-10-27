@@ -104,3 +104,26 @@ Content building (B3.11 onwards) is paused until U1–U5 are in.
   software-GL rig a cold open fell from 9.7 s to 0.37 s, a warmed one to 0.19 s, a reopen to 6 ms; on a phone GPU
   the cold case is a fraction of that. Ambient occlusion is deferred to U3 (it belongs with the renderer
   restructuring the streamed world needs). U1 is complete apart from that.
+- **2026-10-27 U2a — one world: coordinates, streaming, places in it.** The engine no longer loads a map at a
+  time. `content/world/sites.ts` places every hand-built map in one tile grid (32768 × 8192 m; 1 km on the world
+  map = 12 m walked): open places are stamped at their world-map positions with the rock or wall round their edges
+  stripped so the ground runs on (Meridian's districts stand side by side), enclosed places (the cisterns, tower
+  floors, roofs, the Crown) are cells kept apart and entered instantly through their doors. `world/worldGrid.ts`
+  answers walking, fighting and standing for the whole world (the loaded sites where they stand, the region's
+  terrain everywhere else; far goals are walked in legs of 120 m). `scene/stream.ts` builds sites as they come
+  within 150 m and lets them go past 230 m, fills the ground between with 128 m terrain chunks blended from each
+  region's four surfaces, and parks the open world while you are in a cell. Walking out of a place is walking: the
+  location under your feet changes to the region (`wild:sallow`) and back with no screen; a door is a short fade.
+  People, dropped things and the player persist map-local, so places may move in the world between versions (save
+  v6). The world map, trips, schedules, extras, camps, encounters and the notebook all work in world tiles; the dev
+  overlay and all 27 QA smokes were moved to the place-local helpers (`placeLocal`, `walkLocal`, `interactLocal`,
+  `findPathLocal`). Evidence `docs/evidence/u2/` and `tools/qa/openworld.cjs`: the Cistern's door onto the mouth,
+  the walk out into the Sallow with chunks streaming, Shale built as you near it and entered on foot with its people
+  in it, saves in the wild and in a place, the mouth let go behind you. What it looks like is not yet what the
+  directive asks: the ground is flat and its surfaces still read as a repeat, a place's floor meets the terrain at a
+  straight edge, there are no roads, water, horizon or height. That is U2b, next: a heightfield with places
+  flattened into it, world-space blending of a place's edge into the terrain (one shared surface array for the
+  whole world; also fixes texture memory, 439 MB with three places loaded), roads and rails laid between places,
+  rivers and the sea as unwalkable, a far horizon ring, the world map drawn from the world, vehicles as the fast
+  travel. Draw calls at Shale with two neighbours loaded: 167 (budget 150; U3's instancing and U2b's merged chunks
+  bring it down).

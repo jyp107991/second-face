@@ -42,10 +42,10 @@ const fs = require('fs');
   await shot('th_1_arrive');
   // Walk up to the gate.
   // Headless frames are slow: stand at the apron, then walk the last tiles through the gate.
-  await page.evaluate(() => { game.player.place(26, 23); game.cam.recentre(); game.cam.zoomBy(0.6); });
+  await page.evaluate(() => { game.placeLocal(26, 23); game.cam.recentre(); game.cam.zoomBy(0.6); });
   await page.waitForTimeout(1500);
   await shot('th_2_wall');
-  await page.evaluate(() => { game.player.setPath(game.loc.grid.findPath(26, 23, 34, 23, { ignore: 'player', adjacentOk: false })); });
+  await page.evaluate(() => { game.player.setPath(game.findPathLocal(26, 23, 34, 23, { ignore: 'player', adjacentOk: false })); });
   await page.waitForFunction(() => !!document.querySelector('.dlg'), null, { timeout: 60000 }).catch(() => {});
   await page.waitForTimeout(800);
   console.log('gate:', await dlg());
@@ -57,10 +57,10 @@ const fs = require('fs');
   await pick('(Go through.)');
   check('paid and stamped', await page.evaluate(() => game.state.flags.th_passed === true && game.state.pc.inventory.tolls === 40), await page.evaluate(() => `quest=${game.state.world.quests.q_a1_tollhouse?.status}/${game.state.world.quests.q_a1_tollhouse?.stage}`));
   // Inside: the clerk, the yard, the east road.
-  await page.evaluate(() => { game.player.place(40, 23); game.cam.recentre(); game.cam.zoomBy(1 / 0.6); });
+  await page.evaluate(() => { game.placeLocal(40, 23); game.cam.recentre(); game.cam.zoomBy(1 / 0.6); });
   await page.waitForTimeout(1500);
   await shot('th_4_inside');
-  await page.evaluate(() => { game.player.place(59, 23); game.player.setPath(game.loc.grid.findPath(59, 23, 63, 23, { ignore: 'player', adjacentOk: false })); });
+  await page.evaluate(() => { game.placeLocal(59, 23); game.player.setPath(game.findPathLocal(59, 23, 63, 23, { ignore: 'player', adjacentOk: false })); });
   await page.waitForFunction(() => !!document.querySelector('.map-canvas'), null, { timeout: 40000 }).catch(() => {});
   await page.waitForTimeout(1500);
   const after = await page.evaluate(() => `${game.state.locationId} mapOpen=${!!document.querySelector('.map-canvas')} player=${game.player?.tx},${game.player?.ty}`);

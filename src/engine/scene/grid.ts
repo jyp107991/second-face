@@ -23,20 +23,22 @@ const PROP_BLOCKS: Record<string, Cover> = {
 const PROP_SOLID = new Set(Object.keys(PROP_BLOCKS).filter((k) => !['sign', 'debris', 'blanket'].includes(k)));
 
 export class Grid {
-  readonly width: number;
-  readonly height: number;
+  width: number;
+  height: number;
   readonly tiles: Tile[];
   /** Dynamic occupancy (actors) — tile index → entity id. */
   readonly occupied = new Map<number, string>();
 
-  constructor(map: MapDef) {
+  /** `stripRim`: the rock or wall the map was drawn with round its border becomes open ground (an open-world site). */
+  constructor(map: MapDef, opts: { stripRim?: boolean } = {}) {
     this.height = map.layout.length;
     this.width = Math.max(...map.layout.map((r) => r.length));
     this.tiles = [];
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
         const ch = map.layout[y][x] ?? ' ';
-        const def = map.legend[ch] ?? { empty: true };
+        let def = map.legend[ch] ?? { empty: true };
+        if (opts.stripRim && def.wall && (x === 0 || y === 0 || x === this.width - 1 || y === this.height - 1)) def = { floor: def.floor ?? 'sand' };
         this.tiles.push(Grid.makeTile(x, y, def));
       }
     }
@@ -94,7 +96,7 @@ export class Grid {
    * A* over 8-connected tiles. Diagonal moves may not cut wall corners.
    * Returns path excluding start, or null. `maxCost` bounds the search (e.g. AP).
    */
-  findPath(sx: number, sy: number, tx: number, ty: number, opts: { ignore?: string; maxCost?: number; adjacentOk?: boolean } = {}): { x: number; y: number }[] | null {
+  findPath(sx: number, sy: number, tx: number, ty: number, opts: { ignore?: string; maxCost?: number; adjacentOk?: boolean; /** Most nodes expanded before giving up (the open world). */ budget?: number } = {}): { x: number; y: number }[] | null {
     if (!this.inBounds(tx, ty)) return null;
     const goalPassable = this.passable(tx, ty, opts.ignore);
     if (!goalPassable && !opts.adjacentOk) return null;
@@ -109,7 +111,9 @@ export class Grid {
     };
     open.push(start, h(sx, sy));
     const closed = new Set<number>();
+    let budget = opts.budget ?? Infinity;
     while (open.size) {
+      if (--budget < 0) return null;
       const cur = open.pop();
       const cx = cur % W, cy = (cur / W) | 0;
       const atGoal = opts.adjacentOk && !goalPassable

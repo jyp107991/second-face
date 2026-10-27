@@ -7,12 +7,14 @@ import type { Appearance } from './data/appearance';
 import type { CharacterSheet } from './stats/sheet';
 import { addItem, emptyInventory, equip, makeItem, removeItem, syncGear } from './inventory/inventory';
 import { Input } from './input/input';
-import { ensurePbr, groundLayersFor, setPbrDetail } from './assets/pbr';
+import { ensurePbr, setPbrDetail } from './assets/pbr';
 import { portraitCached, portraitEnvironment, portraitLook, warmPortrait } from './render/portrait';
 import { warmConversationView } from './ui/dialogue';
 import { SURFACE_PBR_KEYS } from './assets/materials';
-import { groundKeys } from './scene/ground';
-import { Grid } from './scene/grid';
+import { WorldScene, type LoadedSite } from './scene/stream';
+import { sitePlacement, type SitePlacement } from './world/sites';
+import { regionAt } from './world/terrain';
+import type { WorldGrid } from './world/worldGrid';
 import { Atmosphere } from './render/atmosphere';
 import { IsoCamera } from './render/camera';
 import { PostFX } from './render/postfx';
@@ -30,8 +32,8 @@ import { makeExtras, spotIdle } from './npc/extras';
 import { moodSound, weatherFor, type WeatherKind } from './world/weather';
 import { placeMoving } from './world/travel';
 import { inHours as inHoursOf } from './npc/schedule';
-import { QUESTS, ROAD_ENCOUNTERS, SETTLEMENTS, WORLD_EVENTS, WORLD_MAP } from '../content';
-import { buildLocation, type BuiltLocation } from './scene/location';
+import { QUESTS, REGIONS, ROAD_ENCOUNTERS, SETTLEMENTS, WORLD_EVENTS, WORLD_MAP } from '../content';
+import type { BuiltLocation } from './scene/location';
 import type { ExitDef, MapDef } from './data/types';
 import type { NpcPlacement } from './npc/defs';
 import { SaveManager, type SaveFile, type SlotId } from './save/saves';
@@ -94,7 +96,17 @@ export class Game extends EventBus<GameEvents> {
   post!: PostFX;
   quality: QualityLevel;
   state: GameState;
-  loc?: BuiltLocation;
+  /** The streamed world: sites round the player, ground between them, or the cell you are in. */
+  readonly world: WorldScene;
+  /** The walkable world; every actor paths on it. */
+  get grid(): WorldGrid { return this.world.grid; }
+  /** The site the player stands in (undefined in open country). */
+  get loc(): BuiltLocation | undefined { return this.siteHere()?.built; }
+  siteHere(): LoadedSite | undefined {
+    const p = this.player;
+    if (!p) return this.world.cell ? this.world.site(this.world.cell) : undefined;
+    return this.world.siteAt(p.tx, p.ty);
+  }
   player?: Actor;
   readonly actors = new Map<string, Actor>();
   private lastFrame = 0;
@@ -174,7 +186,7 @@ export class Game extends EventBus<GameEvents> {
   private hostilityTimer = 0;
   private pendingInteract?: { x: number; y: number; run: () => void };
   /** Where the player is walking to (tap or interaction); kept so a walk blocked by someone crossing re-paths instead of stopping. */
-  private walkGoal?: { x: number; y: number; adjacentOk: boolean; tries: number };
+  private walkGoal?: { x: number; y: number; adjacentOk: boolean; tries: number; legs: number };
   /** Seconds until the blocked walk is retried. */
   private walkRetry?: number;
   private pileGroup = new THREE.Group();
@@ -262,14 +274,20 @@ export class Game extends EventBus<GameEvents> {
     this.pathMesh.frustumCulled = false;
     this.scene.add(this.reachMesh, this.pathMesh, this.pileGroup);
     this.fx = new Fx(this.scene, () => this.cam.camera);
+    this.world = new WorldScene(this.scene, {
+      prepare: (place) => this.prepareSite(place),
+      loaded: (site) => this.onSiteLoaded(site),
+      unloading: (site) => this.onSiteUnloading(site),
+      changed: () => this.atmosphere.setSites([...this.world.sites.values()]),
+    });
     const game = this;
     this.encounter = new Encounter({
-      get grid() { return game.loc!.grid; },
+      get grid() { return game.grid; },
       get rng() { return game.rng; },
       fx: this.fx,
       shake: (a) => this.cam.addShake(a),
       hurt: () => { this.post.hurt = 1; this.cam.addShake(0.3); },
-      context: (x, y) => ({ indoor: !!this.loc?.map.ambience.indoor, night: hourOf(this.state.minutes) < 6 || hourOf(this.state.minutes) > 20, darkness: 1 - this.atmosphere.lightAt(x + 0.5, y + 0.5) }),
+      context: (x, y) => ({ indoor: !!this.world.siteAt(x, y)?.built.map.ambience.indoor, night: hourOf(this.state.minutes) < 6 || hourOf(this.state.minutes) > 20, darkness: 1 - this.atmosphere.lightAt(x + 0.5, y + 0.5) }),
       previewPath: (p, ap) => this.showPath(p, ap),
       showReach: (t) => this.showReach(t),
       now: () => this.state.minutes,
@@ -323,7 +341,7 @@ export class Game extends EventBus<GameEvents> {
     const path = this.loc.grid.findPath(p.tx, p.ty, ls.x, ls.y, { ignore: p.id });
     this.lastStand = undefined;
     this.pendingInteract = undefined;
-    if (path) { this.walkGoal = { x: ls.x, y: ls.y, adjacentOk: false, tries: 0 }; this.walkRetry = undefined; p.setPath(path); this.pathMarker.visible = false; }
+    if (path) { this.walkGoal = { x: ls.x, y: ls.y, adjacentOk: false, tries: 0, legs: 0 }; this.walkRetry = undefined; p.setPath(path); this.pathMarker.visible = false; }
   }
 
   /** Make camp here (outdoors, or at a campfire). */
@@ -415,7 +433,7 @@ export class Game extends EventBus<GameEvents> {
   quietRoads = false;
   weatherNow(): WeatherKind {
     if (this.weatherOverride) return this.weatherOverride;
-    const region = WORLD_MAP.locations[this.state.world.at ?? '']?.region ?? 'sallow';
+    const region = this.player && this.world.mode === 'open' ? regionAt(this.player.tx, this.player.ty) : WORLD_MAP.locations[this.state.world.at ?? '']?.region ?? 'sallow';
     return weatherFor(region, dayOf(this.state.minutes), this.state.rngState % 97);
   }
 
@@ -438,13 +456,16 @@ export class Game extends EventBus<GameEvents> {
 
   /** Rest, cook, mend, write. `force`: a bed of your own (a safehouse) lets you camp indoors without a fire. */
   openCamp(force = false): void {
-    if (this.encounter.active || !this.loc) return;
-    if (!force && this.loc.map.ambience.indoor && !this.nearCampfire()) { this.emit('message', { text: 'Not here. Find a fire or open sky.' }); return; }
+    if (this.encounter.active || !this.player) return;
+    if (!force && this.loc?.map.ambience.indoor && !this.nearCampfire()) { this.emit('message', { text: 'Not here. Find a fire or open sky.' }); return; }
     this.emit('openCamp', {});
   }
   private nearCampfire(): boolean {
     const p = this.player;
-    return !!p && !!this.loc?.map.props?.some((pr) => (pr.kind === 'campfire' || pr.kind === 'fire_barrel') && Math.max(Math.abs(pr.x - p.tx), Math.abs(pr.y - p.ty)) <= 1);
+    const site = this.siteHere();
+    if (!p || !site) return false;
+    const lx = p.tx - site.place.x, ly = p.ty - site.place.z;
+    return !!site.built.map.props?.some((pr) => (pr.kind === 'campfire' || pr.kind === 'fire_barrel') && Math.max(Math.abs(pr.x - lx), Math.abs(pr.y - ly)) <= 1);
   }
 
   applyQuality(level: QualityLevel): void {
@@ -462,7 +483,10 @@ export class Game extends EventBus<GameEvents> {
     this.atmosphere = new Atmosphere(this.scene, q);
     this.post = new PostFX(this.renderer, q.msaa);
     this.post.bloomEnabled = q.bloom;
-    if (this.loc) this.atmosphere.load(this.loc);
+    if (this.world) {
+      this.atmosphere.setSites([...this.world.sites.values()]);
+      if (this.player) this.atmosphere.setAmbience(this.world.ambienceAt(this.player.tx, this.player.ty));
+    }
     // Materials must recompile for changed light counts / shadows.
     this.scene.traverse((o) => {
       const m = (o as THREE.Mesh).material as THREE.Material | undefined;
@@ -483,59 +507,56 @@ export class Game extends EventBus<GameEvents> {
   }
 
   /** Load a location and place the player at a spawn point (or explicit tile). Fetches the clothing worn there first. */
+  /** Arrive at a site: by a named spawn, at a world tile, or where the player was. Open sites stream round it; a cell replaces the open world. */
   async loadLocation(id: string, spawn?: string | { x: number; y: number }): Promise<void> {
-    const map = MAPS[id];
-    if (!map) throw new Error(`Unknown location ${id}`);
-    const outfits = this.placements(map).flatMap((p) => (NPCS[p.def] ? [npcLook(NPCS[p.def]).outfit] : []));
-    // Background people are generated now so their clothes load with everyone else's.
-    for (const [index, def] of (map.extras ?? []).entries()) for (const d of makeExtras(map.id, map.seed ?? 1, index, def)) outfits.push(npcLook(d).outfit);
+    // `wild:<region>`: open ground between places (a save made on the road); the tile must be given.
+    const wild = id.startsWith('wild:');
+    const place = wild ? undefined : sitePlacement(id);
+    if (!wild && !place) throw new Error(`Unknown location ${id}`);
+    if (wild && typeof spawn !== 'object') throw new Error(`No tile to stand on in ${id}`);
+    const map = place?.map;
     const seq = ++this.loadSeq;
     const outfit = this.playerOutfit();
     this.lookKey = wardrobeKey(this.state.pc);
-    await ensureProxies([...outfitProxyKeys(outfit, ...outfits), ...wearProxyKeys()]).catch((e) => console.warn(e));
-    // A newer load started while the clothing was fetching: let it win.
-    if (seq !== this.loadSeq) return;
-    if (this.loc) {
-      this.scene.remove(this.loc.root);
-      this.loc.root.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
-    }
-    if (this.loc) this.syncNpcState();
-    for (const a of this.actors.values()) { this.scene.remove(a.object); a.body.dispose(); }
-    this.actors.clear();
-    this.npcs.clear();
-    this.fx.clearDecals();
-
-    // The photographed surfaces the walls and the ground need, then the ground's layer arrays.
+    await ensureProxies([...outfitProxyKeys(outfit), ...wearProxyKeys()]).catch((e) => console.warn(e));
     await ensurePbr(SURFACE_PBR_KEYS).catch(() => undefined);
-    const layers = await groundLayersFor(groundKeys(map, new Grid(map))).catch(() => undefined);
+    // A newer load started while things were fetching: let it win.
     if (seq !== this.loadSeq) return;
-    this.loc = buildLocation(map, layers);
-    this.scene.add(this.loc.root);
-    this.atmosphere.load(this.loc);
-    this.soundBed = undefined;
-    this.updateSoundBed();
-
-    let sx = this.state.player.x, sy = this.state.player.y;
-    // Changing map without an explicit spawn → use the map's first spawn point.
-    if (spawn === undefined && id !== this.state.locationId) spawn = map.spawns[0].id;
-    if (typeof spawn === 'string') {
-      const s = map.spawns.find((p) => p.id === spawn) ?? map.spawns[0];
-      sx = s.x; sy = s.y;
-    } else if (spawn) {
-      sx = spawn.x; sy = spawn.y;
-    }
+    this.syncNpcState();
+    if (this.player) { this.scene.remove(this.player.object); this.player.body.dispose(); this.actors.delete('player'); this.grid.occupied.delete(this.grid.index(this.player.tx, this.player.ty)); this.player = undefined; }
+    this.fx.clearDecals();
+    let site: LoadedSite | undefined;
+    if (place?.kind === 'cell') site = await this.world.enterCell(id);
+    else { this.world.leaveCell(); if (place) site = await this.world.ensureSite(place); }
+    if (seq !== this.loadSeq) return;
+    if (place && !site) throw new Error(`Could not build ${id}`);
+    let sx: number, sy: number;
+    if (spawn === undefined && id !== this.state.locationId) spawn = map?.spawns[0].id;
+    if (typeof spawn === 'string' && place && map) {
+      const sp = map.spawns.find((q) => q.id === spawn) ?? map.spawns[0];
+      sx = place.x + sp.x; sy = place.z + sp.y;
+    } else if (typeof spawn === 'object') { sx = spawn.x; sy = spawn.y; }
+    else { sx = this.state.player.x; sy = this.state.player.y; }
     this.state.locationId = id;
+    this.state.player.x = sx; this.state.player.y = sy;
     this.player = new Actor({
       id: 'player', x: sx, y: sy, facing: this.state.player.facing,
       look: lookFrom(this.state.pc.appearance, outfit),
-    }, this.loc.grid);
+    }, this.grid);
     this.player.onArriveTile = (x, y) => this.onPlayerTile(x, y);
     this.walkGoal = undefined; this.walkRetry = undefined;
     this.player.onPathDone = (blocked) => {
-      if (blocked && this.walkGoal && !this.encounter.active && this.walkGoal.tries < 5) {
+      const g = this.walkGoal, p = this.player;
+      if (blocked && g && !this.encounter.active && g.tries < 5) {
         // Someone stepped into the way: wait a moment for them to pass, then path round them.
-        this.walkGoal.tries++;
+        g.tries++;
         this.walkRetry = 0.35;
+        return;
+      }
+      // A long walk is made in legs: this one ended short of the goal, so path the next.
+      if (!blocked && g && p && !this.encounter.active && Math.max(Math.abs(g.x - p.tx), Math.abs(g.y - p.ty)) > 1 && g.legs < 60) {
+        g.legs++;
+        this.walkRetry = 0.02;
         return;
       }
       this.walkGoal = undefined; this.walkRetry = undefined;
@@ -550,8 +571,6 @@ export class Game extends EventBus<GameEvents> {
     this.addActor(this.player);
     this.rng.state = this.state.rngState;
     this.pc = { id: 'player', name: this.state.pc.sheet.name || 'You', team: 'player', sheet: this.state.pc.sheet, inv: this.state.pc.inventory, x: sx, y: sy, ap: 0, morale: 100, evasion: 0, isPlayer: true };
-    for (const p of this.placements(map)) if (test(p.if, this.state)) this.spawn(p);
-    this.spawnExtras(map);
     this.spawnParty(sx, sy);
     this.groundPilesChanged();
     this.cam.target.copy(this.player.object.position);
@@ -559,19 +578,105 @@ export class Game extends EventBus<GameEvents> {
     this.cam.snapToTarget();
     this.state.flags[`visited_${id}`] = true;
     const known = (this.state.world.knownLocations ??= []);
-    for (const l of Object.values(WORLD_MAP.locations)) if (l.map === id && !known.includes(l.id)) known.push(l.id);
-    this.emit('locationChanged', { id, name: map.name });
+    for (const l of Object.values(WORLD_MAP.locations)) if (l.map === id) { if (!known.includes(l.id)) known.push(l.id); this.state.world.at = l.id; }
+    this.atmosphere.setAmbience(this.world.ambienceAt(sx, sy));
+    this.soundBed = undefined;
+    this.updateSoundBed();
+    this.emit('locationChanged', { id, name: this.locationName ?? '' });
     this.quests.update();
+    // On open ground the first ring of terrain is built before the fade lifts, so the player never stands on nothing.
+    if (wild) await this.world.update(sx, sy); else void this.world.update(sx, sy);
   }
 
-  /** Spawn an NPC placement on the current map, applying persisted state. */
-  spawn(p: import('./npc/defs').NpcPlacement): NpcRuntime | undefined {
-    if (!this.loc) return;
-    const key = `${this.state.locationId}/${p.id ?? p.def}`;
+  /** Map-local tile of a world tile in the current location (world tiles stay as they are in the wild). */
+  toLocal(x: number, y: number, id = this.state.locationId): { x: number; y: number } {
+    const p = id.startsWith('wild:') ? undefined : sitePlacement(id);
+    return p ? { x: x - p.x, y: y - p.z } : { x, y };
+  }
+
+  /** World tile of a map-local tile in the current location. */
+  toWorld(x: number, y: number, id = this.state.locationId): { x: number; y: number } {
+    const p = id.startsWith('wild:') ? undefined : sitePlacement(id);
+    return p ? { x: x + p.x, y: y + p.z } : { x, y };
+  }
+
+  /** Dev/QA: act in the current place's own tile coordinates. */
+  placeLocal(x: number, y: number): void { const w = this.toWorld(x, y); this.player?.place(w.x, w.y); this.state.player.x = w.x; this.state.player.y = w.y; }
+  walkLocal(x: number, y: number): void { const w = this.toWorld(x, y); this.walkTo(w.x, w.y); }
+  interactLocal(x: number, y: number): void { const w = this.toWorld(x, y); this.tryInteract(w.x, w.y); }
+  findPathLocal(fx: number, fy: number, tx: number, ty: number, opts?: Parameters<WorldGrid['findPath']>[4]): ReturnType<WorldGrid['findPath']> { const a = this.toWorld(fx, fy), b = this.toWorld(tx, ty); return this.grid.findPath(a.x, a.y, b.x, b.y, opts); }
+
+  /** The world-map location the player is at or nearest to (for the map, trips and news). */
+  nearestLocation(): string | undefined {
+    const here = this.state.locationId;
+    const direct = Object.values(WORLD_MAP.locations).find((l) => l.map === here);
+    if (direct) return direct.id;
+    // Inside a cell (a cistern, a tower floor) the open world is parked: you are where you went in.
+    if (this.world.mode === 'cell' || !this.player) return this.state.world.at;
+    const km = { x: this.player.tx / 12, y: this.player.ty / 12 };
+    let best: string | undefined, bestD = Infinity;
+    for (const l of Object.values(WORLD_MAP.locations)) {
+      const d = (l.x - km.x) ** 2 + (l.y - km.y) ** 2;
+      if (d < bestD) { bestD = d; best = l.id; }
+    }
+    return best;
+  }
+
+  // --- streaming hooks --------------------------------------------------------------------------------------
+
+  /** Fetch what a site's people wear before it is built. */
+  private async prepareSite(place: SitePlacement): Promise<void> {
+    const map = place.map;
+    const outfits = this.placements(map).flatMap((p) => (NPCS[p.def] ? [npcLook(NPCS[p.def]).outfit] : []));
+    for (const [index, def] of (map.extras ?? []).entries()) for (const d of makeExtras(map.id, map.seed ?? 1, index, def)) outfits.push(npcLook(d).outfit);
+    await ensureProxies(outfitProxyKeys(...outfits)).catch((e) => console.warn(e));
+  }
+
+  /** A site has been built: its people appear, and companions dismissed there are where they were left. */
+  private onSiteLoaded(site: LoadedSite): void {
+    for (const p of this.placements(site.place.map)) if (test(p.if, this.state)) this.spawn(p, site);
+    this.spawnExtras(site);
+    const saved = (this.state.companions ??= {});
+    for (const [id, c] of Object.entries(saved)) {
+      if (this.state.world.party.includes(id) || c.waitingAt?.location !== site.place.id || this.npcs.has(id)) continue;
+      const wx = site.place.x + c.waitingAt.x, wz = site.place.z + c.waitingAt.y;
+      const at = freeTileNear(this.grid, wx, wz) ?? { x: wx, y: wz };
+      const rt = spawnNpc({ def: id, x: at.x, y: at.y }, this.grid, c);
+      rt.site = site.place.id;
+      this.npcs.set(rt.id, rt);
+      this.addActor(rt.actor);
+    }
+  }
+
+  /** A site is going: its people's state is kept; companions stay with the player. */
+  private onSiteUnloading(site: LoadedSite): void {
+    this.syncNpcState();
+    for (const n of [...this.npcs.values()]) {
+      if (n.site !== site.place.id) continue;
+      if (n.companion) { n.site = undefined; continue; }
+      this.removeNpc(n);
+    }
+  }
+
+  private removeNpc(n: NpcRuntime): void {
+    this.npcs.delete(n.id);
+    this.actors.delete(n.actor.id);
+    this.scene.remove(n.actor.object);
+    n.actor.body.dispose();
+    const i = this.grid.index(n.actor.tx, n.actor.ty);
+    if (this.grid.occupied.get(i) === n.id) this.grid.occupied.delete(i);
+  }
+
+  /** Spawn an NPC placement on a site (placement and saved positions are local to it), applying persisted state. */
+  spawn(p: import('./npc/defs').NpcPlacement, site: LoadedSite | undefined = this.siteHere()): NpcRuntime | undefined {
+    if (!site) return;
+    const key = `${site.place.id}/${p.id ?? p.def}`;
     const saved = this.state.npcs[key];
-    const pos = saved?.x !== undefined ? { ...p, x: saved.x, y: saved.y! } : p;
-    if (!this.loc.grid.passable(pos.x, pos.y)) return;
-    const rt = spawnNpc(pos, this.loc.grid);
+    const lx = saved?.x ?? p.x, ly = saved?.y ?? p.y;
+    const pos = { ...p, x: site.place.x + lx, y: site.place.z + ly };
+    if (!this.grid.passable(pos.x, pos.y)) return;
+    const rt = spawnNpc(pos, this.grid);
+    rt.site = site.place.id;
     if (saved?.hp !== undefined) rt.combatant.sheet.hp = saved.hp;
     if (saved?.hostile !== undefined) rt.hostile = saved.hostile;
     if (rt.def.hostileIf && test(rt.def.hostileIf, this.state)) rt.hostile = true;
@@ -612,9 +717,9 @@ export class Game extends EventBus<GameEvents> {
   /** Persist NPC positions/health/inventories for the current map; companions' sheets and packs globally. */
   syncNpcState(): void {
     for (const n of this.npcs.values()) {
-      const key = `${this.state.locationId}/${n.id}`;
+      const site = n.site ? this.world.sites.get(n.site) : undefined;
       const dead = n.combatant.sheet.hp <= 0;
-      this.state.npcs[key] = { dead, hp: n.combatant.sheet.hp, x: n.actor.tx, y: n.actor.ty, hostile: n.hostile, inventory: n.combatant.inv };
+      if (site) this.state.npcs[`${site.place.id}/${n.id}`] = { dead, hp: n.combatant.sheet.hp, x: n.actor.tx - site.place.x, y: n.actor.ty - site.place.z, hostile: n.hostile, inventory: n.combatant.inv };
       if (n.companion || this.state.companions?.[n.id]) {
         const c = ((this.state.companions ??= {})[n.id] ??= { sheet: n.combatant.sheet, inv: n.combatant.inv });
         c.sheet = n.combatant.sheet; c.inv = n.combatant.inv;
@@ -628,28 +733,25 @@ export class Game extends EventBus<GameEvents> {
    * Dismissed companions waiting at this location are spawned where they were left.
    */
   private spawnParty(px: number, py: number): void {
-    if (!this.loc) return;
     const saved = (this.state.companions ??= {});
     for (const id of this.state.world.party) {
       const def = NPCS[id];
       if (!def) continue;
       let rt = this.npcs.get(id);
       if (!rt) {
-        const at = freeTileNear(this.loc.grid, px, py, 'player') ?? { x: px, y: py };
-        rt = spawnNpc({ def: id, x: at.x, y: at.y, facing: this.state.player.facing }, this.loc.grid, saved[id]);
+        const at = freeTileNear(this.grid, px, py, 'player') ?? { x: px, y: py };
+        rt = spawnNpc({ def: id, x: at.x, y: at.y, facing: this.state.player.facing }, this.grid, saved[id]);
         this.npcs.set(rt.id, rt);
         this.addActor(rt.actor);
-      } else if (saved[id]) { rt.combatant.sheet = saved[id].sheet; rt.combatant.inv = saved[id].inv; }
+      } else {
+        if (saved[id]) { rt.combatant.sheet = saved[id].sheet; rt.combatant.inv = saved[id].inv; }
+        // Arrived somewhere else: they come along.
+        if (Math.max(Math.abs(rt.actor.tx - px), Math.abs(rt.actor.ty - py)) > 12) { const at = freeTileNear(this.grid, px, py, 'player') ?? { x: px, y: py }; rt.actor.place(at.x, at.y); }
+      }
       rt.companion = true;
       rt.hostile = false;
+      rt.site = undefined;
       delete saved[id]?.waitingAt;
-    }
-    for (const [id, c] of Object.entries(saved)) {
-      if (this.state.world.party.includes(id) || c.waitingAt?.location !== this.state.locationId || this.npcs.has(id)) continue;
-      const at = freeTileNear(this.loc.grid, c.waitingAt.x, c.waitingAt.y) ?? c.waitingAt;
-      const rt = spawnNpc({ def: id, x: at.x, y: at.y }, this.loc.grid, c);
-      this.npcs.set(rt.id, rt);
-      this.addActor(rt.actor);
     }
   }
 
@@ -671,49 +773,47 @@ export class Game extends EventBus<GameEvents> {
   private barkTick = 0;
   /** Conditional placements on the current map appear or leave as the world changes (an event fired, a flag set). */
   /** Background people: generated from the map's `extras`, placed on free tiles where they belong, hours permitting. */
-  private spawnExtras(map: MapDef): void {
-    if (!this.loc || !map.extras?.length) return;
-    const grid = this.loc.grid, hour = hourOf(this.state.minutes);
+  private spawnExtras(site: LoadedSite): void {
+    const map = site.place.map;
+    if (!map.extras?.length) return;
+    const ox = site.place.x, oz = site.place.z, grid = this.grid, hour = hourOf(this.state.minutes);
     map.extras.forEach((def, index) => {
       const defs = makeExtras(map.id, map.seed ?? 1, index, def);
       const rng = new Rng((map.seed ?? 1) * 31 + index);
       const spots = def.spots ?? [];
       const inHours = !def.hours || inHoursOf(def.hours, hour);
+      const area = def.area ? { x: ox + def.area.x, y: oz + def.area.y, w: def.area.w, h: def.area.h } : { x: ox + 1, y: oz + 1, w: site.place.w - 2, h: site.place.h - 2 };
       defs.forEach((d, k) => {
         // Named spots are taken in order (pairs face each other); the rest wander the area.
         const spot = k < spots.length ? spots[k] : undefined;
         const at = spot ? map.spots?.[spot] : undefined;
-        const tile = at ? freeTileNear(grid, at.x, at.y, undefined, 2) : this.randomAreaTile(def.area, rng, 12);
+        const tile = at ? freeTileNear(grid, ox + at.x, oz + at.y, undefined, 2) : this.randomAreaTile(area, rng, 12);
         if (!tile) return;
-        const rt = this.spawn({ def: d.id, x: tile.x, y: tile.y, facing: rng.range(0, Math.PI * 2), schedule: [] });
+        const rt = this.spawn({ def: d.id, x: tile.x - ox, y: tile.y - oz, facing: rng.range(0, Math.PI * 2), schedule: [] }, site);
         if (!rt) return;
-        rt.extra = { area: def.area, spots, hours: def.hours, wait: rng.range(2, 20), fixed: !!spot };
+        rt.extra = { area, spots, hours: def.hours, wait: rng.range(2, 20), fixed: !!spot };
         rt.actor.idle = spotIdle(spot);
         const partner = spot && /_pair_[ab]$/.test(spot) ? map.spots?.[spot.endsWith('_a') ? spot.replace(/_a$/, '_b') : spot.replace(/_b$/, '_a')] : undefined;
-        if (partner) rt.actor.faceTowards(partner.x + 0.5, partner.y + 0.5);
+        if (partner) rt.actor.faceTowards(ox + partner.x + 0.5, oz + partner.y + 0.5);
         if (!inHours) { rt.away = true; rt.actor.object.visible = false; grid.occupied.delete(grid.index(rt.actor.tx, rt.actor.ty)); }
       });
     });
   }
 
-  private randomAreaTile(area: { x: number; y: number; w: number; h: number } | undefined, rng: Rng, tries: number): { x: number; y: number } | undefined {
-    if (!this.loc) return;
-    const grid = this.loc.grid;
-    const a = area ?? { x: 1, y: 1, w: grid.width - 2, h: grid.height - 2 };
+  private randomAreaTile(a: { x: number; y: number; w: number; h: number }, rng: Rng, tries: number): { x: number; y: number } | undefined {
     for (let i = 0; i < tries; i++) {
-      const x = a.x + rng.int(0, a.w - 1), y = a.y + rng.int(0, a.h - 1);
-      if (grid.passable(x, y)) return { x, y };
+      const x = a.x + rng.int(0, Math.max(0, a.w - 1)), y = a.y + rng.int(0, Math.max(0, a.h - 1));
+      if (this.grid.passable(x, y)) return { x, y };
     }
     return undefined;
   }
 
   /** Background people drift: stand a while, walk somewhere else in their patch, stand again. */
   private wanderExtras(hour: number): void {
-    if (!this.loc) return;
-    const grid = this.loc.grid;
+    const grid = this.grid;
     for (const n of this.npcs.values()) {
       const x = n.extra;
-      if (!x || n.hostile || n.actor.isDead || n.talking) continue;
+      if (!x || !x.area || n.hostile || n.actor.isDead || n.talking) continue;
       const inHours = !x.hours || inHoursOf(x.hours, hour);
       if (inHours === !!n.away) {
         n.away = !inHours;
@@ -740,17 +840,16 @@ export class Game extends EventBus<GameEvents> {
   }
 
   syncPlacements(): void {
-    const map = this.loc?.map;
-    if (!map || this.encounter.active) return;
-    const grid = this.loc!.grid;
-    for (const p of this.placements(map)) {
+    if (this.encounter.active) return;
+    const grid = this.grid;
+    for (const site of this.world.sites.values()) for (const p of this.placements(site.place.map)) {
       if (!p.if) continue;
       const id = p.id ?? p.def;
       const n = this.npcs.get(id);
       // Companions travel with the player: their placement conditions no longer apply.
       if (this.state.world.party.includes(id)) continue;
       const want = test(p.if, this.state);
-      if (want && !n) this.spawn(p);
+      if (want && !n) this.spawn(p, site);
       else if (want && n?.away && !n.companion) { n.away = false; n.actor.object.visible = true; grid.occupied.set(grid.index(n.actor.tx, n.actor.ty), n.id); }
       else if (!want && n && !n.away && !n.companion && n.combatant.sheet.hp > 0) { n.away = true; n.actor.object.visible = false; grid.occupied.delete(grid.index(n.actor.tx, n.actor.ty)); }
     }
@@ -777,11 +876,11 @@ export class Game extends EventBus<GameEvents> {
 
   /** Walk NPCs to where their routine says they should be; take 'away' NPCs off the map. */
   private updateSchedules(dt: number): void {
-    if (this.encounter.active || !this.loc || this.paused) return;
+    if (this.encounter.active || !this.player || this.paused) return;
     this.scheduleTick += dt;
     if (this.scheduleTick < 2) return;
     this.scheduleTick = 0;
-    const hour = hourOf(this.state.minutes), grid = this.loc.grid;
+    const hour = hourOf(this.state.minutes), grid = this.grid;
     this.wanderExtras(hour);
     for (const n of this.npcs.values()) {
       if (n.extra) continue;
@@ -798,8 +897,11 @@ export class Game extends EventBus<GameEvents> {
       if (away || !e) continue;
       if (!n.talking) n.actor.idle = IDLE_BY_ACTIVITY[e.activity] ?? 'stand';
       if (n.actor.moving) continue;
-      const t = scheduleTile(e, this.loc.map.spots);
-      if (!t || (t.x === n.actor.tx && t.y === n.actor.ty)) continue;
+      const home = n.site ? this.world.sites.get(n.site) : undefined;
+      const lt = scheduleTile(e, home?.built.map.spots);
+      if (!lt) continue;
+      const t = { x: lt.x + (home?.place.x ?? 0), y: lt.y + (home?.place.z ?? 0) };
+      if (t.x === n.actor.tx && t.y === n.actor.ty) continue;
       const goal = grid.passable(t.x, t.y, n.id) ? t : freeTileNear(grid, t.x, t.y, n.id);
       if (!goal) continue;
       const path = grid.findPath(n.actor.tx, n.actor.ty, goal.x, goal.y, { ignore: n.id, maxCost: 120 });
@@ -835,7 +937,7 @@ export class Game extends EventBus<GameEvents> {
   private followTick = 0;
   /** Companions trail the player outside combat. */
   private updateFollowers(dt: number): void {
-    if (this.encounter.active || !this.player || !this.loc || this.paused) return;
+    if (this.encounter.active || !this.player || this.paused) return;
     this.followTick += dt;
     if (this.followTick < 0.3) return;
     this.followTick = 0;
@@ -844,13 +946,13 @@ export class Game extends EventBus<GameEvents> {
       if (!n.companion || n.actor.isDead || n.actor.moving) continue;
       const dist = Math.max(Math.abs(n.actor.tx - p.tx), Math.abs(n.actor.ty - p.ty));
       if (!shouldFollow(dist, p.moving)) continue;
-      const path = followPath(this.loc.grid, { id: n.id, x: n.actor.tx, y: n.actor.ty }, { x: p.tx, y: p.ty, facing: p.facing });
+      const path = followPath(this.grid, { id: n.id, x: n.actor.tx, y: n.actor.ty }, { x: p.tx, y: p.ty, facing: p.facing });
       if (path && path.length) { n.actor.running = p.running || dist > 5; n.actor.setPath(path); }
     }
   }
 
   startCombat(target?: NpcRuntime, pit?: { win?: Effect[]; lose?: Effect[] }): void {
-    if (this.encounter.active || !this.player || !this.loc) return;
+    if (this.encounter.active || !this.player) return;
     this.player.stop();
     this.pathMarker.visible = false;
     this.pc.x = this.player.tx; this.pc.y = this.player.ty;
@@ -913,7 +1015,7 @@ export class Game extends EventBus<GameEvents> {
     for (const n of this.npcs.values()) {
       if (!n.hostile || n.combatant.sheet.hp <= 0 || n.away) continue;
       const d = Math.max(Math.abs(n.actor.tx - this.player.tx), Math.abs(n.actor.ty - this.player.ty));
-      if (d <= derived(n.combatant.sheet).sightRange && this.loc!.grid.lineOfSight(n.actor.tx, n.actor.ty, this.player.tx, this.player.ty)) {
+      if (d <= derived(n.combatant.sheet).sightRange && this.grid.lineOfSight(n.actor.tx, n.actor.ty, this.player.tx, this.player.ty)) {
         this.emit('message', { text: `${n.def.name} spots you!` });
         this.startCombat();
         return;
@@ -924,14 +1026,14 @@ export class Game extends EventBus<GameEvents> {
   /** Corpse, container or ground pile at a tile → walk over and open it. Returns true if handled. */
   tryInteract(x: number, y: number): boolean {
     const target = this.interactableAt(x, y);
-    if (!target || !this.player || !this.loc) return false;
+    if (!target || !this.player) return false;
     const run = target;
     const p = this.player;
     if (Math.max(Math.abs(x - p.tx), Math.abs(y - p.ty)) <= 1) { p.faceTowards(x + 0.5, y + 0.5); run(); return true; }
-    const path = this.loc.grid.findPath(p.tx, p.ty, x, y, { ignore: p.id, adjacentOk: true });
+    const path = this.pathToward(p, { x, y }, true, p.id);
     if (!path) return false;
     this.pendingInteract = { x, y, run };
-    this.walkGoal = { x, y, adjacentOk: true, tries: 0 }; this.walkRetry = undefined;
+    this.walkGoal = { x, y, adjacentOk: true, tries: 0, legs: 0 }; this.walkRetry = undefined;
     p.setPath(path);
     return true;
   }
@@ -939,24 +1041,33 @@ export class Game extends EventBus<GameEvents> {
   /** Walk to a tile (what a tap on open ground does). Returns false when there is no way there. */
   walkTo(x: number, y: number): boolean {
     const p = this.player;
-    if (!p || !this.loc) return false;
+    if (!p) return false;
     this.pendingInteract = undefined;
-    const path = this.loc.grid.findPath(p.tx, p.ty, x, y, { ignore: p.id, adjacentOk: true });
+    const path = this.pathToward(p, { x, y }, true, p.id);
     if (!path || !path.length) return false;
     this.lastStand = { x: p.tx, y: p.ty, until: performance.now() + 8000 + path.length * 400 };
-    this.walkGoal = { x, y, adjacentOk: true, tries: 0 }; this.walkRetry = undefined;
+    this.walkGoal = { x, y, adjacentOk: true, tries: 0, legs: 0 }; this.walkRetry = undefined;
     p.setPath(path);
-    const end = path[path.length - 1];
-    this.pathMarker.position.set(end.x + 0.5, 0.03, end.y + 0.5);
+    this.pathMarker.position.set(x + 0.5, 0.03, y + 0.5);
     this.pathMarker.visible = true;
     return true;
+  }
+
+  /** A path to a goal: the whole way when it is near; across open country, the next leg toward it. */
+  private pathToward(from: { tx: number; ty: number }, goal: { x: number; y: number }, adjacentOk: boolean, ignore: string): { x: number; y: number }[] | null {
+    const LEG = 120;
+    const dx = goal.x - from.tx, dy = goal.y - from.ty, d = Math.max(Math.abs(dx), Math.abs(dy));
+    if (d <= LEG) return this.grid.findPath(from.tx, from.ty, goal.x, goal.y, { ignore, adjacentOk });
+    const t = LEG / d;
+    const mx = Math.round(from.tx + dx * t), my = Math.round(from.ty + dy * t);
+    return this.grid.findPath(from.tx, from.ty, mx, my, { ignore, adjacentOk: true, budget: 30000 }) ?? this.grid.findPath(from.tx, from.ty, goal.x, goal.y, { ignore, adjacentOk });
   }
 
   /** A blocked walk, retried: path round whoever stepped in; give up quietly when there is no way. */
   private resumeWalk(): void {
     const g = this.walkGoal, p = this.player;
-    if (!g || !p || !this.loc || p.moving) return;
-    const path = this.loc.grid.findPath(p.tx, p.ty, g.x, g.y, { ignore: p.id, adjacentOk: g.adjacentOk });
+    if (!g || !p || p.moving) return;
+    const path = this.pathToward(p, g, g.adjacentOk, p.id);
     if (path && path.length) p.setPath(path);
     else if (path) p.onPathDone?.();
     else if (g.tries < 5) { g.tries++; this.walkRetry = 0.35; }
@@ -971,7 +1082,7 @@ export class Game extends EventBus<GameEvents> {
   private updateHover(x: number, y: number): void {
     const t = this.pickTile(x, y);
     const what = t && !this.transitioning ? this.describeAt(t.x, t.y) : undefined;
-    this.cursor.visible = !!t && (!!what || !!this.loc?.grid.get(t.x, t.y)?.walkable);
+    this.cursor.visible = !!t && (!!what || !!this.grid.get(t.x, t.y)?.walkable);
     if (t) this.cursor.position.set(t.x + 0.5, 0.02, t.y + 0.5);
     (this.cursor.material as THREE.MeshBasicMaterial).color.setHex(what ? 0xffe8a0 : 0xe8c070);
     (this.cursor.material as THREE.MeshBasicMaterial).opacity = what ? 0.85 : 0.5;
@@ -982,7 +1093,7 @@ export class Game extends EventBus<GameEvents> {
 
   /** What is at a tile and what a tap would do there, for the hover label: a person, a thing with a verb, a way out. */
   describeAt(x: number, y: number): { name: string; verb: string } | undefined {
-    if (!this.loc) return undefined;
+    if (!this.player) return undefined;
     for (const n of this.npcs.values()) {
       if (n.actor.tx !== x || n.actor.ty !== y || n.away) continue;
       if (n.combatant.sheet.hp <= 0) return { name: n.def.name, verb: 'Search' };
@@ -992,22 +1103,29 @@ export class Game extends EventBus<GameEvents> {
       if (n.def.merchant) return { name: n.def.name, verb: 'Trade' };
       return { name: n.def.name, verb: '' };
     }
-    const map = this.loc.map, loc = this.state.locationId;
-    const pile = this.state.containers[`${loc}/ground_${x}_${y}`];
+    const pile = this.state.containers[this.pileKey(x, y)];
     if (pile && (pile.items.length || pile.tolls)) return { name: 'Dropped things', verb: 'Take' };
-    const prop = map.props?.find((p) => p.x === x && p.y === y);
+    const site = this.world.siteAt(x, y);
+    if (!site) return undefined;
+    const map = site.place.map, lx = x - site.place.x, ly = y - site.place.z;
+    const prop = map.props?.find((p) => p.x === lx && p.y === ly);
     if (prop) {
       if (prop.kind === 'campfire' || prop.kind === 'fire_barrel') return { name: 'Fire', verb: 'Camp' };
       if (prop.id && map.talk?.[prop.id]) return { name: map.talk[prop.id].name, verb: 'Look' };
       if (prop.id && map.containers?.[prop.id]) return { name: map.containers[prop.id].name, verb: map.containers[prop.id].lock ? 'Open (locked)' : 'Open' };
     }
-    const exit = map.exits?.find((e) => x >= e.x && x < e.x + (e.w ?? 1) && y >= e.y && y < e.y + (e.h ?? 1) && test(e.if, this.state));
+    const exit = map.exits?.find((e) => lx >= e.x && lx < e.x + (e.w ?? 1) && ly >= e.y && ly < e.y + (e.h ?? 1) && test(e.if, this.state) && this.exitApplies(e));
     if (exit) return { name: exit.label ?? 'Out', verb: 'Leave' };
     return undefined;
   }
 
+  /** Which drawn exits still mean anything: doors to and from cells. Walking out of an open site needs none. */
+  private exitApplies(e: ExitDef): boolean {
+    if (this.world.mode === 'cell') return true;
+    return 'location' in e.to && sitePlacement(e.to.location)?.kind === 'cell';
+  }
+
   private interactableAt(x: number, y: number): (() => void) | undefined {
-    const loc = this.state.locationId;
     for (const n of this.npcs.values()) {
       if (n.actor.tx !== x || n.actor.ty !== y || n.away) continue;
       if (n.combatant.sheet.hp > 0) {
@@ -1022,18 +1140,21 @@ export class Game extends EventBus<GameEvents> {
         this.emit('openTransfer', { inv, name: `${n.def.name} (dead)` });
       };
     }
-    const pileKey = `${loc}/ground_${x}_${y}`;
+    const pileKey = this.pileKey(x, y);
     if (this.state.containers[pileKey] && (this.state.containers[pileKey].items.length || this.state.containers[pileKey].tolls)) {
       return () => this.emit('openTransfer', { inv: this.state.containers[pileKey], name: 'Ground' });
     }
-    const fire = this.loc?.map.props?.find((p) => p.x === x && p.y === y && (p.kind === 'campfire' || p.kind === 'fire_barrel'));
+    const site = this.world.siteAt(x, y);
+    if (!site) return undefined;
+    const map = site.place.map, lx = x - site.place.x, ly = y - site.place.z;
+    const fire = map.props?.find((p) => p.x === lx && p.y === ly && (p.kind === 'campfire' || p.kind === 'fire_barrel'));
     if (fire) return () => this.emit('openCamp', {});
-    const talker = this.loc?.map.props?.find((p) => p.x === x && p.y === y && p.id && this.loc!.map.talk?.[p.id]);
-    if (talker) { const t = this.loc!.map.talk![talker.id!]; return () => this.emit('openDialogue', { tree: t.dialogue, name: t.name }); }
-    const prop = this.loc?.map.props?.find((p) => p.x === x && p.y === y && p.id && this.loc!.map.containers?.[p.id]);
+    const talker = map.props?.find((p) => p.x === lx && p.y === ly && p.id && map.talk?.[p.id]);
+    if (talker) { const t = map.talk![talker.id!]; return () => this.emit('openDialogue', { tree: t.dialogue, name: t.name }); }
+    const prop = map.props?.find((p) => p.x === lx && p.y === ly && p.id && map.containers?.[p.id]);
     if (prop) {
-      const def = this.loc!.map.containers![prop.id!];
-      const key = `${loc}/${prop.id}`;
+      const def = map.containers![prop.id!];
+      const key = `${site.place.id}/${prop.id}`;
       return () => {
         const unlockedFlag = `unlocked:${key}`;
         if (def.lock && !this.state.flags[unlockedFlag]) {
@@ -1056,13 +1177,31 @@ export class Game extends EventBus<GameEvents> {
     }
   }
 
-  /** Rebuild the little sack meshes for dropped items on this map. */
+  /** Container key for things dropped on a world tile: site-local inside a place, world tiles in the wild. */
+  pileKey(x: number, y: number): string {
+    const site = this.world.siteAt(x, y);
+    return site ? `${site.place.id}/ground_${x - site.place.x}_${y - site.place.z}` : `wild:${regionAt(x, y)}/ground_${x}_${y}`;
+  }
+
+  /** World tile of a pile key, if its place is loaded (or it lies in the wild). */
+  private pileTile(key: string): { x: number; y: number } | undefined {
+    const m = /^(.*)\/ground_(-?\d+)_(-?\d+)$/.exec(key);
+    if (!m) return undefined;
+    const x = Number(m[2]), y = Number(m[3]);
+    if (m[1].startsWith('wild:')) return { x, y };
+    const site = this.world.sites.get(m[1]);
+    return site ? { x: site.place.x + x, y: site.place.z + y } : undefined;
+  }
+
+  /** Rebuild the little sack meshes for dropped items near the player. */
   groundPilesChanged(): void {
     this.pileGroup.clear();
-    const prefix = `${this.state.locationId}/ground_`;
+    const px = this.player?.tx ?? 0, py = this.player?.ty ?? 0;
     for (const [k, inv] of Object.entries(this.state.containers)) {
-      if (!k.startsWith(prefix) || (!inv.items.length && !inv.tolls)) continue;
-      const [x, y] = k.slice(prefix.length).split('_').map(Number);
+      if (!k.includes('/ground_') || (!inv.items.length && !inv.tolls)) continue;
+      const t = this.pileTile(k);
+      if (!t || Math.abs(t.x - px) > 260 || Math.abs(t.y - py) > 260) continue;
+      const { x, y } = t;
       const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.18, 0).scale(1, 0.7, 1), new THREE.MeshStandardMaterial({ color: 0x8a7a5a, flatShading: true }));
       m.position.set(x + 0.5, 0.12, y + 0.5);
       m.castShadow = true;
@@ -1085,8 +1224,8 @@ export class Game extends EventBus<GameEvents> {
 
   addActor(a: Actor): void {
     a.onStep = (x, y) => {
-      const t = this.loc?.grid.get(x, y);
-      this.soundAt(stepSoundFor(t?.def.floor ?? (this.loc?.map.ambience.indoor ? 'concrete' : 'sand')), a.object.position, a.id === 'player' ? 0.6 : 0.35);
+      const t = this.grid.get(x, y);
+      this.soundAt(stepSoundFor(t?.def.floor ?? 'sand'), a.object.position, a.id === 'player' ? 0.6 : 0.35);
     };
     this.actors.set(a.id, a);
     this.scene.add(a.object);
@@ -1095,10 +1234,23 @@ export class Game extends EventBus<GameEvents> {
   private onPlayerTile(x: number, y: number): void {
     this.state.player.x = x;
     this.state.player.y = y;
-    const map = this.loc?.map;
-    if (!map) return;
+    const site = this.world.siteAt(x, y);
+    // Crossing into a place, or out of one: the location changes under your feet, no screen between.
+    const id = site ? site.place.id : `wild:${regionAt(x, y)}`;
+    if (id !== this.state.locationId) {
+      this.state.locationId = id;
+      this.state.flags[`visited_${id}`] = true;
+      if (site) {
+        const known = (this.state.world.knownLocations ??= []);
+        for (const l of Object.values(WORLD_MAP.locations)) if (l.map === id && !known.includes(l.id)) { known.push(l.id); this.state.world.at = l.id; }
+      }
+      this.emit('locationChanged', { id, name: this.locationName ?? '' });
+      this.quests.update();
+    }
+    if (!site) return;
+    const map = site.place.map, lx = x - site.place.x, ly = y - site.place.z;
     for (const t of map.triggers ?? []) {
-      if (!inExit(t, x, y) || !test(t.if, this.state)) continue;
+      if (!inExit(t, lx, ly) || !test(t.if, this.state)) continue;
       const key = `trigger:${map.id}/${t.id}`;
       if (t.once !== false && this.state.flags[key]) continue;
       this.state.flags[key] = true;
@@ -1106,12 +1258,13 @@ export class Game extends EventBus<GameEvents> {
       apply(t.effects, this.state, this.logicHost);
       this.quests.update();
     }
-    const exit = map.exits?.find((e) => inExit(e, x, y) && test(e.if, this.state));
+    const exit = map.exits?.find((e) => inExit(e, lx, ly) && test(e.if, this.state) && this.exitApplies(e));
     if (exit && !this.transitioning) this.useExit(exit);
   }
 
   private warmTimer = 0;
   private warming = false;
+  private streamTick = 0;
   /** Build the conversation portrait of the nearest person who has none yet, in an idle moment, so talking opens at once. */
   private warmPortraits(): void {
     if (this.warming || this.talking || this.paused || !this.player || this.encounter.active) return;
@@ -1144,7 +1297,7 @@ export class Game extends EventBus<GameEvents> {
     this.quests.update();
     if (!('location' in exit.to)) {
       const trip = this.state.world.trip;
-      if (trip && this.loc?.map.id === trip.map) {
+      if (trip && this.world.cell === trip.map) {
         // Back on the road: the rest of the trip, time already half spent.
         this.state.world.trip = undefined;
         void this.travelTo(trip.to, trip.from, { legs: [], hours: trip.hoursLeft, fare: 0, fast: false });
@@ -1155,9 +1308,10 @@ export class Game extends EventBus<GameEvents> {
     }
     this.transitioning = true;
     const to = exit.to;
-    await fade(1);
+    // A door: through it at once (a short fade, never a loading screen; the place is built in memory).
+    await fade(1, 180);
     await this.loadLocation(to.location, to.spawn);
-    await fade(0);
+    await fade(0, 220);
     this.transitioning = false;
     void this.save('auto');
   }
@@ -1171,7 +1325,7 @@ export class Game extends EventBus<GameEvents> {
     const hit = new THREE.Vector3();
     if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return null;
     const x = Math.floor(hit.x), y = Math.floor(hit.z);
-    return this.loc?.grid.inBounds(x, y) ? { x, y } : null;
+    return this.grid.inBounds(x, y) ? { x, y } : null;
   }
 
   private bindInput(): void {
@@ -1232,18 +1386,18 @@ export class Game extends EventBus<GameEvents> {
   // --- Save / load ---------------------------------------------------------
 
   async save(slot: SlotId, label?: string): Promise<void> {
-    if (!this.saves || !this.loc) return;
+    if (!this.saves || !this.player) return;
     if (this.encounter.active) { this.emit('message', { text: 'Cannot save during combat' }); return; }
     this.syncNpcState();
     const thumb = await this.captureThumb();
     await this.saves.write(slot, {
-      label: label ?? (slot === 'auto' ? 'Autosave' : slot === 'quick' ? 'Quicksave' : this.loc.map.name),
+      label: label ?? (slot === 'auto' ? 'Autosave' : slot === 'quick' ? 'Quicksave' : this.locationName ?? ''),
       locationId: this.state.locationId,
-      locationName: this.loc.map.name,
+      locationName: this.locationName ?? '',
       minutes: this.state.minutes,
       playtimeSec: this.state.playtimeSec,
       thumb,
-    }, this.state);
+    }, { ...this.state, player: { ...this.state.player, ...this.toLocal(this.state.player.x, this.state.player.y) } });
     this.emit('saved', { slot });
     if (slot !== 'auto') this.emit('message', { text: 'Game saved' });
   }
@@ -1258,7 +1412,8 @@ export class Game extends EventBus<GameEvents> {
   async loadFile(f: SaveFile, slot?: SlotId): Promise<void> {
     await fade(1, 200);
     this.state = structuredClone(f.state);
-    await this.loadLocation(this.state.locationId, { x: this.state.player.x, y: this.state.player.y });
+    // Saves keep the player map-local (so places may move in the world between versions); the world tile is derived.
+    await this.loadLocation(this.state.locationId, this.toWorld(this.state.player.x, this.state.player.y));
     this.emit('loaded', { slot });
     await fade(0, 300);
   }
@@ -1280,8 +1435,12 @@ export class Game extends EventBus<GameEvents> {
     for (const w of this.thumbWaiters.splice(0)) w(url);
   }
 
-  /** Display name of the current location. */
-  get locationName(): string | undefined { return this.loc?.map.name; }
+  /** Display name of where the player is: the site, or the region of open country. */
+  get locationName(): string | undefined {
+    const site = this.siteHere();
+    if (site) return site.place.map.name;
+    return this.player ? REGIONS[regionAt(this.player.tx, this.player.ty)]?.name : undefined;
+  }
 
   /** Grab part of the next rendered frame (crop in 0..1 of the canvas) into a w×h canvas. */
   captureFrame(crop: { x: number; y: number; w: number; h: number }, w: number, h: number): Promise<HTMLCanvasElement> {
@@ -1365,7 +1524,17 @@ export class Game extends EventBus<GameEvents> {
     // Cutaway centred on the player (chest height); the roof of the building the player is in is lifted.
     if (this.player) cutawayUniforms.uCutCenter.value.copy(this.player.object.position).setY(1.0);
     this.cam.forward(cutawayUniforms.uCamDir.value);
-    roofUniforms.uHideBld.value = this.player && this.loc && this.loc.grid.inBounds(this.player.tx, this.player.ty) ? this.loc.buildings.at[this.loc.grid.index(this.player.tx, this.player.ty)] : -1;
+    const here = this.siteHere();
+    if (here && this.player) {
+      const b = here.built, lx = this.player.tx - here.place.x, ly = this.player.ty - here.place.z;
+      const id = b.grid.inBounds(lx, ly) ? b.buildings.at[b.grid.index(lx, ly)] : -1;
+      roofUniforms.uHideBld.value = id >= 0 ? b.bldBase + id : -1;
+    } else roofUniforms.uHideBld.value = -1;
+    if (this.player) {
+      this.atmosphere.setAmbience(this.world.ambienceAt(this.player.tx, this.player.ty));
+      this.streamTick += dt;
+      if (this.streamTick > 0.25) { this.streamTick = 0; void this.world.update(this.player.tx, this.player.ty); }
+    }
 
     this.atmosphere.hour = hourOf(this.state.minutes);
     this.atmosphere.weather = this.weatherNow();

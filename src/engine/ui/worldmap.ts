@@ -22,8 +22,7 @@ export class WorldMapUi {
 
   /** World-map location the player is at (the one whose map is loaded), else where they last were. */
   here(): string {
-    const id = this.game.state.locationId;
-    const at = Object.values(WORLD_MAP.locations).find((l) => l.map === id)?.id;
+    const at = this.game.nearestLocation();
     if (at) this.game.state.world.at = at;
     return this.game.state.world.at ?? 'cistern9';
   }

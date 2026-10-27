@@ -30,7 +30,7 @@ Precinct, Old Market, the Sink, Lantern Row, the Stacks, Bridgeward and the Crow
 147 items;
 six companions can join; a flat in the Stacks is a safehouse; four gangs joinable one at a time; the Crown has five ways in).
 **Content building is PAUSED by the owner's directive of 2026-10-27 (pass 5): the upgrade in `docs/UPGRADE.md` comes first
-(§2c below), U1 next; then B3.11.** Still open from the presentation
+(§2c below): U1 done, U2a done, U2b next; then B3.11.** Still open from the presentation
 pass: A5.9's remaining items (combat hover card, crowd yielding, indoor sound, camera ease, Tab reveal) — fold them in
 as B3 touches the same code. Binding owner rules: see `CLAUDE.md` §2 (no time limits; spoiler rule; not a Fallout
 clone; cyberpunk fusion).
@@ -239,9 +239,17 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
       terrain ground per map (no tile seams), real wall/roof materials, re-lit sun/sky/fog (lit palette; dust and sepia
       only as weather/mood), soft shadows; typefaces (no cursive), default outfit, reroll variance, portrait
       pre-warming (evidence `docs/evidence/u1/`). AO moved to U3 (with the renderer restructuring for streaming).
-- [ ] U2 Open world (NEXT): world coordinates, continuous terrain by region climate, places stamped at their positions,
-      roads/rails, chunk streaming with detail rings, pathfinding over terrain, persistence, instant interiors, world
-      map as a map, vehicles as fast travel, save migration. No exits, no loading screens.
+- [ ] U2 Open world (IN PROGRESS): world coordinates, continuous terrain by region climate, places stamped at their
+      positions, roads/rails, chunk streaming with detail rings, pathfinding over terrain, persistence, instant
+      interiors, world map as a map, vehicles as fast travel, save migration. No exits, no loading screens.
+      - [x] U2a DONE 2026-10-27: one world grid, places stamped in (`src/content/world/sites.ts`), streaming
+            (`src/engine/scene/stream.ts`), world-wide pathing (`src/engine/world/worldGrid.ts`), flat region terrain
+            chunks (`src/engine/world/terrain.ts`), cells for interiors, map-local persistence (save v6), QA smokes on
+            place-local helpers, evidence `docs/evidence/u2/` + `tools/qa/openworld.cjs`.
+      - [ ] U2b NEXT: heightfield terrain with places flattened in; world-space edge blending (one shared surface
+            array for the world); roads/rails between places; rivers and sea unwalkable; far horizon; world map drawn
+            from the world; vehicles as fast travel; walking = on-foot travel.
+      - [ ] U2c: detail rings/LOD, memory and draw-call budget, phone profiling.
 - [ ] U3 Living world: biome vegetation and surviving greenery, rocks and ruins, real props, water and shores,
       weather by region, background life.
 - [ ] U4 People: captured motion retargeted to the human rig, locomotion blending, skin/cloth/hair materials, close

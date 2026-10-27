@@ -40,7 +40,7 @@ const fs = require('fs');
   await shot('concern_front');
   await page.keyboard.press('Escape');
   await page.waitForTimeout(500);
-  await page.evaluate(() => { game.player.place(8, 14); game.cam.recentre(); game.cam.viewGoal = 6; game.cam.viewHeight = 6; });
+  await page.evaluate(() => { game.placeLocal(8, 14); game.cam.recentre(); game.cam.viewGoal = 6; game.cam.viewHeight = 6; });
   await page.waitForTimeout(6000);
   await shot('world');
   console.log('errors:', errors);

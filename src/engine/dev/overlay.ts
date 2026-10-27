@@ -48,7 +48,7 @@ export class DevOverlay {
     game.input.on('tap', ({ x, y }) => {
       if (!this.teleportMode || !game.player) return;
       const t = game.pickTile(x, y);
-      if (t && game.loc?.grid.passable(t.x, t.y)) {
+      if (t && game.grid.passable(t.x, t.y)) {
         game.player.place(t.x, t.y);
         game.state.player.x = t.x; game.state.player.y = t.y;
       }
@@ -92,7 +92,8 @@ export class DevOverlay {
         ['dev_raider_boss', 'dev_raider', 'dev_raider_knife'].forEach((def, i) => {
           for (let r = 0; r < 6; r++) {
             const x = p.tx + spots[i][0] + r, y = p.ty + spots[i][1];
-            if (g.loc?.grid.passable(x, y)) { g.spawn({ def, x, y, id: `${def}_${Date.now() % 10000}` }); break; }
+            const site = g.siteHere();
+            if (site && g.grid.passable(x, y)) { g.spawn({ def, x: x - site.place.x, y: y - site.place.z, id: `${def}_${Date.now() % 10000}` }, site); break; }
           }
         });
         break;

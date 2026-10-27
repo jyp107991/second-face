@@ -17,8 +17,8 @@ const fs = require('fs');
   const dlg = () => page.evaluate(() => (document.querySelector('.dlg-name')?.textContent ?? 'none') + ' | ' + (document.querySelector('.dlg-text')?.textContent ?? '').replace(/\s+/g, ' ').slice(0, 110));
   const pick = async (sub) => { const ok = await page.evaluate((sub) => { const li = [...document.querySelectorAll('.dlg-opts li')].find((l) => l.textContent.includes(sub)); if (!li) return false; li.click(); return true; }, sub); await page.waitForTimeout(500); console.log(`  > ${sub} → ${ok ? await dlg() : 'NO OPTION: ' + await page.evaluate(() => [...document.querySelectorAll('.dlg-opts li')].map((l) => l.textContent.trim()).join(' | '))}`); return ok; };
   const talk = async (id) => { await page.evaluate((id) => { const n = game.npcs.get(id); if (!n) throw new Error('no npc ' + id); game.player.place(n.actor.tx, n.actor.ty + 1); game.cam.recentre(); game.emit('openDialogue', { npc: n }); }, id); await page.waitForTimeout(1200); console.log(`${id}:`, await dlg()); };
-  const prop = async (px, py, sx, sy) => { await page.evaluate(([px, py, sx, sy]) => { game.player.place(sx, sy); game.cam.recentre(); game.tryInteract(px, py); }, [px, py, sx, sy]); await page.waitForTimeout(1500); console.log(`prop ${px},${py}:`, await dlg()); };
-  const walk = async (fx, fy, tx, ty, until) => { await page.evaluate(([fx, fy, tx, ty]) => { game.player.place(fx, fy); game.cam.recentre(); game.walkTo(tx, ty); }, [fx, fy, tx, ty]); await page.waitForFunction(until, null, { timeout: 90000 }).catch(() => {}); await page.waitForTimeout(1200); };
+  const prop = async (px, py, sx, sy) => { await page.evaluate(([px, py, sx, sy]) => { game.placeLocal(sx, sy); game.cam.recentre(); game.interactLocal(px, py); }, [px, py, sx, sy]); await page.waitForTimeout(1500); console.log(`prop ${px},${py}:`, await dlg()); };
+  const walk = async (fx, fy, tx, ty, until) => { await page.evaluate(([fx, fy, tx, ty]) => { game.placeLocal(fx, fy); game.cam.recentre(); game.walkLocal(tx, ty); }, [fx, fy, tx, ty]); await page.waitForFunction(until, null, { timeout: 90000 }).catch(() => {}); await page.waitForTimeout(1200); };
   const fails = [];
   const check = (name, ok, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ' — ' + detail : ''}`); if (!ok) fails.push(name); };
   const has = (id) => page.evaluate((id) => JSON.stringify(game.state.pc.inventory.items).includes(`"${id}"`), id);
@@ -35,11 +35,11 @@ const fs = require('fs');
   // the street at night
   await walk(2, 33, 6, 33, () => game.state.world.knowledge.seen_lantern === true);
   check('the arrival fired', await page.evaluate(() => game.state.world.knowledge.seen_lantern === true && game.state.flags.md_lantern_open === true));
-  await page.evaluate(() => { game.player.place(30, 19); game.cam.recentre(); game.cam.zoomBy(0.7); });
+  await page.evaluate(() => { game.placeLocal(30, 19); game.cam.recentre(); game.cam.zoomBy(0.7); });
   await page.waitForTimeout(1800);
   await shot('lr_1_row');
   console.log('perf:', JSON.stringify(await page.evaluate(() => game.perf())));
-  await page.evaluate(() => { game.player.place(20, 27); game.cam.recentre(); });
+  await page.evaluate(() => { game.placeLocal(20, 27); game.cam.recentre(); });
   await page.waitForTimeout(1500);
   await shot('lr_2_canal');
   // the pit: the card, the undercard, the stake
@@ -58,7 +58,7 @@ const fs = require('fs');
   await pick('(Pay. 30 Tolls)');
   await pick('(The ring.)');
   check('the stake is paid', await page.evaluate(() => game.state.flags.lr_comer_paid === true));
-  await page.evaluate(() => { game.player.place(35, 44); game.cam.recentre(); });
+  await page.evaluate(() => { game.placeLocal(35, 44); game.cam.recentre(); });
   await page.waitForTimeout(1500);
   await shot('lr_3_pit');
   // the bout, on the real combat system
@@ -79,7 +79,7 @@ const fs = require('fs');
       if (!foe || !e.alive(foe)) return 'wait';
       const pv = e.preview(p, foe);
       if (pv.ok) { await e.attack(p, foe); return 'hit'; }
-      const path = game.loc.grid.findPath(p.c.x, p.c.y, foe.c.x, foe.c.y, { ignore: p.c.id });
+      const path = game.grid.findPath(p.c.x, p.c.y, foe.c.x, foe.c.y, { ignore: p.c.id });
       if (path && path.length > 1 && p.c.ap > 0) { await e.moveUnit(p, path.slice(0, -1)); return 'move'; }
       e.endTurn(); return 'end';
     });

@@ -16,7 +16,7 @@ const path = require('path');
   await page.screenshot({ path: path.join(out, `${map}_1.png`), timeout: 180000 });
   if (second) {
     const [x, y] = second.split(',').map(Number);
-    await page.evaluate(([x, y]) => { game.player.place(x, y); game.cam.recentre(); game.cam.viewGoal = 11; game.cam.viewHeight = 11; }, [x, y]);
+    await page.evaluate(([x, y]) => { game.placeLocal(x, y); game.cam.recentre(); game.cam.viewGoal = 11; game.cam.viewHeight = 11; }, [x, y]);
     await page.waitForTimeout(3000);
     await page.screenshot({ path: path.join(out, `${map}_2.png`), timeout: 180000 });
   }

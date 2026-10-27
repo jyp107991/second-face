@@ -382,7 +382,7 @@ function triPrism(p: [number, number][], depth: number): THREE.BufferGeometry {
   return g;
 }
 
-export function buildRoofs(b: GeoBuilder, grid: Grid, map: MapDef, bld: Buildings, rng: Rng): void {
+export function buildRoofs(b: GeoBuilder, grid: Grid, map: MapDef, bld: Buildings, rng: Rng, bldBase = 0): void {
   if (map.ambience.indoor) return;
   const W = grid.width;
   for (const bd of bld.list) {
@@ -402,9 +402,9 @@ export function buildRoofs(b: GeoBuilder, grid: Grid, map: MapDef, bld: Building
         const x = i % W, y = Math.floor(i / W);
         const xa = x - (isRing(x - 1, y) ? ext : 0), xb = x + 1 + (isRing(x + 1, y) ? ext : 0);
         const za = y - (isRing(x, y - 1) ? ext : 0), zb = y + 1 + (isRing(x, y + 1) ? ext : 0);
-        b.box(xb - xa, 0.12, zb - za, (xa + xb) / 2, top - 0.06, (za + zb) / 2, surf, col, 0, { cutaway: true, building: id, jitter: 0 });
+        b.box(xb - xa, 0.12, zb - za, (xa + xb) / 2, top - 0.06, (za + zb) / 2, surf, col, 0, { cutaway: true, building: id + bldBase, jitter: 0 });
       }
-      roofClutter(b, bd, grid, top, rng, bd.kind === 'concrete' ? 'tech' : 'home');
+      roofClutter(b, bd, grid, top, rng, bd.kind === 'concrete' ? 'tech' : 'home', bldBase);
     } else if (bd.roof === 'pitched') {
       const alongX = X1 - X0 >= Z1 - Z0;
       const L = alongX ? X1 - X0 : Z1 - Z0, span = alongX ? Z1 - Z0 : X1 - X0;
@@ -414,22 +414,22 @@ export function buildRoofs(b: GeoBuilder, grid: Grid, map: MapDef, bld: Building
       const col = rng.pick([0x6a4e34, 0x5a4a3a, 0x7a5a40]);
       for (const sgn of [-1, 1]) {
         const off = (sgn * hh) / 2, y = ridgeY - vd / 2;
-        if (alongX) b.box(L + 2 * o, 0.1, sl, cx, y, cz + off, 'wood', col, 0, { cutaway: true, building: id, rx: sgn * a });
-        else b.box(sl, 0.1, L + 2 * o, cx + off, y, cz, 'wood', col, 0, { cutaway: true, building: id, rz: -sgn * a });
+        if (alongX) b.box(L + 2 * o, 0.1, sl, cx, y, cz + off, 'wood', col, 0, { cutaway: true, building: id + bldBase, rx: sgn * a });
+        else b.box(sl, 0.1, L + 2 * o, cx + off, y, cz, 'wood', col, 0, { cutaway: true, building: id + bldBase, rz: -sgn * a });
       }
-      if (alongX) b.box(L + 2 * o, 0.08, 0.22, cx, ridgeY + 0.02, cz, 'wood', DARK_WOOD, 0, { cutaway: true, building: id });
-      else b.box(0.22, 0.08, L + 2 * o, cx, ridgeY + 0.02, cz, 'wood', DARK_WOOD, 0, { cutaway: true, building: id });
+      if (alongX) b.box(L + 2 * o, 0.08, 0.22, cx, ridgeY + 0.02, cz, 'wood', DARK_WOOD, 0, { cutaway: true, building: id + bldBase });
+      else b.box(0.22, 0.08, L + 2 * o, cx, ridgeY + 0.02, cz, 'wood', DARK_WOOD, 0, { cutaway: true, building: id + bldBase });
       // Gables close the ends, in the plane of the end walls.
       for (const end of [-1, 1]) {
         const g = triPrism([[-span / 2, h - 0.02], [span / 2, h - 0.02], [0, ridgeY]], th);
         const m = new THREE.Matrix4();
         if (alongX) m.compose(new THREE.Vector3(end > 0 ? X1 - 0.5 : X0 + 0.5, 0, cz), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2), new THREE.Vector3(1, 1, 1));
         else m.compose(new THREE.Vector3(cx, 0, end > 0 ? Z1 - 0.5 : Z0 + 0.5), new THREE.Quaternion(), new THREE.Vector3(1, 1, 1));
-        b.add(g, SURF[bd.kind], bd.tint, m, { cutaway: true, building: id });
+        b.add(g, SURF[bd.kind], bd.tint, m, { cutaway: true, building: id + bldBase });
       }
       if (rng.chance(0.6)) {
         const px = alongX ? cx + rng.range(-L / 4, L / 4) : cx + 0.4, pz = alongX ? cz + 0.4 : cz + rng.range(-L / 4, L / 4);
-        b.cyl(0.1, 0.1, 1.0, 6, px, ridgeY + 0.2, pz, 'metal', DARK_METAL, { cutaway: true, building: id });
+        b.cyl(0.1, 0.1, 1.0, 6, px, ridgeY + 0.2, pz, 'metal', DARK_METAL, { cutaway: true, building: id + bldBase });
       }
     } else if (bd.roof === 'tin') {
       const alongX = X1 - X0 >= Z1 - Z0;
@@ -439,17 +439,17 @@ export function buildRoofs(b: GeoBuilder, grid: Grid, map: MapDef, bld: Building
       const cx = (X0 + X1) / 2, cz = (Z0 + Z1) / 2, y = h + 0.06 + rise / 2;
       const col = rng.pick([0xb0a890, 0x9a9488, 0xa8a090]);
       // High side toward -z (or -x): the sheet drops across the short span.
-      if (alongX) b.box(L + 2 * o, 0.06, sl, cx, y, cz, 'tin', col, 0, { cutaway: true, building: id, rx: a });
-      else b.box(sl, 0.06, L + 2 * o, cx, y, cz, 'tin', col, 0, { cutaway: true, building: id, rz: -a });
+      if (alongX) b.box(L + 2 * o, 0.06, sl, cx, y, cz, 'tin', col, 0, { cutaway: true, building: id + bldBase, rx: a });
+      else b.box(sl, 0.06, L + 2 * o, cx, y, cz, 'tin', col, 0, { cutaway: true, building: id + bldBase, rz: -a });
       // The gap under the high edge, boarded; the end triangles too.
-      if (alongX) b.box(L, rise + 0.1, th, cx, h + rise / 2, Z0 + 0.5, 'scrap', 0x6a5a48, 0, { cutaway: true, building: id });
-      else b.box(th, rise + 0.1, L, X0 + 0.5, h + rise / 2, cz, 'scrap', 0x6a5a48, 0, { cutaway: true, building: id });
+      if (alongX) b.box(L, rise + 0.1, th, cx, h + rise / 2, Z0 + 0.5, 'scrap', 0x6a5a48, 0, { cutaway: true, building: id + bldBase });
+      else b.box(th, rise + 0.1, L, X0 + 0.5, h + rise / 2, cz, 'scrap', 0x6a5a48, 0, { cutaway: true, building: id + bldBase });
       for (const end of [-1, 1]) {
         const g = triPrism([[-span / 2, h], [span / 2, h], [-span / 2, h + rise]], th);
         const m = new THREE.Matrix4();
         if (alongX) m.compose(new THREE.Vector3(end > 0 ? X1 - 0.5 : X0 + 0.5, 0, cz), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2), new THREE.Vector3(1, 1, 1));
         else m.compose(new THREE.Vector3(cx, 0, end > 0 ? Z1 - 0.5 : Z0 + 0.5), new THREE.Quaternion(), new THREE.Vector3(1, 1, 1));
-        b.add(g, 'scrap', 0x6a5a48, m, { cutaway: true, building: id });
+        b.add(g, 'scrap', 0x6a5a48, m, { cutaway: true, building: id + bldBase });
       }
       // Tyres and rocks hold the sheet down.
       const n = 3 + Math.floor(rng.next() * 3);
@@ -457,14 +457,14 @@ export function buildRoofs(b: GeoBuilder, grid: Grid, map: MapDef, bld: Building
         const u = rng.range(-L / 2 + 0.6, L / 2 - 0.6), v = rng.range(-span / 2 + 0.5, span / 2 - 0.5);
         const px = alongX ? cx + u : cx + v, pz = alongX ? cz + v : cz + u;
         const yy = h + 0.09 + rise / 2 - (v / span) * rise;
-        if (rng.chance(0.6)) b.cyl(0.3, 0.3, 0.18, 10, px, yy + 0.09, pz, 'flat', 0x1c1a18, { cutaway: true, building: id, ...(alongX ? { rx: a } : { rz: -a }) });
-        else b.rock(0.16, px, yy + 0.08, pz, 0x8a7a5a, 0, 0.6, { cutaway: true, building: id });
+        if (rng.chance(0.6)) b.cyl(0.3, 0.3, 0.18, 10, px, yy + 0.09, pz, 'flat', 0x1c1a18, { cutaway: true, building: id + bldBase, ...(alongX ? { rx: a } : { rz: -a }) });
+        else b.rock(0.16, px, yy + 0.08, pz, 0x8a7a5a, 0, 0.6, { cutaway: true, building: id + bldBase });
       }
     }
   }
 }
 
-function roofClutter(b: GeoBuilder, bd: Building, grid: Grid, top: number, rng: Rng, style: 'tech' | 'home'): void {
+function roofClutter(b: GeoBuilder, bd: Building, grid: Grid, top: number, rng: Rng, style: 'tech' | 'home', bldBase = 0): void {
   const W = grid.width, id = bd.id;
   const spots = bd.interior.filter((i) => !bd.doors.includes(i));
   const n = Math.min(spots.length, 1 + Math.floor(rng.next() * 3));
@@ -473,24 +473,24 @@ function roofClutter(b: GeoBuilder, bd: Building, grid: Grid, top: number, rng: 
     const x = (i % W) + 0.5, z = Math.floor(i / W) + 0.5, y = top;
     const r = rng.next();
     if (r < 0.25) {
-      b.cyl(0.5, 0.5, 0.9, 10, x, y + 0.65, z, 'rust', 0x8a6a4a, { cutaway: true, building: id });
-      b.cyl(0.52, 0.52, 0.06, 10, x, y + 0.95, z, 'metal', DARK_METAL, { cutaway: true, building: id });
-      for (const [dx, dz] of [[-0.3, -0.3], [0.3, -0.3], [-0.3, 0.3], [0.3, 0.3]]) b.box(0.06, 0.2, 0.06, x + dx, y + 0.1, z + dz, 'metal', DARK_METAL, 0, { cutaway: true, building: id });
+      b.cyl(0.5, 0.5, 0.9, 10, x, y + 0.65, z, 'rust', 0x8a6a4a, { cutaway: true, building: id + bldBase });
+      b.cyl(0.52, 0.52, 0.06, 10, x, y + 0.95, z, 'metal', DARK_METAL, { cutaway: true, building: id + bldBase });
+      for (const [dx, dz] of [[-0.3, -0.3], [0.3, -0.3], [-0.3, 0.3], [0.3, 0.3]]) b.box(0.06, 0.2, 0.06, x + dx, y + 0.1, z + dz, 'metal', DARK_METAL, 0, { cutaway: true, building: id + bldBase });
     } else if (r < 0.45) {
-      b.box(1.3, 0.05, 1.0, x, y + 0.04, z, 'fabric', rng.pick([0x6b6b45, 0x7a6a58, 0x5a6a6a]), rng.next() * 0.6, { cutaway: true, building: id });
-      b.rock(0.1, x + 0.5, y + 0.1, z + 0.3, 0x8a7a5a, 0, 0.6, { cutaway: true, building: id });
+      b.box(1.3, 0.05, 1.0, x, y + 0.04, z, 'fabric', rng.pick([0x6b6b45, 0x7a6a58, 0x5a6a6a]), rng.next() * 0.6, { cutaway: true, building: id + bldBase });
+      b.rock(0.1, x + 0.5, y + 0.1, z + 0.3, 0x8a7a5a, 0, 0.6, { cutaway: true, building: id + bldBase });
     } else if (r < 0.6) {
-      b.cyl(0.12, 0.12, 0.5, 6, x, y + 0.25, z, 'metal', 0x6a7070, { cutaway: true, building: id });
-      b.cyl(0.2, 0.12, 0.12, 6, x, y + 0.55, z, 'metal', DARK_METAL, { cutaway: true, building: id });
+      b.cyl(0.12, 0.12, 0.5, 6, x, y + 0.25, z, 'metal', 0x6a7070, { cutaway: true, building: id + bldBase });
+      b.cyl(0.2, 0.12, 0.12, 6, x, y + 0.55, z, 'metal', DARK_METAL, { cutaway: true, building: id + bldBase });
     } else if (r < 0.75) {
-      b.cyl(0.02, 0.02, 2.2, 4, x, y + 1.1, z, 'metal', DARK_METAL, { cutaway: true, building: id });
-      b.box(0.6, 0.02, 0.02, x, y + 2.0, z, 'metal', DARK_METAL, 0, { cutaway: true, building: id });
+      b.cyl(0.02, 0.02, 2.2, 4, x, y + 1.1, z, 'metal', DARK_METAL, { cutaway: true, building: id + bldBase });
+      b.box(0.6, 0.02, 0.02, x, y + 2.0, z, 'metal', DARK_METAL, 0, { cutaway: true, building: id + bldBase });
     } else if (style === 'tech' && r < 0.9) {
-      b.box(1.2, 0.05, 0.8, x, y + 0.42, z, 'metal', 0x24303a, 0, { cutaway: true, building: id, rx: 0.4 });
-      b.box(0.06, 0.4, 0.06, x, y + 0.2, z + 0.3, 'metal', DARK_METAL, 0, { cutaway: true, building: id });
+      b.box(1.2, 0.05, 0.8, x, y + 0.42, z, 'metal', 0x24303a, 0, { cutaway: true, building: id + bldBase, rx: 0.4 });
+      b.box(0.06, 0.4, 0.06, x, y + 0.2, z + 0.3, 'metal', DARK_METAL, 0, { cutaway: true, building: id + bldBase });
     } else {
       const s = 0.6;
-      b.box(s, s, s, x, y + s / 2, z, 'wood', WOOD, rng.next() * 0.5, { cutaway: true, building: id });
+      b.box(s, s, s, x, y + s / 2, z, 'wood', WOOD, rng.next() * 0.5, { cutaway: true, building: id + bldBase });
     }
   }
 }

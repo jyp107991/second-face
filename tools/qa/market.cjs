@@ -17,7 +17,7 @@ const fs = require('fs');
   const dlg = () => page.evaluate(() => (document.querySelector('.dlg-name')?.textContent ?? 'none') + ' | ' + (document.querySelector('.dlg-text')?.textContent ?? '').replace(/\s+/g, ' ').slice(0, 110));
   const pick = async (sub) => { const ok = await page.evaluate((sub) => { const li = [...document.querySelectorAll('.dlg-opts li')].find((l) => l.textContent.includes(sub)); if (!li) return false; li.click(); return true; }, sub); await page.waitForTimeout(500); console.log(`  > ${sub} → ${ok ? await dlg() : 'NO OPTION: ' + await page.evaluate(() => [...document.querySelectorAll('.dlg-opts li')].map((l) => l.textContent.trim()).join(' | '))}`); return ok; };
   const talk = async (id) => { await page.evaluate((id) => { const n = game.npcs.get(id); if (!n) throw new Error('no npc ' + id); game.player.place(n.actor.tx, n.actor.ty + 1); game.cam.recentre(); game.emit('openDialogue', { npc: n }); }, id); await page.waitForTimeout(1200); console.log(`${id}:`, await dlg()); };
-  const prop = async (px, py, sx, sy) => { await page.evaluate(([px, py, sx, sy]) => { game.player.place(sx, sy); game.cam.recentre(); game.tryInteract(px, py); }, [px, py, sx, sy]); await page.waitForTimeout(1500); console.log(`prop ${px},${py}:`, await dlg()); };
+  const prop = async (px, py, sx, sy) => { await page.evaluate(([px, py, sx, sy]) => { game.placeLocal(sx, sy); game.cam.recentre(); game.interactLocal(px, py); }, [px, py, sx, sy]); await page.waitForTimeout(1500); console.log(`prop ${px},${py}:`, await dlg()); };
   const fails = [];
   const check = (name, ok, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ' — ' + detail : ''}`); if (!ok) fails.push(name); };
   const has = (id) => page.evaluate((id) => JSON.stringify(game.state.pc.inventory.items).includes(`"${id}"`), id);
@@ -32,14 +32,14 @@ const fs = require('fs');
   console.log('npcs:', await page.evaluate(() => [...game.npcs.keys()].join(',')));
   check('the market is peopled: the Broker, Sato, Lark, Vell', await page.evaluate(() => game.npcs.has('npc_mk_01') && game.npcs.has('npc_mk_05') && game.npcs.has('npc_mk_08') && game.npcs.has('npc_mk_09') && game.npcs.size >= 10), await page.evaluate(() => `npcs=${game.npcs.size}`));
   // the avenue in
-  await page.evaluate(() => { game.player.place(3, 28); game.cam.recentre(); game.cam.zoomBy(0.7); game.walkTo(6, 28); });
+  await page.evaluate(() => { game.placeLocal(3, 28); game.cam.recentre(); game.cam.zoomBy(0.7); game.walkLocal(6, 28); });
   await page.waitForFunction(() => game.state.flags.md_market_open === true, null, { timeout: 90000 }).catch(() => {});
   await page.waitForTimeout(1500);
   check('the arrival fired and opened the market', await page.evaluate(() => game.state.world.knowledge.seen_market === true && game.state.flags.md_market_open === true));
   await shot('mk_1_avenue');
   console.log('perf:', JSON.stringify(await page.evaluate(() => game.perf())));
   // the court
-  await page.evaluate(() => { game.player.place(29, 28); game.cam.recentre(); game.walkTo(31, 28); });
+  await page.evaluate(() => { game.placeLocal(29, 28); game.cam.recentre(); game.walkLocal(31, 28); });
   await page.waitForFunction(() => game.state.world.knowledge.seen_broker === true, null, { timeout: 90000 }).catch(() => {});
   await page.waitForTimeout(1500);
   check('the court is seen', await page.evaluate(() => game.state.world.knowledge.seen_broker === true));
@@ -78,7 +78,7 @@ const fs = require('fs');
   await pick('(Leave it.)');
   check('the wire is cut', await page.evaluate(() => game.state.flags.mk_kiosk_outcome === 'cut' && game.state.world.quests.q_md_kiosk?.status === 'done'));
   // the standpipe square
-  await page.evaluate(() => { game.player.place(36, 46); game.cam.recentre(); game.walkTo(36, 49); });
+  await page.evaluate(() => { game.placeLocal(36, 46); game.cam.recentre(); game.walkLocal(36, 49); });
   await page.waitForFunction(() => game.state.world.quests.q_md_riot?.stage === 'queue', null, { timeout: 90000 }).catch(() => {});
   await page.waitForTimeout(1500);
   check('the square is brewing', await page.evaluate(() => game.state.world.quests.q_md_riot?.stage === 'queue'), await page.evaluate(() => `player=${game.player.tx},${game.player.ty} seen=${game.state.flags.mk_riot_seen}`));

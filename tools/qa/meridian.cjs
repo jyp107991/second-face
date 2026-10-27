@@ -28,12 +28,12 @@ const fs = require('fs');
   await page.waitForTimeout(8000);
   console.log('npcs:', await page.evaluate(() => [...game.npcs.keys()].join(',')));
   check('the Precinct is peopled, the assessor at its desk', await page.evaluate(() => game.npcs.has('npc_md_01') && game.npcs.has('npc_md_nine') && game.npcs.has('npc_md_12') && game.npcs.size >= 18), await page.evaluate(() => `npcs=${game.npcs.size}`));
-  await page.evaluate(() => { game.player.place(5, 29); game.cam.recentre(); game.cam.zoomBy(0.65); });
+  await page.evaluate(() => { game.placeLocal(5, 29); game.cam.recentre(); game.cam.zoomBy(0.65); });
   await page.waitForTimeout(1800);
   await shot('md_1_wall');
   console.log('perf:', JSON.stringify(await page.evaluate(() => game.perf())));
   // the gate
-  await page.evaluate(() => { game.player.place(9, 29); game.cam.recentre(); game.walkTo(11, 29); });
+  await page.evaluate(() => { game.placeLocal(9, 29); game.cam.recentre(); game.walkLocal(11, 29); });
   await page.waitForFunction(() => !!document.querySelector('.dlg'), null, { timeout: 90000 }).catch(() => {});
   await page.waitForTimeout(800);
   console.log('gate:', await dlg());
@@ -45,7 +45,7 @@ const fs = require('fs');
   await pick('(Through.)');
   check('the file admitted on sight', await page.evaluate(() => game.state.flags.md_status === 'flagged' && game.state.world.quests.q_a2_precinct?.status === 'done'), await page.evaluate(() => JSON.stringify(game.state.world.quests.q_a2_precinct?.stage)));
   // the avenue
-  await page.evaluate(() => { game.player.place(30, 29); game.cam.recentre(); game.cam.zoomBy(1 / 0.65); });
+  await page.evaluate(() => { game.placeLocal(30, 29); game.cam.recentre(); game.cam.zoomBy(1 / 0.65); });
   await page.waitForTimeout(1800);
   await shot('md_4_avenue');
   // the assessor: the diary, then the road
@@ -64,9 +64,9 @@ const fs = require('fs');
   await pick('That\'s all.');
   check('fined in advance and paid', await page.evaluate(() => game.state.flags.md_fines_paid === true && game.state.world.quests.q_md_fines?.status === 'done'));
   // the Loop platform
-  await page.evaluate(() => { game.player.place(60, 24); game.cam.recentre(); game.cam.zoomBy(0.7); });
+  await page.evaluate(() => { game.placeLocal(60, 24); game.cam.recentre(); game.cam.zoomBy(0.7); });
   await page.waitForTimeout(1500);
-  await page.evaluate(() => { game.tryInteract(59, 25); });
+  await page.evaluate(() => { game.interactLocal(59, 25); });
   await page.waitForTimeout(1500);
   console.log('loop:', await dlg());
   await shot('md_7_loop');

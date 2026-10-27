@@ -35,7 +35,7 @@ const path = require('path');
   await page.screenshot({ path: path.join(out, 'imm_2_headturn.png'), timeout: 120000 });
   // Lamps: the lamp post at the wells plaza by day and at dusk.
   for (const [h, name] of [[13, 'imm_3_lamps_noon'], [19.6, 'imm_4_lamps_dusk']]) {
-    await page.evaluate((h) => { game.state.minutes = Math.floor(game.state.minutes / 1440) * 1440 + h * 60; game.player.place(27, 21); game.cam.recentre(); game.cam.viewGoal = 9; game.cam.viewHeight = 9; game.cam.target.copy(game.player.object.position); game.cam.focus.copy(game.cam.target); }, h);
+    await page.evaluate((h) => { game.state.minutes = Math.floor(game.state.minutes / 1440) * 1440 + h * 60; game.placeLocal(27, 21); game.cam.recentre(); game.cam.viewGoal = 9; game.cam.viewHeight = 9; game.cam.target.copy(game.player.object.position); game.cam.focus.copy(game.cam.target); }, h);
     await page.waitForTimeout(3500);
     await page.screenshot({ path: path.join(out, `${name}.png`), timeout: 120000 });
   }

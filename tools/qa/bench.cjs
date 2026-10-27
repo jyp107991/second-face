@@ -17,7 +17,7 @@ const { chromium } = require('playwright');
       await page.evaluate(async () => {
         await game.loadLocation('dev_yard', 'start');
         const p = game.player, defs = ['dev_raider_boss', 'dev_raider', 'dev_raider_knife', 'dev_raider'];
-        defs.forEach((def, i) => { for (let r = 0; r < 8; r++) { const x = p.tx + 5 + i, y = p.ty - 4 + r; if (game.loc.grid.passable(x, y)) { game.spawn({ def, x, y, id: 'bench_r' + i }); break; } } });
+        defs.forEach((def, i) => { for (let r = 0; r < 8; r++) { const x = p.tx + 5 + i, y = p.ty - 4 + r; const st = game.siteHere(); if (st && game.grid.passable(x, y)) { game.spawn({ def, x: x - st.place.x, y: y - st.place.z, id: 'bench_r' + i }, st); break; } } });
         game.startCombat();
       });
     } else await page.evaluate(async (s) => { await game.loadLocation(s, 'start'); }, scene);

@@ -33,7 +33,7 @@ const SHOTS = [
     }, s);
     await page.waitForTimeout(s.map === last ? 3500 : 8000);
     last = s.map;
-    console.log(s.name, await page.evaluate(() => `${game.state.locationId} rooms=${game.loc.buildings.list.length} hide=${game.loc.buildings.at[game.loc.grid.index(game.player.tx, game.player.ty)]} ${JSON.stringify(game.perf())}`.slice(0, 160)));
+    console.log(s.name, await page.evaluate(() => `${game.state.locationId} rooms=${game.loc.buildings.list.length} hide=${game.loc.buildings.at[game.loc.grid.index(game.toLocal(game.player.tx, game.player.ty).x, game.toLocal(game.player.tx, game.player.ty).y)]} ${JSON.stringify(game.perf())}`.slice(0, 160)));
     await page.screenshot({ path: path.join(out, `${s.name}.png`), timeout: 180000 });
   }
   await browser.close();

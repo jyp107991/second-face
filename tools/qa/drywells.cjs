@@ -39,7 +39,7 @@ const fs = require('fs');
   check('reached Dry Wells with the family placed', await page.evaluate(() => game.state.locationId === 'drywells' && game.npcs.has('npc_dw_01') && game.npcs.has('npc_dw_02')));
   await shot('dw_1_track');
   // The approach: walk into the sandbags and meet the rifle.
-  await page.evaluate(() => { game.player.place(18, 23); game.cam.recentre(); game.player.setPath(game.loc.grid.findPath(18, 23, 22, 23, { ignore: 'player', adjacentOk: false })); });
+  await page.evaluate(() => { game.placeLocal(18, 23); game.cam.recentre(); game.player.setPath(game.findPathLocal(18, 23, 22, 23, { ignore: 'player', adjacentOk: false })); });
   await page.waitForFunction(() => !!document.querySelector('.dlg'), null, { timeout: 60000 }).catch(() => {});
   await page.waitForTimeout(800);
   console.log('approach:', await dlg());
@@ -63,7 +63,7 @@ const fs = require('fs');
   await pick('That\'s all.');
   check('the ghosts began and the key is ours', await page.evaluate(() => game.state.world.quests.q_dw_ghosts?.stage === 'squat' && game.state.pc.inventory.items.some((i) => i.def === 'k_station_key') && game.state.world.knowledge.dw_override_word === true), await page.evaluate(() => JSON.stringify(game.state.pc.inventory.items.map((i) => i.def))));
   // The pump hall and the locked door.
-  await page.evaluate(() => { game.player.place(39, 11); game.cam.recentre(); game.player.setPath(game.loc.grid.findPath(39, 11, 42, 11, { ignore: 'player', adjacentOk: false })); });
+  await page.evaluate(() => { game.placeLocal(39, 11); game.cam.recentre(); game.player.setPath(game.findPathLocal(39, 11, 42, 11, { ignore: 'player', adjacentOk: false })); });
   await page.waitForFunction(() => !!document.querySelector('.dlg'), null, { timeout: 60000 }).catch(() => {});
   await page.waitForTimeout(800);
   console.log('door:', await dlg());
@@ -72,7 +72,7 @@ const fs = require('fs');
   await pick('(Go in.)');
   check('the door is open', await page.evaluate(() => game.state.flags.dw_control_open === true && game.state.world.quests.q_a1_drywells?.stage === 'console'));
   // The console: the Cistern on the schedule (pump hand), then the pump man's word.
-  await page.evaluate(() => { game.player.place(48, 9); game.cam.recentre(); game.tryInteract(49, 9); });
+  await page.evaluate(() => { game.placeLocal(48, 9); game.cam.recentre(); game.interactLocal(49, 9); });
   await page.waitForTimeout(2500);
   console.log('console:', await dlg());
   await shot('dw_5_console');

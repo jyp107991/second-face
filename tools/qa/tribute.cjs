@@ -25,7 +25,7 @@ const path = require('path');
   console.log(await page.evaluate(() => `npcs=${[...game.npcs.keys()].filter((k) => k.startsWith('tribute')).join(',')}`));
   await page.screenshot({ path: path.join(out, 'tribute_1.png'), timeout: 180000 });
   // Walk toward the wells to hit the trigger.
-  await page.evaluate(() => { game.player.place(31, 28); game.cam.recentre(); game.player.setPath(game.loc.grid.findPath(31, 28, 31, 26, { ignore: 'player', adjacentOk: false })); });
+  await page.evaluate(() => { game.placeLocal(31, 28); game.cam.recentre(); game.player.setPath(game.findPathLocal(31, 28, 31, 26, { ignore: 'player', adjacentOk: false })); });
   await page.waitForTimeout(6000);
   console.log('dialogue:', await page.evaluate(() => (document.querySelector('.dlg-name')?.textContent ?? 'none') + ' | ' + (document.querySelector('.dlg-text')?.textContent ?? '').slice(0, 90)));
   await page.screenshot({ path: path.join(out, 'tribute_2.png'), timeout: 180000 });

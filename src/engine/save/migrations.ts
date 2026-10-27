@@ -2,7 +2,7 @@
  * Save format migrations. Each entry upgrades a raw save object from version N to N+1.
  * NEVER edit a published migration; add a new one and bump CURRENT_SAVE_VERSION.
  */
-export const CURRENT_SAVE_VERSION = 5;
+export const CURRENT_SAVE_VERSION = 6;
 
 type RawSave = { version: number; [k: string]: unknown };
 
@@ -43,6 +43,10 @@ export const MIGRATIONS: Record<number, (s: RawSave) => RawSave> = {
     state.world.membership ??= {};
     return { ...s, version: 5, state };
   },
+  // 5 → 6: one open world. `locationId` may now be `wild:<region>` (between places); player and dropped-item
+  // positions stay map-local inside a place and are world tiles in the wild. Old saves are always inside a place, so
+  // nothing moves; the version marks the meaning.
+  5: (s) => ({ ...s, version: 6 }),
 };
 
 export function migrate(raw: RawSave): RawSave {

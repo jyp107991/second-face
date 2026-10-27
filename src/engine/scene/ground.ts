@@ -16,7 +16,7 @@ export const FLOOR_KEY: Record<Exclude<FloorKind, 'water'>, string> = {
 };
 const OUTDOOR = new Set<FloorKind>(['sand', 'dirt', 'rubble', 'asphalt']);
 /** Vertex-colour stand-ins when the library is not loaded (tests, offline). */
-const FALLBACK: Record<string, number> = { sand: 0xc9ac7e, dirt: 0x8a7050, concrete: 0x9a968c, metal: 0x7a7e80, wood: 0x8a6a48, grate: 0x6a6e70, asphalt: 0x5a5a58, rubble: 0x8a8278, tile: 0xb0aca0 };
+export const FALLBACK: Record<string, number> = { sand: 0xc9ac7e, dirt: 0x8a7050, concrete: 0x9a968c, metal: 0x7a7e80, wood: 0x8a6a48, grate: 0x6a6e70, asphalt: 0x5a5a58, rubble: 0x8a8278, tile: 0xb0aca0 };
 
 /** The surface keys a map's ground needs, in a stable order (the first is the kind that stands in for the outside). */
 export function groundKeys(map: MapDef, grid: Grid): string[] {
@@ -98,7 +98,8 @@ export function buildGround(map: MapDef, grid: Grid, layers: GroundLayers | unde
 
 const splatCache = new WeakMap<GroundLayers, THREE.MeshStandardMaterial>();
 
-function splatMaterial(layers: GroundLayers): THREE.MeshStandardMaterial {
+/** The blended-surface material for a set of layers (shared by every mesh that uses the same arrays). */
+export function splatMaterial(layers: GroundLayers): THREE.MeshStandardMaterial {
   const hit = splatCache.get(layers);
   if (hit) return hit;
   const m = new THREE.MeshStandardMaterial({ roughness: 1, metalness: 1, color: 0xffffff });

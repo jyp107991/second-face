@@ -60,6 +60,8 @@ export interface NpcRuntime {
   extra?: { area?: { x: number; y: number; w: number; h: number }; spots: string[]; hours?: { from: number; to: number }; wait: number; fixed?: boolean };
   /** Placement-specific routine (overrides the def's). */
   schedule?: import('./schedule').ScheduleEntry[];
+  /** The site (map id) this person belongs to; their saved position is local to it. */
+  site?: string;
 }
 
 export function spawnNpc(p: NpcPlacement, grid: Grid, keep?: { sheet: CharacterSheet; inv: Inventory }): NpcRuntime {
