@@ -165,6 +165,20 @@ such presentation decisions against modern CRPG practice. Each step: evidence sh
       ten implemented (hover highlights, footsteps by surface, head-turn to the player, ambient beds, prompt text).
 Total ~22 h. Then B2.6. v1 estimate = this + the Phase B remainder (~66 h) ≈ 90 h of build sessions.
 
+## 2b. OWNER REQUEST (2026-10-27, binding): standalone Act 1 test version
+The owner road-tests Act 1 while the build continues. Plan:
+- **Reroll first.** Character creation gets a Baldur's Gate 2-style roll: a random pool of attribute points is rolled
+  (so each playthrough starts differently), the player can reroll as often as they like, keep the best roll, and
+  move points between attributes within the roll's total. The fixed point-buy stays as "standard".
+- **Then finish Act 1**: B2.6 (the Mender and chrome surgery, the Wheel, caravan escort basics) and B2.7 (faction
+  lines to Act 1 end, side quests, the end-to-end Act 1 smoke), with A5.8 (bionics) and the top items of A5.9
+  (hover labels, head-turns, combat card, hit feedback, lamps by hour, panel motion) folded in.
+- **Then cut the test version**: an immutable git tag (`act1-test-N`) built by the Pages workflow into its own path
+  `/second-face/act1/` with its own save namespace (`VITE_SAVE_NS=act1`, saves under `sf.act1.save.*`), so it never
+  conflicts with `main`'s deploy at `/second-face/` or its saves. A `docs/PLAYTEST.md` tells the owner how to play,
+  what is in, what to report. Later test versions are new tags; the old one stays until replaced.
+- **Then straight on** to Act 2 (B3) without waiting for feedback; feedback is folded in as it arrives.
+
 ## 3. PHASE B — build the complete game to a playable v1 (vertical slices)
 Each slice ends playable and polished before the next starts. Definition of v1 done: creation → every
 ending without dev tools; ~60+ h; validate + per-quest route tests green; saves migrate; perf budget on a

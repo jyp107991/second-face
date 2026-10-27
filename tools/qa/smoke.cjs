@@ -10,7 +10,7 @@ const fs = require('fs');
   const errors = [];
   page.on('pageerror', (e) => errors.push('PAGEERROR ' + e.message));
   page.on('console', (m) => { if (m.type() === 'error') errors.push('CONSOLE ' + m.text().slice(0, 300)); });
-  await page.goto('http://127.0.0.1:5173/');
+  await page.goto(`${process.env.SF_URL || 'http://127.0.0.1:5173'}/`);
   await page.waitForTimeout(10000);
   const shot = async (name) => { await page.waitForTimeout(600); await page.screenshot({ path: `${out}/${name}.png`, timeout: 120000 }); };
   await page.evaluate(() => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; });

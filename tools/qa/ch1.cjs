@@ -56,7 +56,7 @@ const fs = require('fs');
     console.log(`  arrived ${await page.evaluate(() => `${game.state.locationId} at=${game.state.world.at} day=${Math.floor(game.state.minutes / 1440) + 1} ${String(Math.floor((game.state.minutes % 1440) / 60)).padStart(2, '0')}:${String(Math.floor(game.state.minutes % 60)).padStart(2, '0')} npcs=${game.npcs.size} player=${game.player.tx},${game.player.ty}`)}`);
   };
 
-  await page.goto('http://127.0.0.1:5173/?dev');
+  await page.goto(`${process.env.SF_URL || 'http://127.0.0.1:5173'}/?dev`);
   await page.waitForTimeout(9000);
   await page.evaluate(() => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('medium'); game.quietRoads = true; });
   await page.evaluate(() => { const s = game.state; game.newGame(s.pc.sheet, SF.randomAppearance(11, { frame: 'lean' }), 'they', 'pump_hand'); });

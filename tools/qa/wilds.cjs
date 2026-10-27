@@ -29,7 +29,7 @@ const fs = require('fs');
     await page.waitForTimeout(1500);
   };
 
-  await page.goto('http://127.0.0.1:5173/?dev');
+  await page.goto(`${process.env.SF_URL || 'http://127.0.0.1:5173'}/?dev`);
   await page.waitForTimeout(9000);
   await page.evaluate(() => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('medium'); });
   await page.evaluate(() => { const s = game.state; game.newGame(s.pc.sheet, SF.randomAppearance(53, { frame: 'broad' }), 'he', 'door_watch'); });

@@ -8,7 +8,7 @@ const { chromium } = require('playwright');
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
   page.on('pageerror', (e) => console.log('PAGEERROR', e.message));
-  await page.goto('http://127.0.0.1:5173/?dev');
+  await page.goto(`${process.env.SF_URL || 'http://127.0.0.1:5173'}/?dev`);
   await page.waitForTimeout(9000);
   await page.evaluate((q) => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality(q); }, quality);
   const out = { quality, scenes: {} };

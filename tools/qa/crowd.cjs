@@ -6,7 +6,7 @@ const path = require('path');
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
   page.on('pageerror', (e) => console.log('ERR', e.message));
-  await page.goto('http://127.0.0.1:5173/?dev');
+  await page.goto(`${process.env.SF_URL || 'http://127.0.0.1:5173'}/?dev`);
   await page.waitForTimeout(9000);
   await page.evaluate(async () => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('medium'); await game.loadLocation('bench_crowd', 'start'); });
   await page.waitForTimeout(6000);

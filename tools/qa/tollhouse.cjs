@@ -18,7 +18,7 @@ const fs = require('fs');
   const fails = [];
   const check = (name, ok, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ' — ' + detail : ''}`); if (!ok) fails.push(name); };
 
-  await page.goto('http://127.0.0.1:5173/?dev');
+  await page.goto(`${process.env.SF_URL || 'http://127.0.0.1:5173'}/?dev`);
   await page.waitForTimeout(9000);
   await page.evaluate(() => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('medium'); game.quietRoads = true; });
   await page.evaluate(() => { const s = game.state; game.newGame(s.pc.sheet, SF.randomAppearance(31, { frame: 'narrow' }), 'she', 'door_watch'); });

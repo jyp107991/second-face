@@ -1,0 +1,49 @@
+# Deploys the game to GitHub Pages on every push to main: the current build at /second-face/, and, when a playtest
+# tag exists (act1-test-N, newest wins), that frozen version at /second-face/act1/ with its own save namespace.
+name: pages
+on:
+  push:
+    branches: [main]
+    tags: ['act1-test-*']
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - name: Build main
+        run: |
+          npm ci
+          npm run build
+          mkdir -p site && cp -r dist/* site/
+      - name: Build the playtest version (newest act1-test-* tag)
+        run: |
+          TAG=$(git tag --list 'act1-test-*' --sort=-v:refname | head -n 1)
+          if [ -z "$TAG" ]; then echo "no playtest tag"; exit 0; fi
+          echo "playtest tag: $TAG"
+          git worktree add playtest "$TAG"
+          cd playtest
+          npm ci
+          VITE_BASE=/second-face/act1/ VITE_SAVE_NS=act1 npm run build
+          mkdir -p ../site/act1 && cp -r dist/* ../site/act1/
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

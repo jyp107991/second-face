@@ -12,7 +12,7 @@ const fs = require('fs');
   page.on('pageerror', (e) => { errors++; console.log('PAGEERROR', e.message); });
   page.on('console', (m) => { if (m.type() === 'error') { errors++; console.log('CONSOLE', m.text().slice(0, 300)); } });
   const shot = async (name) => { await page.screenshot({ path: path.join(out, `${prefix}_${name}.png`), timeout: 180000 }); console.log('shot', name); };
-  await page.goto('http://127.0.0.1:5173/?dev');
+  await page.goto(`${process.env.SF_URL || 'http://127.0.0.1:5173'}/?dev`);
   await page.waitForTimeout(9000);
   await page.evaluate(() => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('high'); });
   await page.evaluate(() => { const s = game.state; game.newGame(s.pc.sheet, SF.randomAppearance(23, { frame: 'broad' }), 'he', 'door_watch'); });
