@@ -328,10 +328,26 @@ mid-range Android phone; deployed to Pages.
             six leads. Tests `tests/a2.test.ts` (10). Smoke `tools/qa/ninebridge.cjs`, evidence `docs/evidence/b31/`.
             Perf note: ~265 draws with 25 people on the deck (Shale ~200); the budget pass in B8 must merge crowd
             figures or cap extras per map — logged in §6 backlog.
-      - [ ] B3.2 **Openfield** (~1.5 h) NEXT: Choir commune (`gen_openfield.py`, timber: fields, long halls, shrine, open-sky
-            burial ground); the Elder and his household; `q_a2_openfield` (the blight: medicine / tech / talk / stealth
-            / survival); sides *Well-Poisoner*, *Seed Thief*; the Sky Rite (Choir rank 2). Smoke.
-      - [ ] B3.3 **Cistern 4 and the Sump** (~1.5 h): a failed shelter as a dungeon (`gen_cistern4.py`) and the scavenger
+      - [x] B3.2 **Openfield** DONE 2026-10-27: `tools/maps/gen_openfield.py` → `maps/openfield.ts` (64×56: planted rows
+            with every third row dying, the well on the green, the sky-shrine, seed store, the Elder's house and his
+            son's hut, two long timber halls — the common hall with a hatch at its west end, the sick hall — the
+            threshing yard, the refugees' tents, the open-sky burial ground under a dead windpump); cast
+            `npcs/openfield.ts` (the Elder, his daughter at the shrine, his son in the rows, the healer, the
+            seed-keeper, an old farmer, a yard hand from the Sump, two sick, the guild's buyer on the lane; the
+            orchard's two thieves live in the tents if they went to the Choir); `dialogue/openfield.ts` (23 trees);
+            `quests/a2.ts` — the beat `q_a2_openfield` *Every Third Row* (started when the Exchange beat ends; the
+            Elder asks; five ways to the cause: the healer's diagnosis, a trough test, the night tracks, the old
+            farmer's word, a stake-out at the well; then four ways to settle it — tell the father, keep the son's
+            secret, hand him to his sister's people, or steel; the well runs clean after), sides *A Crate a Night*
+            (`q_of_seed`: the tally, the yard key, the guild's buyer; expose, a cut, send the buyer packing, or dead
+            seed sold at a living price) and *The Sky Rite* (`q_of_rite`: raise a cairn for someone lost → Choir
+            rank 2 and a stone); the hatch under the common hall opens to the dead man's word (Door Watch origin)
+            or to a sibling the daughter trusts — a cellar scene that names the stranger and what his people are;
+            the fifth companion (the brother digging at the burial ground: joins with the Elder's blessing or after
+            the rite, refuses if the son died; camp talk seeds his own road). Items (a worn forecast sheet, a cairn
+            stone, dead seed, the Elder's letter); six leads. Tests `tests/a2.test.ts` (+8). Smoke
+            `tools/qa/openfield.cjs`, evidence `docs/evidence/b32/`.
+      - [ ] B3.3 **Cistern 4 and the Sump** (~1.5 h) NEXT: a failed shelter as a dungeon (`gen_cistern4.py`) and the scavenger
             clan's camp; `q_a2_cistern4`; sides *Sump Feud*, *Cistern 4 Diary*; the stilted-freeway landmark. Smoke.
       - [ ] B3.4 **Meridian: the gate and the Precinct** (~2 h): first district map; the gate hearing `q_a2_precinct`
             (talk / barter / record / stealth / riot; a detention branch); the warden captain; a fifth companion (a

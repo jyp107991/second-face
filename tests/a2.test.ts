@@ -154,3 +154,108 @@ describe('Ninebridge: the block and the ramp', () => {
     expect(g.flags.nb_toll_rate).toBe('high');
   });
 });
+
+function atOpenfield(hour = 12) {
+  const g = newGameState('c9', 0, 0);
+  g.minutes = 24 * 1440 + hour * 60;
+  g.locationId = 'openfield';
+  g.flags.visited_openfield = true;
+  g.flags.ch1_done = true;
+  const q = new QuestEngine(QUESTS, g);
+  q.questStart('q_a2_openfield');
+  return { g, q };
+}
+
+describe('Openfield: every third row', () => {
+  it('the Exchange beat ending starts the road to Openfield', () => {
+    const { g, q } = atNinebridge();
+    g.world.knowledge.nb_paid_truth = true;
+    q.update();
+    expect(g.world.quests.q_a2_ninebridge.status).toBe('done');
+    expect(g.world.quests.q_a2_openfield?.stage).toBe('rows');
+    expect(g.world.knowledge.loc_openfield).toBe(true);
+  });
+
+  it('the healer and the well both point at a dosed trough; the son confesses and the Elder is told', () => {
+    const { g, q } = atOpenfield();
+    talk('d_of_mason', g, q, ['What\'s killing them?', 'I\'ll look at the well.']);
+    expect(g.flags.of_blight_told).toBe(true);
+    g.pc.sheet.skillBought.medicine = 90;
+    talk('d_of_imre', g, q, ['What is it, then?', '(Look at the child\'s hands and gums.)', 'That\'s all.']);
+    expect(g.world.knowledge.of_well_dosed).toBe(true);
+    g.pc.sheet.skillBought.speech = 90;
+    talk('d_of_tobias', g, q, ['It\'s not blight. The north trough is dosed.', 'What now?', 'Your father hears it. From you, or from me.', '(Leave them to it.)']);
+    expect(g.world.knowledge.of_poisoner_known).toBe(true);
+    expect(countItem(g.pc.inventory, 'k_tobias_sheet')).toBe(1);
+    expect(g.flags.of_blight_outcome).toBe('exposed');
+    expect(g.world.quests.q_a2_openfield.status).toBe('done');
+    expect(g.world.quests.q_a2_openfield.stage).toBe('exposed');
+    expect(g.flags.of_well_clean).toBe(true);
+  });
+
+  it('the night stake-out at the well catches him; mercy keeps the secret', () => {
+    const { g, q } = atOpenfield(2);
+    g.pc.sheet.skillBought.stealth = 90;
+    talk('d_of_well', g, q, ['(Wait in the dark by the north trough.)', 'Why.', 'Stop. Give me the pouch and the paper.', '(Go.)']);
+    expect(g.flags.of_blight_outcome).toBe('mercy');
+    expect(g.world.quests.q_a2_openfield.stage).toBe('mercy');
+    expect(countItem(g.pc.inventory, 'k_tobias_sheet')).toBe(1);
+  });
+
+  it('the tracks at the well read straight to the hut', () => {
+    const { g, q } = atOpenfield();
+    g.pc.sheet.skillBought.survival = 90;
+    talk('d_of_well', g, q, ['(Read the ground round the north trough.)', '(The son.)']);
+    expect(g.world.knowledge.of_poisoner_known).toBe(true);
+    expect(g.world.quests.q_a2_openfield.stage).toBe('found');
+  });
+
+  it('the word opens the hatch and the cellar names the stranger', () => {
+    const { g, q } = atOpenfield();
+    g.world.knowledge.word_larkspur = true;
+    addItem(g.pc.inventory, makeItem('k_photo'));
+    talk('d_of_cellar', g, q, ['(Say it to the iron.) "Larkspur."', '(Go down.)', 'There\'s a photograph of me. Older. In a city.', 'Not a kind one, you said.', '(Go up.)']);
+    expect(g.flags.unwritten_met).toBe(true);
+    expect(g.world.knowledge.stranger_name).toBe(true);
+    expect(cond({ lead: 'l_stranger_unwritten' }, g)).toBe(true);
+    expect(g.world.knowledge.unwritten_kill).toBe(true);
+  });
+
+  it('the Sky Rite makes a sibling of the Open Sky, and the brother at the grave joins', () => {
+    const { g, q } = atOpenfield();
+    talk('d_of_petra', g, q, ['The Choir\'s door is a burial, your father says.', 'The man who died at my door.', '(Keep the stone.)']);
+    expect(g.flags.sky_rite).toBe(true);
+    expect(cond({ member: 'choir', rank: 'sibling' }, g)).toBe(true);
+    expect(countItem(g.pc.inventory, 'k_sky_token')).toBe(1);
+    expect(g.world.quests.q_of_rite.status).toBe('done');
+    g.flags.a2_openfield_done = true;
+    talk('d_of_ash', g, q, ['Whose grave?', 'That\'s all.']);
+    talk('d_of_ash', g, q, ['Come east.', '(Go.)']);
+    expect(g.world.party).toContain('npc_of_03');
+    expect(g.flags.ash_joined).toBe(true);
+  });
+
+  it('a crate a night: the guild\'s hand admits it and can be sent packing', () => {
+    const { g, q } = atOpenfield();
+    talk('d_of_doria', g, q, ['Who has keys?', 'That\'s all.']);
+    expect(g.world.quests.q_of_seed?.stage).toBe('count');
+    g.pc.sheet.skillBought.barter = 90;
+    g.pc.sheet.skillBought.speech = 90;
+    talk('d_of_corso', g, q, ['You\'re buying seed by night. A crate a time.', 'Pack the tent. Tonight.', 'That\'s all.']);
+    expect(g.world.knowledge.of_seed_hollin).toBe(true);
+    expect(g.flags.of_seed_outcome).toBe('corso_gone');
+    expect(g.world.quests.q_of_seed.status).toBe('done');
+  });
+
+  it('dead seed, sold to the guild at a living price', () => {
+    const { g, q } = atOpenfield();
+    g.world.knowledge.of_seed_hollin = true;
+    g.pc.sheet.skillBought.science = 90;
+    talk('d_of_doria', g, q, ['Let them keep stealing. Give them dead seed.', '(Boil and dry a crate of last year\'s seed with her.)', 'I\'ll sell it to him myself.']);
+    expect(countItem(g.pc.inventory, 'k_chaff')).toBe(1);
+    g.pc.inventory.tolls = 0;
+    talk('d_of_corso', g, q, ['I\'ve a crate for you. Choir seed, the good rows.', 'That\'s all.']);
+    expect(g.pc.inventory.tolls).toBe(60);
+    expect(g.world.quests.q_of_seed.stage).toBe('chaff');
+  });
+});

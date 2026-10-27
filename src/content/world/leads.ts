@@ -30,6 +30,13 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_sable', label: 'Lot four is a Calloway', text: 'The young woman on the auction block is Sable Calloway, nineteen, fifty-eight Tolls in debt. Wren had a sister.' },
   { id: 'l_strike_forecast', label: 'The strike is forecast', text: 'The guild holds a sealed sheet saying the porters\' stoppage ends on the third day with nothing won. It was written before the strike began.' },
   { id: 'l_odile_hand', label: 'Odile knows the hand', text: 'Odile Marchetti recognised the notation on the stranger\'s map at a glance: the Exchange\'s own, from before she left it.' },
+  // Act 2 — Openfield
+  { id: 'l_well_powder', label: 'Something in the well', text: 'The north trough at Openfield carries a bitter salt the south trough does not. The well is being dosed, not blighted.' },
+  { id: 'l_tobias_nights', label: 'Tobias at the well', text: 'The Elder\'s son goes to the well after midnight with a lantern and a pouch, and comes back without the pouch.' },
+  { id: 'l_openfield_sheet', label: 'Openfield burns', text: 'A guild forecast says Openfield burns in the Long Night if its harvest rises above plan. Someone here has read it until it fell apart.' },
+  { id: 'l_seed_corso', label: 'The guild buys seed by night', text: 'Corso Vail, the Tollmen\'s hand on the lane, pays a yard hand in Tolls for a crate of Choir seed every night — for Factor Pike\'s unnamed client.' },
+  { id: 'l_stranger_unwritten', label: 'He was one of theirs', text: 'The stranger who died at your door was Hollis Dray of the Unwritten: the Choir\'s hidden circle, who keep no likeness and sign nothing.' },
+  { id: 'l_unwritten_kill', label: 'Some of them kill', text: 'Petra Mason said it plainly: some of the Unwritten break a forecast by killing the person it is about.' },
   { id: 'l_sigil_shale', label: 'Sign at the mission', text: 'The stranger\'s half-sun sign is painted on the Choir tent-pole in Shale.' },
   { id: 'l_larkspur_calla', label: 'Calla knew the word', text: 'Sister Calla knew the dead man\'s word, and said a man at Openfield would know more.' },
   { id: 'l_hollis_city', label: 'The boards', text: 'Hollis Crane lived in a city with screens that showed who paid, who owed, and who was next.' },
