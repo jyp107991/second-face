@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DIALOGUES, QUESTS } from '../src/content';
 import { newGameState } from '../src/engine/core/state';
 import { DialogueRunner } from '../src/engine/dialogue/dialogue';
-import { addItem, countItem, makeItem } from '../src/engine/inventory/inventory';
+import { addItem, countItem, equip, makeItem } from '../src/engine/inventory/inventory';
 import { QuestEngine } from '../src/engine/quest/quest';
 import { test as cond } from '../src/engine/world/logic';
 
@@ -1198,5 +1198,228 @@ describe('Bridgeward: the chain, the tower, the old haunt', () => {
     expect(h.g.flags.bw_harrow_ledger).toBe(true);
     expect(h.g.pc.inventory.tolls).toBe(120);
     expect(countItem(h.g.pc.inventory, 'k_bw_toll_ledger')).toBe(0);
+  });
+});
+
+function atCrown(hour = 20) {
+  const g = newGameState('c9', 0, 0);
+  g.minutes = 44 * 1440 + hour * 60;
+  g.locationId = 'md_crown';
+  g.flags.visited_md_crown = true;
+  g.flags.ch1_done = true;
+  g.flags.md_inside = true; g.flags.md_market_open = true; g.flags.md_lantern_open = true; g.flags.md_crown_open = true; g.flags.md_status = 'citizen';
+  const q = new QuestEngine(QUESTS, g);
+  q.questStart('q_cr_masque');
+  return { g, q };
+}
+
+describe('The Crown: the lens, the Masque, the studio', () => {
+  it('the invitation car goes up on a chit, a pass, a card, clothes, standing or a face', () => {
+    const { g, q } = atCrown();
+    g.locationId = 'md_precinct';
+    const car = () => talk('d_md_loop', g, q, []).view()?.options.some((o) => o.text.startsWith('The Crown.')) ?? false;
+    expect(car()).toBe(false);
+    addItem(g.pc.inventory, makeItem('k_masque_chit'));
+    expect(car()).toBe(true);
+    g.pc.inventory.items = [];
+    addItem(g.pc.inventory, makeItem('r_velvet'));
+    expect(car()).toBe(false);
+    equip(g.pc.inventory, 0);
+    expect(g.pc.inventory.equipped.body?.def).toBe('r_velvet');
+    expect(car()).toBe(true);
+    const h = atCrown();
+    h.g.locationId = 'md_precinct';
+    h.g.world.knowledge.md_magistrate_designate = true;
+    expect(talk('d_md_loop', h.g, h.q, []).view()?.options.some((o) => o.text.startsWith('The Crown.'))).toBe(true);
+  });
+
+  it('a chit at the lens, the hall door, and House Lorne\'s word', () => {
+    const { g, q } = atCrown();
+    addItem(g.pc.inventory, makeItem('k_masque_chit'));
+    talk('d_cr_ambrose', g, q, ['(Show the chit.)', '(Through the gate.)']);
+    expect(g.flags.cr_entry).toBe('chit');
+    expect(g.world.quests.q_cr_masque.stage).toBe('terraces');
+    talk('d_cr_dace', g, q, ['(The chit.)', '(In.)']);
+    expect(g.flags.cr_hall_open).toBe(true);
+    talk('d_cr_lorne', g, q, ['He\'s at the Row', 'That\'s all.']);
+    expect(g.flags.cr_lorne_word).toBe(true);
+    const r = talk('d_cr_ambrose', g, q, []);
+    expect(r.view()?.text).toContain('You\'re in');
+  });
+
+  it('the Velvet dresses you, and bottle-green walks past the sergeant', () => {
+    const { g, q } = atCrown();
+    g.locationId = 'md_lantern';
+    g.pc.inventory.tolls = 100;
+    g.world.knowledge.masque_heard = true;
+    talk('d_lr_madame', g, q, ['Dress me for the Masque. (60 Tolls)', 'That\'s all.']);
+    expect(countItem(g.pc.inventory, 'r_velvet')).toBe(1);
+    expect(g.pc.inventory.tolls).toBe(40);
+    expect(g.world.knowledge.masque_velvet).toBe(true);
+    g.locationId = 'md_crown';
+    let r = talk('d_cr_ambrose', g, q, []);
+    expect(r.view()?.options.some((o) => o.text.startsWith('(Walk past him'))).toBe(false);
+    equip(g.pc.inventory, g.pc.inventory.items.findIndex((i) => i.def === 'r_velvet'));
+    g.pc.sheet.skillBought.speech = 90;
+    talk('d_cr_ambrose', g, q, ['(Walk past him like you belong.)', '(Through the gate.)']);
+    expect(g.flags.cr_entry).toBe('disguise');
+    talk('d_cr_dace', g, q, ['(Say nothing. Belong.)', '(In.)']);
+    expect(g.flags.cr_hall_open).toBe(true);
+    const h = atCrown();
+    talk('d_cr_ambrose', h.g, h.q, ['(Go through them.)', '(Stand down.)']);
+    expect(h.g.flags.cr_fight_wardens).toBe(false);
+    expect(h.g.flags.cr_entry).toBeUndefined();
+  });
+
+  it('the kitchens: the pass, the back stair, and the daughter down the lift', () => {
+    const { g, q } = atCrown();
+    g.locationId = 'md_market';
+    talk('d_mk_gigs', g, q, ['A DAUGHTER', '(That\'s enough.)']);
+    expect(g.world.quests.q_cr_kidnap.stage).toBe('gig');
+    expect(countItem(g.pc.inventory, 'k_cr_service_pass')).toBe(1);
+    g.locationId = 'md_crown';
+    talk('d_cr_ambrose', g, q, ['(Show the service pass.)', '(Round the back.)']);
+    expect(g.flags.cr_entry).toBe('contract');
+    talk('d_cr_brisk', g, q, ['(The service pass.)', '(Up the back stair.)']);
+    expect(g.flags.cr_hall_open).toBe(true);
+    talk('d_cr_tillie', g, q, ['The Broker sent me.', '(Take her down. The lift, now.)']);
+    expect(g.flags.cr_tillie).toBe('row');
+    expect(g.flags.cr_tillie_gone).toBe(true);
+    expect(g.world.quests.q_cr_kidnap.status).toBe('done');
+    expect(g.world.quests.q_cr_kidnap.stage).toBe('row');
+    g.locationId = 'md_lantern';
+    expect(talk('d_cr_tillie', g, q, []).view()?.text).toContain('Velvet');
+    g.locationId = 'md_market';
+    g.pc.inventory.tolls = 0;
+    talk('d_mk_broker', g, q, ['A job\'s done.', 'The daughter is at the Velvet', 'That\'s all.']);
+    expect(g.pc.inventory.tolls).toBe(200);
+    expect(g.flags.q_cr_kidnap_paid).toBe(true);
+  });
+
+  it('the daughter sold back to the house, or the marriage called off and the reel for it', () => {
+    const a = atCrown();
+    a.q.questStart('q_cr_kidnap');
+    a.g.pc.inventory.tolls = 0;
+    talk('d_cr_tillie', a.g, a.q, ['That\'s all.']);
+    talk('d_cr_honora', a.g, a.q, ['Your daughter paid a Broker', 'The hatch at Old Market.', 'That\'s all.']);
+    expect(a.g.flags.cr_tillie).toBe('sold');
+    expect(a.g.pc.inventory.tolls).toBe(300);
+    expect(a.g.world.quests.q_cr_kidnap.stage).toBe('sold');
+    const b = atCrown();
+    b.q.questStart('q_cr_kidnap');
+    b.g.pc.sheet.skillBought.speech = 90;
+    talk('d_cr_tillie', b.g, b.q, ['The Broker sent me.', 'Tell her yourself.', 'That\'s all.']);
+    expect(b.g.flags.cr_tillie_together).toBe(true);
+    talk('d_cr_honora', b.g, b.q, ['Your daughter paid a Broker', 'Because she will go anyway', 'That\'s all.']);
+    expect(b.g.flags.cr_tillie).toBe('stays');
+    expect(b.g.flags.cr_honora_favour).toBe(true);
+    expect(b.g.world.quests.q_cr_kidnap.stage).toBe('stays');
+    talk('d_cr_osric', b.g, b.q, ['Your mother sold the Chair', 'That\'s all.']);
+    expect(b.g.world.knowledge.cr_reel_where).toBe(true);
+    expect(b.g.world.leads.l_cr_concern_chair).toBe(true);
+    talk('d_cr_osric', b.g, b.q, ['The reel.', 'That\'s all.']);
+    expect(countItem(b.g.pc.inventory, 'k_cr_reel')).toBe(1);
+  });
+
+  it('the lectern: a word for Vane, the floor for Ashby-Crane, or silence', () => {
+    const a = atCrown();
+    a.g.flags.cr_entry = 'chit'; a.g.pc.sheet.skillBought.speech = 90;
+    talk('d_cr_lectern', a.g, a.q, ['Speak for House Vane.', '(Step back.)']);
+    expect(a.g.flags.cr_chair).toBe('vane');
+    expect(a.g.flags.cr_concern).toBe('kept');
+    expect(a.g.world.quests.q_cr_masque.status).toBe('done');
+    expect(a.g.world.quests.q_cr_masque.stage).toBe('vane');
+    expect(a.g.flags.ks_vane).toBe('rises');
+    expect(talk('d_cr_celestine', a.g, a.q, []).view()?.text).toContain('The Chair');
+    const b = atCrown();
+    b.g.flags.cr_entry = 'lens'; b.g.world.knowledge.cr_magistrate_known = true;
+    talk('d_cr_honora', b.g, b.q, ['Who stands for the house tonight?', '(Take a blade from the wall.)']);
+    expect(b.g.world.knowledge.cr_honora_champion).toBe(true);
+    expect(countItem(b.g.pc.inventory, 'w_sabre')).toBe(1);
+    expect(talk('d_cr_dace', b.g, b.q, []).view()?.options.some((o) => o.text.startsWith('I stand for House Ashby-Crane'))).toBe(true);
+    b.g.flags.cr_duel = 'ashby'; b.g.flags.cr_duel_won = true;
+    expect(talk('d_cr_dace', b.g, b.q, []).view()?.text).toContain('Well struck');
+    talk('d_cr_lectern', b.g, b.q, ['The floor decided it. Ashby-Crane.', '(Step back.)']);
+    expect(b.g.flags.cr_chair).toBe('ashby');
+    expect(b.g.world.quests.q_cr_masque.stage).toBe('ashby');
+    expect(b.g.flags.ks_vane).toBe('broken');
+    const c = atCrown();
+    c.g.flags.cr_entry = 'standing';
+    talk('d_cr_lectern', c.g, c.q, ['(Say nothing. Let the houses vote.)', '(Step back.)']);
+    expect(c.g.flags.cr_chair).toBe('vane');
+    expect(c.g.flags.cr_vote_silent).toBe(true);
+  });
+
+  it('the reel: played to the room the Crown turns; sold to the house it buys a retainer', () => {
+    const a = atCrown();
+    a.g.flags.cr_entry = 'chit';
+    addItem(a.g.pc.inventory, makeItem('k_cr_reel'));
+    talk('d_cr_lectern', a.g, a.q, ['(Put the reel on the clerk', '(Step back.)']);
+    expect(a.g.flags.cr_concern).toBe('exposed');
+    expect(a.g.flags.cr_chair).toBe('ashby');
+    expect(a.g.flags.cr_crown_hostile).toBe(true);
+    expect(a.g.world.quests.q_cr_masque.stage).toBe('exposed');
+    expect(a.g.world.leads.l_cr_concern_chair).toBe(true);
+    expect(countItem(a.g.pc.inventory, 'k_cr_reel')).toBe(0);
+    expect(talk('d_cr_celestine', a.g, a.q, []).view()?.text).toContain('turned its back');
+    const b = atCrown();
+    b.g.flags.cr_entry = 'chit'; b.g.pc.inventory.tolls = 0;
+    addItem(b.g.pc.inventory, makeItem('k_cr_reel'));
+    talk('d_cr_celestine', b.g, b.q, ['(Put the reel on the table.)', '(Slide it across.)', 'That\'s all.']);
+    expect(b.g.flags.cr_reel_sold).toBe(true);
+    expect(b.g.flags.cr_concern).toBe('kept');
+    expect(b.g.pc.inventory.tolls).toBe(200);
+    expect(b.g.world.membership.tenured?.rank).toBe('retainer');
+    const c = atCrown();
+    c.g.flags.cr_entry = 'contract'; c.g.pc.inventory.tolls = 0;
+    addItem(c.g.pc.inventory, makeItem('k_cr_reel'));
+    talk('d_cr_quill', c.g, c.q, ['(Show him the reel.)', '(Take the three hundred.)', 'That\'s all.']);
+    expect(c.g.pc.inventory.tolls).toBe(300);
+    expect(c.g.world.knowledge.concern_favour).toBe(true);
+  });
+
+  it('a cup at the toast: the hostess dies and the Chair goes the frightened way', () => {
+    const { g, q } = atCrown();
+    g.flags.cr_entry = 'contract';
+    talk('d_cr_pell', g, q, ['What would the house pay for the Chair', '(Take the vial.)']);
+    expect(countItem(g.pc.inventory, 'k_cr_vial')).toBe(1);
+    g.pc.sheet.skillBought.stealth = 90;
+    talk('d_cr_cup', g, q, ['(Tip the vial into the cup.)', '(Walk away from the table.)']);
+    expect(g.flags.cr_celestine_dead).toBe(true);
+    expect(g.flags.cr_chair).toBe('ashby');
+    expect(g.world.quests.q_cr_masque.stage).toBe('mourning');
+    expect(g.flags.ks_vane).toBe('broken');
+    expect(g.world.news.some((n) => n.tag === 'cr_vane_dead')).toBe(true);
+    expect(talk('d_cr_honora', g, q, []).view()?.text).toContain('I did not ask');
+  });
+
+  it('the studio: the renderer had you already; hung in the hall, the houses court a designate', () => {
+    const a = atCrown();
+    a.q.questStart('q_cr_studio');
+    a.g.pc.inventory.tolls = 100;
+    addItem(a.g.pc.inventory, makeItem('k_photo'));
+    talk('d_cr_halden', a.g, a.q, ['Render me. (50 Tolls)', '(Hold it beside the photograph.)', '(Keep the print.)']);
+    expect(countItem(a.g.pc.inventory, 'k_cr_render')).toBe(1);
+    expect(a.g.pc.inventory.tolls).toBe(50);
+    expect(a.g.world.leads.l_studio_render).toBe(true);
+    expect(a.g.world.leads.l_photo_grain).toBe(true);
+    expect(a.g.flags.cr_render).toBe('kept');
+    expect(a.g.world.quests.q_cr_studio.status).toBe('done');
+    expect(a.g.world.quests.q_cr_studio.stage).toBe('print');
+    const b = atCrown();
+    b.q.questStart('q_cr_studio');
+    b.g.flags.cr_entry = 'chit'; b.g.pc.inventory.tolls = 60;
+    talk('d_cr_halden', b.g, b.q, ['Render me. (50 Tolls)', 'Hang it.', 'That\'s all.']);
+    expect(b.g.flags.cr_render).toBe('hung');
+    expect(b.g.world.knowledge.cr_magistrate_known).toBe(true);
+    talk('d_cr_celestine', b.g, b.q, ['Houses take clients. Take me.', 'That\'s all.']);
+    expect(b.g.world.membership.tenured?.rank).toBe('client');
+    expect(b.g.flags.cr_client).toBe('vane');
+    const c = atCrown();
+    c.q.questStart('q_cr_studio');
+    addItem(c.g.pc.inventory, makeItem('k_photo'));
+    talk('d_cr_halden', c.g, c.q, ['(Show him the photograph.)', 'That\'s all.']);
+    expect(c.g.world.knowledge.cr_halden_photo).toBe(true);
+    expect(c.g.world.quests.q_cr_studio.stage).toBe('shown');
   });
 });

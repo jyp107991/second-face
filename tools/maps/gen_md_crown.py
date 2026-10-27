@@ -1,0 +1,185 @@
+#!/usr/bin/env python3
+"""Generates src/content/maps/md_crown.ts — the Crown: Meridian's terraces under glass (DESIGN §2c.2: class is
+spatial; the Masque).
+
+The Loop's invitation car arrives in a lift lobby at the south, where a lens and a sergeant decide what they have seen.
+Beyond the gate: the terraces, a promenade of planters and a reflecting pool under the domes; the Masque hall to the
+north (House Vane's season); House Ashby-Crane's salon west; the portrait studio east; the kitchens and the service lift
+south-east; the parapet on the east edge with the whole city under it.
+    python3 tools/maps/gen_md_crown.py
+"""
+import json, os, re
+
+ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
+W, H = 64, 52
+
+
+def ts(obj):
+    s = json.dumps(obj, indent=2)
+    s = re.sub(r'"([A-Za-z_][A-Za-z0-9_]*)":', r'\1:', s)
+    s = re.sub(r'"hex:(0x[0-9a-fA-F]+)"', r'\1', s)
+    return s
+
+
+g = [['t'] * W for _ in range(H)]
+
+
+def fill(x0, y0, x1, y1, ch):
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            g[y][x] = ch
+
+
+def building(x0, y0, x1, y1, wall, floor, doors):
+    fill(x0, y0, x1, y1, wall)
+    fill(x0 + 1, y0 + 1, x1 - 1, y1 - 1, floor)
+    for (x, y) in doors:
+        g[y][x] = floor
+
+
+# rim
+fill(0, 0, W - 1, 0, 'R'); fill(0, H - 1, W - 1, H - 1, 'R'); fill(0, 0, 0, H - 1, 'R'); fill(W - 1, 0, W - 1, H - 1, 'R')
+# the promenade in pale concrete between beds of dirt under planters
+fill(1, 1, W - 2, H - 2, 'c')
+fill(24, 15, 40, 40, 't')
+fill(4, 32, 20, 40, 'd')
+# the reflecting pool
+fill(28, 23, 36, 27, 'w')
+# the lift lobby (south), the Masque hall (north), the salon (west), the studio (east), the kitchens (south-east)
+building(23, 41, 41, 50, 'G', 't', [(32, 41)])
+building(18, 2, 46, 14, 'H', 't', [(32, 14), (46, 8)])
+building(3, 17, 19, 29, 'C', 't', [(19, 23)])
+building(45, 17, 61, 27, 'B', 't', [(45, 22)])
+building(44, 32, 60, 41, 'M', 'm', [(44, 36)])
+# the parapet on the east edge and the air beyond it
+for y in range(28, 32):
+    g[y][62] = 'P'; g[y][63] = '.'
+fill(48, 28, 61, 31, 't')
+rows = [''.join(r) for r in g]
+
+props = [
+    # the lift lobby: the lens, the lift, the sergeant's booth
+    {'kind': 'terminal', 'x': 30, 'y': 42, 'rot': 1, 'id': 'cr_lens'}, {'kind': 'machine', 'x': 36, 'y': 48, 'rot': 3, 'id': 'cr_lift'}, {'kind': 'counter', 'x': 38, 'y': 45, 'rot': 3}, {'kind': 'chair', 'x': 39, 'y': 44, 'rot': 3},
+    {'kind': 'planter', 'x': 25, 'y': 48}, {'kind': 'planter', 'x': 25, 'y': 43}, {'kind': 'sign', 'x': 27, 'y': 42, 'rot': 1, 'id': 'cr_lobby_sign'},
+    # the promenade: planters and lamps, the glass table by the pool
+    {'kind': 'planter', 'x': 24, 'y': 18}, {'kind': 'planter', 'x': 40, 'y': 18}, {'kind': 'planter', 'x': 24, 'y': 26}, {'kind': 'planter', 'x': 40, 'y': 30}, {'kind': 'planter', 'x': 24, 'y': 34}, {'kind': 'planter', 'x': 40, 'y': 38},
+    {'kind': 'lamp_post', 'x': 23, 'y': 22}, {'kind': 'lamp_post', 'x': 41, 'y': 22}, {'kind': 'lamp_post', 'x': 23, 'y': 30}, {'kind': 'lamp_post', 'x': 41, 'y': 35},
+    {'kind': 'table', 'x': 38, 'y': 24, 'id': 'cr_glass_table'}, {'kind': 'chair', 'x': 39, 'y': 24, 'rot': 3}, {'kind': 'chair', 'x': 38, 'y': 23, 'rot': 0},
+    {'kind': 'planter', 'x': 27, 'y': 22}, {'kind': 'planter', 'x': 37, 'y': 28},
+    # the gardens: beds, a gardener's things
+    {'kind': 'planter', 'x': 6, 'y': 33}, {'kind': 'planter', 'x': 10, 'y': 33}, {'kind': 'planter', 'x': 14, 'y': 33}, {'kind': 'planter', 'x': 18, 'y': 33}, {'kind': 'planter', 'x': 6, 'y': 39}, {'kind': 'planter', 'x': 14, 'y': 39}, {'kind': 'crate', 'x': 18, 'y': 39}, {'kind': 'chair', 'x': 12, 'y': 37, 'rot': 0},
+    # the Masque hall: the lectern, the hostess's table, the cabinet, chairs
+    {'kind': 'sign', 'x': 34, 'y': 15, 'rot': 0, 'id': 'cr_hall_sign'}, {'kind': 'counter', 'x': 32, 'y': 4, 'rot': 0, 'id': 'cr_lectern'}, {'kind': 'table', 'x': 26, 'y': 5, 'id': 'cr_cup'}, {'kind': 'locker', 'x': 20, 'y': 4, 'id': 'cr_cabinet'},
+    {'kind': 'chair', 'x': 24, 'y': 10, 'rot': 2}, {'kind': 'chair', 'x': 28, 'y': 10, 'rot': 2}, {'kind': 'table', 'x': 36, 'y': 5}, {'kind': 'shelf', 'x': 44, 'y': 4, 'rot': 3}, {'kind': 'planter', 'x': 22, 'y': 12}, {'kind': 'planter', 'x': 42, 'y': 12}, {'kind': 'planter', 'x': 20, 'y': 8},
+    # the salon: House Ashby-Crane
+    {'kind': 'sign', 'x': 20, 'y': 21, 'rot': 1, 'id': 'cr_salon_sign'}, {'kind': 'table', 'x': 10, 'y': 21, 'id': 'cr_salon_table'}, {'kind': 'chair', 'x': 9, 'y': 21, 'rot': 1}, {'kind': 'chair', 'x': 11, 'y': 21, 'rot': 3}, {'kind': 'shelf', 'x': 4, 'y': 19, 'rot': 1}, {'kind': 'shelf', 'x': 4, 'y': 24, 'rot': 1}, {'kind': 'planter', 'x': 17, 'y': 27}, {'kind': 'cot', 'x': 16, 'y': 18, 'rot': 1},
+    # the studio: the sitter's chair, the renderer, the archive
+    {'kind': 'sign', 'x': 44, 'y': 20, 'rot': 3, 'id': 'cr_studio_sign'}, {'kind': 'chair', 'x': 48, 'y': 22, 'rot': 1, 'id': 'cr_sitter'}, {'kind': 'terminal', 'x': 55, 'y': 19, 'rot': 0, 'id': 'cr_renderer'}, {'kind': 'machine', 'x': 57, 'y': 19, 'rot': 0}, {'kind': 'locker', 'x': 59, 'y': 25, 'id': 'cr_archive'},
+    {'kind': 'shelf', 'x': 46, 'y': 19, 'rot': 1}, {'kind': 'table', 'x': 52, 'y': 25}, {'kind': 'planter', 'x': 59, 'y': 18},
+    # the kitchens: counters, the stove, the service lift
+    {'kind': 'counter', 'x': 49, 'y': 34, 'rot': 0}, {'kind': 'counter', 'x': 50, 'y': 34, 'rot': 0}, {'kind': 'counter', 'x': 51, 'y': 34, 'rot': 0}, {'kind': 'stove', 'x': 46, 'y': 34}, {'kind': 'crate', 'x': 46, 'y': 39}, {'kind': 'crate', 'x': 47, 'y': 39}, {'kind': 'barrel', 'x': 58, 'y': 33},
+    {'kind': 'machine', 'x': 58, 'y': 39, 'rot': 2, 'id': 'cr_service_lift'}, {'kind': 'locker', 'x': 54, 'y': 40, 'id': 'cr_kitchen_locker'}, {'kind': 'sign', 'x': 43, 'y': 35, 'rot': 3, 'id': 'cr_kitchen_sign'},
+    # the parapet
+    {'kind': 'sign', 'x': 61, 'y': 30, 'rot': 3, 'id': 'cr_view'}, {'kind': 'planter', 'x': 50, 'y': 28}, {'kind': 'chair', 'x': 56, 'y': 31, 'rot': 1},
+]
+
+md_crown = {
+    'id': 'md_crown', 'name': 'Meridian — the Crown', 'seed': 77, 'settlement': 'meridian',
+    'layout': rows,
+    'legend': {
+        't': {'floor': 'tile'}, 'c': {'floor': 'concrete'}, 'm': {'floor': 'metal'}, 'd': {'floor': 'dirt'},
+        'w': {'floor': 'water', 'blocks': True},
+        '.': {'empty': True},
+        'R': {'wall': 'concrete', 'floor': 'concrete', 'wallHeight': 4},
+        'P': {'wall': 'concrete', 'floor': 'tile', 'wallHeight': 1.0},
+        'G': {'wall': 'concrete', 'floor': 'tile', 'wallHeight': 3.2, 'roof': 'flat'},
+        'H': {'wall': 'concrete', 'floor': 'tile', 'wallHeight': 4.2, 'roof': 'flat'},
+        'C': {'wall': 'concrete', 'floor': 'tile', 'wallHeight': 3.2, 'roof': 'flat'},
+        'B': {'wall': 'brick', 'floor': 'tile', 'wallHeight': 3.0, 'roof': 'flat'},
+        'M': {'wall': 'metal', 'floor': 'metal', 'wallHeight': 2.8, 'roof': 'tin'},
+    },
+    'props': props,
+    'lights': [
+        {'x': 30, 'y': 42, 'height': 1.6, 'color': 'hex:0x60ff90', 'intensity': 1.4, 'range': 5, 'flicker': 0.1}, {'x': 32, 'y': 46, 'height': 3.0, 'color': 'hex:0xf4f0ff', 'intensity': 2.2, 'range': 9},
+        {'x': 26, 'y': 7, 'height': 3.6, 'color': 'hex:0xfff0d0', 'intensity': 2.6, 'range': 10}, {'x': 33, 'y': 8, 'height': 3.8, 'color': 'hex:0xfff0d0', 'intensity': 2.6, 'range': 11}, {'x': 40, 'y': 8, 'height': 3.6, 'color': 'hex:0xfff0d0', 'intensity': 2.4, 'range': 10},
+        {'x': 10, 'y': 23, 'height': 3.0, 'color': 'hex:0xffe8c0', 'intensity': 2.2, 'range': 9}, {'x': 52, 'y': 22, 'height': 3.0, 'color': 'hex:0xf0f8ff', 'intensity': 2.2, 'range': 9}, {'x': 55, 'y': 19, 'height': 1.6, 'color': 'hex:0x80c0ff', 'intensity': 1.2, 'range': 5, 'flicker': 0.2},
+        {'x': 50, 'y': 36, 'height': 2.6, 'color': 'hex:0xffd8a0', 'intensity': 2.0, 'range': 8, 'flicker': 0.15}, {'x': 46, 'y': 34, 'height': 0.8, 'color': 'hex:0xff9a40', 'intensity': 1.2, 'range': 4, 'flicker': 0.3},
+        {'x': 23, 'y': 22, 'height': 3.4, 'color': 'hex:0xfff4e0', 'intensity': 2.0, 'range': 9}, {'x': 41, 'y': 22, 'height': 3.4, 'color': 'hex:0xfff4e0', 'intensity': 2.0, 'range': 9}, {'x': 23, 'y': 30, 'height': 3.4, 'color': 'hex:0xfff4e0', 'intensity': 2.0, 'range': 9}, {'x': 41, 'y': 35, 'height': 3.4, 'color': 'hex:0xfff4e0', 'intensity': 2.0, 'range': 9},
+        {'x': 32, 'y': 25, 'height': 0.6, 'color': 'hex:0xa0d8ff', 'intensity': 1.6, 'range': 8}, {'x': 38, 'y': 24, 'height': 1.4, 'color': 'hex:0xfff0d0', 'intensity': 1.2, 'range': 5},
+    ],
+    'spawns': [
+        {'id': 'start', 'x': 32, 'y': 48, 'facing': 0}, {'id': 'lift', 'x': 32, 'y': 48, 'facing': 0}, {'id': 'terraces', 'x': 32, 'y': 39, 'facing': 0}, {'id': 'service', 'x': 56, 'y': 37, 'facing': 3}, {'id': 'hall', 'x': 32, 'y': 12, 'facing': 0}, {'id': 'hall_back', 'x': 44, 'y': 8, 'facing': 3},
+    ],
+    'exits': [],
+    'talk': {
+        'cr_lens': {'dialogue': 'd_cr_lens', 'name': 'The lens'},
+        'cr_lift': {'dialogue': 'd_cr_lift', 'name': 'The invitation car'},
+        'cr_lobby_sign': {'dialogue': 'd_cr_lobby_sign', 'name': 'A notice'},
+        'cr_glass_table': {'dialogue': 'd_cr_glass_table', 'name': 'A glass table'},
+        'cr_hall_sign': {'dialogue': 'd_cr_hall_sign', 'name': 'The hall doors'},
+        'cr_lectern': {'dialogue': 'd_cr_lectern', 'name': 'The Committee\'s lectern'},
+        'cr_cup': {'dialogue': 'd_cr_cup', 'name': 'The hostess\'s table'},
+        'cr_salon_sign': {'dialogue': 'd_cr_salon_sign', 'name': 'A house crest'},
+        'cr_studio_sign': {'dialogue': 'd_cr_studio_sign', 'name': 'The studio'},
+        'cr_renderer': {'dialogue': 'd_cr_renderer', 'name': 'The renderer'},
+        'cr_kitchen_sign': {'dialogue': 'd_cr_kitchen_sign', 'name': 'STAFF'},
+        'cr_service_lift': {'dialogue': 'd_cr_service_lift', 'name': 'The service lift'},
+        'cr_view': {'dialogue': 'd_cr_view', 'name': 'The parapet'},
+    },
+    'containers': {
+        'cr_cabinet': {'name': 'House Vane\'s Cabinet', 'items': [['k_cr_reel', 1]], 'tolls': 0, 'lock': 55},
+        'cr_archive': {'name': 'The Studio Archive', 'items': [['k_cr_render_vane', 1]], 'tolls': 40, 'lock': 45},
+        'cr_kitchen_locker': {'name': 'Kitchen Locker', 'items': [['c_bitters', 2], ['c_jerky', 4]], 'tolls': 25, 'lock': 30},
+    },
+    'spots': {
+        'gate': {'x': 32, 'y': 41}, 'booth': {'x': 37, 'y': 45}, 'w1': {'x': 29, 'y': 43}, 'w2': {'x': 35, 'y': 43},
+        'hostess': {'x': 26, 'y': 7}, 'osric': {'x': 40, 'y': 11}, 'quill': {'x': 43, 'y': 5}, 'dace_door': {'x': 32, 'y': 15}, 'dace_side': {'x': 29, 'y': 15}, 'hg1': {'x': 22, 'y': 15}, 'hg2': {'x': 46, 'y': 8}, 'hg2_side': {'x': 48, 'y': 10}, 'hall_pair_a': {'x': 36, 'y': 9}, 'hall_pair_b': {'x': 37, 'y': 9}, 'hall_lean': {'x': 22, 'y': 9}, 'hall_sit': {'x': 28, 'y': 11},
+        'honora': {'x': 10, 'y': 23}, 'pell': {'x': 6, 'y': 27}, 'tillie': {'x': 15, 'y': 20}, 'mabe': {'x': 6, 'y': 20}, 'hg3': {'x': 20, 'y': 25},
+        'halden': {'x': 50, 'y': 22}, 'brisk': {'x': 50, 'y': 36}, 'lorne': {'x': 38, 'y': 25},
+        'prom_pair_a': {'x': 30, 'y': 32}, 'prom_pair_b': {'x': 31, 'y': 32}, 'prom_lean': {'x': 25, 'y': 23}, 'prom_sit': {'x': 39, 'y': 24}, 'garden_sit': {'x': 12, 'y': 37}, 'garden_work': {'x': 8, 'y': 36}, 'parapet_sit': {'x': 56, 'y': 31}, 'parapet_lean': {'x': 60, 'y': 29}, 'kitchen_work': {'x': 48, 'y': 36},
+    },
+    'npcs': [
+        {'def': 'npc_cr_08', 'x': 32, 'y': 41, 'facing': 2, 'if': {'not': {'flag': 'cr_entry'}}},
+        {'def': 'npc_cr_08', 'id': 'npc_cr_08_booth', 'x': 37, 'y': 45, 'facing': 3, 'if': {'flag': 'cr_entry'}},
+        {'def': 'npc_cr_w1', 'x': 29, 'y': 43, 'facing': 1}, {'def': 'npc_cr_w2', 'x': 35, 'y': 43, 'facing': 3},
+        {'def': 'npc_cr_03', 'x': 32, 'y': 15, 'facing': 2, 'if': {'not': {'flag': 'cr_hall_open'}}},
+        {'def': 'npc_cr_03', 'id': 'npc_cr_03_side', 'x': 29, 'y': 15, 'facing': 1, 'if': {'flag': 'cr_hall_open'}},
+        {'def': 'npc_cr_01', 'x': 26, 'y': 7, 'facing': 2, 'if': {'not': {'flag': 'cr_celestine_dead'}}},
+        {'def': 'npc_cr_10', 'x': 40, 'y': 11, 'facing': 3},
+        {'def': 'npc_cr_11', 'x': 43, 'y': 5, 'facing': 3, 'if': {'not': {'flag': 'cr_concern', 'eq': 'exposed'}}},
+        {'def': 'npc_cr_06', 'x': 38, 'y': 25, 'facing': 3},
+        {'def': 'npc_cr_02', 'x': 10, 'y': 23, 'facing': 1},
+        {'def': 'npc_cr_07', 'x': 6, 'y': 27, 'facing': 0},
+        {'def': 'npc_cr_04', 'x': 15, 'y': 20, 'facing': 2, 'if': {'not': {'flag': 'cr_tillie_gone'}}},
+        {'def': 'npc_cr_12', 'x': 6, 'y': 20, 'facing': 1},
+        {'def': 'npc_cr_05', 'x': 50, 'y': 22, 'facing': 3},
+        {'def': 'npc_cr_09', 'x': 50, 'y': 36, 'facing': 0},
+        {'def': 'npc_cr_hg1', 'x': 22, 'y': 15, 'facing': 1},
+        {'def': 'npc_cr_hg2', 'x': 46, 'y': 8, 'facing': 1, 'if': {'not': {'flag': 'cr_hall_open'}}},
+        {'def': 'npc_cr_hg2', 'id': 'npc_cr_hg2_side', 'x': 48, 'y': 10, 'facing': 3, 'if': {'flag': 'cr_hall_open'}},
+        {'def': 'npc_cr_hg3', 'x': 20, 'y': 25, 'facing': 0},
+    ],
+    'triggers': [
+        {'id': 'arrive', 'x': 24, 'y': 42, 'w': 17, 'h': 8, 'text': 'The Crown\'s lift lobby. The car that costs nothing opens on tile that has been washed, a lens on a post with a green light under it, and two wardens whose grey is clean. Through the gate, light: real light, through glass, on leaves. Nobody here is in a hurry, which is the first thing money buys.', 'effects': [{'learn': 'seen_crown'}, {'set': 'md_crown_open'}, {'quest': 'q_cr_masque', 'start': True}]},
+        {'id': 'terraces', 'x': 26, 'y': 33, 'w': 13, 'h': 8, 'if': {'flag': 'cr_entry'}, 'text': 'The terraces. Domes of old glass over a promenade of planters that are green all the way through, a pool that reflects a sky it does not have to share, and a hall at the end with its doors open on music. The air has no taste at all. People in clothes that have never been mended look at you the way the lens did, and decide, and go on.', 'effects': [{'learn': 'seen_terraces'}]},
+        {'id': 'forced', 'x': 30, 'y': 38, 'w': 5, 'h': 3, 'if': {'all': [{'not': {'flag': 'cr_entry'}}, {'dead': 'npc_cr_w1'}, {'dead': 'npc_cr_w2'}, {'dead': 'npc_cr_08'}]}, 'text': 'Through the gate over three wardens. Somewhere a bell has started that is not for dinner, and the people on the promenade are going indoors the way birds go off a field.', 'effects': [{'set': 'cr_entry', 'value': 'force'}, {'set': 'cr_alarm'}, {'learn': 'cr_forced'}, {'rep': {'faction': 'wardens', 'respect': -20, 'fear': 10}}, {'rep': {'faction': 'tenured', 'respect': -20, 'fear': 10}}, {'decision': {'id': 'cr_forced', 'text': 'You went into the Crown over its wardens.'}}, {'news': {'tag': 'cr_forced', 'text': 'somebody went up to the Crown over the lift wardens during the Masque', 'valence': -8, 'size': 8, 'at': 'meridian'}}]},
+        {'id': 'hall', 'x': 19, 'y': 3, 'w': 27, 'h': 11, 'text': 'The Masque. A hall under the biggest dome, lit like noon at night, strings somewhere, and a hundred people in the Crown\'s season showing their faces to one another and to the lens over the door, which is the point of a Masque up here: everyone is seen. At the far end a lectern with the Committee\'s crest, and nobody at it yet.', 'effects': [{'learn': 'seen_masque'}]},
+        {'id': 'studio', 'x': 46, 'y': 18, 'w': 15, 'h': 9, 'text': 'A studio: a chair in good light, a machine that hums, and the walls hung with portraits of people who look like the people on the promenade but better, older, finished. Under each a date that has not happened yet.', 'effects': [{'learn': 'seen_studio'}, {'quest': 'q_cr_studio', 'start': True}]},
+        {'id': 'salon', 'x': 4, 'y': 18, 'w': 15, 'h': 11, 'text': 'House Ashby-Crane\'s salon: older money than the hall, quieter, a crest over the door with a crane on it, and a girl at the window who is not looking at the view.', 'effects': [{'learn': 'seen_salon'}]},
+        {'id': 'kitchens', 'x': 45, 'y': 33, 'w': 15, 'h': 8, 'text': 'The kitchens: heat, steam, forty people in white moving fast, and a lift that goes down to Old Market with the day\'s rubbish and the night\'s help. Nobody up here has ever seen this room.', 'effects': [{'learn': 'seen_kitchens'}]},
+        {'id': 'view', 'x': 58, 'y': 28, 'w': 4, 'h': 4, 'once': False, 'text': 'The parapet. Under it, all of Meridian in haze: the Precinct a grid, Old Market a stain, the canal a thread, the Stacks a wall, the broken bridge a finger pointing at the Docks. You cannot see the Sink at all. That is the point of up here.', 'effects': [{'learn': 'crown_view'}]},
+    ],
+    'extras': [
+        {'count': 6, 'roles': ['gilded', 'corp'], 'life': 'pampered', 'area': {'x': 24, 'y': 16, 'w': 17, 'h': 24}, 'spots': ['prom_pair_a', 'prom_pair_b', 'prom_lean', 'prom_sit', 'parapet_sit', 'parapet_lean'], 'barks': ['Vane\'s season. Everyone says so, so it must be.', 'The near end. Have you heard? The near end of a bridge.', 'The Concern sent a man. The Concern never sends a man.', 'I don\'t go down. Fenwick goes down. Look what it did to him.']},
+        {'count': 6, 'roles': ['gilded'], 'life': 'pampered', 'area': {'x': 20, 'y': 4, 'w': 25, 'h': 9}, 'spots': ['hall_pair_a', 'hall_pair_b', 'hall_lean', 'hall_sit'], 'barks': ['The Chair, tonight. They say the file already knows.', 'Honora won\'t duel. Honora buys.', 'Smile. The lens likes a smile.']},
+        {'count': 3, 'roles': ['labourer', 'settler'], 'life': 'hard', 'area': {'x': 45, 'y': 33, 'w': 15, 'h': 8}, 'spots': ['kitchen_work'], 'barks': ['Forty covers. Forty! For people who don\'t eat.', 'Down by the lift at four, or walk.', 'Don\'t look at them. They don\'t look at you.']},
+        {'count': 2, 'roles': ['labourer'], 'life': 'settled', 'area': {'x': 4, 'y': 32, 'w': 17, 'h': 9}, 'spots': ['garden_work', 'garden_sit'], 'barks': ['Green all the way through. It\'s the water. They have the water.', 'Mind the beds.']},
+    ],
+    # under glass: the terraces light themselves, whatever the hour or the weather outside the domes
+    'ambience': {'indoor': True, 'fogColor': 'hex:0xd8d0c4', 'fogDensity': 0.006, 'dust': 0.05, 'ambient': {'color': 'hex:0xfff2dc', 'intensity': 1.1}, 'grade': 0.15, 'mood': 'bright', 'sound': 'murmur'},
+}
+
+HEADER = "import type { MapDef } from '../../engine/data/types';\n\n// Generated by tools/maps/gen_md_crown.py — edit the generator, then re-run it.\n"
+with open(os.path.join(ROOT, 'src', 'content', 'maps', 'md_crown.ts'), 'w') as f:
+    f.write(f"{HEADER}export const md_crown: MapDef = {ts(md_crown)};\n")
+print('md_crown', W, 'x', H)

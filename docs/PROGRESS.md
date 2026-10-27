@@ -26,9 +26,10 @@ wilds, Dry Wells, the Mender's table, the Wheel, the escort, four Act 1 side lin
 22 quests, 104 items); three companions can join. Character creation has a rolled start (owner's reroll request).
 **Act 1 is cut as a playtest version** (frozen branch `act1-test-1`, see §2b and `docs/PLAYTEST.md`; the owner installed
 the Pages workflow). **Act 2 part 1 is under way**: Ninebridge, Openfield, the Sump and Cistern 4, Meridian's gate, the
-Precinct, Old Market, the Sink, Lantern Row, the Stacks and Bridgeward are playable (28 maps, 321 dialogues, 51 quests, 140 items;
-six companions can join; a flat in the Stacks is a safehouse; four gangs joinable one at a time). Current work: **Phase B,
-B3 Meridian** (Act 2's first megacity), next the Crown and the Masque (B3.10). Still open from the presentation
+Precinct, Old Market, the Sink, Lantern Row, the Stacks, Bridgeward and the Crown are playable (29 maps, 347 dialogues, 54 quests,
+147 items;
+six companions can join; a flat in the Stacks is a safehouse; four gangs joinable one at a time; the Crown has five ways in).
+Current work: **Phase B, B3 Meridian** (Act 2's first megacity), next the Archive Spire and the Court of Accounts (B3.11). Still open from the presentation
 pass: A5.9's remaining items (combat hover card, crowd yielding, indoor sound, camera ease, Tab reveal) — fold them in
 as B3 touches the same code. Binding owner rules: see `CLAUDE.md` §2 (no time limits; spoiler rule; not a Fallout
 clone; cyberpunk fusion).
@@ -448,10 +449,23 @@ mid-range Android phone; deployed to Pages.
             a pick), and the chalk that says the Dogs mean to come back. Seventeen named NPCs + extras. Tests
             `tests/a2.test.ts` (+9, 231 total). Smoke `tools/qa/bridgeward.cjs` all green, evidence `docs/evidence/b39/`
             (headless perf: 165 draws, over the ~150 budget by the barrels and lamps; for the B8 draw-call pass).
-      - [ ] B3.10 **The Crown and the Masque** (~2 h) NEXT: terraces under domes; invitation / contract / disguise / force
-            entry; the Tenured houses; the Masque (duel, infiltration); *The Kidnapping*, *Photographer's Studio*.
-            ENGINE: heist-lite (approach choice → map with routes). Smoke.
-      - [ ] B3.11 **Archive Spire and the Court of Accounts** (~2 h): the archive beats `q_a2_calendar` and `q_a2_spire`;
+      - [x] B3.10 **The Crown and the Masque** DONE 2026-10-27: map `md_crown` (the invitation car's lobby with a lens and a
+            sergeant, the terraces under glass with a reflecting pool, House Vane's Masque hall, House Ashby-Crane's salon,
+            Halden's portrait studio, the kitchens and the service lift down to Old Market, the parapet over the whole
+            city). Heist-lite in content + one engine cond (`wearing`): five ways past the lens (a chit from the Row, a
+            kitchen pass or the Concern's card or Exchange standing, the Velvet's clothes with a Speech check, the lens
+            itself if it has filed your face, or over the wardens, which rings the bell and turns the houses' guards);
+            conditional placements move the sergeant and the duellist once a door is open. *The Masque*: the Committee's
+            Chair decided at the toast by a word at the lectern (Speech, with the lens, a house's clientage and House
+            Lorne's word as mods), by a duel for either house (pit bouts, sabres), by a reel played to the room (the
+            Crown turns on you), sold to the house or the Concern, or by a cup at the toast. *The Kidnapping*: a Broker
+            gig off the Old Market board; the daughter paid; down the lift to the Velvet (she is placed there after),
+            sold back to the house, or the marriage talked off. *Photographer's Studio*: the renderer and its queue; a
+            print to keep, burn or hang (hung, the houses court a designate). The Madame dresses you; the den plays the
+            reel. Thirteen named NPCs + wardens, guards and extras. Tests `tests/a2.test.ts` (+9, 240 total). Smoke
+            `tools/qa/crown.cjs` all green, evidence `docs/evidence/b310/` (169 draws headless; B8 budget pass). The map is
+            lit as an interior (its own ambient under the domes, no weather) so the terraces read at any hour.
+      - [ ] B3.11 **Archive Spire and the Court of Accounts** (~2 h) NEXT: the archive beats `q_a2_calendar` and `q_a2_spire`;
             the court (ENGINE: trial as dialogue with evidence; precedent flags); *Court Case: the Squatter*. Smoke.
       - [ ] B3.12 **Dead Ring, races, wrap** (~1.5 h): the ruined outer ring; buggy races (segments: push / hold / cut);
             the Loop complete; Meridian end-to-end smoke in `tools/qa/act2.sh`; PROGRESS; a second test version
@@ -477,7 +491,7 @@ mid-range Android phone; deployed to Pages.
 | Signal Hill | 1/1 | 3/3 | 7/7 | 2/2 | playable; relay, voice, gully |
 | Dry Wells | 1/1 | 6/6 | 13/13 | 2/2 | playable; the Act 1 finale, the family |
 | Act 1 wilds | 5/5 | 15/15 | 17/17 | 2/2 | playable; ten road encounters, discoveries on foot, hunting and traps, the windpumps, the wreck, the orchard |
-| Meridian | 8/14 | 86/100 | 134/150 | 20/30 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors) and Bridgeward playable; the Loop joins five districts, stairs the Sink, the chain Bridgeward |
+| Meridian | 9/14 | 103/110 | 160/170 | 23/30 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward and the Crown playable; the Loop joins five districts, stairs the Sink, the chain Bridgeward, the invitation car the Crown |
 | Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |
 | Act 2 wilds | 4/14 | 38/50 | 64/80 | 9/16 | Ninebridge, Openfield, the Sump and Cistern 4 playable (counts approximate) |
 | Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |

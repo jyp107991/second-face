@@ -148,7 +148,7 @@ export const d_mk_broker: DialogueDef = {
       ],
       options: [
         { id: 'broker.board', text: 'What\'s on the board?', next: 'board', once: true },
-        { id: 'broker.pay', text: 'A job\'s done.', if: { any: [{ flag: 'gig_case_delivered' }, { flag: 'gig_meds_delivered' }, { item: 'k_gig_lot7' }, { flag: 'gig_letter_done' }, BOX_DUE] }, next: 'pay' },
+        { id: 'broker.pay', text: 'A job\'s done.', if: { any: [{ flag: 'gig_case_delivered' }, { flag: 'gig_meds_delivered' }, { item: 'k_gig_lot7' }, { flag: 'gig_letter_done' }, BOX_DUE, { all: [{ flag: 'cr_tillie', eq: 'row' }, { not: { flag: 'q_cr_kidnap_paid' } }] }] }, next: 'pay' },
         { id: 'broker.tap', text: 'The kiosk on the east street reads the city\'s file off the lamp wire. That splice is for sale.', if: { all: [{ lead: 'l_kiosk_wire' }, { not: { flag: 'mk_kiosk_outcome' } }] }, check: { skill: 'barter', dc: 35 }, next: 'tap_ok', fail: 'tap_no' },
         { id: 'broker.who', text: 'Who are you?', next: 'who', once: true },
         bye,
@@ -158,7 +158,7 @@ export const d_mk_broker: DialogueDef = {
       text: '"Half-Price." The box. The hand.',
       options: [
         { id: 'broker.board.again', text: 'What\'s on the board?', if: { not: { seen: 'broker.board' } }, next: 'board' },
-        { id: 'broker.pay.again', text: 'A job\'s done.', if: { any: [{ all: [{ flag: 'gig_case_delivered' }, { not: { flag: 'q_gig_case_paid' } }] }, { all: [{ flag: 'gig_meds_delivered' }, { not: { flag: 'q_gig_meds_paid' } }] }, { item: 'k_gig_lot7' }, { all: [{ flag: 'gig_letter_done' }, { not: { flag: 'q_gig_letter_paid' } }] }, BOX_DUE] }, next: 'pay' },
+        { id: 'broker.pay.again', text: 'A job\'s done.', if: { any: [{ all: [{ flag: 'gig_case_delivered' }, { not: { flag: 'q_gig_case_paid' } }] }, { all: [{ flag: 'gig_meds_delivered' }, { not: { flag: 'q_gig_meds_paid' } }] }, { item: 'k_gig_lot7' }, { all: [{ flag: 'gig_letter_done' }, { not: { flag: 'q_gig_letter_paid' } }] }, BOX_DUE, { all: [{ flag: 'cr_tillie', eq: 'row' }, { not: { flag: 'q_cr_kidnap_paid' } }] }] }, next: 'pay' },
         { id: 'broker.tap.again', text: 'The kiosk\'s splice is for sale.', if: { all: [{ lead: 'l_kiosk_wire' }, { not: { flag: 'mk_kiosk_outcome' } }] }, check: { skill: 'barter', dc: 35 }, next: 'tap_ok', fail: 'tap_no' },
         { id: 'broker.who.again', text: 'Who are you?', if: { not: { seen: 'broker.who' } }, next: 'who' },
         bye,
@@ -173,6 +173,7 @@ export const d_mk_broker: DialogueDef = {
         { id: 'pay.meds', text: 'The knit kits went to Openfield\'s healer.', if: { all: [{ flag: 'gig_meds_delivered' }, { not: { flag: 'q_gig_meds_paid' } }] }, effects: PAY('q_gig_meds', 50), next: 'paid' },
         { id: 'pay.lot7', text: '(Put lot seven\'s paper on the counter.)', if: { item: 'k_gig_lot7' }, effects: [{ take: 'k_gig_lot7' }, ...PAY('q_gig_lot7', 120)], next: 'paid' },
         { id: 'pay.letter', text: 'The captain has the letter.', if: { all: [{ flag: 'gig_letter_done' }, { not: { flag: 'q_gig_letter_paid' } }] }, effects: PAY('q_gig_letter', 20), next: 'paid_letter' },
+        { id: 'pay.daughter', text: 'The daughter is at the Velvet, tasting things.', if: { all: [{ flag: 'cr_tillie', eq: 'row' }, { not: { flag: 'q_cr_kidnap_paid' } }] }, effects: PAY('q_cr_kidnap', 200), next: 'paid' },
         { id: 'pay.box', text: '(Put the Tanners\' box on the counter.)', if: BOX_DUE, effects: [{ take: 'ci_ch_eye_heat' }, ...PAY('q_gig_box', 80)], next: 'paid' },
         { text: 'Nothing yet.', exit: true },
       ],
@@ -196,6 +197,7 @@ export const d_mk_gigs: DialogueDef = {
         { id: 'gig.meds', text: 'KNIT KITS (2) — to the sick hall, Openfield. 50.', if: { quest: 'q_gig_meds', status: 'none' }, effects: [{ quest: 'q_gig_meds', start: true }, { give: 'c_knitkit', count: 2 }], next: 'took' },
         { id: 'gig.lot7', text: 'LOT SEVEN — a paper off the Ninebridge block. 120; you front it.', if: { quest: 'q_gig_lot7', status: 'none' }, effects: [{ quest: 'q_gig_lot7', start: true }], next: 'took' },
         { id: 'gig.letter', text: 'A LETTER — to Captain Lowe, Precinct. 20.', if: { quest: 'q_gig_letter', status: 'none' }, effects: [{ quest: 'q_gig_letter', start: true }, { give: 'k_gig_letter' }], next: 'took' },
+        { id: 'gig.daughter', text: 'A DAUGHTER — out of the Crown, down to the Row. 200. A kitchen pass comes with it.', if: { all: [{ quest: 'q_cr_kidnap', status: 'none' }, { flag: 'md_lantern_open' }] }, effects: [{ quest: 'q_cr_kidnap', start: true }, { give: 'k_cr_service_pass' }, { learn: 'masque_heard' }], next: 'took' },
         { id: 'gig.box', text: 'A BOX — in the Tanners\' locker at the Sump. 80.', if: { quest: 'q_gig_box', status: 'none' }, effects: [{ quest: 'q_gig_box', start: true }], next: 'took' },
         { text: '(Leave it.)', exit: true },
       ],

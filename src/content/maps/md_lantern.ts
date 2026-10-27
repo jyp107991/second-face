@@ -1462,6 +1462,16 @@ export const md_lantern: MapDef = {
       x: 41,
       y: 38,
       facing: 2
+    },
+    {
+      def: "npc_cr_04",
+      x: 54,
+      y: 9,
+      facing: 3,
+      if: {
+        flag: "cr_tillie",
+        eq: "row"
+      }
     }
   ],
   triggers: [

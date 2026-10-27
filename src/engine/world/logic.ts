@@ -44,7 +44,9 @@ export type Cond =
   /** Live member of a faction (at `rank` or higher); or a past member with the given status. */
   | { member: string; rank?: string; status?: MembershipStatus }
   /** The player is on this map right now. */
-  | { at: string };
+  | { at: string }
+  /** The item worn on the body (a disguise, the Velvet's evening clothes). */
+  | { wearing: string };
 
 export type Effect =
   | { set: string; value?: number | string | boolean }
@@ -139,6 +141,7 @@ export function test(c: Cond | undefined, g: GameState): boolean {
   if ('chromeSlot' in c) return !!sh.chrome?.[c.chromeSlot as keyof typeof sh.chrome];
   if ('drift' in c) return inRange(sh.drift ?? 0, c.drift.gte, c.drift.lte);
   if ('at' in c) return g.locationId === c.at;
+  if ('wearing' in c) return g.pc.inventory.equipped.body?.def === c.wearing;
   if ('member' in c) {
     if (c.status && c.status !== 'member') return w.membership[c.member]?.status === c.status;
     return isMember(g, factionDefs(), c.member, c.rank);

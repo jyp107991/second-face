@@ -15,4 +15,6 @@ export const ARMOR: ItemDef[] = [
     armor: { slot: 'head', dt: 1, dr: 8, durability: 250 } },
   { id: 'r_gasmask', wear: { mask: true }, name: 'Filter Mask', desc: 'A rubber mask with a screw-in filter. Breathe easy in bad air.', category: 'armor', weight: 0.8, value: 120,
     armor: { slot: 'head', dt: 0, dr: 4, radResist: 20, durability: 150 } },
+  { id: 'r_velvet', icon: 'coat', wear: { garments: [{ name: { m: 'mindfront_m_suit_01', f: 'elvs_halter_style_pantsuit1' }, dye: 0x1f5b4a }, { name: { m: 'mindfront_shoes_oxford_male', f: 'mindfront_shoes_oxford_female' } }] }, name: 'The Velvet\'s Evening', desc: 'Evening clothes cut by the Madame of the Velvet to the Crown\'s season: bottle-green, Crown-plain, nothing on them that says the Row. They check whether you look like you belong. This is what belonging looks like.', category: 'armor', weight: 1, value: 180,
+    armor: { slot: 'body', dt: 0, dr: 2, durability: 120 } },
 ];

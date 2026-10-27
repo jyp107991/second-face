@@ -604,3 +604,72 @@ export const q_bw_haunt: QuestDef = {
     cache: { journal: 'The cache under Fenn\'s bench: a revolver, cartridges, eighty Tolls and a strip of cloth with a dog\'s head on it, from when the Dogs were a crew. BACK FOR THE BRIDGE, the wall says, every spring. Fenn says the rope is what the bridge is for, and the Rustmouths keep one on the booth.', end: 'done' },
   },
 };
+
+// ---------------------------------------------------------------- the Crown
+
+export const q_cr_masque: QuestDef = {
+  id: 'q_cr_masque', title: 'The Masque', act: 'a2', start: 'lift', xp: 300,
+  routes: [
+    { id: 'word', kind: 'talk', label: 'Speak for a house at the Committee\'s lectern', requires: { skill: 'speech', gte: 40 } },
+    { id: 'duel', kind: 'fight', label: 'Stand for a house on the floor: the Chair follows the duel' },
+    { id: 'reel', kind: 'stealth', label: 'The house records its sittings as art; play the room a reel it was not in' },
+    { id: 'cup', kind: 'stealth', label: 'A cup, at the toast. Nobody up here asks what was in a cup' },
+  ],
+  stages: {
+    lift: {
+      journal: 'The Loop\'s invitation car goes up to the Crown and costs nothing. At the top a lens and a sergeant decide what they have seen: a chit, a pass, a card, standing, a face the lens has filed, or clothes that say you belong. The help goes round the back. It is House Vane\'s season, and the Committee\'s Chair is decided at the toast.',
+      objectives: [{ id: 'in', text: 'Get past the lens', done: { flag: 'cr_entry' } }],
+      next: [{ if: { flag: 'cr_entry' }, stage: 'terraces' }],
+    },
+    terraces: {
+      journal: 'The terraces under glass. Two houses want the Chair: Vane, whose season it is and who has a man from the Concern at the back of her hall, and Ashby-Crane, who has sold nothing in ninety years and has no one to stand for her. The Chair signs the road, the bridge\'s near end, and the Committee\'s forecasts, which a Chair may sell on. The file is not in doubt; only the room.',
+      objectives: [{ id: 'chair', text: 'Decide the Chair, or let the houses', done: { flag: 'cr_chair' } }],
+      next: [{ if: { flag: 'cr_celestine_dead' }, stage: 'mourning' }, { if: { flag: 'cr_concern', eq: 'exposed' }, stage: 'exposed' }, { if: { flag: 'cr_chair', eq: 'vane' }, stage: 'vane' }, { if: { flag: 'cr_chair', eq: 'ashby' }, stage: 'ashby' }],
+    },
+    vane: { journal: 'The Chair went to House Vane, as the file expected. The road to the Docks will be voted, the bridge\'s near end signed for, and the Committee\'s forecasts go wherever Celestine Vane sends them. The Concern\'s man went down the lift before the toast, satisfied.', end: 'done', onEnter: [{ set: 'ks_vane', value: 'rises' }, { set: 'cr_settled' }] },
+    ashby: { journal: 'The Chair went to House Ashby-Crane, against the file. Ninety years and nothing sold, and now a Chair. The Concern\'s man went down the lift without the toast. Celestine Vane turned her cup a quarter turn and said there would be another season.', end: 'done', onEnter: [{ set: 'ks_vane', value: 'broken' }, { set: 'cr_settled' }] },
+    exposed: { journal: 'The room heard a room it was not in: House Vane\'s terms with the Concern, aloud, at the toast. The Chair went to Ashby-Crane and the Crown turned, all at once, politely, on Celestine Vane and on you. The lens filed every face. Yours is on a list up here now that has nothing to do with the sash.', end: 'done', onEnter: [{ set: 'ks_vane', value: 'broken' }, { set: 'cr_settled' }] },
+    mourning: { journal: 'Celestine Vane took ill at her own toast and was dead before the car went down. The Committee met in the morning with the chair beside her table empty and voted the way frightened people vote: Ashby-Crane. Lawful, the wardens said. Nobody up here asks what was in a cup.', end: 'done', onEnter: [{ set: 'ks_vane', value: 'broken' }, { set: 'cr_settled' }] },
+  },
+};
+
+export const q_cr_kidnap: QuestDef = {
+  id: 'q_cr_kidnap', title: 'The Kidnapping', act: 'a2', start: 'gig', xp: 150,
+  routes: [
+    { id: 'down', kind: 'stealth', label: 'Take her down the service lift as she paid for' },
+    { id: 'sell', kind: 'barter', label: 'Sell the house her escape; the house pays better than the hatch' },
+    { id: 'word', kind: 'talk', label: 'Stand beside her while she tells her mother, and talk the marriage off', requires: { skill: 'speech', gte: 30 } },
+  ],
+  stages: {
+    gig: {
+      journal: 'A Broker\'s gig off the Old Market board: a daughter, out of the Crown, down to the Row, two hundred; a kitchen pass for the service lift comes with it. Nobody at the hatch said kidnapping. Nobody at the hatch says anything.',
+      objectives: [{ id: 'find', text: 'Find the daughter in the Crown', done: { knows: 'cr_tillie_met' } }],
+      next: [{ if: { knows: 'cr_tillie_met' }, stage: 'daughter' }],
+    },
+    daughter: {
+      journal: 'Ottilie Ashby-Crane paid the Broker herself, with money Osric Vane gave her, to be taken out of a marriage that seals the Chair. Her mother will pay three hundred to keep her. The service lift goes down at four with the rubbish and anyone in a kitchen coat with their head down.',
+      objectives: [{ id: 'decide', text: 'Take her down, sell her back, or stand beside her', done: { flag: 'cr_tillie' } }],
+      next: [{ if: { flag: 'cr_tillie', eq: 'row' }, stage: 'row' }, { if: { flag: 'cr_tillie', eq: 'sold' }, stage: 'sold' }, { if: { flag: 'cr_tillie', eq: 'stays' }, stage: 'stays' }],
+    },
+    row: { journal: 'She went down the service lift in a kitchen coat and is at the Velvet in a Row dress that fits her badly, tasting things. Her mother knows where she is and has sent nobody, which is the kindest thing she has ever done. The hatch owes you two hundred.', end: 'done' },
+    sold: { journal: 'Her mother paid three hundred for the lift and the hour. The window in the salon is empty; Miss Ottilie is in her room, and will be. The hatch pays for results, and will not pay for this one.', end: 'done' },
+    stays: { journal: 'Her mother said off. The marriage, the seal on the Chair, the sixty years under glass. Ottilie Ashby-Crane is still at the window, but she is sitting, and the dress is plainer, and she might go down anyway, with a house behind her, which is different.', end: 'done' },
+  },
+};
+
+export const q_cr_studio: QuestDef = {
+  id: 'q_cr_studio', title: 'Photographer\'s Studio', act: 'a2', start: 'portraits', xp: 120,
+  stages: {
+    portraits: {
+      journal: 'A studio on the Crown\'s terraces hung with portraits of people as they will be: older, finished, in the chairs their forecast sheets say, with dates under them that have not happened. The machine is on the city\'s wire. It is never wrong about a face. It has your name at the top of its queue, unrequested.',
+      objectives: [{ id: 'see', text: 'See what the renderer makes', done: { any: [{ knows: 'cr_render_seen' }, { knows: 'cr_halden_photo' }] } }, { id: 'print', text: 'Decide what to do with your print', done: { flag: 'cr_render' } }],
+      next: [{ if: { flag: 'cr_render' }, stage: 'print' }, { if: { knows: 'cr_halden_photo' }, stage: 'shown' }],
+    },
+    shown: {
+      journal: 'Halden looked at the photograph and would not touch it. Not his: the original, the city\'s own hand, no grain because there was no light. Nobody took it. It was expected. He will render you for fifty, if you want to see it printed warm.',
+      objectives: [{ id: 'print', text: 'Decide what to do with your print, or leave it in the drawer', done: { flag: 'cr_render' } }],
+      next: [{ if: { flag: 'cr_render' }, stage: 'print' }],
+    },
+    print: { journal: 'The renderer had you already, the day you came through the gate: the steps, the sash, the date. Halden printed it once then for nobody, because the machine told him to. What you did with the print is done, and the machine will print it again, because it always does.', end: 'done' },
+  },
+};

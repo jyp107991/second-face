@@ -44,4 +44,6 @@ export const WEAPONS: ItemDef[] = [
   // --- Arc (pre-Burn energy)
   { id: 'w_arc_pistol', held: 'arc', name: 'Arc Pistol', desc: 'A pre-Burn security sidearm. It hums. It should not still work.', category: 'weapon', weight: 1.4, value: 1200,
     weapon: { skill: 'arc', kind: 'arc', hands: 1, dmg: [14, 24], dmgType: 'energy', ap: 5, range: 16, ammo: 'cell', magazine: 20, durability: 200, noise: 6 } },
+  { id: 'w_sabre', held: 'machete', name: 'Duelling Sabre', desc: 'A Crown blade: light, curved, a basket hilt with a house crest filed off. Made for one other person at a time.', category: 'weapon', weight: 1, value: 160,
+    weapon: { skill: 'melee', kind: 'melee', hands: 1, dmg: [6, 14], dmgType: 'blade', ap: 3, range: 1, durability: 300, critMult: 2.5 } },
 ];

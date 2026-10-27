@@ -122,6 +122,7 @@ export const d_md_loop: DialogueDef = {
         { id: 'loop.lantern', text: 'Lantern Row. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_lantern', spawn: 'loop', minutes: 15 } }], exit: true },
         { id: 'loop.stacks', text: 'The Stacks. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_stacks', spawn: 'loop', minutes: 20 } }], exit: true },
         { id: 'loop.bridgeward', text: 'Bridgeward. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_bridgeward', spawn: 'loop', minutes: 20 } }], exit: true },
+        { id: 'loop.crown', text: 'The Crown. (The invitation car.)', if: { any: [{ item: 'k_masque_chit' }, { item: 'k_cr_service_pass' }, { item: 'k_latch_card' }, { wearing: 'r_velvet' }, { knows: 'md_magistrate_designate' }, { member: 'tenured' }, { member: 'tollmen', rank: 'hand' }, { flag: 'cr_entry' }] }, effects: [{ learn: 'cr_car_taken' }, { event: 'goto', data: { location: 'md_crown', spawn: 'lift', minutes: 10 } }], exit: true },
         { id: 'loop.works', text: '(The lines through the names.)', next: 'works' },
         { text: '(Leave it.)', exit: true },
       ],

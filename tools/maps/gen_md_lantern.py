@@ -187,6 +187,7 @@ md_lantern = {
         {'def': 'npc_lr_12', 'x': 45, 'y': 34, 'facing': 3},
         {'def': 'npc_lr_g1', 'x': 20, 'y': 6, 'facing': 2}, {'def': 'npc_lr_g2', 'x': 18, 'y': 12, 'facing': 1},
         {'def': 'npc_lr_h1', 'x': 30, 'y': 54, 'facing': 0}, {'def': 'npc_lr_h2', 'x': 41, 'y': 38, 'facing': 2},
+        {'def': 'npc_cr_04', 'x': 54, 'y': 9, 'facing': 3, 'if': {'flag': 'cr_tillie', 'eq': 'row'}},
     ],
     'triggers': [
         {'id': 'arrive', 'x': 1, 'y': 30, 'w': 10, 'h': 8, 'text': 'Lantern Row. The street comes out of Old Market\'s dead bulbs into live ones: salvaged tubes in every colour that still lights, strung over a canal that throws them back. Music from three doors at once, none of it the same song. A bridge, a boat, a queue outside something pink. Somebody is shouting odds.', 'effects': [{'learn': 'seen_lantern'}, {'set': 'md_lantern_open'}]},

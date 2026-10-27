@@ -140,6 +140,8 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_static_forecast', label: 'The girl who hears', text: 'A girl at the Saints\' tower in Bridgeward says the city\'s own lines in the city\'s own voice: names, numbers, days. What she says comes true. The Saints hear the shape of it; she hears the words.' },
   { id: 'l_bw_tenured_road', label: 'The near end', text: 'House Vane holds Crown paper on the Bridgeward bridge and wants its near end for a road to the Docks by the Long Night. The Rustmouths who collect its toll are, in the Crown\'s words, a temporary arrangement.' },
   { id: 'l_bw_haunt', label: 'Back for the bridge', text: 'The Rust Dogs were a crew in a Bridgeward garage before the Rustmouths took the bridge; an old Dog keeps a cache under his bench and chalks BACK FOR THE BRIDGE on the wall every spring.' },
+  { id: 'l_studio_render', label: 'The renderer', text: 'The Crown\'s studio renders portraits of people as the file expects them to become, from forecasts bought at the Exchange. The photograph is that kind of picture, made by a bigger machine than the studio\'s.' },
+  { id: 'l_cr_concern_chair', label: 'The Chair is a sale', text: 'House Vane has promised the Concern the Committee\'s forecasts once it holds the Chair: the Crown\'s futures, sold downriver before the vote.' },
 ] as LeadDef[]).map((l) => [l.id, l]));
 
 export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
@@ -157,4 +159,6 @@ export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
   { id: 'c_dead_numbers', from: ['l_sink_numbers', 'l_sato_numbers'], text: 'The Sink\'s drowned go on living in the city\'s file: their numbers come up the stair each spring and are sold to people who need to be someone the lens has not seen.' },
   { id: 'c_rev_last_day', from: ['l_rev_spire', 'l_rev_bundle', 'l_rev_gate'], text: 'The stranger walked out of the city\'s highest house with twelve faces under his coat, and somebody at the gate already knew to wait for him on the road.' },
   { id: 'c_static_source', from: ['l_static_forecast', 'l_kiosk_wire'], text: 'The city reads itself its own file on the lamp wire every night at two; a kiosk spliced to it sells the names as fortunes, and a girl who slept against a lift shaft says them as prophecy. Whoever listens right is a forecast.' },
+  { id: 'c_photo_forecast', from: ['l_studio_render', 'l_photo_grain'], text: 'The photograph is a forecast: a portrait of who the file expects me to become, rendered, not taken.' },
+  { id: 'c_crown_sold', from: ['l_cr_concern_chair', 'l_bw_tenured_road'], text: 'The Crown is selling itself downriver: the bridge\'s near end and the Committee\'s forecasts both go to the Concern by the Long Night, by the same house.' },
 ] as ConclusionDef[]).map((c) => [c.id, c]));

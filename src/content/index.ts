@@ -51,11 +51,13 @@ import { md_stacks } from './maps/md_stacks';
 import { md_stacks_9 } from './maps/md_stacks_9';
 import { md_stacks_roof } from './maps/md_stacks_roof';
 import { md_bridgeward } from './maps/md_bridgeward';
+import { md_crown } from './maps/md_crown';
 import { MARKET_NPCS } from './npcs/md_market';
 import { SINK_NPCS } from './npcs/md_sink';
 import { LANTERN_NPCS } from './npcs/md_lantern';
 import { STACKS_NPCS } from './npcs/md_stacks';
 import { BRIDGEWARD_NPCS } from './npcs/md_bridgeward';
+import { CROWN_NPCS } from './npcs/md_crown';
 import { BENCH_NPCS } from './npcs/bench';
 import { DIALOGUES } from './dialogue';
 import { QUESTS } from './quests';
@@ -77,10 +79,10 @@ export const MAPS: Record<string, MapDef> = {
   overpass,
   dev_yard,
   dev_bunker,
-  bench_crowd, tollhouse, signalhill, drywells, wild_track, wild_rough, windpumps, saltpan, orchard, wheel, ninebridge, openfield, sump, cistern4, md_precinct, md_market, md_sink, md_lantern, md_stacks, md_stacks_9, md_stacks_roof, md_bridgeward,
+  bench_crowd, tollhouse, signalhill, drywells, wild_track, wild_rough, windpumps, saltpan, orchard, wheel, ninebridge, openfield, sump, cistern4, md_precinct, md_market, md_sink, md_lantern, md_stacks, md_stacks_9, md_stacks_roof, md_bridgeward, md_crown,
 };
 
-export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...TOLLHOUSE_NPCS, ...SIGNALHILL_NPCS, ...DRYWELLS_NPCS, ...WILDS_NPCS, ...LANDMARK_NPCS, ...ORCHARD_NPCS, ...WHEEL_NPCS, ...NINEBRIDGE_NPCS, ...OPENFIELD_NPCS, ...SUMP_NPCS, ...MERIDIAN_NPCS, ...MARKET_NPCS, ...SINK_NPCS, ...LANTERN_NPCS, ...STACKS_NPCS, ...BRIDGEWARD_NPCS, ...BENCH_NPCS].map((n) => [n.id, n]));
+export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...TOLLHOUSE_NPCS, ...SIGNALHILL_NPCS, ...DRYWELLS_NPCS, ...WILDS_NPCS, ...LANDMARK_NPCS, ...ORCHARD_NPCS, ...WHEEL_NPCS, ...NINEBRIDGE_NPCS, ...OPENFIELD_NPCS, ...SUMP_NPCS, ...MERIDIAN_NPCS, ...MARKET_NPCS, ...SINK_NPCS, ...LANTERN_NPCS, ...STACKS_NPCS, ...BRIDGEWARD_NPCS, ...CROWN_NPCS, ...BENCH_NPCS].map((n) => [n.id, n]));
 
 export { LETTERS, FACTIONS, WORLD_MAP, REGIONS, TRAITS, PERKS, CHROME, ITEMS, ORIGINS, DIALOGUES, QUESTS, SETTLEMENTS, LEADS, CONCLUSIONS, WORLD_EVENTS, ROAD_ENCOUNTERS };
 registerRules({ traits: TRAITS, perks: PERKS });

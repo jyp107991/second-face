@@ -310,3 +310,22 @@ name (the stranger is Hollis Dray — the shared first name is deliberate: Crane
   seals her (Tollmen futures improve; a rescue hook in Act 2 part 2); concern → she becomes a grid-rider under the
   Concern (hook to Kes and the Leash in Halcyon; she can later be found wired in Clinic Floor Nine).
 - The Gilt/Pale/Rustmouths/Saints are joinable one at a time by the faction group; cover memberships are not used here.
+
+## Build notes — the Crown (B3.10, 2026-10-27)
+- Keystone 11 (Celestine Vane, "House Vane rises") resolves at the Masque, on the player's action, never a day count:
+  `ks_vane` = `rises` (the Chair to Vane: a word, a duel for Vane, or silence) or `broken` (Ashby-Crane by word or
+  duel; the reel played; the cup). `cr_concern` = `kept` (default; the reel sold to Vane or Quill) or `exposed` (the
+  reel played at the lectern → `cr_crown_hostile`: the Crown turns on the player, per §11; use at the Spire hearing
+  and in Act 3's Meridian return). `cr_celestine_dead` is the poison route; the wardens call it lawful (a Lowe line
+  for B3.11: the captain knows a cup when he sees one).
+- The Chair signs the road, the bridge's near end (ties to `bw_*`) and the Committee's forecasts: Vane in the Chair
+  + `cr_concern` kept = the Concern gets Meridian's futures by the season (Halcyon B4: the Board's leverage; the
+  Leash offer sweeter). Ashby-Crane in the Chair = the Concern's man leaves without the toast (Quill remembers the
+  player; `concern_favour`/`concern_masque` from Latch's card line into A Contract for Kes).
+- The studio is the first half of the calendar reveal: `l_studio_render` + `l_photo_grain` → `c_photo_forecast`
+  ("rendered, not taken; who the file expects me to become"). The DATE half stays for q_a2_calendar (B3.11): nothing
+  in the Crown says the date is a future; Halden "does not comment on it". `cr_magistrate_known` (the lens said it
+  aloud, or the print hung in the hall) makes the Tenured court the player as the future Magistrate (clientage with
+  either house); carry it into the Spire hearing as a modifier and into Act 3 (the Crown's loyalty).
+- The Kidnapping's `cr_tillie` = row (at the Velvet, placed; Osric gives the reel) / sold / stays (Honora's favour,
+  the marriage off; Osric gives the reel). Osric Vane and Ottilie are seeds for a Crown-side ally in Act 3.
