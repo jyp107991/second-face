@@ -23,6 +23,13 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_pressure_shale', label: 'Shale\'s pressure', text: 'Shale\'s pump pressure is as constant as the Cistern\'s. Both are fed from the same somewhere.' },
   { id: 'l_seed_buyer', label: 'Seed at any price', text: 'Factor Pike buys viable seed at absurd prices, in advance, for a client he will not name.' },
   { id: 'l_mags_buyout', label: 'Who owns the Dry Well', text: 'On paper the Dry Well saloon is Factor Pike\'s: a guild loan against the deed, and a signed buyout Mags is hiding from the town.' },
+  // Act 2 — Ninebridge
+  { id: 'l_futures', label: 'Paper futures', text: 'The Exchange at Ninebridge sells sealed sheets that say what will happen, where, and when. Buyers pay more for the seal unbroken.' },
+  { id: 'l_exchange_paid', label: 'Paid from the floor', text: 'The outriders who shot the stranger were paid from the Exchange: two riders, four days, "westbound traveller, confirmed", by order of the floor.' },
+  { id: 'l_packet_water', label: 'The packet was water', text: 'The sealed packet you carried east was a schedule: SHALE — 0.62 — and a date. Somebody at the Exchange buys Shale\'s water by the number.' },
+  { id: 'l_sable', label: 'Lot four is a Calloway', text: 'The young woman on the auction block is Sable Calloway, nineteen, fifty-eight Tolls in debt. Wren had a sister.' },
+  { id: 'l_strike_forecast', label: 'The strike is forecast', text: 'The guild holds a sealed sheet saying the porters\' stoppage ends on the third day with nothing won. It was written before the strike began.' },
+  { id: 'l_odile_hand', label: 'Odile knows the hand', text: 'Odile Marchetti recognised the notation on the stranger\'s map at a glance: the Exchange\'s own, from before she left it.' },
   { id: 'l_sigil_shale', label: 'Sign at the mission', text: 'The stranger\'s half-sun sign is painted on the Choir tent-pole in Shale.' },
   { id: 'l_larkspur_calla', label: 'Calla knew the word', text: 'Sister Calla knew the dead man\'s word, and said a man at Openfield would know more.' },
   { id: 'l_hollis_city', label: 'The boards', text: 'Hollis Crane lived in a city with screens that showed who paid, who owed, and who was next.' },

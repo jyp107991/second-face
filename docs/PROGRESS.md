@@ -311,12 +311,24 @@ mid-range Android phone; deployed to Pages.
       beats come before the city on the critical path, so the next test version can be "Act 2 opening"; the other
       Act 2 wilds stay in B5). Each slice ends playable, validated, with a smoke; engine additions are listed where a
       slice needs them (content must not need engine changes otherwise).
-      - [ ] B3.1 **Ninebridge** (~2 h) NEXT: Tollmen trade town on the broken bridge (`gen_ninebridge.py`, kit wreck:
-            stalls on bridge decks and hulls, the Exchange hall, the auction block, a berth to rent as a safehouse);
-            cast (the Grand Factor, the auctioneer, a fourth companion — an ex-trader — extras); the Exchange beat
-            `q_a2_ninebridge` (barter / talk / stealth in the ledgers / tech / leads); sides *Debt Auction* and
-            *Bridge-Toll Strike*; Tollmen rank 2 content; Dust table; letters; caravan stop. Smoke `tools/qa/ninebridge.cjs`.
-      - [ ] B3.2 **Openfield** (~1.5 h): Choir commune (`gen_openfield.py`, timber: fields, long halls, shrine, open-sky
+      - [x] B3.1 **Ninebridge** DONE 2026-10-27: `tools/maps/gen_ninebridge.py` → `maps/ninebridge.ts` (72×44: the deck
+            over a dry gorge with stalls along both parapets, the Span bar in a scrap hull, two container berths, the
+            Exchange hall with its office and vault, the fallen ninth span crossed on planks, the toll post and porters'
+            camp on the west bank, the auction block and cage on the east); cast `npcs/ninebridge.ts` (the Grand Factor,
+            the auctioneer, the toll-warden, the porters' chief, the floor clerk, the deck captain, lot four, three
+            stall-keepers, four guards, extras); `dialogue/ninebridge.ts` (27 trees); `quests/a2.ts` — the Exchange beat
+            `q_a2_ninebridge` *Paper Futures* (started by every Act 1 finale outcome; five routes: buy the line, talk the
+            Grand Factor into it, the ledgers by night or under the clerk's nose, the board, or the trader's word), sides
+            *Lot Four* (`q_nb_auction`: bid, talk the room down, the auctioneer's box after dark, free / keep / resell /
+            let go; a companion recognises her) and *Straps Off* (`q_nb_strike`: break it for eighty, carry alone, put the
+            guild's own forecast in the porters' hands, or pay the tenth; sets the bridge rate); the fourth companion
+            (an ex-trader at the Span: joins, reads two map names a night at camp, her own trade to unwind later);
+            Tollmen ticket from the packet, hand from breaking the strike or selling the clerk; the packet is now
+            readable (and opening it costs); berth A rents as a safehouse; Dust at the Span; items `items/story_a2.ts`;
+            six leads. Tests `tests/a2.test.ts` (10). Smoke `tools/qa/ninebridge.cjs`, evidence `docs/evidence/b31/`.
+            Perf note: ~265 draws with 25 people on the deck (Shale ~200); the budget pass in B8 must merge crowd
+            figures or cap extras per map — logged in §6 backlog.
+      - [ ] B3.2 **Openfield** (~1.5 h) NEXT: Choir commune (`gen_openfield.py`, timber: fields, long halls, shrine, open-sky
             burial ground); the Elder and his household; `q_a2_openfield` (the blight: medicine / tech / talk / stealth
             / survival); sides *Well-Poisoner*, *Seed Thief*; the Sky Rite (Choir rank 2). Smoke.
       - [ ] B3.3 **Cistern 4 and the Sump** (~1.5 h): a failed shelter as a dungeon (`gen_cistern4.py`) and the scavenger
@@ -400,7 +412,8 @@ G1–G5 research-driven design + dialogue/quest engines + Cistern 9 opening · F
 notebook UI · W1–W5 worldbuilding (cities, chrome, settlement types, world map/travel) + NPC variance
 (layered garments, outfit roles, cloth shader, merged low-LOD clothes).
 Engine polish backlog: tall interior walls hide a lot (consider wall fade); bundle ~1.1 MB (split later, PERF.md);
-derive gossip road days from the world map in B2.
+derive gossip road days from the world map in B2; draw calls over the mobile budget on crowded maps (Shale ~200,
+Ninebridge ~265 at 25 people) — merge extras into instanced low-LOD figures or cap crowds by quality setting (B8).
 
 ## 7. Notes for owner (how to run/test)
 - Run locally: `npm install` then `npm run dev`, open the printed URL (add `?dev` on a deployed build for

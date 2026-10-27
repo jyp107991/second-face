@@ -196,6 +196,7 @@ const DW_END = (how: string, text: string) => [
   { set: 'jonah_month_over' }, { set: 'a1_finale', value: how },
   { decision: { id: `a1_water_${how}`, text } },
   { after: { minutes: 3, id: 'a1_end_card', effects: [{ event: 'title', data: { text: 'ACT ONE ENDS\nTHE WATER CLOCK' } }] } },
+  { quest: 'q_a2_ninebridge', start: true },
 ];
 
 export const q_a1_drywells: QuestDef = {

@@ -14,6 +14,7 @@ import { d_or_anselm, d_or_dun, d_or_leavings, d_or_petra, d_or_shrine, d_or_thi
 import { EXTRA_DIALOGUES } from './extras';
 import { WHEEL_DIALOGUES } from './wheel';
 import { ACT1_SIDE_DIALOGUES } from './act1_sides';
+import { NINEBRIDGE_DIALOGUES } from './ninebridge';
 import { d_dw_approach, d_dw_cato, d_dw_clerk, d_dw_console, d_dw_diary_table, d_dw_door, d_dw_juno, d_dw_oriel, d_dw_panel, d_dw_pumps, d_dw_sable, d_dw_valve, d_dw_wick } from './drywells';
 import { d_c9_archive, d_c9_body, d_c9_bram, d_c9_great_door, d_c9_ines, d_c9_mother, d_c9_pell, d_c9_shaft, d_c9_tamsin, d_c9_teague } from './ch1_cistern';
 
@@ -26,5 +27,5 @@ export const DIALOGUES: Record<string, DialogueDef> = Object.fromEntries([
   d_dw_approach, d_dw_sable, d_dw_oriel, d_dw_juno, d_dw_cato, d_dw_wick, d_dw_door, d_dw_console, d_dw_panel, d_dw_valve, d_dw_pumps, d_dw_diary_table, d_dw_clerk,
   d_re_patrol, d_re_drifter, d_re_scouts, d_re_wheel, d_re_walker, d_re_caravan, d_re_axle, d_re_shakedown, d_wp_marit, d_wp_pump, d_wp_valvehouse,
   d_sp_hound, d_sp_truck, d_or_anselm, d_or_petra, d_or_dun, d_or_shrine, d_or_well, d_or_leavings, d_or_thieves,
-  ...EXTRA_DIALOGUES, ...WHEEL_DIALOGUES, ...ACT1_SIDE_DIALOGUES,
+  ...EXTRA_DIALOGUES, ...WHEEL_DIALOGUES, ...ACT1_SIDE_DIALOGUES, ...NINEBRIDGE_DIALOGUES,
 ].map((d) => [d.id, d]));

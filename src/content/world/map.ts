@@ -20,7 +20,7 @@ const L: LocationDef[] = [
     moves: { days: 4, route: [{ x: 446, y: 371, near: 'shale' }, { x: 489, y: 384, near: 'drywells' }, { x: 458, y: 338, near: 'orchard' }, { x: 437, y: 349, near: 'rustdogs' }] } },
   { id: 'lm_sallow_02', name: 'Windpump graveyard', region: 'sallow', x: 488, y: 345, kind: 'landmark', hidden: true, map: 'windpumps' },
   // The Glass Flats
-  { id: 'ninebridge', name: 'Ninebridge', region: 'glass_flats', x: 320, y: 300, kind: 'major', settlement: 'ninebridge' },
+  { id: 'ninebridge', name: 'Ninebridge', region: 'glass_flats', x: 320, y: 300, kind: 'major', settlement: 'ninebridge', map: 'ninebridge' },
   { id: 'openfield', name: 'Openfield', region: 'glass_flats', x: 280, y: 340, kind: 'major', settlement: 'openfield' },
   { id: 'sump', name: 'the Sump', region: 'glass_flats', x: 362, y: 382, kind: 'minor' },
   { id: 'lm_flats_01', name: 'Stilted freeway', region: 'glass_flats', x: 370, y: 318, kind: 'landmark', hidden: true },
