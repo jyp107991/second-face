@@ -291,6 +291,22 @@ goods is always possible (value-matched).
 - **Healing has costs**: time (rest consumes food/water and lets world clocks advance), Tolls (doctors), or
   scarce consumables.
 
+## 5b. Presentation rules (owner, pass 4 — binding)
+- **Masks are not a motif.** People cover their faces against dust when the wind is up and that is all; no faction
+  has a mask culture, no rite needs one. Disguise is a hood, a scarf, dirt, changed hair. The one painted mask in the
+  story is one man's possession, not a symbol everyone recognises.
+- **Men and women differ clearly** in face and body; women are generally somewhat shorter; proportions vary widely
+  and independently of mass. Faces stay inside one consistent realistic realm.
+- **Movement is fluid**: no sliding feet, no snapping turns, no stuck-out arms; everyone standing has an idle loop
+  (breath, weight, glance, fidget) and workers have work loops.
+- **Places are alive**: background people with shallow talk, clusters, vendors, sitters, children, animals later.
+- **Weather and mood vary**: clear sun with hard shadows is common; haze, dust and storms are events; maps carry a
+  mood (bright, peaceful, bustling, grim). Gloom is a choice for a place, never the default.
+- **Conversations stay in the world**: the scene remains, the camera frames the speakers, a live portrait sits beside
+  the panel. No black-screen close-ups.
+- **Buildings read as buildings**: roofs, lintels, windows, materials with their own edges and wear; no bare blocks.
+- **Bionics look like the future**: segmented matte plating, metal seams, a lit accent line; never bolted scrap.
+
 ## 6. Combat
 - Turn-based on a square grid (1 m tiles) over 3D scenes; real-time exploration until hostility.
 - Turn order by Initiative; AP per turn. Costs: move 1/tile, single shot 4–5, aimed +1, burst 6,

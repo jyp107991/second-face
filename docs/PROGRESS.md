@@ -106,6 +106,46 @@ the wilds, then the Mender and the Wheel, then the Act 1 wrap). Binding owner ru
       shader simplification at low tier, lazy chunks (code splitting), adaptive resolution tiers.
       Numbers before/after in `docs/PERF.md`.
 
+### A5 — second immersion & aesthetics sweep (owner feedback, after B2.5; runs before B2.6)
+Owner verdicts, binding: masks are not a motif (people wear dust masks when the wind is up; no faction mask culture;
+disguise = hood, scarf, dirt); men and women must differ clearly in face and body, women generally somewhat shorter
+with far more variable proportions; movement must be fluid and natural; idle motion loops everywhere people stand;
+crowds must look like crowds and places must feel alive (more people, some with shallow talk); buildings must stop
+reading as blocks; the world must not be uniformly gloomy (sun, bustle, peace); conversations stay in the world
+view with a portrait beside the panel; bionics look futuristic (Cyberpunk 2077 as the reference); a second sweep of
+such presentation decisions against modern CRPG practice. Each step: evidence sheet in `docs/evidence/a5/`, check, commit.
+- [ ] A5.1 **Conversations in the world** (~1.5 h): no black close-up; the scene stays, the camera eases to frame the
+      two of you, the panel gets a live portrait (`FigureView`, head-and-shoulders) on its left; the speaker's head
+      turns to the player. Sunglasses come off indoors and in talk.
+- [ ] A5.2 **Masks out of the lore** (~1 h): content and docs rewritten (the stranger keeps his single dust mask with
+      its painted sign; the Choir has no rite masks; "masked traveller" → "the old man"; the hide-your-face mechanic
+      becomes hood/scarf); the story plan's mask motif replaced (secret file; spoiler-free summary here only).
+- [ ] A5.3 **Dimorphism and body variety** (~2 h): gender-conditioned face biases (jaw, chin, brow, cheek, lips, eyes,
+      neck), women's height distribution ~7% lower with wider spread, hip/shoulder/waist/bust/limb ratios varying
+      independently and more widely, stronger macro gender weight; before/after portrait and silhouette sheets.
+- [ ] A5.4 **Fluid movement and idle loops** (~3 h): speed-ramped stride with distance-driven phase (no sliding),
+      hip sway and torso counter-rotation, arm swing with elbow bend, foot lift, smooth turning; idle loops by
+      activity (breath, weight shift, look-around, fidgets, arms-crossed, lean, sit, work loops: hammer, sweep,
+      dig); a crowd no longer stands with its hands out. Mocap import (CMU/ACCAD BVH → our rig) evaluated and
+      noted as a follow-up if procedural still reads stiff.
+- [ ] A5.5 **Alive places** (~3 h): `MapDef.extras` → generated background people (looks, routes between spots,
+      pauses, short generic talk, barks), clusters of two or three talking, vendors behind counters, sitters on
+      crates and steps, children; the crowd bench becomes a real market (stalls, awnings, goods, a well, a queue).
+- [ ] A5.6 **Weather and mood** (~2 h): per-day weather in a region (clear / haze / dust / storm), a true clear noon
+      (blue sky, hard warm light, light fog), per-map mood (bright, peaceful, bustling, grim) that sets grade and
+      sound; birdsong at the orchard, crowd murmur in Shale's market hours.
+- [ ] A5.7 **Buildings that read as buildings** (~4 h): buildings detected as wall components; roofs with overhang,
+      parapet and clutter; wall faces by material (adobe: rounded tops, beam ends; scrap: overlapping tilted panels,
+      corrugation; concrete: seams, stains, rebar; brick courses); doorways get lintels and frames, long walls get
+      windows and awnings; ground edges blend, rubble and dust gather at walls. Before/after of Shale and the fort.
+- [ ] A5.8 **Bionics that look like the future** (~2.5 h): chrome redrawn as segmented matte-polymer plating with
+      brushed-metal seams and a thin emissive accent (amber old / red dark / cyan Concern): forearm sleeves and
+      knuckle plates, shin plates, an optic ring with a lit iris, a nape port, a lit spine ridge, subdermal seams.
+- [ ] A5.9 **Immersion sweep 2** (~3 h): `docs/IMMERSION_AUDIT.md` against Disco Elysium / BG3 / Pillars / Wasteland
+      3 / Rogue Trader (camera, hover and prompts, feedback, sound, NPC reactions, lighting, UI motion); the top
+      ten implemented (hover highlights, footsteps by surface, head-turn to the player, ambient beds, prompt text).
+Total ~22 h. Then B2.6. v1 estimate = this + the Phase B remainder (~66 h) ≈ 90 h of build sessions.
+
 ## 3. PHASE B — build the complete game to a playable v1 (vertical slices)
 Each slice ends playable and polished before the next starts. Definition of v1 done: creation → every
 ending without dev tools; ~60+ h; validate + per-quest route tests green; saves migrate; perf budget on a
