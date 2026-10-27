@@ -13,7 +13,8 @@ export type PropKind =
   | 'crate' | 'barrel' | 'barrel_rust' | 'locker' | 'table' | 'chair' | 'bed' | 'terminal'
   | 'pipe_h' | 'lamp_post' | 'car_wreck' | 'rock' | 'rock_small' | 'tire_pile' | 'tank' | 'vault_door'
   | 'dead_tree' | 'sandbags' | 'shelf' | 'stove' | 'fire_barrel' | 'campfire' | 'cactus' | 'sign'
-  | 'counter' | 'planter' | 'machine' | 'cot' | 'tent' | 'fence_post' | 'debris';
+  | 'counter' | 'planter' | 'machine' | 'cot' | 'tent' | 'fence_post' | 'debris'
+  | 'windpump' | 'hound_dormant';
 
 export type Cover = 'none' | 'half' | 'full';
 

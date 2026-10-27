@@ -162,11 +162,11 @@ export const wild_rough: MapDef = {
       y: 12
     },
     ahead: {
-      x: 14,
+      x: 12,
       y: 12
     },
     ahead2: {
-      x: 15,
+      x: 13,
       y: 13
     },
     side: {
@@ -182,7 +182,7 @@ export const wild_rough: MapDef = {
       y: 17
     },
     far: {
-      x: 30,
+      x: 22,
       y: 13
     }
   },

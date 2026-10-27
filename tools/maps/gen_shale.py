@@ -205,8 +205,8 @@ shale = {
         {'def': 'npc_rd_t4', 'id': 'tribute_t4', 'x': 31, 'y': 24, 'facing': 2, 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}]}}, {'def': 'npc_sh_15', 'x': 34, 'y': 21, 'facing': 3}, {'def': 'npc_sh_16', 'x': 50, 'y': 25, 'facing': 3},
     ],
     'triggers': [
-        {'id': 'arrive_w', 'x': 1, 'y': 23, 'w': 4, 'h': 5, 'text': 'Shale. Mud-brick and scrap around two pumps, a saloon, a flag that was a sheet once. Twenty-odd houses and a lot of empty ones.', 'effects': [{'learn': 'seen_shale'}]},
-        {'id': 'arrive_e', 'x': 59, 'y': 23, 'w': 4, 'h': 5, 'text': 'Shale. Mud-brick and scrap around two pumps, a saloon, a flag that was a sheet once. Twenty-odd houses and a lot of empty ones.', 'effects': [{'learn': 'seen_shale'}]},
+        {'id': 'arrive_w', 'x': 1, 'y': 23, 'w': 4, 'h': 5, 'text': 'Shale. Mud-brick and scrap around two pumps, a saloon, a flag that was a sheet once. Twenty-odd houses and a lot of empty ones.', 'effects': [{'learn': 'seen_shale'}, {'learn': 'loc_orchard'}]},
+        {'id': 'arrive_e', 'x': 59, 'y': 23, 'w': 4, 'h': 5, 'text': 'Shale. Mud-brick and scrap around two pumps, a saloon, a flag that was a sheet once. Twenty-odd houses and a lot of empty ones.', 'effects': [{'learn': 'seen_shale'}, {'learn': 'loc_orchard'}]},
         {'id': 'pumps', 'x': 28, 'y': 17, 'w': 10, 'h': 6, 'text': 'The pumps run in short bursts, then stop, then run — on a clock nobody in Shale set.', 'effects': [{'learn': 'pumps_on_a_clock'}]},
         {'id': 'tribute', 'x': 24, 'y': 16, 'w': 16, 'h': 14, 'once': False, 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}, {'not': {'flag': 'tribute_opened'}}]}, 'effects': [{'event': 'talk', 'data': {'npc': 'tribute_vasha'}}]},
     ],

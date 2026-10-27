@@ -131,7 +131,7 @@ export const saltpan: MapDef = {
       y: 26
     },
     {
-      kind: "machine",
+      kind: "hound_dormant",
       x: 18,
       y: 12,
       rot: 2,

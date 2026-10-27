@@ -41,8 +41,7 @@ fill(3, 2, 48, 9, 's')
 fill(30, 26, 48, 36, 's')
 # the pumps: six towers in a line along the track, each with its pad
 for i, x in enumerate([8, 15, 22, 29, 36, 43]):
-    g[14][x] = 'M'
-    fill(x - 1, 15, x + 1, 16, 'm')
+    fill(x - 1, 14, x + 1, 16, 'm')
 # the troughs: a stone run below the fourth and fifth pumps
 fill(26, 23, 38, 24, 'c')
 # the pump house: concrete, the door gone
@@ -54,8 +53,8 @@ rows = [''.join(r) for r in g]
 
 props = [
     # the pumps' feet
-    {'kind': 'machine', 'x': 8, 'y': 16, 'rot': 0}, {'kind': 'machine', 'x': 15, 'y': 16, 'rot': 0}, {'kind': 'machine', 'x': 22, 'y': 16, 'rot': 0, 'id': 'pump_3'},
-    {'kind': 'machine', 'x': 29, 'y': 16, 'rot': 0}, {'kind': 'machine', 'x': 36, 'y': 16, 'rot': 0}, {'kind': 'machine', 'x': 43, 'y': 16, 'rot': 0, 'id': 'pump_6'},
+    {'kind': 'windpump', 'x': 8, 'y': 14}, {'kind': 'windpump', 'x': 15, 'y': 14}, {'kind': 'windpump', 'x': 22, 'y': 14, 'id': 'pump_3'},
+    {'kind': 'windpump', 'x': 29, 'y': 14}, {'kind': 'windpump', 'x': 36, 'y': 14}, {'kind': 'windpump', 'x': 43, 'y': 14, 'id': 'pump_6'},
     {'kind': 'pipe_h', 'x': 11, 'y': 17}, {'kind': 'pipe_h', 'x': 18, 'y': 17}, {'kind': 'pipe_h', 'x': 25, 'y': 17}, {'kind': 'pipe_h', 'x': 32, 'y': 17}, {'kind': 'pipe_h', 'x': 39, 'y': 17},
     # the troughs
     {'kind': 'tank', 'x': 27, 'y': 22}, {'kind': 'pipe_h', 'x': 30, 'y': 22}, {'kind': 'pipe_h', 'x': 34, 'y': 22}, {'kind': 'debris', 'x': 37, 'y': 25},
@@ -80,7 +79,6 @@ windpumps = {
         '.': {'floor': 'sand'}, ',': {'floor': 'dirt'}, 's': {'floor': 'rubble'}, 'c': {'floor': 'concrete'}, 'm': {'floor': 'metal'},
         'R': {'wall': 'rock', 'floor': 'sand', 'wallHeight': 2.8},
         'C': {'wall': 'concrete', 'floor': 'concrete', 'wallHeight': 3},
-        'M': {'wall': 'scrap', 'floor': 'metal', 'wallHeight': 8},
     },
     'props': props,
     'lights': [

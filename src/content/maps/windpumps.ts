@@ -20,7 +20,7 @@ export const windpumps: MapDef = {
     "R.......................................,,,,,,,,...R",
     "R.......................................,,,,,,,,...R",
     "R.......................................,,,,,,,,...R",
-    "R.......M......M......M......M......M......M.......R",
+    "R......mmm....mmm....mmm....mmm....mmm....mmm......R",
     "R......mmm....mmm....mmm....mmm....mmm....mmm......R",
     "R......mmm....mmm....mmm....mmm....mmm....mmm......R",
     "R..................................................R",
@@ -72,50 +72,39 @@ export const windpumps: MapDef = {
       wall: "concrete",
       floor: "concrete",
       wallHeight: 3
-    },
-    M: {
-      wall: "scrap",
-      floor: "metal",
-      wallHeight: 8
     }
   },
   props: [
     {
-      kind: "machine",
+      kind: "windpump",
       x: 8,
-      y: 16,
-      rot: 0
+      y: 14
     },
     {
-      kind: "machine",
+      kind: "windpump",
       x: 15,
-      y: 16,
-      rot: 0
+      y: 14
     },
     {
-      kind: "machine",
+      kind: "windpump",
       x: 22,
-      y: 16,
-      rot: 0,
+      y: 14,
       id: "pump_3"
     },
     {
-      kind: "machine",
+      kind: "windpump",
       x: 29,
-      y: 16,
-      rot: 0
+      y: 14
     },
     {
-      kind: "machine",
+      kind: "windpump",
       x: 36,
-      y: 16,
-      rot: 0
+      y: 14
     },
     {
-      kind: "machine",
+      kind: "windpump",
       x: 43,
-      y: 16,
-      rot: 0,
+      y: 14,
       id: "pump_6"
     },
     {

@@ -9,5 +9,6 @@ export const STORY_A1: ItemDef[] = [
   { id: 'k_pumpman_diary', icon: 'book', name: 'Pump Man\'s Diary', desc: 'Forty years of gauge readings in a hand that gets smaller, and on the first page, underlined twice, a credential: MAINT AUTH — MARR — DW4 — "ELEVEN".', category: 'note', weight: 0.3, value: 0 },
   { id: 'k_hound_controller', icon: 'cell', name: 'Controller', desc: 'A grey slab the size of a hand with one lens and no buttons, warm when nothing is. The convoy was carrying it; the thing on the pan sat down beside it.', category: 'key', weight: 0.4, value: 0 },
   { id: 'k_convoy_manifest', icon: 'page', name: 'Convoy Manifest', desc: 'Guild paper. Eight crates of parts, two of water, one item listed as HANDLER (1) — CONCERN CUSTOMS SEAL — DO NOT POWER.', category: 'note', weight: 0, value: 0 },
+  { id: 'k_dog_plate', icon: 'plates', name: 'Rust Dog Plate (small)', desc: 'A thumb-sized scrap of plate with a dog\'s head scratched on it, on a child\'s cord. Dropped in the orchard wall.', category: 'key', weight: 0, value: 0 },
   { id: 'k_ledger_page', icon: 'page', name: 'Toll Ledger Page', desc: 'Torn from the Tollhouse 9 ledger. A line of outriders\' pay: two riders, four days, "one masked traveller, confirmed — as per Factor Pike, post nine-west".', category: 'note', weight: 0, value: 0 },
 ];

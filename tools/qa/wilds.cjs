@@ -96,6 +96,35 @@ const fs = require('fs');
   const meat2 = await page.evaluate(() => game.state.pc.inventory.items.find((i) => i.def === 'c_meat')?.qty ?? 0);
   check('the traps yielded after a day and a half', meat2 > meat, `${meat} → ${meat2}`);
   await page.evaluate(() => document.querySelector('[data-a=close]')?.click());
+
+  // 4. The wreck on the pan: the thing in the ring wakes for Shale.
+  await page.evaluate(async () => { const g = game.state; g.pc.sheet.skillBought.science = 60; SF.addItem(g.pc.inventory, SF.makeItem('k_hound_controller')); SF.addItem(g.pc.inventory, SF.makeItem('k_convoy_manifest')); game.quests.questStart('q_sw_wreck'); await game.loadLocation('saltpan', 'start'); g.world.at = 'lm_sallow_01'; });
+  await page.waitForTimeout(6000);
+  await page.evaluate(() => { game.player.place(18, 13); game.cam.recentre(); game.cam.zoomBy(0.7); });
+  await page.waitForTimeout(1500);
+  await shot('wild_5_saltpan');
+  await page.evaluate(() => { game.tryInteract(18, 12); });
+  await page.waitForTimeout(2500);
+  console.log('hound:', await dlg());
+  await pick('(Hold up the controller.)');
+  await pick('(Tell it to stand');
+  await pick('(Walk.)');
+  check('the machine woke for Shale', await page.evaluate(() => game.state.flags.hound_for_shale === true && game.state.world.quests.q_sw_wreck?.stage === 'shale'), await page.evaluate(() => JSON.stringify(game.state.world.quests.q_sw_wreck)));
+
+  // 5. The orchard at night: the thieves at the beds.
+  await page.evaluate(async () => { const g = game.state; g.flags.or_stakeout = true; g.pc.sheet.skillBought.speech = 60; game.quests.questStart('q_orchard'); g.minutes = Math.floor(g.minutes / 1440) * 1440 + 23 * 60 + 30; await game.loadLocation('orchard', 'start'); g.world.at = 'orchard'; });
+  await page.waitForTimeout(6000);
+  console.log('orchard npcs:', await page.evaluate(() => [...game.npcs.keys()].join(',')));
+  check('the thieves are at the beds at night', await page.evaluate(() => game.npcs.has('npc_or_04') && game.npcs.has('npc_or_05')));
+  await page.evaluate(() => { game.player.place(34, 32); game.cam.recentre(); game.player.setPath(game.loc.grid.findPath(34, 32, 37, 32, { ignore: 'player', adjacentOk: false })); });
+  await page.waitForFunction(() => !!document.querySelector('.dlg'), null, { timeout: 60000 }).catch(() => {});
+  await page.waitForTimeout(800);
+  console.log('thieves:', await dlg());
+  await shot('wild_6_orchard_night');
+  await pick('Don\'t. Nobody here');
+  await pick('Stay. The Choir feeds you first');
+  await pick('(Wake Petra.)');
+  check('the thieves stayed with the Choir', await page.evaluate(() => game.state.flags.or_outcome === 'choir' && game.state.world.quests.q_orchard?.stage === 'choir'));
   console.log('perf:', JSON.stringify(await page.evaluate(() => game.perf())));
   console.log(`\n${fails.length ? 'FAILED: ' + fails.join('; ') : 'ALL PASS'}; page errors: ${errors}`);
   await browser.close();

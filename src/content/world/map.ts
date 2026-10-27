@@ -13,7 +13,8 @@ const L: LocationDef[] = [
   { id: 'rustdogs', name: 'the overpass', region: 'sallow', x: 430, y: 335, kind: 'major', settlement: 'rustdogs', map: 'overpass' },
   { id: 'tollhouse', name: 'Tollhouse 9', region: 'sallow', x: 420, y: 300, kind: 'major', settlement: 'tollhouse', map: 'tollhouse' },
   { id: 'signalhill', name: 'Signal Hill', region: 'sallow', x: 402, y: 286, kind: 'minor', map: 'signalhill' },
-  { id: 'lm_sallow_01', name: 'Salt-pan wreck', region: 'sallow', x: 442, y: 372, kind: 'landmark', hidden: true },
+  { id: 'lm_sallow_01', name: 'Salt-pan wreck', region: 'sallow', x: 442, y: 372, kind: 'landmark', hidden: true, map: 'saltpan' },
+  { id: 'orchard', name: 'the Burnt Orchard', region: 'sallow', x: 452, y: 349, kind: 'minor', map: 'orchard' },
   { id: 'lm_sallow_02', name: 'Windpump graveyard', region: 'sallow', x: 488, y: 345, kind: 'landmark', hidden: true, map: 'windpumps' },
   // The Glass Flats
   { id: 'ninebridge', name: 'Ninebridge', region: 'glass_flats', x: 320, y: 300, kind: 'major', settlement: 'ninebridge' },
@@ -69,6 +70,8 @@ const R: RouteDef[] = [
   { a: 'drywells', b: 'lm_ash_01', terrain: 'rough', danger: 0.8 },
   // Off-road to landmarks (found on foot nearby, then walkable).
   { a: 'shale', b: 'lm_sallow_01', terrain: 'rough', danger: 0.3 },
+  { a: 'rustdogs', b: 'lm_sallow_01', terrain: 'rough', danger: 0.3 },
+  { a: 'shale', b: 'orchard', terrain: 'track', danger: 0.05 },
   { a: 'drywells', b: 'lm_sallow_02', terrain: 'rough', danger: 0.3 },
   { a: 'ninebridge', b: 'lm_flats_01', terrain: 'glass', danger: 0.4 },
 ];

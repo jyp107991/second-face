@@ -124,3 +124,49 @@ describe('hunting and trapping', () => {
     expect(trapYield(line, 60 * 200, 0.6, g.pc.sheet)).toBeLessThanOrEqual(4);
   });
 });
+
+describe('the salt-pan wreck and the burnt orchard', () => {
+  it('the machine wakes for Shale with the controller and the word, or sleeps on, or is sold to Pike', () => {
+    let s = onRoad(); s.g.locationId = 'saltpan';
+    s.q.questStart('q_sw_wreck');
+    addItem(s.g.pc.inventory, makeItem('k_hound_controller')); addItem(s.g.pc.inventory, makeItem('k_convoy_manifest'));
+    s.g.pc.sheet.skillBought.science = 60;
+    talk('d_sp_hound', s.g, s.q, ['(Put a hand on it.)', '(Hold up the controller.)', '(Tell it to stand', '(Walk.)']);
+    expect(s.g.flags.hound_for_shale).toBe(true);
+    expect(s.g.world.quests.q_sw_wreck.stage).toBe('shale');
+    expect(countItem(s.g.pc.inventory, 'k_hound_controller')).toBe(0);
+    expect(s.g.world.news.some((n) => n.tag === 'hound_in_shale')).toBe(true);
+    s = onRoad(); s.g.locationId = 'saltpan'; s.q.questStart('q_sw_wreck');
+    addItem(s.g.pc.inventory, makeItem('k_hound_controller'));
+    talk('d_sp_hound', s.g, s.q, ['(Hold up the controller.)', '(Tell it to stay.', '(Put it away.)']);
+    expect(s.g.world.quests.q_sw_wreck.stage).toBe('kept');
+    s = onRoad(); s.g.locationId = 'shale'; s.g.flags.sh_pike_met = true; s.q.questStart('q_sw_wreck');
+    addItem(s.g.pc.inventory, makeItem('k_hound_controller'));
+    talk('d_sh_pike', s.g, s.q, ['(Put the grey slab from the pan on the counter.)', '(Take the money.)', 'As per.']);
+    expect(s.g.pc.inventory.tolls).toBe(150);
+    expect(s.g.world.quests.q_sw_wreck.stage).toBe('sold');
+  });
+
+  it('the orchard: Anselm starts it, the wall names the thieves, and the night by the beds decides them', () => {
+    let s = onRoad(); s.g.locationId = 'orchard';
+    talk('d_or_anselm', s.g, s.q, ['You said they take the green ones.', 'I\'ll look at the wall.', 'That\'s all.']);
+    expect(s.g.world.quests.q_orchard?.stage).toBe('thefts');
+    s.g.pc.sheet.baseAttrs.senses = 8; s.g.pc.sheet.skillBought.survival = 40;
+    talk('d_or_leavings', s.g, s.q, ['(Pick up the plate.)', '(Pocket it.)']);
+    expect(s.g.world.knowledge.or_leavings_dog).toBe(true);
+    expect(s.g.world.quests.q_orchard.done).toContain('who');
+    talk('d_or_anselm', s.g, s.q, ['There\'s a gap in the north wall', 'After the lamps.', 'That\'s all.']);
+    expect(s.g.flags.or_stakeout).toBe(true);
+    s.g.pc.sheet.skillBought.speech = 60;
+    talk('d_or_thieves', s.g, s.q, ['Don\'t. Nobody here', 'Stay. The Choir feeds you first', '(Wake Petra.)']);
+    expect(s.g.flags.or_outcome).toBe('choir');
+    expect(s.g.world.quests.q_orchard.stage).toBe('choir');
+    const r = talk('d_or_anselm', s.g, s.q, ['About the thieves.']);
+    expect(r.view()!.text).toContain('Petra\'s tent');
+    // Wren knows their names; the cell and the road are the other ways.
+    s = onRoad(); s.g.locationId = 'orchard'; s.g.flags.or_stakeout = true; s.g.world.party.push('npc_rd_03'); s.q.questStart('q_orchard');
+    talk('d_or_thieves', s.g, s.q, ['(Let Wren speak.)', 'Sit. Both of you.', 'I\'ll walk you back to the overpass.', '(Go.)']);
+    expect(s.g.world.quests.q_orchard.stage).toBe('returned');
+    expect(s.g.world.approval.npc_rd_03).toBeGreaterThan(0);
+  });
+});

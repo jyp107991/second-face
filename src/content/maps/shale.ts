@@ -1527,6 +1527,9 @@ export const shale: MapDef = {
       effects: [
         {
           learn: "seen_shale"
+        },
+        {
+          learn: "loc_orchard"
         }
       ]
     },
@@ -1540,6 +1543,9 @@ export const shale: MapDef = {
       effects: [
         {
           learn: "seen_shale"
+        },
+        {
+          learn: "loc_orchard"
         }
       ]
     },

@@ -169,16 +169,16 @@ export const wild_track: MapDef = {
       y: 11
     },
     ahead: {
-      x: 18,
+      x: 13,
       y: 11
     },
     ahead2: {
-      x: 19,
+      x: 14,
       y: 12
     },
     side: {
-      x: 22,
-      y: 15
+      x: 15,
+      y: 14
     },
     side2: {
       x: 20,
@@ -189,7 +189,7 @@ export const wild_track: MapDef = {
       y: 15
     },
     far: {
-      x: 30,
+      x: 24,
       y: 12
     }
   },

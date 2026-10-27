@@ -108,6 +108,46 @@ const P: Record<PropKind, PropFn> = {
     }
     b.box(0.7, 0.12, 0.66, 0, 1.75, 0, 'metal', 0xb0a060);
   },
+  /** A windpump: a lattice tower with a bladed vane and a tail at the top, locked side-on to the wind. */
+  windpump: (b, r) => {
+    const h = 7.2, col = C.darkMetal;
+    for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+      // legs lean in: a thin leg from a wide foot to a narrow head
+      const x0 = sx * 0.55, z0 = sz * 0.55, x1 = sx * 0.16, z1 = sz * 0.16;
+      const dx = x1 - x0, dz = z1 - z0, len = Math.hypot(dx, h, dz);
+      b.cyl(0.035, 0.045, len, 5, (x0 + x1) / 2, h / 2, (z0 + z1) / 2, 'rust', col, { rz: -Math.atan2(dx, h), rx: Math.atan2(dz, h) });
+    }
+    for (let y = 1.2; y < h; y += 1.5) {
+      const t = 1 - y / h, s = 0.16 + 0.39 * t;
+      b.box(s * 2, 0.03, 0.03, 0, y, -s, 'rust', col); b.box(s * 2, 0.03, 0.03, 0, y, s, 'rust', col);
+      b.box(0.03, 0.03, s * 2, -s, y, 0, 'rust', col); b.box(0.03, 0.03, s * 2, s, y, 0, 'rust', col);
+    }
+    b.box(0.3, 0.3, 0.3, 0, h + 0.1, 0, 'metal', col);
+    // the vane: a disc of blades on a short axle, and the tail fin behind it
+    const ry = r.range(-0.4, 0.4);
+    b.at(0, 0, ry, 1, () => {
+      b.cyl(0.05, 0.05, 0.5, 6, 0, h + 0.2, 0.3, 'metal', col, { rx: Math.PI / 2 });
+      for (let i = 0; i < 12; i++) {
+        const a = (i / 12) * Math.PI * 2;
+        b.box(0.22, 1.1, 0.02, Math.cos(a) * 0.65, h + 0.2 + Math.sin(a) * 0.65, 0.55, 'rust', 0x8a7a62, 0, { rz: a + Math.PI / 2 } as never);
+      }
+      b.box(0.02, 0.7, 1.2, 0, h + 0.3, -1.0, 'rust', 0x8a7a62);
+      b.box(0.04, 0.04, 1.4, 0, h + 0.1, -0.5, 'metal', col);
+    });
+  },
+  /** A machine the size of a big dog, sat down with its legs folded: grey plates, a single lens, a light inside it. */
+  hound_dormant: (b) => {
+    const grey = 0x6a6e70;
+    b.box(0.6, 0.42, 1.2, 0, 0.5, 0, 'metal', grey);
+    b.box(0.5, 0.2, 0.9, 0, 0.78, -0.05, 'metal', 0x5a5e60);
+    b.box(0.34, 0.3, 0.42, 0, 0.72, 0.72, 'metal', grey);
+    b.cyl(0.09, 0.09, 0.08, 10, 0, 0.74, 0.95, 'glow', 0x3ab0ff, { rx: Math.PI / 2 });
+    for (const [x, z] of [[-0.36, 0.35], [0.36, 0.35], [-0.36, -0.4], [0.36, -0.4]]) {
+      b.box(0.14, 0.18, 0.5, x, 0.2, z, 'metal', 0x5a5e60);
+      b.box(0.12, 0.12, 0.3, x, 0.08, z + 0.25, 'metal', 0x4a4e50);
+    }
+    return [{ kind: 'lamp', x: 0, y: 0.8, z: 1.0, color: 0x3ab0ff }];
+  },
   dead_tree: (b, r) => {
     b.cyl(0.08, 0.16, 2.4, 6, 0, 1.2, 0, 'wood', 0x4a3a2a, { rz: r.range(-0.1, 0.1) });
     for (let i = 0; i < 4; i++) {

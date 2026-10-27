@@ -163,6 +163,7 @@ export const d_sh_ada: DialogueDef = {
       effects: [{ set: 'ada_broke' }, { trust: { npc: 'npc_sh_01', by: -10 } }, { learn: 'ada_pike_protection' }, { lead: 'l_ada_protection' }],
       options: [{ text: 'I\'m sorry.', exit: true }],
     },
+    hound: { text: '"I noticed." She has not sat down since it walked in. "Issa wants to shoot it. Jonah wants to name it. Mags wants to charge people to look at it. I\'ve told all three no." She looks out at the yard, where it sits. "It looked at me once and then it stopped, as if it had decided something. I\'d like to know what." A breath. "Thank you. I think."', effects: [{ set: 'ada_hound_told' }, { trust: { npc: 'npc_sh_01', by: 10 } }, { memory: { npc: 'npc_sh_01', tag: 'hound', valence: 15, strength: 90 } }], options: [{ text: 'Noted.', exit: true }] },
     ghosts: {
       text: '"On a tap off my line." She lets that be a sentence by itself. "So the pressure drop has a name and a family, and the family wants a street."',
       options: [
@@ -215,6 +216,7 @@ export const d_sh_ada: DialogueDef = {
         { id: 'ada.jonah.lived', text: 'The month\'s out. He\'s alive.', if: { flag: 'jonah_lived' }, next: 'jonah_lived', once: true },
         { id: 'ada.ghosts', text: 'Five people live at Dry Wells, on a tap off your line. Would Shale take them in?', if: { all: [{ knows: 'dw_oriel_would_go' }, { not: { flag: 'ada_ghosts_decided' } }] }, next: 'ghosts' },
         { id: 'ada.drywells', text: 'Dry Wells. The station there sets your water.', if: { all: [{ flag: 'dw_outcome' }, { not: { flag: 'ada_dw_told' } }] }, next: 'drywells' },
+        { id: 'ada.hound', text: 'The machine in your yard. It will look at everything that comes in at night.', if: { all: [{ flag: 'hound_for_shale' }, { not: { flag: 'ada_hound_told' } }] }, next: 'hound' },
         { text: 'Nothing. Just checking in.', exit: true },
       ],
     },
@@ -334,7 +336,7 @@ export const d_sh_pike: DialogueDef = {
       passives: [{ attr: 'wits', dc: 8, text: 'A list on the wall behind him: SEED — ANY VARIETY — ANY QUANTITY — PAID IN TOLLS OR SCRIP. The prices are absurd.', effects: [{ learn: 'pike_buys_seed' }] }],
       options: [{ text: 'Let\'s see the stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed', text: 'You\'re buying seed.', if: { knows: 'pike_buys_seed' }, next: 'seed', once: true }, { id: 'pike.who', text: 'Who are the Tollmen?', next: 'who', once: true }, { id: 'pike.stranger', text: 'A masked man came through three weeks ago. You spoke with him.', if: { quest: 'q_ch1_shale' }, next: 'stranger', once: true }, bye],
     },
-    again: { text: 'As per. Stock, or something else?', options: [{ text: 'Stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed.again', text: 'About the seed.', if: { all: [{ knows: 'pike_buys_seed' }, { not: { seen: 'pike.seed' } }] }, next: 'seed' }, { id: 'pike.stranger.again', text: 'About the masked man.', if: { all: [{ quest: 'q_ch1_shale' }, { not: { seen: 'pike.stranger' } }] }, next: 'stranger' }, { id: 'pike.key', text: 'Do the Tollmen read this hand?', if: { all: [{ item: 'k_map' }, { not: { item: 'k_cipher_key' } }] }, next: 'key' }, { id: 'pike.ledger', text: '(Put the Tollhouse ledger page on the counter.)', if: { item: 'k_ledger_page' }, next: 'ledger_page' }, { id: 'pike.station', text: 'The console at Dry Wells. The guild would pay to hold what it holds.', if: { all: [{ flag: 'dw_console_seen' }, { not: { flag: 'dw_outcome' } }] }, next: 'station' }, bye] },
+    again: { text: 'As per. Stock, or something else?', options: [{ text: 'Stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed.again', text: 'About the seed.', if: { all: [{ knows: 'pike_buys_seed' }, { not: { seen: 'pike.seed' } }] }, next: 'seed' }, { id: 'pike.stranger.again', text: 'About the masked man.', if: { all: [{ quest: 'q_ch1_shale' }, { not: { seen: 'pike.stranger' } }] }, next: 'stranger' }, { id: 'pike.key', text: 'Do the Tollmen read this hand?', if: { all: [{ item: 'k_map' }, { not: { item: 'k_cipher_key' } }] }, next: 'key' }, { id: 'pike.ledger', text: '(Put the Tollhouse ledger page on the counter.)', if: { item: 'k_ledger_page' }, next: 'ledger_page' }, { id: 'pike.station', text: 'The console at Dry Wells. The guild would pay to hold what it holds.', if: { all: [{ flag: 'dw_console_seen' }, { not: { flag: 'dw_outcome' } }] }, next: 'station' }, { id: 'pike.controller', text: '(Put the grey slab from the pan on the counter.)', if: { all: [{ item: 'k_hound_controller' }, { not: { flag: 'hound_outcome' } }] }, next: 'controller' }, bye] },
     station: {
       text: '"Post nine-west has known about DW-4 for eleven years, and been unable to get a man past the rifle." He does not blink. "One hundred and fifty Tolls. A guild engineer walks in behind you, and Shale\'s water is sold by the measure, as per: reliably. There is a word for what Shale has now, and it is not reliable."',
       options: [
@@ -343,7 +345,16 @@ export const d_sh_pike: DialogueDef = {
       ],
     },
     station_sold: { text: '"As per." He counts it out in a way that makes a hundred and fifty look like a courtesy. "An engineer leaves tonight. A caravan goes east in three days from the gate; there is a seat on it with a description on it that is not your name." He is already writing. "Shale will find this reliable. Everyone does, in the end."', options: [{ text: 'As per.', exit: true }] },
-    station_no: { text: '"Then it will be somebody else, later, for less." He goes back to the rates. "The offer does not expire. The guild\'s offers never do; that is what the guild is."', options: [{ text: 'Noted.', exit: true }] },
+    controller: {
+      text: 'He does not touch it. "Concern customs seal. Handler, one." He knows the manifest line by heart. "The guild lost a convoy on the pan with that aboard, and has been not saying so for a season." The top half of his face does the arithmetic. "One hundred and fifty. The guild\'s engineer collects the rest of it, and the guild\'s road is quieter for everyone. As per."',
+      options: [
+        { id: 'pike.controller.sell', text: '(Take the money.)', effects: [{ take: 'k_hound_controller' }, { give: 'tolls', count: 150 }, { set: 'hound_outcome', value: 'sold' }, { set: 'hound_sold' }, { decision: { id: 'hound_sold', text: 'You sold the controller from the pan to Factor Pike; the guild will have the machine.' } }, { rep: { faction: 'tollmen', respect: 12 } }, { memory: { npc: 'npc_sh_04', tag: 'sold_controller', valence: 25, strength: 90 } }, { xp: 80 }], next: 'controller_sold' },
+        { id: 'pike.controller.no', text: 'No.', effects: [{ memory: { npc: 'npc_sh_04', tag: 'kept_controller', valence: -10, strength: 60 } }], next: 'controller_no' },
+      ],
+    },
+    controller_sold: { text: 'The slab goes into a drawer that locks. "The guild thanks you for your custom." He writes two lines, and the second one is longer than the first.', options: [{ text: 'As per.', exit: true }] },
+    controller_no: { text: '"Then you are carrying something the Concern will want back, and the Concern does not haggle either." He goes back to the rates. "The offer stands. They always do."', options: [{ text: 'Noted.', exit: true }] },
+    station_no: { text: '"Then it will be somebody else, later, for less."" He goes back to the rates. "The offer does not expire. The guild\'s offers never do; that is what the guild is."', options: [{ text: 'Noted.', exit: true }] },
     ledger_page: {
       text: 'He reads it the way he reads rates. "Post nine\'s hand. A road contract, confirmed and paid, as per." He looks up with the top half of his face. "Guild paper, removed from a guild ledger. There is a buy-back rate for that. Sixty." A pause exactly as long as a courtesy. "I don\'t ask what you\'d do with it otherwise. I know."',
       options: [
@@ -402,6 +413,7 @@ export const d_sh_calla: DialogueDef = {
         { id: 'calla.heal', text: 'Patch me up.', if: { not: { flag: 'calla_healed_today' } }, next: 'heal' },
         { id: 'calla.trade', text: 'Supplies.', effects: [{ event: 'barter' }], exit: true },
         { id: 'calla.choir', text: 'What is the Choir?', next: 'choir', once: true },
+        { id: 'calla.orchard', text: 'The trees north of town, with leaves on. Yours?', next: 'orchard', once: true },
         { id: 'calla.word', text: '"Larkspur."', if: { knows: 'word_larkspur' }, next: 'larkspur', once: true },
         { id: 'calla.sigil', text: 'That sign on the pole. I\'ve seen it on a mask.', if: { all: [{ knows: 'calla_sigil' }, { knows: 'sigil_seen' }] }, next: 'sigil', once: true },
         bye,
@@ -412,6 +424,7 @@ export const d_sh_calla: DialogueDef = {
       effects: [{ set: 'calla_healed_today' }, { event: 'heal' }, { after: { minutes: 720, id: 'calla_heal_reset', effects: [{ set: 'calla_healed_today', value: false }] } }, { trust: { npc: 'npc_sh_05', by: 3 } }],
       options: [{ text: 'Thank you.', next: 'menu' }],
     },
+    orchard: { text: '"Ours, and the sky\'s. Brother Anselm has had twelve of them back from the roots in nine years, which is twelve more than anyone else in the Sallow." The smile goes. "Something robs him at night. He won\'t have it hurt and he won\'t have it go on, and he asked me, and I am asking you, since you look like someone who can tell the difference between those two."', effects: [{ learn: 'calla_orchard' }, { learn: 'loc_orchard' }, { learn: 'or_thefts' }, { quest: 'q_orchard', start: true }, { lead: 'l_orchard_thieves' }], options: [{ text: 'I\'ll go and look.', next: 'menu' }] },
     choir: { text: '"People who decided the sky was enough to pray to, since it was all that was left. We farm, we heal, we bury. Some of us wear masks at the rites so the sky sees a face it can\'t name." She smiles. "That\'s the short version. The long one has a lot of singing."', effects: [{ learn: 'choir_what' }], options: [{ text: 'Thanks.', next: 'menu' }] },
     larkspur: {
       text: 'She goes very still, then very busy. "Where did you hear that?" You tell her: a dying man at a door. She closes her eyes. "Then he got that far. Say it to no one else. Not here. There\'s a man east, at Openfield — I can\'t tell you more than that, and you should not want me to."',

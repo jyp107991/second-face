@@ -45,7 +45,7 @@ props = [
     {'kind': 'crate', 'x': 25, 'y': 19, 'id': 'convoy_crate_a'}, {'kind': 'crate', 'x': 24, 'y': 22, 'id': 'convoy_crate_b'}, {'kind': 'barrel', 'x': 33, 'y': 20}, {'kind': 'barrel_rust', 'x': 27, 'y': 24},
     {'kind': 'debris', 'x': 22, 'y': 25}, {'kind': 'debris', 'x': 18, 'y': 25}, {'kind': 'debris', 'x': 30, 'y': 16}, {'kind': 'tire_pile', 'x': 14, 'y': 26},
     # the thing beside it
-    {'kind': 'machine', 'x': 18, 'y': 12, 'rot': 2, 'id': 'hound'},
+    {'kind': 'hound_dormant', 'x': 18, 'y': 12, 'rot': 2, 'id': 'hound'},
     {'kind': 'debris', 'x': 16, 'y': 14}, {'kind': 'rock_small', 'x': 21, 'y': 10},
     # the pan
     {'kind': 'rock', 'x': 4, 'y': 30}, {'kind': 'rock', 'x': 43, 'y': 8}, {'kind': 'rock_small', 'x': 8, 'y': 8}, {'kind': 'rock_small', 'x': 38, 'y': 33}, {'kind': 'dead_tree', 'x': 3, 'y': 3},

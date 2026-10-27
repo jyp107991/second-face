@@ -291,3 +291,53 @@ export const q_dw_ghosts: QuestDef = {
     shot: { journal: 'You drew on the family at Dry Wells. What is left of them stays, because there is nowhere else, and Oriel Marr gave you the key with nothing in her voice at all.', end: 'failed' },
   },
 };
+
+/** The convoy on the white and what sat down beside it. */
+export const q_sw_wreck: QuestDef = {
+  id: 'q_sw_wreck', title: 'The Saltpan Wreck', act: 'a1', start: 'found', xp: 200,
+  routes: [
+    { id: 'cab', kind: 'stealth', label: 'Open the cab', requires: { skill: 'security', gte: 45 } },
+    { id: 'wake', kind: 'tech', label: 'Wake the machine for Shale', requires: { skill: 'science', gte: 40 } },
+    { id: 'sell', kind: 'barter', label: 'Sell the controller to Factor Pike' },
+    { id: 'keep', kind: 'knowledge', label: 'Leave it sleeping and keep the controller' },
+  ],
+  stages: {
+    found: {
+      journal: 'A guild convoy truck on its side on the white pan, its skid half a mile long, its cab locked, and in a ring pressed into the crust beside it a machine the size of a dog that has not moved since it sat down. Something came down here, took the crew, and left that.',
+      objectives: [
+        { id: 'cab', text: 'Get into the cab', done: { item: 'k_hound_controller' } },
+        { id: 'what', text: 'Find out what the convoy was carrying', done: { any: [{ item: 'k_convoy_manifest' }, { knows: 'sp_hound_make' }] }, optional: true },
+        { id: 'decide', text: 'Decide what the machine is for', done: { flag: 'hound_outcome' } },
+      ],
+      next: [{ if: { flag: 'hound_for_shale' }, stage: 'shale' }, { if: { flag: 'hound_sold' }, stage: 'sold' }, { if: { flag: 'hound_kept' }, stage: 'kept' }],
+    },
+    shale: { journal: 'The machine stood up for you and walked to Shale at your heel, and sits in the sheriff\'s yard now, and nothing comes into the town at night that it does not look at first. Somewhere east, whoever made it will want to know where it went.', end: 'done', onEnter: [{ set: 'shale_has_hound' }, { lead: 'l_hound_in_shale' }] },
+    sold: { journal: 'Factor Pike has the controller and the guild will have the machine. A hundred and fifty Tolls, and the knowledge that the Tollmen now own something that can stand up.', end: 'done' },
+    kept: { journal: 'The machine sleeps in its ring on the pan, and the slab that wakes it is in your pack, warm. Nobody east knows that yet.', end: 'done' },
+  },
+};
+
+/** Green fruit, a low wall, and two who come over it. */
+export const q_orchard: QuestDef = {
+  id: 'q_orchard', title: 'Orchard Thieves', act: 'a1', start: 'thefts', xp: 150,
+  routes: [
+    { id: 'wall', kind: 'survival', label: 'Read the wall', requires: { skill: 'survival', gte: 20 } },
+    { id: 'talk', kind: 'talk', label: 'Talk them into sitting down', requires: { skill: 'speech', gte: 30 } },
+    { id: 'wren', kind: 'talk', label: 'Wren knows their names' },
+  ],
+  stages: {
+    thefts: {
+      journal: 'Twice a week something comes over the north wall of the Choir\'s orchard and takes the green fruit, which nobody takes. Brother Anselm wants it to stop and does not want anyone hurt, and knows those are two different things.',
+      objectives: [
+        { id: 'wall', text: 'Look at the north wall', done: { knows: 'or_wall_seen' } },
+        { id: 'who', text: 'Find out who comes over it', done: { any: [{ knows: 'or_leavings_dog' }, { knows: 'or_prints_kids' }, { knows: 'or_two_small' }] } },
+        { id: 'wait', text: 'Wait for them by the beds after the lamps are out', done: { flag: 'or_thieves_caught' } },
+      ],
+      next: [{ if: { flag: 'or_thieves_choir' }, stage: 'choir' }, { if: { flag: 'or_thieves_returned' }, stage: 'returned' }, { if: { flag: 'or_thieves_cell' }, stage: 'cell' }, { if: { flag: 'or_thieves_let_go' }, stage: 'let_go' }],
+    },
+    choir: { journal: 'Kip and Mote sleep in the Choir\'s tents now and eat first. The overpass has two fewer mouths and will decide later whether that was a theft.', end: 'done' },
+    returned: { journal: 'You walked the two of them back to the overpass in the dark. Whoever is short there is shorter; the Dogs remember who brought their children home; the wall will be robbed again when they are hungry.', end: 'done' },
+    cell: { journal: 'Two children in Sheriff Vey\'s cell, with blankets, while she sends to the overpass and the overpass decides whether they are its. Anselm asked you not to hurt them, and meant something larger.', end: 'done' },
+    let_go: { journal: 'They went over the wall with the sack. Anselm leaves the green ones on the wall now and calls it a tithe. The sky is open; so is the wall.', end: 'done' },
+  },
+};
