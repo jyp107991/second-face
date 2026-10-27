@@ -46,6 +46,8 @@ export interface NpcRuntime {
   outfit: Outfit;
   actor: Actor;
   combatant: Combatant;
+  /** In conversation with the player: schedules leave the body alone. */
+  talking?: boolean;
   hostile: boolean;
   /** Travelling with the player: follows, fights alongside, kept across maps. */
   companion?: boolean;

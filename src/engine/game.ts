@@ -66,6 +66,9 @@ export type GameEvents = {
 /** The clothes everyone from the Cistern walks out in (worn armour and chrome change it: inventory/wardrobe.ts). */
 export const PLAYER_OUTFIT = BASE_OUTFIT;
 
+/** The idle loop a body runs for each scheduled activity. */
+const IDLE_BY_ACTIVITY: Record<string, import('./assets/humanoid').IdleKind> = { work: 'work', idle: 'stand', drink: 'drink', patrol: 'alert', pray: 'pray', trade: 'stand', sleep: 'sleep', away: 'stand' };
+
 /** Real seconds → game minutes. 1 real second = 1/3 game minute while exploring (24h ≈ 72 min). */
 const GAME_MINUTES_PER_SEC = 1 / 3;
 
@@ -623,7 +626,9 @@ export class Game extends EventBus<GameEvents> {
         if (away) grid.occupied.delete(grid.index(n.actor.tx, n.actor.ty));
         else { const at = freeTileNear(grid, n.actor.tx, n.actor.ty) ?? { x: n.actor.tx, y: n.actor.ty }; n.actor.place(at.x, at.y); }
       }
-      if (away || !e || n.actor.moving) continue;
+      if (away || !e) continue;
+      if (!n.talking) n.actor.idle = IDLE_BY_ACTIVITY[e.activity] ?? 'stand';
+      if (n.actor.moving) continue;
       const t = scheduleTile(e, this.loc.map.spots);
       if (!t || (t.x === n.actor.tx && t.y === n.actor.ty)) continue;
       const goal = grid.passable(t.x, t.y, n.id) ? t : freeTileNear(grid, t.x, t.y, n.id);

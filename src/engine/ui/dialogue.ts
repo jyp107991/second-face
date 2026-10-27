@@ -103,6 +103,9 @@ export class DialogueUi {
     const a = p.object.position, b = npc.actor.object.position;
     npc.actor.faceTowards(a.x, a.z);
     p.faceTowards(b.x, b.z);
+    npc.talking = true;
+    npc.actor.idle = 'talk';
+    p.idle = 'talk';
     g.cam.pan.set((b.x - a.x) / 2, 0, (b.z - a.z) / 2);
     g.cam.panScreen(0, -window.innerHeight * 0.1, window.innerHeight);
     g.cam.zoomBy(0.78);
@@ -135,6 +138,8 @@ export class DialogueUi {
     this.runner = undefined;
     this.face?.dispose();
     this.face = undefined;
+    if (this.npc) { this.npc.talking = false; this.npc.actor.idle = 'stand'; }
+    if (this.game.player) this.game.player.idle = 'stand';
     if (this.framed) { this.game.cam.zoomBy(1 / 0.78); this.game.cam.recentre(); this.framed = false; }
     this.game.talking = false;
     this.game.paused = false;

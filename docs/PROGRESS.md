@@ -123,7 +123,7 @@ such presentation decisions against modern CRPG practice. Each step: evidence sh
 - [x] A5.3 **Dimorphism and body variety** (~2 h): gender-conditioned face biases (jaw, chin, brow, cheek, lips, eyes,
       neck), women's height distribution ~7% lower with wider spread, hip/shoulder/waist/bust/limb ratios varying
       independently and more widely, stronger macro gender weight; before/after portrait and silhouette sheets.
-- [ ] A5.4 **Fluid movement and idle loops** (~3 h): speed-ramped stride with distance-driven phase (no sliding),
+- [x] A5.4 **Fluid movement and idle loops** (~3 h): speed-ramped stride with distance-driven phase (no sliding),
       hip sway and torso counter-rotation, arm swing with elbow bend, foot lift, smooth turning; idle loops by
       activity (breath, weight shift, look-around, fidgets, arms-crossed, lean, sit, work loops: hammer, sweep,
       dig); a crowd no longer stands with its hands out. Mocap import (CMU/ACCAD BVH → our rig) evaluated and

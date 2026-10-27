@@ -102,6 +102,10 @@ export class Actor {
     this.path = [];
   }
 
+  /** The idle loop the body runs when still (set from the schedule's activity or a conversation). */
+  get idle(): import('../assets/humanoid').IdleKind { return this.body.idle; }
+  set idle(k: import('../assets/humanoid').IdleKind) { this.body.idle = k; }
+
   faceTowards(wx: number, wz: number): void {
     this.facing = Math.atan2(wx - this.object.position.x, wz - this.object.position.z);
   }
@@ -129,7 +133,7 @@ export class Actor {
         const maxV = this.speed * (this.running ? 1.8 : 1);
         this.velocity = Math.min(maxV, this.velocity + dt * 12);
         const step = this.velocity * dt;
-        if (dist > 0.001) this.facing = turnTowards(this.facing, Math.atan2(dx, dz), dt * 12);
+        if (dist > 0.001) this.facing = turnTowards(this.facing, Math.atan2(dx, dz), dt * 9);
         if (step >= dist) {
           pos.x = goalX; pos.z = goalZ;
           this.path.shift();

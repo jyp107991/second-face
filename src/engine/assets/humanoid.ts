@@ -71,6 +71,10 @@ const Z = new THREE.Vector3(0, 0, 1);
  * aiming, flinch, death). Animation sets each bone's figure-space rotation relative to rest;
  * local rotations are derived through the chain of animated ancestors.
  */
+export type IdleKind = 'stand' | 'alert' | 'talk' | 'work' | 'sit' | 'lean' | 'pray' | 'drink' | 'sleep';
+type Fidget = 'none' | 'scratch' | 'hands' | 'hips' | 'cross' | 'neck' | 'look';
+type ArmPose = { upper: [number, number, number]; lower: [number, number, number]; blend: number };
+
 export class Humanoid {
   readonly figure: HumanFigure;
   readonly root: THREE.Group;
@@ -88,6 +92,15 @@ export class Humanoid {
   private W = new Map<string, THREE.Quaternion>();
   private rootRestY: number;
   private posture = 0;
+  /** What the body does when it is not walking: the idle loop its activity calls for. */
+  idle: IdleKind = 'stand';
+  private fidget: Fidget = 'none';
+  private fidgetT = 2 + Math.random() * 5;
+  private fidgetLeft = 0;
+  private fidgetBlend = 0;
+  private poseBlend = 0;
+  private workPhase = Math.random() * 10;
+  private sipT = 4 + Math.random() * 6;
 
   constructor(look: HumanoidLook) {
     const o = look.outfit;
@@ -154,44 +167,75 @@ export class Humanoid {
   animate(dt: number, speed: number): void {
     const f = this.figure;
     this.breathe += dt;
-    this.moveBlend += ((speed > 0.05 ? 1 : 0) - this.moveBlend) * Math.min(1, dt * 10);
+    const movingGoal = speed > 0.05 ? 1 : 0;
+    // Ease into a walk and settle out of one; stride, swing and bob scale with how fast the body is actually going.
+    this.moveBlend += (movingGoal - this.moveBlend) * Math.min(1, dt * (movingGoal ? 7 : 5));
+    const amp = THREE.MathUtils.clamp(speed / 1.3, 0.55, 1.35);
     this.walkPhase += dt * speed * 3.6;
     const s = Math.sin(this.walkPhase), c = Math.cos(this.walkPhase);
     const w = this.moveBlend;
     const breath = Math.sin(this.breathe * 1.5);
     const W = this.W;
     const t = this.breathe + this.idleSeed;
+    const idle = this.idle;
+    this.updateFidget(dt, w);
+    const fb = this.fidgetBlend;
+    const posed = idle !== 'stand' && idle !== 'talk' && idle !== 'alert';
+    this.poseBlend += (((posed && w < 0.5) ? 1 : 0) - this.poseBlend) * Math.min(1, dt * 3);
+    const pb = this.poseBlend;
+    const lying = idle === 'sleep' ? pb : 0;
+    this.workPhase += dt;
+    if (idle === 'drink') { this.sipT -= dt; if (this.sipT < -1.6) this.sipT = 5 + Math.random() * 7; }
+    const sip = idle === 'drink' && this.sipT < 0 ? Math.sin(Math.min(1, -this.sipT / 1.6) * Math.PI) : 0;
     // Idle: weight shifts slowly from foot to foot; the pelvis and shoulders counter-tilt; the head wanders.
     const shift = Math.sin(t * 0.35) * (1 - w);
-    W.set('root', qAxis(Z, shift * 0.025).multiply(qAxis(Y, s * 0.05 * w)));
+    const lean = idle === 'lean' ? pb * (this.idleSeed % 2 < 1 ? 1 : -1) : 0;
+    // Walking: the pelvis rolls and yaws with the stride, the shoulders counter it.
+    W.set('root', qAxis(Z, shift * 0.025 + s * 0.035 * w * amp + lean * 0.1).multiply(qAxis(Y, s * 0.06 * w)));
     // Posture: a slouch rounds the upper back and the head comes forward and up to compensate.
     const sl = this.posture;
-    W.set('spine05', qAxis(X, 0.04 * w - this.flinch * 0.25 + sl * 0.07).multiply(qAxis(Z, -shift * 0.02)));
-    W.set('spine03', qAxis(Y, -s * 0.08 * w).multiply(qAxis(X, breath * 0.012 + sl * 0.08)).multiply(qAxis(Z, -shift * 0.02)));
+    const workBend = idle === 'work' ? pb * (0.22 + Math.max(0, Math.sin(this.workPhase * 5.5)) * 0.08) : 0;
+    const prayBend = idle === 'pray' ? pb * 0.12 : 0;
+    const sitBend = idle === 'sit' ? pb * 0.08 : 0;
+    W.set('spine05', qAxis(X, 0.04 * w - this.flinch * 0.25 + sl * 0.07 + workBend + prayBend + sitBend - (idle === 'alert' ? 0.03 : 0)).multiply(qAxis(Z, -shift * 0.02 - lean * 0.06)));
+    W.set('spine03', qAxis(Y, -s * 0.08 * w - (this.fidget === 'look' ? fb * 0.18 : 0)).multiply(qAxis(X, breath * 0.012 + sl * 0.08 + workBend * 0.6)).multiply(qAxis(Z, -shift * 0.02 - s * 0.03 * w * amp)));
     W.set('neck01', qAxis(X, -0.03 * w + this.flinch * 0.2 - sl * 0.09));
-    const look = Math.sin(t * 0.31) * 0.09 + Math.sin(t * 0.07) * 0.06;
-    W.set('head', qAxis(Y, look * (1 - w)).multiply(qAxis(X, -sl * 0.05 + Math.sin(t * 0.19) * 0.02 * (1 - w))).multiply(qAxis(Z, Math.sin(t * 0.13) * 0.02 * (1 - w))));
-    // Legs: forward swing is a negative rotation about X (figure faces +Z). Idle: the unweighted knee softens.
+    const scan = idle === 'alert' ? 2.2 : 1;
+    const look = (Math.sin(t * 0.31) * 0.09 + Math.sin(t * 0.07) * 0.06) * scan + (this.fidget === 'look' ? fb * 0.45 * (this.idleSeed % 3 < 1.5 ? 1 : -1) : 0);
+    const headPitch = -sl * 0.05 + Math.sin(t * 0.19) * 0.02 * (1 - w) + (this.fidget === 'hands' ? fb * 0.38 : 0) + (idle === 'pray' ? pb * 0.45 : 0) + (idle === 'work' ? pb * 0.2 : 0) - sip * 0.28;
+    W.set('head', qAxis(Y, look * (1 - w)).multiply(qAxis(X, headPitch)).multiply(qAxis(Z, Math.sin(t * 0.13) * 0.02 * (1 - w))));
+    // Legs: forward swing is a negative rotation about X (figure faces +Z). Idle: the unweighted knee softens;
+    // sitting folds both; working and leaning bend one.
+    const sitLeg = idle === 'sit' ? pb : 0;
     for (const [side, sign] of [['L', 1], ['R', -1]] as const) {
-      const upper = qAxis(X, -s * sign * 0.55 * w);
-      const soft = Math.max(0, -shift * sign) * 0.06;
-      const knee = Math.max(0, sign * c) * 0.9 * w + 0.03 + soft;
+      const soft = Math.max(0, -shift * sign) * 0.06 + (idle === 'work' ? pb * 0.12 : 0) + (lean !== 0 && sign * lean > 0 ? Math.abs(lean) * 0.18 : 0);
+      const upperA = -s * sign * 0.55 * w * amp - sitLeg * 1.45;
+      const knee = Math.max(0, sign * c) * 0.9 * w * amp + 0.03 + soft + sitLeg * 1.45;
+      const upper = qAxis(X, upperA);
       W.set(`upperleg01.${side}`, upper);
       W.set(`lowerleg01.${side}`, upper.clone().multiply(qAxis(X, knee)));
-      W.set(`foot.${side}`, upper.clone().multiply(qAxis(X, knee * 0.4)));
+      // The foot lifts toe-down through the swing and lands flat.
+      W.set(`foot.${side}`, upper.clone().multiply(qAxis(X, knee * 0.4 - Math.max(0, sign * s) * 0.25 * w * amp - sitLeg * 1.4)));
     }
-    // Arms hang beside the thighs with a soft elbow; the forearm and hand are aimed explicitly, since the
-    // rest pose (A-pose, forearms bent forward, hands flat) would otherwise leave the hands sticking out.
-    // Walking swings them opposite to the legs; the right arm can come up to aim.
+    // Arms hang beside the thighs with a soft elbow; walking swings them opposite to the legs with the elbow
+    // folding on the forward swing. An idle pose or a fidget steers the arms somewhere else and blends back.
+    const override = this.armOverride(sip);
     for (const [side, sign] of [['L', 1], ['R', -1]] as const) {
-      const swing = qAxis(X, s * sign * 0.45 * w + breath * 0.012 + Math.sin(t * 0.23 + sign) * 0.01 * (1 - w));
+      const swing = qAxis(X, s * sign * 0.5 * w * amp + breath * 0.012 + Math.sin(t * 0.23 + sign) * 0.01 * (1 - w));
       let upperDir = new THREE.Vector3(sign * 0.07, -1, 0.04).normalize().applyQuaternion(swing);
-      let elbow = 0.2 + 0.35 * w;
+      let elbow = 0.2 + 0.3 * w + Math.max(0, s * sign) * 0.35 * w;
       if (side === 'R' && this.aim > 0) {
         upperDir = upperDir.lerp(new THREE.Vector3(-0.05, 0.05, 1).normalize(), this.aim).normalize();
         elbow *= 1 - this.aim;
       }
-      const lowerDir = upperDir.clone().applyQuaternion(qAxis(X, -elbow));
+      let lowerDir = upperDir.clone().applyQuaternion(qAxis(X, -elbow));
+      const o = override[side];
+      if (o && o.blend > 0 && this.aim === 0) {
+        const ou = new THREE.Vector3(sign * o.upper[0], o.upper[1], o.upper[2]).normalize();
+        const ol = new THREE.Vector3(sign * o.lower[0], o.lower[1], o.lower[2]).normalize();
+        upperDir = upperDir.lerp(ou, o.blend).normalize();
+        lowerDir = lowerDir.lerp(ol, o.blend).normalize();
+      }
       // The hand continues the forearm, turned a little in toward the thigh and relaxed.
       const handDir = lowerDir.clone().applyQuaternion(qAxis(Z, -sign * 0.12)).applyQuaternion(qAxis(X, -0.08 * (1 - this.aim)));
       W.set(`upperarm01.${side}`, f.aimRotation(`upperarm01.${side}`, upperDir).clone());
@@ -203,17 +247,68 @@ export class Humanoid {
       const pa = this.parentAnimated.get(n);
       f.rotateFigure(n, pa ? W.get(pa)!.clone().invert().multiply(wq) : wq);
     }
-    // Body bob, the idle weight shift, and the death fall.
+    // Body bob and sway, the idle weight shift, sitting, lying down, and the death fall.
     const rootB = f.bones.get('root')!;
-    rootB.position.y = this.rootRestY + Math.abs(c) * 0.03 * w - 0.01 * w;
-    rootB.position.x = shift * 0.012;
-    if (this.dead > 0) {
-      const t = 1 - Math.pow(1 - Math.min(1, this.dead), 3);
-      f.rotateFigure('root', qAxis(X, (-Math.PI / 2) * t));
-      rootB.position.y = this.rootRestY * (1 - 0.82 * t);
-      rootB.position.z = -0.35 * t;
+    rootB.position.y = this.rootRestY + Math.abs(c) * 0.03 * w * amp - 0.01 * w - sitLeg * 0.5;
+    rootB.position.x = shift * 0.012 + s * 0.01 * w * amp;
+    rootB.position.z = 0;
+    const fall = this.dead > 0 ? 1 - Math.pow(1 - Math.min(1, this.dead), 3) : 0;
+    const down = Math.max(fall, lying);
+    if (down > 0) {
+      f.rotateFigure('root', qAxis(X, (-Math.PI / 2) * down));
+      rootB.position.y = this.rootRestY * (1 - 0.82 * down);
+      rootB.position.z = -0.35 * down;
     }
     this.flinch = Math.max(0, this.flinch - dt * 4);
+  }
+
+  /** Every few seconds of standing, something small: a scratch, a glance at the hands, arms crossed for a while. */
+  private updateFidget(dt: number, w: number): void {
+    const can = w < 0.5 && (this.idle === 'stand' || this.idle === 'talk' || this.idle === 'alert');
+    if (!can) { this.fidgetLeft = 0; this.fidgetBlend = Math.max(0, this.fidgetBlend - dt * 3); if (this.fidgetBlend === 0) this.fidget = 'none'; return; }
+    if (this.fidgetLeft > 0) {
+      this.fidgetLeft -= dt;
+      this.fidgetBlend = Math.min(1, this.fidgetBlend + dt * 2.5);
+      if (this.fidgetLeft <= 0) this.fidgetT = 3 + Math.random() * 7;
+      return;
+    }
+    this.fidgetBlend = Math.max(0, this.fidgetBlend - dt * 2);
+    if (this.fidgetBlend === 0) this.fidget = 'none';
+    this.fidgetT -= dt;
+    if (this.fidgetT > 0 || this.fidgetBlend > 0) return;
+    const pool: [Fidget, number][] = this.idle === 'talk' ? [['hands', 2], ['neck', 1], ['look', 2], ['scratch', 1]]
+      : this.idle === 'alert' ? [['look', 3], ['hips', 2], ['neck', 1]]
+      : [['scratch', 1], ['hands', 1], ['hips', 2], ['cross', 3], ['neck', 1], ['look', 2]];
+    const total = pool.reduce((a, [, n]) => a + n, 0);
+    let r = Math.random() * total;
+    this.fidget = pool[0][0];
+    for (const [k, n] of pool) { r -= n; if (r <= 0) { this.fidget = k; break; } }
+    this.fidgetLeft = this.fidget === 'cross' ? 6 + Math.random() * 10 : this.fidget === 'hips' ? 4 + Math.random() * 6 : 1.2 + Math.random() * 1.2;
+  }
+
+  /** Where the arms go for the current fidget or idle pose (x is outward from the body's centre on each side). */
+  private armOverride(sip: number): { L?: ArmPose; R?: ArmPose } {
+    const fb = this.fidgetBlend, pb = this.poseBlend;
+    switch (this.fidget) {
+      case 'scratch': return { R: { upper: [0.3, 0.25, 0.92], lower: [0.15, 0.95, -0.5], blend: fb } };
+      case 'neck': return { L: { upper: [0.3, 0.1, 0.95], lower: [-0.1, 0.9, -0.6], blend: fb } };
+      case 'hands': return { L: { upper: [0.1, -0.6, 0.8], lower: [-0.2, 0.2, 1], blend: fb }, R: { upper: [0.1, -0.6, 0.8], lower: [-0.2, 0.2, 1], blend: fb } };
+      case 'hips': return { L: { upper: [0.55, -0.8, 0.05], lower: [-0.85, -0.3, 0.45], blend: fb }, R: { upper: [0.55, -0.8, 0.05], lower: [-0.85, -0.3, 0.45], blend: fb } };
+      case 'cross': return { L: { upper: [0.2, -0.85, 0.45], lower: [-0.95, 0.1, 0.3], blend: fb }, R: { upper: [0.2, -0.8, 0.5], lower: [-0.95, 0.18, 0.3], blend: fb } };
+      default: break;
+    }
+    switch (this.idle) {
+      case 'work': {
+        const raise = (1 + Math.sin(this.workPhase * 5.5)) / 2;
+        return { R: { upper: [0.1, -0.4 + raise, 0.9], lower: [0, -0.9 + raise * 0.6, 0.6], blend: pb }, L: { upper: [0.15, -0.75, 0.6], lower: [-0.2, -0.3, 1], blend: pb } };
+      }
+      case 'sit': return { L: { upper: [0.1, -0.6, 0.75], lower: [0, -0.2, 1], blend: pb }, R: { upper: [0.1, -0.6, 0.75], lower: [0, -0.2, 1], blend: pb } };
+      case 'lean': return { L: { upper: [0.2, -0.85, 0.45], lower: [-0.95, 0.1, 0.3], blend: pb }, R: { upper: [0.2, -0.8, 0.5], lower: [-0.95, 0.18, 0.3], blend: pb } };
+      case 'pray': return { L: { upper: [0.08, -0.75, 0.62], lower: [-0.55, 0.25, 0.8], blend: pb }, R: { upper: [0.08, -0.75, 0.62], lower: [-0.55, 0.25, 0.8], blend: pb } };
+      case 'alert': return { L: { upper: [0.15, -0.92, 0.3], lower: [-0.45, 0.15, 0.9], blend: 0.55 }, R: { upper: [0.15, -0.92, 0.3], lower: [-0.45, 0.15, 0.9], blend: 0.55 } };
+      case 'drink': return sip > 0 ? { R: { upper: [0.15, -0.3, 0.9], lower: [0.1, 0.95, -0.35], blend: sip } } : {};
+      default: return {};
+    }
   }
 }
 
