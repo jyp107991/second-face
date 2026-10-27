@@ -153,6 +153,10 @@ export class Game extends EventBus<GameEvents> {
   private pathMesh: THREE.InstancedMesh;
   private hostilityTimer = 0;
   private pendingInteract?: { x: number; y: number; run: () => void };
+  /** Where the player is walking to (tap or interaction); kept so a walk blocked by someone crossing re-paths instead of stopping. */
+  private walkGoal?: { x: number; y: number; adjacentOk: boolean; tries: number };
+  /** Seconds until the blocked walk is retried. */
+  private walkRetry?: number;
   private pileGroup = new THREE.Group();
   readonly audio = new AudioEngine();
   fps = 0;
@@ -281,7 +285,7 @@ export class Game extends EventBus<GameEvents> {
     const path = this.loc.grid.findPath(p.tx, p.ty, ls.x, ls.y, { ignore: p.id });
     this.lastStand = undefined;
     this.pendingInteract = undefined;
-    if (path) { p.setPath(path); this.pathMarker.visible = false; }
+    if (path) { this.walkGoal = { x: ls.x, y: ls.y, adjacentOk: false, tries: 0 }; this.walkRetry = undefined; p.setPath(path); this.pathMarker.visible = false; }
   }
 
   /** Make camp here (outdoors, or at a campfire). */
@@ -482,7 +486,15 @@ export class Game extends EventBus<GameEvents> {
       look: lookFrom(this.state.pc.appearance, outfit),
     }, this.loc.grid);
     this.player.onArriveTile = (x, y) => this.onPlayerTile(x, y);
-    this.player.onPathDone = () => {
+    this.walkGoal = undefined; this.walkRetry = undefined;
+    this.player.onPathDone = (blocked) => {
+      if (blocked && this.walkGoal && !this.encounter.active && this.walkGoal.tries < 5) {
+        // Someone stepped into the way: wait a moment for them to pass, then path round them.
+        this.walkGoal.tries++;
+        this.walkRetry = 0.35;
+        return;
+      }
+      this.walkGoal = undefined; this.walkRetry = undefined;
       this.pathMarker.visible = false;
       const pi = this.pendingInteract;
       if (pi && this.player && Math.max(Math.abs(pi.x - this.player.tx), Math.abs(pi.y - this.player.ty)) <= 1) {
@@ -865,8 +877,36 @@ export class Game extends EventBus<GameEvents> {
     const path = this.loc.grid.findPath(p.tx, p.ty, x, y, { ignore: p.id, adjacentOk: true });
     if (!path) return false;
     this.pendingInteract = { x, y, run };
+    this.walkGoal = { x, y, adjacentOk: true, tries: 0 }; this.walkRetry = undefined;
     p.setPath(path);
     return true;
+  }
+
+  /** Walk to a tile (what a tap on open ground does). Returns false when there is no way there. */
+  walkTo(x: number, y: number): boolean {
+    const p = this.player;
+    if (!p || !this.loc) return false;
+    this.pendingInteract = undefined;
+    const path = this.loc.grid.findPath(p.tx, p.ty, x, y, { ignore: p.id, adjacentOk: true });
+    if (!path || !path.length) return false;
+    this.lastStand = { x: p.tx, y: p.ty, until: performance.now() + 8000 + path.length * 400 };
+    this.walkGoal = { x, y, adjacentOk: true, tries: 0 }; this.walkRetry = undefined;
+    p.setPath(path);
+    const end = path[path.length - 1];
+    this.pathMarker.position.set(end.x + 0.5, 0.03, end.y + 0.5);
+    this.pathMarker.visible = true;
+    return true;
+  }
+
+  /** A blocked walk, retried: path round whoever stepped in; give up quietly when there is no way. */
+  private resumeWalk(): void {
+    const g = this.walkGoal, p = this.player;
+    if (!g || !p || !this.loc || p.moving) return;
+    const path = this.loc.grid.findPath(p.tx, p.ty, g.x, g.y, { ignore: p.id, adjacentOk: g.adjacentOk });
+    if (path && path.length) p.setPath(path);
+    else if (path) p.onPathDone?.();
+    else if (g.tries < 5) { g.tries++; this.walkRetry = 0.35; }
+    else { this.walkGoal = undefined; this.pathMarker.visible = false; this.pendingInteract = undefined; }
   }
 
   /** Where the mouse last was over the scene; the hover is re-read from here while the world moves under it. */
@@ -1070,17 +1110,9 @@ export class Game extends EventBus<GameEvents> {
       const npc = this.npcAt(t.x, t.y);
       if (npc && npc.hostile) { this.startCombat(npc); return; }
       if (this.tryInteract(t.x, t.y)) return;
-      this.pendingInteract = undefined;
-      const p = this.player;
-      const path = this.loc.grid.findPath(p.tx, p.ty, t.x, t.y, { ignore: p.id, adjacentOk: true });
-      if (path && path.length) {
-        this.lastStand = { x: p.tx, y: p.ty, until: performance.now() + 8000 + path.length * 400 };
+      if (this.walkTo(t.x, t.y)) {
         const tip = tipOnce('move', 'Tapped the wrong place? Undo (↶) walks you back for a few seconds.');
         if (tip) this.emit('message', { text: tip });
-        p.setPath(path);
-        const end = path[path.length - 1];
-        this.pathMarker.position.set(end.x + 0.5, 0.03, end.y + 0.5);
-        this.pathMarker.visible = true;
         this.cam.recentre();
       }
     });
@@ -1243,6 +1275,10 @@ export class Game extends EventBus<GameEvents> {
       }
     }
     for (const a of this.actors.values()) a.update(this.talking ? dt : simDt);
+    if (this.walkRetry !== undefined && simDt > 0 && !this.encounter.active) {
+      this.walkRetry -= simDt;
+      if (this.walkRetry <= 0) { this.walkRetry = undefined; this.resumeWalk(); }
+    }
     const cur = this.encounter.active ? this.encounter.current : undefined;
     if (cur && !cur.c.isPlayer) this.cam.target.copy(cur.actor.object.position);
     else if (this.player) {

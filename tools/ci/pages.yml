@@ -17,13 +17,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # Always build main for the root site, whatever ref triggered the run (a tag push must not replace it).
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with: { ref: main, fetch-depth: 0 }
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
       - name: Build main
         run: |
           npm ci
+          npm run check
           npm run build
           mkdir -p site && cp -r dist/* site/
       - name: Build the playtest version (newest act1-test-* tag)

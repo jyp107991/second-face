@@ -17,16 +17,18 @@ from here without guessing. Story-sensitive detail lives only in `story/` (never
    `tools/qa/` (committed copies, see §4) when needed.
 
 ## 1. Where things stand (one paragraph)
-Engine is substantial (render, iso camera, turn-based combat + AI, stats/perks/chrome, inventory, dialogue,
-quests, world logic, local reputation/news/leads/events, scheduled events that wait for the player, settlement
-types, world-map travel, human figures with layered garments, equipment and chrome shown on the body, camp,
-letters, Dust). Content: Chapter One and Act 1 through its finale are playable end to end — the Cistern, Shale,
-the overpass, Tollhouse 9, Signal Hill, Jonah's month, Dry Wells (10 maps, ~60 NPCs, ~75 dialogues, 15
-quests, ~80 items); three companions can join; the wilds (orchard, saltpan, windpumps, road encounters, hunting)
-are in. Current work: the **A5 presentation pass** (owner feedback; A5.1–A5.6 done: in-world dialogue, masks out,
-dimorphism, fluid movement and idles, background extras, weather and mood) — next A5.7 buildings, A5.8 bionics,
-A5.9 immersion sweep — then back to **Phase B** (B2.6 the Mender and the Wheel, B2.7 the Act 1 wrap). Binding
-owner rules: see `CLAUDE.md` §2 (no time limits; spoiler rule; not a Fallout clone; cyberpunk fusion).
+Engine is substantial (render, iso camera, turn-based combat + AI, stats/perks/chrome with a surgery screen, inventory,
+dialogue, quests, world logic, local reputation/news/leads/events, scheduled events that wait for the player, settlement
+types, world-map travel with a moving camp, human figures with layered garments, equipment and chrome shown on the body,
+camp, letters, Dust, weather and mood, real buildings with roofs that hide when you enter). Content: **Chapter One and
+all of Act 1 are playable end to end** — the Cistern, Shale, the overpass, Tollhouse 9, Signal Hill, Jonah's month, the
+wilds, Dry Wells, the Mender's table, the Wheel, the escort, four Act 1 side lines (16 maps, ~85 NPCs, 114 dialogues,
+22 quests, 104 items); three companions can join. Character creation has a rolled start (owner's reroll request).
+**Act 1 is cut as a playtest version** (git tag `act1-test-1`, see §2b and `docs/PLAYTEST.md`; the owner installs the
+Pages workflow once). Current work: **Phase B, B3 Meridian** (Act 2's first megacity). Still open from the presentation
+pass: A5.9's remaining items (combat hover card, crowd yielding, indoor sound, camera ease, Tab reveal) — fold them in
+as B3 touches the same code. Binding owner rules: see `CLAUDE.md` §2 (no time limits; spoiler rule; not a Fallout
+clone; cyberpunk fusion).
 
 ## 2. PHASE A — quality and depth pass
 ### A0 Plan
@@ -171,9 +173,11 @@ such presentation decisions against modern CRPG practice. Each step: evidence sh
       touch); #2 head-turn — standing people within ~3 m turn head and a little shoulder to the player
       (`Humanoid.lookTarget`, `Actor.lookAt`); #4 being hit — red pulse at the edges (`PostFX.hurt`), a shake;
       #5 lamps come on at dusk and go out after dawn (`LightSource.lamp`); #6 panels arrive with a 160 ms rise/settle.
-      Evidence `docs/evidence/a5/imm_*.png` (`tools/qa/immersion.cjs`). LEFT for after the playtest cut: #3 combat
-      hover card, #7 crowd yields, #8 indoor reverb + distance attenuation, #9 camera ease/lead, #10 Tab reveals
-      interactables.
+      Evidence `docs/evidence/a5/imm_*.png` (`tools/qa/immersion.cjs`). #7 half-done: a walk that someone steps into
+      no longer stops dead — the player waits a beat and paths round them to the same goal (`Game.walkTo`,
+      `resumeWalk`; `Actor.onPathDone(blocked)`; found by the Act 1 runner at the orchard); people stepping aside for
+      the player is still to do. LEFT for after the playtest cut: #3 combat hover card, #7 crowd yields (the other
+      half), #8 indoor reverb + distance attenuation, #9 camera ease/lead, #10 Tab reveals interactables.
 Total ~22 h. Then B2.6. v1 estimate = this + the Phase B remainder (~66 h) ≈ 90 h of build sessions.
 
 ## 2b. OWNER REQUEST (2026-10-27, binding): standalone Act 1 test version
@@ -183,18 +187,22 @@ The owner road-tests Act 1 while the build continues. Plan:
   thirty), Roll / Keep this roll / Recall kept / Standard start; points move between attributes within the roll's
   pool (`CharacterSheet.creationPool`, validation honours it). Tests `tests/creation.test.ts`; evidence
   `docs/evidence/a5/creator_attributes_{standard,rolled}.png` (`tools/qa/creator.cjs`).
-- **Then finish Act 1**: B2.6 (the Mender and chrome surgery, the Wheel, caravan escort basics) and B2.7 (faction
-  lines to Act 1 end, side quests, the end-to-end Act 1 smoke), with A5.8 (bionics) and the top items of A5.9
-  (hover labels, head-turns, combat card, hit feedback, lamps by hour, panel motion) folded in.
-- **Act 1 end-to-end smoke** (`tools/qa/act1.sh` against a frozen `vite preview` build on :4173, 2026-10-27): tollhouse,
-  month, drywells, wheel, surgery, act1_sides passed first time; ch1, signalhill, wilds failed only on walking/arrival
-  waits under CPU load (captures ran on the dev server at the same time) and were given longer waits and rerun alone
-  (results in `docs/evidence/act1/*.log`).
-- **Then cut the test version**: an immutable git tag (`act1-test-N`) built by the Pages workflow into its own path
-  `/second-face/act1/` with its own save namespace (`VITE_SAVE_NS=act1`, saves under `sf.act1.save.*`), so it never
-  conflicts with `main`'s deploy at `/second-face/` or its saves. A `docs/PLAYTEST.md` tells the owner how to play,
-  what is in, what to report. Later test versions are new tags; the old one stays until replaced.
-- **Then straight on** to Act 2 (B3) without waiting for feedback; feedback is folded in as it arrives.
+- [x] **Then finish Act 1**: B2.6 (the Mender and chrome surgery, the Wheel, caravan escort basics) and B2.7 (faction
+  lines to Act 1 end, side quests, the end-to-end Act 1 smoke) DONE, with A5.8 (bionics) and five of A5.9's ten
+  (hover labels, head-turns, hit feedback, lamps by hour, panel motion) folded in; the other five wait (§2 A5.9).
+- [x] **Act 1 end-to-end smoke** (`tools/qa/act1.sh` against a frozen `vite preview` build on :4173, 2026-10-27): all nine
+  green — ch1 (19 checks), tollhouse (5), signalhill (6), month (6), drywells (9), wilds (13), wheel (9), surgery,
+  act1_sides (10); logs in `docs/evidence/act1/*.log`. ch1 and signalhill had first failed only on walking/arrival waits
+  under CPU load (longer waits); wilds had found a real bug — a villager on her night schedule stepped into the player's
+  path and the walk stopped dead — fixed in the engine (A5.9 #7, blocked walks re-path). The runner's pictures are
+  not tracked (regenerated each run).
+- [x] **Then cut the test version** DONE 2026-10-27: tag `act1-test-1`, built by the Pages workflow (`tools/ci/pages.yml`;
+  the owner copies it to `.github/workflows/pages.yml` once — this session's tokens cannot write workflow files) into its
+  own path `/second-face/act1/` with its own save namespace (`VITE_SAVE_NS=act1`, saves under `sf.act1.save.*`), so it
+  never conflicts with `main`'s deploy at `/second-face/` or its saves. `docs/PLAYTEST.md` tells the owner how to play,
+  what is in, what to report. Later test versions are new tags (`act1-test-2`, …); the newest wins, the old stays until
+  replaced. Owner feedback is folded in as it arrives (fixes land on `main`; a new tag when a batch is worth re-testing).
+- [ ] **Then straight on** to Act 2 (B3) without waiting for feedback; feedback is folded in as it arrives. NEXT.
 
 ### B2.6 plan (written before coding; spoiler-free)
 - [x] **B2.6a Chrome surgery** DONE (engine + content; `world/surgery.ts` rules, `ui/surgery.ts` screen, `tests/surgery.test.ts`, smoke `tools/qa/surgery.cjs`, evidence `docs/evidence/b26/surgery_*.png`): `NpcDef.surgeon { stock: chromeId[], fee }`; dialogue effect
@@ -361,5 +369,6 @@ derive gossip road days from the world map in B2.
 ## 7. Notes for owner (how to run/test)
 - Run locally: `npm install` then `npm run dev`, open the printed URL (add `?dev` on a deployed build for
   the DEV console).
-- Deploy: add `docs/setup/deploy.yml` as `.github/workflows/deploy.yml` via GitHub web UI; Settings →
-  Pages → Source: GitHub Actions.
+- Deploy: add `tools/ci/pages.yml` as `.github/workflows/pages.yml` via the GitHub web UI; Settings → Pages →
+  Source: GitHub Actions. It deploys `main` to `/second-face/` and the newest `act1-test-*` tag to `/second-face/act1/`
+  (details in `docs/PLAYTEST.md`).

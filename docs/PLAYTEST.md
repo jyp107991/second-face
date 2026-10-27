@@ -3,8 +3,8 @@
 A frozen build of Act 1 for road-testing, separate from the main build so the two never interfere.
 
 ## Where to play
-- **Test version**: `https://jyp107991.github.io/second-face/act1/` — built from the git tag `act1-test-N` (newest
-  wins). It changes only when a new tag is cut.
+- **Test version**: `https://jyp107991.github.io/second-face/act1/` — built from the newest git tag `act1-test-N`
+  (currently `act1-test-1`, cut 2026-10-27). It changes only when a new tag is cut; the main build moves on underneath.
 - **Main build** (moves with every push): `https://jyp107991.github.io/second-face/`.
 - Saves are separate: the test version keeps its own slots (`sf.act1.save.*`), so playing one never touches the other.
 - Works in a current Chrome, Edge, Firefox or Safari on desktop; on a phone, tap to move, tap a person or thing for
@@ -36,3 +36,9 @@ Short notes are best, one line each, in whatever order they happen:
 - Acts 2+ are not in; the world map shows places you cannot enter yet.
 - Live AI dialogue is off (trees only).
 - Performance: a desktop GPU is assumed; on a phone set Quality to low in the menu.
+- Shale is a little over the mobile draw-call budget; the rest of the maps are inside it.
+- Combat has no hover card yet (the target's odds show in the radial menu); crowds do not step aside for you.
+
+## Dev console (if you want to poke)
+Add `?dev` to the URL: `game` and `SF` are on the window. `game.state` is the save state; `game.devApply([...])` runs
+dialogue effects (give/learn/set/quest). Saves are in your browser's local storage under `sf.act1.save.*`.

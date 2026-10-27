@@ -27,7 +27,8 @@ export class Actor {
   onArriveTile?: (x: number, y: number) => void;
   /** Footstep hook (audio). */
   onStep?: (x: number, y: number) => void;
-  onPathDone?: () => void;
+  /** Called when the path ends: `blocked` when another actor took the next tile (the walk did not arrive). */
+  onPathDone?: (blocked?: boolean) => void;
 
   constructor(opts: ActorOpts, private grid: Grid) {
     this.id = opts.id;
@@ -122,7 +123,7 @@ export class Actor {
       const occ = this.grid.occupied.get(ni);
       if (occ !== undefined && occ !== this.id) {
         this.path = [];
-        this.onPathDone?.();
+        this.onPathDone?.(true);
       } else {
         if (occ === undefined) {
           this.grid.occupied.delete(this.grid.index(this.tx, this.ty));

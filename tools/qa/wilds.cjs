@@ -116,7 +116,7 @@ const fs = require('fs');
   await page.waitForTimeout(6000);
   console.log('orchard npcs:', await page.evaluate(() => [...game.npcs.keys()].join(',')));
   check('the thieves are at the beds at night', await page.evaluate(() => game.npcs.has('npc_or_04') && game.npcs.has('npc_or_05')));
-  await page.evaluate(() => { game.player.place(34, 32); game.cam.recentre(); game.player.setPath(game.loc.grid.findPath(34, 32, 37, 32, { ignore: 'player', adjacentOk: false })); });
+  await page.evaluate(() => { game.player.place(34, 32); game.cam.recentre(); game.walkTo(37, 32); });
   await page.waitForFunction(() => !!document.querySelector('.dlg'), null, { timeout: 150000 }).catch(() => {});
   await page.waitForTimeout(800);
   console.log('thieves:', await dlg());
