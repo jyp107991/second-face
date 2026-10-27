@@ -86,7 +86,7 @@ cistern9 = {
         # hydroponics: two long beds of planters under grow lights
         *[{'kind': 'planter', 'x': x, 'y': 2} for x in range(27, 44, 2)],
         *[{'kind': 'planter', 'x': x, 'y': 7} for x in range(27, 44, 2)],
-        {'kind': 'tank', 'x': 44, 'y': 1}, {'kind': 'crate', 'x': 44, 'y': 8, 'id': 'hydro_crate'}, {'kind': 'table', 'x': 35, 'y': 5},
+        {'kind': 'tank', 'x': 44, 'y': 1}, {'kind': 'crate', 'x': 44, 'y': 8, 'id': 'hydro_crate'}, {'kind': 'locker', 'x': 44, 'y': 10, 'id': 'hydro_vault'}, {'kind': 'table', 'x': 35, 'y': 5},
         # clinic: the stranger on a cot, Pell's table, a shelf of bandages
         {'kind': 'cot', 'x': 3, 'y': 13, 'id': 'stranger_cot'}, {'kind': 'cot', 'x': 3, 'y': 17}, {'kind': 'table', 'x': 7, 'y': 15},
         {'kind': 'shelf', 'x': 10, 'y': 13, 'rot': 3, 'id': 'clinic_shelf'}, {'kind': 'chair', 'x': 6, 'y': 15, 'rot': 1}, {'kind': 'locker', 'x': 1, 'y': 18},
@@ -149,6 +149,7 @@ cistern9 = {
         'hall_crate': {'name': 'Drill Crate', 'items': [['j_scrap', 2], ['c_water', 1]]},
         'parts_shelf': {'name': 'Parts Shelf', 'items': [['j_wiring', 2], ['j_electronics', 1], ['t_repair', 1]], 'lock': 20},
         'hydro_crate': {'name': 'Seed Crate', 'items': [['c_algae', 3], ['j_electronics', 1]]},
+        'hydro_vault': {'name': 'Seed Vault', 'items': [['k_seed_case', 1]], 'lock': 45},
         'kitchen_crate': {'name': 'Ration Crate', 'items': [['c_algae', 4], ['c_water', 2], ['c_jerky', 1]]},
         'armoury_locker': {'name': 'Armoury Locker', 'items': [['w_zip38', 1], ['a_38', 14]], 'lock': 40},
         'armoury_locker2': {'name': 'Armoury Locker', 'items': [['w_pipe', 1], ['c_knitkit', 1]], 'lock': 25},

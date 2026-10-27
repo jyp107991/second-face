@@ -96,6 +96,7 @@ export const SHALE_NPCS: NpcDef[] = [
   },
   {
     id: 'npc_sh_14', name: 'Hesper Vale', look: { seed: 2114, frame: 'narrow', age: 40 }, role: 'settler', level: 1, ...SH, courage: 30,
+    dialogue: 'd_sh_hesper',
     schedule: [{ from: 7, to: 10, spot: 'wells_b', activity: 'work' }, { from: 10, to: 18, spot: 'street_w', activity: 'idle' }, { from: 18, to: 21, spot: 'saloon_table', activity: 'drink' }, home('home_c')],
     barks: ['Two cups a day. Two. For a family.', 'You from the salt cut? Nobody\'s from the salt cut.', 'The Choir girl fixed my boy\'s arm for nothing. Nothing. I don\'t trust it.'],
   },
@@ -116,5 +117,18 @@ export const SHALE_NPCS: NpcDef[] = [
     level: 7, ...SH, courage: 70, dialogue: 'd_sh_ilya', attrs: { senses: 8, reflex: 7, grit: 6, presence: 4 }, skills: { firearms: 70, survival: 45, melee: 30, stealth: 25 },
     equip: ['w_bolt308', 'r_duster'], inventory: [['a_308', 24], ['c_bitters', 2], ['c_jerky', 1]], tolls: 12,
     barks: ['Right.', 'Wind\'s from the east. Means nothing. Means everything.', 'Two hundred paces. The post was the point.', 'Seven. Eight. Right.'],
+  },
+  // The Choir tent's three cots (q_a1_tents): a dust-lung, a broken arm, a fever.
+  {
+    id: 'npc_sh_20', name: 'Old Teodor', look: { seed: 2120, frame: 'narrow', age: 71, over: { hair: { style: 'none', color: 0x3a3030 }, facialHair: 'full_beard' } }, role: 'settler', level: 1, ...SH, courage: 10,
+    dialogue: 'd_sh_tent_a', attrs: { grit: 3 }, schedule: [{ from: 0, to: 24, spot: 'cot_a_sit', activity: 'idle' }], barks: ['Don\'t fuss.', 'Forty years of dust.'],
+  },
+  {
+    id: 'npc_sh_21', name: 'Pip', look: { seed: 2121, frame: 'narrow', age: 15, over: { hair: { style: 'cut_messy', color: 0x3a2a1a } } }, role: 'settler', level: 1, ...SH, courage: 30,
+    dialogue: 'd_sh_tent_b', attrs: { reflex: 6 }, schedule: [{ from: 0, to: 24, spot: 'cot_b_sit', activity: 'idle' }], barks: ['It\'s fine. Calla did it.', 'I fell off the deck. That\'s all.'],
+  },
+  {
+    id: 'npc_sh_22', name: 'Abel Marsh', look: { seed: 2122, frame: 'broad', age: 38, ancestry: 'west_african', over: { hair: { style: 'cut_crop', color: 0x1a1410 } } }, role: 'labourer', level: 2, ...SH, courage: 35,
+    dialogue: 'd_sh_tent_c', attrs: { brawn: 7 }, schedule: [{ from: 0, to: 24, spot: 'cot_c_sit', activity: 'idle' }], barks: ['Kit? The rope.', 'Sorry. Thought you were —'],
   },
 ];

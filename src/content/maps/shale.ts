@@ -1210,6 +1210,18 @@ export const shale: MapDef = {
       x: 15,
       y: 39
     },
+    cot_a_sit: {
+      x: 11,
+      y: 36
+    },
+    cot_b_sit: {
+      x: 14,
+      y: 36
+    },
+    cot_c_sit: {
+      x: 12,
+      y: 38
+    },
     mender: {
       x: 57,
       y: 17
@@ -1372,6 +1384,29 @@ export const shale: MapDef = {
       x: 57,
       y: 34,
       facing: 0
+    },
+    {
+      def: "npc_sh_20",
+      x: 11,
+      y: 36,
+      facing: 2
+    },
+    {
+      def: "npc_sh_21",
+      x: 14,
+      y: 36,
+      facing: 2,
+      if: {
+        not: {
+          knows: "pip_reported"
+        }
+      }
+    },
+    {
+      def: "npc_sh_22",
+      x: 12,
+      y: 38,
+      facing: 2
     },
     {
       def: "npc_sh_14",

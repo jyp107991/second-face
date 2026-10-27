@@ -359,3 +359,105 @@ export const q_a1_escort: QuestDef = {
     },
   },
 };
+
+/** Factor Pike will pay anything for viable seed, and will not say for whom. */
+export const q_a1_seed: QuestDef = {
+  id: 'q_a1_seed', title: 'Seed at Any Price', act: 'a1', start: 'fetch', xp: 200,
+  routes: [
+    { id: 'sell', kind: 'barter', label: 'Sell the Cistern\'s seed to the guild' },
+    { id: 'give', kind: 'talk', label: 'Put it under the open sky with the Choir' },
+  ],
+  stages: {
+    fetch: {
+      journal: 'Factor Pike buys viable seed at absurd prices, in advance, for a client east of the Teeth he will not name. Cistern 9 kept a seed bank for ninety years; the Elder keeps its key. The guild would pay a great deal. The Choir would plant it.',
+      objectives: [{ id: 'case', text: 'Get a case of viable seed from the Cistern', done: { item: 'k_seed_case' } }],
+      next: [{ if: { item: 'k_seed_case' }, stage: 'deliver' }],
+    },
+    deliver: {
+      journal: 'The case is cold in your pack. Pike at the Tollmen post pays in Tolls and standing; Sister Calla or Brother Anselm would put it in the ground.',
+      objectives: [
+        { id: 'sell', text: 'Sell it to Factor Pike', done: { knows: 'seed_sold_pike' }, optional: true },
+        { id: 'give', text: 'Give it to the Choir', done: { knows: 'seed_given_choir' }, optional: true },
+      ],
+      next: [{ if: { knows: 'seed_sold_pike' }, stage: 'sold' }, { if: { knows: 'seed_given_choir' }, stage: 'given' }],
+    },
+    sold: { journal: 'The guild has the Cistern\'s seed, and a client east of the Teeth will have it after them. The Tolls were real. So was the look on Calla\'s face when she heard.', end: 'done' },
+    given: { journal: 'The Cistern\'s seed is in the Choir\'s beds under the open sky. Pike heard, and wrote something in a ledger. Anselm says the first beans in a fortnight.', end: 'done' },
+  },
+};
+
+/** Three on cots and one of her. */
+export const q_a1_tents: QuestDef = {
+  id: 'q_a1_tents', title: 'The Choir Tent', act: 'a1', start: 'tend', xp: 150,
+  routes: [{ id: 'tend', kind: 'medicine', label: 'See to the sick in the mission tent' }],
+  stages: {
+    tend: {
+      journal: 'Sister Calla has three on cots and one of her: a dust-lung, a broken arm, a fever. She will take any pair of hands that can hold a cup steady.',
+      objectives: [
+        { id: 'a', text: 'See to the old man with the dust-lung', done: { knows: 'tent_a_done' } },
+        { id: 'b', text: 'See to the girl with the broken arm', done: { knows: 'tent_b_done' } },
+        { id: 'c', text: 'See to the man with the fever', done: { knows: 'tent_c_done' } },
+      ],
+      next: [{ if: { all: [{ knows: 'tent_a_done' }, { knows: 'tent_b_done' }, { knows: 'tent_c_done' }] }, stage: 'tended' }],
+    },
+    tended: {
+      journal: 'Three seen to. Calla will want to say something about it; she usually does.',
+      objectives: [{ id: 'calla', text: 'Tell Sister Calla', done: { knows: 'tents_thanked' } }],
+      next: [{ if: { knows: 'tents_thanked' }, stage: 'done_stage' }],
+    },
+    done_stage: { journal: 'The Choir calls you a lay healer now, which Calla says is a way of saying they trust your hands. What you did about the girl is between you and the sky.', end: 'done' },
+  },
+};
+
+/** Mags wants her books looked at by someone who can read numbers. */
+export const q_a1_books: QuestDef = {
+  id: 'q_a1_books', title: 'Mags\'s Ledger', act: 'a1', start: 'audit', xp: 180,
+  routes: [
+    { id: 'expose', kind: 'talk', label: 'Tell the sheriff who owns the saloon' },
+    { id: 'squeeze', kind: 'talk', label: 'Make silence worth something' },
+    { id: 'help', kind: 'barter', label: 'Make the books balance for her' },
+  ],
+  stages: {
+    audit: {
+      journal: 'Mags has handed you two ledgers and a night\'s room for reading them. She says it is to catch a thieving barman. Read them.',
+      objectives: [{ id: 'read', text: 'Read the Dry Well\'s books', done: { any: [{ knows: 'mags_cooked' }, { knows: 'mags_books_clean' }] } }],
+      next: [{ if: { knows: 'mags_cooked' }, stage: 'decide' }, { if: { knows: 'mags_books_clean' }, stage: 'clean' }],
+    },
+    decide: {
+      journal: 'The second ledger\'s margins are in a guild hand. The Dry Well is held against a Tollmen loan Mags cannot pay, and the buyout is signed: on paper the saloon is Pike\'s, and the town does not know. She wants it to stay that way.',
+      objectives: [
+        { id: 'expose', text: 'Tell Sheriff Vey', done: { knows: 'mags_exposed' }, optional: true },
+        { id: 'squeeze', text: 'Name a price for silence', done: { knows: 'mags_squeezed' }, optional: true },
+        { id: 'help', text: 'Make the books balance', done: { knows: 'mags_helped' }, optional: true },
+      ],
+      next: [{ if: { knows: 'mags_exposed' }, stage: 'exposed' }, { if: { knows: 'mags_squeezed' }, stage: 'squeezed' }, { if: { knows: 'mags_helped' }, stage: 'helped' }],
+    },
+    clean: { journal: 'Two ledgers, water in and water out. If there is a thief, it is not in the numbers. Mags paid you twenty and looked relieved about the wrong thing.', end: 'done' },
+    exposed: { journal: 'Shale knows the Dry Well is guild property. Mags will not pour for you again. Ada says the town needed to know and does not look as if she enjoyed it.', end: 'done' },
+    squeezed: { journal: 'A hundred and fifty Tolls, and Mags\'s silence bought with hers. She remembers it every time she sees you.', end: 'done' },
+    helped: { journal: 'The books balance now, in a way that will survive a guild clerk\'s lamp. The room upstairs is yours for nothing, for as long as there is a Dry Well.', end: 'done' },
+  },
+};
+
+/** A letter from a man who has not been outside in ninety years, to a woman in Shale. */
+export const q_a1_bram: QuestDef = {
+  id: 'q_a1_bram', title: 'A Letter for Bram', act: 'a1', start: 'carry', xp: 120,
+  routes: [
+    { id: 'truth', kind: 'talk', label: 'Carry back the truth' },
+    { id: 'kind', kind: 'talk', label: 'Carry back a kindness' },
+  ],
+  stages: {
+    carry: {
+      journal: 'Bram gave you a letter sealed with machine grease, for a woman called Edda Vale in Shale. He asked you not to read it. He did not say how he knows her.',
+      objectives: [{ id: 'find', text: 'Find Edda Vale in Shale', done: { knows: 'edda_found' } }],
+      next: [{ if: { knows: 'edda_found' }, stage: 'answer' }],
+    },
+    answer: {
+      journal: 'Edda Vale has been under the salt six years. Her daughter Hesper read the letter and went quiet for a long time. Something has to go back to the Cistern.',
+      objectives: [{ id: 'back', text: 'Take an answer back to Bram', done: { any: [{ knows: 'bram_answered_truth' }, { knows: 'bram_answered_kind' }, { knows: 'bram_answered_told' }] } }],
+      next: [{ if: { knows: 'bram_answered_kind' }, stage: 'kind' }, { if: { any: [{ knows: 'bram_answered_truth' }, { knows: 'bram_answered_told' }] }, stage: 'truth' }],
+    },
+    truth: { journal: 'Bram knows. He thanked you, which was worse than if he had not.', end: 'done' },
+    kind: { journal: 'Bram has a letter from Edda Vale that Edda Vale did not write. He reads it at the machine when he thinks nobody is looking. He is happier than he was. You will have to live with the rest.', end: 'done' },
+  },
+};

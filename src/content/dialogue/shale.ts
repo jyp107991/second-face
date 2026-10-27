@@ -23,6 +23,26 @@ export const d_sh_mags: DialogueDef = {
       effects: [{ set: 'mags_told_teo' }, { give: 'tolls', count: 30 }, { trust: { npc: 'npc_sh_03', by: 25 } }, { set: 'shale_room' }, { news: { tag: 'teo_home', text: 'Teo Marsh is back behind the bar at the Dry Well', valence: 15, size: 5, at: 'shale' } }, { xp: 40 }],
       options: [{ text: 'I won\'t.', next: 'menu' }],
     },
+    books: {
+      text: 'She looks at the bar for a while before she answers, which for Mags is a year. "Somebody\'s skimming. Barman, I think; the water doesn\'t add up. You read numbers? You look like you read numbers." Two ledgers tied with a bootlace come up from under the bar. "Read them. Night\'s room and twenty for your trouble. Don\'t show them to anyone, love. They\'re mine."',
+      effects: [{ give: 'k_mags_books' }, { quest: 'q_a1_books', start: true }, { set: 'shale_room' }, { learn: 'shale_room' }],
+      options: [{ text: 'I\'ll read them.', exit: true }],
+    },
+    books_clean: { text: '"No?" Something goes out of her shoulders that was not about a barman. "Well. Good." Twenty Tolls on the bar. "Keep the room tonight."', effects: [{ take: 'k_mags_books' }, { give: 'tolls', count: 20 }, { trust: { npc: 'npc_sh_03', by: 3 } }], options: [{ text: 'Thanks.', next: 'menu' }] },
+    books_back: {
+      text: 'You put the second ledger on the bar open at the signed page and she does not look at it, because she knows the page. "Right." Very quietly. "Right. Pike lent against the deed when the pumps went dry the second year. I\'ve been paying it back out of water money and losing. He bought the rest two months ago. On paper it\'s his. The town doesn\'t know, because the day they know, this is a guild saloon and they\'ll drink somewhere there isn\'t one." She looks at you then. "What do you want, love?"',
+      options: [
+        { id: 'mags.expose', text: 'The town should know who they\'re drinking under.', next: 'expose_warn' },
+        { id: 'mags.squeeze', text: 'A hundred and fifty, and I never read the second book.', check: { skill: 'speech', dc: 40 }, next: 'squeezed', fail: 'squeeze_no' },
+        { id: 'mags.help', text: 'I can make these balance so a guild clerk\'s lamp won\'t find it.', check: { skill: 'barter', dc: 40, mods: [{ if: { knows: 'mags_hidden' }, dc: -10, why: 'you saw how she hid it; you can hide it better' }] }, next: 'helped', fail: 'help_no' },
+        { text: 'Let me think.', exit: true },
+      ],
+    },
+    expose_warn: { text: '"Then tell Ada." She takes the books back. "And when you want a drink in this town, go to the Choir for water and the Dogs for the rest." No anger in it. That is the worst of it.', effects: [{ take: 'k_mags_books' }, { learn: 'mags_warned' }], options: [{ text: '(Leave.)', exit: true }] },
+    squeezed: { text: 'She counts it out without looking at you. A hundred and fifty, from the water tin. "There. Paid." She takes the books. "Don\'t come back for seconds. I\'d sooner tell Ada myself."', effects: [{ take: 'k_mags_books' }, { give: 'tolls', count: 150 }, { learn: 'mags_squeezed' }, { trust: { npc: 'npc_sh_03', by: -25 } }, { memory: { npc: 'npc_sh_03', tag: 'squeezed', valence: -1, strength: 3 } }, { decision: { id: 'mags_squeezed', text: 'You sold Mags her own silence for 150 Tolls.' } }], options: [{ text: '(Leave.)', exit: true }] },
+    squeeze_no: { text: '"No." She takes the books. "Tell Ada, then. Go on." She waits. You don\'t.', options: [{ id: 'mags.help2', text: 'Or I make them balance.', check: { skill: 'barter', dc: 40 }, next: 'helped', fail: 'help_no' }, { text: 'Let me think.', exit: true }] },
+    helped: { text: 'Two hours with the lamp and a pencil, moving water from a column where it shows to a column where it doesn\'t, until the second book says what the first book says and both of them say it to a guild clerk. She watches the whole time. "That\'ll hold." Then: "The room\'s yours. Not tonight. Always."', effects: [{ take: 'k_mags_books' }, { time: 120 }, { learn: 'mags_helped' }, { set: 'shale_room' }, { learn: 'mags_room_free' }, { trust: { npc: 'npc_sh_03', by: 15 } }, { memory: { npc: 'npc_sh_03', tag: 'helped', valence: 1, strength: 3 } }, { decision: { id: 'mags_helped', text: 'You hid the Dry Well\'s buyout for Mags.' } }], options: [{ text: 'Always, then.', next: 'menu' }] },
+    help_no: { text: 'You try, and an hour in you have made it worse, and she takes the pencil out of your hand very gently. "Leave it. Leave it, love." She pours. "Just don\'t tell anyone."', effects: [{ take: 'k_mags_books' }, { time: 60 }, { learn: 'mags_help_failed' }], options: [{ id: 'mags.expose2', text: 'The town should know.', next: 'expose_warn' }, { text: 'I won\'t.', effects: [{ learn: 'mags_helped' }, { trust: { npc: 'npc_sh_03', by: 5 } }], exit: true }] },
     menu: {
       text: 'Drink\'s on the house — the first one. Water\'s two. The back room\'s ten a night, and nobody\'ll touch your things because nobody wants to find out what I\'d do. And there\'s always a game on.',
       options: [
@@ -32,6 +52,9 @@ export const d_sh_mags: DialogueDef = {
         { id: 'mags.dust', text: 'A game of Dust. (5 Tolls)', if: { item: 'tolls', count: 5 }, effects: [{ event: 'dust', data: { stake: 5 } }], exit: true },
         { id: 'mags.trade', text: 'Let me see what you\'re selling.', effects: [{ event: 'barter' }], exit: true },
         { id: 'mags.town', text: 'Tell me about Shale.', next: 'town' },
+        { id: 'mags.books', text: 'You look like someone with a problem.', if: { all: [{ quest: 'q_a1_books', status: 'none' }, { any: [{ flag: 'shale_room' }, { flag: 'teo_freed' }, { trust: { npc: 'npc_sh_03', gte: 5 } }] }] }, next: 'books' },
+        { id: 'mags.books.cooked', text: 'About your books.', if: { all: [{ quest: 'q_a1_books', stage: 'decide' }, { knows: 'mags_cooked' }] }, next: 'books_back' },
+        { id: 'mags.books.clean', text: 'Your books. There\'s no thief in them.', if: { all: [{ item: 'k_mags_books' }, { knows: 'mags_books_clean' }] }, next: 'books_clean' },
         { id: 'mags.teo', text: 'Who\'s Teo?', if: { any: [{ knows: 'mags_teo' }, { seen: 'mags.town' }] }, next: 'teo', once: true },
         { id: 'mags.stranger', text: 'A tall old man, hurt, in a long coat. Three weeks back. Did he drink here?', if: { quest: 'q_ch1_shale' }, next: 'stranger', once: true },
         bye,
@@ -145,6 +168,8 @@ export const d_sh_ada: DialogueDef = {
       options: [
         { id: 'ada.cut', text: 'The salt cut. Cistern 9. A man died at our door and I\'m finding out who he was.', next: 'cut' },
         { id: 'ada.lie', text: 'Passing through.', check: { skill: 'speech', dc: 40 }, next: 'lie_ok', fail: 'lie_no' },
+        { id: 'ada.pip', text: 'There\'s a Rust Dog child in the Choir tent.', if: { all: [{ knows: 'pip_is_dog' }, { not: { knows: 'pip_reported' } }] }, next: 'pip' },
+        { id: 'ada.books', text: 'The Dry Well is Pike\'s. Mags signed it over two months ago.', if: { all: [{ knows: 'mags_cooked' }, { not: { knows: 'mags_exposed' } }, { not: { knows: 'mags_helped' } }, { not: { knows: 'mags_squeezed' } }] }, next: 'books' },
         { id: 'ada.dogs', text: 'What if I said the Dogs?', next: 'dogs' },
       ],
     },
@@ -192,6 +217,20 @@ export const d_sh_ada: DialogueDef = {
       text: '"A month and a day." She has counted; she pretends she hasn\'t. "Something changed its mind about my deputy, and I don\'t know what, and I don\'t like not knowing." She looks at you, properly. "But I know who was in town." A pause. "Pike came by with a rate card for protection last week. I threw him out. I\'d like you to know that was easier than it should have been."',
       effects: [{ trust: { npc: 'npc_sh_01', by: 15 } }, { rep: { faction: 'shale_militia', respect: 10 } }, { learn: 'ada_threw_pike_out' }],
       options: [{ text: 'Noted.', exit: true }],
+    },
+    pip: {
+      text: '"I know." She does not stop writing. "Fifteen, broken arm, fell off the deck when the Dogs had their last fight about who runs it. Calla took her in and asked me not to look, so I didn\'t." Now she looks at you. "You want me to look?"',
+      options: [
+        { id: 'ada.pip.yes', text: 'She\'s a Dog. Kessler will come for her, or use her.', next: 'pip_taken' },
+        { id: 'ada.pip.no', text: 'No. I wanted you to know I knew.', effects: [{ learn: 'pip_kept' }, { trust: { npc: 'npc_sh_01', by: 2 } }], next: 'pip_left' },
+      ],
+    },
+    pip_taken: { text: '"Then she goes in the cell till the Dogs send for her, and the Choir doesn\'t speak to either of us for a season." She stands. "You\'re right that Kessler would use her. That\'s not the same as this being right."', effects: [{ learn: 'pip_reported' }, { rep: { faction: 'shale_militia', respect: 5 } }, { rep: { faction: 'choir', respect: -10 } }, { trust: { npc: 'npc_sh_05', by: -12 } }, { decision: { id: 'pip_reported', text: 'You had the sheriff take a Rust Dog child out of the Choir tent.' } }, { news: { tag: 'pip_taken', text: 'The sheriff took a girl out of the Choir tent.', valence: -1, at: 'shale' } }], options: [{ text: 'No.', exit: true }] },
+    pip_left: { text: '"Good." Back to writing. "Then we both know, and the girl keeps her arm."', options: [{ text: 'Yes.', exit: true }] },
+    books: {
+      text: 'She stops writing. "Say that again." You do. She sits with it the way she sits with everything, which is still. "Then Shale\'s only bar is a guild bar, and the water in it is guild water at guild prices the day Pike wants it to be." She stands. "The town needs to know that. Mags will never forgive you, and neither will I, quite, and it still needs doing."',
+      effects: [{ learn: 'mags_exposed' }, { trust: { npc: 'npc_sh_03', by: -40 } }, { memory: { npc: 'npc_sh_03', tag: 'exposed', valence: -1, strength: 3 } }, { rep: { faction: 'tollmen', respect: -3 } }, { news: { tag: 'drywell_guild', text: 'The Dry Well is guild property; Mags signed it over.', valence: -1, size: 2, at: 'shale' } }, { decision: { id: 'mags_exposed', text: 'You told the sheriff the Dry Well belongs to the guild.' } }],
+      options: [{ text: 'It needed doing.', exit: true }],
     },
     ledger_page: {
       text: 'She reads it twice, and the second time her lips move on the name. "Post nine-west." She folds it into her shirt, not her pocket. "He sells us water. He stands in my street." A breath. "This stays with me. If I use it, it\'ll be when it costs him more than it costs Shale, and I don\'t know when that is yet."',
@@ -336,7 +375,7 @@ export const d_sh_pike: DialogueDef = {
       passives: [{ attr: 'wits', dc: 8, text: 'A list on the wall behind him: SEED — ANY VARIETY — ANY QUANTITY — PAID IN TOLLS OR SCRIP. The prices are absurd.', effects: [{ learn: 'pike_buys_seed' }] }],
       options: [{ text: 'Let\'s see the stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed', text: 'You\'re buying seed.', if: { knows: 'pike_buys_seed' }, next: 'seed', once: true }, { id: 'pike.who', text: 'Who are the Tollmen?', next: 'who', once: true }, { id: 'pike.stranger', text: 'An old man came through three weeks ago, hurt. You spoke with him.', if: { quest: 'q_ch1_shale' }, next: 'stranger', once: true }, bye],
     },
-    again: { text: 'As per. Stock, or something else?', options: [{ text: 'Stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed.again', text: 'About the seed.', if: { all: [{ knows: 'pike_buys_seed' }, { not: { seen: 'pike.seed' } }] }, next: 'seed' }, { id: 'pike.stranger.again', text: 'About the old man.', if: { all: [{ quest: 'q_ch1_shale' }, { not: { seen: 'pike.stranger' } }] }, next: 'stranger' }, { id: 'pike.key', text: 'Do the Tollmen read this hand?', if: { all: [{ item: 'k_map' }, { not: { item: 'k_cipher_key' } }] }, next: 'key' }, { id: 'pike.ledger', text: '(Put the Tollhouse ledger page on the counter.)', if: { item: 'k_ledger_page' }, next: 'ledger_page' }, { id: 'pike.station', text: 'The console at Dry Wells. The guild would pay to hold what it holds.', if: { all: [{ flag: 'dw_console_seen' }, { not: { flag: 'dw_outcome' } }] }, next: 'station' }, { id: 'pike.controller', text: '(Put the grey slab from the pan on the counter.)', if: { all: [{ item: 'k_hound_controller' }, { not: { flag: 'hound_outcome' } }] }, next: 'controller' }, bye] },
+    again: { text: 'As per. Stock, or something else?', options: [{ id: 'pike.seed.sell', text: '(Put the seed case on the counter.)', if: { all: [{ item: 'k_seed_case' }, { quest: 'q_a1_seed', status: 'active' }] }, next: 'seed_sell' }, { text: 'Stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed.again', text: 'About the seed.', if: { all: [{ knows: 'pike_buys_seed' }, { not: { seen: 'pike.seed' } }] }, next: 'seed' }, { id: 'pike.stranger.again', text: 'About the old man.', if: { all: [{ quest: 'q_ch1_shale' }, { not: { seen: 'pike.stranger' } }] }, next: 'stranger' }, { id: 'pike.key', text: 'Do the Tollmen read this hand?', if: { all: [{ item: 'k_map' }, { not: { item: 'k_cipher_key' } }] }, next: 'key' }, { id: 'pike.ledger', text: '(Put the Tollhouse ledger page on the counter.)', if: { item: 'k_ledger_page' }, next: 'ledger_page' }, { id: 'pike.station', text: 'The console at Dry Wells. The guild would pay to hold what it holds.', if: { all: [{ flag: 'dw_console_seen' }, { not: { flag: 'dw_outcome' } }] }, next: 'station' }, { id: 'pike.controller', text: '(Put the grey slab from the pan on the counter.)', if: { all: [{ item: 'k_hound_controller' }, { not: { flag: 'hound_outcome' } }] }, next: 'controller' }, bye] },
     station: {
       text: '"Post nine-west has known about DW-4 for eleven years, and been unable to get a man past the rifle." He does not blink. "One hundred and fifty Tolls. A guild engineer walks in behind you, and Shale\'s water is sold by the measure, as per: reliably. There is a word for what Shale has now, and it is not reliable."',
       options: [
@@ -389,10 +428,16 @@ export const d_sh_pike: DialogueDef = {
     seed: {
       text: '"Any variety. Any quantity. Viable, which I test." He does not explain who wants it. "You came from the salt cut, I\'m told. A shelter like that keeps a seed bank, or it wouldn\'t have lasted the first winter. I would pay very well. I would pay in advance."',
       effects: [{ learn: 'pike_seed_offer' }, { lead: 'l_seed_buyer' }],
-      options: [{ text: 'I\'ll think about it.', next: 'intro' }, { id: 'pike.seed.who', text: 'Who\'s it for?', check: { skill: 'speech', dc: 50 }, next: 'seed_who', fail: 'seed_who_no', once: true }],
+      options: [{ id: 'pike.seed.get', text: 'The Cistern kept a bank. I could ask.', if: { quest: 'q_a1_seed', status: 'none' }, effects: [{ quest: 'q_a1_seed', start: true }], next: 'seed_get' }, { text: 'I\'ll think about it.', next: 'intro' }, { id: 'pike.seed.who', text: 'Who\'s it for?', check: { skill: 'speech', dc: 50 }, next: 'seed_who', fail: 'seed_who_no', once: true }],
     },
     seed_who: { text: '"A client east of the Teeth with a great deal of glass and not enough green under it." He stops, surprised at himself, and his face closes like a ledger. "Rates are posted."', effects: [{ learn: 'seed_client_east' }], options: [{ text: 'Noted.', next: 'intro' }] },
     seed_who_no: { text: '"A client. As per." The ledger closes.', options: [{ text: 'Fine.', next: 'intro' }] },
+    seed_get: { text: '"Then ask." He writes a figure on a slip and turns it to face you: more than the saloon takes in a month. "Viable. Sealed. I test it here. Bring it to this counter and the guild will remember your name, which is worth more than the figure."', options: [{ text: 'I\'ll see what the Elder says.', next: 'intro' }] },
+    seed_sell: {
+      text: 'He does not open the case here. He weighs it, reads the label twice, and sets it under the counter the way other men set down a loaded gun. "Viable." The Tolls come out in a stack that has been counted in advance. "The guild remembers. As per."',
+      effects: [{ take: 'k_seed_case' }, { give: 'tolls', count: 250 }, { rep: { faction: 'tollmen', respect: 10 } }, { enlist: 'tollmen', rank: 'ticket' }, { learn: 'seed_sold_pike' }, { news: { tag: 'seed_sold', text: 'The Cistern\'s seed went east with the guild.', valence: -1, at: 'shale' } }, { decision: { id: 'seed_sold', text: 'You sold the Cistern\'s seed to the Tollmen.' } }],
+      options: [{ text: 'As per.', next: 'intro' }],
+    },
   },
 };
 
@@ -411,6 +456,9 @@ export const d_sh_calla: DialogueDef = {
       text: 'Ask.',
       options: [
         { id: 'calla.heal', text: 'Patch me up.', if: { not: { flag: 'calla_healed_today' } }, next: 'heal' },
+        { id: 'calla.help', text: 'You\'ve three on cots and one of you. Let me help.', if: { quest: 'q_a1_tents', status: 'none' }, effects: [{ quest: 'q_a1_tents', start: true }], next: 'help' },
+        { id: 'calla.tents', text: 'The three are seen to.', if: { quest: 'q_a1_tents', stage: 'tended' }, next: 'tents_done' },
+        { id: 'calla.seed', text: '(Give her the Cistern\'s seed case.)', if: { all: [{ item: 'k_seed_case' }, { quest: 'q_a1_seed', status: 'active' }] }, next: 'seed_given' },
         { id: 'calla.trade', text: 'Supplies.', effects: [{ event: 'barter' }], exit: true },
         { id: 'calla.choir', text: 'What is the Choir?', next: 'choir', once: true },
         { id: 'calla.orchard', text: 'The trees north of town, with leaves on. Yours?', next: 'orchard', once: true },
@@ -418,6 +466,21 @@ export const d_sh_calla: DialogueDef = {
         { id: 'calla.sigil', text: 'That sign on the pole. I\'ve seen it on a dead man\'s things.', if: { all: [{ knows: 'calla_sigil' }, { knows: 'sigil_seen' }] }, next: 'sigil', once: true },
         bye,
       ],
+    },
+    help: { text: '"Would you." It is not a question; she is already pointing. "The old man can\'t breathe, the girl\'s arm needs the board checked, and Abel\'s burning. Water\'s in the crate. Don\'t be clever; be slow."', options: [{ text: 'Slow it is.', next: 'menu' }] },
+    tents_done: {
+      text: [
+        { if: { knows: 'pip_reported' }, text: '"Seen to." She does not look up from what she is doing. "And the girl is in the sheriff\'s cell, so one of the three is seen to twice." She finishes the knot. "The Choir says lay healer. The Choir is kinder than I am."' },
+        { if: { knows: 'pip_kept' }, text: '"Seen to." She looks at you properly for the first time. "All three. And you looked at Pip\'s arm and saw an arm." She puts a grey scarf in your hands. "Lay healer. It means the sky trusts your hands, and so do I."' },
+        { text: '"Seen to." She puts a grey scarf in your hands. "Lay healer. It means the sky trusts your hands. Try to deserve it."' },
+      ],
+      effects: [{ learn: 'tents_thanked' }, { enlist: 'choir', rank: 'lay' }, { rep: { faction: 'choir', respect: 8 } }, { trust: { npc: 'npc_sh_05', by: 8 } }],
+      options: [{ text: 'I\'ll try.', next: 'menu' }],
+    },
+    seed_given: {
+      text: 'She takes the case in both hands and does not say anything for a while. "Ninety years." She reads the label. "Tomato." A laugh that is nearly something else. "Anselm will plant it tomorrow. Pike will hear by tonight. Let him." She touches the tent-pole where the sign is. "Under the sky. Thank you."',
+      effects: [{ take: 'k_seed_case' }, { rep: { faction: 'choir', respect: 12 } }, { enlist: 'choir', rank: 'lay' }, { trust: { npc: 'npc_sh_05', by: 10 } }, { learn: 'seed_given_choir' }, { rep: { faction: 'tollmen', respect: -4 } }, { news: { tag: 'seed_choir', text: 'The Cistern\'s seed went into the Choir\'s beds.', valence: 1, at: 'shale' } }, { decision: { id: 'seed_given', text: 'You gave the Cistern\'s seed to the Choir.' } }],
+      options: [{ text: 'Under the sky.', next: 'menu' }],
     },
     heal: {
       text: 'She works fast and talks while she does it, which you suspect is the point. Clean water, a needle, something that stings.',

@@ -269,6 +269,12 @@ export const cistern9: MapDef = {
       id: "hydro_crate"
     },
     {
+      kind: "locker",
+      x: 44,
+      y: 10,
+      id: "hydro_vault"
+    },
+    {
       kind: "table",
       x: 35,
       y: 5
@@ -917,6 +923,16 @@ export const cistern9: MapDef = {
           1
         ]
       ]
+    },
+    hydro_vault: {
+      name: "Seed Vault",
+      items: [
+        [
+          "k_seed_case",
+          1
+        ]
+      ],
+      lock: 45
     },
     kitchen_crate: {
       name: "Ration Crate",

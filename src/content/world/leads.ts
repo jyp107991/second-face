@@ -22,6 +22,7 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_pump_manual_hand', label: 'Manual in city print', text: 'The unreadable half of the pump manual is the same print as MOTHER\'s crates: SUPPLY — NETWORK 4.' },
   { id: 'l_pressure_shale', label: 'Shale\'s pressure', text: 'Shale\'s pump pressure is as constant as the Cistern\'s. Both are fed from the same somewhere.' },
   { id: 'l_seed_buyer', label: 'Seed at any price', text: 'Factor Pike buys viable seed at absurd prices, in advance, for a client he will not name.' },
+  { id: 'l_mags_buyout', label: 'Who owns the Dry Well', text: 'On paper the Dry Well saloon is Factor Pike\'s: a guild loan against the deed, and a signed buyout Mags is hiding from the town.' },
   { id: 'l_sigil_shale', label: 'Sign at the mission', text: 'The stranger\'s half-sun sign is painted on the Choir tent-pole in Shale.' },
   { id: 'l_larkspur_calla', label: 'Calla knew the word', text: 'Sister Calla knew the dead man\'s word, and said a man at Openfield would know more.' },
   { id: 'l_hollis_city', label: 'The boards', text: 'Hollis Crane lived in a city with screens that showed who paid, who owed, and who was next.' },

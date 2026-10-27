@@ -184,7 +184,7 @@ shale = {
         'bar': {'x': 12, 'y': 14}, 'bar_hand': {'x': 14, 'y': 14}, 'saloon_table': {'x': 16, 'y': 18}, 'dust': {'x': 18, 'y': 16}, 'awning': {'x': 6, 'y': 23},
         'sheriff_desk': {'x': 45, 'y': 16}, 'deputy': {'x': 43, 'y': 18}, 'corporal': {'x': 47, 'y': 14}, 'yard': {'x': 40, 'y': 7}, 'yard_b': {'x': 41, 'y': 8},
         'toll_counter': {'x': 46, 'y': 33}, 'toll_desk': {'x': 47, 'y': 34},
-        'mission': {'x': 13, 'y': 35}, 'mission_cot': {'x': 11, 'y': 36}, 'mission_fire': {'x': 15, 'y': 39},
+        'mission': {'x': 13, 'y': 35}, 'mission_cot': {'x': 11, 'y': 36}, 'mission_fire': {'x': 15, 'y': 39}, 'cot_a_sit': {'x': 11, 'y': 36}, 'cot_b_sit': {'x': 14, 'y': 36}, 'cot_c_sit': {'x': 12, 'y': 38},
         'mender': {'x': 57, 'y': 17}, 'mender_cot': {'x': 59, 'y': 19},
         'pump_house': {'x': 26, 'y': 9}, 'wells': {'x': 30, 'y': 20}, 'wells_b': {'x': 34, 'y': 21}, 'plaza': {'x': 36, 'y': 19},
         'caravan': {'x': 57, 'y': 34}, 'caravan_b': {'x': 59, 'y': 32},
@@ -197,6 +197,8 @@ shale = {
         {'def': 'npc_sh_03', 'x': 12, 'y': 14, 'facing': 2}, {'def': 'npc_sh_10', 'x': 14, 'y': 14, 'facing': 2}, {'def': 'npc_sh_06', 'x': 6, 'y': 23, 'facing': 1},
         {'def': 'npc_sh_04', 'x': 46, 'y': 33, 'facing': 0}, {'def': 'npc_sh_05', 'x': 13, 'y': 35, 'facing': 2}, {'def': 'npc_sh_08', 'x': 57, 'y': 17, 'facing': 2},
         {'def': 'npc_sh_09', 'x': 26, 'y': 9, 'facing': 2}, {'def': 'npc_sh_12', 'x': 30, 'y': 20, 'facing': 1}, {'def': 'npc_sh_13', 'x': 57, 'y': 34, 'facing': 0},
+        # the Choir tent's cots (q_a1_tents): they stay on them until seen to; the girl is gone if reported
+        {'def': 'npc_sh_20', 'x': 11, 'y': 36, 'facing': 2}, {'def': 'npc_sh_21', 'x': 14, 'y': 36, 'facing': 2, 'if': {'not': {'knows': 'pip_reported'}}}, {'def': 'npc_sh_22', 'x': 12, 'y': 38, 'facing': 2},
         {'def': 'npc_sh_14', 'x': 12, 'y': 25, 'facing': 1}, {'def': 'npc_sh_07', 'x': 16, 'y': 18, 'facing': 0, 'if': {'flag': 'teo_freed'}},
         {'def': 'npc_sh_17', 'x': 43, 'y': 6, 'facing': 2, 'if': {'all': [{'flag': 'drills_started'}, {'not': {'flag': 'ilya_gone'}}, {'not': {'flag': 'ilya_recruited'}}]}},
         {'def': 'npc_rd_02', 'id': 'tribute_vasha', 'x': 32, 'y': 22, 'facing': 2, 'dialogue': 'd_tribute', 'schedule': [], 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}]}},

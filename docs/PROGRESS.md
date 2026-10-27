@@ -278,8 +278,15 @@ mid-range Android phone; deployed to Pages.
       7; `q_orchard` Orchard Thieves: the wall, a night stake-out, four outcomes; Wren knows their names), the windpumps got
       a real `windpump` prop (lattice tower, vane, tail); the roadside spots sit in the arrival view; smoke `tools/qa/wilds.cjs`
       covers the patrol stop and trip continuation, a passing thing, a discovery, a hunt and traps, the machine, the stake-out.
-      NEXT: B2.6 the Mender + chrome surgery, the Wheel, caravan escort basics.) Remaining: B2.6, B2.7 Act 1 side quests and
-      the end-to-end Act 1 smoke. ~4 h.
+      NEXT: B2.6 the Mender + chrome surgery, the Wheel, caravan escort basics.) B2.6 DONE (see §2b plan: the surgeon's
+      table, the Wheel, the escort). B2.7 DONE: four Act 1 side lines — *Seed at Any Price* (`q_a1_seed`: Pike's errand,
+      the Elder's vault or her trust, sell to the guild or plant it with the Choir), *The Choir Tent* (`q_a1_tents`: three
+      patients on cots in Shale's mission, medicine or water and a splint, a secret on one of them that can be kept or
+      reported to the sheriff, lay-healer rank), *Mags's Ledger* (`q_a1_books`: a readable item, a Barter passive finds
+      what the second book hides, expose / squeeze / help / clean), *A Letter for Bram* (`q_a1_bram`: carried from the
+      Cistern to Shale, answered by a daughter, three ways back). Engine: `Game.logicHost` now routes quest effects (road
+      encounters, timers, dev runs), `game.devApply` for QA. Smokes: `tools/qa/act1_sides.cjs`; `tools/qa/act1.sh`
+      runs every Act 1 smoke in order against one server (`SF_URL`), evidence under `docs/evidence/act1/`.
 - [ ] B3 **Meridian**: 9 districts, the Loop, Brokers' gigs (~25), the Masque, High Water, Static, Turf,
       Court of Accounts, citizenship hearing, Archive Spire, flat, fight pits, reverie dens, races,
       gambling, safehouse; gangs joinable; Ledger line; companions 4–6. ~16 h.

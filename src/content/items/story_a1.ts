@@ -2,6 +2,11 @@ import type { ItemDef } from '../../engine/inventory/items';
 
 /** Act 1 papers and keepsakes. */
 export const STORY_A1: ItemDef[] = [
+  { id: 'k_seed_case', icon: 'tin', name: 'Cistern Seed Case', desc: 'A sealed steel case the size of a loaf, cold to the touch, with a Cistern inventory label: VIABLE — TOMATO, BEAN, SQUASH, MILLET — DO NOT OPEN BELOW 4°C. Ninety years of somebody\'s patience.', category: 'key', weight: 1.5, value: 300 },
+  { id: 'k_mags_books', icon: 'order', name: 'The Dry Well\'s Books', desc: 'Two ledgers tied with a bootlace. Water in, water out, rooms, Dust, debts. Mags\'s hand throughout, and another hand in the margins of the second.', category: 'note', weight: 0.8, value: 0, read: 'd_mags_books' },
+  { id: 'k_bram_letter', icon: 'order', name: 'Bram\'s Letter', desc: 'Folded four times and sealed with machine grease. On the outside, in a mechanic\'s careful capitals: EDDA VALE, SHALE. He asked you not to read it, and you have not.', category: 'note', weight: 0, value: 0 },
+  { id: 'k_hesper_reply', icon: 'order', name: 'Hesper\'s Reply', desc: 'A single sheet in a tight, plain hand. For Bram, at the Cistern: the truth, kindly put.', category: 'note', weight: 0, value: 0 },
+  { id: 'k_hesper_reply_forged', icon: 'order', name: 'A Reply for Bram', desc: 'A single sheet in a hand that is not Edda Vale\'s, saying things Edda Vale would have said. You wrote it.', category: 'note', weight: 0, value: 0 },
   { id: 'k_pass_forged', icon: 'order', name: 'Tollmen Pass (forged)', desc: 'A guild transit pass on the right paper with the wrong hand. Good at a glance; bad under a lamp.', category: 'key', weight: 0, value: 0 },
   { id: 'k_pass_stamped', icon: 'order', name: 'Tollmen Pass', desc: 'A guild transit pass, stamped at Tollhouse 9. "Bearer and goods. As per."', category: 'key', weight: 0, value: 0 },
   { id: 'k_packet', icon: 'order', name: 'Sealed Guild Packet', desc: 'Oilcloth, wax, the guild\'s half-moon pressed into it. For the Exchange at Ninebridge, by hand, unopened. It weighs almost nothing and you keep checking it.', category: 'key', weight: 0.2, value: 0 },

@@ -107,6 +107,10 @@ export class Game extends EventBus<GameEvents> {
   /** Narrative host: XP toasts and journal notifications for dialogue/quest effects. */
   readonly logicHost: LogicHost = {
     xp: (amount) => this.emit('message', { text: `+${amount} XP` }),
+    // Quest effects from road encounters, timers and dev runs reach the quest book too.
+    questStart: (id: string) => this.quests.questStart(id),
+    questStage: (id: string, s: string) => this.quests.questStage(id, s),
+    questEnd: (id: string, st: 'done' | 'failed') => this.quests.questEnd(id, st),
     event: (name, data) => {
       const d = (data ?? {}) as { tree?: string; name?: string; npc?: string };
       if (name === 'dialogue' && d.tree) { window.setTimeout(() => this.emit('openDialogue', { tree: d.tree, name: d.name ?? '' })); return; }
@@ -352,6 +356,12 @@ export class Game extends EventBus<GameEvents> {
   placeCamps(): void {
     const near = placeMoving(WORLD_MAP, dayOf(this.state.minutes), this.state.world.at);
     for (const [id, n] of Object.entries(near)) this.state.flags[`${id}_near`] = n;
+  }
+
+  /** Dev/QA: run content effects against the live state (what a dialogue option would do). */
+  devApply(effects: import('./world/logic').Effect[]): void {
+    apply(effects, this.state, this.logicHost);
+    this.quests.update();
   }
 
   /** Dev/QA: force a weather kind regardless of the day. */

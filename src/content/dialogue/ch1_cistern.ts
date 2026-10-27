@@ -183,7 +183,19 @@ export const d_c9_ines: DialogueDef = {
       options: [{ text: 'I will.', exit: true }],
     },
     armed_no: { text: 'We have eleven rifles for sixty people, and nobody has fired one in a generation. No. Find what you need out there — I suspect it\'s full of rifles.', options: [{ text: 'Fine.', exit: true }] },
-    after: { text: 'Go carefully. Write. And if you find the people who sent him — be polite until you can\'t.', options: [{ text: 'I will.', exit: true }] },
+    after: { text: 'Go carefully. Write. And if you find the people who sent him — be polite until you can\'t.', options: [
+        { id: 'ines.seed', text: 'Factor Pike at Shale would pay the Cistern a fortune for viable seed.', if: { quest: 'q_a1_seed', status: 'active' }, next: 'seed' },
+       { text: 'I will.', exit: true }] },
+    seed: {
+      text: '"The bank is the ring\'s. It is not mine to sell and it is not the guild\'s to buy." She lets that stand. Then, more quietly: "It is also ninety years old and has never been under a sky. If it went into the ground somewhere with sun on it, I would call that the bank doing what it was built to do."',
+      options: [
+        { id: 'ines.seed.sky', text: 'The Choir at Shale farms under the open sky. It would go in the ground.', check: { skill: 'speech', dc: 40, mods: [{ if: { trust: { npc: 'npc_c9_01', gte: 10 } }, dc: -20, why: 'she trusts you' }] }, next: 'seed_yes', fail: 'seed_no' },
+        { id: 'ines.seed.guild', text: 'The guild pays. The ring could use what it pays.', next: 'seed_no' },
+        { text: 'Forget I asked.', exit: true },
+      ],
+    },
+    seed_yes: { text: 'She unlocks the vault herself and chooses the case the way you choose a word. "Tomato, bean, squash, millet." She puts it in your hands, cold. "For the sky. Not for a ledger. I am trusting you with the difference."', effects: [{ give: 'k_seed_case' }, { learn: 'seed_from_ines' }, { trust: { npc: 'npc_c9_01', by: 5 } }], options: [{ text: 'For the sky.', exit: true }] },
+    seed_no: { text: '"No." The word is final in the way doors are. "Not to the guild, and not through you to the guild. The vault stays locked."', effects: [{ learn: 'seed_refused' }], options: [{ text: 'All right.', exit: true }] },
   },
 };
 
@@ -253,6 +265,7 @@ export const d_c9_bram: DialogueDef = {
         { id: 'bram.shop', text: 'The seal\'s hydraulic. Cycle it by hand and MOTHER logs it as maintenance.', check: { skill: 'mechanics', dc: 40, mods: [{ if: { origin: 'pump_hand' }, dc: -15, why: 'you\'ve cycled those valves yourself' }] }, next: 'shop', fail: 'shop_fail', once: true },
         { id: 'bram.price', text: 'What would it take?', next: 'price' },
         { id: 'bram.guilt', text: 'If the next knock is people with guns, you\'ll want someone out there who knows our names.', check: { skill: 'speech', dc: 60 }, next: 'guilt', fail: 'guilt_fail', once: true },
+        { id: 'bram.letter', text: 'If the door opens, is there anything you\'d have carried out?', if: { quest: 'q_a1_bram', status: 'none' }, next: 'letter' },
         { text: 'Never mind.', exit: true },
       ],
     },
@@ -276,7 +289,27 @@ export const d_c9_bram: DialogueDef = {
       effects: [{ set: 'c9_door_open' }, { memory: { npc: 'npc_c9_04', tag: 'opened_door_for_player', valence: 10, strength: 100 } }],
       options: [{ text: '(Step into the light.)', exit: true }],
     },
-    open_already: { text: 'It\'s open. Don\'t make me regret it.', options: [{ text: 'I won\'t.', exit: true }] },
+    open_already: {
+      text: [
+        { if: { any: [{ item: 'k_hesper_reply' }, { item: 'k_hesper_reply_forged' }, { knows: 'bram_tell' }] }, text: 'He sees your face before he sees your hands and puts the wrench down. "You found her."' },
+        { text: 'It\'s open. Don\'t make me regret it.' },
+      ],
+      options: [
+        { id: 'bram.letter2', text: 'Is there anything you\'d have carried out?', if: { quest: 'q_a1_bram', status: 'none' }, next: 'letter' },
+        { id: 'bram.reply', text: '(Give him Hesper\'s letter.)', if: { item: 'k_hesper_reply' }, next: 'reply_truth' },
+        { id: 'bram.reply_kind', text: '(Give him the letter.)', if: { item: 'k_hesper_reply_forged' }, next: 'reply_kind' },
+        { id: 'bram.tell', text: 'Edda Vale died six years ago. Her daughter is called Hesper. She kept the other letter.', if: { all: [{ knows: 'bram_tell' }, { not: { knows: 'bram_answered_told' } }] }, next: 'told' },
+        { text: 'I won\'t.', exit: true },
+      ],
+    },
+    letter: {
+      text: 'He does not answer at once. He goes to the toolbox, and under the tray there is a letter, folded four times and sealed with grease, soft at the corners from being carried. "Edda Vale. Shale." He does not hand it over yet. "She came to the door, once. Years back. Talked through it with me for a night. Said she\'d wait." He gives it to you. "Don\'t read it. Just — if she\'s there."',
+      effects: [{ give: 'k_bram_letter' }, { quest: 'q_a1_bram', start: true }, { learn: 'bram_letter' }],
+      options: [{ text: 'If she\'s there.', exit: true }],
+    },
+    reply_truth: { text: 'He reads it at the machine with his back to you. He reads it twice. "Hesper." He folds it along its creases. "She kept it." Then, after a while: "Thank you for not — thank you." He does not turn round for a long time.', effects: [{ take: 'k_hesper_reply' }, { learn: 'bram_answered_truth' }, { trust: { npc: 'npc_c9_04', by: 12 } }, { memory: { npc: 'npc_c9_04', tag: 'truth', valence: 1, strength: 3 } }], options: [{ text: '(Leave him to it.)', exit: true }] },
+    reply_kind: { text: 'He reads it at the machine with his back to you, and you watch his shoulders come down, and he laughs once at something on the page, and wipes his face with the back of a greasy hand. "She\'s all right, then." He puts it in his breast pocket. "She\'s all right." You say nothing, which is the price.', effects: [{ take: 'k_hesper_reply_forged' }, { learn: 'bram_answered_kind' }, { trust: { npc: 'npc_c9_04', by: 15 } }, { memory: { npc: 'npc_c9_04', tag: 'letter', valence: 1, strength: 3 } }], options: [{ text: '(Leave him to it.)', exit: true }] },
+    told: { text: 'He sets the wrench down very carefully, as if it might break the floor. "Six years." He does the sum you can see him doing. "Hesper." He sits on the machine\'s step. "Kept it. Kept the — all right." He nods at the door. "All right. Thank you. Go on."', effects: [{ learn: 'bram_answered_told' }, { trust: { npc: 'npc_c9_04', by: 8 } }, { memory: { npc: 'npc_c9_04', tag: 'told', valence: 1, strength: 2 } }], options: [{ text: '(Go.)', exit: true }] },
   },
 };
 

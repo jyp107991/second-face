@@ -16,6 +16,8 @@ export const d_or_anselm: DialogueDef = {
       effects: [{ set: 'or_anselm_met' }, { learn: 'anselm_met' }],
       passives: [{ skill: 'survival', dc: 25, text: 'Twelve living trees out of a hundred-odd dead: root-stock that survived the Burn under the ash, coaxed up over years. Nobody else in the Sallow is growing anything on a tree.', effects: [{ learn: 'orchard_rare' }] }],
       options: [
+        { id: 'anselm.seed', text: '(Give him the Cistern\'s seed case.)', if: { all: [{ item: 'k_seed_case' }, { quest: 'q_a1_seed', status: 'active' }] }, next: 'seed_given' },
+       
         { id: 'anselm.trees', text: 'How do you keep a tree alive out here?', next: 'trees', once: true },
         { id: 'anselm.thieves', text: 'Sister Calla says something is robbing you.', if: { any: [{ knows: 'calla_orchard' }, { knows: 'or_thefts' }] }, next: 'thieves', once: true },
         { id: 'anselm.thieves.ask', text: 'You said they take the green ones. Who does?', if: { not: { knows: 'calla_orchard' } }, next: 'thieves', once: true },
@@ -50,6 +52,11 @@ export const d_or_anselm: DialogueDef = {
       options: [bye],
     },
     fruit: { text: '"Two." He counts them into your hand from his pocket, small and hard. "Sour. Eat them anyway; you\'ll not have had one. Tell Shale the Choir grew them, and tell them it took nine years."', effects: [{ give: 'c_fruit', count: 2 }, { set: 'or_fruit_given' }, { trust: { npc: 'npc_or_01', by: 5 } }], options: [{ text: 'Thanks.', next: 'again' }] },
+    seed_given: {
+      text: 'He opens it there in the rows, which Calla would not have, and holds a single seed up to the light between finger and thumb like a jeweller. "Bean." His voice goes. "Ninety years in the dark and it\'s a bean." He closes the case. "Tomorrow. The south beds. Pike will hear; let him hear it from the plants."',
+      effects: [{ take: 'k_seed_case' }, { rep: { faction: 'choir', respect: 12 } }, { enlist: 'choir', rank: 'lay' }, { trust: { npc: 'npc_or_01', by: 12 } }, { trust: { npc: 'npc_sh_05', by: 6 } }, { learn: 'seed_given_choir' }, { rep: { faction: 'tollmen', respect: -4 } }, { news: { tag: 'seed_choir', text: 'The Cistern\'s seed went into the Choir\'s beds.', valence: 1, at: 'shale' } }, { decision: { id: 'seed_given', text: 'You gave the Cistern\'s seed to the Choir.' } }],
+      options: [{ text: 'From the plants.', exit: true }],
+    },
   },
 };
 
