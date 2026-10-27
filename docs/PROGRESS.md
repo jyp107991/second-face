@@ -256,9 +256,11 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
             (`ways.cjs`).
       - [x] U2b.4a DONE 2026-10-27: the field map drawn from the world (`src/engine/ui/mapImage.ts`: relief, sea,
             river, the Line, wandering roads, "you are here" from the player's tile) (`fieldmap.cjs`).
-      - [ ] U2b.4b NEXT: travel from the map — on foot = walking the ways (auto-walk, clock ×60, encounters and
-            discoveries kept); vehicles (the Line, the barges, the caravan) board at their stops with fare and time.
-      - [ ] U2c: detail rings/LOD, memory and draw-call budget, phone profiling.
+      - [x] U2b.4b DONE 2026-10-27: travel from the map — "Walk there" walks the ways (one game minute a real
+            second; discoveries and trouble per leg; a tap ends it), vehicles board at their stops with fare and
+            time (`journey.cjs`). Taps work in the open country.
+      - [ ] U2c (after U3): detail rings/LOD, memory and draw-call budget, phone profiling.
+
 - [ ] U3 Living world: biome vegetation and surviving greenery, rocks and ruins, real props, water and shores,
       weather by region, background life.
 - [ ] U4 People: captured motion retargeted to the human rig, locomotion blending, skin/cloth/hair materials, close

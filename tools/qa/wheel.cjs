@@ -18,7 +18,7 @@ const path = require('path');
   const quest = (id) => page.evaluate((id) => { const q = game.state.world.quests?.[id]; return q ? `${q.status}/${q.stage}` : 'none'; }, id);
   await page.goto(`${process.env.SF_URL || 'http://127.0.0.1:5173'}/?dev`);
   await page.waitForTimeout(9000);
-  await page.evaluate(async () => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('medium'); game.quietRoads = true; await game.loadLocation('shale', 'start'); game.state.world.at = 'shale'; game.state.flags.visited_shale = true; });
+  await page.evaluate(async () => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('medium'); game.quietRoads = true; game.instantJourney = true; await game.loadLocation('shale', 'start'); game.state.world.at = 'shale'; game.state.flags.visited_shale = true; });
   await page.waitForFunction(() => game.state.locationId === 'shale' && game.npcs.size >= 10, null, { timeout: 120000 });
   // The camp moves with the day.
   const pos = await page.evaluate(() => { const L = SF.WORLD_MAP.locations.wheel; const out = []; for (const d of [1, 5, 9, 13, 17]) { game.state.minutes = d * 1440 + 10 * 60; game.placeCamps(); out.push(`${d}:${L.x},${L.y}/${game.state.flags.wheel_near}`); } game.state.minutes = 1 * 1440 + 10 * 60; game.placeCamps(); return out.join(' '); });

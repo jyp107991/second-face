@@ -180,3 +180,16 @@ Content building (B3.11 onwards) is paused until U1–U5 are in.
   `docs/evidence/u2/map_1_early.png` (the Cistern and Shale known, standing on the track between them) and
   `map_2_reach.png` (the Reach known); `tools/qa/fieldmap.cjs`. Next U2b.4b: travel from the map — on foot means
   walking the ways with the clock running fast, vehicles (the Line, the barges, the caravan) board at their stops.
+- **2026-10-27 U2b.4b — travel is walking, or a ride.** From the map, "Walk there" sets the player walking the
+  ways to a place, point by point, the way joined at the nearest point from wherever they stand, with the clock
+  running at one game minute a real second (`Game.startJourney`, `world/ways.ts journeyHours`): the Cistern to
+  Shale is a walk of about two hours. Each leg rolls its discoveries and its one chance of trouble as it begins;
+  trouble that has a map of its own stops the walk there and the roadside map's exit carries the trip on as before.
+  A tap, a fight or the arrival ends the walk (and the fast clock). Vehicles are the networks at their stops: the
+  side panel offers the Line, the barges or the Tollmen caravan where one calls, with the fare and the hours
+  (timetable waits included), "Board" pays and the world moves while you ride. Taps now work in the open country
+  (they were gated on standing in a place). The old "Set out" teleport is gone. Evidence
+  `docs/evidence/u2/journey_*.png`; `tools/qa/journey.cjs` (walk to Shale from the map; the caravan to Ninebridge
+  with the fare paid). The caravan's timetable (every three days) makes a long wait of a short ride: the networks'
+  schedules are content for M4 to tune. U2b is complete; U2c (budgets and phone profiling) follows U3's
+  instancing, since the same work settles both.

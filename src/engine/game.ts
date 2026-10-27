@@ -14,6 +14,7 @@ import { SURFACE_PBR_KEYS } from './assets/materials';
 import { WorldScene, type LoadedSite } from './scene/stream';
 import { sitePlacement, type SitePlacement } from './world/sites';
 import { regionAt } from './world/terrain';
+import { JOURNEY_CLOCK, wayPoints } from './world/ways';
 import type { WorldGrid } from './world/worldGrid';
 import { Atmosphere } from './render/atmosphere';
 import { IsoCamera } from './render/camera';
@@ -335,6 +336,123 @@ export class Game extends EventBus<GameEvents> {
 
   /** Where the player stood before the last tap-to-walk, for a quick undo. */
   private lastStand?: { x: number; y: number; until: number };
+
+  /** A walk across the land from the map: the way's points in turn, the clock running fast, a leg's chances rolled as it starts. */
+  private journey?: { to: string; from: string; pts: { x: number; y: number; leg: number }[]; i: number; legs: import('./world/travel').TripLeg[]; legDone: number; misses: number };
+  get journeying(): boolean { return !!this.journey; }
+
+  /**
+   * Set out on foot from the map: the player walks the ways from here to a place, point by point, with one real
+   * second a game minute. A tap, a fight or an arrival ends it. Each leg rolls its discoveries and its one chance
+   * of trouble as it begins; trouble with a map of its own stops the walk there (the road goes on from it).
+   */
+  /** Dev/QA: a walk from the map arrives at once (the old overland travel), for smokes that cannot wait. */
+  instantJourney = false;
+
+  startJourney(to: string, from: string, trip: import('./world/travel').Trip): void {
+    if (!this.player || this.transitioning || this.encounter.active) return;
+    if (this.instantJourney) { void this.travelTo(to, from, trip); return; }
+    const pts: { x: number; y: number; leg: number }[] = [];
+    trip.legs.forEach((leg, li) => {
+      const way = wayPoints(leg.from, leg.to);
+      for (const [wx, wz] of way) {
+        const p = { x: Math.floor(wx), y: Math.floor(wz), leg: li };
+        const last = pts[pts.length - 1];
+        if (!last || Math.max(Math.abs(last.x - p.x), Math.abs(last.y - p.y)) >= 10) pts.push(p);
+      }
+    });
+    // No way to walk (the nearest place, from the open country): straight to it.
+    if (!pts.length) { const l = WORLD_MAP.locations[to]; if (l) pts.push({ x: Math.floor(l.x * 12), y: Math.floor(l.y * 12), leg: 0 }); }
+    if (!pts.length) return;
+    // Join the way where you are: from the open country between places the walk starts at the nearest point of
+    // the first leg, not back at its beginning.
+    let start = 0, best = Infinity;
+    for (let k = 0; k < pts.length && pts[k].leg === 0; k++) { const d = Math.hypot(pts[k].x - this.player.tx, pts[k].y - this.player.ty); if (d < best) { best = d; start = k; } }
+    this.cancelJourney();
+    this.journey = { to, from, pts, i: start - 1, legs: trip.legs, legDone: -1, misses: 0 };
+    this.timeScale = JOURNEY_CLOCK;
+    this.emit('message', { text: `You set out for ${WORLD_MAP.locations[to]?.name ?? to}. Tap anywhere to stop.` });
+    this.journeyNext();
+  }
+
+  cancelJourney(quiet = true): void {
+    if (!this.journey) return;
+    this.journey = undefined;
+    this.timeScale = 1;
+    if (!quiet) this.emit('message', { text: 'You stop walking.' });
+  }
+
+  private journeyNext(): void {
+    const j = this.journey, p = this.player;
+    if (!j || !p) return;
+    const dest = WORLD_MAP.locations[j.to];
+    if (dest?.map && this.state.locationId === dest.map) { this.finishJourney(); return; }
+    while (true) {
+      j.i++;
+      if (j.i >= j.pts.length) { this.finishJourney(); return; }
+      const pt = j.pts[j.i];
+      if (pt.leg !== j.legDone) { j.legDone = pt.leg; const leg = j.legs[pt.leg]; if (leg && this.journeyLeg(leg)) return; }
+      if (Math.max(Math.abs(pt.x - p.tx), Math.abs(pt.y - p.ty)) <= 1) continue;
+      if (this.walkTo(pt.x, pt.y)) { j.misses = 0; this.pathMarker.visible = false; return; }
+      if (++j.misses > 4) { this.cancelJourney(); this.emit('message', { text: 'No way on from here: the walk ends.' }); return; }
+    }
+  }
+
+  /** A leg begins: what is noticed from the way, and whether trouble finds you. Returns true when the walk stops here. */
+  private journeyLeg(leg: import('./world/travel').TripLeg): boolean {
+    const j = this.journey!;
+    const notes: string[] = [];
+    const isKnown = (id: string) => (this.state.world.knownLocations ?? []).includes(id) || !!this.state.world.knowledge[`loc_${id}`];
+    for (const d of discoveriesOnLeg(this.state, WORLD_MAP, leg, isKnown)) {
+      this.state.world.knowledge[`loc_${d.id}`] = true;
+      notes.push(`From the way you make out ${d.name}, ${d.km} km off. It is on your map now.`);
+    }
+    const forced = this.forceEncounter ? ROAD_ENCOUNTERS[this.forceEncounter] : undefined;
+    this.forceEncounter = undefined;
+    const enc = forced ?? (this.quietRoads ? undefined : rollEncounter(this.state, WORLD_MAP, leg, ROAD_ENCOUNTERS, this.rng));
+    if (enc) {
+      (this.state.world.roadSeen ??= {})[enc.id] = true;
+      if (!enc.map) {
+        apply(enc.effects, this.state, this.logicHost);
+        if (enc.text) notes.push(enc.text);
+      } else {
+        // Trouble with a place of its own: the walk stops; the roadside map's exit carries the trip on.
+        const hoursLeft = j.legs.slice(j.legs.indexOf(leg)).reduce((t, l) => t + l.hours, 0) / 2;
+        const roadside = MAPS[enc.map];
+        const npcs = (enc.npcs ?? []).map((n) => { const sp = roadside.spots?.[n.spot] ?? roadside.spawns[0]; return { def: n.def, id: n.id, x: sp.x, y: sp.y, facing: n.facing, dialogue: n.dialogue, schedule: [] }; });
+        this.state.world.trip = { to: j.to, from: j.from, hoursLeft, map: enc.map, encounter: enc.id, npcs };
+        this.cancelJourney();
+        this.tellNotes(notes);
+        void (async () => {
+          this.transitioning = true;
+          await fade(1, 180);
+          await this.loadLocation(enc.map!, 'here');
+          this.quests.update();
+          await fade(0, 220);
+          this.transitioning = false;
+          if (enc.dialogue) window.setTimeout(() => this.emit('openDialogue', { tree: enc.dialogue!, name: '' }), 500);
+        })();
+        return true;
+      }
+    }
+    this.tellNotes(notes);
+    return false;
+  }
+
+  private finishJourney(): void {
+    const j = this.journey;
+    if (!j) return;
+    this.journey = undefined;
+    this.timeScale = 1;
+    const loc = WORLD_MAP.locations[j.to];
+    this.state.world.at = j.to;
+    const known = (this.state.world.knownLocations ??= []);
+    if (!known.includes(j.to)) known.push(j.to);
+    this.state.flags[`visited_${j.to}`] = true;
+    this.emit('message', { text: loc ? `${loc.name}.` : 'You arrive.' });
+    this.quests.update();
+    void this.save('auto');
+  }
   get canUndo(): boolean { return !!this.lastStand && performance.now() < this.lastStand.until && !this.encounter.active; }
   undoMove(): void {
     const p = this.player, ls = this.lastStand;
@@ -353,6 +471,11 @@ export class Game extends EventBus<GameEvents> {
   async travelTo(to: string, from: string, trip: import('./world/travel').Trip): Promise<void> {
     const loc = WORLD_MAP.locations[to];
     if (!loc || this.transitioning) return;
+    if (trip.fare > 0) {
+      if (this.state.pc.inventory.tolls < trip.fare) { this.emit('message', { text: 'You cannot pay the fare.' }); return; }
+      this.state.pc.inventory.tolls -= trip.fare;
+    }
+    this.cancelJourney();
     this.transitioning = true;
     await fade(1);
     // On the way: hidden places noticed from the track, passing things, or an encounter that stops the trip on a
@@ -953,6 +1076,7 @@ export class Game extends EventBus<GameEvents> {
   }
 
   startCombat(target?: NpcRuntime, pit?: { win?: Effect[]; lose?: Effect[] }): void {
+    this.cancelJourney();
     if (this.encounter.active || !this.player) return;
     this.player.stop();
     this.pathMarker.visible = false;
@@ -1241,6 +1365,8 @@ export class Game extends EventBus<GameEvents> {
     if (id !== this.state.locationId) {
       this.state.locationId = id;
       this.state.flags[`visited_${id}`] = true;
+      // A walk from the map ends the moment its place is underfoot.
+      if (this.journey && site && WORLD_MAP.locations[this.journey.to]?.map === id) this.finishJourney();
       if (site) {
         const known = (this.state.world.knownLocations ??= []);
         for (const l of Object.values(WORLD_MAP.locations)) if (l.map === id && !known.includes(l.id)) { known.push(l.id); this.state.world.at = l.id; }
@@ -1336,7 +1462,8 @@ export class Game extends EventBus<GameEvents> {
     const i = this.input;
     i.on('tap', ({ x, y, mouse }) => {
       const t = this.pickTile(x, y);
-      if (!t || !this.player || !this.loc || this.transitioning || this.paused) return;
+      if (!t || !this.player || this.transitioning || this.paused) return;
+      if (this.journey) { this.cancelJourney(false); return; }
       if (this.encounter.active) { this.encounter.tapTile(t.x, t.y, mouse); return; }
       const npc = this.npcAt(t.x, t.y);
       if (npc && npc.hostile) { this.startCombat(npc); return; }
@@ -1517,6 +1644,7 @@ export class Game extends EventBus<GameEvents> {
       this.walkRetry -= simDt;
       if (this.walkRetry <= 0) { this.walkRetry = undefined; this.resumeWalk(); }
     }
+    if (this.journey && this.player && !this.player.moving && !this.walkGoal && this.walkRetry === undefined && !this.encounter.active && !this.talking && !this.transitioning && !this.paused) this.journeyNext();
     const cur = this.encounter.active ? this.encounter.current : undefined;
     if (cur && !cur.c.isPlayer) this.cam.target.copy(cur.actor.object.position);
     else if (this.player) {

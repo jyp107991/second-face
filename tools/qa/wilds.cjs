@@ -31,7 +31,7 @@ const fs = require('fs');
 
   await page.goto(`${process.env.SF_URL || 'http://127.0.0.1:5173'}/?dev`);
   await page.waitForTimeout(9000);
-  await page.evaluate(() => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('medium'); });
+  await page.evaluate(() => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.instantJourney = true; game.applyQuality('medium'); });
   await page.evaluate(() => { const s = game.state; game.newGame(s.pc.sheet, SF.randomAppearance(53, { frame: 'broad' }), 'he', 'door_watch'); });
   await page.waitForFunction(() => game.state.locationId === 'cistern9' && game.npcs.size >= 9, null, { timeout: 120000 });
   await page.evaluate(async () => { const g = game.state; g.flags.ch1_done = true; g.flags.th_passed = true; g.world.knowledge.loc_drywells = true; g.world.knowledge.loc_lm_sallow_02 = true; g.pc.inventory.tolls = 30; g.pc.sheet.skillBought.survival = 70; SF.addItem(g.pc.inventory, SF.makeItem('k_pass_stamped')); SF.addItem(g.pc.inventory, SF.makeItem('j_wiring', 2)); SF.addItem(g.pc.inventory, SF.makeItem('j_scrap', 2)); await game.loadLocation('shale', 'start'); game.state.world.at = 'shale'; });

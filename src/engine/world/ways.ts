@@ -151,3 +151,34 @@ export function onWay(x: number, z: number): boolean {
   }
   return false;
 }
+
+/** The way joining two places, if one is drawn (either direction). */
+export function wayBetween(a: string, b: string): Way | undefined {
+  return ways().find((w) => (w.a === a && w.b === b) || (w.a === b && w.b === a));
+}
+
+/** Points of the way from `a` to `b` in walking order (a straight line when none is drawn). */
+export function wayPoints(a: string, b: string): [number, number][] {
+  const w = wayBetween(a, b);
+  if (w) return w.a === a ? w.pts.slice() : w.pts.slice().reverse();
+  const pa = km(a), pb = km(b);
+  return pa && pb ? [pa, pb] : [];
+}
+
+/** Metres walked along the way from `a` to `b`. */
+export function wayMetres(a: string, b: string): number {
+  const pts = wayPoints(a, b);
+  let m = 0;
+  for (let i = 0; i + 1 < pts.length; i++) m += Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]);
+  return m;
+}
+
+/** Walking pace in metres per second, and the clock's pace on a journey: one real second is one game minute. */
+export const WALK_MPS = 3.5;
+export const JOURNEY_CLOCK = 3;
+/** Game hours a walk takes along the ways of a trip's legs. */
+export function journeyHours(legs: { from: string; to: string }[]): number {
+  let m = 0;
+  for (const l of legs) m += wayMetres(l.from, l.to);
+  return Math.round((m / WALK_MPS / 60) * 10) / 10;
+}

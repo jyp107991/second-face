@@ -3,8 +3,8 @@ import { WORLD_SCALE } from '../../content/world/sites';
 import { hourOf } from '../core/state';
 import type { Game } from '../game';
 import { worldToKm } from '../world/sites';
-import { planTrip, type Trip } from '../world/travel';
-import { ways } from '../world/ways';
+import { fastTravel, planTrip, type Trip } from '../world/travel';
+import { journeyHours, ways } from '../world/ways';
 import { KM_PER_PX, mapImage } from './mapImage';
 
 /**
@@ -58,6 +58,12 @@ export class WorldMapUi {
     this.game.paused = false;
   }
 
+  /** The place the player is actually in (none in the open country). */
+  private atPlace(): string | undefined {
+    const id = this.game.state.locationId;
+    return Object.values(WORLD_MAP.locations).find((l) => l.map === id)?.id;
+  }
+
   /** Where the player stands, in km: their tile in the open world; the place they are in when inside. */
   private me(): { x: number; y: number } {
     const g = this.game;
@@ -68,42 +74,71 @@ export class WorldMapUi {
 
   private trip(to: string): Trip | undefined {
     const from = this.here();
-    if (from === to) return undefined;
+    if (to === this.atPlace()) return undefined;
+    // The nearest place, from the open country: a straight walk to it.
+    if (from === to) return { legs: [], hours: 0, fare: 0, fast: false };
     return planTrip(WORLD_MAP, from, to, { modes: [], networks: [], known: (id) => this.known(id), hour: hourOf(this.game.state.minutes) });
   }
 
-  private async travel(to: string): Promise<void> {
+  /** Vehicles that would carry the player from here to a place: the networks with a stop here, each with its own trip. */
+  private rides(to: string): { id: string; name: string; trip: Trip }[] {
+    const from = this.here();
+    const out: { id: string; name: string; trip: Trip }[] = [];
+    for (const n of Object.values(WORLD_MAP.networks)) {
+      if (!n.stops.includes(from) || !n.stops.includes(to) || from === to) continue;
+      const trip = fastTravel(WORLD_MAP, from, to, { modes: [], networks: [n.id], known: (id) => this.known(id), hour: hourOf(this.game.state.minutes) });
+      if (trip) out.push({ id: n.id, name: n.name, trip });
+    }
+    return out;
+  }
+
+  /** On foot: the player walks the ways there, the clock running fast. */
+  private walk(to: string): void {
     const trip = this.trip(to);
-    const loc = WORLD_MAP.locations[to];
-    if (!trip || !loc) return;
+    if (!trip) return;
     const from = this.here();
     this.close();
-    await this.game.travelTo(to, from, trip);
+    this.game.startJourney(to, from, trip);
+  }
+
+  /** By vehicle: time passes, the fare is paid, you arrive. */
+  private async ride(to: string, network: string): Promise<void> {
+    const r = this.rides(to).find((x) => x.id === network);
+    if (!r) return;
+    const from = this.here();
+    this.close();
+    await this.game.travelTo(to, from, r.trip);
   }
 
   private render(): void {
     if (!this.el) return;
     const sel = this.selected ? WORLD_MAP.locations[this.selected] : undefined;
     const trip = this.selected ? this.trip(this.selected) : undefined;
-    const here = this.here();
-    const hours = trip ? trip.hours : 0;
+    const at = this.atPlace();
+    const direct = sel ? Math.hypot(sel.x - this.me().x, sel.y - this.me().y) * WORLD_SCALE / 210 : 0;
+    const hours = trip ? (trip.legs.length ? journeyHours(trip.legs) : Math.round(direct * 10) / 10) : 0;
     const arrive = (this.game.state.minutes + hours * 60);
     const arriveDay = Math.floor(arrive / 1440) + 1, arriveHour = Math.floor((arrive % 1440) / 60);
     const risk = trip ? Math.round(Math.max(...trip.legs.map((l) => l.risk), 0) * 100) : 0;
     const region = sel ? REGIONS[sel.region]?.name ?? sel.region : '';
+    const rides = this.selected ? this.rides(this.selected) : [];
+    const tolls = this.game.state.pc.inventory.tolls;
+    const rideRows = rides.map((r) => { const a = this.game.state.minutes + r.trip.hours * 60; return `<p>${esc(r.name)}: <b>${fmtHours(r.trip.hours)}</b>, fare <b>${r.trip.fare}</b> Tolls. Arrive day ${Math.floor(a / 1440) + 1}, about ${String(Math.floor((a % 1440) / 60)).padStart(2, '0')}:00.</p>
+      <div class="acts"><button data-a="ride" data-n="${r.id}" ${tolls < r.trip.fare ? 'disabled' : ''}>${tolls < r.trip.fare ? 'Cannot pay' : 'Board'}</button></div>`; }).join('');
     const side = sel
       ? `<h4>${esc(sel.name)}</h4><p class="dim">${esc(region)}${sel.settlement ? ' · settlement' : sel.kind === 'landmark' ? ' · landmark' : ''}</p>
-         ${this.selected === here ? '<p>You are here.</p>' : this.game.loc?.map.interior
+         ${this.selected === at ? '<p>You are here.</p>' : this.game.loc?.map.interior
           ? '<p class="dim">You will have to get outside first.</p>' : trip
-          ? `<p>On foot: <b>${fmtHours(hours)}</b>${hours >= 10 ? ' (with a night on the road)' : ''}.<br>Arrive day ${arriveDay}, about ${String(arriveHour).padStart(2, '0')}:00.<br>Trouble on the way: <b>${risk < 15 ? 'unlikely' : risk < 40 ? 'possible' : 'likely'}</b>.</p>
-             <div class="acts"><button data-a="travel">Set out</button></div>`
-          : '<p class="dim">No road you know leads there.</p>'}`
+          ? `<p>On foot: <b>${fmtHours(hours)}</b> of walking.<br>Arrive day ${arriveDay}, about ${String(arriveHour).padStart(2, '0')}:00.<br>Trouble on the way: <b>${risk < 15 ? 'unlikely' : risk < 40 ? 'possible' : 'likely'}</b>.</p>
+             <div class="acts"><button data-a="travel">Walk there</button></div>${rideRows}`
+          : rideRows || '<p class="dim">No road you know leads there.</p>'}`
       : '<p class="dim">Tap a place you know. Roads you have walked or been told of are drawn; the rest of the Reach is blank until someone fills it in.</p>';
     this.el.innerHTML = `<div class="nb map"><div class="nb-top"><b>The Western Reach</b> <span class="dim">field map · day ${Math.floor(this.game.state.minutes / 1440) + 1}</span><button class="x" data-a="close" aria-label="Close">✕</button></div>
       <div class="nb-body map-body"><canvas class="map-canvas"></canvas><div class="col map-side">${side}</div></div>
       <div class="nb-foot"><button data-a="close">Close</button></div></div>`;
     this.el.querySelectorAll<HTMLElement>('[data-a=close]').forEach((b) => b.addEventListener('click', () => this.close()));
-    this.el.querySelector("[data-a=travel]")?.addEventListener('click', () => { if (this.selected) void this.travel(this.selected); });
+    this.el.querySelector("[data-a=travel]")?.addEventListener('click', () => { if (this.selected) this.walk(this.selected); });
+    this.el.querySelectorAll<HTMLElement>("[data-a=ride]").forEach((b) => b.addEventListener('click', () => { if (this.selected) void this.ride(this.selected, b.dataset.n ?? ''); }));
     this.canvas = this.el.querySelector('canvas')!;
     this.canvas.addEventListener('click', (e) => this.pick(e));
     requestAnimationFrame(() => this.draw());
@@ -126,7 +161,7 @@ export class WorldMapUi {
     const g = c.getContext('2d')!;
     g.scale(dpr, dpr);
     const known = Object.values(WORLD_MAP.locations).filter((l) => this.known(l.id));
-    const here = this.here();
+    const at = this.atPlace();
     const me = this.me();
     // Fit the known places and where you stand, with a margin; never zoom closer than ~120 km across.
     const xs = [...known.map((l) => l.x), me.x], ys = [...known.map((l) => l.y), me.y];
@@ -187,7 +222,7 @@ export class WorldMapUi {
       g.fillStyle = l.id === this.selected ? '#8a2a1a' : '#2a1d10';
       g.beginPath(); g.arc(p.x, p.y, major ? 5 : 3.5, 0, Math.PI * 2); g.fill();
       if (l.kind === 'landmark') { g.strokeStyle = '#2a1d10'; g.lineWidth = 1; g.beginPath(); g.arc(p.x, p.y, 7, 0, Math.PI * 2); g.stroke(); }
-      if (l.id === here) { g.strokeStyle = '#8a2a1a'; g.lineWidth = 2; g.beginPath(); g.arc(p.x, p.y, 10, 0, Math.PI * 2); g.stroke(); }
+      if (l.id === at) { g.strokeStyle = '#8a2a1a'; g.lineWidth = 2; g.beginPath(); g.arc(p.x, p.y, 10, 0, Math.PI * 2); g.stroke(); }
       g.fillStyle = '#2a1d10'; g.textAlign = 'left';
       g.fillText(l.name, p.x + 9, p.y + 5);
     }
