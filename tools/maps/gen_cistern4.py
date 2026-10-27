@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+"""Generates src/content/maps/cistern4.ts — Cistern 4: a continuity reserve like Cistern 9 that failed. The same
+rings, forty years dead: the pumps stopped when the city cut its supply, the great door never opened, and what is
+left is dry rooms, cots, a caretaker with no power, and the records the city expected to be returned.
+Reached through the Sump's storm tunnel, which comes up in the pump room.
+    python3 tools/maps/gen_cistern4.py
+"""
+import json, os, re
+
+ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
+W, H = 46, 31
+
+
+def ts(obj):
+    s = json.dumps(obj, indent=2)
+    s = re.sub(r'"([A-Za-z_][A-Za-z0-9_]*)":', r'\1:', s)
+    s = re.sub(r'"hex:(0x[0-9a-fA-F]+)"', r'\1', s)
+    return s
+
+
+g = [['#'] * W for _ in range(H)]
+
+
+def carve(x0, y0, x1, y1, ch):
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            g[y][x] = ch
+
+
+carve(1, 1, 11, 7, '.')      # great-door hall
+carve(14, 1, 23, 7, 'm')     # machine room (the caretaker)
+carve(26, 1, 44, 8, 't')     # hydroponics, dry
+carve(1, 9, 44, 10, '.')     # upper ring corridor
+carve(12, 4, 13, 4, '.')     # hall → machine room
+carve(24, 4, 25, 4, 'm')     # machine room → hydroponics
+carve(1, 12, 10, 18, 't')    # clinic
+carve(15, 12, 22, 18, '.')   # council room
+carve(27, 12, 44, 19, '.')   # dormitory
+carve(12, 11, 13, 20, '.')   # west vertical corridor
+carve(24, 11, 25, 20, '.')   # east vertical corridor
+carve(5, 11, 5, 11, '.')     # clinic door
+carve(18, 11, 18, 11, '.')   # council door
+carve(30, 11, 30, 11, '.')   # dorm door (west)
+carve(40, 11, 40, 11, '.')   # dorm door (east)
+carve(1, 21, 44, 22, '.')    # lower ring corridor
+carve(1, 24, 21, 29, 't')    # commons / kitchen
+carve(24, 24, 29, 29, 'm')   # armoury
+carve(32, 24, 44, 29, 'g')   # pump room: the tunnel comes up here
+carve(10, 23, 10, 23, '.')   # commons door
+carve(26, 23, 26, 23, '.')   # armoury door
+carve(36, 23, 36, 23, '.')   # pump room door
+carve(23, 15, 23, 15, '.')   # the Archive: its door stands open here
+carve(5, 0, 7, 0, 'D')       # the great door, never opened
+# the collapse: the east end of the upper corridor and half the hydroponics are rubble and rock
+carve(38, 9, 44, 10, 'X'); carve(36, 1, 44, 3, 'X'); carve(41, 4, 44, 8, 'X')
+# a second collapse took the clinic's north wall down into the corridor
+carve(1, 9, 3, 10, 'X')
+# the water line: the lower ring flooded once and dried; tile floor shows it
+carve(1, 21, 44, 22, 'f')
+
+rows = [''.join(r) for r in g]
+
+cistern4 = {
+    'id': 'cistern4', 'name': 'Cistern 4', 'seed': 4, 'settlement': 'sump', 'interior': True,
+    'layout': rows,
+    'legend': {
+        '#': {'wall': 'concrete', 'floor': 'concrete', 'wallHeight': 2.8},
+        '.': {'floor': 'concrete'}, 'm': {'floor': 'metal'}, 't': {'floor': 'tile'}, 'g': {'floor': 'grate'}, 'f': {'floor': 'rubble'},
+        'X': {'wall': 'rock', 'floor': 'rubble', 'wallHeight': 2.6},
+        'D': {'wall': 'metal', 'floor': 'metal', 'wallHeight': 2.8},
+    },
+    'props': [
+        # the great-door hall: the door's inner face, and what was piled against it
+        {'kind': 'vault_door', 'x': 6, 'y': 1, 'rot': 0, 'id': 'c4_great_door'}, {'kind': 'sandbags', 'x': 8, 'y': 2}, {'kind': 'sandbags', 'x': 4, 'y': 2}, {'kind': 'crate', 'x': 9, 'y': 3}, {'kind': 'table', 'x': 5, 'y': 3, 'id': 'c4_door_table'},
+        {'kind': 'debris', 'x': 2, 'y': 5}, {'kind': 'debris', 'x': 7, 'y': 6}, {'kind': 'barrel', 'x': 10, 'y': 6}, {'kind': 'sign', 'x': 2, 'y': 1},
+        # the machine room: the caretaker's terminal, dead; the crank generator
+        {'kind': 'terminal', 'x': 18, 'y': 1, 'rot': 0, 'id': 'c4_four'}, {'kind': 'machine', 'x': 21, 'y': 3, 'rot': 3, 'id': 'c4_crank'}, {'kind': 'shelf', 'x': 15, 'y': 2, 'rot': 1}, {'kind': 'locker', 'x': 15, 'y': 6, 'id': 'c4_parts_locker'},
+        {'kind': 'pipe_h', 'x': 19, 'y': 7}, {'kind': 'pipe_h', 'x': 20, 'y': 7}, {'kind': 'table', 'x': 18, 'y': 5, 'id': 'c4_machine_bench'}, {'kind': 'chair', 'x': 18, 'y': 6, 'rot': 0},
+        # hydroponics, dry: planters with nothing in them
+        {'kind': 'planter', 'x': 28, 'y': 2}, {'kind': 'planter', 'x': 30, 'y': 2}, {'kind': 'planter', 'x': 32, 'y': 2}, {'kind': 'planter', 'x': 28, 'y': 5}, {'kind': 'planter', 'x': 30, 'y': 5}, {'kind': 'planter', 'x': 32, 'y': 5}, {'kind': 'planter', 'x': 34, 'y': 5},
+        {'kind': 'tank', 'x': 27, 'y': 7}, {'kind': 'debris', 'x': 35, 'y': 7}, {'kind': 'crate', 'x': 38, 'y': 6, 'id': 'c4_hydro_crate'}, {'kind': 'shelf', 'x': 39, 'y': 4, 'rot': 3},
+        # the clinic: cots, the shelf, the last doctor's table
+        {'kind': 'cot', 'x': 2, 'y': 13, 'rot': 1}, {'kind': 'cot', 'x': 2, 'y': 16, 'rot': 1}, {'kind': 'cot', 'x': 8, 'y': 13, 'rot': 3, 'id': 'c4_clinic_cot'}, {'kind': 'shelf', 'x': 9, 'y': 17, 'rot': 3, 'id': 'c4_clinic_shelf'},
+        {'kind': 'table', 'x': 5, 'y': 15, 'id': 'c4_clinic_table'}, {'kind': 'chair', 'x': 5, 'y': 16, 'rot': 0},
+        # the council room and the Archive beyond its east wall
+        {'kind': 'table', 'x': 18, 'y': 15, 'id': 'c4_council_table'}, {'kind': 'chair', 'x': 17, 'y': 15, 'rot': 1}, {'kind': 'chair', 'x': 19, 'y': 15, 'rot': 3}, {'kind': 'chair', 'x': 18, 'y': 14, 'rot': 2},
+        {'kind': 'shelf', 'x': 16, 'y': 13, 'rot': 0}, {'kind': 'shelf', 'x': 20, 'y': 13, 'rot': 0}, {'kind': 'locker', 'x': 21, 'y': 17, 'id': 'c4_archive_locker'}, {'kind': 'sign', 'x': 22, 'y': 14, 'rot': 3, 'id': 'c4_archive_sign'},
+        # the dormitory: bunks, and the people who stayed in them
+        {'kind': 'cot', 'x': 28, 'y': 14, 'rot': 1}, {'kind': 'cot', 'x': 30, 'y': 14, 'rot': 1, 'id': 'c4_cot_a'}, {'kind': 'cot', 'x': 32, 'y': 17, 'rot': 1}, {'kind': 'cot', 'x': 34, 'y': 14, 'rot': 1, 'id': 'c4_cot_b'},
+        {'kind': 'cot', 'x': 36, 'y': 17, 'rot': 1}, {'kind': 'cot', 'x': 38, 'y': 14, 'rot': 1, 'id': 'c4_cot_c'}, {'kind': 'cot', 'x': 40, 'y': 17, 'rot': 1}, {'kind': 'cot', 'x': 42, 'y': 14, 'rot': 1},
+        {'kind': 'locker', 'x': 43, 'y': 18, 'id': 'c4_dorm_locker'}, {'kind': 'table', 'x': 30, 'y': 18, 'id': 'c4_diary_table'}, {'kind': 'debris', 'x': 37, 'y': 13}, {'kind': 'debris', 'x': 41, 'y': 15},
+        # the commons: tables, the kitchen, the last meal
+        {'kind': 'table', 'x': 7, 'y': 26}, {'kind': 'table', 'x': 11, 'y': 26}, {'kind': 'table', 'x': 15, 'y': 26}, {'kind': 'chair', 'x': 7, 'y': 27, 'rot': 0}, {'kind': 'chair', 'x': 11, 'y': 25, 'rot': 2}, {'kind': 'chair', 'x': 15, 'y': 27, 'rot': 0},
+        {'kind': 'stove', 'x': 3, 'y': 25}, {'kind': 'crate', 'x': 2, 'y': 28, 'id': 'c4_kitchen_crate'}, {'kind': 'barrel', 'x': 19, 'y': 28}, {'kind': 'debris', 'x': 10, 'y': 28}, {'kind': 'sign', 'x': 20, 'y': 25, 'rot': 3, 'id': 'c4_ration_board'},
+        # the armoury: empty racks, one locker
+        {'kind': 'shelf', 'x': 25, 'y': 25, 'rot': 1}, {'kind': 'shelf', 'x': 25, 'y': 27, 'rot': 1}, {'kind': 'locker', 'x': 28, 'y': 28, 'id': 'c4_armoury_locker'},
+        # the pump room: the pumps, the cut supply pipe, the tunnel hatch the Sump dug into
+        {'kind': 'pump', 'x': 34, 'y': 26, 'id': 'c4_pumps'}, {'kind': 'pump', 'x': 37, 'y': 26}, {'kind': 'tank', 'x': 40, 'y': 25}, {'kind': 'pipe_h', 'x': 42, 'y': 26}, {'kind': 'pipe_h', 'x': 43, 'y': 26},
+        {'kind': 'sign', 'x': 43, 'y': 28, 'rot': 3, 'id': 'c4_supply_sign'}, {'kind': 'crate', 'x': 33, 'y': 28, 'id': 'c4_pump_crate'}, {'kind': 'debris', 'x': 39, 'y': 28}, {'kind': 'lamp_post', 'x': 36, 'y': 25},
+    ],
+    'lights': [
+        {'x': 18, 'y': 2, 'height': 2.4, 'color': 'hex:0x8ab0d0', 'intensity': 1.2, 'range': 6, 'flicker': 0.45},
+        {'x': 6, 'y': 4, 'height': 2.6, 'color': 'hex:0xc0b090', 'intensity': 1.6, 'range': 8, 'flicker': 0.3},
+        {'x': 18, 'y': 16, 'height': 2.6, 'color': 'hex:0xc0b090', 'intensity': 1.6, 'range': 8, 'flicker': 0.4},
+        {'x': 35, 'y': 16, 'height': 2.6, 'color': 'hex:0xc0b090', 'intensity': 1.8, 'range': 10, 'flicker': 0.4}, {'x': 5, 'y': 15, 'height': 2.6, 'color': 'hex:0xc0b090', 'intensity': 1.4, 'range': 7, 'flicker': 0.4}, {'x': 30, 'y': 5, 'height': 2.6, 'color': 'hex:0xc0b090', 'intensity': 1.2, 'range': 8, 'flicker': 0.4},
+        {'x': 36, 'y': 25, 'height': 2.8, 'color': 'hex:0xffd8a0', 'intensity': 2.2, 'range': 8, 'flicker': 0.2},
+        {'x': 10, 'y': 26, 'height': 2.6, 'color': 'hex:0xc0b090', 'intensity': 1.6, 'range': 9, 'flicker': 0.4},
+        {'x': 22, 'y': 10, 'height': 2.6, 'color': 'hex:0x8ab0d0', 'intensity': 1.2, 'range': 10, 'flicker': 0.5},
+        {'x': 22, 'y': 21, 'height': 2.6, 'color': 'hex:0x8ab0d0', 'intensity': 1.2, 'range': 10, 'flicker': 0.5},
+    ],
+    'spawns': [
+        {'id': 'start', 'x': 42, 'y': 28, 'facing': 3}, {'id': 'tunnel', 'x': 42, 'y': 28, 'facing': 3},
+    ],
+    'exits': [
+        {'x': 43, 'y': 29, 'to': {'location': 'sump', 'spawn': 'tunnel'}, 'label': 'The tunnel up'},
+    ],
+    'talk': {
+        'c4_great_door': {'dialogue': 'd_c4_great_door', 'name': 'The great door'},
+        'c4_four': {'dialogue': 'd_c4_four', 'name': 'FOUR'},
+        'c4_crank': {'dialogue': 'd_c4_crank', 'name': 'The crank generator'},
+        'c4_archive_sign': {'dialogue': 'd_c4_archive', 'name': 'The Archive'},
+        'c4_diary_table': {'dialogue': 'd_c4_diary', 'name': 'A diary'},
+        'c4_clinic_table': {'dialogue': 'd_c4_clinic', 'name': 'The clinic table'},
+        'c4_supply_sign': {'dialogue': 'd_c4_supply', 'name': 'The supply pipe'},
+        'c4_ration_board': {'dialogue': 'd_c4_rations', 'name': 'The ration board'},
+        'c4_cot_a': {'dialogue': 'd_c4_cots', 'name': 'A cot'}, 'c4_cot_b': {'dialogue': 'd_c4_cots', 'name': 'A cot'}, 'c4_cot_c': {'dialogue': 'd_c4_cots', 'name': 'A cot'},
+        'c4_council_table': {'dialogue': 'd_c4_council', 'name': 'The council table'},
+    },
+    'containers': {
+        'c4_archive_locker': {'name': 'Continuity Records', 'items': [['k_c4_order', 1]], 'lock': 35},
+        'c4_parts_locker': {'name': 'Parts Locker', 'items': [['j_wiring', 2], ['j_electronics', 2], ['t_repair', 1]], 'lock': 25},
+        'c4_clinic_shelf': {'name': 'Clinic Shelf', 'items': [['c_iodine', 1], ['c_bandage', 1]]},
+        'c4_hydro_crate': {'name': 'Seed Crate', 'items': [['j_glass', 1]]},
+        'c4_kitchen_crate': {'name': 'Ration Crate', 'items': [['c_tin', 1]]},
+        'c4_armoury_locker': {'name': 'Armoury Locker', 'items': [['w_revolver38', 1], ['a_38', 10]], 'lock': 45},
+        'c4_dorm_locker': {'name': 'Dormitory Locker', 'items': [['j_cloth', 2], ['k_c4_photo', 1]], 'lock': 20},
+        'c4_pump_crate': {'name': 'Pump Spares', 'items': [['j_electronics', 1], ['j_wiring', 2]]},
+    },
+    'spots': {
+        'machine': {'x': 18, 'y': 3}, 'pumps': {'x': 35, 'y': 27}, 'council': {'x': 18, 'y': 16}, 'dorm': {'x': 31, 'y': 16},
+    },
+    'npcs': [],
+    'triggers': [
+        {'id': 'arrive', 'x': 33, 'y': 24, 'w': 12, 'h': 6, 'text': 'The tunnel comes up through a hole the Sump cut in a pump-room floor. Pumps like Cistern 9\'s. A supply pipe like Cistern 9\'s, cut through, dry. The lamp the scavengers hung still burns. Everything else has been dark for forty years, and smells of it.', 'effects': [{'learn': 'seen_cistern4'}, {'set': 'c4_entered'}]},
+        {'id': 'ring', 'x': 1, 'y': 21, 'w': 44, 'h': 2, 'text': 'A line on the corridor wall at shoulder height, brown, where water stood for a season after the pumps stopped and then went down and did not come back.', 'effects': [{'learn': 'c4_water_line'}]},
+        {'id': 'dorm', 'x': 27, 'y': 12, 'w': 18, 'h': 8, 'text': 'The dormitory. The cots are made. Some of them are not empty, and have not been for forty years, and lie the way people lie who decided to.', 'effects': [{'learn': 'c4_dorm_seen'}]},
+        {'id': 'hall', 'x': 1, 'y': 1, 'w': 11, 'h': 7, 'text': 'The great-door hall. Sandbags against the inside of the door, and crates, and a table, and then — the marks are still on the floor — the sandbags dragged away again, and the door still shut.', 'effects': [{'learn': 'c4_door_hall_seen'}]},
+    ],
+    'ambience': {'indoor': True, 'fogColor': 'hex:0x08090a', 'fogDensity': 0.02, 'dust': 0.6, 'grade': 0.5, 'ambient': {'color': 'hex:0x8a9098', 'intensity': 0.8}, 'mood': 'grim', 'sound': 'hum'},
+}
+
+HEADER = "import type { MapDef } from '../../engine/data/types';\n\n// Generated by tools/maps/gen_cistern4.py — edit the generator, then re-run it.\n"
+with open(os.path.join(ROOT, 'src', 'content', 'maps', 'cistern4.ts'), 'w') as f:
+    f.write(f"{HEADER}export const cistern4: MapDef = {ts(cistern4)};\n")
+print('cistern4', W, 'x', H)

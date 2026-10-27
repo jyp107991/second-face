@@ -22,7 +22,7 @@ const L: LocationDef[] = [
   // The Glass Flats
   { id: 'ninebridge', name: 'Ninebridge', region: 'glass_flats', x: 320, y: 300, kind: 'major', settlement: 'ninebridge', map: 'ninebridge' },
   { id: 'openfield', name: 'Openfield', region: 'glass_flats', x: 280, y: 340, kind: 'major', settlement: 'openfield', map: 'openfield' },
-  { id: 'sump', name: 'the Sump', region: 'glass_flats', x: 362, y: 382, kind: 'minor' },
+  { id: 'sump', name: 'the Sump', region: 'glass_flats', x: 362, y: 382, kind: 'minor', settlement: 'sump', map: 'sump' },
   { id: 'lm_flats_01', name: 'Stilted freeway', region: 'glass_flats', x: 370, y: 318, kind: 'landmark', hidden: true },
   // The Rail Corridor
   { id: 'junction', name: 'the Junction', region: 'rail_corridor', x: 380, y: 232, kind: 'major' },
@@ -56,6 +56,7 @@ const R: RouteDef[] = [
   { a: 'tollhouse', b: 'junction', terrain: 'road', danger: 0.3 },
   { a: 'ninebridge', b: 'openfield', terrain: 'track', danger: 0.15 },
   { a: 'ninebridge', b: 'sump', terrain: 'glass', danger: 0.45 },
+  { a: 'openfield', b: 'sump', terrain: 'glass', danger: 0.4 },
   { a: 'openfield', b: 'halt_w', terrain: 'track', danger: 0.2 },
   { a: 'ninebridge', b: 'meridian', terrain: 'road', danger: 0.35 },
   { a: 'meridian', b: 'hamlet_shore', terrain: 'marsh', danger: 0.3 },

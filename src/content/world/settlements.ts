@@ -8,7 +8,8 @@ export const SETTLEMENTS: Record<string, SettlementDef> = Object.fromEntries(([
   { id: 'drywells', name: 'Dry Wells', roads: { shale: 1, wheel: 1 }, traffic: 0.4, type: 'well_town', region: 'sallow', prosperity: 0.15, kit: 'scrap' },
   { id: 'wheel', name: 'the Wheel', roads: { shale: 1, drywells: 1, rustdogs: 1 }, traffic: 0.6, type: 'nomad_camp', region: 'sallow', prosperity: 0.4, kit: 'wagons', owner: 'wheel' },
   { id: 'tollhouse', name: 'Tollhouse 9', roads: { shale: 2, rustdogs: 2, ninebridge: 4 }, traffic: 0.9, type: 'toll_fort', region: 'sallow', prosperity: 0.6, kit: 'concrete', owner: 'tollmen' },
-  { id: 'ninebridge', name: 'Ninebridge', roads: { tollhouse: 4, openfield: 2, meridian: 3 }, traffic: 1, type: 'trade_town', region: 'glass_flats', prosperity: 0.6, kit: 'wreck', owner: 'tollmen' },
-  { id: 'openfield', name: 'Openfield', roads: { ninebridge: 2, meridian: 3 }, traffic: 0.5, type: 'commune', region: 'glass_flats', prosperity: 0.55, kit: 'timber', owner: 'choir' },
+  { id: 'ninebridge', name: 'Ninebridge', roads: { tollhouse: 4, openfield: 2, meridian: 3, sump: 2 }, traffic: 1, type: 'trade_town', region: 'glass_flats', prosperity: 0.6, kit: 'wreck', owner: 'tollmen' },
+  { id: 'openfield', name: 'Openfield', roads: { ninebridge: 2, meridian: 3, sump: 2 }, traffic: 0.5, type: 'commune', region: 'glass_flats', prosperity: 0.55, kit: 'timber', owner: 'choir' },
+  { id: 'sump', name: 'the Sump', roads: { ninebridge: 2, openfield: 2 }, traffic: 0.3, type: 'salvage_camp', region: 'glass_flats', prosperity: 0.2, kit: 'scrap' },
   { id: 'meridian', name: 'Meridian', roads: { ninebridge: 3, openfield: 3 }, traffic: 0.8, type: 'bastion', region: 'meridian', prosperity: 0.5, kit: 'concrete' },
 ] as SettlementDef[]).map((s) => [s.id, s]));

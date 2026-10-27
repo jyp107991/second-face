@@ -39,6 +39,9 @@ import { ninebridge } from './maps/ninebridge';
 import { NINEBRIDGE_NPCS } from './npcs/ninebridge';
 import { openfield } from './maps/openfield';
 import { OPENFIELD_NPCS } from './npcs/openfield';
+import { sump } from './maps/sump';
+import { cistern4 } from './maps/cistern4';
+import { SUMP_NPCS } from './npcs/sump';
 import { BENCH_NPCS } from './npcs/bench';
 import { DIALOGUES } from './dialogue';
 import { QUESTS } from './quests';
@@ -60,10 +63,10 @@ export const MAPS: Record<string, MapDef> = {
   overpass,
   dev_yard,
   dev_bunker,
-  bench_crowd, tollhouse, signalhill, drywells, wild_track, wild_rough, windpumps, saltpan, orchard, wheel, ninebridge, openfield,
+  bench_crowd, tollhouse, signalhill, drywells, wild_track, wild_rough, windpumps, saltpan, orchard, wheel, ninebridge, openfield, sump, cistern4,
 };
 
-export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...TOLLHOUSE_NPCS, ...SIGNALHILL_NPCS, ...DRYWELLS_NPCS, ...WILDS_NPCS, ...LANDMARK_NPCS, ...ORCHARD_NPCS, ...WHEEL_NPCS, ...NINEBRIDGE_NPCS, ...OPENFIELD_NPCS, ...BENCH_NPCS].map((n) => [n.id, n]));
+export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...TOLLHOUSE_NPCS, ...SIGNALHILL_NPCS, ...DRYWELLS_NPCS, ...WILDS_NPCS, ...LANDMARK_NPCS, ...ORCHARD_NPCS, ...WHEEL_NPCS, ...NINEBRIDGE_NPCS, ...OPENFIELD_NPCS, ...SUMP_NPCS, ...BENCH_NPCS].map((n) => [n.id, n]));
 
 export { LETTERS, FACTIONS, WORLD_MAP, REGIONS, TRAITS, PERKS, CHROME, ITEMS, ORIGINS, DIALOGUES, QUESTS, SETTLEMENTS, LEADS, CONCLUSIONS, WORLD_EVENTS, ROAD_ENCOUNTERS };
 registerRules({ traits: TRAITS, perks: PERKS });

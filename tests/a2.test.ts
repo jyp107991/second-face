@@ -259,3 +259,89 @@ describe('Openfield: every third row', () => {
     expect(g.world.quests.q_of_seed.stage).toBe('chaff');
   });
 });
+
+function atSump(hour = 12) {
+  const g = newGameState('c9', 0, 0);
+  g.minutes = 28 * 1440 + hour * 60;
+  g.locationId = 'sump';
+  g.flags.visited_sump = true;
+  g.flags.ch1_done = true;
+  const q = new QuestEngine(QUESTS, g);
+  q.questStart('q_a2_cistern4');
+  return { g, q };
+}
+
+describe('The Sump and Cistern 4: the fourth door', () => {
+  it('every Openfield ending starts the road to the Sump', () => {
+    const of = QUESTS.q_a2_openfield;
+    const enders = Object.values(of.stages).filter((s) => s.end === 'done');
+    expect(enders.length).toBe(4);
+    for (const s of enders) expect(s.onEnter?.some((e) => 'quest' in e && e.quest === 'q_a2_cistern4' && e.start)).toBe(true);
+  });
+
+  it('the Marrs\' name is a leave from Grel, and the mouth opens to it', () => {
+    const { g, q } = atSump();
+    g.world.knowledge.dw_origin_known = true;
+    talk('d_sp_grel', g, q, ['The Marrs.', 'That\'s all.']);
+    expect(g.flags.sp_grel_leave).toBe(true);
+    talk('d_sp_mouth', g, q, ['Grel says I go down.', '(Down.)']);
+    expect(g.flags.sp_tunnel_open).toBe(true);
+  });
+
+  it('after dark the mouth can be slipped past', () => {
+    const { g, q } = atSump(1);
+    g.pc.sheet.skillBought.stealth = 90;
+    talk('d_sp_mouth', g, q, ['(Past them, along the wall', '(Down.)']);
+    expect(g.flags.sp_tunnel_open).toBe(true);
+    expect(g.flags.sp_sneaked).toBe(true);
+  });
+
+  it('the one-purse ledger unites the rims and throws the runner out', () => {
+    const { g, q } = atSump();
+    g.pc.sheet.skillBought.barter = 90;
+    talk('d_sp_dace', g, q, ['Both rims. You were going to say both.', 'That\'s all.']);
+    expect(g.world.quests.q_sp_feud?.stage).toBe('rims');
+    expect(cond({ lead: 'l_sump_one_purse' }, g)).toBe(true);
+    g.pc.sheet.skillBought.speech = 90;
+    talk('d_sp_grel', g, q, ['The Tanners are paid from the same purse', '(Let them.)']);
+    expect(g.flags.sp_feud_outcome).toBe('united');
+    expect(g.world.quests.q_sp_feud.status).toBe('done');
+    expect(g.flags.sp_runner_gone).toBe(true);
+    talk('d_sp_mouth', g, q, ['(Down.)']);
+    expect(g.flags.sp_tunnel_open).toBe(true);
+  });
+
+  it('the crank wakes the caretaker and the caretaker is proof enough', () => {
+    const { g, q } = atSump();
+    g.locationId = 'cistern4';
+    g.pc.sheet.skillBought.science = 90;
+    talk('d_c4_crank', g, q, ['(Clear the lead, seat the brushes, turn it.)', '(Go to the terminal.)']);
+    expect(g.flags.c4_powered).toBe(true);
+    talk('d_c4_four', g, q, ['What were you told?', 'Where are your people?', 'Cistern 9.', 'Be well, FOUR.']);
+    expect(g.world.knowledge.c4_four_spoke).toBe(true);
+    expect(g.world.knowledge.c4_mother_judged).toBe(true);
+    expect(g.world.quests.q_a2_cistern4.status).toBe('done');
+    expect(g.world.quests.q_a2_cistern4.stage).toBe('proof');
+    expect(cond({ lead: 'l_c4_same_order' }, g)).toBe(true);
+  });
+
+  it('the diary is carried for the city, and reading it is proof too', () => {
+    const { g, q } = atSump();
+    g.locationId = 'cistern4';
+    talk('d_c4_diary', g, q, ['(Take it.)', '(Go.)']);
+    expect(countItem(g.pc.inventory, 'k_c4_diary')).toBe(1);
+    expect(g.world.quests.q_c4_diary?.stage).toBe('carry');
+    talk('d_c4_diary_read', g, q, ['(Close it.)']);
+    expect(g.world.knowledge.c4_diary_read).toBe(true);
+    expect(g.world.quests.q_a2_cistern4.status).toBe('done');
+  });
+
+  it('the order itself, read, is the knowledge route', () => {
+    const { g, q } = atSump();
+    addItem(g.pc.inventory, makeItem('k_c4_order'));
+    q.update();
+    expect(g.world.quests.q_a2_cistern4.status).toBe('done');
+    talk('d_c4_order_read', g, q, ['(Fold it.)']);
+    expect(g.world.knowledge.c4_order_read).toBe(true);
+  });
+});

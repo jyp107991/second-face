@@ -131,22 +131,22 @@ export const q_a2_openfield: QuestDef = {
     exposed: {
       journal: 'You told the Elder. He heard it the way a man hears his own name read from a list, and then he walked his son to the track and did not come back for an hour. The well is clean. The rows will come back. Mason will not. The road runs on east, to a dead shelter and the city.',
       end: 'done',
-      onEnter: [{ set: 'of_well_clean' }, { set: 'of_tobias_gone' }, { set: 'a2_openfield_done' }, { decision: { id: 'of_exposed', text: 'You told Elder Mason that his son was poisoning Openfield\'s well.' } }, { news: { tag: 'of_son_cast_out', text: 'the Elder of Openfield cast out his own son over the well', valence: -10, size: 7, at: 'openfield' } }, { rep: { faction: 'choir', respect: 8 } }],
+      onEnter: [{ set: 'of_well_clean' }, { set: 'of_tobias_gone' }, { set: 'a2_openfield_done' }, { learn: 'loc_sump' }, { quest: 'q_a2_cistern4', start: true }, { decision: { id: 'of_exposed', text: 'You told Elder Mason that his son was poisoning Openfield\'s well.' } }, { news: { tag: 'of_son_cast_out', text: 'the Elder of Openfield cast out his own son over the well', valence: -10, size: 7, at: 'openfield' } }, { rep: { faction: 'choir', respect: 8 } }],
     },
     mercy: {
       journal: 'Tobias stopped. You hold his secret and his sheet, and the Elder holds a theory about blight that he can go on not believing. The well is clean by the week\'s end. The rows will come back. The road runs on east, to a dead shelter and the city.',
       end: 'done',
-      onEnter: [{ set: 'of_well_clean' }, { set: 'of_tobias_secret' }, { set: 'a2_openfield_done' }, { decision: { id: 'of_mercy', text: 'You let Tobias Mason stop poisoning the well without telling his father.' } }, { rep: { faction: 'choir', respect: 4 } }, { trust: { npc: 'npc_of_04', by: 30 } }],
+      onEnter: [{ set: 'of_well_clean' }, { set: 'of_tobias_secret' }, { set: 'a2_openfield_done' }, { learn: 'loc_sump' }, { quest: 'q_a2_cistern4', start: true }, { decision: { id: 'of_mercy', text: 'You let Tobias Mason stop poisoning the well without telling his father.' } }, { rep: { faction: 'choir', respect: 4 } }, { trust: { npc: 'npc_of_04', by: 30 } }],
     },
     unwritten: {
       journal: 'You gave Tobias to Petra, and the Unwritten took him down the hatch to argue about whether a man who breaks a forecast by starving his own people is one of them or the opposite. The Elder thinks his son went east. The well is clean. The road runs on east, to a dead shelter and the city.',
       end: 'done',
-      onEnter: [{ set: 'of_well_clean' }, { set: 'of_tobias_gone' }, { set: 'of_tobias_unwritten' }, { set: 'a2_openfield_done' }, { decision: { id: 'of_unwritten', text: 'You handed Tobias Mason to the Unwritten.' } }, { rep: { faction: 'choir', respect: 2 } }],
+      onEnter: [{ set: 'of_well_clean' }, { set: 'of_tobias_gone' }, { set: 'of_tobias_unwritten' }, { set: 'a2_openfield_done' }, { learn: 'loc_sump' }, { quest: 'q_a2_cistern4', start: true }, { decision: { id: 'of_unwritten', text: 'You handed Tobias Mason to the Unwritten.' } }, { rep: { faction: 'choir', respect: 2 } }],
     },
     dead: {
       journal: 'Tobias Mason died at his own well with a knife in his hand. The Choir buried him under the open sky and did not sing. The well is clean. Nothing else here is. The road runs on east.',
       end: 'done',
-      onEnter: [{ set: 'of_well_clean' }, { set: 'of_tobias_dead' }, { set: 'a2_openfield_done' }, { decision: { id: 'of_dead', text: 'Tobias Mason died at Openfield\'s well.' } }, { news: { tag: 'of_son_dead', text: 'the Elder\'s son died at the well in Openfield; a stranger\'s hand was in it', valence: -25, size: 8, at: 'openfield' } }, { rep: { faction: 'choir', respect: -20, fear: 10 } }],
+      onEnter: [{ set: 'of_well_clean' }, { set: 'of_tobias_dead' }, { set: 'a2_openfield_done' }, { learn: 'loc_sump' }, { quest: 'q_a2_cistern4', start: true }, { decision: { id: 'of_dead', text: 'Tobias Mason died at Openfield\'s well.' } }, { news: { tag: 'of_son_dead', text: 'the Elder\'s son died at the well in Openfield; a stranger\'s hand was in it', valence: -25, size: 8, at: 'openfield' } }, { rep: { faction: 'choir', respect: -20, fear: 10 } }],
     },
   },
 };
@@ -187,5 +187,80 @@ export const q_of_rite: QuestDef = {
       next: [{ if: { flag: 'sky_rite' }, stage: 'done' }],
     },
     done: { journal: 'A cairn under the windpump with no name on it, and a stone from it in your pack. Sister, or brother, of the Open Sky. The Choir\'s halls are open to you from Shale to the city.', end: 'done', onEnter: [{ decision: { id: 'sky_rite', text: 'You raised a cairn under the open sky at Openfield and took the Choir\'s second vow.' } }] },
+  },
+};
+
+// ---------------------------------------------------------------- the Sump and Cistern 4
+
+const C4_PROOF = { any: [{ item: 'k_c4_order' }, { knows: 'c4_four_spoke' }, { knows: 'c4_diary_read' }] };
+
+export const q_a2_cistern4: QuestDef = {
+  id: 'q_a2_cistern4', title: 'The Fourth Door', act: 'a2', critical: true, start: 'sump', xp: 400,
+  routes: [
+    { id: 'four', kind: 'tech', label: 'Crank the caretaker awake and ask it what it was told', requires: { any: [{ skill: 'science', gte: 35 }, { skill: 'mechanics', gte: 35 }] } },
+    { id: 'records', kind: 'knowledge', label: 'The Archive: the order itself, with the city\'s seal' },
+    { id: 'diary', kind: 'medicine', label: 'The last doctor\'s diary, and the clinic table that says how they went', requires: { skill: 'medicine', gte: 30 } },
+    { id: 'sneak', kind: 'stealth', label: 'Past the tunnel guard after dark, or by the way a child knows', requires: { skill: 'stealth', gte: 40 } },
+    { id: 'fight', kind: 'fight', label: 'Through the guard' },
+  ],
+  stages: {
+    sump: {
+      journal: 'The Marrs walked out of a cistern with a number on it when its pumps stopped and its door would not open: Cistern 4, under the glass south-east of Ninebridge, where two scavenger clans are being paid to dig toward a door. What the city told Cistern 4, it told Cistern 9. The proof is down there.',
+      objectives: [
+        { id: 'reach', text: 'Reach the Sump', done: { flag: 'visited_sump' } },
+        { id: 'down', text: 'Get down the tunnel', done: { flag: 'sp_tunnel_open' } },
+        { id: 'proof', text: 'Find what Cistern 4 was told', done: C4_PROOF },
+      ],
+      onEnter: [{ learn: 'loc_sump' }],
+      next: [{ if: C4_PROOF, stage: 'proof' }],
+    },
+    proof: {
+      journal: 'Cistern 4 was ordered to send its people to the city on a date, and could not, and had its water cut for not complying, and died in the dark with its door shut and its records filed for return. The same order sits sealed in MOTHER\'s log three times over, refused. The cisterns were never anyone\'s but the city\'s. The city is east, and the map\'s road runs into it.',
+      end: 'done',
+      onEnter: [
+        { set: 'a2_cistern4_done' }, { lead: 'l_c4_order' }, { lead: 'l_c4_same_order' },
+        { decision: { id: 'c4_proof', text: 'You found in Cistern 4 what the city ordered of the cisterns.' } },
+        { news: { tag: 'c4_opened', text: 'someone went down the Sump\'s tunnel to the dead cistern and came back up with paper', valence: 0, size: 5, at: 'sump' } },
+      ],
+    },
+  },
+};
+
+export const q_sp_feud: QuestDef = {
+  id: 'q_sp_feud', title: 'Two Clans, One Purse', act: 'a2', start: 'rims', xp: 160,
+  routes: [
+    { id: 'purse', kind: 'barter', label: 'The runner\'s ledger: both rims paid from one purse', requires: { skill: 'barter', gte: 35 } },
+    { id: 'unite', kind: 'talk', label: 'Put the ledger in front of both chiefs', requires: { skill: 'speech', gte: 40 } },
+    { id: 'skim', kind: 'stealth', label: 'Take a cut of the purse and let them dig', requires: { skill: 'stealth', gte: 35 } },
+    { id: 'side', kind: 'fight', label: 'Take a side and clear the other rim' },
+  ],
+  stages: {
+    rims: {
+      journal: 'Two clans over one tunnel, paid on the fourth day to dig toward the same door and to hate each other in between. The guild\'s runner sleeps on the south rim with the purse.',
+      objectives: [{ id: 'purse', text: 'Find out who pays the Sump', done: { lead: 'l_sump_one_purse' } }, { id: 'end', text: 'End the feud, or use it', done: { flag: 'sp_feud_outcome' } }],
+      next: [
+        { if: { flag: 'sp_feud_outcome', eq: 'united' }, stage: 'united' },
+        { if: { flag: 'sp_feud_outcome', eq: 'grel' }, stage: 'grel' },
+        { if: { flag: 'sp_feud_outcome', eq: 'tanner' }, stage: 'tanner' },
+        { if: { flag: 'sp_feud_outcome', eq: 'skim' }, stage: 'skim' },
+      ],
+    },
+    united: { journal: 'Grel and Hesk Tanner read the same ledger at the same fire and did not speak for a while, and then went together to the south rim. The runner left in the night with his purse and without his horse. The Sump digs for itself now, both rims, and the tunnel is open to anyone it does not mind.', end: 'done', onEnter: [{ set: 'sp_runner_gone' }, { set: 'sp_united' }, { rep: { faction: 'tollmen', respect: -8 } }, { news: { tag: 'sump_united', text: 'the two clans at the Sump threw out the guild\'s runner and dig for themselves', valence: 12, size: 6, at: 'sump' } }] },
+    grel: { journal: 'The east rim is empty. Grel\'s people have both cabins and the tunnel and the purse, and the guild pays one column now instead of two, which Factor Pike will call a saving.', end: 'done', onEnter: [{ set: 'sp_grel_won' }, { decision: { id: 'sp_grel', text: 'You cleared the Tanners off the Sump\'s east rim for Grel.' } }, { news: { tag: 'sump_grel', text: 'Grel\'s clan took the whole Sump; a stranger\'s gun was in it', valence: -10, size: 6, at: 'sump' } }] },
+    tanner: { journal: 'The west rim is empty. Hesk Tanner has the cabins, the tunnel, the purse and the door, which is what Hesk Tanner wanted; the guild pays one column now.', end: 'done', onEnter: [{ set: 'sp_tanner_won' }, { decision: { id: 'sp_tanner', text: 'You cleared Grel\'s clan off the Sump\'s west rim for Hesk Tanner.' } }, { news: { tag: 'sump_tanner', text: 'the Tanners took the whole Sump; a stranger\'s gun was in it', valence: -10, size: 6, at: 'sump' } }] },
+    skim: { journal: 'A tenth of the purse comes to you on the fourth day, and both rims keep digging, and hating, and neither knows why the runner looks at you when he counts.', end: 'done', onEnter: [{ decision: { id: 'sp_skim', text: 'You took a cut of the guild\'s purse at the Sump and let the clans keep feuding.' } }] },
+  },
+};
+
+export const q_c4_diary: QuestDef = {
+  id: 'q_c4_diary', title: 'To Whoever Comes', act: 'a2', start: 'carry', xp: 120,
+  routes: [{ id: 'deliver', kind: 'knowledge', label: 'Carry the last doctor\'s letter to the city it was written to' }],
+  stages: {
+    carry: {
+      journal: 'The last doctor of Cistern 4 wrote the end of it in a clinic ledger, and addressed the last page to whoever came from Meridian. Nobody came. You have it. The city is east.',
+      objectives: [{ id: 'deliver', text: 'Put the diary in front of someone in Meridian who should read it', done: { flag: 'c4_diary_delivered' } }],
+      next: [{ if: { flag: 'c4_diary_delivered' }, stage: 'delivered' }],
+    },
+    delivered: { journal: 'Read, in the city it was written to. What that changes is the city\'s to decide.', end: 'done' },
   },
 };

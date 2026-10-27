@@ -347,9 +347,24 @@ mid-range Android phone; deployed to Pages.
             the rite, refuses if the son died; camp talk seeds his own road). Items (a worn forecast sheet, a cairn
             stone, dead seed, the Elder's letter); six leads. Tests `tests/a2.test.ts` (+8). Smoke
             `tools/qa/openfield.cjs`, evidence `docs/evidence/b32/`.
-      - [ ] B3.3 **Cistern 4 and the Sump** (~1.5 h) NEXT: a failed shelter as a dungeon (`gen_cistern4.py`) and the scavenger
-            clan's camp; `q_a2_cistern4`; sides *Sump Feud*, *Cistern 4 Diary*; the stilted-freeway landmark. Smoke.
-      - [ ] B3.4 **Meridian: the gate and the Precinct** (~2 h): first district map; the gate hearing `q_a2_precinct`
+      - [x] B3.3 **Cistern 4 and the Sump** DONE 2026-10-27: `gen_sump.py` → `maps/sump.ts` (52×40: a drained concrete
+            bowl over the storm tunnels, scrap cabins on the west rim, tents on the east, the guild runner's container
+            on the south rim, the tunnel mouth under sandbags at the bowl's north end — an exit into Cistern 4);
+            `gen_cistern4.py` → `maps/cistern4.ts` (46×31, the Cistern 9 plan forty years dead: collapses, dry
+            hydroponics, the clinic, the council room with its Archive standing open, the dormitory and its cots, the
+            commons, the pump room where the tunnel comes up; no living cast); `npcs/sump.ts` (two clan chiefs, the
+            guild's runner, a child who knows a drain, guards and diggers for both rims); `dialogue/sump.ts` (23 trees:
+            the mouth, the chiefs, the runner, the child; below, the great door, a crank generator and the caretaker
+            terminal FOUR, the Archive, the diary, the clinic table, the supply pipe, the ration board, the cots, the
+            council table); `quests/a2.ts` — the beat `q_a2_cistern4` *The Fourth Door* (started by every Openfield
+            ending; down the tunnel by a chief's leave, the family name the Dry Wells people carry, coin, the drain a
+            child knows, the dark, or force; proof by the caretaker, the order or the diary), sides *Two Clans, One
+            Purse* (`q_sp_feud`: the runner's ledger; unite the rims, skim the purse, or take a side) and *To Whoever
+            Comes* (`q_c4_diary`: carried for the city; completes in B3.4). Settlement `sump` (salvage camp) with the
+            map; routes Ninebridge/Openfield ↔ Sump. Items (the runner's ledger, the relocation order, the diary, a
+            real photograph); four leads and a notebook conclusion. The stilted-freeway landmark is deferred to B5.
+            Tests `tests/a2.test.ts` (+7). Smoke `tools/qa/sump.cjs`, evidence `docs/evidence/b33/`.
+      - [ ] B3.4 **Meridian: the gate and the Precinct** (~2 h) NEXT: first district map; the gate hearing `q_a2_precinct`
             (talk / barter / record / stealth / riot; a detention branch); the warden captain; a fifth companion (a
             Ledger assessor unit); wardens rank 1; *Citizenship Exam*, *Unpaid Fines*. ENGINE: districts as linked maps
             under one world place + the Loop (district transit with fares and access rules; `DESIGN §13c`). Smoke.
