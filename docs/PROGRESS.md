@@ -307,9 +307,43 @@ mid-range Android phone; deployed to Pages.
       Cistern to Shale, answered by a daughter, three ways back). Engine: `Game.logicHost` now routes quest effects (road
       encounters, timers, dev runs), `game.devApply` for QA. Smokes: `tools/qa/act1_sides.cjs`; `tools/qa/act1.sh`
       runs every Act 1 smoke in order against one server (`SF_URL`), evidence under `docs/evidence/act1/`.
-- [ ] B3 **Meridian**: 9 districts, the Loop, Brokers' gigs (~25), the Masque, High Water, Static, Turf,
-      Court of Accounts, citizenship hearing, Archive Spire, flat, fight pits, reverie dens, races,
-      gambling, safehouse; gangs joinable; Ledger line; companions 4–6. ~16 h.
+- [~] B3 **Act 2 part 1 — the road east and Meridian** (~20 h). Ordered as the player meets it (the Glass Flats
+      beats come before the city on the critical path, so the next test version can be "Act 2 opening"; the other
+      Act 2 wilds stay in B5). Each slice ends playable, validated, with a smoke; engine additions are listed where a
+      slice needs them (content must not need engine changes otherwise).
+      - [ ] B3.1 **Ninebridge** (~2 h) NEXT: Tollmen trade town on the broken bridge (`gen_ninebridge.py`, kit wreck:
+            stalls on bridge decks and hulls, the Exchange hall, the auction block, a berth to rent as a safehouse);
+            cast (the Grand Factor, the auctioneer, a fourth companion — an ex-trader — extras); the Exchange beat
+            `q_a2_ninebridge` (barter / talk / stealth in the ledgers / tech / leads); sides *Debt Auction* and
+            *Bridge-Toll Strike*; Tollmen rank 2 content; Dust table; letters; caravan stop. Smoke `tools/qa/ninebridge.cjs`.
+      - [ ] B3.2 **Openfield** (~1.5 h): Choir commune (`gen_openfield.py`, timber: fields, long halls, shrine, open-sky
+            burial ground); the Elder and his household; `q_a2_openfield` (the blight: medicine / tech / talk / stealth
+            / survival); sides *Well-Poisoner*, *Seed Thief*; the Sky Rite (Choir rank 2). Smoke.
+      - [ ] B3.3 **Cistern 4 and the Sump** (~1.5 h): a failed shelter as a dungeon (`gen_cistern4.py`) and the scavenger
+            clan's camp; `q_a2_cistern4`; sides *Sump Feud*, *Cistern 4 Diary*; the stilted-freeway landmark. Smoke.
+      - [ ] B3.4 **Meridian: the gate and the Precinct** (~2 h): first district map; the gate hearing `q_a2_precinct`
+            (talk / barter / record / stealth / riot; a detention branch); the warden captain; a fifth companion (a
+            Ledger assessor unit); wardens rank 1; *Citizenship Exam*, *Unpaid Fines*. ENGINE: districts as linked maps
+            under one world place + the Loop (district transit with fares and access rules; `DESIGN §13c`). Smoke.
+      - [ ] B3.5 **Old Market + the Brokers' board** (~2 h): bazaar map; the Broker; the gigs board (authored gigs +
+            templated couriers/bounties/rescues, ~10 at first); *Haunted Kiosk*, *Old Market Riot*; chrome and gun
+            merchants. ENGINE: gig board UI (notebook tab) + gig templates. Smoke.
+      - [ ] B3.6 **The Sink** (~1.5 h): flooded under-city map; the Mender of the Sink (surgery, the Menders' Code);
+            *High Water* line (the spring flood; who pays); *Organ Run*. Smoke.
+      - [ ] B3.7 **Lantern Row** (~2 h): canal pleasure district; fight pits (ENGINE: combat variant — unarmed/melee,
+            crowd morale, bets); reverie dens (ENGINE: short playable memory scenes); Dust; *Reverie of a Stranger*. Smoke.
+      - [ ] B3.8 **The Stacks** (~1.5 h): megablock map with floors; a flat to rent or buy (safehouse: storage, rest,
+            letters, Loop node); *Rooftop Gardens* floor war. Smoke.
+      - [ ] B3.9 **Bridgeward and Turf** (~2 h): gang turf map; the four gangs (one joinable at a time, gang-specific
+            initiations); *Static* line; *Turf* outcomes; the Rust Dogs' old haunt. Smoke.
+      - [ ] B3.10 **The Crown and the Masque** (~2 h): terraces under domes; invitation / contract / disguise / force
+            entry; the Tenured houses; the Masque (duel, infiltration); *The Kidnapping*, *Photographer's Studio*.
+            ENGINE: heist-lite (approach choice → map with routes). Smoke.
+      - [ ] B3.11 **Archive Spire and the Court of Accounts** (~2 h): the archive beats `q_a2_calendar` and `q_a2_spire`;
+            the court (ENGINE: trial as dialogue with evidence; precedent flags); *Court Case: the Squatter*. Smoke.
+      - [ ] B3.12 **Dead Ring, races, wrap** (~1.5 h): the ruined outer ring; buggy races (segments: push / hold / cut);
+            the Loop complete; Meridian end-to-end smoke in `tools/qa/act2.sh`; PROGRESS; a second test version
+            (`act1-test-2` → or `act2-test-1`) when the owner's Act 1 notes are folded in.
 - [ ] B4 **Halcyon & the Skirts**: arcology, Skirts, the Shift, Contract, Spare Parts, the Leash, the
       Long-Lived; Concern chrome; 7th companion. ~10 h.
 - [ ] B5 **Act 2 wilds**: Glass Flats (Ninebridge, Openfield, the Sump, Cistern 4), Rail Corridor (the
