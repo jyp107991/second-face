@@ -133,6 +133,9 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_rev_spire', label: 'Ninety-one landings', text: 'In the reel the stranger came down a stair of ninety-odd landings lit with the city\'s own tubes. One house in Meridian has that many floors above a stair.' },
   { id: 'l_rev_bundle', label: 'Twelve faces', text: 'He carried a bundle of photographs with cipher under each, and a sheet of twelve lines in the same cipher. The fourth face was yours, older.' },
   { id: 'l_rev_gate', label: 'A rider at the gate', text: 'At dawn a guild rider waited on the road west of the Wall with a brand on the saddle you have seen at Tollhouse 9. The stranger saw the rider waiting, and went west anyway.' },
+  // the Stacks
+  { id: 'l_st_tank', label: 'Live at two', text: 'Block Seven\'s main is live only at night, and the lifts\' three-minute check at two draws the whole block; the roof pump runs at two because that is when there is power. Something under the dead lifts has run every night for forty years.' },
+  { id: 'l_st_latch', label: 'A man called Latch', text: 'A man in a clean coat brings Concern nutrient to the Stacks\' trays and takes a third of the crop up the Loop; the deal has a line about who owns the deck.' },
 ] as LeadDef[]).map((l) => [l.id, l]));
 
 export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([

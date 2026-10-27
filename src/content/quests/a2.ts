@@ -502,3 +502,51 @@ export const q_lr_reverie: QuestDef = {
     seen: { journal: 'You lived the stranger\'s last day in the city through his eyes: a long stair, something flat carried against the ribs, this cot, a bowl of noodles eaten standing, and a gate at dawn with somebody on the road beyond it who was waiting. What you made of it is in the notebook\'s leads.', end: 'done' },
   },
 };
+
+// ---------------------------------------------------------------- the Stacks
+
+export const q_st_flat: QuestDef = {
+  id: 'q_st_flat', title: 'A Flat in the Stacks', act: 'a2', start: 'offer', xp: 80,
+  routes: [
+    { id: 'pay', kind: 'barter', label: 'Key money: two hundred and fifty to the committee' },
+    { id: 'earn', kind: 'talk', label: 'Settle the roof and the committee gives it' },
+    { id: 'squat', kind: 'stealth', label: 'Break the seal and move in', requires: { skill: 'security', gte: 35 } },
+  ],
+  stages: {
+    offer: {
+      journal: 'Flat 9-14 in Block Seven: two rooms, a stove, a bed the Marrs left, a window on the canyon. The committee wants two hundred and fifty in key money, or the roof settled so Nine is not dry at six. The door has a seal on it.',
+      objectives: [{ id: 'key', text: 'Get the flat, one way or another', done: { flag: 'st_flat' } }],
+      next: [{ if: { flag: 'st_flat' }, stage: 'home' }],
+    },
+    home: { journal: 'A flat of your own, nine floors up: a bed to rest in, a locker to keep things in, a table to write at, a door that locks from your side. The Loop is downstairs.', end: 'done' },
+  },
+};
+
+export const q_st_gardens: QuestDef = {
+  id: 'q_st_gardens', title: 'Rooftop Gardens', act: 'a2', start: 'roof', xp: 180,
+  routes: [
+    { id: 'shared', kind: 'talk', label: 'A schedule: hours for the beds, hours for the trays (the committee, or the valve)' },
+    { id: 'nines', kind: 'stealth', label: 'The beds: pull the pump\'s fuse, or turn the valve west', requires: { any: [{ skill: 'stealth', gte: 30 }, { skill: 'mechanics', gte: 35 }] } },
+    { id: 'twelves', kind: 'talk', label: 'The trays: argue the committee into giving them the tank', requires: { skill: 'speech', gte: 40 } },
+    { id: 'burned', kind: 'fight', label: 'Burn the trays with Ren, and fight the Twelves' },
+  ],
+  stages: {
+    roof: {
+      journal: 'Block Seven\'s roof: a tank that fills off the Precinct main at night, beds of real dirt on the Nines\' side that are dry by noon, trays on the Twelves\' side that take the whole tank from two to five. Nine old people and a tree against sixty dinners and a man in a clean coat. Three springs of committee pending.',
+      objectives: [
+        { id: 'log', text: 'Learn who takes what from the tank, and when', done: { knows: 'st_tank_log' } },
+        { id: 'settle', text: 'Settle the roof', done: { flag: 'st_roof' } },
+      ],
+      next: [
+        { if: { flag: 'st_roof', eq: 'shared' }, stage: 'shared' },
+        { if: { flag: 'st_roof', eq: 'nines' }, stage: 'nines' },
+        { if: { flag: 'st_roof', eq: 'twelves' }, stage: 'twelves' },
+        { if: { flag: 'st_roof', eq: 'burned' }, stage: 'burned' },
+      ],
+    },
+    shared: { journal: 'Five to two for the beds, two to five for the trays, in the keeper\'s log in capitals and in the committee\'s ledger with a date. Nine is wet at six and Twelve is green at eight. Nobody is happy and everybody is fed.', end: 'done', onEnter: [{ set: 'st_roof_settled' }, { news: { tag: 'stacks_schedule', text: 'Block Seven\'s roof got a water schedule after three springs; the committee signed it', valence: 7, size: 5, at: 'meridian' } }] },
+    nines: { journal: 'The pump is dead, or the valve is wired west; either way the tank is the beds\' all night and the trays are drying. Sixty people will carry buckets. Lio Brand will remember the sum.', end: 'done', onEnter: [{ set: 'st_roof_settled' }, { news: { tag: 'stacks_beds', text: 'the Twelves\' pump on Block Seven stopped; the Nines\' beds are wet for the first time in three springs', valence: 2, size: 5, at: 'meridian' } }] },
+    twelves: { journal: 'The committee gave the tank to the trays, out loud, in the ledger. Nine carries buckets from the laundry. Mama Deel has stopped coming to committee. A man in a clean coat was pleased, which should worry someone.', end: 'done', onEnter: [{ set: 'st_roof_settled' }, { news: { tag: 'stacks_trays', text: 'Block Seven\'s committee gave the roof tank to the hydroponic deck', valence: -3, size: 5, at: 'meridian' } }] },
+    burned: { journal: 'The trays burned at two in the morning with the pump loud, and sixty dinners with them, and Nessa Kord\'s hands. The Twelves came across the deck with pipes. Ren Ashby is sitting in the dirt with an empty can. The committee has written your name beside his.', end: 'done', onEnter: [{ set: 'st_roof_settled' }, { rep: { faction: 'wardens', respect: -4 } }] },
+  },
+};

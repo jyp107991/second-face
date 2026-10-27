@@ -124,7 +124,7 @@ export class DialogueUi {
         if (name === 'barter' && this.npc) { const npc = this.npc; window.setTimeout(() => { this.close(); this.game.openBarter(npc); }); return; }
         if (name === 'surgery' && this.npc) { const npc = this.npc; window.setTimeout(() => { this.close(); this.game.openSurgery(npc); }); return; }
         if (name === 'dust' && this.npc) { const npc = this.npc, d = (data ?? {}) as { stake?: number; prize?: import('../world/logic').DustPrize }; window.setTimeout(() => { this.close(); this.game.emit('openDust', { npc, stake: Number(d.stake ?? 5), prize: d.prize }); }); return; }
-        if (name === 'camp') { window.setTimeout(() => { this.close(); this.game.openCamp(); }); return; }
+        if (name === 'camp') { window.setTimeout(() => { this.close(); this.game.openCamp(true); }); return; }
         // A fight with the person you are talking to; `{ pit: { win, lose } }` makes it a pit bout (nobody dies; the stake pays by effects).
         if (name === 'fight' && this.npc) { const npc = this.npc, d = (data ?? {}) as { pit?: { win?: import('../world/logic').Effect[]; lose?: import('../world/logic').Effect[] } }; window.setTimeout(() => { this.close(); if (d.pit) { this.game.startCombat(npc, d.pit); return; } npc.hostile = true; this.game.refreshHostility(); this.game.startCombat(npc); }); return; }
         // A recorded memory: close this conversation, turn the picture cold, and play the memory's tree.

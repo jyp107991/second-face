@@ -20,6 +20,7 @@ export const d_mk_loop: DialogueDef = {
       options: [
         { id: 'mkloop.precinct', text: 'The Precinct. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_precinct', spawn: 'loop', minutes: 15 } }], exit: true },
         { id: 'mkloop.lantern', text: 'Lantern Row. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_lantern', spawn: 'loop', minutes: 10 } }], exit: true },
+        { id: 'mkloop.stacks', text: 'The Stacks. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_stacks', spawn: 'loop', minutes: 15 } }], exit: true },
         { text: '(Leave it.)', exit: true },
       ],
     },

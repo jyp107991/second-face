@@ -22,6 +22,7 @@ export const d_lr_loop: DialogueDef = {
       options: [
         { id: 'lrloop.precinct', text: 'The Precinct. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_precinct', spawn: 'loop', minutes: 15 } }], exit: true },
         { id: 'lrloop.market', text: 'Old Market. (2 Tolls)', if: { all: [{ flag: 'md_market_open' }, { item: 'tolls', count: 2 }] }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_market', spawn: 'loop', minutes: 10 } }], exit: true },
+        { id: 'lrloop.stacks', text: 'The Stacks. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_stacks', spawn: 'loop', minutes: 15 } }], exit: true },
         { text: '(Leave it.)', exit: true },
       ],
     },

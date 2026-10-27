@@ -880,3 +880,130 @@ describe('Lantern Row: the pit, the Lantern, the Row', () => {
     expect(g.world.knowledge.masque_velvet).toBe(true);
   });
 });
+
+function atStacks(map = 'md_stacks_roof', hour = 12) {
+  const g = newGameState('c9', 0, 0);
+  g.minutes = 36 * 1440 + hour * 60;
+  g.locationId = map;
+  g.flags.visited_md_stacks = true;
+  g.flags.ch1_done = true;
+  g.flags.md_inside = true; g.flags.md_market_open = true; g.flags.md_stacks_open = true; g.flags.md_status = 'citizen';
+  const q = new QuestEngine(QUESTS, g);
+  return { g, q };
+}
+
+describe('The Stacks: the flat and the roof', () => {
+  it('the Loop runs to the Stacks from all three boards, and back', () => {
+    const { g, q } = atStacks('md_precinct');
+    g.pc.inventory.tolls = 20;
+    talk('d_md_loop', g, q, ['The Stacks. (3 Tolls)']);
+    g.locationId = 'md_market';
+    talk('d_mk_loop', g, q, ['The Stacks. (3 Tolls)']);
+    g.locationId = 'md_lantern';
+    talk('d_lr_loop', g, q, ['The Stacks. (3 Tolls)']);
+    g.locationId = 'md_stacks';
+    talk('d_st_loop', g, q, ['The Precinct. (3 Tolls)']);
+    expect(g.pc.inventory.tolls).toBe(8);
+  });
+
+  it('key money buys 9-14, and the bed is a home', () => {
+    const { g, q } = atStacks('md_stacks');
+    g.pc.inventory.tolls = 300;
+    talk('d_st_hester', g, q, ['A flat.', '(Pay. 250 Tolls)', 'That\'s all.']);
+    expect(g.flags.st_flat).toBe('paid');
+    expect(countItem(g.pc.inventory, 'k_st_key')).toBe(1);
+    expect(g.world.quests.q_st_flat.status).toBe('done');
+    expect(g.world.quests.q_st_flat.stage).toBe('home');
+    g.locationId = 'md_stacks_9';
+    const r = talk('d_st_flat', g, q, []);
+    expect(r.view()?.options.some((o) => o.text === '(Rest, mend, write.)')).toBe(true);
+  });
+
+  it('the keeper\'s log, Lio\'s hours, the committee\'s signature: shared, and the flat for the settling', () => {
+    const { g, q } = atStacks();
+    q.questStart('q_st_gardens');
+    talk('d_st_oskar', g, q, ['The log. Who takes what, when.', 'That\'s all.']);
+    expect(g.world.knowledge.st_tank_log).toBe(true);
+    expect(countItem(g.pc.inventory, 'k_st_tank_log')).toBe(1);
+    talk('d_st_oskar', g, q, ['A schedule. Would you keep it?', 'That\'s all.']);
+    g.pc.sheet.skillBought.speech = 90;
+    talk('d_st_lio', g, q, ['Five to two for the beds', 'That\'s all.']);
+    expect(g.flags.st_lio_shared).toBe(true);
+    g.locationId = 'md_stacks';
+    talk('d_st_hester', g, q, ['A schedule. Nine has the tank', 'I\'ll take the key.', 'That\'s all.']);
+    expect(g.flags.st_roof).toBe('shared');
+    expect(g.world.quests.q_st_gardens.status).toBe('done');
+    expect(g.world.quests.q_st_gardens.stage).toBe('shared');
+    expect(g.flags.st_flat).toBe('earned');
+  });
+
+  it('the valve gives both sides their hours without anybody agreeing', () => {
+    const { g, q } = atStacks();
+    q.questStart('q_st_gardens');
+    g.world.knowledge.st_tank_log = true;
+    g.pc.sheet.skillBought.mechanics = 90;
+    talk('d_st_valve', g, q, ['(Reset the stops', '(Leave it running.)']);
+    expect(g.flags.st_roof).toBe('shared');
+    expect(g.flags.st_valve_split).toBe(true);
+  });
+
+  it('the pump\'s fuse at night: the beds, and the committee pays in a key', () => {
+    const { g, q } = atStacks('md_stacks_roof', 1);
+    q.questStart('q_st_gardens');
+    g.pc.sheet.skillBought.stealth = 90;
+    talk('d_st_pump_panel', g, q, ['(Pull the fuse and pocket it.)', '(Walk away.)']);
+    expect(g.flags.st_roof).toBe('nines');
+    expect(g.flags.st_pump_broken).toBe(true);
+    expect(g.world.quests.q_st_gardens.stage).toBe('nines');
+    g.locationId = 'md_stacks';
+    talk('d_st_hester', g, q, ['The flat.', 'That\'s all.']);
+    expect(g.flags.st_flat).toBe('earned');
+    expect(countItem(g.pc.inventory, 'k_st_key')).toBe(1);
+  });
+
+  it('the Twelves\' case carried to the committee, and Latch\'s card', () => {
+    const { g, q } = atStacks();
+    q.questStart('q_st_gardens');
+    talk('d_st_lio', g, q, ['What do you want from the committee?', 'That\'s all.']);
+    expect(g.flags.st_lio_asked).toBe(true);
+    g.pc.sheet.skillBought.speech = 90;
+    g.locationId = 'md_stacks';
+    talk('d_st_hester', g, q, ['The Twelves want the committee to let the trays', 'That\'s all.']);
+    expect(g.flags.st_roof).toBe('twelves');
+    g.locationId = 'md_stacks_roof';
+    g.pc.inventory.tolls = 0;
+    talk('d_st_lio', g, q, ['(Take the hundred and twenty, and the card.)']);
+    expect(g.pc.inventory.tolls).toBe(120);
+    expect(countItem(g.pc.inventory, 'k_latch_card')).toBe(1);
+  });
+
+  it('Ren is talked down with Mama Deel\'s word; or the trays burn', () => {
+    const { g, q } = atStacks();
+    q.questStart('q_st_gardens');
+    talk('d_st_ren', g, q, ['That\'s all.']);
+    talk('d_st_deel', g, q, ['Ren has a jerry-can.', 'That\'s all.']);
+    expect(g.world.knowledge.st_deel_no_burn).toBe(true);
+    g.pc.sheet.skillBought.speech = 90;
+    talk('d_st_ren', g, q, ['Dirt remembers.', 'That\'s all.']);
+    expect(g.flags.st_ren_talked_down).toBe(true);
+    const h = atStacks();
+    h.q.questStart('q_st_gardens');
+    talk('d_st_ren', h.g, h.q, ['Then let\'s burn them. Tonight.', '(Two, then.)', '(Face them.)']);
+    expect(h.g.flags.st_roof).toBe('burned');
+    expect(h.g.flags.st_fight_twelves).toBe(true);
+    expect(h.g.world.quests.q_st_gardens.stage).toBe('burned');
+  });
+
+  it('squatting: the seal, then the committee\'s price', () => {
+    const { g, q } = atStacks('md_stacks_9');
+    g.pc.sheet.skillBought.security = 90;
+    talk('d_st_flat_door', g, q, ['(Break the seal and force the latch.)', '(Go in.)']);
+    expect(g.flags.st_flat).toBe('squatted');
+    expect(g.world.quests.q_st_flat.status).toBe('done');
+    g.locationId = 'md_stacks';
+    g.pc.inventory.tolls = 200;
+    talk('d_st_hester', g, q, ['(Pay. 150 Tolls)', 'That\'s all.']);
+    expect(g.flags.st_flat).toBe('paid');
+    expect(g.pc.inventory.tolls).toBe(50);
+  });
+});

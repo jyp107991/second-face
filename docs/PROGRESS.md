@@ -26,8 +26,9 @@ wilds, Dry Wells, the Mender's table, the Wheel, the escort, four Act 1 side lin
 22 quests, 104 items); three companions can join. Character creation has a rolled start (owner's reroll request).
 **Act 1 is cut as a playtest version** (frozen branch `act1-test-1`, see §2b and `docs/PLAYTEST.md`; the owner installed
 the Pages workflow). **Act 2 part 1 is under way**: Ninebridge, Openfield, the Sump and Cistern 4, Meridian's gate, the
-Precinct, Old Market, the Sink and Lantern Row are playable (24 maps, 273 dialogues, 46 quests, 133 items; six
-companions can join). Current work: **Phase B, B3 Meridian** (Act 2's first megacity), next the Stacks (B3.8). Still open from the presentation
+Precinct, Old Market, the Sink, Lantern Row and the Stacks are playable (27 maps, 298 dialogues, 48 quests, 137 items;
+six companions can join; a flat in the Stacks is a safehouse). Current work: **Phase B, B3 Meridian** (Act 2's first
+megacity), next Bridgeward and the gangs (B3.9). Still open from the presentation
 pass: A5.9's remaining items (combat hover card, crowd yielding, indoor sound, camera ease, Tab reveal) — fold them in
 as B3 touches the same code. Binding owner rules: see `CLAUDE.md` §2 (no time limits; spoiler rule; not a Fallout
 clone; cyberpunk fusion).
@@ -421,9 +422,19 @@ mid-range Android phone; deployed to Pages.
             from the locker) and a playable memory scrubbed for three leads and a conclusion. Dust at the hall; a Masque
             chit in the house cage (B3.10 hook); the Gilt's invitation (B3.9 hook). Twelve named NPCs + extras. Tests
             `tests/a2.test.ts` (+8). Smoke `tools/qa/lantern.cjs` (fights the bout headless), evidence `docs/evidence/b37/`.
-      - [ ] B3.8 **The Stacks** (~1.5 h) NEXT: megablock map with floors; a flat to rent or buy (safehouse: storage, rest,
-            letters, Loop node); *Rooftop Gardens* floor war. Smoke.
-      - [ ] B3.9 **Bridgeward and Turf** (~2 h): gang turf map; the four gangs (one joinable at a time, gang-specific
+      - [x] B3.8 **The Stacks** DONE 2026-10-27: ENGINE — a bed of your own lets you camp indoors (`openCamp(force)` from
+            the dialogue `camp` event). Three linked maps: `md_stacks` (the canyon street between two megablocks, the
+            Loop stop, Block Seven's lobby with its market, committee office and stair cage), `md_stacks_9` (floor nine:
+            the corridor ring round the dead lifts, flats, the laundry, the hermit in the shaft room, and 9-14) and
+            `md_stacks_roof` (the tank, the Nines' allotments, the Twelves' hydroponic deck, the whole city in haze
+            below). *A Flat in the Stacks*: key money, earned by settling the roof, or the seal broken and the committee
+            faced after; the flat is a safehouse (rest, locker, letters, the Loop downstairs). *Rooftop Gardens*: the
+            keeper's log, Lio's hours and the committee's signature (shared), the valve reset (shared), the pump's fuse
+            or the valve wired west (the beds), the Twelves' case carried to the committee (the trays, with a Concern
+            card as a hook), or the trays burned with Ren. The lifts' two-o'clock check and the warm shaft seed a lead.
+            All four Loop boards now sell seats to each other. Thirteen named NPCs + extras. Tests `tests/a2.test.ts`
+            (+8). Smoke `tools/qa/stacks.cjs`, evidence `docs/evidence/b38/`.
+      - [ ] B3.9 **Bridgeward and Turf** (~2 h) NEXT: gang turf map; the four gangs (one joinable at a time, gang-specific
             initiations); *Static* line; *Turf* outcomes; the Rust Dogs' old haunt. Smoke.
       - [ ] B3.10 **The Crown and the Masque** (~2 h): terraces under domes; invitation / contract / disguise / force
             entry; the Tenured houses; the Masque (duel, infiltration); *The Kidnapping*, *Photographer's Studio*.
@@ -454,7 +465,7 @@ mid-range Android phone; deployed to Pages.
 | Signal Hill | 1/1 | 3/3 | 7/7 | 2/2 | playable; relay, voice, gully |
 | Dry Wells | 1/1 | 6/6 | 13/13 | 2/2 | playable; the Act 1 finale, the family |
 | Act 1 wilds | 5/5 | 15/15 | 17/17 | 2/2 | playable; ten road encounters, discoveries on foot, hunting and traps, the windpumps, the wreck, the orchard |
-| Meridian | 4/12 | 56/70 | 86/100 | 15/30 | the gate, the Precinct, Old Market, the Sink and Lantern Row playable; the Loop joins three of them, stairs the fourth |
+| Meridian | 7/14 | 69/90 | 111/130 | 17/30 | the gate, the Precinct, Old Market, the Sink, Lantern Row and the Stacks (three floors) playable; the Loop joins four districts, stairs the Sink |
 | Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |
 | Act 2 wilds | 4/14 | 38/50 | 64/80 | 9/16 | Ninebridge, Openfield, the Sump and Cistern 4 playable (counts approximate) |
 | Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |

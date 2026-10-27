@@ -427,9 +427,10 @@ export class Game extends EventBus<GameEvents> {
     notes.forEach((text, i) => window.setTimeout(() => this.emit('message', { text }), 300 + i * 5000));
   }
 
-  openCamp(): void {
+  /** Rest, cook, mend, write. `force`: a bed of your own (a safehouse) lets you camp indoors without a fire. */
+  openCamp(force = false): void {
     if (this.encounter.active || !this.loc) return;
-    if (this.loc.map.ambience.indoor && !this.nearCampfire()) { this.emit('message', { text: 'Not here. Find a fire or open sky.' }); return; }
+    if (!force && this.loc.map.ambience.indoor && !this.nearCampfire()) { this.emit('message', { text: 'Not here. Find a fire or open sky.' }); return; }
     this.emit('openCamp', {});
   }
   private nearCampfire(): boolean {
