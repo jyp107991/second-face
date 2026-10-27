@@ -128,7 +128,7 @@ such presentation decisions against modern CRPG practice. Each step: evidence sh
       activity (breath, weight shift, look-around, fidgets, arms-crossed, lean, sit, work loops: hammer, sweep,
       dig); a crowd no longer stands with its hands out. Mocap import (CMU/ACCAD BVH → our rig) evaluated and
       noted as a follow-up if procedural still reads stiff.
-- [ ] A5.5 **Alive places** (~3 h): `MapDef.extras` → generated background people (looks, routes between spots,
+- [x] A5.5 **Alive places** (~3 h): `MapDef.extras` → generated background people (looks, routes between spots,
       pauses, short generic talk, barks), clusters of two or three talking, vendors behind counters, sitters on
       crates and steps, children; the crowd bench becomes a real market (stalls, awnings, goods, a well, a queue).
 - [ ] A5.6 **Weather and mood** (~2 h): per-day weather in a region (clear / haze / dust / storm), a true clear noon

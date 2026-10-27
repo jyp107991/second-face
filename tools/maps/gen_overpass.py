@@ -162,6 +162,9 @@ overpass = {
         {'id': 'arrive', 'x': 26, 'y': 38, 'w': 7, 'h': 4, 'text': 'The dead highway lies across the sky on its piers, and under it, in the shade, the Rust Dogs have made a town out of what the highway dropped.', 'effects': [{'learn': 'seen_overpass'}]},
         {'id': 'water', 'x': 47, 'y': 24, 'w': 7, 'h': 6, 'text': 'Shale\'s water, in a tank with Shale\'s name still stencilled on it.', 'effects': [{'learn': 'seen_stolen_water'}]},
     ],
+    'extras': [
+        {'count': 5, 'roles': ['raider', 'raider', 'street'], 'life': 'hard', 'team': 'rustdogs', 'faction': 'rust_dogs', 'hostileIf': {'flag': 'rustdogs_hostile'}, 'area': {'x': 20, 'y': 17, 'w': 22, 'h': 10}},
+    ],
     'ambience': {'indoor': False, 'fogColor': 'hex:0xb8a284', 'fogDensity': 0.02, 'dust': 0.9, 'grade': 0.75, 'sound': 'wind'},
 }
 

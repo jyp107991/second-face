@@ -1,4 +1,5 @@
 import { NPCS } from '../../content';
+import { extraDef } from './extras';
 import { lookFrom } from '../assets/humanoid';
 import { initialMorale, type Combatant } from '../combat/rules';
 import { randomAppearance, type Appearance } from '../data/appearance';
@@ -55,12 +56,14 @@ export interface NpcRuntime {
   away?: boolean;
   /** Placement-specific conversation (overrides the def's). */
   dialogue?: string;
+  /** Background person: where they wander and when they next move. */
+  extra?: { area?: { x: number; y: number; w: number; h: number }; spots: string[]; hours?: { from: number; to: number }; wait: number; fixed?: boolean };
   /** Placement-specific routine (overrides the def's). */
   schedule?: import('./schedule').ScheduleEntry[];
 }
 
 export function spawnNpc(p: NpcPlacement, grid: Grid, keep?: { sheet: CharacterSheet; inv: Inventory }): NpcRuntime {
-  const def = NPCS[p.def];
+  const def = NPCS[p.def] ?? extraDef(p.def);
   if (!def) throw new Error(`Unknown NPC ${p.def}`);
   const id = p.id ?? def.id;
   const { app, outfit: dressed } = npcLook(def);

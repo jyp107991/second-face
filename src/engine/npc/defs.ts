@@ -52,6 +52,8 @@ export interface NpcDef {
   merchant?: MerchantDef;
   /** Daily routine (spots on the map they are placed on). */
   schedule?: ScheduleEntry[];
+  /** Background person: not noted in the notebook, no sketch, generated rather than written. */
+  minor?: boolean;
   /** Lines muttered when the player is near. */
   barks?: string[];
   /** Settlement whose standing sets their prices (defaults to the map's settlement). */

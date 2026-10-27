@@ -182,6 +182,10 @@ tollhouse = {
         {'id': 'yard', 'x': 48, 'y': 29, 'w': 13, 'h': 16, 'text': 'The outriders\' yard: two bikes with the guild\'s half-moon on the tank, a rifle scabbard on one, and the smell of fuel nobody else in the Sallow can buy.', 'effects': [{'learn': 'seen_outrider_bikes'}]},
         {'id': 'cage', 'x': 45, 'y': 7, 'w': 5, 'h': 5, 'text': 'A cage of chain-link inside the warehouse, with a cot in it and a chalk tally on the wall: days, and a sum going down very slowly.', 'effects': [{'learn': 'seen_debt_cage'}]},
     ],
+    'extras': [
+        {'count': 4, 'roles': ['trader', 'drifter', 'labourer', 'nomad'], 'area': {'x': 48, 'y': 32, 'w': 10, 'h': 9}, 'hours': {'from': 6, 'to': 22}, 'barks': ['Guild water\'s dear.', 'Waiting on the caravan.', 'Don\'t look at the cage.']},
+        {'count': 2, 'roles': ['drifter', 'settler'], 'life': 'starved', 'area': {'x': 6, 'y': 33, 'w': 8, 'h': 6}},
+    ],
     'ambience': {'indoor': False, 'fogColor': 'hex:0xb8a89a', 'fogDensity': 0.018, 'dust': 0.6, 'grade': 0.7, 'sound': 'wind'},
 }
 

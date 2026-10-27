@@ -210,6 +210,12 @@ shale = {
         {'id': 'pumps', 'x': 28, 'y': 17, 'w': 10, 'h': 6, 'text': 'The pumps run in short bursts, then stop, then run — on a clock nobody in Shale set.', 'effects': [{'learn': 'pumps_on_a_clock'}]},
         {'id': 'tribute', 'x': 24, 'y': 16, 'w': 16, 'h': 14, 'once': False, 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}, {'not': {'flag': 'tribute_opened'}}]}, 'effects': [{'event': 'talk', 'data': {'npc': 'tribute_vasha'}}]},
     ],
+    'extras': [
+        {'count': 7, 'roles': ['settler', 'settler', 'labourer', 'trader', 'drifter'], 'life': 'hard', 'area': {'x': 26, 'y': 14, 'w': 16, 'h': 12}, 'hours': {'from': 7, 'to': 19}},
+        {'count': 2, 'roles': ['settler'], 'ages': [11, 15], 'area': {'x': 28, 'y': 16, 'w': 12, 'h': 8}, 'hours': {'from': 8, 'to': 18}, 'barks': ['Race you to the pumps!', 'Mam says the Dogs eat kids.', 'Did you see the kite?']},
+        {'count': 2, 'roles': ['pilgrim'], 'area': {'x': 10, 'y': 33, 'w': 8, 'h': 7}, 'hours': {'from': 6, 'to': 21}},
+        {'count': 3, 'roles': ['settler', 'labourer', 'drifter'], 'life': 'hard', 'area': {'x': 12, 'y': 13, 'w': 8, 'h': 8}, 'hours': {'from': 17, 'to': 2}, 'barks': ['Mags waters it. Everyone knows.', 'One more and then home.']},
+    ],
     'ambience': {'indoor': False, 'fogColor': 'hex:0xc8ae86', 'fogDensity': 0.016, 'dust': 0.8, 'grade': 0.7, 'sound': 'wind'},
 }
 

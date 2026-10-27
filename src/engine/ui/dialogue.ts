@@ -88,6 +88,7 @@ export class DialogueUi {
   /** Note the person in the notebook and sketch them from the close-up. */
   private remember(npc: NpcRuntime): void {
     const st = this.game.state, w = st.world;
+    if (npc.def.minor) return;
     (w.met ??= {})[npc.def.id] ??= { name: npc.def.name, day: dayOf(st.minutes), where: this.game.locationName };
     if (st.sketches?.[npc.def.id]) return;
     window.setTimeout(() => {

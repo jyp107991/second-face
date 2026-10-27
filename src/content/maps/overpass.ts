@@ -842,6 +842,28 @@ export const overpass: MapDef = {
       ]
     }
   ],
+  extras: [
+    {
+      count: 5,
+      roles: [
+        "raider",
+        "raider",
+        "street"
+      ],
+      life: "hard",
+      team: "rustdogs",
+      faction: "rust_dogs",
+      hostileIf: {
+        flag: "rustdogs_hostile"
+      },
+      area: {
+        x: 20,
+        y: 17,
+        w: 22,
+        h: 10
+      }
+    }
+  ],
   ambience: {
     indoor: false,
     fogColor: 0xb8a284,

@@ -20,6 +20,8 @@ import { QuestEngine } from './quest/quest';
 import { apply, runTimers, test, type LogicHost } from './world/logic';
 import { runWorldEvents, spreadNews } from './world/frontier';
 import { discoveriesOnLeg, rollEncounter } from './world/roads';
+import { makeExtras, spotIdle } from './npc/extras';
+import { inHours as inHoursOf } from './npc/schedule';
 import { QUESTS, ROAD_ENCOUNTERS, SETTLEMENTS, WORLD_EVENTS, WORLD_MAP } from '../content';
 import { buildLocation, type BuiltLocation } from './scene/location';
 import type { ExitDef, MapDef } from './data/types';
@@ -399,6 +401,8 @@ export class Game extends EventBus<GameEvents> {
     const map = MAPS[id];
     if (!map) throw new Error(`Unknown location ${id}`);
     const outfits = this.placements(map).flatMap((p) => (NPCS[p.def] ? [npcLook(NPCS[p.def]).outfit] : []));
+    // Background people are generated now so their clothes load with everyone else's.
+    for (const [index, def] of (map.extras ?? []).entries()) for (const d of makeExtras(map.id, map.seed ?? 1, index, def)) outfits.push(npcLook(d).outfit);
     const seq = ++this.loadSeq;
     const outfit = this.playerOutfit();
     this.lookKey = wardrobeKey(this.state.pc);
@@ -448,6 +452,7 @@ export class Game extends EventBus<GameEvents> {
     this.rng.state = this.state.rngState;
     this.pc = { id: 'player', name: this.state.pc.sheet.name || 'You', team: 'player', sheet: this.state.pc.sheet, inv: this.state.pc.inventory, x: sx, y: sy, ap: 0, morale: 100, evasion: 0, isPlayer: true };
     for (const p of this.placements(map)) if (test(p.if, this.state)) this.spawn(p);
+    this.spawnExtras(map);
     this.spawnParty(sx, sy);
     this.groundPilesChanged();
     this.cam.target.copy(this.player.object.position);
@@ -566,6 +571,69 @@ export class Game extends EventBus<GameEvents> {
   private scheduleTick = 0;
   private barkTick = 0;
   /** Conditional placements on the current map appear or leave as the world changes (an event fired, a flag set). */
+  /** Background people: generated from the map's `extras`, placed on free tiles where they belong, hours permitting. */
+  private spawnExtras(map: MapDef): void {
+    if (!this.loc || !map.extras?.length) return;
+    const grid = this.loc.grid, hour = hourOf(this.state.minutes);
+    map.extras.forEach((def, index) => {
+      const defs = makeExtras(map.id, map.seed ?? 1, index, def);
+      const rng = new Rng((map.seed ?? 1) * 31 + index);
+      const spots = def.spots ?? [];
+      const inHours = !def.hours || inHoursOf(def.hours, hour);
+      defs.forEach((d, k) => {
+        // Named spots are taken in order (pairs face each other); the rest wander the area.
+        const spot = k < spots.length ? spots[k] : undefined;
+        const at = spot ? map.spots?.[spot] : undefined;
+        const tile = at ? freeTileNear(grid, at.x, at.y, undefined, 2) : this.randomAreaTile(def.area, rng, 12);
+        if (!tile) return;
+        const rt = this.spawn({ def: d.id, x: tile.x, y: tile.y, facing: rng.range(0, Math.PI * 2), schedule: [] });
+        if (!rt) return;
+        rt.extra = { area: def.area, spots, hours: def.hours, wait: rng.range(2, 20), fixed: !!spot };
+        rt.actor.idle = spotIdle(spot);
+        const partner = spot && /_pair_[ab]$/.test(spot) ? map.spots?.[spot.endsWith('_a') ? spot.replace(/_a$/, '_b') : spot.replace(/_b$/, '_a')] : undefined;
+        if (partner) rt.actor.faceTowards(partner.x + 0.5, partner.y + 0.5);
+        if (!inHours) { rt.away = true; rt.actor.object.visible = false; grid.occupied.delete(grid.index(rt.actor.tx, rt.actor.ty)); }
+      });
+    });
+  }
+
+  private randomAreaTile(area: { x: number; y: number; w: number; h: number } | undefined, rng: Rng, tries: number): { x: number; y: number } | undefined {
+    if (!this.loc) return;
+    const grid = this.loc.grid;
+    const a = area ?? { x: 1, y: 1, w: grid.width - 2, h: grid.height - 2 };
+    for (let i = 0; i < tries; i++) {
+      const x = a.x + rng.int(0, a.w - 1), y = a.y + rng.int(0, a.h - 1);
+      if (grid.passable(x, y)) return { x, y };
+    }
+    return undefined;
+  }
+
+  /** Background people drift: stand a while, walk somewhere else in their patch, stand again. */
+  private wanderExtras(hour: number): void {
+    if (!this.loc) return;
+    const grid = this.loc.grid;
+    for (const n of this.npcs.values()) {
+      const x = n.extra;
+      if (!x || n.hostile || n.actor.isDead || n.talking) continue;
+      const inHours = !x.hours || inHoursOf(x.hours, hour);
+      if (inHours === !!n.away) {
+        n.away = !inHours;
+        n.actor.object.visible = inHours;
+        if (!inHours) grid.occupied.delete(grid.index(n.actor.tx, n.actor.ty));
+        else { const at = freeTileNear(grid, n.actor.tx, n.actor.ty) ?? { x: n.actor.tx, y: n.actor.ty }; n.actor.place(at.x, at.y); }
+      }
+      if (n.away || x.fixed || n.actor.moving) continue;
+      x.wait -= 2;
+      if (x.wait > 0) continue;
+      x.wait = this.rng.range(6, 28);
+      if (this.rng.chance(0.45)) continue;
+      const goal = this.randomAreaTile(x.area, this.rng, 8);
+      if (!goal) continue;
+      const path = grid.findPath(n.actor.tx, n.actor.ty, goal.x, goal.y, { ignore: n.id, maxCost: 80 });
+      if (path && path.length) { n.actor.setPath(path); n.actor.idle = 'stand'; }
+    }
+  }
+
   /** A map's placements, plus the people a road encounter put on it. */
   private placements(map: MapDef): NpcPlacement[] {
     const trip = this.state.world.trip;
@@ -615,7 +683,9 @@ export class Game extends EventBus<GameEvents> {
     if (this.scheduleTick < 2) return;
     this.scheduleTick = 0;
     const hour = hourOf(this.state.minutes), grid = this.loc.grid;
+    this.wanderExtras(hour);
     for (const n of this.npcs.values()) {
+      if (n.extra) continue;
       const sched = n.schedule ?? n.def.schedule;
       if (!sched || n.companion || n.hostile || n.actor.isDead) continue;
       const e = scheduleAt(sched, hour);

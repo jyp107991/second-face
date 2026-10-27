@@ -1067,6 +1067,46 @@ export const tollhouse: MapDef = {
       ]
     }
   ],
+  extras: [
+    {
+      count: 4,
+      roles: [
+        "trader",
+        "drifter",
+        "labourer",
+        "nomad"
+      ],
+      area: {
+        x: 48,
+        y: 32,
+        w: 10,
+        h: 9
+      },
+      hours: {
+        from: 6,
+        to: 22
+      },
+      barks: [
+        "Guild water's dear.",
+        "Waiting on the caravan.",
+        "Don't look at the cage."
+      ]
+    },
+    {
+      count: 2,
+      roles: [
+        "drifter",
+        "settler"
+      ],
+      life: "starved",
+      area: {
+        x: 6,
+        y: 33,
+        w: 8,
+        h: 6
+      }
+    }
+  ],
   ambience: {
     indoor: false,
     fogColor: 0xb8a89a,

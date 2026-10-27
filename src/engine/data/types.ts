@@ -139,4 +139,6 @@ export interface MapDef {
   interior?: boolean;
   /** How much game there is to hunt or trap at camp (0..1); none when absent. */
   hunting?: number;
+  /** Background people generated on load: how many of what kind, where they wander, when they are about. */
+  extras?: import('../npc/extras').ExtrasDef[];
 }
