@@ -24,11 +24,11 @@ const F: FactionDef[] = [
       { id: 'factor', title: 'Factor', flags: ['futures_access'], priceMul: 0.8, access: ['exchange_vault', 'line_firstclass'] },
       { id: 'circle', title: 'Grand Factor\'s Circle', flags: ['grand_factor_ear'] },
     ], conflicts: ['choir', 'the_shift'] },
-  { id: 'choir', name: 'The Choir of the Open Sky', desc: 'Healers, farmers, masks at rites. The sky keeps no books.', home: 'openfield',
+  { id: 'choir', name: 'The Choir of the Open Sky', desc: 'Healers, farmers, open-sky burials. The sky keeps no books.', home: 'openfield',
     ranks: [
       { id: 'lay', title: 'Lay Healer', mods: [{ target: 'skill:medicine', add: 5 }], access: ['choir_tent'] },
       { id: 'sibling', title: 'Sister / Brother', flags: ['sky_rite'], priceMul: 0.85, access: ['openfield_halls'] },
-      { id: 'unwritten', title: 'Unwritten', flags: ['unwritten_mask'], access: ['unwritten_cellar'] },
+      { id: 'unwritten', title: 'Unwritten', flags: ['unwritten_sworn'], access: ['unwritten_cellar'] },
     ], conflicts: ['tollmen', 'wardens'] },
   { id: 'wardens', name: 'The Ledger\'s Wardens', desc: 'Meridian\'s law in grey. Fair by rule; deaf to need.', home: 'meridian',
     ranks: [

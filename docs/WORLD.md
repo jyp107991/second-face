@@ -68,7 +68,7 @@ Plague, famine, cold winters and warlords. Those who had **sealed shelters** wen
 one. Most shelters were never heard from again. On the surface, people learned to live with dust storms,
 bad water and each other — and with the **remnant machines**: autonomous mining rigs still digging,
 convoy trucks driving their loops until the fuel ran out, wardens enforcing curfews over dead districts,
-kites circling strike fields. People learned to go unseen by cameras. Masks began as survival.
+kites circling strike fields. People learned to go unseen by cameras: scarves and goggles against dust and lenses, as survival, nothing more.
 
 ### 1.5 The Reknitting (Years 30–70)
 - Survivors gathered where something still worked. **Meridian's** core survived because its systems had
@@ -77,7 +77,7 @@ kites circling strike fields. People learned to go unseen by cameras. Masks bega
   the mountains with the only chip line still running, opened its gates — a crack — to trade.
 - The **Tollmen** grew from convoy guards into a guild that owns the roads, the bridges and the debt.
 - The **Choir of the Open Sky** spread through the frontier: healers, burial under open sky, kindness,
-  masks at rites.
+  burial under open sky.
 - Gangs became clans; towns like **Shale** grew around wells; the **Line** (an old rail corridor) was
   repaired piece by piece between the cities.
 
@@ -115,7 +115,7 @@ Crown, who learned long ago how to make the Ledger's rules work for them.
 
 | District | Life |
 |---|---|
-| **The Crown** | Hanging gardens and glass terraces at the top of the Archive Spire's shoulder towers. The **Tenured** families: hereditary contract-holders from before the Burn. Clean air under filtered domes, real food, pre-Burn chrome, private guards, masked salons, reverie parlours, duels for sport. Entry by invitation, contract or service. |
+| **The Crown** | Hanging gardens and glass terraces at the top of the Archive Spire's shoulder towers. The **Tenured** families: hereditary contract-holders from before the Burn. Clean air under filtered domes, real food, pre-Burn chrome, private guards, private salons, reverie parlours, duels for sport. Entry by invitation, contract or service. |
 | **The Precinct** | The Ledger's orderly middle: licensed shops, clinics, schools, curfews, tickets and fines, wardens in grey. Safe and suffocating. Citizenship hearings decide who may live here. |
 | **Old Market** | Bazaar in a dead mall and the streets around it: food, chrome, guns, gossip, fixers. Where everyone meets. |
 | **Lantern Row** | Pleasure district along the canal: bars, fight pits, reverie dens, brothels, gambling. Neon from salvaged tubes. |
@@ -190,7 +190,7 @@ from the few printers that still have feedstock.
 | **The Ledger** | Meridian's law. Courts, clinics, licences, wardens. Fair by rule; deaf to need. |
 | **The Concern** (Halcyon) | Makes chrome, medicine and machines; trades through the Tollmen; hires the desperate. |
 | **The Tollmen** | Roads, bridges, convoys, the Line's tickets, and everyone's debt. Courteous, ruthless. |
-| **The Choir of the Open Sky** | Healers and farmers; bury their dead under open sky; wear simple masks at rites. |
+| **The Choir of the Open Sky** | Healers and farmers; bury their dead under open sky; bury their dead under open sky. |
 | **The Tenured** | Meridian's old families of the Crown: patrons, duellists, collectors, decadents. |
 | **City gangs** | Meridian: the **Gilt** (Crown-born kids slumming in chrome), the **Saints of Static** (who swear they hear voices in dead radios), the **Pale** (no chrome, ever), **Rustmouths** (salvage union turned mob). Halcyon's Skirts: **the Shift**, a miners' union that is also a gang. |
 | **Clans & towns** | Shale and its sheriff, the Rust Dogs, nomad caravan families (**the Wheel**), salt-pan cooperatives, rail-halt towns, river people of the Drowned Shore. |
@@ -199,7 +199,7 @@ from the few printers that still have feedstock.
 
 ---------------------------------------------------------------------------------------------------
 ## 6. Culture
-- **Faces are currency.** In a world without papers, people are known by face and by story. Masks are worn for
+- **Faces are currency.** In a world without papers, people are known by face and by story. Hoods and scarves are worn for
   rites (Choir), for crime (everyone), for fashion (the Crown's masquerades), and to be left alone.
 - **Water first.** Greeting a guest means offering water. Stealing water can be a hanging matter in small towns.
 - **Debts are sacred.** The Tollmen made debt the closest thing the frontier has to a common law.
@@ -217,10 +217,10 @@ from the few printers that still have feedstock.
   scrap plates and leather over the vitals for anyone who expects a fight; webbing and harnesses to carry what
   matters. Boots are the most valuable thing most people own.
 - **Uniforms of the dead.** Warden grey, dock-company orange, rail-crew hi-vis, clinic whites: worn for
-  warmth, for what they say, or as armour. Faction colour is a strip of cloth, a painted mark, a mask.
+  warmth, for what they say, or as armour. Faction colour is a strip of cloth, a painted mark, a scarf.
 - **Cities add style, not cleanliness.** Lantern Row and Bridgeward crews wear salvaged neon, cheap chrome
   on show, dyed hair, stitched jackets with crew marks. The Precinct is grey and licensed. Only the Crown and
-  Halcyon look clean — and their fashion is strange: masks, long gloves, pre-Burn silks, visible but
+  Halcyon look clean — and their fashion is strange: long gloves, pre-Burn silks, visible but
   flawless chrome, clothes that say *we never had to run*.
 - **Hair is practical.** Cropped, shaved, braided tight, wrapped, or tied back; long hair means someone with
   water to wash it. City youth dye and shave patterns; the Crown wears elaborate, old-fashioned styles as a

@@ -42,7 +42,7 @@ export const TOLLHOUSE_NPCS: NpcDef[] = [
     level: 4, ...TH, hostileIf: { any: [{ flag: 'th_fight' }, { flag: 'th_outriders_hostile' }] }, courage: 60, dialogue: 'd_th_outrider_b', attrs: { reflex: 7, senses: 6 }, skills: { firearms: 40, stealth: 30 },
     equip: ['w_revolver38', 'r_duster'], inventory: [['a_38', 12]], tolls: 20,
     schedule: [{ from: 10, to: 20, spot: 'yard_b', activity: 'idle' }, { from: 20, to: 1, spot: 'yard_fire', activity: 'drink' }, { from: 1, to: 5, spot: 'bunk_5', activity: 'sleep' }, { from: 5, to: 10, spot: 'yard_b', activity: 'away' }],
-    barks: ['Cass does the talking. I do the other thing.', 'You hear the mask-man came all the way to the salt cut? On that leg?', 'I sleep fine. Ask anyone.'],
+    barks: ['Cass does the talking. I do the other thing.', 'You hear the old man came all the way to the salt cut? On that leg?', 'I sleep fine. Ask anyone.'],
   },
   {
     id: 'npc_th_06', name: 'Oren Tulley', look: { seed: 4106, frame: 'narrow', age: 52, ancestry: 'north_european', over: { hair: { style: 'paint_shaved', color: 0x6a6058 }, facialHair: 'short_beard' } }, role: 'labourer',

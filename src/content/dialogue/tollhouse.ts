@@ -24,7 +24,7 @@ export const d_th_gate: DialogueDef = {
         { id: 'gate.pike', text: 'Factor Pike sends me. Post nine-west. I\'m on the seed.', if: { all: [{ knows: 'pike_seed_offer' }, { item: 'tolls', count: 10 }] }, effects: [{ take: 'tolls', count: 10 }, { give: 'k_pass_stamped' }, ...PASS_EFFECTS('pike_rate', 'You passed Tollhouse 9 at the guild\'s own rate, on Factor Pike\'s name.'), { memory: { npc: 'npc_th_01', tag: 'pike_runner', valence: 5 } }], next: 'pike_ok' },
         { id: 'gate.forged', text: '(Show the pass.)', if: { item: 'k_pass_forged' }, check: { skill: 'speech', dc: 35, mods: [{ if: NIGHT, dc: -10, why: 'lamplight is kind to paper' }, { if: { knows: 'th_stamp_far_posts' }, dc: -5, why: 'you hold it the way the stamped ones do' }] }, next: 'forged_ok', fail: 'forged_caught' },
         { id: 'gate.contract', text: '(Show the sealed packet.) Courier. Ninebridge.', if: { item: 'k_packet' }, effects: [{ give: 'k_pass_stamped' }, ...PASS_EFFECTS('contract', 'You passed Tollhouse 9 as a guild courier, carrying a sealed packet to the Exchange.')], next: 'contract_ok' },
-        { id: 'gate.stranger', text: 'A masked man came west on this road three weeks ago. Shot.', if: { quest: 'q_ch1_name' }, next: 'stranger', once: true },
+        { id: 'gate.stranger', text: 'An old man came west on this road three weeks ago. Shot.', if: { quest: 'q_ch1_name' }, next: 'stranger', once: true },
         { id: 'gate.who', text: 'Who are you people?', next: 'who', once: true },
         { id: 'gate.fight', text: 'I\'m not paying, and I\'m going through.', next: 'threat' },
         { text: 'I\'ll think about it.', exit: true },
@@ -45,7 +45,7 @@ export const d_th_gate: DialogueDef = {
       options: [{ text: 'Rates, then.', next: 'intro' }],
     },
     stranger: {
-      text: 'She doesn\'t look at the yard, which is how you know. "Nobody came through this gate in a mask. What happens on the road past the posts is the road\'s business." A pause. "If you\'ve a complaint about the road, the clerk takes complaints. In writing."',
+      text: 'She doesn\'t look at the yard, which is how you know. "Nobody like that came through this gate. What happens on the road past the posts is the road\'s business." A pause. "If you\'ve a complaint about the road, the clerk takes complaints. In writing."',
       effects: [{ learn: 'th_sergeant_dodged' }, { lead: 'l_outriders' }],
       options: [{ text: 'Rates, then.', next: 'intro' }],
     },
@@ -84,7 +84,7 @@ export const d_th_sergeant: DialogueDef = {
         { id: 'sgt.riders', text: 'The outriders. Who are they?', next: 'riders', once: true },
         { id: 'sgt.hill', text: 'What\'s the hill with the mast, east of here?', next: 'hill', once: true },
         { id: 'sgt.cage', text: 'There\'s a man in a cage in your warehouse.', if: { knows: 'seen_debt_cage' }, next: 'cage', once: true },
-        { id: 'sgt.stranger', text: 'A masked man was shot on this road three weeks ago.', if: { all: [{ quest: 'q_ch1_name' }, { not: { knows: 'th_sergeant_dodged' } }] }, next: 'stranger', once: true },
+        { id: 'sgt.stranger', text: 'An old man was shot on this road three weeks ago.', if: { all: [{ quest: 'q_ch1_name' }, { not: { knows: 'th_sergeant_dodged' } }] }, next: 'stranger', once: true },
         bye,
       ],
     },
@@ -98,7 +98,7 @@ export const d_th_sergeant: DialogueDef = {
     riders: { text: '"Cass and Nikko. They ride the road between posts and they keep it clear, which is what you pay for. What they do between posts is in the ledger and the ledger is guild property." She looks at the yard for the first time. "They\'re not mine. I\'d like that written down somewhere too."', effects: [{ learn: 'outriders_named' }, { lead: 'l_outriders' }], options: [bye] },
     hill: { text: '"Signal Hill. A mast and a dead station and a voice that talks to itself. The guild doesn\'t go up there, and the guild goes everywhere." A shrug. "Track leaves the highway a day east. You\'d see the mast before you saw the track."', effects: [{ learn: 'signal_mast' }, { learn: 'loc_signalhill' }, { lead: 'l_signal_mast' }], options: [bye] },
     cage: { text: '"Tulley. He owes. The guild doesn\'t hang people and doesn\'t hit them; it counts. He\'ll count his way out by spring." She doesn\'t sound like she believes it. "Buy his paper from Rask if it bothers you. It\'s thirty-five. It bothers everyone for about a day."', effects: [{ learn: 'debtor_price' }], options: [bye] },
-    stranger: { text: '"Nobody came through this gate in a mask." She says it to the wall. "Past the posts it\'s the road\'s business. The clerk takes complaints."', effects: [{ learn: 'th_sergeant_dodged' }, { lead: 'l_outriders' }], options: [bye] },
+    stranger: { text: '"Nobody like that came through this gate." She says it to the wall. "Past the posts it\'s the road\'s business. The clerk takes complaints."', effects: [{ learn: 'th_sergeant_dodged' }, { lead: 'l_outriders' }], options: [bye] },
     page: { text: 'She reads it without touching it. "That\'s Sayle\'s hand and that\'s Pike\'s name." A long breath out. "I keep the gate. I don\'t keep that. Take it to someone who wants it and don\'t tell me who." She turns back to the road.', effects: [{ memory: { npc: 'npc_th_01', tag: 'saw_ledger_page', valence: 0, strength: 60 } }, { trust: { npc: 'npc_th_01', by: 5 } }], options: [bye] },
     hostile: { text: 'She has nothing to say to you that the shotgun hasn\'t.', options: [{ text: '(Back off.)', exit: true }] },
   },
@@ -115,7 +115,7 @@ export const d_th_clerk: DialogueDef = {
       options: [
         { id: 'clerk.stamp', text: 'A stamp. (Pay. 20 Tolls)', if: { all: [{ item: 'tolls', count: 20 }, { not: { flag: 'th_passed' } }] }, effects: [{ take: 'tolls', count: 20 }, { give: 'k_pass_stamped' }, ...PASS_EFFECTS('paid', 'You bought a stamp at the Tollhouse 9 booth: twenty Tolls.'), { rep: { faction: 'tollmen', respect: 3 } }], next: 'stamped' },
         { id: 'clerk.contract', text: 'Contracts. What kind?', next: 'contract', once: true },
-        { id: 'clerk.complaint', text: 'A complaint. A masked man was shot on your road.', if: { quest: 'q_ch1_name' }, next: 'complaint', once: true },
+        { id: 'clerk.complaint', text: 'A complaint. An old man was shot on your road.', if: { quest: 'q_ch1_name' }, next: 'complaint', once: true },
         { id: 'clerk.forged', text: '(Put the forged pass on the counter with ten Tolls under it.)', if: { all: [{ item: 'k_pass_forged' }, { item: 'tolls', count: 10 }] }, check: { skill: 'barter', dc: 40 }, next: 'forged_stamp', fail: 'forged_no' },
         bye,
       ],
@@ -160,7 +160,7 @@ export const d_th_ledger: DialogueDef = {
     },
     caught: { text: '"That is guild property." He hasn\'t raised his voice; he has raised a hand, and the guard at the gate has turned round. "Thirty Tolls for the paper you were about to damage, or the sergeant can explain it."', effects: [{ memory: { npc: 'npc_th_02', tag: 'caught_at_ledger', valence: -15, strength: 70 } }, { rep: { faction: 'tollmen', respect: -5 } }], options: [{ id: 'ledger.fine', text: '(Pay. 30 Tolls)', if: { item: 'tolls', count: 30 }, effects: [{ take: 'tolls', count: 30 }], exit: true }, { text: '(Walk away.)', effects: [{ rep: { faction: 'tollmen', respect: -5 } }], exit: true }] },
     open: {
-      text: 'Pay lines, toll lines, a column headed ROAD. Three weeks back, in the clerk\'s tidy hand: OUTRIDERS MOHR, VANCE — four days — "one masked traveller, confirmed" — eighty Tolls — as per Factor Pike, post nine-west. A tick beside it.',
+      text: 'Pay lines, toll lines, a column headed ROAD. Three weeks back, in the clerk\'s tidy hand: OUTRIDERS MOHR, VANCE — four days — "one traveller, westbound, confirmed" — eighty Tolls — as per Factor Pike, post nine-west. A tick beside it.',
       effects: [{ learn: 'ledger_read' }, { lead: 'l_pike_paid' }, { quest: 'q_a1_ledger', start: true }],
       options: [
         { id: 'ledger.tear', text: '(Tear the page out.)', effects: [{ give: 'k_ledger_page' }, { set: 'th_page_taken' }, { decision: { id: 'th_page_taken', text: 'You tore the page naming Pike out of the Tollhouse 9 ledger.' } }, { news: { tag: 'ledger_torn', text: 'a page went missing from the Tollhouse ledger', valence: -5, size: 3, at: 'tollhouse' } }], exit: true },
@@ -231,14 +231,14 @@ export const d_th_outrider_a: DialogueDef = {
       effects: [{ set: 'th_cass_met' }],
       options: [
         { id: 'cass.road', text: 'You ride the road west. Toward Shale.', next: 'road', once: true },
-        { id: 'cass.mask', text: 'Three weeks ago. A man in a mask, on the salt pan. You shot him.', if: { any: [{ quest: 'q_ch1_name' }, { lead: 'l_outriders' }] }, next: 'mask' },
+        { id: 'cass.mask', text: 'Three weeks ago. An old man on the salt pan. You shot him.', if: { any: [{ quest: 'q_ch1_name' }, { lead: 'l_outriders' }] }, next: 'mask' },
         { text: 'Just looking.', exit: true },
       ],
     },
-    again: { text: '"Still not buying fuel."', options: [{ id: 'cass.mask.again', text: 'The man in the mask, on the salt pan.', if: { any: [{ quest: 'q_ch1_name' }, { lead: 'l_outriders' }] }, next: 'mask' }, { text: 'Just looking.', exit: true }] },
+    again: { text: '"Still not buying fuel."', options: [{ id: 'cass.mask.again', text: 'The old man on the salt pan.', if: { any: [{ quest: 'q_ch1_name' }, { lead: 'l_outriders' }] }, next: 'mask' }, { text: 'Just looking.', exit: true }] },
     road: { text: '"Between posts. That\'s the job. Nobody robs guild custom between posts, and if somebody tries, somebody doesn\'t get to try twice." The cloth moves. "Shale isn\'t a post. Shale\'s a place the road goes past."', effects: [{ learn: 'outriders_patrol_west' }], options: [{ id: 'cass.mask2', text: 'Three weeks ago. A man in a mask, on the salt pan.', if: { any: [{ quest: 'q_ch1_name' }, { lead: 'l_outriders' }] }, next: 'mask' }, { text: 'Noted.', exit: true }] },
     mask: {
-      text: 'The cloth stops. Across the yard Nikko has stopped too. "Lot of people on the road," he says. "Lot of masks. Choir wear them. Dust-walkers wear them." He looks at the carbine instead of you. "Who\'s asking?"',
+      text: 'The cloth stops. Across the yard Nikko has stopped too. "Lot of people on the road," he says. "Lot of old men. Lot of salt." He looks at the carbine instead of you. "Who\'s asking?"',
       options: [
         { id: 'cass.page', text: '(Show him the ledger page.) The guild\'s asking. Eighty Tolls, four days, confirmed.', if: { item: 'k_ledger_page' }, next: 'confess' },
         { id: 'cass.speech', text: 'Someone he walked thirty miles to die in front of. He had my face. You\'ll have seen it.', check: { skill: 'speech', dc: 45, mods: [{ if: { knows: 'ledger_read' }, dc: -15, why: 'you know the sum and the days' }, { if: { attr: 'presence', gte: 7 }, dc: -5, why: 'he can\'t quite look away' }] }, next: 'confess', fail: 'deny' },
@@ -248,7 +248,7 @@ export const d_th_outrider_a: DialogueDef = {
     },
     deny: { text: '"Then nobody shot anybody." He goes back to the carbine. Nikko doesn\'t.', effects: [{ memory: { npc: 'npc_th_04', tag: 'asked_about_mask', valence: -10, strength: 60 } }], options: [{ text: '(Leave it. For now.)', exit: true }] },
     confess: {
-      text: 'He puts the cloth down. "A contract. Paper from nine-west: one traveller, masked, westbound, confirmed and paid on confirmation." He says it flat, like reading it. "We confirmed. He walked off it. I\'ve never seen anyone walk off that." Nikko, behind you: "Cass."  "She can hear it. Everyone can hear it. Contracts don\'t have faces." He looks at yours. "His did."',
+      text: 'He puts the cloth down. "A contract. Paper from nine-west: one traveller, old, westbound, confirmed and paid on confirmation." He says it flat, like reading it. "We confirmed. He walked off it. I\'ve never seen anyone walk off that." Nikko, behind you: "Cass."  "She can hear it. Everyone can hear it. Contracts don\'t have faces." He looks at yours. "His did."',
       effects: [{ learn: 'outriders_confessed' }, { lead: 'l_outriders_confessed' }, { decision: { id: 'outriders_confessed', text: 'The guild\'s outriders admitted shooting the stranger on a contract from Pike.' } }, { xp: 60 }],
       options: [
         { id: 'cass.kill', text: '(Draw.)', effects: [{ set: 'th_outriders_hostile' }, { decision: { id: 'th_outriders_fought', text: 'You drew on the outriders after they admitted it.' } }, { rep: { faction: 'tollmen', fear: 8, respect: -15 } }, { event: 'combat' }], exit: true },
@@ -316,7 +316,7 @@ export const d_th_caravan: DialogueDef = {
       options: [
         { id: 'car.east', text: 'What\'s east?', next: 'east', once: true },
         { id: 'car.ride', text: 'Can I ride with you?', next: 'ride', once: true },
-        { id: 'car.stranger', text: 'A masked man came west on this road. Did you see him?', if: { quest: 'q_ch1_name' }, next: 'stranger', once: true },
+        { id: 'car.stranger', text: 'An old man came west on this road, hurt. Did you see him?', if: { quest: 'q_ch1_name' }, next: 'stranger', once: true },
         bye,
       ],
     },

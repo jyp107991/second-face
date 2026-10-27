@@ -36,9 +36,9 @@ export interface NewsItem {
   id: string;
   /** What happened (content tag, e.g. 'saved_deputy'). */
   tag: string;
-  /** How people tell it; '{who}' becomes 'you' or 'a masked stranger'. */
+  /** How people tell it; '{who}' becomes 'you' or 'a hooded stranger'. */
   text?: string;
-  /** Who it is about: the player by face, or an unrecognised masked stranger. */
+  /** Who it is about: the player by face, or an unrecognised hooded stranger. */
   about: 'player' | 'masked';
   /** -100..100 how it reflects on them. */
   valence: number;

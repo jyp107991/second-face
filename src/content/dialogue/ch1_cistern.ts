@@ -14,7 +14,7 @@ export const d_c9_pell: DialogueDef = {
         { text: '{name}. Good — steady hands. Shut the door behind you; half the ring has been in here to stare at him.' },
       ],
       passives: [
-        { attr: 'senses', dc: 6, text: 'The mask on the side table has letters scratched inside the rim, worn almost smooth.', effects: [{ learn: 'mask_scratches' }] },
+        { attr: 'senses', dc: 6, text: 'The dust mask on the side table has letters scratched inside the rim, worn almost smooth.', effects: [{ learn: 'mask_scratches' }] },
         { attr: 'wits', dc: 7, text: 'Pell keeps tugging the sheet back over the man\'s left forearm.' },
       ],
       options: [{ text: 'Who was he?', next: 'menu' }],
@@ -25,7 +25,7 @@ export const d_c9_pell: DialogueDef = {
         { id: 'pell.cause', text: 'What killed him?', next: 'cause' },
         { id: 'pell.wounds', text: 'Let me look at the wounds myself.', check: { skill: 'medicine', dc: 40, mods: [{ if: { origin: 'clinic_aide' }, dc: -20, why: 'Pell trained you' }] }, next: 'wounds', fail: 'wounds_fail', once: true },
         { id: 'pell.arm', text: 'What are you hiding under that sheet?', if: { attr: 'wits', gte: 7 }, next: 'arm', once: true },
-        { id: 'pell.mask', text: 'The mask — what\'s the sign on it?', next: 'mask' },
+        { id: 'pell.mask', text: 'The dust mask on the table. What\'s the sign on it?', next: 'mask' },
         { id: 'pell.pack', text: 'Did he carry anything?', next: 'pack', if: { not: { item: 'k_photo' } } },
         { id: 'pell.bye', text: 'I should see the Elder.', exit: true },
       ],
@@ -129,7 +129,7 @@ export const d_c9_ines: DialogueDef = {
     },
     want: { text: 'I want one person who can keep their head to walk out, look, and come back and tell me the truth. That person has your face. It seems the waste agrees.', options: [{ text: 'Go on.', next: 'council' }] },
     pack: {
-      text: 'Here. Waterskin, empty. A notebook full of marks no one can read. The mask. Take them; they\'re more yours than ours.',
+      text: 'Here. Waterskin, empty. A notebook full of marks no one can read. His dust mask. Take them; they\'re more yours than ours.',
       effects: [{ give: 'k_notebook' }, { give: 'k_mask' }, { set: 'c9_pack_given' }],
       passives: [{ skill: 'science', dc: 40, text: 'The marks in the notebook repeat in blocks of five. A cipher, not a language.', effects: [{ learn: 'notebook_cipher' }] }],
       options: [
@@ -440,7 +440,7 @@ export const d_c9_great_door: DialogueDef = {
   nodes: {
     shut: {
       text: 'Ninety years of paint on a door built to outlast the people behind it. The wheel is locked out; the panel beside it is dark. Bram keeps the key.',
-      passives: [{ attr: 'senses', dc: 6, text: 'Fresh scratches along the bottom edge, outside-in: fingernails, or the tin of a mask.', effects: [{ learn: 'door_scratches' }] }],
+      passives: [{ attr: 'senses', dc: 6, text: 'Fresh scratches along the bottom edge, outside-in: fingernails, or a buckle.', effects: [{ learn: 'door_scratches' }] }],
       options: [{ text: '(Step back.)', exit: true }],
     },
     open: { text: 'Open on a slice of white daylight. Dust comes in. Nothing else does, yet.', options: [{ text: '(Step back.)', exit: true }] },

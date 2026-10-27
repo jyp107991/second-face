@@ -53,7 +53,7 @@ would actually say to this person, now.
 
 ### comp_ash — Brother Ash (38, Choir acolyte, ex-raider, Unwritten)
 - **Look:** indigenous-American+north-European, broad frame but gaunt, long grey-shot hair tied back, nose
-  broken twice, a Choir half-mask on a cord; patched robe over a raider's jacket; shotgun.
+  broken twice, a grey Choir scarf on a cord; patched robe over a raider's jacket; shotgun.
 - **Want:** to be forgiven by someone who has the right to. **Fear:** that he enjoys violence and the vow is
   a leash he chose because he couldn't be trusted without one.
 - **Contradiction:** preaches mercy, is the Unwritten's killer-in-waiting (orders to kill keystones who
@@ -275,7 +275,7 @@ camp's memory; npc_rd_06 — Brindle (16), scout, Wren's shadow; npc_rd_07 — S
 - **npc_nb_02 — Auctioneer Fen (30):** runs the debt auctions; cheerful; hates it; can be turned.
 - **npc_of_01 — Elder Mason (67), Openfield:** keystone (burns, D+210); farmer-priest, patient, loves the
   blight problem more than he should; his son is the well-poisoner. Says "the sky keeps no books".
-- **npc_of_02 — Petra Mason (29):** his daughter, the Unwritten's local hand; masks; wants the war.
+- **npc_of_02 — Petra Mason (29):** his daughter, the Unwritten's local hand; keeps no likeness; wants the war.
 - **npc_rc_01 — Stationmaster Quill (50), the Junction:** timetable law; a decent tyrant; rail bandits
   are his own halt's militia (side quest).
 - **npc_sump_01 — Grel (45), Sump clan head:** scavenger pragmatist paid by Pike.
@@ -296,7 +296,7 @@ camp's memory; npc_rd_06 — Brindle (16), scout, Wren's shadow; npc_rd_07 — S
 - **npc_md_07 — Boss Tully Grange (52), Rustmouths:** salvage union gone mob; Bridgeward tolls; the
   Tenured's muscle; can be bought back into a union.
 - **npc_md_08 — Half-Price (ageless), Old Market Broker:** the gigs board; a chrome voice box; never seen
-  without a mask; is, in fact, two people.
+  with the hood down; is, in fact, two people.
 - **npc_md_09 — Assessor Three (Ledger unit), the Court of Accounts:** presides; Nine's sibling; strict.
 - **npc_md_10 — the Ledger (voice):** only at the Spire; speaks in forecasts and clauses; wants the player
   to *agree*, not obey.

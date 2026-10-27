@@ -114,10 +114,10 @@ crowds must look like crowds and places must feel alive (more people, some with 
 reading as blocks; the world must not be uniformly gloomy (sun, bustle, peace); conversations stay in the world
 view with a portrait beside the panel; bionics look futuristic (Cyberpunk 2077 as the reference); a second sweep of
 such presentation decisions against modern CRPG practice. Each step: evidence sheet in `docs/evidence/a5/`, check, commit.
-- [ ] A5.1 **Conversations in the world** (~1.5 h): no black close-up; the scene stays, the camera eases to frame the
+- [x] A5.1 **Conversations in the world** (~1.5 h): no black close-up; the scene stays, the camera eases to frame the
       two of you, the panel gets a live portrait (`FigureView`, head-and-shoulders) on its left; the speaker's head
       turns to the player. Sunglasses come off indoors and in talk.
-- [ ] A5.2 **Masks out of the lore** (~1 h): content and docs rewritten (the stranger keeps his single dust mask with
+- [x] A5.2 **Masks out of the lore** (~1 h): content and docs rewritten (the stranger keeps his single dust mask with
       its painted sign; the Choir has no rite masks; "masked traveller" → "the old man"; the hide-your-face mechanic
       becomes hood/scarf); the story plan's mask motif replaced (secret file; spoiler-free summary here only).
 - [ ] A5.3 **Dimorphism and body variety** (~2 h): gender-conditioned face biases (jaw, chin, brow, cheek, lips, eyes,

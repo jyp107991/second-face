@@ -3,8 +3,8 @@
 This is the plot bible. It supersedes `STORY_SECRET.md` (the owner's original, kept for the record) and all
 earlier passes; §16 logs every change. Public, spoiler-free expression of the same world is in
 `docs/WORLD.md`; mechanics in `docs/DESIGN.md`; people in `CHARACTERS_SECRET.md`; audit findings in
-`AUDIT_SECRET.md`. Safe facts the owner knows: the Burn (90 years ago), Cistern 9, MOTHER, the dying masked
-stranger, the photo of the player older in a ruined city dated 41 years ago, Shale, Rust Dogs, Tollmen,
+`AUDIT_SECRET.md`. Safe facts the owner knows: the Burn (90 years ago), Cistern 9, MOTHER, the dying
+  stranger, the photo of the player older in a ruined city dated 41 years ago, Shale, Rust Dogs, Tollmen,
 Choir of the Open Sky, the Ledger; Chapter One ends when the player gets the stranger's map.
 
 ## 1. Canon — the truth under everything
@@ -25,7 +25,7 @@ Choir of the Open Sky, the Ledger; Chapter One ends when the player gets the str
    MOTHER refused each time ("population variance unchanged; thank you for your continuity" = *I kept
    them*). MOTHER is protective, formal and frightened, not sinister. Elder **Ines** knows MOTHER refuses
    orders "from the city" and has kept it from everyone — twice stopping young people from leaving.
-5. **The stranger** was **Hollis Dray** of the Unwritten (the Choir's inner circle; masks defeat the
+5. **The stranger** was **Hollis Dray** of the Unwritten (the Choir's inner circle; they keep no likeness and sign nothing, which defeats the
    Ledger's face-tracking). He stole a bundle of keystone portraits and the cast list from the Archive
    Spire to warn the people on it. Tollmen outriders shot him at Tollhouse 9 (the Tollmen protect the trade
    in forecasts); he walked west three weeks on the wound; the Rust Dogs' scouts (Wren) found him at the
@@ -55,7 +55,7 @@ Choir of the Open Sky, the Ledger; Chapter One ends when the player gets the str
 | The Concern | a contract and a leash | A future is a product. You are wearing ours. |
 | The Tollmen | a market in futures | Tomorrow is a commodity; whoever pays should hold it. |
 | The remnant machines / MOTHER | habit — orders nobody alive gave | MOTHER: *the people who are alive now come before the people the city wants them to become.* |
-| The Choir / the Unwritten | masks, refusal | Only an unwritten sky is free. (Some will kill to keep it unwritten.) |
+| The Choir / the Unwritten | no likeness, refusal | Only an unwritten sky is free. (Some will kill to keep it unwritten.) |
 Shale's answer: the Plan is weather; survive the winter. Kessler: plans are for people with food. Vasha:
 if it's written, hold the pen. The player's chrome choices put the question in their body: Concern chrome
 is better and leashed; dark chrome is crude and free; no chrome is human and limited.
@@ -68,7 +68,7 @@ or endanger other memberships. Public mechanics in DESIGN §2d. Rank ids are sta
 | **Shale militia** | none; Ada hides that she has already been offered a Tollmen buyout | volunteer → deputy → sheriff's hand | Tribute Day or militia drills | Ada (free town) vs Mags (company town, quietly for sale) | Rust Dogs |
 | **Rust Dogs** | Kessler took Tollmen money once and regrets it; Vasha has read her own forecast and embraces it | prospect → dog → lieutenant | pass "the Walk" (cross the pens unarmed) or bring a prize | Kessler (hold on) vs Vasha (take Shale) vs Wren (exodus) | Shale militia; infiltration for Ada possible |
 | **Tollmen** | funded by Halcyon scrip; run the futures exchange; shot the stranger | ticket-holder → factor's hand → factor → Grand Factor's circle | a contract run with a catch | Pike (Sallow) vs Sarr (Ninebridge; keystone Treasurer) | Choir membership; the Shift |
-| **Choir of the Open Sky** | the Unwritten break forecasts, some by killing keystones; Ash is one of them | lay healer → sister/brother → Unwritten (masked) | the Sky Rite (bury someone you lost) | Mason (peace, farms) vs the Unwritten (war on the Plan) | Tollmen; wardens |
+| **Choir of the Open Sky** | the Unwritten break forecasts, some by killing keystones; Ash is one of them | lay healer → sister/brother → Unwritten (sworn: no name, no likeness) | the Sky Rite (bury someone you lost) | Mason (peace, farms) vs the Unwritten (war on the Plan) | Tollmen; wardens |
 | **Ledger wardens** | enforcement arm of the Plan; forecasts dictate patrols; Captain Lowe believes the Plan is just | citizen → warden → sergeant → assessor's deputy | citizenship hearing + an arrest | Lowe (letter of the law) vs Nine's faction (log the errors) | gangs; Choir |
 | **Tenured houses** | sell forecasts and citizens to the Concern; the Masque is a succession war | client → retainer → house member | a duel or a favour at the Masque | Vane vs Ashby-Crane | Ledger (if caught) |
 | **Gilt / Saints of Static / the Pale / Rustmouths** (one at a time) | Gilt: Crown kids fencing stolen chrome; Saints: accidental grid-riders hearing the Ledger; Pale: Hollowing memory; Rustmouths: Bridgeward tolls for the Tenured | runner → crew → captain | gang-specific (chrome fitting / a vigil / a vow / a tithe) | turf war over Bridgeward and Old Market | the other three; wardens |
@@ -91,7 +91,7 @@ Routes: F fight · T talk · S stealth · X science/tech · B barter · K knowle
 | 8 | q_a1_jonah | The month ends: save Jonah or watch the forecast find another way | any; outcome = first broken or fulfilled forecast |
 | 9 | q_a1_drywells | Dry Wells: the pumps answer to the city — Act 1 finale | F/T/X/B; sets Shale's water and who escorts you east |
 | 10 | q_a2_ninebridge | Ninebridge Exchange: who financed the stranger's killers; futures are traded here | B, T, S (Exchange ledgers), X, K |
-| 11 | q_a2_openfield | Openfield: the blight; Elder Mason; the Unwritten's masks | M/X (blight), T, S, V |
+| 11 | q_a2_openfield | Openfield: the blight; Elder Mason; the Unwritten's oath | M/X (blight), T, S, V |
 | 12 | q_a2_cistern4 | Cistern 4: a failed reserve — proof that cisterns belong to the city | X, M, K, S; F vs Sumpers optional |
 | 13 | q_a2_precinct | Meridian's gate: the Ledger knows your face as its future Magistrate | T/B (hearing), X (record), S, F (riot); detention branch |
 | 14 | q_a2_calendar | The calendar reveal: the date is a *future*; the photo is a forecast | K (leads board), X, T (Odile/Nine), C |
@@ -199,7 +199,7 @@ burned) · Cistern 9 (relocated by force / kept sealed / opened freely) · the h
 residents; MOTHER; each companion's fate (7) and romance; Wren's rope; Ilya's revenge; Odile's position; Nine's
 deed; Ash's orders; Kes's Leash; Hollis Crane; Jonah; Ada; Mags & Teo; Imelda; Vasha; Kessler; Mason; Calla;
 Ocho; Vane; Maren; Openfield blight; Dry Wells water; Sump clans; the Saints; the Pale; the Wheel; player's
-legal identity; chrome and Drift tone; masks worn; standing tone.
+legal identity; chrome and Drift tone; faces shown to the record; standing tone.
 
 ## 11. Delayed and distant consequences (≥30% of all consequences; seed list)
 Jonah's fate → Ada's letter in Act 2 → Shale's buyout · Teo freed → Mags becomes your Act 2 courier · Kessler

@@ -22,5 +22,5 @@ borrowed names; "wasteland" avoided as a noun for the setting — it is "the Rea
 ## Open watch-list (check when the content exists)
 - Jonah's three authored deaths must each be preventable only by changing conditions, not by standing next to him.
 - Every faction's initiation must be refusable without closing the main path.
-- The Precinct hearing must have a route for a masked player (the Ledger cannot see the face) and for a chromed one (it sees them better).
+- The Precinct hearing must have a route for a hooded player (the Ledger cannot see the face) and for a chromed one (it sees them better).
 - Odile decoding all names at once must not trivialise the keystone pacing: she joins mid-Act 2; by then ≥6 names are decoded anyway.

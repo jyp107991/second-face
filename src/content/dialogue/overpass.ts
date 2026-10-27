@@ -65,7 +65,7 @@ export const d_rd_kessler: DialogueDef = {
         { attr: 'senses', dc: 7, text: 'The coach smells of dog, and of soap. Somebody here washes.' },
       ],
       options: [
-        { id: 'kessler.cut', text: 'Both. I\'m from the salt cut — Cistern 9. A man with a mask died at our door.', next: 'cut' },
+        { id: 'kessler.cut', text: 'Both. I\'m from the salt cut — Cistern 9. A man died at our door.', next: 'cut' },
         { id: 'kessler.manners', text: 'Manners. I\'d like to keep them.', next: 'menu' },
       ],
     },
@@ -235,7 +235,7 @@ export const d_rd_wren: DialogueDef = {
   ],
   nodes: {
     intro: {
-      text: 'Don\'t stand on the skyline. — You\'re the salt-cut one. I found him, you know. Your old man with the mask. Out past the west track, sitting against a post with his boots off, talking to the boots.',
+      text: 'Don\'t stand on the skyline. — You\'re the salt-cut one. I found him, you know. Your old man from the salt cut. Out past the west track, sitting against a post with his boots off, talking to the boots.',
       effects: [{ set: 'rd_wren_met' }],
       options: [{ text: 'What did he say?', next: 'said' }, { text: 'You brought him in?', next: 'brought' }],
     },
@@ -351,7 +351,7 @@ export const d_rd_perpetua: DialogueDef = {
     intro: {
       text: 'Dog-mother. Forty years in this camp; the dogs are mine, the races are mine, the memory\'s mine. The dogs say you\'re not afraid, which means you don\'t know enough yet.',
       options: [
-        { id: 'perp.stranger', text: 'The man with the mask.', if: { any: [{ knows: 'kessler_met_stranger' }, { knows: 'wren_found_stranger' }, { knows: 'kessler_has_map' }] }, next: 'stranger', once: true },
+        { id: 'perp.stranger', text: 'The old man from the salt cut.', if: { any: [{ knows: 'kessler_met_stranger' }, { knows: 'wren_found_stranger' }, { knows: 'kessler_has_map' }] }, next: 'stranger', once: true },
         { id: 'perp.teo', text: 'Teo Marsh.', if: { all: [{ knows: 'teo_prisoner' }, { not: { flag: 'teo_freed' } }] }, next: 'teo' },
         { id: 'perp.races', text: 'The races?', next: 'races', once: true },
         { id: 'perp.pass', text: 'The Tollmen\'s wall. Can you write a pass the gate would take?', if: { all: [{ quest: 'q_a1_tollhouse' }, { not: { item: 'k_pass_forged' } }, { not: { flag: 'th_passed' } }] }, next: 'pass' },

@@ -30,7 +30,7 @@ export const d_map: DialogueDef = {
     },
     fail: { text: 'An hour, and the blocks stay blocks. One of them might be SHALE and might be anything. You will need a crib, a key, or someone who has read this hand before.', effects: [{ time: 60 }, { learn: 'map_cipher_hard' }], options: [{ text: '(Put it away.)', exit: true }] },
     first: {
-      text: 'The first block gives. Five marks, then five, then four, then a number: REESE JONAH. SHALE. And a span, from a date that is — you check it twice — the day the stranger died at your door: within the month. Beside the pin, in the margin, a smaller mark you have seen on a mask: half a sun.',
+      text: 'The first block gives. Five marks, then five, then four, then a number: REESE JONAH. SHALE. And a span, from a date that is — you check it twice — the day the stranger died at your door: within the month. Beside the pin, in the margin, a smaller mark you have seen painted on his dust mask: half a sun.',
       effects: DECODE_FIRST,
       options: [{ text: 'Jonah Reese. The deputy.', next: 'jonah' }],
     },

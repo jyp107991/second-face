@@ -59,7 +59,7 @@ export interface WorldState {
   conclusions: Record<string, true>;
   /** Scheduled world events that have resolved. */
   events: Record<string, 'happened' | 'prevented'>;
-  /** Whether the player currently hides their face (news attaches to a masked stranger). */
+  /** Whether the player currently hides their face (hood up, scarf over the mouth: news attaches to a hooded stranger). */
   masked?: boolean;
   /** People the player has spoken with. */
   met?: Record<string, { name: string; day: number; where?: string }>;

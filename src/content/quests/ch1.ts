@@ -46,7 +46,7 @@ export const q_ch1_door: QuestDef = {
 };
 
 export const q_ch1_shale: QuestDef = {
-  id: 'q_ch1_shale', title: 'A Man With a Mask', act: 'ch1', critical: true, start: 'road', xp: 200,
+  id: 'q_ch1_shale', title: 'A Man at the Door', act: 'ch1', critical: true, start: 'road', xp: 200,
   routes: [
     { id: 'sheriff', kind: 'talk', label: 'Ask Sheriff Vey; she saw him' },
     { id: 'rumour', kind: 'barter', label: 'Buy the rumour from Mags or Pike' },
@@ -56,7 +56,7 @@ export const q_ch1_shale: QuestDef = {
   ],
   stages: {
     road: {
-      journal: 'He walked west for weeks on a wound that should have killed him, and he came to our door on purpose. Shale is the only town for a day in any direction. Someone there will have seen a masked man with a bad hip.',
+      journal: 'He walked west for weeks on a wound that should have killed him, and he came to our door on purpose. Shale is the only town for a day in any direction. Someone there will have seen an old man with a bad hip.',
       objectives: [
         { id: 'shale', text: 'Reach Shale', done: { flag: 'visited_shale' } },
         { id: 'seen', text: 'Find someone who saw him', done: { any: [{ knows: 'ada_saw_stranger' }, { knows: 'pardo_has_ring' }, { knows: 'hollis_saw_stranger' }, { knows: 'mags_saw_stranger' }, { knows: 'pike_saw_stranger' }, { knows: 'tracks_read' }] } },

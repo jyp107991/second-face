@@ -45,7 +45,7 @@ Coherent features drawn from modern games, chosen because they make a lawless fr
 | System | Inspiration | How it works here |
 |---|---|---|
 | **Reputation travels with people** (no global karma) | Kenshi, Mount & Blade, Red Dead Redemption 2 | Each settlement and faction has its own opinion of you, built from what its people *witnessed* or *heard*. News moves along roads with caravans, travellers and gossip at travel speed; places you haven't reached haven't heard yet. Rumours distort. You can arrive ahead of your reputation, or send a story ahead of you. |
-| **Faces, masks and recognition** | Hitman, Assassin's Creed notoriety (inverted for RPG) | People attach news to a *face*. Masks, hoods, dirt and changed hair stop recognition (news attaches to "a masked stranger" instead). Some places admit only the known, some only the masked. Your sculpted face matters to the world. |
+| **Faces and recognition** | Hitman, Assassin's Creed notoriety (inverted for RPG) | People attach news to a *face*. Hoods, scarves, dirt and changed hair stop recognition (news attaches to "a masked stranger" instead). Some places admit only the known, some only the masked. Your sculpted face matters to the world. |
 | **Leads board** | Return of the Obra Dinn, Shadows of Doubt, Disco Elysium thoughts | Clues (things seen, said, read) go on a board in the notebook. Linking the right clues forms a *conclusion* that unlocks dialogue, routes and check bonuses. Wrong links are allowed and cost nothing but time. |
 | **Scheduled world events** | Pathologic, Majora's Mask, Citizen Sleeper | Some things will happen on a given day whether or not you are there (a raid, a hanging, a toll rise). Some can be learned in advance from rumours or documents and prevented, exploited or sold. Ignored crises resolve, often badly, and stay resolved. Clear in-game warnings; never a hidden fail state for the main path. |
 | **Frontier justice** | Frostpunk, This War of Mine, Pentiment | When you hold standing in a town you are asked to settle disputes (water rights, debts, thefts, a killing) and, later, to set town rules (curfew, tribute, who may draw from the well). Rulings change the town, its people's opinions and later events. |
@@ -66,7 +66,7 @@ What we take from cyberpunk (tabletop to 2077) and how scarcity changes it:
 | Fixers & gigs | **Brokers** in each district with contracts; reputation with Brokers unlocks better work |
 | Megacorps vs street | **The Concern** and the **Tenured** vs gangs, unions, Menders and the destitute |
 | Night City | **Meridian** and **Halcyon**: deep, dense, vertical bastion cities ringed by ruins and shanties |
-| Style over substance | Clothing, masks and visible chrome change how people treat you (recognition, class, fear) |
+| Style over substance | Clothing, hoods and visible chrome change how people treat you (recognition, class, fear) |
 
 ### 2c.1 Chrome system
 - **Slots:** eyes · neural · arms (L/R) · legs · spine · skin · organs. One piece per slot.
@@ -148,7 +148,7 @@ Every authored side quest passes this checklist before it ships; `AUDIT_SECRET.m
 
 ## 2g. Nonlinearity rules
 - **Entry routes:** every story place has at least three of: talk (standing or papers), sneak (a mapped
-  route), force, bribe, disguise (outfit or mask), chrome (spring legs, grid link), knowledge (a lead or
+  route), force, bribe, disguise (outfit, hood or scarf), chrome (spring legs, grid link), knowledge (a lead or
   password). The validator reads these from `MapDef.entries` once maps exist.
 - **Order:** regions can be played in different orders. Locations carry a **tier** (1–5) that sets enemy
   bands and loot; the critical path gates only on *information* (leads, names), never on level walls.

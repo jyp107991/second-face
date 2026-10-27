@@ -120,7 +120,7 @@ describe('Shale: tracing the stranger', () => {
     q.questStart('q_ch1_shale');
     g.flags.visited_shale = true;
     g.pc.inventory.tolls = 20;
-    talk('d_sh_pike', g, q, ['A masked man came through', '(Pay. 15 Tolls)', 'Noted.']);
+    talk('d_sh_pike', g, q, ['An old man came through', '(Pay. 15 Tolls)', 'Noted.']);
     expect(g.pc.inventory.tolls).toBe(5);
     expect(g.world.knowledge.kessler_has_map).toBe(true);
     expect(g.world.quests.q_ch1_shale.stage).toBe('overpass');
@@ -128,7 +128,7 @@ describe('Shale: tracing the stranger', () => {
     const q2 = new QuestEngine(QUESTS, g2);
     q2.questStart('q_ch1_shale');
     g2.world.knowledge.teo_prisoner = true;
-    talk('d_sh_mags', g2, q2, ['What have you got', 'A tall old man with a mask', 'Tell me, and I\'ll ask after Teo', 'Thank you.']);
+    talk('d_sh_mags', g2, q2, ['What have you got', 'A tall old man, hurt', 'Tell me, and I\'ll ask after Teo', 'Thank you.']);
     expect(g2.world.decisions.map((d) => d.id)).toContain('promised_mags_teo');
     expect(g2.world.knowledge.mags_saw_stranger).toBe(true);
   });

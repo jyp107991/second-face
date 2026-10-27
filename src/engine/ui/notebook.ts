@@ -202,7 +202,7 @@ export class Notebook {
     const stories = g.world.news.filter((n) => n.heard[sel.id]);
     b.innerHTML = `<h4>${esc(sel.name)}</h4>` + (stories.length ? stories.map((n) => {
       const h = n.heard[sel.id];
-      const who = n.about === 'masked' ? 'a masked stranger' : 'you';
+      const who = n.about === 'masked' ? 'a hooded stranger' : 'you';
       const told = h.distortion > 0.3 ? ' (the story has grown in the telling)' : '';
       return `<p class="log">${esc((n.text ?? n.tag.replace(/_/g, ' ')).replace('{who}', who))}${told} <span class="dim">— heard day ${h.day}${dayOf(g.minutes) - h.day > 0 ? `, ${dayOf(g.minutes) - h.day} days ago` : ''}</span></p>`;
     }).join('') : '<p class="dim">Nothing about you has reached them.</p>');
