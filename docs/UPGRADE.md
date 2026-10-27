@@ -234,3 +234,15 @@ Content building (B3.11 onwards) is paused until U1–U5 are in.
   the rest stay built for now. Evidence `docs/evidence/u2/props_*.png` (Shale, the Old Market, the Overpass, Dry
   Wells); `tools/qa/props.cjs`. The Overpass's deck still reads as a pale slab from the terrain side (its map was
   drawn for a closed room); that is a map fix for the content pass, not the engine.
+- **2026-10-27 U3.4 — weather by region, and small life.** The climate gains rain, fog and snow
+  (`world/weather.ts`: the Wet and the Shore rain a quarter of their days and fog another sixth, the Teeth snow,
+  the Sallow and the Flats never see any of it); each has its own sky (a rain-grey sun and a blue-grey fog, a pale
+  close fog, a white snow light) and the rain its own sound (`audio.ts`). Rain and snow fall through a box that
+  rides with the camera (`render/atmosphere.ts buildPrecip`: streaks that slant with the wind, flakes that sway)
+  and stop under a roof. Smoke rises from the nearest fires (one cloud of motes for up to six fires, each mote
+  born at its fire, drifting on the wind, swelling and thinning). `render/life.ts`: now and then a flock of seven
+  birds crosses high over the player in a loose V, wings beating (not over the Ashlands, not in a storm, not at
+  night; seldom over the dry country); in the Sallow, the Flats and the Ashlands a dust devil wanders by on a
+  clear day. The sound bed in the open follows the region's ambience. Evidence `docs/evidence/u2/sky_*.png`;
+  `tools/qa/sky.cjs`. U3 is in. Left on its list for the content pass: roadside detail along the ways (posts,
+  wrecks, markers), which wants the naming and content work of U6 anyway.

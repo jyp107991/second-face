@@ -201,3 +201,19 @@ export function softSprite(): THREE.Texture {
   g.fillRect(0, 0, 64, 64);
   return new THREE.CanvasTexture(c);
 }
+
+let streak: THREE.Texture | undefined;
+/** A thin vertical streak with soft ends (rain). */
+export function streakSprite(): THREE.Texture {
+  if (streak) return streak;
+  const c = document.createElement('canvas');
+  c.width = 16; c.height = 64;
+  const ctx = c.getContext('2d')!;
+  const g = ctx.createLinearGradient(0, 0, 0, 64);
+  g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.3, 'rgba(255,255,255,0.9)'); g.addColorStop(0.7, 'rgba(255,255,255,0.9)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(6, 0, 4, 64);
+  streak = new THREE.CanvasTexture(c);
+  streak.minFilter = THREE.LinearFilter;
+  return streak;
+}

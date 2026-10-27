@@ -30,7 +30,7 @@ Precinct, Old Market, the Sink, Lantern Row, the Stacks, Bridgeward and the Crow
 147 items;
 six companions can join; a flat in the Stacks is a safehouse; four gangs joinable one at a time; the Crown has five ways in).
 **Content building is PAUSED by the owner's directive of 2026-10-27 (pass 5): the upgrade in `docs/UPGRADE.md` comes first
-(§2c below): U1 done, U2a done, U2b next; then B3.11.** Still open from the presentation
+(§2c below): U1–U3 done, U4 next; then B3.11.** Still open from the presentation
 pass: A5.9's remaining items (combat hover card, crowd yielding, indoor sound, camera ease, Tab reveal) — fold them in
 as B3 touches the same code. Binding owner rules: see `CLAUDE.md` §2 (no time limits; spoiler rule; not a Fallout
 clone; cyberpunk fusion).
@@ -261,8 +261,8 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
             time (`journey.cjs`). Taps work in the open country.
       - [ ] U2c (after U3): detail rings/LOD, memory and draw-call budget, phone profiling.
 
-- [ ] U3 Living world (IN PROGRESS): biome vegetation and surviving greenery, rocks and ruins, real props, water and
-      shores, weather by region, background life.
+- [x] U3 Living world DONE 2026-10-27: biome vegetation and surviving greenery, rocks, real props, water and shores,
+      weather by region, background life.
       - [x] U3.1 DONE 2026-10-27: CC0 model library (`tools/assets/models.py`, 25 plants/rocks, phone-sized),
             `src/engine/assets/models.ts`, `src/engine/world/flora.ts` (regional rules, patches, exclusions,
             instancing within 120 m, obstacles); trees as eight-view impostor cards baked from the full models
@@ -272,8 +272,9 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
       - [x] U3.3 DONE 2026-10-27: 22 CC0 prop models; `src/engine/assets/propModels.ts` maps built box props to
             them; places merge their model props by material (`props.cjs`). Roadside detail along the ways folds
             into U3.4.
-      - [ ] U3.4: weather by region in the open (dust in the Sallow, rain and fog in the Wet and on the Shore, snow in
-            the Teeth), background life (birds, dust devils, smoke from places), a grass LOD.
+      - [x] U3.4 DONE 2026-10-27: rain, fog and snow by region with their skies and sound; rain and snow particles;
+            smoke from fires; birds and dust devils (`src/engine/render/life.ts`); open-country sound bed
+            (`sky.cjs`). Grass LOD and roadside detail deferred to U2c/the content pass.
 - [ ] U4 People: captured motion retargeted to the human rig, locomotion blending, skin/cloth/hair materials, close
       LOD, outfits per role/region, visual variance, cached portraits.
 - [ ] U5 Camera and touch: one-finger turn, tap move, pinch zoom, two-finger pan, compass/recentre.

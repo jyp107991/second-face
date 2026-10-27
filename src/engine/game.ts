@@ -16,6 +16,8 @@ import { sitePlacement, type SitePlacement } from './world/sites';
 import { regionAt } from './world/terrain';
 import { JOURNEY_CLOCK, wayPoints } from './world/ways';
 import type { WorldGrid } from './world/worldGrid';
+import { Life } from './render/life';
+import { SCREEN_H } from './render/screen';
 import { Atmosphere } from './render/atmosphere';
 import { IsoCamera } from './render/camera';
 import { PostFX } from './render/postfx';
@@ -178,6 +180,8 @@ export class Game extends EventBus<GameEvents> {
   private captureWaiters: { crop: { x: number; y: number; w: number; h: number }; w: number; h: number; done: (c: HTMLCanvasElement) => void }[] = [];
   readonly npcs = new Map<string, NpcRuntime>();
   readonly fx: Fx;
+  /** Birds and dust devils: the open country is never quite still. */
+  private life?: Life;
   readonly encounter: Encounter;
   rng = new Rng(1);
   /** The player's combat view of state.pc (rebuilt on load). */
@@ -564,7 +568,8 @@ export class Game extends EventBus<GameEvents> {
   private soundBed?: string;
   /** The ambient sound follows the map's mood, the hour and the weather. */
   private updateSoundBed(): void {
-    const a = this.loc?.map.ambience;
+    // A place's own ambience, or the open country's where the player stands.
+    const a = this.loc?.map.ambience ?? (this.player ? this.world.ambienceAt(this.player.tx, this.player.ty) : undefined);
     if (!a) return;
     const id = a.indoor ? a.sound : moodSound(a.mood, this.atmosphere.weather, hourOf(this.state.minutes), a.sound);
     if (id !== this.soundBed) { this.soundBed = id; this.audio.setAmbience(id); }
@@ -624,6 +629,7 @@ export class Game extends EventBus<GameEvents> {
     this.renderer.setSize(w, h);
     const pr = this.renderer.getPixelRatio();
     this.post?.setSize(Math.floor(w * pr), Math.floor(h * pr));
+    SCREEN_H.value = Math.floor(h * pr);
     this.cam.setAspect(w / h);
     this.portrait?.setAspect(w / h);
     // Phones in portrait see less width; zoom out a bit.
@@ -1675,6 +1681,11 @@ export class Game extends EventBus<GameEvents> {
     this.atmosphere.focusDistance = this.cam.distance;
     this.updateSoundBed();
     this.atmosphere.update(dt, this.time, this.cam.focus, this.post.settings);
+    if (this.player) {
+      this.life ??= new Life(this.scene);
+      const region = regionAt(this.player.tx, this.player.ty);
+      this.life.update(simDt, this.time, this.cam.focus, region, this.atmosphere.weather, this.world.mode === 'open' && !this.paused, hourOf(this.state.minutes), (x, z) => this.world.heightAt(x, z));
+    }
     if (this.reverieOn) {
       // A recorded memory: cold, washed, grainy, the edges closing in.
       const s = this.post.settings;

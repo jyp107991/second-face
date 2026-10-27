@@ -4,19 +4,20 @@
  * Maps carry a mood on top (bright, peaceful, bustling, haze, grim) that sets the grade and the sound bed.
  */
 
-export type WeatherKind = 'clear' | 'haze' | 'dust' | 'storm';
+export type WeatherKind = 'clear' | 'haze' | 'dust' | 'storm' | 'rain' | 'fog' | 'snow';
 export type Mood = 'bright' | 'peaceful' | 'bustling' | 'haze' | 'grim';
 
-/** Per-region odds, in order: clear, haze, dust, storm. */
-const CLIMATE: Record<string, [number, number, number, number]> = {
-  sallow: [0.56, 0.24, 0.15, 0.05],
-  glass_flats: [0.6, 0.2, 0.15, 0.05],
-  rail_corridor: [0.5, 0.3, 0.12, 0.08],
-  drowned_shore: [0.35, 0.45, 0.05, 0.15],
-  meridian: [0.45, 0.4, 0.05, 0.1],
-  teeth: [0.4, 0.35, 0.1, 0.15],
-  ashlands: [0.3, 0.3, 0.3, 0.1],
-  northern_wet: [0.3, 0.45, 0.05, 0.2],
+/** Per-region odds, in order: clear, haze, dust, storm, rain, fog, snow. */
+const KINDS: WeatherKind[] = ['clear', 'haze', 'dust', 'storm', 'rain', 'fog', 'snow'];
+const CLIMATE: Record<string, number[]> = {
+  sallow: [0.55, 0.23, 0.14, 0.05, 0.03, 0, 0],
+  glass_flats: [0.6, 0.2, 0.14, 0.05, 0.01, 0, 0],
+  rail_corridor: [0.42, 0.25, 0.08, 0.06, 0.14, 0.05, 0],
+  drowned_shore: [0.22, 0.28, 0.02, 0.1, 0.2, 0.18, 0],
+  meridian: [0.3, 0.3, 0.02, 0.06, 0.2, 0.12, 0],
+  teeth: [0.34, 0.22, 0.04, 0.1, 0.08, 0.07, 0.15],
+  ashlands: [0.3, 0.3, 0.28, 0.1, 0.02, 0, 0],
+  northern_wet: [0.18, 0.3, 0.02, 0.1, 0.26, 0.14, 0],
 };
 
 function hash(s: string): number {
@@ -31,8 +32,7 @@ export function weatherFor(region: string, day: number, seed = 0): WeatherKind {
   // Weather runs in spells: the roll is shared across two to three days.
   const spell = Math.floor((day + hash(`${region}/${seed}/spell`) * 3) / 2.5);
   let r = hash(`${region}/${seed}/${spell}`);
-  const kinds: WeatherKind[] = ['clear', 'haze', 'dust', 'storm'];
-  for (let i = 0; i < 4; i++) { r -= odds[i]; if (r <= 0) return kinds[i]; }
+  for (let i = 0; i < KINDS.length; i++) { r -= odds[i] ?? 0; if (r <= 0) return KINDS[i]; }
   return 'clear';
 }
 
@@ -63,6 +63,9 @@ export function skyLook(weather: WeatherKind, mood: Mood | undefined): SkyLook {
     haze: { sun: 0.92, clarity: 0.95, dust: 0.7, grade: 0.03, blue: 0.45 },
     dust: { sun: 0.65, clarity: 0.45, dust: 2.2, grade: 0.2, blue: 0 },
     storm: { sun: 0.4, clarity: 0.3, dust: 3.2, grade: 0.3, blue: 0 },
+    rain: { sun: 0.5, clarity: 0.55, dust: 0, grade: 0.06, blue: 0 },
+    fog: { sun: 0.62, clarity: 0.22, dust: 0.3, grade: 0.0, blue: 0.1 },
+    snow: { sun: 0.85, clarity: 0.6, dust: 0, grade: -0.06, blue: 0.35 },
   };
   const w = table[weather];
   const m: Record<Mood, Partial<SkyLook>> = {
@@ -73,8 +76,8 @@ export function skyLook(weather: WeatherKind, mood: Mood | undefined): SkyLook {
     grim: { grade: 0.12, clarity: 0.9, exposure: 0.86, tint: [0.96, 0.95, 0.9], fogMul: 0.78, fogCool: 0.45 },
   };
   const mm = mood ? m[mood] : {};
-  // Dust and storm darken the air whatever the mood.
-  const wFog = weather === 'storm' ? 0.78 : weather === 'dust' ? 0.9 : 1;
+  // Dust, storm and rain darken the air whatever the mood; fog and snow pale it.
+  const wFog = weather === 'storm' ? 0.78 : weather === 'dust' ? 0.9 : weather === 'rain' ? 0.84 : weather === 'fog' ? 1.06 : weather === 'snow' ? 1.08 : 1;
   return {
     sun: w.sun, clarity: w.clarity * (mm.clarity ?? 1), dust: w.dust, grade: w.grade + (mm.grade ?? 0), blue: w.blue,
     fogMul: (mm.fogMul ?? 1) * wFog, fogCool: mm.fogCool ?? 0, exposure: mm.exposure ?? 1, tint: mm.tint ?? [1.03, 0.99, 0.93],
@@ -87,6 +90,7 @@ export const MOOD_GRADE: Record<Mood, number> = { bright: 0.12, peaceful: 0.18, 
 /** The sound bed a mood wants at an hour, given the weather. */
 export function moodSound(mood: Mood | undefined, weather: WeatherKind, hour: number, fallback: string | undefined): string | undefined {
   if (weather === 'storm' || weather === 'dust') return 'wind';
+  if (weather === 'rain') return 'rain';
   const day = hour >= 6 && hour < 20;
   if (mood === 'peaceful' && day) return 'birds';
   if (mood === 'bustling' && hour >= 7 && hour < 21) return 'murmur';

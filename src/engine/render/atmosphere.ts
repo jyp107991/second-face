@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { softSprite } from '../assets/textures';
+import { softSprite, streakSprite } from '../assets/textures';
+import { SCREEN_H } from './screen';
 import type { AmbienceDef } from '../data/types';
 import type { BuiltLocation } from '../scene/location';
 import { roofBase } from '../scene/buildings';
@@ -36,6 +37,13 @@ export class Atmosphere {
   private pool: THREE.PointLight[] = [];
   private sources: LightSource[] = [];
   private dust?: THREE.Points;
+  /** Rain or snow falling through a box that rides with the focus. */
+  private precip?: THREE.Points;
+  private precipMat?: THREE.ShaderMaterial;
+  private precipKind?: WeatherKind;
+  /** Smoke rising from the nearest fires. */
+  private smoke?: THREE.Points;
+  private smokeMat?: THREE.ShaderMaterial;
   private clarity = 1;
   private dustMul = 1;
   private dustMat?: THREE.ShaderMaterial;
@@ -116,9 +124,9 @@ export class Atmosphere {
     g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
     this.dustMat ??= new THREE.ShaderMaterial({
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-      uniforms: { uTime: { value: 0 }, uSize: { value: 40 }, uColor: { value: new THREE.Color(0xffe8c0) }, uMap: { value: softSprite() }, uBounds: { value: new THREE.Vector2(w, h) }, uOrigin: { value: new THREE.Vector2(0, 0) }, uWind: { value: new THREE.Vector2(0.3, 0.1) }, uDensity: { value: 1 } },
+      uniforms: { uTime: { value: 0 }, uSize: { value: 0.32 }, uScreen: SCREEN_H, uColor: { value: new THREE.Color(0xffe8c0) }, uMap: { value: softSprite() }, uBounds: { value: new THREE.Vector2(w, h) }, uOrigin: { value: new THREE.Vector2(0, 0) }, uWind: { value: new THREE.Vector2(0.3, 0.1) }, uDensity: { value: 1 } },
       vertexShader: /* glsl */ `
-        attribute float aSeed; uniform float uTime; uniform float uSize; uniform vec2 uBounds; uniform vec2 uOrigin; uniform vec2 uWind; uniform float uDensity;
+        attribute float aSeed; uniform float uTime; uniform float uSize; uniform float uScreen; uniform vec2 uBounds; uniform vec2 uOrigin; uniform vec2 uWind; uniform float uDensity;
         varying float vA;
         void main() {
           vec3 p = position;
@@ -129,7 +137,7 @@ export class Atmosphere {
           vec4 mv = modelViewMatrix * vec4(p, 1.0);
           gl_Position = projectionMatrix * mv;
           float thick = max(uDensity - 1.0, 0.0);
-          gl_PointSize = uSize * (0.3 + aSeed * 0.7) * (1.0 + 0.25 * thick) * projectionMatrix[1][1];
+          gl_PointSize = uSize * (0.3 + aSeed * 0.7) * (1.0 + 0.25 * thick) * projectionMatrix[1][1] * uScreen * 0.5;
           vA = 0.18 + 0.25 * sin(uTime * 1.3 + aSeed * 20.0) * 0.5 + 0.12;
           vA *= (1.0 + 0.35 * thick) * step(aSeed, uDensity);
         }`,
@@ -140,6 +148,98 @@ export class Atmosphere {
     this.dust = new THREE.Points(g, this.dustMat);
     this.dust.frustumCulled = false;
     this.scene.add(this.dust);
+  }
+
+  private static PRECIP_BOX = 70;
+  private static PRECIP_H = 26;
+
+  /** Rain or snow for the weather at hand (none for the rest). */
+  private buildPrecip(kind: WeatherKind): void {
+    if (this.precip) { this.scene.remove(this.precip); this.precip.geometry.dispose(); this.precip = undefined; }
+    this.precipKind = kind;
+    if (kind !== 'rain' && kind !== 'snow' && kind !== 'storm') return;
+    const snow = kind === 'snow';
+    const count = Math.max(300, Math.floor(this.quality.dust * (snow ? 1.2 : kind === 'storm' ? 2.2 : 1.8)));
+    const w = Atmosphere.PRECIP_BOX, h = Atmosphere.PRECIP_H;
+    const pos = new Float32Array(count * 3), seed = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = Math.random() * w; pos[i * 3 + 1] = Math.random() * h; pos[i * 3 + 2] = Math.random() * w;
+      seed[i] = Math.random();
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
+    this.precipMat ??= new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false,
+      uniforms: { uTime: { value: 0 }, uSize: { value: 0.6 }, uScreen: SCREEN_H, uSpeed: { value: 12 }, uSway: { value: 0 }, uColor: { value: new THREE.Color(0xdde4ec) }, uAlpha: { value: 0.5 }, uMap: { value: streakSprite() }, uBounds: { value: new THREE.Vector3(w, h, w) }, uOrigin: { value: new THREE.Vector3() }, uWind: { value: new THREE.Vector2(1.2, 0.4) } },
+      vertexShader: /* glsl */ `
+        attribute float aSeed; uniform float uTime; uniform float uSize; uniform float uScreen; uniform float uSpeed; uniform float uSway; uniform vec3 uBounds; uniform vec3 uOrigin; uniform vec2 uWind;
+        varying float vA;
+        void main() {
+          vec3 p = position;
+          float fall = uTime * uSpeed * (0.8 + 0.4 * aSeed);
+          p.y = mod(p.y - fall, uBounds.y);
+          p.x = mod(p.x + uWind.x * uTime * (0.7 + aSeed * 0.6) + sin(uTime * 1.7 + aSeed * 30.0) * uSway - uOrigin.x, uBounds.x) + uOrigin.x;
+          p.z = mod(p.z + uWind.y * uTime * (0.7 + aSeed * 0.6) + cos(uTime * 1.3 + aSeed * 20.0) * uSway - uOrigin.z, uBounds.z) + uOrigin.z;
+          p.y += uOrigin.y;
+          vec4 mv = modelViewMatrix * vec4(p, 1.0);
+          gl_Position = projectionMatrix * mv;
+          gl_PointSize = uSize * (0.6 + 0.4 * aSeed) * projectionMatrix[1][1] * uScreen * 0.5;
+          vA = 0.6 + 0.4 * aSeed;
+        }`,
+      fragmentShader: /* glsl */ `
+        uniform sampler2D uMap; uniform vec3 uColor; uniform float uAlpha; varying float vA;
+        void main() { gl_FragColor = vec4(uColor, texture2D(uMap, gl_PointCoord).a * vA * uAlpha); }`,
+    });
+    const u = this.precipMat.uniforms;
+    u.uMap.value = snow ? softSprite() : streakSprite();
+    u.uSize.value = snow ? 0.2 : kind === 'storm' ? 0.75 : 0.65;
+    u.uSpeed.value = snow ? 1.4 : kind === 'storm' ? 16 : 11;
+    u.uSway.value = snow ? 0.6 : 0.05;
+    u.uWind.value.set(snow ? 0.6 : kind === 'storm' ? 3.5 : 1.4, snow ? 0.3 : 0.5);
+    u.uAlpha.value = snow ? 0.9 : 0.6;
+    this.precip = new THREE.Points(g, this.precipMat);
+    this.precip.frustumCulled = false;
+    this.scene.add(this.precip);
+  }
+
+  private static SMOKE_FIRES = 6;
+  private static SMOKE_PER = 28;
+
+  /** One cloud of motes for the nearest fires: each mote rises from its fire, drifts on the wind, swells and thins. */
+  private buildSmoke(): void {
+    const n = Atmosphere.SMOKE_FIRES * Atmosphere.SMOKE_PER;
+    const pos = new Float32Array(n * 3), seed = new Float32Array(n), fire = new Float32Array(n);
+    for (let i = 0; i < n; i++) { seed[i] = Math.random(); fire[i] = Math.floor(i / Atmosphere.SMOKE_PER); }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
+    g.setAttribute('aFire', new THREE.BufferAttribute(fire, 1));
+    this.smokeMat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false,
+      uniforms: { uTime: { value: 0 }, uScreen: SCREEN_H, uMap: { value: softSprite() }, uFires: { value: Array.from({ length: Atmosphere.SMOKE_FIRES }, () => new THREE.Vector4(0, -100, 0, 0)) }, uWind: { value: new THREE.Vector2(0.5, 0.2) }, uColor: { value: new THREE.Color(0x8a8480) } },
+      vertexShader: /* glsl */ `
+        attribute float aSeed; attribute float aFire; uniform float uTime; uniform float uScreen; uniform vec4 uFires[${Atmosphere.SMOKE_FIRES}]; uniform vec2 uWind;
+        varying float vA;
+        void main() {
+          vec4 f = uFires[int(aFire + 0.5)];
+          float life = mod(uTime * (0.35 + 0.25 * aSeed) + aSeed * 7.0, 7.0) / 7.0;
+          vec3 p = f.xyz;
+          p.y += life * 7.0;
+          p.x += (sin(uTime * 0.9 + aSeed * 40.0) * 0.4 + uWind.x * life * 6.0) * life;
+          p.z += (cos(uTime * 0.7 + aSeed * 30.0) * 0.4 + uWind.y * life * 6.0) * life;
+          vec4 mv = modelViewMatrix * vec4(p, 1.0);
+          gl_Position = projectionMatrix * mv;
+          gl_PointSize = (0.5 + 2.6 * life) * projectionMatrix[1][1] * uScreen * 0.5 * f.w;
+          vA = (1.0 - life) * life * 1.6 * 0.42 * f.w;
+        }`,
+      fragmentShader: /* glsl */ `
+        uniform sampler2D uMap; uniform vec3 uColor; varying float vA;
+        void main() { gl_FragColor = vec4(uColor, texture2D(uMap, gl_PointCoord).a * vA); }`,
+    });
+    this.smoke = new THREE.Points(g, this.smokeMat);
+    this.smoke.frustumCulled = false;
+    this.scene.add(this.smoke);
   }
 
   /** 0 (dark) .. 1 (lit) at a world position: sun/ambient plus nearby light sources. */
@@ -197,6 +297,16 @@ export class Atmosphere {
       if (this.weather === 'dust' || this.weather === 'storm') {
         this.fog.color.lerp(cb.setHex(0xb08a5a), this.weather === 'storm' ? 0.55 : 0.35);
         this.sun.color.lerp(cb.setHex(0xe8a060), 0.4);
+      } else if (this.weather === 'rain') {
+        this.fog.color.lerp(cb.setHex(0x8e969c), 0.5);
+        this.sun.color.lerp(cb.setHex(0xc8ccd4), 0.6);
+        this.hemi.color.lerp(cb.setHex(0x9aa4b0), 0.5);
+      } else if (this.weather === 'fog') {
+        this.fog.color.lerp(cb.setHex(0xd2d2cc), 0.65);
+        this.sun.color.lerp(cb.setHex(0xe0e0dc), 0.5);
+      } else if (this.weather === 'snow') {
+        this.fog.color.lerp(cb.setHex(0xdfe3ea), 0.55);
+        this.hemi.color.lerp(cb.setHex(0xc4ccd8), 0.4);
       }
       if (look.fogCool > 0) this.fog.color.lerp(cb.setHex(0x8c8a88), look.fogCool);
       this.fog.color.multiplyScalar(look.fogMul);
@@ -241,6 +351,27 @@ export class Atmosphere {
       l.intensity = s.intensity * fl * Math.max(0.1, lit);
     }
 
+    if (this.precipKind !== this.weather) this.buildPrecip(this.weather);
+    if (this.precip && this.precipMat) {
+      this.precip.visible = !a.indoor;
+      const u = this.precipMat.uniforms;
+      u.uTime.value = time;
+      u.uOrigin.value.set(focus.x - Atmosphere.PRECIP_BOX / 2, focus.y - 2, focus.z - Atmosphere.PRECIP_BOX / 2);
+      u.uColor.value.copy(this.weather === 'snow' ? ca.setHex(0xffffff) : this.fog.color.clone().lerp(ca.setHex(0xffffff), 0.55)).multiplyScalar(this.weather === 'snow' ? 1 : 1.2);
+    }
+    if (!this.smoke) this.buildSmoke();
+    if (this.smokeMat) {
+      const fires = this.sources.filter((s) => s.flicker >= 0.3 && !s.lamp).map((s) => ({ s, d: s.pos.distanceToSquared(focus) })).sort((x, y) => x.d - y.d);
+      const u = this.smokeMat.uniforms;
+      for (let i = 0; i < Atmosphere.SMOKE_FIRES; i++) {
+        const f = fires[i];
+        const v = (u.uFires.value as THREE.Vector4[])[i];
+        if (!f || f.d > 60 * 60) v.set(0, -100, 0, 0); else v.set(f.s.pos.x, f.s.pos.y - 0.2, f.s.pos.z, 1);
+      }
+      u.uTime.value = time;
+      u.uColor.value.copy(this.fog.color).lerp(ca.setHex(0x5a5652), 0.5);
+      if (this.smoke) this.smoke.visible = !a.indoor;
+    }
     if (this.dustMat) {
       this.dustMat.uniforms.uTime.value = time;
       this.dustMat.uniforms.uOrigin.value.set(focus.x - DUST_BOX / 2, focus.z - DUST_BOX / 2);

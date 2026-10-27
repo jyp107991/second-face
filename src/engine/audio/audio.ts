@@ -121,6 +121,22 @@ export class AudioEngine {
       n.start(); lfo.start(); lfo2.start();
       this.ambNodes.push(n, lfo, lfo2);
     }
+    if (id === 'rain') {
+      // Rain: a broad hiss with a slow swell, and the patter in the upper band.
+      const n = this.noiseSrc(true, true);
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1600; bp.Q.value = 0.45;
+      const g = ctx.createGain(); g.gain.value = 0.42;
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.05;
+      const lfoG = ctx.createGain(); lfoG.gain.value = 0.12;
+      lfo.connect(lfoG).connect(g.gain);
+      n.connect(bp).connect(g).connect(out);
+      const n2 = this.noiseSrc(false, true);
+      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 5000;
+      const g2 = ctx.createGain(); g2.gain.value = 0.08;
+      n2.connect(hp).connect(g2).connect(out);
+      n.start(); lfo.start(); n2.start();
+      this.ambNodes.push(n, lfo, n2);
+    }
     if (id === 'hum') {
       for (const [f, gv] of [[55, 0.12], [110, 0.05], [165, 0.02]] as const) {
         const o = ctx.createOscillator(); o.frequency.value = f; o.type = 'sine';

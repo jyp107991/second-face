@@ -15,6 +15,18 @@ describe('weather', () => {
     expect(same).toBeGreaterThan(220);
   });
 
+  it('it rains in the Wet and snows in the Teeth, never in the Sallow', () => {
+    const tally = (region: string) => { const c: Record<string, number> = {}; for (let d = 1; d <= 400; d++) { const k = weatherFor(region, d, 3); c[k] = (c[k] ?? 0) + 1; } return c; };
+    const wet = tally('northern_wet'), teeth = tally('teeth'), sallow = tally('sallow');
+    expect(wet.rain ?? 0).toBeGreaterThan(50);
+    expect(teeth.snow ?? 0).toBeGreaterThan(25);
+    expect(sallow.snow ?? 0).toBe(0);
+    expect(sallow.fog ?? 0).toBe(0);
+    expect(skyLook('rain', 'peaceful').sun).toBeLessThan(skyLook('clear', 'peaceful').sun);
+    expect(skyLook('fog', undefined).clarity).toBeLessThan(skyLook('haze', undefined).clarity);
+    expect(moodSound('peaceful', 'rain', 10, 'wind')).toBe('rain');
+  });
+
   it('a clear day is bright and far-seeing; a storm is dim and close; moods shift the grade', () => {
     const clear = skyLook('clear', 'bright'), storm = skyLook('storm', 'grim');
     expect(clear.sun).toBeGreaterThan(storm.sun);
