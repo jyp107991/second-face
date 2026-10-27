@@ -109,12 +109,23 @@ export const d_sh_nell: DialogueDef = {
         { id: 'nell.wheel', text: 'You mentioned the Wheel.', next: 'wheel', once: true },
         { id: 'nell.leave', text: 'You want to leave Shale.', if: { attr: 'wits', gte: 6 }, next: 'leave', once: true },
         { id: 'nell.mother', text: 'Is it just you and Mags?', next: 'mother', once: true },
+        { id: 'nell.water', text: 'The east cistern\'s gone green. The deputy drinks from it.', if: { all: [{ knows: 'jonah_drinks' }, { not: { flag: 'jonah_fever_blocked' } }] }, next: 'water' },
         bye,
       ],
     },
     wheel: { text: 'Forty wagons, horses, a whole town that moves. They stayed two days and when they left the street was quiet for a week. Ruth at the caravan post rides with them sometimes. I asked her what they need. She said "people who don\'t ask".', effects: [{ learn: 'nell_wheel' }], options: [{ text: 'Huh.', next: 'intro' }] },
     leave: { text: 'She goes red. "Does it show? Don\'t tell her. She\'d say it was the house that was leaving, not me." She wipes a glass that was already clean.', effects: [{ learn: 'nell_wants_out' }, { trust: { npc: 'npc_sh_10', by: 5 } }], options: [{ text: 'I won\'t.', next: 'intro' }] },
     mother: { text: '"My mum died when I was nine. Fever year. Mags took me on like a bar tab — says it every birthday." She smiles like it doesn\'t cost anything.', effects: [{ learn: 'nell_mother_dead' }], options: [{ text: 'I\'m sorry.', next: 'intro' }] },
+    water: {
+      text: '"Everyone drinks last from something." She frowns. "Aunt Mags says it\'s the pipe. The Mender says it\'s the tank. Jonah says it\'s fine." She looks at the bar. "I could give him the good water. He wouldn\'t take it. He\'d say somebody else needed it."',
+      options: [
+        { id: 'nell.water.flush', text: '(Give her a Flush for him.) Tell him it\'s for the pump manual: it stops the pages going green.', if: { item: 'c_radflush' }, effects: [{ take: 'c_radflush' }, { set: 'jonah_fever_blocked' }, { decision: { id: 'jonah_water_flush', text: 'You left a Flush with Nell for Jonah, with a story he would swallow.' } }, { trust: { npc: 'npc_sh_10', by: 10 } }, { xp: 40 }], next: 'water_done' },
+        { id: 'nell.water.filter', text: '(Show her a filter: sand, cloth, charcoal, in a barrel by the cistern.)', check: { skill: 'medicine', dc: 30, mods: [{ if: { skill: 'survival', gte: 30 }, dc: -10, why: 'you have made worse water drinkable' }] }, effects: [{ set: 'jonah_fever_blocked' }, { set: 'east_cistern_filtered' }, { decision: { id: 'jonah_water_filter', text: 'You built a filter barrel for the east cistern.' } }, { news: { tag: 'filter_barrel', text: 'someone built a filter barrel for the east cistern', valence: 8, size: 4, at: 'shale' } }, { trust: { npc: 'npc_sh_10', by: 8 } }, { xp: 50 }], next: 'water_done', fail: 'water_no' },
+        { text: 'Someone will think of something.', next: 'intro' },
+      ],
+    },
+    water_done: { text: '"He\'ll drink it if it\'s for the manual." She almost laughs. "He\'d drink from the Dogs\' truck if it was for the manual."', options: [bye] },
+    water_no: { text: 'The barrel leaks and the sand goes green faster than the water. Nell watches you fail politely.', effects: [{ time: 60 }], options: [bye] },
   },
 };
 
@@ -142,6 +153,16 @@ export const d_sh_ada: DialogueDef = {
     dogs: { text: '"Then I\'d ask you to leave the gun on the counter and I\'d watch you walk back out." She doesn\'t reach for anything. "Are you saying it?"', options: [{ text: 'No. The salt cut.', next: 'cut' }, { text: 'Passing through.', next: 'rules' }] },
     name: { text: '"He didn\'t, and I asked twice. He had a way of not hearing questions. Pike at the Tollmen post talked to him longer than I did — ask him what it cost."', effects: [{ learn: 'pike_met_stranger' }], options: [{ text: 'What\'s at the overpass?', next: 'overpass' }, { text: 'Thanks.', next: 'rules' }] },
     overpass: { text: '"The Rust Dogs. Forty, fifty of them under a dead highway, with the water they take from us and the people they take from the road. Kessler runs them; he\'s a thief with manners. His lieutenant has none." She looks at you. "If you go, go in daylight, hands empty, and don\'t say my name like it\'s a password."', effects: [{ learn: 'overpass_dogs' }, { learn: 'kessler_name' }, { learn: 'loc_rustdogs' }], options: [{ text: 'Noted.', next: 'rules' }] },
+    jonah_dead: {
+      text: [{ if: { flag: 'jonah_death', eq: 'fall' }, text: '"The tower." She doesn\'t look up from the desk. "Forty feet. Half the rungs. Everyone knew and I signed nothing." A long breath. "The militia\'s four rifles again. Pike was here this morning with a rate card for protection. I didn\'t throw him out."' }, { if: { flag: 'jonah_death', eq: 'fight' }, text: '"East street. Midnight. Alone, because that\'s how I had it drawn up." She is very still. "They didn\'t even take anything. The militia\'s four rifles again and Pike was here this morning with a rate card for protection. I didn\'t throw him out."' }, { text: '"Fever. From the east cistern, Nell says, and Nell\'s usually right." She looks at her hands. "I wrote the ration. Deputy drinks last. The militia\'s four rifles again and Pike was here this morning with a rate card for protection. I didn\'t throw him out."' }],
+      effects: [{ set: 'ada_broke' }, { trust: { npc: 'npc_sh_01', by: -10 } }, { learn: 'ada_pike_protection' }, { lead: 'l_ada_protection' }],
+      options: [{ text: 'I\'m sorry.', exit: true }],
+    },
+    jonah_lived: {
+      text: '"Thirty-one, today." She has counted; she pretends she hasn\'t. "Something changed its mind about my deputy, and I don\'t know what, and I don\'t like not knowing." She looks at you, properly. "But I know who was in town." A pause. "Pike came by with a rate card for protection last week. I threw him out. I\'d like you to know that was easier than it should have been."',
+      effects: [{ trust: { npc: 'npc_sh_01', by: 15 } }, { rep: { faction: 'shale_militia', respect: 10 } }, { learn: 'ada_threw_pike_out' }],
+      options: [{ text: 'Noted.', exit: true }],
+    },
     ledger_page: {
       text: 'She reads it twice, and the second time her lips move on the name. "Post nine-west." She folds it into her shirt, not her pocket. "He sells us water. He stands in my street." A breath. "This stays with me. If I use it, it\'ll be when it costs him more than it costs Shale, and I don\'t know when that is yet."',
       effects: [{ take: 'k_ledger_page' }, { set: 'ledger_shown_ada' }, { decision: { id: 'ledger_shown_ada', text: 'You gave Sheriff Vey the ledger page proving Pike paid for the stranger\'s shooting.' } }, { trust: { npc: 'npc_sh_01', by: 15 } }, { rep: { faction: 'shale_militia', respect: 10 } }, { rep: { faction: 'tollmen', respect: -10 } }, { memory: { npc: 'npc_sh_01', tag: 'pike_page', valence: 20, strength: 100 } }, { xp: 60 }],
@@ -161,6 +182,8 @@ export const d_sh_ada: DialogueDef = {
         { id: 'ada.terms', text: 'Kessler\'s terms: half of last time, in water. I carried them myself.', if: { all: [{ flag: 'rd_terms_carried' }, { not: { flag: 'ada_terms_decided' } }] }, next: 'terms' },
         { id: 'ada.exodus', text: 'Some of the Dogs want out — Wren Calloway and her people. Would Shale have them?', if: { all: [{ any: [{ knows: 'wren_wants_out' }, { knows: 'wren_leaving' }] }, { not: { flag: 'shale_exodus_decided' } }] }, next: 'exodus' },
         { id: 'ada.ledger', text: 'Pike paid the outriders who shot the masked man. (Show her the ledger page.)', if: { item: 'k_ledger_page' }, next: 'ledger_page' },
+        { id: 'ada.jonah.dead', text: 'Jonah.', if: { flag: 'jonah_dead' }, next: 'jonah_dead', once: true },
+        { id: 'ada.jonah.lived', text: 'Thirty days. He\'s alive.', if: { flag: 'jonah_lived' }, next: 'jonah_lived', once: true },
         { text: 'Nothing. Just checking in.', exit: true },
       ],
     },
@@ -193,8 +216,41 @@ export const d_sh_ada: DialogueDef = {
 
 export const d_sh_jonah: DialogueDef = {
   id: 'd_sh_jonah', owner: 'npc_sh_02',
-  start: [{ node: 'intro' }],
+  start: [{ if: { flag: 'jonah_lived' }, node: 'lived' }, { if: { all: [{ flag: 'jonah_named' }, { flag: 'jonah_month_met' }] }, node: 'month_again' }, { if: { flag: 'jonah_named' }, node: 'month' }, { node: 'intro' }],
   nodes: {
+    month: {
+      text: 'He straightens when he sees you, the way he does for everyone, and then a little more. "You\'re the one from the salt cut. The sheriff says you went to the overpass and came back, which nobody does." He waits to be told what to do with that.',
+      effects: [{ set: 'jonah_month_met' }],
+      options: [
+        { id: 'jonah.week', text: 'What does a deputy do with his week?', next: 'week', once: true },
+        { id: 'jonah.night', text: 'Who walks the street at night?', next: 'night', once: true },
+        { id: 'jonah.water', text: 'Where do you drink? The water, I mean.', next: 'water', once: true },
+        { id: 'jonah.name', text: 'Someone wrote your name on a list. With a number of days.', if: { not: { flag: 'jonah_told' } }, next: 'name' },
+        { text: 'Something else.', next: 'intro' },
+      ],
+    },
+    month_again: { text: '"Sir. Ma\'am." He catches himself. "Sorry."', options: [
+      { id: 'jonah.week.again', text: 'What does a deputy do with his week?', if: { not: { seen: 'jonah.week' } }, next: 'week' },
+      { id: 'jonah.night.again', text: 'Who walks the street at night?', if: { not: { seen: 'jonah.night' } }, next: 'night' },
+      { id: 'jonah.water.again', text: 'Where do you drink?', if: { not: { seen: 'jonah.water' } }, next: 'water' },
+      { id: 'jonah.name.again', text: 'Someone wrote your name on a list.', if: { not: { flag: 'jonah_told' } }, next: 'name' },
+      { text: 'Something else.', next: 'intro' },
+    ] },
+    week: { text: '"Patrol, mostly. And the vane — Dad sends me up the windpump tower every week since the kite day bent it. Somebody has to, and it isn\'t going to be him." He grins. "Forty feet. You can see the overpass from the top."', effects: [{ learn: 'jonah_climbs' }, { lead: 'l_jonah_tower' }], options: [{ text: 'Forty feet of what?', next: 'week2', once: true }, { text: 'Noted.', next: 'month_again' }] },
+    week2: { text: '"Rungs. Half of them." The grin doesn\'t go. "I know. I\'m careful."', options: [{ text: 'Noted.', next: 'month_again' }] },
+    night: { text: '"Me. East street, midnight to four. The Corporal\'s got nine rifles and four that shoot, and the four sleep." He says it with pride, which is the problem. "If the Dogs come at night, I\'m the one who sees them first."', effects: [{ learn: 'jonah_patrols' }, { lead: 'l_jonah_patrol' }], options: [{ text: 'Noted.', next: 'month_again' }] },
+    water: { text: '"East cistern, by the yard. It\'s gone a bit green." A shrug. "The deputy drinks last. Everybody else gets the pumps."', effects: [{ learn: 'jonah_drinks' }, { lead: 'l_jonah_water' }], options: [{ text: 'Noted.', next: 'month_again' }] },
+    name: {
+      text: 'He goes very still, and then he laughs, because he is twenty-two. "A list. Of — what, people who are going to —" He doesn\'t finish it. "Who wrote it?" You tell him you don\'t know. "Then it\'s not true till someone makes it true." He puts his hand on the badge without noticing.',
+      effects: [{ set: 'jonah_told' }, { decision: { id: 'jonah_told', text: 'You told Jonah Reese his name was on the stranger\'s list.' } }, { trust: { npc: 'npc_sh_02', by: 5 } }],
+      options: [
+        { id: 'jonah.name.careful', text: 'Then don\'t help them. Stay off the tower. Walk the street with someone. Drink from the pumps.', check: { skill: 'speech', dc: 40, mods: [{ if: { trust: { npc: 'npc_sh_02', gte: 10 } }, dc: -10, why: 'he wants to believe you' }] }, next: 'careful', fail: 'careful_no' },
+        { text: 'Then don\'t.', next: 'month_again' },
+      ],
+    },
+    careful: { text: 'He nods, slowly, the way he reads. "Off the tower." It costs him something; you can see it being paid. "I\'ll tell Dad it\'s the sheriff\'s order. He\'ll like that less than the tower."', effects: [{ set: 'jonah_fall_blocked' }, { decision: { id: 'jonah_off_tower', text: 'You talked Jonah Reese off the windpump tower.' } }, { xp: 40 }], options: [{ text: 'Good.', next: 'month_again' }] },
+    careful_no: { text: '"I\'m not going to hide from a list." He stands straighter. It is exactly what the list would want him to say.', options: [{ text: 'Noted.', next: 'month_again' }] },
+    lived: { text: 'He is sitting on the office step with both books open on his knees, alive, and looks up like a man who has heard a door close somewhere far away. "Thirty days." He says it quietly. "Dad counted too. He pretended not to." A breath. "Whatever you did — I don\'t know what you did." He goes back to the books, and then doesn\'t.', effects: [{ trust: { npc: 'npc_sh_02', by: 15 } }, { learn: 'jonah_knows_lived' }], options: [{ text: 'Read your books, deputy.', exit: true }] },
     intro: {
       text: [{ if: { pronouns: 'she' }, text: 'Ma\'am. Deputy Reese. Sheriff\'s inside if you need the sheriff. If you need a deputy, that\'s — that\'s me.' }, { if: { pronouns: 'he' }, text: 'Sir. Deputy Reese. Sheriff\'s inside if you need the sheriff. If you need a deputy, that\'s — that\'s me.' }, { text: 'Deputy Reese. Sheriff\'s inside if you need the sheriff. If you need a deputy, that\'s — that\'s me.' }],
       options: [
@@ -219,9 +275,19 @@ export const d_sh_issa: DialogueDef = {
       options: [
         { id: 'issa.shoot', text: 'I can shoot.', if: { skill: 'firearms', gte: 35 }, next: 'shoot', once: true },
         { id: 'issa.dogs', text: 'When do the Dogs come?', next: 'dogs', once: true },
+        { id: 'issa.drills', text: 'Your four that shoot could be nine. I\'ll drill them.', if: { all: [{ not: { flag: 'drills_started' } }, { any: [{ skill: 'firearms', gte: 35 }, { skill: 'speech', gte: 40 }, { attr: 'presence', gte: 7 }] }] }, next: 'drills' },
+        { id: 'issa.drills.on', text: 'How are the drills?', if: { all: [{ flag: 'drills_started' }, { not: { flag: 'militia_drilled' } }] }, next: 'drills_on' },
+        { id: 'issa.drills.done', text: 'The militia.', if: { flag: 'militia_drilled' }, next: 'drills_done', once: true },
         bye,
       ],
     },
+    drills: {
+      text: '"Three days. Dawn and dusk, the yard, live rounds we can\'t spare." She looks at the nine. "There\'s a man drinks behind the yard who used to be the best shot in the Sallow. If he turns up, don\'t let him near the boys. Or do. I\'ve stopped knowing."',
+      effects: [{ set: 'drills_started' }, { quest: 'q_sh_drills', start: true }, { decision: { id: 'drills_started', text: 'You took on drilling Shale\'s militia.' } }, { after: { minutes: 3 * 1440, id: 'drills_done', effects: [{ set: 'militia_drilled' }, { set: 'jonah_fight_blocked' }, { news: { tag: 'militia_drilled', text: 'the militia walk the street in pairs now, and nine rifles shoot', valence: 12, size: 6, at: 'shale' } }, { rep: { faction: 'shale_militia', respect: 10 } }] } }, { learn: 'ilya_rumour' }],
+      options: [{ text: 'Dawn, then.', exit: true }],
+    },
+    drills_on: { text: '"Better. Two of them hit the post today; one of them meant to." She lowers her voice. "The deputy walks the east street alone at night. When this is done, nobody walks alone."', options: [bye] },
+    drills_done: { text: '"Nine rifles. Nine that shoot, more or less." She doesn\'t smile, but it\'s close. "Pairs on the street from now on. Ada signed it." A beat. "Thank you. I don\'t say that."', effects: [{ trust: { npc: 'npc_sh_11', by: 15 } }], options: [bye] },
     shoot: { text: '"Then you\'re the fifth rifle." She looks you over once, properly. "Ada will say no. Ada says no to everything until she says yes."', effects: [{ learn: 'issa_counts_you' }, { trust: { npc: 'npc_sh_11', by: 8 } }], options: [{ text: 'We\'ll see.', next: 'intro' }] },
     dogs: { text: '"Tribute\'s due. Half a year since the last. They come with a truck, they take water and whatever Mags has brewed, and this time they\'ll want more because Kessler\'s lieutenant counts. Vasha. Say the name to Ada and watch her face."', effects: [{ learn: 'tribute_due' }, { learn: 'vasha_name' }, { learn: 'loc_rustdogs' }, { quest: 'q_ch1_tribute', start: true }], options: [{ text: 'Noted.', next: 'intro' }] },
   },
@@ -364,11 +430,14 @@ export const d_sh_yusra: DialogueDef = {
         { id: 'yusra.work', text: 'The work?', next: 'work', once: true },
         { id: 'yusra.trade', text: 'What do you sell?', effects: [{ event: 'barter' }], exit: true },
         { id: 'yusra.fit', text: 'Could you fit something in me?', if: { knows: 'yusra_work' }, next: 'fit', once: true },
+        { id: 'yusra.filter', text: 'The east cistern. Could you build a filter for it?', if: { all: [{ knows: 'jonah_drinks' }, { not: { flag: 'jonah_fever_blocked' } }] }, next: 'filter' },
         bye,
       ],
     },
     work: { text: '"Chrome. Bionics. Eyes that see heat, a hand that doesn\'t shake, a spine-link. Rare out here; the city makes the good pieces and the Concern makes the better ones and both of them keep a hand on the leash." She wipes a blade. "I fit what people bring me. I take it out again when it goes wrong, and it does."', effects: [{ learn: 'yusra_work' }], options: [{ text: 'Could you fit something in me?', next: 'fit' }, bye] },
     fit: { text: '"With what? I\'ve got a Holdfast — an old stabiliser for the hands — and that\'s it, and it costs more than you\'ve got. Bring me a piece and the Tolls for the surgery, and I\'ll tell you if your body will keep it." She looks at you honestly. "Most people shouldn\'t."', effects: [{ learn: 'yusra_fits' }], options: [{ text: 'Noted.', exit: true }] },
+    filter: { text: '"Ceramic and charcoal, a day\'s work, and thirty Tolls for the ceramic, which I don\'t make." She wipes her hands. "The deputy drinks from it. I know. Everyone knows and nobody\'s asked."', options: [{ id: 'yusra.filter.pay', text: '(Pay. 30 Tolls)', if: { item: 'tolls', count: 30 }, effects: [{ take: 'tolls', count: 30 }, { set: 'jonah_fever_blocked' }, { set: 'east_cistern_filtered' }, { decision: { id: 'jonah_water_mender', text: 'You paid the Mender to build a filter for the east cistern.' } }, { trust: { npc: 'npc_sh_08', by: 8 } }, { xp: 40 }], next: 'filter_done' }, { text: 'Not now.', exit: true }] },
+    filter_done: { text: '"Tomorrow. Tell the deputy it\'s for the whole east street. He\'ll drink from it if it isn\'t for him."', options: [{ text: 'Done.', exit: true }] },
   },
 };
 
@@ -383,6 +452,7 @@ export const d_sh_dov: DialogueDef = {
         { id: 'dov.pumps', text: 'Who runs the pumps?', next: 'pumps', once: true },
         { id: 'dov.pump_hand', text: 'The pressure on these never changes either, does it?', if: { all: [{ origin: 'pump_hand' }, { knows: 'c9_pressure_constant' }] }, next: 'pressure', once: true },
         { id: 'dov.jonah', text: 'Your son seems set on the badge.', next: 'jonah', once: true },
+        { id: 'dov.tower', text: 'Stop sending Jonah up the tower.', if: { all: [{ knows: 'jonah_climbs' }, { not: { flag: 'jonah_fall_blocked' } }] }, next: 'tower' },
         bye,
       ],
     },
@@ -391,6 +461,20 @@ export const d_sh_dov: DialogueDef = {
     pressure: { text: 'He looks at you for a long moment. "No. No, it doesn\'t. You\'re the first person who ever asked that like it meant something."', effects: [{ learn: 'dov_pressure' }, { trust: { npc: 'npc_sh_09', by: 10 } }, { lead: 'l_pressure_shale' }], options: [{ text: 'It might.', next: 'intro' }] },
     jonah: { text: '"Set." He spits. "He\'s twenty-two. He read a book about sheriffs. Ada read him."', options: [{ text: 'He seems like a good one.', next: 'jonah2' }, bye] },
     jonah2: { text: '"He is." It comes out before he can stop it. "That\'s the problem, isn\'t it."', effects: [{ trust: { npc: 'npc_sh_09', by: 5 } }], options: [bye] },
+    tower: {
+      text: '"Who else goes up? Me, with this hip? The vane\'s bent since the kite day and if it doesn\'t turn, the tank doesn\'t fill, and if the tank doesn\'t fill the east street drinks green." He looks at the tower, not at you. "He\'s careful."',
+      options: [
+        { id: 'dov.tower.fix', text: '(Go up and straighten the vane yourself.)', check: { skill: 'mechanics', dc: 30, mods: [{ if: { origin: 'pump_hand' }, dc: -10, why: 'you grew up on ladders like this' }] }, next: 'fixed', fail: 'fix_no' },
+        { id: 'dov.tower.pay', text: '(Pay Pardo to go up. 20 Tolls)', if: { item: 'tolls', count: 20 }, effects: [{ take: 'tolls', count: 20 }, { set: 'jonah_fall_blocked' }, { decision: { id: 'jonah_tower_paid', text: 'You paid Old Pardo to climb the windpump tower so Jonah would not.' } }, { xp: 30 }], next: 'paid' },
+        { id: 'dov.tower.son', text: 'He\'s your son. You know what half the rungs are.', check: { skill: 'speech', dc: 40 }, effects: [{ set: 'jonah_fall_blocked' }, { decision: { id: 'jonah_tower_dov', text: 'You made Dov Reese climb his own tower instead of sending his son.' } }, { trust: { npc: 'npc_sh_09', by: -5 } }, { xp: 40 }], next: 'son', fail: 'son_no' },
+        { text: 'Never mind.', next: 'intro' },
+      ],
+    },
+    fixed: { text: 'Forty feet of rungs, half of them, and a vane that straightens with a crowbar and a word. From the top you can see the overpass. When you come down Dov has not moved. "Right," he says, which is a word people use here when they mean thank you.', effects: [{ set: 'jonah_fall_blocked' }, { set: 'vane_fixed' }, { decision: { id: 'jonah_tower_fixed', text: 'You climbed the windpump tower and straightened the vane yourself.' } }, { trust: { npc: 'npc_sh_09', by: 10 } }, { xp: 50 }, { time: 60 }], options: [{ text: '(Done.)', exit: true }] },
+    fix_no: { text: 'Twenty feet up a rung lets go under you and you come down the hard way. The vane is still bent. Dov says nothing, which is kinder than it sounds.', effects: [{ time: 40 }], options: [{ text: '(Try again later.)', exit: true }] },
+    paid: { text: 'Pardo takes the Tolls and looks at the tower like an old enemy. "Forty feet," he says. "I did it at sixty." He does it again.', options: [{ text: '(Done.)', exit: true }] },
+    son: { text: 'He is quiet for a long time. "Half of them," he agrees. "Right." He goes to get the crowbar himself, and the hip, and the ladder.', options: [{ text: '(Done.)', exit: true }] },
+    son_no: { text: '"Don\'t tell me what I know." He bangs the casing.', effects: [{ trust: { npc: 'npc_sh_09', by: -5 } }], options: [{ text: 'Never mind.', exit: true }] },
   },
 };
 

@@ -192,11 +192,12 @@ shale = {
         'home_g': {'x': 6, 'y': 10}, 'home_h': {'x': 14, 'y': 6}, 'home_i': {'x': 50, 'y': 6},
     },
     'npcs': [
-        {'def': 'npc_sh_01', 'x': 45, 'y': 16, 'facing': 2}, {'def': 'npc_sh_02', 'x': 43, 'y': 18, 'facing': 1}, {'def': 'npc_sh_11', 'x': 40, 'y': 7, 'facing': 2},
+        {'def': 'npc_sh_01', 'x': 45, 'y': 16, 'facing': 2}, {'def': 'npc_sh_02', 'x': 43, 'y': 18, 'facing': 1, 'if': {'not': {'flag': 'jonah_dead'}}}, {'def': 'npc_sh_11', 'x': 40, 'y': 7, 'facing': 2},
         {'def': 'npc_sh_03', 'x': 12, 'y': 14, 'facing': 2}, {'def': 'npc_sh_10', 'x': 14, 'y': 14, 'facing': 2}, {'def': 'npc_sh_06', 'x': 6, 'y': 23, 'facing': 1},
         {'def': 'npc_sh_04', 'x': 46, 'y': 33, 'facing': 0}, {'def': 'npc_sh_05', 'x': 13, 'y': 35, 'facing': 2}, {'def': 'npc_sh_08', 'x': 57, 'y': 17, 'facing': 2},
         {'def': 'npc_sh_09', 'x': 26, 'y': 9, 'facing': 2}, {'def': 'npc_sh_12', 'x': 30, 'y': 20, 'facing': 1}, {'def': 'npc_sh_13', 'x': 57, 'y': 34, 'facing': 0},
         {'def': 'npc_sh_14', 'x': 12, 'y': 25, 'facing': 1}, {'def': 'npc_sh_07', 'x': 16, 'y': 18, 'facing': 0, 'if': {'flag': 'teo_freed'}},
+        {'def': 'npc_sh_17', 'x': 43, 'y': 6, 'facing': 2, 'if': {'all': [{'flag': 'drills_started'}, {'not': {'flag': 'ilya_gone'}}, {'not': {'flag': 'ilya_recruited'}}]}},
         {'def': 'npc_rd_02', 'id': 'tribute_vasha', 'x': 32, 'y': 22, 'facing': 2, 'dialogue': 'd_tribute', 'schedule': [], 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}]}},
         {'def': 'npc_rd_t1', 'id': 'tribute_t1', 'x': 30, 'y': 23, 'facing': 2, 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}]}},
         {'def': 'npc_rd_t2', 'id': 'tribute_t2', 'x': 34, 'y': 23, 'facing': 2, 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}]}},

@@ -117,6 +117,7 @@ export class DialogueUi {
     this.game.portrait = undefined;
     this.game.paused = false;
     this.game.quests.update();
+    this.game.syncParty();
     this.game.syncPlacements();
     // A conversation can turn a camp hostile ("get out before I change my mind").
     const turned = this.game.refreshHostility();

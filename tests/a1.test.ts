@@ -4,6 +4,7 @@ import { newGameState } from '../src/engine/core/state';
 import { DialogueRunner } from '../src/engine/dialogue/dialogue';
 import { addItem, countItem, makeItem } from '../src/engine/inventory/inventory';
 import { QuestEngine } from '../src/engine/quest/quest';
+import { runTimers } from '../src/engine/world/logic';
 
 /** Play a conversation by choosing options whose text starts with the given prefixes, in order. */
 function talk(id: string, g: ReturnType<typeof newGameState>, q: QuestEngine, picks: string[]): DialogueRunner {
@@ -253,5 +254,128 @@ describe('The Hill with the Mast', () => {
     expect(s.g.flags.broadcast_amplified).toBe(true);
     expect(s.g.world.quests.q_a1_broadcast.status).toBe('done');
     expect(s.g.world.news.some((n) => n.tag === 'broadcast_kessler')).toBe(true);
+  });
+});
+
+function inShale(day = 5) {
+  const g = newGameState('c9', 0, 0);
+  g.minutes = day * 1440 + 10 * 60;
+  g.locationId = 'shale';
+  g.flags.visited_shale = true;
+  const q = new QuestEngine(QUESTS, g);
+  return { g, q };
+}
+
+describe('The Month: Jonah Reese and the three ways', () => {
+  it('reading the first name starts the month with a thirty-day timer', () => {
+    const g = newGameState('c9', 0, 0);
+    const q = new QuestEngine(QUESTS, g);
+    q.questStart('q_ch1_name');
+    g.world.knowledge.name1_decoded = true;
+    q.update();
+    expect(g.world.quests.q_a1_jonah?.stage).toBe('month');
+    const t = g.world.timers.find((x) => x.id === 'jonah_month');
+    expect(t).toBeTruthy();
+    expect(t!.at - g.minutes).toBe(30 * 1440);
+  });
+
+  it('day thirty takes the first unblocked way, or none', () => {
+    const run = (blocks: string[]) => {
+      const { g, q } = inShale();
+      q.questStart('q_a1_jonah');
+      for (const b of blocks) g.flags[b] = true;
+      g.flags.jonah_month_over = true;
+      q.update();
+      return g;
+    };
+    expect(run([]).world.quests.q_a1_jonah.stage).toBe('fell');
+    expect(run([]).flags.jonah_death).toBe('fall');
+    expect(run(['jonah_fall_blocked']).world.quests.q_a1_jonah.stage).toBe('fought');
+    expect(run(['jonah_fall_blocked', 'jonah_fight_blocked']).world.quests.q_a1_jonah.stage).toBe('fevered');
+    const lived = run(['jonah_fall_blocked', 'jonah_fight_blocked', 'jonah_fever_blocked']);
+    expect(lived.world.quests.q_a1_jonah.stage).toBe('lived');
+    expect(lived.flags.jonah_lived).toBe(true);
+    expect(lived.flags.jonah_dead).toBeUndefined();
+    expect(lived.world.leads.l_forecast_broken).toBeTruthy();
+  });
+
+  it('Jonah tells you his week, and can be talked off the tower', () => {
+    const { g, q } = inShale();
+    q.questStart('q_a1_jonah');
+    g.flags.jonah_named = true;
+    g.pc.sheet.skillBought.speech = 90;
+    talk('d_sh_jonah', g, q, ['What does a deputy do with his week?', 'Noted.', 'Who walks the street at night?', 'Noted.', 'Where do you drink?', 'Noted.', 'Someone wrote your name on a list.', 'Then don\'t help them.', 'Good.', 'Something else.']);
+    expect(g.world.knowledge.jonah_climbs && g.world.knowledge.jonah_patrols && g.world.knowledge.jonah_drinks).toBe(true);
+    expect(g.flags.jonah_fall_blocked).toBe(true);
+    expect(g.world.quests.q_a1_jonah.done).toContain('ways');
+  });
+
+  it('Dov\'s tower, Nell\'s water, and the Mender\'s filter each change a condition', () => {
+    let s = inShale();
+    s.g.world.knowledge.jonah_climbs = true; s.g.world.knowledge.dov_met = true;
+    s.g.pc.sheet.skillBought.mechanics = 90;
+    talk('d_sh_dov', s.g, s.q, ['Stop sending Jonah up the tower.', '(Go up and straighten the vane yourself.)', '(Done.)']);
+    expect(s.g.flags.jonah_fall_blocked).toBe(true);
+    s = inShale();
+    s.g.world.knowledge.jonah_drinks = true;
+    addItem(s.g.pc.inventory, makeItem('c_radflush'));
+    talk('d_sh_nell', s.g, s.q, ['The east cistern\'s gone green.', '(Give her a Flush for him.)', 'Later.']);
+    expect(s.g.flags.jonah_fever_blocked).toBe(true);
+    expect(countItem(s.g.pc.inventory, 'c_radflush')).toBe(0);
+    s = inShale();
+    s.g.world.knowledge.jonah_drinks = true; s.g.pc.inventory.tolls = 30;
+    talk('d_sh_yusra', s.g, s.q, ['The east cistern. Could you build a filter', '(Pay. 30 Tolls)', 'Done.']);
+    expect(s.g.flags.jonah_fever_blocked).toBe(true);
+  });
+
+  it('drills take three days and then nobody walks alone', () => {
+    const { g, q } = inShale();
+    q.questStart('q_a1_jonah');
+    g.pc.sheet.skillBought.firearms = 40;
+    talk('d_sh_issa', g, q, ['Your four that shoot could be nine.', 'Dawn, then.']);
+    expect(g.flags.drills_started).toBe(true);
+    expect(g.world.quests.q_sh_drills?.stage).toBe('drill');
+    g.minutes += 3 * 1440 + 1;
+    runTimers(g, q);
+    q.update();
+    expect(g.flags.militia_drilled).toBe(true);
+    expect(g.flags.jonah_fight_blocked).toBe(true);
+    expect(g.world.quests.q_sh_drills.status).toBe('done');
+    expect(g.world.news.some((n) => n.tag === 'militia_drilled')).toBe(true);
+  });
+
+  it('Ilya can be shamed sober or taken east; the party knows him', () => {
+    let s = inShale();
+    s.g.flags.drills_started = true; s.g.world.knowledge.overpass_dogs = true;
+    s.g.pc.sheet.skillBought.speech = 90;
+    talk('d_sh_ilya', s.g, s.q, ['Who are you?', 'Before what?', 'Right.', 'Come east with me.', 'Because the militia has nine rifles', 'Keep up.']);
+    expect(s.g.world.party).toContain('npc_sh_17');
+    expect(s.g.flags.ilya_recruited).toBe(true);
+    const r = new DialogueRunner(DIALOGUES.d_sh_ilya, s.g, s.q);
+    expect(r.view()!.options.some((o) => o.text.startsWith('Wait here'))).toBe(true);
+    s = inShale();
+    s.g.flags.drills_started = true;
+    s.g.pc.sheet.skillBought.speech = 90;
+    talk('d_sh_ilya', s.g, s.q, ['You\'re drunk in front of boys', '(Leave him to it.)']);
+    expect(s.g.flags.ilya_shamed).toBe(true);
+    expect(s.g.world.party).not.toContain('npc_sh_17');
+    // Outshooting him works without a silver tongue.
+    s = inShale();
+    s.g.flags.drills_started = true; s.g.world.knowledge.overpass_dogs = true;
+    s.g.pc.sheet.skillBought.firearms = 90;
+    talk('d_sh_ilya', s.g, s.q, ['Come east with me.', '(Pick up the bottle.', 'Keep up.']);
+    expect(s.g.world.party).toContain('npc_sh_17');
+  });
+
+  it('Ada answers the month either way', () => {
+    let s = inShale();
+    s.g.flags.sh_ada_met = true; s.g.flags.jonah_dead = true; s.g.flags.jonah_death = 'fight';
+    const r = talk('d_sh_ada', s.g, s.q, ['Jonah.']);
+    expect(r.view()!.text).toContain('East street');
+    expect(s.g.flags.ada_broke).toBe(true);
+    s = inShale();
+    s.g.flags.sh_ada_met = true; s.g.flags.jonah_lived = true;
+    talk('d_sh_ada', s.g, s.q, ['Thirty days. He\'s alive.', 'Noted.']);
+    expect(s.g.world.knowledge.ada_threw_pike_out).toBe(true);
   });
 });

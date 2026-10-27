@@ -63,6 +63,21 @@ describe('wardrobe: what is worn shows on the body', () => {
   });
 });
 
+describe('a clothing set replaces what it covers', () => {
+  it('the duster over a dressed NPC leaves one pair of trousers', () => {
+    const w = wearer();
+    addItem(w.inventory, makeItem('r_duster'));
+    equip(w.inventory, 0);
+    const base = { layers: [{ name: 'elvs_jeans_bootcut' }, { name: 'mindfront_tank_top_01' }, { name: 'maciekg_leather_boots' }, { name: 'jujube_newsboy_cap' }] };
+    const o = wardrobeOutfit(w, base);
+    const names = o.layers!.map((l) => l.name);
+    expect(names).not.toContain('elvs_jeans_bootcut');
+    expect(names).toContain('cortu_cargo_pants');
+    expect(names).toContain('maciekg_leather_boots');
+    expect(names).toContain('jujube_newsboy_cap');
+  });
+});
+
 describe('every item has a sketch', () => {
   it('resolves to a drawn recipe, never the category fallback for weapons and armour', () => {
     for (const d of Object.values(ITEMS)) {

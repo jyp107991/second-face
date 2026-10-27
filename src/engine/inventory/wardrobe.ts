@@ -32,8 +32,10 @@ export function wardrobeOutfit(pc: Wearer, base: Outfit = BASE_OUTFIT): Outfit {
     const w = it ? itemDef(it.def).wear : undefined;
     if (!w) continue;
     if (w.garments) {
+      // A whole set of clothes: it replaces the base suit and whatever the base wore on top and legs.
       o.suit = undefined;
-      for (const g of w.garments) o.layers!.push({ name: typeof g.name === 'string' ? g.name : g.name[fit], tint: g.tint, dye: g.dye, grime: g.grime, wear: g.wear });
+      o.layers = o.layers!.filter((l) => !['top', 'legs', 'full'].includes(GARMENTS[l.name]?.slot ?? ''));
+      for (const g of w.garments) o.layers.push({ name: typeof g.name === 'string' ? g.name : g.name[fit], tint: g.tint, dye: g.dye, grime: g.grime, wear: g.wear });
     }
     if (w.garment) {
       const name = typeof w.garment === 'string' ? w.garment : w.garment[fit];

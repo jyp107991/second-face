@@ -122,3 +122,71 @@ export const q_a1_broadcast: QuestDef = {
     amplified: { journal: 'Every dead radio in the Sallow says the same five words at night now. The overpass will have heard it by morning. Kessler will have heard it. So will Vasha.', end: 'done' },
   },
 };
+
+/** The first name on the map, and the month it comes with. */
+export const q_a1_jonah: QuestDef = {
+  id: 'q_a1_jonah', title: 'The Month', act: 'a1', critical: true, start: 'month', xp: 400,
+  routes: [
+    { id: 'tower', kind: 'tech', label: 'Change the conditions of the fall (the windpump tower)' },
+    { id: 'street', kind: 'talk', label: 'Change the conditions of the fight (drill the militia)' },
+    { id: 'water', kind: 'medicine', label: 'Change the conditions of the fever (the east cistern)' },
+    { id: 'watch', kind: 'knowledge', label: 'Do nothing, and see what the list does' },
+  ],
+  stages: {
+    month: {
+      journal: 'Jonah Reese, Shale, thirty days. The list did not say how. Shale is full of ways for an earnest young man to die — a fall, a fight, a fever — and if one road is blocked, whatever wrote his name will look for another. Prevention means changing the conditions, not the day.',
+      objectives: [
+        { id: 'ways', text: 'Find out how a deputy spends his days and nights', done: { all: [{ knows: 'jonah_climbs' }, { knows: 'jonah_patrols' }, { knows: 'jonah_drinks' }] } },
+        { id: 'fall', text: 'Change the conditions of the fall', done: { flag: 'jonah_fall_blocked' }, optional: true },
+        { id: 'fight', text: 'Change the conditions of the fight', done: { flag: 'jonah_fight_blocked' }, optional: true },
+        { id: 'fever', text: 'Change the conditions of the fever', done: { flag: 'jonah_fever_blocked' }, optional: true },
+        { id: 'day', text: 'Day thirty', done: { flag: 'jonah_month_over' } },
+      ],
+      next: [
+        { if: { all: [{ flag: 'jonah_month_over' }, { not: { flag: 'jonah_fall_blocked' } }] }, stage: 'fell' },
+        { if: { all: [{ flag: 'jonah_month_over' }, { not: { flag: 'jonah_fight_blocked' } }] }, stage: 'fought' },
+        { if: { all: [{ flag: 'jonah_month_over' }, { not: { flag: 'jonah_fever_blocked' } }] }, stage: 'fevered' },
+        { if: { flag: 'jonah_month_over' }, stage: 'lived' },
+      ],
+    },
+    fell: {
+      journal: 'Day thirty. Jonah Reese went up the windpump tower for the vane, the way he did every week, and a rung let go. Shale buried him behind the sheriff\'s office. The militia is four rifles again. The list was right.',
+      end: 'done',
+      onEnter: [{ set: 'jonah_dead' }, { set: 'jonah_death', value: 'fall' }, { set: 'shale_broke' }, { decision: { id: 'jonah_died', text: 'Jonah Reese died on day thirty, as the list said: a fall from the windpump tower.' } }, { news: { tag: 'jonah_dead', text: 'Deputy Reese fell from the windpump tower', valence: -30, size: 9, at: 'shale' } }, { memory: { npc: 'npc_sh_01', tag: 'jonah_died', valence: -20, strength: 100 } }, { memory: { npc: 'npc_sh_09', tag: 'son_died', valence: -40, strength: 100 } }, { event: 'title', data: { text: 'DAY THIRTY\nTHE LIST WAS RIGHT' } }],
+    },
+    fought: {
+      journal: 'Day thirty. Jonah Reese walked the east street alone at midnight, the way he did, and four Dogs came in off the salt for nothing in particular. Shale buried him behind the sheriff\'s office. The militia is four rifles again. The list was right.',
+      end: 'done',
+      onEnter: [{ set: 'jonah_dead' }, { set: 'jonah_death', value: 'fight' }, { set: 'shale_broke' }, { decision: { id: 'jonah_died', text: 'Jonah Reese died on day thirty, as the list said: alone on the east street, against the Dogs.' } }, { news: { tag: 'jonah_dead', text: 'Deputy Reese was killed on the east street by Rust Dogs in the night', valence: -30, size: 9, at: 'shale' } }, { memory: { npc: 'npc_sh_01', tag: 'jonah_died', valence: -20, strength: 100 } }, { memory: { npc: 'npc_sh_09', tag: 'son_died', valence: -40, strength: 100 } }, { rep: { faction: 'rust_dogs', fear: 10 } }, { event: 'title', data: { text: 'DAY THIRTY\nTHE LIST WAS RIGHT' } }],
+    },
+    fevered: {
+      journal: 'Day thirty. Jonah Reese drank last from the east cistern, the way the ration said, and the fever took four days to do what the tower and the Dogs had not. Shale buried him behind the sheriff\'s office. The militia is four rifles again. The list was right.',
+      end: 'done',
+      onEnter: [{ set: 'jonah_dead' }, { set: 'jonah_death', value: 'fever' }, { set: 'shale_broke' }, { decision: { id: 'jonah_died', text: 'Jonah Reese died on day thirty, as the list said: a fever from the east cistern.' } }, { news: { tag: 'jonah_dead', text: 'Deputy Reese died of a fever from the east cistern', valence: -30, size: 9, at: 'shale' } }, { memory: { npc: 'npc_sh_01', tag: 'jonah_died', valence: -20, strength: 100 } }, { memory: { npc: 'npc_sh_09', tag: 'son_died', valence: -40, strength: 100 } }, { event: 'title', data: { text: 'DAY THIRTY\nTHE LIST WAS RIGHT' } }],
+    },
+    lived: {
+      journal: 'Day thirty. Jonah Reese is alive. The tower, the street and the cistern each had their conditions changed, and the list — for the first time anyone knows of — was wrong. Whatever wrote it will have noticed.',
+      end: 'done',
+      onEnter: [{ set: 'jonah_lived' }, { set: 'forecast_broken' }, { set: 'plan_rerouted' }, { decision: { id: 'jonah_lived', text: 'Jonah Reese lived past day thirty. The first forecast anyone knows of was broken.' } }, { news: { tag: 'jonah_lived', text: 'the deputy is alive on the thirty-first day, and people are counting', valence: 20, size: 7, at: 'shale' } }, { rep: { faction: 'shale_militia', respect: 15 } }, { memory: { npc: 'npc_sh_01', tag: 'jonah_lived', valence: 25, strength: 100 } }, { lead: 'l_forecast_broken' }, { event: 'title', data: { text: 'DAY THIRTY\nTHE LIST WAS WRONG' } }],
+    },
+  },
+};
+
+export const q_sh_drills: QuestDef = {
+  id: 'q_sh_drills', title: 'Militia Drills', act: 'a1', start: 'drill', xp: 150,
+  routes: [
+    { id: 'drill', kind: 'talk', label: 'Three days of dawn and dusk in the yard' },
+    { id: 'ilya', kind: 'talk', label: 'The drunk behind the yard: shame him sober, or take him east' },
+  ],
+  stages: {
+    drill: {
+      journal: 'Nine rifles, four that shoot. Three days of drills, dawn and dusk, with rounds Shale cannot spare. Corporal Lind says a man who used to be the best shot in the Sallow drinks behind the yard.',
+      objectives: [
+        { id: 'days', text: 'Three days of drills', done: { flag: 'militia_drilled' } },
+        { id: 'ilya', text: 'The man behind the yard', done: { any: [{ flag: 'ilya_shamed' }, { flag: 'ilya_recruited' }, { flag: 'ilya_showed' }] }, optional: true },
+      ],
+      next: [{ if: { flag: 'militia_drilled' }, stage: 'done' }],
+    },
+    done: { journal: 'Nine rifles that shoot, pairs on the street at night, and Ada\'s signature on it. Shale is not safer; it is less alone.', end: 'done' },
+  },
+};

@@ -109,4 +109,11 @@ export const SHALE_NPCS: NpcDef[] = [
     schedule: [{ from: 6, to: 14, spot: 'street_e', activity: 'patrol' }, { from: 14, to: 22, spot: 'yard_b', activity: 'work' }, home('home_f', 22, 6)],
     barks: ['Militia. Volunteer. Mostly volunteer.', 'My cousin Ilya shot a bottle off a post at two hundred paces. Then he shot the post.', 'Keep the gun down in town.'],
   },
+  {
+    id: 'npc_sh_17', name: 'Ilya Strand', look: { seed: 2117, frame: 'broad', age: 41, ancestry: 'north_european', over: { hair: { style: 'paint_shaved', color: 0x3a3230 }, facialHair: 'stubble_heavy', scars: ['chin_nick'], weathering: 0.7 } }, role: 'drifter',
+    outfit: { layers: [{ name: 'elvs_male_tankshirt1', dye: 0x5a5650, grime: 0.5, wear: 0.5 }, { name: 'cortu_cargo_pants', dye: 0x3a3a34, grime: 0.5, wear: 0.5 }, { name: 'maciekg_leather_boots', grime: 0.5 }], grime: 0.45, wear: 0.5 },
+    level: 7, ...SH, courage: 70, dialogue: 'd_sh_ilya', attrs: { senses: 8, reflex: 7, grit: 6, presence: 4 }, skills: { firearms: 70, survival: 45, melee: 30, stealth: 25 },
+    equip: ['w_bolt308', 'r_duster'], inventory: [['a_308', 24], ['c_bitters', 2], ['c_jerky', 1]], tolls: 12,
+    barks: ['Right.', 'Wind\'s from the east. Means nothing. Means everything.', 'Two hundred paces. The post was the point.', 'Seven. Eight. Right.'],
+  },
 ];

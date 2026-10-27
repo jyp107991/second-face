@@ -1301,7 +1301,12 @@ export const shale: MapDef = {
       def: "npc_sh_02",
       x: 43,
       y: 18,
-      facing: 1
+      facing: 1,
+      if: {
+        not: {
+          flag: "jonah_dead"
+        }
+      }
     },
     {
       def: "npc_sh_11",
@@ -1376,6 +1381,29 @@ export const shale: MapDef = {
       facing: 0,
       if: {
         flag: "teo_freed"
+      }
+    },
+    {
+      def: "npc_sh_17",
+      x: 43,
+      y: 6,
+      facing: 2,
+      if: {
+        all: [
+          {
+            flag: "drills_started"
+          },
+          {
+            not: {
+              flag: "ilya_gone"
+            }
+          },
+          {
+            not: {
+              flag: "ilya_recruited"
+            }
+          }
+        ]
       }
     },
     {

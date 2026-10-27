@@ -147,8 +147,13 @@ mid-range Android phone; deployed to Pages.
       round the camp, the station, the mast), the Hollow (3), `q_a1_signal` (pay / board / speech / Wren / gully / fight;
       the relay's log, an identity choice, a grid-link route for `ch_neural_link`; `RouteKind` gains `chrome`),
       `q_a1_broadcast` (silence or amplify the voice that reads the second name; news reaches the overpass), the
-      stranger's cot, the mast view discovers two places; smoke `tools/qa/signalhill.cjs`; tests. NEXT: B2.3 Jonah's
-      month + Militia Drills + Ilya.) Remaining: Signal Hill, Jonah's month + Ilya, Dry Wells finale, Burnt
+      stranger's cot, the mast view discovers two places; smoke `tools/qa/signalhill.cjs`; tests. B2.3 DONE: the month —
+      `q_a1_jonah` resolves on day thirty through the quest engine (three authored ways, each blocked by changing its
+      conditions via Jonah/Dov/Issa/Nell/the Mender; the first unblocked one fires; all blocked = the first broken
+      forecast; title cards; Ada and Jonah react after), the thirty-day timer now lives on the quest stage every decode
+      route reaches, `q_sh_drills` (three days, pairs on the street), Ilya Strand (`npc_sh_17`, `dialogue/a1_shale.ts`:
+      shame him sober, outshoot him, or talk him east; third companion), companions survive placement syncs, clothing
+      sets replace covered layers; smoke `tools/qa/month.cjs`; tests. NEXT: B2.4 Dry Wells.) Remaining: Signal Hill, Jonah's month + Ilya, Dry Wells finale, Burnt
       Orchard/salt pans/hunting/road encounters/camps, Mender + chrome surgery, the Wheel, Act 1 side quests and smoke. ~8 h.
 - [ ] B3 **Meridian**: 9 districts, the Loop, Brokers' gigs (~25), the Masque, High Water, Static, Turf,
       Court of Accounts, citizenship hearing, Archive Spire, flat, fight pits, reverie dens, races,
@@ -177,7 +182,7 @@ mid-range Android phone; deployed to Pages.
 | Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |
 | Act 2 wilds | 0/14 | 0/40 | 0/40 | 0/16 | — |
 | Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |
-| Companions | — | 2/7 | 0/7 arcs | 0/7 | two can join in Chapter One; arcs in B2+ |
+| Companions | — | 3/7 | 0/7 arcs | 0/7 | Tamsin, Wren, Ilya can join; arcs later |
 | Factions joinable | — | — | — | 0/9 | design pending |
 
 ## 4. Conventions and tools (keep current)

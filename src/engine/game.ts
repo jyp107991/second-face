@@ -496,7 +496,8 @@ export class Game extends EventBus<GameEvents> {
   }
 
   /** Reconcile party membership changed by dialogue (join/leave) with the actors on the map. */
-  private syncParty(): void {
+  /** Mark party members as companions (and release the ones who left); safe to call any time. */
+  syncParty(): void {
     for (const n of this.npcs.values()) {
       const inParty = this.state.world.party.includes(n.id);
       if (inParty && !n.companion) { n.companion = true; n.hostile = false; (this.state.companions ??= {})[n.id] = { sheet: n.combatant.sheet, inv: n.combatant.inv }; }
@@ -519,6 +520,8 @@ export class Game extends EventBus<GameEvents> {
       if (!p.if) continue;
       const id = p.id ?? p.def;
       const n = this.npcs.get(id);
+      // Companions travel with the player: their placement conditions no longer apply.
+      if (this.state.world.party.includes(id)) continue;
       const want = test(p.if, this.state);
       if (want && !n) this.spawn(p);
       else if (want && n?.away && !n.companion) { n.away = false; n.actor.object.visible = true; grid.occupied.set(grid.index(n.actor.tx, n.actor.ty), n.id); }

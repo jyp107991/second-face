@@ -9,8 +9,6 @@ import type { DialogueDef } from '../../engine/dialogue/dialogue';
 const DECODE_FIRST = [
   { learn: 'name1_decoded' }, { set: 'jonah_named' }, { lead: 'l_name_jonah' }, { xp: 80 },
   { decision: { id: 'read_first_name', text: 'You read the first name on the stranger\'s map: Jonah Reese, Shale — within the month.' } },
-  // The month starts the day you read it; Act 1 decides what the end of it means.
-  { after: { minutes: 30 * 1440, id: 'jonah_month', effects: [{ set: 'jonah_month_over' }] } },
   { quest: 'q_ch1_name', stage: 'read' },
 ];
 
