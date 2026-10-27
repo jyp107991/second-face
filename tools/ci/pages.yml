@@ -30,7 +30,7 @@ jobs:
           mkdir -p site && cp -r dist/* site/
       - name: Build the playtest version (newest act1-test-* branch)
         run: |
-          REF=$(git branch -r --list 'origin/act1-test-*' --format='%(refname:short)' | sort -t- -k3,3n -r | head -n 1)
+          REF=$(git branch -r --list 'origin/act1-test-*' --format='%(refname:short)' | sort -t- -k3,3nr | head -n 1)
           if [ -z "$REF" ]; then echo "no playtest branch"; exit 0; fi
           echo "playtest branch: $REF"
           git worktree add --detach playtest "$REF"
