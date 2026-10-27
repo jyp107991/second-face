@@ -186,6 +186,10 @@ The owner road-tests Act 1 while the build continues. Plan:
 - **Then finish Act 1**: B2.6 (the Mender and chrome surgery, the Wheel, caravan escort basics) and B2.7 (faction
   lines to Act 1 end, side quests, the end-to-end Act 1 smoke), with A5.8 (bionics) and the top items of A5.9
   (hover labels, head-turns, combat card, hit feedback, lamps by hour, panel motion) folded in.
+- **Act 1 end-to-end smoke** (`tools/qa/act1.sh` against a frozen `vite preview` build on :4173, 2026-10-27): tollhouse,
+  month, drywells, wheel, surgery, act1_sides passed first time; ch1, signalhill, wilds failed only on walking/arrival
+  waits under CPU load (captures ran on the dev server at the same time) and were given longer waits and rerun alone
+  (results in `docs/evidence/act1/*.log`).
 - **Then cut the test version**: an immutable git tag (`act1-test-N`) built by the Pages workflow into its own path
   `/second-face/act1/` with its own save namespace (`VITE_SAVE_NS=act1`, saves under `sf.act1.save.*`), so it never
   conflicts with `main`'s deploy at `/second-face/` or its saves. A `docs/PLAYTEST.md` tells the owner how to play,
