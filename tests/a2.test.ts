@@ -345,3 +345,103 @@ describe('The Sump and Cistern 4: the fourth door', () => {
     expect(g.world.knowledge.c4_order_read).toBe(true);
   });
 });
+
+function atPrecinct(hour = 12) {
+  const g = newGameState('c9', 0, 0);
+  g.minutes = 32 * 1440 + hour * 60;
+  g.locationId = 'md_precinct';
+  g.flags.visited_md_precinct = true;
+  g.flags.ch1_done = true;
+  const q = new QuestEngine(QUESTS, g);
+  q.questStart('q_a2_precinct');
+  return { g, q };
+}
+
+describe('Meridian: the face at the gate', () => {
+  it('the fourth door\'s proof starts the road to the city', () => {
+    const { g, q } = atSump();
+    g.world.knowledge.c4_four_spoke = true;
+    q.update();
+    expect(g.world.quests.q_a2_cistern4.status).toBe('done');
+    expect(g.world.quests.q_a2_precinct?.stage).toBe('wall');
+    expect(g.world.knowledge.loc_meridian).toBe(true);
+  });
+
+  it('the lens knows the face; the file can admit on sight', () => {
+    const { g, q } = atPrecinct();
+    talk('d_md_gate', g, q, ['(Face the lens.)', 'What status?', 'Then admit me on sight.', '(Through.)']);
+    expect(g.world.knowledge.md_magistrate_designate).toBe(true);
+    expect(g.flags.md_status).toBe('flagged');
+    expect(countItem(g.pc.inventory, 'k_md_papers')).toBe(1);
+    expect(cond({ member: 'wardens', rank: 'citizen' }, g)).toBe(true);
+    expect(g.world.quests.q_a2_precinct.status).toBe('done');
+  });
+
+  it('the hearing takes the dead doctor\'s letter as evidence and passes', () => {
+    const { g, q } = atPrecinct();
+    talk('d_md_gate', g, q, ['(Face the lens.)', 'What status?', 'I\'ll stand the hearing like anyone.', '(Through.)']);
+    expect(g.flags.md_hearing_pending).toBe(true);
+    expect(g.flags.md_inside).toBe(true);
+    addItem(g.pc.inventory, makeItem('k_c4_diary'));
+    g.pc.sheet.skillBought.speech = 40;
+    talk('d_md_nine', g, q, ['Cistern 9, in the Sallow.', 'I came to see the city that writes people down.', '(Take the card.)']);
+    expect(g.flags.md_status).toBe('citizen');
+    expect(g.flags.md_hearing_passed).toBe(true);
+    expect(g.world.quests.q_a2_precinct.stage).toBe('inside');
+  });
+
+  it('a failed hearing is a provisional pass, and the exam makes a citizen', () => {
+    const { g, q } = atPrecinct();
+    g.flags.md_hearing_pending = true; g.flags.md_inside = true;
+    g.pc.sheet.skillBought.speech = 0;
+    talk('d_md_nine', g, q, ['Cistern 9, in the Sallow.', 'I came to see the city that writes people down.', '(Take the pass.)']);
+    expect(g.flags.md_status).toBe('provisional');
+    expect(countItem(g.pc.inventory, 'k_md_pass')).toBe(1);
+    talk('d_md_nine', g, q, ['The exam.', 'Begin.', 'The drains.', 'The Resumption', 'Shall not be voided.', 'Nine.', 'The Precinct, as per schedule.', '(Take the card.)']);
+    expect(g.flags.md_exam_passed).toBe(true);
+    expect(g.world.quests.q_md_exam.status).toBe('done');
+    expect(cond({ member: 'wardens', rank: 'citizen' }, g)).toBe(true);
+  });
+
+  it('the drain under the Wall is a way in with no card', () => {
+    const { g, q } = atPrecinct(1);
+    g.pc.sheet.skillBought.stealth = 90;
+    talk('d_md_drain', g, q, ['(Wait for the warden to pass, and go under.)', '(Through.)']);
+    expect(g.flags.md_status).toBe('smuggled');
+    expect(g.world.quests.q_a2_precinct.status).toBe('done');
+  });
+
+  it('the cells: bail buys a pass; the file admits on sight', () => {
+    const { g, q } = atPrecinct();
+    g.flags.md_detained = true; g.flags.md_inside = true;
+    q.update();
+    expect(g.world.quests.q_a2_precinct.stage).toBe('cells');
+    g.pc.inventory.tolls = 120;
+    talk('d_md_cell', g, q, ['(Bail. 100 Tolls)', '(Out.)']);
+    expect(g.pc.inventory.tolls).toBe(20);
+    expect(g.flags.md_status).toBe('provisional');
+    expect(g.world.quests.q_a2_precinct.stage).toBe('inside');
+  });
+
+  it('the diary is noted somewhere that is read, and the assessor comes along', () => {
+    const { g, q } = atPrecinct();
+    g.flags.md_status = 'citizen'; g.flags.md_inside = true;
+    addItem(g.pc.inventory, makeItem('k_c4_diary'));
+    q.questStart('q_c4_diary');
+    talk('d_md_nine', g, q, ['(Put the Cistern 4 diary on the desk.)', 'What is the other one?', 'Come and see where they come from.', '(Go.)']);
+    expect(g.flags.c4_diary_delivered).toBe(true);
+    expect(g.world.quests.q_c4_diary.status).toBe('done');
+    expect(g.world.party).toContain('npc_md_nine');
+    expect(g.flags.nine_joined).toBe(true);
+  });
+
+  it('fined in advance: paid, or contested for the court', () => {
+    const { g, q } = atPrecinct();
+    g.flags.md_status = 'citizen'; g.flags.md_inside = true;
+    g.pc.inventory.tolls = 50;
+    talk('d_md_desk', g, q, ['(Pay. 45 Tolls)', 'That\'s all.']);
+    expect(g.pc.inventory.tolls).toBe(5);
+    expect(g.world.quests.q_md_fines.status).toBe('done');
+    expect(g.world.quests.q_md_fines.stage).toBe('paid');
+  });
+});

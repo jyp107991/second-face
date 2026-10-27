@@ -30,7 +30,7 @@ const L: LocationDef[] = [
   { id: 'halt_w', name: 'West Halt', region: 'rail_corridor', x: 215, y: 238, kind: 'minor' },
   { id: 'depot', name: 'the Depot', region: 'rail_corridor', x: 300, y: 205, kind: 'minor' },
   // The Drowned Shore & Meridian
-  { id: 'meridian', name: 'Meridian', region: 'meridian', x: 95, y: 340, kind: 'major', settlement: 'meridian' },
+  { id: 'meridian', name: 'Meridian', region: 'meridian', x: 95, y: 340, kind: 'major', settlement: 'meridian', map: 'md_precinct' },
   { id: 'hamlet_shore', name: 'Gull Stilts', region: 'drowned_shore', x: 60, y: 420, kind: 'minor' },
   { id: 'rigs', name: 'the Rigs', region: 'drowned_shore', x: 22, y: 300, kind: 'landmark' },
   // The Teeth

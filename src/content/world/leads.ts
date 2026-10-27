@@ -42,6 +42,12 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_c4_order', label: 'Relocate on schedule', text: 'Cistern 4 was ordered by the city to send its people to the Precinct on a date. Its door failed; its water was cut for not complying. The order carries the Ledger\'s seal.' },
   { id: 'l_c4_same_order', label: 'The same order', text: 'The city sent Cistern 4 the order MOTHER\'s sealed OUTBOUND entries answer: relocate. Cistern 4 could not. Cistern 9 would not.' },
   { id: 'l_c4_diary', label: 'To whoever comes', text: 'The last doctor of Cistern 4 wrote a letter to the city that never came. It is in your pack. The city is east.' },
+  // Act 2 — Meridian, the Precinct
+  { id: 'l_face_flagged', label: 'Your face is on file', text: 'The gate\'s scanner knew your face before you gave a name: a file, a number, and a status the clerk had never seen — ADMIT ON SIGHT.' },
+  { id: 'l_fines_forecast', label: 'Fined in advance', text: 'The Precinct has fined you for three offences you have not committed yet. Each carries a forecast date.' },
+  { id: 'l_nine_log', label: 'The assessor\'s private log', text: 'Assessor Nine keeps an unlawful record of every forecast that failed. It would like to know where the errors come from.' },
+  { id: 'l_precinct_rationing', label: 'Point eight', text: 'The Precinct\'s water is rationed to point eight of its number since the Sallow\'s pumps changed. The Plan rebalances.' },
+  { id: 'l_cisterns_relocate', label: 'Reserves on schedule', text: 'The records office lists the continuity reserves by number with a relocation date against each. Nine\'s says: OUTSTANDING.' },
   { id: 'l_sigil_shale', label: 'Sign at the mission', text: 'The stranger\'s half-sun sign is painted on the Choir tent-pole in Shale.' },
   { id: 'l_larkspur_calla', label: 'Calla knew the word', text: 'Sister Calla knew the dead man\'s word, and said a man at Openfield would know more.' },
   { id: 'l_hollis_city', label: 'The boards', text: 'Hollis Crane lived in a city with screens that showed who paid, who owed, and who was next.' },

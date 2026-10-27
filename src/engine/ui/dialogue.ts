@@ -127,6 +127,8 @@ export class DialogueUi {
         if (name === 'camp') { window.setTimeout(() => { this.close(); this.game.openCamp(); }); return; }
         if (name === 'fight' && this.npc) { const npc = this.npc; window.setTimeout(() => { this.close(); npc.hostile = true; this.game.refreshHostility(); this.game.startCombat(npc); }); return; }
         if (name === 'map') { window.setTimeout(() => { this.close(); this.game.emit('openMap', {}); }); return; }
+        // District transit and other scripted moves between maps of the same place: { location, spawn?, minutes? }.
+        if (name === 'goto') { const d = (data ?? {}) as { location: string; spawn?: string; minutes?: number }; window.setTimeout(() => { this.close(); if (d.minutes) this.game.state.minutes += d.minutes; void this.game.loadLocation(d.location, d.spawn); }); return; }
         if (name === 'heal') { this.game.healParty(); return; }
         this.game.logicHost.event?.(name, data);
       },

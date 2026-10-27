@@ -364,11 +364,29 @@ mid-range Android phone; deployed to Pages.
             map; routes Ninebridge/Openfield ↔ Sump. Items (the runner's ledger, the relocation order, the diary, a
             real photograph); four leads and a notebook conclusion. The stilted-freeway landmark is deferred to B5.
             Tests `tests/a2.test.ts` (+7). Smoke `tools/qa/sump.cjs`, evidence `docs/evidence/b33/`.
-      - [ ] B3.4 **Meridian: the gate and the Precinct** (~2 h) NEXT: first district map; the gate hearing `q_a2_precinct`
-            (talk / barter / record / stealth / riot; a detention branch); the warden captain; a fifth companion (a
-            Ledger assessor unit); wardens rank 1; *Citizenship Exam*, *Unpaid Fines*. ENGINE: districts as linked maps
-            under one world place + the Loop (district transit with fares and access rules; `DESIGN §13c`). Smoke.
-      - [ ] B3.5 **Old Market + the Brokers' board** (~2 h): bazaar map; the Broker; the gigs board (authored gigs +
+      - [x] B3.4 **Meridian: the gate and the Precinct** DONE 2026-10-27: ENGINE — a `goto` dialogue event
+            (`{ event: 'goto', data: { location, spawn, minutes } }`) moves between a place's district maps; districts
+            are maps under the one world place (`world.at` stays `meridian`); the Loop is a platform prop whose board
+            lists districts with fares and sends the tram by `goto` (only the Precinct exists yet; the rest read WORKS
+            until their slices land). `gen_md_precinct.py` → `maps/md_precinct.ts` (72×60: the approach and the
+            refugees' line outside a five-storey Wall, the gate booth and its lens, the avenue with a tram rail, the
+            warden station with two cells, the records office, the hearing room, a licensed shop and clinic, two
+            tenement blocks round a square with the curfew bell and the water post, the Loop platform, a storm drain
+            under the Wall to a back lane); cast `npcs/meridian.ts` (the warden captain, the assessor unit, the gate
+            sergeant, the booth clerk, a licensed doctor and shopkeeper, an old citizen, a woman in the line, wardens);
+            `dialogue/meridian.ts` (21 trees); `quests/a2.ts` — the beat `q_a2_precinct` *The Face at the Gate*
+            (started by the fourth-door proof; the lens knows the face and the file calls it something the clerk has
+            never seen; six ways in: let the file admit you, stand the hearing with evidence (the dead doctor's
+            letter cuts the check by 25), edit the file at the booth, the drain after dark, push with the crowd, or
+            the cells — bail, serve, the file, or the captain's grey), sides *The Citizenship Exam* (`q_md_exam`: five
+            questions, three right) and *Unpaid Fines* (`q_md_fines`: fined in advance for three forecast offences;
+            pay or contest for the Court); *To Whoever Comes* completes at the assessor's desk; the sixth companion
+            (the assessor and its unlawful log of the Plan's errors: joins after the diary or the order; camp talk
+            seeds its deed). Wardens rank 1 'citizen' by card. Water rationing shows if the Sallow's pumps were
+            changed. Items (citizen papers, a provisional pass, the fine notice and receipt); five leads. Tests
+            `tests/a2.test.ts` (+8). Smoke `tools/qa/meridian.cjs`, evidence `docs/evidence/b34/`. Backlog: the
+            assessor wears a sealed helm and grey skinsuit; a true machine skin for the humanoid rig is still to do.
+      - [ ] B3.5 **Old Market + the Brokers' board** (~2 h) NEXT: bazaar map; the Broker; the gigs board (authored gigs +
             templated couriers/bounties/rescues, ~10 at first); *Haunted Kiosk*, *Old Market Riot*; chrome and gun
             merchants. ENGINE: gig board UI (notebook tab) + gig templates. Smoke.
       - [ ] B3.6 **The Sink** (~1.5 h): flooded under-city map; the Mender of the Sink (surgery, the Menders' Code);

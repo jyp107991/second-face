@@ -218,7 +218,7 @@ export const q_a2_cistern4: QuestDef = {
       journal: 'Cistern 4 was ordered to send its people to the city on a date, and could not, and had its water cut for not complying, and died in the dark with its door shut and its records filed for return. The same order sits sealed in MOTHER\'s log three times over, refused. The cisterns were never anyone\'s but the city\'s. The city is east, and the map\'s road runs into it.',
       end: 'done',
       onEnter: [
-        { set: 'a2_cistern4_done' }, { lead: 'l_c4_order' }, { lead: 'l_c4_same_order' },
+        { set: 'a2_cistern4_done' }, { lead: 'l_c4_order' }, { lead: 'l_c4_same_order' }, { learn: 'loc_meridian' }, { quest: 'q_a2_precinct', start: true },
         { decision: { id: 'c4_proof', text: 'You found in Cistern 4 what the city ordered of the cisterns.' } },
         { news: { tag: 'c4_opened', text: 'someone went down the Sump\'s tunnel to the dead cistern and came back up with paper', valence: 0, size: 5, at: 'sump' } },
       ],
@@ -262,5 +262,73 @@ export const q_c4_diary: QuestDef = {
       next: [{ if: { flag: 'c4_diary_delivered' }, stage: 'delivered' }],
     },
     delivered: { journal: 'Read, in the city it was written to. What that changes is the city\'s to decide.', end: 'done' },
+  },
+};
+
+// ---------------------------------------------------------------- Meridian: the gate and the Precinct
+
+const MD_IN = { flag: 'md_status' };
+
+export const q_a2_precinct: QuestDef = {
+  id: 'q_a2_precinct', title: 'The Face at the Gate', act: 'a2', critical: true, start: 'wall', xp: 450,
+  routes: [
+    { id: 'hearing', kind: 'talk', label: 'Stand the citizenship hearing and talk your way to papers', requires: { skill: 'speech', gte: 40 } },
+    { id: 'paper', kind: 'barter', label: 'The hearing takes evidence: a guild ticket, a reserve\'s records, a dead doctor\'s letter' },
+    { id: 'record', kind: 'tech', label: 'The scanner\'s file can be edited by someone who knows how', requires: { skill: 'science', gte: 50 } },
+    { id: 'drain', kind: 'stealth', label: 'The storm drain under the wall, south of the gate', requires: { skill: 'stealth', gte: 40 } },
+    { id: 'push', kind: 'fight', label: 'Push through with the crowd when it pushes', requires: { attr: 'brawn', gte: 6 } },
+    { id: 'flag', kind: 'knowledge', label: 'The file says ADMIT ON SIGHT. Let it' },
+  ],
+  stages: {
+    wall: {
+      journal: 'Meridian: the Wall, the gate, and the Ledger behind it that keeps a face for everyone it has ever seen. The map\'s road runs through the gate to the towers; so does the city\'s interest in a cistern that would not comply. There is a hearing for people without papers, and a line for the hearing, and a lens before the line.',
+      objectives: [
+        { id: 'reach', text: 'Reach Meridian', done: { flag: 'visited_md_precinct' } },
+        { id: 'in', text: 'Get inside the Wall', done: { flag: 'md_inside' } },
+        { id: 'status', text: 'Settle what you are to the Precinct', done: MD_IN },
+      ],
+      onEnter: [{ learn: 'loc_meridian' }],
+      next: [{ if: { flag: 'md_detained' }, stage: 'cells' }, { if: MD_IN, stage: 'inside' }],
+    },
+    cells: {
+      journal: 'A cell in the warden station, tile floor, a cot, a fence door. The Precinct has a procedure for you and is following it. Someone will come; the file will say who.',
+      objectives: [{ id: 'out', text: 'Get out of the cells', done: MD_IN }],
+      next: [{ if: MD_IN, stage: 'inside' }],
+    },
+    inside: {
+      journal: 'Inside the Wall, with a status the Precinct can read off a card — or a storm drain and no card at all. The city knew your face before you gave a name; the file calls you something the clerk had never seen. The records office will know what. So will the assessor who keeps it.',
+      end: 'done',
+      onEnter: [{ set: 'a2_precinct_done' }, { decision: { id: 'md_entered', text: 'You got inside Meridian\'s Wall.' } }, { news: { tag: 'stranger_at_gate', text: 'someone from the salt cut came through the Precinct gate and the lens knew their face', valence: 0, size: 5, at: 'meridian' } }],
+    },
+  },
+};
+
+export const q_md_exam: QuestDef = {
+  id: 'q_md_exam', title: 'The Citizenship Exam', act: 'a2', start: 'sit', xp: 120,
+  routes: [{ id: 'sit', kind: 'knowledge', label: 'Five questions on the charter, the drains and the calendar; three right makes a citizen' }],
+  stages: {
+    sit: {
+      journal: 'The records office sets an exam for provisional residents: five questions on the charter, the drains and the Restoration Calendar. Three right and the card is yours. The assessor says the questions are the same every year; it has filed a complaint about that.',
+      objectives: [{ id: 'pass', text: 'Pass the exam', done: { flag: 'md_exam_passed' } }],
+      next: [{ if: { flag: 'md_exam_passed' }, stage: 'passed' }],
+    },
+    passed: { journal: 'Three of five, or better. A citizen of the Precinct, by examination, which the assessor says is the only lawful way and the least used.', end: 'done' },
+  },
+};
+
+export const q_md_fines: QuestDef = {
+  id: 'q_md_fines', title: 'Unpaid Fines', act: 'a2', start: 'notice', xp: 80,
+  routes: [
+    { id: 'pay', kind: 'barter', label: 'Pay forty-five for three things you have not done' },
+    { id: 'contest', kind: 'talk', label: 'Contest them at the Court of Accounts, by appointment' },
+  ],
+  stages: {
+    notice: {
+      journal: 'The Precinct has fined you for three offences, each with a forecast date: a curfew you will break, an avenue you will loiter on, an assembly you will attend. Forty-five Tolls, payable at the warden\'s counter. The desk warden was apologetic about the dates.',
+      objectives: [{ id: 'settle', text: 'Pay the fines, or contest them', done: { any: [{ flag: 'md_fines_paid' }, { flag: 'md_fines_contested' }] } }],
+      next: [{ if: { flag: 'md_fines_paid' }, stage: 'paid' }, { if: { flag: 'md_fines_contested' }, stage: 'contested' }],
+    },
+    paid: { journal: 'Paid. The receipt is stamped twice. You are, for the moment, a person the Precinct has no complaint against, including the ones it has not had yet.', end: 'done' },
+    contested: { journal: 'Contested. The Court of Accounts will hear it, by appointment, which the assessor says could be any time and will be when the schedule says.', end: 'done' },
   },
 };
