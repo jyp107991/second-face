@@ -246,9 +246,11 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
             (`src/engine/scene/stream.ts`), world-wide pathing (`src/engine/world/worldGrid.ts`), flat region terrain
             chunks (`src/engine/world/terrain.ts`), cells for interiors, map-local persistence (save v6), QA smokes on
             place-local helpers, evidence `docs/evidence/u2/` + `tools/qa/openworld.cjs`.
-      - [ ] U2b NEXT: heightfield terrain with places flattened in; world-space edge blending (one shared surface
-            array for the world); roads/rails between places; rivers and sea unwalkable; far horizon; world map drawn
-            from the world; vehicles as fast travel; walking = on-foot travel.
+      - [x] U2b.1 DONE 2026-10-27: one world surface array, weight-only splat with per-mesh slot tables, places
+            feathered into the terrain, stochastic tiling (no repeat), skirt gone (`wild.cjs`, `edges.cjs`).
+      - [ ] U2b.2 NEXT: heightfield terrain (region relief, places flattened in on pads, slopes shade, steep = no
+            walk); then U2b.3 roads/rails between places, rivers and sea unwalkable, far horizon; U2b.4 world map
+            drawn from the world; vehicles as fast travel; walking = on-foot travel.
       - [ ] U2c: detail rings/LOD, memory and draw-call budget, phone profiling.
 - [ ] U3 Living world: biome vegetation and surviving greenery, rocks and ruins, real props, water and shores,
       weather by region, background life.

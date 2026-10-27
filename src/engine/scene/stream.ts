@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import { groundLayersFor, type GroundLayers } from '../assets/pbr';
+import { worldLayers, type GroundLayers } from '../assets/pbr';
 import { openSites, sitePlacement, type SitePlacement } from '../world/sites';
-import { BIOMES, CHUNK, buildChunk, chunkKey, regionAt } from '../world/terrain';
+import { BIOMES, CHUNK, FEATHER, buildChunk, chunkKey, regionAt, type NearSite } from '../world/terrain';
 import { WorldGrid } from '../world/worldGrid';
-import { groundKeys } from './ground';
+import { outsideKey } from './ground';
 import { Grid } from './grid';
 import { buildLocation, type BuiltLocation } from './location';
 
@@ -33,7 +33,8 @@ export class WorldScene {
   readonly sites = new Map<string, LoadedSite>();
   private chunks = new Map<string, THREE.Mesh>();
   private inFlight = new Set<string>();
-  private layers = new Map<string, Promise<GroundLayers | undefined>>();
+  private layersP?: Promise<GroundLayers | undefined>;
+  private outside = new Map<string, string>();
   private bldBase = 0;
   mode: 'open' | 'cell' = 'open';
   cell?: string;
@@ -52,10 +53,16 @@ export class WorldScene {
   /** A site by id if it is loaded. */
   site(id: string): LoadedSite | undefined { return this.sites.get(id); }
 
-  private regionLayers(region: string): Promise<GroundLayers | undefined> {
-    let p = this.layers.get(region);
-    if (!p) { p = groundLayersFor((BIOMES[region] ?? BIOMES.sallow).layers); this.layers.set(region, p); }
-    return p;
+  /** The world's one surface set (built on first use). */
+  private layers(): Promise<GroundLayers | undefined> {
+    return (this.layersP ??= worldLayers());
+  }
+
+  /** The surface a place's ground is made of at its edge (what the terrain runs up to). */
+  private outsideKeyOf(place: SitePlacement): string {
+    let k = this.outside.get(place.id);
+    if (!k) { k = outsideKey(place.map, new Grid(place.map, { stripRim: place.rim === 'strip' })); this.outside.set(place.id, k); }
+    return k;
   }
 
   /** Enter a cell: the open world is put away and the cell built. */
@@ -92,11 +99,10 @@ export class WorldScene {
     this.inFlight.add(place.id);
     try {
       await this.hooks.prepare(place);
-      const probe = new Grid(place.map, { stripRim: place.rim === 'strip' });
-      const layers = await groundLayersFor(groundKeys(place.map, probe)).catch(() => undefined);
+      const layers = await this.layers();
       // Put away while it was loading (left the area, entered a cell): drop it.
       if (this.mode === 'cell' ? this.cell !== place.id : place.kind === 'cell') return undefined;
-      const built = buildLocation(place.map, layers, { stripRim: place.rim === 'strip', bldBase: (this.bldBase += 4096) });
+      const built = buildLocation(place.map, layers, { stripRim: place.rim === 'strip', bldBase: (this.bldBase += 4096), skirt: place.kind === 'cell' });
       built.root.position.set(place.x, 0, place.z);
       this.root.add(built.root);
       const site: LoadedSite = { place, built };
@@ -147,10 +153,13 @@ export class WorldScene {
           if (Math.max(Math.abs(dx), Math.abs(dz)) !== r) continue;
           const k = chunkKey(cx + dx, cz + dz);
           if (this.chunks.has(k)) continue;
-          const region = regionAt((cx + dx) * CHUNK + CHUNK / 2, (cz + dz) * CHUNK + CHUNK / 2);
-          const layers = await this.regionLayers(region);
+          const layers = await this.layers();
           if (this.mode !== 'open') break outer;
-          const m = buildChunk(cx + dx, cz + dz, () => layers);
+          const X = (cx + dx) * CHUNK, Z = (cz + dz) * CHUNK;
+          const near: NearSite[] = openSites()
+            .filter((p) => p.x < X + CHUNK + FEATHER && p.x + p.w > X - FEATHER && p.z < Z + CHUNK + FEATHER && p.z + p.h > Z - FEATHER)
+            .map((p) => ({ x: p.x, z: p.z, w: p.w, h: p.h, key: this.outsideKeyOf(p) }));
+          const m = buildChunk(cx + dx, cz + dz, layers, near);
           this.chunks.set(k, m);
           this.root.add(m);
           break outer;

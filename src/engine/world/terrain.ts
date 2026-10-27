@@ -3,7 +3,7 @@ import { REGIONS } from '../../content';
 import { WORLD_SCALE } from '../../content/world/sites';
 import type { AmbienceDef, FloorKind } from '../data/types';
 import type { GroundLayers } from '../assets/pbr';
-import { FALLBACK, splatMaterial } from '../scene/ground';
+import { FALLBACK, SLOTS, splatMaterial } from '../scene/ground';
 import type { Mood } from './weather';
 
 /**
@@ -72,13 +72,16 @@ export function fbm(x: number, y: number, seed: number, oct = 3): number {
 }
 
 /** Layer weights at a world point: the base surface everywhere, the others in patches of different grain. */
+const smoothstep = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 export function layerWeights(wx: number, wz: number, n: number): number[] {
   const w = new Array(n).fill(0);
-  w[0] = 0.55;
+  w[0] = 0.5;
   const scales = [0.011, 0.023, 0.006];
   for (let i = 1; i < n; i++) {
-    const v = fbm(wx * scales[(i - 1) % 3] + i * 100, wz * scales[(i - 1) % 3] - i * 70, 900 + i * 7);
-    w[i] = Math.max(0, (v - 0.48) * 2.6) ** 1.4;
+    // Each surface comes in clear patches of its own grain, with frayed edges.
+    const sc = scales[(i - 1) % 3];
+    const v = fbm(wx * sc + i * 100, wz * sc - i * 70, 900 + i * 7, 4);
+    w[i] = smoothstep(0.5, 0.6, v) * 1.6;
   }
   const sum = w.reduce((a, b) => a + b, 0);
   return w.map((v) => v / sum);
@@ -86,30 +89,53 @@ export function layerWeights(wx: number, wz: number, n: number): number[] {
 
 export function chunkKey(cx: number, cz: number): string { return `${cx},${cz}`; }
 
-/** Build one chunk's ground mesh (vertices every 2 m), slightly below the sites so their floors win. */
-export function buildChunk(cx: number, cz: number, layersByRegion: (region: string) => GroundLayers | undefined): THREE.Mesh {
+/** A place the terrain runs up to: its rectangle and the surface its ground is made of at the edge. */
+export interface NearSite { x: number; z: number; w: number; h: number; key: string }
+/** How far from a place's edge its own surface reaches into the terrain before the region's patches return. */
+export const FEATHER = 14;
+
+/**
+ * Build one chunk's ground mesh (vertices every 2 m), slightly below the sites so their floors win. Layer indices
+ * are the world set's; near a place the region's patches give way to the place's own outside surface, so its edge
+ * is not a line.
+ */
+export function buildChunk(cx: number, cz: number, layers: GroundLayers | undefined, near: NearSite[] = []): THREE.Mesh {
   const x0 = cx * CHUNK, z0 = cz * CHUNK;
   const n = CHUNK / STEP + 1;
   const count = n * n;
   const pos = new Float32Array(count * 3), nrm = new Float32Array(count * 3), col = new Float32Array(count * 3);
-  const aLayer = new Float32Array(count * 4), aWeight = new Float32Array(count * 4);
+  const wA = new Float32Array(count * 4), wB = new Float32Array(count * 4);
   const region = regionAt(x0 + CHUNK / 2, z0 + CHUNK / 2);
   const biome = BIOMES[region] ?? BIOMES.sallow;
-  const layers = layersByRegion(region);
-  const keys = layers?.keys ?? biome.layers;
+  // Slots: the region's surfaces, then the surfaces of the places the chunk runs up to (eight at most).
+  const keys = biome.layers.slice(0, 4);
+  for (const s of near) if (!keys.includes(s.key) && keys.length < SLOTS) keys.push(s.key);
+  const slotOf = (key: string): number => { const i = keys.indexOf(key); return i < 0 ? 0 : i; };
   const c = new THREE.Color();
+  const distTo = (s: NearSite, x: number, z: number) => Math.hypot(Math.max(s.x - x, 0, x - (s.x + s.w)), Math.max(s.z - z, 0, z - (s.z + s.h)));
+  const w = new Float32Array(SLOTS);
+  const nb = Math.min(4, biome.layers.length);
   for (let j = 0; j < n; j++) {
     for (let i = 0; i < n; i++) {
       const k = j * n + i;
       const wx = x0 + i * STEP, wz = z0 + j * STEP;
       pos[k * 3] = wx; pos[k * 3 + 1] = -0.06; pos[k * 3 + 2] = wz;
       nrm[k * 3 + 1] = 1;
-      const w = layerWeights(wx, wz, keys.length);
+      w.fill(0);
+      const bw = layerWeights(wx, wz, nb);
+      for (let s = 0; s < nb; s++) w[s] = bw[s];
+      // The nearest place within reach pulls the ground to its own surface.
+      let best: NearSite | undefined, bestD = FEATHER;
+      for (const s of near) { const d = distTo(s, wx, wz); if (d < bestD) { bestD = d; best = s; } }
+      if (best) {
+        const f = 1 - bestD / FEATHER;
+        for (let s = 0; s < SLOTS; s++) w[s] *= 1 - f;
+        w[slotOf(best.key)] += f;
+      }
       c.setRGB(0, 0, 0);
-      for (let s = 0; s < 4; s++) {
-        aLayer[k * 4 + s] = s < keys.length ? s : 0;
-        aWeight[k * 4 + s] = s < keys.length ? w[s] : 0;
-        if (s < keys.length) c.add(new THREE.Color(FALLBACK[keys[s]] ?? 0x9a8a6a).multiplyScalar(w[s]));
+      for (let s = 0; s < SLOTS; s++) {
+        if (s < 4) wA[k * 4 + s] = w[s]; else wB[k * 4 + s - 4] = w[s];
+        if (w[s] > 0) c.add(new THREE.Color(FALLBACK[keys[s]] ?? 0x9a8a6a).multiplyScalar(w[s]));
       }
       col[k * 3] = c.r; col[k * 3 + 1] = c.g; col[k * 3 + 2] = c.b;
     }
@@ -124,11 +150,11 @@ export function buildChunk(cx: number, cz: number, layersByRegion: (region: stri
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   geo.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
   geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  geo.setAttribute('aLayer', new THREE.BufferAttribute(aLayer, 4));
-  geo.setAttribute('aWeight', new THREE.BufferAttribute(aWeight, 4));
+  geo.setAttribute('aWeight', new THREE.BufferAttribute(wA, 4));
+  geo.setAttribute('aWeight2', new THREE.BufferAttribute(wB, 4));
   geo.setIndex(new THREE.BufferAttribute(idx, 1));
   geo.computeBoundingSphere();
-  const mesh = new THREE.Mesh(geo, layers ? splatMaterial(layers) : new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0 }));
+  const mesh = new THREE.Mesh(geo, layers ? splatMaterial(layers, keys) : new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0 }));
   mesh.receiveShadow = true;
   mesh.name = `chunk ${cx},${cz}`;
   return mesh;

@@ -127,3 +127,18 @@ Content building (B3.11 onwards) is paused until U1–U5 are in.
   rivers and the sea as unwalkable, a far horizon ring, the world map drawn from the world, vehicles as the fast
   travel. Draw calls at Shale with two neighbours loaded: 167 (budget 150; U3's instancing and U2b's merged chunks
   bring it down).
+- **2026-10-27 U2b.1 — one surface set, no edges.** The whole world now draws its ground with one material: every
+  library surface (30) in one texture array (`assets/pbr.ts worldLayers`; 256 px on medium detail, 512 on high), so a
+  place's floor, the terrain round it and its neighbours share layer indices. The splat mesh changed shape: each mesh
+  carries a fixed table of up to eight surfaces and its vertices carry weights only (`scene/ground.ts`), which
+  interpolate cleanly (the old per-vertex layer indices smeared through unrelated layers between vertices once the
+  array held 30, and gave a stair-stepped edge where a place's surface met the terrain). Terrain chunks list the
+  region's four surfaces and the surfaces of the places they run up to, and within 14 m of a place the region's
+  patches give way to that place's own ground (`world/terrain.ts FEATHER`); a stripped rim takes the map's commonest
+  open floor (a district's rim is rubble, not sand); the old 400 m skirt plane is gone for open places (it was the
+  tiled brown wallpaper in the first U2a shots). The repeat is broken for good by stochastic triangle tiling (Heitz &
+  Neyret: three randomly offset samples per surface, contrast restored round the texture's mean) and a slow drift of
+  tone and warmth; the region's patches come in clear, frayed shapes. Evidence `docs/evidence/u2/wild_*.png` (outside
+  the Cistern mouth, Shale, Ninebridge, Openfield) and `edge_*.png` (inside them at the edge); `tools/qa/wild.cjs`,
+  `tools/qa/edges.cjs`. Still flat; the heightfield is U2b.2. Texture memory barely moved (427 MB at Shale with two
+  neighbours): the arrays were never the bulk, the people are (each figure its own skin and cloth maps) — U4's job.

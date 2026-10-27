@@ -34,11 +34,19 @@ export class Grid {
     this.height = map.layout.length;
     this.width = Math.max(...map.layout.map((r) => r.length));
     this.tiles = [];
+    // What a stripped rim becomes: the commonest open floor inside the map (a city district's rim is rubble, not sand).
+    let rimFloor: Tile['def']['floor'] = 'sand';
+    if (opts.stripRim) {
+      const count = new Map<string, number>();
+      for (const row of map.layout) for (const ch of row) { const d = map.legend[ch]; if (d && !d.wall && !d.empty && d.floor && d.floor !== 'water') count.set(d.floor, (count.get(d.floor) ?? 0) + 1); }
+      const best = [...count.entries()].sort((a, b) => b[1] - a[1])[0];
+      if (best) rimFloor = best[0] as Tile['def']['floor'];
+    }
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
         const ch = map.layout[y][x] ?? ' ';
         let def = map.legend[ch] ?? { empty: true };
-        if (opts.stripRim && def.wall && (x === 0 || y === 0 || x === this.width - 1 || y === this.height - 1)) def = { floor: def.floor ?? 'sand' };
+        if (opts.stripRim && def.wall && (x === 0 || y === 0 || x === this.width - 1 || y === this.height - 1)) def = { floor: def.floor ?? rimFloor };
         this.tiles.push(Grid.makeTile(x, y, def));
       }
     }

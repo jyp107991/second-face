@@ -75,23 +75,24 @@ export interface GroundLayers {
   tints: THREE.Color[];
 }
 const arrays = new Map<string, Promise<GroundLayers | undefined>>();
-const SIZE = 512;
+/** Array layer size: full on high detail; a quarter of the memory on medium (the world set is 30 surfaces). */
+function arraySize(): number { return detail === 'high' ? 512 : 256; }
 
-async function imageData(url: string): Promise<Uint8ClampedArray> {
+async function imageData(url: string, size: number): Promise<Uint8ClampedArray> {
   const blob = await (await fetch(url)).blob();
   const bmp = await createImageBitmap(blob);
   const canvas = document.createElement('canvas');
-  canvas.width = SIZE; canvas.height = SIZE;
+  canvas.width = size; canvas.height = size;
   const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
-  ctx.drawImage(bmp, 0, 0, SIZE, SIZE);
+  ctx.drawImage(bmp, 0, 0, size, size);
   bmp.close();
-  return ctx.getImageData(0, 0, SIZE, SIZE).data;
+  return ctx.getImageData(0, 0, size, size).data;
 }
 
-function arrayTexture(layers: Uint8ClampedArray[], srgb: boolean): THREE.DataArrayTexture {
-  const data = new Uint8Array(SIZE * SIZE * 4 * layers.length);
-  layers.forEach((l, i) => data.set(l, i * SIZE * SIZE * 4));
-  const t = new THREE.DataArrayTexture(data, SIZE, SIZE, layers.length);
+function arrayTexture(layers: Uint8ClampedArray[], srgb: boolean, size: number): THREE.DataArrayTexture {
+  const data = new Uint8Array(size * size * 4 * layers.length);
+  layers.forEach((l, i) => data.set(l, i * size * size * 4));
+  const t = new THREE.DataArrayTexture(data, size, size, layers.length);
   t.format = THREE.RGBAFormat;
   t.type = THREE.UnsignedByteType;
   t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
@@ -114,11 +115,12 @@ export function groundLayersFor(keys: string[]): Promise<GroundLayers | undefine
       if (!m || typeof document === 'undefined' || typeof createImageBitmap !== 'function') return undefined;
       const entries = keys.map((k) => m.materials[k]);
       if (entries.some((e) => !e)) return undefined;
-      const d = await Promise.all(keys.map((k) => imageData(`${base()}mat/${k}_d_512.webp`)));
-      const n = await Promise.all(keys.map((k) => imageData(`${base()}mat/${k}_n_512.webp`)));
-      const a = await Promise.all(keys.map((k) => imageData(`${base()}mat/${k}_a_512.webp`)));
+      const size = arraySize();
+      const d = await Promise.all(keys.map((k) => imageData(`${base()}mat/${k}_d_512.webp`, size)));
+      const n = await Promise.all(keys.map((k) => imageData(`${base()}mat/${k}_n_512.webp`, size)));
+      const a = await Promise.all(keys.map((k) => imageData(`${base()}mat/${k}_a_512.webp`, size)));
       return {
-        keys, diff: arrayTexture(d, true), nor: arrayTexture(n, false), arm: arrayTexture(a, false),
+        keys, diff: arrayTexture(d, true, size), nor: arrayTexture(n, false, size), arm: arrayTexture(a, false, size),
         scales: entries.map((e) => e!.scale), hard: entries.map((e) => (e!.hard ? 1 : 0)),
         tints: entries.map((e) => new THREE.Color(e!.tint ? parseInt(e!.tint, 16) : 0xffffff)),
       };
@@ -126,4 +128,15 @@ export function groundLayersFor(keys: string[]): Promise<GroundLayers | undefine
     arrays.set(id, p);
   }
   return p;
+}
+
+/**
+ * The one surface set of the whole world: every library material in one array, so a place's ground, the terrain
+ * round it, a road through it and its neighbours all draw with one material and the same layer indices (edges blend
+ * instead of meeting). Built once per session.
+ */
+export async function worldLayers(): Promise<GroundLayers | undefined> {
+  const m = await loadMaterialManifest();
+  if (!m) return undefined;
+  return groundLayersFor(Object.keys(m.materials));
 }

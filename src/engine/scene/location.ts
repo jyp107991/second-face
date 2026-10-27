@@ -44,7 +44,7 @@ export function worldToTile(p: THREE.Vector3): { x: number; y: number } {
   return { x: Math.floor(p.x), y: Math.floor(p.z) };
 }
 
-export function buildLocation(map: MapDef, layers?: GroundLayers, opts: { stripRim?: boolean; bldBase?: number } = {}): BuiltLocation {
+export function buildLocation(map: MapDef, layers?: GroundLayers, opts: { stripRim?: boolean; bldBase?: number; /** A wide ground plane round the map (places that stand alone); the open world's terrain replaces it. */ skirt?: boolean } = {}): BuiltLocation {
   const grid = new Grid(map, { stripRim: opts.stripRim });
   const bldBase = opts.bldBase ?? 0;
   const rng = new Rng(map.seed ?? 1234);
@@ -99,8 +99,8 @@ export function buildLocation(map: MapDef, layers?: GroundLayers, opts: { stripR
   const root = b.build();
   root.add(buildGround(map, grid, layers));
 
-  // Outdoor maps: a wide ground skirt beyond the playable bounds that fades into fog, in the outside surface.
-  if (!map.ambience.indoor) {
+  // Outdoor maps standing alone: a wide ground skirt beyond the playable bounds that fades into fog, in the outside surface.
+  if (!map.ambience.indoor && opts.skirt !== false) {
     const outside = pbrMapsSync(groundKeys(map, grid)[0]);
     const skirtMat = outside
       ? new THREE.MeshStandardMaterial({ map: outside.map, normalMap: outside.normalMap, roughnessMap: outside.arm, aoMap: outside.arm, roughness: 1, metalness: 0, color: 0xd8d0c0 })
