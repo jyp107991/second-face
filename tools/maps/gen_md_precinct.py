@@ -70,6 +70,7 @@ building(56, 36, 68, 48, 'B', 't', [(62, 36)])
 fill(36, 36, 39, 48, 'c')
 # a back lane south of the tenements, and the drain's inside mouth
 fill(12, 50, 70, 51, 'c')
+fill(40, 52, 41, 53, 'c')   # the stair down to the Sink, off the back lane
 
 rows = [''.join(r) for r in g]
 
@@ -136,10 +137,11 @@ md_precinct = {
     'spawns': [
         {'id': 'start', 'x': 2, 'y': 29, 'facing': 1}, {'id': 'from_ninebridge', 'x': 2, 'y': 30, 'facing': 1}, {'id': 'from_openfield', 'x': 2, 'y': 29, 'facing': 1}, {'id': 'from_sump', 'x': 2, 'y': 31, 'facing': 1},
         {'id': 'from_riverdock', 'x': 2, 'y': 28, 'facing': 1}, {'id': 'from_halt_w', 'x': 2, 'y': 28, 'facing': 1}, {'id': 'from_hamlet_shore', 'x': 2, 'y': 31, 'facing': 1}, {'id': 'from_rigs', 'x': 2, 'y': 31, 'facing': 1},
-        {'id': 'inside', 'x': 22, 'y': 29, 'facing': 1}, {'id': 'cell', 'x': 16, 'y': 13, 'facing': 2}, {'id': 'drain', 'x': 13, 'y': 52, 'facing': 1}, {'id': 'loop', 'x': 63, 'y': 24, 'facing': 2},
+        {'id': 'inside', 'x': 22, 'y': 29, 'facing': 1}, {'id': 'cell', 'x': 16, 'y': 13, 'facing': 2}, {'id': 'drain', 'x': 13, 'y': 52, 'facing': 1}, {'id': 'loop', 'x': 63, 'y': 24, 'facing': 2}, {'id': 'sink_stair', 'x': 40, 'y': 51, 'facing': 0},
     ],
     'exits': [
         {'x': 0, 'y': 28, 'w': 1, 'h': 4, 'to': {'worldMap': True}, 'label': 'The road out'},
+        {'x': 40, 'y': 53, 'w': 2, 'h': 1, 'to': {'location': 'md_sink', 'spawn': 'from_precinct'}, 'label': 'The stair down to the Sink'},
         {'x': 71, 'y': 27, 'w': 1, 'h': 6, 'to': {'location': 'md_market', 'spawn': 'from_precinct'}, 'label': 'The avenue east, to Old Market', 'if': {'flag': 'md_market_open'}},
     ],
     'talk': {

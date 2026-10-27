@@ -6,7 +6,7 @@ import type { Cond, Effect } from '../world/logic';
  * the engine never needs to change to add content.
  */
 
-export type FloorKind = 'sand' | 'dirt' | 'concrete' | 'metal' | 'wood' | 'grate' | 'asphalt' | 'rubble' | 'tile';
+export type FloorKind = 'sand' | 'dirt' | 'concrete' | 'metal' | 'wood' | 'grate' | 'asphalt' | 'rubble' | 'tile' | 'water';
 export type WallKind = 'concrete' | 'metal' | 'wood' | 'rock' | 'fence' | 'brick' | 'scrap' | 'adobe';
 /** How an enclosed building is roofed: flat slab behind a parapet, pitched with gables, a lean-to of tin, or open. */
 export type RoofKind = 'flat' | 'pitched' | 'tin' | 'none';

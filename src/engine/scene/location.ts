@@ -20,11 +20,11 @@ export interface BuiltLocation {
 
 const FLOOR_SURFACE: Record<FloorKind, SurfaceKind> = {
   sand: 'sand', dirt: 'dirt', concrete: 'concrete', metal: 'metal', wood: 'wood', grate: 'grate',
-  asphalt: 'asphalt', rubble: 'rubble', tile: 'tile',
+  asphalt: 'asphalt', rubble: 'rubble', tile: 'tile', water: 'water',
 };
 const FLOOR_TINT: Record<FloorKind, number> = {
   sand: 0xffffff, dirt: 0xffffff, concrete: 0xe8e4dc, metal: 0xd0d4d0, wood: 0xffffff, grate: 0xffffff,
-  asphalt: 0xffffff, rubble: 0xffffff, tile: 0xffffff,
+  asphalt: 0xffffff, rubble: 0xffffff, tile: 0xffffff, water: 0xffffff,
 };
 const WALL_SURFACE: Record<WallKind, SurfaceKind> = {
   concrete: 'concrete', metal: 'metal', wood: 'wood', rock: 'rock', fence: 'wood', brick: 'brick', scrap: 'scrap', adobe: 'adobe',

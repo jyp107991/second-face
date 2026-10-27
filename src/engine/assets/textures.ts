@@ -4,7 +4,7 @@ import { hash2 } from '../core/rng';
 /** Procedural surface textures (canvas-generated, cached, tileable). */
 export type SurfaceKind =
   | 'sand' | 'dirt' | 'concrete' | 'metal' | 'wood' | 'grate' | 'asphalt' | 'rubble' | 'tile'
-  | 'brick' | 'rust' | 'rock' | 'fabric' | 'scrap' | 'paint' | 'adobe' | 'tin';
+  | 'brick' | 'rust' | 'rock' | 'fabric' | 'scrap' | 'paint' | 'adobe' | 'tin' | 'water';
 
 const SIZE = 128;
 const cache = new Map<SurfaceKind, THREE.Texture>();
@@ -152,6 +152,14 @@ const SHADERS: Record<SurfaceKind, Shader> = {
     const rust = smooth(Math.min(1, Math.max(0, (streak * 0.7 + spot * 0.3 - 0.5) * 3)));
     const c = mix(mix([140, 144, 140], [168, 170, 164], spot), [118, 66, 36], rust);
     return [c[0] * ridge, c[1] * ridge, c[2] * ridge];
+  },
+  water: (u, v) => {
+    // Standing flood water: dark green-black with an oily sheen, slow ripples, a skin of scum where it is still.
+    const n = fbm(u, v, 3, 38), d = fbm(u, v, 10, 39);
+    const ripple = Math.sin((u * 7 + v * 3 + n * 2) * Math.PI * 2) * 0.5 + 0.5;
+    const scum = smooth(Math.max(0, fbm(u, v, 5, 40) - 0.62) * 3);
+    const c = mix(mix([16, 26, 28], [34, 52, 54], n * 0.6 + ripple * 0.25 + d * 0.15), [58, 66, 40], scum * 0.6);
+    return c;
   },
 };
 

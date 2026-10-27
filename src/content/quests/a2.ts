@@ -400,3 +400,65 @@ export const q_gig_meds = GIG('q_gig_meds', 'Gig: Knit Kits for the Farms', 'Two
 export const q_gig_lot7 = GIG('q_gig_lot7', 'Gig: Lot Seven', 'A debt contract on the block at Ninebridge: lot seven, a mechanic, forty-eight. The Broker wants the paper, and fronts nothing. A hundred and twenty for it, the board says; the lot opens at seventy.', { item: 'k_gig_lot7' }, 'A hundred and twenty through the hatch for the mechanic\'s paper. Whoever he is, he is the Broker\'s now, and the Broker says that is better than the block, and is probably right.');
 export const q_gig_letter = GIG('q_gig_letter', 'Gig: A Letter for the Captain', 'A sealed letter for Captain Lowe at the Precinct station, by hand. Twenty, the board says. It is the weight of a letter with something flat inside.', { flag: 'gig_letter_done' }, 'Twenty through the hatch. "He always refuses," the voice box said. "The point is that he knows who asked."');
 export const q_gig_box = GIG('q_gig_box', 'Gig: A Box from the Sump', 'A boxed piece of chrome in the Tanners\' locker at the Sump, which the Broker says is the Broker\'s and the Tanners say is the Tanners\'. Eighty for it through the hatch.', { item: 'ci_ch_eye_heat' }, 'Eighty through the hatch, and the box gone into the container without a sound.');
+
+// ---------------------------------------------------------------- the Sink
+
+export const q_sk_highwater: QuestDef = {
+  id: 'q_sk_highwater', title: 'High Water', act: 'a2', start: 'rising', xp: 200,
+  routes: [
+    { id: 'paid', kind: 'talk', label: 'A variance under clause 14: the Precinct bears the shortfall (the assessor, or the captain)' },
+    { id: 'retimed', kind: 'tech', label: 'Retime the relief pumps at the dial', requires: { any: [{ skill: 'mechanics', gte: 40 }, { skill: 'science', gte: 40 }] } },
+    { id: 'seized', kind: 'fight', label: 'Take the pump house with the Pale' },
+  ],
+  stages: {
+    rising: {
+      journal: 'The first pier of the Sink\'s stilt-walk has a chalk line for every spring, each a hand above the last, and next spring\'s already drawn with a question mark. Something is pumping, far off, for somebody else.',
+      objectives: [
+        { id: 'schedule', text: 'Learn what the pumps are told to do in spring', done: { knows: 'sk_schedule_known' } },
+        { id: 'decide', text: 'See the Sink through the spring', done: { flag: 'sk_pumps' } },
+      ],
+      next: [
+        { if: { flag: 'sk_pumps', eq: 'paid' }, stage: 'paid' },
+        { if: { flag: 'sk_pumps', eq: 'retimed' }, stage: 'retimed' },
+        { if: { flag: 'sk_pumps', eq: 'seized' }, stage: 'seized' },
+      ],
+    },
+    paid: { journal: 'A variance under clause 14, the drains being the city\'s first duty: the relief pumps run for the Sink this spring and the Precinct bears the shortfall. Dagny Roos read it twice and turned her own dial, which she has not been allowed to do in eleven years. The Precinct will drink point six and notice.', end: 'done', onEnter: [{ set: 'sk_pumps_running' }, { set: 'sk_saved' }, { decision: { id: 'sk_paid', text: 'You had the Sink\'s relief pumping varied under clause 14; the Precinct bears the shortfall.' } }, { news: { tag: 'sink_variance', text: 'the Sink\'s pumps will run this spring on a variance; the Precinct\'s ration drops to pay for it', valence: 6, size: 7, at: 'meridian' } }] },
+    retimed: { journal: 'The relief dial reads what you set it to. Two pumps that were the Precinct\'s in spring are the Sink\'s again, and the seal on the dial is a seal on a dial, which the wardens will find out when they next count. Dagny Roos says she does not know who did it, which is nearly true.', end: 'done', onEnter: [{ set: 'sk_pumps_running' }, { set: 'sk_saved' }, { decision: { id: 'sk_retimed', text: 'You retimed the Sink\'s relief pumps behind the Plan\'s seal.' } }, { news: { tag: 'sink_retimed', text: 'somebody retimed the Sink\'s pumps under the Plan\'s seal; the Precinct\'s pressure dropped overnight', valence: 2, size: 6, at: 'meridian' } }] },
+    seized: { journal: 'The Pale hold the pump house. The wardens who held it are on the tally wall, by the Pale\'s hand and yours, and the pumps run for the Sink because Saskia Dray says so. The Precinct will come down the stair for this, in its own time, with its own count.', end: 'done', onEnter: [{ set: 'sk_pumps_running' }, { set: 'sk_saved' }, { set: 'sk_pale_leave' }, { decision: { id: 'sk_seized', text: 'You took the Sink\'s pump house from the Precinct with the Pale.' } }, { news: { tag: 'sink_seized', text: 'the Pale took the Sink\'s pump house from the wardens; a stranger was in it', valence: -8, size: 9, at: 'meridian' } }] },
+  },
+};
+
+export const q_sk_organ: QuestDef = {
+  id: 'q_sk_organ', title: 'Organ Run', act: 'a2', start: 'need', xp: 160,
+  routes: [
+    { id: 'buy', kind: 'barter', label: 'Buy one from Vash\'s cold box, and don\'t ask' },
+    { id: 'take', kind: 'stealth', label: 'Take it from the Pale\'s cold store', requires: { any: [{ skill: 'security', gte: 40 }, { skill: 'stealth', gte: 40 }] } },
+    { id: 'chrome', kind: 'barter', label: 'A dark-chrome Second Heart instead, and Ocho to fit it' },
+  ],
+  stages: {
+    need: {
+      journal: 'Tam Oduya pumped the Sink for the Precinct for eleven years and the wet got into his heart. Ocho can fit a new one — a real one, chilled, or a dark-chrome Second Heart — if one comes through the clinic door. Vash sells hearts. Nobody says whose.',
+      objectives: [
+        { id: 'heart', text: 'Bring Ocho a heart he can fit', done: { any: [{ item: 'k_sk_heart' }, { item: 'ci_ch_org_heart' }, { flag: 'sk_organ_fitted' }] } },
+        { id: 'fit', text: 'See it fitted', done: { flag: 'sk_organ_fitted' } },
+      ],
+      next: [{ if: { flag: 'sk_organ_how', eq: 'chrome' }, stage: 'fitted_chrome' }, { if: { flag: 'sk_organ_lied' }, stage: 'fitted_lie' }, { if: { flag: 'sk_organ_fitted' }, stage: 'fitted' }],
+    },
+    fitted: { journal: 'Tam Oduya has a heart that beats. Ocho asked where it came from and you told him, and he asked Tam, and Tam said yes before the sentence was finished. The Code says the patient decides. It does not say Ocho has to like it.', end: 'done' },
+    fitted_chrome: { journal: 'Tam Oduya has a Second Heart under his ribs, Mender-built, no leash. It does not skip. He says it ticks, and that he can live with ticking.', end: 'done' },
+    fitted_lie: { journal: 'Tam Oduya has a heart that beats and a number inked on a bag in Ocho\'s bin, crossed out. Ocho believes it came from under the water. You know whose walk it came off.', end: 'done' },
+  },
+};
+
+export const q_sk_code: QuestDef = {
+  id: 'q_sk_code', title: 'The Menders\' Code', act: 'a2', start: 'hands', xp: 100,
+  stages: {
+    hands: {
+      journal: 'Ocho does not take apprentices; he takes hands. Hold a clamp steady through one fitting and he will say the words, which are: *fit only what the patient can bear*. Shake, and Pell takes the clamp, and there is always a next time down here.',
+      objectives: [{ id: 'assist', text: 'Hold steady through a fitting at Ocho\'s table', done: { member: 'menders' } }],
+      next: [{ if: { member: 'menders' }, stage: 'apprentice' }],
+    },
+    apprentice: { journal: 'Apprentice, by the Menders\' Code. Ocho said the words over a table with a man still open on it, which Pell says is how he says everything. Menders\' prices are yours now, where there are Menders, and so is the thing the Code asks: fit only what the patient can bear.', end: 'done' },
+  },
+};

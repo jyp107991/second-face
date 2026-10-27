@@ -284,3 +284,15 @@ name (the stranger is Hollis Dray — the shared first name is deliberate: Crane
 
 ## 17. Questions for the owner (ask spoiler-free, only when needed)
 - None open. (Engine choice is a tech question, asked in docs/TECH_EVALUATION.md.)
+
+## Build notes — the Sink (B3.6, 2026-10-27)
+- Keystone 10 (Ocho) is now in play. High Water (`q_sk_highwater`) resolves only by the player's hand: `sk_pumps` =
+  `paid` (a clause-14 variance from Nine or Lowe) · `retimed` (the dial) · `seized` (the Pale hold the house); all
+  three set `sk_saved`. No day limit: if the player leaves the schedule alone, the spring flood and Ocho's drowning
+  fire on a STORY MILESTONE, not a date — planned trigger: the Spire hearing's verdict (B3.11), with a news item and
+  the clinic closed afterwards (`sk_flooded`, Ocho dead, Pell runs the clinic). Write that resolution in B3.11.
+- `sk_saved` → the Precinct riots over water later (modifier list §Act 2); `sk_pumps = seized` → the wardens come down
+  the stair in the Long Night; Dagny stays at the panel either way.
+- The Pale remember the Scald (chrome woke and held still while the fire came): their hostility to chrome is the
+  first in-world statement of the Leash's history. Organ Run (`q_sk_organ`): `sk_organ_lied` is remembered by Ocho
+  (memory `lied_heart`) and matters if the player later asks him for the Code's help.

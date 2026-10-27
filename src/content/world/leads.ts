@@ -124,6 +124,11 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_name_vey_partial', label: 'V-E-Y-A', text: 'The second block on the map half-read: V, E, Y, A. Someone else in Shale.' },
   { id: 'l_pike_saw_map', label: 'Pike saw the map', text: 'Factor Pike has seen the stranger\'s map in your hands and sold you the key to it. The Tollmen will know by the next caravan.' },
   { id: 'l_ring_gone', label: 'Missing ring', text: 'The stranger had worn a ring until shortly before he died. He traded or lost it near the end.' },
+  // the Sink
+  { id: 'l_pumps_schedule', label: 'The relief schedule', text: 'The Sink\'s three relief pumps run to a Precinct schedule, and in spring two of them are turned to the Precinct\'s supply, as per Plan. The line on the pier rises a hand a year since.' },
+  { id: 'l_sink_numbers', label: 'The drowned\'s numbers', text: 'The tally wall in the Sink keeps the citizen numbers of the drowned beside their names, and somebody sells the numbers up the stair every spring.' },
+  { id: 'l_sato_numbers', label: 'A dead woman\'s card', text: 'Sato\'s forged cards carry the numbers of people who died in the Sink; he says the Sink gives him a few every spring.' },
+  { id: 'l_pale_harvest', label: 'What the cold box holds', text: 'Vash\'s cold box fills from the Pale\'s store, and the Pale take from people who owe them, who walk back off the east bank lighter.' },
 ] as LeadDef[]).map((l) => [l.id, l]));
 
 export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
@@ -138,4 +143,5 @@ export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
   { id: 'c_held_at_a_number', from: ['l_dw_schedule', 'l_dw_target', 'l_dw_diary'], text: 'Shale is not short of water. It is being held at a number, by a schedule somebody east writes.' },
   { id: 'c_same_hand_everywhere', from: ['l_dw_log_hand', 'l_record_hand', 'l_pump_manual_hand'], text: 'The Cistern\'s records, the pump manual and the Dry Wells log are all kept in one hand. One keeper.' },
   { id: 'c_fed_from_outside', from: ['l_pressure', 'l_archive_label'], text: 'The Cistern was built to be collected. Its water comes from outside, and so, one day, will its people\'s orders.' },
+  { id: 'c_dead_numbers', from: ['l_sink_numbers', 'l_sato_numbers'], text: 'The Sink\'s drowned go on living in the city\'s file: their numbers come up the stair each spring and are sold to people who need to be someone the lens has not seen.' },
 ] as ConclusionDef[]).map((c) => [c.id, c]));

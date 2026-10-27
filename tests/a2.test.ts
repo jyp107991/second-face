@@ -601,3 +601,164 @@ describe('Old Market: the hatch, the kiosk, the square', () => {
     expect(g.flags.md_forged_papers).toBe(true);
   });
 });
+
+function atSink(hour = 12) {
+  const g = newGameState('c9', 0, 0);
+  g.minutes = 34 * 1440 + hour * 60;
+  g.locationId = 'md_sink';
+  g.flags.visited_md_sink = true;
+  g.flags.ch1_done = true;
+  g.flags.md_inside = true; g.flags.md_sink_open = true; g.flags.md_status = 'citizen';
+  const q = new QuestEngine(QUESTS, g);
+  return { g, q };
+}
+
+describe('The Sink: high water, the clinic, the Pale', () => {
+  it('the board and the keeper both teach the spring schedule', () => {
+    const { g, q } = atSink();
+    q.questStart('q_sk_highwater');
+    talk('d_sk_pump_board', g, q, ['(Copy the schedule, clause and all.)', '(Leave it.)']);
+    expect(g.world.knowledge.sk_schedule_known).toBe(true);
+    expect(countItem(g.pc.inventory, 'k_sk_schedule')).toBe(1);
+    expect(cond({ lead: 'l_pumps_schedule' }, g)).toBe(true);
+    talk('d_sk_dagny', g, q, ['The schedule. Spring.', 'That\'s all.']);
+    expect(g.world.quests.q_sk_highwater.stage).toBe('rising');
+  });
+
+  it('the keeper\'s son on the wall buys her leave, and the dial is retimed', () => {
+    const { g, q } = atSink();
+    q.questStart('q_sk_highwater');
+    talk('d_sk_tally', g, q, ['(Read the newest.)', '(Leave it.)']);
+    expect(g.world.knowledge.sk_dagny_son).toBe(true);
+    talk('d_sk_dagny', g, q, ['The schedule. Spring.', 'That\'s all.']);
+    talk('d_sk_dagny', g, q, ['Roos, H. Spring before last.', 'Then let me at the dial.', 'That\'s all.']);
+    expect(countItem(g.pc.inventory, 'k_sk_leave')).toBe(1);
+    expect(g.flags.sk_pump_leave).toBe(true);
+    g.pc.sheet.skillBought.mechanics = 90;
+    talk('d_sk_dial', g, q, ['(Break the seal and retime pumps 2 and 3 to the Sink.)', '(Leave it running.)']);
+    expect(g.flags.sk_pumps).toBe('retimed');
+    expect(g.world.quests.q_sk_highwater.status).toBe('done');
+    expect(g.world.quests.q_sk_highwater.stage).toBe('retimed');
+    expect(g.flags.sk_saved).toBe(true);
+  });
+
+  it('without leave the wardens watch the dial room; the count is a window', () => {
+    const { g, q } = atSink();
+    q.questStart('q_sk_highwater');
+    g.pc.sheet.skillBought.stealth = 90;
+    talk('d_sk_dial', g, q, ['(Wait for the count, when the door is empty, and come back.)', '(The dial.)', '(Leave it.)']);
+    expect(g.flags.sk_dial_sneak).toBe(true);
+    expect(g.world.knowledge.sk_dial_seen).toBe(true);
+  });
+
+  it('the assessor varies the schedule under clause 14, and the keeper moves the levers herself', () => {
+    const { g, q } = atSink();
+    q.questStart('q_sk_highwater');
+    g.world.party.push('npc_md_nine');
+    talk('d_sk_pump_board', g, q, ['Nine. Clause 14. The drains.', '(Take it to the keeper.)']);
+    expect(countItem(g.pc.inventory, 'k_sk_variance')).toBe(1);
+    expect(g.flags.sk_pumps).toBe('paid');
+    expect(g.world.quests.q_sk_highwater.stage).toBe('paid');
+    talk('d_sk_dagny', g, q, ['(Leave her to it.)']);
+    expect(countItem(g.pc.inventory, 'k_sk_variance')).toBe(0);
+    expect(g.flags.sk_variance_applied).toBe(true);
+  });
+
+  it('the captain signs the same variance for the schedule in hand', () => {
+    const { g, q } = atSink();
+    q.questStart('q_sk_highwater');
+    talk('d_sk_pump_board', g, q, ['(Copy the schedule, clause and all.)', '(Leave it.)']);
+    g.locationId = 'md_precinct';
+    g.world.knowledge.lowe_rebalance = true;
+    g.pc.sheet.skillBought.speech = 90;
+    talk('d_md_lowe', g, q, ['(Put the relief schedule on the desk.)', 'Then sign a variance.', '(Take it.)']);
+    expect(countItem(g.pc.inventory, 'k_sk_schedule')).toBe(0);
+    expect(countItem(g.pc.inventory, 'k_sk_variance')).toBe(1);
+    expect(g.flags.sk_pumps).toBe('paid');
+    expect(g.flags.sk_variance_lowe).toBe(true);
+  });
+
+  it('the Pale take the pump house with you in front', () => {
+    const { g, q } = atSink();
+    q.questStart('q_sk_highwater');
+    g.world.knowledge.sk_schedule_known = true;
+    talk('d_sk_dray', g, q, ['The pumps. Spring. You want them.', 'With me in front. Now.', '(Go.)']);
+    expect(g.flags.sk_fight_pumps).toBe(true);
+    expect(cond({ hostileIf: { any: [{ flag: 'md_fight' }, { flag: 'sk_fight_pumps' }] } } as never, g)).toBe(false);
+    g.npcs['md_sink/npc_sk_w1'] = { dead: true } as never;
+    g.npcs['md_sink/npc_sk_w2'] = { dead: true } as never;
+    talk('d_sk_dray', g, q, ['(Leave them to it.)']);
+    expect(g.flags.sk_pumps).toBe('seized');
+    expect(g.world.quests.q_sk_highwater.stage).toBe('seized');
+    expect(g.flags.sk_pale_leave).toBe(true);
+  });
+
+  it('Organ Run: a heart from the cold box, the truth, the patient\'s word, a steady clamp and the Code', () => {
+    const { g, q } = atSink();
+    talk('d_sk_pell', g, q, ['The big man on the end cot.', 'That\'s all.']);
+    expect(g.world.knowledge.ocho_tam).toBe(true);
+    talk('d_sk_ocho', g, q, ['Tam Oduya. The heart.', 'Then let me bring one. You don\'t ask me where.', 'That\'s all.']);
+    expect(g.world.quests.q_sk_organ?.stage).toBe('need');
+    g.pc.inventory.tolls = 200;
+    talk('d_sk_vash', g, q, ['A heart. For Ocho\'s patient.', '(Pay. 150 Tolls)', 'That\'s all.']);
+    expect(countItem(g.pc.inventory, 'k_sk_heart')).toBe(1);
+    expect(g.pc.inventory.tolls).toBe(50);
+    g.pc.sheet.skillBought.medicine = 90;
+    talk('d_sk_ocho', g, q, ['(Put the cooler on the table.)', 'Vash. He says the water.', '(The clamp.)', '(Hold it steady.)', '(Wash.)']);
+    expect(g.flags.sk_organ_fitted).toBe(true);
+    expect(countItem(g.pc.inventory, 'k_sk_heart')).toBe(0);
+    expect(cond({ member: 'menders', rank: 'apprentice' }, g)).toBe(true);
+    expect(g.world.quests.q_sk_organ.status).toBe('done');
+    expect(g.world.quests.q_sk_organ.stage).toBe('fitted');
+  });
+
+  it('a Second Heart instead; a shaking clamp loses the words, and the next table wins them', () => {
+    const { g, q } = atSink();
+    g.world.knowledge.ocho_tam = true;
+    talk('d_sk_ocho', g, q, ['Tam Oduya. The heart.', 'That\'s all.']);
+    addItem(g.pc.inventory, makeItem('ci_ch_org_heart', 1));
+    g.pc.sheet.skillBought.medicine = 0;
+    talk('d_sk_ocho', g, q, ['(Put the boxed Second Heart on the table.)', '(The clamp.)', '(Hold it steady.)', '(Wash.)']);
+    expect(g.flags.sk_organ_fitted).toBe(true);
+    expect(g.flags.sk_organ_how).toBe('chrome');
+    expect(g.world.quests.q_sk_organ.stage).toBe('fitted_chrome');
+    expect(cond({ member: 'menders' }, g)).toBe(false);
+    g.pc.sheet.skillBought.medicine = 90;
+    talk('d_sk_ocho', g, q, ['Teach me.', '(Hold out your hands.) Try me on the next one.', '(Wash.)']);
+    expect(cond({ member: 'menders' }, g)).toBe(true);
+    expect(g.world.quests.q_sk_code.status).toBe('done');
+    expect(g.world.quests.q_sk_code.stage).toBe('apprentice');
+  });
+
+  it('the Pale sell the cold store open; Ocho hears the truth and asks the patient', () => {
+    const { g, q } = atSink();
+    g.pc.sheet.skillBought.speech = 90;
+    talk('d_sk_kye', g, q, ['Vash\'s cold box. Where does it fill from?', 'That\'s all.']);
+    expect(cond({ lead: 'l_pale_harvest' }, g)).toBe(true);
+    g.pc.inventory.tolls = 80;
+    talk('d_sk_dray', g, q, ['There\'s a heart in your cold store with a number crossed out.', '(Pay. 80 Tolls)', 'That\'s all.']);
+    expect(g.flags['unlocked:md_sink/sk_cold']).toBe(true);
+    expect(g.flags.sk_pale_leave).toBe(true);
+    addItem(g.pc.inventory, makeItem('k_sk_heart', 1));
+    talk('d_sk_tam', g, q, ['If a heart came. From the Pale. Off somebody who owed them.', 'That\'s all.']);
+    expect(g.flags.sk_tam_yes).toBe(true);
+    talk('d_sk_ocho', g, q, ['Tam Oduya. The heart.', 'That\'s all.']);
+    g.pc.sheet.skillBought.medicine = 90;
+    talk('d_sk_ocho', g, q, ['(Put the cooler on the table.)', 'The Pale\'s cold store. Off a man who owed them. He\'s alive.', '(The clamp.)', '(Hold it steady.)', '(Wash.)']);
+    expect(g.world.knowledge.sk_organ_pale_told).toBe(true);
+    expect(g.world.quests.q_sk_organ.stage).toBe('fitted');
+  });
+
+  it('the raft crosses for two, and the drowned\'s numbers reach Sato\'s cards', () => {
+    const { g, q } = atSink();
+    g.pc.inventory.tolls = 10;
+    talk('d_sk_jory', g, q, ['Across to the clinic. (2 Tolls)']);
+    expect(g.pc.inventory.tolls).toBe(8);
+    g.world.knowledge.sk_tally_numbers = true;
+    talk('d_sk_lusk', g, q, ['The numbers beside the names. The Precinct\'s kind.', 'Useful is better than filed.', 'That\'s all.']);
+    expect(cond({ lead: 'l_sink_numbers' }, g)).toBe(true);
+    g.locationId = 'md_market';
+    talk('d_mk_sato', g, q, ['I need papers.', 'Not yet.']);
+    expect(cond({ lead: 'l_sato_numbers' }, g)).toBe(true);
+  });
+});

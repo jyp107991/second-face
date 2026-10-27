@@ -909,6 +909,12 @@ export const md_precinct: MapDef = {
       x: 63,
       y: 24,
       facing: 2
+    },
+    {
+      id: "sink_stair",
+      x: 40,
+      y: 51,
+      facing: 0
     }
   ],
   exits: [
@@ -921,6 +927,17 @@ export const md_precinct: MapDef = {
         worldMap: true
       },
       label: "The road out"
+    },
+    {
+      x: 40,
+      y: 53,
+      w: 2,
+      h: 1,
+      to: {
+        location: "md_sink",
+        spawn: "from_precinct"
+      },
+      label: "The stair down to the Sink"
     },
     {
       x: 71,

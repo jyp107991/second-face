@@ -21,6 +21,7 @@ const PARAMS: Partial<Record<SurfaceKind, SurfaceParams>> = {
   tile: { roughness: 0.5, metalness: 0 },
   paint: { roughness: 0.7, metalness: 0 },
   tin: { roughness: 0.55, metalness: 0.45 },
+  water: { roughness: 0.18, metalness: 0.12 },
 };
 
 const cache = new Map<string, THREE.MeshStandardMaterial>();

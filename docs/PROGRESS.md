@@ -26,8 +26,8 @@ wilds, Dry Wells, the Mender's table, the Wheel, the escort, four Act 1 side lin
 22 quests, 104 items); three companions can join. Character creation has a rolled start (owner's reroll request).
 **Act 1 is cut as a playtest version** (frozen branch `act1-test-1`, see §2b and `docs/PLAYTEST.md`; the owner installed
 the Pages workflow). **Act 2 part 1 is under way**: Ninebridge, Openfield, the Sump and Cistern 4, Meridian's gate, the
-Precinct and Old Market are playable (22 maps, 230 dialogues, 41 quests, 126 items; six companions can join). Current
-work: **Phase B, B3 Meridian** (Act 2's first megacity), next district the Sink (B3.6). Still open from the presentation
+Precinct, Old Market and the Sink are playable (23 maps, 248 dialogues, 44 quests, 130 items; six companions can join).
+Current work: **Phase B, B3 Meridian** (Act 2's first megacity), next district Lantern Row (B3.7). Still open from the presentation
 pass: A5.9's remaining items (combat hover card, crowd yielding, indoor sound, camera ease, Tab reveal) — fold them in
 as B3 touches the same code. Binding owner rules: see `CLAUDE.md` §2 (no time limits; spoiler rule; not a Fallout
 clone; cyberpunk fusion).
@@ -398,9 +398,19 @@ mid-range Android phone; deployed to Pages.
             gun (Galt) merchants; ten named NPCs + extras. No engine work was needed: the board is a dialogue and the
             gigs are quests. Deferred to §6: templated gigs and a notebook gig tab. Tests `tests/a2.test.ts` (+10).
             Smoke `tools/qa/market.cjs`, evidence `docs/evidence/b35/`.
-      - [ ] B3.6 **The Sink** (~1.5 h) NEXT: flooded under-city map; the Mender of the Sink (surgery, the Menders' Code);
-            *High Water* line (the spring flood; who pays); *Organ Run*. Smoke.
-      - [ ] B3.7 **Lantern Row** (~2 h): canal pleasure district; fight pits (ENGINE: combat variant — unarmed/melee,
+      - [x] B3.6 **The Sink** DONE 2026-10-27: ENGINE — a `water` floor kind (dark, glossy, scummed; deep water is a
+            legend tile with `blocks`). Flooded under-city map `md_sink` under the Precinct (a dry shelf with the tally
+            wall, the basin with grate stilt-walks, the pump house on its pad, the clinic on the south shore, the organ
+            broker's container, the Pale's hold, shanties on stilts), reached by stairs from the Precinct's back lane
+            and Old Market's square. Ocho's free clinic (surgeon; the Menders' Code is joinable by holding a clamp
+            steady through a fitting). *High Water*: the relief schedule and the spring line; resolved by a variance
+            (the assessor in the party, or the captain with the schedule in hand), by retiming the dial (the keeper's
+            leave, a warden's card or a sneak at the count), or by taking the pump house with the Pale. The flood
+            itself, if nothing is done, resolves on a later story milestone (no day limit). *Organ Run*: a heart from
+            Vash's cold box, from the Pale's cold store (paid open or picked), or a dark-chrome Second Heart; Ocho asks
+            where it came from, the patient decides. Fifteen named NPCs + extras. Tests `tests/a2.test.ts` (+10).
+            Smoke `tools/qa/sink.cjs`, evidence `docs/evidence/b36/`.
+      - [ ] B3.7 **Lantern Row** (~2 h) NEXT: canal pleasure district; fight pits (ENGINE: combat variant — unarmed/melee,
             crowd morale, bets); reverie dens (ENGINE: short playable memory scenes); Dust; *Reverie of a Stranger*. Smoke.
       - [ ] B3.8 **The Stacks** (~1.5 h): megablock map with floors; a flat to rent or buy (safehouse: storage, rest,
             letters, Loop node); *Rooftop Gardens* floor war. Smoke.
@@ -435,7 +445,7 @@ mid-range Android phone; deployed to Pages.
 | Signal Hill | 1/1 | 3/3 | 7/7 | 2/2 | playable; relay, voice, gully |
 | Dry Wells | 1/1 | 6/6 | 13/13 | 2/2 | playable; the Act 1 finale, the family |
 | Act 1 wilds | 5/5 | 15/15 | 17/17 | 2/2 | playable; ten road encounters, discoveries on foot, hunting and traps, the windpumps, the wreck, the orchard |
-| Meridian | 2/12 | 25/60 | 43/60 | 10/30 | the gate, the Precinct and Old Market playable; the Loop runs between them |
+| Meridian | 3/12 | 40/60 | 61/70 | 13/30 | the gate, the Precinct, Old Market and the Sink playable; the Loop runs between the first two, stairs to the third |
 | Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |
 | Act 2 wilds | 4/14 | 38/50 | 64/80 | 9/16 | Ninebridge, Openfield, the Sump and Cistern 4 playable (counts approximate) |
 | Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |

@@ -62,7 +62,7 @@ export const md_market: MapDef = {
     "RccaaaaaaaacccccccccccccccccccccccccccccccccccccccccccccccccaaaaaaaaaaaR",
     "RccaaaaaaaacccccccccccccccccccccccccccccccccccccccccccccccccaaaaaaaaaaaR",
     "RccaaaaaaaacccccccccccccccccccccccccccccccccccccccccccccccccaaaaaaaaaaaR",
-    "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR"
+    "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRccRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR"
   ],
   legend: {
     c: {
@@ -824,6 +824,12 @@ export const md_market: MapDef = {
       x: 69,
       y: 28,
       facing: 3
+    },
+    {
+      id: "sink_stair",
+      x: 36,
+      y: 53,
+      facing: 0
     }
   ],
   exits: [
@@ -837,6 +843,17 @@ export const md_market: MapDef = {
         spawn: "loop"
       },
       label: "The avenue west, to the Precinct"
+    },
+    {
+      x: 36,
+      y: 55,
+      w: 2,
+      h: 1,
+      to: {
+        location: "md_sink",
+        spawn: "from_market"
+      },
+      label: "The stair down to the Sink"
     }
   ],
   talk: {

@@ -62,6 +62,7 @@ building(4, 3, 10, 7, 'M', 'm', [(7, 7), (7, 3)])
 building(3, 35, 11, 42, 'B', 't', [(11, 38)])
 # the standpipe square, south: concrete, the standpipe in the middle
 fill(16, 48, 56, 53, 'c')
+fill(36, 54, 37, 55, 'c')   # the stair down to the Sink, off the square's south side
 # the chrome stall and the gun stall: two container shops on the north street
 building(18, 2, 26, 8, 'M', 'm', [(22, 8)])
 building(44, 2, 52, 8, 'M', 'm', [(48, 8)])
@@ -123,10 +124,11 @@ md_market = {
         {'x': 13, 'y': 31, 'height': 0.8, 'color': 'hex:0xff9a40', 'intensity': 1.6, 'range': 5, 'flicker': 0.35}, {'x': 52, 'y': 51, 'height': 0.8, 'color': 'hex:0xff9a40', 'intensity': 1.6, 'range': 5, 'flicker': 0.35},
     ],
     'spawns': [
-        {'id': 'start', 'x': 2, 'y': 28, 'facing': 1}, {'id': 'from_precinct', 'x': 2, 'y': 28, 'facing': 1}, {'id': 'loop', 'x': 7, 'y': 8, 'facing': 2}, {'id': 'court', 'x': 36, 'y': 28, 'facing': 0}, {'id': 'from_lantern', 'x': 69, 'y': 28, 'facing': 3},
+        {'id': 'start', 'x': 2, 'y': 28, 'facing': 1}, {'id': 'from_precinct', 'x': 2, 'y': 28, 'facing': 1}, {'id': 'loop', 'x': 7, 'y': 8, 'facing': 2}, {'id': 'court', 'x': 36, 'y': 28, 'facing': 0}, {'id': 'from_lantern', 'x': 69, 'y': 28, 'facing': 3}, {'id': 'sink_stair', 'x': 36, 'y': 53, 'facing': 0},
     ],
     'exits': [
         {'x': 0, 'y': 26, 'w': 1, 'h': 6, 'to': {'location': 'md_precinct', 'spawn': 'loop'}, 'label': 'The avenue west, to the Precinct'},
+        {'x': 36, 'y': 55, 'w': 2, 'h': 1, 'to': {'location': 'md_sink', 'spawn': 'from_market'}, 'label': 'The stair down to the Sink'},
     ],
     'talk': {
         'mk_loop_sign': {'dialogue': 'd_mk_loop', 'name': 'The Loop — Old Market'},
