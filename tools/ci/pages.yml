@@ -1,10 +1,10 @@
 # Deploys the game to GitHub Pages on every push to main: the current build at /second-face/, and, when a playtest
-# tag exists (act1-test-N, newest wins), that frozen version at /second-face/act1/ with its own save namespace.
+# branch exists (act1-test-N, frozen, never moved; the newest wins), that version at /second-face/act1/ with its own
+# save namespace.
 name: pages
 on:
   push:
-    branches: [main]
-    tags: ['act1-test-*']
+    branches: [main, 'act1-test-*']
   workflow_dispatch:
 permissions:
   contents: read
@@ -17,7 +17,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # Always build main for the root site, whatever ref triggered the run (a tag push must not replace it).
+      # Always build main for the root site, whatever ref triggered the run (a playtest push must not replace it).
       - uses: actions/checkout@v4
         with: { ref: main, fetch-depth: 0 }
       - uses: actions/setup-node@v4
@@ -28,12 +28,12 @@ jobs:
           npm run check
           npm run build
           mkdir -p site && cp -r dist/* site/
-      - name: Build the playtest version (newest act1-test-* tag)
+      - name: Build the playtest version (newest act1-test-* branch)
         run: |
-          TAG=$(git tag --list 'act1-test-*' --sort=-v:refname | head -n 1)
-          if [ -z "$TAG" ]; then echo "no playtest tag"; exit 0; fi
-          echo "playtest tag: $TAG"
-          git worktree add playtest "$TAG"
+          REF=$(git branch -r --list 'origin/act1-test-*' --format='%(refname:short)' | sort -t- -k3,3n -r | head -n 1)
+          if [ -z "$REF" ]; then echo "no playtest branch"; exit 0; fi
+          echo "playtest branch: $REF"
+          git worktree add --detach playtest "$REF"
           cd playtest
           npm ci
           VITE_BASE=/second-face/act1/ VITE_SAVE_NS=act1 npm run build

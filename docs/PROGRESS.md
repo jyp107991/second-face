@@ -24,8 +24,8 @@ camp, letters, Dust, weather and mood, real buildings with roofs that hide when 
 all of Act 1 are playable end to end** — the Cistern, Shale, the overpass, Tollhouse 9, Signal Hill, Jonah's month, the
 wilds, Dry Wells, the Mender's table, the Wheel, the escort, four Act 1 side lines (16 maps, ~85 NPCs, 114 dialogues,
 22 quests, 104 items); three companions can join. Character creation has a rolled start (owner's reroll request).
-**Act 1 is cut as a playtest version** (git tag `act1-test-1`, see §2b and `docs/PLAYTEST.md`; the owner installs the
-Pages workflow once). Current work: **Phase B, B3 Meridian** (Act 2's first megacity). Still open from the presentation
+**Act 1 is cut as a playtest version** (frozen branch `act1-test-1`, see §2b and `docs/PLAYTEST.md`; the owner installs
+the Pages workflow once). Current work: **Phase B, B3 Meridian** (Act 2's first megacity). Still open from the presentation
 pass: A5.9's remaining items (combat hover card, crowd yielding, indoor sound, camera ease, Tab reveal) — fold them in
 as B3 touches the same code. Binding owner rules: see `CLAUDE.md` §2 (no time limits; spoiler rule; not a Fallout
 clone; cyberpunk fusion).
@@ -196,12 +196,14 @@ The owner road-tests Act 1 while the build continues. Plan:
   under CPU load (longer waits); wilds had found a real bug — a villager on her night schedule stepped into the player's
   path and the walk stopped dead — fixed in the engine (A5.9 #7, blocked walks re-path). The runner's pictures are
   not tracked (regenerated each run).
-- [x] **Then cut the test version** DONE 2026-10-27: tag `act1-test-1`, built by the Pages workflow (`tools/ci/pages.yml`;
-  the owner copies it to `.github/workflows/pages.yml` once — this session's tokens cannot write workflow files) into its
-  own path `/second-face/act1/` with its own save namespace (`VITE_SAVE_NS=act1`, saves under `sf.act1.save.*`), so it
+- [x] **Then cut the test version** DONE 2026-10-27: frozen branch `act1-test-1` at 27a976d (a branch, not a tag: this
+  session's tokens cannot push tags; the branch is never moved), built by the Pages workflow (`tools/ci/pages.yml`; the
+  owner copies it to `.github/workflows/pages.yml` once — the tokens cannot write workflow files either) into its own
+  path `/second-face/act1/` with its own save namespace (`VITE_SAVE_NS=act1`, saves under `sf.act1.save.*`), so it
   never conflicts with `main`'s deploy at `/second-face/` or its saves. `docs/PLAYTEST.md` tells the owner how to play,
-  what is in, what to report. Later test versions are new tags (`act1-test-2`, …); the newest wins, the old stays until
-  replaced. Owner feedback is folded in as it arrives (fixes land on `main`; a new tag when a batch is worth re-testing).
+  what is in, what to report. Later test versions are new branches (`act1-test-2`, …); the newest number wins, the old
+  stays until replaced. Owner feedback is folded in as it arrives (fixes land on `main`; a new branch when a batch is
+  worth re-testing).
 - [ ] **Then straight on** to Act 2 (B3) without waiting for feedback; feedback is folded in as it arrives. NEXT.
 
 ### B2.6 plan (written before coding; spoiler-free)
@@ -370,5 +372,5 @@ derive gossip road days from the world map in B2.
 - Run locally: `npm install` then `npm run dev`, open the printed URL (add `?dev` on a deployed build for
   the DEV console).
 - Deploy: add `tools/ci/pages.yml` as `.github/workflows/pages.yml` via the GitHub web UI; Settings → Pages →
-  Source: GitHub Actions. It deploys `main` to `/second-face/` and the newest `act1-test-*` tag to `/second-face/act1/`
+  Source: GitHub Actions. It deploys `main` to `/second-face/` and the newest `act1-test-*` branch to `/second-face/act1/`
   (details in `docs/PLAYTEST.md`).

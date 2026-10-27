@@ -3,8 +3,9 @@
 A frozen build of Act 1 for road-testing, separate from the main build so the two never interfere.
 
 ## Where to play
-- **Test version**: `https://jyp107991.github.io/second-face/act1/` — built from the newest git tag `act1-test-N`
-  (currently `act1-test-1`, cut 2026-10-27). It changes only when a new tag is cut; the main build moves on underneath.
+- **Test version**: `https://jyp107991.github.io/second-face/act1/` — built from the newest frozen branch `act1-test-N`
+  (currently `act1-test-1`, cut 2026-10-27; it is never moved). It changes only when a new one is cut; the main build
+  moves on underneath.
 - **Main build** (moves with every push): `https://jyp107991.github.io/second-face/`.
 - Saves are separate: the test version keeps its own slots (`sf.act1.save.*`), so playing one never touches the other.
 - Works in a current Chrome, Edge, Firefox or Safari on desktop; on a phone, tap to move, tap a person or thing for
