@@ -164,7 +164,27 @@ export class Humanoid {
   }
 
   /** Advance procedural animation. `speed` is world units/sec of locomotion. */
+  /** Where the head turns to (world space) while someone is near; cleared when they go. */
+  lookTarget?: THREE.Vector3;
+  private lookBlend = 0;
+  private lookYaw = 0;
+  private lookPitch = 0;
+
+  /** Head yaw/pitch toward the look target in the body's own frame, blended in and out over a third of a second. */
+  private updateLook(dt: number): void {
+    const want = this.lookTarget ? 1 : 0;
+    this.lookBlend += (want - this.lookBlend) * Math.min(1, dt * 5);
+    if (!this.lookTarget) return;
+    const local = this.root.worldToLocal(this.lookTarget.clone());
+    const yaw = Math.max(-1.1, Math.min(1.1, Math.atan2(local.x, local.z)));
+    const flat = Math.hypot(local.x, local.z);
+    const pitch = Math.max(-0.35, Math.min(0.3, -Math.atan2(local.y - 1.55, Math.max(0.3, flat))));
+    this.lookYaw += (yaw - this.lookYaw) * Math.min(1, dt * 6);
+    this.lookPitch += (pitch - this.lookPitch) * Math.min(1, dt * 6);
+  }
+
   animate(dt: number, speed: number): void {
+    this.updateLook(dt);
     const f = this.figure;
     this.breathe += dt;
     const movingGoal = speed > 0.05 ? 1 : 0;
@@ -198,12 +218,13 @@ export class Humanoid {
     const prayBend = idle === 'pray' ? pb * 0.12 : 0;
     const sitBend = idle === 'sit' ? pb * 0.08 : 0;
     W.set('spine05', qAxis(X, 0.04 * w - this.flinch * 0.25 + sl * 0.07 + workBend + prayBend + sitBend - (idle === 'alert' ? 0.03 : 0)).multiply(qAxis(Z, -shift * 0.02 - lean * 0.06)));
-    W.set('spine03', qAxis(Y, -s * 0.08 * w - (this.fidget === 'look' ? fb * 0.18 : 0)).multiply(qAxis(X, breath * 0.012 + sl * 0.08 + workBend * 0.6)).multiply(qAxis(Z, -shift * 0.02 - s * 0.03 * w * amp)));
+    W.set('spine03', qAxis(Y, -s * 0.08 * w - (this.fidget === 'look' ? fb * 0.18 : 0) + this.lookYaw * 0.3 * this.lookBlend).multiply(qAxis(X, breath * 0.012 + sl * 0.08 + workBend * 0.6)).multiply(qAxis(Z, -shift * 0.02 - s * 0.03 * w * amp)));
     W.set('neck01', qAxis(X, -0.03 * w + this.flinch * 0.2 - sl * 0.09));
     const scan = idle === 'alert' ? 2.2 : 1;
     const look = (Math.sin(t * 0.31) * 0.09 + Math.sin(t * 0.07) * 0.06) * scan + (this.fidget === 'look' ? fb * 0.45 * (this.idleSeed % 3 < 1.5 ? 1 : -1) : 0);
     const headPitch = -sl * 0.05 + Math.sin(t * 0.19) * 0.02 * (1 - w) + (this.fidget === 'hands' ? fb * 0.38 : 0) + (idle === 'pray' ? pb * 0.45 : 0) + (idle === 'work' ? pb * 0.2 : 0) - sip * 0.28;
-    W.set('head', qAxis(Y, look * (1 - w)).multiply(qAxis(X, headPitch)).multiply(qAxis(Z, Math.sin(t * 0.13) * 0.02 * (1 - w))));
+    const lk = this.lookBlend * (1 - w * 0.6);
+    W.set('head', qAxis(Y, look * (1 - w) * (1 - lk) + this.lookYaw * 0.7 * lk).multiply(qAxis(X, headPitch + this.lookPitch * lk)).multiply(qAxis(Z, Math.sin(t * 0.13) * 0.02 * (1 - w))));
     // Legs: forward swing is a negative rotation about X (figure faces +Z). Idle: the unweighted knee softens;
     // sitting folds both; working and leaning bend one.
     const sitLeg = idle === 'sit' ? pb : 0;

@@ -25,7 +25,7 @@ void main() {
 
 const compositeFS = /* glsl */ `
 uniform sampler2D tScene; uniform sampler2D tBloom;
-uniform float uBloom, uGrade, uGrain, uVignette, uTime, uExposure, uFlash;
+uniform float uBloom, uGrade, uGrain, uVignette, uTime, uExposure, uFlash, uHurt;
 uniform vec3 uTint; uniform vec2 uRes;
 varying vec2 vUv;
 
@@ -54,6 +54,8 @@ void main() {
   float g = rand(vUv * uRes + fract(uTime * 13.37)) - 0.5;
   c += g * uGrain;
   c += vec3(uFlash);
+  // Hurt: blood at the edges of sight, fading.
+  c = mix(c, vec3(0.42, 0.03, 0.02), uHurt * smoothstep(0.3, 1.1, length(d)));
   gl_FragColor = vec4(c, 1.0);
 }`;
 
@@ -74,6 +76,9 @@ export class PostFX {
   private dirH = new THREE.Vector2();
   private dirV = new THREE.Vector2();
   flash = 0;
+  /** 1 when the player has just been hit; decays over about a second. */
+  hurt = 0;
+  private lastTime = 0;
 
   constructor(private renderer: THREE.WebGLRenderer, samples: number) {
     const type = renderer.capabilities.isWebGL2 ? THREE.HalfFloatType : THREE.UnsignedByteType;
@@ -87,7 +92,7 @@ export class PostFX {
       uniforms: {
         tScene: { value: null }, tBloom: { value: null }, uBloom: { value: 0 }, uGrade: { value: 0 }, uGrain: { value: 0 },
         uVignette: { value: 0 }, uTime: { value: 0 }, uExposure: { value: 1 }, uTint: { value: new THREE.Color() },
-        uRes: { value: new THREE.Vector2() }, uFlash: { value: 0 },
+        uRes: { value: new THREE.Vector2() }, uFlash: { value: 0 }, uHurt: { value: 0 },
       },
       depthTest: false, depthWrite: false,
     });
@@ -127,6 +132,9 @@ export class PostFX {
     u.uTint.value.copy(s.tint);
     u.uTime.value = time;
     u.uFlash.value = this.flash;
+    const dt = Math.min(0.1, Math.max(0, time - this.lastTime)); this.lastTime = time;
+    this.hurt = Math.max(0, this.hurt - dt * 1.4);
+    u.uHurt.value = this.hurt;
     u.uRes.value.set(this.sceneRT.width, this.sceneRT.height);
     this.quad.material = this.composite;
     r.setRenderTarget(null);

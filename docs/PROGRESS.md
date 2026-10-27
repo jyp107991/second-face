@@ -165,9 +165,15 @@ such presentation decisions against modern CRPG practice. Each step: evidence sh
       channel, a nape port over a vertebra ridge, steel collarbone seams and sternum hex plates. `wardrobe.ts` passes
       plating/accent/grade/wear per piece. Evidence `docs/evidence/a5_before/chrome_*` → `docs/evidence/a5/chrome_*`
       (`tools/qa/chrome.cjs`).
-- [ ] A5.9 **Immersion sweep 2** (~3 h): `docs/IMMERSION_AUDIT.md` against Disco Elysium / BG3 / Pillars / Wasteland
-      3 / Rogue Trader (camera, hover and prompts, feedback, sound, NPC reactions, lighting, UI motion); the top
-      ten implemented (hover highlights, footsteps by surface, head-turn to the player, ambient beds, prompt text).
+- [~] A5.9 **Immersion sweep 2** (~3 h): `docs/IMMERSION_AUDIT.md` written (seven areas against Disco Elysium / BG3 /
+      Pillars / Wasteland 3 / Rogue Trader, ten fixes ranked). DONE of the ten: #1 hover label (name · verb) with a
+      brighter, larger cursor ring on people, things and exits (`Game.describeAt`, HUD `.hover-label`; hidden on
+      touch); #2 head-turn — standing people within ~3 m turn head and a little shoulder to the player
+      (`Humanoid.lookTarget`, `Actor.lookAt`); #4 being hit — red pulse at the edges (`PostFX.hurt`), a shake;
+      #5 lamps come on at dusk and go out after dawn (`LightSource.lamp`); #6 panels arrive with a 160 ms rise/settle.
+      Evidence `docs/evidence/a5/imm_*.png` (`tools/qa/immersion.cjs`). LEFT for after the playtest cut: #3 combat
+      hover card, #7 crowd yields, #8 indoor reverb + distance attenuation, #9 camera ease/lead, #10 Tab reveals
+      interactables.
 Total ~22 h. Then B2.6. v1 estimate = this + the Phase B remainder (~66 h) ≈ 90 h of build sessions.
 
 ## 2b. OWNER REQUEST (2026-10-27, binding): standalone Act 1 test version

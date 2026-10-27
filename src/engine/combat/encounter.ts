@@ -34,6 +34,8 @@ export interface EncounterHost {
   rng: Rng;
   fx: import('../render/fx').Fx;
   shake(amount: number): void;
+  /** The player has been hit: show it. */
+  hurt?(): void;
   context(x: number, y: number): CombatContext;
   /** Show a path preview (null clears). */
   previewPath(path: { x: number; y: number }[] | null, affordable: number): void;
@@ -273,7 +275,7 @@ export class Encounter extends EventBus<EncounterEvents> {
       this.host.sound(w.kind === 'unarmed' ? 'unarmed' : w.kind, from);
       if (h?.hit) this.host.sound('impact', to);
       else if (!isMelee(w)) this.host.sound('miss', to);
-      if (h?.hit && def.c.isPlayer) this.host.sound('hurt', to);
+      if (h?.hit && def.c.isPlayer) { this.host.sound('hurt', to); this.host.hurt?.(); }
       if (!isMelee(w)) {
         this.host.fx.muzzle(from.clone().addScaledVector(dir, 0.5), dir);
         const miss = !h?.hit;

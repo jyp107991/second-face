@@ -61,6 +61,8 @@ export type GameEvents = {
   openDialogue: { npc?: NpcRuntime; tree?: string; name?: string };
   openBarter: { npc: NpcRuntime };
   openSurgery: { npc: NpcRuntime };
+  /** The pointer is over something (name and verb) or over nothing (name absent). */
+  hoverLabel: { x: number; y: number; name?: string; verb?: string };
   openCamp: Record<string, never>;
   openMap: Record<string, never>;
   openDust: { npc: NpcRuntime; stake: number; prize?: import('./world/logic').DustPrize };
@@ -239,6 +241,7 @@ export class Game extends EventBus<GameEvents> {
       get rng() { return game.rng; },
       fx: this.fx,
       shake: (a) => this.cam.addShake(a),
+      hurt: () => { this.post.hurt = 1; this.cam.addShake(0.3); },
       context: (x, y) => ({ indoor: !!this.loc?.map.ambience.indoor, night: hourOf(this.state.minutes) < 6 || hourOf(this.state.minutes) > 20, darkness: 1 - this.atmosphere.lightAt(x + 0.5, y + 0.5) }),
       previewPath: (p, ap) => this.showPath(p, ap),
       showReach: (t) => this.showReach(t),
@@ -866,6 +869,49 @@ export class Game extends EventBus<GameEvents> {
     return true;
   }
 
+  /** Where the mouse last was over the scene; the hover is re-read from here while the world moves under it. */
+  private lastPointer?: { x: number; y: number };
+  private hoverTick = 0;
+
+  /** The tile cursor and the label follow what is under the pointer (people and things get a brighter, larger ring). */
+  private updateHover(x: number, y: number): void {
+    const t = this.pickTile(x, y);
+    const what = t && !this.transitioning ? this.describeAt(t.x, t.y) : undefined;
+    this.cursor.visible = !!t && (!!what || !!this.loc?.grid.get(t.x, t.y)?.walkable);
+    if (t) this.cursor.position.set(t.x + 0.5, 0.02, t.y + 0.5);
+    (this.cursor.material as THREE.MeshBasicMaterial).color.setHex(what ? 0xffe8a0 : 0xe8c070);
+    (this.cursor.material as THREE.MeshBasicMaterial).opacity = what ? 0.85 : 0.5;
+    this.cursor.scale.setScalar(what ? 1.25 : 1);
+    this.emit('hoverLabel', what ? { x, y, name: what.name, verb: what.verb } : { x, y });
+    if (t && this.encounter.active) this.encounter.hoverTile(t.x, t.y);
+  }
+
+  /** What is at a tile and what a tap would do there, for the hover label: a person, a thing with a verb, a way out. */
+  describeAt(x: number, y: number): { name: string; verb: string } | undefined {
+    if (!this.loc) return undefined;
+    for (const n of this.npcs.values()) {
+      if (n.actor.tx !== x || n.actor.ty !== y || n.away) continue;
+      if (n.combatant.sheet.hp <= 0) return { name: n.def.name, verb: 'Search' };
+      if (n.hostile) return { name: n.def.name, verb: this.encounter.active ? 'Attack' : 'Hostile' };
+      if (this.encounter.active) return { name: n.def.name, verb: '' };
+      if (n.dialogue ?? n.def.dialogue) return { name: n.def.name, verb: 'Talk' };
+      if (n.def.merchant) return { name: n.def.name, verb: 'Trade' };
+      return { name: n.def.name, verb: '' };
+    }
+    const map = this.loc.map, loc = this.state.locationId;
+    const pile = this.state.containers[`${loc}/ground_${x}_${y}`];
+    if (pile && (pile.items.length || pile.tolls)) return { name: 'Dropped things', verb: 'Take' };
+    const prop = map.props?.find((p) => p.x === x && p.y === y);
+    if (prop) {
+      if (prop.kind === 'campfire' || prop.kind === 'fire_barrel') return { name: 'Fire', verb: 'Camp' };
+      if (prop.id && map.talk?.[prop.id]) return { name: map.talk[prop.id].name, verb: 'Look' };
+      if (prop.id && map.containers?.[prop.id]) return { name: map.containers[prop.id].name, verb: map.containers[prop.id].lock ? 'Open (locked)' : 'Open' };
+    }
+    const exit = map.exits?.find((e) => x >= e.x && x < e.x + (e.w ?? 1) && y >= e.y && y < e.y + (e.h ?? 1) && test(e.if, this.state));
+    if (exit) return { name: exit.label ?? 'Out', verb: 'Leave' };
+    return undefined;
+  }
+
   private interactableAt(x: number, y: number): (() => void) | undefined {
     const loc = this.state.locationId;
     for (const n of this.npcs.values()) {
@@ -1038,12 +1084,7 @@ export class Game extends EventBus<GameEvents> {
         this.cam.recentre();
       }
     });
-    i.on('hover', ({ x, y }) => {
-      const t = this.pickTile(x, y);
-      this.cursor.visible = !!t && !!this.loc?.grid.get(t.x, t.y)?.walkable;
-      if (t) this.cursor.position.set(t.x + 0.5, 0.02, t.y + 0.5);
-      if (t && this.encounter.active) this.encounter.hoverTile(t.x, t.y);
-    });
+    i.on('hover', ({ x, y }) => { this.lastPointer = { x, y }; this.updateHover(x, y); });
     i.on('pan', ({ dx, dy }) => this.cam.panScreen(dx, dy, this.renderer.domElement.clientHeight));
     i.on('zoom', ({ factor }) => this.cam.zoomBy(factor));
     i.on('rotate', ({ rad }) => this.cam.rotateBy(rad));
@@ -1192,6 +1233,15 @@ export class Game extends EventBus<GameEvents> {
     if (held.has('KeyA') || held.has('ArrowLeft')) this.cam.panScreen(panSpeed, 0, 800);
     if (held.has('KeyD') || held.has('ArrowRight')) this.cam.panScreen(-panSpeed, 0, 800);
 
+    // Heads turn to the player when they are close and standing; the player looks at whoever they talk to.
+    if (this.player) {
+      const pp = this.player.object.position;
+      for (const n of this.npcs.values()) {
+        if (n.away || n.combatant.sheet.hp <= 0) { n.actor.lookAt = undefined; continue; }
+        const d = n.actor.object.position.distanceTo(pp);
+        n.actor.lookAt = d < 3.2 && d > 0.4 && !n.actor.moving && !n.hostile ? pp : undefined;
+      }
+    }
     for (const a of this.actors.values()) a.update(this.talking ? dt : simDt);
     const cur = this.encounter.active ? this.encounter.current : undefined;
     if (cur && !cur.c.isPlayer) this.cam.target.copy(cur.actor.object.position);
@@ -1212,6 +1262,8 @@ export class Game extends EventBus<GameEvents> {
     this.updateSoundBed();
     this.atmosphere.update(dt, this.time, this.cam.focus, this.post.settings);
     this.cursor.rotation.y += dt;
+    this.hoverTick += dt;
+    if (this.hoverTick > 0.25 && this.lastPointer && !this.paused) { this.hoverTick = 0; this.updateHover(this.lastPointer.x, this.lastPointer.y); }
     this.fx.update(dt);
     if (this.portrait) {
       // Close-ups: softer grade so skin tones read naturally; shadows always on.

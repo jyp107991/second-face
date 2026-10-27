@@ -103,6 +103,8 @@ export class Actor {
   }
 
   /** The idle loop the body runs when still (set from the schedule's activity or a conversation). */
+  /** Turn the head toward a world point (undefined: look where the idle wanders). */
+  set lookAt(v: THREE.Vector3 | undefined) { this.body.lookTarget = v; }
   get idle(): import('../assets/humanoid').IdleKind { return this.body.idle; }
   set idle(k: import('../assets/humanoid').IdleKind) { this.body.idle = k; }
 

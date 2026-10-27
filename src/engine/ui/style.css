@@ -314,3 +314,15 @@ body.hc .dlg .chk.ok { color: #7cff9c; } body.hc .dlg .chk.bad { color: #ff8a7a;
 .surgery .item .desc { margin-top: 2px; }
 .surgery .note { margin-top: 10px; padding: 8px; border: 1px dashed var(--crt-dim); }
 .surgery .nb-foot .dim { font-size: 11px; max-width: 70%; }
+
+/* Panels arrive, they do not pop (A5.9 #6). */
+@keyframes sf-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes sf-settle { from { opacity: 0; transform: scale(.985); } to { opacity: 1; transform: none; } }
+.dlg-panel { animation: sf-rise .16s ease-out; }
+.nb { animation: sf-settle .16s ease-out; }
+.wl > .nb, .wl > .dev-frame { animation: sf-settle .16s ease-out; }
+@media (prefers-reduced-motion: reduce) { .dlg-panel, .nb, .wl > .nb, .wl > .dev-frame { animation: none; } }
+
+/* What the pointer is over, and what a tap would do (A5.9 #1). */
+.hud .hover-label { position: fixed; z-index: 12; pointer-events: none; font-family: var(--font); font-size: 13px; letter-spacing: .5px; color: #f0e0b8; background: rgba(20, 14, 8, .78); border: 1px solid rgba(226, 184, 106, .45); padding: 4px 9px; white-space: nowrap; }
+.hud .hover-label span { color: #c8a870; }

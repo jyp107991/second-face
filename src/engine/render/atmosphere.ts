@@ -5,7 +5,7 @@ import type { BuiltLocation } from '../scene/location';
 import { roofBase } from '../scene/buildings';
 import { MOOD_GRADE, skyLook, type WeatherKind } from '../world/weather';
 
-interface LightSource { pos: THREE.Vector3; color: THREE.Color; intensity: number; range: number; flicker: number; phase: number; }
+interface LightSource { pos: THREE.Vector3; color: THREE.Color; intensity: number; range: number; flicker: number; phase: number; /** Lamps are lit at dusk and put out at dawn; fires and screens burn all day. */ lamp?: boolean; }
 
 const KEY_TIMES: { h: number; sun: number; sunI: number; sky: number; ground: number; ambI: number; fog: number }[] = [
   { h: 0, sun: 0x4a5a8a, sunI: 0.25, sky: 0x1a2030, ground: 0x0e0c0a, ambI: 0.35, fog: 0x14161c },
@@ -78,12 +78,12 @@ export class Atmosphere {
       return id >= 0 ? Math.min(y, roofBase(loc.buildings.list[id]) - 0.25) : y;
     };
     for (const l of loc.map.lights ?? []) {
-      this.sources.push({ pos: new THREE.Vector3(l.x + 0.5, under(l.x + 0.5, l.y + 0.5, l.height ?? 2.2), l.y + 0.5), color: new THREE.Color(l.color), intensity: l.intensity * LIGHT_SCALE, range: l.range * 1.4, flicker: l.flicker ?? 0, phase: Math.random() * 10 });
+      this.sources.push({ pos: new THREE.Vector3(l.x + 0.5, under(l.x + 0.5, l.y + 0.5, l.height ?? 2.2), l.y + 0.5), color: new THREE.Color(l.color), intensity: l.intensity * LIGHT_SCALE, range: l.range * 1.4, flicker: l.flicker ?? 0, phase: Math.random() * 10, lamp: (l.flicker ?? 0) < 0.25 });
     }
     for (const f of loc.features) {
       const base = { pos: new THREE.Vector3(f.wx + f.x, under(f.wx + f.x, f.wz + f.z, f.y), f.wz + f.z), color: new THREE.Color(f.color), phase: Math.random() * 10 };
       if (f.kind === 'fire') this.sources.push({ ...base, intensity: 6 * LIGHT_SCALE, range: 9, flicker: 0.35 });
-      else if (f.kind === 'lamp') this.sources.push({ ...base, intensity: 5 * LIGHT_SCALE, range: 11, flicker: 0.05 });
+      else if (f.kind === 'lamp') this.sources.push({ ...base, intensity: 5 * LIGHT_SCALE, range: 11, flicker: 0.05, lamp: true });
       else this.sources.push({ ...base, intensity: 1.2 * LIGHT_SCALE, range: 4, flicker: 0.04 });
     }
     this.buildDust(loc);
@@ -222,7 +222,10 @@ export class Atmosphere {
       l.color.copy(s.color);
       l.distance = s.range;
       const fl = s.flicker ? 1 - s.flicker * (0.5 + 0.5 * Math.sin(time * 13 + s.phase) * Math.sin(time * 7.3 + s.phase * 2)) : 1;
-      l.intensity = s.intensity * fl;
+      // Outdoor lamps come on at dusk and go out after dawn (a trace stays, for the bulb and the glass).
+      const h = this.hour;
+      const lit = !s.lamp || a.indoor ? 1 : h >= 19 || h < 5.5 ? 1 : h >= 18 ? (h - 18) : h < 6.5 ? 1 - (h - 5.5) : 0.1;
+      l.intensity = s.intensity * fl * Math.max(0.1, lit);
     }
 
     if (this.dustMat) {

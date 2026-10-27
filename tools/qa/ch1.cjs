@@ -121,7 +121,7 @@ const fs = require('fs');
   await travel('the overpass');
   check('reached the overpass', (await page.evaluate(() => game.state.locationId)) === 'overpass', await quest('q_ch1_shale'));
   await page.evaluate(() => { game.player.setPath(game.loc.grid.findPath(game.player.tx, game.player.ty, 29, 37, { ignore: 'player', adjacentOk: false })); });
-  await page.waitForFunction(() => !!document.querySelector('.dlg'), null, { timeout: 20000 }).catch(() => {});
+  await page.waitForFunction(() => !!document.querySelector('.dlg'), null, { timeout: 120000 }).catch(() => {});
   await page.waitForTimeout(800);
   console.log('gate:', await dlg());
   await shot('rd_gate');

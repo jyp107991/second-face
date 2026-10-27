@@ -19,6 +19,7 @@ export class Hud {
       <div class="hud-top"><div class="loc"></div><div class="clock"></div><div class="pin"></div><div class="mail"></div></div>
       <button class="btn undo" data-a="undo" aria-label="Undo last move" style="display:none">↶</button>
       <div class="toast" style="opacity:0"></div>
+      <div class="hover-label" style="display:none"></div>
       <div class="title-card" style="opacity:0"></div>
       <div class="hud-buttons">
         <button class="btn" data-a="rotL" aria-label="Rotate left">⟲</button>
@@ -50,6 +51,14 @@ export class Hud {
     });
     game.on('locationChanged', ({ name }) => { (this.info.querySelector('.loc') as HTMLElement).textContent = name; });
     game.on('message', ({ text }) => this.toast(text));
+    const hl = this.el.querySelector('.hover-label') as HTMLElement;
+    game.on('hoverLabel', ({ x, y, name, verb }) => {
+      if (!name || window.matchMedia('(pointer: coarse)').matches) { hl.style.display = 'none'; return; }
+      hl.innerHTML = `<b>${name.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!)}</b>${verb ? ` <span>· ${verb}</span>` : ''}`;
+      hl.style.display = 'block';
+      hl.style.left = `${Math.min(window.innerWidth - 220, x + 16)}px`;
+      hl.style.top = `${Math.max(8, y - 34)}px`;
+    });
     game.on('title', ({ text }) => this.title(text));
     let acc = 0;
     game.on('tick', ({ dt }) => {
