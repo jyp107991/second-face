@@ -115,12 +115,13 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   const gauss = () => (r.next() + r.next() + r.next() - 1.5) / 1.5;
   const masc = opts.frame ? opts.frame === 'broad' : r.chance(0.5);
   const s = a.shape;
-  s.gender = masc ? 0.8 + r.next() * 0.2 : r.next() * 0.2;
+  s.gender = masc ? 0.86 + r.next() * 0.14 : r.next() * 0.12;
   s.age = opts.age ?? Math.round(19 + Math.pow(r.next(), 1.5) * 52);
   // A scarcity world is lean: wiry, gaunt and labour-built bodies; soft ones mark the comfortable.
   s.muscle = clamp(0.5 + gauss() * 0.3);
   s.weight = clamp(0.36 + gauss() * 0.2);
-  s.height = clamp(0.5 + gauss() * 0.35);
+  // Men run taller; women are generally somewhat shorter and spread wider either way.
+  s.height = clamp((masc ? 0.58 : 0.4) + gauss() * (masc ? 0.3 : 0.33));
   const life = opts.life ?? 'settled';
   const LIFE: Record<Lifestyle, [number, number]> = { starved: [-0.28, -0.12], hard: [-0.08, 0.18], settled: [-0.02, 0], soft: [0.18, -0.15], pampered: [0.14, -0.1] };
   s.weight = clamp(s.weight + LIFE[life][0]);
@@ -133,6 +134,18 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   if (r.chance(0.08)) s.height = r.chance(0.5) ? r.range(0.9, 1) : r.range(0, 0.1);
   // Proportions vary independently of mass: limb lengths, shoulders and hips, neck, hands.
   for (const id of BODY_VARIATION) if (r.chance(0.75)) s.modifiers[id] = gauss() * 0.5;
+  // Sex shows in the frame, not only the macro blend: men broader at the shoulder, straighter at the hip, thicker in
+  // the neck and hand; women wider at the hip, narrower at the shoulder, slimmer in neck and hand, fuller in the
+  // seat — and women's ratios vary more widely, one to the next.
+  const dim = (masc ? 1 : -1) * r.range(0.6, 1);
+  const addm = (id: string, v: number) => (s.modifiers[id] = clamp((s.modifiers[id] ?? 0) + v, -1, 1));
+  addm('torso-vshape|decr|incr', dim * r.range(0.15, 0.45));
+  addm('hip-scale-horiz|decr|incr', -dim * r.range(0.15, 0.5));
+  addm('neck-scale-horiz|decr|incr', dim * r.range(0.1, 0.3));
+  addm('sym:hand-scale|decr|incr', dim * r.range(0.08, 0.25));
+  addm('buttocks-volume|decr|incr', -dim * r.range(0.05, 0.35));
+  addm('torso-scale-horiz|decr|incr', dim * r.range(0.05, 0.2));
+  if (!masc) for (const id of ['hip-scale-horiz|decr|incr', 'torso-scale-horiz|decr|incr', 'upperlegs-height|decr|incr', 'buttocks-volume|decr|incr', 'torso-scale-vert|decr|incr', 'sym:upperarm-scale-vert|decr|incr']) addm(id, gauss() * 0.35);
   if (life === 'hard') { s.modifiers['sym:upperarm-muscle|decr|incr'] = r.range(0.1, 0.5); s.modifiers['torso-muscle-dorsi|decr|incr'] = r.range(0, 0.4); }
   if (life === 'starved') { s.modifiers['torso-scale-horiz|decr|incr'] = -r.range(0.15, 0.4); s.modifiers['stomach-tone|decr|incr'] = -r.range(0.1, 0.4); }
   if (comfortable) s.modifiers['stomach-tone|decr|incr'] = -r.range(0.1, 0.5);
@@ -151,7 +164,7 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   s.caucasian = Math.max(0, mixv(pa.shape.caucasian, pb.shape.caucasian) + jitter());
   const es = s.african + s.asian + s.caucasian || 1;
   s.african /= es; s.asian /= es; s.caucasian /= es;
-  s.breastSize = clamp(0.5 + gauss() * 0.3);
+  s.breastSize = masc ? 0.2 : clamp(0.5 + gauss() * 0.45);
   s.breastFirmness = clamp(0.6 - (s.age - 25) / 100 + gauss() * 0.15);
   a.ancestry = pa === pb ? pa.id : `${pa.id}+${pb.id}`;
   a.skinTone = clamp(mixv(r.range(...pa.tone), r.range(...pb.tone)));
@@ -197,6 +210,16 @@ export function randomAppearance(seed: number, opts: RandomLookOptions = {}): Ap
   const add = (id: string, v: number) => (s.modifiers[id] = clamp((s.modifiers[id] ?? 0) + v, -1, 1));
   add('sym:cheek-bones|decr|incr', 0.5 * gaunt); add('sym:cheek-volume|decr|incr', -0.6 * gaunt); add('sym:cheek-inner|decr|incr', -0.3 * gaunt);
   add('chin-bones|decr|incr', 0.35 * gaunt); add('head-fat|decr|incr', -0.35 * gaunt); add('sym:eye-bag|decr|incr', 0.3 * gaunt);
+  // Sex in the face, applied last so nothing above washes it out: men carry a wider, deeper jaw and chin, a heavier
+  // lower brow and ridge, a broader nose, thinner lips and slightly smaller eyes; women the reverse, with higher
+  // cheekbones, fuller cheeks and lips, a higher brow arch and a finer neck. Each person gets their own dose.
+  const F = masc ? 1 : -1, dose = () => r.range(0.6, 1);
+  add('chin-width|decr|incr', F * 0.35 * dose()); add('chin-prominent|decr|incr', F * 0.2 * dose()); add('chin-bones|decr|incr', F * 0.3 * dose());
+  add('chin-height|decr|incr', F * 0.15 * dose()); add('eyebrows-trans|down|up', -F * 0.25 * dose()); add('forehead-trans|backward|forward', F * 0.15 * dose());
+  add('head-scale-horiz|decr|incr', F * 0.08 * dose()); add('nose-scale-horiz|decr|incr', F * 0.15 * dose()); add('nose-volume|decr|incr', F * 0.2 * dose());
+  add('nose-width2|decr|incr', F * 0.12 * dose()); add('mouth-upperlip-volume|decr|incr', -F * 0.25 * dose()); add('mouth-lowerlip-volume|decr|incr', -F * 0.2 * dose());
+  add('sym:eye-scale|decr|incr', -F * 0.15 * dose()); add('sym:cheek-bones|decr|incr', masc ? 0 : 0.2 * dose()); add('sym:cheek-volume|decr|incr', masc ? -0.1 * dose() : 0.15 * dose());
+  add('neck-scale-horiz|decr|incr', F * 0.12 * dose());
   a.grime = { starved: r.range(0.4, 0.8), hard: r.range(0.2, 0.55), settled: r.range(0, 0.25), soft: 0, pampered: 0 }[life];
   // Sun and wind: anyone who lives outdoors is weathered early.
   a.weathering = clamp({ starved: r.range(0.5, 0.9), hard: r.range(0.4, 0.8), settled: r.range(0.15, 0.45), soft: r.range(0, 0.15), pampered: 0 }[life] + Math.max(0, (s.age - 35) / 100));

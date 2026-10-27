@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
   const page = await browser.newPage({ viewport: { width: +(process.env.VW||480), height: +(process.env.VW||480) } });
   page.on('pageerror', (e) => console.log('ERR', e.message));
   page.on('console', (m) => { if (m.type() === 'error') console.log('CONSOLE', m.text()); });
-  await page.goto('http://localhost:5173/');
+  await page.goto('http://127.0.0.1:5173/?dev');
   await page.waitForTimeout(9000);
   await page.evaluate(() => { document.querySelector('.overlay').classList.add('hidden'); document.querySelectorAll('.hud,.btn').forEach(e => e.style.display='none'); });
   const specs = JSON.parse(process.argv[2]);

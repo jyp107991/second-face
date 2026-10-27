@@ -120,7 +120,7 @@ such presentation decisions against modern CRPG practice. Each step: evidence sh
 - [x] A5.2 **Masks out of the lore** (~1 h): content and docs rewritten (the stranger keeps his single dust mask with
       its painted sign; the Choir has no rite masks; "masked traveller" → "the old man"; the hide-your-face mechanic
       becomes hood/scarf); the story plan's mask motif replaced (secret file; spoiler-free summary here only).
-- [ ] A5.3 **Dimorphism and body variety** (~2 h): gender-conditioned face biases (jaw, chin, brow, cheek, lips, eyes,
+- [x] A5.3 **Dimorphism and body variety** (~2 h): gender-conditioned face biases (jaw, chin, brow, cheek, lips, eyes,
       neck), women's height distribution ~7% lower with wider spread, hip/shoulder/waist/bust/limb ratios varying
       independently and more widely, stronger macro gender weight; before/after portrait and silhouette sheets.
 - [ ] A5.4 **Fluid movement and idle loops** (~3 h): speed-ramped stride with distance-driven phase (no sliding),
