@@ -24,8 +24,10 @@ camp, letters, Dust, weather and mood, real buildings with roofs that hide when 
 all of Act 1 are playable end to end** — the Cistern, Shale, the overpass, Tollhouse 9, Signal Hill, Jonah's month, the
 wilds, Dry Wells, the Mender's table, the Wheel, the escort, four Act 1 side lines (16 maps, ~85 NPCs, 114 dialogues,
 22 quests, 104 items); three companions can join. Character creation has a rolled start (owner's reroll request).
-**Act 1 is cut as a playtest version** (frozen branch `act1-test-1`, see §2b and `docs/PLAYTEST.md`; the owner installs
-the Pages workflow once). Current work: **Phase B, B3 Meridian** (Act 2's first megacity). Still open from the presentation
+**Act 1 is cut as a playtest version** (frozen branch `act1-test-1`, see §2b and `docs/PLAYTEST.md`; the owner installed
+the Pages workflow). **Act 2 part 1 is under way**: Ninebridge, Openfield, the Sump and Cistern 4, Meridian's gate, the
+Precinct and Old Market are playable (22 maps, 230 dialogues, 41 quests, 126 items; six companions can join). Current
+work: **Phase B, B3 Meridian** (Act 2's first megacity), next district the Sink (B3.6). Still open from the presentation
 pass: A5.9's remaining items (combat hover card, crowd yielding, indoor sound, camera ease, Tab reveal) — fold them in
 as B3 touches the same code. Binding owner rules: see `CLAUDE.md` §2 (no time limits; spoiler rule; not a Fallout
 clone; cyberpunk fusion).
@@ -386,10 +388,17 @@ mid-range Android phone; deployed to Pages.
             changed. Items (citizen papers, a provisional pass, the fine notice and receipt); five leads. Tests
             `tests/a2.test.ts` (+8). Smoke `tools/qa/meridian.cjs`, evidence `docs/evidence/b34/`. Backlog: the
             assessor wears a sealed helm and grey skinsuit; a true machine skin for the humanoid rig is still to do.
-      - [ ] B3.5 **Old Market + the Brokers' board** (~2 h) NEXT: bazaar map; the Broker; the gigs board (authored gigs +
-            templated couriers/bounties/rescues, ~10 at first); *Haunted Kiosk*, *Old Market Riot*; chrome and gun
-            merchants. ENGINE: gig board UI (notebook tab) + gig templates. Smoke.
-      - [ ] B3.6 **The Sink** (~1.5 h): flooded under-city map; the Mender of the Sink (surgery, the Menders' Code);
+      - [x] B3.5 **Old Market + the Brokers' board** DONE 2026-10-27: bazaar map `md_market` (the dead mall's court,
+            the east street, the standpipe square, the Loop stop); the Precinct opened east to it, and both Loop boards
+            sell seats both ways by `goto`. The Broker's hatch and the gigs board with five authored gigs (a case for
+            the Exchange clerk, knit kits for Openfield's healer, lot seven off the block, a letter the captain refuses,
+            a box in the Tanners' locker that Hesk can be paid to open), each delivered inside the existing trees and
+            paid through the hatch. *The Haunted Kiosk* (wire / the boy / sell the tap / cut), *Old Market Riot*
+            (talk / the captain turns the dial / stand with the queue / loot), Sato's forged card, chrome (Kuhn) and
+            gun (Galt) merchants; ten named NPCs + extras. No engine work was needed: the board is a dialogue and the
+            gigs are quests. Deferred to §6: templated gigs and a notebook gig tab. Tests `tests/a2.test.ts` (+10).
+            Smoke `tools/qa/market.cjs`, evidence `docs/evidence/b35/`.
+      - [ ] B3.6 **The Sink** (~1.5 h) NEXT: flooded under-city map; the Mender of the Sink (surgery, the Menders' Code);
             *High Water* line (the spring flood; who pays); *Organ Run*. Smoke.
       - [ ] B3.7 **Lantern Row** (~2 h): canal pleasure district; fight pits (ENGINE: combat variant — unarmed/melee,
             crowd morale, bets); reverie dens (ENGINE: short playable memory scenes); Dust; *Reverie of a Stranger*. Smoke.
@@ -426,11 +435,11 @@ mid-range Android phone; deployed to Pages.
 | Signal Hill | 1/1 | 3/3 | 7/7 | 2/2 | playable; relay, voice, gully |
 | Dry Wells | 1/1 | 6/6 | 13/13 | 2/2 | playable; the Act 1 finale, the family |
 | Act 1 wilds | 5/5 | 15/15 | 17/17 | 2/2 | playable; ten road encounters, discoveries on foot, hunting and traps, the windpumps, the wreck, the orchard |
-| Meridian | 0/12 | 0/60 | 0/60 | 0/30 | — |
+| Meridian | 2/12 | 25/60 | 43/60 | 10/30 | the gate, the Precinct and Old Market playable; the Loop runs between them |
 | Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |
-| Act 2 wilds | 0/14 | 0/40 | 0/40 | 0/16 | — |
+| Act 2 wilds | 4/14 | 38/50 | 64/80 | 9/16 | Ninebridge, Openfield, the Sump and Cistern 4 playable (counts approximate) |
 | Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |
-| Companions | — | 3/7 | 0/7 arcs | 0/7 | Tamsin, Wren, Ilya can join; arcs later |
+| Companions | — | 6/7 | 0/7 arcs | 0/7 | Tamsin, Wren, Ilya, Odile, Ash, Nine can join; arcs later |
 | Factions joinable | — | — | — | 0/9 | design pending |
 
 ## 4. Conventions and tools (keep current)
@@ -463,6 +472,9 @@ notebook UI · W1–W5 worldbuilding (cities, chrome, settlement types, world ma
 Engine polish backlog: tall interior walls hide a lot (consider wall fade); bundle ~1.1 MB (split later, PERF.md);
 derive gossip road days from the world map in B2; draw calls over the mobile budget on crowded maps (Shale ~200,
 Ninebridge ~265 at 25 people) — merge extras into instanced low-LOD figures or cap crowds by quality setting (B8).
+Content backlog: templated gigs (couriers/bounties/rescues from a generator) and a notebook gig tab — the Broker's
+board is five authored gigs for now (B3.5); an NPC handing over what sits in a container needs a `container` effect
+(Hesk works round it with the engine's `unlocked:<map>/<container>` flag).
 
 ## 7. Notes for owner (how to run/test)
 - Run locally: `npm install` then `npm run dev`, open the printed URL (add `?dev` on a deployed build for

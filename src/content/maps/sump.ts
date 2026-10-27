@@ -631,6 +631,10 @@ export const sump: MapDef = {
         [
           "a_9mm",
           8
+        ],
+        [
+          "ci_ch_eye_heat",
+          1
         ]
       ],
       tolls: 24,

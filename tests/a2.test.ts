@@ -445,3 +445,159 @@ describe('Meridian: the face at the gate', () => {
     expect(g.world.quests.q_md_fines.stage).toBe('paid');
   });
 });
+
+function atMarket(hour = 12) {
+  const g = newGameState('c9', 0, 0);
+  g.minutes = 33 * 1440 + hour * 60;
+  g.locationId = 'md_market';
+  g.flags.visited_md_market = true;
+  g.flags.ch1_done = true;
+  g.flags.md_inside = true; g.flags.md_market_open = true; g.flags.md_status = 'citizen';
+  const q = new QuestEngine(QUESTS, g);
+  return { g, q };
+}
+
+describe('Old Market: the hatch, the kiosk, the square', () => {
+  it('the Loop sells a seat to the Precinct', () => {
+    const { g, q } = atMarket();
+    g.pc.inventory.tolls = 10;
+    talk('d_mk_loop', g, q, ['The Precinct. (2 Tolls)']);
+    expect(g.pc.inventory.tolls).toBe(8);
+  });
+
+  it('a sealed case off the board goes to the floor clerk, and the hatch pays sixty', () => {
+    const { g, q } = atMarket();
+    talk('d_mk_gigs', g, q, ['A SEALED CASE', '(That\'s enough.)']);
+    expect(g.world.quests.q_gig_case?.stage).toBe('taken');
+    expect(countItem(g.pc.inventory, 'k_gig_case')).toBe(1);
+    g.locationId = 'ninebridge';
+    talk('d_nb_clerk', g, q, ['(Put the sealed case on the desk.)', 'That\'s all.']);
+    expect(g.flags.gig_case_delivered).toBe(true);
+    expect(countItem(g.pc.inventory, 'k_gig_case')).toBe(0);
+    g.locationId = 'md_market';
+    g.pc.inventory.tolls = 0;
+    talk('d_mk_broker', g, q, ['A job\'s done.', 'The case went to the Exchange clerk.', 'That\'s all.']);
+    expect(g.pc.inventory.tolls).toBe(60);
+    expect(g.world.quests.q_gig_case.status).toBe('done');
+  });
+
+  it('knit kits to the sick hall; the letter to the captain, who refuses it', () => {
+    const { g, q } = atMarket();
+    talk('d_mk_gigs', g, q, ['KNIT KITS', '(Another.)', 'A LETTER', '(That\'s enough.)']);
+    expect(countItem(g.pc.inventory, 'c_knitkit')).toBe(2);
+    expect(countItem(g.pc.inventory, 'k_gig_letter')).toBe(1);
+    g.locationId = 'openfield';
+    talk('d_of_imre', g, q, ['(Hand over two knit kits.)', 'That\'s all.']);
+    expect(g.flags.gig_meds_delivered).toBe(true);
+    expect(countItem(g.pc.inventory, 'c_knitkit')).toBe(0);
+    talk('d_gig_letter_read', g, q, ['(Break the wax.)', '(Fold it.)']);
+    expect(g.world.knowledge.gig_letter_bribe).toBe(true);
+    g.locationId = 'md_precinct';
+    talk('d_md_lowe', g, q, ['(Hand him the sealed letter.)', 'A month for a family is not much to ask.', 'That\'s all.']);
+    expect(g.flags.gig_letter_done).toBe(true);
+    expect(countItem(g.pc.inventory, 'k_gig_letter')).toBe(0);
+    g.locationId = 'md_market';
+    g.pc.inventory.tolls = 0;
+    talk('d_mk_broker', g, q, ['A job\'s done.', 'The knit kits went to Openfield\'s healer.', 'That\'s all.']);
+    talk('d_mk_broker', g, q, ['A job\'s done.', 'The captain has the letter.', 'That\'s all.']);
+    expect(g.pc.inventory.tolls).toBe(70);
+    expect(g.world.quests.q_gig_meds.status).toBe('done');
+    expect(g.world.quests.q_gig_letter.status).toBe('done');
+  });
+
+  it('lot seven comes off the block for fifty with a word, and the hatch pays a hundred and twenty', () => {
+    const { g, q } = atMarket();
+    talk('d_mk_gigs', g, q, ['LOT SEVEN', '(That\'s enough.)']);
+    g.locationId = 'ninebridge';
+    g.pc.inventory.tolls = 100;
+    g.pc.sheet.skillBought.barter = 90;
+    talk('d_nb_fen', g, q, ['Lot seven. The mechanic.', 'Nobody\'s bidding. Fifty', '(Take the paper.)', 'That\'s all.']);
+    expect(g.pc.inventory.tolls).toBe(50);
+    expect(countItem(g.pc.inventory, 'k_gig_lot7')).toBe(1);
+    g.locationId = 'md_market';
+    talk('d_mk_broker', g, q, ['A job\'s done.', '(Put lot seven\'s paper on the counter.)', 'That\'s all.']);
+    expect(g.pc.inventory.tolls).toBe(170);
+    expect(countItem(g.pc.inventory, 'k_gig_lot7')).toBe(0);
+    expect(g.world.quests.q_gig_lot7.status).toBe('done');
+  });
+
+  it('the Tanners\' box: Hesk opens the locker for the other half, and the hatch pays once', () => {
+    const { g, q } = atMarket();
+    talk('d_mk_gigs', g, q, ['A BOX', '(That\'s enough.)']);
+    g.locationId = 'sump';
+    g.pc.inventory.tolls = 60;
+    talk('d_sp_hesk', g, q, ['The boxed piece in your locker.', '(Pay the other half.) 60 Tolls.', 'That\'s all.']);
+    expect(g.pc.inventory.tolls).toBe(0);
+    expect(g.flags['unlocked:sump/sp_tanner_locker']).toBe(true);
+    addItem(g.pc.inventory, makeItem('ci_ch_eye_heat', 1));
+    g.locationId = 'md_market';
+    talk('d_mk_broker', g, q, ['A job\'s done.', '(Put the Tanners\' box on the counter.)', 'That\'s all.']);
+    expect(g.pc.inventory.tolls).toBe(80);
+    expect(countItem(g.pc.inventory, 'ci_ch_eye_heat')).toBe(0);
+    expect(g.world.quests.q_gig_box.status).toBe('done');
+    addItem(g.pc.inventory, makeItem('ci_ch_eye_heat', 1));
+    const r = talk('d_mk_broker', g, q, []);
+    expect(r.view()?.options.some((o) => o.text.startsWith('A job'))).toBe(false);
+  });
+
+  it('the kiosk knows the name; the boy names the wire; the wire is cut', () => {
+    const { g, q } = atMarket();
+    g.pc.inventory.tolls = 10;
+    talk('d_mk_kiosk', g, q, ['How do you know my name?', '(Step back.)']);
+    expect(g.world.quests.q_md_kiosk?.stage).toBe('name');
+    expect(g.world.knowledge.kiosk_lamp_feeds).toBe(true);
+    g.pc.sheet.skillBought.speech = 90;
+    talk('d_mk_lark', g, q, ['Who put the wire up the post?', 'That\'s all.']);
+    expect(cond({ lead: 'l_kiosk_wire' }, g)).toBe(true);
+    talk('d_mk_kiosk', g, q, ['(Cut the wire where it leaves the post.)', '(Leave it.)']);
+    expect(g.flags.mk_kiosk_outcome).toBe('cut');
+    expect(g.world.quests.q_md_kiosk.status).toBe('done');
+    expect(g.world.quests.q_md_kiosk.stage).toBe('cut');
+  });
+
+  it('or the tap is sold to the hatch for sixty', () => {
+    const { g, q } = atMarket();
+    talk('d_mk_kiosk', g, q, ['How do you know my name?', '(Step back.)']);
+    g.world.leads.l_kiosk_wire = true;
+    g.pc.inventory.tolls = 0;
+    g.pc.sheet.skillBought.barter = 90;
+    talk('d_mk_broker', g, q, ['The kiosk on the east street', '(Take it.)']);
+    expect(g.pc.inventory.tolls).toBe(60);
+    expect(g.flags.mk_kiosk_outcome).toBe('sold');
+    expect(g.world.quests.q_md_kiosk.stage).toBe('sold');
+    expect(g.flags.broker_has_tap).toBe(true);
+  });
+
+  it('the square: talked down into a petition', () => {
+    const { g, q } = atMarket();
+    q.questStart('q_md_riot');
+    g.pc.sheet.skillBought.speech = 90;
+    talk('d_mk_vell', g, q, ['Forty names on a sheet', 'That\'s all.']);
+    expect(g.flags.mk_riot_outcome).toBe('talked');
+    expect(g.world.quests.q_md_riot.status).toBe('done');
+    expect(g.flags.mk_riot_over).toBe(true);
+  });
+
+  it('the square: the captain comes down and turns the dial himself', () => {
+    const { g, q } = atMarket();
+    q.questStart('q_md_riot');
+    g.world.knowledge.lowe_seen = true;
+    talk('d_mk_vell', g, q, ['Hold the queue.', 'That\'s all.']);
+    expect(g.flags.mk_riot_lowe_pending).toBe(true);
+    g.locationId = 'md_precinct';
+    talk('d_md_lowe', g, q, ['The standpipe square.', '(Walk back with him.)']);
+    expect(g.flags.mk_riot_outcome).toBe('lowe');
+    expect(g.world.quests.q_md_riot.stage).toBe('lowe');
+    expect(g.flags.mk_dial_fixed).toBe(true);
+    talk('d_mk_vell', g, q, ['That\'s all.']);
+  });
+
+  it('Sato sells a dead citizen\'s card', () => {
+    const { g, q } = atMarket();
+    g.pc.inventory.tolls = 150;
+    talk('d_mk_sato', g, q, ['I need papers.', '(Pay. 120 Tolls)', 'That\'s all.']);
+    expect(g.pc.inventory.tolls).toBe(30);
+    expect(countItem(g.pc.inventory, 'k_md_papers_forged')).toBe(1);
+    expect(g.flags.md_forged_papers).toBe(true);
+  });
+});

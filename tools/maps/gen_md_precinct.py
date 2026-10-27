@@ -49,7 +49,7 @@ fill(2, 52, 9, 53, 'g'); fill(12, 52, 20, 53, 'g')
 fill(12, 25, 20, 34, 'c')
 building(14, 21, 19, 24, 'C', 'c', [(16, 24)])
 # the avenue, asphalt, with a tram-rail strip along its north edge further east
-fill(12, 27, 70, 32, 'a')
+fill(12, 27, 70, 32, 'a'); fill(W - 1, 27, W - 1, 32, 'a')   # the avenue runs out of the map east, to Old Market
 fill(58, 26, 70, 26, 'm')
 # the warden station (cells at its west end) and the records office, north of the avenue
 building(13, 10, 25, 20, 'C', 't', [(19, 20)])
@@ -140,6 +140,7 @@ md_precinct = {
     ],
     'exits': [
         {'x': 0, 'y': 28, 'w': 1, 'h': 4, 'to': {'worldMap': True}, 'label': 'The road out'},
+        {'x': 71, 'y': 27, 'w': 1, 'h': 6, 'to': {'location': 'md_market', 'spawn': 'from_precinct'}, 'label': 'The avenue east, to Old Market', 'if': {'flag': 'md_market_open'}},
     ],
     'talk': {
         'md_scanner': {'dialogue': 'd_md_scanner', 'name': 'The face scanner'},
@@ -190,9 +191,8 @@ md_precinct = {
         {'id': 'arrive', 'x': 1, 'y': 25, 'w': 8, 'h': 10, 'text': 'Meridian. Towers first, miles off, grey against grey; then the Wall, poured concrete five storeys high, running out of sight both ways; then, when the road reaches it, a gate the size of a door, a booth, a lamp, and a line of people who have been waiting since before you came over the last rise.', 'effects': [{'learn': 'seen_meridian'}, {'learn': 'loc_meridian'}]},
         {'id': 'gate', 'x': 10, 'y': 28, 'w': 2, 'h': 4, 'once': False, 'if': {'not': {'flag': 'md_inside'}}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_md_gate', 'name': 'The gate'}}]},
         {'id': 'drain_out', 'x': 7, 'y': 52, 'w': 3, 'h': 2, 'once': False, 'if': {'not': {'flag': 'md_inside'}}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_md_drain', 'name': 'The storm drain'}}]},
-        {'id': 'inside', 'x': 12, 'y': 25, 'w': 9, 'h': 10, 'text': 'The Precinct. Swept asphalt, lamps that all work, a tram rail, buildings with numbers on them, and people walking as if they had somewhere to be by a time. Nobody looks at you. A camera on the lamp-post does.', 'effects': [{'learn': 'seen_precinct'}, {'set': 'md_inside'}]},
+        {'id': 'inside', 'x': 12, 'y': 25, 'w': 9, 'h': 10, 'text': 'The Precinct. Swept asphalt, lamps that all work, a tram rail, buildings with numbers on them, and people walking as if they had somewhere to be by a time. Nobody looks at you. A camera on the lamp-post does.', 'effects': [{'learn': 'seen_precinct'}, {'set': 'md_inside'}, {'set': 'md_market_open'}]},
         {'id': 'square', 'x': 36, 'y': 36, 'w': 4, 'h': 13, 'text': 'A square between the tenements with a standpipe, a bell on a post, and a notice board under glass. Everything that happens here has been posted first.', 'effects': [{'learn': 'seen_square'}]},
-        {'id': 'avenue_end', 'x': 68, 'y': 27, 'w': 3, 'h': 6, 'once': False, 'if': {'not': {'flag': 'md_market_open'}}, 'text': 'The avenue runs on east into Old Market under a gantry that says WORKS, and a warden under the gantry who says the same.'},
         {'id': 'platform', 'x': 58, 'y': 18, 'w': 13, 'h': 8, 'text': 'The Loop\'s Precinct platform: a raised deck, a shelter, a tram on the rail with its doors open and nobody in it, and a board of district names with a fare beside each.', 'effects': [{'learn': 'seen_loop'}]},
         {'id': 'cells', 'x': 15, 'y': 12, 'w': 2, 'h': 2, 'once': False, 'if': {'all': [{'flag': 'md_detained'}, {'not': {'flag': 'md_status'}}]}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_md_cell', 'name': 'The cell'}}]},
     ],

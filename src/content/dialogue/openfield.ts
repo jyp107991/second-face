@@ -1,4 +1,5 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
+import type { Cond, Effect } from '../../engine/world/logic';
 
 /**
  * Openfield: the Choir's farms in the glass, every third row dying. The Elder calls it blight; the well knows
@@ -7,6 +8,9 @@ import type { DialogueDef } from '../../engine/dialogue/dialogue';
 
 const bye = { text: 'That\'s all.', exit: true };
 const NIGHT = { hour: { from: 0, to: 4 } };
+// The Broker's board at Old Market: two knit kits for the sick hall.
+const GIG_KITS: Cond = { all: [{ item: 'c_knitkit', count: 2 }, { quest: 'q_gig_meds' }, { not: { flag: 'gig_meds_delivered' } }] };
+const GIG_KITS_DONE: Effect[] = [{ take: 'c_knitkit', count: 2 }, { set: 'gig_meds_delivered' }, { trust: { npc: 'npc_of_05', by: 15 } }, { rep: { faction: 'choir', respect: 3 } }, { xp: 30 }];
 const KNOWN = { knows: 'of_poisoner_known' };
 const FOUND = [{ learn: 'of_poisoner_known' }, { lead: 'l_tobias_nights' }, { xp: 80 }];
 const EXPOSE = [{ set: 'of_blight_outcome', value: 'exposed' }, { set: 'of_tobias_caught' }, { xp: 150 }];
@@ -366,10 +370,12 @@ export const d_of_imre: DialogueDef = {
         { id: 'imre.sick', text: 'What is it, then?', next: 'sick' },
         { id: 'imre.heal', text: 'Patch me up.', if: { not: { flag: 'imre_healed_today' } }, next: 'heal' },
         { id: 'imre.trade', text: 'What have you got?', effects: [{ event: 'barter' }], exit: true },
+        { id: 'imre.kits', text: '(Hand over two knit kits.) From the board at Old Market. For the hall.', if: GIG_KITS, effects: GIG_KITS_DONE, next: 'kits' },
         bye,
       ],
     },
-    again: { text: '"Boiled water only. Sit or help."', options: [{ id: 'imre.sick.again', text: 'The sick.', if: { not: { knows: 'of_well_dosed' } }, next: 'sick' }, { id: 'imre.heal.again', text: 'Patch me up.', if: { not: { flag: 'imre_healed_today' } }, next: 'heal' }, { id: 'imre.trade.again', text: 'What have you got?', effects: [{ event: 'barter' }], exit: true }, bye] },
+    again: { text: '"Boiled water only. Sit or help."', options: [{ id: 'imre.sick.again', text: 'The sick.', if: { not: { knows: 'of_well_dosed' } }, next: 'sick' }, { id: 'imre.heal.again', text: 'Patch me up.', if: { not: { flag: 'imre_healed_today' } }, next: 'heal' }, { id: 'imre.trade.again', text: 'What have you got?', effects: [{ event: 'barter' }], exit: true }, { id: 'imre.kits.again', text: '(Hand over two knit kits.) From the board at Old Market.', if: GIG_KITS, effects: GIG_KITS_DONE, next: 'kits' }, bye] },
+    kits: { text: 'She turns one over, reads the pre-Burn print on it, and does not ask what it cost. "Two." They go on the high shelf, out of the children\'s reach, where the empty space was. "The hatch sends these every few months and never a note. Tell them the Choir thanks the sky, and I thank them, and I know the difference."', effects: [{ learn: 'of_imre_hatch' }], options: [bye] },
     sick: {
       text: '"Shaking hands. Bad stomachs. A taste of pennies, the child says. No fever, no rash, nothing passing from one to the next." She folds a cloth. "All three drank from the north trough before I made the rule. That\'s as far as I can take it. I\'m a healer; I\'m not a well."',
       options: [

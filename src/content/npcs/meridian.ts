@@ -17,9 +17,10 @@ export const MERIDIAN_NPCS: NpcDef[] = [
     barks: ['The schedule holds.', 'Every eviction is lawful. I have checked.', 'Nobody in the Precinct goes hungry. Outside the wall is outside the law.'],
   },
   {
-    id: 'npc_md_nine', name: 'Assessor Nine', look: { seed: 9109, frame: 'broad', age: 40, ancestry: 'north_european', over: { hair: { style: 'none', color: 0x404040 }, facialHair: 'none' } }, role: 'corp',
-    // A warden-pattern walker refitted for civil work: grey plating and a sealed helm (a machine skin is B3 backlog).
-    outfit: { layers: [{ name: 'matcreator_mc-skinsuit_2022', dye: 0x6a7078, grime: 0.1, wear: 0.3 }, { name: 'culturalibre_warrior_helmet', grime: 0.1, wear: 0.4 }, { name: 'toigo_gloves_short', dye: 0x3a3e44 }], grime: 0.1, wear: 0.35 },
+    id: 'npc_md_nine', name: 'Assessor Nine', look: { seed: 9109, frame: 'broad', age: 40, ancestry: 'north_european', over: { hair: { style: 'none', color: 0x404040 }, facialHair: 'none', skinTone: 0.42, skinUndertone: -1, eyes: 'grey' as never, freckles: 0, weathering: 0 } }, role: 'corp',
+    // A warden-pattern walker refitted for civil work: grey plating under a grey cap, no hair, a cool grey skin — the
+    // nearest the human rig gets to a machine until it has a machine skin (B3 backlog).
+    outfit: { layers: [{ name: 'matcreator_mc-skinsuit_2022', dye: 0x6a7078, grime: 0.1, wear: 0.3 }, { name: 'mindfront_patrol_cap', dye: 0x4a5058, grime: 0.05 }, { name: 'toigo_gloves_short', dye: 0x3a3e44 }], grime: 0.1, wear: 0.35 },
     level: 7, team: 'neutral', settlement: 'meridian', faction: 'wardens', courage: 60, dialogue: 'd_md_nine', attrs: { wits: 10, senses: 8, grit: 7, presence: 5, brawn: 6 }, skills: { science: 70, security: 55, speech: 40, barter: 35 }, tolls: 0,
     equip: ['w_arc_pistol'], inventory: [],
     schedule: [{ from: 0, to: 24, spot: 'nine_desk', activity: 'work' }],

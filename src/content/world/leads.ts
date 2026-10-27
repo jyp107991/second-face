@@ -48,6 +48,10 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_nine_log', label: 'The assessor\'s private log', text: 'Assessor Nine keeps an unlawful record of every forecast that failed. It would like to know where the errors come from.' },
   { id: 'l_precinct_rationing', label: 'Point eight', text: 'The Precinct\'s water is rationed to point eight of its number since the Sallow\'s pumps changed. The Plan rebalances.' },
   { id: 'l_cisterns_relocate', label: 'Reserves on schedule', text: 'The records office lists the continuity reserves by number with a relocation date against each. Nine\'s says: OUTSTANDING.' },
+  // Act 2 — Old Market
+  { id: 'l_kiosk_wire', label: 'The kiosk\'s wire', text: 'The talking kiosk in Old Market is spliced to the Precinct\'s lamp wire. Whatever it says about a face, it is reading off the city\'s file.' },
+  { id: 'l_broker_two', label: 'The hatch has two voices', text: 'The Broker\'s voice box speaks in one voice, but the hand that takes the coin changes size between morning and night.' },
+  { id: 'l_market_ration', label: 'Point six', text: 'The Precinct\'s ration is point eight. Old Market\'s standpipe is turned to point six. The difference goes somewhere.' },
   { id: 'l_sigil_shale', label: 'Sign at the mission', text: 'The stranger\'s half-sun sign is painted on the Choir tent-pole in Shale.' },
   { id: 'l_larkspur_calla', label: 'Calla knew the word', text: 'Sister Calla knew the dead man\'s word, and said a man at Openfield would know more.' },
   { id: 'l_hollis_city', label: 'The boards', text: 'Hollis Crane lived in a city with screens that showed who paid, who owed, and who was next.' },

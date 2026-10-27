@@ -1,4 +1,5 @@
 import type { QuestDef } from '../../engine/quest/quest';
+import type { Cond } from '../../engine/world/logic';
 
 /** Act 2, part 1: the road east — Ninebridge. */
 
@@ -332,3 +333,70 @@ export const q_md_fines: QuestDef = {
     contested: { journal: 'Contested. The Court of Accounts will hear it, by appointment, which the assessor says could be any time and will be when the schedule says.', end: 'done' },
   },
 };
+
+// ---------------------------------------------------------------- Old Market: the kiosk, the riot, the Broker's gigs
+
+export const q_md_kiosk: QuestDef = {
+  id: 'q_md_kiosk', title: 'The Haunted Kiosk', act: 'a2', start: 'name', xp: 140,
+  routes: [
+    { id: 'wire', kind: 'tech', label: 'Follow the wire from the kiosk to where it drinks', requires: { any: [{ skill: 'mechanics', gte: 30 }, { skill: 'science', gte: 30 }] } },
+    { id: 'lark', kind: 'talk', label: 'The boy who feeds it knows what it eats' },
+    { id: 'sell', kind: 'barter', label: 'A tap on the city\'s wire is worth something to the Broker' },
+  ],
+  stages: {
+    name: {
+      journal: 'A pre-Burn kiosk on Old Market\'s east street that still talks, and said your name before you gave it, and said other things after: a number, a reserve, a chair, a date. A boy feeds it cells. Something feeds it names.',
+      objectives: [{ id: 'how', text: 'Find out how the kiosk knows faces', done: { lead: 'l_kiosk_wire' } }, { id: 'end', text: 'Decide what to do about it', done: { flag: 'mk_kiosk_outcome' } }],
+      next: [
+        { if: { flag: 'mk_kiosk_outcome', eq: 'cut' }, stage: 'cut' },
+        { if: { flag: 'mk_kiosk_outcome', eq: 'sold' }, stage: 'sold' },
+        { if: { flag: 'mk_kiosk_outcome', eq: 'left' }, stage: 'left' },
+        { if: { flag: 'mk_kiosk_outcome', eq: 'reported' }, stage: 'reported' },
+      ],
+    },
+    cut: { journal: 'The wire is cut where it left the lamp post. The kiosk sells fortunes now out of a memory forty years deep and no newer, and gets everyone\'s name wrong, and the boy says it is happier.', end: 'done', onEnter: [{ decision: { id: 'mk_kiosk_cut', text: 'You cut the kiosk\'s tap on the city\'s wire.' } }] },
+    sold: { journal: 'The Broker bought the splice: a tap on the Precinct\'s lamp wire, which is a tap on the file. The kiosk still talks. So, now, does the hatch.', end: 'done', onEnter: [{ decision: { id: 'mk_kiosk_sold', text: 'You sold the Broker a tap on the city\'s file.' } }, { set: 'broker_has_tap' }] },
+    left: { journal: 'You left the kiosk talking. It knows your name and the date, and will tell anyone who stands in front of it with two Tolls.', end: 'done' },
+    reported: { journal: 'The wardens took the wire and the kiosk, and the boy, for an hour, and Captain Lowe wrote it up as an unlicensed tap and filed it where the Saints of Static will find it when it is their turn.', end: 'done', onEnter: [{ decision: { id: 'mk_kiosk_reported', text: 'You reported the kiosk\'s tap to the wardens.' } }, { rep: { faction: 'wardens', respect: 5 } }] },
+  },
+};
+
+export const q_md_riot: QuestDef = {
+  id: 'q_md_riot', title: 'Old Market Riot', act: 'a2', start: 'queue', xp: 180,
+  routes: [
+    { id: 'talk', kind: 'talk', label: 'Talk the square down before the wardens count it', requires: { skill: 'speech', gte: 45 } },
+    { id: 'lowe', kind: 'knowledge', label: 'Bring the captain the count: point eight on the notice, point six on the dial' },
+    { id: 'crowd', kind: 'fight', label: 'Stand with the queue when it goes for the dial' },
+    { id: 'loot', kind: 'stealth', label: 'Let it run, and take what runs loose' },
+  ],
+  stages: {
+    queue: {
+      journal: 'The standpipe square in Old Market: the notice says point eight and the dial says point six, and forty people in a queue have done the arithmetic. Two wardens are counting them. Something will happen at the dial before dark.',
+      objectives: [{ id: 'end', text: 'See the square through', done: { flag: 'mk_riot_outcome' } }],
+      next: [
+        { if: { flag: 'mk_riot_outcome', eq: 'talked' }, stage: 'talked' },
+        { if: { flag: 'mk_riot_outcome', eq: 'lowe' }, stage: 'lowe' },
+        { if: { flag: 'mk_riot_outcome', eq: 'crowd' }, stage: 'crowd' },
+        { if: { flag: 'mk_riot_outcome', eq: 'loot' }, stage: 'loot' },
+      ],
+    },
+    talked: { journal: 'The square sat down. You gave them the arithmetic and a place to send it, and Caddo Vell took the count to the Precinct himself with forty names on it, which is a petition and not a riot and gets a notice instead of a club.', end: 'done', onEnter: [{ set: 'mk_riot_over' }, { rep: { faction: 'wardens', respect: 3 } }, { news: { tag: 'market_petition', text: 'Old Market\'s standpipe queue sent a petition to the Precinct instead of breaking the dial', valence: 8, size: 5, at: 'meridian' } }] },
+    lowe: { journal: 'Captain Lowe came down to the square himself with the notice in his hand, read both numbers aloud, and turned the dial to point eight with his own fingers while the queue watched. He checked the arithmetic. It was wrong. He wrote that down.', end: 'done', onEnter: [{ set: 'mk_riot_over' }, { set: 'mk_dial_fixed' }, { trust: { npc: 'npc_md_01', by: 20 } }, { rep: { faction: 'wardens', respect: 6 } }, { news: { tag: 'lowe_dial', text: 'the warden captain came to Old Market and turned the water dial up himself', valence: 10, size: 6, at: 'meridian' } }] },
+    crowd: { journal: 'The queue went for the dial and you went with it, and the two wardens went down under forty people and were let up again, and the dial is broken open and the standpipe runs. The Precinct will count this one carefully.', end: 'done', onEnter: [{ set: 'mk_riot_over' }, { set: 'mk_dial_broken' }, { rep: { faction: 'wardens', respect: -15, fear: 8 } }, { decision: { id: 'mk_riot_crowd', text: 'You stood with Old Market\'s queue when it broke the water dial.' } }, { news: { tag: 'market_riot', text: 'Old Market broke its water dial; a stranger was in the front of it', valence: -10, size: 8, at: 'meridian' } }] },
+    loot: { journal: 'It ran. The dial went, the wardens went for help, the crates at the square\'s edge went in the confusion, and so did you, with what was in them. The queue drinks; the Precinct counts; nobody saw you.', end: 'done', onEnter: [{ set: 'mk_riot_over' }, { set: 'mk_dial_broken' }, { give: 'tolls', count: 40 }, { give: 'c_water', count: 4 }, { decision: { id: 'mk_riot_loot', text: 'You let Old Market riot and took what ran loose.' } }] },
+  },
+};
+
+const GIG = (id: string, title: string, journal: string, done: Cond, reward: string): QuestDef => ({
+  id, title, act: 'a2', start: 'taken', xp: 60,
+  stages: {
+    taken: { journal, objectives: [{ id: 'do', text: 'Do the job', done }, { id: 'pay', text: 'Collect from the Broker\'s hatch', done: { flag: `${id}_paid` } }], next: [{ if: { flag: `${id}_paid` }, stage: 'paid' }] },
+    paid: { journal: reward, end: 'done' },
+  },
+});
+
+export const q_gig_case = GIG('q_gig_case', 'Gig: A Sealed Case', 'A flat steel case for the clerk at the Exchange in Ninebridge, by hand, unopened. Sixty on delivery, the board says. It ticks, faintly.', { flag: 'gig_case_delivered' }, 'Sixty Tolls through the hatch, and a hand you did not see take the receipt.');
+export const q_gig_meds = GIG('q_gig_meds', 'Gig: Knit Kits for the Farms', 'Two knit kits for the sick hall at Openfield, where the Choir\'s healer is short. Fifty, the board says, and the Choir\'s thanks, which the Broker does not pay in.', { flag: 'gig_meds_delivered' }, 'Fifty through the hatch. The healer at Openfield has two knit kits she did not have.');
+export const q_gig_lot7 = GIG('q_gig_lot7', 'Gig: Lot Seven', 'A debt contract on the block at Ninebridge: lot seven, a mechanic, forty-eight. The Broker wants the paper, and fronts nothing. A hundred and twenty for it, the board says; the lot opens at seventy.', { item: 'k_gig_lot7' }, 'A hundred and twenty through the hatch for the mechanic\'s paper. Whoever he is, he is the Broker\'s now, and the Broker says that is better than the block, and is probably right.');
+export const q_gig_letter = GIG('q_gig_letter', 'Gig: A Letter for the Captain', 'A sealed letter for Captain Lowe at the Precinct station, by hand. Twenty, the board says. It is the weight of a letter with something flat inside.', { flag: 'gig_letter_done' }, 'Twenty through the hatch. "He always refuses," the voice box said. "The point is that he knows who asked."');
+export const q_gig_box = GIG('q_gig_box', 'Gig: A Box from the Sump', 'A boxed piece of chrome in the Tanners\' locker at the Sump, which the Broker says is the Broker\'s and the Tanners say is the Tanners\'. Eighty for it through the hatch.', { item: 'ci_ch_eye_heat' }, 'Eighty through the hatch, and the box gone into the container without a sound.');

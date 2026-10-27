@@ -1,4 +1,5 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
+import type { Cond } from '../../engine/world/logic';
 
 /**
  * Meridian, the Precinct: the gate and the lens, the hearing, the cells, the records office and the assessor who
@@ -7,6 +8,10 @@ import type { DialogueDef } from '../../engine/dialogue/dialogue';
 
 const bye = { text: 'That\'s all.', exit: true };
 const NIGHT = { hour: { from: 22, to: 5 } };
+// The Broker's board at Old Market: a sealed letter for the captain, by hand.
+const GIG_LETTER: Cond = { all: [{ item: 'k_gig_letter' }, { quest: 'q_gig_letter' }] };
+/** Old Market's standpipe queue is holding while you bring the captain the count. */
+const RIOT_COUNT: Cond = { all: [{ flag: 'mk_riot_lowe_pending' }, { not: { flag: 'mk_riot_outcome' } }] };
 const PAPERS = (status: string) => [{ set: 'md_status', value: status }, { set: 'md_inside' }, { xp: 150 }];
 const CITIZEN = [{ give: 'k_md_papers' }, { enlist: 'wardens', rank: 'citizen' }];
 
@@ -201,10 +206,33 @@ export const d_md_lowe: DialogueDef = {
         { id: 'lowe.ring', text: 'The Ring is burning. There are people at your gate.', next: 'ring', once: true },
         { id: 'lowe.recruit', text: 'You take people from the cells.', if: { flag: 'md_detained' }, next: 'recruit', once: true },
         { id: 'lowe.water', text: 'Your water\'s rationed since the Sallow\'s pumps changed.', if: { any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, next: 'water', once: true },
+        { id: 'lowe.letter', text: '(Hand him the sealed letter.) From the board at Old Market. By hand.', if: GIG_LETTER, next: 'letter' },
+        { id: 'lowe.dial', text: 'The standpipe square. Point eight on the notice, point six on the dial, and forty people who can count.', if: RIOT_COUNT, next: 'dial' },
         bye,
       ],
     },
-    again: { text: '"Captain." He has stood up again.', options: [{ id: 'lowe.lawful.again', text: 'Lawful and right are two words.', if: { not: { seen: 'lowe.lawful' } }, next: 'lawful' }, { id: 'lowe.flag.again', text: 'The lens called me a magistrate.', if: { all: [{ knows: 'md_magistrate_designate' }, { not: { seen: 'lowe.flag' } }] }, next: 'flag' }, { id: 'lowe.ring.again', text: 'The Ring is burning.', if: { not: { seen: 'lowe.ring' } }, next: 'ring' }, { id: 'lowe.water.again', text: 'Your water\'s rationed.', if: { all: [{ any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, { not: { seen: 'lowe.water' } }] }, next: 'water' }, bye] },
+    again: { text: '"Captain." He has stood up again.', options: [{ id: 'lowe.lawful.again', text: 'Lawful and right are two words.', if: { not: { seen: 'lowe.lawful' } }, next: 'lawful' }, { id: 'lowe.flag.again', text: 'The lens called me a magistrate.', if: { all: [{ knows: 'md_magistrate_designate' }, { not: { seen: 'lowe.flag' } }] }, next: 'flag' }, { id: 'lowe.ring.again', text: 'The Ring is burning.', if: { not: { seen: 'lowe.ring' } }, next: 'ring' }, { id: 'lowe.water.again', text: 'Your water\'s rationed.', if: { all: [{ any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, { not: { seen: 'lowe.water' } }] }, next: 'water' }, { id: 'lowe.letter.again', text: '(Hand him the sealed letter.) From the board at Old Market.', if: GIG_LETTER, next: 'letter' }, { id: 'lowe.dial.again', text: 'The standpipe square. Point eight on the notice, point six on the dial.', if: RIOT_COUNT, next: 'dial' }, bye] },
+    dial: {
+      text: '"Point eight is the notice." He takes it off the spike. "Point six is a dial that somebody turned, or that turned itself, and either way the arithmetic is wrong, and I check the arithmetic." He puts on his coat. He walks the avenue to the square with the notice held out in front of him, reads both numbers aloud to forty people and two wardens, and turns the dial to point eight with his own fingers, slowly, so the queue can see the hand. Then he writes it down.',
+      effects: [{ set: 'mk_riot_outcome', value: 'lowe' }, { time: 90 }, { xp: 120 }, { learn: 'lowe_turned_dial' }, { decision: { id: 'mk_riot_lowe', text: 'You brought Captain Lowe the standpipe\'s arithmetic, and he turned the dial himself.' } }],
+      options: [{ text: '(Walk back with him.)', exit: true }],
+    },
+    letter: {
+      text: [
+        { if: { flag: 'gig_letter_opened' }, text: 'He turns it over once. "The wax has been lifted." He says it the way he says everything: for the record. He reads it standing. A guild note for a hundred falls flat on the desk and he does not touch it. "The Quint eviction stands Thursday, because it is lawful, and I have said so in writing to that hatch eleven times." He writes a twelfth on the back of the letter, pins the note to it, and puts both in a drawer marked AUDIT. "Received and refused. Tell them. They know."' },
+        { text: 'He opens it standing, because the charter says station mail is read on receipt. A guild note for a hundred falls flat on the desk and he does not touch it. "*The Quint eviction. Thursday. Reschedule it.*" He reads it twice. "It stands, because it is lawful, and I have said so in writing to that hatch eleven times." He writes a twelfth on the back of the letter, pins the note to it, and puts both in a drawer marked AUDIT. "Received and refused. Tell them. They know."' },
+      ],
+      effects: [{ take: 'k_gig_letter' }, { set: 'gig_letter_done' }, { learn: 'lowe_refused' }, { learn: 'quint_eviction' }, { xp: 30 }],
+      options: [
+        { id: 'lowe.letter.month', text: 'A month for a family is not much to ask.', next: 'letter_month' },
+        { id: 'lowe.letter.keep', text: 'You could keep the hundred. Nobody would know.', next: 'letter_keep' },
+        { id: 'lowe.letter.who', text: 'Who are the Quints?', next: 'letter_who' },
+        bye,
+      ],
+    },
+    letter_month: { text: '"It is not much. It is also not mine to give; the schedule is the assessor\'s, and the assessor is the Plan\'s." He looks at the drawer. "Eleven times I have wanted to. That is in the drawer too."', effects: [{ learn: 'lowe_wanted' }, { trust: { npc: 'npc_md_01', by: 8 } }], options: [bye] },
+    letter_keep: { text: '"I would know. The drawer would know. The audit would know, when it came, and the audit always comes." He sits. "That is not virtue. That is arithmetic. I told you I check it."', effects: [{ trust: { npc: 'npc_md_01', by: -5 } }], options: [bye] },
+    letter_who: { text: '"Four rooms on the Sink side of the Precinct. Six people. Three months behind on the ration levy, which is lawful, and a tram pass stamped on a day a man was carrying his mother to the drain, which is also lawful." He does not look at the list under his hand. "Thursday."', effects: [{ learn: 'quint_eviction' }], options: [bye] },
     lawful: { text: '"They are." He sits. "I know the difference. I carry out the lawful one and I grieve the other one, at home, where it isn\'t on the record. If you have a third word, I would like to hear it. Nobody has had one yet."', effects: [{ learn: 'lowe_grieves' }, { trust: { npc: 'npc_md_01', by: 10 } }], options: [bye] },
     flag: { text: 'He looks at you for a long time. "Then one day you will sit where the assessor sits and sign what I carry out." He does not say it unkindly. "I\'ll stand for you then, too. I\'d rather you were someone who knew the two words."', effects: [{ learn: 'lowe_mirror' }, { memory: { npc: 'npc_md_01', tag: 'designate', valence: 5, strength: 80 } }], options: [bye] },
     ring: { text: '"The Ring is outside the law. Outside the Wall. The charter keeps the city\'s people; the Ring stopped being the city\'s on a date I can show you." He does not reach for it. "Every dusk they push. Every dusk we hold. Nobody dies of it, mostly. I count them in the morning."', effects: [{ learn: 'lowe_ring' }], options: [bye] },

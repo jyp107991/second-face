@@ -1,4 +1,5 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
+import type { Cond, Effect } from '../../engine/world/logic';
 
 /**
  * The Sump: two clans, one purse, a tunnel to a door that never opened. Cistern 4 below: the rooms of a reserve
@@ -7,6 +8,10 @@ import type { DialogueDef } from '../../engine/dialogue/dialogue';
 
 const bye = { text: 'That\'s all.', exit: true };
 const NIGHT = { hour: { from: 23, to: 5 } };
+// The Broker's board at Old Market wants the boxed piece in the Tanners' locker; Hesk can be paid to open it.
+const GIG_BOX: Cond = { all: [{ quest: 'q_gig_box' }, { not: { item: 'ci_ch_eye_heat' } }, { not: { flag: 'sp_box_paid' } }, { not: { flag: 'unlocked:sump/sp_tanner_locker' } }] };
+/** Hesk lets the locker open (the engine's unlocked flag for that container) and remembers the box was paid for. */
+const BOX_OPEN: Effect[] = [{ set: 'sp_box_paid' }, { set: 'unlocked:sump/sp_tanner_locker' }, { learn: 'sp_box_paid' }];
 const OPEN = [{ set: 'sp_tunnel_open' }, { xp: 60 }];
 
 // ---------------------------------------------------------------- the Sump
@@ -127,17 +132,31 @@ export const d_sp_hesk: DialogueDef = {
         { id: 'hesk.pay', text: 'A leave to go down. (40 Tolls)', if: { all: [{ item: 'tolls', count: 40 }, { not: { flag: 'sp_hesk_leave' } }] }, effects: [{ take: 'tolls', count: 40 }, { set: 'sp_hesk_leave' }], next: 'leave' },
         { id: 'hesk.purse', text: 'Grel is paid from the same purse you are. Same runner, same ledger.', if: { lead: 'l_sump_one_purse' }, check: { skill: 'speech', dc: 40, mods: [{ if: { item: 'k_sp_pay_ledger' }, dc: -20, why: 'you can put the ledger on his table' }] }, next: 'purse_ok', fail: 'purse_no' },
         { id: 'hesk.side', text: 'Clear Grel off the west rim and the door\'s yours alone.', next: 'side' },
+        { id: 'hesk.box', text: 'The boxed piece in your locker. The hatch at Old Market says it\'s theirs.', if: GIG_BOX, next: 'box' },
         bye,
       ],
     },
-    again: { text: '"East rim." The chalk line.', options: [{ id: 'hesk.door.again', text: 'What\'s behind the door?', if: { not: { seen: 'hesk.door' } }, next: 'door' }, { id: 'hesk.pay.again', text: 'A leave to go down. (40 Tolls)', if: { all: [{ item: 'tolls', count: 40 }, { not: { flag: 'sp_hesk_leave' } }] }, effects: [{ take: 'tolls', count: 40 }, { set: 'sp_hesk_leave' }], next: 'leave' }, { id: 'hesk.purse.again', text: 'Grel is paid from the same purse.', if: { all: [{ lead: 'l_sump_one_purse' }, { not: { seen: 'hesk.purse' } }] }, check: { skill: 'speech', dc: 40, mods: [{ if: { item: 'k_sp_pay_ledger' }, dc: -20, why: 'the ledger' }] }, next: 'purse_ok', fail: 'purse_no' }, { id: 'hesk.side.again', text: 'Clear Grel off the west rim.', if: { not: { seen: 'hesk.side' } }, next: 'side' }, bye] },
+    again: { text: '"East rim." The chalk line.', options: [{ id: 'hesk.door.again', text: 'What\'s behind the door?', if: { not: { seen: 'hesk.door' } }, next: 'door' }, { id: 'hesk.pay.again', text: 'A leave to go down. (40 Tolls)', if: { all: [{ item: 'tolls', count: 40 }, { not: { flag: 'sp_hesk_leave' } }] }, effects: [{ take: 'tolls', count: 40 }, { set: 'sp_hesk_leave' }], next: 'leave' }, { id: 'hesk.purse.again', text: 'Grel is paid from the same purse.', if: { all: [{ lead: 'l_sump_one_purse' }, { not: { seen: 'hesk.purse' } }] }, check: { skill: 'speech', dc: 40, mods: [{ if: { item: 'k_sp_pay_ledger' }, dc: -20, why: 'the ledger' }] }, next: 'purse_ok', fail: 'purse_no' }, { id: 'hesk.side.again', text: 'Clear Grel off the west rim.', if: { not: { seen: 'hesk.side' } }, next: 'side' }, { id: 'hesk.box.again', text: 'The boxed piece in your locker.', if: GIG_BOX, next: 'box' }, bye] },
+    box: {
+      text: '"Half-Price says." He does not turn from the chalk. "Half-Price fronted the dig that turned it up and paid half, which is where the name comes from. The box sits in my locker till the other half comes up the road. You can be the other half, or you can be the hatch\'s problem and not mine."',
+      options: [
+        { id: 'hesk.box.pay', text: '(Pay the other half.) 60 Tolls.', if: { item: 'tolls', count: 60 }, effects: [{ take: 'tolls', count: 60 }, ...BOX_OPEN, { trust: { npc: 'npc_sp_02', by: 5 } }], next: 'box_paid' },
+        { id: 'hesk.box.low', text: 'Forty. The hatch pays eighty and fronts nothing; I\'m the one who walked up the road.', if: { item: 'tolls', count: 40 }, check: { skill: 'barter', dc: 35 }, next: 'box_low', fail: 'box_firm' },
+        { id: 'hesk.box.united', text: 'Both rims threw the runner out together. The hatch was the runner\'s purse.', if: { flag: 'sp_feud_outcome', eq: 'united' }, effects: [...BOX_OPEN, { xp: 40 }], next: 'box_united' },
+        { text: 'I\'ll think about it.', exit: true },
+      ],
+    },
+    box_paid: { text: '"Other half." The coin goes to one of his people, as before. "Locker\'s open. The box and nothing else; the nine-mil\'s mine and the jerky\'s Nib\'s." He goes back to the chalk.', options: [bye] },
+    box_low: { text: '"Forty." He does the sum on the wall in chalk, under the door, and rubs it out. "Forty, and tell Half-Price the Tanners\' half was the heavy one. Locker\'s open."', effects: [{ take: 'tolls', count: 40 }, ...BOX_OPEN, { xp: 30 }], options: [bye] },
+    box_firm: { text: '"Sixty. The hatch can send someone who\'ll pay it or someone who\'ll steal it; I\'ve a lock for the second kind."', options: [{ id: 'hesk.box.pay2', text: '(Pay.) 60 Tolls.', if: { item: 'tolls', count: 60 }, effects: [{ take: 'tolls', count: 60 }, ...BOX_OPEN], next: 'box_paid' }, { text: 'Later.', exit: true }] },
+    box_united: { text: '"The runner\'s purse." He thinks about it for exactly as long as he thought about the ledger. "Then it\'s nobody\'s, and nobody can have it, and you\'re nobody I know. Locker\'s open."', options: [bye] },
     door: { text: '"People." He says it without drama. "A cistern like the one in the Sallow everyone pretends isn\'t there. The city made them and sealed them and this one didn\'t open. Whatever a city keeps behind a door it never opens is worth more than scrap." He finally looks at you. "Or it\'s bones. I\'d like to know which."', effects: [{ learn: 'sp_hesk_theory' }], options: [bye] },
     leave: { text: '"Forty." He does not touch the coin; one of his people does. "Tell the mouth Hesk says. If there\'s a door, tell me what it looked like. Just that."', options: [bye] },
     purse_ok: { text: 'He reads it once; he reads fast. He does not say anything for a while, and then he says, "Angry. *They dig faster angry.*" He takes the ledger and walks across the bowl in daylight, and Grel comes out of the cabin with the sawn-off and reads with a finger, twice, and puts it down. What they say to each other you do not hear. What they say to the runner, everyone does.', effects: [{ set: 'sp_feud_outcome', value: 'united' }, { set: 'sp_grel_leave' }, { set: 'sp_hesk_leave' }, { take: 'k_sp_pay_ledger' }, { xp: 150 }, { decision: { id: 'sp_united', text: 'You put the guild\'s one-purse ledger in front of both Sump clans; they threw the runner out together.' } }], options: [{ text: '(Let them.)', exit: true }] },
     purse_no: { text: '"Grel\'s paid?" A thin smile. "Grel\'s paid in scrip for scrap. I\'m paid in feet. Different ledgers, friend. You\'ve been reading the wrong one."', options: [bye] },
     side: { text: '"Worth the door." He looks at the chalk. "And the west rim\'s cabins, and the purse. Say yes."', options: [{ id: 'hesk.side.yes', text: 'Yes.', effects: [{ set: 'sp_fight_grel' }, { set: 'sp_hesk_leave' }, { set: 'sp_feud_outcome', value: 'tanner' }, { decision: { id: 'sp_took_tanner', text: 'You took Hesk Tanner\'s side at the Sump.' } }, { rep: { faction: 'tollmen', respect: 2 } }], next: 'side_yes' }, { text: 'Not for me.', exit: true }] },
     side_yes: { text: '"West rim." He takes the gun off the wall. "Leave the runner. He\'s the purse."', options: [{ text: '(Go.)', exit: true }] },
-    after: { text: [{ if: { flag: 'sp_united' }, text: '"Both rims. Same tunnel." He looks at the chalk line at a hundred and sixty. "A week, now. Then I\'ll know which."' }, { if: { flag: 'sp_tanner_won' }, text: '"The door." It is all he says.' }, { text: '"East rim."' }], options: [bye] },
+    after: { text: [{ if: { flag: 'sp_united' }, text: '"Both rims. Same tunnel." He looks at the chalk line at a hundred and sixty. "A week, now. Then I\'ll know which."' }, { if: { flag: 'sp_tanner_won' }, text: '"The door." It is all he says.' }, { text: '"East rim."' }], options: [{ id: 'hesk.box.after', text: 'The boxed piece in your locker. The hatch at Old Market says it\'s theirs.', if: GIG_BOX, next: 'box' }, bye] },
     fight: { text: 'Nothing.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };

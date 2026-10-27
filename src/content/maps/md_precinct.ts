@@ -34,12 +34,12 @@ export const md_precinct: MapDef = {
     "RrrrrrrrrrHHccCCcCCCccccccccccccccccccccccccccccccccccccccmmmmmmmmmmmmmR",
     "RrrrrrrrrrHHccccccccccccccccccccccccccccccccccccccccccccccmmmmmmmmmmmmmR",
     "RcccccccccHHccccccccccccccccccccccccccccccccccccccccccccccmmmmmmmmmmmmmR",
-    "RcccccccccHHaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaR",
-    "ccccccccccccaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaR",
-    "ccccccccccccaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaR",
-    "ccccccccccccaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaR",
-    "ccccccccccccaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaR",
-    "RcccccccccHHaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaR",
+    "RcccccccccHHaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "ccccccccccccaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "ccccccccccccaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "ccccccccccccaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "ccccccccccccaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "RcccccccccHHaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "RcccccccccHHcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
     "RrrrrrrrrrHHcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
     "RrrrrrrrrrHHcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
@@ -921,6 +921,20 @@ export const md_precinct: MapDef = {
         worldMap: true
       },
       label: "The road out"
+    },
+    {
+      x: 71,
+      y: 27,
+      w: 1,
+      h: 6,
+      to: {
+        location: "md_market",
+        spawn: "from_precinct"
+      },
+      label: "The avenue east, to Old Market",
+      if: {
+        flag: "md_market_open"
+      }
     }
   ],
   talk: {
@@ -1380,6 +1394,9 @@ export const md_precinct: MapDef = {
         },
         {
           set: "md_inside"
+        },
+        {
+          set: "md_market_open"
         }
       ]
     },
@@ -1395,20 +1412,6 @@ export const md_precinct: MapDef = {
           learn: "seen_square"
         }
       ]
-    },
-    {
-      id: "avenue_end",
-      x: 68,
-      y: 27,
-      w: 3,
-      h: 6,
-      once: false,
-      if: {
-        not: {
-          flag: "md_market_open"
-        }
-      },
-      text: "The avenue runs on east into Old Market under a gantry that says WORKS, and a warden under the gantry who says the same."
     },
     {
       id: "platform",

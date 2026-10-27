@@ -121,7 +121,7 @@ sump = {
     'containers': {
         'sp_pay_crate': {'name': 'Guild Pay Crate', 'items': [['k_sp_pay_ledger', 1]], 'tolls': 140, 'lock': 50},
         'sp_grel_locker': {'name': 'Grel\'s Locker', 'items': [['c_water', 2], ['a_12ga', 6]], 'tolls': 30, 'lock': 40},
-        'sp_tanner_locker': {'name': 'Tanner Locker', 'items': [['c_jerky', 2], ['a_9mm', 8]], 'tolls': 24, 'lock': 40},
+        'sp_tanner_locker': {'name': 'Tanner Locker', 'items': [['c_jerky', 2], ['a_9mm', 8], ['ci_ch_eye_heat', 1]], 'tolls': 24, 'lock': 40},
         'sp_grel_crate': {'name': 'Salvage Crate', 'items': [['j_scrap', 4], ['j_wiring', 2], ['j_electronics', 1]], 'lock': 20},
         'sp_tanner_crate': {'name': 'Salvage Crate', 'items': [['j_scrap', 3], ['j_glass', 2], ['t_picks', 1]], 'lock': 25},
     },

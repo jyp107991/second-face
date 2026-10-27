@@ -1,4 +1,5 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
+import type { Cond, Effect } from '../../engine/world/logic';
 
 /**
  * Ninebridge: the guild's Exchange on the broken bridge. The toll at the sandbags, the porters sitting down
@@ -9,6 +10,11 @@ import type { DialogueDef } from '../../engine/dialogue/dialogue';
 const bye = { text: 'That\'s all.', exit: true };
 const NIGHT = { hour: { from: 23, to: 6 } };
 const BLOCK_HOURS = { hour: { from: 9, to: 18 } };
+// The Broker's board at Old Market: a sealed case for the floor clerk, and lot seven off the block.
+const GIG_CASE: Cond = { all: [{ item: 'k_gig_case' }, { quest: 'q_gig_case' }, { not: { flag: 'gig_case_delivered' } }] };
+const GIG_CASE_DONE: Effect[] = [{ take: 'k_gig_case' }, { set: 'gig_case_delivered' }, { xp: 30 }];
+const GIG_LOT7: Cond = { all: [{ quest: 'q_gig_lot7' }, { not: { item: 'k_gig_lot7' } }, { not: { flag: 'nb_lot7_sold' } }] };
+const LOT7_SOLD: Effect[] = [{ give: 'k_gig_lot7' }, { set: 'nb_lot7_sold' }, { approval: { companion: 'npc_rd_03', by: -15 } }, { approval: { companion: 'npc_nb_03', by: -10 } }];
 const TRUTH = (how: string) => [{ learn: 'nb_paid_truth' }, { lead: 'l_exchange_paid' }, { set: `nb_truth_${how}` }, { xp: 120 }];
 
 // ---------------------------------------------------------------- the west bank: toll and strike
@@ -422,10 +428,13 @@ export const d_nb_clerk: DialogueDef = {
         { id: 'rook.protection', text: 'The protection account. Two riders, four days, Tollhouse 9.', if: { quest: 'q_a2_ninebridge' }, next: 'protection', once: true },
         { id: 'rook.leak', text: 'You\'re copying paper. For whom?', if: { knows: 'nb_rook_leak' }, next: 'leak', once: true },
         { id: 'rook.sell', text: 'I\'ve a debt contract to sell.', if: { item: 'k_sable_contract' }, next: 'sell_contract' },
+        { id: 'rook.case', text: '(Put the sealed case on the desk.) From the board at Old Market. By hand, unopened.', if: GIG_CASE, effects: GIG_CASE_DONE, next: 'case' },
         bye,
       ],
     },
-    again: { text: '"Lots are on the board."', options: [{ id: 'rook.what.again', text: 'What is it you sell?', if: { not: { seen: 'rook.what' } }, next: 'what' }, { id: 'rook.protection.again', text: 'The protection account.', if: { all: [{ quest: 'q_a2_ninebridge' }, { not: { seen: 'rook.protection' } }] }, next: 'protection' }, { id: 'rook.leak.again', text: 'You\'re copying paper.', if: { all: [{ knows: 'nb_rook_leak' }, { not: { seen: 'rook.leak' } }] }, next: 'leak' }, { id: 'rook.line', text: 'The line. You said you\'d get it.', if: { all: [{ flag: 'nb_rook_deal' }, { not: { item: 'k_exchange_line' } }, { not: { knows: 'nb_paid_truth' } }] }, next: 'line' }, { id: 'rook.sell.again', text: 'I\'ve a debt contract to sell.', if: { item: 'k_sable_contract' }, next: 'sell_contract' }, bye] },
+    again: { text: '"Lots are on the board."', options: [{ id: 'rook.what.again', text: 'What is it you sell?', if: { not: { seen: 'rook.what' } }, next: 'what' }, { id: 'rook.protection.again', text: 'The protection account.', if: { all: [{ quest: 'q_a2_ninebridge' }, { not: { seen: 'rook.protection' } }] }, next: 'protection' }, { id: 'rook.leak.again', text: 'You\'re copying paper.', if: { all: [{ knows: 'nb_rook_leak' }, { not: { seen: 'rook.leak' } }] }, next: 'leak' }, { id: 'rook.line', text: 'The line. You said you\'d get it.', if: { all: [{ flag: 'nb_rook_deal' }, { not: { item: 'k_exchange_line' } }, { not: { knows: 'nb_paid_truth' } }] }, next: 'line' }, { id: 'rook.sell.again', text: 'I\'ve a debt contract to sell.', if: { item: 'k_sable_contract' }, next: 'sell_contract' }, { id: 'rook.case.again', text: '(Put the sealed case on the desk.) From the board at Old Market.', if: GIG_CASE, effects: GIG_CASE_DONE, next: 'case' }, bye] },
+    case: { text: 'She does not open it. She does not ask. A receipt comes across the desk already written, as if the case had been expected since morning: RECEIVED — EXCHANGE FLOOR — ONE CASE, SEALED. "Tell the hatch it still ticks," she says, not looking up. "They like to know."', effects: [{ learn: 'nb_case_received' }], options: [bye] },
+    case_new: { text: 'The new clerk weighs it, listens to it, and puts it under the desk without a receipt. "Half-Price\'s," he says, to the board. "Tell the hatch the floor has it."', options: [bye] },
     what: { text: '"Futures. A sealed sheet says what happens at a place on a date. You buy it, you\'re on the right side of the date. You don\'t open it; opened, it\'s news, and news is free." She says it like the rates. "Where they come from is not a floor question."', effects: [{ learn: 'nb_futures' }, { lead: 'l_futures' }], options: [bye] },
     protection: { text: 'Her pen stops for exactly as long as it takes to decide. "Accounts aren\'t lots. Accounts are the Grand Factor\'s." She turns the ledgers a quarter-inch further face down. "The floor closes at nine. I lock them in this desk." It is not clear whether that is a warning or a map.', effects: [{ learn: 'nb_ledgers_desk' }], options: [bye] },
     leak: {
@@ -455,7 +464,7 @@ export const d_nb_clerk: DialogueDef = {
     },
     sold: { text: 'The thumb. The sum. The paper goes into a drawer with others like it. "Lot four," she says to nobody, and writes.', options: [bye] },
     asleep: { text: 'The clerk is asleep on her folded arms over the two ledgers, ink on her cheek. The floor is dark but for the board\'s green.', options: [{ text: '(Leave her.)', exit: true }] },
-    reported: { text: 'The desk is empty. The ledgers are in the Grand Factor\'s office now, and a new clerk with no ink on him is learning the board. Lot nine on the block this morning was young and knew her numbers.', options: [{ text: '(Nothing.)', exit: true }] },
+    reported: { text: 'The desk is empty. The ledgers are in the Grand Factor\'s office now, and a new clerk with no ink on him is learning the board. Lot nine on the block this morning was young and knew her numbers.', options: [{ id: 'rook.case.new', text: '(Put the sealed case on the desk.) From the board at Old Market.', if: GIG_CASE, effects: GIG_CASE_DONE, next: 'case_new' }, { text: '(Nothing.)', exit: true }] },
     fight: { text: 'Nothing.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
@@ -652,10 +661,23 @@ export const d_nb_fen: DialogueDef = {
         { id: 'fen.bid', text: '(Bid.) Sixty.', if: { item: 'tolls', count: 60 }, next: 'bid' },
         { id: 'fen.hate', text: 'You hate this.', if: { knows: 'fen_hates_it' }, check: { skill: 'speech', dc: 40 }, next: 'hate_ok', fail: 'hate_no' },
         { id: 'fen.let', text: '(Let it go. Someone else will buy her.)', next: 'let_go' },
+        { id: 'fen.lot7', text: 'Lot seven. The mechanic.', if: GIG_LOT7, next: 'lot7' },
         bye,
       ],
     },
-    again: { text: '"Lot four. Sixty opens it."', options: [{ id: 'fen.four.again', text: 'Lot four.', if: { not: { seen: 'fen.four' } }, next: 'four' }, { id: 'fen.bid.again', text: '(Bid.) Sixty.', if: { item: 'tolls', count: 60 }, next: 'bid' }, { id: 'fen.hate.again', text: 'You hate this.', if: { all: [{ knows: 'fen_hates_it' }, { not: { seen: 'fen.hate' } }] }, check: { skill: 'speech', dc: 40 }, next: 'hate_ok', fail: 'hate_no' }, { id: 'fen.let.again', text: '(Let it go.)', next: 'let_go' }, bye] },
+    again: { text: '"Lot four. Sixty opens it."', options: [{ id: 'fen.four.again', text: 'Lot four.', if: { not: { seen: 'fen.four' } }, next: 'four' }, { id: 'fen.bid.again', text: '(Bid.) Sixty.', if: { item: 'tolls', count: 60 }, next: 'bid' }, { id: 'fen.hate.again', text: 'You hate this.', if: { all: [{ knows: 'fen_hates_it' }, { not: { seen: 'fen.hate' } }] }, check: { skill: 'speech', dc: 40 }, next: 'hate_ok', fail: 'hate_no' }, { id: 'fen.let.again', text: '(Let it go.)', next: 'let_go' }, { id: 'fen.lot7.again', text: 'Lot seven. The mechanic.', if: GIG_LOT7, next: 'lot7' }, bye] },
+    lot7: {
+      text: '"Lot seven. Bexley, forty-one, a mechanic, forty-eight and interest. Signed for parts he fitted to a truck that then left without him." The voice, and under it: "Nobody comes for mechanics. He\'s been on the board since spring." He looks at you properly for the first time. "Seventy opens it. There is nobody to bid against you. There never is."',
+      effects: [{ learn: 'lot7_story' }],
+      options: [
+        { id: 'fen.lot7.pay', text: '(Bid.) Seventy.', if: { item: 'tolls', count: 70 }, effects: [{ take: 'tolls', count: 70 }, ...LOT7_SOLD], next: 'lot7_sold' },
+        { id: 'fen.lot7.low', text: 'Nobody\'s bidding. Fifty, and your board is a card shorter.', if: { item: 'tolls', count: 50 }, check: { skill: 'barter', dc: 30 }, next: 'lot7_low', fail: 'lot7_firm' },
+        { text: 'Not today.', exit: true },
+      ],
+    },
+    lot7_low: { text: '"Fifty." He writes it in the voice that says sums. "Going — gone, to the stranger at fifty, and the guild can take the twenty out of my cheer." The paper comes across.', effects: [{ take: 'tolls', count: 50 }, ...LOT7_SOLD, { xp: 30 }], options: [{ text: '(Take the paper.)', next: 'lot7_sold' }] },
+    lot7_firm: { text: '"Seventy opens it. The guild counts what I open at, not what I close at."', options: [{ id: 'fen.lot7.pay2', text: '(Bid.) Seventy.', if: { item: 'tolls', count: 70 }, effects: [{ take: 'tolls', count: 70 }, ...LOT7_SOLD], next: 'lot7_sold' }, { text: 'Not today.', exit: true }] },
+    lot7_sold: { text: '"Lot seven." The thumb-print on the paper is a working man\'s, broad and oil-dark. "He\'s wherever the guild has him working till the paper says otherwise. Whoever you\'re buying for — " He stops himself. "I say the sums."', effects: [{ learn: 'lot7_held' }], options: [bye] },
     four: { text: '"Sable Calloway, nineteen, fifty-eight and interest. Her brother\'s debt, if you want the story — he signed and ran, and the paper doesn\'t care who signed." The voice does not change. "Service until cleared. Most buyers want a cook or a carrier. Some want nineteen." He looks at the counter. "I say the sums. I don\'t say the rest."', effects: [{ learn: 'sable_story' }], options: [bye] },
     bid: {
       text: '"Sixty from the stranger." The voice rises and the crowd leans. "Seventy from the back. Eighty — the gentleman in the coat, thank you, eighty." He looks at you. He is very slightly, under the voice, on your side.',
@@ -680,7 +702,7 @@ export const d_nb_fen: DialogueDef = {
     took: { text: '"Lot four, stolen in the night," he says to the fire, in the voice, and then not in it: "Thank you."', options: [bye] },
     let_go: { text: '"Lot four, sixty — seventy — ninety to the gentleman in the coat, going, gone." The cup on the counter. The crowd moves to lot five. Somebody opens the cage.', effects: [{ set: 'nb_sable_outcome', value: 'sold_on' }, { set: 'nb_sable_settled' }], options: [{ text: '(Walk away.)', exit: true }] },
     off: { text: 'Off the block he is somebody else: smaller, by the fire, with a cup. "Lots at nine. I don\'t sell at night; it\'s the one rule I made myself."', options: [bye] },
-    settled: { text: [{ if: { flag: 'nb_sable_outcome', eq: 'freed' }, text: '"Lot four, stolen, lost, mislaid — I\'ve said all three to the guild and they wrote down the one they liked." He almost smiles. "Lot five\'s a mechanic. Nobody comes for mechanics."' }, { text: '"Lot five. A mechanic, forty-eight." The voice is back.' }], options: [bye] },
+    settled: { text: [{ if: { all: [{ flag: 'nb_sable_outcome', eq: 'freed' }, { not: { flag: 'nb_lot7_sold' } }] }, text: '"Lot four, stolen, lost, mislaid — I\'ve said all three to the guild and they wrote down the one they liked." He almost smiles. "Lot seven\'s a mechanic. Nobody comes for mechanics."' }, { if: { flag: 'nb_lot7_sold' }, text: '"Lot eight. A carrier, thirty." The voice is back, and the board is one card shorter.' }, { text: '"Lot seven. A mechanic, forty-eight." The voice is back.' }], options: [{ id: 'fen.lot7.settled', text: 'Lot seven. The mechanic.', if: GIG_LOT7, next: 'lot7' }, bye] },
   },
 };
 
