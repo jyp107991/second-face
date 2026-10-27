@@ -246,3 +246,20 @@ Content building (B3.11 onwards) is paused until U1–U5 are in.
   clear day. The sound bed in the open follows the region's ambience. Evidence `docs/evidence/u2/sky_*.png`;
   `tools/qa/sky.cjs`. U3 is in. Left on its list for the content pass: roadside detail along the ways (posts,
   wrecks, markers), which wants the naming and content work of U6 anyway.
+- **2026-10-27 U4.1 — people move like people.** Every figure now runs on captured motion. The source is the CMU
+  motion-capture database (free for any use with a credit, `public/assets/human/anim/MOTION_CREDITS.md`):
+  `tools/assets/motion/cmu.mjs` reads a subject's skeleton and a trial, works out every bone's rotation in the
+  world against the capture's own rest pose, turns the subject to face forward, and writes compact clips (int16
+  quaternions at 30 fps, 615 KB for twenty-eight). A walk is one stride, found from the legs' rhythm and cut at
+  the left foot's furthest swing, seam-blended into a loop and stamped with its true speed; a standing or sitting
+  idle is a stretch of the trial cross-faded into a loop; a drink or a wave plays once. In the game the figure does
+  not need the capture's proportions: for each bone it turns its own rest direction onto the source's and applies
+  the captured rotation, so thighs, shins, arms and spine point where the captured ones pointed whatever the build,
+  and the pelvis rides at the capture's height scaled to the body's own. Gaits are chosen by the pace the walk is
+  heading for (so a start does not run through every gait) and played at the actor's speed over the clip's, which
+  keeps the feet planted; clip changes cross-fade and a gait change keeps the stride's phase. The procedural layer
+  stays on top for what captures cannot know: the head turning to whoever is near, a flinch, the aimed arm, the
+  fall. People walk at a walking pace now (1.7 m/s) while the player keeps the jog of a modern isometric RPG; a
+  companion matches the player. Standing people stretch or yawn now and then. Evidence
+  `docs/evidence/u4/clips/*.png`, `docs/evidence/u4/motion_*.png`. Not yet captured: a death (the database's falls
+  are stunts), getting up, a turn in place; they stay procedural for now.

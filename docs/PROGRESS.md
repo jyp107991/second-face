@@ -30,7 +30,7 @@ Precinct, Old Market, the Sink, Lantern Row, the Stacks, Bridgeward and the Crow
 147 items;
 six companions can join; a flat in the Stacks is a safehouse; four gangs joinable one at a time; the Crown has five ways in).
 **Content building is PAUSED by the owner's directive of 2026-10-27 (pass 5): the upgrade in `docs/UPGRADE.md` comes first
-(§2c below): U1–U3 done, U4 next; then B3.11.** Still open from the presentation
+(§2c below): U1–U3 done, U4 in progress (U4.1 captured motion in); then B3.11.** Still open from the presentation
 pass: A5.9's remaining items (combat hover card, crowd yielding, indoor sound, camera ease, Tab reveal) — fold them in
 as B3 touches the same code. Binding owner rules: see `CLAUDE.md` §2 (no time limits; spoiler rule; not a Fallout
 clone; cyberpunk fusion).
@@ -275,8 +275,24 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
       - [x] U3.4 DONE 2026-10-27: rain, fog and snow by region with their skies and sound; rain and snow particles;
             smoke from fires; birds and dust devils (`src/engine/render/life.ts`); open-country sound bed
             (`sky.cjs`). Grass LOD and roadside detail deferred to U2c/the content pass.
-- [ ] U4 People: captured motion retargeted to the human rig, locomotion blending, skin/cloth/hair materials, close
+- [~] U4 People: captured motion retargeted to the human rig, locomotion blending, skin/cloth/hair materials, close
       LOD, outfits per role/region, visual variance, cached portraits.
+      - [x] U4.1 DONE 2026-10-27: real captured motion on every figure. `tools/assets/motion/cmu.mjs` turns CMU
+            mocap trials (ASF/AMC, free for all uses) into 28 clips (`public/assets/human/anim/clips.bin` + index,
+            615 KB): walks at four paces, jogs, a run, a carry and a sneak (one stride cut and seam-blended, each
+            with its true speed), four standing idles, three sitting idles, two conversations and a quarrel, a
+            drink, a wave, sweeping, a guard stance, a stretch and two yawns, a pick-up and a fall (unused yet).
+            `assets/human/motion.ts` loads and samples them; `Humanoid` plays them by aligning each bone's rest
+            direction to the capture's (any build), picks the gait by the pace the walk is heading for and runs
+            it at the actor's speed (no foot sliding), cross-fades between clips keeping the stride phase, blends
+            the aimed arm, the head turn, flinches and the procedural fall over them, and plays a stretch or a
+            yawn now and then over a standing idle. NPCs walk (1.7 m/s), the player jogs (3.2), companions match
+            the player. Portraits stay procedural (a steady face). Evidence `docs/evidence/u4/clips/clip_*.png`
+            (every clip front and side on the stage, `tools/qa/clips.cjs`) and `docs/evidence/u4/motion_*.png`
+            (`tools/qa/motion.cjs`). Left for U4.2+: a captured death (CMU has only stunt falls; the procedural
+            fall stays), getting up, turns in place, the UAL2 (CC0) gesture set if needed.
+      - [ ] U4.2 Skin/cloth/hair materials and a sharper close LOD.
+      - [ ] U4.3 Outfits per role and region, visual variance pass.
 - [ ] U5 Camera and touch: one-finger turn, tap move, pinch zoom, two-finger pan, compass/recentre.
 - [ ] U6 Naming bible and rename pass (ids stay; names change everywhere the player reads them).
 - [ ] U7 Conversation system: memory, exhaustion, state-aware greetings, interjections, no loops; pass over trees.

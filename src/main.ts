@@ -33,6 +33,7 @@ import { skinSamples } from './engine/assets/human/skin';
 import { skinAlbedo } from './engine/data/ancestry';
 import { agedAppearance, defaultAppearance, randomAppearance } from './engine/data/appearance';
 import { loadHumanData } from './engine/assets/human/data';
+import { loadMotion, motionReady, motionClipNames, motionClip } from './engine/assets/human/motion';
 import { preloadHumanTextures } from './engine/assets/human/textures';
 import { PLAYER_OUTFIT } from './engine/game';
 import { HumanFigure } from './engine/assets/human/figure';
@@ -50,6 +51,8 @@ loading.textContent = 'LOADING…';
 document.body.appendChild(loading);
 await loadHumanData();
 await preloadHumanTextures();
+// Captured motion arrives behind the figures; they move procedurally until it does.
+void loadMotion().catch((e) => console.warn(e));
 loading.remove();
 
 const game = new Game(app);
@@ -78,7 +81,7 @@ const dev = import.meta.env.DEV || new URLSearchParams(location.search).has('dev
 if (dev) {
   new DevOverlay(game);
   // Dev helpers for the browser console / automated screenshots.
-  (window as unknown as Record<string, unknown>).SF = { PortraitStage, lookFrom, randomAppearance, agedAppearance, defaultAppearance, PLAYER_OUTFIT, HumanFigure, Humanoid, THREE, evaluateShape, humanData, ensureProxies, outfitProxyKeys, dressFor, roleLook, skinSamples, skinAlbedo, addItem, makeItem, equip, unequip, wardrobeOutfit , WORLD_MAP, MAPS, sitePlacement, openSites, ways, heightAt };
+  (window as unknown as Record<string, unknown>).SF = { PortraitStage, lookFrom, randomAppearance, agedAppearance, defaultAppearance, PLAYER_OUTFIT, HumanFigure, Humanoid, THREE, evaluateShape, humanData, ensureProxies, outfitProxyKeys, dressFor, roleLook, skinSamples, skinAlbedo, addItem, makeItem, equip, unequip, wardrobeOutfit , WORLD_MAP, MAPS, sitePlacement, openSites, ways, heightAt, motionReady, motionClipNames, motionClip };
 }
 await game.loadLocation(game.state.locationId, 'start');
 game.loadMs = performance.now() - t0;

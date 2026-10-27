@@ -31,6 +31,7 @@ export function warmPortrait(look: HumanoidLook): Humanoid {
   let f = cache.get(key);
   if (f) { cache.delete(key); cache.set(key, f); return f; }
   f = new Humanoid(look);
+  f.captured = false;
   cache.set(key, f);
   if (cache.size > CACHE_MAX) {
     for (const [k, old] of cache) {
@@ -109,6 +110,7 @@ export class PortraitStage {
     this.release();
     this.cached = cached;
     this.figure = cached ? warmPortrait(look) : new Humanoid(look);
+    this.figure.captured = false;
     if (cached) inUse.add(this.figure);
     this.figure.root.rotation.y = this.yaw;
     this.scene.add(this.figure.root);

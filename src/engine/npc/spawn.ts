@@ -73,6 +73,8 @@ export function spawnNpc(p: NpcPlacement, grid: Grid, keep?: { sheet: CharacterS
   // Worn armour and the weapon in hand show on the body.
   const outfit = wardrobeOutfit({ sheet, inventory: inv, appearance: app }, dressed);
   const actor = new Actor({ id, x: p.x, y: p.y, facing: p.facing ?? 0, look: lookFrom(app, outfit, 'low') }, grid);
+  // People about their day walk; the player's pace is a jog (companions match it while they follow).
+  actor.speed = 1.7;
   const combatant: Combatant = {
     id, name: def.name, team: def.team, sheet, inv, x: p.x, y: p.y, ap: 0, morale: initialMorale(def.courage), evasion: 0,
     natural: def.natural, courage: def.courage,

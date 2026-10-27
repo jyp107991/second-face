@@ -158,7 +158,7 @@ export class Actor {
     }
     this.object.rotation.y = this.facing;
     if (this.dying > 0 && this.dying < 1) { this.dying = Math.min(1, this.dying + dt * 1.6); this.body.dead = this.dying; }
-    this.body.animate(dt, speedNow);
+    this.body.animate(dt, speedNow, this.path.length ? this.speed * (this.running ? 1.8 : 1) : 0);
   }
 }
 

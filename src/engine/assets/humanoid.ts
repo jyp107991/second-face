@@ -8,6 +8,7 @@ import { addGear, type GearLook } from './human/gear';
 import { addHeld, closeFist } from './human/weapons';
 import type { HeldShape } from '../inventory/items';
 import { BEARD_PROXY } from './human/facialHair';
+import { MOTION_BONES, clipDuration, motionClip, motionReady, sampleClip, samplePos, type MotionClip } from './human/motion';
 
 /**
  * What a character wears. Suits/shoes are the base full outfits; `layers` are separate garments (see
@@ -76,6 +77,8 @@ const Z = new THREE.Vector3(0, 0, 1);
 export type IdleKind = 'stand' | 'alert' | 'talk' | 'work' | 'sit' | 'lean' | 'pray' | 'drink' | 'sleep';
 type Fidget = 'none' | 'scratch' | 'hands' | 'hips' | 'cross' | 'neck' | 'look';
 type ArmPose = { upper: [number, number, number]; lower: [number, number, number]; blend: number };
+interface Playing { clip: MotionClip; time: number; rate: number; align: THREE.Quaternion[] }
+const GAITS: [number, string | string[]][] = [[1.15, 'walk_slow'], [1.75, ['walk', 'walk_b']], [2.45, 'walk_brisk'], [3.4, ['jog', 'jog_b']], [Infinity, 'run']];
 
 export class Humanoid {
   readonly figure: HumanFigure;
@@ -103,6 +106,25 @@ export class Humanoid {
   private poseBlend = 0;
   private workPhase = Math.random() * 10;
   private sipT = 4 + Math.random() * 6;
+  /** Captured motion drives the body when clips are loaded; off for portraits (a steady pose). */
+  captured = true;
+  /** A clip to play whatever the body is doing (figure viewers, tools). */
+  forceClip?: string;
+  private play?: Playing;
+  private prev?: Playing;
+  /** 0: the previous clip, 1: the current one. */
+  private fade = 1;
+  private fadeRate = 4;
+  /** 0: procedural pose, 1: the captured clip. */
+  private motionBlend = 0;
+  private clipName: string | undefined;
+  /** A captured one-shot (a stretch, a yawn) playing over the idle until this time on the breathe clock. */
+  private oneShot?: { name: string; until: number };
+  private alignCache = new Map<string, THREE.Quaternion[]>();
+  private tmpQ = new THREE.Quaternion();
+  private tmpQ2 = new THREE.Quaternion();
+  private tmpV = new THREE.Vector3();
+  private tmpV2 = new THREE.Vector3();
 
   constructor(look: HumanoidLook) {
     const o = look.outfit;
@@ -185,8 +207,96 @@ export class Humanoid {
     this.lookPitch += (pitch - this.lookPitch) * Math.min(1, dt * 6);
   }
 
-  animate(dt: number, speed: number): void {
+  /** A stable pick among variants for this person. */
+  private variant(list: string | string[]): string {
+    return typeof list === 'string' ? list : list[Math.floor(this.idleSeed) % list.length];
+  }
+
+  /** The clip the body should be playing now, or none when the pose stays procedural. */
+  private wantedClip(speed: number, goal: number): string | undefined {
+    if (!this.captured || !motionReady() || this.dead > 0) return undefined;
+    if (this.forceClip) return this.forceClip;
+    if (speed > 0.05) {
+      // Chosen by the pace the walk is heading for, so a start does not run through every gait.
+      const pace = Math.max(speed, goal);
+      // Keep the gait while its rate stays natural: no flapping between two clips at a threshold.
+      const cur = this.play?.clip;
+      if (cur && cur.speed > 0 && this.clipName === cur.name) {
+        const r = pace / cur.speed;
+        if (r > 0.7 && r < 1.45) return cur.name;
+      }
+      for (const [max, name] of GAITS) if (pace < max) return this.variant(name);
+      return 'run';
+    }
+    if (this.oneShot && this.breathe >= this.oneShot.until) this.oneShot = undefined;
+    switch (this.idle) {
+      case 'stand': return this.oneShot ? this.oneShot.name : this.variant(['idle', 'idle_b', 'idle_c', 'idle_d']);
+      case 'talk': return this.variant(['talk', 'talk_b']);
+      case 'alert': return 'guard';
+      case 'sit': return this.variant(['sit', 'sit_stool']);
+      case 'work': return 'sweep';
+      case 'drink': return this.sipT < 0 ? 'drink' : this.variant(['idle', 'idle_b']);
+      default: return undefined;
+    }
+  }
+
+  private alignFor(clip: MotionClip): THREE.Quaternion[] {
+    let a = this.alignCache.get(clip.name);
+    if (a) return a;
+    a = MOTION_BONES.map((n, i) => {
+      const rw = this.figure.restWorld.get(n);
+      if (n === 'root' || !rw) return new THREE.Quaternion();
+      const d = rw.tail.clone().sub(rw.head).normalize();
+      return new THREE.Quaternion().setFromUnitVectors(d, clip.dir[i]);
+    });
+    this.alignCache.set(clip.name, a);
+    return a;
+  }
+
+  /** Cross-fade to a clip; a gait keeps the stride's phase so the feet carry on. */
+  private startClip(name: string): void {
+    const clip = motionClip(name);
+    if (!clip) { this.play = undefined; return; }
+    const old = this.play;
+    const dur = clipDuration(clip);
+    let time = clip.loop ? Math.random() * dur : 0;
+    if (old && old.clip.speed > 0 && clip.speed > 0) time = ((old.time / clipDuration(old.clip)) % 1) * dur;
+    this.prev = old;
+    this.fade = old ? 0 : 1;
+    this.fadeRate = old && old.clip.speed > 0 && clip.speed > 0 ? 5 : 2.5;
+    this.play = { clip, time, rate: 1, align: this.alignFor(clip) };
+  }
+
+  private updateMotion(dt: number, speed: number, goal: number): void {
+    const want = this.wantedClip(speed, goal);
+    if (want !== this.clipName) {
+      this.clipName = want;
+      if (want) this.startClip(want);
+    }
+    const p = this.play;
+    if (p) {
+      p.rate = p.clip.speed > 0 ? THREE.MathUtils.clamp(Math.max(speed, 0.3) / p.clip.speed, 0.5, 1.8) : 1;
+      p.time += dt * p.rate;
+      if (this.prev) { this.prev.time += dt * this.prev.rate; this.fade = Math.min(1, this.fade + dt * this.fadeRate); if (this.fade >= 1) this.prev = undefined; }
+    }
+    this.motionBlend += ((want && p ? 1 : 0) - this.motionBlend) * Math.min(1, dt * 4);
+  }
+
+  /** The captured rotation (figure space, aligned to this body) of bone `i`, faded between the last clip and this one. */
+  private clipRotation(i: number, out: THREE.Quaternion): THREE.Quaternion {
+    const p = this.play!;
+    sampleClip(p.clip, p.time, i, out).multiply(p.align[i]);
+    if (this.prev && this.fade < 1) {
+      sampleClip(this.prev.clip, this.prev.time, i, this.tmpQ2).multiply(this.prev.align[i]);
+      this.tmpQ2.slerp(out, this.fade);
+      out.copy(this.tmpQ2);
+    }
+    return out;
+  }
+
+  animate(dt: number, speed: number, goal = speed): void {
     this.updateLook(dt);
+    this.updateMotion(dt, speed, goal);
     const f = this.figure;
     this.breathe += dt;
     const movingGoal = speed > 0.05 ? 1 : 0;
@@ -207,7 +317,7 @@ export class Humanoid {
     const pb = this.poseBlend;
     const lying = idle === 'sleep' ? pb : 0;
     this.workPhase += dt;
-    if (idle === 'drink') { this.sipT -= dt; if (this.sipT < -1.6) this.sipT = 5 + Math.random() * 7; }
+    if (idle === 'drink') { this.sipT -= dt; if (this.sipT < -(this.motionBlend > 0.5 ? 8 : 1.6)) this.sipT = 5 + Math.random() * 7; }
     const sip = idle === 'drink' && this.sipT < 0 ? Math.sin(Math.min(1, -this.sipT / 1.6) * Math.PI) : 0;
     // Idle: weight shifts slowly from foot to foot; the pelvis and shoulders counter-tilt; the head wanders.
     const shift = Math.sin(t * 0.35) * (1 - w);
@@ -265,6 +375,25 @@ export class Humanoid {
       W.set(`lowerarm01.${side}`, f.aimRotation(`lowerarm01.${side}`, lowerDir).clone());
       W.set(`wrist.${side}`, f.aimRotation(`wrist.${side}`, handDir).clone());
     }
+    // Captured motion replaces the procedural pose bone by bone (the aimed arm stays procedural), then the live
+    // overlays go back on: the head turning to whoever is near, a flinch.
+    const mb = this.motionBlend;
+    if (this.play && mb > 0.001) {
+      for (let i = 0; i < MOTION_BONES.length; i++) {
+        const n = MOTION_BONES[i];
+        const wq0 = W.get(n);
+        if (!wq0) continue;
+        let wgt = mb;
+        if (this.aim > 0 && n.endsWith('.R') && (n.startsWith('upperarm') || n.startsWith('lowerarm') || n.startsWith('wrist'))) wgt *= 1 - this.aim;
+        wq0.slerp(this.clipRotation(i, this.tmpQ), wgt);
+      }
+      const lk = this.lookBlend * (1 - w * 0.6) * mb;
+      if (lk > 0.001) {
+        W.get('head')!.premultiply(this.tmpQ.setFromAxisAngle(Y, this.lookYaw * 0.7 * lk)).premultiply(this.tmpQ2.setFromAxisAngle(X, this.lookPitch * lk));
+        W.get('spine03')!.premultiply(this.tmpQ.setFromAxisAngle(Y, this.lookYaw * 0.3 * lk));
+      }
+      if (this.flinch > 0) W.get('spine05')!.premultiply(this.tmpQ.setFromAxisAngle(X, -this.flinch * 0.25 * mb));
+    }
     for (const n of ANIMATED) {
       const wq = W.get(n)!;
       const pa = this.parentAnimated.get(n);
@@ -275,6 +404,17 @@ export class Humanoid {
     rootB.position.y = this.rootRestY + Math.abs(c) * 0.03 * w * amp - 0.01 * w - sitLeg * 0.5;
     rootB.position.x = shift * 0.012 + s * 0.01 * w * amp;
     rootB.position.z = 0;
+    if (this.play && mb > 0.001) {
+      // The pelvis where the capture put it, scaled to this body's hip height.
+      const at = (p: Playing, out: THREE.Vector3) => {
+        const v = samplePos(p.clip, p.time, out);
+        const scale = this.rootRestY / p.clip.hip;
+        return v.set(v.x * scale, this.rootRestY * (1 + v.y), v.z * scale);
+      };
+      const v = at(this.play, this.tmpV);
+      if (this.prev && this.fade < 1) v.lerp(at(this.prev, this.tmpV2), 1 - this.fade);
+      rootB.position.lerp(v, mb);
+    }
     const fall = this.dead > 0 ? 1 - Math.pow(1 - Math.min(1, this.dead), 3) : 0;
     const down = Math.max(fall, lying);
     if (down > 0) {
@@ -299,6 +439,16 @@ export class Humanoid {
     if (this.fidgetBlend === 0) this.fidget = 'none';
     this.fidgetT -= dt;
     if (this.fidgetT > 0 || this.fidgetBlend > 0) return;
+    // Captured idles carry their own small movements; now and then a captured stretch or yawn plays over them.
+    if (this.motionBlend > 0.5) {
+      if (this.idle === 'stand' && Math.random() < 0.3) {
+        const name = this.variant(['stretch', 'yawn', 'yawn_b']);
+        const c = motionClip(name);
+        if (c) this.oneShot = { name, until: this.breathe + clipDuration(c) };
+      }
+      this.fidgetT = 10 + Math.random() * 14;
+      return;
+    }
     const pool: [Fidget, number][] = this.idle === 'talk' ? [['hands', 2], ['neck', 1], ['look', 2], ['scratch', 1]]
       : this.idle === 'alert' ? [['look', 3], ['hips', 2], ['neck', 1]]
       : [['scratch', 1], ['hands', 1], ['hips', 2], ['cross', 3], ['neck', 1], ['look', 2]];

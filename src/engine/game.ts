@@ -1077,7 +1077,7 @@ export class Game extends EventBus<GameEvents> {
       const dist = Math.max(Math.abs(n.actor.tx - p.tx), Math.abs(n.actor.ty - p.ty));
       if (!shouldFollow(dist, p.moving)) continue;
       const path = followPath(this.grid, { id: n.id, x: n.actor.tx, y: n.actor.ty }, { x: p.tx, y: p.ty, facing: p.facing });
-      if (path && path.length) { n.actor.running = p.running || dist > 5; n.actor.setPath(path); }
+      if (path && path.length) { n.actor.speed = p.speed; n.actor.running = p.running || dist > 5; n.actor.setPath(path); }
     }
   }
 
