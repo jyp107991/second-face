@@ -16,7 +16,7 @@ const PROP_BLOCKS: Record<string, Cover> = {
   rock_small: 'half', tire_pile: 'half', tank: 'full', vault_door: 'full', dead_tree: 'half',
   sandbags: 'half', shelf: 'full', stove: 'half', fire_barrel: 'half', campfire: 'none', cactus: 'half',
   sign: 'none', counter: 'half', planter: 'half', machine: 'full', cot: 'half', tent: 'full',
-  fence_post: 'none', debris: 'half',
+  fence_post: 'none', debris: 'half', pump: 'half',
 };
 
 /** Props that occupy their tile (not walkable). */

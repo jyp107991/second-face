@@ -228,6 +228,22 @@ const P: Record<PropKind, PropFn> = {
   fence_post: (b) => {
     b.box(0.1, 1.3, 0.1, 0, 0.65, 0, 'wood', C.darkWood);
   },
+  pump: (b) => {
+    // A well pump: cast-iron column and head on a concrete plinth, a long lever, a spout over a trough, a drive wheel.
+    b.box(1.0, 0.22, 1.0, 0, 0.11, 0, 'concrete', 0x9a9488);
+    b.cyl(0.11, 0.14, 1.35, 8, 0, 0.9, 0, 'metal', C.darkMetal);
+    b.box(0.38, 0.32, 0.3, 0, 1.68, 0, 'metal', 0x3e4244);
+    b.cyl(0.06, 0.06, 0.2, 6, 0, 1.92, 0, 'metal', C.darkMetal);
+    b.box(0.95, 0.05, 0.06, 0.38, 1.82, 0, 'metal', C.darkMetal, 0, { rz: 0.32 });
+    b.cyl(0.03, 0.03, 0.22, 6, 0.8, 1.98, 0, 'wood', C.wood, { rz: Math.PI / 2 });
+    b.box(0.09, 0.09, 0.4, 0, 1.4, 0.3, 'metal', C.darkMetal);
+    b.box(0.09, 0.3, 0.09, 0, 1.25, 0.5, 'metal', C.darkMetal);
+    b.box(0.9, 0.34, 0.42, 0, 0.39, 0.62, 'rust', 0x7a5a42);
+    b.box(0.82, 0.02, 0.34, 0, 0.55, 0.62, 'flat', 0x3a4a48, 0, { shadow: false });
+    b.cyl(0.3, 0.3, 0.06, 10, -0.34, 1.05, 0, 'metal', C.darkMetal, { rz: Math.PI / 2 });
+    b.cyl(0.07, 0.07, 0.5, 6, -0.3, 0.3, -0.3, 'rust', C.rust, { rx: Math.PI / 2 });
+    b.box(0.7, 0.02, 0.5, 0.1, 0.23, -0.1, 'flat', 0x6a5a48, 0.4, { shadow: false });
+  },
   debris: (b, r) => {
     for (let i = 0; i < 4; i++) b.box(r.range(0.1, 0.4), r.range(0.03, 0.12), r.range(0.1, 0.4), r.range(-0.35, 0.35), 0.04, r.range(-0.35, 0.35), r.pick(['concrete', 'rust', 'wood'] as const), r.pick([0x8a8478, 0x8a5a3a, 0x6a5a48]), r.next() * 3);
   },

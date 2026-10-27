@@ -69,15 +69,15 @@ g[30][13] = '.'; g[30][14] = '.'
 fill(36, 4, 44, 10, 'r')
 # homes
 for (x0, y0) in [(3, 42), (11, 42), (21, 42), (37, 42), (46, 42), (54, 42)]:
-    building(x0, y0, x0 + 5, y0 + 5, 'B', 'c', [(x0 + 2, y0)])
+    building(x0, y0, x0 + 5, y0 + 5, 'A', 'c', [(x0 + 2, y0)])
 for (x0, y0) in [(4, 8), (12, 4), (48, 4)]:
-    building(x0, y0, x0 + 5, y0 + 4, 'B', 'c', [(x0 + 2, y0 + 4)])
+    building(x0, y0, x0 + 5, y0 + 4, 'A', 'c', [(x0 + 2, y0 + 4)])
 
 rows = [''.join(r) for r in g]
 
 props = [
     # wells plaza
-    {'kind': 'machine', 'x': 31, 'y': 19, 'id': 'pump_a'}, {'kind': 'machine', 'x': 33, 'y': 19, 'id': 'pump_b'}, {'kind': 'tank', 'x': 35, 'y': 20},
+    {'kind': 'pump', 'x': 31, 'y': 19, 'id': 'pump_a'}, {'kind': 'pump', 'x': 33, 'y': 19, 'id': 'pump_b'}, {'kind': 'tank', 'x': 35, 'y': 20},
     {'kind': 'barrel', 'x': 29, 'y': 21}, {'kind': 'barrel', 'x': 30, 'y': 21}, {'kind': 'pipe_h', 'x': 32, 'y': 18}, {'kind': 'fire_barrel', 'x': 27, 'y': 18},
     {'kind': 'crate', 'x': 37, 'y': 18, 'id': 'water_crate'}, {'kind': 'sign', 'x': 28, 'y': 22}, {'kind': 'lamp_post', 'x': 26, 'y': 22}, {'kind': 'lamp_post', 'x': 38, 'y': 22},
     # saloon
@@ -132,6 +132,7 @@ shale = {
         '.': {'floor': 'sand'}, ',': {'floor': 'dirt'}, 'r': {'floor': 'rubble'}, 's': {'floor': 'rubble'}, 'c': {'floor': 'concrete'}, 'w': {'floor': 'wood'}, 'm': {'floor': 'metal'},
         'R': {'wall': 'rock', 'floor': 'sand', 'wallHeight': 3},
         'B': {'wall': 'brick', 'floor': 'dirt', 'wallHeight': 2.6},
+        'A': {'wall': 'adobe', 'floor': 'dirt', 'wallHeight': 2.5},
         'W': {'wall': 'wood', 'floor': 'wood', 'wallHeight': 2.8},
         'C': {'wall': 'concrete', 'floor': 'concrete', 'wallHeight': 2.8},
         'S': {'wall': 'scrap', 'floor': 'dirt', 'wallHeight': 2.4},

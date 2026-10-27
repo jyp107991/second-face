@@ -10,7 +10,7 @@ const path = require('path');
   await page.goto('http://127.0.0.1:5173/?dev');
   await page.waitForTimeout(9000);
   await page.evaluate(async () => {
-    document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('medium');
+    document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('medium'); game.quietRoads = true;
     game.state.flags.visited_shale = true; game.state.minutes = 4 * 1440 + 10 * 60 + 1;
     game.quests.questStart('q_ch1_tribute');
   });

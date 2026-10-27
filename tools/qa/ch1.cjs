@@ -58,7 +58,7 @@ const fs = require('fs');
 
   await page.goto('http://127.0.0.1:5173/?dev');
   await page.waitForTimeout(9000);
-  await page.evaluate(() => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('medium'); });
+  await page.evaluate(() => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('medium'); game.quietRoads = true; });
   await page.evaluate(() => { const s = game.state; game.newGame(s.pc.sheet, SF.randomAppearance(11, { frame: 'lean' }), 'they', 'pump_hand'); });
   await page.waitForFunction(() => game.state.locationId === 'cistern9' && game.npcs.size >= 9, null, { timeout: 120000 });
   await page.waitForTimeout(1500);

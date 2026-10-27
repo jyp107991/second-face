@@ -4,7 +4,7 @@ import { hash2 } from '../core/rng';
 /** Procedural surface textures (canvas-generated, cached, tileable). */
 export type SurfaceKind =
   | 'sand' | 'dirt' | 'concrete' | 'metal' | 'wood' | 'grate' | 'asphalt' | 'rubble' | 'tile'
-  | 'brick' | 'rust' | 'rock' | 'fabric' | 'scrap' | 'paint';
+  | 'brick' | 'rust' | 'rock' | 'fabric' | 'scrap' | 'paint' | 'adobe' | 'tin';
 
 const SIZE = 128;
 const cache = new Map<SurfaceKind, THREE.Texture>();
@@ -134,6 +134,24 @@ const SHADERS: Record<SurfaceKind, Shader> = {
     const peel = n > 0.62 ? 0.7 : 1;
     const c = mix([200, 196, 180], [224, 220, 204], fbm(u, v, 16, 31));
     return [c[0] * peel, c[1] * peel, c[2] * peel];
+  },
+  adobe: (u, v) => {
+    // Mud plaster: soft ochre blotches, hairline cracks, straw flecks, the ghost of the brick courses under it.
+    const n = fbm(u, v, 3, 32), d = fbm(u, v, 12, 33);
+    const crack = Math.abs(fbm(u, v, 4, 34, 3) - 0.5) < 0.007 ? 0.78 : 1;
+    const straw = hash2(Math.floor(u * 128), Math.floor(v * 128), 35) > 0.985 ? 1.12 : 1;
+    const course = (v * 6) % 1 < 0.06 ? 0.95 : 1;
+    const c = mix([188, 150, 104], [224, 194, 148], n * 0.75 + d * 0.25);
+    const k = crack * straw * course;
+    return [c[0] * k, c[1] * k, c[2] * k];
+  },
+  tin: (u, v) => {
+    // Corrugated sheet: ridges along v, galvanised grey going to rust in streaks that run down the sheet.
+    const ridge = 0.78 + 0.22 * Math.sin(u * Math.PI * 2 * 16);
+    const streak = fbm(u * 3, v * 0.6, 4, 36), spot = fbm(u, v, 8, 37);
+    const rust = smooth(Math.min(1, Math.max(0, (streak * 0.7 + spot * 0.3 - 0.5) * 3)));
+    const c = mix(mix([140, 144, 140], [168, 170, 164], spot), [118, 66, 36], rust);
+    return [c[0] * ridge, c[1] * ridge, c[2] * ridge];
   },
 };
 

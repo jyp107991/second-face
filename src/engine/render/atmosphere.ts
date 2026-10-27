@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { softSprite } from '../assets/textures';
 import type { AmbienceDef } from '../data/types';
 import type { BuiltLocation } from '../scene/location';
+import { roofBase } from '../scene/buildings';
 import { MOOD_GRADE, skyLook, type WeatherKind } from '../world/weather';
 
 interface LightSource { pos: THREE.Vector3; color: THREE.Color; intensity: number; range: number; flicker: number; phase: number; }
@@ -68,11 +69,19 @@ export class Atmosphere {
   load(loc: BuiltLocation): void {
     this.ambience = loc.map.ambience;
     this.sources = [];
+    // A light inside a roofed room stays under the roof (a lamp post's head would otherwise light the roof's top).
+    const under = (x: number, z: number, y: number) => {
+      if (loc.map.ambience.indoor) return y;
+      const tx = Math.floor(x), tz = Math.floor(z);
+      if (!loc.grid.inBounds(tx, tz)) return y;
+      const id = loc.buildings.at[loc.grid.index(tx, tz)];
+      return id >= 0 ? Math.min(y, roofBase(loc.buildings.list[id]) - 0.25) : y;
+    };
     for (const l of loc.map.lights ?? []) {
-      this.sources.push({ pos: new THREE.Vector3(l.x + 0.5, l.height ?? 2.2, l.y + 0.5), color: new THREE.Color(l.color), intensity: l.intensity * LIGHT_SCALE, range: l.range * 1.4, flicker: l.flicker ?? 0, phase: Math.random() * 10 });
+      this.sources.push({ pos: new THREE.Vector3(l.x + 0.5, under(l.x + 0.5, l.y + 0.5, l.height ?? 2.2), l.y + 0.5), color: new THREE.Color(l.color), intensity: l.intensity * LIGHT_SCALE, range: l.range * 1.4, flicker: l.flicker ?? 0, phase: Math.random() * 10 });
     }
     for (const f of loc.features) {
-      const base = { pos: new THREE.Vector3(f.wx + f.x, f.y, f.wz + f.z), color: new THREE.Color(f.color), phase: Math.random() * 10 };
+      const base = { pos: new THREE.Vector3(f.wx + f.x, under(f.wx + f.x, f.wz + f.z, f.y), f.wz + f.z), color: new THREE.Color(f.color), phase: Math.random() * 10 };
       if (f.kind === 'fire') this.sources.push({ ...base, intensity: 6 * LIGHT_SCALE, range: 9, flicker: 0.35 });
       else if (f.kind === 'lamp') this.sources.push({ ...base, intensity: 5 * LIGHT_SCALE, range: 11, flicker: 0.05 });
       else this.sources.push({ ...base, intensity: 1.2 * LIGHT_SCALE, range: 4, flicker: 0.04 });

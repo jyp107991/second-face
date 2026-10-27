@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { MAPS, NPCS } from '../content';
-import { cutawayUniforms } from './assets/materials';
+import { cutawayUniforms, roofUniforms } from './assets/materials';
 import { EventBus } from './core/events';
 import { dayOf, hourOf, newGameState, type GameState, type Pronouns } from './core/state';
 import type { Appearance } from './data/appearance';
@@ -297,7 +297,7 @@ export class Game extends EventBus<GameEvents> {
       }
       const forced = this.forceEncounter ? ROAD_ENCOUNTERS[this.forceEncounter] : undefined;
       this.forceEncounter = undefined;
-      const enc = forced ?? rollEncounter(this.state, WORLD_MAP, leg, ROAD_ENCOUNTERS, this.rng);
+      const enc = forced ?? (this.quietRoads ? undefined : rollEncounter(this.state, WORLD_MAP, leg, ROAD_ENCOUNTERS, this.rng));
       if (!enc) { spent += leg.hours; continue; }
       (this.state.world.roadSeen ??= {})[enc.id] = true;
       if (!enc.map) {
@@ -348,6 +348,8 @@ export class Game extends EventBus<GameEvents> {
   /** Today's weather where the player is. */
   /** Dev/QA: force a weather kind regardless of the day. */
   weatherOverride?: WeatherKind;
+  /** Dev/QA: roll no road encounters (forced ones still happen), so a scripted journey arrives where it set out for. */
+  quietRoads = false;
   weatherNow(): WeatherKind {
     if (this.weatherOverride) return this.weatherOverride;
     const region = WORLD_MAP.locations[this.state.world.at ?? '']?.region ?? 'sallow';
@@ -1174,9 +1176,10 @@ export class Game extends EventBus<GameEvents> {
     }
     this.cam.update(dt);
 
-    // Cutaway centred on the player (chest height).
+    // Cutaway centred on the player (chest height); the roof of the building the player is in is lifted.
     if (this.player) cutawayUniforms.uCutCenter.value.copy(this.player.object.position).setY(1.0);
     this.cam.forward(cutawayUniforms.uCamDir.value);
+    roofUniforms.uHideBld.value = this.player && this.loc && this.loc.grid.inBounds(this.player.tx, this.player.ty) ? this.loc.buildings.at[this.loc.grid.index(this.player.tx, this.player.ty)] : -1;
 
     this.atmosphere.hour = hourOf(this.state.minutes);
     this.atmosphere.weather = this.weatherNow();

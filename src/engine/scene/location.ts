@@ -5,6 +5,7 @@ import { Rng, hash2 } from '../core/rng';
 import type { FloorKind, MapDef, WallKind } from '../data/types';
 import { Grid } from './grid';
 import type { SurfaceKind } from '../assets/textures';
+import { buildRoofs, buildWalls, detectBuildings, type Buildings } from './buildings';
 
 export interface BuiltLocation {
   map: MapDef;
@@ -13,6 +14,8 @@ export interface BuiltLocation {
   root: THREE.Group;
   features: (PropFeature & { wx: number; wz: number })[];
   bounds: THREE.Box3;
+  /** The rooms the walls enclose (roofs hide while the player is in one). */
+  buildings: Buildings;
 }
 
 const FLOOR_SURFACE: Record<FloorKind, SurfaceKind> = {
@@ -24,7 +27,7 @@ const FLOOR_TINT: Record<FloorKind, number> = {
   asphalt: 0xffffff, rubble: 0xffffff, tile: 0xffffff,
 };
 const WALL_SURFACE: Record<WallKind, SurfaceKind> = {
-  concrete: 'concrete', metal: 'metal', wood: 'wood', rock: 'rock', fence: 'wood', brick: 'brick', scrap: 'scrap',
+  concrete: 'concrete', metal: 'metal', wood: 'wood', rock: 'rock', fence: 'wood', brick: 'brick', scrap: 'scrap', adobe: 'adobe',
 };
 
 /** Tile (x, y) → world centre. Row y grows south (+z). */
@@ -42,6 +45,7 @@ export function buildLocation(map: MapDef): BuiltLocation {
   const b = new GeoBuilder(rng);
   const features: BuiltLocation['features'] = [];
   const floorGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+  const buildings = detectBuildings(grid, rng);
 
   for (const t of grid.tiles) {
     const { x, y, def } = t;
@@ -51,7 +55,7 @@ export function buildLocation(map: MapDef): BuiltLocation {
     const m = new THREE.Matrix4().makeTranslation(wx, 0, wz);
     b.add(floorGeo, FLOOR_SURFACE[floor], FLOOR_TINT[floor], m, { shadow: false, jitter: 0.04 });
 
-    if (def.wall) buildWall(b, def.wall, def.wallHeight ?? 2.6, x, y, grid, rng);
+    if (def.wall === 'rock' || def.wall === 'fence') buildWall(b, def.wall, def.wallHeight ?? 2.6, x, y, grid, rng);
 
     if (def.prop) {
       b.cutawayDefault = true;
@@ -84,6 +88,8 @@ export function buildLocation(map: MapDef): BuiltLocation {
     b.cutawayDefault = false;
   }
 
+  buildWalls(b, grid, map, buildings, rng);
+  buildRoofs(b, grid, map, buildings, rng);
   const root = b.build();
 
   // Outdoor maps: a wide ground skirt beyond the playable bounds that fades into fog.
@@ -98,7 +104,7 @@ export function buildLocation(map: MapDef): BuiltLocation {
   }
 
   const bounds = new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(grid.width, 3, grid.height));
-  return { map, grid, root, features, bounds };
+  return { map, grid, root, features, bounds, buildings };
 }
 
 function buildWall(b: GeoBuilder, kind: WallKind, h: number, x: number, y: number, grid: Grid, rng: Rng): void {
@@ -120,14 +126,8 @@ function buildWall(b: GeoBuilder, kind: WallKind, h: number, x: number, y: numbe
       if (isWall(0, 1)) for (const yy of [0.35, 0.9]) b.box(0.04, 0.08, 1.0, wx, yy * (h / 1.3), wz + 0.5, 'wood', 0x7a5c3c, 0, { cutaway: true });
       return;
     }
-    default: {
-      const color = kind === 'concrete' ? 0xd8d2c4 : kind === 'metal' ? 0xc0c4c0 : 0xffffff;
-      b.box(1, h, 1, wx, h / 2, wz, surf, color, 0, { cutaway: true });
-      // Detail: trim at the top and a darker skirting at the base.
-      b.box(1.0, 0.14, 1.0, wx, h + 0.03, wz, surf, 0x9a948a, 0, { cutaway: true });
-      b.box(1.02, 0.18, 1.02, wx, 0.09, wz, surf, 0x6a645a, 0, { cutaway: true });
-      if (kind === 'scrap' && rng.chance(0.4)) b.box(0.9, 0.5, 0.05, wx, h * 0.6, wz + 0.52, 'rust', 0xa06a40, rng.range(-0.2, 0.2), { cutaway: true });
-      if ((kind === 'concrete' || kind === 'brick') && rng.chance(0.08)) b.box(0.15, 0.6, 0.06, wx, h * 0.55, wz + 0.52, 'metal', 0x4a4e50, 0, { cutaway: true });
-    }
+    default:
+      // Built walls are the buildings module's.
+      b.box(1, h, 1, wx, h / 2, wz, surf, 0xffffff, 0, { cutaway: true });
   }
 }

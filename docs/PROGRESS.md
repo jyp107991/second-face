@@ -141,10 +141,22 @@ such presentation decisions against modern CRPG practice. Each step: evidence sh
       synthesised in `audio.ts`; storm/dust fall back to wind). Dev: `game.weatherOverride`. Evidence
       `docs/evidence/a5/{shale_clear_noon,shale_dust_noon,shale_storm_evening,orchard_peaceful_morning,windpumps_bright,
       overpass_grim_haze}.png` via `tools/qa/weather.cjs`. Moods set per map in the generators.
-- [ ] A5.7 **Buildings that read as buildings** (~4 h): buildings detected as wall components; roofs with overhang,
-      parapet and clutter; wall faces by material (adobe: rounded tops, beam ends; scrap: overlapping tilted panels,
-      corrugation; concrete: seams, stains, rebar; brick courses); doorways get lintels and frames, long walls get
-      windows and awnings; ground edges blend, rubble and dust gather at walls. Before/after of Shale and the fort.
+- [x] A5.7 **Buildings that read as buildings** (~4 h): `engine/scene/buildings.ts` — `detectBuildings` finds the
+      rooms the walls enclose (doorways = gaps of 1–2 tiles in a wall, alley mouths excluded; yards with sand floors
+      are not rooms; `TileDef.roof` overrides); walls rebuilt at a real thickness (0.4–0.9 m) with faces by material
+      (adobe: plaster, rounded cap, vigas, base splash; brick: band course, coping, missing bricks; concrete: panel
+      seams, rebar, spall; wood: studs, rails; metal: ribs, bolts; scrap: leaning panel collage on posts); doors get
+      lintel, jambs, threshold and a canvas/tin awning; long runs get through-wall windows (shutters, bars or boards);
+      sand drifts at the foot outside. Roofs per kind — flat slab behind a parapet with clutter (tank, tarp, vent,
+      aerial, cracked solar panel), pitched with gables and a chimney, lean-to tin with tyres and rocks — carry a
+      per-vertex building id and are discarded (shadow too, `roofDepthMaterial`) while the player is in that room
+      (`roofUniforms.uHideBld`, set in `Game.frame`). Lights inside a roofed room are kept under the roof. New
+      `adobe` wall kind + `adobe`/`tin` surfaces; Shale's homes are adobe and its wells are a real `pump` prop.
+      Evidence `docs/evidence/a5_before/{shale_bld_2,tollhouse_bld_1}.png` → `docs/evidence/a5/bld_*.png`
+      (`tools/qa/buildings.cjs`: Shale sheriff/homes/saloon (+inside)/pumps/mender, the fort (+inside), the overpass
+      shed, the orchard house, Dry Wells hall and sheds). Tests `tests/buildings.test.ts`. Draw calls unchanged
+      (roofs merge into ~6 buckets). Known: the wall cutaway can open a dark hole into a roofed room when the player
+      stands against its outer corner — tighten the cut cylinder in A5.9.
 - [ ] A5.8 **Bionics that look like the future** (~2.5 h): chrome redrawn as segmented matte-polymer plating with
       brushed-metal seams and a thin emissive accent (amber old / red dark / cyan Concern): forearm sleeves and
       knuckle plates, shin plates, an optic ring with a lit iris, a nape port, a lit spine ridge, subdermal seams.

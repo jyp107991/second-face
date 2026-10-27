@@ -9,7 +9,7 @@ const path = require('path');
   page.on('console', (m) => { if (m.type() === 'error') console.log('CONSOLE', m.text().slice(0, 300)); });
   await page.goto('http://127.0.0.1:5173/?dev');
   await page.waitForTimeout(9000);
-  await page.evaluate(() => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('medium'); });
+  await page.evaluate(() => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('medium'); game.quietRoads = true; });
   // Start a new game through the engine (skips the creator): default sheet + appearance.
   await page.evaluate(() => { const s = game.state; game.newGame(s.pc.sheet, SF.randomAppearance(5, { frame: 'broad' }), 'they', 'pump_hand'); });
   await page.waitForTimeout(9000);

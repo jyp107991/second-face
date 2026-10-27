@@ -304,7 +304,9 @@ goods is always possible (value-matched).
   mood (bright, peaceful, bustling, grim). Gloom is a choice for a place, never the default.
 - **Conversations stay in the world**: the scene remains, the camera frames the speakers, a live portrait sits beside
   the panel. No black-screen close-ups.
-- **Buildings read as buildings**: roofs, lintels, windows, materials with their own edges and wear; no bare blocks.
+- **Buildings read as buildings**: real wall thickness, roofs (flat and parapeted, pitched, tin lean-to), lintels,
+  windows, materials with their own edges and wear; no bare blocks. The roof of the room the player is in lifts
+  (and its shadow with it); from outside, interiors are hidden, as in classic isometric RPGs.
 - **Bionics look like the future**: segmented matte plating, metal seams, a lit accent line; never bolted scrap.
 
 ## 6. Combat

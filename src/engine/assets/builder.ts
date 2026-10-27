@@ -1,12 +1,14 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { applyWorldUVs, flatMaterial, surfaceMaterial } from './materials';
+import { applyWorldUVs, flatMaterial, roofDepthMaterial, surfaceMaterial } from './materials';
 import type { SurfaceKind } from './textures';
 import type { Rng } from '../core/rng';
 
 export type Surface = SurfaceKind | 'flat' | 'glow';
 
-interface Bucket { surface: Surface; cutaway: boolean; shadow: boolean; geos: THREE.BufferGeometry[]; }
+interface Bucket { surface: Surface; cutaway: boolean; shadow: boolean; roof: boolean; geos: THREE.BufferGeometry[]; }
+
+export interface AddOpts { cutaway?: boolean; shadow?: boolean; jitter?: number; /** Roof piece of this building (hidden while the player is inside). */ building?: number; }
 
 const tmpColor = new THREE.Color();
 
@@ -23,7 +25,7 @@ export class GeoBuilder {
 
   constructor(private rng?: Rng) {}
 
-  add(geo: THREE.BufferGeometry, surface: Surface, color: number, local?: THREE.Matrix4, opts: { cutaway?: boolean; shadow?: boolean; jitter?: number } = {}): void {
+  add(geo: THREE.BufferGeometry, surface: Surface, color: number, local?: THREE.Matrix4, opts: AddOpts = {}): void {
     const g = geo.index ? geo.toNonIndexed() : geo.clone();
     const m = local ? this.matrix.clone().multiply(local) : this.matrix;
     g.applyMatrix4(m);
@@ -38,17 +40,19 @@ export class GeoBuilder {
       colors[i * 3] = tmpColor.r * v; colors[i * 3 + 1] = tmpColor.g * v; colors[i * 3 + 2] = tmpColor.b * v;
     }
     g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    if (surface !== 'flat' && surface !== 'glow') applyWorldUVs(g, surface === 'grate' || surface === 'tile' ? 1 : 2);
+    if (surface !== 'flat' && surface !== 'glow') applyWorldUVs(g, surface === 'grate' || surface === 'tile' || surface === 'brick' || surface === 'tin' ? 1 : 2);
     else g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(n * 2), 2));
+    const roof = opts.building !== undefined;
+    if (roof) g.setAttribute('aBld', new THREE.BufferAttribute(new Float32Array(n).fill(opts.building!), 1));
     const cut = opts.cutaway ?? this.cutawayDefault;
-    const key = `${surface}|${cut}|${opts.shadow ?? true}`;
+    const key = `${surface}|${cut}|${opts.shadow ?? true}|${roof}`;
     let b = this.buckets.get(key);
-    if (!b) this.buckets.set(key, (b = { surface, cutaway: cut, shadow: opts.shadow ?? true, geos: [] }));
+    if (!b) this.buckets.set(key, (b = { surface, cutaway: cut, shadow: opts.shadow ?? true, roof, geos: [] }));
     b.geos.push(g);
   }
 
   // --- primitive helpers (local coords relative to this.matrix) ---
-  box(w: number, h: number, d: number, x: number, y: number, z: number, surface: Surface, color: number, ry = 0, opts?: { cutaway?: boolean; shadow?: boolean; rx?: number; rz?: number }): void {
+  box(w: number, h: number, d: number, x: number, y: number, z: number, surface: Surface, color: number, ry = 0, opts?: AddOpts & { rx?: number; rz?: number }): void {
     const g = new THREE.BoxGeometry(w, h, d);
     const m = new THREE.Matrix4().compose(
       new THREE.Vector3(x, y, z),
@@ -58,7 +62,7 @@ export class GeoBuilder {
     this.add(g, surface, color, m, opts);
   }
 
-  cyl(rTop: number, rBot: number, h: number, seg: number, x: number, y: number, z: number, surface: Surface, color: number, opts?: { cutaway?: boolean; shadow?: boolean; rx?: number; rz?: number; ry?: number }): void {
+  cyl(rTop: number, rBot: number, h: number, seg: number, x: number, y: number, z: number, surface: Surface, color: number, opts?: AddOpts & { rx?: number; rz?: number; ry?: number }): void {
     const g = new THREE.CylinderGeometry(rTop, rBot, h, seg);
     const m = new THREE.Matrix4().compose(
       new THREE.Vector3(x, y, z),
@@ -68,7 +72,7 @@ export class GeoBuilder {
     this.add(g, surface, color, m, opts);
   }
 
-  rock(r: number, x: number, y: number, z: number, color: number, detail = 0, squash = 0.7, opts?: { cutaway?: boolean }): void {
+  rock(r: number, x: number, y: number, z: number, color: number, detail = 0, squash = 0.7, opts?: AddOpts): void {
     const g = new THREE.IcosahedronGeometry(r, detail);
     const pos = g.getAttribute('position') as THREE.BufferAttribute;
     const rnd = this.rng;
@@ -78,7 +82,7 @@ export class GeoBuilder {
     }
     g.computeVertexNormals();
     const m = new THREE.Matrix4().makeTranslation(x, y, z);
-    this.add(g, 'rock', color, m, { cutaway: opts?.cutaway, jitter: 0.1 });
+    this.add(g, 'rock', color, m, { ...opts, jitter: 0.1 });
   }
 
   /** Run fn with this.matrix temporarily set to a placement transform. */
@@ -101,11 +105,12 @@ export class GeoBuilder {
       if (!merged) continue;
       merged.computeBoundingSphere();
       const mat = b.surface === 'flat'
-        ? flatMaterial({ cutaway: b.cutaway })
+        ? flatMaterial({ cutaway: b.cutaway, roof: b.roof })
         : b.surface === 'glow'
           ? glowMaterial()
-          : surfaceMaterial(b.surface, { cutaway: b.cutaway });
+          : surfaceMaterial(b.surface, { cutaway: b.cutaway, roof: b.roof });
       const mesh = new THREE.Mesh(merged, mat);
+      if (b.roof) mesh.customDepthMaterial = roofDepthMaterial();
       mesh.castShadow = b.shadow && b.surface !== 'glow';
       mesh.receiveShadow = b.surface !== 'glow';
       mesh.matrixAutoUpdate = false;

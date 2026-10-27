@@ -20,12 +20,16 @@ const PARAMS: Partial<Record<SurfaceKind, SurfaceParams>> = {
   scrap: { roughness: 0.8, metalness: 0.3 },
   tile: { roughness: 0.5, metalness: 0 },
   paint: { roughness: 0.7, metalness: 0 },
+  tin: { roughness: 0.55, metalness: 0.45 },
 };
 
 const cache = new Map<string, THREE.MeshStandardMaterial>();
 
-export function surfaceMaterial(kind: SurfaceKind, opts: { cutaway?: boolean } = {}): THREE.MeshStandardMaterial {
-  const key = `${kind}|${opts.cutaway ? 1 : 0}`;
+/** The building whose roof is hidden (the one the player is in), or -1. */
+export const roofUniforms = { uHideBld: { value: -1 } };
+
+export function surfaceMaterial(kind: SurfaceKind, opts: { cutaway?: boolean; roof?: boolean } = {}): THREE.MeshStandardMaterial {
+  const key = `${kind}|${opts.cutaway ? 1 : 0}|${opts.roof ? 1 : 0}`;
   const hit = cache.get(key);
   if (hit) return hit;
   const p = PARAMS[kind] ?? { roughness: 0.92, metalness: 0 };
@@ -37,13 +41,14 @@ export function surfaceMaterial(kind: SurfaceKind, opts: { cutaway?: boolean } =
     flatShading: true,
   });
   if (opts.cutaway) applyCutaway(m);
+  if (opts.roof) applyRoofHide(m);
   cache.set(key, m);
   return m;
 }
 
 /** Plain vertex-coloured material (characters, small props). */
-export function flatMaterial(opts: { cutaway?: boolean; emissive?: number } = {}): THREE.MeshStandardMaterial {
-  const key = `flat|${opts.cutaway ? 1 : 0}|${opts.emissive ?? 0}`;
+export function flatMaterial(opts: { cutaway?: boolean; emissive?: number; roof?: boolean } = {}): THREE.MeshStandardMaterial {
+  const key = `flat|${opts.cutaway ? 1 : 0}|${opts.emissive ?? 0}|${opts.roof ? 1 : 0}`;
   const hit = cache.get(key);
   if (hit) return hit;
   const m = new THREE.MeshStandardMaterial({
@@ -51,8 +56,36 @@ export function flatMaterial(opts: { cutaway?: boolean; emissive?: number } = {}
     emissive: opts.emissive ?? 0x000000,
   });
   if (opts.cutaway) applyCutaway(m);
+  if (opts.roof) applyRoofHide(m);
   cache.set(key, m);
   return m;
+}
+
+/** Roof geometry carries its building's id per vertex (`aBld`); the building the player is in is discarded. */
+export function applyRoofHide(m: THREE.Material): void {
+  const prev = m.onBeforeCompile;
+  m.onBeforeCompile = (shader, renderer) => {
+    prev?.call(m, shader, renderer);
+    Object.assign(shader.uniforms, roofUniforms);
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nattribute float aBld; varying float vBld;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvBld = aBld;');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying float vBld; uniform float uHideBld;')
+      .replace('void main() {', 'void main() {\n  if (abs(vBld - uHideBld) < 0.5) discard;');
+  };
+  const prevKey = m.customProgramCacheKey;
+  m.customProgramCacheKey = () => `${prevKey ? prevKey.call(m) : ''}_roof`;
+}
+
+let roofDepth: THREE.MeshDepthMaterial | undefined;
+/** Shadow-pass material for roof meshes: the hidden roof casts no shadow either. */
+export function roofDepthMaterial(): THREE.MeshDepthMaterial {
+  if (!roofDepth) {
+    roofDepth = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking });
+    applyRoofHide(roofDepth);
+  }
+  return roofDepth;
 }
 
 export function applyCutaway(m: THREE.Material): void {

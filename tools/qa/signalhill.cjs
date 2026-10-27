@@ -20,7 +20,7 @@ const fs = require('fs');
 
   await page.goto('http://127.0.0.1:5173/?dev');
   await page.waitForTimeout(9000);
-  await page.evaluate(() => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('medium'); });
+  await page.evaluate(() => { document.querySelector('.overlay').classList.add('hidden'); game.paused = false; game.applyQuality('medium'); game.quietRoads = true; });
   await page.evaluate(() => { const s = game.state; game.newGame(s.pc.sheet, SF.randomAppearance(37, { frame: 'broad' }), 'he', 'pump_hand'); });
   await page.waitForFunction(() => game.state.locationId === 'cistern9' && game.npcs.size >= 9, null, { timeout: 120000 });
   await page.evaluate(async () => { const g = game.state; g.flags.ch1_done = true; g.flags.th_passed = true; g.flags.visited_tollhouse = true; g.world.knowledge.loc_signalhill = true; g.pc.inventory.tolls = 40; g.pc.sheet.skillBought.science = 60; game.quests.questStart('q_a1_signal'); await game.loadLocation('tollhouse', 'inside'); });
