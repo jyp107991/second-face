@@ -66,6 +66,20 @@ export class FigureView {
     this.raf = requestAnimationFrame(this.frame);
   };
 
+  /** A copy of the current frame (rendered now, so it is never blank), scaled to w×h. */
+  snapshot(w: number, h: number): HTMLCanvasElement {
+    this.stage.update(0);
+    this.renderer.render(this.stage.scene, this.stage.camera);
+    const out = document.createElement('canvas');
+    out.width = w; out.height = h;
+    const src = this.canvas, sw = src.width, sh = src.height;
+    // Crop to the output aspect from the centre.
+    const ar = w / h, sar = sw / sh;
+    const cw = sar > ar ? sh * ar : sw, ch = sar > ar ? sh : sw / ar;
+    out.getContext('2d')!.drawImage(src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, w, h);
+    return out;
+  }
+
   dispose(): void {
     this.disposed = true;
     cancelAnimationFrame(this.raf);

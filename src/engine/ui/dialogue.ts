@@ -3,12 +3,14 @@ import { DIALOGUES, NPCS } from '../../content';
 import { lookFrom } from '../assets/humanoid';
 import { DialogueRunner, type NodeView } from '../dialogue/dialogue';
 import type { NpcRuntime } from '../npc/spawn';
-import { PortraitStage } from '../render/portrait';
+import { FigureView } from '../render/figureView';
+import { GARMENTS } from '../data/garments';
 import { dayOf } from '../core/state';
 import { settings, tipOnce } from './settings';
 
 /**
- * Conversation screen: the speaker in a lit close-up (portrait stage) with the exchange below.
+ * Conversation panel: the world stays in view, the camera eases to frame the two of you, and the speaker's lit
+ * close-up sits beside the exchange (a small live view of its own). No black screen.
  * Options show their checks up front ([Speech 50], green when you meet it, red when you don't) and why
  * a difficulty changed. Number keys pick options; Escape leaves when an exit option exists.
  */
@@ -19,6 +21,8 @@ export class DialogueUi {
   /** Speaker name for tree-only conversations (terminals, examined things). */
   private title = '';
   private history: { who: string; text: string; pc?: boolean }[] = [];
+  private face?: FigureView;
+  private framed = false;
 
   constructor(private game: Game) {
     game.on('openDialogue', ({ npc, tree, name }) => { if (npc) this.open(npc); else if (tree) this.openTree(tree, name ?? ''); });
@@ -45,8 +49,10 @@ export class DialogueUi {
     this.runner = new DialogueRunner(def, this.game.state, { ...this.hostFns(), checkXp: 15 });
     if (this.runner.ended) { this.runner = undefined; return; }
     this.game.paused = true;
+    this.game.talking = true;
     this.el = document.createElement('div');
     this.el.className = 'dlg noface';
+    this.el.innerHTML = '<div class="dlg-panel"><div class="dlg-face"></div><div class="dlg-body"></div></div>';
     document.body.appendChild(this.el);
     this.render();
   }
@@ -60,17 +66,19 @@ export class DialogueUi {
     this.title = npc.def.name;
     this.history = [];
     this.runner = new DialogueRunner(def, this.game.state, { ...this.hostFns(), checkXp: 15 });
-    const stage = new PortraitStage(0x0f0c09);
-    stage.setLook(lookFrom(npc.appearance, npc.outfit));
-    stage.setFraming(0, true);
-    stage.offsetY = 0.1;
-    stage.yaw = -0.25;
-    this.game.portrait = stage;
     this.game.paused = true;
+    this.game.talking = true;
     this.el = document.createElement('div');
     this.el.className = 'dlg';
+    this.el.innerHTML = '<div class="dlg-panel"><div class="dlg-face"></div><div class="dlg-body"></div></div>';
     document.body.appendChild(this.el);
-    this.game.resize();
+    // The speaker, lit, beside the panel; eyewear comes off so the face reads.
+    const outfit = { ...npc.outfit, layers: (npc.outfit.layers ?? []).filter((l) => GARMENTS[l.name]?.slot !== 'eyes'), gear: (npc.outfit.gear ?? []).filter((g) => g.kind !== 'goggles') };
+    this.face = new FigureView(this.el.querySelector('.dlg-face')!, 0, 0x1a1512);
+    this.face.stage.offsetY = 0.02;
+    this.face.stage.yaw = -0.22;
+    this.face.setLook(lookFrom(npc.appearance, outfit));
+    this.frameSpeakers(npc);
     this.render();
     this.remember(npc);
     const tip = tipOnce('dialogue', 'Checks like [Speech 50] are fixed thresholds — no dice. Green ✓ means you meet it; red ✗ still leads somewhere.');
@@ -83,11 +91,22 @@ export class DialogueUi {
     (w.met ??= {})[npc.def.id] ??= { name: npc.def.name, day: dayOf(st.minutes), where: this.game.locationName };
     if (st.sketches?.[npc.def.id]) return;
     window.setTimeout(() => {
-      if (!this.el) return;
-      void this.game.captureFrame({ x: 0.3, y: 0.0, w: 0.4, h: 0.62 }, 150, 190).then((c) => {
-        (st.sketches ??= {})[npc.def.id] = sketchify(c);
-      });
+      if (!this.el || !this.face) return;
+      (st.sketches ??= {})[npc.def.id] = sketchify(this.face.snapshot(150, 190));
     }, 1200);
+  }
+
+  /** Turn the two of you to face each other and ease the camera to frame you both above the panel. */
+  private frameSpeakers(npc: NpcRuntime): void {
+    const g = this.game, p = g.player;
+    if (!p) return;
+    const a = p.object.position, b = npc.actor.object.position;
+    npc.actor.faceTowards(a.x, a.z);
+    p.faceTowards(b.x, b.z);
+    g.cam.pan.set((b.x - a.x) / 2, 0, (b.z - a.z) / 2);
+    g.cam.panScreen(0, -window.innerHeight * 0.1, window.innerHeight);
+    g.cam.zoomBy(0.78);
+    this.framed = true;
   }
 
   private hostFns() {
@@ -114,7 +133,10 @@ export class DialogueUi {
     this.el.remove();
     this.el = undefined;
     this.runner = undefined;
-    this.game.portrait = undefined;
+    this.face?.dispose();
+    this.face = undefined;
+    if (this.framed) { this.game.cam.zoomBy(1 / 0.78); this.game.cam.recentre(); this.framed = false; }
+    this.game.talking = false;
     this.game.paused = false;
     this.game.quests.update();
     this.game.syncParty();
@@ -142,8 +164,8 @@ export class DialogueUi {
     if (!this.el || !v) { this.close(); return; }
     this.pushLine(v);
     const name = this.speakerName(v.speaker);
-    this.el.innerHTML = `
-      <div class="dlg-panel">
+    const body = this.el.querySelector('.dlg-body')!;
+    body.innerHTML = `
         <div class="dlg-hist">${this.history.slice(-8, -1).map((h) => `<p class="${h.pc ? 'pc' : h.who ? '' : 'sys'}">${h.who ? `<b>${esc(h.who)}:</b> ` : ''}${esc(h.text)}</p>`).join('')}</div>
         <div class="dlg-name">${esc(name)}${v.seen && settings().skipSeen && v.options.length === 1 && !v.options[0].checkLabel ? ' <button class="skip" data-skip="1">skip ▸▸</button>' : ''}</div>
         <div class="dlg-text">${esc(v.text)}</div>
@@ -153,8 +175,7 @@ export class DialogueUi {
             <span class="n">${i + 1}.</span>
             ${o.checkLabel ? `<span class="chk ${o.checkMet ? 'ok' : 'bad'}">[${esc(o.checkLabel)} ${o.checkMet ? '✓' : '✗'}]</span> ` : ''}${esc(o.text)}
             ${o.checkNotes.length ? `<span class="why">${o.checkNotes.map(esc).join(' · ')}</span>` : ''}
-          </li>`).join('')}</ol>
-      </div>`;
+          </li>`).join('')}</ol>`;
     this.el.querySelectorAll<HTMLElement>('.dlg-opts li').forEach((li) => li.addEventListener('click', () => this.pick(Number(li.dataset.i))));
     this.el.querySelector('[data-skip]')?.addEventListener('click', () => this.skip());
   }

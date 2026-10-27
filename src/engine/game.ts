@@ -91,6 +91,8 @@ export class Game extends EventBus<GameEvents> {
   timeScale = 1;
   /** When true the simulation is frozen (menus open); rendering continues. */
   paused = false;
+  /** A conversation is open: the world holds still for play, but people keep breathing and the camera moves. */
+  talking = false;
   private questCache?: { g: GameState; e: QuestEngine };
   private questTick = 0;
 
@@ -1068,7 +1070,7 @@ export class Game extends EventBus<GameEvents> {
     if (held.has('KeyA') || held.has('ArrowLeft')) this.cam.panScreen(panSpeed, 0, 800);
     if (held.has('KeyD') || held.has('ArrowRight')) this.cam.panScreen(-panSpeed, 0, 800);
 
-    for (const a of this.actors.values()) a.update(simDt);
+    for (const a of this.actors.values()) a.update(this.talking ? dt : simDt);
     const cur = this.encounter.active ? this.encounter.current : undefined;
     if (cur && !cur.c.isPlayer) this.cam.target.copy(cur.actor.object.position);
     else if (this.player) {
