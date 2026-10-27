@@ -56,12 +56,12 @@ describe('The Wall on the Highway: every route through', () => {
     expect(g.world.knowledge.loc_signalhill).toBe(true);
   });
 
-  it('a guild courier contract is free passage with a nine-day timer', () => {
+  it('a guild courier contract is free passage with no clock on it', () => {
     const { g, q } = atTollhouse();
     talk('d_th_clerk', g, q, ['Contracts. What kind?', 'What\'s in it?', 'I\'ll carry it.', '(Take it.)']);
     expect(countItem(g.pc.inventory, 'k_packet')).toBe(1);
     expect(g.flags.th_contract).toBe(true);
-    expect(g.world.timers.some((t) => t.id === 'th_packet_due')).toBe(true);
+    expect(g.world.timers.some((t) => t.id === 'th_packet_due')).toBe(false);
     talk('d_th_gate', g, q, ['(Show the sealed packet.)', '(Go through.)']);
     expect(g.world.quests.q_a1_tollhouse.status).toBe('done');
   });
@@ -267,19 +267,26 @@ function inShale(day = 5) {
 }
 
 describe('The Month: Jonah Reese and the three ways', () => {
-  it('reading the first name starts the month with a thirty-day timer', () => {
+  it('reading the first name starts the month, which no clock ends: it ends with the water at Dry Wells', () => {
     const g = newGameState('c9', 0, 0);
     const q = new QuestEngine(QUESTS, g);
     q.questStart('q_ch1_name');
     g.world.knowledge.name1_decoded = true;
     q.update();
     expect(g.world.quests.q_a1_jonah?.stage).toBe('month');
-    const t = g.world.timers.find((x) => x.id === 'jonah_month');
-    expect(t).toBeTruthy();
-    expect(t!.at - g.minutes).toBe(30 * 1440);
+    expect(g.world.timers.find((x) => x.id === 'jonah_month')).toBeUndefined();
+    g.minutes += 400 * 1440;
+    runTimers(g, q); q.update();
+    expect(g.world.quests.q_a1_jonah.stage).toBe('month');
+    q.questStart('q_a1_drywells');
+    g.flags.dw_admitted = true; g.flags.dw_control_open = true; g.flags.dw_kept = true; g.flags.dw_outcome = 'kept';
+    q.update();
+    expect(g.world.quests.q_a1_drywells.status).toBe('done');
+    expect(g.flags.jonah_month_over).toBe(true);
+    expect(g.world.quests.q_a1_jonah.stage).toBe('fell');
   });
 
-  it('day thirty takes the first unblocked way, or none', () => {
+  it('the month\'s end takes the first unblocked way, or none', () => {
     const run = (blocks: string[]) => {
       const { g, q } = inShale();
       q.questStart('q_a1_jonah');
@@ -328,18 +335,18 @@ describe('The Month: Jonah Reese and the three ways', () => {
     expect(s.g.flags.jonah_fever_blocked).toBe(true);
   });
 
-  it('drills take three days and then nobody walks alone', () => {
+  it('drills put pairs on the street from the first night; three days later nine rifles shoot', () => {
     const { g, q } = inShale();
     q.questStart('q_a1_jonah');
     g.pc.sheet.skillBought.firearms = 40;
     talk('d_sh_issa', g, q, ['Your four that shoot could be nine.', 'Dawn, then.']);
     expect(g.flags.drills_started).toBe(true);
     expect(g.world.quests.q_sh_drills?.stage).toBe('drill');
+    expect(g.flags.jonah_fight_blocked).toBe(true);
     g.minutes += 3 * 1440 + 1;
     runTimers(g, q);
     q.update();
     expect(g.flags.militia_drilled).toBe(true);
-    expect(g.flags.jonah_fight_blocked).toBe(true);
     expect(g.world.quests.q_sh_drills.status).toBe('done');
     expect(g.world.news.some((n) => n.tag === 'militia_drilled')).toBe(true);
   });
@@ -375,7 +382,182 @@ describe('The Month: Jonah Reese and the three ways', () => {
     expect(s.g.flags.ada_broke).toBe(true);
     s = inShale();
     s.g.flags.sh_ada_met = true; s.g.flags.jonah_lived = true;
-    talk('d_sh_ada', s.g, s.q, ['Thirty days. He\'s alive.', 'Noted.']);
+    talk('d_sh_ada', s.g, s.q, ['The month\'s out. He\'s alive.', 'Noted.']);
     expect(s.g.world.knowledge.ada_threw_pike_out).toBe(true);
+  });
+});
+
+function atDryWells(hour = 12) {
+  const g = newGameState('c9', 0, 0);
+  g.minutes = 12 * 1440 + hour * 60;
+  g.locationId = 'drywells';
+  g.flags.visited_drywells = true;
+  const q = new QuestEngine(QUESTS, g);
+  q.questStart('q_a1_drywells');
+  return { g, q };
+}
+
+describe('The Water Clock: Dry Wells', () => {
+  it('the hill done starts the water clock; the approach has six ways past the rifle', () => {
+    const { g, q } = atSignalHill();
+    g.flags.sg_camp_passed = true; g.flags.sg_station = true; g.world.knowledge.relay_answers_city = true; q.update();
+    expect(g.world.quests.q_a1_drywells?.stage).toBe('track');
+    let s = atDryWells();
+    s.g.world.leads.l_relay_west_line = { at: 0 } as never;
+    talk('d_dw_approach', s.g, s.q, ['I came from Signal Hill', '(Go in.)', '(Go in.)']);
+    expect(s.g.flags.dw_admitted).toBe(true);
+    expect(s.g.world.quests.q_a1_drywells.stage).toBe('station');
+    s = atDryWells();
+    s.g.origin = 'pump_hand';
+    talk('d_dw_approach', s.g, s.q, ['(Look at the station, not at her.)', '(Go in.)', '(Go in.)']);
+    expect(s.g.flags.dw_pumphand).toBe(true);
+    s = atDryWells();
+    s.g.world.party.push('npc_sh_17');
+    talk('d_dw_approach', s.g, s.q, ['(Let Ilya speak.)', '(Go in.)', '(Go in.)']);
+    expect(s.g.flags.dw_ilya).toBe(true);
+    s = atDryWells();
+    s.g.pc.sheet.skillBought.speech = 90;
+    talk('d_dw_approach', s.g, s.q, ['I\'m from Shale.', 'I don\'t know what valve.', '(Go in.)']);
+    expect(s.g.flags.dw_talked).toBe(true);
+    s = atDryWells();
+    s.g.pc.inventory.tolls = 10;
+    talk('d_dw_approach', s.g, s.q, ['(Hold up ten Tolls.)', '(Go in.)']);
+    expect(s.g.flags.dw_paid).toBe(true);
+    expect(s.g.pc.inventory.tolls).toBe(0);
+    s = atDryWells();
+    talk('d_dw_approach', s.g, s.q, ['(Draw.)']);
+    expect(s.g.flags.dw_fight).toBe(true);
+  });
+
+  it('Oriel tells the family\'s story, which starts the ghosts, and gives the key on a promise or to a pump hand', () => {
+    let s = atDryWells();
+    s.g.flags.dw_admitted = true; s.q.update();
+    s.g.pc.sheet.skillBought.speech = 90; s.g.world.knowledge.dw_control_locked = true;
+    talk('d_dw_oriel', s.g, s.q, ['Who are you people?', 'Why here?', 'Noted.', 'The room at the end of the station.', 'Give it to me and I\'ll see your family stays.', '(Take it.)']);
+    expect(s.g.world.quests.q_dw_ghosts?.stage).toBe('squat');
+    expect(countItem(s.g.pc.inventory, 'k_station_key')).toBe(1);
+    expect(s.g.flags.dw_promised_stay).toBe(true);
+    expect(s.g.world.knowledge.dw_override_word).toBe(true);
+    s = atDryWells();
+    s.g.flags.dw_admitted = true; s.g.origin = 'pump_hand'; s.g.world.knowledge.dw_control_locked = true;
+    talk('d_dw_oriel', s.g, s.q, ['The station. Sable says', '(Tell her what the clock sounds like', '(Take it.)']);
+    expect(s.g.flags.dw_oriel_key).toBe(true);
+    // Or it is taken, and the family remembers.
+    s = atDryWells();
+    s.g.flags.dw_admitted = true; s.g.world.knowledge.dw_control_locked = true;
+    talk('d_dw_oriel', s.g, s.q, ['The station. Sable says', '(Take it off her neck.)', '(Go.)']);
+    expect(s.g.flags.dw_key_forced).toBe(true);
+    expect(countItem(s.g.pc.inventory, 'k_station_key')).toBe(1);
+  });
+
+  it('the door: key, picks, or a shoulder', () => {
+    let s = atDryWells();
+    addItem(s.g.pc.inventory, makeItem('k_station_key'));
+    talk('d_dw_door', s.g, s.q, ['(Use the brass key.)', '(Go in.)']);
+    expect(s.g.flags.dw_control_open).toBe(true);
+    s = atDryWells();
+    s.g.pc.sheet.skillBought.security = 90;
+    talk('d_dw_door', s.g, s.q, ['(Pick it.)', '(Go in.)']);
+    expect(s.g.flags.dw_door_picked).toBe(true);
+    s = atDryWells();
+    s.g.pc.sheet.baseAttrs.brawn = 10;
+    talk('d_dw_door', s.g, s.q, ['(Force it.)', '(Go in.)']);
+    expect(s.g.flags.dw_door_forced).toBe(true);
+  });
+
+  it('the console: science restores the water, the pump man\'s word restores it without a check, or it is left', () => {
+    let s = atDryWells();
+    s.g.flags.dw_admitted = true; s.g.flags.dw_control_open = true; s.q.update();
+    expect(s.g.world.quests.q_a1_drywells.stage).toBe('console');
+    s.g.pc.sheet.skillBought.science = 90;
+    talk('d_dw_console', s.g, s.q, ['(Override the schedule.', '(Step back.)']);
+    expect(s.g.flags.dw_outcome).toBe('restored');
+    expect(s.g.world.quests.q_a1_drywells.status).toBe('done');
+    expect(s.g.world.quests.q_a1_drywells.stage).toBe('restored');
+    expect(s.g.flags.jonah_month_over).toBe(true);
+    expect(s.g.flags.a1_finale).toBe('restored');
+    expect(s.g.world.news.some((n) => n.tag === 'water_restored')).toBe(true);
+    expect(s.g.world.timers.some((t) => t.id === 'a1_end_card')).toBe(true);
+    s = atDryWells();
+    s.g.flags.dw_admitted = true; s.g.flags.dw_control_open = true; s.g.world.knowledge.dw_override_word = true; s.g.flags.dw_oriel_key = true;
+    const r = talk('d_dw_console', s.g, s.q, ['(Enter the pump man\'s credential']);
+    expect(r.view()!.text).toContain('MAINT AUTH: MARR');
+    expect(s.g.flags.dw_how).toBe('word');
+    s = atDryWells();
+    s.g.flags.dw_admitted = true; s.g.flags.dw_control_open = true;
+    talk('d_dw_console', s.g, s.q, ['(Leave the schedule as it is.)', '(Leave it. It isn\'t yours to change', '(Step back.)']);
+    expect(s.g.flags.dw_outcome).toBe('kept');
+    expect(s.g.world.quests.q_a1_drywells.stage).toBe('kept');
+    expect(s.g.flags.shale_withers).toBe(true);
+  });
+
+  it('the pump hand finds the Cistern on the schedule', () => {
+    const s = atDryWells();
+    s.g.origin = 'pump_hand';
+    talk('d_dw_console', s.g, s.q, ['(Find the Cistern on the schedule.)', '(Read on.)', '(Step back.)']);
+    expect(s.g.world.knowledge.c9_fed_from_outside).toBe(true);
+    expect(s.g.world.leads.l_c9_fed).toBeTruthy();
+    const r = new DialogueRunner(DIALOGUES.d_dw_console, atDryWells().g, atDryWells().q);
+    expect(r.view()!.options.some((o) => o.text.includes('Find the Cistern'))).toBe(false);
+  });
+
+  it('the governor breaks for a mechanic, and the diary gives the word', () => {
+    let s = atDryWells();
+    s.g.flags.dw_admitted = true; s.g.flags.dw_control_open = true; s.q.update();
+    s.g.pc.sheet.skillBought.mechanics = 90;
+    talk('d_dw_panel', s.g, s.q, ['(Break the governor.)', '(Step back.)']);
+    expect(s.g.flags.dw_outcome).toBe('freed');
+    expect(s.g.world.quests.q_a1_drywells.stage).toBe('freed');
+    s = atDryWells();
+    talk('d_dw_diary_table', s.g, s.q, ['(Read it.)', '(Take it.)', '(Go.)']);
+    expect(s.g.world.knowledge.dw_override_word).toBe(true);
+    expect(countItem(s.g.pc.inventory, 'k_pumpman_diary')).toBe(1);
+  });
+
+  it('Pike buys the console; the guild takes the station and Ada throws you out', () => {
+    const s = inShale();
+    s.q.questStart('q_a1_drywells');
+    s.g.flags.dw_admitted = true; s.g.flags.dw_control_open = true; s.g.flags.dw_console_seen = true; s.g.flags.sh_pike_met = true; s.q.update();
+    talk('d_sh_pike', s.g, s.q, ['The console at Dry Wells.', '(Take the money.)', 'As per.']);
+    expect(s.g.pc.inventory.tolls).toBe(150);
+    expect(s.g.flags.dw_outcome).toBe('sold');
+    expect(s.g.flags.escort_east).toBe('tollmen');
+    expect(s.g.world.quests.q_a1_drywells.stage).toBe('sold');
+    expect(s.g.flags.shale_company_town).toBe(true);
+    s.g.flags.sh_ada_met = true;
+    const r = talk('d_sh_ada', s.g, s.q, ['Dry Wells. The station there sets your water.']);
+    expect(r.view()!.text).toContain('rate card');
+    expect(r.view()!.options.map((o) => o.text)).toEqual(['(Go.)']);
+    r.choose(r.view()!.options[0].id);
+    expect(s.g.flags.ada_dw_told).toBe(true);
+    expect(s.g.world.relations.npc_sh_01?.trust ?? 0).toBeLessThan(0);
+  });
+
+  it('the ghosts: Ada says yes or no, and the family walks, takes the road, or stays', () => {
+    let s = inShale();
+    s.g.flags.sh_ada_met = true; s.g.world.knowledge.dw_oriel_would_go = true; s.g.flags.dw_restored = true; s.g.pc.sheet.skillBought.speech = 50;
+    s.q.questStart('q_dw_ghosts');
+    talk('d_sh_ada', s.g, s.q, ['Five people live at Dry Wells', 'Three generations out of a cistern', 'Noted.']);
+    expect(s.g.flags.ada_ghosts_ok).toBe(true);
+    s.g.locationId = 'drywells'; s.g.flags.dw_oriel_met = true;
+    talk('d_dw_oriel', s.g, s.q, ['Sheriff Vey says yes.', '(Help her up.)']);
+    expect(s.g.flags.dw_ghosts_shale).toBe(true);
+    expect(s.g.flags.dw_valve_closed).toBe(true);
+    expect(s.g.world.quests.q_dw_ghosts.stage).toBe('shale');
+    s = atDryWells();
+    s.g.flags.dw_oriel_met = true; s.g.world.knowledge.dw_origin_known = true; s.g.pc.inventory.tolls = 40;
+    s.q.questStart('q_dw_ghosts');
+    talk('d_dw_oriel', s.g, s.q, ['(Forty Tolls.)', 'Noted.']);
+    expect(s.g.world.quests.q_dw_ghosts.stage).toBe('moved');
+    s = atDryWells();
+    s.g.flags.dw_oriel_met = true; s.g.world.knowledge.dw_origin_known = true; s.g.world.knowledge.dw_bypass_known = true;
+    s.q.questStart('q_dw_ghosts');
+    talk('d_dw_oriel', s.g, s.q, ['Stay, then.', 'Noted.']);
+    expect(s.g.world.quests.q_dw_ghosts.stage).toBe('left');
+    // Sable walks you east only if the water runs.
+    s = atDryWells();
+    s.g.flags.dw_outcome = 'restored'; s.g.flags.dw_restored = true; s.g.flags.dw_sable_met = true;
+    talk('d_dw_sable', s.g, s.q, ['East. What\'s past the windpumps?', 'To the glass, then.', 'That\'s all.']);
+    expect(s.g.flags.escort_east).toBe('sable');
   });
 });

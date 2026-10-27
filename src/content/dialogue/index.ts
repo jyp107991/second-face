@@ -7,6 +7,7 @@ import { d_map } from './decode';
 import { d_th_bikes, d_th_caravan, d_th_clerk, d_th_debtor, d_th_fence, d_th_gate, d_th_ledger, d_th_outrider_a, d_th_outrider_b, d_th_quartermaster, d_th_rates, d_th_sergeant, d_th_terminal } from './tollhouse';
 import { d_sg_camp, d_sg_cot, d_sg_gully, d_sg_mast, d_sg_relay, d_sg_speaker, d_sg_tally } from './signalhill';
 import { d_sh_ilya } from './a1_shale';
+import { d_dw_approach, d_dw_cato, d_dw_clerk, d_dw_console, d_dw_diary_table, d_dw_door, d_dw_juno, d_dw_oriel, d_dw_panel, d_dw_pumps, d_dw_sable, d_dw_valve, d_dw_wick } from './drywells';
 import { d_c9_archive, d_c9_body, d_c9_bram, d_c9_great_door, d_c9_ines, d_c9_mother, d_c9_pell, d_c9_shaft, d_c9_tamsin, d_c9_teague } from './ch1_cistern';
 
 export const DIALOGUES: Record<string, DialogueDef> = Object.fromEntries([
@@ -15,4 +16,5 @@ export const DIALOGUES: Record<string, DialogueDef> = Object.fromEntries([
   d_rd_gate, d_rd_brindle, d_rd_kessler, d_rd_vasha, d_rd_wren, d_rd_teo, d_rd_cage, d_rd_table, d_rd_perpetua, d_rd_jack, d_rd_tank, d_rd_chest, d_tribute, d_rd_truck, d_map,
   d_th_gate, d_th_sergeant, d_th_clerk, d_th_ledger, d_th_terminal, d_th_fence, d_th_rates, d_th_bikes, d_th_outrider_a, d_th_outrider_b, d_th_quartermaster, d_th_debtor, d_th_caravan,
   d_sg_camp, d_sg_gully, d_sg_tally, d_sg_relay, d_sg_speaker, d_sg_mast, d_sg_cot, d_sh_ilya,
+  d_dw_approach, d_dw_sable, d_dw_oriel, d_dw_juno, d_dw_cato, d_dw_wick, d_dw_door, d_dw_console, d_dw_panel, d_dw_valve, d_dw_pumps, d_dw_diary_table, d_dw_clerk,
 ].map((d) => [d.id, d]));

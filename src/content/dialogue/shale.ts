@@ -89,7 +89,12 @@ export const d_sh_pumps: DialogueDef = {
   start: [{ node: 'look' }],
   nodes: {
     look: {
-      text: 'Two pumps on a concrete apron, pre-Burn work patched with everything since. They run in bursts and stop, and the whole town leans toward them when they start.',
+      text: [
+        { if: { flag: 'dw_restored' }, text: 'Two pumps on a concrete apron, pre-Burn work patched with everything since. They run in long pulls now instead of bursts, and the town has stopped leaning.' },
+        { if: { flag: 'dw_freed' }, text: 'Two pumps on a concrete apron, pre-Burn work patched with everything since. They have not stopped since you came back from the east; the overflow has made a creek across the yard, and children stand in it.' },
+        { if: { flag: 'dw_sold' }, text: 'Two pumps on a concrete apron, pre-Burn work patched with everything since. A Tollman sits on a chair beside them with a ledger and sells what comes out by the measure.' },
+        { text: 'Two pumps on a concrete apron, pre-Burn work patched with everything since. They run in bursts and stop, and the whole town leans toward them when they start.' },
+      ],
       passives: [
         { skill: 'mechanics', dc: 35, text: 'There is no hand-switch. The pumps are driven from somewhere else — the pipe runs north, under the pump house, and keeps going.', effects: [{ learn: 'pumps_remote' }, { lead: 'l_pumps_remote' }] },
         { attr: 'senses', dc: 7, text: 'A faint click before each burst, from a box on the north pump. Something counts before the water comes.', effects: [{ learn: 'pumps_click' }] },
@@ -158,8 +163,32 @@ export const d_sh_ada: DialogueDef = {
       effects: [{ set: 'ada_broke' }, { trust: { npc: 'npc_sh_01', by: -10 } }, { learn: 'ada_pike_protection' }, { lead: 'l_ada_protection' }],
       options: [{ text: 'I\'m sorry.', exit: true }],
     },
+    ghosts: {
+      text: '"On a tap off my line." She lets that be a sentence by itself. "So the pressure drop has a name and a family, and the family wants a street."',
+      options: [
+        { id: 'ada.ghosts.yes', text: 'Three generations out of a cistern that failed. Five people, one of them sixteen, one of them dying. Under your law, and the valve closes.', check: { skill: 'speech', dc: 35, mods: [{ if: { any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, dc: -15, why: 'the town has water to spare now' }, { if: { standing: { settlement: 'shale', gte: 15 } }, dc: -10, why: 'Shale trusts you' }, { if: { flag: 'shale_exodus_ok' }, dc: -10, why: 'she has done this once already' }] }, next: 'ghosts_yes', fail: 'ghosts_no' },
+        { text: 'Forget I asked.', exit: true },
+      ],
+    },
+    ghosts_yes: { text: '"Under my law. As townsfolk. The tannery\'s empty; it stinks, and it has a roof." She writes it on the blotter. "And the first one who touches that valve again answers to me, not to you. Noted?"', effects: [{ set: 'ada_ghosts_decided' }, { set: 'ada_ghosts_ok' }, { decision: { id: 'ada_ghosts_ok', text: 'Sheriff Vey agreed to take the Dry Wells family in under Shale\'s law.' } }, { trust: { npc: 'npc_sh_01', by: 5 } }, { xp: 40 }], options: [{ text: 'Noted.', exit: true }] },
+    ghosts_no: { text: '"They\'ve been drinking my town for sixty years and you want me to give them a street." She shakes her head once. "No. Tell them the valve closes, or I close it."', effects: [{ set: 'ada_ghosts_decided' }, { decision: { id: 'ada_ghosts_no', text: 'Sheriff Vey refused the Dry Wells family.' } }], options: [{ text: 'Noted.', exit: true }] },
+    drywells: {
+      text: [
+        { if: { flag: 'dw_restored' }, text: '"The pumps ran all night." She has not slept either. "You did that. In a room, with a machine, a day east." She does not sit down. "Nine years I\'ve been sheriff of a town dying of something nobody could name, and you named it and fixed it, and I don\'t know whether to thank you or arrest you for knowing where it was." A breath. "Thank you."' },
+        { if: { flag: 'dw_freed' }, text: '"They haven\'t stopped." She looks toward the yard, where you can hear them. "The north tank\'s over the top and the children are standing in it. And when they stop?" She lets you answer or not. "Fine. Water today. I\'ve had worse news from the east."' },
+        { if: { flag: 'dw_sold' }, text: '"A Tollman on a chair by my pumps, selling me my water by the measure." Her voice is very level. "Pike came by with the rate card an hour ago. He said your name twice, as per." She sits down. "Get out of my office. Come back when you\'ve got something for Shale that isn\'t a receipt."' },
+        { text: '"You stood in front of it." She says it flat. "The thing that\'s been bleeding my town, and you read it and walked away." A long pause. "Maybe that was the right thing. Maybe whatever wrote the number reads what you do, too. I\'d have liked to be asked."' },
+      ],
+      effects: [{ set: 'ada_dw_told' }],
+      options: [
+        { text: 'Noted.', if: { flag: 'dw_restored' }, effects: [{ trust: { npc: 'npc_sh_01', by: 20 } }, { memory: { npc: 'npc_sh_01', tag: 'water_restored', valence: 40, strength: 100 } }, { rep: { faction: 'shale_militia', respect: 5 } }], exit: true },
+        { text: 'Noted.', if: { flag: 'dw_freed' }, effects: [{ trust: { npc: 'npc_sh_01', by: 10 } }, { memory: { npc: 'npc_sh_01', tag: 'water_freed', valence: 20, strength: 100 } }], exit: true },
+        { text: '(Go.)', if: { flag: 'dw_sold' }, effects: [{ trust: { npc: 'npc_sh_01', by: -25 } }, { memory: { npc: 'npc_sh_01', tag: 'sold_water', valence: -40, strength: 100 } }, { rep: { faction: 'shale_militia', respect: -10 } }], exit: true },
+        { text: 'Noted.', if: { flag: 'dw_kept' }, effects: [{ trust: { npc: 'npc_sh_01', by: -5 } }, { memory: { npc: 'npc_sh_01', tag: 'water_kept', valence: -10, strength: 80 } }], exit: true },
+      ],
+    },
     jonah_lived: {
-      text: '"Thirty-one, today." She has counted; she pretends she hasn\'t. "Something changed its mind about my deputy, and I don\'t know what, and I don\'t like not knowing." She looks at you, properly. "But I know who was in town." A pause. "Pike came by with a rate card for protection last week. I threw him out. I\'d like you to know that was easier than it should have been."',
+      text: '"A month and a day." She has counted; she pretends she hasn\'t. "Something changed its mind about my deputy, and I don\'t know what, and I don\'t like not knowing." She looks at you, properly. "But I know who was in town." A pause. "Pike came by with a rate card for protection last week. I threw him out. I\'d like you to know that was easier than it should have been."',
       effects: [{ trust: { npc: 'npc_sh_01', by: 15 } }, { rep: { faction: 'shale_militia', respect: 10 } }, { learn: 'ada_threw_pike_out' }],
       options: [{ text: 'Noted.', exit: true }],
     },
@@ -183,7 +212,9 @@ export const d_sh_ada: DialogueDef = {
         { id: 'ada.exodus', text: 'Some of the Dogs want out — Wren Calloway and her people. Would Shale have them?', if: { all: [{ any: [{ knows: 'wren_wants_out' }, { knows: 'wren_leaving' }] }, { not: { flag: 'shale_exodus_decided' } }] }, next: 'exodus' },
         { id: 'ada.ledger', text: 'Pike paid the outriders who shot the masked man. (Show her the ledger page.)', if: { item: 'k_ledger_page' }, next: 'ledger_page' },
         { id: 'ada.jonah.dead', text: 'Jonah.', if: { flag: 'jonah_dead' }, next: 'jonah_dead', once: true },
-        { id: 'ada.jonah.lived', text: 'Thirty days. He\'s alive.', if: { flag: 'jonah_lived' }, next: 'jonah_lived', once: true },
+        { id: 'ada.jonah.lived', text: 'The month\'s out. He\'s alive.', if: { flag: 'jonah_lived' }, next: 'jonah_lived', once: true },
+        { id: 'ada.ghosts', text: 'Five people live at Dry Wells, on a tap off your line. Would Shale take them in?', if: { all: [{ knows: 'dw_oriel_would_go' }, { not: { flag: 'ada_ghosts_decided' } }] }, next: 'ghosts' },
+        { id: 'ada.drywells', text: 'Dry Wells. The station there sets your water.', if: { all: [{ flag: 'dw_outcome' }, { not: { flag: 'ada_dw_told' } }] }, next: 'drywells' },
         { text: 'Nothing. Just checking in.', exit: true },
       ],
     },
@@ -250,7 +281,7 @@ export const d_sh_jonah: DialogueDef = {
     },
     careful: { text: 'He nods, slowly, the way he reads. "Off the tower." It costs him something; you can see it being paid. "I\'ll tell Dad it\'s the sheriff\'s order. He\'ll like that less than the tower."', effects: [{ set: 'jonah_fall_blocked' }, { decision: { id: 'jonah_off_tower', text: 'You talked Jonah Reese off the windpump tower.' } }, { xp: 40 }], options: [{ text: 'Good.', next: 'month_again' }] },
     careful_no: { text: '"I\'m not going to hide from a list." He stands straighter. It is exactly what the list would want him to say.', options: [{ text: 'Noted.', next: 'month_again' }] },
-    lived: { text: 'He is sitting on the office step with both books open on his knees, alive, and looks up like a man who has heard a door close somewhere far away. "Thirty days." He says it quietly. "Dad counted too. He pretended not to." A breath. "Whatever you did — I don\'t know what you did." He goes back to the books, and then doesn\'t.', effects: [{ trust: { npc: 'npc_sh_02', by: 15 } }, { learn: 'jonah_knows_lived' }], options: [{ text: 'Read your books, deputy.', exit: true }] },
+    lived: { text: 'He is sitting on the office step with both books open on his knees, alive, and looks up like a man who has heard a door close somewhere far away. "A month." He says it quietly. "Dad counted too. He pretended not to." A breath. "Whatever you did — I don\'t know what you did." He goes back to the books, and then doesn\'t.', effects: [{ trust: { npc: 'npc_sh_02', by: 15 } }, { learn: 'jonah_knows_lived' }], options: [{ text: 'Read your books, deputy.', exit: true }] },
     intro: {
       text: [{ if: { pronouns: 'she' }, text: 'Ma\'am. Deputy Reese. Sheriff\'s inside if you need the sheriff. If you need a deputy, that\'s — that\'s me.' }, { if: { pronouns: 'he' }, text: 'Sir. Deputy Reese. Sheriff\'s inside if you need the sheriff. If you need a deputy, that\'s — that\'s me.' }, { text: 'Deputy Reese. Sheriff\'s inside if you need the sheriff. If you need a deputy, that\'s — that\'s me.' }],
       options: [
@@ -282,11 +313,11 @@ export const d_sh_issa: DialogueDef = {
       ],
     },
     drills: {
-      text: '"Three days. Dawn and dusk, the yard, live rounds we can\'t spare." She looks at the nine. "There\'s a man drinks behind the yard who used to be the best shot in the Sallow. If he turns up, don\'t let him near the boys. Or do. I\'ve stopped knowing."',
-      effects: [{ set: 'drills_started' }, { quest: 'q_sh_drills', start: true }, { decision: { id: 'drills_started', text: 'You took on drilling Shale\'s militia.' } }, { after: { minutes: 3 * 1440, id: 'drills_done', effects: [{ set: 'militia_drilled' }, { set: 'jonah_fight_blocked' }, { news: { tag: 'militia_drilled', text: 'the militia walk the street in pairs now, and nine rifles shoot', valence: 12, size: 6, at: 'shale' } }, { rep: { faction: 'shale_militia', respect: 10 } }] } }, { learn: 'ilya_rumour' }],
+      text: '"Dawn and dusk, the yard, live rounds we can\'t spare, until nine of them shoot. And from tonight nobody walks the street alone; I\'ll tell Ada it was your idea." She looks at the nine. "There\'s a man drinks behind the yard who used to be the best shot in the Sallow. If he turns up, don\'t let him near the boys. Or do. I\'ve stopped knowing."',
+      effects: [{ set: 'drills_started' }, { quest: 'q_sh_drills', start: true }, { decision: { id: 'drills_started', text: 'You took on drilling Shale\'s militia.' } }, { set: 'jonah_fight_blocked' }, { after: { minutes: 3 * 1440, id: 'drills_done', effects: [{ set: 'militia_drilled' }, { news: { tag: 'militia_drilled', text: 'the militia walk the street in pairs now, and nine rifles shoot', valence: 12, size: 6, at: 'shale' } }, { rep: { faction: 'shale_militia', respect: 10 } }] } }, { learn: 'ilya_rumour' }],
       options: [{ text: 'Dawn, then.', exit: true }],
     },
-    drills_on: { text: '"Better. Two of them hit the post today; one of them meant to." She lowers her voice. "The deputy walks the east street alone at night. When this is done, nobody walks alone."', options: [bye] },
+    drills_on: { text: '"Better. Two of them hit the post today; one of them meant to." She lowers her voice. "The deputy walked the east street in a pair last night and hated it. Good."', options: [bye] },
     drills_done: { text: '"Nine rifles. Nine that shoot, more or less." She doesn\'t smile, but it\'s close. "Pairs on the street from now on. Ada signed it." A beat. "Thank you. I don\'t say that."', effects: [{ trust: { npc: 'npc_sh_11', by: 15 } }], options: [bye] },
     shoot: { text: '"Then you\'re the fifth rifle." She looks you over once, properly. "Ada will say no. Ada says no to everything until she says yes."', effects: [{ learn: 'issa_counts_you' }, { trust: { npc: 'npc_sh_11', by: 8 } }], options: [{ text: 'We\'ll see.', next: 'intro' }] },
     dogs: { text: '"Tribute\'s due. Half a year since the last. They come with a truck, they take water and whatever Mags has brewed, and this time they\'ll want more because Kessler\'s lieutenant counts. Vasha. Say the name to Ada and watch her face."', effects: [{ learn: 'tribute_due' }, { learn: 'vasha_name' }, { learn: 'loc_rustdogs' }, { quest: 'q_ch1_tribute', start: true }], options: [{ text: 'Noted.', next: 'intro' }] },
@@ -303,7 +334,16 @@ export const d_sh_pike: DialogueDef = {
       passives: [{ attr: 'wits', dc: 8, text: 'A list on the wall behind him: SEED — ANY VARIETY — ANY QUANTITY — PAID IN TOLLS OR SCRIP. The prices are absurd.', effects: [{ learn: 'pike_buys_seed' }] }],
       options: [{ text: 'Let\'s see the stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed', text: 'You\'re buying seed.', if: { knows: 'pike_buys_seed' }, next: 'seed', once: true }, { id: 'pike.who', text: 'Who are the Tollmen?', next: 'who', once: true }, { id: 'pike.stranger', text: 'A masked man came through three weeks ago. You spoke with him.', if: { quest: 'q_ch1_shale' }, next: 'stranger', once: true }, bye],
     },
-    again: { text: 'As per. Stock, or something else?', options: [{ text: 'Stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed.again', text: 'About the seed.', if: { all: [{ knows: 'pike_buys_seed' }, { not: { seen: 'pike.seed' } }] }, next: 'seed' }, { id: 'pike.stranger.again', text: 'About the masked man.', if: { all: [{ quest: 'q_ch1_shale' }, { not: { seen: 'pike.stranger' } }] }, next: 'stranger' }, { id: 'pike.key', text: 'Do the Tollmen read this hand?', if: { all: [{ item: 'k_map' }, { not: { item: 'k_cipher_key' } }] }, next: 'key' }, { id: 'pike.ledger', text: '(Put the Tollhouse ledger page on the counter.)', if: { item: 'k_ledger_page' }, next: 'ledger_page' }, bye] },
+    again: { text: 'As per. Stock, or something else?', options: [{ text: 'Stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed.again', text: 'About the seed.', if: { all: [{ knows: 'pike_buys_seed' }, { not: { seen: 'pike.seed' } }] }, next: 'seed' }, { id: 'pike.stranger.again', text: 'About the masked man.', if: { all: [{ quest: 'q_ch1_shale' }, { not: { seen: 'pike.stranger' } }] }, next: 'stranger' }, { id: 'pike.key', text: 'Do the Tollmen read this hand?', if: { all: [{ item: 'k_map' }, { not: { item: 'k_cipher_key' } }] }, next: 'key' }, { id: 'pike.ledger', text: '(Put the Tollhouse ledger page on the counter.)', if: { item: 'k_ledger_page' }, next: 'ledger_page' }, { id: 'pike.station', text: 'The console at Dry Wells. The guild would pay to hold what it holds.', if: { all: [{ flag: 'dw_console_seen' }, { not: { flag: 'dw_outcome' } }] }, next: 'station' }, bye] },
+    station: {
+      text: '"Post nine-west has known about DW-4 for eleven years, and been unable to get a man past the rifle." He does not blink. "One hundred and fifty Tolls. A guild engineer walks in behind you, and Shale\'s water is sold by the measure, as per: reliably. There is a word for what Shale has now, and it is not reliable."',
+      options: [
+        { id: 'pike.station.sell', text: '(Take the money.)', effects: [{ give: 'tolls', count: 150 }, { set: 'dw_outcome', value: 'sold' }, { set: 'dw_sold' }, { set: 'dw_how', value: 'sold' }, { set: 'escort_east', value: 'tollmen' }, { decision: { id: 'dw_sold', text: 'You sold the Dry Wells console to Factor Pike for a hundred and fifty Tolls.' } }, { memory: { npc: 'npc_sh_04', tag: 'sold_station', valence: 30, strength: 100 } }, { xp: 120 }], next: 'station_sold' },
+        { id: 'pike.station.no', text: 'No.', effects: [{ memory: { npc: 'npc_sh_04', tag: 'refused_station', valence: -10, strength: 60 } }, { set: 'pike_station_refused' }], next: 'station_no' },
+      ],
+    },
+    station_sold: { text: '"As per." He counts it out in a way that makes a hundred and fifty look like a courtesy. "An engineer leaves tonight. A caravan goes east in three days from the gate; there is a seat on it with a description on it that is not your name." He is already writing. "Shale will find this reliable. Everyone does, in the end."', options: [{ text: 'As per.', exit: true }] },
+    station_no: { text: '"Then it will be somebody else, later, for less." He goes back to the rates. "The offer does not expire. The guild\'s offers never do; that is what the guild is."', options: [{ text: 'Noted.', exit: true }] },
     ledger_page: {
       text: 'He reads it the way he reads rates. "Post nine\'s hand. A road contract, confirmed and paid, as per." He looks up with the top half of his face. "Guild paper, removed from a guild ledger. There is a buy-back rate for that. Sixty." A pause exactly as long as a courtesy. "I don\'t ask what you\'d do with it otherwise. I know."',
       options: [

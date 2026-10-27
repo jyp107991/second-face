@@ -17,6 +17,10 @@ const path = require('path');
   await page.waitForTimeout(6000);
   console.log(await page.evaluate(() => `events=${JSON.stringify(game.state.world.events)} tribute_day=${game.state.flags.tribute_day} stage=${game.state.world.quests.q_ch1_tribute?.stage}`));
   await page.evaluate(async () => { await game.loadLocation('shale', 'start'); });
+  // The Dogs come at ten the next morning we are in Shale (no day limits: the event waited for us). Let it arm, then skip to the morning.
+  await page.waitForFunction(() => typeof game.state.flags.ev_armed_tribute_day === 'number', null, { timeout: 40000 }).catch(() => {});
+  await page.evaluate(() => { game.state.minutes += 1440; });
+  await page.waitForFunction(() => game.state.flags.tribute_day === true, null, { timeout: 40000 }).catch(() => {});
   await page.waitForTimeout(7000);
   console.log(await page.evaluate(() => `npcs=${[...game.npcs.keys()].filter((k) => k.startsWith('tribute')).join(',')}`));
   await page.screenshot({ path: path.join(out, 'tribute_1.png'), timeout: 180000 });

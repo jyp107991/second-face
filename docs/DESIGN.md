@@ -351,7 +351,8 @@ Stage { journal, objectives: Objective[], onEnter?: Effect[] }
 Objective { id, text, kind: 'flag'|'item'|'kill'|'talk'|'reach'|'state', condition, optional? }
 ```
 Objectives evaluate world state, so any method that achieves the state completes them. Timers schedule
-delayed consequences.
+delayed consequences, never deadlines: **there are no time limits** (owner). A forecast that names a span resolves
+when the story reaches its milestone, not when a clock runs out; a scheduled event waits for the player to be there.
 
 ## 10. World & locations
 - Locations are data: `Location { id, maps: MapDef[], ambience, lighting, encounters, entries }`.
@@ -366,6 +367,9 @@ delayed consequences.
 - Consequences: immediate (scene), local (NPC memory/gossip), delayed (timers, later acts), distant (other
   locations, epilogue). At least 30% are delayed or distant.
 - No "invisible failure": when a door closes because of a choice, the journal records it.
+- No time limits (owner, binding): no quest fails, expires or resolves because days passed. Events wait for the
+  player (`WorldEventDef.at: { hour, where }`); keystone outcomes fire on milestones; durations (drills, cooldowns,
+  travel time, healing) are fine. The calendar colours the world; it never races the player.
 - Kill anyone: if a key NPC dies, their knowledge survives in records, notes, terminals, or another person.
 - Endings: assembled from faction states, companion fates, key decisions, and reputation (≈40 variables),
   presented as epilogue slides per place and person.

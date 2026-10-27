@@ -132,8 +132,12 @@ export function tryConclude(g: GameState, selected: string[], conclusions: Recor
 
 export interface WorldEventDef {
   id: string;
-  /** Game minute at which it happens (absolute), or a day number at an hour. */
-  at: { day: number; hour?: number };
+  /**
+   * When it happens: a day number at an hour (absolute), or — the usual form, since the game has no day limits —
+   * the next time the clock reaches `hour` after the event is armed, and then only once the player is at `where`
+   * (a world-map location id) if one is given. An event that waits for the player never resolves behind their back.
+   */
+  at: { day: number; hour?: number } | { hour: number; where?: string };
   /** Only scheduled once this holds (e.g. a quest has started). */
   armedIf?: Cond;
   /** If this holds when the time comes, the event is prevented. */
@@ -148,7 +152,18 @@ export function runWorldEvents(g: GameState, events: Record<string, WorldEventDe
   for (const e of Object.values(events)) {
     if (g.world.events[e.id]) continue;
     if (e.armedIf && !test(e.armedIf, g)) continue;
-    const due = (e.at.day - 1) * 1440 + (e.at.hour ?? 0) * 60;
+    let due: number;
+    if ('day' in e.at) due = (e.at.day - 1) * 1440 + (e.at.hour ?? 0) * 60;
+    else {
+      // Armed now: the first `hour` o'clock after this moment, remembered so travel can jump past it.
+      const key = `ev_armed_${e.id}`;
+      let armed = g.flags[key];
+      if (typeof armed !== 'number') { armed = g.minutes; g.flags[key] = armed; }
+      const dayStart = Math.floor(armed / 1440) * 1440;
+      due = dayStart + e.at.hour * 60;
+      if (due <= armed) due += 1440;
+      if (e.at.where && g.locationId !== e.at.where) continue;
+    }
     if (g.minutes < due) continue;
     const prevented = !!e.preventedIf && test(e.preventedIf, g);
     g.world.events[e.id] = prevented ? 'prevented' : 'happened';

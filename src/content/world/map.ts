@@ -9,7 +9,7 @@ const L: LocationDef[] = [
   // The Sallow
   { id: 'cistern9', name: 'Cistern 9', region: 'sallow', x: 470, y: 382, kind: 'major', settlement: 'cistern9', map: 'c9_mouth' },
   { id: 'shale', name: 'Shale', region: 'sallow', x: 455, y: 360, kind: 'major', settlement: 'shale', map: 'shale' },
-  { id: 'drywells', name: 'Dry Wells', region: 'sallow', x: 500, y: 395, kind: 'minor', settlement: 'drywells' },
+  { id: 'drywells', name: 'Dry Wells', region: 'sallow', x: 500, y: 395, kind: 'minor', settlement: 'drywells', map: 'drywells' },
   { id: 'rustdogs', name: 'the overpass', region: 'sallow', x: 430, y: 335, kind: 'major', settlement: 'rustdogs', map: 'overpass' },
   { id: 'tollhouse', name: 'Tollhouse 9', region: 'sallow', x: 420, y: 300, kind: 'major', settlement: 'tollhouse', map: 'tollhouse' },
   { id: 'signalhill', name: 'Signal Hill', region: 'sallow', x: 402, y: 286, kind: 'minor', map: 'signalhill' },

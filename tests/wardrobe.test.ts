@@ -85,7 +85,7 @@ describe('every item has a sketch', () => {
       expect(ICON_RECIPES, `${d.id} → ${r}`).toContain(r);
       if (d.weapon) expect(r, d.id).not.toBe('weapon');
       if (d.armor) expect(r, d.id).not.toBe('armor');
-      if (!d.weapon && !d.armor) expect(r, `${d.id} needs an icon`).not.toBe(d.category);
+      if (!d.weapon && !d.armor && !d.icon) expect(r, `${d.id} needs an icon`).not.toBe(d.category);
     }
   });
 });

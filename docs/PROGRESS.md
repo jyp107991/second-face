@@ -153,8 +153,18 @@ mid-range Android phone; deployed to Pages.
       forecast; title cards; Ada and Jonah react after), the thirty-day timer now lives on the quest stage every decode
       route reaches, `q_sh_drills` (three days, pairs on the street), Ilya Strand (`npc_sh_17`, `dialogue/a1_shale.ts`:
       shame him sober, outshoot him, or talk him east; third companion), companions survive placement syncs, clothing
-      sets replace covered layers; smoke `tools/qa/month.cjs`; tests. NEXT: B2.4 Dry Wells.) Remaining: Signal Hill, Jonah's month + Ilya, Dry Wells finale, Burnt
-      Orchard/salt pans/hunting/road encounters/camps, Mender + chrome surgery, the Wheel, Act 1 side quests and smoke. ~8 h.
+      sets replace covered layers; smoke `tools/qa/month.cjs`; tests. B2.4 DONE: Dry Wells — pump-station map
+      `tools/maps/gen_drywells.py` (the track in, three dry wells, the water tower, scrap shacks, the pump hall with its
+      bypass valve, a locked control room), the family in the shacks (`npcs/drywells.ts`, 5 + one guild engineer who
+      appears after one outcome), `dialogue/drywells.ts` (13 trees: the rifle on the approach with six ways past, the
+      matriarch and her key, the door, the console, the pressure panel, the valve, the diary), `q_a1_drywells` = the Act 1
+      finale (restore by science or by the pump man's credential / break the governor / sell to Pike / leave it; each
+      outcome changes Shale's pumps, Ada, news, rep, and who will walk you east; end card), `q_dw_ghosts` (Ada's yes or
+      no, the road, or leave them), the Pump Hand origin's thread pays off at the console, `PassiveDef` takes `if`;
+      smoke `tools/qa/drywells.cjs`; tests. **No day limits (owner)**: the month resolves when the finale does (no
+      thirty-day timer), the courier packet has no clock, drills put pairs on the street at once, Tribute Day waits for
+      the player (`WorldEventDef.at: { hour, where }`), all day-count wording rewritten. NEXT: B2.5 Wilds.) Remaining:
+      Burnt Orchard/salt pans/hunting/road encounters/camps, Mender + chrome surgery, the Wheel, Act 1 side quests and smoke. ~7 h.
 - [ ] B3 **Meridian**: 9 districts, the Loop, Brokers' gigs (~25), the Masque, High Water, Static, Turf,
       Court of Accounts, citizenship hearing, Archive Spire, flat, fight pits, reverie dens, races,
       gambling, safehouse; gangs joinable; Ledger line; companions 4–6. ~16 h.
@@ -177,6 +187,7 @@ mid-range Android phone; deployed to Pages.
 | Rust Dogs camp | 1/1 | 13/13 | 13/13 | 2/2 | playable; The Paper, Teo |
 | Tollhouse 9 | 1/1 | 11/11 | 13/13 | 2/2 | playable; six ways through |
 | Signal Hill | 1/1 | 3/3 | 7/7 | 2/2 | playable; relay, voice, gully |
+| Dry Wells | 1/1 | 6/6 | 13/13 | 2/2 | playable; the Act 1 finale, the family |
 | Act 1 wilds | 0/5 | 0/15 | 0/15 | 0/6 | — |
 | Meridian | 0/12 | 0/60 | 0/60 | 0/30 | — |
 | Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |

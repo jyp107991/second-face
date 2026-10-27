@@ -97,7 +97,7 @@ export const q_a1_signal: QuestDef = {
     done: {
       journal: 'The relay at Signal Hill talks to something east and relays a nightly list west — to a pump station in the Sallow marked DW-4. Dry Wells. The map\'s road runs back toward home before it runs on.',
       end: 'done',
-      onEnter: [{ learn: 'loc_drywells' }, { lead: 'l_relay_west_line' }],
+      onEnter: [{ learn: 'loc_drywells' }, { lead: 'l_relay_west_line' }, { quest: 'q_a1_drywells', start: true }],
     },
   },
 };
@@ -134,13 +134,13 @@ export const q_a1_jonah: QuestDef = {
   ],
   stages: {
     month: {
-      journal: 'Jonah Reese, Shale, thirty days. The list did not say how. Shale is full of ways for an earnest young man to die — a fall, a fight, a fever — and if one road is blocked, whatever wrote his name will look for another. Prevention means changing the conditions, not the day.',
+      journal: 'Jonah Reese, Shale, within the month. The list did not say how. Shale is full of ways for an earnest young man to die — a fall, a fight, a fever — and if one road is blocked, whatever wrote his name will look for another. Prevention means changing the conditions. There is no clock to race: the month, whatever the list means by it, will not be over before the business east of here is settled.',
       objectives: [
         { id: 'ways', text: 'Find out how a deputy spends his days and nights', done: { all: [{ knows: 'jonah_climbs' }, { knows: 'jonah_patrols' }, { knows: 'jonah_drinks' }] } },
         { id: 'fall', text: 'Change the conditions of the fall', done: { flag: 'jonah_fall_blocked' }, optional: true },
         { id: 'fight', text: 'Change the conditions of the fight', done: { flag: 'jonah_fight_blocked' }, optional: true },
         { id: 'fever', text: 'Change the conditions of the fever', done: { flag: 'jonah_fever_blocked' }, optional: true },
-        { id: 'day', text: 'Day thirty', done: { flag: 'jonah_month_over' } },
+        { id: 'day', text: 'The month ends', done: { flag: 'jonah_month_over' } },
       ],
       next: [
         { if: { all: [{ flag: 'jonah_month_over' }, { not: { flag: 'jonah_fall_blocked' } }] }, stage: 'fell' },
@@ -150,24 +150,24 @@ export const q_a1_jonah: QuestDef = {
       ],
     },
     fell: {
-      journal: 'Day thirty. Jonah Reese went up the windpump tower for the vane, the way he did every week, and a rung let go. Shale buried him behind the sheriff\'s office. The militia is four rifles again. The list was right.',
+      journal: 'The month was out before you were back. Jonah Reese went up the windpump tower for the vane, the way he did every week, and a rung let go. Shale buried him behind the sheriff\'s office. The militia is four rifles again. The list was right.',
       end: 'done',
-      onEnter: [{ set: 'jonah_dead' }, { set: 'jonah_death', value: 'fall' }, { set: 'shale_broke' }, { decision: { id: 'jonah_died', text: 'Jonah Reese died on day thirty, as the list said: a fall from the windpump tower.' } }, { news: { tag: 'jonah_dead', text: 'Deputy Reese fell from the windpump tower', valence: -30, size: 9, at: 'shale' } }, { memory: { npc: 'npc_sh_01', tag: 'jonah_died', valence: -20, strength: 100 } }, { memory: { npc: 'npc_sh_09', tag: 'son_died', valence: -40, strength: 100 } }, { event: 'title', data: { text: 'DAY THIRTY\nTHE LIST WAS RIGHT' } }],
+      onEnter: [{ set: 'jonah_dead' }, { set: 'jonah_death', value: 'fall' }, { set: 'shale_broke' }, { decision: { id: 'jonah_died', text: 'Jonah Reese died before the month was out, as the list said: a fall from the windpump tower.' } }, { news: { tag: 'jonah_dead', text: 'Deputy Reese fell from the windpump tower', valence: -30, size: 9, at: 'shale' } }, { memory: { npc: 'npc_sh_01', tag: 'jonah_died', valence: -20, strength: 100 } }, { memory: { npc: 'npc_sh_09', tag: 'son_died', valence: -40, strength: 100 } }, { event: 'title', data: { text: 'THE MONTH\nTHE LIST WAS RIGHT' } }],
     },
     fought: {
-      journal: 'Day thirty. Jonah Reese walked the east street alone at midnight, the way he did, and four Dogs came in off the salt for nothing in particular. Shale buried him behind the sheriff\'s office. The militia is four rifles again. The list was right.',
+      journal: 'The month was out before you were back. Jonah Reese walked the east street alone at midnight, the way he did, and four Dogs came in off the salt for nothing in particular. Shale buried him behind the sheriff\'s office. The militia is four rifles again. The list was right.',
       end: 'done',
-      onEnter: [{ set: 'jonah_dead' }, { set: 'jonah_death', value: 'fight' }, { set: 'shale_broke' }, { decision: { id: 'jonah_died', text: 'Jonah Reese died on day thirty, as the list said: alone on the east street, against the Dogs.' } }, { news: { tag: 'jonah_dead', text: 'Deputy Reese was killed on the east street by Rust Dogs in the night', valence: -30, size: 9, at: 'shale' } }, { memory: { npc: 'npc_sh_01', tag: 'jonah_died', valence: -20, strength: 100 } }, { memory: { npc: 'npc_sh_09', tag: 'son_died', valence: -40, strength: 100 } }, { rep: { faction: 'rust_dogs', fear: 10 } }, { event: 'title', data: { text: 'DAY THIRTY\nTHE LIST WAS RIGHT' } }],
+      onEnter: [{ set: 'jonah_dead' }, { set: 'jonah_death', value: 'fight' }, { set: 'shale_broke' }, { decision: { id: 'jonah_died', text: 'Jonah Reese died before the month was out, as the list said: alone on the east street, against the Dogs.' } }, { news: { tag: 'jonah_dead', text: 'Deputy Reese was killed on the east street by Rust Dogs in the night', valence: -30, size: 9, at: 'shale' } }, { memory: { npc: 'npc_sh_01', tag: 'jonah_died', valence: -20, strength: 100 } }, { memory: { npc: 'npc_sh_09', tag: 'son_died', valence: -40, strength: 100 } }, { rep: { faction: 'rust_dogs', fear: 10 } }, { event: 'title', data: { text: 'THE MONTH\nTHE LIST WAS RIGHT' } }],
     },
     fevered: {
-      journal: 'Day thirty. Jonah Reese drank last from the east cistern, the way the ration said, and the fever took four days to do what the tower and the Dogs had not. Shale buried him behind the sheriff\'s office. The militia is four rifles again. The list was right.',
+      journal: 'The month was out before you were back. Jonah Reese drank last from the east cistern, the way the ration said, and the fever took four days to do what the tower and the Dogs had not. Shale buried him behind the sheriff\'s office. The militia is four rifles again. The list was right.',
       end: 'done',
-      onEnter: [{ set: 'jonah_dead' }, { set: 'jonah_death', value: 'fever' }, { set: 'shale_broke' }, { decision: { id: 'jonah_died', text: 'Jonah Reese died on day thirty, as the list said: a fever from the east cistern.' } }, { news: { tag: 'jonah_dead', text: 'Deputy Reese died of a fever from the east cistern', valence: -30, size: 9, at: 'shale' } }, { memory: { npc: 'npc_sh_01', tag: 'jonah_died', valence: -20, strength: 100 } }, { memory: { npc: 'npc_sh_09', tag: 'son_died', valence: -40, strength: 100 } }, { event: 'title', data: { text: 'DAY THIRTY\nTHE LIST WAS RIGHT' } }],
+      onEnter: [{ set: 'jonah_dead' }, { set: 'jonah_death', value: 'fever' }, { set: 'shale_broke' }, { decision: { id: 'jonah_died', text: 'Jonah Reese died before the month was out, as the list said: a fever from the east cistern.' } }, { news: { tag: 'jonah_dead', text: 'Deputy Reese died of a fever from the east cistern', valence: -30, size: 9, at: 'shale' } }, { memory: { npc: 'npc_sh_01', tag: 'jonah_died', valence: -20, strength: 100 } }, { memory: { npc: 'npc_sh_09', tag: 'son_died', valence: -40, strength: 100 } }, { event: 'title', data: { text: 'THE MONTH\nTHE LIST WAS RIGHT' } }],
     },
     lived: {
-      journal: 'Day thirty. Jonah Reese is alive. The tower, the street and the cistern each had their conditions changed, and the list — for the first time anyone knows of — was wrong. Whatever wrote it will have noticed.',
+      journal: 'The month is out, and Jonah Reese is alive. The tower, the street and the cistern each had their conditions changed, and the list — for the first time anyone knows of — was wrong. Whatever wrote it will have noticed.',
       end: 'done',
-      onEnter: [{ set: 'jonah_lived' }, { set: 'forecast_broken' }, { set: 'plan_rerouted' }, { decision: { id: 'jonah_lived', text: 'Jonah Reese lived past day thirty. The first forecast anyone knows of was broken.' } }, { news: { tag: 'jonah_lived', text: 'the deputy is alive on the thirty-first day, and people are counting', valence: 20, size: 7, at: 'shale' } }, { rep: { faction: 'shale_militia', respect: 15 } }, { memory: { npc: 'npc_sh_01', tag: 'jonah_lived', valence: 25, strength: 100 } }, { lead: 'l_forecast_broken' }, { event: 'title', data: { text: 'DAY THIRTY\nTHE LIST WAS WRONG' } }],
+      onEnter: [{ set: 'jonah_lived' }, { set: 'forecast_broken' }, { set: 'plan_rerouted' }, { decision: { id: 'jonah_lived', text: 'Jonah Reese lived out the month. The first forecast anyone knows of was broken.' } }, { news: { tag: 'jonah_lived', text: 'the deputy is alive past the month, and people are counting', valence: 20, size: 7, at: 'shale' } }, { rep: { faction: 'shale_militia', respect: 15 } }, { memory: { npc: 'npc_sh_01', tag: 'jonah_lived', valence: 25, strength: 100 } }, { lead: 'l_forecast_broken' }, { event: 'title', data: { text: 'THE MONTH\nTHE LIST WAS WRONG' } }],
     },
   },
 };
@@ -175,18 +175,119 @@ export const q_a1_jonah: QuestDef = {
 export const q_sh_drills: QuestDef = {
   id: 'q_sh_drills', title: 'Militia Drills', act: 'a1', start: 'drill', xp: 150,
   routes: [
-    { id: 'drill', kind: 'talk', label: 'Three days of dawn and dusk in the yard' },
+    { id: 'drill', kind: 'talk', label: 'Dawn and dusk in the yard until nine rifles shoot' },
     { id: 'ilya', kind: 'talk', label: 'The drunk behind the yard: shame him sober, or take him east' },
   ],
   stages: {
     drill: {
-      journal: 'Nine rifles, four that shoot. Three days of drills, dawn and dusk, with rounds Shale cannot spare. Corporal Lind says a man who used to be the best shot in the Sallow drinks behind the yard.',
+      journal: 'Nine rifles, four that shoot. Drills at dawn and dusk with rounds Shale cannot spare, and from the first night nobody walks the street alone. Corporal Lind says a man who used to be the best shot in the Sallow drinks behind the yard.',
       objectives: [
-        { id: 'days', text: 'Three days of drills', done: { flag: 'militia_drilled' } },
+        { id: 'days', text: 'Drill them until nine rifles shoot', done: { flag: 'militia_drilled' } },
         { id: 'ilya', text: 'The man behind the yard', done: { any: [{ flag: 'ilya_shamed' }, { flag: 'ilya_recruited' }, { flag: 'ilya_showed' }] }, optional: true },
       ],
       next: [{ if: { flag: 'militia_drilled' }, stage: 'done' }],
     },
     done: { journal: 'Nine rifles that shoot, pairs on the street at night, and Ada\'s signature on it. Shale is not safer; it is less alone.', end: 'done' },
+  },
+};
+
+/** The Act 1 finale: the station that sets Shale's water, and the four things that can be done to it. */
+const DW_END = (how: string, text: string) => [
+  { set: 'jonah_month_over' }, { set: 'a1_finale', value: how },
+  { decision: { id: `a1_water_${how}`, text } },
+  { after: { minutes: 3, id: 'a1_end_card', effects: [{ event: 'title', data: { text: 'ACT ONE ENDS\nTHE WATER CLOCK' } }] } },
+];
+
+export const q_a1_drywells: QuestDef = {
+  id: 'q_a1_drywells', title: 'The Water Clock', act: 'a1', critical: true, start: 'track', xp: 500,
+  routes: [
+    { id: 'science', kind: 'tech', label: 'Override the schedule at the console', requires: { skill: 'science', gte: 45 } },
+    { id: 'word', kind: 'talk', label: 'The pump man\'s credential: Oriel Marr\'s key and her father\'s word' },
+    { id: 'governor', kind: 'fight', label: 'Break the governor under the gauges', requires: { skill: 'mechanics', gte: 35 } },
+    { id: 'sell', kind: 'barter', label: 'Sell the console to Factor Pike' },
+    { id: 'diary', kind: 'knowledge', label: 'The pump man\'s diary has the word on its first page' },
+    { id: 'keep', kind: 'knowledge', label: 'Leave the schedule as it is' },
+  ],
+  stages: {
+    track: {
+      journal: 'The line from Signal Hill runs west to a pump station marked DW-4: Dry Wells, a day east of Shale on a track nobody uses. Whatever sets Shale\'s water sits there. Somebody is living there too; the Tollmen call them ghosts.',
+      objectives: [
+        { id: 'reach', text: 'Find Dry Wells', done: { flag: 'visited_drywells' } },
+        { id: 'perch', text: 'Get past the rifle on the approach', done: { flag: 'dw_admitted' } },
+      ],
+      next: [{ if: { flag: 'dw_admitted' }, stage: 'station' }],
+    },
+    station: {
+      journal: 'The shacks are the family\'s; the station is Oriel Marr\'s; the room at the east end of the pump hall is locked and hums, and her father\'s key is on a cord round her neck. A lock can be picked and a door can be forced, and the family will remember which.',
+      objectives: [
+        { id: 'door', text: 'Open the room at the end of the station', done: { flag: 'dw_control_open' } },
+        { id: 'who', text: 'Learn who the family are', done: { knows: 'dw_origin_known' }, optional: true },
+        { id: 'diary', text: 'Read the pump man\'s diary', done: { knows: 'dw_diary_read' }, optional: true },
+      ],
+      next: [{ if: { flag: 'dw_control_open' }, stage: 'console' }],
+    },
+    console: {
+      journal: 'DW-4 holds Shale at 0.62 of something, on a schedule changed from upstream. The console will take a new number from someone who can make it listen, or from the pump man\'s word; the governor under the gauges can be broken; Factor Pike would pay to hold what the console holds; or the schedule can be left as it is, which is also a choice. Whatever is decided here, the Sallow\'s business is done with and the road runs east.',
+      objectives: [
+        { id: 'read', text: 'Read the schedule', done: { knows: 'dw_schedule_read' } },
+        { id: 'decide', text: 'Decide what Shale drinks', done: { flag: 'dw_outcome' } },
+        { id: 'held', text: 'Find the line that is held constant', done: { knows: 'c9_fed_from_outside' }, optional: true, hidden: true },
+      ],
+      next: [
+        { if: { flag: 'dw_restored' }, stage: 'restored' },
+        { if: { flag: 'dw_freed' }, stage: 'freed' },
+        { if: { flag: 'dw_sold' }, stage: 'sold' },
+        { if: { flag: 'dw_kept' }, stage: 'kept' },
+      ],
+    },
+    restored: {
+      journal: 'SHALE — 1.00. The pumps run outside the clock now, and the last line in the station\'s log is yours. Shale will drink; something upstream will read the line. The road runs east.',
+      end: 'done',
+      onEnter: [...DW_END('restored', 'You set Shale\'s allocation at Dry Wells to the full measure.'), { news: { tag: 'water_restored', text: 'the pumps in the yard run twice as long as they did, and nobody changed anything in Shale', valence: 20, size: 9, at: 'shale' } }, { rep: { faction: 'shale_militia', respect: 15 } }, { rep: { faction: 'tollmen', respect: -5 } }, { set: 'dw_wardens_due' }],
+    },
+    freed: {
+      journal: 'The governor is in pieces and the pumps run flat out, for Shale, until the aquifer or the bearings give up. The console has stopped pretending to know. The road runs east.',
+      end: 'done',
+      onEnter: [...DW_END('freed', 'You broke the governor at Dry Wells: Shale has all the water, for as long as it lasts.'), { news: { tag: 'water_freed', text: 'the pumps have not stopped since the night the salt-cut stranger came back from the east, and the north tank is overflowing into the street', valence: 15, size: 9, at: 'shale' } }, { rep: { faction: 'shale_militia', respect: 10 } }, { set: 'dw_wardens_due' }],
+    },
+    sold: {
+      journal: 'Factor Pike has the console, a guild engineer has the chair, and Shale\'s water is sold by the measure, reliably. You have a hundred and fifty Tolls and a seat on a guild caravan east.',
+      end: 'done',
+      onEnter: [...DW_END('sold', 'You sold the Dry Wells console to the Tollmen for a hundred and fifty Tolls.'), { news: { tag: 'water_sold', text: 'the Tollmen have put an engineer on the Dry Wells station and water in the yard is sold by the measure', valence: -20, size: 9, at: 'shale' } }, { rep: { faction: 'tollmen', respect: 20 } }, { rep: { faction: 'shale_militia', respect: -15 } }, { set: 'shale_company_town' }],
+    },
+    kept: {
+      journal: 'SHALE — 0.62. You stood in front of the thing that sets Shale\'s water and left it as it was. Shale thins on schedule, and whatever changed the number can change it back, and nothing upstream has noticed you. The road runs east.',
+      end: 'done',
+      onEnter: [...DW_END('kept', 'You left the Dry Wells schedule as you found it.'), { set: 'shale_withers' }],
+    },
+  },
+};
+
+/** Side quest: the family in the shacks, and where they end up. */
+export const q_dw_ghosts: QuestDef = {
+  id: 'q_dw_ghosts', title: 'Pump-Station Ghosts', act: 'a1', start: 'squat', xp: 150,
+  routes: [
+    { id: 'shale', kind: 'talk', label: 'Talk Sheriff Vey into taking them under her law' },
+    { id: 'road', kind: 'barter', label: 'Pay their way east' },
+    { id: 'leave', kind: 'knowledge', label: 'Leave them on their trickle and say nothing' },
+  ],
+  stages: {
+    squat: {
+      journal: 'Five people live in the scrap shacks at Dry Wells on a trickle tapped off Shale\'s line: three generations out of a cistern that failed. Shale does not know they exist; the Tollmen call them ghosts. Oriel Marr will go to Shale if the sheriff says yes and means it; she will take forty Tolls for the road; or she will stay, if nobody tells Shale about the valve.',
+      objectives: [
+        { id: 'ask', text: 'Ask Sheriff Vey whether Shale would have them', done: { flag: 'ada_ghosts_decided' }, optional: true },
+        { id: 'decide', text: 'Settle what becomes of the family', done: { flag: 'dw_ghosts_decided' } },
+      ],
+      next: [
+        { if: { flag: 'dw_ghosts_shale' }, stage: 'shale' },
+        { if: { flag: 'dw_ghosts_moved' }, stage: 'moved' },
+        { if: { all: [{ flag: 'dw_ghosts_left' }, { flag: 'dw_fight' }] }, stage: 'shot' },
+        { if: { flag: 'dw_ghosts_left' }, stage: 'left' },
+      ],
+    },
+    shale: { journal: 'The Marrs walked to Shale under Sheriff Vey\'s law and got the old tannery. Juno has a second street; Cato has no valve; Oriel has a chair that was built for sitting. Shale is five people bigger and does not know yet what that costs.', end: 'done' },
+    moved: { journal: 'The Marrs took forty Tolls and the road east: the windpump graveyard, then the glass. Oriel\'s father walked it the other way. The shacks at Dry Wells are empty, and the valve is shut.', end: 'done' },
+    left: { journal: 'The Marrs stay at Dry Wells on their trickle, and Shale was told nothing. When Shale comes, it comes; it was always going to.', end: 'done' },
+    shot: { journal: 'You drew on the family at Dry Wells. What is left of them stays, because there is nowhere else, and Oriel Marr gave you the key with nothing in her voice at all.', end: 'failed' },
   },
 };

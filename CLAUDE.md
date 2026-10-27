@@ -36,6 +36,9 @@ The owner wants to play unspoiled.
 
 ## 2. Owner decisions (binding)
 - Fully original: no Fallout names/IP. Genre conventions only. Add best-practice fun from leading RPGs.
+- **No time limits** (owner): no day limits or deadlines of any kind. Nothing fails, expires or resolves behind the
+  player's back because days passed. Scheduled events wait for the player (`WorldEventDef.at: { hour, where }`),
+  keystone outcomes resolve on story milestones, and only durations are allowed (drills take days, cooldowns, travel).
 - **60+ hours = one single playthrough** (not completionist).
 - Visual style: detailed low-poly, orthographic iso camera, rotatable/zoomable, heavy atmosphere.
 - Touch: tap-to-act (tap move, tap target → radial menu, pinch zoom, two-finger twist rotate).

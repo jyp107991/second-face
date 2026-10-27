@@ -48,8 +48,10 @@ const fs = require('fs');
       return 'not found';
     }, to);
     console.log(`map: ${to} ${found}; side: ${await page.evaluate(() => document.querySelector('.map-side')?.textContent?.replace(/\s+/g, ' ').slice(0, 120))}`);
+    const before = await page.evaluate(() => game.state.world.at);
     await page.evaluate(() => document.querySelector('.map-side [data-a=travel]')?.click());
-    await page.waitForTimeout(7000);
+    await page.waitForFunction((b) => game.state.world.at !== b && !game.transitioning && game.npcs.size > 0, before, { timeout: 90000 }).catch(() => {});
+    await page.waitForTimeout(1500);
     console.log(`  arrived ${await page.evaluate(() => `${game.state.locationId} at=${game.state.world.at} day=${Math.floor(game.state.minutes / 1440) + 1} ${String(Math.floor((game.state.minutes % 1440) / 60)).padStart(2, '0')}:${String(Math.floor(game.state.minutes % 60)).padStart(2, '0')} npcs=${game.npcs.size} player=${game.player.tx},${game.player.ty}`)}`);
   };
 
@@ -179,10 +181,10 @@ const fs = require('fs');
   console.log('title card:', card);
   await shot('title_card');
   check('Chapter One ends', (await flags('ch1_done')).includes('true'), `${await quest('q_ch1_name')} card=${card}`);
-  check('month timer set', await page.evaluate(() => (game.state.world.timers ?? []).some((t) => t.id === 'jonah_month')), await page.evaluate(() => JSON.stringify((game.state.world.timers ?? []).map((t) => t.id))));
+  check('no month timer (no day limits)', await page.evaluate(() => !(game.state.world.timers ?? []).some((t) => t.id === 'jonah_month') && game.state.world.quests.q_a1_jonah?.stage === 'month'), await page.evaluate(() => JSON.stringify((game.state.world.timers ?? []).map((t) => t.id))));
 
-  // ---- Tribute Day: let the clock run to the morning of day 5 and face them at the wells.
-  await page.evaluate(() => { game.state.minutes = 4 * 1440 + 10 * 60 + 1; });
+  // ---- Tribute Day waits for us: it comes at ten the next morning we are in Shale.
+  await page.evaluate(() => { const g = game.state; g.minutes = (Math.floor(g.minutes / 1440) + 1) * 1440 + 10 * 60 + 1; });
   await page.waitForFunction(() => game.state.flags.tribute_day === true, null, { timeout: 30000 }).catch(() => {});
   console.log('tribute:', await flags('tribute_day'), await quest('q_ch1_tribute'), await page.evaluate(() => [...game.npcs.keys()].filter((k) => k.startsWith('tribute')).join(',')));
   await page.evaluate(() => { game.player.place(31, 28); game.cam.recentre(); game.player.setPath(game.loc.grid.findPath(31, 28, 31, 26, { ignore: 'player', adjacentOk: false })); });

@@ -67,9 +67,13 @@ export class Hud {
   }
 
   /** A chapter card: large, centred, slow to fade. */
+  private titleBusyUntil = 0;
+
   title(text: string, ms = 5000): void {
-    // Wait for the conversation that raised it to close, so the card stands alone.
-    if (document.querySelector('.dlg')) { window.setTimeout(() => this.title(text, ms), 300); return; }
+    // Wait for the conversation that raised it to close, and for the card before it to fade, so each card stands alone.
+    const wait = document.querySelector('.dlg') ? 300 : Math.max(0, this.titleBusyUntil - performance.now());
+    if (wait > 0) { window.setTimeout(() => this.title(text, ms), wait + 50); return; }
+    this.titleBusyUntil = performance.now() + ms + 1500;
     const el = this.el.querySelector('.title-card') as HTMLElement;
     el.innerHTML = text.split('\n').map((l) => `<div>${l.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!)}</div>`).join('');
     el.style.opacity = '1';

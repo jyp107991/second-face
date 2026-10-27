@@ -42,7 +42,11 @@ export interface OptionDef {
 export interface PassiveDef {
   skill?: SkillId;
   attr?: AttributeId;
-  dc: number;
+  /** Threshold for the skill or attribute; with neither, the passive needs only `if` (an origin, a thing known). */
+  dc?: number;
+  if?: Cond;
+  /** Label when there is no check (defaults to the condition's kind, e.g. an origin's name). */
+  label?: string;
   text: Text;
   effects?: Effect[];
 }
@@ -150,11 +154,15 @@ export class DialogueRunner {
     const n = this.def.nodes[this.node];
     const passives: NodeView['passives'] = [];
     (n.passives ?? []).forEach((p, i) => {
-      const value = p.skill ? skill(this.g.pc.sheet, p.skill) : attr(this.g.pc.sheet, p.attr!);
-      if (value < p.dc) return;
+      if (p.if && !test(p.if, this.g)) return;
+      if (p.skill || p.attr) {
+        const value = p.skill ? skill(this.g.pc.sheet, p.skill) : attr(this.g.pc.sheet, p.attr!);
+        if (value < (p.dc ?? 0)) return;
+      }
       const key = `${this.node}.${i}`;
       if (!this.passivesShown.has(key)) { this.passivesShown.add(key); apply(p.effects, this.g, this.host); }
-      passives.push({ label: checkName(p).toUpperCase(), text: render(p.text, this.g) });
+      const label = p.skill || p.attr ? checkName(p) : p.label ?? (p.if && 'origin' in p.if ? String(p.if.origin).replace('_', ' ') : 'insight');
+      passives.push({ label: label.toUpperCase(), text: render(p.text, this.g) });
     });
     const options: OptionView[] = [];
     n.options.forEach((o, i) => {

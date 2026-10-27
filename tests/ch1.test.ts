@@ -176,18 +176,31 @@ describe('The Paper (overpass)', () => {
 });
 
 describe('Tribute Day', () => {
-  it('fires on day 5 once Shale is known, and settles by default when nobody faces it', async () => {
+  it('waits for the player: the Dogs come at ten the morning after you hear of it, while you are in Shale', async () => {
     const { runWorldEvents } = await import('../src/engine/world/frontier');
     const { WORLD_EVENTS } = await import('../src/content');
     const g = newGameState('c9', 0, 0);
     const q = new QuestEngine(QUESTS, g);
     g.minutes = 4 * 1440 + 12 * 60;
-    expect(runWorldEvents(g, WORLD_EVENTS, q)).toEqual([]);
+    g.locationId = 'shale';
     g.flags.visited_shale = true;
+    expect(runWorldEvents(g, WORLD_EVENTS, q)).toEqual([]);
+    g.world.knowledge.tribute_due = true;
+    // Armed at noon: not today, and not while the player is elsewhere, however many days pass.
+    expect(runWorldEvents(g, WORLD_EVENTS, q)).toEqual([]);
+    g.minutes = 5 * 1440 + 9 * 60;
+    expect(runWorldEvents(g, WORLD_EVENTS, q)).toEqual([]);
+    g.minutes = 40 * 1440 + 15 * 60;
+    g.locationId = 'rustdogs';
+    expect(runWorldEvents(g, WORLD_EVENTS, q)).toEqual([]);
+    g.locationId = 'shale';
     expect(runWorldEvents(g, WORLD_EVENTS, q)).toEqual(['tribute_day']);
     expect(g.flags.tribute_day).toBe(true);
     expect(g.world.quests.q_ch1_tribute?.stage).toBe('day');
-    g.minutes = 4 * 1440 + 19 * 60;
+    // By six that evening it settles by default if nobody faced it.
+    g.minutes = 40 * 1440 + 17 * 60;
+    expect(runWorldEvents(g, WORLD_EVENTS, q)).toEqual([]);
+    g.minutes = 41 * 1440 + 18 * 60 + 5;
     expect(runWorldEvents(g, WORLD_EVENTS, q)).toEqual(['tribute_settled']);
     q.update();
     expect(g.flags.tribute_outcome).toBe('default');
@@ -221,7 +234,9 @@ describe('The First Name (Chapter One end)', () => {
     expect(g.world.knowledge.name1_decoded).toBe(true);
     expect(g.world.quests.q_ch1_name.status).toBe('done');
     expect(g.flags.ch1_done).toBe(true);
-    expect(g.world.timers.some((t) => t.id === 'jonah_month')).toBe(true);
+    // No day limit: the month is a story beat, not a clock.
+    expect(g.world.timers.some((t) => t.id === 'jonah_month')).toBe(false);
+    expect(g.world.quests.q_a1_jonah?.stage).toBe('month');
   });
 
   it('the Tollmen sell the key; Hollis reads two names', () => {
