@@ -142,3 +142,19 @@ Content building (B3.11 onwards) is paused until U1–U5 are in.
   the Cistern mouth, Shale, Ninebridge, Openfield) and `edge_*.png` (inside them at the edge); `tools/qa/wild.cjs`,
   `tools/qa/edges.cjs`. Still flat; the heightfield is U2b.2. Texture memory barely moved (427 MB at Shale with two
   neighbours): the arrays were never the bulk, the people are (each figure its own skin and cloth maps) — U4's job.
+- **2026-10-27 U2b.2 — the lie of the land.** One continuous heightfield over the world (`world/height.ts`): each
+  region has its own relief (dunes with sharp crests in the Sallow, a near-flat pan on the Flats, plains along the
+  Line, a shore that dips under the sea, mountains with ridges in the Teeth, craters in the Ashlands, hills in the
+  Wet), three scales each (the region's sweep, walking-scale ridges and hummocks, fine ripples), blended across
+  region borders. Hand-built places stand on pads: level at the place's own height (the natural ground under its
+  centre), the terrain eased onto the pad over 28 m. Chunk vertices follow the field, carry true normals and a
+  curvature term (hollows in shade, crests catching the sky), and throw shadows. Water lies at level 0 (one plane
+  under the open world); ground below it or steeper than 0.75 is not walked (`WorldGrid.blocked`, from cached tile
+  heights so pathing stays fast). Everything that stood on y = 0 now stands on the ground: actors (feet follow the
+  field while walking), places and their lights, the tap pick (a ray against the terrain and the places' floors),
+  the path marker, the cursor, dropped things, reach and path dots, decals. Streaming runs on the real clock, builds
+  up to four chunks a tick, and an arrival fills its ring of ground before the fade lifts. Evidence
+  `docs/evidence/u2/relief_*.png` (the Sallow's dunes, Shale on its pad, the Teeth, the shore, the Wet);
+  `tools/qa/relief.cjs`; `openworld.cjs` all green on the heightfield. Flat-looking still: the gentler regions read
+  as flat until U3 puts rocks, scrub and trees on them (parallax is what sells relief from above), and the sun arc
+  stays high. Next U2b.3: roads and rails between places, rivers carved to the sea, a far horizon.

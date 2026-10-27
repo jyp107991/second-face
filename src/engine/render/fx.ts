@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { groundHeight } from '../scene/actor';
 import { softSprite } from '../assets/textures';
 
 interface Particle { p: THREE.Vector3; v: THREE.Vector3; life: number; max: number; color: THREE.Color; size: number; gravity: number; }
@@ -83,7 +84,7 @@ export class Fx {
       else if (kind === 'spark') this.emit(at, v.multiplyScalar(2), 0.25, 0xffd070, 0.08, 4);
       else this.emit(at, v.multiplyScalar(0.4), 0.8, 0xa89878, 0.3, -0.2);
     }
-    if (kind === 'blood') this.decal(at.clone().setY(0.012), 0x4a0a06, 0.3 + Math.random() * 0.4);
+    if (kind === 'blood') this.decal(at.clone().setY(groundHeight(at.x, at.z) + 0.012), 0x4a0a06, 0.3 + Math.random() * 0.4);
   }
 
   decal(at: THREE.Vector3, color: number, size: number): void {
@@ -109,7 +110,7 @@ export class Fx {
       this.emit(at, v, 0.5 + Math.random() * 0.3, i % 3 ? 0xff9a40 : 0xffe080, 0.5, 2);
     }
     for (let i = 0; i < 20; i++) this.emit(at, new THREE.Vector3((Math.random() - 0.5) * 2, 1 + Math.random() * 1.5, (Math.random() - 0.5) * 2), 2.2, 0x3a3630, 0.9, -0.1);
-    this.decal(at.clone().setY(0.011), 0x1a1612, radius * 1.4);
+    this.decal(at.clone().setY(groundHeight(at.x, at.z) + 0.011), 0x1a1612, radius * 1.4);
   }
 
   floatText(at: THREE.Vector3, text: string, color = '#ffd070'): void {

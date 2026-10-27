@@ -3,6 +3,7 @@ import { worldLayers, type GroundLayers } from '../assets/pbr';
 import { openSites, sitePlacement, type SitePlacement } from '../world/sites';
 import { BIOMES, CHUNK, FEATHER, buildChunk, chunkKey, regionAt, type NearSite } from '../world/terrain';
 import { WorldGrid } from '../world/worldGrid';
+import { heightAt, siteLevel, tileWalkable, WATER_LEVEL } from '../world/height';
 import { outsideKey } from './ground';
 import { Grid } from './grid';
 import { buildLocation, type BuiltLocation } from './location';
@@ -12,7 +13,7 @@ import { buildLocation, type BuiltLocation } from './location';
  * terrain chunks fill the ground between them. A cell (an enclosed place) replaces the open world while you are
  * in it and gives it back when you leave. One site is built per update at most, so a frame is never swamped.
  */
-export interface LoadedSite { place: SitePlacement; built: BuiltLocation }
+export interface LoadedSite { place: SitePlacement; built: BuiltLocation; /** The pad's height: the place's ground level in the world. */ level: number }
 
 export interface StreamHooks {
   /** Fetch what the site's people wear before it is built (clothing proxies). */
@@ -40,9 +41,29 @@ export class WorldScene {
   cell?: string;
   private streaming = false;
 
+  /** The sea and the drowned ground: one plane at the water level, following the focus. */
+  private water: THREE.Mesh;
+
   constructor(scene: THREE.Scene, private hooks: StreamHooks) {
     this.root.name = 'world';
     scene.add(this.root);
+    this.grid.blocked = (x, y) => !tileWalkable(x, y);
+    const wm = new THREE.MeshStandardMaterial({ color: 0x4a6a70, roughness: 0.18, metalness: 0.1, transparent: true, opacity: 0.86 });
+    this.water = new THREE.Mesh(new THREE.PlaneGeometry(900, 900).rotateX(-Math.PI / 2), wm);
+    this.water.position.y = WATER_LEVEL;
+    this.water.receiveShadow = true;
+    this.water.name = 'water';
+    this.root.add(this.water);
+  }
+
+  /** Ground height at a world point (a cell is flat). */
+  heightAt(x: number, z: number): number { return this.mode === 'cell' ? 0 : heightAt(x, z); }
+
+  /** The ground meshes a tap can land on (the places' floors and the terrain). */
+  groundMeshes(): THREE.Object3D[] {
+    const out: THREE.Object3D[] = [...this.chunks.values()];
+    for (const s of this.sites.values()) { const g = s.built.root.getObjectByName('ground'); if (g) out.push(g); }
+    return out;
   }
 
   siteAt(x: number, z: number): LoadedSite | undefined {
@@ -103,9 +124,10 @@ export class WorldScene {
       // Put away while it was loading (left the area, entered a cell): drop it.
       if (this.mode === 'cell' ? this.cell !== place.id : place.kind === 'cell') return undefined;
       const built = buildLocation(place.map, layers, { stripRim: place.rim === 'strip', bldBase: (this.bldBase += 4096), skirt: place.kind === 'cell' });
-      built.root.position.set(place.x, 0, place.z);
+      const level = siteLevel(place);
+      built.root.position.set(place.x, level, place.z);
       this.root.add(built.root);
-      const site: LoadedSite = { place, built };
+      const site: LoadedSite = { place, built, level };
       this.sites.set(place.id, site);
       this.grid.addSite(place, built.grid);
       this.hooks.loaded(site);
@@ -132,8 +154,23 @@ export class WorldScene {
     this.chunks.clear();
   }
 
-  /** Stream round a focus (the player). Builds at most one site and one chunk per call. */
-  async update(fx: number, fz: number): Promise<void> {
+  /** Whether the ring of ground round a point is built (what a fade should wait for). */
+  ringComplete(fx: number, fz: number): boolean {
+    if (this.mode !== 'open') return true;
+    const cx = Math.floor(fx / CHUNK), cz = Math.floor(fz / CHUNK);
+    for (let dz = -CHUNK_RING; dz <= CHUNK_RING; dz++) for (let dx = -CHUNK_RING; dx <= CHUNK_RING; dx++) if (!this.chunks.has(chunkKey(cx + dx, cz + dz))) return false;
+    return true;
+  }
+
+  /** Build everything within reach of a point before going on (arrivals: the ground is there when the fade lifts). */
+  async fill(fx: number, fz: number): Promise<void> {
+    for (let i = 0; i < 24 && !this.ringComplete(fx, fz); i++) await this.update(fx, fz, 4);
+  }
+
+  /** Stream round a focus (the player). Builds at most one site and `burst` chunks per call. */
+  async update(fx: number, fz: number, burst = 1): Promise<void> {
+    this.water.visible = this.mode === 'open';
+    this.water.position.x = fx; this.water.position.z = fz;
     if (this.mode !== 'open' || this.streaming) return;
     this.streaming = true;
     try {
@@ -148,6 +185,7 @@ export class WorldScene {
         const [x, z] = k.split(',').map(Number);
         if (Math.max(Math.abs(x - cx), Math.abs(z - cz)) > CHUNK_KEEP) { this.chunks.delete(k); this.root.remove(m); m.geometry.dispose(); }
       }
+      let built = 0;
       outer: for (let r = 0; r <= CHUNK_RING; r++) {
         for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) {
           if (Math.max(Math.abs(dx), Math.abs(dz)) !== r) continue;
@@ -162,7 +200,7 @@ export class WorldScene {
           const m = buildChunk(cx + dx, cz + dz, layers, near);
           this.chunks.set(k, m);
           this.root.add(m);
-          break outer;
+          if (++built >= burst) break outer;
         }
       }
     } finally {

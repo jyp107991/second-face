@@ -95,6 +95,7 @@ export function buildGround(map: MapDef, grid: Grid, layers: GroundLayers | unde
   geo.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
   geo.setAttribute('aWeight', new THREE.BufferAttribute(wA, 4));
   geo.setAttribute('aWeight2', new THREE.BufferAttribute(wB, 4));
+  geo.setAttribute('aOcc', new THREE.BufferAttribute(new Float32Array(n).fill(1), 1));
   geo.setAttribute('color', new THREE.BufferAttribute(color, 3));
   geo.setIndex(idx);
   geo.computeBoundingSphere();
@@ -127,14 +128,14 @@ export function splatMaterial(layers: GroundLayers, slotKeys: string[]): THREE.M
     shader.uniforms.uTint = { value: tints };
     shader.uniforms.uSlot = { value: slots };
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nattribute vec4 aWeight; attribute vec4 aWeight2; varying vec4 vW; varying vec4 vW2; varying vec2 vGUv;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvW = aWeight; vW2 = aWeight2; vGUv = (modelMatrix * vec4(position, 1.0)).xz;');
+      .replace('#include <common>', '#include <common>\nattribute vec4 aWeight; attribute vec4 aWeight2; attribute float aOcc; varying vec4 vW; varying vec4 vW2; varying vec2 vGUv; varying float vOcc;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvW = aWeight; vW2 = aWeight2; vOcc = aOcc; vGUv = (modelMatrix * vec4(position, 1.0)).xz;');
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
 precision highp sampler2DArray;
 uniform sampler2DArray uDiff; uniform sampler2DArray uNor; uniform sampler2DArray uArm;
 uniform float uScale[${MAX_LAYERS}]; uniform float uHard[${MAX_LAYERS}]; uniform vec3 uTint[${MAX_LAYERS}]; uniform float uSlot[${SLOTS}];
-varying vec4 vW; varying vec4 vW2; varying vec2 vGUv;
+varying vec4 vW; varying vec4 vW2; varying vec2 vGUv; varying float vOcc;
 float gHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float gNoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(gHash(i), gHash(i + vec2(1.0, 0.0)), f.x), mix(gHash(i + vec2(0.0, 1.0)), gHash(i + vec2(1.0, 1.0)), f.x), f.y); }
 mat3 gTangentFrame(vec3 eye_pos, vec3 surf_norm, vec2 uv) {
@@ -186,9 +187,9 @@ for (int s = 0; s < ${SLOTS}; s++) gSample(s, gDiff, gNor, gArm, gSum, gw[s] / g
 gSum = max(gSum, 1e-4); gDiff /= gSum; gNor /= gSum; gArm /= gSum;
 // Slow drift of tone and warmth across the ground (damp hollows, bleached rises) so no stretch reads the same.
 float gM1 = gNoise(vGUv * 0.045 + 7.0), gM2 = gNoise(vGUv * 0.19 + 3.0);
-float gMacro = 0.84 + 0.26 * gM1 + 0.08 * gM2;
+float gMacro = 0.9 + 0.16 * gM1 + 0.06 * gM2;
 vec3 gWarm = mix(vec3(0.97, 0.98, 1.02), vec3(1.03, 1.0, 0.95), gNoise(vGUv * 0.03 + 11.0));
-diffuseColor.rgb *= gDiff * gMacro * gWarm;`)
+diffuseColor.rgb *= gDiff * gMacro * gWarm * vOcc;`)
       .replace('#include <roughnessmap_fragment>', 'float roughnessFactor = roughness * clamp(gArm.g, 0.25, 1.0);')
       .replace('#include <metalnessmap_fragment>', 'float metalnessFactor = metalness * gArm.b;')
       .replace('#include <normal_fragment_maps>', 'normal = normalize(gTangentFrame(-vViewPosition, normal, vGUv) * normalize(vec3(gNor.xy * 0.9, max(gNor.z, 0.2))));')

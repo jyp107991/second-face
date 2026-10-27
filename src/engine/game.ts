@@ -19,7 +19,7 @@ import { Atmosphere } from './render/atmosphere';
 import { IsoCamera } from './render/camera';
 import { PostFX } from './render/postfx';
 import { QUALITY, detectQuality, type QualityLevel } from './render/quality';
-import { Actor } from './scene/actor';
+import { Actor, setGroundHeight } from './scene/actor';
 import { lookFrom, outfitProxyKeys, type Outfit } from './assets/humanoid';
 import { BASE_OUTFIT, wardrobeKey, wardrobeOutfit, wearProxyKeys } from './inventory/wardrobe';
 import { ensureProxies } from './assets/human/data';
@@ -274,6 +274,7 @@ export class Game extends EventBus<GameEvents> {
     this.pathMesh.frustumCulled = false;
     this.scene.add(this.reachMesh, this.pathMesh, this.pileGroup);
     this.fx = new Fx(this.scene, () => this.cam.camera);
+    setGroundHeight((x, z) => this.world.heightAt(x, z));
     this.world = new WorldScene(this.scene, {
       prepare: (place) => this.prepareSite(place),
       loaded: (site) => this.onSiteLoaded(site),
@@ -584,8 +585,8 @@ export class Game extends EventBus<GameEvents> {
     this.updateSoundBed();
     this.emit('locationChanged', { id, name: this.locationName ?? '' });
     this.quests.update();
-    // On open ground the first ring of terrain is built before the fade lifts, so the player never stands on nothing.
-    if (wild) await this.world.update(sx, sy); else void this.world.update(sx, sy);
+    // The ground round the arrival is built before the fade lifts, so the player never stands on nothing.
+    await this.world.fill(sx, sy);
   }
 
   /** Map-local tile of a world tile in the current location (world tiles stay as they are in the wild). */
@@ -992,7 +993,7 @@ export class Game extends EventBus<GameEvents> {
     const m = new THREE.Matrix4();
     const list = tiles ?? [];
     this.reachMesh.count = Math.min(list.length, 600);
-    for (let i = 0; i < this.reachMesh.count; i++) this.reachMesh.setMatrixAt(i, m.makeTranslation(list[i].x + 0.5, 0.015, list[i].y + 0.5));
+    for (let i = 0; i < this.reachMesh.count; i++) this.reachMesh.setMatrixAt(i, m.makeTranslation(list[i].x + 0.5, this.world.heightAt(list[i].x + 0.5, list[i].y + 0.5) + 0.015, list[i].y + 0.5));
     this.reachMesh.instanceMatrix.needsUpdate = true;
   }
 
@@ -1002,7 +1003,7 @@ export class Game extends EventBus<GameEvents> {
     this.pathMesh.count = list.length;
     const c = new THREE.Color();
     for (let i = 0; i < list.length; i++) {
-      this.pathMesh.setMatrixAt(i, m.makeTranslation(list[i].x + 0.5, 0.025, list[i].y + 0.5));
+      this.pathMesh.setMatrixAt(i, m.makeTranslation(list[i].x + 0.5, this.world.heightAt(list[i].x + 0.5, list[i].y + 0.5) + 0.025, list[i].y + 0.5));
       this.pathMesh.setColorAt(i, c.setHex(i < affordable ? 0x80ffa0 : 0xff6050));
     }
     this.pathMesh.instanceMatrix.needsUpdate = true;
@@ -1048,7 +1049,7 @@ export class Game extends EventBus<GameEvents> {
     this.lastStand = { x: p.tx, y: p.ty, until: performance.now() + 8000 + path.length * 400 };
     this.walkGoal = { x, y, adjacentOk: true, tries: 0, legs: 0 }; this.walkRetry = undefined;
     p.setPath(path);
-    this.pathMarker.position.set(x + 0.5, 0.03, y + 0.5);
+    this.pathMarker.position.set(x + 0.5, this.world.heightAt(x + 0.5, y + 0.5) + 0.03, y + 0.5);
     this.pathMarker.visible = true;
     return true;
   }
@@ -1083,7 +1084,7 @@ export class Game extends EventBus<GameEvents> {
     const t = this.pickTile(x, y);
     const what = t && !this.transitioning ? this.describeAt(t.x, t.y) : undefined;
     this.cursor.visible = !!t && (!!what || !!this.grid.get(t.x, t.y)?.walkable);
-    if (t) this.cursor.position.set(t.x + 0.5, 0.02, t.y + 0.5);
+    if (t) this.cursor.position.set(t.x + 0.5, this.world.heightAt(t.x + 0.5, t.y + 0.5) + 0.02, t.y + 0.5);
     (this.cursor.material as THREE.MeshBasicMaterial).color.setHex(what ? 0xffe8a0 : 0xe8c070);
     (this.cursor.material as THREE.MeshBasicMaterial).opacity = what ? 0.85 : 0.5;
     this.cursor.scale.setScalar(what ? 1.25 : 1);
@@ -1203,7 +1204,7 @@ export class Game extends EventBus<GameEvents> {
       if (!t || Math.abs(t.x - px) > 260 || Math.abs(t.y - py) > 260) continue;
       const { x, y } = t;
       const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.18, 0).scale(1, 0.7, 1), new THREE.MeshStandardMaterial({ color: 0x8a7a5a, flatShading: true }));
-      m.position.set(x + 0.5, 0.12, y + 0.5);
+      m.position.set(x + 0.5, this.world.heightAt(x + 0.5, y + 0.5) + 0.12, y + 0.5);
       m.castShadow = true;
       this.pileGroup.add(m);
     }
@@ -1322,8 +1323,11 @@ export class Game extends EventBus<GameEvents> {
     const ndc = new THREE.Vector2((sx / rect.width) * 2 - 1, -(sy / rect.height) * 2 + 1);
     const ray = new THREE.Raycaster();
     ray.setFromCamera(ndc, this.cam.camera);
+    // The ground is not flat: the tap lands on the terrain or a place's floor; failing that, on the player's level.
+    const hits = ray.intersectObjects(this.world.groundMeshes(), false);
     const hit = new THREE.Vector3();
-    if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return null;
+    if (hits.length) hit.copy(hits[0].point);
+    else if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -(this.player?.object.position.y ?? 0)), hit)) return null;
     const x = Math.floor(hit.x), y = Math.floor(hit.z);
     return this.grid.inBounds(x, y) ? { x, y } : null;
   }
@@ -1532,8 +1536,9 @@ export class Game extends EventBus<GameEvents> {
     } else roofUniforms.uHideBld.value = -1;
     if (this.player) {
       this.atmosphere.setAmbience(this.world.ambienceAt(this.player.tx, this.player.ty));
-      this.streamTick += dt;
-      if (this.streamTick > 0.25) { this.streamTick = 0; void this.world.update(this.player.tx, this.player.ty); }
+      // Streaming runs on the clock, not the simulation: slow frames must not starve the ground.
+      const now = performance.now();
+      if (now - this.streamTick > 250) { this.streamTick = now; void this.world.update(this.player.tx, this.player.ty); }
     }
 
     this.atmosphere.hour = hourOf(this.state.minutes);

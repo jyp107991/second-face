@@ -4,6 +4,7 @@ import { WORLD_SCALE } from '../../content/world/sites';
 import type { AmbienceDef, FloorKind } from '../data/types';
 import type { GroundLayers } from '../assets/pbr';
 import { FALLBACK, SLOTS, splatMaterial } from '../scene/ground';
+import { heightAt, normalAt } from './height';
 import type { Mood } from './weather';
 
 /**
@@ -104,7 +105,7 @@ export function buildChunk(cx: number, cz: number, layers: GroundLayers | undefi
   const n = CHUNK / STEP + 1;
   const count = n * n;
   const pos = new Float32Array(count * 3), nrm = new Float32Array(count * 3), col = new Float32Array(count * 3);
-  const wA = new Float32Array(count * 4), wB = new Float32Array(count * 4);
+  const wA = new Float32Array(count * 4), wB = new Float32Array(count * 4), occ = new Float32Array(count);
   const region = regionAt(x0 + CHUNK / 2, z0 + CHUNK / 2);
   const biome = BIOMES[region] ?? BIOMES.sallow;
   // Slots: the region's surfaces, then the surfaces of the places the chunk runs up to (eight at most).
@@ -119,8 +120,14 @@ export function buildChunk(cx: number, cz: number, layers: GroundLayers | undefi
     for (let i = 0; i < n; i++) {
       const k = j * n + i;
       const wx = x0 + i * STEP, wz = z0 + j * STEP;
-      pos[k * 3] = wx; pos[k * 3 + 1] = -0.06; pos[k * 3 + 2] = wz;
-      nrm[k * 3 + 1] = 1;
+      const h = heightAt(wx, wz);
+      pos[k * 3] = wx; pos[k * 3 + 1] = h - 0.06; pos[k * 3 + 2] = wz;
+      const nn = normalAt(wx, wz);
+      nrm[k * 3] = nn[0]; nrm[k * 3 + 1] = nn[1]; nrm[k * 3 + 2] = nn[2];
+      // Curvature as light: hollows sit in shade, crests catch the sky (two scales, 4 m and 14 m).
+      const c1 = h - (heightAt(wx + 4, wz) + heightAt(wx - 4, wz) + heightAt(wx, wz + 4) + heightAt(wx, wz - 4)) / 4;
+      const c2 = h - (heightAt(wx + 14, wz) + heightAt(wx - 14, wz) + heightAt(wx, wz + 14) + heightAt(wx, wz - 14)) / 4;
+      occ[k] = Math.min(1.12, Math.max(0.5, 1 + c1 * 0.8 + c2 * 0.22));
       w.fill(0);
       const bw = layerWeights(wx, wz, nb);
       for (let s = 0; s < nb; s++) w[s] = bw[s];
@@ -152,10 +159,13 @@ export function buildChunk(cx: number, cz: number, layers: GroundLayers | undefi
   geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
   geo.setAttribute('aWeight', new THREE.BufferAttribute(wA, 4));
   geo.setAttribute('aWeight2', new THREE.BufferAttribute(wB, 4));
+  geo.setAttribute('aOcc', new THREE.BufferAttribute(occ, 1));
   geo.setIndex(new THREE.BufferAttribute(idx, 1));
   geo.computeBoundingSphere();
   const mesh = new THREE.Mesh(geo, layers ? splatMaterial(layers, keys) : new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0 }));
   mesh.receiveShadow = true;
+  // Dune crests and ridges throw their own shadows: the surest way relief reads from above.
+  mesh.castShadow = true;
   mesh.name = `chunk ${cx},${cz}`;
   return mesh;
 }

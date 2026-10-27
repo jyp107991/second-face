@@ -11,6 +11,11 @@ export interface ActorOpts {
 }
 
 /** A character placed on the grid with smooth movement between tiles. */
+/** The ground height under a world point; the open world sets it, maps built alone are flat. */
+let groundY: (x: number, z: number) => number = () => 0;
+export function setGroundHeight(fn: (x: number, z: number) => number): void { groundY = fn; }
+export function groundHeight(x: number, z: number): number { return groundY(x, z); }
+
 export class Actor {
   readonly id: string;
   body: Humanoid;
@@ -39,7 +44,7 @@ export class Actor {
     // A stable wrapper: the body inside can be rebuilt (new clothes, a weapon drawn) without anything losing the actor.
     this.object = new THREE.Group();
     this.object.add(this.body.root);
-    this.object.position.set(opts.x + 0.5, 0, opts.y + 0.5);
+    this.object.position.set(opts.x + 0.5, groundY(opts.x + 0.5, opts.y + 0.5), opts.y + 0.5);
     this.object.userData.actorId = opts.id;
     grid.occupied.set(grid.index(opts.x, opts.y), opts.id);
   }
@@ -99,7 +104,7 @@ export class Actor {
     this.grid.occupied.delete(this.grid.index(this.tx, this.ty));
     this.tx = x; this.ty = y;
     this.grid.occupied.set(this.grid.index(x, y), this.id);
-    this.object.position.set(x + 0.5, 0, y + 0.5);
+    this.object.position.set(x + 0.5, groundY(x + 0.5, y + 0.5), y + 0.5);
     this.path = [];
   }
 
@@ -138,7 +143,7 @@ export class Actor {
         const step = this.velocity * dt;
         if (dist > 0.001) this.facing = turnTowards(this.facing, Math.atan2(dx, dz), dt * 9);
         if (step >= dist) {
-          pos.x = goalX; pos.z = goalZ;
+          pos.x = goalX; pos.z = goalZ; pos.y = groundY(pos.x, pos.z);
           this.path.shift();
           this.onStep?.(next.x, next.y);
           this.onArriveTile?.(next.x, next.y);
@@ -146,6 +151,7 @@ export class Actor {
         } else {
           pos.x += (dx / dist) * step;
           pos.z += (dz / dist) * step;
+          pos.y = groundY(pos.x, pos.z);
         }
         speedNow = this.velocity;
       }

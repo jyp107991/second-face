@@ -51,7 +51,7 @@ export class Atmosphere {
     if (this.sun.castShadow) {
       this.sun.shadow.mapSize.set(quality.shadowSize, quality.shadowSize);
       const s = this.sun.shadow.camera;
-      s.left = -22; s.right = 22; s.top = 22; s.bottom = -22; s.near = 1; s.far = 120;
+      s.left = -22; s.right = 22; s.top = 22; s.bottom = -22; s.near = 1; s.far = 160;
       this.sun.shadow.bias = -0.0008;
       this.sun.shadow.normalBias = 0.03;
     }
@@ -69,10 +69,10 @@ export class Atmosphere {
   }
 
   /** Rebuild the light sources from the loaded sites (each placed at its world offset). */
-  setSites(sites: { place: { x: number; z: number }; built: BuiltLocation }[]): void {
+  setSites(sites: { place: { x: number; z: number }; built: BuiltLocation; level?: number }[]): void {
     this.sources = [];
-    for (const { place, built: loc } of sites) {
-      const ox = place.x, oz = place.z;
+    for (const { place, built: loc, level } of sites) {
+      const ox = place.x, oz = place.z, oy = level ?? 0;
       // A light inside a roofed room stays under the roof (a lamp post's head would otherwise light the roof's top).
       const under = (x: number, z: number, y: number) => {
         if (loc.map.ambience.indoor) return y;
@@ -82,10 +82,10 @@ export class Atmosphere {
         return id >= 0 ? Math.min(y, roofBase(loc.buildings.list[id]) - 0.25) : y;
       };
       for (const l of loc.map.lights ?? []) {
-        this.sources.push({ pos: new THREE.Vector3(ox + l.x + 0.5, under(l.x + 0.5, l.y + 0.5, l.height ?? 2.2), oz + l.y + 0.5), color: new THREE.Color(l.color), intensity: l.intensity * LIGHT_SCALE, range: l.range * 1.4, flicker: l.flicker ?? 0, phase: Math.random() * 10, lamp: true });
+        this.sources.push({ pos: new THREE.Vector3(ox + l.x + 0.5, oy + under(l.x + 0.5, l.y + 0.5, l.height ?? 2.2), oz + l.y + 0.5), color: new THREE.Color(l.color), intensity: l.intensity * LIGHT_SCALE, range: l.range * 1.4, flicker: l.flicker ?? 0, phase: Math.random() * 10, lamp: true });
       }
       for (const f of loc.features) {
-        const base = { pos: new THREE.Vector3(ox + f.wx + f.x, under(f.wx + f.x, f.wz + f.z, f.y), oz + f.wz + f.z), color: new THREE.Color(f.color), phase: Math.random() * 10 };
+        const base = { pos: new THREE.Vector3(ox + f.wx + f.x, oy + under(f.wx + f.x, f.wz + f.z, f.y), oz + f.wz + f.z), color: new THREE.Color(f.color), phase: Math.random() * 10 };
         if (f.kind === 'fire') this.sources.push({ ...base, intensity: 6 * LIGHT_SCALE, range: 9, flicker: 0.35 });
         else if (f.kind === 'lamp') this.sources.push({ ...base, intensity: 5 * LIGHT_SCALE, range: 11, flicker: 0.05, lamp: true });
         else this.sources.push({ ...base, intensity: 1.2 * LIGHT_SCALE, range: 4, flicker: 0.04 });
@@ -207,7 +207,7 @@ export class Atmosphere {
       const day = h >= 6 && h <= 20;
       const ang = day ? ((h - 6) / 14) * Math.PI : ((h < 6 ? h + 24 : h) - 20) / 10 * Math.PI;
       const dir = new THREE.Vector3(Math.cos(ang) * 0.8, Math.max(0.25, Math.sin(ang)), 0.45).normalize();
-      this.sun.position.copy(focus).addScaledVector(dir, 40);
+      this.sun.position.copy(focus).addScaledVector(dir, 70);
       this.sun.target.position.copy(focus);
     }
     // Reflections follow the daylight (metal and wet ground at noon, little at night).
