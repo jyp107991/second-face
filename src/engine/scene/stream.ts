@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { worldLayers, type GroundLayers } from '../assets/pbr';
 import { openSites, sitePlacement, type SitePlacement } from '../world/sites';
-import { BIOMES, CHUNK, FEATHER, buildChunk, chunkKey, regionAt, type NearSite } from '../world/terrain';
+import { BIOMES, CHUNK, FAR, FEATHER, buildChunk, buildFar, chunkKey, regionAt, type NearSite } from '../world/terrain';
 import { WorldGrid } from '../world/worldGrid';
 import { heightAt, siteLevel, tileWalkable, WATER_LEVEL } from '../world/height';
 import { outsideKey } from './ground';
@@ -43,6 +43,9 @@ export class WorldScene {
 
   /** The sea and the drowned ground: one plane at the water level, following the focus. */
   private water: THREE.Mesh;
+  /** Coarse ground beyond the near chunks, rebuilt as the player moves on. */
+  private far?: THREE.Mesh;
+  private farAt = { x: NaN, z: NaN };
 
   constructor(scene: THREE.Scene, private hooks: StreamHooks) {
     this.root.name = 'world';
@@ -171,8 +174,16 @@ export class WorldScene {
   async update(fx: number, fz: number, burst = 1): Promise<void> {
     this.water.visible = this.mode === 'open';
     this.water.position.x = fx; this.water.position.z = fz;
+    if (this.far) this.far.visible = this.mode === 'open';
     if (this.mode !== 'open' || this.streaming) return;
     this.streaming = true;
+    // The far ring: remade once the player is a quarter of it from where it was made.
+    if (Math.abs(fx - this.farAt.x) > FAR / 4 || Math.abs(fz - this.farAt.z) > FAR / 4 || !this.far) {
+      if (this.far) { this.root.remove(this.far); this.far.geometry.dispose(); }
+      this.far = buildFar(fx, fz);
+      this.farAt = { x: fx, z: fz };
+      this.root.add(this.far);
+    }
     try {
       // Sites: by distance from the focus to the site's rectangle.
       const dist = (p: SitePlacement) => Math.hypot(Math.max(p.x - fx, 0, fx - (p.x + p.w)), Math.max(p.z - fz, 0, fz - (p.z + p.h)));

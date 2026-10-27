@@ -1,4 +1,6 @@
 import { openSites, sitePlacement } from './engine/world/sites';
+import { ways } from './engine/world/ways';
+import { heightAt } from './engine/world/height';
 import { addItem, equip, makeItem, unequip } from './engine/inventory/inventory';
 import { wardrobeOutfit } from './engine/inventory/wardrobe';
 import '@fontsource/ibm-plex-mono/400.css';
@@ -76,7 +78,7 @@ const dev = import.meta.env.DEV || new URLSearchParams(location.search).has('dev
 if (dev) {
   new DevOverlay(game);
   // Dev helpers for the browser console / automated screenshots.
-  (window as unknown as Record<string, unknown>).SF = { PortraitStage, lookFrom, randomAppearance, agedAppearance, defaultAppearance, PLAYER_OUTFIT, HumanFigure, Humanoid, THREE, evaluateShape, humanData, ensureProxies, outfitProxyKeys, dressFor, roleLook, skinSamples, skinAlbedo, addItem, makeItem, equip, unequip, wardrobeOutfit , WORLD_MAP, MAPS, sitePlacement, openSites };
+  (window as unknown as Record<string, unknown>).SF = { PortraitStage, lookFrom, randomAppearance, agedAppearance, defaultAppearance, PLAYER_OUTFIT, HumanFigure, Humanoid, THREE, evaluateShape, humanData, ensureProxies, outfitProxyKeys, dressFor, roleLook, skinSamples, skinAlbedo, addItem, makeItem, equip, unequip, wardrobeOutfit , WORLD_MAP, MAPS, sitePlacement, openSites, ways, heightAt };
 }
 await game.loadLocation(game.state.locationId, 'start');
 game.loadMs = performance.now() - t0;

@@ -158,3 +158,16 @@ Content building (B3.11 onwards) is paused until U1–U5 are in.
   `tools/qa/relief.cjs`; `openworld.cjs` all green on the heightfield. Flat-looking still: the gentler regions read
   as flat until U3 puts rocks, scrub and trees on them (parallax is what sells relief from above), and the sun arc
   stays high. Next U2b.3: roads and rails between places, rivers carved to the sea, a far horizon.
+- **2026-10-27 U2b.3 — the ways and the water.** `world/ways.ts` turns the world map's routes into ways across the
+  land: roads (asphalt, 5 m), tracks (dirt), rough going (gravel), glass and marsh crossings, each with a wander in
+  it so nothing runs ruler-straight; the Line's rails (gravel ballast, with sleepers and two rails laid along it in
+  every chunk it crosses); the river the barges run, from the timber country past the Dam and Low Landing to the
+  city and on to the sea. Chunks lay each way's surface over the ground, fading over its verge; the heightfield
+  carves the river's bed and banks and drops the land away west of a ragged coast at about 32 km, so the sea and
+  the river are water (one plane at level 0) and are not walked, while a road, track or rail is walked whatever the
+  slope. A far ring of coarse, vertex-coloured ground (1.15 km) follows the player under the near chunks so a zoomed-out
+  or fast-moving view never ends in a void. Every place is kept above the water. Evidence `docs/evidence/u2/way_*.png`
+  (the track to Shale, a road, the Line, the river's bank, the coast, a zoomed-out view); `tools/qa/ways.cjs`.
+  Known and left for U3: the water is a flat tinted plane (a water shader with shore foam and depth comes with the
+  shores work); the Overpass's old flat highway deck shows from afar as a cream slab (real props); the Drowned Shore
+  sits largely at or below the water, as marsh should, but Gull Stilts and the Rigs will want stilts and causeways.

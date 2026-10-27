@@ -1,10 +1,12 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { REGIONS } from '../../content';
 import { WORLD_SCALE } from '../../content/world/sites';
 import type { AmbienceDef, FloorKind } from '../data/types';
 import type { GroundLayers } from '../assets/pbr';
 import { FALLBACK, SLOTS, splatMaterial } from '../scene/ground';
-import { heightAt, normalAt } from './height';
+import { heightAt, normalAt, WATER_LEVEL } from './height';
+import { wayWeight, waysIn, type Way } from './ways';
 import type { Mood } from './weather';
 
 /**
@@ -108,9 +110,12 @@ export function buildChunk(cx: number, cz: number, layers: GroundLayers | undefi
   const wA = new Float32Array(count * 4), wB = new Float32Array(count * 4), occ = new Float32Array(count);
   const region = regionAt(x0 + CHUNK / 2, z0 + CHUNK / 2);
   const biome = BIOMES[region] ?? BIOMES.sallow;
-  // Slots: the region's surfaces, then the surfaces of the places the chunk runs up to (eight at most).
+  // Slots: the region's surfaces, then the surfaces of the places the chunk runs up to and the ways across it
+  // (eight at most; the river's banks are mud).
   const keys = biome.layers.slice(0, 4);
   for (const s of near) if (!keys.includes(s.key) && keys.length < SLOTS) keys.push(s.key);
+  const ways: Way[] = waysIn(x0, z0, x0 + CHUNK, z0 + CHUNK);
+  for (const w of ways) if (!keys.includes(w.key) && keys.length < SLOTS) keys.push(w.key);
   const slotOf = (key: string): number => { const i = keys.indexOf(key); return i < 0 ? 0 : i; };
   const c = new THREE.Color();
   const distTo = (s: NearSite, x: number, z: number) => Math.hypot(Math.max(s.x - x, 0, x - (s.x + s.w)), Math.max(s.z - z, 0, z - (s.z + s.h)));
@@ -138,6 +143,13 @@ export function buildChunk(cx: number, cz: number, layers: GroundLayers | undefi
         const f = 1 - bestD / FEATHER;
         for (let s = 0; s < SLOTS; s++) w[s] *= 1 - f;
         w[slotOf(best.key)] += f;
+      }
+      // Ways: the surface lies on top of whatever is there, fading over the verge.
+      for (const way of ways) {
+        const f = wayWeight(way, wx, wz);
+        if (f <= 0 || !keys.includes(way.key)) continue;
+        for (let s = 0; s < SLOTS; s++) w[s] *= 1 - f;
+        w[slotOf(way.key)] += f;
       }
       c.setRGB(0, 0, 0);
       for (let s = 0; s < SLOTS; s++) {
@@ -167,5 +179,91 @@ export function buildChunk(cx: number, cz: number, layers: GroundLayers | undefi
   // Dune crests and ridges throw their own shadows: the surest way relief reads from above.
   mesh.castShadow = true;
   mesh.name = `chunk ${cx},${cz}`;
+  for (const r of buildRails(x0, z0, ways)) mesh.add(r);
+  return mesh;
+}
+
+const SLEEPER_MAT = new THREE.MeshStandardMaterial({ color: 0x5a4a38, roughness: 0.95, metalness: 0 });
+const RAIL_MAT = new THREE.MeshStandardMaterial({ color: 0x6a6660, roughness: 0.55, metalness: 0.7 });
+
+/** The Line's track where it crosses a chunk: sleepers and two rails laid on the ground. */
+function buildRails(x0: number, z0: number, ways: Way[]): THREE.Mesh[] {
+  const sleepers: THREE.BufferGeometry[] = [], rails: THREE.BufferGeometry[] = [];
+  const sleeper = new THREE.BoxGeometry(2.4, 0.12, 0.24), rail = new THREE.BoxGeometry(0.08, 0.14, 1.25);
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), sc = new THREE.Vector3(1, 1, 1), pos = new THREE.Vector3();
+  for (const w of ways) {
+    if (w.kind !== 'rail') continue;
+    for (let i = 0; i + 1 < w.pts.length; i++) {
+      const [ax, az] = w.pts[i], [bx, bz] = w.pts[i + 1];
+      const dx = bx - ax, dz = bz - az, len = Math.hypot(dx, dz);
+      if (len < 1) continue;
+      const ux = dx / len, uz = dz / len, nx = -uz, nz = ux;
+      q.setFromAxisAngle(up, Math.atan2(ux, uz));
+      for (let t = 0; t < len; t += 1.2) {
+        const px = ax + ux * t, pz = az + uz * t;
+        if (px < x0 || px >= x0 + CHUNK || pz < z0 || pz >= z0 + CHUNK) continue;
+        const h = heightAt(px, pz);
+        sleepers.push(sleeper.clone().applyMatrix4(m.compose(pos.set(px, h + 0.06, pz), q, sc)));
+        for (const side of [-0.72, 0.72]) rails.push(rail.clone().applyMatrix4(m.compose(pos.set(px + nx * side, h + 0.19, pz + nz * side), q, sc)));
+      }
+    }
+  }
+  const out: THREE.Mesh[] = [];
+  if (sleepers.length) { const g = mergeGeometries(sleepers); if (g) { const mesh = new THREE.Mesh(g, SLEEPER_MAT); mesh.castShadow = true; mesh.name = 'sleepers'; out.push(mesh); } }
+  if (rails.length) { const g = mergeGeometries(rails); if (g) { const mesh = new THREE.Mesh(g, RAIL_MAT); mesh.castShadow = true; mesh.name = 'rails'; out.push(mesh); } }
+  return out;
+}
+
+/** Size and step of the far ring: coarse ground beyond the near chunks so nothing ends in a void. */
+export const FAR = 1152;
+const FAR_STEP = 16;
+
+/**
+ * A coarse single mesh of the land round a point: vertex colours only (the region's surfaces by weight, the
+ * water, a hint of the ways), a step below the near ground so the chunks win where both are. Rebuilt when the
+ * player has moved a few hundred metres.
+ */
+export function buildFar(fx: number, fz: number): THREE.Mesh {
+  const n = FAR / FAR_STEP + 1;
+  const x0 = Math.round(fx / FAR_STEP) * FAR_STEP - FAR / 2, z0 = Math.round(fz / FAR_STEP) * FAR_STEP - FAR / 2;
+  const count = n * n;
+  const pos = new Float32Array(count * 3), nrm = new Float32Array(count * 3), col = new Float32Array(count * 3);
+  const c = new THREE.Color(), t = new THREE.Color();
+  const water = new THREE.Color(0x4a6a70);
+  const ways = waysIn(x0, z0, x0 + FAR, z0 + FAR);
+  for (let j = 0; j < n; j++) {
+    for (let i = 0; i < n; i++) {
+      const k = j * n + i;
+      const wx = x0 + i * FAR_STEP, wz = z0 + j * FAR_STEP;
+      const h = heightAt(wx, wz);
+      pos[k * 3] = wx; pos[k * 3 + 1] = Math.max(h, WATER_LEVEL - 0.3) - 0.9; pos[k * 3 + 2] = wz;
+      const nn = normalAt(wx, wz);
+      nrm[k * 3] = nn[0]; nrm[k * 3 + 1] = nn[1]; nrm[k * 3 + 2] = nn[2];
+      const biome = biomeAt(wx, wz);
+      const bw = layerWeights(wx, wz, Math.min(4, biome.layers.length));
+      c.setRGB(0, 0, 0);
+      for (let s = 0; s < bw.length; s++) c.add(t.setHex(FALLBACK[biome.layers[s]] ?? 0x9a8a6a).multiplyScalar(bw[s]));
+      for (const way of ways) { const f = wayWeight(way, wx, wz); if (f > 0) c.lerp(t.setHex(FALLBACK[way.key] ?? 0x8a8278), f); }
+      if (h < WATER_LEVEL) c.copy(water);
+      // The ground's slow drift of tone, as the near shader has it.
+      c.multiplyScalar(0.88 + 0.2 * fbm(wx * 0.045, wz * 0.045, 7, 2));
+      col[k * 3] = c.r; col[k * 3 + 1] = c.g; col[k * 3 + 2] = c.b;
+    }
+  }
+  const idx = new Uint32Array((n - 1) * (n - 1) * 6);
+  let o = 0;
+  for (let j = 0; j < n - 1; j++) for (let i = 0; i < n - 1; i++) {
+    const a = j * n + i, b = a + 1, d = a + n, e = d + 1;
+    idx[o++] = a; idx[o++] = d; idx[o++] = b; idx[o++] = b; idx[o++] = d; idx[o++] = e;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  geo.setIndex(new THREE.BufferAttribute(idx, 1));
+  geo.computeBoundingSphere();
+  const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0 }));
+  mesh.receiveShadow = true;
+  mesh.name = 'far';
   return mesh;
 }

@@ -2,6 +2,7 @@ import { REGIONS } from '../../content';
 import { WORLD_SCALE, WORLD_W } from '../../content/world/sites';
 import { openSites, type SitePlacement } from './sites';
 import { fbm } from './terrain';
+import { carve, onWay } from './ways';
 
 /**
  * The lie of the land: one continuous heightfield over the world, in metres. Each region has its own relief
@@ -75,8 +76,8 @@ export function rawHeight(wx: number, wz: number): number {
     sum += w * relief(def, wx, wz, 1300 + r.id.length * 13);
     wsum += w;
   }
-  if (wsum <= 0) return relief(RELIEF.sallow, wx, wz, 1300);
-  return sum / wsum;
+  const h = wsum <= 0 ? relief(RELIEF.sallow, wx, wz, 1300) : sum / wsum;
+  return carve(h, wx, wz);
 }
 
 const levels = new Map<string, number>();
@@ -86,8 +87,8 @@ export function siteLevel(place: SitePlacement): number {
   if (place.kind === 'cell') return 0;
   let l = levels.get(place.id);
   if (l === undefined) {
-    // A little above the natural mean so the pad reads as a rise, never as a pit.
-    l = rawHeight(place.x + place.w / 2, place.z + place.h / 2) + 0.4;
+    // A little above the natural mean so the pad reads as a rise, never as a pit; and always dry ground.
+    l = Math.max(WATER_LEVEL + 0.8, rawHeight(place.x + place.w / 2, place.z + place.h / 2) + 0.4);
     levels.set(place.id, l);
   }
   return l;
@@ -161,7 +162,7 @@ export function tileWalkable(tx: number, tz: number): boolean {
     if (h < WATER_LEVEL + 0.15) w = false;
     else {
       const dx = (tileHeight(tx + 1, tz) - tileHeight(tx - 1, tz)) / 2, dz = (tileHeight(tx, tz + 1) - tileHeight(tx, tz - 1)) / 2;
-      w = Math.hypot(dx, dz) < MAX_SLOPE;
+      w = Math.hypot(dx, dz) < MAX_SLOPE || onWay(tx + 0.5, tz + 0.5);
     }
     tileW.set(k, w);
   }

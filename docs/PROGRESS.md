@@ -251,9 +251,12 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
       - [x] U2b.2 DONE 2026-10-27: heightfield (`src/engine/world/height.ts`): region relief at three scales, places
             on pads, true normals + curvature shading + terrain shadows, water level and slope walkability, actors
             and overlays on the ground, terrain-ray tap pick, streaming on the real clock (`relief.cjs`).
-      - [ ] U2b.3 NEXT: roads and rails between places (splat layers along the world map's routes), rivers carved
-            to the sea, far horizon ring; then U2b.4 world map drawn from the world; vehicles as fast travel;
-            walking = on-foot travel.
+      - [x] U2b.3 DONE 2026-10-27: ways (`src/engine/world/ways.ts`): roads, tracks, rails with sleepers and rails
+            laid, the river carved to the sea, the sea west of the coast, walkability along ways, a far ground ring
+            (`ways.cjs`).
+      - [ ] U2b.4 NEXT: the world map drawn from the world (terrain, sea, river, ways, places; "you are here" from the
+            player's tile); vehicles as fast travel (the Line, the barges, the caravan board at their stops; on foot
+            = walking the ways, with the trip's clock and encounters kept).
       - [ ] U2c: detail rings/LOD, memory and draw-call budget, phone profiling.
 - [ ] U3 Living world: biome vegetation and surviving greenery, rocks and ruins, real props, water and shores,
       weather by region, background life.
