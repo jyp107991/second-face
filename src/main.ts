@@ -20,6 +20,7 @@ import { CampUi } from './engine/ui/camp';
 import { DustUi } from './engine/ui/dust';
 import { WorldMapUi } from './engine/ui/worldmap';
 import { applySettings } from './engine/ui/settings';
+import { initApp } from './engine/ui/app';
 import { Humanoid, lookFrom, outfitProxyKeys } from './engine/assets/humanoid';
 import { skinSamples } from './engine/assets/human/skin';
 import { skinAlbedo } from './engine/data/ancestry';
@@ -33,6 +34,7 @@ import { humanData, ensureProxies } from './engine/assets/human/data';
 import { dressFor, roleLook } from './engine/data/outfits';
 import * as THREE from 'three';
 
+initApp();
 const t0 = performance.now();
 const app = document.getElementById('app')!;
 // Human assets (~8 MB) must be loaded before any character is built.

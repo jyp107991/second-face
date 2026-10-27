@@ -326,3 +326,10 @@ body.hc .dlg .chk.ok { color: #7cff9c; } body.hc .dlg .chk.bad { color: #ff8a7a;
 /* What the pointer is over, and what a tap would do (A5.9 #1). */
 .hud .hover-label { position: fixed; z-index: 12; pointer-events: none; font-family: var(--font); font-size: 13px; letter-spacing: .5px; color: #f0e0b8; background: rgba(20, 14, 8, .78); border: 1px solid rgba(226, 184, 106, .45); padding: 4px 9px; white-space: nowrap; }
 .hud .hover-label span { color: #c8a870; }
+
+/* App shell: portrait guard on phones (see ui/app.ts). */
+.rotate-hint { display: none; position: fixed; inset: 0; z-index: 1000; background: var(--ink); color: var(--crt); font-family: var(--font); font-size: 18px; letter-spacing: .12em; text-transform: uppercase; flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; padding: 24px; }
+.rotate-hint .rotate-sub { font-size: 12px; color: var(--crt-dim); }
+.rotate-phone { width: 44px; height: 74px; border: 3px solid var(--amber); border-radius: 8px; animation: sf-rotate 2.4s ease-in-out infinite; }
+@keyframes sf-rotate { 0%, 25% { transform: rotate(0); } 55%, 100% { transform: rotate(-90deg); } }
+@media (orientation: portrait) and (pointer: coarse) { .rotate-hint { display: flex; } }

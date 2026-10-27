@@ -4,6 +4,8 @@ import { SLOTS, exportSave, pickSaveFile, type SlotId } from '../save/saves';
 import type { QualityLevel } from '../render/quality';
 import { DEFAULT_KEYS, KEY_ACTION_NAMES, keyLabel, settings, updateSettings, type Difficulty, type KeyAction } from './settings';
 
+import { canInstall, onInstallChange, promptInstall } from './app';
+
 type Screen = 'title' | 'pause' | 'save' | 'load' | 'settings';
 
 const SLOT_NAMES: Record<SlotId, string> = { auto: 'Autosave', quick: 'Quicksave', slot1: 'Slot 1', slot2: 'Slot 2', slot3: 'Slot 3' };
@@ -23,6 +25,8 @@ export class Menu {
     this.root = document.createElement('div');
     this.root.className = 'overlay hidden';
     document.body.appendChild(this.root);
+    // The browser's install offer usually arrives after the title is up; refresh it so "Install App" appears.
+    onInstallChange(() => { if (this.stack[this.stack.length - 1] === 'title') void this.render(); });
     window.addEventListener('keydown', (e) => {
       if (e.code !== 'Escape') return;
       if (!this.stack.length) this.open('pause');
@@ -73,6 +77,7 @@ export class Menu {
         item('Load Game', () => this.open('load')),
         item('Settings', () => this.open('settings')),
       );
+      if (canInstall()) items.append(item('Install App', async () => { await promptInstall(); void this.render(); }));
       panel.append(items);
     } else if (s === 'pause') {
       panel.innerHTML = `<h2>Paused</h2>`;

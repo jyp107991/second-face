@@ -10,6 +10,15 @@ A frozen build of Act 1 for road-testing, separate from the main build so the tw
 - Works in a current Chrome, Edge, Firefox or Safari on desktop; on a phone, tap to move, tap a person or thing for
   the action menu, pinch to zoom, two-finger twist to rotate.
 
+## Play it as an app (phone, recommended)
+1. Open the test version link in **Chrome** on the phone.
+2. Title screen → **Install App** (or Chrome **⋮ → Add to Home screen → Install**).
+3. Launch **Second Face Act 1** from the home screen / app drawer: it opens fullscreen in landscape with no browser
+   bar, has its own icon and task-switcher entry, and starts offline once played.
+- Opened in a normal browser tab instead, the first tap goes fullscreen and turns the game sideways.
+- If an older install still opens upright or with a URL bar, uninstall it and install again (Chrome reads the app
+  settings only at install time).
+
 ## One-time setup (owner, once)
 This session's GitHub tokens cannot write workflow files, so the deploy workflow is in the repository at
 `tools/ci/pages.yml` and needs copying into place by hand:
