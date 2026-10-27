@@ -296,3 +296,17 @@ name (the stranger is Hollis Dray — the shared first name is deliberate: Crane
 - The Pale remember the Scald (chrome woke and held still while the fire came): their hostility to chrome is the
   first in-world statement of the Leash's history. Organ Run (`q_sk_organ`): `sk_organ_lied` is remembered by Ocho
   (memory `lied_heart`) and matters if the player later asks him for the Code's help.
+
+## Build notes — Bridgeward (B3.9, 2026-10-27)
+- Keystone 6 (Wren Calloway, "hanged for the Bridgeward raid") is seeded, not fired: the Saints' girl says the line
+  (`bw_wren_foretold`) when Wren has joined or led the exodus; Fenn's wall says BACK FOR THE BRIDGE; the cache under
+  his bench holds the Dogs' mark; Fenn names the rope on the Rustmouths' booth. The raid itself is a STORY MILESTONE
+  (plan: the Act 2 part-1 close, B3.12, after the Spire hearing's verdict), never a day count: Wren (in party, or in
+  Shale) asks to take the bridge; outcomes raid won (Dogs hold Bridgeward; the Crown's road is blocked) / raid lost
+  (Wren hanged from the booth: the keystone as forecast) / talked out of it (Wren stays; the Dogs stay a crew). Wren's
+  approval and `bw_turf` (who holds the chain) set the odds; `bw_three_crews` makes the peace route possible.
+- `bw_static`: kept → the Saints are a forecast source for the player (Verity relays lines: use in B3.11 for the Spire
+  date); silenced → Lowe holds her; the Precinct learns of the wire (wardens' tap line in B3.11); sold → the Exchange
+  seals her (Tollmen futures improve; a rescue hook in Act 2 part 2); concern → she becomes a grid-rider under the
+  Concern (hook to Kes and the Leash in Halcyon; she can later be found wired in Clinic Floor Nine).
+- The Gilt/Pale/Rustmouths/Saints are joinable one at a time by the faction group; cover memberships are not used here.

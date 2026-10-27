@@ -276,7 +276,14 @@ export const d_rd_wren: DialogueDef = {
     leaving: { text: '"Brindle talks." Not angry. "Everyone\'s leaving; most people just do it by dying. I\'d rather walk." She doesn\'t say where.', effects: [{ learn: 'wren_wants_out' }], options: [{ text: 'Noted.', next: 'menu' }] },
     page: { text: 'She takes a folded page from inside her hood: a leaf torn from a notebook, the same tight marks. "He was tearing it up to burn it when I found him. This one he dropped. I can\'t read it. Can you?"', effects: [{ give: 'k_notebook_page' }, { learn: 'wren_page' }, { lead: 'l_wren_page' }], options: [{ text: 'Not yet.', next: 'menu' }] },
     page_no: { text: '"A waterskin and a bad hip." She isn\'t going to say more today.', options: [{ text: 'Noted.', next: 'menu' }] },
-    party: { text: '"Two riders, no dust." She means: nothing to report. "Where next?"', options: [{ text: 'Keep up.', exit: true }] },
+    party: {
+      text: [{ if: { at: 'md_bridgeward' }, text: 'She has stopped on the pavement across from the boarded garage and is not looking at it. "Dogs had that." It is all she says for a while. "I was six. Perpetua carried me down the stair the night the Rustmouths took the bridge, and Kessler carried the cache key, and Fenn stayed because of his knees." She looks at it now. "He\'s still in there. I can smell the stove."' }, { text: '"Two riders, no dust." She means: nothing to report. "Where next?"' }],
+      options: [
+        { id: 'wren.haunt', text: 'Show me the garage.', if: { all: [{ at: 'md_bridgeward' }, { not: { knows: 'bw_wren_haunt' } }] }, next: 'haunt' },
+        { text: 'Keep up.', exit: true },
+      ],
+    },
+    haunt: { text: '"The cache is under the bench by the south wall; Fenn sits on it, which is the point of Fenn. The key was Kessler\'s and went with Kessler." She breathes out. "Fenn will open it for me. He won\'t open it for you. Let me do the talking, for once."', effects: [{ learn: 'bw_wren_haunt' }, { lead: 'l_bw_haunt' }, { approval: { companion: 'npc_rd_03', by: 5 } }], options: [{ text: 'Go on, then.', exit: true }] },
   },
 };
 

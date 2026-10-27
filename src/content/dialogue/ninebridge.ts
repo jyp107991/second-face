@@ -526,6 +526,8 @@ export const d_nb_sarr: DialogueDef = {
   id: 'd_nb_sarr', owner: 'npc_nb_01',
   start: [{ if: { flag: 'nb_fight' }, node: 'fight' }, { if: { not: { flag: 'nb_office_ok' } }, node: 'closed' }, { if: { flag: 'nb_sarr_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
+    static: { text: 'The pen stops. "For nothing." She says it the way other people say a death. "A sealed sheet is worth what it is worth because it is sealed. A girl who says the sheet aloud in a gang street is a hole in the floor." She writes a figure and turns it to you: two hundred. "The name of the street, and the tower. Riders will fetch her at dawn, with a sheet of her own, and she will be sealed where sealed things are kept, and fed, and listened to by people who pay."', options: [{ id: 'static.sell', text: 'The Saints\' tower in Bridgeward. Under the mast. (200 Tolls)', effects: [{ give: 'tolls', count: 200 }, { set: 'bw_static', value: 'sold' }, { rep: { faction: 'tollmen', respect: 8 } }, { rep: { faction: 'saints', respect: -30 } }, { xp: 80 }, { decision: { id: 'bw_static_sold', text: 'You sold the Exchange the Saints\' girl who hears the city\'s wire.' } }], next: 'static_sold' }, { text: 'I haven\'t decided.', exit: true }] },
+    static_sold: { text: '"Sealed." The figure goes into the ledger under a line that says nothing about a girl. "The floor thanks you. The floor always thanks you; it is the floor\'s only expense."', options: [bye] },
     closed: { text: 'The Grand Factor does not look up. "By appointment."', options: [{ text: '(Go.)', exit: true }] },
     intro: {
       text: 'A woman of nearly sixty with silver hair swept back and a pen she has not put down since you came in. Clocks on every shelf, none of them agreeing. "Imelda Sarr. Grand Factor." She looks at you once, the way the board looks at a lot. "Everything is for sale. Say what you want and I\'ll say what it costs, and we\'ll save each other the part where you pretend it\'s free."',
@@ -540,6 +542,7 @@ export const d_nb_sarr: DialogueDef = {
         { id: 'sarr.rook', text: 'Your clerk copies paper for the porters.', if: { all: [{ knows: 'nb_rook_confessed' }, { not: { flag: 'nb_rook_reported' } }, { not: { flag: 'nb_rook_kept' } }] }, next: 'rook' },
         { id: 'sarr.hand', text: 'I broke your strike. I\'d like more than eighty.', if: { all: [{ flag: 'nb_strike_outcome', eq: 'broken' }, { member: 'tollmen' }, { not: { member: 'tollmen', rank: 'hand' } }] }, next: 'hand' },
         { id: 'sarr.odile', text: 'Odile Marchetti sends her regards.', if: { knows: 'odile_history' }, next: 'odile', once: true },
+        { id: 'sarr.static', text: 'I know where your forecasts leak. A girl in Bridgeward hears them off the city\'s wire and says them for nothing.', if: { all: [{ knows: 'bw_immy_heard' }, { not: { flag: 'bw_static' } }] }, next: 'static' },
         { id: 'sarr.sell', text: 'I\'ve a debt contract. Lot four.', if: { item: 'k_sable_contract' }, next: 'contract' },
         bye,
       ],
@@ -555,6 +558,7 @@ export const d_nb_sarr: DialogueDef = {
         { id: 'sarr.rook.again', text: 'Your clerk copies paper for the porters.', if: { all: [{ knows: 'nb_rook_confessed' }, { not: { flag: 'nb_rook_reported' } }, { not: { flag: 'nb_rook_kept' } }] }, next: 'rook' },
         { id: 'sarr.hand.again', text: 'I broke your strike. I\'d like more than eighty.', if: { all: [{ flag: 'nb_strike_outcome', eq: 'broken' }, { member: 'tollmen' }, { not: { member: 'tollmen', rank: 'hand' } }] }, next: 'hand' },
         { id: 'sarr.odile.again', text: 'Odile Marchetti sends her regards.', if: { all: [{ knows: 'odile_history' }, { not: { seen: 'sarr.odile' } }] }, next: 'odile' },
+        { id: 'sarr.static.again', text: 'A girl in Bridgeward says your forecasts for nothing.', if: { all: [{ knows: 'bw_immy_heard' }, { not: { flag: 'bw_static' } }] }, next: 'static' },
         { id: 'sarr.sell.again', text: 'I\'ve a debt contract. Lot four.', if: { item: 'k_sable_contract' }, next: 'contract' },
         { id: 'sarr.service', text: 'About the broken seal. The service.', if: { all: [{ flag: 'nb_packet_debt' }, { flag: 'nb_strike_outcome', eq: 'broken' }] }, next: 'service_done' },
         bye,

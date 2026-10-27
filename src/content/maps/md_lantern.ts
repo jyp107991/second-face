@@ -23,11 +23,11 @@ export const md_lantern: MapDef = {
     "RcccccccccccccccBtttttttttttBcccccccccccccccccccBtttttttttttttBcMmmmmmMR",
     "RcccccccccccccccBBBBBBtBBBBBBcccccccccccccccccccBBBBBBBtBBBBBBBcMMMMMMMR",
     "RaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaR",
-    "RaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaR",
-    "RaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaR",
-    "RaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaR",
-    "RaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaR",
-    "RaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaR",
+    "Raaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "Raaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "Raaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "Raaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "Raaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "RaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaR",
     "RcccccccccoooocccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
     "RcccccccccoooocccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
@@ -1000,6 +1000,12 @@ export const md_lantern: MapDef = {
       x: 63,
       y: 10,
       facing: 1
+    },
+    {
+      id: "from_bridgeward",
+      x: 69,
+      y: 18,
+      facing: 3
     }
   ],
   exits: [
@@ -1013,6 +1019,17 @@ export const md_lantern: MapDef = {
         spawn: "from_lantern"
       },
       label: "The street west, to Old Market"
+    },
+    {
+      x: 71,
+      y: 16,
+      w: 1,
+      h: 5,
+      to: {
+        location: "md_bridgeward",
+        spawn: "from_lantern"
+      },
+      label: "The chain east, to Bridgeward"
     }
   ],
   talk: {

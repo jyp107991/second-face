@@ -136,6 +136,10 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   // the Stacks
   { id: 'l_st_tank', label: 'Live at two', text: 'Block Seven\'s main is live only at night, and the lifts\' three-minute check at two draws the whole block; the roof pump runs at two because that is when there is power. Something under the dead lifts has run every night for forty years.' },
   { id: 'l_st_latch', label: 'A man called Latch', text: 'A man in a clean coat brings Concern nutrient to the Stacks\' trays and takes a third of the crop up the Loop; the deal has a line about who owns the deck.' },
+  // Bridgeward
+  { id: 'l_static_forecast', label: 'The girl who hears', text: 'A girl at the Saints\' tower in Bridgeward says the city\'s own lines in the city\'s own voice: names, numbers, days. What she says comes true. The Saints hear the shape of it; she hears the words.' },
+  { id: 'l_bw_tenured_road', label: 'The near end', text: 'House Vane holds Crown paper on the Bridgeward bridge and wants its near end for a road to the Docks by the Long Night. The Rustmouths who collect its toll are, in the Crown\'s words, a temporary arrangement.' },
+  { id: 'l_bw_haunt', label: 'Back for the bridge', text: 'The Rust Dogs were a crew in a Bridgeward garage before the Rustmouths took the bridge; an old Dog keeps a cache under his bench and chalks BACK FOR THE BRIDGE on the wall every spring.' },
 ] as LeadDef[]).map((l) => [l.id, l]));
 
 export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
@@ -152,4 +156,5 @@ export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
   { id: 'c_fed_from_outside', from: ['l_pressure', 'l_archive_label'], text: 'The Cistern was built to be collected. Its water comes from outside, and so, one day, will its people\'s orders.' },
   { id: 'c_dead_numbers', from: ['l_sink_numbers', 'l_sato_numbers'], text: 'The Sink\'s drowned go on living in the city\'s file: their numbers come up the stair each spring and are sold to people who need to be someone the lens has not seen.' },
   { id: 'c_rev_last_day', from: ['l_rev_spire', 'l_rev_bundle', 'l_rev_gate'], text: 'The stranger walked out of the city\'s highest house with twelve faces under his coat, and somebody at the gate already knew to wait for him on the road.' },
+  { id: 'c_static_source', from: ['l_static_forecast', 'l_kiosk_wire'], text: 'The city reads itself its own file on the lamp wire every night at two; a kiosk spliced to it sells the names as fortunes, and a girl who slept against a lift shaft says them as prophecy. Whoever listens right is a forecast.' },
 ] as ConclusionDef[]).map((c) => [c.id, c]));

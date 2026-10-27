@@ -39,7 +39,7 @@ def building(x0, y0, x1, y1, wall, floor, doors):
 
 # rim: ruined blocks all round; the market street cut through west
 fill(0, 0, W - 1, 0, 'R'); fill(0, H - 1, W - 1, H - 1, 'R'); fill(0, 0, 0, H - 1, 'R'); fill(W - 1, 0, W - 1, H - 1, 'R')
-fill(0, 32, 0, 35, 'a')
+fill(0, 32, 0, 35, 'a'); fill(W - 1, 16, W - 1, 20, 'a')   # the market street in from the west; the chain east to Bridgeward
 # the north bank: the Row's street, the towpath, the buildings
 fill(1, 15, 70, 21, 'a')
 fill(1, 22, 70, 23, 'c')
@@ -135,10 +135,11 @@ md_lantern = {
     ],
     'spawns': [
         {'id': 'start', 'x': 2, 'y': 33, 'facing': 1}, {'id': 'from_market', 'x': 2, 'y': 33, 'facing': 1}, {'id': 'loop', 'x': 7, 'y': 9, 'facing': 2},
-        {'id': 'pit', 'x': 35, 'y': 37, 'facing': 0}, {'id': 'quay_n', 'x': 11, 'y': 22, 'facing': 0}, {'id': 'quay_s', 'x': 11, 'y': 31, 'facing': 2}, {'id': 'den', 'x': 63, 'y': 10, 'facing': 1},
+        {'id': 'pit', 'x': 35, 'y': 37, 'facing': 0}, {'id': 'quay_n', 'x': 11, 'y': 22, 'facing': 0}, {'id': 'quay_s', 'x': 11, 'y': 31, 'facing': 2}, {'id': 'den', 'x': 63, 'y': 10, 'facing': 1}, {'id': 'from_bridgeward', 'x': 69, 'y': 18, 'facing': 3},
     ],
     'exits': [
         {'x': 0, 'y': 32, 'w': 1, 'h': 4, 'to': {'location': 'md_market', 'spawn': 'from_lantern'}, 'label': 'The street west, to Old Market'},
+        {'x': 71, 'y': 16, 'w': 1, 'h': 5, 'to': {'location': 'md_bridgeward', 'spawn': 'from_lantern'}, 'label': 'The chain east, to Bridgeward'},
     ],
     'talk': {
         'lr_loop_sign': {'dialogue': 'd_lr_loop', 'name': 'The Loop — Lantern Row'},

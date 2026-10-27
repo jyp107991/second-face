@@ -14,6 +14,8 @@ const GIG_LETTER: Cond = { all: [{ item: 'k_gig_letter' }, { quest: 'q_gig_lette
 const RIOT_COUNT: Cond = { all: [{ flag: 'mk_riot_lowe_pending' }, { not: { flag: 'mk_riot_outcome' } }] };
 /** The Sink's relief schedule, in hand, with the spring still undecided (High Water). */
 const PUMPS_PAPER: Cond = { all: [{ item: 'k_sk_schedule' }, { not: { flag: 'sk_pumps' } }] };
+/** The Saints' girl has been heard and nobody has decided her yet (Static). */
+const STATIC_GIRL: Cond = { all: [{ knows: 'bw_immy_heard' }, { not: { flag: 'bw_static' } }] };
 const PAPERS = (status: string) => [{ set: 'md_status', value: status }, { set: 'md_inside' }, { xp: 150 }];
 const CITIZEN = [{ give: 'k_md_papers' }, { enlist: 'wardens', rank: 'citizen' }];
 
@@ -119,6 +121,7 @@ export const d_md_loop: DialogueDef = {
         { id: 'loop.market', text: 'Old Market. (2 Tolls)', if: { all: [{ flag: 'md_market_open' }, { item: 'tolls', count: 2 }] }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_market', spawn: 'loop', minutes: 15 } }], exit: true },
         { id: 'loop.lantern', text: 'Lantern Row. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_lantern', spawn: 'loop', minutes: 15 } }], exit: true },
         { id: 'loop.stacks', text: 'The Stacks. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_stacks', spawn: 'loop', minutes: 20 } }], exit: true },
+        { id: 'loop.bridgeward', text: 'Bridgeward. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_bridgeward', spawn: 'loop', minutes: 20 } }], exit: true },
         { id: 'loop.works', text: '(The lines through the names.)', next: 'works' },
         { text: '(Leave it.)', exit: true },
       ],
@@ -213,10 +216,13 @@ export const d_md_lowe: DialogueDef = {
         { id: 'lowe.letter', text: '(Hand him the sealed letter.) From the board at Old Market. By hand.', if: GIG_LETTER, next: 'letter' },
         { id: 'lowe.dial', text: 'The standpipe square. Point eight on the notice, point six on the dial, and forty people who can count.', if: RIOT_COUNT, next: 'dial' },
         { id: 'lowe.pumps', text: '(Put the relief schedule on the desk.) Clause 31 sends the Sink\'s pumps to the Precinct in spring. Clause 14 says the drains come first.', if: PUMPS_PAPER, next: 'pumps' },
+        { id: 'lowe.static', text: 'There\'s a girl in Bridgeward who says the Plan\'s own lines out loud. Reserve nine. Point six. Thursday.', if: STATIC_GIRL, next: 'static' },
         bye,
       ],
     },
-    again: { text: '"Captain." He has stood up again.', options: [{ id: 'lowe.lawful.again', text: 'Lawful and right are two words.', if: { not: { seen: 'lowe.lawful' } }, next: 'lawful' }, { id: 'lowe.flag.again', text: 'The lens called me a magistrate.', if: { all: [{ knows: 'md_magistrate_designate' }, { not: { seen: 'lowe.flag' } }] }, next: 'flag' }, { id: 'lowe.ring.again', text: 'The Ring is burning.', if: { not: { seen: 'lowe.ring' } }, next: 'ring' }, { id: 'lowe.water.again', text: 'Your water\'s rationed.', if: { all: [{ any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, { not: { seen: 'lowe.water' } }] }, next: 'water' }, { id: 'lowe.letter.again', text: '(Hand him the sealed letter.) From the board at Old Market.', if: GIG_LETTER, next: 'letter' }, { id: 'lowe.dial.again', text: 'The standpipe square. Point eight on the notice, point six on the dial.', if: RIOT_COUNT, next: 'dial' }, { id: 'lowe.pumps.again', text: '(Put the relief schedule on the desk.) Clause 31 against clause 14.', if: PUMPS_PAPER, next: 'pumps' }, bye] },
+    again: { text: '"Captain." He has stood up again.', options: [{ id: 'lowe.lawful.again', text: 'Lawful and right are two words.', if: { not: { seen: 'lowe.lawful' } }, next: 'lawful' }, { id: 'lowe.flag.again', text: 'The lens called me a magistrate.', if: { all: [{ knows: 'md_magistrate_designate' }, { not: { seen: 'lowe.flag' } }] }, next: 'flag' }, { id: 'lowe.ring.again', text: 'The Ring is burning.', if: { not: { seen: 'lowe.ring' } }, next: 'ring' }, { id: 'lowe.water.again', text: 'Your water\'s rationed.', if: { all: [{ any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, { not: { seen: 'lowe.water' } }] }, next: 'water' }, { id: 'lowe.letter.again', text: '(Hand him the sealed letter.) From the board at Old Market.', if: GIG_LETTER, next: 'letter' }, { id: 'lowe.dial.again', text: 'The standpipe square. Point eight on the notice, point six on the dial.', if: RIOT_COUNT, next: 'dial' }, { id: 'lowe.pumps.again', text: '(Put the relief schedule on the desk.) Clause 31 against clause 14.', if: PUMPS_PAPER, next: 'pumps' }, { id: 'lowe.static.again', text: 'A girl in Bridgeward says the Plan\'s lines out loud.', if: STATIC_GIRL, next: 'static' }, bye] },
+    static: { text: '"A tap." He does not write it down yet. "An unlicensed tap on the file, in a person. The charter has a clause; it is not a kind one." He looks at the drawer marked AUDIT. "If I know the tower\'s name, I have to go. If I don\'t, I don\'t." He waits, which is the kindest thing he can do.', options: [{ id: 'static.give', text: 'The Saints\' tower. Under the mast.', effects: [{ set: 'bw_static', value: 'silenced' }, { rep: { faction: 'wardens', respect: 6 } }, { rep: { faction: 'saints', respect: -25 } }, { trust: { npc: 'npc_md_01', by: 5 } }, { xp: 80 }, { decision: { id: 'bw_static_silenced', text: 'You gave the warden captain the Saints\' tower, and the girl who hears went to the Precinct\'s cells.' } }], next: 'static_done' }, { text: 'Forget I said it.', exit: true }] },
+    static_done: { text: '"Then I know it." He puts on his coat. "She\'ll be in a cell with a blanket and no radio, which the charter calls custody and I call quiet. Lawful." He does not say the other word.', options: [bye] },
     pumps: {
       text: 'He reads the schedule the way he reads everything, to the end, and then the clause numbers again. "Clause 31. Growth. Clause 14. The drains." He puts a finger on each. "I have never been asked which comes first. I have assumed the Plan knew." He looks at the finger on 14 for a long time.',
       options: [

@@ -1007,3 +1007,196 @@ describe('The Stacks: the flat and the roof', () => {
     expect(g.pc.inventory.tolls).toBe(50);
   });
 });
+
+function atBridgeward(hour = 15) {
+  const g = newGameState('c9', 0, 0);
+  g.minutes = 40 * 1440 + hour * 60;
+  g.locationId = 'md_bridgeward';
+  g.flags.visited_md_bridgeward = true;
+  g.flags.ch1_done = true;
+  g.flags.md_inside = true; g.flags.md_market_open = true; g.flags.md_lantern_open = true; g.flags.md_bridgeward_open = true; g.flags.md_status = 'citizen';
+  const q = new QuestEngine(QUESTS, g);
+  q.questStart('q_bw_turf');
+  return { g, q };
+}
+
+describe('Bridgeward: the chain, the tower, the old haunt', () => {
+  it('the Loop runs to Bridgeward from all four boards, and back', () => {
+    const { g, q } = atBridgeward();
+    g.pc.inventory.tolls = 20;
+    g.locationId = 'md_precinct';
+    talk('d_md_loop', g, q, ['Bridgeward. (3 Tolls)']);
+    g.locationId = 'md_market';
+    talk('d_mk_loop', g, q, ['Bridgeward. (3 Tolls)']);
+    g.locationId = 'md_lantern';
+    talk('d_lr_loop', g, q, ['Bridgeward. (3 Tolls)']);
+    g.locationId = 'md_stacks';
+    talk('d_st_loop', g, q, ['Bridgeward. (3 Tolls)']);
+    g.locationId = 'md_bridgeward';
+    talk('d_bw_loop', g, q, ['The Precinct. (3 Tolls)']);
+    expect(g.pc.inventory.tolls).toBe(5);
+    expect(g.world.knowledge.bw_loop_seen).toBe(true);
+  });
+
+  it('a haul for the tithe, the chain held with a word: the Rustmouths keep the bridge', () => {
+    const { g, q } = atBridgeward();
+    g.pc.sheet.skillBought.mechanics = 90; g.pc.sheet.skillBought.speech = 90;
+    talk('d_bw_dagmar', g, q, ['How does one become a Rustmouth?', 'That\'s all.']);
+    expect(g.world.knowledge.bw_tithe_heard).toBe(true);
+    talk('d_bw_petrov', g, q, ['The Hand sent me. The wreck.', 'That\'s all.']);
+    expect(countItem(g.pc.inventory, 'k_bw_haul')).toBe(1);
+    talk('d_bw_corvo', g, q, ['(Hand over the haul ticket.)', 'That\'s all.']);
+    expect(g.world.membership.rustmouths?.status).toBe('member');
+    expect(countItem(g.pc.inventory, 'k_bw_haul')).toBe(0);
+    talk('d_bw_dagmar', g, q, ['I\'ll hold the chain for you.', 'That\'s all.']);
+    expect(g.flags.bw_hold_chain).toBe(true);
+    talk('d_bw_jax', g, q, ['Pull back off the chain, Jax.', 'That\'s all.']);
+    expect(g.flags.bw_turf).toBe('rustmouths');
+    expect(g.world.membership.rustmouths?.rank).toBe('crew');
+    expect(g.world.quests.q_bw_turf.status).toBe('done');
+    expect(g.world.quests.q_bw_turf.stage).toBe('rustmouths');
+    const r = talk('d_bw_chain', g, q, []);
+    expect(r.view()?.text).toContain('rust-red');
+  });
+
+  it('the warden-stamped ledger buys the Gilt; the chain comes down with iron', () => {
+    const { g, q } = atBridgeward();
+    addItem(g.pc.inventory, makeItem('k_bw_toll_ledger'));
+    g.locationId = 'md_lantern';
+    talk('d_lr_pip', g, q, ['(Put the Rustmouths\' toll ledger on the bar.)', 'That\'s all.']);
+    expect(g.world.membership.gilt?.status).toBe('member');
+    expect(g.flags.gilt_runner).toBe(true);
+    g.locationId = 'md_bridgeward';
+    talk('d_bw_jax', g, q, ['The chain comes down. When?', 'Now.', '(Go.)']);
+    expect(g.flags.bw_fight_rustmouths).toBe(true);
+    g.npcs['md_bridgeward/npc_bw_r1'] = { dead: true } as never;
+    g.npcs['md_bridgeward/npc_bw_r2'] = { dead: true } as never;
+    talk('d_bw_jax', g, q, ['That\'s all.']);
+    expect(g.flags.bw_turf).toBe('gilt');
+    expect(g.world.membership.gilt?.rank).toBe('crew');
+    expect(g.world.quests.q_bw_turf.stage).toBe('gilt');
+    expect(g.world.news.some((n) => n.tag === 'bw_chain_down')).toBe(true);
+  });
+
+  it('the Pale\'s vow takes no chrome, and costs the Gilt', () => {
+    const { g, q } = atBridgeward();
+    addItem(g.pc.inventory, makeItem('k_bw_toll_ledger'));
+    g.locationId = 'md_lantern';
+    talk('d_lr_pip', g, q, ['(Put the Rustmouths\' toll ledger on the bar.)', 'That\'s all.']);
+    g.locationId = 'md_bridgeward';
+    talk('d_bw_nell', g, q, ['Swear me in.', 'No chrome. Ever.', 'That\'s all.']);
+    expect(g.world.membership.pale?.status).toBe('member');
+    expect(g.world.membership.gilt?.status).not.toBe('member');
+    expect(g.world.decisions.some((d) => d.id === 'expelled_gilt_for_pale')).toBe(true);
+    const r = talk('d_bw_hatch', g, q, []);
+    expect(r.view()?.text).toContain('Yours to use now');
+  });
+
+  it('a sit-down under the mast: the chain split three ways', () => {
+    const { g, q } = atBridgeward();
+    g.pc.sheet.skillBought.speech = 90;
+    talk('d_bw_immy', g, q, ['That\'s all.']);
+    talk('d_bw_dagmar', g, q, ['The bridge goes nowhere. Why a toll?', 'That\'s all.']);
+    expect(g.world.knowledge.bw_vane_toll).toBe(true);
+    talk('d_bw_dagmar', g, q, ['A sit-down, at the tower.', 'That\'s all.']);
+    expect(g.flags.bw_dagmar_sitdown).toBe(true);
+    talk('d_bw_jax', g, q, ['A sit-down, at the tower. Dagmar will come.', 'That\'s all.']);
+    talk('d_bw_nell', g, q, ['A sit-down, at the tower. The three crews.', 'That\'s all.']);
+    expect(g.flags.bw_jax_sitdown).toBe(true);
+    expect(g.flags.bw_nell_sitdown).toBe(true);
+    talk('d_bw_verity', g, q, ['The Crown takes the near end by the Long Night', 'That\'s all.']);
+    expect(g.flags.bw_turf).toBe('peace');
+    expect(g.world.quests.q_bw_turf.stage).toBe('peace');
+    expect(g.flags.bw_three_crews).toBe(true);
+    const r = talk('d_bw_chain', g, q, []);
+    expect(r.view()?.text).toContain('SPLIT THREE WAYS');
+  });
+
+  it('the girl who hears, kept: sworn on the hiss', () => {
+    const { g, q } = atBridgeward();
+    g.pc.sheet.baseAttrs.senses = 10;
+    talk('d_bw_immy', g, q, ['Say it again. The rest of it.', 'That\'s all.']);
+    expect(g.world.knowledge.bw_immy_heard).toBe(true);
+    expect(g.world.knowledge.immy_port).toBe(true);
+    expect(g.world.quests.q_bw_static.stage).toBe('hiss');
+    talk('d_bw_verity', g, q, ['Keep her here.', 'That\'s all.']);
+    expect(g.flags.bw_static).toBe('kept');
+    expect(g.world.quests.q_bw_static.status).toBe('done');
+    expect(g.world.leads.l_static_forecast).toBe(true);
+    const r = talk('d_bw_immy', g, q, []);
+    expect(r.view()?.text).toContain('the one who swore');
+  });
+
+  it('the girl who hears, given away: the captain, the floor, or the Concern', () => {
+    const a = atBridgeward();
+    talk('d_bw_immy', a.g, a.q, ['That\'s all.']);
+    a.g.locationId = 'md_precinct';
+    talk('d_md_lowe', a.g, a.q, ['There\'s a girl in Bridgeward', 'The Saints\' tower. Under the mast.', 'That\'s all.']);
+    expect(a.g.flags.bw_static).toBe('silenced');
+    expect(a.g.world.quests.q_bw_static.stage).toBe('silenced');
+    expect(a.g.world.news.some((n) => n.tag === 'bw_static_wardens')).toBe(true);
+
+    const b = atBridgeward();
+    talk('d_bw_immy', b.g, b.q, ['That\'s all.']);
+    b.g.locationId = 'ninebridge'; b.g.flags.visited_ninebridge = true; b.g.pc.inventory.tolls = 0;
+    addItem(b.g.pc.inventory, makeItem('k_packet'));
+    talk('d_nb_floor_door', b.g, b.q, ['(Show the sealed packet.)', '(In.)']);
+    talk('d_nb_sarr', b.g, b.q, ['I know where your forecasts leak.', 'The Saints\' tower in Bridgeward. Under the mast. (200 Tolls)', 'That\'s all.']);
+    expect(b.g.flags.bw_static).toBe('sold');
+    expect(b.g.pc.inventory.tolls).toBe(200);
+    expect(b.g.world.quests.q_bw_static.stage).toBe('sold');
+
+    const c = atBridgeward();
+    talk('d_bw_immy', c.g, c.q, ['That\'s all.']);
+    c.g.locationId = 'md_stacks'; c.g.world.knowledge.concern_offer = true; c.g.pc.inventory.tolls = 0;
+    talk('d_st_latch', c.g, c.q, ['There\'s a girl in Bridgeward who hears the city\'s wire in words.', 'The Saints\' tower in Bridgeward. (150 Tolls)', 'That\'s all.']);
+    expect(c.g.flags.bw_static).toBe('concern');
+    expect(c.g.pc.inventory.tolls).toBe(150);
+    expect(c.g.world.quests.q_bw_static.stage).toBe('concern');
+    c.g.locationId = 'md_bridgeward';
+    const r = talk('d_bw_verity', c.g, c.q, []);
+    expect(r.view()?.text).toContain('clean coat');
+  });
+
+  it('the vigil in the small hours: a Listener, or hiss', () => {
+    const { g, q } = atBridgeward(1);
+    g.pc.sheet.baseAttrs.senses = 10;
+    talk('d_bw_verity', g, q, ['I\'d sit with the radios.', 'That\'s all.']);
+    expect(g.flags.bw_vigil_asked).toBe(true);
+    expect(g.world.quests.q_bw_static.stage).toBe('hiss');
+    talk('d_bw_shrine', g, q, ['(Sit with a radio until the hiss changes.)', 'That\'s all.']);
+    expect(g.world.membership.saints?.status).toBe('member');
+    expect(g.flags.bw_vigil_done).toBe(true);
+    expect(g.world.leads.l_static_forecast).toBe(true);
+    const day = atBridgeward(12);
+    day.g.flags.bw_vigil_asked = true;
+    const r = talk('d_bw_shrine', day.g, day.q, []);
+    expect(r.view()?.options.some((o) => o.text.startsWith('(Sit with a radio until'))).toBe(false);
+  });
+
+  it('the old haunt: Fenn lifts the bench for Wren; the Crown\'s agent buys the ledger', () => {
+    const { g, q } = atBridgeward();
+    g.world.party.push('npc_rd_03'); g.flags.wren_joined = true;
+    talk('d_rd_wren', g, q, ['Show me the garage.', 'Go on, then.']);
+    expect(g.world.knowledge.bw_wren_haunt).toBe(true);
+    expect(g.world.leads.l_bw_haunt).toBe(true);
+    talk('d_bw_haunt_door', g, q, ['(Go in.)']);
+    expect(g.world.quests.q_bw_haunt.stage).toBe('garage');
+    talk('d_bw_fenn', g, q, ['The cache. Under the bench.', '(Let Wren take it.)', '(The locker.)']);
+    expect(g.flags['unlocked:md_bridgeward/bw_haunt_cache']).toBe(true);
+    expect(g.world.knowledge.bw_wren_mark).toBe(true);
+    expect(g.world.quests.q_bw_haunt.status).toBe('done');
+    expect(g.world.quests.q_bw_haunt.stage).toBe('cache');
+    const h = atBridgeward();
+    h.g.pc.sheet.skillBought.speech = 90;
+    talk('d_bw_haunt_wall', h.g, h.q, ['(Leave it.)']);
+    talk('d_bw_fenn', h.g, h.q, ['The cache. Under the bench.', 'Because the Dogs are coming back for the bridge', '(The locker.)']);
+    expect(h.g.flags['unlocked:md_bridgeward/bw_haunt_cache']).toBe(true);
+    h.g.pc.inventory.tolls = 0;
+    addItem(h.g.pc.inventory, makeItem('k_bw_toll_ledger'));
+    talk('d_bw_harrow', h.g, h.q, ['(Show her the toll box\'s ledger.)', 'That\'s all.']);
+    expect(h.g.flags.bw_harrow_ledger).toBe(true);
+    expect(h.g.pc.inventory.tolls).toBe(120);
+    expect(countItem(h.g.pc.inventory, 'k_bw_toll_ledger')).toBe(0);
+  });
+});

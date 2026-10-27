@@ -26,9 +26,9 @@ wilds, Dry Wells, the Mender's table, the Wheel, the escort, four Act 1 side lin
 22 quests, 104 items); three companions can join. Character creation has a rolled start (owner's reroll request).
 **Act 1 is cut as a playtest version** (frozen branch `act1-test-1`, see §2b and `docs/PLAYTEST.md`; the owner installed
 the Pages workflow). **Act 2 part 1 is under way**: Ninebridge, Openfield, the Sump and Cistern 4, Meridian's gate, the
-Precinct, Old Market, the Sink, Lantern Row and the Stacks are playable (27 maps, 298 dialogues, 48 quests, 137 items;
-six companions can join; a flat in the Stacks is a safehouse). Current work: **Phase B, B3 Meridian** (Act 2's first
-megacity), next Bridgeward and the gangs (B3.9). Still open from the presentation
+Precinct, Old Market, the Sink, Lantern Row, the Stacks and Bridgeward are playable (28 maps, 321 dialogues, 51 quests, 140 items;
+six companions can join; a flat in the Stacks is a safehouse; four gangs joinable one at a time). Current work: **Phase B,
+B3 Meridian** (Act 2's first megacity), next the Crown and the Masque (B3.10). Still open from the presentation
 pass: A5.9's remaining items (combat hover card, crowd yielding, indoor sound, camera ease, Tab reveal) — fold them in
 as B3 touches the same code. Binding owner rules: see `CLAUDE.md` §2 (no time limits; spoiler rule; not a Fallout
 clone; cyberpunk fusion).
@@ -434,9 +434,21 @@ mid-range Android phone; deployed to Pages.
             card as a hook), or the trays burned with Ren. The lifts' two-o'clock check and the warm shaft seed a lead.
             All four Loop boards now sell seats to each other. Thirteen named NPCs + extras. Tests `tests/a2.test.ts`
             (+8). Smoke `tools/qa/stacks.cjs`, evidence `docs/evidence/b38/`.
-      - [ ] B3.9 **Bridgeward and Turf** (~2 h) NEXT: gang turf map; the four gangs (one joinable at a time, gang-specific
-            initiations); *Static* line; *Turf* outcomes; the Rust Dogs' old haunt. Smoke.
-      - [ ] B3.10 **The Crown and the Masque** (~2 h): terraces under domes; invitation / contract / disguise / force
+      - [x] B3.9 **Bridgeward and Turf** DONE 2026-10-27: map `md_bridgeward` (the chain from Lantern Row, the street of
+            chop-shops, the toll chain and the Tenured's booth, the bridge deck ending in air over the dry river with
+            the Docks across it, the Saints' mast and shrine of dead radios, the Rust Dogs' boarded garage, the Pale's
+            hatch, the Rustmouths' hall); reached by the chain and the Loop (all five boards now sell seats to each
+            other). The four gangs are joinable one at a time (the engine's group expulsion): the Rustmouths by tithe
+            or a haul cut at the chop-shop, the Gilt by the warden-stamped ledger carried to Pip, the Pale by a vow
+            that needs no chrome in any slot, the Saints by a vigil in the small hours. *Turf*: hold the chain for the
+            Rustmouths (a word to Jax, or iron), pull it down with the Gilt, or a sit-down under the mast that splits
+            it three ways before the Crown takes the near end. *Static*: the girl who says the city's lines; kept with
+            Verity, or given to the captain (Precinct), sold to the Exchange (Ninebridge) or to the Concern's man (the
+            Stacks). *The Old Haunt*: Fenn, the wall of names, the cache under the bench (Wren in the party, a word, or
+            a pick), and the chalk that says the Dogs mean to come back. Seventeen named NPCs + extras. Tests
+            `tests/a2.test.ts` (+9, 231 total). Smoke `tools/qa/bridgeward.cjs` all green, evidence `docs/evidence/b39/`
+            (headless perf: 165 draws, over the ~150 budget by the barrels and lamps; for the B8 draw-call pass).
+      - [ ] B3.10 **The Crown and the Masque** (~2 h) NEXT: terraces under domes; invitation / contract / disguise / force
             entry; the Tenured houses; the Masque (duel, infiltration); *The Kidnapping*, *Photographer's Studio*.
             ENGINE: heist-lite (approach choice → map with routes). Smoke.
       - [ ] B3.11 **Archive Spire and the Court of Accounts** (~2 h): the archive beats `q_a2_calendar` and `q_a2_spire`;
@@ -465,7 +477,7 @@ mid-range Android phone; deployed to Pages.
 | Signal Hill | 1/1 | 3/3 | 7/7 | 2/2 | playable; relay, voice, gully |
 | Dry Wells | 1/1 | 6/6 | 13/13 | 2/2 | playable; the Act 1 finale, the family |
 | Act 1 wilds | 5/5 | 15/15 | 17/17 | 2/2 | playable; ten road encounters, discoveries on foot, hunting and traps, the windpumps, the wreck, the orchard |
-| Meridian | 7/14 | 69/90 | 111/130 | 17/30 | the gate, the Precinct, Old Market, the Sink, Lantern Row and the Stacks (three floors) playable; the Loop joins four districts, stairs the Sink |
+| Meridian | 8/14 | 86/100 | 134/150 | 20/30 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors) and Bridgeward playable; the Loop joins five districts, stairs the Sink, the chain Bridgeward |
 | Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |
 | Act 2 wilds | 4/14 | 38/50 | 64/80 | 9/16 | Ninebridge, Openfield, the Sump and Cistern 4 playable (counts approximate) |
 | Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |

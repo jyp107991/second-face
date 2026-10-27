@@ -550,3 +550,57 @@ export const q_st_gardens: QuestDef = {
     burned: { journal: 'The trays burned at two in the morning with the pump loud, and sixty dinners with them, and Nessa Kord\'s hands. The Twelves came across the deck with pipes. Ren Ashby is sitting in the dirt with an empty can. The committee has written your name beside his.', end: 'done', onEnter: [{ set: 'st_roof_settled' }, { rep: { faction: 'wardens', respect: -4 } }] },
   },
 };
+
+// ---------------------------------------------------------------- Bridgeward
+
+export const q_bw_turf: QuestDef = {
+  id: 'q_bw_turf', title: 'Turf', act: 'a2', start: 'three', xp: 200,
+  routes: [
+    { id: 'rustmouths', kind: 'talk', label: 'Pay the Rustmouths\' tithe and hold their chain against the Gilt, with a word or with iron' },
+    { id: 'gilt', kind: 'fight', label: 'Bring the Gilt the Rustmouths\' warden-stamped ledger, and pull the chain down with them' },
+    { id: 'peace', kind: 'talk', label: 'A sit-down under the Saints\' mast: the chain split three ways before the Crown takes it', requires: { skill: 'speech', gte: 35 } },
+  ],
+  stages: {
+    three: {
+      journal: 'Bridgeward: one chain across a bridge to nowhere, three paints on every wall. The Rustmouths hold the chain and collect a Tenured house\'s toll on it; the Gilt want it; the Pale say the bridge is nobody\'s and keep a hatch to the Sink. A woman in a clean coat holds the pen on the arrangement, and a girl at the Saints\' tower says the Crown takes the near end by the Long Night.',
+      objectives: [{ id: 'side', text: 'Decide the chain: hold it, take it, or share it', done: { flag: 'bw_turf' } }],
+      next: [{ if: { flag: 'bw_turf', eq: 'rustmouths' }, stage: 'rustmouths' }, { if: { flag: 'bw_turf', eq: 'gilt' }, stage: 'gilt' }, { if: { flag: 'bw_turf', eq: 'peace' }, stage: 'peace' }],
+    },
+    rustmouths: { journal: 'The Rustmouths hold the chain and you are a mouth on it, with a cut of a toll that goes nowhere. The Gilt went back to their fire barrel. The Crown\'s paper is the same paper it was.', end: 'done', onEnter: [{ set: 'bw_turf_settled' }] },
+    gilt: { journal: 'The chain is on the ground and the slate says STAND — FREE — GILT in gold, and the Rustmouths who held it are on the tally of a street that keeps no tally. Pip Aldous is coming down the Loop to see it. The Crown\'s agent has stopped coming Tuesdays.', end: 'done', onEnter: [{ set: 'bw_turf_settled' }] },
+    peace: { journal: 'Two Tolls to stand, split three ways, with a Gilt, a Rustmouth and a white hand at the chain together and nobody liking it. The girl said the Crown takes the near end by the Long Night. Three crews on one chain is the only thing it cannot take.', end: 'done', onEnter: [{ set: 'bw_turf_settled' }, { set: 'bw_three_crews' }] },
+  },
+};
+
+export const q_bw_static: QuestDef = {
+  id: 'q_bw_static', title: 'Static', act: 'a2', start: 'hiss', xp: 150,
+  routes: [
+    { id: 'kept', kind: 'talk', label: 'Swear on the hiss: she stays sixteen, and the Saints tell you what the wire says' },
+    { id: 'silenced', kind: 'talk', label: 'Give the warden captain the tower' },
+    { id: 'sold', kind: 'barter', label: 'Sell the Exchange its leak' },
+    { id: 'concern', kind: 'barter', label: 'Tell the Concern\'s man where a radio that works sits' },
+  ],
+  stages: {
+    hiss: {
+      journal: 'A girl at the Saints\' tower in Bridgeward says the city\'s lines in the city\'s voice — reserve nine, point six, Thursday, a hand higher — and what she says comes true. The wardens would call her a tap, the Exchange a leak, the Concern a find. Verity wants her to be sixteen.',
+      objectives: [{ id: 'hear', text: 'Hear her', done: { knows: 'bw_immy_heard' } }, { id: 'decide', text: 'Decide what she is', done: { flag: 'bw_static' } }],
+      next: [{ if: { flag: 'bw_static', eq: 'kept' }, stage: 'kept' }, { if: { flag: 'bw_static', eq: 'silenced' }, stage: 'silenced' }, { if: { flag: 'bw_static', eq: 'sold' }, stage: 'sold' }, { if: { flag: 'bw_static', eq: 'concern' }, stage: 'concern' }],
+    },
+    kept: { journal: 'She stays at the altar, sixteen, saying the city\'s lines to forty dead radios. You swore on the hiss. When the wire says something you need, Verity will tell you, and nobody else.', end: 'done' },
+    silenced: { journal: 'Wardens came for the tower at dusk with the captain at their head and took the girl to a cell with a blanket and no radio. Lawful. The altar has a gap in it and the Saints have your name.', end: 'done', onEnter: [{ news: { tag: 'bw_static_wardens', text: 'wardens took the Saints\' girl who hears from the Bridgeward tower', valence: -6, size: 6, at: 'meridian' } }] },
+    sold: { journal: 'Guild riders came at dawn with a sealed sheet with her name on it, and she went to wherever the Exchange keeps the things it sells. The floor thanked you. The floor always thanks you.', end: 'done', onEnter: [{ news: { tag: 'bw_static_guild', text: 'guild riders took the Saints\' girl who hears from the Bridgeward tower', valence: -8, size: 6, at: 'meridian' } }] },
+    concern: { journal: 'A man in a clean coat came with a radio that worked and she went with him, and by Thursday she will have something in her neck and hear everything, all of it, all the time. Verity could keep one thing from her. Now she cannot.', end: 'done', onEnter: [{ news: { tag: 'bw_static_concern', text: 'a man in a clean coat took the Saints\' girl who hears up the Loop', valence: -8, size: 5, at: 'meridian' } }] },
+  },
+};
+
+export const q_bw_haunt: QuestDef = {
+  id: 'q_bw_haunt', title: 'The Old Haunt', act: 'a2', start: 'garage', xp: 100,
+  stages: {
+    garage: {
+      journal: 'A garage in Bridgeward with a dog\'s head burned into every wall: the Rust Dogs\' old haunt, before the Rustmouths took the bridge and the Dogs took the Sallow. An old Dog named Fenn has sat on the same bench for nine years, and the bench is a cache.',
+      objectives: [{ id: 'cache', text: 'Open the cache under Fenn\'s bench', done: { any: [{ flag: 'unlocked:md_bridgeward/bw_haunt_cache' }, { item: 'k_bw_dog_mark' }] } }],
+      next: [{ if: { any: [{ flag: 'unlocked:md_bridgeward/bw_haunt_cache' }, { item: 'k_bw_dog_mark' }] }, stage: 'cache' }],
+    },
+    cache: { journal: 'The cache under Fenn\'s bench: a revolver, cartridges, eighty Tolls and a strip of cloth with a dog\'s head on it, from when the Dogs were a crew. BACK FOR THE BRIDGE, the wall says, every spring. Fenn says the rope is what the bridge is for, and the Rustmouths keep one on the booth.', end: 'done' },
+  },
+};
