@@ -54,6 +54,8 @@ namespace SecondFace.EditorTools
     /// <summary>Builds and binds a person's materials from its slot names; called by the scene builders after instantiating.</summary>
     public static class PeopleMaterials
     {
+        private static readonly string[] Kinds = { "skin", "eyes", "hair", "brows", "lashes", "cloth" };
+
         /// <summary>Replaces the placeholder materials of every renderer under <paramref name="root"/>. Returns the slots bound.</summary>
         public static int Bind(GameObject root, string modelDir)
         {
@@ -77,10 +79,15 @@ namespace SecondFace.EditorTools
         public static Material Build(string slotName, string modelDir)
         {
             var name = slotName.StartsWith("mat_") ? slotName.Substring(4) : slotName;
-            var colon = name.IndexOf(':');
-            if (colon < 0) return null;
-            var kind = name.Substring(0, colon);
-            var tex = name.Substring(colon + 1);
+            // Slots are written mat_<kind>:<texture>; the FBX round trip turns the ':' into '_' (seen in the editor), so
+            // the kind is matched as a known prefix followed by either separator.
+            string kind = null, tex = null;
+            foreach (var k in Kinds)
+            {
+                if (name.Length > k.Length + 1 && name.StartsWith(k) && (name[k.Length] == ':' || name[k.Length] == '_'))
+                { kind = k; tex = name.Substring(k.Length + 1); break; }
+            }
+            if (kind == null) return null;
             var dir = modelDir.Replace('\\', '/').TrimEnd('/');
             var matDir = dir + "/Materials";
             Directory.CreateDirectory(matDir);

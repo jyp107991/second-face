@@ -136,6 +136,9 @@ namespace SecondFace.EditorTools
             var imp = (ModelImporter)assetImporter;
             imp.materialImportMode = ModelImporterMaterialImportMode.ImportStandard;
             imp.materialLocation = ModelImporterMaterialLocation.InPrefab;
+            // Blender's Z-up becomes a 270° root rotation unless baked into the mesh; builders set the root rotation and
+            // would overwrite it, laying walls flat (seen in the first engine captures).
+            imp.bakeAxisConversion = true;
             imp.addCollider = true;
             imp.isReadable = false;
             imp.importAnimation = false;

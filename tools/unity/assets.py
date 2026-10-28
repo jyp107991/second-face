@@ -270,9 +270,13 @@ def main():
     credits = ['# External textures (Unity game)\n', 'All textures below are CC0 from Poly Haven (https://polyhaven.com), fetched by `tools/unity/assets.py`.\n', '\n| key | Poly Haven id | use | metres per tile | note |\n|---|---|---|---|---|\n']
     for key, (phid, metres, use, note) in LIBRARY.items():
         if only and key not in only:
-            continue
-        status = process(key, phid, a.force)
-        print(f'{key:14s} {phid:26s} {status}')
+            # --only fetches a subset, but the manifest still lists everything already on disk (a partial fetch once
+            # rewrote it to three entries and three test scenes silently lost their terrain)
+            if not any(os.path.exists(os.path.join(TEX, key, f'{key}_d.{ext}')) for ext in ('png', 'jpg')):
+                continue
+        else:
+            status = process(key, phid, a.force)
+            print(f'{key:14s} {phid:26s} {status}')
         manifest[key] = {'id': phid, 'metres': metres, 'use': use, 'note': note, 'dir': f'Assets/External/Textures/{key}'}
         credits.append(f'| {key} | {phid} | {use} | {metres} | {note} |\n')
     with open(os.path.join(OUT, 'library.json'), 'w') as f:

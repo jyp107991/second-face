@@ -25,3 +25,5 @@ crashlytics-build.properties
 # materials the people importer generates beside the models
 /Assets/SecondFace/People/**/Materials/
 /Assets/SecondFace/Motion/_tmp/
+/Assets/SecondFace/Generated.meta
+/Assets/SecondFace/People/**/Materials.meta

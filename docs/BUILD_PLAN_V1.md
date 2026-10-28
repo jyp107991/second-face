@@ -754,6 +754,23 @@ numbers from the densest place written into PORT.md §5.
   `IPrebuildSetup`; a setup step that opens other scenes must restore the runner's scene
   (`EditorSceneManager.GetSceneManagerSetup` / `RestoreSceneManagerSetup`) or play mode starts on a scene with no
   runner. Evidence in the log: `Loaded scene 'Temp/__Backupscenes/0.backup'` followed by nothing.
+- **Material slot names lose their colon** (local editor, 2026-10-28): Blender's FBX round trip turns
+  `mat_<kind>:<texture>` into `mat_<kind>_<texture>`, so a parser keyed on ':' finds nothing and people render
+  untextured grey. `PeopleMaterials.Build` matches the known kinds followed by ':' or '_'.
+- **Kit pieces lie flat** (first engine captures): Blender's Z-up arrives as a 270° rotation on each piece's root;
+  builders that set `transform.rotation` overwrite it. Kit metas and `KitImportPostprocessor` set
+  `bakeAxisConversion` so the root stays identity.
+- **A partial texture fetch emptied the manifest** (`assets.py --only` once rewrote `library.json` to three
+  entries and three scenes silently lost their terrain): the manifest now always lists everything on disk.
+- **A Personal licence file only works on the machine that made it** ("Machine bindings don't match", in every CI
+  run too, where GameCI falls back to the account): activate with `UNITY_EMAIL` / `UNITY_PASSWORD` through the
+  Licensing Client (`--activate-all --include-personal`), as `tools/unity/editor.sh` does.
+- **The editor started without `-projectPath` makes the working directory a project** (it created Library/,
+  Packages/, ProjectSettings/ at the repository root once): always pass a project path; licence checks use a
+  throwaway blank project.
+- **The first local import rewrites metas and settings** (import settings applied by post-processors, asset
+  version upgrades, metas for folders and sidecar files): commit them, so CI imports exactly what the session
+  verified and GUIDs stay stable.
 - **CI run cancelled by a push**: concurrency `cancel-in-progress`; wait for the run first.
 - **The owner's token lacks the `workflow` scope**: workflow files cannot be pushed from the session; the owner
   copies `tools/ci/*.yml` into `.github/workflows/`.

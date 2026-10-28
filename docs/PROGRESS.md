@@ -343,6 +343,14 @@ postprocessor's slot-prefix fix, `docs/evidence/unity/` (Cycles renders of the b
 **Local editor:** the owner has a Unity Personal licence. Once `UNITY_EMAIL` and `UNITY_PASSWORD` are set in the cloud environment (a Personal licence file is machine-bound and refused here),
 every session runs the real editor with `tools/unity/editor.sh` (BUILD_PLAN §7.1a) and stops guessing through CI.
 First use: `tools/unity/editor.sh test all`, read every capture, fix, then push.
+**Local editor live (2026-10-28):** the owner's Unity account activates the editor in the session (Personal seat);
+`tools/unity/editor.sh test all` runs the whole suite in about 3 minutes once the Library exists (first import
+about 12). First local run fixed: people untextured (slot-name parsing), kit pieces lying flat (axis conversion),
+three terrain scenes unbuilt (a partial texture fetch had emptied the manifest). All 87 EditMode and 8 PlayMode
+tests pass locally with 23 captures. Known from the captures, to fix in the people and vegetation passes: eyes render
+as pale blanks (cornea/iris material), hair breaks the hair rule (step 2), leaves render near-black and multi-variant
+scans scatter as rows of identical plants (split the scans into variants in `models_bake.py`), the vegetation
+camera sees the terrain edge.
 **Next action:** `docs/BUILD_PLAN_V1.md` §10, step 2 (step 1, the cards, is verified: coverage 16–32 %, root at
 the bottom): apply the hair rule to the six bake-off people per §6.C.1, rebuild, render, refresh the evidence,
 commit; then steps 3–9 in order; the owner copies the workflow (step 10) when they can.
