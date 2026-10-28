@@ -30,6 +30,7 @@ namespace SecondFace.Core.Content
         public static Dictionary<string, QuestDef> Quests = new();
         public static WorldMap WorldMap = new();
         public static Dictionary<string, RegionDef> Regions = new();
+        public static Dictionary<string, RoadEncounterDef> RoadEncounters = new();
 
         public static readonly JsonSerializer Strict = new() { MissingMemberHandling = MissingMemberHandling.Error };
         public static readonly JsonSerializer Lenient = new();
@@ -66,6 +67,7 @@ namespace SecondFace.Core.Content
             Quests = Table<QuestDef>(db, "quests");
             WorldMap = db.Table("world_map").ToObject<WorldMap>(Lenient);
             Regions = Table<RegionDef>(db, "regions");
+            RoadEncounters = Table<RoadEncounterDef>(db, "road_encounters");
         }
     }
 }

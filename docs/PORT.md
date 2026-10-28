@@ -70,7 +70,9 @@ The Claude session cannot run the Unity editor (it needs a licence and a desktop
 1. **Core**: `dotnet build core/ && dotnet test core/` locally — compiles the pure C# and runs its tests.
 2. **Game**: compile-checked locally against the editor's managed assemblies (`UnityEngine*.dll`, URP, Input
    System, glTFast) extracted from the Unity 6000.3 Linux editor archive into the session's scratch space
-   (`tools/port/refs.sh` fetches them; they are not committed). That catches API misuse before CI.
+   (`tools/port/refs.sh` fetches them; they are not committed). That catches API misuse before CI:
+   `dotnet build core/Game.Check.csproj -p:UnityManaged=<Editor/Data/Managed>` for the Game assembly and
+   `core/Editor.Check.csproj` for the Editor assembly (the URP types it uses are stubbed in `core/stubs/`).
 3. **CI**: `.github/workflows/android.yml` builds the Android APK with `game-ci/unity-builder` on every push to
    `main` (Library cached). A failed build's log is read back through the GitHub API and fixed. The APK is a
    workflow artifact and, on a tag, a release asset the owner installs on the phone.

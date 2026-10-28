@@ -307,11 +307,12 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
       ContentDb over the exported JSON), `Game` (Bootstrap: full screen, loads content, title card), `Editor`
       (ProjectSetup: creates the Boot scene, URP asset and player settings in code on load); `core/` .NET build
       + NUnit tests green locally; `core/Game.Check.csproj` compiles the Game assembly against the editor's
-      UnityEngine DLLs (extracted from the Unity Linux archive into the session scratch space).
-      **Waiting on the owner:** (1) copy `tools/ci/android.yml` and `core.yml` into `.github/workflows/`
-      (the session's tokens lack the workflow scope); (2) the three licence secrets (PORT.md §3). Then the first
-      APK builds. **Next action:** P1 core port while that happens; when the Android workflow runs, read its log
-      and fix the first build.
+      UnityEngine DLLs (extracted from the Unity Linux archive into the session scratch space);
+      `core/Editor.Check.csproj` does the same for the Editor assembly (URP types stubbed in `core/stubs/`).
+      Owner did: workflows copied into `.github/workflows/`, licence secrets added. CI: Core green; Android
+      run 1 stopped at the licence (expected), run 2 reached Unity's compiler (three fixes), run 3 failed on
+      one missing `using UnityEditor.Build` in ProjectSetup (fixed, now caught locally by the Editor check).
+      **Open:** the first APK artifact from the next Android run; P0 closes when the owner installs it.
 - [~] P1 Core (pure C#) with ported tests. Done: P1.1 stats — `Core/Stats/{Rules,Sheet,Chrome}.cs`, the rules/
       chrome content model, `Content/Registry.cs` (typed registries from the JSON, strict-deserialisation check);
       the web stats, creation and chrome suites ported (18 tests green with `dotnet test core/...`).
@@ -322,8 +323,12 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
       migrations v1). 54 tests green locally (NUnit pinned near Unity's 3.5 so API gaps show here first).
       CI: Core green; the first licensed Android build reached Unity's compiler and failed on three things now
       fixed (Input System 1.20.1 for Unity 6.3, the test assembly's Newtonsoft reference, NUnit `Is.AnyOf`/
-      `ContainKey` not in Unity's NUnit). **Next:** P1.6 combat rules/encounter/AI and wardrobe/outfits
-      logic; P1.7 NPC stats, party, hunting, roads; then P2.
+      `ContainKey` not in Unity's NUnit). P1.6 combat rules (`Core/Combat/Rules.cs`: hit/crit chances,
+      attack resolution, armour, turn order, morale, kill XP) and P1.7 roads and hunting (`Core/World/Roads.cs`:
+      encounter eligibility and rolls, discoveries on a leg, hunts, trap yields) with their tests: 66 green.
+      **Next:** P1.8 grid/pathfinding (`scene/grid.ts` is pure logic: walkable/opaque/cover, A*, line of
+      sight) and wardrobe/outfit logic; P1.9 NPC stats and party; then P2 (the encounter/AI flow goes with
+      P5 since it drives actors).
 - [ ] P2 World. - [ ] P3 People. - [ ] P4 Camera/touch/UI. - [ ] P5 Gameplay and parity on device.
 
 ## 3. PHASE B — build the complete game to a playable v1 (vertical slices)

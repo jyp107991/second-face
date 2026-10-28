@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Compile check (no build output used) of the Editor and Game assemblies against the Unity editor's managed
+       assemblies (UnityEditor.*Module and UnityEngine.*Module under Editor/Data/Managed/UnityEngine), so editor
+       API mistakes surface before CI. URP ships as source inside its package, so the few URP types ProjectSetup
+       touches are stood in by stubs/UrpStubs.cs (keep them in step with the real API when the setup grows). -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <UnityManaged Condition="'$(UnityManaged)' == ''">$(HOME)/unity-managed</UnityManaged>
+    <NoWarn>CS1701;CS1702</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../unity/Assets/SecondFace/Editor/**/*.cs" />
+    <Compile Include="../unity/Assets/SecondFace/Game/**/*.cs" />
+    <Compile Include="stubs/UrpStubs.cs" />
+    <ProjectReference Include="SecondFace.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="$(UnityManaged)/UnityEngine/*.dll" />
+  </ItemGroup>
+</Project>
