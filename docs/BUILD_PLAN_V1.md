@@ -55,6 +55,22 @@ the pump station, the wilds, the nomad camp) and the megacity districts of Act 2
 remaining Act 2 content (B3.11 on) and the owner's later story passes are built in Unity after v1's systems are
 in, on the same pipelines.
 
+**How the older phases map onto this plan** (they were built in the web game, which is now frozen as the reference):
+- **Phase A** (design and depth pass, A0–A5) is done as design: its rules, systems and story work live in the
+  content and in `SecondFace.Core`. What it left half-done is absorbed here: A2.4's economy simulation → P9 balance;
+  A2.6's activities that come with content (fight pits, hunting, dives, heists) → P6 and P8; A4.3 performance →
+  P3.7/P6.7; A5.9's presentation sweep → P5/P6 (the web presentation itself is not ported).
+- **Phase B** (content slices) built Chapter One (B1), Act 1 (B2) and Act 2 part 1 up to B3.10 in `src/content/`;
+  all of it is exported to Unity and is in v1 (P7, P8). **Not yet written** and therefore after v1: B3.11 (the
+  last Act 2 part 1 location), B4 (a further megacity area), B5 (the Act 2 wilds), B6 (Act 3 and the endings), B7
+  (systemic depth: ruins, bounties, rare encounters), B8 (balance and deploy, which becomes P9 for the app).
+- **The upgrade list U1–U8**: U1–U4 were done in the web game and are redone at the Unity standard by P2–P4; U5
+  (camera and touch) is P5; U6 (naming pass), U7 (conversation system) and U8 (characters and relationships) are
+  content passes that follow v1 (P8).
+- So **v1 is the installable app with every part of the story written so far**; the complete game (B3.11–B6 and
+  U6–U8) is built on the same pipelines after it. If the owner wants v1 to mean the complete story, those slices
+  move inside the roadmap after P8.
+
 v1 acceptance (all must hold):
 - Fresh install → title → character creation (face sculptor, body, skin, hair, scars, tattoos, clothing colours,
   attribute pool with reroll) → the opening → Chapter One complete → Act 1 complete → the megacity reached and

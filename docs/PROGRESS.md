@@ -444,7 +444,9 @@ sparse and small from the overview: density and clumping are P3.4's tuning.
       The wardrobe and appearance-generator ports are paused: they describe the web figure, and the people
       pipeline is chosen in P2. **P1 is the narrative core and is closed**, except for rule changes the redesign
       asks for later.
-- [ ] P2 World. - [ ] P3 People. - [ ] P4 Camera/touch/UI. - [ ] P5 Gameplay and parity on device.
+- [ ] The remaining Unity phases are numbered and specified in `docs/BUILD_PLAN_V1.md` §5 (P2 bake-off closing, then
+      P3 world, P4 people, P5 camera/touch/UI, P6 systems and combat, P7 Chapter One on the phone, P8 Act 1 and the
+      megacity, P9 release hardening). An older numbering here (P2 World … P5 Gameplay) is superseded.
 
 ## 3. PHASE B — build the complete game to a playable v1 (vertical slices)
 Each slice ends playable and polished before the next starts. Definition of v1 done: creation → every
