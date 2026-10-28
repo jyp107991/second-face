@@ -15,3 +15,5 @@ sysinfo.txt
 *.apk
 *.aab
 crashlytics-build.properties
+/Screenshots/
+/test-results/
