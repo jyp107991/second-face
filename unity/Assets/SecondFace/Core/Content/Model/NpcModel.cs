@@ -42,8 +42,8 @@ namespace SecondFace.Core.Npc
         [JsonProperty("mask")] public bool? Mask;
         [JsonProperty("layers")] public List<GarmentLook> Layers;
         [JsonProperty("gear")] public List<GearLook> Gear;
-        /// <summary>The weapon in the right hand (set at runtime from the inventory).</summary>
-        [JsonProperty("held")] public JToken Held;
+        /// <summary>The weapon shape in the right hand (set at runtime from the inventory).</summary>
+        [JsonProperty("held")] public string Held;
         [JsonProperty("grime")] public double? Grime;
         [JsonProperty("wear")] public double? Wear;
     }

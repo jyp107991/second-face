@@ -300,7 +300,14 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
 - [ ] U8 Characters and relationships: motive bibles, arcs, romances rewritten; natural talk over exposition.
 - Then B3.11+ resumes (the content tracker below is unchanged; the maps become places in the one world).
 
-### 2d. The Unity port (owner decision 2026-10-28; `docs/PORT.md` is the plan — read it)
+### 2d. The Unity game (owner decisions 2026-10-28; `docs/PORT.md` is the plan — read it)
+**Pass 7 (owner, 2026-10-28): a redesign, not a port.** Keep only the narrative/thematic layer; rebuild the world,
+every asset, the people, camera, UI, audio and the play systems to the highest aesthetic and functional standard a
+modern Android phone runs (DOS2/BG3/Cyberpunk aspirational; Android the primary console). CLAUDE.md §2 has the
+words; PORT.md §1 what is kept/redesigned, §4 the standard, device targets and asset strategy, §4a the phases.
+**Next action:** P1 closes as the narrative core (86 tests green); then P2 — write `docs/DESIGN_UNITY.md` (the
+redesigned game: camera, world scale, places as 3D, combat and systems, UI, audio) and run the bake-offs with CI
+screenshots (people pipeline, material library + modular kit, a first lit place, terrain + vegetation).
 - [~] P0 Foundation: decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,
@@ -336,10 +343,10 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
       (`Core/Scene/Grid.cs`: walkable/opaque/cover from legend and props, rim stripping, A* with corner rules, line
       of sight); P1.9 the NPC model, outfits (`Core/Npc/Outfits.cs`: the role/faction dresser with the web game's
       exact random sequence), party helpers and NPC sheet/pack building (`Core/Npc/{Party,Outfits}.cs`): 86 tests
-      green, every one of the 268 people builds a sheet and pack. **Next:** P1.10 extras (background people) and
-      the wardrobe (`inventory/wardrobe.ts`: worn gear on the figure) if pure; then P1 closes and P2 World starts
-      (terrain/regions/ways data model first, then the Unity side). The encounter/AI flow goes with P5 since it
-      drives actors.
+      green, every one of the 268 people builds a sheet and pack. Items' worn visuals are typed (`WearVisual`).
+      The wardrobe and appearance-generator ports are paused: they describe the web figure, and the people
+      pipeline is chosen in P2. **P1 is the narrative core and is closed**, except for rule changes the redesign
+      asks for later.
 - [ ] P2 World. - [ ] P3 People. - [ ] P4 Camera/touch/UI. - [ ] P5 Gameplay and parity on device.
 
 ## 3. PHASE B — build the complete game to a playable v1 (vertical slices)

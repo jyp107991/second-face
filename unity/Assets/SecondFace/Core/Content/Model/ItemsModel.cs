@@ -90,9 +90,46 @@ namespace SecondFace.Core.Inventory
         [JsonProperty("tags")] public List<string> Tags;
         [JsonProperty("icon")] public string Icon;
         /// <summary>What the item puts on the body when worn (read by the people code).</summary>
-        [JsonProperty("wear")] public JToken Wear;
+        [JsonProperty("wear")] public WearVisual Wear;
         [JsonProperty("held")] public string Held;
         [JsonProperty("chrome")] public string Chrome;
+    }
+
+    /// <summary>A garment name, or one per fit ({m, f}).</summary>
+    public sealed class FitName
+    {
+        public JToken Raw;
+        public string For(string fit) => Raw == null ? null : Raw.Type == JTokenType.String ? (string)Raw : (string)Raw[fit];
+    }
+
+    public sealed class FitNameConverter : JsonConverter<FitName>
+    {
+        public override FitName ReadJson(JsonReader reader, System.Type objectType, FitName existingValue, bool hasExistingValue, JsonSerializer serializer) => new FitName { Raw = JToken.ReadFrom(reader) };
+        public override void WriteJson(JsonWriter writer, FitName value, JsonSerializer serializer) => (value?.Raw ?? JValue.CreateNull()).WriteTo(writer);
+    }
+
+    public sealed class WearGarment
+    {
+        [JsonProperty("name"), JsonConverter(typeof(FitNameConverter))] public FitName Name;
+        [JsonProperty("tint")] public int? Tint;
+        [JsonProperty("dye")] public int? Dye;
+        [JsonProperty("grime")] public double? Grime;
+        [JsonProperty("wear")] public double? Wear;
+    }
+
+    public sealed class WearGear { [JsonProperty("kind")] public string Kind; [JsonProperty("color")] public int? Color; }
+
+    /// <summary>What an item puts on the body when worn.</summary>
+    public sealed class WearVisual
+    {
+        /// <summary>Garment proxy name, or one per fit: a full garment replaces the base suit, anything else goes over it.</summary>
+        [JsonProperty("garment"), JsonConverter(typeof(FitNameConverter))] public FitName Garment;
+        [JsonProperty("tint")] public int? Tint;
+        /// <summary>A whole set of clothes instead of the base suit (a coat over trousers, say), in draw order.</summary>
+        [JsonProperty("garments")] public List<WearGarment> Garments;
+        [JsonProperty("gear")] public List<WearGear> Gear;
+        /// <summary>The gas mask.</summary>
+        [JsonProperty("mask")] public bool? Mask;
     }
 
     /// <summary>A merchant: what they buy, their cash, their stock and restock rhythm.</summary>

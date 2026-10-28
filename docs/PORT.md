@@ -5,24 +5,46 @@ Android first; the engine is **Unity 6.3 LTS (6000.3) with the Universal Render 
 plan and the working rules for the port. It overrides the content roadmap until the port reaches parity with the
 web game (then content building resumes at B3.11, in Unity).
 
-## 1. What moves, what stays
+## 1. What is kept, what is redesigned (owner, 2026-10-28, pass 7)
 
-- **Content data stays the source of truth** in `src/content/` (TypeScript data modules: maps, NPCs, dialogues,
-  quests, items, rules, world). `npm run validate` keeps validating it. `tools/port/export.ts` exports every
-  registry to JSON under `unity/Assets/StreamingAssets/content/`; the Unity game loads those. Content authors keep
-  editing TypeScript; a content change is: edit → `npm run check` → `npm run export` → commit both.
-- **Assets are re-judged for quality, not copied by default** (owner, 2026-10-28: no anchoring on the web game's
-  graphics; maximise what a 2026 Android phone runs smoothly; remake what must be remade). What survives is what
-  meets the bar: the CC0 source libraries (Poly Haven models and PBR sets, MakeHuman bodies and clothes, the CMU
-  motion) are re-imported from their originals at the resolution and detail Unity's pipeline can carry (ASTC
-  textures at 1–2 K where it shows, LOD groups instead of hand-decimated meshes, real trees with LODs and
-  impostors only at distance), through URP's lit shading, shadows, SSAO, bloom, colour grading and post. The
-  web-era downsizes (512 px atlases, 2 k-triangle trees as billboards, painted-on cloth) are not carried over.
-  The visual bar for each phase is set in P2/P3 below.
-- **Engine code is rewritten in C#**, in the same shape as the TypeScript engine, module by module, each with its
-  tests. The web engine (`src/engine/`) is frozen: it is the reference for every behaviour and the visual bar
-  (`docs/UPGRADE.md` U1–U4.1 evidence), not a place for new features.
-- **Story and docs** are unchanged. The spoiler rule applies to the Unity project exactly as to the web one.
+The Unity game is a **redesign**, not a port with better graphics. The owner's words: "do not anchor on the web game…
+keep only the narrative/thematic elements and redesign a new game with new textures and assets."
+
+**Kept — the narrative and thematic layer**
+- The story (`story/`, spoiler rule unchanged), the world and its history (`docs/WORLD.md`), the characters and
+  their relationships, the factions, the regions and places as *concepts* (Cistern 9, Shale, the Overpass,
+  Tollhouse 9, Signal Hill, Dry Wells, Ninebridge, Openfield, the megacity districts…), the fiction of the economy
+  (Tolls, scrip), of chrome (bionics, Drift), of the Burn and the Ledger.
+- The narrative content as data: dialogues, quests, leads and conclusions, letters, world events, road encounters,
+  the people (name, role, faction, routine, what they say), items as fiction (names, categories, descriptions),
+  settlements and regions. `src/content/` stays the source of truth, `npm run validate` keeps it coherent, and the
+  export to JSON feeds Unity. **The C# Core keeps it playable**: dialogue and quest engines, flags, conditions and
+  effects, reputation and news, world events (no time limits), journeys, saves. Rules the content leans on (skill
+  checks, flags, items in quests) keep their meaning; everything else in the rules is open to redesign.
+- The owner's binding rules in `CLAUDE.md` §2: no time limits, no Fallout IP, one open world without loading
+  screens, touch-first with one-finger camera, full romance, mature realism, XP + perks and turn-based combat (its
+  kind stays; its depth is redesigned, with DOS2/BG3 as the benchmark).
+
+**Redesigned — everything the player sees, hears and touches**
+- **The world**: not tile maps drawn in legend characters. Places are built in 3D in Unity (modular prefab kits on
+  terrain, authored layouts, real lighting); the web maps are layout notes only. Scale, traversal, verticality and
+  the camera's relationship to places are re-planned for a 3D isometric camera of BG3's kind.
+- **Every asset**: textures, materials, models, people, clothes, props, vegetation, VFX, UI, audio are chosen or
+  made for the design (§4 asset strategy). Nothing is carried over because it exists; the web-era downsizes are
+  gone with the web game.
+- **People**: a new character pipeline chosen by quality on a phone (faces, bodies, clothes, hair, animation), with
+  the face sculptor on blend shapes; not the web figure.
+- **Camera, UI, audio**: new, on Cinemachine, UI Toolkit and the Audio Mixer.
+- **The play systems**: combat depth (elevation, cover, surfaces, reactions, an AP economy worth planning around,
+  called shots, bionic abilities), stealth that reads real light, crowds and schedules across the open world,
+  physics (ragdolls, destructible cover, projectiles), an inventory and wardrobe worth looking at, barter, camps,
+  travel with montages, a photo mode, controller support. Where a redesigned system changes a rule, the Core rule
+  and its tests change with it; the narrative content is re-validated.
+- The web grid and A* survive only as the interior pathing fallback until NavMesh covers every place.
+
+**The constraint**: it runs on a modern Android phone (§4 device targets), measured through the CI APK on the
+owner's phone, never assumed. The aspiration (DOS2, BG3, Cyberpunk) sets the direction of every choice; the phone
+sets the budget.
 
 ## 2. Project layout
 
@@ -94,33 +116,130 @@ Unity Personal is free but must be activated through Unity Hub on a desktop; CI 
    `ANDROID_KEYALIAS_NAME`, `ANDROID_KEYALIAS_PASS`.
 GameCI does not see or store the credentials; they stay in the repository's secrets.
 
-## 4. Phases (each ends with a CI-built APK the owner can install)
+## 4. The standard (owner: highest aesthetic and functionality a modern Android phone can run)
+
+**Benchmarks and device targets.** The aspiration is DOS2 / BG3 for the isometric RPG (lit, dense, reactive places;
+cinematic conversation; deep turn-based combat) and Cyberpunk 2077 for the megacity (verticality, neon and volume
+light, crowds, bionics, decadence against squalor). The budget is the phone. Targets, measured on device:
+- *Flagship 2024–26* (Snapdragon 8 Gen 2/3/Elite, Dimensity 9200+ class, 12 GB): 60 fps at native-with-STP
+  upscale, full feature set.
+- *Mid-range 2023–25* (Snapdragon 7-series / Dimensity 8000 class, 8 GB): 30–40 fps with dynamic resolution,
+  reduced shadows/VFX/view distance; nothing missing that affects play.
+- *Floor*: Vulkan, 6 GB RAM, Android 8+ (minSdk 26). Below it the game may refuse to run rather than look poor.
+- Budgets per view (flagship / mid): ≤ 2.5 M / 1.2 M triangles, ≤ 300 / 150 draw calls after the GPU Resident
+  Drawer, ≤ 24 / 12 skinned figures at close LOD, texture memory ≤ 1.5 / 0.9 GB (ASTC), 16.6 / 30 ms frame.
+
+**The engine contract.** In each area the Unity feature that gives the most on a phone is the one used; nothing is
+hand-rolled where Unity has a system for it. *Must* items gate their phase; *then* items follow once the must set
+runs smoothly on device. Fallbacks for GLES3 phones are listed where a feature needs Vulkan/compute.
+
+*Rendering (URP 17, Unity 6)*
+- Must: Forward+ with many real lights (lanterns, fires, neon, headlamps, light cookies); a realtime sun with soft
+  cascaded shadows (2 cascades flagship, 1 mid); Screen Space Shadows; SSAO; Light Layers so interiors stay dark
+  at noon; reflection probes per interior.
+- Must: Adaptive Probe Volumes with sky occlusion for baked bounce across the streamed world under a dynamic sky.
+- Must: GPU Resident Drawer + GPU occlusion culling for every prop, tree, rock and grass instance; LOD groups on
+  everything; baked octahedral impostors (our tool) beyond ~80 m. GLES3: resident drawer off, instancing on,
+  shorter view distance.
+- Must: Shader Graph materials — height-blended terrain layers with parallax where it reads, triplanar rock and
+  ruin, water (depth fog, refraction, foam, flow), skin (wrapped-diffuse subsurface, 2 K composited maps),
+  anisotropic hair cards, cloth with sheen and re-dye, emissive neon and holograms, global wetness and dust driven
+  by weather.
+- Must: Decal Renderer Feature (blood, scorch, grime, graffiti, markings, bullet marks).
+- Must: Volumes with HDR + ACES, grading per region and mood, bloom, vignette, depth of field in conversation; TAA
+  on flagship (SMAA mid); STP upscaling with dynamic resolution.
+- Must: VFX Graph (Vulkan) for dust, rain, embers, sparks, smoke, flies, muzzle flash; Shuriken fallback on GLES3.
+- Must: Unity Terrain per chunk from our heightfield (layers, holes for interiors, instanced detail grass, tree
+  instancing); our own meshes only where an authored floor cannot be terrain.
+- Then: SSR on water, planar reflections in the canals, volumetric local fog.
+
+*People and animation*
+- Must: Humanoid Mecanim — captured motion as humanoid clips (CMU and other free captures, converted by Blender
+  headless in the tool pipeline), blend trees by speed and turn, layers and masks for aim and carry, Humanoid
+  retargeting across every build.
+- Must: Animation Rigging — foot IK on terrain and stairs, look-at, weapon hand IK, two-bone IK for reaching,
+  leaning and sitting.
+- Must: blend-shape faces (the sculptor and the ageing photograph live on them); blinks and expressions keyed from
+  dialogue tone; LOD groups per figure; a crowd budget measured on device.
+- Must: ragdolls on death and on going down, blending back to standing; hit reactions by body part (colliders per
+  part for called shots).
+- Then: Cloth on hero ponchos and coats where it runs; capture-quality facial expression.
+
+*World and systems*
+- Must: Addressables for everything streamed (chunks, places, people, audio) under memory budgets; content
+  catalogs so content patches ship without a store update.
+- Must: AI Navigation — NavMesh built at runtime per chunk, agents with avoidance and carving; crowds that flow;
+  schedules that walk the whole open world.
+- Must: PhysX for cover, doors, props, projectiles (raycasts with per-part hit zones), knockback, destructible
+  cover, shell casings.
+- Must: Cinemachine — the iso rig (one-finger turn, pinch, two-finger pan, collision), conversation shots
+  (over-shoulder, two-shot), combat focus, impulse shake; Timeline for scripted moments; a photo mode.
+- Must: Input System (touch, gamepad, keyboard/mouse, rebinding); UI Toolkit for all UI (USS themes, runtime data
+  binding, responsive to every phone aspect); Localization wired from day one.
+- Must: Audio Mixer with snapshots (indoor, outdoor, combat, conversation), spatial sources, footsteps by terrain
+  layer, ambient and reverb zones, occlusion by raycast.
+- Must: Adaptive Performance (thermal, dynamic resolution), Vulkan with frame pacing, IL2CPP, Burst jobs for
+  terrain, crowds and pathing; the Frame and Memory Profilers on device at the end of every phase; Unity Cloud
+  Diagnostics for crash reports from the owner's phone.
+
+*Play (the overhaul in function, not only in look)*
+- Combat (turn-based, as the owner keeps it): elevation and cover that matter, surfaces (fire, oil, water, dust,
+  electricity from chrome and salvaged tech) that interact, reactions/overwatch, an AP economy with movement and
+  action trade-offs, called shots on real hit zones, bionic abilities with Drift as the cost, environmental kills,
+  squad tactics with companions, a tactical camera.
+- Stealth reads the light on the body and the noise of the surface; disguises and papers; crowds to vanish into.
+- Conversation as scenes: framed shots, faces that react, interjections from companions standing there.
+- A world that moves: crowds and schedules on NavMesh across the open world, weather that wets and blinds, day and
+  night that change who is where and what is lit; vehicles and travel as montages; camps.
+- Quality of life at BG3's level: inventory that reads, a notebook worth reading, map and pins, controller support,
+  accessibility (UI scale, contrast, rebinding), saves with screenshots, a photo mode.
+
+**Asset strategy (new textures and assets, created or existing, whichever is best).**
+- *Rule*: the repository is public, so every committed asset is redistributable (CC0, CC-BY with credit in
+  `CREDITS.md`, or a licence that allows redistribution with the project). Anything else is generated by our tools
+  from such sources, or built from scratch. The owner decides exceptions.
+- *Environment*: 2 K PBR sets from Poly Haven and ambientCG (CC0) re-authored into our material library (height
+  blends, weathering masks, decals); photogrammetry models from Poly Haven and Sketchfab CC0 for rocks, ruins,
+  props; modular architecture kits built in Blender by our scripts (shelter concrete, frontier timber and scrap,
+  megacity curtain wall and neon), trees and scrub as real meshes with LODs (CC0 sources, re-processed), impostors
+  by our tool.
+- *People*: a bake-off in the first redesign phase between the candidate pipelines (MakeHuman CC0 base with our
+  Blender re-authoring; MB-Lab (open source) bases; Unity UMA for modularity), judged on face quality at portrait
+  distance, body variety, clothing at 2 K, hair, animation retargeting and crowd cost, with screenshots the owner
+  reviews. Clothing re-authored or newly built; skin maps synthesised at 2 K; hair as cards.
+- *Motion*: CMU and other free captures converted to Humanoid clips; what captures lack (deaths, getting up, turns
+  in place, aims) is built by our tools or from other free libraries.
+- *VFX, audio, UI*: VFX Graph effects built in-project; audio from CC0/CC-BY libraries (Freesound, OpenGameArt)
+  mixed in-project; UI drawn in-project (USS, vector), typefaces under OFL.
+- *Creation pipeline*: Blender headless scripts in `tools/`, Unity editor scripts for import, material and prefab
+  assembly (the session cannot open the editor; CI runs it in batch mode for imports, bakes and PlayMode screenshot
+  tests under a virtual display), content exported from TypeScript as before.
+
+## 4a. Phases (each ends with a CI-built APK the owner can install)
 
 - **P0 Foundation** — project skeleton, packages, Android settings (landscape, immersive), assemblies, content
-  export, local compile/test loop, CI workflow, a Boot scene that shows the title screen on the phone.
-- **P1 Core** — the pure-C# engine: content model and loader; `Rng`; character sheet, skills, perks, traits,
-  origins, chrome; items, inventory, equipment, economy; dialogue engine (conditions, effects, memory); quests,
-  flags, leads, conclusions, decisions; reputation, news, factions; schedules, world events (no time limits:
-  scheduled events wait for the player), journeys and timetables; saves and migrations. Tests ported from
-  `tests/*.test.ts`.
-- **P2 World** — heightfield and regions, ways, chunk streaming, the ground shader, water, sky and weather,
-  vegetation, props, places built from map data, buildings/roofs, lights. Visual bar: a modern isometric RPG on a
-  2026 phone (DOS2-class): URP lit PBR with 1–2 K ASTC texture sets, height-blended terrain layers with
-  tessellation-free parallax where it reads, real tree meshes with LOD groups (impostors only beyond ~80 m),
-  dense grass and scrub through GPU instancing with wind, physically plausible water (depth fog, refraction,
-  foam), volumetric-looking fog and sky, cascaded shadows at medium, SSAO and bloom, at 60 fps on a 2024–26
-  flagship and 30+ on a mid-range phone with dynamic resolution. Measured on device, not assumed.
-- **P3 People** — the MakeHuman figure (shape evaluation, skinned meshes, skin compositing, proxies, hair),
-  the captured-motion clip player with direction retargeting, portraits, outfits, gear, weapons, bionics.
-  Visual bar: skin with subsurface scattering (URP's lit shader with a skin profile or a custom one), 2 K face
-  and body maps composited at import, cloth with real weave normal/roughness maps, hair as cards with
-  anisotropic shading, blend-shape faces, captured motion blended through Unity's animation system, LOD groups
-  per figure, and a crowd budget that keeps the scene smooth.
-- **P4 Camera, touch and UI** — iso camera (one-finger turn, pinch, tap-to-move; U5), radial menu, HUD, the
-  notebook, the map and travel, dialogue view with portraits, combat UI, menus, settings, character creation.
-- **P5 Gameplay and parity** — actors and pathing, NPC schedules and crowds, encounters and combat, interactions
-  and loot, journeys and vehicles, audio; Chapter One and Act 1 playable on the phone; performance pass on
-  device (the U2c list); then U6–U8 and B3.11 continue in Unity.
+  export, local compile/test loop, CI workflow, the Boot scene on the phone. *(nearly done)*
+- **P1 Narrative core** — the pure-C# layer that keeps the story content playable: content model and loader,
+  `Rng`, sheet and checks, items, dialogue engine, quests, flags, leads, reputation, news, factions, world events,
+  journeys, saves; the tile grid as the interior fallback; people as data. Tests ported. *(nearly done; rules
+  change later as the redesign needs)*
+- **P2 Redesign and bake-off** — the design document of the Unity game (`docs/DESIGN_UNITY.md`: the camera and the
+  world's scale, places and districts as 3D spaces, combat and systems at the standard above, UI, audio), the
+  asset strategy executed as tests: the people pipeline bake-off, the material library and a modular kit, a first
+  lit place, a vegetation and terrain test — each with CI screenshots the owner judges; the CI screenshot loop
+  itself; Addressables and the streaming skeleton; the package set.
+- **P3 World** — terrain chunks, streaming, APV, the terrain/rock/water shaders, sky and weather, vegetation and
+  props through the resident drawer, places built as 3D prefabs with real lights and decals, NavMesh at runtime,
+  the first region to the bar, measured on device.
+- **P4 People** — the chosen pipeline at full quality: faces on blend shapes, skin/hair/cloth, Mecanim locomotion
+  from captures, rigging, ragdolls, LODs, in-engine portraits, outfits and chrome from the wardrobe.
+- **P5 Camera, touch and UI** — Cinemachine rig and conversation cameras, UI Toolkit screens (radial menu, HUD,
+  notebook, map and travel, dialogue, combat, menus, settings, the sculptor), photo mode, gamepad.
+- **P6 Systems and combat** — NavMesh actors and crowds, schedules across the world, the redesigned combat with
+  physics, stealth on light, interactions and loot, journeys and vehicles with Timeline, the soundscape, Adaptive
+  Performance and the profiler pass.
+- **P7 Chapter One on the phone** — the opening through the stranger's map at the standard, end to end on device;
+  then Act 1, the megacity, U6–U8 and B3.11 continue in Unity.
 
 ## 5. Log
 - 2026-10-28 P0: decision recorded; .NET SDK in the session; Unity 6000.3.27f1 Linux editor archive fetched and its
@@ -133,3 +252,7 @@ GameCI does not see or store the credentials; they stay in the repository's secr
 - 2026-10-28 Owner: the workflows are in `.github/workflows/` (the first Android run reached game-ci and stopped at
   the missing licence secrets, which is the expected state); the Core workflow is green. Owner directive recorded:
   no anchoring on the web game's graphics; assets re-judged and remade for quality on a 2026 phone.
+- 2026-10-28 Owner (pass 7): redesign on Unity — keep the narrative/thematic layer, rebuild everything else to the
+  highest standard a modern Android phone runs (DOS2/BG3/Cyberpunk aspirational). §1, §4 and §4a rewritten; the
+  wardrobe/appearance ports paused (they belong to the people pipeline chosen in P2); P1 closes as the narrative
+  core.

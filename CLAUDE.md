@@ -83,6 +83,16 @@ The owner wants to play unspoiled.
   what a 2026 Android phone runs at a smooth frame rate. The three.js look is not a reference for visuals; where
   assets or textures must be remade or replaced to reach that quality, remake them. The U1–U4 evidence is a floor
   for behaviour and a record of what exists, never a ceiling for how it should look.
+- **Redesign on Unity — exhaust the engine** (owner, 2026-10-28, pass 7, binding): "You must exhaust the benefits of
+  Unity engine given the amount of effort it takes. We are now aiming for a much higher, overhauled standard in
+  aesthetic, but also functionality. IT MUST BE the highest aesthetic + functionality standard possible (DOS2 / BG3 /
+  Cyberpunk are aspirational benchmarks — obviously full achievement of the aspiration is not possible on mobile),
+  subject to the constraint that it must run on a modern Android phone, and Android is the primary console
+  targeted. Do not anchor on the web game, because that will waste the potential of Unity. Keep only the
+  narrative/thematic elements and redesign a new game with new textures and assets (created or existing, whichever
+  is best for our design)." What is kept and what is redesigned is set out in `docs/PORT.md` §1; the standard and
+  the asset strategy in §4. The web game is neither a visual nor a design reference any more; its rules live on only
+  where the narrative content depends on them (checks, flags, quests), and even those are open to redesign.
 - Visual style (superseded where the upgrade directive says otherwise): orthographic iso camera, rotatable/zoomable.
 
 ## 3. Engineering conventions

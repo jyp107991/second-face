@@ -279,3 +279,11 @@ Content building (B3.11 onwards) is paused until U1–U5 are in.
   port programme is `docs/PORT.md`; U4.2+ and U5–U8 are carried out in Unity rather than in the web engine. The
   web engine stays as the reference for behaviour and visuals (every U1–U4.1 result is the bar the port must meet
   or beat) and as the content validator.
+- **2026-10-28 Redesign on Unity (owner, pass 7).** "Exhaust the benefits of Unity… the highest aesthetic +
+  functionality standard possible (DOS2 / BG3 / Cyberpunk as aspirational benchmarks, within what a modern Android
+  phone runs; Android is the primary console)… do not anchor on the web game… keep only the narrative/thematic
+  elements and redesign a new game with new textures and assets (created or existing, whichever is best)." Recorded
+  in CLAUDE.md §2. `docs/PORT.md` is rewritten: what is kept (story, world, characters, the narrative content and the
+  engines that deliver it) and what is redesigned (world construction, every asset, people, camera, UI, audio and the
+  play systems), the standard and device targets, the asset strategy and licence rule, and the phases. The U1–U4.1
+  evidence is now history, not a floor: it records what the web game managed, nothing more.
