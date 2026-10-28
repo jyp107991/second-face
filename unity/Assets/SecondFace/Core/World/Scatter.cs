@@ -59,8 +59,29 @@ namespace SecondFace.Core.World
                 Accepts = g => g.Slope < 0.4f && g.Noise > 0.5f },
         };
 
+        /// <summary>The Teeth: mountain slopes with card pines on the upper ground (tools/unity/kits/trees.py), dead wood
+        /// among them, boulders on the steeps and scrub only below the tree line's foot.</summary>
+        public static readonly IReadOnlyList<ScatterRule> Teeth = new[]
+        {
+            new ScatterRule { Group = "Pines", Models = new[] { "pine" }, Tries = 3200, ScaleMin = 0.8f, ScaleMax = 1.15f,
+                Accepts = g => g.Slope < 0.5f && g.Height > 0.45f && g.Noise > 0.3f },
+            new ScatterRule { Group = "DeadWood", Models = new[] { "dead_tree_trunk", "dead_tree_trunk_02", "tree_stump_01" }, Tries = 300, ScaleMin = 0.8f, ScaleMax = 1.2f,
+                Accepts = g => g.Slope < 0.45f && g.Height > 0.4f && g.Noise > 0.6f },
+            new ScatterRule { Group = "Boulders", Models = new[] { "boulder_01", "namaqualand_boulder_02", "namaqualand_boulder_03" }, Tries = 600, ScaleMin = 0.8f, ScaleMax = 1.6f,
+                Accepts = g => g.Slope > 0.3f || g.Noise > 0.8f },
+            new ScatterRule { Group = "Stones", Models = new[] { "rock_07", "rock_09", "namaqualand_rocks_01" }, Tries = 1500, ScaleMin = 0.8f, ScaleMax = 1.3f,
+                Accepts = g => g.Slope < 0.6f && g.Noise > 0.35f },
+            new ScatterRule { Group = "Scrub", Models = new[] { "shrub_01", "shrub_02", "shrub_03", "shrub_04" }, Tries = 1500, ScaleMin = 0.7f, ScaleMax = 1.2f,
+                Accepts = g => g.Slope < 0.4f && g.Height < 0.6f && g.Noise > 0.45f },
+        };
+
         /// <summary>The rules for a biome id; none for a biome without scatter yet.</summary>
-        public static IReadOnlyList<ScatterRule> For(string biome) => biome == "sallow" ? Sallow : Array.Empty<ScatterRule>();
+        public static IReadOnlyList<ScatterRule> For(string biome) => biome switch
+        {
+            "sallow" => Sallow,
+            "teeth" => Teeth,
+            _ => Array.Empty<ScatterRule>(),
+        };
 
         /// <summary>
         /// Placements for one rule over the unit square: <see cref="ScatterRule.Tries"/> uniform points, each kept where the

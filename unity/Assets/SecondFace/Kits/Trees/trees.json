@@ -1,0 +1,45 @@
+{
+ "pine": {
+  "id": "pine",
+  "licence": "ours (Sapling) + CC0 cards",
+  "note": "conifer of the Teeth",
+  "path": "Assets/SecondFace/Kits/Trees/pine_1_lod0.fbx",
+  "place": "scatter",
+  "size": [
+   6.63,
+   10.51,
+   6.66
+  ],
+  "tris": 1932,
+  "use": "tree",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Kits/Trees/pine_1_lod0.fbx",
+    "size": [
+     6.63,
+     10.51,
+     6.66
+    ],
+    "tris": 1820
+   },
+   {
+    "path": "Assets/SecondFace/Kits/Trees/pine_2_lod0.fbx",
+    "size": [
+     7.81,
+     13.94,
+     8.2
+    ],
+    "tris": 1932
+   },
+   {
+    "path": "Assets/SecondFace/Kits/Trees/pine_3_lod0.fbx",
+    "size": [
+     6.75,
+     10.95,
+     6.52
+    ],
+    "tris": 1844
+   }
+  ]
+ }
+}

@@ -21,16 +21,15 @@ import models as M  # noqa: E402
 OUT = os.path.join(M.ROOT, 'unity', 'Assets', 'SecondFace', 'Kits', 'Trees', 'tex')
 REL = 'Assets/SecondFace/Kits/Trees/tex'
 
-# name: scan, variant letter, the material names that are foliage, the slab (metres, Blender z up): x from the trunk
-# outwards, z band height, y depth; the output size.
+# name: scan, variant letter, the materials kept (substrings; everything else, dead wood above all, is deleted), the
+# card's band height and slab depth in metres, the output's long side in pixels. Branch cards are cut from the scan
+# along the crown's densest direction out of the trunk; the whole-crown card frames the full sapling.
 CARDS = {
-    'pine_branch': dict(model='pine_sapling_medium', variant='c', foliage=('twig',), x=(0.12, 1.95), band=1.25, depth=1.1, res=(1024, 768), rotate=True),
-    'fir_branch': dict(model='fir_sapling_medium', variant='c', foliage=('twigs',), x=(0.12, 2.1), band=1.2, depth=1.1, res=(1024, 768), rotate=True),
-    'broadleaf_cluster': dict(model='tree_small_02', variant=None, foliage=('leaves',), x=(0.3, 1.65), band=1.3, depth=1.2, res=(1024, 1024), rotate=True),
-    'pine_crown': dict(model='pine_sapling_medium', variant='c', foliage=('twig', 'bark'), whole=True, res=(768, 1024)),
+    'pine_branch': dict(model='pine_sapling_medium', variant='a', keep=('twig', 'bark'), drop=('dead',), band=1.3, depth=1.0, px=1024),
+    'fir_branch': dict(model='fir_sapling_medium', variant='a', keep=('twigs', 'branches'), drop=('dead',), band=1.2, depth=1.0, px=1024),
+    'broadleaf_cluster': dict(model='tree_small_02', variant=None, keep=('leaves', 'branches'), drop=('trunk',), band=1.3, depth=1.2, px=1024),
+    'pine_crown': dict(model='pine_sapling_medium', variant='a', keep=('twig', 'bark', 'dead'), whole=True, px=1024),
 }
-
-
 def unlit(mat):
     """Rewires a material to emit its base colour and keep its alpha: the card is albedo, lit in the engine."""
     if not mat.use_nodes:
@@ -58,12 +57,52 @@ def unlit(mat):
     mat.blend_method = 'HASHED'
 
 
-def verts_of(ob):
-    n = len(ob.data.vertices)
-    co = np.empty(n * 3, dtype=np.float32); ob.data.vertices.foreach_get('co', co)
-    co = co.reshape(n, 3)
+def face_data(ob):
+    """World-space face centres and each face's material name, as numpy arrays."""
+    n = len(ob.data.polygons)
+    c = np.empty(n * 3, dtype=np.float32); ob.data.polygons.foreach_get('center', c)
+    mi = np.empty(n, dtype=np.int32); ob.data.polygons.foreach_get('material_index', mi)
     mw = np.array(ob.matrix_world)
-    return co @ mw[:3, :3].T + mw[:3, 3]
+    names = np.array([m.name if m else '' for m in ob.data.materials])
+    return c.reshape(n, 3) @ mw[:3, :3].T + mw[:3, 3], names[mi]
+
+
+def keep_only(ob, keep, drop=()):
+    """Deletes every face whose material matches none of the kept substrings or any dropped one (dead wood)."""
+    _, mats = face_data(ob)
+    drop = np.array([not any(k in m for k in keep) or any(d in m for d in drop) for m in mats])
+    if not drop.any(): return
+    bpy.context.view_layer.objects.active = ob; ob.select_set(True)
+    bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_mode(type='FACE'); bpy.ops.mesh.select_all(action='DESELECT')
+    bpy.ops.object.mode_set(mode='OBJECT')
+    ob.data.polygons.foreach_set('select', drop)
+    bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.delete(type='FACE'); bpy.ops.object.mode_set(mode='OBJECT')
+
+
+def finish_card(path, spec):
+    """Crops the render to its alpha, turns it root-down (the branch grows up the card, v = 0 at the stem), and spreads
+    the colour of the opaque texels into the transparent ones so mipmaps fade to foliage colour, not to black."""
+    img = bpy.data.images.load(path); w, h = img.size
+    a = np.array(img.pixels[:], dtype=np.float32).reshape(h, w, 4)[::-1]   # Blender rows run bottom-up; work top-down
+    ys, xs = np.nonzero(a[..., 3] > 0.02)
+    m = 4
+    y0, y1 = max(0, ys.min() - m), min(h, ys.max() + m + 1); x0, x1 = max(0, xs.min() - m), min(w, xs.max() + m + 1)
+    a = a[y0:y1, x0:x1].copy()
+    if not spec.get('whole'):
+        a = np.ascontiguousarray(np.rot90(a, k=1))   # counter-clockwise in top-down rows: the trunk side (left) goes down
+    filled = a[..., 3] > 0.5
+    rgb = a[..., :3] * filled[..., None]
+    for _ in range(32):
+        acc = np.zeros_like(rgb); cnt = np.zeros(filled.shape, dtype=np.float32)
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            acc += np.roll(rgb, (dy, dx), axis=(0, 1)); cnt += np.roll(filled, (dy, dx), axis=(0, 1))
+        grow = (~filled) & (cnt > 0)
+        if not grow.any(): break
+        rgb[grow] = acc[grow] / cnt[grow][:, None]; filled = filled | grow
+    a[..., :3] = np.where((a[..., 3] > 0.5)[..., None], a[..., :3], rgb)
+    out = bpy.data.images.new('card', a.shape[1], a.shape[0], alpha=True)
+    out.pixels = a[::-1].ravel().tolist(); out.filepath_raw = path; out.file_format = 'PNG'; out.save()
+    return (x1 - x0) / w, (y1 - y0) / h
 
 
 def bake(name, spec):
@@ -72,81 +111,84 @@ def bake(name, spec):
     bpy.ops.import_scene.gltf(filepath=src)
     objs = [o for o in bpy.context.scene.objects if o.type == 'MESH']
     v = spec.get('variant')
-    if v:
-        for o in objs:
-            if f'_{v}_' not in o.name and not o.name.endswith(f'_{v}'):
-                bpy.data.objects.remove(o, do_unlink=True)
-        objs = [o for o in bpy.context.scene.objects if o.type == 'MESH']
-    # only the foliage (and what the card lists) stays
-    keep = []
     for o in objs:
-        mats = [m.name for m in o.data.materials if m]
-        if any(any(f in mn for f in spec['foliage']) for mn in mats):
-            keep.append(o)
-        else:
+        if v and f'_{v}_' not in o.name and not o.name.endswith(f'_{v}'):
             bpy.data.objects.remove(o, do_unlink=True)
+    keep = [o for o in bpy.context.scene.objects if o.type == 'MESH']
+    for o in keep:
+        keep_only(o, spec['keep'], spec.get('drop', ()))
     for m in bpy.data.materials:
         unlit(m)
-    pts = np.concatenate([verts_of(o) for o in keep])
-    lo, hi = pts.min(axis=0), pts.max(axis=0)
+    fc, fm = zip(*(face_data(o) for o in keep)); fc = np.concatenate(fc); fm = np.concatenate(fm)
+    lo, hi = fc.min(axis=0), fc.max(axis=0)
+    foliage = np.array([any(k in mm for k in spec['keep'][:1]) for mm in fm])
     if spec.get('whole'):
-        x0, x1 = lo[0], hi[0]; z0, z1 = lo[2], hi[2]; y0, y1 = lo[1], hi[1]
+        right, fwd = np.array([1.0, 0, 0]), np.array([0, 1.0, 0])
+        centre = (lo + hi) / 2; w, hgt, depth = hi[0] - lo[0], hi[2] - lo[2], hi[1] - lo[1]
+        mid = centre
     else:
-        # the densest horizontal band of the crown (by 0.2 m bins, away from the top and the bottom) is the card's band
-        z = pts[:, 2]
-        hist, edges = np.histogram(z, bins=int((hi[2] - lo[2]) / 0.2) + 1, range=(lo[2], hi[2]))
+        # the trunk: the densest column of wood faces in the crown's middle third
+        z = fc[:, 2]; zr = lo[2] + (hi[2] - lo[2]) * np.array([0.3, 0.7])
+        wood = (~foliage) & (z > zr[0]) & (z < zr[1])
+        hx, xe, ye = np.histogram2d(fc[wood, 0], fc[wood, 1], bins=(int((hi[0] - lo[0]) / 0.1) + 1, int((hi[1] - lo[1]) / 0.1) + 1))
+        i, j = np.unravel_index(np.argmax(hx), hx.shape)
+        trunk = np.array([(xe[i] + xe[i + 1]) / 2, (ye[j] + ye[j + 1]) / 2])
+        # the band: the densest 0.2 m slice of foliage between 30 % and 75 % of the height
+        f = fc[foliage]; fz = f[:, 2]
+        hist, edges = np.histogram(fz, bins=int((hi[2] - lo[2]) / 0.2) + 1, range=(lo[2], hi[2]))
         n = len(hist); lo_i, hi_i = int(n * 0.3), max(int(n * 0.3) + 1, int(n * 0.75))
-        k = lo_i + int(np.argmax(hist[lo_i:hi_i]))
-        zc = (edges[k] + edges[k + 1]) / 2
-        z0, z1 = zc - spec['band'] / 2, zc + spec['band'] / 2
-        # the scan's variants sit side by side in the file: the slab is relative to this crown's centre (the trunk)
-        cx, cy = float(np.median(pts[:, 0])), float(np.median(pts[:, 1]))
-        x0, x1 = cx + spec['x'][0], cx + spec['x'][1]; y0, y1 = cy - spec['depth'] / 2, cy + spec['depth'] / 2
-    w, h = x1 - x0, z1 - z0
+        k = lo_i + int(np.argmax(hist[lo_i:hi_i])); zc = (edges[k] + edges[k + 1]) / 2
+        inband = np.abs(fz - zc) < spec['band'] / 2
+        d = f[inband, :2] - trunk; r = np.hypot(d[:, 0], d[:, 1]); ang = np.arctan2(d[:, 1], d[:, 0])
+        sel = (r > 0.2) & (r < 3.0)
+        hist_a, ea = np.histogram(ang[sel], bins=24, range=(-np.pi, np.pi))
+        sm = hist_a + np.roll(hist_a, 1) + np.roll(hist_a, -1)
+        a0 = (ea[np.argmax(sm)] + ea[np.argmax(sm) + 1]) / 2
+        right = np.array([np.cos(a0), np.sin(a0), 0.0]); fwd = np.array([-np.sin(a0), np.cos(a0), 0.0])
+        along = d[:, 0] * right[0] + d[:, 1] * right[1]; across = d[:, 0] * fwd[0] + d[:, 1] * fwd[1]
+        sector = sel & (np.abs(across) < spec['depth'] / 2) & (along > 0)
+        reach = float(np.quantile(along[sector], 0.97))
+        x0, x1 = 0.1, reach + 0.05
+        w, hgt, depth = x1 - x0, spec['band'], spec['depth']
+        mid = np.array([trunk[0], trunk[1], zc]) + right * (x0 + x1) / 2
     sc = bpy.context.scene
     sc.render.engine = 'CYCLES'; sc.cycles.samples = 48; sc.cycles.device = 'CPU'; sc.cycles.use_denoising = False
     sc.render.film_transparent = True
     sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'None'
-    sc.render.resolution_x, sc.render.resolution_y = spec['res']
+    aspect = w / hgt
+    px = spec['px']
+    sc.render.resolution_x, sc.render.resolution_y = (px, max(64, int(px / aspect))) if aspect >= 1 else (max(64, int(px * aspect)), px)
     sc.render.image_settings.file_format = 'PNG'; sc.render.image_settings.color_mode = 'RGBA'; sc.render.image_settings.color_depth = '8'
     world = bpy.data.worlds.new('w'); sc.world = world; world.use_nodes = True
     world.node_tree.nodes['Background'].inputs[1].default_value = 0.0
     cam_d = bpy.data.cameras.new('c'); cam_d.type = 'ORTHO'
-    aspect = spec['res'][0] / spec['res'][1]
-    cam_d.ortho_scale = max(w, h * aspect)
+    cam_d.ortho_scale = max(w, hgt)
     cam = bpy.data.objects.new('c', cam_d); sc.collection.objects.link(cam); sc.camera = cam
     dist = 50.0
-    cam.location = ((x0 + x1) / 2, y0 - dist, (z0 + z1) / 2)
-    cam.rotation_euler = (np.pi / 2, 0, 0)   # looking along +y
-    cam_d.clip_start = dist - 0.01; cam_d.clip_end = dist + (y1 - y0) + 0.01
+    cam.location = Vector(mid - fwd * dist)
+    cam.rotation_euler = Vector(fwd).to_track_quat('-Z', 'Y').to_euler()   # looking along fwd, z up, the branch to the right
+    cam_d.clip_start = dist - depth / 2; cam_d.clip_end = dist + depth / 2
     os.makedirs(OUT, exist_ok=True)
     out = os.path.join(OUT, f'card_{name}.png')
     sc.render.filepath = out
     t = time.time()
     bpy.ops.render.render(write_still=True)
-    if spec.get('rotate'):
-        # the branch grows left to right in the frame; the leaf cards want the root at the bottom (v = 0), tip at the top
-        img = bpy.data.images.load(out); w_px, h_px = img.size
-        px = np.array(img.pixels[:], dtype=np.float32).reshape(h_px, w_px, 4)
-        rot = np.ascontiguousarray(np.rot90(px, k=1))   # counter-clockwise: +x becomes +y
-        res = bpy.data.images.new('rot', rot.shape[1], rot.shape[0], alpha=True)
-        res.pixels = rot.ravel().tolist(); res.filepath_raw = out; res.file_format = 'PNG'; res.save()
-        fw_rot = True
-    # the card's extent in metres as framed (the ortho frame may be wider than the slab on one axis)
-    fw = cam_d.ortho_scale; fh = fw / aspect
-    if spec.get('rotate'):
-        fw, fh = fh, fw   # after the rotation the card's width is the branch's thickness, its height the branch's length
+    fx, fy = finish_card(out, spec)
+    fw, fh = cam_d.ortho_scale * (sc.render.resolution_x / max(sc.render.resolution_x, sc.render.resolution_y)) * fx, \
+        cam_d.ortho_scale * (sc.render.resolution_y / max(sc.render.resolution_x, sc.render.resolution_y)) * fy
+    if not spec.get('whole'):
+        fw, fh = fh, fw   # turned: the card's width is the branch's thickness, its height the branch's length
     side = {'name': name, 'model': spec['model'], 'width_m': round(float(fw), 3), 'height_m': round(float(fh), 3),
-            'root': 'bottom' if spec.get('rotate') else ('centre' if spec.get('whole') else 'left'), 'licence': 'CC0 (Poly Haven scan, rendered)'}
+            'root': 'centre' if spec.get('whole') else 'bottom', 'licence': 'CC0 (Poly Haven scan, rendered)'}
     with open(os.path.join(OUT, f'card_{name}.json'), 'w') as f:
         json.dump(side, f, indent=1)
-    sys.path.insert(0, os.path.join(HERE, '..'))
     import assets as A
-    with open(out + '.meta', 'w') as f:
-        f.write(A.meta(f'{REL}/card_{name}.png', 'd'))
+    if not os.path.exists(out + '.meta'):   # the editor rewrites an existing meta's import settings; keep its version
+        with open(out + '.meta', 'w') as f:
+            f.write(A.meta(f'{REL}/card_{name}.png', 'd'))
     with open(os.path.join(OUT, f'card_{name}.json.meta'), 'w') as f:
         f.write(f'fileFormatVersion: 2\nguid: {M.guid_for(f"{REL}/card_{name}.json")}\nTextScriptImporter:\n  externalObjects: {{}}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n')
-    print(f'{name:20s} {fw:.2f} x {fh:.2f} m  band z {z0:.2f}..{z1:.2f}  {time.time() - t:4.0f}s  -> {out}')
+    print(f'{name:20s} {fw:.2f} x {fh:.2f} m  {time.time() - t:4.0f}s  -> {out}')
 
 
 def main():

@@ -34,6 +34,94 @@ namespace SecondFace.EditorTools
             return prefab;
         }
 
+        /// <summary>
+        /// The Teeth beside the Sallow (a second 512 m tile to the east): a mountainside rising from the scrub's level, pines
+        /// on its upper slopes from the card-tree baker, dead wood, boulders and stones; four terrain layers. Captured as
+        /// `vegetation_teeth`. Returns the instances placed.
+        /// </summary>
+        private static int BuildTeeth(Dictionary<string, LibraryEntry> lib, System.Func<string, GameObject[]> prefabsOf, System.Func<string, Transform> group)
+        {
+            const int res = 513;
+            var data = new TerrainData { heightmapResolution = res, size = new Vector3(512, 180, 512) };
+            data.SetDetailResolution(512, 32);
+            var heights = new float[res, res];
+            for (var y = 0; y < res; y++) for (var x = 0; x < res; x++)
+            {
+                float u = x / (float)(res - 1), v = y / (float)(res - 1);
+                // the rise from the west edge (the scrub's height) to the ridge in the east, folded by spurs and gullies
+                var rise = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(u * 1.15f - 0.05f));
+                var spurs = Mathf.PerlinNoise(u * 3.2f + 5f, v * 3.2f + 1f) - 0.5f;
+                var ridged = 1f - Mathf.Abs(Mathf.PerlinNoise(u * 6f + 2f, v * 6f + 9f) * 2f - 1f);
+                var h = 0.13f + 0.62f * rise + 0.12f * spurs * rise + 0.05f * ridged * rise + 0.01f * Mathf.PerlinNoise(u * 40f, v * 40f);
+                heights[y, x] = Mathf.Clamp01(h);
+            }
+            data.SetHeights(0, 0, heights);
+            // four layers per tile (BUILD_PLAN §6.A.3). The library's "forest" scan is orange broadleaf litter, not pine
+            // needles: dry ground stands in under the pines until P3.2 fetches a needle-litter texture.
+            var keys = new[] { "scrub_soil", "grass_dry", "rock", "gravel" }.Where(lib.ContainsKey).ToArray();
+            var layers = keys.Select(k =>
+            {
+                var layer = new TerrainLayer
+                {
+                    diffuseTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(TextureLibrary.MapPath(k, "d")),
+                    normalMapTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(TextureLibrary.MapPath(k, "n")),
+                    maskMapTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(TextureLibrary.MapPath(k, "mask")),
+                    tileSize = Vector2.one * lib[k].Metres,
+                };
+                var p = $"Assets/SecondFace/Generated/TerrainLayers/teeth_{k}.terrainlayer";
+                AssetDatabase.CreateAsset(layer, p);
+                return AssetDatabase.LoadAssetAtPath<TerrainLayer>(p);
+            }).ToArray();
+            data.terrainLayers = layers;
+            var ar = data.alphamapResolution;
+            var maps = new float[ar, ar, layers.Length];
+            for (var y = 0; y < ar; y++) for (var x = 0; x < ar; x++)
+            {
+                float u = x / (float)(ar - 1), v = y / (float)(ar - 1);
+                var h = data.GetInterpolatedHeight(u, v) / data.size.y;
+                var slope = data.GetSteepness(u, v) / 90f;
+                var n = Mathf.PerlinNoise(u * 9f + 3f, v * 9f + 6f);
+                var w = new float[layers.Length];
+                int i;
+                // litter under the trees' clumps (the scatter's own noise field), dry grass in the clearings and below
+                var clump = Mathf.PerlinNoise(u * 11f + 4f, v * 11f + 13f);
+                i = System.Array.IndexOf(keys, "scrub_soil"); if (i >= 0) w[i] = Mathf.Clamp01((h - 0.4f) * 6f) * Mathf.Clamp01(1f - slope * 2.2f) * Mathf.Clamp01((clump - 0.3f) * 3f) * (0.6f + 0.4f * n);
+                i = System.Array.IndexOf(keys, "grass_dry"); if (i >= 0) w[i] = Mathf.Clamp01(1f - slope * 2.5f) * (Mathf.Clamp01((0.55f - h) * 5f) + Mathf.Clamp01((0.45f - clump) * 3f)) * (0.4f + 0.6f * (1f - n));
+                i = System.Array.IndexOf(keys, "rock"); if (i >= 0) w[i] = Mathf.Clamp01((slope - 0.3f) * 4f);
+                i = System.Array.IndexOf(keys, "gravel"); if (i >= 0) w[i] = 0.15f + Mathf.Clamp01(1f - slope * 3f) * (1f - n) * 0.35f;
+                var sum = w.Sum(); if (sum <= 0) { w[0] = 1; sum = 1; }
+                for (var k = 0; k < w.Length; k++) maps[y, x, k] = w[k] / sum;
+            }
+            data.SetAlphamaps(0, 0, maps);
+            AssetDatabase.CreateAsset(data, "Assets/SecondFace/Generated/Test_Vegetation_Teeth.asset");
+            var go0 = Terrain.CreateTerrainGameObject(data); go0.name = "TerrainTeeth";
+            go0.transform.position = new Vector3(512, 0, 0);
+            var terrain = go0.GetComponent<Terrain>(); terrain.heightmapPixelError = 4f; terrain.basemapDistance = 500f;
+            GroundSample Ground(float u, float v) => new GroundSample(
+                data.GetInterpolatedHeight(u, v) / data.size.y, data.GetSteepness(u, v) / 90f, 0f,
+                Mathf.PerlinNoise(u * 11f + 4f, v * 11f + 13f));
+            var models = ModelLibrary.Load();
+            var rng = new System.Random(11);
+            var placed = 0;
+            foreach (var rule in Scatter.For("teeth"))
+            {
+                var prefabs = rule.Models.Where(k => models.TryGetValue(k, out var e) && e.Place != "patch").SelectMany(prefabsOf).ToArray();
+                if (prefabs.Length == 0) { Debug.LogWarning($"VegetationTestScene: no models for teeth {rule.Group}"); continue; }
+                foreach (var p in Scatter.Place(rule, Ground, prefabs.Length, rng))
+                {
+                    var go = (GameObject)PrefabUtility.InstantiatePrefab(prefabs[p.Model]);
+                    go.transform.SetParent(group("Teeth" + rule.Group));
+                    var pos = new Vector3(512 + p.U * data.size.x, 0, p.V * data.size.z); pos.y = terrain.SampleHeight(pos) - 0.05f;
+                    go.transform.SetPositionAndRotation(pos, Quaternion.Euler(0, p.Yaw, 0));
+                    go.transform.localScale = Vector3.one * p.Scale;
+                    go.isStatic = true;
+                    placed++;
+                }
+            }
+            Debug.Log($"VegetationTestScene: {placed} instances scattered in the Teeth");
+            return placed;
+        }
+
         [MenuItem("Second Face/Build vegetation test scene")]
         public static void Build()
         {
@@ -144,7 +232,7 @@ namespace SecondFace.EditorTools
                 var pos = new Vector3(u * data.size.x, 0, v * data.size.z); pos.y = terrain.SampleHeight(pos) - 0.15f;
                 go.transform.SetPositionAndRotation(pos, Quaternion.Euler(0, yaw, 0)); go.isStatic = true; placed++;
             }
-            Debug.Log($"VegetationTestScene: {placed} instances scattered");
+            Debug.Log($"VegetationTestScene: {placed} instances scattered in the Sallow");
             // Grass as terrain detail meshes where the soil is flat and the wash is near.
             var grassKeys = new[] { "grass_medium_01", "grass_medium_02" }.SelectMany(Prefabs).ToArray();
             if (grassKeys.Length > 0)
@@ -167,6 +255,7 @@ namespace SecondFace.EditorTools
                 }
                 terrain.detailObjectDistance = 120f; terrain.detailObjectDensity = 0.8f;
             }
+            placed += BuildTeeth(lib, Prefabs, Group);
             var camGo = new GameObject("Main Camera");
             var cam = camGo.AddComponent<Camera>();
             cam.tag = "MainCamera"; cam.fieldOfView = 35f; cam.nearClipPlane = 0.3f; cam.farClipPlane = 1500f;

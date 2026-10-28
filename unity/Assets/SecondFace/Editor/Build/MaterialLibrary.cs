@@ -32,7 +32,8 @@ namespace SecondFace.EditorTools
         /// <summary>The material for a library key, building it if needed; null when the key is unknown.</summary>
         public static Material Get(string key)
         {
-            if (key.StartsWith("card:")) return Card(key.Substring(5));
+            // card slots are mat_card:<name>; the FBX round trip may turn the ':' into '_' (no library key starts with "card_")
+            if (key.StartsWith("card:") || key.StartsWith("card_")) return Card(key.Substring(5));
             // nature slots are mat_nature:<stem>; the FBX round trip turns the ':' into '_'
             if (key.StartsWith("nature:") || key.StartsWith("nature_")) return Nature(key.Substring(7));
             var existing = AssetDatabase.LoadAssetAtPath<Material>(PathFor(key));
@@ -66,23 +67,24 @@ namespace SecondFace.EditorTools
             return n;
         }
 
-        /// <summary>A foliage card (Kits/Trees/tex/card_&lt;name&gt;.png, baked by tools/unity/kits/cards.py): cutout, double-sided.</summary>
+        /// <summary>A foliage card (Kits/Trees/tex/card_&lt;name&gt;.png, baked by tools/unity/kits/cards.py): cutout,
+        /// double-sided. Re-configured on every call so this code stays the source of truth.</summary>
         public static Material Card(string name)
         {
             var path = PathFor("card_" + name);
-            var existing = AssetDatabase.LoadAssetAtPath<Material>(path);
-            if (existing != null) return existing;
             var d = AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/SecondFace/Kits/Trees/tex/card_{name}.png");
             if (d == null) { Debug.LogWarning($"MaterialLibrary: no card texture card_{name}.png"); return null; }
             Directory.CreateDirectory(Dir);
-            var m = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = "card_" + name };
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            var fresh = m == null;
+            if (fresh) m = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = "card_" + name };
             m.SetTexture("_BaseMap", d);
             m.SetColor("_BaseColor", Color.white);
             m.SetFloat("_Smoothness", 0.2f); m.SetFloat("_Metallic", 0f);
             m.SetFloat("_AlphaClip", 1f); m.SetFloat("_Cutoff", 0.45f); m.EnableKeyword("_ALPHATEST_ON");
             m.SetFloat("_Cull", 0f);   // double-sided cards
             m.SetFloat("_ReceiveShadows", 1f);
-            AssetDatabase.CreateAsset(m, path);
+            if (fresh) AssetDatabase.CreateAsset(m, path); else EditorUtility.SetDirty(m);
             return m;
         }
 
@@ -172,7 +174,7 @@ namespace SecondFace.EditorTools
     public sealed class KitImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 3;
+        public override uint GetVersion() => 4;
 
         private void OnPreprocessTexture()
         {
@@ -198,6 +200,14 @@ namespace SecondFace.EditorTools
             imp.importBlendShapes = false;
             imp.meshCompression = ModelImporterMeshCompression.Off;   // compression only shrinks files and can add artifacts
             imp.generateSecondaryUV = true;
+            if (assetPath.StartsWith("Assets/SecondFace/Kits/Trees/"))
+            {
+                // Card trees are scattered by the hundred: no colliders, no lightmap UVs, and the baker's bent card normals
+                // (the crown shades as a volume) kept as written.
+                imp.addCollider = false;
+                imp.generateSecondaryUV = false;
+                imp.importNormals = ModelImporterNormals.Import;
+            }
         }
 
     }

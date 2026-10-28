@@ -21,3 +21,6 @@ rule (`docs/DESIGN_UNITY.md` §4).
   weathered skin (sun, dirt in the creases, chapped lips, stubble, matte where it should be) and the jaw fix.
 - `frontier_axis_before_after.jpg` — **engine captures** (2026-10-28): the frontier test town before and after the
   export-axis fix (every kit piece had lain on its side: walls flat, roofs on end).
+- `pines_cards_before_after.jpg` (2026-10-28, plan §10 step 8): the first card pine in Blender with the old branch card
+  (root at the top, dead wood in it: the black curls), the same tree with the re-baked card, and the pines in the
+  engine on the Teeth tile from the game camera (`vegetation_teeth`), shadows on.

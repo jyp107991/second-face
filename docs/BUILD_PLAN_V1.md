@@ -721,28 +721,44 @@ scale under thermal warning. Budgets per frame on Mid: ≤ 150 draw calls before
 triangles, ≤ 4 realtime lights, ≤ 8 ms CPU main thread. The debug overlay (§7.4) is always one gesture away in
 development builds. Textures ASTC 6×6 (albedo) / 5×5 (normals), mipmaps on, no readable meshes.
 
-### 6.L Card trees (`tools/unity/kits/trees.py`, to write)
-- Blender's Sapling Tree Gen is installed as an extension (§7.1). Call
-  `bpy.ops.curve.tree_add(**params)` with params from a preset file
-  (`<ext>/presets/<name>.py`, a dict; parse with `ast.literal_eval` after stripping the licence comment) plus
-  overrides. Species → preset + overrides: pine (the Teeth) ← `douglas_fir` with `levels=2`, `branches=(0,28,0,0)`,
-  `scale=14, scaleV=3`, `bevelRes=1, resU=2`, `leaves=7, leafShape='rect', leafScale=<card height_m>,
-  leafScaleX=<card width_m / height_m>, leafDownAngle=25, leafRotate=137.5, horzLeaves=False, showLeaves=True`;
-  fir ← `douglas_fir` with `branches=(0,34,0,0)`, `scale=11`; broadleaf (sheltered ground) ← `small_maple`
-  with `levels=2`, `branches=(0,18,0,0)`, `scale=6`, `leaves=9`, the broadleaf cluster card. Three seeds per
-  species (`seed=1,2,3`).
-- Sapling makes a curve (trunk/branches) and a `leaves` mesh. Convert the curve to a mesh (`object.convert`),
-  set `use_uv_as_generated` before converting so the bark has UVs, then scale all UVs by
-  `sqrt(Σ world area / Σ uv area)` so one UV unit is one metre (the library tiles bark at 2 m). Material slot
-  `mat_bark_pine` / `mat_bark_brown`. Leaves mesh: material `mat_card:pine_branch` (Sapling's `rect` leaf UV is
-  v = 0 at the stem, v = 1 at the tip, u across; the cards are baked root-down to match). Join into one object,
-  export FBX via `kitlib.export_fbx`, write the model meta. Budget ≤ 3 K triangles per tree; if over, lower
-  `curveRes`/`resU` before `branches`.
-- `Test_Vegetation` gets a second camera on a conifer slope (`vegetation_teeth`); `ScatterRules` place pines where
-  biome = Teeth, slope < 0.5, height > 0.45.
-- LOD: LOD1 = same trunk with half the cards (every other leaf), LOD2 = a two-quad cross impostor using
-  `card_pine_crown.png` (the whole-sapling card). The postprocessor builds the `LODGroup` from the three FBX
-  variants named `<species>_<seed>_lod0/1/2`.
+### 6.L Card trees (`tools/unity/kits/trees.py`; pine built 2026-10-28, fir/broadleaf/LODs next)
+**As built (pine).** `blender -b --python tools/unity/kits/trees.py -- [--only pine] [--preview <dir>]`:
+- Sapling Tree Gen (extension, §7.1) is enabled with `addon_utils.enable('bl_ext.user_default.sapling_tree_gen')`;
+  `bpy.ops.curve.tree_add(**params)` takes the preset (`<ext>/presets/<name>.py`, `ast.literal_eval` after the
+  licence comment, keys filtered to the operator's properties) plus the overrides in `SPECIES`. Pine ← `douglas_fir`
+  with `levels=2, branches=(0,40,0,0), scale=10, scaleV=2, bevelRes=1, resU=1, curveRes=(10,3,3,2), leaves=18,
+  leafDist='6', leafShape='rect', leafDownAngle=25, horzLeaves=False, showLeaves=True`, `leafScale` and
+  `leafScaleX` from the card's `card_<name>.json` (metres). The first spec (28 branches, 7 leaves, resU 2) gave
+  77 cards and 3,034 triangles, 95 % of them bark: the bark resolution goes to `resU 1` (the cards hide the
+  branches) and the count to cards. Result: 1.8–1.9 K triangles per tree, 10.5–14 m tall, seeds 1, 2, 3. (At
+  14–19 m the pines filled the iso camera's view with canopy: trees are sized for the camera, not for botany.)
+- Bark: Blender 4.5 curves have no `use_uv_as_generated`; a converted Sapling curve carries generated UVs 0..1
+  around and 0..1 along each branch. `bark_uvs` rescales per branch (connected part): v = metres along, one wrap
+  around = a whole number of 2 m tiles (no seam), so UV units are metres as the library expects. Slot
+  `mat_<bark key>` (`bark_pine`).
+- Cards: Sapling's `rect` leaf maps u 0.125..0.875 and v 0 at the stem → 1 at the tip; u is stretched to 0..1. The
+  cards' normals are bent outwards from the trunk and a little up (`out + 0.35 up`, `normals_split_custom_set`) so
+  the crown has a sunlit and a shaded side (bent mostly up, every card lit the same and the crown read flat); `KitImportPostprocessor` imports normals for `Kits/Trees/` (and no colliders, no lightmap UVs). Slot
+  `mat_card:<card>`; `MaterialLibrary.Get` routes `card:` and `card_` (the FBX round trip).
+- Output: `Kits/Trees/<species>_<seed>_lod0.fbx` + stable metas and `Kits/Trees/trees.json` (the nature manifest's
+  schema); `ModelLibrary.Load` merges it, so scatter rules name `pine` like any model.
+- Scatter: `Scatter.Teeth` (Core) puts pines where slope < 0.5, height > 0.45 and the clump noise > 0.3, with dead
+  wood, boulders, stones and low scrub; `Test_Vegetation` has a second 512 m tile (`TerrainTeeth`, four layers:
+  scrub_soil, grass_dry, rock, gravel) east of the Sallow, captured as `vegetation_teeth` from the game camera
+  (pitch 50°, 35 m: inside the 60 m shadow distance) just below the densest clump of pines. The library's `forest`
+  texture is orange broadleaf litter, not pine needles: P3.2 fetches a needle-litter scan for the Teeth.
+- **Cards (`cards.py`, rewritten 2026-10-28):** a branch card is cut from the scan along the crown's densest
+  direction out of the trunk (trunk = the densest column of wood faces in the middle third; direction = the 15°
+  sector with most foliage in the densest 0.2 m band), faces of other materials deleted (dead wood above all),
+  rendered unlit and orthographic, cropped to its alpha, turned root-down in top-down rows, and its colour
+  dilated 32 px into the transparent texels so mipmaps fade to foliage, not to black. Existing card metas are kept.
+
+**Still to build (step 9).** Fir ← `douglas_fir` with `branches=(0,34,0,0)`, `scale=11`, card `fir_branch`;
+broadleaf (sheltered ground) ← `small_maple` with `levels=2`, `branches=(0,18,0,0)`, `scale=6`, `leaves=9`, card
+`broadleaf_cluster`, bark `bark_brown`; tune each in `--preview` first, then in the engine. LOD: LOD1 = the same
+trunk with every other card, LOD2 = a two-quad cross impostor with `card_pine_crown.png` (the whole sapling); the
+postprocessor (or the scene builder) makes the `LODGroup` from `<species>_<seed>_lod0/1/2`. ≤ 3 K triangles at
+LOD0; if over, lower `curveRes`/`resU` before `branches`.
 
 ### 6.M Content export and parity
 `npm run export` writes `StreamingAssets/content/*.json` from `src/content`; `Registry` loads them. When a rule
@@ -1070,6 +1086,15 @@ numbers from the densest place written into PORT.md §5.
   instead.
 - **The test job cannot post its check** ("Resource not accessible by integration"): the default `GITHUB_TOKEN`
   is read-only; the test job declares `permissions: contents: read, checks: write`.
+- **Black curls in every pine crown** (trees.py preview, 2026-10-28): the branch card itself was wrong, verified
+  only as "a card exists". Blender's `image.pixels` rows run bottom-up, so `np.rot90(k=1)` on them turned the card
+  clockwise and put the root at the top; and the scan's variant is one object carrying bark, twigs and dead
+  branches, so "keep objects with a twig material" kept everything, dead wood included, inside a slab framed on the
+  vertex median instead of the trunk. Fix: `cards.py` deletes faces by material, finds the trunk and the densest
+  branch direction, crops to the alpha and flips rows to top-down before any numpy image work. Judge a card on a
+  light background, its root edge marked, before using it.
+- **Dark fringes on cut-out foliage at a distance**: transparent texels rendered by Cycles are black, and mipmaps
+  average them into the edges. Dilate the colour into the transparent texels (cards.py does 32 px).
 
 ---
 
@@ -1103,7 +1128,8 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
 6. ~~Nature models to FBX, one per variant, `nature` materials, glTFast removed~~ (done 2026-10-28).
 7. ~~`vegetation_iso` framed inside the terrain; scatter rules extracted with tests~~ (done 2026-10-28: Core
    `Scatter`, `ScatterTests`; the eye-level camera takes the ground height under itself).
-8. `trees.py` pine, three seeds (P2.8, §6.L); `vegetation_teeth`.
+8. ~~`trees.py` pine, three seeds (P2.8, §6.L); `vegetation_teeth`~~ (done 2026-10-28: the branch cards re-baked,
+   §8 "Black curls").
 9. Fir and broadleaf; LOD1/LOD2 and the `LODGroup` (P2.8).
 10. ~~Frontier kit pieces upright~~ (done with step 6).
 11. Addressables skeleton + the content build step + the PlayMode smoke test (P2.10, §6.A.7).

@@ -402,7 +402,15 @@ export's compensating root rotation, overwritten by every builder; an earlier "f
 slope × height × wash × noise, deterministic per seed) with 7 tests that run in both .NET and the editor; the vegetation
 scene uses them (same scene as before). The eye-level capture no longer sits inside rising ground. The plants are still
 sparse and small from the overview: density and clumping are P3.4's tuning.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 8 (card trees: `trees.py`, pine first), then 9, 11, 12.
+**Card pines (plan §10 step 8, 2026-10-28):** `tools/unity/kits/trees.py` grows pines with Blender's Sapling (trunk
+and branches) dressed in branch cards from the pine scan: three seeds, 1.8–1.9 K triangles each, 10.5–14 m. The
+branch cards themselves were wrong (root at the top, dead wood in them: the black curls of the first preview) and are
+re-baked for all four cards by a rewritten `cards.py`. The vegetation scene has a second tile, the Teeth, with pines
+on the upper slopes from Core scatter rules; `vegetation_teeth` shows a pine clump with shadows from the game camera.
+Open: per-tree hue variation (P3.4); a needle-litter ground texture for the Teeth (P3.2: the library's `forest` scan
+is orange broadleaf litter).
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 9 (fir and broadleaf from `trees.py`, then LOD1/LOD2 and the
+`LODGroup`), then 11, 12.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

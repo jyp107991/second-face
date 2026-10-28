@@ -13,13 +13,25 @@ namespace SecondFace.Tests
         private static GroundSample G(float height = 0.3f, float slope = 0.1f, float wash = 0f, float noise = 0.8f) => new GroundSample(height, slope, wash, noise);
 
         [Test]
-        public void SallowRulesNameOnlyBakedModels()
+        public void RulesNameOnlyBakedModels()
         {
-            var manifest = FindManifest();
-            var baked = JObject.Parse(File.ReadAllText(manifest)).Properties().Select(p => p.Name).ToHashSet();
-            foreach (var rule in Scatter.Sallow)
-                foreach (var m in rule.Models)
-                    Assert.That(baked, Does.Contain(m), $"{rule.Group} scatters {m}, which models_bake.py has not baked");
+            // nature models (models_bake.py) and card trees (kits/trees.py): the model library merges both manifests
+            var baked = new[] { "unity/Assets/SecondFace/Models/Nature/models.json", "unity/Assets/SecondFace/Kits/Trees/trees.json" }
+                .SelectMany(m => JObject.Parse(File.ReadAllText(Find(m))).Properties().Select(p => p.Name)).ToHashSet();
+            foreach (var biome in new[] { "sallow", "teeth" })
+                foreach (var rule in Scatter.For(biome))
+                    foreach (var m in rule.Models)
+                        Assert.That(baked, Does.Contain(m), $"{biome} {rule.Group} scatters {m}, which no baker has written");
+        }
+
+        [Test]
+        public void PinesGrowOnTheUpperSlopesOfTheTeethOnly()
+        {
+            var pines = Scatter.Teeth.Single(r => r.Group == "Pines");
+            Assert.That(pines.Accepts(G(height: 0.6f, slope: 0.3f)), Is.True);
+            Assert.That(pines.Accepts(G(height: 0.3f, slope: 0.3f)), Is.False, "below the tree line's foot");
+            Assert.That(pines.Accepts(G(height: 0.6f, slope: 0.6f)), Is.False, "too steep to root");
+            Assert.That(Scatter.For("sallow").SelectMany(r => r.Models), Does.Not.Contain("pine"), "no pines in the scrub desert");
         }
 
         [Test]
@@ -81,18 +93,19 @@ namespace SecondFace.Tests
         [Test]
         public void NoModelsMeansNoPlacements() => Assert.That(Scatter.Place(Rule("Trees"), (u, v) => G(), 0, new Random(1)), Is.Empty);
 
-        private static string FindManifest()
+        /// <summary>A repository file from the .NET test run (repo root above) or the editor (the unity/ project).</summary>
+        private static string Find(string repoRel)
         {
             foreach (var start in new[] { AppContext.BaseDirectory, Directory.GetCurrentDirectory() })
             {
                 for (var dir = new DirectoryInfo(start); dir != null; dir = dir.Parent)
-                    foreach (var rel in new[] { "unity/Assets/SecondFace/Models/Nature/models.json", "Assets/SecondFace/Models/Nature/models.json" })
+                    foreach (var rel in new[] { repoRel, repoRel.Substring("unity/".Length) })
                     {
                         var p = Path.Combine(dir.FullName, rel);
                         if (File.Exists(p)) return p;
                     }
             }
-            throw new FileNotFoundException("models.json not found (tools/unity/models_bake.py writes it)");
+            throw new FileNotFoundException($"{repoRel} not found (written by the tools/unity bakers)");
         }
     }
 }

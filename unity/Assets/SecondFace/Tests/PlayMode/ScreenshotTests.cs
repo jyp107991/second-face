@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -268,7 +269,8 @@ namespace SecondFace.Tests
             yield return LoadTestScene(path);
             for (var i = 0; i < 10; i++) yield return null;
             yield return Capture("vegetation_iso", 1920, 1080);
-            var cam = Camera.main; var t = Terrain.activeTerrain;
+            // two tiles now (the Sallow and the Teeth): Terrain.activeTerrain may be either, so each is found by name
+            var cam = Camera.main; var t = GameObject.Find("Terrain").GetComponent<Terrain>();
             // Eye height above the ground under the camera, looking down at a point 12 m ahead: placing it from the
             // focus point's height put the camera inside rising ground (a grey wedge in the capture).
             var f = new Vector3(300, 0, 170); f.y = t.SampleHeight(f);
@@ -281,6 +283,19 @@ namespace SecondFace.Tests
             cam.transform.position = g - cam.transform.rotation * Vector3.forward * 220f;
             yield return null;
             yield return Capture("vegetation_far", 1920, 1080);
+            // The Teeth: the densest clump of pines from the game's camera (pitch and distance of vegetation_iso, inside
+            // the shadow distance), looking uphill.
+            var teeth = GameObject.Find("TerrainTeeth")?.GetComponent<Terrain>();
+            Assert.That(teeth, Is.Not.Null, "the Teeth tile is missing from the vegetation scene");
+            var pines = GameObject.Find("TeethPines");
+            Assert.That(pines, Is.Not.Null, "no pines were scattered in the Teeth");
+            var at = new List<Vector3>(); foreach (Transform p in pines.transform) at.Add(p.position);
+            var s = at.OrderByDescending(a => at.Count(b => (a - b).sqrMagnitude < 18f * 18f)).First();
+            s -= Quaternion.Euler(0f, 70f, 0f) * Vector3.forward * 10f; s.y = teeth.SampleHeight(s);   // just below the clump
+            cam.transform.rotation = Quaternion.Euler(50f, 70f, 0f);
+            cam.transform.position = s - cam.transform.rotation * Vector3.forward * 35f;
+            yield return null;
+            yield return Capture("vegetation_teeth", 1920, 1080);
         }
     }
 }

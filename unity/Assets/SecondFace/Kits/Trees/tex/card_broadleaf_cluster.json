@@ -1,8 +1,8 @@
 {
  "name": "broadleaf_cluster",
  "model": "tree_small_02",
- "width_m": 1.35,
- "height_m": 1.35,
+ "width_m": 1.299,
+ "height_m": 2.538,
  "root": "bottom",
  "licence": "CC0 (Poly Haven scan, rendered)"
 }
