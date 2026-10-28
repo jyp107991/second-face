@@ -256,8 +256,8 @@ of the step.
 Every step below runs the working loop of §7.0. Blender steps also re-run the Blender script and commit the baked
 output it changed. "Read" means: open the PNG with the Read tool and judge it against §6.N.
 1. ~~**Verify the cards**~~ — done 2026-10-28 (coverage 16–32 %, root at the bottom).
-2. **Hair rule on the six bake-off people** (§6.C.1–C.2, C.4): apply the mapping in §6.C.1; build the scalp cap
-   and `bake_hair` for p5 (buzzed) and p3 (balding). Rebuild with `mh_build.py`; read `people_lineup` and
+2. **Hair rule on the six bake-off people** (§6.C.1–C.2, C.4): apply the mapping in §6.C.1; `bake_hair` for the
+   card hair; stubble painted into the skin for p5 (buzzed) and p3 (balding). Rebuild with `mh_build.py`; read `people_lineup` and
    `portrait_*`. Every head must pass §3.4.
 3. **Eyes** (§6.B.3): drop the cornea faces in `mh_build.py`; make the eye material opaque in `PeopleMaterials`;
    rebuild; read `portrait_*`: iris and pupil visible, highlight on the eye.
@@ -473,21 +473,30 @@ extras.
 
 ### 6.C Hair and grooming (the hair rule in practice)
 
-1. **Allowed proxies from the packs** (CC0 `hair01`): `cortu_short_messy_hair` (cropped, uneven),
-   `elvs_unkempt_french_braid` (work braid), `rehmanpolanski_hair_bun_brown` and `elvs_reverse_french_braid_bun`
-   (tied back), `o4saken_long01` only under a wrap or hood (matted long). **Forbidden**: every bob
+1. **Allowed proxies from the packs** (CC0 `hair01`): `elvs_unkempt_french_braid` (work braid), `rehmanpolanski_hair_bun_brown` and `elvs_reverse_french_braid_bun`
+   (tied back), `o4saken_long01` only under a wrap (not the hood: it pokes through). **Forbidden**: every bob
    (`toigo_*bob*`, `littleright_bobcut_hair`), bangs, `culturalibre_hair_05/06` (swept), `learning_anime_hair`,
    `cortu_strawberry_cloud_hair`, `sonntag78_blond_with_headband`, `elvs_double_mh_braid` (too neat),
+   `cortu_short_messy_hair` (its fringe hangs over the eyes in the engine),
    `faydaen_hair_1`. The bake-off mapping to apply now: p1 → `cortu_short_messy_hair`; p2 →
-   `elvs_unkempt_french_braid`; p3 → none (balding) + beard from the skin; p4 → `rehmanpolanski_hair_bun_brown`
-   (the rich keep it tidy: that is their costume); p5 → scalp cap, buzzed (§C.2); p6 → `o4saken_long01` under a
-   headwrap (§C.3).
-2. **Scalp cap for shaved and buzzed heads.** Build a cap mesh in `mh_build.py` from the base head's hair region:
-   the MakeHuman base has a "helper-hair" helper group (`read_obj(..., keep_groups={'helper-hair'})`); fit it like
-   a proxy (it is already in base coordinates: apply the same baked vertex deltas by index), shrink along normals
-   by 1 mm, skin to `Head`. Material `hair:<id>__scalp` with a texture baked by `bake_hair` (§C.4): stubble
-   density by noise, dark on the skin tone, with the hairline faded over 8 mm; a "receding" parameter raises the
-   front edge. Alpha 1 everywhere (no cards): a buzz cut is a texture.
+   `elvs_unkempt_french_braid`; p3 → none (balding, §C.2) + beard from the skin, hood removed so the head shows;
+   p4 → `rehmanpolanski_hair_bun_brown` (the rich keep it tidy: that is their costume); p5 → buzzed (§C.2); p6 → long hair
+   kept under the dust hood (no hair mesh: the hood hides it). Seen in the engine and rejected (2026-10-28):
+   `cortu_short_messy_hair` hangs a fringe over the eyes (bangs; p1 got a dense crop painted into the skin
+   instead), `o4saken_long01` under the balaclava-like hood pokes through it, and `elvs_reverse_french_braid_bun`
+   sweeps a heavy styled fringe across the forehead (keep it for the back-of-head-only variants, or not at all). Card hair is re-coloured by `bake_hair`
+   (`hair_look: W(colour, dust, grey)`, colours in `HAIR_COLOURS`) and ships without normal maps.
+2. **Shaved, buzzed and balding heads are painted into the skin** (done for p5 and p3, 2026-10-28). The plan once
+   said to build a cap mesh from the base mesh's `helper-hair` group: that group is not a cap but 198 loose strips
+   from the crown to the chest (used by MakeHuman to fit long hair), so it cannot be used. Instead `mh_build.py`
+   gives the person their own copy of the skin texture (`<id>__skin_d`, 2 K, its normal map beside it as
+   `<id>__skin_n` when the skin has one) with stubble baked in by `bake_scalp`: `hair_weight` computes a per-vertex weight
+   on the head from a hairline model around the skull (elevation above a threshold that falls from the forehead to
+   the temples, the ear tops and the nape; `bald` keeps the horseshoe on the sides and back; ears and face get
+   none), stored as a vertex attribute, broken up by a mid noise (ragged hairline) and stippled by a fine one,
+   coloured as darkened skin under the hair colour. Spec field: `scalp: W(mode='buzz'|'bald', density, colour,
+   recede)`. No extra mesh, no alpha, no overdraw. The thresholds were tuned on the base mesh with a shaded
+   four-view preview; re-tune them only against engine portraits.
 3. **Headwraps and scarves.** Model once in Blender as proxies on the base head/neck (a wrap: a torus-ish band
    with a knot; a scarf: a loose loop at the neck), exported as garments with `mhclo`-style reference vertices
    (write them with the same fitting code path: pick the nearest base vertex per proxy vertex and store offsets
@@ -724,8 +733,8 @@ shown up locally in minutes.
    editor commands on the project at once (Unity refuses a second instance on the same project).
 5. **Read the results**: the pass/fail counts printed by `editor.sh` (a total of 0 is a failure: a filter or
    category that matches nothing "passes"); then, pass or fail,
-   `grep -n -i 'error\|exception\|warning CS' unity/test-results/*.log | grep -v -i licens | head -60` and read
-   the log around the first hit. A run that "passes" with import errors in the log is not green: an asset that
+   `grep -n -E 'error CS|^Error|Exception:|NullReference|Failed to' unity/test-results/*.log | grep -v -i licens`
+   and read the log around the first hit. A run that "passes" with import errors in the log is not green: an asset that
    failed to import shows up as a wrong capture later.
 6. **Read the captures** the step changed: open each PNG in `unity/Screenshots/` with the Read tool and judge it
    against §6.N line by line. If it fails a line, go back to 1. Never describe a capture you have not opened.
@@ -926,6 +935,15 @@ numbers from the densest place written into PORT.md §5.
   Write `-testCategory !Heavy` unquoted (reproduced locally: quoted 0 tests, unquoted 7 PlayMode tests with the
   Heavy one excluded). The test job now fails when a run executes nothing, and `editor.sh` flags a total of 0.
   Any new CI argument is first tried in the session's editor exactly as CI will pass it.
+- **A person renders black and glossy** (p3, local editor): Blender cuts datablock names at 63 characters without a
+  word, so a slot `mat_skin:<id>__<long skin name>_d` lost its tail and Unity found no texture (the untextured
+  fallback colour is a dark fibre). Keep texture names short (`<id>__skin_d`); `mh_build.slot()` raises on a slot
+  name over 63 characters.
+- **The base mesh's `helper-hair` group is not a scalp cap**: it is 198 loose strips from the crown to the chest.
+  Stubble for shaved and balding heads is painted into the person's own skin texture (§6.C.2).
+- **`grep -i exception` flags every `Debug.Log`**: in batch mode each log line carries a stack trace through
+  `ExecuteEnumerableAndRecordExceptions`. Grep the logs for `error CS|^Error|Exception:|NullReference|Failed to`
+  instead.
 - **The test job cannot post its check** ("Resource not accessible by integration"): the default `GITHUB_TOKEN`
   is read-only; the test job declares `permissions: contents: read, checks: write`.
 
@@ -953,7 +971,7 @@ and combat → P7 Chapter One on the phone → P8 Act 1 and the megacity → P9 
 step by step in §5. Each step below is one commit (a few WIP commits at most) and runs the loop of §7.0.
 
 1. ~~Cards verified~~ (done 2026-10-28).
-2. Hair rule on the six people (P2.2: §6.C.1 mapping, scalp cap, `bake_hair`); read `people_lineup`, `portrait_*`.
+2. Hair rule on the six people (P2.2: §6.C.1 mapping, `bake_hair`, `bake_scalp`); read `people_lineup`, `portrait_*`.
 3. Eyes: drop the cornea faces, opaque eye material (P2.3, §6.B.3); read `portrait_*`.
 4. `bake_skin` (sun, creases, lips, stubble) (P2.4); read the portraits.
 5. People weight ≤ 8 MB each (P2.5, §6.B.6).

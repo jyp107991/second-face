@@ -368,10 +368,14 @@ fix in `mh_build.py`, §6.B.3). CI run 40663317991 showed the test job had run *
 `"!Heavy"` category with its quotes; plan §8): the workflow fix (unquoted category, a zero-test guard, the check
 permission) is verified locally and pushed. **Run 40665386414 (8f0d8f6) is the first truly green CI run:** 87
 EditMode + 7 PlayMode tests executed and passed (Heavy skipped), APK built in 7 minutes from the Library cache.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 2: apply the hair rule to the six bake-off people (§6.C.1
-mapping, scalp cap and `bake_hair` for p5 and p3), rebuild with `mh_build.py`, run the §7.0 loop, read
-`people_lineup` and `portrait_*`, commit; then steps 3–12 (eyes, skin, weight, nature to FBX, vegetation,
-trees, frontier kit, Addressables, the P2 verdict).
+**Hair rule applied (plan §10 step 2, 2026-10-28):** p1 a dense crop and p5 a buzz, p3 balding (grey horseshoe, his
+beard), all three painted into the person's own skin (`bake_scalp`); p2 a dull auburn work braid and p4 a tidy bun
+(the rich), both re-coloured by `bake_hair`; p6 keeps her hair under a dust hood. Rejected after seeing them in the
+engine: a messy crop whose fringe hangs over the eyes, long hair that pokes through the hood, a braid bun with a
+styled sweep (plan §6.C.1). People textures 134 → 104 MB. Seen for later steps: p6's skin has bright red lips and her
+mouth sits open (step 4, skin), eyes still blank (step 3).
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 3: drop the eye's cornea faces in `mh_build.py` (§6.B.3), make the
+eye material opaque in `PeopleMaterials`, rebuild, run the §7.0 loop, read `portrait_*`, commit; then steps 4–12.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

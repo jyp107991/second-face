@@ -102,8 +102,8 @@ namespace SecondFace.EditorTools
             var m = new Material(shader) { name = $"{kind}_{tex}" };
             var d = tex == "none" ? null : AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/tex/{tex}.png");
             if (d != null) m.SetTexture("_BaseMap", d);
-            var nrm = AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/tex/{tex.Replace("_d", "_n")}.png");
-            if (nrm != null && tex.EndsWith("_d")) { m.SetTexture("_BumpMap", nrm); m.EnableKeyword("_NORMALMAP"); }
+            var nrm = d == null ? null : NormalFor(dir, tex);
+            if (nrm != null) { m.SetTexture("_BumpMap", nrm); m.EnableKeyword("_NORMALMAP"); }
             if (d == null)
             {
                 // Strand-modelled brows and lashes and untextured hair ship without a texture: a dark fibre colour.
@@ -137,5 +137,10 @@ namespace SecondFace.EditorTools
             AssetDatabase.CreateAsset(m, matPath);
             return m;
         }
+
+        /// <summary>The normal map for a diffuse named &lt;stem&gt;_d is &lt;stem&gt;_n (only the suffix changes: an
+        /// id such as p3_drifter_m contains "_d" too).</summary>
+        private static Texture2D NormalFor(string dir, string tex) =>
+            tex.EndsWith("_d") ? AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/tex/{tex.Substring(0, tex.Length - 2)}_n.png") : null;
     }
 }
