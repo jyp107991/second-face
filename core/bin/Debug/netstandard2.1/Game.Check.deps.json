@@ -9,8 +9,7 @@
     ".NETStandard,Version=v2.1/": {
       "Game.Check/1.0.0": {
         "dependencies": {
-          "Newtonsoft.Json": "13.0.3",
-          "SecondFace.Core": "1.0.0.0",
+          "SecondFace.Core": "1.0.0",
           "Unity.Cecil": "0.10.0.0",
           "Unity.Cecil.Mdb": "0.10.0.0",
           "Unity.Cecil.Pdb": "0.10.0.0",
@@ -163,7 +162,10 @@
           }
         }
       },
-      "SecondFace.Core/1.0.0.0": {
+      "SecondFace.Core/1.0.0": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.3"
+        },
         "runtime": {
           "SecondFace.Core.dll": {
             "assemblyVersion": "1.0.0.0",
@@ -1298,8 +1300,8 @@
       "path": "newtonsoft.json/13.0.3",
       "hashPath": "newtonsoft.json.13.0.3.nupkg.sha512"
     },
-    "SecondFace.Core/1.0.0.0": {
-      "type": "reference",
+    "SecondFace.Core/1.0.0": {
+      "type": "project",
       "serviceable": false,
       "sha512": ""
     },

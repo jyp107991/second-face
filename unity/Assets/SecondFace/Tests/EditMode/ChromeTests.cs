@@ -30,7 +30,7 @@ namespace SecondFace.Tests
             Assert.That(Chrome.SurgeryRisk(d, 80, 9), Is.LessThan(Chrome.SurgeryRisk(d, 80, 5)));
             var s = Sheet.Empty("t");
             Assert.That(Chrome.Install(s, "ch_neural_reflex", 1, 0, 5, 0.01), Is.EqualTo("rejected"));
-            Assert.That(s.Chrome, Is.Null.Or.Not.ContainKey("neural"));
+            Assert.That(s.Chrome == null || !s.Chrome.ContainsKey("neural"), Is.True);
             Assert.That(Chrome.Install(s, "ch_neural_reflex", 1, 0, 5, Chrome.SurgeryRisk(d, 0, 5) * 0.9), Is.EqualTo("complication"));
             Assert.That(s.Chrome["neural"].Condition, Is.EqualTo(0.6));
         }
@@ -46,7 +46,7 @@ namespace SecondFace.Tests
             Assert.That(s.Chrome["legs"].Condition, Is.LessThan(Chrome.Working));
             Assert.That(Sheet.HasFlag(s, "chrome_spring_legs"), Is.False);
             Chrome.Remove(s, "legs");
-            Assert.That(s.Chrome, Does.Not.ContainKey("legs"));
+            Assert.That(s.Chrome.ContainsKey("legs"), Is.False);
         }
 
         [Test]

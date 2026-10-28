@@ -110,17 +110,17 @@ namespace SecondFace.Tests
             Assert.That(quests.Count, Is.GreaterThan(50));
             foreach (var d in dialogues.Values)
             {
-                foreach (var s in d.Start) Assert.That(d.Nodes, Does.ContainKey(s.Node), $"{d.Id} start {s.Node}");
+                foreach (var s in d.Start) Assert.That(d.Nodes.ContainsKey(s.Node), Is.True, $"{d.Id} start {s.Node}");
                 foreach (var n in d.Nodes.Values) foreach (var o in n.Options)
                 {
-                    if (o.Next != null) Assert.That(d.Nodes, Does.ContainKey(o.Next), $"{d.Id} next {o.Next}");
-                    if (o.Fail != null) Assert.That(d.Nodes, Does.ContainKey(o.Fail), $"{d.Id} fail {o.Fail}");
+                    if (o.Next != null) Assert.That(d.Nodes.ContainsKey(o.Next), Is.True, $"{d.Id} next {o.Next}");
+                    if (o.Fail != null) Assert.That(d.Nodes.ContainsKey(o.Fail), Is.True, $"{d.Id} fail {o.Fail}");
                 }
             }
             foreach (var q in quests.Values)
             {
-                Assert.That(q.Stages, Does.ContainKey(q.Start), $"{q.Id} start");
-                foreach (var s in q.Stages.Values) if (s.Next != null) foreach (var t in s.Next) Assert.That(q.Stages, Does.ContainKey(t.Stage), $"{q.Id} → {t.Stage}");
+                Assert.That(q.Stages.ContainsKey(q.Start), Is.True, $"{q.Id} start");
+                foreach (var s in q.Stages.Values) if (s.Next != null) foreach (var t in s.Next) Assert.That(q.Stages.ContainsKey(t.Stage), Is.True, $"{q.Id} → {t.Stage}");
             }
         }
 

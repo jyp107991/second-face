@@ -315,9 +315,15 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
 - [~] P1 Core (pure C#) with ported tests. Done: P1.1 stats — `Core/Stats/{Rules,Sheet,Chrome}.cs`, the rules/
       chrome content model, `Content/Registry.cs` (typed registries from the JSON, strict-deserialisation check);
       the web stats, creation and chrome suites ported (18 tests green with `dotnet test core/...`).
-      **Next:** P1.2 items/inventory/barter/wardrobe; P1.3 game state + world logic (Cond/Effect over JSON);
-      P1.4 dialogue; P1.5 quests, frontier (news, standing, leads, events), factions, letters; P1.6 travel,
-      roads, schedules; P1.7 combat rules/encounter/ai; P1.8 saves.
+      Also done: P1.2 items/inventory/barter/schedules; P1.3 game state, Cond/Effect logic over JSON, news and
+      standing, leads, world events, factions, letters; P1.4 dialogue runner + checks + quest engine (every
+      authored conversation opens on a fresh game: 347 trees, 54 quests, strict deserialisation); P1.5 world
+      travel (moving camps, timetables, Dijkstra trips, discoveries) and saves (slots, atomic file backend,
+      migrations v1). 54 tests green locally (NUnit pinned near Unity's 3.5 so API gaps show here first).
+      CI: Core green; the first licensed Android build reached Unity's compiler and failed on three things now
+      fixed (Input System 1.20.1 for Unity 6.3, the test assembly's Newtonsoft reference, NUnit `Is.AnyOf`/
+      `ContainKey` not in Unity's NUnit). **Next:** P1.6 combat rules/encounter/AI and wardrobe/outfits
+      logic; P1.7 NPC stats, party, hunting, roads; then P2.
 - [ ] P2 World. - [ ] P3 People. - [ ] P4 Camera/touch/UI. - [ ] P5 Gameplay and parity on device.
 
 ## 3. PHASE B — build the complete game to a playable v1 (vertical slices)

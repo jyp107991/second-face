@@ -28,6 +28,8 @@ namespace SecondFace.Core.Content
         public static Dictionary<string, LetterDef> Letters = new();
         public static Dictionary<string, DialogueDef> Dialogues = new();
         public static Dictionary<string, QuestDef> Quests = new();
+        public static WorldMap WorldMap = new();
+        public static Dictionary<string, RegionDef> Regions = new();
 
         public static readonly JsonSerializer Strict = new() { MissingMemberHandling = MissingMemberHandling.Error };
         public static readonly JsonSerializer Lenient = new();
@@ -62,6 +64,8 @@ namespace SecondFace.Core.Content
             Letters = Table<LetterDef>(db, "letters");
             Dialogues = Table<DialogueDef>(db, "dialogues");
             Quests = Table<QuestDef>(db, "quests");
+            WorldMap = db.Table("world_map").ToObject<WorldMap>(Lenient);
+            Regions = Table<RegionDef>(db, "regions");
         }
     }
 }

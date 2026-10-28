@@ -25,7 +25,7 @@ namespace SecondFace.Tests
                 Assert.That(v, Is.InRange(2, 5));
                 Assert.That(r.Range(-1, 1), Is.InRange(-1.0, 1.0));
             }
-            Assert.That(r.Pick(new[] { "a", "b", "c" }), Is.AnyOf("a", "b", "c"));
+            Assert.That(new[] { "a", "b", "c" }, Does.Contain(r.Pick(new[] { "a", "b", "c" })));
         }
 
         [Test]
