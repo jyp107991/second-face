@@ -49,3 +49,14 @@ Used modified (refit to the game's bodies, re-dyed, weathered, resampled texture
 
 ## Libraries
 - three.js (MIT)
+
+## The Unity game (redesign, 2026-10-28 on)
+- **Textures**: Poly Haven (https://polyhaven.com), CC0, fetched by `tools/unity/assets.py`; the list with ids is
+  written to `unity/Assets/External/CREDITS.md` at fetch time.
+- **People**: the MakeHuman 1.x base mesh, targets, rig and proxies (CC0, makehumancommunity.org) and the MakeHuman
+  community asset packs skins01/02, hair01, eyebrows01, eyelashes01 (CC0; authors named in each pack's files),
+  rebuilt by `tools/unity/people/mh_build.py`. No MakeHuman program code is used.
+- **Motion**: the CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu; free for all uses; "The data used in
+  this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217."),
+  converted by `tools/unity/motion/cmu2fbx.py` (trials listed in that file).
+- **Kits**: built from scratch by `tools/unity/kits/*.py` in Blender (GPL program; its output is ours).

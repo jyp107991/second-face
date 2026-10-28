@@ -321,8 +321,9 @@ sheet (`Editor/Build/{MaterialLibrary,MaterialSheetScene}.cs` → `materials_she
 and cistern ring hall assembled in code (`Editor/Build/ShelterTestScene.cs` → `place_shelter_*`). The CC0 MakeHuman
 data repositories are cloned in the session scratch for the people bake-off. People pipeline candidate A is built (`tools/unity/people/mh_build.py`: six bake-off people as Humanoid FBX with 69 face
 and expression blend shapes each, eyes/brows/lashes/hair fitted from the MakeHuman proxies, textures beside them) and
-captured motion is converted (`tools/unity/motion/cmu2fbx.py`: walk, run, idle, talk as Humanoid clips with loop
-sidecars; the other 24 clips convert on demand). Run 6 (packages) and run 7 (people, motion, kits) build the APK.
+all 28 captured clips are converted (`tools/unity/motion/cmu2fbx.py` → `Motion/*.fbx` Humanoid clips with loop and
+root sidecars). The frontier kit (22 pieces) and the well-town street scene (`Test_Frontier`, three captures) join
+the shelter kit. Run 6 (packages) and run 7 (people, motion, kits) build the APK.
 Local Cycles sanity renders live in the session scratch (not the engine; geometry and fit checks only).
 **Next action:** the owner copies the workflow so the tests-and-screenshots job runs; read `Unity-screenshots`
 (terrain, materials sheet, shelter place, people lineup, portraits, motion) and fix what they show; then candidates B
