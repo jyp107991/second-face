@@ -358,9 +358,19 @@ every import post-processor has a `GetVersion`; test scenes load additively with
 requests; the walking capture plays by state (it was frozen); kit meshes uncompressed; CI skips the Heavy category.
 The plan's §6.Q lists the corrections that land in later phases (Vulkan/GLES tiers, 4 terrain layers per tile, one
 skinned mesh per NPC, nature models to FBX).
-**Next action:** `docs/BUILD_PLAN_V1.md` §10, step 2 (step 1, the cards, is verified: coverage 16–32 %, root at
-the bottom): apply the hair rule to the six bake-off people per §6.C.1, rebuild, render, refresh the evidence,
-commit; then steps 3–9 in order; the owner copies the workflow (step 10) when they can.
+**Plan revised for the in-session editor (2026-10-28):** `docs/BUILD_PLAN_V1.md` now has the working loop every
+step follows (§7.0: compile checks → Blender if an asset changed → `tools/unity/editor.sh test all` → read the
+full log → open every changed capture and judge it against §6.N → commit metas with the change → push; CI only
+confirms and builds the APK), the machine's disk budget (§7.1), the current state (§2), the remaining P2 steps
+(§5) and the next 24 steps to the end of P3 in order (§10). `editor.sh test <mode> <filter>` runs one test
+class. The eyes' cause is found (the cornea shell maps onto a tiny transparent patch that mipmaps blur opaque;
+fix in `mh_build.py`, §6.B.3). CI run 40663317991 showed the test job had run **0 tests** (GameCI passed the
+`"!Heavy"` category with its quotes; plan §8): the workflow fix (unquoted category, a zero-test guard, the check
+permission) is verified locally and pushed once that run's APK build finishes, so its Library cache is saved.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 2: apply the hair rule to the six bake-off people (§6.C.1
+mapping, scalp cap and `bake_hair` for p5 and p3), rebuild with `mh_build.py`, run the §7.0 loop, read
+`people_lineup` and `portrait_*`, commit; then steps 3–12 (eyes, skin, weight, nature to FBX, vegetation,
+trees, frontier kit, Addressables, the P2 verdict).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

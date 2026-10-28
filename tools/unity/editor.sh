@@ -8,8 +8,9 @@
 # Start `install` in the background at the beginning of a session that will need the editor (about 10 minutes).
 #
 #   tools/unity/editor.sh install                 editor 6000.3.27f1 into $UNITY_HOME (about 10 min, 8.4 GB)
-#   tools/unity/editor.sh licence                 activate from $UNITY_LICENSE
-#   tools/unity/editor.sh test [editmode|playmode|all]   results + logs in unity/test-results, captures in unity/Screenshots
+#   tools/unity/editor.sh licence                 activate with the account (UNITY_EMAIL, UNITY_PASSWORD)
+#   tools/unity/editor.sh test [editmode|playmode|all] [filter]   results + logs in unity/test-results, captures in
+#                                                 unity/Screenshots; filter = -testFilter (e.g. ScreenshotTests.People)
 #   tools/unity/editor.sh run <Namespace.Class.Method>   -executeMethod, then quit (log in unity/test-results/run.log)
 set -euo pipefail
 VERSION=6000.3.27f1
@@ -93,6 +94,8 @@ summary() {
 import sys, xml.etree.ElementTree as ET
 t = ET.parse(sys.argv[1]).getroot()
 print({k: t.get(k) for k in ('total', 'passed', 'failed', 'skipped', 'result')})
+if t.get('total') == '0':
+    print('  NO TESTS RAN: a wrong filter or category; this is a failure, not a pass')
 for tc in t.iter('test-case'):
     if tc.get('result') != 'Passed':
         m = tc.find('.//message')
@@ -101,8 +104,10 @@ PY
 }
 
 test_mode() {
-  local mode=$1; mkdir -p "$OUT"
-  editor -runTests -testPlatform "$mode" -testResults "$OUT/$mode-results.xml" -logFile "$OUT/$mode.log" || true
+  local mode=$1 filter=${2:-}; mkdir -p "$OUT"
+  rm -f "$OUT/$mode-results.xml"   # a stale file from an earlier run must not pass for this one
+  editor -runTests -testPlatform "$mode" ${filter:+-testFilter "$filter"} -testResults "$OUT/$mode-results.xml" \
+    -logFile "$OUT/$mode.log" || true
   if [ -f "$OUT/$mode-results.xml" ]; then echo "== $mode"; summary "$OUT/$mode-results.xml"
   else echo "== $mode: no results; last lines of $OUT/$mode.log:"; tail -30 "$OUT/$mode.log"; fi
 }
@@ -113,8 +118,8 @@ case "${1:-}" in
   test)
     need_licence; install; [ -f "$OUT/.licensed" ] || licence
     case "${2:-all}" in
-      editmode|playmode) test_mode "$2" ;;
-      all) test_mode editmode; test_mode playmode ;;
+      editmode|playmode) test_mode "$2" "${3:-}" ;;
+      all) test_mode editmode "${3:-}"; test_mode playmode "${3:-}" ;;
       *) echo "test mode: editmode | playmode | all"; exit 1 ;;
     esac
     ls "$ROOT/unity/Screenshots" 2>/dev/null | sed 's/^/capture: /' || true ;;
@@ -122,5 +127,5 @@ case "${1:-}" in
     need_licence; install; [ -f "$OUT/.licensed" ] || licence
     mkdir -p "$OUT"; editor -executeMethod "${2:?method}" -quit -logFile "$OUT/run.log" || true
     grep -n -i "error\|exception" "$OUT/run.log" | grep -v -i "licensing" | head -20 || true ;;
-  *) sed -n '2,10p' "$0"; exit 1 ;;
+  *) sed -n '2,14p' "$0"; exit 1 ;;
 esac
