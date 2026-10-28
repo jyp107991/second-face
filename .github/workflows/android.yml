@@ -74,6 +74,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40   # a full pass takes 10-15 min; anything longer is a hang
     if: ${{ !cancelled() }}
+    permissions:
+      contents: read
+      checks: write        # the test runner posts its results as a check run
     steps:
       - uses: actions/checkout@v4
         with:
@@ -109,10 +112,23 @@ jobs:
         with:
           projectPath: unity
           testMode: all
-          customParameters: -testCategory "!Heavy"   # heavy captures run in the session's editor (BUILD_PLAN §7.1a)
+          # No quotes: GameCI passes them through literally, and a category of "!Heavy" (quotes included) matches
+          # nothing, so Unity ran 0 tests and reported success (run 40663317991). Heavy captures run in the
+          # session's editor (BUILD_PLAN §7.0).
+          customParameters: -testCategory !Heavy
           artifactsPath: test-results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Unity tests
+
+      - name: Fail if a test run executed nothing
+        if: always() && steps.tests.outcome != 'skipped'
+        run: |
+          for mode in editmode playmode; do
+            f=test-results/$mode-results.xml
+            n=$(grep -o '<test-run [^>]*' "$f" 2>/dev/null | grep -o ' total="[0-9]*"' | grep -o '[0-9]*' || true)
+            echo "$mode: ${n:-no results} tests run"
+            [ "${n:-0}" -gt 0 ] || { echo "::error::$mode ran no tests ($f)"; exit 1; }
+          done
 
       - uses: actions/upload-artifact@v4
         if: always()

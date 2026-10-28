@@ -366,7 +366,7 @@ confirms and builds the APK), the machine's disk budget (§7.1), the current sta
 class. The eyes' cause is found (the cornea shell maps onto a tiny transparent patch that mipmaps blur opaque;
 fix in `mh_build.py`, §6.B.3). CI run 40663317991 showed the test job had run **0 tests** (GameCI passed the
 `"!Heavy"` category with its quotes; plan §8): the workflow fix (unquoted category, a zero-test guard, the check
-permission) is verified locally and pushed once that run's APK build finishes, so its Library cache is saved.
+permission) is verified locally and pushed; its run supersedes 40663317991 (same project, now with real tests).
 **Next action:** `docs/BUILD_PLAN_V1.md` §10 step 2: apply the hair rule to the six bake-off people (§6.C.1
 mapping, scalp cap and `bake_hair` for p5 and p3), rebuild with `mh_build.py`, run the §7.0 loop, read
 `people_lineup` and `portrait_*`, commit; then steps 3–12 (eyes, skin, weight, nature to FBX, vegetation,
