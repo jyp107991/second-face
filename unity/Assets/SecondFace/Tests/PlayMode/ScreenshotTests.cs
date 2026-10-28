@@ -100,12 +100,12 @@ namespace SecondFace.Tests
             for (var i = 0; i < 10; i++) yield return null;
             yield return Capture("place_shelter_corridor");
             var cam = Camera.main;
-            cam.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
-            cam.transform.position = new Vector3(-16f, 0, 8f) - cam.transform.rotation * Vector3.forward * 24f;
+            cam.transform.rotation = Quaternion.Euler(45f, 30f, 0f);
+            cam.transform.position = new Vector3(-16f, 0, 8f) - cam.transform.rotation * Vector3.forward * 42f;
             yield return null;
             yield return Capture("place_shelter_ring");
-            cam.transform.rotation = Quaternion.Euler(18f, 180f, 0f);
-            cam.transform.position = new Vector3(0, 1.6f, 10f) - cam.transform.rotation * Vector3.forward * 9f;
+            cam.transform.rotation = Quaternion.Euler(12f, 0f, 0f);
+            cam.transform.position = new Vector3(0, 1.4f, 16.5f) - cam.transform.rotation * Vector3.forward * 9f;
             yield return null;
             yield return Capture("place_shelter_hatch");
         }

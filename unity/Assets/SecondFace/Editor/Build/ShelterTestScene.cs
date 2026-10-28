@@ -48,6 +48,9 @@ namespace SecondFace.EditorTools
             RenderSettings.ambientLight = new Color(0.035f, 0.04f, 0.05f);
             RenderSettings.fog = true; RenderSettings.fogMode = FogMode.ExponentialSquared; RenderSettings.fogColor = new Color(0.03f, 0.035f, 0.04f); RenderSettings.fogDensity = 0.015f;
             var root = new GameObject("Shelter").transform;
+            // Ceilings live under their own parent, inactive: the camera looks in from above and the roof-lift cutaway
+            // (DESIGN_UNITY §2) is a P5 feature; the pieces are placed so the real place can switch them on.
+            var ceilings = new GameObject("Ceilings").transform; ceilings.SetParent(root);
             var warm = new Color(1f, 0.86f, 0.62f);
 
             // Corridor: 5 bays of 4 m along +Z, walls both sides, ceiling, pipes along the left wall.
@@ -55,7 +58,7 @@ namespace SecondFace.EditorTools
             {
                 var z = i * 4f;
                 Place("floor_slab", new Vector3(0, 0, z), 0, root);
-                Place("ceiling_slab", new Vector3(0, 0, z), 0, root);
+                Place("ceiling_slab", new Vector3(0, 0, z), 0, ceilings);
                 Place(i == 2 ? "wall_doorway" : "wall_straight", new Vector3(-2f, 0, z), 90f, root);
                 Place(i == 1 ? "wall_doorway" : "wall_straight", new Vector3(2f, 0, z), -90f, root);
                 Place("pipe_straight", new Vector3(-1.7f, 2.6f, z), 90f, root);
@@ -77,7 +80,7 @@ namespace SecondFace.EditorTools
             for (var i = 0; i < 2; i++)
             {
                 Place("floor_slab", new Vector3(6f, 0, 4f + i * 4f), 0, room);
-                Place("ceiling_slab", new Vector3(6f, 0, 4f + i * 4f), 0, room);
+                Place("ceiling_slab", new Vector3(6f, 0, 4f + i * 4f), 0, ceilings);
                 Place("wall_straight", new Vector3(8f, 0, 4f + i * 4f), -90f, room);
             }
             Place("wall_straight", new Vector3(6f, 0, 2f), 0, room);
@@ -105,10 +108,11 @@ namespace SecondFace.EditorTools
             for (var i = 0; i < 4; i++) PointLight(centre + Quaternion.Euler(0, 45f + i * 90f, 0) * new Vector3(6f, 3.0f, 0), warm, 18f, 12f, hall);
             PointLight(centre + new Vector3(0, 2.2f, 5.5f), new Color(0.75f, 0.9f, 1f), 12f, 7f, hall).name = "GrowLamp";
 
+            ceilings.gameObject.SetActive(false);
             var camGo = new GameObject("Main Camera");
             var cam = camGo.AddComponent<Camera>();
             cam.tag = "MainCamera"; cam.fieldOfView = 35f; cam.nearClipPlane = 0.2f; cam.farClipPlane = 300f;
-            var rot = Quaternion.Euler(50f, 35f, 0f);
+            var rot = Quaternion.Euler(50f, -35f, 0f);
             camGo.transform.rotation = rot;
             camGo.transform.position = new Vector3(0, 0, 8f) - rot * Vector3.forward * 16f;
             EditorSceneManager.SaveScene(scene, ScenePath);
