@@ -17,4 +17,5 @@ The outfits are bake-off silhouettes; authored garments (coats, ponchos, rigs, p
 rule (`docs/DESIGN_UNITY.md` §4).
 - `people_hair_eyes_before_after.jpg` — **engine captures** (Unity, local editor, 2026-10-28): the six test people's
   portraits before and after the hair rule (crop, buzz and balding painted into the skin; a work braid; a tidy bun
-  for the rich; long hair under a dust hood) and the eye fix (cornea shell dropped, Blender's normals imported).
+  for the rich; long hair under a dust hood), the eye fix (cornea shell dropped, Blender's normals imported), the
+  weathered skin (sun, dirt in the creases, chapped lips, stubble, matte where it should be) and the jaw fix.
