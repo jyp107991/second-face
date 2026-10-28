@@ -15,3 +15,6 @@ them. Downscaled JPEGs; nothing here is story content.
 
 The outfits are bake-off silhouettes; authored garments (coats, ponchos, rigs, plating) follow in P4 under the same
 rule (`docs/DESIGN_UNITY.md` §4).
+- `people_hair_eyes_before_after.jpg` — **engine captures** (Unity, local editor, 2026-10-28): the six test people's
+  portraits before and after the hair rule (crop, buzz and balding painted into the skin; a work braid; a tidy bun
+  for the rich; long hair under a dust hood) and the eye fix (cornea shell dropped, Blender's normals imported).
