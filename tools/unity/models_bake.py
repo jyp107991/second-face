@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""Bakes the fetched CC0 models (tools/unity/models.py → unity/Assets/External/Models) down to phone budgets and writes
-the result to unity/Assets/SecondFace/Models/Nature/<key>.glb (committed): decimated to the triangle budget below,
-textures at 1K as JPEG inside the .glb. The source models are photoscan-grade (a Poly Haven pine is 17M triangles);
-the phone draws thousands of these through the GPU Resident Drawer, so the budget is per instance, LODs come in P3.
+"""Bakes the fetched CC0 models (tools/unity/models.py → .scans/models) down to phone budgets and writes the result to
+unity/Assets/SecondFace/Models/Nature (committed): decimated to the triangle budget below, split into one model per
+variant (a scan file often holds several plants or rocks side by side), each re-centred on its own base and written as
+<key>.fbx or <key>_v<n>.fbx with material slots mat_nature:<key>_<m>; textures beside them in tex/ (base colour 1K,
+JPEG when opaque and PNG when it carries alpha; normal map 512 PNG), bound in Unity by MaterialLibrary like the kits'.
+FBX, not glTF: glTFast draws with its own shaders, which ignore our materials and would have to ship (BUILD_PLAN §6.Q).
+The source models are photoscan-grade (a Poly Haven pine is 17M triangles); the phone draws thousands of these
+through the GPU Resident Drawer, so the budget is per instance, LODs come in P3.
 
 Runs under Blender's Python (4.5):
 
@@ -11,14 +15,21 @@ Runs under Blender's Python (4.5):
 import json, os, sys, time
 
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(HERE, 'kits'))
 import models as M  # noqa: E402  (the library and the meta helpers)
+import assets as A  # noqa: E402  (texture metas)
+import kitlib as K  # noqa: E402  (model metas)
 
 OUT = os.path.join(M.ROOT, 'unity', 'Assets', 'SecondFace', 'Models', 'Nature')
+REL = 'Assets/SecondFace/Models/Nature'
 TEX = 1024
+NORMAL_TEX = 512
+GAP = 0.5           # metres of ground between two variants in one scan file
+PATCH = 6.0         # a scan wider than this is a ground patch (a rock bed, a stone field): never split, placed deliberately
 
 # Triangle budget per model (None = not baked: needle-geometry trees are rebuilt as card trees, see docs/PORT.md).
 BUDGET = {
@@ -44,6 +55,7 @@ def tri_count(ob):
 
 
 def bake(key, src, out, budget):
+    """Imports a scan and decimates it to the budget; returns (triangles before, after, mesh objects)."""
     reset()
     bpy.ops.import_scene.gltf(filepath=src, merge_vertices=True)  # scans arrive unwelded; collapse needs shared vertices
     meshes = [o for o in bpy.context.scene.objects if o.type == 'MESH']
@@ -71,27 +83,147 @@ def bake(key, src, out, budget):
             if welded >= now * 0.999 and now >= after * 0.98:
                 break
         after = now
-    for img in bpy.data.images:
-        if img.size[0] == 0:
-            continue
-        w, h = img.size
-        if max(w, h) > TEX:
-            s = TEX / max(w, h)
-            img.scale(max(1, round(w * s)), max(1, round(h * s)))
-        img.pack()
-    kw = dict(filepath=out, export_format='GLB', export_image_format='JPEG', export_apply=True, export_yup=True,
-              export_animations=False, export_skins=False, export_morph=False, export_lights=False, export_cameras=False)
-    try:
-        bpy.ops.export_scene.gltf(**kw, export_jpeg_quality=86)
-    except TypeError:
-        bpy.ops.export_scene.gltf(**kw)
-    lo = [1e9] * 3; hi = [-1e9] * 3
+    return before, after, meshes
+
+
+def image_into(sock):
+    """The image node feeding a socket, through normal-map and separate/mix nodes."""
+    if sock is None or not sock.is_linked: return None
+    n = sock.links[0].from_node
+    for _ in range(6):
+        if n.type == 'TEX_IMAGE': return n.image
+        linked = [i for i in n.inputs if i.is_linked]
+        if not linked: return None
+        n = linked[0].links[0].from_node
+    return None
+
+
+def save_texture(img, path, size, alpha):
+    """A resized copy of `img` at `path` (JPEG when no alpha is needed, else PNG)."""
+    import numpy as np
+    w, h = img.size
+    px = np.empty(w * h * 4, np.float32); img.pixels.foreach_get(px)
+    cp = bpy.data.images.new('cp', w, h, alpha=alpha)
+    cp.colorspace_settings.name = img.colorspace_settings.name
+    cp.pixels.foreach_set(px)
+    if max(w, h) > size:
+        f = size / max(w, h); cp.scale(max(1, round(w * f)), max(1, round(h * f)))
+    cp.filepath_raw = path; cp.file_format = 'PNG' if path.endswith('.png') else 'JPEG'
+    if not alpha: cp.alpha_mode = 'NONE'
+    cp.save(); bpy.data.images.remove(cp)
+
+
+def export_materials(key, meshes):
+    """Renames every material to its slot (mat_nature:<key>_<m>) and writes its textures to tex/."""
+    os.makedirs(os.path.join(OUT, 'tex'), exist_ok=True)
+    K.write_folder_meta(os.path.join(OUT, 'tex'), REL + '/tex')
+    mats = []
     for o in meshes:
-        for c in o.bound_box:
-            w = o.matrix_world @ Vector(c)
-            for i in range(3): lo[i] = min(lo[i], w[i]); hi[i] = max(hi[i], w[i])
-    size = [round(hi[0] - lo[0], 2), round(hi[2] - lo[2], 2), round(hi[1] - lo[1], 2)]  # x, up, depth (as glTF y-up)
-    return before, after, size
+        for m in o.data.materials:
+            if m is not None and m not in mats: mats.append(m)
+    for i, m in enumerate(mats):
+        stem = f'{key}_{i}'
+        bsdf = next((n for n in m.node_tree.nodes if n.type == 'BSDF_PRINCIPLED'), None) if m.use_nodes else None
+        base = image_into(bsdf.inputs['Base Color']) if bsdf else None
+        nrm = image_into(bsdf.inputs['Normal']) if bsdf else None
+        # cut-out only where the base colour really has transparent texels: scans flag solid leaves (a quiver tree's
+        # succulent ones) as blended too, and a JPEG has no alpha to cut with
+        cut = False
+        if bsdf and bsdf.inputs['Alpha'].is_linked and base is not None and base.size[0] and base.channels == 4:
+            import numpy as np
+            px = np.empty(base.size[0] * base.size[1] * 4, np.float32); base.pixels.foreach_get(px)
+            cut = bool((px[3::4] < 0.5).mean() > 0.01)
+        for old in ('_d.jpg', '_d.png', '_n.png'):
+            p = os.path.join(OUT, 'tex', stem + old)
+            if os.path.exists(p): os.remove(p); os.path.exists(p + '.meta') and os.remove(p + '.meta')
+        if base is not None and base.size[0]:
+            dst = os.path.join(OUT, 'tex', stem + ('_d.png' if cut else '_d.jpg'))
+            save_texture(base, dst, TEX, cut)
+            with open(dst + '.meta', 'w') as f: f.write(A.meta(f'{REL}/tex/{os.path.basename(dst)}', 'd'))
+        if nrm is not None and nrm.size[0]:
+            dst = os.path.join(OUT, 'tex', stem + '_n.png')
+            save_texture(nrm, dst, NORMAL_TEX, False)
+            with open(dst + '.meta', 'w') as f: f.write(A.meta(f'{REL}/tex/{os.path.basename(dst)}', 'n'))
+        m.name = 'mat_nature:' + stem
+        assert len(m.name) <= 63, m.name
+
+
+def split_variants(meshes, footprint):
+    """One object per variant: loose parts grouped by a ground-plane occupancy grid (parts closer than GAP join), small
+    groups (stray twigs, pebbles) folded into the nearest large one. Patches stay whole."""
+    for o in bpy.context.scene.objects: o.select_set(False)
+    for o in meshes: o.select_set(True)
+    bpy.context.view_layer.objects.active = meshes[0]
+    if len(meshes) > 1: bpy.ops.object.join()
+    whole = bpy.context.view_layer.objects.active
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    if footprint > PATCH: return [whole]
+    bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.separate(type='LOOSE'); bpy.ops.object.mode_set(mode='OBJECT')
+    parts = [o for o in bpy.context.scene.objects if o.type == 'MESH']
+    boxes = []
+    for o in parts:
+        xs = [v.co.x for v in o.data.vertices]; ys = [v.co.y for v in o.data.vertices]
+        boxes.append((min(xs), min(ys), max(xs), max(ys)))
+    x0 = min(b[0] for b in boxes); y0 = min(b[1] for b in boxes)
+    cell = GAP / 2
+    nx = int((max(b[2] for b in boxes) - x0) / cell) + 3; ny = int((max(b[3] for b in boxes) - y0) / cell) + 3
+    grid = [[-1] * ny for _ in range(nx)]
+    cells = []
+    for i, (ax, ay, bx, by) in enumerate(boxes):
+        cs = [(cx, cy) for cx in range(int((ax - x0) / cell), int((bx - x0) / cell) + 1) for cy in range(int((ay - y0) / cell), int((by - y0) / cell) + 1)]
+        cells.append(cs)
+        for cx, cy in cs: grid[cx][cy] = 0
+    label = 0
+    for cx in range(nx):
+        for cy in range(ny):
+            if grid[cx][cy] != 0: continue
+            label += 1; stack = [(cx, cy)]; grid[cx][cy] = label
+            while stack:
+                x, y = stack.pop()
+                for dx in (-1, 0, 1):
+                    for dy in (-1, 0, 1):
+                        u, w = x + dx, y + dy
+                        if 0 <= u < nx and 0 <= w < ny and grid[u][w] == 0: grid[u][w] = label; stack.append((u, w))
+    groups = {}
+    for i, cs in enumerate(cells): groups.setdefault(grid[cs[0][0]][cs[0][1]], []).append(i)
+    def extent(ids):
+        return max(max(boxes[i][2] for i in ids) - min(boxes[i][0] for i in ids), max(boxes[i][3] for i in ids) - min(boxes[i][1] for i in ids))
+    big = max(extent(ids) for ids in groups.values())
+    keep = {g: ids for g, ids in groups.items() if extent(ids) >= 0.25 * big}
+    for g, ids in groups.items():
+        if g in keep: continue
+        cx = sum((boxes[i][0] + boxes[i][2]) / 2 for i in ids) / len(ids); cy = sum((boxes[i][1] + boxes[i][3]) / 2 for i in ids) / len(ids)
+        def dist(k):
+            kx = sum((boxes[i][0] + boxes[i][2]) / 2 for i in keep[k]) / len(keep[k]); ky = sum((boxes[i][1] + boxes[i][3]) / 2 for i in keep[k]) / len(keep[k])
+            return (kx - cx) ** 2 + (ky - cy) ** 2
+        keep[min(keep, key=dist)].extend(ids)
+    variants = []
+    for g in sorted(keep, key=lambda g: (sum(boxes[i][0] for i in keep[g]) / len(keep[g]))):
+        for o in bpy.context.scene.objects: o.select_set(False)
+        objs = [parts[i] for i in keep[g]]
+        for o in objs: o.select_set(True)
+        bpy.context.view_layer.objects.active = objs[0]
+        if len(objs) > 1: bpy.ops.object.join()
+        variants.append(bpy.context.view_layer.objects.active)
+    return variants
+
+
+def export_variant(ob, path, rel):
+    """Re-centres a variant on its base (median x/y, lowest z) and writes it as FBX with a stable meta."""
+    vs = [v.co for v in ob.data.vertices]
+    xs = sorted(v.x for v in vs); ys = sorted(v.y for v in vs)
+    origin = Vector((xs[len(xs) // 2], ys[len(ys) // 2], min(v.z for v in vs)))
+    ob.data.transform(Matrix.Translation(-origin)); ob.location = (0, 0, 0)
+    for o in bpy.context.scene.objects: o.select_set(False)
+    ob.select_set(True); bpy.context.view_layer.objects.active = ob
+    ob.name = os.path.splitext(os.path.basename(path))[0]
+    bpy.ops.export_scene.fbx(filepath=path, use_selection=True, apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y',
+                             mesh_smooth_type='FACE', use_mesh_modifiers=True, bake_anim=False, add_leaf_bones=False, path_mode='STRIP',
+                             embed_textures=False)
+    K.write_model_meta(path, rel)
+    lo = [min(v.co[i] for v in ob.data.vertices) for i in range(3)]; hi = [max(v.co[i] for v in ob.data.vertices) for i in range(3)]
+    return [round(hi[0] - lo[0], 2), round(hi[2] - lo[2], 2), round(hi[1] - lo[1], 2)], tri_count(ob)   # x, up, depth
 
 
 def main():
@@ -116,22 +248,33 @@ def main():
             src = os.path.join(M.OUT, key, key + '.glb')
         if not os.path.exists(src):
             print(f'{key:26s} not fetched'); continue
-        out = os.path.join(OUT, key + '.glb')
-        rel = f'Assets/SecondFace/Models/Nature/{key}.glb'
-        if os.path.exists(out) and not force and key in manifest:
+        done = manifest.get(key, {}).get('variants')
+        if done and not force and all(os.path.exists(os.path.join(M.ROOT, 'unity', v['path'])) for v in done):
             print(f'{key:26s} kept'); continue
+        for f in os.listdir(OUT):   # this key's earlier outputs (.glb of the old pipeline, earlier variants)
+            if f.startswith(key + '.') or (f.startswith(key + '_v') and f[len(key) + 2:len(key) + 3].isdigit()):
+                os.remove(os.path.join(OUT, f))
         t = time.time()
         try:
-            before, after, size = bake(key, src, out, budget)
+            before, after, meshes = bake(key, src, None, budget)
+            lo = [min((o.matrix_world @ Vector(c))[i] for o in meshes for c in o.bound_box) for i in range(3)]
+            hi = [max((o.matrix_world @ Vector(c))[i] for o in meshes for c in o.bound_box) for i in range(3)]
+            footprint = max(hi[0] - lo[0], hi[1] - lo[1])
+            export_materials(key, meshes)
+            variants = split_variants(meshes, footprint)
+            out = []
+            for n, ob in enumerate(variants):
+                name = key if len(variants) == 1 else f'{key}_v{n + 1}'
+                rel = f'{REL}/{name}.fbx'
+                size, tris = export_variant(ob, os.path.join(OUT, name + '.fbx'), rel)
+                out.append({'path': rel, 'size': size, 'tris': tris})
         except Exception as e:
+            import traceback; traceback.print_exc()
             print(f'{key:26s} failed: {e}'); continue
-        with open(out + '.meta', 'w') as f:  # minimal meta: Unity picks the glTFast importer and keeps the guid
-            f.write(f'fileFormatVersion: 2\nguid: {M.guid_for(rel)}\n')
-        foot = max(size[0], size[2])
-        # a scan wider than 6 m is a ground patch (a rock bed, a stone field) placed deliberately, not a scatter prop
-        manifest[key] = {'id': phid, 'use': use, 'note': note, 'path': rel, 'tris_src': before, 'tris': after, 'size': size,
-                         'place': 'patch' if foot > 6.0 else 'scatter', 'licence': 'CC0 (Poly Haven)'}
-        print(f'{key:26s} {before:>10,} -> {after:>7,} tris  {os.path.getsize(out) / 2**20:5.1f} MB  {time.time() - t:4.0f}s')
+        manifest[key] = {'id': phid, 'use': use, 'note': note, 'path': out[0]['path'], 'tris_src': before, 'tris': after,
+                         'size': out[0]['size'], 'variants': out, 'place': 'patch' if footprint > PATCH else 'scatter',
+                         'licence': 'CC0 (Poly Haven)'}
+        print(f'{key:26s} {before:>10,} -> {after:>7,} tris, {len(out)} variant(s)  {time.time() - t:4.0f}s')
     with open(manifest_path, 'w') as f:
         json.dump(manifest, f, indent=1, sort_keys=True)
     M.write_meta(manifest_path, f'fileFormatVersion: 2\nguid: {M.guid_for("Assets/SecondFace/Models/Nature/models.json")}\nTextScriptImporter:\n  externalObjects: {{}}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n')

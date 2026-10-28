@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Fetches CC0 glTF models (Poly Haven) for the world: trees, scrub, rocks, debris — into unity/Assets/External/Models
-(not committed; CI caches by this file's hash). glTFast imports the .glb files in the editor; stable GUID metas are
-written so prefabs and scenes can reference them.
+"""Fetches CC0 glTF models (Poly Haven) for the world: trees, scrub, rocks, debris — the photoscan sources that
+tools/unity/models_bake.py bakes to phone budgets. They go outside the Unity project (2.2 GB that the editor would
+otherwise import on every run): .scans/models at the repository root (gitignored), or $MODELS_DIR. Only the baked
+results are committed.
 
     python3 tools/unity/models.py [--force] [--only a,b]
 """
 import argparse, hashlib, io, json, os, sys, urllib.request, zipfile
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-OUT = os.path.join(ROOT, 'unity', 'Assets', 'External', 'Models')
+OUT = os.environ.get('MODELS_DIR') or os.path.join(ROOT, '.scans', 'models')
 API = 'https://api.polyhaven.com/files/'
 RES = '2k'
 

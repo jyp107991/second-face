@@ -16,12 +16,22 @@ namespace SecondFace.Game.World
         [JsonProperty("size")] public float[] Size;
         /// <summary>"scatter" (a prop placed by the rules) or "patch" (a scanned ground feature placed deliberately).</summary>
         [JsonProperty("place")] public string Place;
+        /// <summary>Every variant baked from the scan (one model each, re-centred on its own base).</summary>
+        [JsonProperty("variants")] public List<ModelVariant> Variants;
         [JsonIgnore] public float Footprint => Size == null || Size.Length < 3 ? 0 : Mathf.Max(Size[0], Size[2]);
+    }
+
+    public sealed class ModelVariant
+    {
+        [JsonProperty("path")] public string Path;
+        /// <summary>Width, height, depth in metres.</summary>
+        [JsonProperty("size")] public float[] Size;
+        [JsonProperty("tris")] public int Tris;
     }
 
     /// <summary>
     /// The baked CC0 nature models (unity/Assets/SecondFace/Models/Nature, written by tools/unity/models_bake.py from the
-    /// Poly Haven fetch): decimated to phone budgets, 1K textures inside the .glb, imported by glTFast.
+    /// Poly Haven fetch): decimated to phone budgets, one FBX per variant, textures in tex/ bound by the material library.
     /// </summary>
     public static class ModelLibrary
     {
@@ -34,11 +44,15 @@ namespace SecondFace.Game.World
             return JsonConvert.DeserializeObject<Dictionary<string, ModelEntry>>(File.ReadAllText(p)) ?? new Dictionary<string, ModelEntry>();
         }
 
-        /// <summary>Asset path of the baked model, or null when it is not baked.</summary>
-        public static string AssetPath(string key)
+        /// <summary>Asset paths of a model's baked variants (empty when it is not baked).</summary>
+        public static List<string> VariantPaths(ModelEntry e)
         {
-            var p = $"{Dir}/{key}.glb";
-            return File.Exists(System.IO.Path.Combine(Application.dataPath, "..", p)) ? p : null;
+            var paths = new List<string>();
+            if (e?.Variants != null) foreach (var v in e.Variants) if (Exists(v.Path)) paths.Add(v.Path);
+            if (paths.Count == 0 && e?.Path != null && Exists(e.Path)) paths.Add(e.Path);
+            return paths;
         }
+
+        private static bool Exists(string assetPath) => File.Exists(System.IO.Path.Combine(Application.dataPath, "..", assetPath));
     }
 }

@@ -48,7 +48,7 @@
   "id": "dead_quiver_trunk",
   "licence": "CC0 (Poly Haven)",
   "note": "dead quiver trunk",
-  "path": "Assets/SecondFace/Models/Nature/dead_quiver_trunk.glb",
+  "path": "Assets/SecondFace/Models/Nature/dead_quiver_trunk.fbx",
   "place": "scatter",
   "size": [
    0.31,
@@ -57,7 +57,18 @@
   ],
   "tris": 4000,
   "tris_src": 17978,
-  "use": "tree"
+  "use": "tree",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/dead_quiver_trunk.fbx",
+    "size": [
+     0.31,
+     1.99,
+     0.27
+    ],
+    "tris": 4000
+   }
+  ]
  },
  "dead_tree_trunk": {
   "id": "dead_tree_trunk",
@@ -228,22 +239,33 @@
   "id": "quiver_tree_01",
   "licence": "CC0 (Poly Haven)",
   "note": "quiver tree (the Sallow)",
-  "path": "Assets/SecondFace/Models/Nature/quiver_tree_01.glb",
+  "path": "Assets/SecondFace/Models/Nature/quiver_tree_01.fbx",
   "place": "scatter",
   "size": [
    1.18,
-   2.72,
+   2.71,
    0.97
   ],
   "tris": 9000,
   "tris_src": 150124,
-  "use": "tree"
+  "use": "tree",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/quiver_tree_01.fbx",
+    "size": [
+     1.18,
+     2.71,
+     0.97
+    ],
+    "tris": 9000
+   }
+  ]
  },
  "quiver_tree_02": {
   "id": "quiver_tree_02",
   "licence": "CC0 (Poly Haven)",
   "note": "quiver tree (the Sallow)",
-  "path": "Assets/SecondFace/Models/Nature/quiver_tree_02.glb",
+  "path": "Assets/SecondFace/Models/Nature/quiver_tree_02.fbx",
   "place": "scatter",
   "size": [
    0.87,
@@ -252,7 +274,18 @@
   ],
   "tris": 9000,
   "tris_src": 82074,
-  "use": "tree"
+  "use": "tree",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/quiver_tree_02.fbx",
+    "size": [
+     0.87,
+     1.47,
+     0.88
+    ],
+    "tris": 9000
+   }
+  ]
  },
  "rock_07": {
   "id": "rock_07",

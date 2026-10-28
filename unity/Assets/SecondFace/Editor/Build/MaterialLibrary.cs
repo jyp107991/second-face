@@ -33,6 +33,8 @@ namespace SecondFace.EditorTools
         public static Material Get(string key)
         {
             if (key.StartsWith("card:")) return Card(key.Substring(5));
+            // nature slots are mat_nature:<stem>; the FBX round trip turns the ':' into '_'
+            if (key.StartsWith("nature:") || key.StartsWith("nature_")) return Nature(key.Substring(7));
             var existing = AssetDatabase.LoadAssetAtPath<Material>(PathFor(key));
             if (existing != null) return existing;
             var lib = TextureLibrary.Load();
@@ -81,6 +83,44 @@ namespace SecondFace.EditorTools
             m.SetFloat("_Cull", 0f);   // double-sided cards
             m.SetFloat("_ReceiveShadows", 1f);
             AssetDatabase.CreateAsset(m, path);
+            return m;
+        }
+
+        /// <summary>
+        /// A baked nature model's material (Models/Nature/tex/&lt;stem&gt;_d.jpg|png and &lt;stem&gt;_n.png, written by
+        /// tools/unity/models_bake.py): URP Lit; cut-out and double-sided when the base colour carries alpha (leaves,
+        /// grass), opaque otherwise (bark, rock). Re-configured on every call so this code stays the source of truth.
+        /// </summary>
+        public static Material Nature(string stem)
+        {
+            const string tex = "Assets/SecondFace/Models/Nature/tex/";
+            var dPath = File.Exists($"{tex}{stem}_d.png") ? $"{tex}{stem}_d.png" : $"{tex}{stem}_d.jpg";
+            var d = AssetDatabase.LoadAssetAtPath<Texture2D>(dPath);
+            if (d == null) { Debug.LogWarning($"MaterialLibrary: no nature texture for {stem}"); return null; }
+            var nrm = AssetDatabase.LoadAssetAtPath<Texture2D>($"{tex}{stem}_n.png");
+            var cut = dPath.EndsWith(".png");   // the baker writes PNG exactly when the base colour carries alpha
+            Directory.CreateDirectory(Dir);
+            var path = PathFor("nature_" + stem);
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            var fresh = m == null;
+            if (fresh) m = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = "nature_" + stem };
+            m.SetTexture("_BaseMap", d);
+            m.SetColor("_BaseColor", Color.white);
+            m.SetFloat("_Metallic", 0f);
+            m.SetFloat("_Smoothness", cut ? 0.15f : 0.2f);
+            if (nrm != null) { m.SetTexture("_BumpMap", nrm); m.SetFloat("_BumpScale", 1f); m.EnableKeyword("_NORMALMAP"); }
+            else { m.SetTexture("_BumpMap", null); m.DisableKeyword("_NORMALMAP"); }
+            if (cut)
+            {
+                m.SetFloat("_AlphaClip", 1f); m.SetFloat("_Cutoff", 0.5f); m.EnableKeyword("_ALPHATEST_ON");
+                m.SetFloat("_Cull", 0f);   // leaves and blades are single sheets
+            }
+            else
+            {
+                m.SetFloat("_AlphaClip", 0f); m.DisableKeyword("_ALPHATEST_ON");
+                m.SetFloat("_Cull", 2f);
+            }
+            if (fresh) AssetDatabase.CreateAsset(m, path); else EditorUtility.SetDirty(m);
             return m;
         }
 

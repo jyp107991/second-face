@@ -111,7 +111,8 @@ What exists and is verified:
   - `tools/unity/assets.py` — CC0 textures (Poly Haven) by manifest → `unity/Assets/External/` (gitignored, CI
     caches by script hash; `--only` keeps the manifest whole): 36 materials at 2 K (`d`, `n`, `mask` = R metallic /
     G AO / B height / A smoothness, `h`), GUIDs = md5(`second-face:` + asset path).
-  - `tools/unity/models.py` — CC0 glTF scans (Poly Haven) → `External/Models/` (2.2 GB, gitignored, local only;
+  - `tools/unity/models.py` — CC0 glTF scans (Poly Haven) → `.scans/models/` at the repository root, outside the
+    Unity project so the editor never imports them (2.2 GB, gitignored, local only;
     fetch only for a nature re-bake).
   - `tools/unity/models_bake.py` — Blender: welds, decimates to per-model budgets (2–9 K; one 24 K hero tree),
     1 K JPEG inside `.glb` → committed `unity/Assets/SecondFace/Models/Nature/*.glb` + `models.json`
@@ -778,7 +779,7 @@ what the step needs; the disk allowance is the binding limit.
 | .NET SDK | `/home/user/.dotnet` (`docs/PORT.md` §3) | 0.6 GB | compile checks |
 | Blender 4.5.9 (+ Sapling) | `S/blender` | 1.5 GB | kit, people, motion, nature, tree tools |
 | MakeHuman data + packs | `S/mh`, `S/mhc` | 2.1 GB | people steps (delete the downloaded zips after unzipping) |
-| Poly Haven scans | `unity/Assets/External/Models` (`models.py`) | 2.2 GB | a nature re-bake only; delete after |
+| Poly Haven scans | `.scans/models` (`models.py`; never inside `unity/Assets`) | 2.2 GB | a nature re-bake only; delete after |
 | CMU mocap trials | `S/cmu` | 0.1 GB | motion steps |
 
 Everything a session needs at once stays under about 20 GB. Leave 5 GB free for imports and builds. A full disk
@@ -798,7 +799,8 @@ shows as "No space left on device" with little "Used": delete rebuildable items 
   masks01–02, equipment03, gloves01, glasses01 → unzipped under `S/mhc/<pack>/`.
 - CMU mocap: `http://mocap.cs.cmu.edu/subjects/<subject>/<subject>_<trial>.asf|amc` for the subject/trial pairs
   listed in `tools/unity/motion/cmu2fbx.py` → `S/cmu/<subject>/`.
-- Poly Haven scans: `python3 tools/unity/models.py` (into `unity/Assets/External/Models`, gitignored).
+- Poly Haven scans: `python3 tools/unity/models.py` (into `.scans/models`, gitignored; `MODELS_DIR` overrides).
+  Anything under `unity/Assets` is imported by the editor on every run, so sources never go there.
 
 ### 7.1a The real Unity editor in the session (use it before CI, every time)
 The owner holds a Unity Personal licence. With `UNITY_EMAIL` and `UNITY_PASSWORD` (the owner's Unity account, the

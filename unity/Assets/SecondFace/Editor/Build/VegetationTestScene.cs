@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using SecondFace.Game.World;
 using UnityEditor;
@@ -17,6 +18,20 @@ namespace SecondFace.EditorTools
     public static class VegetationTestScene
     {
         public const string ScenePath = "Assets/SecondFace/Scenes/Test_Vegetation.unity";
+
+        /// <summary>A model with its library materials bound, saved as a prefab under Generated/ (rebuilt with the scene).</summary>
+        private static GameObject BoundPrefab(string modelPath)
+        {
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath);
+            if (model == null) return null;
+            Directory.CreateDirectory("Assets/SecondFace/Generated/Nature");
+            var path = $"Assets/SecondFace/Generated/Nature/{Path.GetFileNameWithoutExtension(modelPath)}.prefab";
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(model);
+            MaterialLibrary.Bind(go);
+            var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
+            Object.DestroyImmediate(go);
+            return prefab;
+        }
 
         [MenuItem("Second Face/Build vegetation test scene")]
         public static void Build()
@@ -90,19 +105,17 @@ namespace SecondFace.EditorTools
             var terrainGo = Terrain.CreateTerrainGameObject(data); terrainGo.name = "Terrain";
             var terrain = terrainGo.GetComponent<Terrain>(); terrain.heightmapPixelError = 4f; terrain.basemapDistance = 500f;
 
-            // Scatter: rules by slope, height, wash and noise. Deterministic.
-            GameObject Prefab(string key)
-            {
-                var p = ModelLibrary.AssetPath(key);
-                return p == null ? null : AssetDatabase.LoadAssetAtPath<GameObject>(p);
-            }
+            // Scatter: rules by slope, height, wash and noise. Deterministic. Every variant of a model is used, as a prefab
+            // with its library materials bound (one bind per variant, not per instance).
+            GameObject[] Prefabs(string key) =>
+                models.TryGetValue(key, out var entry) ? ModelLibrary.VariantPaths(entry).Select(BoundPrefab).Where(p => p != null).ToArray() : new GameObject[0];
             var groups = new Dictionary<string, Transform>();
             Transform Group(string n) { if (!groups.TryGetValue(n, out var t)) { t = new GameObject(n).transform; groups[n] = t; } return t; }
             var rng = new System.Random(7);
             int placed = 0;
             void Scatter(string[] keysOf, int tries, System.Func<float, float, float, float, bool> rule, float scaleMin, float scaleMax, string group)
             {
-                var prefabs = keysOf.Where(k => models.TryGetValue(k, out var e) && e.Place != "patch").Select(Prefab).Where(p => p != null).ToArray();
+                var prefabs = keysOf.Where(k => models.TryGetValue(k, out var e) && e.Place != "patch").SelectMany(Prefabs).ToArray();
                 if (prefabs.Length == 0) { Debug.LogWarning($"VegetationTestScene: no models for {group}"); return; }
                 for (var t = 0; t < tries; t++)
                 {
@@ -133,7 +146,7 @@ namespace SecondFace.EditorTools
             // Scanned ground patches (rock beds wider than 6 m) are features, not scatter: a few at the mesa's foot and the wash.
             foreach (var (key, u, v, yaw) in new[] { ("coast_land_rocks_02", 0.62f, 0.36f, 20f), ("coast_land_rocks_02", 0.74f, 0.45f, 140f), ("coast_rocks_01", 0.80f, 0.22f, 75f) })
             {
-                var prefab = Prefab(key); if (prefab == null) continue;
+                var prefab = Prefabs(key).FirstOrDefault(); if (prefab == null) continue;
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
                 go.transform.SetParent(Group("Patches"));
                 var pos = new Vector3(u * data.size.x, 0, v * data.size.z); pos.y = terrain.SampleHeight(pos) - 0.15f;
@@ -141,7 +154,7 @@ namespace SecondFace.EditorTools
             }
             Debug.Log($"VegetationTestScene: {placed} instances scattered");
             // Grass as terrain detail meshes where the soil is flat and the wash is near.
-            var grassKeys = new[] { "grass_medium_01", "grass_medium_02" }.Select(Prefab).Where(p => p != null).ToArray();
+            var grassKeys = new[] { "grass_medium_01", "grass_medium_02" }.SelectMany(Prefabs).ToArray();
             if (grassKeys.Length > 0)
             {
                 data.detailPrototypes = grassKeys.Select(g => new DetailPrototype { prototype = g, usePrototypeMesh = true, renderMode = DetailRenderMode.VertexLit, useInstancing = true, minWidth = 0.6f, maxWidth = 1.2f, minHeight = 0.5f, maxHeight = 1.0f, noiseSpread = 0.3f, healthyColor = Color.white, dryColor = new Color(0.95f, 0.9f, 0.75f) }).ToArray();

@@ -15,3 +15,6 @@ tools/assets/__pycache__/
 core/**/bin/
 core/**/obj/
 **/__pycache__/
+
+# photoscan sources for tools/unity/models_bake.py (2.2 GB, outside the Unity project)
+.scans/
