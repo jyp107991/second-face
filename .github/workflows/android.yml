@@ -1,0 +1,55 @@
+name: Android
+
+# Builds the installable Android app from the Unity project on every push to main (and on demand).
+# Needs the owner's Unity licence secrets (docs/PORT.md §3): UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD.
+on:
+  push:
+    branches: [main]
+    paths: ['unity/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    if: ${{ !cancelled() }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+          fetch-depth: 0
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android/sdk/ndk /opt/ghc /usr/local/share/boost || true
+          df -h /
+
+      - uses: actions/cache@v4
+        with:
+          path: unity/Library
+          key: Library-Android-${{ hashFiles('unity/Assets/**', 'unity/Packages/**', 'unity/ProjectSettings/**') }}
+          restore-keys: |
+            Library-Android-
+
+      - name: Build
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: unity
+          targetPlatform: Android
+          androidExportType: androidPackage
+          buildName: SecondFace
+          versioning: Semantic
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SecondFace-Android-APK
+          path: build/Android
+          retention-days: 30
