@@ -3,8 +3,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SecondFace.Core.Dialogue;
 using SecondFace.Core.Inventory;
+using SecondFace.Core.Npc;
 using SecondFace.Core.Quest;
 using SecondFace.Core.Stats;
+using SecondFace.Core.Scene;
 using SecondFace.Core.World;
 
 namespace SecondFace.Core.Content
@@ -31,6 +33,13 @@ namespace SecondFace.Core.Content
         public static WorldMap WorldMap = new();
         public static Dictionary<string, RegionDef> Regions = new();
         public static Dictionary<string, RoadEncounterDef> RoadEncounters = new();
+        public static Dictionary<string, MapDef> Maps = new();
+        public static Dictionary<string, NpcDef> Npcs = new();
+        public static Dictionary<string, GarmentDef> Garments = new();
+        /// <summary>Garment ids in catalogue order (the outfit generator's draw order).</summary>
+        public static List<string> GarmentIds = new();
+        public static Dictionary<string, RoleDef> OutfitRoles = new();
+        public static Dictionary<string, FactionLook> FactionLooks = new();
 
         public static readonly JsonSerializer Strict = new() { MissingMemberHandling = MissingMemberHandling.Error };
         public static readonly JsonSerializer Lenient = new();
@@ -68,6 +77,14 @@ namespace SecondFace.Core.Content
             WorldMap = db.Table("world_map").ToObject<WorldMap>(Lenient);
             Regions = Table<RegionDef>(db, "regions");
             RoadEncounters = Table<RoadEncounterDef>(db, "road_encounters");
+            Maps = Table<MapDef>(db, "maps");
+            Npcs = Table<NpcDef>(db, "npcs");
+            Garments = Table<GarmentDef>(db, "garments");
+            GarmentIds = new List<string>();
+            foreach (var prop in ((JObject)db.Table("garments")).Properties()) GarmentIds.Add(prop.Name);
+            var outfits = (JObject)db.Table("outfits");
+            OutfitRoles = outfits["roles"].ToObject<Dictionary<string, RoleDef>>(Lenient);
+            FactionLooks = outfits["factions"].ToObject<Dictionary<string, FactionLook>>(Lenient);
         }
     }
 }

@@ -25,7 +25,9 @@ namespace SecondFace.EditorTools
 
         static ProjectSetup()
         {
-            // Defer until the asset database is ready.
+            // Defer until the asset database is ready. In batch mode (CI) delayCall never fires before -executeMethod,
+            // so the Boot scene, the URP asset and the build settings are committed assets and BuildGuard checks the
+            // player settings at build time instead.
             EditorApplication.delayCall += EnsureAll;
         }
 
@@ -62,7 +64,7 @@ namespace SecondFace.EditorTools
             Debug.Log("Second Face: created the mobile URP asset");
         }
 
-        private static void EnsurePlayerSettings()
+        public static void EnsurePlayerSettings()
         {
             PlayerSettings.productName = "The Second Face";
             PlayerSettings.companyName = "Second Face";
@@ -120,6 +122,19 @@ namespace SecondFace.EditorTools
         {
             if (EditorBuildSettings.scenes.Any(s => s.path == ScenePath && s.enabled)) return;
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
+        }
+    }
+
+    /// <summary>Before any player build: the committed player settings are re-asserted (landscape, immersive, IL2CPP, ARM64) and the Boot scene must be in the build.</summary>
+    public sealed class BuildGuard : UnityEditor.Build.IPreprocessBuildWithReport
+    {
+        public int callbackOrder => -1000;
+
+        public void OnPreprocessBuild(UnityEditor.Build.Reporting.BuildReport report)
+        {
+            ProjectSetup.EnsurePlayerSettings();
+            if (!EditorBuildSettings.scenes.Any(sc => sc.enabled && sc.path.EndsWith("Boot.unity")))
+                throw new BuildFailedException("The Boot scene is not in the build settings (ProjectSettings/EditorBuildSettings.asset)");
         }
     }
 }

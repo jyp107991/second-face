@@ -311,8 +311,14 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
       `core/Editor.Check.csproj` does the same for the Editor assembly (URP types stubbed in `core/stubs/`).
       Owner did: workflows copied into `.github/workflows/`, licence secrets added. CI: Core green; Android
       run 1 stopped at the licence (expected), run 2 reached Unity's compiler (three fixes), run 3 failed on
-      one missing `using UnityEditor.Build` in ProjectSetup (fixed, now caught locally by the Editor check).
-      **Open:** the first APK artifact from the next Android run; P0 closes when the owner installs it.
+      one missing `using UnityEditor.Build` in ProjectSetup (fixed, now caught locally by the Editor check); run 4
+      got through compilation and failed on "Cannot build untitled scene": in batch mode `EditorApplication.delayCall`
+      never fires before `-executeMethod`, so ProjectSetup's scene creation never ran. Fixed by committing the Boot
+      scene as an asset (`Assets/SecondFace/Scenes/Boot.unity`, adapted from Unity's URP template: iso ortho camera,
+      sun, the Bootstrap object), listing it in `EditorBuildSettings.asset`, committing `.meta` files for every asset
+      (stable GUIDs), a `BuildGuard` pre-build check, and a malformed `applicationIdentifier` block in
+      ProjectSettings repaired. **Open:** the first APK artifact from the next Android run; P0 closes when the owner
+      installs it.
 - [~] P1 Core (pure C#) with ported tests. Done: P1.1 stats — `Core/Stats/{Rules,Sheet,Chrome}.cs`, the rules/
       chrome content model, `Content/Registry.cs` (typed registries from the JSON, strict-deserialisation check);
       the web stats, creation and chrome suites ported (18 tests green with `dotnet test core/...`).
@@ -326,9 +332,14 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
       `ContainKey` not in Unity's NUnit). P1.6 combat rules (`Core/Combat/Rules.cs`: hit/crit chances,
       attack resolution, armour, turn order, morale, kill XP) and P1.7 roads and hunting (`Core/World/Roads.cs`:
       encounter eligibility and rolls, discoveries on a leg, hunts, trap yields) with their tests: 66 green.
-      **Next:** P1.8 grid/pathfinding (`scene/grid.ts` is pure logic: walkable/opaque/cover, A*, line of
-      sight) and wardrobe/outfit logic; P1.9 NPC stats and party; then P2 (the encounter/AI flow goes with
-      P5 since it drives actors).
+      P1.8 the map model (`Content/Model/MapsModel.cs`, every authored map deserialises strictly) and the tile grid
+      (`Core/Scene/Grid.cs`: walkable/opaque/cover from legend and props, rim stripping, A* with corner rules, line
+      of sight); P1.9 the NPC model, outfits (`Core/Npc/Outfits.cs`: the role/faction dresser with the web game's
+      exact random sequence), party helpers and NPC sheet/pack building (`Core/Npc/{Party,Outfits}.cs`): 86 tests
+      green, every one of the 268 people builds a sheet and pack. **Next:** P1.10 extras (background people) and
+      the wardrobe (`inventory/wardrobe.ts`: worn gear on the figure) if pure; then P1 closes and P2 World starts
+      (terrain/regions/ways data model first, then the Unity side). The encounter/AI flow goes with P5 since it
+      drives actors.
 - [ ] P2 World. - [ ] P3 People. - [ ] P4 Camera/touch/UI. - [ ] P5 Gameplay and parity on device.
 
 ## 3. PHASE B — build the complete game to a playable v1 (vertical slices)
