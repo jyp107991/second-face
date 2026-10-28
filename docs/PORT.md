@@ -108,6 +108,10 @@ GameCI does not see or store the credentials; they stay in the repository's secr
   device (the U2c list); then U6–U8 and B3.11 continue in Unity.
 
 ## 5. Log
-- 2026-10-28 P0 started: decision recorded; .NET SDK installed in the session; Unity 6000.3.27f1 editor archive
-  fetched for reference assemblies; content export tool; project skeleton; CI workflow (waits on the owner's
-  licence secrets to run).
+- 2026-10-28 P0: decision recorded; .NET SDK in the session; Unity 6000.3.27f1 Linux editor archive fetched and its
+  managed assemblies and the URP cross-platform template extracted (scratch space); content export tool
+  (`npm run export`, 22 registries, 1.5 MB JSON); project skeleton with settings taken from Unity's own mobile
+  template; Core/Game/Editor/Tests assemblies; Rng and ContentDb; Bootstrap title card; ProjectSetup creates the
+  scene/pipeline/player settings in code; core builds and tests locally; CI workflows written to `tools/ci/`
+  (the session cannot create `.github/workflows` files: the owner copies them). Open: the owner's licence secrets;
+  the first CI build; URP package assemblies for a local compile check of the Game assembly.

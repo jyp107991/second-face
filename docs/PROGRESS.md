@@ -302,9 +302,16 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
 
 ### 2d. The Unity port (owner decision 2026-10-28; `docs/PORT.md` is the plan — read it)
 - [~] P0 Foundation: decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
-      tool; `unity/` project skeleton (6000.3 LTS, URP, Android landscape immersive); core/ .NET solution for the
-      pure-C# assembly; CI workflow (game-ci) — waits on the owner's licence secrets (PORT.md §3).
-      **Next action:** finish the skeleton and the first Boot scene; get the CI build green once secrets exist.
+      tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
+      landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,
+      ContentDb over the exported JSON), `Game` (Bootstrap: full screen, loads content, title card), `Editor`
+      (ProjectSetup: creates the Boot scene, URP asset and player settings in code on load); `core/` .NET build
+      + NUnit tests green locally; `core/Game.Check.csproj` compiles the Game assembly against the editor's
+      UnityEngine DLLs (extracted from the Unity Linux archive into the session scratch space).
+      **Waiting on the owner:** (1) copy `tools/ci/android.yml` and `core.yml` into `.github/workflows/`
+      (the session's tokens lack the workflow scope); (2) the three licence secrets (PORT.md §3). Then the first
+      APK builds. **Next action:** P1 core port while that happens; when the Android workflow runs, read its log
+      and fix the first build.
 - [ ] P1 Core (pure C#) with ported tests.
 - [ ] P2 World. - [ ] P3 People. - [ ] P4 Camera/touch/UI. - [ ] P5 Gameplay and parity on device.
 
