@@ -7,9 +7,10 @@ The full brief is `docs/BRIEF.md`. Design: `docs/DESIGN.md`. Milestones: `docs/R
 Sessions can be cut off at any moment by usage limits. Work is structured so nothing is lost:
 
 1. **On session start, read `docs/PROGRESS.md` before anything else.** It names the current
-   milestone, the step in progress, what is done, and the exact next action. Then `docs/PORT.md` (the Unity port:
-   plan, conventions, how to build and verify) and `docs/UPGRADE.md` (the owner's visual directive, still binding
-   for the port's targets).
+   milestone, the step in progress, what is done, and the exact next action. Then **`docs/BUILD_PLAN_V1.md`** (the
+   binding, prescriptive plan to the v1 app: architecture, phases, the hard parts specified, the verification
+   protocol, the pitfall log — follow it exactly), then `docs/PORT.md` (the Unity port: conventions, how to build
+   and verify) and `docs/UPGRADE.md` (the owner's visual directive, still binding for the port's targets).
 2. Work in **small steps** (≤ ~1 hour of work each). After each step:
    - run `npm run check` (typecheck + validate content + tests) when code exists,
    - update `docs/PROGRESS.md` (tick the step, write the next action),
@@ -97,6 +98,11 @@ The owner wants to play unspoiled.
   post-apocalyptic, cyberpunk, anarchistic: salvaged, re-dyed, patched, layered, taped and rigged; clean synthetics and
   lit trims only on the megacity rich; no prints, logos, modern fashion, costume or uniform-as-such. Found garment
   meshes may be used for their silhouette alone and are always re-textured by our pipeline (`docs/DESIGN_UNITY.md` §4).
+- **Hair and grooming are gritty and functional** (owner, 2026-10-28, binding): shaved or buzzed, cropped uneven
+  as if cut with a knife, tied back, rough buns and work braids, long hair matted under a wrap or hood, balding,
+  unkempt beards; dull, dusty, sun-bleached or greying. Never a styled modern cut, never gel or product, never a
+  bob, bangs or salon shape. Faces and every other aesthetic choice are weathered and functional too; only the
+  megacity's rich are clean, and that is their costume. Implementation: `docs/BUILD_PLAN_V1.md` §6.C.
 - Visual style (superseded where the upgrade directive says otherwise): orthographic iso camera, rotatable/zoomable.
 
 ## 3. Engineering conventions

@@ -42,6 +42,9 @@ LIBRARY = {
     'snow':        ('snow_02',                4.0, 'terrain', 'the Teeth: snow'),
     'burned':      ('burned_ground_01',       4.0, 'terrain', 'the Ashlands'),
     'rock':        ('aerial_rocks_04',        4.0, 'terrain', 'cliff and scree'),
+    'bark_pine':   ('pine_bark',              2.0, 'tree', 'conifer bark (the Teeth)'),
+    'bark_brown':  ('bark_brown_02',          2.0, 'tree', 'broadleaf bark'),
+    'bark_willow': ('bark_willow_02',         2.0, 'tree', 'wash trees'),
     # architecture (the kits, docs/DESIGN_UNITY.md §3)
     'concrete':    ('concrete_floor_worn_001', 2.0, 'surface', 'shelter floors'),
     'concrete_wall': ('concrete_wall_006',    2.0, 'surface', 'shelter and city walls'),

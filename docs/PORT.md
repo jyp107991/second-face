@@ -281,3 +281,9 @@ runs smoothly on device. Fallbacks for GLES3 phones are listed where a feature n
   1 K JPEG textures into committed `.glb` files under `Models/Nature/` (26 models, ~30 MB); the needle conifers are
   not baked — they become card trees built in Blender (Sapling + baked branch cards) in P3, with impostors. CI no
   longer fetches models. `VegetationTestScene` scatters the baked set over the Sallow terrain (`vegetation_*`).
+- 2026-10-28 P2.5: run 9 green. `tools/unity/kits/cards.py` renders foliage cards (pine, fir, broadleaf cluster,
+  whole pine crown) unlit from the scans; `MaterialLibrary.Card` makes cutout double-sided materials for
+  `mat_card:<name>` slots; bark textures (pine, brown, willow) in the texture library; the people postprocessor
+  strips the `mat_` prefix (people had generic materials in Unity until now). The owner's hair rule recorded.
+  **`docs/BUILD_PLAN_V1.md` written as the binding hand-off plan** (architecture, phases, hard-part specs,
+  verification, pitfalls, decisions, next twenty steps); it is read right after PROGRESS.md in every session.

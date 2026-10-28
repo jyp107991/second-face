@@ -32,10 +32,31 @@ namespace SecondFace.EditorTools
         /// <summary>The material for a library key, building it if needed; null when the key is unknown.</summary>
         public static Material Get(string key)
         {
+            if (key.StartsWith("card:")) return Card(key.Substring(5));
             var existing = AssetDatabase.LoadAssetAtPath<Material>(PathFor(key));
             if (existing != null) return existing;
             var lib = TextureLibrary.Load();
             return lib.TryGetValue(key, out var e) ? Build(key, e) : null;
+        }
+
+        /// <summary>A foliage card (Kits/Trees/tex/card_&lt;name&gt;.png, baked by tools/unity/kits/cards.py): cutout, double-sided.</summary>
+        public static Material Card(string name)
+        {
+            var path = PathFor("card_" + name);
+            var existing = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (existing != null) return existing;
+            var d = AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/SecondFace/Kits/Trees/tex/card_{name}.png");
+            if (d == null) { Debug.LogWarning($"MaterialLibrary: no card texture card_{name}.png"); return null; }
+            Directory.CreateDirectory(Dir);
+            var m = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = "card_" + name };
+            m.SetTexture("_BaseMap", d);
+            m.SetColor("_BaseColor", Color.white);
+            m.SetFloat("_Smoothness", 0.2f); m.SetFloat("_Metallic", 0f);
+            m.SetFloat("_AlphaClip", 1f); m.SetFloat("_Cutoff", 0.45f); m.EnableKeyword("_ALPHATEST_ON");
+            m.SetFloat("_Cull", 0f);   // double-sided cards
+            m.SetFloat("_ReceiveShadows", 1f);
+            AssetDatabase.CreateAsset(m, path);
+            return m;
         }
 
         private static Material Build(string key, LibraryEntry e)

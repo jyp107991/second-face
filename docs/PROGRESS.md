@@ -331,11 +331,18 @@ dressed from curated silhouettes and every garment texture is baked by our pipel
 `mh_build.py`: re-dyed, grimed, faded, patched, taped). The CC0 nature models are baked to phone budgets by
 `tools/unity/models_bake.py` and committed as `.glb` under `Models/Nature/` (26; conifers become card trees in P3);
 `Editor/Build/VegetationTestScene.cs` scatters them over the Sallow (`vegetation_iso` capture).
-**Next action:** the owner copies `tools/ci/android.yml` over `.github/workflows/android.yml` so the
-tests-and-screenshots job runs; read `Unity-screenshots` (terrain, materials sheet, shelter and frontier places,
-people lineup, portraits, motion, vegetation) and fix what they show; then candidates B (MB-Lab) and C (UMA) if A
-falls short at portrait distance; then authored garments (coats, ponchos, rigs, plating) under the wardrobe rule,
-the remaining kits (toll fort, bridge town) and the first outdoor place.
+Run 9 (wardrobe, baked models, vegetation scene) built the APK. The owner's **hair rule** (gritty, functional,
+no styled cuts or product) is recorded in CLAUDE.md §2 and DESIGN_UNITY §4. **`docs/BUILD_PLAN_V1.md` is the
+binding hand-off plan to the v1 app** (written 2026-10-28 so the build continues at the same standard in any
+session): the architecture to follow, every phase step by step, the hard parts specified (streaming terrain,
+people, hair, wardrobe, motion, touch camera, combat, saves, shaders, performance, card trees), the verification
+protocol, the pitfall log, the owner's open decisions and the next twenty steps. Also in: foliage cards baked
+from the conifer and broadleaf scans (`tools/unity/kits/cards.py` → `Kits/Trees/tex/card_*.png`, root at the
+bottom), `card:<name>` materials in the kit library, bark textures in the texture library, the people
+postprocessor's slot-prefix fix, `docs/evidence/unity/` (Cycles renders of the bake-off).
+**Next action:** `docs/BUILD_PLAN_V1.md` §10, step 2 (step 1, the cards, is verified: coverage 16–32 %, root at
+the bottom): apply the hair rule to the six bake-off people per §6.C.1, rebuild, render, refresh the evidence,
+commit; then steps 3–9 in order; the owner copies the workflow (step 10) when they can.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

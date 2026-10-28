@@ -50,7 +50,7 @@ namespace SecondFace.EditorTools
         private Material OnAssignMaterialModel(Material material, Renderer renderer)
         {
             if (!IsPerson) return null;
-            var name = material.name;
+            var name = material.name.StartsWith("mat_") ? material.name.Substring(4) : material.name;   // slots are mat_<kind>:<texture>
             var colon = name.IndexOf(':');
             if (colon < 0) return null;
             var kind = name.Substring(0, colon);

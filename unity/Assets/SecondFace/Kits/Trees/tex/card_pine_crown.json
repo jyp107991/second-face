@@ -1,0 +1,8 @@
+{
+ "name": "pine_crown",
+ "model": "pine_sapling_medium",
+ "width_m": 5.259,
+ "height_m": 7.012,
+ "root": "centre",
+ "licence": "CC0 (Poly Haven scan, rendered)"
+}

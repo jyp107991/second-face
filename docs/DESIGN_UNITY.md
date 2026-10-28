@@ -101,6 +101,12 @@ The three benchmarks, and what we take from each on a phone:
   Found meshes (MakeHuman community packs, CC0/CC-BY) are silhouettes only; their textures are never shipped —
   `tools/unity/people/mh_build.py` bakes a worn, re-dyed cloth onto each garment's UVs (`bake_cloth`) from a look
   (`tint`, `grime`, `wear`, `patch`, `tape`). Authored garments (coats, ponchos, rigs, plating) follow in P4.
+- **Hair rule (owner, 2026-10-28, binding)**: hair is gritty and functional — shaved or buzzed scalps (a stubble
+  texture on a scalp cap, not cards), hair cropped short and uneven, tied back, rough buns and work braids, long
+  hair matted and under a wrap, scarf or hood, balding and receding, unkempt beards; dull and dusty, bleached at
+  the ends, greying in streaks. No styled modern cuts, no gel, no bobs, bangs or salon shapes. Faces carry sun,
+  dirt in the creases, chapped lips and old scars. Only the megacity's rich are clean and tidy, as costume.
+  Implementation and the allowed proxies: `docs/BUILD_PLAN_V1.md` §6.C.
 - **Animation**: Humanoid Mecanim with captured motion (CMU and other free captures, converted by our pipeline),
   blend trees by speed and turn, idle loops for everyone standing, work loops, conversation gestures by tone,
   Animation Rigging for feet on the ground, heads that turn to whoever is near, hands on weapons and ledges;

@@ -1,0 +1,8 @@
+{
+ "name": "fir_branch",
+ "model": "fir_sapling_medium",
+ "width_m": 1.485,
+ "height_m": 1.98,
+ "root": "bottom",
+ "licence": "CC0 (Poly Haven scan, rendered)"
+}
