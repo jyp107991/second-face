@@ -374,8 +374,15 @@ beard), all three painted into the person's own skin (`bake_scalp`); p2 a dull a
 engine: a messy crop whose fringe hangs over the eyes, long hair that pokes through the hood, a braid bun with a
 styled sweep (plan §6.C.1). People textures 134 → 104 MB. Seen for later steps: p6's skin has bright red lips and her
 mouth sits open (step 4, skin), eyes still blank (step 3).
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 3: drop the eye's cornea faces in `mh_build.py` (§6.B.3), make the
-eye material opaque in `PeopleMaterials`, rebuild, run the §7.0 loop, read `portrait_*`, commit; then steps 4–12.
+**Eyes fixed (plan §10 step 3, 2026-10-28):** the cornea shell is dropped in `mh_build.py` (490 faces); people import
+Blender's normals (Unity's recalculated ones turned the recessed pupil and the strand brows grey); eye material opaque,
+smoothness 0.7; generated people materials are re-configured on every build. Portraits now show irises, pupils, dark
+brows and lashes. Seen for later steps: in `people_motion_*` only p6 walks, p1–p5 stay in T-pose (check each avatar's
+Humanoid mapping with `Diagnostics.Report`; a P2 fix before the verdict); p1's crop is glossy like wet skin (step 4:
+matte stubble); p6's lips are bright red and her mouth sits open (step 4).
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 4: `bake_skin` for the six (sun, dirt in creases, chapped and
+desaturated lips, stubble beards, a matte scalp where stubble is painted), rebuild, run the §7.0 loop, read the
+portraits, commit; then the T-pose fix; then steps 5–12.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

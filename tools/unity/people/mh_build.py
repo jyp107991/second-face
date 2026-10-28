@@ -644,11 +644,30 @@ def build_person(spec):
     body.parent = rig
 
     # --- proxies: eyes, brows, lashes, hair fitted by mhclo
-    def proxy(kind, folder_name, name, mat_name, tex_name=None, mat_override=None, skin_to=None, look=None, hair_look=None):
+    def proxy(kind, folder_name, name, mat_name, tex_name=None, mat_override=None, skin_to=None, look=None, hair_look=None,
+              drop_clear=False):
         d = find_dir(name, os.path.join(MH, folder_name), COMMUNITY)
         if d is None: print('  no proxy', name); return None
         meta, refs, deletes = read_mhclo(os.path.join(d, name + '.mhclo'))
         pv, pvt, pf = read_obj(os.path.join(d, meta['obj_file'][0]))
+        if drop_clear:
+            # The high-poly eye is an eyeball under a cornea shell whose UVs all fall on the texture's small transparent
+            # patch; the engine's mip levels blur that patch opaque and the shell hides the iris (BUILD_PLAN §6.B.3).
+            # Drop every face whose UV centre is transparent, and the vertices only those faces used.
+            mp = os.path.join(d, mat_override or meta.get('material', [name + '.mhmat'])[0])
+            im = bpy.data.images.load(os.path.join(os.path.dirname(mp), read_mhmat(mp)['diffuseTexture']))
+            iw, ih = im.size; alpha = im.pixels[:][3::4]; bpy.data.images.remove(im)
+            def clear(f):
+                us = [pvt[t] for _, t in f if 0 <= t < len(pvt)]
+                if not us: return False
+                u, w = sum(x for x, _ in us) / len(us), sum(y for _, y in us) / len(us)
+                return alpha[min(ih - 1, int(w * ih)) * iw + min(iw - 1, int(u * iw))] < 0.5   # Blender rows run bottom-up, as v does
+            kept_f = [f for f in pf if not clear(f)]
+            keep = sorted({i for f in kept_f for i, _ in f})
+            km = {i: k for k, i in enumerate(keep)}
+            print(f'  {kind}: dropped {len(pf) - len(kept_f)} transparent faces of {len(pf)}')
+            pf = [[(km[i], t) for i, t in f] for f in kept_f]
+            refs = [refs[i] for i in keep]
         scale = {}
         for ax in ('x_scale', 'y_scale', 'z_scale'):
             if ax in meta:
@@ -705,7 +724,7 @@ def build_person(spec):
         po.parent = rig
         return po
     # The MakeHuman data ships one eye texture (brown); other colours are tints applied by the material in Unity.
-    proxy('Eyes', 'eyes', 'high-poly', 'eyes', tex_name='eye_brown', mat_override='../materials/brown.mhmat', skin_to='Head')
+    proxy('Eyes', 'eyes', 'high-poly', 'eyes', tex_name='eye_brown', mat_override='../materials/brown.mhmat', skin_to='Head', drop_clear=True)
     if spec.get('brows'): proxy('Brows', 'eyebrows', spec['brows'], 'brows')
     proxy('Lashes', 'eyelashes', 'mindfront_eyelashes_01', 'lashes')
     if spec.get('hair'):

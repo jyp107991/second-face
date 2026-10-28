@@ -14,7 +14,7 @@ namespace SecondFace.EditorTools
     public sealed class PeopleImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 2;
+        public override uint GetVersion() => 3;
 
         private bool IsPerson => assetPath.StartsWith("Assets/SecondFace/People/");
 
@@ -26,9 +26,9 @@ namespace SecondFace.EditorTools
             imp.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
             imp.importBlendShapes = true;
             imp.importBlendShapeNormals = ModelImporterNormals.None;
-            imp.importNormals = ModelImporterNormals.Calculate;
-            imp.normalCalculationMode = ModelImporterNormalCalculationMode.AreaAndAngleWeighted;
-            imp.normalSmoothingAngle = 80f;
+            // Blender's own smooth normals: Unity's recalculation bent the normals in the eye's recessed pupil, which then
+            // caught the sky at a grazing angle and rendered as a grey diamond (2026-10-28).
+            imp.importNormals = ModelImporterNormals.Import;
             imp.isReadable = false;
             imp.meshCompression = ModelImporterMeshCompression.Off;
             imp.materialImportMode = ModelImporterMaterialImportMode.ImportStandard;
@@ -78,7 +78,8 @@ namespace SecondFace.EditorTools
             return n;
         }
 
-        /// <summary>The material for a slot name (mat_&lt;kind&gt;:&lt;texture&gt;), built once into &lt;modelDir&gt;/Materials.</summary>
+        /// <summary>The material for a slot name (mat_&lt;kind&gt;:&lt;texture&gt;) in &lt;modelDir&gt;/Materials, created once
+        /// and re-configured on every call, so this code stays the source of truth for an existing material.</summary>
         public static Material Build(string slotName, string modelDir)
         {
             var name = slotName.StartsWith("mat_") ? slotName.Substring(4) : slotName;
@@ -95,11 +96,12 @@ namespace SecondFace.EditorTools
             var matDir = dir + "/Materials";
             Directory.CreateDirectory(matDir);
             var matPath = $"{matDir}/{kind}_{tex}.mat";
-            var existing = AssetDatabase.LoadAssetAtPath<Material>(matPath);
-            if (existing != null) return existing;
             var shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null) { Debug.LogError("PeopleMaterials: URP Lit shader not found"); return null; }
-            var m = new Material(shader) { name = $"{kind}_{tex}" };
+            var m = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+            var created = m == null;
+            if (created) m = new Material(shader) { name = $"{kind}_{tex}" };
+            else m.shader = shader;
             var d = tex == "none" ? null : AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/tex/{tex}.png");
             if (d != null) m.SetTexture("_BaseMap", d);
             var nrm = d == null ? null : NormalFor(dir, tex);
@@ -115,9 +117,9 @@ namespace SecondFace.EditorTools
                     m.SetFloat("_Smoothness", 0.42f); m.SetFloat("_Metallic", 0f);
                     break;
                 case "eyes":
-                    // The MakeHuman eye carries its cornea in the texture's alpha: clip it so the iris shows through.
-                    m.SetFloat("_Smoothness", 0.9f);
-                    if (d != null) { m.SetFloat("_AlphaClip", 1f); m.SetFloat("_Cutoff", 0.5f); m.EnableKeyword("_ALPHATEST_ON"); }
+                    // The eyeball alone (mh_build drops the cornea shell): opaque, wet.
+                    m.SetFloat("_Smoothness", 0.7f); m.SetFloat("_Metallic", 0f);
+                    m.SetFloat("_AlphaClip", 0f); m.DisableKeyword("_ALPHATEST_ON");
                     break;
                 case "cloth":
                     m.SetFloat("_Smoothness", 0.32f); m.SetFloat("_Metallic", 0f);
@@ -134,7 +136,7 @@ namespace SecondFace.EditorTools
                     m.renderQueue = 2450;
                     break;
             }
-            AssetDatabase.CreateAsset(m, matPath);
+            if (created) AssetDatabase.CreateAsset(m, matPath); else EditorUtility.SetDirty(m);
             return m;
         }
 

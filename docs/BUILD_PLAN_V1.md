@@ -451,8 +451,10 @@ the texture's mip levels average that tiny patch with its opaque neighbours, the
 cornea, and the eye renders as a pale blank (seen in the first captures). **Fix in `mh_build.py`, not in Unity:**
 when fitting the `eyes` proxy, drop every face whose UV centroid samples alpha < 128 in the eye texture (read
 the PNG with `bpy.data.images`, §8), and export the eyeball alone. The eye material then needs no alpha clip:
-`PeopleMaterials` sets eyes opaque with smoothness 0.85 for the wet highlight. Verify on `portrait_*` (iris
-and pupil visible, highlight on the eye). In Cycles previews keep `image.alpha_mode = 'CHANNEL_PACKED'`. Eye
+`PeopleMaterials` sets eyes opaque with smoothness 0.7 (done 2026-10-28). The pupil is a shallow recessed cone:
+with Unity's recalculated normals it caught the sky at a grazing angle and rendered as a grey diamond, so people
+import Blender's own normals (`ModelImporterNormals.Import`), which also turned the grey-speckled brows and lashes
+into dark strands. Verify on `portrait_*` (iris and pupil visible, a soft sheen on the eye). In Cycles previews keep `image.alpha_mode = 'CHANNEL_PACKED'`. Eye
 colour = tint on the one brown texture (`_BaseColor`), per `eyes` field.
 
 **B.4 Variance.** Every NPC brief draws: ancestry mix (three weights), age 16–75, muscle/weight/height, 6–10
@@ -939,6 +941,11 @@ numbers from the densest place written into PORT.md §5.
   word, so a slot `mat_skin:<id>__<long skin name>_d` lost its tail and Unity found no texture (the untextured
   fallback colour is a dark fibre). Keep texture names short (`<id>__skin_d`); `mh_build.slot()` raises on a slot
   name over 63 characters.
+- **Grey diamonds in the pupils, grey speckled brows** (local editor): the people importer recalculated normals
+  (80° smoothing), which bent them in the eye's recessed pupil and on the strand brows and lashes; at a grazing angle
+  they reflected the sky. Diagnosed by rendering the same FBX in Blender (correct) and the eye unlit in Unity
+  (correct). People import Blender's normals now. Generated materials are re-configured on every build, so a code
+  change to a material reaches the session's cached `.mat` files too.
 - **The base mesh's `helper-hair` group is not a scalp cap**: it is 198 loose strips from the crown to the chest.
   Stubble for shaved and balding heads is painted into the person's own skin texture (§6.C.2).
 - **`grep -i exception` flags every `Debug.Log`**: in batch mode each log line carries a stack trace through
