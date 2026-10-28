@@ -340,6 +340,9 @@ protocol, the pitfall log, the owner's open decisions and the next twenty steps.
 from the conifer and broadleaf scans (`tools/unity/kits/cards.py` → `Kits/Trees/tex/card_*.png`, root at the
 bottom), `card:<name>` materials in the kit library, bark textures in the texture library, the people
 postprocessor's slot-prefix fix, `docs/evidence/unity/` (Cycles renders of the bake-off).
+**Local editor:** the owner has a Unity Personal licence. Once `UNITY_LICENSE` is set in the cloud environment,
+every session runs the real editor with `tools/unity/editor.sh` (BUILD_PLAN §7.1a) and stops guessing through CI.
+First use: `tools/unity/editor.sh test all`, read every capture, fix, then push.
 **Next action:** `docs/BUILD_PLAN_V1.md` §10, step 2 (step 1, the cards, is verified: coverage 16–32 %, root at
 the bottom): apply the hair rule to the six bake-off people per §6.C.1, rebuild, render, refresh the evidence,
 commit; then steps 3–9 in order; the owner copies the workflow (step 10) when they can.

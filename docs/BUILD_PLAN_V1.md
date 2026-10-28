@@ -648,6 +648,21 @@ Scratch root `S` = the session's scratchpad directory (write every tool's absolu
   listed in `tools/unity/motion/cmu2fbx.py` → `S/cmu/<subject>/`.
 - Poly Haven scans: `python3 tools/unity/models.py` (2.2 GB into `unity/Assets/External/Models`, gitignored).
 
+### 7.1a The real Unity editor in the session (use it before CI, every time)
+The owner holds a Unity Personal licence. With the environment variable `UNITY_LICENSE` (the full contents of the
+owner's `Unity_lic.ulf`) set in the cloud environment's settings, `tools/unity/editor.sh` runs the same editor as CI
+inside the session: `install` (6000.3.27f1 into `/opt/unity`, ~10 min, 8.4 GB; the container has every system library
+it needs and reaches Unity's servers, verified 2026-10-28), `licence`, `test editmode|playmode|all` (results and logs
+in `unity/test-results/`, captures in `unity/Screenshots/`, under xvfb with software OpenGL as in CI), and
+`run <Class.Method>`. Rule: **no editor-side change is pushed until `tools/unity/editor.sh test all` passes locally
+and the captures have been looked at.** CI then only confirms and builds the APK. The licence is never printed or
+committed. Optional setup script for the environment (installs the editor at session start; it cannot read
+variables, so it does not touch the licence):
+```
+V=6000.3.27f1; C=672d562a42a7; D=/opt/unity/$V
+[ -x "$D/Editor/Unity" ] || { mkdir -p "$D" && curl -fsSL "https://download.unity3d.com/download_unity/$C/LinuxEditorInstaller/Unity-$V.tar.xz" | tar -xJ -C "$D"; }
+```
+
 ### 7.2 Local checks (run before every commit that touches the thing)
 ```
 export PATH=/home/user/.dotnet:$PATH DOTNET_CLI_HOME=/home/user
