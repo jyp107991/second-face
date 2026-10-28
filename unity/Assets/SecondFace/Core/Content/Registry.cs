@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SecondFace.Core.Inventory;
 using SecondFace.Core.Stats;
+using SecondFace.Core.World;
 
 namespace SecondFace.Core.Content
 {
@@ -17,6 +18,12 @@ namespace SecondFace.Core.Content
         public static Dictionary<string, ChromeDef> Chrome = new();
         public static Dictionary<string, OriginDef> Origins = new();
         public static Dictionary<string, ItemDef> Items = new();
+        public static Dictionary<string, FactionDef> Factions = new();
+        public static Dictionary<string, SettlementDef> Settlements = new();
+        public static Dictionary<string, LeadDef> Leads = new();
+        public static Dictionary<string, ConclusionDef> Conclusions = new();
+        public static Dictionary<string, WorldEventDef> WorldEvents = new();
+        public static Dictionary<string, LetterDef> Letters = new();
 
         public static readonly JsonSerializer Strict = new() { MissingMemberHandling = MissingMemberHandling.Error };
         public static readonly JsonSerializer Lenient = new();
@@ -43,6 +50,12 @@ namespace SecondFace.Core.Content
             Chrome = Table<ChromeDef>(db, "chrome");
             Origins = Table<OriginDef>(db, "origins");
             Items = Table<ItemDef>(db, "items");
+            Factions = Table<FactionDef>(db, "factions");
+            Settlements = Table<SettlementDef>(db, "settlements");
+            Leads = Table<LeadDef>(db, "leads");
+            Conclusions = Table<ConclusionDef>(db, "conclusions");
+            WorldEvents = Table<WorldEventDef>(db, "world_events");
+            Letters = Table<LetterDef>(db, "letters");
         }
     }
 }
