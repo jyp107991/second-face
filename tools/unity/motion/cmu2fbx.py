@@ -265,7 +265,9 @@ def export_clip(d, bones, rows, speed, hip):
     bvh = os.path.join(OUT, '_tmp', d['name'] + '.bvh'); os.makedirs(os.path.dirname(bvh), exist_ok=True)
     write_bvh(bvh, bones, rows)
     bpy.ops.import_anim.bvh(filepath=bvh, axis_forward='-Z', axis_up='Y', global_scale=1.0, frame_start=1, use_fps_scale=False, update_scene_fps=False, update_scene_duration=True, rotate_mode='QUATERNION')
-    bpy.context.scene.render.fps = OUT_FPS
+    sc = bpy.context.scene
+    sc.render.fps = OUT_FPS; sc.render.fps_base = 1.0
+    sc.frame_start = 1; sc.frame_end = len(rows)     # the FBX exporter bakes the scene range
     arm = next(o for o in bpy.data.objects if o.type == 'ARMATURE')
     arm.name = d['name']
     if arm.animation_data and arm.animation_data.action: arm.animation_data.action.name = d['name']

@@ -24,3 +24,4 @@ crashlytics-build.properties
 /Assets/SecondFace/Scenes/Test_*.unity*
 # materials the people importer generates beside the models
 /Assets/SecondFace/People/**/Materials/
+/Assets/SecondFace/Motion/_tmp/
