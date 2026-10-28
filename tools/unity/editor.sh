@@ -51,8 +51,9 @@ need_licence() {   # checked before any download: no point fetching 4.6 GB witho
   fi
 }
 
-editor_licensed() {   # a short editor start: does it find a licence?
-  "$UNITY" -batchmode -nographics -quit -logFile "$OUT/licence.log" || true
+editor_licensed() {   # a short editor start on an empty throwaway project: does it find a licence?
+  local blank=/tmp/second-face-blank-project; mkdir -p "$blank/Assets"   # never the working directory (it becomes a project)
+  "$UNITY" -batchmode -nographics -quit -projectPath "$blank" -logFile "$OUT/licence.log" || true
   grep -q -i "Successfully resolved entitlement\|License activation succeeded\|Successfully updated license" "$OUT/licence.log" \
     && ! grep -q -i "No valid Unity Editor license\|Machine bindings don't match" "$OUT/licence.log"
 }
@@ -74,7 +75,8 @@ licence() {
     # Only works on the machine the file was made on; kept for running the script on the owner's own computer.
     mkdir -p "$ULF_DIR"
     ( umask 077; licence_text > "$ULF_DIR/Unity_lic.ulf" )
-    "$UNITY" -batchmode -nographics -quit -manualLicenseFile "$ULF_DIR/Unity_lic.ulf" -logFile "$OUT/licence.log" || true
+    mkdir -p /tmp/second-face-blank-project/Assets
+    "$UNITY" -batchmode -nographics -quit -projectPath /tmp/second-face-blank-project -manualLicenseFile "$ULF_DIR/Unity_lic.ulf" -logFile "$OUT/licence.log" || true
     if editor_licensed; then touch "$OUT/.licensed"; echo "licence active (licence file)"; return; fi
     rm -f "$ULF_DIR/Unity_lic.ulf"
     grep -q "Machine bindings don't match" "$OUT/licence.log" && echo "the licence file is bound to another machine (expected outside the owner's computer)"
