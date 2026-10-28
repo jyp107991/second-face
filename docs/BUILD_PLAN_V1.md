@@ -712,6 +712,10 @@ numbers from the densest place written into PORT.md §5.
 - **PlayMode test hangs for ever in CI** (run 11, 67 minutes without a line): `WaitForEndOfFrame` never
   returns in `-batchmode`. Capture with `yield return null` then `Camera.Render()` into a RenderTexture; every
   `[UnityTest]` carries `Timeout(600000)`; the CI jobs have `timeout-minutes`.
+- **Test job editor crashes during import** (run 12: `crn_threading_pthreads.cpp(194) sem_wait failed`, then a
+  secondary audio crash on shutdown): the Linux editor's Crunch compressor fails in the GameCI container while
+  importing crunched package textures. `Editor/Build/CiImportSettings.cs` turns crunch off for every texture in
+  batch mode on Linux; the Android build is unaffected (ASTC).
 - **CI run cancelled by a push**: concurrency `cancel-in-progress`; wait for the run first.
 - **The owner's token lacks the `workflow` scope**: workflow files cannot be pushed from the session; the owner
   copies `tools/ci/*.yml` into `.github/workflows/`.
