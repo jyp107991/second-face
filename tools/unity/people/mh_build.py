@@ -208,7 +208,8 @@ def W(**look): return look
 # braids, long hair matted under a wrap or hood, balding; dull, dusty, sun-bleached or greying; never a styled cut,
 # product, bob, bangs or salon shape (the megacity's rich keep it tidy: that is their costume). Card hair is re-coloured
 # by bake_hair() to a dull natural colour with dust and grey; shaved and balding heads are stubble painted into the
-# person's own skin texture by bake_scalp() (a buzz cut is a texture, not a mesh).
+# person's own skin texture by bake_skin() (a buzz cut is a texture, not a mesh), which also weathers the face:
+# skin_look = W(sun, grime, lips (how chapped), beard (stubble density), beard_colour).
 HAIR_COLOURS = {   # as seen (sRGB), already dulled
     'black': (0.075, 0.065, 0.06), 'black_brown': (0.12, 0.09, 0.075), 'dark_brown': (0.19, 0.13, 0.09),
     'brown': (0.28, 0.19, 0.13), 'dull_auburn': (0.36, 0.2, 0.12), 'ash_blonde': (0.5, 0.44, 0.35), 'grey': (0.56, 0.54, 0.51),
@@ -217,40 +218,40 @@ HAIR_COLOURS = {   # as seen (sRGB), already dulled
 PEOPLE = [
     {'id': 'p1_labourer_m', 'gender': 1.0, 'age': 34, 'muscle': 0.72, 'weight': 0.42, 'height': 0.6, 'african': 0.9, 'asian': 0.0, 'caucasian': 0.1,
      'mods': {'sym:cheek-bones|decr|incr': 0.4, 'chin-width|decr|incr': 0.3, 'nose-scale-horiz|decr|incr': 0.3, 'head-age|decr|incr': 0.2, 'torso-vshape|decr|incr': 0.35, 'sym:upperarm-muscle|decr|incr': 0.4},
-     'skin': 'mindfront_skin_male_african_middleage', 'hair': None, 'scalp': W(mode='buzz', density=1.0, colour='black'), 'brows': 'mindfront_eyebrows_04', 'eyes': 'brown',
+     'skin': 'mindfront_skin_male_african_middleage', 'skin_look': W(sun=.5, grime=.6, lips=.6, beard=.35, beard_colour='black'), 'hair': None, 'scalp': W(mode='buzz', density=1.0, colour='black'), 'brows': 'mindfront_eyebrows_04', 'eyes': 'brown',
      'clothes': [('elvs_male_shirt_untucked_bd1', W(tint='rust_dye', grime=.5, wear=.6, patch=.3, sat=.2)),
                  ('cortu_cargo_pants', W(tint='canvas_faded', grime=.9, wear=.5, patch=.5, sat=.3)),
                  ('culturalibre_male_boots', W(tint='leather_dark', grime=.7, wear=.3, sat=.6, flat=.2)),
                  ('mindfront_tactical_vest_male', W(tint='olive_wax', grime=.5, wear=.4, sat=.3))]},
     {'id': 'p2_settler_f', 'gender': 0.0, 'age': 26, 'muscle': 0.5, 'weight': 0.38, 'height': 0.42, 'african': 0.08, 'asian': 0.04, 'caucasian': 0.88,
      'mods': {'mouth-upperlip-volume|decr|incr': 0.25, 'nose-hump|decr|incr': 0.2, 'sym:cheek-bones|decr|incr': 0.2, 'hip-scale-horiz|decr|incr': 0.3, 'sym:eye-scale|decr|incr': 0.15},
-     'breastSize': 0.5, 'breastFirmness': 0.6, 'skin': 'toigo_light_skin_female_ginger_2', 'hair': 'elvs_unkempt_french_braid', 'hair_look': W(colour='dull_auburn', dust=.5), 'brows': 'mindfront_eyebrows_03', 'eyes': 'green',
+     'breastSize': 0.5, 'breastFirmness': 0.6, 'skin': 'toigo_light_skin_female_ginger_2', 'skin_look': W(sun=.6, grime=.4, lips=.6), 'hair': 'elvs_unkempt_french_braid', 'hair_look': W(colour='dull_auburn', dust=.5), 'brows': 'mindfront_eyebrows_03', 'eyes': 'green',
      'clothes': [('toigo_fisherman_sweater', W(tint='wool_undyed', grime=.3, wear=.3, patch=.3, sat=.2)),
                  ('toigo_wool_pants', W(tint='wool_brown', grime=.6, wear=.4, patch=.2, sat=.2)),
                  ('toigo_ankle_boots_female', W(tint='leather_dark', grime=.6, wear=.3, sat=.6, flat=.2))]},
     {'id': 'p3_drifter_m', 'gender': 1.0, 'age': 61, 'muscle': 0.35, 'weight': 0.12, 'height': 0.5, 'african': 0.0, 'asian': 0.0, 'caucasian': 1.0,
      'mods': {'head-age|decr|incr': 0.5, 'sym:cheek-volume|decr|incr': -0.6, 'sym:eye-bag|decr|incr': 0.4, 'chin-bones|decr|incr': 0.35, 'head-fat|decr|incr': -0.35, 'stomach-tone|decr|incr': -0.3, 'torso-scale-horiz|decr|incr': -0.3},
-     'skin': 'jartur69_old_slavic_male_with_genitals_and_beard', 'hair': None, 'scalp': W(mode='bald', density=.75, colour='grey'), 'brows': 'mindfront_eyebrows_11', 'eyes': 'grey',
+     'skin': 'jartur69_old_slavic_male_with_genitals_and_beard', 'skin_look': W(sun=.7, grime=.7, lips=.7), 'hair': None, 'scalp': W(mode='bald', density=.75, colour='grey'), 'brows': 'mindfront_eyebrows_11', 'eyes': 'grey',
      'clothes': [('elvs_male_shirt_untucked_bd1', W(tint='bone', grime=.5, wear=.5, patch=.2, sat=.1)),
                  ('elvs_male_trouser', W(tint='charcoal', grime=.7, wear=.4, patch=.4, sat=.1)),
                  ('mindfront_cardigan_long_open_front', W(tint='olive_wax', grime=.7, wear=.5, patch=.3, sat=.1)),
                  ('maciekg_leather_boots', W(tint='leather_dark', grime=.7, wear=.3, sat=.6, flat=.2))]},
     {'id': 'p4_gilded_f', 'gender': 0.0, 'age': 44, 'muscle': 0.42, 'weight': 0.55, 'height': 0.55, 'african': 0.0, 'asian': 0.95, 'caucasian': 0.05,
      'mods': {'sym:eye-epicanthus|in|out': 0.35, 'sym:eye-eyefold-angle|down|up': 0.25, 'nose-hump|decr|incr': -0.2, 'sym:cheek-bones|decr|incr': 0.25, 'head-round': 0.2, 'stomach-tone|decr|incr': -0.2},
-     'breastSize': 0.55, 'breastFirmness': 0.45, 'skin': 'onlytheghosts_middle_aged_eurasian_female', 'hair': 'rehmanpolanski_hair_bun_brown', 'hair_look': W(colour='black', dust=0), 'brows': 'mindfront_eyebrows_10', 'eyes': 'brown',
+     'breastSize': 0.55, 'breastFirmness': 0.45, 'skin': 'onlytheghosts_middle_aged_eurasian_female', 'skin_look': W(sun=.05, grime=0, lips=.3), 'hair': 'rehmanpolanski_hair_bun_brown', 'hair_look': W(colour='black', dust=0), 'brows': 'mindfront_eyebrows_10', 'eyes': 'brown',
      'clothes': [('matcreator_mc-skinsuit_2022', W(tint='graphite_synth', grime=0, wear=0, patch=0, sat=.4, flat=.3)),
                  ('mindfront_cardigan_long_open_front', W(tint='wine', grime=0, wear=0, patch=0, sat=.1, tape=[0.62, 1.3], tape_col=(0.55, 0.85, 0.95))),
                  ('toigo_ankle_boots_female', W(tint='charcoal', grime=.1, wear=0, patch=0, sat=.5, flat=.2)),
                  ('spamrakuen_tbm_glasses_frames_01', None)]},
     {'id': 'p5_street_m', 'gender': 1.0, 'age': 21, 'muscle': 0.55, 'weight': 0.3, 'height': 0.48, 'african': 0.12, 'asian': 0.3, 'caucasian': 0.58,
      'mods': {'sym:cheek-bones|decr|incr': 0.3, 'nose-scale-vert|decr|incr': 0.15, 'mouth-scale-horiz|decr|incr': 0.2, 'sym:upperarm-muscle|decr|incr': 0.2},
-     'skin': 'toigo_light_skin_male_bronze', 'hair': None, 'scalp': W(mode='buzz', density=.9, colour='black_brown'), 'brows': 'mindfront_eyebrows_13', 'eyes': 'brown',
+     'skin': 'toigo_light_skin_male_bronze', 'skin_look': W(sun=.5, grime=.5, lips=.6, beard=.2, beard_colour='black_brown'), 'hair': None, 'scalp': W(mode='buzz', density=.9, colour='black_brown'), 'brows': 'mindfront_eyebrows_13', 'eyes': 'brown',
      'clothes': [('elvs_hooded_sweat_jacket1', W(tint='charcoal', grime=.4, wear=.5, patch=.2, sat=.1, tape=[0.98], tape_col=(0.82, 0.8, 0.7))),
                  ('cortu_cargo_pants', W(tint='indigo_faded', grime=.7, wear=.5, patch=.3, sat=.2, tape=[0.5, 0.12], tape_col=(0.82, 0.8, 0.7))),
                  ('culturalibre_sneakers', W(tint='charcoal', grime=.5, wear=.3, patch=0, sat=.4, flat=.3))]},
     {'id': 'p6_nomad_f', 'gender': 0.0, 'age': 68, 'muscle': 0.5, 'weight': 0.3, 'height': 0.45, 'african': 0.03, 'asian': 0.6, 'caucasian': 0.37,
      'mods': {'head-age|decr|incr': 0.6, 'sym:cheek-bones|decr|incr': 0.45, 'nose-scale-vert|decr|incr': 0.2, 'nose-hump|decr|incr': 0.25, 'sym:cheek-volume|decr|incr': -0.4, 'chin-width|decr|incr': 0.2, 'sym:eye-bag|decr|incr': 0.3},
-     'breastSize': 0.4, 'breastFirmness': 0.2, 'skin': 'darthfurby_caucasian_female', 'hair': None, 'brows': 'mindfront_eyebrows_14', 'eyes': 'brownlight',
+     'breastSize': 0.4, 'breastFirmness': 0.2, 'skin': 'darthfurby_caucasian_female', 'skin_look': W(sun=.8, grime=.5, lips=.95), 'hair': None, 'brows': 'mindfront_eyebrows_14', 'eyes': 'brownlight',
      'clothes': [('rehmanpolanski_viking_tunic', W(tint='ochre', grime=.5, wear=.7, patch=.5, sat=.2)),
                  ('toigo_wool_pants', W(tint='indigo_faded', grime=.7, wear=.6, patch=.3, sat=.2)),
                  ('punkduck_winter_boots', W(tint='leather_tan', grime=.6, wear=.3, patch=0, sat=.5, flat=.2)),
@@ -432,40 +433,61 @@ def bake_hair(src, name, look, size=1024):
     write_tex_meta(dst, f'{REL}/tex/{name}.png', 'd')
     return name
 
-def hair_weight(P, eye, mode, recede=0.0):
-    """Stubble weight per head vertex (P: MakeHuman units, y up, z forward) from a hairline model around the skull:
-    elevation above a threshold that falls from the forehead to the temples, the ear tops and the nape; 'bald' keeps
-    the horseshoe on the sides and back only. Ears (outside the skull's silhouette) and the face get none. Tuned on
-    the base mesh with a shaded preview from four sides (BUILD_PLAN §6.C.2)."""
+def head_angles(P, top, eye):
+    """Elevation and azimuth (degrees; 0 = straight ahead) of points P (MakeHuman units, y up, z forward) seen from a
+    point inside the skull behind and above the eyes, plus their offsets from it. `top` is the crown's height."""
     import numpy as np
-    top = P[:, 1].max()
     c = np.array([0.0, eye[1] + 0.15 * (top - eye[1]), eye[2] - 0.75])
     d = P - c
-    e = np.degrees(np.arctan2(d[:, 1], np.hypot(d[:, 0], d[:, 2])))
-    a = np.abs(np.degrees(np.arctan2(d[:, 0], d[:, 2])))
+    return np.degrees(np.arctan2(d[:, 1], np.hypot(d[:, 0], d[:, 2]))), np.abs(np.degrees(np.arctan2(d[:, 0], d[:, 2]))), d
+
+def smoothstep(x):
+    import numpy as np
+    x = np.clip(x, 0, 1); return x * x * (3 - 2 * x)
+
+def hair_weight(P, top, eye, mode, recede=0.0):
+    """Stubble weight per head vertex from a hairline model around the skull: elevation above a threshold that falls
+    from the forehead to the temples, the ear tops and the nape; 'bald' keeps the horseshoe on the sides and back
+    only. Ears (outside the skull's silhouette) and the face get none. Tuned on the base mesh with a shaded preview
+    from four sides (BUILD_PLAN §6.C.2)."""
+    import numpy as np
+    e, a, d = head_angles(P, top, eye)
     t = np.interp(a, [0, 40, 75, 100, 140, 180], [30 + recede, 24 + recede, 4, -10, -38, -58])
-    w = np.clip((e - (t - 2)) / 8.0, 0, 1); w = w * w * (3 - 2 * w)
+    w = smoothstep((e - (t - 2)) / 8.0)
     if mode == 'bald':
-        tt = np.interp(a, [0, 60, 90, 130, 180], [-90, -90, 18, 26, 30])
-        k = np.clip((tt - e) / 8.0, 0, 1); w *= k * k * (3 - 2 * k)
+        w *= smoothstep((np.interp(a, [0, 60, 90, 130, 180], [-90, -90, 18, 26, 30]) - e) / 8.0)
     band = (a > 55) & (a < 125) & (e > -35) & (e < 25)
     rr = np.linalg.norm(d, axis=1)
     if band.any(): w[band & (rr > np.median(rr[band]) * 1.06)] = 0.0
     w[P[:, 2] > eye[2] + 0.1] = 0.0
     return w
 
-def bake_scalp(body, skin_src, name, look, weights):
-    """Paints shaved or balding stubble into the person's own copy of the skin texture (2K): the hairline weights as a
-    vertex attribute, broken up by a mid noise, stippled by a fine one, in the hair colour over darkened skin."""
+def beard_weight(P, top, eye, lips):
+    """Beard stubble weight: below a line from under the nose across the cheeks to the sideburns, fading down the
+    neck, none behind the ears or on the lips. Tuned like hair_weight."""
+    import numpy as np
+    e, a, _ = head_angles(P, top, eye)
+    w = smoothstep((np.interp(a, [0, 30, 60, 80, 90], [-28, -27, -16, 0, 2]) - e) / 6.0) * smoothstep((e + 72) / 8.0)
+    w[a > 88] = 0.0
+    return w * np.clip(1 - lips * 1.5, 0, 1)
+
+def bake_skin(body, skin_src, name, look, weights):
+    """The person's own skin texture (2K, RGBA: colour + smoothness in alpha), weathered by the hair rule's face rules
+    (BUILD_PLAN §6.C.4-C.5): sun darkening and warming the exposed skin (more where it faces up), dirt in the creases
+    (Cycles pointiness) and in large patches, chapped and desaturated lips, shaved or balding scalp stubble and beard
+    stubble in the hair colour over darkened skin, all broken up by noise. The alpha is the smoothness URP reads:
+    skin 0.42, matte where stubble or dirt is, a little drier on the lips. `weights` holds per-vertex 'scalp',
+    'beard', 'lips' and 'up' (0 facing down .. 1 facing up)."""
+    import numpy as np
     os.makedirs(TEXOUT, exist_ok=True)
     dst = os.path.join(TEXOUT, name + '.png')
-    attr = body.data.color_attributes.new('scalp', 'FLOAT_COLOR', 'POINT')
-    for k, wv in enumerate(weights): attr.data[k].color = (wv, wv, wv, 1.0)
-    img = bpy.data.images.new('bake_' + name, 2048, 2048)
+    for key, wl in weights.items():
+        attr = body.data.color_attributes.new(key, 'FLOAT_COLOR', 'POINT')
+        for k, wv in enumerate(wl): attr.data[k].color = (wv, wv, wv, 1.0)
     mat = bpy.data.materials.new('bake_' + name); mat.use_nodes = True
     nt = mat.node_tree; nt.nodes.clear(); N = nt.nodes; L = nt.links
-    def mixrgb(fac, a, b):
-        m = N.new('ShaderNodeMixRGB'); m.blend_type = 'MIX'
+    def mixrgb(fac, a, b, blend='MIX'):
+        m = N.new('ShaderNodeMixRGB'); m.blend_type = blend
         if isinstance(fac, (int, float)): m.inputs['Fac'].default_value = float(fac)
         else: L.new(fac, m.inputs['Fac'])
         for sock, val in (('Color1', a), ('Color2', b)):
@@ -479,33 +501,65 @@ def bake_scalp(body, skin_src, name, look, weights):
             else: L.new(val, m.inputs[i])
         return m.outputs[0]
     tc = N.new('ShaderNodeTexCoord')
-    def noise(scale):
-        n = N.new('ShaderNodeTexNoise'); n.inputs['Scale'].default_value = scale; n.inputs['Detail'].default_value = 1.0
+    def noise(scale, detail=1.0):
+        n = N.new('ShaderNodeTexNoise'); n.inputs['Scale'].default_value = scale; n.inputs['Detail'].default_value = detail
         L.new(tc.outputs['Object'], n.inputs['Vector']); return n.outputs['Fac']
-    t = N.new('ShaderNodeTexImage'); t.image = bpy.data.images.load(skin_src); skin = t.outputs['Color']
-    at = N.new('ShaderNodeAttribute'); at.attribute_name = 'scalp'
-    w = math('MULTIPLY', at.outputs['Fac'], math('ADD', math('MULTIPLY', noise(60.0), 0.6), 0.7))   # ragged hairline
-    stip = math('GREATER_THAN', noise(900.0), 0.47)                                                  # single stubs
-    f = math('MULTIPLY', math('MULTIPLY', w, math('ADD', math('MULTIPLY', stip, 0.45), 0.55)), look.get('density', 0.8))
+    def attr(key):
+        at = N.new('ShaderNodeAttribute'); at.attribute_name = key; return at.outputs['Fac']
     lin = lambda c: tuple(x ** 2.2 for x in c)
-    dark = N.new('ShaderNodeMixRGB'); dark.blend_type = 'MULTIPLY'; dark.inputs['Fac'].default_value = 1.0
-    L.new(skin, dark.inputs['Color1']); dark.inputs['Color2'].default_value = (0.5, 0.5, 0.5, 1.0)
-    stubble = mixrgb(0.55, dark.outputs['Color'], lin(HAIR_COLOURS[look.get('colour', 'dark_brown')]))
-    col = mixrgb(f, skin, stubble)
+    t = N.new('ShaderNodeTexImage'); t.image = bpy.data.images.load(skin_src); col = t.outputs['Color']
+    # sun: a warm darkening, stronger where the skin faces up, mottled
+    sun = math('MULTIPLY', math('MULTIPLY', math('ADD', math('MULTIPLY', attr('up'), 0.55), 0.45),
+                                math('ADD', math('MULTIPLY', noise(8.0, 2.0), 0.6), 0.7)), look.get('sun', 0.5) * 0.6)
+    col = mixrgb(sun, col, mixrgb(1.0, col, lin((0.8, 0.66, 0.54)), 'MULTIPLY'))
+    # dirt: in the creases (concave = pointiness under 0.5) and in large faint patches
+    geo = N.new('ShaderNodeNewGeometry')
+    crease = math('MULTIPLY', math('MULTIPLY', math('SUBTRACT', 0.5, geo.outputs['Pointiness']), 9.0), look.get('grime', 0.4))
+    patch = math('MULTIPLY', math('POWER', noise(3.0, 2.0), 3.0), look.get('grime', 0.4) * 0.5)
+    dirt = math('ADD', crease, patch)
+    col = mixrgb(dirt, col, mixrgb(1.0, col, lin((0.55, 0.47, 0.4)), 'MULTIPLY'))
+    # lips: chapped, desaturated, a little lighter, flaking
+    hsv = N.new('ShaderNodeHueSaturation'); hsv.inputs['Saturation'].default_value = 0.45; hsv.inputs['Value'].default_value = 1.06
+    L.new(col, hsv.inputs['Color'])
+    flakes = mixrgb(math('MULTIPLY', math('GREATER_THAN', noise(260.0), 0.6), 0.35), hsv.outputs['Color'], lin((0.78, 0.68, 0.64)))
+    col = mixrgb(math('MULTIPLY', attr('lips'), look.get('lips', 0.7)), col, flakes)
+    # stubble: scalp (shaved, buzzed, balding) and beard, ragged at the edges, stippled
+    stip = math('ADD', math('MULTIPLY', math('GREATER_THAN', noise(900.0), 0.47), 0.45), 0.55)
+    ragged = math('ADD', math('MULTIPLY', noise(60.0), 0.6), 0.7)
+    scalp = look.get('scalp') or {}
+    fs = math('MULTIPLY', math('MULTIPLY', math('MULTIPLY', attr('scalp'), ragged), stip), scalp.get('density', 0.0))
+    fb = math('MULTIPLY', math('MULTIPLY', math('MULTIPLY', attr('beard'), ragged), stip), look.get('beard', 0.0))
+    darkened = mixrgb(1.0, col, (0.5, 0.5, 0.5), 'MULTIPLY')
+    col = mixrgb(fs, col, mixrgb(0.55, darkened, lin(HAIR_COLOURS[scalp.get('colour', 'dark_brown')])))
+    col = mixrgb(fb, col, mixrgb(0.55, darkened, lin(HAIR_COLOURS[look.get('beard_colour', 'dark_brown')])))
+    # smoothness (written to alpha after a second bake)
+    rough = math('ADD', math('ADD', math('MULTIPLY', fs, 0.3), math('MULTIPLY', fb, 0.25)), math('MULTIPLY', dirt, 0.12))
+    smooth = math('SUBTRACT', math('SUBTRACT', 0.42, rough), math('MULTIPLY', attr('lips'), 0.06))
     out = N.new('ShaderNodeOutputMaterial'); em = N.new('ShaderNodeEmission'); L.new(em.outputs[0], out.inputs[0])
-    L.new(col, em.inputs['Color'])
-    tgt = N.new('ShaderNodeTexImage'); tgt.image = img; N.active = tgt
+    tgt = N.new('ShaderNodeTexImage'); N.active = tgt
     keep = list(body.data.materials)
     body.data.materials.clear(); body.data.materials.append(mat)
     bpy.ops.object.select_all(action='DESELECT'); body.select_set(True); bpy.context.view_layer.objects.active = body
     sc = bpy.context.scene; sc.render.engine = 'CYCLES'; sc.cycles.samples = 1; sc.cycles.device = 'CPU'
     sc.render.bake.margin = 8; sc.render.bake.use_clear = True
-    bpy.ops.object.bake(type='EMIT')
-    img.filepath_raw = dst; img.file_format = 'PNG'; img.save()
+    planes = []
+    for src, cs in ((col, 'sRGB'), (smooth, 'Non-Color')):
+        img = bpy.data.images.new('bake_' + name + cs, 2048, 2048); img.colorspace_settings.name = cs; tgt.image = img
+        for l in list(em.inputs['Color'].links): L.remove(l)
+        L.new(src, em.inputs['Color'])
+        bpy.ops.object.bake(type='EMIT')
+        px = np.empty(2048 * 2048 * 4, np.float32); img.pixels.foreach_get(px); planes.append(px.reshape(-1, 4))
+        bpy.data.images.remove(img)
+    rgba = planes[0].copy(); rgba[:, 3] = planes[1][:, 0]
+    rgba[planes[1][:, 0] == 0, 3] = 0.42      # outside the islands (the bake's clear colour): ordinary skin
+    out_img = bpy.data.images.new('skin_' + name, 2048, 2048, alpha=True)
+    out_img.pixels.foreach_set(rgba.ravel())
+    out_img.filepath_raw = dst; out_img.file_format = 'PNG'; out_img.save()
+    bpy.data.images.remove(out_img)
     body.data.materials.clear()
     for m in keep: body.data.materials.append(m)
-    body.data.color_attributes.remove(body.data.color_attributes['scalp'])
-    bpy.data.images.remove(img); bpy.data.materials.remove(mat)
+    for key in weights: body.data.color_attributes.remove(body.data.color_attributes[key])
+    bpy.data.materials.remove(mat)
     write_tex_meta(dst, f'{REL}/tex/{name}.png', 'd')
     return name
 
@@ -741,21 +795,30 @@ def build_person(spec):
             if key in mm:
                 tp = os.path.join(sd, mm[key])
                 if not os.path.exists(tp): continue
-                if spec.get('scalp') and key != 'diffuseTexture':
+                if key != 'diffuseTexture':
                     copy_texture(tp, spec['id'] + '__skin' + suffix, kind)   # beside the person's own diffuse
-                elif key == 'diffuseTexture' and spec.get('scalp'):
-                    # the person's own skin, <id>__skin_d (a longer name would pass Blender's 63-character limit)
-                    import numpy as np
-                    head = {i for i, x in weights_mh['head'] if x > 0.5}
-                    eye = np.mean([np.mean([v[i] for i in EYE_GROUPS[g]], axis=0) for g in EYE_GROUPS], axis=0)
-                    hv = [i for i in used if i in head]
-                    hw = hair_weight(np.array([v[i] for i in hv]), eye, spec['scalp'].get('mode', 'buzz'), spec['scalp'].get('recede', 0.0))
-                    wts = [0.0] * len(used)
-                    for i, wv in zip(hv, hw): wts[remap[i]] = float(wv)
-                    own = bake_scalp(body, tp, spec['id'] + '__skin_d', spec['scalp'], wts)
-                    body.data.materials.clear(); body.data.materials.append(slot('skin:' + own))
-                else:
-                    copy_texture(tp, spec['skin'] + suffix, kind)
+                    continue
+                # the person's own skin, <id>__skin_d (a longer name would pass Blender's 63-character limit)
+                import numpy as np
+                P = np.array([v[i] for i in used])
+                head = {i for i, x in weights_mh['head'] if x > 0.5}
+                neck = {i for b in ('neck01', 'neck02', 'neck03') for i, x in weights_mh.get(b, []) if x > 0.3}
+                in_head = np.array([i in head for i in used]); in_face = in_head | np.array([i in neck for i in used])
+                eye = np.mean([np.mean([v[i] for i in EYE_GROUPS[g]], axis=0) for g in EYE_GROUPS], axis=0)
+                top = P[in_head, 1].max()
+                mag = np.zeros(len(used))
+                for t in ('mouth/mouth-upperlip-volume-incr', 'mouth/mouth-lowerlip-volume-incr'):
+                    for i, dx, dy, dz in target(t) or []:
+                        if i in remap: mag[remap[i]] = max(mag[remap[i]], (dx * dx + dy * dy + dz * dz) ** 0.5)
+                lips = np.clip(mag / (0.35 * mag.max()), 0, 1) if mag.max() > 0 else mag
+                scalp = np.zeros(len(used)); beard = np.zeros(len(used))
+                if spec.get('scalp'):
+                    scalp[in_head] = hair_weight(P[in_head], top, eye, spec['scalp'].get('mode', 'buzz'), spec['scalp'].get('recede', 0.0))
+                beard[in_face] = beard_weight(P[in_face], top, eye, lips[in_face])
+                up = np.array([(vx.normal.z + 1) / 2 for vx in body.data.vertices])
+                look = dict(spec.get('skin_look', {})); look['scalp'] = spec.get('scalp')
+                own = bake_skin(body, tp, spec['id'] + '__skin_d', look, {'scalp': scalp, 'beard': beard, 'lips': lips, 'up': up})
+                body.data.materials.clear(); body.data.materials.append(slot('skin:' + own))
     else:
         print('  no skin', spec['skin'])
 

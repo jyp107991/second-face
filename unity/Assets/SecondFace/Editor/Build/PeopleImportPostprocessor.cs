@@ -14,7 +14,7 @@ namespace SecondFace.EditorTools
     public sealed class PeopleImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 3;
+        public override uint GetVersion() => 5;
 
         private bool IsPerson => assetPath.StartsWith("Assets/SecondFace/People/");
 
@@ -44,7 +44,11 @@ namespace SecondFace.EditorTools
             var normal = name.EndsWith("_n");
             imp.textureType = normal ? TextureImporterType.NormalMap : TextureImporterType.Default;
             imp.sRGBTexture = !normal;
-            imp.alphaIsTransparency = !normal;
+            // The generated metas say "no alpha" (a template made for terrain textures), which threw away the hair cards'
+            // cut-outs and the skin's smoothness: the alpha is read from the file. A person's own skin carries smoothness
+            // in its alpha (mh_build bake_skin), not transparency.
+            imp.alphaSource = normal ? TextureImporterAlphaSource.None : TextureImporterAlphaSource.FromInput;
+            imp.alphaIsTransparency = !normal && !name.Contains("__skin_");
             imp.mipmapEnabled = true;
             imp.streamingMipmaps = true;
             imp.maxTextureSize = 2048;
@@ -114,7 +118,18 @@ namespace SecondFace.EditorTools
             switch (kind)
             {
                 case "skin":
-                    m.SetFloat("_Smoothness", 0.42f); m.SetFloat("_Metallic", 0f);
+                    m.SetFloat("_Metallic", 0f);
+                    if (d != null && tex.Contains("__skin"))
+                    {
+                        // smoothness painted per texel (matte stubble and dirt, drier lips) in the albedo's alpha
+                        m.SetFloat("_SmoothnessTextureChannel", 1f); m.EnableKeyword("_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
+                        m.SetFloat("_Smoothness", 1f);
+                    }
+                    else
+                    {
+                        m.SetFloat("_SmoothnessTextureChannel", 0f); m.DisableKeyword("_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
+                        m.SetFloat("_Smoothness", 0.42f);
+                    }
                     break;
                 case "eyes":
                     // The eyeball alone (mh_build drops the cornea shell): opaque, wet.

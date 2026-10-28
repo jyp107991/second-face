@@ -380,9 +380,13 @@ smoothness 0.7; generated people materials are re-configured on every build. Por
 brows and lashes. Seen for later steps: in `people_motion_*` only p6 walks, p1–p5 stay in T-pose (check each avatar's
 Humanoid mapping with `Diagnostics.Report`; a P2 fix before the verdict); p1's crop is glossy like wet skin (step 4:
 matte stubble); p6's lips are bright red and her mouth sits open (step 4).
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 4: `bake_skin` for the six (sun, dirt in creases, chapped and
-desaturated lips, stubble beards, a matte scalp where stubble is painted), rebuild, run the §7.0 loop, read the
-portraits, commit; then the T-pose fix; then steps 5–12.
+**Skin weathered (plan §10 step 4, 2026-10-28):** `bake_skin` gives each of the six their own 2 K skin with sun,
+dirt in the creases, chapped desaturated lips, beard stubble and painted scalps, smoothness in the alpha (matte stubble).
+Found on the way: every generated texture meta said "no alpha", so hair cards were solid sheets and skins read fully
+glossy; the people and kit importers now take the alpha from the file. Still open for later: p6's mouth sits open (her
+face shape; the red is the inside of the mouth), scars and tattoos (not built), the T-pose in `people_motion_*`.
+**Next action:** fix the T-pose (p1–p5 do not walk in `people_motion_*`: check each avatar with `Diagnostics.Report`),
+then `docs/BUILD_PLAN_V1.md` §10 step 5 (people weight ≤ 8 MB each), then steps 6–12.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

@@ -127,11 +127,21 @@ namespace SecondFace.EditorTools
         }
     }
 
-    /// <summary>Kit models (Assets/SecondFace/Kits) get their library materials by slot name (mat_&lt;key&gt;) and colliders.</summary>
+    /// <summary>Kit models (Assets/SecondFace/Kits) get their library materials by slot name (mat_&lt;key&gt;) and colliders;
+    /// foliage cards (card_*.png) keep their alpha.</summary>
     public sealed class KitImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 2;
+        public override uint GetVersion() => 3;
+
+        private void OnPreprocessTexture()
+        {
+            if (!assetPath.StartsWith("Assets/SecondFace/Kits/") || !System.IO.Path.GetFileName(assetPath).StartsWith("card_")) return;
+            var imp = (TextureImporter)assetImporter;
+            // The generated metas say "no alpha" (a template made for terrain textures); a card is its alpha.
+            imp.alphaSource = TextureImporterAlphaSource.FromInput;
+            imp.alphaIsTransparency = true;
+        }
 
         private void OnPreprocessModel()
         {

@@ -492,7 +492,7 @@ extras.
    said to build a cap mesh from the base mesh's `helper-hair` group: that group is not a cap but 198 loose strips
    from the crown to the chest (used by MakeHuman to fit long hair), so it cannot be used. Instead `mh_build.py`
    gives the person their own copy of the skin texture (`<id>__skin_d`, 2 K, its normal map beside it as
-   `<id>__skin_n` when the skin has one) with stubble baked in by `bake_scalp`: `hair_weight` computes a per-vertex weight
+   `<id>__skin_n` when the skin has one) with stubble baked in by `bake_skin` (§C.4): `hair_weight` computes a per-vertex weight
    on the head from a hairline model around the skull (elevation above a threshold that falls from the forehead to
    the temples, the ear tops and the nape; `bald` keeps the horseshoe on the sides and back; ears and face get
    none), stored as a vertex attribute, broken up by a mid noise (ragged hairline) and stippled by a fine one,
@@ -503,7 +503,12 @@ extras.
    with a knot; a scarf: a loose loop at the neck), exported as garments with `mhclo`-style reference vertices
    (write them with the same fitting code path: pick the nearest base vertex per proxy vertex and store offsets
    in base space). Until modelled, a hood (`culturalibre_hero-heroine_hood_1`) covers long hair.
-4. **`bake_hair` and `bake_skin`** (same shape as `bake_cloth`): hair → desaturate 0.4, darken 0.75, multiply by
+4. **`bake_hair` and `bake_skin`** (done 2026-10-28 for the six; what was built: `bake_skin` gives every person their
+   own 2 K skin, RGBA with the smoothness URP reads in the alpha (skin 0.42, matte where stubble or dirt is, drier
+   lips); sun warms and darkens the skin more where it faces up; dirt sits in the creases by Cycles pointiness and in
+   faint patches; lips (found from MakeHuman's own lip-volume targets) are chapped and desaturated; beard stubble
+   comes from a beard line around the face like the hairline; spec field `skin_look: W(sun, grime, lips, beard,
+   beard_colour)`. Scars and tattoos are not built yet.) The original spec, kept for those: hair → desaturate 0.4, darken 0.75, multiply by
    a large-scale noise (dust lightening at the ends: v-based), grey streaks for age > 50 (thin noise bands
    lightened), smoothness in Unity 0.25. Skin → sun darkening on the face/neck/forearms (UV regions of the
    MakeHuman layout: face is the upper-left quadrant of the texture; forearms and hands in the lower band),
@@ -941,6 +946,10 @@ numbers from the densest place written into PORT.md §5.
   word, so a slot `mat_skin:<id>__<long skin name>_d` lost its tail and Unity found no texture (the untextured
   fallback colour is a dark fibre). Keep texture names short (`<id>__skin_d`); `mh_build.slot()` raises on a slot
   name over 63 characters.
+- **Alpha thrown away on import** (people textures and foliage cards): the generated texture metas carry
+  `alphaUsage: 0` (no alpha; the template was made for terrain textures), so hair cards rendered as solid sheets and
+  a skin's smoothness alpha read as 1 (every face wet and glossy). The people and kit importers now set
+  `alphaSource = FromInput` themselves; a meta's word is never trusted for an import rule.
 - **Grey diamonds in the pupils, grey speckled brows** (local editor): the people importer recalculated normals
   (80° smoothing), which bent them in the eye's recessed pupil and on the strand brows and lashes; at a grazing angle
   they reflected the sky. Diagnosed by rendering the same FBX in Blender (correct) and the eye unlit in Unity
