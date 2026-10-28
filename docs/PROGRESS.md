@@ -393,8 +393,13 @@ shapes on NPCs); per person in the build 7.8–10.6 MB + 5 MB shared, the rest i
 on the way: every mouth gaped once all animated (the rig's Jaw; merged into Head), every avatar then failed on the
 stale bone map in the metas (now re-mapped every import; `editor.sh` prints `LOG PROBLEM` lines), portraits lost the
 head (pose now held). MakeHuman ships 5 of the 14 expression units the plan wanted (P4 face work).
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 6 (nature models to FBX, one per variant, `nature` materials,
-glTFast removed), then steps 7–12.
+**Nature models and kits fixed (plan §10 step 6, 2026-10-28):** the 27 nature models are FBX now, 75 variants (from
+the scans' own objects, rows cut at their gaps), our materials (leaves lit, not black), glTFast removed; sources live in
+`.scans/` outside the Unity project. Found on the way: every kit piece and nature model lay on its side (the Blender
+export's compensating root rotation, overwritten by every builder; an earlier "fix" never worked): fixed with
+`bake_space_transform`, and the frontier town finally stands up in its captures.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 7 (frame `vegetation_iso` inside the terrain; `ScatterRules` with
+EditMode tests), then steps 8–12 (step 10, the frontier kit, is done).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

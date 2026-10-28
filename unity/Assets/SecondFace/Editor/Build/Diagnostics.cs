@@ -30,13 +30,41 @@ namespace SecondFace.EditorTools
                 var b = Bounds(go);
                 Debug.Log($"DIAG kit {Path.GetFileName(path)} bakeAxisConversion={imp.bakeAxisConversion} rootRot={go.transform.localEulerAngles} childRots=[{string.Join(" ", go.GetComponentsInChildren<Transform>().Skip(1).Select(t => t.localEulerAngles.ToString()))}] size={b.size}");
             }
-            foreach (var key in new[] { "quiver_tree_01", "shrub_02", "namaqualand_boulder_03" })
+            foreach (var key in new[] { "quiver_tree_01", "shrub_02_v1", "namaqualand_boulder_03", "grass_medium_01_v3" })
             {
-                var path = $"Assets/SecondFace/Models/Nature/{key}.glb";
+                var path = $"Assets/SecondFace/Models/Nature/{key}.fbx";
+                var bound = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/SecondFace/Generated/Nature/{key}.prefab");
+                if (bound != null)
+                {
+                    var bm = bound.GetComponentsInChildren<Renderer>(true).SelectMany(r => r.sharedMaterials).Where(m => m != null).Select(m => $"{m.name}({m.shader.name})").Distinct();
+                    Debug.Log($"DIAG nature prefab {key} rootScale={bound.transform.localScale} rootRot={bound.transform.localEulerAngles} size={Bounds(bound).size} materials=[{string.Join(" | ", bm)}]");
+                }
                 var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
                 if (go == null) { Debug.Log($"DIAG nature {key}: not imported"); continue; }
+                var nimp = (ModelImporter)AssetImporter.GetAtPath(path);
+                Debug.Log($"DIAG nature model {key} bakeAxisConversion={nimp.bakeAxisConversion} rootRot={go.transform.localEulerAngles} children={go.transform.childCount}");
                 var mats = go.GetComponentsInChildren<Renderer>(true).SelectMany(r => r.sharedMaterials).Where(m => m != null).Select(m => $"{m.name}({m.shader.name})").Distinct();
                 Debug.Log($"DIAG nature {key} size={Bounds(go).size} materials=[{string.Join(" | ", mats)}]");
+            }
+        }
+
+        /// <summary>World bounds of the first instances in each scatter group of the built vegetation scene.</summary>
+        public static void Vegetation()
+        {
+            var scene = UnityEditor.SceneManagement.EditorSceneManager.OpenScene("Assets/SecondFace/Scenes/Test_Vegetation.unity");
+            foreach (var root in scene.GetRootGameObjects())
+            {
+                if (root.transform.childCount == 0) continue;
+                Debug.Log($"DIAG group {root.name}: {root.transform.childCount} instances");
+                for (var i = 0; i < Mathf.Min(3, root.transform.childCount); i++)
+                {
+                    var t = root.transform.GetChild(i);
+                    var rs = t.GetComponentsInChildren<Renderer>();
+                    if (rs.Length == 0) { Debug.Log($"DIAG   {t.name}: no renderer"); continue; }
+                    var b = rs[0].bounds; foreach (var r in rs) b.Encapsulate(r.bounds);
+                    var ground = Terrain.activeTerrain != null ? Terrain.activeTerrain.SampleHeight(t.position) : float.NaN;
+                    Debug.Log($"DIAG   {t.name} pos={t.position} rot={t.eulerAngles} scale={t.localScale.x:F2} boundsMin={b.min} boundsMax={b.max} ground={ground:F2} enabled={rs[0].enabled} mat={rs[0].sharedMaterial?.name}");
+                }
             }
         }
 

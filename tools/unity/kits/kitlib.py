@@ -92,9 +92,14 @@ def finish(bm):
     bm.normal_update()
 
 def export_fbx(path):
+    # bake_space_transform writes the mesh Y-up with an identity root. Without it Blender keeps the data Z-up and adds a
+    # compensating 90° rotation on the root, which every builder that sets a rotation overwrites (walls lay flat and
+    # roofs stood on end in the engine captures until 2026-10-28; Unity's bakeAxisConversion cannot undo it, because the
+    # file already declares Y-up).
     os.makedirs(os.path.dirname(path), exist_ok=True)
     bpy.ops.export_scene.fbx(filepath=path, use_selection=False, apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y',
-                             mesh_smooth_type='EDGE', use_mesh_modifiers=True, bake_anim=False, add_leaf_bones=False, path_mode='STRIP', embed_textures=False)
+                             bake_space_transform=True, mesh_smooth_type='EDGE', use_mesh_modifiers=True, bake_anim=False,
+                             add_leaf_bones=False, path_mode='STRIP', embed_textures=False)
 
 def guid_for(rel):
     return hashlib.md5(('second-face:' + rel).encode()).hexdigest()

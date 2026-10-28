@@ -3,46 +3,79 @@
   "id": "boulder_01",
   "licence": "CC0 (Poly Haven)",
   "note": "boulder",
-  "path": "Assets/SecondFace/Models/Nature/boulder_01.glb",
+  "path": "Assets/SecondFace/Models/Nature/boulder_01.fbx",
   "place": "scatter",
   "size": [
-   1.27,
-   1.0,
+   1.28,
+   1.02,
    1.83
   ],
   "tris": 26510,
   "tris_src": 66122,
-  "use": "rock"
+  "use": "rock",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/boulder_01.fbx",
+    "size": [
+     1.28,
+     1.02,
+     1.83
+    ],
+    "tris": 26474
+   }
+  ]
  },
  "coast_land_rocks_02": {
   "id": "coast_land_rocks_02",
   "licence": "CC0 (Poly Haven)",
   "note": "coast rocks",
-  "path": "Assets/SecondFace/Models/Nature/coast_land_rocks_02.glb",
+  "path": "Assets/SecondFace/Models/Nature/coast_land_rocks_02.fbx",
   "place": "patch",
   "size": [
    4.89,
-   1.4,
-   10.45
+   1.38,
+   10.44
   ],
   "tris": 7000,
   "tris_src": 1291146,
-  "use": "rock"
+  "use": "rock",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/coast_land_rocks_02.fbx",
+    "size": [
+     4.89,
+     1.38,
+     10.44
+    ],
+    "tris": 7000
+   }
+  ]
  },
  "coast_rocks_01": {
   "id": "coast_rocks_01",
   "licence": "CC0 (Poly Haven)",
   "note": "coast rocks",
-  "path": "Assets/SecondFace/Models/Nature/coast_rocks_01.glb",
+  "path": "Assets/SecondFace/Models/Nature/coast_rocks_01.fbx",
   "place": "patch",
   "size": [
    59.51,
-   3.29,
+   3.24,
    42.52
   ],
   "tris": 5999,
   "tris_src": 679936,
-  "use": "rock"
+  "use": "rock",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/coast_rocks_01.fbx",
+    "size": [
+     59.51,
+     3.24,
+     42.52
+    ],
+    "tris": 5999
+   }
+  ]
  },
  "dead_quiver_trunk": {
   "id": "dead_quiver_trunk",
@@ -74,7 +107,7 @@
   "id": "dead_tree_trunk",
   "licence": "CC0 (Poly Haven)",
   "note": "dead tree",
-  "path": "Assets/SecondFace/Models/Nature/dead_tree_trunk.glb",
+  "path": "Assets/SecondFace/Models/Nature/dead_tree_trunk.fbx",
   "place": "scatter",
   "size": [
    3.05,
@@ -83,43 +116,94 @@
   ],
   "tris": 4500,
   "tris_src": 101802,
-  "use": "tree"
+  "use": "tree",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/dead_tree_trunk.fbx",
+    "size": [
+     3.05,
+     0.29,
+     0.28
+    ],
+    "tris": 4500
+   }
+  ]
  },
  "dead_tree_trunk_02": {
   "id": "dead_tree_trunk_02",
   "licence": "CC0 (Poly Haven)",
   "note": "dead tree",
-  "path": "Assets/SecondFace/Models/Nature/dead_tree_trunk_02.glb",
+  "path": "Assets/SecondFace/Models/Nature/dead_tree_trunk_02.fbx",
   "place": "scatter",
   "size": [
-   4.05,
+   4.06,
    1.06,
    1.06
   ],
   "tris": 4500,
   "tris_src": 83128,
-  "use": "tree"
+  "use": "tree",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/dead_tree_trunk_02.fbx",
+    "size": [
+     4.06,
+     1.06,
+     1.06
+    ],
+    "tris": 4500
+   }
+  ]
  },
  "dry_branches_medium_01": {
   "id": "dry_branches_medium_01",
   "licence": "CC0 (Poly Haven)",
   "note": "dry branches",
-  "path": "Assets/SecondFace/Models/Nature/dry_branches_medium_01.glb",
+  "path": "Assets/SecondFace/Models/Nature/dry_branches_medium_01_v1.fbx",
   "place": "scatter",
   "size": [
-   0.32,
-   0.34,
-   1.3
+   0.13,
+   0.14,
+   0.78
   ],
   "tris": 3997,
   "tris_src": 16803,
-  "use": "debris"
+  "use": "debris",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/dry_branches_medium_01_v1.fbx",
+    "size": [
+     0.13,
+     0.14,
+     0.78
+    ],
+    "tris": 1336
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/dry_branches_medium_01_v2.fbx",
+    "size": [
+     0.15,
+     0.14,
+     1.04
+    ],
+    "tris": 1250
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/dry_branches_medium_01_v3.fbx",
+    "size": [
+     0.32,
+     0.34,
+     1.3
+    ],
+    "tris": 1411
+   }
+  ]
  },
  "fern_02": {
   "id": "fern_02",
   "licence": "CC0 (Poly Haven)",
   "note": "fern (the Wet)",
-  "path": "Assets/SecondFace/Models/Nature/fern_02.glb",
+  "path": "Assets/SecondFace/Models/Nature/fern_02_v1.fbx",
   "place": "scatter",
   "size": [
    0.99,
@@ -128,88 +212,370 @@
   ],
   "tris": 2995,
   "tris_src": 6232,
-  "use": "scrub"
+  "use": "scrub",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/fern_02_v1.fbx",
+    "size": [
+     0.99,
+     0.43,
+     0.89
+    ],
+    "tris": 1146
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/fern_02_v2.fbx",
+    "size": [
+     0.88,
+     0.35,
+     0.76
+    ],
+    "tris": 1081
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/fern_02_v3.fbx",
+    "size": [
+     0.55,
+     0.29,
+     0.61
+    ],
+    "tris": 376
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/fern_02_v4.fbx",
+    "size": [
+     0.57,
+     0.21,
+     0.59
+    ],
+    "tris": 392
+   }
+  ]
  },
  "grass_medium_01": {
   "id": "grass_medium_01",
   "licence": "CC0 (Poly Haven)",
   "note": "grass clump (detail mesh)",
-  "path": "Assets/SecondFace/Models/Nature/grass_medium_01.glb",
+  "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v1.fbx",
   "place": "scatter",
   "size": [
-   0.32,
-   0.34,
-   0.33
+   0.16,
+   0.14,
+   0.12
   ],
   "tris": 2988,
   "tris_src": 24730,
-  "use": "grass"
+  "use": "grass",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v1.fbx",
+    "size": [
+     0.16,
+     0.14,
+     0.12
+    ],
+    "tris": 101
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v2.fbx",
+    "size": [
+     0.25,
+     0.14,
+     0.24
+    ],
+    "tris": 561
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v3.fbx",
+    "size": [
+     0.19,
+     0.18,
+     0.17
+    ],
+    "tris": 152
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v4.fbx",
+    "size": [
+     0.14,
+     0.23,
+     0.13
+    ],
+    "tris": 37
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v5.fbx",
+    "size": [
+     0.15,
+     0.28,
+     0.16
+    ],
+    "tris": 35
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v6.fbx",
+    "size": [
+     0.15,
+     0.23,
+     0.11
+    ],
+    "tris": 40
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v7.fbx",
+    "size": [
+     0.16,
+     0.1,
+     0.18
+    ],
+    "tris": 78
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v8.fbx",
+    "size": [
+     0.19,
+     0.14,
+     0.2
+    ],
+    "tris": 177
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v9.fbx",
+    "size": [
+     0.17,
+     0.2,
+     0.17
+    ],
+    "tris": 277
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v10.fbx",
+    "size": [
+     0.32,
+     0.15,
+     0.33
+    ],
+    "tris": 779
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v11.fbx",
+    "size": [
+     0.28,
+     0.14,
+     0.25
+    ],
+    "tris": 720
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v12.fbx",
+    "size": [
+     0.01,
+     0.07,
+     0.03
+    ],
+    "tris": 3
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v13.fbx",
+    "size": [
+     0.06,
+     0.11,
+     0.07
+    ],
+    "tris": 9
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v14.fbx",
+    "size": [
+     0.0,
+     0.05,
+     0.03
+    ],
+    "tris": 2
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v15.fbx",
+    "size": [
+     0.02,
+     0.05,
+     0.05
+    ],
+    "tris": 3
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v16.fbx",
+    "size": [
+     0.07,
+     0.05,
+     0.06
+    ],
+    "tris": 7
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_01_v17.fbx",
+    "size": [
+     0.04,
+     0.05,
+     0.05
+    ],
+    "tris": 7
+   }
+  ]
  },
  "grass_medium_02": {
   "id": "grass_medium_02",
   "licence": "CC0 (Poly Haven)",
   "note": "grass clump (detail mesh)",
-  "path": "Assets/SecondFace/Models/Nature/grass_medium_02.glb",
+  "path": "Assets/SecondFace/Models/Nature/grass_medium_02_v1.fbx",
   "place": "scatter",
   "size": [
-   0.36,
-   0.41,
-   0.43
+   0.12,
+   0.16,
+   0.12
   ],
   "tris": 2496,
   "tris_src": 7842,
-  "use": "grass"
+  "use": "grass",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_02_v1.fbx",
+    "size": [
+     0.12,
+     0.16,
+     0.12
+    ],
+    "tris": 227
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_02_v2.fbx",
+    "size": [
+     0.18,
+     0.18,
+     0.2
+    ],
+    "tris": 560
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_02_v3.fbx",
+    "size": [
+     0.26,
+     0.23,
+     0.25
+    ],
+    "tris": 387
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_02_v4.fbx",
+    "size": [
+     0.31,
+     0.26,
+     0.3
+    ],
+    "tris": 793
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/grass_medium_02_v5.fbx",
+    "size": [
+     0.36,
+     0.4,
+     0.43
+    ],
+    "tris": 529
+   }
+  ]
  },
  "namaqualand_boulder_02": {
   "id": "namaqualand_boulder_02",
   "licence": "CC0 (Poly Haven)",
   "note": "boulder",
-  "path": "Assets/SecondFace/Models/Nature/namaqualand_boulder_02.glb",
+  "path": "Assets/SecondFace/Models/Nature/namaqualand_boulder_02.fbx",
   "place": "scatter",
   "size": [
-   2.53,
-   0.88,
-   1.23
+   2.52,
+   0.87,
+   1.22
   ],
   "tris": 2499,
   "tris_src": 97964,
-  "use": "rock"
+  "use": "rock",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/namaqualand_boulder_02.fbx",
+    "size": [
+     2.52,
+     0.87,
+     1.22
+    ],
+    "tris": 2499
+   }
+  ]
  },
  "namaqualand_boulder_03": {
   "id": "namaqualand_boulder_03",
   "licence": "CC0 (Poly Haven)",
   "note": "boulder",
-  "path": "Assets/SecondFace/Models/Nature/namaqualand_boulder_03.glb",
+  "path": "Assets/SecondFace/Models/Nature/namaqualand_boulder_03.fbx",
   "place": "scatter",
   "size": [
    2.41,
    1.47,
-   3.07
+   3.06
   ],
   "tris": 2500,
   "tris_src": 64826,
-  "use": "rock"
+  "use": "rock",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/namaqualand_boulder_03.fbx",
+    "size": [
+     2.41,
+     1.47,
+     3.06
+    ],
+    "tris": 2500
+   }
+  ]
  },
  "namaqualand_boulders_01": {
   "id": "namaqualand_boulders_01",
   "licence": "CC0 (Poly Haven)",
   "note": "boulder group",
-  "path": "Assets/SecondFace/Models/Nature/namaqualand_boulders_01.glb",
+  "path": "Assets/SecondFace/Models/Nature/namaqualand_boulders_01_v1.fbx",
   "place": "scatter",
   "size": [
-   0.38,
+   0.36,
    0.25,
-   0.59
+   0.55
   ],
   "tris": 3998,
   "tris_src": 40850,
-  "use": "rock"
+  "use": "rock",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/namaqualand_boulders_01_v1.fbx",
+    "size": [
+     0.36,
+     0.25,
+     0.55
+    ],
+    "tris": 1572
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/namaqualand_boulders_01_v2.fbx",
+    "size": [
+     0.34,
+     0.21,
+     0.58
+    ],
+    "tris": 2426
+   }
+  ]
  },
  "namaqualand_rocks_01": {
   "id": "namaqualand_rocks_01",
   "licence": "CC0 (Poly Haven)",
   "note": "rocks",
-  "path": "Assets/SecondFace/Models/Nature/namaqualand_rocks_01.glb",
+  "path": "Assets/SecondFace/Models/Nature/namaqualand_rocks_01_v1.fbx",
   "place": "scatter",
   "size": [
    0.23,
@@ -218,22 +584,107 @@
   ],
   "tris": 3996,
   "tris_src": 85716,
-  "use": "rock"
+  "use": "rock",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/namaqualand_rocks_01_v1.fbx",
+    "size": [
+     0.23,
+     0.15,
+     0.22
+    ],
+    "tris": 632
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/namaqualand_rocks_01_v2.fbx",
+    "size": [
+     0.22,
+     0.08,
+     0.16
+    ],
+    "tris": 1156
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/namaqualand_rocks_01_v3.fbx",
+    "size": [
+     0.21,
+     0.08,
+     0.17
+    ],
+    "tris": 1046
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/namaqualand_rocks_01_v4.fbx",
+    "size": [
+     0.2,
+     0.12,
+     0.16
+    ],
+    "tris": 1162
+   }
+  ]
  },
  "namaqualand_stones_01": {
   "id": "namaqualand_stones_01",
   "licence": "CC0 (Poly Haven)",
   "note": "stones (scatter)",
-  "path": "Assets/SecondFace/Models/Nature/namaqualand_stones_01.glb",
+  "path": "Assets/SecondFace/Models/Nature/namaqualand_stones_01_v1.fbx",
   "place": "scatter",
   "size": [
-   1.02,
    0.08,
-   0.11
+   0.04,
+   0.06
   ],
   "tris": 2996,
   "tris_src": 70124,
-  "use": "rock"
+  "use": "rock",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/namaqualand_stones_01_v1.fbx",
+    "size": [
+     0.08,
+     0.04,
+     0.06
+    ],
+    "tris": 1036
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/namaqualand_stones_01_v2.fbx",
+    "size": [
+     0.15,
+     0.08,
+     0.08
+    ],
+    "tris": 388
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/namaqualand_stones_01_v3.fbx",
+    "size": [
+     0.1,
+     0.06,
+     0.1
+    ],
+    "tris": 846
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/namaqualand_stones_01_v4.fbx",
+    "size": [
+     0.12,
+     0.04,
+     0.08
+    ],
+    "tris": 250
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/namaqualand_stones_01_v5.fbx",
+    "size": [
+     0.11,
+     0.08,
+     0.11
+    ],
+    "tris": 476
+   }
+  ]
  },
  "quiver_tree_01": {
   "id": "quiver_tree_01",
@@ -291,7 +742,7 @@
   "id": "rock_07",
   "licence": "CC0 (Poly Haven)",
   "note": "rock",
-  "path": "Assets/SecondFace/Models/Nature/rock_07.glb",
+  "path": "Assets/SecondFace/Models/Nature/rock_07.fbx",
   "place": "scatter",
   "size": [
    0.17,
@@ -300,13 +751,24 @@
   ],
   "tris": 2000,
   "tris_src": 14844,
-  "use": "rock"
+  "use": "rock",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/rock_07.fbx",
+    "size": [
+     0.17,
+     0.14,
+     0.32
+    ],
+    "tris": 2000
+   }
+  ]
  },
  "rock_09": {
   "id": "rock_09",
   "licence": "CC0 (Poly Haven)",
   "note": "rock",
-  "path": "Assets/SecondFace/Models/Nature/rock_09.glb",
+  "path": "Assets/SecondFace/Models/Nature/rock_09.fbx",
   "place": "scatter",
   "size": [
    0.07,
@@ -315,126 +777,405 @@
   ],
   "tris": 2000,
   "tris_src": 12416,
-  "use": "rock"
+  "use": "rock",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/rock_09.fbx",
+    "size": [
+     0.07,
+     0.03,
+     0.14
+    ],
+    "tris": 2000
+   }
+  ]
  },
  "root_cluster_01": {
   "id": "root_cluster_01",
   "licence": "CC0 (Poly Haven)",
   "note": "roots",
-  "path": "Assets/SecondFace/Models/Nature/root_cluster_01.glb",
+  "path": "Assets/SecondFace/Models/Nature/root_cluster_01.fbx",
   "place": "scatter",
   "size": [
    4.12,
-   1.51,
+   1.5,
    2.68
   ],
   "tris": 4999,
   "tris_src": 225261,
-  "use": "debris"
+  "use": "debris",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/root_cluster_01.fbx",
+    "size": [
+     4.12,
+     1.5,
+     2.68
+    ],
+    "tris": 4999
+   }
+  ]
  },
  "shrub_01": {
   "id": "shrub_01",
   "licence": "CC0 (Poly Haven)",
   "note": "scrub",
-  "path": "Assets/SecondFace/Models/Nature/shrub_01.glb",
+  "path": "Assets/SecondFace/Models/Nature/shrub_01_v1.fbx",
   "place": "scatter",
   "size": [
-   2.59,
-   0.4,
-   0.22
+   0.18,
+   0.35,
+   0.18
   ],
   "tris": 6999,
   "tris_src": 156012,
-  "use": "scrub"
+  "use": "scrub",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_01_v1.fbx",
+    "size": [
+     0.18,
+     0.35,
+     0.18
+    ],
+    "tris": 1518
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_01_v2.fbx",
+    "size": [
+     0.23,
+     0.4,
+     0.2
+    ],
+    "tris": 2451
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_01_v3.fbx",
+    "size": [
+     0.11,
+     0.25,
+     0.12
+    ],
+    "tris": 1287
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_01_v4.fbx",
+    "size": [
+     0.09,
+     0.12,
+     0.1
+    ],
+    "tris": 117
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_01_v5.fbx",
+    "size": [
+     0.1,
+     0.18,
+     0.11
+    ],
+    "tris": 166
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_01_v6.fbx",
+    "size": [
+     0.14,
+     0.2,
+     0.15
+    ],
+    "tris": 220
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_01_v7.fbx",
+    "size": [
+     0.16,
+     0.29,
+     0.18
+    ],
+    "tris": 304
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_01_v8.fbx",
+    "size": [
+     0.18,
+     0.33,
+     0.18
+    ],
+    "tris": 375
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_01_v9.fbx",
+    "size": [
+     0.23,
+     0.37,
+     0.21
+    ],
+    "tris": 561
+   }
+  ]
  },
  "shrub_02": {
   "id": "shrub_02",
   "licence": "CC0 (Poly Haven)",
   "note": "scrub",
-  "path": "Assets/SecondFace/Models/Nature/shrub_02.glb",
+  "path": "Assets/SecondFace/Models/Nature/shrub_02_v1.fbx",
   "place": "scatter",
   "size": [
-   2.34,
-   1.98,
-   1.79
+   1.31,
+   1.69,
+   1.63
   ],
   "tris": 5997,
   "tris_src": 27254,
-  "use": "scrub"
+  "use": "scrub",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_02_v1.fbx",
+    "size": [
+     1.31,
+     1.69,
+     1.63
+    ],
+    "tris": 1670
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_02_v2.fbx",
+    "size": [
+     1.11,
+     1.51,
+     1.28
+    ],
+    "tris": 1153
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_02_v3.fbx",
+    "size": [
+     1.77,
+     1.32,
+     2.29
+    ],
+    "tris": 2032
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_02_v4.fbx",
+    "size": [
+     1.07,
+     1.23,
+     1.1
+    ],
+    "tris": 1142
+   }
+  ]
  },
  "shrub_03": {
   "id": "shrub_03",
   "licence": "CC0 (Poly Haven)",
   "note": "scrub",
-  "path": "Assets/SecondFace/Models/Nature/shrub_03.glb",
+  "path": "Assets/SecondFace/Models/Nature/shrub_03_v1.fbx",
   "place": "scatter",
   "size": [
-   0.22,
+   0.2,
    0.4,
    0.15
   ],
   "tris": 4996,
   "tris_src": 8287,
-  "use": "scrub"
+  "use": "scrub",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_03_v1.fbx",
+    "size": [
+     0.2,
+     0.4,
+     0.15
+    ],
+    "tris": 1438
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_03_v2.fbx",
+    "size": [
+     0.18,
+     0.35,
+     0.12
+    ],
+    "tris": 1286
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_03_v3.fbx",
+    "size": [
+     0.1,
+     0.3,
+     0.11
+    ],
+    "tris": 1080
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_03_v4.fbx",
+    "size": [
+     0.11,
+     0.26,
+     0.09
+    ],
+    "tris": 1192
+   }
+  ]
  },
  "shrub_04": {
   "id": "shrub_04",
   "licence": "CC0 (Poly Haven)",
   "note": "scrub",
-  "path": "Assets/SecondFace/Models/Nature/shrub_04.glb",
+  "path": "Assets/SecondFace/Models/Nature/shrub_04_v1.fbx",
   "place": "scatter",
   "size": [
-   0.58,
-   0.22,
-   0.15
+   0.14,
+   0.15,
+   0.08
   ],
   "tris": 6000,
   "tris_src": 27327,
-  "use": "scrub"
+  "use": "scrub",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_04_v1.fbx",
+    "size": [
+     0.14,
+     0.15,
+     0.08
+    ],
+    "tris": 839
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_04_v2.fbx",
+    "size": [
+     0.17,
+     0.16,
+     0.13
+    ],
+    "tris": 1434
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/shrub_04_v3.fbx",
+    "size": [
+     0.29,
+     0.22,
+     0.15
+    ],
+    "tris": 3727
+   }
+  ]
  },
  "tree_small_02": {
   "id": "tree_small_02",
   "licence": "CC0 (Poly Haven)",
   "note": "small tree (sheltered ground)",
-  "path": "Assets/SecondFace/Models/Nature/tree_small_02.glb",
+  "path": "Assets/SecondFace/Models/Nature/tree_small_02.fbx",
   "place": "scatter",
   "size": [
-   2.92,
-   4.56,
-   4.29
+   2.87,
+   4.24,
+   4.27
   ],
-  "tris": 42855,
+  "tris": 42840,
   "tris_src": 2062487,
-  "use": "tree"
+  "use": "tree",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/tree_small_02.fbx",
+    "size": [
+     2.87,
+     4.24,
+     4.27
+    ],
+    "tris": 42758
+   }
+  ]
  },
  "tree_stump_01": {
   "id": "tree_stump_01",
   "licence": "CC0 (Poly Haven)",
   "note": "stump (logging)",
-  "path": "Assets/SecondFace/Models/Nature/tree_stump_01.glb",
+  "path": "Assets/SecondFace/Models/Nature/tree_stump_01.fbx",
   "place": "scatter",
   "size": [
-   1.43,
+   1.42,
    0.57,
    1.59
   ],
   "tris": 2999,
   "tris_src": 41046,
-  "use": "debris"
+  "use": "debris",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/tree_stump_01.fbx",
+    "size": [
+     1.42,
+     0.57,
+     1.59
+    ],
+    "tris": 2999
+   }
+  ]
  },
  "wild_rooibos_bush": {
   "id": "wild_rooibos_bush",
   "licence": "CC0 (Poly Haven)",
   "note": "dry bush",
-  "path": "Assets/SecondFace/Models/Nature/wild_rooibos_bush.glb",
+  "path": "Assets/SecondFace/Models/Nature/wild_rooibos_bush_v1.fbx",
   "place": "scatter",
   "size": [
-   0.7,
+   0.69,
    0.54,
    0.84
   ],
   "tris": 5998,
   "tris_src": 27519,
-  "use": "scrub"
+  "use": "scrub",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/wild_rooibos_bush_v1.fbx",
+    "size": [
+     0.69,
+     0.54,
+     0.84
+    ],
+    "tris": 2867
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/wild_rooibos_bush_v2.fbx",
+    "size": [
+     0.52,
+     0.54,
+     0.47
+    ],
+    "tris": 1370
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/wild_rooibos_bush_v3.fbx",
+    "size": [
+     0.43,
+     0.45,
+     0.47
+    ],
+    "tris": 916
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/wild_rooibos_bush_v4.fbx",
+    "size": [
+     0.32,
+     0.42,
+     0.38
+    ],
+    "tris": 585
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/wild_rooibos_bush_v5.fbx",
+    "size": [
+     0.28,
+     0.31,
+     0.17
+    ],
+    "tris": 260
+   }
+  ]
  }
 }

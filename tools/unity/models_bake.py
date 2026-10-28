@@ -28,7 +28,6 @@ OUT = os.path.join(M.ROOT, 'unity', 'Assets', 'SecondFace', 'Models', 'Nature')
 REL = 'Assets/SecondFace/Models/Nature'
 TEX = 1024
 NORMAL_TEX = 512
-GAP = 0.5           # metres of ground between two variants in one scan file
 PATCH = 6.0         # a scan wider than this is a ground patch (a rock bed, a stone field): never split, placed deliberately
 
 # Triangle budget per model (None = not baked: needle-geometry trees are rebuilt as card trees, see docs/PORT.md).
@@ -148,69 +147,76 @@ def export_materials(key, meshes):
         assert len(m.name) <= 63, m.name
 
 
-def split_variants(meshes, footprint):
-    """One object per variant: loose parts grouped by a ground-plane occupancy grid (parts closer than GAP join), small
-    groups (stray twigs, pebbles) folded into the nearest large one. Patches stay whole."""
+def split_variants(meshes):
+    """One object per variant. Poly Haven ships a scan's variants as separate objects (<key>_a, _b, ... or small_a,
+    tall_b ...), so several objects are several variants. A single long, thin object is a row of plants or stones
+    (shrub_01: nine seedlings in one mesh): it is cut where the vertices along its length leave an empty stretch, and
+    slivers under a quarter of the largest piece join their neighbour. Anything else stays whole (a rock bed, a tree).
+    Distance grouping was tried and fails: neighbouring shrubs' branches come within centimetres."""
+    import numpy as np
     for o in bpy.context.scene.objects: o.select_set(False)
-    for o in meshes: o.select_set(True)
-    bpy.context.view_layer.objects.active = meshes[0]
-    if len(meshes) > 1: bpy.ops.object.join()
-    whole = bpy.context.view_layer.objects.active
-    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-    if footprint > PATCH: return [whole]
-    bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.mesh.separate(type='LOOSE'); bpy.ops.object.mode_set(mode='OBJECT')
-    parts = [o for o in bpy.context.scene.objects if o.type == 'MESH']
-    boxes = []
-    for o in parts:
-        xs = [v.co.x for v in o.data.vertices]; ys = [v.co.y for v in o.data.vertices]
-        boxes.append((min(xs), min(ys), max(xs), max(ys)))
-    x0 = min(b[0] for b in boxes); y0 = min(b[1] for b in boxes)
-    cell = GAP / 2
-    nx = int((max(b[2] for b in boxes) - x0) / cell) + 3; ny = int((max(b[3] for b in boxes) - y0) / cell) + 3
-    grid = [[-1] * ny for _ in range(nx)]
-    cells = []
-    for i, (ax, ay, bx, by) in enumerate(boxes):
-        cs = [(cx, cy) for cx in range(int((ax - x0) / cell), int((bx - x0) / cell) + 1) for cy in range(int((ay - y0) / cell), int((by - y0) / cell) + 1)]
-        cells.append(cs)
-        for cx, cy in cs: grid[cx][cy] = 0
-    label = 0
-    for cx in range(nx):
-        for cy in range(ny):
-            if grid[cx][cy] != 0: continue
-            label += 1; stack = [(cx, cy)]; grid[cx][cy] = label
-            while stack:
-                x, y = stack.pop()
-                for dx in (-1, 0, 1):
-                    for dy in (-1, 0, 1):
-                        u, w = x + dx, y + dy
-                        if 0 <= u < nx and 0 <= w < ny and grid[u][w] == 0: grid[u][w] = label; stack.append((u, w))
-    groups = {}
-    for i, cs in enumerate(cells): groups.setdefault(grid[cs[0][0]][cs[0][1]], []).append(i)
-    def extent(ids):
-        return max(max(boxes[i][2] for i in ids) - min(boxes[i][0] for i in ids), max(boxes[i][3] for i in ids) - min(boxes[i][1] for i in ids))
-    big = max(extent(ids) for ids in groups.values())
-    keep = {g: ids for g, ids in groups.items() if extent(ids) >= 0.25 * big}
-    for g, ids in groups.items():
-        if g in keep: continue
-        cx = sum((boxes[i][0] + boxes[i][2]) / 2 for i in ids) / len(ids); cy = sum((boxes[i][1] + boxes[i][3]) / 2 for i in ids) / len(ids)
-        def dist(k):
-            kx = sum((boxes[i][0] + boxes[i][2]) / 2 for i in keep[k]) / len(keep[k]); ky = sum((boxes[i][1] + boxes[i][3]) / 2 for i in keep[k]) / len(keep[k])
-            return (kx - cx) ** 2 + (ky - cy) ** 2
-        keep[min(keep, key=dist)].extend(ids)
+    for o in meshes:
+        o.select_set(True); bpy.context.view_layer.objects.active = o
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        o.select_set(False)
+    if len(meshes) > 1: return meshes
+    ob = meshes[0]; me = ob.data
+    co = np.empty(len(me.vertices) * 3, np.float32); me.vertices.foreach_get('co', co); co = co.reshape(-1, 3)
+    ext = co.max(0) - co.min(0)
+    axis = 0 if ext[0] >= ext[1] else 1
+    if ext[axis] < 3 * max(ext[1 - axis], 1e-3): return [ob]
+    t = co[:, axis]; lo = t.min()
+    nb = 400; width = (t.max() - lo) / nb
+    hist = np.bincount(np.minimum(((t - lo) / width).astype(int), nb - 1), minlength=nb)
+    cuts, run = [], 0
+    for i, c in enumerate(hist):   # the middle of every empty stretch of at least two bins
+        if c == 0: run += 1
+        else:
+            if run >= 2: cuts.append(lo + (i - run / 2) * width)
+            run = 0
+    if not cuts: return [ob]
+    bounds = [lo] + cuts + [float(t.max())]
+    while len(bounds) > 2:   # fold the shortest piece into its shorter neighbour until none is a sliver
+        lens = [bounds[i + 1] - bounds[i] for i in range(len(bounds) - 1)]
+        i = min(range(len(lens)), key=lambda k: lens[k])
+        if lens[i] >= 0.25 * max(lens): break
+        if i == 0: del bounds[1]
+        elif i == len(lens) - 1: del bounds[-2]
+        elif lens[i - 1] < lens[i + 1]: del bounds[i]
+        else: del bounds[i + 1]
+    if len(bounds) == 2: return [ob]
+    merged = [None] + bounds[1:-1] + [None]
+    centre = np.array([sum(co[v][axis] for v in poly.vertices) / len(poly.vertices) for poly in me.polygons])
+    seg = np.searchsorted(np.array(merged[1:-1]), centre).astype(np.int32)
+    attr = me.attributes.new('variant', 'INT', 'FACE'); attr.data.foreach_set('value', seg.tolist())
     variants = []
-    for g in sorted(keep, key=lambda g: (sum(boxes[i][0] for i in keep[g]) / len(keep[g]))):
+    bpy.context.tool_settings.mesh_select_mode = (False, False, True)   # face selection survives entering edit mode
+    for n in range(1, len(merged) - 1):   # peel each piece off; piece 0 stays in `ob` (faces reorder: read the attribute)
+        cur = [0] * len(ob.data.polygons); ob.data.attributes['variant'].data.foreach_get('value', cur)
+        if n not in cur: continue
+        for v in ob.data.vertices: v.select = False
+        for e in ob.data.edges: e.select = False
+        for poly in ob.data.polygons:
+            poly.select = cur[poly.index] == n
+            if poly.select:
+                for vi in poly.vertices: ob.data.vertices[vi].select = True
         for o in bpy.context.scene.objects: o.select_set(False)
-        objs = [parts[i] for i in keep[g]]
-        for o in objs: o.select_set(True)
-        bpy.context.view_layer.objects.active = objs[0]
-        if len(objs) > 1: bpy.ops.object.join()
-        variants.append(bpy.context.view_layer.objects.active)
-    return variants
+        ob.select_set(True); bpy.context.view_layer.objects.active = ob
+        bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.separate(type='SELECTED'); bpy.ops.object.mode_set(mode='OBJECT')
+        variants.append(next(o for o in bpy.context.selected_objects if o != ob))
+    out = [o for o in [ob] + variants if len(o.data.vertices)]
+    for o in out:
+        if 'variant' in o.data.attributes: o.data.attributes.remove(o.data.attributes['variant'])
+    return out
 
 
 def export_variant(ob, path, rel):
     """Re-centres a variant on its base (median x/y, lowest z) and writes it as FBX with a stable meta."""
+    for o in bpy.context.scene.objects: o.select_set(False)
+    ob.select_set(True); bpy.context.view_layer.objects.active = ob
+    bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.delete_loose(use_verts=True, use_edges=True, use_faces=False)   # strays a separate leaves behind
+    bpy.ops.object.mode_set(mode='OBJECT')
     vs = [v.co for v in ob.data.vertices]
     xs = sorted(v.x for v in vs); ys = sorted(v.y for v in vs)
     origin = Vector((xs[len(xs) // 2], ys[len(ys) // 2], min(v.z for v in vs)))
@@ -218,9 +224,10 @@ def export_variant(ob, path, rel):
     for o in bpy.context.scene.objects: o.select_set(False)
     ob.select_set(True); bpy.context.view_layer.objects.active = ob
     ob.name = os.path.splitext(os.path.basename(path))[0]
+    # Y-up mesh data with an identity root (see kitlib.export_fbx: a compensating root rotation is lost to any builder)
     bpy.ops.export_scene.fbx(filepath=path, use_selection=True, apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y',
-                             mesh_smooth_type='FACE', use_mesh_modifiers=True, bake_anim=False, add_leaf_bones=False, path_mode='STRIP',
-                             embed_textures=False)
+                             bake_space_transform=True, mesh_smooth_type='FACE', use_mesh_modifiers=True, bake_anim=False,
+                             add_leaf_bones=False, path_mode='STRIP', embed_textures=False)
     K.write_model_meta(path, rel)
     lo = [min(v.co[i] for v in ob.data.vertices) for i in range(3)]; hi = [max(v.co[i] for v in ob.data.vertices) for i in range(3)]
     return [round(hi[0] - lo[0], 2), round(hi[2] - lo[2], 2), round(hi[1] - lo[1], 2)], tri_count(ob)   # x, up, depth
@@ -257,17 +264,15 @@ def main():
         t = time.time()
         try:
             before, after, meshes = bake(key, src, None, budget)
-            lo = [min((o.matrix_world @ Vector(c))[i] for o in meshes for c in o.bound_box) for i in range(3)]
-            hi = [max((o.matrix_world @ Vector(c))[i] for o in meshes for c in o.bound_box) for i in range(3)]
-            footprint = max(hi[0] - lo[0], hi[1] - lo[1])
             export_materials(key, meshes)
-            variants = split_variants(meshes, footprint)
+            variants = split_variants(meshes)
             out = []
             for n, ob in enumerate(variants):
                 name = key if len(variants) == 1 else f'{key}_v{n + 1}'
                 rel = f'{REL}/{name}.fbx'
                 size, tris = export_variant(ob, os.path.join(OUT, name + '.fbx'), rel)
                 out.append({'path': rel, 'size': size, 'tris': tris})
+            footprint = max(max(v['size'][0], v['size'][2]) for v in out)
         except Exception as e:
             import traceback; traceback.print_exc()
             print(f'{key:26s} failed: {e}'); continue

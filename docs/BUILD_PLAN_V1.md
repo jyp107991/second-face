@@ -137,16 +137,14 @@ What the engine captures show is still wrong (each has a step in §5 P2 or §10)
   texture that the mip levels blur opaque, so the shell covers the iris; drop the shell in `mh_build.py`
   (§6.B.3, §10 step 3).
 - **Hair breaks the hair rule** (§3.4) on the bake-off people (§10 step 2).
-- **Leaves render near-black** and **multi-variant scans scatter as rows of identical plants**: glTFast materials
-  and the scans' side-by-side variants (§10 step 6).
+- ~~Leaves near-black, rows of identical plants~~: fixed by the move to FBX with one model per variant (§10 step 6).
 - **The vegetation camera sees the terrain edge** (`vegetation_iso`): frame inside the terrain (§10 step 7).
 - **The boot capture lacks the UI**: a camera render does not include UI Toolkit; P5 captures render the panel
   through `PanelSettings.targetTexture` (§8).
 - **The captured walk holds the forearms raised in front** on every person (`people_motion_*`): a retarget fault,
   likely the rest pose of the converted clips against the game rig's (check `cmu2fbx.py`'s reference pose and the
   Humanoid muscle settings); fix with P4.4 locomotion at the latest.
-- **Some frontier walls lean** in `place_frontier_*`: check each piece's pivot and rotation in the kit builder
-  before P3.5 assembles places from the kit.
+- ~~Some frontier walls lean~~: every kit piece lay on its side (the export axis, §8); fixed 2026-10-28.
 - `bake_cloth` palette tones are first guesses; judge them on the engine captures.
 - `tools/unity/kits/trees.py` (Sapling card trees) is **not written**; §6.L specifies it.
 - The Addressables skeleton is not started; §6.A.7 specifies it.
@@ -271,7 +269,11 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    1 K and RGB, skin diffuse 2 K (own per person), the sculptor's shapes only on the player (`sculpt`), 102 → 66 MB
    in the repository; per person in the build (ASTC 6×6 + mesh file) 7.8–10.6 MB plus 5 MB shared. The rest is
    mesh weight (FBX 3–5 MB): LODs and decimation in P4.1.
-6. **Nature to FBX, one model per variant** (§6.Q, fixes the near-black leaves and the rows of identical plants):
+6. ~~**Nature to FBX, one model per variant**~~ — done 2026-10-28: 27 models, 75 variants, 35 MB; glTFast removed.
+   As built: variants come from the scan's own objects (Poly Haven ships them as <key>_a, _b ...), and a single long
+   thin object (a row of seedlings) is cut at the empty stretches along its length (distance grouping fails:
+   neighbouring shrubs touch); base colour JPEG when opaque, PNG only when it has real transparency (the quiver
+   tree's succulent leaves are flagged "blend" but solid); normals 512. The original spec, for reference:
    `models_bake.py` exports FBX instead of `.glb`; it splits a scan into variants by its separate mesh objects,
    or, if the scan is one object, by connected parts grouped by a gap over 0.5 m on the ground plane, and
    re-centres each variant on its own origin (median x/z, lowest y) as `<key>_v<n>.fbx`. Material slots are
@@ -286,9 +288,7 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    Game assembly with EditMode tests on the rules. Commit.
 8. **`trees.py`** (§6.L): pine first (three seeds), then fir and broadleaf, with LOD1/LOD2; ≤ 3 K triangles
    each; `vegetation_teeth` capture on a conifer slope. Two commits (pine; fir, broadleaf and LODs).
-9. **Frontier kit check**: `place_frontier_*` shows leaning walls. Run `Diagnostics.Report` over every frontier
-   piece (root rotation identity, bounds upright); fix the piece in `frontier.py` or the scene builder; re-read
-   the captures.
+9. ~~**Frontier kit check**~~ — done with step 6: the export axis (§8); the town reads as a town now.
 10. **Addressables skeleton** (§6.A.7): groups, labels, the content build step (an editor method run by
     `editor.sh run` locally and by CI before the APK build), a PlayMode smoke test that loads one kit prefab by
     address. Commit.
@@ -925,9 +925,13 @@ numbers from the densest place written into PORT.md §5.
 - **Material slot names lose their colon** (local editor, 2026-10-28): Blender's FBX round trip turns
   `mat_<kind>:<texture>` into `mat_<kind>_<texture>`, so a parser keyed on ':' finds nothing and people render
   untextured grey. `PeopleMaterials.Build` matches the known kinds followed by ':' or '_'.
-- **Kit pieces lie flat** (first engine captures): Blender's Z-up arrives as a 270° rotation on each piece's root;
-  builders that set `transform.rotation` overwrite it. Kit metas and `KitImportPostprocessor` set
-  `bakeAxisConversion` so the root stays identity.
+- **Kit pieces and nature models lay on their sides** (walls flat on the ground, roofs on end, trees upside down
+  under the terrain): Blender's FBX exporter keeps the mesh Z-up and adds a compensating 90° rotation on the root;
+  every builder that sets `transform.rotation` overwrites it. Unity's `bakeAxisConversion` does not help (the file
+  already declares Y-up), although an earlier entry here claimed it did: the frontier captures stayed broken until
+  2026-10-28. The fix is on the Blender side: `bake_space_transform=True` in `kitlib.export_fbx` and
+  `models_bake.export_variant` writes Y-up mesh data with an identity root (people keep their rig's own handling).
+  Check with `Diagnostics.Report`: root rotation (0, 0, 0), height on Y.
 - **A partial texture fetch emptied the manifest** (`assets.py --only` once rewrote `library.json` to three
   entries and three scenes silently lost their terrain): the manifest now always lists everything on disk.
 - **A Personal licence file only works on the machine that made it** ("Machine bindings don't match", in every CI
@@ -1013,11 +1017,11 @@ step by step in §5. Each step below is one commit (a few WIP commits at most) a
 3. Eyes: drop the cornea faces, opaque eye material (P2.3, §6.B.3); read `portrait_*`.
 4. `bake_skin` (sun, creases, lips, stubble) (P2.4); read the portraits.
 5. People weight ≤ 8 MB each (P2.5, §6.B.6).
-6. Nature models to FBX, one per variant, `nature` materials, glTFast removed (P2.6); read `vegetation_iso`.
+6. ~~Nature models to FBX, one per variant, `nature` materials, glTFast removed~~ (done 2026-10-28).
 7. `vegetation_iso` framed inside the terrain; `ScatterRules` extracted with EditMode tests (P2.7).
 8. `trees.py` pine, three seeds (P2.8, §6.L); `vegetation_teeth`.
 9. Fir and broadleaf; LOD1/LOD2 and the `LODGroup` (P2.8).
-10. Frontier kit pieces upright (P2.9); read `place_frontier_*`.
+10. ~~Frontier kit pieces upright~~ (done with step 6).
 11. Addressables skeleton + the content build step + the PlayMode smoke test (P2.10, §6.A.7).
 12. P2 verdict and evidence (P2.11). Then, time-boxed to one step: evaluate the official Unity CLI
     (`docs/UNITY_PRACTICES.md` §8) as a faster loop than restarting the editor per run; adopt it only if it runs
