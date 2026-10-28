@@ -1,0 +1,407 @@
+{
+ "boulder_01": {
+  "id": "boulder_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "boulder",
+  "path": "Assets/SecondFace/Models/Nature/boulder_01.glb",
+  "place": "scatter",
+  "size": [
+   1.27,
+   1.0,
+   1.83
+  ],
+  "tris": 26510,
+  "tris_src": 66122,
+  "use": "rock"
+ },
+ "coast_land_rocks_02": {
+  "id": "coast_land_rocks_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "coast rocks",
+  "path": "Assets/SecondFace/Models/Nature/coast_land_rocks_02.glb",
+  "place": "patch",
+  "size": [
+   4.89,
+   1.4,
+   10.45
+  ],
+  "tris": 7000,
+  "tris_src": 1291146,
+  "use": "rock"
+ },
+ "coast_rocks_01": {
+  "id": "coast_rocks_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "coast rocks",
+  "path": "Assets/SecondFace/Models/Nature/coast_rocks_01.glb",
+  "place": "patch",
+  "size": [
+   59.51,
+   3.29,
+   42.52
+  ],
+  "tris": 5999,
+  "tris_src": 679936,
+  "use": "rock"
+ },
+ "dead_quiver_trunk": {
+  "id": "dead_quiver_trunk",
+  "licence": "CC0 (Poly Haven)",
+  "note": "dead quiver trunk",
+  "path": "Assets/SecondFace/Models/Nature/dead_quiver_trunk.glb",
+  "place": "scatter",
+  "size": [
+   0.31,
+   1.99,
+   0.27
+  ],
+  "tris": 4000,
+  "tris_src": 17978,
+  "use": "tree"
+ },
+ "dead_tree_trunk": {
+  "id": "dead_tree_trunk",
+  "licence": "CC0 (Poly Haven)",
+  "note": "dead tree",
+  "path": "Assets/SecondFace/Models/Nature/dead_tree_trunk.glb",
+  "place": "scatter",
+  "size": [
+   3.05,
+   0.29,
+   0.28
+  ],
+  "tris": 4500,
+  "tris_src": 101802,
+  "use": "tree"
+ },
+ "dead_tree_trunk_02": {
+  "id": "dead_tree_trunk_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "dead tree",
+  "path": "Assets/SecondFace/Models/Nature/dead_tree_trunk_02.glb",
+  "place": "scatter",
+  "size": [
+   4.05,
+   1.06,
+   1.06
+  ],
+  "tris": 4500,
+  "tris_src": 83128,
+  "use": "tree"
+ },
+ "dry_branches_medium_01": {
+  "id": "dry_branches_medium_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "dry branches",
+  "path": "Assets/SecondFace/Models/Nature/dry_branches_medium_01.glb",
+  "place": "scatter",
+  "size": [
+   0.32,
+   0.34,
+   1.3
+  ],
+  "tris": 3997,
+  "tris_src": 16803,
+  "use": "debris"
+ },
+ "fern_02": {
+  "id": "fern_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "fern (the Wet)",
+  "path": "Assets/SecondFace/Models/Nature/fern_02.glb",
+  "place": "scatter",
+  "size": [
+   0.99,
+   0.43,
+   0.89
+  ],
+  "tris": 2995,
+  "tris_src": 6232,
+  "use": "scrub"
+ },
+ "grass_medium_01": {
+  "id": "grass_medium_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "grass clump (detail mesh)",
+  "path": "Assets/SecondFace/Models/Nature/grass_medium_01.glb",
+  "place": "scatter",
+  "size": [
+   0.32,
+   0.34,
+   0.33
+  ],
+  "tris": 2988,
+  "tris_src": 24730,
+  "use": "grass"
+ },
+ "grass_medium_02": {
+  "id": "grass_medium_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "grass clump (detail mesh)",
+  "path": "Assets/SecondFace/Models/Nature/grass_medium_02.glb",
+  "place": "scatter",
+  "size": [
+   0.36,
+   0.41,
+   0.43
+  ],
+  "tris": 2496,
+  "tris_src": 7842,
+  "use": "grass"
+ },
+ "namaqualand_boulder_02": {
+  "id": "namaqualand_boulder_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "boulder",
+  "path": "Assets/SecondFace/Models/Nature/namaqualand_boulder_02.glb",
+  "place": "scatter",
+  "size": [
+   2.53,
+   0.88,
+   1.23
+  ],
+  "tris": 2499,
+  "tris_src": 97964,
+  "use": "rock"
+ },
+ "namaqualand_boulder_03": {
+  "id": "namaqualand_boulder_03",
+  "licence": "CC0 (Poly Haven)",
+  "note": "boulder",
+  "path": "Assets/SecondFace/Models/Nature/namaqualand_boulder_03.glb",
+  "place": "scatter",
+  "size": [
+   2.41,
+   1.47,
+   3.07
+  ],
+  "tris": 2500,
+  "tris_src": 64826,
+  "use": "rock"
+ },
+ "namaqualand_boulders_01": {
+  "id": "namaqualand_boulders_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "boulder group",
+  "path": "Assets/SecondFace/Models/Nature/namaqualand_boulders_01.glb",
+  "place": "scatter",
+  "size": [
+   0.38,
+   0.25,
+   0.59
+  ],
+  "tris": 3998,
+  "tris_src": 40850,
+  "use": "rock"
+ },
+ "namaqualand_rocks_01": {
+  "id": "namaqualand_rocks_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "rocks",
+  "path": "Assets/SecondFace/Models/Nature/namaqualand_rocks_01.glb",
+  "place": "scatter",
+  "size": [
+   0.23,
+   0.15,
+   0.22
+  ],
+  "tris": 3996,
+  "tris_src": 85716,
+  "use": "rock"
+ },
+ "namaqualand_stones_01": {
+  "id": "namaqualand_stones_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "stones (scatter)",
+  "path": "Assets/SecondFace/Models/Nature/namaqualand_stones_01.glb",
+  "place": "scatter",
+  "size": [
+   1.02,
+   0.08,
+   0.11
+  ],
+  "tris": 2996,
+  "tris_src": 70124,
+  "use": "rock"
+ },
+ "quiver_tree_01": {
+  "id": "quiver_tree_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "quiver tree (the Sallow)",
+  "path": "Assets/SecondFace/Models/Nature/quiver_tree_01.glb",
+  "place": "scatter",
+  "size": [
+   1.18,
+   2.72,
+   0.97
+  ],
+  "tris": 9000,
+  "tris_src": 150124,
+  "use": "tree"
+ },
+ "quiver_tree_02": {
+  "id": "quiver_tree_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "quiver tree (the Sallow)",
+  "path": "Assets/SecondFace/Models/Nature/quiver_tree_02.glb",
+  "place": "scatter",
+  "size": [
+   0.87,
+   1.47,
+   0.88
+  ],
+  "tris": 9000,
+  "tris_src": 82074,
+  "use": "tree"
+ },
+ "rock_07": {
+  "id": "rock_07",
+  "licence": "CC0 (Poly Haven)",
+  "note": "rock",
+  "path": "Assets/SecondFace/Models/Nature/rock_07.glb",
+  "place": "scatter",
+  "size": [
+   0.17,
+   0.14,
+   0.32
+  ],
+  "tris": 2000,
+  "tris_src": 14844,
+  "use": "rock"
+ },
+ "rock_09": {
+  "id": "rock_09",
+  "licence": "CC0 (Poly Haven)",
+  "note": "rock",
+  "path": "Assets/SecondFace/Models/Nature/rock_09.glb",
+  "place": "scatter",
+  "size": [
+   0.07,
+   0.03,
+   0.14
+  ],
+  "tris": 2000,
+  "tris_src": 12416,
+  "use": "rock"
+ },
+ "root_cluster_01": {
+  "id": "root_cluster_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "roots",
+  "path": "Assets/SecondFace/Models/Nature/root_cluster_01.glb",
+  "place": "scatter",
+  "size": [
+   4.12,
+   1.51,
+   2.68
+  ],
+  "tris": 4999,
+  "tris_src": 225261,
+  "use": "debris"
+ },
+ "shrub_01": {
+  "id": "shrub_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "scrub",
+  "path": "Assets/SecondFace/Models/Nature/shrub_01.glb",
+  "place": "scatter",
+  "size": [
+   2.59,
+   0.4,
+   0.22
+  ],
+  "tris": 6999,
+  "tris_src": 156012,
+  "use": "scrub"
+ },
+ "shrub_02": {
+  "id": "shrub_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "scrub",
+  "path": "Assets/SecondFace/Models/Nature/shrub_02.glb",
+  "place": "scatter",
+  "size": [
+   2.34,
+   1.98,
+   1.79
+  ],
+  "tris": 5997,
+  "tris_src": 27254,
+  "use": "scrub"
+ },
+ "shrub_03": {
+  "id": "shrub_03",
+  "licence": "CC0 (Poly Haven)",
+  "note": "scrub",
+  "path": "Assets/SecondFace/Models/Nature/shrub_03.glb",
+  "place": "scatter",
+  "size": [
+   0.22,
+   0.4,
+   0.15
+  ],
+  "tris": 4996,
+  "tris_src": 8287,
+  "use": "scrub"
+ },
+ "shrub_04": {
+  "id": "shrub_04",
+  "licence": "CC0 (Poly Haven)",
+  "note": "scrub",
+  "path": "Assets/SecondFace/Models/Nature/shrub_04.glb",
+  "place": "scatter",
+  "size": [
+   0.58,
+   0.22,
+   0.15
+  ],
+  "tris": 6000,
+  "tris_src": 27327,
+  "use": "scrub"
+ },
+ "tree_small_02": {
+  "id": "tree_small_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "small tree (sheltered ground)",
+  "path": "Assets/SecondFace/Models/Nature/tree_small_02.glb",
+  "place": "scatter",
+  "size": [
+   2.92,
+   4.56,
+   4.29
+  ],
+  "tris": 42855,
+  "tris_src": 2062487,
+  "use": "tree"
+ },
+ "tree_stump_01": {
+  "id": "tree_stump_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "stump (logging)",
+  "path": "Assets/SecondFace/Models/Nature/tree_stump_01.glb",
+  "place": "scatter",
+  "size": [
+   1.43,
+   0.57,
+   1.59
+  ],
+  "tris": 2999,
+  "tris_src": 41046,
+  "use": "debris"
+ },
+ "wild_rooibos_bush": {
+  "id": "wild_rooibos_bush",
+  "licence": "CC0 (Poly Haven)",
+  "note": "dry bush",
+  "path": "Assets/SecondFace/Models/Nature/wild_rooibos_bush.glb",
+  "place": "scatter",
+  "size": [
+   0.7,
+   0.54,
+   0.84
+  ],
+  "tris": 5998,
+  "tris_src": 27519,
+  "use": "scrub"
+ }
+}

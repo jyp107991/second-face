@@ -14,3 +14,4 @@ tools/assets/__pycache__/
 # .NET build outputs of the local Core/Game compile loop
 core/**/bin/
 core/**/obj/
+**/__pycache__/

@@ -325,10 +325,17 @@ all 28 captured clips are converted (`tools/unity/motion/cmu2fbx.py` → `Motion
 root sidecars). The frontier kit (22 pieces) and the well-town street scene (`Test_Frontier`, three captures) join
 the shelter kit. Run 6 (packages) and run 7 (people, motion, kits) build the APK.
 Local Cycles sanity renders live in the session scratch (not the engine; geometry and fit checks only).
-**Next action:** the owner copies the workflow so the tests-and-screenshots job runs; read `Unity-screenshots`
-(terrain, materials sheet, shelter place, people lineup, portraits, motion) and fix what they show; then candidates B
-(MB-Lab) and C (UMA) if A falls short at portrait distance; then the remaining kits (frontier adobe/scrap, toll fort,
-bridge town) and the first outdoor place.
+Run 8 (frontier kit, all clips) built the APK. P2.4: the owner's **wardrobe rule** (all clothing lore-consistent:
+post-apocalyptic, cyberpunk, anarchistic) is recorded in CLAUDE.md §2 and DESIGN_UNITY §4; the bake-off people are
+dressed from curated silhouettes and every garment texture is baked by our pipeline (`bake_cloth` in
+`mh_build.py`: re-dyed, grimed, faded, patched, taped). The CC0 nature models are baked to phone budgets by
+`tools/unity/models_bake.py` and committed as `.glb` under `Models/Nature/` (26; conifers become card trees in P3);
+`Editor/Build/VegetationTestScene.cs` scatters them over the Sallow (`vegetation_iso` capture).
+**Next action:** the owner copies `tools/ci/android.yml` over `.github/workflows/android.yml` so the
+tests-and-screenshots job runs; read `Unity-screenshots` (terrain, materials sheet, shelter and frontier places,
+people lineup, portraits, motion, vegetation) and fix what they show; then candidates B (MB-Lab) and C (UMA) if A
+falls short at portrait distance; then authored garments (coats, ponchos, rigs, plating) under the wardrobe rule,
+the remaining kits (toll fort, bridge town) and the first outdoor place.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

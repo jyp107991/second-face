@@ -206,7 +206,9 @@ runs smoothly on device. Fallbacks for GLES3 phones are listed where a feature n
 - *People*: a bake-off in the first redesign phase between the candidate pipelines (MakeHuman CC0 base with our
   Blender re-authoring; MB-Lab (open source) bases; Unity UMA for modularity), judged on face quality at portrait
   distance, body variety, clothing at 2 K, hair, animation retargeting and crowd cost, with screenshots the owner
-  reviews. Clothing re-authored or newly built; skin maps synthesised at 2 K; hair as cards.
+  reviews. Clothing re-authored or newly built; skin maps synthesised at 2 K; hair as cards. Every garment obeys the
+  wardrobe rule (owner, 2026-10-28; DESIGN_UNITY §4): this world's salvage, re-dyed, patched and taped, clean
+  synthetics only on the megacity rich; found meshes are silhouettes only and are always re-textured by our bake.
 - *Motion*: CMU and other free captures converted to Humanoid clips; what captures lack (deaths, getting up, turns
   in place, aims) is built by our tools or from other free libraries.
 - *VFX, audio, UI*: VFX Graph effects built in-project; audio from CC0/CC-BY libraries (Freesound, OpenGameArt)
@@ -264,3 +266,18 @@ runs smoothly on device. Fallbacks for GLES3 phones are listed where a feature n
   with a sidecar JSON for loop and root settings). Editor side: import post-processors bind materials and set
   Humanoid imports; code-built scenes (terrain, material sheet, shelter place, people lineup) are captured by the
   PlayMode screenshot tests. Candidates B (MB-Lab) and C (UMA) are evaluated after A's captures are judged.
+- 2026-10-28 P2.3 continued: the people pipeline's local checks (Cycles renders in the session scratch) showed the
+  fit of eyes, brows, lashes and hair is right and faces carry age, build and ancestry; clothing from the CC0 packs is
+  fitted with the body hidden beneath; the eye's cornea is in the texture's alpha (clipped in Unity). Kits: shelter
+  (20) and frontier (22). All 28 captured clips converted. `tools/unity/models.py` fetches CC0 glTF trees, scrub and
+  rocks by manifest for the vegetation test.
+- 2026-10-28 P2.4: the owner's wardrobe rule (every clothing asset lore-consistent: post-apocalyptic, cyberpunk,
+  anarchistic) recorded in CLAUDE.md §2 and DESIGN_UNITY §4. `mh_build.py` now dresses the six bake-off people from
+  a curated set of silhouettes (work shirt, cargo and wool trousers, boots, a tool rig, a long coat as a duster, a
+  hood, a hoodie, a wrapped tunic, a skinsuit and silk coat for the rich) and bakes every garment's texture itself
+  (`bake_cloth`: desaturated weave under a palette tint, hem grime, sun-fade, patches, tape bands); the packs'
+  textures are never shipped. The Poly Haven scans are photoscan-grade (a pine is 17M triangles), so
+  `tools/unity/models_bake.py` (Blender) welds, decimates to per-model budgets (2–9 K; one 24 K hero tree) and packs
+  1 K JPEG textures into committed `.glb` files under `Models/Nature/` (26 models, ~30 MB); the needle conifers are
+  not baked — they become card trees built in Blender (Sapling + baked branch cards) in P3, with impostors. CI no
+  longer fetches models. `VegetationTestScene` scatters the baked set over the Sallow terrain (`vegetation_*`).

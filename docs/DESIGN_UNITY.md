@@ -93,6 +93,14 @@ The three benchmarks, and what we take from each on a phone:
   weathered, clearly dimorphic, proportions varying independently of mass), ancestries as presets that mix,
   lifestyles that shape the body and the grime, hair as cards, skin at 2 K with weathering, scars and tattoos,
   clothing as salvage layered and re-dyed, visible chrome as segmented matte plating with a lit accent.
+- **Wardrobe rule (owner, 2026-10-28, binding)**: every garment reads as this world's. The frontier wears salvage:
+  canvas, wool and leather re-dyed in a muted found palette, patched with other cloth, grimed from the hem up,
+  sun-faded, taped at the knee and cuff, carried in rigs and straps; hoods and scarves, never masks as a motif
+  (DESIGN §"Masks are not a motif"). The megacity street adds reflective tape, cable and cheap synthetics; the rich
+  wear clean synthetics and silk with lit trims. Nothing modern-fashion, printed, logoed, costume or uniform-as-such.
+  Found meshes (MakeHuman community packs, CC0/CC-BY) are silhouettes only; their textures are never shipped —
+  `tools/unity/people/mh_build.py` bakes a worn, re-dyed cloth onto each garment's UVs (`bake_cloth`) from a look
+  (`tint`, `grime`, `wear`, `patch`, `tape`). Authored garments (coats, ponchos, rigs, plating) follow in P4.
 - **Animation**: Humanoid Mecanim with captured motion (CMU and other free captures, converted by our pipeline),
   blend trees by speed and turn, idle loops for everyone standing, work loops, conversation gestures by tone,
   Animation Rigging for feet on the ground, heads that turn to whoever is near, hands on weapons and ledges;

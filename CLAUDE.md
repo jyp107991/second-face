@@ -93,6 +93,10 @@ The owner wants to play unspoiled.
   is best for our design)." What is kept and what is redesigned is set out in `docs/PORT.md` §1; the standard and
   the asset strategy in §4. The web game is neither a visual nor a design reference any more; its rules live on only
   where the narrative content depends on them (checks, flags, quests), and even those are open to redesign.
+- **Wardrobe is lore-bound** (owner, 2026-10-28, binding): every clothing asset must be consistent with this world —
+  post-apocalyptic, cyberpunk, anarchistic: salvaged, re-dyed, patched, layered, taped and rigged; clean synthetics and
+  lit trims only on the megacity rich; no prints, logos, modern fashion, costume or uniform-as-such. Found garment
+  meshes may be used for their silhouette alone and are always re-textured by our pipeline (`docs/DESIGN_UNITY.md` §4).
 - Visual style (superseded where the upgrade directive says otherwise): orthographic iso camera, rotatable/zoomable.
 
 ## 3. Engineering conventions

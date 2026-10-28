@@ -192,25 +192,59 @@ def build_rig(skel, verts_mh):
 # ----------------------------------------------------------------------------------------------------------------
 # People specs for the bake-off (narrative-neutral examples spanning WORLD.md §7)
 # ----------------------------------------------------------------------------------------------------------------
+# Wardrobe rule (owner, 2026-10-28, binding): every garment must read as this world's — salvaged, re-dyed, patched,
+# layered, taped; synthetic and clean only on the megacity rich. Community garment meshes are used for their
+# silhouette alone (plain shirts, trousers, boots, coats, hoods, rigs); no prints, logos, modern fashion or costume.
+# Their textures are never shipped as they come: each is re-baked by bake_cloth() with the look below.
+PALETTE = {
+    'canvas_faded': (0.52, 0.48, 0.40), 'olive_wax': (0.30, 0.31, 0.22), 'indigo_faded': (0.26, 0.30, 0.38),
+    'rust_dye': (0.48, 0.26, 0.18), 'wool_undyed': (0.62, 0.57, 0.48), 'wool_brown': (0.33, 0.26, 0.20),
+    'charcoal': (0.16, 0.16, 0.17), 'bone': (0.72, 0.68, 0.58), 'graphite_synth': (0.12, 0.12, 0.14),
+    'wine': (0.30, 0.10, 0.14), 'ochre': (0.60, 0.42, 0.22), 'leather_dark': (0.22, 0.15, 0.11), 'leather_tan': (0.45, 0.32, 0.22),
+}
+def W(**look): return look
+
 PEOPLE = [
     {'id': 'p1_labourer_m', 'gender': 1.0, 'age': 34, 'muscle': 0.72, 'weight': 0.42, 'height': 0.6, 'african': 0.9, 'asian': 0.0, 'caucasian': 0.1,
      'mods': {'sym:cheek-bones|decr|incr': 0.4, 'chin-width|decr|incr': 0.3, 'nose-scale-horiz|decr|incr': 0.3, 'head-age|decr|incr': 0.2, 'torso-vshape|decr|incr': 0.35, 'sym:upperarm-muscle|decr|incr': 0.4},
-     'skin': 'mindfront_skin_male_african_middleage', 'hair': 'culturalibre_hair_05', 'brows': 'mindfront_eyebrows_04', 'eyes': 'brown'},
+     'skin': 'mindfront_skin_male_african_middleage', 'hair': 'culturalibre_hair_05', 'brows': 'mindfront_eyebrows_04', 'eyes': 'brown',
+     'clothes': [('elvs_male_shirt_untucked_bd1', W(tint='rust_dye', grime=.5, wear=.6, patch=.3, sat=.2)),
+                 ('cortu_cargo_pants', W(tint='canvas_faded', grime=.9, wear=.5, patch=.5, sat=.3)),
+                 ('culturalibre_male_boots', W(tint='leather_dark', grime=.7, wear=.3, sat=.6, flat=.2)),
+                 ('mindfront_tactical_vest_male', W(tint='olive_wax', grime=.5, wear=.4, sat=.3))]},
     {'id': 'p2_settler_f', 'gender': 0.0, 'age': 26, 'muscle': 0.5, 'weight': 0.38, 'height': 0.42, 'african': 0.08, 'asian': 0.04, 'caucasian': 0.88,
      'mods': {'mouth-upperlip-volume|decr|incr': 0.25, 'nose-hump|decr|incr': 0.2, 'sym:cheek-bones|decr|incr': 0.2, 'hip-scale-horiz|decr|incr': 0.3, 'sym:eye-scale|decr|incr': 0.15},
-     'breastSize': 0.5, 'breastFirmness': 0.6, 'skin': 'toigo_light_skin_female_ginger_2', 'hair': 'toigo_inverted_bob', 'brows': 'mindfront_eyebrows_03', 'eyes': 'green'},
+     'breastSize': 0.5, 'breastFirmness': 0.6, 'skin': 'toigo_light_skin_female_ginger_2', 'hair': 'toigo_inverted_bob', 'brows': 'mindfront_eyebrows_03', 'eyes': 'green',
+     'clothes': [('toigo_fisherman_sweater', W(tint='wool_undyed', grime=.3, wear=.3, patch=.3, sat=.2)),
+                 ('toigo_wool_pants', W(tint='wool_brown', grime=.6, wear=.4, patch=.2, sat=.2)),
+                 ('toigo_ankle_boots_female', W(tint='leather_dark', grime=.6, wear=.3, sat=.6, flat=.2))]},
     {'id': 'p3_drifter_m', 'gender': 1.0, 'age': 61, 'muscle': 0.35, 'weight': 0.12, 'height': 0.5, 'african': 0.0, 'asian': 0.0, 'caucasian': 1.0,
      'mods': {'head-age|decr|incr': 0.5, 'sym:cheek-volume|decr|incr': -0.6, 'sym:eye-bag|decr|incr': 0.4, 'chin-bones|decr|incr': 0.35, 'head-fat|decr|incr': -0.35, 'stomach-tone|decr|incr': -0.3, 'torso-scale-horiz|decr|incr': -0.3},
-     'skin': 'jartur69_old_slavic_male_with_genitals_and_beard', 'hair': None, 'brows': 'mindfront_eyebrows_11', 'eyes': 'grey'},
+     'skin': 'jartur69_old_slavic_male_with_genitals_and_beard', 'hair': None, 'brows': 'mindfront_eyebrows_11', 'eyes': 'grey',
+     'clothes': [('elvs_male_shirt_untucked_bd1', W(tint='bone', grime=.5, wear=.5, patch=.2, sat=.1)),
+                 ('elvs_male_trouser', W(tint='charcoal', grime=.7, wear=.4, patch=.4, sat=.1)),
+                 ('mindfront_cardigan_long_open_front', W(tint='olive_wax', grime=.7, wear=.5, patch=.3, sat=.1)),
+                 ('maciekg_leather_boots', W(tint='leather_dark', grime=.7, wear=.3, sat=.6, flat=.2)),
+                 ('culturalibre_hero-heroine_hood_1', W(tint='olive_wax', grime=.4, wear=.5, patch=.2, sat=.1))]},
     {'id': 'p4_gilded_f', 'gender': 0.0, 'age': 44, 'muscle': 0.42, 'weight': 0.55, 'height': 0.55, 'african': 0.0, 'asian': 0.95, 'caucasian': 0.05,
      'mods': {'sym:eye-epicanthus|in|out': 0.35, 'sym:eye-eyefold-angle|down|up': 0.25, 'nose-hump|decr|incr': -0.2, 'sym:cheek-bones|decr|incr': 0.25, 'head-round': 0.2, 'stomach-tone|decr|incr': -0.2},
-     'breastSize': 0.55, 'breastFirmness': 0.45, 'skin': 'onlytheghosts_middle_aged_eurasian_female', 'hair': 'toigo_blunt_bob_with_bangs', 'brows': 'mindfront_eyebrows_10', 'eyes': 'brown'},
+     'breastSize': 0.55, 'breastFirmness': 0.45, 'skin': 'onlytheghosts_middle_aged_eurasian_female', 'hair': 'toigo_blunt_bob_with_bangs', 'brows': 'mindfront_eyebrows_10', 'eyes': 'brown',
+     'clothes': [('matcreator_mc-skinsuit_2022', W(tint='graphite_synth', grime=0, wear=0, patch=0, sat=.4, flat=.3)),
+                 ('mindfront_cardigan_long_open_front', W(tint='wine', grime=0, wear=0, patch=0, sat=.1, tape=[0.62, 1.3], tape_col=(0.55, 0.85, 0.95))),
+                 ('toigo_ankle_boots_female', W(tint='charcoal', grime=.1, wear=0, patch=0, sat=.5, flat=.2)),
+                 ('spamrakuen_tbm_glasses_frames_01', None)]},
     {'id': 'p5_street_m', 'gender': 1.0, 'age': 21, 'muscle': 0.55, 'weight': 0.3, 'height': 0.48, 'african': 0.12, 'asian': 0.3, 'caucasian': 0.58,
      'mods': {'sym:cheek-bones|decr|incr': 0.3, 'nose-scale-vert|decr|incr': 0.15, 'mouth-scale-horiz|decr|incr': 0.2, 'sym:upperarm-muscle|decr|incr': 0.2},
-     'skin': 'toigo_light_skin_male_bronze', 'hair': 'elvs_double_mh_braid', 'brows': 'mindfront_eyebrows_13', 'eyes': 'brown'},
+     'skin': 'toigo_light_skin_male_bronze', 'hair': 'elvs_double_mh_braid', 'brows': 'mindfront_eyebrows_13', 'eyes': 'brown',
+     'clothes': [('elvs_hooded_sweat_jacket1', W(tint='charcoal', grime=.4, wear=.5, patch=.2, sat=.1, tape=[0.98], tape_col=(0.82, 0.8, 0.7))),
+                 ('cortu_cargo_pants', W(tint='indigo_faded', grime=.7, wear=.5, patch=.3, sat=.2, tape=[0.5, 0.12], tape_col=(0.82, 0.8, 0.7))),
+                 ('culturalibre_sneakers', W(tint='charcoal', grime=.5, wear=.3, patch=0, sat=.4, flat=.3))]},
     {'id': 'p6_nomad_f', 'gender': 0.0, 'age': 68, 'muscle': 0.5, 'weight': 0.3, 'height': 0.45, 'african': 0.03, 'asian': 0.6, 'caucasian': 0.37,
      'mods': {'head-age|decr|incr': 0.6, 'sym:cheek-bones|decr|incr': 0.45, 'nose-scale-vert|decr|incr': 0.2, 'nose-hump|decr|incr': 0.25, 'sym:cheek-volume|decr|incr': -0.4, 'chin-width|decr|incr': 0.2, 'sym:eye-bag|decr|incr': 0.3},
-     'breastSize': 0.4, 'breastFirmness': 0.2, 'skin': 'darthfurby_caucasian_female', 'hair': 'sonntag78_junglebook_hair', 'brows': 'mindfront_eyebrows_14', 'eyes': 'brownlight'},
+     'breastSize': 0.4, 'breastFirmness': 0.2, 'skin': 'darthfurby_caucasian_female', 'hair': 'sonntag78_junglebook_hair', 'brows': 'mindfront_eyebrows_14', 'eyes': 'brownlight',
+     'clothes': [('rehmanpolanski_viking_tunic', W(tint='ochre', grime=.5, wear=.7, patch=.5, sat=.2)),
+                 ('toigo_wool_pants', W(tint='indigo_faded', grime=.7, wear=.6, patch=.3, sat=.2)),
+                 ('punkduck_winter_boots', W(tint='leather_tan', grime=.6, wear=.3, patch=0, sat=.5, flat=.2))]},
 ]
 
 # Blend shapes kept on every exported body: a face sculptor set (incr/decr pairs) and expression units.
@@ -259,6 +293,92 @@ def copy_texture(src, name, kind='d'):
     write_tex_meta(dst, f'{REL}/tex/{name}.png', kind)
     return name
 
+def bake_cloth(po, src, name, look):
+    """Bakes a worn, re-dyed cloth onto the garment's UVs (1K): its own weave desaturated under a palette tint, grime
+    rising from the hem, sun-fade, patches of other cloth, and tape bands (reflective tape on the street, a lit trim on
+    the rich). The source texture is never shipped; this is what makes a community mesh this world's garment."""
+    os.makedirs(TEXOUT, exist_ok=True)
+    dst = os.path.join(TEXOUT, name + '.png')
+    # palette and look colours are written as seen (sRGB); the node tree works in linear, the bake saves sRGB
+    lin = lambda c: tuple(x ** 2.2 for x in c)
+    tint = lin(PALETTE[look.get('tint', 'canvas_faded')])
+    zs = [vtx.co.z for vtx in po.data.vertices]
+    zmin, zmax = (min(zs), max(zs)) if zs else (0.0, 1.0)
+    if zmax - zmin < 0.05: zmax = zmin + 0.05
+    img = bpy.data.images.new('bake_' + name, 1024, 1024)
+    mat = bpy.data.materials.new('bake_' + name); mat.use_nodes = True
+    nt = mat.node_tree; nt.nodes.clear(); N = nt.nodes; L = nt.links
+    def mixrgb(blend, fac, a, b):
+        m = N.new('ShaderNodeMixRGB'); m.blend_type = blend
+        if isinstance(fac, (int, float)): m.inputs['Fac'].default_value = float(fac)
+        else: L.new(fac, m.inputs['Fac'])
+        for sock, val in (('Color1', a), ('Color2', b)):
+            if isinstance(val, tuple): m.inputs[sock].default_value = (*val, 1.0)
+            else: L.new(val, m.inputs[sock])
+        return m.outputs['Color']
+    def math(op, a, b=None):
+        m = N.new('ShaderNodeMath'); m.operation = op
+        for i, val in enumerate((a, b)):
+            if val is None: continue
+            if isinstance(val, (int, float)): m.inputs[i].default_value = float(val)
+            else: L.new(val, m.inputs[i])
+        return m.outputs[0]
+    def noise(scale, detail=2.0):
+        n = N.new('ShaderNodeTexNoise'); n.inputs['Scale'].default_value = scale; n.inputs['Detail'].default_value = detail
+        L.new(tc.outputs['Object'], n.inputs['Vector']); return n.outputs['Fac']
+    tc = N.new('ShaderNodeTexCoord')
+    sep = N.new('ShaderNodeSeparateXYZ'); L.new(tc.outputs['Object'], sep.inputs[0]); z = sep.outputs['Z']
+    out = N.new('ShaderNodeOutputMaterial'); em = N.new('ShaderNodeEmission'); L.new(em.outputs[0], out.inputs[0])
+    # base: the garment's own weave, desaturated and flattened towards grey, under the tint
+    if src:
+        t = N.new('ShaderNodeTexImage'); t.image = bpy.data.images.load(src)
+        hsv = N.new('ShaderNodeHueSaturation'); hsv.inputs['Saturation'].default_value = look.get('sat', 0.3)
+        L.new(t.outputs['Color'], hsv.inputs['Color'])
+        base = mixrgb('MIX', look.get('flat', 0.5), hsv.outputs['Color'], (0.4, 0.4, 0.4))
+    else:
+        base = mixrgb('MIX', 1.0, (0.4, 0.4, 0.4), (0.4, 0.4, 0.4))
+    col = mixrgb('MULTIPLY', 1.0, base, tuple(min(1.0, c / 0.4) for c in tint))
+    # weave: fine noise, 0.85..1.15
+    fine = math('ADD', math('MULTIPLY', noise(70.0, 3.0), 0.3), 0.85)
+    cxyz = N.new('ShaderNodeCombineXYZ')
+    for i in range(3): L.new(fine, cxyz.inputs[i])
+    col = mixrgb('MULTIPLY', 1.0, col, cxyz.outputs[0])
+    big = noise(2.5)
+    # patches of other cloth (noise cells above a threshold)
+    patch = look.get('patch', 0.0)
+    if patch > 0:
+        mask = math('GREATER_THAN', noise(1.8, 1.0), 1.0 - 0.35 * patch)
+        pcol = tuple(min(1.0, c * 0.75 + 0.06) for c in (tint[2], tint[1], tint[0]))
+        col = mixrgb('MIX', mask, col, lin(pcol))
+    # sun-fade towards bone where the big noise is high
+    wear = look.get('wear', 0.0)
+    if wear > 0: col = mixrgb('MIX', math('MULTIPLY', math('MULTIPLY', big, big), wear * 0.7), col, lin((0.78, 0.75, 0.68)))
+    # grime rising from the hem
+    grime = look.get('grime', 0.0)
+    if grime > 0:
+        mr = N.new('ShaderNodeMapRange'); L.new(z, mr.inputs['Value'])
+        mr.inputs['From Min'].default_value = zmin; mr.inputs['From Max'].default_value = zmax
+        mr.inputs['To Min'].default_value = 1.0; mr.inputs['To Max'].default_value = 0.0
+        hem = math('POWER', mr.outputs['Result'], 2.2)
+        gf = math('MULTIPLY', math('MULTIPLY', hem, math('ADD', math('MULTIPLY', big, 0.6), 0.4)), grime * 0.8)
+        col = mixrgb('MIX', gf, col, lin((0.20, 0.17, 0.13)))
+    # tape bands at given heights (metres from the ground)
+    for zb in look.get('tape', []):
+        band = math('LESS_THAN', math('ABSOLUTE', math('SUBTRACT', z, zb)), 0.014)
+        col = mixrgb('MIX', band, col, lin(look.get('tape_col', (0.8, 0.8, 0.75))))
+    L.new(col, em.inputs['Color'])
+    tgt = N.new('ShaderNodeTexImage'); tgt.image = img; N.active = tgt
+    po.data.materials.clear(); po.data.materials.append(mat)
+    bpy.ops.object.select_all(action='DESELECT'); po.select_set(True); bpy.context.view_layer.objects.active = po
+    sc = bpy.context.scene; sc.render.engine = 'CYCLES'; sc.cycles.samples = 1; sc.cycles.device = 'CPU'
+    sc.render.bake.margin = 6; sc.render.bake.use_clear = True
+    bpy.ops.object.bake(type='EMIT')
+    img.filepath_raw = dst; img.file_format = 'PNG'; img.save()
+    po.data.materials.clear()
+    bpy.data.images.remove(img); bpy.data.materials.remove(mat)
+    write_tex_meta(dst, f'{REL}/tex/{name}.png', 'd')
+    return name
+
 skel = json.load(open(os.path.join(MH, 'rigs', 'default.mhskel')))
 weights_mh = json.load(open(os.path.join(MH, 'rigs', 'default_weights.mhw')))['weights']
 base_verts, base_vts, body_faces = read_obj(os.path.join(MH, '3dobjs', 'base.obj'), keep_groups={'body'})
@@ -287,14 +407,21 @@ def build_person(spec):
     to_bl = lambda p: Vector((p[0] * SCALE, -p[2] * SCALE, (p[1] - ground) * SCALE))
     to_bl_dir = lambda p: Vector((p[0] * SCALE, -p[2] * SCALE, p[1] * SCALE))
 
-    # --- body mesh (body group only), uv from vt
-    used = sorted({i for f in body_faces for i, _ in f})
+    # --- body mesh (body group only, minus the vertices the clothes hide), uv from vt
+    hidden = set()
+    for g, _ in spec.get('clothes', []):
+        d = find_dir(g, COMMUNITY, os.path.join(MH, 'clothes'))
+        if d is None: print('  no garment', g); continue
+        _, _, dels = read_mhclo(os.path.join(d, g + '.mhclo'))
+        hidden.update(dels)
+    faces_kept = [f for f in body_faces if not all(i in hidden for i, _ in f)]
+    used = sorted({i for f in faces_kept for i, _ in f})
     remap = {i: k for k, i in enumerate(used)}
     me = bpy.data.meshes.new('Body')
-    me.from_pydata([to_bl(v[i]) for i in used], [], [[remap[i] for i, _ in f] for f in body_faces])
+    me.from_pydata([to_bl(v[i]) for i in used], [], [[remap[i] for i, _ in f] for f in faces_kept])
     uv = me.uv_layers.new(name='UVMap')
     li = 0
-    for f in body_faces:
+    for f in faces_kept:
         for _, vt in f:
             uv.data[li].uv = base_vts[vt] if vt >= 0 else (0, 0); li += 1
     me.validate(); me.update()
@@ -366,7 +493,7 @@ def build_person(spec):
     body.parent = rig
 
     # --- proxies: eyes, brows, lashes, hair fitted by mhclo
-    def proxy(kind, folder_name, name, mat_name, tex_name=None, mat_override=None, skin_to=None):
+    def proxy(kind, folder_name, name, mat_name, tex_name=None, mat_override=None, skin_to=None, look=None):
         d = find_dir(name, os.path.join(MH, folder_name), COMMUNITY)
         if d is None: print('  no proxy', name); return None
         meta, refs, deletes = read_mhclo(os.path.join(d, name + '.mhclo'))
@@ -395,11 +522,14 @@ def build_person(spec):
         # material and texture
         mat_path = os.path.join(d, mat_override or meta.get('material', [name + '.mhmat'])[0])
         tex = None
-        if os.path.exists(mat_path):
-            mm = read_mhmat(mat_path)
+        mm = read_mhmat(mat_path) if os.path.exists(mat_path) else {}
+        if mm or look is not None:
+            src_d = None
             if 'diffuseTexture' in mm:
                 tp = os.path.join(os.path.dirname(mat_path), mm['diffuseTexture'])
-                if os.path.exists(tp): tex = copy_texture(tp, (tex_name or name) + '_d')
+                if os.path.exists(tp): src_d = tp
+            if look is not None: tex = bake_cloth(po, src_d, (tex_name or name) + '_d', look)
+            elif src_d: tex = copy_texture(src_d, (tex_name or name) + '_d')
             if tex and 'normalmapTexture' in mm:
                 tp = os.path.join(os.path.dirname(mat_path), mm['normalmapTexture'])
                 if os.path.exists(tp): copy_texture(tp, (tex_name or name) + '_n', 'n')
@@ -428,6 +558,8 @@ def build_person(spec):
     if spec.get('brows'): proxy('Brows', 'eyebrows', spec['brows'], 'brows')
     proxy('Lashes', 'eyelashes', 'mindfront_eyelashes_01', 'lashes')
     if spec.get('hair'): proxy('Hair', 'hair', spec['hair'], 'hair')
+    # baked cloth is per person (the same mesh is dyed differently on different people), so the texture carries the id
+    for g, look in spec.get('clothes', []): proxy('Cloth_' + g, 'clothes', g, 'cloth', look=look, tex_name=(spec['id'] + '__' + g) if look is not None else None)
 
     # --- skin textures beside the model
     sd = find_dir(spec['skin'], COMMUNITY, os.path.join(MH, 'skins'))

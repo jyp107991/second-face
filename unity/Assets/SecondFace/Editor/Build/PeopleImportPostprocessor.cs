@@ -81,6 +81,11 @@ namespace SecondFace.EditorTools
                     m.SetFloat("_Smoothness", 0.9f);
                     if (d != null) { m.SetFloat("_AlphaClip", 1f); m.SetFloat("_Cutoff", 0.5f); m.EnableKeyword("_ALPHATEST_ON"); }
                     break;
+                case "cloth":
+                    m.SetFloat("_Smoothness", 0.32f); m.SetFloat("_Metallic", 0f);
+                    if (d != null) { m.SetFloat("_AlphaClip", 1f); m.SetFloat("_Cutoff", 0.5f); m.EnableKeyword("_ALPHATEST_ON"); }
+                    m.SetFloat("_Cull", 0f);
+                    break;
                 case "hair":
                 case "brows":
                 case "lashes":

@@ -53,6 +53,16 @@ Used modified (refit to the game's bodies, re-dyed, weathered, resampled texture
 ## The Unity game (redesign, 2026-10-28 on)
 - **Textures**: Poly Haven (https://polyhaven.com), CC0, fetched by `tools/unity/assets.py`; the list with ids is
   written to `unity/Assets/External/CREDITS.md` at fetch time.
+- **Nature models** (rocks, dead wood, scrub, grass): Poly Haven, CC0, fetched by `tools/unity/models.py` and baked to
+  phone budgets by `tools/unity/models_bake.py` into `unity/Assets/SecondFace/Models/Nature/` (ids in `models.json`).
+- **Bake-off people** (`unity/Assets/SecondFace/People/Bakeoff/`): MakeHuman 1.x base, targets, rig and community
+  skins/hair/brows/lashes as above (CC0). Garment meshes used for their silhouette, re-textured by `bake_cloth`:
+  CC0 — cortu (`cortu_cargo_pants`), toigo (`toigo_fisherman_sweater`, `toigo_wool_pants`, `toigo_ankle_boots_female`),
+  culturalibre (`culturalibre_male_boots`, `culturalibre_hero-heroine_hood_1`), matcreator (`matcreator_mc-skinsuit_2022`),
+  rehmanpolanski (`rehmanpolanski_viking_tunic`), spamrakuen (`spamrakuen_tbm_glasses_frames_01`);
+  CC BY 4.0 — Elvaerwyn (`elvs_male_shirt_untucked_bd1`, `elvs_male_trouser`, `elvs_hooded_sweat_jacket1`), mindfront
+  (`mindfront_tactical_vest_male`, `mindfront_cardigan_long_open_front`), maciekg (`maciekg_leather_boots`),
+  culturalibre (`culturalibre_sneakers`), punkduck (`punkduck_winter_boots`). Used modified (refit, re-baked textures).
 - **People**: the MakeHuman 1.x base mesh, targets, rig and proxies (CC0, makehumancommunity.org) and the MakeHuman
   community asset packs skins01/02, hair01, eyebrows01, eyelashes01 (CC0; authors named in each pack's files),
   rebuilt by `tools/unity/people/mh_build.py`. No MakeHuman program code is used.

@@ -184,5 +184,29 @@ namespace SecondFace.Tests
             yield return null;
             yield return Capture("place_frontier_eye", 1920, 1080);
         }
+
+        [UnityTest]
+        public IEnumerator VegetationIsCapturedWhenBuilt()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Vegetation.unity";
+#if UNITY_EDITOR
+            if (!File.Exists(path)) UnityEditor.EditorApplication.ExecuteMenuItem("Second Face/Build vegetation test scene");
+#endif
+            if (!File.Exists(path)) { Assert.Ignore("vegetation scene not built"); yield break; }
+            yield return SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+            for (var i = 0; i < 10; i++) yield return null;
+            yield return Capture("vegetation_iso", 1920, 1080);
+            var cam = Camera.main; var t = Terrain.activeTerrain;
+            cam.transform.rotation = Quaternion.Euler(22f, -60f, 0f);
+            var f = new Vector3(300, 0, 170); f.y = t.SampleHeight(f) + 1.6f;
+            cam.transform.position = f - cam.transform.rotation * Vector3.forward * 12f;
+            yield return null;
+            yield return Capture("vegetation_eye", 1920, 1080);
+            cam.transform.rotation = Quaternion.Euler(35f, 200f, 0f);
+            var g = new Vector3(256, 0, 256); g.y = t.SampleHeight(g);
+            cam.transform.position = g - cam.transform.rotation * Vector3.forward * 220f;
+            yield return null;
+            yield return Capture("vegetation_far", 1920, 1080);
+        }
     }
 }
