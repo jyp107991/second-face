@@ -160,5 +160,29 @@ namespace SecondFace.Tests
                 yield return Capture("people_motion_" + shot, 1920, 1080);
             }
         }
+
+        [UnityTest]
+        public IEnumerator FrontierPlaceIsCapturedWhenBuilt()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Frontier.unity";
+#if UNITY_EDITOR
+            if (!File.Exists(path)) UnityEditor.EditorApplication.ExecuteMenuItem("Second Face/Build frontier test scene");
+#endif
+            if (!File.Exists(path)) { Assert.Ignore("frontier scene not built"); yield break; }
+            yield return SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+            for (var i = 0; i < 10; i++) yield return null;
+            yield return Capture("place_frontier_street", 1920, 1080);
+            var cam = Camera.main;
+            var t = Terrain.activeTerrain;
+            var square = new Vector3(160, t.SampleHeight(new Vector3(160, 0, 128)), 128);
+            cam.transform.rotation = Quaternion.Euler(42f, -50f, 0f);
+            cam.transform.position = square - cam.transform.rotation * Vector3.forward * 30f;
+            yield return null;
+            yield return Capture("place_frontier_square", 1920, 1080);
+            cam.transform.rotation = Quaternion.Euler(14f, 70f, 0f);
+            cam.transform.position = new Vector3(112, t.SampleHeight(new Vector3(112, 0, 126)) + 1.7f, 126) - cam.transform.rotation * Vector3.forward * 6f;
+            yield return null;
+            yield return Capture("place_frontier_eye", 1920, 1080);
+        }
     }
 }
