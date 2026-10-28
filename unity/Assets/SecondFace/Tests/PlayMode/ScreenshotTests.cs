@@ -56,5 +56,23 @@ namespace SecondFace.Tests
             Assert.That(Camera.main, Is.Not.Null);
             yield return Capture("boot");
         }
+
+        [UnityTest]
+        public IEnumerator TerrainTestSceneIsCapturedWhenBuilt()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Terrain.unity";
+#if UNITY_EDITOR
+            if (!File.Exists(path)) UnityEditor.EditorApplication.ExecuteMenuItem("Second Face/Build terrain test scene");
+#endif
+            if (!File.Exists(path)) { Assert.Ignore("terrain test scene not built (no external library)"); yield break; }
+            yield return SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+            for (var i = 0; i < 10; i++) yield return null;
+            yield return Capture("terrain_iso");
+            var cam = Camera.main;
+            cam.transform.rotation = Quaternion.Euler(35f, 120f, 0f);
+            cam.transform.position = new Vector3(250, 0, 250) + new Vector3(0, Terrain.activeTerrain.SampleHeight(new Vector3(250, 0, 250)), 0) - cam.transform.rotation * Vector3.forward * 40f;
+            yield return null;
+            yield return Capture("terrain_wide");
+        }
     }
 }

@@ -17,3 +17,8 @@ sysinfo.txt
 crashlytics-build.properties
 /Screenshots/
 /test-results/
+# fetched by tools/unity/assets.py (docs/PORT.md §4: assets by manifest, not committed)
+/Assets/External/
+# built in CI by the editor scripts (terrain test, layers, materials)
+/Assets/SecondFace/Generated/
+/Assets/SecondFace/Scenes/Test_*.unity*

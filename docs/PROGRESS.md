@@ -307,10 +307,16 @@ modern Android phone runs (DOS2/BG3/Cyberpunk aspirational; Android the primary 
 words; PORT.md §1 what is kept/redesigned, §4 the standard, device targets and asset strategy, §4a the phases.
 P1 is closed as the narrative core (86 tests green). P2 in progress: P2.1 `docs/DESIGN_UNITY.md` written (the
 redesigned game: camera, world, people, play systems, UI, audio, art direction, architecture; four spoiler-free
-decisions listed for the owner in its §11). **Next action:** P2.2 the package set (Cinemachine, AI Navigation,
-Animation Rigging, Addressables, Adaptive Performance, Localization, VFX Graph, Timeline, Burst/Mathematics/
-Collections, Cloud Diagnostics) and the CI screenshot loop (PlayMode tests under a virtual display uploading
-`docs/evidence/unity/` PNGs); then P2.3 the bake-offs (people pipeline first).
+decisions listed for the owner in its §11). P2.2 done in the repo: the package set (Cinemachine, AI Navigation, Animation Rigging, Addressables,
+Adaptive Performance, Localization, VFX Graph, Shader Graph, Timeline, Burst, Mathematics, Collections, Splines,
+Cloud Diagnostics), the PlayMode screenshot tests (`Tests/PlayMode/ScreenshotTests.cs` → `unity/Screenshots/*.png`
+uploaded by CI as the `Unity-screenshots` artifact), the CC0 texture library fetched by manifest
+(`tools/unity/assets.py` → `unity/Assets/External/`, 31 materials at 2 K with stable GUID metas; not committed, CI
+caches it), the code-built terrain test scene (`Editor/Build/TerrainTestScene.cs`: the Sallow's layers on a 512 m
+terrain, captured as `terrain_iso` and `terrain_wide`), Blender 4.5 in the session scratch for the kit and people
+pipelines. **Waiting on the owner:** copy `tools/ci/android.yml` over `.github/workflows/android.yml` again (it
+adds the fetch step and the tests-and-screenshots job). **Next action:** P2.3 the bake-offs — the modular kit
+builder in Blender (shelter concrete first) and the people pipeline candidates, each landing as a screenshot set.
 - [~] P0 Foundation: decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,
