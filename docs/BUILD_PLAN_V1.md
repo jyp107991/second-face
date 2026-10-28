@@ -141,6 +141,9 @@ What the engine captures show is still wrong (each has a step in §5 P2 or §10)
 - **The vegetation camera sees the terrain edge** (`vegetation_iso`): frame inside the terrain (§10 step 7).
 - **The boot capture lacks the UI**: a camera render does not include UI Toolkit; P5 captures render the panel
   through `PanelSettings.targetTexture` (§8).
+- **The captured walk holds the forearms raised in front** on every person (`people_motion_*`): a retarget fault,
+  likely the rest pose of the converted clips against the game rig's (check `cmu2fbx.py`'s reference pose and the
+  Humanoid muscle settings); fix with P4.4 locomotion at the latest.
 - **Some frontier walls lean** in `place_frontier_*`: check each piece's pivot and rotation in the kit builder
   before P3.5 assembles places from the kit.
 - `bake_cloth` palette tones are first guesses; judge them on the engine captures.
@@ -946,6 +949,10 @@ numbers from the densest place written into PORT.md §5.
   word, so a slot `mat_skin:<id>__<long skin name>_d` lost its tail and Unity found no texture (the untextured
   fallback colour is a dark fibre). Keep texture names short (`<id>__skin_d`); `mh_build.slot()` raises on a slot
   name over 63 characters.
+- **Five of six people stood in T-pose in the walk captures**: the people scene builder created the animator
+  controller once per person at the same asset path; each creation destroyed the controller the previous people
+  held. Build shared assets once, before the loop. Test people also animate with `AlwaysAnimate` (captures render by
+  request, so no renderer ever counts as visible and culled animators never pose).
 - **Alpha thrown away on import** (people textures and foliage cards): the generated texture metas carry
   `alphaUsage: 0` (no alpha; the template was made for terrain textures), so hair cards rendered as solid sheets and
   a skin's smoothness alpha read as 1 (every face wet and glossy). The people and kit importers now set

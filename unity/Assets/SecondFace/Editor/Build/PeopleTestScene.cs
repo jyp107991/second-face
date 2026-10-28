@@ -59,6 +59,9 @@ namespace SecondFace.EditorTools
             var fm = MaterialLibrary.Get("scrub_soil") ?? MaterialLibrary.Get("sand");
             if (fm != null) floor.GetComponent<Renderer>().sharedMaterial = fm;
             var people = new GameObject("People").transform;
+            // One controller for everyone: building it per person recreated the asset at the same path, which destroyed
+            // the one the previous people held, and five of six stood in T-pose in the walk captures.
+            var motion = MotionController();
             for (var i = 0; i < models.Length; i++)
             {
                 var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(models[i].Replace('\\', '/'));
@@ -70,7 +73,12 @@ namespace SecondFace.EditorTools
                 go.transform.position = new Vector3((i - (models.Length - 1) / 2f) * 1.1f, 0, 0);
                 go.transform.rotation = Quaternion.Euler(0, 180f, 0);   // face the camera at -Z
                 var anim = go.GetComponent<Animator>();
-                if (anim != null) { var ctl = MotionController(); if (ctl != null) anim.runtimeAnimatorController = ctl; anim.applyRootMotion = false; }
+                if (anim != null)
+                {
+                    if (motion != null) anim.runtimeAnimatorController = motion;
+                    anim.applyRootMotion = false;
+                    anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;   // captures render by request, so nothing is "visible"
+                }
             }
             var camGo = new GameObject("Main Camera");
             var cam = camGo.AddComponent<Camera>();

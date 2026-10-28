@@ -385,8 +385,10 @@ dirt in the creases, chapped desaturated lips, beard stubble and painted scalps,
 Found on the way: every generated texture meta said "no alpha", so hair cards were solid sheets and skins read fully
 glossy; the people and kit importers now take the alpha from the file. Still open for later: p6's mouth sits open (her
 face shape; the red is the inside of the mouth), scars and tattoos (not built), the T-pose in `people_motion_*`.
-**Next action:** fix the T-pose (p1–p5 do not walk in `people_motion_*`: check each avatar with `Diagnostics.Report`),
-then `docs/BUILD_PLAN_V1.md` §10 step 5 (people weight ≤ 8 MB each), then steps 6–12.
+**Walk captures fixed (2026-10-28):** five of six stood in T-pose because the scene builder recreated the animator
+controller per person (each creation destroyed the previous one); all six walk now. Seen: the captured walk holds the
+forearms raised in front (a retarget fault; plan §2 list, P4.4 at the latest).
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 5 (people weight ≤ 8 MB each), then steps 6–12.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,
