@@ -19,3 +19,5 @@ rule (`docs/DESIGN_UNITY.md` §4).
   portraits before and after the hair rule (crop, buzz and balding painted into the skin; a work braid; a tidy bun
   for the rich; long hair under a dust hood), the eye fix (cornea shell dropped, Blender's normals imported), the
   weathered skin (sun, dirt in the creases, chapped lips, stubble, matte where it should be) and the jaw fix.
+- `frontier_axis_before_after.jpg` — **engine captures** (2026-10-28): the frontier test town before and after the
+  export-axis fix (every kit piece had lain on its side: walls flat, roofs on end).
