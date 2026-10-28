@@ -95,6 +95,9 @@ The owner wants to play unspoiled.
   is best for our design)." What is kept and what is redesigned is set out in `docs/PORT.md` §1; the standard and
   the asset strategy in §4. The web game is neither a visual nor a design reference any more; its rules live on only
   where the narrative content depends on them (checks, flags, quests), and even those are open to redesign.
+- **v1 is the complete game** (owner, 2026-10-28, binding): v1 is not "the content written so far" but the whole story
+  to every ending, at the Unity standard, as the installable Android app, 60+ hours in one playthrough. The order and
+  phases (P9–P13 after the systems) are in `docs/BUILD_PLAN_V1.md` §1 and §5.
 - **Wardrobe is lore-bound** (owner, 2026-10-28, binding): every clothing asset must be consistent with this world —
   post-apocalyptic, cyberpunk, anarchistic: salvaged, re-dyed, patched, layered, taped and rigged; clean synthetics and
   lit trims only on the megacity rich; no prints, logos, modern fashion, costume or uniform-as-such. Found garment

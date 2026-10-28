@@ -47,34 +47,41 @@ Reading order for a fresh session: `CLAUDE.md` → `docs/PROGRESS.md` → this f
 
 ## 1. What v1 is
 
-**v1 is an installable Android app (APK from CI, later an AAB) that plays everything that exists in
-`src/content/` at the standard of `docs/DESIGN_UNITY.md`, on one streamed open world, end to end, saved and
-resumed, at a smooth frame rate on a 2024–2026 mid-range phone.** Today that content is the opening (Chapter
-One, which ends when the player has the stranger's map), Act 1 (the frontier: the town, the toll fort, the relay,
-the pump station, the wilds, the nomad camp) and the megacity districts of Act 2 built so far (B3.1–B3.10). The
-remaining Act 2 content (B3.11 on) and the owner's later story passes are built in Unity after v1's systems are
-in, on the same pipelines.
+**v1 is the complete game (owner, 2026-10-28: "V1 is complete game"): an installable Android app (APK from CI,
+later an AAB) that plays the whole story, from character creation through Chapter One, Act 1, Act 2 and Act 3 to
+every ending, at the standard of `docs/DESIGN_UNITY.md`, on one streamed open world, end to end, saved and
+resumed, at a smooth frame rate on a 2024–2026 mid-range phone, as a single playthrough of 60 hours or more.**
+Part of that story already exists in `src/content/`: the opening (Chapter One, which ends when the player has the
+stranger's map), Act 1 (the frontier: the town, the toll fort, the relay, the pump station, the wilds, the nomad
+camp) and the megacity districts of Act 2 built so far (B3.1–B3.10). The rest is written inside this roadmap
+(P9–P12) on the same pipelines, after the systems that carry it are in (P2–P8).
 
-**How the older phases map onto this plan** (they were built in the web game, which is now frozen as the reference):
+**How the older phases map onto this plan** (they were built in the web game, which is now frozen as the reference
+for behaviour; content is still written in `src/content/`, validated by `npm run check` and exported to Unity):
 - **Phase A** (design and depth pass, A0–A5) is done as design: its rules, systems and story work live in the
-  content and in `SecondFace.Core`. What it left half-done is absorbed here: A2.4's economy simulation → P9 balance;
-  A2.6's activities that come with content (fight pits, hunting, dives, heists) → P6 and P8; A4.3 performance →
-  P3.7/P6.7; A5.9's presentation sweep → P5/P6 (the web presentation itself is not ported).
+  content and in `SecondFace.Core`. What it left half-done is absorbed here: A2.4's economy simulation → P13
+  balance; A2.6's activities that come with content (fight pits, hunting, dives, heists) → P6 and P8; A4.3
+  performance → P3.7/P6.7; A5.9's presentation sweep → P5/P6 (the web presentation itself is not ported).
 - **Phase B** (content slices) built Chapter One (B1), Act 1 (B2) and Act 2 part 1 up to B3.10 in `src/content/`;
-  all of it is exported to Unity and is in v1 (P7, P8). **Not yet written** and therefore after v1: B3.11 (the
-  last Act 2 part 1 location), B4 (a further megacity area), B5 (the Act 2 wilds), B6 (Act 3 and the endings), B7
-  (systemic depth: ruins, bounties, rare encounters), B8 (balance and deploy, which becomes P9 for the app).
+  all of it is exported to Unity (P7, P8). The slices not yet written are all inside v1: B3.11, B4 and B5 → P10
+  (Act 2 completed); B6 (Act 3 and the endings) → P11; B7 (systemic depth) → P12; B8 (balance and release) →
+  P13, where the release is the app, not the web page.
 - **The upgrade list U1–U8**: U1–U4 were done in the web game and are redone at the Unity standard by P2–P4; U5
-  (camera and touch) is P5; U6 (naming pass), U7 (conversation system) and U8 (characters and relationships) are
-  content passes that follow v1 (P8).
-- So **v1 is the installable app with every part of the story written so far**; the complete game (B3.11–B6 and
-  U6–U8) is built on the same pipelines after it. If the owner wants v1 to mean the complete story, those slices
-  move inside the roadmap after P8.
+  (camera and touch) is P5; U6 (naming pass), U7 (conversation system) and U8 (characters and relationships) →
+  P9, before any new content is written, so the new content is written once, to their rules.
+- So the order is: **systems and the existing content at the standard (P2–P8) → the passes every later line of
+  content depends on (P9) → the rest of the story (P10–P11) → systemic depth (P12) → release hardening (P13) =
+  v1.**
 
 v1 acceptance (all must hold):
 - Fresh install → title → character creation (face sculptor, body, skin, hair, scars, tattoos, clothing colours,
-  attribute pool with reroll) → the opening → Chapter One complete → Act 1 complete → the megacity reached and
-  every existing district playable → saves survive app restarts and a version bump (migrations tested).
+  attribute pool with reroll) → the opening → Chapter One complete → Act 1 complete → Act 2 complete (every
+  megacity district and the Act 2 wilds) → Act 3 complete → an ending and its epilogue; every ending reachable
+  (each covered by a headless playtest script); saves survive app restarts and a version bump (migrations tested).
+- One playthrough takes 60 hours or more for a player doing the main story and a reasonable share of what the
+  world offers (not completionist), measured by the playtest pacing model of P13 and by the owner's own play.
+- Conversations progress and never loop (U7); names follow the naming bible (U6); every named companion and major
+  character has a motive bible and an arc, romances included (U8).
 - No loading screen after the title: places open as the player walks in; interiors open instantly; fast travel is
   a montage, not a load.
 - 30 fps minimum on the Mid tier (PORT.md §4 device tiers), 60 on Flagship, with the frame budget measured on
@@ -89,7 +96,8 @@ v1 acceptance (all must hold):
 pipelines exist and render in the engine; what remains is the people at the hair and skin standard, their weight,
 the nature set moved to FBX, the card trees, and the Addressables skeleton (§5 P2). Then P3 (world) → P4 (people
 at full quality) → P5 (camera, touch, UI) → P6 (systems and combat) → P7 (Chapter One on the phone) → P8 (Act 1 and
-the megacity) → P9 (release hardening) = v1.
+the megacity) → P9 (names, conversation, characters) → P10 (Act 2 completed) → P11 (Act 3 and the endings) →
+P12 (systemic depth) → P13 (release hardening) = v1, the complete game (§1).
 
 What exists and is verified:
 - **`unity/`** Unity 6000.3.27f1, URP 17.3, Android IL2CPP ARM64, landscape immersive. `ProjectSetup.cs` creates
@@ -385,13 +393,71 @@ runs the whole chapter headless and asserts the quest states; the owner plays it
 
 ### P8 — Act 1 and the megacity on device
 All Act 1 and the existing Act 2 districts: places built from their layouts, the cast dressed and scheduled, the
-systems exercised. The headless playtest scripts cover every quest line in `src/content/quests`. Then U6 (naming
-pass), U7 (conversation system), U8 (characters and relationships) and B3.11 continue in Unity.
+systems exercised. The headless playtest scripts cover every quest line in `src/content/quests`.
 
-### P9 — Release hardening (v1)
-Save migrations from the first public build onwards; crash reporting (Cloud Diagnostics); the AAB with asset
-packs if the APK passes 150 MB; signing (owner's keystore via secrets); store listing assets; the accessibility
-pass (text scale, colour-blind palettes for the combat UI); the final profiler pass on the Floor tier.
+### How the story is written from P9 on (applies to P9–P12)
+- **Content stays data in `src/content/`** (typed TS modules, neutral ids), validated by `npm run check` and
+  exported to Unity by `npm run export`; the web runtime is not extended (owner: no new web features), so a slice
+  that needs a new mechanic adds its schema to the TS content types and the validator, and its runtime only in
+  `SecondFace.Core` (rules, with EditMode tests) and `SecondFace.Game` (presentation). The web game will not play
+  the new slices; it is not meant to.
+- **Story truth stays in `story/`** (spoiler rule, CLAUDE.md §1): each slice's beats are planned in
+  `story/STORY_PLAN_SECRET.md` before its content is written; this plan, PROGRESS.md and commit messages name a
+  slice by its id and its places only, never by what happens in it.
+- **Each slice ends playable on device**: its places built in the one world (P3's `PlaceBuilder`, no new scene per
+  place), its cast through the people pipeline (P4: generated variety, the wardrobe and hair rules), a headless
+  playtest script per quest line asserting the quest states, the capture set of its places judged by §6.N, and the
+  frame time on the Mid tier inside budget. A slice is never "content done, presentation later".
+- **Economy and pacing are watched per slice**: each slice records its rewards, prices and playtime estimate in
+  the pacing table (P13 sums them); scarcity early, rewarding later (DESIGN §Economy); no time limits of any kind.
+
+### P9 — Names, conversation and characters (U6, U7, U8)
+Before any new line of content, so it is written once to these rules.
+1. **U6 naming.** A naming bible in `docs/DESIGN_UNITY.md` (how this world names its places, people, factions,
+   things and events: found names, worn-down words, no "the [noun]"); a rename pass over existing content, docs and
+   UI strings; neutral ids unchanged, so saves, tests and quest states survive. A validator rule rejects names that
+   break the bible's mechanical checks (the article-noun pattern, banned words).
+2. **U7 conversation system** in `SecondFace.Core.Dialogue`: topic memory (what has been said to whom), topic
+   exhaustion (a spent topic closes or changes, it never re-opens the same lines), greetings from state (time,
+   weather, news, the last meeting, the companions present, local reputation), companion interjections, rationed
+   exposition (one fact per beat, the rest on asking); EditMode tests prove no tree can loop to a line it has
+   already shown unless the line is marked as a repeatable service (trade, travel). Then a pass over every existing
+   tree in `src/content/dialogue` to the new rules; the validator flags trees that still loop.
+3. **U8 characters and relationships.** A motive bible per named character in `story/` (what they want, what they
+   fear, what they will not do, what changes them); relationship arcs per companion with stages, approval that
+   moves for reasons the player can see, conflicts between companions; romances per genre best practice (opt-in,
+   consent-forward, companion-specific, able to fail, never a reward for gifts); the existing companions rewritten to
+   their bibles. Tests: each arc reachable and each failure state reachable in the headless playtests.
+
+### P10 — Act 2 completed (B3.11, B3.12, B4, B5)
+The rest of the megacity and the Act 2 wilds, slice by slice in this order: **B3.11** (the archive and the court:
+the court is a new mechanic, a trial as dialogue with evidence and precedent flags, in Core); **B3.12** (the ruined
+outer ring and the races; the megacity end-to-end playtest); **B4** (the arcology and the districts beneath it, the
+seventh companion); **B5** (the Act 2 wilds: the flats, the rail corridor, the drowned shore, the mines, the northern
+wet, the ashlands, and the act's alliance). The PROGRESS.md Phase B list holds each slice's place list and estimate;
+each is one or more P10 steps of the size rule (≤ ~1 hour per commit), ending playable on device as above. The
+world's chunk map grows with each slice (one streamed world, no loading screens).
+
+### P11 — Act 3 and the endings (B6)
+The final act and the finale, every ending and its modifiers, and the epilogue (illustrated slides at the standard,
+rendered in the engine from the world's own places and the player's own face). Every ending reachable from a save
+before the point of no return, each covered by a headless playtest script; the endings read the player's choices
+across the whole game (flags, local reputations, companions' states), never a global karma.
+
+### P12 — Systemic depth (B7)
+What makes the open world dense between the story's beats: ruins templates (procedural interiors from authored
+rooms, salvage tables by region), bounty and gig templates (generated from the factions and places, local
+reputation as their reward), rare encounters (authored, one-off, region-bound), activities by region (P6/P8's fight
+pits, hunting, dives and heists extended to the Act 2 regions); music and ambience per region and state; title art,
+menus, credits, settings, tips. Each template is Core data with tests (a generated gig is always completable, its
+reward inside the region's band).
+
+### P13 — Release hardening (B8) = v1
+Balance: the economy simulation (A2.4) over the whole game, the pacing table summed (the 60-hour single playthrough
+checked against it and against the owner's play), difficulty settings. Then the release: save migrations from the
+first public build onwards; crash reporting (Cloud Diagnostics); the AAB with asset packs if the APK passes 150 MB;
+signing (owner's keystore via secrets); store listing assets; the accessibility pass (text scale, colour-blind
+palettes for the combat UI, touch targets); the final profiler pass on the Floor tier; the v1 tag.
 
 ---
 
@@ -1024,9 +1090,10 @@ Before the session ends: PROGRESS.md names the step in progress and the exact ne
 `tools/unity/editor.sh test all` green on the last editor-side change; committed and pushed; the CI run id noted;
 the machine's re-provisioning needs nothing beyond §7.1.
 
-The order to v1: **finish P2 (steps 2–12) → P3 world (13–24) → P4 people → P5 camera, touch and UI → P6 systems
-and combat → P7 Chapter One on the phone → P8 Act 1 and the megacity → P9 release hardening.** P4–P9 are listed
-step by step in §5. Each step below is one commit (a few WIP commits at most) and runs the loop of §7.0.
+The order to v1 (the complete game, §1): **finish P2 (steps 8–12) → P3 world (13–24) → P4 people → P5 camera,
+touch and UI → P6 systems and combat → P7 Chapter One on the phone → P8 Act 1 and the megacity → P9 names,
+conversation, characters → P10 Act 2 completed → P11 Act 3 and the endings → P12 systemic depth → P13 release
+hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WIP commits at most) and runs the loop of §7.0.
 
 1. ~~Cards verified~~ (done 2026-10-28).
 2. Hair rule on the six people (P2.2: §6.C.1 mapping, `bake_hair`, `bake_scalp`); read `people_lineup`, `portrait_*`.

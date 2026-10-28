@@ -446,7 +446,10 @@ sparse and small from the overview: density and clumping are P3.4's tuning.
       asks for later.
 - [ ] The remaining Unity phases are numbered and specified in `docs/BUILD_PLAN_V1.md` §5 (P2 bake-off closing, then
       P3 world, P4 people, P5 camera/touch/UI, P6 systems and combat, P7 Chapter One on the phone, P8 Act 1 and the
-      megacity, P9 release hardening). An older numbering here (P2 World … P5 Gameplay) is superseded.
+      megacity, P9 names/conversation/characters (U6–U8), P10 Act 2 completed (B3.11–B5), P11 Act 3 and the endings
+      (B6), P12 systemic depth (B7), P13 release hardening (B8) = v1). **Owner 2026-10-28: v1 is the complete game**,
+      so the Phase B slices below are built in Unity as P10–P13 (content still written in `src/content/`, exported).
+      An older numbering here (P2 World … P5 Gameplay) is superseded.
 
 ## 3. PHASE B — build the complete game to a playable v1 (vertical slices)
 Each slice ends playable and polished before the next starts. Definition of v1 done: creation → every
@@ -699,7 +702,7 @@ mid-range Android phone; deployed to Pages.
 - [ ] B7 **Systemic depth + presentation**: ruins templates, bounty/gig templates, rare encounters, music
       and ambience, title art, menus, credits, settings, tips.
 - [ ] B8 **Balance, performance, deploy**: economy sim pass, difficulty, accessibility, Android perf
-      budget verified, Pages deploy, v1 tag.
+      budget verified, Pages deploy, v1 tag. (Now BUILD_PLAN P13: the release is the Android app, not Pages.)
 
 ### Content tracker (spoiler-free counts; update as slices land)
 | Area | Maps | NPCs | Dialogues | Quests | Status |
