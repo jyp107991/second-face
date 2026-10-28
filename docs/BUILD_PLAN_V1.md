@@ -649,19 +649,19 @@ Scratch root `S` = the session's scratchpad directory (write every tool's absolu
 - Poly Haven scans: `python3 tools/unity/models.py` (2.2 GB into `unity/Assets/External/Models`, gitignored).
 
 ### 7.1a The real Unity editor in the session (use it before CI, every time)
-The owner holds a Unity Personal licence. With the environment variable `UNITY_LICENSE` (the full contents of the
-owner's `Unity_lic.ulf`) set in the cloud environment's settings, `tools/unity/editor.sh` runs the same editor as CI
-inside the session: `install` (6000.3.27f1 into `/opt/unity`, ~10 min, 8.4 GB; the container has every system library
-it needs and reaches Unity's servers, verified 2026-10-28), `licence`, `test editmode|playmode|all` (results and logs
-in `unity/test-results/`, captures in `unity/Screenshots/`, under xvfb with software OpenGL as in CI), and
-`run <Class.Method>`. Rule: **no editor-side change is pushed until `tools/unity/editor.sh test all` passes locally
-and the captures have been looked at.** CI then only confirms and builds the APK. The licence is never printed or
-committed. Optional setup script for the environment (installs the editor at session start; it cannot read
-variables, so it does not touch the licence):
-```
-V=6000.3.27f1; C=672d562a42a7; D=/opt/unity/$V
-[ -x "$D/Editor/Unity" ] || { mkdir -p "$D" && curl -fsSL "https://download.unity3d.com/download_unity/$C/LinuxEditorInstaller/Unity-$V.tar.xz" | tar -xJ -C "$D"; }
-```
+The owner holds a Unity Personal licence. With the variable `UNITY_LICENSE_B64` (the owner's `Unity_lic.ulf`,
+base64-encoded on one line) set in the cloud environment's variables, `tools/unity/editor.sh` runs the same editor
+as CI inside the session: `install` (6000.3.27f1 into `/opt/unity`, about 10 minutes and 8.4 GB; the container has
+every system library it needs and reaches Unity's servers, verified 2026-10-28), `licence`, `test
+editmode|playmode|all` (results and logs in `unity/test-results/`, captures in `unity/Screenshots/`, under xvfb
+with software OpenGL as in CI), and `run <Class.Method>`. Start `tools/unity/editor.sh install` in the background
+at the beginning of any session that will touch editor-side code. Rule: **no editor-side change is pushed until
+`tools/unity/editor.sh test all` passes locally and the captures have been looked at.** CI then only confirms and
+builds the APK. The licence is never printed or committed.
+Facts from the cloud-environment docs (2026-10-28): variables are `.env` format, one `KEY=value` per line (a
+multi-line value must be quoted, hence base64); a running session reads changed values when its VM next restores
+after idling, or a new session reads them at once; a setup script is cached only if it finishes in about five
+minutes, so the editor install does not belong in the setup script; the VM has about 30 GB of disk.
 
 ### 7.2 Local checks (run before every commit that touches the thing)
 ```

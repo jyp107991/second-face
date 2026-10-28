@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # The real Unity editor in a Claude Code cloud session (or any Linux machine): install, licence, tests, captures.
-# Replaces the CI round trip for everything except the APK. Needs the environment variable UNITY_LICENSE holding the
-# full contents of the owner's Unity_lic.ulf (set in the cloud environment's settings; a new session picks it up).
+# Replaces the CI round trip for everything except the APK. Needs the owner's Unity_lic.ulf in the cloud environment's
+# variables, as UNITY_LICENSE_B64 (the file base64-encoded on one line: the field is .env format, one line per key)
+# or as UNITY_LICENSE (the raw XML, quoted). A session reads new values when its VM next restores or on a new session.
+# Start `install` in the background at the beginning of a session that will need the editor (about 10 minutes).
 #
 #   tools/unity/editor.sh install                 editor 6000.3.27f1 into $UNITY_HOME (about 10 min, 8.4 GB)
 #   tools/unity/editor.sh licence                 activate from $UNITY_LICENSE
@@ -17,26 +19,39 @@ OUT="$ROOT/unity/test-results"
 ULF_DIR="$HOME/.local/share/unity3d/Unity"
 
 install() {
+  # One installer at a time; unpack beside the target and move it into place at the end, so a half-unpacked editor
+  # is never mistaken for an installed one.
+  exec 9>/tmp/second-face-unity-install.lock
+  flock 9
   if [ -x "$UNITY" ]; then echo "editor present: $UNITY"; return; fi
-  mkdir -p "$UNITY_HOME"
-  echo "downloading and unpacking Unity $VERSION into $UNITY_HOME ..."
-  curl -fsSL "https://download.unity3d.com/download_unity/$CHANGESET/LinuxEditorInstaller/Unity-$VERSION.tar.xz" | tar -xJ -C "$UNITY_HOME"
-  [ -x "$UNITY" ] || { echo "install failed: $UNITY missing"; exit 1; }
+  local part="$UNITY_HOME.partial"
+  rm -rf -- "$part"; mkdir -p "$part"
+  echo "downloading and unpacking Unity $VERSION (about 10 min) ..."
+  curl -fsSL "https://download.unity3d.com/download_unity/$CHANGESET/LinuxEditorInstaller/Unity-$VERSION.tar.xz" | tar -xJ -C "$part"
+  [ -x "$part/Editor/Unity" ] || { echo "install failed: Editor/Unity missing after unpacking"; exit 1; }
+  mkdir -p "$(dirname "$UNITY_HOME")"; mv -- "$part" "$UNITY_HOME"
+  echo "editor installed: $UNITY"
+}
+
+licence_text() {   # the .ulf contents from either variable; never echoed to the terminal
+  if [ -n "${UNITY_LICENSE_B64:-}" ]; then printf '%s' "$UNITY_LICENSE_B64" | tr -d ' \r\n' | base64 -d
+  else printf '%s' "${UNITY_LICENSE:-}"; fi
 }
 
 need_licence() {   # checked before any download: no point fetching 4.6 GB without a licence to run it
   [ -f "$ULF_DIR/Unity_lic.ulf" ] && return
-  if [ -z "${UNITY_LICENSE:-}" ]; then
-    echo "UNITY_LICENSE is not set. Add the contents of Unity_lic.ulf as an environment variable in the cloud"
-    echo "environment's settings and start a new session."; exit 2
+  if [ -z "${UNITY_LICENSE_B64:-}${UNITY_LICENSE:-}" ]; then
+    echo "No Unity licence: set UNITY_LICENSE_B64 (Unity_lic.ulf base64-encoded on one line) in the cloud environment's"
+    echo "variables; a session reads it when its VM next restores, or start a new session."; exit 2
   fi
 }
 
 licence() {
   need_licence
-  [ -n "${UNITY_LICENSE:-}" ] || { echo "licence file already in place"; return; }
+  [ -n "${UNITY_LICENSE_B64:-}${UNITY_LICENSE:-}" ] || { echo "licence file already in place"; return; }
   mkdir -p "$ULF_DIR"
-  printf '%s' "$UNITY_LICENSE" > "$ULF_DIR/Unity_lic.ulf"; chmod 600 "$ULF_DIR/Unity_lic.ulf"
+  ( umask 077; licence_text > "$ULF_DIR/Unity_lic.ulf" )
+  grep -q "<License" "$ULF_DIR/Unity_lic.ulf" || { echo "the licence variable does not decode to a Unity licence file"; rm -f "$ULF_DIR/Unity_lic.ulf"; exit 4; }
   mkdir -p "$OUT"
   # Same activation GameCI performs for a Personal licence; never prints the licence.
   "$UNITY" -batchmode -nographics -quit -manualLicenseFile "$ULF_DIR/Unity_lic.ulf" -logFile "$OUT/licence.log" || true
