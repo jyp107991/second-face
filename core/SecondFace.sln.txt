@@ -1,0 +1,3 @@
+Build and test the core outside Unity:
+  dotnet build core/SecondFace.Core.csproj
+  dotnet test core/SecondFace.Core.Tests/SecondFace.Core.Tests.csproj

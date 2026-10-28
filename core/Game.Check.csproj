@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Compile check (no build output used) of the Unity-side code against the editor's managed assemblies, so API
+       mistakes surface before CI. Set UnityManaged to the editor's Editor/Data/Managed folder (tools/port/refs.sh
+       extracts it from the Unity Linux archive). Files that need package assemblies (URP, Input System, glTFast)
+       are listed in GameCheckExclude until those packages' assemblies are available locally. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <UnityManaged Condition="'$(UnityManaged)' == ''">$(HOME)/unity-managed</UnityManaged>
+    <NoWarn>CS1701;CS1702</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../unity/Assets/SecondFace/Game/**/*.cs" />
+    <ProjectReference Include="SecondFace.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="$(UnityManaged)/UnityEngine/*.dll" />
+  </ItemGroup>
+</Project>
