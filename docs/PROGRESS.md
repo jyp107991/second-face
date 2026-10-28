@@ -312,7 +312,12 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
       (the session's tokens lack the workflow scope); (2) the three licence secrets (PORT.md §3). Then the first
       APK builds. **Next action:** P1 core port while that happens; when the Android workflow runs, read its log
       and fix the first build.
-- [ ] P1 Core (pure C#) with ported tests.
+- [~] P1 Core (pure C#) with ported tests. Done: P1.1 stats — `Core/Stats/{Rules,Sheet,Chrome}.cs`, the rules/
+      chrome content model, `Content/Registry.cs` (typed registries from the JSON, strict-deserialisation check);
+      the web stats, creation and chrome suites ported (18 tests green with `dotnet test core/...`).
+      **Next:** P1.2 items/inventory/barter/wardrobe; P1.3 game state + world logic (Cond/Effect over JSON);
+      P1.4 dialogue; P1.5 quests, frontier (news, standing, leads, events), factions, letters; P1.6 travel,
+      roads, schedules; P1.7 combat rules/encounter/ai; P1.8 saves.
 - [ ] P2 World. - [ ] P3 People. - [ ] P4 Camera/touch/UI. - [ ] P5 Gameplay and parity on device.
 
 ## 3. PHASE B — build the complete game to a playable v1 (vertical slices)
