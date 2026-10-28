@@ -25,7 +25,10 @@ namespace SecondFace.Tests
         /// <summary>Reads back the main camera's frame at the given size and writes a PNG.</summary>
         public static IEnumerator Capture(string name, int width = 1600, int height = 720)
         {
-            yield return new WaitForEndOfFrame();
+            // Never WaitForEndOfFrame here: in -batchmode no frame end is ever signalled and the test hangs for ever
+            // (CI run 11). Camera.Render() below draws on demand, which works under xvfb's software OpenGL.
+            yield return null;
+            yield return null;
             var cam = Camera.main;
             Assert.That(cam, Is.Not.Null, "no main camera");
             var rt = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
@@ -48,7 +51,7 @@ namespace SecondFace.Tests
             Assert.That(File.Exists(path), Is.True);
         }
 
-        [UnityTest]
+        [UnityTest, Timeout(600000)]
         public IEnumerator BootSceneRendersAndIsCaptured()
         {
             yield return SceneManager.LoadSceneAsync("Assets/SecondFace/Scenes/Boot.unity", LoadSceneMode.Single);
@@ -58,7 +61,7 @@ namespace SecondFace.Tests
             yield return Capture("boot");
         }
 
-        [UnityTest]
+        [UnityTest, Timeout(600000)]
         public IEnumerator TerrainTestSceneIsCapturedWhenBuilt()
         {
             const string path = "Assets/SecondFace/Scenes/Test_Terrain.unity";
@@ -76,7 +79,7 @@ namespace SecondFace.Tests
             yield return Capture("terrain_wide");
         }
 
-        [UnityTest]
+        [UnityTest, Timeout(600000)]
         public IEnumerator MaterialSheetIsCapturedWhenBuilt()
         {
             const string path = "Assets/SecondFace/Scenes/Test_Materials.unity";
@@ -89,7 +92,7 @@ namespace SecondFace.Tests
             yield return Capture("materials_sheet", 1920, 1080);
         }
 
-        [UnityTest]
+        [UnityTest, Timeout(600000)]
         public IEnumerator ShelterPlaceIsCapturedWhenBuilt()
         {
             const string path = "Assets/SecondFace/Scenes/Test_Shelter.unity";
@@ -111,7 +114,7 @@ namespace SecondFace.Tests
             yield return Capture("place_shelter_hatch");
         }
 
-        [UnityTest]
+        [UnityTest, Timeout(600000)]
         public IEnumerator PeopleLineupAndPortraitsAreCapturedWhenBuilt()
         {
             const string path = "Assets/SecondFace/Scenes/Test_People.unity";
@@ -140,7 +143,7 @@ namespace SecondFace.Tests
             }
         }
 
-        [UnityTest]
+        [UnityTest, Timeout(600000)]
         public IEnumerator PeopleWalkOnCapturedMotionWhenClipsExist()
         {
             const string path = "Assets/SecondFace/Scenes/Test_People.unity";
@@ -161,7 +164,7 @@ namespace SecondFace.Tests
             }
         }
 
-        [UnityTest]
+        [UnityTest, Timeout(600000)]
         public IEnumerator FrontierPlaceIsCapturedWhenBuilt()
         {
             const string path = "Assets/SecondFace/Scenes/Test_Frontier.unity";
@@ -185,7 +188,7 @@ namespace SecondFace.Tests
             yield return Capture("place_frontier_eye", 1920, 1080);
         }
 
-        [UnityTest]
+        [UnityTest, Timeout(600000)]
         public IEnumerator VegetationIsCapturedWhenBuilt()
         {
             const string path = "Assets/SecondFace/Scenes/Test_Vegetation.unity";
