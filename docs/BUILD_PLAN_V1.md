@@ -266,8 +266,10 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    rebuild; read `portrait_*`: iris and pupil visible, highlight on the eye.
 4. **Skin grit** (§6.C.4–C.5): `bake_skin` (sun, dirt in creases, chapped lips, stubble) on the six skins;
    rebuild; read the portraits.
-5. **People weight** (§6.B.6): skin 2 K for p1–p6 as the hero set, cloth and hair 1 K, no textures on brows and
-   lashes, shared garments share a texture. Target ≤ 8 MB per person; print the sizes in the commit message.
+5. ~~**People weight**~~ (§6.B.6) — done 2026-10-28: garment normal maps shared per garment at 1 K, all normal maps
+   1 K and RGB, skin diffuse 2 K (own per person), the sculptor's shapes only on the player (`sculpt`), 102 → 66 MB
+   in the repository; per person in the build (ASTC 6×6 + mesh file) 7.8–10.6 MB plus 5 MB shared. The rest is
+   mesh weight (FBX 3–5 MB): LODs and decimation in P4.1.
 6. **Nature to FBX, one model per variant** (§6.Q, fixes the near-black leaves and the rows of identical plants):
    `models_bake.py` exports FBX instead of `.glb`; it splits a scan into variants by its separate mesh objects,
    or, if the scan is one object, by connected parts grouped by a gap over 0.5 m on the ground plane, and
@@ -742,7 +744,9 @@ shown up locally in minutes.
    `tools/unity/editor.sh test playmode <filter>` (a `-testFilter`, e.g. `ScreenshotTests.People`). Never run two
    editor commands on the project at once (Unity refuses a second instance on the same project).
 5. **Read the results**: the pass/fail counts printed by `editor.sh` (a total of 0 is a failure: a filter or
-   category that matches nothing "passes"); then, pass or fail,
+   category that matches nothing "passes") and its `LOG PROBLEM` lines (import and runtime errors without the known
+   noise; any line there means the run is not green, whatever the counts say: an avatar that failed to build still
+   "passes"); then, pass or fail,
    `grep -n -E 'error CS|^Error|Exception:|NullReference|Failed to' unity/test-results/*.log | grep -v -i licens`
    and read the log around the first hit. A run that "passes" with import errors in the log is not green: an asset that
    failed to import shows up as a wrong capture later.
@@ -949,6 +953,15 @@ numbers from the densest place written into PORT.md §5.
   word, so a slot `mat_skin:<id>__<long skin name>_d` lost its tail and Unity found no texture (the untextured
   fallback colour is a dark fibre). Keep texture names short (`<id>__skin_d`); `mh_build.slot()` raises on a slot
   name over 63 characters.
+- **Every avatar failed and nothing failed** (local editor): after the jaw bone left the rig, the people's `.meta`
+  files still held the first import's bone map, so every import logged "Avatar creation failed: Transform 'Jaw' for
+  human bone 'Jaw' not found" and the tests passed on fallback framing. The importer now maps the bones afresh on
+  every import, and `editor.sh` prints such lines as `LOG PROBLEM` after every run (the old grep missed it because
+  the error did not start a line).
+- **Every mouth gaped once the people animated**: body clips carry no jaw curves and Humanoid retargeting then poses
+  a mapped Jaw open. The rig has no Jaw (merged into Head); speech uses the expression shapes.
+- **Portraits framed chests and empty sky**: an animated head moves between aiming and capture (long frames in
+  batch mode); the portrait test holds the pose (`Animator.speed = 0`).
 - **Five of six people stood in T-pose in the walk captures**: the people scene builder created the animator
   controller once per person at the same asset path; each creation destroyed the controller the previous people
   held. Build shared assets once, before the loop. Test people also animate with `AlwaysAnimate` (captures render by

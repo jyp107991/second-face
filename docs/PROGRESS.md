@@ -388,7 +388,13 @@ face shape; the red is the inside of the mouth), scars and tattoos (not built), 
 **Walk captures fixed (2026-10-28):** five of six stood in T-pose because the scene builder recreated the animator
 controller per person (each creation destroyed the previous one); all six walk now. Seen: the captured walk holds the
 forearms raised in front (a retarget fault; plan §2 list, P4.4 at the latest).
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 5 (people weight ≤ 8 MB each), then steps 6–12.
+**People weight (plan §10 step 5, 2026-10-28):** 102 → 66 MB (shared 1 K garment normals, normals 1 K, no sculptor
+shapes on NPCs); per person in the build 7.8–10.6 MB + 5 MB shared, the rest is mesh (LODs in P4.1). Found and fixed
+on the way: every mouth gaped once all animated (the rig's Jaw; merged into Head), every avatar then failed on the
+stale bone map in the metas (now re-mapped every import; `editor.sh` prints `LOG PROBLEM` lines), portraits lost the
+head (pose now held). MakeHuman ships 5 of the 14 expression units the plan wanted (P4 face work).
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 6 (nature models to FBX, one per variant, `nature` materials,
+glTFast removed), then steps 7–12.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

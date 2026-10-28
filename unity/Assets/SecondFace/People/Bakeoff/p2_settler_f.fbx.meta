@@ -268,14 +268,6 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Jaw
-      humanName: Jaw
-      limit:
-        min: {x: 0, y: 0, z: 0}
-        max: {x: 0, y: 0, z: 0}
-        value: {x: 0, y: 0, z: 0}
-        length: 0
-        modified: 0
     - boneName: LeftThumbProximal
       humanName: Left Thumb Proximal
       limit:
@@ -805,11 +797,6 @@ ModelImporter:
       position: {x: -0.069555454, y: 0.026769124, z: 0.028223282}
       rotation: {x: 0.72401875, y: -0.6896636, z: -0.006874921, w: 0.010673943}
       scale: {x: 1.0000024, y: 1.000001, z: 1.0000008}
-    - name: Jaw
-      parentName: Head
-      position: {x: -0.014232095, y: -0.0011796742, z: 0.0000000010675887}
-      rotation: {x: 0.0000000756838, y: 0.000000026413208, z: 0.96733034, w: 0.25351942}
-      scale: {x: 1.0000056, y: 0.9999992, z: 1.0000001}
     - name: LeftUpperLeg
       parentName: Hips
       position: {x: -0.011115998, y: 0.07830499, z: -0.10016605}
@@ -850,18 +837,18 @@ ModelImporter:
       position: {x: 0.022244738, y: 0.12664983, z: -0.027668433}
       rotation: {x: 0.026264647, y: -0.003281293, z: -0.12392213, w: 0.99193895}
       scale: {x: 1.0000019, y: 1.000005, z: 1.0000035}
-    armTwist: 0.5
-    foreArmTwist: 0.5
-    upperLegTwist: 0.5
-    legTwist: 0.5
-    armStretch: 0.05
-    legStretch: 0.05
+    armTwist: 0
+    foreArmTwist: 0
+    upperLegTwist: 0
+    legTwist: 0
+    armStretch: 0
+    legStretch: 0
     feetSpacing: 0
-    globalScale: 1
+    globalScale: 0
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0
-    skeletonHasParents: 1
+    skeletonHasParents: 0
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 3

@@ -195,6 +195,9 @@ namespace SecondFace.Tests
             var cam = Camera.main;
             var people = GameObject.Find("People");
             Assert.That(people, Is.Not.Null);
+            // Hold the pose: the people animate (idle), and in batch mode the frames between aiming at the head and the
+            // capture are long enough for it to move out of frame.
+            foreach (var a in people.GetComponentsInChildren<Animator>()) a.speed = 0f;
             for (var i = 0; i < people.transform.childCount; i++)
             {
                 var person = people.transform.GetChild(i);

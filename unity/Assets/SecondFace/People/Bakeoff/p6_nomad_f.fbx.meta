@@ -268,14 +268,6 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Jaw
-      humanName: Jaw
-      limit:
-        min: {x: 0, y: 0, z: 0}
-        max: {x: 0, y: 0, z: 0}
-        value: {x: 0, y: 0, z: 0}
-        length: 0
-        modified: 0
     - boneName: LeftThumbProximal
       humanName: Left Thumb Proximal
       limit:
@@ -540,6 +532,11 @@ ModelImporter:
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
+    - name: Cloth_culturalibre_hero-heroine_hood_1
+      parentName: p6_nomad_f(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
     - name: Cloth_punkduck_winter_boots
       parentName: p6_nomad_f(Clone)
       position: {x: -0, y: 0, z: 0}
@@ -556,11 +553,6 @@ ModelImporter:
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
     - name: Eyes
-      parentName: p6_nomad_f(Clone)
-      position: {x: -0, y: 0, z: 0}
-      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
-      scale: {x: 1, y: 1, z: 1}
-    - name: Hair
       parentName: p6_nomad_f(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
@@ -805,11 +797,6 @@ ModelImporter:
       position: {x: -0.067070544, y: 0.038544904, z: 0.027591156}
       rotation: {x: 0.7415712, y: -0.6705327, z: -0.01342898, w: 0.016668687}
       scale: {x: 1, y: 1, z: 1}
-    - name: Jaw
-      parentName: Head
-      position: {x: -0.00837449, y: 0.011656523, z: 6.61954e-10}
-      rotation: {x: 0.00000006754624, y: 0.0000000022958386, z: 0.96957064, w: 0.24481183}
-      scale: {x: 0.9999993, y: 0.99999994, z: 1}
     - name: LeftUpperLeg
       parentName: Hips
       position: {x: -0.013256098, y: 0.06997904, z: -0.09150059}
@@ -850,18 +837,18 @@ ModelImporter:
       position: {x: 0.025279555, y: 0.12623067, z: -0.024133163}
       rotation: {x: 0.07700677, y: -0.010973774, z: -0.14065191, w: 0.9869988}
       scale: {x: 1.0000001, y: 0.9999999, z: 1}
-    armTwist: 0.5
-    foreArmTwist: 0.5
-    upperLegTwist: 0.5
-    legTwist: 0.5
-    armStretch: 0.05
-    legStretch: 0.05
+    armTwist: 0
+    foreArmTwist: 0
+    upperLegTwist: 0
+    legTwist: 0
+    armStretch: 0
+    legStretch: 0
     feetSpacing: 0
-    globalScale: 1
+    globalScale: 0
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0
-    skeletonHasParents: 1
+    skeletonHasParents: 0
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 3

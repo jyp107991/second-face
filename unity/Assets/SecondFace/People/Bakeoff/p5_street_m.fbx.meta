@@ -268,14 +268,6 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Jaw
-      humanName: Jaw
-      limit:
-        min: {x: 0, y: 0, z: 0}
-        max: {x: 0, y: 0, z: 0}
-        value: {x: 0, y: 0, z: 0}
-        length: 0
-        modified: 0
     - boneName: LeftThumbProximal
       humanName: Left Thumb Proximal
       limit:
@@ -560,11 +552,6 @@ ModelImporter:
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
       scale: {x: 1, y: 1, z: 1}
-    - name: Hair
-      parentName: p5_street_m(Clone)
-      position: {x: -0, y: 0, z: 0}
-      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
-      scale: {x: 1, y: 1, z: 1}
     - name: Lashes
       parentName: p5_street_m(Clone)
       position: {x: -0, y: 0, z: 0}
@@ -805,11 +792,6 @@ ModelImporter:
       position: {x: -0.08047748, y: 0.0378007, z: 0.029209627}
       rotation: {x: 0.76631784, y: -0.64182824, z: -0.018595647, w: 0.021625802}
       scale: {x: 1.0000001, y: 1.0000001, z: 0.9999999}
-    - name: Jaw
-      parentName: Head
-      position: {x: -0.0121261105, y: 0.0073943464, z: 0.000000011439463}
-      rotation: {x: -0.0000000014458426, y: 0.00000025678372, z: 0.96236396, w: 0.27176392}
-      scale: {x: 1.0000012, y: 1.0000001, z: 1}
     - name: LeftUpperLeg
       parentName: Hips
       position: {x: -0.003533134, y: 0.05766176, z: -0.10726176}
@@ -850,18 +832,18 @@ ModelImporter:
       position: {x: 0.031751543, y: 0.13989288, z: -0.027581053}
       rotation: {x: 0.037657596, y: -0.0033173254, z: -0.08768757, w: 0.99543047}
       scale: {x: 1, y: 1.0000001, z: 1}
-    armTwist: 0.5
-    foreArmTwist: 0.5
-    upperLegTwist: 0.5
-    legTwist: 0.5
-    armStretch: 0.05
-    legStretch: 0.05
+    armTwist: 0
+    foreArmTwist: 0
+    upperLegTwist: 0
+    legTwist: 0
+    armStretch: 0
+    legStretch: 0
     feetSpacing: 0
-    globalScale: 1
+    globalScale: 0
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0
-    skeletonHasParents: 1
+    skeletonHasParents: 0
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 3

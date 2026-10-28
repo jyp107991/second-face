@@ -103,12 +103,19 @@ for tc in t.iter('test-case'):
 PY
 }
 
+problems() {   # import and runtime errors in a log, without the known noise; a run with lines here is not green
+  local n; n=$(grep -c -i -E 'error CS|error:|exception:|nullreference|failed' "$1" 2>/dev/null | head -1)
+  grep -n -i -E 'error CS|error:|exception:|nullreference|failed' "$1" 2>/dev/null \
+    | grep -v -i -E 'licens|FMOD|ALSA|snd_|LogAssemblyErrors|ExecuteEnumerableAndRecordExceptions|ValidationExceptions|ExceptionVisual|pvpExceptions' \
+    | cut -c1-220 | head -15 | sed 's/^/  LOG PROBLEM: /' || true
+}
+
 test_mode() {
   local mode=$1 filter=${2:-}; mkdir -p "$OUT"
   rm -f "$OUT/$mode-results.xml"   # a stale file from an earlier run must not pass for this one
   editor -runTests -testPlatform "$mode" ${filter:+-testFilter "$filter"} -testResults "$OUT/$mode-results.xml" \
     -logFile "$OUT/$mode.log" || true
-  if [ -f "$OUT/$mode-results.xml" ]; then echo "== $mode"; summary "$OUT/$mode-results.xml"
+  if [ -f "$OUT/$mode-results.xml" ]; then echo "== $mode"; summary "$OUT/$mode-results.xml"; problems "$OUT/$mode.log"
   else echo "== $mode: no results; last lines of $OUT/$mode.log:"; tail -30 "$OUT/$mode.log"; fi
 }
 
@@ -126,6 +133,6 @@ case "${1:-}" in
   run)
     need_licence; install; [ -f "$OUT/.licensed" ] || licence
     mkdir -p "$OUT"; editor -executeMethod "${2:?method}" -quit -logFile "$OUT/run.log" || true
-    grep -n -i "error\|exception" "$OUT/run.log" | grep -v -i "licensing" | head -20 || true ;;
+    problems "$OUT/run.log" ;;
   *) sed -n '2,14p' "$0"; exit 1 ;;
 esac

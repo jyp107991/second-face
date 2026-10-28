@@ -153,7 +153,9 @@ def target(rel):
 # ----------------------------------------------------------------------------------------------------------------
 RENAME = {
     'root': 'Hips', 'spine05': 'Spine', 'spine03': 'Chest', 'spine01': 'UpperChest', 'neck01': 'Neck', 'head': 'Head',
-    'eye.L': 'LeftEye', 'eye.R': 'RightEye', 'jaw': 'Jaw',
+    # no Jaw: body clips carry no jaw motion and Humanoid retargeting then poses a mapped jaw open (every mouth gaped
+    # once all the test people animated); the jaw merges into Head and speech uses the expression shapes
+    'eye.L': 'LeftEye', 'eye.R': 'RightEye',
     'clavicle.L': 'LeftShoulder', 'upperarm01.L': 'LeftUpperArm', 'lowerarm01.L': 'LeftLowerArm', 'wrist.L': 'LeftHand',
     'clavicle.R': 'RightShoulder', 'upperarm01.R': 'RightUpperArm', 'lowerarm01.R': 'RightLowerArm', 'wrist.R': 'RightHand',
     'upperleg01.L': 'LeftUpperLeg', 'lowerleg01.L': 'LeftLowerLeg', 'foot.L': 'LeftFoot', 'toe1-1.L': 'LeftToes',
@@ -291,16 +293,24 @@ def write_tex_meta(path, rel, kind):
     import assets as A
     with open(path + '.meta', 'w') as f: f.write(A.meta(rel, kind))
 
-def copy_texture(src, name, kind='d'):
-    """Copies a texture beside the people as <name>.png (resized to 2048 at most) with a stable meta."""
+def copy_texture(src, name, kind='d', size=2048):
+    """Copies a texture beside the people as <name>.png (resized to `size` at most) with a stable meta; normal maps
+    are written without alpha (RGB)."""
+    import numpy as np
     os.makedirs(TEXOUT, exist_ok=True)
     dst = os.path.join(TEXOUT, name + '.png')
     if not os.path.exists(dst):
         im = bpy.data.images.load(src)
         w, h = im.size
-        if max(w, h) > 2048:
-            f = 2048 / max(w, h); im.scale(max(1, int(w * f)), max(1, int(h * f)))
-        im.filepath_raw = dst; im.file_format = 'PNG'; im.save()
+        if max(w, h) > size:
+            f = size / max(w, h); im.scale(max(1, int(w * f)), max(1, int(h * f))); w, h = im.size
+        if kind == 'n':
+            px = np.empty(w * h * 4, np.float32); im.pixels.foreach_get(px); bpy.data.images.remove(im)
+            im = bpy.data.images.new('n_' + name, w, h, alpha=False); im.colorspace_settings.name = 'Non-Color'
+            px = px.reshape(-1, 4); px[:, 3] = 1.0; im.pixels.foreach_set(px.ravel())
+        im.filepath_raw = dst; im.file_format = 'PNG'
+        if kind == 'n': im.alpha_mode = 'NONE'
+        im.save()
         bpy.data.images.remove(im)
     write_tex_meta(dst, f'{REL}/tex/{name}.png', kind)
     return name
@@ -635,7 +645,8 @@ def build_person(spec):
             if i in remap:
                 k = remap[i]; d = to_bl_dir((dx * w, dy * w, dz * w)); sk.data[k].co = sk.data[k].co + d
     nshapes = 0
-    for mod in FACE_SHAPES:
+    # The sculptor's shapes only on the player (spec 'sculpt'); NPCs have their face baked and keep the expressions.
+    for mod in (FACE_SHAPES if spec.get('sculpt') else []):
         parts = mod[4:].split('|') if mod.startswith('sym:') else mod.split('|')
         if len(parts) == 3:
             for sign, label in ((1.0, parts[2]), (-1.0, parts[1])):
@@ -755,10 +766,14 @@ def build_person(spec):
             if look is not None: tex = bake_cloth(po, src_d, (tex_name or name) + '_d', look)
             elif hair_look is not None and src_d: tex = bake_hair(src_d, (tex_name or name) + '_d', hair_look)
             elif src_d: tex = copy_texture(src_d, (tex_name or name) + '_d')
-            # hair cards ship without normal maps (BUILD_PLAN §6.B.6; some packs' are object-space, wrong in Unity)
+            # hair cards ship without normal maps (BUILD_PLAN §6.B.6; some packs' are object-space, wrong in Unity). A
+            # garment's normal map does not change with its dye: one shared 1K copy per garment (<garment>_n), which
+            # Unity finds from the person's <id>__<garment>_d.
             if tex and hair_look is None and 'normalmapTexture' in mm:
                 tp = os.path.join(os.path.dirname(mat_path), mm['normalmapTexture'])
-                if os.path.exists(tp): copy_texture(tp, (tex_name or name) + '_n', 'n')
+                if os.path.exists(tp):
+                    if look is not None: copy_texture(tp, name + '_n', 'n', size=1024)
+                    else: copy_texture(tp, (tex_name or name) + '_n', 'n')
         po.data.materials.append(slot(f'{mat_name}:{tex or "none"}'))
         # skinning: weights of the first reference vertex (eyes to the eye bones)
         if skin_to:
@@ -796,7 +811,7 @@ def build_person(spec):
                 tp = os.path.join(sd, mm[key])
                 if not os.path.exists(tp): continue
                 if key != 'diffuseTexture':
-                    copy_texture(tp, spec['id'] + '__skin' + suffix, kind)   # beside the person's own diffuse
+                    copy_texture(tp, spec['id'] + '__skin' + suffix, kind, size=1024)   # beside the person's own diffuse
                     continue
                 # the person's own skin, <id>__skin_d (a longer name would pass Blender's 63-character limit)
                 import numpy as np

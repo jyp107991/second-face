@@ -14,7 +14,7 @@ namespace SecondFace.EditorTools
     public sealed class PeopleImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 5;
+        public override uint GetVersion() => 6;
 
         private bool IsPerson => assetPath.StartsWith("Assets/SecondFace/People/");
 
@@ -24,6 +24,11 @@ namespace SecondFace.EditorTools
             var imp = (ModelImporter)assetImporter;
             imp.animationType = ModelImporterAnimationType.Human;
             imp.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+            // Map the bones afresh on every import: the .meta keeps the mapping of the first import, and when the rig
+            // changed (the jaw was merged into the head) the stale map failed every avatar ("Transform 'Jaw' for human
+            // bone 'Jaw' not found").
+            imp.humanDescription = new HumanDescription();
+            imp.autoGenerateAvatarMappingIfUnspecified = true;
             imp.importBlendShapes = true;
             imp.importBlendShapeNormals = ModelImporterNormals.None;
             // Blender's own smooth normals: Unity's recalculation bent the normals in the eye's recessed pupil, which then
@@ -155,9 +160,17 @@ namespace SecondFace.EditorTools
             return m;
         }
 
-        /// <summary>The normal map for a diffuse named &lt;stem&gt;_d is &lt;stem&gt;_n (only the suffix changes: an
-        /// id such as p3_drifter_m contains "_d" too).</summary>
-        private static Texture2D NormalFor(string dir, string tex) =>
-            tex.EndsWith("_d") ? AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/tex/{tex.Substring(0, tex.Length - 2)}_n.png") : null;
+        /// <summary>The normal map for a diffuse named &lt;stem&gt;_d: &lt;stem&gt;_n, or for a person's dyed garment
+        /// (&lt;id&gt;__&lt;garment&gt;_d) the garment's shared &lt;garment&gt;_n. Only the suffix is replaced: an id such as
+        /// p3_drifter_m contains "_d" too.</summary>
+        private static Texture2D NormalFor(string dir, string tex)
+        {
+            if (!tex.EndsWith("_d")) return null;
+            var stem = tex.Substring(0, tex.Length - 2);
+            var own = AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/tex/{stem}_n.png");
+            if (own != null) return own;
+            var split = stem.IndexOf("__", System.StringComparison.Ordinal);
+            return split < 0 ? null : AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/tex/{stem.Substring(split + 2)}_n.png");
+        }
     }
 }
