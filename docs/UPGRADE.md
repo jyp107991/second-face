@@ -274,3 +274,8 @@ Content building (B3.11 onwards) is paused until U1–U5 are in.
   up: on-device profiling through the shell, WebGL2 as the production path (WebGPU in the Android WebView is still
   behind a flag in 2026), KTX2/Basis texture compression, resolution scaling, draw-call and skinned-mesh budgets,
   allocation-free hot loops, workers for chunk building, LOD rings.
+- **2026-10-28 Engine decision (owner): port to Unity.** Offered the choice between shipping the three.js game in a
+  native shell (recommended for cost) and a port to Godot or Unity, the owner chose **Unity**, Android first. The
+  port programme is `docs/PORT.md`; U4.2+ and U5–U8 are carried out in Unity rather than in the web engine. The
+  web engine stays as the reference for behaviour and visuals (every U1–U4.1 result is the bar the port must meet
+  or beat) and as the content validator.

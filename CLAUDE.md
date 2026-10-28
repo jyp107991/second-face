@@ -1,14 +1,15 @@
 # THE SECOND FACE — instructions for Claude sessions
 
-Original isometric turn-based post-apocalyptic RPG (TypeScript + Vite + three.js).
+Original isometric turn-based post-apocalyptic RPG. Being ported to Unity 6 (URP, C#) from the TypeScript + three.js original (see `docs/PORT.md`).
 The full brief is `docs/BRIEF.md`. Design: `docs/DESIGN.md`. Milestones: `docs/ROADMAP.md`.
 
 ## 0. RESUME FIRST (usage-limit safety)
 Sessions can be cut off at any moment by usage limits. Work is structured so nothing is lost:
 
 1. **On session start, read `docs/PROGRESS.md` before anything else.** It names the current
-   milestone, the step in progress, what is done, and the exact next action. Then `docs/UPGRADE.md` (the owner's
-   directive and the order of work that overrides the content roadmap until it is done).
+   milestone, the step in progress, what is done, and the exact next action. Then `docs/PORT.md` (the Unity port:
+   plan, conventions, how to build and verify) and `docs/UPGRADE.md` (the owner's visual directive, still binding
+   for the port's targets).
 2. Work in **small steps** (≤ ~1 hour of work each). After each step:
    - run `npm run check` (typecheck + validate content + tests) when code exists,
    - update `docs/PROGRESS.md` (tick the step, write the next action),
@@ -72,9 +73,12 @@ The owner wants to play unspoiled.
   characters with distinct, rational motives and deep relationships. Content building pauses until U1–U5 are in.
 - **Installable app, not a web page** (owner, pass 6, 2026-10-27): the release is an installable app that runs full
   screen (no browser bar) in landscape. Performance is a first-class goal: wherever the game can run faster without
-  losing aesthetic or experience, it must, in line with modern mobile best practice. The engine choice is to be
-  re-examined on that basis (see `docs/UPGRADE.md` "App directive"); until the owner decides, the TS/three.js
-  codebase continues and ships through a native shell.
+  losing aesthetic or experience, it must, in line with modern mobile best practice.
+- **Unity port** (owner decision, 2026-10-28): the game is ported to **Unity 6 LTS (6000.3) with URP**, Android
+  first (APK built by CI; iOS when a Mac and Apple account exist). The plan and conventions are in `docs/PORT.md`
+  and override the content roadmap until the port reaches parity. The TS/three.js game in `src/` is frozen as the
+  reference implementation and the content validator; content data (`src/content/`) stays the source of truth and
+  is exported to the Unity project by a tool. No new web features.
 - Visual style (superseded where the upgrade directive says otherwise): orthographic iso camera, rotatable/zoomable.
 
 ## 3. Engineering conventions

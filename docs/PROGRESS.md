@@ -29,8 +29,9 @@ the Pages workflow). **Act 2 part 1 is under way**: Ninebridge, Openfield, the S
 Precinct, Old Market, the Sink, Lantern Row, the Stacks, Bridgeward and the Crown are playable (29 maps, 347 dialogues, 54 quests,
 147 items;
 six companions can join; a flat in the Stacks is a safehouse; four gangs joinable one at a time; the Crown has five ways in).
-**Content building is PAUSED by the owner's directive of 2026-10-27 (pass 5): the upgrade in `docs/UPGRADE.md` comes first
-(§2c below): U1–U3 done, U4 in progress (U4.1 captured motion in); then B3.11.** Still open from the presentation
+**Content building is PAUSED. Owner decision 2026-10-28: the game is being PORTED TO UNITY 6 (URP, Android first) —
+plan and rules in `docs/PORT.md` (§2d below). The web engine is frozen as the reference (U1–U4.1 done in it). The
+upgrade list `docs/UPGRADE.md` U4.2–U8 is carried out in Unity; then B3.11.** Still open from the presentation
 pass: A5.9's remaining items (combat hover card, crowd yielding, indoor sound, camera ease, Tab reveal) — fold them in
 as B3 touches the same code. Binding owner rules: see `CLAUDE.md` §2 (no time limits; spoiler rule; not a Fallout
 clone; cyberpunk fusion).
@@ -298,6 +299,14 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
 - [ ] U7 Conversation system: memory, exhaustion, state-aware greetings, interjections, no loops; pass over trees.
 - [ ] U8 Characters and relationships: motive bibles, arcs, romances rewritten; natural talk over exposition.
 - Then B3.11+ resumes (the content tracker below is unchanged; the maps become places in the one world).
+
+### 2d. The Unity port (owner decision 2026-10-28; `docs/PORT.md` is the plan — read it)
+- [~] P0 Foundation: decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
+      tool; `unity/` project skeleton (6000.3 LTS, URP, Android landscape immersive); core/ .NET solution for the
+      pure-C# assembly; CI workflow (game-ci) — waits on the owner's licence secrets (PORT.md §3).
+      **Next action:** finish the skeleton and the first Boot scene; get the CI build green once secrets exist.
+- [ ] P1 Core (pure C#) with ported tests.
+- [ ] P2 World. - [ ] P3 People. - [ ] P4 Camera/touch/UI. - [ ] P5 Gameplay and parity on device.
 
 ## 3. PHASE B — build the complete game to a playable v1 (vertical slices)
 Each slice ends playable and polished before the next starts. Definition of v1 done: creation → every
