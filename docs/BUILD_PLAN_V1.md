@@ -594,6 +594,38 @@ changes in the redesign (combat, checks), change Core and its tests and leave `s
 valid because ids and fields do not change. Add new content fields in `src/content` types first (validated by
 `npm run validate`), then in the Core model, then in the exporter.
 
+### 6.N Judging a capture (the rubric; a capture that fails any line is not done)
+- **Terrain/world**: no visible tiling at the iso distance (layers tile at their metres, detail noise breaks
+  repeats), no hard splat edges, slopes read as rock, flats as soil/sand, a wash reads as a wash; the horizon has
+  haze; shadows are soft and the palette is lit (midtones above 40 % luminance by day).
+- **Scatter**: no floating or sunken props (feet −3 cm into the ground), no scale lies (a boulder is 1–3 m, a
+  shrub 0.5–2 m), clumps and clearings rather than an even sprinkle, grass where the rules say, nothing
+  intersecting a building footprint.
+- **Place**: walls meet floors without gaps, roofs overhang, doors are 2.1 m, props touch surfaces, three light
+  sources at most read as the lighting of a room, decals carry ninety years of use, nothing is clean except in
+  the rich districts.
+- **People (lineup)**: height variance visible (1.55–1.95 m), silhouettes differ (build, posture, layers), every
+  garment obeys §3.3, every head obeys §3.4, skin tones and ages vary, no two outfits identical in colour.
+- **People (portrait)**: iris visible and wet, lashes present, brows readable, hairline natural, skin with pores
+  and sun, no seam at the neck, teeth not visible through lips, the expression neutral but alive (slight
+  asymmetry).
+- **Motion**: feet do not slide (the hip speed matches the clip's), the idle breathes, turns pivot on the planted
+  foot, no popping at loop seams.
+- **UI**: readable at 6.1″ at arm's length (body text ≥ 14 px at 1080p-wide), nothing under the notch, 16 px
+  gutters, one type family, no cursive, contrast ≥ 4.5:1.
+- **Combat**: the reachable area, the hit chance and the cover state are visible before committing an action;
+  hits land where aimed; the log explains every number.
+
+### 6.O Brief schemas (JSON the tools read; keep these names)
+- `people.json` (per set): `[{ id, role, region, gender 0..1, age, muscle, weight, height, ancestry {african,
+  asian, caucasian}, mods { "<target>": w }, breastSize?, breastFirmness?, skin, hair | null, scalp? {stubble,
+  receding}, wrap?, brows, eyes, beard? {density}, sun, grime, scars [[region, n]], tattoos [[region, id]],
+  clothes [[garment, look]] }]` — `look` as in `mh_build.py`'s `W(...)`.
+- `scatter_rules.json`: `[{ group, keys [model keys], tries, biome [ids], slope [min,max], height [min,max],
+  wash [min,max], noise { scale, min }, scale [min,max], sink }]` evaluated per chunk with the chunk's seed.
+- `places.json` (from the exporter): `{ id, bounds {x,z,w,d}, yaw, elevation, interiors [{ id, door {x,z},
+  bounds }] }`; `control.png` channels as §6.A.2.
+
 ---
 
 ## 7. Verification protocol (exact)
