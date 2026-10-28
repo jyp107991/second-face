@@ -256,3 +256,11 @@ runs smoothly on device. Fallbacks for GLES3 phones are listed where a feature n
   highest standard a modern Android phone runs (DOS2/BG3/Cyberpunk aspirational). §1, §4 and §4a rewritten; the
   wardrobe/appearance ports paused (they belong to the people pipeline chosen in P2); P1 closes as the narrative
   core.
+- 2026-10-28 P2.3 pipelines in place (session scratch holds Blender 4.5, the MakeHuman CC0 data and community packs,
+  the CMU trials): `tools/unity/assets.py` (CC0 textures by manifest), `tools/unity/kits/*.py` (modular kits as FBX,
+  shelter first), `tools/unity/people/mh_build.py` (candidate A: MakeHuman base + macro and feature targets baked,
+  Mecanim game rig, face/expression blend shapes, eyes/brows/lashes/hair fitted from proxies, Humanoid FBX per
+  person), `tools/unity/motion/cmu2fbx.py` (CMU ASF/AMC → gait-cut, seam-looped clips → BVH → Blender → Humanoid FBX
+  with a sidecar JSON for loop and root settings). Editor side: import post-processors bind materials and set
+  Humanoid imports; code-built scenes (terrain, material sheet, shelter place, people lineup) are captured by the
+  PlayMode screenshot tests. Candidates B (MB-Lab) and C (UMA) are evaluated after A's captures are judged.

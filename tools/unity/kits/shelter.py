@@ -37,7 +37,7 @@ def ceiling_slab(bm):
     K.box(bm, (3.6, 0.3, 0.06), (0, 1.2, H - 0.05), 1)
     K.box(bm, (3.6, 0.02, 0.1), (0, 1.05, H - 0.05), 1)
     K.box(bm, (3.6, 0.02, 0.1), (0, 1.35, H - 0.05), 1)
-    return ['concrete', 'metal_plate']
+    return ['concrete', 'steel']
 
 def grate_floor(bm):
     K.box(bm, (2, 2, 0.06), (0, 0, 0.03), 0)
@@ -51,7 +51,7 @@ def wall_straight(bm):
         K.box(bm, (1.6, 0.03, 2.2), (x, -T / 2 - 0.015, 1.4), 0)
     # a steel skirting
     K.box(bm, (4, 0.04, 0.25), (0, -T / 2 - 0.02, 0.125), 1)
-    return ['concrete_wall', 'metal_plate']
+    return ['concrete_wall', 'steel']
 
 def wall_doorway(bm):
     # two piers and a lintel, with a steel frame round a 1.3 x 2.4 opening
@@ -61,7 +61,7 @@ def wall_doorway(bm):
     K.box(bm, (0.12, T + 0.06, 2.45), (-0.71, 0, 1.225), 1)
     K.box(bm, (0.12, T + 0.06, 2.45), (0.71, 0, 1.225), 1)
     K.box(bm, (1.54, T + 0.06, 0.12), (0, 0, 2.46), 1)
-    return ['concrete_wall', 'metal_plate']
+    return ['concrete_wall', 'steel']
 
 def wall_ring(bm):
     # 22.5 degrees of a 12 m cistern ring: 16 pieces close the circle
@@ -71,7 +71,7 @@ def wall_ring(bm):
 def wall_ring_low(bm):
     K.ring_segment(bm, 12.0 - T, 12.0, 1.1, 22.5, segments=6, mat_index=0)
     K.ring_segment(bm, 12.0 - T - 0.05, 12.0 + 0.05, 0.08, 22.5, segments=6, z=1.1, mat_index=1)
-    return ['concrete_wall', 'metal_plate']
+    return ['concrete_wall', 'steel']
 
 def pillar(bm):
     K.box(bm, (0.5, 0.5, H), (0, 0, H / 2), 0)
@@ -91,13 +91,13 @@ def hatch_door(bm):
     K.cylinder(bm, 0.42, 0.06, (0, -0.26, 1.35), 24, 1, axis='Y')
     K.cylinder(bm, 0.38, 0.08, (0, -0.26, 1.35), 24, 1, axis='Y', cap=False)
     K.cylinder(bm, 0.06, 0.4, (0, -0.3, 1.35), 12, 1, axis='Y')
-    return ['metal_plate', 'rust']
+    return ['steel', 'rust']
 
 def pipe_straight(bm):
     K.cylinder(bm, 0.15, 4.0, (0, 0, 0), 16, 0, axis='X')
     K.cylinder(bm, 0.19, 0.12, (-1.9, 0, 0), 16, 1, axis='X')
     K.cylinder(bm, 0.19, 0.12, (1.9, 0, 0), 16, 1, axis='X')
-    return ['metal_plate', 'rust']
+    return ['steel', 'rust']
 
 def pipe_elbow(bm):
     K.cylinder(bm, 0.15, 0.6, (-0.3, 0, 0), 16, 0, axis='X')
@@ -106,14 +106,14 @@ def pipe_elbow(bm):
     for f in {f for v in r['verts'] for f in v.link_faces}: f.material_index = 0
     K.cylinder(bm, 0.19, 0.12, (-0.55, 0, 0), 16, 1, axis='X')
     K.cylinder(bm, 0.19, 0.12, (0, 0.55, 0), 16, 1, axis='Y')
-    return ['metal_plate', 'rust']
+    return ['steel', 'rust']
 
 def railing(bm):
     for x in (-0.95, 0.95):
         K.cylinder(bm, 0.025, 1.05, (x, 0, 0.525), 10, 0)
     K.cylinder(bm, 0.03, 2.0, (0, 0, 1.05), 10, 0, axis='X')
     K.cylinder(bm, 0.02, 2.0, (0, 0, 0.55), 10, 0, axis='X')
-    return ['metal_plate']
+    return ['steel']
 
 def stair(bm):
     # 12 risers over 3.2 m, 1.2 m wide, treads as plates, stringers as boxes
@@ -124,7 +124,7 @@ def stair(bm):
     for x in (-0.58, 0.58):
         verts = K.box(bm, (0.04, n * run + 0.3, 0.3), (x, (n * run) / 2, H / 2), 1)
         bmesh.ops.rotate(bm, cent=(x, (n * run) / 2, H / 2), matrix=__import__('mathutils').Matrix.Rotation(-math.atan2(H, n * run), 3, 'X'), verts=verts)
-    return ['grate', 'metal_plate']
+    return ['grate', 'steel']
 
 # --- furniture ---------------------------------------------------------------------------------------------------
 def bunk(bm):
@@ -134,7 +134,7 @@ def bunk(bm):
     for x in (-0.43, 0.43):
         for y in (-0.97, 0.97):
             K.box(bm, (0.04, 0.04, 2.0), (x, y, 1.0), 0)
-    return ['metal_plate', 'canvas']
+    return ['steel', 'canvas']
 
 def hydro_trough(bm):
     K.box(bm, (3.0, 0.9, 0.9), (0, 0, 0.45), 0)
@@ -143,36 +143,36 @@ def hydro_trough(bm):
     K.box(bm, (0.06, 0.06, 1.9), (-1.4, -0.4, 0.95), 0)
     K.box(bm, (0.06, 0.06, 1.9), (1.4, -0.4, 0.95), 0)
     K.box(bm, (3.0, 0.3, 0.05), (0, -0.4, 1.9), 0)    # the lamp bar
-    return ['metal_plate', 'moss']
+    return ['steel', 'moss']
 
 def crate(bm):
     K.box(bm, (0.8, 0.8, 0.8), (0, 0, 0.4), 0)
     for z in (0.08, 0.72):
         K.box(bm, (0.84, 0.84, 0.05), (0, 0, z), 1)
-    return ['planks', 'metal_plate']
+    return ['planks', 'steel']
 
 def barrel(bm):
     K.cylinder(bm, 0.3, 0.9, (0, 0, 0.45), 20, 0)
     for z in (0.2, 0.7):
         K.cylinder(bm, 0.315, 0.04, (0, 0, z), 20, 1, cap=False)
-    return ['rust', 'metal_plate']
+    return ['rust', 'steel']
 
 def locker(bm):
     K.box(bm, (0.5, 0.5, 1.9), (0, 0, 0.95), 0)
     K.box(bm, (0.44, 0.02, 1.7), (0, -0.26, 0.95), 1)
-    return ['painted', 'metal_plate']
+    return ['steel_painted', 'steel']
 
 def terminal(bm):
     K.box(bm, (0.8, 0.6, 0.9), (0, 0, 0.45), 0)
     verts = K.box(bm, (0.7, 0.4, 0.5), (0, -0.05, 1.1), 0)
     bmesh.ops.rotate(bm, cent=(0, -0.05, 1.1), matrix=__import__('mathutils').Matrix.Rotation(math.radians(-20), 3, 'X'), verts=verts)
     K.box(bm, (0.5, 0.02, 0.3), (0, -0.27, 1.12), 1)
-    return ['painted', 'metal_plate']
+    return ['steel_painted', 'steel']
 
 def light_fixture(bm):
     K.box(bm, (1.2, 0.15, 0.08), (0, 0, H - 0.04), 0)
     K.box(bm, (1.1, 0.1, 0.02), (0, 0, H - 0.09), 1)
-    return ['metal_plate', 'painted']
+    return ['steel_painted', 'painted']
 
 PIECES = {
     'floor_slab': (floor_slab, {}), 'ceiling_slab': (ceiling_slab, {}), 'grate_floor': (grate_floor, {}),

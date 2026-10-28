@@ -1,5 +1,6 @@
 using System.Collections;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -108,6 +109,56 @@ namespace SecondFace.Tests
             cam.transform.position = new Vector3(0, 1.4f, 16.5f) - cam.transform.rotation * Vector3.forward * 9f;
             yield return null;
             yield return Capture("place_shelter_hatch");
+        }
+
+        [UnityTest]
+        public IEnumerator PeopleLineupAndPortraitsAreCapturedWhenBuilt()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_People.unity";
+#if UNITY_EDITOR
+            if (!File.Exists(path)) UnityEditor.EditorApplication.ExecuteMenuItem("Second Face/Build people test scene");
+#endif
+            if (!File.Exists(path)) { Assert.Ignore("people scene not built"); yield break; }
+            yield return SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+            for (var i = 0; i < 10; i++) yield return null;
+            yield return Capture("people_lineup", 1920, 1080);
+            var cam = Camera.main;
+            var people = GameObject.Find("People");
+            Assert.That(people, Is.Not.Null);
+            for (var i = 0; i < people.transform.childCount; i++)
+            {
+                var person = people.transform.GetChild(i);
+                var anim = person.GetComponent<Animator>();
+                var head = anim != null && anim.isHuman ? anim.GetBoneTransform(HumanBodyBones.Head) : null;
+                var focus = head != null ? head.position + new Vector3(0, 0.08f, 0) : person.position + new Vector3(0, 1.6f, 0);
+                // Over the shoulder of the viewer: the face from slightly above, 0.7 m away, facing -Z.
+                cam.transform.position = focus + new Vector3(0.12f, 0.04f, -0.72f);
+                cam.transform.LookAt(focus);
+                cam.fieldOfView = 24f;
+                yield return null;
+                yield return Capture("portrait_" + person.name, 900, 1200);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator PeopleWalkOnCapturedMotionWhenClipsExist()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_People.unity";
+            if (!File.Exists(path)) { Assert.Ignore("people scene not built"); yield break; }
+            yield return SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+            for (var i = 0; i < 5; i++) yield return null;
+            var people = GameObject.Find("People");
+            var anims = people.GetComponentsInChildren<Animator>().Where(a => a.runtimeAnimatorController != null).ToList();
+            if (anims.Count == 0) { Assert.Ignore("no captured motion imported"); yield break; }
+            var hasWalk = anims[0].runtimeAnimatorController.animationClips.Any(c => c.name == "walk");
+            foreach (var a in anims) a.Play(hasWalk ? "walk" : anims[0].runtimeAnimatorController.animationClips[0].name, 0, 0f);
+            var cam = Camera.main;
+            cam.transform.position = new Vector3(-2.5f, 1.1f, -7.5f); cam.transform.LookAt(new Vector3(0, 0.9f, 0)); cam.fieldOfView = 30f;
+            for (var shot = 0; shot < 3; shot++)
+            {
+                for (var i = 0; i < 12; i++) yield return null;
+                yield return Capture("people_motion_" + shot, 1920, 1080);
+            }
         }
     }
 }

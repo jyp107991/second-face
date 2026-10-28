@@ -15,7 +15,6 @@ A smoothness (the Terrain layer mask layout; URP Lit reads metallic/smoothness f
 same texture), h = height alone for parallax.
 """
 import argparse, hashlib, io, json, os, sys, urllib.request
-from PIL import Image
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'unity', 'Assets', 'External')
@@ -47,7 +46,9 @@ LIBRARY = {
     'concrete':    ('concrete_floor_worn_001', 2.0, 'surface', 'shelter floors'),
     'concrete_wall': ('concrete_wall_006',    2.0, 'surface', 'shelter and city walls'),
     'painted':     ('painted_concrete',       2.0, 'surface', 'painted concrete'),
-    'metal_plate': ('metal_plate',            1.5, 'surface', 'steel plate'),
+    'metal_plate': ('metal_plate',            1.5, 'surface', 'diamond-plate steel (grates, treads, hatch rims)'),
+    'steel':       ('metal_plate_02',         1.5, 'surface', 'plain steel plate (pipes, frames, doors)'),
+    'steel_painted': ('painted_metal_shutter', 1.5, 'surface', 'painted steel (lockers, fixtures, terminals)'),
     'rust':        ('rusty_metal_02',         1.5, 'surface', 'rusted steel'),
     'scrap':       ('rusty_metal_sheet',      1.5, 'surface', 'scrap sheet'),
     'tin':         ('corrugated_iron_02',     1.0, 'surface', 'corrugated iron roofs'),
@@ -216,6 +217,7 @@ def write_meta(path, text):
 
 
 def process(key, phid, force):
+    from PIL import Image
     d = os.path.join(TEX, key)
     os.makedirs(d, exist_ok=True)
     rel_dir = os.path.relpath(d, os.path.join(ROOT, 'unity'))
