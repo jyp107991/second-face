@@ -716,6 +716,11 @@ numbers from the densest place written into PORT.md §5.
   secondary audio crash on shutdown): the Linux editor's Crunch compressor fails in the GameCI container while
   importing crunched package textures. `Editor/Build/CiImportSettings.cs` turns crunch off for every texture in
   batch mode on Linux; the Android build is unaffected (ASTC).
+- **PlayMode tests cannot build scenes** (`EditorSceneManager.NewScene` in play mode, run 13): the test class
+  implements `IPrebuildSetup` and builds the six scenes before play mode; generated scenes load with
+  `EditorSceneManager.LoadSceneInPlayMode` (they are not in the build list). A camera-only capture
+  (`Camera.Render` to a RenderTexture) does not include UI Toolkit panels: UI captures (P5) render the panel to
+  its own RenderTexture through `PanelSettings.targetTexture`.
 - **CI run cancelled by a push**: concurrency `cancel-in-progress`; wait for the run first.
 - **The owner's token lacks the `workflow` scope**: workflow files cannot be pushed from the session; the owner
   copies `tools/ci/*.yml` into `.github/workflows/`.

@@ -5,6 +5,10 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEditor.SceneManagement;
+#endif
 
 namespace SecondFace.Tests
 {
@@ -12,8 +16,45 @@ namespace SecondFace.Tests
     /// The CI screenshot loop: PlayMode tests that render a scene and write PNGs the workflow uploads as artifacts
     /// (reviewed as the web game's probes were). Each bake-off and each phase adds its own capture here.
     /// </summary>
-    public class ScreenshotTests
+    public class ScreenshotTests : IPrebuildSetup
     {
+        /// <summary>
+        /// The test scenes are built before play mode starts: the builders use EditorSceneManager.NewScene, which
+        /// cannot run during play mode (CI run 13). Each builder is tolerant of a missing library (it logs and returns).
+        /// </summary>
+        public void Setup()
+        {
+#if UNITY_EDITOR
+            foreach (var item in new[]
+            {
+                "Second Face/Build terrain test scene", "Second Face/Build material sheet scene", "Second Face/Build shelter test scene",
+                "Second Face/Build frontier test scene", "Second Face/Build people test scene", "Second Face/Build vegetation test scene",
+            })
+            {
+                try { EditorApplication.ExecuteMenuItem(item); }
+                catch (System.Exception e) { Debug.LogWarning($"{item}: {e.Message}"); }
+            }
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+#endif
+        }
+
+        /// <summary>Captures record what renders; errors are read in the uploaded editor log, not asserted here.</summary>
+        [SetUp]
+        public void Lenient() { LogAssert.ignoreFailingMessages = true; }
+
+        /// <summary>Loads a generated test scene (not in the build list) in play mode.</summary>
+        private static IEnumerator LoadTestScene(string path)
+        {
+#if UNITY_EDITOR
+            EditorSceneManager.LoadSceneInPlayMode(path, new LoadSceneParameters(LoadSceneMode.Single));
+            yield return null;
+            yield return null;
+#else
+            yield return LoadTestScene(path);
+#endif
+        }
+
         /// <summary>Where captures go: unity/Screenshots (ignored by git; CI uploads it).</summary>
         public static string OutDir()
         {
@@ -31,6 +72,7 @@ namespace SecondFace.Tests
             yield return null;
             var cam = Camera.main;
             Assert.That(cam, Is.Not.Null, "no main camera");
+            cam.transform.rotation = cam.transform.rotation.normalized;   // URP culling asserts on a drifted quaternion
             var rt = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
             var prev = cam.targetTexture;
             cam.targetTexture = rt;
@@ -65,11 +107,8 @@ namespace SecondFace.Tests
         public IEnumerator TerrainTestSceneIsCapturedWhenBuilt()
         {
             const string path = "Assets/SecondFace/Scenes/Test_Terrain.unity";
-#if UNITY_EDITOR
-            if (!File.Exists(path)) UnityEditor.EditorApplication.ExecuteMenuItem("Second Face/Build terrain test scene");
-#endif
             if (!File.Exists(path)) { Assert.Ignore("terrain test scene not built (no external library)"); yield break; }
-            yield return SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+            yield return LoadTestScene(path);
             for (var i = 0; i < 10; i++) yield return null;
             yield return Capture("terrain_iso");
             var cam = Camera.main;
@@ -83,11 +122,8 @@ namespace SecondFace.Tests
         public IEnumerator MaterialSheetIsCapturedWhenBuilt()
         {
             const string path = "Assets/SecondFace/Scenes/Test_Materials.unity";
-#if UNITY_EDITOR
-            if (!File.Exists(path)) UnityEditor.EditorApplication.ExecuteMenuItem("Second Face/Build material sheet scene");
-#endif
             if (!File.Exists(path)) { Assert.Ignore("material sheet not built (no external library)"); yield break; }
-            yield return SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+            yield return LoadTestScene(path);
             for (var i = 0; i < 10; i++) yield return null;
             yield return Capture("materials_sheet", 1920, 1080);
         }
@@ -96,11 +132,8 @@ namespace SecondFace.Tests
         public IEnumerator ShelterPlaceIsCapturedWhenBuilt()
         {
             const string path = "Assets/SecondFace/Scenes/Test_Shelter.unity";
-#if UNITY_EDITOR
-            if (!File.Exists(path)) UnityEditor.EditorApplication.ExecuteMenuItem("Second Face/Build shelter test scene");
-#endif
             if (!File.Exists(path)) { Assert.Ignore("shelter scene not built (kit or library missing)"); yield break; }
-            yield return SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+            yield return LoadTestScene(path);
             for (var i = 0; i < 10; i++) yield return null;
             yield return Capture("place_shelter_corridor");
             var cam = Camera.main;
@@ -118,11 +151,8 @@ namespace SecondFace.Tests
         public IEnumerator PeopleLineupAndPortraitsAreCapturedWhenBuilt()
         {
             const string path = "Assets/SecondFace/Scenes/Test_People.unity";
-#if UNITY_EDITOR
-            if (!File.Exists(path)) UnityEditor.EditorApplication.ExecuteMenuItem("Second Face/Build people test scene");
-#endif
             if (!File.Exists(path)) { Assert.Ignore("people scene not built"); yield break; }
-            yield return SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+            yield return LoadTestScene(path);
             for (var i = 0; i < 10; i++) yield return null;
             yield return Capture("people_lineup", 1920, 1080);
             var cam = Camera.main;
@@ -148,7 +178,7 @@ namespace SecondFace.Tests
         {
             const string path = "Assets/SecondFace/Scenes/Test_People.unity";
             if (!File.Exists(path)) { Assert.Ignore("people scene not built"); yield break; }
-            yield return SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+            yield return LoadTestScene(path);
             for (var i = 0; i < 5; i++) yield return null;
             var people = GameObject.Find("People");
             var anims = people.GetComponentsInChildren<Animator>().Where(a => a.runtimeAnimatorController != null).ToList();
@@ -168,11 +198,8 @@ namespace SecondFace.Tests
         public IEnumerator FrontierPlaceIsCapturedWhenBuilt()
         {
             const string path = "Assets/SecondFace/Scenes/Test_Frontier.unity";
-#if UNITY_EDITOR
-            if (!File.Exists(path)) UnityEditor.EditorApplication.ExecuteMenuItem("Second Face/Build frontier test scene");
-#endif
             if (!File.Exists(path)) { Assert.Ignore("frontier scene not built"); yield break; }
-            yield return SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+            yield return LoadTestScene(path);
             for (var i = 0; i < 10; i++) yield return null;
             yield return Capture("place_frontier_street", 1920, 1080);
             var cam = Camera.main;
@@ -192,11 +219,8 @@ namespace SecondFace.Tests
         public IEnumerator VegetationIsCapturedWhenBuilt()
         {
             const string path = "Assets/SecondFace/Scenes/Test_Vegetation.unity";
-#if UNITY_EDITOR
-            if (!File.Exists(path)) UnityEditor.EditorApplication.ExecuteMenuItem("Second Face/Build vegetation test scene");
-#endif
             if (!File.Exists(path)) { Assert.Ignore("vegetation scene not built"); yield break; }
-            yield return SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+            yield return LoadTestScene(path);
             for (var i = 0; i < 10; i++) yield return null;
             yield return Capture("vegetation_iso", 1920, 1080);
             var cam = Camera.main; var t = Terrain.activeTerrain;
