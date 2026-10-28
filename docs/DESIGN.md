@@ -1,5 +1,10 @@
 # THE SECOND FACE — Design Document (spoiler-free)
 
+> **2026-10-28 (owner, pass 7):** the game is redesigned on Unity. `docs/DESIGN_UNITY.md` is the design of the Unity
+> game and supersedes §5b, §6, §10 and §14 of this document; the rest stays as the fiction and the rules the content
+> is written against.
+
+
 ## 1. Pillars
 1. **Reactivity over volume.** The world notices: NPCs remember, gossip spreads, factions shift, and
    companions comment. Every quest has at least two real solutions (fight / talk / sneak / science).

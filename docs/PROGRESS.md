@@ -305,9 +305,12 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
 every asset, the people, camera, UI, audio and the play systems to the highest aesthetic and functional standard a
 modern Android phone runs (DOS2/BG3/Cyberpunk aspirational; Android the primary console). CLAUDE.md §2 has the
 words; PORT.md §1 what is kept/redesigned, §4 the standard, device targets and asset strategy, §4a the phases.
-**Next action:** P1 closes as the narrative core (86 tests green); then P2 — write `docs/DESIGN_UNITY.md` (the
-redesigned game: camera, world scale, places as 3D, combat and systems, UI, audio) and run the bake-offs with CI
-screenshots (people pipeline, material library + modular kit, a first lit place, terrain + vegetation).
+P1 is closed as the narrative core (86 tests green). P2 in progress: P2.1 `docs/DESIGN_UNITY.md` written (the
+redesigned game: camera, world, people, play systems, UI, audio, art direction, architecture; four spoiler-free
+decisions listed for the owner in its §11). **Next action:** P2.2 the package set (Cinemachine, AI Navigation,
+Animation Rigging, Addressables, Adaptive Performance, Localization, VFX Graph, Timeline, Burst/Mathematics/
+Collections, Cloud Diagnostics) and the CI screenshot loop (PlayMode tests under a virtual display uploading
+`docs/evidence/unity/` PNGs); then P2.3 the bake-offs (people pipeline first).
 - [~] P0 Foundation: decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,
