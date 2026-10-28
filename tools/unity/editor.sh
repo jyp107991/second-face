@@ -85,7 +85,7 @@ licence() {
 }
 
 editor() {   # software OpenGL under a virtual display, as in CI
-  xvfb-run -a -s "-screen 0 1920x1080x24" "$UNITY" -batchmode -projectPath "$ROOT/unity" "$@"
+  xvfb-run -a -s "-screen 0 1920x1080x24" "$UNITY" -batchmode -accept-apiupdate -projectPath "$ROOT/unity" "$@"
 }
 
 summary() {

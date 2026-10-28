@@ -9,6 +9,9 @@ namespace SecondFace.EditorTools
     /// </summary>
     public sealed class ExternalTexturePostprocessor : AssetPostprocessor
     {
+        /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
+        public override uint GetVersion() => 2;
+
         private void OnPreprocessTexture()
         {
             if (!assetPath.StartsWith("Assets/External/Textures/")) return;

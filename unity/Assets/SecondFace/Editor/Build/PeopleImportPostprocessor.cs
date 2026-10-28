@@ -13,6 +13,9 @@ namespace SecondFace.EditorTools
     /// </summary>
     public sealed class PeopleImportPostprocessor : AssetPostprocessor
     {
+        /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
+        public override uint GetVersion() => 2;
+
         private bool IsPerson => assetPath.StartsWith("Assets/SecondFace/People/");
 
         private void OnPreprocessModel()

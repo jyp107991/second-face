@@ -5,7 +5,8 @@ whichever model or session executes it. It is prescriptive on purpose: where it 
 unless the owner says otherwise. Where it leaves a choice, it says so. Read it top to bottom once before the first
 step of any session, then keep it open beside `docs/PROGRESS.md`.
 
-Reading order for a fresh session: `CLAUDE.md` → `docs/PROGRESS.md` → this file → `docs/PORT.md` →
+Reading order for a fresh session: `CLAUDE.md` → `docs/PROGRESS.md` → this file → **`docs/UNITY_PRACTICES.md`**
+(Unity's own rules for this project, with sources; it overrides this file where they disagree) → `docs/PORT.md` →
 `docs/DESIGN_UNITY.md`. Story truth is only in `story/` and `src/content/` and is never quoted anywhere else.
 
 ---
@@ -251,7 +252,7 @@ each is one commit or a few WIP commits. Budgets and acceptance are part of the 
 ### P3 — World
 1. `WorldService` + chunk grid + the control map + runtime terrain generation (§6.A.1–A.4), with a PlayMode test
    that walks a camera across 4 chunks and asserts no frame over 33 ms on the CI machine and no missing chunk.
-2. Terrain shader: URP Terrain Lit with 8 layers, height-blended, triplanar on steep slopes (§6.J). Capture
+2. Terrain shader: URP Terrain Lit with at most 4 layers per tile, height-blended, triplanar on steep slopes (§6.J). Capture
    `world_sallow`, `world_teeth`, `world_shore`.
 3. Sky, sun and weather: Unity 6 URP physically based sky is HDRP-only, so use a gradient + procedural sky
    shader (§6.J), a `TimeService` day cycle, fog by region, dust and rain as particle layers. Capture at 7:00,
@@ -350,8 +351,8 @@ map is bilinear-sampled at any world position.
 lowers by 3 m inside the water mask with an 8 m shore ramp. Then 2 passes of talus (if slope > 38°, move 0.5 of
 the excess to the lower neighbour). Then **place stamps**: for every place whose bounds intersect the chunk,
 blend the authored place heightmap (1 m, from the place prefab's `PlaceHeight` asset) with weight 1 inside the
-bounds falling to 0 over 24 m outside. Seed = hash(cx, cz, worldSeed). Output: `TerrainData` (heights, 8 splat
-weights from biome + slope + height + noise, detail density maps). Build ≤ 4 ms on a phone (Burst, `IJobParallelFor`
+bounds falling to 0 over 24 m outside. Seed = hash(cx, cz, worldSeed). Output: `TerrainData` (heights, at most 4 terrain layers
+per tile chosen from the biome, weights from slope + height + noise, detail density maps; UNITY_PRACTICES §7.1). Build ≤ 4 ms on a phone (Burst, `IJobParallelFor`
 over rows); apply to a pooled `Terrain` (pre-created, 16 in the pool). Set `Terrain.SetNeighbors` after load.
 Holes under interiors via `TerrainData.SetHoles`.
 
@@ -542,8 +543,8 @@ screenshot per slot. Autosave on place entry, quicksave button, three manual slo
 points of the fixture game and reloads each, asserting state equality.
 
 ### 6.J Shaders (Shader Graph, URP, all with a Floor-tier variant)
-- **Terrain**: URP Terrain Lit (8 layers, height-based blend from the mask's B channel, 2 layers per texel on
-  Floor), triplanar on slopes > 45° (Shader Graph custom terrain shader after v1 if the stock one shows stretch).
+- **Terrain**: URP Terrain Lit (at most 4 layers per tile, which URP draws in one pass; height-based blend from the
+  mask's B channel), triplanar on slopes > 45° (Shader Graph custom terrain shader after v1 if the stock one shows stretch).
 - **Foliage card**: cutout, double-sided, normals bent towards the tree's centre ("fluffy" normals: normal =
   normalize(worldPos − treePivot) blended 70 % with the face normal, pivot from the mesh's bounds centre passed
   as a per-instance vector), wind: vertex offset by `sin(time · 1.3 + worldPos.x · 0.2) · 0.03 · uv.y`, subsurface
@@ -627,6 +628,22 @@ valid because ids and fields do not change. Add new content fields in `src/conte
   bounds }] }`; `control.png` channels as §6.A.2.
 
 ---
+
+### 6.Q Corrections from Unity's documentation (2026-10-28; details and sources in `docs/UNITY_PRACTICES.md`)
+- **Tiers by graphics API** (§6.K): Vulkan tiers use Forward+, the GPU Resident Drawer and optionally STP; the GLES3
+  tier uses Forward without them (both need compute) and lower density. FXAA for anti-aliasing. Frame rate via
+  `Application.targetFrameRate` and Optimized Frame Pacing; Adaptive Performance is built into 6.3 (Android provider).
+- **Scatter** (§6.A, §P3.4): GRD batches only MeshRenderers with no MaterialPropertyBlock; static batching and
+  per-material GPU instancing off when GRD is on; LOD cross-fade (not animated). No baked occlusion culling.
+- **Terrain** (§6.A.3, §6.J): at most 4 layers per tile; `SetDetailResolution(res, 16)`; `drawInstanced`; write
+  heights once per chunk.
+- **Characters** (§6.D, §P4): NPC outfits merge into one SkinnedMeshRenderer at build time (two renderers roughly
+  double the cost); only the player keeps separate garments for the wardrobe. Optimize Game Objects; Animator culling
+  Cull Completely for ambient NPCs; skinned LODs in a LODGroup.
+- **Nature models** (§6.L, §2): glTFast renders with its own shaders, which would have to ship in the build and
+  ignore remaps; the baked nature set moves to FBX with library materials (URP Lit, cutout foliage).
+- **Streaming** (§6.A.4, §6.A.7): additive loads only; never `activateOnLoad = false`; pair Load/Release; run the
+  duplicate-dependency analysis.
 
 ## 7. Verification protocol (exact)
 

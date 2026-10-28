@@ -351,6 +351,13 @@ tests pass locally with 23 captures. Known from the captures, to fix in the peop
 as pale blanks (cornea/iris material), hair breaks the hair rule (step 2), leaves render near-black and multi-variant
 scans scatter as rows of identical plants (split the scans into variants in `models_bake.py`), the vegetation
 camera sees the terrain edge.
+**Unity practices (2026-10-28):** `docs/UNITY_PRACTICES.md` distils Unity's own documentation for this project
+(headless editor, tests and captures, the import pipeline, textures, glTF, version control, URP mobile tiers,
+terrain, streaming, characters, agent tooling) with sources, and is required reading after the plan. Applied at once:
+every import post-processor has a `GetVersion`; test scenes load additively with teardown; captures use URP render
+requests; the walking capture plays by state (it was frozen); kit meshes uncompressed; CI skips the Heavy category.
+The plan's §6.Q lists the corrections that land in later phases (Vulkan/GLES tiers, 4 terrain layers per tile, one
+skinned mesh per NPC, nature models to FBX).
 **Next action:** `docs/BUILD_PLAN_V1.md` §10, step 2 (step 1, the cards, is verified: coverage 16–32 %, root at
 the bottom): apply the hair rule to the six bake-off people per §6.C.1, rebuild, render, refresh the evidence,
 commit; then steps 3–9 in order; the owner copies the workflow (step 10) when they can.

@@ -11,6 +11,9 @@ namespace SecondFace.EditorTools
     /// </summary>
     public sealed class CiImportSettings : AssetPostprocessor
     {
+        /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
+        public override uint GetVersion() => 2;
+
         private void OnPreprocessTexture()
         {
             if (!Application.isBatchMode || Application.platform != RuntimePlatform.LinuxEditor) return;

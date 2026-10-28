@@ -130,6 +130,9 @@ namespace SecondFace.EditorTools
     /// <summary>Kit models (Assets/SecondFace/Kits) get their library materials by slot name (mat_&lt;key&gt;) and colliders.</summary>
     public sealed class KitImportPostprocessor : AssetPostprocessor
     {
+        /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
+        public override uint GetVersion() => 2;
+
         private void OnPreprocessModel()
         {
             if (!assetPath.StartsWith("Assets/SecondFace/Kits/")) return;
@@ -143,7 +146,7 @@ namespace SecondFace.EditorTools
             imp.isReadable = false;
             imp.importAnimation = false;
             imp.importBlendShapes = false;
-            imp.meshCompression = ModelImporterMeshCompression.Medium;
+            imp.meshCompression = ModelImporterMeshCompression.Off;   // compression only shrinks files and can add artifacts
             imp.generateSecondaryUV = true;
         }
 

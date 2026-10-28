@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 #if UNITY_EDITOR
@@ -54,16 +55,35 @@ namespace SecondFace.Tests
         [SetUp]
         public void Lenient() { LogAssert.ignoreFailingMessages = true; }
 
-        /// <summary>Loads a generated test scene (not in the build list) in play mode.</summary>
+        private static Scene loadedScene;
+
+        /// <summary>
+        /// Loads a test scene additively and makes it the active scene (its lighting and render settings apply). Additive
+        /// keeps the test runner's own scene loaded: unloading it can leave the runner stuck (Unity issue tracker), and
+        /// LoadSceneInPlayMode is how a scene outside the build list is loaded in play mode.
+        /// </summary>
         private static IEnumerator LoadTestScene(string path)
         {
 #if UNITY_EDITOR
-            EditorSceneManager.LoadSceneInPlayMode(path, new LoadSceneParameters(LoadSceneMode.Single));
-            yield return null;
-            yield return null;
+            var op = EditorSceneManager.LoadSceneAsyncInPlayMode(path, new LoadSceneParameters(LoadSceneMode.Additive));
 #else
-            yield return LoadTestScene(path);
+            var op = SceneManager.LoadSceneAsync(path, LoadSceneMode.Additive);
 #endif
+            while (op != null && !op.isDone) yield return null;
+            loadedScene = SceneManager.GetSceneByPath(path);
+            if (loadedScene.IsValid()) SceneManager.SetActiveScene(loadedScene);
+            yield return null;
+        }
+
+        [UnityTearDown]
+        public IEnumerator UnloadTestScene()
+        {
+            if (loadedScene.IsValid() && loadedScene.isLoaded)
+            {
+                var op = SceneManager.UnloadSceneAsync(loadedScene);
+                while (op != null && !op.isDone) yield return null;
+            }
+            loadedScene = default;
         }
 
         /// <summary>Where captures go: unity/Screenshots (ignored by git; CI uploads it).</summary>
@@ -78,17 +98,23 @@ namespace SecondFace.Tests
         public static IEnumerator Capture(string name, int width = 1600, int height = 720)
         {
             // Never WaitForEndOfFrame here: in -batchmode no frame end is ever signalled and the test hangs for ever
-            // (CI run 11). Camera.Render() below draws on demand, which works under xvfb's software OpenGL.
+            // (CI run 11). The camera is rendered on demand into a texture with URP's render request (the documented
+            // way; synchronous), falling back to Camera.Render where the pipeline does not support the request.
             yield return null;
             yield return null;
             var cam = Camera.main;
             Assert.That(cam, Is.Not.Null, "no main camera");
             cam.transform.rotation = cam.transform.rotation.normalized;   // URP culling asserts on a drifted quaternion
             var rt = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
-            var prev = cam.targetTexture;
-            cam.targetTexture = rt;
-            cam.Render();
-            cam.targetTexture = prev;
+            var request = new RenderPipeline.StandardRequest { destination = rt };
+            if (RenderPipeline.SupportsRenderRequest(cam, request)) RenderPipeline.SubmitRenderRequest(cam, request);
+            else
+            {
+                var prev = cam.targetTexture;
+                cam.targetTexture = rt;
+                cam.Render();
+                cam.targetTexture = prev;
+            }
             var tex = new Texture2D(width, height, TextureFormat.RGB24, false);
             var active = RenderTexture.active;
             RenderTexture.active = rt;
@@ -107,7 +133,7 @@ namespace SecondFace.Tests
         [UnityTest, Timeout(600000)]
         public IEnumerator BootSceneRendersAndIsCaptured()
         {
-            yield return SceneManager.LoadSceneAsync("Assets/SecondFace/Scenes/Boot.unity", LoadSceneMode.Single);
+            yield return LoadTestScene("Assets/SecondFace/Scenes/Boot.unity");
             // Let the bootstrap load the content and draw its title card.
             for (var i = 0; i < 90; i++) yield return null;
             Assert.That(Camera.main, Is.Not.Null);
@@ -194,8 +220,11 @@ namespace SecondFace.Tests
             var people = GameObject.Find("People");
             var anims = people.GetComponentsInChildren<Animator>().Where(a => a.runtimeAnimatorController != null).ToList();
             if (anims.Count == 0) { Assert.Ignore("no captured motion imported"); yield break; }
-            var hasWalk = anims[0].runtimeAnimatorController.animationClips.Any(c => c.name == "walk");
-            foreach (var a in anims) a.Play(hasWalk ? "walk" : anims[0].runtimeAnimatorController.animationClips[0].name, 0, 0f);
+            // States are named after the motion files (PeopleTestScene.MotionController); the clips inside them are not,
+            // so play by state and check it exists (Play on a missing state only logs and nothing moves).
+            var walk = Animator.StringToHash("walk");
+            Assert.That(anims.Any(a => a.HasState(0, walk)), Is.True, "no 'walk' state in the people's controller");
+            for (var k = 0; k < anims.Count; k++) if (anims[k].HasState(0, walk)) anims[k].Play(walk, 0, k * 0.17f);   // staggered phases
             var cam = Camera.main;
             cam.transform.position = new Vector3(-2.5f, 1.1f, -7.5f); cam.transform.LookAt(new Vector3(0, 0.9f, 0)); cam.fieldOfView = 30f;
             for (var shot = 0; shot < 3; shot++)
@@ -226,7 +255,9 @@ namespace SecondFace.Tests
             yield return Capture("place_frontier_eye", 1920, 1080);
         }
 
-        [UnityTest, Timeout(600000)]
+        /// <summary>Heavy: thousands of props drawn by software rendering take minutes per frame on CI runners; CI skips the
+        /// Heavy category (-testCategory "!Heavy"), the session's editor runs it.</summary>
+        [UnityTest, Timeout(600000), Category("Heavy")]
         public IEnumerator VegetationIsCapturedWhenBuilt()
         {
             const string path = "Assets/SecondFace/Scenes/Test_Vegetation.unity";

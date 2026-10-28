@@ -9,7 +9,8 @@ Sessions can be cut off at any moment by usage limits. Work is structured so not
 1. **On session start, read `docs/PROGRESS.md` before anything else.** It names the current
    milestone, the step in progress, what is done, and the exact next action. Then **`docs/BUILD_PLAN_V1.md`** (the
    binding, prescriptive plan to the v1 app: architecture, phases, the hard parts specified, the verification
-   protocol, the pitfall log — follow it exactly), then `docs/PORT.md` (the Unity port: conventions, how to build
+   protocol, the pitfall log — follow it exactly), then **`docs/UNITY_PRACTICES.md`** (Unity's own rules for this
+   project, with sources — follow them; they override older plan text), then `docs/PORT.md` (the Unity port: conventions, how to build
    and verify) and `docs/UPGRADE.md` (the owner's visual directive, still binding for the port's targets).
 2. Work in **small steps** (≤ ~1 hour of work each). After each step:
    - run `npm run check` (typecheck + validate content + tests) when code exists,
