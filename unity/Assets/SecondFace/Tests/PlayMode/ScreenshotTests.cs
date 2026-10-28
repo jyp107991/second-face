@@ -74,5 +74,40 @@ namespace SecondFace.Tests
             yield return null;
             yield return Capture("terrain_wide");
         }
+
+        [UnityTest]
+        public IEnumerator MaterialSheetIsCapturedWhenBuilt()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Materials.unity";
+#if UNITY_EDITOR
+            if (!File.Exists(path)) UnityEditor.EditorApplication.ExecuteMenuItem("Second Face/Build material sheet scene");
+#endif
+            if (!File.Exists(path)) { Assert.Ignore("material sheet not built (no external library)"); yield break; }
+            yield return SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+            for (var i = 0; i < 10; i++) yield return null;
+            yield return Capture("materials_sheet", 1920, 1080);
+        }
+
+        [UnityTest]
+        public IEnumerator ShelterPlaceIsCapturedWhenBuilt()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Shelter.unity";
+#if UNITY_EDITOR
+            if (!File.Exists(path)) UnityEditor.EditorApplication.ExecuteMenuItem("Second Face/Build shelter test scene");
+#endif
+            if (!File.Exists(path)) { Assert.Ignore("shelter scene not built (kit or library missing)"); yield break; }
+            yield return SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+            for (var i = 0; i < 10; i++) yield return null;
+            yield return Capture("place_shelter_corridor");
+            var cam = Camera.main;
+            cam.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+            cam.transform.position = new Vector3(-16f, 0, 8f) - cam.transform.rotation * Vector3.forward * 24f;
+            yield return null;
+            yield return Capture("place_shelter_ring");
+            cam.transform.rotation = Quaternion.Euler(18f, 180f, 0f);
+            cam.transform.position = new Vector3(0, 1.6f, 10f) - cam.transform.rotation * Vector3.forward * 9f;
+            yield return null;
+            yield return Capture("place_shelter_hatch");
+        }
     }
 }

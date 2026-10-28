@@ -315,9 +315,14 @@ uploaded by CI as the `Unity-screenshots` artifact), the CC0 texture library fet
 caches it), the code-built terrain test scene (`Editor/Build/TerrainTestScene.cs`: the Sallow's layers on a 512 m
 terrain, captured as `terrain_iso` and `terrain_wide`), Blender 4.5 in the session scratch for the kit and people
 pipelines. **Waiting on the owner:** copy `tools/ci/android.yml` over `.github/workflows/android.yml` again (it
-adds the fetch step and the tests-and-screenshots job). **Next action:** P2.3 the bake-offs — the modular kit
-builder in Blender (shelter concrete first) and the people pipeline candidates, each landing as a screenshot set.
-- [~] P0 Foundation: decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
+adds the fetch step and the tests-and-screenshots job). P2.3 started: the shelter kit builder (`tools/unity/kits/{kitlib,shelter}.py`, 20 pieces as FBX with
+stable metas, material slots bound to the library by `KitImportPostprocessor`), the material library builder and
+sheet (`Editor/Build/{MaterialLibrary,MaterialSheetScene}.cs` → `materials_sheet`), the shelter corridor, bunk room
+and cistern ring hall assembled in code (`Editor/Build/ShelterTestScene.cs` → `place_shelter_*`). The CC0 MakeHuman
+data repositories are cloned in the session scratch for the people bake-off. **Next action:** get the
+tests-and-screenshots job running (owner copies the workflow), read the first captures, fix what they show; then the
+people pipeline candidate A (MakeHuman base through Blender to a Humanoid FBX with blend shapes) as a screenshot set.
+- [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,
       ContentDb over the exported JSON), `Game` (Bootstrap: full screen, loads content, title card), `Editor`
@@ -333,8 +338,10 @@ builder in Blender (shelter concrete first) and the people pipeline candidates, 
       scene as an asset (`Assets/SecondFace/Scenes/Boot.unity`, adapted from Unity's URP template: iso ortho camera,
       sun, the Bootstrap object), listing it in `EditorBuildSettings.asset`, committing `.meta` files for every asset
       (stable GUIDs), a `BuildGuard` pre-build check, and a malformed `applicationIdentifier` block in
-      ProjectSettings repaired. **Open:** the first APK artifact from the next Android run; P0 closes when the owner
-      installs it.
+      ProjectSettings repaired. **Run 5 (e775f3c) built the first APK**: artifact `SecondFace-Android-APK` on the
+      Android workflow run (GitHub → Actions → Android → the run → Artifacts); sideload `SecondFace.apk` on the phone
+      (allow installs from the browser/file manager). It shows the title card with the loaded content counts, full
+      screen, landscape. P0 closes when the owner has it running.
 - [~] P1 Core (pure C#) with ported tests. Done: P1.1 stats — `Core/Stats/{Rules,Sheet,Chrome}.cs`, the rules/
       chrome content model, `Content/Registry.cs` (typed registries from the JSON, strict-deserialisation check);
       the web stats, creation and chrome suites ported (18 tests green with `dotnet test core/...`).
