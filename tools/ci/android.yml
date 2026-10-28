@@ -72,7 +72,7 @@ jobs:
   test:
     name: Unity tests and screenshots
     runs-on: ubuntu-latest
-    timeout-minutes: 100
+    timeout-minutes: 40   # a full pass takes 10-15 min; anything longer is a hang
     if: ${{ !cancelled() }}
     steps:
       - uses: actions/checkout@v4

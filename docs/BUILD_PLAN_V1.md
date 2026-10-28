@@ -747,6 +747,10 @@ numbers from the densest place written into PORT.md §5.
   that deform nothing, and proxies whose reference vertices were hidden beneath them had no weights at all. Proxy
   weights now come from every base vertex (hidden and helper vertices included), blended over the three references;
   the export keeps every bone.
+- **PlayMode run never starts a test** (run 15, 58 minutes idle): the runner opens its init scene before
+  `IPrebuildSetup`; a setup step that opens other scenes must restore the runner's scene
+  (`EditorSceneManager.GetSceneManagerSetup` / `RestoreSceneManagerSetup`) or play mode starts on a scene with no
+  runner. Evidence in the log: `Loaded scene 'Temp/__Backupscenes/0.backup'` followed by nothing.
 - **CI run cancelled by a push**: concurrency `cancel-in-progress`; wait for the run first.
 - **The owner's token lacks the `workflow` scope**: workflow files cannot be pushed from the session; the owner
   copies `tools/ci/*.yml` into `.github/workflows/`.

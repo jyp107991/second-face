@@ -26,6 +26,11 @@ namespace SecondFace.Tests
         {
 #if UNITY_EDITOR
             LogAssert.ignoreFailingMessages = true;   // a logged error here aborts the whole run as a RunError (run 14)
+            // The runner opens its own init scene (it drives the tests) before this step; the builders open scenes of
+            // their own, so the setup is restored afterwards or play mode starts on a scene with no runner (run 15 hung).
+            var sceneSetup = EditorSceneManager.GetSceneManagerSetup();
+            try
+            {
             foreach (var item in new[]
             {
                 "Second Face/Build terrain test scene", "Second Face/Build material sheet scene", "Second Face/Build shelter test scene",
@@ -37,6 +42,11 @@ namespace SecondFace.Tests
             }
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+            }
+            finally
+            {
+                EditorSceneManager.RestoreSceneManagerSetup(sceneSetup);
+            }
 #endif
         }
 
