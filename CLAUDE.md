@@ -79,6 +79,10 @@ The owner wants to play unspoiled.
   and override the content roadmap until the port reaches parity. The TS/three.js game in `src/` is frozen as the
   reference implementation and the content validator; content data (`src/content/`) stays the source of truth and
   is exported to the Unity project by a tool. No new web features.
+- **No anchoring on the web game's graphics** (owner, 2026-10-28): the Unity port maximises graphical quality within
+  what a 2026 Android phone runs at a smooth frame rate. The three.js look is not a reference for visuals; where
+  assets or textures must be remade or replaced to reach that quality, remake them. The U1–U4 evidence is a floor
+  for behaviour and a record of what exists, never a ceiling for how it should look.
 - Visual style (superseded where the upgrade directive says otherwise): orthographic iso camera, rotatable/zoomable.
 
 ## 3. Engineering conventions

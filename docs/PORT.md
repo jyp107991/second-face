@@ -11,9 +11,14 @@ web game (then content building resumes at B3.11, in Unity).
   quests, items, rules, world). `npm run validate` keeps validating it. `tools/port/export.ts` exports every
   registry to JSON under `unity/Assets/StreamingAssets/content/`; the Unity game loads those. Content authors keep
   editing TypeScript; a content change is: edit → `npm run check` → `npm run export` → commit both.
-- **Assets move as they are**: `public/assets/world` (glTF models, impostor atlases, PBR textures),
-  `public/assets/human` (the MakeHuman data, proxies, skin maps, the mocap clips) copy into `unity/Assets/`
-  (models via glTFast at import time; our own binary formats read by C# loaders).
+- **Assets are re-judged for quality, not copied by default** (owner, 2026-10-28: no anchoring on the web game's
+  graphics; maximise what a 2026 Android phone runs smoothly; remake what must be remade). What survives is what
+  meets the bar: the CC0 source libraries (Poly Haven models and PBR sets, MakeHuman bodies and clothes, the CMU
+  motion) are re-imported from their originals at the resolution and detail Unity's pipeline can carry (ASTC
+  textures at 1–2 K where it shows, LOD groups instead of hand-decimated meshes, real trees with LODs and
+  impostors only at distance), through URP's lit shading, shadows, SSAO, bloom, colour grading and post. The
+  web-era downsizes (512 px atlases, 2 k-triangle trees as billboards, painted-on cloth) are not carried over.
+  The visual bar for each phase is set in P2/P3 below.
 - **Engine code is rewritten in C#**, in the same shape as the TypeScript engine, module by module, each with its
   tests. The web engine (`src/engine/`) is frozen: it is the reference for every behaviour and the visual bar
   (`docs/UPGRADE.md` U1–U4.1 evidence), not a place for new features.
@@ -96,11 +101,19 @@ GameCI does not see or store the credentials; they stay in the repository's secr
   flags, leads, conclusions, decisions; reputation, news, factions; schedules, world events (no time limits:
   scheduled events wait for the player), journeys and timetables; saves and migrations. Tests ported from
   `tests/*.test.ts`.
-- **P2 World** — heightfield and regions, ways, chunk streaming, the splat ground shader, water, sky and weather,
-  flora instancing, impostors, glTF props, places built from map data, buildings/roofs, lights. Bar: U2/U3.
+- **P2 World** — heightfield and regions, ways, chunk streaming, the ground shader, water, sky and weather,
+  vegetation, props, places built from map data, buildings/roofs, lights. Visual bar: a modern isometric RPG on a
+  2026 phone (DOS2-class): URP lit PBR with 1–2 K ASTC texture sets, height-blended terrain layers with
+  tessellation-free parallax where it reads, real tree meshes with LOD groups (impostors only beyond ~80 m),
+  dense grass and scrub through GPU instancing with wind, physically plausible water (depth fog, refraction,
+  foam), volumetric-looking fog and sky, cascaded shadows at medium, SSAO and bloom, at 60 fps on a 2024–26
+  flagship and 30+ on a mid-range phone with dynamic resolution. Measured on device, not assumed.
 - **P3 People** — the MakeHuman figure (shape evaluation, skinned meshes, skin compositing, proxies, hair),
   the captured-motion clip player with direction retargeting, portraits, outfits, gear, weapons, bionics.
-  Bar: U4.1 and the U4 list.
+  Visual bar: skin with subsurface scattering (URP's lit shader with a skin profile or a custom one), 2 K face
+  and body maps composited at import, cloth with real weave normal/roughness maps, hair as cards with
+  anisotropic shading, blend-shape faces, captured motion blended through Unity's animation system, LOD groups
+  per figure, and a crowd budget that keeps the scene smooth.
 - **P4 Camera, touch and UI** — iso camera (one-finger turn, pinch, tap-to-move; U5), radial menu, HUD, the
   notebook, the map and travel, dialogue view with portraits, combat UI, menus, settings, character creation.
 - **P5 Gameplay and parity** — actors and pathing, NPC schedules and crowds, encounters and combat, interactions
@@ -115,3 +128,6 @@ GameCI does not see or store the credentials; they stay in the repository's secr
   scene/pipeline/player settings in code; core builds and tests locally; CI workflows written to `tools/ci/`
   (the session cannot create `.github/workflows` files: the owner copies them). Open: the owner's licence secrets;
   the first CI build; URP package assemblies for a local compile check of the Game assembly.
+- 2026-10-28 Owner: the workflows are in `.github/workflows/` (the first Android run reached game-ci and stopped at
+  the missing licence secrets, which is the expected state); the Core workflow is green. Owner directive recorded:
+  no anchoring on the web game's graphics; assets re-judged and remade for quality on a 2026 phone.
