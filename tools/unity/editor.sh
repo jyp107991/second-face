@@ -27,7 +27,8 @@ install() {
   local part="$UNITY_HOME.partial"
   rm -rf -- "$part"; mkdir -p "$part"
   echo "downloading and unpacking Unity $VERSION (about 10 min) ..."
-  curl -fsSL "https://download.unity3d.com/download_unity/$CHANGESET/LinuxEditorInstaller/Unity-$VERSION.tar.xz" | tar -xJ -C "$part"
+  if [ -n "${UNITY_ARCHIVE:-}" ] && [ -f "$UNITY_ARCHIVE" ]; then tar -xJf "$UNITY_ARCHIVE" -C "$part"   # an archive already on disk
+  else curl -fsSL "https://download.unity3d.com/download_unity/$CHANGESET/LinuxEditorInstaller/Unity-$VERSION.tar.xz" | tar -xJ -C "$part"; fi
   [ -x "$part/Editor/Unity" ] || { echo "install failed: Editor/Unity missing after unpacking"; exit 1; }
   mkdir -p "$(dirname "$UNITY_HOME")"; mv -- "$part" "$UNITY_HOME"
   echo "editor installed: $UNITY"
