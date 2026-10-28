@@ -77,7 +77,9 @@ namespace SecondFace.EditorTools
                     m.SetFloat("_Smoothness", 0.42f); m.SetFloat("_Metallic", 0f);
                     break;
                 case "eyes":
+                    // The MakeHuman eye carries its cornea in the texture's alpha: clip it so the iris shows through.
                     m.SetFloat("_Smoothness", 0.9f);
+                    if (d != null) { m.SetFloat("_AlphaClip", 1f); m.SetFloat("_Cutoff", 0.5f); m.EnableKeyword("_ALPHATEST_ON"); }
                     break;
                 case "hair":
                 case "brows":

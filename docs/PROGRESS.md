@@ -319,9 +319,15 @@ adds the fetch step and the tests-and-screenshots job). P2.3 started: the shelte
 stable metas, material slots bound to the library by `KitImportPostprocessor`), the material library builder and
 sheet (`Editor/Build/{MaterialLibrary,MaterialSheetScene}.cs` → `materials_sheet`), the shelter corridor, bunk room
 and cistern ring hall assembled in code (`Editor/Build/ShelterTestScene.cs` → `place_shelter_*`). The CC0 MakeHuman
-data repositories are cloned in the session scratch for the people bake-off. **Next action:** get the
-tests-and-screenshots job running (owner copies the workflow), read the first captures, fix what they show; then the
-people pipeline candidate A (MakeHuman base through Blender to a Humanoid FBX with blend shapes) as a screenshot set.
+data repositories are cloned in the session scratch for the people bake-off. People pipeline candidate A is built (`tools/unity/people/mh_build.py`: six bake-off people as Humanoid FBX with 69 face
+and expression blend shapes each, eyes/brows/lashes/hair fitted from the MakeHuman proxies, textures beside them) and
+captured motion is converted (`tools/unity/motion/cmu2fbx.py`: walk, run, idle, talk as Humanoid clips with loop
+sidecars; the other 24 clips convert on demand). Run 6 (packages) and run 7 (people, motion, kits) build the APK.
+Local Cycles sanity renders live in the session scratch (not the engine; geometry and fit checks only).
+**Next action:** the owner copies the workflow so the tests-and-screenshots job runs; read `Unity-screenshots`
+(terrain, materials sheet, shelter place, people lineup, portraits, motion) and fix what they show; then candidates B
+(MB-Lab) and C (UMA) if A falls short at portrait distance; then the remaining kits (frontier adobe/scrap, toll fort,
+bridge town) and the first outdoor place.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

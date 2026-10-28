@@ -282,7 +282,10 @@ def build_person(spec):
             for i, dx, dy, dz in t: v[i][0] += dx * w; v[i][1] += dy * w; v[i][2] += dz * w
             applied += 1
     print(f'{spec["id"]}: {applied} targets baked')
-    to_bl = lambda p: Vector((p[0] * SCALE, -p[2] * SCALE, p[1] * SCALE))
+    body_idx = sorted({i for f in body_faces for i, _ in f})
+    ground = min(v[i][1] for i in body_idx)
+    to_bl = lambda p: Vector((p[0] * SCALE, -p[2] * SCALE, (p[1] - ground) * SCALE))
+    to_bl_dir = lambda p: Vector((p[0] * SCALE, -p[2] * SCALE, p[1] * SCALE))
 
     # --- body mesh (body group only), uv from vt
     used = sorted({i for f in body_faces for i, _ in f})
@@ -297,7 +300,7 @@ def build_person(spec):
     me.validate(); me.update()
     for p in me.polygons: p.use_smooth = True
     body = bpy.data.objects.new('Body', me); bpy.context.scene.collection.objects.link(body)
-    body.data.materials.append(K.mat('skin:' + spec['skin']))
+    body.data.materials.append(K.mat('skin:' + spec['skin'] + '_d'))
 
     # --- blend shapes relative to the baked body
     body.shape_key_add(name='Basis', from_mix=False)
@@ -305,7 +308,7 @@ def build_person(spec):
         sk = body.shape_key_add(name=name, from_mix=False)
         for i, dx, dy, dz in deltas:
             if i in remap:
-                k = remap[i]; d = to_bl((dx * w, dy * w, dz * w)); sk.data[k].co = sk.data[k].co + d
+                k = remap[i]; d = to_bl_dir((dx * w, dy * w, dz * w)); sk.data[k].co = sk.data[k].co + d
     nshapes = 0
     for mod in FACE_SHAPES:
         parts = mod[4:].split('|') if mod.startswith('sym:') else mod.split('|')
@@ -343,7 +346,7 @@ def build_person(spec):
         name, parent, head, tail, normal = kept[b]
         e = arm.edit_bones.new(name); e.head = to_bl(head); e.tail = to_bl(tail)
         if (e.tail - e.head).length < 0.005: e.tail = e.head + Vector((0, 0, 0.02))
-        if normal is not None: e.align_roll(to_bl(normal) - to_bl((0, 0, 0)))
+        if normal is not None: e.align_roll(to_bl_dir(normal))
         if parent: e.parent = eb[parent]; e.use_connect = False
         eb[b] = e
     bpy.ops.object.mode_set(mode='OBJECT')
