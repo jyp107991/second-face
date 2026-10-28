@@ -39,6 +39,31 @@ namespace SecondFace.EditorTools
             return lib.TryGetValue(key, out var e) ? Build(key, e) : null;
         }
 
+        /// <summary>
+        /// Binds library materials to a kit instance by slot name (mat_&lt;key&gt;). Called by the builders after instantiating,
+        /// never during import: Unity forbids creating assets in import callbacks and the URP shader is not loaded yet on a
+        /// cold import (CI run 14). The import keeps the slot names on placeholder materials (ImportStandard, InPrefab).
+        /// </summary>
+        public static int Bind(GameObject root)
+        {
+            var n = 0;
+            foreach (var r in root.GetComponentsInChildren<Renderer>(true))
+            {
+                var mats = r.sharedMaterials; var changed = false;
+                for (var i = 0; i < mats.Length; i++)
+                {
+                    if (mats[i] == null) continue;
+                    var name = mats[i].name;
+                    var key = name.StartsWith("mat_") ? name.Substring(4) : name;
+                    var m = Get(key);
+                    if (m == null) { Debug.LogWarning($"{root.name}: no library material for slot {name}"); continue; }
+                    mats[i] = m; changed = true; n++;
+                }
+                if (changed) r.sharedMaterials = mats;
+            }
+            return n;
+        }
+
         /// <summary>A foliage card (Kits/Trees/tex/card_&lt;name&gt;.png, baked by tools/unity/kits/cards.py): cutout, double-sided.</summary>
         public static Material Card(string name)
         {
@@ -119,14 +144,5 @@ namespace SecondFace.EditorTools
             imp.generateSecondaryUV = true;
         }
 
-        private Material OnAssignMaterialModel(Material material, Renderer renderer)
-        {
-            if (!assetPath.StartsWith("Assets/SecondFace/Kits/")) return null;
-            var name = material.name;
-            var key = name.StartsWith("mat_") ? name.Substring(4) : name;
-            var m = MaterialLibrary.Get(key);
-            if (m == null) Debug.LogWarning($"{assetPath}: no library material for slot {name}");
-            return m;
-        }
     }
 }

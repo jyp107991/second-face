@@ -64,6 +64,7 @@ namespace SecondFace.EditorTools
                 var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(models[i].Replace('\\', '/'));
                 if (prefab == null) continue;
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+                PeopleMaterials.Bind(go, Path.GetDirectoryName(models[i]).Replace('\\', '/'));
                 go.name = Path.GetFileNameWithoutExtension(models[i]);
                 go.transform.SetParent(people);
                 go.transform.position = new Vector3((i - (models.Length - 1) / 2f) * 1.1f, 0, 0);

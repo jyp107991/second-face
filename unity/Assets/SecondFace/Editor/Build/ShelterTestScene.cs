@@ -21,6 +21,7 @@ namespace SecondFace.EditorTools
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Kit + piece + ".fbx");
             if (prefab == null) { Debug.LogWarning($"ShelterTestScene: missing kit piece {piece}"); return null; }
             var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+            MaterialLibrary.Bind(go);
             go.transform.SetParent(parent);
             go.transform.position = at;
             go.transform.rotation = Quaternion.Euler(0, yaw, 0);

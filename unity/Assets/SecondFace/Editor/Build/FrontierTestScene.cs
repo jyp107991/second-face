@@ -24,6 +24,7 @@ namespace SecondFace.EditorTools
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Kit + piece + ".fbx");
             if (prefab == null) { Debug.LogWarning($"FrontierTestScene: missing {piece}"); return null; }
             var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+            MaterialLibrary.Bind(go);
             go.transform.SetParent(parent);
             if (t != null) at.y += t.SampleHeight(at);
             go.transform.position = at;
@@ -73,6 +74,7 @@ namespace SecondFace.EditorTools
             // Terrain: 256 m, nearly flat with a gentle rise, scrub soil with sand.
             const int res = 257;
             var data = new TerrainData { heightmapResolution = res, size = new Vector3(256, 40, 256) };
+            data.SetDetailResolution(1024, 32);   // a TerrainData without one logs "zero detail resolution" as an error
             var heights = new float[res, res];
             for (var y = 0; y < res; y++) for (var x = 0; x < res; x++)
             {
@@ -148,6 +150,7 @@ namespace SecondFace.EditorTools
                 var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(people[i].Replace('\\', '/'));
                 if (prefab == null) continue;
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+                PeopleMaterials.Bind(go, People);
                 go.transform.SetParent(town);
                 var at = spots[i].Item1; at.y = terrain.SampleHeight(at);
                 go.transform.position = at; go.transform.rotation = Quaternion.Euler(0, spots[i].Item2, 0);

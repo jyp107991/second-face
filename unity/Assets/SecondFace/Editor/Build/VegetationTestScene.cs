@@ -37,6 +37,7 @@ namespace SecondFace.EditorTools
             // Terrain: the Sallow's mesas and a dry wash.
             const int res = 513;
             var data = new TerrainData { heightmapResolution = res, size = new Vector3(512, 110, 512) };
+            data.SetDetailResolution(1024, 32);   // a TerrainData without one logs "zero detail resolution" as an error
             var heights = new float[res, res];
             for (var y = 0; y < res; y++) for (var x = 0; x < res; x++)
             {

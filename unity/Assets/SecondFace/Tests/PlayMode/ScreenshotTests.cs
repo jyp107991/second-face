@@ -25,6 +25,7 @@ namespace SecondFace.Tests
         public void Setup()
         {
 #if UNITY_EDITOR
+            LogAssert.ignoreFailingMessages = true;   // a logged error here aborts the whole run as a RunError (run 14)
             foreach (var item in new[]
             {
                 "Second Face/Build terrain test scene", "Second Face/Build material sheet scene", "Second Face/Build shelter test scene",

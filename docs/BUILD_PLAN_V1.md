@@ -721,6 +721,17 @@ numbers from the densest place written into PORT.md §5.
   `EditorSceneManager.LoadSceneInPlayMode` (they are not in the build list). A camera-only capture
   (`Camera.Render` to a RenderTexture) does not include UI Toolkit panels: UI captures (P5) render the panel to
   its own RenderTexture through `PanelSettings.targetTexture`.
+- **Materials created inside import callbacks** (run 14: "URP Lit shader not found" on a cold import, then
+  "AssetDatabase.CreateAsset is restricted during asset importing"): never bind or create materials in
+  `OnAssignMaterialModel`. Imports keep slot names on placeholder materials (ImportStandard, InPrefab);
+  `MaterialLibrary.Bind(go)` and `PeopleMaterials.Bind(go, dir)` bind after instantiating (builders, prefab bakes).
+- **A logged error in `IPrebuildSetup` aborts the whole PlayMode run** ("Multiple unexpected errors", exit code 3,
+  no results): `LogAssert.ignoreFailingMessages = true` at the top of `Setup()`; a `TerrainData` needs
+  `SetDetailResolution` or it logs "zero detail resolution" as an error.
+- **A person's bones vanish on export** (run 14: p4 had no `LeftUpperLeg`): `use_armature_deform_only` drops bones
+  that deform nothing, and proxies whose reference vertices were hidden beneath them had no weights at all. Proxy
+  weights now come from every base vertex (hidden and helper vertices included), blended over the three references;
+  the export keeps every bone.
 - **CI run cancelled by a push**: concurrency `cancel-in-progress`; wait for the run first.
 - **The owner's token lacks the `workflow` scope**: workflow files cannot be pushed from the session; the owner
   copies `tools/ci/*.yml` into `.github/workflows/`.

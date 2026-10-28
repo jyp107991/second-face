@@ -49,6 +49,7 @@ namespace SecondFace.EditorTools
             // Terrain: 512 m, 128 m tall, noise with a dry basin, a mesa and a road cut.
             const int res = 513;
             var data = new TerrainData { heightmapResolution = res, size = new Vector3(512, 128, 512) };
+            data.SetDetailResolution(1024, 32);   // a TerrainData without one logs "zero detail resolution" as an error
             var heights = new float[res, res];
             for (var y = 0; y < res; y++)
                 for (var x = 0; x < res; x++)

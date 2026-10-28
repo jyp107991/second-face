@@ -489,6 +489,13 @@ def build_person(spec):
     for name, g in groups.items():
         vg = body.vertex_groups.new(name=name)
         for k, w in g.items(): vg.add([k], min(1.0, w), 'REPLACE')
+    # proxies take their weights from the base vertices they reference, hidden or helper vertices included: a garment
+    # sits exactly where the body beneath it is deleted, so the kept-vertex map above must not be used for them
+    inv_all = {}
+    for b, wl in weights_mh.items():
+        kb = b if b in kept else merge.get(b)
+        if kb is None: continue
+        for i, w in wl: inv_all.setdefault(i, []).append((kept[kb][0], w))
     mod = body.modifiers.new('Armature', 'ARMATURE'); mod.object = rig
     body.parent = rig
 
@@ -538,15 +545,13 @@ def build_person(spec):
         if skin_to:
             vg = po.vertex_groups.new(name=skin_to); vg.add(list(range(len(fitted))), 1.0, 'REPLACE')
         else:
-            inv = {}
-            for name_g, g in groups.items():
-                for k, w in g.items(): inv.setdefault(k, []).append((name_g, w))
             vgs = {}
             for pi, r in enumerate(refs):
-                i0 = r[0]
-                if i0 in remap:
-                    for name_g, w in inv.get(remap[i0], []):
-                        vgs.setdefault(name_g, []).append((pi, w))
+                acc = {}
+                for k in range(3):
+                    for name_g, w in inv_all.get(r[k], []): acc[name_g] = acc.get(name_g, 0.0) + w * r[3 + k]
+                tot = sum(acc.values()) or 1.0
+                for name_g, w in acc.items(): vgs.setdefault(name_g, []).append((pi, w / tot))
             for name_g, lst in vgs.items():
                 vg = po.vertex_groups.new(name=name_g)
                 for pi, w in lst: vg.add([pi], min(1.0, w), 'REPLACE')
@@ -577,7 +582,7 @@ def build_person(spec):
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.export_scene.fbx(filepath=path, use_selection=True, apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y',
                              mesh_smooth_type='FACE', use_mesh_modifiers=False, add_leaf_bones=False, bake_anim=False, path_mode='STRIP',
-                             embed_textures=False, use_armature_deform_only=True, primary_bone_axis='Y', secondary_bone_axis='X')
+                             embed_textures=False, use_armature_deform_only=False, primary_bone_axis='Y', secondary_bone_axis='X')
     K.write_model_meta(path, f'{REL}/{spec["id"]}.fbx')
     print('  wrote', path)
 

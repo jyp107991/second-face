@@ -5,8 +5,11 @@ using UnityEngine;
 namespace SecondFace.EditorTools
 {
     /// <summary>
-    /// People models (Assets/SecondFace/People) import as Humanoid with blend shapes; their material slots name their
-    /// textures (skin:&lt;file&gt;, hair:&lt;file&gt;, brows:, lashes:, eyes:) which live beside the model in tex/.
+    /// People models (Assets/SecondFace/People) import as Humanoid with blend shapes. Their material slots name their
+    /// textures (mat_skin:&lt;file&gt;, mat_hair:&lt;file&gt;, mat_brows:, mat_lashes:, mat_eyes:, mat_cloth:) which live
+    /// beside the model in tex/; the import keeps those names on placeholder materials and <see cref="PeopleMaterials"/>
+    /// binds the real ones when a person is instantiated (materials are never created inside an import callback:
+    /// Unity forbids it, and the URP shader is not even loaded yet on a cold import).
     /// </summary>
     public sealed class PeopleImportPostprocessor : AssetPostprocessor
     {
@@ -46,26 +49,51 @@ namespace SecondFace.EditorTools
             android.overridden = true; android.maxTextureSize = 2048; android.format = TextureImporterFormat.ASTC_6x6;
             imp.SetPlatformTextureSettings(android);
         }
+    }
 
-        private Material OnAssignMaterialModel(Material material, Renderer renderer)
+    /// <summary>Builds and binds a person's materials from its slot names; called by the scene builders after instantiating.</summary>
+    public static class PeopleMaterials
+    {
+        /// <summary>Replaces the placeholder materials of every renderer under <paramref name="root"/>. Returns the slots bound.</summary>
+        public static int Bind(GameObject root, string modelDir)
         {
-            if (!IsPerson) return null;
-            var name = material.name.StartsWith("mat_") ? material.name.Substring(4) : material.name;   // slots are mat_<kind>:<texture>
+            var n = 0;
+            foreach (var r in root.GetComponentsInChildren<Renderer>(true))
+            {
+                var mats = r.sharedMaterials; var changed = false;
+                for (var i = 0; i < mats.Length; i++)
+                {
+                    if (mats[i] == null) continue;
+                    var m = Build(mats[i].name, modelDir);
+                    if (m == null) continue;
+                    mats[i] = m; changed = true; n++;
+                }
+                if (changed) r.sharedMaterials = mats;
+            }
+            return n;
+        }
+
+        /// <summary>The material for a slot name (mat_&lt;kind&gt;:&lt;texture&gt;), built once into &lt;modelDir&gt;/Materials.</summary>
+        public static Material Build(string slotName, string modelDir)
+        {
+            var name = slotName.StartsWith("mat_") ? slotName.Substring(4) : slotName;
             var colon = name.IndexOf(':');
             if (colon < 0) return null;
             var kind = name.Substring(0, colon);
             var tex = name.Substring(colon + 1);
-            var dir = Path.GetDirectoryName(assetPath).Replace('\\', '/');
+            var dir = modelDir.Replace('\\', '/').TrimEnd('/');
             var matDir = dir + "/Materials";
             Directory.CreateDirectory(matDir);
             var matPath = $"{matDir}/{kind}_{tex}.mat";
             var existing = AssetDatabase.LoadAssetAtPath<Material>(matPath);
             if (existing != null) return existing;
-            var m = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = $"{kind}_{tex}" };
+            var shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null) { Debug.LogError("PeopleMaterials: URP Lit shader not found"); return null; }
+            var m = new Material(shader) { name = $"{kind}_{tex}" };
             var d = tex == "none" ? null : AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/tex/{tex}.png");
             if (d != null) m.SetTexture("_BaseMap", d);
-            var n = AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/tex/{tex.Replace("_d", "_n")}.png");
-            if (n != null && tex.EndsWith("_d")) { m.SetTexture("_BumpMap", n); m.EnableKeyword("_NORMALMAP"); }
+            var nrm = AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/tex/{tex.Replace("_d", "_n")}.png");
+            if (nrm != null && tex.EndsWith("_d")) { m.SetTexture("_BumpMap", nrm); m.EnableKeyword("_NORMALMAP"); }
             if (d == null)
             {
                 // Strand-modelled brows and lashes and untextured hair ship without a texture: a dark fibre colour.
@@ -91,7 +119,8 @@ namespace SecondFace.EditorTools
                 case "lashes":
                     if (d != null) { m.SetFloat("_AlphaClip", 1f); m.SetFloat("_Cutoff", 0.4f); m.EnableKeyword("_ALPHATEST_ON"); }
                     m.SetFloat("_Cull", 0f);   // double-sided cards
-                    m.SetFloat("_Smoothness", kind == "hair" ? 0.55f : 0.3f);
+                    // Hair rule: dull, dusty, never glossy.
+                    m.SetFloat("_Smoothness", kind == "hair" ? 0.25f : 0.3f);
                     m.renderQueue = 2450;
                     break;
             }
