@@ -398,8 +398,11 @@ the scans' own objects, rows cut at their gaps), our materials (leaves lit, not 
 `.scans/` outside the Unity project. Found on the way: every kit piece and nature model lay on its side (the Blender
 export's compensating root rotation, overwritten by every builder; an earlier "fix" never worked): fixed with
 `bake_space_transform`, and the frontier town finally stands up in its captures.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 7 (frame `vegetation_iso` inside the terrain; `ScatterRules` with
-EditMode tests), then steps 8–12 (step 10, the frontier kit, is done).
+**Scatter rules (plan §10 step 7, 2026-10-28):** the placement rules live in Core (`Core/World/Scatter.cs`: biome ×
+slope × height × wash × noise, deterministic per seed) with 7 tests that run in both .NET and the editor; the vegetation
+scene uses them (same scene as before). The eye-level capture no longer sits inside rising ground. The plants are still
+sparse and small from the overview: density and clumping are P3.4's tuning.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 8 (card trees: `trees.py`, pine first), then 9, 11, 12.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

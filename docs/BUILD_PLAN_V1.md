@@ -1018,7 +1018,8 @@ step by step in §5. Each step below is one commit (a few WIP commits at most) a
 4. `bake_skin` (sun, creases, lips, stubble) (P2.4); read the portraits.
 5. People weight ≤ 8 MB each (P2.5, §6.B.6).
 6. ~~Nature models to FBX, one per variant, `nature` materials, glTFast removed~~ (done 2026-10-28).
-7. `vegetation_iso` framed inside the terrain; `ScatterRules` extracted with EditMode tests (P2.7).
+7. ~~`vegetation_iso` framed inside the terrain; scatter rules extracted with tests~~ (done 2026-10-28: Core
+   `Scatter`, `ScatterTests`; the eye-level camera takes the ground height under itself).
 8. `trees.py` pine, three seeds (P2.8, §6.L); `vegetation_teeth`.
 9. Fir and broadleaf; LOD1/LOD2 and the `LODGroup` (P2.8).
 10. ~~Frontier kit pieces upright~~ (done with step 6).

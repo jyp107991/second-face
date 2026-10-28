@@ -269,9 +269,11 @@ namespace SecondFace.Tests
             for (var i = 0; i < 10; i++) yield return null;
             yield return Capture("vegetation_iso", 1920, 1080);
             var cam = Camera.main; var t = Terrain.activeTerrain;
-            cam.transform.rotation = Quaternion.Euler(22f, -60f, 0f);
-            var f = new Vector3(300, 0, 170); f.y = t.SampleHeight(f) + 1.6f;
-            cam.transform.position = f - cam.transform.rotation * Vector3.forward * 12f;
+            // Eye height above the ground under the camera, looking down at a point 12 m ahead: placing it from the
+            // focus point's height put the camera inside rising ground (a grey wedge in the capture).
+            var f = new Vector3(300, 0, 170); f.y = t.SampleHeight(f);
+            var eye = f - Quaternion.Euler(0f, -60f, 0f) * Vector3.forward * 12f; eye.y = t.SampleHeight(eye) + 1.7f;
+            cam.transform.position = eye; cam.transform.LookAt(f + Vector3.up * 0.4f);
             yield return null;
             yield return Capture("vegetation_eye", 1920, 1080);
             cam.transform.rotation = Quaternion.Euler(35f, 200f, 0f);

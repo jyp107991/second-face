@@ -6,8 +6,7 @@
     "Unity.RenderPipelines.Universal.Runtime",
     "Unity.RenderPipelines.Core.Runtime",
     "Unity.InputSystem",
-    "Unity.TextMeshPro",
-    "glTFast"
+    "Unity.TextMeshPro"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],
