@@ -18,9 +18,9 @@ namespace SecondFace.EditorTools
     public static class ProjectSetup
     {
         private const string ScenePath = "Assets/SecondFace/Scenes/Boot.unity";
-        private const string PipelineDir = "Assets/SecondFace/Settings";
-        private const string PipelinePath = PipelineDir + "/URP-Mobile.asset";
-        private const string RendererPath = PipelineDir + "/URP-Mobile-Renderer.asset";
+        private const string PipelineDir = "Assets/Settings";
+        private const string PipelinePath = PipelineDir + "/Mobile_RPAsset.asset";
+        private const string RendererPath = PipelineDir + "/Mobile_Renderer.asset";
 
         static ProjectSetup()
         {
@@ -38,7 +38,12 @@ namespace SecondFace.EditorTools
 
         private static void EnsurePipeline()
         {
-            if (AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(PipelinePath) != null) return;
+            var existing = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(PipelinePath);
+            if (existing != null)
+            {
+                if (GraphicsSettings.defaultRenderPipeline != existing) { GraphicsSettings.defaultRenderPipeline = existing; AssetDatabase.SaveAssets(); }
+                return;
+            }
             Directory.CreateDirectory(PipelineDir);
             var renderer = ScriptableObject.CreateInstance<UniversalRendererData>();
             AssetDatabase.CreateAsset(renderer, RendererPath);
