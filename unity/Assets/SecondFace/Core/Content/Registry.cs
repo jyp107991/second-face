@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SecondFace.Core.Dialogue;
 using SecondFace.Core.Inventory;
+using SecondFace.Core.Quest;
 using SecondFace.Core.Stats;
 using SecondFace.Core.World;
 
@@ -24,6 +26,8 @@ namespace SecondFace.Core.Content
         public static Dictionary<string, ConclusionDef> Conclusions = new();
         public static Dictionary<string, WorldEventDef> WorldEvents = new();
         public static Dictionary<string, LetterDef> Letters = new();
+        public static Dictionary<string, DialogueDef> Dialogues = new();
+        public static Dictionary<string, QuestDef> Quests = new();
 
         public static readonly JsonSerializer Strict = new() { MissingMemberHandling = MissingMemberHandling.Error };
         public static readonly JsonSerializer Lenient = new();
@@ -56,6 +60,8 @@ namespace SecondFace.Core.Content
             Conclusions = Table<ConclusionDef>(db, "conclusions");
             WorldEvents = Table<WorldEventDef>(db, "world_events");
             Letters = Table<LetterDef>(db, "letters");
+            Dialogues = Table<DialogueDef>(db, "dialogues");
+            Quests = Table<QuestDef>(db, "quests");
         }
     }
 }
