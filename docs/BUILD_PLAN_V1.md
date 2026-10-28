@@ -649,15 +649,18 @@ Scratch root `S` = the session's scratchpad directory (write every tool's absolu
 - Poly Haven scans: `python3 tools/unity/models.py` (2.2 GB into `unity/Assets/External/Models`, gitignored).
 
 ### 7.1a The real Unity editor in the session (use it before CI, every time)
-The owner holds a Unity Personal licence. With the variable `UNITY_LICENSE_B64` (the owner's `Unity_lic.ulf`,
-base64-encoded on one line) set in the cloud environment's variables, `tools/unity/editor.sh` runs the same editor
-as CI inside the session: `install` (6000.3.27f1 into `/opt/unity`, about 10 minutes and 8.4 GB; the container has
-every system library it needs and reaches Unity's servers, verified 2026-10-28), `licence`, `test
+The owner holds a Unity Personal licence. With `UNITY_EMAIL` and `UNITY_PASSWORD` (the owner's Unity account, the
+same values as the GitHub secrets) set in the cloud environment's variables, `tools/unity/editor.sh` runs the same
+editor as CI inside the session: `install` (6000.3.27f1 into `/opt/unity`, about 10 minutes and 8.4 GB; the
+container has every system library it needs and reaches Unity's servers, verified 2026-10-28), `licence` (Unity's
+Licensing Client: `--activate-all --include-personal` with the account, exactly CI's fallback), `test
 editmode|playmode|all` (results and logs in `unity/test-results/`, captures in `unity/Screenshots/`, under xvfb
-with software OpenGL as in CI), and `run <Class.Method>`. Start `tools/unity/editor.sh install` in the background
-at the beginning of any session that will touch editor-side code. Rule: **no editor-side change is pushed until
-`tools/unity/editor.sh test all` passes locally and the captures have been looked at.** CI then only confirms and
-builds the APK. The licence is never printed or committed.
+with software OpenGL as in CI), and `run <Class.Method>`. A Personal licence file (`Unity_lic.ulf`) does **not**
+work here: it is bound to the machine that made it and Unity's server answers "Machine bindings don't match" (seen
+in this session and in every CI run, where GameCI then falls back to the account). Start `tools/unity/editor.sh
+install` in the background at the beginning of any session that will touch editor-side code. Rule: **no
+editor-side change is pushed until `tools/unity/editor.sh test all` passes locally and the captures have been
+looked at.** CI then only confirms and builds the APK. Credentials are never printed or committed.
 Facts from the cloud-environment docs (2026-10-28): variables are `.env` format, one `KEY=value` per line (a
 multi-line value must be quoted, hence base64); a running session reads changed values when its VM next restores
 after idling, or a new session reads them at once; a setup script is cached only if it finishes in about five

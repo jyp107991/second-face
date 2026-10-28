@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # The real Unity editor in a Claude Code cloud session (or any Linux machine): install, licence, tests, captures.
-# Replaces the CI round trip for everything except the APK. Needs the owner's Unity_lic.ulf in the cloud environment's
-# variables, as UNITY_LICENSE_B64 (the file base64-encoded on one line: the field is .env format, one line per key)
-# or as UNITY_LICENSE (the raw XML, quoted). A session reads new values when its VM next restores or on a new session.
+# Replaces the CI round trip for everything except the APK. Needs the owner's Unity account in the cloud environment's
+# variables: UNITY_EMAIL and UNITY_PASSWORD. A Personal licence file (Unity_lic.ulf) is bound to the machine that made
+# it and is refused anywhere else ("Machine bindings don't match", verified here and in CI on 2026-10-28); CI falls
+# back to the account, and so does this script, through Unity's Licensing Client (--activate-all --include-personal).
+# A session reads new variable values when its VM next restores after idling, or at once in a new session.
 # Start `install` in the background at the beginning of a session that will need the editor (about 10 minutes).
 #
 #   tools/unity/editor.sh install                 editor 6000.3.27f1 into $UNITY_HOME (about 10 min, 8.4 GB)
@@ -39,28 +41,45 @@ licence_text() {   # the .ulf contents from either variable; never echoed to the
   else printf '%s' "${UNITY_LICENSE:-}"; fi
 }
 
+have_account() { [ -n "${UNITY_EMAIL:-}" ] && [ -n "${UNITY_PASSWORD:-}" ]; }
+
 need_licence() {   # checked before any download: no point fetching 4.6 GB without a licence to run it
-  [ -f "$ULF_DIR/Unity_lic.ulf" ] && return
-  if [ -z "${UNITY_LICENSE_B64:-}${UNITY_LICENSE:-}" ]; then
-    echo "No Unity licence: set UNITY_LICENSE_B64 (Unity_lic.ulf base64-encoded on one line) in the cloud environment's"
-    echo "variables; a session reads it when its VM next restores, or start a new session."; exit 2
+  [ -f "$OUT/.licensed" ] && return
+  if ! have_account && [ -z "${UNITY_LICENSE_B64:-}${UNITY_LICENSE:-}" ]; then
+    echo "No Unity licence: set UNITY_EMAIL and UNITY_PASSWORD in the cloud environment's variables; a session reads"
+    echo "them when its VM next restores after idling, or start a new session."; exit 2
   fi
+}
+
+editor_licensed() {   # a short editor start: does it find a licence?
+  "$UNITY" -batchmode -nographics -quit -logFile "$OUT/licence.log" || true
+  grep -q -i "Successfully resolved entitlement\|License activation succeeded\|Successfully updated license" "$OUT/licence.log" \
+    && ! grep -q -i "No valid Unity Editor license\|Machine bindings don't match" "$OUT/licence.log"
 }
 
 licence() {
   need_licence
-  [ -n "${UNITY_LICENSE_B64:-}${UNITY_LICENSE:-}" ] || { echo "licence file already in place"; return; }
-  mkdir -p "$ULF_DIR"
-  ( umask 077; licence_text > "$ULF_DIR/Unity_lic.ulf" )
-  grep -q "<License" "$ULF_DIR/Unity_lic.ulf" || { echo "the licence variable does not decode to a Unity licence file"; rm -f "$ULF_DIR/Unity_lic.ulf"; exit 4; }
   mkdir -p "$OUT"
-  # Same activation GameCI performs for a Personal licence; never prints the licence.
-  "$UNITY" -batchmode -nographics -quit -manualLicenseFile "$ULF_DIR/Unity_lic.ulf" -logFile "$OUT/licence.log" || true
-  if grep -q -i "Successfully resolved entitlement\|License activation succeeded\|Successfully updated license" "$OUT/licence.log"; then
-    echo "licence active"
-  else
-    echo "licence not confirmed; see unity/test-results/licence.log"; exit 3
+  local client="$UNITY_HOME/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client"
+  if have_account; then
+    # The account path, as CI's fallback does it. Output goes to a file and is checked, never shown (it names the account).
+    "$client" --activate-all --include-personal --username "$UNITY_EMAIL" --password "$UNITY_PASSWORD" > "$OUT/licence-client.log" 2>&1 || true
+    if grep -q -i "Activation processed successfully\|Successfully updated" "$OUT/licence-client.log" && editor_licensed; then
+      touch "$OUT/.licensed"; echo "licence active (Unity account)"; return
+    fi
+    echo "account activation not confirmed:"
+    grep -i "error\|fail\|invalid\|denied\|two-factor\|2fa\|activat" "$OUT/licence-client.log" | grep -v -i "password" | head -5
   fi
+  if [ -n "${UNITY_LICENSE_B64:-}${UNITY_LICENSE:-}" ]; then
+    # Only works on the machine the file was made on; kept for running the script on the owner's own computer.
+    mkdir -p "$ULF_DIR"
+    ( umask 077; licence_text > "$ULF_DIR/Unity_lic.ulf" )
+    "$UNITY" -batchmode -nographics -quit -manualLicenseFile "$ULF_DIR/Unity_lic.ulf" -logFile "$OUT/licence.log" || true
+    if editor_licensed; then touch "$OUT/.licensed"; echo "licence active (licence file)"; return; fi
+    rm -f "$ULF_DIR/Unity_lic.ulf"
+    grep -q "Machine bindings don't match" "$OUT/licence.log" && echo "the licence file is bound to another machine (expected outside the owner's computer)"
+  fi
+  echo "no working licence; see unity/test-results/licence*.log"; exit 3
 }
 
 editor() {   # software OpenGL under a virtual display, as in CI
@@ -90,7 +109,7 @@ case "${1:-}" in
   install) install ;;
   licence) need_licence; install; licence ;;
   test)
-    need_licence; install; [ -f "$ULF_DIR/Unity_lic.ulf" ] || licence
+    need_licence; install; [ -f "$OUT/.licensed" ] || licence
     case "${2:-all}" in
       editmode|playmode) test_mode "$2" ;;
       all) test_mode editmode; test_mode playmode ;;
@@ -98,7 +117,7 @@ case "${1:-}" in
     esac
     ls "$ROOT/unity/Screenshots" 2>/dev/null | sed 's/^/capture: /' || true ;;
   run)
-    need_licence; install; [ -f "$ULF_DIR/Unity_lic.ulf" ] || licence
+    need_licence; install; [ -f "$OUT/.licensed" ] || licence
     mkdir -p "$OUT"; editor -executeMethod "${2:?method}" -quit -logFile "$OUT/run.log" || true
     grep -n -i "error\|exception" "$OUT/run.log" | grep -v -i "licensing" | head -20 || true ;;
   *) sed -n '2,10p' "$0"; exit 1 ;;
