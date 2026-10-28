@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SecondFace.Core.Inventory;
 using SecondFace.Core.Stats;
 
 namespace SecondFace.Core.Content
@@ -15,6 +16,7 @@ namespace SecondFace.Core.Content
         public static Dictionary<string, PerkDef> Perks = new();
         public static Dictionary<string, ChromeDef> Chrome = new();
         public static Dictionary<string, OriginDef> Origins = new();
+        public static Dictionary<string, ItemDef> Items = new();
 
         public static readonly JsonSerializer Strict = new() { MissingMemberHandling = MissingMemberHandling.Error };
         public static readonly JsonSerializer Lenient = new();
@@ -40,6 +42,7 @@ namespace SecondFace.Core.Content
             Perks = Table<PerkDef>(db, "perks");
             Chrome = Table<ChromeDef>(db, "chrome");
             Origins = Table<OriginDef>(db, "origins");
+            Items = Table<ItemDef>(db, "items");
         }
     }
 }
