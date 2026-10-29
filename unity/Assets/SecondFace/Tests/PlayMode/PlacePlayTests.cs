@@ -15,7 +15,8 @@ namespace SecondFace.Tests
     /// <summary>
     /// The first town in the streamed world (step 20): the streamer builds the ground round Shale and the place spawner
     /// puts its prefab (PlaceBuilder) on its pad by address: fourteen buildings with shells and roofs, its props, lights
-    /// and markers; its NavMesh builds and carries a walker from road to road and in through the saloon's door. Captured from the game camera over the main street (`place_shale_street`), at the pumps
+    /// and markers; its NavMesh builds and carries a walker from road to road and in through the saloon's door; inside
+    /// the saloon its roof hides and its walls are cut away (`place_shale_saloon`). Captured from the game camera over the main street (`place_shale_street`), at the pumps
     /// (`place_shale_square`) and wide (`place_shale_wide`) in the afternoon.
     /// </summary>
     public class PlacePlayTests : IPrebuildSetup
@@ -133,6 +134,24 @@ namespace SecondFace.Tests
             yield return Shot(cam, centre + new Vector3(-6f, 0, 4f), 50f, 35f, 34f, "place_shale_street");
             yield return Shot(cam, centre + new Vector3(1f, 0, 12f), 50f, 215f, 20f, "place_shale_square");
             yield return Shot(cam, centre + new Vector3(0, 0, -4f), 52f, 30f, 95f, "place_shale_wide");
+
+            // in the saloon (step 21): its roof, doors and shutters stop drawing and its walls are cut away
+            var interiors = shale.GetComponent<PlaceInteriors>();
+            Assert.That(interiors, Is.Not.Null, "the place opens its buildings");
+            Assert.That(interiors.World, Is.EqualTo(world), "the spawner gave it the world's focus");
+            var bar = At("spot", "bar");
+            world.Focus = bar;
+            interiors.Refresh();
+            Assert.That(interiors.Inside, Is.Not.Null, "the bar is inside a building");
+            Assert.That(interiors.Inside.name, Does.EndWith("_wood"), "the timber saloon");
+            var hidden = interiors.Inside.Roof.GetComponentsInChildren<Renderer>().Concat(interiors.Inside.Fittings.GetComponentsInChildren<Renderer>()).ToList();
+            Assert.That(hidden.Count, Is.GreaterThan(0));
+            Assert.That(hidden.All(r => r.shadowCastingMode == UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly), "the roof and the doors draw only their shadow");
+            yield return Shot(cam, bar + new Vector3(4f, 0, -2f), 55f, 25f, 24f, "place_shale_saloon");
+            world.Focus = centre;
+            interiors.Refresh();
+            Assert.That(interiors.Inside, Is.Null, "back in the street");
+            Assert.That(hidden.All(r => r.shadowCastingMode == UnityEngine.Rendering.ShadowCastingMode.On), "the saloon closes again");
         }
 
         private static IEnumerator Shot(Camera cam, Vector3 at, float pitch, float yaw, float distance, string name)

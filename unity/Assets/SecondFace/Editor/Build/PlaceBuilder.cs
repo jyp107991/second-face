@@ -130,6 +130,7 @@ namespace SecondFace.EditorTools
             var roofs = plan.Rooms.Select(_ => new Geo()).ToArray();
             var loose = new Geo();
             var fittings = new List<(string Model, Vector3 At, Quaternion Rot, int Room, float Open)>();
+            var roofThings = new List<(string Model, Vector3 At, Quaternion Rot, int Room, float Open)>();
             for (var w = 0; w < plan.Walls.Count; w++)
             {
                 var wall = plan.Walls[w];
@@ -140,36 +141,35 @@ namespace SecondFace.EditorTools
             foreach (var room in plan.Rooms)
             {
                 Floor(shells[room.Index], room);
-                Roof(roofs[room.Index], room, plan, rng.For(1000 + room.Index), fittings);
+                Roof(roofs[room.Index], room, plan, rng.For(1000 + room.Index), roofThings);
             }
+            var built = new PlaceBuilding[plan.Rooms.Count];
             for (var r = 0; r < plan.Rooms.Count; r++)
             {
-                var b = Child(buildings, $"building_{r}_{plan.Rooms[r].Wall}");
+                var room = plan.Rooms[r];
+                var b = Child(buildings, $"building_{r}_{room.Wall}");
                 Renderer(b, "shell", shells[r], $"{meshDir}/building_{r}_shell.asset", stored, true);
                 Renderer(b, "roof", roofs[r], $"{meshDir}/building_{r}_roof.asset", stored, true);
+                var pb = b.gameObject.AddComponent<PlaceBuilding>();
+                pb.Footprint = new Vector4(room.X0, room.Z0, room.X1, room.Z1);
+                pb.Floor = FloorTop(room);
+                pb.Height = room.Height + (room.Roof == "tin" ? 3f : 0.5f);
+                pb.Roof = b.Find("roof") ?? Child(b, "roof");
+                pb.Fittings = Child(b, "fittings");
+                built[r] = pb;
             }
             if (!loose.Empty) Renderer(Child(root.transform, "walls"), "walls", loose, $"{meshDir}/walls.asset", stored, true);
 
-            // doors, shutters and roof clutter (kit prefabs)
+            // doors and shutters with their building, roof clutter on its roof (they hide when it opens), the rest loose
             var fitted = Child(root.transform, "fittings");
-            foreach (var f in fittings)
+            foreach (var f in fittings.Select(x => (x, false)).Concat(roofThings.Select(x => (x, true))))
             {
-                var go = Instance(f.Model, fitted);
-                if (go == null) continue;
-                if (f.Open != 0)
-                {
-                    // a door ajar: turned about its hinge (its left edge)
-                    var hinge = new GameObject("door").transform;
-                    hinge.SetParent(fitted, false);
-                    hinge.SetPositionAndRotation(f.At + f.Rot * new Vector3(-0.475f, 0, 0), f.Rot * Quaternion.Euler(0, -f.Open, 0));   // swung in
-                    go.transform.SetParent(hinge, false);
-                    go.transform.localPosition = new Vector3(0.475f, 0, 0);
-                    go.transform.localRotation = Quaternion.identity;
-                }
-                else go.transform.SetPositionAndRotation(f.At, f.Rot);
-                // doors stay out of the NavMesh: the doorway is walkable
-                if (f.Model.EndsWith("plank_door.fbx")) go.AddComponent<NavMeshModifier>().ignoreFromBuild = true;
+                var (fit, onRoof) = f;
+                var parent = fit.Room < 0 ? fitted : onRoof ? built[fit.Room].Roof : built[fit.Room].Fittings;
+                ApplyFitting(fit, parent);
             }
+            // the place opens the building the player walks into
+            root.AddComponent<PlaceInteriors>();
 
             // fences: the frontier kit's wire fence every 2 m, posts at gates; inside a room, a cell's bars
             var fences = Child(root.transform, "fences");
@@ -250,6 +250,25 @@ namespace SecondFace.EditorTools
                 $"{plan.Fences.Count} fences, {plan.Items.Count - unknown.Values.Sum()} props, {plan.Lamps.Count} lights, {plan.Markers.Count} markers" +
                 (unknown.Count > 0 ? $"; no model for {string.Join(", ", unknown.Select(kv => $"{kv.Key} ×{kv.Value}"))}" : ""));
             return prefab;
+        }
+
+        /// <summary>A kit fitting under its parent: a door ajar turns about its hinge (its left edge); doors stay out of
+        /// the NavMesh (the doorway is walkable).</summary>
+        private static void ApplyFitting((string Model, Vector3 At, Quaternion Rot, int Room, float Open) f, Transform parent)
+        {
+            var go = Instance(f.Model, parent);
+            if (go == null) return;
+            if (f.Open != 0)
+            {
+                var hinge = new GameObject("door").transform;
+                hinge.SetParent(parent, false);
+                hinge.SetPositionAndRotation(f.At + f.Rot * new Vector3(-0.475f, 0, 0), f.Rot * Quaternion.Euler(0, -f.Open, 0));   // swung in
+                go.transform.SetParent(hinge, false);
+                go.transform.localPosition = new Vector3(0.475f, 0, 0);
+                go.transform.localRotation = Quaternion.identity;
+            }
+            else go.transform.SetPositionAndRotation(f.At, f.Rot);
+            if (f.Model.EndsWith("plank_door.fbx")) go.AddComponent<NavMeshModifier>().ignoreFromBuild = true;
         }
 
         /// <summary>The top of a room's floor, metres: a slab a step up from the street, boards on joists higher (level
@@ -849,23 +868,19 @@ namespace SecondFace.EditorTools
             }
 
             /// <summary>A gable end: a triangle of boards from the wall top (at <paramref name="at"/> ± <paramref name="half"/>)
-            /// up to the ridge, both faces.</summary>
+            /// up to the ridge (one face: SecondFace/Weathered draws both).</summary>
             public void Gable(Vector3 at, Vector3 half, float wallTop, float rise, string key)
             {
                 var a = at - half + Vector3.up * wallTop; var b = at + half + Vector3.up * wallTop; var c = at + Vector3.up * (wallTop + rise);
-                var n = Vector3.Cross(b - a, c - a).normalized;
-                Face(new[] { a, c, b }, -n, key);
-                Face(new[] { a, b, c }, n, key);
+                Face(new[] { a, b, c }, Vector3.Cross(b - a, c - a).normalized, key);
             }
 
             /// <summary>A lean-to's side: the wedge between the wall top and the sloping roof (high on the −<paramref name="half"/>
-            /// side), both faces.</summary>
+            /// side; one face: SecondFace/Weathered draws both).</summary>
             public void Wedge(Vector3 at, Vector3 half, float wallTop, float rise, string key)
             {
                 var a = at - half + Vector3.up * wallTop; var b = at + half + Vector3.up * wallTop; var c = at - half + Vector3.up * (wallTop + rise);
-                var n = Vector3.Cross(b - a, c - a).normalized;
-                Face(new[] { a, c, b }, -n, key);
-                Face(new[] { a, b, c }, n, key);
+                Face(new[] { a, b, c }, Vector3.Cross(b - a, c - a).normalized, key);
             }
 
             public Mesh ToMesh(string name, out string[] keys)

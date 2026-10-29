@@ -480,8 +480,12 @@ to road and goes in through the saloon's door to the bar. Roads now stop at the 
 centre. Captures in `docs/evidence/unity/p3/place_shale_street_square_wide.jpg`. Still to do: the town is sparse in
 its open ground, it costs too many draw calls for the older phones (merge on measurement, step 24), roads should come
 in at its exits, lights on at dusk.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 21 (interiors that open instantly: hide a building's roof and the
-walls between the camera and the player when they step inside; `place_shelter_hall`).
+**Interiors open (plan §10 step 21a, 2026-10-29):** walking into a building opens it at once: its roof, doors and
+shutters stop drawing (their shade stays, so sunlight falls through the windows onto the floor) and its walls are cut
+away to about a metre, with dark tops where they are cut, so the room is seen from the usual camera; walking out
+closes it again. Capture `place_shale_saloon` in `docs/evidence/unity/p3/`.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 21b (the underground shelter: Cistern 9's hall built under its mouth,
+the surface hidden while the player is below; `place_shelter_hall`).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

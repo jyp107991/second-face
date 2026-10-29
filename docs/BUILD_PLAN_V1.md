@@ -1410,6 +1410,15 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
     merged meshes per material per cell (interactive props kept apart) — measure first (step 24); roads should come in
     at a place's exits (world.py routes them to the centre; they now stop at the edge); lights on at dusk.
 21. P3.5 interiors as positioned prefabs with instant open; `place_shelter_hall`.
+    21a. ~~Buildings open~~ (done 2026-10-29): each building of a place carries `PlaceBuilding` (footprint, floor,
+         height, its roof with what is kept on it, its doors and shutters); `PlaceInteriors` (on the place, given the
+         world's focus by `PlaceSpawner`) finds the building the focus is in ten times a second and opens it: roof,
+         doors and shutters draw only their shadow (the room keeps its shade; sun falls through its windows), and
+         `SecondFace/Weathered` cuts away everything above the floor + 1.2 m in that building's box (globals
+         `_SF_CutMin`, `_SF_CutMax`, `_SF_CutHeight`; also in the depth passes, not in the shadow caster), drawing the
+         walls' inner faces where a cut opens them as a dark cap (both faces drawn; gables and lean-to sides are now one
+         face). `place_shale_saloon`.
+    21b. The underground shelter: Cistern 9's hall under its mouth, the overworld hidden while the player is below.
 22. P3.6 water.
 23. The debug overlay (§7.4) in development builds.
 24. P3.7 device measurement by the owner with the overlay; numbers in PORT.md §5; fix until Mid ≥ 30 fps.

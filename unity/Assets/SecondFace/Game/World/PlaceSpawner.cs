@@ -33,6 +33,7 @@ namespace SecondFace.Game.World
             {
                 if (!p.IsDone) return;
                 if (p.Status != AsyncOperationStatus.Succeeded) Debug.LogWarning($"PlaceSpawner: {p.OperationException?.Message}");
+                else if (p.Result.TryGetComponent<PlaceInteriors>(out var interiors)) interiors.World = World;
                 _pending = null;
             }
             var focus = World.Focus;

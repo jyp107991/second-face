@@ -3,6 +3,9 @@
 // added in the shader, at no extra draw: grime and damp rising from the ground (object y, the building stands on y = 0),
 // streaks run down from the tops in world noise, the albedo varied in broad and small patches (a long wall is never one
 // colour), and wind-blown sand settled on whatever faces up. URP PBR, main light shadows, additional lights, fog.
+// Interiors (step 21): inside the box _SF_CutMin.._SF_CutMax (the building the player is in; _SF_CutMax.w = 1 when set)
+// everything above _SF_CutHeight is cut away, and the walls' inner faces, seen where a cut opens them, are drawn as a dark
+// cap (both faces are drawn; closed boxes hide their back faces everywhere else). Shadows are cast whole.
 Shader "SecondFace/Weathered"
 {
     Properties
@@ -27,6 +30,8 @@ Shader "SecondFace/Weathered"
         TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
         TEXTURE2D(_BumpMap);
         TEXTURE2D(_MaskMap);
+        float4 _SF_CutMin, _SF_CutMax;
+        float _SF_CutHeight;
         CBUFFER_START(UnityPerMaterial)
             float4 _BaseMap_ST;
             half4 _Grime, _Dust;
@@ -56,12 +61,21 @@ Shader "SecondFace/Weathered"
             float2 u = f * f * (3.0 - 2.0 * f);
             return lerp(lerp(Hash(i), Hash(i + float2(1, 0)), u.x), lerp(Hash(i + float2(0, 1)), Hash(i + float2(1, 1)), u.x), u.y);
         }
+
+        // the open building: nothing above the cut inside its box
+        void Cutaway(float3 p)
+        {
+            if (_SF_CutMax.w > 0.5 && p.y > _SF_CutHeight && p.y < _SF_CutMax.y + 4.0
+                && p.x > _SF_CutMin.x - 0.4 && p.x < _SF_CutMax.x + 0.4 && p.z > _SF_CutMin.z - 0.4 && p.z < _SF_CutMax.z + 0.4)
+                clip(-1);
+        }
         ENDHLSL
 
         Pass
         {
             Name "ForwardLit"
             Tags { "LightMode" = "UniversalForward" }
+            Cull Off
 
             HLSLPROGRAM
             #pragma target 3.0
@@ -101,9 +115,12 @@ Shader "SecondFace/Weathered"
                 return o;
             }
 
-            half4 Frag(Varyings i) : SV_Target
+            half4 Frag(Varyings i, bool front : SV_IsFrontFace) : SV_Target
             {
+                Cutaway(i.positionWS);
                 half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv);
+                // a wall's inside, seen where the cut opens it: a dark cap of the wall's own colour
+                if (!front) return half4(MixFog(albedo.rgb * 0.22h, i.fog), 1);
                 half4 mask = SAMPLE_TEXTURE2D(_MaskMap, sampler_BaseMap, i.uv);
                 half3 nTS = UnpackNormal(SAMPLE_TEXTURE2D(_BumpMap, sampler_BaseMap, i.uv));
                 half3 bitangent = cross(i.normalWS, i.tangentWS.xyz) * i.tangentWS.w;
@@ -206,6 +223,7 @@ Shader "SecondFace/Weathered"
             Tags { "LightMode" = "DepthOnly" }
             ZWrite On
             ColorMask R
+            Cull Off
 
             HLSLPROGRAM
             #pragma target 3.0
@@ -213,13 +231,18 @@ Shader "SecondFace/Weathered"
             #pragma fragment Frag
             #pragma multi_compile_instancing
 
-            float4 Vert(Attributes v) : SV_POSITION
+            struct Varyings { float4 positionCS : SV_POSITION; float3 positionWS : TEXCOORD0; };
+
+            Varyings Vert(Attributes v)
             {
                 UNITY_SETUP_INSTANCE_ID(v);
-                return TransformObjectToHClip(v.positionOS.xyz);
+                Varyings o;
+                o.positionWS = TransformObjectToWorld(v.positionOS.xyz);
+                o.positionCS = TransformWorldToHClip(o.positionWS);
+                return o;
             }
 
-            half Frag(float4 positionCS : SV_POSITION) : SV_Target { return positionCS.z; }
+            half Frag(Varyings i) : SV_Target { Cutaway(i.positionWS); return i.positionCS.z; }
             ENDHLSL
         }
 
@@ -228,6 +251,7 @@ Shader "SecondFace/Weathered"
             Name "DepthNormals"
             Tags { "LightMode" = "DepthNormals" }
             ZWrite On
+            Cull Off
 
             HLSLPROGRAM
             #pragma target 3.0
@@ -236,20 +260,22 @@ Shader "SecondFace/Weathered"
             #pragma multi_compile_instancing
             #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
 
-            struct Varyings { float4 positionCS : SV_POSITION; half3 normalWS : TEXCOORD0; };
+            struct Varyings { float4 positionCS : SV_POSITION; half3 normalWS : TEXCOORD0; float3 positionWS : TEXCOORD1; };
 
             Varyings Vert(Attributes v)
             {
                 UNITY_SETUP_INSTANCE_ID(v);
                 Varyings o;
-                o.positionCS = TransformObjectToHClip(v.positionOS.xyz);
+                o.positionWS = TransformObjectToWorld(v.positionOS.xyz);
+                o.positionCS = TransformWorldToHClip(o.positionWS);
                 o.normalWS = TransformObjectToWorldNormal(v.normalOS);
                 return o;
             }
 
-            half4 Frag(Varyings i) : SV_Target
+            half4 Frag(Varyings i, bool front : SV_IsFrontFace) : SV_Target
             {
-                float3 n = normalize(i.normalWS);
+                Cutaway(i.positionWS);
+                float3 n = normalize(i.normalWS) * (front ? 1 : -1);
                 #if defined(_GBUFFER_NORMALS_OCT)
                     float2 oct = PackNormalOctQuadEncode(n);
                     return half4(PackFloat2To888(saturate(oct * 0.5 + 0.5)), 0);
