@@ -14,7 +14,7 @@ namespace SecondFace.Tests
     /// P4 step 4: people standing on the world's ground and living a little. A person of the cast on a 14° slope, the
     /// slope across their stance: without <see cref="FootPlant"/> one foot sinks and the other floats; with it both feet
     /// meet the ground within 2.5 cm. Their own idle (the "Idle" variant) and a gesture played over the upper body by
-    /// name (<see cref="Ambient"/>). Capture `people_motion_slope`.
+    /// name (<see cref="Ambient"/>). Capture `people_motion_slope`. And a ragdoll that falls and stands (`people_ragdoll`).
     /// </summary>
     public class PeopleMotionTests : IPrebuildSetup
     {
@@ -123,6 +123,68 @@ namespace SecondFace.Tests
             cam.transform.LookAt(new Vector3(0, 0.75f, -0.5f));
             yield return null;
             yield return ScreenshotTests.Capture("people_motion_slope", 1200, 900);
+        }
+
+        /// <summary>P4 step 5: a push to the chest and the body falls on the ground (none of it through), settles, and the
+        /// person stands again under their hips, the animation back on (`people_ragdoll`).</summary>
+        [UnityTest, Timeout(300000)]
+        public IEnumerator ARagdollFallsSettlesAndStandsAgain()
+        {
+#if UNITY_EDITOR
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Person);
+            var controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/SecondFace/People/Locomotion.controller");
+#else
+            GameObject prefab = null; RuntimeAnimatorController controller = null;
+#endif
+            if (prefab == null || controller == null) { Assert.Ignore("the cast's prefabs or the locomotion controller are not built"); yield break; }
+            var ground = Made(GameObject.CreatePrimitive(PrimitiveType.Cube));
+            ground.name = "floor";
+            ground.transform.localScale = new Vector3(10f, 0.2f, 10f);
+            ground.transform.position = new Vector3(0, -0.1f, 0);
+            var sun = Made(new GameObject("sun")).AddComponent<Light>();
+            sun.type = LightType.Directional; sun.intensity = 1.6f; sun.shadows = LightShadows.Soft;
+            sun.transform.rotation = Quaternion.Euler(40f, 150f, 0);
+
+            var person = Made(Object.Instantiate(prefab, Vector3.zero, Quaternion.identity));
+            var animator = person.GetComponent<Animator>();
+            animator.runtimeAnimatorController = controller;
+            animator.applyRootMotion = false;
+            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+            var ragdoll = person.AddComponent<Ragdoll>();
+            yield return Seconds(0.5f);
+
+            var chest = animator.GetBoneTransform(HumanBodyBones.Chest) ?? animator.GetBoneTransform(HumanBodyBones.Spine);
+            ragdoll.Fall(new Vector3(0, 8f, -55f), chest.position);
+            Assert.That(ragdoll.Fallen, Is.True);
+            Assert.That(animator.enabled, Is.False, "the animation hands the body to physics");
+            Assert.That(ragdoll.Bodies.Count, Is.GreaterThanOrEqualTo(10), "a body per part");
+            var lowest = float.MaxValue;
+            var t0 = Time.time;
+            while (Time.time - t0 < 3f)
+            {
+                foreach (var b in ragdoll.Bodies) lowest = Mathf.Min(lowest, b.worldCenterOfMass.y);
+                yield return null;
+            }
+            var hips = ragdoll.Hips;
+            Debug.Log($"people_ragdoll: hips at {hips.position}, still at {hips.linearVelocity.magnitude:0.00} m/s, the lowest part's centre {lowest:0.000} m");
+            Assert.That(hips.position.y, Is.LessThan(0.45f), "lying down");
+            Assert.That(lowest, Is.GreaterThan(-0.02f), "no part through the ground");
+            Assert.That(hips.linearVelocity.magnitude, Is.LessThan(0.3f), "settled");
+
+            var cam = Made(new GameObject("camera")).AddComponent<Camera>();
+            cam.tag = "MainCamera"; cam.fieldOfView = 35f;
+            cam.backgroundColor = new Color(0.32f, 0.33f, 0.35f); cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.transform.position = hips.position + new Vector3(2.6f, 1.6f, 1.2f);
+            cam.transform.LookAt(hips.position);
+            yield return null;
+            yield return ScreenshotTests.Capture("people_ragdoll", 1200, 900);
+
+            ragdoll.StandUp();
+            Assert.That(ragdoll.Fallen, Is.False);
+            yield return Seconds(1.2f);
+            Assert.That(ragdoll.Blending, Is.False, "the blend back has ended");
+            Assert.That(animator.enabled, Is.True);
+            Assert.That(animator.GetBoneTransform(HumanBodyBones.Hips).position.y, Is.GreaterThan(0.75f), "standing again");
         }
     }
 }

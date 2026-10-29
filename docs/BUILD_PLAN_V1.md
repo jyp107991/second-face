@@ -375,7 +375,16 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    alert, …) in a 2D freeform blend tree by speed and turn; root motion off; a `CharacterMotor` on NavMesh
    (`NavMeshAgent` with `updatePosition` true, animation driven by velocity); foot IK through Animation Rigging
    `TwoBoneIKConstraint` with ground raycasts (§6.E).
-5. Ragdoll per rig (`RagdollBuilder` editor step: capsules per Humanoid bone, joints with limits), switched on
+5. **Built (P4.5a, 2026-10-29; capture `people_ragdoll`): built at runtime on the first fall instead of an editor
+   step (the many who never fall carry no physics).** `Game/People/Ragdoll`: twelve bodies on the Humanoid bones
+   (hips, spine, chest, head, upper and lower arms and legs; ~70 kg shared like a body's), capsules along each bone to
+   its child and a sphere for the head, character joints to the nearest part above in the skeleton (an avatar without
+   a chest joins arms and head to the spine) with twist and swing limits by bone. `Fall(impulse, at)`: the animator,
+   agent, walker, foot planting and gestures stop, the nearest part takes the push. `StandUp()`: the person is put
+   under the hips facing the hips' way and the lying pose is blended into the animation over 0.7 s. Test: a 55 N·s push
+   to the chest, the body lies (hips 0.1 m up), no part's centre under the ground, settled in 3 s, standing again 1.2 s
+   after `StandUp`. Open: a captured get-up clip (face up and face down) instead of the blend; partial ragdoll for hits
+   (P6 combat). Ragdoll per rig (`RagdollBuilder` editor step: capsules per Humanoid bone, joints with limits), switched on
    at death and heavy knockback; blended back for stand-ups.
 6. Portraits in engine: a `PortraitCamera` renders the head to a 256² RT with the face lit by a fixed key/fill,
    cached per actor per outfit state; the UI shows the RT (no wait).

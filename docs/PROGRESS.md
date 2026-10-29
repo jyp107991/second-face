@@ -546,13 +546,15 @@ grime and wear changing at runtime, body-shape sliders, and NPC outfits merged f
 meet sloped and uneven ground instead of sinking or floating (`docs/evidence/unity/p4/people_motion_slope.jpg`: in
 front planted, behind not). The townsfolk in Shale and the walker carry both. Still to come: turning on the spot and
 side-steps (no clips yet).
+**Falling (P4 step 5, 2026-10-29):** people can now fall as a body (a push, a blow, a death), land on the ground and
+lie there, and get back up (`docs/evidence/unity/p4/people_ragdoll.jpg`). The getting up is a quick blend for now;
+a captured get-up motion comes later.
 **Next action:** step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until
 Mid ≥ 30 fps); **`play-walkabout` is released** (2026-10-29, commit e0b69c6: the cast in Shale and the
 walkabout; https://github.com/jyp107991/second-face/releases/tag/play-walkabout, `SecondFace.apk`, 345 MB as a
 development build: its size wants a look in release hardening). Later playable builds: run the Android workflow by
 hand with `release: play-<name>` (its release job waits for that run's tests and APK, then makes the tag and the
-release page; this session's git proxy refuses tag pushes); then P4 step 5: ragdolls (a builder per rig: capsules
-per Humanoid bone, joints with limits; on at death and heavy knockback, blended back to stand), then step 6: portraits
+release page; this session's git proxy refuses tag pushes); then P4 step 6: portraits
 in engine (a portrait camera per actor, cached per outfit; the aged skin for the photograph), then the wardrobe's open
 items (NPC outfits merged into one renderer; body sliders; runtime grime in a cloth shader).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
