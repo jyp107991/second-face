@@ -84,7 +84,14 @@ namespace SecondFace.Core.World
             if (conclusions != null)
                 foreach (var id in g.World.Conclusions)
                     if (conclusions.TryGetValue(id, out var c))
-                        list.Add(new NoteEntry { Id = id, Title = c.Text, Status = "conclusion", Body = { c.Text } });
+                    {
+                        // what it rests on: the leads behind it, ticked
+                        var e = new NoteEntry { Id = id, Title = c.Text, Status = "conclusion" };
+                        foreach (var from in c.From)
+                            if (leads != null && leads.TryGetValue(from, out var l))
+                                e.Items.Add(new NoteItem { Text = string.IsNullOrEmpty(l.Label) ? l.Text : l.Label, Done = true });
+                        list.Add(e);
+                    }
             if (leads != null)
                 foreach (var id in g.World.Leads)
                     if (leads.TryGetValue(id, out var l))

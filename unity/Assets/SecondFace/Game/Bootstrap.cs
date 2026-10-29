@@ -138,7 +138,9 @@ namespace SecondFace.Game
             if (_hud == null)
             {
                 _hud = new Hud(UI);
-                _hud.Actions(null, null, null);   // the notebook, map and pack screens come with P5.3f-h
+                _hud.Actions(OpenNotebook, null, null);   // the map and the pack come with P5.3g-h
+                _hud.ObjectiveTapped += () => OpenNotebook(SecondFace.Core.World.Notebook.Tracked(Walkabout.Game));
+                UI.StackChanged += () => _hudNext = 0f;   // a quest tracked in the notebook, or one a conversation began, shows at once
                 var place = Content?.Entry("maps", "shale")?["name"]?.ToString() ?? "Shale";
                 _hudState = new HudState { Place = place, Party = { new HudMember { Name = Strings.Get("hud.you"), Hp = 1, MaxHp = 1, Leader = true } } };
             }
@@ -153,9 +155,25 @@ namespace SecondFace.Game
             _hudNext = Time.unscaledTime + 1f;
             var minutes = Stage.Clock.Minutes;
             _hudState.Day = Stage.Clock.Day;
+            // the tracked quest's next objective (the walkabout's own game: conversations can start the content's quests)
+            var g = Walkabout.Game;
+            var tracked = SecondFace.Core.World.Notebook.Tracked(g);
+            var page = tracked == null ? null : SecondFace.Core.World.Notebook.Quests(g, Registry.Quests).Find(e => e.Id == tracked);
+            _hudState.Quest = page?.Title;
+            _hudState.Objective = page?.Items.Find(i => !i.Done && !i.Optional)?.Text;
             _hudState.Clock = $"{(int)(minutes % 1440 / 60):00}:{(int)(minutes % 60):00}";
             _hud.Show(_hudState);
         }
+
+        /// <summary>Opens the notebook over the walkabout's game, at a quest if given.</summary>
+        public NotebookScreen OpenNotebook(string quest)
+        {
+            if (UI == null || Walkabout == null) return null;
+            if (UI.Top is NotebookScreen open) return open;
+            return UI.Open(NotebookScreen.FromContent(Walkabout.Game).At("quests", quest));
+        }
+
+        private void OpenNotebook() => OpenNotebook(null);
 
         private void LateUpdate()
         {

@@ -180,6 +180,8 @@ What the engine captures show is still wrong (each has a step in §5 P2 or §10)
 - **Hair breaks the hair rule** (§3.4) on the bake-off people (§10 step 2).
 - ~~Leaves near-black, rows of identical plants~~: fixed by the move to FBX with one model per variant (§10 step 6).
 - **The vegetation camera sees the terrain edge** (`vegetation_iso`): frame inside the terrain (§10 step 7).
+- **EditMode tests are compiled by the dotnet Core test build too** (`core/SecondFace.Core.Tests` includes
+  `Tests/EditMode/**`): no `UnityEngine` in them; run `dotnet test core/SecondFace.Core.Tests` before pushing (P5.3f).
 - **The default theme's disabled colours show through**: `.unity-button:disabled` sets a background, which a
   transparent or plate button of ours does not override with one class; every `:disabled` rule of ours sets its
   background too (P5.3d).
@@ -435,7 +437,7 @@ from fixture state and captured (`UiTests`, the panel drawn into a texture):
 - ~~3d. Dialogue panel bound to Core dialogue (the scene stays visible; options as notebook lines; skip heard lines; log)~~
   (done, below).
 - ~~3e. Conversation cameras (over-shoulder two-shot, portrait inserts; Cinemachine)~~ (done, below).
-- 3f. The notebook (leads, quests, people, letters, decisions) as a book.
+- ~~3f. The notebook (leads, quests, people, letters, decisions) as a book~~ (done, below).
 - 3g. The map and travel (world and local; pins).
 - 3h. The pack with the live paper doll, and barter.
 - 3i. Character creation and the sculptor (body sliders here).
@@ -519,6 +521,22 @@ turns. `ConversationCameraTests` stands two of the cast face to face, checks eac
 other shoulder when a wall stands in the first spot, and captures each with the page drawn over it
 (`docs/evidence/unity/p5/conversation_twoshot.jpg`, `conversation_other.jpg`, `conversation_player.jpg`). Not yet:
 depth of field (a tier decision: the Gaussian DOF pass on Mid and up), companions in shot, a shot grammar by tone.
+
+*As built (P5.3f, 2026-10-29).* Core `World.Notebook` (pure, `NotebookTests` on fixtures) turns the game state into
+pages of `NoteEntry` (title, status, day, where, closed, pinned, objectives as `NoteItem`s, body paragraphs): quests
+through `QuestEngine.Journal` (open first, the pinned one on top, then newest; the current stage's objectives; the
+journal newest first; finished and failed ones closed after), `Tracked` (pinned and open, else the newest open), leads
+with each conclusion first and the leads it rests on, the people met (newest), the post and the letters sent, the
+decisions (newest); wording is left to the screen. `Game.UI.NotebookScreen` (opaque): a book on a dark desk, the
+sections as tabs along the top and a close button, the entries on the left page (a tracked mark, the status, place and
+day in pencil; closed ones dimmed), the chosen one on the right (Literata title, a track/stop-tracking button for an open
+quest, objectives with open and filled rings, the journal); an empty section says so; `At(section, entry)` opens it
+there. The words are `notebook.*` in the UI table. The walkabout: conversations run with a `QuestEngine` on the
+walkabout's game as their host (so the content's quests start and move, `Update` after each node); the HUD's notebook
+button and a tap on its objective open the notebook (at the tracked quest); the HUD shows the tracked quest's title and
+its next objective, refreshed when the screens change. Captures `ui_notebook`, `ui_notebook_leads`. Also: the Core test
+build (`core.yml`) had stopped compiling with P5.3b (`UiStringsTests` used `UnityEngine.Application`); it finds the
+project from the working directory now.
 
 ### P6 — Systems and combat
 1. Interactions and loot (`Play/`): tap on a thing → radial of verbs from content (`talk`, `look`, `take`, `use`,

@@ -123,6 +123,74 @@ MonoBehaviour:
     m_Key: people.someone
     m_Metadata:
       m_Items: []
+  - m_Id: 14856992702464
+    m_Key: notebook.quests
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256896
+    m_Key: notebook.leads
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256897
+    m_Key: notebook.people
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256898
+    m_Key: notebook.letters
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256899
+    m_Key: notebook.decisions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256900
+    m_Key: notebook.close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256901
+    m_Key: notebook.empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256902
+    m_Key: notebook.track
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256903
+    m_Key: notebook.untrack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256904
+    m_Key: notebook.tracked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256905
+    m_Key: notebook.optional
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256906
+    m_Key: notebook.day
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256907
+    m_Key: notebook.done
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256908
+    m_Key: notebook.failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256909
+    m_Key: notebook.conclusion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256910
+    m_Key: notebook.received
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256911
+    m_Key: notebook.sent
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

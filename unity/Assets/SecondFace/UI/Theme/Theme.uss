@@ -449,3 +449,112 @@
 }
 .sf-dialogue__option--seen .sf-dialogue__option-text { color: var(--pencil); }
 .sf-dialogue__option--exit .sf-dialogue__option-text { -unity-font-definition: url("../Fonts/Literata-Italic.asset"); }
+
+/* ---- the notebook (NotebookScreen.cs): a book open on a dark desk ---- */
+.sf-notebook { background-color: #2B241E; }
+.sf-notebook__head {
+    flex-direction: row;
+    align-items: center;
+    margin: 12px 20px 8px 20px;
+    min-height: 72px;
+}
+.sf-notebook__tab {
+    min-height: 64px;
+    margin: 0 8px 0 0;
+    padding: 0 14px;
+    border-width: 0;
+    border-bottom-width: 3px;
+    border-color: rgba(0, 0, 0, 0);
+    border-radius: 0;
+    background-color: rgba(0, 0, 0, 0);
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 24px;
+    letter-spacing: 1px;
+    color: var(--plate-dim);
+}
+.sf-notebook__tab:enabled:hover { background-color: rgba(255, 255, 255, 0.06); }
+.sf-notebook__tab:enabled:active { background-color: rgba(255, 255, 255, 0.1); }
+.sf-notebook__tab--on { color: var(--plate-text); border-color: var(--ochre); }
+.sf-notebook__head .sf-button--quiet { color: var(--plate-text); border-color: var(--plate-dim); }
+.sf-notebook__head .sf-button--quiet:enabled:hover { background-color: rgba(255, 255, 255, 0.06); }
+.sf-notebook__pages {
+    flex-grow: 1;
+    flex-direction: row;
+    margin: 0 16px 16px 16px;
+    background-color: var(--paper);
+    border-radius: 6px;
+}
+.sf-notebook__list { width: 40%; }
+.sf-notebook__list .unity-scroll-view__content-container { padding: 16px 16px 24px 20px; }
+.sf-notebook__gutter {
+    width: 3px;
+    margin: 16px 0;
+    background-color: var(--paper-edge);
+}
+.sf-notebook__detail { flex-grow: 1; flex-shrink: 1; }
+.sf-notebook__detail .unity-scroll-view__content-container { padding: 24px 36px 32px 32px; }
+.sf-notebook__row {
+    margin: 0;
+    padding: 10px 12px;
+    min-height: 72px;
+    border-width: 0;
+    border-bottom-width: 1px;
+    border-color: var(--paper-edge);
+    border-radius: 0;
+    background-color: rgba(0, 0, 0, 0);
+    align-items: flex-start;
+    justify-content: center;
+}
+.sf-notebook__row:enabled:hover { background-color: var(--paper-deep); }
+.sf-notebook__row--on { background-color: var(--paper-deep); border-left-width: 4px; border-left-color: var(--ochre); }
+.sf-notebook__row-title {
+    -unity-font-definition: url("../Fonts/Literata-Regular.asset");
+    font-size: 24px;
+    color: var(--ink);
+    white-space: normal;
+    -unity-text-align: middle-left;
+}
+.sf-notebook__row--closed .sf-notebook__row-title { color: var(--pencil); }
+.sf-notebook__row-sub {
+    font-size: 20px;
+    margin-top: 2px;
+    color: var(--pencil);
+    -unity-text-align: middle-left;
+}
+.sf-notebook__empty {
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: 24px;
+    color: var(--pencil);
+    margin: 12px 4px;
+}
+.sf-notebook__title {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: 36px;
+    color: var(--ink);
+    white-space: normal;
+}
+.sf-notebook__sub { font-size: 20px; color: var(--pencil); margin-top: 4px; }
+.sf-notebook__track { align-self: flex-start; margin: 14px 0 6px 0; }
+.sf-notebook__item { flex-direction: row; align-items: flex-start; margin-top: 12px; }
+.sf-notebook__box {
+    -unity-font-definition: url("../Fonts/Literata-Regular.asset");
+    font-size: 24px;
+    width: 32px;
+    color: var(--rust);
+}
+.sf-notebook__item-text {
+    -unity-font-definition: url("../Fonts/Literata-Regular.asset");
+    font-size: 25px;
+    flex-shrink: 1;
+    white-space: normal;
+    color: var(--ink);
+}
+.sf-notebook__item--done .sf-notebook__box { color: var(--sage); }
+.sf-notebook__item--done .sf-notebook__item-text { color: var(--pencil); }
+.sf-notebook__para {
+    -unity-font-definition: url("../Fonts/Literata-Regular.asset");
+    font-size: 24px;
+    color: var(--ink-soft);
+    white-space: normal;
+    margin-top: 16px;
+}

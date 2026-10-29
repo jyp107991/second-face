@@ -2,6 +2,7 @@ using System.Collections;
 using System.Linq;
 using SecondFace.Core.Content;
 using SecondFace.Core.Dialogue;
+using SecondFace.Core.Quest;
 using SecondFace.Core.State;
 using SecondFace.Game.People;
 using SecondFace.Game.UI;
@@ -35,6 +36,10 @@ namespace SecondFace.Game.Play
         public int Townsfolk { get; private set; }
         /// <summary>The walkabout's own game state (a new game at Shale): the conversations run on it.</summary>
         public GameState Game { get; } = States.NewGame("shale", 0, 0);
+        /// <summary>The quests on <see cref="Game"/>: the conversations run with it as their host, so what is said can start
+        /// and move the content's quests (the notebook and the HUD follow them).</summary>
+        public QuestEngine Quests => _quests ??= new QuestEngine(Registry.Quests, Game);
+        private QuestEngine _quests;
         /// <summary>The conversation open now (null when none).</summary>
         public DialoguePanel Conversation { get; private set; }
 
@@ -160,7 +165,7 @@ namespace SecondFace.Game.Play
             var ui = UIService.Instance;
             if (ui == null || !Registry.Npcs.TryGetValue(who.Id, out var npc) || string.IsNullOrEmpty(npc.Dialogue)
                 || !Registry.Dialogues.TryGetValue(npc.Dialogue, out var def)) return false;
-            var runner = new DialogueRunner(def, Game);
+            var runner = new DialogueRunner(def, Game, Quests);
             if (runner.Ended) return false;
             var face = who.GetComponentInChildren<Animator>() != null ? who.gameObject : null;
             var panel = new DialoguePanel(runner,
@@ -174,6 +179,7 @@ namespace SecondFace.Game.Play
                 panel.Presented += _ => { if (shots != null) shots.Cut(lines++ % 2 == 0 ? ConversationCamera.Shot.TwoShot : ConversationCamera.Shot.Other); };
                 panel.Ended += () => { if (shots != null) shots.End(); };
             }
+            panel.Presented += _ => Quests.Update();   // a choice's effects may move a quest on
             Conversation = ui.Open(panel);
             return true;
         }

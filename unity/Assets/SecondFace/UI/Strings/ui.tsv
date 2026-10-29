@@ -24,6 +24,23 @@ compass.n	N
 compass.e	E
 compass.s	S
 compass.w	W
+notebook.quests	Quests
+notebook.leads	Leads
+notebook.people	People
+notebook.letters	Letters
+notebook.decisions	Decisions
+notebook.close	Close
+notebook.empty	Nothing written here yet.
+notebook.track	Track this
+notebook.untrack	Stop tracking
+notebook.tracked	Tracked
+notebook.optional	optional
+notebook.day	day {0}
+notebook.done	done
+notebook.failed	failed
+notebook.conclusion	what it adds up to
+notebook.received	received
+notebook.sent	sent
 common.back	Back
 common.yes	Yes
 common.no	No

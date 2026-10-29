@@ -68,6 +68,7 @@ namespace SecondFace.Tests
             g.World.Conclusions.Add("c_short");
             var page = Notebook.Leads(g, leads, conclusions);
             Assert.That(page[0].Status, Is.EqualTo("conclusion"), "what the leads add up to comes first");
+            Assert.That(page[0].Items.Select(i => i.Text), Is.EqualTo(new[] { "The scale", "Only two people hold the key." }), "with the leads it rests on");
             Assert.That(page.Select(p => p.Title), Is.EquivalentTo(new[] { "Someone is shorting the ration.", "The scale", "Only two people hold the key." }));
 
             g.World.MetPeople["npc_a"] = new Met { Name = "Teller Vos", Day = 1, Where = "Shale" };

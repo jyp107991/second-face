@@ -594,8 +594,12 @@ the scene: over your shoulder at the person you are talking to, then close on th
 of the screen the page leaves free, never behind a wall; it glides back when you are done, and the HUD steps aside
 meanwhile. Seen in `docs/evidence/unity/p5/conversation_twoshot.jpg`, `conversation_other.jpg` and
 `conversation_player.jpg`.
-**Next action:** P5.3f (the notebook: leads, quests, people, letters, decisions, as a book; BUILD_PLAN P5 "Order of
-work"). **`play-people` is released**
+**The notebook (P5.3f, 2026-10-29):** the field notebook is open: your quests (what to do next ticked off or not,
+the journal under it), the leads and what they add up to, the people you have met, letters and the decisions you have
+made, as a book on a dark desk. Track a quest from it and the HUD shows its next step. In the walkabout, talking to the
+townsfolk can now start the game's real quests, which then appear in the notebook and on the HUD. Seen in
+`docs/evidence/unity/p5/ui_notebook.jpg` and `ui_notebook_leads.jpg`.
+**Next action:** P5.3g (the map and travel: world and local, pins; BUILD_PLAN P5 "Order of work"). **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).
 Step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until Mid ≥ 30 fps).

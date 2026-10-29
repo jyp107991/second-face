@@ -91,6 +91,14 @@ namespace SecondFace.Tests
             Assert.That(boot.Hud, Is.Not.Null, "the HUD is up");
             var fwd = Camera.main.transform.forward;
             Assert.That(Mathf.Abs(Mathf.DeltaAngle(boot.Hud.Compass.Heading, Mathf.Atan2(fwd.x, fwd.z) * Mathf.Rad2Deg)), Is.LessThan(2f), "the compass follows the camera");
+            // the notebook under the thumb (P5.3f) opens over the walkabout's game and closes
+            Assert.That(boot.Hud.NotebookButton.resolvedStyle.display, Is.EqualTo(UnityEngine.UIElements.DisplayStyle.Flex), "the notebook button is shown");
+            var notebook = boot.OpenNotebook(null);
+            yield return null;
+            Assert.That(boot.UI.Top, Is.SameAs(notebook), "the notebook opened");
+            Assert.That(boot.Hud.Root.resolvedStyle.display, Is.EqualTo(UnityEngine.UIElements.DisplayStyle.Flex), "the HUD element stays (its layer hides)");
+            notebook.Close();
+            yield return null;
             // a tap on one of the townsfolk in view opens the radial over them (P5.3c); a verb closes it
             var view = Camera.main;
             var tappable = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None);

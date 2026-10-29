@@ -126,6 +126,74 @@ MonoBehaviour:
     m_Localized: Someone from the town
     m_Metadata:
       m_Items: []
+  - m_Id: 14856992702464
+    m_Localized: Quests
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256896
+    m_Localized: Leads
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256897
+    m_Localized: People
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256898
+    m_Localized: Letters
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256899
+    m_Localized: Decisions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256900
+    m_Localized: Close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256901
+    m_Localized: Nothing written here yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256902
+    m_Localized: Track this
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256903
+    m_Localized: Stop tracking
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256904
+    m_Localized: Tracked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256905
+    m_Localized: optional
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256906
+    m_Localized: day {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256907
+    m_Localized: done
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256908
+    m_Localized: failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256909
+    m_Localized: what it adds up to
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256910
+    m_Localized: received
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14857026256911
+    m_Localized: sent
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

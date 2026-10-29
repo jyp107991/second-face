@@ -1,10 +1,13 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SecondFace.Core.Dialogue;
+using SecondFace.Core.Quest;
 using SecondFace.Core.State;
+using SecondFace.Core.World;
 using SecondFace.Game.UI;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -29,7 +32,9 @@ namespace SecondFace.Tests
     /// safe area whole (`ui_radial`, `ui_radial_corner`). A conversation (P5.3d) writes its line out, then shows the
     /// passives and the choices with their checks up front, locked ones dimmed; a choice logs the line and goes on; the
     /// end closes it; heard lines show whole and chosen choices dim; back takes the way out (`ui_dialogue`,
-    /// `ui_dialogue_log`).
+    /// `ui_dialogue_log`). The notebook (P5.3f) lists open quests first and finished ones after, writes the chosen one out
+    /// with its objectives and journal, tracks a quest to the top, and turns to the leads, people, letters and decisions;
+    /// an empty section says so (`ui_notebook`, `ui_notebook_leads`).
     /// </summary>
     public class UiTests : IPrebuildSetup
     {
@@ -377,6 +382,81 @@ namespace SecondFace.Tests
             Assert.That(_ui.Back(), Is.True);
             Assert.That(again.IsOpen, Is.False, "back takes the way out");
             Object.Destroy(face);
+        }
+
+        private static QuestDef Quest(string json) => JObject.Parse(json).ToObject<QuestDef>();
+
+        [UnityTest, Timeout(120000)]
+        public IEnumerator NotebookShowsItsPagesAndTracks()
+        {
+            var defs = new Dictionary<string, QuestDef>
+            {
+                ["q_water"] = Quest(@"{ ""id"": ""q_water"", ""title"": ""Water rights"", ""start"": ""s1"", ""stages"": {
+                    ""s1"": { ""journal"": ""The ration at the tower is short, and everyone blames someone else."", ""objectives"": [ { ""id"": ""ask"", ""text"": ""Ask who weighs it"" } ] },
+                    ""s2"": { ""journal"": ""The scale's pan is filed light. Whoever holds the key knows."", ""objectives"": [ { ""id"": ""key"", ""text"": ""Find out who holds the key"" }, { ""id"": ""look"", ""text"": ""Look at the ledger"", ""optional"": true } ] } } }"),
+                ["q_debt"] = Quest(@"{ ""id"": ""q_debt"", ""title"": ""Old debts"", ""start"": ""s1"", ""stages"": { ""s1"": { ""journal"": ""A debt to settle at the saloon."", ""objectives"": [ { ""id"": ""pay"", ""text"": ""Pay what is owed, or argue it down"" } ] } } }"),
+                ["q_fence"] = Quest(@"{ ""id"": ""q_fence"", ""title"": ""Mend the fence"", ""start"": ""s1"", ""stages"": { ""s1"": { ""journal"": ""The fence is down at the goat pen."" } } }"),
+            };
+            var g = States.NewGame("shale", 0, 0);
+            var q = new QuestEngine(defs, g);
+            q.QuestStart("q_water");
+            g.Minutes += 60;
+            q.QuestStart("q_debt");
+            g.Minutes += 60;
+            q.QuestStart("q_fence");
+            q.QuestStage("q_water", "s2");
+            q.QuestEnd("q_fence", "done");
+            var leads = new Dictionary<string, LeadDef>
+            {
+                ["l_scale"] = new() { Id = "l_scale", Label = "The scale", Text = "The scale's pan is filed light on one side." },
+                ["l_key"] = new() { Id = "l_key", Label = "The key", Text = "Only two people hold the key to the tower." },
+            };
+            var conclusions = new Dictionary<string, ConclusionDef> { ["c_short"] = new() { Id = "c_short", Text = "Someone with a key is shorting the ration.", From = { "l_scale", "l_key" } } };
+            g.World.Leads.Add("l_scale"); g.World.Leads.Add("l_key"); g.World.Conclusions.Add("c_short");
+            g.World.MetPeople["npc_a"] = new Met { Name = "Teller Vos", Day = 1, Where = "Shale" };
+            g.World.MetPeople["npc_b"] = new Met { Name = "Ash Corran", Day = 2, Where = "the north road" };
+            g.World.PostBag.Add(new Post { From = "A friend in Shale", Text = "Come back before the rains.", Day = 2 });
+            g.World.Decisions.Add(new Decision { Id = "d1", Text = "Paid the toll at the bridge.", Minutes = Clock.StartMinutes });
+
+            _ui = Offscreen(1600, 720, out _rt);
+            _ui.SafeAreaOverride = new Rect(0.05f, 0.04f, 0.95f, 0.96f);
+            var nb = _ui.Open(new NotebookScreen(g, defs, leads, conclusions));
+            for (var i = 0; i < 4; i++) yield return null;
+            var inset = _ui.Insets;
+            Assert.That(nb.Entries.Select(e => e.Id), Is.EqualTo(new[] { "q_debt", "q_water", "q_fence" }), "open quests first, the newest on top; finished after");
+            Assert.That(nb.Selected, Is.EqualTo("q_debt"), "the first entry is written out");
+            Assert.That(nb.List.worldBound.xMin, Is.GreaterThanOrEqualTo(inset.x), "the book clears the cutout");
+            Assert.That(nb.Tab("quests").ClassListContains("sf-notebook__tab--on"), Is.True);
+            nb.Select("q_water");
+            yield return null;
+            Assert.That(nb.Detail.Query(className: "sf-notebook__item").ToList().Count, Is.EqualTo(2), "the current stage's objectives");
+            Assert.That(nb.TrackButton, Is.Not.Null, "an open quest can be tracked");
+            nb.Track("q_water");
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(g.World.Pinned, Is.EqualTo("q_water"));
+            Assert.That(nb.Entries[0].Id, Is.EqualTo("q_water"), "the tracked quest on top");
+            Assert.That(nb.Selected, Is.EqualTo("q_water"));
+            Assert.That(Notebook.Tracked(g), Is.EqualTo("q_water"));
+            Assert.That(Save(_rt, "ui_notebook"), Is.GreaterThan(0.95f));
+
+            nb.Show("leads");
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(nb.Entries.Count, Is.EqualTo(3));
+            Assert.That(nb.Entries[0].Status, Is.EqualTo("conclusion"), "what the leads add up to comes first");
+            Save(_rt, "ui_notebook_leads");
+            nb.Show("people");
+            Assert.That(nb.Entries.Select(e => e.Title), Is.EqualTo(new[] { "Ash Corran", "Teller Vos" }));
+            nb.Show("letters");
+            Assert.That(nb.Entries.Count, Is.EqualTo(1));
+            nb.Show("decisions");
+            Assert.That(nb.Entries.Count, Is.EqualTo(1));
+            Assert.That(_ui.Back(), Is.True);
+            Assert.That(nb.IsOpen, Is.False, "back closes the notebook");
+
+            var empty = _ui.Open(new NotebookScreen(States.NewGame("shale", 0, 0), defs).At("letters"));
+            yield return null;
+            Assert.That(empty.List.Q(className: "sf-notebook__empty"), Is.Not.Null, "an empty section says so");
+            empty.Close();
         }
 
         private static Label Text(string cls, string text)
