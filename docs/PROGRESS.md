@@ -434,7 +434,13 @@ written to Unity terrains once: ridged mountains in the Teeth, dunes and mesas i
 ground, places on pads cut into the land; chunks meet without seams. The relief styles are a second control map
 (`style.bin`) blended across region borders. Known faults, next for step 17: the ground textures tile visibly, the
 Teeth palette reads as sand, and the palette changes at biome-changing chunk edges.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 15 (streaming policy §6.A.4, pooled terrains), then 16, 17.
+**Streaming (plan §10 step 15, 2026-10-29):** the world streams round a moving focus: 5 × 5 chunks built, the ring
+beyond prepared on worker threads, terrains pooled and created ahead, one chunk written a frame (median 10.5 ms in the
+editor). Chunk terrains have no collider yet (the terrain physics module is added when walking needs it).
+**Rendering tiers (plan §10 step 16, 2026-10-29):** Vulkan phones get Forward+ and the GPU Resident Drawer, GLES3
+phones plain Forward, chosen at boot by graphics API; the editor and CI render the GLES3 tier.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 17 (terrain layers per biome: fix the visible tiling first, then the
+Teeth palette and the palette seam at biome-changing chunk edges).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

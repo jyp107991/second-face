@@ -14,11 +14,18 @@
   <ItemGroup>
     <Compile Include="../unity/Assets/SecondFace/Editor/**/*.cs" />
     <Compile Include="../unity/Assets/SecondFace/Game/**/*.cs" />
-    <Compile Include="stubs/UrpStubs.cs" />
+    <!-- URP ships as source: its compiled assemblies exist once the editor has opened the project; on a fresh machine
+         the few URP types ProjectSetup touches are stood in by stubs/UrpStubs.cs. -->
+    <Compile Include="stubs/UrpStubs.cs" Condition="!Exists('../unity/Library/ScriptAssemblies/Unity.RenderPipelines.Universal.Runtime.dll')" />
     <ProjectReference Include="SecondFace.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="$(UnityManaged)/UnityEngine/*.dll" />
+    <Reference Include="../unity/Library/ScriptAssemblies/Unity.RenderPipelines.Universal.Runtime.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.RenderPipelines.Universal.Runtime.dll')" />
+    <Reference Include="../unity/Library/ScriptAssemblies/Unity.RenderPipelines.Universal.Editor.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.RenderPipelines.Universal.Editor.dll')" />
+    <Reference Include="../unity/Library/ScriptAssemblies/Unity.RenderPipelines.Core.Runtime.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.RenderPipelines.Core.Runtime.dll')" />
+    <Reference Include="../unity/Library/ScriptAssemblies/Unity.RenderPipelines.Core.Editor.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.RenderPipelines.Core.Editor.dll')" />
+    <Reference Include="../unity/Library/ScriptAssemblies/Unity.RenderPipelines.GPUDriven.Runtime.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.RenderPipelines.GPUDriven.Runtime.dll')" />
     <!-- Addressables ships as a package; its compiled assemblies exist once the editor has opened the project. -->
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.Addressables.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.Addressables.dll')" />
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.Addressables.Editor.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.Addressables.Editor.dll')" />

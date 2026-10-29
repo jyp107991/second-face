@@ -19,6 +19,7 @@ namespace SecondFace.Game
 
         private void Awake()
         {
+            RenderTier.Apply();   // the rendering tier by graphics API, before anything renders
             Application.targetFrameRate = 60;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             Screen.fullScreen = true;

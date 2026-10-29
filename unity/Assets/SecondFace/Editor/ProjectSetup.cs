@@ -39,29 +39,93 @@ namespace SecondFace.EditorTools
             EnsureBootScene();
         }
 
+        private const string GlesPipelinePath = PipelineDir + "/Mobile_GLES_RPAsset.asset";
+        private const string GlesRendererPath = PipelineDir + "/Mobile_GLES_Renderer.asset";
+
+        /// <summary>
+        /// The two rendering tiers (BUILD_PLAN §6.Q): quality level "Vulkan" on Mobile_RPAsset (Forward+, the GPU Resident
+        /// Drawer, SRP batcher) and "GLES3" on Mobile_GLES_RPAsset (Forward); RenderTier picks one at boot by graphics API.
+        /// The editor and CI render with GLES3: their software renderer is no judge of Forward+ and compute, which the phone
+        /// measures (P3.7). The resident drawer needs the BatchRendererGroup shader variants kept.
+        /// </summary>
         private static void EnsurePipeline()
         {
-            var existing = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(PipelinePath);
-            if (existing != null)
-            {
-                if (GraphicsSettings.defaultRenderPipeline != existing) { GraphicsSettings.defaultRenderPipeline = existing; AssetDatabase.SaveAssets(); }
-                return;
-            }
-            Directory.CreateDirectory(PipelineDir);
-            var renderer = ScriptableObject.CreateInstance<UniversalRendererData>();
-            AssetDatabase.CreateAsset(renderer, RendererPath);
-            var pipeline = UniversalRenderPipelineAsset.Create(renderer);
-            pipeline.supportsHDR = false;
-            pipeline.msaaSampleCount = 1;
-            pipeline.renderScale = 1f;
-            pipeline.shadowDistance = 60f;
-            pipeline.shadowCascadeCount = 1;
-            pipeline.supportsCameraDepthTexture = true;
-            AssetDatabase.CreateAsset(pipeline, PipelinePath);
-            GraphicsSettings.defaultRenderPipeline = pipeline;
-            QualitySettings.renderPipeline = pipeline;
+            var vulkan = EnsureTier(PipelinePath, RendererPath, RenderingMode.ForwardPlus, GPUResidentDrawerMode.InstancedDrawing);
+            var gles = EnsureTier(GlesPipelinePath, GlesRendererPath, RenderingMode.Forward, GPUResidentDrawerMode.Disabled);
+            if (GraphicsSettings.defaultRenderPipeline != vulkan) GraphicsSettings.defaultRenderPipeline = vulkan;
+            KeepBatchRendererGroupVariants();
+            EnsureQualityLevels(vulkan, gles);
             AssetDatabase.SaveAssets();
-            Debug.Log("Second Face: created the mobile URP asset");
+        }
+
+        /// <summary>The resident drawer draws through BatchRendererGroup, whose shader variants Unity strips by default
+        /// unless Entities Graphics is installed. The setting is read-only in the API, so its serialized field is set to the
+        /// enum's KeepAll value (found by name, not by a guessed number).</summary>
+        private static void KeepBatchRendererGroupVariants()
+        {
+            var prop = typeof(UnityEditor.Rendering.EditorGraphicsSettings).GetProperty("batchRendererGroupShaderStrippingMode");
+            if (prop == null) { Debug.LogWarning("Second Face: no BatchRendererGroup stripping setting in this editor"); return; }
+            var keepAll = System.Convert.ToInt32(System.Enum.Parse(prop.PropertyType, "KeepAll"));
+            if (System.Convert.ToInt32(prop.GetValue(null)) == keepAll) return;
+            var gs = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/GraphicsSettings.asset").FirstOrDefault();
+            if (gs == null) return;
+            var so = new SerializedObject(gs);
+            var field = so.FindProperty("m_BrgStripping");
+            if (field == null) { Debug.LogWarning("Second Face: m_BrgStripping not found in GraphicsSettings"); return; }
+            field.intValue = keepAll;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static UniversalRenderPipelineAsset EnsureTier(string path, string rendererPath, RenderingMode mode, GPUResidentDrawerMode drawer)
+        {
+            Directory.CreateDirectory(PipelineDir);
+            var renderer = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(rendererPath);
+            if (renderer == null) { renderer = ScriptableObject.CreateInstance<UniversalRendererData>(); AssetDatabase.CreateAsset(renderer, rendererPath); }
+            if (renderer.renderingMode != mode) { renderer.renderingMode = mode; EditorUtility.SetDirty(renderer); }
+            var pipeline = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(path);
+            if (pipeline == null)
+            {
+                pipeline = UniversalRenderPipelineAsset.Create(renderer);
+                pipeline.supportsHDR = false;
+                pipeline.msaaSampleCount = 1;
+                pipeline.renderScale = 1f;
+                pipeline.shadowDistance = 60f;
+                pipeline.shadowCascadeCount = 1;
+                pipeline.supportsCameraDepthTexture = true;
+                AssetDatabase.CreateAsset(pipeline, path);
+                Debug.Log($"Second Face: created {path}");
+            }
+            if (pipeline.gpuResidentDrawerMode != drawer) { pipeline.gpuResidentDrawerMode = drawer; EditorUtility.SetDirty(pipeline); }
+            if (!pipeline.useSRPBatcher) { pipeline.useSRPBatcher = true; EditorUtility.SetDirty(pipeline); }
+            return pipeline;
+        }
+
+        /// <summary>Quality levels exactly "Vulkan" (Android's default) and "GLES3" (the editor's and the fallback), each on
+        /// its pipeline asset. Written through the settings' serialized form: there is no API to name or add levels.</summary>
+        private static void EnsureQualityLevels(UniversalRenderPipelineAsset vulkan, UniversalRenderPipelineAsset gles)
+        {
+            var qs = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/QualitySettings.asset").FirstOrDefault();
+            if (qs == null) return;
+            var so = new SerializedObject(qs);
+            var levels = so.FindProperty("m_QualitySettings");
+            if (levels.arraySize < 2) levels.arraySize = 2;
+            while (levels.arraySize > 2) levels.DeleteArrayElementAtIndex(levels.arraySize - 1);
+            void Set(int i, string name, UniversalRenderPipelineAsset rp)
+            {
+                var l = levels.GetArrayElementAtIndex(i);
+                l.FindPropertyRelative("name").stringValue = name;
+                l.FindPropertyRelative("customRenderPipeline").objectReferenceValue = rp;
+            }
+            Set(0, SecondFace.Game.RenderTier.Vulkan, vulkan);
+            Set(1, SecondFace.Game.RenderTier.Gles, gles);
+            so.FindProperty("m_CurrentQuality").intValue = 1;
+            var defaults = so.FindProperty("m_PerPlatformDefaultQuality");
+            for (var i = 0; i < defaults.arraySize; i++)
+            {
+                var e = defaults.GetArrayElementAtIndex(i);
+                e.FindPropertyRelative("second").intValue = e.FindPropertyRelative("first").stringValue == "Android" ? 0 : 1;
+            }
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         public static void EnsurePlayerSettings()

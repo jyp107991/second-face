@@ -533,12 +533,20 @@ port the inner loops to Burst if the phone measurement (P3.7) or fast travel nee
 and a biome change at a chunk edge changes the palette with a seam. Holes under interiors: `TerrainData.SetHoles`
 when interiors exist (P3.5).
 
-**A.4 Streaming policy.** Load radius 2 chunks (5 × 5 = 25 loaded, 1.5 km visible), prewarm radius 3 (terrain
-only, no scatter), unload at radius 4. Order by distance to the camera's look-at point, one chunk per frame at
-most, terrain first, scatter next frame, places when within 600 m, interiors within 40 m of a door. Memory
-budget: 25 terrains × (257² × 4 B heights + 8 × 257² splat) ≈ 60 MB; scatter instances as `GraphicsBuffer`
-transforms (resident drawer handles culling); people per §P6.2. If a frame exceeds 25 ms, the loader pauses the
-next frame (never two loads in a row above budget).
+**A.4 Streaming (built 2026-10-29).** Core `StreamingPolicy` decides, Game `WorldStreamer` executes. Load radius 2
+(5 × 5 built), prepare radius 3 (ground computed ahead on worker threads, at most 2 at once), a built terrain dropped
+beyond 3 (the band between 2 and 3 stops flicker at borders and caps the terrains at 7 × 7 = 49; the first version
+dropped at 4, which let a wandering focus keep 81), computed ground forgotten beyond 4. One chunk write a frame,
+nearest the focus first; none after a frame slower than 25 ms. **Terrains are pooled and created ahead**
+(`WorldStreamer.Prewarm`, one a frame while the title shows: 49 in 2.9 s in the editor): creating a terrain cost
+~90 ms against ~10 ms to re-fill a pooled one (`SetHeights` ~6–10 ms, `SetAlphamaps` ~1 ms, the array copies ~3–5 ms),
+and re-activating one ~50 ms, so a pooled terrain stays active and only stops drawing (`drawHeightmap`). Neighbours
+are stitched after every write (`SetNeighbors`). Measured in the editor (`WorldStreamingTests`: the focus walks four
+chunks east from Shale): chunk writes median 10.5 ms, max 18.9 ms; the streamer's worst frame 21.4 ms. Later steps add
+scatter (the frame after its terrain), places within 600 m, interiors within 40 m of a door. **Terrain physics:** the
+project lacks the built-in Terrain Physics module, so chunk terrains have no collider yet; add
+`com.unity.modules.terrainphysics` when raycasts and walking need it (P5/P6) and measure the collider's cooking cost
+then (it may need to be limited to the chunks round the player).
 
 **A.5 Places.** A place is a prefab (`Places/<id>.prefab`, Addressable) built by `PlaceBuilder` from the exported
 layout: the kit pieces (walls, floors, roofs, props from `Kits/*`), lights, decals, the NavMesh modifier volumes,
@@ -1165,6 +1173,16 @@ numbers from the densest place written into PORT.md §5.
   rather than commit Linux values over the Android ones.
 - **`core/Editor.Check.csproj` cannot see package assemblies** until the editor has opened the project once: it
   references Addressables from `unity/Library/ScriptAssemblies` when present. Run the editor first in a fresh session.
+- **An editor test run hangs on a compile error when code is edited during it**: the screenshot tests' setup calls
+  `AssetDatabase.Refresh`, which compiled half-written code mid-run (2026-10-29). Never edit files under `unity/`
+  while `editor.sh` runs; write docs instead, or stop the run first.
+- **Every later editor run waited forever after a killed one**: `editor.sh` held its install lock on fd 9 and the
+  Xvfb it started inherited it, so a stray Xvfb kept the lock. `install()` now closes fd 9 before anything starts;
+  after killing a run, also kill its `Xvfb` (`pgrep -fa Xvfb`).
+- **The compile check passes where the editor fails** on assembly references: `core/Editor.Check.csproj` references
+  every assembly, the editor only those in the `.asmdef` (`GPUResidentDrawerMode` lives in
+  `Unity.RenderPipelines.GPUDriven.Runtime`). And a name may collide with Unity's (`UnityEngine.Rendering.GraphicsTier`;
+  ours is `RenderTier`). The editor run is the judge.
 
 ---
 
@@ -1209,9 +1227,13 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
 13. ~~P3.1 `WorldService` + chunk grid + control map tool (§6.A.1–A.2)~~ (done 2026-10-29).
 14. ~~P3.1 runtime terrain (§6.A.3) + the 4-chunk PlayMode test~~ (done 2026-10-29: worker-thread Core generation,
     relief styles, `world_chunks_iso`, `world_chunks_wide`, `world_teeth_chunk`).
-15. P3.1 streaming policy (§6.A.4: additive loads only, Load/Release paired) + pooled terrains.
-16. The two URP tiers by graphics API (§6.Q: Vulkan with Forward+, GPU Resident Drawer, STP; GLES3 with Forward),
-    selected at boot; a test asserts the asset chosen per API.
+15. ~~P3.1 streaming policy (§6.A.4) + pooled terrains~~ (done 2026-10-29: `StreamingPolicy`, `WorldStreamer`, pool
+    created ahead; `WorldStreamingTests`).
+16. ~~The two URP tiers by graphics API~~ (done 2026-10-29): quality levels "Vulkan" (Mobile_RPAsset: Forward+, the GPU
+    Resident Drawer, SRP batcher; BatchRendererGroup variants kept) and "GLES3" (Mobile_GLES_RPAsset: Forward), made in
+    code by `ProjectSetup`; `Game.RenderTier` picks by graphics API in `Bootstrap.Awake`; `RenderTierTests`. Android
+    defaults to Vulkan; the editor and CI render with GLES3 (their software renderer is no judge of Forward+ and
+    compute: the Vulkan tier is judged on the phone, P3.7). STP is left off (render scale 1) until the device pass.
 17. P3.2 terrain layers per biome — first fix the visible tiling (macro variation / detail noise / height blend in
     the terrain material), the Teeth palette and the palette seam at biome-changing chunk edges (§6.A.3 known faults);
     `world_sallow`, `world_teeth`, `world_shore`.
