@@ -1071,6 +1071,110 @@ MonoBehaviour:
     m_Key: skill.survival
     m_Metadata:
       m_Items: []
+  - m_Id: 38589874683904
+    m_Key: create.look
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044032
+    m_Key: create.skin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044033
+    m_Key: create.tone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044034
+    m_Key: create.undertone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044035
+    m_Key: create.freckles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044036
+    m_Key: create.hair
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044037
+    m_Key: create.eyes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044038
+    m_Key: create.scar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044039
+    m_Key: create.tattoo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044040
+    m_Key: create.none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044041
+    m_Key: scar.brow_cut
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044042
+    m_Key: scar.cheek_slash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044043
+    m_Key: scar.lip_split
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044044
+    m_Key: scar.eye_line
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044045
+    m_Key: scar.burn_jaw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044046
+    m_Key: scar.burn_cheek
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044047
+    m_Key: scar.chin_nick
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044048
+    m_Key: scar.nose_break
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044049
+    m_Key: tattoo.nine_neck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044050
+    m_Key: tattoo.tally_cheek
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044051
+    m_Key: tattoo.tear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044052
+    m_Key: tattoo.chin_lines
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044053
+    m_Key: tattoo.brow_dots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044054
+    m_Key: tattoo.temple_spiral
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044055
+    m_Key: tattoo.jaw_stripes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044056
+    m_Key: tattoo.eye_band
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

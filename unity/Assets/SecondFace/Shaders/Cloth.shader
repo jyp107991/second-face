@@ -2,7 +2,10 @@
 // double-sided with an alpha cut like the people's Lit cloth, plus what the wardrobe sets per garment: _Inflate, the
 // distance a layer stands off the ones under it along its normals (a coat over a shirt both fitted to the bare body
 // let the shirt show through), and the content's look of a worn piece: _Grime, dirt heaviest towards the hem (by the
-// garment's own height above the feet), broken up by a little noise, and _Wear, sun-fading (paler, greyer).
+// garment's own height above the feet), broken up by a little noise, and _Wear, sun-fading (paler, greyer). The
+// player's hair and eyes use it too (P5.3i): _Recolour turns the texture to a chosen colour keeping its light and dark
+// (the whole of it for hair; with _RecolourIris only the saturated, dark iris, the white of the eye left alone), and
+// hair turns the sky's reflection and the specular highlight off (the hair rule: dull, never glossy).
 Shader "SecondFace/Cloth"
 {
     Properties
@@ -16,6 +19,11 @@ Shader "SecondFace/Cloth"
         _Inflate ("Stand-off along the normals (m)", Range(0, 0.03)) = 0
         _Grime ("Grime", Range(0, 1)) = 0
         _Wear ("Sun and wear", Range(0, 1)) = 0
+        _Recolour ("Recolour (a: how much)", Color) = (0, 0, 0, 0)
+        _RecolourLum ("The texture's mean luminance", Float) = 0.2
+        [Toggle] _RecolourIris ("Only the iris", Float) = 0
+        [Toggle(_ENVIRONMENTREFLECTIONS_OFF)] _EnvironmentReflectionsOff ("No sky reflection", Float) = 0
+        [Toggle(_SPECULARHIGHLIGHTS_OFF)] _SpecularHighlightsOff ("No highlight", Float) = 0
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 0
     }
     SubShader
@@ -31,7 +39,8 @@ Shader "SecondFace/Cloth"
         CBUFFER_START(UnityPerMaterial)
             float4 _BaseMap_ST;
             half4 _BaseColor;
-            half _BumpScale, _Smoothness, _Cutoff, _Grime, _Wear;
+            half4 _Recolour;
+            half _BumpScale, _Smoothness, _Cutoff, _Grime, _Wear, _RecolourLum, _RecolourIris;
             float _Inflate;
         CBUFFER_END
 
@@ -76,6 +85,8 @@ Shader "SecondFace/Cloth"
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
             #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
             #pragma multi_compile_fog
+            #pragma shader_feature_local_fragment _ENVIRONMENTREFLECTIONS_OFF
+            #pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
             struct Varyings
@@ -111,6 +122,19 @@ Shader "SecondFace/Cloth"
                 half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv) * _BaseColor;
                 clip(albedo.a - _Cutoff);
                 half smoothness = _Smoothness;
+                // a chosen colour with the texture's own light and dark (hair), or for the iris alone (eyes)
+                if (_Recolour.a > 0.001h)
+                {
+                    half lum = dot(albedo.rgb, half3(0.3h, 0.59h, 0.11h));
+                    half w = _Recolour.a;
+                    if (_RecolourIris > 0.5h)
+                    {
+                        half mx = max(albedo.r, max(albedo.g, albedo.b)), mn = min(albedo.r, min(albedo.g, albedo.b));
+                        half sat = (mx - mn) / max(mx, 0.001h);
+                        w *= smoothstep(0.3h, 0.5h, sat) * (1.0h - smoothstep(0.3h, 0.55h, lum));
+                    }
+                    albedo.rgb = lerp(albedo.rgb, _Recolour.rgb * min(lum / max(_RecolourLum, 0.001h), 2.0h), w);
+                }
                 // sun and wear: paler and greyer
                 if (_Wear > 0.001h)
                 {

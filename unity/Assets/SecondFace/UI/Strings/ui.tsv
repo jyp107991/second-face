@@ -266,3 +266,29 @@ skill.stealth	Stealth
 skill.speech	Speech
 skill.barter	Barter
 skill.survival	Survival
+create.look	Look
+create.skin	SKIN
+create.tone	Lighter or darker
+create.undertone	Rosier or warmer
+create.freckles	Freckles
+create.hair	HAIR
+create.eyes	EYES
+create.scar	A SCAR
+create.tattoo	A TATTOO
+create.none	None
+scar.brow_cut	Split brow
+scar.cheek_slash	Cheek slash
+scar.lip_split	Split lip
+scar.eye_line	Cut over the eye
+scar.burn_jaw	Burn on the jaw
+scar.burn_cheek	Burn on the cheek
+scar.chin_nick	Chin nick
+scar.nose_break	Broken nose
+tattoo.nine_neck	Cistern number
+tattoo.tally_cheek	Tally
+tattoo.tear	Tear
+tattoo.chin_lines	Chin lines
+tattoo.brow_dots	Brow dots
+tattoo.temple_spiral	Temple spiral
+tattoo.jaw_stripes	Jaw stripes
+tattoo.eye_band	Eye band

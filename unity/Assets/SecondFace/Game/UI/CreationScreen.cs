@@ -28,13 +28,14 @@ namespace SecondFace.Game.UI
     /// Character creation (P5.3i, DESIGN §4, DESIGN_UNITY §6 "the sculptor is a full screen with the live face"): the
     /// player's body stands on the left under the studio light (framed on the face while the face is made; a drag turns
     /// them), the pages on the right: who (an origin or someone of your own, a name, pronouns), the face (the sculptor's
-    /// sliders by feature, another face, an even one), the body (body type, height, the clothes' dyes), the attributes
+    /// sliders by feature, another face, an even one), the look (the skin's tone, undertone and freckles, the hair's
+    /// colour, the eyes', a scar, a tattoo), the body (body type, height, the clothes' dyes), the attributes
     /// (the standard spread or the rolled start: roll, keep, recall, then move points), skills and traits (three tags, up
     /// to two traits), and begin (what is still missing, then begin). The rules are Core <see cref="Creation"/>.
     /// </summary>
     public sealed class CreationScreen : UIScreen
     {
-        public static readonly string[] Pages = { "who", "face", "body", "attributes", "skills", "begin" };
+        public static readonly string[] Pages = { "who", "face", "look", "body", "attributes", "skills", "begin" };
 
         private readonly CreationModel _m;
         private readonly Dictionary<string, Button> _tabs = new();
@@ -157,6 +158,7 @@ namespace SecondFace.Game.UI
                     outfit.Layers.Add(new GarmentLook { Name = id, Dye = g != null && look.Dyes.TryGetValue(g.Slot, out var d) && d != 0xffffff ? d : null });
                 }
             Figure.Dress(outfit);
+            LookView.Apply(Figure.Body, look);
             DrawFigure();
             Root.schedule.Execute(DrawFigure).ExecuteLater(1);
         }
@@ -175,7 +177,7 @@ namespace SecondFace.Game.UI
             foreach (var kv in _tabs) kv.Value.EnableInClassList("sf-creation__tab--on", kv.Key == page);
             if (Figure != null)
             {
-                Figure.Close = page == "face";
+                Figure.Close = page == "face" || page == "look";
                 DrawFigure();
             }
             _page.Clear();
@@ -183,6 +185,7 @@ namespace SecondFace.Game.UI
             {
                 case "who": Who(); break;
                 case "face": Face(); break;
+                case "look": LookPage(); break;
                 case "body": BodyPage(); break;
                 case "attributes": Attributes(); break;
                 case "skills": Skills(); break;
@@ -317,6 +320,62 @@ namespace SecondFace.Game.UI
                     if (face != null) face.Set(slider.Id, nv);
                     DrawFigure();
                 }, "slider-" + s.Id);
+            }
+        }
+
+        // --- the look ----------------------------------------------------------------------------------------------
+
+        private void LookPage()
+        {
+            var look = Creation.Look;
+            void Show() { if (Figure != null) { LookView.Apply(Figure.Body, look); DrawFigure(); } }
+            Heading("create.skin");
+            Slider(Strings.Get("create.tone"), -1f, 1f, look.Skin, v => { look.Skin = v; Show(); }, "slider-tone");
+            Slider(Strings.Get("create.undertone"), -1f, 1f, look.Undertone, v => { look.Undertone = v; Show(); }, "slider-undertone");
+            Slider(Strings.Get("create.freckles"), 0f, 1f, look.Freckles, v => { look.Freckles = v; Show(); }, "slider-freckles");
+            Heading("create.hair");
+            var hair = Row();
+            hair.AddToClassList("sf-creation__swatches");
+            foreach (var c in Looks.HairColours)
+            {
+                var colour = c;
+                hair.Add(Swatch($"hair-{c:x6}", LookView.Colour(c), look.HairColour == c, () => { look.HairColour = colour; Show(); Refresh(); }));
+            }
+            Heading("create.eyes");
+            var eyes = Row();
+            eyes.AddToClassList("sf-creation__swatches");
+            foreach (var (id, rgb) in Looks.Eyes)
+            {
+                var eye = id;
+                eyes.Add(Swatch("eyes-" + id, LookView.Colour(rgb), look.Eyes == id, () => { look.Eyes = eye; Show(); Refresh(); }));
+            }
+            Heading("create.scar");
+            Marks("scar", Looks.Scars, look.Scar, v => { look.Scar = v; Show(); Refresh(); });
+            Heading("create.tattoo");
+            Marks("tattoo", Looks.Tattoos, look.Tattoo, v => { look.Tattoo = v; Show(); Refresh(); });
+        }
+
+        private static Button Swatch(string name, Color colour, bool on, Action act)
+        {
+            var sw = new Button(act) { name = name };
+            sw.AddToClassList("sf-creation__swatch");
+            sw.EnableInClassList("sf-creation__swatch--on", on);
+            sw.style.backgroundColor = colour;
+            return sw;
+        }
+
+        private void Marks(string kind, string[] ids, string current, Action<string> set)
+        {
+            var row = Row("sf-creation__chips");
+            var none = Choice(Strings.Get("create.none"), current == null, () => set(null), kind + "-none");
+            none.AddToClassList("sf-creation__chip");
+            row.Add(none);
+            foreach (var id in ids)
+            {
+                var mark = id;
+                var chip = Choice(Strings.Get(kind + "." + id), current == id, () => set(mark), kind + "-" + id);
+                chip.AddToClassList("sf-creation__chip");
+                row.Add(chip);
             }
         }
 

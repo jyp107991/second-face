@@ -454,7 +454,7 @@ from fixture state and captured (`UiTests`, the panel drawn into a texture):
   with P6.1's loot, the procedural gear, held weapons and visible chrome on the figure with the P4 follow-ups).
 - 3i. Character creation and the sculptor (body sliders here). Parts: (1) the rules and the screen (done, below);
   (2) the look in the shaders: skin tone and undertone, freckles, eye colour, hair colour, a scar and a tattoo drawn
-  over the skin; (3) body sliders (build, muscle) and hair choices from the people pipeline (shapes refitted on every
+  over the skin (done, below); (3) body sliders (build, muscle) and hair choices from the people pipeline (shapes refitted on every
   garment, hair pieces as wardrobe items in a hair slot).
 - 3j. Title, settings (text size, contrast, controls), saves and pause.
 - 3k. The combat bar and log (with P6). 3l. Photo mode and the gamepad.
@@ -625,6 +625,23 @@ values; the traits with their words) and begin (who you are, what is missing, be
 (`create.*`, `face.*`, `attr.*`, `skill.*`). Captures `ui_create_who`, `ui_create_face`, `ui_create_body`,
 `ui_create_attributes`, `ui_create_skills`. Seen close up (P4 follow-ups): the braid's front edge shows as a band on
 the scalp, the painted brows are patchy at this size, and a dark gap shows between the neck and the sweater's collar.
+
+*As built (P5.3i part 2, 2026-10-29).* The look in the shaders, on a new Look page framed on the face (skin: lighter or
+darker, rosier or warmer, freckles; the hair's colour from `Looks.HairColours`; the eyes'; a scar and a tattoo, or
+none). `SecondFace/Skin` gains `_Tone` (darker towards a deep brown, lighter as if out of the sun), `_Undertone`,
+`_Freckles` (dots across the nose and cheeks, thinning out), `_Scar` and `_Tattoo` (indices into `Looks.Scars` and
+`Looks.Tattoos`), drawn procedurally in the head frame of the web game's skin painter: `WardrobeBuild.RestMap` bakes
+each base vertex's rest position in that frame (the eyes at (±0.36, 0.1, 0.88) head radii from the centre; z the face's
+way) into a 128×128 half-float texture at the texel of its MakeHuman base index (uv1, as the wardrobe mask), the
+vertex reads it, and the fragment draws the marks from it (a healed cut: a ragged soft stroke, paler, pinker and
+shinier; a burn: a mottled patch; old ink: blue-black, faded), so they are placed once in 3D and stay on the skin
+through every face shape and the animation (`player_f_rest.asset`, `player_m_rest.asset`, 256 KB each; head radius
+7.9 / 8.5 cm). `SecondFace/Cloth` gains `_Recolour` (a colour keeping the texture's light and dark round its mean,
+`_RecolourLum`, measured by `PeopleMaterials.MeanLum` at build) and `_RecolourIris` (only the saturated, dark texels:
+the white of the eye is left alone), and the hair rule's reflection and highlight switches; the player's hair and eyes
+now use it. `FaceSculpt.HairColour` greys towards ash with `Aged` (the photograph). `People.LookView.Apply` puts a whole
+`PlayerLook` on a body through the renderers' property blocks. Captures `ui_create_look`, `ui_create_look_face`. Seen:
+recoloured light, the braid's front edge reads as a tight cap (with the hair choices, part 3).
 
 ### P6 — Systems and combat
 1. Interactions and loot (`Play/`): tap on a thing → radial of verbs from content (`talk`, `look`, `take`, `use`,

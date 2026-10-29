@@ -139,7 +139,8 @@ namespace SecondFace.EditorTools
             // the player's skin hides under worn garments (SecondFace/Skin, the wardrobe's mask) and the player's garments
             // stand off each other in layers and take the content's grime (SecondFace/Cloth, P4.10); everyone else is URP Lit
             var wardrobeSkin = kind == "skin" && dir.EndsWith("/Player");
-            var wardrobeCloth = kind == "cloth" && dir.EndsWith("/Player");
+            // (the player's hair and eyes too: recoloured at creation, P5.3i)
+            var wardrobeCloth = (kind == "cloth" || kind == "hair" || kind == "eyes") && dir.EndsWith("/Player");
             var shader = Shader.Find(wardrobeSkin ? "SecondFace/Skin" : wardrobeCloth ? "SecondFace/Cloth" : "Universal Render Pipeline/Lit");
             if (shader == null) { Debug.LogError($"PeopleMaterials: shader for {kind} not found"); return null; }
             var m = AssetDatabase.LoadAssetAtPath<Material>(matPath);
@@ -181,6 +182,12 @@ namespace SecondFace.EditorTools
                     // The eyeball alone (mh_build drops the cornea shell): opaque, wet.
                     m.SetFloat("_Smoothness", 0.7f); m.SetFloat("_Metallic", 0f);
                     m.SetFloat("_AlphaClip", 0f); m.DisableKeyword("_ALPHATEST_ON");
+                    if (wardrobeCloth)
+                    {
+                        // the iris recoloured at creation (SecondFace/Cloth with _RecolourIris): its mean light here
+                        m.SetFloat("_Cutoff", 0f); m.SetFloat("_Cull", 2f); m.SetFloat("_RecolourIris", 1f);
+                        if (d != null) m.SetFloat("_RecolourLum", MeanLum($"{dir}/tex/{tex}.png", iris: true));
+                    }
                     break;
                 case "cloth":
                     m.SetFloat("_Smoothness", 0.32f); m.SetFloat("_Metallic", 0f);
@@ -197,11 +204,43 @@ namespace SecondFace.EditorTools
                     m.SetFloat("_Smoothness", kind == "hair" ? 0.25f : 0.3f);
                     m.SetFloat("_EnvironmentReflections", 0f); m.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
                     m.SetFloat("_SpecularHighlights", 0f); m.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
+                    if (wardrobeCloth)
+                    {
+                        // the player's hair, recoloured at creation (SecondFace/Cloth): its mean light here
+                        m.SetFloat("_EnvironmentReflectionsOff", 1f); m.SetFloat("_SpecularHighlightsOff", 1f);
+                        if (d != null) m.SetFloat("_RecolourLum", MeanLum($"{dir}/tex/{tex}.png", iris: false));
+                    }
                     m.renderQueue = 2450;
                     break;
             }
             if (created) AssetDatabase.CreateAsset(m, matPath); else EditorUtility.SetDirty(m);
             return m;
+        }
+
+        /// <summary>The mean linear luminance of a texture's opaque texels (of its saturated, dark ones for an iris): what
+        /// SecondFace/Cloth's recolour divides by, so a chosen colour keeps the texture's light and dark round it.</summary>
+        public static float MeanLum(string png, bool iris)
+        {
+            if (!File.Exists(png)) return 0.2f;
+            var t = new Texture2D(2, 2, TextureFormat.RGBA32, false, false);
+            t.LoadImage(File.ReadAllBytes(png));
+            var px = t.GetPixels32();
+            Object.DestroyImmediate(t);
+            double sum = 0; var n = 0;
+            for (var i = 0; i < px.Length; i += 7)
+            {
+                var p = px[i];
+                if (p.a < 128) continue;
+                var c = new Color(p.r / 255f, p.g / 255f, p.b / 255f).linear;
+                var lum = 0.3f * c.r + 0.59f * c.g + 0.11f * c.b;
+                if (iris)
+                {
+                    var mx = Mathf.Max(c.r, Mathf.Max(c.g, c.b)); var mn = Mathf.Min(c.r, Mathf.Min(c.g, c.b));
+                    if (mx < 1e-3f || (mx - mn) / mx < 0.45f || lum > 0.3f) continue;
+                }
+                sum += lum; n++;
+            }
+            return n > 0 ? Mathf.Max(0.005f, (float)(sum / n)) : 0.2f;
         }
 
         /// <summary>The normal map for a diffuse named &lt;stem&gt;_d: &lt;stem&gt;_n, or for a person's dyed garment

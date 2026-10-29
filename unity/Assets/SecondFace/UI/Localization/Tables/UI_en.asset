@@ -1079,6 +1079,110 @@ MonoBehaviour:
     m_Localized: Survival
     m_Metadata:
       m_Items: []
+  - m_Id: 38589874683904
+    m_Localized: Look
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044032
+    m_Localized: SKIN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044033
+    m_Localized: Lighter or darker
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044034
+    m_Localized: Rosier or warmer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044035
+    m_Localized: Freckles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044036
+    m_Localized: HAIR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044037
+    m_Localized: EYES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044038
+    m_Localized: A SCAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044039
+    m_Localized: A TATTOO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044040
+    m_Localized: None
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044041
+    m_Localized: Split brow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044042
+    m_Localized: Cheek slash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044043
+    m_Localized: Split lip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044044
+    m_Localized: Cut over the eye
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044045
+    m_Localized: Burn on the jaw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044046
+    m_Localized: Burn on the cheek
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044047
+    m_Localized: Chin nick
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044048
+    m_Localized: Broken nose
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044049
+    m_Localized: Cistern number
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044050
+    m_Localized: Tally
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044051
+    m_Localized: Tear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044052
+    m_Localized: Chin lines
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044053
+    m_Localized: Brow dots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044054
+    m_Localized: Temple spiral
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044055
+    m_Localized: Jaw stripes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38589904044056
+    m_Localized: Eye band
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -625,9 +625,12 @@ face filling the frame, or roll another face); pick the body type, the height an
 standard start or roll your attributes the old way (roll, keep, recall, then move points); tag three skills and take
 up to two traits; begin. Seen in `docs/evidence/unity/p5/ui_create_who.jpg`, `ui_create_face.jpg`,
 `ui_create_body.jpg`, `ui_create_attributes.jpg` and `ui_create_skills.jpg`.
-**Next action:** P5.3i part 2: the look in the shaders — skin tone and undertone, freckles, eye colour, hair colour,
-a scar and a tattoo drawn over the skin — on the creation's body page (BUILD_PLAN P5 "Order of work" 3i). Then part 3
-(body sliders and hair choices from the people pipeline: Blender and the MakeHuman assets are in the session
+**The look (P5.3i part 2, 2026-10-29):** a Look page in creation: the skin lighter or darker, rosier or warmer,
+freckles; the hair's colour (dull, dusty, sun-bleached or greying); the eyes'; a scar (eight, from a split brow to a
+burn on the jaw) and a tattoo (eight, from a Cistern number on the neck to a tally on the cheek), all on the live face.
+Seen in `docs/evidence/unity/p5/ui_create_look.jpg` and `ui_create_look_face.jpg`.
+**Next action:** P5.3i part 3: body sliders (build, muscle) and hair choices from the people pipeline (BUILD_PLAN P5
+"Order of work" 3i; the braid seen light reads as a cap, so better hair is part of it; Blender and the MakeHuman assets are in the session
 scratchpad, `blender/` and `mhc/`; if a fresh session lacks them, see `tools/unity/people/`). **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).

@@ -51,7 +51,9 @@ namespace SecondFace.Tests
     /// player can pay for and refuses one they cannot (`ui_barter`, `ui_barter_haggle`). Creation (P5.3i) offers the
     /// origins, takes a name and pronouns, frames the face while the sculptor's sliders and another face change it, swaps
     /// the body, dyes the clothes, sets the height, rolls, keeps and recalls the attributes and moves a point, tags and
-    /// takes traits, and begins with the player made (`ui_create_who`, `_face`, `_body`, `_attributes`, `_skills`).
+    /// takes traits, and begins with the player made (`ui_create_who`, `_face`, `_body`, `_attributes`, `_skills`); the
+    /// look darkens the skin, cuts a scar, inks a tattoo and recolours the hair and eyes on the figure (`ui_create_look`,
+    /// and the face alone `ui_create_look_face`).
     /// </summary>
     public class UiTests : IPrebuildSetup
     {
@@ -797,6 +799,31 @@ namespace SecondFace.Tests
             yield return null;
             Assert.That(Changed(before, Pixels(screen.Figure.Texture)), Is.GreaterThan(0.02f), "the face changed on the figure");
             Save(_rt, "ui_create_face");
+
+            screen.Show("look");
+            for (var i = 0; i < 2; i++) yield return null;
+            Assert.That(screen.Figure.Close, Is.True);
+            var plain = Pixels(screen.Figure.Texture);
+            screen.Content.Q("slider-tone").Q<Slider>().value = 0.55f;
+            Press(screen.Content.Q<Button>("scar-cheek_slash"));
+            Press(screen.Content.Q<Button>("tattoo-tally_cheek"));
+            Press(screen.Content.Q<Button>("hair-" + Looks.HairColours[4].ToString("x6")));
+            Press(screen.Content.Q<Button>("eyes-blue"));
+            var look = screen.Creation.Look;
+            Assert.That(look.Scar, Is.EqualTo("cheek_slash"));
+            Assert.That(look.Tattoo, Is.EqualTo("tally_cheek"));
+            Assert.That(look.Eyes, Is.EqualTo("blue"));
+            var skin = screen.Figure.Body.GetComponentsInChildren<SkinnedMeshRenderer>(true).First(r => r.name == "Body_LOD0");
+            var block = new MaterialPropertyBlock();
+            skin.GetPropertyBlock(block);
+            Assert.That(block.GetFloat("_Scar"), Is.EqualTo(System.Array.IndexOf(Looks.Scars, "cheek_slash")), "the scar reaches the skin");
+            Assert.That(skin.sharedMaterial.GetTexture("_RestMap"), Is.Not.Null, "the head frame is baked (Second Face/Build player wardrobes)");
+            for (var i = 0; i < 2; i++) yield return null;
+            screen.DrawFigure();
+            yield return null;
+            Assert.That(Changed(plain, Pixels(screen.Figure.Texture)), Is.GreaterThan(0.05f), "skin, hair, eyes and marks on the figure");
+            Save(_rt, "ui_create_look");
+            Save(screen.Figure.Texture, "ui_create_look_face");
 
             screen.Show("body");
             Press(screen.Content.Q<Button>("body-m"));

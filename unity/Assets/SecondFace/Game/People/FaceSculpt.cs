@@ -27,6 +27,10 @@ namespace SecondFace.Game.People
         [Range(0f, 1f)] public float Aged;
         /// <summary>The hair greyed (mh_build's &lt;id&gt;__&lt;hair&gt;_aged_d), worn while the face is mostly aged.</summary>
         public Texture AgedHair;
+        /// <summary>The hair's colour chosen at creation (alpha 0: the texture's own); greys towards ash with
+        /// <see cref="Aged"/> (on the player's recolouring hair shader, P5.3i).</summary>
+        public Color HairColour;
+        public static readonly Color AshGrey = new(0.62f, 0.6f, 0.57f, 1f);
 
         private readonly Dictionary<SkinnedMeshRenderer, Dictionary<string, int>> _index = new();
 
@@ -112,6 +116,15 @@ namespace SecondFace.Game.People
                     _block.SetFloat(AgedId, Aged);
                     r.SetPropertyBlock(_block);
                 }
+                else if (r.name.StartsWith("Hair_") && HairColour.a > 0.001f && m.HasProperty(RecolourId))
+                {
+                    // the chosen colour, greying with age (the photograph is fully aged)
+                    r.GetPropertyBlock(_block);
+                    var c = Color.Lerp(HairColour, AshGrey, Aged * 0.85f);
+                    c.a = 1f;
+                    _block.SetColor(RecolourId, c);
+                    r.SetPropertyBlock(_block);
+                }
                 else if (AgedHair != null && r.name.StartsWith("Hair_") && m.HasProperty(BaseMapId))
                 {
                     // the hair greys with the face (a texture swap past halfway: the photograph is fully aged)
@@ -125,6 +138,7 @@ namespace SecondFace.Game.People
         private static readonly int AgedId = Shader.PropertyToID("_Aged");
         private static readonly int AgedMapId = Shader.PropertyToID("_AgedMap");
         private static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
+        private static readonly int RecolourId = Shader.PropertyToID("_Recolour");
         private MaterialPropertyBlock _block;
     }
 }
