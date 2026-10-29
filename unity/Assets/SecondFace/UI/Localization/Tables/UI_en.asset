@@ -238,6 +238,406 @@ MonoBehaviour:
     m_Localized: About {0} days
     m_Metadata:
       m_Items: []
+  - m_Id: 27095841751040
+    m_Localized: Trade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095892082688
+    m_Localized: Pack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095892082689
+    m_Localized: All
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095892082690
+    m_Localized: Weapons
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095892082691
+    m_Localized: Wear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276992
+    m_Localized: Aid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276993
+    m_Localized: Papers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276994
+    m_Localized: Other
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276995
+    m_Localized: Close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276996
+    m_Localized: '{0} Tolls'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276997
+    m_Localized: Carrying {0} of {1} kg
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276998
+    m_Localized: Nothing here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276999
+    m_Localized: "\xD7{0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277000
+    m_Localized: Equip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277001
+    m_Localized: Sling
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277002
+    m_Localized: Hold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277003
+    m_Localized: Take off
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277004
+    m_Localized: Use
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277005
+    m_Localized: AGAINST {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277006
+    m_Localized: '{0}: worn.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277007
+    m_Localized: '{0}: back in the pack.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277008
+    m_Localized: '{0}: {1} health back.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277009
+    m_Localized: '{0}: used.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277010
+    m_Localized: HEAD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277011
+    m_Localized: BODY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277012
+    m_Localized: IN HAND
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277013
+    m_Localized: SLUNG
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277014
+    m_Localized: Nothing worn there.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277015
+    m_Localized: on the head
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277016
+    m_Localized: worn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277017
+    m_Localized: in hand
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277018
+    m_Localized: slung
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277019
+    m_Localized: Weapon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277020
+    m_Localized: Wear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277021
+    m_Localized: Ammunition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277022
+    m_Localized: Aid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277023
+    m_Localized: Tool
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277024
+    m_Localized: Thing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277025
+    m_Localized: Salvage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277026
+    m_Localized: Paper
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277027
+    m_Localized: Key
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277028
+    m_Localized: Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277029
+    m_Localized: Action points
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277030
+    m_Localized: Range
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277031
+    m_Localized: Magazine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277032
+    m_Localized: Brawn needed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277033
+    m_Localized: Threshold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277034
+    m_Localized: Resistance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277035
+    m_Localized: Radiation guard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277036
+    m_Localized: Stealth
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277037
+    m_Localized: Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277038
+    m_Localized: Pierces
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277039
+    m_Localized: Health
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277040
+    m_Localized: Radiation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277041
+    m_Localized: Effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277042
+    m_Localized: Mends breaks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277043
+    m_Localized: Habit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277044
+    m_Localized: Condition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277045
+    m_Localized: Weight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277046
+    m_Localized: Value
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277047
+    m_Localized: '{0}%'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277048
+    m_Localized: '{0} min'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277049
+    m_Localized: '{0} kg'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277050
+    m_Localized: '{0} Tolls'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277051
+    m_Localized: ballistic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277052
+    m_Localized: blade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277053
+    m_Localized: blunt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277054
+    m_Localized: arc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277055
+    m_Localized: blast
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277056
+    m_Localized: fire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154387611648
+    m_Localized: "THEIR GOODS \xB7 {0} TOLLS ON HAND"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154421166080
+    m_Localized: "YOUR PACK \xB7 {0} TOLLS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154421166081
+    m_Localized: ON THE TABLE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154421166082
+    m_Localized: Tap a thing to put it on the table.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154421166083
+    m_Localized: You pay {0} Tolls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154421166084
+    m_Localized: They pay you {0} Tolls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154421166085
+    m_Localized: Even
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360384
+    m_Localized: BARTER {0} / {1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360385
+    m_Localized: Agreed, {0}% your way for today; refused, {1}% dearer. {2}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360386
+    m_Localized: They will agree.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360387
+    m_Localized: '{0}% chance.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360388
+    m_Localized: You have haggled with them today.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360389
+    m_Localized: Haggle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360390
+    m_Localized: Deal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360391
+    m_Localized: Clear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360392
+    m_Localized: Leave
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360393
+    m_Localized: They come down {0}% for today.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360394
+    m_Localized: 'They hold firm: {0}% dearer for today.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360395
+    m_Localized: won't buy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360396
+    m_Localized: They don't deal in that.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360397
+    m_Localized: You are {0} Tolls short.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360398
+    m_Localized: They have only {0} Tolls on hand.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360399
+    m_Localized: Done.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360400
+    m_Localized: Barter {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360401
+    m_Localized: liked here
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360402
+    m_Localized: disliked here
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360403
+    m_Localized: member's rate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360404
+    m_Localized: '{0}% down today'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360405
+    m_Localized: '{0}% up today'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29035598299136
+    m_Localized: '{0} Toll'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

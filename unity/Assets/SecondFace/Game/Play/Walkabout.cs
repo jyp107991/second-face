@@ -2,6 +2,7 @@ using System.Collections;
 using System.Linq;
 using SecondFace.Core.Content;
 using SecondFace.Core.Dialogue;
+using SecondFace.Core.Inventory;
 using SecondFace.Core.Quest;
 using SecondFace.Core.State;
 using SecondFace.Game.People;
@@ -19,7 +20,8 @@ namespace SecondFace.Game.Play
     /// measuring tour and back. A tap on one of the townsfolk opens the radial (P5.3c): talk walks the walker over, the
     /// person turns to them and their conversation from the content opens in the panel (P5.3d; on a fresh game state,
     /// <see cref="Game"/>, so what is said there stays in the walkabout); look has them meet each other's eyes and the
-    /// person waves.
+    /// person waves. The walker carries a kit (<see cref="Kit"/>) the pack shows; the townsfolk who keep a stall can be
+    /// traded with (P5.3h): the walker goes over and their barter table opens with their face across it.
     /// </summary>
     public sealed class Walkabout : MonoBehaviour
     {
@@ -42,9 +44,28 @@ namespace SecondFace.Game.Play
         private QuestEngine _quests;
         /// <summary>The conversation open now (null when none).</summary>
         public DialoguePanel Conversation { get; private set; }
+        /// <summary>The barter table open now (null when none).</summary>
+        public BarterScreen Trade { get; private set; }
+
+        /// <summary>What the walkabout's player carries until the opening gives them their own: the Cistern's issue worn,
+        /// a pipe in hand, a zip gun and a few rounds, water, a bandage or two, jerky, salvage, a lamp and some Tolls.</summary>
+        private void Kit()
+        {
+            var inv = Game.Pc.Inventory;
+            if (inv.Items.Count > 0 || inv.Equipped.Count > 0 || Registry.Items.Count == 0) return;
+            foreach (var (id, n) in new[] { ("r_jumpsuit", 1), ("w_pipe", 1), ("w_zip38", 1), ("a_38", 6), ("c_water", 2), ("c_bandage", 2), ("c_jerky", 1), ("j_scrap", 3), ("j_cloth", 2), ("t_lamp", 1) })
+                if (Items.Has(id)) Inv.AddItem(inv, Inv.MakeItem(id, n));
+            inv.Tolls = 40;
+            Inv.Equip(inv, inv.Items.FindIndex(i => i.Def == "r_jumpsuit"));
+            Inv.Equip(inv, inv.Items.FindIndex(i => i.Def == "w_pipe"));
+            var zip = inv.Items.Find(i => i.Def == "w_zip38");
+            if (zip != null) zip.Cond = 0.55;
+            Inv.SyncGear(Game.Pc.Sheet, inv);
+        }
 
         private IEnumerator Start()
         {
+            Kit();
             if (Stage == null) yield break;
             if (!Stage.Raised) yield return Stage.Raise();
             if (!Stage.Raised) yield break;
@@ -96,7 +117,9 @@ namespace SecondFace.Game.Play
                     anim.gameObject.AddComponent<SecondFace.Game.People.Gaze>();
                 }
                 var name = Bootstrap.Content?.Entry("npcs", m.Id)?["name"]?.ToString();
-                var it = Interactable.Add(p, m.Id, string.IsNullOrEmpty(name) ? Strings.Get("people.someone") : name, 0.4f, 1.85f, "talk", "look");
+                var trades = Registry.Npcs.TryGetValue(m.Id, out var def) && def.Merchant != null;
+                var verbs = trades ? new[] { "talk", "trade", "look" } : new[] { "talk", "look" };
+                var it = Interactable.Add(p, m.Id, string.IsNullOrEmpty(name) ? Strings.Get("people.someone") : name, 0.4f, 1.85f, verbs);
                 it.Chosen += (who, verb) => StartCoroutine(Respond(who, verb));
                 n++;
             }
@@ -139,7 +162,7 @@ namespace SecondFace.Game.Play
             var walkerGaze = walkerAnim != null ? walkerAnim.GetComponent<Gaze>() : null;
             var head = anim != null && anim.isHuman ? anim.GetBoneTransform(HumanBodyBones.Head) : person;
             var walkerHead = walkerAnim != null && walkerAnim.isHuman ? walkerAnim.GetBoneTransform(HumanBodyBones.Head) : Walker.transform;
-            if (verb == "talk")
+            if (verb == "talk" || verb == "trade")
             {
                 var away = Walker.transform.position - person.position;
                 away.y = 0;
@@ -169,6 +192,8 @@ namespace SecondFace.Game.Play
             if (ambient != null) ambient.Gesture(verb == "talk" ? "talk" : "wave");   // not ?. on a component
             if (verb == "talk" && OpenConversation(who))
                 while (Conversation != null && Conversation.IsOpen) yield return null;
+            else if (verb == "trade" && OpenTrade(who))
+                while (Trade != null && Trade.IsOpen) yield return null;
             else yield return new WaitForSeconds(6f);
             if (gaze != null && gaze.Target == walkerHead) gaze.Target = null;
             if (walkerGaze != null && walkerGaze.Target == head) walkerGaze.Target = null;
@@ -196,6 +221,20 @@ namespace SecondFace.Game.Play
             }
             panel.Presented += _ => Quests.Update();   // a choice's effects may move a quest on
             Conversation = ui.Open(panel);
+            return true;
+        }
+
+        /// <summary>Opens a merchant's barter table, their face across it (false when they keep no stall).</summary>
+        public bool OpenTrade(Interactable who)
+        {
+            var ui = UIService.Instance;
+            if (ui == null || !Registry.Npcs.TryGetValue(who.Id, out var npc) || npc.Merchant == null) return false;
+            var face = who.GetComponentInChildren<Animator>() != null ? who.gameObject : null;
+            Trade = ui.Open(new BarterScreen(new BarterModel
+            {
+                Game = Game, MerchantId = who.Id, Def = npc.Merchant, Name = string.IsNullOrEmpty(npc.Name) ? who.Title : npc.Name,
+                Settlement = string.IsNullOrEmpty(npc.Settlement) ? "shale" : npc.Settlement, Face = face != null ? Portraits.Of(face) : null,
+            }));
             return true;
         }
 

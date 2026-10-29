@@ -138,7 +138,7 @@ namespace SecondFace.Game
             if (_hud == null)
             {
                 _hud = new Hud(UI);
-                _hud.Actions(OpenNotebook, () => OpenMap(), null);   // the pack comes with P5.3h
+                _hud.Actions(OpenNotebook, () => OpenMap(), () => OpenPack());
                 _hud.ObjectiveTapped += () => OpenNotebook(SecondFace.Core.World.Notebook.Tracked(Walkabout.Game));
                 UI.StackChanged += () => _hudNext = 0f;   // a quest tracked in the notebook, or one a conversation began, shows at once
                 var place = Content?.Entry("maps", "shale")?["name"]?.ToString() ?? "Shale";
@@ -174,6 +174,15 @@ namespace SecondFace.Game
         }
 
         private void OpenNotebook() => OpenNotebook(null);
+
+        /// <summary>Opens the pack over the walkabout: the walker's kit, the live figure in the player's body.</summary>
+        public PackScreen OpenPack()
+        {
+            if (UI == null || Walkabout == null || Stage == null) return null;
+            if (UI.Top is PackScreen open) return open;
+            var assets = Stage.Assets;
+            return UI.Open(new PackScreen(new PackModel { Game = Walkabout.Game, Body = assets.PlayerM, Idle = assets.Locomotion, Fit = "m" }));
+        }
 
         /// <summary>Opens the world map over the walkabout: the places its game knows, the walker where they stand, the
         /// quickest journeys from the place they are nearest.</summary>

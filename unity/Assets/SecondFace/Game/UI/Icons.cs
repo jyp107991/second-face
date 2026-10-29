@@ -9,7 +9,7 @@ namespace SecondFace.Game.UI
     /// </summary>
     public static class Icons
     {
-        public static readonly string[] Names = { "notebook", "map", "pack", "talk", "look", "take", "use", "steal", "give", "attack" };
+        public static readonly string[] Names = { "notebook", "map", "pack", "talk", "look", "take", "use", "steal", "give", "attack", "trade" };
 
         public static VisualElement Make(string name, float size = 40f)
         {
@@ -110,6 +110,14 @@ namespace SecondFace.Game.UI
                     p.MoveTo(P(0.24f, 0.76f)); p.LineTo(P(0.82f, 0.18f));
                     p.MoveTo(P(0.22f, 0.56f)); p.LineTo(P(0.44f, 0.78f));   // the guard
                     p.MoveTo(P(0.24f, 0.76f)); p.LineTo(P(0.14f, 0.86f));   // the grip
+                    p.Stroke();
+                    break;
+                case "trade":   // an arrow each way
+                    p.BeginPath();
+                    p.MoveTo(P(0.18f, 0.36f)); p.LineTo(P(0.80f, 0.36f));
+                    p.MoveTo(P(0.66f, 0.22f)); p.LineTo(P(0.80f, 0.36f)); p.LineTo(P(0.66f, 0.50f));
+                    p.MoveTo(P(0.82f, 0.64f)); p.LineTo(P(0.20f, 0.64f));
+                    p.MoveTo(P(0.34f, 0.50f)); p.LineTo(P(0.20f, 0.64f)); p.LineTo(P(0.34f, 0.78f));
                     p.Stroke();
                     break;
                 default:   // a verb with no icon of its own yet

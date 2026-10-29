@@ -19,6 +19,8 @@ namespace SecondFace.Game.World
         /// with the locomotion controller they share (idle at rest, the captured walk and jog by speed).</summary>
         public GameObject Walker;
         public GameObject[] Townsfolk;
+        /// <summary>The player's bodies (the player bases with their wardrobes, P4.2-P4.3): the pack's figure.</summary>
+        public GameObject PlayerM, PlayerF;
         public RuntimeAnimatorController Locomotion;
 
         public bool Complete => Layers != null && Catalog != null && Details != null && Places != null && Sky != null;

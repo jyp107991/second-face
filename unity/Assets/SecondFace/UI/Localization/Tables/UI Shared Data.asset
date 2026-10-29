@@ -235,6 +235,406 @@ MonoBehaviour:
     m_Key: map.days
     m_Metadata:
       m_Items: []
+  - m_Id: 27095841751040
+    m_Key: verb.trade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095892082688
+    m_Key: pack.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095892082689
+    m_Key: pack.filter.all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095892082690
+    m_Key: pack.filter.weapons
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095892082691
+    m_Key: pack.filter.wear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276992
+    m_Key: pack.filter.aid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276993
+    m_Key: pack.filter.papers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276994
+    m_Key: pack.filter.other
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276995
+    m_Key: pack.close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276996
+    m_Key: pack.tolls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276997
+    m_Key: pack.carry
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276998
+    m_Key: pack.empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896276999
+    m_Key: pack.qty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277000
+    m_Key: pack.equip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277001
+    m_Key: pack.sling
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277002
+    m_Key: pack.hold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277003
+    m_Key: pack.unequip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277004
+    m_Key: pack.use
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277005
+    m_Key: pack.against
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277006
+    m_Key: pack.equipped
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277007
+    m_Key: pack.unequipped
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277008
+    m_Key: pack.healed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277009
+    m_Key: pack.used
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277010
+    m_Key: pack.slot.head
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277011
+    m_Key: pack.slot.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277012
+    m_Key: pack.slot.primary
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277013
+    m_Key: pack.slot.secondary
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277014
+    m_Key: pack.slot.empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277015
+    m_Key: pack.worn.head
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277016
+    m_Key: pack.worn.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277017
+    m_Key: pack.worn.primary
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277018
+    m_Key: pack.worn.secondary
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277019
+    m_Key: cat.weapon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277020
+    m_Key: cat.armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277021
+    m_Key: cat.ammo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277022
+    m_Key: cat.consumable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277023
+    m_Key: cat.tool
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277024
+    m_Key: cat.misc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277025
+    m_Key: cat.junk
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277026
+    m_Key: cat.note
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277027
+    m_Key: cat.key
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277028
+    m_Key: stat.damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277029
+    m_Key: stat.ap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277030
+    m_Key: stat.range
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277031
+    m_Key: stat.magazine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277032
+    m_Key: stat.brawn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277033
+    m_Key: stat.dt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277034
+    m_Key: stat.dr
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277035
+    m_Key: stat.rad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277036
+    m_Key: stat.stealth
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277037
+    m_Key: stat.dmg_mult
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277038
+    m_Key: stat.dt_pen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277039
+    m_Key: stat.heal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277040
+    m_Key: stat.rads
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277041
+    m_Key: stat.effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277042
+    m_Key: stat.mend
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277043
+    m_Key: stat.habit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277044
+    m_Key: stat.condition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277045
+    m_Key: stat.weight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277046
+    m_Key: stat.value
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277047
+    m_Key: stat.pct
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277048
+    m_Key: stat.min
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277049
+    m_Key: stat.kg
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277050
+    m_Key: stat.tolls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277051
+    m_Key: dmg.ballistic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277052
+    m_Key: dmg.blade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277053
+    m_Key: dmg.blunt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277054
+    m_Key: dmg.energy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277055
+    m_Key: dmg.explosive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27095896277056
+    m_Key: dmg.fire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154387611648
+    m_Key: barter.theirs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154421166080
+    m_Key: barter.yours
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154421166081
+    m_Key: barter.table
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154421166082
+    m_Key: barter.nothing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154421166083
+    m_Key: barter.you_pay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154421166084
+    m_Key: barter.they_pay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154421166085
+    m_Key: barter.even
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360384
+    m_Key: barter.check
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360385
+    m_Key: barter.terms
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360386
+    m_Key: barter.certain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360387
+    m_Key: barter.chance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360388
+    m_Key: barter.spent
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360389
+    m_Key: barter.haggle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360390
+    m_Key: barter.deal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360391
+    m_Key: barter.clear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360392
+    m_Key: barter.leave
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360393
+    m_Key: barter.haggled_win
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360394
+    m_Key: barter.haggled_lose
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360395
+    m_Key: barter.wont
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360396
+    m_Key: barter.wont_deal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360397
+    m_Key: barter.short
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360398
+    m_Key: barter.no_cash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360399
+    m_Key: barter.done
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360400
+    m_Key: barter.skill
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360401
+    m_Key: barter.liked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360402
+    m_Key: barter.disliked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360403
+    m_Key: barter.member
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360404
+    m_Key: barter.today_down
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28154425360405
+    m_Key: barter.today_up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29035598299136
+    m_Key: stat.toll
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -57,3 +57,103 @@ common.yes	Yes
 common.no	No
 common.ok	OK
 common.cancel	Cancel
+verb.trade	Trade
+pack.title	Pack
+pack.filter.all	All
+pack.filter.weapons	Weapons
+pack.filter.wear	Wear
+pack.filter.aid	Aid
+pack.filter.papers	Papers
+pack.filter.other	Other
+pack.close	Close
+pack.tolls	{0} Tolls
+pack.carry	Carrying {0} of {1} kg
+pack.empty	Nothing here.
+pack.qty	×{0}
+pack.equip	Equip
+pack.sling	Sling
+pack.hold	Hold
+pack.unequip	Take off
+pack.use	Use
+pack.against	AGAINST {0}
+pack.equipped	{0}: worn.
+pack.unequipped	{0}: back in the pack.
+pack.healed	{0}: {1} health back.
+pack.used	{0}: used.
+pack.slot.head	HEAD
+pack.slot.body	BODY
+pack.slot.primary	IN HAND
+pack.slot.secondary	SLUNG
+pack.slot.empty	Nothing worn there.
+pack.worn.head	on the head
+pack.worn.body	worn
+pack.worn.primary	in hand
+pack.worn.secondary	slung
+cat.weapon	Weapon
+cat.armor	Wear
+cat.ammo	Ammunition
+cat.consumable	Aid
+cat.tool	Tool
+cat.misc	Thing
+cat.junk	Salvage
+cat.note	Paper
+cat.key	Key
+stat.damage	Damage
+stat.ap	Action points
+stat.range	Range
+stat.magazine	Magazine
+stat.brawn	Brawn needed
+stat.dt	Threshold
+stat.dr	Resistance
+stat.rad	Radiation guard
+stat.stealth	Stealth
+stat.dmg_mult	Damage
+stat.dt_pen	Pierces
+stat.heal	Health
+stat.rads	Radiation
+stat.effect	Effect
+stat.mend	Mends breaks
+stat.habit	Habit
+stat.condition	Condition
+stat.weight	Weight
+stat.value	Value
+stat.pct	{0}%
+stat.min	{0} min
+stat.kg	{0} kg
+stat.tolls	{0} Tolls
+stat.toll	{0} Toll
+dmg.ballistic	ballistic
+dmg.blade	blade
+dmg.blunt	blunt
+dmg.energy	arc
+dmg.explosive	blast
+dmg.fire	fire
+barter.theirs	THEIR GOODS · {0} TOLLS ON HAND
+barter.yours	YOUR PACK · {0} TOLLS
+barter.table	ON THE TABLE
+barter.nothing	Tap a thing to put it on the table.
+barter.you_pay	You pay {0} Tolls
+barter.they_pay	They pay you {0} Tolls
+barter.even	Even
+barter.check	BARTER {0} / {1}
+barter.terms	Agreed, {0}% your way for today; refused, {1}% dearer. {2}
+barter.certain	They will agree.
+barter.chance	{0}% chance.
+barter.spent	You have haggled with them today.
+barter.haggle	Haggle
+barter.deal	Deal
+barter.clear	Clear
+barter.leave	Leave
+barter.haggled_win	They come down {0}% for today.
+barter.haggled_lose	They hold firm: {0}% dearer for today.
+barter.wont	won't buy
+barter.wont_deal	They don't deal in that.
+barter.short	You are {0} Tolls short.
+barter.no_cash	They have only {0} Tolls on hand.
+barter.done	Done.
+barter.skill	Barter {0}
+barter.liked	liked here
+barter.disliked	disliked here
+barter.member	member's rate
+barter.today_down	{0}% down today
+barter.today_up	{0}% up today

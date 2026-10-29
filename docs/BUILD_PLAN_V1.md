@@ -441,7 +441,8 @@ from fixture state and captured (`UiTests`, the panel drawn into a texture):
 - ~~3g. The map and travel (world and local; pins)~~ (the world map done, below; the local map, pins and the travel
   itself follow: the local map as a top-down render of the place round the player, pins on a long press, the journey
   run by `TravelService` in P6.5).
-- 3h. The pack with the live paper doll, and barter.
+- ~~3h. The pack with the live paper doll, and barter~~ (done, below; item models and icons rendered from them come
+  with P6.1's loot, the procedural gear, held weapons and visible chrome on the figure with the P4 follow-ups).
 - 3i. Character creation and the sculptor (body sliders here).
 - 3j. Title, settings (text size, contrast, controls), saves and pause.
 - 3k. The combat bar and log (with P6). 3l. Photo mode and the gamepad.
@@ -556,6 +557,45 @@ as an arrow along their heading. A tap on a place opens its card: name, region, 
 (`Travel.PlanTrip`) as hours or days on foot or by a line you can ride, or "no known way"; a travel button where a way
 exists and the model offers travel. Back closes the card, then the map. The walkabout knows its town and the places its
 roads lead to (`Walkabout.Know`); the HUD's map button opens the map there. Captures `ui_map`, `ui_map_card`.
+
+*As built (P5.3h, 2026-10-29).* Core: `Inventory.Wear` (port of the web game's wardrobe rule: the base clothes, worn
+armour over or instead of them, the weapon in hand, visible chrome as gear; `Key` changes whenever the outfit would);
+`Inventory.Pack` (the sections all / weapons / wear / aid / papers / other, a steady order, the piece an item is
+weighed against — the weapon in hand, the armour in its slot — and `Stats` as `StatLine`s with the change against it
+and whether it helps); `Barter` gains the price context from the game (`Context`: Barter with tools, the settlement's
+standing, a member's rate, the markup, the `price_buy`/`price_sell` perk modifiers the web game never applied) and the
+haggle: once a day per merchant, a Barter check (`Checks.SkillCheck`: met always lands, a near miss may) against
+`HaggleDc` = 15 + 40 × (markup − 1) + |net| / 25 (at most 15); landed, the day's prices move 4 % at the DC up to 15 % the
+player's way; refused, 5 % against (`MerchantState.HaggleDay`, `Haggle`). `PackTests` (4). Game: `UI.ItemArt` draws
+every item as ink on paper (63 drawings as SVG path data in a 100-unit box — wash, line, fine line, solid, circles —
+parsed once, drawn with `Painter2D`; chosen by the shape in the hand, what armour puts on the body, the ammunition's
+kind, the content icon, the category); `ItemGlyph` is the element. `People.Studio` is the portrait studio made shared
+(one camera on layer 31, the fixed key/fill/rim and trilight, the world's lights, ambient and fog set aside per render);
+`People.Figure` is the live paper doll: a copy of the player's body idling in the studio 3 km under the world, a soft
+shadow sprite at its feet, drawn full length (FOV 24°, 576×864, MSAA 4) when the pack opens, after a change of clothes
+(again the next frame, once the old garments are gone), while it is dragged round, and every 120 ms for the idle's
+breath; `People.Dresser` puts a `Wear` outfit on a `Wardrobe` slot by slot (the outfit's garment where the body's set
+has it built, the set's own where not; dyes as tints). `UI.PackScreen` (opaque, on the desk): the figure on the left with
+the four worn places over it (head, body, in hand, slung), two pages: the grid of item cells by section (drawing, count,
+condition line) and the item's card (drawing, name, kind, the content's words, its figures each against the piece it
+would replace in sage or rust, equip / sling / use, take off / hold for a worn one), the load against the carry along
+the foot. `UI.BarterScreen` (opaque): their goods on the left page priced, the player's pack on the right priced (dimmed
+"won't buy" where they do not deal), the table between with the merchant's portrait across it, the reasons for the
+prices, the lines each way (a minus takes one back), the balance, the haggle's check pill, terms and odds before
+trying, then haggle, deal, clear, leave; a deal the player cannot pay for, or the merchant cannot, is refused with
+the sum short. `ItemCells` holds the shared cell and stat rows. The walkabout gives its player a kit (the Cistern's
+issue worn, a pipe in hand, a worn zip gun, rounds, water, bandages, food, salvage, a lamp, 40 Tolls); townsfolk who keep a
+stall have a trade verb (the walker goes over, the table opens with their face); the HUD's pack button opens the pack
+on the player's body (`WorldAssets.PlayerM`/`PlayerF`). A panel drawing into a texture repaints only what is marked
+dirty, so each draw of the figure marks its image (`PackScreen.DrawFigure`). Captures `ui_pack`, `ui_pack_worn`,
+`ui_pack_figure` (the figure's own texture), `ui_barter`, `ui_barter_haggle`. Known: a garment worn over another, both
+fitted to the bare body, lets the one under it show through in patches (the duster's long cardigan over the shirt,
+`ui_pack_figure`); the fix is the next step, P4.10: a cloth shader (URP PBR with alpha clip, as the cloth's Lit
+materials now) with a per-layer offset along the normals set by the wardrobe for each slot, which is also where the
+runtime grime goes. Not yet: item models (the drawings stand until P6.1 brings things to pick up; then an icon bake
+renders each model like a portrait), the procedural gear (wraps, goggles, plates), the held weapon and visible chrome
+on the figure (P4 follow-ups), the full wardrobe of every garment on the player's bases (a duster on the player's body
+is the long cardigan and the cargo trousers; the tank top under it is not built yet), dropping things (with loot).
 
 ### P6 — Systems and combat
 1. Interactions and loot (`Play/`): tap on a thing → radial of verbs from content (`talk`, `look`, `take`, `use`,
@@ -1593,6 +1633,13 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   word, so a slot `mat_skin:<id>__<long skin name>_d` lost its tail and Unity found no texture (the untextured
   fallback colour is a dark fibre). Keep texture names short (`<id>__skin_d`); `mh_build.slot()` raises on a slot
   name over 63 characters.
+- **A UI Toolkit page overflowed its card instead of scrolling** (the pack's stat rows ran under its buttons): flex
+  items do not shrink by default in UI Toolkit (Yoga's `flex-shrink` is 0, not the web's 1); a `ScrollView` that should
+  take the space left needs `flex-grow: 1; flex-shrink: 1; flex-basis: 0`, and its container `overflow: hidden`.
+- **A figure drawn the frame its clothes changed shows the old and the new together**: `Wardrobe` takes garments
+  off with `Destroy`, which waits for the frame's end. Draw again the next frame (`PackScreen` schedules it).
+- **"Covers more of the frame" is no test of a coat**: a dark dye sits within the backdrop's tolerance. Compare the
+  draws before and after a change (`UiTests.Changed`) instead of counting pixels off the backdrop.
 - **Every avatar failed and nothing failed** (local editor): after the jaw bone left the rig, the people's `.meta`
   files still held the first import's bone map, so every import logged "Avatar creation failed: Transform 'Jaw' for
   human bone 'Jaw' not found" and the tests passed on fallback framing. The importer now maps the bones afresh on

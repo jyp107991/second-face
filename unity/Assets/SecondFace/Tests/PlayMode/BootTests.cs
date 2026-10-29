@@ -109,6 +109,27 @@ namespace SecondFace.Tests
             Assert.That(map.You, Is.Not.Null, "and the walker");
             map.Close();
             yield return null;
+            // the pack (P5.3h): the walker's kit, the live figure in the player's body; a stall-keeper's barter table
+            Assert.That(boot.World.PlayerM, Is.Not.Null, "the player's body is in the world assets (Second Face/Wire the Boot scene)");
+            Assert.That(boot.Hud.PackButton.resolvedStyle.display, Is.EqualTo(UnityEngine.UIElements.DisplayStyle.Flex), "the pack button is shown");
+            var pack = boot.OpenPack();
+            for (var f = 0; f < 4; f++) yield return null;
+            Assert.That(boot.UI.Top, Is.SameAs(pack), "the pack opened");
+            Assert.That(walk.Game.Pc.Inventory.EquippedAt("body"), Is.Not.Null, "the walker wears the Cistern's issue");
+            Assert.That(pack.Cells.Count, Is.EqualTo(walk.Game.Pc.Inventory.Items.Count), "the kit in the grid");
+            Assert.That(pack.Figure, Is.Not.Null, "the live figure");
+            Assert.That(pack.Figure.Draws, Is.GreaterThan(0), "drawn");
+            pack.Close();
+            yield return null;
+            Assert.That(pack.Figure, Is.Null, "the figure goes with the pack");
+            var stall = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None).FirstOrDefault(i => i.Verbs.Contains("trade"));
+            Assert.That(stall, Is.Not.Null, "one of the townsfolk keeps a stall");
+            Assert.That(walk.OpenTrade(stall), Is.True, $"{stall.Title}'s barter table opens");
+            for (var f = 0; f < 3; f++) yield return null;
+            Assert.That(walk.Trade.IsOpen, Is.True);
+            Assert.That(walk.Trade.Theirs.Count, Is.GreaterThan(0), "their goods are on it");
+            walk.Trade.Close();
+            yield return null;
             // a tap on one of the townsfolk in view opens the radial over them (P5.3c); a verb closes it
             var view = Camera.main;
             var tappable = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None);

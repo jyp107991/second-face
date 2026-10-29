@@ -605,7 +605,19 @@ and the rail line. Open it from the HUD: drag and pinch it, see where you stand 
 know for how long the journey there would take. Seen in `docs/evidence/unity/p5/map_sheet.jpg`, `ui_map.jpg` and
 `ui_map_card.jpg`. Still to come: the local map of the place you are in, pins, and the journeys themselves (with the
 systems, P6).
-**Next action:** P5.3h (the pack with the live paper doll, and barter; BUILD_PLAN P5 "Order of work"). **`play-people` is released**
+**The pack and barter (P5.3h, 2026-10-29):** open the pack from the HUD and your character stands on the left in a
+pool of light, wearing what you wear: put on the leather duster and the coat is on them at once; drag across them to
+turn them. Everything you carry is drawn in ink on the pages beside, by section, with how many and how worn; tap one
+for its card, its figures set against what you have in hand or on your back (better in green, worse in red), and
+equip, sling or use it. Stall-keepers in the walkabout can be traded with: their goods and yours priced on either
+side, their face across the table, and a haggle you can see before you try it (your Barter against what it takes,
+what you would win, what a refusal costs, the odds; once a day each). Seen in `docs/evidence/unity/p5/ui_pack.jpg`,
+`ui_pack_worn.jpg`, `ui_pack_figure.jpg`, `ui_barter.jpg` and `ui_barter_haggle.jpg`. Still to come: things drawn
+from real models once there are things to pick up (P6), and the wraps, goggles, plates and weapon in hand shown on the
+figure. Known: the shirt shows through the coat in patches (both were fitted to the bare body); fixed next.
+**Next action:** P4.10, the cloth shader (layers stand off each other along the normals, so a coat covers the shirt
+under it; the runtime grime goes in the same shader; BUILD_PLAN "As built (P5.3h)" says how), then P5.3i (character
+creation and the sculptor, with the body sliders; BUILD_PLAN P5 "Order of work"). **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).
 Step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until Mid ≥ 30 fps).

@@ -634,3 +634,301 @@
 .sf-map__card-trip { font-size: 24px; margin-top: 8px; color: var(--plate-text); white-space: normal; }
 .sf-map__travel { margin-top: 12px; align-self: flex-start; background-color: var(--ochre); color: var(--ink); }
 .sf-map__travel:enabled:hover { background-color: #D59B3A; }
+
+/* ---- item cells (ItemCells.cs): an item's drawing on a scrap of paper ---- */
+.sf-cell {
+    width: 96px;
+    height: 96px;
+    margin: 0 10px 10px 0;
+    padding: 10px;
+    border-width: 1px;
+    border-color: var(--paper-edge);
+    border-radius: 4px;
+    background-color: #F4EEDF;
+}
+.sf-cell:enabled:hover { background-color: #F8F3E7; }
+.sf-cell:enabled:active { background-color: var(--paper-deep); }
+.sf-cell--on { border-width: 3px; border-color: var(--ochre); padding: 8px; }
+.sf-cell--empty { background-color: rgba(244, 238, 223, 0.35); border-color: rgba(201, 185, 148, 0.7); }
+.sf-cell--dim { opacity: 0.45; }
+.sf-cell .sf-glyph { flex-grow: 1; }
+.sf-cell__qty {
+    position: absolute;
+    right: 3px;
+    top: 3px;
+    padding: 0 5px;
+    border-radius: 3px;
+    background-color: rgba(244, 238, 223, 0.9);
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 18px;
+    color: var(--ink);
+}
+.sf-cell__cond {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 5px;
+    height: 5px;
+    border-radius: 2px;
+    background-color: rgba(36, 32, 27, 0.14);
+}
+.sf-cell__cond-fill { height: 100%; border-radius: 2px; background-color: var(--sage); }
+.sf-cell__cond-fill--worn { background-color: var(--ochre); }
+.sf-cell__cond-fill--failing { background-color: var(--rust); }
+
+/* an item's figures (ItemCells.Row) */
+.sf-stat {
+    flex-direction: row;
+    align-items: center;
+    min-height: 34px;
+    border-bottom-width: 1px;
+    border-color: rgba(201, 185, 148, 0.6);
+}
+.sf-stat__label { width: 40%; font-size: 21px; color: var(--pencil); }
+.sf-stat__value {
+    flex-grow: 1;
+    flex-shrink: 1;
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 22px;
+    color: var(--ink);
+}
+.sf-stat__delta { min-width: 92px; font-size: 20px; -unity-text-align: middle-right; }
+.sf-stat__delta--better { color: var(--sage); }
+.sf-stat__delta--worse { color: var(--rust); }
+
+/* ---- the pack (PackScreen.cs): the figure on the desk, the items and the card on two pages ---- */
+.sf-pack { background-color: #2B241E; }
+.sf-pack__head { flex-direction: row; align-items: center; margin: 12px 20px 6px 20px; min-height: 72px; }
+.sf-pack__title {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: 34px;
+    color: var(--plate-text);
+    margin-right: 22px;
+}
+.sf-pack__tolls {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 24px;
+    letter-spacing: 1px;
+    color: #E0A645;
+    margin-right: 18px;
+}
+.sf-pack__close { color: var(--plate-text); border-color: var(--plate-dim); }
+.sf-pack__close:enabled:hover { background-color: rgba(255, 255, 255, 0.06); }
+.sf-pack__body { flex-grow: 1; flex-direction: row; margin: 0 16px; }
+.sf-pack__doll {
+    width: 300px;
+    margin-right: 16px;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: #3C342D;
+}
+.sf-pack__figure { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.sf-pack__slots { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.sf-pack__slot { position: absolute; width: 84px; height: 84px; margin: 0; padding: 8px; background-color: rgba(244, 238, 223, 0.9); }
+.sf-pack__slot.sf-cell--on { padding: 6px; }
+.sf-pack__slot.sf-cell--empty { background-color: rgba(244, 238, 223, 0.18); border-color: rgba(242, 234, 219, 0.35); }
+.sf-pack__slot--active { border-width: 3px; border-color: var(--sage); padding: 6px; }
+.sf-pack__slot--head { right: 12px; top: 14px; }
+.sf-pack__slot--body { right: 12px; top: 136px; }
+.sf-pack__slot--primary { left: 12px; bottom: 150px; }
+.sf-pack__slot--secondary { left: 12px; bottom: 34px; }
+.sf-pack__slot-label {
+    position: absolute;
+    left: -20px;
+    right: -20px;
+    bottom: -26px;
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 16px;
+    letter-spacing: 1px;
+    color: var(--plate-dim);
+    -unity-text-align: middle-center;
+}
+.sf-pack__pages { flex-grow: 1; flex-direction: row; background-color: var(--paper); border-radius: 6px; overflow: hidden; }
+.sf-pack__grid-scroll { width: 52%; flex-shrink: 0; }
+.sf-pack__grid-scroll .unity-scroll-view__content-container { padding: 16px 8px 16px 18px; }
+.sf-pack__grid { flex-direction: row; flex-wrap: wrap; }
+.sf-pack__right { flex-grow: 1; flex-shrink: 1; flex-basis: 0; }
+.sf-pack__card-scroll { flex-grow: 1; flex-shrink: 1; flex-basis: 0; }
+.sf-pack__card-scroll .unity-scroll-view__content-container { padding: 18px 24px 8px 22px; }
+.sf-pack__card-top { flex-direction: row; align-items: center; }
+.sf-pack__card-top .sf-glyph { width: 96px; height: 96px; margin-right: 14px; flex-shrink: 0; }
+.sf-pack__card-names { flex-shrink: 1; }
+.sf-pack__card-name {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: 30px;
+    color: var(--ink);
+    white-space: normal;
+}
+.sf-pack__card-sub { font-size: 20px; color: var(--pencil); margin-top: 2px; }
+.sf-pack__card-desc {
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: 22px;
+    color: var(--ink-soft);
+    white-space: normal;
+    margin-top: 12px;
+}
+.sf-pack__against {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 18px;
+    letter-spacing: 1px;
+    color: var(--pencil);
+    margin-top: 14px;
+}
+.sf-pack__stats { margin-top: 6px; }
+.sf-pack__actions { flex-direction: row; flex-shrink: 0; padding: 10px 22px 14px 22px; border-top-width: 1px; border-color: rgba(201, 185, 148, 0.6); }
+.sf-pack__act { margin-right: 12px; }
+.sf-pack__foot { flex-direction: row; align-items: center; margin: 8px 20px 10px 20px; min-height: 36px; }
+.sf-pack__meter { font-size: 20px; color: var(--plate-text); }
+.sf-pack__meter--over { color: #E07A5F; }
+.sf-pack__meter-track {
+    width: 220px;
+    height: 8px;
+    margin: 0 18px;
+    border-radius: 4px;
+    background-color: rgba(242, 234, 219, 0.16);
+}
+.sf-pack__meter-fill { height: 100%; border-radius: 4px; background-color: var(--sage); }
+.sf-pack__meter-fill--over { background-color: var(--rust); }
+.sf-pack__message {
+    flex-grow: 1;
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: 21px;
+    color: var(--plate-dim);
+    -unity-text-align: middle-right;
+}
+
+/* ---- barter (BarterScreen.cs): their goods and your pack on two pages, the table between with the merchant across it ---- */
+.sf-cell__deal {
+    position: absolute;
+    left: 3px;
+    top: 3px;
+    padding: 0 6px;
+    border-radius: 3px;
+    background-color: var(--ochre);
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 18px;
+    color: var(--ink);
+}
+.sf-barter { background-color: #2B241E; }
+.sf-barter__body { flex-grow: 1; flex-direction: row; margin: 14px 16px 0 16px; }
+.sf-barter__page { flex-grow: 1; flex-basis: 0; background-color: var(--paper); border-radius: 6px; }
+.sf-barter__label {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--plate-dim);
+    margin: 8px 0 2px 0;
+}
+.sf-barter__label--page { color: var(--pencil); margin: 14px 18px 6px 18px; }
+.sf-barter__scroll { flex-grow: 1; }
+.sf-barter__scroll .unity-scroll-view__content-container { padding: 4px 6px 14px 18px; }
+.sf-barter__grid { flex-direction: row; flex-wrap: wrap; }
+.sf-barter__item { margin: 0 10px 12px 0; align-items: center; }
+.sf-barter__item .sf-cell { margin: 0; }
+.sf-barter__price {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 18px;
+    color: var(--ink);
+    margin-top: 2px;
+}
+.sf-barter__price--wont { -unity-font-definition: url("../Fonts/Barlow-Regular.asset"); color: var(--pencil); }
+.sf-barter__table {
+    width: 380px;
+    margin: 0 14px;
+    padding: 14px 16px;
+    border-radius: 6px;
+    background-color: #3C342D;
+}
+.sf-barter__who { flex-direction: row; align-items: center; }
+.sf-barter__face {
+    width: 92px;
+    height: 92px;
+    margin-right: 14px;
+    border-radius: 46px;
+    border-width: 3px;
+    border-color: rgba(242, 234, 219, 0.25);
+    overflow: hidden;
+    background-color: #5C5146;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+.sf-barter__face Image { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.sf-barter__initial {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: 48px;
+    color: var(--plate-text);
+}
+.sf-barter__names { flex-grow: 1; flex-shrink: 1; }
+.sf-barter__name {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: 30px;
+    color: var(--plate-text);
+    white-space: normal;
+}
+.sf-barter__note { font-size: 18px; color: var(--plate-dim); white-space: normal; margin-top: 2px; }
+.sf-barter__lines { flex-grow: 1; flex-shrink: 1; min-height: 150px; }
+.sf-barter__line {
+    flex-direction: row;
+    align-items: center;
+    min-height: 72px;
+    border-bottom-width: 1px;
+    border-color: rgba(242, 234, 219, 0.12);
+}
+.sf-barter__line-glyph { width: 44px; height: 44px; margin-right: 10px; flex-shrink: 0; }
+.sf-barter__line-text { flex-grow: 1; flex-shrink: 1; font-size: 21px; color: var(--plate-text); white-space: normal; }
+.sf-barter__line-dir { font-size: 22px; margin: 0 8px; color: #E0A645; }
+.sf-barter__line--sell .sf-barter__line-dir { color: #9DB38F; }
+.sf-barter__less {
+    min-width: 72px;
+    min-height: 64px;
+    width: 72px;
+    padding: 0;
+    font-size: 30px;
+    color: var(--plate-text);
+    border-color: var(--plate-dim);
+}
+.sf-barter__less:enabled:hover { background-color: rgba(255, 255, 255, 0.06); }
+.sf-barter__hint {
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: 20px;
+    color: var(--plate-dim);
+    white-space: normal;
+    margin-top: 10px;
+}
+.sf-barter__balance {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 28px;
+    color: #E0A645;
+    margin-top: 8px;
+}
+.sf-barter__balance--short { color: #E07A5F; }
+.sf-barter__haggle { margin-top: 8px; }
+.sf-barter__pill {
+    align-self: flex-start;
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 18px;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 3px;
+    background-color: var(--sage);
+    color: var(--paper);
+}
+.sf-barter__pill--unmet { background-color: rgba(0, 0, 0, 0); border-width: 2px; border-color: #E07A5F; color: #E07A5F; }
+.sf-barter__pill--spent { opacity: 0.5; }
+.sf-barter__terms { font-size: 18px; color: var(--plate-dim); white-space: normal; margin-top: 4px; }
+.sf-barter__buttons { flex-direction: row; flex-shrink: 0; margin: 8px -5px 0 -5px; }
+.sf-barter__buttons .sf-button { flex-grow: 1; flex-basis: 0; margin: 0 5px; padding: 0 10px; }
+.sf-barter__quiet { color: var(--plate-text); border-color: var(--plate-dim); }
+.sf-barter__quiet:enabled:hover { background-color: rgba(255, 255, 255, 0.06); }
+.sf-barter__deal { background-color: var(--ochre); color: var(--ink); }
+.sf-barter__deal:enabled:hover { background-color: #D59B3A; }
+.sf-barter__deal:disabled { background-color: var(--ochre); }
+.sf-barter__message {
+    min-height: 34px;
+    margin: 6px 20px 10px 20px;
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: 21px;
+    color: var(--plate-dim);
+    -unity-text-align: middle-center;
+}

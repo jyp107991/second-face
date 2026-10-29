@@ -4,10 +4,14 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
+using SecondFace.Core.Content;
 using SecondFace.Core.Dialogue;
+using SecondFace.Core.Inventory;
 using SecondFace.Core.Quest;
 using SecondFace.Core.State;
+using SecondFace.Core.Stats;
 using SecondFace.Core.World;
+using SecondFace.Game.People;
 using SecondFace.Game.UI;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -36,7 +40,14 @@ namespace SecondFace.Tests
     /// with its objectives and journal, tracks a quest to the top, and turns to the leads, people, letters and decisions;
     /// an empty section says so (`ui_notebook`, `ui_notebook_leads`). The map (P5.3g) opens on the player over the baked
     /// sheet, names only the known places, opens a place's card with the journey there, offers travel only where a way
-    /// exists, keeps its zoom within bounds, and back closes the card before the map (`ui_map`, `ui_map_card`).
+    /// exists, keeps its zoom within bounds, and back closes the card before the map (`ui_map`, `ui_map_card`). The pack
+    /// (P5.3h) lists every carried item as its own drawing, the worn ones in their places round the live figure; an item's
+    /// card weighs it against what is in hand; equipping the duster puts its coat on the figure and its figures on the
+    /// sheet; aid heals; taking off undresses; the figure goes with the pack (`ui_pack`, `ui_pack_worn`, and the figure's own texture
+    /// `ui_pack_figure`). Barter (P5.3h)
+    /// prices both sides, dims what the merchant will not buy, puts things on the table each way, shows the haggle's
+    /// check, terms and odds up front, haggles once a day (a met check moves the deal the player's way), closes a deal the
+    /// player can pay for and refuses one they cannot (`ui_barter`, `ui_barter_haggle`).
     /// </summary>
     public class UiTests : IPrebuildSetup
     {
@@ -512,6 +523,213 @@ namespace SecondFace.Tests
             Assert.That(_ui.Back(), Is.True);
             Assert.That(map.IsOpen, Is.False);
             Assert.That(travelled, Is.Null);
+        }
+
+        /// <summary>The exported content in the registry (the pack and barter read items and merchants from it).</summary>
+        public static void Content()
+        {
+            if (Registry.Items.Count > 0) return;
+            var db = new ContentDb();
+            foreach (var name in ContentDb.Registries)
+                db.Load(name, File.ReadAllText(Path.Combine(Application.streamingAssetsPath, "content", name + ".json")));
+            Registry.Load(db);
+        }
+
+        /// <summary>A player with a kit: a pipe in hand, a worn pistol, a duster and a hood, rounds, aid, salvage.</summary>
+        public static GameState Kitted()
+        {
+            Content();
+            var g = States.NewGame("shale", 0, 0);
+            g.Pc.Sheet = Sheet.Empty();
+            var inv = g.Pc.Inventory;
+            foreach (var (id, n) in new[] { ("w_pipe", 1), ("w_pistol9", 1), ("r_duster", 1), ("r_hood", 1), ("a_9mm", 14), ("c_bandage", 3), ("c_water", 2), ("j_scrap", 4), ("j_wiring", 2), ("t_picks", 1), ("k_ring", 1) })
+                Inv.AddItem(inv, Inv.MakeItem(id, n));
+            inv.Tolls = 37;
+            Inv.Equip(inv, inv.Items.FindIndex(i => i.Def == "w_pipe"));
+            inv.Items.Find(i => i.Def == "w_pistol9").Cond = 0.62;
+            g.Pc.Sheet.Hp = 9;
+            return g;
+        }
+
+        private static Color[] Pixels(RenderTexture rt)
+        {
+            var tex = new Texture2D(rt.width, rt.height, TextureFormat.RGBA32, false);
+            var active = RenderTexture.active;
+            RenderTexture.active = rt;
+            tex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+            tex.Apply();
+            RenderTexture.active = active;
+            var px = tex.GetPixels();
+            Object.Destroy(tex);
+            return px;
+        }
+
+        /// <summary>The share of pixels that differ between two draws.</summary>
+        private static float Changed(Color[] a, Color[] b)
+        {
+            var n = 0;
+            for (var i = 0; i < a.Length; i++) if (Mathf.Abs(a[i].r - b[i].r) + Mathf.Abs(a[i].g - b[i].g) + Mathf.Abs(a[i].b - b[i].b) > 0.1f) n++;
+            return n / (float)a.Length;
+        }
+
+        /// <summary>The share of a figure's texture that is not the studio's backdrop.</summary>
+        private static float Drawn(RenderTexture rt, Color backdrop)
+        {
+            var px = Pixels(rt);
+            var n = 0;
+            foreach (var p in px) if (Mathf.Abs(p.r - backdrop.r) + Mathf.Abs(p.g - backdrop.g) + Mathf.Abs(p.b - backdrop.b) > 0.12f) n++;
+            return n / (float)px.Length;
+        }
+
+        [UnityTest, Timeout(180000)]
+        public IEnumerator PackShowsTheFigureAndEquips()
+        {
+            var g = Kitted();
+            var inv = g.Pc.Inventory;
+#if UNITY_EDITOR
+            var body = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_m.prefab");
+            var idle = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/SecondFace/People/Locomotion.controller");
+#else
+            GameObject body = null; RuntimeAnimatorController idle = null;
+#endif
+            Assert.That(body, Is.Not.Null, "the player base (Second Face/Build player wardrobes)");
+            _ui = Offscreen(1600, 720, out _rt);
+            _ui.SafeAreaOverride = new Rect(0.05f, 0.04f, 0.95f, 0.96f);
+            var pack = _ui.Open(new PackScreen(new PackModel { Game = g, Body = body, Idle = idle, Fit = "m" }));
+            for (var i = 0; i < 8; i++) yield return null;
+            Assert.That(pack.Cells.Count, Is.EqualTo(inv.Items.Count), "every carried item in the grid; the worn ones in their places");
+            Assert.That(pack.Slot("primary").Q<ItemGlyph>().Key, Is.EqualTo("pipe"));
+            Assert.That(pack.Slot("body").ClassListContains("sf-cell--empty"), Is.True);
+            Assert.That(pack.Cells.Select(c => c.Q<ItemGlyph>().Key).Distinct().Count(), Is.EqualTo(pack.Cells.Count), "each item drawn as itself");
+            Assert.That(pack.Figure, Is.Not.Null);
+            Assert.That(pack.FigureImage.image, Is.EqualTo(pack.Figure.Texture));
+            Assert.That(Drawn(pack.Figure.Texture, Figure.Backdrop), Is.GreaterThan(0.06f), "the figure is drawn");
+            Assert.That(pack.Meter.text, Does.StartWith("Carrying"));
+
+            var pistol = inv.Items.FindIndex(i => i.Def == "w_pistol9");
+            pack.Select(pistol);
+            yield return null;
+            Assert.That(pack.Card.Q<Label>("against").text, Does.Contain("Lead Pipe"), "compared with the weapon in hand");
+            Assert.That(pack.Card.Q("stat-damage").Q<Label>("delta").ClassListContains("sf-stat__delta--better"), Is.True);
+            Assert.That(pack.Card.Q("stat-condition"), Is.Not.Null);
+            Assert.That(pack.Actions.Q<Button>("act-equip"), Is.Not.Null);
+            for (var i = 0; i < 4; i++) yield return null;
+            Assert.That(Save(_rt, "ui_pack"), Is.GreaterThan(0.95f));
+
+            var bare = Pixels(pack.Figure.Texture);
+            Assert.That(pack.Equip(inv.Items.FindIndex(i => i.Def == "r_duster")), Is.True);
+            var draws = pack.Figure.Draws;
+            for (var t = 0f; t < 3f && pack.Figure.Draws <= draws; t += Time.unscaledDeltaTime) yield return null;
+            Assert.That(pack.Figure.Draws, Is.GreaterThan(draws), "drawn again after the change of clothes");
+            Assert.That(inv.EquippedAt("body").Def, Is.EqualTo("r_duster"));
+            Assert.That(Sheet.Derived(g.Pc.Sheet).Dt, Is.EqualTo(2), "the gear's figures count at once");
+            Assert.That(pack.Figure.Wardrobe.Wearing.Values, Does.Contain("mindfront_cardigan_long_open_front"), "the duster shows on the figure");
+            Assert.That(pack.SelectedSlot, Is.EqualTo("body"));
+            Assert.That(pack.Actions.Q<Button>("act-unequip"), Is.Not.Null);
+            Assert.That(Changed(bare, Pixels(pack.Figure.Texture)), Is.GreaterThan(0.02f), "the coat shows on the figure");
+            pack.Figure.Yaw = 25f;
+            pack.DrawFigure();
+            for (var i = 0; i < 2; i++) yield return null;
+            Save(_rt, "ui_pack_worn");
+            Save(pack.Figure.Texture, "ui_pack_figure");
+
+            pack.Show("aid");
+            yield return null;
+            Assert.That(pack.Cells.Count, Is.EqualTo(2));
+            var hp = g.Pc.Sheet.Hp;
+            Assert.That(pack.Use(inv.Items.FindIndex(i => i.Def == "c_bandage")), Is.True);
+            Assert.That(g.Pc.Sheet.Hp, Is.GreaterThan(hp));
+            Assert.That(Inv.CountItem(inv, "c_bandage"), Is.EqualTo(2));
+            Assert.That(pack.Message.text, Does.Contain("health back"));
+            Assert.That(pack.Unequip("body"), Is.True);
+            Assert.That(inv.EquippedAt("body"), Is.Null);
+            Assert.That(pack.Figure.Wardrobe.Wearing.Values, Does.Not.Contain("mindfront_cardigan_long_open_front"));
+
+            var figure = pack.Figure;
+            Assert.That(_ui.Back(), Is.True);
+            Assert.That(pack.IsOpen, Is.False);
+            Assert.That(figure.Body == null && figure.Texture == null, Is.True, "the figure goes with the pack");
+        }
+
+        [UnityTest, Timeout(180000)]
+        public IEnumerator BarterDealsAndHaggles()
+        {
+            var g = Kitted();
+            g.Pc.Sheet.SkillBought["barter"] = 25;
+            var inv = g.Pc.Inventory;
+            var npc = Registry.Npcs["npc_sh_03"];
+            GameObject person = null;
+#if UNITY_EDITOR
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/p2_settler_f.prefab");
+            var idle = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/SecondFace/People/Locomotion.controller");
+            if (prefab != null)
+            {
+                person = Object.Instantiate(prefab, new Vector3(0f, -1000f, 0f), Quaternion.identity);
+                var anim = person.GetComponentInChildren<Animator>();
+                if (anim != null) { anim.runtimeAnimatorController = idle; anim.Update(0f); }
+            }
+#endif
+            yield return null;
+            _ui = Offscreen(1600, 720, out _rt);
+            _ui.SafeAreaOverride = new Rect(0.05f, 0.04f, 0.95f, 0.96f);
+            var screen = _ui.Open(new BarterScreen(new BarterModel
+            {
+                Game = g, MerchantId = "npc_sh_03", Def = npc.Merchant, Name = npc.Name, Settlement = "shale",
+                Face = person != null ? Portraits.Of(person) : null, Rng = new SecondFace.Core.Rng(11),
+            }));
+            for (var i = 0; i < 6; i++) yield return null;
+            var ms = screen.State;
+            Assert.That(screen.Theirs.Count, Is.EqualTo(ms.Inv.Items.Count), "their stock, each with its price");
+            Assert.That(screen.Yours.Count, Is.EqualTo(inv.Items.Count));
+            var picks = inv.Items.FindIndex(i => i.Def == "t_picks");
+            Assert.That(screen.Yours[picks].ClassListContains("sf-cell--dim"), Is.True, "they do not deal in tools");
+            screen.Sell(picks);
+            Assert.That(screen.Deal.Sell, Is.Empty);
+            Assert.That(screen.Message.text, Is.EqualTo("They don't deal in that."));
+
+            var water = ms.Inv.Items.FindIndex(i => i.Def == "c_water");
+            screen.Buy(water);
+            screen.Buy(water);
+            var scrap = inv.Items.FindIndex(i => i.Def == "j_scrap");
+            screen.Sell(scrap);
+            screen.Sell(scrap);
+            yield return null;
+            var t = screen.Totals;
+            Assert.That(t.Net, Is.GreaterThan(0));
+            Assert.That(screen.Balance.text, Is.EqualTo($"You pay {t.Net} Tolls"));
+            Assert.That(screen.Lines.childCount, Is.EqualTo(2), "a line each way");
+            Assert.That(screen.Theirs[water].ClassListContains("sf-cell--on"), Is.True);
+            var offer = screen.Offer;
+            Assert.That(offer.Open, Is.True);
+            Assert.That(offer.Skill, Is.GreaterThanOrEqualTo(offer.Dc), "a trained trader meets a small deal's DC");
+            Assert.That(screen.Pill.text, Is.EqualTo($"BARTER {offer.Skill} / {offer.Dc}"));
+            Assert.That(screen.Pill.ClassListContains("sf-barter__pill--unmet"), Is.False);
+            Assert.That(screen.Terms.text, Does.EndWith("They will agree."));
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(Save(_rt, "ui_barter"), Is.GreaterThan(0.95f));
+
+            Assert.That(screen.Haggle(), Is.True);
+            Assert.That(ms.HaggleDay, Is.EqualTo(screen.Day));
+            Assert.That(screen.Totals.Net, Is.LessThan(t.Net), "the haggle moves the deal the player's way");
+            Assert.That(screen.HaggleButton.enabledSelf, Is.False, "once a day");
+            Assert.That(screen.Message.text, Does.StartWith("They come down"));
+            yield return null;
+            Save(_rt, "ui_barter_haggle");
+
+            var net = screen.Totals.Net;
+            var tolls = inv.Tolls;
+            Assert.That(screen.Strike(), Is.True);
+            Assert.That(inv.Tolls, Is.EqualTo(tolls - net));
+            Assert.That(Inv.CountItem(inv, "c_water"), Is.EqualTo(4));
+            Assert.That(Inv.CountItem(inv, "j_scrap"), Is.EqualTo(2));
+            Assert.That(screen.Deal.Buy, Is.Empty);
+            for (var i = 0; i < ms.Inv.Items.Count; i++) screen.Buy(i, 99);
+            Assert.That(screen.Totals.Net, Is.GreaterThan(inv.Tolls));
+            Assert.That(screen.Strike(), Is.False, "too dear");
+            Assert.That(screen.Message.text, Does.StartWith("You are"));
+            Assert.That(_ui.Back(), Is.True);
+            Assert.That(screen.IsOpen, Is.False);
+            if (person != null) Object.Destroy(person);
         }
 
         private static Label Text(string cls, string text)

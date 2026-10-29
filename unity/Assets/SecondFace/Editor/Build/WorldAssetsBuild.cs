@@ -36,6 +36,9 @@ namespace SecondFace.EditorTools
             if (a.Townsfolk.Length == 0)
                 a.Townsfolk = new[] { "p1_labourer_m", "p2_settler_f", "p5_street_m", "p6_nomad_f", "p4_gilded_f" }.Select(Person).Where(g => g != null).ToArray();
             a.Locomotion = LocomotionBuild.Build();
+            // the player's bodies for the pack's figure (P5.3h), as WardrobeBuild made them
+            a.PlayerM = AssetDatabase.LoadAssetAtPath<GameObject>($"{PeopleDir}/player_m.prefab");
+            a.PlayerF = AssetDatabase.LoadAssetAtPath<GameObject>($"{PeopleDir}/player_f.prefab");
             if (fresh) AssetDatabase.CreateAsset(a, AssetPath); else EditorUtility.SetDirty(a);
             AssetDatabase.SaveAssets();
             if (!a.Complete) Debug.LogWarning("WorldAssetsBuild: some of the world's assets are missing (build terrain layers, scatter catalog, detail meshes, places, sky assets)");

@@ -29,4 +29,6 @@ MonoBehaviour:
   - {fileID: 4076701257671222121, guid: 86074827d407e4b369d673930dbe3279, type: 3}
   - {fileID: 3677702626408596720, guid: 09fb49fd095f28527b5f5a703035de46, type: 3}
   - {fileID: 9094183397666744723, guid: bbfaac0cc7035e4e2b92ce8a10059a7b, type: 3}
+  PlayerM: {fileID: 6726620675166629814, guid: d3f9370a32c9bf9c49456cb2aee4a833, type: 3}
+  PlayerF: {fileID: 2539535584533208972, guid: 24ebc521b512534f6acb1415836c3c61, type: 3}
   Locomotion: {fileID: 9100000, guid: d48b81ce77cb2e95c8b00171183ffc6e, type: 2}
