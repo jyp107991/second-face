@@ -97,6 +97,14 @@ namespace SecondFace.Game.Play
             Pan = Vector3.ClampMagnitude(Pan + world, PanLimit);
         }
 
+        /// <summary>Turns the view to a heading (degrees clockwise from north), eased or at once.</summary>
+        public void TurnTo(float yaw, bool now = false)
+        {
+            _yawGoal = yaw;
+            _yawFling = 0;
+            if (now) Snap();
+        }
+
         /// <summary>Back to the leader (a double tap on them).</summary>
         public void Recentre() => Pan = Vector3.zero;
 

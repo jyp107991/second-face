@@ -180,6 +180,9 @@ What the engine captures show is still wrong (each has a step in §5 P2 or §10)
 - **Hair breaks the hair rule** (§3.4) on the bake-off people (§10 step 2).
 - ~~Leaves near-black, rows of identical plants~~: fixed by the move to FBX with one model per variant (§10 step 6).
 - **The vegetation camera sees the terrain edge** (`vegetation_iso`): frame inside the terrain (§10 step 7).
+- **The default theme's disabled colours show through**: `.unity-button:disabled` sets a background, which a
+  transparent or plate button of ours does not override with one class; every `:disabled` rule of ours sets its
+  background too (P5.3d).
 - **Safe-area padding does not move absolutely placed children**: in UI Toolkit (Yoga) an absolute child is placed
   against its parent's padding edge, so padding a `.sf-safe` wrapper moves its flow children only; absolutely placed
   HUD pieces go in a child that fills the wrapper (P5.3a).
@@ -429,7 +432,8 @@ from fixture state and captured (`UiTests`, the panel drawn into a texture):
   below).
 - ~~3c. The radial action menu (hold on a person or thing; verbs from content) and the touch rules round it~~ (done,
   below; a tap opens it, per §6.F.2).
-- 3d. Dialogue panel bound to Core dialogue (the scene stays visible; options as notebook lines; skip heard lines; log).
+- ~~3d. Dialogue panel bound to Core dialogue (the scene stays visible; options as notebook lines; skip heard lines; log)~~
+  (done, below).
 - 3e. Conversation cameras (over-shoulder two-shot, portrait inserts; Cinemachine).
 - 3f. The notebook (leads, quests, people, letters, decisions) as a book.
 - 3g. The map and travel (world and local; pins).
@@ -482,8 +486,22 @@ dimmed and cannot be chosen; a verb's tap closes the ring and reports the verb; 
 labels are `verb.<id>` in the UI table, icons in `Icons` (talk, look, take, use, steal, give, attack; a ring for any
 other). The walkabout's townsfolk are interactables named from content (`npcs[<post>].name`) with talk (the walker
 walks over, the person turns to them and talks, both look at each other) and look (eyes meet, the person waves); their
-conversations come with the dialogue panel. `BootTests` taps one in clear view and chooses a verb. Captures
+conversations open in the dialogue panel (P5.3d). `BootTests` turns the view to the nearest one in clear view (new
+`OrbitRig.TurnTo`), taps them and chooses a verb. Captures
 `ui_radial`, `ui_radial_corner`.
+
+*As built (P5.3d, 2026-10-29).* `Game.UI.DialoguePanel` (a screen, not opaque, takes every touch) over Core
+`DialogueRunner`: a paper page on the right 46 % (min 560 units; safe-padded on every side but the left,
+`UIService.SafeNoLeftClass`), the scene beside it. Head: the speaker's portrait (a `People.Portraits` RT, or the name's
+initial) and name. A `ScrollView` (touch-scrolled, no bars) holds the log (each past line and the choice taken, in
+pencil), the line (Literata 28; written out at 90 characters a second the first time, whole when heard before; a tap
+on the page finishes it, and the passives and choices appear after it), the passives (label and italic text on a slate
+rule) and the choices (numbered rows of 72+ units; a check shown up front as a pill, sage when met, rust outline when
+not; chosen-before dimmed; locked ones dimmed where the content shows them; exits in italic). The page opens at the
+current line (the log is a scroll up). A choice logs and goes to `DialogueRunner.Choose`; at the end the panel closes
+and raises `Ended`; back takes the content's way out if there is one. `Bootstrap` installs the typed `Registry` after
+loading the content; the walkabout's talk opens the person's content conversation on its own fresh game state
+(`Walkabout.Game`), with their portrait. Captures `ui_dialogue`, `ui_dialogue_log`.
 
 ### P6 — Systems and combat
 1. Interactions and loot (`Play/`): tap on a thing → radial of verbs from content (`talk`, `look`, `take`, `use`,

@@ -24,6 +24,9 @@ namespace SecondFace.Game.UI
         /// <summary>The class of elements kept inside the safe area: their padding is the safe-area insets. Padding does
         /// not move absolutely placed children (they sit against the padding edge), so those go in a child that fills it.</summary>
         public const string SafeClass = "sf-safe";
+        /// <summary>With <see cref="SafeClass"/> on an element that does not reach the screen's left (or right) edge: that
+        /// side is not padded.</summary>
+        public const string SafeNoLeftClass = "sf-safe--no-left", SafeNoRightClass = "sf-safe--no-right";
 
         public static UIService Instance { get; private set; }
 
@@ -154,9 +157,9 @@ namespace SecondFace.Game.UI
         /// on change; call it for one added later).</summary>
         public void Pad(VisualElement e)
         {
-            e.style.paddingLeft = Insets.x;
+            e.style.paddingLeft = e.ClassListContains(SafeNoLeftClass) ? 0f : Insets.x;
             e.style.paddingTop = Insets.y;
-            e.style.paddingRight = Insets.z;
+            e.style.paddingRight = e.ClassListContains(SafeNoRightClass) ? 0f : Insets.z;
             e.style.paddingBottom = Insets.w;
         }
 

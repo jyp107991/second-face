@@ -80,6 +80,8 @@ namespace SecondFace.Game
                 _card?.Set($"{Strings.Get("title.loading")} {name}");
             }
             Content = db;
+            try { Registry.Load(db); }   // the typed registries the rules read (conversations, people, quests)
+            catch (System.Exception e) { Debug.LogError($"Bootstrap: the content registries did not load: {e.Message}"); }
             var loaded = $"{db.Count("maps")} places · {db.Count("npcs")} people · {db.Count("dialogues")} conversations · {db.Count("quests")} quests · {db.Count("items")} items\n{Screen.width}×{Screen.height} {SystemInfo.graphicsDeviceType} · {SystemInfo.deviceModel}";
             _status = "THE SECOND FACE\n" + loaded;
             _card?.Set(Strings.Get("title.raising"), loaded);

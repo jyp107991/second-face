@@ -584,7 +584,13 @@ done with it (talk, look, take, use, steal, give, attack, as the game allows; wh
 named at its centre and kept on screen whatever corner was tapped. In the walkabout the townsfolk answer it: talk and
 the stand-in walks over, the person turns and talks; look and they meet each other's eyes and the person waves. Seen in
 `docs/evidence/unity/p5/ui_radial.jpg` and `ui_radial_corner.jpg`.
-**Next action:** P5.3d (the dialogue panel bound to Core dialogue; BUILD_PLAN P5 "Order of work"). **`play-people` is released**
+**Conversations (P5.3d, 2026-10-29):** talking to someone now opens a page at the right of the screen with the
+scene still beside it: their portrait and name, the line written out the first time (whole when heard before), what
+your skills notice, and your choices with any skill check shown up front, met or not; what was said scrolls up as a
+log. In the walkabout, talk to one of the townsfolk and their real conversation from the game opens. Seen in
+`docs/evidence/unity/p5/ui_dialogue.jpg` and `ui_dialogue_log.jpg`.
+**Next action:** P5.3e (conversation cameras: an over-shoulder two-shot and portrait inserts; BUILD_PLAN P5 "Order of
+work"). **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).
 Step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until Mid ≥ 30 fps).

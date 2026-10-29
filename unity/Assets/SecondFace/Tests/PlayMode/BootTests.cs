@@ -93,10 +93,21 @@ namespace SecondFace.Tests
             Assert.That(Mathf.Abs(Mathf.DeltaAngle(boot.Hud.Compass.Heading, Mathf.Atan2(fwd.x, fwd.z) * Mathf.Rad2Deg)), Is.LessThan(2f), "the compass follows the camera");
             // a tap on one of the townsfolk in view opens the radial over them (P5.3c); a verb closes it
             var view = Camera.main;
-            var folk = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None)
+            var tappable = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None);
+            Assert.That(tappable.Length, Is.GreaterThanOrEqualTo(walk.Townsfolk), "every one of the townsfolk can be tapped");
+            (Interactable i, Vector2 p) InView() => tappable
                 .Select(i => (i, p: (Vector2)view.WorldToScreenPoint(i.transform.position + Vector3.up * 1.2f)))
                 .FirstOrDefault(x => x.p.x > 0 && x.p.x < Screen.width && x.p.y > 0 && x.p.y < Screen.height && Interactable.Under(view, x.p) == x.i);
-            Assert.That(Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None).Length, Is.GreaterThanOrEqualTo(walk.Townsfolk), "every one of the townsfolk can be tapped");
+            var folk = InView();
+            var nearest = tappable.OrderBy(i => Vector3.Distance(i.transform.position, walk.Walker.transform.position)).ToList();
+            for (var k = 0; folk.i == null && k < nearest.Count; k++)
+            {
+                // turn the view toward one of them, nearest first, until one stands in clear view
+                var d = nearest[k].transform.position - walk.Walker.transform.position;
+                walk.Rig.TurnTo(Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg, true);
+                for (var f = 0; f < 3; f++) yield return null;
+                folk = InView();
+            }
             if (folk.i != null)
             {
                 walk.Input.Tap(folk.p);
@@ -105,6 +116,14 @@ namespace SecondFace.Tests
                 Assert.That(boot.UI.Top, Is.Null, "a verb closes it");
             }
             else Debug.LogWarning("BootTests: none of the townsfolk is in clear view from the spawn; the radial is covered by UiTests");
+            // their conversation from the content opens in the panel (P5.3d)
+            var speaker = tappable.FirstOrDefault(i => SecondFace.Core.Content.Registry.Npcs.TryGetValue(i.Id, out var n) && !string.IsNullOrEmpty(n.Dialogue));
+            Assert.That(speaker, Is.Not.Null, "one of the townsfolk has a conversation in the content");
+            Assert.That(walk.OpenConversation(speaker), Is.True, $"{speaker.Title}'s conversation opens");
+            for (var f = 0; f < 3; f++) yield return null;
+            Assert.That(walk.Conversation.IsOpen, Is.True);
+            Assert.That(walk.Conversation.View.Options.Count, Is.GreaterThan(0), "it offers choices");
+            boot.UI.CloseAll();
             // levels of detail (P4.1): the game camera's person is LOD1, about 6 K triangles (they were 95-141 K whole)
             var lod = walk.Walker.GetComponentInChildren<LODGroup>();
             Assert.That(lod, Is.Not.Null, "the walker's levels of detail");

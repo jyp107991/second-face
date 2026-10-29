@@ -1,7 +1,10 @@
 using System.Collections;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
+using SecondFace.Core.Dialogue;
+using SecondFace.Core.State;
 using SecondFace.Game.UI;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -23,7 +26,10 @@ namespace SecondFace.Tests
     /// area, bands the party's health, turns the compass with the camera and quiets its line when nothing is tracked
     /// (`ui_hud`); its words come from the UI string table. The radial (P5.3c) rings the tapped point with its verbs, dims
     /// one that is closed, takes every touch, reports the verb chosen and closes; tapped by the corner it moves inside the
-    /// safe area whole (`ui_radial`, `ui_radial_corner`).
+    /// safe area whole (`ui_radial`, `ui_radial_corner`). A conversation (P5.3d) writes its line out, then shows the
+    /// passives and the choices with their checks up front, locked ones dimmed; a choice logs the line and goes on; the
+    /// end closes it; heard lines show whole and chosen choices dim; back takes the way out (`ui_dialogue`,
+    /// `ui_dialogue_log`).
     /// </summary>
     public class UiTests : IPrebuildSetup
     {
@@ -293,6 +299,84 @@ namespace SecondFace.Tests
             Save(_rt, "ui_radial_corner");
             Assert.That(_ui.Back(), Is.True);
             Assert.That(corner.IsOpen, Is.False, "back closes the ring");
+        }
+
+        /// <summary>A conversation fixture: a line with the player's name, a passive, a plain choice, a check the fixture
+        /// meets, one it does not, a locked one shown, a way out; a second node; a fail node.</summary>
+        private const string Talk = @"{
+  ""id"": ""d_test"", ""owner"": ""npc_test"",
+  ""start"": [ { ""node"": ""a"" } ],
+  ""nodes"": {
+    ""a"": { ""text"": ""Water's by the cup here, {name}. You paying, or asking?"",
+      ""passives"": [ { ""label"": ""insight"", ""text"": ""The scale's pan has been filed light on one side."" } ],
+      ""options"": [
+        { ""id"": ""ask"", ""text"": ""Who weighs it?"", ""next"": ""b"" },
+        { ""id"": ""calm"", ""text"": ""Fair weight, or none at all."", ""check"": { ""skill"": ""speech"", ""dc"": 10 }, ""next"": ""b"", ""fail"": ""c"" },
+        { ""id"": ""hard"", ""text"": ""Open the cistern. Now."", ""check"": { ""skill"": ""barter"", ""dc"": 95 }, ""next"": ""b"", ""fail"": ""c"" },
+        { ""id"": ""pass"", ""text"": ""Show the warden's pass."", ""if"": { ""flag"": ""has_pass"" }, ""showLocked"": true, ""next"": ""b"" },
+        { ""id"": ""bye"", ""text"": ""Another time."", ""exit"": true } ] },
+    ""b"": { ""text"": ""The Tollmen weigh it. Who else would."", ""options"": [ { ""id"": ""thanks"", ""text"": ""Thanks."", ""exit"": true } ] },
+    ""c"": { ""text"": ""No."", ""options"": [ { ""id"": ""fine"", ""text"": ""Fine."", ""exit"": true } ] }
+  } }";
+
+        [UnityTest, Timeout(120000)]
+        public IEnumerator ConversationReadsAndChooses()
+        {
+            var def = JObject.Parse(Talk).ToObject<DialogueDef>();
+            var g = States.NewGame("shale", 0, 0);
+            g.Pc.Sheet.Name = "Ash";
+            _ui = Offscreen(1600, 720, out _rt);
+            _ui.SafeAreaOverride = new Rect(0.05f, 0.04f, 0.95f, 0.96f);
+            _ui.Root.Insert(0, World());
+            var face = Face(128);
+            var ended = 0;
+            var panel = _ui.Open(new DialoguePanel(new DialogueRunner(def, g), id => id == "npc_test" ? "Teller Vos" : id, id => id == "npc_test" ? face : null) { CharsPerSecond = 20f });
+            panel.Ended += () => ended++;
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(panel.Revealing, Is.True, "a new line is written out");
+            Assert.That(panel.Options.resolvedStyle.display, Is.EqualTo(DisplayStyle.None), "the choices wait for the line");
+            panel.Finish();
+            for (var i = 0; i < 3; i++) yield return null;
+            var w = _ui.Root.layout.width;
+            var h = _ui.Root.layout.height;
+            var inset = _ui.Insets;
+            Assert.That(panel.Line.text, Does.Contain("Ash"), "the player's name in the line");
+            Assert.That(panel.View.Options.Count, Is.EqualTo(5));
+            Assert.That(panel.Options.childCount, Is.EqualTo(5));
+            Assert.That(panel.Options.Q<Button>("option-pass").enabledSelf, Is.False, "a locked choice is shown dimmed");
+            var calm = panel.View.Options.Find(o => o.Id == "calm");
+            var hard = panel.View.Options.Find(o => o.Id == "hard");
+            Assert.That(calm.CheckMet, Is.True);
+            Assert.That(hard.CheckMet, Is.False);
+            Assert.That(panel.Options.Q<Button>("option-hard").Q<Label>(className: "sf-dialogue__check").ClassListContains("sf-dialogue__check--unmet"), Is.True, "an unmet check shows so up front");
+            Assert.That(panel.Root.Q(className: "sf-dialogue__passive"), Is.Not.Null, "the passive is shown");
+            var page = panel.Root.Q("dialogue-page");
+            Assert.That(page.worldBound.xMin, Is.GreaterThan(w * 0.45f), "the page sits at the right, the scene beside it");
+            Assert.That(page.worldBound.xMax, Is.EqualTo(w).Within(1f));
+            Assert.That(panel.Scroll.worldBound.yMax, Is.LessThanOrEqualTo(h - inset.w + 0.5f), "the page's reading area clears the gesture bar");
+            Assert.That(_ui.CoversPanel(new Vector2(w * 0.25f, h * 0.5f)), Is.True, "the scene takes no touches during a conversation");
+            Assert.That(panel.Options.Q<Button>("option-ask").worldBound.height, Is.GreaterThanOrEqualTo(72f), "a choice is a thumb's target");
+            Assert.That(panel.Line.worldBound.yMin, Is.GreaterThanOrEqualTo(panel.Scroll.worldBound.yMin - 0.5f), "the line is read from its start");
+            Assert.That(Save(_rt, "ui_dialogue"), Is.GreaterThan(0.95f));
+
+            panel.Choose("ask");
+            panel.Finish();
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(panel.Log.childCount, Is.EqualTo(2), "the line and the choice went to the log");
+            Assert.That(panel.Line.worldBound.yMin, Is.GreaterThanOrEqualTo(panel.Scroll.worldBound.yMin - 0.5f), "the new line is read from its start");
+            Assert.That(panel.Line.text, Does.Contain("Tollmen"));
+            Save(_rt, "ui_dialogue_log");
+            panel.Choose("thanks");
+            Assert.That(ended, Is.EqualTo(1), "the conversation ended");
+            Assert.That(panel.IsOpen, Is.False);
+
+            var again = _ui.Open(new DialoguePanel(new DialogueRunner(def, g), id => "Teller Vos") { CharsPerSecond = 20f });
+            yield return null;
+            Assert.That(again.Revealing, Is.False, "a line heard before is shown whole");
+            Assert.That(again.Options.Q<Button>("option-ask").ClassListContains("sf-dialogue__option--seen"), Is.True, "a choice made before is dimmed");
+            Assert.That(_ui.Back(), Is.True);
+            Assert.That(again.IsOpen, Is.False, "back takes the way out");
+            Object.Destroy(face);
         }
 
         private static Label Text(string cls, string text)

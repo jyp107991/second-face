@@ -114,7 +114,7 @@
 .sf-button:enabled:hover { background-color: var(--ink-soft); }
 .sf-button:enabled:active { background-color: #000000; }
 .sf-button:enabled:focus { border-width: 3px; border-color: var(--ochre); }
-.sf-button:disabled { opacity: 0.45; }
+.sf-button:disabled { opacity: 0.45; background-color: var(--ink); }
 .sf-button--quiet { background-color: rgba(0, 0, 0, 0); color: var(--ink); border-width: 2px; border-color: var(--ink); }
 .sf-button--quiet:enabled:hover { background-color: rgba(36, 32, 27, 0.08); }
 .sf-button--quiet:enabled:active { background-color: rgba(36, 32, 27, 0.16); }
@@ -300,7 +300,7 @@
 .sf-radial__verb:enabled:hover { background-color: rgba(48, 42, 36, 0.97); }
 .sf-radial__verb:enabled:active { background-color: rgba(8, 7, 6, 0.95); }
 .sf-radial__verb:enabled:focus { border-width: 3px; border-color: var(--ochre); }
-.sf-radial__verb:disabled { opacity: 0.4; }
+.sf-radial__verb:disabled { opacity: 0.4; background-color: rgba(30, 26, 22, 0.95); }
 .sf-radial__verb .sf-icon { color: var(--plate-text); }
 .sf-radial__verb-label {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
@@ -322,3 +322,130 @@
     white-space: normal;
     -unity-text-align: middle-center;
 }
+
+/* ---- the conversation panel (DialoguePanel.cs): a page at the right, the scene beside it ---- */
+.sf-dialogue { flex-direction: row; justify-content: flex-end; }
+.sf-dialogue__page {
+    width: 46%;
+    min-width: 560px;
+    background-color: var(--paper);
+    border-left-width: 3px;
+    border-left-color: var(--paper-edge);
+}
+.sf-dialogue__page > .sf-safe { flex-grow: 1; }
+.sf-dialogue__head {
+    flex-direction: row;
+    align-items: center;
+    margin: 20px 24px 8px 24px;
+}
+.sf-dialogue__face {
+    width: 96px;
+    height: 96px;
+    border-radius: 4px;
+    border-width: 2px;
+    border-color: var(--paper-edge);
+    background-color: #3A332B;
+    -unity-background-scale-mode: scale-and-crop;
+    justify-content: center;
+    align-items: center;
+}
+.sf-dialogue__initial {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: 44px;
+    color: var(--plate-dim);
+}
+.sf-dialogue__speaker {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: 32px;
+    margin-left: 16px;
+    flex-shrink: 1;
+    white-space: normal;
+    color: var(--ink);
+}
+.sf-dialogue__scroll { flex-grow: 1; flex-shrink: 1; }
+.sf-dialogue__scroll .unity-scroll-view__content-container { padding: 4px 24px 24px 24px; }
+.sf-dialogue__log { margin-bottom: 4px; }
+.sf-dialogue__logged-line {
+    -unity-font-definition: url("../Fonts/Literata-Regular.asset");
+    font-size: 22px;
+    color: var(--pencil);
+    white-space: normal;
+    margin-bottom: 6px;
+}
+.sf-dialogue__logged-choice {
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: 22px;
+    color: var(--pencil);
+    white-space: normal;
+    margin-bottom: 12px;
+    padding-left: 16px;
+}
+.sf-dialogue__line {
+    -unity-font-definition: url("../Fonts/Literata-Regular.asset");
+    font-size: 28px;
+    color: var(--ink);
+    white-space: normal;
+    margin: 6px 0 12px 0;
+}
+.sf-dialogue__passive {
+    border-left-width: 3px;
+    border-left-color: var(--slate);
+    padding: 2px 0 2px 12px;
+    margin-bottom: 12px;
+}
+.sf-dialogue__passive-label {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: var(--slate);
+}
+.sf-dialogue__passive-text {
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: 24px;
+    color: var(--ink-soft);
+    white-space: normal;
+}
+.sf-dialogue__options { margin-top: 4px; }
+.sf-dialogue__option {
+    flex-direction: row;
+    align-items: center;
+    min-height: 72px;
+    margin: 0;
+    padding: 8px 12px;
+    border-width: 0;
+    border-bottom-width: 1px;
+    border-color: var(--paper-edge);
+    border-radius: 0;
+    background-color: rgba(0, 0, 0, 0);
+    -unity-text-align: middle-left;
+}
+.sf-dialogue__option:enabled:hover { background-color: var(--paper-deep); }
+.sf-dialogue__option:enabled:active { background-color: #D8CBAE; }
+.sf-dialogue__option:enabled:focus { border-left-width: 4px; border-left-color: var(--ochre); }
+.sf-dialogue__option:disabled { opacity: 0.45; background-color: rgba(0, 0, 0, 0); }
+.sf-dialogue__number {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 22px;
+    min-width: 34px;
+    color: var(--pencil);
+}
+.sf-dialogue__check {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 20px;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    margin-right: 10px;
+    border-radius: 3px;
+    background-color: var(--sage);
+    color: var(--paper);
+}
+.sf-dialogue__check--unmet { background-color: rgba(0, 0, 0, 0); border-width: 2px; border-color: var(--rust); color: var(--rust); }
+.sf-dialogue__option-text {
+    -unity-font-definition: url("../Fonts/Barlow-Regular.asset");
+    font-size: 26px;
+    flex-shrink: 1;
+    white-space: normal;
+    color: var(--ink);
+}
+.sf-dialogue__option--seen .sf-dialogue__option-text { color: var(--pencil); }
+.sf-dialogue__option--exit .sf-dialogue__option-text { -unity-font-definition: url("../Fonts/Literata-Italic.asset"); }

@@ -1,5 +1,8 @@
 using System.Collections;
 using System.Linq;
+using SecondFace.Core.Content;
+using SecondFace.Core.Dialogue;
+using SecondFace.Core.State;
 using SecondFace.Game.People;
 using SecondFace.Game.UI;
 using SecondFace.Game.World;
@@ -12,9 +15,10 @@ namespace SecondFace.Game.Play
     /// player set down at Shale's spawn, the game camera on them, touch to look round, tap to walk, pinch to zoom, the
     /// NavMesh following them over the open ground and through the town, and the P2 people standing about the town at
     /// its people's posts, idling. The world streams round the walker. <see cref="Pause"/> hands the camera to the
-    /// measuring tour and back. A tap on one of the townsfolk opens the radial (P5.3c): talk walks the walker over and
-    /// the person turns to them and talks; look has them meet each other's eyes and the person waves. (Their
-    /// conversations come with the dialogue panel, P5.3d.)
+    /// measuring tour and back. A tap on one of the townsfolk opens the radial (P5.3c): talk walks the walker over, the
+    /// person turns to them and their conversation from the content opens in the panel (P5.3d; on a fresh game state,
+    /// <see cref="Game"/>, so what is said there stays in the walkabout); look has them meet each other's eyes and the
+    /// person waves.
     /// </summary>
     public sealed class Walkabout : MonoBehaviour
     {
@@ -29,6 +33,10 @@ namespace SecondFace.Game.Play
         /// <summary>The walker stands on a built NavMesh and the camera follows them.</summary>
         public bool Ready => Walker != null && Nav != null && Nav.Ready && Walker.Agent.isOnNavMesh;
         public int Townsfolk { get; private set; }
+        /// <summary>The walkabout's own game state (a new game at Shale): the conversations run on it.</summary>
+        public GameState Game { get; } = States.NewGame("shale", 0, 0);
+        /// <summary>The conversation open now (null when none).</summary>
+        public DialoguePanel Conversation { get; private set; }
 
         private IEnumerator Start()
         {
@@ -139,9 +147,26 @@ namespace SecondFace.Game.Play
             if (gaze != null) gaze.Target = walkerHead;
             if (walkerGaze != null) walkerGaze.Target = head;
             if (ambient != null) ambient.Gesture(verb == "talk" ? "talk" : "wave");   // not ?. on a component
-            yield return new WaitForSeconds(6f);
+            if (verb == "talk" && OpenConversation(who))
+                while (Conversation != null && Conversation.IsOpen) yield return null;
+            else yield return new WaitForSeconds(6f);
             if (gaze != null && gaze.Target == walkerHead) gaze.Target = null;
             if (walkerGaze != null && walkerGaze.Target == head) walkerGaze.Target = null;
+        }
+
+        /// <summary>Opens a person's conversation from the content in the panel (false when they have none).</summary>
+        public bool OpenConversation(Interactable who)
+        {
+            var ui = UIService.Instance;
+            if (ui == null || !Registry.Npcs.TryGetValue(who.Id, out var npc) || string.IsNullOrEmpty(npc.Dialogue)
+                || !Registry.Dialogues.TryGetValue(npc.Dialogue, out var def)) return false;
+            var runner = new DialogueRunner(def, Game);
+            if (runner.Ended) return false;
+            var face = who.GetComponentInChildren<Animator>() != null ? who.gameObject : null;
+            Conversation = ui.Open(new DialoguePanel(runner,
+                id => Registry.Npcs.TryGetValue(id, out var n) && !string.IsNullOrEmpty(n.Name) ? n.Name : who.Title,
+                id => id == who.Id && face != null ? Portraits.Of(face) : null));
+            return true;
         }
 
         private static float Hash(string s)
