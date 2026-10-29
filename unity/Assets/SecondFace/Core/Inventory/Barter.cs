@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SecondFace.Core.Content;
+using SecondFace.Core.State;
+using SecondFace.Core.Stats;
+using SecondFace.Core.World;
 
 namespace SecondFace.Core.Inventory
 {
@@ -14,6 +18,9 @@ namespace SecondFace.Core.Inventory
         public int RestockDay;
         /// <summary>Recent sales to this merchant by item id (decays over days).</summary>
         public Dictionary<string, SoldRecord> Sold = new();
+        /// <summary>The day of the last haggle with them (one a day) and what it won (+, in the player's favour) or cost (−).</summary>
+        public int HaggleDay = -1;
+        public double Haggle;
     }
 
     public struct PriceContext
@@ -25,6 +32,22 @@ namespace SecondFace.Core.Inventory
         /// <summary>Faction price multiplier (1 = none).</summary>
         public double FactionMul;
         public double Markup;
+        /// <summary>Perks on the player's prices (price_buy, price_sell modifiers); 0 reads as 1.</summary>
+        public double BuyMul, SellMul;
+        /// <summary>Today's haggle with this merchant: + in the player's favour, − against.</summary>
+        public double Haggle;
+    }
+
+    /// <summary>A haggle before it is tried, as the screen shows it: the skill against the DC, the chance, what it wins
+    /// and what a refusal costs.</summary>
+    public struct HaggleOffer
+    {
+        public int Skill, Dc;
+        /// <summary>0..100.</summary>
+        public double Chance;
+        public double Win, Lose;
+        /// <summary>False when they have been haggled with today.</summary>
+        public bool Open;
     }
 
     public struct DealLine { public int Index; public int Qty; public DealLine(int index, int qty) { Index = index; Qty = qty; } }
@@ -61,7 +84,8 @@ namespace SecondFace.Core.Inventory
         /// <summary>What the player pays for one unit. Barter and standing shave up to 25% and 20%; never below value × 1.05.</summary>
         public static int BuyPrice(int value, PriceContext c)
         {
-            double p = value * c.Markup * Math.Max(0.75, 1 - c.Barter / 400) * Math.Max(0.8, 1 - c.Standing / 500) * c.FactionMul;
+            double p = value * c.Markup * Math.Max(0.75, 1 - c.Barter / 400) * Math.Max(0.8, 1 - c.Standing / 500) * c.FactionMul
+                       * Mul(c.BuyMul) * (1 - c.Haggle);
             return Math.Max((int)Math.Ceiling(value * 1.05), Num.RoundInt(p));
         }
 
@@ -75,7 +99,62 @@ namespace SecondFace.Core.Inventory
         public static int SellPrice(int value, PriceContext c, double sat = 0)
         {
             double frac = Math.Max(0.1, Math.Min(0.6, 0.2 + c.Barter / 400 + c.Standing / 500));
-            return value > 0 ? Math.Max(1, Num.RoundInt(value * frac / (1 + 0.2 * sat))) : 0;
+            return value > 0 ? Math.Max(1, Num.RoundInt(value * frac * Mul(c.SellMul) * (1 + c.Haggle) / (1 + 0.2 * sat))) : 0;
+        }
+
+        private static double Mul(double m) => m > 0 ? m : 1;
+
+        /// <summary>The prices a merchant gives the player: their Barter (with tools), the standing of the merchant's
+        /// settlement, membership of the merchant's faction, the merchant's markup, the player's price perks and today's
+        /// haggle.</summary>
+        public static PriceContext Context(GameState g, MerchantDef def, string settlement, MerchantState ms = null)
+        {
+            var mods = Sheet.AllMods(g.Pc.Sheet);
+            return new PriceContext
+            {
+                Barter = Checks.EffectiveSkill(g.Pc.Sheet, g.Pc.Inventory, "barter"),
+                Standing = string.IsNullOrEmpty(settlement) ? 0 : Frontier.Standing(g, settlement),
+                FactionMul = string.IsNullOrEmpty(def.Faction) ? 1 : Factions.FactionPriceMul(g, Registry.Factions, def.Faction),
+                Markup = def.Markup ?? 1.5,
+                BuyMul = Sheet.ModValue(mods, "price_buy", 1),
+                SellMul = Sheet.ModValue(mods, "price_sell", 1),
+                Haggle = ms != null ? HaggleToday(ms, Clock.DayOf(g.Minutes)) : 0,
+            };
+        }
+
+        /// <summary>What today's haggle with them changed (0 on another day).</summary>
+        public static double HaggleToday(MerchantState ms, int day) => ms.HaggleDay == day ? ms.Haggle : 0;
+
+        /// <summary>The haggle's DC: a merchant with a fat markup has room and knows it; a big deal is harder to shift.</summary>
+        public static int HaggleDc(MerchantDef def, int net) => 15 + Num.RoundInt(40 * ((def.Markup ?? 1.5) - 1)) + Math.Min(15, Math.Abs(net) / 25);
+
+        /// <summary>What a haggle wins: 4% at the DC, more the further past it, at most 15%.</summary>
+        public static double HaggleWin(int skill, int dc) => Math.Max(0.04, Math.Min(0.15, 0.04 + (skill - dc) / 250.0));
+
+        /// <summary>What a refusal costs for the rest of the day.</summary>
+        public const double HaggleLose = 0.05;
+
+        /// <summary>The haggle as it stands for a deal of <paramref name="net"/> Tolls (either way).</summary>
+        public static HaggleOffer Offer(int skill, MerchantDef def, MerchantState ms, int net, int day)
+        {
+            var dc = HaggleDc(def, net);
+            return new HaggleOffer
+            {
+                Skill = skill, Dc = dc, Chance = skill >= dc ? 100 : Math.Max(0, 35 - (dc - skill) * 3),
+                Win = HaggleWin(skill, dc), Lose = HaggleLose, Open = ms.HaggleDay != day,
+            };
+        }
+
+        /// <summary>Haggles (once a day each): a Barter check against <see cref="HaggleDc"/>, the same as any check (met
+        /// always wins, a near miss may). Won, their prices move <see cref="HaggleWin"/> the player's way for the day;
+        /// refused, <see cref="HaggleLose"/> the other way.</summary>
+        public static CheckResult Haggle(GameState g, MerchantDef def, MerchantState ms, int net, Rng rng)
+        {
+            var day = Clock.DayOf(g.Minutes);
+            var r = Checks.SkillCheck(g.Pc.Sheet, g.Pc.Inventory, "barter", HaggleDc(def, net), rng);
+            ms.HaggleDay = day;
+            ms.Haggle = r.Success ? HaggleWin(r.Value, r.Dc) : -HaggleLose;
+            return r;
         }
 
         private static int UnitValue(ItemInst it) { var one = it.Clone(); one.Qty = 1; return Inv.ItemValue(one); }
