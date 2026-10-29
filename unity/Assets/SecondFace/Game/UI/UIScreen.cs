@@ -29,6 +29,8 @@ namespace SecondFace.Game.UI
         public virtual UILayer Layer => UILayer.Screens;
         /// <summary>Whether it covers the whole screen (what is under it is not drawn).</summary>
         public virtual bool Opaque => true;
+        /// <summary>Whether the HUD hides while it is open (an opaque screen always hides it).</summary>
+        public virtual bool HidesHud => Opaque;
         /// <summary>Whether a touch on its empty parts goes through to the world.</summary>
         public virtual bool PassesTouches => false;
 

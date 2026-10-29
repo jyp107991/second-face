@@ -303,7 +303,7 @@ namespace SecondFace.Tests
 
         /// <summary>A conversation fixture: a line with the player's name, a passive, a plain choice, a check the fixture
         /// meets, one it does not, a locked one shown, a way out; a second node; a fail node.</summary>
-        private const string Talk = @"{
+        public const string Talk = @"{
   ""id"": ""d_test"", ""owner"": ""npc_test"",
   ""start"": [ { ""node"": ""a"" } ],
   ""nodes"": {

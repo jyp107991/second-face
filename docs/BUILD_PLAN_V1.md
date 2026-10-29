@@ -434,7 +434,7 @@ from fixture state and captured (`UiTests`, the panel drawn into a texture):
   below; a tap opens it, per §6.F.2).
 - ~~3d. Dialogue panel bound to Core dialogue (the scene stays visible; options as notebook lines; skip heard lines; log)~~
   (done, below).
-- 3e. Conversation cameras (over-shoulder two-shot, portrait inserts; Cinemachine).
+- ~~3e. Conversation cameras (over-shoulder two-shot, portrait inserts; Cinemachine)~~ (done, below).
 - 3f. The notebook (leads, quests, people, letters, decisions) as a book.
 - 3g. The map and travel (world and local; pins).
 - 3h. The pack with the live paper doll, and barter.
@@ -486,8 +486,9 @@ dimmed and cannot be chosen; a verb's tap closes the ring and reports the verb; 
 labels are `verb.<id>` in the UI table, icons in `Icons` (talk, look, take, use, steal, give, attack; a ring for any
 other). The walkabout's townsfolk are interactables named from content (`npcs[<post>].name`) with talk (the walker
 walks over, the person turns to them and talks, both look at each other) and look (eyes meet, the person waves); their
-conversations open in the dialogue panel (P5.3d). `BootTests` turns the view to the nearest one in clear view (new
-`OrbitRig.TurnTo`), taps them and chooses a verb. Captures
+conversations open in the dialogue panel (P5.3d). `BootTests` pans the view onto the nearest one in clear view (the
+townsfolk stand 25-35 m from the spawn, out of the game camera's frame), taps them and chooses a verb; a tap looks past
+the player's own body (`Interactable.Under` skips the walker). Captures
 `ui_radial`, `ui_radial_corner`.
 
 *As built (P5.3d, 2026-10-29).* `Game.UI.DialoguePanel` (a screen, not opaque, takes every touch) over Core
@@ -502,6 +503,22 @@ current line (the log is a scroll up). A choice logs and goes to `DialogueRunner
 and raises `Ended`; back takes the content's way out if there is one. `Bootstrap` installs the typed `Registry` after
 loading the content; the walkabout's talk opens the person's content conversation on its own fresh game state
 (`Walkabout.Game`), with their portrait. Captures `ui_dialogue`, `ui_dialogue_log`.
+
+*As built (P5.3e, 2026-10-29).* `Game.Play.ConversationCamera`: a `CinemachineCamera` at priority 50 over the game
+camera (the brain blends 0.6 s in and out, ease in-out; cuts within the conversation are instant: the one camera is
+moved). Shots are worked out from the two heads (humanoid head bone), never authored: `TwoShot` (behind the player's
+shoulder, 1.3 m back, 0.6 m aside, FOV 32°, framing the other), `Other` (an insert on the other from 1.5 m on the
+player's side, FOV 24°) and `Player` (its reverse). Each is aimed so its subject sits at the middle of the screen's
+left `Frame` (54 %, the part the conversation page leaves free) with the eyes on `EyeLine` (62 % up), from the
+camera's own aspect. A spot is used only if nothing solid but the two people stands between it and the subject and the
+spot itself is free (after `Physics.SyncTransforms`); else the other shoulder, then a higher spot. `End` drops the
+priority (the brain blends back) and removes it after the blend. `DialoguePanel` raises `Presented` per node and
+`Ended` whenever it closes; `HidesHud` (new on `UIScreen`, default: opaque) hides the HUD during a conversation. The
+walkabout opens the shots with the conversation: the two-shot first, then the speaker's insert and the two-shot by
+turns. `ConversationCameraTests` stands two of the cast face to face, checks each shot's framing and the move to the
+other shoulder when a wall stands in the first spot, and captures each with the page drawn over it
+(`docs/evidence/unity/p5/conversation_twoshot.jpg`, `conversation_other.jpg`, `conversation_player.jpg`). Not yet:
+depth of field (a tier decision: the Gaussian DOF pass on Mid and up), companions in shot, a shot grammar by tone.
 
 ### P6 — Systems and combat
 1. Interactions and loot (`Play/`): tap on a thing → radial of verbs from content (`talk`, `look`, `take`, `use`,

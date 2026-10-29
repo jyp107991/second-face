@@ -223,17 +223,20 @@ namespace SecondFace.Game.UI
             return true;
         }
 
-        /// <summary>Hides what an opaque screen covers (screens under it and the HUD): nothing hidden is drawn.</summary>
+        /// <summary>Hides what an opaque screen covers (screens under it and the HUD), and the HUD under a screen that hides
+        /// it (a conversation): nothing hidden is drawn.</summary>
         private void Refresh()
         {
             var covered = false;
+            var hud = true;
             for (var i = _stack.Count - 1; i >= 0; i--)
             {
                 var s = _stack[i];
                 s.Root.style.display = covered ? DisplayStyle.None : DisplayStyle.Flex;
                 if (s.Opaque && s.Layer == UILayer.Screens) covered = true;
+                if (s.HidesHud) hud = false;
             }
-            Hud.style.display = covered ? DisplayStyle.None : DisplayStyle.Flex;
+            Hud.style.display = covered || !hud ? DisplayStyle.None : DisplayStyle.Flex;
         }
 
         /// <summary>Whether a finger at this screen position (pixels, origin bottom-left, as the Input System gives it)

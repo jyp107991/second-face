@@ -11,7 +11,8 @@ namespace SecondFace.Game.UI
     /// log, read by scrolling up), the line (written out quickly the first time, whole when heard before; a tap finishes
     /// it), what the player's skills notice (passives), and the choices: each with its check shown up front (met or not),
     /// dimmed once chosen before, locked ones shown where the content asks. A choice goes to Core
-    /// <see cref="DialogueRunner"/>; when the conversation ends the panel closes and <see cref="Ended"/> is raised.
+    /// <see cref="DialogueRunner"/>; each node shown raises <see cref="Presented"/> (the conversation cameras cut on it);
+    /// when the panel closes, by the conversation ending or otherwise, <see cref="Ended"/> is raised. The HUD hides.
     /// </summary>
     public sealed class DialoguePanel : UIScreen
     {
@@ -19,6 +20,7 @@ namespace SecondFace.Game.UI
         public float CharsPerSecond = 90f;
 
         public event Action Ended;
+        public event Action<NodeView> Presented;
 
         private readonly DialogueRunner _runner;
         private readonly Func<string, string> _nameOf;
@@ -32,6 +34,7 @@ namespace SecondFace.Game.UI
         private NodeView _view;
 
         public override bool Opaque => false;
+        public override bool HidesHud => true;
 
         /// <param name="nameOf">A speaker id's name (the content's NPC name).</param>
         /// <param name="portraitOf">A speaker id's portrait (People.Portraits), or null.</param>
@@ -101,7 +104,11 @@ namespace SecondFace.Game.UI
 
         protected internal override void Shown() => Present();
 
-        protected internal override void Hidden() => _reveal?.Pause();
+        protected internal override void Hidden()
+        {
+            _reveal?.Pause();
+            Ended?.Invoke();
+        }
 
         /// <summary>Back leaves the conversation only where the content offers a way out (an exit choice).</summary>
         protected internal override bool Back()
@@ -172,6 +179,7 @@ namespace SecondFace.Game.UI
             }
 
             _full = _view.Text ?? "";
+            Presented?.Invoke(_view);
             if (_view.Seen || CharsPerSecond <= 0f) Finish();
             else
             {
@@ -225,11 +233,6 @@ namespace SecondFace.Game.UI
         /// <summary>Brings the current line to the top of the page (the log above it is a scroll up; the choices follow it).</summary>
         private void ScrollToLine() => _scroll.schedule.Execute(() => _scroll.scrollOffset = new Vector2(0, Mathf.Max(0f, _line.layout.y - 8f))).ExecuteLater(30);
 
-        private void End()
-        {
-            _reveal?.Pause();
-            Close();
-            Ended?.Invoke();
-        }
+        private void End() => Close();   // Hidden raises Ended
     }
 }

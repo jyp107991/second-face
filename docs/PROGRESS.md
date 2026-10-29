@@ -589,7 +589,12 @@ scene still beside it: their portrait and name, the line written out the first t
 your skills notice, and your choices with any skill check shown up front, met or not; what was said scrolls up as a
 log. In the walkabout, talk to one of the townsfolk and their real conversation from the game opens. Seen in
 `docs/evidence/unity/p5/ui_dialogue.jpg` and `ui_dialogue_log.jpg`.
-**Next action:** P5.3e (conversation cameras: an over-shoulder two-shot and portrait inserts; BUILD_PLAN P5 "Order of
+**Conversations as scenes (P5.3e, 2026-10-29):** when a conversation opens the camera glides from the game view into
+the scene: over your shoulder at the person you are talking to, then close on them as they speak, framed in the part
+of the screen the page leaves free, never behind a wall; it glides back when you are done, and the HUD steps aside
+meanwhile. Seen in `docs/evidence/unity/p5/conversation_twoshot.jpg`, `conversation_other.jpg` and
+`conversation_player.jpg`.
+**Next action:** P5.3f (the notebook: leads, quests, people, letters, decisions, as a book; BUILD_PLAN P5 "Order of
 work"). **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).

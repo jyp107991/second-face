@@ -102,9 +102,10 @@ namespace SecondFace.Tests
             var nearest = tappable.OrderBy(i => Vector3.Distance(i.transform.position, walk.Walker.transform.position)).ToList();
             for (var k = 0; folk.i == null && k < nearest.Count; k++)
             {
-                // turn the view toward one of them, nearest first, until one stands in clear view
-                var d = nearest[k].transform.position - walk.Walker.transform.position;
-                walk.Rig.TurnTo(Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg + 20f, true);   // a little aside: the walker stands in front
+                // pan the view onto one of them (as two fingers would), nearest first, until one stands in clear view
+                walk.Rig.Recentre();
+                walk.Rig.PanBy(nearest[k].transform.position - walk.Walker.transform.position);
+                walk.Rig.Snap();
                 for (var f = 0; f < 3; f++) yield return null;
                 folk = InView();
             }
@@ -114,10 +115,10 @@ namespace SecondFace.Tests
                 Assert.That(boot.UI.Top, Is.TypeOf<SecondFace.Game.UI.RadialMenu>(), $"the radial opened over {folk.i.Title}");
                 ((SecondFace.Game.UI.RadialMenu)boot.UI.Top).Choose("look");
                 Assert.That(boot.UI.Top, Is.Null, "a verb closes it");
+                Debug.Log($"BootTests: tapped {folk.i.Title}; the radial opened over them");
             }
             else
             {
-                Debug.LogWarning("BootTests: none of the townsfolk is in clear view from the spawn; the radial is covered by UiTests");
                 foreach (var i in nearest.Take(3))
                 {
                     var sp = view.WorldToScreenPoint(i.transform.position + Vector3.up * 1.2f);
@@ -125,7 +126,10 @@ namespace SecondFace.Tests
                         .OrderBy(h => h.distance).Take(5).Select(h => $"{h.collider.name}({(h.collider.isTrigger ? "trigger" : "solid")}, {h.distance:0.0} m)");
                     Debug.Log($"BootTests: {i.Title} at screen {sp} of {Screen.width}x{Screen.height}, {Vector3.Distance(i.transform.position, walk.Walker.transform.position):0.0} m off: {string.Join(", ", hits)}");
                 }
+                Assert.Fail("none of the townsfolk could be brought into clear view to tap (the log says what the rays met)");
             }
+            walk.Rig.Recentre();
+            walk.Rig.Snap();
             // their conversation from the content opens in the panel (P5.3d)
             var speaker = tappable.FirstOrDefault(i => SecondFace.Core.Content.Registry.Npcs.TryGetValue(i.Id, out var n) && !string.IsNullOrEmpty(n.Dialogue));
             Assert.That(speaker, Is.Not.Null, "one of the townsfolk has a conversation in the content");

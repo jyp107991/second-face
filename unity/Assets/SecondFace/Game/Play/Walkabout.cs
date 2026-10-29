@@ -163,9 +163,18 @@ namespace SecondFace.Game.Play
             var runner = new DialogueRunner(def, Game);
             if (runner.Ended) return false;
             var face = who.GetComponentInChildren<Animator>() != null ? who.gameObject : null;
-            Conversation = ui.Open(new DialoguePanel(runner,
+            var panel = new DialoguePanel(runner,
                 id => Registry.Npcs.TryGetValue(id, out var n) && !string.IsNullOrEmpty(n.Name) ? n.Name : who.Title,
-                id => id == who.Id && face != null ? Portraits.Of(face) : null));
+                id => id == who.Id && face != null ? Portraits.Of(face) : null);
+            // the conversation cameras (P5.3e): the two-shot first, then the speaker's insert and the two-shot by turns
+            if (Stage.Camera != null && Walker != null)
+            {
+                var shots = ConversationCamera.Begin(Stage.Camera, Walker.transform, who.transform);
+                var lines = 0;
+                panel.Presented += _ => { if (shots != null) shots.Cut(lines++ % 2 == 0 ? ConversationCamera.Shot.TwoShot : ConversationCamera.Shot.Other); };
+                panel.Ended += () => { if (shots != null) shots.End(); };
+            }
+            Conversation = ui.Open(panel);
             return true;
         }
 
