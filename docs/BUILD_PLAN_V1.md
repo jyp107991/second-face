@@ -865,6 +865,27 @@ turn, released she is off to her evening). Evidence `docs/evidence/unity/p6/walk
 and beds with owners), the other places' people (part 2: actors as data when far, agents within 120 m, full actors
 within 60 m, the cast loaded per region), crowds yielding to the walker, doors that open for whoever walks through.
 
+*As built (P6.2 part 2, 2026-10-29).* The world's people by distance. `Play/PeopleService` (§4.2's `PeopleService`)
+hears `PlaceSpawner.Shown` and `Dropping` (new events; `Standing()` lists the places in): each place that comes brings
+its people as data (`Resident`: the placement whose condition holds, its map, its cast body by `Routine.Assign`, its
+post) and a `Townsfolk` of its own (spots by map: Cistern 9's shelter people keep the shelter's spots). Four times a
+second the service looks at everyone: someone without a body whose routine has them about (not asleep, not away)
+within `Near` (120 m, flat) of the walker gets one, the nearest first and two a frame at most (an instantiation costs a
+few milliseconds on a phone), put where the hour has them; a body beyond `Leave` (140 m) goes and the data stays
+(nobody held goes); within `Full` (60 m) a person is seen in full (gestures, gaze, foot planting, low-quality
+avoidance), further off only the animator runs, and only while seen (`CullCompletely`). A place taken away takes its
+people's bodies and data with it; a game begun or loaded brings every standing place's people again (conditions may
+differ). Bodies stand under their place's people group, not the place (a place hides its own surface under the
+ground). The walkabout equips each place's things as it comes (containers keyed by the map they belong to), and while a
+load sets the walker down far off, the world streams round where they are going (the per-frame focus on the old walker
+fought the load's). Tests: `BootTests.PeopleComeAndGoWithTheWalker` (Shale's 18 all stand from the plaza; with `Full`
+at 10 m only the near are in full and the far have no gestures; with `Near` 25 m and `Leave` 35 m the far bodies go and
+all 18 remain as data, back when the radii are; set down at Cistern 9's mouth 770 m off, Shale stands with none of its
+people in the world, the shelter's people stand, each in a body of their sex; set down among them in the shelter, they
+are seen in full), `ShaleKeepsItsHours` (now from the plaza). Evidence `docs/evidence/unity/p6/walkabout_people_shelter.jpg`.
+Not yet: the cast loaded per region (all 32 bodies are referenced by `WorldAssets`; with more places, Addressables per
+region), the people of places not built yet (only Shale and Cistern 9 are), people on the roads between places.
+
 ### P7 — Chapter One on the phone
 The opening through the stranger's map, end to end on device, at the standard: every scene, conversation, check
 and reward of Chapter One works from the content, saved and resumed. A playtest script (PlayMode, fixture-driven)
@@ -2119,6 +2140,14 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   many frames, so the agent never moves); ask again only when the target moves, and not while `pathPending`. A partial
   path's search costs the whole reachable mesh: do not repeat it every tick. `ResetPath` on an agent that is not on a
   mesh throws: only call it after a `Warp` that succeeded.
+- **A load far off while walking streams round the old walker** (P6.2): the walkabout set the world's focus on the
+  walker every frame, so a load's `WaitAround` at the new spot was undone the next frame and the ground there never
+  came; keep the focus where the walker is going until they are set down.
+- **Nothing but the place goes under a place's root** (P6.2): under the ground the place switches off every renderer
+  of its own that is not in an underground building (its surface), and people instantiated under its root went dark
+  with it in the shelter. People stand under their place's people group (`people_<place>`).
+- **A test keeps a place's people by asking again** (P6.2): a game begun or loaded brings every place's people anew,
+  so a `Townsfolk` held from before is an empty, destroyed group; fetch `People.Town(id)` after the load.
 - **The local compile checks do not build the PlayMode tests**: a test's missing `using UnityEngine.UIElements` (for
   `Q<T>`) only shows in Unity's own compile; read `playmode.log` for `error CS` when a run writes no results.
 

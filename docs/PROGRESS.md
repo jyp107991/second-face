@@ -687,10 +687,17 @@ in the morning; after a rest everyone is where the hour has them. Each wears a b
 from the cast (18 people, 18 bodies). Someone you talk to waits for you. Doorways are a little wider, and the rooms of
 the town can now be walked into from the street (they could not before: a second, unjoined walking mesh). Seen in
 `docs/evidence/unity/p6/walkabout_town_noon.jpg` (the sheriff at her desk) and `walkabout_town_night.jpg` (the bar).
-**Next action:** P6 step 2 part 2: the people service for the whole world (actors as data when far, position
-advanced by their routine; as agents within 120 m; as full actors within 60 m; the cast loaded per region), the other
-places' people, the townsfolk sitting at their seats and sleeping in their beds (seats and beds with owners), crowds
-yielding to the walker. P6.1 left for later: doors that lock (with the door models), a share of a stack by a long press, the search of the
+**People come and go with you (P6.2 part 2, 2026-10-29):** every place now brings its own people, not only Shale:
+Cistern 9's shelter folk are there when you come to it. People far from you are kept as plain records of where their
+day has them; within about 120 m they step into the world, the nearest first, and within 60 m you see them in full
+(their gestures, glances, feet on the ground); walk away and they quietly go again, always where the hour has them
+when you come back. This keeps the phone's work to the people near you. Seen in
+`docs/evidence/unity/p6/walkabout_people_shelter.jpg`.
+**Next action:** P6 step 3: stealth on light (a light-level probe at the actor: the lights within range by a cheap
+estimate, the sun by a shadow ray; noise from actions; detection per DESIGN), with owners and witnesses for what is
+taken (P6.1's leftover). P6.2 left for later: the townsfolk sitting at their seats and sleeping in their beds (seats
+and beds with owners), crowds yielding to the walker, doors that open for whoever walks through, the cast loaded per
+region (Addressables), people on the roads. P6.1 left for later: doors that lock (with the door models), a share of a stack by a long press, the search of the
 fallen (with combat), owners and witnesses for what is taken (with stealth, P6.3). Blender and the MakeHuman assets are in the session
 scratchpad, `blender/` and `mhc/`; if a fresh session lacks them, see `tools/unity/people/`. **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;

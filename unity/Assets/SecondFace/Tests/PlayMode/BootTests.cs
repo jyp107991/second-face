@@ -175,7 +175,7 @@ namespace SecondFace.Tests
             // a tap on one of the townsfolk in view opens the radial over them (P5.3c); a verb closes it
             var view = Camera.main;
             var tappable = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None).Where(i => i.Verbs.Contains("talk")).ToArray();   // the townsfolk
-            var about = walk.People != null ? walk.People.People.Count(p => p.gameObject.activeSelf) : walk.Townsfolk;
+            var about = walk.People != null ? walk.People.Residents.Count(r => r.Person != null && r.Person.gameObject.activeSelf) : walk.Townsfolk;
             Assert.That(tappable.Length, Is.GreaterThanOrEqualTo(about), "every one of the townsfolk about can be tapped");
             (Interactable i, Vector2 p) InView() => tappable
                 .Select(i => (i, p: (Vector2)view.WorldToScreenPoint(i.transform.position + Vector3.up * 1.2f)))
@@ -653,15 +653,24 @@ namespace SecondFace.Tests
             Bootstrap boot = null;
             yield return Boot(b => boot = b);
             var walk = boot.Walkabout;
-            var town = walk.People;
+            Assert.That(walk.People, Is.Not.Null, "the world's people");
+            var town = walk.People.Town("shale");
             Assert.That(town, Is.Not.Null, "the town's people keep routines");
-            Assert.That(town.People.Count, Is.GreaterThanOrEqualTo(15), "Shale's people");
+            float Flat(Vector3 a, Vector3 b) { a.y = 0; b.y = 0; return Vector3.Distance(a, b); }
+            Vector3 Spot(string id) => boot.Stage.Marker("shale", "spot", id).transform.position;
+            // from the plaza the whole town is within reach: everyone about stands in the world
+            UnityEngine.AI.NavMesh.SamplePosition(Spot("plaza"), out var plaza, 3f, UnityEngine.AI.NavMesh.AllAreas);
+            walk.Walker.Agent.Warp(plaza.position);
+            boot.Stage.Clock.SetHour(12);
+            var residents = walk.People.ResidentsOf("shale");
+            var w0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - w0 < 10f) yield return null;
+            Assert.That(residents.Count, Is.GreaterThanOrEqualTo(15), "Shale's people");
+            Assert.That(town.People.Count, Is.GreaterThanOrEqualTo(10), "those about stand in the world");
             var cast = boot.World.Cast.ToDictionary(c => c.Id);
             foreach (var p in town.People)
                 Assert.That(cast[p.Body].Male, Is.EqualTo(SecondFace.Core.Npc.Routine.Male(p.Def.Look)), $"{p.Id} in a body of their sex");
-            Debug.Log($"BootTests: {town.People.Count} people, {town.People.Select(p => p.Body).Distinct().Count()} bodies");
-            float Flat(Vector3 a, Vector3 b) { a.y = 0; b.y = 0; return Vector3.Distance(a, b); }
-            Vector3 Spot(string id) => boot.Stage.Marker("shale", "spot", id).transform.position;
+            Debug.Log($"BootTests: {residents.Count} people, {town.People.Count} standing, {town.People.Select(p => p.Body).Distinct().Count()} bodies");
             // one mesh over the town: a way from the street in through the sheriff's door (a place's own mesh built before
             // the world's would leave its interiors an island)
             var way = new UnityEngine.AI.NavMeshPath();
@@ -686,7 +695,6 @@ namespace SecondFace.Tests
             var mags = town.Of("npc_sh_03");
             Assert.That(ada != null && pike != null && mags != null, Is.True, "the sheriff, the factor, the barkeep");
             // noon
-            boot.Stage.Clock.SetHour(12);
             town.Step(12, true);
             for (var i = 0; i < 5; i++) yield return null;
             Assert.That(ada.gameObject.activeSelf, Is.True);
@@ -732,6 +740,98 @@ namespace SecondFace.Tests
             ada.Held = false;
             town.Step(20, true);
             Assert.That(Flat(ada.transform.position, Spot("saloon_table")), Is.LessThan(1.5f), "then off to her evening");
+        }
+
+        /// <summary>P6.2 part 2: the world's people come and go with the walker: bodies near, data far; seen in full only
+        /// close by; another place's people stand when the walker comes to it, and the town left behind goes with its
+        /// people.</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator PeopleComeAndGoWithTheWalker()
+        {
+            Bootstrap boot = null;
+            yield return Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            var people = walk.People;
+            Assert.That(people, Is.Not.Null);
+            var town = people.Town("shale");
+            Assert.That(town, Is.Not.Null, "Shale stands, and its people with it");
+            float Flat(Vector3 a, Vector3 b) { a.y = 0; b.y = 0; return Vector3.Distance(a, b); }
+            IEnumerator Wait(float seconds) { var t = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t < seconds) yield return null; }
+            var plaza = boot.Stage.Marker("shale", "spot", "plaza").transform.position;
+            UnityEngine.AI.NavMesh.SamplePosition(plaza, out var hit, 3f, UnityEngine.AI.NavMesh.AllAreas);
+            walk.Walker.Agent.Warp(hit.position);
+            boot.Stage.Clock.SetHour(12);
+            yield return Wait(4f);
+            var residents = people.ResidentsOf("shale").Count;
+            var standing = town.People.Count;
+            Assert.That(standing, Is.GreaterThanOrEqualTo(10), "those about stand in the world");
+            // seen in full only close by (gestures, gaze, feet planted)
+            people.Full = 10f;
+            yield return Wait(1f);
+            var me = walk.Walker.transform.position;
+            foreach (var p in town.People)
+            {
+                var d = Flat(p.transform.position, me);
+                if (d < 8.5f) Assert.That(p.Full, Is.True, $"{p.Id} at {d:0.0} m in full");
+                if (d > 11.5f) Assert.That(p.Full, Is.False, $"{p.Id} at {d:0.0} m not in full");
+                if (!p.Full && p.Animator != null) Assert.That(p.Animator.GetComponent<Ambient>().enabled, Is.False, "no gestures far off");
+            }
+            Assert.That(town.People.Any(p => !p.Full), Is.True, "someone further off");
+            // beyond reach the bodies go and the people stay as data
+            people.Near = 25f; people.Leave = 35f;
+            yield return Wait(1.5f);
+            Assert.That(town.People.Count, Is.LessThan(standing), "the far ones' bodies gone");
+            foreach (var p in town.People)
+                Assert.That(Flat(p.transform.position, walk.Walker.transform.position), Is.LessThan(37f), $"{p.Id} near");
+            Assert.That(people.ResidentsOf("shale").Count, Is.EqualTo(residents), "everyone still there as data");
+            Assert.That(people.ResidentsOf("shale").Count(r => r.Person != null), Is.EqualTo(town.People.Count));
+            people.Near = 120f; people.Leave = 140f; people.Full = 60f;
+            yield return Wait(4f);
+            Assert.That(town.People.Count, Is.GreaterThanOrEqualTo(standing - 1), "and they come back where the hour has them");
+            Debug.Log($"BootTests: Shale {residents} people, {standing} standing; near 25 m: some gone, back again {town.People.Count}");
+            // another place: set down at Cistern 9's mouth, its people stand; Shale (770 m off, still standing) keeps its
+            // people as data, none of them in the world
+            var mouth = boot.Stage.World.PlaceCentre("cistern9");
+            walk.Game.Spot = new SecondFace.Core.State.WorldSpot { X = mouth.x, Y = mouth.y, Z = mouth.z, CamYaw = 30f, CamPitch = 50f, CamDistance = 20f };
+            walk.Begin(walk.Game);
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 120f && (people.Town("cistern9") == null || people.Town("cistern9").People.Count == 0)) yield return null;
+            yield return Wait(1f);
+            Debug.Log($"BootTests: at Cistern 9 after {Time.realtimeSinceStartup - t0:0.0} s; {walk.Line()}");
+            if (people.Town("shale") != null)
+            {
+                Assert.That(people.Town("shale").People.Count, Is.EqualTo(0), "Shale's people far off: none stands");
+                Assert.That(people.ResidentsOf("shale").Count, Is.EqualTo(residents), "but all are there as data");
+            }
+            var shelter = people.Town("cistern9");
+            Assert.That(shelter, Is.Not.Null, "Cistern 9 stands");
+            Assert.That(people.ResidentsOf("cistern9").Count, Is.GreaterThanOrEqualTo(5), "the shelter's people");
+            Assert.That(shelter.People.Count, Is.GreaterThanOrEqualTo(1), "near enough to stand");
+            var cast = boot.World.Cast.ToDictionary(c => c.Id);
+            foreach (var p in shelter.People)
+                Assert.That(cast[p.Body].Male, Is.EqualTo(SecondFace.Core.Npc.Routine.Male(p.Def.Look)), $"{p.Id} in a body of their sex");
+            // down in the shelter among them
+            var one = shelter.People.OrderBy(p => p.Id).First();
+            var at = one.transform.position + one.transform.forward * 1.6f;
+            walk.Game.Spot = new SecondFace.Core.State.WorldSpot { X = at.x, Y = one.transform.position.y, Z = at.z, Yaw = one.transform.eulerAngles.y + 180f, CamYaw = one.transform.eulerAngles.y + 200f, CamPitch = 45f, CamDistance = 9f };
+            var before = walk.Walker;
+            walk.Begin(walk.Game);   // as a load does: the people are brought again for the game
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 60f && (walk.Walker == before || !walk.Ready)) yield return null;
+            Assert.That(walk.Walker != before && walk.Ready, Is.True, "set down in the shelter");
+            yield return Wait(3f);
+            shelter = people.Town("cistern9");
+            Assert.That(shelter.People.Count(p => p.Full), Is.GreaterThanOrEqualTo(1), "seen in full close by");
+            Debug.Log($"BootTests: in the shelter {shelter.People.Count} standing of {people.ResidentsOf("cistern9").Count}; {walk.Line()}");
+            // beside the nearest of them, looking past the walker at them
+            var near = shelter.People.Where(p => p.gameObject.activeSelf).OrderBy(p => Flat(p.transform.position, walk.Walker.transform.position)).First();
+            UnityEngine.AI.NavMesh.SamplePosition(near.transform.position + near.transform.forward * 1.8f, out var by, 2f, UnityEngine.AI.NavMesh.AllAreas);
+            walk.Walker.Agent.Warp(by.position);
+            var look = near.transform.position - by.position;
+            walk.Rig.Follow(walk.Walker.transform);
+            walk.Rig.View(Mathf.Atan2(look.x, look.z) * Mathf.Rad2Deg + 25f, 40f, 6f);
+            yield return Wait(1.5f);
+            yield return ScreenshotTests.Capture("walkabout_people_shelter", 1920, 1080);
         }
 
         [UnityTest, Timeout(900000)]

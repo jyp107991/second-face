@@ -20,7 +20,20 @@ namespace SecondFace.Game.World
 
         private readonly Dictionary<string, AsyncOperationHandle<GameObject>> _live = new();
         private AsyncOperationHandle<GameObject>? _pending;
+        private string _pendingId;
         private Transform _root;
+
+        /// <summary>A place has been put in the world (its id, its instance): its people and things can be brought.</summary>
+        public event System.Action<string, GameObject> Shown;
+        /// <summary>A place is about to be taken away (its id, its instance, still there).</summary>
+        public event System.Action<string, GameObject> Dropping;
+
+        /// <summary>The places standing in the world now.</summary>
+        public IEnumerable<(string Id, GameObject Place)> Standing()
+        {
+            foreach (var id in new List<string>(_live.Keys))
+                if (Instance(id) is { } go) yield return (id, go);
+        }
 
         /// <summary>No instantiation in flight.</summary>
         public bool Idle => _pending == null;
@@ -34,9 +47,13 @@ namespace SecondFace.Game.World
             if (_pending is { } p)
             {
                 if (!p.IsDone) return;
-                if (p.Status != AsyncOperationStatus.Succeeded) Debug.LogWarning($"PlaceSpawner: {p.OperationException?.Message}");
-                else Ready(p.Result);
                 _pending = null;
+                if (p.Status != AsyncOperationStatus.Succeeded) Debug.LogWarning($"PlaceSpawner: {p.OperationException?.Message}");
+                else
+                {
+                    Ready(p.Result);
+                    Shown?.Invoke(_pendingId, p.Result);
+                }
             }
             var focus = World.Focus;
             foreach (var e in Places.Entries)
@@ -50,10 +67,12 @@ namespace SecondFace.Game.World
                     var h = Addressables.InstantiateAsync(e.Address, at, Quaternion.identity, _root);
                     _live[e.Id] = h;
                     _pending = h;
+                    _pendingId = e.Id;
                     return;
                 }
                 if (d > DropBeyond && _live.TryGetValue(e.Id, out var live))
                 {
+                    if (Instance(e.Id) is { } gone) Dropping?.Invoke(e.Id, gone);
                     if (live.IsValid()) Addressables.ReleaseInstance(live);
                     _live.Remove(e.Id);
                     if (Streamer != null) Streamer.SetHoles(e.Id, null);

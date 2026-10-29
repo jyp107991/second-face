@@ -18,6 +18,8 @@ namespace SecondFace.Game.Play
         public string Body;
         public NpcDef Def;
         public NpcPlacement Placement;
+        /// <summary>The map of the place they belong to (a place may hold two: a shelter under its mouth).</summary>
+        public MapDef Map;
         public NavMeshAgent Agent;
         public Animator Animator;
         public Ambient Ambient;
@@ -37,6 +39,8 @@ namespace SecondFace.Game.Play
         public Vector3 Asked { get; set; }
         /// <summary>Their last path ended short of where it was asked for (they stand as near as they got).</summary>
         public bool Short { get; set; }
+        /// <summary>Near enough to be seen up close: their gestures, gaze and feet on the ground (<see cref="PeopleService"/>).</summary>
+        public bool Full { get; set; } = true;
 
         private static readonly int Speed = Animator.StringToHash("Speed");
 
@@ -51,10 +55,11 @@ namespace SecondFace.Game.Play
     /// <summary>
     /// A place's people keeping their hours (P6.2; port of game.ts updateSchedules, BUILD_PLAN P6 step 2): twice a second
     /// each person's routine is looked at for the world clock's hour (Core <see cref="Routine"/>): they walk on the
-    /// NavMesh to the entry's spot (a place's <c>spot</c> marker, or a tile of its map), and stand there as the activity has
-    /// it (a drinker drinks, a trader talks, a patrol takes turns about its post); asleep, they walk home and go in (out of
-    /// sight until the routine wakes them, then they come out of their door); away, they are gone. When the clock jumps
-    /// (a rest, a load) everyone is put where the hour has them at once. Anyone talked to is held still.
+    /// NavMesh to the entry's spot (a place's <c>spot</c> marker of their map, or a tile of it), and stand there as the
+    /// activity has it (a drinker drinks, a trader talks, a patrol takes turns about its post); asleep, they walk home and
+    /// go in (out of sight until the routine wakes them, then they come out of their door); away, they are gone. When the
+    /// clock jumps (a rest, a load) everyone is put where the hour has them at once. Anyone talked to is held still. Who
+    /// stands in the world at all is the <see cref="PeopleService"/>'s (by distance); these are the bodies standing.
     /// </summary>
     public sealed class Townsfolk : MonoBehaviour
     {
@@ -62,33 +67,33 @@ namespace SecondFace.Game.Play
 
         public TimeService Clock;
         public readonly List<Townsperson> People = new();
-        private readonly Dictionary<string, Transform> _spots = new();
+        /// <summary>The place's spots by map and id.</summary>
+        private readonly Dictionary<(string, string), Transform> _spots = new();
         private Transform _place;
-        private MapDef _map;
         private float _next;
         private double _lastMinutes = -1;
 
-        /// <summary>The place whose people these are (its <c>spot</c> markers and its map's tiles).</summary>
-        public void Bind(GameObject place, MapDef map)
+        /// <summary>The place whose people these are: its <c>spot</c> markers, by the map each comes from (a marker that
+        /// names none is <paramref name="mainMap"/>'s).</summary>
+        public void Bind(GameObject place, string mainMap)
         {
             _place = place.transform;
-            _map = map;
             _spots.Clear();
             foreach (var m in place.GetComponentsInChildren<PlaceMarker>())
-                if (m.Kind == "spot" && (string.IsNullOrEmpty(m.Map) || m.Map == map.Id)) _spots[m.Id] = m.transform;
+                if (m.Kind == "spot") _spots[(string.IsNullOrEmpty(m.Map) ? mainMap : m.Map, m.Id)] = m.transform;
         }
 
         /// <summary>Takes a person into the routine (their agent is made here; it waits for the NavMesh).</summary>
-        public Townsperson Add(GameObject body, string id, NpcDef def, NpcPlacement placement, Vector3 post)
+        public Townsperson Add(GameObject body, string id, NpcDef def, NpcPlacement placement, MapDef map, Vector3 post)
         {
             var p = body.AddComponent<Townsperson>();
-            p.Id = id; p.Def = def; p.Placement = placement; p.Post = post;
+            p.Id = id; p.Def = def; p.Placement = placement; p.Map = map; p.Post = post;
             p.Animator = body.GetComponentInChildren<Animator>();
             p.Ambient = p.Animator != null ? p.Animator.GetComponent<Ambient>() : null;
             var agent = body.AddComponent<NavMeshAgent>();
             agent.radius = 0.28f; agent.height = 1.8f; agent.speed = WalkSpeed; agent.acceleration = 6f; agent.angularSpeed = 360f;
             agent.stoppingDistance = 0.4f; agent.autoBraking = true;
-            agent.obstacleAvoidanceType = ObstacleAvoidanceType.LowQualityObstacleAvoidance;
+            agent.obstacleAvoidanceType = ObstacleAvoidanceType.LowQualityObstacleAvoidance;   // none when far (PeopleService)
             agent.avoidancePriority = 60;
             agent.enabled = false;   // on once there is a NavMesh under them
             p.Agent = agent;
@@ -97,15 +102,20 @@ namespace SecondFace.Game.Play
         }
 
         /// <summary>Where an entry sends a person (their post when it names nowhere this place knows).</summary>
-        public Vector3 Where(Townsperson p, ScheduleEntry e)
+        public Vector3 Where(Townsperson p, ScheduleEntry e) => Where(p.Map, p.Post, e);
+
+        /// <summary>Where an entry sends someone of a map whose post is <paramref name="post"/> (also for one not standing
+        /// in the world: where they would be). A tile is the place's surface map's (no routine names a tile under the
+        /// ground).</summary>
+        public Vector3 Where(MapDef map, Vector3 post, ScheduleEntry e)
         {
-            if (e?.At != null && _map != null && _place != null)
+            if (e?.At != null && map != null && _place != null)
             {
-                var (x, z) = PlacePlan.TileCentre(_map, e.At.X, e.At.Y);
+                var (x, z) = PlacePlan.TileCentre(map, e.At.X, e.At.Y);
                 return _place.TransformPoint(new Vector3(x, 0f, z));
             }
-            if (e?.Spot != null && _spots.TryGetValue(e.Spot, out var s) && s != null) return s.position;
-            return p.Post;
+            if (e?.Spot != null && map != null && _spots.TryGetValue((map.Id, e.Spot), out var s) && s != null) return s.position;
+            return post;
         }
 
         private void Update()
@@ -123,6 +133,16 @@ namespace SecondFace.Game.Play
         {
             foreach (var p in People)
                 if (p != null && !p.Held) Keep(p, hour, snap);
+        }
+
+        /// <summary>Puts someone just come into the world where the hour has them.</summary>
+        public void Settle(Townsperson p) => Keep(p, Clock != null ? Clock.Hour : 12.0, true);
+
+        /// <summary>Takes someone out of the world (gone too far to matter): their body goes.</summary>
+        public void Remove(Townsperson p)
+        {
+            People.Remove(p);
+            if (p != null) Destroy(p.gameObject);
         }
 
         private void Keep(Townsperson p, double hour, bool snap)

@@ -41,11 +41,14 @@ namespace SecondFace.Game.Play
         public bool Paused { get; private set; }
         /// <summary>The walker stands on a built NavMesh and the camera follows them.</summary>
         public bool Ready => Walker != null && Nav != null && Nav.Ready && Walker.Agent.isOnNavMesh;
-        public int Townsfolk { get; private set; }
-        /// <summary>The town's people keeping their routines (P6.2; null until they are placed).</summary>
-        public Townsfolk People { get; private set; }
-        /// <summary>The town's things that can be used: containers and talking props (P6.1).</summary>
-        public int Things { get; private set; }
+        /// <summary>How many of the world's people stand in it now (those near the walker).</summary>
+        public int Townsfolk => People != null ? People.Standing : 0;
+        /// <summary>The world's people keeping their routines (P6.2; null until the walker is first set down).</summary>
+        public PeopleService People { get; private set; }
+        /// <summary>The standing places' things that can be used: containers, talking props, fires, seats (P6.1).</summary>
+        public int Things => _equipped.Values.Sum();
+        /// <summary>The places whose things are equipped, and how many each has.</summary>
+        private readonly System.Collections.Generic.Dictionary<GameObject, int> _equipped = new();
         /// <summary>A line for the HUD (a lock that held, a lock picked).</summary>
         public event System.Action<string> Said;
         /// <summary>The container open now (null when none).</summary>
@@ -136,6 +139,8 @@ namespace SecondFace.Game.Play
 
         private bool _raised;
         private int _placing;
+        /// <summary>The last setting down that has put the walker down (behind <see cref="_placing"/> while one is under way).</summary>
+        private int _down;
 
         private IEnumerator Start()
         {
@@ -167,12 +172,13 @@ namespace SecondFace.Game.Play
                 at = marker != null ? marker.transform.position : centre;
                 yaw = marker != null ? marker.transform.eulerAngles.y : 0f;
             }
-            yield return Stage.WaitAround(at, Townsfolk == 0 ? "shale" : null, LoadTimeout);
+            yield return Stage.WaitAround(at, People == null ? "shale" : null, LoadTimeout);
             if (ticket != _placing || Stage.Camera == null) yield break;   // left meanwhile, or the camera went with the scene
             if (Stage.Clock != null) Stage.Clock.Minutes = Game.Minutes;
             if (Walker != null) Destroy(Walker.gameObject);
             var body = PlayerBody.Base(PlayerBody.Look(Game.Pc), assets.PlayerF, assets.PlayerM);
             Walker = Walker.Create(body != null ? body : assets.Walker, assets.Locomotion, at, yaw);
+            _down = ticket;
             if (body != null) PlayerBody.Apply(Walker.gameObject, Game.Pc);
             if (Nav == null) Nav = gameObject.AddComponent<WorldNav>();
             Nav.Target = Walker.transform;
@@ -193,7 +199,7 @@ namespace SecondFace.Game.Play
                 Pad.Rig = Rig; Pad.Camera = Stage.Camera;
             }
             Pad.Walker = Walker;
-            if (Townsfolk == 0) Townsfolk = Populate(assets);
+            Populate(assets);
             if (Piles == null)
             {
                 Piles = gameObject.AddComponent<GroundPiles>();
@@ -205,67 +211,41 @@ namespace SecondFace.Game.Play
             SetDown?.Invoke();
         }
 
-        /// <summary>The town's people (P6.2): every one of its placements whose condition holds, each in a body of the
-        /// cast of their sex and nearest age (Core <c>Routine.Assign</c>), keeping their routine (<see cref="Townsfolk"/>)
-        /// from where the hour has them; their own idle and now and then a gesture, feet on the ground.</summary>
-        private int Populate(WorldAssets assets)
+        /// <summary>The world's people (P6.2) for the game begun: each standing place's placements whose condition holds,
+        /// in bodies of the cast (<see cref="PeopleService"/>: near the walker they stand and keep their routines), and the
+        /// standing places' things, each place's as it comes.</summary>
+        private void Populate(WorldAssets assets)
         {
-            var bodies = assets.Cast != null && assets.Cast.Length > 0
+            var spawner = Stage.Streamer != null ? Stage.Streamer.PlaceSpawner : null;
+            if (People == null)
+            {
+                People = gameObject.AddComponent<PeopleService>();
+                People.Chosen += (person, verb) => StartCoroutine(Respond(person, verb));
+                if (spawner != null)
+                {
+                    spawner.Shown += (id, place) => Equip(place, id);
+                    spawner.Dropping += (id, place) => _equipped.Remove(place);   // its things go with it
+                }
+            }
+            People.Clock = Stage.Clock;
+            People.World = Stage.World;
+            People.Spawner = spawner;
+            People.Focus = Walker.transform;
+            People.Locomotion = assets.Locomotion;
+            People.Bodies = assets.Cast != null && assets.Cast.Length > 0
                 ? assets.Cast.Where(c => c != null && c.Prefab != null).ToList()
                 : (assets.Townsfolk ?? new GameObject[0]).Where(g => g != null)
                     .Select((g, i) => new WorldAssets.CastEntry { Id = g.name, Prefab = g, Male = i % 2 == 0, Age = 35f }).ToList();
-            if (bodies.Count == 0) return 0;
-            var place = Stage.Streamer.PlaceSpawner?.Instance("shale");
-            if (place == null || !Registry.Maps.TryGetValue("shale", out var map)) return 0;
-            if (People == null) People = gameObject.AddComponent<Townsfolk>();
-            People.Clock = Stage.Clock;
-            People.Bind(place, map);
-            var who = new System.Collections.Generic.List<(PlaceMarker M, NpcPlacement P, NpcDef D)>();
-            foreach (var m in place.GetComponentsInChildren<PlaceMarker>())
-            {
-                if (m.Kind != "npc" || (!string.IsNullOrEmpty(m.Map) && m.Map != map.Id)) continue;
-                var placement = map.Npcs?.FirstOrDefault(p => (p.Id ?? p.Def) == m.Id);
-                if (placement == null || !Registry.Npcs.TryGetValue(placement.Def, out var def)) continue;
-                if (placement.If != null && !Logic.Test(placement.If, Game)) continue;
-                who.Add((m, placement, def));
-            }
-            var cast = bodies.Select(b => new CastBody { Id = b.Id, Male = b.Male, Age = b.Age, Role = b.Role }).ToList();
-            var wear = Routine.Assign(who.Select(w => (w.M.Id, Routine.Male(w.D.Look), w.D.Look?.Age ?? 35.0, w.D.Role)).ToList(), cast);
-            var n = 0;
-            foreach (var (m, placement, def) in who)
-            {
-                if (!wear.TryGetValue(m.Id, out var bodyId)) continue;
-                var model = bodies.First(b => b.Id == bodyId).Prefab;
-                var p = Instantiate(model, m.transform.position, Quaternion.Euler(0, Hash(m.Id) * 360f, 0), place.transform);
-                p.name = "townsfolk_" + m.Id;
-                var anim = p.GetComponentInChildren<Animator>();
-                if (anim != null)
-                {
-                    anim.runtimeAnimatorController = assets.Locomotion;
-                    anim.applyRootMotion = false;
-                    anim.cullingMode = AnimatorCullingMode.CullCompletely;
-                    // their own idle and now and then a gesture (P4 step 4); every third one talks more; feet on the ground
-                    var ambient = anim.gameObject.AddComponent<SecondFace.Game.People.Ambient>();
-                    ambient.Talker = n % 3 == 0;
-                    anim.gameObject.AddComponent<SecondFace.Game.People.FootPlant>();
-                    anim.gameObject.AddComponent<SecondFace.Game.People.Gaze>();
-                }
-                var name = string.IsNullOrEmpty(def.Name) ? Bootstrap.Content?.Entry("npcs", def.Id)?["name"]?.ToString() : def.Name;
-                var verbs = def.Merchant != null ? new[] { "talk", "trade", "look" } : new[] { "talk", "look" };
-                var it = Interactable.Add(p, m.Id, string.IsNullOrEmpty(name) ? Strings.Get("people.someone") : name, 0.4f, 1.85f, verbs);
-                it.Chosen += (person, verb) => StartCoroutine(Respond(person, verb));
-                People.Add(p, m.Id, def, placement, m.transform.position).Body = bodyId;
-                n++;
-            }
-            People.Step(Stage.Clock != null ? Stage.Clock.Hour : 12.0, true);   // where the hour has them
-            Things = Equip(place, "shale");
-            return n;
+            People.Begin(Game);
+            if (spawner != null)
+                foreach (var (id, place) in spawner.Standing()) Equip(place, id);
         }
 
         /// <summary>The place's things (P6.1): its containers open (a lock first), its talking props say their piece, its
         /// fires are somewhere to camp.</summary>
-        private int Equip(GameObject place, string placeId)
+        private void Equip(GameObject place, string placeId)
         {
+            if (place == null || _equipped.ContainsKey(place)) return;
             var n = 0;
             foreach (var m in place.GetComponentsInChildren<PlaceMarker>())
             {
@@ -286,10 +266,10 @@ namespace SecondFace.Game.Play
                     title = c.Name; verb = "open";
                 }
                 var it = Interactable.Add(m.gameObject, m.Id, title, 0.5f, 1.2f, verb);
-                it.Chosen += (thing, v) => StartCoroutine(Use(thing, v, placeId, map));
+                it.Chosen += (thing, v) => StartCoroutine(Use(thing, v, map?.Id ?? placeId, map));
                 n++;
             }
-            return n;
+            _equipped[place] = n;
         }
 
         /// <summary>How near a thing must be to be used (metres, on the ground).</summary>
@@ -713,19 +693,10 @@ namespace SecondFace.Game.Play
             return who != null && Registry.Npcs.TryGetValue(who.Id, out var d) ? d : null;
         }
 
-        private static float Hash(string s)
-        {
-            unchecked
-            {
-                var h = 2166136261u;
-                foreach (var c in s) h = (h ^ c) * 16777619u;
-                return (h & 0xFFFF) / 65536f;
-            }
-        }
-
         private void Update()
         {
-            if (!Paused && Walker != null) Stage.World.Focus = Walker.transform.position;
+            // while a load sets the walker down elsewhere the world streams round where they are going, not where they were
+            if (!Paused && Walker != null && _down == _placing) Stage.World.Focus = Walker.transform.position;
             if (Begun && Walker != null && Time.timeScale > 0f) Game.PlaytimeSec += Time.unscaledDeltaTime;
         }
 
