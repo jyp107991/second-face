@@ -16,8 +16,8 @@ namespace SecondFace.Game.Play
         public float ZoomIn, ZoomOut;
         /// <summary>Pressed this frame: turn the view 90° (the bumpers; Q and E), act on what is near (south; Space),
         /// the pack (north; I), the map (west; M), the notebook (view; Tab or J), the pause (start), photo mode (P),
-        /// quicksave and quickload (F5, F9), the view back on the walker (right stick press; C).</summary>
-        public bool TurnLeft, TurnRight, Act, Pack, Map, Notebook, Pause, Photo, QuickSave, QuickLoad, Recentre;
+        /// quicksave and quickload (F5, F9), the view back on the walker (right stick press; C), camp (the d-pad down; K).</summary>
+        public bool TurnLeft, TurnRight, Act, Pack, Map, Notebook, Pause, Photo, QuickSave, QuickLoad, Recentre, Camp;
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ namespace SecondFace.Game.Play
         /// <summary>Instead of the devices (tests): the frame to apply next, once.</summary>
         public PadFrame? Next;
 
-        public event Action Act, Pack, Map, Notebook, Pause, Photo, QuickSave, QuickLoad;
+        public event Action Act, Pack, Map, Notebook, Pause, Photo, QuickSave, QuickLoad, Camp;
 
         /// <summary>The frame from the devices there are.</summary>
         public static PadFrame Read()
@@ -60,6 +60,7 @@ namespace SecondFace.Game.Play
                 f.Notebook = g.selectButton.wasPressedThisFrame;
                 f.Pause = g.startButton.wasPressedThisFrame;
                 f.Recentre = g.rightStickButton.wasPressedThisFrame;
+                f.Camp = g.dpad.down.wasPressedThisFrame;
             }
             var k = Keyboard.current;
             if (k != null)
@@ -79,6 +80,7 @@ namespace SecondFace.Game.Play
                 f.QuickSave |= k.f5Key.wasPressedThisFrame;
                 f.QuickLoad |= k.f9Key.wasPressedThisFrame;
                 f.Recentre |= k.cKey.wasPressedThisFrame;
+                f.Camp |= k.kKey.wasPressedThisFrame;
             }
             return f;
         }
@@ -134,6 +136,7 @@ namespace SecondFace.Game.Play
             if (f.Photo) Photo?.Invoke();
             if (f.QuickSave) QuickSave?.Invoke();
             if (f.QuickLoad) QuickLoad?.Invoke();
+            if (f.Camp) Camp?.Invoke();
         }
     }
 }

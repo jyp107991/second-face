@@ -387,3 +387,58 @@ hair.sf_crop	Cropped short
 hair.sf_bun	Tied in a bun
 hair.sf_braid	A work braid
 hair.sf_matted	Matted
+hud.camp	Camp
+verb.camp	Camp
+camp.fire	The fire
+camp.title	Camp
+camp.where	{0} · day {1}, {2}
+camp.health	Health {0} of {1} · water {2} · food {3}
+camp.open_land	The open land
+camp.near	Out past {0}
+camp.not_here	Not here. Find a fire, or the open sky.
+camp.rest	Rest
+camp.rest_1	An hour
+camp.rest_4	Four hours
+camp.rest_8	A night
+camp.rest_morning	Until morning ({0} h)
+camp.rest_evening	Until evening ({0} h)
+camp.rest_hint	A rest takes water, and a long sleep food; without them it does half the good. The world keeps moving.
+camp.rested	You rest {0} hours.
+camp.rested_healed	You rest {0} hours and get {1} health back.
+camp.no_water	No water: a poor sleep.
+camp.no_food	Nothing to eat.
+camp.talk	Talk
+camp.alone	Nobody here but you.
+camp.hunt	Hunt
+camp.hunt_go	Hunt (three hours)
+camp.traps_set	Set snares (a wire, a scrap)
+camp.traps_check	Check the snares
+camp.hunt_rich	Tracks everywhere; game comes to the water at dawn and dusk.
+camp.hunt_thin	Thin country. Dawn and dusk are the hours.
+camp.hunt_none	Nothing lives here to hunt.
+camp.traps_out	Your snares are out; they take days.
+camp.traps_need	Snares need a wire and a scrap.
+camp.traps_laid	Two snares on the runs by the water. They will take what comes, in their own time.
+camp.traps_one	One in the snares, dressed where it hung.
+camp.traps_caught	{0} in the snares, dressed where they hung.
+camp.traps_soon	Too soon; the snares are empty. You take them up.
+camp.traps_empty	Empty snares and a fox's tracks round them. You take them up.
+camp.cook	Cook
+camp.cook_go	Cook {0}
+camp.cook_none	Nothing raw to cook.
+camp.cooked	You cook what you have.
+camp.mend	Mend
+camp.mend_item	{0} ({1}%)
+camp.kit_one	One repair kit.
+camp.kits	{0} repair kits.
+camp.mend_none	Everything is as good as it gets.
+camp.no_kit	No repair kit.
+camp.mended	{0} mended to {1}%.
+camp.write	Write
+camp.write_go	Write a letter
+camp.write_none	No one you would write to, or nothing to say yet.
+camp.write_town	Letters need a caravan. Write from a town.
+camp.write_to	Write to
+camp.sent	Your letter to {0} goes with the next caravan.
+camp.back	Back
+camp.break	Break camp

@@ -594,6 +594,9 @@ namespace SecondFace.Core.World
                 var item = new Item { Kind = kind, Id = id, X = cx, Z = cz, Yaw = yaw, Scale = (float)(scale ?? 1), Room = plan.RoomOf(x, y) };
                 plan.Items.Add(item);
                 if (id != null) byId[id] = item;
+                // a fire is somewhere to camp (P6.1): one without an id is named by where it stands
+                if (Camp.IsFire(kind))
+                    plan.Markers.Add(new Marker { Kind = "fire", Id = id ?? $"fire_{Num.RoundInt(x)}_{Num.RoundInt(y)}", X = cx, Z = cz, Yaw = yaw });
             }
             foreach (var p in map.Props ?? new List<Scene.PropPlacement>()) Add(p.Kind, p.Id, p.X, p.Y, p.Rot, p.Rad == true, p.Scale);
             for (var j = 0; j < plan.Rows; j++)

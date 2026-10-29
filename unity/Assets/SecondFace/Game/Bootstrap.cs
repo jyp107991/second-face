@@ -112,6 +112,7 @@ namespace SecondFace.Game
             Walkabout.Stage = Stage;
             Walkabout.SetDown += SetDown;
             Walkabout.Said += line => _hud?.Note(line);
+            Walkabout.Asked += (name, _) => { if (name == "map") OpenMap(); };
             overlay.World = () => Tour != null ? Tour.WorldLine() : Walkabout.Line();
             overlay.Report = () => _lastTour;
             overlay.ButtonLabel = () => Tour != null ? "walk" : "measure (tour)";
@@ -198,6 +199,7 @@ namespace SecondFace.Game
             pad.Map += () => OpenMap();
             pad.Notebook += () => OpenNotebook(null);
             pad.Photo += () => OpenPhoto();
+            pad.Camp += () => { if (UI != null && UI.Top == null) Walkabout.OpenCamp(); };
             pad.Pause += () =>
             {
                 if (Photo != null && Photo.IsOpen) Photo.Close();
@@ -311,17 +313,9 @@ namespace SecondFace.Game
         /// <summary>The place the walker is nearest (the town before they are set down).</summary>
         private (string Id, string Name) Nearest()
         {
-            var layout = Stage?.World?.Layout;
-            if (layout == null || Walkabout == null || Walkabout.Walker == null) return ("shale", Content?.Entry("maps", "shale")?["name"]?.ToString() ?? "Shale");
-            var at = Walkabout.Walker.transform.position;
-            SecondFace.Core.World.PlaceInfo best = null;
-            var d2 = float.MaxValue;
-            foreach (var p in layout.Places.Values)
-            {
-                var d = (new Vector2(p.Centre[0], p.Centre[1]) - new Vector2(at.x, at.z)).sqrMagnitude;
-                if (d < d2) { d2 = d; best = p; }
-            }
-            return best == null ? ("shale", "Shale") : (best.Id, string.IsNullOrEmpty(best.Name) ? best.Id : best.Name);
+            var best = Walkabout != null ? Walkabout.Here() : null;
+            if (best == null) return ("shale", Content?.Entry("maps", "shale")?["name"]?.ToString() ?? "Shale");
+            return (best.Id, string.IsNullOrEmpty(best.Name) ? best.Id : best.Name);
         }
 
         private string _lastTour;
@@ -364,7 +358,7 @@ namespace SecondFace.Game
             if (_hud == null)
             {
                 _hud = new Hud(UI);
-                _hud.Actions(OpenNotebook, () => OpenMap(), () => OpenPack());
+                _hud.Actions(OpenNotebook, () => OpenMap(), () => OpenPack(), () => Walkabout.OpenCamp());
                 _hud.Menu(() => OpenPause());
                 _hud.ObjectiveTapped += () => OpenNotebook(SecondFace.Core.World.Notebook.Tracked(Walkabout.Game));
                 UI.StackChanged += () => _hudNext = 0f;   // a quest tracked in the notebook, or one a conversation began, shows at once

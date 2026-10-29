@@ -1564,6 +1564,228 @@ MonoBehaviour:
     m_Localized: You cannot get to it from here.
     m_Metadata:
       m_Items: []
+  - m_Id: 69111459987456
+    m_Localized: Camp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736192
+    m_Localized: Camp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736193
+    m_Localized: The fire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736194
+    m_Localized: Camp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736195
+    m_Localized: "{0} \xB7 day {1}, {2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736196
+    m_Localized: "Health {0} of {1} \xB7 water {2} \xB7 food {3}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736197
+    m_Localized: The open land
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736198
+    m_Localized: Out past {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736199
+    m_Localized: Not here. Find a fire, or the open sky.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736200
+    m_Localized: Rest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736201
+    m_Localized: An hour
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736202
+    m_Localized: Four hours
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736203
+    m_Localized: A night
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736204
+    m_Localized: Until morning ({0} h)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736205
+    m_Localized: A rest takes water, and a long sleep food; without them it does
+      half the good. The world keeps moving.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736206
+    m_Localized: You rest {0} hours.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736207
+    m_Localized: You rest {0} hours and get {1} health back.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736208
+    m_Localized: 'No water: a poor sleep.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736209
+    m_Localized: Nothing to eat.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736210
+    m_Localized: Talk
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736211
+    m_Localized: Nobody here but you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736212
+    m_Localized: Hunt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736213
+    m_Localized: Hunt (three hours)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736214
+    m_Localized: Set snares (a wire, a scrap)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736215
+    m_Localized: Check the snares
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736216
+    m_Localized: Tracks everywhere; game comes to the water at dawn and dusk.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736217
+    m_Localized: Thin country. Dawn and dusk are the hours.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736218
+    m_Localized: Nothing lives here to hunt.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736219
+    m_Localized: Your snares are out; they take days.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736220
+    m_Localized: Snares need a wire and a scrap.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736221
+    m_Localized: Two snares on the runs by the water. They will take what comes,
+      in their own time.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736222
+    m_Localized: One in the snares, dressed where it hung.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736223
+    m_Localized: '{0} in the snares, dressed where they hung.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736224
+    m_Localized: Too soon; the snares are empty. You take them up.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736225
+    m_Localized: Empty snares and a fox's tracks round them. You take them up.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736226
+    m_Localized: Cook
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736227
+    m_Localized: Cook {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736228
+    m_Localized: Nothing raw to cook.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736229
+    m_Localized: You cook what you have.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736230
+    m_Localized: Mend
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736231
+    m_Localized: '{0} ({1}%)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736232
+    m_Localized: One repair kit.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736233
+    m_Localized: '{0} repair kits.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736234
+    m_Localized: Everything is as good as it gets.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736235
+    m_Localized: No repair kit.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736236
+    m_Localized: '{0} mended to {1}%.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736237
+    m_Localized: Write
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736238
+    m_Localized: Write a letter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736239
+    m_Localized: No one you would write to, or nothing to say yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736240
+    m_Localized: Letters need a caravan. Write from a town.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736241
+    m_Localized: Write to
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736242
+    m_Localized: Your letter to {0} goes with the next caravan.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736243
+    m_Localized: Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736244
+    m_Localized: Break camp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 70084202971136
+    m_Localized: Until evening ({0} h)
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -21,6 +21,7 @@ namespace SecondFace.Game.UI
         public Button NotebookButton { get; }
         public Button MapButton { get; }
         public Button PackButton { get; }
+        public Button CampButton { get; }
         /// <summary>The pause (P5.3j), top right under the compass.</summary>
         public Button MenuButton { get; }
         /// <summary>The objective was tapped (the notebook opens at the quest).</summary>
@@ -30,7 +31,7 @@ namespace SecondFace.Game.UI
         private IVisualElementScheduledItem _noteOff;
         private readonly VisualElement _actions;
         private readonly List<Member> _members = new();
-        private Action _notebook, _map, _pack, _menu;
+        private Action _notebook, _map, _pack, _camp, _menu;
 
         private sealed class Member
         {
@@ -84,6 +85,7 @@ namespace SecondFace.Game.UI
             NotebookButton = ActionButton("notebook", "hud.notebook", () => _notebook?.Invoke());
             MapButton = ActionButton("map", "hud.map", () => _map?.Invoke());
             PackButton = ActionButton("pack", "hud.pack", () => _pack?.Invoke());
+            CampButton = ActionButton("camp", "hud.camp", () => _camp?.Invoke());
 
             ui.Hud.Add(Root);
             ui.Pad(Root);
@@ -108,13 +110,14 @@ namespace SecondFace.Game.UI
             return b;
         }
 
-        /// <summary>What the notebook, map and pack buttons do; a null hides its button (the screen is not there yet).</summary>
-        public void Actions(Action notebook, Action map, Action pack)
+        /// <summary>What the notebook, map, pack and camp buttons do; a null hides its button (the screen is not there yet).</summary>
+        public void Actions(Action notebook, Action map, Action pack, Action camp = null)
         {
-            _notebook = notebook; _map = map; _pack = pack;
+            _notebook = notebook; _map = map; _pack = pack; _camp = camp;
             NotebookButton.style.display = notebook != null ? DisplayStyle.Flex : DisplayStyle.None;
             MapButton.style.display = map != null ? DisplayStyle.Flex : DisplayStyle.None;
             PackButton.style.display = pack != null ? DisplayStyle.Flex : DisplayStyle.None;
+            CampButton.style.display = camp != null ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         /// <summary>A line for a moment at the top (a quicksave made, a load failed).</summary>

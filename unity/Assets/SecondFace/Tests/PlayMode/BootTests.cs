@@ -475,6 +475,63 @@ namespace SecondFace.Tests
             boot.UI.CloseAll();
         }
 
+        /// <summary>P6.1: the town's fires are somewhere to camp: the walker goes to one, the camp's page opens and a rest
+        /// moves the world's clock (and the sky); out of doors the HUD's camp makes camp where they stand; the rented
+        /// room's conversation makes camp (the content's camp event, after the conversation closes).</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator TheWalkerMakesCamp()
+        {
+            Bootstrap boot = null;
+            yield return Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            var g = walk.Game;
+            var map = SecondFace.Core.Content.Registry.Maps["shale"];
+            var things = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None);
+            var fires = things.Where(t => t.Verbs.Contains("camp")).ToList();
+            Assert.That(fires.Count, Is.EqualTo(4), "Shale's four fires");
+            var at = walk.Walker.transform.position;
+            var fire = fires.OrderBy(f => Vector3.Distance(f.transform.position, at)).First();
+            g.Pc.Sheet.Hp = 3;
+            var t0 = Time.realtimeSinceStartup;
+            walk.StartCoroutine(walk.Use(fire, "camp", "shale", map));
+            while (Time.realtimeSinceStartup - t0 < 40f && (walk.Camping == null || !walk.Camping.IsOpen)) yield return null;
+            Assert.That(walk.Camping != null && walk.Camping.IsOpen, Is.True, "walked to the fire and made camp");
+            var near = walk.Walker.transform.position - fire.transform.position;
+            near.y = 0f;
+            Assert.That(near.magnitude, Is.LessThan(Walkabout.Reach), "at the fire");
+            Assert.That(Time.timeScale, Is.EqualTo(0f), "the world waits");
+            var clock = boot.Stage.Clock;
+            var m0 = clock.Minutes;
+            walk.Camping.Rest(4);
+            Assert.That(clock.Minutes, Is.EqualTo(m0 + 240).Within(0.01), "four hours on the world's clock");
+            Assert.That(g.Pc.Sheet.Hp, Is.GreaterThan(3), "rested");
+            Assert.That(walk.Camping.Said, Does.StartWith("You rest 4 hours"));
+            yield return ScreenshotTests.Capture("walkabout_camp", 1920, 1080);
+            walk.Camping.Close();
+            Assert.That(Time.timeScale, Is.EqualTo(1f), "the world moves again");
+            // out of doors the HUD's camp makes camp where the walker stands
+            Assert.That(walk.Indoors(), Is.False);
+            Assert.That(boot.Hud.CampButton.resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex), "the HUD's camp");
+            var open = walk.OpenCamp();
+            Assert.That(open != null && open.IsOpen, Is.True, "camp under the open sky");
+            open.Close();
+            // the rented room: its conversation makes camp
+            g.SetFlag("shale_room", true);
+            var bed = things.FirstOrDefault(t => t.Id == "room_bed");
+            Assert.That(bed, Is.Not.Null, "the back room's bed");
+            Assert.That(walk.LookAt(bed, map), Is.True);
+            for (var i = 0; i < 2; i++) yield return null;
+            var panel = walk.Conversation;
+            var rest = panel.View.Options.FirstOrDefault(o => o.Text.StartsWith("(Rest"));
+            Assert.That(rest, Is.Not.Null, "the room is yours");
+            panel.Choose(rest.Id);
+            for (var i = 0; i < 10 && (walk.Camping == null || !walk.Camping.IsOpen); i++) yield return null;
+            Assert.That(walk.Camping != null && walk.Camping.IsOpen, Is.True, "the room's conversation makes camp");
+            Assert.That(panel.IsOpen, Is.False, "the conversation closed first");
+            walk.Camping.Close();
+            boot.UI.CloseAll();
+        }
+
         [UnityTest, Timeout(900000)]
         public IEnumerator TheOverlaysButtonRunsTheMeasuringTour()
         {

@@ -56,8 +56,15 @@ namespace SecondFace.Game.Play
         public event System.Action SetDown;
         /// <summary>The quests on <see cref="Game"/>: the conversations run with it as their host, so what is said can start
         /// and move the content's quests (the notebook and the HUD follow them).</summary>
-        public QuestEngine Quests => _quests ??= new QuestEngine(Registry.Quests, Game);
+        public QuestEngine Quests => _quests ??= new QuestEngine(Registry.Quests, Game, new Host(this));
         private QuestEngine _quests;
+        /// <summary>What the content asks of the world that the walkabout does not do itself (the map; later the fight,
+        /// the surgeon's chair, the Dust table): the event's name and data.</summary>
+        public event System.Action<string, Newtonsoft.Json.Linq.JToken> Asked;
+        /// <summary>The camp open now (null when none).</summary>
+        public CampScreen Camping { get; private set; }
+        /// <summary>Who the conversation open now is with (null for a talking thing).</summary>
+        private Interactable _speaking;
         /// <summary>The conversation open now (null when none).</summary>
         public DialoguePanel Conversation { get; private set; }
         /// <summary>The barter table open now (null when none).</summary>
@@ -221,17 +228,19 @@ namespace SecondFace.Game.Play
             return n;
         }
 
-        /// <summary>The place's things (P6.1): its containers open (a lock first), its talking props say their piece.</summary>
+        /// <summary>The place's things (P6.1): its containers open (a lock first), its talking props say their piece, its
+        /// fires are somewhere to camp.</summary>
         private int Equip(GameObject place, string placeId)
         {
             var n = 0;
             foreach (var m in place.GetComponentsInChildren<PlaceMarker>())
             {
-                if (m.Kind != "container" && m.Kind != "talk") continue;
+                if (m.Kind != "container" && m.Kind != "talk" && m.Kind != "fire") continue;
                 var map = Registry.Maps.TryGetValue(string.IsNullOrEmpty(m.Map) ? placeId : m.Map, out var d) ? d : null;
                 string title;
                 string verb;
-                if (m.Kind == "talk")
+                if (m.Kind == "fire") { title = Strings.Get("camp.fire"); verb = "camp"; }
+                else if (m.Kind == "talk")
                 {
                     if (map?.Talk == null || !map.Talk.TryGetValue(m.Id, out var t)) continue;
                     title = t.Name; verb = "look";
@@ -274,6 +283,127 @@ namespace SecondFace.Game.Play
             if (face.sqrMagnitude > 0.01f) Walker.transform.rotation = Quaternion.LookRotation(face, Vector3.up);
             if (verb == "open") OpenContainer(thing, placeId, map);
             else if (verb == "look") LookAt(thing, map);
+            else if (verb == "camp") OpenCamp(true);
+        }
+
+        /// <summary>Makes camp where the walker is (P6.1): out of doors anywhere, indoors at a fire (or anywhere when
+        /// <paramref name="force"/>: at a fire, a bed of one's own, the content's <c>camp</c> event). In a place its map
+        /// says how much game there is, whether a caravan takes letters, and its snares are kept under it; out on the
+        /// land the biome says, and the snares are kept where they were set. Null when it cannot be made here (said).</summary>
+        public CampScreen OpenCamp(bool force = false)
+        {
+            var ui = UIService.Instance;
+            if (ui == null || Walker == null) return null;
+            if (Camping != null && Camping.IsOpen) return Camping;
+            if (!force && Indoors() && !NearFire()) { Said?.Invoke(Strings.Get("camp.not_here")); return null; }
+            var at = Walker.transform.position;
+            var place = Here();
+            var inPlace = place != null && place.Contains(at.x, at.z);
+            var mapId = inPlace ? (string.IsNullOrEmpty(place.Map) ? place.Id : place.Map) : null;
+            var map = mapId != null && Registry.Maps.TryGetValue(mapId, out var md) ? md : null;
+            var world = Stage != null ? Stage.World : null;
+            var biome = "";
+            if (world != null && world.Ready)
+            {
+                var b = world.Control.Sample(at.x, at.z).Biome;
+                if (b >= 0 && b < world.Layout.Biomes.Length) biome = world.Layout.Biomes[b];
+            }
+            var name = place == null ? Strings.Get("camp.open_land")
+                : inPlace ? place.Name : Strings.Get("camp.near", place.Name);
+            Camping = ui.Open(new CampScreen(new CampModel
+            {
+                Game = Game,
+                Where = name,
+                Abundance = inPlace ? map?.Hunting ?? 0 : Camp.WildGame(biome),
+                TrapsAt = inPlace ? mapId : Camp.WildSpot(at.x, at.z),
+                Town = inPlace && !string.IsNullOrEmpty(map?.Settlement),
+                Host = Quests,
+                Now = () => Stage != null && Stage.Clock != null ? Stage.Clock.Minutes : Game.Minutes,
+                Then = minutes =>
+                {
+                    if (Stage != null && Stage.Clock != null) Stage.Clock.Minutes = minutes;
+                    if (Stage != null && Stage.Sky != null) Stage.Sky.Apply();   // the world is stopped: turn the sky now
+                    Quests.Update();
+                },
+                Talk = id =>
+                {
+                    var who = FindObjectsByType<Interactable>(FindObjectsSortMode.None).FirstOrDefault(i => i.Id == id);
+                    if (who != null) StartCoroutine(Respond(who, "talk"));
+                },
+            }));
+            return Camping;
+        }
+
+        /// <summary>The walker is inside a building (or under the ground).</summary>
+        public bool Indoors()
+        {
+            foreach (var i in FindObjectsByType<PlaceInteriors>(FindObjectsSortMode.None))
+                if (i.Inside != null) return true;
+            return false;
+        }
+
+        /// <summary>A fire is within reach of the walker.</summary>
+        public bool NearFire()
+        {
+            if (Walker == null) return false;
+            var p = Walker.transform.position;
+            foreach (var m in FindObjectsByType<PlaceMarker>(FindObjectsSortMode.None))
+            {
+                if (m.Kind != "fire") continue;
+                var to = m.transform.position - p;
+                to.y = 0f;
+                if (to.magnitude <= Reach) return true;
+            }
+            return false;
+        }
+
+        /// <summary>The place the walker is nearest (null before they are set down, or with no world laid out).</summary>
+        public PlaceInfo Here()
+        {
+            var layout = Stage != null && Stage.World != null ? Stage.World.Layout : null;
+            if (layout == null || Walker == null) return null;
+            var at = Walker.transform.position;
+            PlaceInfo best = null;
+            var d2 = float.MaxValue;
+            foreach (var p in layout.Places.Values)
+            {
+                var d = (new Vector2(p.Centre[0], p.Centre[1]) - new Vector2(at.x, at.z)).sqrMagnitude;
+                if (d < d2) { d2 = d; best = p; }
+            }
+            return best;
+        }
+
+        /// <summary>The conversations' host beyond the quests: their events reach the walkabout.</summary>
+        private sealed class Host : LogicHost
+        {
+            private readonly Walkabout _w;
+            public Host(Walkabout w) { _w = w; }
+            public override void Event(string name, Newtonsoft.Json.Linq.JToken data) => _w.OnEvent(name, data);
+        }
+
+        /// <summary>An event from the content (a choice's effect): camp (a bed of one's own), trade with whoever is being
+        /// talked to, everyone healed; the rest go to <see cref="Asked"/>. What opens a screen waits for the conversation
+        /// to close first.</summary>
+        private void OnEvent(string name, Newtonsoft.Json.Linq.JToken data)
+        {
+            switch (name)
+            {
+                case "camp": StartCoroutine(AfterTalk(() => OpenCamp(true))); break;
+                case "barter":
+                    var who = _speaking;
+                    if (who != null) StartCoroutine(AfterTalk(() => OpenTrade(who)));
+                    break;
+                case "heal": Camp.HealAll(Game); break;
+                default: Asked?.Invoke(name, data); break;
+            }
+        }
+
+        /// <summary>Closes the conversation (after the choice that asked has run) and then does something.</summary>
+        private IEnumerator AfterTalk(System.Action then)
+        {
+            yield return null;
+            if (Conversation != null && Conversation.IsOpen) Conversation.Close();
+            then();
         }
 
         /// <summary>Opens a container on the loot screen (a lock is tried first: two minutes a try, the result said);
@@ -304,6 +434,7 @@ namespace SecondFace.Game.Play
                 || !Registry.Dialogues.TryGetValue(talk.Dialogue, out var def)) return false;
             var runner = new DialogueRunner(def, Game, Quests);
             if (runner.Ended) return false;
+            _speaking = null;
             var panel = new DialoguePanel(runner, _ => talk.Name);
             panel.Presented += _ => Quests.Update();
             Conversation = ui.Open(panel);
@@ -414,6 +545,7 @@ namespace SecondFace.Game.Play
                 || !Registry.Dialogues.TryGetValue(npc.Dialogue, out var def)) return false;
             var runner = new DialogueRunner(def, Game, Quests);
             if (runner.Ended) return false;
+            _speaking = who;
             var face = who.GetComponentInChildren<Animator>() != null ? who.gameObject : null;
             var panel = new DialoguePanel(runner,
                 id => Registry.Npcs.TryGetValue(id, out var n) && !string.IsNullOrEmpty(n.Name) ? n.Name : who.Title,

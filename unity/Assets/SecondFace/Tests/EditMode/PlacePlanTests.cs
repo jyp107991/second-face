@@ -79,6 +79,11 @@ namespace SecondFace.Tests
             Assert.That(plan.Markers.Any(m => m.Kind == "spawn" && m.Id == "start"));
             Assert.That(plan.Markers.Count(m => m.Kind == "talk"), Is.EqualTo(map.Talk.Count(t => map.Props.Any(p => p.Id == t.Key))));
             Assert.That(plan.Markers.Any(m => m.Kind == "container" && m.Id == "bar_shelf"));
+            // a fire is somewhere to camp: one marker each, named by its id or where it stands, on the fire
+            var fires = plan.Markers.Where(m => m.Kind == "fire").ToList();
+            Assert.That(fires.Count, Is.EqualTo(map.Props.Count(p => Camp.IsFire(p.Kind))).And.EqualTo(4));
+            Assert.That(fires.Select(f => f.Id).Distinct().Count(), Is.EqualTo(fires.Count));
+            Assert.That(fires.All(f => plan.Items.Any(i => Camp.IsFire(i.Kind) && i.X == f.X && i.Z == f.Z)));
             // the ground outside: the street is dirt, the rooms have none
             Assert.That(plan.Ground.Count(gd => gd == "dirt"), Is.GreaterThan(200));
             Assert.That(Enumerable.Range(0, plan.Ground.Length).Where(k => plan.RoomAt[k] >= 0).All(k => plan.Ground[k] == null));

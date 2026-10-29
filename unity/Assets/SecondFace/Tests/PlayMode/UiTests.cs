@@ -224,7 +224,7 @@ namespace SecondFace.Tests
             _ui.SafeAreaOverride = new Rect(0.05f, 0.04f, 0.95f, 0.96f);
             _ui.Root.Insert(0, World());
             var hud = new Hud(_ui);
-            hud.Actions(() => { }, () => { }, () => { });
+            hud.Actions(() => { }, () => { }, () => { }, () => { });
             var face = Face(128);
             hud.Show(new HudState
             {
@@ -258,6 +258,8 @@ namespace SecondFace.Tests
             Assert.That(_ui.CoversPanel(hud.MapButton.worldBound.center), Is.True);
             Assert.That(_ui.CoversPanel(new Vector2(w * 0.5f, h * 0.5f)), Is.False, "the middle of the screen is the world's");
             Assert.That(hud.NotebookButton.Q<Label>().text, Is.EqualTo("Notebook"), "the button's word is bound to the table");
+            Assert.That(hud.CampButton.Q<Label>().text, Is.EqualTo("Camp"), "camp beside the pack");
+            Assert.That(hud.CampButton.worldBound.xMin, Is.GreaterThanOrEqualTo(hud.PackButton.worldBound.xMax), "after it");
             Assert.That(Save(_rt, "ui_hud"), Is.GreaterThan(0.95f));
 
             hud.Heading(200f);
@@ -1103,6 +1105,59 @@ namespace SecondFace.Tests
             Assert.That(Save(_rt, "ui_loot_taken"), Is.GreaterThan(0.95f));
             Press(loot.Root.Q<Button>("done"));
             Assert.That(loot.IsOpen, Is.False);
+        }
+
+        /// <summary>P6.1: the camp's page: rest, hunt and snares, cook, mend, write (in a town), each saying what came of it
+        /// and passing the game's time; the world waits while it is open.</summary>
+        [UnityTest]
+        public IEnumerator CampRestsCooksMendsAndWrites()
+        {
+            var g = Kitted();
+            var inv = g.Pc.Inventory;
+            foreach (var (id, n) in new[] { ("c_meat", 2), ("t_repair", 1), ("c_jerky", 1) }) Inv.AddItem(inv, Inv.MakeItem(id, n));
+            Inv.Equip(inv, inv.Items.FindIndex(i => i.Def == "r_duster"));
+            inv.EquippedAt("body").Cond = 0.5;
+            g.Pc.Sheet.Hp = 4;
+            g.World.MetPeople["npc_c9_01"] = new Met { Name = "Ines", Day = 1, Where = "cistern9" };
+            g.SetFlag("visited_shale", true);
+            _ui = Offscreen(1600, 720, out _rt);
+            _ui.SafeAreaOverride = new Rect(0.05f, 0.04f, 0.95f, 0.96f);
+            var camp = _ui.Open(new CampScreen(new CampModel { Game = g, Where = "Shale", Abundance = 0.5, TrapsAt = "shale", Town = true }));
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(Time.timeScale, Is.EqualTo(0f), "the world waits while camp is made");
+            foreach (var name in new[] { "rest-1", "rest-4", "rest-8", "rest-until", "hunt", "traps-set", "cook", "mend-body", "write", "camp-break" })
+                Assert.That(camp.Root.Q<Button>(name), Is.Not.Null, name);
+            Assert.That(camp.Root.Q<Label>("camp-health").text, Does.Contain("Health 4 of"));
+            Assert.That(camp.Root.Q<Button>("rest-until").text, Is.EqualTo("Until evening (11 h)"), "by day, until the evening");
+            Assert.That(Save(_rt, "ui_camp"), Is.GreaterThan(0.95f));
+            var m0 = g.Minutes;
+            Press(camp.Root.Q<Button>("rest-8"));
+            Assert.That(g.Minutes, Is.EqualTo(m0 + 480), "a night");
+            Assert.That(g.Pc.Sheet.Hp, Is.GreaterThan(4));
+            Assert.That(camp.Said, Does.StartWith("You rest 8 hours"));
+            Press(camp.Root.Q<Button>("cook"));
+            Assert.That(Inv.CountItem(inv, "c_meat"), Is.EqualTo(0), "the meat cooked");
+            Assert.That(camp.Said, Is.EqualTo("You cook what you have."));
+            Press(camp.Root.Q<Button>("mend-body"));
+            Assert.That(inv.EquippedAt("body").Cond, Is.EqualTo(0.85).Within(1e-6), "mended");
+            Assert.That(camp.Root.Q<Button>("mend-body"), Is.Null, "no kit left to mend with");
+            Press(camp.Root.Q<Button>("traps-set"));
+            Assert.That(Camp.Traps(g, "shale"), Is.Not.Null, "the snares out");
+            Assert.That(camp.Root.Q<Button>("traps-check"), Is.Not.Null, "and to be checked");
+            for (var i = 0; i < 2; i++) yield return null;
+            Assert.That(Save(_rt, "ui_camp_done"), Is.GreaterThan(0.95f));
+            Press(camp.Root.Q<Button>("write"));
+            for (var i = 0; i < 2; i++) yield return null;
+            var letter = camp.Root.Q<Button>("letter-let_ines_shale");
+            Assert.That(letter, Is.Not.Null, "a letter to someone met");
+            Assert.That(Save(_rt, "ui_camp_write"), Is.GreaterThan(0.95f));
+            Press(letter);
+            Assert.That(g.World.Letters.Any(l => l.Id == "let_ines_shale"), Is.True, "sent");
+            Assert.That(camp.Said, Does.StartWith("Your letter to"));
+            Assert.That(camp.Root.Q<Button>("rest-8"), Is.Not.Null, "back to the camp's page");
+            Press(camp.Root.Q<Button>("camp-break"));
+            Assert.That(camp.IsOpen, Is.False);
+            Assert.That(Time.timeScale, Is.EqualTo(1f), "the world moves again");
         }
 
         private static Label Text(string cls, string text)

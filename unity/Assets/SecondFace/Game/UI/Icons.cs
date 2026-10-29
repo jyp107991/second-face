@@ -9,7 +9,7 @@ namespace SecondFace.Game.UI
     /// </summary>
     public static class Icons
     {
-        public static readonly string[] Names = { "notebook", "map", "pack", "talk", "look", "take", "use", "steal", "give", "attack", "trade", "menu", "open" };
+        public static readonly string[] Names = { "notebook", "map", "pack", "talk", "look", "take", "use", "steal", "give", "attack", "trade", "menu", "open", "camp" };
 
         public static VisualElement Make(string name, float size = 40f)
         {
@@ -37,6 +37,20 @@ namespace SecondFace.Game.UI
                     p.ClosePath();
                     p.MoveTo(P(0.16f, 0.66f)); p.LineTo(P(0.84f, 0.66f));   // a board across
                     p.MoveTo(P(0.16f, 0.46f)); p.LineTo(P(0.30f, 0.16f)); p.LineTo(P(0.92f, 0.28f)); p.LineTo(P(0.84f, 0.46f));   // the lid
+                    p.Stroke();
+                    break;
+                case "camp":   // a flame over two crossed sticks
+                    p.BeginPath();
+                    p.MoveTo(P(0.18f, 0.88f)); p.LineTo(P(0.82f, 0.70f));
+                    p.MoveTo(P(0.18f, 0.70f)); p.LineTo(P(0.82f, 0.88f));
+                    p.Stroke();
+                    p.BeginPath();
+                    p.MoveTo(P(0.50f, 0.70f));
+                    p.BezierCurveTo(P(0.26f, 0.66f), P(0.30f, 0.44f), P(0.42f, 0.32f));
+                    p.BezierCurveTo(P(0.42f, 0.42f), P(0.48f, 0.46f), P(0.52f, 0.46f));
+                    p.BezierCurveTo(P(0.48f, 0.30f), P(0.56f, 0.18f), P(0.62f, 0.12f));
+                    p.BezierCurveTo(P(0.64f, 0.30f), P(0.76f, 0.40f), P(0.72f, 0.56f));
+                    p.BezierCurveTo(P(0.70f, 0.66f), P(0.60f, 0.70f), P(0.50f, 0.70f));
                     p.Stroke();
                     break;
                 case "menu":   // three strokes, a little uneven, as if ruled by hand

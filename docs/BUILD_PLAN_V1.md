@@ -754,6 +754,34 @@ locker's lock holds against a new character, said on the HUD, two minutes gone; 
 search of the fallen (with combat), a share of a stack (a long press), owners and witnesses for what is taken (with
 stealth, P6.3), beds, benches and the camp at a fire (the camp screen), doors that lock.
 
+*As built (P6.1 part 2a, 2026-10-29).* The camp. Core `World.Camp` (port of ui/camp.ts): `Rest` (water each time and,
+for six hours or more, food, each missing halving the healing; the party heals too), `UntilNext` (by day until seven in
+the evening, at night until six in the morning), `Cook` (half an hour), `Mend` (a repair kit, an hour, +35 %), `Hunt`
+(Core `Hunting`, by Survival, the land's game and the hour), snares (`SetTraps`, `CheckTraps`; a wire and a scrap; kept
+in `WorldState.Traps` under the place's map or, out on the land, under `WildSpot`, the 200 m square they were set in),
+`WildGame` (the open land's game by biome, from the wet north at 0.6 to the megacity's ground at 0.05), `Supplies`,
+`HealAll` (the content's `heal` event); `CampTests` (3). Core `PlacePlan` now marks every `campfire` and `fire_barrel`
+prop with a `fire` marker (its id, or `fire_<x>_<y>`; Shale has four; `PlacePlanTests`), so the place prefabs were rebuilt.
+`Walkabout.Equip` makes the fires interactables (verb camp, a flame icon); `OpenCamp(force)` makes camp out of doors
+anywhere and indoors only within reach of a fire (`Indoors` from `PlaceInteriors.Inside`, `NearFire`), or anywhere when
+forced (a fire, a bed of one's own); in a place its map gives the game, the snares' key and whether a caravan takes
+letters (`settlement`), out on the land the biome under the walker (`ControlMap.Sample`). `UI.CampScreen`: a page of
+the notebook on the right with the world (the walker at the fire) on the left; time stands still while it is open and
+each thing done reads the world clock into the game first and hands it back after (`CampModel.Now`/`Then`: the
+`TimeService`, the sky re-lit, the quests updated); rest (an hour, four, a night, until evening or morning), talk to the
+party (none yet in the walkabout), hunt and snares, cook, mend, write (the letters `Letters.Available` offers, sent
+with `Letters.Send`), each saying what came of it in red under the heading. The walkabout's `QuestEngine` now has an
+outer host (`Walkabout.Host`): the content's events reach the world: `camp` (after the conversation closes), `barter`
+(with whoever is being talked to), `heal`; the rest go out on `Walkabout.Asked` (the bootstrap opens the map for `map`;
+`fight`, `surgery`, `dust`, `reverie` and `goto` wait for their systems). A camp button on the HUD after the pack, the
+d-pad's down and K. `Walkabout.Here` (the nearest place) now serves the saves' place names too. Tests:
+`UiTests.CampRestsCooksMendsAndWrites`, `UiTests.HudSitsInTheSafeAreaAndIsCaptured` (the camp button),
+`BootTests.TheWalkerMakesCamp` (walked to Shale's nearest fire, four hours on the world's clock, camp under the open
+sky from the HUD, the rented room's conversation makes camp). Evidence `docs/evidence/unity/p6/ui_camp.jpg`,
+`ui_camp_done.jpg`, `ui_camp_write.jpg`, `walkabout_camp.jpg`, `p5/ui_hud.jpg`. Not yet: fires that burn (a flame and
+a flickering light at every fire prop, with the props' pass), a camp camera (lower and closer on the walker at the fire),
+companions at the fire (with the party, P7).
+
 ### P7 — Chapter One on the phone
 The opening through the stranger's map, end to end on device, at the standard: every scene, conversation, check
 and reward of Chapter One works from the content, saved and resumed. A playtest script (PlayMode, fixture-driven)
@@ -1981,6 +2009,13 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
 - **A test that adds a virtual pad** needs `Unity.InputSystem` in the test assembly's references.
 - **Wait for a walk as long as it takes** (P6.1): a container across the town is more than ten seconds' walk, and a use
   that waited ten seconds opened it from afar. Wait up to 30 s, then check the reach before using anything.
+- **A place's markers live in its prefab** (P6.1): a new kind of marker from Core `PlacePlan` reaches the game only
+  after `Second Face/Build places` (`PlaceBuilder.Build`, or `editor.sh run SecondFace.EditorTools.PlaceBuilder.Build`);
+  commit the rebuilt `Prefabs/places/*.prefab` with the change (their file ids churn on every build, so otherwise
+  revert them).
+- **Time passed by a screen goes through the world's clock** (P6.1): while walking the `TimeService` leads and the game
+  state's minutes are only written at a save; read the clock into the state before a rest or a hunt, set it back after,
+  and re-light the sky by hand (the screen stops time, so the sky would not turn by itself).
 - **The local compile checks do not build the PlayMode tests**: a test's missing `using UnityEngine.UIElements` (for
   `Q<T>`) only shows in Unity's own compile; read `playmode.log` for `error CS` when a run writes no results.
 

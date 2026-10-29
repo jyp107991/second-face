@@ -1555,6 +1555,226 @@ MonoBehaviour:
     m_Key: loot.cannot_reach
     m_Metadata:
       m_Items: []
+  - m_Id: 69111459987456
+    m_Key: hud.camp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736192
+    m_Key: verb.camp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736193
+    m_Key: camp.fire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736194
+    m_Key: camp.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736195
+    m_Key: camp.where
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736196
+    m_Key: camp.health
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736197
+    m_Key: camp.open_land
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736198
+    m_Key: camp.near
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736199
+    m_Key: camp.not_here
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736200
+    m_Key: camp.rest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736201
+    m_Key: camp.rest_1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736202
+    m_Key: camp.rest_4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736203
+    m_Key: camp.rest_8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736204
+    m_Key: camp.rest_morning
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736205
+    m_Key: camp.rest_hint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736206
+    m_Key: camp.rested
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736207
+    m_Key: camp.rested_healed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736208
+    m_Key: camp.no_water
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736209
+    m_Key: camp.no_food
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736210
+    m_Key: camp.talk
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736211
+    m_Key: camp.alone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736212
+    m_Key: camp.hunt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736213
+    m_Key: camp.hunt_go
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736214
+    m_Key: camp.traps_set
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736215
+    m_Key: camp.traps_check
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736216
+    m_Key: camp.hunt_rich
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736217
+    m_Key: camp.hunt_thin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736218
+    m_Key: camp.hunt_none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736219
+    m_Key: camp.traps_out
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736220
+    m_Key: camp.traps_need
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736221
+    m_Key: camp.traps_laid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736222
+    m_Key: camp.traps_one
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736223
+    m_Key: camp.traps_caught
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736224
+    m_Key: camp.traps_soon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736225
+    m_Key: camp.traps_empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736226
+    m_Key: camp.cook
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736227
+    m_Key: camp.cook_go
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736228
+    m_Key: camp.cook_none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736229
+    m_Key: camp.cooked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736230
+    m_Key: camp.mend
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736231
+    m_Key: camp.mend_item
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736232
+    m_Key: camp.kit_one
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736233
+    m_Key: camp.kits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736234
+    m_Key: camp.mend_none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736235
+    m_Key: camp.no_kit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736236
+    m_Key: camp.mended
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736237
+    m_Key: camp.write
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736238
+    m_Key: camp.write_go
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736239
+    m_Key: camp.write_none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736240
+    m_Key: camp.write_town
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736241
+    m_Key: camp.write_to
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736242
+    m_Key: camp.sent
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736243
+    m_Key: camp.back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 69111497736244
+    m_Key: camp.break
+    m_Metadata:
+      m_Items: []
+  - m_Id: 70084202971136
+    m_Key: camp.rest_evening
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

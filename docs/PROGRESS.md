@@ -658,8 +658,16 @@ walk over, and its things lie beside your pack; tap to take or put back, or take
 (each try takes two minutes; picked, it stays open and earns XP; if it holds, the HUD says how far short you are).
 What you leave stays there. The pumps, the signposts and the back room's bed say their piece when you look at them.
 Seen in `docs/evidence/unity/p6/ui_loot.jpg` and `ui_loot_taken.jpg`.
-**Next action:** P6.1 part 2: things on the ground and dropping them, beds and benches, the camp at a fire (the camp
-screen), then P6 step 2 (schedules across the world). Blender and the MakeHuman assets are in the session
+**The camp (P6.1 part 2a, 2026-10-29):** make camp at any fire (Shale has four: tap one, you walk over), anywhere
+under the open sky (the new camp button after the pack, K, or the pad's d-pad down), or in a bed of your own (the back
+room, once it is yours). The notebook's camp page opens beside you and the world waits: rest an hour, four, a night, or
+until evening (by day) or morning (at night), each rest wanting water and a long one food; hunt and set snares where
+there is game (they keep, for days, where you set them); cook what is raw, mend what is worn with a repair kit, and in
+a town write a letter to someone you have met. Each thing says what came of it, and the hour on the HUD and the sky move
+on with it. Seen in `docs/evidence/unity/p6/ui_camp.jpg`, `ui_camp_done.jpg`, `ui_camp_write.jpg`,
+`walkabout_camp.jpg` and the HUD with its camp button, `p5/ui_hud.jpg`.
+**Next action:** P6.1 part 2b: things on the ground and dropping them (a share of a stack by a long press), beds and
+benches to sit and sleep, doors that lock; then P6 step 2 (schedules across the world). Blender and the MakeHuman assets are in the session
 scratchpad, `blender/` and `mhc/`; if a fresh session lacks them, see `tools/unity/people/`. **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).

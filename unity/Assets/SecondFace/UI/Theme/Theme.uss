@@ -1430,3 +1430,73 @@
 .sf-loot__weight { margin-top: 18px; font-size: var(--fs-20); color: var(--plate-dim); -unity-text-align: middle-center; white-space: normal; }
 .sf-loot__weight--over { color: #E07A5F; }
 .sf-loot__empty { -unity-font-definition: url("../Fonts/Literata-Italic.asset"); font-size: var(--fs-22); color: var(--ink-soft); margin: 12px; }
+
+/* ---- the camp (CampScreen.cs): a page of the notebook on the right, the walker at the fire on the left ---- */
+.sf-camp { background-color: rgba(12, 10, 8, 0.16); }
+.sf-camp__safe { flex-direction: row; justify-content: flex-end; }
+.sf-camp__page {
+    width: 50%;
+    min-width: 560px;
+    flex-grow: 0;
+    background-color: var(--paper);
+    border-radius: 4px;
+    padding: 22px 28px 16px 28px;
+}
+.sf-camp__title {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: var(--fs-36);
+    color: var(--ink);
+}
+.sf-camp__line { font-size: var(--fs-21); color: var(--pencil); }
+.sf-camp__health {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-22);
+    color: var(--ink-soft);
+    margin-top: 4px;
+}
+.sf-camp__said {
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: var(--fs-23);
+    color: var(--rust);
+    white-space: normal;
+    margin-top: 10px;
+}
+.sf-camp__scroll { flex-grow: 1; flex-shrink: 1; margin-top: 6px; }
+.sf-camp__heading {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-20);
+    letter-spacing: 2px;
+    color: var(--pencil);
+    margin: 14px 0 6px 0;
+    flex-shrink: 0;
+}
+.sf-camp__row { flex-direction: row; flex-wrap: wrap; flex-shrink: 0; }
+.sf-camp__act { min-height: 72px; margin: 0 10px 10px 0; padding: 0 20px; font-size: var(--fs-23); white-space: normal; }
+.sf-camp__hint { font-size: var(--fs-21); color: var(--pencil); white-space: normal; flex-shrink: 0; }
+.sf-camp__letter {
+    flex-shrink: 0;
+    align-items: stretch;
+    margin: 0 0 8px 0;
+    padding: 12px 16px;
+    border-width: 0;
+    border-radius: 3px;
+    background-color: rgba(36, 32, 27, 0.05);
+}
+.sf-camp__letter:enabled:hover { background-color: rgba(36, 32, 27, 0.1); }
+.sf-camp__letter:enabled:active { background-color: rgba(36, 32, 27, 0.16); }
+.sf-camp__letter:enabled:focus { background-color: rgba(36, 32, 27, 0.08); border-width: 3px; border-color: var(--ochre); }
+.sf-camp__letter-to {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-23);
+    color: var(--ink);
+    white-space: normal;
+    -unity-text-align: upper-left;
+}
+.sf-camp__letter-gist {
+    -unity-font-definition: url("../Fonts/Literata-Regular.asset");
+    font-size: var(--fs-21);
+    color: var(--ink-soft);
+    white-space: normal;
+    -unity-text-align: upper-left;
+}
+.sf-camp__foot { flex-direction: row; justify-content: flex-end; margin-top: 10px; flex-shrink: 0; }
