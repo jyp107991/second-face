@@ -372,6 +372,66 @@ namespace SecondFace.Tests
             }
         }
 
+        /// <summary>P4 step 6: portraits in the engine under the studio light, cached; the player's two bases as they are
+        /// and aged, and three of the cast, in one sheet (`people_portraits`). The second ask returns the same texture;
+        /// the person's layers and the world's lights are as they were after.</summary>
+        [UnityTest, Timeout(600000)]
+        public IEnumerator PortraitsAreRenderedAndKept()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Player.unity";
+            if (!File.Exists(path)) { Assert.Ignore("player scene not built"); yield break; }
+            yield return LoadTestScene(path);
+            for (var i = 0; i < 10; i++) yield return null;
+            var people = new List<GameObject> { GameObject.Find("player_f_built"), GameObject.Find("player_m_built") };
+            Assert.That(people.All(p => p != null), Is.True, "the player's bases in the scene");
+#if UNITY_EDITOR
+            foreach (var id in new[] { "cast_sal_02", "cast_chr_02", "cast_sal_04" })
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/SecondFace/Prefabs/people/{id}.prefab");
+                if (prefab == null) continue;
+                var p = Object.Instantiate(prefab, new Vector3(30f + people.Count * 2f, 0, 0), Quaternion.Euler(0, 180f, 0));
+                p.name = id;
+                people.Add(p);
+            }
+#endif
+            for (var i = 0; i < 5; i++) yield return null;
+            var sun = Object.FindObjectsByType<Light>(FindObjectsSortMode.None).First(l => l.type == LightType.Directional && l.gameObject.name == "Sun");
+            var layer = people[0].GetComponentInChildren<SkinnedMeshRenderer>().gameObject.layer;
+            var asks = new List<(GameObject, string)>();
+            foreach (var p in people) asks.Add((p, ""));
+            asks.Insert(1, (people[0], "aged")); asks.Insert(3, (people[1], "aged"));
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            var rts = asks.Select(a => SecondFace.Game.People.Portraits.Of(a.Item1, a.Item2)).ToList();
+            var ms = watch.Elapsed.TotalMilliseconds / rts.Count;
+            Assert.That(SecondFace.Game.People.Portraits.Of(people[0]), Is.SameAs(rts[0]), "asked again, the same texture");
+            Assert.That(sun.enabled, Is.True, "the world's sun back on");
+            Assert.That(people[0].GetComponentInChildren<SkinnedMeshRenderer>().gameObject.layer, Is.EqualTo(layer), "the person's layer back");
+            // one sheet, and each portrait more than its background
+            var size = SecondFace.Game.People.Portraits.Size;
+            var sheet = new Texture2D(size * rts.Count, size, TextureFormat.RGB24, false);
+            var active = RenderTexture.active;
+            for (var i = 0; i < rts.Count; i++)
+            {
+                RenderTexture.active = rts[i];
+                sheet.ReadPixels(new Rect(0, 0, size, size), i * size, 0);
+            }
+            RenderTexture.active = active;
+            sheet.Apply();
+            for (var i = 0; i < rts.Count; i++)
+            {
+                var px = sheet.GetPixels(i * size + size / 4, size / 4, size / 2, size / 2);
+                var mean = new Color(px.Average(c => c.r), px.Average(c => c.g), px.Average(c => c.b));
+                var spread = px.Average(c => Mathf.Abs(c.r - mean.r) + Mathf.Abs(c.g - mean.g) + Mathf.Abs(c.b - mean.b));
+                Assert.That(spread, Is.GreaterThan(0.02f), $"portrait {i} ({asks[i].Item1.name} {asks[i].Item2}) shows a face");
+            }
+            File.WriteAllBytes(Path.Combine(OutDir(), "people_portraits.png"), sheet.EncodeToPNG());
+            Debug.Log($"people_portraits: {rts.Count} portraits, {ms:0.0} ms each in the editor, {SecondFace.Game.People.Portraits.Count} kept");
+            Object.Destroy(sheet);
+            foreach (var p in people) SecondFace.Game.People.Portraits.Forget(p);
+            Assert.That(SecondFace.Game.People.Portraits.Count, Is.EqualTo(0));
+            foreach (var p in people.Skip(2)) Object.Destroy(p);
+        }
+
         [UnityTest, Timeout(600000)]
         public IEnumerator PeopleWalkOnCapturedMotionWhenClipsExist()
         {

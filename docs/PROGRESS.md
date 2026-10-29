@@ -549,14 +549,19 @@ side-steps (no clips yet).
 **Falling (P4 step 5, 2026-10-29):** people can now fall as a body (a push, a blow, a death), land on the ground and
 lie there, and get back up (`docs/evidence/unity/p4/people_ragdoll.jpg`). The getting up is a quick blend for now;
 a captured get-up motion comes later.
+**Portraits (P4 step 6, 2026-10-29):** anyone's portrait is now drawn in the game under a steady studio light, kept, and
+shown at once when asked again (`docs/evidence/unity/p4/people_portraits.jpg`). Seen in them: the one hair left that
+the hair rule allows is a neat bun from behind (not rough), eyebrows read as dotted, darker lips come out lilac, and
+the aged face needs aged skin. Those are the people's next quality items.
 **Next action:** step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until
 Mid ≥ 30 fps); **`play-walkabout` is released** (2026-10-29, commit e0b69c6: the cast in Shale and the
 walkabout; https://github.com/jyp107991/second-face/releases/tag/play-walkabout, `SecondFace.apk`, 345 MB as a
 development build: its size wants a look in release hardening). Later playable builds: run the Android workflow by
 hand with `release: play-<name>` (its release job waits for that run's tests and APK, then makes the tag and the
-release page; this session's git proxy refuses tag pushes); then P4 step 6: portraits
-in engine (a portrait camera per actor, cached per outfit; the aged skin for the photograph), then the wardrobe's open
-items (NPC outfits merged into one renderer; body sliders; runtime grime in a cloth shader).
+release page; this session's git proxy refuses tag pushes); then the people's quality items in this order: hair of
+our own for the hair rule's forms (rough buns, work braids, uneven crops, matted under a wrap: generated cards from
+`mh_build`), eyebrows painted into the skin, lips by skin tone, the aged skin bake; then NPC outfits merged into one
+renderer (crowd cost), body sliders, runtime grime in a cloth shader; then P5 (camera, touch and UI).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

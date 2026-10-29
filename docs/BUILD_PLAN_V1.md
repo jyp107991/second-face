@@ -386,9 +386,17 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    after `StandUp`. Open: a captured get-up clip (face up and face down) instead of the blend; partial ragdoll for hits
    (P6 combat). Ragdoll per rig (`RagdollBuilder` editor step: capsules per Humanoid bone, joints with limits), switched on
    at death and heavy knockback; blended back for stand-ups.
-6. Portraits in engine: a `PortraitCamera` renders the head to a 256² RT with the face lit by a fixed key/fill,
+6. **Built (P4.6a, 2026-10-29; capture `people_portraits`).** `Game/People/Portraits`: `Of(person, key)` draws the
+   person where they stand, alone (their renderers on layer 31 for the one render, LOD0 forced), framed three-quarter
+   from the front left by the head bone and facing by the eyes (a person not yet animated stands in the model's own
+   pose, which faces away from the Humanoid forward), under a fixed studio light (warm key, cool fill, rim, neutral
+   trilight ambient, no fog; the world's lights, ambient and fog set aside for the render and put back) into a 256²
+   texture, kept per person and key (an outfit state; "aged" draws `FaceSculpt.Aged` = 1); `Forget` drops a person's.
+   118 ms each in the batch editor (cached, so paid once). Open: the aged skin bake for the photograph (geometry alone
+   barely ages the face); portraits from the sculptor screen (P5). Portraits in engine: a `PortraitCamera` renders the head to a 256² RT with the face lit by a fixed key/fill,
    cached per actor per outfit state; the UI shows the RT (no wait).
-7. Capture `people_cast_lineup` (30 people), `people_lod`, `people_walk`, `people_portraits`.
+7. **Done**: `people_cast_1..4` (32 people), `people_lod_0..2`, `people_walk`, `people_portraits`, plus
+   `people_sculpt_*`, `people_wardrobe_*`, `people_motion_slope`, `people_ragdoll`. Capture `people_cast_lineup` (30 people), `people_lod`, `people_walk`, `people_portraits`.
 
 ### P5 — Camera, touch and UI
 1. `CameraService` with Cinemachine 3: an orbit rig around the party leader (§6.F), tactical camera in combat,
