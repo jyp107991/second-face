@@ -446,6 +446,20 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    the bound prefabs. Not yet: stooped age and posture, the bake-off people (test-only), a third body slider for shape in
    creation.
 
+12. **Built (P4.12, 2026-10-29; owner: "arms are clipping body … her hands are melded into her hips"; evidence
+   `docs/evidence/unity/p4/people_arms.jpg`, before | after).** The captures were taken from bodies narrower at the hip
+   than ours, so a hanging arm or a hand at the back went 6 cm into the walker. Each person prefab now carries a
+   `TorsoProfile`: measured at build time by `Editor/Build/TorsoMeasure` (`Second Face/Measure torsos`, and in every
+   `WorldAssetsBuild.Build`; garments' own prefabs are skipped) from the LOD0 body and its clothes baked at rest,
+   leaving out every vertex whose strongest bone is an arm's, a lower leg's or the hair's, as an ellipse per 2.5 cm of
+   height in the hips' frame from 45 cm below to 75 cm above them, with each `body-*` shape (the player's build and
+   muscle) at full weight as a change (the meshes are not readable on the phone: measuring there is impossible).
+   `Game/People/ArmClearance` runs after the animation and its IK each frame: the elbow, mid-forearm, wrist and hand are
+   tested against the torso grown by 2 cm, in a frame that turns with the hips (the sneak's lean), and the upper arm is
+   turned at the shoulder about the axis that moves the deepest point straight out, then once more for what is left;
+   the turn comes at once and eases off at 90° a second. On the walker and on the townsfolk seen in full; off while
+   seated (hands on the lap). Test `BootTests.ArmsStayOutOfTheBody`: 6.2 cm in without it; 0.0 cm standing, sneaking
+   and walking with it, and 0.0 for all 18 townsfolk.
 ### P5 — Camera, touch and UI
 1. `CameraService` with Cinemachine 3: an orbit rig around the party leader (§6.F), tactical camera in combat,
    conversation cameras (over-shoulder two-shot, portrait inserts), the photo mode.
@@ -932,7 +946,16 @@ consequences in person (the owner confronting the player, the militia), the owne
 
 ### P7 — Chapter One on the phone
 The opening through the stranger's map, end to end on device, at the standard: every scene, conversation, check
-and reward of Chapter One works from the content, saved and resumed. A playtest script (PlayMode, fixture-driven)
+and reward of Chapter One works from the content, saved and resumed.
+**The new opening first (owner's note, 2026-10-29, binding; rules in `docs/OPENINGS.md`, design in `story/` §18).**
+The player character no longer starts inside the shelter: they have a home in the Reach, a trade and people of their
+own. Before the chapter is built on the phone its content is rewritten in `src/content` (and exported): (1) the home
+place as a map with its people (looks, routines, functions), the day's chores as quests, each teaching one system for
+one person (barter, talk and checks, scavenging and the pack, sneaking, a first fight, mechanics or snares, the camp,
+the notebook); (2) the night and the morning after as quests, with the opening's echoing choice; (3) the four origins
+reframed as trades of that home, their threads kept; (4) Shale's trace, the letters-home line and the companions'
+entries adjusted to match; (5) the old shelter opening's content retired. Tests: a route test per origin through the
+opening; the content validator; the Chapter One playtest script. A playtest script (PlayMode, fixture-driven)
 runs the whole chapter headless and asserts the quest states; the owner plays it on the phone.
 
 ### P8 — Act 1 and the megacity on device

@@ -280,7 +280,11 @@ found him; Kessler traded water for the map); the calendar made precise (Resumpt
 the twelve keystones named and dated; joinable-faction paths with ranks and politics; side quests rewritten
 to the hook/turn/choice standard; hard-choice table; Chapter One gains q_ch1_name (decode the first name);
 Tamsin's photo line fixed (the scar); Senses/Science passives seed "not a photograph"; Hollis Crane keeps his
-name (the stranger is Hollis Dray — the shared first name is deliberate: Crane knew Dray).
+name (the stranger is Hollis Dray — the shared first name is deliberate: Crane knew Dray). **14 (v4, owner's note
+2026-10-29):** the PC is no longer a Cistern dweller: they grow up in Knock, the hamlet at the Cistern's hatch, with
+Maud, Linnet, Dace, Corin, and Tamsin's voice at the Grille; the Ledger has the PC's face from Tollmen toll cards; the
+opening is a day of chores that teach, the stranger's night, and the outriders' reprisal (§18); origins reframed as
+Knock's trades; Tamsin becomes the one who steps out of the Cistern for the first time.
 
 ## 17. Questions for the owner (ask spoiler-free, only when needed)
 - None open. (Engine choice is a tech question, asked in docs/TECH_EVALUATION.md.)
@@ -329,3 +333,62 @@ name (the stranger is Hollis Dray — the shared first name is deliberate: Crane
   either house); carry it into the Spire hearing as a modifier and into Act 3 (the Crown's loyalty).
 - The Kidnapping's `cr_tillie` = row (at the Velvet, placed; Osric gives the reel) / sold / stays (Honora's favour,
   the marriage off; Osric gives the reel). Osric Vane and Ottilie are seeds for a Crown-side ally in Act 3.
+
+## 18. The opening, v4 (owner's note 2026-10-29: no shelter-dweller first steps) — supersedes §4 beat 1 and §8
+Built on the common denominators in `docs/OPENINGS.md`. The player character (PC) is **not** from inside Cistern 9.
+
+**Home: Knock.** A hamlet of ~40 on the slope above Cistern 9's sealed door (the `c9_mouth` map becomes Knock). For
+two generations MOTHER has opened a **drop-hatch** beside the door once a week: clean water, medicine and seed out;
+salvage, food, wool and **the post** (letters) in. Knock grew on that trade and sells the Cistern's water to the toll
+road. Beside the hatch is **the Grille**, a speaking grate: Knock and the Cistern have talked through it for sixty years
+and **have never seen each other's faces.** (Theme: the Ledger knows the PC only by face; Knock knows the Cistern only
+by voice; the Unwritten keep no likeness.) The Cistern counts from the Burn like everyone outside Meridian, so the
+portrait's "49" still reads as forty-one years ago.
+**How the Ledger has the PC's face:** the Tollmen issue **toll cards** with a printed likeness to every trader who
+uses the road; Knock's water-runners carry them. The Tollmen sell those likenesses with their forecasts; the Ledger
+has had the PC's face since their first card at fourteen. Keystone #1 now reads *the Mouth (Knock) → Spire*.
+
+**The PC's people** (each met in a chore that teaches a system; each returns):
+| Who | Bond | Teaches | Want / fear / secret | Returns |
+|---|---|---|---|---|
+| **Maud Ferrow** (64), hatch-keeper | raised the PC (parents lost to a road fever when the PC was nine) | barter (Hatch Day with MOTHER), the notebook (the post-book) | want: Knock fed and the hatch honest · fear: the hatch going quiet (it has, three times: MOTHER's lockdowns after the Ledger's orders) · secret: she once sold a Cistern letter to a Tollman for medicine and has never forgiven herself | letters; Act 3 at the door |
+| **Linnet Ferrow** (17), the PC's sister | worships the PC; wants out | sneaking ("ghosts" in the Rib); climbing | want: Meridian (a cheap print of the Spire over her cot: it is the photo's steps) · fear: dying in Knock · secret: she has been selling Maud's spare water to an outrider | follows the PC in Act 1 or stays (the opening's echoing choice); Act 2 letter from Meridian |
+| **Dace Moro** (26), scavenging partner, rival for the hatch | grew up next door; half friend, half rival | salvage run: the pack, weight, containers; a first fight (wild dogs in the Rib) | want: the hatch-keeper's post (and Linnet's respect) · fear: debt · secret: owes the Tollmen; it is his talk that brings the outriders to Knock | turns up in Shale or Tollhouse 9 (debt route) |
+| **Corin Asch** (58), Knock's well-mender and only rifle | the PC's teacher with the rifle and the windpump | mechanics (the windpump), firearms, hunting and snares | want: to be left alone · fear: the road · secret: rode with Tollmen outriders twenty years ago; knows the one who shot the stranger (ties to q_a1_tollhouse) | gives the PC his rifle; Act 1 Tollhouse knowledge; Act 3 holds the slope |
+| **Tamsin Roe** (24), the voice at the Grille | friends through the grate since they were six; neither has seen the other's face | dialogue and its checks (her riddles, her lies she wants caught) | as §7/CHARACTERS (unforecast) | escapes the Cistern after the PC's first letter home (the first person out in living memory) and joins in Shale — she, not the PC, steps out for the first time, and the PC is her guide |
+| **MOTHER**, at the hatch panel | formal, kind to Knock in her way ("thank you for your continuity, Knock") | the exchange; her rules | as §1 | relays letters; Act 3 |
+| **Doc Pell** (inside), through the Grille | Knock's only doctor, by voice | medicine (talks the PC through the stranger's wound) | as before | Charts thread |
+| **Elder Ines** (inside), through the Grille | the voice that says no | — | as before; now also: refuses to open the door for a dying Knock woman | Act 3 |
+
+**The day (≈60 min, one system at a time):** Hatch Day morning (barter with MOTHER; the post; Tamsin at the Grille) →
+the salvage run with Dace to the Rib, a collapsed relay mast (the pack, containers, sneaking past a dog pack; a fight
+if they wake) → the windpump with Corin (mechanics; or the snares: survival) → Linnet missing: found at the Tollmen
+post on the road selling water (the toll road, toll cards with faces, a factor, the price of things; the first choice:
+pay her debt, talk the factor down, or let her take the beating she has earned) → evening at Maud's fire (camp: cook,
+mend, write; Maud tells the story of the door) → night watch at the hatch.
+**The night:** the masked stranger (Hollis Dray, shot at Tollhouse 9, three weeks on the road) comes up the road past
+the shacks to the Cistern's door and hammers on it, then sees the PC at the hatch lamp, says "you" (Night Watch hears
+*Larkspur*), and dies. Pell talks the PC through the wound from behind the Grille. The pack: the photograph (the PC
+older on the steps of a ruined city), a notebook, Unwritten marks; the map is not there (Kessler has it).
+**Day two — the rupture:** Tollmen outriders ride into Knock for "stolen Guild property" (Dace's loose talk led them
+here). The **echoing choice**: hand over the notebook (keep the photo), hide everything, lie, or fight beside Corin.
+Whatever is chosen, the outriders take their due from Knock: the post-house burns with sixty years of letters, and
+Maud is badly hurt defending the post-book. Knock begs the Cistern to open the door for Pell; **Ines refuses** (the
+door has never opened). MOTHER can be persuaded (Speech/Science or the Hatch Hand's standing) to break her schedule
+and open the hatch out of turn for medicine: Maud lives; otherwise she lives scarred and lame (never killed: she is
+the home to come back to; her letters carry Act 1). Knock's anger turns on the Cistern and on the PC's photograph.
+**Why the PC goes:** the photograph puts Knock in danger while the PC stays, and the stranger died to tell the PC
+something. Maud: "Find out who he was before they come back for you. Then come home." Linnet asks to come (take her
+as far as Shale, where she finds work at Mags's and can be drawn into the Rust Dogs' orbit; or leave her, and she
+runs to Meridian on her own in Act 2). Tamsin at the Grille: "Write to me. Tell me what the sky looks like."
+**What it changes downstream:** q_ch1_door → **q_ch1_knock** (the day) + **q_ch1_outriders** (the rupture); Shale's
+trace (q_ch1_shale) follows Dray back along his road; Chapter One still ends with the map and the first name. The
+letters-home line (§5 Cistern 9) becomes **Knock and the Grille**: what the PC writes shapes Maud, Linnet, Ines and
+whether Tamsin comes out. Act 3: the relocation force comes up through Knock to the door; the people the PC grew up
+with are on both sides of it.
+**Origins (§8) become Knock's trades** (same threads, new framing): **Hatch Hand** (barter; keeps the post with
+Maud; *Pressure*: the hatch water's readings never change — the Cistern's pumps are fed from outside, to Dry Wells) ·
+**Bonesetter** (medicine, taught by Pell through the Grille; *Charts*: Pell's forms are the Precinct's) · **Night
+Watch** (stealth and senses; hears *Larkspur*; *The Word*) · **Road Clerk** (keeps the Tollmen post's book on hatch
+days; reads city shorthand; *Copyist*: the toll cards' likenesses go to the city — the PC's own card was copied).
+**Avoided by design:** no shelter emergence, no amnesia, no chosen one, no kidnapped kin as the motive.

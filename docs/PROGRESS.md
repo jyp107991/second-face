@@ -705,11 +705,16 @@ keeps the room they stand in (the barkeep's shelf, the sheriff's locker, the fac
 says whose a thing is and who can see you. Take from it while nobody watches and the owner only finds it gone; take
 from it in front of someone and they remember, trust you less, and word of a thief goes round the town and down its
 roads. The back room's locker becomes yours once the room is.
-**Next action (owner's notes, 2026-10-29, first):** arms that clip the body (a clearance pass after the animation);
-real variety in women's and men's bodies (breasts and buttocks; height, build and muscle tone); the cast for the whole
-game, not a first batch (every named character from the content and role-based people everywhere, loaded by region);
-a new origin and opening (not a shelter-dweller stepping out for the first time), designed from what the great
-openings share. Then P6 step 3 part 2's remainder: owners and witnesses for what is taken (a container or a pile that belongs to
+**Arms clear of the body (P4.12, 2026-10-29, the owner's note):** the hands no longer sink into the hips. Every body
+is measured when the game is built, and after each frame's animation the arms are kept just outside the body and its
+clothes, standing, sneaking and walking, for you and everyone near (6 cm in before; none now). Seen in
+`docs/evidence/unity/p4/people_arms.jpg` (before | after).
+**A new opening, designed (2026-10-29, the owner's note):** `docs/OPENINGS.md` studies how the great games open and
+sets the rules for ours; the new beginning itself is written in the secret story plan (you no longer begin inside a
+shelter: you begin with a home, a trade and people of your own). It is built into the content as P7's first step.
+**Next action (owner's notes, 2026-10-29, continuing):** real variety in women's and men's bodies (breasts and
+buttocks; height, build and muscle tone) through the people pipeline, then the cast for the whole game (every named
+character from the content and role-based people everywhere, loaded by region; a size budget so it fits the app). Then P6 step 3 part 2's remainder: owners and witnesses for what is taken (a container or a pile that belongs to
 someone; taking it while seen is theft, told about town and held against you by the local reputation), the steal verb
 (pickpocketing, with real risk), crowds hiding you; then P6 step 4, combat. P6.3 left for later: shade outdoors by a
 shadow ray (with the places' colliders, P6.4), noise by the ground, sight cones shown while sneaking, a crouched idle.

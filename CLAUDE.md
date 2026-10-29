@@ -112,6 +112,18 @@ The owner wants to play unspoiled.
   shapes (lean, wiry, stocky, broad, pear, barrel, long- or short-legged, tall and short), skewing slimmer than today's
   real world because life here is hard: heavy bodies are rare and belong to the comfortable (merchants, the megacity's
   rich). Implementation: `docs/BUILD_PLAN_V1.md` §6.B (people).
+- **Bodies vary as widely as in life, and nothing clips** (owner, 2026-10-29, binding): beyond dimorphism, women vary in
+  breast and buttock size and shape, men in height, build and muscle tone, as widely as real people do (still skewing
+  slim, per the rule above); arms, hands and clothing never sink into a body in any pose or motion.
+- **A cast for the whole game** (owner, 2026-10-29, binding): a first batch of bodies is not the cast. Every named
+  character has a body of their own, and every place is peopled with characters of varying functions, roles and
+  importance (who work, guard, trade, beg, idle, travel) so that everywhere feels alive and dynamic, as realism and
+  immersion demand over 60+ hours. Implementation: `docs/BUILD_PLAN_V1.md` §6.B (people) and P6.2.
+- **A new origin** (owner, 2026-10-29, binding): the player is NOT a shelter-dweller who ventures out for the first
+  time (too derivative of Fallout, to the point of an IP breach). The opening gives the player character a life of
+  their own and the people in it, so the player cares about them as much as about the hero, and it builds the world,
+  establishes those characters and trains the mechanics at once, on the common denominators of the great openings
+  (`docs/OPENINGS.md`). Story specifics live in `story/` only.
 - Visual style (superseded where the upgrade directive says otherwise): orthographic iso camera, rotatable/zoomable.
 
 ## 3. Engineering conventions

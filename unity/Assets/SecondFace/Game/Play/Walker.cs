@@ -62,6 +62,7 @@ namespace SecondFace.Game.Play
                 w.Animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
                 w.Animator.gameObject.AddComponent<SecondFace.Game.People.FootPlant>();
                 w.Animator.gameObject.AddComponent<SecondFace.Game.People.Gaze>();
+                w.Animator.gameObject.AddComponent<SecondFace.Game.People.ArmClearance>();
             }
             return w;
         }
@@ -164,6 +165,9 @@ namespace SecondFace.Game.Play
         {
             var plant = Animator != null ? Animator.GetComponent<SecondFace.Game.People.FootPlant>() : null;
             if (plant != null) plant.enabled = on;
+            // seated, the hands rest on the lap: the torso's clearance would push them off it
+            var clear = Animator != null ? Animator.GetComponent<SecondFace.Game.People.ArmClearance>() : null;
+            if (clear != null) clear.enabled = on;
         }
 
         private void Move(Vector3 to, Quaternion facing)

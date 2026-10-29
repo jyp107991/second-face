@@ -981,6 +981,61 @@ namespace SecondFace.Tests
             yield return Wait(0.2f);
         }
 
+        /// <summary>The owner's note (2026-10-29): hands melded into the hips. Every body's torso is measured at build time
+        /// and the arms are kept out of it after the animation: standing, in the sneak and walking, for the player and the
+        /// townsfolk, nothing of an arm is more than a centimetre inside a body (without the clearance, it was).</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator ArmsStayOutOfTheBody()
+        {
+            Bootstrap boot = null;
+            yield return Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            var clear = walk.Walker.Animator.GetComponent<ArmClearance>();
+            Assert.That(clear, Is.Not.Null, "the walker keeps their arms clear");
+            Assert.That(clear.Ready, Is.True, "their torso was measured (TorsoMeasure)");
+            boot.Stage.Clock.SetHour(12);
+            boot.Stage.Sky.Apply();
+            IEnumerator Deepest(float seconds, System.Func<float> depth, System.Action<float> done)
+            {
+                var max = 0f;
+                var t = Time.realtimeSinceStartup;
+                while (Time.realtimeSinceStartup - t < seconds) { yield return null; max = Mathf.Max(max, depth()); }
+                done(max);
+            }
+            // from behind, as the owner saw it
+            walk.Rig.Limit(walk.Rig.PitchMin, walk.Rig.PitchMax, 1.2f, walk.Rig.DistanceMax, 0f);   // close enough to see the hands
+            void Behind() { walk.Rig.Follow(walk.Walker.transform); walk.Rig.View(walk.Walker.transform.eulerAngles.y, 24f, 2.4f); }
+            var raw = 0f; var standing = 0f; var sneaking = 0f; var walking = 0f;
+            clear.enabled = false;
+            Behind();
+            yield return Deepest(2f, clear.Depth, v => raw = v);
+            yield return ScreenshotTests.Capture("people_arms_before", 1080, 1080);
+            clear.enabled = true;
+            yield return Deepest(2f, clear.Depth, v => standing = v);
+            yield return ScreenshotTests.Capture("people_arms_after", 1080, 1080);
+            walk.ToggleSneak();
+            var ahead = walk.Walker.transform.position + walk.Walker.transform.forward * 5f;
+            walk.Walker.GoTo(ahead);
+            yield return Deepest(3f, clear.Depth, v => sneaking = v);
+            Behind();
+            yield return ScreenshotTests.Capture("people_arms_sneak", 1080, 1080);
+            walk.ToggleSneak();
+            walk.Walker.GoTo(walk.Walker.transform.position - walk.Walker.transform.forward * 8f);
+            yield return Deepest(3f, clear.Depth, v => walking = v);
+            Debug.Log($"BootTests: the walker's arms in the body: {raw * 100f:0.0} cm without the clearance; with it {standing * 100f:0.0} standing, {sneaking * 100f:0.0} sneaking, {walking * 100f:0.0} cm walking");
+            Assert.That(standing, Is.LessThan(0.01f), "standing");
+            Assert.That(sneaking, Is.LessThan(0.01f), "sneaking");
+            Assert.That(walking, Is.LessThan(0.01f), "walking");
+            // the townsfolk seen in full
+            var folk = walk.People.Residents.Where(r => r.Person != null && r.Person.Full && r.Person.gameObject.activeInHierarchy)
+                .Select(r => r.Person.Animator != null ? r.Person.Animator.GetComponent<ArmClearance>() : null).Where(c => c != null && c.Ready && c.enabled).ToList();
+            Assert.That(folk.Count, Is.GreaterThan(0), "townsfolk near enough to be seen in full");
+            var townsfolk = 0f;
+            yield return Deepest(3f, () => folk.Max(c => c.Depth()), v => townsfolk = v);
+            Debug.Log($"BootTests: {folk.Count} townsfolk, their arms at most {townsfolk * 100f:0.0} cm in");
+            Assert.That(townsfolk, Is.LessThan(0.012f), "the townsfolk's arms clear of their bodies");
+        }
+
         [UnityTest, Timeout(900000)]
         public IEnumerator TheOverlaysButtonRunsTheMeasuringTour()
         {

@@ -148,6 +148,33 @@ would actually say to this person, now.
   one honest scene about the cable in her neck.
 
 ---------------------------------------------------------------------------------------------------
+## B0. Knock (v4, owner's note 2026-10-29) — the PC's home at the Cistern's hatch (story: STORY_PLAN §18)
+
+### npc_kn_01 — Maud Ferrow (64), hatch-keeper, raised the PC
+- **Look:** small, wiry, sun-dark, white hair cropped with shears, reading lenses on a cord, a burn scar up one forearm
+  from the hatch's old seal; patched quilted vest over a man's work shirt. Woman, slight.
+- **Voice:** short sentences, counts things aloud, "that's not nothing" for praise. **Want/fear/secret:** §18.
+
+### npc_kn_02 — Linnet Ferrow (17), the PC's sister
+- **Look:** long-limbed, quick, sunburnt nose, dark hair hacked short to the jaw by her own knife, a stolen Tollmen
+  scarf; climbs everything. Girl, tall for her age.
+- **Voice:** fast, mocking, earnest under it; quotes Meridian things she has only heard of.
+
+### npc_kn_03 — Dace Moro (26), scavenger, rival for the hatch
+- **Look:** broad, heavy-shouldered, a short dark beard, a bad knee wrapped in tyre rubber, salvage tools on a
+  bandolier. Man, stocky.
+- **Voice:** boasts, then apologises; generous with what he hasn't got.
+
+### npc_kn_04 — Corin Asch (58), well-mender, Knock's one rifle
+- **Look:** tall, gaunt, grey stubble, a Tollmen outrider's old duster dyed black to hide what it was; a rebuilt
+  rifle he never names. Man, lean.
+- **Voice:** says half of what he means; whistles to the windpump.
+
+### npc_kn_05..12 — Knock's others (backgrounds with functions)
+A water-runner family (the Okoro-Lunds), a goat-keeper, a midwife who learned from Pell's voice, two boys who sell
+salvage on the road, a deaf mechanic, a widower who talks to the Grille every night though nobody answers. Each has a
+small want for the chores and a line for each Act's letters.
+
 ## B. Cistern 9
 
 ### npc_c9_01 — Elder Ines Halloran (66)

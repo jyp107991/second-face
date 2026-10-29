@@ -205,6 +205,7 @@ namespace SecondFace.Game.Play
                 ambient.Talker = Hash(r.Id + "t") < 0.34f;
                 anim.gameObject.AddComponent<FootPlant>();
                 anim.gameObject.AddComponent<Gaze>();
+                anim.gameObject.AddComponent<ArmClearance>();
             }
             var def = r.Def;
             var name = string.IsNullOrEmpty(def.Name) ? Bootstrap.Content?.Entry("npcs", def.Id)?["name"]?.ToString() : def.Name;
@@ -219,7 +220,8 @@ namespace SecondFace.Game.Play
             _made++;
         }
 
-        /// <summary>Seen in full (near) or not: gestures, gaze, feet planted and avoiding others only near.</summary>
+        /// <summary>Seen in full (near) or not: gestures, gaze, feet planted, arms kept clear of the body and avoiding others
+        /// only near.</summary>
         private static void Detail(Townsperson p, bool full, bool force = false)
         {
             if (p.Full == full && !force) return;
@@ -229,6 +231,7 @@ namespace SecondFace.Game.Play
                 if (p.Animator.TryGetComponent<Ambient>(out var a)) a.enabled = full;
                 if (p.Animator.TryGetComponent<FootPlant>(out var f)) f.enabled = full;
                 if (p.Animator.TryGetComponent<Gaze>(out var g)) g.enabled = full;
+                if (p.Animator.TryGetComponent<ArmClearance>(out var c)) c.enabled = full;
             }
             if (p.Agent != null) p.Agent.obstacleAvoidanceType = full ? ObstacleAvoidanceType.LowQualityObstacleAvoidance : ObstacleAvoidanceType.NoObstacleAvoidance;
         }

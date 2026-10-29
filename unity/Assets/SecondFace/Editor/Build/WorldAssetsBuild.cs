@@ -29,6 +29,8 @@ namespace SecondFace.EditorTools
             a.Details = AssetDatabase.LoadAssetAtPath<DetailSet>("Assets/SecondFace/World/DetailSet.asset");
             a.Places = AssetDatabase.LoadAssetAtPath<PlaceSet>("Assets/SecondFace/World/PlaceSet.asset");
             a.Sky = AssetDatabase.LoadAssetAtPath<SkyProfile>("Assets/SecondFace/Sky/SkyProfile.asset");
+            // every person's torso measured for the arms' clearance (the owner's note: nothing sinks into a body)
+            TorsoMeasure.MeasureEvery(false);
             // the walkabout (step 25): the drifter walks, the other P2 people stand about the town
             a.Walker = Person("p3_drifter_m");
             // the people of Shale and the Sallow from the cast (P4.1), else the other P2 people
