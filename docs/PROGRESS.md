@@ -542,8 +542,10 @@ the body, its levels of detail and the sculpted face; the skin under them is hid
 takes the hair off, and a garment can be dyed. Seen in `docs/evidence/unity/p4/people_wardrobe.jpg`. Still to come:
 grime and wear changing at runtime, body-shape sliders, and NPC outfits merged for speed.
 **Next action:** step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until
-Mid ≥ 30 fps); the playable build `play-walkabout` is released by running the Android workflow by hand with
-the input `release: play-walkabout` (its release job waits for that run's tests and APK, then makes the tag and the
+Mid ≥ 30 fps); **`play-walkabout` is released** (2026-10-29, commit e0b69c6: the cast in Shale and the
+walkabout; https://github.com/jyp107991/second-face/releases/tag/play-walkabout, `SecondFace.apk`, 345 MB as a
+development build: its size wants a look in release hardening). Later playable builds: run the Android workflow by
+hand with `release: play-<name>` (its release job waits for that run's tests and APK, then makes the tag and the
 release page; this session's git proxy refuses tag pushes); then P4 step 4: locomotion (the 2D blend by speed and
 turn from the captured clips, foot IK with Animation Rigging, a CharacterMotor on the NavMesh), then the wardrobe's
 open items (NPC outfits merged into one renderer; body sliders; runtime grime in a cloth shader).
