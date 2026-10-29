@@ -925,6 +925,62 @@ namespace SecondFace.Tests
             who.Held = false;
         }
 
+        /// <summary>P6.3 part 2: whose things are whose. The bar's shelf is the barkeep's: taken from while nobody watches,
+        /// she finds it gone and nobody hears of it; taken from while she watches, she trusts the player less and word
+        /// goes round the town. The loot screen says whose it is and who can see.</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator ATheftSeenIsATheftKnown()
+        {
+            Bootstrap boot = null;
+            yield return Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            IEnumerator Wait(float seconds) { var t = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t < seconds) yield return null; }
+            boot.Stage.Clock.SetHour(12);
+            var bar = boot.Stage.Marker("shale", "spot", "bar").transform.position;
+            UnityEngine.AI.NavMesh.SamplePosition(bar, out var hit, 3f, UnityEngine.AI.NavMesh.AllAreas);
+            walk.Walker.Agent.Warp(hit.position);
+            Townsperson mags = null;
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 20f && (mags = walk.People.Of("npc_sh_03")) == null) yield return null;
+            Assert.That(mags, Is.Not.Null, "the barkeep behind her bar");
+            var map = SecondFace.Core.Content.Registry.Maps["shale"];
+            var g = walk.Game;
+            g.SetFlag(SecondFace.Core.World.Containers.UnlockedFlag(SecondFace.Core.World.Containers.Key("shale", "bar_shelf")), true);
+            var shelf = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None).First(i => i.Id == "bar_shelf");
+            walk.Watch.enabled = false;   // their eyes are the test's from here
+            var news = g.World.News.Count;
+            // nobody watching: taken, and nobody hears of it
+            walk.Watch.Calm();
+            var screen = walk.OpenContainer(shelf, "shale", map);
+            Assert.That(screen, Is.Not.Null, "the shelf opens");
+            yield return null;
+            Assert.That(screen.Root.Q<Label>("whose").text, Does.Contain("Mags"), "the screen says whose it is");
+            Assert.That(screen.Root.Q<Label>("seen").text, Is.EqualTo(Strings.Get("loot.unseen")));
+            Assert.That(screen.Root.Q<Button>("take-all").text, Is.EqualTo(Strings.Get("loot.steal_all")));
+            screen.Take(0);
+            screen.Close();
+            yield return null;
+            Assert.That(g.World.News.Count, Is.EqualTo(news), "unseen: no word of it");
+            Assert.That(g.World.Memories["npc_sh_03"].Any(m => m.Tag == "robbed"), Is.True, "she finds it gone");
+            Assert.That(g.World.Relations.TryGetValue("npc_sh_03", out var before) ? before.Trust : 0, Is.EqualTo(0), "and blames nobody");
+            // she is watching: taken, and the town hears of it
+            mags.Awareness = SecondFace.Core.World.Stealth.Max;
+            screen = walk.OpenContainer(shelf, "shale", map);
+            yield return null;
+            Assert.That(screen.Root.Q<Label>("seen").text, Does.Contain("Mags"), "the screen says who can see");
+            screen.Take(0);
+            screen.Close();
+            yield return null;
+            Assert.That(g.World.News.Count, Is.EqualTo(news + 1), "word of it goes round");
+            Assert.That(g.World.News.Last().Tag, Is.EqualTo(SecondFace.Core.World.Theft.Tag));
+            Assert.That(g.World.Relations["npc_sh_03"].Trust, Is.LessThan(0), "she trusts the player less");
+            Assert.That(SecondFace.Core.World.Frontier.Standing(g, "shale"), Is.LessThan(0), "and so does the town");
+            Assert.That(boot.Hud.NoteText, Does.Contain("Mags"), "the HUD says who saw");
+            Debug.Log($"BootTests: theft seen: trust {g.World.Relations["npc_sh_03"].Trust}, standing {SecondFace.Core.World.Frontier.Standing(g, "shale")}");
+            walk.Watch.enabled = true;
+            yield return Wait(0.2f);
+        }
+
         [UnityTest, Timeout(900000)]
         public IEnumerator TheOverlaysButtonRunsTheMeasuringTour()
         {

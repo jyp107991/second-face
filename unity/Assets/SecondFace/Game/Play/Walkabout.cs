@@ -509,8 +509,40 @@ namespace SecondFace.Game.Play
                 return null;
             }
             if (o.Picked) Said?.Invoke(Strings.Get("loot.picked", o.Xp));
-            Loot = ui.Open(new LootScreen(new LootModel { Name = o.Name, Container = o.Inv, Pc = Game.Pc }));
+            // someone else's (P6.3): whose it is, who is watching as it opens; what is taken from it is a theft, seen or not
+            var model = new LootModel { Name = o.Name, Container = o.Inv, Pc = Game.Pc };
+            var owner = Owners.Now(Game, map, thing.Id, OwnersOf(map));
+            if (owner != null)
+            {
+                model.Owner = NameOf(owner);
+                var seeing = Watch != null ? Watch.Seeing() : new System.Collections.Generic.List<Townsperson>();
+                var witnesses = seeing.Select(p => p.Def != null ? p.Def.Id : p.Id).ToList();
+                if (seeing.Count > 0) model.Seen = string.Join(", ", seeing.Select(p => NameOf(p.Def != null ? p.Def.Id : p.Id)));
+                model.Stolen = worth =>
+                {
+                    Theft.Taken(Game, map.Id, map.Name, owner, witnesses, worth);
+                    if (seeing.Count > 0) Said?.Invoke(Strings.Get("loot.seen_taking", NameOf(witnesses[0])));
+                };
+            }
+            Loot = ui.Open(new LootScreen(model));
             return Loot;
+        }
+
+        private readonly System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, string>> _owners = new();
+
+        /// <summary>Whose each of a map's containers is (Core <see cref="Owners"/>; worked out once a map).</summary>
+        private System.Collections.Generic.Dictionary<string, string> OwnersOf(MapDef map)
+        {
+            if (map == null) return null;
+            if (!_owners.TryGetValue(map.Id, out var o)) _owners[map.Id] = o = Owners.Of(map, PlacePlan.Build(map));
+            return o;
+        }
+
+        /// <summary>A person's name as the content has it (their id when it has none).</summary>
+        private static string NameOf(string npc)
+        {
+            if (npc != null && Registry.Npcs.TryGetValue(npc, out var d) && !string.IsNullOrEmpty(d.Name)) return d.Name;
+            return Bootstrap.Content?.Entry("npcs", npc)?["name"]?.ToString() ?? npc;
         }
 
         /// <summary>A pile on the ground on the loot screen (its bundle goes when it is emptied); null when there is none.</summary>

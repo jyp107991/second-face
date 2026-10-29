@@ -128,6 +128,8 @@ namespace SecondFace.Core.Scene
         [JsonProperty("tolls")] public double? Tolls;
         /// <summary>Lock difficulty (Locks skill needed); absent = unlocked.</summary>
         [JsonProperty("lock")] public double? Lock;
+        /// <summary>The player's while this holds (a rented room's locker), whoever keeps its room (P6.3).</summary>
+        [JsonProperty("yoursIf")] public JObject YoursIf;
 
         public IEnumerable<(string id, int count)> Entries()
         {

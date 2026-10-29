@@ -100,6 +100,11 @@ verb.give	Give
 verb.attack	Attack
 verb.open	Open
 loot.take_all	Take all
+loot.steal_all	Steal all
+loot.whose	{0}'s
+loot.seen	{0} can see you.
+loot.unseen	Nobody is watching.
+loot.seen_taking	{0} saw you take it.
 loot.done	Done
 loot.yours	Your pack · {0}
 loot.empty	Nothing left in it.

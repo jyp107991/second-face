@@ -915,6 +915,21 @@ and props outdoors by a shadow ray (the places have no colliders: with combat's 
 surface, sight cones drawn while sneaking, crowds hiding the walker, disguises and papers, pickpocketing and owners and
 witnesses for what is taken (part 2), a crouched idle of its own (the sneak's first frame holds for now).
 
+*As built (P6.3 part 2, 2026-10-29).* Owners and witnesses. Core `World.Owners`: a container belongs to whoever keeps
+its room (the one who sleeps there first, else who works or trades there, else who is placed there; visitors keep
+nothing; in the open, or in a room nobody keeps, nobody's); `Owners.Now` makes it the player's while its content's
+`yoursIf` holds (new optional content field, `src/engine/data/types.ts` `ContainerDef.yoursIf`; Shale's back-room
+locker is the player's once `shale_room` is set). Shale: the bar's shelf and the back room's locker are the barkeep's,
+the militia's locker the sheriff's, the toll crate the factor's, the mender's shelf the mender's, the pump house's shelf
+its keeper's, a household crate its household's. Core `World.Theft.Taken`: unseen, the owner finds it gone (a memory,
+no suspect, no word); seen, each witness remembers it and trusts the player 10 less, the owner 25 less if they saw
+(15 if told), and news about the player goes round the settlement and on along its roads (size by the worth taken),
+which `Frontier.Standing` reads. The loot screen says whose a thing is and who can see the player as it opens (anyone
+whose awareness has reached seen), and its take-all says steal; closing it with something taken records the theft and
+the HUD says who saw. Tests `TheftTests`, `BootTests.ATheftSeenIsATheftKnown` (the barkeep's shelf: unseen, no word and
+no blame; seen by her, her trust −25 and the town's standing −7). Not yet: the steal verb on people (pickpocketing),
+consequences in person (the owner confronting the player, the militia), the owner's memory read by dialogue.
+
 ### P7 — Chapter One on the phone
 The opening through the stranger's map, end to end on device, at the standard: every scene, conversation, check
 and reward of Chapter One works from the content, saved and resumed. A playtest script (PlayMode, fixture-driven)
@@ -2172,6 +2187,9 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
 - **A load far off while walking streams round the old walker** (P6.2): the walkabout set the world's focus on the
   walker every frame, so a load's `WaitAround` at the new spot was undone the next frame and the ground there never
   came; keep the focus where the walker is going until they are set down.
+- **New UI strings need the localization tables rebuilt** (P6.3): `ui.tsv` is read into the Unity Localization tables
+  by `Second Face/Build localization` (`editor.sh run SecondFace.EditorTools.LocalizationBuild.Build`); a PlayMode test
+  that runs without it reads "No translation found". Commit the regenerated `UI/Localization/Tables/*.asset`.
 - **Pick the sun by kind, not by luck** (P6.3): `FindAnyObjectByType<Light>()` returns disabled lights too, and once
   the portraits' studio was made before the world (its lights off between pictures), the sky drove the studio's fill
   while the scene's own light stayed at noon: every night in the walkabout was day, and nothing failed. Take the enabled

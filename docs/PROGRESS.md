@@ -700,7 +700,16 @@ away; nobody sees behind them or through a wall, and running is heard. Someone g
 look at you, and the eye at the top of the screen fills as they notice, turning red when you have been seen. Also
 fixed: nights in the game were secretly lit like day; now they are moonlit. Seen in
 `docs/evidence/unity/p6/walkabout_sneak.jpg`.
-**Next action:** P6 step 3 part 2: owners and witnesses for what is taken (a container or a pile that belongs to
+**Whose things are whose (P6.3 part 2, 2026-10-29):** the town's crates, shelves and lockers now belong to whoever
+keeps the room they stand in (the barkeep's shelf, the sheriff's locker, the factor's crate), and the loot screen
+says whose a thing is and who can see you. Take from it while nobody watches and the owner only finds it gone; take
+from it in front of someone and they remember, trust you less, and word of a thief goes round the town and down its
+roads. The back room's locker becomes yours once the room is.
+**Next action (owner's notes, 2026-10-29, first):** arms that clip the body (a clearance pass after the animation);
+real variety in women's and men's bodies (breasts and buttocks; height, build and muscle tone); the cast for the whole
+game, not a first batch (every named character from the content and role-based people everywhere, loaded by region);
+a new origin and opening (not a shelter-dweller stepping out for the first time), designed from what the great
+openings share. Then P6 step 3 part 2's remainder: owners and witnesses for what is taken (a container or a pile that belongs to
 someone; taking it while seen is theft, told about town and held against you by the local reputation), the steal verb
 (pickpocketing, with real risk), crowds hiding you; then P6 step 4, combat. P6.3 left for later: shade outdoors by a
 shadow ray (with the places' colliders, P6.4), noise by the ground, sight cones shown while sneaking, a crouched idle.

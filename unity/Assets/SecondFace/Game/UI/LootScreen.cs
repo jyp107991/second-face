@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using SecondFace.Core.Inventory;
 using SecondFace.Core.State;
 using SecondFace.Core.World;
@@ -15,6 +16,12 @@ namespace SecondFace.Game.UI
         public PlayerCharacter Pc;
         /// <summary>When it closes (the ground's piles tidy up).</summary>
         public Action Done;
+        /// <summary>Whose it is (their name; null when it is nobody's or the player's): what is taken from it is stolen (P6.3).</summary>
+        public string Owner;
+        /// <summary>Who is watching as it is opened (their names; null when nobody).</summary>
+        public string Seen;
+        /// <summary>It closed with something taken from someone else's: the worth of what was taken, in Tolls.</summary>
+        public Action<int> Stolen;
     }
 
     /// <summary>
@@ -28,6 +35,8 @@ namespace SecondFace.Game.UI
         private readonly LootModel _m;
         private VisualElement _theirGrid, _yourGrid;
         private Label _theirHead, _yourHead, _weight;
+        /// <summary>The worth of what has been taken from it while open (put back, it counts less).</summary>
+        public int Taken { get; private set; }
 
         public LootScreen(LootModel model) { _m = model; }
 
@@ -55,7 +64,18 @@ namespace SecondFace.Game.UI
             var title = new Label(_m.Name) { name = "container" };
             title.AddToClassList("sf-loot__title");
             middle.Add(title);
-            var all = new Button(TakeAll) { name = "take-all", text = Strings.Get("loot.take_all") };
+            if (_m.Owner != null)
+            {
+                // someone else's: said so, and who is looking
+                var whose = new Label(Strings.Get("loot.whose", _m.Owner)) { name = "whose" };
+                whose.AddToClassList("sf-loot__whose");
+                middle.Add(whose);
+                var seen = new Label(_m.Seen != null ? Strings.Get("loot.seen", _m.Seen) : Strings.Get("loot.unseen")) { name = "seen" };
+                seen.AddToClassList("sf-loot__seen");
+                seen.EnableInClassList("sf-loot__seen--watched", _m.Seen != null);
+                middle.Add(seen);
+            }
+            var all = new Button(TakeAll) { name = "take-all", text = Strings.Get(_m.Owner != null ? "loot.steal_all" : "loot.take_all") };
             all.AddToClassList("sf-button");
             all.AddToClassList("sf-loot__all");
             middle.Add(all);
@@ -96,17 +116,32 @@ namespace SecondFace.Game.UI
 
         protected internal override void Shown() => Refresh();
 
-        protected internal override void Hidden() => _m.Done?.Invoke();
+        protected internal override void Hidden()
+        {
+            if (_m.Owner != null && Taken > 0) _m.Stolen?.Invoke(Taken);
+            Taken = 0;
+            _m.Done?.Invoke();
+        }
 
         /// <summary>Takes a stack from the container.</summary>
-        public void Take(int index) { if (Containers.Move(_m.Container, index, Pack)) Refresh(); }
+        public void Take(int index)
+        {
+            var worth = index >= 0 && index < _m.Container.Items.Count ? Inv.ItemValue(_m.Container.Items[index]) : 0;
+            if (Containers.Move(_m.Container, index, Pack)) { Taken += worth; Refresh(); }
+        }
 
         /// <summary>Puts a stack from the pack into the container (what is worn stays worn: only carried things show).</summary>
-        public void Put(int index) { if (Containers.Move(Pack, index, _m.Container)) Refresh(); }
+        public void Put(int index)
+        {
+            var worth = index >= 0 && index < Pack.Items.Count ? Inv.ItemValue(Pack.Items[index]) : 0;
+            if (Containers.Move(Pack, index, _m.Container)) { Taken = System.Math.Max(0, Taken - worth); Refresh(); }
+        }
 
         public void TakeAll()
         {
+            var worth = _m.Container.Items.Sum(Inv.ItemValue) + _m.Container.Tolls;
             Containers.MoveAll(_m.Container, Pack);
+            Taken += worth;
             Refresh();
         }
 

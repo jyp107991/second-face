@@ -1807,6 +1807,26 @@ MonoBehaviour:
     m_Key: stealth.seen
     m_Metadata:
       m_Items: []
+  - m_Id: 135988349616128
+    m_Key: loot.steal_all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 135988391559168
+    m_Key: loot.whose
+    m_Metadata:
+      m_Items: []
+  - m_Id: 135988391559169
+    m_Key: loot.seen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 135988391559170
+    m_Key: loot.unseen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 135988391559171
+    m_Key: loot.seen_taking
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -1818,6 +1818,26 @@ MonoBehaviour:
     m_Localized: Someone has seen you.
     m_Metadata:
       m_Items: []
+  - m_Id: 135988349616128
+    m_Localized: Steal all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 135988391559168
+    m_Localized: '{0}''s'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 135988391559169
+    m_Localized: '{0} can see you.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 135988391559170
+    m_Localized: Nobody is watching.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 135988391559171
+    m_Localized: '{0} saw you take it.'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

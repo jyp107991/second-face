@@ -1021,7 +1021,8 @@ export const shale: MapDef = {
     },
     room_locker: {
       name: "Room Locker",
-      items: []
+      items: [],
+      yoursIf: { flag: "shale_room" }
     },
     militia_locker: {
       name: "Militia Locker",

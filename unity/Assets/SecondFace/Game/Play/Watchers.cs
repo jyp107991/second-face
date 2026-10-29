@@ -95,6 +95,17 @@ namespace SecondFace.Game.Play
             }
         }
 
+        /// <summary>Who has the walker in their eye now: everyone standing who has seen them (awareness at
+        /// <see cref="Stealth.Noticed"/> or more).</summary>
+        public List<Townsperson> Seeing()
+        {
+            var list = new List<Townsperson>();
+            if (People == null) return list;
+            foreach (var r in People.Residents)
+                if (r.Person != null && r.Person.gameObject.activeInHierarchy && r.Person.Awareness >= Stealth.Noticed) list.Add(r.Person);
+            return list;
+        }
+
         /// <summary>Everyone's awareness back to nothing (a load, a test).</summary>
         public void Calm()
         {

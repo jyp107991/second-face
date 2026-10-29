@@ -116,6 +116,8 @@ export interface ContainerDef {
   tolls?: number;
   /** Lock difficulty (Locks skill needed); absent = unlocked. */
   lock?: number;
+  /** The player's while this holds (a rented room's locker), whoever keeps its room (Unity port, P6.3). */
+  yoursIf?: Cond;
 }
 
 export interface MapDef {
