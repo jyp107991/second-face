@@ -655,6 +655,38 @@ Captures (`WorldSkyTests`): `sky_0700`, `sky_1300`, `sky_1900`, `sky_night`, `sk
 over Shale and `sky_1300_iso` from the game camera. Not yet: wind in the foliage and the clouds' shadows on the ground
 (with scatter, P3.4), lightning, puddles and wet ground in rain (a terrain wetness term), the moon's phases.
 
+**A.8 Water (built 2026-10-29, step 22).** The sea lies at `WorldLayout.SeaLevel` (0) wherever the ground is under it;
+the Wet's river at its own level within 40 m of its banks. *The river:* `tools/unity/world.py` fades the relief
+(roughness and styles) out over 760 → 220 m from the river, so its valley has a floor and the river can fall steadily
+(without it the Wet's ±15 m noise left kilometres of dry bed or 20 m gorges). Core `RiverProfile`: the layout's polyline
+(points 300 m apart) drawn as a Catmull-Rom curve every 20 m and swung up to ~22 m sideways by slow noise (none at the
+ends); half-width breathing −20 %…+25 % over a few hundred metres and narrowing to a stream over the first 900 m; the
+level sampled every 10 m from the natural ground under the course, 1.5 m down, a running minimum from the source
+(never rising), softened over 150 m only where that lowers it, never below the sea (56 m in the Wet's flat, down to
+the sea over ~5 km). `TerrainGen` cuts the bed under it from the nearest course segment (one shape across a bend): a
+bowl 2.5 m deep at the centre (less for a stream), 0.3 m under the water at the edge, then an 8 m bank up to the
+ground; ground under the edge is raised to it only to contain a river above the sea; the control map's water lowering
+(meant for the sea) fades out within 40–100 m of a river. *The sheet:* Core `WorldWater.Build` on the chunk's worker
+lays a flat sheet on a 4 m grid over every cell with a corner under water (corners' levels within 0.75 m), each vertex
+carrying the depth under it (negative on a shore corner) and the flow (down the river at 0.9 m/s, a slow drift at
+sea); open sea deeper than 4 m in 32 m quads (a sea chunk is ~500 triangles, a river chunk 4–8 K, a mouth ~10 K). The
+terrain hides the sheet where the ground rises above it, so the shoreline is the ground's own. `WorldWater.Near(...)`
+gives a probe for many queries; `WorldScatter` and `WorldDetails` keep props and plants out of any water (and the
+details 4 m off a river's polyline). *Shader:* `SecondFace/Water` (Transparent−50, premultiplied, no depth or opaque
+texture): murk by the path through the water (depth / view slant; shallow olive-grey to deep teal), two ripple layers
+from one tileable normal map (`Terrain/WaterRipples.png`, a sum of whole-number waves made by `TerrainLayerLibrary`),
+the first drifting with the flow in two cross-faded phases (flow mapping that never stretches), ripples calmer in the
+shallows and fading out far off; the sky by Fresnel through the environment probe the sky controller refreshes, the
+sun as a glint, main-light shadows; a thin broken lace of foam where the sea runs up the shore (faint on a river), a
+0.12 m fade where the sheet runs under the bank; fog. `Terrain/Water.mat` set in code; `BiomeLayerSet.Water`.
+`ChunkTerrain.ApplyWater`: a pooled child `water` of the terrain, hidden with it and under the ground.
+Tests: `WorldWaterTests` (EditMode: the level falls and never stands above its ground, river water stays in its
+channel, open sea in blocks, a shore chunk, sheets meet across chunk edges, nothing grows in the river, dry land has
+none) and `WorldWaterPlayTests` (`world_water_shore`, `_river`, `_falls`, `_mouth`, each near and `_mid`; hidden under
+the ground). Not yet: bridges and fords where roads cross the river (a road dips into the water today), the flooded
+under-city's water (a place's own sheet with the same material, when the Sink is built, P8), wet sand above the
+waterline, planar reflection on Flagship (§6.J), lakes behind the dam.
+
 **A.7 Addressables (skeleton built 2026-10-29).** `Editor/Build/AddressablesBuild.cs`: groups `kits-shelter`,
 `kits-frontier`, `kits-trees`, `nature` (PackTogether, LZ4: meshes only) and `materials` (PackSeparately: one
 bundle per library material with its own textures, so a piece loads only its surfaces' textures and no texture is
@@ -1311,6 +1343,15 @@ numbers from the densest place written into PORT.md §5.
   (it works in the editor, not in the player). Kit models import readable; non-readable sources stand in as their
   bounding boxes (`PlaceNav`) — never for a porch or an awning, whose box closes the way under it.
 
+- **A river on the natural ground's level dries out or cuts gorges** (step 22): the Wet's relief noise (±15 m over a
+  kilometre) under a 110 m river left a falling level kilometres below its banks, or banks under its water. Rivers lie
+  on valley floors: `world.py` fades the relief out near the river, then a running-minimum level and a bed cut for it.
+- **A river's bank raised to its level stood as a ridge under the sea** (step 22): at the mouth the ground is already
+  under the water, and raising the bank to the water's edge drew two pale stripes along the channel. Raise only to
+  contain a river above the sea.
+- **Foam by depth is wide on a gentle beach** (step 22): 0.45 m of depth spans ~13 m of a 1:30 shore, a white strip
+  like snow. Foam within ~0.2 m of depth, broken by noise, faint on a river.
+
 ---
 
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)
@@ -1433,7 +1474,12 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
          the shelter's commons up the tunnel to the road out (132 m). `place_c9_mouth`, `place_shelter_hall`, `_close`.
          **Next for places:** the bunker front is a plain block (an art pass on concrete fronts, doors in thick walls),
          a lit camera background under the ground (P5), the vault door's state from its flag (P6).
-22. P3.6 water.
+22. ~~P3.6 water~~ (done 2026-10-29, §6.A.8): the sea at sea level wherever the ground is under it, the Wet's river
+    on a level that falls to the sea in a bed cut for it (a curved, breathing course; its valley's relief faded out in
+    `world.py`), a water sheet per chunk with depth and flow per vertex, `SecondFace/Water`; plants and props keep out
+    of the water. `world_water_shore`, `_river`, `_falls`, `_mouth` (`docs/evidence/unity/p3/`). There are no creeks
+    in the layout (the "shore's ditch lines" were the river's control-map water before the river had a bed). The
+    flooded under-city's water comes with that place (P8).
 23. The debug overlay (§7.4) in development builds.
 24. P3.7 device measurement by the owner with the overlay; numbers in PORT.md §5; fix until Mid ≥ 30 fps.
 25. P5.1–P5.2 pulled forward: the orbit camera and the touch input on the streamed world, a walking stand-in for the

@@ -491,8 +491,15 @@ goes away and the rooms are seen from above against the dark, ceilings off and w
 over the tunnel's mouth. A walker goes from the commons up the tunnel to the road out. The rock round the mouth is now
 a heap of real boulders, and walls two tiles thick are solid blocks. Captures `place_c9_mouth_shelter_hall.jpg` in
 `docs/evidence/unity/p3/`.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 22 (water: the shore, the Wet's river, the flooded under-city; the
-shore's ditch lines).
+**Water (plan §10 step 22, 2026-10-29):** the sea now lies along the whole west coast and the Wet's river runs from
+above the timber town down past the dam and the river landing to the sea: murky olive-grey water, clearer in the
+shallows where the bed shows through, teal where it is deep, rippling and drifting downstream, the sky and the sun
+glinting in it, a thin lace of foam where the sea runs up the sand. The river falls steadily in a bed cut for it; its
+banks bend and its width changes along the way; it starts as a stream. Nothing grows in the water. The water is
+hidden with the ground while the player is under it. Captures `world_water_*.jpg` in `docs/evidence/unity/p3/`. Still
+to do: bridges or fords where roads cross the river (a road dips into the water today), the flooded under-city's water
+(with that place), wet sand at the waterline.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 23 (the debug overlay, §7.4, in development builds).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,
