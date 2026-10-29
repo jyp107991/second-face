@@ -10,7 +10,7 @@ namespace SecondFace.EditorTools
     public sealed class ExternalTexturePostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 2;
+        public override uint GetVersion() => 3;
 
         private void OnPreprocessTexture()
         {
@@ -26,7 +26,9 @@ namespace SecondFace.EditorTools
             imp.maxTextureSize = 2048;
             var android = imp.GetPlatformTextureSettings("Android");
             android.overridden = true;
-            android.maxTextureSize = 2048;
+            // 1K on the phone: a library texture tiles every 2-5 m, so 1K is 200-500 texels a metre against 30-40 screen
+            // pixels a metre at the iso camera; 2K quadrupled the memory and the bundles (126 MB for the shelter kit).
+            android.maxTextureSize = 1024;
             android.format = kind == "mask" ? TextureImporterFormat.ASTC_6x6 : TextureImporterFormat.ASTC_6x6;
             imp.SetPlatformTextureSettings(android);
         }

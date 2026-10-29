@@ -8,12 +8,14 @@ namespace SecondFace.EditorTools
 {
     /// <summary>
     /// Builds URP Lit materials for every surface entry of the fetched texture library into
-    /// Assets/SecondFace/Generated/Materials/&lt;key&gt;.mat (generated, not committed) and hands them to kit models by
-    /// material-slot name (mat_&lt;key&gt;). The bake-off's material sheet renders them side by side.
+    /// Assets/SecondFace/Materials/Library/&lt;key&gt;.mat and hands them to kit models by material-slot name
+    /// (mat_&lt;key&gt;). The materials are committed (the bound prefabs and the Addressables groups refer to them by GUID,
+    /// which must survive a fresh clone) and rebuilt by this code, so a change here shows as a diff of the .mat files.
+    /// The bake-off's material sheet renders them side by side.
     /// </summary>
     public static class MaterialLibrary
     {
-        public const string Dir = "Assets/SecondFace/Generated/Materials";
+        public const string Dir = "Assets/SecondFace/Materials/Library";
 
         public static string PathFor(string key) => $"{Dir}/{key}.mat";
 
@@ -36,11 +38,16 @@ namespace SecondFace.EditorTools
             if (key.StartsWith("card:") || key.StartsWith("card_")) return Card(key.Substring(5));
             // nature slots are mat_nature:<stem>; the FBX round trip turns the ':' into '_'
             if (key.StartsWith("nature:") || key.StartsWith("nature_")) return Nature(key.Substring(7));
-            var existing = AssetDatabase.LoadAssetAtPath<Material>(PathFor(key));
-            if (existing != null) return existing;
-            var lib = TextureLibrary.Load();
-            return lib.TryGetValue(key, out var e) ? Build(key, e) : null;
+            // Rebuilt once per editor session, so a committed material follows this code without being rebuilt per slot.
+            if (Configured.Contains(key)) { var done = AssetDatabase.LoadAssetAtPath<Material>(PathFor(key)); if (done != null) return done; }
+            Library ??= TextureLibrary.Load();
+            var m = Library.TryGetValue(key, out var e) ? Build(key, e) : null;
+            if (m != null) Configured.Add(key);
+            return m;
         }
+
+        private static Dictionary<string, LibraryEntry> Library;
+        private static readonly HashSet<string> Configured = new HashSet<string>();
 
         /// <summary>
         /// Binds library materials to a kit instance by slot name (mat_&lt;key&gt;). Called by the builders after instantiating,

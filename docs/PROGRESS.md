@@ -416,8 +416,12 @@ three seeds each, 1.4–2.4 K triangles; every tree is one FBX with three levels
 a crossed impostor of its own render) and Unity builds the LODGroup from their names. The broadleaf card was re-baked
 smaller (the first one stuck out of the crown as sheets). A trees test scene shows the nine side by side and each
 species' three levels (`trees_lineup`, `trees_lod`); `TreeAssetTests` checks the levels, budgets and textures.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 11 (Addressables skeleton + content build step + PlayMode smoke),
-then 12 (P2 verdict), then P3 from step 13.
+**Addressables skeleton (plan §10 step 11, 2026-10-29):** five content groups (three kits, nature, materials) of
+bound prefabs built before every player build; the bound prefabs and library materials are now committed (stable
+GUIDs) and rebuild without a diff; smoke tests load a kit piece by address and the trees by label. Kit bundles hold
+meshes only (textures once each, per material); library textures are 1K on Android.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 12 (P2 verdict and evidence; the time-boxed Unity CLI evaluation),
+then P3 from step 13.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

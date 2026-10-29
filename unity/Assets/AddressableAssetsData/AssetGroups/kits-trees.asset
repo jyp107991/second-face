@@ -1,0 +1,82 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: kits-trees
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: kits-trees
+  m_GUID: 45d0ca74c243965199bc2a1fa9c4ef0c
+  m_SerializeEntries:
+  - m_GUID: 1f02bba6c37940a048973dcde1a31b4a
+    m_Address: kits-trees/fir_3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tree
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 26a9dd6a8dba20562955285c88cec179
+    m_Address: kits-trees/broadleaf_2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tree
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3578e9df8aad5be0c91836dcd46b1fb3
+    m_Address: kits-trees/broadleaf_1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tree
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 62d658cb194b0a93e91cd9485aaea27e
+    m_Address: kits-trees/broadleaf_3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tree
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6c05536f16c39fa74aab61fd13bc5103
+    m_Address: kits-trees/fir_2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tree
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b04bce1ab7ba8291887ea7359bb5381d
+    m_Address: kits-trees/fir_1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tree
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b3ec75ccefbceb62188406cfed3fd2ec
+    m_Address: kits-trees/pine_2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tree
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d3a145933a9615c929efaf1b2aec6953
+    m_Address: kits-trees/pine_1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tree
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dac6ec095fc9c04938db728f90931b87
+    m_Address: kits-trees/pine_3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tree
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 1c12ab3b1775f45449309f6c0586d14c, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 22342f2ae405cd1d99ba061f124fbe28, type: 2}
+    - {fileID: 11400000, guid: 482a48b35114f70bbacbc9d12360fd21, type: 2}
+    m_SchemaDisplayOrder:
+    - kits-trees_BundledAssetGroupSchema
+    - kits-trees_ContentUpdateGroupSchema
+  m_IncludeInBuild: 1
+  m_IncludeInBuildMigrated: 1

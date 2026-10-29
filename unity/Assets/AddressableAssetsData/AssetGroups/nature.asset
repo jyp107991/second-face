@@ -1,0 +1,508 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: nature
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: nature
+  m_GUID: 72f9b3f0060321b6984120499d815e99
+  m_SerializeEntries:
+  - m_GUID: 021e20e58427552509a6e68cb7e0e624
+    m_Address: nature/wild_rooibos_bush_v3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 02396b4a3de1dd9a5ad56b6a6f91825b
+    m_Address: nature/shrub_04_v1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0828bd99d746cb813b235b13561e29f7
+    m_Address: nature/shrub_03_v4
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0845545f64839943b9a93b3b7aeeb665
+    m_Address: nature/wild_rooibos_bush_v4
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0cd49e594f4caa46287d9150c6818639
+    m_Address: nature/grass_medium_02_v2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0e49f0392b3be769f8b80f2d0df681f7
+    m_Address: nature/grass_medium_01_v3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0f84607b9691ed29a9c6550711ee56e6
+    m_Address: nature/namaqualand_boulders_01_v2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0fb83d10f4c21a89a899accf26fb146f
+    m_Address: nature/namaqualand_boulders_01_v1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1357fa3ed980ef530bed91a57b421429
+    m_Address: nature/quiver_tree_02
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1370a5550885913b492ca95924bf29fe
+    m_Address: nature/shrub_01_v7
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1a8455e9114ca899fb3ee65633f3b2cc
+    m_Address: nature/rock_07
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1cd57c8feeecffcbcad412220f31856c
+    m_Address: nature/grass_medium_02_v4
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1fcdd35a6b9e282c5a6b585f292f5818
+    m_Address: nature/shrub_01_v8
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 23ec8d4089377a414a524e9214b7f819
+    m_Address: nature/namaqualand_stones_01_v5
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 29734450c2dd3fb6087ea16bd36a9e24
+    m_Address: nature/namaqualand_rocks_01_v4
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2be047f2ddf1baf798debe3966d2fcda
+    m_Address: nature/grass_medium_02_v5
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2bf9a223381de2f59b143c230735b8bb
+    m_Address: nature/tree_stump_01
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 33dc2b366e4a517f19190055a25b5abe
+    m_Address: nature/namaqualand_stones_01_v3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 352d4c2cf9e14bcfe94758ee28319ea6
+    m_Address: nature/namaqualand_boulder_03
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3b01d0cb6979d611ebd9dd1a32685bc1
+    m_Address: nature/shrub_02_v1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3bdace200e6134ca9879f47f141e1bd5
+    m_Address: nature/namaqualand_rocks_01_v1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 412843b9504b2fe4dac9d0d0c32e8d1b
+    m_Address: nature/dry_branches_medium_01_v1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 427a4bc0b5ee0556f9d7ba9ff6c04f6f
+    m_Address: nature/grass_medium_02_v3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 468ce832ef8616d89b246b3aa0bc10b5
+    m_Address: nature/shrub_02_v4
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4a2a21b7ddce9c9a584f34f7d182483d
+    m_Address: nature/shrub_01_v5
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4bd22456ecc71e3898f903acfd9e28d5
+    m_Address: nature/shrub_01_v1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 534917e51ba5f3ea79ff4cbf8505688d
+    m_Address: nature/grass_medium_01_v5
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 53f3dd6f76d3d497488e951f27629606
+    m_Address: nature/shrub_01_v3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5425bfbfe7377fe359556932e54ad6a1
+    m_Address: nature/wild_rooibos_bush_v2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5442eea0329748fde952b58fcee3e8be
+    m_Address: nature/root_cluster_01
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5689ee2504918efa2bed68124fbdbd87
+    m_Address: nature/tree_small_02
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 574389b1ecdf334cab6b034013ce5081
+    m_Address: nature/shrub_03_v2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5a34a719bdb64b131a63b71f99b62747
+    m_Address: nature/grass_medium_01_v10
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6b556324f19ab1db7b1b5174b5a7db92
+    m_Address: nature/shrub_02_v2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 73643ee3ea65ab87280f9c41144e2759
+    m_Address: nature/fern_02_v4
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 82d1e5fe284afae8b86c03a906c35cbc
+    m_Address: nature/shrub_04_v3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8548824ff534c96739b2ce1c5eab9bc7
+    m_Address: nature/dry_branches_medium_01_v3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8566a227e2c3622c89462b46329c45e1
+    m_Address: nature/shrub_02_v3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 85685f520eca43f4dacdb74c9c7dfdc6
+    m_Address: nature/grass_medium_01_v11
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 87f5a66a7b3eb95fc98480ec7a44d927
+    m_Address: nature/namaqualand_stones_01_v2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8805674db05fb37978403dbc62ff884a
+    m_Address: nature/dead_quiver_trunk
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 897bc93d7a2f88f9ca7a1a6325509a7b
+    m_Address: nature/wild_rooibos_bush_v1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 89d7f81e4fd9c6ad2b24291886e08840
+    m_Address: nature/fern_02_v1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8a18dee9b8445c04cb882988a30f8221
+    m_Address: nature/grass_medium_01_v16
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8ce8104712b8eed969d228706c1b2d90
+    m_Address: nature/grass_medium_01_v14
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 952909cc2ea9a2ee2af1c4325f244a25
+    m_Address: nature/namaqualand_stones_01_v1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 97fb928455a5481c5bac52440551df43
+    m_Address: nature/shrub_01_v4
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 98ad67e445c562b44b65e9a6a82c86c2
+    m_Address: nature/coast_rocks_01
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9d1e470e3f12f751db8166d7849e1c3e
+    m_Address: nature/grass_medium_01_v1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9d467eef1ed1a2df0938920cc388bcd1
+    m_Address: nature/namaqualand_rocks_01_v3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9f7fe69909cb56d92b49e96f2df76d85
+    m_Address: nature/namaqualand_rocks_01_v2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a3ab4ce1f64a2a233b33ece819b34439
+    m_Address: nature/grass_medium_01_v2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a61b463d4e4b494179d0a89110ed56a7
+    m_Address: nature/namaqualand_boulder_02
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a6f4d873cda0f3f7ca55b8a430acf2db
+    m_Address: nature/grass_medium_01_v7
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ad0f00a3edf7adf378e300e0cb658a16
+    m_Address: nature/fern_02_v2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ad3c67d06c0ce39bea124c2f7c7c6ed5
+    m_Address: nature/grass_medium_02_v1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b4eae63f215dc530bb76e48a18bf1562
+    m_Address: nature/grass_medium_01_v15
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b585d7fadc10c8dadad2d93b976d28c3
+    m_Address: nature/quiver_tree_01
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b5d549e89e295f2eabb10ed5269877a5
+    m_Address: nature/grass_medium_01_v13
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b71073579674ba4dc8ee1503d66f0278
+    m_Address: nature/coast_land_rocks_02
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bcbe791ece1e3b2718ce31f3fcfa5dfe
+    m_Address: nature/dead_tree_trunk
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: be03f50adee4465e6bab7611c0919472
+    m_Address: nature/wild_rooibos_bush_v5
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: be6067ae8f3c232b9a361a56dd581354
+    m_Address: nature/dry_branches_medium_01_v2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bff83de190fb03f21a0f5a195177d819
+    m_Address: nature/grass_medium_01_v6
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c08973a8290474abf86348bb563f2337
+    m_Address: nature/boulder_01
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c11dee2daec4557249c788b99a3ab56b
+    m_Address: nature/grass_medium_01_v9
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c620ffe7bb5babcfbbc1f4b6cbd7e5f0
+    m_Address: nature/grass_medium_01_v12
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c8a79cbf9d1c71225be8fe08db39099c
+    m_Address: nature/rock_09
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cbf7ae6c5d92a72ff9102b54571d530a
+    m_Address: nature/namaqualand_stones_01_v4
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cc1117f66b1bcc287a8f2cf84f7c13be
+    m_Address: nature/fern_02_v3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d3bc95796260724c28de478679f731e0
+    m_Address: nature/grass_medium_01_v4
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d78bc924f768f717b928947a8bf1cfe8
+    m_Address: nature/shrub_03_v1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: db9cd9ebb01bd4390953a8deb43e5de6
+    m_Address: nature/shrub_01_v2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e35483a4d5612bbcaa6be54a68657100
+    m_Address: nature/grass_medium_01_v8
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e64db77895316b247beda16b5ef3699a
+    m_Address: nature/shrub_04_v2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f32a148140f25a65ea287aef0c04043e
+    m_Address: nature/grass_medium_01_v17
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f3907e78cd94524f9a31dc9a0c72c163
+    m_Address: nature/shrub_01_v6
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f3ca699c556b4441e94bf6d27bf9ca70
+    m_Address: nature/shrub_01_v9
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f7e4e8b8f5c27cf84be0db4d238e8b91
+    m_Address: nature/shrub_03_v3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: faf22ea3299694f04b461bfbe223d23b
+    m_Address: nature/dead_tree_trunk_02
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - nature
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 1c12ab3b1775f45449309f6c0586d14c, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: ffe56fcd75a61a4319a84d3019b9d5fe, type: 2}
+    - {fileID: 11400000, guid: fd9dbe222392ad1c9a92bc506fb42b88, type: 2}
+    m_SchemaDisplayOrder:
+    - nature_BundledAssetGroupSchema
+    - nature_ContentUpdateGroupSchema
+  m_IncludeInBuild: 1
+  m_IncludeInBuildMigrated: 1

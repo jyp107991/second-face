@@ -187,7 +187,7 @@ What the engine captures show is still wrong (each has a step in §5 P2 or §10)
 - ~~Some frontier walls lean~~: every kit piece lay on its side (the export axis, §8); fixed 2026-10-28.
 - `bake_cloth` palette tones are first guesses; judge them on the engine captures.
 - `tools/unity/kits/trees.py` (Sapling card trees) is **not written**; §6.L specifies it.
-- The Addressables skeleton is not started; §6.A.7 specifies it.
+- The Addressables skeleton is built (§6.A.7): five groups, committed bound prefabs and library materials.
 
 Session machine (ephemeral; a new session re-provisions per §7.1): the Unity editor (`/opt/unity`, 8.3 GB), the
 project's `unity/Library` (about 4 GB, rebuilt by the first import, about 12 minutes), `unity/Assets/External`
@@ -525,11 +525,21 @@ fog colour and density per region/weather with exponential-squared mode. Point l
 others emissive-only. No baked lighting in v1 (CI cannot afford bakes; APV revisited after v1 if the Floor tier
 needs it).
 
-**A.7 Addressables.** Groups: `world-chunks-<region>` (nothing in v1: terrain is generated), `places-<region>`,
-`kits-<kit>`, `people-<set>`, `motion`, `cards`, `audio-<region>`, `ui`. Labels by region. Local build path in
-`StreamingAssets` (no remote in v1). Editor step `Editor/Build/AddressablesBuild.cs` (`-executeMethod` before the
-player build in CI, in `tools/ci/android.yml`). Loading: `Addressables.InstantiateAsync` with a handle cache per
-chunk; release on unload. A PlayMode smoke test loads `kits-shelter/wall_a` by address.
+**A.7 Addressables (skeleton built 2026-10-29).** `Editor/Build/AddressablesBuild.cs`: groups `kits-shelter`,
+`kits-frontier`, `kits-trees`, `nature` (PackTogether, LZ4: meshes only) and `materials` (PackSeparately: one
+bundle per library material with its own textures, so a piece loads only its surfaces' textures and no texture is
+stored twice; the first build without it put 126 MB in the shelter kit's bundle). Entries are the bound prefabs
+(`ContentPrefabs.Bound`: `Assets/SecondFace/Prefabs/<group>/<name>.prefab`) at `<group>/<name>`, labelled `kit`,
+`tree`, `nature`, `material`. **The bound prefabs and the library materials (`Assets/SecondFace/Materials/Library`)
+are committed**: Addressables refers to them by GUID, which must survive a fresh clone; they are rebuilt by code and
+a second `Prepare` produces no diff (checked). `ContentBuildProcessor` (a `BuildPlayerProcessor`, callbackOrder 0)
+runs `Prepare` before every player build, CI's included, and Addressables (order 1, `BuildWithPlayer`) builds the
+bundles into the player (local, StreamingAssets; no remote in v1). Menu/`editor.sh run`:
+`SecondFace.EditorTools.AddressablesBuild.Prepare` and `.BuildBundles` (bundles for the active target). Smoke tests
+(`AddressablesSmokeTests`, PlayMode): `kits-shelter/wall_straight` instantiates by address with bound materials and
+releases; the `tree` label finds the nine trees. Groups to add as the content comes: `places-<region>` (P3.5),
+`people-<set>` (P4), `motion`, `ui`, `audio-<region>`. Loading at runtime: `Addressables.InstantiateAsync` with a
+handle cache per chunk; release on unload. Library textures are capped at 1K on Android (ASTC 6×6).
 
 ### 6.B People pipeline (candidate A, MakeHuman base re-authored)
 
@@ -1118,6 +1128,14 @@ numbers from the densest place written into PORT.md §5.
   light background, its root edge marked, before using it.
 - **Dark fringes on cut-out foliage at a distance**: transparent texels rendered by Cycles are black, and mipmaps
   average them into the edges. Dilate the colour into the transparent texels (cards.py does 32 px).
+- **Every Addressables group carried its own copy of the textures** (first bundle build, 2026-10-29: 126 MB for the
+  shelter kit, 98 MB for the frontier kit): a group bundles the dependencies of its entries. The library materials
+  are their own group, one bundle each; kit bundles now hold meshes only (1.1 MB for all kits).
+- **`Mobile_RPAsset.asset` changes after a local bundle or player build**: URP rewrites its shader-prefilter fields
+  for the active build target (Linux in the session). Revert it (`git checkout -- unity/Assets/Settings/Mobile_RPAsset.asset`)
+  rather than commit Linux values over the Android ones.
+- **`core/Editor.Check.csproj` cannot see package assemblies** until the editor has opened the project once: it
+  references Addressables from `unity/Library/ScriptAssemblies` when present. Run the editor first in a fresh session.
 
 ---
 
@@ -1156,7 +1174,7 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
 9. ~~Fir and broadleaf; LOD1/LOD2 and the `LODGroup` (P2.8)~~ (done 2026-10-29: one FBX per tree with `_LOD0/1/2`;
    `Test_Trees`, `TreeAssetTests`; §6.L).
 10. ~~Frontier kit pieces upright~~ (done with step 6).
-11. Addressables skeleton + the content build step + the PlayMode smoke test (P2.10, §6.A.7).
+11. ~~Addressables skeleton + the content build step + the PlayMode smoke test (P2.10, §6.A.7)~~ (done 2026-10-29).
 12. P2 verdict and evidence (P2.11). Then, time-boxed to one step: evaluate the official Unity CLI
     (`docs/UNITY_PRACTICES.md` §8) as a faster loop than restarting the editor per run; adopt it only if it runs
     headless here, gives the same test results as `editor.sh`, and cuts the loop below about a minute. Write the

@@ -20,20 +20,6 @@ namespace SecondFace.EditorTools
     {
         public const string ScenePath = "Assets/SecondFace/Scenes/Test_Vegetation.unity";
 
-        /// <summary>A model with its library materials bound, saved as a prefab under Generated/ (rebuilt with the scene).</summary>
-        internal static GameObject BoundPrefab(string modelPath)
-        {
-            var model = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath);
-            if (model == null) return null;
-            Directory.CreateDirectory("Assets/SecondFace/Generated/Nature");
-            var path = $"Assets/SecondFace/Generated/Nature/{Path.GetFileNameWithoutExtension(modelPath)}.prefab";
-            var go = (GameObject)PrefabUtility.InstantiatePrefab(model);
-            MaterialLibrary.Bind(go);
-            var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
-            Object.DestroyImmediate(go);
-            return prefab;
-        }
-
         /// <summary>
         /// The Teeth beside the Sallow (a second 512 m tile to the east): a mountainside rising from the scrub's level, pines
         /// on its upper slopes from the card-tree baker, dead wood, boulders and stones; four terrain layers. Captured as
@@ -197,7 +183,7 @@ namespace SecondFace.EditorTools
             // Scatter: rules by slope, height, wash and noise. Deterministic. Every variant of a model is used, as a prefab
             // with its library materials bound (one bind per variant, not per instance).
             GameObject[] Prefabs(string key) =>
-                models.TryGetValue(key, out var entry) ? ModelLibrary.VariantPaths(entry).Select(BoundPrefab).Where(p => p != null).ToArray() : new GameObject[0];
+                models.TryGetValue(key, out var entry) ? ModelLibrary.VariantPaths(entry).Select(ContentPrefabs.Bound).Where(p => p != null).ToArray() : new GameObject[0];
             var groups = new Dictionary<string, Transform>();
             Transform Group(string n) { if (!groups.TryGetValue(n, out var t)) { t = new GameObject(n).transform; groups[n] = t; } return t; }
             // The ground as the scatter rules read it (Core Scatter: biome × slope × height × wash × noise).

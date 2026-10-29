@@ -57,7 +57,7 @@ namespace SecondFace.EditorTools
             var rowA = new GameObject("RowA").transform;
             for (var i = 0; i < variants.Count; i++)
             {
-                var prefab = VegetationTestScene.BoundPrefab(variants[i]);
+                var prefab = ContentPrefabs.Bound(variants[i]);
                 if (prefab == null) continue;
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
                 go.transform.SetParent(rowA);
@@ -70,7 +70,7 @@ namespace SecondFace.EditorTools
             var x = 60f - (firsts.Count * 3 - 1) / 2f * 7.5f;
             foreach (var path in firsts)
             {
-                var prefab = VegetationTestScene.BoundPrefab(path);
+                var prefab = ContentPrefabs.Bound(path);
                 for (var lod = 0; lod < 3; lod++, x += 7.5f)
                 {
                     if (prefab == null) continue;

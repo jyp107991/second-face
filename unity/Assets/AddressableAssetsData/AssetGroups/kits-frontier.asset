@@ -1,0 +1,160 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: kits-frontier
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: kits-frontier
+  m_GUID: 4df1c513501a39ab5a4c52ed25a6731a
+  m_SerializeEntries:
+  - m_GUID: 0165936301d91447392fa92c1e49a488
+    m_Address: kits-frontier/tin_roof_flat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 13878466c4a4fa2eb9c55dfbde4ce40e
+    m_Address: kits-frontier/market_bench
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 15d82d7a5798e84c7bb12f618a80cba1
+    m_Address: kits-frontier/windpump
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1ebf99e42e0eb74769eaeae9f2dc1c27
+    m_Address: kits-frontier/plank_floor
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 209c5b329a871d5d0bbc2eaab3535cdb
+    m_Address: kits-frontier/tin_roof_lean
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2441e1245fde57d61912f4d27896e0e8
+    m_Address: kits-frontier/porch
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 28c3b646774aba97e8c9748bc092384b
+    m_Address: kits-frontier/awning
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 519e409dabc619ce89929a06e17268c2
+    m_Address: kits-frontier/adobe_wall
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 55a137f7a9f392df08028d18a617d524
+    m_Address: kits-frontier/water_tank
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 641e2b8ede749ec99ac32a6094e2186f
+    m_Address: kits-frontier/barrel_rust
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 68914d4fe95b416a882d6ca22268928a
+    m_Address: kits-frontier/fence_wire
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7bcbc55dfd3b09eef81465d1b28f5336
+    m_Address: kits-frontier/adobe_wall_window
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 85e0e4bed00e56c56b47be885fe5c9e5
+    m_Address: kits-frontier/lamp_post
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8894276c2b6d4e293a05c93aeb69093a
+    m_Address: kits-frontier/shutter
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 90106690b2fc0d68ba7ef989ad3135e2
+    m_Address: kits-frontier/sign_post
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 945d02f63c41b16fe99e675f03be784d
+    m_Address: kits-frontier/adobe_wall_door
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9d6f4d818b169db77a9f46d2fd6c5841
+    m_Address: kits-frontier/scrap_wall_low
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ae4fd554e25d871df827e73fd0210c04
+    m_Address: kits-frontier/fence_post
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b2a35191cea190dde84e2be35aba4723
+    m_Address: kits-frontier/crate_stack
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b9eefa8f16d06993498df2ba7d71df48
+    m_Address: kits-frontier/well
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb2e04210238084babc4368ca961266b
+    m_Address: kits-frontier/plank_door
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ff4341fc08bb0637997abbfe81aac427
+    m_Address: kits-frontier/scrap_wall
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 1c12ab3b1775f45449309f6c0586d14c, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 65f20b34aad075b308dccd64f1deab63, type: 2}
+    - {fileID: 11400000, guid: 38f0290b2a8fa679788716582b263494, type: 2}
+    m_SchemaDisplayOrder:
+    - kits-frontier_BundledAssetGroupSchema
+    - kits-frontier_ContentUpdateGroupSchema
+  m_IncludeInBuild: 1
+  m_IncludeInBuildMigrated: 1

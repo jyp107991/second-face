@@ -33,7 +33,7 @@ namespace SecondFace.EditorTools
             foreach (var key in new[] { "quiver_tree_01", "shrub_02_v1", "namaqualand_boulder_03", "grass_medium_01_v3" })
             {
                 var path = $"Assets/SecondFace/Models/Nature/{key}.fbx";
-                var bound = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/SecondFace/Generated/Nature/{key}.prefab");
+                var bound = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/SecondFace/Prefabs/nature/{key}.prefab");
                 if (bound != null)
                 {
                     var bm = bound.GetComponentsInChildren<Renderer>(true).SelectMany(r => r.sharedMaterials).Where(m => m != null).Select(m => $"{m.name}({m.shader.name})").Distinct();

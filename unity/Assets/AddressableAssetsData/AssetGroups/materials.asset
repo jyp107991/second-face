@@ -1,0 +1,382 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: materials
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: materials
+  m_GUID: 41b242f90f81359ccb9f8dbf457564f1
+  m_SerializeEntries:
+  - m_GUID: 06519b84a3e915b278c9c69bfef1cf9e
+    m_Address: materials/card_fir_3_crown
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 082c63abf9a16ca6ea143d2e5d2f7c18
+    m_Address: materials/planks
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0af7db581c612f440992610b86d9baa8
+    m_Address: materials/painted
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0b540f974e22169b3a032b6ea74cc99b
+    m_Address: materials/card_fir_branch
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0ee30709ff554c61e973b1a7ef07386c
+    m_Address: materials/card_pine_1_crown
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 14cd23211110d6ff88c94270edc328e7
+    m_Address: materials/card_broadleaf_1_crown
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1d449a3a5706fee019d6d1c08008281c
+    m_Address: materials/card_pine_branch
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 203b792d03e87d4a1a959fa60a4e693e
+    m_Address: materials/nature_tree_small_02_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 20748fab6e26f8a5eb79654957f00457
+    m_Address: materials/card_broadleaf_cluster
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 21a763a1f42bce4c4bd1c668b8f6620d
+    m_Address: materials/rust
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 21e3bbac842fb280b96e52a08043df03
+    m_Address: materials/moss
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2907882289068fc3091e91ae1d565b4b
+    m_Address: materials/bark_brown
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2f6d3f9d4b3d70d8587830372e027939
+    m_Address: materials/adobe
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 36c5b1a262a83896f85a1851cb1b3204
+    m_Address: materials/steel_painted
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 38654f5b12c3540658dcaf50a053881c
+    m_Address: materials/nature_dead_tree_trunk_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3c1d8345b596df80c86cb9954ec7482f
+    m_Address: materials/nature_wild_rooibos_bush_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4284d0ba1054e6ce3a6a67d8e2be503c
+    m_Address: materials/nature_shrub_04_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4c328abbb9947f0158c70153a8eff4a9
+    m_Address: materials/nature_namaqualand_stones_01_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4f59edfda8152984ca7f8d7fcb9962fd
+    m_Address: materials/card_pine_2_crown
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5e170f00822aea50492fef06c8d38100
+    m_Address: materials/nature_wild_rooibos_bush_2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 606b06e02b959227285bb16e65fe0c9c
+    m_Address: materials/nature_shrub_01_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 60b9e430ce221ce298d07b9d3bf38437
+    m_Address: materials/card_fir_1_crown
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6200929711b433a2397561cce4c7b09b
+    m_Address: materials/nature_shrub_02_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 64fc5e100ca934f01ad62323a536461c
+    m_Address: materials/nature_tree_stump_01_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 66f031eab3acb70fc84ff8fb26488171
+    m_Address: materials/nature_rock_07_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 671bc6883a7e8b46f9230c0afc085a9f
+    m_Address: materials/nature_namaqualand_boulder_02_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6a23d91ad6d24d24390939b22a64d774
+    m_Address: materials/nature_grass_medium_01_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6d651500c9467e8898c71890ce29d1f2
+    m_Address: materials/steel
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6f17b8a46a727600ba85919e17085b97
+    m_Address: materials/wood_floor
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 72a8578eb771ee2dc97ca21070024390
+    m_Address: materials/nature_grass_medium_02_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 73b330496a26d3981a3eb57376cc276e
+    m_Address: materials/nature_dry_branches_medium_01_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 79e758b3fcba7f809bae6cae031cdf79
+    m_Address: materials/nature_rock_09_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7a3a1431766ee584f9358832ab322dce
+    m_Address: materials/card_fir_2_crown
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7b9061583261d4cee8455bee70d3c40c
+    m_Address: materials/nature_quiver_tree_01_1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7c3c696e441768408a3dd58b7fd3118d
+    m_Address: materials/nature_namaqualand_rocks_01_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 86f90f547554939a4adbf04fa1aa9d76
+    m_Address: materials/nature_dead_tree_trunk_02_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 88d8d846a3f809205955b7db469c4501
+    m_Address: materials/card_broadleaf_3_crown
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8cec9171f756b9095a5c3ce17be7aaa9
+    m_Address: materials/card_pine_3_crown
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 93aca7e5f1bf9235284b92d3742da4d1
+    m_Address: materials/nature_quiver_tree_01_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9430b235037521831bd09642bdd0c01e
+    m_Address: materials/nature_namaqualand_boulder_03_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9a8e5924e43d3a69cb038d6a611f2b26
+    m_Address: materials/card_broadleaf_2_crown
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a2424965074a3481cbc5f4995fa4f554
+    m_Address: materials/nature_boulder_01_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a3b172469031d30c9a81e852e16a6b3a
+    m_Address: materials/concrete_wall
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a3ca9c961f69fc88a952fb75c5307326
+    m_Address: materials/bark_pine
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a5cf5f27bc81e2702894c06eea797407
+    m_Address: materials/nature_coast_rocks_01_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a7905293a533d64d9a9492f515151cdf
+    m_Address: materials/nature_fern_02_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ade7014bdad0ccb57b56c4532018874b
+    m_Address: materials/nature_tree_small_02_1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b40f7d8fc7ee3d05885d36630564e24e
+    m_Address: materials/nature_shrub_03_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bb1a309ae96dfdcfe828992e39518de3
+    m_Address: materials/nature_coast_land_rocks_02_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: be2136e6d227ac8c382cbfb98d7c70df
+    m_Address: materials/grate
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c1f31303c043d825f92f1a47ff874b4a
+    m_Address: materials/canvas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c5d547354d2db93399b0750395832642
+    m_Address: materials/tin
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c871e8aa1f29aa7a08da23d1b0ba97f0
+    m_Address: materials/nature_root_cluster_01_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c9265773fb18c9f5389143c2198101f1
+    m_Address: materials/nature_namaqualand_boulders_01_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ca3dd61c1fb71d841b40feaa7c9accf6
+    m_Address: materials/nature_quiver_tree_02_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cc916284b5fd2e01885f10922517a09a
+    m_Address: materials/nature_wild_rooibos_bush_1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ccd4973cd6ed0f8bea27fafc699cc907
+    m_Address: materials/nature_tree_small_02_2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ce06e7e01e54eb1288213decf5d36319
+    m_Address: materials/concrete
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e22176e39add08f1a8d8d459ed3fbb5e
+    m_Address: materials/nature_dead_quiver_trunk_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 1c12ab3b1775f45449309f6c0586d14c, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 865a004c6cea0e54a9dc25b5638a44e0, type: 2}
+    - {fileID: 11400000, guid: 685f83c06524180d49f8d9434043a15d, type: 2}
+    m_SchemaDisplayOrder:
+    - materials_BundledAssetGroupSchema
+    - materials_ContentUpdateGroupSchema
+  m_IncludeInBuild: 1
+  m_IncludeInBuildMigrated: 1
