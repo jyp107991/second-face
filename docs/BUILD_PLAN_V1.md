@@ -487,11 +487,27 @@ world (DESIGN_UNITY §3). Chunks are 512 × 512 m, indexed `(cx, cz)`, 47 × 32 
 is fine for 24 km at the camera's scale (positions ≤ 24 000 → ~2 mm precision); do **not** add floating-origin
 shifting in v1 (it complicates saves and NavMesh); re-evaluate only if jitter is seen.
 
-**A.2 Control map (authored, tiny).** `tools/unity/world.py` writes `StreamingAssets/world/control.png` (375 × 250,
-64 m per texel, RGBA16): R base height (0–1 → 0–600 m), G roughness (0–1), B biome id (× 16), A water mask;
-plus `roads.json` (polylines with width) and `places.json` (bounds, entry yaw, elevation). Source: the web world's
-region layout (`src/content/world`), converted once by the tool and then edited by hand in the PNG. The control
-map is bilinear-sampled at any world position.
+**A.2 Control map (built 2026-10-29).** `python3 tools/unity/world.py [--preview <png>]` reads the content export
+(`StreamingAssets/content/{regions,world_map,sites,maps}.json`) and writes `StreamingAssets/world/`:
+- `control.bin` (runtime): `'SFCM'`, version 1, width, height, metres per texel (int32 LE), then RGBA uint16 LE per
+  texel, rows south → north; 376 × 251 texels, 64 m apart, texel (0,0) at the world origin, the last row and column
+  on the far edges. R base height (0..1 → −50..550 m; sea level 0), G roughness, B biome index × 4096, A water.
+  Read by Core `ControlMap` (bilinear; the biome is the nearest texel's). `control.png` is the same data as a 16-bit
+  RGBA PNG for looking at and editing (hand edits need a PNG → bin step in world.py when the first edit is made).
+- The fiction's 700 × 500 km map becomes the world at **32 m per km**, centred in x (x = 800 + 32·km_x,
+  z = 32·(500 − km_y)): Shale to Cistern 9 is ~850 m, Shale to Tollhouse ~2.2 km. Regions keep their base height and
+  roughness (`LAND` in world.py) and blend over 1.6 km at their borders; borders wander by ~1 km (a smooth domain
+  warp) except near places, so every place stands on its own region's ground. The Teeth climb 260 m more inside their
+  bounds. A ragged coast and the sea run along the west; the Wet's river runs past the timber town, the dam and the
+  river landing (all on its east bank) and along the city's north side to the sea.
+- `places.json`: every world-map location and Meridian's districts (placed side by side per `sites.json`):
+  centre, size (a web map's layout at 2 m a tile, provisional until `PlaceBuilder`; 160/96/48 m by kind when no map
+  is built yet), elevation (base ground + 0.5 m), entry yaw (the first road out), region, biome, map, hidden,
+  offshore (the rigs stand in the sea). `roads.json`: roads and tracks from the world map's routes (meandering
+  polylines, widths by surface: road 8 m, track 5, rough 3, glass 5, marsh 4, mountain 5), the Line as rail (6 m) and
+  the river (110 m). Core `WorldLayout` reads both; `WorldMapTests` check the files (every place on dry ground of
+  its own region, places do not overlap, roads start at their places). Game `WorldService` loads all three from
+  StreamingAssets (UnityWebRequest inside the APK) and answers the chunks wanted around its focus.
 
 **A.3 Runtime terrain generation (Burst job per chunk, deterministic).** For a chunk: heightmap resolution 257
 (2 m texels). `h = base(x,z) + roughness(x,z) · fbm(x,z; 6 octaves, lacunarity 2.0, gain 0.5, base frequency
@@ -1178,7 +1194,7 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
 11. ~~Addressables skeleton + the content build step + the PlayMode smoke test (P2.10, §6.A.7)~~ (done 2026-10-29).
 12. ~~P2 verdict and evidence (P2.11); the Unity CLI evaluated~~ (done 2026-10-29: candidate A, evidence in
     `docs/evidence/unity/p2/`, verdict in PORT.md §5; the CLI not adopted, UNITY_PRACTICES §8).
-13. P3.1 `WorldService` + chunk grid + control map tool (§6.A.1–A.2).
+13. ~~P3.1 `WorldService` + chunk grid + control map tool (§6.A.1–A.2)~~ (done 2026-10-29).
 14. P3.1 runtime terrain job (§6.A.3: ≤ 4 layers per tile, `SetDetailResolution(res, 16)`, heights written once)
     + the 4-chunk PlayMode test.
 15. P3.1 streaming policy (§6.A.4: additive loads only, Load/Release paired) + pooled terrains.

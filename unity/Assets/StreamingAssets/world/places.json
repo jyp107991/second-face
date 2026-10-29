@@ -1,0 +1,662 @@
+{
+ "places": {
+  "cistern9": {
+   "biome": "sallow",
+   "centre": [
+    15840.0,
+    3776.0
+   ],
+   "elevation": 38.5,
+   "entryYaw": 330.6,
+   "hidden": false,
+   "id": "cistern9",
+   "kind": "major",
+   "map": "c9_mouth",
+   "name": "Cistern 9",
+   "offshore": false,
+   "region": "sallow",
+   "size": [
+    60.0,
+    48.0
+   ]
+  },
+  "dam": {
+   "biome": "northern_wet",
+   "centre": [
+    7072.0,
+    14016.0
+   ],
+   "elevation": 56.5,
+   "entryYaw": 101.3,
+   "hidden": false,
+   "id": "dam",
+   "kind": "landmark",
+   "map": null,
+   "name": "the Dam",
+   "offshore": false,
+   "region": "northern_wet",
+   "size": [
+    48.0,
+    48.0
+   ]
+  },
+  "depot": {
+   "biome": "rail_corridor",
+   "centre": [
+    10400.0,
+    9440.0
+   ],
+   "elevation": 52.7,
+   "entryYaw": 114.0,
+   "hidden": false,
+   "id": "depot",
+   "kind": "minor",
+   "map": null,
+   "name": "the Depot",
+   "offshore": false,
+   "region": "rail_corridor",
+   "size": [
+    96.0,
+    96.0
+   ]
+  },
+  "drywells": {
+   "biome": "sallow",
+   "centre": [
+    16800.0,
+    3360.0
+   ],
+   "elevation": 38.5,
+   "entryYaw": 309.5,
+   "hidden": false,
+   "id": "drywells",
+   "kind": "minor",
+   "map": "drywells",
+   "name": "Dry Wells",
+   "offshore": false,
+   "region": "sallow",
+   "size": [
+    112.0,
+    96.0
+   ]
+  },
+  "halcyon": {
+   "biome": "teeth",
+   "centre": [
+    21344.0,
+    12224.0
+   ],
+   "elevation": 269.06,
+   "entryYaw": 218.9,
+   "hidden": false,
+   "id": "halcyon",
+   "kind": "major",
+   "map": null,
+   "name": "Halcyon",
+   "offshore": false,
+   "region": "teeth",
+   "size": [
+    160.0,
+    160.0
+   ]
+  },
+  "halt_e": {
+   "biome": "rail_corridor",
+   "centre": [
+    17440.0,
+    8960.0
+   ],
+   "elevation": 58.16,
+   "entryYaw": 265.2,
+   "hidden": false,
+   "id": "halt_e",
+   "kind": "minor",
+   "map": null,
+   "name": "East Halt",
+   "offshore": false,
+   "region": "rail_corridor",
+   "size": [
+    96.0,
+    96.0
+   ]
+  },
+  "halt_w": {
+   "biome": "rail_corridor",
+   "centre": [
+    7680.0,
+    8384.0
+   ],
+   "elevation": 46.09,
+   "entryYaw": 150.2,
+   "hidden": false,
+   "id": "halt_w",
+   "kind": "minor",
+   "map": null,
+   "name": "West Halt",
+   "offshore": false,
+   "region": "rail_corridor",
+   "size": [
+    96.0,
+    96.0
+   ]
+  },
+  "hamlet_shore": {
+   "biome": "drowned_shore",
+   "centre": [
+    2720.0,
+    2560.0
+   ],
+   "elevation": 4.7,
+   "entryYaw": 23.1,
+   "hidden": false,
+   "id": "hamlet_shore",
+   "kind": "minor",
+   "map": null,
+   "name": "Gull Stilts",
+   "offshore": false,
+   "region": "drowned_shore",
+   "size": [
+    96.0,
+    96.0
+   ]
+  },
+  "junction": {
+   "biome": "rail_corridor",
+   "centre": [
+    12960.0,
+    8576.0
+   ],
+   "elevation": 47.71,
+   "entryYaw": 140.9,
+   "hidden": false,
+   "id": "junction",
+   "kind": "major",
+   "map": null,
+   "name": "the Junction",
+   "offshore": false,
+   "region": "rail_corridor",
+   "size": [
+    160.0,
+    160.0
+   ]
+  },
+  "lm_ash_01": {
+   "biome": "ashlands",
+   "centre": [
+    20960.0,
+    3136.0
+   ],
+   "elevation": 44.5,
+   "entryYaw": 270.3,
+   "hidden": true,
+   "id": "lm_ash_01",
+   "kind": "landmark",
+   "map": null,
+   "name": "Cratered base",
+   "offshore": false,
+   "region": "ashlands",
+   "size": [
+    48.0,
+    48.0
+   ]
+  },
+  "lm_flats_01": {
+   "biome": "glass_flats",
+   "centre": [
+    12640.0,
+    5824.0
+   ],
+   "elevation": 30.8,
+   "entryYaw": 295.1,
+   "hidden": true,
+   "id": "lm_flats_01",
+   "kind": "landmark",
+   "map": null,
+   "name": "Stilted freeway",
+   "offshore": false,
+   "region": "glass_flats",
+   "size": [
+    48.0,
+    48.0
+   ]
+  },
+  "lm_sallow_01": {
+   "biome": "sallow",
+   "centre": [
+    14944.0,
+    4096.0
+   ],
+   "elevation": 38.14,
+   "entryYaw": 40.6,
+   "hidden": true,
+   "id": "lm_sallow_01",
+   "kind": "landmark",
+   "map": "saltpan",
+   "name": "Salt-pan wreck",
+   "offshore": false,
+   "region": "sallow",
+   "size": [
+    96.0,
+    80.0
+   ]
+  },
+  "lm_sallow_02": {
+   "biome": "sallow",
+   "centre": [
+    16416.0,
+    4960.0
+   ],
+   "elevation": 38.5,
+   "entryYaw": 164.9,
+   "hidden": true,
+   "id": "lm_sallow_02",
+   "kind": "landmark",
+   "map": "windpumps",
+   "name": "Windpump graveyard",
+   "offshore": false,
+   "region": "sallow",
+   "size": [
+    104.0,
+    80.0
+   ]
+  },
+  "meridian": {
+   "biome": "meridian",
+   "centre": [
+    3840.0,
+    5120.0
+   ],
+   "elevation": 7.3,
+   "entryYaw": 84.6,
+   "hidden": false,
+   "id": "meridian",
+   "kind": "major",
+   "map": "md_precinct",
+   "name": "Meridian",
+   "offshore": false,
+   "region": "meridian",
+   "size": [
+    144.0,
+    120.0
+   ]
+  },
+  "mine_teeth": {
+   "biome": "teeth",
+   "centre": [
+    20000.0,
+    8896.0
+   ],
+   "elevation": 168.89,
+   "entryYaw": 270.2,
+   "hidden": false,
+   "id": "mine_teeth",
+   "kind": "minor",
+   "map": null,
+   "name": "Number Four Pit",
+   "offshore": false,
+   "region": "teeth",
+   "size": [
+    96.0,
+    96.0
+   ]
+  },
+  "ninebridge": {
+   "biome": "glass_flats",
+   "centre": [
+    11040.0,
+    6400.0
+   ],
+   "elevation": 31.63,
+   "entryYaw": 97.1,
+   "hidden": false,
+   "id": "ninebridge",
+   "kind": "major",
+   "map": "ninebridge",
+   "name": "Ninebridge",
+   "offshore": false,
+   "region": "glass_flats",
+   "size": [
+    144.0,
+    88.0
+   ]
+  },
+  "openfield": {
+   "biome": "glass_flats",
+   "centre": [
+    9760.0,
+    5120.0
+   ],
+   "elevation": 24.5,
+   "entryYaw": 44.1,
+   "hidden": false,
+   "id": "openfield",
+   "kind": "major",
+   "map": "openfield",
+   "name": "Openfield",
+   "offshore": false,
+   "region": "glass_flats",
+   "size": [
+    128.0,
+    112.0
+   ]
+  },
+  "orchard": {
+   "biome": "sallow",
+   "centre": [
+    15264.0,
+    4832.0
+   ],
+   "elevation": 38.5,
+   "entryYaw": 169.7,
+   "hidden": false,
+   "id": "orchard",
+   "kind": "minor",
+   "map": "orchard",
+   "name": "the Burnt Orchard",
+   "offshore": false,
+   "region": "sallow",
+   "size": [
+    96.0,
+    88.0
+   ]
+  },
+  "rigs": {
+   "biome": "drowned_shore",
+   "centre": [
+    1504.0,
+    6400.0
+   ],
+   "elevation": 1.0,
+   "entryYaw": 108.7,
+   "hidden": false,
+   "id": "rigs",
+   "kind": "landmark",
+   "map": null,
+   "name": "the Rigs",
+   "offshore": true,
+   "region": "drowned_shore",
+   "size": [
+    48.0,
+    48.0
+   ]
+  },
+  "riverdock": {
+   "biome": "northern_wet",
+   "centre": [
+    5600.0,
+    11200.0
+   ],
+   "elevation": 58.02,
+   "entryYaw": 33.9,
+   "hidden": false,
+   "id": "riverdock",
+   "kind": "minor",
+   "map": null,
+   "name": "Low Landing",
+   "offshore": false,
+   "region": "northern_wet",
+   "size": [
+    96.0,
+    96.0
+   ]
+  },
+  "rustdogs": {
+   "biome": "sallow",
+   "centre": [
+    14560.0,
+    5280.0
+   ],
+   "elevation": 36.55,
+   "entryYaw": 136.7,
+   "hidden": false,
+   "id": "rustdogs",
+   "kind": "major",
+   "map": "overpass",
+   "name": "the overpass",
+   "offshore": false,
+   "region": "sallow",
+   "size": [
+    120.0,
+    92.0
+   ]
+  },
+  "shale": {
+   "biome": "sallow",
+   "centre": [
+    15360.0,
+    4480.0
+   ],
+   "elevation": 38.5,
+   "entryYaw": 143.7,
+   "hidden": false,
+   "id": "shale",
+   "kind": "major",
+   "map": "shale",
+   "name": "Shale",
+   "offshore": false,
+   "region": "sallow",
+   "size": [
+    128.0,
+    104.0
+   ]
+  },
+  "signalhill": {
+   "biome": "sallow",
+   "centre": [
+    13664.0,
+    6848.0
+   ],
+   "elevation": 38.36,
+   "entryYaw": 130.2,
+   "hidden": false,
+   "id": "signalhill",
+   "kind": "minor",
+   "map": "signalhill",
+   "name": "Signal Hill",
+   "offshore": false,
+   "region": "sallow",
+   "size": [
+    96.0,
+    112.0
+   ]
+  },
+  "site_md_bridgeward": {
+   "biome": "meridian",
+   "centre": [
+    4272.0,
+    5120.0
+   ],
+   "elevation": 7.25,
+   "entryYaw": 0.0,
+   "hidden": false,
+   "id": "site_md_bridgeward",
+   "kind": "district",
+   "map": "md_bridgeward",
+   "name": "Meridian \u2014 Bridgeward",
+   "offshore": false,
+   "region": "meridian",
+   "size": [
+    144.0,
+    112.0
+   ]
+  },
+  "site_md_lantern": {
+   "biome": "meridian",
+   "centre": [
+    4128.0,
+    5120.0
+   ],
+   "elevation": 7.31,
+   "entryYaw": 0.0,
+   "hidden": false,
+   "id": "site_md_lantern",
+   "kind": "district",
+   "map": "md_lantern",
+   "name": "Meridian \u2014 Lantern Row",
+   "offshore": false,
+   "region": "meridian",
+   "size": [
+    144.0,
+    112.0
+   ]
+  },
+  "site_md_market": {
+   "biome": "meridian",
+   "centre": [
+    3984.0,
+    5120.0
+   ],
+   "elevation": 7.32,
+   "entryYaw": 0.0,
+   "hidden": false,
+   "id": "site_md_market",
+   "kind": "district",
+   "map": "md_market",
+   "name": "Meridian \u2014 Old Market",
+   "offshore": false,
+   "region": "meridian",
+   "size": [
+    144.0,
+    112.0
+   ]
+  },
+  "site_md_stacks": {
+   "biome": "meridian",
+   "centre": [
+    3984.0,
+    5016.0
+   ],
+   "elevation": 7.25,
+   "entryYaw": 0.0,
+   "hidden": false,
+   "id": "site_md_stacks",
+   "kind": "district",
+   "map": "md_stacks",
+   "name": "Meridian \u2014 the Stacks",
+   "offshore": false,
+   "region": "meridian",
+   "size": [
+    128.0,
+    96.0
+   ]
+  },
+  "skirts": {
+   "biome": "teeth",
+   "centre": [
+    20896.0,
+    11456.0
+   ],
+   "elevation": 263.11,
+   "entryYaw": 205.5,
+   "hidden": false,
+   "id": "skirts",
+   "kind": "major",
+   "map": null,
+   "name": "the Skirts",
+   "offshore": false,
+   "region": "teeth",
+   "size": [
+    160.0,
+    160.0
+   ]
+  },
+  "sump": {
+   "biome": "glass_flats",
+   "centre": [
+    12384.0,
+    3776.0
+   ],
+   "elevation": 28.5,
+   "entryYaw": 336.2,
+   "hidden": false,
+   "id": "sump",
+   "kind": "minor",
+   "map": "sump",
+   "name": "the Sump",
+   "offshore": false,
+   "region": "glass_flats",
+   "size": [
+    104.0,
+    80.0
+   ]
+  },
+  "timber": {
+   "biome": "northern_wet",
+   "centre": [
+    10400.0,
+    13056.0
+   ],
+   "elevation": 62.5,
+   "entryYaw": 170.2,
+   "hidden": false,
+   "id": "timber",
+   "kind": "minor",
+   "map": null,
+   "name": "Sawtown",
+   "offshore": false,
+   "region": "northern_wet",
+   "size": [
+    96.0,
+    96.0
+   ]
+  },
+  "tollhouse": {
+   "biome": "sallow",
+   "centre": [
+    14240.0,
+    6400.0
+   ],
+   "elevation": 38.35,
+   "entryYaw": 145.4,
+   "hidden": false,
+   "id": "tollhouse",
+   "kind": "major",
+   "map": "tollhouse",
+   "name": "Tollhouse 9",
+   "offshore": false,
+   "region": "sallow",
+   "size": [
+    128.0,
+    96.0
+   ]
+  },
+  "wheel": {
+   "biome": "sallow",
+   "centre": [
+    15072.0,
+    4128.0
+   ],
+   "elevation": 38.43,
+   "entryYaw": 0.0,
+   "hidden": true,
+   "id": "wheel",
+   "kind": "minor",
+   "map": "wheel",
+   "name": "the Wheel",
+   "offshore": false,
+   "region": "sallow",
+   "size": [
+    92.0,
+    80.0
+   ]
+  }
+ },
+ "world": {
+  "biomes": [
+   "sallow",
+   "glass_flats",
+   "rail_corridor",
+   "drowned_shore",
+   "meridian",
+   "teeth",
+   "ashlands",
+   "northern_wet"
+  ],
+  "depth": 16000.0,
+  "floor": -50.0,
+  "metresPerKm": 32.0,
+  "sea": 0.0,
+  "span": 600.0,
+  "width": 24000.0
+ }
+}

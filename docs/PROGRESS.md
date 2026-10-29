@@ -424,7 +424,12 @@ meshes only (textures once each, per material); library textures are 1K on Andro
 candidate A, whose faces pass; the hair and garment assets that fail (a braid that reads as a fringe, a hood that reads
 as a cap, hair cards that read as shells up close) are P4's. Terrain tiling is P3.2's, scatter density P3.4's. The
 Unity CLI was evaluated and not adopted (`editor.sh` stays).
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 13 (P3.1 `WorldService` + chunk grid + control map tool, §6.A.1–A.2).
+**P3 started — the world's map (plan §10 step 13, 2026-10-29):** `tools/unity/world.py` turns the content's world map
+into the 24 × 16 km world (32 m to the km): a control map of base height, roughness, biome and water (sea along the
+west, the Wet's river), 32 places with footprints and elevations, the roads, the Line and the river. Core reads it
+(`WorldGrid`, `ControlMap`, `WorldLayout`, 7 tests on the real files); the game's `WorldService` loads it from
+StreamingAssets.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 14 (runtime terrain job per chunk, §6.A.3, + the 4-chunk PlayMode test).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,
