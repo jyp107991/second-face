@@ -21,8 +21,12 @@ namespace SecondFace.Core.World
         public const float Storey = 3.1f;
         /// <summary>Walls lower than this are fences: they close no room and block neither sight nor flood.</summary>
         public const float FenceHeight = 1.3f;
-        /// <summary>Door and gate openings, metres (a gate of n tiles is n × 2 − 1.2 m wide, a three-tile gate 0.6 m taller).</summary>
-        public const float DoorWidth = 1.1f, DoorHeight = 2.1f, GateHeight = 2.6f;
+        /// <summary>Door and gate openings, metres (a gate of n tiles is n × 2 − 1.2 m wide, a three-tile gate 0.6 m taller).
+        /// A door is 1.3 m (P6.2, from 1.1): the town's people walk in and out of every building, and the NavMesh is eroded
+        /// by a person's radius from each jamb.</summary>
+        public const float DoorWidth = 1.3f, DoorHeight = 2.1f, GateHeight = 2.6f;
+        /// <summary>The width the kit's door leaf was made for (it is stretched to the doorway).</summary>
+        public const float KitDoorWidth = 1.1f;
 
         public enum OpeningKind { Door, Gate, Window }
 
@@ -124,6 +128,15 @@ namespace SecondFace.Core.World
 
         /// <summary>A tile's centre in place metres.</summary>
         public (float X, float Z) Centre(double i, double j) => ((float)((i + 0.5) * Tile - Width / 2), (float)(Depth / 2 - (j + 0.5) * Tile));
+
+        /// <summary>A map tile's centre in its place's own metres (what <see cref="Centre"/> gives, without building the
+        /// plan): for a routine's tile, a script's point.</summary>
+        public static (float X, float Z) TileCentre(MapDef map, double i, double j)
+        {
+            var rows = map.Layout.Count;
+            var cols = map.Layout.Max(r => r.Length);
+            return ((float)((i + 0.5) * Tile - cols * Tile / 2), (float)(rows * Tile / 2 - (j + 0.5) * Tile));
+        }
 
         public int RoomOf(double i, double j)
         {

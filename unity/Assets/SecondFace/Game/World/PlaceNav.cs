@@ -27,8 +27,11 @@ namespace SecondFace.Game.World
         /// <summary>While the world's own NavMesh follows the walker (<see cref="WorldNav"/>, step 25), places build none:
         /// two meshes over the same ground do not join.</summary>
         public static bool Disabled;
+        private static readonly List<PlaceNav> Live = new();
         private AsyncOperation _build;
         private NavMeshDataInstance _instance;
+
+        private void Awake() => Live.Add(this);
 
         private void Start()
         {
@@ -81,8 +84,17 @@ namespace SecondFace.Game.World
             if (!Ready && _build != null && _build.isDone) Ready = true;
         }
 
+        /// <summary>Takes away every place's own mesh (the world's has come: a place loaded before it built one, and a
+        /// path from the world's mesh onto a place's would end short at the place's edge).</summary>
+        public static void DropAll()
+        {
+            foreach (var p in Live)
+                if (p != null && p._instance.valid) { p._instance.Remove(); p.Ready = true; }
+        }
+
         private void OnDestroy()
         {
+            Live.Remove(this);
             if (_instance.valid) _instance.Remove();
         }
     }

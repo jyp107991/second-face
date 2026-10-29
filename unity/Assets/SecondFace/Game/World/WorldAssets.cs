@@ -24,6 +24,19 @@ namespace SecondFace.Game.World
         public RuntimeAnimatorController Locomotion;
         /// <summary>The cloth of the bundles things dropped on the ground lie in (P6.1; the library's burlap).</summary>
         public Material Sack;
+        /// <summary>Every body of the cast (P4.1, P4.11) with who it can stand in for: a place's people each wear one of
+        /// their sex and nearest age (P6.2, Core <c>Routine.Assign</c>).</summary>
+        public CastEntry[] Cast;
+
+        [System.Serializable]
+        public sealed class CastEntry
+        {
+            public string Id;
+            public GameObject Prefab;
+            public bool Male;
+            public float Age;
+            public string Role;
+        }
 
         public bool Complete => Layers != null && Catalog != null && Details != null && Places != null && Sky != null;
     }

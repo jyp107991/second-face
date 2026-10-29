@@ -7,7 +7,8 @@ namespace SecondFace.Game.World
     /// The NavMesh round the one who walks (step 25): one mesh over the streamed terrain, the props and the places
     /// within <see cref="Size"/> m of <see cref="Target"/>, built on worker threads and rebuilt round them when they come
     /// within <see cref="Margin"/> m of its edge (the old mesh serves until the new one is in). While it runs, places build
-    /// none of their own (<see cref="PlaceNav.Disabled"/>): two meshes over the same ground do not join. Voxels of
+    /// none of their own (<see cref="PlaceNav.Disabled"/>), and those built before it came are dropped: two meshes over the
+    /// same ground do not join (a path from one ends short at the other's edge). Voxels of
     /// <see cref="Voxel"/> m (three to a person's width: a 1.1 m door stays open) keep a phone's build short.
     /// </summary>
     public sealed class WorldNav : MonoBehaviour
@@ -24,7 +25,11 @@ namespace SecondFace.Game.World
         private AsyncOperation _build;
         private Bounds _pending;
 
-        private void OnEnable() => PlaceNav.Disabled = true;
+        private void OnEnable()
+        {
+            PlaceNav.Disabled = true;
+            PlaceNav.DropAll();
+        }
 
         private void OnDisable()
         {

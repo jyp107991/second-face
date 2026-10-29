@@ -3,6 +3,7 @@ using System.Linq;
 using SecondFace.Core.Content;
 using SecondFace.Core.Dialogue;
 using SecondFace.Core.Inventory;
+using SecondFace.Core.Npc;
 using SecondFace.Core;
 using SecondFace.Core.Quest;
 using SecondFace.Core.Scene;
@@ -41,6 +42,8 @@ namespace SecondFace.Game.Play
         /// <summary>The walker stands on a built NavMesh and the camera follows them.</summary>
         public bool Ready => Walker != null && Nav != null && Nav.Ready && Walker.Agent.isOnNavMesh;
         public int Townsfolk { get; private set; }
+        /// <summary>The town's people keeping their routines (P6.2; null until they are placed).</summary>
+        public Townsfolk People { get; private set; }
         /// <summary>The town's things that can be used: containers and talking props (P6.1).</summary>
         public int Things { get; private set; }
         /// <summary>A line for the HUD (a lock that held, a lock picked).</summary>
@@ -202,20 +205,39 @@ namespace SecondFace.Game.Play
             SetDown?.Invoke();
         }
 
-        /// <summary>The cast at the town's people's posts (one each, the first posts), each idling their own way.</summary>
+        /// <summary>The town's people (P6.2): every one of its placements whose condition holds, each in a body of the
+        /// cast of their sex and nearest age (Core <c>Routine.Assign</c>), keeping their routine (<see cref="Townsfolk"/>)
+        /// from where the hour has them; their own idle and now and then a gesture, feet on the ground.</summary>
         private int Populate(WorldAssets assets)
         {
-            if (assets.Townsfolk == null || assets.Townsfolk.Length == 0) return 0;
+            var bodies = assets.Cast != null && assets.Cast.Length > 0
+                ? assets.Cast.Where(c => c != null && c.Prefab != null).ToList()
+                : (assets.Townsfolk ?? new GameObject[0]).Where(g => g != null)
+                    .Select((g, i) => new WorldAssets.CastEntry { Id = g.name, Prefab = g, Male = i % 2 == 0, Age = 35f }).ToList();
+            if (bodies.Count == 0) return 0;
             var place = Stage.Streamer.PlaceSpawner?.Instance("shale");
-            if (place == null) return 0;
-            var n = 0;
+            if (place == null || !Registry.Maps.TryGetValue("shale", out var map)) return 0;
+            if (People == null) People = gameObject.AddComponent<Townsfolk>();
+            People.Clock = Stage.Clock;
+            People.Bind(place, map);
+            var who = new System.Collections.Generic.List<(PlaceMarker M, NpcPlacement P, NpcDef D)>();
             foreach (var m in place.GetComponentsInChildren<PlaceMarker>())
             {
-                if (m.Kind != "npc" || n >= assets.Townsfolk.Length) continue;
-                var model = assets.Townsfolk[n];
-                if (model == null) continue;
+                if (m.Kind != "npc" || (!string.IsNullOrEmpty(m.Map) && m.Map != map.Id)) continue;
+                var placement = map.Npcs?.FirstOrDefault(p => (p.Id ?? p.Def) == m.Id);
+                if (placement == null || !Registry.Npcs.TryGetValue(placement.Def, out var def)) continue;
+                if (placement.If != null && !Logic.Test(placement.If, Game)) continue;
+                who.Add((m, placement, def));
+            }
+            var cast = bodies.Select(b => new CastBody { Id = b.Id, Male = b.Male, Age = b.Age, Role = b.Role }).ToList();
+            var wear = Routine.Assign(who.Select(w => (w.M.Id, Routine.Male(w.D.Look), w.D.Look?.Age ?? 35.0, w.D.Role)).ToList(), cast);
+            var n = 0;
+            foreach (var (m, placement, def) in who)
+            {
+                if (!wear.TryGetValue(m.Id, out var bodyId)) continue;
+                var model = bodies.First(b => b.Id == bodyId).Prefab;
                 var p = Instantiate(model, m.transform.position, Quaternion.Euler(0, Hash(m.Id) * 360f, 0), place.transform);
-                p.name = "townsfolk_" + model.name;
+                p.name = "townsfolk_" + m.Id;
                 var anim = p.GetComponentInChildren<Animator>();
                 if (anim != null)
                 {
@@ -228,13 +250,14 @@ namespace SecondFace.Game.Play
                     anim.gameObject.AddComponent<SecondFace.Game.People.FootPlant>();
                     anim.gameObject.AddComponent<SecondFace.Game.People.Gaze>();
                 }
-                var name = Bootstrap.Content?.Entry("npcs", m.Id)?["name"]?.ToString();
-                var trades = Registry.Npcs.TryGetValue(m.Id, out var def) && def.Merchant != null;
-                var verbs = trades ? new[] { "talk", "trade", "look" } : new[] { "talk", "look" };
+                var name = string.IsNullOrEmpty(def.Name) ? Bootstrap.Content?.Entry("npcs", def.Id)?["name"]?.ToString() : def.Name;
+                var verbs = def.Merchant != null ? new[] { "talk", "trade", "look" } : new[] { "talk", "look" };
                 var it = Interactable.Add(p, m.Id, string.IsNullOrEmpty(name) ? Strings.Get("people.someone") : name, 0.4f, 1.85f, verbs);
-                it.Chosen += (who, verb) => StartCoroutine(Respond(who, verb));
+                it.Chosen += (person, verb) => StartCoroutine(Respond(person, verb));
+                People.Add(p, m.Id, def, placement, m.transform.position).Body = bodyId;
                 n++;
             }
+            People.Step(Stage.Clock != null ? Stage.Clock.Hour : 12.0, true);   // where the hour has them
             Things = Equip(place, "shale");
             return n;
         }
@@ -581,6 +604,19 @@ namespace SecondFace.Game.Play
         /// them meet each other's eyes and the person waves.</summary>
         public IEnumerator Respond(Interactable who, string verb)
         {
+            // their routine waits while they deal with the walker
+            var townsperson = who != null ? who.GetComponent<Townsperson>() : null;
+            if (townsperson != null)
+            {
+                townsperson.Held = true;
+                if (townsperson.Agent != null && townsperson.Agent.enabled && townsperson.Agent.isOnNavMesh) townsperson.Agent.ResetPath();
+            }
+            yield return Responding(who, verb);
+            if (townsperson != null) townsperson.Held = false;
+        }
+
+        private IEnumerator Responding(Interactable who, string verb)
+        {
             if (Walker == null || who == null) yield break;
             var person = who.transform;
             var anim = who.GetComponentInChildren<Animator>();
@@ -631,8 +667,9 @@ namespace SecondFace.Game.Play
         public bool OpenConversation(Interactable who)
         {
             var ui = UIService.Instance;
-            if (ui == null || !Registry.Npcs.TryGetValue(who.Id, out var npc) || string.IsNullOrEmpty(npc.Dialogue)
-                || !Registry.Dialogues.TryGetValue(npc.Dialogue, out var def)) return false;
+            var npc = NpcOf(who);
+            var tree = who.GetComponent<Townsperson>()?.Placement?.Dialogue ?? npc?.Dialogue;   // a placement may say other things
+            if (ui == null || npc == null || string.IsNullOrEmpty(tree) || !Registry.Dialogues.TryGetValue(tree, out var def)) return false;
             var runner = new DialogueRunner(def, Game, Quests);
             if (runner.Ended) return false;
             _speaking = who;
@@ -657,14 +694,23 @@ namespace SecondFace.Game.Play
         public bool OpenTrade(Interactable who)
         {
             var ui = UIService.Instance;
-            if (ui == null || !Registry.Npcs.TryGetValue(who.Id, out var npc) || npc.Merchant == null) return false;
+            var npc = NpcOf(who);
+            if (ui == null || npc == null || npc.Merchant == null) return false;
             var face = who.GetComponentInChildren<Animator>() != null ? who.gameObject : null;
             Trade = ui.Open(new BarterScreen(new BarterModel
             {
-                Game = Game, MerchantId = who.Id, Def = npc.Merchant, Name = string.IsNullOrEmpty(npc.Name) ? who.Title : npc.Name,
+                Game = Game, MerchantId = npc.Id, Def = npc.Merchant, Name = string.IsNullOrEmpty(npc.Name) ? who.Title : npc.Name,
                 Settlement = string.IsNullOrEmpty(npc.Settlement) ? "shale" : npc.Settlement, Face = face != null ? Portraits.Of(face) : null,
             }));
             return true;
+        }
+
+        /// <summary>Who someone in the world is: their routine's person, else the definition named by their id.</summary>
+        private static NpcDef NpcOf(Interactable who)
+        {
+            var person = who != null ? who.GetComponent<Townsperson>() : null;
+            if (person != null && person.Def != null) return person.Def;
+            return who != null && Registry.Npcs.TryGetValue(who.Id, out var d) ? d : null;
         }
 
         private static float Hash(string s)

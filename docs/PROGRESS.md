@@ -680,9 +680,17 @@ shoulder, narrower in the hip), and the cast spreads over real builds and height
 pear, hourglass, a few heavier among the comfortable; men 162 to 189 cm, women 151 to 176), most of them lean. Your own
 body starts from the same baseline. Seen in `docs/evidence/unity/p4/people_bodies.jpg` (every body front-on, before and
 after), `people_cast_lineup.jpg` and `people_wardrobe.jpg`.
-**Next action:** P6 step 2: schedules across the world (`Npc/Schedule` → a people service: actors as data when far,
-as agents within 120 m, as full actors within 60 m; the townsfolk keep their hours, sit at their seats, sleep in their
-beds). P6.1 left for later: doors that lock (with the door models), a share of a stack by a long press, the search of the
+**Shale keeps its hours (P6.2 part 1, 2026-10-29):** the town's people now live by their routines on the world's
+clock: each walks to where the hour has them (the sheriff patrols the street in the morning and keeps her desk at noon,
+the factor his counter, the barkeep the bar into the night), goes home and in to sleep, or is away, and comes out again
+in the morning; after a rest everyone is where the hour has them. Each wears a body of their own sex and near their age
+from the cast (18 people, 18 bodies). Someone you talk to waits for you. Doorways are a little wider, and the rooms of
+the town can now be walked into from the street (they could not before: a second, unjoined walking mesh). Seen in
+`docs/evidence/unity/p6/walkabout_town_noon.jpg` (the sheriff at her desk) and `walkabout_town_night.jpg` (the bar).
+**Next action:** P6 step 2 part 2: the people service for the whole world (actors as data when far, position
+advanced by their routine; as agents within 120 m; as full actors within 60 m; the cast loaded per region), the other
+places' people, the townsfolk sitting at their seats and sleeping in their beds (seats and beds with owners), crowds
+yielding to the walker. P6.1 left for later: doors that lock (with the door models), a share of a stack by a long press, the search of the
 fallen (with combat), owners and witnesses for what is taken (with stealth, P6.3). Blender and the MakeHuman assets are in the session
 scratchpad, `blender/` and `mhc/`; if a fresh session lacks them, see `tools/unity/people/`. **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;

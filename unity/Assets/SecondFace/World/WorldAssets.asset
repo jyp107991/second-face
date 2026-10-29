@@ -33,3 +33,164 @@ MonoBehaviour:
   PlayerF: {fileID: 2539535584533208972, guid: 24ebc521b512534f6acb1415836c3c61, type: 3}
   Locomotion: {fileID: 9100000, guid: d48b81ce77cb2e95c8b00171183ffc6e, type: 2}
   Sack: {fileID: 2100000, guid: 3a8456b370747872eb0b9f109671594a, type: 2}
+  Cast:
+  - Id: cast_sal_01
+    Prefab: {fileID: 8986221291955259547, guid: 5cfb23b1dad0b262ea55d3ae3329e695, type: 3}
+    Male: 1
+    Age: 46
+    Role: labourer
+  - Id: cast_sal_02
+    Prefab: {fileID: 1393974216823851399, guid: e16a79aa6a402f4c4af71820afcb0e27, type: 3}
+    Male: 0
+    Age: 31
+    Role: water_carrier
+  - Id: cast_sal_03
+    Prefab: {fileID: 8780991685459674273, guid: a9843a671413681a499adfdd9f97638e, type: 3}
+    Male: 1
+    Age: 20
+    Role: raider
+  - Id: cast_sal_04
+    Prefab: {fileID: 3179647767029758272, guid: a13582d897dfe471fb35f44053817591, type: 3}
+    Male: 0
+    Age: 49
+    Role: deputy
+  - Id: cast_sal_05
+    Prefab: {fileID: 5775507854851489883, guid: adf55aa9df0d0edea9c5292cc6374c0a, type: 3}
+    Male: 1
+    Age: 69
+    Role: prospector
+  - Id: cast_sal_06
+    Prefab: {fileID: 4076701257671222121, guid: 86074827d407e4b369d673930dbe3279, type: 3}
+    Male: 0
+    Age: 24
+    Role: raider
+  - Id: cast_rail_01
+    Prefab: {fileID: 5307142229805085770, guid: 0f2194944ad0ef2aeacd7ae7373a3190, type: 3}
+    Male: 1
+    Age: 38
+    Role: rail_crew
+  - Id: cast_rail_02
+    Prefab: {fileID: 8503699249297299887, guid: fb408e22eed48d450b2cd2b73a1782e0, type: 3}
+    Male: 0
+    Age: 41
+    Role: rail_crew
+  - Id: cast_rail_03
+    Prefab: {fileID: 542267119447242654, guid: 4344278b7ca534ff1b202a0fbe8fedee, type: 3}
+    Male: 1
+    Age: 58
+    Role: trader
+  - Id: cast_gls_01
+    Prefab: {fileID: 4827131927552915617, guid: e72f4f82e48cca5019026fe89e67f887, type: 3}
+    Male: 0
+    Age: 29
+    Role: salt_worker
+  - Id: cast_gls_02
+    Prefab: {fileID: 6400001657726323531, guid: cd168b90274cd83eebcde56d8cf25d06, type: 3}
+    Male: 1
+    Age: 25
+    Role: salt_worker
+  - Id: cast_gls_03
+    Prefab: {fileID: 1082431411635305088, guid: d4529e0296c0b7048acfd4be25a5b01c, type: 3}
+    Male: 1
+    Age: 66
+    Role: elder
+  - Id: cast_shr_01
+    Prefab: {fileID: 8760606797902841067, guid: abe691c52abbc390ca1d224c0cf575c7, type: 3}
+    Male: 1
+    Age: 47
+    Role: fisher
+  - Id: cast_shr_02
+    Prefab: {fileID: 9219532222040579695, guid: 1d616ac0c26a8565eb2ce1f4c1284dfc, type: 3}
+    Male: 0
+    Age: 37
+    Role: river_trader
+  - Id: cast_shr_03
+    Prefab: {fileID: 2194942597763000959, guid: 5e99274150524c4ec90b4e0fea34de49, type: 3}
+    Male: 0
+    Age: 17
+    Role: runner
+  - Id: cast_wet_01
+    Prefab: {fileID: 3780257767575993743, guid: f353aec058b1c3bf2bf9be9c986d8504, type: 3}
+    Male: 1
+    Age: 35
+    Role: timber
+  - Id: cast_wet_02
+    Prefab: {fileID: 8796206911878420818, guid: 028f6d46c9ccac5abbf172c3bd3abd10, type: 3}
+    Male: 0
+    Age: 44
+    Role: dam_worker
+  - Id: cast_wet_03
+    Prefab: {fileID: 8051299949023527516, guid: 8b5df97826fd723798a05cc6fc11b64a, type: 3}
+    Male: 1
+    Age: 29
+    Role: boatman
+  - Id: cast_tth_01
+    Prefab: {fileID: 3077061105780474944, guid: 677933cbfd333aa4a82c4776734a654a, type: 3}
+    Male: 1
+    Age: 51
+    Role: miner
+  - Id: cast_tth_02
+    Prefab: {fileID: 7049998727054348734, guid: 3be92b2c98472387b810ff4ea3b8cc8d, type: 3}
+    Male: 0
+    Age: 22
+    Role: herder
+  - Id: cast_ash_01
+    Prefab: {fileID: 6503837540940817946, guid: e9b9e55caa94e4675a344801edac8a70, type: 3}
+    Male: 1
+    Age: 33
+    Role: scavenger
+  - Id: cast_ash_02
+    Prefab: {fileID: 249943767031045085, guid: e5381008ee2d99483983ca769ddead82, type: 3}
+    Male: 0
+    Age: 46
+    Role: scavenger
+  - Id: cast_toll_01
+    Prefab: {fileID: 5301399953126124058, guid: 85398c33ab7ec992c85ec2175fc8e49f, type: 3}
+    Male: 1
+    Age: 40
+    Role: convoy_guard
+  - Id: cast_toll_02
+    Prefab: {fileID: 1230638021024937911, guid: 70b196aa64ddc3d6aaa232e3dab003f1, type: 3}
+    Male: 0
+    Age: 35
+    Role: clerk
+  - Id: cast_chr_01
+    Prefab: {fileID: 1272917746545643104, guid: a2e224dc8ea146eb0ad5cc3fee039471, type: 3}
+    Male: 0
+    Age: 27
+    Role: choir
+  - Id: cast_chr_02
+    Prefab: {fileID: 3677702626408596720, guid: 09fb49fd095f28527b5f5a703035de46, type: 3}
+    Male: 1
+    Age: 62
+    Role: choir
+  - Id: cast_mnd_01
+    Prefab: {fileID: 8216478254266774210, guid: 36dea4549687ac9fcb38426ec9124b35, type: 3}
+    Male: 0
+    Age: 51
+    Role: mender
+  - Id: cast_mer_01
+    Prefab: {fileID: 3150486969472037856, guid: 9a123cf21117d4746af5d8eb9044c0cf, type: 3}
+    Male: 0
+    Age: 33
+    Role: warden
+  - Id: cast_mer_02
+    Prefab: {fileID: 6866885923318024276, guid: 5cba54618246ddd30baef8b381a852ac, type: 3}
+    Male: 1
+    Age: 23
+    Role: sinker
+  - Id: cast_mer_03
+    Prefab: {fileID: 7074389297031851865, guid: ba5c8d171575359bf80066ce7d2f5727, type: 3}
+    Male: 0
+    Age: 21
+    Role: crew
+  - Id: cast_mer_04
+    Prefab: {fileID: 6378994734728010981, guid: 8842cebb9627768fe917d0b109eb985f, type: 3}
+    Male: 1
+    Age: 56
+    Role: tenured
+  - Id: cast_whl_01
+    Prefab: {fileID: 9094183397666744723, guid: bbfaac0cc7035e4e2b92ce8a10059a7b, type: 3}
+    Male: 1
+    Age: 39
+    Role: nomad

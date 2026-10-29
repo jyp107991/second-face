@@ -175,7 +175,8 @@ namespace SecondFace.Tests
             // a tap on one of the townsfolk in view opens the radial over them (P5.3c); a verb closes it
             var view = Camera.main;
             var tappable = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None).Where(i => i.Verbs.Contains("talk")).ToArray();   // the townsfolk
-            Assert.That(tappable.Length, Is.GreaterThanOrEqualTo(walk.Townsfolk), "every one of the townsfolk can be tapped");
+            var about = walk.People != null ? walk.People.People.Count(p => p.gameObject.activeSelf) : walk.Townsfolk;
+            Assert.That(tappable.Length, Is.GreaterThanOrEqualTo(about), "every one of the townsfolk about can be tapped");
             (Interactable i, Vector2 p) InView() => tappable
                 .Select(i => (i, p: (Vector2)view.WorldToScreenPoint(i.transform.position + Vector3.up * 1.2f)))
                 .FirstOrDefault(x => x.p.x > 0 && x.p.x < Screen.width && x.p.y > 0 && x.p.y < Screen.height && Interactable.Under(view, x.p, walk.Walker.transform) == x.i);
@@ -641,6 +642,96 @@ namespace SecondFace.Tests
             t0 = Time.realtimeSinceStartup;
             while (Time.realtimeSinceStartup - t0 < 15f && walk.Walker.Goal != null) yield return null;
             Assert.That(walk.Walker.Goal, Is.Null, "and walks");
+        }
+
+        /// <summary>P6.2: Shale keeps its hours: its people each in a body of their sex, the sheriff at her desk at noon and
+        /// gone in to sleep at night, the factor away, the barkeep still at the bar; between posts they walk; one talked to
+        /// stays put.</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator ShaleKeepsItsHours()
+        {
+            Bootstrap boot = null;
+            yield return Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            var town = walk.People;
+            Assert.That(town, Is.Not.Null, "the town's people keep routines");
+            Assert.That(town.People.Count, Is.GreaterThanOrEqualTo(15), "Shale's people");
+            var cast = boot.World.Cast.ToDictionary(c => c.Id);
+            foreach (var p in town.People)
+                Assert.That(cast[p.Body].Male, Is.EqualTo(SecondFace.Core.Npc.Routine.Male(p.Def.Look)), $"{p.Id} in a body of their sex");
+            Debug.Log($"BootTests: {town.People.Count} people, {town.People.Select(p => p.Body).Distinct().Count()} bodies");
+            float Flat(Vector3 a, Vector3 b) { a.y = 0; b.y = 0; return Vector3.Distance(a, b); }
+            Vector3 Spot(string id) => boot.Stage.Marker("shale", "spot", id).transform.position;
+            // one mesh over the town: a way from the street in through the sheriff's door (a place's own mesh built before
+            // the world's would leave its interiors an island)
+            var way = new UnityEngine.AI.NavMeshPath();
+            UnityEngine.AI.NavMesh.CalculatePath(walk.Walker.transform.position, Spot("sheriff_desk"), UnityEngine.AI.NavMesh.AllAreas, way);
+            Assert.That(way.status, Is.EqualTo(UnityEngine.AI.NavMeshPathStatus.PathComplete), "a way in to the sheriff's desk");
+            var street = boot.Stage.Marker("shale", "spawn").transform.position;
+            // the walker stands in a room (its roof and upper walls open) and looks down at whoever keeps it
+            IEnumerator Visit(Vector3 spot, string capture)
+            {
+                var near = spot + (street - spot).normalized * 1.8f;
+                UnityEngine.AI.NavMesh.SamplePosition(near, out var h, 3f, UnityEngine.AI.NavMesh.AllAreas);
+                walk.Walker.Agent.Warp(h.position);
+                walk.Rig.Follow(walk.Walker.transform);
+                walk.Rig.View(Mathf.Atan2(spot.x - h.position.x, spot.z - h.position.z) * Mathf.Rad2Deg, 55f, 10f);
+                if (boot.Stage.Sky != null) boot.Stage.Sky.Apply();
+                var t = Time.realtimeSinceStartup;
+                while (Time.realtimeSinceStartup - t < 1.5f) yield return null;
+                yield return ScreenshotTests.Capture(capture, 1920, 1080);
+            }
+            var ada = town.Of("npc_sh_01");
+            var pike = town.Of("npc_sh_04");
+            var mags = town.Of("npc_sh_03");
+            Assert.That(ada != null && pike != null && mags != null, Is.True, "the sheriff, the factor, the barkeep");
+            // noon
+            boot.Stage.Clock.SetHour(12);
+            town.Step(12, true);
+            for (var i = 0; i < 5; i++) yield return null;
+            Assert.That(ada.gameObject.activeSelf, Is.True);
+            Assert.That(Flat(ada.transform.position, Spot("sheriff_desk")), Is.LessThan(1.5f), "the sheriff at her desk");
+            Assert.That(Flat(pike.transform.position, Spot("toll_counter")), Is.LessThan(1.5f), "the factor at his counter");
+            yield return Visit(Spot("sheriff_desk"), "walkabout_town_noon");
+            // night
+            boot.Stage.Clock.SetHour(23.5);
+            town.Step(23.5, true);
+            for (var i = 0; i < 5; i++) yield return null;
+            Assert.That(ada.gameObject.activeSelf, Is.False, "gone in to sleep");
+            Assert.That(pike.gameObject.activeSelf, Is.False, "away");
+            Assert.That(mags.gameObject.activeSelf, Is.True, "the bar keeps late hours");
+            Assert.That(Flat(mags.transform.position, Spot("bar")), Is.LessThan(1.5f));
+            var awake = town.People.Count(p => p.gameObject.activeSelf);
+            Debug.Log($"BootTests: at 23:30 {awake} of {town.People.Count} about");
+            yield return Visit(Spot("bar"), "walkabout_town_night");
+            // between posts they walk: the sheriff from her patrol to her desk as nine strikes
+            boot.Stage.Clock.SetHour(8.9);
+            town.Step(8.9, true);
+            for (var i = 0; i < 5; i++) yield return null;
+            Assert.That(Flat(ada.transform.position, Spot("street_c")), Is.LessThan(8f), "on her patrol");
+            boot.Stage.Clock.SetHour(9.05);
+            town.Step(9.05, false);
+            var t0 = Time.realtimeSinceStartup;
+            var moved = false;
+            var start = ada.transform.position;
+            while (Time.realtimeSinceStartup - t0 < 60f && Flat(ada.transform.position, Spot("sheriff_desk")) > 1.5f)
+            {
+                if (Flat(ada.transform.position, start) > 1f) moved = true;
+                town.Step(9.05, false);
+                yield return null;
+            }
+            Assert.That(moved, Is.True, "she walked");
+            Assert.That(Flat(ada.transform.position, Spot("sheriff_desk")), Is.LessThan(1.5f), "to her desk");
+            // held: talked to, she stays as the hours turn
+            ada.Held = true;
+            var at = ada.transform.position;
+            boot.Stage.Clock.SetHour(20);
+            town.Step(20, true);
+            for (var i = 0; i < 5; i++) yield return null;
+            Assert.That(Flat(ada.transform.position, at), Is.LessThan(0.2f), "held where she is");
+            ada.Held = false;
+            town.Step(20, true);
+            Assert.That(Flat(ada.transform.position, Spot("saloon_table")), Is.LessThan(1.5f), "then off to her evening");
         }
 
         [UnityTest, Timeout(900000)]

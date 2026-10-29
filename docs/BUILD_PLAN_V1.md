@@ -839,6 +839,32 @@ ground at the fire facing it, hips 0.13 m; up when camp is broken). Evidence `do
 `walkabout_camp.jpg`. Not yet: stools and benches as seats (none in the content yet besides the market bench stall),
 lying down in a bed, the townsfolk sitting at their schedules' seats (P6.2), doors that lock (with the door models).
 
+*As built (P6.2 part 1, 2026-10-29).* Shale keeps its hours. Core `Npc.Routine` (port of game.ts updateSchedules):
+the placement's own schedule else the person's, the entry in force at an hour (`Schedule.At`, the hour wrapped),
+`Hidden` (away, or asleep: gone in at home), `Male(look)` (a beard says a man, else a broad frame) and `Assign` (each
+person a cast body of their sex and nearest age, each body once while any of that sex are left; a matching role breaks
+near ties). `PlacePlan.TileCentre` puts an entry's map tile in the place's metres. `WorldAssets.Cast` lists the whole
+32-person cast (id, prefab, sex, age, role) from `tools/unity/people/briefs/cast.json` (`WorldAssetsBuild`; every cast
+prefab in `Prefabs/people`). `Walkabout.Populate` brings every Shale placement whose condition holds (18 in a new game),
+each in its assigned body (18 bodies), and hands them to `Play/Townsfolk`: twice a second each person's entry for the
+world clock's hour sends their `NavMeshAgent` (radius 0.28, 1.25 m/s) to the entry's `spot` marker or tile; a drinker,
+a trader, a worker and a patrol each get their own mix of gestures (`Ambient.Pool`), a patrol takes turns a few metres
+about its post; asleep they walk home and go in (out of sight until the routine wakes them, then they come out where
+they went in); away they are gone; a clock jump of more than half an hour (a rest, a load) puts everyone where the hour
+has them at once. Anyone talked to or traded with is held still (`Townsperson.Held`, set while the conversation
+runs). A path that ends short (partial) is not asked again until the routine sends them elsewhere. Doors are 1.3 m (the
+kit's 1.1 m leaf scaled to fit: two people pass in a doorway, and a 0.3 m agent clears it with room). The world's
+NavMesh now drops every place's own mesh when it comes (`PlaceNav.DropAll`): Shale loads while the walker waits, built
+its own mesh, and the two never joined, so no path from the street reached a room (the player could not walk into the
+sheriff's office either). Tests: `RoutineTests` (Shale's routines, every spot they name, bodies by sex and age),
+`BootTests.ShaleKeepsItsHours` (each person in a body of their sex; a way in from the street to the sheriff's desk;
+noon: the sheriff at her desk, the factor at his counter; 23:30: the sheriff gone in to sleep, the factor away, the
+barkeep at the bar, 5 of 18 about; at nine the sheriff walks from her patrol to her desk; held, she stays as the hours
+turn, released she is off to her evening). Evidence `docs/evidence/unity/p6/walkabout_town_noon.jpg`,
+`walkabout_town_night.jpg`. Not yet: the townsfolk sitting at their routines' seats and sleeping in their beds (seats
+and beds with owners), the other places' people (part 2: actors as data when far, agents within 120 m, full actors
+within 60 m, the cast loaded per region), crowds yielding to the walker, doors that open for whoever walks through.
+
 ### P7 — Chapter One on the phone
 The opening through the stranger's map, end to end on device, at the standard: every scene, conversation, check
 and reward of Chapter One works from the content, saved and resumed. A playtest script (PlayMode, fixture-driven)
@@ -2084,6 +2110,15 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
 - **Time passed by a screen goes through the world's clock** (P6.1): while walking the `TimeService` leads and the game
   state's minutes are only written at a save; read the clock into the state before a rest or a hunt, set it back after,
   and re-light the sky by hand (the screen stops time, so the sky would not turn by itself).
+- **Two NavMeshes over the same ground do not join** (P6.2): a place that loads before the world's mesh exists (it
+  loads while the walker waits) builds its own, and with both in, a path from the street ends just outside a door
+  (`PathPartial`) while a raycast along the same line passes. Drop the places' meshes when the world's comes. To see a
+  mesh, write `NavMesh.CalculateTriangulation()` round the spot to a file and draw it: two voxel grids (0.1 m and
+  0.15 m vertices) overlapping is the tell.
+- **Ask an agent for a path once** (P6.2): `SetDestination` every tick restarts the search (a far or blocked one takes
+  many frames, so the agent never moves); ask again only when the target moves, and not while `pathPending`. A partial
+  path's search costs the whole reachable mesh: do not repeat it every tick. `ResetPath` on an agent that is not on a
+  mesh throws: only call it after a `Warp` that succeeded.
 - **The local compile checks do not build the PlayMode tests**: a test's missing `using UnityEngine.UIElements` (for
   `Q<T>`) only shows in Unity's own compile; read `playmode.log` for `error CS` when a run writes no results.
 

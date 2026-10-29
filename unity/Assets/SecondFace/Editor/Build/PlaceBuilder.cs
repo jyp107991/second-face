@@ -382,17 +382,21 @@ namespace SecondFace.EditorTools
         {
             var go = Instance(f.Model, parent);
             if (go == null) return;
+            // a door leaf is stretched to the doorway (the kit's is made for 1.1 m)
+            var door = f.Model.EndsWith("plank_door.fbx");
+            var wide = door ? PlacePlan.DoorWidth / PlacePlan.KitDoorWidth : 1f;
+            if (door) go.transform.localScale = new Vector3(wide, 1f, 1f);
             if (f.Open != 0)
             {
                 var hinge = new GameObject("door").transform;
                 hinge.SetParent(parent, false);
-                hinge.SetLocalPositionAndRotation(f.At + f.Rot * new Vector3(-0.475f, 0, 0), f.Rot * Quaternion.Euler(0, -f.Open, 0));   // swung in
+                hinge.SetLocalPositionAndRotation(f.At + f.Rot * new Vector3(-0.475f * wide, 0, 0), f.Rot * Quaternion.Euler(0, -f.Open, 0));   // swung in
                 go.transform.SetParent(hinge, false);
-                go.transform.localPosition = new Vector3(0.475f, 0, 0);
+                go.transform.localPosition = new Vector3(0.475f * wide, 0, 0);
                 go.transform.localRotation = Quaternion.identity;
             }
             else go.transform.SetLocalPositionAndRotation(f.At, f.Rot);
-            if (f.Model.EndsWith("plank_door.fbx")) go.AddComponent<NavMeshModifier>().ignoreFromBuild = true;
+            if (door) go.AddComponent<NavMeshModifier>().ignoreFromBuild = true;
         }
 
         /// <summary>The top of a room's floor, metres: a slab a step up from the street, boards on joists higher (level

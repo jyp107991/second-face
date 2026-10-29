@@ -19,6 +19,9 @@ namespace SecondFace.Game.People
         public float MinGap = 7f, MaxGap = 20f;
         /// <summary>Talks more than the others (set by whoever places them).</summary>
         public bool Talker;
+        /// <summary>The gestures their activity calls for (a drinker drinks, a trader talks; P6.2), over the talker's and
+        /// the idle pools; null for those.</summary>
+        public string[] Pool;
 
         private static readonly int IdleId = Animator.StringToHash("Idle");
         private static readonly int SpeedId = Animator.StringToHash("Speed");
@@ -52,7 +55,7 @@ namespace SecondFace.Game.People
             if (Time.time < _next) return;
             _next = Time.time + Mathf.Lerp(MinGap, MaxGap, Random01());
             if (_animator.GetFloat(SpeedId) > 0.1f) return;
-            var pool = Talker && Random01() < 0.7f ? Talk : Idle;
+            var pool = Pool != null && Pool.Length > 0 ? Pool : Talker && Random01() < 0.7f ? Talk : Idle;
             Gesture(pool[(int)(Random01() * pool.Length) % pool.Length]);
         }
 
