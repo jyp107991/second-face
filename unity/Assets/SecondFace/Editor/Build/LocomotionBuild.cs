@@ -21,7 +21,7 @@ namespace SecondFace.EditorTools
         public const string ControllerPath = "Assets/SecondFace/People/Locomotion.controller";
         public const string MaskPath = "Assets/SecondFace/People/UpperBody.mask";
         /// <summary>Bump when the layout changes; the controller carries it as the parameter "v&lt;Version&gt;".</summary>
-        public const int Version = 3;
+        public const int Version = 4;
         public const string GestureLayer = "Gesture";
         private static readonly string[] Moving = { "walk_slow", "walk", "walk_brisk", "jog", "run" };
         private static readonly string[] Idles = { "idle", "idle_b", "idle_c", "idle_d" };

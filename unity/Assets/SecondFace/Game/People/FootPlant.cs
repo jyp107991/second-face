@@ -62,10 +62,10 @@ namespace SecondFace.Game.People
             Place(AvatarIKGoal.RightFoot, _right, hitR ? normalR : Vector3.up, weight);
         }
 
-        /// <summary>The ground's height under a foot relative to the footing, and its normal.</summary>
         /// <summary>Where each foot was probed last (tests read them): left, right.</summary>
         public (Vector3, Vector3) Probed { get; private set; }
 
+        /// <summary>The ground's height under a foot relative to the footing, and its normal.</summary>
         private bool Probe(AvatarIKGoal goal, float footing, out float offset, out Vector3 normal)
         {
             var foot = _animator.GetIKPosition(goal);

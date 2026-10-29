@@ -100,11 +100,11 @@ namespace SecondFace.Game.People
             if (w >= 1f) { _blendT = -1f; Others(true); }
         }
 
-        /// <summary>The navigation agent, the walker, the foot planting and the gestures stop while the body falls.</summary>
+        /// <summary>The navigation agent, the walker, the foot planting, the gaze and the gestures stop while the body falls.</summary>
         private void Others(bool on)
         {
             foreach (var b in GetComponentsInParent<MonoBehaviour>())
-                if (b != this && (b is FootPlant || b is Ambient || b.GetType().Name == "Walker")) b.enabled = on;
+                if (b != this && (b is FootPlant || b is Ambient || b is Gaze || b.GetType().Name == "Walker")) b.enabled = on;
             var agent = GetComponentInParent<NavMeshAgent>();
             if (agent != null)
             {

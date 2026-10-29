@@ -14,7 +14,7 @@ namespace SecondFace.EditorTools
     public sealed class PeopleImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 8;
+        public override uint GetVersion() => 9;
 
         private bool IsPerson => assetPath.StartsWith("Assets/SecondFace/People/");
 
@@ -27,7 +27,13 @@ namespace SecondFace.EditorTools
             // Map the bones afresh on every import: the .meta keeps the mapping of the first import, and when the rig
             // changed (the jaw was merged into the head) the stale map failed every avatar ("Transform 'Jaw' for human
             // bone 'Jaw' not found").
-            imp.humanDescription = new HumanDescription();
+            // A new HumanDescription zeroes the muscle settings (twist 0, stretch 0); Unity's defaults put half of each
+            // limb's roll in each of its joints and let the limbs stretch a little to reach (P4.8).
+            imp.humanDescription = new HumanDescription
+            {
+                upperArmTwist = 0.5f, lowerArmTwist = 0.5f, upperLegTwist = 0.5f, lowerLegTwist = 0.5f,
+                armStretch = 0.05f, legStretch = 0.05f, feetSpacing = 0f, hasTranslationDoF = false,
+            };
             imp.autoGenerateAvatarMappingIfUnspecified = true;
             imp.importBlendShapes = true;
             imp.importBlendShapeNormals = ModelImporterNormals.None;

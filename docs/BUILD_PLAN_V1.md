@@ -182,9 +182,8 @@ What the engine captures show is still wrong (each has a step in §5 P2 or §10)
 - **The vegetation camera sees the terrain edge** (`vegetation_iso`): frame inside the terrain (§10 step 7).
 - **The boot capture lacks the UI**: a camera render does not include UI Toolkit; P5 captures render the panel
   through `PanelSettings.targetTexture` (§8).
-- **The captured walk holds the forearms raised in front** on every person (`people_motion_*`): a retarget fault,
-  likely the rest pose of the converted clips against the game rig's (check `cmu2fbx.py`'s reference pose and the
-  Humanoid muscle settings); fix with P4.4 locomotion at the latest.
+- ~~The captured walk holds the forearms raised in front~~ on every person: fixed in P4.8 (§6.E "As built (P4.8)":
+  the BVH angles decomposed in the wrong order, each clip's reference its own first frame).
 - ~~Some frontier walls lean~~: every kit piece lay on its side (the export axis, §8); fixed 2026-10-28.
 - `bake_cloth` palette tones are first guesses; judge them on the engine captures.
 - `tools/unity/kits/trees.py` (Sapling card trees) is **not written**; §6.L specifies it.
@@ -950,6 +949,31 @@ the ground, the planted one's 1.5 cm; the wave plays on the gesture layer at ful
 `people_motion_slope`. Open: turn-in-place and strafe clips (none captured yet: the agent turns on the spot), foot
 contact curves for planting while walking, the gesture layer over walking.
 
+**As built (P4.8, 2026-10-29: the owner saw unnatural arms and body positions).** Three faults, all in how the captures
+reached the Humanoid rig, none in the captures: (1) `cmu2fbx.py` split each rotation into the BVH's angles with
+Blender's `to_euler('ZXY')`, which is extrinsic, while the BVH channels `Z X Y` are intrinsic (Blender's `'YXZ'`): every
+large rotation came out scrambled, the arms worst (they turn ~80° from the capture's T-pose to hang), so walks held the
+forearms raised in front and idles reached forward; (2) the clip FBX's default skeleton (each bone's Lcl transform,
+from which Unity builds the clip's avatar) was the motion's first frame, so each clip retargeted against its own
+reference, a walk against a striding leg; Unity's avatar setup levels the arms but leaves legs and spine as found;
+(3) the people's importer reset the avatar's muscle settings to zero (no twist distribution, no stretch). Fixed:
+the rotations decomposed as `'YXZ'`; a T-pose keyed at frame 0, outside the baked range, and the scene left there when
+the FBX is written (the capture's base pose with the legs turned straight down, its stance is 20° wide, and the feet
+kept pointing ahead); the capture's single finger and thumb bones left out (mapped to index and thumb they curled
+one finger into a claw; unanimated, Humanoid fingers rest relaxed); people import with Unity's default muscle settings
+(twist 0.5, stretch 0.05; importer version 9); the clips reimport (motion importer version 3) and `LocomotionBuild` goes to version 4. The people's own models needed no change: `RigReport` (menu "Report rig
+poses") shows Unity's avatar levelling their arms from MakeHuman's A-pose into a true T-pose. Checked by
+`PeopleMotionTests.CapturedMotionHoldsHumanPosesWhenBuilt` (three people in two idles, a walk at two phases and a jog,
+front and side; standing, both hands hang at the thighs and beside the body; never a hand held up in front), capture
+`people_motion_frames`. The heads: the common idle holds its subject's face 16° up (at the capture studio's ceiling);
+`Gaze` (Humanoid look-at in the IK pass: the head drawn level ahead, or to a `Target`, head 0.75, body 0.05) keeps faces
+within 2° of level in the walk and the idles; the walker and the townsfolk carry it beside `FootPlant`, and a fall stops
+it. The slope test now compares each foot with the same person on flat ground (an idle stands with one heel a little
+raised): planted, the feet stand within 2.4 cm of their flat height on 14°. Open: that residual (a foot's reported IK goal
+sits 1-2 cm under the ankle the solver places; reading the ankle bone instead feeds back the last frame's solved pose);
+the common walk (CMU 07_01) swings the forward arm with the elbow well bent, a subject's style: give people one of
+the two captured walks each (and blend a little of the other) for variety.
+
 ### 6.F Camera and touch
 **F.1 Rig.** Cinemachine 3: a `CinemachineCamera` with `OrbitalFollow` around a `LookTarget` (the leader's chest +
 a lead by velocity · 0.4 s), yaw 0–360, pitch 35–62°, distance 8–26 m (orthographic *feel* via a 28° FOV at
@@ -1572,6 +1596,14 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   atlas (0.1–0.4 mm on the head) average out, so the shell's edge read as a cut line. Fade over 1.2 cm along the
   scalp, strands starting in clumps a few millimetres wide. And generate no more cards than the budget keeps:
   `thin` dropping 40 % of them at random showed the hairline through the gaps as bald patches.
+- **BVH channel order is intrinsic, Blender's euler order extrinsic** (P4.8): channels `Zrotation Xrotation Yrotation`
+  mean M = Rz·Rx·Ry, which is `to_euler('YXZ')` in Blender; `to_euler('ZXY')` scrambles every large rotation (the arms
+  first). Check a converted clip as a stick figure (front and side) before anything is retargeted.
+- **A Humanoid clip retargets against its file's default pose** (P4.8): the FBX exporter writes each bone's current
+  pose as its default, and Unity builds the clip's avatar from it; Unity levels the arms of a non-T-pose but not the legs
+  or spine. Leave the scene on a keyed T-pose frame outside the baked range when writing a clip.
+- **`new HumanDescription()` zeroes the muscle settings** (P4.8): set Unity's defaults (twist 0.5, stretch 0.05) when
+  resetting the mapping in an importer.
 
 ---
 

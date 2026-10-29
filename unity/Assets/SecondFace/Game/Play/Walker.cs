@@ -39,6 +39,7 @@ namespace SecondFace.Game.Play
                 w.Animator.applyRootMotion = false;
                 w.Animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
                 w.Animator.gameObject.AddComponent<SecondFace.Game.People.FootPlant>();
+                w.Animator.gameObject.AddComponent<SecondFace.Game.People.Gaze>();
             }
             return w;
         }

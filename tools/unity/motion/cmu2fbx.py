@@ -9,7 +9,7 @@ the bones renamed to Mecanim names, and exported as FBX with the animation baked
 Humanoid clip that retargets to every person. Walks play in place (root travel removed); falls keep root motion.
 """
 import bpy, math, os, sys
-from mathutils import Quaternion, Vector, Euler
+from mathutils import Quaternion, Vector, Euler, Matrix
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'kits'))
 import kitlib as K
 
@@ -229,6 +229,10 @@ def build_clip(d):
     return bones, out, speed, hip
 
 # --- BVH out, Blender in, FBX out ---------------------------------------------------------------------------------
+# The capture's single finger and thumb bones are left out: mapped to the index and thumb they curled one finger of a
+# full hand into a claw. Unanimated, Humanoid fingers rest relaxed (P4.8).
+DROP = {'lfingers', 'lthumb', 'rfingers', 'rthumb'}
+
 def write_bvh(path, bones, rows):
     lines = ['HIERARCHY']
     def joint(name, depth, is_root):
@@ -239,8 +243,9 @@ def write_bvh(path, bones, rows):
         lines.append(f'{ind}{{')
         lines.append(f'{ind}  OFFSET {off.x:.6f} {off.y:.6f} {off.z:.6f}')
         lines.append(f'{ind}  CHANNELS {"6 Xposition Yposition Zposition " if is_root else "3 "}Zrotation Xrotation Yrotation')
-        if b['children']:
-            for c in b['children']: joint(c, depth + 1, False)
+        kids = [c for c in b['children'] if c not in DROP]
+        if kids:
+            for c in kids: joint(c, depth + 1, False)
         else:
             end = b['direction'] * b['length'] * UNIT
             lines.append(f'{ind}  End Site'); lines.append(f'{ind}  {{'); lines.append(f'{ind}    OFFSET {end.x:.6f} {end.y:.6f} {end.z:.6f}'); lines.append(f'{ind}  }}')
@@ -249,16 +254,46 @@ def write_bvh(path, bones, rows):
     order = []
     def visit(n):
         order.append(n)
-        for c in bones[n]['children']: visit(c)
+        for c in bones[n]['children']:
+            if c not in DROP: visit(c)
     visit('root')
     lines.append('MOTION'); lines.append(f'Frames: {len(rows)}'); lines.append(f'Frame Time: {1.0 / OUT_FPS:.6f}')
     for r in rows:
         vals = [f'{r["pos"].x:.5f} {r["pos"].y:.5f} {r["pos"].z:.5f}']
         for n in order:
-            e = r['loc'][n].to_euler('ZXY')   # intrinsic ZXY: BVH channel order Z X Y
+            # BVH channels "Z X Y" are intrinsic: M = Rz·Rx·Ry, which is Blender's (extrinsic) 'YXZ'. Decomposing as
+            # Blender's 'ZXY' (M = Ry·Rx·Rz) scrambled every large rotation: arms that hang from the capture's T-pose
+            # came out reaching forward (P4.8)
+            e = r['loc'][n].to_euler('YXZ')
             vals.append(f'{math.degrees(e.z):.4f} {math.degrees(e.x):.4f} {math.degrees(e.y):.4f}')
         lines.append(' '.join(vals))
     with open(path, 'w') as f: f.write('\n'.join(lines) + '\n')
+
+def t_pose_key(arm, sc):
+    """The FBX's default skeleton (each bone's Lcl transform) is the pose at the scene's current frame, and Unity builds
+    the clip's Humanoid avatar from it: it must be a true T-pose, not the first frame of the motion (a walk's first
+    frame put a striding leg into the reference, P4.8). Unity's own avatar setup levels the arms but not the legs, and
+    the capture's base pose stands with its legs 20° apart: keyed at frame 0 (outside the baked range 1..N, the scene
+    left there) is the capture's base pose with the legs turned straight down, the feet kept pointing ahead."""
+    # keys first (changing frame re-applies the action over unkeyed values), each adjusted bone keyed again at once
+    def key(pb): pb.keyframe_insert('rotation_quaternion', frame=0); pb.keyframe_insert('location', frame=0)
+    for pb in arm.pose.bones:
+        pb.rotation_mode = 'QUATERNION'
+        pb.rotation_quaternion = (1.0, 0.0, 0.0, 0.0); pb.location = (0.0, 0.0, 0.0)
+        key(pb)
+    sc.frame_set(0)
+    down = (arm.matrix_world.inverted().to_3x3() @ Vector((0.0, 0.0, -1.0))).normalized()   # world down, armature space
+    for side in ('Left', 'Right'):
+        thigh = arm.pose.bones.get(side + 'UpperLeg')
+        if thigh is None: continue
+        d = (thigh.tail - thigh.head).normalized()
+        q = d.rotation_difference(down)
+        thigh.matrix = Matrix.Translation(thigh.head) @ (q @ thigh.matrix.to_quaternion()).to_matrix().to_4x4()
+        key(thigh); sc.frame_set(0)
+        foot = arm.pose.bones.get(side + 'Foot')
+        if foot is not None:
+            foot.matrix = Matrix.Translation(foot.head) @ foot.bone.matrix_local.to_quaternion().to_matrix().to_4x4()
+            key(foot); sc.frame_set(0)
 
 def export_clip(d, bones, rows, speed, hip):
     K.reset()
@@ -271,6 +306,7 @@ def export_clip(d, bones, rows, speed, hip):
     arm = next(o for o in bpy.data.objects if o.type == 'ARMATURE')
     arm.name = d['name']
     if arm.animation_data and arm.animation_data.action: arm.animation_data.action.name = d['name']
+    t_pose_key(arm, sc)
     path = os.path.join(OUT, d['name'] + '.fbx')
     bpy.ops.object.select_all(action='DESELECT'); arm.select_set(True); bpy.context.view_layer.objects.active = arm
     bpy.ops.export_scene.fbx(filepath=path, use_selection=True, apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y', object_types={'ARMATURE'},

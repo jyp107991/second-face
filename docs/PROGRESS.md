@@ -558,6 +558,12 @@ a work braid, an uneven crop, and long hair matted under a wrap. Each is a layer
 up into strands, with locks, a knot or a plait on top. It fits any head the face sculptor makes. Eight of the cast and
 both player bases wear it now (`docs/evidence/unity/p4/people_hair.jpg`); one of the found buns is kept. The dark
 triangle seen under one eye in the hair test was the nose's shadow from a sun at the side, not a fault in the face.
+**Natural motion (P4.8, 2026-10-29, the owner's report: "arm motions look so unnatural, along with general body
+positions"):** the captured motion itself was fine; the way it was converted for the game's skeleton was not. Every
+large turn of a joint was being split into angles in the wrong order (arms reached forward, walks held the forearms up),
+each clip measured itself against its own first frame instead of a standard standing pose (a walk against a stride), and
+the people's joints had no twist spread. All three fixed and the 28 clips rebuilt: standing people let their arms hang,
+walkers swing them low, the hands rest relaxed (`docs/evidence/unity/p4/people_motion_frames.jpg`).
 **Next action:** step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until
 Mid ≥ 30 fps); **`play-walkabout` is released** (2026-10-29, commit e0b69c6: the cast in Shale and the
 walkabout; https://github.com/jyp107991/second-face/releases/tag/play-walkabout, `SecondFace.apk`, 345 MB as a

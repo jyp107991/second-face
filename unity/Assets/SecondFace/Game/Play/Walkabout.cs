@@ -73,6 +73,7 @@ namespace SecondFace.Game.Play
                     var ambient = anim.gameObject.AddComponent<SecondFace.Game.People.Ambient>();
                     ambient.Talker = n % 3 == 0;
                     anim.gameObject.AddComponent<SecondFace.Game.People.FootPlant>();
+                    anim.gameObject.AddComponent<SecondFace.Game.People.Gaze>();
                 }
                 n++;
             }

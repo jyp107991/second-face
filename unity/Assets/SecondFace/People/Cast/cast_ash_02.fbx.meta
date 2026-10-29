@@ -899,12 +899,12 @@ ModelImporter:
       position: {x: -0.023908269, y: 0.12872562, z: 0.026642201}
       rotation: {x: -0.049114484, y: -0.006668867, z: 0.13438368, w: 0.989689}
       scale: {x: 1.0000001, y: 1.0000001, z: 1.0000001}
-    armTwist: 0
-    foreArmTwist: 0
-    upperLegTwist: 0
-    legTwist: 0
-    armStretch: 0
-    legStretch: 0
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
     feetSpacing: 0
     globalScale: 0
     rootMotionBoneName: 
