@@ -1412,3 +1412,21 @@
 .sf-saves__card:enabled:focus { background-color: #F4EEDF; }
 .sf-photo__chip:enabled:active, .sf-photo__chip:enabled:hover:active { background-color: rgba(242, 234, 219, 0.2); }
 .sf-photo__chip--on:enabled:active, .sf-photo__chip--on:enabled:hover, .sf-photo__chip--on:enabled:hover:active { background-color: rgba(196, 138, 44, 0.34); }
+
+/* ---- a container open (LootScreen.cs): barter's pages, a narrow middle ---- */
+.sf-loot__middle { width: 22%; min-width: 220px; margin: 0 14px; align-items: stretch; justify-content: center; }
+.sf-loot__title {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: var(--fs-30);
+    color: var(--plate-text);
+    white-space: normal;
+    -unity-text-align: middle-center;
+    margin-bottom: 18px;
+}
+.sf-loot__all { margin-bottom: 10px; background-color: var(--ochre); color: var(--ink); }
+.sf-loot__all:enabled:hover { background-color: #D59B3A; }
+.sf-loot__all:enabled:focus { background-color: var(--ochre); }
+.sf-loot__middle .sf-button--quiet { color: var(--plate-text); border-color: var(--plate-dim); }
+.sf-loot__weight { margin-top: 18px; font-size: var(--fs-20); color: var(--plate-dim); -unity-text-align: middle-center; white-space: normal; }
+.sf-loot__weight--over { color: #E07A5F; }
+.sf-loot__empty { -unity-font-definition: url("../Fonts/Literata-Italic.asset"); font-size: var(--fs-22); color: var(--ink-soft); margin: 12px; }

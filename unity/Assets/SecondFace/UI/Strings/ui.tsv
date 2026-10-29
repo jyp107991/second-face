@@ -98,6 +98,15 @@ verb.use	Use
 verb.steal	Steal
 verb.give	Give
 verb.attack	Attack
+verb.open	Open
+loot.take_all	Take all
+loot.done	Done
+loot.yours	Your pack · {0}
+loot.empty	Nothing left in it.
+loot.weight	Carrying {0} of {1} kg
+loot.locked	Locked. Your Locks, {0}%, are not enough: it needs {1}.
+loot.picked	Lock picked. +{0} XP
+loot.cannot_reach	You cannot get to it from here.
 people.someone	Someone from the town
 compass.n	N
 compass.e	E

@@ -111,6 +111,7 @@ namespace SecondFace.Game
             Walkabout = gameObject.AddComponent<Walkabout>();
             Walkabout.Stage = Stage;
             Walkabout.SetDown += SetDown;
+            Walkabout.Said += line => _hud?.Note(line);
             overlay.World = () => Tour != null ? Tour.WorldLine() : Walkabout.Line();
             overlay.Report = () => _lastTour;
             overlay.ButtonLabel = () => Tour != null ? "walk" : "measure (tour)";

@@ -738,6 +738,22 @@ a gallery screen in the game, the cast's expressions (with its next rebuild), fa
    weather, footsteps by surface from the terrain layer under the foot, UI sounds. Music per §9 decision 3.
 7. Adaptive Performance and the quality tiers (§6.K); the profiler pass with the owner's devices.
 
+*As built (P6.1 part 1, 2026-10-29).* The town's things. Core `World.Containers` (port of game.ts): a locked container
+takes a Locks check (`Checks.SkillCheck` on `security`, two minutes a try; picked, it stays open by the flag
+`unlocked:<place>/<id>` and is worth 10 + half the lock in XP), the first opening fills it from the map's
+`ContainerDef` (items and Tolls) into `GameState.Containers["<place>/<id>"]`, where what is left stays; `Move` and
+`MoveAll` carry stacks and Tolls between inventories (`ContainersTests`, 2). `Walkabout.Equip` makes the place's
+`container` and `talk` markers interactables (open; look) from the map's `Containers` and `Talk`; `Use` walks the
+walker over (up to 30 s; out of `Reach`, 2.5 m, it says so) and faces it, then `OpenContainer` (the lock's result said
+on the HUD through `Walkabout.Said` → `Hud.Note`) opens `UI.LootScreen` (barter's pages: the container's drawn cells
+beside the pack's, a tap moves a whole stack either way, take all, the weight carried) and `LookAt` begins the prop's
+conversation (no faces, its name as the speaker). A new radial verb and icon, open. Tests: `UiTests.LootTakesAndPuts`,
+`BootTests.TheTownsThingsOpenAndSpeak` (the water crate walked to and emptied and empty the next time; the militia
+locker's lock holds against a new character, said on the HUD, two minutes gone; the pumps' conversation). Evidence
+`docs/evidence/unity/p6/ui_loot.jpg`, `ui_loot_taken.jpg`. Not yet (part 2): things dropped on the ground and the
+search of the fallen (with combat), a share of a stack (a long press), owners and witnesses for what is taken (with
+stealth, P6.3), beds, benches and the camp at a fire (the camp screen), doors that lock.
+
 ### P7 — Chapter One on the phone
 The opening through the stranger's map, end to end on device, at the standard: every scene, conversation, check
 and reward of Chapter One works from the content, saved and resumed. A playtest script (PlayMode, fixture-driven)
@@ -1963,6 +1979,8 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   scroll the column and keep its children from shrinking.
 - **`new Button(Method)` with a method that returns a value** picks the `Background` overload and fails; pass a lambda.
 - **A test that adds a virtual pad** needs `Unity.InputSystem` in the test assembly's references.
+- **Wait for a walk as long as it takes** (P6.1): a container across the town is more than ten seconds' walk, and a use
+  that waited ten seconds opened it from afar. Wait up to 30 s, then check the reach before using anything.
 - **The local compile checks do not build the PlayMode tests**: a test's missing `using UnityEngine.UIElements` (for
   `Q<T>`) only shows in Unity's own compile; read `playmode.log` for `error CS` when a run writes no results.
 

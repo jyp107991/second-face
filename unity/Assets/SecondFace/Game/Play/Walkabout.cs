@@ -3,8 +3,11 @@ using System.Linq;
 using SecondFace.Core.Content;
 using SecondFace.Core.Dialogue;
 using SecondFace.Core.Inventory;
+using SecondFace.Core;
 using SecondFace.Core.Quest;
+using SecondFace.Core.Scene;
 using SecondFace.Core.State;
+using SecondFace.Core.World;
 using SecondFace.Game.People;
 using SecondFace.Game.UI;
 using SecondFace.Game.World;
@@ -38,6 +41,12 @@ namespace SecondFace.Game.Play
         /// <summary>The walker stands on a built NavMesh and the camera follows them.</summary>
         public bool Ready => Walker != null && Nav != null && Nav.Ready && Walker.Agent.isOnNavMesh;
         public int Townsfolk { get; private set; }
+        /// <summary>The town's things that can be used: containers and talking props (P6.1).</summary>
+        public int Things { get; private set; }
+        /// <summary>A line for the HUD (a lock that held, a lock picked).</summary>
+        public event System.Action<string> Said;
+        /// <summary>The container open now (null when none).</summary>
+        public LootScreen Loot { get; private set; }
         /// <summary>The game being played (<see cref="Begin"/>; a new game at Shale until one is begun): the conversations,
         /// the notebook, the pack and the saves run on it.</summary>
         public GameState Game { get; private set; } = States.NewGame("shale", 0, 0);
@@ -208,7 +217,97 @@ namespace SecondFace.Game.Play
                 it.Chosen += (who, verb) => StartCoroutine(Respond(who, verb));
                 n++;
             }
+            Things = Equip(place, "shale");
             return n;
+        }
+
+        /// <summary>The place's things (P6.1): its containers open (a lock first), its talking props say their piece.</summary>
+        private int Equip(GameObject place, string placeId)
+        {
+            var n = 0;
+            foreach (var m in place.GetComponentsInChildren<PlaceMarker>())
+            {
+                if (m.Kind != "container" && m.Kind != "talk") continue;
+                var map = Registry.Maps.TryGetValue(string.IsNullOrEmpty(m.Map) ? placeId : m.Map, out var d) ? d : null;
+                string title;
+                string verb;
+                if (m.Kind == "talk")
+                {
+                    if (map?.Talk == null || !map.Talk.TryGetValue(m.Id, out var t)) continue;
+                    title = t.Name; verb = "look";
+                }
+                else
+                {
+                    if (map?.Containers == null || !map.Containers.TryGetValue(m.Id, out var c)) continue;
+                    title = c.Name; verb = "open";
+                }
+                var it = Interactable.Add(m.gameObject, m.Id, title, 0.5f, 1.2f, verb);
+                it.Chosen += (thing, v) => StartCoroutine(Use(thing, v, placeId, map));
+                n++;
+            }
+            return n;
+        }
+
+        /// <summary>How near a thing must be to be used (metres, on the ground).</summary>
+        public const float Reach = 2.5f;
+
+        /// <summary>A thing used: the walker goes over and faces it (out of reach, it says so), then a container opens (or its lock holds) and a
+        /// talking prop's conversation begins.</summary>
+        public IEnumerator Use(Interactable thing, string verb, string placeId, MapDef map)
+        {
+            if (Walker == null || thing == null) yield break;
+            var at = thing.transform.position;
+            var away = Walker.transform.position - at;
+            away.y = 0f;
+            var spot = at + (away.sqrMagnitude > 0.01f ? away.normalized : thing.transform.forward) * 1.0f;
+            if (Walker.GoTo(spot))
+            {
+                var t0 = Time.time;
+                while (Walker != null && Walker.Goal != null && Time.time - t0 < 30f) yield return null;
+            }
+            if (Walker == null || thing == null) yield break;
+            var off = at - Walker.transform.position;
+            off.y = 0f;
+            if (off.magnitude > Reach) { Said?.Invoke(Strings.Get("loot.cannot_reach")); yield break; }
+            var face = at - Walker.transform.position;
+            face.y = 0f;
+            if (face.sqrMagnitude > 0.01f) Walker.transform.rotation = Quaternion.LookRotation(face, Vector3.up);
+            if (verb == "open") OpenContainer(thing, placeId, map);
+            else if (verb == "look") LookAt(thing, map);
+        }
+
+        /// <summary>Opens a container on the loot screen (a lock is tried first: two minutes a try, the result said);
+        /// null when it held or there is no such container.</summary>
+        public LootScreen OpenContainer(Interactable thing, string placeId, MapDef map)
+        {
+            var ui = UIService.Instance;
+            if (ui == null || thing == null || map?.Containers == null || !map.Containers.TryGetValue(thing.Id, out var def)) return null;
+            var rng = new Rng(Game.RngState != 0 ? Game.RngState : 1u);
+            var o = Containers.Open(Game, placeId, thing.Id, def, rng);
+            Game.RngState = rng.State;
+            if (!o.Open)
+            {
+                var check = o.Check.GetValueOrDefault();
+                Said?.Invoke(Strings.Get("loot.locked", check.Value, check.Dc));
+                return null;
+            }
+            if (o.Picked) Said?.Invoke(Strings.Get("loot.picked", o.Xp));
+            Loot = ui.Open(new LootScreen(new LootModel { Name = o.Name, Container = o.Inv, Pc = Game.Pc }));
+            return Loot;
+        }
+
+        /// <summary>A talking prop's conversation (a sign, the pumps, a bed): false when it has none to give.</summary>
+        public bool LookAt(Interactable thing, MapDef map)
+        {
+            var ui = UIService.Instance;
+            if (ui == null || thing == null || map?.Talk == null || !map.Talk.TryGetValue(thing.Id, out var talk)
+                || !Registry.Dialogues.TryGetValue(talk.Dialogue, out var def)) return false;
+            var runner = new DialogueRunner(def, Game, Quests);
+            if (runner.Ended) return false;
+            var panel = new DialoguePanel(runner, _ => talk.Name);
+            panel.Presented += _ => Quests.Update();
+            Conversation = ui.Open(panel);
+            return true;
         }
 
         /// <summary>The town is known, and the places its roads lead to (the walkabout's map starts with them).</summary>

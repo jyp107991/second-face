@@ -653,9 +653,14 @@ bumpers turn the view a quarter, A acts on who is near, Y the pack, X the map, t
 pauses; the keyboard too (WASD, Q/E, R/F, Space, I, M, Tab, P, F5/F9). Seen in `docs/evidence/unity/p5/ui_photo.jpg`,
 `ui_photo_upright.jpg`, and two pictures photo mode kept, `photo_face.jpg` (evening light, half a smile) and
 `photo_upright.jpg`.
-**Next action:** P6 step 1: interactions and loot (BUILD_PLAN P6; P5 is done but for 3k, the combat bar and log, which
-comes with P6.4's combat, and the local map, pins and travel, with P6.5). Blender and the MakeHuman assets are in the
-session scratchpad, `blender/` and `mhc/`; if a fresh session lacks them, see `tools/unity/people/`. **`play-people` is released**
+**The town's things (P6.1 part 1, 2026-10-29):** the crates, shelves and lockers of Shale can be opened: tap one, you
+walk over, and its things lie beside your pack; tap to take or put back, or take all. A locked one needs your Locks
+(each try takes two minutes; picked, it stays open and earns XP; if it holds, the HUD says how far short you are).
+What you leave stays there. The pumps, the signposts and the back room's bed say their piece when you look at them.
+Seen in `docs/evidence/unity/p6/ui_loot.jpg` and `ui_loot_taken.jpg`.
+**Next action:** P6.1 part 2: things on the ground and dropping them, beds and benches, the camp at a fire (the camp
+screen), then P6 step 2 (schedules across the world). Blender and the MakeHuman assets are in the session
+scratchpad, `blender/` and `mhc/`; if a fresh session lacks them, see `tools/unity/people/`. **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).
 Step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until Mid ≥ 30 fps).

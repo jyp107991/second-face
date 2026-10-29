@@ -1072,6 +1072,39 @@ namespace SecondFace.Tests
             Object.Destroy(host);
         }
 
+        /// <summary>P6.1: a container opened: its things beside the pack, a tap takes a stack and puts one back, take all
+        /// empties it (the Tolls too), the weight carried under the pack.</summary>
+        [UnityTest, Timeout(120000)]
+        public IEnumerator LootTakesAndPuts()
+        {
+            var g = Kitted();
+            var crate = new Inventory();
+            foreach (var (id, n) in new[] { ("c_jerky", 2), ("c_water", 2), ("a_9mm", 8), ("j_cloth", 3) }) Inv.AddItem(crate, Inv.MakeItem(id, n));
+            crate.Tolls = 12;
+            _ui = Offscreen(1600, 720, out _rt);
+            _ui.SafeAreaOverride = new Rect(0.05f, 0.04f, 0.95f, 0.96f);
+            var loot = _ui.Open(new LootScreen(new LootModel { Name = "Caravan Crate", Container = crate, Pc = g.Pc }));
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(loot.Theirs.Count, Is.EqualTo(4));
+            var carried = g.Pc.Inventory.Items.Count;
+            Assert.That(loot.Yours.Count, Is.EqualTo(carried));
+            Assert.That(loot.Root.Q<Label>("weight").text, Does.Contain("kg"));
+            Assert.That(Save(_rt, "ui_loot"), Is.GreaterThan(0.95f));
+            Press(loot.Theirs[0]);
+            Assert.That(Inv.CountItem(g.Pc.Inventory, "c_jerky"), Is.EqualTo(2), "a tap takes the stack");
+            Assert.That(loot.Theirs.Count, Is.EqualTo(3));
+            Press(loot.Yours[loot.Yours.Count - 1]);
+            Assert.That(crate.Items.Count, Is.EqualTo(4), "and a tap in the pack puts one back");
+            Press(loot.Root.Q<Button>("take-all"));
+            Assert.That(crate.Items, Is.Empty, "take all");
+            Assert.That(g.Pc.Inventory.Tolls, Is.EqualTo(37 + 12), "the Tolls too");
+            Assert.That(loot.Root.Q<Button>("take-all").enabledSelf, Is.False, "nothing left to take");
+            for (var i = 0; i < 2; i++) yield return null;
+            Assert.That(Save(_rt, "ui_loot_taken"), Is.GreaterThan(0.95f));
+            Press(loot.Root.Q<Button>("done"));
+            Assert.That(loot.IsOpen, Is.False);
+        }
+
         private static Label Text(string cls, string text)
         {
             var l = new Label(text);

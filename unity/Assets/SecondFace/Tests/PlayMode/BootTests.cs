@@ -174,7 +174,7 @@ namespace SecondFace.Tests
             yield return null;
             // a tap on one of the townsfolk in view opens the radial over them (P5.3c); a verb closes it
             var view = Camera.main;
-            var tappable = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None);
+            var tappable = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None).Where(i => i.Verbs.Contains("talk")).ToArray();   // the townsfolk
             Assert.That(tappable.Length, Is.GreaterThanOrEqualTo(walk.Townsfolk), "every one of the townsfolk can be tapped");
             (Interactable i, Vector2 p) InView() => tappable
                 .Select(i => (i, p: (Vector2)view.WorldToScreenPoint(i.transform.position + Vector3.up * 1.2f)))
@@ -427,6 +427,52 @@ namespace SecondFace.Tests
             yield return null;
             Assert.That(boot.Session.Read("quick"), Is.Not.Null, "quicksaved");
             Assert.That(boot.Hud.NoteText, Is.EqualTo(Strings.Get("hud.saved")));
+        }
+
+        /// <summary>P6.1: the town's things: a crate is walked to and opened, its water taken and gone the next time; a
+        /// locker's lock holds against a new character (said on the HUD, two minutes gone); a talking prop's
+        /// conversation opens.</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator TheTownsThingsOpenAndSpeak()
+        {
+            Bootstrap boot = null;
+            yield return Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            Assert.That(walk.Things, Is.GreaterThan(3), "the town's containers and talking props can be used");
+            var things = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None);
+            var map = SecondFace.Core.Content.Registry.Maps["shale"];
+            var crate = things.FirstOrDefault(t => t.Id == "water_crate");
+            Assert.That(crate, Is.Not.Null, "the water crate");
+            Assert.That(crate.Verbs, Is.EqualTo(new[] { "open" }));
+            var t0 = Time.realtimeSinceStartup;
+            walk.StartCoroutine(walk.Use(crate, "open", "shale", map));
+            while (Time.realtimeSinceStartup - t0 < 30f && (walk.Loot == null || !walk.Loot.IsOpen)) yield return null;
+            Assert.That(walk.Loot != null && walk.Loot.IsOpen, Is.True, "walked over and opened");
+            Assert.That(Vector3.Distance(walk.Walker.transform.position, crate.transform.position), Is.LessThan(2.5f), "beside it");
+            walk.Loot.TakeAll();
+            Assert.That(SecondFace.Core.Inventory.Inv.CountItem(walk.Game.Pc.Inventory, "c_dirtywater"), Is.EqualTo(3), "its water taken");
+            walk.Loot.Close();
+            var again = walk.OpenContainer(crate, "shale", map);
+            Assert.That(again.Theirs, Is.Empty, "gone the next time");
+            again.Close();
+            // a lock beyond a new character
+            var locker = things.FirstOrDefault(t => t.Id == "militia_locker");
+            Assert.That(locker, Is.Not.Null, "the militia locker");
+            string said = null;
+            walk.Said += line => said = line;
+            var m0 = walk.Game.Minutes;
+            Assert.That(walk.OpenContainer(locker, "shale", map), Is.Null, "the lock holds");
+            Assert.That(said, Does.StartWith("Locked"));
+            Assert.That(walk.Game.Minutes, Is.EqualTo(m0 + 2), "two minutes at it");
+            yield return null;
+            Assert.That(boot.Hud.NoteText, Is.EqualTo(said), "said on the HUD");
+            // a talking prop
+            var pump = things.FirstOrDefault(t => t.Id == "pump_a");
+            Assert.That(pump, Is.Not.Null, "the pumps");
+            Assert.That(walk.LookAt(pump, map), Is.True, "its conversation opens");
+            for (var i = 0; i < 2; i++) yield return null;
+            Assert.That(walk.Conversation.IsOpen, Is.True);
+            boot.UI.CloseAll();
         }
 
         [UnityTest, Timeout(900000)]

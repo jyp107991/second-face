@@ -1519,6 +1519,42 @@ MonoBehaviour:
     m_Key: hud.no_quicksave
     m_Metadata:
       m_Items: []
+  - m_Id: 63062392815616
+    m_Key: verb.open
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63062426370048
+    m_Key: loot.take_all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63062426370049
+    m_Key: loot.done
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63062426370050
+    m_Key: loot.yours
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63062426370051
+    m_Key: loot.empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63062426370052
+    m_Key: loot.weight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63062426370053
+    m_Key: loot.locked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63062426370054
+    m_Key: loot.picked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65160966684672
+    m_Key: loot.cannot_reach
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

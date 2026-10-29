@@ -1528,6 +1528,42 @@ MonoBehaviour:
     m_Localized: No quicksave yet.
     m_Metadata:
       m_Items: []
+  - m_Id: 63062392815616
+    m_Localized: Open
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63062426370048
+    m_Localized: Take all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63062426370049
+    m_Localized: Done
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63062426370050
+    m_Localized: "Your pack \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63062426370051
+    m_Localized: Nothing left in it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63062426370052
+    m_Localized: Carrying {0} of {1} kg
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63062426370053
+    m_Localized: 'Locked. Your Locks, {0}%, are not enough: it needs {1}.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63062426370054
+    m_Localized: Lock picked. +{0} XP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 65160966684672
+    m_Localized: You cannot get to it from here.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
