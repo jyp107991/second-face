@@ -57,3 +57,4 @@ MonoBehaviour:
     Material: {fileID: 2100000, guid: 5f2cfa1238ff0bbc784151a642fe726a, type: 2}
   - Key: trail
     Material: {fileID: 2100000, guid: 886a9e692c7d6157abf35c102ce73cde, type: 2}
+  Water: {fileID: 2100000, guid: 129dc4340e9d192628cee70dcb843148, type: 2}

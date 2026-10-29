@@ -28,6 +28,8 @@ namespace SecondFace.Game.World
         public WorldScatter Scatter { get; private set; }
         /// <summary>The small scatter over the loaded world (thread-safe to call from workers).</summary>
         public WorldDetails Details { get; private set; }
+        /// <summary>The sea and the rivers per chunk (step 22).</summary>
+        public WorldWater Water { get; private set; }
         public bool Ready => Control != null && Layout != null;
         public string Error { get; private set; }
 
@@ -50,8 +52,9 @@ namespace SecondFace.Game.World
             Layout = WorldLayout.Read(places, roads);
             Gen = new TerrainGen(Control, Layout, Style);
             Roads = new RoadStrips(Layout);
-            Scatter = new WorldScatter(Control, Layout);
-            Details = new WorldDetails(Control, Layout);
+            Water = new WorldWater(Gen, Layout);
+            Scatter = new WorldScatter(Control, Layout) { Water = Water };
+            Details = new WorldDetails(Control, Layout) { Water = Water };
             Debug.Log($"WorldService: control {Control.Width}x{Control.Height} at {Control.MetresPerTexel} m, {Layout.Places.Count} places, {Layout.Roads.Count} roads");
         }
 

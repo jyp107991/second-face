@@ -30,6 +30,8 @@ namespace SecondFace.Game.World
         public Entry[] Layers = Array.Empty<Entry>();
         /// <summary>The road surfaces' materials by Core RoadStrips' surface key (asphalt, gravel, mud, trail).</summary>
         public SurfaceEntry[] Surfaces = Array.Empty<SurfaceEntry>();
+        /// <summary>The sea's and the rivers' sheet (SecondFace/Water, step 22).</summary>
+        public Material Water;
 
         /// <summary>The material for a road surface, or null.</summary>
         public Material Surface(string key)

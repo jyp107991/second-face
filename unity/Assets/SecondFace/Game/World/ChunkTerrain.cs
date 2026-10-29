@@ -23,11 +23,13 @@ namespace SecondFace.Game.World
             public System.Collections.Generic.List<PropPlacement> Props;
             /// <summary>The chunk's small scatter per detail layer (null without details).</summary>
             public WorldDetails.Result Details;
+            /// <summary>The chunk's sea and river water (null where it has none, or without a water builder).</summary>
+            public WorldWater.Sheet Water;
             public long Milliseconds;
         }
 
         /// <summary>Heights, the dominant biome, the paint and the road strips of a chunk, on a worker thread.</summary>
-        public static Task<Prepared> Prepare(TerrainGen gen, ControlMap control, string[] biomes, RoadStrips roads, WorldScatter scatter, System.Func<string, int> variants, int cx, int cz, WorldDetails details = null) => Task.Run(() =>
+        public static Task<Prepared> Prepare(TerrainGen gen, ControlMap control, string[] biomes, RoadStrips roads, WorldScatter scatter, System.Func<string, int> variants, int cx, int cz, WorldDetails details = null, WorldWater water = null) => Task.Run(() =>
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             var heights = gen.Heights(cx, cz);
@@ -35,12 +37,13 @@ namespace SecondFace.Game.World
             var strips = roads?.Build(cx, cz, heights);
             var props = scatter != null && variants != null ? scatter.Props(cx, cz, heights, biomes, variants) : null;
             var small = details?.Build(cx, cz, heights, biomes);
-            return new Prepared { Cx = cx, Cz = cz, Biome = TerrainPaint.DominantBiome(control, cx, cz), Heights = heights, Paint = paint, Roads = strips, Props = props, Details = small, Milliseconds = sw.ElapsedMilliseconds };
+            var sheet = water?.Build(cx, cz, heights);
+            return new Prepared { Cx = cx, Cz = cz, Biome = TerrainPaint.DominantBiome(control, cx, cz), Heights = heights, Paint = paint, Roads = strips, Props = props, Details = small, Water = sheet, Milliseconds = sw.ElapsedMilliseconds };
         });
 
         /// <summary>A chunk of the loaded world; with a catalog its props are placed too.</summary>
         public static Task<Prepared> Prepare(WorldService world, int cx, int cz, ScatterCatalog catalog = null) =>
-            Prepare(world.Gen, world.Control, world.Layout.Biomes, world.Roads, world.Scatter, catalog != null ? catalog.Variants : null, cx, cz, world.Details);
+            Prepare(world.Gen, world.Control, world.Layout.Biomes, world.Roads, world.Scatter, catalog != null ? catalog.Variants : null, cx, cz, world.Details, world.Water);
 
         /// <summary>A pooled, empty chunk terrain: created once, re-filled by <see cref="Apply"/> as chunks come and go.</summary>
         public static Terrain Create(Transform parent, BiomeLayerSet layers, DetailSet details = null)
@@ -112,6 +115,8 @@ namespace SecondFace.Game.World
             else Debug.LogWarning($"ChunkTerrain: no layer for one of {string.Join(", ", keys)} (Second Face/Build terrain layers)");
             ApplyRoads(t, p, layers);
             Mark("roads");
+            ApplyWater(t, p, layers);
+            Mark("water");
             ApplyDetails(t, p);
             Mark("details");
             t.name = $"chunk_{p.Cx}_{p.Cz}";
@@ -173,6 +178,57 @@ namespace SecondFace.Game.World
             }
         }
 
+        // reused across ApplyWater calls (main thread)
+        private static readonly System.Collections.Generic.List<Vector2> _wd = new(), _wf = new();
+        private static readonly System.Collections.Generic.List<Vector3> _wn = new();
+
+        /// <summary>The chunk's water sheet as a child mesh of its terrain (pooled with it; off where the chunk has none):
+        /// uv0.x the depth under each vertex, uv1 the flow.</summary>
+        private static void ApplyWater(Terrain t, Prepared p, BiomeLayerSet layers)
+        {
+            var root = t.transform;
+            var go = root.Find(WaterName)?.gameObject;
+            if (p.Water == null || layers == null || layers.Water == null)
+            {
+                if (go != null) go.GetComponent<MeshRenderer>().enabled = false;
+                return;
+            }
+            if (go == null)
+            {
+                go = new GameObject(WaterName);
+                go.transform.SetParent(root, false);
+                go.transform.localPosition = new Vector3(0, -ControlMap.Floor, 0);   // the sheet's heights are metres above sea level
+                go.AddComponent<MeshFilter>().sharedMesh = new Mesh { name = WaterName };
+                var r = go.AddComponent<MeshRenderer>();
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                r.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
+                r.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.BlendProbesAndSkybox;
+            }
+            var s = p.Water;
+            var mesh = go.GetComponent<MeshFilter>().sharedMesh;
+            _rv.Clear(); _wd.Clear(); _wf.Clear(); _wn.Clear();
+            for (var v = 0; v < s.VertexCount; v++)
+            {
+                _rv.Add(new Vector3(s.Positions[v * 3], s.Positions[v * 3 + 1], s.Positions[v * 3 + 2]));
+                _wd.Add(new Vector2(s.Depths[v], 0));
+                _wf.Add(new Vector2(s.Flows[v * 2], s.Flows[v * 2 + 1]));
+                _wn.Add(Vector3.up);
+            }
+            mesh.Clear();
+            mesh.indexFormat = s.VertexCount > 65000 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16;
+            mesh.SetVertices(_rv);
+            mesh.SetNormals(_wn);
+            mesh.SetUVs(0, _wd);
+            mesh.SetUVs(1, _wf);
+            mesh.SetTriangles(s.Triangles, 0);
+            mesh.RecalculateBounds();
+            var mr = go.GetComponent<MeshRenderer>();
+            mr.sharedMaterial = layers.Water;
+            mr.enabled = true;
+        }
+
+        public const string WaterName = "water";
+
         /// <summary>Cuts the terrain away over world rectangles (a tunnel's mouth): hole texels are 2 m, a texel is cut
         /// when its centre lies in a rectangle. With none, the terrain is whole again.</summary>
         public static void SetHoles(Terrain t, float x0, float z0, System.Collections.Generic.IReadOnlyList<Rect> rects)
@@ -229,7 +285,7 @@ namespace SecondFace.Game.World
         {
             t.drawHeightmap = false;
             t.drawTreesAndFoliage = false;
-            foreach (Transform child in t.transform) if (child.name.StartsWith("road_")) child.GetComponent<MeshRenderer>().enabled = false;
+            foreach (Transform child in t.transform) if (child.name.StartsWith("road_") || child.name == WaterName) child.GetComponent<MeshRenderer>().enabled = false;
         }
 
         /// <summary>A new terrain for one prepared chunk (tests and tools; the streamer pools instead).</summary>

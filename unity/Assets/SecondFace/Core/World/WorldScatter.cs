@@ -38,6 +38,8 @@ namespace SecondFace.Core.World
         private readonly ControlMap _control;
         private readonly WorldLayout _layout;
         private readonly int _seed;
+        /// <summary>The sea and the rivers (step 22): nothing stands in their water. Without it, in the sea.</summary>
+        public WorldWater Water { get; set; }
 
         public WorldScatter(ControlMap control, WorldLayout layout, int seed = 1909) { _control = control; _layout = layout; _seed = seed; }
 
@@ -157,6 +159,8 @@ namespace SecondFace.Core.World
         public List<PropPlacement> Props(int cx, int cz, float[] heights, string[] biomes, Func<string, int> variants)
         {
             var (x0, z0) = WorldGrid.Origin(cx, cz);
+            var water = Water?.Near(x0, z0, WorldGrid.Chunk);
+            if (water != null && !water.Rivers) water = null;
             var list = new List<PropPlacement>();
             // the biomes present, from the control map at 64 m (with a margin, so a border chunk tries its neighbour's rules)
             var present = new SortedSet<int>();
@@ -188,7 +192,7 @@ namespace SecondFace.Core.World
                         var inPlace = false;
                         foreach (var p in places) if (!p.Offshore && p.Contains(x, z, 10f)) { inPlace = true; break; }
                         if (inPlace) continue;
-                        if (g.Altitude < _layout.SeaLevel + 0.5f) continue;
+                        if (g.Altitude < (water?.Level(x, z).level ?? _layout.SeaLevel) + 0.5f) continue;
                         var tooClose = false;
                         foreach (var (px, pz) in taken) if ((px - x) * (px - x) + (pz - z) * (pz - z) < rule.Spacing * rule.Spacing) { tooClose = true; break; }
                         if (tooClose) continue;

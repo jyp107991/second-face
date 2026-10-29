@@ -47,6 +47,7 @@ BLEND = 1600.0           # metres over which neighbouring regions' land blends a
 TEETH_RISE = (260.0, 5000.0)   # the Teeth climb this much more over this distance in from their edge
 ROAD_WIDTH = {'road': 8.0, 'track': 5.0, 'rough': 3.0, 'glass': 5.0, 'marsh': 4.0, 'mountain': 5.0}
 FOOTPRINT = {'major': 160.0, 'minor': 96.0, 'landmark': 48.0}   # metres, for locations without a built map yet
+VALLEY = (220.0, 760.0)  # the river's valley: its relief and styles fade out from this far to this near its centre
 OFFSHORE = {'rigs'}      # places that stand in the sea on their own legs: no ground is stamped for them
 TILE_M = 2.0             # a web map tile becomes this many metres of place (provisional until PlaceBuilder, P3.5)
 
@@ -204,7 +205,8 @@ def build():
     # --- the control map ---------------------------------------------------------------------------------------
     centres = [p['centre'] for p in places.values()]
     rp = rivers[0]['points']
-    rbox = (min(p[0] for p in rp) - 200, min(p[1] for p in rp) - 200, max(p[0] for p in rp) + 200, max(p[1] for p in rp) + 200)
+    m = VALLEY[1]
+    rbox = (min(p[0] for p in rp) - m, min(p[1] for p in rp) - m, max(p[0] for p in rp) + m, max(p[1] for p in rp) + m)
     data = bytearray()
     raw = []      # (r, g, b, a) floats per texel, rows south → north
     styles = []   # (dunes, ridges, mesas, craters) per texel
@@ -244,6 +246,10 @@ def build():
                 rough *= 1 - t
                 style = [v * (1 - t) for v in style]
             dr = poly_dist(x, z, rivers[0]['points']) if rbox[0] <= x <= rbox[2] and rbox[1] <= z <= rbox[3] else 1e9
+            if dr < VALLEY[1]:   # a river runs on a floor of its own: the hills and dunes round it fade out, so its level
+                v = smooth((VALLEY[1] - dr) / (VALLEY[1] - VALLEY[0]))   # can fall steadily to the sea (step 22)
+                rough *= 1 - v
+                style = [s * (1 - v) for s in style]
             if dr < 200:
                 water = max(water, smooth((rivers[0]['width'] / 2 + 32 - dr) / 64))
                 h = min(h, h - 6 * smooth((200 - dr) / 140))

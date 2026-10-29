@@ -96,7 +96,19 @@ namespace SecondFace.Core.World
         public TerrainGen(ControlMap control, WorldLayout layout, StyleMap style = null, int worldSeed = 1909)
         {
             _control = control; _layout = layout; _style = style ?? StyleMap.None; _seed = worldSeed;
+            var rivers = new List<RiverProfile>();
+            foreach (var w in layout.Rivers) if (w.Points.Count >= 2) rivers.Add(new RiverProfile(w, Natural, layout.SeaLevel));
+            Rivers = rivers;
         }
+
+        /// <summary>The rivers' courses and levels (step 22): their beds are cut under these levels.</summary>
+        public IReadOnlyList<RiverProfile> Rivers { get; }
+
+        /// <summary>A river's bed: a bowl this deep under its level at the centre, its edge this far under the water.</summary>
+        public const float RiverDepth = 2.5f, RiverEdge = 0.3f;
+        /// <summary>The control map's water lowers the ground by the sea; by a river (whose bed is cut to its level) it
+        /// fades in from this far beyond the half-width to this much farther.</summary>
+        public const float RiverCalm = 40f, RiverCalmRamp = 60f;
 
         /// <summary>The natural ground at a world point (before roads, water, talus and places).</summary>
         public float Natural(float x, float z)
@@ -122,27 +134,38 @@ namespace SecondFace.Core.World
         private readonly struct Seg
         {
             public readonly float Ax, Az, Bx, Bz, Half;
-            public readonly bool River;
-            public Seg(float ax, float az, float bx, float bz, float half, bool river) { Ax = ax; Az = az; Bx = bx; Bz = bz; Half = half; River = river; }
+            /// <summary>A river's segment: the river, and the arc length where the segment starts.</summary>
+            public readonly RiverProfile River;
+            public readonly float S0;
+            public Seg(float ax, float az, float bx, float bz, float half, RiverProfile river = null, float s0 = 0)
+            {
+                Ax = ax; Az = az; Bx = bx; Bz = bz; Half = half; River = river; S0 = s0;
+            }
         }
 
         /// <summary>The segments of roads, rail and rivers that reach into a square (with their reach added).</summary>
         private List<Seg> SegmentsNear(float x0, float z0, float size)
         {
             var list = new List<Seg>();
-            void Add(WayInfo w, bool river)
+            bool Reaches(float ax, float az, float bx, float bz, float reach) =>
+                !(Math.Max(ax, bx) + reach < x0 || Math.Min(ax, bx) - reach > x0 + size || Math.Max(az, bz) + reach < z0 || Math.Min(az, bz) - reach > z0 + size);
+            void Add(WayInfo w)
             {
-                var reach = w.Width / 2 + (river ? WaterRamp : RoadShoulder);
+                var reach = w.Width / 2 + RoadShoulder;
                 for (var i = 0; i + 1 < w.Points.Count; i++)
                 {
                     float ax = w.Points[i][0], az = w.Points[i][1], bx = w.Points[i + 1][0], bz = w.Points[i + 1][1];
-                    if (Math.Max(ax, bx) + reach < x0 || Math.Min(ax, bx) - reach > x0 + size || Math.Max(az, bz) + reach < z0 || Math.Min(az, bz) - reach > z0 + size) continue;
-                    list.Add(new Seg(ax, az, bx, bz, w.Width / 2, river));
+                    if (Reaches(ax, az, bx, bz, reach)) list.Add(new Seg(ax, az, bx, bz, w.Width / 2));
                 }
             }
-            foreach (var w in _layout.Roads) Add(w, false);
-            foreach (var w in _layout.Rails) Add(w, false);
-            foreach (var w in _layout.Rivers) Add(w, true);
+            foreach (var w in _layout.Roads) Add(w);
+            foreach (var w in _layout.Rails) Add(w);
+            foreach (var r in Rivers)
+                for (var i = 0; i < r.SegmentCount; i++)
+                {
+                    var (ax, az, bx, bz) = r.SegmentEnds(i);
+                    if (Reaches(ax, az, bx, bz, r.Half * RiverProfile.MaxWidening + RiverCalm + RiverCalmRamp)) list.Add(new Seg(ax, az, bx, bz, r.Half, r, r.SegmentStart(i)));
+                }
             return list;
         }
 
@@ -150,16 +173,18 @@ namespace SecondFace.Core.World
         private float Shaped(float x, float z, List<Seg> segs)
         {
             var h = Natural(x, z);
+            // the nearest river segment (one shape across a bend, not one per segment)
+            float riverD = float.MaxValue, riverS = 0;
+            RiverProfile river = null;
             foreach (var s in segs)
             {
                 float vx = s.Bx - s.Ax, vz = s.Bz - s.Az, l2 = vx * vx + vz * vz;
                 var t = l2 == 0 ? 0 : Math.Clamp(((x - s.Ax) * vx + (z - s.Az) * vz) / l2, 0f, 1f);
                 float px = s.Ax + t * vx - x, pz = s.Az + t * vz - z;
                 var d = (float)Math.Sqrt(px * px + pz * pz);
-                if (s.River)
+                if (s.River != null)
                 {
-                    var w = 1f - Smooth((d - s.Half) / WaterRamp);
-                    if (w > 0) h -= 3f * w;
+                    if (d < riverD) { riverD = d; river = s.River; riverS = s.S0 + t * (float)Math.Sqrt(l2); }
                 }
                 else
                 {
@@ -174,9 +199,37 @@ namespace SecondFace.Core.World
                     }
                 }
             }
+            var calm = 1f;
+            if (river != null)
+            {
+                var half = river.HalfAt(riverS);
+                var level = river.LevelAt(riverS);
+                if (riverD < half + WaterRamp) h = Channel(h, riverD, half, level, level > _layout.SeaLevel + 0.5f);
+                calm = Smooth((riverD - half - RiverCalm) / RiverCalmRamp);
+            }
             var water = _control.Sample(x, z).Water;
-            if (water > 0) h -= 3f * Smooth(water * 2f);
+            if (water > 0) h -= 3f * Smooth(water * 2f) * calm;
             return h;
+        }
+
+        /// <summary>
+        /// The ground across a river (step 22): under its width a bowl <see cref="RiverDepth"/> m under the level at the
+        /// centre and <see cref="RiverEdge"/> m under it at the edge (never raised there: the sea bed at a mouth stays), then
+        /// over <see cref="WaterRamp"/> m a bank from the water's edge up to the ground, so the water meets a bank a little
+        /// beyond the width. Ground under the water's edge is raised to it only to <paramref name="contain"/> a river above
+        /// the sea (at the sea's level the sea floods round it anyway, and a raised bank showed as a ridge under the water).
+        /// </summary>
+        private static float Channel(float h, float d, float half, float level, bool contain)
+        {
+            var edge = level - RiverEdge;
+            var depth = Math.Min(RiverDepth, half * 0.08f);   // a stream at the source is shallow
+            if (d < half)
+            {
+                var u = d / half;
+                return Math.Min(h, edge - depth * (1 - u * u));
+            }
+            if (h < edge && !contain) return h;
+            return edge + (h - edge) * Smooth((d - half) / WaterRamp);
         }
 
         /// <summary>The chunk's heights in metres above sea level.</summary>

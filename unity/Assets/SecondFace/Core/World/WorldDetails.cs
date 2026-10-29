@@ -120,12 +120,17 @@ namespace SecondFace.Core.World
             _control = control; _layout = layout; _seed = seed; _ground = new WorldScatter(control, layout, seed);
         }
 
+        /// <summary>The sea and the rivers (step 22): nothing grows under their water. Without it, under the sea.</summary>
+        public WorldWater Water { get; set; }
+
         public Result Build(int cx, int cz, float[] heights, string[] biomes)
         {
             const int n = Resolution;
             var (x0, z0) = WorldGrid.Origin(cx, cz);
             const float cell = WorldGrid.Chunk / n;
             var blocked = Blocked(cx, cz, x0, z0, cell);
+            var water = Water?.Near(x0, z0, WorldGrid.Chunk);
+            if (water != null && !water.Rivers) water = null;
             var counts = new byte[Keys.Length][];
             var result = new Result();
             for (var j = 0; j < n; j++)
@@ -136,7 +141,7 @@ namespace SecondFace.Core.World
                     var b = _control.Sample(x, z).Biome;
                     if (b < 0 || b >= biomes.Length || !Rules.TryGetValue(biomes[b], out var rules)) continue;
                     var g = _ground.Sample(heights, x0, z0, x, z);
-                    if (g.Altitude < _layout.SeaLevel + 0.3f) continue;
+                    if (g.Altitude < (water?.Level(x, z).level ?? _layout.SeaLevel) + 0.3f) continue;
                     foreach (var r in rules)
                     {
                         var e = r.Expected(g);
@@ -153,14 +158,15 @@ namespace SecondFace.Core.World
             return result;
         }
 
-        /// <summary>Cells on a road, rail or river (half its width + 1 m) or in a place (+ 4 m).</summary>
+        /// <summary>Cells on a road or rail (half its width + 1 m), in a river (+ 4 m: its bank climbs out of the water over
+        /// the first metres) or in a place (+ 4 m).</summary>
         private bool[] Blocked(int cx, int cz, float x0, float z0, float cell)
         {
             const int n = Resolution;
             var blocked = new bool[n * n];
-            void Way(WayInfo w)
+            void Way(WayInfo w, float margin = 1f)
             {
-                var half = w.Width / 2 + 1f;
+                var half = w.Width / 2 + margin;
                 for (var s = 0; s + 1 < w.Points.Count; s++)
                 {
                     float ax = w.Points[s][0], az = w.Points[s][1], bx = w.Points[s + 1][0], bz = w.Points[s + 1][1];
@@ -180,7 +186,7 @@ namespace SecondFace.Core.World
             }
             foreach (var w in _layout.Roads) Way(w);
             foreach (var w in _layout.Rails) Way(w);
-            foreach (var w in _layout.Rivers) Way(w);
+            foreach (var w in _layout.Rivers) Way(w, 4f);
             foreach (var p in _layout.PlacesIn(cx, cz, 8f))
             {
                 if (p.Offshore) continue;
