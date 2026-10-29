@@ -424,6 +424,27 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    towards the hem by the garment's height above the feet, in noise patches) and `_Wear` (sun-faded: paler, greyer),
    from the content's garment looks (`Dresser`; the player's own clothes are `LivedIn`, 0.2). Every pass (forward,
    shadow, depth, depth-normals) inflates and cuts the same way, so the shadow and the depth prepass match.
+11. **Built (P4.11, 2026-10-29; owner: "dimorphism is more pronounced in real life, as is shape diversity, even if ...
+   people tend to skew slimmer"; evidence `people_bodies.jpg`, `people_cast_lineup.jpg`, `people_wardrobe.jpg`).** Measured
+   first: `tools/unity/people/measure/measure.py` applies a spec's targets to the MakeHuman base mesh in plain Python
+   (the build's own `macro_targets` and `body_mods`) and reads stature and the deltoid, waist and hip breadths (torso told
+   from arms by each vertex's dominant bone in the default skin weights). Against adult anthropometry (ANSUR II means)
+   MakeHuman's men were close (shoulders over hips 1.46 against 1.44) but its women stood on a near-male frame (1.36
+   against 1.17, hips no wider than a man's), and the cast's heights ran from 150 to 197 cm. `mh_build.py` now gives
+   every body a sex baseline, `DIMORPH` (women: the torso narrowed and V-shaped inward, hips wider, a waist, a slighter
+   neck, upper arm and wrist, smaller hands and feet, a fuller seat and thigh; men: a V, narrower hips, a thicker neck
+   and wrists, larger hands and feet), scaled per person by `dimorph`; a `shape` from MakeHuman's body-shape targets
+   (women: column, rectangle, pear, hourglass, full, wedge, apple, diamond; men: column, rectangle, pear, wedge,
+   trapezoid, apple) with a weight; `legs` and `torso` lengths (-1..1); the person's own `mods` on top (`body_mods`).
+   `measure/design.py` gave each of the 32 a shape, build and stature by role (labourers broad, scavengers gaunt, a
+   stocky miner, a barrel-chested fisher, a lanky salt worker; the comfortable heavier: the Tollmen clerk, a trader, one
+   of the Tenured; most lean, weight 0.05 to 0.45) and solved the height macro to the stature: men 174.6 ± 7.5 cm,
+   women 162.4 ± 6.1 cm (real 175 ± 7, 162 ± 6.5); shoulders over hips men 1.57, women 1.18; women's hips some 9 %
+   wider than men's (real ~4 %; a little past it, as asked). The player bases take the baseline and no shape (the
+   sculptor's neutral start; the body sliders move from there): 164 and 177 cm. `measure/silhouettes.py` draws every body
+   front-on, before and after, at one scale (`people_bodies.jpg`). Rebuilt: the cast, the player bases, their wardrobes,
+   the bound prefabs. Not yet: stooped age and posture, the bake-off people (test-only), a third body slider for shape in
+   creation.
 
 ### P5 — Camera, touch and UI
 1. `CameraService` with Cinemachine 3: an orbit rig around the party leader (§6.F), tactical camera in combat,

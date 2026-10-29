@@ -674,6 +674,12 @@ things lie beside your pack; empty it and it is gone. Seen in `docs/evidence/uni
 with your feet on the floor; walk anywhere and you get up first. When you make camp out of doors you sit on the ground,
 facing the fire if there is one, and get up when you break camp. Seen in `docs/evidence/unity/p6/walkabout_sit.jpg` and
 `walkabout_camp.jpg`.
+**Bodies (P4.11, 2026-10-29, the owner's note on dimorphism and shape):** women and men now differ as they do in
+life (women narrower in the shoulder with wider hips and a waist, slighter necks, wrists and hands; men broader in the
+shoulder, narrower in the hip), and the cast spreads over real builds and heights (gaunt, wiry, lanky, stocky, broad,
+pear, hourglass, a few heavier among the comfortable; men 162 to 189 cm, women 151 to 176), most of them lean. Your own
+body starts from the same baseline. Seen in `docs/evidence/unity/p4/people_bodies.jpg` (every body front-on, before and
+after), `people_cast_lineup.jpg` and `people_wardrobe.jpg`.
 **Next action:** P6 step 2: schedules across the world (`Npc/Schedule` → a people service: actors as data when far,
 as agents within 120 m, as full actors within 60 m; the townsfolk keep their hours, sit at their seats, sleep in their
 beds). P6.1 left for later: doors that lock (with the door models), a share of a stack by a long press, the search of the

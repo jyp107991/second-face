@@ -107,6 +107,11 @@ The owner wants to play unspoiled.
   unkempt beards; dull, dusty, sun-bleached or greying. Never a styled modern cut, never gel or product, never a
   bob, bangs or salon shape. Faces and every other aesthetic choice are weathered and functional too; only the
   megacity's rich are clean, and that is their costume. Implementation: `docs/BUILD_PLAN_V1.md` §6.C.
+- **Bodies: real dimorphism and real shape diversity** (owner, 2026-10-29, binding): sexual dimorphism as pronounced as
+  in real life (stature, shoulders against hips, waist, neck, hands and feet, jaw and brow), and the real spread of
+  shapes (lean, wiry, stocky, broad, pear, barrel, long- or short-legged, tall and short), skewing slimmer than today's
+  real world because life here is hard: heavy bodies are rare and belong to the comfortable (merchants, the megacity's
+  rich). Implementation: `docs/BUILD_PLAN_V1.md` §6.B (people).
 - Visual style (superseded where the upgrade directive says otherwise): orthographic iso camera, rotatable/zoomable.
 
 ## 3. Engineering conventions

@@ -126,10 +126,55 @@ def macro_targets(p):
                                 out.append((f'breast/female-{an}-{mn}muscle-{wn}weight-{cn}cup-{fn}firmness', base * cw * fw))
     return out
 
+# ----------------------------------------------------------------------------------------------------------------
+# The body's sex, shape and proportions (owner, 2026-10-29: dimorphism as pronounced as in real life, the real spread of
+# shapes, skewing slim). Calibrated by the scratch measure (stature, deltoid, waist and hip breadth from the base mesh
+# and targets, torso told from arms by the skin weights) against adult anthropometry (ANSUR II means): MakeHuman's
+# men are close (shoulders over hips 1.46 against 1.44) but its women stand on a near-male frame (1.36 against 1.17,
+# hips no wider than a man's). The baseline below brings women to about 1.17 with hips some 8 % wider than a man's (real: 4 %; a
+# little past it, as the owner asked for it pronounced), men to about 1.5, and the softer marks of sex (neck, upper arm, wrist, hand, foot, seat and thigh) with them. `dimorph`
+# scales it per person (1 by default). A person's `shape` (the elvs body shapes: a name and a weight) and `legs` /
+# `torso` (longer or shorter, -1..1) spread the builds; their own `mods` add on top.
+# ----------------------------------------------------------------------------------------------------------------
+DIMORPH = {
+    'female': {'torso-vshape|decr|incr': -0.45, 'torso-scale-horiz|decr|incr': -0.2, 'hip-scale-horiz|decr|incr': 0.28,
+               'measure-hips-circ|decr|incr': 0.1, 'measure-neck-circ|decr|incr': -0.35, 'measure-upperarm-circ|decr|incr': -0.2,
+               'measure-wrist-circ|decr|incr': -0.35, 'sym:hand-scale|decr|incr': -0.2, 'sym:foot-scale|decr|incr': -0.15,
+               'buttocks-volume|decr|incr': 0.25, 'measure-thigh-circ|decr|incr': 0.15},
+    'male': {'torso-vshape|decr|incr': 0.2, 'hip-scale-horiz|decr|incr': -0.15, 'measure-neck-circ|decr|incr': 0.3,
+             'measure-upperarm-circ|decr|incr': 0.15, 'measure-wrist-circ|decr|incr': 0.25, 'sym:hand-scale|decr|incr': 0.15,
+             'sym:foot-scale|decr|incr': 0.1},
+}
+SHAPES = {
+    'female': {'column': 'lean-column', 'rectangle': 'rectangle', 'pear': 'triangle', 'hourglass': 'neat-hourglass',
+               'full': 'full-hourglass', 'wedge': 'invert-triangle', 'apple': 'apple', 'diamond': 'diamond'},
+    'male': {'column': 'lean-column', 'rectangle': 'rectangle', 'pear': 'triangle', 'wedge': 'invert-triangle',
+             'trapezoid': 'trapezoid', 'apple': 'apple'},
+}
+
+def body_mods(p):
+    """Every modifier the body takes: the sex baseline (scaled by `dimorph`), the shape, the legs' and torso's length,
+    then the person's own `mods` added on top."""
+    sex = 'male' if p['gender'] >= 0.5 else 'female'
+    k = p.get('dimorph', 1.0)
+    out = {m: v * k for m, v in DIMORPH[sex].items()}
+    shape = p.get('shape')
+    if shape:
+        name, w = (shape, 0.7) if isinstance(shape, str) else (shape[0], shape[1])
+        out[f"bodyshapes-elvs-{'man' if sex == 'male' else 'fem'}-{SHAPES[sex][name]}"] = w
+    if p.get('legs'):
+        out['measure-upperleg-height|decr|incr'] = out.get('measure-upperleg-height|decr|incr', 0) + p['legs'] * 0.35
+        out['measure-lowerleg-height|decr|incr'] = out.get('measure-lowerleg-height|decr|incr', 0) + p['legs'] * 0.35
+    if p.get('torso'):
+        out['measure-napetowaist-dist|decr|incr'] = out.get('measure-napetowaist-dist|decr|incr', 0) + p['torso'] * 0.35
+    for m, v in (p.get('mods') or {}).items(): out[m] = out.get(m, 0) + v
+    return out
+
 FOLDER = {'nose': 'nose', 'mouth': 'mouth', 'chin': 'chin', 'cheek': 'cheek', 'eye': 'eyes', 'eyebrows': 'eyebrows', 'forehead': 'forehead',
           'head': 'head', 'neck': 'neck', 'ear': 'ears', 'torso': 'torso', 'hip': 'hip', 'buttocks': 'buttocks', 'stomach': 'stomach',
           'upperarm': 'armslegs', 'lowerarm': 'armslegs', 'upperleg': 'armslegs', 'lowerleg': 'armslegs', 'upperlegs': 'armslegs',
-          'lowerlegs': 'armslegs', 'hand': 'armslegs', 'foot': 'armslegs', 'pelvis': 'pelvis', 'breast': 'breast'}
+          'lowerlegs': 'armslegs', 'hand': 'armslegs', 'foot': 'armslegs', 'pelvis': 'pelvis', 'breast': 'breast',
+          'measure': 'measure', 'bodyshapes': 'bodyshapes'}
 
 def modifier_targets(mod, v):
     """Modifier id ('nose-scale-horiz|decr|incr', 'sym:cheek-bones|decr|incr', 'head-oval') + value -> [(target rel path, weight)]."""
@@ -822,7 +867,7 @@ def build_person(spec):
         if not t: continue
         for i, dx, dy, dz in t: v[i][0] += dx * w; v[i][1] += dy * w; v[i][2] += dz * w
         applied += 1
-    for mod, val in spec.get('mods', {}).items():
+    for mod, val in body_mods(spec).items():
         for rel, w in modifier_targets(mod, val):
             t = target(rel)
             if not t: continue
