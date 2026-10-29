@@ -22,6 +22,8 @@ namespace SecondFace.Game.World
         /// <summary>The player's bodies (the player bases with their wardrobes, P4.2-P4.3): the pack's figure.</summary>
         public GameObject PlayerM, PlayerF;
         public RuntimeAnimatorController Locomotion;
+        /// <summary>The cloth of the bundles things dropped on the ground lie in (P6.1; the library's burlap).</summary>
+        public Material Sack;
 
         public bool Complete => Layers != null && Catalog != null && Details != null && Places != null && Sky != null;
     }

@@ -1775,6 +1775,22 @@ MonoBehaviour:
     m_Key: camp.rest_evening
     m_Metadata:
       m_Items: []
+  - m_Id: 73183474860032
+    m_Key: ground.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73183525191680
+    m_Key: pack.drop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73183525191681
+    m_Key: pack.drop_all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73183525191682
+    m_Key: pack.dropped
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

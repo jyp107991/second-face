@@ -407,6 +407,7 @@ namespace SecondFace.Game
             {
                 Game = Walkabout.Game, Body = SecondFace.Game.People.PlayerBody.Base(look, assets.PlayerF, assets.PlayerM),
                 Idle = assets.Locomotion, Fit = look.Body, Look = look,
+                Drop = Walkabout.Walker != null ? (i, n) => Walkabout.Drop(i, n) != null : null,
             }));
         }
 

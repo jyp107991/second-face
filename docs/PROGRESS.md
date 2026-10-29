@@ -666,8 +666,13 @@ there is game (they keep, for days, where you set them); cook what is raw, mend 
 a town write a letter to someone you have met. Each thing says what came of it, and the hour on the HUD and the sky move
 on with it. Seen in `docs/evidence/unity/p6/ui_camp.jpg`, `ui_camp_done.jpg`, `ui_camp_write.jpg`,
 `walkabout_camp.jpg` and the HUD with its camp button, `p5/ui_hud.jpg`.
-**Next action:** P6.1 part 2b: things on the ground and dropping them (a share of a stack by a long press), beds and
-benches to sit and sleep, doors that lock; then P6 step 2 (schedules across the world). Blender and the MakeHuman assets are in the session
+**Things on the ground (P6.1 part 2b, 2026-10-29):** in the pack, choose something and drop it (one, or the whole
+stack; keys and papers stay with you): it lies at your feet in a tied sack, where it stays (saved with the game), and
+another thing dropped near it joins the same sack. Tap the sack to take from it: you walk over, stoop for it, and its
+things lie beside your pack; empty it and it is gone. Seen in `docs/evidence/unity/p6/walkabout_ground.jpg`.
+**Next action:** P6.1 part 2c: sitting (on the town's chairs and stools, and on the ground at the fire while camped;
+the sit motions are in the controller), beds that are yours to sleep in, doors that lock; then P6 step 2 (schedules
+across the world). Blender and the MakeHuman assets are in the session
 scratchpad, `blender/` and `mhc/`; if a fresh session lacks them, see `tools/unity/people/`. **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).

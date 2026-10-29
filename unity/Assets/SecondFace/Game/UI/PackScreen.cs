@@ -23,6 +23,9 @@ namespace SecondFace.Game.UI
         public string Fit = "m";
         /// <summary>The player's look (their own clothes' dyes, the face, hair, build and height); null: the base as built.</summary>
         public PlayerLook Look;
+        /// <summary>Drops some of a carried stack on the ground where the player stands (index, how many); null: nothing
+        /// can be dropped here (no world under the pack).</summary>
+        public Func<int, int, bool> Drop;
     }
 
     /// <summary>
@@ -385,6 +388,24 @@ namespace SecondFace.Game.UI
             }
             else if (d.Armor != null) Act("pack.equip", () => Equip(index));
             else if (d.Consumable != null) Act("pack.use", () => Use(index));
+            // keys and papers are kept: they weigh nothing and the story wants them
+            if (_m.Drop != null && d.Category != "key" && d.Category != "note")
+            {
+                Act("pack.drop", () => DropItem(index, 1), quiet: true);
+                if (it.Qty > 1) Act("pack.drop_all", () => DropItem(index, it.Qty), quiet: true);
+            }
+        }
+
+        /// <summary>Leaves some of a carried stack on the ground where the player stands.</summary>
+        public bool DropItem(int index, int count)
+        {
+            if (_m.Drop == null || index < 0 || index >= Inventory.Items.Count) return false;
+            var def = Inventory.Items[index].Def;
+            if (!_m.Drop(index, count)) return false;
+            Say(Strings.Get("pack.dropped", Items.Def(def).Name));
+            Selected = Inventory.Items.FindIndex(x => x.Def == def);   // the rest of the stack, if any is left
+            AfterChange(null);
+            return true;
         }
 
         private void Act(string key, Action act, bool quiet = false)

@@ -532,6 +532,58 @@ namespace SecondFace.Tests
             boot.UI.CloseAll();
         }
 
+        /// <summary>P6.1: what is dropped lies on the ground in a bundle at the walker's feet; tapped, the walker goes over,
+        /// stoops, and its things lie beside the pack; emptied, the bundle goes; a pile is kept with the game.</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator ThingsDroppedLieOnTheGround()
+        {
+            Bootstrap boot = null;
+            yield return Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            var g = walk.Game;
+            var inv = g.Pc.Inventory;
+            var water = SecondFace.Core.Inventory.Inv.CountItem(inv, "c_water");
+            Assert.That(water, Is.GreaterThan(0), "the kit's water");
+            var pile = walk.Drop(inv.Items.FindIndex(i => i.Def == "c_water"), 1);
+            Assert.That(pile, Is.Not.Null, "dropped");
+            Assert.That(walk.Piles.Count, Is.EqualTo(1), "its bundle");
+            var bundle = walk.Piles.Of(pile.Key);
+            Assert.That(bundle, Is.Not.Null);
+            var flat = bundle.transform.position - walk.Walker.transform.position;
+            flat.y = 0f;
+            Assert.That(flat.magnitude, Is.LessThan(1f), "at the walker's feet");
+            Assert.That(Mathf.Abs(bundle.transform.position.y - walk.Walker.transform.position.y), Is.LessThan(0.5f), "on the ground");
+            // walk a little off and look back at it (closer, for the evidence), then take it back
+            var away = walk.Walker.transform.position + walk.Walker.transform.right * 3f;
+            walk.Walker.GoTo(away);
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 15f && walk.Walker.Goal != null) yield return null;
+            var look = bundle.transform.position - walk.Walker.transform.position;
+            walk.Rig.View(Mathf.Atan2(look.x, look.z) * Mathf.Rad2Deg + 25f, 36f, 5f);
+            for (var i = 0; i < 30; i++) yield return null;
+            yield return ScreenshotTests.Capture("walkabout_ground", 1920, 1080);
+            var thing = bundle.GetComponent<Interactable>();
+            Assert.That(thing.Verbs, Is.EqualTo(new[] { "take" }));
+            walk.StartCoroutine(walk.Use(thing, "take", null, null));
+            var stooped = false;
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 30f && (walk.Loot == null || !walk.Loot.IsOpen))
+            {
+                if (walk.Walker.Animator.GetCurrentAnimatorStateInfo(0).IsName("pickup")) stooped = true;
+                yield return null;
+            }
+            Assert.That(walk.Loot != null && walk.Loot.IsOpen, Is.True, "walked over and opened");
+            Assert.That(stooped, Is.True, "stooped for it");
+            Assert.That(walk.Loot.Root.Q<Label>("container").text, Is.EqualTo("On the ground"));
+            walk.Loot.TakeAll();
+            Assert.That(SecondFace.Core.Inventory.Inv.CountItem(inv, "c_water"), Is.EqualTo(water), "the water back");
+            walk.Loot.Close();
+            yield return null;
+            Assert.That(walk.Piles.Count, Is.EqualTo(0), "the emptied bundle goes");
+            Assert.That(g.Containers.ContainsKey(pile.Key), Is.False, "and its pile");
+            boot.UI.CloseAll();
+        }
+
         [UnityTest, Timeout(900000)]
         public IEnumerator TheOverlaysButtonRunsTheMeasuringTour()
         {

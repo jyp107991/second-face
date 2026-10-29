@@ -13,7 +13,10 @@ namespace SecondFace.EditorTools
     /// the base layer runs the IK pass (<see cref="SecondFace.Game.People.FootPlant"/>). "Gesture" layer: an upper-body
     /// mask (People/UpperBody.mask) over states played by name (talk, talk_b, argue, drink, wave, stretch, yawn, yawn_b),
     /// each going back to the empty "none" at its end; the layer weighs 0 at rest (<see cref="SecondFace.Game.People.Ambient"/>
-    /// raises it while a gesture plays). Committed at <see cref="ControllerPath"/>; built when missing or
+    /// raises it while a gesture plays). Whole-body states on the base layer, played by name (P6.1): "pickup" (the
+    /// captured stoop, from <see cref="PickupFrom"/> s in, at <see cref="PickupSpeed"/>, back to the locomotion as the
+    /// body straightens) and the sits, "sit", "sit_stool", "sit_ground", which hold until the walker stands (played
+    /// back to "Locomotion" by name). Committed at <see cref="ControllerPath"/>; built when missing or
     /// older than <see cref="Version"/>, in place (its GUID stays: the world assets refer to it).
     /// </summary>
     public static class LocomotionBuild
@@ -21,7 +24,11 @@ namespace SecondFace.EditorTools
         public const string ControllerPath = "Assets/SecondFace/People/Locomotion.controller";
         public const string MaskPath = "Assets/SecondFace/People/UpperBody.mask";
         /// <summary>Bump when the layout changes; the controller carries it as the parameter "v&lt;Version&gt;".</summary>
-        public const int Version = 5;
+        public const int Version = 6;
+        /// <summary>The pickup clip (CMU 26_09, 6 s) stands still for its first 0.9 s, is lowest at 2.3 s and upright
+        /// again by 3.7 s: it is played from 0.7 s in, 1.4 times as fast, and leaves for the locomotion at 62 %.</summary>
+        public const float PickupFrom = 0.7f, PickupSpeed = 1.4f, PickupExit = 0.62f;
+        public static readonly string[] Sits = { "sit", "sit_stool", "sit_ground" };
         public const string GestureLayer = "Gesture";
         private static readonly string[] Moving = { "walk_slow", "walk", "walk_brisk", "jog", "run" };
         private static readonly string[] Idles = { "idle", "idle_b", "idle_c", "idle_d" };
@@ -72,6 +79,28 @@ namespace SecondFace.EditorTools
                 if (clip != null) tree.AddChild(clip, Speed(name));
             }
             ctl.layers[0].stateMachine.defaultState = state;
+            // whole-body states played by name: the pickup goes back to walking as the body straightens; a sit holds
+            var baseSm = ctl.layers[0].stateMachine;
+            var pickupClip = Clip("pickup");
+            if (pickupClip != null)
+            {
+                var pickup = baseSm.AddState("pickup");
+                pickup.motion = pickupClip;
+                pickup.speed = PickupSpeed;
+                pickup.iKOnFeet = true;
+                var up = pickup.AddTransition(state);
+                up.hasExitTime = true;
+                up.exitTime = PickupExit;
+                up.duration = 0.3f;
+                up.hasFixedDuration = true;
+            }
+            foreach (var name in Sits)
+            {
+                var clip = Clip(name);
+                if (clip == null) continue;
+                var sit = baseSm.AddState(name);
+                sit.motion = clip;
+            }
             var layers = ctl.layers;
             layers[0].iKPass = true;
             ctl.layers = layers;

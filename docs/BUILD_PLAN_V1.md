@@ -782,6 +782,24 @@ sky from the HUD, the rented room's conversation makes camp). Evidence `docs/evi
 a flickering light at every fire prop, with the props' pass), a camp camera (lower and closer on the walker at the fire),
 companions at the fire (with the party, P7).
 
+*As built (P6.1 part 2b, 2026-10-29).* Things on the ground. Core `World.Ground` (port of game.ts's ground piles, in
+world metres): a pile is a container in `GameState.Containers` under `ground:<x>_<y>_<z>` (decimetres; saved with the
+game), `Drop` puts some of a carried stack in the pile within 1.5 m on the same floor or a new one, `Piles` lists those
+with something in them, `Tidy` takes the empty ones away (`GroundTests`: where it lies, joining, a floor apart, saved
+and parsed back, emptied). `Play.GroundPiles` lays a bundle where each pile lies (one procedural mesh, a lumpy sack
+gathered and tied at the neck, the library's burlap darkened as if oiled and road-dirty, since undyed sacking is the
+desert's own colour; settled by a ray on whatever is under it; turned and sized by its key), a tap's take: the
+walkabout walks over and the walker stoops (`Walker.PickUp`: the captured pickup, CMU 26_09, a new base-layer state in
+the locomotion controller, v6, played from 0.7 s in at 1.4 times; the loot screen opens as the hands reach the ground)
+and the pile opens on the loot screen ("On the ground"); emptied, the bundle goes (`LootModel.Done`). The pack drops
+(`PackModel.Drop`, `Walkabout.Drop`: at the walker's feet, a little ahead): drop one or drop all; keys and papers are
+kept; with no world under the pack (creation), nothing is offered. The controller also holds the sits (sit,
+sit_stool, sit_ground) for part 2c. Tests: `GroundTests`, `UiTests.PackDropsWhatIsCarried`,
+`BootTests.ThingsDroppedLieOnTheGround` (the kit's water dropped, its bundle at the feet and on the ground, walked back
+to, stooped for, taken; the bundle and the pile gone). Evidence `docs/evidence/unity/p6/walkabout_ground.jpg`. Not yet:
+a share of a stack by a long press (drop one or all for now), item models instead of the bundle for a single big
+thing (with the item models), the search of the fallen (with combat).
+
 ### P7 — Chapter One on the phone
 The opening through the stranger's map, end to end on device, at the standard: every scene, conversation, check
 and reward of Chapter One works from the content, saved and resumed. A playtest script (PlayMode, fixture-driven)
@@ -2013,6 +2031,12 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   after `Second Face/Build places` (`PlaceBuilder.Build`, or `editor.sh run SecondFace.EditorTools.PlaceBuilder.Build`);
   commit the rebuilt `Prefabs/places/*.prefab` with the change (their file ids churn on every build, so otherwise
   revert them).
+- **Find where a captured clip does its work before playing it** (P6.1): the pickup clip stands still for its first
+  second and is upright again long before its six seconds end; probe the hips' height over its frames in Blender
+  (`tools`-less: import the FBX, sample `Hips` every few frames) and play the part that matters (an offset in, a speed,
+  an exit time), or the walker stands about before and after.
+- **Material colours the ground shares vanish on it** (P6.1): undyed burlap on the desert gravel was invisible from the
+  game camera; darken or dye whatever lies on the ground.
 - **Time passed by a screen goes through the world's clock** (P6.1): while walking the `TimeService` leads and the game
   state's minutes are only written at a save; read the clock into the state before a rest or a hunt, set it back after,
   and re-light the sky by hand (the screen stops time, so the sky would not turn by itself).

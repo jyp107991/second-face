@@ -13,7 +13,10 @@ namespace SecondFace.Game.Play
     public sealed class Walker : MonoBehaviour
     {
         public const float WalkSpeed = 1.4f, JogSpeed = 3.2f, JogBeyond = 22f, SampleRadius = 4f;
+        /// <summary>The controller's pickup (LocomotionBuild): played from 0.7 s in at 1.4 times, lowest at the clip's 2.3 s.</summary>
+        public const float PickupFrom = 0.7f, PickupSpeed = 1.4f, PickupLowest = 2.3f;
         private static readonly int Speed = Animator.StringToHash("Speed");
+        private static readonly int Pickup = Animator.StringToHash("pickup");
 
         public NavMeshAgent Agent { get; private set; }
         public Animator Animator { get; private set; }
@@ -79,6 +82,17 @@ namespace SecondFace.Game.Play
             var dir = direction.normalized;
             Agent.velocity = dir * (amount > 0.9f ? JogSpeed : WalkSpeed * Mathf.Lerp(0.6f, 1f, Mathf.InverseLerp(0.15f, 0.9f, amount)));
             transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(dir, Vector3.up), Agent.angularSpeed * Time.deltaTime);
+        }
+
+        /// <summary>Stops and stoops to pick something up (the controller's "pickup"; it straightens and goes back to
+        /// standing by itself); the seconds until the hands are at the ground (0 without the motion).</summary>
+        public float PickUp()
+        {
+            if (Agent.isOnNavMesh) { Agent.ResetPath(); Agent.velocity = Vector3.zero; }
+            Goal = null;
+            if (Animator == null || !Animator.HasState(0, Pickup)) return 0f;
+            Animator.CrossFadeInFixedTime(Pickup, 0.2f, 0, PickupFrom);
+            return (PickupLowest - PickupFrom) / PickupSpeed;
         }
 
         /// <summary>A stick or keys are walking it.</summary>

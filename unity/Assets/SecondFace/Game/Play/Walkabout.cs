@@ -47,6 +47,8 @@ namespace SecondFace.Game.Play
         public event System.Action<string> Said;
         /// <summary>The container open now (null when none).</summary>
         public LootScreen Loot { get; private set; }
+        /// <summary>Things on the ground: the bundles in the world (P6.1).</summary>
+        public GroundPiles Piles { get; private set; }
         /// <summary>The game being played (<see cref="Begin"/>; a new game at Shale until one is begun): the conversations,
         /// the notebook, the pack and the saves run on it.</summary>
         public GameState Game { get; private set; } = States.NewGame("shale", 0, 0);
@@ -126,6 +128,7 @@ namespace SecondFace.Game.Play
             if (Input != null) Input.Walker = null;
             if (Pad != null) Pad.Walker = null;
             if (Rig != null) Rig.Leader = null;
+            if (Piles != null) Piles.Clear();
         }
 
         private bool _raised;
@@ -188,6 +191,14 @@ namespace SecondFace.Game.Play
             }
             Pad.Walker = Walker;
             if (Townsfolk == 0) Townsfolk = Populate(assets);
+            if (Piles == null)
+            {
+                Piles = gameObject.AddComponent<GroundPiles>();
+                Piles.Material = assets.Sack;
+                Piles.Chosen += (thing, verb) => StartCoroutine(Use(thing, verb, null, null));
+            }
+            Piles.Clear();
+            Piles.Sync(Game);
             SetDown?.Invoke();
         }
 
@@ -281,6 +292,14 @@ namespace SecondFace.Game.Play
             var face = at - Walker.transform.position;
             face.y = 0f;
             if (face.sqrMagnitude > 0.01f) Walker.transform.rotation = Quaternion.LookRotation(face, Vector3.up);
+            if (verb == "take")
+            {
+                // stoop to it, and open it as the hands reach the ground
+                var stoop = Walker.PickUp();
+                if (stoop > 0f) yield return new WaitForSeconds(stoop);
+                if (thing != null) OpenPile(thing);
+                yield break;
+            }
             if (verb == "open") OpenContainer(thing, placeId, map);
             else if (verb == "look") LookAt(thing, map);
             else if (verb == "camp") OpenCamp(true);
@@ -424,6 +443,31 @@ namespace SecondFace.Game.Play
             if (o.Picked) Said?.Invoke(Strings.Get("loot.picked", o.Xp));
             Loot = ui.Open(new LootScreen(new LootModel { Name = o.Name, Container = o.Inv, Pc = Game.Pc }));
             return Loot;
+        }
+
+        /// <summary>A pile on the ground on the loot screen (its bundle goes when it is emptied); null when there is none.</summary>
+        public LootScreen OpenPile(Interactable thing)
+        {
+            var ui = UIService.Instance;
+            if (ui == null || thing == null || !Game.Containers.TryGetValue(thing.Id, out var inv) || inv == null) return null;
+            Loot = ui.Open(new LootScreen(new LootModel
+            {
+                Name = Strings.Get("ground.title"), Container = inv, Pc = Game.Pc,
+                Done = () => { if (Piles != null) Piles.Sync(Game); },
+            }));
+            return Loot;
+        }
+
+        /// <summary>Drops some of a carried stack where the walker stands (into a pile near by, or a new one, its bundle
+        /// laid down); null when nothing was dropped.</summary>
+        public Pile Drop(int index, int count)
+        {
+            if (Walker == null) return null;
+            var at = Walker.transform.position + Walker.transform.forward * 0.45f;   // at the feet, a little ahead
+            at.y = Walker.transform.position.y;
+            var pile = Ground.Drop(Game, Game.Pc.Inventory, index, count, at.x, at.y, at.z);
+            if (pile != null && Piles != null) Piles.Sync(Game);
+            return pile;
         }
 
         /// <summary>A talking prop's conversation (a sign, the pumps, a bed): false when it has none to give.</summary>

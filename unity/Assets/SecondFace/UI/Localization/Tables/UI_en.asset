@@ -1786,6 +1786,22 @@ MonoBehaviour:
     m_Localized: Until evening ({0} h)
     m_Metadata:
       m_Items: []
+  - m_Id: 73183474860032
+    m_Localized: On the ground
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73183525191680
+    m_Localized: Drop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73183525191681
+    m_Localized: Drop all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 73183525191682
+    m_Localized: '{0} left on the ground.'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

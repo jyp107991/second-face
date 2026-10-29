@@ -32,3 +32,4 @@ MonoBehaviour:
   PlayerM: {fileID: 6726620675166629814, guid: d3f9370a32c9bf9c49456cb2aee4a833, type: 3}
   PlayerF: {fileID: 2539535584533208972, guid: 24ebc521b512534f6acb1415836c3c61, type: 3}
   Locomotion: {fileID: 9100000, guid: d48b81ce77cb2e95c8b00171183ffc6e, type: 2}
+  Sack: {fileID: 2100000, guid: 3a8456b370747872eb0b9f109671594a, type: 2}

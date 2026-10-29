@@ -1107,6 +1107,47 @@ namespace SecondFace.Tests
             Assert.That(loot.IsOpen, Is.False);
         }
 
+        /// <summary>P6.1: the pack drops what is carried on the ground (one, or the whole stack), says so, and keeps keys
+        /// and papers; with no world under it, nothing is offered.</summary>
+        [UnityTest]
+        public IEnumerator PackDropsWhatIsCarried()
+        {
+            var g = Kitted();
+            var inv = g.Pc.Inventory;
+            Inv.AddItem(inv, Inv.MakeItem("k_ring", 1));
+            var dropped = new List<(int, int)>();
+            _ui = Offscreen(1600, 720, out _rt);
+            _ui.SafeAreaOverride = new Rect(0.05f, 0.04f, 0.95f, 0.96f);
+            var pack = _ui.Open(new PackScreen(new PackModel
+            {
+                Game = g, Fit = "m",
+                Drop = (i, n) => { dropped.Add((i, n)); return Ground.Drop(g, inv, i, n, 10f, 0f, 10f) != null; },
+            }));
+            for (var i = 0; i < 3; i++) yield return null;
+            pack.Select(inv.Items.FindIndex(i => i.Def == "c_bandage"));
+            yield return null;
+            Assert.That(pack.Actions.Q<Button>("act-drop"), Is.Not.Null, "drop one");
+            Assert.That(pack.Actions.Q<Button>("act-drop_all"), Is.Not.Null, "and the whole stack");
+            Press(pack.Actions.Q<Button>("act-drop"));
+            Assert.That(Inv.CountItem(inv, "c_bandage"), Is.EqualTo(2));
+            Assert.That(pack.Message.text, Does.EndWith("left on the ground."));
+            Assert.That(pack.Chosen?.Def, Is.EqualTo("c_bandage"), "the rest of the stack still chosen");
+            Press(pack.Actions.Q<Button>("act-drop_all"));
+            Assert.That(Inv.CountItem(inv, "c_bandage"), Is.EqualTo(0));
+            Assert.That(Ground.Piles(g).Single().Inv.Items.Single().Qty, Is.EqualTo(3), "into one pile");
+            Assert.That(dropped.Count, Is.EqualTo(2));
+            pack.Select(inv.Items.FindIndex(i => i.Def == "k_ring"));
+            yield return null;
+            Assert.That(pack.Actions.Q<Button>("act-drop"), Is.Null, "a key is kept");
+            pack.Close();
+            var plain = _ui.Open(new PackScreen(new PackModel { Game = g, Fit = "m" }));
+            yield return null;
+            plain.Select(inv.Items.FindIndex(i => i.Def == "c_water"));
+            yield return null;
+            Assert.That(plain.Actions.Q<Button>("act-drop"), Is.Null, "no ground under it, no drop");
+            plain.Close();
+        }
+
         /// <summary>P6.1: the camp's page: rest, hunt and snares, cook, mend, write (in a town), each saying what came of it
         /// and passing the game's time; the world waits while it is open.</summary>
         [UnityTest]

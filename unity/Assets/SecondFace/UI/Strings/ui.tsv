@@ -442,3 +442,7 @@ camp.write_to	Write to
 camp.sent	Your letter to {0} goes with the next caravan.
 camp.back	Back
 camp.break	Break camp
+ground.title	On the ground
+pack.drop	Drop
+pack.drop_all	Drop all
+pack.dropped	{0} left on the ground.

@@ -13,6 +13,8 @@ namespace SecondFace.Game.UI
         public string Name;
         public Inventory Container;
         public PlayerCharacter Pc;
+        /// <summary>When it closes (the ground's piles tidy up).</summary>
+        public Action Done;
     }
 
     /// <summary>
@@ -93,6 +95,8 @@ namespace SecondFace.Game.UI
         }
 
         protected internal override void Shown() => Refresh();
+
+        protected internal override void Hidden() => _m.Done?.Invoke();
 
         /// <summary>Takes a stack from the container.</summary>
         public void Take(int index) { if (Containers.Move(_m.Container, index, Pack)) Refresh(); }
