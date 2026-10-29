@@ -8,6 +8,8 @@ unity/Assets/StreamingAssets/world/:
                 width × height × RGBA uint16 LE, rows south to north. R base height (0..65535 → 0..600 m above the
                 world floor, which lies 50 m below sea level), G roughness (0..1), B biome index × 4096, A water (0..1).
 - control.png   the same data as a 16-bit RGBA PNG (rows north to south, as images run), to look at and to edit.
+- style.bin     the relief styles on the same grid ('SFST', same header): dunes, ridges, mesas, craters (0..1 each),
+                blended across region borders so the ground's character changes without a step.
 - roads.json    roads and tracks between places, the rail line, the rivers: polylines in world metres with widths.
 - places.json   every location of the world map: footprint, elevation, entry yaw, region, the map it is built from.
 
@@ -33,6 +35,13 @@ BIOMES = ['sallow', 'glass_flats', 'rail_corridor', 'drowned_shore', 'meridian',
 LAND = {
     'sallow': (38, 0.12), 'glass_flats': (24, 0.03), 'rail_corridor': (52, 0.08), 'drowned_shore': (4, 0.04),
     'meridian': (8, 0.02), 'teeth': (190, 0.85), 'ashlands': (44, 0.25), 'northern_wet': (62, 0.3),
+}
+# Per region: how much of each relief style its ground carries (blended at borders like the height): dunes (wind-
+# stretched ridges of a few metres), ridges (mountain crests), mesas (flat-topped rises with cliff sides), craters.
+STYLE = {
+    'sallow': (0.6, 0.0, 1.0, 0.0), 'glass_flats': (0.2, 0.0, 0.0, 0.0), 'rail_corridor': (0.35, 0.0, 0.0, 0.0),
+    'drowned_shore': (0.25, 0.0, 0.0, 0.0), 'meridian': (0.0, 0.0, 0.0, 0.0), 'teeth': (0.0, 1.0, 0.0, 0.0),
+    'ashlands': (0.1, 0.15, 0.0, 1.0), 'northern_wet': (0.35, 0.25, 0.0, 0.0),
 }
 BLEND = 1600.0           # metres over which neighbouring regions' land blends at a border
 TEETH_RISE = (260.0, 5000.0)   # the Teeth climb this much more over this distance in from their edge
@@ -198,9 +207,11 @@ def build():
     rbox = (min(p[0] for p in rp) - 200, min(p[1] for p in rp) - 200, max(p[0] for p in rp) + 200, max(p[1] for p in rp) + 200)
     data = bytearray()
     raw = []      # (r, g, b, a) floats per texel, rows south → north
+    styles = []   # (dunes, ridges, mesas, craters) per texel
     for j in range(CH):
         z = j * TEXEL
         row = []
+        srow = []
         for i in range(CW):
             x = i * TEXEL
             # no wander near a place: a town stands on its own region's ground
@@ -209,6 +220,7 @@ def build():
             ux, uz = warp(x, z)
             wx, wz = x + (ux - x) * k, z + (uz - z) * k
             hsum = rsum = wsum = 0.0
+            ssum = [0.0, 0.0, 0.0, 0.0]
             for rid, r in rects.items():
                 d = dist_out(r, wx, wz)
                 if d >= BLEND: continue
@@ -219,7 +231,9 @@ def build():
                 if rid == 'teeth':
                     base += TEETH_RISE[0] * smooth(max(0.0, dist_in(r, wx, wz)) / TEETH_RISE[1])
                 hsum += w * base; rsum += w * rough; wsum += w
+                for k in range(4): ssum[k] += w * STYLE[rid][k]
             h = hsum / wsum if wsum else LAND['sallow'][0]
+            style = [v / wsum for v in ssum] if wsum else list(STYLE['sallow'])
             rough = rsum / wsum if wsum else LAND['sallow'][1]
             water = 0.0
             cxw = coast_x(z)
@@ -228,13 +242,16 @@ def build():
                 h = h * (1 - t) + (-12.0) * t
                 water = smooth((cxw - x) / 128 + 0.5)
                 rough *= 1 - t
+                style = [v * (1 - t) for v in style]
             dr = poly_dist(x, z, rivers[0]['points']) if rbox[0] <= x <= rbox[2] and rbox[1] <= z <= rbox[3] else 1e9
             if dr < 200:
                 water = max(water, smooth((rivers[0]['width'] / 2 + 32 - dr) / 64))
                 h = min(h, h - 6 * smooth((200 - dr) / 140))
             biome = BIOMES.index(region_at(rects, wx, wz))
             row.append((h, rough, biome, water))
+            srow.append(tuple(style))
         raw.append(row)
+        styles.append(srow)
     for row in raw:
         for h, rough, biome, water in row:
             r16 = int(round(max(0.0, min(1.0, (h - FLOOR) / SPAN)) * 65535))
@@ -253,7 +270,11 @@ def build():
             dx, dz = pts[1][0] - pts[0][0], pts[1][1] - pts[0][1]
             yaw = round(math.degrees(math.atan2(dx, dz)) % 360, 1)
         p['entryYaw'] = yaw
-    return data, raw, places, {'roads': roads, 'rails': rails, 'rivers': rivers}
+    style_data = bytearray()
+    for srow in styles:
+        for st in srow:
+            style_data += struct.pack('<HHHH', *(int(round(max(0.0, min(1.0, v)) * 65535)) for v in st))
+    return data, raw, places, {'roads': roads, 'rails': rails, 'rivers': rivers}, style_data
 
 
 def write_png16(path, raw):
@@ -304,10 +325,12 @@ def preview(path, raw, places, lines):
 
 def main():
     argv = sys.argv[1:]
-    data, raw, places, lines = build()
+    data, raw, places, lines, style = build()
     os.makedirs(OUT, exist_ok=True)
     with open(os.path.join(OUT, 'control.bin'), 'wb') as f:
         f.write(b'SFCM' + struct.pack('<iiii', 1, CW, CH, TEXEL) + bytes(data))
+    with open(os.path.join(OUT, 'style.bin'), 'wb') as f:
+        f.write(b'SFST' + struct.pack('<iiii', 1, CW, CH, TEXEL) + bytes(style))
     write_png16(os.path.join(OUT, 'control.png'), raw)
     with open(os.path.join(OUT, 'places.json'), 'w') as f:
         json.dump({'world': {'width': WORLD_W, 'depth': WORLD_D, 'floor': FLOOR, 'span': SPAN, 'sea': SEA, 'metresPerKm': M_PER_KM,

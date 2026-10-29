@@ -429,7 +429,12 @@ into the 24 × 16 km world (32 m to the km): a control map of base height, rough
 west, the Wet's river), 32 places with footprints and elevations, the roads, the Line and the river. Core reads it
 (`WorldGrid`, `ControlMap`, `WorldLayout`, 7 tests on the real files); the game's `WorldService` loads it from
 StreamingAssets.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 14 (runtime terrain job per chunk, §6.A.3, + the 4-chunk PlayMode test).
+**Runtime terrain (plan §10 step 14, 2026-10-29):** chunks are generated from the world data on a worker thread and
+written to Unity terrains once: ridged mountains in the Teeth, dunes and mesas in the Sallow, roads levelled along the
+ground, places on pads cut into the land; chunks meet without seams. The relief styles are a second control map
+(`style.bin`) blended across region borders. Known faults, next for step 17: the ground textures tile visibly, the
+Teeth palette reads as sand, and the palette changes at biome-changing chunk edges.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 15 (streaming policy §6.A.4, pooled terrains), then 16, 17.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

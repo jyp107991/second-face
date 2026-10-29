@@ -17,7 +17,8 @@ namespace SecondFace.Tests
             if (_gen != null) return _gen;
             var control = ControlMap.Read(File.ReadAllBytes(Find("unity/Assets/StreamingAssets/world/control.bin")));
             _layout = WorldLayout.Read(File.ReadAllText(Find("unity/Assets/StreamingAssets/world/places.json")), File.ReadAllText(Find("unity/Assets/StreamingAssets/world/roads.json")));
-            return _gen = new TerrainGen(control, _layout);
+            var style = StyleMap.Read(File.ReadAllBytes(Find("unity/Assets/StreamingAssets/world/style.bin")));
+            return _gen = new TerrainGen(control, _layout, style);
         }
 
         private static (int, int) ChunkOf(string place) { Gen(); var p = _layout.Places[place]; return WorldGrid.ChunkAt(p.Centre[0], p.Centre[1]); }
@@ -51,8 +52,31 @@ namespace SecondFace.Tests
             var h = Gen().Heights(cx, cz);
             var (x0, z0) = WorldGrid.Origin(cx, cz);
             int i = (int)Math.Round((p.Centre[0] - x0) / TerrainGen.Step), j = (int)Math.Round((p.Centre[1] - z0) / TerrainGen.Step);
-            Assert.That(h[j * n + i], Is.EqualTo(p.Elevation).Within(0.01f));
-            Assert.That(h[j * n + Math.Min(n - 1, i + 10)], Is.EqualTo(p.Elevation).Within(0.01f), "20 m in, still level");
+            var level = Gen().Pad(p).level;
+            Assert.That(h[j * n + i], Is.EqualTo(level).Within(0.01f));
+            Assert.That(h[j * n + Math.Min(n - 1, i + 10)], Is.EqualTo(level).Within(0.01f), "20 m in, still level");
+            Assert.That(level, Is.EqualTo(p.Elevation).Within(25f), "the layout's estimate is near the real pad");
+        }
+
+        [Test]
+        public void APlaceOnAMountainsideSitsInACutNotAPit()
+        {
+            const int n = TerrainGen.Resolution;
+            Gen();
+            var p = _layout.Places["mine_teeth"];
+            var (cx, cz) = WorldGrid.ChunkAt(p.Centre[0], p.Centre[1]);
+            var h = Gen().Heights(cx, cz);
+            float worst = 0, wd = 0;
+            var (x0, z0) = WorldGrid.Origin(cx, cz);
+            for (var j = 1; j < n - 1; j++)
+                for (var i = 1; i < n - 1; i++)
+                {
+                    float gx = (h[j * n + i + 1] - h[j * n + i - 1]) / (2 * TerrainGen.Step), gz = (h[(j + 1) * n + i] - h[(j - 1) * n + i]) / (2 * TerrainGen.Step);
+                    var sl = (float)Math.Sqrt(gx * gx + gz * gz);
+                    if (sl > worst) { worst = sl; wd = (float)Math.Sqrt(Math.Pow(x0 + i * TerrainGen.Step - p.Centre[0], 2) + Math.Pow(z0 + j * TerrainGen.Step - p.Centre[1], 2)); }
+                }
+            TestContext.WriteLine($"steepest {worst:0.00} at {wd:0} m from the pad's centre; pad {Gen().Pad(p)}");
+            Assert.That(worst, Is.LessThan(1.6f), "no wall steeper than ~58° round the pad");
         }
 
         [Test]
@@ -79,11 +103,64 @@ namespace SecondFace.Tests
             Assert.That(sw.ElapsedMilliseconds, Is.LessThan(3000), "a worker thread builds a chunk while the player walks 512 m");
         }
 
+        [Test]
+        public void ReliefOfTheTeethAndTheScrub()
+        {
+            const int n = TerrainGen.Resolution;
+            foreach (var (name, x, z) in new[] { ("teeth", 21000f, 11000f), ("teeth2", 20000f, 9000f), ("sallow", 16500f, 5200f) })
+            {
+                var (cx, cz) = WorldGrid.ChunkAt(x, z);
+                var h = Gen().Heights(cx, cz);
+                var slopes = new System.Collections.Generic.List<float>();
+                for (var j = 1; j < n - 1; j++)
+                    for (var i = 1; i < n - 1; i++)
+                    {
+                        float gx = (h[j * n + i + 1] - h[j * n + i - 1]) / (2 * TerrainGen.Step), gz = (h[(j + 1) * n + i] - h[(j - 1) * n + i]) / (2 * TerrainGen.Step);
+                        slopes.Add((float)Math.Sqrt(gx * gx + gz * gz));
+                    }
+                slopes.Sort();
+                float P(double q) => slopes[(int)(q * (slopes.Count - 1))];
+                TestContext.WriteLine($"{name}: relief {h.Max() - h.Min():0} m, slope p50 {P(0.5):0.00} p90 {P(0.9):0.00} p99 {P(0.99):0.00}");
+            }
+        }
+
+        [Test]
+        public void EveryBiomeHasFourLayersFromTheTextureLibrary()
+        {
+            Gen();
+            var manifest = File.ReadAllText(Find("tools/unity/assets.py"));
+            foreach (var biome in _layout.Biomes)
+            {
+                Assert.That(TerrainPaint.Palettes.ContainsKey(biome), Is.True, biome);
+                var keys = TerrainPaint.Palettes[biome];
+                Assert.That(keys.Length, Is.EqualTo(TerrainPaint.Roles), biome);
+                foreach (var k in keys) Assert.That(manifest, Does.Contain($"'{k}':"), $"{biome} paints with {k}, which assets.py does not fetch");
+            }
+        }
+
+        [Test]
+        public void SurfaceWeightsSumToOneAndSlopesTurnToRock()
+        {
+            var (tx, tz) = WorldGrid.ChunkAt(21000, 11000);
+            var heights = Gen().Heights(tx, tz);
+            var control = ControlMap.Read(File.ReadAllBytes(Find("unity/Assets/StreamingAssets/world/control.bin")));
+            var w = TerrainPaint.Weights(control, heights, tx, tz);
+            Assert.That(w.Length, Is.EqualTo(TerrainPaint.AlphaResolution * TerrainPaint.AlphaResolution * TerrainPaint.Roles));
+            float steepTotal = 0;
+            for (var k = 0; k < w.Length; k += TerrainPaint.Roles)
+            {
+                Assert.That(w[k] + w[k + 1] + w[k + 2] + w[k + 3], Is.EqualTo(1f).Within(1e-4f));
+                steepTotal += w[k + 3];
+            }
+            Assert.That(steepTotal / (w.Length / 4), Is.GreaterThan(0.05f), "the mountains show rock on their slopes");
+            Assert.That(_layout.Biomes[TerrainPaint.DominantBiome(control, tx, tz)], Is.EqualTo("teeth"));
+        }
+
         private static string Find(string repoRel)
         {
             foreach (var start in new[] { AppContext.BaseDirectory, Directory.GetCurrentDirectory() })
                 for (var dir = new DirectoryInfo(start); dir != null; dir = dir.Parent)
-                    foreach (var rel in new[] { repoRel, repoRel.Substring("unity/".Length) })
+                    foreach (var rel in new[] { repoRel, repoRel.StartsWith("unity/") ? repoRel.Substring("unity/".Length) : "../" + repoRel })
                     {
                         var p = Path.Combine(dir.FullName, rel);
                         if (File.Exists(p)) return p;

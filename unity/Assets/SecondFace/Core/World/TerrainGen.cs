@@ -71,9 +71,10 @@ namespace SecondFace.Core.World
     }
 
     /// <summary>
-    /// The ground of one 512 m chunk (BUILD_PLAN §6.A.3), deterministic from the control map, the layout and the world
-    /// seed: base height + roughness × fbm (6 octaves from 1/900 m, 120 m) + ridged (3 octaves from 1/350 m, 40 m) on
-    /// steep ground; roads flattened to their centreline height within half their width with a 12 m shoulder; water
+    /// The ground of one 512 m chunk (BUILD_PLAN §6.A.3), deterministic from the control map, the relief style map, the
+    /// layout and the world seed: base height + roughness × fbm (6 octaves from 1/900 m, 120 m) + the region's relief
+    /// styles at the scales the iso camera reads (mountain ridges of 110 + 25 m, wind-stretched dunes of 5 m, mesas
+    /// 22 m high with cliff sides, craters) + fine ripples; roads levelled across their width to the ground under their centreline (smoothed over 30 m along it) with a 12 m shoulder; water
     /// lowered by 3 m with an 8 m ramp; two talus passes (steeper than 38° gives half its excess to the lower
     /// neighbour); then each place's pad at its elevation, falling off over 24 m. Heights in metres above sea level,
     /// <see cref="Resolution"/>² samples 2 m apart, row-major from the south-west corner (index z × Resolution + x).
@@ -88,31 +89,41 @@ namespace SecondFace.Core.World
         private static readonly float TalusDrop = (float)Math.Tan(38 * Math.PI / 180) * Step;
 
         private readonly ControlMap _control;
+        private readonly StyleMap _style;
         private readonly WorldLayout _layout;
         private readonly int _seed;
-        private readonly int _teeth;
 
-        public TerrainGen(ControlMap control, WorldLayout layout, int worldSeed = 1909)
+        public TerrainGen(ControlMap control, WorldLayout layout, StyleMap style = null, int worldSeed = 1909)
         {
-            _control = control; _layout = layout; _seed = worldSeed;
-            _teeth = Array.IndexOf(layout.Biomes, "teeth");
+            _control = control; _layout = layout; _style = style ?? StyleMap.None; _seed = worldSeed;
         }
 
         /// <summary>The natural ground at a world point (before roads, water, talus and places).</summary>
         public float Natural(float x, float z)
         {
             var c = _control.Sample(x, z);
+            var s = _style.Sample(x, z);
             var h = c.Height + c.Roughness * 120f * Noise.Fbm(x / 900f, z / 900f, _seed, 6);
-            var steep = Smooth((c.Roughness - 0.4f) / 0.3f);
-            if (steep > 0) h += steep * 40f * Noise.Ridged(x / 350f, z / 350f, _seed, 3);
+            if (s.Ridges > 0.001f)
+                h += s.Ridges * (110f * Noise.Ridged(x / 600f, z / 600f, _seed + 11, 4) + 25f * Noise.Ridged(x / 130f, z / 130f, _seed + 12, 3));
+            if (s.Dunes > 0.001f)   // ridges across the prevailing wind (from the west): long in z, close in x
+                h += s.Dunes * 5f * Noise.Ridged(x / 55f, z / 140f, _seed + 13, 2);
+            if (s.Mesas > 0.001f)   // a plateau where the slow noise crosses a threshold, with cliff sides
+                h += s.Mesas * 22f * Smooth((Noise.Fbm(x / 800f, z / 800f, _seed + 14, 3) - 0.22f) / 0.035f);
+            if (s.Craters > 0.001f)
+            {
+                var k = Noise.Fbm(x / 260f, z / 260f, _seed + 15, 2);
+                if (k > 0.3f) h -= s.Craters * (k - 0.3f) * 90f;
+            }
+            h += (0.25f + c.Roughness) * 0.6f * Noise.Fbm(x / 14f, z / 14f, _seed + 16, 2);   // ripples the eye reads underfoot
             return h;
         }
 
         private readonly struct Seg
         {
-            public readonly float Ax, Az, Bx, Bz, Half, Ha, Hb;
+            public readonly float Ax, Az, Bx, Bz, Half;
             public readonly bool River;
-            public Seg(float ax, float az, float bx, float bz, float half, float ha, float hb, bool river) { Ax = ax; Az = az; Bx = bx; Bz = bz; Half = half; Ha = ha; Hb = hb; River = river; }
+            public Seg(float ax, float az, float bx, float bz, float half, bool river) { Ax = ax; Az = az; Bx = bx; Bz = bz; Half = half; River = river; }
         }
 
         /// <summary>The segments of roads, rail and rivers that reach into a square (with their reach added).</summary>
@@ -126,7 +137,7 @@ namespace SecondFace.Core.World
                 {
                     float ax = w.Points[i][0], az = w.Points[i][1], bx = w.Points[i + 1][0], bz = w.Points[i + 1][1];
                     if (Math.Max(ax, bx) + reach < x0 || Math.Min(ax, bx) - reach > x0 + size || Math.Max(az, bz) + reach < z0 || Math.Min(az, bz) - reach > z0 + size) continue;
-                    list.Add(new Seg(ax, az, bx, bz, w.Width / 2, Natural(ax, az), Natural(bx, bz), river));
+                    list.Add(new Seg(ax, az, bx, bz, w.Width / 2, river));
                 }
             }
             foreach (var w in _layout.Roads) Add(w, false);
@@ -153,7 +164,14 @@ namespace SecondFace.Core.World
                 else
                 {
                     var w = 1f - Smooth((d - s.Half) / RoadShoulder);
-                    if (w > 0) h += (s.Ha + (s.Hb - s.Ha) * t - h) * w;
+                    if (w > 0)
+                    {
+                        // the road's level follows the ground under its centreline, smoothed over 30 m along it: a straight
+                        // line between far-apart points sat tens of metres off a mountainside and cut walls into it
+                        float qx = s.Ax + t * vx, qz = s.Az + t * vz, len = (float)Math.Sqrt(l2), ux = l2 == 0 ? 0 : vx / len * 15f, uz = l2 == 0 ? 0 : vz / len * 15f;
+                        var hc = (Natural(qx, qz) + Natural(qx + ux, qz + uz) + Natural(qx - ux, qz - uz)) / 3f;
+                        h += (hc - h) * w;
+                    }
                 }
             }
             var water = _control.Sample(x, z).Water;
@@ -172,21 +190,51 @@ namespace SecondFace.Core.World
                 for (var i = 0; i < n; i++)
                     h[j * n + i] = Shaped(x0 + i * Step, z0 + j * Step, segs);
             for (var pass = 0; pass < 2; pass++) Talus(h, n);
-            foreach (var p in _layout.PlacesIn(cx, cz, PadFalloff))
+            foreach (var p in _layout.PlacesIn(cx, cz, MaxFalloff))
             {
                 if (p.Offshore) continue;
+                var (level, falloff) = Pad(p);
                 float hx = p.Size[0] / 2, hz = p.Size[1] / 2;
                 for (var j = 0; j < n; j++)
                     for (var i = 0; i < n; i++)
                     {
                         float dx = Math.Max(0, Math.Abs(x0 + i * Step - p.Centre[0]) - hx), dz = Math.Max(0, Math.Abs(z0 + j * Step - p.Centre[1]) - hz);
                         var d = (float)Math.Sqrt(dx * dx + dz * dz);
-                        if (d >= PadFalloff) continue;
-                        var w = 1f - Smooth(d / PadFalloff);
-                        h[j * n + i] += (p.Elevation - h[j * n + i]) * w;
+                        if (d >= falloff) continue;
+                        var w = 1f - Smooth(d / falloff);
+                        h[j * n + i] += (level - h[j * n + i]) * w;
                     }
             }
             return h;
+        }
+
+        /// <summary>The widest a pad's falloff gets (a place cut into a mountainside).</summary>
+        public const float MaxFalloff = 160f;
+        private readonly Dictionary<string, (float level, float falloff)> _pads = new();
+
+        /// <summary>
+        /// A place's pad: level with the mean of the natural ground over its footprint (0.3 m proud, never below the
+        /// sea), and a falloff wide enough that the ground meets it at no more than ~35° (at least 24 m): a place on a
+        /// mountainside sits in a cut, not in a pit. Deterministic and the same from every chunk.
+        /// </summary>
+        public (float level, float falloff) Pad(PlaceInfo p)
+        {
+            lock (_pads)
+                if (_pads.TryGetValue(p.Id, out var cached)) return cached;
+            float sum = 0; var k = 0;
+            for (var a = -2; a <= 2; a++)
+                for (var b = -2; b <= 2; b++) { sum += Natural(p.Centre[0] + a * p.Size[0] / 4.5f, p.Centre[1] + b * p.Size[1] / 4.5f); k++; }
+            var level = Math.Max(_layout.SeaLevel + 1f, sum / k + 0.3f);
+            float worst = 0;
+            for (var t = 0; t < 24; t++)
+            {
+                var ang = t / 24.0 * Math.PI * 2;
+                float ex = p.Centre[0] + (float)Math.Cos(ang) * (p.Size[0] / 2 + PadFalloff), ez = p.Centre[1] + (float)Math.Sin(ang) * (p.Size[1] / 2 + PadFalloff);
+                worst = Math.Max(worst, Math.Abs(Natural(ex, ez) - level));
+            }
+            var result = (level, Math.Clamp(worst * 1.45f, PadFalloff, MaxFalloff));
+            lock (_pads) _pads[p.Id] = result;
+            return result;
         }
 
         /// <summary>One talus pass over the interior: a sample steeper than 38° above a neighbour gives it half the excess.</summary>

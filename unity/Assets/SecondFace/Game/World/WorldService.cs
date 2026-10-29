@@ -18,7 +18,10 @@ namespace SecondFace.Game.World
         public int LoadRadius = 2;
 
         public ControlMap Control { get; private set; }
+        public StyleMap Style { get; private set; }
         public WorldLayout Layout { get; private set; }
+        /// <summary>The ground generator over the loaded world (thread-safe to call from workers).</summary>
+        public TerrainGen Gen { get; private set; }
         public bool Ready => Control != null && Layout != null;
         public string Error { get; private set; }
 
@@ -30,13 +33,16 @@ namespace SecondFace.Game.World
         /// <summary>Reads the three world files; on Android they live inside the APK, where only UnityWebRequest reads.</summary>
         public IEnumerator Load()
         {
-            byte[] control = null; string places = null, roads = null;
+            byte[] control = null, style = null; string places = null, roads = null;
             yield return Read("control.bin", b => control = b);
+            yield return Read("style.bin", b => style = b);
             yield return Read("places.json", b => places = System.Text.Encoding.UTF8.GetString(b));
             yield return Read("roads.json", b => roads = System.Text.Encoding.UTF8.GetString(b));
             if (Error != null) { Debug.LogError($"WorldService: {Error}"); yield break; }
             Control = ControlMap.Read(control);
+            Style = StyleMap.Read(style);
             Layout = WorldLayout.Read(places, roads);
+            Gen = new TerrainGen(Control, Layout, Style);
             Debug.Log($"WorldService: control {Control.Width}x{Control.Height} at {Control.MetresPerTexel} m, {Layout.Places.Count} places, {Layout.Roads.Count} roads");
         }
 
@@ -60,11 +66,11 @@ namespace SecondFace.Game.World
         /// <summary>The chunks the focus wants loaded, nearest first.</summary>
         public List<(int cx, int cz)> WantedChunks() => WorldGrid.Around(Focus.x, Focus.z, LoadRadius);
 
-        /// <summary>A place's centre at its ground level, in world space (for cameras, spawns and tests).</summary>
+        /// <summary>A place's centre at its pad's level, in world space (for cameras, spawns and tests).</summary>
         public Vector3 PlaceCentre(string id)
         {
             var p = Layout.Places[id];
-            return new Vector3(p.Centre[0], p.Elevation, p.Centre[1]);
+            return new Vector3(p.Centre[0], Gen.Pad(p).level, p.Centre[1]);
         }
     }
 }

@@ -509,17 +509,29 @@ shifting in v1 (it complicates saves and NavMesh); re-evaluate only if jitter is
   its own region, places do not overlap, roads start at their places). Game `WorldService` loads all three from
   StreamingAssets (UnityWebRequest inside the APK) and answers the chunks wanted around its focus.
 
-**A.3 Runtime terrain generation (Burst job per chunk, deterministic).** For a chunk: heightmap resolution 257
-(2 m texels). `h = base(x,z) + roughness(x,z) · fbm(x,z; 6 octaves, lacunarity 2.0, gain 0.5, base frequency
-1/900 m, amplitude 120 m) + ridged(x,z; 3 octaves, 1/350 m, 40 m) · steepBiomeMask − roadCut(x,z) − waterCut`.
-`roadCut` flattens to the road's centreline height within half its width with a 12 m smooth shoulder; `waterCut`
-lowers by 3 m inside the water mask with an 8 m shore ramp. Then 2 passes of talus (if slope > 38°, move 0.5 of
-the excess to the lower neighbour). Then **place stamps**: for every place whose bounds intersect the chunk,
-blend the authored place heightmap (1 m, from the place prefab's `PlaceHeight` asset) with weight 1 inside the
-bounds falling to 0 over 24 m outside. Seed = hash(cx, cz, worldSeed). Output: `TerrainData` (heights, at most 4 terrain layers
-per tile chosen from the biome, weights from slope + height + noise, detail density maps; UNITY_PRACTICES §7.1). Build ≤ 4 ms on a phone (Burst, `IJobParallelFor`
-over rows); apply to a pooled `Terrain` (pre-created, 16 in the pool). Set `Terrain.SetNeighbors` after load.
-Holes under interiors via `TerrainData.SetHoles`.
+**A.3 Runtime terrain (built 2026-10-29).** Core `TerrainGen` (pure C#, deterministic, run on a worker thread;
+`ChunkTerrain.Prepare` wraps it in a `Task`, `ChunkTerrain.Build` makes the `TerrainData` on the main thread with
+one `SetHeights` and one `SetAlphamaps`): a chunk is 257² samples, 2 m apart, in metres above sea level. Natural
+ground = base height + roughness × 120 m × fbm (6 octaves from 1/900 m) + the relief styles of `style.bin`
+(`world.py` writes it on the control grid, blended across region borders: **ridges** 110 m ridged at 1/600 m + 25 m
+at 1/130 m; **dunes** 5 m ridged, stretched across the west wind; **mesas** 22 m plateaus with cliff sides where a
+slow noise crosses a threshold; **craters**) + ripples (0.6 m × (0.25 + roughness) at 14 m). The spec's flat
+"ridged × steep mask" gave the Teeth 63 m of relief per chunk and slopes mostly under 21°, and the Sallow 9 m: hills
+and a plate, not mountains and a desert at the iso camera's scale. Roads are levelled across their width to the ground
+under their centreline, smoothed over 30 m along it, with a 12 m shoulder (levelling to a straight line between
+far-apart points cut walls into the mountains); rivers sink 3 m with an 8 m ramp; the control map's water lowers the
+ground 3 m. Two talus passes (38°) over the interior; the edge rows stay exact, so chunks meet without a seam
+(tested). Places: `TerrainGen.Pad(place)` = the mean natural ground over the footprint + 0.3 m (never below the sea),
+falloff wide enough for ≤ ~35° (24–160 m): a place on a mountainside sits in a cut, not a pit; places.json's
+elevation is only the control map's estimate. Paint: Core `TerrainPaint` — four library keys per biome in role order
+(base, patches, accent, steep: `Palettes`); a tile paints with its dominant biome's four (≤ 4 layers per tile); role
+weights from slope (steep over ~24°), noise patches, low ground and water. The layers, `TerrainLit.mat` and
+`BiomeLayers.asset` are built by `TerrainLayerLibrary` (menu) into `Assets/SecondFace/Terrain/` and committed.
+Measured: heights + paint 350–520 ms a chunk in the editor (a worker thread; the walker crosses 512 m in minutes);
+port the inner loops to Burst if the phone measurement (P3.7) or fast travel needs it. **Known faults for step 17
+(P3.2):** the layers tile visibly (sand repeats as a grid of blobs: §6.N fails), the Teeth's palette reads as sand,
+and a biome change at a chunk edge changes the palette with a seam. Holes under interiors: `TerrainData.SetHoles`
+when interiors exist (P3.5).
 
 **A.4 Streaming policy.** Load radius 2 chunks (5 × 5 = 25 loaded, 1.5 km visible), prewarm radius 3 (terrain
 only, no scatter), unload at radius 4. Order by distance to the camera's look-at point, one chunk per frame at
@@ -1195,12 +1207,14 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
 12. ~~P2 verdict and evidence (P2.11); the Unity CLI evaluated~~ (done 2026-10-29: candidate A, evidence in
     `docs/evidence/unity/p2/`, verdict in PORT.md §5; the CLI not adopted, UNITY_PRACTICES §8).
 13. ~~P3.1 `WorldService` + chunk grid + control map tool (§6.A.1–A.2)~~ (done 2026-10-29).
-14. P3.1 runtime terrain job (§6.A.3: ≤ 4 layers per tile, `SetDetailResolution(res, 16)`, heights written once)
-    + the 4-chunk PlayMode test.
+14. ~~P3.1 runtime terrain (§6.A.3) + the 4-chunk PlayMode test~~ (done 2026-10-29: worker-thread Core generation,
+    relief styles, `world_chunks_iso`, `world_chunks_wide`, `world_teeth_chunk`).
 15. P3.1 streaming policy (§6.A.4: additive loads only, Load/Release paired) + pooled terrains.
 16. The two URP tiers by graphics API (§6.Q: Vulkan with Forward+, GPU Resident Drawer, STP; GLES3 with Forward),
     selected at boot; a test asserts the asset chosen per API.
-17. P3.2 terrain layers per biome; `world_sallow`, `world_teeth`, `world_shore`.
+17. P3.2 terrain layers per biome — first fix the visible tiling (macro variation / detail noise / height blend in
+    the terrain material), the Teeth palette and the palette seam at biome-changing chunk edges (§6.A.3 known faults);
+    `world_sallow`, `world_teeth`, `world_shore`.
 18. P3.3 `TimeService`, sky, fog, weather; captures at 7:00, 13:00, 19:00, night.
 19. P3.4 resident-drawer scatter per chunk + grass; `world_scatter_dense` with the frame time.
 20. P3.5 `PlaceBuilder` from the exported layout for the first town; lights, decals, NavMesh; `place_shale_street`.

@@ -78,15 +78,23 @@ namespace SecondFace.Core.World
         /// <summary>Reads control.bin ('SFCM', version 1, width, height, metres per texel, then the texels).</summary>
         public static ControlMap Read(byte[] bytes)
         {
-            if (bytes.Length < 20 || Encoding.ASCII.GetString(bytes, 0, 4) != "SFCM") throw new InvalidDataException("control map: not an SFCM file");
+            var (w, h, m, data) = ReadGrid(bytes, "SFCM");
+            return new ControlMap(w, h, m, data);
+        }
+
+        /// <summary>A world grid file: a 4-letter magic, version 1, width, height, metres per texel (int32 LE), then
+        /// RGBA uint16 LE texels, rows south to north.</summary>
+        internal static (int w, int h, int m, ushort[] data) ReadGrid(byte[] bytes, string magic)
+        {
+            if (bytes.Length < 20 || Encoding.ASCII.GetString(bytes, 0, 4) != magic) throw new InvalidDataException($"world grid: not an {magic} file");
             var version = BitConverter.ToInt32(bytes, 4);
-            if (version != 1) throw new InvalidDataException($"control map: version {version} unknown");
+            if (version != 1) throw new InvalidDataException($"world grid: version {version} unknown");
             int w = BitConverter.ToInt32(bytes, 8), h = BitConverter.ToInt32(bytes, 12), m = BitConverter.ToInt32(bytes, 16);
             var n = w * h * 4;
-            if (bytes.Length != 20 + n * 2) throw new InvalidDataException("control map: truncated");
+            if (bytes.Length != 20 + n * 2) throw new InvalidDataException("world grid: truncated");
             var data = new ushort[n];
             Buffer.BlockCopy(bytes, 20, data, 0, n * 2);   // little-endian on every platform the game runs on
-            return new ControlMap(w, h, m, data);
+            return (w, h, m, data);
         }
 
         private float Channel(int i, int j, int c) => _data[((Math.Clamp(j, 0, Height - 1) * Width) + Math.Clamp(i, 0, Width - 1)) * 4 + c] / 65535f;
@@ -100,6 +108,43 @@ namespace SecondFace.Core.World
                 (Channel(i, j, c) * (1 - tx) + Channel(i + 1, j, c) * tx) * (1 - tz) + (Channel(i, j + 1, c) * (1 - tx) + Channel(i + 1, j + 1, c) * tx) * tz;
             var biome = (int)Math.Round(Channel((int)Math.Round(fx), (int)Math.Round(fz), 2) * 65535f / 4096f);
             return new ControlSample(Floor + Bilinear(0) * Span, Bilinear(1), biome, Bilinear(3));
+        }
+    }
+
+    /// <summary>How much of each relief style the ground carries at a point (0..1 each): dunes, mountain ridges, mesas,
+    /// craters. Blended across region borders by tools/unity/world.py, so the ground's character changes without a step.</summary>
+    public readonly struct ReliefStyle
+    {
+        public readonly float Dunes, Ridges, Mesas, Craters;
+        public ReliefStyle(float dunes, float ridges, float mesas, float craters) { Dunes = dunes; Ridges = ridges; Mesas = mesas; Craters = craters; }
+    }
+
+    /// <summary>The relief style map (StreamingAssets/world/style.bin, 'SFST'): the control map's grid, four style weights.</summary>
+    public sealed class StyleMap
+    {
+        public readonly int Width, Height, MetresPerTexel;
+        private readonly ushort[] _data;
+
+        public StyleMap(int width, int height, int metresPerTexel, ushort[] rgba) { Width = width; Height = height; MetresPerTexel = metresPerTexel; _data = rgba; }
+
+        public static StyleMap Read(byte[] bytes)
+        {
+            var (w, h, m, data) = ControlMap.ReadGrid(bytes, "SFST");
+            return new StyleMap(w, h, m, data);
+        }
+
+        /// <summary>No styles anywhere (plain fbm ground): for tests and when the file is missing.</summary>
+        public static StyleMap None => new StyleMap(1, 1, 64, new ushort[4]);
+
+        private float Channel(int i, int j, int c) => _data[((Math.Clamp(j, 0, Height - 1) * Width) + Math.Clamp(i, 0, Width - 1)) * 4 + c] / 65535f;
+
+        public ReliefStyle Sample(float x, float z)
+        {
+            float fx = x / MetresPerTexel, fz = z / MetresPerTexel;
+            int i = (int)Math.Floor(fx), j = (int)Math.Floor(fz);
+            float tx = fx - i, tz = fz - j;
+            float B(int c) => (Channel(i, j, c) * (1 - tx) + Channel(i + 1, j, c) * tx) * (1 - tz) + (Channel(i, j + 1, c) * (1 - tx) + Channel(i + 1, j + 1, c) * tx) * tz;
+            return new ReliefStyle(B(0), B(1), B(2), B(3));
         }
     }
 
