@@ -272,7 +272,7 @@ namespace SecondFace.Tests
             var root = GameObject.Find("Players");
             Assert.That(root, Is.Not.Null);
             foreach (var a in root.GetComponentsInChildren<Animator>()) a.speed = 0f;
-            var faces = root.GetComponentsInChildren<SecondFace.Game.People.FaceSculpt>();
+            var faces = root.GetComponentsInChildren<SecondFace.Game.People.FaceSculpt>().Where(f => !f.name.Contains("_wear_")).ToArray();
             Assert.That(faces.Length, Is.EqualTo(8), "two bases, four faces each");
             var shapes = SecondFace.Core.Npc.Sculpt.Shapes().ToList();
             foreach (var f in faces)
@@ -314,6 +314,61 @@ namespace SecondFace.Tests
                 cam.transform.LookAt(at);
                 yield return null;
                 yield return Capture("people_sculpt_" + f.name.Replace("player_", ""), 640, 720);
+            }
+        }
+
+        /// <summary>P4 step 3: the wardrobe at runtime. Four of each base in a row: the outfit they start in; with the long
+        /// cardigan over it; with the cardigan and the knitted hat (the hair goes); the cardigan dyed, the hat on and off
+        /// again (`people_wardrobe_<f|m>`). Every garment's bones are found on the person's skeleton, the garments join the
+        /// person's levels of detail, and the skin's mask covers what the outfit hides.</summary>
+        [UnityTest, Timeout(600000)]
+        public IEnumerator PlayerWardrobeChangesWhenBuilt()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Player.unity";
+            if (!File.Exists(path)) { Assert.Ignore("player scene not built"); yield break; }
+            yield return LoadTestScene(path);
+            for (var i = 0; i < 10; i++) yield return null;
+            var root = GameObject.Find("Players");
+            Assert.That(root, Is.Not.Null);
+            foreach (var a in root.GetComponentsInChildren<Animator>()) a.speed = 0f;
+            var cam = Camera.main;
+            cam.fieldOfView = 22f;
+            int Hidden(SecondFace.Game.People.Wardrobe w) { var n = 0; foreach (var b in w.Mask.GetPixelData<byte>(0)) if (b > 127) n++; return n; }
+            for (var b = 0; b < 2; b++)
+            {
+                var id = b == 0 ? "player_f" : "player_m";
+                var people = Enumerable.Range(1, 4).Select(i => GameObject.Find($"{id}_wear_{i}").GetComponent<SecondFace.Game.People.Wardrobe>()).ToArray();
+                var set = people[0].Set;
+                Assert.That(set, Is.Not.Null, $"{id}: the wardrobe set");
+                Assert.That(people[0].Wearing.Values, Is.EquivalentTo(set.Outfit), $"{id}: the outfit on at start");
+                var over = set.Garments.First(g => g.Slot == "over").Id;
+                var hat = set.Garments.First(g => g.Slot == "head").Id;
+                Assert.That(people[1].Equip(over), Is.True);
+                people[2].Equip(over); people[2].Equip(hat);
+                people[3].Equip(over); people[3].Dye("over", new Color(0.45f, 0.5f, 0.7f)); people[3].Equip(hat);
+                Assert.That(people[3].Unequip("head"), Is.True);
+                yield return null;
+                yield return null;
+                foreach (var p in people)
+                {
+                    var garments = p.GarmentRenderers.ToList();
+                    Assert.That(garments.All(r => r.bones.All(x => x != null)), Is.True, $"{p.name}: every garment bone found on the person's skeleton");
+                    var lods = p.GetComponent<LODGroup>().GetLODs();
+                    for (var l = 0; l < lods.Length; l++)
+                        Assert.That(garments.Where(r => r.name.EndsWith($"_LOD{l}")).All(r => lods[l].renderers.Contains(r)), Is.True, $"{p.name}: the garments at LOD{l}");
+                    Assert.That(Hidden(p), Is.GreaterThan(1000), $"{p.name}: the outfit hides the skin under it");
+                }
+                Assert.That(Hidden(people[1]), Is.EqualTo(Hidden(people[0])), "an open cardigan hides nothing more");
+                Assert.That(Hidden(people[2]), Is.GreaterThan(Hidden(people[1])), "the hat hides the scalp under it");
+                Assert.That(people[3].Wearing.ContainsKey("head"), Is.False, "the hat came off");
+                var hair = people[2].GetComponentsInChildren<Renderer>(true).Where(r => r.name.StartsWith("Hair_")).ToList();
+                Assert.That(hair.All(r => !r.enabled), Is.True, "under the hat, no hair");
+                Assert.That(people[3].GetComponentsInChildren<Renderer>(true).Where(r => r.name.StartsWith("Hair_")).All(r => r.enabled), Is.True, "hat off, hair back");
+                Debug.Log($"people_wardrobe_{id}: outfit hides {Hidden(people[0])} base vertices, with the hat {Hidden(people[2])}; LOD0 renderers {people[2].GetComponent<LODGroup>().GetLODs()[0].renderers.Length}");
+                cam.transform.position = new Vector3(b * 10f + 5f, 0.95f, -6.2f);
+                cam.transform.rotation = Quaternion.Euler(1f, 0, 0);
+                yield return null;
+                yield return Capture($"people_wardrobe_{id.Replace("player_", "")}", 1920, 1080);
             }
         }
 

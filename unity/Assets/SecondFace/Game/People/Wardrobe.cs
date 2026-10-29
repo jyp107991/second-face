@@ -1,0 +1,195 @@
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+namespace SecondFace.Game.People
+{
+    /// <summary>
+    /// What a person wears, changed at runtime (BUILD_PLAN §6.D, P4 step 3): the player's garments are separate skinned
+    /// meshes built on the same rig; equipping one takes its renderers onto this person's skeleton (bones matched by name),
+    /// into this person's levels of detail, and hides the skin it covers through the skin shader's mask (SecondFace/Skin:
+    /// a 128 x 128 texture over the MakeHuman base vertices). One garment per slot; a garment that hides the hair (a hat)
+    /// switches the hair off while it is worn. A dye is a tint on the garment's material (a property block). The face
+    /// sculpt is refreshed so collars and hats follow the face.
+    /// </summary>
+    [DisallowMultipleComponent]
+    public sealed class Wardrobe : MonoBehaviour
+    {
+        public WardrobeSet Set;
+        public bool WearOutfitOnStart = true;
+
+        private sealed class Worn
+        {
+            public WardrobeSet.Garment Garment;
+            public readonly List<SkinnedMeshRenderer> Renderers = new();
+        }
+
+        private static readonly int HiddenMaskId = Shader.PropertyToID("_HiddenMask");
+        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        public const int MaskSize = 128;
+
+        private readonly Dictionary<string, Worn> _worn = new();
+        private Dictionary<string, Transform> _bones;
+        private Texture2D _mask;
+
+        /// <summary>The garments worn, by slot.</summary>
+        public IReadOnlyDictionary<string, string> Wearing => _worn.ToDictionary(kv => kv.Key, kv => kv.Value.Garment.Id);
+        /// <summary>The worn garments' renderers (every level).</summary>
+        public IEnumerable<SkinnedMeshRenderer> GarmentRenderers => _worn.Values.SelectMany(w => w.Renderers);
+        /// <summary>The skin mask (1 where a worn garment covers the base vertex).</summary>
+        public Texture2D Mask => _mask;
+
+        private void Start()
+        {
+            if (WearOutfitOnStart && _worn.Count == 0 && Set != null) Wear(Set.Outfit);
+        }
+
+        /// <summary>Wears these garments (by id) and nothing else.</summary>
+        public void Wear(IEnumerable<string> ids)
+        {
+            foreach (var slot in _worn.Keys.ToList()) Remove(slot);
+            foreach (var id in ids) Put(id);
+            Changed();
+        }
+
+        /// <summary>Puts a garment on, taking off whatever was in its slot. False when the set has no such garment.</summary>
+        public bool Equip(string id)
+        {
+            if (!Put(id)) return false;
+            Changed();
+            return true;
+        }
+
+        /// <summary>Takes off what is worn in a slot.</summary>
+        public bool Unequip(string slot)
+        {
+            if (!Remove(slot)) return false;
+            Changed();
+            return true;
+        }
+
+        /// <summary>Tints a worn garment (white: its own baked colour).</summary>
+        public void Dye(string slot, Color tint)
+        {
+            if (!_worn.TryGetValue(slot, out var w)) return;
+            var block = new MaterialPropertyBlock();
+            foreach (var r in w.Renderers)
+            {
+                r.GetPropertyBlock(block);
+                block.SetColor(BaseColorId, tint);
+                r.SetPropertyBlock(block);
+            }
+        }
+
+        private bool Put(string id)
+        {
+            var g = Set != null ? Set.Find(id) : null;
+            if (g == null || g.Prefab == null) { Debug.LogWarning($"Wardrobe: no garment {id} in {(Set != null ? Set.Base : "no set")}"); return false; }
+            Remove(g.Slot);
+            Bones();
+            var instance = Instantiate(g.Prefab);
+            var worn = new Worn { Garment = g };
+            foreach (var r in instance.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                // the renderer's place under the model root, then onto this person's skeleton by bone name
+                var (pos, rot, scale) = (r.transform.localPosition, r.transform.localRotation, r.transform.localScale);
+                r.bones = r.bones.Select(b => b != null && _bones.TryGetValue(b.name, out var t) ? t : null).ToArray();
+                if (r.rootBone != null && _bones.TryGetValue(r.rootBone.name, out var root)) r.rootBone = root;
+                r.transform.SetParent(transform, false);
+                r.transform.localPosition = pos;
+                r.transform.localRotation = rot;
+                r.transform.localScale = scale;
+                r.name = $"{g.Slot}:{r.name}";
+                worn.Renderers.Add(r);
+            }
+            Gone(instance);
+            _worn[g.Slot] = worn;
+            return true;
+        }
+
+        private bool Remove(string slot)
+        {
+            if (!_worn.TryGetValue(slot, out var w)) return false;
+            foreach (var r in w.Renderers) if (r != null) Gone(r.gameObject);
+            _worn.Remove(slot);
+            return true;
+        }
+
+        private void Bones()
+        {
+            if (_bones != null) return;
+            _bones = new Dictionary<string, Transform>();
+            var animator = GetComponent<Animator>();
+            // the skeleton is the transforms the body's renderer is bound to, with every parent up to the root
+            var body = GetComponentsInChildren<SkinnedMeshRenderer>(true).FirstOrDefault(r => r.name.StartsWith("Body_"));
+            var bones = body != null ? body.bones : new Transform[0];
+            foreach (var b in bones)
+                for (var t = b; t != null && t != transform; t = t.parent) _bones.TryAdd(t.name, t);
+            if (animator != null && animator.avatarRoot != null) _bones.TryAdd(animator.avatarRoot.name, animator.avatarRoot);
+        }
+
+        /// <summary>After any change: the levels of detail, the skin mask, the hair, the face.</summary>
+        private void Changed()
+        {
+            Levels();
+            Hide();
+            var hatted = _worn.Values.Any(w => w.Garment.HidesHair);
+            foreach (var r in GetComponentsInChildren<Renderer>(true))
+                if (r.name.StartsWith("Hair_")) r.enabled = !hatted;
+            var sculpt = GetComponent<FaceSculpt>();
+            if (sculpt != null) sculpt.Refresh();
+        }
+
+        /// <summary>Each worn renderer joins the level its name ends in (_LOD0.._LOD2); the body's own renderers stay.</summary>
+        private void Levels()
+        {
+            var group = GetComponent<LODGroup>();
+            if (group == null) return;
+            var lods = group.GetLODs();
+            var garments = new HashSet<Renderer>(GarmentRenderers);
+            for (var l = 0; l < lods.Length; l++)
+            {
+                var keep = lods[l].renderers.Where(r => r != null && !r.name.Contains(":")).ToList();   // the base's own
+                keep.AddRange(garments.Where(r => r.name.EndsWith($"_LOD{l}")));
+                lods[l].renderers = keep.ToArray();
+            }
+            group.SetLODs(lods);
+        }
+
+        /// <summary>Writes the mask of base vertices the worn garments cover and gives it to the body's renderers.</summary>
+        private void Hide()
+        {
+            if (_mask == null)
+            {
+                _mask = new Texture2D(MaskSize, MaskSize, TextureFormat.R8, false, true)
+                    { name = "wardrobe mask", filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            }
+            var px = new byte[MaskSize * MaskSize];
+            foreach (var w in _worn.Values)
+                if (w.Garment.Hides != null)
+                    foreach (var i in w.Garment.Hides)
+                        if (i >= 0 && i < px.Length) px[i] = 255;
+            _mask.SetPixelData(px, 0);
+            _mask.Apply(false, false);
+            var block = new MaterialPropertyBlock();
+            foreach (var r in GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                if (!r.name.StartsWith("Body_")) continue;
+                r.GetPropertyBlock(block);
+                block.SetTexture(HiddenMaskId, _mask);
+                r.SetPropertyBlock(block);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (_mask != null) Gone(_mask);
+        }
+
+        /// <summary>Destroys now in the editor's edit mode (scene builders), at the frame's end in play.</summary>
+        private static void Gone(Object o)
+        {
+            if (Application.isPlaying) Destroy(o); else DestroyImmediate(o);
+        }
+    }
+}

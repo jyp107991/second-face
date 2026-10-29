@@ -1,0 +1,138 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &3458579767389709021
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -4440119028976383919, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 5c24d75b5cafd462aa26ba650feda43e, type: 2}
+    - target: {fileID: 919132149155446097, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: m_Name
+      value: player_f
+      objectReference: {fileID: 0}
+    - target: {fileID: 2305908379898636046, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 6c7bb1fc7a09bfe1b8ace0c01e48ae11, type: 2}
+    - target: {fileID: 3760734162536860665, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 6c7bb1fc7a09bfe1b8ace0c01e48ae11, type: 2}
+    - target: {fileID: 5446655507094972968, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 6c7bb1fc7a09bfe1b8ace0c01e48ae11, type: 2}
+    - target: {fileID: 5871866042498841591, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 0ed181b79413e214396617940c9ab693, type: 2}
+    - target: {fileID: 6416526739229117638, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: cfca8b3ab8437776284c2511ead7d847, type: 2}
+    - target: {fileID: 6552869607395121521, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: cfca8b3ab8437776284c2511ead7d847, type: 2}
+    - target: {fileID: 6876508208194627181, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 5c24d75b5cafd462aa26ba650feda43e, type: 2}
+    - target: {fileID: 7065292039784987631, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 0ed181b79413e214396617940c9ab693, type: 2}
+    - target: {fileID: 7508965872455144790, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: bb37ee910d65950f39fec71db5f6ac4a, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1076522388617207713}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4909184594109960163}
+  m_SourcePrefab: {fileID: 100100000, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+--- !u!1 &2539535584533208972 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 98813c6af9cab0c2fd33b3fceb390edd, type: 3}
+  m_PrefabInstance: {fileID: 3458579767389709021}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1076522388617207713
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2539535584533208972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 776d35e58c67b860fad37b47c38ec2af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SecondFace.Game::SecondFace.Game.People.FaceSculpt
+  values: []
+  Aged: 0
+--- !u!114 &4909184594109960163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2539535584533208972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 788f8f69fd9c8774882fa247c17a74df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SecondFace.Game::SecondFace.Game.People.Wardrobe
+  Set: {fileID: 11400000, guid: 70bdcdcec29d258abad84cfe5dffe8a6, type: 2}
+  WearOutfitOnStart: 1

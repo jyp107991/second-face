@@ -573,6 +573,25 @@ NV = len(base_verts)
 print('base', NV, 'verts;', len(body_faces), 'body faces')
 EYE_GROUPS = read_groups(os.path.join(MH, '3dobjs', 'base.obj'), ('joint-l-eye', 'joint-r-eye'))
 
+# the body's vertex graph (base indices), for closing holes in what a garment hides
+BODY_NEIGHBOURS = {}
+for _f in body_faces:
+    _ix = [i for i, _ in _f]
+    for _a in _ix:
+        BODY_NEIGHBOURS.setdefault(_a, set()).update(b for b in _ix if b != _a)
+
+def close_holes(hidden, rounds=4, share=0.6):
+    """A garment's hidden body vertices with the small islands inside them filled: a vertex whose neighbours are at
+    least `share` hidden is hidden too (nipples and knuckles stood through a sweater the garment's own list skipped).
+    The garment's edges barely move: a vertex there has about half its neighbours hidden."""
+    hidden = set(hidden)
+    for _ in range(rounds):
+        add = {v for v, ns in BODY_NEIGHBOURS.items()
+               if v not in hidden and ns and sum(1 for n in ns if n in hidden) >= share * len(ns)}
+        if not add: break
+        hidden |= add
+    return hidden
+
 def slot(key):
     """A material slot named mat_<key>. Blender silently cuts datablock names at 63 characters, and the slot name is
     how Unity finds the texture, so a longer one is an error here rather than an untextured person in the engine."""
@@ -676,8 +695,23 @@ def transfer_shapes(src, dst):
         sk = dst.shape_key_add(name=kb.name, from_mix=False)
         for k, dv in enumerate(d): sk.data[k].co = sk.data[k].co + dv
 
-def lod_chain(rig, keep_shapes=False):
-    parts = [o for o in rig.children if o.type == 'MESH']
+def copy_base_index(src, dst):
+    """The decimated body's base indices from the nearest source vertex (decimation blends the channel into nonsense)."""
+    if 'BaseIndex' not in src.data.uv_layers or 'BaseIndex' not in dst.data.uv_layers: return
+    s = src.data.uv_layers['BaseIndex'].data
+    per_vertex = {loop.vertex_index: tuple(s[loop.index].uv) for loop in src.data.loops}
+    kd = KDTree(len(src.data.vertices))
+    for i, p in enumerate(src.data.vertices): kd.insert(p.co, i)
+    kd.balance()
+    near = [kd.find(v.co)[1] for v in dst.data.vertices]
+    d = dst.data.uv_layers['BaseIndex'].data
+    for loop in dst.data.loops: d[loop.index].uv = per_vertex.get(near[loop.vertex_index], (0.0, 0.0))
+
+# a whole outfit's LOD0 cloth triangles: a wardrobe garment exported alone takes its share of the LOD budget by this
+OUTFIT_TRIS = 12000
+
+def lod_chain(rig, keep_shapes=False, parts=None, cloth_total=None):
+    parts = parts if parts is not None else [o for o in rig.children if o.type == 'MESH']
     report = []
     # LOD0 caps on everything but the body (which keeps its face shapes whole); a capped part takes its shapes back
     for o in parts:
@@ -690,7 +724,7 @@ def lod_chain(rig, keep_shapes=False):
             report.append(f'{o.name} {before}->{tris(o)}')
     totals = [sum(tris(o) for o in parts)]
     cloth = [o for o in parts if part(o) == 'Cloth']
-    cloth_tris = sum(tris(o) for o in cloth) or 1
+    cloth_tris = cloth_total or sum(tris(o) for o in cloth) or 1
     for level, budget in enumerate(LOD_BUDGET, start=1):
         made = []
         for o in parts:
@@ -698,6 +732,7 @@ def lod_chain(rig, keep_shapes=False):
             if b is None: continue
             if part(o) == 'Cloth': b = max(60, b * tris(o) / cloth_tris)   # the clothes share their budget by size
             made.append(decimated(o, min(b, tris(o)), f'{o.name}_LOD{level}', rig))
+            if part(o) == 'Body': copy_base_index(o, made[-1])
             # the player's sculpted face shows at the game camera too (their LOD1); nobody's LOD2 has shapes
             if keep_shapes and level == 1: transfer_shapes(o, made[-1])
         totals.append(sum(tris(o) for o in made))
@@ -763,6 +798,7 @@ def build_person(spec):
         hidden.update(dels)
         if g in COVERS or (look or {}).get('hide'):
             hidden.update(i for r in refs for i in r[:3])
+    hidden = close_holes(hidden)
     faces_kept = [f for f in body_faces if not all(i in hidden for i, _ in f)]
     used = sorted({i for f in faces_kept for i, _ in f})
     remap = {i: k for k, i in enumerate(used)}
@@ -774,6 +810,12 @@ def build_person(spec):
         for _, vt in f:
             uv.data[li].uv = base_vts[vt] if vt >= 0 else (0, 0); li += 1
     me.validate(); me.update()
+    if spec.get('wardrobe'):
+        # each vertex's MakeHuman base index as (i % 128, i // 128), exact in half floats on a phone: the wardrobe hides
+        # the body under worn garments by these indices (a 128 x 128 mask the skin shader reads, BUILD_PLAN §6.D)
+        bi = me.uv_layers.new(name='BaseIndex')
+        for loop in me.loops:
+            k = used[loop.vertex_index]; bi.data[loop.index].uv = (k % 128, k // 128)
     for p in me.polygons: p.use_smooth = True
     body = bpy.data.objects.new('Body', me); bpy.context.scene.collection.objects.link(body)
     body.data.materials.append(slot('skin:' + spec['id'] + '__skin_d'))   # the person's own skin, baked below
@@ -1018,6 +1060,36 @@ def build_person(spec):
                              embed_textures=False, use_armature_deform_only=False, primary_bone_axis='Y', secondary_bone_axis='X')
     K.write_model_meta(path, f'{REL}/{spec["id"]}.fbx')
     print('  wrote', path)
+
+    # --- the wardrobe (the player, BUILD_PLAN §6.D): each garment alone on the same rig as <id>__<garment>.fbx, with its
+    # shapes and levels of detail, and in <id>.wardrobe.json its slot and the base vertices it hides
+    if spec.get('wardrobe'):
+        manifest = {'base': spec['id'], 'outfit': spec.get('outfit', []), 'garments': []}
+        for w in spec['wardrobe']:
+            g, look = w['g'], w.get('look')
+            before = set(bpy.data.objects)
+            po = proxy('Cloth_' + g, 'clothes', g, 'cloth', look=look, tex_name=spec['id'] + '__' + g)
+            if po is None: continue
+            lod_chain(rig, keep_shapes=bool(spec.get('sculpt')), parts=[po], cloth_total=OUTFIT_TRIS)
+            made = [o for o in bpy.data.objects if o not in before]
+            bpy.ops.object.select_all(action='DESELECT')
+            rig.select_set(True)
+            for o in made: o.select_set(True)
+            name = f'{spec["id"]}__{g}'
+            gpath = os.path.join(OUT, name + '.fbx')
+            bpy.ops.export_scene.fbx(filepath=gpath, use_selection=True, apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y',
+                                     mesh_smooth_type='FACE', use_mesh_modifiers=False, add_leaf_bones=False, bake_anim=False, path_mode='STRIP',
+                                     embed_textures=False, use_armature_deform_only=False, primary_bone_axis='Y', secondary_bone_axis='X')
+            K.write_model_meta(gpath, f'{REL}/{name}.fbx')
+            _, refs, dels = read_mhclo(os.path.join(find_dir(g, COMMUNITY, os.path.join(MH, 'clothes')), g + '.mhclo'))
+            hides = set(dels)
+            if g in COVERS or (look or {}).get('hide'): hides.update(i for r in refs for i in r[:3])
+            hides = close_holes(hides)
+            manifest['garments'].append({'id': g, 'slot': w['slot'], 'model': name, 'hidesHair': bool(w.get('hides_hair')),
+                                         'hides': sorted(hides)})
+            for o in made: bpy.data.objects.remove(o, do_unlink=True)
+            print(f'  wardrobe: {name} ({w["slot"]}, hides {len(hides)} body vertices)')
+        with open(os.path.join(OUT, spec['id'] + '.wardrobe.json'), 'w') as f: json.dump(manifest, f, indent=1)
 
 os.makedirs(OUT, exist_ok=True)
 K.write_folder_meta(OUT, REL)

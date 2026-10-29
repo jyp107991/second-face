@@ -14,7 +14,7 @@ namespace SecondFace.EditorTools
     public sealed class PeopleImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 7;
+        public override uint GetVersion() => 8;
 
         private bool IsPerson => assetPath.StartsWith("Assets/SecondFace/People/");
 
@@ -36,6 +36,9 @@ namespace SecondFace.EditorTools
             imp.importNormals = ModelImporterNormals.Import;
             imp.isReadable = false;
             imp.meshCompression = ModelImporterMeshCompression.Off;
+            // people are never lightmapped, and uv1 carries the wardrobe's base indices (the player's skin mask): the meta
+            // template's lightmap unwrap wrote over it (P4 step 3)
+            imp.generateSecondaryUV = false;
             imp.materialImportMode = ModelImporterMaterialImportMode.ImportStandard;
             imp.materialLocation = ModelImporterMaterialLocation.InPrefab;
             imp.optimizeGameObjects = false;
@@ -118,8 +121,10 @@ namespace SecondFace.EditorTools
             var matDir = dir + "/Materials";
             Directory.CreateDirectory(matDir);
             var matPath = $"{matDir}/{kind}_{tex}.mat";
-            var shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) { Debug.LogError("PeopleMaterials: URP Lit shader not found"); return null; }
+            // the player's skin hides under worn garments (SecondFace/Skin, the wardrobe's mask); everyone else is URP Lit
+            var wardrobeSkin = kind == "skin" && dir.EndsWith("/Player");
+            var shader = Shader.Find(wardrobeSkin ? "SecondFace/Skin" : "Universal Render Pipeline/Lit");
+            if (shader == null) { Debug.LogError($"PeopleMaterials: shader for {kind} not found"); return null; }
             var m = AssetDatabase.LoadAssetAtPath<Material>(matPath);
             var created = m == null;
             if (created) m = new Material(shader) { name = $"{kind}_{tex}" };
@@ -135,6 +140,9 @@ namespace SecondFace.EditorTools
             }
             switch (kind)
             {
+                case "skin" when wardrobeSkin:
+                    m.SetFloat("_Smoothness", d != null && tex.Contains("__skin") ? 1f : 0.42f);   // × the albedo's alpha
+                    break;
                 case "skin":
                     m.SetFloat("_Metallic", 0f);
                     if (d != null && tex.Contains("__skin"))

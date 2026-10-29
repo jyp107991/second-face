@@ -366,7 +366,8 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    with the same rig; `LODGroup` set by the postprocessor. Budget ≤ 8 MB per person, ≤ 15 K triangles LOD0.
 2. **Built (P4.2a, 2026-10-29; §6.B.5 "As built"; captures `people_sculpt_*`): the shapes, their binding and the
    rerolls; the sculptor screen itself is P5.** The player prefab with all face shapes; the sculptor UI binds to blend-shape weights (§6.B.5).
-3. Wardrobe runtime (§6.D, §6.Q): the player's garments are separate skinned meshes on the shared rig, swapped on
+3. **Built (P4.3a, 2026-10-29; §6.D "As built"; capture `people_wardrobe_*`): the player's wardrobe, swapped at
+   runtime, skin hidden by mask; NPC merging and body sliders open.** Wardrobe runtime (§6.D, §6.Q): the player's garments are separate skinned meshes on the shared rig, swapped on
    equip; every NPC's outfit is merged into one SkinnedMeshRenderer when the NPC prefab is baked (two renderers
    roughly double the skinning cost). Dye and grime are material parameters, not textures.
 4. Locomotion: Animator controller from the 28 clips (idle, walk, jog, run, turn, strafe, sit, stand, drink,
@@ -864,6 +865,26 @@ indigo, faded reds and greens) so a crowd reads as many people at the game camer
   at runtime.
 - `ItemDef.Wear` (Core) names the garment proxy per fit, tint/dye indices, grime/wear; the `Outfits` rules choose
   per role/region (`Core/Npc/Outfits.cs`, the web RNG sequence kept for content parity).
+
+**As built (P4.3a, 2026-10-29).** The player's bases are built naked (`clothes: []`) with a `wardrobe` in the brief
+(`{g, slot, look, hides_hair}` per garment, `outfit` the ones worn at start): `mh_build` exports each garment alone on
+the same rig as `People/Player/<base>__<garment>.fbx` (its LODs by its share of a 12 K outfit, its face shapes
+refitted) and `<base>.wardrobe.json` (slot, hides the hair, and the MakeHuman base vertices it hides: `delete_verts`,
+plus the vertices it is fitted to for `COVERS` or `look.hide`, with the small islands inside closed by `close_holes`).
+The body carries each vertex's base index in uv1 as `(i % 128, i / 128)` (exact in half floats), the LOD copies
+taking theirs from the nearest LOD0 vertex. **Hiding is a mask, not a mesh edit**: `SecondFace/Skin` (the player's
+skin shader: URP PBR with the albedo-alpha smoothness and normal map of the Lit skin, SSAO, fog) reads a 128 × 128 R8
+mask at the vertex's texel and clips in every pass (forward, shadow, depth, depth-normals), so no body mesh is copied
+(the blend shapes stay shared). Runtime: `WardrobeSet` (per base: garments with slot, hair, hides and the bound
+prefab; built by *Second Face/Build player wardrobes* with the base's prefab `Prefabs/people/<base>.prefab` carrying
+`FaceSculpt` and `Wardrobe`) and `Wardrobe` (`Wear`, `Equip`, `Unequip`, `Dye`; one garment per slot; a garment's
+renderers move onto the person's skeleton by bone name and into the person's `LODGroup` by their `_LODn` suffix; the
+mask is rewritten and given to the body's renderers by a property block; hats switch the hair off; the face sculpt is
+refreshed). The capture `people_wardrobe_<f|m>`: the outfit; with the long cardigan; with the cardigan and the
+knitted hat; the cardigan dyed, the hat on and off. Open: dye is the URP Lit `_BaseColor` (a property block, so the
+player's garments leave the SRP batcher: one actor); grime and wear at runtime need the cloth shader (P4 skin/cloth
+pass); body sliders (build, weight) as refitted shapes on the body and every garment; NPC outfits merged into one
+renderer at bake (they are separate renderers per garment today).
 
 ### 6.E Motion
 - `cmu2fbx.py` keeps the canonical processing: CMU ASF/AMC at 120 Hz → 30 Hz; gait cut at the left-foot contact
@@ -1472,6 +1493,12 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   has no tag. A playable build is released by running the Android workflow by hand with `release: play-<name>`
   (`workflow_dispatch`); its `release` job runs only after that run's tests and APK passed and creates the tag at the
   run's commit with the release. A pushed `play-*` tag (from a machine that can) still works.
+- **The model meta template turns on lightmap UVs** (`generateSecondaryUV: 1`, P4.3a): Unity's unwrap wrote over
+  the people's uv1 (the wardrobe's base indices) and split the body from 14.5 K to 21 K vertices. People import with
+  it off (`PeopleImportPostprocessor` version 8); `WardrobeBuild` checks every body level's indices are whole.
+- **Skin stands through a tight garment where its own list skips it** (P4.3a): a sweater's `delete_verts` and fitted
+  vertices left the nipples visible through it. `close_holes` hides a body vertex when 60 % of its neighbours are
+  hidden (four rounds): islands fill, the garment's edges barely move. Applied to every person's build.
 - **Judge hair from the front at portrait distance** (P4.2a): two braids passed in the lineup (from 7 m) and showed a
   swept fringe in the close-ups. Brief a hair only after seeing it in `people_sculpt_*` or a portrait.
 

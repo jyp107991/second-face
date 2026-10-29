@@ -79,6 +79,13 @@ namespace SecondFace.Game.People
             }
         }
 
+        /// <summary>Looks again for the renderers that carry the shapes (after garments are put on or taken off) and applies.</summary>
+        public void Refresh()
+        {
+            _index.Clear();
+            Apply();
+        }
+
         /// <summary>Writes the weights to every driven renderer.</summary>
         public void Apply()
         {
