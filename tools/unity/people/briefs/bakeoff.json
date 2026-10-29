@@ -1,0 +1,460 @@
+{
+ "_about": "People briefs for tools/unity/people/mh_build.py (BUILD_PLAN P4.1). One entry per person: macro body (gender 0..1, age in years, muscle, weight, height 0..1, ancestry mix african/asian/caucasian summing to 1), feature targets (mods), skin and its weathering (skin_look: sun, grime, lips, beard, beard_colour), hair mesh and its look or a scalp painted into the skin (scalp: mode buzz|bald, density, colour), brows, eye colour, and clothes as [garment, look] pairs (look: tint from PALETTE, grime, wear, patch, sat, flat, tape bands; null keeps the garment's own texture). Wardrobe and hair rules: CLAUDE.md \u00a72.",
+ "people": [
+  {
+   "id": "p1_labourer_m",
+   "gender": 1.0,
+   "age": 34,
+   "muscle": 0.72,
+   "weight": 0.42,
+   "height": 0.6,
+   "african": 0.9,
+   "asian": 0.0,
+   "caucasian": 0.1,
+   "mods": {
+    "sym:cheek-bones|decr|incr": 0.4,
+    "chin-width|decr|incr": 0.3,
+    "nose-scale-horiz|decr|incr": 0.3,
+    "head-age|decr|incr": 0.2,
+    "torso-vshape|decr|incr": 0.35,
+    "sym:upperarm-muscle|decr|incr": 0.4
+   },
+   "skin": "mindfront_skin_male_african_middleage",
+   "skin_look": {
+    "sun": 0.5,
+    "grime": 0.6,
+    "lips": 0.6,
+    "beard": 0.35,
+    "beard_colour": "black"
+   },
+   "hair": null,
+   "scalp": {
+    "mode": "buzz",
+    "density": 1.0,
+    "colour": "black"
+   },
+   "brows": "mindfront_eyebrows_04",
+   "eyes": "brown",
+   "clothes": [
+    [
+     "elvs_male_shirt_untucked_bd1",
+     {
+      "tint": "rust_dye",
+      "grime": 0.5,
+      "wear": 0.6,
+      "patch": 0.3,
+      "sat": 0.2
+     }
+    ],
+    [
+     "cortu_cargo_pants",
+     {
+      "tint": "canvas_faded",
+      "grime": 0.9,
+      "wear": 0.5,
+      "patch": 0.5,
+      "sat": 0.3
+     }
+    ],
+    [
+     "culturalibre_male_boots",
+     {
+      "tint": "leather_dark",
+      "grime": 0.7,
+      "wear": 0.3,
+      "sat": 0.6,
+      "flat": 0.2
+     }
+    ],
+    [
+     "mindfront_tactical_vest_male",
+     {
+      "tint": "olive_wax",
+      "grime": 0.5,
+      "wear": 0.4,
+      "sat": 0.3
+     }
+    ]
+   ]
+  },
+  {
+   "id": "p2_settler_f",
+   "gender": 0.0,
+   "age": 26,
+   "muscle": 0.5,
+   "weight": 0.38,
+   "height": 0.42,
+   "african": 0.08,
+   "asian": 0.04,
+   "caucasian": 0.88,
+   "mods": {
+    "mouth-upperlip-volume|decr|incr": 0.25,
+    "nose-hump|decr|incr": 0.2,
+    "sym:cheek-bones|decr|incr": 0.2,
+    "hip-scale-horiz|decr|incr": 0.3,
+    "sym:eye-scale|decr|incr": 0.15
+   },
+   "breastSize": 0.5,
+   "breastFirmness": 0.6,
+   "skin": "toigo_light_skin_female_ginger_2",
+   "skin_look": {
+    "sun": 0.6,
+    "grime": 0.4,
+    "lips": 0.6
+   },
+   "hair": "elvs_unkempt_french_braid",
+   "hair_look": {
+    "colour": "dull_auburn",
+    "dust": 0.5
+   },
+   "brows": "mindfront_eyebrows_03",
+   "eyes": "green",
+   "clothes": [
+    [
+     "toigo_fisherman_sweater",
+     {
+      "tint": "wool_undyed",
+      "grime": 0.3,
+      "wear": 0.3,
+      "patch": 0.3,
+      "sat": 0.2
+     }
+    ],
+    [
+     "toigo_wool_pants",
+     {
+      "tint": "wool_brown",
+      "grime": 0.6,
+      "wear": 0.4,
+      "patch": 0.2,
+      "sat": 0.2
+     }
+    ],
+    [
+     "toigo_ankle_boots_female",
+     {
+      "tint": "leather_dark",
+      "grime": 0.6,
+      "wear": 0.3,
+      "sat": 0.6,
+      "flat": 0.2
+     }
+    ]
+   ]
+  },
+  {
+   "id": "p3_drifter_m",
+   "gender": 1.0,
+   "age": 61,
+   "muscle": 0.35,
+   "weight": 0.12,
+   "height": 0.5,
+   "african": 0.0,
+   "asian": 0.0,
+   "caucasian": 1.0,
+   "mods": {
+    "head-age|decr|incr": 0.5,
+    "sym:cheek-volume|decr|incr": -0.6,
+    "sym:eye-bag|decr|incr": 0.4,
+    "chin-bones|decr|incr": 0.35,
+    "head-fat|decr|incr": -0.35,
+    "stomach-tone|decr|incr": -0.3,
+    "torso-scale-horiz|decr|incr": -0.3
+   },
+   "skin": "jartur69_old_slavic_male_with_genitals_and_beard",
+   "skin_look": {
+    "sun": 0.7,
+    "grime": 0.7,
+    "lips": 0.7
+   },
+   "hair": null,
+   "scalp": {
+    "mode": "bald",
+    "density": 0.75,
+    "colour": "grey"
+   },
+   "brows": "mindfront_eyebrows_11",
+   "eyes": "grey",
+   "clothes": [
+    [
+     "elvs_male_shirt_untucked_bd1",
+     {
+      "tint": "bone",
+      "grime": 0.5,
+      "wear": 0.5,
+      "patch": 0.2,
+      "sat": 0.1
+     }
+    ],
+    [
+     "elvs_male_trouser",
+     {
+      "tint": "charcoal",
+      "grime": 0.7,
+      "wear": 0.4,
+      "patch": 0.4,
+      "sat": 0.1
+     }
+    ],
+    [
+     "mindfront_cardigan_long_open_front",
+     {
+      "tint": "olive_wax",
+      "grime": 0.7,
+      "wear": 0.5,
+      "patch": 0.3,
+      "sat": 0.1
+     }
+    ],
+    [
+     "maciekg_leather_boots",
+     {
+      "tint": "leather_dark",
+      "grime": 0.7,
+      "wear": 0.3,
+      "sat": 0.6,
+      "flat": 0.2
+     }
+    ]
+   ]
+  },
+  {
+   "id": "p4_gilded_f",
+   "gender": 0.0,
+   "age": 44,
+   "muscle": 0.42,
+   "weight": 0.55,
+   "height": 0.55,
+   "african": 0.0,
+   "asian": 0.95,
+   "caucasian": 0.05,
+   "mods": {
+    "sym:eye-epicanthus|in|out": 0.35,
+    "sym:eye-eyefold-angle|down|up": 0.25,
+    "nose-hump|decr|incr": -0.2,
+    "sym:cheek-bones|decr|incr": 0.25,
+    "head-round": 0.2,
+    "stomach-tone|decr|incr": -0.2
+   },
+   "breastSize": 0.55,
+   "breastFirmness": 0.45,
+   "skin": "onlytheghosts_middle_aged_eurasian_female",
+   "skin_look": {
+    "sun": 0.05,
+    "grime": 0,
+    "lips": 0.3
+   },
+   "hair": "rehmanpolanski_hair_bun_brown",
+   "hair_look": {
+    "colour": "black",
+    "dust": 0
+   },
+   "brows": "mindfront_eyebrows_10",
+   "eyes": "brown",
+   "clothes": [
+    [
+     "matcreator_mc-skinsuit_2022",
+     {
+      "tint": "graphite_synth",
+      "grime": 0,
+      "wear": 0,
+      "patch": 0,
+      "sat": 0.4,
+      "flat": 0.3
+     }
+    ],
+    [
+     "mindfront_cardigan_long_open_front",
+     {
+      "tint": "wine",
+      "grime": 0,
+      "wear": 0,
+      "patch": 0,
+      "sat": 0.1,
+      "tape": [
+       0.62,
+       1.3
+      ],
+      "tape_col": [
+       0.55,
+       0.85,
+       0.95
+      ]
+     }
+    ],
+    [
+     "toigo_ankle_boots_female",
+     {
+      "tint": "charcoal",
+      "grime": 0.1,
+      "wear": 0,
+      "patch": 0,
+      "sat": 0.5,
+      "flat": 0.2
+     }
+    ],
+    [
+     "spamrakuen_tbm_glasses_frames_01",
+     null
+    ]
+   ]
+  },
+  {
+   "id": "p5_street_m",
+   "gender": 1.0,
+   "age": 21,
+   "muscle": 0.55,
+   "weight": 0.3,
+   "height": 0.48,
+   "african": 0.12,
+   "asian": 0.3,
+   "caucasian": 0.58,
+   "mods": {
+    "sym:cheek-bones|decr|incr": 0.3,
+    "nose-scale-vert|decr|incr": 0.15,
+    "mouth-scale-horiz|decr|incr": 0.2,
+    "sym:upperarm-muscle|decr|incr": 0.2
+   },
+   "skin": "toigo_light_skin_male_bronze",
+   "skin_look": {
+    "sun": 0.5,
+    "grime": 0.5,
+    "lips": 0.6,
+    "beard": 0.2,
+    "beard_colour": "black_brown"
+   },
+   "hair": null,
+   "scalp": {
+    "mode": "buzz",
+    "density": 0.9,
+    "colour": "black_brown"
+   },
+   "brows": "mindfront_eyebrows_13",
+   "eyes": "brown",
+   "clothes": [
+    [
+     "elvs_hooded_sweat_jacket1",
+     {
+      "tint": "charcoal",
+      "grime": 0.4,
+      "wear": 0.5,
+      "patch": 0.2,
+      "sat": 0.1,
+      "tape": [
+       0.98
+      ],
+      "tape_col": [
+       0.82,
+       0.8,
+       0.7
+      ]
+     }
+    ],
+    [
+     "cortu_cargo_pants",
+     {
+      "tint": "indigo_faded",
+      "grime": 0.7,
+      "wear": 0.5,
+      "patch": 0.3,
+      "sat": 0.2,
+      "tape": [
+       0.5,
+       0.12
+      ],
+      "tape_col": [
+       0.82,
+       0.8,
+       0.7
+      ]
+     }
+    ],
+    [
+     "culturalibre_sneakers",
+     {
+      "tint": "charcoal",
+      "grime": 0.5,
+      "wear": 0.3,
+      "patch": 0,
+      "sat": 0.4,
+      "flat": 0.3
+     }
+    ]
+   ]
+  },
+  {
+   "id": "p6_nomad_f",
+   "gender": 0.0,
+   "age": 68,
+   "muscle": 0.5,
+   "weight": 0.3,
+   "height": 0.45,
+   "african": 0.03,
+   "asian": 0.6,
+   "caucasian": 0.37,
+   "mods": {
+    "head-age|decr|incr": 0.6,
+    "sym:cheek-bones|decr|incr": 0.45,
+    "nose-scale-vert|decr|incr": 0.2,
+    "nose-hump|decr|incr": 0.25,
+    "sym:cheek-volume|decr|incr": -0.4,
+    "chin-width|decr|incr": 0.2,
+    "sym:eye-bag|decr|incr": 0.3
+   },
+   "breastSize": 0.4,
+   "breastFirmness": 0.2,
+   "skin": "darthfurby_caucasian_female",
+   "skin_look": {
+    "sun": 0.8,
+    "grime": 0.5,
+    "lips": 0.95
+   },
+   "hair": null,
+   "brows": "mindfront_eyebrows_14",
+   "eyes": "brownlight",
+   "clothes": [
+    [
+     "rehmanpolanski_viking_tunic",
+     {
+      "tint": "ochre",
+      "grime": 0.5,
+      "wear": 0.7,
+      "patch": 0.5,
+      "sat": 0.2
+     }
+    ],
+    [
+     "toigo_wool_pants",
+     {
+      "tint": "indigo_faded",
+      "grime": 0.7,
+      "wear": 0.6,
+      "patch": 0.3,
+      "sat": 0.2
+     }
+    ],
+    [
+     "punkduck_winter_boots",
+     {
+      "tint": "leather_tan",
+      "grime": 0.6,
+      "wear": 0.3,
+      "patch": 0,
+      "sat": 0.5,
+      "flat": 0.2
+     }
+    ],
+    [
+     "culturalibre_hero-heroine_hood_1",
+     {
+      "tint": "canvas_faded",
+      "grime": 0.5,
+      "wear": 0.6,
+      "patch": 0.3,
+      "sat": 0.1
+     }
+    ]
+   ]
+  }
+ ]
+}

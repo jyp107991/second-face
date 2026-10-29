@@ -518,8 +518,14 @@ back). **For the owner:** install `play-walkabout` (the release page of the tag,
 walk round Shale and out into the scrub, and send impressions and the overlay's tour table (three-finger tap, the
 button, wait for a full lap of about 80 s, screenshot). Known gaps: the people are the trial models without their
 final hair and clothes (P4), no long-press pin or compass yet, you can wade the river.
+**People with levels of detail (P4.1a, 2026-10-29):** the trial people were far too heavy for a phone (95–141 thousand
+triangles each; their eyebrows and eyelashes alone were tens of thousands of hair strands). Each now comes in three
+levels: the full person for close-ups, a ~6 thousand triangle version for the game camera and a ~2 thousand one far
+off, switched by how big they are on screen. The people descriptions are now data files the pipeline reads.
 **Next action:** step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until
-Mid ≥ 30 fps); meanwhile P4 from `docs/BUILD_PLAN_V1.md` §5, step 1 (the people pipeline to `People/Cast/`).
+Mid ≥ 30 fps); tag `play-walkabout` once the Android run of this commit is green; then P4.1b: the cast briefs (about
+30 people across the regions and trades, `tools/unity/people/briefs/cast.json`) built to `People/Cast/`, the lineup
+capture `people_cast_lineup` and `people_lod`.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

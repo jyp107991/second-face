@@ -1,6 +1,7 @@
 """People pipeline, candidate A (MakeHuman CC0 data through Blender to Unity Humanoid FBX).
 
     blender -b --python tools/unity/people/mh_build.py -- <mh data dir> <community packs dir> <out dir>
+    (env BRIEF=<briefs/*.json> REL=<the out dir's Assets path> ONLY=<id,id>)
 
 For each person spec below: the MakeHuman base body with the macro targets (gender, age, muscle, weight, height,
 ancestry, breast) and the person's feature targets baked in; a game rig reduced from the default MakeHuman skeleton
@@ -16,7 +17,7 @@ import kitlib as K
 
 args = sys.argv[sys.argv.index('--') + 1:]
 MH, COMMUNITY, OUT = args[0], args[1], args[2]
-REL = 'Assets/SecondFace/People/Bakeoff'
+REL = os.environ.get('REL', 'Assets/SecondFace/People/Bakeoff')   # where OUT lies in the Unity project (for the metas)
 TEXOUT = os.path.join(OUT, 'tex')
 SCALE = 0.1   # MakeHuman decimetres -> metres
 
@@ -217,49 +218,9 @@ HAIR_COLOURS = {   # as seen (sRGB), already dulled
     'brown': (0.28, 0.19, 0.13), 'dull_auburn': (0.36, 0.2, 0.12), 'ash_blonde': (0.5, 0.44, 0.35), 'grey': (0.56, 0.54, 0.51),
 }
 
-PEOPLE = [
-    {'id': 'p1_labourer_m', 'gender': 1.0, 'age': 34, 'muscle': 0.72, 'weight': 0.42, 'height': 0.6, 'african': 0.9, 'asian': 0.0, 'caucasian': 0.1,
-     'mods': {'sym:cheek-bones|decr|incr': 0.4, 'chin-width|decr|incr': 0.3, 'nose-scale-horiz|decr|incr': 0.3, 'head-age|decr|incr': 0.2, 'torso-vshape|decr|incr': 0.35, 'sym:upperarm-muscle|decr|incr': 0.4},
-     'skin': 'mindfront_skin_male_african_middleage', 'skin_look': W(sun=.5, grime=.6, lips=.6, beard=.35, beard_colour='black'), 'hair': None, 'scalp': W(mode='buzz', density=1.0, colour='black'), 'brows': 'mindfront_eyebrows_04', 'eyes': 'brown',
-     'clothes': [('elvs_male_shirt_untucked_bd1', W(tint='rust_dye', grime=.5, wear=.6, patch=.3, sat=.2)),
-                 ('cortu_cargo_pants', W(tint='canvas_faded', grime=.9, wear=.5, patch=.5, sat=.3)),
-                 ('culturalibre_male_boots', W(tint='leather_dark', grime=.7, wear=.3, sat=.6, flat=.2)),
-                 ('mindfront_tactical_vest_male', W(tint='olive_wax', grime=.5, wear=.4, sat=.3))]},
-    {'id': 'p2_settler_f', 'gender': 0.0, 'age': 26, 'muscle': 0.5, 'weight': 0.38, 'height': 0.42, 'african': 0.08, 'asian': 0.04, 'caucasian': 0.88,
-     'mods': {'mouth-upperlip-volume|decr|incr': 0.25, 'nose-hump|decr|incr': 0.2, 'sym:cheek-bones|decr|incr': 0.2, 'hip-scale-horiz|decr|incr': 0.3, 'sym:eye-scale|decr|incr': 0.15},
-     'breastSize': 0.5, 'breastFirmness': 0.6, 'skin': 'toigo_light_skin_female_ginger_2', 'skin_look': W(sun=.6, grime=.4, lips=.6), 'hair': 'elvs_unkempt_french_braid', 'hair_look': W(colour='dull_auburn', dust=.5), 'brows': 'mindfront_eyebrows_03', 'eyes': 'green',
-     'clothes': [('toigo_fisherman_sweater', W(tint='wool_undyed', grime=.3, wear=.3, patch=.3, sat=.2)),
-                 ('toigo_wool_pants', W(tint='wool_brown', grime=.6, wear=.4, patch=.2, sat=.2)),
-                 ('toigo_ankle_boots_female', W(tint='leather_dark', grime=.6, wear=.3, sat=.6, flat=.2))]},
-    {'id': 'p3_drifter_m', 'gender': 1.0, 'age': 61, 'muscle': 0.35, 'weight': 0.12, 'height': 0.5, 'african': 0.0, 'asian': 0.0, 'caucasian': 1.0,
-     'mods': {'head-age|decr|incr': 0.5, 'sym:cheek-volume|decr|incr': -0.6, 'sym:eye-bag|decr|incr': 0.4, 'chin-bones|decr|incr': 0.35, 'head-fat|decr|incr': -0.35, 'stomach-tone|decr|incr': -0.3, 'torso-scale-horiz|decr|incr': -0.3},
-     'skin': 'jartur69_old_slavic_male_with_genitals_and_beard', 'skin_look': W(sun=.7, grime=.7, lips=.7), 'hair': None, 'scalp': W(mode='bald', density=.75, colour='grey'), 'brows': 'mindfront_eyebrows_11', 'eyes': 'grey',
-     'clothes': [('elvs_male_shirt_untucked_bd1', W(tint='bone', grime=.5, wear=.5, patch=.2, sat=.1)),
-                 ('elvs_male_trouser', W(tint='charcoal', grime=.7, wear=.4, patch=.4, sat=.1)),
-                 ('mindfront_cardigan_long_open_front', W(tint='olive_wax', grime=.7, wear=.5, patch=.3, sat=.1)),
-                 ('maciekg_leather_boots', W(tint='leather_dark', grime=.7, wear=.3, sat=.6, flat=.2))]},
-    {'id': 'p4_gilded_f', 'gender': 0.0, 'age': 44, 'muscle': 0.42, 'weight': 0.55, 'height': 0.55, 'african': 0.0, 'asian': 0.95, 'caucasian': 0.05,
-     'mods': {'sym:eye-epicanthus|in|out': 0.35, 'sym:eye-eyefold-angle|down|up': 0.25, 'nose-hump|decr|incr': -0.2, 'sym:cheek-bones|decr|incr': 0.25, 'head-round': 0.2, 'stomach-tone|decr|incr': -0.2},
-     'breastSize': 0.55, 'breastFirmness': 0.45, 'skin': 'onlytheghosts_middle_aged_eurasian_female', 'skin_look': W(sun=.05, grime=0, lips=.3), 'hair': 'rehmanpolanski_hair_bun_brown', 'hair_look': W(colour='black', dust=0), 'brows': 'mindfront_eyebrows_10', 'eyes': 'brown',
-     'clothes': [('matcreator_mc-skinsuit_2022', W(tint='graphite_synth', grime=0, wear=0, patch=0, sat=.4, flat=.3)),
-                 ('mindfront_cardigan_long_open_front', W(tint='wine', grime=0, wear=0, patch=0, sat=.1, tape=[0.62, 1.3], tape_col=(0.55, 0.85, 0.95))),
-                 ('toigo_ankle_boots_female', W(tint='charcoal', grime=.1, wear=0, patch=0, sat=.5, flat=.2)),
-                 ('spamrakuen_tbm_glasses_frames_01', None)]},
-    {'id': 'p5_street_m', 'gender': 1.0, 'age': 21, 'muscle': 0.55, 'weight': 0.3, 'height': 0.48, 'african': 0.12, 'asian': 0.3, 'caucasian': 0.58,
-     'mods': {'sym:cheek-bones|decr|incr': 0.3, 'nose-scale-vert|decr|incr': 0.15, 'mouth-scale-horiz|decr|incr': 0.2, 'sym:upperarm-muscle|decr|incr': 0.2},
-     'skin': 'toigo_light_skin_male_bronze', 'skin_look': W(sun=.5, grime=.5, lips=.6, beard=.2, beard_colour='black_brown'), 'hair': None, 'scalp': W(mode='buzz', density=.9, colour='black_brown'), 'brows': 'mindfront_eyebrows_13', 'eyes': 'brown',
-     'clothes': [('elvs_hooded_sweat_jacket1', W(tint='charcoal', grime=.4, wear=.5, patch=.2, sat=.1, tape=[0.98], tape_col=(0.82, 0.8, 0.7))),
-                 ('cortu_cargo_pants', W(tint='indigo_faded', grime=.7, wear=.5, patch=.3, sat=.2, tape=[0.5, 0.12], tape_col=(0.82, 0.8, 0.7))),
-                 ('culturalibre_sneakers', W(tint='charcoal', grime=.5, wear=.3, patch=0, sat=.4, flat=.3))]},
-    {'id': 'p6_nomad_f', 'gender': 0.0, 'age': 68, 'muscle': 0.5, 'weight': 0.3, 'height': 0.45, 'african': 0.03, 'asian': 0.6, 'caucasian': 0.37,
-     'mods': {'head-age|decr|incr': 0.6, 'sym:cheek-bones|decr|incr': 0.45, 'nose-scale-vert|decr|incr': 0.2, 'nose-hump|decr|incr': 0.25, 'sym:cheek-volume|decr|incr': -0.4, 'chin-width|decr|incr': 0.2, 'sym:eye-bag|decr|incr': 0.3},
-     'breastSize': 0.4, 'breastFirmness': 0.2, 'skin': 'darthfurby_caucasian_female', 'skin_look': W(sun=.8, grime=.5, lips=.95), 'hair': None, 'brows': 'mindfront_eyebrows_14', 'eyes': 'brownlight',
-     'clothes': [('rehmanpolanski_viking_tunic', W(tint='ochre', grime=.5, wear=.7, patch=.5, sat=.2)),
-                 ('toigo_wool_pants', W(tint='indigo_faded', grime=.7, wear=.6, patch=.3, sat=.2)),
-                 ('punkduck_winter_boots', W(tint='leather_tan', grime=.6, wear=.3, patch=0, sat=.5, flat=.2)),
-                 # long hair kept under the dust hood (hair rule); the hood hides it, so no hair mesh is fitted
-                 ('culturalibre_hero-heroine_hood_1', W(tint='canvas_faded', grime=.5, wear=.6, patch=.3, sat=.1))]},
-]
+# The people themselves are briefs (tools/unity/people/briefs/*.json, P4.1): BRIEF names the file (the bake-off's by default)
+BRIEF = os.environ.get('BRIEF', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'briefs', 'bakeoff.json'))
+PEOPLE = json.load(open(BRIEF))['people']
 
 # Blend shapes kept on every exported body: a face sculptor set (incr/decr pairs) and expression units.
 FACE_SHAPES = [
@@ -593,6 +554,112 @@ def slot(key):
     if len('mat_' + key) > 63: raise ValueError(f'material slot name over 63 characters: mat_{key}')
     return K.mat(key)
 
+# ----------------------------------------------------------------------------------------------------------------
+# Levels of detail
+# ----------------------------------------------------------------------------------------------------------------
+# LOD0 is the close-up (conversation, portrait): the body keeps its face shapes and full topology, the rest is capped
+# (strand brows and lashes ran to 30-40 K and 17 K triangles, a tactical vest to 37 K). LOD1 is the game camera's person
+# (13-44 % of the screen's height at 8-26 m), ~6 K; LOD2 the far one, ~2 K. Per-part budgets in triangles; None drops
+# the part at that level. Unity groups the objects by their _LOD<n> suffix into one LODGroup on import.
+LOD0_CAP = {'Brows': 3000, 'Lashes': 1500, 'Hair': 6000, 'Cloth': 4000}
+LOD_BUDGET = [
+    {'Body': 3000, 'Cloth': 2400, 'Hair': 600, 'Eyes': 200, 'Brows': 500, 'Lashes': None},
+    {'Body': 1000, 'Cloth': 800, 'Hair': 150, 'Eyes': None, 'Brows': None, 'Lashes': None},
+]
+
+def tris(o): return sum(len(p.vertices) - 2 for p in o.data.polygons)
+
+def part(o):
+    for k in ('Body', 'Cloth', 'Hair', 'Eyes', 'Brows', 'Lashes'):
+        if o.name.startswith(k): return k
+    return 'Cloth'
+
+# strands and cards are many small islands that collapse cannot merge: they are thinned instead, whole islands kept
+# evenly through the mesh until the budget is met
+STRANDS = ('Brows', 'Lashes', 'Hair')
+
+def thin(me, target):
+    bm = bmesh.new(); bm.from_mesh(me)
+    bm.faces.ensure_lookup_table()
+    seen, islands = set(), []
+    for f in bm.faces:
+        if f.index in seen: continue
+        stack, isl = [f], []
+        seen.add(f.index)
+        while stack:
+            g = stack.pop(); isl.append(g)
+            for e in g.edges:
+                for h in e.link_faces:
+                    if h.index not in seen: seen.add(h.index); stack.append(h)
+        islands.append(isl)
+    total = sum(len(f.verts) - 2 for isl in islands for f in isl)
+    if total > target and len(islands) > 1:
+        keep_every = total / target
+        acc, drop = 0.0, []
+        for k, isl in enumerate(islands):
+            acc += 1.0
+            if acc >= keep_every: acc -= keep_every
+            else: drop.extend(isl)
+        bmesh.ops.delete(bm, geom=list({id(f): f for f in drop}.values()), context='FACES')
+    bm.to_mesh(me); bm.free()
+
+def decimated(src, target, name, rig):
+    """A copy of a skinned mesh decimated (collapse) to about `target` triangles, at rest, without its shape keys, with
+    its vertex groups, materials and armature; strands and cards thinned by whole islands first."""
+    strands = part(src) in STRANDS
+    if strands:
+        dg = bpy.context.evaluated_depsgraph_get()
+        arms = [m for m in src.modifiers if m.type == 'ARMATURE']
+        for m in arms: m.show_viewport = False
+        me = bpy.data.meshes.new_from_object(src.evaluated_get(bpy.context.evaluated_depsgraph_get()), preserve_all_data_layers=True, depsgraph=bpy.context.evaluated_depsgraph_get())
+        for m in arms: m.show_viewport = True
+        thin(me, target)
+        me.name = name
+        o = bpy.data.objects.new(name, me); bpy.context.scene.collection.objects.link(o)
+        for vg in src.vertex_groups: o.vertex_groups.new(name=vg.name)
+        o.parent = rig
+        a = o.modifiers.new('Armature', 'ARMATURE'); a.object = rig
+        return o
+    ratio = max(0.002, min(1.0, target / max(1, tris(src))))
+    arms = [m for m in src.modifiers if m.type == 'ARMATURE']
+    for m in arms: m.show_viewport = False
+    dec = src.modifiers.new('LODDecimate', 'DECIMATE'); dec.ratio = ratio; dec.use_collapse_triangulate = True
+    dg = bpy.context.evaluated_depsgraph_get()
+    me = bpy.data.meshes.new_from_object(src.evaluated_get(dg), preserve_all_data_layers=True, depsgraph=dg)
+    src.modifiers.remove(dec)
+    for m in arms: m.show_viewport = True
+    me.name = name
+    o = bpy.data.objects.new(name, me); bpy.context.scene.collection.objects.link(o)
+    for vg in src.vertex_groups: o.vertex_groups.new(name=vg.name)
+    o.parent = rig
+    a = o.modifiers.new('Armature', 'ARMATURE'); a.object = rig
+    return o
+
+def lod_chain(rig):
+    parts = [o for o in rig.children if o.type == 'MESH']
+    report = []
+    # LOD0 caps on parts without shape keys (the body keeps its face shapes)
+    for o in parts:
+        cap = LOD0_CAP.get(part(o))
+        if cap and not o.data.shape_keys and tris(o) > cap:
+            before = tris(o)
+            c = decimated(o, cap, o.name + '_capped', rig)
+            old = o.data; o.data = c.data; bpy.data.objects.remove(c); bpy.data.meshes.remove(old)
+            report.append(f'{o.name} {before}->{tris(o)}')
+    totals = [sum(tris(o) for o in parts)]
+    cloth = [o for o in parts if part(o) == 'Cloth']
+    cloth_tris = sum(tris(o) for o in cloth) or 1
+    for level, budget in enumerate(LOD_BUDGET, start=1):
+        made = []
+        for o in parts:
+            b = budget.get(part(o))
+            if b is None: continue
+            if part(o) == 'Cloth': b = max(60, b * tris(o) / cloth_tris)   # the clothes share their budget by size
+            made.append(decimated(o, min(b, tris(o)), f'{o.name}_LOD{level}', rig))
+        totals.append(sum(tris(o) for o in made))
+    for o in parts: o.name = o.name + '_LOD0'; o.data.name = o.name
+    print(f'  LOD triangles {totals}' + (f'; capped {", ".join(report)}' if report else ''))
+
 def build_person(spec):
     K.reset(); K._mats.clear()
     v = [list(p) for p in base_verts]
@@ -836,6 +903,9 @@ def build_person(spec):
                 body.data.materials.clear(); body.data.materials.append(slot('skin:' + own))
     else:
         print('  no skin', spec['skin'])
+
+    # --- levels of detail (P4.1, BUILD_PLAN §6.B): caps on LOD0, decimated LOD1 and LOD2 named for Unity's LODGroup
+    lod_chain(rig)
 
     # --- export
     path = os.path.join(OUT, spec['id'] + '.fbx')

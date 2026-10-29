@@ -45,11 +45,13 @@ namespace SecondFace.EditorTools
         /// <summary>A P2 person as a prefab with their materials bound (the model's own slots are placeholders that
         /// <see cref="PeopleMaterials"/> binds in the editor; an instance made at runtime would stand white). Built when
         /// missing, committed: a rebuild renumbers the prefab.</summary>
-        public static GameObject Person(string name)
+        public static GameObject Person(string name) => Person(name, false);
+
+        public static GameObject Person(string name, bool force)
         {
             var path = $"{PeopleDir}/{name}.prefab";
             var existing = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-            if (existing != null) return existing;
+            if (existing != null && !force) return existing;
             var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{PeopleTestScene.Dir}/{name}.fbx");
             if (model == null) { Debug.LogWarning($"WorldAssetsBuild: no {name}.fbx (tools/unity/people/mh_build.py)"); return null; }
             System.IO.Directory.CreateDirectory(PeopleDir);
@@ -58,6 +60,15 @@ namespace SecondFace.EditorTools
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);
             return prefab;
+        }
+
+        /// <summary>Rebuilds the bound person prefabs (after mh_build changed the models: new parts, the LOD levels).</summary>
+        [MenuItem("Second Face/Rebuild people prefabs")]
+        public static void RebuildPeople()
+        {
+            foreach (var n in new[] { "p1_labourer_m", "p2_settler_f", "p3_drifter_m", "p4_gilded_f", "p5_street_m", "p6_nomad_f" }) Person(n, true);
+            AssetDatabase.SaveAssets();
+            Debug.Log("WorldAssetsBuild: people prefabs rebuilt");
         }
 
         /// <summary>Builds the world assets and puts them on the Boot scene's Bootstrap (opens and saves the scene).</summary>

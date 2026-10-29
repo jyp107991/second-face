@@ -80,6 +80,16 @@ namespace SecondFace.Tests
             yield return Boot(b => boot = b);
             var walk = boot.Walkabout;
             Assert.That(walk.Townsfolk, Is.EqualTo(5), "the P2 people stand about the town");
+            // levels of detail (P4.1): the game camera's person is LOD1, about 6 K triangles (they were 95-141 K whole)
+            var lod = walk.Walker.GetComponentInChildren<LODGroup>();
+            Assert.That(lod, Is.Not.Null, "the walker's levels of detail");
+            var lods = lod.GetLODs();
+            Assert.That(lods.Length, Is.EqualTo(3), "LOD0 close-up, LOD1 game camera, LOD2 far");
+            long Tris(LOD l) => l.renderers.OfType<SkinnedMeshRenderer>().Sum(r => { long n = 0; for (var i = 0; i < r.sharedMesh.subMeshCount; i++) n += r.sharedMesh.GetIndexCount(i) / 3; return n; });
+            Debug.Log($"BootTests: walker LOD triangles {string.Join(" / ", lods.Select(Tris))}, transitions {string.Join(" / ", lods.Select(l => l.screenRelativeTransitionHeight.ToString("0.###")))}");
+            Assert.That(Tris(lods[1]), Is.LessThan(8000), "LOD1 within the game camera's budget");
+            Assert.That(Tris(lods[2]), Is.LessThan(3000), "LOD2 within the far budget");
+            Assert.That(lods.All(l => l.renderers.All(r => r.sharedMaterials.All(m => m != null && m.name.Contains("_")))), Is.True, "every level's materials bound");
             var cam = boot.Stage.Camera;
             for (var i = 0; i < 5; i++) yield return null;
             var d0 = Vector3.Distance(cam.transform.position, walk.Rig.Target.position);

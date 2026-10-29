@@ -14,7 +14,7 @@ namespace SecondFace.EditorTools
     public sealed class PeopleImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 6;
+        public override uint GetVersion() => 7;
 
         private bool IsPerson => assetPath.StartsWith("Assets/SecondFace/People/");
 
@@ -39,6 +39,19 @@ namespace SecondFace.EditorTools
             imp.materialImportMode = ModelImporterMaterialImportMode.ImportStandard;
             imp.materialLocation = ModelImporterMaterialLocation.InPrefab;
             imp.optimizeGameObjects = false;
+        }
+
+        /// <summary>The levels of detail mh_build exports (objects named _LOD0.._LOD2, which the importer groups into a
+        /// LODGroup) switch by the person's share of the screen's height: LOD0 for close-ups (conversation, portraits,
+        /// above 45 %), LOD1 for the game camera's person (13-44 % at 8-26 m), LOD2 far, culled under 1.2 %.</summary>
+        public static readonly float[] LodHeights = { 0.45f, 0.1f, 0.012f };
+
+        private void OnPostprocessModel(GameObject root)
+        {
+            if (!IsPerson || !root.TryGetComponent<LODGroup>(out var group)) return;
+            var lods = group.GetLODs();
+            for (var i = 0; i < lods.Length && i < LodHeights.Length; i++) lods[i].screenRelativeTransitionHeight = LodHeights[i];
+            group.SetLODs(lods);
         }
 
         private void OnPreprocessTexture()

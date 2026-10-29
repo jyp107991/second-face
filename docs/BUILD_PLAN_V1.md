@@ -749,6 +749,21 @@ skin 2 K (player and companions), 1 K for everyone else; cloth and hair cards 1 
 per (garment, look), named `<look>__<garment>_d` instead of per person. Target ≤ 8 MB per person, ≤ 4 MB for
 extras.
 
+**B.7 Levels of detail (built 2026-10-29, P4.1a).** The bake-off people were 95–141 K triangles each, with no LODs:
+strand brows 22–42 K, strand lashes 17 K, a tactical vest 37 K, boots 31 K (six in the walkabout ≈ 700 K a frame on
+the phone). `mh_build.py` `lod_chain` before export: **LOD0** (close-ups) keeps the body whole with its face shapes
+(18–20 K) and caps the rest: garments 4 K (collapse decimation), brows 3 K, lashes 1.5 K and hair 6 K by *thinning*
+(strands and cards are many small islands that collapse cannot merge: whole islands are kept evenly through the mesh);
+**LOD1** ~6 K (body 3 K, garments 2.4 K shared by size, hair 0.6 K, eyes 0.2 K, brows 0.5 K, no lashes); **LOD2**
+~1.8 K (body 1 K, garments 0.8 K, hair 0.15 K, no eyes, brows or lashes). Copies are made at rest without shape keys,
+keeping vertex groups, materials and the armature; objects are named `_LOD0.._LOD2`, which the FBX importer groups into
+a `LODGroup`; `PeopleImportPostprocessor` sets the transitions 0.45 / 0.1 / 0.012 of the screen's height (the game
+camera's person, 13–44 %, is LOD1). LOD0 is 36–44 K, over the 15 K first planned: the body's 18–20 K carry the face
+shapes and only show in close-ups (a conversation's two people); a lower-poly LOD0 body waits on P4.2. The briefs are
+data: `tools/unity/people/briefs/*.json` (`BRIEF`, `REL` env), the bake-off's in `bakeoff.json`. The bound person
+prefabs are rebuilt after a model changes (*Second Face/Rebuild people prefabs*). Brows painted into the skin (instead
+of thinned strands) would read better at LOD1: open.
+
 ### 6.C Hair and grooming (the hair rule in practice)
 
 1. **Allowed proxies from the packs** (CC0 `hair01`): `elvs_unkempt_french_braid` (work braid), `rehmanpolanski_hair_bun_brown` and `elvs_reverse_french_braid_bun`
@@ -1385,6 +1400,10 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   read as null afterwards (the asset on disk is fine). Read what you need before `EditorSceneManager.OpenScene`.
 - **The project uses the Input System only** (`activeInputHandler: 1`): `UnityEngine.Input` throws. Read
   `Touchscreen.current` / `Keyboard.current` (and reference `Unity.InputSystem` in the check projects).
+- **Collapse decimation cannot reduce strand or card meshes** (P4.1a): brows of 37 K strands only fell to 25 K;
+  each strand is an island. Thin whole islands instead (`mh_build.thin`).
+- **mh_build's metas are templates**: a rebuild rewrites every model and texture `.meta` in an older format with the
+  same GUID; Unity's own committed metas are the ones to keep (`git checkout` the metas after a rebuild).
 - **A model's materials bound in the editor do not reach a runtime instance** (step 25): the P2 people's slots are
   placeholders that `PeopleMaterials.Bind` replaces on scene instances; `Instantiate` of the FBX at runtime stood white.
   Runtime people come from bound prefabs (`WorldAssetsBuild.Person` → `Prefabs/people/`).
