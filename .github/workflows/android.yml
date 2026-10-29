@@ -17,7 +17,8 @@ on:
         default: ''
 
 concurrency:
-  group: android-${{ github.ref }}
+  # a release run (dispatched with `release`) has its own group: a later push to the branch must not cancel it
+  group: android-${{ github.ref }}-${{ inputs.release || 'ci' }}
   cancel-in-progress: true
 
 jobs:

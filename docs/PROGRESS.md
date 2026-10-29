@@ -574,9 +574,9 @@ Mid ≥ 30 fps); **`play-walkabout` is released** (2026-10-29, commit e0b69c6: t
 walkabout; https://github.com/jyp107991/second-face/releases/tag/play-walkabout, `SecondFace.apk`, 345 MB as a
 development build: its size wants a look in release hardening). Later playable builds: run the Android workflow by
 hand with `release: play-<name>` (its release job waits for that run's tests and APK, then makes the tag and the
-release page; this session's git proxy refuses tag pushes). `play-people` was requested 2026-10-29 (run 66, commit
-8fe19c4: the natural motion and the generated hair) — check it released (its release job waits for the run's tests and
-APK). Then: NPC outfits merged into one renderer (crowd cost), body sliders, runtime grime in a cloth shader; garment
+release page; this session's git proxy refuses tag pushes). `play-people` (the natural motion, the generated hair, the faces)
+is requested again on the commit after bb040ff: run 66 was cancelled by the next push to main (one concurrency group);
+release runs now have their own group — check it released (its release job waits for the run's tests and APK). Then: NPC outfits merged into one renderer (crowd cost), body sliders, runtime grime in a cloth shader; garment
 models import as people (Humanoid) and log "Invalid Avatar Rig Configuration" (harmless: the wardrobe rebinds their
 bones by name; import them without an avatar); per-person walk variety (two captured walks); then P5 (camera, touch and
 UI), the road to `play-ch1`.
