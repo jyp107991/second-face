@@ -49,7 +49,7 @@ namespace SecondFace.Game.Play
             Townsfolk = Populate(assets);
         }
 
-        /// <summary>The P2 people at the town's people's posts (one each, the first posts), idling out of step.</summary>
+        /// <summary>The cast at the town's people's posts (one each, the first posts), each idling their own way.</summary>
         private int Populate(WorldAssets assets)
         {
             if (assets.Townsfolk == null || assets.Townsfolk.Length == 0) return 0;
@@ -69,7 +69,10 @@ namespace SecondFace.Game.Play
                     anim.runtimeAnimatorController = assets.Locomotion;
                     anim.applyRootMotion = false;
                     anim.cullingMode = AnimatorCullingMode.CullCompletely;
-                    anim.Play(0, 0, Hash(m.Id + "t"));
+                    // their own idle and now and then a gesture (P4 step 4); every third one talks more; feet on the ground
+                    var ambient = anim.gameObject.AddComponent<SecondFace.Game.People.Ambient>();
+                    ambient.Talker = n % 3 == 0;
+                    anim.gameObject.AddComponent<SecondFace.Game.People.FootPlant>();
                 }
                 n++;
             }

@@ -370,7 +370,8 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    runtime, skin hidden by mask; NPC merging and body sliders open.** Wardrobe runtime (§6.D, §6.Q): the player's garments are separate skinned meshes on the shared rig, swapped on
    equip; every NPC's outfit is merged into one SkinnedMeshRenderer when the NPC prefab is baked (two renderers
    roughly double the skinning cost). Dye and grime are material parameters, not textures.
-4. Locomotion: Animator controller from the 28 clips (idle, walk, jog, run, turn, strafe, sit, stand, drink,
+4. **Built (P4.4a, 2026-10-29; §6.E "As built"; capture `people_motion_slope`): speed blend with idle variants, a
+   gesture layer, foot planting by Humanoid IK; turn and strafe clips open.** Locomotion: Animator controller from the 28 clips (idle, walk, jog, run, turn, strafe, sit, stand, drink,
    alert, …) in a 2D freeform blend tree by speed and turn; root motion off; a `CharacterMotor` on NavMesh
    (`NavMeshAgent` with `updatePosition` true, animation driven by velocity); foot IK through Animation Rigging
    `TwoBoneIKConstraint` with ground raycasts (§6.E).
@@ -899,6 +900,21 @@ renderer at bake (they are separate renderers per garment today).
   mask) for conversation and work loops; an `Additive` layer for breathing on idle.
 - Crowd cost: GPU skinning on, `SkinnedMeshRenderer.updateWhenOffscreen = false`, LOD2 switches to a 1-bone
   "billboard sway" rig; ≤ 40 full actors in view on Mid.
+
+**As built (P4.4a, 2026-10-29).** `LocomotionBuild` (version 3, rebuilt in place so the controller's GUID stays): the
+base layer's 1D blend on `Speed` over idle, walk_slow, walk, walk_brisk, jog and run at the clips' own speeds, the idle a
+nested blend on `Idle` over four captured idles; IK pass on. A `Gesture` layer on `People/UpperBody.mask` (trunk, head,
+arms, fingers) with states played by name (talk, talk_b, argue, drink, wave, stretch, yawn, yawn_b), each back to an
+empty `none` at its end; the layer weighs **0 at rest** (an empty state on an override layer writes the default pose
+over the masked bones) and `Ambient` raises it while a gesture plays. `FootPlant` (Humanoid IK in `OnAnimatorIK`, no
+rig): each foot moved by the ground's height under it relative to the person's footing, turned to the slope, the pelvis
+lowered by the lower foot's ground; full standing, 0.35 at walking pace (the clips have no contact curves); smoothed.
+`Ambient`: each person's own idle by a hash of their name, started at their own point, and a gesture every 7–20 s
+while standing (talkers mostly talk and argue). The walker and the walkabout's townsfolk carry both. Test
+`PeopleMotionTests` on a 14° slope: two of the same person in step, the bare one's ankles 5.5 cm apart in height over
+the ground, the planted one's 1.5 cm; the wave plays on the gesture layer at full weight; capture
+`people_motion_slope`. Open: turn-in-place and strafe clips (none captured yet: the agent turns on the spot), foot
+contact curves for planting while walking, the gesture layer over walking.
 
 ### 6.F Camera and touch
 **F.1 Rig.** Cinemachine 3: a `CinemachineCamera` with `OrbitalFollow` around a `LookTarget` (the leader's chest +
@@ -1499,6 +1515,12 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
 - **Skin stands through a tight garment where its own list skips it** (P4.3a): a sweater's `delete_verts` and fitted
   vertices left the nipples visible through it. `close_holes` hides a body vertex when 60 % of its neighbours are
   hidden (four rounds): islands fill, the garment's edges barely move. Applied to every person's build.
+- **An empty state on an override layer holds the default pose** (P4.4a): the gesture layer at weight 1 resting in
+  an empty state (write defaults on) overwrote the masked trunk and arms, and undid the base layer's foot planting.
+  Rest the layer at weight 0, states without write defaults, weight up only while a clip plays.
+- **Batch-mode frames are a few milliseconds** (P4.4a): a test waiting 25 frames for a 0.25 s fade saw 15 % of it.
+  Wait by game time (`Time.time`). And an Animator at speed 0 barely re-evaluates, so its IK hardly runs: compare two
+  people in step instead of freezing one.
 - **Judge hair from the front at portrait distance** (P4.2a): two braids passed in the lineup (from 7 m) and showed a
   swept fringe in the close-ups. Brief a hair only after seeing it in `people_sculpt_*` or a portrait.
 

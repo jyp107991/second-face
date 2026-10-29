@@ -38,6 +38,7 @@ namespace SecondFace.Game.Play
                 w.Animator.runtimeAnimatorController = locomotion;
                 w.Animator.applyRootMotion = false;
                 w.Animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
+                w.Animator.gameObject.AddComponent<SecondFace.Game.People.FootPlant>();
             }
             return w;
         }

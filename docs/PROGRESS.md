@@ -541,14 +541,20 @@ while the game runs (a top, trousers, boots, a long cardigan over them, a knitte
 the body, its levels of detail and the sculpted face; the skin under them is hidden so nothing pokes through, a hat
 takes the hair off, and a garment can be dyed. Seen in `docs/evidence/unity/p4/people_wardrobe.jpg`. Still to come:
 grime and wear changing at runtime, body-shape sliders, and NPC outfits merged for speed.
+**People that stand on the ground and live a little (P4 step 4, 2026-10-29):** each person now idles their own way
+(four captured idles), and now and then gestures (talks, argues, drinks, waves, stretches, yawns) while standing; feet
+meet sloped and uneven ground instead of sinking or floating (`docs/evidence/unity/p4/people_motion_slope.jpg`: in
+front planted, behind not). The townsfolk in Shale and the walker carry both. Still to come: turning on the spot and
+side-steps (no clips yet).
 **Next action:** step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until
 Mid ≥ 30 fps); **`play-walkabout` is released** (2026-10-29, commit e0b69c6: the cast in Shale and the
 walkabout; https://github.com/jyp107991/second-face/releases/tag/play-walkabout, `SecondFace.apk`, 345 MB as a
 development build: its size wants a look in release hardening). Later playable builds: run the Android workflow by
 hand with `release: play-<name>` (its release job waits for that run's tests and APK, then makes the tag and the
-release page; this session's git proxy refuses tag pushes); then P4 step 4: locomotion (the 2D blend by speed and
-turn from the captured clips, foot IK with Animation Rigging, a CharacterMotor on the NavMesh), then the wardrobe's
-open items (NPC outfits merged into one renderer; body sliders; runtime grime in a cloth shader).
+release page; this session's git proxy refuses tag pushes); then P4 step 5: ragdolls (a builder per rig: capsules
+per Humanoid bone, joints with limits; on at death and heavy knockback, blended back to stand), then step 6: portraits
+in engine (a portrait camera per actor, cached per outfit; the aged skin for the photograph), then the wardrobe's open
+items (NPC outfits merged into one renderer; body sliders; runtime grime in a cloth shader).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,
