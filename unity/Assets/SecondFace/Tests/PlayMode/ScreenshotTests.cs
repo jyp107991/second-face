@@ -487,6 +487,91 @@ namespace SecondFace.Tests
             }
         }
 
+        /// <summary>P4.13 step 3 (the cast as data): every garment the content dresses people in is built for the bases it
+        /// fits, and a crowd of ten women and ten men by trade, each made by <see cref="SecondFace.Core.Npc.Bodies"/>, is
+        /// dressed by the content's own outfit rules (`Outfits.DressFor`, `Dresser`): a top and legs or a garment for the
+        /// whole body, shoes, and what the trade adds, dyed and weathered on the one texture each garment has
+        /// (`people_cast_<f|m>`). The arms stay out of every body.</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator TheCastWearsTheContent()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Player.unity";
+            if (!File.Exists(path)) { Assert.Ignore("player scene not built"); yield break; }
+            yield return LoadTestScene(path);
+            UiTests.Content();
+            for (var i = 0; i < 5; i++) yield return null;
+            var built = GameObject.Find("player_f_built");
+            Assert.That(built, Is.Not.Null);
+            var controller = built.GetComponent<Animator>().runtimeAnimatorController;
+            var roles = SecondFace.Core.Npc.Outfits.Roles;
+            var cam = Camera.main;
+            cam.fieldOfView = 22f;
+            var sun = Object.FindObjectsByType<Light>(FindObjectsSortMode.None).FirstOrDefault(l => l.type == LightType.Directional && l.name == "Sun");
+            if (sun != null) sun.transform.rotation = Quaternion.Euler(35f, 20f, 0f);
+            for (var b = 0; b < 2; b++)
+            {
+                var male = b == 1;
+                var id = male ? "player_m" : "player_f";
+                var fit = male ? "m" : "f";
+                GameObject prefab = null;
+#if UNITY_EDITOR
+                prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/SecondFace/Prefabs/people/{id}.prefab");
+#endif
+                if (prefab == null) { Assert.Ignore("player prefabs not built"); yield break; }
+                var set = prefab.GetComponent<SecondFace.Game.People.Wardrobe>().Set;
+                var wanted = SecondFace.Core.Content.Registry.GarmentIds.Where(g => { var f = SecondFace.Core.Content.Registry.Garments[g].Fit; return f == "u" || f == fit; }).ToList();
+                var missing = wanted.Where(g => set.Find(g) == null).ToList();
+                Debug.Log($"people_cast_{fit}: {wanted.Count - missing.Count} of {wanted.Count} garments built" + (missing.Count > 0 ? "; missing " + string.Join(", ", missing) : ""));
+                var row = new List<(GameObject Go, SecondFace.Core.Npc.PlayerLook Look, SecondFace.Core.Npc.Outfit Outfit, string Role)>();
+                var z = 70f + b * 12f;
+                for (var i = 0; i < 10; i++)
+                {
+                    var role = roles[(i * 4 + b * 3) % roles.Length];
+                    var age = 19 + (i * 13 + b * 5) % 50;
+                    var look = SecondFace.Core.Npc.Bodies.For($"crowd_{fit}_{i}", male, age, role);
+                    var outfit = SecondFace.Core.Npc.Outfits.DressFor(1000 + i * 31 + b * 7, role, fit);
+                    var go = Object.Instantiate(prefab, new Vector3((i - 4.5f) * 0.75f, 0f, z), Quaternion.Euler(0, 180f, 0));
+                    go.name = $"{id}_{role}_{age}";
+                    go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
+                    var anim = go.GetComponent<Animator>();
+                    anim.runtimeAnimatorController = controller;
+                    anim.applyRootMotion = false;
+                    anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                    go.AddComponent<SecondFace.Game.People.ArmClearance>();
+                    row.Add((go, look, outfit, role));
+                }
+                yield return null;
+                yield return null;
+                foreach (var (go, look, outfit, role) in row)
+                {
+                    var w = go.GetComponent<SecondFace.Game.People.Wardrobe>();
+                    SecondFace.Game.People.Dresser.Dress(w, outfit);
+                    SecondFace.Game.People.LookView.Apply(go, look);
+                    var wearing = w.Wearing;
+                    Debug.Log($"people_cast: {go.name} wears {string.Join(", ", wearing.Select(kv => kv.Key + " " + kv.Value))}");
+                    Assert.That(wearing.ContainsKey("full") || (wearing.ContainsKey("top") && wearing.ContainsKey("legs")), Is.True, $"{go.name}: dressed");
+                    Assert.That(wearing.ContainsKey("feet"), Is.True, $"{go.name}: shod");
+                    Assert.That(!(wearing.ContainsKey("full") && (wearing.ContainsKey("top") || wearing.ContainsKey("legs"))), Is.True, $"{go.name}: a garment for the whole body is the top and the legs");
+                }
+                var deepest = 0f;
+                var t0 = Time.realtimeSinceStartup;
+                while (Time.realtimeSinceStartup - t0 < 2f)
+                {
+                    yield return null;
+                    foreach (var (go, _, _, _) in row) deepest = Mathf.Max(deepest, go.GetComponent<SecondFace.Game.People.ArmClearance>().Depth());
+                }
+                Debug.Log($"people_cast_{fit}: arms at most {deepest * 100f:0.0} cm in");
+                Assert.That(deepest, Is.LessThan(0.012f), "arms clear of every body");
+                foreach (var a in row.Select(r => r.Go.GetComponent<Animator>())) a.speed = 0f;
+                foreach (var g in row.Select(r => r.Go.GetComponent<LODGroup>()).Where(g => g != null)) g.ForceLOD(0);
+                cam.transform.position = new Vector3(0f, 0.92f, z - 9.8f);
+                cam.transform.rotation = Quaternion.Euler(0.5f, 0, 0);
+                yield return null;
+                yield return Capture($"people_cast_{fit}", 1920, 1000);
+                Assert.That(missing, Is.Empty, $"{id}: every garment of its fit built (mh_build wardrobe_content)");
+            }
+        }
+
         /// <summary>P4 step 6: portraits in the engine under the studio light, cached; the player's two bases as they are
         /// and aged, and three of the cast, in one sheet (`people_portraits`). The second ask returns the same texture;
         /// the person's layers and the world's lights are as they were after.</summary>

@@ -12,7 +12,8 @@ namespace SecondFace.Core.Npc
     /// range (fuller with a fuller build), its firmness going with the years; seat, hips and waist; a man's shoulders,
     /// chest and arms with his muscle; a belly with weight and age; the face drawn by the sculptor's reroll (a character,
     /// not an average); ancestry from the content's tag, else the Reach's mix; skin from ancestry and the sun of the
-    /// work; hair by the grooming rule, greying with age. What the content says of a person (frame, age, ancestry) wins.
+    /// work; hair by the grooming rule, greying with age. What the content says of a person (age, ancestry) wins; its
+    /// "frame" is how the web game marked a person's sex (Routine.Male), not a build.
     /// </summary>
     public static class Bodies
     {
@@ -59,7 +60,7 @@ namespace SecondFace.Core.Npc
         };
 
         /// <summary>A person's look (for the base of their sex) from who they are.</summary>
-        public static PlayerLook For(string id, bool male, double age, string role = null, Means? means = null, string frame = null, string ancestry = null)
+        public static PlayerLook For(string id, bool male, double age, string role = null, Means? means = null, string ancestry = null)
         {
             var rng = new Rng(Seed(id));
             var m = means ?? MeansOf(role, rng);
@@ -70,8 +71,6 @@ namespace SecondFace.Core.Npc
             var mean = male ? ManMean : WomanMean;
             var sd = male ? ManSd : WomanSd;
             var stature = Math.Clamp(mean + Normal(rng) * sd, mean - 2.5 * sd, mean + 2.5 * sd) - Math.Max(0, age - 45) * 0.08;
-            if (frame == "broad") stature += 1.5;
-            if (frame == "narrow") stature -= 1.5;
             look.Stature = (float)Math.Round(stature, 1);
 
             // build (the weight macro): lean unless comfortable; muscle by the work
@@ -86,7 +85,6 @@ namespace SecondFace.Core.Npc
             weight = Math.Clamp(weight, 0.02, 0.9);
             var muscleBase = male ? BaseMuscleM : BaseMuscleF;
             var muscle = (male ? 0.55 + Normal(rng) * 0.14 : 0.45 + Normal(rng) * 0.11) + (labour - 0.5) * 0.24 - Math.Max(0, age - 50) * 0.004;
-            if (frame == "broad") muscle += 0.05;
             muscle = Math.Clamp(muscle, 0.1, 1.0);
             look.Build = (float)ToSlider(weight, BaseWeight, 0.0, BaseWeight + 0.5);
             look.Muscle = (float)ToSlider(muscle, muscleBase, Math.Max(0, muscleBase - 0.3), Math.Min(1, muscleBase + 0.5));
@@ -101,8 +99,8 @@ namespace SecondFace.Core.Npc
                 s["body-bust"] = (float)ToSlider(cup, BaseBust, 0, 1);
                 s["body-firm"] = (float)ToSlider(firm, BaseFirm, 0, 1);
                 s["body-seat"] = Clamp1(0.15 + Normal(rng) * 0.4 + heavy * 0.6);
-                s["body-hips"] = Clamp1(0.05 + Normal(rng) * 0.33 + heavy * 0.5 + (frame == "narrow" ? 0.05 : 0));
-                s["body-shoulders"] = Clamp1(-0.05 + Normal(rng) * 0.2 + strong * 0.5 + (frame == "broad" ? 0.2 : 0));
+                s["body-hips"] = Clamp1(0.05 + Normal(rng) * 0.33 + heavy * 0.5);
+                s["body-shoulders"] = Clamp1(-0.05 + Normal(rng) * 0.2 + strong * 0.5);
                 s["body-chest"] = Clamp1(Normal(rng) * 0.1 + (cup - 0.45) * 0.9);
                 s["body-thighs"] = Clamp1(0.1 + Normal(rng) * 0.15 + strong * 0.5 + heavy * 0.8);
             }
@@ -110,7 +108,7 @@ namespace SecondFace.Core.Npc
             {
                 s["body-seat"] = Clamp1(-0.05 + Normal(rng) * 0.25 + heavy * 0.4);
                 s["body-hips"] = Clamp1(Normal(rng) * 0.2 + heavy * 0.3);
-                s["body-shoulders"] = Clamp1(0.05 + Normal(rng) * 0.25 + strong * 0.8 + (frame == "broad" ? 0.25 : frame == "narrow" ? -0.2 : 0));
+                s["body-shoulders"] = Clamp1(0.05 + Normal(rng) * 0.25 + strong * 0.8);
                 s["body-chest"] = Clamp1(Normal(rng) * 0.2 + strong * 0.8 + heavy * 0.4);
                 s["body-thighs"] = Clamp1(Normal(rng) * 0.15 + strong * 0.5 + heavy * 0.8);
             }

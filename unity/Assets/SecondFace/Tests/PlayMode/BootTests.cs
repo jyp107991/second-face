@@ -669,7 +669,7 @@ namespace SecondFace.Tests
             Assert.That(town.People.Count, Is.GreaterThanOrEqualTo(10), "those about stand in the world");
             var cast = boot.World.Cast.ToDictionary(c => c.Id);
             foreach (var p in town.People)
-                Assert.That(cast[p.Body].Male, Is.EqualTo(SecondFace.Core.Npc.Routine.Male(p.Def.Look)), $"{p.Id} in a body of their sex");
+                Assert.That(p.Body.StartsWith("base_") ? p.Body == "base_m" : cast[p.Body].Male, Is.EqualTo(SecondFace.Core.Npc.Routine.Male(p.Def.Look)), $"{p.Id} in a body of their sex");
             Debug.Log($"BootTests: {residents.Count} people, {town.People.Count} standing, {town.People.Select(p => p.Body).Distinct().Count()} bodies");
             // one mesh over the town: a way from the street in through the sheriff's door (a place's own mesh built before
             // the world's would leave its interiors an island)
@@ -809,7 +809,7 @@ namespace SecondFace.Tests
             Assert.That(shelter.People.Count, Is.GreaterThanOrEqualTo(1), "near enough to stand");
             var cast = boot.World.Cast.ToDictionary(c => c.Id);
             foreach (var p in shelter.People)
-                Assert.That(cast[p.Body].Male, Is.EqualTo(SecondFace.Core.Npc.Routine.Male(p.Def.Look)), $"{p.Id} in a body of their sex");
+                Assert.That(p.Body.StartsWith("base_") ? p.Body == "base_m" : cast[p.Body].Male, Is.EqualTo(SecondFace.Core.Npc.Routine.Male(p.Def.Look)), $"{p.Id} in a body of their sex");
             // down in the shelter among them
             var one = shelter.People.OrderBy(p => p.Id).First();
             var at = one.transform.position + one.transform.forward * 1.6f;

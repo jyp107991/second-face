@@ -26,6 +26,11 @@ namespace SecondFace.Game.Play
         public string Body;
         public Vector3 Post;
         public Townsperson Person;
+        /// <summary>Made from a base body (P4.13): their sex, their body and face (<see cref="Bodies"/>), and what they
+        /// wear (the content's own outfit, else its outfit rules for their trade and faction). Null look: a cast body.</summary>
+        public bool Male;
+        public PlayerLook Look;
+        public Outfit Outfit;
     }
 
     /// <summary>
@@ -51,8 +56,11 @@ namespace SecondFace.Game.Play
         /// <summary>The one who walks: distances are theirs.</summary>
         public Transform Focus;
         public RuntimeAnimatorController Locomotion;
-        /// <summary>The cast's bodies.</summary>
+        /// <summary>The cast's bodies (used while the bases are not set).</summary>
         public List<WorldAssets.CastEntry> Bodies = new();
+        /// <summary>The two base bodies everyone is made from (P4.13: the player's, with the wardrobe for the whole cast).</summary>
+        public GameObject BaseF, BaseM;
+        public bool FromBases => BaseF != null && BaseM != null;
         /// <summary>One of the people was tapped and a verb chosen.</summary>
         public event Action<Interactable, string> Chosen;
 
@@ -116,11 +124,24 @@ namespace SecondFace.Game.Play
                 if (placement.If != null && !Logic.Test(placement.If, _game)) continue;
                 who.Add((m, placement, def, map));
             }
-            var cast = Bodies.Select(b => new CastBody { Id = b.Id, Male = b.Male, Age = b.Age, Role = b.Role }).ToList();
-            var wear = Routine.Assign(who.Select(w => (w.M.Id, Routine.Male(w.D.Look), w.D.Look?.Age ?? 35.0, w.D.Role)).ToList(), cast);
-            foreach (var (m, placement, def, map) in who)
-                if (wear.TryGetValue(m.Id, out var body))
-                    town.Residents.Add(new Resident { Id = m.Id, Def = def, Placement = placement, Map = map, Body = body, Post = m.transform.position });
+            if (FromBases)
+                foreach (var (m, placement, def, map) in who)
+                {
+                    var male = Routine.Male(def.Look);
+                    town.Residents.Add(new Resident
+                    {
+                        Id = m.Id, Def = def, Placement = placement, Map = map, Body = male ? "base_m" : "base_f", Post = m.transform.position,
+                        Male = male, Look = LookOf(def, male), Outfit = OutfitOf(def, male),
+                    });
+                }
+            else
+            {
+                var cast = Bodies.Select(b => new CastBody { Id = b.Id, Male = b.Male, Age = b.Age, Role = b.Role }).ToList();
+                var wear = Routine.Assign(who.Select(w => (w.M.Id, Routine.Male(w.D.Look), w.D.Look?.Age ?? 35.0, w.D.Role)).ToList(), cast);
+                foreach (var (m, placement, def, map) in who)
+                    if (wear.TryGetValue(m.Id, out var body))
+                        town.Residents.Add(new Resident { Id = m.Id, Def = def, Placement = placement, Map = map, Body = body, Post = m.transform.position });
+            }
             _towns[id] = town;
             _next = 0f;   // look at once who is near
         }
@@ -185,15 +206,34 @@ namespace SecondFace.Game.Play
             _queue.Sort((a, b) => a.D.CompareTo(b.D));
         }
 
-        /// <summary>A body for someone come near: their cast body where the hour has them, keeping their routine.</summary>
+        /// <summary>A person's body and face as the content has them: their id, sex, age, trade and ancestry
+        /// (<see cref="Bodies"/>; the same every time).</summary>
+        public static PlayerLook LookOf(NpcDef def, bool male) =>
+            Core.Npc.Bodies.For(def.Id, male, def.Look?.Age ?? 35.0, def.Role, ancestry: def.Look?.Ancestry);
+
+        /// <summary>What a person wears: the content's own outfit, else its rules for their trade and faction, seeded as the
+        /// web game seeded them.</summary>
+        public static Outfit OutfitOf(NpcDef def, bool male) =>
+            def.Outfit ?? Outfits.DressFor(def.Look?.Seed ?? (int)(Core.Npc.Bodies.Seed(def.Id) & 0x7fffffff), Outfits.Roles.Contains(def.Role) ? def.Role : "settler", male ? "m" : "f", def.Faction);
+
+        /// <summary>A body for someone come near: made from their base (or their cast body) where the hour has them,
+        /// keeping their routine.</summary>
         private void Make(Group town, Resident r)
         {
-            var model = Bodies.FirstOrDefault(b => b.Id == r.Body)?.Prefab;
+            var model = r.Look != null ? (r.Male ? BaseM : BaseF) : Bodies.FirstOrDefault(b => b.Id == r.Body)?.Prefab;
             if (model == null) return;
             // under the place's people, not the place: a place hides its surface while the walker is under it, and people
             // are not its surface
             var go = Instantiate(model, r.Post, Quaternion.Euler(0, Hash(r.Id) * 360f, 0), town.Folk.transform);
             go.name = "townsfolk_" + r.Id;
+            if (r.Look != null)
+            {
+                // their stature, dressed for their trade, then their body, face, skin and hair over what they wear
+                go.transform.localScale = Vector3.one * LookView.Scale(r.Look);
+                var wardrobe = go.GetComponent<Wardrobe>();
+                if (wardrobe != null) Dresser.Dress(wardrobe, r.Outfit);
+                LookView.Apply(go, r.Look);
+            }
             var anim = go.GetComponentInChildren<Animator>();
             if (anim != null)
             {

@@ -258,8 +258,35 @@ PALETTE = {
     # clinic whites; and a river green
     'warden_grey': (0.40, 0.41, 0.42), 'dock_orange': (0.66, 0.36, 0.17), 'hivis_faded': (0.70, 0.62, 0.24),
     'clinic_white': (0.78, 0.77, 0.72), 'river_green': (0.27, 0.33, 0.28),
+    # the wardrobe for the cast (P4.13): cloth left light for the dye it takes at runtime, and a garment's own colours
+    'undyed': (0.70, 0.67, 0.60), 'own': (0.40, 0.40, 0.40),
 }
 def W(**look): return look
+
+# The content's garments on the player's bases (P4.13 step 3, the cast as data): every garment the content's outfit
+# rules dress people in (garments.json: slot, fit f / m / u for which base, dye), built for the whole cast with one
+# texture each, shared by both bases. Dyeable cloth is baked light and undyed with salvage patches (its dye, grime and
+# wear come at runtime: Dresser, SecondFace/Cloth); leather, metal and the rest keep their own colours, muted. A
+# garment hides the body under it by its slot; a hat hides the hair.
+CONTENT_LOOK = W(tint='undyed', sat=0.15, flat=0.5, patch=0.25)
+OWN_LOOK = W(tint='own', sat=0.45, flat=0.15)
+HIDING_SLOTS = {'top', 'legs', 'full', 'feet', 'hands', 'face'}
+BAKED = set()   # shared garment textures baked in this run (the second base reuses them)
+
+def content_wardrobe(spec):
+    path = spec.get('wardrobe_content')
+    if not path: return []
+    with open(os.path.abspath(path)) as f: garments = json.load(f)
+    fit = 'f' if spec['gender'] < 0.5 else 'm'
+    have = {w['g'] for w in spec.get('wardrobe', [])}
+    only = os.environ.get('WARDROBE_ONLY')
+    out = []
+    for g, d in sorted(garments.items()):
+        if g in have or d.get('fit', 'u') not in ('u', fit): continue
+        if only and g not in only.split(','): continue
+        look = dict(CONTENT_LOOK if d.get('dye') else OWN_LOOK, hide=d['slot'] in HIDING_SLOTS, shared=True)
+        out.append({'g': g, 'slot': d['slot'], 'look': look, 'hides_hair': d['slot'] == 'head'})
+    return out
 
 # Garments whose community texture carries a print, a logo, lettering or a fashion motif (wardrobe rule: none of
 # those): the bake flattens their own texture at least this far towards plain grey, so only the dye, the weave noise
@@ -358,6 +385,7 @@ def bake_cloth(po, src, name, look):
     the rich). The source texture is never shipped; this is what makes a community mesh this world's garment."""
     os.makedirs(TEXOUT, exist_ok=True)
     dst = os.path.join(TEXOUT, name + '.png')
+    if look.get('shared') and name in BAKED and os.path.exists(dst): return name   # the other base baked it
     # palette and look colours are written as seen (sRGB); the node tree works in linear, the bake saves sRGB
     lin = lambda c: tuple(x ** 2.2 for x in c)
     tint = lin(PALETTE[look.get('tint', 'canvas_faded')])
@@ -436,6 +464,7 @@ def bake_cloth(po, src, name, look):
     po.data.materials.clear()
     bpy.data.images.remove(img); bpy.data.materials.remove(mat)
     write_tex_meta(dst, f'{REL}/tex/{name}.png', 'd')
+    if look.get('shared'): BAKED.add(name)
     return name
 
 def smooth_noise(w, h, cells, rng):
@@ -645,18 +674,33 @@ for _f in body_faces:
     for _a in _ix:
         BODY_NEIGHBOURS.setdefault(_a, set()).update(b for b in _ix if b != _a)
 
-def close_holes(hidden, rounds=4, share=0.6, island=200):
+def close_holes(hidden, cover=None, at=None, rounds=4, share=0.6, island=200, reach=0.3):
     """A garment's hidden body vertices with the small islands inside them filled: a vertex whose neighbours are at
     least `share` hidden is hidden too (nipples and knuckles stood through a sweater the garment's own list skipped).
     The garment's edges barely move: a vertex there has about half its neighbours hidden. Then every patch of body the
-    garment encloses whole, up to `island` vertices (P4.13: a nipple under a sweater is 50, which a fuller bust pushed
-    through the cloth; the navel under trousers 18-30), where the openings left are the head, a hand or a foot (1000+)."""
+    garment encloses whole, up to `island` vertices, that lies under the cloth: each of its vertices (`at`, MakeHuman
+    space) within `reach` (3 cm) of the garment's surface over the body (`cover`, cover_points). P4.13: a nipple under a
+    sweater is 57 vertices, which a fuller bust pushed through the cloth; a bare finger past a fingerless glove is a
+    patch of 115-175 the glove does not lie over, and stays."""
+    import math
     hidden = set(hidden)
     for _ in range(rounds):
         add = {v for v, ns in BODY_NEIGHBOURS.items()
                if v not in hidden and ns and sum(1 for n in ns if n in hidden) >= share * len(ns)}
         if not add: break
         hidden |= add
+    if not cover or at is None: return hidden
+    cell = lambda p: tuple(int(math.floor(x / reach)) for x in p)
+    grid = {}
+    for p in cover: grid.setdefault(cell(p), []).append(p)
+    def near(q):
+        c = cell(q)
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                for dz in (-1, 0, 1):
+                    for p in grid.get((c[0] + dx, c[1] + dy, c[2] + dz), ()):
+                        if (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 + (p[2] - q[2]) ** 2 <= reach * reach: return True
+        return False
     seen = set()
     for start in BODY_NEIGHBOURS:
         if start in hidden or start in seen: continue
@@ -666,8 +710,17 @@ def close_holes(hidden, rounds=4, share=0.6, island=200):
             u = stack.pop(); patch.append(u)
             for n in BODY_NEIGHBOURS[u]:
                 if n not in hidden and n not in seen: seen.add(n); stack.append(n)
-        if len(patch) <= island: hidden.update(patch)
+        if len(patch) <= island and all(near(at(i)) for i in patch): hidden.update(patch)
     return hidden
+
+def ref_vertices(refs):
+    """The body vertices a garment's vertices are fitted to (a single-vertex reference names only its one)."""
+    return {i for r in refs for i, w in zip(r[:3], r[3:6]) if w > 0}
+
+def cover_points(refs, at):
+    """Where a garment lies over the body: each of its vertices at the weighted body vertices it is fitted to (its
+    offset left out), MakeHuman space."""
+    return [tuple(r[3] * at(r[0])[k] + r[4] * at(r[1])[k] + r[5] * at(r[2])[k] for k in range(3)) for r in refs]
 
 def slot(key):
     """A material slot named mat_<key>. Blender silently cuts datablock names at 63 characters, and the slot name is
@@ -907,15 +960,16 @@ def build_person(spec):
     to_bl_dir = lambda p: Vector((p[0] * SCALE, -p[2] * SCALE, p[1] * SCALE))
 
     # --- body mesh (body group only, minus the vertices the clothes hide), uv from vt
-    hidden = set()
+    hidden, cover = set(), []
     for g, look in spec.get('clothes', []):
         d = find_dir(g, COMMUNITY, os.path.join(MH, 'clothes'))
         if d is None: print('  no garment', g); continue
         _, refs, dels = read_mhclo(os.path.join(d, g + '.mhclo'))
         hidden.update(dels)
         if g in COVERS or (look or {}).get('hide'):
-            hidden.update(i for r in refs for i in r[:3])
-    hidden = close_holes(hidden)
+            hidden.update(ref_vertices(refs))
+            cover += cover_points(refs, lambda i: v[i])
+    hidden = close_holes(hidden, cover, lambda i: v[i])
     faces_kept = [f for f in body_faces if not all(i in hidden for i, _ in f)]
     used = sorted({i for f in faces_kept for i, _ in f})
     remap = {i: k for k, i in enumerate(used)}
@@ -1138,12 +1192,12 @@ def build_person(spec):
             elif hair_look is not None and src_d: tex = bake_hair(src_d, (tex_name or name) + '_d', hair_look)
             elif src_d: tex = copy_texture(src_d, (tex_name or name) + '_d')
             # hair cards ship without normal maps (BUILD_PLAN §6.B.6; some packs' are object-space, wrong in Unity). A
-            # garment's normal map does not change with its dye: one shared 1K copy per garment (<garment>_n), which
+            # garment's normal map does not change with its dye: one shared half-K copy per garment (<garment>_n), which
             # Unity finds from the person's <id>__<garment>_d.
             if tex and hair_look is None and 'normalmapTexture' in mm:
                 tp = os.path.join(os.path.dirname(mat_path), mm['normalmapTexture'])
                 if os.path.exists(tp):
-                    if look is not None: copy_texture(tp, name + '_n', 'n', size=1024)
+                    if look is not None: copy_texture(tp, name + '_n', 'n', size=512)   # the phone's import caps them at 512
                     else: copy_texture(tp, (tex_name or name) + '_n', 'n')
         po.data.materials.append(slot(f'{mat_name}:{tex or "none"}'))
         # skinning: weights of the first reference vertex (eyes to the eye bones)
@@ -1279,10 +1333,11 @@ def build_person(spec):
     # shapes and levels of detail, and in <id>.wardrobe.json its slot and the base vertices it hides
     if spec.get('wardrobe'):
         manifest = {'base': spec['id'], 'outfit': spec.get('outfit', []), 'garments': []}
-        for w in spec['wardrobe']:
+        for w in spec['wardrobe'] + content_wardrobe(spec):
             g, look = w['g'], w.get('look')
             before = set(bpy.data.objects)
-            po = proxy('Cloth_' + g, 'clothes', g, 'cloth', look=look, tex_name=spec['id'] + '__' + g)
+            shared = bool((look or {}).get('shared'))
+            po = proxy('Cloth_' + g, 'clothes', g, 'cloth', look=look, tex_name=g if shared else spec['id'] + '__' + g)
             if po is None: continue
             lod_chain(rig, keep_shapes=bool(spec.get('sculpt')), parts=[po], cloth_total=OUTFIT_TRIS)
             made = [o for o in bpy.data.objects if o not in before]
@@ -1297,8 +1352,10 @@ def build_person(spec):
             K.write_model_meta(gpath, f'{REL}/{name}.fbx')
             _, refs, dels = read_mhclo(os.path.join(find_dir(g, COMMUNITY, os.path.join(MH, 'clothes')), g + '.mhclo'))
             hides = set(dels)
-            if g in COVERS or (look or {}).get('hide'): hides.update(i for r in refs for i in r[:3])
-            hides = close_holes(hides)
+            if g in COVERS or (look or {}).get('hide'):
+                hides.update(ref_vertices(refs))
+                hides = close_holes(hides, cover_points(refs, lambda i: v[i]), lambda i: v[i])
+            else: hides = close_holes(hides)
             manifest['garments'].append({'id': g, 'slot': w['slot'], 'model': name, 'hidesHair': bool(w.get('hides_hair')),
                                          'hides': sorted(hides)})
             for o in made: bpy.data.objects.remove(o, do_unlink=True)

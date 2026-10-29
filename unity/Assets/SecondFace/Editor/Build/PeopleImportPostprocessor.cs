@@ -88,8 +88,11 @@ namespace SecondFace.EditorTools
             imp.mipmapEnabled = true;
             imp.streamingMipmaps = true;
             imp.maxTextureSize = 2048;
+            // the cast's wardrobe (P4.13): one texture a garment, shared by every body that wears it; seen at the game
+            // camera's distance and in conversation, a 1K weave and a half-K normal are enough on the phone
+            var garment = assetPath.Contains("/People/Player/tex/") && !name.StartsWith("player_") && !name.StartsWith("eye_");
             var android = imp.GetPlatformTextureSettings("Android");
-            android.overridden = true; android.maxTextureSize = 2048; android.format = TextureImporterFormat.ASTC_6x6;
+            android.overridden = true; android.maxTextureSize = garment ? (normal ? 512 : 1024) : 2048; android.format = TextureImporterFormat.ASTC_6x6;
             imp.SetPlatformTextureSettings(android);
         }
     }

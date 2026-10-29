@@ -238,6 +238,9 @@ namespace SecondFace.Game.Play
                 ? assets.Cast.Where(c => c != null && c.Prefab != null).ToList()
                 : (assets.Townsfolk ?? new GameObject[0]).Where(g => g != null)
                     .Select((g, i) => new WorldAssets.CastEntry { Id = g.name, Prefab = g, Male = i % 2 == 0, Age = 35f }).ToList();
+            // everyone made from the two bases and their own measurements, dressed from the whole cast's wardrobe (P4.13)
+            People.BaseF = assets.PlayerF;
+            People.BaseM = assets.PlayerM;
             People.Begin(Game);
             if (spawner != null)
                 foreach (var (id, place) in spawner.Standing()) Equip(place, id);

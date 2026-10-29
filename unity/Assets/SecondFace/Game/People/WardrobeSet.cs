@@ -20,6 +20,10 @@ namespace SecondFace.Game.People
             public bool HidesHair;
             public int[] Hides;
             public GameObject Prefab;
+            /// <summary>How far the garment stands off the bare body, per height bin of the base's
+            /// <see cref="TorsoProfile"/> (m, half-width and half-depth; its sleeves and anything below the knee left out):
+            /// the arms keep clear of the cloth too (P4.13; measured by WardrobeBuild).</summary>
+            public float[] Rx, Rz;
         }
 
         public string Base;

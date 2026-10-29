@@ -106,8 +106,18 @@ namespace SecondFace.EditorTools
             if (!string.IsNullOrEmpty(hairPath) && hairPath.EndsWith("_d.png"))
                 sculpt.AgedHair = AssetDatabase.LoadAssetAtPath<Texture2D>(hairPath.Substring(0, hairPath.Length - 6) + "_aged_d.png");
             go.AddComponent<Wardrobe>().Set = set;
-            // the torso and the body's shapes measured afresh for the arms' clearance (the owner's note: nothing clips)
+            // the torso and the body's shapes measured afresh for the arms' clearance (the owner's note: nothing clips), and
+            // how far each garment stands off it (the arms keep clear of the cloth too)
             TorsoMeasure.Measure(go);
+            var measured = 0;
+            foreach (var g in set.Garments)
+            {
+                if (g.Slot == "hair" || g.Prefab == null) continue;
+                (g.Rx, g.Rz) = TorsoMeasure.Garment(go, g.Prefab);
+                if (g.Rx != null) measured++;
+            }
+            EditorUtility.SetDirty(set);
+            Debug.Log($"WardrobeBuild: {m.@base}: {measured} garments measured over the body");
             PrefabUtility.SaveAsPrefabAsset(go, $"{WorldAssetsBuild.PeopleDir}/{m.@base}.prefab");
             UnityEngine.Object.DestroyImmediate(go);
             Debug.Log($"WardrobeBuild: {m.@base}, {set.Garments.Count} garments, wears {string.Join(", ", set.Outfit)}");

@@ -721,10 +721,15 @@ tall); bodies stay lean unless their owner is comfortable (merchants, the megaci
 work. Ancestry, age, skin, hair and greying follow who a person is. The arms stay clear of every one of these bodies.
 Character creation gained the same body sliders. Seen in `docs/evidence/unity/p4/people_bodies_*.jpg` (front, side,
 close). Also fixed: skin no longer shows through a sweater on a fuller figure.
-**Next action:** P4.13 step 3, the wardrobe for the whole cast: every garment the content dresses people in (117)
-built for the two bases, one texture each, dyed in the shader, with a size budget for the app; then step 4,
-`PeopleService` making everyone from the bases and their measurements, dressed by the content's outfit rules; step 5,
-extras with jobs in every place; step 6, the old per-person cast models retired, with a lineup of 60 as evidence. Then
+**Everyone dressed for their trade (P4.13 steps 3-4, 2026-10-29):** every garment the game's people wear (117
+pieces: shirts, sweaters, coveralls, robes, coats, boots, hats, hoods, masks, goggles, gloves) now fits both base bodies
+and follows every body's shape, so anyone can wear anything that suits them. The townsfolk are now made this way:
+each has their own body, face and stature, dressed by their trade and faction (a guard's vest and gloves, a pilgrim's
+robe and sandals, the rich in silk and dark glasses), dyed and worn. Arms stay clear of the clothes too. Seen in
+`docs/evidence/unity/p4/people_cast_wardrobe.jpg` and Shale in `docs/evidence/unity/p6/walkabout_town_bases.jpg`.
+**Next action:** P4.13 step 5, extras with jobs in every place: the content already has 204 of them in 17 places
+(trades, spots, hours, barks); port the generator, bring them in as residents with routines, then add extras where
+there are none; step 6, the old per-person cast models retired, with a lineup of 60 as evidence. Then
 P7's first step, the new opening, in the content. Then P6 step 4, combat. P6.3 left for later: shade outdoors by a
 shadow ray (with the places' colliders, P6.4), noise by the ground, sight cones shown while sneaking, a crouched idle,
 the steal verb on people. P6.2 left for later: the townsfolk sitting at their seats and sleeping in their beds (seats

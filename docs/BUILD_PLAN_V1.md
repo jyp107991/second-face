@@ -490,13 +490,27 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    arms, waist, belly, tone, hips, seat, thighs). Evidence: `ScreenshotTests.BodiesVaryAsInLife`, nine women and nine
    men by trade, means and age on the bases, front, side and close (`docs/evidence/unity/p4/people_bodies_*.jpg`):
    women 147-169 cm, hips 33-38 cm, men 165-183 cm, hips 29-37 cm, the arms 0.0 cm in on every one.
-   *Planned:* (3) the wardrobe gains every garment the content dresses people in (`garments.json`: 117, 177 builds
-   with the unisex ones on both bases), each with one texture dyed in the shader (not one a person), the body shapes
-   refitted, the face's only on what is worn on the head; size budget first (FBX and textures per garment, the APK's
-   share). (4) `PeopleService` makes everyone from a base, `Bodies.For` and the content's outfit rules (`Outfits`,
-   `Dresser`), the content's own look where it has one; the 32 cast bodies stay until (6). (5) every place gets
-   **extras** with functions beyond its named people (porters, guards, water-sellers, beggars, drovers, travellers on
-   the road), with routines from the place's spots, seats and beds. (6) the per-person cast meshes retired; a lineup of
+   *As built (steps 3-4, 2026-10-29):* the bases' wardrobe holds every garment the content dresses people in
+   (`garments.json`, brief key `wardrobe_content`: 85 for the woman, 84 for the man by fit, beside each base's own five),
+   each built with the body shapes that touch it (a hat carries the face's too) and one texture shared by both bases:
+   dyeable cloth baked light and undyed with salvage patches (`undyed`), the rest in its own colours, muted (`own`);
+   dye, grime and wear at runtime. A garment hides the body under it by slot (top, legs, full, feet, hands, face), a hat
+   the hair. Each garment is measured over the bare base at build (`TorsoMeasure.Garment`: sleeves and lower legs left
+   out) and the arms keep clear of what is worn too (`TorsoProfile.Wearing`, from `Wardrobe`). `full` replaces top and
+   legs. Size: People/Player 245 MB on disk (FBX 145, textures 98; garment normals stored at 512, diffuse at 1K, the
+   phone's import caps them there); the build takes ~3.5 s a garment (about 12 minutes for both bases). `PeopleService`
+   makes everyone from the bases when they are set (`BaseF`, `BaseM` from `WorldAssets.PlayerF/M`): their look from
+   `Bodies.For(id, sex, age, trade, ancestry)`, their outfit the content's own or `Outfits.DressFor(look seed, trade,
+   fit, faction)` as the web game seeded it, dressed by `Dresser`, then the look over it; their stature as scale. The
+   content's `frame` is the web game's sex marker (`Routine.Male`), not a build: it is not passed to `Bodies`.
+   Evidence: `ScreenshotTests.TheCastWearsTheContent` (ten women and ten men by trade, every garment of their fit built,
+   dressed, shod, arms 0.0 cm in; `docs/evidence/unity/p4/people_cast_wardrobe.jpg`) and Shale's 18 townsfolk made from
+   the two bases (`BootTests.ShaleKeepsItsHours`, `walkabout_town_bases.jpg`).
+   *Planned:* (5) every place gets
+   **extras** with functions beyond its named people: first the content's own (`MapDef.Extras`: 204 in 17 places, with
+   trades, spots, hours, barks and factions, the web game's `makeExtras` ported with its random sequence), then extras
+   for the places that have none (porters, guards, water-sellers, beggars, drovers, travellers on the road), with
+   routines from the place's spots, seats and beds. (6) the per-person cast meshes retired; a lineup of
    60 generated people as evidence (the spread of stature, bust, seat, shoulders and muscle measured against the
    targets).
 ### P5 — Camera, touch and UI
@@ -2270,6 +2284,12 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   shape was counted twice (a 165 cm labourer looked like a boy). Every whole-body shape is built at the base's own
   stature (`keep_stature` in mh_build: the shaped body scaled about the ground until its crown is the base's), and a
   person's height is only their `Stature`.
+- **An enclosed patch is not always under the cloth** (P4.13): hiding every small patch of body a garment encloses
+  hid the bare fingers past a fingerless glove (115-175 vertices each). A patch is hidden only when each of its
+  vertices lies within 3 cm of where the garment sits over the body (`cover_points`: its vertices at their weighted
+  body vertices). A single-vertex reference in a .mhclo names only that vertex (`ref_vertices`), not vertex 0.
+- **The content's `frame` is a sex, not a build** (P4.13): the web game marked men "broad" and women "narrow"; read as
+  a build it made every man taller and broader than his draw. `Routine.Male` reads it; `Bodies` ignores it.
 - **A garment's hidden list misses what it encloses** (P4.13): a body vertex is hidden when a garment vertex refers to
   it, and a sweater refers to nothing on the nipples (50 vertices each), so a fuller bust pushed skin through the
   cloth. `close_holes` hides every patch of body the garment encloses whole up to 200 vertices (navels 18-30; the

@@ -33,7 +33,7 @@ namespace SecondFace.Game.People
         private static readonly int WearId = Shader.PropertyToID("_Wear");
 
         /// <summary>How far a slot's garments stand off the layers under them (m).</summary>
-        public static float StandOff(string slot) => slot switch { "over" => 0.012f, "feet" => 0.004f, _ => 0f };
+        public static float StandOff(string slot) => slot switch { "over" => 0.012f, "gear" => 0.015f, "feet" => 0.004f, _ => 0f };
         public const int MaskSize = 128;
 
         private readonly Dictionary<string, Worn> _worn = new();
@@ -80,6 +80,7 @@ namespace SecondFace.Game.People
         }
 
         public const string HairSlot = "hair";
+        public const string FullSlot = "full";
 
         /// <summary>The hair (P5.3i): null the body's own, "buzz" none (shaved), else a hair piece of the set by id.</summary>
         public void Hair(string id)
@@ -123,6 +124,9 @@ namespace SecondFace.Game.People
             var g = Set != null ? Set.Find(id) : null;
             if (g == null || g.Prefab == null) { Debug.LogWarning($"Wardrobe: no garment {id} in {(Set != null ? Set.Base : "no set")}"); return false; }
             Remove(g.Slot);
+            // a garment for the whole body (coveralls, a robe, a suit) is the top and the legs at once
+            if (g.Slot == FullSlot) { Remove("top"); Remove("legs"); }
+            else if (g.Slot == "top" || g.Slot == "legs") Remove(FullSlot);
             Bones();
             var instance = Instantiate(g.Prefab);
             var worn = new Worn { Garment = g };
@@ -183,6 +187,9 @@ namespace SecondFace.Game.People
             }
             var sculpt = GetComponent<FaceSculpt>();
             if (sculpt != null) sculpt.Refresh();
+            // the torso the arms keep clear of grows by what is worn
+            var torso = GetComponent<TorsoProfile>();
+            if (torso != null) torso.Wearing(_worn.Values.Select(w => (w.Garment.Rx, w.Garment.Rz)));
         }
 
         /// <summary>Each worn renderer joins the level its name ends in (_LOD0.._LOD2); the body's own renderers stay.</summary>

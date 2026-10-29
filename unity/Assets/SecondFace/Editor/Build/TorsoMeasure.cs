@@ -51,17 +51,7 @@ namespace SecondFace.EditorTools
             if (anim == null || !anim.isHuman) return false;
             var hips = anim.GetBoneTransform(HumanBodyBones.Hips);
             if (hips == null) return false;
-            var skip = new HashSet<Transform>();
-            for (var b = HumanBodyBones.LeftUpperArm; b <= HumanBodyBones.RightHand; b++)
-                if (b != HumanBodyBones.Neck && b != HumanBodyBones.Head && b != HumanBodyBones.LeftEye && b != HumanBodyBones.RightEye && b != HumanBodyBones.Jaw
-                    && b != HumanBodyBones.LeftShoulder && b != HumanBodyBones.RightShoulder && b != HumanBodyBones.Chest && b != HumanBodyBones.Spine)
-                    Add(anim.GetBoneTransform(b));
-            for (var b = HumanBodyBones.LeftThumbProximal; b <= HumanBodyBones.RightLittleDistal; b++) Add(anim.GetBoneTransform(b));
-            foreach (var b in new[] { HumanBodyBones.LeftLowerLeg, HumanBodyBones.RightLowerLeg, HumanBodyBones.LeftFoot, HumanBodyBones.RightFoot, HumanBodyBones.LeftToes, HumanBodyBones.RightToes })
-                Add(anim.GetBoneTransform(b));
-            void Add(Transform t) { if (t != null) skip.Add(t); }
-            // below every arm and leg bone in the list: their children (twist and roll bones) are theirs too
-            foreach (var t in skip.ToList()) foreach (var c in t.GetComponentsInChildren<Transform>(true)) skip.Add(c);
+            var skip = Skipped(anim);
 
             var renderers = root.GetComponentsInChildren<SkinnedMeshRenderer>(true)
                 .Where(r => r.sharedMesh != null && !Skip.Any(s => r.name.ToLowerInvariant().Contains(s))).ToList();
@@ -73,7 +63,7 @@ namespace SecondFace.EditorTools
             var frame = anim.transform.rotation;
             var scale = Mathf.Max(0.01f, anim.transform.lossyScale.y);
             var bins = Mathf.RoundToInt((1.2f) / p.Step) + 1;   // from -0.45 to +0.75 m about the hips
-            var (cx, cz, rx, rz) = Sections(renderers, skip, hips, frame, scale, p.Bottom, p.Step, bins);
+            var (cx, cz, rx, rz, _) = Sections(renderers, skip, hips, frame, scale, p.Bottom, p.Step, bins);
             p.Cx = cx; p.Cz = cz; p.Rx = rx; p.Rz = rz;
             // the body's own shapes (the player's build and muscle), each at full weight against the rest
             p.Shapes.Clear();
@@ -83,7 +73,7 @@ namespace SecondFace.EditorTools
                 {
                     var set = renderers.Select(r => (r, i: r.sharedMesh.GetBlendShapeIndex(name))).Where(x => x.i >= 0).ToList();
                     foreach (var (r, i) in set) r.SetBlendShapeWeight(i, 100f);
-                    var (_, _, srx, srz) = Sections(renderers, skip, hips, frame, scale, p.Bottom, p.Step, bins);
+                    var (_, _, srx, srz, _) = Sections(renderers, skip, hips, frame, scale, p.Bottom, p.Step, bins);
                     foreach (var (r, i) in set) r.SetBlendShapeWeight(i, 0f);
                     p.Shapes.Add(new TorsoProfile.Shape
                     {
@@ -98,6 +88,59 @@ namespace SecondFace.EditorTools
             return true;
         }
 
+        /// <summary>The bones whose vertices are not the torso: the arms from the upper arm down, the hands, the lower legs
+        /// and feet, and every bone under them (twist and roll bones).</summary>
+        private static HashSet<Transform> Skipped(Animator anim)
+        {
+            var skip = new HashSet<Transform>();
+            for (var b = HumanBodyBones.LeftUpperArm; b <= HumanBodyBones.RightHand; b++)
+                if (b != HumanBodyBones.Neck && b != HumanBodyBones.Head && b != HumanBodyBones.LeftEye && b != HumanBodyBones.RightEye && b != HumanBodyBones.Jaw
+                    && b != HumanBodyBones.LeftShoulder && b != HumanBodyBones.RightShoulder && b != HumanBodyBones.Chest && b != HumanBodyBones.Spine)
+                    Add(anim.GetBoneTransform(b));
+            for (var b = HumanBodyBones.LeftThumbProximal; b <= HumanBodyBones.RightLittleDistal; b++) Add(anim.GetBoneTransform(b));
+            foreach (var b in new[] { HumanBodyBones.LeftLowerLeg, HumanBodyBones.RightLowerLeg, HumanBodyBones.LeftFoot, HumanBodyBones.RightFoot, HumanBodyBones.LeftToes, HumanBodyBones.RightToes })
+                Add(anim.GetBoneTransform(b));
+            void Add(Transform t) { if (t != null) skip.Add(t); }
+            foreach (var t in skip.ToList()) foreach (var c in t.GetComponentsInChildren<Transform>(true)) skip.Add(c);
+            return skip;
+        }
+
+        /// <summary>
+        /// How far a garment of a person's wardrobe stands off their bare body (P4.13; <see cref="TorsoProfile.Wearing"/>):
+        /// the garment alone on its own rig at rest, which coincides with the person's (the same skeleton, built together),
+        /// its LOD0 baked with the same bones left out as the body's (sleeves, trouser legs below the knee), as sections
+        /// in the person's hips frame; per bin the half-width and half-depth beyond the body's own, where the garment
+        /// reaches, and nothing where it does not. Null when the person is not measured.
+        /// </summary>
+        public static (float[] Rx, float[] Rz) Garment(GameObject person, GameObject garment)
+        {
+            var anim = person.GetComponentInChildren<Animator>();
+            var p = anim != null ? anim.GetComponent<TorsoProfile>() : null;
+            var hips = anim != null && anim.isHuman ? anim.GetBoneTransform(HumanBodyBones.Hips) : null;
+            if (p == null || p.Bins < 2 || hips == null || garment == null) return (null, null);
+            var names = new HashSet<string>(Skipped(anim).Select(t => t.name));
+            var g = Object.Instantiate(garment, anim.transform.position, anim.transform.rotation);
+            try
+            {
+                var renderers = g.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => r.sharedMesh != null).ToList();
+                if (renderers.Any(r => r.name.Contains("_LOD"))) renderers = renderers.Where(r => r.name.Contains("_LOD0")).ToList();
+                if (renderers.Count == 0) return (null, null);
+                var skip = new HashSet<Transform>(g.GetComponentsInChildren<Transform>(true).Where(t => names.Contains(t.name)));
+                var scale = Mathf.Max(0.01f, anim.transform.lossyScale.y);
+                var (_, _, rx, rz, have) = Sections(renderers, skip, hips, anim.transform.rotation, scale, p.Bottom, p.Step, p.Bins, fill: false);
+                var ox = new float[p.Bins];
+                var oz = new float[p.Bins];
+                for (var k = 0; k < p.Bins; k++)
+                {
+                    if (!have[k]) continue;
+                    ox[k] = Mathf.Max(0f, rx[k] - p.Rx[k]);
+                    oz[k] = Mathf.Max(0f, rz[k] - p.Rz[k]);
+                }
+                return (ox, oz);
+            }
+            finally { Object.DestroyImmediate(g); }
+        }
+
         private static IEnumerable<string> Shapes(SkinnedMeshRenderer r)
         {
             var m = r.sharedMesh;
@@ -110,8 +153,8 @@ namespace SecondFace.EditorTools
 
         /// <summary>The torso's sections: per height bin the middle and half-width (x) and half-depth (z), gaps filled
         /// from the neighbours.</summary>
-        private static (float[] Cx, float[] Cz, float[] Rx, float[] Rz) Sections(List<SkinnedMeshRenderer> renderers, HashSet<Transform> skip,
-            Transform hips, Quaternion frame, float scale, float bottom, float step, int bins)
+        private static (float[] Cx, float[] Cz, float[] Rx, float[] Rz, bool[] Have) Sections(List<SkinnedMeshRenderer> renderers, HashSet<Transform> skip,
+            Transform hips, Quaternion frame, float scale, float bottom, float step, int bins, bool fill = true)
         {
             var minX = Enumerable.Repeat(float.MaxValue, bins).ToArray();
             var maxX = Enumerable.Repeat(float.MinValue, bins).ToArray();
@@ -149,7 +192,7 @@ namespace SecondFace.EditorTools
                 cx[k] = (minX[k] + maxX[k]) / 2f; rx[k] = (maxX[k] - minX[k]) / 2f;
                 cz[k] = (minZ[k] + maxZ[k]) / 2f; rz[k] = (maxZ[k] - minZ[k]) / 2f;
             }
-            for (var k = 0; k < bins; k++)
+            for (var k = 0; k < bins && fill; k++)
             {
                 if (have[k]) continue;
                 int a = k - 1, b = k + 1;
@@ -162,7 +205,7 @@ namespace SecondFace.EditorTools
                 cx[k] = Mathf.Lerp(cx[a], cx[b], t); cz[k] = Mathf.Lerp(cz[a], cz[b], t);
                 rx[k] = Mathf.Lerp(rx[a], rx[b], t); rz[k] = Mathf.Lerp(rz[a], rz[b], t);
             }
-            return (cx, cz, rx, rz);
+            return (cx, cz, rx, rz, have);
         }
     }
 }
