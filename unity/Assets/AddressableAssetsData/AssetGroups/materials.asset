@@ -27,6 +27,18 @@ MonoBehaviour:
     m_SerializedLabels:
     - material
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0a2aa695e5c32b45eb0fb2a070d89bc2
+    m_Address: materials/mud
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0ab03953e4d61ad6eab5eda1db73e0ff
+    m_Address: materials/asphalt
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0af7db581c612f440992610b86d9baa8
     m_Address: materials/painted
     m_ReadOnly: 0
@@ -41,6 +53,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0ee30709ff554c61e973b1a7ef07386c
     m_Address: materials/card_pine_1_crown
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1131bc766dfbadb21a430e253e8d20a8
+    m_Address: materials/metal_plate
     m_ReadOnly: 0
     m_SerializedLabels:
     - material
@@ -93,6 +111,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - material
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 353ff49fd5010a73ea92631f42a7b7a7
+    m_Address: materials/sand
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 36c5b1a262a83896f85a1851cb1b3204
     m_Address: materials/steel_painted
     m_ReadOnly: 0
@@ -105,8 +129,32 @@ MonoBehaviour:
     m_SerializedLabels:
     - material
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3948113103b94221ab393edf172d6c98
+    m_Address: materials/rubble
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3a0ca13b6a87c1d4c97a20053c2477e4
+    m_Address: materials/bark_willow
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3a45f5a02b79a01bda09a464049704ad
+    m_Address: materials/salt
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3c1d8345b596df80c86cb9954ec7482f
     m_Address: materials/nature_wild_rooibos_bush_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3f492b09ee27a13b18258f33d6ee4416
+    m_Address: materials/glass
     m_ReadOnly: 0
     m_SerializedLabels:
     - material
@@ -117,14 +165,32 @@ MonoBehaviour:
     m_SerializedLabels:
     - material
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 49d92b65a4116a2419c1bb209b67aa32
+    m_Address: materials/burned
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4c328abbb9947f0158c70153a8eff4a9
     m_Address: materials/nature_namaqualand_stones_01_0
     m_ReadOnly: 0
     m_SerializedLabels:
     - material
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4ce720ae57a0fdbd283491070b3a2516
+    m_Address: materials/coast
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4f59edfda8152984ca7f8d7fcb9962fd
     m_Address: materials/card_pine_2_crown
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 58f90ba0994e382309991c5048670aac
+    m_Address: materials/scrub_soil
     m_ReadOnly: 0
     m_SerializedLabels:
     - material
@@ -177,8 +243,20 @@ MonoBehaviour:
     m_SerializedLabels:
     - material
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6b07a5a263d3f1b429475d514c42ebac
+    m_Address: materials/gravel
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6d651500c9467e8898c71890ce29d1f2
     m_Address: materials/steel
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6ec91bbcef755ec9296f030f4fd6cb4f
+    m_Address: materials/grass
     m_ReadOnly: 0
     m_SerializedLabels:
     - material
@@ -197,6 +275,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 73b330496a26d3981a3eb57376cc276e
     m_Address: materials/nature_dry_branches_medium_01_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 75792c8829181a89b911a1abfa24480a
+    m_Address: materials/scrap
     m_ReadOnly: 0
     m_SerializedLabels:
     - material
@@ -255,6 +339,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - material
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 97f67b95cd863c3d28062a0c2f6a2286
+    m_Address: materials/cracked
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9a8e5924e43d3a69cb038d6a611f2b26
     m_Address: materials/card_broadleaf_2_crown
     m_ReadOnly: 0
@@ -263,6 +353,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a2424965074a3481cbc5f4995fa4f554
     m_Address: materials/nature_boulder_01_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a2dfa669c518ad62798b92c5c4999c78
+    m_Address: materials/rock
     m_ReadOnly: 0
     m_SerializedLabels:
     - material
@@ -299,6 +395,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b40f7d8fc7ee3d05885d36630564e24e
     m_Address: materials/nature_shrub_03_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b85ebb9ba500249118186a71df3d129b
+    m_Address: materials/brick
     m_ReadOnly: 0
     m_SerializedLabels:
     - material
@@ -363,8 +465,32 @@ MonoBehaviour:
     m_SerializedLabels:
     - material
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: deab78268a4a392c1b99f046f60e6bf7
+    m_Address: materials/tiles
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e22176e39add08f1a8d8d459ed3fbb5e
     m_Address: materials/nature_dead_quiver_trunk_0
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e55e191f5e6ba0f4e8e90b0e61213629
+    m_Address: materials/forest
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eadf2df46062ad3c4a8a93dd5bc9b7a1
+    m_Address: materials/snow
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f18c4386cea372b32a0bcaf13aac8d5a
+    m_Address: materials/grass_dry
     m_ReadOnly: 0
     m_SerializedLabels:
     - material
