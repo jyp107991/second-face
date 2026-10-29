@@ -84,6 +84,13 @@ namespace SecondFace.Tests
             yield return Boot(b => boot = b);
             var walk = boot.Walkabout;
             Assert.That(walk.Townsfolk, Is.GreaterThanOrEqualTo(5), "people stand about the town");
+            // the interface (P5.3): the start card has gone and the HUD is over the walkabout, its compass on the camera
+            Assert.That(boot.UI, Is.Not.Null, "the Boot scene holds the UI assets (Second Face/Wire the Boot scene)");
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(boot.UI.Top, Is.Null, "the start card closed once the walker was set down");
+            Assert.That(boot.Hud, Is.Not.Null, "the HUD is up");
+            var fwd = Camera.main.transform.forward;
+            Assert.That(Mathf.Abs(Mathf.DeltaAngle(boot.Hud.Compass.Heading, Mathf.Atan2(fwd.x, fwd.z) * Mathf.Rad2Deg)), Is.LessThan(2f), "the compass follows the camera");
             // levels of detail (P4.1): the game camera's person is LOD1, about 6 K triangles (they were 95-141 K whole)
             var lod = walk.Walker.GetComponentInChildren<LODGroup>();
             Assert.That(lod, Is.Not.Null, "the walker's levels of detail");

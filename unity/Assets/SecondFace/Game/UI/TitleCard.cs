@@ -23,7 +23,8 @@ namespace SecondFace.Game.UI
             safe.AddToClassList(UIService.SafeClass);
             safe.AddToClassList("sf-title-card__body");
             root.Add(safe);
-            var name = new Label("THE SECOND FACE") { pickingMode = PickingMode.Ignore };
+            var name = new Label { pickingMode = PickingMode.Ignore };
+            Strings.Bind(name, "title.name");
             name.AddToClassList("sf-title-card__name");
             _status = new Label(_statusText) { pickingMode = PickingMode.Ignore };
             _status.AddToClassList("sf-title-card__status");

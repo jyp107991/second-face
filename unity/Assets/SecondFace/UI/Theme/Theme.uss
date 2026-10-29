@@ -160,3 +160,115 @@
     padding: 28px 32px;
     max-width: 70%;
 }
+
+/* ---- the HUD (Hud.cs): plates over the world inside the safe area ---- */
+.sf-hud__area { flex-grow: 1; }
+.sf-hud__objective {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    max-width: 46%;
+    padding: 10px 18px 12px 18px;
+}
+.sf-hud__when {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: var(--plate-dim);
+}
+.sf-hud__quest {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 22px;
+    margin-top: 4px;
+    color: #E0A645;
+}
+.sf-hud__line { font-size: 26px; margin-top: 2px; color: var(--plate-text); white-space: normal; }
+
+.sf-compass {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    width: 360px;
+    height: 52px;
+    background-color: var(--plate);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.sf-compass__letter {
+    position: absolute;
+    left: -16px;
+    width: 32px;
+    top: 6px;
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 22px;
+    -unity-text-align: upper-center;
+    color: var(--plate-text);
+}
+
+.sf-hud__party { position: absolute; left: 20px; bottom: 20px; flex-direction: row; align-items: flex-end; }
+.sf-hud__member {
+    width: 100px;
+    margin-right: 12px;
+    padding: 6px 6px 8px 6px;
+    align-items: center;
+    background-color: var(--plate);
+    border-radius: 6px;
+}
+.sf-hud__face {
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+    border-width: 2px;
+    border-color: rgba(242, 234, 219, 0.5);
+    background-color: #3A332B;
+    -unity-background-scale-mode: scale-and-crop;
+    justify-content: center;
+    align-items: center;
+}
+.sf-hud__member--leader .sf-hud__face { border-color: #E0A645; }
+.sf-hud__initial {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: 40px;
+    color: var(--plate-dim);
+}
+.sf-hud__name {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 20px;
+    margin-top: 4px;
+    color: var(--plate-text);
+    -unity-text-align: upper-center;
+}
+.sf-hud__bar {
+    align-self: stretch;
+    height: 8px;
+    margin-top: 4px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.55);
+}
+.sf-hud__fill { height: 100%; border-radius: 4px; background-color: #7E9A6F; }
+.sf-hud__fill--low { background-color: #D49A3A; }
+.sf-hud__fill--critical { background-color: #C4553A; }
+
+.sf-hud__actions { position: absolute; right: 20px; bottom: 20px; flex-direction: row; }
+.sf-hud__action {
+    width: 100px;
+    height: 100px;
+    margin: 0 0 0 12px;
+    padding: 0;
+    border-width: 0;
+    border-radius: 8px;
+    background-color: var(--plate);
+    color: var(--plate-text);
+    align-items: center;
+    justify-content: center;
+}
+.sf-hud__action:enabled:hover { background-color: rgba(40, 35, 30, 0.86); }
+.sf-hud__action:enabled:active { background-color: rgba(8, 7, 6, 0.9); }
+.sf-hud__action:enabled:focus { border-width: 3px; border-color: var(--ochre); }
+.sf-hud__action-label {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 20px;
+    margin-top: 4px;
+    color: var(--plate-text);
+}
+.sf-icon { color: var(--plate-text); }

@@ -70,7 +70,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c496ca6b6b6e58b378abccba0102f933, type: 2}
   - {fileID: 11400000, guid: 5be014c68c133a223bf969ff5f11bb40, type: 2}
   - {fileID: 11400000, guid: d15c725493bf59780b6d8571ecab3650, type: 2}
+  - {fileID: 11400000, guid: ae505319904b7a4c2810244e1038986c, type: 2}
   - {fileID: 11400000, guid: 048bd836ba4af7475940924be63d44b0, type: 2}
+  - {fileID: 11400000, guid: 6cad0e6cc6739fa79b6d32f1e69766b3, type: 2}
+  - {fileID: 11400000, guid: b0d24b8d6ec7c4608b71b3c73c8ba4b3, type: 2}
   - {fileID: 11400000, guid: d8fb9284e6038af12bc01d5cf2c1c29d, type: 2}
   - {fileID: 11400000, guid: b81c2de0909cc29b79df0ddb93c625fc, type: 2}
   m_BuildSettings:
@@ -116,6 +119,9 @@ MonoBehaviour:
     - tree
     - nature
     - material
+    - Locale
+    - Locale-en
+    - Preload
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: e29a34d3a929f8604a3211ecb8e9599b, type: 2}

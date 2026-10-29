@@ -1,0 +1,23 @@
+# The interface's words (English). One line per string: key<TAB>text. Second Face/Build localization writes them
+# into the UI string table (Unity Localization); code takes them by key through Game.UI.Strings. Content text
+# (dialogue, quests, items, places) is not here: it stays content (src/content).
+key	en
+title.name	THE SECOND FACE
+title.loading	LOADING…
+title.raising	RAISING THE WORLD…
+title.failed	CONTENT FAILED
+hud.notebook	Notebook
+hud.map	Map
+hud.pack	Pack
+hud.you	You
+hud.quiet	Nothing pressing. Walk, ask, look.
+hud.when	Day {0} · {1}
+compass.n	N
+compass.e	E
+compass.s	S
+compass.w	W
+common.back	Back
+common.yes	Yes
+common.no	No
+common.ok	OK
+common.cancel	Cancel

@@ -49,12 +49,14 @@ namespace SecondFace.Game
             {
                 UI = UIService.Create(Interface, transform);
                 _card = UI.Open(new TitleCard());
-                _card.Set("LOADING…");
             }
         }
 
         private IEnumerator Start()
         {
+            // the interface's words (the UI table is preloaded with the settings)
+            if (Strings.Available) yield return UnityEngine.Localization.Settings.LocalizationSettings.InitializationOperation;
+            _card?.Set(Strings.Get("title.loading"));
             var db = new ContentDb();
             foreach (var name in ContentDb.Registries)
             {
@@ -75,12 +77,12 @@ namespace SecondFace.Game
                 }
                 db.Load(name, text);
                 _status = $"LOADING… {name}";
-                _card?.Set(_status);
+                _card?.Set($"{Strings.Get("title.loading")} {name}");
             }
             Content = db;
             var loaded = $"{db.Count("maps")} places · {db.Count("npcs")} people · {db.Count("dialogues")} conversations · {db.Count("quests")} quests · {db.Count("items")} items\n{Screen.width}×{Screen.height} {SystemInfo.graphicsDeviceType} · {SystemInfo.deviceModel}";
             _status = "THE SECOND FACE\n" + loaded;
-            _card?.Set("RAISING THE WORLD…", loaded);
+            _card?.Set(Strings.Get("title.raising"), loaded);
             var overlay = DebugOverlay.Ensure();
             if (World == null) yield break;
             Stage = gameObject.AddComponent<WorldStage>();
@@ -118,12 +120,45 @@ namespace SecondFace.Game
         private void Fail(string error)
         {
             _error = error;
-            _card?.Set("CONTENT FAILED", error);
+            _card?.Set(Strings.Get("title.failed"), error);
+        }
+
+        private Hud _hud;
+        private HudState _hudState;
+        private float _hudNext;
+
+        /// <summary>The HUD over the walkabout (P5.3b): the compass turns with the camera, the clock is the world's.</summary>
+        public Hud Hud => _hud;
+
+        private void UpdateHud()
+        {
+            if (UI == null || Walkabout == null || Walkabout.Walker == null || Stage == null) return;
+            if (_hud == null)
+            {
+                _hud = new Hud(UI);
+                _hud.Actions(null, null, null);   // the notebook, map and pack screens come with P5.3f-h
+                var place = Content?.Entry("maps", "shale")?["name"]?.ToString() ?? "Shale";
+                _hudState = new HudState { Place = place, Party = { new HudMember { Name = Strings.Get("hud.you"), Hp = 1, MaxHp = 1, Leader = true } } };
+            }
+            _hud.Root.style.display = Tour != null ? UnityEngine.UIElements.DisplayStyle.None : UnityEngine.UIElements.DisplayStyle.Flex;
+            var cam = Stage.Camera;
+            if (cam != null)
+            {
+                var f = cam.transform.forward;   // north is +z
+                if (f.x * f.x + f.z * f.z > 1e-4f) _hud.Heading(Mathf.Atan2(f.x, f.z) * Mathf.Rad2Deg);
+            }
+            if (Time.unscaledTime < _hudNext || Stage.Clock == null) return;
+            _hudNext = Time.unscaledTime + 1f;
+            var minutes = Stage.Clock.Minutes;
+            _hudState.Day = Stage.Clock.Day;
+            _hudState.Clock = $"{(int)(minutes % 1440 / 60):00}:{(int)(minutes % 60):00}";
+            _hud.Show(_hudState);
         }
 
         private void LateUpdate()
         {
             if (Tour != null) _lastTour = Tour.Report() ?? _lastTour;
+            UpdateHud();
             if (_card == null || !_card.IsOpen || Walkabout == null) return;
             // the title card stays over the world while it comes in
             if (Walkabout.Walker != null || Tour != null) _card.Close();

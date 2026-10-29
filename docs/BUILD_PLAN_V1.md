@@ -424,8 +424,9 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
 *Order of work (2026-10-29; P5.1–P5.2 were pulled forward as P3 step 25).* Each step ends with its screen opened
 from fixture state and captured (`UiTests`, the panel drawn into a texture):
 - ~~3a. The foundation~~ (done, below).
-- 3b. Localization wired (Unity Localization: a `UI` string table, English; screens take their strings from it, content
-  text stays content) and the HUD (the objective line, health, the compass, the thumb-reach action cluster).
+- ~~3b. Localization wired (Unity Localization: a `UI` string table, English; screens take their strings from it, content
+  text stays content) and the HUD (the objective line, health, the compass, the thumb-reach action cluster)~~ (done,
+  below).
 - 3c. The radial action menu (hold on a person or thing; verbs from content) and the touch rules round it.
 - 3d. Dialogue panel bound to Core dialogue (the scene stays visible; options as notebook lines; skip heard lines; log).
 - 3e. Conversation cameras (over-shoulder two-shot, portrait inserts; Cinemachine).
@@ -453,6 +454,21 @@ kept in the build) with a dynamic SDFAA fallback per family (emptied on build). 
 `TitleCard` (IMGUI only when no UI assets are wired). `UiTests` draws a specimen, a modal question and an opaque page
 into a 1600×720 texture with a left cutout and a gesture bar (`docs/evidence/unity/p5/ui_foundation.jpg`,
 `ui_modal.jpg`).
+
+*As built (P5.3b, 2026-10-29).* Localization: `LocalizationBuild` (Second Face/Build localization) makes the project's
+Localization Settings (`UI/Localization/`, a config object in EditorBuildSettings; the package adds it to the
+preloaded assets at build), the English locale and the `UI` string table (preloaded), its entries exactly the lines of
+`UI/Strings/ui.tsv` (key, tab, English); the package's own Addressables groups (`Localization-*`) build with the player
+like ours. `Game.UI.Strings`: `Get(key, args)` (String.Format) and `Bind(textElement, key)` (a `LocalizedString` data
+binding: follows the language); `Bootstrap` waits on `LocalizationSettings.InitializationOperation` before its first
+words. EditMode `UiStringsTests` fails on any key used in `Game/` that is not in the source. The HUD: `Game.UI.Hud`
+over `UIService.Hud` (safe-area wrapper with a filler for its absolute pieces) from a `HudState` (place, day and clock,
+tracked quest and objective or the quiet line, party members with portrait or initial and banded health, the
+objective's bearing): objective plate top left (tap: `ObjectiveTapped`), `Compass` top right (180° strip drawn with
+`Painter2D`, letters moved by `translate`, notch, objective pin or an edge arrow when behind; `Heading` each frame
+costs no relayout; north is +z), party bottom left, notebook/map/pack bottom right (100-unit plates with vector
+`Icons`; `Actions(...)` hides a button with no screen yet). The walkabout shows it live (clock from `TimeService`,
+heading from the camera); `BootTests` checks it is up and follows the camera. Captures `ui_hud`, `ui_hud_quiet`.
 
 ### P6 — Systems and combat
 1. Interactions and loot (`Play/`): tap on a thing → radial of verbs from content (`talk`, `look`, `take`, `use`,

@@ -23,5 +23,6 @@
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.AI.Navigation.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.AI.Navigation.dll')" />
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.InputSystem.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.InputSystem.dll')" />
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.Cinemachine.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.Cinemachine.dll')" />
+    <Reference Include="../unity/Library/ScriptAssemblies/Unity.Localization.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.Localization.dll')" />
   </ItemGroup>
 </Project>

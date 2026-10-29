@@ -10,7 +10,8 @@
     "Unity.Addressables",
     "Unity.ResourceManager",
     "Unity.AI.Navigation",
-    "Unity.Cinemachine"
+    "Unity.Cinemachine",
+    "Unity.Localization"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

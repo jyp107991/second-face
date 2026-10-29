@@ -1,5 +1,6 @@
 using System.Collections;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using SecondFace.Game.UI;
 using UnityEngine;
@@ -18,7 +19,9 @@ namespace SecondFace.Tests
     /// is captured (`ui_foundation`); the panel scales by height, the safe area pads what must stay clear, each class
     /// resolves to its face, a finger on a control is the interface's and one on the bare world is not; a modal question
     /// takes every touch and the back gesture closes it (`ui_modal`); an opaque page hides the screens and the HUD under it
-    /// (`ui_page`), and closing the bottom screen closes those over it.
+    /// (`ui_page`), and closing the bottom screen closes those over it. The HUD (P5.3b) keeps every plate inside the safe
+    /// area, bands the party's health, turns the compass with the camera and quiets its line when nothing is tracked
+    /// (`ui_hud`); its words come from the UI string table.
     /// </summary>
     public class UiTests : IPrebuildSetup
     {
@@ -28,6 +31,7 @@ namespace SecondFace.Tests
         {
 #if UNITY_EDITOR
             EditorApplication.ExecuteMenuItem("Second Face/Build UI assets");
+            EditorApplication.ExecuteMenuItem("Second Face/Build localization");
 #endif
         }
 
@@ -157,6 +161,84 @@ namespace SecondFace.Tests
             Assert.That(page.IsOpen, Is.False);
             Assert.That(_ui.Hud.resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex));
             Assert.That(_ui.Back(), Is.False, "back with nothing open is not the interface's");
+        }
+
+        /// <summary>A flat stand-in for the world under the interface.</summary>
+        private static VisualElement World()
+        {
+            var world = new VisualElement { pickingMode = PickingMode.Ignore };
+            world.style.position = Position.Absolute;
+            world.style.left = 0; world.style.top = 0; world.style.right = 0; world.style.bottom = 0;
+            world.style.backgroundColor = new Color(0.80f, 0.66f, 0.45f);
+            return world;
+        }
+
+        /// <summary>A stand-in portrait: a warm vertical gradient.</summary>
+        private static Texture2D Face(int size)
+        {
+            var t = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            for (var y = 0; y < size; y++)
+            for (var x = 0; x < size; x++)
+                t.SetPixel(x, y, Color.Lerp(new Color(0.25f, 0.18f, 0.14f), new Color(0.72f, 0.55f, 0.42f), y / (float)size));
+            t.Apply();
+            return t;
+        }
+
+        [UnityTest, Timeout(120000)]
+        public IEnumerator HudSitsInTheSafeAreaAndIsCaptured()
+        {
+            Assert.That(Strings.Get("hud.map"), Is.EqualTo("Map"), "the UI string table is built and loads");
+            _ui = Offscreen(1600, 720, out _rt);
+            _ui.SafeAreaOverride = new Rect(0.05f, 0.04f, 0.95f, 0.96f);
+            _ui.Root.Insert(0, World());
+            var hud = new Hud(_ui);
+            hud.Actions(() => { }, () => { }, () => { });
+            var face = Face(128);
+            hud.Show(new HudState
+            {
+                Place = "Shale", Day = 2, Clock = "14:20", Quest = "Water rights",
+                Objective = "Ask at the water tower who weighs the ration", Bearing = 40f,
+                Party =
+                {
+                    new HudMember { Name = "Ash", Hp = 34, MaxHp = 40, Leader = true, Portrait = face },
+                    new HudMember { Name = "Pell", Hp = 12, MaxHp = 30 },
+                    new HudMember { Name = "Oro", Hp = 4, MaxHp = 28 },
+                },
+            });
+            hud.Heading(20f);
+            for (var i = 0; i < 6; i++) yield return null;
+            var w = _ui.Root.layout.width;
+            var h = _ui.Root.layout.height;
+            var inset = _ui.Insets;
+            Assert.That(hud.Objective.worldBound.xMin, Is.GreaterThanOrEqualTo(inset.x), "the objective clears the cutout");
+            Assert.That(hud.Compass.worldBound.xMax, Is.LessThanOrEqualTo(w - inset.z));
+            Assert.That(hud.Compass.worldBound.xMin, Is.GreaterThan(hud.Objective.worldBound.xMax), "the compass and the objective do not overlap");
+            Assert.That(hud.Party.worldBound.yMax, Is.LessThanOrEqualTo(h - inset.w), "the party clears the gesture bar");
+            Assert.That(hud.MapButton.worldBound.yMax, Is.LessThanOrEqualTo(h - inset.w), "the actions clear the gesture bar");
+            Assert.That(hud.MapButton.worldBound.height, Is.GreaterThanOrEqualTo(80f), "an action is a thumb's target");
+            Assert.That(hud.Party.worldBound.xMax, Is.LessThan(hud.NotebookButton.worldBound.xMin), "the party and the actions do not overlap");
+            Assert.That(hud.Filled(0), Is.EqualTo(34f / 40f).Within(0.02f));
+            Assert.That(hud.Band(0), Is.EqualTo(""));
+            Assert.That(hud.Band(1), Is.EqualTo("low"));
+            Assert.That(hud.Band(2), Is.EqualTo("critical"));
+            Assert.That(hud.Compass.Shows(0), Is.True, "north is ahead");
+            Assert.That(hud.Compass.Shows(2), Is.False, "south is behind");
+            Assert.That(_ui.CoversPanel(hud.MapButton.worldBound.center), Is.True);
+            Assert.That(_ui.CoversPanel(new Vector2(w * 0.5f, h * 0.5f)), Is.False, "the middle of the screen is the world's");
+            Assert.That(hud.NotebookButton.Q<Label>().text, Is.EqualTo("Notebook"), "the button's word is bound to the table");
+            Assert.That(Save(_rt, "ui_hud"), Is.GreaterThan(0.95f));
+
+            hud.Heading(200f);
+            hud.Actions(null, () => { }, null);
+            hud.Show(new HudState { Day = 1, Clock = "08:00", Party = { new HudMember { Name = "Ash", Hp = 40, MaxHp = 40, Leader = true } } });
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(hud.Compass.Shows(2), Is.True, "turned round, south is ahead");
+            Assert.That(hud.Compass.Shows(0), Is.False);
+            Assert.That(hud.Root.Q<Label>(className: "sf-hud__line").text, Is.EqualTo(Strings.Get("hud.quiet")), "nothing tracked: the quiet line");
+            Assert.That(hud.NotebookButton.resolvedStyle.display, Is.EqualTo(DisplayStyle.None), "an action with no screen yet is hidden");
+            Assert.That(hud.Party.Children().Count(c => c.resolvedStyle.display == DisplayStyle.Flex), Is.EqualTo(1));
+            Save(_rt, "ui_hud_quiet");
+            Object.Destroy(face);
         }
 
         private static Label Text(string cls, string text)

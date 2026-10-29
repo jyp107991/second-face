@@ -574,17 +574,22 @@ in as the face is aged (`docs/evidence/unity/p4/people_portraits.jpg`).
 what sits over the world, buttons sized for a thumb, and everything kept clear of the notch and the gesture bar. Screens
 stack (a question over a page, back closes the top one) and a finger on the interface never moves the camera. The start
 card is drawn with it. Seen in `docs/evidence/unity/p5/ui_foundation.jpg` and `ui_modal.jpg`.
-**Next action:** P5.3b (the UI string table, then the HUD; BUILD_PLAN P5 "Order of work"). Step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until
-Mid ≥ 30 fps); **`play-walkabout` is released** (2026-10-29, commit e0b69c6: the cast in Shale and the
-walkabout; https://github.com/jyp107991/second-face/releases/tag/play-walkabout, `SecondFace.apk`, 345 MB as a
-development build: its size wants a look in release hardening). Later playable builds: run the Android workflow by
-hand with `release: play-<name>` (its release job waits for that run's tests and APK, then makes the tag and the
-release page; this session's git proxy refuses tag pushes). `play-people` (the natural motion, the generated hair, the faces)
-is requested again on the commit after bb040ff: run 66 was cancelled by the next push to main (one concurrency group);
-release runs now have their own group — check it released (its release job waits for the run's tests and APK). Then: NPC outfits merged into one renderer (crowd cost), body sliders, runtime grime in a cloth shader; garment
-models import as people (Humanoid) and log "Invalid Avatar Rig Configuration" (harmless: the wardrobe rebinds their
-bones by name; import them without an avatar); per-person walk variety (two captured walks). P5 (camera, touch and
-UI) is under way, the road to `play-ch1`.
+**Words and the HUD (P5.3b, 2026-10-29):** the interface's words now come from a string table (English; another
+language is a column away), and the walkabout has its HUD: where and when and what to do next at top left, a compass at
+top right that turns with the camera, the party's faces and health at bottom left, and under the right thumb the notebook,
+the map and the pack (hidden until those screens exist). Seen in `docs/evidence/unity/p5/ui_hud.jpg` and
+`ui_hud_quiet.jpg` (nothing tracked, turned round).
+**Next action:** P5.3c (the radial action menu; BUILD_PLAN P5 "Order of work"). **`play-people` is released**
+(2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
+https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).
+Step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until Mid ≥ 30 fps).
+Later playable builds: run the Android workflow by hand with `release: play-<name>` (its release job waits for that
+run's tests and APK, then makes the tag and the release page; this session's git proxy refuses tag pushes; release
+runs have their own concurrency group, so a push does not cancel them). P4 follow-ups, folded into later steps: NPC
+outfits merged into one renderer (crowd cost), body sliders (with the sculptor, P5.3i), runtime grime in a cloth
+shader; garment models import as people (Humanoid) and log "Invalid Avatar Rig Configuration" (harmless: the wardrobe
+rebinds their bones by name; import them without an avatar); per-person walk variety (two captured walks). P5 (camera,
+touch and UI) is under way, the road to `play-ch1`.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

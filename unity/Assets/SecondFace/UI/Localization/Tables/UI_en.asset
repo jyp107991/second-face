@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: UI_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 1f9cff42f4a186a1f8d1a25d0674f001, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 1191559168
+    m_Localized: THE SECOND FACE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1229307904
+    m_Localized: "LOADING\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502208
+    m_Localized: "RAISING THE WORLD\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502209
+    m_Localized: CONTENT FAILED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502210
+    m_Localized: Notebook
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502211
+    m_Localized: Map
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502212
+    m_Localized: Pack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502213
+    m_Localized: You
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502214
+    m_Localized: Nothing pressing. Walk, ask, look.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502215
+    m_Localized: "Day {0} \xB7 {1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502216
+    m_Localized: N
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502217
+    m_Localized: E
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502218
+    m_Localized: S
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502219
+    m_Localized: W
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502220
+    m_Localized: Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502221
+    m_Localized: Yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502222
+    m_Localized: No
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502223
+    m_Localized: OK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1233502224
+    m_Localized: Cancel
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []
