@@ -886,6 +886,35 @@ are seen in full), `ShaleKeepsItsHours` (now from the plaza). Evidence `docs/evi
 Not yet: the cast loaded per region (all 32 bodies are referenced by `WorldAssets`; with more places, Addressables per
 region), the people of places not built yet (only Shale and Cistern 9 are), people on the roads between places.
 
+*As built (P6.3 part 1, 2026-10-29).* Stealth on light. Core `World.Stealth`: the light on a body (0..1: the sky's key
+light, sun or moon, over the noon sun's 2.5 unless under a roof, the sky's ambient luminance, the lamps in range, each
+falling to nothing at its range), the exposure (a sneak shows 0.55, a Stealth of 100 shows 0.6 of an untrained body, a
+run 1.25), the sight range at that exposure (2.5 m in the dark to ~25 m in the sun, more with Senses), the noise (still
+nothing; a sneak 1.6 m, less with practice; a walk 4.5 m; a run 10 m) and an observer's awareness step (rising while
+seen, faster near and at the middle of the eye, half at its edge to 85°, nothing behind; rising while heard; fading
+0.12 a second; wary at 0.35, seen at 1.0); `StealthTests`. Game: the locomotion controller (v7) has a `sneak` state, the
+captured crouched walk (CMU 136_09: the hips 13 cm lower in the walker) played at `SneakRate` (speed over the clip's
+0.85 m/s: still, held in the crouch), to and from the locomotion on the Bool `Sneak`; `Walker.Sneak` goes into it at
+the clip's pace (taps and the stick alike). `Play/Watchers` looks five times a second: the light on the walker (the
+sky's look; indoors or underground no key light; the place lamps), their exposure and noise, then everyone standing
+within 30 m: the angle from where they face, the line of sight (the NavMesh unbroken between them: walls cut it; on
+the same floor), their Senses (content `attrs.senses`, else 4); someone wary turns their head to the walker (`Gaze`),
+someone who has seen them is told (`Noticed`: while sneaking, the HUD says "Someone has seen you."). The HUD has a sneak
+button (lit while sneaking; also Ctrl, and the pad's left stick pressed) and an eye at the top that fills with the most
+aware one's awareness, ochre when wary, red when seen. And a fix found here: the world's sun was whatever light
+`FindAnyObjectByType` found first, since the portraits' pre-warm the studio's disabled fill light, so the sky turned a
+dead light while the Boot scene's own stayed at noon round the clock (every walkabout night was day), and the sky made a
+default sun of its own in `Awake` (before the stage handed it one) that was left burning sideways at full strength; the
+stage now takes the scene's enabled directional light, never the studio's, and puts out a second one, and the sky makes
+its own sun only at its first look if none was handed over (the test checks one sun, the sky's, at the moon's strength
+at night). The HUD's capture shows the sneak button and the eye (`docs/evidence/unity/p5/ui_hud.jpg`). Test
+`BootTests.TheWalkerSneaksPastInTheDark` (by day walking up in front: light 0.89, seen; the sneak: hips 0.75 → 0.62 m,
+the button lit, the eye shown; at night behind them: light 0.12, unaware; in front six metres off: unaware; close in
+front: seen, the eye red). Evidence `docs/evidence/unity/p6/walkabout_sneak.jpg` (moonlight). Not yet: shade from walls
+and props outdoors by a shadow ray (the places have no colliders: with combat's cover, P6.4), noise by the ground's
+surface, sight cones drawn while sneaking, crowds hiding the walker, disguises and papers, pickpocketing and owners and
+witnesses for what is taken (part 2), a crouched idle of its own (the sneak's first frame holds for now).
+
 ### P7 — Chapter One on the phone
 The opening through the stranger's map, end to end on device, at the standard: every scene, conversation, check
 and reward of Chapter One works from the content, saved and resumed. A playtest script (PlayMode, fixture-driven)
@@ -2143,6 +2172,12 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
 - **A load far off while walking streams round the old walker** (P6.2): the walkabout set the world's focus on the
   walker every frame, so a load's `WaitAround` at the new spot was undone the next frame and the ground there never
   came; keep the focus where the walker is going until they are set down.
+- **Pick the sun by kind, not by luck** (P6.3): `FindAnyObjectByType<Light>()` returns disabled lights too, and once
+  the portraits' studio was made before the world (its lights off between pictures), the sky drove the studio's fill
+  while the scene's own light stayed at noon: every night in the walkabout was day, and nothing failed. Take the enabled
+  directional light of the scene, never one on the studio's layer, and check a night capture for night. A component
+  that makes a default of something in `Awake` makes it before anyone can hand it one (`AddComponent` runs `Awake`
+  at once): make defaults at first use.
 - **Nothing but the place goes under a place's root** (P6.2): under the ground the place switches off every renderer
   of its own that is not in an underground building (its surface), and people instantiated under its root went dark
   with it in the shelter. People stand under their place's people group (`people_<place>`).

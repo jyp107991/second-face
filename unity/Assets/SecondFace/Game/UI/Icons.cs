@@ -9,7 +9,7 @@ namespace SecondFace.Game.UI
     /// </summary>
     public static class Icons
     {
-        public static readonly string[] Names = { "notebook", "map", "pack", "talk", "look", "take", "use", "steal", "give", "attack", "trade", "menu", "open", "camp", "sit" };
+        public static readonly string[] Names = { "notebook", "map", "pack", "talk", "look", "take", "use", "steal", "give", "attack", "trade", "menu", "open", "camp", "sit", "sneak", "eye" };
 
         public static VisualElement Make(string name, float size = 40f)
         {
@@ -45,6 +45,27 @@ namespace SecondFace.Game.UI
                     p.MoveTo(P(0.34f, 0.56f)); p.LineTo(P(0.32f, 0.88f));                              // the back legs
                     p.MoveTo(P(0.72f, 0.56f)); p.LineTo(P(0.74f, 0.88f));                              // the front legs
                     p.MoveTo(P(0.33f, 0.74f)); p.LineTo(P(0.73f, 0.74f));                              // a rung
+                    p.Stroke();
+                    break;
+                case "sneak":   // someone crouched low, stepping forward
+                    p.BeginPath();
+                    p.Arc(P(0.62f, 0.22f), r.width * 0.09f, 0f, 360f);
+                    p.Stroke();
+                    p.BeginPath();
+                    p.MoveTo(P(0.56f, 0.32f)); p.LineTo(P(0.38f, 0.52f));                              // the back, bent
+                    p.MoveTo(P(0.50f, 0.40f)); p.LineTo(P(0.66f, 0.50f)); p.LineTo(P(0.74f, 0.44f));   // an arm forward
+                    p.MoveTo(P(0.38f, 0.52f)); p.LineTo(P(0.60f, 0.66f)); p.LineTo(P(0.58f, 0.86f));   // the front leg, knee bent
+                    p.MoveTo(P(0.38f, 0.52f)); p.LineTo(P(0.24f, 0.70f)); p.LineTo(P(0.14f, 0.84f));   // the back leg, trailing
+                    p.Stroke();
+                    break;
+                case "eye":   // an eye, its pupil
+                    p.BeginPath();
+                    p.MoveTo(P(0.08f, 0.50f));
+                    p.BezierCurveTo(P(0.30f, 0.20f), P(0.70f, 0.20f), P(0.92f, 0.50f));
+                    p.BezierCurveTo(P(0.70f, 0.80f), P(0.30f, 0.80f), P(0.08f, 0.50f));
+                    p.Stroke();
+                    p.BeginPath();
+                    p.Arc(P(0.50f, 0.50f), r.width * 0.12f, 0f, 360f);
                     p.Stroke();
                     break;
                 case "camp":   // a flame over two crossed sticks

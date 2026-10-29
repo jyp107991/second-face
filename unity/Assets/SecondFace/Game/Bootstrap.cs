@@ -200,6 +200,7 @@ namespace SecondFace.Game
             pad.Notebook += () => OpenNotebook(null);
             pad.Photo += () => OpenPhoto();
             pad.Camp += () => { if (UI != null && UI.Top == null) Walkabout.OpenCamp(); };
+            pad.Sneak += () => Walkabout.ToggleSneak();
             pad.Pause += () =>
             {
                 if (Photo != null && Photo.IsOpen) Photo.Close();
@@ -358,7 +359,7 @@ namespace SecondFace.Game
             if (_hud == null)
             {
                 _hud = new Hud(UI);
-                _hud.Actions(OpenNotebook, () => OpenMap(), () => OpenPack(), () => Walkabout.OpenCamp());
+                _hud.Actions(OpenNotebook, () => OpenMap(), () => OpenPack(), () => Walkabout.OpenCamp(), () => Walkabout.ToggleSneak());
                 _hud.Menu(() => OpenPause());
                 _hud.ObjectiveTapped += () => OpenNotebook(SecondFace.Core.World.Notebook.Tracked(Walkabout.Game));
                 UI.StackChanged += () => _hudNext = 0f;   // a quest tracked in the notebook, or one a conversation began, shows at once
@@ -372,6 +373,7 @@ namespace SecondFace.Game
                 var f = cam.transform.forward;   // north is +z
                 if (f.x * f.x + f.z * f.z > 1e-4f) _hud.Heading(Mathf.Atan2(f.x, f.z) * Mathf.Rad2Deg);
             }
+            if (Walkabout.Watch != null) _hud.Watched(Walkabout.Walker.Sneaking, Walkabout.Watch.Highest);
             if (Time.unscaledTime < _hudNext || Stage.Clock == null) return;
             _hudNext = Time.unscaledTime + 1f;
             var minutes = Stage.Clock.Minutes;

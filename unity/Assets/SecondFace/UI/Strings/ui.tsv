@@ -388,6 +388,8 @@ hair.sf_bun	Tied in a bun
 hair.sf_braid	A work braid
 hair.sf_matted	Matted
 hud.camp	Camp
+hud.sneak	Sneak
+stealth.seen	Someone has seen you.
 verb.camp	Camp
 camp.fire	The fire
 camp.title	Camp

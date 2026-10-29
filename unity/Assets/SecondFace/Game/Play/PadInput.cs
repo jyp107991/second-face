@@ -17,7 +17,7 @@ namespace SecondFace.Game.Play
         /// <summary>Pressed this frame: turn the view 90° (the bumpers; Q and E), act on what is near (south; Space),
         /// the pack (north; I), the map (west; M), the notebook (view; Tab or J), the pause (start), photo mode (P),
         /// quicksave and quickload (F5, F9), the view back on the walker (right stick press; C), camp (the d-pad down; K).</summary>
-        public bool TurnLeft, TurnRight, Act, Pack, Map, Notebook, Pause, Photo, QuickSave, QuickLoad, Recentre, Camp;
+        public bool TurnLeft, TurnRight, Act, Pack, Map, Notebook, Pause, Photo, QuickSave, QuickLoad, Recentre, Camp, Sneak;
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ namespace SecondFace.Game.Play
         /// <summary>Instead of the devices (tests): the frame to apply next, once.</summary>
         public PadFrame? Next;
 
-        public event Action Act, Pack, Map, Notebook, Pause, Photo, QuickSave, QuickLoad, Camp;
+        public event Action Act, Pack, Map, Notebook, Pause, Photo, QuickSave, QuickLoad, Camp, Sneak;
 
         /// <summary>The frame from the devices there are.</summary>
         public static PadFrame Read()
@@ -61,6 +61,7 @@ namespace SecondFace.Game.Play
                 f.Pause = g.startButton.wasPressedThisFrame;
                 f.Recentre = g.rightStickButton.wasPressedThisFrame;
                 f.Camp = g.dpad.down.wasPressedThisFrame;
+                f.Sneak = g.leftStickButton.wasPressedThisFrame;
             }
             var k = Keyboard.current;
             if (k != null)
@@ -81,6 +82,7 @@ namespace SecondFace.Game.Play
                 f.QuickLoad |= k.f9Key.wasPressedThisFrame;
                 f.Recentre |= k.cKey.wasPressedThisFrame;
                 f.Camp |= k.kKey.wasPressedThisFrame;
+                f.Sneak |= k.leftCtrlKey.wasPressedThisFrame || k.rightCtrlKey.wasPressedThisFrame;
             }
             return f;
         }
@@ -137,6 +139,7 @@ namespace SecondFace.Game.Play
             if (f.QuickSave) QuickSave?.Invoke();
             if (f.QuickLoad) QuickLoad?.Invoke();
             if (f.Camp) Camp?.Invoke();
+            if (f.Sneak) Sneak?.Invoke();
         }
     }
 }

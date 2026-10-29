@@ -45,6 +45,8 @@ namespace SecondFace.Game.Play
         public int Townsfolk => People != null ? People.Standing : 0;
         /// <summary>The world's people keeping their routines (P6.2; null until the walker is first set down).</summary>
         public PeopleService People { get; private set; }
+        /// <summary>The people about watching the walker (P6.3: the light on them, who has noticed them).</summary>
+        public Watchers Watch { get; private set; }
         /// <summary>The standing places' things that can be used: containers, talking props, fires, seats (P6.1).</summary>
         public int Things => _equipped.Values.Sum();
         /// <summary>The places whose things are equipped, and how many each has.</summary>
@@ -239,6 +241,23 @@ namespace SecondFace.Game.Play
             People.Begin(Game);
             if (spawner != null)
                 foreach (var (id, place) in spawner.Standing()) Equip(place, id);
+            if (Watch == null)
+            {
+                Watch = gameObject.AddComponent<Watchers>();
+                Watch.Noticed += _ => { if (Walker != null && Walker.Sneaking) Said?.Invoke(Strings.Get("stealth.seen")); };
+            }
+            Watch.Walker = Walker;
+            Watch.People = People;
+            Watch.Sky = Stage.Sky;
+            Watch.Game = Game;
+            Watch.Indoors = Indoors;
+            Watch.Calm();
+        }
+
+        /// <summary>Into a sneak or out of it (P6.3; the HUD's sneak button, Ctrl, the pad's left stick pressed).</summary>
+        public void ToggleSneak()
+        {
+            if (Walker != null) Walker.Sneak(!Walker.Sneaking);
         }
 
         /// <summary>The place's things (P6.1): its containers open (a lock first), its talking props say their piece, its

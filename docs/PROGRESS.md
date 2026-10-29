@@ -693,9 +693,18 @@ day has them; within about 120 m they step into the world, the nearest first, an
 (their gestures, glances, feet on the ground); walk away and they quietly go again, always where the hour has them
 when you come back. This keeps the phone's work to the people near you. Seen in
 `docs/evidence/unity/p6/walkabout_people_shelter.jpg`.
-**Next action:** P6 step 3: stealth on light (a light-level probe at the actor: the lights within range by a cheap
-estimate, the sun by a shadow ray; noise from actions; detection per DESIGN), with owners and witnesses for what is
-taken (P6.1's leftover). P6.2 left for later: the townsfolk sitting at their seats and sleeping in their beds (seats
+**Sneaking (P6.3 part 1, 2026-10-29):** you can sneak now (the new button by the camp button, Ctrl, or pressing the
+pad's left stick): you crouch low and go slowly, in captured motion. The people about see by the light that is
+really on you: in the noon sun they see you from far off, under a roof or at night only close up, and a lamp gives you
+away; nobody sees behind them or through a wall, and running is heard. Someone growing wary turns their head to
+look at you, and the eye at the top of the screen fills as they notice, turning red when you have been seen. Also
+fixed: nights in the game were secretly lit like day; now they are moonlit. Seen in
+`docs/evidence/unity/p6/walkabout_sneak.jpg`.
+**Next action:** P6 step 3 part 2: owners and witnesses for what is taken (a container or a pile that belongs to
+someone; taking it while seen is theft, told about town and held against you by the local reputation), the steal verb
+(pickpocketing, with real risk), crowds hiding you; then P6 step 4, combat. P6.3 left for later: shade outdoors by a
+shadow ray (with the places' colliders, P6.4), noise by the ground, sight cones shown while sneaking, a crouched idle.
+P6.2 left for later: the townsfolk sitting at their seats and sleeping in their beds (seats
 and beds with owners), crowds yielding to the walker, doors that open for whoever walks through, the cast loaded per
 region (Addressables), people on the roads. P6.1 left for later: doors that lock (with the door models), a share of a stack by a long press, the search of the
 fallen (with combat), owners and witnesses for what is taken (with stealth, P6.3). Blender and the MakeHuman assets are in the session

@@ -34,7 +34,8 @@ namespace SecondFace.Game.World
         private readonly Dictionary<(string, int), WeatherKind> _days = new();
         private double _envAt = -999;
 
-        private void Awake() => Ensure();
+        // no Awake: the sun is made at the first look only if none was handed over by then (the stage hands over the
+        // scene's own in the frame it adds the sky; one made in Awake was left burning beside it, sideways, round the clock)
 
         private void Ensure()
         {

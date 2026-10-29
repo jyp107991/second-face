@@ -1,4 +1,5 @@
 using System.Collections;
+using SecondFace.Core.World;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -19,6 +20,7 @@ namespace SecondFace.Game.Play
         private static readonly int Speed = Animator.StringToHash("Speed");
         private static readonly int Pickup = Animator.StringToHash("pickup");
         private static readonly int Locomotion = Animator.StringToHash("Locomotion");
+        private static readonly int SneakOn = Animator.StringToHash("Sneak"), SneakRate = Animator.StringToHash("SneakRate");
         /// <summary>How long sitting down or getting up takes (the body moves and the motion blends over it).</summary>
         public const float SitTime = 0.6f;
 
@@ -29,6 +31,9 @@ namespace SecondFace.Game.Play
         private Coroutine _seating;
         /// <summary>Where it stands, or would stand up to while seated (what a save keeps).</summary>
         public Vector3 Footing => Seated ? _standAt : transform.position;
+
+        /// <summary>In a sneak (P6.3): crouched, at the captured crouched walk's pace (<see cref="Stealth.SneakSpeed"/>).</summary>
+        public bool Sneaking { get; private set; }
 
         public NavMeshAgent Agent { get; private set; }
         public Animator Animator { get; private set; }
@@ -73,7 +78,7 @@ namespace SecondFace.Game.Play
             if (Seated) Stand();
             if (!Agent.isOnNavMesh && !Settle()) return false;
             if (!NavMesh.SamplePosition(point, out var hit, SampleRadius, NavMesh.AllAreas)) return false;
-            Agent.speed = Vector3.Distance(transform.position, hit.position) > JogBeyond ? JogSpeed : WalkSpeed;
+            Agent.speed = Sneaking ? Stealth.SneakSpeed : Vector3.Distance(transform.position, hit.position) > JogBeyond ? JogSpeed : WalkSpeed;
             if (!Agent.SetDestination(hit.position)) return false;
             Goal = hit.position;
             return true;
@@ -96,8 +101,17 @@ namespace SecondFace.Game.Play
             Goal = null;
             if (Agent.hasPath) Agent.ResetPath();
             var dir = direction.normalized;
-            Agent.velocity = dir * (amount > 0.9f ? JogSpeed : WalkSpeed * Mathf.Lerp(0.6f, 1f, Mathf.InverseLerp(0.15f, 0.9f, amount)));
+            var top = Sneaking ? Stealth.SneakSpeed : WalkSpeed;
+            Agent.velocity = dir * (amount > 0.9f && !Sneaking ? JogSpeed : top * Mathf.Lerp(0.6f, 1f, Mathf.InverseLerp(0.15f, 0.9f, amount)));
             transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(dir, Vector3.up), Agent.angularSpeed * Time.deltaTime);
+        }
+
+        /// <summary>Goes into a sneak or out of it (P6.3): crouched and slow, or up and walking.</summary>
+        public void Sneak(bool on)
+        {
+            Sneaking = on;
+            if (Animator != null) Animator.SetBool(SneakOn, on);
+            Agent.speed = on ? Stealth.SneakSpeed : WalkSpeed;
         }
 
         /// <summary>Stops and stoops to pick something up (the controller's "pickup"; it straightens and goes back to
@@ -189,7 +203,11 @@ namespace SecondFace.Game.Play
         {
             if (!Agent.isOnNavMesh && !Seated) Settle();
             if (Goal is { } g && Agent.isOnNavMesh && !Agent.pathPending && Agent.remainingDistance <= Agent.stoppingDistance + 0.05f) Goal = null;
-            if (Animator != null) Animator.SetFloat(Speed, Agent.velocity.magnitude, 0.12f, Time.deltaTime);
+            if (Animator != null)
+            {
+                Animator.SetFloat(Speed, Agent.velocity.magnitude, 0.12f, Time.deltaTime);
+                if (Sneaking) Animator.SetFloat(SneakRate, Mathf.Clamp(Agent.velocity.magnitude / Stealth.SneakSpeed, 0f, 1.6f), 0.1f, Time.deltaTime);
+            }
         }
     }
 }

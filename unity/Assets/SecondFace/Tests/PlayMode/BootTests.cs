@@ -834,6 +834,97 @@ namespace SecondFace.Tests
             yield return ScreenshotTests.Capture("walkabout_people_shelter", 1920, 1080);
         }
 
+        /// <summary>P6.3: stealth on light: walking up to someone by day they see you; in a sneak (crouched, the captured
+        /// motion) behind them at night they do not, nor in front of them a few metres off in the dark; close in front they
+        /// do. The HUD's sneak button is lit and its eye fills.</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator TheWalkerSneaksPastInTheDark()
+        {
+            Bootstrap boot = null;
+            yield return Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            var watch = walk.Watch;
+            Assert.That(watch, Is.Not.Null, "the people about watch");
+            float Flat(Vector3 a, Vector3 b) { a.y = 0; b.y = 0; return Vector3.Distance(a, b); }
+            IEnumerator Wait(float seconds) { var t = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t < seconds) yield return null; }
+            var town = walk.People.Town("shale");
+            var plaza = boot.Stage.Marker("shale", "spot", "plaza").transform.position;
+            UnityEngine.AI.NavMesh.SamplePosition(plaza, out var hit, 3f, UnityEngine.AI.NavMesh.AllAreas);
+            walk.Walker.Agent.Warp(hit.position);
+            boot.Stage.Clock.SetHour(12);
+            boot.Stage.Sky.Apply();
+            yield return Wait(4f);
+            // someone standing with open ground six metres before and behind them
+            Vector3 Spot(Vector3 from, Vector3 to) =>
+                UnityEngine.AI.NavMesh.SamplePosition(to, out var h, 1f, UnityEngine.AI.NavMesh.AllAreas) && !UnityEngine.AI.NavMesh.Raycast(from, h.position, out _, UnityEngine.AI.NavMesh.AllAreas)
+                    ? h.position : Vector3.positiveInfinity;
+            Townsperson who = null;
+            Vector3 front = default, back = default, close = default;
+            foreach (var p in town.People.Where(x => x.gameObject.activeSelf).OrderBy(x => Flat(x.transform.position, walk.Walker.transform.position)))
+            {
+                var f = p.transform.forward; f.y = 0; f.Normalize();
+                front = Spot(p.transform.position, p.transform.position + f * 6f);
+                back = Spot(p.transform.position, p.transform.position - f * 6f);
+                close = Spot(p.transform.position, p.transform.position + f * 1.5f);
+                if (float.IsInfinity(front.x) || float.IsInfinity(back.x) || float.IsInfinity(close.x)) continue;
+                who = p;
+                break;
+            }
+            Assert.That(who, Is.Not.Null, "someone with open ground about them");
+            who.Held = true;   // their routine waits: they stand where they are, facing as they do
+            if (who.Agent.isOnNavMesh) who.Agent.ResetPath();
+            Debug.Log($"BootTests: watched by {who.Id} at {who.transform.position}");
+            IEnumerator Stand(Vector3 at, float seconds)
+            {
+                walk.Walker.Agent.Warp(at);
+                watch.Calm();
+                var t = Time.realtimeSinceStartup;
+                while (Time.realtimeSinceStartup - t < seconds && who.Awareness < SecondFace.Core.World.Stealth.Noticed) yield return null;
+            }
+            // by day, walking up in front of them: seen
+            yield return Stand(front, 4f);
+            Debug.Log($"BootTests: noon in front: light {watch.Light:0.00}, exposure {watch.Exposure:0.00}, awareness {who.Awareness:0.00}");
+            Assert.That(who.Awareness, Is.GreaterThanOrEqualTo(SecondFace.Core.World.Stealth.Noticed), "seen walking up by day");
+            // the sneak: crouched in the captured motion
+            var hips = walk.Walker.Animator.GetBoneTransform(HumanBodyBones.Hips);
+            var standing = hips.position.y - walk.Walker.transform.position.y;
+            walk.ToggleSneak();
+            yield return Wait(1.2f);
+            Assert.That(walk.Walker.Sneaking, Is.True);
+            Assert.That(walk.Walker.Animator.GetCurrentAnimatorStateInfo(0).IsName("sneak"), Is.True, "in the sneak");
+            var crouched = hips.position.y - walk.Walker.transform.position.y;
+            Debug.Log($"BootTests: hips {standing:0.00} m standing, {crouched:0.00} m in the sneak");
+            Assert.That(crouched, Is.LessThan(standing - 0.07f), "crouched");
+            Assert.That(boot.Hud.SneakButton.ClassListContains("sf-hud__action--on"), Is.True, "the sneak button lit");
+            Assert.That(boot.Hud.Eye.style.display.value, Is.EqualTo(DisplayStyle.Flex), "the eye shown");
+            // at night, behind them: unseen
+            boot.Stage.Clock.SetHour(23.5);
+            boot.Stage.Sky.Apply();
+            yield return Stand(back, 4f);
+            Debug.Log($"BootTests: night behind: light {watch.Light:0.00}, awareness {who.Awareness:0.00}");
+            Assert.That(who.Awareness, Is.LessThan(SecondFace.Core.World.Stealth.Suspicious), "unseen behind them at night");
+            // in front of them, six metres off: unseen unless a lamp lights the walker
+            yield return Stand(front, 4f);
+            Debug.Log($"BootTests: night in front: light {watch.Light:0.00}, exposure {watch.Exposure:0.00}, awareness {who.Awareness:0.00}");
+            if (watch.Light < 0.25) Assert.That(who.Awareness, Is.LessThan(SecondFace.Core.World.Stealth.Noticed), "unseen in the dark six metres off");
+            // close in front: seen, and the eye says so
+            yield return Stand(close, 5f);
+            Debug.Log($"BootTests: night close: light {watch.Light:0.00}, awareness {who.Awareness:0.00}");
+            Assert.That(who.Awareness, Is.GreaterThanOrEqualTo(SecondFace.Core.World.Stealth.Noticed), "seen close in front");
+            yield return null;
+            Assert.That(boot.Hud.Eye.ClassListContains("sf-hud__eye--seen"), Is.True, "the eye says so");
+            var look = who.transform.position - walk.Walker.transform.position;
+            walk.Rig.View(Mathf.Atan2(look.x, look.z) * Mathf.Rad2Deg + 35f, 30f, 5f);
+            yield return Wait(1f);
+            var suns = Object.FindObjectsByType<Light>(FindObjectsSortMode.None).Where(l => l.type == LightType.Directional && l.isActiveAndEnabled).ToList();
+            Assert.That(suns.Count, Is.EqualTo(1), "one sun (or moon) lights the world: " + string.Join(", ", suns.Select(l => l.name)));
+            Assert.That(suns[0], Is.SameAs(boot.Stage.Sky.Sun), "and the sky turns it");
+            Assert.That(suns[0].intensity, Is.LessThan(0.5f), "at night, the moon's");
+            yield return ScreenshotTests.Capture("walkabout_sneak", 1920, 1080);
+            walk.ToggleSneak();
+            who.Held = false;
+        }
+
         [UnityTest, Timeout(900000)]
         public IEnumerator TheOverlaysButtonRunsTheMeasuringTour()
         {

@@ -36,8 +36,18 @@ namespace SecondFace.Game.World
 
             var skyGo = new GameObject("Sky");
             Clock = skyGo.AddComponent<TimeService>(); Clock.Paused = true; Clock.SetHour(Hour);
-            var sun = FindAnyObjectByType<Light>();
-            if (sun != null && sun.type == LightType.Directional) sun.shadows = LightShadows.Soft; else sun = null;
+            // the world's sun: the scene's own directional light, never the studio's (portraits light their faces with
+            // lights of their own, off between pictures, on their own layer: taken for the sun, the sky turned a dead
+            // light while the scene's stayed at noon round the clock); a second directional light in the scene is put
+            // out (two suns light the night as the day)
+            Light sun = null;
+            foreach (var l in FindObjectsByType<Light>(FindObjectsSortMode.None))
+            {
+                if (l.type != LightType.Directional || !l.enabled || !l.gameObject.activeInHierarchy) continue;
+                if (l.cullingMask == 1 << SecondFace.Game.People.Studio.Layer) continue;
+                if (sun == null) sun = l; else l.enabled = false;
+            }
+            if (sun != null) sun.shadows = LightShadows.Soft;
             Sky = skyGo.AddComponent<SkyController>();
             Sky.Sun = sun; Sky.Clock = Clock; Sky.World = World; Sky.Profile = Assets.Sky; Sky.Force = WeatherKind.Clear;
 

@@ -1799,6 +1799,14 @@ MonoBehaviour:
     m_Key: verb.sit
     m_Metadata:
       m_Items: []
+  - m_Id: 130658077097984
+    m_Key: hud.sneak
+    m_Metadata:
+      m_Items: []
+  - m_Id: 130658110652416
+    m_Key: stealth.seen
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

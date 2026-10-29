@@ -41,6 +41,9 @@ namespace SecondFace.Game.Play
         public bool Short { get; set; }
         /// <summary>Near enough to be seen up close: their gestures, gaze and feet on the ground (<see cref="PeopleService"/>).</summary>
         public bool Full { get; set; } = true;
+        /// <summary>How aware of the walker they are (P6.3, Core <see cref="SecondFace.Core.World.Stealth"/>): 0 not at
+        /// all; past Suspicious they look; at Noticed they have seen them.</summary>
+        public double Awareness { get; set; }
 
         private static readonly int Speed = Animator.StringToHash("Speed");
 

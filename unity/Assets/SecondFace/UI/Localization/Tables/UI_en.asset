@@ -1810,6 +1810,14 @@ MonoBehaviour:
     m_Localized: Sit
     m_Metadata:
       m_Items: []
+  - m_Id: 130658077097984
+    m_Localized: Sneak
+    m_Metadata:
+      m_Items: []
+  - m_Id: 130658110652416
+    m_Localized: Someone has seen you.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

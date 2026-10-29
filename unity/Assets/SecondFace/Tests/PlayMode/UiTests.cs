@@ -224,7 +224,8 @@ namespace SecondFace.Tests
             _ui.SafeAreaOverride = new Rect(0.05f, 0.04f, 0.95f, 0.96f);
             _ui.Root.Insert(0, World());
             var hud = new Hud(_ui);
-            hud.Actions(() => { }, () => { }, () => { }, () => { });
+            hud.Actions(() => { }, () => { }, () => { }, () => { }, () => { });
+            hud.Watched(true, 0.5);   // sneaking, and someone is wary
             var face = Face(128);
             hud.Show(new HudState
             {
@@ -260,16 +261,27 @@ namespace SecondFace.Tests
             Assert.That(hud.NotebookButton.Q<Label>().text, Is.EqualTo("Notebook"), "the button's word is bound to the table");
             Assert.That(hud.CampButton.Q<Label>().text, Is.EqualTo("Camp"), "camp beside the pack");
             Assert.That(hud.CampButton.worldBound.xMin, Is.GreaterThanOrEqualTo(hud.PackButton.worldBound.xMax), "after it");
+            // the sneak (P6.3): its button after the camp, lit while sneaking; the eye at the top clear of the rest
+            Assert.That(hud.SneakButton.Q<Label>().text, Is.EqualTo("Sneak"));
+            Assert.That(hud.SneakButton.worldBound.xMin, Is.GreaterThanOrEqualTo(hud.CampButton.worldBound.xMax), "after the camp");
+            Assert.That(hud.SneakButton.worldBound.xMax, Is.LessThanOrEqualTo(w - inset.z), "inside the safe area");
+            Assert.That(hud.SneakButton.ClassListContains("sf-hud__action--on"), Is.True, "lit while sneaking");
+            Assert.That(hud.Eye.resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex), "the eye while sneaking");
+            Assert.That(hud.Eye.ClassListContains("sf-hud__eye--wary"), Is.True, "wary");
+            Assert.That(hud.Eye.worldBound.xMin, Is.GreaterThan(hud.Objective.worldBound.xMax), "clear of the objective");
+            Assert.That(hud.Eye.worldBound.xMax, Is.LessThan(hud.Compass.worldBound.xMin), "and of the compass");
             Assert.That(Save(_rt, "ui_hud"), Is.GreaterThan(0.95f));
 
             hud.Heading(200f);
             hud.Actions(null, () => { }, null);
+            hud.Watched(false, 0);
             hud.Show(new HudState { Day = 1, Clock = "08:00", Party = { new HudMember { Name = "Ash", Hp = 40, MaxHp = 40, Leader = true } } });
             for (var i = 0; i < 3; i++) yield return null;
             Assert.That(hud.Compass.Shows(2), Is.True, "turned round, south is ahead");
             Assert.That(hud.Compass.Shows(0), Is.False);
             Assert.That(hud.Root.Q<Label>(className: "sf-hud__line").text, Is.EqualTo(Strings.Get("hud.quiet")), "nothing tracked: the quiet line");
             Assert.That(hud.NotebookButton.resolvedStyle.display, Is.EqualTo(DisplayStyle.None), "an action with no screen yet is hidden");
+            Assert.That(hud.Eye.resolvedStyle.display, Is.EqualTo(DisplayStyle.None), "no eye walking with nobody wary");
             Assert.That(hud.Party.Children().Count(c => c.resolvedStyle.display == DisplayStyle.Flex), Is.EqualTo(1));
             Save(_rt, "ui_hud_quiet");
             Object.Destroy(face);

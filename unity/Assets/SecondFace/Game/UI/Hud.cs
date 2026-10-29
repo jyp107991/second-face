@@ -22,16 +22,21 @@ namespace SecondFace.Game.UI
         public Button MapButton { get; }
         public Button PackButton { get; }
         public Button CampButton { get; }
+        /// <summary>Into a sneak and out of it (P6.3); lit while sneaking.</summary>
+        public Button SneakButton { get; }
+        /// <summary>How aware the people about are of the player (P6.3): an eye at the top that opens as they notice.</summary>
+        public VisualElement Eye { get; }
         /// <summary>The pause (P5.3j), top right under the compass.</summary>
         public Button MenuButton { get; }
         /// <summary>The objective was tapped (the notebook opens at the quest).</summary>
         public event Action ObjectiveTapped;
 
         private readonly Label _when, _quest, _line, _note;
+        private readonly VisualElement _eyeFill;
         private IVisualElementScheduledItem _noteOff;
         private readonly VisualElement _actions;
         private readonly List<Member> _members = new();
-        private Action _notebook, _map, _pack, _camp, _menu;
+        private Action _notebook, _map, _pack, _camp, _sneak, _menu;
 
         private sealed class Member
         {
@@ -75,6 +80,19 @@ namespace SecondFace.Game.UI
             _note.style.display = DisplayStyle.None;
             area.Add(_note);
 
+            Eye = new VisualElement { name = "hud-eye", pickingMode = PickingMode.Ignore };
+            Eye.AddToClassList("sf-plate");
+            Eye.AddToClassList("sf-hud__eye");
+            Eye.Add(Icons.Make("eye", 34f));
+            var bar = new VisualElement { pickingMode = PickingMode.Ignore };
+            bar.AddToClassList("sf-hud__eye-bar");
+            _eyeFill = new VisualElement { name = "hud-eye-fill", pickingMode = PickingMode.Ignore };
+            _eyeFill.AddToClassList("sf-hud__eye-fill");
+            bar.Add(_eyeFill);
+            Eye.Add(bar);
+            Eye.style.display = DisplayStyle.None;
+            area.Add(Eye);
+
             Party = new VisualElement { name = "hud-party", pickingMode = PickingMode.Ignore };
             Party.AddToClassList("sf-hud__party");
             area.Add(Party);
@@ -86,6 +104,7 @@ namespace SecondFace.Game.UI
             MapButton = ActionButton("map", "hud.map", () => _map?.Invoke());
             PackButton = ActionButton("pack", "hud.pack", () => _pack?.Invoke());
             CampButton = ActionButton("camp", "hud.camp", () => _camp?.Invoke());
+            SneakButton = ActionButton("sneak", "hud.sneak", () => _sneak?.Invoke());
 
             ui.Hud.Add(Root);
             ui.Pad(Root);
@@ -110,14 +129,30 @@ namespace SecondFace.Game.UI
             return b;
         }
 
-        /// <summary>What the notebook, map, pack and camp buttons do; a null hides its button (the screen is not there yet).</summary>
-        public void Actions(Action notebook, Action map, Action pack, Action camp = null)
+        /// <summary>What the notebook, map, pack, camp and sneak buttons do; a null hides its button (the screen is not
+        /// there yet).</summary>
+        public void Actions(Action notebook, Action map, Action pack, Action camp = null, Action sneak = null)
         {
-            _notebook = notebook; _map = map; _pack = pack; _camp = camp;
+            _notebook = notebook; _map = map; _pack = pack; _camp = camp; _sneak = sneak;
             NotebookButton.style.display = notebook != null ? DisplayStyle.Flex : DisplayStyle.None;
             MapButton.style.display = map != null ? DisplayStyle.Flex : DisplayStyle.None;
             PackButton.style.display = pack != null ? DisplayStyle.Flex : DisplayStyle.None;
             CampButton.style.display = camp != null ? DisplayStyle.Flex : DisplayStyle.None;
+            SneakButton.style.display = sneak != null ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        /// <summary>The sneak as it stands, and how aware the most aware of the people about is (0..1+): the sneak button
+        /// lit while sneaking; the eye shown while sneaking or while anyone is wary, filling as they notice, and turning
+        /// to the alarm colour once the player is seen.</summary>
+        public void Watched(bool sneaking, double awareness)
+        {
+            SneakButton.EnableInClassList("sf-hud__action--on", sneaking);
+            var show = sneaking || awareness >= 0.05;
+            Eye.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
+            if (!show) return;
+            _eyeFill.style.width = Length.Percent((float)Math.Clamp(awareness, 0, 1) * 100f);
+            Eye.EnableInClassList("sf-hud__eye--wary", awareness >= SecondFace.Core.World.Stealth.Suspicious);
+            Eye.EnableInClassList("sf-hud__eye--seen", awareness >= SecondFace.Core.World.Stealth.Noticed);
         }
 
         /// <summary>A line for a moment at the top (a quicksave made, a load failed).</summary>

@@ -1294,6 +1294,27 @@
     -unity-text-align: middle-center;
 }
 
+/* ---- the sneak (Hud.Watched, P6.3): the button lit while sneaking; an eye that fills as the people about notice ---- */
+.sf-hud__action.sf-hud__action--on { background-color: rgba(196, 138, 44, 0.42); }
+.sf-hud__action.sf-hud__action--on:enabled:hover { background-color: rgba(196, 138, 44, 0.52); }
+.sf-hud__action.sf-hud__action--on:enabled:focus { background-color: rgba(196, 138, 44, 0.42); }
+.sf-hud__eye {
+    position: absolute;
+    top: 76px;
+    left: 46%;
+    right: 46%;
+    min-width: 96px;
+    padding: 6px 10px 10px 10px;
+    align-items: center;
+}
+.sf-hud__eye .sf-icon { color: var(--plate-text); }
+.sf-hud__eye-bar { width: 100%; height: 6px; margin-top: 4px; border-radius: 3px; background-color: rgba(242, 234, 219, 0.18); }
+.sf-hud__eye-fill { height: 100%; width: 0; border-radius: 3px; background-color: rgba(242, 234, 219, 0.7); }
+.sf-hud__eye--wary .sf-hud__eye-fill { background-color: var(--ochre); }
+.sf-hud__eye--wary .sf-icon { color: var(--ochre); }
+.sf-hud__eye--seen .sf-hud__eye-fill { background-color: #C2452D; }
+.sf-hud__eye--seen .sf-icon { color: #C2452D; }
+
 /* ---- photo mode (PhotoScreen.cs): controls on a narrow plate, the frame as dark bands ---- */
 .sf-photo__bands { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 .sf-photo__band { position: absolute; background-color: rgba(0, 0, 0, 0.6); }

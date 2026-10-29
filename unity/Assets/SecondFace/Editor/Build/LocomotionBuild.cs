@@ -16,7 +16,9 @@ namespace SecondFace.EditorTools
     /// raises it while a gesture plays). Whole-body states on the base layer, played by name (P6.1): "pickup" (the
     /// captured stoop, from <see cref="PickupFrom"/> s in, at <see cref="PickupSpeed"/>, back to the locomotion as the
     /// body straightens) and the sits, "sit", "sit_stool", "sit_ground", which hold until the walker stands (played
-    /// back to "Locomotion" by name). Committed at <see cref="ControllerPath"/>; built when missing or
+    /// back to "Locomotion" by name). "sneak" (P6.3): the captured crouched walk while the Bool "Sneak" is on, played at
+    /// "SneakRate" (the walker's speed over the clip's own, so standing still holds the crouch), to and from the
+    /// locomotion by that Bool. Committed at <see cref="ControllerPath"/>; built when missing or
     /// older than <see cref="Version"/>, in place (its GUID stays: the world assets refer to it).
     /// </summary>
     public static class LocomotionBuild
@@ -24,7 +26,7 @@ namespace SecondFace.EditorTools
         public const string ControllerPath = "Assets/SecondFace/People/Locomotion.controller";
         public const string MaskPath = "Assets/SecondFace/People/UpperBody.mask";
         /// <summary>Bump when the layout changes; the controller carries it as the parameter "v&lt;Version&gt;".</summary>
-        public const int Version = 6;
+        public const int Version = 7;
         /// <summary>The pickup clip (CMU 26_09, 6 s) stands still for its first 0.9 s, is lowest at 2.3 s and upright
         /// again by 3.7 s: it is played from 0.7 s in, 1.4 times as fast, and leaves for the locomotion at 62 %.</summary>
         public const float PickupFrom = 0.7f, PickupSpeed = 1.4f, PickupExit = 0.62f;
@@ -53,6 +55,8 @@ namespace SecondFace.EditorTools
             }
             ctl.AddParameter("Speed", AnimatorControllerParameterType.Float);
             ctl.AddParameter("Idle", AnimatorControllerParameterType.Float);
+            ctl.AddParameter("Sneak", AnimatorControllerParameterType.Bool);
+            ctl.AddParameter(new AnimatorControllerParameter { name = "SneakRate", type = AnimatorControllerParameterType.Float, defaultFloat = 1f });
             ctl.AddParameter($"v{Version}", AnimatorControllerParameterType.Bool);
 
             // base: idle variants, then the moving clips at their speeds
@@ -93,6 +97,26 @@ namespace SecondFace.EditorTools
                 up.exitTime = PickupExit;
                 up.duration = 0.3f;
                 up.hasFixedDuration = true;
+            }
+            // the sneak: crouched, at the pace the walker goes (still: held in the crouch)
+            var sneakClip = Clip("sneak");
+            if (sneakClip != null)
+            {
+                var sneak = baseSm.AddState("sneak");
+                sneak.motion = sneakClip;
+                sneak.iKOnFeet = true;
+                sneak.speedParameterActive = true;
+                sneak.speedParameter = "SneakRate";
+                var down = state.AddTransition(sneak);
+                down.hasExitTime = false;
+                down.duration = 0.3f;
+                down.hasFixedDuration = true;
+                down.AddCondition(AnimatorConditionMode.If, 0, "Sneak");
+                var rise = sneak.AddTransition(state);
+                rise.hasExitTime = false;
+                rise.duration = 0.3f;
+                rise.hasFixedDuration = true;
+                rise.AddCondition(AnimatorConditionMode.IfNot, 0, "Sneak");
             }
             foreach (var name in Sits)
             {
