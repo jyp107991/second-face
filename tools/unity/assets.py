@@ -63,7 +63,8 @@ LIBRARY = {
     'wood_floor':  ('wood_floor_worn',        2.0, 'surface', 'worn wooden floors'),
     'tiles':       ('floor_tiles_06',         1.5, 'surface', 'tiled floors'),
     'grate':       ('rusty_metal_grid',       1.0, 'surface', 'grating'),
-    'canvas':      ('denim_fabric_03',        1.0, 'surface', 'canvas and tarps'),
+    'canvas':      ('terlenka',               1.0, 'surface', 'canvas and tarps: a bleached plain weave (the blue denim read as new jeans)'),
+    'burlap':      ('hessian_230',            0.8, 'surface', 'sacking: sandbags, mattresses, sacks'),
     'moss':        ('concrete_moss',          2.0, 'surface', 'overgrown concrete'),
 }
 MAPS = {'d': 'Diffuse', 'n': 'nor_gl', 'arm': 'arm', 'h': 'Displacement'}

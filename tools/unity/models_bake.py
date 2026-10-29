@@ -264,7 +264,7 @@ def export_variant(ob, path, rel):
     bpy.ops.export_scene.fbx(filepath=path, use_selection=True, apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y',
                              bake_space_transform=True, mesh_smooth_type='FACE', use_mesh_modifiers=True, bake_anim=False,
                              add_leaf_bones=False, path_mode='STRIP', embed_textures=False)
-    K.write_model_meta(path, rel)
+    K.write_model_meta(path, rel, readable=False)
     lo = [min(v.co[i] for v in ob.data.vertices) for i in range(3)]; hi = [max(v.co[i] for v in ob.data.vertices) for i in range(3)]
     return [round(hi[0] - lo[0], 2), round(hi[2] - lo[2], 2), round(hi[1] - lo[1], 2)], tri_count(ob)   # x, up, depth
 

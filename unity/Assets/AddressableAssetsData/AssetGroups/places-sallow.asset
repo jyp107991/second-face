@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: places-sallow
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: places-sallow
+  m_GUID: 6453e6d55a955e3c3934fee481035ed2
+  m_SerializeEntries:
+  - m_GUID: cdcf295ea8066f91f9eb1c1f150107b0
+    m_Address: places/shale
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 1c12ab3b1775f45449309f6c0586d14c, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 063ba01b1311f282a995aaaf69041a48, type: 2}
+    - {fileID: 11400000, guid: c898e9d263c9146e2850fafb6293661f, type: 2}
+    m_SchemaDisplayOrder:
+    - places-sallow_BundledAssetGroupSchema
+    - places-sallow_ContentUpdateGroupSchema
+  m_IncludeInBuild: 1
+  m_IncludeInBuildMigrated: 1

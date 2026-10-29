@@ -337,7 +337,7 @@ def main():
             for old in (f'{name}_lod0.fbx', f'{name}_lod0.fbx.meta'):   # the single-LOD files of the first pine pass
                 if os.path.exists(os.path.join(OUT, old)): os.remove(os.path.join(OUT, old))
             path = os.path.join(OUT, name + '.fbx')
-            K.export_fbx(path); K.write_model_meta(path, f'{REL}/{name}.fbx')
+            K.export_fbx(path); K.write_model_meta(path, f'{REL}/{name}.fbx', readable=False)
             dims = lod0.dimensions
             t = [tris(o) for o in (lod0, lod1, lod2)]
             variants.append({'path': f'{REL}/{name}.fbx', 'size': [round(dims.x, 2), round(dims.z, 2), round(dims.y, 2)], 'tris': t[0], 'lod_tris': t})

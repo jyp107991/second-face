@@ -593,6 +593,38 @@ separate prefabs positioned at their world coordinates under the place (walls wi
 layout source (tile → piece rules in `PlaceBuilder`), never at runtime; Core `Grid` is the interior fallback for
 pathing when NavMesh is unavailable.
 
+*As built (2026-10-29, step 20).* Core `PlacePlan` reads a map in world terms (pure, tested by `PlacePlanTests` on
+Shale and every authored map): metres about the place's centre, x east, z north, 2 m a tile; walls of 1.3 m and more
+are buildings (at least `Storey` 3.1 m: the web maps' 2.4–2.8 m were drawn for a tile view), lower ones fences; the
+rock rim (the web map's edge) is dropped. Doorways are one-tile gaps (gates two) in a straight wall line, each side
+continuing or ending the line; rooms are what a flood from the edge cannot reach past building walls and doorways; a
+gap with no room either side, or as wide as the "room" behind it on two opposite sides, is an alley between houses in
+a row, not a door (both found on Shale). Runs of wall split where what lies either side changes (a house wall that is
+the saloon's for two metres is outer wall, then partition); exterior walls know their outside; windows are placed by a
+hash on outer walls, clear of corners and doors; fences run on into a building wall they meet; inside a room a fence is
+a cell's bars. Editor `PlaceBuilder` (menu "Second Face/Build places", and in `AddressablesBuild.Prepare`) makes
+`Prefabs/places/<id>.prefab`, Addressable at `places/<id>` in `places-<region>`, listed in `World/PlaceSet.asset`
+(`PlaceBuilder.Ids`: Shale so far). Buildings are generated, merged per building into a shell (walls with their
+openings cut, floor) and a roof (its own child: an interior opens by hiding it, step 21): trims by material (adobe:
+thickened base, cap, timber lintels and sills, vigas through the long walls, canales; brick and concrete: copings,
+lintels, sills; timber: corner posts, base, frames; scrap and metal: mismatched sheets on a timber frame), flat roofs
+inside the parapet as patched panels, tin gables (timber) and lean-tos (scrap) of sheets of varied width, some slipped,
+with overhangs, ridge cap and gable boards. Building surfaces draw with `SecondFace/Weathered` (the library's maps
+plus grime and damp from the ground, streaks, broad and small patches, sand on top faces; no extra draws).
+Fittings are kit prefabs (plank doors, some ajar about their hinge; shutters; roof clutter); fences the frontier
+kit's wire fence; props by kind from the frontier, shelter, nature and the new furnishing kit
+(`tools/unity/kits/furnish.py`: counter, table, chair, bed, cot, shelf, stove, generator, sandbags, fire barrel, hand
+pump, tent, planter, debris, tyres, car hulk, campfire, wagon, blanket); a dressing pass adds what the map does not
+place (clutter against outer walls, awnings over street doors, the hall's porch, chairs by doors), clear of doors,
+props and markers; streets, rubble and broken concrete are `SecondFace/Road` patches on a 1 m grid with ragged alpha;
+the map's lights are realtime points without shadows; its spawns, exits, triggers, spots, talk and container props and
+people's posts are `PlaceMarker`s. Game: `PlaceSpawner` (with `WorldStreamer.Places`) instantiates a place by address
+on its pad within 600 m of the focus and releases it beyond 800 m; `PlaceNav` builds its NavMesh asynchronously from
+the render meshes over the footprint and 12 m (terrain included; doors ignored through `NavMeshModifier`; kit meshes
+import readable for it, nature scans stand in as their boxes). Roads stop at a place's edge, fading over 6 m
+(`RoadStrips.PlaceFade`): the place's streets are its own. Captures `place_shale_street`, `_square`, `_wide`
+(`PlacePlayTests`, which also walks the NavMesh road to road and in through the saloon's door).
+
 **A.6 Day, weather, light.** `TimeService` keeps world minutes; sun elevation by hour and region latitude;
 `Light` directional with `shadows.distance` 80 m (Mid), cascades 2; ambient from the sky gradient (trilight);
 fog colour and density per region/weather with exponential-squared mode. Point lights realtime ≤ 4 visible,
@@ -1269,6 +1301,15 @@ numbers from the densest place written into PORT.md §5.
   readable bush from above is a mound with a lit side and a shadow side (domes of leaf cards with spherical normals).
 - **Detail distance shorter than the frame** (step 19c): at 75 m the scrub ended in a line across the top of the game
   camera's frame; the frame's top is 90–140 m off. Detail distance 150 m with a dithered fade.
+- **Every road ran to a town's centre** (step 20): world.py starts roads at place centres, so the trail strips fanned
+  across the town's streets as wedges of gravel. `RoadStrips` stops a way at a place's edge (fade 6 m); routing roads to
+  a place's exits is the proper fix.
+- **Two houses in a row look like one wall with a gate** (step 20): their walls line up across the alley, and a gap in a
+  straight wall line read as a doorway closed the alley into a "room". A doorway needs a room behind it, and gaps as wide
+  as the room on two opposite sides are an alley (`PlacePlan.FindRooms`).
+- **A runtime NavMesh from render meshes needs readable meshes** (step 20): "Source mesh … does not allow read access"
+  (it works in the editor, not in the player). Kit models import readable; non-readable sources stand in as their
+  bounding boxes (`PlaceNav`) — never for a porch or an awning, whose box closes the way under it.
 
 ---
 
@@ -1362,7 +1403,12 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
          clumps; `world_scatter_sallow`, `_close`, `world_scatter_teeth` (`docs/evidence/unity/p3/`). **Not yet:**
          the ground beyond 150 m (the 200 m view) shows no scrub: a far representation (bush density darkening the
          terrain's macro colour, or impostors) when the camera's zoom range is set (P5).
-20. P3.5 `PlaceBuilder` from the exported layout for the first town; lights, decals, NavMesh; `place_shale_street`.
+20. ~~P3.5 `PlaceBuilder` from the exported layout for the first town; lights, NavMesh; `place_shale_street`~~ (done
+    2026-10-29, §6.A.5 "As built"). Weathering is in the building shader instead of decal projectors (no extra draws);
+    decals for accents (stains, cracks, faction marks) when the device measurement (step 24) shows their cost.
+    **Carried:** the town is ~370 renderers and ~680 material slots: the GLES3 tier needs its static props baked into
+    merged meshes per material per cell (interactive props kept apart) — measure first (step 24); roads should come in
+    at a place's exits (world.py routes them to the centre; they now stop at the edge); lights on at dusk.
 21. P3.5 interiors as positioned prefabs with instant open; `place_shelter_hall`.
 22. P3.6 water.
 23. The debug overlay (§7.4) in development builds.

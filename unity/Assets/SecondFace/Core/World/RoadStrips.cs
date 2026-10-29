@@ -9,7 +9,10 @@ namespace SecondFace.Core.World
     /// every chunk cuts it the same way); a piece belongs to the chunk holding its midpoint, so neighbouring chunks share
     /// the vertices where a strip crosses their edge and nothing is drawn twice. Across the strip four vertices: the outer
     /// edges at alpha 0, the inner at 1 (the shader breaks the edge with the texture's height). U runs across in metres,
-    /// V along in metres from the way's start, so ruts and cracks follow the road. Pure: it runs on the chunk's worker.
+    /// V along in metres from the way's start, so ruts and cracks follow the road. A way stops at a place's edge (its
+    /// streets are the place's own): it fades out over the last <see cref="PlaceFade"/> m and no piece is laid more than
+    /// <see cref="PlaceInset"/> m inside (the first version ran every road to the town's centre, a fan of trail strips
+    /// across the streets). Pure: it runs on the chunk's worker.
     /// </summary>
     public sealed class RoadStrips
     {
@@ -24,6 +27,7 @@ namespace SecondFace.Core.World
         };
 
         public const float PieceLength = 2f, Lift = 0.05f;
+        public const float PlaceFade = 6f, PlaceInset = 2f;
         /// <summary>V is counted from a multiple of this inside each chunk (every surface's tile length divides it), so a
         /// road 15 km long keeps its texture precise and still meets itself across a chunk edge.</summary>
         public const float VPeriod = 240f;
@@ -47,9 +51,11 @@ namespace SecondFace.Core.World
         }
 
         private readonly List<Way> _ways = new();
+        private readonly List<PlaceInfo> _places = new();
 
         public RoadStrips(WorldLayout layout)
         {
+            foreach (var p in layout.Places.Values) if (!p.Offshore) _places.Add(p);
             void Add(WayInfo w)
             {
                 if (w.Points.Count < 2) return;
@@ -75,12 +81,14 @@ namespace SecondFace.Core.World
         {
             var (x0, z0) = WorldGrid.Origin(cx, cz);
             var strips = new Dictionary<string, Strip>();
+            var places = _places.FindAll(p => Math.Abs(p.Centre[0] - (x0 + WorldGrid.Chunk / 2)) < WorldGrid.Chunk / 2 + p.Size[0] / 2 + PlaceFade + 20
+                                            && Math.Abs(p.Centre[1] - (z0 + WorldGrid.Chunk / 2)) < WorldGrid.Chunk / 2 + p.Size[1] / 2 + PlaceFade + 20);
             foreach (var way in _ways)
             {
                 var reach = way.Half + way.Fade + PieceLength;
                 if (way.MaxX + reach < x0 || way.MinX - reach > x0 + WorldGrid.Chunk || way.MaxZ + reach < z0 || way.MinZ - reach > z0 + WorldGrid.Chunk) continue;
                 if (!strips.TryGetValue(way.Surface, out var strip)) strips[way.Surface] = strip = new Strip { Surface = way.Surface };
-                Lay(way, x0, z0, heights, strip);
+                Lay(way, x0, z0, heights, strip, places);
             }
             var list = new List<Strip>();
             foreach (var s in strips.Values) if (s.Triangles.Count > 0) list.Add(s);
@@ -88,7 +96,15 @@ namespace SecondFace.Core.World
             return list;
         }
 
-        private static void Lay(Way way, float x0, float z0, float[] heights, Strip strip)
+        /// <summary>How far a point lies outside the nearest place's footprint, metres (negative inside).</summary>
+        private static float Outside(List<PlaceInfo> places, float x, float z)
+        {
+            var d = float.MaxValue;
+            foreach (var p in places) d = Math.Min(d, Math.Max(Math.Abs(x - p.Centre[0]) - p.Size[0] / 2, Math.Abs(z - p.Centre[1]) - p.Size[1] / 2));
+            return d;
+        }
+
+        private static void Lay(Way way, float x0, float z0, float[] heights, Strip strip, List<PlaceInfo> places)
         {
             var n = way.Xs.Length;
             int prev = -1;   // the index of the last cross-section emitted (its four vertices), or -1
@@ -107,9 +123,10 @@ namespace SecondFace.Core.World
                     float t0 = (float)k / pieces, t1 = (float)(k + 1) / pieces;
                     float mx = ax + (bx - ax) * (t0 + t1) / 2, mz = az + (bz - az) * (t0 + t1) / 2;
                     if (mx < x0 || mx >= x0 + WorldGrid.Chunk || mz < z0 || mz >= z0 + WorldGrid.Chunk) { prev = -1; continue; }
+                    if (places.Count > 0 && Outside(places, mx, mz) < -PlaceInset) { prev = -1; continue; }
                     if (float.IsNaN(vBase)) vBase = (float)Math.Floor((way.S[i] + len * t0) / VPeriod) * VPeriod;
-                    if (prev < 0) prev = Section(way, i, t0, x0, z0, vBase, heights, strip);
-                    var next = Section(way, i, t1, x0, z0, vBase, heights, strip);
+                    if (prev < 0) prev = Section(way, i, t0, x0, z0, vBase, heights, strip, places);
+                    var next = Section(way, i, t1, x0, z0, vBase, heights, strip, places);
                     for (var e = 0; e < 3; e++)
                     {
                         int a = prev + e, b = prev + e + 1, c = next + e, d = next + e + 1;
@@ -124,7 +141,7 @@ namespace SecondFace.Core.World
         }
 
         /// <summary>Emits the four vertices across the way at parameter t of segment i; returns the first's index.</summary>
-        private static int Section(Way way, int i, float t, float x0, float z0, float vBase, float[] heights, Strip strip)
+        private static int Section(Way way, int i, float t, float x0, float z0, float vBase, float[] heights, Strip strip, List<PlaceInfo> places)
         {
             float ax = way.Xs[i], az = way.Zs[i], bx = way.Xs[i + 1], bz = way.Zs[i + 1];
             float px = ax + (bx - ax) * t, pz = az + (bz - az) * t, s = way.S[i] + (way.S[i + 1] - way.S[i]) * t;
@@ -139,11 +156,13 @@ namespace SecondFace.Core.World
             foreach (var (off, alpha) in new[] { (-outer, 0f), (-inner, 1f), (inner, 1f), (outer, 0f) })
             {
                 float x = px + lx * off, z = pz + lz * off;
+                // fading into a place's own ground
+                var keep = places.Count > 0 ? Math.Clamp((Outside(places, x, z) + PlaceInset) / PlaceFade, 0f, 1f) : 1f;
                 strip.Positions.Add(x - x0);
                 strip.Positions.Add(HeightAt(heights, x - x0, z - z0) + Lift);
                 strip.Positions.Add(z - z0);
                 strip.Uvs.Add(off); strip.Uvs.Add(s - vBase);
-                strip.Alphas.Add(alpha);
+                strip.Alphas.Add(alpha * keep);
             }
             return first;
         }

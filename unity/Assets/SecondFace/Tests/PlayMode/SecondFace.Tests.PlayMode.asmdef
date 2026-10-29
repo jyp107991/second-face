@@ -10,7 +10,8 @@
         "Unity.ResourceManager",
         "Unity.RenderPipelines.Universal.Runtime",
         "Unity.RenderPipelines.Core.Runtime",
-        "Unity.RenderPipelines.GPUDriven.Runtime"
+        "Unity.RenderPipelines.GPUDriven.Runtime",
+        "Unity.AI.Navigation"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

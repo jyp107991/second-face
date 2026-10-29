@@ -12,7 +12,8 @@ namespace SecondFace.Game.World
     /// ground is computed on worker threads ahead of need, at most one chunk is written to a terrain a frame (none after a
     /// frame slower than 25 ms), terrains are pooled and reused, neighbours are stitched. With a <see cref="Catalog"/> the
     /// chunks within <see cref="PropRadius"/> of the focus carry their props (<see cref="ScatterSpawner"/>; dropped beyond
-    /// one more chunk, so a wandering focus does not churn them). Places and interiors join the same loop later.
+    /// one more chunk, so a wandering focus does not churn them). With <see cref="Places"/> the built places near the focus
+    /// stand on their pads (<see cref="PlaceSpawner"/>). Interiors join the same loop later.
     /// </summary>
     public sealed class WorldStreamer : MonoBehaviour
     {
@@ -24,6 +25,9 @@ namespace SecondFace.Game.World
         /// <summary>Chunks within this many of the focus carry their props (the iso camera sees ~150 m round it).</summary>
         public int PropRadius = 1;
         public ScatterSpawner Spawner { get; private set; }
+        /// <summary>The places built as prefabs (step 20), put in round the focus by <see cref="PlaceSpawner"/>.</summary>
+        public PlaceSet Places;
+        public PlaceSpawner PlaceSpawner { get; private set; }
         public readonly StreamingPolicy Policy = new StreamingPolicy();
         /// <summary>After a frame slower than this, no chunk is written the next frame.</summary>
         public float SlowFrameMs = 25f;
@@ -98,6 +102,11 @@ namespace SecondFace.Game.World
                 Stitch(b);
             }
             Props();
+            if (Places != null && PlaceSpawner == null)
+            {
+                PlaceSpawner = gameObject.AddComponent<PlaceSpawner>();
+                PlaceSpawner.World = World; PlaceSpawner.Places = Places;
+            }
             sw.Stop();
             if (sw.Elapsed.TotalMilliseconds > MaxFrameWorkMs) MaxFrameWorkMs = sw.Elapsed.TotalMilliseconds;
         }

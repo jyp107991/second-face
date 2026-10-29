@@ -20,5 +20,6 @@
     <!-- package assemblies the editor has compiled (present once the editor has opened the project) -->
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.Addressables.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.Addressables.dll')" />
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.ResourceManager.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.ResourceManager.dll')" />
+    <Reference Include="../unity/Library/ScriptAssemblies/Unity.AI.Navigation.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.AI.Navigation.dll')" />
   </ItemGroup>
 </Project>

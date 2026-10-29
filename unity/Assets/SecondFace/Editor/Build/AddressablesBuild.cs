@@ -11,7 +11,7 @@ using UnityEngine;
 namespace SecondFace.EditorTools
 {
     /// <summary>
-    /// The Addressables content (BUILD_PLAN §6.A.7): one group per kit (kits-shelter, kits-frontier, kits-trees) and the
+    /// The Addressables content (BUILD_PLAN §6.A.7): one group per kit (kits-shelter, kits-frontier, kits-trees, kits-furnish) and the
     /// nature models (nature), each entry a bound prefab (ContentPrefabs) at the address &lt;group&gt;/&lt;name&gt; with a
     /// label by kind (kit, tree, nature). Bundles are local (StreamingAssets, no remote in v1) and built with the player:
     /// <see cref="ContentBuildProcessor"/> refreshes the entries before every player build, CI's included. The groups
@@ -25,6 +25,7 @@ namespace SecondFace.EditorTools
             ("kits-shelter", "Assets/SecondFace/Kits/Shelter", "kit"),
             ("kits-frontier", "Assets/SecondFace/Kits/Frontier", "kit"),
             ("kits-trees", "Assets/SecondFace/Kits/Trees", "tree"),
+            ("kits-furnish", "Assets/SecondFace/Kits/Furnish", "kit"),
             ("nature", "Assets/SecondFace/Models/Nature", "nature"),
         };
 
@@ -98,6 +99,7 @@ namespace SecondFace.EditorTools
             Debug.Log($"AddressablesBuild: {n} entries in {Sources.Length + 1} groups");
             ScatterCatalogBuilder.Build();   // the world's props name these addresses
             DetailMeshes.Build();            // the terrain's small scatter: its own group, "details"
+            PlaceBuilder.Build();            // the built places: places-<region>, after the kits they nest
             return n;
         }
 

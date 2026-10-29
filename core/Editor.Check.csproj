@@ -30,6 +30,7 @@
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.Addressables.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.Addressables.dll')" />
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.Addressables.Editor.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.Addressables.Editor.dll')" />
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.ResourceManager.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.ResourceManager.dll')" />
+    <Reference Include="../unity/Library/ScriptAssemblies/Unity.AI.Navigation.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.AI.Navigation.dll')" />
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.ScriptableBuildPipeline.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.ScriptableBuildPipeline.dll')" />
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.ScriptableBuildPipeline.Editor.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.ScriptableBuildPipeline.Editor.dll')" />
   </ItemGroup>

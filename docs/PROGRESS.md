@@ -468,9 +468,20 @@ little in the wind and drawn out to 150 m (the scrub used to stop in a line acro
 foliage shader shades each bush as one mound and darkens its heart and base. From the 200 m view the ground is still
 bare past the drawn range (a far representation is a follow-up). Captures `world_scatter_sallow`, `_close`,
 `world_scatter_teeth` in `docs/evidence/unity/p3/`.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 20 (the first town built from its layout: `PlacePlan` in Core,
-the furnishing kit `tools/unity/kits/furnish.py`, `PlaceBuilder` in the editor, places streamed in by the world;
-`place_shale_street`).
+**The first town (plan §10 step 20, 2026-10-29):** Shale now stands in the streamed world, built in code from its
+layout: fourteen buildings (adobe houses with parapets, vigas and spouts; the timber saloon with a patchwork tin gable
+and a porch; scrap sheds of mismatched sheets under lean-tos; the brick lock-up with its cell; the concrete hall),
+doors (some ajar) and windows with shutters, patched flat roofs with barrels, crates and a tank on them, fences with
+gates, beaten-earth streets, the map's props from a new furnishing kit (bar counters, beds, cots, shelves, sandbags, a
+hand pump, tents, a car hulk and more), clutter against the walls, awnings over street doors, its lights and every
+marker the game needs. Walls and roofs show grime from the ground, streaks and sand on their tops. The town is put in
+by address when the player comes within 600 m, and its walking mesh is built on the spot: a walker crosses from road
+to road and goes in through the saloon's door to the bar. Roads now stop at the town's edge instead of running to its
+centre. Captures in `docs/evidence/unity/p3/place_shale_street_square_wide.jpg`. Still to do: the town is sparse in
+its open ground, it costs too many draw calls for the older phones (merge on measurement, step 24), roads should come
+in at its exits, lights on at dusk.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 21 (interiors that open instantly: hide a building's roof and the
+walls between the camera and the player when they step inside; `place_shelter_hall`).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

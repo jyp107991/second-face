@@ -10,7 +10,8 @@
         "Unity.Addressables",
         "Unity.Addressables.Editor",
         "Unity.ResourceManager",
-        "Unity.RenderPipelines.GPUDriven.Runtime"
+        "Unity.RenderPipelines.GPUDriven.Runtime",
+        "Unity.AI.Navigation"
     ],
     "includePlatforms": [
         "Editor"

@@ -181,7 +181,7 @@ namespace SecondFace.EditorTools
     public sealed class KitImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 6;
+        public override uint GetVersion() => 7;
 
         private void OnPreprocessTexture()
         {
@@ -204,7 +204,9 @@ namespace SecondFace.EditorTools
             // would overwrite it, laying walls flat (seen in the first engine captures).
             imp.bakeAxisConversion = true;
             imp.addCollider = true;
-            imp.isReadable = false;
+            // readable: a place's NavMesh is built at runtime from the render meshes round it (PlaceNav), and a kit piece's
+            // bounding box would close a porch or an awning to walking; the kits are small (the card trees are not read)
+            imp.isReadable = !assetPath.StartsWith("Assets/SecondFace/Kits/Trees/");
             imp.importAnimation = false;
             imp.importBlendShapes = false;
             imp.meshCompression = ModelImporterMeshCompression.Off;   // compression only shrinks files and can add artifacts

@@ -238,7 +238,7 @@ namespace SecondFace.Tests
             {
                 Assert.That(s.Triangles.Count % 3, Is.EqualTo(0));
                 Assert.That(s.Triangles.All(t => t >= 0 && t < s.VertexCount), Is.True);
-                Assert.That(s.Alphas.Count(a => a == 0f), Is.EqualTo(s.VertexCount / 2), "two of every four vertices are the faded edges");
+                Assert.That(s.Alphas.Count(a => a == 0f), Is.GreaterThanOrEqualTo(s.VertexCount / 2), "two of every four vertices are the faded edges");
                 for (var t = 0; t < s.Triangles.Count; t += 3)
                 {
                     int i0 = s.Triangles[t] * 3, i1 = s.Triangles[t + 1] * 3, i2 = s.Triangles[t + 2] * 3;
@@ -258,6 +258,34 @@ namespace SecondFace.Tests
                 if (inB.Contains(((int)Math.Round((sa.Positions[v * 3] + oax) * 100), (int)Math.Round((sa.Positions[v * 3 + 2] + oaz) * 100)))) shared++;
             Assert.That(shared, Is.GreaterThanOrEqualTo(4), "the two strips share a cross-section where the road crosses");
             TestContext.WriteLine($"road {road.Id}: {sa.VertexCount} + {sb.VertexCount} vertices, {shared} shared");
+        }
+
+        /// <summary>Roads stop at a town's edge (step 20): Shale's streets are its own, so no road surface shows more than
+        /// a couple of metres inside its footprint, and the roads still reach it.</summary>
+        [Test]
+        public void RoadsStopAtATownsEdge()
+        {
+            Gen();
+            var strips = new RoadStrips(_layout);
+            var shale = _layout.Places["shale"];
+            var (cx, cz) = WorldGrid.ChunkAt(shale.Centre[0], shale.Centre[1]);
+            int inside = 0, near = 0;
+            foreach (var c in WorldGrid.Around(shale.Centre[0], shale.Centre[1], 1))
+            {
+                var (ox, oz) = WorldGrid.Origin(c.cx, c.cz);
+                foreach (var s in strips.Build(c.cx, c.cz, Gen().Heights(c.cx, c.cz)))
+                    for (var v = 0; v < s.VertexCount; v++)
+                    {
+                        if (s.Alphas[v] <= 0.001f) continue;
+                        float x = s.Positions[v * 3] + ox, z = s.Positions[v * 3 + 2] + oz;
+                        var d = Math.Max(Math.Abs(x - shale.Centre[0]) - shale.Size[0] / 2, Math.Abs(z - shale.Centre[1]) - shale.Size[1] / 2);
+                        if (d < -RoadStrips.PlaceInset - 1f) inside++;
+                        if (d < 30f) near++;
+                    }
+            }
+            Assert.That(inside, Is.EqualTo(0), "no road surface inside the town");
+            Assert.That(near, Is.GreaterThan(0), "the roads still come up to the town");
+            TestContext.WriteLine($"chunk {cx},{cz}: {near} road vertices within 30 m of Shale's edge");
         }
 
         private static string Find(string repoRel)
