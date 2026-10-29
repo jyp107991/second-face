@@ -41,6 +41,8 @@ namespace SecondFace.Game.UI
         public Vector4 Insets { get; private set; }
         public event Action<Vector4> InsetsChanged;
         public event Action StackChanged;
+        /// <summary>The back gesture with no screen open (the open world: the pause opens).</summary>
+        public event Action BackUnhandled;
 
         /// <summary>A safe area to use instead of the screen's (normalised, origin bottom-left, as Screen.safeArea): tests
         /// and the notch preview.</summary>
@@ -128,7 +130,7 @@ namespace SecondFace.Game.UI
             var area = _override ?? ScreenSafeArea();
             if (area != _area) { _area = area; _insetsDirty = true; }
             if (_insetsDirty) ApplyInsets();
-            if (BackPressed()) Back();
+            if (BackPressed() && !Back()) BackUnhandled?.Invoke();
         }
 
         private Rect ScreenSafeArea()
@@ -136,6 +138,14 @@ namespace SecondFace.Game.UI
             if (Panel.targetTexture != null || Screen.width <= 0 || Screen.height <= 0) return new Rect(0, 0, 1, 1);
             var s = Screen.safeArea;
             return new Rect(s.x / Screen.width, s.y / Screen.height, s.width / Screen.width, s.height / Screen.height);
+        }
+
+        /// <summary>The settings' text size (an index into Core <c>Settings.TextScales</c>) and contrast, as classes on the
+        /// root the theme answers (every font size is a variable the size class scales; contrast darkens the soft inks).</summary>
+        public void Present(int textSize, bool highContrast)
+        {
+            for (var i = 0; i < 4; i++) Root.EnableInClassList("sf-text-" + i, i == textSize);
+            Root.EnableInClassList("sf-contrast", highContrast);
         }
 
         /// <summary>Works the insets out from the safe area and the panel's size and pads the safe elements (once laid out).</summary>

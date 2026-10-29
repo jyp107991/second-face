@@ -1211,6 +1211,203 @@ MonoBehaviour:
     m_Localized: Matted
     m_Metadata:
       m_Items: []
+  - m_Id: 50241105936384
+    m_Localized: "SETTING YOU DOWN\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462336
+    m_Localized: Continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462337
+    m_Localized: New game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462338
+    m_Localized: Load
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462339
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462340
+    m_Localized: Paused
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462341
+    m_Localized: Back to it
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462342
+    m_Localized: Save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462343
+    m_Localized: Load
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462344
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462345
+    m_Localized: To the title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462346
+    m_Localized: Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462347
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462348
+    m_Localized: Words
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462349
+    m_Localized: Text size
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462350
+    m_Localized: Smaller
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462351
+    m_Localized: Standard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462352
+    m_Localized: Larger
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462353
+    m_Localized: Largest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462354
+    m_Localized: High contrast
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462355
+    m_Localized: On
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462356
+    m_Localized: Off
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462357
+    m_Localized: Camera
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462358
+    m_Localized: How far a drag turns it
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462359
+    m_Localized: Which way it turns
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462360
+    m_Localized: With the finger
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462361
+    m_Localized: Against the finger
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462362
+    m_Localized: Play
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462363
+    m_Localized: Difficulty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462364
+    m_Localized: Story
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462365
+    m_Localized: Normal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462366
+    m_Localized: Hard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462367
+    m_Localized: Difficulty changes only how well enemies aim and how hard they hit.
+      What you find, what you can afford and what a check asks of you stay the same.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462368
+    m_Localized: Combat speed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462369
+    m_Localized: Skip lines already heard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462370
+    m_Localized: Autosave
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462371
+    m_Localized: Save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462372
+    m_Localized: Load
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462373
+    m_Localized: Nothing saved yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462374
+    m_Localized: 'Empty: save here'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462375
+    m_Localized: '{0} played'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462376
+    m_Localized: '{0} h {1} min'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462377
+    m_Localized: '{0} min'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462378
+    m_Localized: Autosave
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462379
+    m_Localized: Quicksave
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462380
+    m_Localized: Slot {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462381
+    m_Localized: Save over {0}? What it holds now will be gone.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462382
+    m_Localized: Save over it
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462383
+    m_Localized: Keep it
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

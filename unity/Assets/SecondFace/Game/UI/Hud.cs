@@ -21,13 +21,15 @@ namespace SecondFace.Game.UI
         public Button NotebookButton { get; }
         public Button MapButton { get; }
         public Button PackButton { get; }
+        /// <summary>The pause (P5.3j), top right under the compass.</summary>
+        public Button MenuButton { get; }
         /// <summary>The objective was tapped (the notebook opens at the quest).</summary>
         public event Action ObjectiveTapped;
 
         private readonly Label _when, _quest, _line;
         private readonly VisualElement _actions;
         private readonly List<Member> _members = new();
-        private Action _notebook, _map, _pack;
+        private Action _notebook, _map, _pack, _menu;
 
         private sealed class Member
         {
@@ -58,6 +60,12 @@ namespace SecondFace.Game.UI
 
             Compass = new Compass();
             area.Add(Compass);
+
+            MenuButton = new Button(() => _menu?.Invoke()) { name = "hud-menu" };
+            MenuButton.AddToClassList("sf-hud__menu");
+            MenuButton.Add(Icons.Make("menu", 34f));
+            MenuButton.style.display = DisplayStyle.None;
+            area.Add(MenuButton);
 
             Party = new VisualElement { name = "hud-party", pickingMode = PickingMode.Ignore };
             Party.AddToClassList("sf-hud__party");
@@ -100,6 +108,13 @@ namespace SecondFace.Game.UI
             NotebookButton.style.display = notebook != null ? DisplayStyle.Flex : DisplayStyle.None;
             MapButton.style.display = map != null ? DisplayStyle.Flex : DisplayStyle.None;
             PackButton.style.display = pack != null ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        /// <summary>What the menu button does (the pause); null hides it.</summary>
+        public void Menu(Action menu)
+        {
+            _menu = menu;
+            MenuButton.style.display = menu != null ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         /// <summary>Where the camera looks, degrees clockwise from north.</summary>

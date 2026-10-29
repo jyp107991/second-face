@@ -905,6 +905,129 @@ namespace SecondFace.Tests
             Assert.That(screen.Figure, Is.Null);
         }
 
+        /// <summary>P5.3j: the title (continue with the last save, new game, load, settings), the settings (a text size
+        /// re-sets every word, contrast, the camera's turn; kept beside the saves), the saves (cards with their pictures;
+        /// load one; save to an empty slot, and over a used one after asking) and the pause (time stops while it is open).</summary>
+        [UnityTest, Timeout(180000)]
+        public IEnumerator TitleSettingsSavesAndPause()
+        {
+            var dir = Path.Combine(Application.temporaryCachePath, "ui-saves-test");
+            if (Directory.Exists(dir)) Directory.Delete(dir, true);
+            var session = new SecondFace.Game.Play.Session(new SecondFace.Core.Save.DirectoryBackend(dir));
+            var picture = new Texture2D(64, 36, TextureFormat.RGB24, false);
+            var px = new Color[64 * 36];
+            for (var i = 0; i < px.Length; i++) px[i] = Color.Lerp(new Color(0.55f, 0.45f, 0.3f), new Color(0.75f, 0.8f, 0.85f), (i / 64) / 36f);
+            picture.SetPixels(px);
+            picture.Apply();
+            var thumb = System.Convert.ToBase64String(picture.EncodeToJPG(80));
+            Object.Destroy(picture);
+            var state = States.NewGame("shale", 0, 0);
+            state.Pc.Sheet.Name = "Ash Corran";
+            state.Minutes = 2 * 1440 + 14 * 60 + 20;
+            state.PlaytimeSec = 2 * 3600 + 12 * 60;
+            session.Write("auto", state, new SecondFace.Core.Save.SaveMeta { Label = "Ash Corran", LocationId = "shale", LocationName = "Shale", Minutes = state.Minutes, PlaytimeSec = state.PlaytimeSec, Thumb = thumb });
+            session.Write("slot1", state, new SecondFace.Core.Save.SaveMeta { Label = "Ash Corran", LocationId = "shale", LocationName = "Shale", Minutes = state.Minutes - 300, PlaytimeSec = state.PlaytimeSec - 900, Thumb = thumb });
+            Assert.That(session.List().Keys, Is.EquivalentTo(new[] { "auto", "slot1" }));
+
+            _ui = Offscreen(1600, 720, out _rt);
+            _ui.SafeAreaOverride = new Rect(0.05f, 0.04f, 0.95f, 0.96f);
+            _ui.Root.Insert(0, World());
+            session.SettingsChanged += s => _ui.Present(System.Array.IndexOf(SecondFace.Core.Save.Settings.TextScales, s.TextScale), s.HighContrast);
+            // the title
+            var chose = "";
+            var latest = session.Latest();
+            var title = _ui.Open(new TitleScreen(new TitleModel
+            {
+                Latest = latest, AnySave = true, Status = () => "RAISING THE WORLD… 12 chunks",
+                Continue = () => chose = "continue", NewGame = () => chose = "new", Load = () => chose = "load", Settings = () => chose = "settings",
+            }));
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(latest, Is.Not.Null, "the last written");
+            Assert.That(title.ContinueButton, Is.Not.Null, "continue, with a save to continue");
+            Assert.That(title.ContinueButton.Q<Label>(className: "sf-start__choice-sub").text, Does.Contain("Ash Corran").And.Contain("Shale"));
+            Press(title.ContinueButton);
+            Assert.That(chose, Is.EqualTo("continue"));
+            Press(title.NewButton);
+            Assert.That(chose, Is.EqualTo("new"));
+            Assert.That(title.Root.Q<Label>("title-status").text, Does.Contain("RAISING"));
+            Assert.That(Save(_rt, "ui_title"), Is.GreaterThan(0.95f));
+            Assert.That(_ui.Back(), Is.True);
+            Assert.That(title.IsOpen, Is.True, "the back gesture leaves the title");
+
+            // the settings: a larger size re-sets the words; contrast; the camera; kept beside the saves
+            var settings = _ui.Open(new SettingsScreen(() => session.Settings, edit => session.Change(edit)));
+            for (var i = 0; i < 3; i++) yield return null;
+            var heading = settings.Root.Q<Label>(className: "sf-menu__title");
+            var size = heading.resolvedStyle.fontSize;
+            Press(settings.Root.Q<Button>("text-1.3"));
+            Press(settings.Root.Q<Button>("contrast-on"));
+            Press(settings.Root.Q<Button>("turn-1.5"));
+            Press(settings.Root.Q<Button>("invert-on"));
+            Press(settings.Root.Q<Button>("difficulty-story"));
+            for (var i = 0; i < 3; i++) yield return null;
+            heading = settings.Root.Q<Label>(className: "sf-menu__title");
+            Assert.That(heading.resolvedStyle.fontSize, Is.EqualTo(size * 1.3f).Within(1f), "the words are larger");
+            Assert.That(_ui.Root.ClassListContains("sf-contrast"), Is.True);
+            Assert.That(settings.Root.Q<Button>("text-1.3").ClassListContains("sf-creation__choice--on"), Is.True, "the page shows what is chosen");
+            var kept = SecondFace.Core.Save.Settings.Parse(System.IO.File.ReadAllText(Path.Combine(dir, "settings.json")));
+            Assert.That((kept.TextScale, kept.HighContrast, kept.TurnSpeed, kept.InvertTurn, kept.Difficulty), Is.EqualTo((1.3f, true, 1.5f, true, "story")), "kept");
+            Assert.That(new SecondFace.Game.Play.Session(new SecondFace.Core.Save.DirectoryBackend(dir)).Settings.TextScale, Is.EqualTo(1.3f), "and read again");
+            Assert.That(Save(_rt, "ui_settings_large"), Is.GreaterThan(0.95f));
+            Press(settings.Root.Q<Button>("text-1"));
+            Press(settings.Root.Q<Button>("contrast-off"));
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(settings.Root.Q<Label>(className: "sf-menu__title").resolvedStyle.fontSize, Is.EqualTo(size).Within(0.5f), "and back");
+            Assert.That(Save(_rt, "ui_settings"), Is.GreaterThan(0.95f));
+            settings.Close();
+
+            // the saves: loading lists the filled slots, the autosave first
+            string loaded = null;
+            var saved = new List<string>();
+            SecondFace.Core.Save.SaveMeta SaveNow(string slot)
+            {
+                saved.Add(slot);
+                return session.Write(slot, state, new SecondFace.Core.Save.SaveMeta { Label = "Ash Corran", LocationName = "Shale", Minutes = state.Minutes + 60, PlaytimeSec = state.PlaytimeSec + 600, Thumb = thumb }).Meta;
+            }
+            var load = _ui.Open(new SavesScreen(new SavesModel { Session = session, Saving = false, Load = slot => loaded = slot, Save = SaveNow }));
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(load.Cards.Keys, Is.EqualTo(new[] { "auto", "slot1" }));
+            Assert.That(load.Cards["auto"].Q<Image>().image, Is.Not.Null, "the slot's picture");
+            Assert.That(Save(_rt, "ui_saves_load"), Is.GreaterThan(0.95f));
+            Press(load.Cards["slot1"]);
+            Assert.That(loaded, Is.EqualTo("slot1"));
+            load.Close();
+            // saving: the quick slot and three by hand; an empty one at once, a used one after asking
+            var save = _ui.Open(new SavesScreen(new SavesModel { Session = session, Saving = true, Load = slot => loaded = slot, Save = SaveNow }));
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(save.Cards.Keys, Is.EqualTo(new[] { "quick", "slot1", "slot2", "slot3" }));
+            Press(save.Cards["slot2"]);
+            Assert.That(saved, Is.EqualTo(new[] { "slot2" }), "an empty slot saves at once");
+            for (var i = 0; i < 2; i++) yield return null;
+            Assert.That(save.Cards["slot2"].ClassListContains("sf-saves__card--empty"), Is.False, "and shows what it holds");
+            Press(save.Cards["slot1"]);
+            Assert.That(_ui.Top, Is.InstanceOf<ConfirmScreen>(), "a used one asks first");
+            for (var i = 0; i < 2; i++) yield return null;
+            Assert.That(Save(_rt, "ui_saves_overwrite"), Is.GreaterThan(0.95f));
+            Press(_ui.Top.Root.Q<Button>("confirm-yes"));
+            Assert.That(saved, Is.EqualTo(new[] { "slot2", "slot1" }));
+            for (var i = 0; i < 2; i++) yield return null;
+            Assert.That(Save(_rt, "ui_saves"), Is.GreaterThan(0.95f));
+            save.Close();
+            title.Close();
+
+            // the pause: time stops while it is open
+            var paused = _ui.Open(new PauseScreen(new PauseModel { Line = TitleScreen.Describe(session.Latest()), Save = () => { }, Load = () => { }, Settings = () => { }, Quit = () => chose = "quit" }));
+            for (var i = 0; i < 2; i++) yield return null;
+            Assert.That(Time.timeScale, Is.EqualTo(0f), "the world stops");
+            Assert.That(Save(_rt, "ui_pause"), Is.GreaterThan(0.95f));
+            Press(paused.Root.Q<Button>("pause-quit"));
+            Assert.That(chose, Is.EqualTo("quit"));
+            Press(paused.Root.Q<Button>("pause-resume"));
+            Assert.That(paused.IsOpen, Is.False);
+            Assert.That(Time.timeScale, Is.EqualTo(1f), "and goes on");
+            Directory.Delete(dir, true);
+        }
+
         private static Label Text(string cls, string text)
         {
             var l = new Label(text);

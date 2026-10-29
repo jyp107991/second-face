@@ -30,6 +30,16 @@ namespace SecondFace.Core.State
 
     public sealed class PlayerPos { public int X; public int Y; public double Facing; }
 
+    /// <summary>Where the player stands in the open world and how the camera looks at them (P5.3j, BUILD_PLAN §6.I);
+    /// null on a new game: they start at the place's spawn.</summary>
+    public sealed class WorldSpot
+    {
+        public float X, Y, Z;
+        /// <summary>Which way they face (degrees, clockwise from north).</summary>
+        public float Yaw;
+        public float CamYaw, CamPitch, CamDistance;
+    }
+
     public sealed class CompanionSave
     {
         public CharacterSheet Sheet;
@@ -45,6 +55,8 @@ namespace SecondFace.Core.State
     {
         public string LocationId;
         public PlayerPos Player = new();
+        /// <summary>The player's place in the open world (the Unity game; the grid fallback keeps <see cref="Player"/>).</summary>
+        public WorldSpot Spot;
         public PlayerCharacter Pc = new();
         /// <summary>Persistent per-NPC state keyed by `locationId/npcId`.</summary>
         public Dictionary<string, NpcSave> Npcs = new();

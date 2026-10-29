@@ -20,11 +20,27 @@
     --plate-dim: #B9AE9C;
     --scrim: rgba(12, 10, 8, 0.55);
 
-    --text-s: 22px;
-    --text-m: 26px;
-    --text-l: 32px;
-    --text-xl: 42px;
-    --text-title: 72px;
+    /* text sizes: every font size is one of these, so the settings' text size (a class on the root, below) scales
+       them all */
+    --fs-16: 16px;
+    --fs-18: 18px;
+    --fs-20: 20px;
+    --fs-21: 21px;
+    --fs-22: 22px;
+    --fs-23: 23px;
+    --fs-24: 24px;
+    --fs-25: 25px;
+    --fs-26: 26px;
+    --fs-28: 28px;
+    --fs-30: 30px;
+    --fs-32: 32px;
+    --fs-34: 34px;
+    --fs-36: 36px;
+    --fs-40: 40px;
+    --fs-42: 42px;
+    --fs-44: 44px;
+    --fs-48: 48px;
+    --fs-72: 72px;
     --touch: 80px;
     --gutter: 16px;
     --edge: 24px;
@@ -34,8 +50,23 @@
     --unity-colors-label-text: #24201B;
 
     -unity-font-definition: url("../Fonts/Barlow-Regular.asset");
-    font-size: 26px;
+    font-size: var(--fs-26);
     color: #24201B;
+}
+
+/* ---- the settings (P5.3j): text size and contrast, as classes on the root element ---- */
+.sf-root { font-size: var(--fs-26); }
+.sf-text-0 { --fs-16: 14px; --fs-18: 16px; --fs-20: 18px; --fs-21: 19px; --fs-22: 20px; --fs-23: 21px; --fs-24: 22px; --fs-25: 22px; --fs-26: 23px; --fs-28: 25px; --fs-30: 27px; --fs-32: 29px; --fs-34: 31px; --fs-36: 32px; --fs-40: 36px; --fs-42: 38px; --fs-44: 40px; --fs-48: 43px; --fs-72: 65px; }
+.sf-text-2 { --fs-16: 18px; --fs-18: 21px; --fs-20: 23px; --fs-21: 24px; --fs-22: 25px; --fs-23: 26px; --fs-24: 28px; --fs-25: 29px; --fs-26: 30px; --fs-28: 32px; --fs-30: 34px; --fs-32: 37px; --fs-34: 39px; --fs-36: 41px; --fs-40: 46px; --fs-42: 48px; --fs-44: 51px; --fs-48: 55px; --fs-72: 83px; }
+.sf-text-3 { --fs-16: 21px; --fs-18: 23px; --fs-20: 26px; --fs-21: 27px; --fs-22: 29px; --fs-23: 30px; --fs-24: 31px; --fs-25: 32px; --fs-26: 34px; --fs-28: 36px; --fs-30: 39px; --fs-32: 42px; --fs-34: 44px; --fs-36: 47px; --fs-40: 52px; --fs-42: 55px; --fs-44: 57px; --fs-48: 62px; --fs-72: 94px; }
+.sf-contrast {
+    --ink-soft: #24201B;
+    --pencil: #3D362E;
+    --paper-edge: #8C7B58;
+    --plate: rgba(8, 7, 6, 0.94);
+    --plate-text: #FFFFFF;
+    --plate-dim: #E4DBCB;
+    --scrim: rgba(6, 5, 4, 0.78);
 }
 
 /* ---- structure ---- */
@@ -61,38 +92,38 @@
 /* ---- type ---- */
 .sf-title {
     -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
-    font-size: var(--text-xl);
+    font-size: var(--fs-42);
     color: var(--ink);
 }
 .sf-heading {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: var(--text-l);
+    font-size: var(--fs-32);
     color: var(--ink);
 }
 .sf-label {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: var(--text-s);
+    font-size: var(--fs-22);
     letter-spacing: 2px;
     color: var(--pencil);
 }
 .sf-body {
     -unity-font-definition: url("../Fonts/Barlow-Regular.asset");
-    font-size: var(--text-m);
+    font-size: var(--fs-26);
     white-space: normal;
 }
 .sf-book {
     -unity-font-definition: url("../Fonts/Literata-Regular.asset");
-    font-size: var(--text-m);
+    font-size: var(--fs-26);
     color: var(--ink);
     white-space: normal;
 }
 .sf-note {
     -unity-font-definition: url("../Fonts/Literata-Italic.asset");
-    font-size: var(--text-m);
+    font-size: var(--fs-26);
     color: var(--ink-soft);
     white-space: normal;
 }
-.sf-fine { font-size: var(--text-s); color: var(--pencil); white-space: normal; }
+.sf-fine { font-size: var(--fs-22); color: var(--pencil); white-space: normal; }
 .sf-mark { color: var(--rust); }
 .sf-lead { color: var(--slate); }
 
@@ -107,7 +138,7 @@
     background-color: var(--ink);
     color: var(--paper);
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: var(--text-m);
+    font-size: var(--fs-26);
     letter-spacing: 1px;
     -unity-text-align: middle-center;
 }
@@ -127,7 +158,7 @@
 .sf-title-card__body { justify-content: center; align-items: center; }
 .sf-title-card__name {
     -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
-    font-size: var(--text-title);
+    font-size: var(--fs-72);
     letter-spacing: 6px;
     color: var(--plate-text);
     -unity-text-align: middle-center;
@@ -135,7 +166,7 @@
 }
 .sf-title-card__status {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: var(--text-m);
+    font-size: var(--fs-26);
     letter-spacing: 2px;
     margin-top: 18px;
     color: var(--plate-text);
@@ -143,7 +174,7 @@
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
 }
 .sf-title-card__detail {
-    font-size: var(--text-s);
+    font-size: var(--fs-22);
     margin-top: 10px;
     max-width: 80%;
     color: var(--plate-dim);
@@ -172,17 +203,17 @@
 }
 .sf-hud__when {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 20px;
+    font-size: var(--fs-20);
     letter-spacing: 2px;
     color: var(--plate-dim);
 }
 .sf-hud__quest {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 22px;
+    font-size: var(--fs-22);
     margin-top: 4px;
     color: #E0A645;
 }
-.sf-hud__line { font-size: 26px; margin-top: 2px; color: var(--plate-text); white-space: normal; }
+.sf-hud__line { font-size: var(--fs-26); margin-top: 2px; color: var(--plate-text); white-space: normal; }
 
 .sf-compass {
     position: absolute;
@@ -200,7 +231,7 @@
     width: 32px;
     top: 6px;
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 22px;
+    font-size: var(--fs-22);
     -unity-text-align: upper-center;
     color: var(--plate-text);
 }
@@ -228,12 +259,12 @@
 .sf-hud__member--leader .sf-hud__face { border-color: #E0A645; }
 .sf-hud__initial {
     -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
-    font-size: 40px;
+    font-size: var(--fs-40);
     color: var(--plate-dim);
 }
 .sf-hud__name {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 20px;
+    font-size: var(--fs-20);
     margin-top: 4px;
     color: var(--plate-text);
     -unity-text-align: upper-center;
@@ -267,7 +298,7 @@
 .sf-hud__action:enabled:focus { border-width: 3px; border-color: var(--ochre); }
 .sf-hud__action-label {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 20px;
+    font-size: var(--fs-20);
     margin-top: 4px;
     color: var(--plate-text);
 }
@@ -304,7 +335,7 @@
 .sf-radial__verb .sf-icon { color: var(--plate-text); }
 .sf-radial__verb-label {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 20px;
+    font-size: var(--fs-20);
     margin-top: 2px;
     color: var(--plate-text);
 }
@@ -317,7 +348,7 @@
 }
 .sf-radial__title {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 22px;
+    font-size: var(--fs-22);
     color: #E0A645;
     white-space: normal;
     -unity-text-align: middle-center;
@@ -351,12 +382,12 @@
 }
 .sf-dialogue__initial {
     -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
-    font-size: 44px;
+    font-size: var(--fs-44);
     color: var(--plate-dim);
 }
 .sf-dialogue__speaker {
     -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
-    font-size: 32px;
+    font-size: var(--fs-32);
     margin-left: 16px;
     flex-shrink: 1;
     white-space: normal;
@@ -367,14 +398,14 @@
 .sf-dialogue__log { margin-bottom: 4px; }
 .sf-dialogue__logged-line {
     -unity-font-definition: url("../Fonts/Literata-Regular.asset");
-    font-size: 22px;
+    font-size: var(--fs-22);
     color: var(--pencil);
     white-space: normal;
     margin-bottom: 6px;
 }
 .sf-dialogue__logged-choice {
     -unity-font-definition: url("../Fonts/Literata-Italic.asset");
-    font-size: 22px;
+    font-size: var(--fs-22);
     color: var(--pencil);
     white-space: normal;
     margin-bottom: 12px;
@@ -382,7 +413,7 @@
 }
 .sf-dialogue__line {
     -unity-font-definition: url("../Fonts/Literata-Regular.asset");
-    font-size: 28px;
+    font-size: var(--fs-28);
     color: var(--ink);
     white-space: normal;
     margin: 6px 0 12px 0;
@@ -395,13 +426,13 @@
 }
 .sf-dialogue__passive-label {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 20px;
+    font-size: var(--fs-20);
     letter-spacing: 2px;
     color: var(--slate);
 }
 .sf-dialogue__passive-text {
     -unity-font-definition: url("../Fonts/Literata-Italic.asset");
-    font-size: 24px;
+    font-size: var(--fs-24);
     color: var(--ink-soft);
     white-space: normal;
 }
@@ -425,13 +456,13 @@
 .sf-dialogue__option:disabled { opacity: 0.45; background-color: rgba(0, 0, 0, 0); }
 .sf-dialogue__number {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 22px;
+    font-size: var(--fs-22);
     min-width: 34px;
     color: var(--pencil);
 }
 .sf-dialogue__check {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 20px;
+    font-size: var(--fs-20);
     letter-spacing: 1px;
     padding: 2px 8px;
     margin-right: 10px;
@@ -442,7 +473,7 @@
 .sf-dialogue__check--unmet { background-color: rgba(0, 0, 0, 0); border-width: 2px; border-color: var(--rust); color: var(--rust); }
 .sf-dialogue__option-text {
     -unity-font-definition: url("../Fonts/Barlow-Regular.asset");
-    font-size: 26px;
+    font-size: var(--fs-26);
     flex-shrink: 1;
     white-space: normal;
     color: var(--ink);
@@ -468,7 +499,7 @@
     border-radius: 0;
     background-color: rgba(0, 0, 0, 0);
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 24px;
+    font-size: var(--fs-24);
     letter-spacing: 1px;
     color: var(--plate-dim);
 }
@@ -509,42 +540,42 @@
 .sf-notebook__row--on { background-color: var(--paper-deep); border-left-width: 4px; border-left-color: var(--ochre); }
 .sf-notebook__row-title {
     -unity-font-definition: url("../Fonts/Literata-Regular.asset");
-    font-size: 24px;
+    font-size: var(--fs-24);
     color: var(--ink);
     white-space: normal;
     -unity-text-align: middle-left;
 }
 .sf-notebook__row--closed .sf-notebook__row-title { color: var(--pencil); }
 .sf-notebook__row-sub {
-    font-size: 20px;
+    font-size: var(--fs-20);
     margin-top: 2px;
     color: var(--pencil);
     -unity-text-align: middle-left;
 }
 .sf-notebook__empty {
     -unity-font-definition: url("../Fonts/Literata-Italic.asset");
-    font-size: 24px;
+    font-size: var(--fs-24);
     color: var(--pencil);
     margin: 12px 4px;
 }
 .sf-notebook__title {
     -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
-    font-size: 36px;
+    font-size: var(--fs-36);
     color: var(--ink);
     white-space: normal;
 }
-.sf-notebook__sub { font-size: 20px; color: var(--pencil); margin-top: 4px; }
+.sf-notebook__sub { font-size: var(--fs-20); color: var(--pencil); margin-top: 4px; }
 .sf-notebook__track { align-self: flex-start; margin: 14px 0 6px 0; }
 .sf-notebook__item { flex-direction: row; align-items: flex-start; margin-top: 12px; }
 .sf-notebook__box {
     -unity-font-definition: url("../Fonts/Literata-Regular.asset");
-    font-size: 24px;
+    font-size: var(--fs-24);
     width: 32px;
     color: var(--rust);
 }
 .sf-notebook__item-text {
     -unity-font-definition: url("../Fonts/Literata-Regular.asset");
-    font-size: 25px;
+    font-size: var(--fs-25);
     flex-shrink: 1;
     white-space: normal;
     color: var(--ink);
@@ -553,7 +584,7 @@
 .sf-notebook__item--done .sf-notebook__item-text { color: var(--pencil); }
 .sf-notebook__para {
     -unity-font-definition: url("../Fonts/Literata-Regular.asset");
-    font-size: 24px;
+    font-size: var(--fs-24);
     color: var(--ink-soft);
     white-space: normal;
     margin-top: 16px;
@@ -564,7 +595,7 @@
 .sf-map__head { flex-direction: row; align-items: center; margin: 12px 20px 8px 24px; min-height: 72px; }
 .sf-map__title {
     -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
-    font-size: 32px;
+    font-size: var(--fs-32);
     color: var(--plate-text);
 }
 .sf-map__headbutton { margin-left: 12px; color: var(--plate-text); border-color: var(--plate-dim); }
@@ -607,7 +638,7 @@
     left: 36px;
     top: 4px;
     -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
-    font-size: 22px;
+    font-size: var(--fs-22);
     color: var(--ink);
     white-space: nowrap;
     text-shadow: 0 0 4px rgba(238, 230, 211, 0.95);
@@ -622,16 +653,16 @@
 }
 .sf-map__card-title {
     -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
-    font-size: 30px;
+    font-size: var(--fs-30);
     color: var(--plate-text);
 }
 .sf-map__card-region {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 20px;
+    font-size: var(--fs-20);
     letter-spacing: 2px;
     color: var(--plate-dim);
 }
-.sf-map__card-trip { font-size: 24px; margin-top: 8px; color: var(--plate-text); white-space: normal; }
+.sf-map__card-trip { font-size: var(--fs-24); margin-top: 8px; color: var(--plate-text); white-space: normal; }
 .sf-map__travel { margin-top: 12px; align-self: flex-start; background-color: var(--ochre); color: var(--ink); }
 .sf-map__travel:enabled:hover { background-color: #D59B3A; }
 
@@ -660,7 +691,7 @@
     border-radius: 3px;
     background-color: rgba(244, 238, 223, 0.9);
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 18px;
+    font-size: var(--fs-18);
     color: var(--ink);
 }
 .sf-cell__cond {
@@ -684,15 +715,15 @@
     border-bottom-width: 1px;
     border-color: rgba(201, 185, 148, 0.6);
 }
-.sf-stat__label { width: 40%; font-size: 21px; color: var(--pencil); }
+.sf-stat__label { width: 40%; font-size: var(--fs-21); color: var(--pencil); }
 .sf-stat__value {
     flex-grow: 1;
     flex-shrink: 1;
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 22px;
+    font-size: var(--fs-22);
     color: var(--ink);
 }
-.sf-stat__delta { min-width: 92px; font-size: 20px; -unity-text-align: middle-right; }
+.sf-stat__delta { min-width: 92px; font-size: var(--fs-20); -unity-text-align: middle-right; }
 .sf-stat__delta--better { color: var(--sage); }
 .sf-stat__delta--worse { color: var(--rust); }
 
@@ -701,13 +732,13 @@
 .sf-pack__head { flex-direction: row; align-items: center; margin: 12px 20px 6px 20px; min-height: 72px; }
 .sf-pack__title {
     -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
-    font-size: 34px;
+    font-size: var(--fs-34);
     color: var(--plate-text);
     margin-right: 22px;
 }
 .sf-pack__tolls {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 24px;
+    font-size: var(--fs-24);
     letter-spacing: 1px;
     color: #E0A645;
     margin-right: 18px;
@@ -738,7 +769,7 @@
     right: -20px;
     bottom: -26px;
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 16px;
+    font-size: var(--fs-16);
     letter-spacing: 1px;
     color: var(--plate-dim);
     -unity-text-align: middle-center;
@@ -755,21 +786,21 @@
 .sf-pack__card-names { flex-shrink: 1; }
 .sf-pack__card-name {
     -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
-    font-size: 30px;
+    font-size: var(--fs-30);
     color: var(--ink);
     white-space: normal;
 }
-.sf-pack__card-sub { font-size: 20px; color: var(--pencil); margin-top: 2px; }
+.sf-pack__card-sub { font-size: var(--fs-20); color: var(--pencil); margin-top: 2px; }
 .sf-pack__card-desc {
     -unity-font-definition: url("../Fonts/Literata-Italic.asset");
-    font-size: 22px;
+    font-size: var(--fs-22);
     color: var(--ink-soft);
     white-space: normal;
     margin-top: 12px;
 }
 .sf-pack__against {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 18px;
+    font-size: var(--fs-18);
     letter-spacing: 1px;
     color: var(--pencil);
     margin-top: 14px;
@@ -778,7 +809,7 @@
 .sf-pack__actions { flex-direction: row; flex-shrink: 0; padding: 10px 22px 14px 22px; border-top-width: 1px; border-color: rgba(201, 185, 148, 0.6); }
 .sf-pack__act { margin-right: 12px; }
 .sf-pack__foot { flex-direction: row; align-items: center; margin: 8px 20px 10px 20px; min-height: 36px; }
-.sf-pack__meter { font-size: 20px; color: var(--plate-text); }
+.sf-pack__meter { font-size: var(--fs-20); color: var(--plate-text); }
 .sf-pack__meter--over { color: #E07A5F; }
 .sf-pack__meter-track {
     width: 220px;
@@ -792,7 +823,7 @@
 .sf-pack__message {
     flex-grow: 1;
     -unity-font-definition: url("../Fonts/Literata-Italic.asset");
-    font-size: 21px;
+    font-size: var(--fs-21);
     color: var(--plate-dim);
     -unity-text-align: middle-right;
 }
@@ -806,7 +837,7 @@
     border-radius: 3px;
     background-color: var(--ochre);
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 18px;
+    font-size: var(--fs-18);
     color: var(--ink);
 }
 .sf-barter { background-color: #2B241E; }
@@ -814,7 +845,7 @@
 .sf-barter__page { flex-grow: 1; flex-basis: 0; background-color: var(--paper); border-radius: 6px; }
 .sf-barter__label {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 18px;
+    font-size: var(--fs-18);
     letter-spacing: 2px;
     color: var(--plate-dim);
     margin: 8px 0 2px 0;
@@ -827,7 +858,7 @@
 .sf-barter__item .sf-cell { margin: 0; }
 .sf-barter__price {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 18px;
+    font-size: var(--fs-18);
     color: var(--ink);
     margin-top: 2px;
 }
@@ -856,17 +887,17 @@
 .sf-barter__face Image { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 .sf-barter__initial {
     -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
-    font-size: 48px;
+    font-size: var(--fs-48);
     color: var(--plate-text);
 }
 .sf-barter__names { flex-grow: 1; flex-shrink: 1; }
 .sf-barter__name {
     -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
-    font-size: 30px;
+    font-size: var(--fs-30);
     color: var(--plate-text);
     white-space: normal;
 }
-.sf-barter__note { font-size: 18px; color: var(--plate-dim); white-space: normal; margin-top: 2px; }
+.sf-barter__note { font-size: var(--fs-18); color: var(--plate-dim); white-space: normal; margin-top: 2px; }
 .sf-barter__lines { flex-grow: 1; flex-shrink: 1; min-height: 150px; }
 .sf-barter__line {
     flex-direction: row;
@@ -876,29 +907,29 @@
     border-color: rgba(242, 234, 219, 0.12);
 }
 .sf-barter__line-glyph { width: 44px; height: 44px; margin-right: 10px; flex-shrink: 0; }
-.sf-barter__line-text { flex-grow: 1; flex-shrink: 1; font-size: 21px; color: var(--plate-text); white-space: normal; }
-.sf-barter__line-dir { font-size: 22px; margin: 0 8px; color: #E0A645; }
+.sf-barter__line-text { flex-grow: 1; flex-shrink: 1; font-size: var(--fs-21); color: var(--plate-text); white-space: normal; }
+.sf-barter__line-dir { font-size: var(--fs-22); margin: 0 8px; color: #E0A645; }
 .sf-barter__line--sell .sf-barter__line-dir { color: #9DB38F; }
 .sf-barter__less {
     min-width: 72px;
     min-height: 64px;
     width: 72px;
     padding: 0;
-    font-size: 30px;
+    font-size: var(--fs-30);
     color: var(--plate-text);
     border-color: var(--plate-dim);
 }
 .sf-barter__less:enabled:hover { background-color: rgba(255, 255, 255, 0.06); }
 .sf-barter__hint {
     -unity-font-definition: url("../Fonts/Literata-Italic.asset");
-    font-size: 20px;
+    font-size: var(--fs-20);
     color: var(--plate-dim);
     white-space: normal;
     margin-top: 10px;
 }
 .sf-barter__balance {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 28px;
+    font-size: var(--fs-28);
     color: #E0A645;
     margin-top: 8px;
 }
@@ -907,7 +938,7 @@
 .sf-barter__pill {
     align-self: flex-start;
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 18px;
+    font-size: var(--fs-18);
     letter-spacing: 1px;
     padding: 3px 10px;
     border-radius: 3px;
@@ -916,7 +947,7 @@
 }
 .sf-barter__pill--unmet { background-color: rgba(0, 0, 0, 0); border-width: 2px; border-color: #E07A5F; color: #E07A5F; }
 .sf-barter__pill--spent { opacity: 0.5; }
-.sf-barter__terms { font-size: 18px; color: var(--plate-dim); white-space: normal; margin-top: 4px; }
+.sf-barter__terms { font-size: var(--fs-18); color: var(--plate-dim); white-space: normal; margin-top: 4px; }
 .sf-barter__buttons { flex-direction: row; flex-shrink: 0; margin: 8px -5px 0 -5px; }
 .sf-barter__buttons .sf-button { flex-grow: 1; flex-basis: 0; margin: 0 5px; padding: 0 10px; }
 .sf-barter__quiet { color: var(--plate-text); border-color: var(--plate-dim); }
@@ -928,7 +959,7 @@
     min-height: 34px;
     margin: 6px 20px 10px 20px;
     -unity-font-definition: url("../Fonts/Literata-Italic.asset");
-    font-size: 21px;
+    font-size: var(--fs-21);
     color: var(--plate-dim);
     -unity-text-align: middle-center;
 }
@@ -949,7 +980,7 @@
     right: 0;
     bottom: 14px;
     -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
-    font-size: 30px;
+    font-size: var(--fs-30);
     color: var(--plate-text);
     -unity-text-align: middle-center;
     text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
@@ -972,7 +1003,7 @@
     border-radius: 0;
     background-color: rgba(0, 0, 0, 0);
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 22px;
+    font-size: var(--fs-22);
     color: var(--pencil);
 }
 .sf-creation__tab:enabled:hover { background-color: var(--paper-deep); }
@@ -981,14 +1012,14 @@
 .sf-creation__scroll .unity-scroll-view__content-container { padding: 12px 22px 24px 22px; }
 .sf-creation__heading {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 18px;
+    font-size: var(--fs-18);
     letter-spacing: 2px;
     color: var(--pencil);
     margin: 16px 0 8px 0;
 }
 .sf-creation__note {
     -unity-font-definition: url("../Fonts/Literata-Regular.asset");
-    font-size: 22px;
+    font-size: var(--fs-22);
     color: var(--ink-soft);
     white-space: normal;
     margin-bottom: 6px;
@@ -1015,11 +1046,11 @@
 .sf-creation__choice--on { border-color: var(--ochre); border-width: 3px; padding: 7px 13px; background-color: #F8EFD9; }
 .sf-creation__choice-text {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: 23px;
+    font-size: var(--fs-23);
     color: var(--ink);
     white-space: normal;
 }
-.sf-creation__choice-sub { font-size: 18px; color: var(--pencil); white-space: normal; margin-top: 2px; }
+.sf-creation__choice-sub { font-size: var(--fs-18); color: var(--pencil); white-space: normal; margin-top: 2px; }
 .sf-creation__chip { min-height: 56px; min-width: 0; padding: 4px 12px; margin: 0 8px 8px 0; }
 .sf-creation__chip.sf-creation__choice--on { padding: 3px 11px; }
 .sf-creation__action { margin: 0 10px 10px 0; }
@@ -1034,11 +1065,11 @@
     border-radius: 4px;
     background-color: #FBF7EE;
     -unity-font-definition: url("../Fonts/Literata-Regular.asset");
-    font-size: 28px;
+    font-size: var(--fs-28);
     color: var(--ink);
 }
 .sf-creation__slider { margin: 6px 0 4px 0; }
-.sf-creation__slider-label { font-size: 21px; color: var(--ink-soft); margin: 4px 0 0 0; }
+.sf-creation__slider-label { font-size: var(--fs-21); color: var(--ink-soft); margin: 4px 0 0 0; }
 .sf-creation__slider-bar { margin: 0; min-height: 56px; }
 .sf-creation__slider-bar .unity-base-slider__tracker {
     height: 6px;
@@ -1071,13 +1102,182 @@
 .sf-creation__swatch--on { border-width: 4px; border-color: var(--ochre); }
 .sf-creation__attr { flex-direction: row; align-items: center; flex-wrap: nowrap; min-height: 80px; border-bottom-width: 1px; border-color: rgba(201, 185, 148, 0.6); }
 .sf-creation__attr-names { flex-grow: 1; flex-shrink: 1; }
-.sf-creation__attr-name { -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset"); font-size: 24px; color: var(--ink); }
-.sf-creation__attr-desc { font-size: 18px; color: var(--pencil); white-space: normal; }
+.sf-creation__attr-name { -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset"); font-size: var(--fs-24); color: var(--ink); }
+.sf-creation__attr-desc { font-size: var(--fs-18); color: var(--pencil); white-space: normal; }
 .sf-creation__attr-value {
     width: 64px;
     -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
-    font-size: 34px;
+    font-size: var(--fs-34);
     color: var(--ink);
     -unity-text-align: middle-center;
 }
-.sf-creation__step { min-width: 72px; width: 72px; min-height: 72px; padding: 0; font-size: 32px; }
+.sf-creation__step { min-width: 72px; width: 72px; min-height: 72px; padding: 0; font-size: var(--fs-32); }
+
+/* ---- the title (TitleScreen.cs): a dark band down the left, the world behind ---- */
+.sf-start { flex-direction: row; }
+.sf-start__band {
+    width: 44%;
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding: 0 0 0 56px;
+    justify-content: center;
+    background-color: rgba(18, 15, 12, 0.82);
+    border-right-width: 2px;
+    border-color: rgba(196, 138, 44, 0.55);
+}
+.sf-start__name {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: var(--fs-48);
+    letter-spacing: 5px;
+    color: var(--plate-text);
+    white-space: normal;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+.sf-start__rule { width: 120px; height: 3px; margin: 18px 0 26px 0; background-color: var(--ochre); }
+.sf-start__choices { flex-direction: column; align-items: flex-start; }
+.sf-start__choice {
+    min-height: var(--touch);
+    min-width: 340px;
+    margin: 0 0 10px 0;
+    padding: 6px 22px;
+    border-width: 0;
+    border-left-width: 3px;
+    border-color: rgba(0, 0, 0, 0);
+    border-radius: 0;
+    background-color: rgba(0, 0, 0, 0);
+    align-items: flex-start;
+    justify-content: center;
+}
+.sf-start__choice:enabled:hover { background-color: rgba(242, 234, 219, 0.08); border-color: var(--ochre); }
+.sf-start__choice:enabled:active { background-color: rgba(242, 234, 219, 0.16); }
+.sf-start__choice:enabled:focus { border-color: var(--ochre); }
+.sf-start__choice:disabled { opacity: 0.4; }
+.sf-start__choice-text {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-32);
+    letter-spacing: 1px;
+    color: var(--plate-text);
+}
+.sf-start__choice-sub { font-size: var(--fs-21); color: var(--plate-dim); margin-top: 2px; white-space: normal; }
+.sf-start__status {
+    position: absolute;
+    left: 56px;
+    bottom: 28px;
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-20);
+    letter-spacing: 2px;
+    color: var(--plate-dim);
+}
+
+/* ---- the pause (PauseScreen.cs): the world stopped behind a scrim, a column of choices ---- */
+.sf-pause { background-color: var(--scrim); justify-content: center; align-items: center; }
+.sf-pause__column {
+    min-width: 440px;
+    padding: 26px 30px 18px 30px;
+    border-radius: 6px;
+    background-color: var(--plate);
+    align-items: stretch;
+}
+.sf-pause__title {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: var(--fs-36);
+    color: var(--plate-text);
+    -unity-text-align: middle-center;
+}
+.sf-pause__line { font-size: var(--fs-21); color: var(--plate-dim); margin: 4px 0 16px 0; -unity-text-align: middle-center; white-space: normal; }
+.sf-pause__choice {
+    min-height: 72px;
+    margin: 0 0 8px 0;
+    border-width: 0;
+    border-radius: 3px;
+    background-color: rgba(242, 234, 219, 0.07);
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-26);
+    letter-spacing: 1px;
+    color: var(--plate-text);
+}
+.sf-pause__choice:enabled:hover { background-color: rgba(242, 234, 219, 0.14); }
+.sf-pause__choice:enabled:active { background-color: rgba(242, 234, 219, 0.22); }
+.sf-pause__choice:enabled:focus { border-width: 3px; border-color: var(--ochre); }
+.sf-pause__choice:disabled { opacity: 0.4; }
+
+/* ---- a question (ConfirmScreen) ---- */
+.sf-confirm__row { flex-direction: row; justify-content: flex-end; margin-top: 22px; }
+.sf-confirm__row .sf-button { margin-left: 12px; }
+.sf-confirm__yes { background-color: var(--rust); color: var(--paper); }
+.sf-confirm__yes:enabled:hover { background-color: #B5502F; }
+
+/* ---- pages on the desk (SettingsScreen, SavesScreen; creation's paper, chips and headings) ---- */
+.sf-menu__body { flex-grow: 1; margin: 14px 16px; }
+.sf-menu__head {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 10px 16px 10px 22px;
+    border-bottom-width: 2px;
+    border-color: var(--paper-edge);
+}
+.sf-menu__title {
+    flex-grow: 1;
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: var(--fs-34);
+    color: var(--ink);
+}
+.sf-menu__line { flex-direction: row; align-items: center; flex-wrap: wrap; margin: 2px 0 6px 0; }
+.sf-menu__label { width: 30%; min-width: 220px; font-size: var(--fs-24); color: var(--ink-soft); white-space: normal; padding-right: 12px; }
+.sf-menu__chips { flex-grow: 1; flex-shrink: 1; margin: 6px 0 0 0; }
+
+/* ---- the saves (SavesScreen.cs): a card per slot with its picture ---- */
+.sf-saves__grid { flex-direction: row; flex-wrap: wrap; }
+.sf-saves__card {
+    width: 48%;
+    margin: 0 2% 16px 0;
+    padding: 0;
+    flex-direction: column;
+    align-items: stretch;
+    border-width: 2px;
+    border-color: var(--paper-edge);
+    border-radius: 4px;
+    background-color: #F4EEDF;
+    overflow: hidden;
+}
+.sf-saves__card:enabled:hover { border-color: var(--ochre); background-color: #F8F3E7; }
+.sf-saves__card:enabled:focus { border-width: 3px; border-color: var(--ochre); }
+.sf-saves__picture { height: 180px; background-color: #3C342D; }
+.sf-saves__card--empty .sf-saves__picture { height: 80px; background-color: var(--paper-deep); }
+.sf-saves__words { padding: 10px 14px 12px 14px; -unity-text-align: upper-left; }
+.sf-saves__slot {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-18);
+    letter-spacing: 2px;
+    color: var(--pencil);
+}
+.sf-saves__who {
+    -unity-font-definition: url("../Fonts/Literata-Regular.asset");
+    font-size: var(--fs-24);
+    color: var(--ink);
+    white-space: normal;
+    margin-top: 2px;
+}
+.sf-saves__when { font-size: var(--fs-20); color: var(--ink-soft); margin-top: 2px; white-space: normal; }
+.sf-saves__empty { -unity-font-definition: url("../Fonts/Literata-Italic.asset"); font-size: var(--fs-24); color: var(--ink-soft); margin-top: 2px; }
+
+/* ---- the HUD's menu button (the pause), under the compass ---- */
+.sf-hud__menu {
+    position: absolute;
+    right: 20px;
+    top: 84px;
+    width: 64px;
+    height: 64px;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+    border-width: 0;
+    border-radius: 6px;
+    background-color: var(--plate);
+    align-items: center;
+    justify-content: center;
+}
+.sf-hud__menu:enabled:hover { background-color: rgba(40, 35, 30, 0.86); }
+.sf-hud__menu:enabled:active { background-color: rgba(8, 7, 6, 0.9); }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SecondFace.Core.Inventory;
+using SecondFace.Core.Npc;
 using SecondFace.Core.State;
 using SecondFace.Core.Stats;
 using SecondFace.Game.People;
@@ -18,8 +19,10 @@ namespace SecondFace.Game.UI
         /// <summary>The player's body (a player base prefab); no figure when null.</summary>
         public GameObject Body;
         public RuntimeAnimatorController Idle;
-        /// <summary>The cut the clothes are chosen for: m or f.</summary>
+        /// <summary>The cut the clothes are chosen for: m or f (the look's body when there is a look).</summary>
         public string Fit = "m";
+        /// <summary>The player's look (their own clothes' dyes, the face, hair, build and height); null: the base as built.</summary>
+        public PlayerLook Look;
     }
 
     /// <summary>
@@ -217,7 +220,9 @@ namespace SecondFace.Game.UI
             if (always || key != _wearKey)
             {
                 _wearKey = key;
-                Figure.Dress(Wear.Of(Inventory, Character, _m.Fit));
+                var look = _m.Look;
+                Figure.Dress(Wear.Of(Inventory, Character, look?.Body ?? _m.Fit, look != null ? PlayerBody.Own(Figure.Wardrobe, look) : null));
+                if (look != null) { Figure.Look(look); Figure.Scale = LookView.Scale(look); }
                 // drawn again once the garments taken off are gone (they go at the frame's end)
                 Root.schedule.Execute(DrawFigure).ExecuteLater(1);
             }

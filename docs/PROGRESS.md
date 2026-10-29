@@ -633,9 +633,20 @@ Seen in `docs/evidence/unity/p5/ui_create_look.jpg` and `ui_create_look_face.jpg
 harder worked (the clothes and the hair follow the body), and the Look page has five hairs (shaved, cropped short,
 tied in a bun, a work braid, matted), each recoloured by the hair colour and greyed in the photograph. Seen in
 `docs/evidence/unity/p5/ui_create_body.jpg`, `ui_create_look.jpg` and `ui_create_hair.jpg` (every hair on both bodies).
-**Next action:** P5.3j: the title, settings (text size, contrast, controls), saves and pause, with New game going
-through character creation into the walkabout (BUILD_PLAN P5 "Order of work" 3j; Blender and the MakeHuman assets are
-in the session scratchpad, `blender/` and `mhc/`; if a fresh session lacks them, see `tools/unity/people/`). **`play-people` is released**
+**Title, settings, saves and pause (P5.3j, 2026-10-29):** the app now opens on a title over the world as it comes
+in: continue (your last save, who, where and which day), a new game (character creation, then you are set down in
+Shale in the body you made, dressed as you dyed them), load, settings. Settings: four text sizes that re-set every word,
+high contrast, how far and which way a drag turns the camera, difficulty (enemy aim and damage only), combat speed,
+skipping lines already heard, autosave. Saves: an autosave as a game begins and whenever the app goes to the background,
+a quicksave and three slots by hand, each with a picture of the scene; loading puts you back where you stood with the
+camera as it was. The menu button (top right, under the compass) or the back gesture pauses: time stops; save, load,
+settings, or back to the title. Seen in `docs/evidence/unity/p5/ui_title.jpg`, `ui_settings.jpg`,
+`ui_settings_large.jpg`, `ui_saves_load.jpg`, `ui_saves.jpg`, `ui_saves_overwrite.jpg`, `ui_pause.jpg` and
+`walkabout_player.jpg`. The measuring tour (step 24) now runs from inside a game: begin one (or continue), then the
+three-finger tap and its button as before.
+**Next action:** P5.3l: photo mode and the gamepad (BUILD_PLAN P5 "Order of work"; 3k, the combat bar and log, is
+built with P6's combat). Blender and the MakeHuman assets are in the session scratchpad, `blender/` and `mhc/`; if a
+fresh session lacks them, see `tools/unity/people/`. **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).
 Step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until Mid ≥ 30 fps).

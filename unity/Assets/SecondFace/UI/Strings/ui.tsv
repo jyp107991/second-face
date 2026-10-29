@@ -6,6 +6,55 @@ title.name	THE SECOND FACE
 title.loading	LOADING…
 title.raising	RAISING THE WORLD…
 title.failed	CONTENT FAILED
+title.setting_down	SETTING YOU DOWN…
+title.continue	Continue
+title.new	New game
+title.load	Load
+title.settings	Settings
+pause.title	Paused
+pause.resume	Back to it
+pause.save	Save
+pause.load	Load
+pause.settings	Settings
+pause.quit	To the title
+menu.back	Back
+settings.title	Settings
+settings.words	Words
+settings.text_size	Text size
+settings.text_0	Smaller
+settings.text_1	Standard
+settings.text_2	Larger
+settings.text_3	Largest
+settings.contrast	High contrast
+settings.on	On
+settings.off	Off
+settings.camera	Camera
+settings.turn_speed	How far a drag turns it
+settings.invert_turn	Which way it turns
+settings.turn_natural	With the finger
+settings.turn_reversed	Against the finger
+settings.play	Play
+settings.difficulty	Difficulty
+settings.difficulty_story	Story
+settings.difficulty_normal	Normal
+settings.difficulty_hard	Hard
+settings.difficulty_note	Difficulty changes only how well enemies aim and how hard they hit. What you find, what you can afford and what a check asks of you stay the same.
+settings.combat_speed	Combat speed
+settings.skip_seen	Skip lines already heard
+settings.autosave	Autosave
+saves.save_title	Save
+saves.load_title	Load
+saves.none	Nothing saved yet.
+saves.empty	Empty: save here
+saves.played	{0} played
+saves.hours	{0} h {1} min
+saves.minutes	{0} min
+saves.auto	Autosave
+saves.quick	Quicksave
+saves.slot	Slot {0}
+saves.overwrite	Save over {0}? What it holds now will be gone.
+saves.overwrite_yes	Save over it
+saves.overwrite_no	Keep it
 hud.notebook	Notebook
 hud.map	Map
 hud.pack	Pack

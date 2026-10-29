@@ -1203,6 +1203,202 @@ MonoBehaviour:
     m_Key: hair.sf_matted
     m_Metadata:
       m_Items: []
+  - m_Id: 50241105936384
+    m_Key: title.setting_down
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462336
+    m_Key: title.continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462337
+    m_Key: title.new
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462338
+    m_Key: title.load
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462339
+    m_Key: title.settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462340
+    m_Key: pause.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462341
+    m_Key: pause.resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462342
+    m_Key: pause.save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462343
+    m_Key: pause.load
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462344
+    m_Key: pause.settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462345
+    m_Key: pause.quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462346
+    m_Key: menu.back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462347
+    m_Key: settings.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462348
+    m_Key: settings.words
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462349
+    m_Key: settings.text_size
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462350
+    m_Key: settings.text_0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462351
+    m_Key: settings.text_1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462352
+    m_Key: settings.text_2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462353
+    m_Key: settings.text_3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462354
+    m_Key: settings.contrast
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462355
+    m_Key: settings.on
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462356
+    m_Key: settings.off
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462357
+    m_Key: settings.camera
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462358
+    m_Key: settings.turn_speed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462359
+    m_Key: settings.invert_turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462360
+    m_Key: settings.turn_natural
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462361
+    m_Key: settings.turn_reversed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462362
+    m_Key: settings.play
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462363
+    m_Key: settings.difficulty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462364
+    m_Key: settings.difficulty_story
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462365
+    m_Key: settings.difficulty_normal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462366
+    m_Key: settings.difficulty_hard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462367
+    m_Key: settings.difficulty_note
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462368
+    m_Key: settings.combat_speed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462369
+    m_Key: settings.skip_seen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462370
+    m_Key: settings.autosave
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462371
+    m_Key: saves.save_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462372
+    m_Key: saves.load_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462373
+    m_Key: saves.none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462374
+    m_Key: saves.empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462375
+    m_Key: saves.played
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462376
+    m_Key: saves.hours
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462377
+    m_Key: saves.minutes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462378
+    m_Key: saves.auto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462379
+    m_Key: saves.quick
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462380
+    m_Key: saves.slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462381
+    m_Key: saves.overwrite
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462382
+    m_Key: saves.overwrite_yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50241160462383
+    m_Key: saves.overwrite_no
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

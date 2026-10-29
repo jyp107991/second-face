@@ -105,6 +105,44 @@ namespace SecondFace.Tests
         }
 
         [Test]
+        public async Task SavesKeepTheWorldSpotAndSettingsSitBesideTheSlots()
+        {
+            var backend = new MemoryBackend();
+            var sm = new SaveManager(backend);
+            var st = States.NewGame("shale", 0, 0);
+            Assert.That(st.Spot, Is.Null, "a new game starts at the place's spawn");
+            st.Spot = new WorldSpot { X = 12.5f, Y = 3.25f, Z = -40f, Yaw = 90f, CamYaw = 110f, CamPitch = 50f, CamDistance = 18f };
+            await sm.Write("quick", new SaveMeta { Label = "Ash", LocationId = "shale", LocationName = "Shale", Minutes = st.Minutes }, st);
+            var back = await sm.Read("quick");
+            Assert.That(back.State.Spot.X, Is.EqualTo(12.5f));
+            Assert.That(back.State.Spot.CamDistance, Is.EqualTo(18f));
+            // the settings are kept in the same place under their own key, and are not a slot
+            var set = new Settings { TextScale = 1.3f, HighContrast = true, Difficulty = "story", TurnSpeed = 1.5f, InvertTurn = true };
+            await set.Store(backend);
+            Assert.That((await sm.List()).Keys, Is.EqualTo(new[] { "quick" }));
+            var read = await Settings.Load(backend);
+            Assert.That(read.TextScale, Is.EqualTo(1.3f));
+            Assert.That(read.HighContrast && read.InvertTurn, Is.True);
+            Assert.That(read.Mods, Is.EqualTo((-15, 0.6)));
+            Assert.That(read.TurnSpeed, Is.EqualTo(1.5f));
+        }
+
+        [Test]
+        public void SettingsReadAnythingAsSomethingInRange()
+        {
+            var d = new Settings();
+            Assert.That(Settings.Parse(null).ToJson(), Is.EqualTo(d.ToJson()));
+            Assert.That(Settings.Parse("not json").ToJson(), Is.EqualTo(d.ToJson()));
+            Assert.That(Settings.Parse("[1,2]").ToJson(), Is.EqualTo(d.ToJson()));
+            var s = Settings.Parse("{\"textScale\": 1.2, \"turnSpeed\": 9, \"difficulty\": \"nightmare\", \"combatSpeed\": 1.4, \"future\": true}");
+            Assert.That(s.TextScale, Is.EqualTo(1.15f), "the nearest offered size");
+            Assert.That(s.TurnSpeed, Is.EqualTo(2f), "clamped");
+            Assert.That(s.Difficulty, Is.EqualTo("normal"));
+            Assert.That(s.CombatSpeed, Is.EqualTo(1.5f));
+            Assert.That(Settings.DifficultyMods("hard"), Is.EqualTo((8, 1.25)));
+        }
+
+        [Test]
         public void SavesRejectGarbageAndFutureVersions()
         {
             Assert.Throws<InvalidDataException>(() => SaveManager.Parse("nope"));

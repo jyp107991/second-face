@@ -147,15 +147,7 @@ namespace SecondFace.Game.UI
             if (Figure == null) return;
             var look = Creation.Look;
             Figure.Scale = LookView.Scale(look);
-            var outfit = new Outfit { Layers = new List<GarmentLook>() };
-            var wardrobe = Figure.Wardrobe;
-            if (wardrobe != null && wardrobe.Set != null)
-                foreach (var id in wardrobe.Set.Outfit)
-                {
-                    var g = wardrobe.Set.Find(id);
-                    outfit.Layers.Add(new GarmentLook { Name = id, Dye = g != null && look.Dyes.TryGetValue(g.Slot, out var d) && d != 0xffffff ? d : null });
-                }
-            Figure.Dress(outfit);
+            Figure.Dress(PlayerBody.Own(Figure.Wardrobe, look));
             Figure.Look(look);
             DrawFigure();
             Root.schedule.Execute(DrawFigure).ExecuteLater(1);

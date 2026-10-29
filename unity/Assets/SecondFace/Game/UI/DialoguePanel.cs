@@ -18,6 +18,8 @@ namespace SecondFace.Game.UI
     {
         /// <summary>How fast a line is written out, characters per second.</summary>
         public float CharsPerSecond = 90f;
+        /// <summary>A line heard before shows whole at once (the settings' "skip lines already heard", P5.3j).</summary>
+        public static bool HeardWhole = true;
 
         public event Action Ended;
         public event Action<NodeView> Presented;
@@ -180,7 +182,7 @@ namespace SecondFace.Game.UI
 
             _full = _view.Text ?? "";
             Presented?.Invoke(_view);
-            if (_view.Seen || CharsPerSecond <= 0f) Finish();
+            if ((_view.Seen && HeardWhole) || CharsPerSecond <= 0f) Finish();
             else
             {
                 _shown = 0f;

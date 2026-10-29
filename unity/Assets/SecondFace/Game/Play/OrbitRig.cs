@@ -19,6 +19,9 @@ namespace SecondFace.Game.Play
 
         public Transform Leader;
         public float Yaw = 30f, Pitch = 50f, Distance = 20f;
+        /// <summary>How far a drag turns the camera (the settings' turn speed) and whether it turns the other way.</summary>
+        public float TurnSpeed = 1f;
+        public bool InvertTurn;
 
         public CinemachineCamera Virtual { get; private set; }
         public Transform Target { get; private set; }
@@ -75,6 +78,8 @@ namespace SecondFace.Game.Play
         public void Orbit(float dx, float dy, float dt)
         {
             _held = true;
+            dx *= TurnSpeed * (InvertTurn ? -1f : 1f);
+            dy *= TurnSpeed;
             _yawGoal += dx * YawPerPixel;
             _pitchGoal = Mathf.Clamp(_pitchGoal - dy * PitchPerPixel, MinPitch, MaxPitch);
             if (dt > 0) { _yawFling = dx * YawPerPixel / dt; _pitchFling = -dy * PitchPerPixel / dt; }
@@ -103,6 +108,23 @@ namespace SecondFace.Game.Play
             _yawGoal = yaw;
             _yawFling = 0;
             if (now) Snap();
+        }
+
+        /// <summary>Puts the camera at a view at once (a game's start, a loaded save's view).</summary>
+        public void View(float yaw, float pitch, float distance)
+        {
+            _yawGoal = yaw;
+            _pitchGoal = Mathf.Clamp(pitch, MinPitch, MaxPitch);
+            _distanceGoal = Mathf.Clamp(distance, MinDistance, MaxDistance);
+            Pan = Vector3.zero;
+            Snap();
+        }
+
+        /// <summary>Follows someone else (a walker set down again) without the jump read as their speed.</summary>
+        public void Follow(Transform leader)
+        {
+            Leader = leader;
+            if (leader != null) _lastLeader = leader.position;
         }
 
         /// <summary>Back to the leader (a double tap on them).</summary>

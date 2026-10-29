@@ -36,8 +36,13 @@ namespace SecondFace.Game.Play
         /// <summary>The walker stands on a built NavMesh and the camera follows them.</summary>
         public bool Ready => Walker != null && Nav != null && Nav.Ready && Walker.Agent.isOnNavMesh;
         public int Townsfolk { get; private set; }
-        /// <summary>The walkabout's own game state (a new game at Shale): the conversations run on it.</summary>
-        public GameState Game { get; } = States.NewGame("shale", 0, 0);
+        /// <summary>The game being played (<see cref="Begin"/>; a new game at Shale until one is begun): the conversations,
+        /// the notebook, the pack and the saves run on it.</summary>
+        public GameState Game { get; private set; } = States.NewGame("shale", 0, 0);
+        /// <summary>A game has begun (the walker is set down once the world is in).</summary>
+        public bool Begun { get; private set; }
+        /// <summary>The walker was set down for the game begun last (a new game, or a load).</summary>
+        public event System.Action SetDown;
         /// <summary>The quests on <see cref="Game"/>: the conversations run with it as their host, so what is said can start
         /// and move the content's quests (the notebook and the HUD follow them).</summary>
         public QuestEngine Quests => _quests ??= new QuestEngine(Registry.Quests, Game);
@@ -63,31 +68,102 @@ namespace SecondFace.Game.Play
             Inv.SyncGear(Game.Pc.Sheet, inv);
         }
 
+        /// <summary>Plays a game (a new one, <paramref name="fresh"/>: it gets the starting kit; or one loaded): the walker
+        /// is set down where it stood (its
+        /// <see cref="GameState.Spot"/>) or at the town's spawn, in the player's own body as the character was made, once
+        /// the world round them is in. Called while walking (a load), the walker goes there at once.</summary>
+        public void Begin(GameState state, bool fresh = false)
+        {
+            Game = state ?? States.NewGame("shale", 0, 0);
+            _quests = null;
+            Begun = true;
+            if (fresh || state == null) Kit();   // a loaded game keeps what it carries, even nothing
+            Know("shale");
+            if (_raised) StartCoroutine(Place());
+        }
+
+        /// <summary>The game as it stands now, for a save: where the walker is and how the camera looks at them, the hour.</summary>
+        public GameState Snapshot()
+        {
+            if (Walker != null)
+            {
+                var p = Walker.transform.position;
+                Game.Spot = new WorldSpot
+                {
+                    X = p.x, Y = p.y, Z = p.z, Yaw = Walker.transform.eulerAngles.y,
+                    CamYaw = Rig != null ? Rig.Yaw : 0f, CamPitch = Rig != null ? Rig.Pitch : 50f, CamDistance = Rig != null ? Rig.Distance : 20f,
+                };
+            }
+            if (Stage != null && Stage.Clock != null) Game.Minutes = Stage.Clock.Minutes;
+            return Game;
+        }
+
+        /// <summary>Leaves the game (back to the title): the walker goes; the world and the town stay.</summary>
+        public void End()
+        {
+            Begun = false;
+            _placing++;   // a setting down under way is dropped
+            if (Walker != null) Destroy(Walker.gameObject);
+            Walker = null;
+            if (Input != null) Input.Walker = null;
+            if (Rig != null) Rig.Leader = null;
+        }
+
+        private bool _raised;
+        private int _placing;
+
         private IEnumerator Start()
         {
-            Kit();
             if (Stage == null) yield break;
             if (!Stage.Raised) yield return Stage.Raise();
             if (!Stage.Raised) yield break;
             var assets = Stage.Assets;
             if (assets.Walker == null || assets.Locomotion == null) { Debug.LogWarning("Walkabout: no walker in the world assets (Second Face/Build world assets)"); yield break; }
-            var centre = Stage.World.PlaceCentre("shale");
-            yield return Stage.WaitAround(centre, "shale", LoadTimeout);
-            if (Stage.Camera == null) yield break;   // the camera went while the world came in (the scene was left)
-            var spawn = Stage.Marker("shale", "spawn");
-            var at = spawn != null ? spawn.transform.position : centre;
-            var yaw = spawn != null ? spawn.transform.eulerAngles.y : 0f;
-            Walker = Walker.Create(assets.Walker, assets.Locomotion, at, yaw);
-            Nav = gameObject.AddComponent<WorldNav>();
+            _raised = true;
+            if (Begun) yield return Place();
+        }
+
+        /// <summary>Sets the walker down for the game begun (replacing one already walking), the camera, the touches and
+        /// the town's people round them.</summary>
+        private IEnumerator Place()
+        {
+            var ticket = ++_placing;
+            var assets = Stage.Assets;
+            var spot = Game.Spot;
+            Vector3 at;
+            float yaw;
+            if (spot != null) { at = new Vector3(spot.X, spot.Y, spot.Z); yaw = spot.Yaw; }
+            else
+            {
+                var centre = Stage.World.PlaceCentre("shale");
+                yield return Stage.WaitAround(centre, "shale", LoadTimeout);
+                if (ticket != _placing) yield break;
+                var marker = Stage.Marker("shale", "spawn");
+                at = marker != null ? marker.transform.position : centre;
+                yaw = marker != null ? marker.transform.eulerAngles.y : 0f;
+            }
+            yield return Stage.WaitAround(at, Townsfolk == 0 ? "shale" : null, LoadTimeout);
+            if (ticket != _placing || Stage.Camera == null) yield break;   // left meanwhile, or the camera went with the scene
+            if (Stage.Clock != null) Stage.Clock.Minutes = Game.Minutes;
+            if (Walker != null) Destroy(Walker.gameObject);
+            var body = PlayerBody.Base(PlayerBody.Look(Game.Pc), assets.PlayerF, assets.PlayerM);
+            Walker = Walker.Create(body != null ? body : assets.Walker, assets.Locomotion, at, yaw);
+            if (body != null) PlayerBody.Apply(Walker.gameObject, Game.Pc);
+            if (Nav == null) Nav = gameObject.AddComponent<WorldNav>();
             Nav.Target = Walker.transform;
-            Rig = OrbitRig.Create(Stage.Camera, Walker.transform);
-            Rig.Yaw = yaw + 20f;
-            Rig.Snap();
-            Input = gameObject.AddComponent<TouchInput>();
-            Input.Rig = Rig; Input.Walker = Walker; Input.Camera = Stage.Camera;
-            Input.Tapped += OnTapped;
-            Townsfolk = Populate(assets);
-            Know("shale");
+            if (Rig == null) Rig = OrbitRig.Create(Stage.Camera, Walker.transform);
+            Rig.Follow(Walker.transform);
+            if (spot != null) Rig.View(spot.CamYaw, spot.CamPitch, spot.CamDistance);
+            else Rig.View(yaw + 20f, Rig.Pitch, Rig.Distance);
+            if (Input == null)
+            {
+                Input = gameObject.AddComponent<TouchInput>();
+                Input.Rig = Rig; Input.Camera = Stage.Camera;
+                Input.Tapped += OnTapped;
+            }
+            Input.Walker = Walker;
+            if (Townsfolk == 0) Townsfolk = Populate(assets);
+            SetDown?.Invoke();
         }
 
         /// <summary>The cast at the town's people's posts (one each, the first posts), each idling their own way.</summary>
@@ -251,6 +327,7 @@ namespace SecondFace.Game.Play
         private void Update()
         {
             if (!Paused && Walker != null) Stage.World.Focus = Walker.transform.position;
+            if (Begun && Walker != null && Time.timeScale > 0f) Game.PlaytimeSec += Time.unscaledDeltaTime;
         }
 
         /// <summary>Hands the camera to someone else (the measuring tour) or takes it back.</summary>

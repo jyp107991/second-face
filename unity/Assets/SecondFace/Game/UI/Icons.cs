@@ -9,7 +9,7 @@ namespace SecondFace.Game.UI
     /// </summary>
     public static class Icons
     {
-        public static readonly string[] Names = { "notebook", "map", "pack", "talk", "look", "take", "use", "steal", "give", "attack", "trade" };
+        public static readonly string[] Names = { "notebook", "map", "pack", "talk", "look", "take", "use", "steal", "give", "attack", "trade", "menu" };
 
         public static VisualElement Make(string name, float size = 40f)
         {
@@ -31,6 +31,13 @@ namespace SecondFace.Game.UI
             Vector2 P(float x, float y) => new(r.x + x * r.width, r.y + y * r.height);
             switch (name)
             {
+                case "menu":   // three strokes, a little uneven, as if ruled by hand
+                    p.BeginPath();
+                    p.MoveTo(P(0.22f, 0.28f)); p.LineTo(P(0.78f, 0.27f));
+                    p.MoveTo(P(0.22f, 0.50f)); p.LineTo(P(0.78f, 0.50f));
+                    p.MoveTo(P(0.22f, 0.72f)); p.LineTo(P(0.78f, 0.73f));
+                    p.Stroke();
+                    break;
                 case "notebook":
                     p.BeginPath();
                     p.MoveTo(P(0.24f, 0.12f)); p.LineTo(P(0.80f, 0.12f)); p.LineTo(P(0.80f, 0.88f)); p.LineTo(P(0.24f, 0.88f));

@@ -456,7 +456,7 @@ from fixture state and captured (`UiTests`, the panel drawn into a texture):
   (2) the look in the shaders: skin tone and undertone, freckles, eye colour, hair colour, a scar and a tattoo drawn
   over the skin; (3) body sliders (build, muscle) and hair choices from the people pipeline (shapes refitted on every
   garment, hair pieces as wardrobe items in a hair slot).
-- 3j. Title, settings (text size, contrast, controls), saves and pause.
+- ~~3j. Title, settings (text size, contrast, controls), saves and pause~~ (done, below).
 - 3k. The combat bar and log (with P6). 3l. Photo mode and the gamepad.
 
 *As built (P5.3a, 2026-10-29).* `Game.UI.UIService` (made by `Bootstrap` from the Boot scene's `UIAssets`; wired by
@@ -660,6 +660,39 @@ under the 6 K cap). The creation screen: build ("leaner or heavier") and muscle 
 Body page, the five hairs as chips on the Look page; `Figure.Look` puts a look on and re-layers (a hair piece put on
 after the figure was layered stayed out of the studio's camera). Captures `ui_create_body`, `ui_create_look`, and per
 hair and body `ui_create_hair_<f|m>_<form>` (sheet `docs/evidence/unity/p5/ui_create_hair.jpg`).
+
+*As built (P5.3j, 2026-10-29).* The app now starts at a title and plays a game of the player's own. Core
+`Save.Settings` (text scale of 0.9 / 1 / 1.15 / 1.3, high contrast, turn speed 0.5–2 and its direction, difficulty
+story / normal / hard as enemy hit and damage modifiers only, combat speed, skip heard lines, tips, autosave; parsed
+leniently, every value clamped to an offered one; kept under the `settings` key beside the slots) and
+`State.WorldSpot` on `GameState.Spot` (the walker's position and facing, the camera's yaw, pitch and distance; null on
+a new game). `Game.Play.Session`: the slots (`auto`, `quick`, `slot1`–`slot3`) as JSON files in
+`persistentDataPath/saves` through Core `SaveManager`, a 512×288 JPEG of the game camera per slot (a render request,
+no UI in it), the settings with a change event. `Walkabout.Begin(state)` plays a game: the walker is set down at its
+spot or the town's spawn once the ground round it is in, in the player's own body (`People.PlayerBody`: the look's
+base, their own clothes in creation's dyes under what is equipped, the look at its height; the pack's figure and
+creation use the same), and again at once on a load while walking; `Snapshot` writes the spot, the hour and the time
+played for a save; `End` leaves the game. `OrbitRig.View` (the camera at a view at once: `Snap` alone resets the yaw to
+the rig's goal, so the walkabout's old `Rig.Yaw = yaw + 20` never took), `Follow` and the settings' `TurnSpeed` and
+`InvertTurn`. `Bootstrap`: content, then the title over the world coming in (`TitleScreen`: the name on a dark band,
+continue with the last save's person, place and day, new game, load, settings; the world's progress under them);
+new game is character creation, whose begin starts the game (saved to the auto slot two frames after the walker is set
+down, and whenever the app goes to the background); load and continue read a slot and begin it; the HUD's new menu
+button and the back gesture on the open world open `PauseScreen` (time stops while it and the screens from it are open:
+back to it, save, load, settings, to the title, which saves to the auto slot first); `SavesScreen` (a card per slot
+with its picture, the person, place and day, time played and when saved; loading lists the filled slots, saving the
+quick slot and the three by hand, a used one after `ConfirmScreen`); `SettingsScreen` (chips on creation's paper:
+words, camera, play). Text size: every font size of the theme is a variable (`--fs-16` … `--fs-72`) and a class on
+the root (`sf-text-0`…`3`, `UIService.Present`) redefines them all, so a size re-sets every word on screen at once;
+`sf-contrast` darkens the soft inks and the plates. Skip heard lines sets `DialoguePanel.HeardWhole`. Tests:
+`UiTests.TitleSettingsSavesAndPause` (title, settings applied and kept and read again, load, save to an empty and over
+a used slot, pause stops time), `BootTests` through the title and creation (the walker is the person made, dressed;
+the auto slot written) and `TheGameSavesLoadsAndPauses` (saved with a picture, walked on, loaded: back within 0.6 m,
+the camera as it was, the state the saved one; a save from the pause; to the title and continue). Captures `ui_title`,
+`ui_settings`, `ui_settings_large`, `ui_saves_load`, `ui_saves`, `ui_saves_overwrite`, `ui_pause`, and
+`walkabout_player.jpg` (the walker in the player's own body). Not yet: the quality tier as a setting (with Adaptive
+Performance, P6.7), the tips and the combat settings' effect (with the tips and the fights), remapped keys and the pad
+(3l), autosave on entering a place (with places to enter, P6), the camp screen (with P6's systems).
 
 ### P6 — Systems and combat
 1. Interactions and loot (`Play/`): tap on a thing → radial of verbs from content (`talk`, `look`, `take`, `use`,
@@ -1883,6 +1916,15 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   on top of the head edge-on, a fin. Blend from the head's outward to level by height.
 - **A macro step from a lean base barely shows** (P5.3i): MakeHuman's heavy and muscled targets start at 0.5, so a body
   at weight 0.3 moved +0.3 only drops part of its thin target. Step further up than down.
+- **`OrbitRig.Snap` puts the camera at its goals** (P5.3j): setting `Yaw` and then snapping undoes the yaw. Use `View`.
+- **Picture a save a frame or two after the walker is set down** (P5.3j): a render request on the game camera in the
+  frame Cinemachine has not placed it yet asserts on an unnormalised rotation.
+- **`.sf-safe` grows** (P5.3j): the safe-area class sets `flex-grow: 1`, so a sized band in a row fills the row; give it
+  `flex-grow: 0`. Labels inside a `Button` inherit its centred text: align them on their own container.
+- **Scale text with USS variables** (P5.3j): custom properties inherit, so a class on the root that redefines every
+  size variable re-sets all the words; literal font sizes cannot be scaled (the theme has none now: keep it so).
+- **The local compile checks do not build the PlayMode tests**: a test's missing `using UnityEngine.UIElements` (for
+  `Q<T>`) only shows in Unity's own compile; read `playmode.log` for `error CS` when a run writes no results.
 
 ---
 

@@ -1,12 +1,18 @@
 using System.Collections;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using SecondFace.Core.Save;
+using SecondFace.Core.Stats;
 using SecondFace.Game;
+using SecondFace.Game.People;
 using SecondFace.Game.Play;
+using SecondFace.Game.UI;
 using SecondFace.Game.World;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+using UnityEngine.UIElements;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -53,14 +59,31 @@ namespace SecondFace.Tests
             foreach (var s in Object.FindObjectsByType<SkyController>(FindObjectsSortMode.None)) Object.Destroy(s.gameObject);
             foreach (var l in Object.FindObjectsByType<Light>(FindObjectsSortMode.None)) Object.Destroy(l.gameObject);
             foreach (var name in new[] { "Props", "Places" }) { var go = GameObject.Find(name); if (go != null) Object.Destroy(go); }
+            Bootstrap.MakeSession = null;
+            Time.timeScale = 1f;
             WorldView.SetUnderground(false);
             PlaceNav.Disabled = false;
             yield return null;
         }
 
-        /// <summary>Loads the Boot scene and waits until the walker stands on the NavMesh.</summary>
+        /// <summary>The saves of a test's app, apart from the device's (emptied first).</summary>
+        public static string SavesDir => Path.Combine(Application.temporaryCachePath, "boot-saves-test");
+
+        private static void Press(UnityEngine.UIElements.Button b)
+        {
+            Assert.That(b, Is.Not.Null, "the button");
+            Assert.That(b.enabledInHierarchy, Is.True, $"{b.name} can be pressed");
+            using var e = UnityEngine.UIElements.NavigationSubmitEvent.GetPooled();
+            e.target = b;
+            b.SendEvent(e);
+        }
+
+        /// <summary>Loads the Boot scene, goes from the title through a new game (an origin, a name, begin: P5.3j) and
+        /// waits until the walker stands on the NavMesh.</summary>
         private static IEnumerator Boot(System.Action<Bootstrap> done)
         {
+            if (Directory.Exists(SavesDir)) Directory.Delete(SavesDir, true);
+            Bootstrap.MakeSession = () => new Session(new DirectoryBackend(SavesDir));
             SceneManager.LoadScene("Boot");
             yield return null;
             var boot = Object.FindAnyObjectByType<Bootstrap>();
@@ -70,6 +93,19 @@ namespace SecondFace.Tests
             Assert.That(boot.World.Walker, Is.Not.Null, "the walker");
             Assert.That(boot.World.Locomotion, Is.Not.Null, "the locomotion controller");
             var t0 = Time.realtimeSinceStartup;
+            // the title once the content is in: no save yet, so no continue; a new game opens character creation
+            while (Time.realtimeSinceStartup - t0 < 120f && boot.Title == null) yield return null;
+            Assert.That(boot.Title, Is.Not.Null, "the title opened once the content was in");
+            for (var i = 0; i < 2; i++) yield return null;
+            Assert.That(boot.Title.ContinueButton, Is.Null, "nothing to continue on a first start");
+            Press(boot.Title.NewButton);
+            var creation = boot.UI.Top as CreationScreen;
+            Assert.That(creation, Is.Not.Null, "a new game begins with character creation");
+            for (var i = 0; i < 3; i++) yield return null;
+            Press(creation.Content.Q<UnityEngine.UIElements.Button>("origin-" + Creation.Origins()[0].Id));
+            creation.Content.Q<UnityEngine.UIElements.TextField>("name").value = "Ash Corran";
+            Assert.That(creation.Finish(), Is.True, "the person is made and the game begins");
+            Assert.That(boot.Walkabout.Begun, Is.True);
             while (Time.realtimeSinceStartup - t0 < 360f && (boot.Walkabout == null || !boot.Walkabout.Ready)) yield return null;
             Assert.That(boot.Walkabout, Is.Not.Null, "the content loaded and the walkabout began");
             Assert.That(boot.Walkabout.Ready, Is.True, $"the walker stands on the NavMesh ({boot.Walkabout.Line()}) after {Time.realtimeSinceStartup - t0:0} s");
@@ -89,6 +125,12 @@ namespace SecondFace.Tests
             for (var i = 0; i < 3; i++) yield return null;
             Assert.That(boot.UI.Top, Is.Null, "the start card closed once the walker was set down");
             Assert.That(boot.Hud, Is.Not.Null, "the HUD is up");
+            // the walker is the person made: the player's body, their look, their name; the new game saved itself
+            Assert.That(walk.Game.Pc.Sheet.Name, Is.EqualTo("Ash Corran"));
+            Assert.That(walk.Walker.GetComponentInChildren<FaceSculpt>(), Is.Not.Null, "the player's own body (the sculptor's shapes on it)");
+            Assert.That(walk.Walker.GetComponentInChildren<Wardrobe>().Wearing.Count, Is.GreaterThan(0), "dressed");
+            Assert.That(boot.Session.Read(Session.Auto), Is.Not.Null, "the new game is in the auto slot");
+            Assert.That(boot.Hud.MenuButton.resolvedStyle.display, Is.EqualTo(UnityEngine.UIElements.DisplayStyle.Flex), "the menu button is shown");
             var fwd = Camera.main.transform.forward;
             Assert.That(Mathf.Abs(Mathf.DeltaAngle(boot.Hud.Compass.Heading, Mathf.Atan2(fwd.x, fwd.z) * Mathf.Rad2Deg)), Is.LessThan(2f), "the compass follows the camera");
             // the notebook under the thumb (P5.3f) opens over the walkabout's game and closes
@@ -227,6 +269,60 @@ namespace SecondFace.Tests
             Assert.That(walk.Rig.Distance, Is.LessThan(d0 - 2f), "pinched closer");
             Assert.That(walk.Rig.Pitch, Is.InRange(OrbitRig.MinPitch, OrbitRig.MaxPitch));
             yield return ScreenshotTests.Capture("walkabout_saloon", 1920, 1080);
+        }
+
+        /// <summary>P5.3j: the game saved where it stands (with a picture), moved on, then loaded: the walker is back and the
+        /// state is the saved one; the pause stops time; back to the title, whose continue picks the game up again.</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator TheGameSavesLoadsAndPauses()
+        {
+            Bootstrap boot = null;
+            yield return Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            for (var i = 0; i < 5; i++) yield return null;
+            var meta = boot.Save("slot1");
+            Assert.That(meta, Is.Not.Null, "saved");
+            Assert.That(meta.Thumb, Is.Not.Empty, "with a picture of the scene");
+            Assert.That(meta.Label, Is.EqualTo("Ash Corran"));
+            var at = walk.Walker.transform.position;
+            var yaw = walk.Rig.Yaw;
+            // move on: walk away and change the state
+            var away = at + walk.Walker.transform.forward * 6f;
+            walk.Walker.GoTo(away);
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 30f && walk.Walker.Goal != null) yield return null;
+            walk.Game.SetFlag("test_after_save", true);
+            Assert.That(Vector3.Distance(walk.Walker.transform.position, at), Is.GreaterThan(2f), "walked on");
+            Assert.That(boot.Load("slot1"), Is.True, "loaded");
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 120f && (boot.UI.Top != null || !walk.Ready)) yield return null;
+            Assert.That(walk.Ready, Is.True, "set down again");
+            Assert.That(walk.Game.Flag("test_after_save"), Is.Null, "the state is the saved one");
+            Assert.That(Vector3.Distance(walk.Walker.transform.position, at), Is.LessThan(0.6f), "where it was saved");
+            Assert.That(Mathf.Abs(Mathf.DeltaAngle(walk.Rig.Yaw, yaw)), Is.LessThan(1f), "the camera as it was");
+            // the pause: time stops; a save from it
+            var pause = boot.OpenPause();
+            Assert.That(pause, Is.Not.Null);
+            yield return null;
+            Assert.That(Time.timeScale, Is.EqualTo(0f), "the world stops");
+            var saves = boot.OpenSaves(true);
+            for (var i = 0; i < 2; i++) yield return null;
+            saves.SaveTo("slot2");
+            Assert.That(boot.Session.Read("slot2"), Is.Not.Null, "saved from the pause");
+            boot.UI.CloseAll();
+            Assert.That(Time.timeScale, Is.EqualTo(1f), "the world goes on");
+            // back to the title: saved first; continue takes the game up again
+            boot.QuitToTitle();
+            yield return null;
+            Assert.That(walk.Walker, Is.Null, "the walker goes");
+            Assert.That(boot.Title, Is.Not.Null);
+            Assert.That(boot.Title.ContinueButton, Is.Not.Null, "now there is a game to continue");
+            Press(boot.Title.ContinueButton);
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 120f && (boot.UI.Top != null || !walk.Ready)) yield return null;
+            Assert.That(walk.Ready, Is.True, "continued");
+            Assert.That(walk.Game.Pc.Sheet.Name, Is.EqualTo("Ash Corran"));
+            Assert.That(boot.Hud.Root.resolvedStyle.display, Is.EqualTo(UnityEngine.UIElements.DisplayStyle.Flex), "the HUD is back");
         }
 
         [UnityTest, Timeout(900000)]

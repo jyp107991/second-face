@@ -1,6 +1,8 @@
 using System.Collections;
 using System.IO;
 using SecondFace.Core.Content;
+using SecondFace.Core.Save;
+using SecondFace.Core.State;
 using SecondFace.Game.Play;
 using SecondFace.Game.UI;
 using SecondFace.Game.World;
@@ -11,10 +13,13 @@ namespace SecondFace.Game
 {
     /// <summary>
     /// The one authored object in the Boot scene. Locks the app to landscape full screen, opens the interface
-    /// (<see cref="UIService"/>), loads the content registries from StreamingAssets and hands over to the game. Until the
-    /// game exists, it shows a title card with what loaded (<see cref="TitleCard"/>), then raises the world round Shale (<see cref="WorldStage"/>) and sets the player's stand-in down in
-    /// it (<see cref="Walkabout"/>, step 25), with the <see cref="DebugOverlay"/> one three-finger tap away and on it a
-    /// button that runs the measuring tour (<see cref="MeasureTour"/>, step 23) and walks again.
+    /// (<see cref="UIService"/>), loads the content registries from StreamingAssets (a card says what is loading,
+    /// <see cref="TitleCard"/>), opens the saves and settings (<see cref="Session"/>) and starts raising the world round
+    /// Shale (<see cref="WorldStage"/>) behind the title (<see cref="TitleScreen"/>, P5.3j): continue, a new game through
+    /// character creation, load, settings. A game begun sets the player down in it in their own body (<see cref="Walkabout"/>),
+    /// saved to the auto slot as it begins and whenever the app goes to the background; the HUD's menu button and the back
+    /// gesture open the pause (save, load, settings, back to the title). The <see cref="DebugOverlay"/> is one
+    /// three-finger tap away, with a button that runs the measuring tour (<see cref="MeasureTour"/>, step 23).
     /// </summary>
     public sealed class Bootstrap : MonoBehaviour
     {
@@ -29,6 +34,13 @@ namespace SecondFace.Game
         public Walkabout Walkabout { get; private set; }
         /// <summary>The measuring tour while it runs (null while walking).</summary>
         public MeasureTour Tour { get; private set; }
+        /// <summary>The saves and the settings (once the content is in).</summary>
+        public Session Session { get; private set; }
+        /// <summary>Where the session comes from (tests keep theirs apart); null: the device's persistent folder.</summary>
+        public static System.Func<Session> MakeSession;
+        /// <summary>The title while it is open.</summary>
+        public TitleScreen Title { get; private set; }
+        private bool _awaitingSetDown, _autosaveOnSetDown;
         private string _status = "LOADING…";
         private string _error;
         private TitleCard _card;
@@ -85,6 +97,10 @@ namespace SecondFace.Game
             var loaded = $"{db.Count("maps")} places · {db.Count("npcs")} people · {db.Count("dialogues")} conversations · {db.Count("quests")} quests · {db.Count("items")} items\n{Screen.width}×{Screen.height} {SystemInfo.graphicsDeviceType} · {SystemInfo.deviceModel}";
             _status = "THE SECOND FACE\n" + loaded;
             _card?.Set(Strings.Get("title.raising"), loaded);
+            Session = MakeSession != null ? MakeSession() : Session.OnDevice();
+            Apply(Session.Settings);
+            Session.SettingsChanged += Apply;
+            if (UI != null) UI.BackUnhandled += () => { if (Walkabout != null && Walkabout.Walker != null && Tour == null) OpenPause(); };
             var overlay = DebugOverlay.Ensure();
             if (World == null) yield break;
             Stage = gameObject.AddComponent<WorldStage>();
@@ -92,10 +108,179 @@ namespace SecondFace.Game
             Stage.Camera = Camera.main;
             Walkabout = gameObject.AddComponent<Walkabout>();
             Walkabout.Stage = Stage;
+            Walkabout.SetDown += SetDown;
             overlay.World = () => Tour != null ? Tour.WorldLine() : Walkabout.Line();
             overlay.Report = () => _lastTour;
             overlay.ButtonLabel = () => Tour != null ? "walk" : "measure (tour)";
             overlay.Button = ToggleTour;
+            if (UI == null) { Walkabout.Begin(null); yield break; }   // no interface: straight into a new game
+            _card?.Close();
+            OpenTitle();
+        }
+
+        // --- the game: begun, saved, loaded, left ----------------------------------------------------------------
+
+        /// <summary>The title over the world coming in (what is open goes).</summary>
+        public TitleScreen OpenTitle()
+        {
+            if (UI == null) return null;
+            UI.CloseAll();
+            var latest = Session?.Latest();
+            Title = UI.Open(new TitleScreen(new TitleModel
+            {
+                Latest = latest,
+                AnySave = latest != null,
+                Status = () => Stage == null || Stage.Raised ? null : (Stage.Status ?? Strings.Get("title.raising")),
+                Continue = () => { if (latest != null) Load(latest.Slot); },
+                NewGame = () => OpenCreation(),
+                Load = () => OpenSaves(false),
+                Settings = () => OpenSettings(),
+            }));
+            return Title;
+        }
+
+        /// <summary>Character creation; its begin starts a new game with the person made.</summary>
+        public CreationScreen OpenCreation()
+        {
+            if (UI == null || World == null) return null;
+            return UI.Open(new CreationScreen(new CreationModel
+            {
+                BodyF = World.PlayerF, BodyM = World.PlayerM, Idle = World.Locomotion,
+                Done = (pc, origin) =>
+                {
+                    var g = States.NewGame("shale", 0, 0, pc);
+                    g.Origin = origin;
+                    Begin(g, true);
+                },
+            }));
+        }
+
+        /// <summary>Plays a game (a new one, or a loaded one): the screens close, a card says the player is being set down
+        /// until they are (a new game is then saved to the auto slot).</summary>
+        public void Begin(GameState g, bool fresh = false)
+        {
+            if (Walkabout == null) return;
+            UI?.CloseAll();
+            Title = null;
+            _awaitingSetDown = true;
+            _autosaveOnSetDown = fresh;
+            if (UI != null)
+            {
+                _card = UI.Open(new TitleCard());
+                _card.Set(Strings.Get("title.setting_down"));
+            }
+            Walkabout.Begin(g, fresh);
+        }
+
+        private void SetDown()
+        {
+            _awaitingSetDown = false;
+            if (_card != null && _card.IsOpen) _card.Close();
+            if (Session != null) Apply(Session.Settings);
+            if (_autosaveOnSetDown) StartCoroutine(AutosaveSoon());
+            _autosaveOnSetDown = false;
+            _hudNext = 0f;
+        }
+
+        /// <summary>The auto slot once the camera has settled on the walker (a picture taken in the frame they are set
+        /// down reads a camera Cinemachine has not placed yet).</summary>
+        private IEnumerator AutosaveSoon()
+        {
+            for (var i = 0; i < 2; i++) yield return null;
+            Autosave();
+        }
+
+        /// <summary>Loads a slot and plays it (false when it is empty or cannot be read).</summary>
+        public bool Load(string slot)
+        {
+            var f = Session?.Read(slot);
+            if (f == null) return false;
+            Begin(f.State);
+            return true;
+        }
+
+        /// <summary>Saves the game as it stands to a slot, with a picture of the scene (null when there is no game to
+        /// save or it could not be written).</summary>
+        public SaveMeta Save(string slot)
+        {
+            if (Session == null || Walkabout == null || !Walkabout.Begun || Walkabout.Walker == null) return null;
+            var g = Walkabout.Snapshot();
+            var (here, name) = Nearest();
+            var meta = new SaveMeta
+            {
+                Label = g.Pc?.Sheet?.Name, LocationId = here, LocationName = name, Minutes = g.Minutes, PlaytimeSec = g.PlaytimeSec,
+                Thumb = Session.Thumb(Stage.Camera),
+            };
+            try { return Session.Write(slot, g, meta).Meta; }
+            catch (System.Exception e) { Debug.LogWarning($"Bootstrap: the game was not saved to {slot} ({e.Message})"); return null; }
+        }
+
+        /// <summary>Saves to the auto slot (when the settings keep autosaves).</summary>
+        public SaveMeta Autosave() => Session != null && Session.Settings.Autosave ? Save(Session.Auto) : null;
+
+        private void OnApplicationPause(bool paused) { if (paused) Autosave(); }
+
+        /// <summary>The pause over the game (null when there is no game, or the measuring tour runs).</summary>
+        public PauseScreen OpenPause()
+        {
+            if (UI == null || Walkabout == null || Walkabout.Walker == null || Tour != null) return null;
+            if (UI.Top is PauseScreen open) return open;
+            var g = Walkabout.Snapshot();
+            var (_, place) = Nearest();
+            return UI.Open(new PauseScreen(new PauseModel
+            {
+                Line = TitleScreen.Describe(new SaveMeta { Label = g.Pc?.Sheet?.Name, LocationName = place, Minutes = g.Minutes }),
+                Save = () => OpenSaves(true),
+                Load = Session != null && Session.Latest() != null ? () => OpenSaves(false) : null,
+                Settings = () => OpenSettings(),
+                Quit = QuitToTitle,
+            }));
+        }
+
+        /// <summary>Back to the title: the game is saved to the auto slot, the walker goes, the title opens.</summary>
+        public void QuitToTitle()
+        {
+            Autosave();
+            Walkabout?.End();
+            OpenTitle();
+        }
+
+        public SavesScreen OpenSaves(bool saving)
+        {
+            if (UI == null || Session == null) return null;
+            return UI.Open(new SavesScreen(new SavesModel { Session = Session, Saving = saving, Save = Save, Load = slot => Load(slot) }));
+        }
+
+        public SettingsScreen OpenSettings()
+        {
+            if (UI == null || Session == null) return null;
+            return UI.Open(new SettingsScreen(() => Session.Settings, edit => Session.Change(edit)));
+        }
+
+        /// <summary>The settings where they take: the words' size and contrast, the camera's turn.</summary>
+        private void Apply(Settings s)
+        {
+            if (s == null) return;
+            UI?.Present(System.Array.IndexOf(Settings.TextScales, s.TextScale), s.HighContrast);
+            DialoguePanel.HeardWhole = s.SkipSeen;
+            var rig = Walkabout != null ? Walkabout.Rig : null;
+            if (rig != null) { rig.TurnSpeed = s.TurnSpeed; rig.InvertTurn = s.InvertTurn; }
+        }
+
+        /// <summary>The place the walker is nearest (the town before they are set down).</summary>
+        private (string Id, string Name) Nearest()
+        {
+            var layout = Stage?.World?.Layout;
+            if (layout == null || Walkabout == null || Walkabout.Walker == null) return ("shale", Content?.Entry("maps", "shale")?["name"]?.ToString() ?? "Shale");
+            var at = Walkabout.Walker.transform.position;
+            SecondFace.Core.World.PlaceInfo best = null;
+            var d2 = float.MaxValue;
+            foreach (var p in layout.Places.Values)
+            {
+                var d = (new Vector2(p.Centre[0], p.Centre[1]) - new Vector2(at.x, at.z)).sqrMagnitude;
+                if (d < d2) { d2 = d; best = p; }
+            }
+            return best == null ? ("shale", "Shale") : (best.Id, string.IsNullOrEmpty(best.Name) ? best.Id : best.Name);
         }
 
         private string _lastTour;
@@ -139,6 +324,7 @@ namespace SecondFace.Game
             {
                 _hud = new Hud(UI);
                 _hud.Actions(OpenNotebook, () => OpenMap(), () => OpenPack());
+                _hud.Menu(() => OpenPause());
                 _hud.ObjectiveTapped += () => OpenNotebook(SecondFace.Core.World.Notebook.Tracked(Walkabout.Game));
                 UI.StackChanged += () => _hudNext = 0f;   // a quest tracked in the notebook, or one a conversation began, shows at once
                 var place = Content?.Entry("maps", "shale")?["name"]?.ToString() ?? "Shale";
@@ -181,7 +367,12 @@ namespace SecondFace.Game
             if (UI == null || Walkabout == null || Stage == null) return null;
             if (UI.Top is PackScreen open) return open;
             var assets = Stage.Assets;
-            return UI.Open(new PackScreen(new PackModel { Game = Walkabout.Game, Body = assets.PlayerM, Idle = assets.Locomotion, Fit = "m" }));
+            var look = SecondFace.Game.People.PlayerBody.Look(Walkabout.Game.Pc);
+            return UI.Open(new PackScreen(new PackModel
+            {
+                Game = Walkabout.Game, Body = SecondFace.Game.People.PlayerBody.Base(look, assets.PlayerF, assets.PlayerM),
+                Idle = assets.Locomotion, Fit = look.Body, Look = look,
+            }));
         }
 
         /// <summary>Opens the world map over the walkabout: the places its game knows, the walker where they stand, the
@@ -193,13 +384,7 @@ namespace SecondFace.Game
             if (UI.Top is MapScreen open) return open;
             var g = Walkabout.Game;
             var at = Walkabout.Walker.transform.position;
-            string here = null;
-            var best = float.MaxValue;
-            foreach (var p in layout.Places.Values)
-            {
-                var d = (new Vector2(p.Centre[0], p.Centre[1]) - new Vector2(at.x, at.z)).sqrMagnitude;
-                if (d < best) { best = d; here = p.Id; }
-            }
+            var here = Nearest().Id;
             var known = new System.Collections.Generic.HashSet<string>(g.World.KnownLocations);
             if (here != null) known.Add(here);
             var face = Walkabout.Walker.transform.forward;
@@ -221,10 +406,9 @@ namespace SecondFace.Game
         {
             if (Tour != null) _lastTour = Tour.Report() ?? _lastTour;
             UpdateHud();
-            if (_card == null || !_card.IsOpen || Walkabout == null) return;
-            // the title card stays over the world while it comes in
-            if (Walkabout.Walker != null || Tour != null) _card.Close();
-            else if (Stage != null) _card.Set((Stage.Status ?? "setting the walker down…").ToUpperInvariant());
+            // the card stays over the world while a game's ground comes in
+            if (_card == null || !_card.IsOpen || !_awaitingSetDown || Stage == null) return;
+            _card.Set((Stage.Status ?? Strings.Get("title.setting_down")).ToUpperInvariant());
         }
 
         private GUIStyle _style;
