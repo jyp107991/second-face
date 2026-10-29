@@ -97,14 +97,14 @@ namespace SecondFace.Tests
             Assert.That(tappable.Length, Is.GreaterThanOrEqualTo(walk.Townsfolk), "every one of the townsfolk can be tapped");
             (Interactable i, Vector2 p) InView() => tappable
                 .Select(i => (i, p: (Vector2)view.WorldToScreenPoint(i.transform.position + Vector3.up * 1.2f)))
-                .FirstOrDefault(x => x.p.x > 0 && x.p.x < Screen.width && x.p.y > 0 && x.p.y < Screen.height && Interactable.Under(view, x.p) == x.i);
+                .FirstOrDefault(x => x.p.x > 0 && x.p.x < Screen.width && x.p.y > 0 && x.p.y < Screen.height && Interactable.Under(view, x.p, walk.Walker.transform) == x.i);
             var folk = InView();
             var nearest = tappable.OrderBy(i => Vector3.Distance(i.transform.position, walk.Walker.transform.position)).ToList();
             for (var k = 0; folk.i == null && k < nearest.Count; k++)
             {
                 // turn the view toward one of them, nearest first, until one stands in clear view
                 var d = nearest[k].transform.position - walk.Walker.transform.position;
-                walk.Rig.TurnTo(Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg, true);
+                walk.Rig.TurnTo(Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg + 20f, true);   // a little aside: the walker stands in front
                 for (var f = 0; f < 3; f++) yield return null;
                 folk = InView();
             }

@@ -96,7 +96,7 @@ namespace SecondFace.Game.Play
         /// <summary>A tap: on a person or thing it is theirs (<see cref="Tapped"/>), on the ground the walker goes there.</summary>
         public void Tap(Vector2 screen)
         {
-            var it = Tapped != null ? Interactable.Under(Camera, screen) : null;
+            var it = Tapped != null ? Interactable.Under(Camera, screen, Walker != null ? Walker.transform : null) : null;
             if (it != null) Tapped(it, screen);
             else Send(screen.x, screen.y);
         }

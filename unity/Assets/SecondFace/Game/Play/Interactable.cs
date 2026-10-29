@@ -46,8 +46,8 @@ namespace SecondFace.Game.Play
         private static readonly RaycastHit[] Hits = new RaycastHit[16];
 
         /// <summary>The interactable under a screen point, if one is the first thing the ray meets (pixels, origin
-        /// bottom-left).</summary>
-        public static Interactable Under(Camera cam, Vector2 screen, float range = 300f)
+        /// bottom-left); the colliders under <paramref name="ignore"/> (the player's own body) are looked past.</summary>
+        public static Interactable Under(Camera cam, Vector2 screen, Transform ignore = null, float range = 300f)
         {
             if (cam == null) return null;
             var ray = cam.ScreenPointToRay(new Vector3(screen.x, screen.y, 0));
@@ -55,6 +55,7 @@ namespace SecondFace.Game.Play
             Array.Sort(Hits, 0, n, Nearer);
             for (var i = 0; i < n; i++)
             {
+                if (ignore != null && Hits[i].collider.transform.IsChildOf(ignore)) continue;
                 var it = Hits[i].collider.GetComponentInParent<Interactable>();
                 if (it != null && it.isActiveAndEnabled) return it;
                 if (!Hits[i].collider.isTrigger) return null;   // something solid stands in front
