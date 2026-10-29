@@ -78,12 +78,12 @@ namespace SecondFace.Game.World
                 Stitch(c);
             }
             foreach (var c in step.Forget) _prepared.Remove(c);
-            foreach (var c in step.Prepare) _preparing[c] = ChunkTerrain.Prepare(World.Gen, World.Control, c.cx, c.cz);
+            foreach (var c in step.Prepare) _preparing[c] = ChunkTerrain.Prepare(World.Gen, World.Control, World.Layout.Biomes, c.cx, c.cz);
             if (step.Build is { } b && Time.unscaledDeltaTime * 1000f <= SlowFrameMs)
             {
                 var bw = Stopwatch.StartNew();
                 var t = _pool.Count > 0 ? _pool.Pop() : ChunkTerrain.Create(_root, Layers);
-                ChunkTerrain.Apply(t, _prepared[b], World.Layout.Biomes, Layers);
+                ChunkTerrain.Apply(t, _prepared[b], Layers);
                 BuildMs.Add(bw.Elapsed.TotalMilliseconds);
                 _built[b] = t;
                 Stitch(b);

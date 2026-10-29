@@ -138,22 +138,80 @@ namespace SecondFace.Tests
             }
         }
 
+        private static ControlMap _control;
+        private static ControlMap Control() => _control ??= ControlMap.Read(File.ReadAllBytes(Find("unity/Assets/StreamingAssets/world/control.bin")));
+
+        private static float Share(TerrainPaint.Result r, string key)
+        {
+            var l = Array.IndexOf(r.Keys, key);
+            if (l < 0) return 0;
+            float s = 0; var L = r.Keys.Length;
+            for (var t = 0; t < r.Weights.Length / L; t++) s += r.Weights[t * L + l];
+            return s / (r.Weights.Length / L);
+        }
+
+        private static void SumsToOne(TerrainPaint.Result r)
+        {
+            var L = r.Keys.Length;
+            Assert.That(r.Weights.Length, Is.EqualTo(TerrainPaint.AlphaResolution * TerrainPaint.AlphaResolution * L));
+            for (var t = 0; t < r.Weights.Length / L; t++)
+            {
+                float s = 0;
+                for (var l = 0; l < L; l++) s += r.Weights[t * L + l];
+                Assert.That(s, Is.EqualTo(1f).Within(1e-4f), $"texel {t}");
+            }
+        }
+
         [Test]
-        public void SurfaceWeightsSumToOneAndSlopesTurnToRock()
+        public void SurfaceWeightsSumToOneAndTheTeethShowRockOnSlopesAndSnowOnTheHeights()
         {
             var (tx, tz) = WorldGrid.ChunkAt(21000, 11000);
             var heights = Gen().Heights(tx, tz);
-            var control = ControlMap.Read(File.ReadAllBytes(Find("unity/Assets/StreamingAssets/world/control.bin")));
-            var w = TerrainPaint.Weights(control, heights, tx, tz);
-            Assert.That(w.Length, Is.EqualTo(TerrainPaint.AlphaResolution * TerrainPaint.AlphaResolution * TerrainPaint.Roles));
-            float steepTotal = 0;
-            for (var k = 0; k < w.Length; k += TerrainPaint.Roles)
+            var sw = Stopwatch.StartNew();
+            var paint = TerrainPaint.Paint(Control(), _layout.Biomes, heights, tx, tz);
+            TestContext.WriteLine($"teeth chunk: {string.Join(", ", paint.Keys.Select(k => $"{k} {Share(paint, k):0.00}"))}; heights {heights.Min():0}..{heights.Max():0} m; {sw.ElapsedMilliseconds} ms");
+            SumsToOne(paint);
+            Assert.That(paint.Keys.Length, Is.InRange(1, TerrainPaint.MaxLayers));
+            Assert.That(_layout.Biomes[TerrainPaint.DominantBiome(Control(), tx, tz)], Is.EqualTo("teeth"));
+            Assert.That(Share(paint, "rock"), Is.GreaterThan(0.05f), "the mountains show rock on their slopes");
+            if (heights.Max() > TerrainPaint.SnowLine + 60) Assert.That(Share(paint, "snow"), Is.GreaterThan(0.01f), "snow above the snow line");
+        }
+
+        /// <summary>A chunk on a biome border and its neighbour across the border paint with both palettes (≤ 8 layers),
+        /// and the texels either side of their shared edge carry nearly the same weights per key: no palette seam.</summary>
+        [Test]
+        public void ChunksAcrossABiomeBorderBlendWithoutASeam()
+        {
+            Gen();
+            const int a = TerrainPaint.AlphaResolution;
+            (int, int)? pair = null;
+            for (var cz = 0; cz < WorldGrid.ChunksZ && pair == null; cz++)
+                for (var cx = 0; cx + 1 < WorldGrid.ChunksX && pair == null; cx++)
+                {
+                    int ba = TerrainPaint.DominantBiome(Control(), cx, cz), bb = TerrainPaint.DominantBiome(Control(), cx + 1, cz);
+                    if (ba != bb && _layout.Biomes[ba] == "sallow" && _layout.Biomes[bb] != "sallow") pair = (cx, cz);
+                }
+            Assert.That(pair, Is.Not.Null, "a sallow chunk with another biome east of it");
+            var (x, z) = pair.Value;
+            var west = TerrainPaint.Paint(Control(), _layout.Biomes, Gen().Heights(x, z), x, z);
+            var east = TerrainPaint.Paint(Control(), _layout.Biomes, Gen().Heights(x + 1, z), x + 1, z);
+            TestContext.WriteLine($"border {x},{z}: west {string.Join(", ", west.Keys)}; east {string.Join(", ", east.Keys)}");
+            SumsToOne(west); SumsToOne(east);
+            Assert.That(west.Keys.Except(TerrainPaint.Palettes["sallow"]), Is.Not.Empty, "the border chunk carries its neighbour's palette too");
+            Assert.That(west.Keys.Length, Is.AtMost(TerrainPaint.MaxLayers));
+            double diff = 0; var n = 0;
+            foreach (var key in west.Keys.Union(east.Keys))
             {
-                Assert.That(w[k] + w[k + 1] + w[k + 2] + w[k + 3], Is.EqualTo(1f).Within(1e-4f));
-                steepTotal += w[k + 3];
+                int lw = Array.IndexOf(west.Keys, key), le = Array.IndexOf(east.Keys, key);
+                for (var j = 0; j < a; j++)
+                {
+                    var w = lw < 0 ? 0 : west.Weights[(j * a + a - 1) * west.Keys.Length + lw];
+                    var e = le < 0 ? 0 : east.Weights[(j * a + 0) * east.Keys.Length + le];
+                    diff += Math.Abs(w - e); n++;
+                }
             }
-            Assert.That(steepTotal / (w.Length / 4), Is.GreaterThan(0.05f), "the mountains show rock on their slopes");
-            Assert.That(_layout.Biomes[TerrainPaint.DominantBiome(control, tx, tz)], Is.EqualTo("teeth"));
+            TestContext.WriteLine($"mean weight step across the edge: {diff / n:0.000}");
+            Assert.That(diff / n, Is.LessThan(0.03), "the same ground paints the same either side of the edge");
         }
 
         private static string Find(string repoRel)

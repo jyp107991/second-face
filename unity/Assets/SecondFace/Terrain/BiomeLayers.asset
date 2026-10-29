@@ -13,52 +13,38 @@ MonoBehaviour:
   m_Name: BiomeLayers
   m_EditorClassIdentifier: SecondFace.Game::SecondFace.Game.World.BiomeLayerSet
   TerrainMaterial: {fileID: 2100000, guid: 92995d91e058cd81a90ac3a6820316ad, type: 2}
-  Biomes:
-  - Id: ashlands
-    Layers:
-    - {fileID: 8574412962073106934, guid: 2a9b90139631fe8578647aeef80cc6f5, type: 2}
-    - {fileID: 8574412962073106934, guid: d78927176411db3bbbcc3375c2e5d71d, type: 2}
-    - {fileID: 8574412962073106934, guid: b95ad9fe4f3d74ca9896f23a32cca540, type: 2}
-    - {fileID: 8574412962073106934, guid: bd0e0caaa63280dacad8008c766c2ed1, type: 2}
-  - Id: drowned_shore
-    Layers:
-    - {fileID: 8574412962073106934, guid: 35ebc0a4c115dcf90b2b8e7d037aa6f5, type: 2}
-    - {fileID: 8574412962073106934, guid: 293abab6be38780488186b07639bc5aa, type: 2}
-    - {fileID: 8574412962073106934, guid: ff51ca6dc824b25f0ad93fa6dffc605c, type: 2}
-    - {fileID: 8574412962073106934, guid: bd0e0caaa63280dacad8008c766c2ed1, type: 2}
-  - Id: glass_flats
-    Layers:
-    - {fileID: 8574412962073106934, guid: be01cca9a6aaaf87b862215cdc01a1ee, type: 2}
-    - {fileID: 8574412962073106934, guid: 2306ca4b334dd3370a850209078f76b1, type: 2}
-    - {fileID: 8574412962073106934, guid: d78927176411db3bbbcc3375c2e5d71d, type: 2}
-    - {fileID: 8574412962073106934, guid: b95ad9fe4f3d74ca9896f23a32cca540, type: 2}
-  - Id: meridian
-    Layers:
-    - {fileID: 8574412962073106934, guid: b95ad9fe4f3d74ca9896f23a32cca540, type: 2}
-    - {fileID: 8574412962073106934, guid: d5e8a96ffccd31570b0f6f22878b1254, type: 2}
-    - {fileID: 8574412962073106934, guid: 293abab6be38780488186b07639bc5aa, type: 2}
-    - {fileID: 8574412962073106934, guid: 8a64996cb5c143d1a9adc77d53f634ec, type: 2}
-  - Id: northern_wet
-    Layers:
-    - {fileID: 8574412962073106934, guid: c35c115626da200378ff989c530afe95, type: 2}
-    - {fileID: 8574412962073106934, guid: 293abab6be38780488186b07639bc5aa, type: 2}
-    - {fileID: 8574412962073106934, guid: 3745302b481147c0cb08bb5c39dd8f38, type: 2}
-    - {fileID: 8574412962073106934, guid: bd0e0caaa63280dacad8008c766c2ed1, type: 2}
-  - Id: rail_corridor
-    Layers:
-    - {fileID: 8574412962073106934, guid: ff51ca6dc824b25f0ad93fa6dffc605c, type: 2}
-    - {fileID: 8574412962073106934, guid: dad7748e52bf760d7a438263becacb0c, type: 2}
-    - {fileID: 8574412962073106934, guid: 61d271420a13ea5ffb1bd834dc43c5d7, type: 2}
-    - {fileID: 8574412962073106934, guid: bd0e0caaa63280dacad8008c766c2ed1, type: 2}
-  - Id: sallow
-    Layers:
-    - {fileID: 8574412962073106934, guid: dad7748e52bf760d7a438263becacb0c, type: 2}
-    - {fileID: 8574412962073106934, guid: be01cca9a6aaaf87b862215cdc01a1ee, type: 2}
-    - {fileID: 8574412962073106934, guid: d78927176411db3bbbcc3375c2e5d71d, type: 2}
-    - {fileID: 8574412962073106934, guid: bd0e0caaa63280dacad8008c766c2ed1, type: 2}
-  - Id: teeth
-    Layers:
-    - {fileID: 8574412962073106934, guid: ff51ca6dc824b25f0ad93fa6dffc605c, type: 2}
-    - {fileID: 8574412962073106934, guid: 61d271420a13ea5ffb1bd834dc43c5d7, type: 2}
-    - {fileID: 8574412962073106934, guid: 6871df046dd4878be9a71b6792449cd1, type: 2}
-    - {fileID: 8574412962073106934, guid: bd0e0caaa63280dacad8008c766c2ed1, type: 2}
+  Layers:
+  - Key: asphalt
+    Layer: {fileID: 8574412962073106934, guid: d5e8a96ffccd31570b0f6f22878b1254, type: 2}
+  - Key: burned
+    Layer: {fileID: 8574412962073106934, guid: 2a9b90139631fe8578647aeef80cc6f5, type: 2}
+  - Key: coast
+    Layer: {fileID: 8574412962073106934, guid: 35ebc0a4c115dcf90b2b8e7d037aa6f5, type: 2}
+  - Key: concrete
+    Layer: {fileID: 8574412962073106934, guid: 8a64996cb5c143d1a9adc77d53f634ec, type: 2}
+  - Key: cracked
+    Layer: {fileID: 8574412962073106934, guid: d78927176411db3bbbcc3375c2e5d71d, type: 2}
+  - Key: forest
+    Layer: {fileID: 8574412962073106934, guid: 3745302b481147c0cb08bb5c39dd8f38, type: 2}
+  - Key: glass
+    Layer: {fileID: 8574412962073106934, guid: 2306ca4b334dd3370a850209078f76b1, type: 2}
+  - Key: grass
+    Layer: {fileID: 8574412962073106934, guid: c35c115626da200378ff989c530afe95, type: 2}
+  - Key: grass_dry
+    Layer: {fileID: 8574412962073106934, guid: ff51ca6dc824b25f0ad93fa6dffc605c, type: 2}
+  - Key: gravel
+    Layer: {fileID: 8574412962073106934, guid: 61d271420a13ea5ffb1bd834dc43c5d7, type: 2}
+  - Key: mud
+    Layer: {fileID: 8574412962073106934, guid: 293abab6be38780488186b07639bc5aa, type: 2}
+  - Key: rock
+    Layer: {fileID: 8574412962073106934, guid: bd0e0caaa63280dacad8008c766c2ed1, type: 2}
+  - Key: rubble
+    Layer: {fileID: 8574412962073106934, guid: b95ad9fe4f3d74ca9896f23a32cca540, type: 2}
+  - Key: sand
+    Layer: {fileID: 8574412962073106934, guid: be01cca9a6aaaf87b862215cdc01a1ee, type: 2}
+  - Key: scrub_soil
+    Layer: {fileID: 8574412962073106934, guid: dad7748e52bf760d7a438263becacb0c, type: 2}
+  - Key: snow
+    Layer: {fileID: 8574412962073106934, guid: 6871df046dd4878be9a71b6792449cd1, type: 2}
+  - Key: stony_ground
+    Layer: {fileID: 8574412962073106934, guid: 0701f9f694f627f8782763b03c9dfc44, type: 2}

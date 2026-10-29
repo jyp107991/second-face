@@ -439,8 +439,16 @@ beyond prepared on worker threads, terrains pooled and created ahead, one chunk 
 editor). Chunk terrains have no collider yet (the terrain physics module is added when walking needs it).
 **Rendering tiers (plan §10 step 16, 2026-10-29):** Vulkan phones get Forward+ and the GPU Resident Drawer, GLES3
 phones plain Forward, chosen at boot by graphics API; the editor and CI render the GLES3 tier.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 17 (terrain layers per biome: fix the visible tiling first, then the
-Teeth palette and the palette seam at biome-changing chunk edges).
+**Terrain surfaces (plan §10 step 17, 2026-10-29):** the ground no longer tiles: the terrain uses our own copy of
+URP's terrain shader that reads each texture twice (turned and rescaled) and varies the ground's brightness in broad
+patches, and the texture tool takes the large blotches out of every ground texture and grades the warm ones, so the
+Sallow is pale straw rather than orange. Biome borders blend softly across chunk edges (no seam; up to eight layers on
+a border chunk). New sources for sand, snow and rock and a stony ground for the Teeth. Captures near and mid in
+`docs/evidence/unity/p3/`. Roads still carry no surface (step 17b).
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 17b (road surfaces as strip meshes per chunk), then step 18 (time,
+sky, fog, weather: a first draft of Core `Sky`/`Weather`, the sky and particle shaders, `TimeService`, `SkyController`,
+`WeatherLayers`, `SkyProfile` and the editor's `SkyAssets` sits in the session scratchpad `step18/`; if it is gone,
+write them from §6.A.6).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

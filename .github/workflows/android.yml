@@ -40,7 +40,7 @@ jobs:
       - name: Fetch external assets
         if: steps.assets.outputs.cache-hit != 'true'
         run: |
-          python3 -m pip install --quiet pillow
+          python3 -m pip install --quiet pillow numpy
           python3 tools/unity/assets.py
 
       - uses: actions/cache@v4
@@ -92,7 +92,7 @@ jobs:
       - name: Fetch external assets
         if: steps.assets.outputs.cache-hit != 'true'
         run: |
-          python3 -m pip install --quiet pillow
+          python3 -m pip install --quiet pillow numpy
           python3 tools/unity/assets.py
 
       - uses: actions/cache@v4

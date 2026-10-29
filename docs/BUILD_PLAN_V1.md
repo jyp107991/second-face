@@ -523,14 +523,36 @@ far-apart points cut walls into the mountains); rivers sink 3 m with an 8 m ramp
 ground 3 m. Two talus passes (38°) over the interior; the edge rows stay exact, so chunks meet without a seam
 (tested). Places: `TerrainGen.Pad(place)` = the mean natural ground over the footprint + 0.3 m (never below the sea),
 falloff wide enough for ≤ ~35° (24–160 m): a place on a mountainside sits in a cut, not a pit; places.json's
-elevation is only the control map's estimate. Paint: Core `TerrainPaint` — four library keys per biome in role order
-(base, patches, accent, steep: `Palettes`); a tile paints with its dominant biome's four (≤ 4 layers per tile); role
-weights from slope (steep over ~24°), noise patches, low ground and water. The layers, `TerrainLit.mat` and
-`BiomeLayers.asset` are built by `TerrainLayerLibrary` (menu) into `Assets/SecondFace/Terrain/` and committed.
-Measured: heights + paint 350–520 ms a chunk in the editor (a worker thread; the walker crosses 512 m in minutes);
-port the inner loops to Burst if the phone measurement (P3.7) or fast travel needs it. **Known faults for step 17
-(P3.2):** the layers tile visibly (sand repeats as a grid of blobs: §6.N fails), the Teeth's palette reads as sand,
-and a biome change at a chunk edge changes the palette with a seam. Holes under interiors: `TerrainData.SetHoles`
+elevation is only the control map's estimate. Measured: heights + paint 350–800 ms a chunk in the editor (a worker
+thread; the walker crosses 512 m in minutes); port the inner loops to Burst if the phone measurement (P3.7) or fast
+travel needs it.
+
+**Surfaces (built 2026-10-29, step 17).** Paint: Core `TerrainPaint.Paint` returns a chunk's layer keys (≤ 8, most
+weight first) and their weights per 2 m texel. Each biome names four library keys by role (base, patches, accent,
+steep: `Palettes`) and an accent rule (`AccentRule`: "high" puts the Teeth's accent, snow, above `SnowLine` 330 m with
+a noisy edge; otherwise the accent lies in low washes and near water). A point's biome weights come from the control
+map at the point (weight 2) and on a jittered ring 48 m out (six samples), so borders are soft and wander instead of
+stepping at 64 m; each biome's role weights go to its own keys and a chunk paints with the union of the keys that reach
+it: four inside a biome (a fast path skips the ring when no other biome is within reach), more on a border, where the
+URP terrain draws layers five to eight in a second pass. The same point paints the same from either chunk: the mean
+weight step across a biome-border chunk edge is 0.019 (tested). Patches are 40 m noise shapes with 8 m raggedness on a
+narrow transition; steep is slope over ~24°. Layers: `BiomeLayerSet` maps every palette key to its `TerrainLayer`
+(`Layer(key)`); `ChunkTerrain.Apply` sets the chunk's layers and one `SetAlphamaps` (an alpha buffer kept per layer
+count). Shader: `SecondFace/Terrain/Lit` (`Assets/SecondFace/Shaders/Terrain/`) is URP 17's Terrain/Lit family copied
+with two changes in `SFTerrainLitPasses.hlsl`: each layer's albedo is read twice, the second look turned ~37° at 0.43 of
+the scale, mixed by a 23 m world noise near the camera and averaged from 40–130 m on (either look alone repeats as a
+grid from mid range); and macro variation (albedo × broad 90 m and fine 17 m world-noise patches, in every pass
+including the base map's). Height blending is on (`_TERRAIN_BLEND_HEIGHT`, transition 0.25; URP turns it off on chunks
+with more than four layers). Re-copy the four files when URP is upgraded. Textures (tools/unity/assets.py): every
+terrain albedo has its blotches larger than a quarter tile taken out at build time (`flatten`: linear light, wrapping,
+keeps the fine detail and the mean colour; a half-tile blotch repeats as a grid of spots across a field) and the warm
+ones are graded (`GRADE`: saturation, value, tint), so the Sallow is pale straw, not orange, and neighbouring layers
+differ by little colour. Sources changed in this step: sand `sandy_gravel_02` (was a pink aerial sand with tyre
+tracks), snow `snow_03` (the first two had footprints), rock `cliff_side` (layered sandstone; was a mossy green), new
+`stony_ground` (`dry_ground_rocks`) as the Teeth's base. Captures (`WorldTerrainTests`): `world_sallow`, `world_teeth`,
+`world_shore`, `world_border`, each `_near` (the game camera at 45 m) and `_mid` (180 m). Still to do: road surfaces
+(the roads are levelled but carry no surface: step 17b), triplanar on cliffs if stretch shows (it does not at the
+talus angle), and the device cost of the second albedo look (P3.7). Holes under interiors: `TerrainData.SetHoles`
 when interiors exist (P3.5).
 
 **A.4 Streaming (built 2026-10-29).** Core `StreamingPolicy` decides, Game `WorldStreamer` executes. Load radius 2
@@ -876,7 +898,8 @@ valid because ids and fields do not change. Add new content fields in `src/conte
   `Application.targetFrameRate` and Optimized Frame Pacing; Adaptive Performance is built into 6.3 (Android provider).
 - **Scatter** (§6.A, §P3.4): GRD batches only MeshRenderers with no MaterialPropertyBlock; static batching and
   per-material GPU instancing off when GRD is on; LOD cross-fade (not animated). No baked occlusion culling.
-- **Terrain** (§6.A.3, §6.J): at most 4 layers per tile; `SetDetailResolution(res, 16)`; `drawInstanced`; write
+- **Terrain** (§6.A.3, §6.J): four layers per tile inside a biome, up to eight on a biome border (URP draws layers
+  five to eight in a second pass: only border chunks pay it); `SetDetailResolution(res, 16)`; `drawInstanced`; write
   heights once per chunk.
 - **Characters** (§6.D, §P4): NPC outfits merge into one SkinnedMeshRenderer at build time (two renderers roughly
   double the cost); only the player keeps separate garments for the wardrobe. Optimize Game Objects; Animator culling
@@ -1183,6 +1206,19 @@ numbers from the densest place written into PORT.md §5.
   every assembly, the editor only those in the `.asmdef` (`GPUResidentDrawerMode` lives in
   `Unity.RenderPipelines.GPUDriven.Runtime`). And a name may collide with Unity's (`UnityEngine.Rendering.GraphicsTier`;
   ours is `RenderTier`). The editor run is the judge.
+- **Every capture of a test showed the same frame** (2026-10-29): an earlier test's camera, tagged MainCamera, stayed
+  in the scene and `Camera.main` found it first. PlayMode test classes that build scenes in code clear their cameras,
+  lights, terrains and world objects in a `[UnityTearDown]` (`WorldTerrainTests`). Identical file sizes across
+  captures are the tell.
+- **A ground texture tiled as a grid of spots from mid range** although the shader mixed two looks: the texture itself
+  had a blotch half a tile wide (`aerial_sand`), and footprints or tyre tracks repeat however the UVs turn. Look at
+  the albedo tiled 2 × 2 before blaming the shader; `assets.py` flattens terrain albedos (`flatten`), and sources with
+  marks are replaced, not fixed.
+- **"Shader Unsupported … All subshaders removed" and "dependency … not found"** on the first import of the copied
+  terrain shaders are import-order noise (each was imported before the others it names); the shaders compile and
+  render on the next import. Check the capture, not the warning.
+- **Terrain chunks built without `SetNeighbors`** shade their edges alone and show a line where two meet; the streamer
+  stitches, tests that build chunks by hand must too.
 
 ---
 
@@ -1234,9 +1270,13 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
     code by `ProjectSetup`; `Game.RenderTier` picks by graphics API in `Bootstrap.Awake`; `RenderTierTests`. Android
     defaults to Vulkan; the editor and CI render with GLES3 (their software renderer is no judge of Forward+ and
     compute: the Vulkan tier is judged on the phone, P3.7). STP is left off (render scale 1) until the device pass.
-17. P3.2 terrain layers per biome — first fix the visible tiling (macro variation / detail noise / height blend in
-    the terrain material), the Teeth palette and the palette seam at biome-changing chunk edges (§6.A.3 known faults);
-    `world_sallow`, `world_teeth`, `world_shore`.
+17. ~~P3.2 terrain layers per biome~~ (done 2026-10-29, §6.A.3 "Surfaces"): keyed paint with soft biome borders (≤ 8
+    layers on a border, no seam), `SecondFace/Terrain/Lit` (two albedo looks, macro variation, height blend), terrain
+    albedos flattened and graded at build time, new sand/snow/rock sources and the Teeth's stony ground;
+    `world_sallow`, `world_teeth`, `world_shore`, `world_border` (near and mid; `docs/evidence/unity/p3/`).
+17b. Road surfaces: the roads, tracks and the Line get a surface as strip meshes per chunk on the levelled ground
+    (asphalt for roads, gravel and dirt for tracks, ballast for the Line), alpha-edged into the terrain, generated with
+    the chunk on the worker thread and drawn with one material per surface; capture `world_road`.
 18. P3.3 `TimeService`, sky, fog, weather; captures at 7:00, 13:00, 19:00, night.
 19. P3.4 resident-drawer scatter per chunk + grass; `world_scatter_dense` with the frame time.
 20. P3.5 `PlaceBuilder` from the exported layout for the first town; lights, decals, NavMesh; `place_shale_street`.

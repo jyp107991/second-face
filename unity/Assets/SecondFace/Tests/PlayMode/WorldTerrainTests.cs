@@ -27,6 +27,18 @@ namespace SecondFace.Tests
 #endif
         }
 
+        /// <summary>Clears what a test made (cameras, lights, terrains, the world): a camera left behind stays
+        /// Camera.main and every later capture shows its view.</summary>
+        [UnityTearDown]
+        public IEnumerator TearDown()
+        {
+            foreach (var t in Object.FindObjectsByType<Terrain>(FindObjectsSortMode.None)) Object.Destroy(t.transform.root.gameObject);
+            foreach (var c in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None)) Object.Destroy(c.gameObject);
+            foreach (var l in Object.FindObjectsByType<Light>(FindObjectsSortMode.None)) Object.Destroy(l.gameObject);
+            foreach (var w in Object.FindObjectsByType<WorldService>(FindObjectsSortMode.None)) Object.Destroy(w.gameObject);
+            yield return null;
+        }
+
         private static BiomeLayerSet Layers()
         {
 #if UNITY_EDITOR
@@ -52,12 +64,22 @@ namespace SecondFace.Tests
             var root = new GameObject("Chunks").transform;
             foreach (var (cx, cz) in chunks)
             {
-                var task = ChunkTerrain.Prepare(world.Gen, world.Control, cx, cz);
+                var task = ChunkTerrain.Prepare(world.Gen, world.Control, world.Layout.Biomes, cx, cz);
                 while (!task.IsCompleted) yield return null;
                 Assert.That(task.Exception, Is.Null, task.Exception?.ToString());
                 times.Add(task.Result.Milliseconds);
-                into.Add(ChunkTerrain.Build(task.Result, world.Layout.Biomes, Layers(), root));
+                into.Add(ChunkTerrain.Build(task.Result, Layers(), root));
             }
+        }
+
+        /// <summary>Neighbours for four terrains built in the order (0,0), (1,0), (0,1), (1,1): without them each terrain
+        /// shades its edge alone and a line shows where two meet.</summary>
+        private static void Stitch(List<Terrain> t)
+        {
+            t[0].SetNeighbors(null, t[2], t[1], null);
+            t[1].SetNeighbors(t[0], t[3], null, null);
+            t[2].SetNeighbors(null, null, t[3], t[0]);
+            t[3].SetNeighbors(t[2], null, null, t[1]);
         }
 
         [UnityTest, Timeout(300000)]
@@ -110,6 +132,52 @@ namespace SecondFace.Tests
             cam.transform.position = c - cam.transform.rotation * Vector3.forward * 420f;
             yield return null;
             yield return ScreenshotTests.Capture("world_teeth_chunk", 1920, 1080);
+        }
+
+        /// <summary>The ground's surfaces (§6.A.3, P3.2), each from the game camera (`_near`, 45 m) and from mid range
+        /// (`_mid`, 180 m): the sallow by Shale, the Teeth, the drowned shore, and a sallow / rail-corridor border where
+        /// the two palettes blend across the chunk edge (no seam).</summary>
+        [UnityTest, Timeout(600000)]
+        public IEnumerator SurfacesOfTheSallowTheTeethTheShoreAndABorder()
+        {
+            var world = new GameObject("World").AddComponent<WorldService>();
+            yield return world.Load();
+            Assert.That(world.Ready, Is.True, world.Error);
+            Light();
+            var cam = new GameObject("Main Camera").AddComponent<Camera>();
+            cam.tag = "MainCamera"; cam.fieldOfView = 35f; cam.nearClipPlane = 0.5f; cam.farClipPlane = 4000f;
+            cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.62f, 0.72f, 0.86f);
+            var shale = world.PlaceCentre("shale");
+            var views = new (string name, float x, float z)[]
+            {
+                ("world_sallow", shale.x + 220f, shale.z + 60f),
+                ("world_teeth", 21000f, 11000f),
+                ("world_shore", 4224f, 6464f),
+                ("world_border", 30 * WorldGrid.Chunk, 13 * WorldGrid.Chunk + 256f),
+            };
+            var times = new List<long>();
+            foreach (var (name, x, z) in views)
+            {
+                var (ox, oz) = WorldGrid.ChunkAt(x - 256, z - 256);
+                var terrains = new List<Terrain>();
+                yield return BuildChunks(world, new[] { (ox, oz), (ox + 1, oz), (ox, oz + 1), (ox + 1, oz + 1) }, terrains, times);
+                Stitch(terrains);
+                Debug.Log($"WorldTerrainTests: {name}: layers {string.Join(" | ", terrains.Select(t => string.Join(",", t.terrainData.terrainLayers.Select(l => l.name))))}");
+                var under = terrains.First(t => { var o = t.transform.position; return x >= o.x && x < o.x + 512 && z >= o.z && z < o.z + 512; });
+                var target = new Vector3(x, 0, z);
+                target.y = under.SampleHeight(target) + under.transform.position.y;
+                cam.transform.rotation = Quaternion.Euler(50f, 30f, 0f);
+                cam.transform.position = target - cam.transform.rotation * Vector3.forward * 45f;
+                yield return null;
+                yield return ScreenshotTests.Capture(name + "_near", 1920, 1080);
+                cam.transform.rotation = Quaternion.Euler(40f, 30f, 0f);
+                cam.transform.position = target - cam.transform.rotation * Vector3.forward * 180f;
+                yield return null;
+                yield return ScreenshotTests.Capture(name + "_mid", 1920, 1080);
+                foreach (var t in terrains) Object.Destroy(t.gameObject);
+                yield return null;
+            }
+            Debug.Log($"WorldTerrainTests: surfaces prepared in {string.Join(", ", times)} ms");
         }
     }
 }

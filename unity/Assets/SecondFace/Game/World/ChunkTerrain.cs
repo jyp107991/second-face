@@ -6,8 +6,9 @@ namespace SecondFace.Game.World
 {
     /// <summary>
     /// One chunk's Unity terrain (BUILD_PLAN §6.A.3): heights and surface weights are computed off the main thread from
-    /// Core (TerrainGen, TerrainPaint); the main thread only creates the TerrainData and writes heights and alphas once.
-    /// At most four layers per tile (the chunk's dominant biome's palette).
+    /// Core (TerrainGen, TerrainPaint); the main thread only writes heights and alphas once. A chunk paints with the keys
+    /// TerrainPaint picks for it: four inside a biome, up to eight on a biome border (the URP terrain draws layers five to
+    /// eight in a second pass, so only border chunks pay for it).
     /// </summary>
     public static class ChunkTerrain
     {
@@ -15,17 +16,18 @@ namespace SecondFace.Game.World
         public sealed class Prepared
         {
             public int Cx, Cz, Biome;
-            public float[] Heights, Weights;
+            public float[] Heights;
+            public TerrainPaint.Result Paint;
             public long Milliseconds;
         }
 
-        /// <summary>Heights, the dominant biome and the role weights of a chunk, on a worker thread.</summary>
-        public static Task<Prepared> Prepare(TerrainGen gen, ControlMap control, int cx, int cz) => Task.Run(() =>
+        /// <summary>Heights, the dominant biome and the paint of a chunk, on a worker thread.</summary>
+        public static Task<Prepared> Prepare(TerrainGen gen, ControlMap control, string[] biomes, int cx, int cz) => Task.Run(() =>
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             var heights = gen.Heights(cx, cz);
-            var weights = TerrainPaint.Weights(control, heights, cx, cz);
-            return new Prepared { Cx = cx, Cz = cz, Biome = TerrainPaint.DominantBiome(control, cx, cz), Heights = heights, Weights = weights, Milliseconds = sw.ElapsedMilliseconds };
+            var paint = TerrainPaint.Paint(control, biomes, heights, cx, cz);
+            return new Prepared { Cx = cx, Cz = cz, Biome = TerrainPaint.DominantBiome(control, cx, cz), Heights = heights, Paint = paint, Milliseconds = sw.ElapsedMilliseconds };
         });
 
         /// <summary>A pooled, empty chunk terrain: created once, re-filled by <see cref="Apply"/> as chunks come and go.</summary>
@@ -45,15 +47,16 @@ namespace SecondFace.Game.World
             return t;
         }
 
-        // reused across Apply calls on the main thread: no per-chunk garbage for the 66 K heights and 262 K weights
+        // reused across Apply calls on the main thread: no per-chunk garbage for the 66 K heights and the weights (one
+        // buffer per layer count, 4 to 8)
         private static float[,] _heights;
-        private static float[,,] _alphas;
+        private static readonly float[][,,] _alphas = new float[TerrainPaint.MaxLayers + 1][,,];
 
-        /// <summary>Fills a (pooled) terrain with a prepared chunk on the main thread: one SetHeights, the dominant
-        /// biome's four layers and one SetAlphamaps, then moves it into place.</summary>
         public static readonly System.Collections.Generic.Dictionary<string, double> LastApplyMs = new();
 
-        public static void Apply(Terrain t, Prepared p, string[] biomes, BiomeLayerSet layers)
+        /// <summary>Fills a (pooled) terrain with a prepared chunk on the main thread: one SetHeights, the chunk's layers
+        /// and one SetAlphamaps, then moves it into place.</summary>
+        public static void Apply(Terrain t, Prepared p, BiomeLayerSet layers)
         {
             const int n = TerrainGen.Resolution, a = TerrainPaint.AlphaResolution;
             var sw = System.Diagnostics.Stopwatch.StartNew();
@@ -66,22 +69,28 @@ namespace SecondFace.Game.World
             Mark("convert heights");
             data.SetHeights(0, 0, _heights);   // once per chunk (UNITY_PRACTICES §7.1)
             Mark("SetHeights");
-            var set = layers != null ? layers.LayersFor(biomes[p.Biome]) : null;
-            if (set != null && set.Length == TerrainPaint.Roles && set[0] != null)
+            var keys = p.Paint.Keys;
+            var set = new TerrainLayer[keys.Length];
+            var complete = layers != null;
+            for (var l = 0; l < keys.Length && complete; l++) complete = (set[l] = layers.Layer(keys[l])) != null;
+            if (complete)
             {
                 if (data.terrainLayers.Length != set.Length || !System.Linq.Enumerable.SequenceEqual(data.terrainLayers, set)) data.terrainLayers = set;
                 Mark("layers");
-                _alphas ??= new float[a, a, TerrainPaint.Roles];
+                var L = keys.Length;
+                var alphas = _alphas[L] ??= new float[a, a, L];
+                var w = p.Paint.Weights;
                 for (var j = 0; j < a; j++)
                     for (var i = 0; i < a; i++)
                     {
-                        var k = (j * a + i) * TerrainPaint.Roles;
-                        for (var r = 0; r < TerrainPaint.Roles; r++) _alphas[j, i, r] = p.Weights[k + r];
+                        var k = (j * a + i) * L;
+                        for (var r = 0; r < L; r++) alphas[j, i, r] = w[k + r];
                     }
                 Mark("convert alphas");
-                data.SetAlphamaps(0, 0, _alphas);
+                data.SetAlphamaps(0, 0, alphas);
                 Mark("SetAlphamaps");
             }
+            else Debug.LogWarning($"ChunkTerrain: no layer for one of {string.Join(", ", keys)} (Second Face/Build terrain layers)");
             t.name = $"chunk_{p.Cx}_{p.Cz}";
             var (x0, z0) = WorldGrid.Origin(p.Cx, p.Cz);
             t.transform.position = new Vector3(x0, ControlMap.Floor, z0);
@@ -91,10 +100,10 @@ namespace SecondFace.Game.World
         }
 
         /// <summary>A new terrain for one prepared chunk (tests and tools; the streamer pools instead).</summary>
-        public static Terrain Build(Prepared p, string[] biomes, BiomeLayerSet layers, Transform parent)
+        public static Terrain Build(Prepared p, BiomeLayerSet layers, Transform parent)
         {
             var t = Create(parent, layers);
-            Apply(t, p, biomes, layers);
+            Apply(t, p, layers);
             return t;
         }
     }
