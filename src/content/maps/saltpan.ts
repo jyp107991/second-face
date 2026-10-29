@@ -363,6 +363,31 @@ export const saltpan: MapDef = {
       ]
     }
   ],
+  extras: [
+    {
+      count: 3,
+      roles: [
+        "labourer",
+        "settler"
+      ],
+      life: "hard",
+      area: {
+        x: 41,
+        y: 8,
+        w: 5,
+        h: 22
+      },
+      hours: {
+        from: 6,
+        to: 16
+      },
+      barks: [
+        "Salt's the one thing out here that keeps.",
+        "Cut while it's cool.",
+        "Mind your eyes. The glare takes them."
+      ]
+    }
+  ],
   ambience: {
     indoor: false,
     fogColor: 0xe8e2d2,

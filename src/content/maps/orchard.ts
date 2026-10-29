@@ -601,6 +601,26 @@ export const orchard: MapDef = {
       ]
     }
   ],
+  extras: [
+    {
+      count: 3,
+      roles: [
+        "pilgrim",
+        "labourer"
+      ],
+      faction: "choir",
+      area: {
+        x: 6,
+        y: 8,
+        w: 34,
+        h: 16
+      },
+      hours: {
+        from: 6,
+        to: 18
+      }
+    }
+  ],
   ambience: {
     indoor: false,
     fogColor: 0xb8b09a,

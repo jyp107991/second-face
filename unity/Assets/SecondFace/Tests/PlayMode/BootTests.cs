@@ -647,6 +647,52 @@ namespace SecondFace.Tests
         /// <summary>P6.2: Shale keeps its hours: its people each in a body of their sex, the sheriff at her desk at noon and
         /// gone in to sleep at night, the factor away, the barkeep still at the bar; between posts they walk; one talked to
         /// stays put.</summary>
+        /// <summary>P4.13 step 5 (the owner's note: everywhere alive with people of every function): Shale's background
+        /// people stand in the world beside its named ones, each made from a base and dressed for their trade, at their
+        /// spots and about the plaza through their hours, and gone in at night (`walkabout_town_crowd`).</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator ShaleIsAliveWithItsExtras()
+        {
+            Bootstrap boot = null;
+            yield return Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            var town = walk.People.Town("shale");
+            Assert.That(town, Is.Not.Null);
+            Vector3 Spot(string id) => boot.Stage.Marker("shale", "spot", id).transform.position;
+            UnityEngine.AI.NavMesh.SamplePosition(Spot("plaza"), out var plaza, 3f, UnityEngine.AI.NavMesh.AllAreas);
+            walk.Walker.Agent.Warp(plaza.position);
+            boot.Stage.Clock.SetHour(12);
+            var w0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - w0 < 12f) yield return null;
+            var residents = walk.People.ResidentsOf("shale");
+            var extras = residents.Where(r => r.Id.StartsWith("x_")).ToList();
+            var standing = town.People.Where(p => p.Id.StartsWith("x_")).ToList();
+            Debug.Log($"BootTests: Shale has {residents.Count} people, {extras.Count} of them extras ({string.Join(", ", extras.Select(r => r.Def.Name + " " + r.Def.Role))}); {standing.Count} extras standing at noon");
+            Assert.That(extras.Count, Is.GreaterThanOrEqualTo(10), "the content's extras for Shale");
+            Assert.That(standing.Count, Is.GreaterThanOrEqualTo(8), "about at noon");
+            Assert.That(standing.Select(p => p.Def.Role).Distinct().Count(), Is.GreaterThanOrEqualTo(3), "of several trades");
+            foreach (var p in standing)
+            {
+                Assert.That(p.Body, Is.EqualTo(SecondFace.Core.Npc.Routine.Male(p.Def.Look) ? "base_m" : "base_f"), $"{p.Id}: a base of their sex");
+                var w = p.GetComponentInChildren<SecondFace.Game.People.Wardrobe>();
+                Assert.That(w != null && (w.Wearing.ContainsKey("full") || w.Wearing.ContainsKey("top")), Is.True, $"{p.Id}: dressed");
+            }
+            // a look over the plaza
+            walk.Rig.Follow(walk.Walker.transform);
+            walk.Rig.View(30f, 50f, 16f);
+            if (boot.Stage.Sky != null) boot.Stage.Sky.Apply();
+            var t = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t < 2f) yield return null;
+            yield return ScreenshotTests.Capture("walkabout_town_crowd", 1920, 1080);
+            // at night the plaza's day people have gone in
+            boot.Stage.Clock.SetHour(23.5);
+            t = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t < 4f) yield return null;
+            var night = town.People.Count(p => p.Id.StartsWith("x_") && p.gameObject.activeInHierarchy && !p.Inside);
+            Debug.Log($"BootTests: {night} extras about at 23:30");
+            Assert.That(night, Is.LessThan(standing.Count), "fewer about at night");
+        }
+
         [UnityTest, Timeout(900000)]
         public IEnumerator ShaleKeepsItsHours()
         {

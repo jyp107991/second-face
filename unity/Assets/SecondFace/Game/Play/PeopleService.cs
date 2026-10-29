@@ -35,9 +35,10 @@ namespace SecondFace.Game.Play
 
     /// <summary>
     /// The people of the world (P6.2 part 2; BUILD_PLAN P6 step 2, §4.2): every place standing in the world (its
-    /// <see cref="PlaceSpawner"/>) brings its people as data, each placement whose condition holds, each in a cast body of
-    /// their sex and nearest age (Core <see cref="Routine.Assign"/>); while far, a person is only where their routine has
-    /// them. Within <see cref="Near"/> m of the one who walks a body stands for them (a few a frame, the nearest first),
+    /// <see cref="PlaceSpawner"/>) brings its people as data, each placement whose condition holds, and its background
+    /// people (<see cref="Extras"/>), each made from a base body of their sex with their own measurements and dressed for
+    /// their trade (P4.13; before the bases, a cast body of their sex and nearest age, <see cref="Routine.Assign"/>);
+    /// while far, a person is only where their routine has them. Within <see cref="Near"/> m of the one who walks a body stands for them (a few a frame, the nearest first),
     /// put where the hour has them and kept to their routine (<see cref="Townsfolk"/>, one per place); within
     /// <see cref="Full"/> m they are seen in full (gestures, gaze, feet planted, avoiding each other); further off their
     /// animator runs only while seen and they walk without the rest. Beyond <see cref="Leave"/> m (and when their place is
@@ -134,6 +135,7 @@ namespace SecondFace.Game.Play
                         Male = male, Look = LookOf(def, male), Outfit = OutfitOf(def, male),
                     });
                 }
+            if (FromBases) AddExtras(town, place, main);
             else
             {
                 var cast = Bodies.Select(b => new CastBody { Id = b.Id, Male = b.Male, Age = b.Age, Role = b.Role }).ToList();
@@ -144,6 +146,32 @@ namespace SecondFace.Game.Play
             }
             _towns[id] = town;
             _next = 0f;   // look at once who is near
+        }
+
+        /// <summary>The place's background people (P4.13 step 5, <see cref="Extras"/>): each of its maps' extras as a
+        /// resident, at their spot or about their tile (a tile is the surface map's), made from the bases and dressed for
+        /// their trade. One whose spot the place as built has not got is left out.</summary>
+        private void AddExtras(Group town, GameObject place, string main)
+        {
+            var maps = new HashSet<string> { main };
+            foreach (var m in place.GetComponentsInChildren<PlaceMarker>()) if (!string.IsNullOrEmpty(m.Map)) maps.Add(m.Map);
+            var nowhere = new Vector3(float.NaN, 0f, 0f);
+            foreach (var mapId in maps)
+            {
+                if (!Registry.Maps.TryGetValue(mapId, out var map) || map.Extras == null) continue;
+                foreach (var x in Extras.Of(map))
+                {
+                    if (x.At != null && mapId != main) continue;
+                    var first = x.Placement.Schedule.FirstOrDefault(e => e.Activity != "away");
+                    var post = x.Spot == null && x.At == null ? nowhere : town.Folk.Where(map, nowhere, first);
+                    if (float.IsNaN(post.x)) continue;
+                    town.Residents.Add(new Resident
+                    {
+                        Id = x.Def.Id, Def = x.Def, Placement = x.Placement, Map = map, Body = x.Male ? "base_m" : "base_f", Post = post,
+                        Male = x.Male, Look = x.Look, Outfit = Outfits.DressFor(x.Def.Look.Seed, x.Def.Role, x.Male ? "m" : "f", x.Def.Faction),
+                    });
+                }
+            }
         }
 
         /// <summary>A place going: its people's bodies go with it (their data with it too, until it comes again).</summary>

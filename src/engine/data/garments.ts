@@ -83,7 +83,7 @@ export const GARMENTS: Record<string, GarmentDef> = {
   elvs_racing_fire_suit_female1: { slot: 'full', fit: 'f', tags: ['nomad', 'sport', 'work'] },
   mindfront_m_suit_01: { slot: 'full', fit: 'm', tags: ['rich', 'corp'], dye: true },
   punkduck_wetsuit: { slot: 'full', fit: 'u', tags: ['water', 'sport'] },
-  punkduck_diver_suit: { slot: 'full', fit: 'u', tags: ['water', 'work'] },
+  punkduck_diver_suit: { slot: 'full', fit: 'u', tags: ['water'] },   // fins and all: the water trades only (not every 'work' role)
   mindfront_f_ninja: { slot: 'full', fit: 'f', tags: ['street', 'military', 'raider'], dye: true },
   elvs_halter_style_pantsuit1: { slot: 'full', fit: 'f', tags: ['rich'], dye: true },
   elvs_sporty_tracksuit_hoodie_dress1: { slot: 'full', fit: 'f', tags: ['street', 'sport', 'casual'], dye: true },

@@ -727,9 +727,14 @@ and follows every body's shape, so anyone can wear anything that suits them. The
 each has their own body, face and stature, dressed by their trade and faction (a guard's vest and gloves, a pilgrim's
 robe and sandals, the rich in silk and dark glasses), dyed and worn. Arms stay clear of the clothes too. Seen in
 `docs/evidence/unity/p4/people_cast_wardrobe.jpg` and Shale in `docs/evidence/unity/p6/walkabout_town_bases.jpg`.
-**Next action:** P4.13 step 5, extras with jobs in every place: the content already has 204 of them in 17 places
-(trades, spots, hours, barks); port the generator, bring them in as residents with routines, then add extras where
-there are none; step 6, the old per-person cast models retired, with a lineup of 60 as evidence. Then
+**Places alive with their own people (P4.13 step 5, 2026-10-29):** besides the named people, every place now has
+its background people at their work: traders at their stalls, porters and settlers about the streets, the Choir's
+novices in the orchard rows, scavengers among the fallen windpumps, salt cutters on the salt pan, gang hangers-on,
+the megacity's crowds. Each has a first name, a face and body of their own, clothes for their trade, a spot or a
+stretch of ground, hours (most go home at night) and a few words to say. Shale went from 18 people to 32. Seen in
+`docs/evidence/unity/p6/walkabout_town_crowd.jpg`.
+**Next action:** P4.13 step 6, the old per-person cast models retired (everyone is made from the two bases now), with
+a lineup of 60 generated people as evidence; then travellers on the roads (5b). Then
 P7's first step, the new opening, in the content. Then P6 step 4, combat. P6.3 left for later: shade outdoors by a
 shadow ray (with the places' colliders, P6.4), noise by the ground, sight cones shown while sneaking, a crouched idle,
 the steal verb on people. P6.2 left for later: the townsfolk sitting at their seats and sleeping in their beds (seats

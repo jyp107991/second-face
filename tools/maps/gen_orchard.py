@@ -111,6 +111,10 @@ orchard = {
         {'id': 'arrive', 'x': 20, 'y': 36, 'w': 8, 'h': 6, 'text': 'The burnt orchard. Rows of black trees the Burn left standing, and among them a dozen with leaves on, which is a thing you have not seen in your life: green, in rows, with people kneeling at their feet.', 'effects': [{'learn': 'seen_orchard'}, {'xp': 20}]},
         {'id': 'beds_night', 'x': 36, 'y': 29, 'w': 8, 'h': 7, 'once': False, 'if': {'all': [{'flag': 'or_stakeout'}, {'not': {'flag': 'or_thieves_caught'}}, {'hour': {'from': 23, 'to': 4}}]}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_or_thieves', 'name': 'The seedbeds'}}]},
     ],
+    # the Choir's novices at the rows by day (P4.13 step 5: every place alive with people at their work)
+    'extras': [
+        {'count': 3, 'roles': ['pilgrim', 'labourer'], 'faction': 'choir', 'area': {'x': 6, 'y': 8, 'w': 34, 'h': 16}, 'hours': {'from': 6, 'to': 18}},
+    ],
     'ambience': {'indoor': False, 'fogColor': 'hex:0xb8b09a', 'fogDensity': 0.018, 'dust': 0.3, 'grade': 0.62, 'mood': 'peaceful', 'sound': 'wind'},
     'hunting': 0.2,
 }

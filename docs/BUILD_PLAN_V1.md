@@ -506,7 +506,21 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    Evidence: `ScreenshotTests.TheCastWearsTheContent` (ten women and ten men by trade, every garment of their fit built,
    dressed, shod, arms 0.0 cm in; `docs/evidence/unity/p4/people_cast_wardrobe.jpg`) and Shale's 18 townsfolk made from
    the two bases (`BootTests.ShaleKeepsItsHours`, `walkabout_town_bases.jpg`).
-   *Planned:* (5) every place gets
+   *As built (step 5, 2026-10-29):* Core `Npc.Extras` ports the web game's `makeExtras`: a map's `extras` (count,
+   trades, ages, faction, team, area and spots, hours, barks, talk) made from the map's seed into people of their own
+   (`Bodies` for sex, body and face; a first name from their ancestry's pool; the trade's small talk `d_x_<role>`, the
+   settler's where a trade has none; the trade's barks), each with a routine: at their spot through their hours (a
+   spot's name says the activity: `*_work` work, `*_pair_a/b` talking, else idle), or about a tile of their area (the
+   patrol wander), away outside their hours. `PeopleService` brings them beside the named people of every standing
+   place (a spot the place as built lacks leaves its extra out; an area is the surface map's). 207 extras in 20 places
+   now: the content's 204 in 17, and new day workers in three wild places (`tools/maps/gen_*.py`): the Choir's novices
+   in the orchard's rows, scavengers among the fallen windpumps, salt cutters on the salt pan's east crust. Dry Wells
+   and Signal Hill keep only their own people (their quests are about who is there); Cistern 9 waits for the new
+   opening (P7). Shale: 32 people (18 named, 14 extras), 29 about at noon, 3 extras still about at 23:30; arms 0.0 cm
+   in for all 29. The catalogue's diving suit is the water trades' only (it was tagged `work` too, and a labourer in
+   fins stood in the plaza). Tests: `ExtrasTests` (every place's count, ids, names, trades, talk, barks, sex, spots;
+   the same people every time; hours and away), `BootTests.ShaleIsAliveWithItsExtras` (`walkabout_town_crowd.jpg`).
+   *Planned:* (5b) extras for the roads (travellers, caravans, patrols between places); (5) every place gets
    **extras** with functions beyond its named people: first the content's own (`MapDef.Extras`: 204 in 17 places, with
    trades, spots, hours, barks and factions, the web game's `makeExtras` ported with its random sequence), then extras
    for the places that have none (porters, guards, water-sellers, beggars, drovers, travellers on the road), with

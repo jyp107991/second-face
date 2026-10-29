@@ -497,6 +497,31 @@ export const windpumps: MapDef = {
       ]
     }
   ],
+  extras: [
+    {
+      count: 2,
+      roles: [
+        "labourer",
+        "drifter"
+      ],
+      life: "hard",
+      area: {
+        x: 4,
+        y: 10,
+        w: 34,
+        h: 7
+      },
+      hours: {
+        from: 7,
+        to: 17
+      },
+      barks: [
+        "Copper's long gone. Bearings, maybe.",
+        "Don't climb that one. It leans.",
+        "Wind's free. Parts aren't."
+      ]
+    }
+  ],
   ambience: {
     indoor: false,
     fogColor: 0xcfc0a4,
