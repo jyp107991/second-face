@@ -18,3 +18,6 @@ core/**/obj/
 
 # photoscan sources for tools/unity/models_bake.py (2.2 GB, outside the Unity project)
 .scans/
+
+# the scene the Unity test runner writes while it runs
+unity/Assets/InitTestScene*
