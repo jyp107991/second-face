@@ -115,7 +115,17 @@ namespace SecondFace.Tests
                 ((SecondFace.Game.UI.RadialMenu)boot.UI.Top).Choose("look");
                 Assert.That(boot.UI.Top, Is.Null, "a verb closes it");
             }
-            else Debug.LogWarning("BootTests: none of the townsfolk is in clear view from the spawn; the radial is covered by UiTests");
+            else
+            {
+                Debug.LogWarning("BootTests: none of the townsfolk is in clear view from the spawn; the radial is covered by UiTests");
+                foreach (var i in nearest.Take(3))
+                {
+                    var sp = view.WorldToScreenPoint(i.transform.position + Vector3.up * 1.2f);
+                    var hits = Physics.RaycastAll(view.ScreenPointToRay(sp), 300f, ~0, QueryTriggerInteraction.Collide)
+                        .OrderBy(h => h.distance).Take(5).Select(h => $"{h.collider.name}({(h.collider.isTrigger ? "trigger" : "solid")}, {h.distance:0.0} m)");
+                    Debug.Log($"BootTests: {i.Title} at screen {sp} of {Screen.width}x{Screen.height}, {Vector3.Distance(i.transform.position, walk.Walker.transform.position):0.0} m off: {string.Join(", ", hits)}");
+                }
+            }
             // their conversation from the content opens in the panel (P5.3d)
             var speaker = tappable.FirstOrDefault(i => SecondFace.Core.Content.Registry.Npcs.TryGetValue(i.Id, out var n) && !string.IsNullOrEmpty(n.Dialogue));
             Assert.That(speaker, Is.Not.Null, "one of the townsfolk has a conversation in the content");
