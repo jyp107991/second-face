@@ -563,17 +563,23 @@ positions"):** the captured motion itself was fine; the way it was converted for
 large turn of a joint was being split into angles in the wrong order (arms reached forward, walks held the forearms up),
 each clip measured itself against its own first frame instead of a standard standing pose (a walk against a stride), and
 the people's joints had no twist spread. All three fixed and the 28 clips rebuilt: standing people let their arms hang,
-walkers swing them low, the hands rest relaxed (`docs/evidence/unity/p4/people_motion_frames.jpg`).
+walkers swing them low, the hands rest relaxed (`docs/evidence/unity/p4/people_motion_frames.jpg`). People now keep
+their heads level instead of gazing up, and their feet sit on the ground instead of 1-2 cm above it.
+**Faces (P4.9, 2026-10-29):** eyebrows are painted into the skin (the thin strand brows read as black dots and are
+gone), lips take their colour from the person's own skin (no more lilac lips on darker skin), and the player's face has
+an aged look for the photograph: lines, creases, tired eyes, spots, greying brows and stubble, and greyed hair, blended
+in as the face is aged (`docs/evidence/unity/p4/people_portraits.jpg`).
 **Next action:** step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until
 Mid ≥ 30 fps); **`play-walkabout` is released** (2026-10-29, commit e0b69c6: the cast in Shale and the
 walkabout; https://github.com/jyp107991/second-face/releases/tag/play-walkabout, `SecondFace.apk`, 345 MB as a
 development build: its size wants a look in release hardening). Later playable builds: run the Android workflow by
 hand with `release: play-<name>` (its release job waits for that run's tests and APK, then makes the tag and the
-release page; this session's git proxy refuses tag pushes); then the people's quality items in this order: eyebrows
-painted into the skin (the strand brows read as dotted), lips by skin tone (darker lips come out lilac), the aged skin
-bake for the photograph; then NPC outfits merged into one renderer (crowd cost), body sliders, runtime grime in a cloth
-shader; garment models import as people (Humanoid) and log "Invalid Avatar Rig Configuration" (harmless: the wardrobe
-rebinds their bones by name; import them without an avatar); then P5 (camera, touch and UI).
+release page; this session's git proxy refuses tag pushes). `play-people` was requested 2026-10-29 (run 66, commit
+8fe19c4: the natural motion and the generated hair) — check it released (its release job waits for the run's tests and
+APK). Then: NPC outfits merged into one renderer (crowd cost), body sliders, runtime grime in a cloth shader; garment
+models import as people (Humanoid) and log "Invalid Avatar Rig Configuration" (harmless: the wardrobe rebinds their
+bones by name; import them without an avatar); per-person walk variety (two captured walks); then P5 (camera, touch and
+UI), the road to `play-ch1`.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

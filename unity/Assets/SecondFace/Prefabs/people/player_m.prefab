@@ -72,10 +72,6 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 75a67d7b9e6c5fd28a719a5973c7cdae, type: 2}
-    - target: {fileID: 5871866042498841591, guid: 51742780cfb3bc8bec6fca88ffe96f2b, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: 0ed181b79413e214396617940c9ab693, type: 2}
     - target: {fileID: 6416526739229117638, guid: 51742780cfb3bc8bec6fca88ffe96f2b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -88,10 +84,6 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: c10707230031f6e96a283e7a501ce95f, type: 2}
-    - target: {fileID: 7065292039784987631, guid: 51742780cfb3bc8bec6fca88ffe96f2b, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: 0ed181b79413e214396617940c9ab693, type: 2}
     - target: {fileID: 7508965872455144790, guid: 51742780cfb3bc8bec6fca88ffe96f2b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -126,6 +118,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SecondFace.Game::SecondFace.Game.People.FaceSculpt
   values: []
   Aged: 0
+  AgedHair: {fileID: 2800000, guid: 81bbc20659ca174e7b8ffd5c55a45d32, type: 3}
 --- !u!114 &3269136221382126803
 MonoBehaviour:
   m_ObjectHideFlags: 0

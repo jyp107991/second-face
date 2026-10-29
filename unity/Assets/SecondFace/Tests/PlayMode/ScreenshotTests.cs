@@ -281,7 +281,8 @@ namespace SecondFace.Tests
                 Assert.That(bodies.Select(r => r.name), Is.EquivalentTo(new[] { "Body_LOD0", "Body_LOD1" }), $"{f.name}: the sculpted body at LOD0 and LOD1");
                 foreach (var body in bodies)
                     Assert.That(shapes.Where(s => body.sharedMesh.GetBlendShapeIndex(s) < 0), Is.Empty, $"{f.name} {body.name}: every sculptor shape");
-                Assert.That(f.Renderers.Any(r => r.name.StartsWith("Brows_")) && f.Renderers.Any(r => r.name.StartsWith("Eyes_")), Is.True, $"{f.name}: the brows and eyes follow the face");
+                // the brows are painted into the skin (P4.9), so they follow the face with it
+                Assert.That(f.Renderers.Any(r => r.name.StartsWith("Eyes_")), Is.True, $"{f.name}: the eyes follow the face");
             }
             // a rerolled face changes the head, not the feet
             var built = faces.First(f => f.name == "player_f_built");

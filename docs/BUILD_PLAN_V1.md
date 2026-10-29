@@ -398,7 +398,9 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    the hair rule (`hairgen.py`), judged in Blender with Unity's alpha cut-off (fast: one person in ~15 s) and then in the
    engine from the front, the side and the back (`HairTestScene`, `briefs/hairtest.json`, people built locally into
    `People/HairTest`, not committed). Eight of the cast and both player bases re-haired with it.
-8. **Done**: `people_cast_1..4` (32 people), `people_lod_0..2`, `people_walk`, `people_portraits`, plus
+8. **Built (P4.8, P4.9, 2026-10-29).** Natural motion (§6.E "As built (P4.8)"): the captured clips retargeted
+   correctly, Foot IK, the gaze level; faces (§6.C.4 "P4.9"): painted brows, lips by skin tone, the aged skin.
+9. **Done**: `people_cast_1..4` (32 people), `people_lod_0..2`, `people_walk`, `people_portraits`, plus
    `people_sculpt_*`, `people_wardrobe_*`, `people_motion_slope`, `people_ragdoll`. Capture `people_cast_lineup` (30 people), `people_lod`, `people_walk`, `people_portraits`.
 
 ### P5 — Camera, touch and UI
@@ -878,7 +880,17 @@ indigo, faded reds and greens) so a crowd reads as many people at the game camer
    lips); sun warms and darkens the skin more where it faces up; dirt sits in the creases by Cycles pointiness and in
    faint patches; lips (found from MakeHuman's own lip-volume targets) are chapped and desaturated; beard stubble
    comes from a beard line around the face like the hairline; spec field `skin_look: W(sun, grime, lips, beard,
-   beard_colour)`. Scars and tattoos are not built yet.) The original spec, kept for those: hair → desaturate 0.4, darken 0.75, multiply by
+   beard_colour)`. Scars and tattoos are not built yet.) **P4.9 (2026-10-29):** brows are painted into the skin where
+   the brow proxy is tied to it (its reference vertices, softened over 3.5 mm), hairs streaked across the face in the
+   hair's colour a shade darker, `skin_look.brows` the density; the strand brows themselves (thinned to the LOD budget
+   they drew as black dots at portrait size) are dropped by `PeopleImportPostprocessor` (version 10) from every level; lips are the person's own skin deeper and redder with flakes a shade lighter (a fixed
+   pale flake colour went lilac over darker skin); and the sculpted player bases get an aged bake for the photograph,
+   `<id>__skin_aged_d`, baked on the aged shape (its folds become creases), with broken forehead lines, crow's feet,
+   darker skin round the eyes, age spots where the sun falls, greying brows and stubble, a sallower skin. The Skin
+   shader blends to it by `_Aged` (`_AgedMap`, bound by `PeopleMaterials`), which `FaceSculpt.Apply` sets with the aged
+   face, so the aged portrait is aged in both shape and skin; and their hair has a greyed bake, `<id>__<hair>_aged_d`,
+   which `FaceSculpt.AgedHair` (set by `WardrobeBuild`) swaps in past half aged. Open: the eyebrows' strands for
+   close-up conversation cameras, if painted brows read flat there. The original spec, kept for those: hair → desaturate 0.4, darken 0.75, multiply by
    a large-scale noise (dust lightening at the ends: v-based), grey streaks for age > 50 (thin noise bands
    lightened), smoothness in Unity 0.25. Skin → sun darkening on the face/neck/forearms (UV regions of the
    MakeHuman layout: face is the upper-left quadrant of the texture; forearms and hands in the lower band),

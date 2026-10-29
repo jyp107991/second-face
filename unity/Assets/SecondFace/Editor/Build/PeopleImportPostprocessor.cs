@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ namespace SecondFace.EditorTools
     public sealed class PeopleImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 9;
+        public override uint GetVersion() => 10;
 
         private bool IsPerson => assetPath.StartsWith("Assets/SecondFace/People/");
 
@@ -58,9 +59,17 @@ namespace SecondFace.EditorTools
         private void OnPostprocessModel(GameObject root)
         {
             if (!IsPerson || !root.TryGetComponent<LODGroup>(out var group)) return;
+            // The brows are painted into the skin (mh_build, P4.9): the strand brows over them, thinned to the LOD budget,
+            // drew as black dots at portrait size and are dropped from every level
+            var strands = root.GetComponentsInChildren<Renderer>(true).Where(r => r.name.StartsWith("Brows_")).ToList();
             var lods = group.GetLODs();
-            for (var i = 0; i < lods.Length && i < LodHeights.Length; i++) lods[i].screenRelativeTransitionHeight = LodHeights[i];
+            for (var i = 0; i < lods.Length; i++)
+            {
+                if (i < LodHeights.Length) lods[i].screenRelativeTransitionHeight = LodHeights[i];
+                lods[i].renderers = lods[i].renderers.Where(r => r != null && !strands.Contains(r)).ToArray();
+            }
             group.SetLODs(lods);
+            foreach (var r in strands) Object.DestroyImmediate(r.gameObject);
         }
 
         private void OnPreprocessTexture()
@@ -148,6 +157,9 @@ namespace SecondFace.EditorTools
             {
                 case "skin" when wardrobeSkin:
                     m.SetFloat("_Smoothness", d != null && tex.Contains("__skin") ? 1f : 0.42f);   // × the albedo's alpha
+                    // the same skin older, for the photograph (mh_build's <id>__skin_aged_d; FaceSculpt.Aged blends to it)
+                    var aged = tex.EndsWith("__skin_d") ? AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/tex/{tex.Substring(0, tex.Length - 2)}_aged_d.png") : null;
+                    m.SetTexture("_AgedMap", aged);
                     break;
                 case "skin":
                     m.SetFloat("_Metallic", 0f);

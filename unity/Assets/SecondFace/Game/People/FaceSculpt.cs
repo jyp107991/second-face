@@ -25,6 +25,8 @@ namespace SecondFace.Game.People
 
         [SerializeField] private List<Entry> values = new();
         [Range(0f, 1f)] public float Aged;
+        /// <summary>The hair greyed (mh_build's &lt;id&gt;__&lt;hair&gt;_aged_d), worn while the face is mostly aged.</summary>
+        public Texture AgedHair;
 
         private readonly Dictionary<SkinnedMeshRenderer, Dictionary<string, int>> _index = new();
 
@@ -97,6 +99,32 @@ namespace SecondFace.Game.People
                 foreach (var (shape, weight) in weights)
                     if (kv.Value.TryGetValue(shape, out var k)) kv.Key.SetBlendShapeWeight(k, weight);
             }
+            // the skin older with the face (the Skin shader blends to its aged bake, P4.9); merged into each renderer's
+            // block, which also carries the wardrobe's hidden mask
+            _block ??= new MaterialPropertyBlock();
+            foreach (var r in GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                var m = r.sharedMaterial;
+                if (m == null) continue;
+                if (m.HasProperty(AgedId) && m.GetTexture(AgedMapId) != null)
+                {
+                    r.GetPropertyBlock(_block);
+                    _block.SetFloat(AgedId, Aged);
+                    r.SetPropertyBlock(_block);
+                }
+                else if (AgedHair != null && r.name.StartsWith("Hair_") && m.HasProperty(BaseMapId))
+                {
+                    // the hair greys with the face (a texture swap past halfway: the photograph is fully aged)
+                    r.GetPropertyBlock(_block);
+                    _block.SetTexture(BaseMapId, Aged >= 0.5f ? AgedHair : m.GetTexture(BaseMapId));
+                    r.SetPropertyBlock(_block);
+                }
+            }
         }
+
+        private static readonly int AgedId = Shader.PropertyToID("_Aged");
+        private static readonly int AgedMapId = Shader.PropertyToID("_AgedMap");
+        private static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
+        private MaterialPropertyBlock _block;
     }
 }

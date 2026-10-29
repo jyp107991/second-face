@@ -448,7 +448,7 @@ def bake_skin(body, skin_src, name, look, weights):
     (Cycles pointiness) and in large patches, chapped and desaturated lips, shaved or balding scalp stubble and beard
     stubble in the hair colour over darkened skin, all broken up by noise. The alpha is the smoothness URP reads:
     skin 0.42, matte where stubble or dirt is, a little drier on the lips. `weights` holds per-vertex 'scalp',
-    'beard', 'lips' and 'up' (0 facing down .. 1 facing up)."""
+    'beard', 'lips', 'brow' and 'up' (0 facing down .. 1 facing up)."""
     import numpy as np
     os.makedirs(TEXOUT, exist_ok=True)
     dst = os.path.join(TEXOUT, name + '.png')
@@ -491,10 +491,11 @@ def bake_skin(body, skin_src, name, look, weights):
     patch = math('MULTIPLY', math('POWER', noise(3.0, 2.0), 3.0), look.get('grime', 0.4) * 0.5)
     dirt = math('ADD', crease, patch)
     col = mixrgb(dirt, col, mixrgb(1.0, col, lin((0.55, 0.47, 0.4)), 'MULTIPLY'))
-    # lips: chapped, desaturated, a little lighter, flaking
-    hsv = N.new('ShaderNodeHueSaturation'); hsv.inputs['Saturation'].default_value = 0.45; hsv.inputs['Value'].default_value = 1.06
-    L.new(col, hsv.inputs['Color'])
-    flakes = mixrgb(math('MULTIPLY', math('GREATER_THAN', noise(260.0), 0.6), 0.35), hsv.outputs['Color'], lin((0.78, 0.68, 0.64)))
+    # lips: chapped, flaking, a little desaturated, in the person's own colour: a fixed pale flake colour went lilac over
+    # darker skin (P4.9); the lip is the skin a little deeper and redder, the flakes the same skin a shade lighter
+    hsv = N.new('ShaderNodeHueSaturation'); hsv.inputs['Saturation'].default_value = 0.85; hsv.inputs['Value'].default_value = 1.0
+    L.new(mixrgb(1.0, col, (0.7, 0.52, 0.5), 'MULTIPLY'), hsv.inputs['Color'])
+    flakes = mixrgb(math('MULTIPLY', math('GREATER_THAN', noise(260.0), 0.6), 0.3), hsv.outputs['Color'], mixrgb(1.0, col, (1.12, 1.08, 1.06), 'MULTIPLY'))
     col = mixrgb(math('MULTIPLY', attr('lips'), look.get('lips', 0.7)), col, flakes)
     # stubble: scalp (shaved, buzzed, balding) and beard, ragged at the edges, stippled
     stip = math('ADD', math('MULTIPLY', math('GREATER_THAN', noise(900.0), 0.47), 0.45), 0.55)
@@ -503,10 +504,46 @@ def bake_skin(body, skin_src, name, look, weights):
     fs = math('MULTIPLY', math('MULTIPLY', math('MULTIPLY', attr('scalp'), ragged), stip), scalp.get('density', 0.0))
     fb = math('MULTIPLY', math('MULTIPLY', math('MULTIPLY', attr('beard'), ragged), stip), look.get('beard', 0.0))
     darkened = mixrgb(1.0, col, (0.5, 0.5, 0.5), 'MULTIPLY')
-    col = mixrgb(fs, col, mixrgb(0.55, darkened, lin(HAIR_COLOURS[scalp.get('colour', 'dark_brown')])))
-    col = mixrgb(fb, col, mixrgb(0.55, darkened, lin(HAIR_COLOURS[look.get('beard_colour', 'dark_brown')])))
+    age = float(look.get('age', 0.0))
+    def hair(name, k=1.0):
+        """A hair colour (sRGB, as seen), greyed with age, as linear for the shader."""
+        c, g = HAIR_COLOURS[name], HAIR_COLOURS['grey']
+        return lin(tuple((ci + (gi - ci) * min(1.0, age * 0.7)) * k for ci, gi in zip(c, g)))
+    col = mixrgb(fs, col, mixrgb(0.55, darkened, hair(scalp.get('colour', 'dark_brown'))))
+    col = mixrgb(fb, col, mixrgb(0.55, darkened, hair(look.get('beard_colour', 'dark_brown'))))
+    # brows: hairs streaked along the brow (across the face, object X), ragged at the edges, in the hair's colour a
+    # shade darker (P4.9)
+    mp = N.new('ShaderNodeMapping'); mp.inputs['Scale'].default_value = (8.0, 110.0, 110.0)
+    L.new(tc.outputs['Object'], mp.inputs['Vector'])
+    nz = N.new('ShaderNodeTexNoise'); nz.inputs['Scale'].default_value = 6.0; nz.inputs['Detail'].default_value = 3.0
+    L.new(mp.outputs['Vector'], nz.inputs['Vector'])
+    hairs = math('ADD', math('MULTIPLY', math('GREATER_THAN', nz.outputs['Fac'], 0.48), 0.55), 0.45)
+    fbr = math('MULTIPLY', math('MULTIPLY', math('MULTIPLY', attr('brow'), hairs), math('ADD', math('MULTIPLY', noise(40.0), 0.5), 0.75)), look.get('brows', 0.9))
+    col = mixrgb(fbr, col, mixrgb(0.8, darkened, hair(look.get('brow_colour', 'dark_brown'), 0.8)))
+    if age > 0:
+        # the same face older, for the photograph (P4.9): the aged shape's own folds deepened (pointiness of the aged
+        # mesh, whatever the grime), broken lines across the forehead, fine crow's feet at the eyes' outer corners, age
+        # spots where the sun falls, the skin a little sallow
+        folds = math('MULTIPLY', math('MULTIPLY', math('SUBTRACT', 0.5, geo.outputs['Pointiness']), 10.0), age)
+        col = mixrgb(folds, col, mixrgb(1.0, col, lin((0.62, 0.52, 0.46)), 'MULTIPLY'))
+        xyz = N.new('ShaderNodeSeparateXYZ'); L.new(tc.outputs['Object'], xyz.inputs[0])
+        wave = math('SINE', math('ADD', math('MULTIPLY', xyz.outputs['Z'], 1000.0), math('MULTIPLY', noise(20.0), 4.0)), 0.0)
+        lines = math('MULTIPLY', math('MULTIPLY', math('GREATER_THAN', wave, 0.86), math('GREATER_THAN', noise(45.0), 0.42)), attr('forehead'))
+        mc = N.new('ShaderNodeMapping'); mc.inputs['Scale'].default_value = (60.0, 160.0, 25.0)
+        L.new(tc.outputs['Object'], mc.inputs['Vector'])
+        nc = N.new('ShaderNodeTexNoise'); nc.inputs['Scale'].default_value = 5.0; nc.inputs['Detail'].default_value = 2.0
+        L.new(mc.outputs['Vector'], nc.inputs['Vector'])
+        crows = math('MULTIPLY', math('GREATER_THAN', nc.outputs['Fac'], 0.52), attr('crows'))
+        creases = math('MULTIPLY', math('ADD', math('MULTIPLY', lines, 0.75), math('MULTIPLY', crows, 0.65)), age)
+        col = mixrgb(creases, col, mixrgb(1.0, col, lin((0.6, 0.5, 0.44)), 'MULTIPLY'))
+        # tired, darker skin round the eyes
+        col = mixrgb(math('MULTIPLY', attr('crows'), age * 0.35), col, mixrgb(1.0, col, lin((0.78, 0.7, 0.68)), 'MULTIPLY'))
+        spots = math('MULTIPLY', math('MULTIPLY', math('GREATER_THAN', noise(28.0, 2.0), 0.7), attr('up')), age * 0.45)
+        col = mixrgb(spots, col, mixrgb(1.0, col, lin((0.72, 0.58, 0.46)), 'MULTIPLY'))
+        sallow = N.new('ShaderNodeHueSaturation'); sallow.inputs['Saturation'].default_value = 1.0 - 0.15 * age
+        L.new(col, sallow.inputs['Color']); col = sallow.outputs['Color']
     # smoothness (written to alpha after a second bake)
-    rough = math('ADD', math('ADD', math('MULTIPLY', fs, 0.3), math('MULTIPLY', fb, 0.25)), math('MULTIPLY', dirt, 0.12))
+    rough = math('ADD', math('ADD', math('ADD', math('MULTIPLY', fs, 0.3), math('MULTIPLY', fb, 0.25)), math('MULTIPLY', fbr, 0.25)), math('MULTIPLY', dirt, 0.12))
     smooth = math('SUBTRACT', math('SUBTRACT', 0.42, rough), math('MULTIPLY', attr('lips'), 0.06))
     out = N.new('ShaderNodeOutputMaterial'); em = N.new('ShaderNodeEmission'); L.new(em.outputs[0], out.inputs[0])
     tgt = N.new('ShaderNodeTexImage'); N.active = tgt
@@ -1000,6 +1037,12 @@ def build_person(spec):
     if spec.get('hair'):
         hl = spec.get('hair_look')
         proxy('Hair', 'hair', spec['hair'], 'hair', hair_look=hl, tex_name=(spec['id'] + '__' + spec['hair']) if hl is not None else None)
+        if hl is not None and spec.get('sculpt') and spec.get('aged'):
+            # the same hair greyed, for the photograph (P4.9): FaceSculpt puts it on with the aged face
+            hd = find_dir(spec['hair'], os.path.join(MH, 'hair'), COMMUNITY, GENERATED)
+            hm = read_mhmat(os.path.join(hd, spec['hair'] + '.mhmat')) if hd and os.path.exists(os.path.join(hd, spec['hair'] + '.mhmat')) else {}
+            if 'diffuseTexture' in hm:
+                bake_hair(os.path.join(hd, hm['diffuseTexture']), spec['id'] + '__' + spec['hair'] + '_aged_d', {**hl, 'grey': 0.85})
     # baked cloth is per person (the same mesh is dyed differently on different people), so the texture carries the id
     for g, look in spec.get('clothes', []): proxy('Cloth_' + g, 'clothes', g, 'cloth', look=look, tex_name=(spec['id'] + '__' + g) if look is not None else None)
 
@@ -1031,10 +1074,45 @@ def build_person(spec):
                 if spec.get('scalp') and in_head.any():
                     scalp[in_head] = hair_weight(P[in_head], top, eye, spec['scalp'].get('mode', 'buzz'), spec['scalp'].get('recede', 0.0))
                 if in_face.any(): beard[in_face] = beard_weight(P[in_face], top, eye, lips[in_face])
+                # the brows painted under the strand brows (thinned to the LOD budget, strands alone read as dots): where
+                # the brow proxy is tied to the skin, softened over 3.5 mm (P4.9)
+                brow = np.zeros(len(used))
+                bd = find_dir(spec['brows'], os.path.join(MH, 'eyebrows'), COMMUNITY, GENERATED) if spec.get('brows') else None
+                if bd and in_face.any():
+                    _, brefs, _ = read_mhclo(os.path.join(bd, spec['brows'] + '.mhclo'))
+                    tied = [remap[i] for r in brefs for i, w in zip(r[:3], r[3:6]) if w > 0.05 and i in remap]
+                    if tied:
+                        Q = P[sorted(set(tied))]
+                        F = np.flatnonzero(in_face)
+                        dist = np.sqrt(((P[F][:, None, :] - Q[None, :, :]) ** 2).sum(-1)).min(1)
+                        brow[F] = smoothstep(1.0 - dist / 0.035)
                 up = np.array([(vx.normal.z + 1) / 2 for vx in body.data.vertices])
                 look = dict(spec.get('skin_look', {})); look['scalp'] = spec.get('scalp')
                 look['size'] = spec.get('skin_size', 2048)
-                own = bake_skin(body, tp, spec['id'] + '__skin_d', look, {'scalp': scalp, 'beard': beard, 'lips': lips, 'up': up})
+                look.setdefault('brow_colour', (spec.get('hair_look') or {}).get('colour') or (spec.get('scalp') or {}).get('colour') or 'dark_brown')
+                own = bake_skin(body, tp, spec['id'] + '__skin_d', look, {'scalp': scalp, 'beard': beard, 'lips': lips, 'up': up, 'brow': brow})
+                if spec.get('sculpt') and spec.get('aged'):
+                    # the aged skin for the photograph (P4.9): baked on the aged shape (its folds become creases), the
+                    # Skin shader blends to it as FaceSculpt.Aged rises. Masks: the forehead between the brows and the
+                    # hairline, the crow's feet beside each eye's outer corner (MakeHuman units)
+                    e_, a_, _ = head_angles(P, top, eye)
+                    front = np.clip(1.0 - (a_ - 35.0) / 15.0, 0.0, 1.0)
+                    forehead = np.where(in_head, smoothstep((e_ - 9.0) / 5.0) * (1.0 - smoothstep((e_ - 22.0) / 5.0)) * front, 0.0)
+                    crows = np.zeros(len(used))
+                    for g in EYE_GROUPS:
+                        ec = np.mean([v[i] for i in EYE_GROUPS[g]], axis=0)
+                        side = 1.0 if ec[0] > 0 else -1.0
+                        corner = np.array([ec[0] + side * 0.17, ec[1] - 0.02, ec[2] - 0.08])
+                        crows = np.maximum(crows, smoothstep(1.0 - np.linalg.norm(P - corner, axis=1) / 0.22))
+                    crows[~in_head] = 0.0
+                    kb = body.data.shape_keys.key_blocks.get('aged') if body.data.shape_keys else None
+                    if kb is not None: kb.value = 1.0
+                    old_look = dict(look)
+                    old_look['age'] = float(np.clip((spec['aged'] - spec.get('age', 30)) / 40.0, 0.2, 1.0))
+                    old_look['sun'] = min(1.0, look.get('sun', 0.5) + 0.3 * old_look['age'])
+                    bake_skin(body, tp, spec['id'] + '__skin_aged_d', old_look,
+                              {'scalp': scalp, 'beard': beard, 'lips': lips, 'up': up, 'brow': brow, 'forehead': forehead, 'crows': crows})
+                    if kb is not None: kb.value = 0.0
                 body.data.materials.clear(); body.data.materials.append(slot('skin:' + own))
     else:
         print('  no skin', spec['skin'])

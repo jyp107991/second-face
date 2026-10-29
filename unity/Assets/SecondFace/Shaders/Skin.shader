@@ -1,4 +1,4 @@
-// The player's skin (BUILD_PLAN §6.D, P4 step 3): URP PBR (main light with shadows, additional lights, screen-space
+// The player's skin (BUILD_PLAN §6.D, P4 step 3; the aged blend P4.9): URP PBR (main light with shadows, additional lights, screen-space
 // occlusion, fog) like the people's Lit skin (albedo, smoothness in the albedo's alpha, normal map), plus the wardrobe's
 // hiding: each body vertex carries its MakeHuman base index in uv1 as (i % 128, i / 128); _HiddenMask is a 128 x 128 R8
 // mask of the base vertices the worn garments cover (written by Game.People.Wardrobe on equip). The vertex reads its texel
@@ -14,6 +14,8 @@ Shader "SecondFace/Skin"
         _BumpScale ("Normal strength", Float) = 1
         _Smoothness ("Smoothness (times the albedo's alpha)", Range(0, 1)) = 1
         [NoScaleOffset] _HiddenMask ("Hidden base vertices (128 x 128)", 2D) = "black" {}
+        [NoScaleOffset] _AgedMap ("Aged albedo (the photograph)", 2D) = "white" {}
+        _Aged ("Aged", Range(0, 1)) = 0
     }
     SubShader
     {
@@ -25,10 +27,11 @@ Shader "SecondFace/Skin"
         TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
         TEXTURE2D(_BumpMap); SAMPLER(sampler_BumpMap);
         TEXTURE2D(_HiddenMask); SAMPLER(sampler_point_clamp);
+        TEXTURE2D(_AgedMap);
         CBUFFER_START(UnityPerMaterial)
             float4 _BaseMap_ST;
             half4 _BaseColor;
-            half _BumpScale, _Smoothness;
+            half _BumpScale, _Smoothness, _Aged;
         CBUFFER_END
 
         struct Attributes
@@ -97,7 +100,10 @@ Shader "SecondFace/Skin"
             half4 Frag(Varyings i) : SV_Target
             {
                 clip(0.5h - i.hidden);
-                half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv) * _BaseColor;
+                half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv);
+                // the same skin older (FaceSculpt.Aged, the photograph): blended from the aged bake
+                if (_Aged > 0.001h) albedo = lerp(albedo, SAMPLE_TEXTURE2D(_AgedMap, sampler_BaseMap, i.uv), _Aged);
+                albedo *= _BaseColor;
                 half3 normalTS = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, i.uv), _BumpScale);
                 half3 bitangent = i.tangentWS.w * cross(i.normalWS, i.tangentWS.xyz);
                 half3 normalWS = NormalizeNormalPerPixel(TransformTangentToWorld(normalTS, half3x3(i.tangentWS.xyz, bitangent, i.normalWS)));

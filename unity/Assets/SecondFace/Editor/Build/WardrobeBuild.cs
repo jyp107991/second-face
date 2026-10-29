@@ -89,7 +89,13 @@ namespace SecondFace.EditorTools
             }
             var go = (GameObject)PrefabUtility.InstantiatePrefab(model);
             PeopleMaterials.Bind(go, Dir);
-            go.AddComponent<FaceSculpt>();
+            var sculpt = go.AddComponent<FaceSculpt>();
+            // the hair greyed for the aged face (mh_build bakes <id>__<hair>_aged_d beside the hair's own texture)
+            var hairTex = go.GetComponentsInChildren<Renderer>(true).Where(r => r.name.StartsWith("Hair_") && r.sharedMaterial != null)
+                .Select(r => r.sharedMaterial.GetTexture("_BaseMap")).FirstOrDefault(t => t != null);
+            var hairPath = hairTex != null ? AssetDatabase.GetAssetPath(hairTex) : null;
+            if (!string.IsNullOrEmpty(hairPath) && hairPath.EndsWith("_d.png"))
+                sculpt.AgedHair = AssetDatabase.LoadAssetAtPath<Texture2D>(hairPath.Substring(0, hairPath.Length - 6) + "_aged_d.png");
             go.AddComponent<Wardrobe>().Set = set;
             PrefabUtility.SaveAsPrefabAsset(go, $"{WorldAssetsBuild.PeopleDir}/{m.@base}.prefab");
             UnityEngine.Object.DestroyImmediate(go);
