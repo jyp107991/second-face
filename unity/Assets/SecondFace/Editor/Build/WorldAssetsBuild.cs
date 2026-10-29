@@ -82,16 +82,19 @@ namespace SecondFace.EditorTools
             Debug.Log("WorldAssetsBuild: people prefabs rebuilt");
         }
 
-        /// <summary>Builds the world assets and puts them on the Boot scene's Bootstrap (opens and saves the scene).</summary>
+        /// <summary>Builds the world's and the interface's assets and puts them on the Boot scene's Bootstrap (opens and
+        /// saves the scene).</summary>
         [MenuItem("Second Face/Wire the Boot scene")]
         public static void WireBoot()
         {
             var a = Build();
+            var ui = UIBuild.Build();
             var complete = a.Complete;   // before the scene opens: opening it unloads the loaded references
             var scene = EditorSceneManager.OpenScene(ProjectSetup.ScenePath, OpenSceneMode.Single);
             var boot = Object.FindAnyObjectByType<Bootstrap>();
             if (boot == null) { Debug.LogError("WorldAssetsBuild: no Bootstrap in the Boot scene"); return; }
             boot.World = a;
+            boot.Interface = ui;
             EditorUtility.SetDirty(boot);
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);

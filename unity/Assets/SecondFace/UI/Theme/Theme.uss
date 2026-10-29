@@ -1,0 +1,162 @@
+/* The Second Face: the one theme (BUILD_PLAN P5 step 3, DESIGN_UNITY §6 and §8).
+   A field notebook and a map: paper, ink, pencil, a rust mark and an ochre highlight; plates of dark glass over the
+   world for what stays on screen. Two OFL faces: Barlow for the interface, Literata for the notebook. No cursive.
+   Units are panel pixels at the 1280x720 reference (scaled with the screen's height): on a 6.1-inch phone one unit is
+   about 0.09 mm, so body text (26) is about 14 sp and a touch target (80) about 7 mm. */
+
+:root {
+    --paper: #EEE6D3;
+    --paper-deep: #E3D8BF;
+    --paper-edge: #C9B994;
+    --ink: #24201B;
+    --ink-soft: #4B433A;
+    --pencil: #7C7266;
+    --rust: #A1402A;
+    --ochre: #C48A2C;
+    --sage: #5D7354;
+    --slate: #2E4A63;
+    --plate: rgba(22, 19, 16, 0.78);
+    --plate-text: #F2EADB;
+    --plate-dim: #B9AE9C;
+    --scrim: rgba(12, 10, 8, 0.55);
+
+    --text-s: 22px;
+    --text-m: 26px;
+    --text-l: 32px;
+    --text-xl: 42px;
+    --text-title: 72px;
+    --touch: 80px;
+    --gutter: 16px;
+    --edge: 24px;
+
+    /* the default theme's text colours, so plain labels and fields read as ink */
+    --unity-colors-default-text: #24201B;
+    --unity-colors-label-text: #24201B;
+
+    -unity-font-definition: url("../Fonts/Barlow-Regular.asset");
+    font-size: 26px;
+    color: #24201B;
+}
+
+/* ---- structure ---- */
+.sf-row { flex-direction: row; align-items: center; }
+.sf-col { flex-direction: column; }
+.sf-grow { flex-grow: 1; }
+.sf-safe { flex-grow: 1; }
+.sf-edge { margin: var(--edge); }
+.sf-gap { margin-right: var(--gutter); margin-bottom: var(--gutter); }
+
+/* ---- surfaces ---- */
+.sf-page { background-color: var(--paper); }
+.sf-page--deep { background-color: var(--paper-deep); }
+.sf-plate {
+    background-color: var(--plate);
+    border-radius: 6px;
+    padding: 10px 16px;
+}
+.sf-plate Label { color: var(--plate-text); }
+.sf-scrim { background-color: var(--scrim); }
+.sf-rule { height: 2px; background-color: var(--paper-edge); margin: 12px 0; }
+
+/* ---- type ---- */
+.sf-title {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: var(--text-xl);
+    color: var(--ink);
+}
+.sf-heading {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--text-l);
+    color: var(--ink);
+}
+.sf-label {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--text-s);
+    letter-spacing: 2px;
+    color: var(--pencil);
+}
+.sf-body {
+    -unity-font-definition: url("../Fonts/Barlow-Regular.asset");
+    font-size: var(--text-m);
+    white-space: normal;
+}
+.sf-book {
+    -unity-font-definition: url("../Fonts/Literata-Regular.asset");
+    font-size: var(--text-m);
+    color: var(--ink);
+    white-space: normal;
+}
+.sf-note {
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: var(--text-m);
+    color: var(--ink-soft);
+    white-space: normal;
+}
+.sf-fine { font-size: var(--text-s); color: var(--pencil); white-space: normal; }
+.sf-mark { color: var(--rust); }
+.sf-lead { color: var(--slate); }
+
+/* ---- buttons (selectors match the default theme's specificity so ours win) ---- */
+.sf-button {
+    min-height: var(--touch);
+    min-width: var(--touch);
+    padding: 0 28px;
+    margin: 0;
+    border-width: 0;
+    border-radius: 3px;
+    background-color: var(--ink);
+    color: var(--paper);
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--text-m);
+    letter-spacing: 1px;
+    -unity-text-align: middle-center;
+}
+.sf-button:enabled:hover { background-color: var(--ink-soft); }
+.sf-button:enabled:active { background-color: #000000; }
+.sf-button:enabled:focus { border-width: 3px; border-color: var(--ochre); }
+.sf-button:disabled { opacity: 0.45; }
+.sf-button--quiet { background-color: rgba(0, 0, 0, 0); color: var(--ink); border-width: 2px; border-color: var(--ink); }
+.sf-button--quiet:enabled:hover { background-color: rgba(36, 32, 27, 0.08); }
+.sf-button--quiet:enabled:active { background-color: rgba(36, 32, 27, 0.16); }
+.sf-button--plate { background-color: var(--plate); color: var(--plate-text); }
+.sf-button--plate:enabled:hover { background-color: rgba(40, 35, 30, 0.86); }
+.sf-button--plate:enabled:active { background-color: rgba(8, 7, 6, 0.9); }
+
+/* ---- the start card (TitleCard) ---- */
+.sf-title-card { background-color: rgba(14, 12, 9, 0.45); }
+.sf-title-card__body { justify-content: center; align-items: center; }
+.sf-title-card__name {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: var(--text-title);
+    letter-spacing: 6px;
+    color: var(--plate-text);
+    -unity-text-align: middle-center;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+.sf-title-card__status {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--text-m);
+    letter-spacing: 2px;
+    margin-top: 18px;
+    color: var(--plate-text);
+    -unity-text-align: middle-center;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+.sf-title-card__detail {
+    font-size: var(--text-s);
+    margin-top: 10px;
+    max-width: 80%;
+    color: var(--plate-dim);
+    white-space: normal;
+    -unity-text-align: middle-center;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* ---- modal questions ---- */
+.sf-modal { justify-content: center; align-items: center; background-color: var(--scrim); }
+.sf-card {
+    background-color: var(--paper);
+    border-radius: 4px;
+    padding: 28px 32px;
+    max-width: 70%;
+}

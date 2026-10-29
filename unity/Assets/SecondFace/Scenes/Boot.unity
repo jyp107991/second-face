@@ -428,6 +428,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   World: {fileID: 11400000, guid: a536e14a390d4e22ba4eb67621026e3c, type: 2}
+  Interface: {fileID: 11400000, guid: f9ae894593c53733e99869124c4ebe7b, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

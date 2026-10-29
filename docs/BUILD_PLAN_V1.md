@@ -180,6 +180,14 @@ What the engine captures show is still wrong (each has a step in §5 P2 or §10)
 - **Hair breaks the hair rule** (§3.4) on the bake-off people (§10 step 2).
 - ~~Leaves near-black, rows of identical plants~~: fixed by the move to FBX with one model per variant (§10 step 6).
 - **The vegetation camera sees the terrain edge** (`vegetation_iso`): frame inside the terrain (§10 step 7).
+- **Safe-area padding does not move absolutely placed children**: in UI Toolkit (Yoga) an absolute child is placed
+  against its parent's padding edge, so padding a `.sf-safe` wrapper moves its flow children only; absolutely placed
+  HUD pieces go in a child that fills the wrapper (P5.3a).
+- **TextCore's `FontAsset.clearDynamicDataOnBuild` is internal** in 6000.3; set `m_ClearDynamicDataOnBuild` through a
+  `SerializedObject` (UIBuild). A rebuilt font asset (Second Face/Rebuild UI fonts) gets a new GUID: the theme's
+  `url()`s are resolved at import, so `UIBuild` re-imports `Theme.uss` after a rebuild.
+- **A panel with a `targetTexture` draws in batch mode** (the PlayMode tests' editor): yield a few frames after a change
+  and read the texture; no `WaitForEndOfFrame` (it never comes in batch mode).
 - **The boot capture lacks the UI**: a camera render does not include UI Toolkit; P5 captures render the panel
   through `PanelSettings.targetTexture` (§8).
 - ~~The captured walk holds the forearms raised in front~~ on every person: fixed in P4.8 (§6.E "As built (P4.8)":
@@ -412,6 +420,39 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    barter, camp, combat bar and log, settings, title, character creation and the sculptor. Every screen has a
    PlayMode test that opens it with fixture state and captures it.
 4. Safe areas and notches; landscape only; 16 px gutters; text at 1.0 scale readable at 6.1″.
+
+*Order of work (2026-10-29; P5.1–P5.2 were pulled forward as P3 step 25).* Each step ends with its screen opened
+from fixture state and captured (`UiTests`, the panel drawn into a texture):
+- ~~3a. The foundation~~ (done, below).
+- 3b. Localization wired (Unity Localization: a `UI` string table, English; screens take their strings from it, content
+  text stays content) and the HUD (the objective line, health, the compass, the thumb-reach action cluster).
+- 3c. The radial action menu (hold on a person or thing; verbs from content) and the touch rules round it.
+- 3d. Dialogue panel bound to Core dialogue (the scene stays visible; options as notebook lines; skip heard lines; log).
+- 3e. Conversation cameras (over-shoulder two-shot, portrait inserts; Cinemachine).
+- 3f. The notebook (leads, quests, people, letters, decisions) as a book.
+- 3g. The map and travel (world and local; pins).
+- 3h. The pack with the live paper doll, and barter.
+- 3i. Character creation and the sculptor (body sliders here).
+- 3j. Title, settings (text size, contrast, controls), saves and pause.
+- 3k. The combat bar and log (with P6). 3l. Photo mode and the gamepad.
+
+*As built (P5.3a, 2026-10-29).* `Game.UI.UIService` (made by `Bootstrap` from the Boot scene's `UIAssets`; wired by
+Second Face/Wire the Boot scene, checked by `BuildGuard`): one `UIDocument` on a runtime copy of `UI/Panel.asset`
+(scale with screen size from 1280×720, matched by height: on a 6.1″ phone one unit ≈ 0.09 mm, body text 26 ≈ 14 sp,
+a touch target 80 ≈ 7 mm), layers `hud` / `screens` / `modal`, a stack of `UIScreen`s (`Open`, `Close` closes the
+screens over it too, `Back` asks the top screen; Android back = Escape, the pad's east button), opaque screens hide
+the screens and HUD under them (not drawn), `Covers(screenPoint)` for `TouchInput` (a screen that does not pass
+touches is a wall to the world). Safe area: `Screen.safeArea` (or `SafeAreaOverride`, normalised) becomes insets in
+panel units, applied as padding to every `.sf-safe` element on open and on change. The theme is
+`UI/Theme/SecondFace.tss` (Unity's default runtime theme, then `Theme.uss`: palette as USS variables, `.sf-page`,
+`.sf-plate`, `.sf-title/.sf-heading/.sf-label/.sf-body/.sf-book/.sf-note/.sf-fine`, `.sf-button` with `--quiet` and
+`--plate`, `.sf-modal`, `.sf-card`). Typefaces: Barlow Regular and SemiBold (interface), Literata 12 pt Regular and
+Italic and 36 pt SemiBold (notebook; static instances cut from the variable font with fontTools), OFL, in
+`UI/Fonts/`; `UIBuild` makes each a static SDF16 atlas of the Latin set (335–350 glyphs, 1024², not CPU-readable,
+kept in the build) with a dynamic SDFAA fallback per family (emptied on build). The start card is now a UI Toolkit
+`TitleCard` (IMGUI only when no UI assets are wired). `UiTests` draws a specimen, a modal question and an opaque page
+into a 1600×720 texture with a left cutout and a gesture bar (`docs/evidence/unity/p5/ui_foundation.jpg`,
+`ui_modal.jpg`).
 
 ### P6 — Systems and combat
 1. Interactions and loot (`Play/`): tap on a thing → radial of verbs from content (`talk`, `look`, `take`, `use`,

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using SecondFace.Core.Input;
+using SecondFace.Game.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,7 +10,8 @@ namespace SecondFace.Game.Play
     /// The touch controls (BUILD_PLAN §6.F.2, step 25): the fingers on the screen each frame go through Core
     /// <see cref="Gestures"/>; one finger drags the camera round (<see cref="OrbitRig.Orbit"/>), a tap on the ground sends
     /// the walker there, a double tap on the walker brings the camera back to them, two fingers pinch the distance and
-    /// pan the view over the ground. A touch that begins on the debug overlay is the overlay's. With a mouse (the editor,
+    /// pan the view over the ground. A touch that begins on the interface (<see cref="UIService.Covers"/>) or the debug
+    /// overlay is theirs. With a mouse (the editor,
     /// a desktop): the left button is a finger, the wheel zooms, the right button pans.
     /// </summary>
     public sealed class TouchInput : MonoBehaviour
@@ -26,7 +28,7 @@ namespace SecondFace.Game.Play
 
         private readonly List<Finger> _down = new();
         private readonly HashSet<int> _ignored = new();
-        private bool _wasDragging;
+        private bool _wasDragging, _mouseIgnored;
         private Vector2? _rightLast;
 
         private void Update()
@@ -40,7 +42,7 @@ namespace SecondFace.Game.Play
                     var id = t.touchId.ReadValue();
                     if (!t.press.isPressed) { _ignored.Remove(id); continue; }
                     var p = t.position.ReadValue();
-                    if (t.press.wasPressedThisFrame && DebugOverlay.Instance != null && DebugOverlay.Instance.Covers(p)) _ignored.Add(id);
+                    if (t.press.wasPressedThisFrame && Covered(p)) _ignored.Add(id);
                     if (_ignored.Contains(id)) continue;
                     _down.Add(new Finger(id, p.x, p.y));
                 }
@@ -48,8 +50,8 @@ namespace SecondFace.Game.Play
             if (_down.Count == 0 && mouse != null)
             {
                 var p = mouse.position.ReadValue();
-                if (mouse.leftButton.isPressed && !(mouse.leftButton.wasPressedThisFrame && DebugOverlay.Instance != null && DebugOverlay.Instance.Covers(p)))
-                    _down.Add(new Finger(-1, p.x, p.y));
+                if (mouse.leftButton.wasPressedThisFrame) _mouseIgnored = Covered(p);
+                if (mouse.leftButton.isPressed && !_mouseIgnored) _down.Add(new Finger(-1, p.x, p.y));
                 var scroll = mouse.scroll.ReadValue().y;
                 if (Mathf.Abs(scroll) > 0.01f) Rig.Zoom(Mathf.Exp(scroll * 0.0015f));
                 if (mouse.rightButton.isPressed)
@@ -62,6 +64,10 @@ namespace SecondFace.Game.Play
             Gestures.Update(Time.unscaledTime, _down);
             Apply();
         }
+
+        /// <summary>Whether a finger coming down here belongs to the interface or the debug overlay.</summary>
+        private static bool Covered(Vector2 p) =>
+            (UIService.Instance != null && UIService.Instance.Covers(p)) || (DebugOverlay.Instance != null && DebugOverlay.Instance.Covers(p));
 
         private void Apply()
         {

@@ -569,7 +569,12 @@ their heads level instead of gazing up, and their feet sit on the ground instead
 gone), lips take their colour from the person's own skin (no more lilac lips on darker skin), and the player's face has
 an aged look for the photograph: lines, creases, tired eyes, spots, greying brows and stubble, and greyed hair, blended
 in as the face is aged (`docs/evidence/unity/p4/people_portraits.jpg`).
-**Next action:** step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until
+**The interface begins (P5.3a, 2026-10-29):** the game's own interface now exists on the phone: a field-notebook look
+(paper, ink, a rust mark), two typefaces (Barlow for the controls, Literata for the notebook), plates of dark glass for
+what sits over the world, buttons sized for a thumb, and everything kept clear of the notch and the gesture bar. Screens
+stack (a question over a page, back closes the top one) and a finger on the interface never moves the camera. The start
+card is drawn with it. Seen in `docs/evidence/unity/p5/ui_foundation.jpg` and `ui_modal.jpg`.
+**Next action:** P5.3b (the UI string table, then the HUD; BUILD_PLAN P5 "Order of work"). Step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until
 Mid ≥ 30 fps); **`play-walkabout` is released** (2026-10-29, commit e0b69c6: the cast in Shale and the
 walkabout; https://github.com/jyp107991/second-face/releases/tag/play-walkabout, `SecondFace.apk`, 345 MB as a
 development build: its size wants a look in release hardening). Later playable builds: run the Android workflow by
@@ -578,8 +583,8 @@ release page; this session's git proxy refuses tag pushes). `play-people` (the n
 is requested again on the commit after bb040ff: run 66 was cancelled by the next push to main (one concurrency group);
 release runs now have their own group — check it released (its release job waits for the run's tests and APK). Then: NPC outfits merged into one renderer (crowd cost), body sliders, runtime grime in a cloth shader; garment
 models import as people (Humanoid) and log "Invalid Avatar Rig Configuration" (harmless: the wardrobe rebinds their
-bones by name; import them without an avatar); per-person walk variety (two captured walks); then P5 (camera, touch and
-UI), the road to `play-ch1`.
+bones by name; import them without an avatar); per-person walk variety (two captured walks). P5 (camera, touch and
+UI) is under way, the road to `play-ch1`.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

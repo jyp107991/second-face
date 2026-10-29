@@ -70,3 +70,8 @@ Used modified (refit to the game's bodies, re-dyed, weathered, resampled texture
   this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217."),
   converted by `tools/unity/motion/cmu2fbx.py` (trials listed in that file).
 - **Kits**: built from scratch by `tools/unity/kits/*.py` in Blender (GPL program; its output is ours).
+- **Typefaces** (`unity/Assets/SecondFace/UI/Fonts/`, licences beside them): **Barlow** by Jeremy Tribby (The Barlow
+  Project Authors, https://github.com/jpt/barlow) for the interface, and **Literata** by TypeTogether for Google (The
+  Literata Project Authors, https://github.com/googlefonts/literata) for the notebook, both under the SIL Open Font
+  License 1.1, from the google/fonts repository. Literata is used as static instances cut from its variable font
+  with fontTools (12 pt Regular and Italic, 36 pt SemiBold).

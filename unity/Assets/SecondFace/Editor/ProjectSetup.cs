@@ -191,7 +191,8 @@ namespace SecondFace.EditorTools
     }
 
     /// <summary>Before any player build: the committed player settings are re-asserted (landscape, immersive, IL2CPP, ARM64),
-    /// the Boot scene must be in the build and hold the world's assets (else the app shows only its title card).</summary>
+    /// the Boot scene must be in the build and hold the world's assets (else the app shows only its title card) and the
+    /// interface's.</summary>
     public sealed class BuildGuard : UnityEditor.Build.IPreprocessBuildWithReport
     {
         public int callbackOrder => -1000;
@@ -204,6 +205,9 @@ namespace SecondFace.EditorTools
             var world = AssetDatabase.AssetPathToGUID(WorldAssetsBuild.AssetPath);
             if (string.IsNullOrEmpty(world) || !File.ReadAllText(ProjectSetup.ScenePath).Contains(world))
                 throw new BuildFailedException($"The Boot scene does not hold {WorldAssetsBuild.AssetPath} (Second Face/Wire the Boot scene)");
+            var ui = AssetDatabase.AssetPathToGUID(UIBuild.AssetPath);
+            if (string.IsNullOrEmpty(ui) || !File.ReadAllText(ProjectSetup.ScenePath).Contains(ui))
+                throw new BuildFailedException($"The Boot scene does not hold {UIBuild.AssetPath} (Second Face/Wire the Boot scene)");
         }
     }
 }
