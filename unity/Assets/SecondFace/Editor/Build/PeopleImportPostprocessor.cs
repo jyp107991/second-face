@@ -172,8 +172,11 @@ namespace SecondFace.EditorTools
                 case "lashes":
                     if (d != null) { m.SetFloat("_AlphaClip", 1f); m.SetFloat("_Cutoff", 0.4f); m.EnableKeyword("_ALPHATEST_ON"); }
                     m.SetFloat("_Cull", 0f);   // double-sided cards
-                    // Hair rule: dull, dusty, never glossy.
+                    // Hair rule: dull, dusty, never glossy: no sky in it either (cards at a grazing angle caught the sky's
+                    // reflection as a blue-grey sheen, P4 step 7)
                     m.SetFloat("_Smoothness", kind == "hair" ? 0.25f : 0.3f);
+                    m.SetFloat("_EnvironmentReflections", 0f); m.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
+                    m.SetFloat("_SpecularHighlights", 0f); m.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
                     m.renderQueue = 2450;
                     break;
             }

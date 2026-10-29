@@ -553,15 +553,21 @@ a captured get-up motion comes later.
 shown at once when asked again (`docs/evidence/unity/p4/people_portraits.jpg`). Seen in them: the one hair left that
 the hair rule allows is a neat bun from behind (not rough), eyebrows read as dotted, darker lips come out lilac, and
 the aged face needs aged skin. Those are the people's next quality items.
+**Hair of our own (P4 step 7, 2026-10-29):** the game now makes its own hair in the hair rule's forms: a rough bun,
+a work braid, an uneven crop, and long hair matted under a wrap. Each is a layer lying on the scalp whose hairline breaks
+up into strands, with locks, a knot or a plait on top. It fits any head the face sculptor makes. Eight of the cast and
+both player bases wear it now (`docs/evidence/unity/p4/people_hair.jpg`); one of the found buns is kept. The dark
+triangle seen under one eye in the hair test was the nose's shadow from a sun at the side, not a fault in the face.
 **Next action:** step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until
 Mid ≥ 30 fps); **`play-walkabout` is released** (2026-10-29, commit e0b69c6: the cast in Shale and the
 walkabout; https://github.com/jyp107991/second-face/releases/tag/play-walkabout, `SecondFace.apk`, 345 MB as a
 development build: its size wants a look in release hardening). Later playable builds: run the Android workflow by
 hand with `release: play-<name>` (its release job waits for that run's tests and APK, then makes the tag and the
-release page; this session's git proxy refuses tag pushes); then the people's quality items in this order: hair of
-our own for the hair rule's forms (rough buns, work braids, uneven crops, matted under a wrap: generated cards from
-`mh_build`), eyebrows painted into the skin, lips by skin tone, the aged skin bake; then NPC outfits merged into one
-renderer (crowd cost), body sliders, runtime grime in a cloth shader; then P5 (camera, touch and UI).
+release page; this session's git proxy refuses tag pushes); then the people's quality items in this order: eyebrows
+painted into the skin (the strand brows read as dotted), lips by skin tone (darker lips come out lilac), the aged skin
+bake for the photograph; then NPC outfits merged into one renderer (crowd cost), body sliders, runtime grime in a cloth
+shader; garment models import as people (Humanoid) and log "Invalid Avatar Rig Configuration" (harmless: the wardrobe
+rebinds their bones by name; import them without an avatar); then P5 (camera, touch and UI).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

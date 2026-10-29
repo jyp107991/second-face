@@ -15,10 +15,14 @@ from mathutils import Vector
 from mathutils.kdtree import KDTree
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'kits'))
 import kitlib as K
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import hairgen
 
 args = sys.argv[sys.argv.index('--') + 1:]
 MH, COMMUNITY, OUT = args[0], args[1], args[2]
 REL = os.environ.get('REL', 'Assets/SecondFace/People/Bakeoff')   # where OUT lies in the Unity project (for the metas)
+# hair of our own (hairgen.py, BUILD_PLAN §6.C): generated proxies, found by name like the packs' (sf_bun, sf_braid, ...)
+GENERATED = os.environ.get('HAIRGEN_DIR', os.path.join(os.path.expanduser('~'), '.cache', 'second-face', 'hairgen'))
 TEXOUT = os.path.join(OUT, 'tex')
 SCALE = 0.1   # MakeHuman decimetres -> metres
 
@@ -426,34 +430,8 @@ def bake_hair(src, name, look, size=1024):
     write_tex_meta(dst, f'{REL}/tex/{name}.png', 'd')
     return name
 
-def head_angles(P, top, eye):
-    """Elevation and azimuth (degrees; 0 = straight ahead) of points P (MakeHuman units, y up, z forward) seen from a
-    point inside the skull behind and above the eyes, plus their offsets from it. `top` is the crown's height."""
-    import numpy as np
-    c = np.array([0.0, eye[1] + 0.15 * (top - eye[1]), eye[2] - 0.75])
-    d = P - c
-    return np.degrees(np.arctan2(d[:, 1], np.hypot(d[:, 0], d[:, 2]))), np.abs(np.degrees(np.arctan2(d[:, 0], d[:, 2]))), d
-
-def smoothstep(x):
-    import numpy as np
-    x = np.clip(x, 0, 1); return x * x * (3 - 2 * x)
-
-def hair_weight(P, top, eye, mode, recede=0.0):
-    """Stubble weight per head vertex from a hairline model around the skull: elevation above a threshold that falls
-    from the forehead to the temples, the ear tops and the nape; 'bald' keeps the horseshoe on the sides and back
-    only. Ears (outside the skull's silhouette) and the face get none. Tuned on the base mesh with a shaded preview
-    from four sides (BUILD_PLAN §6.C.2)."""
-    import numpy as np
-    e, a, d = head_angles(P, top, eye)
-    t = np.interp(a, [0, 40, 75, 100, 140, 180], [30 + recede, 24 + recede, 4, -10, -38, -58])
-    w = smoothstep((e - (t - 2)) / 8.0)
-    if mode == 'bald':
-        w *= smoothstep((np.interp(a, [0, 60, 90, 130, 180], [-90, -90, 18, 26, 30]) - e) / 8.0)
-    band = (a > 55) & (a < 125) & (e > -35) & (e < 25)
-    rr = np.linalg.norm(d, axis=1)
-    if band.any(): w[band & (rr > np.median(rr[band]) * 1.06)] = 0.0
-    w[P[:, 2] > eye[2] + 0.1] = 0.0
-    return w
+# the head model (head_angles, smoothstep, hair_weight) lives in hairgen.py, shared with the generated hair
+from hairgen import head_angles, smoothstep, hair_weight
 
 def beard_weight(P, top, eye, lips):
     """Beard stubble weight: below a line from under the nose across the cheeks to the sideburns, fading down the
@@ -636,11 +614,23 @@ def thin(me, target):
                 for h in e.link_faces:
                     if h.index not in seen: seen.add(h.index); stack.append(h)
         islands.append(isl)
-    total = sum(len(f.verts) - 2 for isl in islands for f in isl)
+    tri = lambda isl: sum(len(f.verts) - 2 for f in isl)
+    total = sum(tri(isl) for isl in islands)
     if total > target and len(islands) > 1:
-        keep_every = total / target
+        # a mesh of mixed islands (generated hair: a plait's strands and a bun's locks among many scalp cards) keeps
+        # its big islands first, up to 70 % of the budget; the rest (and uniform strands, brows) are thinned evenly
+        sizes = sorted(tri(isl) for isl in islands)
+        median = sizes[len(sizes) // 2]
+        big, rest, kept = [], [], 0
+        for isl in islands:
+            n = tri(isl)
+            if sizes[-1] >= 3 * median and n >= 2 * median and kept + n <= 0.7 * target: big.append(isl); kept += n
+            else: rest.append(isl)
+        left = max(1, target - kept)
+        rest_total = sum(tri(isl) for isl in rest) or 1
+        keep_every = max(1.0, rest_total / left)
         acc, drop = 0.0, []
-        for k, isl in enumerate(islands):
+        for isl in rest:
             acc += 1.0
             if acc >= keep_every: acc -= keep_every
             else: drop.extend(isl)
@@ -902,7 +892,7 @@ def build_person(spec):
     # --- proxies: eyes, brows, lashes, hair fitted by mhclo
     def proxy(kind, folder_name, name, mat_name, tex_name=None, mat_override=None, skin_to=None, look=None, hair_look=None,
               drop_clear=False):
-        d = find_dir(name, os.path.join(MH, folder_name), COMMUNITY)
+        d = find_dir(name, os.path.join(MH, folder_name), COMMUNITY, GENERATED)
         if d is None: print('  no proxy', name); return None
         meta, refs, deletes = read_mhclo(os.path.join(d, name + '.mhclo'))
         pv, pvt, pf = read_obj(os.path.join(d, meta['obj_file'][0]))
@@ -1092,6 +1082,8 @@ def build_person(spec):
         with open(os.path.join(OUT, spec['id'] + '.wardrobe.json'), 'w') as f: json.dump(manifest, f, indent=1)
 
 os.makedirs(OUT, exist_ok=True)
+made = hairgen.generate(MH, GENERATED)
+if made: print('hair of our own generated:', made)
 K.write_folder_meta(OUT, REL)
 os.makedirs(TEXOUT, exist_ok=True); K.write_folder_meta(TEXOUT, REL + '/tex')
 only = os.environ.get('ONLY')

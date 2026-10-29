@@ -26,3 +26,6 @@ crashlytics-build.properties
 # prefabs refer to them by GUID, which must survive a fresh clone (as the library materials do)
 /Assets/SecondFace/Motion/_tmp/
 /Assets/SecondFace/Generated.meta
+# the hair test people (tools/unity/people/briefs/hairtest.json): built to judge generated hair, not shipped
+/Assets/SecondFace/People/HairTest/
+/Assets/SecondFace/People/HairTest.meta

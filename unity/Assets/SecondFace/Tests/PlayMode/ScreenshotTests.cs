@@ -37,7 +37,7 @@ namespace SecondFace.Tests
             {
                 "Second Face/Build terrain test scene", "Second Face/Build material sheet scene", "Second Face/Build shelter test scene",
                 "Second Face/Build frontier test scene", "Second Face/Build people test scene", "Second Face/Build vegetation test scene",
-                "Second Face/Build trees test scene", "Second Face/Build cast test scene", "Second Face/Build player test scene",
+                "Second Face/Build trees test scene", "Second Face/Build cast test scene", "Second Face/Build player test scene", "Second Face/Build hair test scene",
             })
             {
                 try { EditorApplication.ExecuteMenuItem(item); }
@@ -430,6 +430,50 @@ namespace SecondFace.Tests
             foreach (var p in people) SecondFace.Game.People.Portraits.Forget(p);
             Assert.That(SecondFace.Game.People.Portraits.Count, Is.EqualTo(0));
             foreach (var p in people.Skip(2)) Object.Destroy(p);
+        }
+
+        /// <summary>P4 step 7: the generated hair (hairgen.py) on the hair test people from the front, the side and the back,
+        /// one row per person, in one sheet (`people_hair`). Built only where the hair test people are (not in CI).</summary>
+        [UnityTest, Timeout(600000)]
+        public IEnumerator GeneratedHairIsCapturedWhenBuilt()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Hair.unity";
+            if (!File.Exists(path)) { Assert.Ignore("hair test scene not built (the hair test people are local)"); yield break; }
+            yield return LoadTestScene(path);
+            for (var i = 0; i < 20; i++) yield return null;
+            var root = GameObject.Find("HairTest");
+            Assert.That(root, Is.Not.Null);
+            var people = Enumerable.Range(0, root.transform.childCount).Select(i => root.transform.GetChild(i).gameObject).ToList();
+            foreach (var a in root.GetComponentsInChildren<Animator>()) a.speed = 0f;
+            foreach (var p in people) Assert.That(p.GetComponentInChildren<LODGroup>(), Is.Not.Null, $"{p.name}: levels of detail");
+            var cam = Camera.main;
+            const int w = 300, h = 340;
+            var views = new[] { (0.25f, 1f), (1f, 0.1f), (-0.3f, -1f) };   // front, side, back: (x, z) around the head
+            var sheet = new Texture2D(w * views.Length, h * people.Count, TextureFormat.RGB24, false);
+            var rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32);
+            for (var p = 0; p < people.Count; p++)
+            {
+                var anim = people[p].GetComponent<Animator>();
+                var head = anim.GetBoneTransform(HumanBodyBones.Head).position + Vector3.up * 0.04f;
+                for (var v = 0; v < views.Length; v++)
+                {
+                    var face = people[p].transform.rotation * new Vector3(views[v].Item1, 0.05f, views[v].Item2).normalized;
+                    cam.transform.position = head + face * 1.1f;
+                    cam.transform.LookAt(head);
+                    var request = new RenderPipeline.StandardRequest { destination = rt };
+                    if (RenderPipeline.SupportsRenderRequest(cam, request)) RenderPipeline.SubmitRenderRequest(cam, request);
+                    else { cam.targetTexture = rt; cam.Render(); cam.targetTexture = null; }
+                    var active = RenderTexture.active;
+                    RenderTexture.active = rt;
+                    sheet.ReadPixels(new Rect(0, 0, w, h), v * w, (people.Count - 1 - p) * h);
+                    RenderTexture.active = active;
+                }
+                yield return null;
+            }
+            sheet.Apply();
+            File.WriteAllBytes(Path.Combine(OutDir(), "people_hair.png"), sheet.EncodeToPNG());
+            Object.Destroy(sheet);
+            rt.Release(); Object.Destroy(rt);
         }
 
         [UnityTest, Timeout(600000)]

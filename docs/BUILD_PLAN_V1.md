@@ -395,7 +395,11 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    118 ms each in the batch editor (cached, so paid once). Open: the aged skin bake for the photograph (geometry alone
    barely ages the face); portraits from the sculptor screen (P5). Portraits in engine: a `PortraitCamera` renders the head to a 256² RT with the face lit by a fixed key/fill,
    cached per actor per outfit state; the UI shows the RT (no wait).
-7. **Done**: `people_cast_1..4` (32 people), `people_lod_0..2`, `people_walk`, `people_portraits`, plus
+7. **Built (P4.7a, 2026-10-29; §6.C.1 "Hair of our own"; capture `people_hair`).** Generated card hair in four forms of
+   the hair rule (`hairgen.py`), judged in Blender with Unity's alpha cut-off (fast: one person in ~15 s) and then in the
+   engine from the front, the side and the back (`HairTestScene`, `briefs/hairtest.json`, people built locally into
+   `People/HairTest`, not committed). Eight of the cast and both player bases re-haired with it.
+8. **Done**: `people_cast_1..4` (32 people), `people_lod_0..2`, `people_walk`, `people_portraits`, plus
    `people_sculpt_*`, `people_wardrobe_*`, `people_motion_slope`, `people_ragdoll`. Capture `people_cast_lineup` (30 people), `people_lod`, `people_walk`, `people_portraits`.
 
 ### P5 — Camera, touch and UI
@@ -842,6 +846,19 @@ indigo, faded reds and greens) so a crowd reads as many people at the game camer
    balding in the skin, or wrapped.** One card hair is too few for a world: hair cards of our own for the rule's other
    forms (work braids, rough buns, cropped uneven, matted under a wrap) are a P4 follow-up. Card hair is re-coloured by `bake_hair`
    (`hair_look: W(colour, dust, grey)`, colours in `HAIR_COLOURS`) and ships without normal maps.
+   **Hair of our own (P4.7a, 2026-10-29; capture `people_hair`):** `tools/unity/people/hairgen.py` generates four
+   styles on the MakeHuman base head as ordinary proxies (`sf_crop`, `sf_bun`, `sf_braid`, `sf_matted`; `.mhclo`,
+   `.obj`, `.mhmat`, a 1 K strand atlas), which `mh_build` fits, skins, refits, thins and dyes like any other hair; it
+   writes them once per generator version into `HAIRGEN_DIR` (default `~/.cache/second-face/hairgen`). Each style is
+   a **shell** (the scalp's own faces, subdivided once, lifted 1–3 mm, the atlas's sheet strands running from the
+   hairline toward the style's goal; the hairline fades over 1.2 cm along the scalp with strands starting in clumps
+   a few millimetres wide) plus cards for relief: the crop 700 short clumps (narrow at both ends), the bun and braid 70
+   flat locks rooted just inside the hairline and a knot wound from locks, the braid a three-strand plait of crossed
+   cards and a tail, the matted style 80 heavy locks below a wrap. Vertices are tied to the base as MakeHuman's own
+   proxies are (the triangle under them, barycentric weights, an offset), so they follow any head shape and take
+   smooth skin weights. Spec: `"hair": "sf_braid"` with the usual `hair_look`, and a `scalp` buzz of the same colour
+   under it (the shell's soft hairline shows it). The cast now wears them (two braids, three buns, three crops; one
+   found bun kept), the player bases too (braid, crop). Open: longer loose styles under no wrap; strand normal maps.
 2. **Shaved, buzzed and balding heads are painted into the skin** (done for p5 and p3, 2026-10-28). The plan once
    said to build a cap mesh from the base mesh's `helper-hair` group: that group is not a cap but 198 loose strips
    from the crown to the chest (used by MakeHuman to fit long hair), so it cannot be used. Instead `mh_build.py`
@@ -1540,6 +1557,21 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   people in step instead of freezing one.
 - **Judge hair from the front at portrait distance** (P4.2a): two braids passed in the lineup (from 7 m) and showed a
   swept fringe in the close-ups. Brief a hair only after seeing it in `people_sculpt_*` or a portrait.
+- **A dark triangle under one eye** (P4.7a) was the nose's own shadow: the hair test scene's sun came from the side
+  of people facing away from the camera's usual side. Not a mesh fault (Blender and LOD0 forced showed the same);
+  test scenes light faces like the cast lineup (sun front left, fill), and a portrait has its own studio light.
+- **Generated hair jumped off the scalp in spikes** (P4.7a): the rig's head weights cover the base's helper geometry
+  (joint cubes, hair and clothing helpers) and the ears; projecting onto "the nearest head vertex in this direction"
+  hit them. Project onto the skull's skin only, without the ears, and blend the radius over the nearest directions.
+- **One nearest base vertex plus an offset does not follow a reshaped head** (P4.7a): points between base vertices
+  (the subdivided shell) sank under the skin of fuller heads. Tie each vertex to the triangle under it with
+  barycentric weights, as MakeHuman's own proxies are.
+- **Measure the hair weight once** (P4.7a): re-evaluating `hair_weight` on subdivided points took the ear rule's
+  median from a different crowd of points and cut bays into the shell above the ears. Interpolate it from the base.
+- **A hairline needs width to look broken** (P4.7a): a fade by hair weight spans ~5 mm, and strand-wide starts in the
+  atlas (0.1–0.4 mm on the head) average out, so the shell's edge read as a cut line. Fade over 1.2 cm along the
+  scalp, strands starting in clumps a few millimetres wide. And generate no more cards than the budget keeps:
+  `thin` dropping 40 % of them at random showed the hairline through the gaps as bald patches.
 
 ---
 
