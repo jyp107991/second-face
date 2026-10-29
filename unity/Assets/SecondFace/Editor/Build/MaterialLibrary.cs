@@ -181,7 +181,7 @@ namespace SecondFace.EditorTools
     public sealed class KitImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 5;
+        public override uint GetVersion() => 6;
 
         private void OnPreprocessTexture()
         {
@@ -190,6 +190,8 @@ namespace SecondFace.EditorTools
             // The generated metas say "no alpha" (a template made for terrain textures); a card is its alpha.
             imp.alphaSource = TextureImporterAlphaSource.FromInput;
             imp.alphaIsTransparency = true;
+            imp.mipMapsPreserveCoverage = true;   // the cards' needles and leaves keep their coverage with distance
+            imp.alphaTestReferenceValue = 0.5f;
         }
 
         private void OnPreprocessModel()

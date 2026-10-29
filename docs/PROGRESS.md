@@ -461,8 +461,16 @@ terrain details.
 **Small scatter (plan §10 step 19b, 2026-10-29):** stones, pebbles, twigs, dry grass and ferns now lie on the ground
 as instanced terrain details (tens of thousands a chunk, drawn within 75 m); grass and leaf scans keep their cut-out
 alpha (the fetch had lost it). From the game camera they are still too thin to read: the Sallow needs real bushes.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 19c (card bushes and grass tufts from the tree pipeline, replacing
-the thin scans in the detail set).
+**Low vegetation (plan §10 step 19c, 2026-10-29):** the Sallow now reads as a scrub desert from the game camera:
+grey-olive saltbush and grey-green needle bushes in clumps a metre or two apart (lumpy mounds made of leaf cards, each
+plant a little different in colour), bigger dark bushes in the washes, dry grass tufts between them, all swaying a
+little in the wind and drawn out to 150 m (the scrub used to stop in a line across the top of the frame). A new
+foliage shader shades each bush as one mound and darkens its heart and base. From the 200 m view the ground is still
+bare past the drawn range (a far representation is a follow-up). Captures `world_scatter_sallow`, `_close`,
+`world_scatter_teeth` in `docs/evidence/unity/p3/`.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 20 (the first town built from its layout: `PlacePlan` in Core,
+the furnishing kit `tools/unity/kits/furnish.py`, `PlaceBuilder` in the editor, places streamed in by the world;
+`place_shale_street`).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

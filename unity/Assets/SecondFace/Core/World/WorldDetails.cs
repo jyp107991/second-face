@@ -12,10 +12,13 @@ namespace SecondFace.Core.World
     /// </summary>
     public sealed class WorldDetails
     {
-        /// <summary>The detail prototypes, in layer order.</summary>
+        /// <summary>The detail prototypes, in layer order, all instanced meshes: bushes (domes of leaf cards: saltbush,
+        /// renosterbos, the washes' big bush), stones, pebbles, flat rocks, dry branches and a fern (scans), and grass tufts
+        /// (stars of tuft cards), dry and green.</summary>
         public static readonly string[] Keys =
         {
-            "scrub_bush", "scrub_twigs", "scrub_low", "stones", "pebbles", "rocks_flat", "branches", "grass_a", "grass_b", "grass_c", "fern",
+            "bush_a", "bush_b", "bush_c", "stones", "pebbles", "rocks_flat", "branches", "fern",
+            "tuft_dry_a", "tuft_dry_b", "tuft_green_a", "tuft_green_b",
         };
 
         public const int Resolution = TerrainPaint.AlphaResolution;   // 2 m cells over a 512 m chunk
@@ -38,49 +41,53 @@ namespace SecondFace.Core.World
         {
             ["sallow"] = new[]
             {
-                // a scrub desert: bushes in clumps a metre or two apart, bare ground between, dry grass in the washes
-                R("scrub_bush", g => 0.35f * Clump(g, 0.4f) * (1 - Steep(g))),
-                R("scrub_twigs", g => 0.4f * Clump(g, 0.35f) * (1 - Steep(g))),
-                R("scrub_low", g => 0.3f * Clump(g, 0.3f)),
+                // a scrub desert seen from above: grey-olive mounds a metre or two apart in clumps (~15 % cover there),
+                // bare pale ground between, the big bushes and the tufts thickest in the washes, stones on the slopes
+                R("bush_a", g => (0.04f + 0.42f * Clump(g, 0.3f)) * (1 - Steep(g))),
+                R("bush_b", g => (0.02f + 0.16f * Clump(g, 0.45f)) * (1 - Steep(g))),
+                R("bush_c", g => (0.02f * Clump(g, 0.5f) + 0.25f * g.Wash) * (1 - Steep(g))),
                 R("stones", g => 0.08f + 0.25f * Steep(g)),
                 R("pebbles", g => 0.15f),
                 R("rocks_flat", g => 0.03f + 0.08f * Steep(g)),
                 R("branches", g => 0.02f * Clump(g, 0.5f)),
-                R("grass_a", g => 0.35f * Clump(g, 0.45f) + 0.5f * g.Wash),
+                R("tuft_dry_a", g => 0.1f + 0.3f * Clump(g, 0.35f) + 0.4f * g.Wash),
+                R("tuft_dry_b", g => 0.05f + 0.15f * Clump(g, 0.5f) + 0.2f * g.Wash),
             },
             ["teeth"] = new[]
             {
                 R("stones", g => 0.15f + 0.3f * Steep(g)),
                 R("pebbles", g => 0.2f),
                 R("rocks_flat", g => 0.05f + 0.1f * Steep(g)),
-                R("grass_a", g => 0.35f * BelowSnow(g) * (1 - Steep(g))),
-                R("grass_b", g => 0.2f * BelowSnow(g) * (1 - Steep(g)) * Clump(g, 0.4f)),
+                R("tuft_green_a", g => 0.3f * BelowSnow(g) * (1 - Steep(g))),
+                R("tuft_dry_a", g => 0.2f * BelowSnow(g) * (1 - Steep(g)) * Clump(g, 0.4f)),
                 R("fern", g => 0.04f * BelowSnow(g) * Clump(g, 0.5f)),
-                R("scrub_twigs", g => 0.05f * BelowSnow(g)),
+                R("bush_c", g => 0.08f * BelowSnow(g) * Clump(g, 0.5f)),
             },
             ["rail_corridor"] = new[]
             {
-                R("grass_a", g => 0.45f * (1 - Steep(g))),
-                R("grass_b", g => 0.25f * Clump(g, 0.4f)),
-                R("scrub_twigs", g => 0.08f * Clump(g, 0.45f)),
+                R("tuft_dry_a", g => 0.35f * (1 - Steep(g))),
+                R("tuft_green_a", g => 0.2f * Clump(g, 0.4f)),
+                R("tuft_dry_b", g => 0.15f),
+                R("bush_b", g => 0.06f * Clump(g, 0.45f)),
                 R("stones", g => 0.08f + 0.15f * Steep(g)),
                 R("pebbles", g => 0.15f),
                 R("branches", g => 0.01f),
             },
             ["drowned_shore"] = new[]
             {
-                R("grass_b", g => 0.35f * (1 - Steep(g))),
-                R("grass_c", g => 0.2f * Clump(g, 0.4f)),
+                R("tuft_green_a", g => 0.3f * (1 - Steep(g))),
+                R("tuft_green_b", g => 0.2f * Clump(g, 0.4f)),
+                R("tuft_dry_b", g => 0.1f),
                 R("stones", g => 0.1f + 0.15f * Steep(g)),
                 R("pebbles", g => 0.2f),
                 R("branches", g => 0.03f),
             },
             ["northern_wet"] = new[]
             {
-                R("grass_a", g => 0.6f * (1 - Steep(g))),
-                R("grass_c", g => 0.3f * Clump(g, 0.35f)),
+                R("tuft_green_a", g => 0.55f * (1 - Steep(g))),
+                R("tuft_green_b", g => 0.35f * Clump(g, 0.35f)),
                 R("fern", g => 0.18f * Clump(g, 0.45f)),
-                R("scrub_twigs", g => 0.08f),
+                R("bush_c", g => 0.12f * Clump(g, 0.5f)),
                 R("stones", g => 0.05f + 0.15f * Steep(g)),
             },
             ["ashlands"] = new[]
@@ -88,7 +95,7 @@ namespace SecondFace.Core.World
                 R("stones", g => 0.15f + 0.2f * Steep(g)),
                 R("pebbles", g => 0.3f),
                 R("branches", g => 0.06f * Clump(g, 0.4f)),
-                R("scrub_twigs", g => 0.03f),
+                R("tuft_dry_b", g => 0.04f * Clump(g, 0.5f)),
             },
             ["glass_flats"] = new[] { R("pebbles", g => 0.15f), R("stones", g => 0.05f) },
             ["meridian"] = new[] { R("pebbles", g => 0.1f), R("stones", g => 0.05f) },

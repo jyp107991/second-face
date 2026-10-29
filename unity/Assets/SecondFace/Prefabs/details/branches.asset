@@ -6,7 +6,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: dry_branches_medium_01_v2_detail
+  m_Name: branches
   serializedVersion: 12
   m_SubMeshes:
   - serializedVersion: 2

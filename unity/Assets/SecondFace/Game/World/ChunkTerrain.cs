@@ -173,9 +173,10 @@ namespace SecondFace.Game.World
             }
         }
 
-        /// <summary>How far the terrain draws its small scatter, metres (the iso camera sees ~150 m of ground; stones and
-        /// scrub read only near it).</summary>
-        public const float DetailDistance = 75f;
+        /// <summary>How far the terrain draws its small scatter, metres: the top of the game camera's frame is ~90–140 m
+        /// off at its zooms (at 75 m the scrub ended in a line across the frame); the plants dissolve out over the last
+        /// 25 m (SecondFace/Foliage).</summary>
+        public const float DetailDistance = 150f;
 
         private static int[,] _detail;
         private static int[,] _zero;

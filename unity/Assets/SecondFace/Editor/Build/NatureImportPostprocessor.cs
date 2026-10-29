@@ -11,7 +11,7 @@ namespace SecondFace.EditorTools
     public sealed class NatureImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 2;
+        public override uint GetVersion() => 3;
 
         private const string Dir = "Assets/SecondFace/Models/Nature/";
 
@@ -45,6 +45,9 @@ namespace SecondFace.EditorTools
             // The generated metas say "no alpha" (a template made for terrain textures); leaves are their alpha.
             imp.alphaSource = normal ? TextureImporterAlphaSource.None : TextureImporterAlphaSource.FromInput;
             imp.alphaIsTransparency = !normal;
+            // cut-out leaves and blades keep their coverage in the small mips (or they thin away with distance)
+            imp.mipMapsPreserveCoverage = !normal && assetPath.EndsWith(".png");
+            imp.alphaTestReferenceValue = 0.5f;
             imp.mipmapEnabled = true;
             imp.streamingMipmaps = true;
             imp.maxTextureSize = 1024;

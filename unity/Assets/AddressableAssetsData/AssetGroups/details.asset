@@ -15,8 +15,18 @@ MonoBehaviour:
   m_GroupName: details
   m_GUID: 99a9c397cedb37f6a8d02c02b35659c0
   m_SerializeEntries:
-  - m_GUID: 058d2177dbed5ad89acef35f8684024e
-    m_Address: details/scrub_bush
+  - m_GUID: 034afea221a01a022868202608763514
+    m_Address: details/bush_a
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1ca7b219f2f9e2de256a114ba9a58618
+    m_Address: details/tuft_green_b
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 359214bad78271b09a990adb46c7bc9b
+    m_Address: details/tuft_dry_b
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -30,13 +40,8 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 4d1f97985ba30516bb4c34c6b0280d3f
-    m_Address: details/grass_b
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 5eee18c7f3c97976884a86fbc3d2408c
-    m_Address: details/scrub_low
+  - m_GUID: 5a088018612c200b2647133583e0d497
+    m_Address: details/tuft_dry_b
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -45,28 +50,48 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7dcc20a43e7559d9a0bdce4124290d7a
+    m_Address: details/tuft_green_a
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7e9e56d3c2d86a6c588ba16616c74cb8
     m_Address: details/fern
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: cf51e01fdf57176478951f4458685f12
-    m_Address: details/grass_a
+  - m_GUID: 884d93c73421de3f9cac200c5fca301a
+    m_Address: details/tuft_dry_a
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: d59348dbd7ef27397a4a27646fb57439
-    m_Address: details/scrub_twigs
+  - m_GUID: d20d08e64ea28ee01a7841f212cf3a0c
+    m_Address: details/tuft_dry_a
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: f5a297c3a1898b1e2a9fb300440b05f7
-    m_Address: details/grass_c
+  - m_GUID: d2a69d4f8f3d6d0c386f45f34b4a8bec
+    m_Address: details/bush_c
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ecc084cbba105f0e48b715409c0dfbf9
+    m_Address: details/bush_b
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f84a109dcfda71e149c47bacdf7e0a3f
     m_Address: details/stones
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fadc99c08f3b0011f94c9097bdbabdec
+    m_Address: details/tuft_green_b
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fc4013cf5fb84fcd3ac5d031d102e5ff
+    m_Address: details/tuft_green_a
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

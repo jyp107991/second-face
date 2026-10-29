@@ -8,10 +8,10 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 namespace SecondFace.Game.World
 {
     /// <summary>
-    /// The terrain's detail prototypes (step 19b): small scatter (scrub, stones, debris, grass tufts, ferns) drawn by the
-    /// terrain as instanced meshes, in Core <see cref="SecondFace.Core.World.WorldDetails.Keys"/> order. Each prototype is
-    /// a light mesh (the coarsest Mesh LOD of a scan under a triangle cap) with the scan's library materials, made by the
-    /// editor (DetailMeshes) and loaded by address. Every chunk terrain carries the same prototypes; a chunk writes only
+    /// The terrain's detail prototypes (steps 19b–c), in Core <see cref="SecondFace.Core.World.WorldDetails.Keys"/>
+    /// order, all instanced meshes: bushes, stones, branches and ferns (a scan cut to a light Mesh LOD, with its library
+    /// materials) and grass tufts (a star of tilted cards: the terrain's own grass cards stand upright and read as
+    /// slivers from the iso camera). Made by the editor (DetailMeshes) and loaded by address. Every chunk terrain carries the same prototypes; a chunk writes only
     /// the layers its biomes use.
     /// </summary>
     [CreateAssetMenu(menuName = "Second Face/Detail set")]

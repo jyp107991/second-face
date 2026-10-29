@@ -1261,6 +1261,14 @@ numbers from the densest place written into PORT.md §5.
   triangle's facing (cross(b−a, c−a).y > 0).
 - **Terrain chunks built without `SetNeighbors`** shade their edges alone and show a line where two meet; the streamer
   stitches, tests that build chunks by hand must too.
+- **A terrain detail mesh draws only its first submesh** (step 19c): a scan with stem, twig and leaf materials showed
+  bare stems. One material per detail prototype; merge or rebuild the mesh.
+- **Upright grass cards vanish from the iso camera** (step 19c): the terrain's own grass mode (and any upright card)
+  is a sliver from 50° above. Tilt the cards outwards (a star) or use domes of cards facing out.
+- **Scanned bushes read as twigs at game scale** (step 19c): fine-leaved scans are thin and dark once reduced; a
+  readable bush from above is a mound with a lit side and a shadow side (domes of leaf cards with spherical normals).
+- **Detail distance shorter than the frame** (step 19c): at 75 m the scrub ended in a line across the top of the game
+  camera's frame; the frame's top is 90–140 m off. Detail distance 150 m with a dithered fade.
 
 ---
 
@@ -1343,10 +1351,17 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
          the Alpha map (and grass's dried-out colour) and `models_bake.py` composes them; grass, shrubs and rooibos
          re-baked. **Fault carried to 19c:** at their true size the scans' twigs and tufts are thin and straw on straw;
          from the game camera the Sallow still reads bare and the Teeth's tufts vanish.
-    19c. Readable low vegetation from the card pipeline (`tools/unity/kits/trees.py`, `cards.py`): bushes of 0.5–1.5 m
-         (several stems from the base, dense small leaf cards in the dry olive and grey-green of a scrub desert,
-         three seeds each) and grass as chunky tuft cards, replacing the scan twigs and tufts in the detail set;
-         `world_scatter_dense` with the frame time.
+    19c. ~~Readable low vegetation~~ (done 2026-10-29): bushes are domes of leaf cards made in code
+         (`DetailMeshes.BushMesh`: two or three overlapping domes of 28–36 cards, normals out from each dome's heart,
+         vertex colour r = occlusion, g = sway), on the tree kit's leaf-cluster and fir-branch cards graded to
+         grey-olive and grey-green by `tools/unity/tufts.py` (`Textures/Detail/bush_leaf`, `bush_needle`); grass tufts
+         are stars of seven cards tilted 35° (upright cards are slivers from 50°). Both draw with `SecondFace/Foliage`
+         (cut out, both faces, a tint per plant by a hash of its position, light through the leaves, wind, a dithered
+         fade over the last 25 m of the detail distance, now 150 m). The rooibos scans were thin dark twigs at their
+         size, and as three materials only their first submesh drew. Sallow density ~0.5 bushes a 2 m cell inside
+         clumps; `world_scatter_sallow`, `_close`, `world_scatter_teeth` (`docs/evidence/unity/p3/`). **Not yet:**
+         the ground beyond 150 m (the 200 m view) shows no scrub: a far representation (bush density darkening the
+         terrain's macro colour, or impostors) when the camera's zoom range is set (P5).
 20. P3.5 `PlaceBuilder` from the exported layout for the first town; lights, decals, NavMesh; `place_shale_street`.
 21. P3.5 interiors as positioned prefabs with instant open; `place_shelter_hall`.
 22. P3.6 water.
