@@ -137,7 +137,12 @@ namespace SecondFace.Tests
             for (var f = 0; f < 3; f++) yield return null;
             Assert.That(walk.Conversation.IsOpen, Is.True);
             Assert.That(walk.Conversation.View.Options.Count, Is.GreaterThan(0), "it offers choices");
+            Assert.That(Object.FindAnyObjectByType<ConversationCamera>(), Is.Not.Null, "the conversation cameras are on");
             boot.UI.CloseAll();
+            // the camera blends back to the game view (and the conversation camera goes) before the camera checks below
+            yield return new WaitForSeconds(ConversationCamera.Blend + 0.4f);
+            Assert.That(Object.FindAnyObjectByType<ConversationCamera>(), Is.Null, "the conversation cameras are gone");
+            Assert.That(boot.Hud.Root.resolvedStyle.display, Is.EqualTo(UnityEngine.UIElements.DisplayStyle.Flex), "the HUD is back");
             // levels of detail (P4.1): the game camera's person is LOD1, about 6 K triangles (they were 95-141 K whole)
             var lod = walk.Walker.GetComponentInChildren<LODGroup>();
             Assert.That(lod, Is.Not.Null, "the walker's levels of detail");
