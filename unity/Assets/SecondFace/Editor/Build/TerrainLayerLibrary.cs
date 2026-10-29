@@ -18,6 +18,7 @@ namespace SecondFace.EditorTools
         public const string Dir = "Assets/SecondFace/Terrain";
         public const string SetPath = Dir + "/BiomeLayers.asset";
         public const string ShaderName = "SecondFace/Terrain/Lit";
+        public const string RoadShaderName = "SecondFace/Road";
 
         [MenuItem("Second Face/Build terrain layers")]
         public static BiomeLayerSet Build()
@@ -59,6 +60,35 @@ namespace SecondFace.EditorTools
             set.TerrainMaterial = mat;
             set.Layers = TerrainPaint.Palettes.Values.SelectMany(k => k).Distinct().OrderBy(k => k)
                 .Select(k => new BiomeLayerSet.Entry { Key = k, Layer = Layer(k) }).ToArray();
+            // road surfaces (Core RoadStrips): one material each on SecondFace/Road, from the library key of the same
+            // name (the trail's is "trail"); old asphalt is eaten away in patches
+            var road = Shader.Find(RoadShaderName);
+            if (road == null) Debug.LogError($"TerrainLayerLibrary: {RoadShaderName} is missing");
+            else
+            {
+                Material Surface(string key, float decay)
+                {
+                    if (!lib.TryGetValue(key, out var e)) { Debug.LogWarning($"TerrainLayerLibrary: road surface {key} is not in the library"); return null; }
+                    var path = $"{Dir}/Road_{key}.mat";
+                    var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+                    if (m == null) { m = new Material(road) { name = $"Road_{key}" }; AssetDatabase.CreateAsset(m, path); }
+                    if (m.shader != road) m.shader = road;
+                    m.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(TextureLibrary.MapPath(key, "d")));
+                    m.SetTexture("_BumpMap", AssetDatabase.LoadAssetAtPath<Texture2D>(TextureLibrary.MapPath(key, "n")));
+                    m.SetTexture("_MaskMap", AssetDatabase.LoadAssetAtPath<Texture2D>(TextureLibrary.MapPath(key, "mask")));
+                    m.SetFloat("_Tile", e.Metres);
+                    m.SetFloat("_Decay", decay);
+                    EditorUtility.SetDirty(m);
+                    return m;
+                }
+                set.Surfaces = new[]
+                {
+                    new BiomeLayerSet.SurfaceEntry { Key = "asphalt", Material = Surface("asphalt", 0.45f) },
+                    new BiomeLayerSet.SurfaceEntry { Key = "gravel", Material = Surface("gravel", 0f) },
+                    new BiomeLayerSet.SurfaceEntry { Key = "mud", Material = Surface("mud", 0f) },
+                    new BiomeLayerSet.SurfaceEntry { Key = "trail", Material = Surface("trail", 0f) },
+                };
+            }
             if (freshSet) AssetDatabase.CreateAsset(set, SetPath); else EditorUtility.SetDirty(set);
             AssetDatabase.SaveAssets();
             Debug.Log($"TerrainLayerLibrary: {set.Layers.Length} layers ({set.Layers.Count(e => e.Layer == null)} missing) on {shader.name}");

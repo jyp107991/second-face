@@ -64,7 +64,7 @@ namespace SecondFace.Tests
             var root = new GameObject("Chunks").transform;
             foreach (var (cx, cz) in chunks)
             {
-                var task = ChunkTerrain.Prepare(world.Gen, world.Control, world.Layout.Biomes, cx, cz);
+                var task = ChunkTerrain.Prepare(world, cx, cz);
                 while (!task.IsCompleted) yield return null;
                 Assert.That(task.Exception, Is.Null, task.Exception?.ToString());
                 times.Add(task.Result.Milliseconds);
@@ -134,9 +134,16 @@ namespace SecondFace.Tests
             yield return ScreenshotTests.Capture("world_teeth_chunk", 1920, 1080);
         }
 
+        /// <summary>A view of a way: the middle of its middle segment.</summary>
+        private static (string, float, float) Along(string name, WayInfo way)
+        {
+            var i = way.Points.Count / 2 - 1;
+            return (name, (way.Points[i][0] + way.Points[i + 1][0]) / 2, (way.Points[i][1] + way.Points[i + 1][1]) / 2);
+        }
+
         /// <summary>The ground's surfaces (§6.A.3, P3.2), each from the game camera (`_near`, 45 m) and from mid range
-        /// (`_mid`, 180 m): the sallow by Shale, the Teeth, the drowned shore, and a sallow / rail-corridor border where
-        /// the two palettes blend across the chunk edge (no seam).</summary>
+        /// (`_mid`, 180 m): the sallow by Shale, the Teeth, the drowned shore, a sallow / rail-corridor border where the
+        /// two palettes blend across the chunk edge (no seam), and a road and a track with their surfaces (step 17b).</summary>
         [UnityTest, Timeout(600000)]
         public IEnumerator SurfacesOfTheSallowTheTeethTheShoreAndABorder()
         {
@@ -154,6 +161,8 @@ namespace SecondFace.Tests
                 ("world_teeth", 21000f, 11000f),
                 ("world_shore", 4224f, 6464f),
                 ("world_border", 30 * WorldGrid.Chunk, 13 * WorldGrid.Chunk + 256f),
+                Along("world_road", world.Layout.Roads.First(w => w.Kind == "road")),
+                Along("world_track", world.Layout.Roads.First(w => w.Kind == "track")),
             };
             var times = new List<long>();
             foreach (var (name, x, z) in views)

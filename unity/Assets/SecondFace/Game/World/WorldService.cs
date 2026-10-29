@@ -22,6 +22,8 @@ namespace SecondFace.Game.World
         public WorldLayout Layout { get; private set; }
         /// <summary>The ground generator over the loaded world (thread-safe to call from workers).</summary>
         public TerrainGen Gen { get; private set; }
+        /// <summary>The road surfaces over the loaded world (thread-safe to call from workers).</summary>
+        public RoadStrips Roads { get; private set; }
         public bool Ready => Control != null && Layout != null;
         public string Error { get; private set; }
 
@@ -43,6 +45,7 @@ namespace SecondFace.Game.World
             Style = StyleMap.Read(style);
             Layout = WorldLayout.Read(places, roads);
             Gen = new TerrainGen(Control, Layout, Style);
+            Roads = new RoadStrips(Layout);
             Debug.Log($"WorldService: control {Control.Width}x{Control.Height} at {Control.MetresPerTexel} m, {Layout.Places.Count} places, {Layout.Roads.Count} roads");
         }
 

@@ -518,7 +518,7 @@ at 1/130 m; **dunes** 5 m ridged, stretched across the west wind; **mesas** 22 m
 slow noise crosses a threshold; **craters**) + ripples (0.6 m × (0.25 + roughness) at 14 m). The spec's flat
 "ridged × steep mask" gave the Teeth 63 m of relief per chunk and slopes mostly under 21°, and the Sallow 9 m: hills
 and a plate, not mountains and a desert at the iso camera's scale. Roads are levelled across their width to the ground
-under their centreline, smoothed over 30 m along it, with a 12 m shoulder (levelling to a straight line between
+under their centreline, smoothed over 30 m along it, with a 20 m shoulder (12 m made every cut through 5 m dunes steep enough to paint as cliff; levelling to a straight line between
 far-apart points cut walls into the mountains); rivers sink 3 m with an 8 m ramp; the control map's water lowers the
 ground 3 m. Two talus passes (38°) over the interior; the edge rows stay exact, so chunks meet without a seam
 (tested). Places: `TerrainGen.Pad(place)` = the mean natural ground over the footprint + 0.3 m (never below the sea),
@@ -550,9 +550,24 @@ ones are graded (`GRADE`: saturation, value, tint), so the Sallow is pale straw,
 differ by little colour. Sources changed in this step: sand `sandy_gravel_02` (was a pink aerial sand with tyre
 tracks), snow `snow_03` (the first two had footprints), rock `cliff_side` (layered sandstone; was a mossy green), new
 `stony_ground` (`dry_ground_rocks`) as the Teeth's base. Captures (`WorldTerrainTests`): `world_sallow`, `world_teeth`,
-`world_shore`, `world_border`, each `_near` (the game camera at 45 m) and `_mid` (180 m). Still to do: road surfaces
-(the roads are levelled but carry no surface: step 17b), triplanar on cliffs if stretch shows (it does not at the
-talus angle), and the device cost of the second albedo look (P3.7). Holes under interiors: `TerrainData.SetHoles`
+`world_shore`, `world_border`, each `_near` (the game camera at 45 m) and `_mid` (180 m). Still to do: triplanar on
+cliffs if stretch shows (it does not at the talus angle), and the device cost of the second albedo look (P3.7).
+
+**Road surfaces (built 2026-10-29, step 17b).** Core `RoadStrips` lays strip meshes on a chunk's levelled ground, one
+per surface (`SurfaceOf(kind)`: road → `asphalt`, the Line → `gravel`, marsh → `mud`, everything else → `trail`,
+`rocky_trail` graded). A way's polyline is cut into ≤ 2 m pieces from its start; a piece belongs to the chunk holding
+its midpoint, so neighbouring chunks share the cross-section where a strip crosses their edge (tested) and nothing is
+drawn twice. Four vertices across (outer edges at alpha 0), U across and V along in metres (V restarts at a multiple of
+240 m in each chunk: every tile length divides it, so a 15 km road keeps its precision), heights from the chunk's own
+heightfield + 5 cm. Built on the worker with the chunk (`ChunkTerrain.Prepare` → `Prepared.Roads`); `ApplyRoads` fills
+pooled child meshes of the terrain (`road_<surface>`, no shadow casting; `ChunkTerrain.Hide` turns them off with a
+pooled terrain). Shader `SecondFace/Road`: URP PBR with main-light shadows and fog, alpha-blended at queue
+Geometry+450; the verge is the vertex alpha broken by the texture's height, old asphalt is eaten away in world-noise
+patches (`_Decay` 0.45) where the ground shows; vertices are pulled along the view ray by 4 cm + 0.4 % of the distance,
+so the terrain's LOD mesh never swallows a strip far off. Materials `Terrain/Road_<key>.mat` are built with the layers
+(`TerrainLayerLibrary`, `BiomeLayerSet.Surface(key)`). The road shoulder is 20 m (12 m made every cut through the
+Sallow's 5 m dunes steep enough to paint as cliff). Captures `world_road`, `world_track`. Next for roads: wear (ruts,
+verge grass, drifted sand) with scatter (P3.4), bridges and the Line's rails as props (P3.5). Holes under interiors: `TerrainData.SetHoles`
 when interiors exist (P3.5).
 
 **A.4 Streaming (built 2026-10-29).** Core `StreamingPolicy` decides, Game `WorldStreamer` executes. Load radius 2
@@ -1217,6 +1232,9 @@ numbers from the densest place written into PORT.md §5.
 - **"Shader Unsupported … All subshaders removed" and "dependency … not found"** on the first import of the copied
   terrain shaders are import-order noise (each was imported before the others it names); the shaders compile and
   render on the next import. Check the capture, not the warning.
+- **Road strips did not render at all**: their triangles were wound counter-clockwise seen from above, Unity's back
+  face, so every strip was culled. Unity's front face is clockwise; `RoadStripsLieOnTheGround…` now checks each
+  triangle's facing (cross(b−a, c−a).y > 0).
 - **Terrain chunks built without `SetNeighbors`** shade their edges alone and show a line where two meet; the streamer
   stitches, tests that build chunks by hand must too.
 
@@ -1274,9 +1292,9 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
     layers on a border, no seam), `SecondFace/Terrain/Lit` (two albedo looks, macro variation, height blend), terrain
     albedos flattened and graded at build time, new sand/snow/rock sources and the Teeth's stony ground;
     `world_sallow`, `world_teeth`, `world_shore`, `world_border` (near and mid; `docs/evidence/unity/p3/`).
-17b. Road surfaces: the roads, tracks and the Line get a surface as strip meshes per chunk on the levelled ground
-    (asphalt for roads, gravel and dirt for tracks, ballast for the Line), alpha-edged into the terrain, generated with
-    the chunk on the worker thread and drawn with one material per surface; capture `world_road`.
+17b. ~~Road surfaces~~ (done 2026-10-29, §6.A.3 "Road surfaces"): strip meshes per chunk on the levelled ground, one
+    material per surface, `SecondFace/Road`; `world_road`, `world_track`. The shore's dark ditch lines (the control
+    map's water lowering the ground along creeks) are water's (step 22).
 18. P3.3 `TimeService`, sky, fog, weather; captures at 7:00, 13:00, 19:00, night.
 19. P3.4 resident-drawer scatter per chunk + grass; `world_scatter_dense` with the frame time.
 20. P3.5 `PlaceBuilder` from the exported layout for the first town; lights, decals, NavMesh; `place_shale_street`.

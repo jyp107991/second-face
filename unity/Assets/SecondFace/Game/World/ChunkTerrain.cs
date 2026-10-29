@@ -18,17 +18,21 @@ namespace SecondFace.Game.World
             public int Cx, Cz, Biome;
             public float[] Heights;
             public TerrainPaint.Result Paint;
+            public System.Collections.Generic.List<RoadStrips.Strip> Roads;
             public long Milliseconds;
         }
 
-        /// <summary>Heights, the dominant biome and the paint of a chunk, on a worker thread.</summary>
-        public static Task<Prepared> Prepare(TerrainGen gen, ControlMap control, string[] biomes, int cx, int cz) => Task.Run(() =>
+        /// <summary>Heights, the dominant biome, the paint and the road strips of a chunk, on a worker thread.</summary>
+        public static Task<Prepared> Prepare(TerrainGen gen, ControlMap control, string[] biomes, RoadStrips roads, int cx, int cz) => Task.Run(() =>
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             var heights = gen.Heights(cx, cz);
             var paint = TerrainPaint.Paint(control, biomes, heights, cx, cz);
-            return new Prepared { Cx = cx, Cz = cz, Biome = TerrainPaint.DominantBiome(control, cx, cz), Heights = heights, Paint = paint, Milliseconds = sw.ElapsedMilliseconds };
+            var strips = roads?.Build(cx, cz, heights);
+            return new Prepared { Cx = cx, Cz = cz, Biome = TerrainPaint.DominantBiome(control, cx, cz), Heights = heights, Paint = paint, Roads = strips, Milliseconds = sw.ElapsedMilliseconds };
         });
+
+        public static Task<Prepared> Prepare(WorldService world, int cx, int cz) => Prepare(world.Gen, world.Control, world.Layout.Biomes, world.Roads, cx, cz);
 
         /// <summary>A pooled, empty chunk terrain: created once, re-filled by <see cref="Apply"/> as chunks come and go.</summary>
         public static Terrain Create(Transform parent, BiomeLayerSet layers)
@@ -91,12 +95,71 @@ namespace SecondFace.Game.World
                 Mark("SetAlphamaps");
             }
             else Debug.LogWarning($"ChunkTerrain: no layer for one of {string.Join(", ", keys)} (Second Face/Build terrain layers)");
+            ApplyRoads(t, p, layers);
+            Mark("roads");
             t.name = $"chunk_{p.Cx}_{p.Cz}";
             var (x0, z0) = WorldGrid.Origin(p.Cx, p.Cz);
             t.transform.position = new Vector3(x0, ControlMap.Floor, z0);
             t.drawHeightmap = true;   // pooled terrains stay active and only stop drawing: re-activating one cost ~50 ms
             if (!t.gameObject.activeSelf) t.gameObject.SetActive(true);
             Mark("show");
+        }
+
+        // reused across ApplyRoads calls (main thread)
+        private static readonly System.Collections.Generic.List<Vector3> _rv = new();
+        private static readonly System.Collections.Generic.List<Vector2> _ruv = new();
+        private static readonly System.Collections.Generic.List<Color32> _rc = new();
+
+        /// <summary>The chunk's road strips as child meshes of its terrain, one per surface, pooled with the terrain:
+        /// a surface the chunk lacks keeps its object with the renderer off.</summary>
+        private static void ApplyRoads(Terrain t, Prepared p, BiomeLayerSet layers)
+        {
+            var root = t.transform;
+            foreach (Transform child in root) if (child.name.StartsWith("road_")) child.GetComponent<MeshRenderer>().enabled = false;
+            if (p.Roads == null || layers == null) return;
+            foreach (var s in p.Roads)
+            {
+                var mat = layers.Surface(s.Surface);
+                if (mat == null) continue;
+                var name = "road_" + s.Surface;
+                var go = root.Find(name)?.gameObject;
+                if (go == null)
+                {
+                    go = new GameObject(name);
+                    go.transform.SetParent(root, false);
+                    go.transform.localPosition = new Vector3(0, -ControlMap.Floor, 0);   // strip heights are metres above sea level
+                    go.AddComponent<MeshFilter>().sharedMesh = new Mesh { name = name };
+                    var r = go.AddComponent<MeshRenderer>();
+                    r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
+                var mesh = go.GetComponent<MeshFilter>().sharedMesh;
+                _rv.Clear(); _ruv.Clear(); _rc.Clear();
+                for (var v = 0; v < s.VertexCount; v++)
+                {
+                    _rv.Add(new Vector3(s.Positions[v * 3], s.Positions[v * 3 + 1], s.Positions[v * 3 + 2]));
+                    _ruv.Add(new Vector2(s.Uvs[v * 2], s.Uvs[v * 2 + 1]));
+                    _rc.Add(new Color32(255, 255, 255, (byte)(s.Alphas[v] * 255)));
+                }
+                mesh.Clear();
+                mesh.indexFormat = s.VertexCount > 65000 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16;
+                mesh.SetVertices(_rv);
+                mesh.SetUVs(0, _ruv);
+                mesh.SetColors(_rc);
+                mesh.SetTriangles(s.Triangles, 0);
+                mesh.RecalculateNormals();
+                mesh.RecalculateTangents();
+                mesh.RecalculateBounds();
+                var mr = go.GetComponent<MeshRenderer>();
+                mr.sharedMaterial = mat;
+                mr.enabled = true;
+            }
+        }
+
+        /// <summary>Stops a pooled terrain drawing (the ground and its roads) without deactivating it.</summary>
+        public static void Hide(Terrain t)
+        {
+            t.drawHeightmap = false;
+            foreach (Transform child in t.transform) if (child.name.StartsWith("road_")) child.GetComponent<MeshRenderer>().enabled = false;
         }
 
         /// <summary>A new terrain for one prepared chunk (tests and tools; the streamer pools instead).</summary>

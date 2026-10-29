@@ -48,3 +48,12 @@ MonoBehaviour:
     Layer: {fileID: 8574412962073106934, guid: 6871df046dd4878be9a71b6792449cd1, type: 2}
   - Key: stony_ground
     Layer: {fileID: 8574412962073106934, guid: 0701f9f694f627f8782763b03c9dfc44, type: 2}
+  Surfaces:
+  - Key: asphalt
+    Material: {fileID: 2100000, guid: 7fd6d5d3d7077f8cab08d1bcc9354caf, type: 2}
+  - Key: gravel
+    Material: {fileID: 2100000, guid: 7d6cdf3d3f952b24dbf69590e67884b4, type: 2}
+  - Key: mud
+    Material: {fileID: 2100000, guid: 5f2cfa1238ff0bbc784151a642fe726a, type: 2}
+  - Key: trail
+    Material: {fileID: 2100000, guid: 886a9e692c7d6157abf35c102ce73cde, type: 2}

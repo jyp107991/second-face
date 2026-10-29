@@ -74,7 +74,7 @@ namespace SecondFace.Core.World
     /// The ground of one 512 m chunk (BUILD_PLAN §6.A.3), deterministic from the control map, the relief style map, the
     /// layout and the world seed: base height + roughness × fbm (6 octaves from 1/900 m, 120 m) + the region's relief
     /// styles at the scales the iso camera reads (mountain ridges of 110 + 25 m, wind-stretched dunes of 5 m, mesas
-    /// 22 m high with cliff sides, craters) + fine ripples; roads levelled across their width to the ground under their centreline (smoothed over 30 m along it) with a 12 m shoulder; water
+    /// 22 m high with cliff sides, craters) + fine ripples; roads levelled across their width to the ground under their centreline (smoothed over 30 m along it) with a 20 m shoulder; water
     /// lowered by 3 m with an 8 m ramp; two talus passes (steeper than 38° gives half its excess to the lower
     /// neighbour); then each place's pad at its elevation, falling off over 24 m. Heights in metres above sea level,
     /// <see cref="Resolution"/>² samples 2 m apart, row-major from the south-west corner (index z × Resolution + x).
@@ -85,7 +85,7 @@ namespace SecondFace.Core.World
     {
         public const int Resolution = 257;
         public const float Step = WorldGrid.Chunk / (Resolution - 1);
-        public const float RoadShoulder = 12f, WaterRamp = 8f, PadFalloff = 24f;
+        public const float RoadShoulder = 20f, WaterRamp = 8f, PadFalloff = 24f;   // a 20 m shoulder keeps a cut through 5 m dunes under the rock slope (12 m painted every dune cut as cliff)
         private static readonly float TalusDrop = (float)Math.Tan(38 * Math.PI / 180) * Step;
 
         private readonly ControlMap _control;

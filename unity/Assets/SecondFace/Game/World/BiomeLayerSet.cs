@@ -19,8 +19,24 @@ namespace SecondFace.Game.World
             public TerrainLayer Layer;
         }
 
+        [Serializable]
+        public sealed class SurfaceEntry
+        {
+            public string Key;
+            public Material Material;
+        }
+
         public Material TerrainMaterial;
         public Entry[] Layers = Array.Empty<Entry>();
+        /// <summary>The road surfaces' materials by Core RoadStrips' surface key (asphalt, gravel, mud, trail).</summary>
+        public SurfaceEntry[] Surfaces = Array.Empty<SurfaceEntry>();
+
+        /// <summary>The material for a road surface, or null.</summary>
+        public Material Surface(string key)
+        {
+            foreach (var e in Surfaces) if (e.Key == key) return e.Material;
+            return null;
+        }
 
         /// <summary>The layer for a library key, or null when the set has none.</summary>
         public TerrainLayer Layer(string key)

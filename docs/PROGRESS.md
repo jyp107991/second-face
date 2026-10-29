@@ -445,7 +445,10 @@ patches, and the texture tool takes the large blotches out of every ground textu
 Sallow is pale straw rather than orange. Biome borders blend softly across chunk edges (no seam; up to eight layers on
 a border chunk). New sources for sand, snow and rock and a stony ground for the Teeth. Captures near and mid in
 `docs/evidence/unity/p3/`. Roads still carry no surface (step 17b).
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 17b (road surfaces as strip meshes per chunk), then step 18 (time,
+**Road surfaces (plan §10 step 17b, 2026-10-29):** roads, tracks and the Line now carry a surface: strip meshes laid
+on the levelled ground with ragged verges; the old asphalt is broken in patches where the sand shows through; tracks
+are stony trails. Road cuts through the Sallow's dunes are gentler (no more cliff-painted banks along every road).
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 18 (time,
 sky, fog, weather: a first draft of Core `Sky`/`Weather`, the sky and particle shaders, `TimeService`, `SkyController`,
 `WeatherLayers`, `SkyProfile` and the editor's `SkyAssets` sits in the session scratchpad `step18/`; if it is gone,
 write them from §6.A.6).

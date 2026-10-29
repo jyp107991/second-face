@@ -214,6 +214,52 @@ namespace SecondFace.Tests
             Assert.That(diff / n, Is.LessThan(0.03), "the same ground paints the same either side of the edge");
         }
 
+        /// <summary>Road surfaces (step 17b): a chunk a road crosses gets a strip on its ground, edges at alpha 0, and
+        /// where the road crosses into the next chunk the two strips share their vertices (nothing drawn twice, no gap).</summary>
+        [Test]
+        public void RoadStripsLieOnTheGroundAndMeetAcrossChunkEdges()
+        {
+            Gen();
+            var strips = new RoadStrips(_layout);
+            var road = _layout.Roads.First(w => w.Kind == "road");
+            // the first chunk edge the road crosses
+            (int, int, int, int)? cross = null;
+            for (var i = 0; i + 1 < road.Points.Count && cross == null; i++)
+            {
+                var a = WorldGrid.ChunkAt(road.Points[i][0], road.Points[i][1]); var b = WorldGrid.ChunkAt(road.Points[i + 1][0], road.Points[i + 1][1]);
+                if (a != b && Math.Abs(a.cx - b.cx) + Math.Abs(a.cz - b.cz) == 1) cross = (a.cx, a.cz, b.cx, b.cz);
+            }
+            Assert.That(cross, Is.Not.Null, "the road crosses a chunk edge between two of its points");
+            var (ax, az, bx, bz) = cross.Value;
+            var ha = Gen().Heights(ax, az); var hb = Gen().Heights(bx, bz);
+            var sa = strips.Build(ax, az, ha).Single(s => s.Surface == "asphalt");
+            var sb = strips.Build(bx, bz, hb).Single(s => s.Surface == "asphalt");
+            foreach (var s in new[] { sa, sb })
+            {
+                Assert.That(s.Triangles.Count % 3, Is.EqualTo(0));
+                Assert.That(s.Triangles.All(t => t >= 0 && t < s.VertexCount), Is.True);
+                Assert.That(s.Alphas.Count(a => a == 0f), Is.EqualTo(s.VertexCount / 2), "two of every four vertices are the faded edges");
+                for (var t = 0; t < s.Triangles.Count; t += 3)
+                {
+                    int i0 = s.Triangles[t] * 3, i1 = s.Triangles[t + 1] * 3, i2 = s.Triangles[t + 2] * 3;
+                    float ux = s.Positions[i1] - s.Positions[i0], uz = s.Positions[i1 + 2] - s.Positions[i0 + 2];
+                    float vx = s.Positions[i2] - s.Positions[i0], vz = s.Positions[i2 + 2] - s.Positions[i0 + 2];
+                    Assert.That(uz * vx - ux * vz, Is.GreaterThan(0f), "faces up: clockwise from above, Unity's front face");
+                }
+            }
+            for (var v = 0; v < sa.VertexCount; v++)
+                Assert.That(sa.Positions[v * 3 + 1], Is.EqualTo(RoadStrips.HeightAt(ha, sa.Positions[v * 3], sa.Positions[v * 3 + 2]) + RoadStrips.Lift).Within(1e-3f));
+            // world positions of both strips' vertices: some in A must coincide with some in B (the shared cross-section)
+            var (oax, oaz) = WorldGrid.Origin(ax, az); var (obx, obz) = WorldGrid.Origin(bx, bz);
+            var inB = new System.Collections.Generic.HashSet<(int, int)>();
+            for (var v = 0; v < sb.VertexCount; v++) inB.Add(((int)Math.Round((sb.Positions[v * 3] + obx) * 100), (int)Math.Round((sb.Positions[v * 3 + 2] + obz) * 100)));
+            var shared = 0;
+            for (var v = 0; v < sa.VertexCount; v++)
+                if (inB.Contains(((int)Math.Round((sa.Positions[v * 3] + oax) * 100), (int)Math.Round((sa.Positions[v * 3 + 2] + oaz) * 100)))) shared++;
+            Assert.That(shared, Is.GreaterThanOrEqualTo(4), "the two strips share a cross-section where the road crosses");
+            TestContext.WriteLine($"road {road.Id}: {sa.VertexCount} + {sb.VertexCount} vertices, {shared} shared");
+        }
+
         private static string Find(string repoRel)
         {
             foreach (var start in new[] { AppContext.BaseDirectory, Directory.GetCurrentDirectory() })
