@@ -5783,6 +5783,34 @@
     12313,
     12317
    ]
+  },
+  {
+   "id": "sf_crop",
+   "slot": "hair",
+   "model": "player_m__hair_sf_crop",
+   "hidesHair": false,
+   "hides": []
+  },
+  {
+   "id": "sf_bun",
+   "slot": "hair",
+   "model": "player_m__hair_sf_bun",
+   "hidesHair": false,
+   "hides": []
+  },
+  {
+   "id": "sf_braid",
+   "slot": "hair",
+   "model": "player_m__hair_sf_braid",
+   "hidesHair": false,
+   "hides": []
+  },
+  {
+   "id": "sf_matted",
+   "slot": "hair",
+   "model": "player_m__hair_sf_matted",
+   "hidesHair": false,
+   "hides": []
   }
  ]
 }

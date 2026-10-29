@@ -629,9 +629,13 @@ up to two traits; begin. Seen in `docs/evidence/unity/p5/ui_create_who.jpg`, `ui
 freckles; the hair's colour (dull, dusty, sun-bleached or greying); the eyes'; a scar (eight, from a split brow to a
 burn on the jaw) and a tattoo (eight, from a Cistern number on the neck to a tally on the cheek), all on the live face.
 Seen in `docs/evidence/unity/p5/ui_create_look.jpg` and `ui_create_look_face.jpg`.
-**Next action:** P5.3i part 3: body sliders (build, muscle) and hair choices from the people pipeline (BUILD_PLAN P5
-"Order of work" 3i; the braid seen light reads as a cap, so better hair is part of it; Blender and the MakeHuman assets are in the session
-scratchpad, `blender/` and `mhc/`; if a fresh session lacks them, see `tools/unity/people/`). **`play-people` is released**
+**Body and hair (P5.3i part 3, 2026-10-29):** creation is complete: the Body page has leaner or heavier and softer or
+harder worked (the clothes and the hair follow the body), and the Look page has five hairs (shaved, cropped short,
+tied in a bun, a work braid, matted), each recoloured by the hair colour and greyed in the photograph. Seen in
+`docs/evidence/unity/p5/ui_create_body.jpg`, `ui_create_look.jpg` and `ui_create_hair.jpg` (every hair on both bodies).
+**Next action:** P5.3j: the title, settings (text size, contrast, controls), saves and pause, with New game going
+through character creation into the walkabout (BUILD_PLAN P5 "Order of work" 3j; Blender and the MakeHuman assets are
+in the session scratchpad, `blender/` and `mhc/`; if a fresh session lacks them, see `tools/unity/people/`). **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).
 Step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until Mid ≥ 30 fps).

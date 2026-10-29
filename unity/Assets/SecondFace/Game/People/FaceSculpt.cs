@@ -116,7 +116,7 @@ namespace SecondFace.Game.People
                     _block.SetFloat(AgedId, Aged);
                     r.SetPropertyBlock(_block);
                 }
-                else if (r.name.StartsWith("Hair_") && HairColour.a > 0.001f && m.HasProperty(RecolourId))
+                else if (r.name.Contains("Hair_") && HairColour.a > 0.001f && m.HasProperty(RecolourId))   // own or a piece
                 {
                     // the chosen colour, greying with age (the photograph is fully aged)
                     r.GetPropertyBlock(_block);

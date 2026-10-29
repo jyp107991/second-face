@@ -452,9 +452,9 @@ from fixture state and captured (`UiTests`, the panel drawn into a texture):
   run by `TravelService` in P6.5).
 - ~~3h. The pack with the live paper doll, and barter~~ (done, below; item models and icons rendered from them come
   with P6.1's loot, the procedural gear, held weapons and visible chrome on the figure with the P4 follow-ups).
-- 3i. Character creation and the sculptor (body sliders here). Parts: (1) the rules and the screen (done, below);
+- ~~3i. Character creation and the sculptor (body sliders here)~~ (done, below). Parts: (1) the rules and the screen;
   (2) the look in the shaders: skin tone and undertone, freckles, eye colour, hair colour, a scar and a tattoo drawn
-  over the skin (done, below); (3) body sliders (build, muscle) and hair choices from the people pipeline (shapes refitted on every
+  over the skin; (3) body sliders (build, muscle) and hair choices from the people pipeline (shapes refitted on every
   garment, hair pieces as wardrobe items in a hair slot).
 - 3j. Title, settings (text size, contrast, controls), saves and pause.
 - 3k. The combat bar and log (with P6). 3l. Photo mode and the gamepad.
@@ -642,6 +642,24 @@ the white of the eye is left alone), and the hair rule's reflection and highligh
 now use it. `FaceSculpt.HairColour` greys towards ash with `Aged` (the photograph). `People.LookView.Apply` puts a whole
 `PlayerLook` on a body through the renderers' property blocks. Captures `ui_create_look`, `ui_create_look_face`. Seen:
 recoloured light, the braid's front edge reads as a tight cap (with the hair choices, part 3).
+
+*As built (P5.3i part 3, 2026-10-29).* The body's build and muscle and the choice of hair. `mh_build` gives the player
+bases four more shapes, `body-weight-decr/incr` and `body-muscle-decr/incr`: the whole body as MakeHuman's weight or
+muscle macro moves from the base's value (0.3, 0.5) 0.3 down or 0.5 up (`macro_delta`: the summed macro targets at the
+two values, differenced); every proxy is refitted to them as to the face's shapes, so the garments and the hair carry
+them too and follow the body. Core `Sculpt.Body` lists the two sliders (`Sculpt.All`, for `Shapes` and `Weights`;
+the reroll and the distance stay on the face) and `Looks.Shape` adds the look's build and muscle to the face's values
+for `FaceSculpt`. The hair: each of the generated forms (`sf_crop`, `sf_bun`, `sf_braid`, `sf_matted`) is exported
+alone on each base's rig as `<base>__hair_<form>.fbx` with a `hair` slot in the wardrobe manifest; `Wardrobe.Hair(id)`
+wears one (null: the base's own; `buzz`: none, the scalp's painted stubble), the base's own hair goes while a piece or
+the buzz is worn, a piece goes under a hat like the own hair; `FaceSculpt` recolours a piece like the own hair.
+`Looks.Hair` and `Looks.OwnHair` (crop for body two, braid for body one: the look stores null for a base's own).
+`sf_matted` (hairgen v16) was made for under a wrap and left a bare crown alone: it now lies pushed back over the scalp
+(the shell and 34 locks from the hairline), then hangs with the low locks from the back and sides (4.4 K triangles
+under the 6 K cap). The creation screen: build ("leaner or heavier") and muscle ("softer or harder worked") on the
+Body page, the five hairs as chips on the Look page; `Figure.Look` puts a look on and re-layers (a hair piece put on
+after the figure was layered stayed out of the studio's camera). Captures `ui_create_body`, `ui_create_look`, and per
+hair and body `ui_create_hair_<f|m>_<form>` (sheet `docs/evidence/unity/p5/ui_create_hair.jpg`).
 
 ### P6 — Systems and combat
 1. Interactions and loot (`Play/`): tap on a thing → radial of verbs from content (`talk`, `look`, `take`, `use`,
@@ -1857,6 +1875,14 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
 - **Turn Foot IK on for Humanoid locomotion states** (P4.8): without it feet float (or sink) by the difference between
   the captured and the target leg, and a foot IK goal read in `OnAnimatorIK` is not where the ankle is drawn. Bone
   transforms read in `OnAnimatorIK` hold the last frame's solved pose: never build IK targets from them (it feeds back).
+- **Re-layer a figure after every change of look** (P5.3i): the studio camera draws layer 31 only, and a wardrobe piece
+  instantiated after `Figure.Layer` (a hair put on by the look) stays on layer 0, unseen. `Figure.Look` re-layers.
+- **Judge a hair choice bare-headed** (P5.3i): `sf_matted` was generated for under a wrap (locks below it only) and
+  read as a bald crown with strands when chosen alone. A hair offered at creation covers the scalp by itself.
+- **A card levelled to face outwards stands up on the crown** (P5.3i): zeroing the facing's height turns a lock lying
+  on top of the head edge-on, a fin. Blend from the head's outward to level by height.
+- **A macro step from a lean base barely shows** (P5.3i): MakeHuman's heavy and muscled targets start at 0.5, so a body
+  at weight 0.3 moved +0.3 only drops part of its thin target. Step further up than down.
 
 ---
 

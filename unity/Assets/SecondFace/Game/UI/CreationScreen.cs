@@ -146,9 +146,7 @@ namespace SecondFace.Game.UI
         {
             if (Figure == null) return;
             var look = Creation.Look;
-            var face = Figure.Face;
-            if (face != null) face.Set(look.Face);   // not ?. on a component
-            Figure.Scale = 1f + 0.06f * Mathf.Clamp(look.Height, -1f, 1f);
+            Figure.Scale = LookView.Scale(look);
             var outfit = new Outfit { Layers = new List<GarmentLook>() };
             var wardrobe = Figure.Wardrobe;
             if (wardrobe != null && wardrobe.Set != null)
@@ -158,7 +156,7 @@ namespace SecondFace.Game.UI
                     outfit.Layers.Add(new GarmentLook { Name = id, Dye = g != null && look.Dyes.TryGetValue(g.Slot, out var d) && d != 0xffffff ? d : null });
                 }
             Figure.Dress(outfit);
-            LookView.Apply(Figure.Body, look);
+            Figure.Look(look);
             DrawFigure();
             Root.schedule.Execute(DrawFigure).ExecuteLater(1);
         }
@@ -328,12 +326,21 @@ namespace SecondFace.Game.UI
         private void LookPage()
         {
             var look = Creation.Look;
-            void Show() { if (Figure != null) { LookView.Apply(Figure.Body, look); DrawFigure(); } }
+            void Show() { if (Figure != null) { Figure.Look(look); DrawFigure(); } }
             Heading("create.skin");
             Slider(Strings.Get("create.tone"), -1f, 1f, look.Skin, v => { look.Skin = v; Show(); }, "slider-tone");
             Slider(Strings.Get("create.undertone"), -1f, 1f, look.Undertone, v => { look.Undertone = v; Show(); }, "slider-undertone");
             Slider(Strings.Get("create.freckles"), 0f, 1f, look.Freckles, v => { look.Freckles = v; Show(); }, "slider-freckles");
             Heading("create.hair");
+            var styles = Row("sf-creation__chips");
+            var style = look.Hair ?? Looks.OwnHair(look.Body);
+            foreach (var h in Looks.Hair)
+            {
+                var id = h;
+                var chip = Choice(Strings.Get("hair." + h), style == h, () => { look.Hair = id; Show(); Refresh(); }, "hair-" + h);
+                chip.AddToClassList("sf-creation__chip");
+                styles.Add(chip);
+            }
             var hair = Row();
             hair.AddToClassList("sf-creation__swatches");
             foreach (var c in Looks.HairColours)
@@ -399,8 +406,18 @@ namespace SecondFace.Game.UI
             Slider(Strings.Get("create.height"), -1f, 1f, Creation.Look.Height, v =>
             {
                 Creation.Look.Height = v;
-                if (Figure != null) { Figure.Scale = 1f + 0.06f * v; DrawFigure(); }
+                if (Figure != null) { Figure.Scale = LookView.Scale(Creation.Look); DrawFigure(); }
             }, "slider-height");
+            Slider(Strings.Get("create.build"), -1f, 1f, Creation.Look.Build, v =>
+            {
+                Creation.Look.Build = v;
+                if (Figure != null) { Figure.Look(Creation.Look); DrawFigure(); }
+            }, "slider-build");
+            Slider(Strings.Get("create.muscle"), -1f, 1f, Creation.Look.Muscle, v =>
+            {
+                Creation.Look.Muscle = v;
+                if (Figure != null) { Figure.Look(Creation.Look); DrawFigure(); }
+            }, "slider-muscle");
             Heading("create.clothes");
             var wardrobe = Figure != null ? Figure.Wardrobe : null;
             if (wardrobe == null || wardrobe.Set == null) return;

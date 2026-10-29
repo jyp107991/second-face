@@ -70,15 +70,26 @@ namespace SecondFace.Core.Npc
             new("neck-scale-horiz", "neck", "neck width", "decr", "incr"),
         };
 
+        /// <summary>The body's sliders (P5.3i): the weight and muscle macros a step either way over the whole body, every
+        /// garment and hair refitted to them by the build (mh_build "body-weight", "body-muscle").</summary>
+        public static readonly SculptSlider[] Body =
+        {
+            new("body-weight", "body", "build", "decr", "incr"),
+            new("body-muscle", "body", "muscle", "decr", "incr"),
+        };
+
+        /// <summary>The face's sliders and the body's.</summary>
+        public static IEnumerable<SculptSlider> All { get { foreach (var s in Sliders) yield return s; foreach (var s in Body) yield return s; } }
+
         private static readonly Dictionary<string, SculptSlider> ById = new();
-        static Sculpt() { foreach (var s in Sliders) ById[s.Id] = s; }
+        static Sculpt() { foreach (var s in All) ById[s.Id] = s; }
 
         public static SculptSlider Slider(string id) => ById.TryGetValue(id, out var s) ? s : null;
 
         /// <summary>Every blend shape the sculptor drives (both of each pair, the single shapes and <see cref="Aged"/>).</summary>
         public static IEnumerable<string> Shapes()
         {
-            foreach (var s in Sliders)
+            foreach (var s in All)
             {
                 if (s.Paired) { yield return s.Id + "-" + s.Low; yield return s.Id + "-" + s.High; }
                 else yield return s.High;
@@ -93,8 +104,8 @@ namespace SecondFace.Core.Npc
         /// </summary>
         public static List<(string Shape, float Weight)> Weights(IReadOnlyDictionary<string, float> values, float aged = 0f)
         {
-            var l = new List<(string, float)>(Sliders.Length * 2 + 1);
-            foreach (var s in Sliders)
+            var l = new List<(string, float)>((Sliders.Length + Body.Length) * 2 + 1);
+            foreach (var s in All)
             {
                 var v = values != null && values.TryGetValue(s.Id, out var x) ? Math.Clamp(x, s.Min, 1f) : 0f;
                 if (s.Paired)

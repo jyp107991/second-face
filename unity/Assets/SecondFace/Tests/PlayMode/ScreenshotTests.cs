@@ -385,6 +385,7 @@ namespace SecondFace.Tests
             for (var i = 0; i < 10; i++) yield return null;
             var people = new List<GameObject> { GameObject.Find("player_f_built"), GameObject.Find("player_m_built") };
             Assert.That(people.All(p => p != null), Is.True, "the player's bases in the scene");
+            var keptBefore = SecondFace.Game.People.Portraits.Count;   // other tests' people may still be kept
 #if UNITY_EDITOR
             foreach (var id in new[] { "cast_sal_02", "cast_chr_02", "cast_sal_04" })
             {
@@ -429,7 +430,7 @@ namespace SecondFace.Tests
             Debug.Log($"people_portraits: {rts.Count} portraits, {ms:0.0} ms each in the editor, {SecondFace.Game.People.Portraits.Count} kept");
             Object.Destroy(sheet);
             foreach (var p in people) SecondFace.Game.People.Portraits.Forget(p);
-            Assert.That(SecondFace.Game.People.Portraits.Count, Is.EqualTo(0));
+            Assert.That(SecondFace.Game.People.Portraits.Count, Is.EqualTo(keptBefore), "this test's portraits are forgotten");
             foreach (var p in people.Skip(2)) Object.Destroy(p);
         }
 

@@ -10,7 +10,7 @@ import json, os
 import numpy as np
 
 STYLES = ('sf_crop', 'sf_bun', 'sf_braid', 'sf_matted')
-VERSION = 15   # bump when the generator changes: mh_build regenerates into its cache by name + version
+VERSION = 16   # bump when the generator changes: mh_build regenerates into its cache by name + version
 ATLAS = 1024
 COLS = {'sheet': 0, 'clump': 1, 'wisp': 2, 'matted': 3}
 
@@ -370,27 +370,46 @@ def gen_braid(B, rng):
 
 
 def gen_matted(B, rng):
-    """Long hair matted under a wrap: only what shows below a wrap or hood, heavy locks from the back and sides of the
-    head hanging over the shoulders and down the back, uneven."""
+    """Long hair matted: pushed back loose from the hairline over the scalp, heavy matted locks from the crown and from
+    the back and sides of the head hanging over the shoulders and down the back, uneven. Under a wrap or a hood only
+    the locks below it show (v16: the locks alone, made for under a wrap, left a bare crown when worn without one)."""
     m = Mesh()
+    Nk = B.surf(B.c + np.array([0.0, -0.45, -0.9]), 0.05)
+    shell(B, m, Nk, 0.022, rng)
+
+    def hang(p, L, k, lift0=0.05):
+        """From p down: off the head while near it, behind the back below."""
+        pts = [p]; step = L / (k - 1)
+        for j in range(1, k):
+            q = pts[-1] + np.array([rng.normal(0, 0.03), -step, 0])
+            if q[1] > B.c[1] - 0.6: q = B.surf(q, lift0 + 0.01 * j)
+            else: q[2] = min(q[2], B.back(q[1]) - 0.06) if abs(q[0]) < 0.5 else q[2]
+            pts.append(q)
+        return np.array(pts)
+
+    def lay(pts, w0, w1, twist):
+        # on the head a lock lies on it (facing out of it); hanging, it faces away level (a lock on the crown faced
+        # level stood up off the scalp like a fin)
+        o = outward(B, pts)
+        f = o.copy(); f[:, 1] = 0
+        f /= np.maximum(np.linalg.norm(f, axis=1, keepdims=True), 1e-9)
+        t = smoothstep((B.c[1] - pts[:, 1]) / 0.6)[:, None]
+        out = o * (1 - t) + f * t
+        out /= np.maximum(np.linalg.norm(out, axis=1, keepdims=True), 1e-9)
+        m.ribbon(pts, out, taper(len(pts), w0, w1), 'matted', rng, twist=twist)
+
+    # from the crown and the top: pushed back over the scalp to behind the head, then hanging
+    for r in rng.choice(B.scalp, size=34, replace=False, p=B.root_p):
+        path = scalp_path(B, r, Nk, rng.uniform(0.03, 0.045), 0.18, rng, wander=0.05)
+        if len(path) < 2: continue
+        tail = hang(path[-1], rng.uniform(1.2, 2.4), 8, lift0=0.06)
+        lay(np.concatenate([path, tail[1:]]), rng.uniform(0.18, 0.26), 0.07, rng.normal(0, 0.3))
+    # from the back and the sides, low
     P = B.V[B.scalp]
     e, a, _ = head_angles(P, B.top, B.eye)
     band = B.scalp[(a > 70) & (e < 5)]
-    for r in rng.choice(band, size=min(80, len(band)), replace=False):
-        p = B.surf(B.V[r], 0.04)
-        pts = [p]
-        L = rng.uniform(1.6, 3.0); k = 12; step = L / (k - 1)
-        for j in range(1, k):
-            q = pts[-1] + np.array([rng.normal(0, 0.03), -step, 0])
-            # keep off the head and the back: out from the head's centre while near it, behind the back below
-            if q[1] > B.c[1] - 0.6: q = B.surf(q, 0.05 + 0.01 * j)
-            else: q[2] = min(q[2], B.back(q[1]) - 0.06) if abs(q[0]) < 0.5 else q[2]
-            pts.append(q)
-        pts = np.array(pts)
-        out = outward(B, pts)
-        out[:, 1] = 0
-        out /= np.maximum(np.linalg.norm(out, axis=1, keepdims=True), 1e-9)
-        m.ribbon(pts, out, taper(k, rng.uniform(0.2, 0.32), 0.08), 'matted', rng, twist=rng.normal(0, 0.8))
+    for r in rng.choice(band, size=min(64, len(band)), replace=False):
+        lay(hang(B.surf(B.V[r], 0.04), rng.uniform(1.6, 3.0), 11), rng.uniform(0.2, 0.32), 0.08, rng.normal(0, 0.8))
     return m
 
 

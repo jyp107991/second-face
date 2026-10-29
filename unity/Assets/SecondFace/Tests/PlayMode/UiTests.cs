@@ -809,6 +809,12 @@ namespace SecondFace.Tests
             Press(screen.Content.Q<Button>("tattoo-tally_cheek"));
             Press(screen.Content.Q<Button>("hair-" + Looks.HairColours[4].ToString("x6")));
             Press(screen.Content.Q<Button>("eyes-blue"));
+            Press(screen.Content.Q<Button>("hair-sf_matted"));
+            var wardrobe = screen.Figure.Wardrobe;
+            Assert.That(wardrobe.Wearing.TryGetValue("hair", out var piece) && piece == "sf_matted", Is.True, "the matted hair is worn");
+            Assert.That(screen.Figure.Body.GetComponentsInChildren<Renderer>(true).Where(r => r.name.StartsWith("Hair_")).All(r => !r.enabled), Is.True, "the body's own hair goes");
+            Assert.That(screen.Figure.Body.GetComponentsInChildren<Renderer>(true).All(r => r.gameObject.layer == Studio.Layer), Is.True,
+                "the hair piece is on the studio's layer (drawn in the figure)");
             var look = screen.Creation.Look;
             Assert.That(look.Scar, Is.EqualTo("cheek_slash"));
             Assert.That(look.Tattoo, Is.EqualTo("tally_cheek"));
@@ -824,17 +830,48 @@ namespace SecondFace.Tests
             Assert.That(Changed(plain, Pixels(screen.Figure.Texture)), Is.GreaterThan(0.05f), "skin, hair, eyes and marks on the figure");
             Save(_rt, "ui_create_look");
             Save(screen.Figure.Texture, "ui_create_look_face");
+            // every hair on the first body (evidence; each drawn in the close-up)
+            foreach (var h in Looks.Hair)
+            {
+                Press(screen.Content.Q<Button>("hair-" + h));
+                for (var i = 0; i < 2; i++) yield return null;
+                screen.DrawFigure();
+                yield return null;
+                Save(screen.Figure.Texture, "ui_create_hair_f_" + h);
+            }
+            Press(screen.Content.Q<Button>("hair-sf_matted"));
 
             screen.Show("body");
             Press(screen.Content.Q<Button>("body-m"));
             for (var i = 0; i < 3; i++) yield return null;
             Assert.That(screen.Figure.Body.name, Does.Contain("player_m"), "the other body");
             Assert.That(screen.Figure.Face.Values.Count, Is.GreaterThan(0), "the face carried over");
+            Assert.That(screen.Figure.Wardrobe.Wearing.TryGetValue("hair", out var carried) && carried == "sf_matted", Is.True, "the hair carried over");
+            screen.Show("look");
+            foreach (var h in Looks.Hair)
+            {
+                Press(screen.Content.Q<Button>("hair-" + h));
+                for (var i = 0; i < 2; i++) yield return null;
+                screen.DrawFigure();
+                yield return null;
+                Save(screen.Figure.Texture, "ui_create_hair_m_" + h);
+            }
+            Press(screen.Content.Q<Button>("hair-sf_matted"));
+            screen.Show("body");
+            for (var i = 0; i < 2; i++) yield return null;
             var dye = screen.Content.Query<Button>(className: "sf-creation__swatch").ToList().First(b => b.name.StartsWith("dye-top-") && !b.name.EndsWith("ffffff"));
             Press(dye);
             Assert.That(screen.Creation.Look.Dyes.ContainsKey("top"), Is.True);
             screen.Content.Q("slider-height").Q<Slider>().value = 0.8f;
             Assert.That(screen.Figure.Scale, Is.GreaterThan(1.04f));
+            var slim = Pixels(screen.Figure.Texture);
+            screen.Content.Q("slider-build").Q<Slider>().value = 1f;
+            screen.Content.Q("slider-muscle").Q<Slider>().value = 0.8f;
+            Assert.That(screen.Figure.Face.Values["body-weight"], Is.EqualTo(1f), "the build reaches the body's shapes");
+            for (var i = 0; i < 2; i++) yield return null;
+            screen.DrawFigure();
+            yield return null;
+            Assert.That(Changed(slim, Pixels(screen.Figure.Texture)), Is.GreaterThan(0.01f), "a heavier body, clothes and all");
             for (var i = 0; i < 3; i++) yield return null;
             Save(_rt, "ui_create_body");
 

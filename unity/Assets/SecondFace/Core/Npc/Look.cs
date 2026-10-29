@@ -79,13 +79,23 @@ namespace SecondFace.Core.Npc
         /// <summary>Re-dyed salvage: undyed, olive, rust, ochre, slate, faded indigo, charcoal, oxblood, sand.</summary>
         public static readonly int[] Dyes = { 0xffffff, 0x5d6448, 0x7a4127, 0x8f6a2e, 0x4b5560, 0x3d4a66, 0x3a3836, 0x5a2a26, 0xa48f6c };
 
-        /// <summary>Hair by body, as built for the player (the body's own first). The hair rule: shaved, cropped,
-        /// tied back, braided, matted under a wrap; never a styled cut.</summary>
-        public static readonly Dictionary<string, string[]> Hair = new()
+        /// <summary>The hair to choose, as built for both bodies (the wardrobe's hair slot; "buzz" is no hair piece, the
+        /// scalp's painted stubble). The hair rule: shaved, cropped, tied back, braided, matted; never a styled cut.</summary>
+        public static readonly string[] Hair = { "buzz", "sf_crop", "sf_bun", "sf_braid", "sf_matted" };
+
+        /// <summary>The hair a body was built with (what <see cref="PlayerLook.Hair"/> null means).</summary>
+        public static string OwnHair(string body) => body == "m" ? "sf_crop" : "sf_braid";
+
+        /// <summary>The face's values with the body's (the sculptor drives both).</summary>
+        public static Dictionary<string, float> Shape(PlayerLook look)
         {
-            ["f"] = new[] { "braid" },
-            ["m"] = new[] { "crop" },
-        };
+            var d = new Dictionary<string, float>(look.Face ?? new Dictionary<string, float>())
+            {
+                ["body-weight"] = System.Math.Clamp(look.Build, -1f, 1f),
+                ["body-muscle"] = System.Math.Clamp(look.Muscle, -1f, 1f),
+            };
+            return d;
+        }
 
         public static int EyeRgb(string id) { foreach (var e in Eyes) if (e.Id == id) return e.Rgb; return Eyes[0].Rgb; }
     }

@@ -1183,6 +1183,34 @@ MonoBehaviour:
     m_Localized: Eye band
     m_Metadata:
       m_Items: []
+  - m_Id: 40968036663296
+    m_Localized: Leaner or heavier
+    m_Metadata:
+      m_Items: []
+  - m_Id: 40968070217728
+    m_Localized: Softer or harder worked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 40968070217729
+    m_Localized: Shaved
+    m_Metadata:
+      m_Items: []
+  - m_Id: 40968070217730
+    m_Localized: Cropped short
+    m_Metadata:
+      m_Items: []
+  - m_Id: 40968074412032
+    m_Localized: Tied in a bun
+    m_Metadata:
+      m_Items: []
+  - m_Id: 40968074412033
+    m_Localized: A work braid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 40968074412034
+    m_Localized: Matted
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

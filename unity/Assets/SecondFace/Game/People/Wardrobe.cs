@@ -52,10 +52,13 @@ namespace SecondFace.Game.People
             if (WearOutfitOnStart && _worn.Count == 0 && Set != null) Wear(Set.Outfit);
         }
 
-        /// <summary>Wears these garments (by id) and nothing else.</summary>
+        /// <summary>The body's own hair is shaved off (no hair piece worn: the scalp's painted stubble, P5.3i).</summary>
+        public bool Shaved { get; private set; }
+
+        /// <summary>Wears these garments (by id) and nothing else (the hair stays: it is not clothing).</summary>
         public void Wear(IEnumerable<string> ids)
         {
-            foreach (var slot in _worn.Keys.ToList()) Remove(slot);
+            foreach (var slot in _worn.Keys.ToList()) if (slot != HairSlot) Remove(slot);
             foreach (var id in ids) Put(id);
             Changed();
         }
@@ -74,6 +77,18 @@ namespace SecondFace.Game.People
             if (!Remove(slot)) return false;
             Changed();
             return true;
+        }
+
+        public const string HairSlot = "hair";
+
+        /// <summary>The hair (P5.3i): null the body's own, "buzz" none (shaved), else a hair piece of the set by id.</summary>
+        public void Hair(string id)
+        {
+            var now = Shaved ? "buzz" : _worn.TryGetValue(HairSlot, out var w) ? w.Garment.Id : null;
+            if (now == id) return;
+            Shaved = id == "buzz";
+            if (id == null || Shaved || !Put(id)) Remove(HairSlot);
+            Changed();
         }
 
         /// <summary>Tints a worn garment (white: its own baked colour).</summary>
@@ -160,8 +175,12 @@ namespace SecondFace.Game.People
             Levels();
             Hide();
             var hatted = _worn.Values.Any(w => w.Garment.HidesHair);
+            var ownGone = Shaved || _worn.ContainsKey(HairSlot);
             foreach (var r in GetComponentsInChildren<Renderer>(true))
-                if (r.name.StartsWith("Hair_")) r.enabled = !hatted;
+            {
+                if (r.name.StartsWith("Hair_")) r.enabled = !hatted && !ownGone;   // the body's own
+                else if (r.name.StartsWith(HairSlot + ":")) r.enabled = !hatted;   // a hair piece
+            }
             var sculpt = GetComponent<FaceSculpt>();
             if (sculpt != null) sculpt.Refresh();
         }

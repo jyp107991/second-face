@@ -4,7 +4,8 @@ using UnityEngine;
 namespace SecondFace.Game.People
 {
     /// <summary>
-    /// Puts a <see cref="PlayerLook"/> on a player body (P5.3i): the face (<see cref="FaceSculpt"/>), the hair's colour
+    /// Puts a <see cref="PlayerLook"/> on a player body (P5.3i): the hair (a piece of the wardrobe's hair slot, shaved, or
+    /// the body's own), the face and the body's build and muscle (<see cref="FaceSculpt"/>), the hair's colour
     /// (greying with the face's age), the skin's tone, undertone and freckles, a scar and a tattoo (SecondFace/Skin, drawn
     /// in the head's frame), and the eyes' colour (SecondFace/Cloth's iris recolour), through each renderer's property
     /// block (merged with what the wardrobe and the face already put there). The height is <see cref="Scale"/>; the clothes'
@@ -28,11 +29,13 @@ namespace SecondFace.Game.People
         public static void Apply(GameObject body, PlayerLook look)
         {
             if (body == null || look == null) return;
+            var wardrobe = body.GetComponentInChildren<Wardrobe>();
+            if (wardrobe != null) wardrobe.Hair(look.Hair == Looks.OwnHair(look.Body) ? null : look.Hair);
             var face = body.GetComponentInChildren<FaceSculpt>();
             if (face != null)
             {
                 face.HairColour = Colour(look.HairColour);
-                face.Set(look.Face);
+                face.Set(Looks.Shape(look));   // the face's sliders and the body's build and muscle
             }
             var scar = System.Array.IndexOf(Looks.Scars, look.Scar);
             var tattoo = System.Array.IndexOf(Looks.Tattoos, look.Tattoo);

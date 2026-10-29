@@ -67,6 +67,13 @@ namespace SecondFace.Game.People
             Layer();
         }
 
+        /// <summary>Puts a look on the figure (<see cref="LookView"/>); a hair piece it puts on joins the studio's layer.</summary>
+        public void Look(PlayerLook look)
+        {
+            LookView.Apply(Body, look);
+            Layer();
+        }
+
         private void Layer()
         {
             if (Body == null) return;

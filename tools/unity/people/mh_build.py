@@ -766,18 +766,31 @@ def lod_chain(rig, keep_shapes=False, parts=None, cloth_total=None):
     for o in parts: o.name = o.name + '_LOD0'; o.data.name = o.name
     print(f'  LOD triangles {totals}' + (f'; capped {", ".join(report)}' if report else ''))
 
+def macro_sum(p):
+    """The macro targets' summed deltas for a spec, by base vertex (MakeHuman space)."""
+    acc = {}
+    for rel, w in macro_targets(p):
+        t = target(rel)
+        if not t: continue
+        for i, dx, dy, dz in t:
+            a = acc.setdefault(i, [0.0, 0.0, 0.0]); a[0] += dx * w; a[1] += dy * w; a[2] += dz * w
+    return acc
+
+def macro_delta(spec, key, to):
+    """The whole body as one macro moves to another value (the creation's body sliders, P5.3i): deltas over base
+    vertices, MakeHuman space."""
+    now, there = macro_sum(spec), macro_sum({**spec, key: to})
+    out = []
+    for i in set(now) | set(there):
+        a, b = now.get(i, (0.0, 0.0, 0.0)), there.get(i, (0.0, 0.0, 0.0))
+        d = (b[0] - a[0], b[1] - a[1], b[2] - a[2])
+        if abs(d[0]) + abs(d[1]) + abs(d[2]) > 1e-7: out.append((i, d[0], d[1], d[2]))
+    return out
+
 def aged_head(spec, v, body_idx):
     """The same head older, for the photograph (BUILD_PLAN §6.B.5): the age macros' difference between the person's age
     and spec['aged'], on the head and neck only (fading out down the neck) and less the head's mean shift, so the older
     head sits on the body as it is. Deltas over base vertices, MakeHuman space."""
-    def macro_sum(p):
-        acc = {}
-        for rel, w in macro_targets(p):
-            t = target(rel)
-            if not t: continue
-            for i, dx, dy, dz in t:
-                a = acc.setdefault(i, [0.0, 0.0, 0.0]); a[0] += dx * w; a[1] += dy * w; a[2] += dz * w
-        return acc
     now, old = macro_sum(spec), macro_sum({**spec, 'age': spec['aged']})
     ys = [v[i][1] for i in body_idx]; top, ground = max(ys), min(ys); h = top - ground
     lo, hi = top - 0.21 * h, top - 0.16 * h   # from the neck's base to under the jaw
@@ -882,6 +895,16 @@ def build_person(spec):
         if t: add_shape(name, t); nshapes += 1
     if spec.get('sculpt') and spec.get('aged'):
         add_shape('aged', aged_head(spec, v, body_idx)); nshapes += 1
+    if spec.get('sculpt'):
+        # the body sliders (P5.3i, Core Sculpt "body-weight", "body-muscle"): the macro a step either way over the whole
+        # body; every proxy (the garments, the hair) is refitted to them as to the face's shapes. Further up than down:
+        # the bases are lean (weight 0.3), and MakeHuman's heavy and muscled targets only start at 0.5 (+0.3 barely
+        # showed through the clothes)
+        for key in ('weight', 'muscle'):
+            at = spec.get(key, 0.5)
+            for label, to in (('decr', max(0.0, at - 0.3)), ('incr', min(1.0, at + 0.5))):
+                d = macro_delta(spec, key, to)
+                if d: add_shape(f'body-{key}-{label}', d); nshapes += 1
     print(f'  {nshapes} blend shapes')
 
     # --- armature
@@ -1157,6 +1180,27 @@ def build_person(spec):
                                          'hides': sorted(hides)})
             for o in made: bpy.data.objects.remove(o, do_unlink=True)
             print(f'  wardrobe: {name} ({w["slot"]}, hides {len(hides)} body vertices)')
+        # the hair to choose at creation (P5.3i): each form of hair of our own alone on the rig, in a 'hair' slot (the
+        # base's own hair goes while one is worn; none at all leaves the painted buzz)
+        for h in spec.get('hairs', []):
+            before = set(bpy.data.objects)
+            hl = spec.get('hair_look') or {}
+            po = proxy('Hair_' + h, 'hair', h, 'hair', hair_look=hl, tex_name=spec['id'] + '__' + h)
+            if po is None: continue
+            lod_chain(rig, keep_shapes=bool(spec.get('sculpt')), parts=[po])
+            made = [o for o in bpy.data.objects if o not in before]
+            bpy.ops.object.select_all(action='DESELECT')
+            rig.select_set(True)
+            for o in made: o.select_set(True)
+            name = f'{spec["id"]}__hair_{h}'
+            gpath = os.path.join(OUT, name + '.fbx')
+            bpy.ops.export_scene.fbx(filepath=gpath, use_selection=True, apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y',
+                                     mesh_smooth_type='FACE', use_mesh_modifiers=False, add_leaf_bones=False, bake_anim=False, path_mode='STRIP',
+                                     embed_textures=False, use_armature_deform_only=False, primary_bone_axis='Y', secondary_bone_axis='X')
+            K.write_model_meta(gpath, f'{REL}/{name}.fbx')
+            manifest['garments'].append({'id': h, 'slot': 'hair', 'model': name, 'hidesHair': False, 'hides': []})
+            for o in made: bpy.data.objects.remove(o, do_unlink=True)
+            print(f'  wardrobe: {name} (hair)')
         with open(os.path.join(OUT, spec['id'] + '.wardrobe.json'), 'w') as f: json.dump(manifest, f, indent=1)
 
 os.makedirs(OUT, exist_ok=True)
