@@ -194,6 +194,50 @@ MonoBehaviour:
     m_Localized: sent
     m_Metadata:
       m_Items: []
+  - m_Id: 18640007446528
+    m_Localized: Map
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972480
+    m_Localized: Where am I
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972481
+    m_Localized: Close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972482
+    m_Localized: You are here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972483
+    m_Localized: No known way there yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972484
+    m_Localized: Travel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972485
+    m_Localized: on foot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972486
+    m_Localized: by a line you can ride
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972487
+    m_Localized: Under an hour
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972488
+    m_Localized: About {0} hours
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972489
+    m_Localized: About {0} days
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

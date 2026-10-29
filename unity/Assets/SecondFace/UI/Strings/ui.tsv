@@ -41,6 +41,17 @@ notebook.failed	failed
 notebook.conclusion	what it adds up to
 notebook.received	received
 notebook.sent	sent
+map.title	Map
+map.centre	Where am I
+map.close	Close
+map.here	You are here.
+map.no_way	No known way there yet.
+map.travel	Travel
+map.on_foot	on foot
+map.by_ride	by a line you can ride
+map.under_hour	Under an hour
+map.hours	About {0} hours
+map.days	About {0} days
 common.back	Back
 common.yes	Yes
 common.no	No

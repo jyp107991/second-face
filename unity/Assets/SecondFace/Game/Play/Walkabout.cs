@@ -66,6 +66,7 @@ namespace SecondFace.Game.Play
             Input.Rig = Rig; Input.Walker = Walker; Input.Camera = Stage.Camera;
             Input.Tapped += OnTapped;
             Townsfolk = Populate(assets);
+            Know("shale");
         }
 
         /// <summary>The cast at the town's people's posts (one each, the first posts), each idling their own way.</summary>
@@ -100,6 +101,20 @@ namespace SecondFace.Game.Play
                 n++;
             }
             return n;
+        }
+
+        /// <summary>The town is known, and the places its roads lead to (the walkabout's map starts with them).</summary>
+        private void Know(string town)
+        {
+            var known = Game.World.KnownLocations;
+            if (!known.Contains(town)) known.Add(town);
+            foreach (var r in Registry.WorldMap.Routes)
+            {
+                var other = r.A == town ? r.B : r.B == town ? r.A : null;
+                if (other == null || known.Contains(other)) continue;
+                if (Registry.WorldMap.Locations.TryGetValue(other, out var l) && l.Hidden == true) continue;
+                known.Add(other);
+            }
         }
 
         /// <summary>The radial over a tapped person (or thing).</summary>

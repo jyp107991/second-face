@@ -34,7 +34,9 @@ namespace SecondFace.Tests
     /// end closes it; heard lines show whole and chosen choices dim; back takes the way out (`ui_dialogue`,
     /// `ui_dialogue_log`). The notebook (P5.3f) lists open quests first and finished ones after, writes the chosen one out
     /// with its objectives and journal, tracks a quest to the top, and turns to the leads, people, letters and decisions;
-    /// an empty section says so (`ui_notebook`, `ui_notebook_leads`).
+    /// an empty section says so (`ui_notebook`, `ui_notebook_leads`). The map (P5.3g) opens on the player over the baked
+    /// sheet, names only the known places, opens a place's card with the journey there, offers travel only where a way
+    /// exists, keeps its zoom within bounds, and back closes the card before the map (`ui_map`, `ui_map_card`).
     /// </summary>
     public class UiTests : IPrebuildSetup
     {
@@ -457,6 +459,59 @@ namespace SecondFace.Tests
             yield return null;
             Assert.That(empty.List.Q(className: "sf-notebook__empty"), Is.Not.Null, "an empty section says so");
             empty.Close();
+        }
+
+        [UnityTest, Timeout(120000)]
+        public IEnumerator MapShowsKnownPlacesAndJourneys()
+        {
+            var assets = Assets();
+            Assert.That(assets.WorldMap, Is.Not.Null, "the map's sheet (Second Face/Bake the world map, then Build UI assets)");
+            string World(string f) => File.ReadAllText(Path.Combine(Application.streamingAssetsPath, "world", f));
+            var layout = WorldLayout.Read(World("places.json"), World("roads.json"));
+            var shale = layout.Places["shale"];
+            var known = new HashSet<string> { "shale", "cistern9" };
+            var stranger = layout.Places.Keys.First(id => !known.Contains(id));
+            string travelled = null;
+            var player = new Vector2(shale.Centre[0] + 40f, shale.Centre[1] - 20f);
+            var model = new MapModel
+            {
+                Sheet = assets.WorldMap, Layout = layout, Known = known, Here = "shale", Player = player, Heading = 60f,
+                Plan = to => to == "cistern9" ? new Trip { Hours = 6, Legs = { new TripLeg { From = "shale", To = "cistern9", Mode = "foot", Hours = 6 } } } : null,
+                Travel = id => travelled = id,
+            };
+            _ui = Offscreen(1600, 720, out _rt);
+            _ui.SafeAreaOverride = new Rect(0.05f, 0.04f, 0.95f, 0.96f);
+            var map = _ui.Open(new MapScreen(model));
+            for (var i = 0; i < 6; i++) yield return null;
+            Assert.That(map.Marker("shale"), Is.Not.Null);
+            Assert.That(map.Marker("cistern9"), Is.Not.Null);
+            Assert.That(map.Marker(stranger), Is.Null, "a place not yet known is not named");
+            Assert.That(map.You, Is.Not.Null, "the player is marked");
+            Assert.That(map.Zoom, Is.GreaterThan(1.5f), "it opens close in, on the player");
+            var view = map.Sheet.parent.worldBound;
+            Assert.That(Vector2.Distance(map.InView(player.x, player.y), view.center), Is.LessThan(4f), "centred on the player");
+            Assert.That(view.xMin, Is.GreaterThanOrEqualTo(_ui.Insets.x), "the map clears the cutout");
+            Assert.That(Save(_rt, "ui_map"), Is.GreaterThan(0.95f));
+
+            map.Choose("cistern9");
+            yield return null;
+            Assert.That(map.Card.resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex));
+            Assert.That(map.CardTrip.text, Is.EqualTo("About 6 hours on foot"));
+            Assert.That(map.TravelButton.resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex), "a way there: travel is offered");
+            Save(_rt, "ui_map_card");
+            map.Choose("shale");
+            yield return null;
+            Assert.That(map.CardTrip.text, Is.EqualTo("You are here."));
+            Assert.That(map.TravelButton.resolvedStyle.display, Is.EqualTo(DisplayStyle.None));
+            map.ZoomAbout(view.size * 0.5f, 100f);
+            Assert.That(map.Zoom, Is.EqualTo(MapScreen.MaxZoom));
+            map.ZoomAbout(view.size * 0.5f, 0.1f);
+            Assert.That(map.Zoom, Is.EqualTo(1f));
+            Assert.That(_ui.Back(), Is.True);
+            Assert.That(map.IsOpen, Is.True, "back closes the card first");
+            Assert.That(_ui.Back(), Is.True);
+            Assert.That(map.IsOpen, Is.False);
+            Assert.That(travelled, Is.Null);
         }
 
         private static Label Text(string cls, string text)

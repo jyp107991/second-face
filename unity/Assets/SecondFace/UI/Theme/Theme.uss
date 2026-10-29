@@ -558,3 +558,79 @@
     white-space: normal;
     margin-top: 16px;
 }
+
+/* ---- the world map (MapScreen.cs): the surveyor's sheet on the desk ---- */
+.sf-map { background-color: #2B241E; }
+.sf-map__head { flex-direction: row; align-items: center; margin: 12px 20px 8px 24px; min-height: 72px; }
+.sf-map__title {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: 32px;
+    color: var(--plate-text);
+}
+.sf-map__headbutton { margin-left: 12px; color: var(--plate-text); border-color: var(--plate-dim); }
+.sf-map__headbutton:enabled:hover { background-color: rgba(255, 255, 255, 0.06); }
+.sf-map__view {
+    flex-grow: 1;
+    margin: 0 16px 16px 16px;
+    overflow: hidden;
+    border-radius: 6px;
+    background-color: #CFC4AC;
+}
+.sf-map__sheet { -unity-background-scale-mode: stretch-to-fill; }
+.sf-map__place {
+    width: 40px;
+    height: 40px;
+    translate: -20px -20px;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    border-radius: 20px;
+    background-color: rgba(0, 0, 0, 0);
+}
+.sf-map__place:enabled:hover { background-color: rgba(0, 0, 0, 0); }
+.sf-map__place:enabled:active { background-color: rgba(0, 0, 0, 0.08); }
+.sf-map__dot {
+    position: absolute;
+    left: 11px;
+    top: 11px;
+    width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    border-width: 3px;
+    border-color: var(--paper);
+    background-color: var(--ink);
+}
+.sf-map__place--here .sf-map__dot { background-color: var(--rust); }
+.sf-map__place--on .sf-map__dot { border-color: var(--ochre); width: 22px; height: 22px; left: 9px; top: 9px; border-radius: 11px; }
+.sf-map__name {
+    position: absolute;
+    left: 36px;
+    top: 4px;
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: 22px;
+    color: var(--ink);
+    white-space: nowrap;
+    text-shadow: 0 0 4px rgba(238, 230, 211, 0.95);
+}
+.sf-map__you { width: 40px; height: 40px; translate: -20px -20px; }
+.sf-map__card {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+    max-width: 460px;
+    padding: 14px 18px 16px 18px;
+}
+.sf-map__card-title {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: 30px;
+    color: var(--plate-text);
+}
+.sf-map__card-region {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: var(--plate-dim);
+}
+.sf-map__card-trip { font-size: 24px; margin-top: 8px; color: var(--plate-text); white-space: normal; }
+.sf-map__travel { margin-top: 12px; align-self: flex-start; background-color: var(--ochre); color: var(--ink); }
+.sf-map__travel:enabled:hover { background-color: #D59B3A; }

@@ -18,6 +18,8 @@ namespace SecondFace.Game.UI
         public FontAsset Interface, InterfaceStrong;
         /// <summary>The notebook's book face (Literata 12 pt Regular), its italic and its heading cut (36 pt SemiBold).</summary>
         public FontAsset Book, BookItalic, BookHeading;
+        /// <summary>The world map's sheet (MapBake).</summary>
+        public Texture2D WorldMap;
 
         public bool Complete => Panel != null && Panel.themeStyleSheet != null && Interface != null && InterfaceStrong != null
                                 && Book != null && BookItalic != null && BookHeading != null;

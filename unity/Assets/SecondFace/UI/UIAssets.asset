@@ -18,3 +18,4 @@ MonoBehaviour:
   Book: {fileID: 11400000, guid: 2d4e1f7cf1b18f6b0936e85a18c7d3c5, type: 2}
   BookItalic: {fileID: 11400000, guid: 83e38ee4e21fb5c8abf3f97acf87548b, type: 2}
   BookHeading: {fileID: 11400000, guid: a9baafbe4e7993ac7a09369b885ef4ed, type: 2}
+  WorldMap: {fileID: 2800000, guid: 163a49f25352e0d0faa68ed320064d24, type: 3}

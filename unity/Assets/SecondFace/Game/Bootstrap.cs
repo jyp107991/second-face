@@ -138,7 +138,7 @@ namespace SecondFace.Game
             if (_hud == null)
             {
                 _hud = new Hud(UI);
-                _hud.Actions(OpenNotebook, null, null);   // the map and the pack come with P5.3g-h
+                _hud.Actions(OpenNotebook, () => OpenMap(), null);   // the pack comes with P5.3h
                 _hud.ObjectiveTapped += () => OpenNotebook(SecondFace.Core.World.Notebook.Tracked(Walkabout.Game));
                 UI.StackChanged += () => _hudNext = 0f;   // a quest tracked in the notebook, or one a conversation began, shows at once
                 var place = Content?.Entry("maps", "shale")?["name"]?.ToString() ?? "Shale";
@@ -174,6 +174,39 @@ namespace SecondFace.Game
         }
 
         private void OpenNotebook() => OpenNotebook(null);
+
+        /// <summary>Opens the world map over the walkabout: the places its game knows, the walker where they stand, the
+        /// quickest journeys from the place they are nearest.</summary>
+        public MapScreen OpenMap()
+        {
+            var layout = Stage?.World?.Layout;
+            if (UI == null || Walkabout == null || Walkabout.Walker == null || layout == null) return null;
+            if (UI.Top is MapScreen open) return open;
+            var g = Walkabout.Game;
+            var at = Walkabout.Walker.transform.position;
+            string here = null;
+            var best = float.MaxValue;
+            foreach (var p in layout.Places.Values)
+            {
+                var d = (new Vector2(p.Centre[0], p.Centre[1]) - new Vector2(at.x, at.z)).sqrMagnitude;
+                if (d < best) { best = d; here = p.Id; }
+            }
+            var known = new System.Collections.Generic.HashSet<string>(g.World.KnownLocations);
+            if (here != null) known.Add(here);
+            var face = Walkabout.Walker.transform.forward;
+            var hour = Stage.Clock != null ? Stage.Clock.Hour : 8.0;
+            return UI.Open(new MapScreen(new MapModel
+            {
+                Sheet = Interface != null ? Interface.WorldMap : null,
+                Layout = layout,
+                Known = known,
+                Here = here,
+                Player = new Vector2(at.x, at.z),
+                Heading = Mathf.Atan2(face.x, face.z) * Mathf.Rad2Deg,
+                Plan = to => SecondFace.Core.World.Travel.PlanTrip(Registry.WorldMap, here, to,
+                    new SecondFace.Core.World.TravelOptions { Known = id => known.Contains(id), Hour = hour }),
+            }));
+        }
 
         private void LateUpdate()
         {

@@ -55,6 +55,8 @@ namespace SecondFace.EditorTools
             a.Book = book;
             a.BookItalic = bookItalic;
             a.BookHeading = bookHeading;
+            a.WorldMap = AssetDatabase.LoadAssetAtPath<Texture2D>(MapBake.SheetPath);
+            if (a.WorldMap == null) Debug.LogWarning($"UIBuild: no {MapBake.SheetPath} (Second Face/Bake the world map)");
             if (fresh) AssetDatabase.CreateAsset(a, AssetPath);
             else EditorUtility.SetDirty(a);
             AssetDatabase.SaveAssets();

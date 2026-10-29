@@ -599,7 +599,13 @@ the journal under it), the leads and what they add up to, the people you have me
 made, as a book on a dark desk. Track a quest from it and the HUD shows its next step. In the walkabout, talking to the
 townsfolk can now start the game's real quests, which then appear in the notebook and on the HUD. Seen in
 `docs/evidence/unity/p5/ui_notebook.jpg` and `ui_notebook_leads.jpg`.
-**Next action:** P5.3g (the map and travel: world and local, pins; BUILD_PLAN P5 "Order of work"). **`play-people` is released**
+**The map (P5.3g, 2026-10-29):** the world now has a real map, painted from the same ground you walk on: a
+surveyor's sheet on paper with the regions in muted colours, the hills shaded, contours, the sea, the river, the roads
+and the rail line. Open it from the HUD: drag and pinch it, see where you stand and which way you face, tap a place you
+know for how long the journey there would take. Seen in `docs/evidence/unity/p5/map_sheet.jpg`, `ui_map.jpg` and
+`ui_map_card.jpg`. Still to come: the local map of the place you are in, pins, and the journeys themselves (with the
+systems, P6).
+**Next action:** P5.3h (the pack with the live paper doll, and barter; BUILD_PLAN P5 "Order of work"). **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).
 Step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until Mid ≥ 30 fps).

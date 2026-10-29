@@ -191,6 +191,50 @@ MonoBehaviour:
     m_Key: notebook.sent
     m_Metadata:
       m_Items: []
+  - m_Id: 18640007446528
+    m_Key: map.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972480
+    m_Key: map.centre
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972481
+    m_Key: map.close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972482
+    m_Key: map.here
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972483
+    m_Key: map.no_way
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972484
+    m_Key: map.travel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972485
+    m_Key: map.on_foot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972486
+    m_Key: map.by_ride
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972487
+    m_Key: map.under_hour
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972488
+    m_Key: map.hours
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18640061972489
+    m_Key: map.days
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

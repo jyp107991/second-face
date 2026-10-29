@@ -99,6 +99,16 @@ namespace SecondFace.Tests
             Assert.That(boot.Hud.Root.resolvedStyle.display, Is.EqualTo(UnityEngine.UIElements.DisplayStyle.Flex), "the HUD element stays (its layer hides)");
             notebook.Close();
             yield return null;
+            // the map (P5.3g): the walker's town and the places its roads lead to are known and marked
+            Assert.That(boot.Interface.WorldMap, Is.Not.Null, "the map's sheet is in the UI assets");
+            var map = boot.OpenMap();
+            for (var f = 0; f < 3; f++) yield return null;
+            Assert.That(boot.UI.Top, Is.SameAs(map), "the map opened");
+            Assert.That(map.Marker("shale"), Is.Not.Null, "the town is on it");
+            Assert.That(walk.Game.World.KnownLocations.Count, Is.GreaterThan(1), "the places the town's roads lead to are known");
+            Assert.That(map.You, Is.Not.Null, "and the walker");
+            map.Close();
+            yield return null;
             // a tap on one of the townsfolk in view opens the radial over them (P5.3c); a verb closes it
             var view = Camera.main;
             var tappable = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None);

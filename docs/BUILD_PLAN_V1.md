@@ -438,7 +438,9 @@ from fixture state and captured (`UiTests`, the panel drawn into a texture):
   (done, below).
 - ~~3e. Conversation cameras (over-shoulder two-shot, portrait inserts; Cinemachine)~~ (done, below).
 - ~~3f. The notebook (leads, quests, people, letters, decisions) as a book~~ (done, below).
-- 3g. The map and travel (world and local; pins).
+- ~~3g. The map and travel (world and local; pins)~~ (the world map done, below; the local map, pins and the travel
+  itself follow: the local map as a top-down render of the place round the player, pins on a long press, the journey
+  run by `TravelService` in P6.5).
 - 3h. The pack with the live paper doll, and barter.
 - 3i. Character creation and the sculptor (body sliders here).
 - 3j. Title, settings (text size, contrast, controls), saves and pause.
@@ -537,6 +539,23 @@ button and a tap on its objective open the notebook (at the tracked quest); the 
 its next objective, refreshed when the screens change. Captures `ui_notebook`, `ui_notebook_leads`. Also: the Core test
 build (`core.yml`) had stopped compiling with P5.3b (`UiStringsTests` used `UnityEngine.Application`); it finds the
 project from the working directory now.
+
+*As built (P5.3g, 2026-10-29).* `MapBake` (Editor, Second Face/Bake the world map) paints the whole world from the
+streamed terrain's own generator (`TerrainGen.Natural` on the control and style maps) as a surveyor's sheet,
+`UI/Map/world.jpg` (2048×1365, 11.7 m a pixel, north up; JPEG: the paper grain made a 4 MB PNG): a muted colour per
+biome taken from four samples round a noise-warped point (the control map's 64 m cells become soft, wandering borders),
+snow on the high Teeth, relief shaded from the north-west, contours every 50 m (every 250 m stronger), the sea and its
+shore line, the river, the roads (tracks dashed) and the rail line, a paper grain and a worn edge
+(`docs/evidence/unity/p5/map_sheet.jpg`). `UIAssets.WorldMap` holds it. `Game.UI.MapScreen` over a `MapModel` (sheet,
+layout, known places, here, the player and their heading, a trip planner, an optional travel action): the sheet on the
+desk, scaled and moved by transform (no relayout) with one-finger drag (a pointer is captured only once it moves 10
+units, so a tap still reaches a place), two-finger pinch about the fingers, the wheel; zoom 1-6, the margin allowed a
+quarter of the view in; it opens at zoom 2.2 on the player and follows them through layout changes until moved. Only
+known places are marked (a dot and a Literata name with a paper halo, counter-scaled to keep their size), the player
+as an arrow along their heading. A tap on a place opens its card: name, region, and the quickest journey there
+(`Travel.PlanTrip`) as hours or days on foot or by a line you can ride, or "no known way"; a travel button where a way
+exists and the model offers travel. Back closes the card, then the map. The walkabout knows its town and the places its
+roads lead to (`Walkabout.Know`); the HUD's map button opens the map there. Captures `ui_map`, `ui_map_card`.
 
 ### P6 — Systems and combat
 1. Interactions and loot (`Play/`): tap on a thing → radial of verbs from content (`talk`, `look`, `take`, `use`,
