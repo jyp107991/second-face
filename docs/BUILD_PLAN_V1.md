@@ -1332,9 +1332,20 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
          scans' import. `world_scatter_sallow` (sparse: the Sallow's cover is scrub and stones, 19b's) and
          `world_scatter_teeth` (pines, firs, boulders); ~3.7–5.9 K props live round the focus. The editor's batchmode
          renders no frames between captures, so its frame time says nothing: P3.7 measures on the phone.
-    19b. Small scatter — scrub, stones, debris — as instanced terrain detail meshes (low-poly levels taken from the
-         Mesh LODs), density per detail cell from Core, within the detail distance.
-    19c. Grass as cards baked from the grass scans (Blender, like the card trees) on the terrain's grass layer;
+    19b. ~~Small scatter as instanced terrain details~~ (done 2026-10-29): Core `WorldDetails` (eleven prototypes in
+         `Keys` order; per 2 m cell an expected count per biome rule from slope, wash, altitude and clump noise, rounded
+         by a hash of the cell; nothing on roads, rails, rivers or in places; ~35–65 K a chunk, ~110 ms on the
+         worker), `DetailMeshes` (each prototype a scan variant cut to the coarsest Mesh LOD under 400 triangles,
+         compacted, library materials with instancing, prefabs in Prefabs/details made Addressable in "details",
+         `World/DetailSet.asset`), `DetailSet.Load` (by address, before the first terrain), `ChunkTerrain` (instance
+         count scatter mode, detail distance 75 m, only the layers a chunk uses written: ~7 ms a write in the
+         editor). The scans' cut-out alpha was lost in Poly Haven's glTF (JPEG base colour): `models.py` now fetches
+         the Alpha map (and grass's dried-out colour) and `models_bake.py` composes them; grass, shrubs and rooibos
+         re-baked. **Fault carried to 19c:** at their true size the scans' twigs and tufts are thin and straw on straw;
+         from the game camera the Sallow still reads bare and the Teeth's tufts vanish.
+    19c. Readable low vegetation from the card pipeline (`tools/unity/kits/trees.py`, `cards.py`): bushes of 0.5–1.5 m
+         (several stems from the base, dense small leaf cards in the dry olive and grey-green of a scrub desert,
+         three seeds each) and grass as chunky tuft cards, replacing the scan twigs and tufts in the detail set;
          `world_scatter_dense` with the frame time.
 20. P3.5 `PlaceBuilder` from the exported layout for the first town; lights, decals, NavMesh; `place_shale_street`.
 21. P3.5 interiors as positioned prefabs with instant open; `place_shelter_hall`.

@@ -97,6 +97,7 @@ namespace SecondFace.EditorTools
             AssetDatabase.SaveAssets();
             Debug.Log($"AddressablesBuild: {n} entries in {Sources.Length + 1} groups");
             ScatterCatalogBuilder.Build();   // the world's props name these addresses
+            DetailMeshes.Build();            // the terrain's small scatter: its own group, "details"
             return n;
         }
 

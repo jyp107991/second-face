@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd95954f0dab9d16925667c95edf7c3, type: 3}
+  m_Name: DetailSet
+  m_EditorClassIdentifier: SecondFace.Game::SecondFace.Game.World.DetailSet
+  Entries:
+  - Key: scrub_bush
+    Address: details/scrub_bush
+    MinScale: 1.4
+    MaxScale: 2.4
+    AlignToGround: 0.3
+  - Key: scrub_twigs
+    Address: details/scrub_twigs
+    MinScale: 2
+    MaxScale: 3.4
+    AlignToGround: 0.2
+  - Key: scrub_low
+    Address: details/scrub_low
+    MinScale: 1.8
+    MaxScale: 3
+    AlignToGround: 0.2
+  - Key: stones
+    Address: details/stones
+    MinScale: 1
+    MaxScale: 2.2
+    AlignToGround: 0.9
+  - Key: pebbles
+    Address: details/pebbles
+    MinScale: 1.4
+    MaxScale: 3
+    AlignToGround: 1
+  - Key: rocks_flat
+    Address: details/rocks_flat
+    MinScale: 1
+    MaxScale: 1.8
+    AlignToGround: 0.9
+  - Key: branches
+    Address: details/branches
+    MinScale: 0.9
+    MaxScale: 1.4
+    AlignToGround: 1
+  - Key: grass_a
+    Address: details/grass_a
+    MinScale: 2.5
+    MaxScale: 4.5
+    AlignToGround: 0.3
+  - Key: grass_b
+    Address: details/grass_b
+    MinScale: 1.3
+    MaxScale: 2.2
+    AlignToGround: 0.3
+  - Key: grass_c
+    Address: details/grass_c
+    MinScale: 1.2
+    MaxScale: 2
+    AlignToGround: 0.3
+  - Key: fern
+    Address: details/fern
+    MinScale: 1
+    MaxScale: 1.4
+    AlignToGround: 0.3

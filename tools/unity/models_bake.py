@@ -112,6 +112,37 @@ def save_texture(img, path, size, alpha):
     cp.save(); bpy.data.images.remove(cp)
 
 
+# Models whose base colour is replaced by Poly Haven's dried-out variant (the Sallow's grass is straw, not lawn).
+DRY = {'grass_medium_01'}
+
+
+def side_map(key, name):
+    """A map models.py fetched beside the glTF (textures/<key>_<name>_2k.png|jpg), loaded into Blender, or None."""
+    for ext in ('png', 'jpg'):
+        p = os.path.join(M.OUT, key, 'textures', f'{key}_{name}_2k.{ext}')
+        if os.path.exists(p):
+            return bpy.data.images.load(p, check_existing=True)
+    return None
+
+
+def with_alpha(base, alpha, dry=None):
+    """A copy of `base` whose alpha is `alpha`'s first channel (and whose colour is `dry`'s, when given)."""
+    import numpy as np
+    w, h = base.size
+    px = np.empty(w * h * 4, np.float32); base.pixels.foreach_get(px)
+    if dry is not None and tuple(dry.size) == (w, h):
+        dp = np.empty(w * h * 4, np.float32); dry.pixels.foreach_get(dp); px[0::4] = dp[0::4]; px[1::4] = dp[1::4]; px[2::4] = dp[2::4]
+    a = alpha
+    if tuple(a.size) != (w, h):
+        a = alpha.copy(); a.scale(w, h)
+    ap = np.empty(w * h * 4, np.float32); a.pixels.foreach_get(ap)
+    px[3::4] = ap[0::4]
+    out = bpy.data.images.new(base.name + '_cut', w, h, alpha=True)
+    out.colorspace_settings.name = base.colorspace_settings.name
+    out.pixels.foreach_set(px)
+    return out
+
+
 def export_materials(key, meshes):
     """Renames every material to its slot (mat_nature:<key>_<m>) and writes its textures to tex/."""
     os.makedirs(os.path.join(OUT, 'tex'), exist_ok=True)
@@ -128,7 +159,12 @@ def export_materials(key, meshes):
         # cut-out only where the base colour really has transparent texels: scans flag solid leaves (a quiver tree's
         # succulent ones) as blended too, and a JPEG has no alpha to cut with
         cut = False
-        if bsdf and bsdf.inputs['Alpha'].is_linked and base is not None and base.size[0] and base.channels == 4:
+        mask = side_map(key, 'alpha') if bsdf and bsdf.inputs['Alpha'].is_linked else None
+        if mask is not None and base is not None and base.size[0]:
+            # the scan's alpha lives in its own map (models.py fetches it): put it in the base colour's alpha
+            base = with_alpha(base, mask, side_map(key, 'dry_diff') if key in DRY else None)
+            cut = True
+        elif bsdf and bsdf.inputs['Alpha'].is_linked and base is not None and base.size[0] and base.channels == 4:
             import numpy as np
             px = np.empty(base.size[0] * base.size[1] * 4, np.float32); base.pixels.foreach_get(px)
             cut = bool((px[3::4] < 0.5).mean() > 0.01)

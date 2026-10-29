@@ -66,6 +66,43 @@ namespace SecondFace.Tests
             Assert.That(none.Any(p => p.Model == "pine"), Is.False);
         }
 
+        /// <summary>Small scatter (step 19b): the same counts every time, none on a road, a Sallow chunk carries tens of
+        /// thousands of small things, the Wet more grass than the Sallow.</summary>
+        [Test]
+        public void DetailsAreFixedClearOfRoadsAndFollowTheBiome()
+        {
+            Load();
+            var details = new WorldDetails(_control, _layout);
+            var shale = _layout.Places["shale"];
+            var (cx, cz) = WorldGrid.ChunkAt(shale.Centre[0], shale.Centre[1]);
+            var h = _gen.Heights(cx, cz);
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var a = details.Build(cx, cz, h, _layout.Biomes);
+            var ms = sw.ElapsedMilliseconds;
+            var b = details.Build(cx, cz, h, _layout.Biomes);
+            Assert.That(a.Layers, Is.EqualTo(b.Layers));
+            for (var l = 0; l < a.Counts.Count; l++) Assert.That(a.Counts[l], Is.EqualTo(b.Counts[l]));
+            TestContext.WriteLine($"Shale's chunk: {a.Total} details in {string.Join(", ", a.Layers.Select((k, i) => $"{WorldDetails.Keys[k]} {a.Counts[i].Sum(c => c)}"))}; {ms} ms");
+            Assert.That(a.Total, Is.InRange(5000, 120000));
+            Assert.That(a.Counts.All(c => c.All(v => v <= WorldDetails.MaxPerCell)), Is.True);
+            // a cell on a road carries nothing
+            var (x0, z0) = WorldGrid.Origin(cx, cz);
+            const float cell = WorldGrid.Chunk / WorldDetails.Resolution;
+            var onRoad = 0;
+            foreach (var w in _layout.Roads)
+                for (var i = 0; i + 1 < w.Points.Count; i++)
+                    for (var t = 0f; t <= 1f; t += 0.05f)
+                    {
+                        float x = w.Points[i][0] + (w.Points[i + 1][0] - w.Points[i][0]) * t, z = w.Points[i][1] + (w.Points[i + 1][1] - w.Points[i][1]) * t;
+                        int ci = (int)((x - x0) / cell), cj = (int)((z - z0) / cell);
+                        if (ci < 0 || cj < 0 || ci >= WorldDetails.Resolution || cj >= WorldDetails.Resolution) continue;
+                        onRoad++;
+                        foreach (var c in a.Counts) Assert.That(c[cj * WorldDetails.Resolution + ci], Is.EqualTo(0), $"a detail on {w.Id}");
+                    }
+            Assert.That(onRoad, Is.GreaterThan(0), "a road crosses Shale's chunk");
+            Assert.That(ms, Is.LessThan(3000), "computed on the chunk's worker in time");
+        }
+
         private static float Distance(float x, float z, float[] a, float[] b)
         {
             float vx = b[0] - a[0], vz = b[1] - a[1], l2 = vx * vx + vz * vz;

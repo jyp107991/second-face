@@ -21,31 +21,39 @@ namespace SecondFace.Game.World
             public System.Collections.Generic.List<RoadStrips.Strip> Roads;
             /// <summary>The chunk's props (null when no catalog was given): placed by <see cref="ScatterSpawner"/>.</summary>
             public System.Collections.Generic.List<PropPlacement> Props;
+            /// <summary>The chunk's small scatter per detail layer (null without details).</summary>
+            public WorldDetails.Result Details;
             public long Milliseconds;
         }
 
         /// <summary>Heights, the dominant biome, the paint and the road strips of a chunk, on a worker thread.</summary>
-        public static Task<Prepared> Prepare(TerrainGen gen, ControlMap control, string[] biomes, RoadStrips roads, WorldScatter scatter, System.Func<string, int> variants, int cx, int cz) => Task.Run(() =>
+        public static Task<Prepared> Prepare(TerrainGen gen, ControlMap control, string[] biomes, RoadStrips roads, WorldScatter scatter, System.Func<string, int> variants, int cx, int cz, WorldDetails details = null) => Task.Run(() =>
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             var heights = gen.Heights(cx, cz);
             var paint = TerrainPaint.Paint(control, biomes, heights, cx, cz);
             var strips = roads?.Build(cx, cz, heights);
             var props = scatter != null && variants != null ? scatter.Props(cx, cz, heights, biomes, variants) : null;
-            return new Prepared { Cx = cx, Cz = cz, Biome = TerrainPaint.DominantBiome(control, cx, cz), Heights = heights, Paint = paint, Roads = strips, Props = props, Milliseconds = sw.ElapsedMilliseconds };
+            var small = details?.Build(cx, cz, heights, biomes);
+            return new Prepared { Cx = cx, Cz = cz, Biome = TerrainPaint.DominantBiome(control, cx, cz), Heights = heights, Paint = paint, Roads = strips, Props = props, Details = small, Milliseconds = sw.ElapsedMilliseconds };
         });
 
         /// <summary>A chunk of the loaded world; with a catalog its props are placed too.</summary>
         public static Task<Prepared> Prepare(WorldService world, int cx, int cz, ScatterCatalog catalog = null) =>
-            Prepare(world.Gen, world.Control, world.Layout.Biomes, world.Roads, world.Scatter, catalog != null ? catalog.Variants : null, cx, cz);
+            Prepare(world.Gen, world.Control, world.Layout.Biomes, world.Roads, world.Scatter, catalog != null ? catalog.Variants : null, cx, cz, world.Details);
 
         /// <summary>A pooled, empty chunk terrain: created once, re-filled by <see cref="Apply"/> as chunks come and go.</summary>
-        public static Terrain Create(Transform parent, BiomeLayerSet layers)
+        public static Terrain Create(Transform parent, BiomeLayerSet layers, DetailSet details = null)
         {
             var data = new TerrainData { heightmapResolution = TerrainGen.Resolution };
             data.size = new Vector3(WorldGrid.Chunk, ControlMap.Span, WorldGrid.Chunk);
-            data.SetDetailResolution(TerrainPaint.AlphaResolution, 16);
+            data.SetDetailResolution(WorldDetails.Resolution, 16);
             data.alphamapResolution = TerrainPaint.AlphaResolution;
+            if (details?.Prototypes != null && details.Prototypes.Length == WorldDetails.Keys.Length)
+            {
+                data.SetDetailScatterMode(DetailScatterMode.InstanceCountMode);   // a cell's value is how many stand in it
+                data.detailPrototypes = details.Prototypes;
+            }
             var go = Terrain.CreateTerrainGameObject(data);
             go.transform.SetParent(parent, false);
             var t = go.GetComponent<Terrain>();
@@ -53,6 +61,8 @@ namespace SecondFace.Game.World
             t.drawInstanced = true;
             t.heightmapPixelError = 5f;
             t.basemapDistance = 400f;
+            t.detailObjectDistance = DetailDistance;
+            t.detailObjectDensity = 1f;
             return t;
         }
 
@@ -102,10 +112,13 @@ namespace SecondFace.Game.World
             else Debug.LogWarning($"ChunkTerrain: no layer for one of {string.Join(", ", keys)} (Second Face/Build terrain layers)");
             ApplyRoads(t, p, layers);
             Mark("roads");
+            ApplyDetails(t, p);
+            Mark("details");
             t.name = $"chunk_{p.Cx}_{p.Cz}";
             var (x0, z0) = WorldGrid.Origin(p.Cx, p.Cz);
             t.transform.position = new Vector3(x0, ControlMap.Floor, z0);
             t.drawHeightmap = true;   // pooled terrains stay active and only stop drawing: re-activating one cost ~50 ms
+            t.drawTreesAndFoliage = true;
             if (!t.gameObject.activeSelf) t.gameObject.SetActive(true);
             Mark("show");
         }
@@ -160,17 +173,49 @@ namespace SecondFace.Game.World
             }
         }
 
+        /// <summary>How far the terrain draws its small scatter, metres (the iso camera sees ~150 m of ground; stones and
+        /// scrub read only near it).</summary>
+        public const float DetailDistance = 75f;
+
+        private static int[,] _detail;
+        private static int[,] _zero;
+        // the detail layers each (pooled) terrain holds now, so a reused terrain clears what its last chunk wrote
+        private static readonly System.Collections.Generic.Dictionary<TerrainData, System.Collections.Generic.List<int>> _detailLayers = new();
+
+        private static void ApplyDetails(Terrain t, Prepared p)
+        {
+            var data = t.terrainData;
+            if (data.detailPrototypes.Length != WorldDetails.Keys.Length) return;
+            const int n = WorldDetails.Resolution;
+            _detail ??= new int[n, n];
+            _zero ??= new int[n, n];
+            var now = p.Details?.Layers ?? new System.Collections.Generic.List<int>();
+            if (_detailLayers.TryGetValue(data, out var before))
+                foreach (var k in before) if (!now.Contains(k)) data.SetDetailLayer(0, 0, k, _zero);
+            if (p.Details != null)
+                for (var l = 0; l < p.Details.Layers.Count; l++)
+                {
+                    var counts = p.Details.Counts[l];
+                    for (var j = 0; j < n; j++)
+                        for (var i = 0; i < n; i++)
+                            _detail[j, i] = counts[j * n + i];
+                    data.SetDetailLayer(0, 0, p.Details.Layers[l], _detail);
+                }
+            _detailLayers[data] = new System.Collections.Generic.List<int>(now);
+        }
+
         /// <summary>Stops a pooled terrain drawing (the ground and its roads) without deactivating it.</summary>
         public static void Hide(Terrain t)
         {
             t.drawHeightmap = false;
+            t.drawTreesAndFoliage = false;
             foreach (Transform child in t.transform) if (child.name.StartsWith("road_")) child.GetComponent<MeshRenderer>().enabled = false;
         }
 
         /// <summary>A new terrain for one prepared chunk (tests and tools; the streamer pools instead).</summary>
-        public static Terrain Build(Prepared p, BiomeLayerSet layers, Transform parent)
+        public static Terrain Build(Prepared p, BiomeLayerSet layers, Transform parent, DetailSet details = null)
         {
-            var t = Create(parent, layers);
+            var t = Create(parent, layers, details);
             Apply(t, p, layers);
             return t;
         }

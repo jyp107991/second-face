@@ -19,6 +19,8 @@ namespace SecondFace.Game.World
         public WorldService World;
         public BiomeLayerSet Layers;
         public ScatterCatalog Catalog;
+        /// <summary>The terrain's small scatter (loaded by <see cref="Prewarm"/> before the first terrain is made).</summary>
+        public DetailSet Details;
         /// <summary>Chunks within this many of the focus carry their props (the iso camera sees ~150 m round it).</summary>
         public int PropRadius = 1;
         public ScatterSpawner Spawner { get; private set; }
@@ -50,9 +52,10 @@ namespace SecondFace.Game.World
         public IEnumerator Prewarm(int count = -1)
         {
             if (count < 0) count = Policy.MaxBuilt;
+            if (Details != null) yield return Details.Load();
             while (_pool.Count + _built.Count < count)
             {
-                var t = ChunkTerrain.Create(_root, Layers);
+                var t = ChunkTerrain.Create(_root, Layers, Details);
                 ChunkTerrain.Hide(t);
                 _pool.Push(t);
                 yield return null;
@@ -88,7 +91,7 @@ namespace SecondFace.Game.World
             if (step.Build is { } b && Time.unscaledDeltaTime * 1000f <= SlowFrameMs)
             {
                 var bw = Stopwatch.StartNew();
-                var t = _pool.Count > 0 ? _pool.Pop() : ChunkTerrain.Create(_root, Layers);
+                var t = _pool.Count > 0 ? _pool.Pop() : ChunkTerrain.Create(_root, Layers, Details);
                 ChunkTerrain.Apply(t, _prepared[b], Layers);
                 BuildMs.Add(bw.Elapsed.TotalMilliseconds);
                 _built[b] = t;

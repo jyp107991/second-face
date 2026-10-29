@@ -458,8 +458,11 @@ blown dust in the air. Regions' weather blends across borders; a change of weath
 big bushes, placed per chunk by biome rules (clear of roads and towns) and streamed in over a few frames; the Teeth
 are wooded with pines and firs. The Sallow still looks bare: its cover is scrub and stones, which come next as
 terrain details.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 19b (small scatter as instanced terrain details), then 19c (grass
-cards).
+**Small scatter (plan §10 step 19b, 2026-10-29):** stones, pebbles, twigs, dry grass and ferns now lie on the ground
+as instanced terrain details (tens of thousands a chunk, drawn within 75 m); grass and leaf scans keep their cut-out
+alpha (the fetch had lost it). From the game camera they are still too thin to read: the Sallow needs real bushes.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 19c (card bushes and grass tufts from the tree pipeline, replacing
+the thin scans in the detail set).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

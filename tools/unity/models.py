@@ -96,6 +96,18 @@ def process(key, phid, force):
                 os.makedirs(os.path.dirname(p), exist_ok=True)
                 if not os.path.exists(p):
                     open(p, 'wb').write(fetch(inc['url']))
+        # maps the glTF leaves out: the cut-out mask (the glTF's JPEG base colour has no alpha, so grass and leaves
+        # would bake opaque on black) and, for grass, the dried-out colour the arid regions use
+        for name, out in (('Alpha', 'alpha'), ('dry_diff', 'dry_diff')):
+            m = files.get(name, {}).get(RES, {})
+            pick = m.get('png') or m.get('jpg')
+            if not pick:
+                continue
+            ext = 'png' if 'png' in m else 'jpg'
+            p = os.path.join(d, 'textures', f'{key}_{out}_{RES}.{ext}')
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            if not os.path.exists(p):
+                open(p, 'wb').write(fetch(pick['url']))
     # stable metas for everything in the folder (glTFast importer settings come from its defaults)
     for root, dirs, fns in os.walk(d):
         for sub in dirs:
