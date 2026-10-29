@@ -10,13 +10,18 @@ namespace SecondFace.Game.World
     /// <summary>
     /// Streams the world's terrain round the focus (BUILD_PLAN §6.A.4) by Core's <see cref="StreamingPolicy"/>: chunk
     /// ground is computed on worker threads ahead of need, at most one chunk is written to a terrain a frame (none after a
-    /// frame slower than 25 ms), terrains are pooled and reused, neighbours are stitched. Scatter, places and interiors
-    /// join the same loop in later steps.
+    /// frame slower than 25 ms), terrains are pooled and reused, neighbours are stitched. With a <see cref="Catalog"/> the
+    /// chunks within <see cref="PropRadius"/> of the focus carry their props (<see cref="ScatterSpawner"/>; dropped beyond
+    /// one more chunk, so a wandering focus does not churn them). Places and interiors join the same loop later.
     /// </summary>
     public sealed class WorldStreamer : MonoBehaviour
     {
         public WorldService World;
         public BiomeLayerSet Layers;
+        public ScatterCatalog Catalog;
+        /// <summary>Chunks within this many of the focus carry their props (the iso camera sees ~150 m round it).</summary>
+        public int PropRadius = 1;
+        public ScatterSpawner Spawner { get; private set; }
         public readonly StreamingPolicy Policy = new StreamingPolicy();
         /// <summary>After a frame slower than this, no chunk is written the next frame.</summary>
         public float SlowFrameMs = 25f;
@@ -73,12 +78,13 @@ namespace SecondFace.Game.World
             foreach (var c in step.Unload)
             {
                 var t = _built[c]; _built.Remove(c);
+                Spawner?.Hide(c.cx, c.cz);
                 ChunkTerrain.Hide(t);   // stays active in the pool: activation is the expensive part of a write
                 _pool.Push(t);
                 Stitch(c);
             }
             foreach (var c in step.Forget) _prepared.Remove(c);
-            foreach (var c in step.Prepare) _preparing[c] = ChunkTerrain.Prepare(World, c.cx, c.cz);
+            foreach (var c in step.Prepare) _preparing[c] = ChunkTerrain.Prepare(World, c.cx, c.cz, Catalog);
             if (step.Build is { } b && Time.unscaledDeltaTime * 1000f <= SlowFrameMs)
             {
                 var bw = Stopwatch.StartNew();
@@ -88,8 +94,23 @@ namespace SecondFace.Game.World
                 _built[b] = t;
                 Stitch(b);
             }
+            Props();
             sw.Stop();
             if (sw.Elapsed.TotalMilliseconds > MaxFrameWorkMs) MaxFrameWorkMs = sw.Elapsed.TotalMilliseconds;
+        }
+
+        /// <summary>Shows the props of built chunks near the focus and hides those of chunks the focus has left.</summary>
+        private void Props()
+        {
+            if (Catalog == null) return;
+            if (Spawner == null) { Spawner = gameObject.AddComponent<ScatterSpawner>(); Spawner.Catalog = Catalog; }
+            var focus = WorldGrid.ChunkAt(World.Focus.x, World.Focus.z);
+            foreach (var c in _built.Keys)
+            {
+                var d = StreamingPolicy.Distance(c, focus);
+                if (d <= PropRadius && !Spawner.IsShown(c.cx, c.cz) && _prepared.TryGetValue(c, out var p)) Spawner.Show(c.cx, c.cz, p.Props);
+                else if (d > PropRadius + 1 && Spawner.IsShown(c.cx, c.cz)) Spawner.Hide(c.cx, c.cz);
+            }
         }
 
         /// <summary>Tells a chunk and its four neighbours who is next to them (LOD seams match across neighbours).</summary>

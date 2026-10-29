@@ -5,12 +5,13 @@ namespace SecondFace.EditorTools
     /// <summary>
     /// Baked nature models (Assets/SecondFace/Models/Nature, written by tools/unity/models_bake.py): FBX like the kits
     /// (axis conversion baked, slot names kept for <see cref="MaterialLibrary.Bind"/>, no colliders: they are scattered by
-    /// the thousand), and their textures in tex/ (base colour with its alpha for cut-out leaves, normal maps, ASTC).
+    /// the thousand, Mesh LODs generated), and their textures in tex/ (base colour with its alpha for cut-out leaves,
+    /// normal maps, ASTC).
     /// </summary>
     public sealed class NatureImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 1;
+        public override uint GetVersion() => 2;
 
         private const string Dir = "Assets/SecondFace/Models/Nature/";
 
@@ -28,6 +29,9 @@ namespace SecondFace.EditorTools
             imp.importNormals = ModelImporterNormals.Import;
             imp.meshCompression = ModelImporterMeshCompression.Off;
             imp.generateSecondaryUV = false;
+            // Mesh LODs (Unity 6.2+): the scans are 2–40 K triangles each and stand by the hundred round the player; the
+            // renderer (and the GPU Resident Drawer) picks a coarser level by screen size, with no LODGroup to author
+            imp.generateMeshLods = true;
         }
 
         private void OnPreprocessTexture()

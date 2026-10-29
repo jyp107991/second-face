@@ -454,8 +454,12 @@ whose horizon fades into the fog so the edge of the streamed land never shows, a
 most days in the Sallow; haze, dust, storms, rain, fog and snow where the climate gives them) with rain, snow and
 blown dust in the air. Regions' weather blends across borders; a change of weather comes in before dawn. Captures at
 7:00, 13:00, 19:00, night, in dust and in rain in `docs/evidence/unity/p3/`.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 19 (scatter per chunk through the GPU Resident Drawer + grass;
-`world_scatter_dense` with the frame time).
+**Props (plan §10 step 19a, 2026-10-29):** the land round the player now carries its trees, boulders, dead wood and
+big bushes, placed per chunk by biome rules (clear of roads and towns) and streamed in over a few frames; the Teeth
+are wooded with pines and firs. The Sallow still looks bare: its cover is scrub and stones, which come next as
+terrain details.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 19b (small scatter as instanced terrain details), then 19c (grass
+cards).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

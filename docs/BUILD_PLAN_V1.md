@@ -1322,7 +1322,20 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
 18. ~~P3.3 `TimeService`, sky, fog, weather~~ (done 2026-10-29, §6.A.6 "As built"): Core `Sky` and `Weather`,
     `TimeService`, `SkyController`, `WeatherLayers`, the procedural sky; captures at 7:00, 13:00, 19:00, night, in dust
     and in rain (`docs/evidence/unity/p3/`).
-19. P3.4 resident-drawer scatter per chunk + grass; `world_scatter_dense` with the frame time.
+19. P3.4 scatter, in three parts (one GameObject per stone and shrub would be ~150 K objects over the 5 × 5 chunks:
+    no phone carries that):
+    19a. ~~Props~~ (done 2026-10-29): Core `WorldScatter` (rules per biome in world terms: altitude, slope, wash,
+         clump noise; per chunk from the world seed; clear of roads, rails, rivers and places; spacing per rule; ~400
+         props a Sallow chunk, ~670 a Teeth chunk), `ScatterCatalog` (model id → addresses, built by
+         `ScatterCatalogBuilder` with the Addressables content), `ScatterSpawner` (Addressables-loaded, pooled, 1.5 ms a
+         frame) driven by `WorldStreamer` for the chunks within one of the focus (dropped beyond two); Mesh LODs on the
+         scans' import. `world_scatter_sallow` (sparse: the Sallow's cover is scrub and stones, 19b's) and
+         `world_scatter_teeth` (pines, firs, boulders); ~3.7–5.9 K props live round the focus. The editor's batchmode
+         renders no frames between captures, so its frame time says nothing: P3.7 measures on the phone.
+    19b. Small scatter — scrub, stones, debris — as instanced terrain detail meshes (low-poly levels taken from the
+         Mesh LODs), density per detail cell from Core, within the detail distance.
+    19c. Grass as cards baked from the grass scans (Blender, like the card trees) on the terrain's grass layer;
+         `world_scatter_dense` with the frame time.
 20. P3.5 `PlaceBuilder` from the exported layout for the first town; lights, decals, NavMesh; `place_shale_street`.
 21. P3.5 interiors as positioned prefabs with instant open; `place_shelter_hall`.
 22. P3.6 water.

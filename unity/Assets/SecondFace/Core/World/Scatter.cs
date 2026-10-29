@@ -5,12 +5,13 @@ namespace SecondFace.Core.World
 {
     /// <summary>
     /// What the ground offers at a point, normalised: height and slope 0..1 (slope 1 = vertical), wash 0..1 (1 = the bed
-    /// of a dry wash), noise 0..1 (the clump field that makes clumps and clearings instead of an even sprinkle).
+    /// of a dry wash), noise 0..1 (the clump field that makes clumps and clearings instead of an even sprinkle), and the
+    /// altitude in metres above sea level (the world's rules use it; the test tiles' rules use the normalised height).
     /// </summary>
     public readonly struct GroundSample
     {
-        public readonly float Height, Slope, Wash, Noise;
-        public GroundSample(float height, float slope, float wash, float noise) { Height = height; Slope = slope; Wash = wash; Noise = noise; }
+        public readonly float Height, Slope, Wash, Noise, Altitude;
+        public GroundSample(float height, float slope, float wash, float noise, float altitude = 0f) { Height = height; Slope = slope; Wash = wash; Noise = noise; Altitude = altitude; }
     }
 
     /// <summary>One kind of scatter: which models, how many tries, where they may grow or lie, how much they vary in size.</summary>

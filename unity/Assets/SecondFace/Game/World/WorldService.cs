@@ -24,6 +24,8 @@ namespace SecondFace.Game.World
         public TerrainGen Gen { get; private set; }
         /// <summary>The road surfaces over the loaded world (thread-safe to call from workers).</summary>
         public RoadStrips Roads { get; private set; }
+        /// <summary>The props over the loaded world (thread-safe to call from workers).</summary>
+        public WorldScatter Scatter { get; private set; }
         public bool Ready => Control != null && Layout != null;
         public string Error { get; private set; }
 
@@ -46,6 +48,7 @@ namespace SecondFace.Game.World
             Layout = WorldLayout.Read(places, roads);
             Gen = new TerrainGen(Control, Layout, Style);
             Roads = new RoadStrips(Layout);
+            Scatter = new WorldScatter(Control, Layout);
             Debug.Log($"WorldService: control {Control.Width}x{Control.Height} at {Control.MetresPerTexel} m, {Layout.Places.Count} places, {Layout.Roads.Count} roads");
         }
 

@@ -19,20 +19,25 @@ namespace SecondFace.Game.World
             public float[] Heights;
             public TerrainPaint.Result Paint;
             public System.Collections.Generic.List<RoadStrips.Strip> Roads;
+            /// <summary>The chunk's props (null when no catalog was given): placed by <see cref="ScatterSpawner"/>.</summary>
+            public System.Collections.Generic.List<PropPlacement> Props;
             public long Milliseconds;
         }
 
         /// <summary>Heights, the dominant biome, the paint and the road strips of a chunk, on a worker thread.</summary>
-        public static Task<Prepared> Prepare(TerrainGen gen, ControlMap control, string[] biomes, RoadStrips roads, int cx, int cz) => Task.Run(() =>
+        public static Task<Prepared> Prepare(TerrainGen gen, ControlMap control, string[] biomes, RoadStrips roads, WorldScatter scatter, System.Func<string, int> variants, int cx, int cz) => Task.Run(() =>
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             var heights = gen.Heights(cx, cz);
             var paint = TerrainPaint.Paint(control, biomes, heights, cx, cz);
             var strips = roads?.Build(cx, cz, heights);
-            return new Prepared { Cx = cx, Cz = cz, Biome = TerrainPaint.DominantBiome(control, cx, cz), Heights = heights, Paint = paint, Roads = strips, Milliseconds = sw.ElapsedMilliseconds };
+            var props = scatter != null && variants != null ? scatter.Props(cx, cz, heights, biomes, variants) : null;
+            return new Prepared { Cx = cx, Cz = cz, Biome = TerrainPaint.DominantBiome(control, cx, cz), Heights = heights, Paint = paint, Roads = strips, Props = props, Milliseconds = sw.ElapsedMilliseconds };
         });
 
-        public static Task<Prepared> Prepare(WorldService world, int cx, int cz) => Prepare(world.Gen, world.Control, world.Layout.Biomes, world.Roads, cx, cz);
+        /// <summary>A chunk of the loaded world; with a catalog its props are placed too.</summary>
+        public static Task<Prepared> Prepare(WorldService world, int cx, int cz, ScatterCatalog catalog = null) =>
+            Prepare(world.Gen, world.Control, world.Layout.Biomes, world.Roads, world.Scatter, catalog != null ? catalog.Variants : null, cx, cz);
 
         /// <summary>A pooled, empty chunk terrain: created once, re-filled by <see cref="Apply"/> as chunks come and go.</summary>
         public static Terrain Create(Transform parent, BiomeLayerSet layers)

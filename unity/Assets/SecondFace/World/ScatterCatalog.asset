@@ -1,0 +1,164 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 026fd70727c0f24b4a618716adbd731f, type: 3}
+  m_Name: ScatterCatalog
+  m_EditorClassIdentifier: SecondFace.Game::SecondFace.Game.World.ScatterCatalog
+  Entries:
+  - Id: boulder_01
+    Addresses:
+    - nature/boulder_01
+  - Id: broadleaf
+    Addresses:
+    - kits-trees/broadleaf_1
+    - kits-trees/broadleaf_2
+    - kits-trees/broadleaf_3
+  - Id: coast_land_rocks_02
+    Addresses:
+    - nature/coast_land_rocks_02
+  - Id: coast_rocks_01
+    Addresses:
+    - nature/coast_rocks_01
+  - Id: dead_quiver_trunk
+    Addresses:
+    - nature/dead_quiver_trunk
+  - Id: dead_tree_trunk
+    Addresses:
+    - nature/dead_tree_trunk
+  - Id: dead_tree_trunk_02
+    Addresses:
+    - nature/dead_tree_trunk_02
+  - Id: dry_branches_medium_01
+    Addresses:
+    - nature/dry_branches_medium_01_v1
+    - nature/dry_branches_medium_01_v2
+    - nature/dry_branches_medium_01_v3
+  - Id: fern_02
+    Addresses:
+    - nature/fern_02_v1
+    - nature/fern_02_v2
+    - nature/fern_02_v3
+    - nature/fern_02_v4
+  - Id: fir
+    Addresses:
+    - kits-trees/fir_1
+    - kits-trees/fir_2
+    - kits-trees/fir_3
+  - Id: grass_medium_01
+    Addresses:
+    - nature/grass_medium_01_v1
+    - nature/grass_medium_01_v2
+    - nature/grass_medium_01_v3
+    - nature/grass_medium_01_v4
+    - nature/grass_medium_01_v5
+    - nature/grass_medium_01_v6
+    - nature/grass_medium_01_v7
+    - nature/grass_medium_01_v8
+    - nature/grass_medium_01_v9
+    - nature/grass_medium_01_v10
+    - nature/grass_medium_01_v11
+    - nature/grass_medium_01_v12
+    - nature/grass_medium_01_v13
+    - nature/grass_medium_01_v14
+    - nature/grass_medium_01_v15
+    - nature/grass_medium_01_v16
+    - nature/grass_medium_01_v17
+  - Id: grass_medium_02
+    Addresses:
+    - nature/grass_medium_02_v1
+    - nature/grass_medium_02_v2
+    - nature/grass_medium_02_v3
+    - nature/grass_medium_02_v4
+    - nature/grass_medium_02_v5
+  - Id: namaqualand_boulder_02
+    Addresses:
+    - nature/namaqualand_boulder_02
+  - Id: namaqualand_boulder_03
+    Addresses:
+    - nature/namaqualand_boulder_03
+  - Id: namaqualand_boulders_01
+    Addresses:
+    - nature/namaqualand_boulders_01_v1
+    - nature/namaqualand_boulders_01_v2
+  - Id: namaqualand_rocks_01
+    Addresses:
+    - nature/namaqualand_rocks_01_v1
+    - nature/namaqualand_rocks_01_v2
+    - nature/namaqualand_rocks_01_v3
+    - nature/namaqualand_rocks_01_v4
+  - Id: namaqualand_stones_01
+    Addresses:
+    - nature/namaqualand_stones_01_v1
+    - nature/namaqualand_stones_01_v2
+    - nature/namaqualand_stones_01_v3
+    - nature/namaqualand_stones_01_v4
+    - nature/namaqualand_stones_01_v5
+  - Id: pine
+    Addresses:
+    - kits-trees/pine_1
+    - kits-trees/pine_2
+    - kits-trees/pine_3
+  - Id: quiver_tree_01
+    Addresses:
+    - nature/quiver_tree_01
+  - Id: quiver_tree_02
+    Addresses:
+    - nature/quiver_tree_02
+  - Id: rock_07
+    Addresses:
+    - nature/rock_07
+  - Id: rock_09
+    Addresses:
+    - nature/rock_09
+  - Id: root_cluster_01
+    Addresses:
+    - nature/root_cluster_01
+  - Id: shrub_01
+    Addresses:
+    - nature/shrub_01_v1
+    - nature/shrub_01_v2
+    - nature/shrub_01_v3
+    - nature/shrub_01_v4
+    - nature/shrub_01_v5
+    - nature/shrub_01_v6
+    - nature/shrub_01_v7
+    - nature/shrub_01_v8
+    - nature/shrub_01_v9
+  - Id: shrub_02
+    Addresses:
+    - nature/shrub_02_v1
+    - nature/shrub_02_v2
+    - nature/shrub_02_v3
+    - nature/shrub_02_v4
+  - Id: shrub_03
+    Addresses:
+    - nature/shrub_03_v1
+    - nature/shrub_03_v2
+    - nature/shrub_03_v3
+    - nature/shrub_03_v4
+  - Id: shrub_04
+    Addresses:
+    - nature/shrub_04_v1
+    - nature/shrub_04_v2
+    - nature/shrub_04_v3
+  - Id: tree_small_02
+    Addresses:
+    - nature/tree_small_02
+  - Id: tree_stump_01
+    Addresses:
+    - nature/tree_stump_01
+  - Id: wild_rooibos_bush
+    Addresses:
+    - nature/wild_rooibos_bush_v1
+    - nature/wild_rooibos_bush_v2
+    - nature/wild_rooibos_bush_v3
+    - nature/wild_rooibos_bush_v4
+    - nature/wild_rooibos_bush_v5
