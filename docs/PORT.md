@@ -287,3 +287,18 @@ runs smoothly on device. Fallbacks for GLES3 phones are listed where a feature n
   strips the `mat_` prefix (people had generic materials in Unity until now). The owner's hair rule recorded.
   **`docs/BUILD_PLAN_V1.md` written as the binding hand-off plan** (architecture, phases, hard-part specs,
   verification, pitfalls, decisions, next twenty steps); it is read right after PROGRESS.md in every session.
+- 2026-10-29 **P2 verdict (the bake-off closes).** Pipelines chosen and proven in the engine, with the evidence in
+  `docs/evidence/unity/p2/` (17 captures, each judged against BUILD_PLAN §6.N in its README):
+  - **People: candidate A (MakeHuman base re-authored by `mh_build.py`) is the pipeline.** The faces pass §6.N (iris
+    and lashes visible, brows readable, sun and stubble in the skin, ages and ancestries varied); what fails is in
+    the hair and garment assets, not the base: one braid sweeps across the brow like a fringe (the hair rule), one
+    hood reads as a cap, and hair cards read as shells up close. Candidate B (MB-Lab) would replace only the body
+    and face, which pass, so it is not run; the failures go to P4 (hair cards and garments at full quality). Also
+    for P4: the walk holds the forearms forward (P4.4), 5 of 14 expression units, scars and tattoos.
+  - **Kits** (Blender scripts, FBX, library materials) and **nature** (Poly Haven scans decimated and split into
+    variants; card trees from Sapling with three LODs) are the pipelines for P3. The terrain fails "no visible
+    tiling" (P3.2 detail noise and height blending) and the Sallow's scatter is sparse (P3.4).
+  - **Addressables**: five groups of committed bound prefabs and library materials, built with the player.
+  - **Unity CLI**: not adopted (UNITY_PRACTICES §8); `editor.sh` stays the local loop.
+  Next: P3 (world) from BUILD_PLAN §10 step 13, then the camera and touch input pulled forward for `play-walkabout`.
+

@@ -420,8 +420,11 @@ species' three levels (`trees_lineup`, `trees_lod`); `TreeAssetTests` checks the
 bound prefabs built before every player build; the bound prefabs and library materials are now committed (stable
 GUIDs) and rebuild without a diff; smoke tests load a kit piece by address and the trees by label. Kit bundles hold
 meshes only (textures once each, per material); library textures are 1K on Android.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 12 (P2 verdict and evidence; the time-boxed Unity CLI evaluation),
-then P3 from step 13.
+**P2 closed (2026-10-29):** the verdict is in `docs/PORT.md` §5 and the evidence in `docs/evidence/unity/p2/`. People:
+candidate A, whose faces pass; the hair and garment assets that fail (a braid that reads as a fringe, a hood that reads
+as a cap, hair cards that read as shells up close) are P4's. Terrain tiling is P3.2's, scatter density P3.4's. The
+Unity CLI was evaluated and not adopted (`editor.sh` stays).
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 13 (P3.1 `WorldService` + chunk grid + control map tool, §6.A.1–A.2).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

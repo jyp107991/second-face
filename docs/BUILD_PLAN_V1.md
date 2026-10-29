@@ -108,7 +108,8 @@ build says so on load instead of failing. Step counts are rough (±30 %) and are
 
 ## 2. State of the repository (updated 2026-10-28, after the first local-editor passes)
 
-**Where the build is:** P0 (foundation) and P1 (narrative core) are closed. **P2 (the bake-off) is closing**: the
+**Where the build is (2026-10-29):** P0, P1 and **P2 are closed** (verdict in PORT.md §5); **P3 (world) is next**,
+from §10 step 13. What follows was the state while P2 was closing: **P2 (the bake-off) is closing**: the
 pipelines exist and render in the engine; what remains is the people at the hair and skin standard, their weight,
 the nature set moved to FBX, the card trees, and the Addressables skeleton (§5 P2). Then P3 (world) → P4 (people
 at full quality) → P5 (camera, touch, UI) → P6 (systems and combat) → P7 (Chapter One on the phone) → P8 (Act 1 and
@@ -294,7 +295,7 @@ Each phase ends with a CI-built APK the owner installs and a screenshot set the 
 each is one commit or a few WIP commits, and each runs the working loop of §7.0. Budgets and acceptance are part
 of the step.
 
-### P2 — close the bake-off (in progress; finish in this order)
+### P2 — close the bake-off (closed 2026-10-29; verdict in PORT.md §5)
 Every step below runs the working loop of §7.0. Blender steps also re-run the Blender script and commit the baked
 output it changed. "Read" means: open the PNG with the Read tool and judge it against §6.N.
 1. ~~**Verify the cards**~~ — done 2026-10-28 (coverage 16–32 %, root at the bottom).
@@ -1175,10 +1176,8 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
    `Test_Trees`, `TreeAssetTests`; §6.L).
 10. ~~Frontier kit pieces upright~~ (done with step 6).
 11. ~~Addressables skeleton + the content build step + the PlayMode smoke test (P2.10, §6.A.7)~~ (done 2026-10-29).
-12. P2 verdict and evidence (P2.11). Then, time-boxed to one step: evaluate the official Unity CLI
-    (`docs/UNITY_PRACTICES.md` §8) as a faster loop than restarting the editor per run; adopt it only if it runs
-    headless here, gives the same test results as `editor.sh`, and cuts the loop below about a minute. Write the
-    verdict in UNITY_PRACTICES §8 either way.
+12. ~~P2 verdict and evidence (P2.11); the Unity CLI evaluated~~ (done 2026-10-29: candidate A, evidence in
+    `docs/evidence/unity/p2/`, verdict in PORT.md §5; the CLI not adopted, UNITY_PRACTICES §8).
 13. P3.1 `WorldService` + chunk grid + control map tool (§6.A.1–A.2).
 14. P3.1 runtime terrain job (§6.A.3: ≤ 4 layers per tile, `SetDetailResolution(res, 16)`, heights written once)
     + the 4-chunk PlayMode test.

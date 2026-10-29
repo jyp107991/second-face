@@ -183,6 +183,14 @@ links now redirect elsewhere.
   (run C#), `unity logs --follow`, and an MCP server; needs the Unity Pipeline package in the project. Promising
   replacement for parts of `editor.sh`; evaluate in a separate step before adopting (beta).
   https://docs.unity.com/en-us/unity-cli/use-unity-cli
+  **Verdict (2026-10-29, the time-boxed step 12): not adopted; `tools/unity/editor.sh` stays.** From the reference
+  (https://docs.unity.com/en-us/unity-cli/unity-cli-reference): `unity test` launches an editor for the run (exit 6
+  covers "licence unavailable" and "editor crashed"), so it pays the same start-up cost as `editor.sh`; the speed-up
+  would come only from `unity command` against a *connected* editor, which needs the Unity Pipeline package and an
+  editor kept open, and nothing in the docs says that editor can run headless. Installing it means running Unity's
+  remote install script (`curl -fsSL https://unity.com/install.sh | bash`, binary in `~/.local/bin/unity`), which
+  this session's safety policy refused without the owner's permission. Revisit when the CLI leaves beta, if the owner
+  allows the install, and only if a connected headless editor cuts the loop below about a minute.
 - Unity's older MCP server (in `com.unity.ai.assistant`) needs an interactive editor to approve clients: not for us.
 - Community MCP servers (CoplayDev/unity-mcp, IvanMurzak/Unity-MCP, CoderGamester/mcp-unity) run inside the editor;
   third-party code, review before any use. Not adopted.
