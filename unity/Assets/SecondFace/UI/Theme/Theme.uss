@@ -932,3 +932,152 @@
     color: var(--plate-dim);
     -unity-text-align: middle-center;
 }
+
+/* ---- character creation (CreationScreen.cs): the live figure on the left, the pages on paper on the right ---- */
+.sf-creation { background-color: #2B241E; }
+.sf-creation__body { flex-grow: 1; flex-direction: row; margin: 14px 16px; }
+.sf-creation__stage {
+    width: 40%;
+    margin-right: 16px;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: #3C342D;
+}
+.sf-creation__caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 14px;
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: 30px;
+    color: var(--plate-text);
+    -unity-text-align: middle-center;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
+}
+.sf-creation__paper { flex-grow: 1; flex-basis: 0; flex-shrink: 1; background-color: var(--paper); border-radius: 6px; overflow: hidden; }
+.sf-creation__tabs {
+    flex-direction: row;
+    flex-shrink: 0;
+    padding: 8px 12px 0 12px;
+    border-bottom-width: 2px;
+    border-color: var(--paper-edge);
+}
+.sf-creation__tab {
+    min-height: 64px;
+    margin: 0 4px 0 0;
+    padding: 0 12px;
+    border-width: 0;
+    border-bottom-width: 3px;
+    border-color: rgba(0, 0, 0, 0);
+    border-radius: 0;
+    background-color: rgba(0, 0, 0, 0);
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 22px;
+    color: var(--pencil);
+}
+.sf-creation__tab:enabled:hover { background-color: var(--paper-deep); }
+.sf-creation__tab--on { color: var(--ink); border-color: var(--ochre); }
+.sf-creation__scroll { flex-grow: 1; flex-shrink: 1; flex-basis: 0; }
+.sf-creation__scroll .unity-scroll-view__content-container { padding: 12px 22px 24px 22px; }
+.sf-creation__heading {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--pencil);
+    margin: 16px 0 8px 0;
+}
+.sf-creation__note {
+    -unity-font-definition: url("../Fonts/Literata-Regular.asset");
+    font-size: 22px;
+    color: var(--ink-soft);
+    white-space: normal;
+    margin-bottom: 6px;
+}
+.sf-creation__missing { color: var(--rust); -unity-font-definition: url("../Fonts/Literata-Italic.asset"); }
+.sf-creation__row { flex-direction: row; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+.sf-creation__cards { flex-direction: row; flex-wrap: wrap; }
+.sf-creation__chips { flex-direction: row; flex-wrap: wrap; margin: 8px 0 4px 0; }
+.sf-creation__choice {
+    min-height: 72px;
+    min-width: 120px;
+    margin: 0 10px 10px 0;
+    padding: 8px 14px;
+    border-width: 2px;
+    border-color: var(--paper-edge);
+    border-radius: 4px;
+    background-color: #F4EEDF;
+    align-items: flex-start;
+    justify-content: center;
+}
+.sf-creation__cards .sf-creation__choice { width: 46%; }
+.sf-creation__cards .sf-creation__choice--small { width: 30%; min-width: 0; }
+.sf-creation__choice:enabled:hover { background-color: #F8F3E7; }
+.sf-creation__choice--on { border-color: var(--ochre); border-width: 3px; padding: 7px 13px; background-color: #F8EFD9; }
+.sf-creation__choice-text {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 23px;
+    color: var(--ink);
+    white-space: normal;
+}
+.sf-creation__choice-sub { font-size: 18px; color: var(--pencil); white-space: normal; margin-top: 2px; }
+.sf-creation__chip { min-height: 56px; min-width: 0; padding: 4px 12px; margin: 0 8px 8px 0; }
+.sf-creation__chip.sf-creation__choice--on { padding: 3px 11px; }
+.sf-creation__action { margin: 0 10px 10px 0; }
+.sf-creation__begin { min-width: 260px; background-color: var(--ochre); color: var(--ink); }
+.sf-creation__begin:enabled:hover { background-color: #D59B3A; }
+.sf-creation__field { margin: 0 0 4px 0; }
+.sf-creation__field .unity-text-field__input {
+    min-height: 64px;
+    padding: 0 14px;
+    border-width: 2px;
+    border-color: var(--paper-edge);
+    border-radius: 4px;
+    background-color: #FBF7EE;
+    -unity-font-definition: url("../Fonts/Literata-Regular.asset");
+    font-size: 28px;
+    color: var(--ink);
+}
+.sf-creation__slider { margin: 6px 0 4px 0; }
+.sf-creation__slider-label { font-size: 21px; color: var(--ink-soft); margin: 4px 0 0 0; }
+.sf-creation__slider-bar { margin: 0; min-height: 56px; }
+.sf-creation__slider-bar .unity-base-slider__tracker {
+    height: 6px;
+    margin-top: -3px;
+    border-width: 0;
+    border-radius: 3px;
+    background-color: var(--paper-edge);
+}
+.sf-creation__slider-bar .unity-base-slider__dragger {
+    width: 34px;
+    height: 34px;
+    margin-top: -17px;
+    border-width: 3px;
+    border-color: var(--ink);
+    border-radius: 17px;
+    background-color: var(--paper);
+}
+.sf-creation__swatches { margin-bottom: 4px; }
+.sf-creation__swatch {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    min-height: 64px;
+    margin: 0 10px 8px 0;
+    padding: 0;
+    border-width: 2px;
+    border-color: rgba(36, 32, 27, 0.25);
+    border-radius: 32px;
+}
+.sf-creation__swatch--on { border-width: 4px; border-color: var(--ochre); }
+.sf-creation__attr { flex-direction: row; align-items: center; flex-wrap: nowrap; min-height: 80px; border-bottom-width: 1px; border-color: rgba(201, 185, 148, 0.6); }
+.sf-creation__attr-names { flex-grow: 1; flex-shrink: 1; }
+.sf-creation__attr-name { -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset"); font-size: 24px; color: var(--ink); }
+.sf-creation__attr-desc { font-size: 18px; color: var(--pencil); white-space: normal; }
+.sf-creation__attr-value {
+    width: 64px;
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: 34px;
+    color: var(--ink);
+    -unity-text-align: middle-center;
+}
+.sf-creation__step { min-width: 72px; width: 72px; min-height: 72px; padding: 0; font-size: 32px; }

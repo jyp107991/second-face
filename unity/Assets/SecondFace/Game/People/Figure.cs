@@ -22,9 +22,16 @@ namespace SecondFace.Game.People
         public RenderTexture Texture { get; private set; }
         /// <summary>How far the figure is turned from facing the camera (degrees; a three-quarter view to start).</summary>
         public float Yaw = -22f;
+        /// <summary>Framed on the face (the sculptor) instead of full length.</summary>
+        public bool Close;
+        /// <summary>The body's height against its base (the creation's height slider: 0.94..1.06).</summary>
+        public float Scale = 1f;
         public int Draws { get; private set; }
+        public FaceSculpt Face => Body != null ? Body.GetComponentInChildren<FaceSculpt>() : null;
 
         private GameObject _shadow;
+        private Animator _anim;
+        private Renderer _eyes;
 
         /// <summary>The figure of a body (a player base prefab), idling on a locomotion controller, drawn at a size.</summary>
         public static Figure Create(GameObject prefab, RuntimeAnimatorController idle, int width = 576, int height = 864)
@@ -34,7 +41,7 @@ namespace SecondFace.Game.People
             f.Body = Object.Instantiate(prefab, Spot, Quaternion.identity);
             f.Body.name = "figure_" + prefab.name;
             f.Wardrobe = f.Body.GetComponentInChildren<Wardrobe>();
-            var anim = f.Body.GetComponentInChildren<Animator>();
+            var anim = f._anim = f.Body.GetComponentInChildren<Animator>();
             if (anim != null)
             {
                 if (idle != null) anim.runtimeAnimatorController = idle;
@@ -72,10 +79,27 @@ namespace SecondFace.Game.People
         {
             if (Body == null || Texture == null) return;
             Body.transform.SetPositionAndRotation(Spot, Quaternion.Euler(0f, 180f + Yaw, 0f));
+            Body.transform.localScale = Vector3.one * Scale;
             var cam = Studio.Camera;
-            cam.fieldOfView = Fov;
             cam.backgroundColor = Backdrop;
-            cam.transform.SetPositionAndRotation(Spot + new Vector3(0f, 1.02f, -Distance), Quaternion.Euler(1.2f, 0f, 0f));
+            var head = _anim != null && _anim.isHuman ? _anim.GetBoneTransform(HumanBodyBones.Head) : null;
+            if (Close && head != null)
+            {
+                // aimed between the eyes and the mouth from about 9° above (the captured idle carries the chin a little
+                // high; a camera at eye level looked up the nose)
+                if (_eyes == null)
+                    foreach (var r in Body.GetComponentsInChildren<Renderer>()) if (r.name.StartsWith("Eyes_")) { _eyes = r; break; }
+                var eye = _eyes != null ? _eyes.bounds.center : head.position + Vector3.up * 0.09f;
+                var at = new Vector3(head.position.x, eye.y - 0.045f, head.position.z);
+                var from = at + new Vector3(0f, 0.17f, -1.08f);
+                cam.fieldOfView = 19f;
+                cam.transform.SetPositionAndRotation(from, Quaternion.LookRotation(at - from));
+            }
+            else
+            {
+                cam.fieldOfView = Fov;
+                cam.transform.SetPositionAndRotation(Spot + new Vector3(0f, 1.02f * Scale, -Distance * Scale), Quaternion.Euler(1.2f, 0f, 0f));
+            }
             Studio.Light(Vector3.back);
             Studio.Render(Texture);
             Draws++;

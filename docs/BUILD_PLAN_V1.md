@@ -452,7 +452,10 @@ from fixture state and captured (`UiTests`, the panel drawn into a texture):
   run by `TravelService` in P6.5).
 - ~~3h. The pack with the live paper doll, and barter~~ (done, below; item models and icons rendered from them come
   with P6.1's loot, the procedural gear, held weapons and visible chrome on the figure with the P4 follow-ups).
-- 3i. Character creation and the sculptor (body sliders here).
+- 3i. Character creation and the sculptor (body sliders here). Parts: (1) the rules and the screen (done, below);
+  (2) the look in the shaders: skin tone and undertone, freckles, eye colour, hair colour, a scar and a tattoo drawn
+  over the skin; (3) body sliders (build, muscle) and hair choices from the people pipeline (shapes refitted on every
+  garment, hair pieces as wardrobe items in a hair slot).
 - 3j. Title, settings (text size, contrast, controls), saves and pause.
 - 3k. The combat bar and log (with P6). 3l. Photo mode and the gamepad.
 
@@ -603,6 +606,25 @@ P4.10's cloth shader (below). Not yet: item models (the drawings stand until P6.
 renders each model like a portrait), the procedural gear (wraps, goggles, plates), the held weapon and visible chrome
 on the figure (P4 follow-ups), the full wardrobe of every garment on the player's bases (a duster on the player's body
 is the long cardigan and the cargo trousers; the tank top under it is not built yet), dropping things (with loot).
+
+*As built (P5.3i part 1, 2026-10-29).* Core `Stats.Creation` (an origin from the content — attributes, tags, traits,
+a face from its seed and a frame — or someone of the player's own; the standard spread or the old rolled start: roll
+as often as wanted, keep one, recall it, then move points within the roll's pool, each attribute between the minimum
+and the creation maximum; three tags; up to two traits; name; pronouns; `Missing` as keys, `Finish` to a
+`PlayerCharacter` at full health) and `Npc.PlayerLook` (body, face values, height, build, muscle, skin, undertone,
+freckles, hair and its colour, eyes, scar, tattoo, dyes by wardrobe slot; saved as the character's appearance; anything
+else reads as a default look) with `Looks`, the world's palettes (dull hair colours, eye tints, the scars and tattoos,
+re-dyed salvage colours). `CreationTests` (3). `Game.UI.CreationScreen` (opaque): the live figure on the left (the
+pack's `Figure`, 720×800, a drag turns it; framed on the face from about 9° above while the face is made, the captured
+idle carrying the chin a little high), the pages on paper: who (the origins as cards with their words, someone of your
+own, a name field, pronouns), face (another face — `Sculpt.Reroll`, at least 1.6 from the last — and an even one; the
+nine groups as chips; each slider writes `FaceSculpt` live), body (body type one or two: the player bases; height
+±6 % as the body's scale, the camera stepping back with it; the clothes' dyes as swatches per worn slot), attributes
+(the pool, roll, keep, recall, standard; − and + per attribute with its words), skills (twelve to tag with their
+values; the traits with their words) and begin (who you are, what is missing, begin). Every word is in the UI table
+(`create.*`, `face.*`, `attr.*`, `skill.*`). Captures `ui_create_who`, `ui_create_face`, `ui_create_body`,
+`ui_create_attributes`, `ui_create_skills`. Seen close up (P4 follow-ups): the braid's front edge shows as a band on
+the scalp, the painted brows are patchy at this size, and a dark gap shows between the neck and the sweater's collar.
 
 ### P6 — Systems and combat
 1. Interactions and loot (`Play/`): tap on a thing → radial of verbs from content (`talk`, `look`, `take`, `use`,

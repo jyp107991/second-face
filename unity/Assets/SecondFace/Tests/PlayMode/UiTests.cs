@@ -7,6 +7,7 @@ using NUnit.Framework;
 using SecondFace.Core.Content;
 using SecondFace.Core.Dialogue;
 using SecondFace.Core.Inventory;
+using SecondFace.Core.Npc;
 using SecondFace.Core.Quest;
 using SecondFace.Core.State;
 using SecondFace.Core.Stats;
@@ -47,7 +48,10 @@ namespace SecondFace.Tests
     /// `ui_pack_figure`). Barter (P5.3h)
     /// prices both sides, dims what the merchant will not buy, puts things on the table each way, shows the haggle's
     /// check, terms and odds up front, haggles once a day (a met check moves the deal the player's way), closes a deal the
-    /// player can pay for and refuses one they cannot (`ui_barter`, `ui_barter_haggle`).
+    /// player can pay for and refuses one they cannot (`ui_barter`, `ui_barter_haggle`). Creation (P5.3i) offers the
+    /// origins, takes a name and pronouns, frames the face while the sculptor's sliders and another face change it, swaps
+    /// the body, dyes the clothes, sets the height, rolls, keeps and recalls the attributes and moves a point, tags and
+    /// takes traits, and begins with the player made (`ui_create_who`, `_face`, `_body`, `_attributes`, `_skills`).
     /// </summary>
     public class UiTests : IPrebuildSetup
     {
@@ -730,6 +734,111 @@ namespace SecondFace.Tests
             Assert.That(_ui.Back(), Is.True);
             Assert.That(screen.IsOpen, Is.False);
             if (person != null) Object.Destroy(person);
+        }
+
+        /// <summary>Presses a button as the pad's submit would (the button's own click).</summary>
+        private static void Press(Button b)
+        {
+            Assert.That(b, Is.Not.Null, "the button");
+            Assert.That(b.enabledInHierarchy, Is.True, $"{b.name} can be pressed");
+            using var e = NavigationSubmitEvent.GetPooled();
+            e.target = b;
+            b.SendEvent(e);
+        }
+
+        [UnityTest, Timeout(240000)]
+        public IEnumerator CreationMakesAPlayer()
+        {
+            Content();
+#if UNITY_EDITOR
+            var bodyF = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_f.prefab");
+            var bodyM = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_m.prefab");
+            var idle = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/SecondFace/People/Locomotion.controller");
+#else
+            GameObject bodyF = null, bodyM = null; RuntimeAnimatorController idle = null;
+#endif
+            PlayerCharacter made = null;
+            string madeOrigin = "-";
+            var model = new CreationModel { BodyF = bodyF, BodyM = bodyM, Idle = idle, Rng = new SecondFace.Core.Rng(3), Done = (pc, o) => { made = pc; madeOrigin = o; } };
+            _ui = Offscreen(1600, 720, out _rt);
+            _ui.SafeAreaOverride = new Rect(0.05f, 0.04f, 0.95f, 0.96f);
+            var screen = _ui.Open(new CreationScreen(model));
+            for (var i = 0; i < 6; i++) yield return null;
+            Assert.That(screen.Figure, Is.Not.Null, "the live figure");
+            Assert.That(screen.Figure.Body.name, Does.Contain("player_f"));
+            var origins = Creation.Origins();
+            Assert.That(screen.Content.Query<Button>(className: "sf-creation__choice").ToList().Count(b => b.name.StartsWith("origin-")), Is.EqualTo(origins.Count + 1), "the origins and someone of your own");
+            Press(screen.Content.Q<Button>("origin-" + origins[2].Id));
+            Assert.That(screen.Creation.Origin, Is.EqualTo(origins[2].Id));
+            screen.Content.Q<TextField>("name").value = "Ash Corran";
+            Assert.That(screen.Creation.Sheet.Name, Is.EqualTo("Ash Corran"));
+            Press(screen.Content.Q<Button>("pronoun-she"));
+            Assert.That(screen.Creation.Pronouns, Is.EqualTo("she"));
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(Save(_rt, "ui_create_who"), Is.GreaterThan(0.95f));
+
+            screen.Show("face");
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(screen.Figure.Close, Is.True, "the face fills the frame");
+            var before = Pixels(screen.Figure.Texture);
+            var sliders = screen.Content.Query<Slider>().ToList();
+            Assert.That(sliders.Count, Is.EqualTo(Sculpt.Sliders.Count(x => x.Group == "head")));
+            screen.Content.Q("slider-head-scale-horiz").Q<Slider>().value = 1f;
+            screen.Content.Q("slider-head-fat").Q<Slider>().value = -1f;
+            Assert.That(screen.Creation.Look.Face["head-scale-horiz"], Is.EqualTo(1f));
+            Assert.That(screen.Figure.Face.Values["head-scale-horiz"], Is.EqualTo(1f), "the slider moves the face");
+            Press(screen.Content.Q<Button>("group-nose"));
+            Assert.That(screen.Content.Query<Slider>().ToList().Count, Is.EqualTo(Sculpt.Sliders.Count(x => x.Group == "nose")));
+            var face = new Dictionary<string, float>(screen.Creation.Look.Face);
+            Press(screen.Content.Q<Button>("c-another_face"));
+            Assert.That(Sculpt.Distance(face, screen.Creation.Look.Face), Is.GreaterThanOrEqualTo(Sculpt.RerollDistance), "another face, a different one");
+            for (var i = 0; i < 3; i++) yield return null;
+            screen.DrawFigure();
+            yield return null;
+            Assert.That(Changed(before, Pixels(screen.Figure.Texture)), Is.GreaterThan(0.02f), "the face changed on the figure");
+            Save(_rt, "ui_create_face");
+
+            screen.Show("body");
+            Press(screen.Content.Q<Button>("body-m"));
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(screen.Figure.Body.name, Does.Contain("player_m"), "the other body");
+            Assert.That(screen.Figure.Face.Values.Count, Is.GreaterThan(0), "the face carried over");
+            var dye = screen.Content.Query<Button>(className: "sf-creation__swatch").ToList().First(b => b.name.StartsWith("dye-top-") && !b.name.EndsWith("ffffff"));
+            Press(dye);
+            Assert.That(screen.Creation.Look.Dyes.ContainsKey("top"), Is.True);
+            screen.Content.Q("slider-height").Q<Slider>().value = 0.8f;
+            Assert.That(screen.Figure.Scale, Is.GreaterThan(1.04f));
+            for (var i = 0; i < 3; i++) yield return null;
+            Save(_rt, "ui_create_body");
+
+            screen.Show("attributes");
+            Press(screen.Content.Q<Button>("c-roll"));
+            Assert.That(screen.Creation.Rolled, Is.True);
+            Press(screen.Content.Q<Button>("c-keep"));
+            Press(screen.Content.Q<Button>("c-roll"));
+            Press(screen.Content.Q<Button>("c-recall"));
+            Assert.That(screen.Creation.Pool, Is.EqualTo(screen.Creation.Kept.Value.Pool));
+            var lowered = Rules.Attributes.First(a => screen.Creation.Sheet.BaseAttrs[a] > Rules.AttrMin);
+            Press(screen.Content.Q<Button>("lower-" + lowered));
+            Assert.That(screen.Creation.PointsLeft, Is.EqualTo(1));
+            for (var i = 0; i < 3; i++) yield return null;
+            Save(_rt, "ui_create_attributes");
+            Press(screen.Content.Q<Button>("raise-" + lowered));
+
+            screen.Show("skills");
+            Assert.That(screen.Content.Query<Button>().ToList().Count(b => b.name.StartsWith("tag-")), Is.EqualTo(Rules.Skills.Length));
+            for (var i = 0; i < 3; i++) yield return null;
+            Save(_rt, "ui_create_skills");
+
+            screen.Show("begin");
+            Assert.That(screen.Creation.Ready, Is.True, string.Join(", ", screen.Creation.Missing()));
+            Press(screen.Content.Q<Button>("begin"));
+            Assert.That(made, Is.Not.Null, "the player was made");
+            Assert.That(made.Sheet.Name, Is.EqualTo("Ash Corran"));
+            Assert.That(madeOrigin, Is.Null, "points moved by hand: someone of their own");
+            Assert.That(PlayerLook.From(made.Appearance).Body, Is.EqualTo("m"));
+            Assert.That(screen.IsOpen, Is.False);
+            Assert.That(screen.Figure, Is.Null);
         }
 
         private static Label Text(string cls, string text)

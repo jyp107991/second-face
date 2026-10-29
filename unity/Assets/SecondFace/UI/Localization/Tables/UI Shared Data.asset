@@ -635,6 +635,442 @@ MonoBehaviour:
     m_Key: stat.toll
     m_Metadata:
       m_Items: []
+  - m_Id: 34954361028608
+    m_Key: create.who
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777344
+    m_Key: create.face
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777345
+    m_Key: create.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777346
+    m_Key: create.attributes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777347
+    m_Key: create.skills
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777348
+    m_Key: create.begin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777349
+    m_Key: create.origin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777350
+    m_Key: create.own
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777351
+    m_Key: create.own_note
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777352
+    m_Key: create.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777353
+    m_Key: create.pronouns
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777354
+    m_Key: create.pronoun.she
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777355
+    m_Key: create.pronoun.he
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777356
+    m_Key: create.pronoun.they
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777357
+    m_Key: create.another_face
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777358
+    m_Key: create.even_face
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777359
+    m_Key: create.body_type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777360
+    m_Key: create.body.f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777361
+    m_Key: create.body.m
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777362
+    m_Key: create.height
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777363
+    m_Key: create.clothes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777364
+    m_Key: create.dye.top
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777365
+    m_Key: create.dye.legs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777366
+    m_Key: create.dye.over
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777367
+    m_Key: create.dye.head
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777368
+    m_Key: create.standard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777369
+    m_Key: create.rolled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777370
+    m_Key: create.points_left
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777371
+    m_Key: create.roll
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777372
+    m_Key: create.keep
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777373
+    m_Key: create.recall
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777374
+    m_Key: create.standard_start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777375
+    m_Key: create.tags
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777376
+    m_Key: create.traits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777377
+    m_Key: create.summary
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777378
+    m_Key: create.unnamed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777379
+    m_Key: create.missing.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777380
+    m_Key: create.missing.points
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777381
+    m_Key: create.missing.tags
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777382
+    m_Key: face.group.head
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777383
+    m_Key: face.group.brows
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777384
+    m_Key: face.group.eyes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777385
+    m_Key: face.group.nose
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777386
+    m_Key: face.group.cheeks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777387
+    m_Key: face.group.mouth
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777388
+    m_Key: face.group.chin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777389
+    m_Key: face.group.ears
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777390
+    m_Key: face.group.neck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777391
+    m_Key: face.head-scale-horiz
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777392
+    m_Key: face.head-fat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777393
+    m_Key: face.head-age
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777394
+    m_Key: face.forehead-scale-vert
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777395
+    m_Key: face.head-oval
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777396
+    m_Key: face.head-round
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777397
+    m_Key: face.head-square
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777398
+    m_Key: face.head-rectangular
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777399
+    m_Key: face.head-triangular
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777400
+    m_Key: face.head-diamond
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777401
+    m_Key: face.eyebrows-trans
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777402
+    m_Key: face.eyebrows-angle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777403
+    m_Key: face.eye-scale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777404
+    m_Key: face.eye-trans
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777405
+    m_Key: face.eye-epicanthus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777406
+    m_Key: face.eye-bag
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777407
+    m_Key: face.nose-scale-horiz
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777408
+    m_Key: face.nose-scale-vert
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777409
+    m_Key: face.nose-hump
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777410
+    m_Key: face.nose-nostrils-width
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777411
+    m_Key: face.nose-point-width
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777412
+    m_Key: face.nose-volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777413
+    m_Key: face.cheek-bones
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777414
+    m_Key: face.cheek-volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777415
+    m_Key: face.mouth-scale-horiz
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777416
+    m_Key: face.mouth-upperlip-volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777417
+    m_Key: face.mouth-lowerlip-volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777418
+    m_Key: face.mouth-angles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777419
+    m_Key: face.chin-prominent
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777420
+    m_Key: face.chin-width
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777421
+    m_Key: face.chin-height
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777422
+    m_Key: face.chin-bones
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777423
+    m_Key: face.chin-cleft
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777424
+    m_Key: face.ear-scale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777425
+    m_Key: face.neck-scale-horiz
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777426
+    m_Key: attr.brawn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777427
+    m_Key: attr.brawn.desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777428
+    m_Key: attr.senses
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777429
+    m_Key: attr.senses.desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777430
+    m_Key: attr.grit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777431
+    m_Key: attr.grit.desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777432
+    m_Key: attr.presence
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777433
+    m_Key: attr.presence.desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777434
+    m_Key: attr.wits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777435
+    m_Key: attr.wits.desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777436
+    m_Key: attr.reflex
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777437
+    m_Key: attr.reflex.desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777438
+    m_Key: attr.fortune
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777439
+    m_Key: attr.fortune.desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777440
+    m_Key: skill.firearms
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777441
+    m_Key: skill.arc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777442
+    m_Key: skill.melee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777443
+    m_Key: skill.explosives
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777444
+    m_Key: skill.medicine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777445
+    m_Key: skill.mechanics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777446
+    m_Key: skill.science
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777447
+    m_Key: skill.security
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777448
+    m_Key: skill.stealth
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777449
+    m_Key: skill.speech
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777450
+    m_Key: skill.barter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34954398777451
+    m_Key: skill.survival
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

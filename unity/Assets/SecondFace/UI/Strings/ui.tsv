@@ -157,3 +157,112 @@ barter.disliked	disliked here
 barter.member	member's rate
 barter.today_down	{0}% down today
 barter.today_up	{0}% up today
+create.who	Who
+create.face	Face
+create.body	Body
+create.attributes	Attributes
+create.skills	Skills
+create.begin	Begin
+create.origin	WHERE YOU COME FROM
+create.own	Someone of your own
+create.own_note	Choose everything yourself.
+create.name	NAME
+create.pronouns	PRONOUNS
+create.pronoun.she	she
+create.pronoun.he	he
+create.pronoun.they	they
+create.another_face	Another face
+create.even_face	An even face
+create.body_type	BODY TYPE
+create.body.f	Body one
+create.body.m	Body two
+create.height	Height
+create.clothes	CLOTHES
+create.dye.top	Shirt
+create.dye.legs	Trousers
+create.dye.over	Coat
+create.dye.head	Hat
+create.standard	THE STANDARD START · {0} POINTS
+create.rolled	A ROLLED START · {0} POINTS
+create.points_left	{0} left to spend
+create.roll	Roll
+create.keep	Keep this roll
+create.recall	Recall the kept (+{0})
+create.standard_start	Standard start
+create.tags	TAGGED SKILLS · {0} OF {1}
+create.traits	TRAITS · {0} OF {1}
+create.summary	WHO YOU ARE
+create.unnamed	No name yet.
+create.missing.name	Choose a name.
+create.missing.points	Spend every point.
+create.missing.tags	Tag three skills.
+face.group.head	Head
+face.group.brows	Brows
+face.group.eyes	Eyes
+face.group.nose	Nose
+face.group.cheeks	Cheeks
+face.group.mouth	Mouth
+face.group.chin	Chin and jaw
+face.group.ears	Ears
+face.group.neck	Neck
+face.head-scale-horiz	Head width
+face.head-fat	Head fullness
+face.head-age	Head age
+face.forehead-scale-vert	Forehead height
+face.head-oval	Oval
+face.head-round	Round
+face.head-square	Square
+face.head-rectangular	Long
+face.head-triangular	Triangular
+face.head-diamond	Diamond
+face.eyebrows-trans	Brow height
+face.eyebrows-angle	Brow angle
+face.eye-scale	Eye size
+face.eye-trans	Eye spacing
+face.eye-epicanthus	Eyelid fold
+face.eye-bag	Eye bags
+face.nose-scale-horiz	Nose width
+face.nose-scale-vert	Nose length
+face.nose-hump	Bridge hump
+face.nose-nostrils-width	Nostrils
+face.nose-point-width	Nose tip
+face.nose-volume	Nose size
+face.cheek-bones	Cheekbones
+face.cheek-volume	Cheek fullness
+face.mouth-scale-horiz	Mouth width
+face.mouth-upperlip-volume	Upper lip
+face.mouth-lowerlip-volume	Lower lip
+face.mouth-angles	Mouth corners
+face.chin-prominent	Chin forward
+face.chin-width	Chin width
+face.chin-height	Chin height
+face.chin-bones	Jaw
+face.chin-cleft	Chin cleft
+face.ear-scale	Ear size
+face.neck-scale-horiz	Neck width
+attr.brawn	Brawn
+attr.brawn.desc	Raw strength. Carry weight, melee damage, heavy weapons, a little health.
+attr.senses	Senses
+attr.senses.desc	Sight, hearing, instinct. Weapon range, spotting traps and hidden things, noticing what others miss.
+attr.grit	Grit
+attr.grit.desc	Toughness and stamina. Health, healing, resistance to radiation and poison, long marches.
+attr.presence	Presence
+attr.presence.desc	Force of personality. How people react to you, prices, followers.
+attr.wits	Wits
+attr.wits.desc	Intelligence and memory. Skill points, science and medicine, seeing through lies.
+attr.reflex	Reflex
+attr.reflex.desc	Speed and coordination. Action points, initiative, firearms, stealth.
+attr.fortune	Fortune
+attr.fortune.desc	The world bending your way. Critical hits, odd encounters, finds, gambling.
+skill.firearms	Firearms
+skill.arc	Arc Weapons
+skill.melee	Melee
+skill.explosives	Explosives
+skill.medicine	Medicine
+skill.mechanics	Mechanics
+skill.science	Science
+skill.security	Security
+skill.stealth	Stealth
+skill.speech	Speech
+skill.barter	Barter
+skill.survival	Survival

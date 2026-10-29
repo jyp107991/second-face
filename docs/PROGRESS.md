@@ -619,7 +619,16 @@ figure.
 shirt under it instead of the shirt showing through in patches, and each garment can be dirtied (most at the hem) and
 sun-faded as the game describes it. Seen in `docs/evidence/unity/p4/people_wardrobe.jpg` and
 `docs/evidence/unity/p5/ui_pack_figure.jpg`.
-**Next action:** P5.3i (character creation and the sculptor, with the body sliders; BUILD_PLAN P5 "Order of work"). **`play-people` is released**
+**Character creation (P5.3i, part 1, 2026-10-29):** the creation screen is in: pick one of the four Cistern origins or
+make someone of your own, a name and pronouns; shape the face with the sculptor (35 sliders in nine groups, with the
+face filling the frame, or roll another face); pick the body type, the height and the dyes of your clothes; take the
+standard start or roll your attributes the old way (roll, keep, recall, then move points); tag three skills and take
+up to two traits; begin. Seen in `docs/evidence/unity/p5/ui_create_who.jpg`, `ui_create_face.jpg`,
+`ui_create_body.jpg`, `ui_create_attributes.jpg` and `ui_create_skills.jpg`.
+**Next action:** P5.3i part 2: the look in the shaders — skin tone and undertone, freckles, eye colour, hair colour,
+a scar and a tattoo drawn over the skin — on the creation's body page (BUILD_PLAN P5 "Order of work" 3i). Then part 3
+(body sliders and hair choices from the people pipeline: Blender and the MakeHuman assets are in the session
+scratchpad, `blender/` and `mhc/`; if a fresh session lacks them, see `tools/unity/people/`). **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).
 Step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until Mid ≥ 30 fps).
