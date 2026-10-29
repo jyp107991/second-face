@@ -91,6 +91,20 @@ namespace SecondFace.Tests
             Assert.That(boot.Hud, Is.Not.Null, "the HUD is up");
             var fwd = Camera.main.transform.forward;
             Assert.That(Mathf.Abs(Mathf.DeltaAngle(boot.Hud.Compass.Heading, Mathf.Atan2(fwd.x, fwd.z) * Mathf.Rad2Deg)), Is.LessThan(2f), "the compass follows the camera");
+            // a tap on one of the townsfolk in view opens the radial over them (P5.3c); a verb closes it
+            var view = Camera.main;
+            var folk = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None)
+                .Select(i => (i, p: (Vector2)view.WorldToScreenPoint(i.transform.position + Vector3.up * 1.2f)))
+                .FirstOrDefault(x => x.p.x > 0 && x.p.x < Screen.width && x.p.y > 0 && x.p.y < Screen.height && Interactable.Under(view, x.p) == x.i);
+            Assert.That(Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None).Length, Is.GreaterThanOrEqualTo(walk.Townsfolk), "every one of the townsfolk can be tapped");
+            if (folk.i != null)
+            {
+                walk.Input.Tap(folk.p);
+                Assert.That(boot.UI.Top, Is.TypeOf<SecondFace.Game.UI.RadialMenu>(), $"the radial opened over {folk.i.Title}");
+                ((SecondFace.Game.UI.RadialMenu)boot.UI.Top).Choose("look");
+                Assert.That(boot.UI.Top, Is.Null, "a verb closes it");
+            }
+            else Debug.LogWarning("BootTests: none of the townsfolk is in clear view from the spawn; the radial is covered by UiTests");
             // levels of detail (P4.1): the game camera's person is LOD1, about 6 K triangles (they were 95-141 K whole)
             var lod = walk.Walker.GetComponentInChildren<LODGroup>();
             Assert.That(lod, Is.Not.Null, "the walker's levels of detail");

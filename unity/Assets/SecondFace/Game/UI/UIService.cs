@@ -242,6 +242,13 @@ namespace SecondFace.Game.UI
             return CoversPanel(RuntimePanelUtils.ScreenToPanel(panel, new Vector2(screen.x, Screen.height - screen.y)));
         }
 
+        /// <summary>A screen position (pixels, origin bottom-left) in panel units (origin top-left).</summary>
+        public Vector2 ToPanel(Vector2 screen)
+        {
+            var panel = Root?.panel;
+            return panel == null ? screen : RuntimePanelUtils.ScreenToPanel(panel, new Vector2(screen.x, Screen.height - screen.y));
+        }
+
         /// <summary>Whether a point in panel units (origin top-left) is on the interface.</summary>
         public bool CoversPanel(Vector2 point)
         {

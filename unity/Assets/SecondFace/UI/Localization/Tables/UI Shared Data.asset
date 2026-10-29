@@ -91,6 +91,38 @@ MonoBehaviour:
     m_Key: common.cancel
     m_Metadata:
       m_Items: []
+  - m_Id: 3219040616448
+    m_Key: verb.talk
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3219090948096
+    m_Key: verb.look
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3219090948097
+    m_Key: verb.take
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3219090948098
+    m_Key: verb.use
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3219090948099
+    m_Key: verb.steal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3219090948100
+    m_Key: verb.give
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3219090948101
+    m_Key: verb.attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3219090948102
+    m_Key: people.someone
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

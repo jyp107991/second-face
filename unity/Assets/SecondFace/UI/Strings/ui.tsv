@@ -12,6 +12,14 @@ hud.pack	Pack
 hud.you	You
 hud.quiet	Nothing pressing. Walk, ask, look.
 hud.when	Day {0} · {1}
+verb.talk	Talk
+verb.look	Look
+verb.take	Take
+verb.use	Use
+verb.steal	Steal
+verb.give	Give
+verb.attack	Attack
+people.someone	Someone from the town
 compass.n	N
 compass.e	E
 compass.s	S

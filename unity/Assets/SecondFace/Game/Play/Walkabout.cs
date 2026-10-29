@@ -1,4 +1,7 @@
 using System.Collections;
+using System.Linq;
+using SecondFace.Game.People;
+using SecondFace.Game.UI;
 using SecondFace.Game.World;
 using UnityEngine;
 
@@ -9,7 +12,9 @@ namespace SecondFace.Game.Play
     /// player set down at Shale's spawn, the game camera on them, touch to look round, tap to walk, pinch to zoom, the
     /// NavMesh following them over the open ground and through the town, and the P2 people standing about the town at
     /// its people's posts, idling. The world streams round the walker. <see cref="Pause"/> hands the camera to the
-    /// measuring tour and back.
+    /// measuring tour and back. A tap on one of the townsfolk opens the radial (P5.3c): talk walks the walker over and
+    /// the person turns to them and talks; look has them meet each other's eyes and the person waves. (Their
+    /// conversations come with the dialogue panel, P5.3d.)
     /// </summary>
     public sealed class Walkabout : MonoBehaviour
     {
@@ -46,6 +51,7 @@ namespace SecondFace.Game.Play
             Rig.Snap();
             Input = gameObject.AddComponent<TouchInput>();
             Input.Rig = Rig; Input.Walker = Walker; Input.Camera = Stage.Camera;
+            Input.Tapped += OnTapped;
             Townsfolk = Populate(assets);
         }
 
@@ -75,9 +81,67 @@ namespace SecondFace.Game.Play
                     anim.gameObject.AddComponent<SecondFace.Game.People.FootPlant>();
                     anim.gameObject.AddComponent<SecondFace.Game.People.Gaze>();
                 }
+                var name = Bootstrap.Content?.Entry("npcs", m.Id)?["name"]?.ToString();
+                var it = Interactable.Add(p, m.Id, string.IsNullOrEmpty(name) ? Strings.Get("people.someone") : name, 0.4f, 1.85f, "talk", "look");
+                it.Chosen += (who, verb) => StartCoroutine(Respond(who, verb));
                 n++;
             }
             return n;
+        }
+
+        /// <summary>The radial over a tapped person (or thing).</summary>
+        private void OnTapped(Interactable it, Vector2 screen)
+        {
+            var ui = UIService.Instance;
+            if (ui == null) { it.Choose(it.Verbs.FirstOrDefault()); return; }
+            var verbs = it.Verbs.Select(v => new RadialVerb(v, !it.Closed.Contains(v))).ToList();
+            ui.Open(new RadialMenu(ui.ToPanel(screen), it.Title, verbs, it.Choose));
+        }
+
+        /// <summary>The townsfolk answer a verb: talk brings the walker over and the person turns and talks; look has
+        /// them meet each other's eyes and the person waves.</summary>
+        public IEnumerator Respond(Interactable who, string verb)
+        {
+            if (Walker == null || who == null) yield break;
+            var person = who.transform;
+            var anim = who.GetComponentInChildren<Animator>();
+            var gaze = anim != null ? anim.GetComponent<Gaze>() : null;
+            var ambient = anim != null ? anim.GetComponent<Ambient>() : null;
+            var walkerAnim = Walker.GetComponentInChildren<Animator>();
+            var walkerGaze = walkerAnim != null ? walkerAnim.GetComponent<Gaze>() : null;
+            var head = anim != null && anim.isHuman ? anim.GetBoneTransform(HumanBodyBones.Head) : person;
+            var walkerHead = walkerAnim != null && walkerAnim.isHuman ? walkerAnim.GetBoneTransform(HumanBodyBones.Head) : Walker.transform;
+            if (verb == "talk")
+            {
+                var away = Walker.transform.position - person.position;
+                away.y = 0;
+                var spot = person.position + (away.sqrMagnitude > 0.01f ? away.normalized : person.forward) * 1.3f;
+                if (Walker.GoTo(spot))
+                {
+                    var t0 = Time.time;
+                    while (Walker != null && Walker.Goal != null && Time.time - t0 < 10f) yield return null;
+                }
+                if (Walker == null || person == null) yield break;
+                var to = Walker.transform.position - person.position;
+                to.y = 0;
+                if (to.sqrMagnitude > 0.01f)
+                {
+                    var from = person.rotation;
+                    var goal = Quaternion.LookRotation(to.normalized, Vector3.up);
+                    for (var t = 0f; t < 1f && person != null; t += Time.deltaTime / 0.6f)
+                    {
+                        person.rotation = Quaternion.Slerp(from, goal, Mathf.SmoothStep(0f, 1f, t));
+                        yield return null;
+                    }
+                }
+            }
+            if (person == null) yield break;
+            if (gaze != null) gaze.Target = walkerHead;
+            if (walkerGaze != null) walkerGaze.Target = head;
+            if (ambient != null) ambient.Gesture(verb == "talk" ? "talk" : "wave");   // not ?. on a component
+            yield return new WaitForSeconds(6f);
+            if (gaze != null && gaze.Target == walkerHead) gaze.Target = null;
+            if (walkerGaze != null && walkerGaze.Target == head) walkerGaze.Target = null;
         }
 
         private static float Hash(string s)

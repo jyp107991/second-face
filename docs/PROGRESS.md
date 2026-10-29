@@ -579,7 +579,12 @@ language is a column away), and the walkabout has its HUD: where and when and wh
 top right that turns with the camera, the party's faces and health at bottom left, and under the right thumb the notebook,
 the map and the pack (hidden until those screens exist). Seen in `docs/evidence/unity/p5/ui_hud.jpg` and
 `ui_hud_quiet.jpg` (nothing tracked, turned round).
-**Next action:** P5.3c (the radial action menu; BUILD_PLAN P5 "Order of work"). **`play-people` is released**
+**Acting on people and things (P5.3c, 2026-10-29):** a tap on a person or a thing now opens a ring of what can be
+done with it (talk, look, take, use, steal, give, attack, as the game allows; what cannot be done now shows dimmed),
+named at its centre and kept on screen whatever corner was tapped. In the walkabout the townsfolk answer it: talk and
+the stand-in walks over, the person turns and talks; look and they meet each other's eyes and the person waves. Seen in
+`docs/evidence/unity/p5/ui_radial.jpg` and `ui_radial_corner.jpg`.
+**Next action:** P5.3d (the dialogue panel bound to Core dialogue; BUILD_PLAN P5 "Order of work"). **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).
 Step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until Mid ≥ 30 fps).

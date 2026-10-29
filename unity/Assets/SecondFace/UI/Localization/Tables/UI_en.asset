@@ -94,6 +94,38 @@ MonoBehaviour:
     m_Localized: Cancel
     m_Metadata:
       m_Items: []
+  - m_Id: 3219040616448
+    m_Localized: Talk
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3219090948096
+    m_Localized: Look
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3219090948097
+    m_Localized: Take
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3219090948098
+    m_Localized: Use
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3219090948099
+    m_Localized: Steal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3219090948100
+    m_Localized: Give
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3219090948101
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3219090948102
+    m_Localized: Someone from the town
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

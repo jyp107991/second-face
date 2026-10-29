@@ -21,7 +21,9 @@ namespace SecondFace.Tests
     /// takes every touch and the back gesture closes it (`ui_modal`); an opaque page hides the screens and the HUD under it
     /// (`ui_page`), and closing the bottom screen closes those over it. The HUD (P5.3b) keeps every plate inside the safe
     /// area, bands the party's health, turns the compass with the camera and quiets its line when nothing is tracked
-    /// (`ui_hud`); its words come from the UI string table.
+    /// (`ui_hud`); its words come from the UI string table. The radial (P5.3c) rings the tapped point with its verbs, dims
+    /// one that is closed, takes every touch, reports the verb chosen and closes; tapped by the corner it moves inside the
+    /// safe area whole (`ui_radial`, `ui_radial_corner`).
     /// </summary>
     public class UiTests : IPrebuildSetup
     {
@@ -239,6 +241,58 @@ namespace SecondFace.Tests
             Assert.That(hud.Party.Children().Count(c => c.resolvedStyle.display == DisplayStyle.Flex), Is.EqualTo(1));
             Save(_rt, "ui_hud_quiet");
             Object.Destroy(face);
+        }
+
+        [UnityTest, Timeout(120000)]
+        public IEnumerator RadialRingsThePointInsideTheSafeArea()
+        {
+            _ui = Offscreen(1600, 720, out _rt);
+            _ui.SafeAreaOverride = new Rect(0.05f, 0.04f, 0.95f, 0.96f);
+            _ui.Root.Insert(0, World());
+            string chosen = null;
+            var verbs = new[] { new RadialVerb("talk"), new RadialVerb("look"), new RadialVerb("take"), new RadialVerb("steal", false), new RadialVerb("give") };
+            var radial = _ui.Open(new RadialMenu(new Vector2(800f, 360f), "Someone from the town", verbs, v => chosen = v));
+            yield return new WaitForSecondsRealtime(0.4f);
+            for (var i = 0; i < 3; i++) yield return null;
+            var w = _ui.Root.layout.width;
+            var h = _ui.Root.layout.height;
+            var inset = _ui.Insets;
+            Assert.That(Vector2.Distance(radial.Centre, new Vector2(800f, 360f)), Is.LessThan(0.5f), "the ring is centred on the point");
+            foreach (var v in verbs)
+            {
+                var b = radial.VerbButton(v.Id);
+                Assert.That(b, Is.Not.Null, v.Id);
+                Assert.That(Vector2.Distance(b.worldBound.center, radial.Centre), Is.EqualTo(RadialMenu.Radius).Within(2f), $"{v.Id} sits on the ring (the ring has grown open)");
+                Assert.That(b.worldBound.height, Is.GreaterThanOrEqualTo(80f), "a thumb's target");
+            }
+            Assert.That(radial.VerbButton("talk").worldBound.center.y, Is.LessThan(radial.Centre.y - RadialMenu.Radius + 2f), "the first verb at the top");
+            Assert.That(radial.VerbButton("steal").enabledSelf, Is.False, "a closed verb is dimmed");
+            Assert.That(radial.VerbButton("look").Q<Label>().text, Is.EqualTo("Look"));
+            Assert.That(_ui.CoversPanel(new Vector2(120f, 120f)), Is.True, "the ring takes every touch while open");
+            Assert.That(Save(_rt, "ui_radial"), Is.GreaterThan(0.95f));
+            radial.Choose("steal");
+            Assert.That(chosen, Is.Null, "a closed verb cannot be chosen");
+            Assert.That(radial.IsOpen, Is.True);
+            radial.Choose("look");
+            Assert.That(chosen, Is.EqualTo("look"));
+            Assert.That(radial.IsOpen, Is.False, "choosing closes the ring");
+            Assert.That(_ui.Top, Is.Null);
+
+            var corner = _ui.Open(new RadialMenu(new Vector2(1590f, 715f), "A crate", new[] { new RadialVerb("take"), new RadialVerb("look") }, v => chosen = v));
+            yield return new WaitForSecondsRealtime(0.4f);
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(corner.Centre.x, Is.LessThanOrEqualTo(w - inset.z - RadialMenu.Extent - RadialMenu.Margin + 0.5f), "moved in from the edge");
+            Assert.That(corner.Centre.y, Is.LessThanOrEqualTo(h - inset.w - RadialMenu.Extent - RadialMenu.Margin + 0.5f), "moved up off the gesture bar");
+            var take = corner.VerbButton("take");
+            var look = corner.VerbButton("look");
+            Assert.That(take.worldBound.center.x, Is.LessThan(corner.Centre.x - RadialMenu.Radius + 2f), "two verbs sit left and right");
+            Assert.That(look.worldBound.center.x, Is.GreaterThan(corner.Centre.x + RadialMenu.Radius - 2f));
+            Assert.That(take.worldBound.center.y, Is.EqualTo(corner.Centre.y).Within(2f));
+            Assert.That(look.worldBound.xMax, Is.LessThanOrEqualTo(w - inset.z - RadialMenu.Margin + 0.5f));
+            Assert.That(look.worldBound.yMax, Is.LessThanOrEqualTo(h - inset.w));
+            Save(_rt, "ui_radial_corner");
+            Assert.That(_ui.Back(), Is.True);
+            Assert.That(corner.IsOpen, Is.False, "back closes the ring");
         }
 
         private static Label Text(string cls, string text)

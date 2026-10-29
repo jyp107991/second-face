@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using SecondFace.Core.Input;
 using SecondFace.Game.UI;
@@ -9,7 +10,8 @@ namespace SecondFace.Game.Play
     /// <summary>
     /// The touch controls (BUILD_PLAN §6.F.2, step 25): the fingers on the screen each frame go through Core
     /// <see cref="Gestures"/>; one finger drags the camera round (<see cref="OrbitRig.Orbit"/>), a tap on the ground sends
-    /// the walker there, a double tap on the walker brings the camera back to them, two fingers pinch the distance and
+    /// the walker there and a tap on a person or thing (<see cref="Interactable"/>) is <see cref="Tapped"/> (the radial
+    /// opens there), a double tap on the walker brings the camera back to them, two fingers pinch the distance and
     /// pan the view over the ground. A touch that begins on the interface (<see cref="UIService.Covers"/>) or the debug
     /// overlay is theirs. With a mouse (the editor,
     /// a desktop): the left button is a finger, the wheel zooms, the right button pans.
@@ -23,6 +25,9 @@ namespace SecondFace.Game.Play
         public float OnWalkerPixels = 70f;
 
         public Gestures Gestures { get; } = new();
+        /// <summary>A tap landed on a person or thing: it and the screen point (pixels, origin bottom-left). With no
+        /// listener the tap walks there as on the ground.</summary>
+        public event Action<Interactable, Vector2> Tapped;
         /// <summary>The last point a tap sent the walker to (tests read it).</summary>
         public Vector3? LastTap { get; private set; }
 
@@ -85,7 +90,15 @@ namespace SecondFace.Game.Play
             {
                 if (OnWalker(d.x, d.y)) Rig.Recentre(); else Send(d.x, d.y);
             }
-            if (g.Tap is { } t) Send(t.x, t.y);
+            if (g.Tap is { } t) Tap(new Vector2(t.x, t.y));
+        }
+
+        /// <summary>A tap: on a person or thing it is theirs (<see cref="Tapped"/>), on the ground the walker goes there.</summary>
+        public void Tap(Vector2 screen)
+        {
+            var it = Tapped != null ? Interactable.Under(Camera, screen) : null;
+            if (it != null) Tapped(it, screen);
+            else Send(screen.x, screen.y);
         }
 
         /// <summary>The ground under two screen points: the view moves so the ground under the fingers stays there.</summary>

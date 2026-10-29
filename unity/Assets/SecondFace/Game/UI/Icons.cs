@@ -9,7 +9,7 @@ namespace SecondFace.Game.UI
     /// </summary>
     public static class Icons
     {
-        public static readonly string[] Names = { "notebook", "map", "pack" };
+        public static readonly string[] Names = { "notebook", "map", "pack", "talk", "look", "take", "use", "steal", "give", "attack" };
 
         public static VisualElement Make(string name, float size = 40f)
         {
@@ -55,6 +55,66 @@ namespace SecondFace.Game.UI
                     p.ClosePath();
                     p.MoveTo(P(0.24f, 0.54f)); p.LineTo(P(0.76f, 0.54f));   // the flap
                     p.MoveTo(P(0.46f, 0.54f)); p.LineTo(P(0.46f, 0.64f)); p.LineTo(P(0.54f, 0.64f)); p.LineTo(P(0.54f, 0.54f));   // the buckle
+                    p.Stroke();
+                    break;
+                case "talk":   // a speech bubble with its tail
+                    p.BeginPath();
+                    p.MoveTo(P(0.18f, 0.20f)); p.LineTo(P(0.82f, 0.20f)); p.LineTo(P(0.82f, 0.64f)); p.LineTo(P(0.46f, 0.64f));
+                    p.LineTo(P(0.28f, 0.82f)); p.LineTo(P(0.30f, 0.64f)); p.LineTo(P(0.18f, 0.64f));
+                    p.ClosePath();
+                    p.Stroke();
+                    break;
+                case "look":   // an eye
+                    p.BeginPath();
+                    p.MoveTo(P(0.10f, 0.50f)); p.BezierCurveTo(P(0.30f, 0.20f), P(0.70f, 0.20f), P(0.90f, 0.50f));
+                    p.BezierCurveTo(P(0.70f, 0.80f), P(0.30f, 0.80f), P(0.10f, 0.50f));
+                    p.Stroke();
+                    p.BeginPath();
+                    p.Arc(P(0.50f, 0.50f), r.width * 0.12f, 0f, 360f);
+                    p.Stroke();
+                    break;
+                case "take":   // an arrow down into an open box
+                    p.BeginPath();
+                    p.MoveTo(P(0.50f, 0.12f)); p.LineTo(P(0.50f, 0.56f));
+                    p.MoveTo(P(0.34f, 0.42f)); p.LineTo(P(0.50f, 0.58f)); p.LineTo(P(0.66f, 0.42f));
+                    p.MoveTo(P(0.18f, 0.52f)); p.LineTo(P(0.18f, 0.86f)); p.LineTo(P(0.82f, 0.86f)); p.LineTo(P(0.82f, 0.52f));
+                    p.Stroke();
+                    break;
+                case "give":   // an arrow up out of an open box
+                    p.BeginPath();
+                    p.MoveTo(P(0.50f, 0.62f)); p.LineTo(P(0.50f, 0.14f));
+                    p.MoveTo(P(0.34f, 0.30f)); p.LineTo(P(0.50f, 0.14f)); p.LineTo(P(0.66f, 0.30f));
+                    p.MoveTo(P(0.18f, 0.52f)); p.LineTo(P(0.18f, 0.86f)); p.LineTo(P(0.82f, 0.86f)); p.LineTo(P(0.82f, 0.52f));
+                    p.Stroke();
+                    break;
+                case "use":   // a lever in its slot
+                    p.BeginPath();
+                    p.MoveTo(P(0.20f, 0.80f)); p.LineTo(P(0.80f, 0.80f));
+                    p.MoveTo(P(0.50f, 0.80f)); p.LineTo(P(0.68f, 0.30f));
+                    p.Stroke();
+                    p.BeginPath();
+                    p.Arc(P(0.70f, 0.24f), r.width * 0.09f, 0f, 360f);
+                    p.Stroke();
+                    break;
+                case "steal":   // a purse with a cut
+                    p.BeginPath();
+                    p.MoveTo(P(0.38f, 0.30f)); p.LineTo(P(0.62f, 0.30f));
+                    p.MoveTo(P(0.38f, 0.30f)); p.BezierCurveTo(P(0.10f, 0.50f), P(0.14f, 0.86f), P(0.50f, 0.86f));
+                    p.BezierCurveTo(P(0.86f, 0.86f), P(0.90f, 0.50f), P(0.62f, 0.30f));
+                    p.MoveTo(P(0.40f, 0.18f)); p.LineTo(P(0.50f, 0.30f)); p.LineTo(P(0.60f, 0.18f));   // the tie
+                    p.MoveTo(P(0.30f, 0.70f)); p.LineTo(P(0.70f, 0.50f));   // the cut
+                    p.Stroke();
+                    break;
+                case "attack":   // a blade
+                    p.BeginPath();
+                    p.MoveTo(P(0.24f, 0.76f)); p.LineTo(P(0.82f, 0.18f));
+                    p.MoveTo(P(0.22f, 0.56f)); p.LineTo(P(0.44f, 0.78f));   // the guard
+                    p.MoveTo(P(0.24f, 0.76f)); p.LineTo(P(0.14f, 0.86f));   // the grip
+                    p.Stroke();
+                    break;
+                default:   // a verb with no icon of its own yet
+                    p.BeginPath();
+                    p.Arc(P(0.50f, 0.50f), r.width * 0.16f, 0f, 360f);
                     p.Stroke();
                     break;
             }

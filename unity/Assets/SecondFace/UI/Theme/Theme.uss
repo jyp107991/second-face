@@ -272,3 +272,53 @@
     color: var(--plate-text);
 }
 .sf-icon { color: var(--plate-text); }
+
+/* ---- the radial action menu (RadialMenu.cs) ---- */
+.sf-radial { background-color: rgba(10, 8, 6, 0.18); }
+.sf-radial__ring {
+    position: absolute;
+    scale: 0.7 0.7;
+    opacity: 0;
+    transition-property: scale, opacity;
+    transition-duration: 0.12s;
+    transition-timing-function: ease-out;
+}
+.sf-radial--open .sf-radial__ring { scale: 1 1; opacity: 1; }
+.sf-radial__verb {
+    position: absolute;
+    width: 104px;
+    height: 104px;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    border-radius: 52px;
+    background-color: rgba(30, 26, 22, 0.95);
+    color: var(--plate-text);
+    align-items: center;
+    justify-content: center;
+}
+.sf-radial__verb:enabled:hover { background-color: rgba(48, 42, 36, 0.97); }
+.sf-radial__verb:enabled:active { background-color: rgba(8, 7, 6, 0.95); }
+.sf-radial__verb:enabled:focus { border-width: 3px; border-color: var(--ochre); }
+.sf-radial__verb:disabled { opacity: 0.4; }
+.sf-radial__verb .sf-icon { color: var(--plate-text); }
+.sf-radial__verb-label {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 20px;
+    margin-top: 2px;
+    color: var(--plate-text);
+}
+.sf-radial__hub {
+    position: absolute;
+    max-width: 196px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background-color: rgba(30, 26, 22, 0.95);
+}
+.sf-radial__title {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: 22px;
+    color: #E0A645;
+    white-space: normal;
+    -unity-text-align: middle-center;
+}

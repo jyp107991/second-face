@@ -427,7 +427,8 @@ from fixture state and captured (`UiTests`, the panel drawn into a texture):
 - ~~3b. Localization wired (Unity Localization: a `UI` string table, English; screens take their strings from it, content
   text stays content) and the HUD (the objective line, health, the compass, the thumb-reach action cluster)~~ (done,
   below).
-- 3c. The radial action menu (hold on a person or thing; verbs from content) and the touch rules round it.
+- ~~3c. The radial action menu (hold on a person or thing; verbs from content) and the touch rules round it~~ (done,
+  below; a tap opens it, per §6.F.2).
 - 3d. Dialogue panel bound to Core dialogue (the scene stays visible; options as notebook lines; skip heard lines; log).
 - 3e. Conversation cameras (over-shoulder two-shot, portrait inserts; Cinemachine).
 - 3f. The notebook (leads, quests, people, letters, decisions) as a book.
@@ -469,6 +470,20 @@ objective's bearing): objective plate top left (tap: `ObjectiveTapped`), `Compas
 costs no relayout; north is +z), party bottom left, notebook/map/pack bottom right (100-unit plates with vector
 `Icons`; `Actions(...)` hides a button with no screen yet). The walkabout shows it live (clock from `TimeService`,
 heading from the camera); `BootTests` checks it is up and follows the camera. Captures `ui_hud`, `ui_hud_quiet`.
+
+*As built (P5.3c, 2026-10-29).* `Game.Play.Interactable` (id, title, verbs, closed verbs, `Chosen`): a trigger capsule
+of its own, so it blocks neither walking (the NavMesh is built from render meshes) nor physics; `Interactable.Under`
+casts through triggers and stops at the first solid collider (a wall hides the person behind it). `TouchInput.Tap`: a tap
+on an interactable is `Tapped` (when anyone listens), else the walker goes there. `Game.UI.RadialMenu` (modal, not
+opaque): verbs on a 160-unit ring of 104-unit buttons (the first at the top, clockwise; two sit left and right), the
+title at the hub (wraps to two lines), a ring line drawn with `Painter2D`, opened by a 0.12 s scale-and-fade transition;
+centred on the tapped point and moved as little as needed to stay 12 units inside the safe area; a closed verb is
+dimmed and cannot be chosen; a verb's tap closes the ring and reports the verb; a tap elsewhere or back closes it. Verb
+labels are `verb.<id>` in the UI table, icons in `Icons` (talk, look, take, use, steal, give, attack; a ring for any
+other). The walkabout's townsfolk are interactables named from content (`npcs[<post>].name`) with talk (the walker
+walks over, the person turns to them and talks, both look at each other) and look (eyes meet, the person waves); their
+conversations come with the dialogue panel. `BootTests` taps one in clear view and chooses a verb. Captures
+`ui_radial`, `ui_radial_corner`.
 
 ### P6 — Systems and combat
 1. Interactions and loot (`Play/`): tap on a thing → radial of verbs from content (`talk`, `look`, `take`, `use`,
