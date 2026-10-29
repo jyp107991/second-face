@@ -62,6 +62,9 @@ jobs:
           androidExportType: androidPackage
           buildName: SecondFace
           versioning: Semantic
+          # a development build until release hardening (P13): the debug overlay's draw-call and memory counters
+          # (BUILD_PLAN §7.4) need one; game-ci's default build script ORs in every BuildOptions name passed here
+          customParameters: -Development
 
       - uses: actions/upload-artifact@v4
         with:

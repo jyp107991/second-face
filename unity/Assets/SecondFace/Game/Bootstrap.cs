@@ -1,6 +1,7 @@
 using System.Collections;
 using System.IO;
 using SecondFace.Core.Content;
+using SecondFace.Game.World;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -8,12 +9,16 @@ namespace SecondFace.Game
 {
     /// <summary>
     /// The one authored object in the Boot scene. Locks the app to landscape full screen, loads the content
-    /// registries from StreamingAssets and hands over to the game. Until the game exists, shows a title card with
-    /// what loaded, so the first CI build proves the pipeline end to end on the phone.
+    /// registries from StreamingAssets and hands over to the game. Until the game exists, it shows a title card with
+    /// what loaded and then raises the world round Shale for the measuring tour (<see cref="MeasureTour"/>, step 23),
+    /// with the <see cref="DebugOverlay"/> one three-finger tap away.
     /// </summary>
     public sealed class Bootstrap : MonoBehaviour
     {
         public static ContentDb Content { get; private set; }
+        /// <summary>What the world needs (set in the Boot scene by Second Face/Wire the Boot scene).</summary>
+        public WorldAssets World;
+        public MeasureTour Tour { get; private set; }
         private string _status = "LOADING…";
         private string _error;
 
@@ -56,6 +61,13 @@ namespace SecondFace.Game
             }
             Content = db;
             _status = $"THE SECOND FACE\n{db.Count("maps")} places · {db.Count("npcs")} people · {db.Count("dialogues")} conversations · {db.Count("quests")} quests · {db.Count("items")} items\n{Screen.width}×{Screen.height} {SystemInfo.graphicsDeviceType} · {SystemInfo.deviceModel}";
+            var overlay = DebugOverlay.Ensure();
+            if (World == null) yield break;
+            Tour = gameObject.AddComponent<MeasureTour>();
+            Tour.Assets = World;
+            Tour.Camera = Camera.main;
+            overlay.World = Tour.WorldLine;
+            overlay.Report = Tour.Report;
         }
 
         private GUIStyle _style;
@@ -64,7 +76,11 @@ namespace SecondFace.Game
         {
             _style ??= new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(Screen.height * 0.045f), alignment = TextAnchor.MiddleCenter, wordWrap = true };
             _style.normal.textColor = new Color(0.93f, 0.86f, 0.70f);
-            GUI.Label(new Rect(0, 0, Screen.width, Screen.height), _error != null ? "CONTENT FAILED\n" + _error : _status, _style);
+            if (_error != null) { GUI.Label(new Rect(0, 0, Screen.width, Screen.height), "CONTENT FAILED\n" + _error, _style); return; }
+            if (Tour == null) { GUI.Label(new Rect(0, 0, Screen.width, Screen.height), _status, _style); return; }
+            if (Tour.Ready) return;
+            // the title card stays over the world while it comes in
+            GUI.Label(new Rect(0, 0, Screen.width, Screen.height), _status + "\n" + Tour.Status, _style);
         }
     }
 }

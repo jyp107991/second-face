@@ -499,7 +499,18 @@ banks bend and its width changes along the way; it starts as a stream. Nothing g
 hidden with the ground while the player is under it. Captures `world_water_*.jpg` in `docs/evidence/unity/p3/`. Still
 to do: bridges or fords where roads cross the river (a road dips into the water today), the flooded under-city's water
 (with that place), wet sand at the waterline.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 23 (the debug overlay, §7.4, in development builds).
+**The world in the app, with a measuring overlay (plan §10 step 23, 2026-10-29):** the app no longer stops at its title
+card: after loading it raises the world round Shale (ground, plants, props, water, the town, the sky) and the game
+camera tours four views for 20 seconds each, turning slowly: the main street and the square from the widest zoom,
+inside the saloon (opened), and the town's edge over the scrub. A three-finger tap shows or hides the measuring
+overlay (shown at start in this development build): frame time, CPU and GPU time, draw calls, triangles, memory, what
+is loaded, the rendering tier, the phone, and a table with each view's mean, 95th-percentile and worst frame and its
+draw calls. The APK is now a development build. **For the owner (step 24):** install the APK from the latest green
+Android run, let it run one full lap (about a minute and a half after the world appears), take a screenshot with the
+overlay showing and send it (on Vulkan, the default; the tier line says which).
+**Next action:** step 24 waits on the owner's screenshot (record it in PORT.md §5, then fix until Mid ≥ 30 fps);
+meanwhile `docs/BUILD_PLAN_V1.md` §10 step 25 (orbit camera and touch input on the streamed world, a walking
+stand-in; tag `play-walkabout`).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

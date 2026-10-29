@@ -1,0 +1,18 @@
+The debug overlay's text from BootTests (step 23), in the session's editor: batch mode, software GL (llvmpipe),
+640x480. Not a measurement: cameras render only on request in batch mode (draws read 0), frames are paced by the
+60 fps target, no GPU timings; the street row of this run measured the test's own 15 s capture as one frame (the
+capture now comes after the lap). The phone's numbers come from the owner (step 24).
+
+BootTests: overlay
+frame 16.7 ms (60 fps) · worst 2 s 17.9 ms
+CPU main 2.6 · render n/a · GPU n/a ms
+draws 0 · batches 0 · setpass 0 · tris 0 · verts 0
+memory 3533 MB · GC 831 MB · gfx 628 MB
+chunks 24 · props 4895 · places 1 · view street
+tier GLES3 · OpenGLCore · 640×480 · development
+PC · llvmpipe (LLVM 20.1.2, 256 bits) · 16091 MB
+tour lap 1 (4 s a view, after 1 s):
+  street  14839.1 ms mean (0 fps) · 95 % 14839.1 · worst 14839.1 · draws 398
+  square  16.7 ms mean (60 fps) · 95 % 16.8 · worst 20.1
+  saloon  16.7 ms mean (60 fps) · 95 % 16.8 · worst 35.2
+  edge    16.7 ms mean (60 fps) · 95 % 16.8 · worst 21.6

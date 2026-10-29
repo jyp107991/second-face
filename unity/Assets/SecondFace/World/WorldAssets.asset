@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 336fdb5723d07ed16b99d1f496577fee, type: 3}
+  m_Name: WorldAssets
+  m_EditorClassIdentifier: SecondFace.Game::SecondFace.Game.World.WorldAssets
+  Layers: {fileID: 11400000, guid: b825073e7c7cacf5aa5cce734c0cd5f4, type: 2}
+  Catalog: {fileID: 11400000, guid: 73d9e64810322037c8d2843b3be7e96d, type: 2}
+  Details: {fileID: 11400000, guid: dd14bb12d1317b9a2b02a2b8371e7f9a, type: 2}
+  Places: {fileID: 11400000, guid: 51a1384adcfe129b1b8b642fa0e93efd, type: 2}
+  Sky: {fileID: 11400000, guid: 8a3b6fe1d4aa51e5882624ef8e45f875, type: 2}

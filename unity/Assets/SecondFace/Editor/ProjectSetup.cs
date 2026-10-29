@@ -18,7 +18,7 @@ namespace SecondFace.EditorTools
     [InitializeOnLoad]
     public static class ProjectSetup
     {
-        private const string ScenePath = "Assets/SecondFace/Scenes/Boot.unity";
+        public const string ScenePath = "Assets/SecondFace/Scenes/Boot.unity";
         private const string PipelineDir = "Assets/Settings";
         private const string PipelinePath = PipelineDir + "/Mobile_RPAsset.asset";
         private const string RendererPath = PipelineDir + "/Mobile_Renderer.asset";
@@ -139,6 +139,7 @@ namespace SecondFace.EditorTools
             PlayerSettings.allowedAutorotateToLandscapeRight = true;
             PlayerSettings.statusBarHidden = true;
             PlayerSettings.colorSpace = ColorSpace.Linear;
+            PlayerSettings.enableFrameTimingStats = true;   // CPU and GPU frame times for the debug overlay (§7.4)
             PlayerSettings.Android.startInFullscreen = true;
             PlayerSettings.Android.renderOutsideSafeArea = true;
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
@@ -189,7 +190,8 @@ namespace SecondFace.EditorTools
         }
     }
 
-    /// <summary>Before any player build: the committed player settings are re-asserted (landscape, immersive, IL2CPP, ARM64) and the Boot scene must be in the build.</summary>
+    /// <summary>Before any player build: the committed player settings are re-asserted (landscape, immersive, IL2CPP, ARM64),
+    /// the Boot scene must be in the build and hold the world's assets (else the app shows only its title card).</summary>
     public sealed class BuildGuard : UnityEditor.Build.IPreprocessBuildWithReport
     {
         public int callbackOrder => -1000;
@@ -199,6 +201,9 @@ namespace SecondFace.EditorTools
             ProjectSetup.EnsurePlayerSettings();
             if (!EditorBuildSettings.scenes.Any(sc => sc.enabled && sc.path.EndsWith("Boot.unity")))
                 throw new BuildFailedException("The Boot scene is not in the build settings (ProjectSettings/EditorBuildSettings.asset)");
+            var world = AssetDatabase.AssetPathToGUID(WorldAssetsBuild.AssetPath);
+            if (string.IsNullOrEmpty(world) || !File.ReadAllText(ProjectSetup.ScenePath).Contains(world))
+                throw new BuildFailedException($"The Boot scene does not hold {WorldAssetsBuild.AssetPath} (Second Face/Wire the Boot scene)");
         }
     }
 }

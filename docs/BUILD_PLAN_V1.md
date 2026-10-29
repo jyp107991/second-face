@@ -1150,6 +1150,18 @@ transient: re-run that job once (`gh run rerun <id> --failed`). The required cap
 The owner installs the APK. Development builds show a debug overlay (three-finger tap): ms/frame (CPU/GPU),
 draw calls, visible triangles, memory, the loaded chunk count, the tier. Every phase ends with the owner's
 numbers from the densest place written into PORT.md §5.
+*As built (step 23).* `Game.DebugOverlay` (IMGUI, top-left inside the safe area; three fingers down together or F3
+toggles; shown at start in development builds and the editor; in every build until P13 removes it): frame mean and
+worst over 2 s, CPU main and render thread and GPU ms (`FrameTimingManager`; `PlayerSettings.enableFrameTimingStats`
+on; "n/a" where a driver gives none), draws, batches, set-pass calls, triangles, vertices, system/GC/graphics memory
+(`ProfilerRecorder`), the world line (chunks, props, places, the view), tier, API, resolution, device, and the tour's
+table. CI builds the APK with `-Development`. Until step 25 the app has no player: after the title card,
+`Game.World.MeasureTour` raises the world round Shale (`WorldAssets` on the Boot scene's `Bootstrap`, wired by
+*Second Face/Wire the Boot scene*; `BuildGuard` refuses a build whose Boot scene lacks it) and loops four views with
+the game camera (FOV 28°, 14–26 m, pitch 40–58°, turning slowly) for 20 s each: the main street, the square from the
+widest zoom, inside the saloon (opened), the town's edge over the scrub; each view's frames after 3 s give mean,
+95th percentile, worst and mean draws. **The measurement is a screenshot of the overlay after a full lap (~80 s).**
+`BootTests` runs the Boot scene end to end in the editor (one short lap).
 
 ---
 
@@ -1349,6 +1361,13 @@ numbers from the densest place written into PORT.md §5.
 - **A river's bank raised to its level stood as a ridge under the sea** (step 22): at the mouth the ground is already
   under the water, and raising the bank to the water's edge drew two pale stripes along the channel. Raise only to
   contain a river above the sea.
+- **Batch-mode cameras render only on request** (step 23): in `-batchmode` tests nothing draws between captures, so
+  render counters read 0 and frame times are the frame-rate pacing; and a capture taken inside a measured window
+  (15 s of software rendering) is one enormous frame. Measure on the phone; capture outside measured windows.
+- **Opening a scene in an editor script unloads the assets loaded before it** (step 23): references held in C#
+  read as null afterwards (the asset on disk is fine). Read what you need before `EditorSceneManager.OpenScene`.
+- **The project uses the Input System only** (`activeInputHandler: 1`): `UnityEngine.Input` throws. Read
+  `Touchscreen.current` / `Keyboard.current` (and reference `Unity.InputSystem` in the check projects).
 - **Foam by depth is wide on a gentle beach** (step 22): 0.45 m of depth spans ~13 m of a 1:30 shore, a white strip
   like snow. Foam within ~0.2 m of depth, broken by noise, faint on a river.
 
@@ -1480,7 +1499,10 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
     of the water. `world_water_shore`, `_river`, `_falls`, `_mouth` (`docs/evidence/unity/p3/`). There are no creeks
     in the layout (the "shore's ditch lines" were the river's control-map water before the river had a bed). The
     flooded under-city's water comes with that place (P8).
-23. The debug overlay (§7.4) in development builds.
+23. ~~The debug overlay (§7.4) in development builds~~ (done 2026-10-29, §7.4 "As built"): `DebugOverlay` (three-finger
+    tap / F3), and the world in the app: `MeasureTour` raises Shale's surroundings after the title card and loops four
+    measured views; `WorldAssets` on the Boot scene (`BuildGuard` checks it); frame timing stats on; CI builds with
+    `-Development`; `BootTests` runs the Boot scene end to end (`docs/evidence/unity/p3/boot_overlay_editor.txt`).
 24. P3.7 device measurement by the owner with the overlay; numbers in PORT.md §5; fix until Mid ≥ 30 fps.
 25. P5.1–P5.2 pulled forward: the orbit camera and the touch input on the streamed world, a walking stand-in for the
     player; tag `play-walkabout` (§1) for the owner to install.
