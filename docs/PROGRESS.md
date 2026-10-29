@@ -448,10 +448,14 @@ a border chunk). New sources for sand, snow and rock and a stony ground for the 
 **Road surfaces (plan §10 step 17b, 2026-10-29):** roads, tracks and the Line now carry a surface: strip meshes laid
 on the levelled ground with ragged verges; the old asphalt is broken in patches where the sand shows through; tracks
 are stony trails. Road cuts through the Sallow's dunes are gentler (no more cliff-painted banks along every road).
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 18 (time,
-sky, fog, weather: a first draft of Core `Sky`/`Weather`, the sky and particle shaders, `TimeService`, `SkyController`,
-`WeatherLayers`, `SkyProfile` and the editor's `SkyAssets` sits in the session scratchpad `step18/`; if it is gone,
-write them from §6.A.6).
+**Day and weather (plan §10 step 18, 2026-10-29):** a world clock (a day in 24 real minutes), the sun on its path
+and the moon at night as the one shadow-casting light, a procedural sky (gradient, sun, stars, moon, drifting clouds)
+whose horizon fades into the fog so the edge of the streamed land never shows, and weather by region and day (clear
+most days in the Sallow; haze, dust, storms, rain, fog and snow where the climate gives them) with rain, snow and
+blown dust in the air. Regions' weather blends across borders; a change of weather comes in before dawn. Captures at
+7:00, 13:00, 19:00, night, in dust and in rain in `docs/evidence/unity/p3/`.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 19 (scatter per chunk through the GPU Resident Drawer + grass;
+`world_scatter_dense` with the frame time).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

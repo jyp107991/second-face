@@ -599,6 +599,30 @@ fog colour and density per region/weather with exponential-squared mode. Point l
 others emissive-only. No baked lighting in v1 (CI cannot afford bakes; APV revisited after v1 if the Floor tier
 needs it).
 
+*As built (2026-10-29, step 18).* Core `Sky` (pure, tested): the sun's path for latitude 34° and a fixed late-spring
+declination of 12° (the game keeps days, not seasons: sunrise ~5:27, noon at 68° due south, sunset ~18:32); the clear
+look keyed on the sun's elevation (eight keys from deep night to high noon, sRGB hex converted to linear, linear
+between keys: easing doubled the rate mid-way and made dawn jump); the one directional light is the sun above −6° and
+the moon below (high in the south-west), handing over where its intensity is ~0.1 so the shadows' turn is not seen;
+the sun never lights from below 6° (shadows do not run to infinity at sunrise). `SkyLook` holds every number the game
+applies and lerps (region borders, weather changes). Core `Weather`: one kind per region per day from the climate
+table (the web game's, with its FNV hash, so a region's days match it), in spells of two to three days; most Sallow
+days are clear (0.54 measured), never snow; the Teeth snow; the Wet rains. Weather changes the look on top: sun ×,
+fog × (clear air 0.0012, 95 % fogged at ~1.4 km, just past the streamed ground's edge; a storm ~20 % at the game
+camera's 60 m), cloud cover, the sky towards grey or dust, particles. Game: `TimeService` (a day in 24 real minutes by
+default, `SetHour`, paused for captures), `SkyController` (recomputes ten times a second: the look of the regions
+round the focus, the focus's own weight 2 and six points 300 m out, the day's weather blended in over the two hours
+before dawn; applies the light, trilight ambient, exp² fog, the sky material; `DynamicGI.UpdateEnvironment` every half
+game hour, to be measured on the phone), `WeatherLayers` (rain ≤ 4000 stretched streaks, snow, drifting motes, and
+broad blown-dust sheets in dust and storms; boxes riding with the focus; colours follow the light), `SkyProfile` and
+the editor's `SkyAssets` (Assets/SecondFace/Sky: the sky material, a dot and a streak drawn in code, their materials).
+Shaders: `SecondFace/Sky` (procedural skybox: zenith-to-horizon gradient, the fog's colour as a haze band at the
+horizon and below it so the streamed ground's edge fades into the sky, the sun's glow and disc, stars and the moon at
+night, one cloud layer drifting with the wind; arithmetic only) and `SecondFace/Weather Particle` (unlit, alpha, fog).
+Captures (`WorldSkyTests`): `sky_0700`, `sky_1300`, `sky_1900`, `sky_night`, `sky_dust`, `sky_rain` from a low camera
+over Shale and `sky_1300_iso` from the game camera. Not yet: wind in the foliage and the clouds' shadows on the ground
+(with scatter, P3.4), lightning, puddles and wet ground in rain (a terrain wetness term), the moon's phases.
+
 **A.7 Addressables (skeleton built 2026-10-29).** `Editor/Build/AddressablesBuild.cs`: groups `kits-shelter`,
 `kits-frontier`, `kits-trees`, `nature` (PackTogether, LZ4: meshes only) and `materials` (PackSeparately: one
 bundle per library material with its own textures, so a piece loads only its surfaces' textures and no texture is
@@ -1295,7 +1319,9 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
 17b. ~~Road surfaces~~ (done 2026-10-29, §6.A.3 "Road surfaces"): strip meshes per chunk on the levelled ground, one
     material per surface, `SecondFace/Road`; `world_road`, `world_track`. The shore's dark ditch lines (the control
     map's water lowering the ground along creeks) are water's (step 22).
-18. P3.3 `TimeService`, sky, fog, weather; captures at 7:00, 13:00, 19:00, night.
+18. ~~P3.3 `TimeService`, sky, fog, weather~~ (done 2026-10-29, §6.A.6 "As built"): Core `Sky` and `Weather`,
+    `TimeService`, `SkyController`, `WeatherLayers`, the procedural sky; captures at 7:00, 13:00, 19:00, night, in dust
+    and in rain (`docs/evidence/unity/p3/`).
 19. P3.4 resident-drawer scatter per chunk + grass; `world_scatter_dense` with the frame time.
 20. P3.5 `PlaceBuilder` from the exported layout for the first town; lights, decals, NavMesh; `place_shale_street`.
 21. P3.5 interiors as positioned prefabs with instant open; `place_shelter_hall`.

@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e092009d9c6ff66ad8d91fe8eb71b65a, type: 3}
+  m_Name: SkyProfile
+  m_EditorClassIdentifier: SecondFace.Game::SecondFace.Game.World.SkyProfile
+  Sky: {fileID: 2100000, guid: ac4b54a1fc2379743aeae84b7dc9f281, type: 2}
+  Streak: {fileID: 2100000, guid: dac8b4a831d79ca3ea70ab4196cc30e9, type: 2}
+  Dot: {fileID: 2100000, guid: 4442da4100365d2528eda4133e2df158, type: 2}
