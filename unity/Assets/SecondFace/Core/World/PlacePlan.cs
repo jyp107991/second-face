@@ -21,7 +21,8 @@ namespace SecondFace.Core.World
         public const float Storey = 3.1f;
         /// <summary>Walls lower than this are fences: they close no room and block neither sight nor flood.</summary>
         public const float FenceHeight = 1.3f;
-        public const float DoorWidth = 1.1f, DoorHeight = 2.1f, GateWidth = 2.8f, GateHeight = 2.6f;
+        /// <summary>Door and gate openings, metres (a gate of n tiles is n × 2 − 1.2 m wide, a three-tile gate 0.6 m taller).</summary>
+        public const float DoorWidth = 1.1f, DoorHeight = 2.1f, GateHeight = 2.6f;
 
         public enum OpeningKind { Door, Gate, Window }
 
@@ -74,6 +75,15 @@ namespace SecondFace.Core.World
             public float Length => (float)Math.Sqrt((Bx - Ax) * (Bx - Ax) + (Bz - Az) * (Bz - Az));
         }
 
+        /// <summary>A solid block of wall: rock (always), or a building wall two tiles or more thick (a bunker's front, a
+        /// shelter's walls between rooms), as a rectangle on its tiles' outer edges.</summary>
+        public sealed class Mass
+        {
+            public string Kind;
+            public float Height;
+            public float X0, Z0, X1, Z1;
+        }
+
         public sealed class Item
         {
             public string Kind, Id;
@@ -102,6 +112,7 @@ namespace SecondFace.Core.World
         public readonly List<Wall> Walls = new();
         public readonly List<Room> Rooms = new();
         public readonly List<Fence> Fences = new();
+        public readonly List<Mass> Masses = new();
         public readonly List<Item> Items = new();
         public readonly List<Lamp> Lamps = new();
         public readonly List<Marker> Markers = new();
@@ -133,6 +144,8 @@ namespace SecondFace.Core.World
             public float[] Heights;
             /// <summary>Doorways and gates in building walls (closed to the flood that finds rooms).</summary>
             public bool[] Threshold;
+            /// <summary>Wall tiles drawn as solid masses, not wall runs (rock; walls two tiles thick).</summary>
+            public bool[] Solid;
             public bool In(int i, int j) => i >= 0 && j >= 0 && i < N && j < M;
             public Cell At(int i, int j) => In(i, j) ? Cells[j * N + i] : Cell.Open;
             public string Kind(int i, int j) => In(i, j) ? Kinds[j * N + i] : null;
@@ -148,6 +161,7 @@ namespace SecondFace.Core.World
             var doorways = Doorways(g, Cell.High);
             var gates = Doorways(g, Cell.Low);
             FindRooms(plan, g, doorways);
+            FindMasses(plan, g);
             Runs(plan, g, Cell.High, doorways);
             Runs(plan, g, Cell.Low, gates);
             Windows(plan, seed);
@@ -177,10 +191,24 @@ namespace SecondFace.Core.World
                     g.Heights[j * n + i] = h < FenceHeight ? h : Math.Max(h, Storey);
                 }
             }
+            // an exit to another place goes through the wall beside it (a shelter's vault door is drawn as wall): the
+            // wall tiles before and behind an exit across its narrow side open
+            foreach (var e in map.Exits ?? new List<ExitDef>())
+            {
+                if (e.To?.Location == null || e.To.WorldMap == true) continue;
+                int w = e.W ?? 1, h = e.H ?? 1;
+                var across = w >= h;
+                for (var k = 0; k < (across ? w : h); k++)
+                    foreach (var side in new[] { -1, across ? h : w })
+                    {
+                        int i = across ? e.X + k : e.X + side, j = across ? e.Y + side : e.Y + k;
+                        if (g.In(i, j) && g.Cells[j * n + i] == Cell.High) g.Cells[j * n + i] = Cell.Open;
+                    }
+            }
             return g;
         }
 
-        /// <summary>The openings in walls of a class: a gap of one tile (a door) or two (a gate) in a straight line of
+        /// <summary>The openings in walls of a class: a gap of one tile (a door) or two or three (a gate) in a straight line of
         /// wall, each side of it either continuing the line or ending it (two parallel walls a tile apart are a passage,
         /// not a doorway). Value: (width in tiles, the wall kind either side, horizontal).</summary>
         private static Dictionary<int, (int Tiles, string Kind, bool Horizontal)> Doorways(Grid g, Cell cls)
@@ -198,10 +226,16 @@ namespace SecondFace.Core.World
                         int di = horizontal ? 1 : 0, dj = horizontal ? 0 : 1;
                         // no wall across the gap itself
                         if (W(i - dj, j - di) || W(i + dj, j + di)) continue;
-                        foreach (var width in new[] { 1, 2 })
+                        for (var width = 1; width <= 3; width++)
                         {
                             int ai = i - di, aj = j - dj, bi = i + di * width, bj = j + dj * width;
-                            if (width == 2 && (g.At(i + di, j + dj) != Cell.Open || W(i + di - dj, j + dj - di) || W(i + di + dj, j + dj + di))) continue;
+                            var open = true;
+                            for (var k = 1; k < width && open; k++)
+                            {
+                                int ki = i + di * k, kj = j + dj * k;
+                                open = g.At(ki, kj) == Cell.Open && !W(ki - dj, kj - di) && !W(ki + dj, kj + di);
+                            }
+                            if (!open) continue;
                             if (!W(ai, aj) || !W(bi, bj) || g.Kind(ai, aj) != g.Kind(bi, bj)) continue;
                             var aOk = W(ai - di, aj - dj) || EndsAcross(ai, aj, horizontal);
                             var bOk = W(bi + di, bj + dj) || EndsAcross(bi, bj, horizontal);
@@ -342,6 +376,47 @@ namespace SecondFace.Core.World
             plan.RoomAt = region.Select(r => r >= 0 ? r : -1).ToArray();
         }
 
+        /// <summary>Solid masses: every rock tile, and building-wall tiles in a 2 × 2 block of building wall (a wall two
+        /// tiles thick would otherwise be drawn as a lattice of thin walls); merged greedily into rectangles by kind.</summary>
+        private static void FindMasses(PlacePlan plan, Grid g)
+        {
+            int n = g.N, m = g.M;
+            g.Solid = new bool[n * m];
+            bool High(int i, int j) => g.At(i, j) == Cell.High;
+            for (var j = 0; j < m; j++)
+                for (var i = 0; i < n; i++)
+                {
+                    if (!High(i, j)) continue;
+                    if (g.Kind(i, j) == "rock") { g.Solid[j * n + i] = true; continue; }
+                    foreach (var (di, dj) in new[] { (0, 0), (-1, 0), (0, -1), (-1, -1) })
+                        if (High(i + di, j + dj) && High(i + di + 1, j + dj) && High(i + di, j + dj + 1) && High(i + di + 1, j + dj + 1)) { g.Solid[j * n + i] = true; break; }
+                }
+            var done = new bool[n * m];
+            for (var j = 0; j < m; j++)
+                for (var i = 0; i < n; i++)
+                {
+                    var k = j * n + i;
+                    if (!g.Solid[k] || done[k]) continue;
+                    var kind = g.Kinds[k];
+                    var i1 = i;
+                    while (i1 + 1 < n && g.Solid[j * n + i1 + 1] && !done[j * n + i1 + 1] && g.Kinds[j * n + i1 + 1] == kind) i1++;
+                    var j1 = j;
+                    while (j1 + 1 < m)
+                    {
+                        var row = true;
+                        for (var x = i; x <= i1 && row; x++) row = g.Solid[(j1 + 1) * n + x] && !done[(j1 + 1) * n + x] && g.Kinds[(j1 + 1) * n + x] == kind;
+                        if (!row) break;
+                        j1++;
+                    }
+                    float height = 0;
+                    for (var y = j; y <= j1; y++)
+                        for (var x = i; x <= i1; x++) { done[y * n + x] = true; height = Math.Max(height, g.Heights[y * n + x]); }
+                    var (x0, z1) = plan.Centre(i - 0.5, j - 0.5);
+                    var (x1, z0) = plan.Centre(i1 + 0.5, j1 + 0.5);
+                    plan.Masses.Add(new Mass { Kind = kind, Height = height, X0 = x0, X1 = x1, Z0 = z0, Z1 = z1 });
+                }
+        }
+
         private static string DefaultRoof(string wall) => wall switch
         {
             "adobe" or "brick" or "concrete" => "flat",
@@ -355,7 +430,7 @@ namespace SecondFace.Core.World
             int n = g.N, m = g.M;
             var used = new HashSet<int>();
             bool Part(int i, int j, bool horizontal, string kind) =>
-                g.In(i, j) && ((g.At(i, j) == cls && g.Kind(i, j) == kind) || (openings.TryGetValue(j * n + i, out var o) && o.Horizontal == horizontal && o.Kind == kind));
+                g.In(i, j) && ((g.At(i, j) == cls && g.Kind(i, j) == kind && !g.Solid[j * n + i]) || (openings.TryGetValue(j * n + i, out var o) && o.Horizontal == horizontal && o.Kind == kind));
             foreach (var horizontal in new[] { true, false })
             {
                 int outer = horizontal ? m : n, inner = horizontal ? n : m;
@@ -365,12 +440,12 @@ namespace SecondFace.Core.World
                     while (b < inner)
                     {
                         int i = horizontal ? b : a, j = horizontal ? a : b;
-                        if (g.At(i, j) != cls) { b++; continue; }
+                        if (g.At(i, j) != cls || g.Solid[j * n + i]) { b++; continue; }
                         var kind = g.Kind(i, j);
                         var end = b;
                         while (end + 1 < inner && Part(horizontal ? end + 1 : a, horizontal ? a : end + 1, horizontal, kind)) end++;
                         // a run cannot end on an opening
-                        while (end > b && g.At(horizontal ? end : a, horizontal ? a : end) != cls) end--;
+                        while (end > b && (g.At(horizontal ? end : a, horizontal ? a : end) != cls || g.Solid[(horizontal ? a : end) * n + (horizontal ? end : a)])) end--;
                         if (end > b) Emit(plan, g, cls, openings, horizontal, a, b, end, kind, used);
                         b = end + 1;
                     }
@@ -378,7 +453,7 @@ namespace SecondFace.Core.World
             }
             // pillars: wall tiles in no run
             for (var k = 0; k < n * m; k++)
-                if (g.Cells[k] == cls && !used.Contains(k)) Emit(plan, g, cls, openings, true, k / n, k % n, k % n, g.Kinds[k], used);
+                if (g.Cells[k] == cls && !g.Solid[k] && !used.Contains(k)) Emit(plan, g, cls, openings, true, k / n, k % n, k % n, g.Kinds[k], used);
         }
 
         /// <summary>A run of wall tiles from <paramref name="from"/> to <paramref name="to"/> on a row (or column) as walls:
@@ -431,7 +506,7 @@ namespace SecondFace.Core.World
                     var at = (s - from + (o.Tiles - 1) / 2f) * Tile - startOffset;
                     gaps.Add(o.Tiles == 1
                         ? new Opening { Kind = OpeningKind.Door, At = at, Width = DoorWidth, Top = DoorHeight }
-                        : new Opening { Kind = OpeningKind.Gate, At = at, Width = GateWidth, Top = GateHeight });
+                        : new Opening { Kind = OpeningKind.Gate, At = at, Width = o.Tiles * Tile - 1.2f, Top = GateHeight + (o.Tiles - 2) * 0.6f });
                 }
                 if (cls == Cell.Low)
                 {

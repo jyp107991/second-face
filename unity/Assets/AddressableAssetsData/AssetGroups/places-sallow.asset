@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: places-sallow
   m_GUID: 6453e6d55a955e3c3934fee481035ed2
   m_SerializeEntries:
+  - m_GUID: b76b78f97a22a9d14a9607babdad80ae
+    m_Address: places/cistern9
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: cdcf295ea8066f91f9eb1c1f150107b0
     m_Address: places/shale
     m_ReadOnly: 0

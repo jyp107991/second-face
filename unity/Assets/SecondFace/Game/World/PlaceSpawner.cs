@@ -14,6 +14,8 @@ namespace SecondFace.Game.World
     {
         public WorldService World;
         public PlaceSet Places;
+        /// <summary>Cuts the terrain over a place's tunnel mouths (<see cref="PlaceHole"/>) while it stands.</summary>
+        public WorldStreamer Streamer;
         public float ShowWithin = 600f, DropBeyond = 800f;
 
         private readonly Dictionary<string, AsyncOperationHandle<GameObject>> _live = new();
@@ -33,7 +35,7 @@ namespace SecondFace.Game.World
             {
                 if (!p.IsDone) return;
                 if (p.Status != AsyncOperationStatus.Succeeded) Debug.LogWarning($"PlaceSpawner: {p.OperationException?.Message}");
-                else if (p.Result.TryGetComponent<PlaceInteriors>(out var interiors)) interiors.World = World;
+                else Ready(p.Result);
                 _pending = null;
             }
             var focus = World.Focus;
@@ -54,8 +56,21 @@ namespace SecondFace.Game.World
                 {
                     if (live.IsValid()) Addressables.ReleaseInstance(live);
                     _live.Remove(e.Id);
+                    if (Streamer != null) Streamer.SetHoles(e.Id, null);
                 }
             }
+        }
+
+        /// <summary>A place just put in: it learns the world's focus (to open its buildings) and cuts its holes.</summary>
+        private void Ready(GameObject place)
+        {
+            if (place.TryGetComponent<PlaceInteriors>(out var interiors)) interiors.World = World;
+            if (Streamer == null) return;
+            var holes = new List<Rect>();
+            var o = place.transform.position;
+            foreach (var h in place.GetComponentsInChildren<PlaceHole>(true))
+                holes.Add(new Rect(h.Area.x + o.x, h.Area.y + o.z, h.Area.width, h.Area.height));
+            if (holes.Count > 0) Streamer.SetHoles(place.name.Replace("(Clone)", ""), holes);
         }
 
         /// <summary>From the focus to the nearest point of the place's footprint, metres (0 inside).</summary>

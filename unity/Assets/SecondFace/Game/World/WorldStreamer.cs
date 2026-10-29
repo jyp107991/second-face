@@ -47,6 +47,51 @@ namespace SecondFace.Game.World
         public int PooledCount => _pool.Count;
 
         public bool IsBuilt(int cx, int cz) => _built.ContainsKey((cx, cz));
+
+        private void OnEnable() => WorldView.Changed += View;
+        private void OnDisable() => WorldView.Changed -= View;
+
+        /// <summary>Under the ground the surface is not drawn: terrains (with their roads and small scatter) and props.</summary>
+        private void View(bool below)
+        {
+            foreach (var t in _built.Values) Draw(t, !below);
+            if (Spawner != null) Spawner.SetVisible(!below);
+        }
+
+        /// <summary>Rectangles the terrain is cut away over, by owner (a place's tunnel mouth: <see cref="PlaceHole"/>).</summary>
+        private readonly Dictionary<string, List<Rect>> _holes = new();
+        private readonly HashSet<Terrain> _holed = new();
+
+        public void SetHoles(string owner, List<Rect> rects)
+        {
+            if (rects == null || rects.Count == 0) _holes.Remove(owner); else _holes[owner] = rects;
+            foreach (var kv in _built) Holes(kv.Key, kv.Value);
+        }
+
+        private void Holes((int cx, int cz) c, Terrain t)
+        {
+            var (x0, z0) = WorldGrid.Origin(c.cx, c.cz);
+            var chunk = new Rect(x0, z0, WorldGrid.Chunk, WorldGrid.Chunk);
+            var mine = new List<Rect>();
+            foreach (var list in _holes.Values) foreach (var r in list) if (r.Overlaps(chunk)) mine.Add(r);
+            if (mine.Count == 0) { if (_holed.Remove(t)) ChunkTerrain.SetHoles(t, x0, z0, mine); return; }
+            ChunkTerrain.SetHoles(t, x0, z0, mine);
+            _holed.Add(t);
+        }
+
+        /// <summary>The road strips switched off for the view under the ground (unused strips stay off coming back up).</summary>
+        private readonly HashSet<MeshRenderer> _viewHidden = new();
+
+        private void Draw(Terrain t, bool on)
+        {
+            t.drawHeightmap = on;
+            t.drawTreesAndFoliage = on;
+            foreach (var r in t.GetComponentsInChildren<MeshRenderer>(true))
+            {
+                if (!on && r.enabled) { r.enabled = false; _viewHidden.Add(r); }
+                else if (on && _viewHidden.Remove(r)) r.enabled = true;
+            }
+        }
         public Terrain TerrainAt(int cx, int cz) => _built.TryGetValue((cx, cz), out var t) ? t : null;
 
         private void Awake() => _root = new GameObject("Terrain").transform;
@@ -97,6 +142,8 @@ namespace SecondFace.Game.World
                 var bw = Stopwatch.StartNew();
                 var t = _pool.Count > 0 ? _pool.Pop() : ChunkTerrain.Create(_root, Layers, Details);
                 ChunkTerrain.Apply(t, _prepared[b], Layers);
+                if (WorldView.Underground) Draw(t, false);
+                Holes(b, t);
                 BuildMs.Add(bw.Elapsed.TotalMilliseconds);
                 _built[b] = t;
                 Stitch(b);
@@ -105,7 +152,7 @@ namespace SecondFace.Game.World
             if (Places != null && PlaceSpawner == null)
             {
                 PlaceSpawner = gameObject.AddComponent<PlaceSpawner>();
-                PlaceSpawner.World = World; PlaceSpawner.Places = Places;
+                PlaceSpawner.World = World; PlaceSpawner.Places = Places; PlaceSpawner.Streamer = this;
             }
             sw.Stop();
             if (sw.Elapsed.TotalMilliseconds > MaxFrameWorkMs) MaxFrameWorkMs = sw.Elapsed.TotalMilliseconds;

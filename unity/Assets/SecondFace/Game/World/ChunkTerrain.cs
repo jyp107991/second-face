@@ -173,6 +173,25 @@ namespace SecondFace.Game.World
             }
         }
 
+        /// <summary>Cuts the terrain away over world rectangles (a tunnel's mouth): hole texels are 2 m, a texel is cut
+        /// when its centre lies in a rectangle. With none, the terrain is whole again.</summary>
+        public static void SetHoles(Terrain t, float x0, float z0, System.Collections.Generic.IReadOnlyList<Rect> rects)
+        {
+            var td = t.terrainData;
+            var res = td.holesResolution;
+            var cell = WorldGrid.Chunk / res;
+            var solid = new bool[res, res];
+            for (var j = 0; j < res; j++)
+                for (var i = 0; i < res; i++)
+                {
+                    var p = new Vector2(x0 + (i + 0.5f) * cell, z0 + (j + 0.5f) * cell);
+                    var hole = false;
+                    for (var k = 0; k < rects.Count && !hole; k++) hole = rects[k].Contains(p);
+                    solid[j, i] = !hole;
+                }
+            td.SetHoles(0, 0, solid);
+        }
+
         /// <summary>How far the terrain draws its small scatter, metres: the top of the game camera's frame is ~90–140 m
         /// off at its zooms (at 75 m the scrub ended in a line across the frame); the plants dissolve out over the last
         /// 25 m (SecondFace/Foliage).</summary>

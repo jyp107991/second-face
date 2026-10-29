@@ -1418,7 +1418,21 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
          `_SF_CutMin`, `_SF_CutMax`, `_SF_CutHeight`; also in the depth passes, not in the shadow caster), drawing the
          walls' inner faces where a cut opens them as a dark cap (both faces drawn; gables and lean-to sides are now one
          face). `place_shale_saloon`.
-    21b. The underground shelter: Cistern 9's hall under its mouth, the overworld hidden while the player is below.
+    21b. ~~The underground shelter~~ (done 2026-10-29): `PlaceBuilder.Below` names a place's interior map (Cistern 9's
+         under its mouth). The surface map's widest exit to it is carved through to the map's south edge; a ramp tunnel
+         (`Tunnel`: sloped floor, walls, ceiling, a landing, a portal frame) runs 24 m on and 10 m down to the
+         interior's widest exit back; the interior is built there (`Layer` with `below`: one `PlaceBuilding` over all
+         its rooms, marked `Underground`, its ceilings and fittings gathered; no windows, no dressing; a slab under the
+         whole map). Core `PlacePlan`: an exit to another place opens the wall tiles before and behind it (the vault
+         door is drawn as wall); gates up to three tiles; rock and walls two tiles thick are `Masses` (rock drawn as
+         boulder scans, thick walls as blocks with a coping; a thick wall used to come out as a lattice). Game:
+         `WorldView.Underground` (set by `PlaceInteriors` when the open building is underground) hides the streamed
+         terrain with its roads and small scatter (`WorldStreamer`) and the props (`ScatterSpawner.SetVisible`), and the
+         place's own surface renderers; `PlaceHole` cuts the terrain over the tunnel's first third
+         (`WorldStreamer.SetHoles`, `ChunkTerrain.SetHoles`); `PlaceNav` builds over the shelter too. A walker goes from
+         the shelter's commons up the tunnel to the road out (132 m). `place_c9_mouth`, `place_shelter_hall`, `_close`.
+         **Next for places:** the bunker front is a plain block (an art pass on concrete fronts, doors in thick walls),
+         a lit camera background under the ground (P5), the vault door's state from its flag (P6).
 22. P3.6 water.
 23. The debug overlay (§7.4) in development builds.
 24. P3.7 device measurement by the owner with the overlay; numbers in PORT.md §5; fix until Mid ≥ 30 fps.

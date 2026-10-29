@@ -12,5 +12,7 @@ namespace SecondFace.Game.World
         /// <summary>What it refers to: an exit's destination, a person's definition.</summary>
         public string Ref;
         public Vector2 Size;
+        /// <summary>The map it comes from (a place may hold two: a shelter under its mouth).</summary>
+        public string Map;
     }
 }

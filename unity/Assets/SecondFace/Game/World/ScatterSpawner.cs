@@ -36,6 +36,9 @@ namespace SecondFace.Game.World
 
         private void Awake() => _root = new GameObject("Props").transform;
 
+        /// <summary>Shows or hides every prop (the world view under the ground hides the surface).</summary>
+        public void SetVisible(bool on) { if (_root != null) _root.gameObject.SetActive(on); }
+
         /// <summary>Queues a chunk's props (nothing happens if it is shown already).</summary>
         public void Show(int cx, int cz, IReadOnlyList<PropPlacement> props)
         {

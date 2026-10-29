@@ -33,7 +33,10 @@ namespace SecondFace.EditorTools
         public const string Dir = "Assets/SecondFace/Prefabs/places";
         public const string SetPath = "Assets/SecondFace/World/PlaceSet.asset";
         /// <summary>The places built so far; the rest stand as bare pads until their kits are made.</summary>
-        public static readonly string[] Ids = { "shale" };
+        public static readonly string[] Ids = { "shale", "cistern9" };
+
+        /// <summary>A place's interior map under the ground (step 21b), reached from its surface map's main exit to it.</summary>
+        private static readonly Dictionary<string, string> Below = new() { ["cistern9"] = "cistern9" };
 
         private const string Frontier = "Assets/SecondFace/Kits/Frontier/", Furnish = "Assets/SecondFace/Kits/Furnish/", Shelter = "Assets/SecondFace/Kits/Shelter/";
 
@@ -46,7 +49,7 @@ namespace SecondFace.EditorTools
             ["fire_barrel"] = (Furnish + "fire_barrel.fbx", 1f), ["pump"] = (Furnish + "hand_pump.fbx", 1f), ["tent"] = (Furnish + "tent.fbx", 1f),
             ["planter"] = (Furnish + "planter.fbx", 1f), ["debris"] = (Furnish + "debris.fbx", 1f), ["tire_pile"] = (Furnish + "tire_pile.fbx", 1f),
             ["car_wreck"] = (Furnish + "car_wreck.fbx", 1f), ["campfire"] = (Furnish + "campfire.fbx", 1f), ["wagon"] = (Furnish + "wagon.fbx", 1f),
-            ["blanket"] = (Furnish + "blanket.fbx", 1f),
+            ["blanket"] = (Furnish + "blanket.fbx", 1f), ["vault_door"] = (Furnish + "vault_door.fbx", 1f),
             ["barrel"] = (Frontier + "barrel_rust.fbx", 1f), ["barrel_rust"] = (Frontier + "barrel_rust.fbx", 1f), ["crate"] = (Frontier + "crate_stack.fbx", 1f),
             ["lamp_post"] = (Frontier + "lamp_post.fbx", 1f), ["sign"] = (Frontier + "sign_post.fbx", 1f), ["tank"] = (Frontier + "water_tank.fbx", 1f),
             ["windpump"] = (Frontier + "windpump.fbx", 1f), ["fence_post"] = (Frontier + "fence_post.fbx", 1f),
@@ -84,8 +87,8 @@ namespace SecondFace.EditorTools
             foreach (var id in Ids)
             {
                 if (!layout.Places.TryGetValue(id, out var info) || info.Map == null || maps[info.Map] == null) { Debug.LogWarning($"PlaceBuilder: {id} has no map"); continue; }
-                var plan = PlacePlan.Build(maps[info.Map].ToObject<MapDef>());
-                var prefab = Make(id, plan);
+                var belowId = Below.TryGetValue(id, out var bm) ? bm : null;
+                var prefab = Make(id, maps[info.Map].ToObject<MapDef>(), belowId != null ? maps[belowId]?.ToObject<MapDef>() : null);
                 var group = Group(settings, $"places-{info.Region}");
                 var entry = settings.CreateOrMoveEntry(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(prefab)), group, false, false);
                 entry.address = $"places/{id}";
@@ -115,16 +118,88 @@ namespace SecondFace.EditorTools
 
         // --- the prefab ------------------------------------------------------------------------------------------------
 
-        private static GameObject Make(string id, PlacePlan plan)
+        /// <summary>A place under the ground beside its surface map (a shelter under its mouth): the surface map's main
+        /// exit to the interior map (the widest) is carved through to the surface map's south edge, a ramp tunnel runs on
+        /// down <see cref="Below"/>'s depth to the interior's main exit back, and the interior is built there.</summary>
+        private const float BelowDepth = 10f, TunnelLength = 24f;
+
+        private static ExitDef MainExit(MapDef map, string to) =>
+            (map.Exits ?? new List<ExitDef>()).Where(e => e.To?.Location == to).OrderByDescending(e => (e.W ?? 1) * (e.H ?? 1)).FirstOrDefault();
+
+        private static GameObject Make(string id, MapDef surfaceMap, MapDef belowMap)
         {
             var meshDir = $"{Dir}/{id}";
             Directory.CreateDirectory(meshDir);
             var stored = new HashSet<string>();
-            var root = new GameObject(id);
-            var buildings = Child(root.transform, "buildings");
             var unknown = new Dictionary<string, int>();
-            var rng = new Hasher(Stable(plan.Id));
+            var root = new GameObject(id);
+            var rng = new Hasher(Stable(id));
+            ExitDef up = null, down = null;
+            if (belowMap != null)
+            {
+                down = MainExit(surfaceMap, belowMap.Id);
+                up = MainExit(belowMap, surfaceMap.Id);
+                if (down == null || up == null) { Debug.LogWarning($"PlaceBuilder: {id}: no exits between {surfaceMap.Id} and {belowMap.Id}"); belowMap = null; }
+                else
+                {
+                    // the passage from the surface door to the map's south edge, cut through whatever stands there
+                    var rows = surfaceMap.Layout.ToList();
+                    var floorChar = surfaceMap.Legend.First(kv => kv.Value.Wall == null && kv.Value.Floor == "concrete").Key[0];
+                    for (var j = down.Y + (down.H ?? 1); j < rows.Count; j++)
+                    {
+                        var row = rows[j].ToCharArray();
+                        for (var i = down.X; i < down.X + (down.W ?? 1) && i < row.Length; i++) row[i] = floorChar;
+                        rows[j] = new string(row);
+                    }
+                    surfaceMap.Layout = rows;
+                }
+            }
+            var plan = PlacePlan.Build(surfaceMap);
+            var navMin = new Vector3(-plan.Width / 2 - 12f, -6f, -plan.Depth / 2 - 12f);
+            var navMax = new Vector3(plan.Width / 2 + 12f, 34f, plan.Depth / 2 + 12f);
+            Layer(root.transform, plan, meshDir, "", stored, unknown, rng, false);
+            var summary = $"{plan.Rooms.Count} buildings, {plan.Walls.Count} walls ({plan.Walls.Sum(w => w.Openings.Count)} openings), {plan.Fences.Count} fences, {plan.Items.Count} props, {plan.Lamps.Count} lights";
+            if (belowMap != null)
+            {
+                var below = PlacePlan.Build(belowMap);
+                // the surface door's middle and the south edge, the interior door's middle and its north edge
+                var (doorX, _) = plan.Centre(down.X + ((down.W ?? 1) - 1) / 2.0, down.Y);
+                var zEdge = -plan.Depth / 2;
+                var (innerX, innerZ) = below.Centre(up.X + ((up.W ?? 1) - 1) / 2.0, 0);
+                var innerEdge = innerZ + PlacePlan.Tile / 2;
+                var zEnd = zEdge - TunnelLength;
+                var offset = new Vector3(doorX - innerX, -BelowDepth, zEnd - innerEdge);
+                var holder = Child(root.transform, "below");
+                holder.localPosition = offset;
+                Layer(holder, below, meshDir, "below_", stored, unknown, rng.For(7000), true);
+                var tunnelWidth = (down.W ?? 1) * PlacePlan.Tile - 0.6f;
+                Tunnel(root.transform, new Vector3(doorX, 0, zEdge), zEnd, -BelowDepth + 0.15f, tunnelWidth, meshDir, stored);
+                navMin = Vector3.Min(navMin, offset + new Vector3(-below.Width / 2 - 4f, -2f, -below.Depth / 2 - 4f));
+                navMax = Vector3.Max(navMax, offset + new Vector3(below.Width / 2 + 4f, 6f, below.Depth / 2 + 4f));
+                summary += $"; below: {below.Rooms.Count} rooms, {below.Walls.Count} walls, {below.Items.Count} props, {below.Lamps.Count} lights, {BelowDepth} m down a {TunnelLength} m tunnel";
+            }
+            // the place opens the building the player walks into; its NavMesh is built where it is put
+            root.AddComponent<PlaceInteriors>();
+            var nav = root.AddComponent<PlaceNav>();
+            nav.Centre = (navMin + navMax) / 2; nav.Size = navMax - navMin;
 
+            // meshes of an earlier build that this one no longer makes
+            foreach (var old in Directory.GetFiles(meshDir, "*.asset").Select(p => p.Replace('\\', '/')).Where(p => !stored.Contains(p)))
+                AssetDatabase.DeleteAsset(old);
+            var path = $"{Dir}/{id}.prefab";
+            var prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
+            UnityEngine.Object.DestroyImmediate(root);
+            Debug.Log($"PlaceBuilder: {id}: {summary}" + (unknown.Count > 0 ? $"; no model for {string.Join(", ", unknown.Select(kv => $"{kv.Key} ×{kv.Value}"))}" : ""));
+            return prefab;
+        }
+
+        /// <summary>One map's layer of a place under <paramref name="parent"/> (positions local to it): buildings (shell and
+        /// roof per room), fittings, fences, ground, props, dressing, lights, markers. Under the ground
+        /// (<paramref name="below"/>) its rooms open together as one building (the shelter is seen whole), its border walls
+        /// have no windows, and nothing is dressed.</summary>
+        private static void Layer(Transform parent, PlacePlan plan, string meshDir, string prefix, HashSet<string> stored, Dictionary<string, int> unknown, Hasher rng, bool below)
+        {
+            var buildings = Child(parent, "buildings");
             // one shell and one roof per room; walls that close no room in "walls"
             var shells = plan.Rooms.Select(_ => new Geo()).ToArray();
             var roofs = plan.Rooms.Select(_ => new Geo()).ToArray();
@@ -134,6 +209,7 @@ namespace SecondFace.EditorTools
             for (var w = 0; w < plan.Walls.Count; w++)
             {
                 var wall = plan.Walls[w];
+                if (below) wall.Openings.RemoveAll(o => o.Kind == PlacePlan.OpeningKind.Window);
                 var geo = wall.Room >= 0 ? shells[wall.Room] : loose;
                 var room = wall.Room >= 0 ? plan.Rooms[wall.Room] : null;
                 Wall(geo, wall, room, rng.For(w), fittings);
@@ -141,15 +217,40 @@ namespace SecondFace.EditorTools
             foreach (var room in plan.Rooms)
             {
                 Floor(shells[room.Index], room);
-                Roof(roofs[room.Index], room, plan, rng.For(1000 + room.Index), roofThings);
+                Roof(roofs[room.Index], room, plan, rng.For(1000 + room.Index), below ? null : roofThings);
             }
+            // solid masses: rock as a heap of boulders, a thick wall as one block with a coping
+            var rocks = new List<PlacePlan.Mass>();
+            foreach (var mass in plan.Masses)
+            {
+                if (mass.Kind == "rock") { rocks.Add(mass); continue; }
+                var size = new Vector3(mass.X1 - mass.X0, mass.Height, mass.Z1 - mass.Z0);
+                var centre = new Vector3((mass.X0 + mass.X1) / 2, mass.Height / 2, (mass.Z0 + mass.Z1) / 2);
+                loose.Box(centre, size, WallMaterial(mass.Kind));
+                loose.Box(centre + Vector3.up * (mass.Height / 2 + 0.04f), size + new Vector3(0.06f, -mass.Height + 0.08f, 0.06f), "concrete");
+            }
+            // under the ground every tile stands on something: a slab under the whole map (rooms' floors lie on it)
+            if (below) loose.Box(new Vector3(0, -0.05f, 0), new Vector3(plan.Width, 0.1f, plan.Depth), "concrete");
             var built = new PlaceBuilding[plan.Rooms.Count];
+            PlaceBuilding whole = null;
+            if (below)
+            {
+                // the shelter opens whole: one building over all its rooms, its ceilings and fittings gathered
+                whole = parent.gameObject.AddComponent<PlaceBuilding>();
+                whole.Footprint = new Vector4(-plan.Width / 2, -plan.Depth / 2, plan.Width / 2, plan.Depth / 2);
+                whole.Floor = 0.15f;
+                whole.Height = plan.Rooms.Count > 0 ? plan.Rooms.Max(r => r.Height) + 0.5f : PlacePlan.Storey;
+                whole.Roof = Child(parent, "ceilings");
+                whole.Fittings = Child(parent, "fittings_inside");
+                whole.Underground = true;
+            }
             for (var r = 0; r < plan.Rooms.Count; r++)
             {
                 var room = plan.Rooms[r];
                 var b = Child(buildings, $"building_{r}_{room.Wall}");
-                Renderer(b, "shell", shells[r], $"{meshDir}/building_{r}_shell.asset", stored, true);
-                Renderer(b, "roof", roofs[r], $"{meshDir}/building_{r}_roof.asset", stored, true);
+                Renderer(b, "shell", shells[r], $"{meshDir}/{prefix}building_{r}_shell.asset", stored, true);
+                Renderer(whole != null ? whole.Roof : b, whole != null ? $"ceiling_{r}" : "roof", roofs[r], $"{meshDir}/{prefix}building_{r}_roof.asset", stored, true);
+                if (whole != null) { built[r] = whole; continue; }
                 var pb = b.gameObject.AddComponent<PlaceBuilding>();
                 pb.Footprint = new Vector4(room.X0, room.Z0, room.X1, room.Z1);
                 pb.Floor = FloorTop(room);
@@ -158,31 +259,29 @@ namespace SecondFace.EditorTools
                 pb.Fittings = Child(b, "fittings");
                 built[r] = pb;
             }
-            if (!loose.Empty) Renderer(Child(root.transform, "walls"), "walls", loose, $"{meshDir}/walls.asset", stored, true);
+            if (!loose.Empty) Renderer(Child(parent, "walls"), "walls", loose, $"{meshDir}/{prefix}walls.asset", stored, true);
 
             // doors and shutters with their building, roof clutter on its roof (they hide when it opens), the rest loose
-            var fitted = Child(root.transform, "fittings");
+            var fitted = Child(parent, "fittings");
             foreach (var f in fittings.Select(x => (x, false)).Concat(roofThings.Select(x => (x, true))))
             {
                 var (fit, onRoof) = f;
-                var parent = fit.Room < 0 ? fitted : onRoof ? built[fit.Room].Roof : built[fit.Room].Fittings;
-                ApplyFitting(fit, parent);
+                var into = fit.Room < 0 ? fitted : onRoof ? built[fit.Room].Roof : built[fit.Room].Fittings;
+                ApplyFitting(fit, into);
             }
-            // the place opens the building the player walks into
-            root.AddComponent<PlaceInteriors>();
 
             // fences: the frontier kit's wire fence every 2 m, posts at gates; inside a room, a cell's bars
-            var fences = Child(root.transform, "fences");
+            var fences = Child(parent, "fences");
             var bars = new Geo();
             foreach (var fence in plan.Fences)
             {
                 if (fence.Room >= 0) { Bars(bars, fence, plan.Rooms[fence.Room]); continue; }
                 Fence(fence, fences);
             }
-            if (!bars.Empty) Renderer(fences, "bars", bars, $"{meshDir}/bars.asset", stored, true);
+            if (!bars.Empty) Renderer(fences, "bars", bars, $"{meshDir}/{prefix}bars.asset", stored, true);
 
             // the ground outside: streets of beaten earth, rubble, broken concrete
-            var ground = Child(root.transform, "ground");
+            var ground = Child(parent, "ground");
             foreach (var (surface, material) in new[] { ("dirt", "trail"), ("rubble", "rubble"), ("concrete", "concrete") })
             {
                 var mesh = Ground(plan, surface, rng);
@@ -190,34 +289,35 @@ namespace SecondFace.EditorTools
                 var mat = Surface(material, surface == "concrete" ? 0.5f : 0f);
                 if (mat == null) continue;
                 var go = Child(ground, $"ground_{surface}").gameObject;
-                go.AddComponent<MeshFilter>().sharedMesh = Store($"{meshDir}/ground_{surface}.asset", mesh, stored);
+                go.AddComponent<MeshFilter>().sharedMesh = Store($"{meshDir}/{prefix}ground_{surface}.asset", mesh, stored);
                 var mr = go.AddComponent<MeshRenderer>();
                 mr.sharedMaterial = mat;
                 mr.shadowCastingMode = ShadowCastingMode.Off;
             }
 
             // props
-            var props = Child(root.transform, "props");
+            var props = Child(parent, "props");
             foreach (var item in plan.Items)
             {
                 if (!Props.TryGetValue(item.Kind, out var src)) { unknown[item.Kind] = unknown.TryGetValue(item.Kind, out var c) ? c + 1 : 1; continue; }
                 var go = Instance(src.Model, props);
                 if (go == null) { unknown[item.Kind] = unknown.TryGetValue(item.Kind, out var c) ? c + 1 : 1; continue; }
                 var y = item.Room >= 0 ? FloorTop(plan.Rooms[item.Room]) : 0f;
-                go.transform.SetPositionAndRotation(new Vector3(item.X, y, item.Z), Quaternion.Euler(0, item.Yaw, 0));
+                go.transform.SetLocalPositionAndRotation(new Vector3(item.X, y, item.Z), Quaternion.Euler(0, item.Yaw, 0));
                 go.transform.localScale = Vector3.one * src.Scale * item.Scale;
                 if (item.Id != null) go.name = item.Id;
             }
 
             // what people leave against their walls, awnings over street doors, the saloon's porch
-            Dress(plan, Child(root.transform, "dressing"), rng.For(5000));
+            if (!below) Dress(plan, Child(parent, "dressing"), rng.For(5000));
+            if (rocks.Count > 0) Rocks(rocks, Child(parent, "rock"), rng.For(6000));
 
             // lights: realtime points, no shadows (BUILD_PLAN §6.A.6: ≤ 4 visible, the rest emissive)
-            var lights = Child(root.transform, "lights");
+            var lights = Child(parent, "lights");
             foreach (var l in plan.Lamps)
             {
                 var go = Child(lights, "light").gameObject;
-                go.transform.localPosition = new Vector3(l.X, l.Height, l.Z);
+                go.transform.localPosition = new Vector3(l.X, l.Height + (l.Room >= 0 ? FloorTop(plan.Rooms[l.Room]) : 0f), l.Z);
                 var light = go.AddComponent<Light>();
                 light.type = LightType.Point;
                 light.color = new Color(((l.Color >> 16) & 255) / 255f, ((l.Color >> 8) & 255) / 255f, (l.Color & 255) / 255f);
@@ -228,28 +328,52 @@ namespace SecondFace.EditorTools
             }
 
             // markers
-            var markers = Child(root.transform, "markers");
+            var markers = Child(parent, "markers");
             foreach (var m in plan.Markers)
             {
                 var go = Child(markers, $"{m.Kind}_{m.Id}").gameObject;
                 go.transform.SetLocalPositionAndRotation(new Vector3(m.X, 0, m.Z), Quaternion.Euler(0, m.Yaw, 0));
                 var pm = go.AddComponent<PlaceMarker>();
-                pm.Kind = m.Kind; pm.Id = m.Id; pm.Ref = m.Ref; pm.Size = new Vector2(m.W, m.D);
+                pm.Kind = m.Kind; pm.Id = m.Id; pm.Ref = m.Ref; pm.Size = new Vector2(m.W, m.D); pm.Map = plan.Id;
             }
+        }
 
-            // the NavMesh, built where the place is put (PlaceNav)
-            root.AddComponent<PlaceNav>().Size = new Vector2(plan.Width, plan.Depth);
-
-            // meshes of an earlier build that this one no longer makes
-            foreach (var old in Directory.GetFiles(meshDir, "*.asset").Select(p => p.Replace('\\', '/')).Where(p => !stored.Contains(p)))
-                AssetDatabase.DeleteAsset(old);
-            var path = $"{Dir}/{id}.prefab";
-            var prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
-            UnityEngine.Object.DestroyImmediate(root);
-            Debug.Log($"PlaceBuilder: {id}: {plan.Rooms.Count} buildings, {plan.Walls.Count} walls ({plan.Walls.Sum(w => w.Openings.Count)} openings), " +
-                $"{plan.Fences.Count} fences, {plan.Items.Count - unknown.Values.Sum()} props, {plan.Lamps.Count} lights, {plan.Markers.Count} markers" +
-                (unknown.Count > 0 ? $"; no model for {string.Join(", ", unknown.Select(kv => $"{kv.Key} ×{kv.Value}"))}" : ""));
-            return prefab;
+        /// <summary>The ramp tunnel from a surface door at <paramref name="from"/> (its floor level, on the surface map's
+        /// edge) down to <paramref name="zEnd"/> at <paramref name="floorEnd"/>: a sloped concrete floor, walls and a ceiling,
+        /// a portal frame where it leaves the surface. It opens like a building (its ceiling hides) and counts as under
+        /// the ground.</summary>
+        private static void Tunnel(Transform root, Vector3 from, float zEnd, float floorEnd, float width, string meshDir, HashSet<string> stored)
+        {
+            var go = Child(root, "tunnel");
+            var shell = new Geo(); var ceiling = new Geo();
+            var length = from.z - zEnd;
+            var drop = from.y - floorEnd;
+            var slope = Mathf.Sqrt(length * length + drop * drop);
+            var tilt = Quaternion.AngleAxis(-Mathf.Atan2(drop, length) * Mathf.Rad2Deg, Vector3.right);   // the −z end down
+            var mid = new Vector3(from.x, (from.y + floorEnd) / 2, (from.z + zEnd) / 2);
+            const float wallT = 0.3f, height = 3.2f;
+            shell.Box(mid + Vector3.down * 0.15f, new Vector3(width + 2 * wallT, 0.3f, slope + 0.6f), "concrete", tilt);
+            foreach (var side in new[] { -1f, 1f })
+                shell.Box(mid + new Vector3(side * (width / 2 + wallT / 2), height / 2, 0), new Vector3(wallT, height + 0.3f, slope + 0.6f), "concrete_wall", tilt);
+            ceiling.Box(mid + Vector3.up * (height + 0.15f), new Vector3(width + 2 * wallT, 0.3f, slope + 0.6f), "concrete", tilt);
+            // a landing at the foot, into the doorway
+            shell.Box(new Vector3(from.x, floorEnd - 0.15f, zEnd - 1.0f), new Vector3(width + 2 * wallT, 0.3f, 2.4f), "concrete");
+            // the portal where the tunnel leaves the surface: a frame proud of the ground
+            shell.Box(from + new Vector3(0, height + 0.35f, -0.3f), new Vector3(width + 1.4f, 0.7f, 0.6f), "concrete_wall");
+            foreach (var side in new[] { -1f, 1f })
+                shell.Box(from + new Vector3(side * (width / 2 + 0.45f), (height + 0.7f) / 2, -0.3f), new Vector3(0.9f, height + 0.7f, 0.6f), "concrete_wall");
+            Renderer(go, "shell", shell, $"{meshDir}/tunnel_shell.asset", stored, true);
+            Renderer(go, "roof", ceiling, $"{meshDir}/tunnel_roof.asset", stored, true);
+            var pb = go.gameObject.AddComponent<PlaceBuilding>();
+            pb.Footprint = new Vector4(from.x - width / 2 - wallT, zEnd, from.x + width / 2 + wallT, from.z);
+            pb.Floor = floorEnd;
+            pb.Height = from.y + height;
+            pb.Roof = go.Find("roof");
+            pb.Fittings = Child(go, "fittings");
+            pb.Underground = true;
+            // the ground is cut away over the tunnel while its roof is still above it (the first third or so)
+            var open = Mathf.Min(length, (height + 0.5f) / Mathf.Max(0.01f, drop / length));
+            go.gameObject.AddComponent<PlaceHole>().Area = new Rect(from.x - width / 2 - wallT, from.z - open, width + 2 * wallT, open);
         }
 
         /// <summary>A kit fitting under its parent: a door ajar turns about its hinge (its left edge); doors stay out of
@@ -262,12 +386,12 @@ namespace SecondFace.EditorTools
             {
                 var hinge = new GameObject("door").transform;
                 hinge.SetParent(parent, false);
-                hinge.SetPositionAndRotation(f.At + f.Rot * new Vector3(-0.475f, 0, 0), f.Rot * Quaternion.Euler(0, -f.Open, 0));   // swung in
+                hinge.SetLocalPositionAndRotation(f.At + f.Rot * new Vector3(-0.475f, 0, 0), f.Rot * Quaternion.Euler(0, -f.Open, 0));   // swung in
                 go.transform.SetParent(hinge, false);
                 go.transform.localPosition = new Vector3(0.475f, 0, 0);
                 go.transform.localRotation = Quaternion.identity;
             }
-            else go.transform.SetPositionAndRotation(f.At, f.Rot);
+            else go.transform.SetLocalPositionAndRotation(f.At, f.Rot);
             if (f.Model.EndsWith("plank_door.fbx")) go.AddComponent<NavMeshModifier>().ignoreFromBuild = true;
         }
 
@@ -295,8 +419,21 @@ namespace SecondFace.EditorTools
                 geo.Box(c, Size(dir, s1 - s0, y1 - y0, thick), m);
             }
             var scrap = w.Kind == "scrap" || w.Kind == "metal";
+            var rock = w.Kind == "rock";
             void Body(float s0, float s1, float y0, float y1)
             {
+                if (rock)
+                {
+                    // rock is a mass, not a wall: a tile thick, ragged on top and in plan, open to the sky over a gap
+                    if (y0 > 0.01f) return;
+                    for (var s = s0; s < s1 - 0.01f; s += 1f)
+                    {
+                        var e = Mathf.Min(s1, s + 1f);
+                        var top = y1 + rng.Range((int)(s * 10) + 61, -0.9f, 1.1f);
+                        Solid(s, e, 0, top, "rock", PlacePlan.Tile + rng.Range((int)(s * 10) + 63, -0.3f, 0.5f), rng.Range((int)(s * 10) + 65, -0.25f, 0.25f));
+                    }
+                    return;
+                }
                 if (!scrap) { Solid(s0, s1, y0, y1, mat, t); return; }
                 // mismatched sheets a metre wide: scrap, tin and rust, standing a little in and out, ragged on top
                 var sheets = new[] { "scrap", "tin", "rust", w.Kind == "metal" ? "steel_painted" : "scrap" };
@@ -391,6 +528,42 @@ namespace SecondFace.EditorTools
             }
         }
 
+        /// <summary>Boulder scans for rock: rock on a map is a cliff or an outcrop, not a wall; each mass is filled with
+        /// boulders 2.4 m apart (jittered), turned and tilted at random, scaled to fill their cell and reach the mass's
+        /// height, sunk a little into the ground.</summary>
+        private static readonly string[] Boulders = { "boulder_01", "rock_09", "coast_land_rocks_02", "namaqualand_boulder_03", "boulder_01" };
+
+        private static void Rocks(List<PlacePlan.Mass> masses, Transform parent, Hasher rng)
+        {
+            var sizes = new Dictionary<string, Vector3>();
+            Vector3 SizeOf(string stem)
+            {
+                if (sizes.TryGetValue(stem, out var v)) return v;
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(ContentPrefabs.PathFor($"{ModelLibrary.Dir}/{stem}.fbx")) ?? ContentPrefabs.Bound($"{ModelLibrary.Dir}/{stem}.fbx");
+                var mf = prefab != null ? prefab.GetComponentInChildren<MeshFilter>() : null;
+                v = mf != null && mf.sharedMesh != null ? Vector3.Scale(mf.sharedMesh.bounds.size, mf.transform.lossyScale) : Vector3.one;
+                return sizes[stem] = v;
+            }
+            var n = 0;
+            foreach (var m in masses)
+                for (var x = m.X0 + 1.2f; x < m.X1; x += 2.4f)
+                    for (var z = m.Z0 + 1.2f; z < m.Z1; z += 2.4f)
+                    {
+                        n++;
+                        var stem = Boulders[rng.Int(n * 7 + 1, Boulders.Length)];
+                        var size = SizeOf(stem);
+                        var foot = Mathf.Max(0.3f, Mathf.Max(size.x, size.z));
+                        var scale = rng.Range(n * 7 + 2, 2.6f, 3.6f) / foot;
+                        // tall enough to make the mass's height, never a pillar
+                        scale = Mathf.Max(scale, Mathf.Min(m.Height * rng.Range(n * 7 + 3, 0.8f, 1.2f) / Mathf.Max(0.3f, size.y), scale * 1.8f));
+                        var go = Instance($"{ModelLibrary.Dir}/{stem}.fbx", parent);
+                        if (go == null) continue;
+                        var at = new Vector3(x + rng.Range(n * 7 + 4, -0.6f, 0.6f), -0.3f, z + rng.Range(n * 7 + 5, -0.6f, 0.6f));
+                        go.transform.SetLocalPositionAndRotation(at, Quaternion.Euler(rng.Range(n * 7 + 6, -8f, 8f), rng.Range(n * 7 + 7, 0f, 360f), rng.Range(n * 7 + 8, -8f, 8f)));
+                        go.transform.localScale = Vector3.one * scale;
+                    }
+        }
+
         /// <summary>
         /// Dressing (what the map does not place but a lived-in town has): along each building's outer walls, every 1.6 m
         /// or so a chance of a barrel, crates, a planter, scrap or tyres against the wall, a chair by a door; an awning over
@@ -410,7 +583,7 @@ namespace SecondFace.EditorTools
             {
                 var go = Instance(model, parent);
                 if (go == null) return;
-                go.transform.SetPositionAndRotation(at, Quaternion.Euler(0, yaw, 0));
+                go.transform.SetLocalPositionAndRotation(at, Quaternion.Euler(0, yaw, 0));
                 taken.Add(new Vector2(at.x, at.z));
             }
             for (var wi = 0; wi < plan.Walls.Count; wi++)
@@ -529,7 +702,7 @@ namespace SecondFace.EditorTools
                     else if (n == 2 && room.Wall != "adobe") model = Furnish + "debris.fbx";
                     var px = Mathf.Lerp(ix0 + 1.2f, ix1 - 1.2f, rng.Range(320 + n, 0f, 1f));
                     var pz = Mathf.Lerp(iz0 + 1.2f, iz1 - 1.2f, rng.Range(330 + n, 0f, 1f));
-                    fittings.Add((model, new Vector3(px, top, pz), Quaternion.Euler(0, Mathf.Round(rng.Range(340 + n, 0f, 4f)) * 90f + rng.Range(350 + n, -12f, 12f), 0), room.Index, 0f));
+                    fittings?.Add((model, new Vector3(px, top, pz), Quaternion.Euler(0, Mathf.Round(rng.Range(340 + n, 0f, 4f)) * 90f + rng.Range(350 + n, -12f, 12f), 0), room.Index, 0f));
                 }
                 return;
             }
@@ -608,13 +781,13 @@ namespace SecondFace.EditorTools
             {
                 if (f.Gates.Any(g => Mathf.Abs(g.At - s) < g.Width / 2)) continue;
                 var go = Instance(Frontier + "fence_wire.fbx", parent);
-                if (go != null) go.transform.SetPositionAndRotation(a + dir * s, rot);
+                if (go != null) go.transform.SetLocalPositionAndRotation(a + dir * s, rot);
             }
             foreach (var g in f.Gates)
                 foreach (var side in new[] { -1f, 1f })
                 {
                     var go = Instance(Frontier + "fence_post.fbx", parent);
-                    if (go != null) go.transform.SetPositionAndRotation(a + dir * (g.At + side * g.Width / 2), rot);
+                    if (go != null) go.transform.SetLocalPositionAndRotation(a + dir * (g.At + side * g.Width / 2), rot);
                 }
         }
 

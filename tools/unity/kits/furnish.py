@@ -1,6 +1,6 @@
 """The furnishing kit (BUILD_PLAN step 20): what the places' layouts put in rooms and yards beyond the frontier and
 shelter kits — bar counters, tables, chairs, beds, cots, shelves, a stove, a generator, sandbags, a fire barrel, a hand
-pump, tents, planters, a debris pile, a tyre pile, a stripped car, a campfire, a wagon, a blanket. Sized to the 2 m
+pump, tents, planters, a debris pile, a tyre pile, a stripped car, a campfire, a wagon, a blanket, a shelter's vault door. Sized to the 2 m
 tile the layouts are drawn on; the front (where a person stands, sits or works) faces -y (the engine's -z at yaw 0).
 
     blender -b --python tools/unity/kits/furnish.py -- unity/Assets/SecondFace/Kits/Furnish
@@ -258,6 +258,25 @@ def wagon(bm):
     return ['planks', 'rust']
 
 
+def vault_door(bm):
+    """A shelter's vault door, rolled open: a 4 m steel disc on edge beside the doorway (+x), its locking bolts,
+    the hinge arm reaching back to the frame at x = 0."""
+    v = K.cylinder(bm, 2.0, 0.55, (0, 0, 0), 40, 0, axis='Y')
+    bmesh.ops.translate(bm, vec=(3.3, 0.6, 2.05), verts=v)
+    v = K.cylinder(bm, 1.55, 0.6, (0, 0, 0), 40, 1, axis='Y')                      # the inner face, a darker plate
+    bmesh.ops.translate(bm, vec=(3.3, 0.62, 2.05), verts=v)
+    for k in range(12):                                                             # bolts round the rim
+        a = k / 12 * math.tau
+        v = K.cylinder(bm, 0.09, 0.9, (0, 0, 0), 10, 2, axis='Y')
+        bmesh.ops.translate(bm, vec=(3.3 + math.cos(a) * 1.75, 0.6, 2.05 + math.sin(a) * 1.75), verts=v)
+    K.box(bm, (1.6, 0.3, 0.35), (1.6, 0.6, 2.05), 2)                               # the hinge arm
+    K.cylinder(bm, 0.22, 2.4, (0.75, 0.6, 2.05), 16, 2)                            # the hinge pin
+    K.box(bm, (0.5, 0.25, 0.2), (3.3, 0.25, 2.05), 2)                              # the wheel's hub
+    for a in (0, 60, 120):
+        v = K.box(bm, (1.2, 0.08, 0.08), (0, 0, 0), 2); rot(bm, v, a, 'Y'); bmesh.ops.translate(bm, vec=(3.3, 0.18, 2.05), verts=v)
+    return ['steel_painted', 'rust', 'steel']
+
+
 def blanket(bm):
     v = K.box(bm, (1.8, 1.2, 0.03), (0, 0, 0.02), 0)
     K.box(bm, (0.5, 1.2, 0.1), (0.75, 0, 0.06), 0)               # the rolled end
@@ -271,6 +290,7 @@ PIECES = {
     'hand_pump': (hand_pump, {'smooth': True, 'split_angle': 40}), 'tent': (tent, {}), 'planter': (planter, {}),
     'debris': (debris, {}), 'tire_pile': (tire_pile, {'smooth': True, 'split_angle': 50}), 'car_wreck': (car_wreck, {'bevel': 0.03}),
     'campfire': (campfire, {'bevel': 0.02}), 'wagon': (wagon, {}), 'blanket': (blanket, {'bevel': 0.01}),
+    'vault_door': (vault_door, {'smooth': True, 'split_angle': 35}),
 }
 os.makedirs(OUT, exist_ok=True); K.write_folder_meta(OUT, REL)
 for name, (fn, kw) in PIECES.items(): piece(name, fn, **kw)

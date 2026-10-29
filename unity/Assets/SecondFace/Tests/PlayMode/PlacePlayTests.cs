@@ -41,6 +41,7 @@ namespace SecondFace.Tests
             foreach (var w in Object.FindObjectsByType<WorldService>(FindObjectsSortMode.None)) Object.Destroy(w.gameObject);
             foreach (var s in Object.FindObjectsByType<SkyController>(FindObjectsSortMode.None)) Object.Destroy(s.gameObject);
             foreach (var name in new[] { "Props", "Places" }) { var go = GameObject.Find(name); if (go != null) Object.Destroy(go); }
+            WorldView.SetUnderground(false);
             yield return null;
         }
 
@@ -152,6 +153,86 @@ namespace SecondFace.Tests
             interiors.Refresh();
             Assert.That(interiors.Inside, Is.Null, "back in the street");
             Assert.That(hidden.All(r => r.shadowCastingMode == UnityEngine.Rendering.ShadowCastingMode.On), "the saloon closes again");
+        }
+
+        /// <summary>The shelter under its mouth (step 21b): Cistern 9's rooms ten metres down a ramp tunnel from the door in
+        /// the mouth's wall; standing in its commons opens it whole and takes the surface away, and a walker goes from the
+        /// commons up the tunnel to the road out.</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator TheShelterOpensUnderItsMouth()
+        {
+#if UNITY_EDITOR
+            var layers = AssetDatabase.LoadAssetAtPath<BiomeLayerSet>("Assets/SecondFace/Terrain/BiomeLayers.asset");
+            var profile = AssetDatabase.LoadAssetAtPath<SkyProfile>("Assets/SecondFace/Sky/SkyProfile.asset");
+            var catalog = AssetDatabase.LoadAssetAtPath<ScatterCatalog>("Assets/SecondFace/World/ScatterCatalog.asset");
+            var details = AssetDatabase.LoadAssetAtPath<DetailSet>("Assets/SecondFace/World/DetailSet.asset");
+            var places = AssetDatabase.LoadAssetAtPath<PlaceSet>("Assets/SecondFace/World/PlaceSet.asset");
+#else
+            BiomeLayerSet layers = null; SkyProfile profile = null; ScatterCatalog catalog = null; DetailSet details = null; PlaceSet places = null;
+#endif
+            Assert.That(places.AddressOf("cistern9"), Is.EqualTo("places/cistern9"));
+            var world = new GameObject("World").AddComponent<WorldService>();
+            yield return world.Load();
+            var streamer = new GameObject("Streamer").AddComponent<WorldStreamer>();
+            streamer.World = world; streamer.Layers = layers; streamer.Catalog = catalog; streamer.Details = details; streamer.Places = places;
+            yield return streamer.Prewarm();
+            var skyGo = new GameObject("Sky");
+            var clock = skyGo.AddComponent<TimeService>(); clock.Paused = true; clock.SetHour(15.5);
+            var sky = skyGo.AddComponent<SkyController>();
+            sky.Clock = clock; sky.World = world; sky.Profile = profile; sky.Force = WeatherKind.Clear;
+            var cam = new GameObject("Main Camera").AddComponent<Camera>();
+            cam.tag = "MainCamera"; cam.fieldOfView = 35f; cam.nearClipPlane = 0.3f; cam.farClipPlane = 3000f;
+            cam.clearFlags = CameraClearFlags.Skybox;
+
+            var mouth = world.PlaceCentre("cistern9");
+            world.Focus = mouth;
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 300f)
+            {
+                if (WorldGrid.Around(mouth.x, mouth.z, 1).All(c => streamer.IsBuilt(c.cx, c.cz)) && streamer.PlaceSpawner != null && streamer.PlaceSpawner.IsShown("cistern9")) break;
+                yield return null;
+            }
+            var place = streamer.PlaceSpawner.Instance("cistern9");
+            Assert.That(place, Is.Not.Null, "Cistern 9 was not placed");
+            var below = place.transform.Find("below");
+            Assert.That(below, Is.Not.Null, "the shelter under the mouth");
+            Assert.That(below.position.y, Is.LessThan(mouth.y - 8f), "ten metres down");
+            Assert.That(place.transform.Find("tunnel"), Is.Not.Null, "the tunnel down to it");
+            var markers = place.GetComponentsInChildren<PlaceMarker>();
+            Vector3 At(string map, string kind, string id) => markers.Single(m => m.Map == map && m.Kind == kind && m.Id == id).transform.position;
+            sky.Apply();
+            for (var i = 0; i < 10; i++) yield return null;
+            yield return Shot(cam, mouth + new Vector3(0, 0, -6f), 50f, 20f, 48f, "place_c9_mouth");
+
+            // the walk out: from the commons up the tunnel and through the mouth to the road north
+            var nav = place.GetComponent<PlaceNav>();
+            var n0 = Time.realtimeSinceStartup;
+            while (!nav.Ready && Time.realtimeSinceStartup - n0 < 120f) yield return null;
+            Assert.That(nav.Ready, Is.True, "the NavMesh built");
+            var commons = At("cistern9", "spot", "commons_a");
+            var road = At("c9_mouth", "spawn", "road");
+            Assert.That(NavMesh.SamplePosition(commons, out var a, 3f, NavMesh.AllAreas), Is.True, "the commons is on the NavMesh");
+            Assert.That(NavMesh.SamplePosition(road, out var b, 3f, NavMesh.AllAreas), Is.True, "the road out is on the NavMesh");
+            var path = new NavMeshPath();
+            NavMesh.CalculatePath(a.position, b.position, NavMesh.AllAreas, path);
+            Assert.That(path.status, Is.EqualTo(NavMeshPathStatus.PathComplete), $"commons to the road: stopped at {(path.corners.Length > 0 ? path.corners[^1] : a.position)} of {b.position}");
+            var length = 0f; for (var i = 1; i < path.corners.Length; i++) length += Vector3.Distance(path.corners[i - 1], path.corners[i]);
+            Debug.Log($"PlacePlayTests: the commons to the road out: {length:0} m in {path.corners.Length} corners");
+
+            // below: the shelter opens whole and the surface goes
+            var interiors = place.GetComponent<PlaceInteriors>();
+            world.Focus = commons;
+            interiors.Refresh();
+            Assert.That(interiors.Inside != null && interiors.Inside.Underground, Is.True, "in the shelter");
+            Assert.That(WorldView.Underground, Is.True, "the world view is below");
+            Assert.That(streamer.TerrainAt(WorldGrid.ChunkAt(mouth.x, mouth.z).cx, WorldGrid.ChunkAt(mouth.x, mouth.z).cz).drawHeightmap, Is.False, "the terrain is not drawn");
+            cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = Color.black;
+            yield return Shot(cam, commons, 55f, 25f, 40f, "place_shelter_hall");
+            yield return Shot(cam, commons + new Vector3(-6f, 0, 6f), 55f, 25f, 22f, "place_shelter_hall_close");
+            world.Focus = mouth;
+            interiors.Refresh();
+            Assert.That(WorldView.Underground, Is.False, "back on the surface");
+            Assert.That(streamer.TerrainAt(WorldGrid.ChunkAt(mouth.x, mouth.z).cx, WorldGrid.ChunkAt(mouth.x, mouth.z).cz).drawHeightmap, Is.True, "the terrain is back");
         }
 
         private static IEnumerator Shot(Camera cam, Vector3 at, float pitch, float yaw, float distance, string name)

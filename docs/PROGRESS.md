@@ -484,8 +484,15 @@ in at its exits, lights on at dusk.
 shutters stop drawing (their shade stays, so sunlight falls through the windows onto the floor) and its walls are cut
 away to about a metre, with dark tops where they are cut, so the room is seen from the usual camera; walking out
 closes it again. Capture `place_shale_saloon` in `docs/evidence/unity/p3/`.
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 21b (the underground shelter: Cistern 9's hall built under its mouth,
-the surface hidden while the player is below; `place_shelter_hall`).
+**The shelter under the ground (plan §10 step 21b, 2026-10-29):** Cistern 9 now lies ten metres under its mouth: the
+door in the mouth's concrete front opens onto a ramp tunnel that runs down to the vault door and the shelter's halls,
+built from its map. Stepping inside opens the whole shelter: the surface (ground, roads, plants, the mouth itself)
+goes away and the rooms are seen from above against the dark, ceilings off and walls cut low. The ground is cut away
+over the tunnel's mouth. A walker goes from the commons up the tunnel to the road out. The rock round the mouth is now
+a heap of real boulders, and walls two tiles thick are solid blocks. Captures `place_c9_mouth_shelter_hall.jpg` in
+`docs/evidence/unity/p3/`.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 22 (water: the shore, the Wet's river, the flooded under-city; the
+shore's ditch lines).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,
