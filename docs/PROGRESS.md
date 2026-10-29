@@ -409,8 +409,15 @@ re-baked for all four cards by a rewritten `cards.py`. The vegetation scene has 
 on the upper slopes from Core scatter rules; `vegetation_teeth` shows a pine clump with shadows from the game camera.
 Open: per-tree hue variation (P3.4); a needle-litter ground texture for the Teeth (P3.2: the library's `forest` scan
 is orange broadleaf litter).
-**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 9 (fir and broadleaf from `trees.py`, then LOD1/LOD2 and the
-`LODGroup`), then 11, 12.
+**Playable builds** (owner asked 2026-10-28): `play-walkabout` → `play-ch1` → `play-act1` → `play-act2a` → `play-voices` →
+`play-act2` → `play-story` (beta) → v1; the table with what each holds is in `docs/BUILD_PLAN_V1.md` §1.
+**Fir, broadleaf and tree LODs (plan §10 step 9, 2026-10-29):** `trees.py` grows three species (pine, fir, broadleaf),
+three seeds each, 1.4–2.4 K triangles; every tree is one FBX with three levels (the tree; the trunk and half the cards;
+a crossed impostor of its own render) and Unity builds the LODGroup from their names. The broadleaf card was re-baked
+smaller (the first one stuck out of the crown as sheets). A trees test scene shows the nine side by side and each
+species' three levels (`trees_lineup`, `trees_lod`); `TreeAssetTests` checks the levels, budgets and textures.
+**Next action:** `docs/BUILD_PLAN_V1.md` §10 step 11 (Addressables skeleton + content build step + PlayMode smoke),
+then 12 (P2 verdict), then P3 from step 13.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

@@ -174,7 +174,7 @@ namespace SecondFace.EditorTools
     public sealed class KitImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 4;
+        public override uint GetVersion() => 5;
 
         private void OnPreprocessTexture()
         {
@@ -208,6 +208,21 @@ namespace SecondFace.EditorTools
                 imp.generateSecondaryUV = false;
                 imp.importNormals = ModelImporterNormals.Import;
             }
+        }
+
+        /// <summary>Card trees carry meshes named &lt;tree&gt;_LOD0/1/2 (tools/unity/kits/trees.py), from which the import
+        /// builds a LODGroup; its switch heights are set here: the full tree while it fills more than about a fifth of the
+        /// screen's height, the trunk with half the cards down to a fourteenth, the crossed impostor down to a hundredth.</summary>
+        private void OnPostprocessModel(GameObject root)
+        {
+            if (!assetPath.StartsWith("Assets/SecondFace/Kits/Trees/")) return;
+            var group = root.GetComponent<LODGroup>();
+            if (group == null) { Debug.LogWarning($"{assetPath}: no LODGroup (the meshes must be named _LOD0, _LOD1, _LOD2)"); return; }
+            var lods = group.GetLODs();
+            float[] at = { 0.22f, 0.07f, 0.01f };
+            for (var i = 0; i < lods.Length && i < at.Length; i++) lods[i].screenRelativeTransitionHeight = at[i];
+            group.SetLODs(lods);
+            group.RecalculateBounds();
         }
 
     }

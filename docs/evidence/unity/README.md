@@ -24,3 +24,5 @@ rule (`docs/DESIGN_UNITY.md` §4).
 - `pines_cards_before_after.jpg` (2026-10-28, plan §10 step 8): the first card pine in Blender with the old branch card
   (root at the top, dead wood in it: the black curls), the same tree with the re-baked card, and the pines in the
   engine on the Teeth tile from the game camera (`vegetation_teeth`), shadows on.
+- `trees_lineup_lod.jpg` (2026-10-29, plan §10 step 9): the nine card trees in the engine (broadleaf, fir, pine, three
+  seeds each) and each species at its three levels of detail (the tree; the trunk and half the cards; the impostor).

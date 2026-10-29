@@ -21,7 +21,7 @@ namespace SecondFace.EditorTools
         public const string ScenePath = "Assets/SecondFace/Scenes/Test_Vegetation.unity";
 
         /// <summary>A model with its library materials bound, saved as a prefab under Generated/ (rebuilt with the scene).</summary>
-        private static GameObject BoundPrefab(string modelPath)
+        internal static GameObject BoundPrefab(string modelPath)
         {
             var model = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath);
             if (model == null) return null;

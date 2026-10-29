@@ -88,6 +88,22 @@ v1 acceptance (all must hold):
   device at the end of every phase.
 - The screenshot set of every system (§7.3) judged acceptable by the owner.
 
+**Playable builds on the way to v1** (asked by the owner 2026-10-28). Each is an APK from CI that the owner installs on
+the phone; it is tagged `play-<name>` on the commit that passes its line below, and `docs/PLAYTEST.md` says what it
+holds and how to install it. A save from one playable build may not load in the next until P13's migrations; the
+build says so on load instead of failing. Step counts are rough (±30 %) and are refined when each phase starts.
+
+| Build | After | What the owner can play | Steps from now (≈) |
+|---|---|---|---|
+| `play-walkabout` | P3 + P5.1–P5.2 (camera and input pulled forward) | Walk the first region of the one world (the Sallow and Shale) with the one-finger camera, tap to move, pinch zoom; the P2 people stand in town. A feel-and-frame-rate build, not a game. | 20 |
+| `play-ch1` | P7 | Character creation → the opening → Chapter One to the stranger's map: talk, checks, quests, combat, saving. The first real playtest. | 70 |
+| `play-act1` | P8, first half | All of Act 1 to its finale (the old `act1-test-1` cut, at the new standard). | 85 |
+| `play-act2a` | P8 | Act 1 and the megacity districts written so far (Act 2 part 1). | 105 |
+| `play-voices` | P9 | The same, renamed to the naming bible, with the conversation system that never loops and the rewritten companions and romances. | 125 |
+| `play-act2` | P10 | Act 2 complete: the rest of the megacity and the Act 2 wilds. | 165 |
+| `play-story` (beta) | P11 | The whole story to every ending: feature-complete beta. | 190 |
+| **v1** | P12 + P13 | The complete game: systemic depth, balance, accessibility, signed release build. | 215 |
+
 ---
 
 ## 2. State of the repository (updated 2026-10-28, after the first local-editor passes)
@@ -721,7 +737,7 @@ scale under thermal warning. Budgets per frame on Mid: ≤ 150 draw calls before
 triangles, ≤ 4 realtime lights, ≤ 8 ms CPU main thread. The debug overlay (§7.4) is always one gesture away in
 development builds. Textures ASTC 6×6 (albedo) / 5×5 (normals), mipmaps on, no readable meshes.
 
-### 6.L Card trees (`tools/unity/kits/trees.py`; pine built 2026-10-28, fir/broadleaf/LODs next)
+### 6.L Card trees (`tools/unity/kits/trees.py`; built 2026-10-28)
 **As built (pine).** `blender -b --python tools/unity/kits/trees.py -- [--only pine] [--preview <dir>]`:
 - Sapling Tree Gen (extension, §7.1) is enabled with `addon_utils.enable('bl_ext.user_default.sapling_tree_gen')`;
   `bpy.ops.curve.tree_add(**params)` takes the preset (`<ext>/presets/<name>.py`, `ast.literal_eval` after the
@@ -753,12 +769,19 @@ development builds. Textures ASTC 6×6 (albedo) / 5×5 (normals), mipmaps on, no
   rendered unlit and orthographic, cropped to its alpha, turned root-down in top-down rows, and its colour
   dilated 32 px into the transparent texels so mipmaps fade to foliage, not to black. Existing card metas are kept.
 
-**Still to build (step 9).** Fir ← `douglas_fir` with `branches=(0,34,0,0)`, `scale=11`, card `fir_branch`;
-broadleaf (sheltered ground) ← `small_maple` with `levels=2`, `branches=(0,18,0,0)`, `scale=6`, `leaves=9`, card
-`broadleaf_cluster`, bark `bark_brown`; tune each in `--preview` first, then in the engine. LOD: LOD1 = the same
-trunk with every other card, LOD2 = a two-quad cross impostor with `card_pine_crown.png` (the whole sapling); the
-postprocessor (or the scene builder) makes the `LODGroup` from `<species>_<seed>_lod0/1/2`. ≤ 3 K triangles at
-LOD0; if over, lower `curveRes`/`resU` before `branches`.
+**Fir, broadleaf and LODs (step 9, as built).** Fir ← `douglas_fir` with the conifer overrides, `branches=(0,48,0,0),
+scale=8, scaleV=1.5, leaves=22, baseSize=0.18, shape='0'`, card `fir_branch`: a dense column, 2.3–2.4 K triangles,
+8.7–10.7 m. Broadleaf ← `small_maple` with `levels=2, branches=(0,22,0,0), segSplits=(0,0.25,0.15,0), scale=6,
+leaves=12`, card `broadleaf_cluster` re-baked with its reach capped at 1.5 m (the uncapped 2.5 m card stuck out of
+the crown as sheets), bark `bark_brown`: 1.4–1.6 K triangles, 6.6–9.8 m. The maple's own forks (`segSplits`)
+cost 90 splines and 3 K bark triangles; 0.25/0.15 keeps a few. **One FBX per tree** (`<species>_<seed>.fbx`)
+holds `_LOD0` (the tree), `_LOD1` (the trunk alone, the largest connected part, and every other card: 210–390
+triangles) and `_LOD2` (two crossed quads, 4 triangles, showing `tex/card_<species>_<seed>_crown.png`, the tree's own
+unlit orthographic render, colour dilated); Unity builds the `LODGroup` from the `_LODn` names and
+`KitImportPostprocessor.OnPostprocessModel` sets the switch heights 0.22 / 0.07 / 0.01. `ModelLibrary.IsCardTree`
+tells card trees from scanned ones (both say `use: "tree"`). `Test_Trees` (`TreesTestScene`) stands every tree in a
+row and each species' three LODs side by side (forced by name in the capture): `trees_lineup`, `trees_iso`,
+`trees_lod`; `TreeAssetTests` (PlayMode folder: Unity API) checks three LODs within budget and every slot's texture.
 
 ### 6.M Content export and parity
 `npm run export` writes `StreamingAssets/content/*.json` from `src/content`; `Registry` loads them. When a rule
@@ -1130,7 +1153,8 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
    `Scatter`, `ScatterTests`; the eye-level camera takes the ground height under itself).
 8. ~~`trees.py` pine, three seeds (P2.8, §6.L); `vegetation_teeth`~~ (done 2026-10-28: the branch cards re-baked,
    §8 "Black curls").
-9. Fir and broadleaf; LOD1/LOD2 and the `LODGroup` (P2.8).
+9. ~~Fir and broadleaf; LOD1/LOD2 and the `LODGroup` (P2.8)~~ (done 2026-10-29: one FBX per tree with `_LOD0/1/2`;
+   `Test_Trees`, `TreeAssetTests`; §6.L).
 10. ~~Frontier kit pieces upright~~ (done with step 6).
 11. Addressables skeleton + the content build step + the PlayMode smoke test (P2.10, §6.A.7).
 12. P2 verdict and evidence (P2.11). Then, time-boxed to one step: evaluate the official Unity CLI
@@ -1151,4 +1175,6 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
 22. P3.6 water.
 23. The debug overlay (§7.4) in development builds.
 24. P3.7 device measurement by the owner with the overlay; numbers in PORT.md §5; fix until Mid ≥ 30 fps.
-Then P4 from §5, step by step.
+25. P5.1–P5.2 pulled forward: the orbit camera and the touch input on the streamed world, a walking stand-in for the
+    player; tag `play-walkabout` (§1) for the owner to install.
+Then P4 from §5, step by step (P5 continues after it from P5.3).

@@ -53,6 +53,9 @@ namespace SecondFace.Game.World
             return all;
         }
 
+        /// <summary>A card tree from tools/unity/kits/trees.py (three LODs per variant); scanned trees say use "tree" too.</summary>
+        public static bool IsCardTree(ModelEntry e) => e?.Path != null && e.Path.StartsWith("Assets/SecondFace/Kits/Trees/");
+
         /// <summary>Asset paths of a model's baked variants (empty when it is not baked).</summary>
         public static List<string> VariantPaths(ModelEntry e)
         {

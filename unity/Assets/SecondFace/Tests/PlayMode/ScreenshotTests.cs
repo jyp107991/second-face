@@ -37,6 +37,7 @@ namespace SecondFace.Tests
             {
                 "Second Face/Build terrain test scene", "Second Face/Build material sheet scene", "Second Face/Build shelter test scene",
                 "Second Face/Build frontier test scene", "Second Face/Build people test scene", "Second Face/Build vegetation test scene",
+                "Second Face/Build trees test scene",
             })
             {
                 try { EditorApplication.ExecuteMenuItem(item); }
@@ -257,6 +258,29 @@ namespace SecondFace.Tests
             cam.transform.position = new Vector3(112, t.SampleHeight(new Vector3(112, 0, 126)) + 1.7f, 126) - cam.transform.rotation * Vector3.forward * 6f;
             yield return null;
             yield return Capture("place_frontier_eye", 1920, 1080);
+        }
+
+        /// <summary>The card trees side by side (trees_lineup, trees_iso) and each species' three LODs forced (trees_lod).</summary>
+        [UnityTest, Timeout(300000)]
+        public IEnumerator TreesAreCapturedWhenBuilt()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Trees.unity";
+            if (!File.Exists(path)) { Assert.Ignore("trees scene not built"); yield break; }
+            yield return LoadTestScene(path);
+            foreach (var g in Object.FindObjectsByType<LODGroup>(FindObjectsSortMode.None))
+                g.ForceLOD(g.name.StartsWith("lod") ? g.name[3] - '0' : 0);   // row A at full detail, row B at its named level
+            for (var i = 0; i < 5; i++) yield return null;
+            yield return Capture("trees_lineup", 1920, 1080);
+            var cam = Camera.main;
+            // the game camera over the middle of row A (pitch 50°, 35 m: inside the shadow distance)
+            cam.transform.rotation = Quaternion.Euler(50f, 30f, 0f);
+            cam.transform.position = new Vector3(-60f, 0, 0) - cam.transform.rotation * Vector3.forward * 35f;
+            yield return null;
+            yield return Capture("trees_iso", 1920, 1080);
+            cam.transform.rotation = Quaternion.Euler(6f, 0f, 0f);
+            cam.transform.position = new Vector3(60f, 5f, -55f);
+            yield return null;
+            yield return Capture("trees_lod", 1920, 1080);
         }
 
         /// <summary>Heavy: thousands of props drawn by software rendering take minutes per frame on CI runners; CI skips the

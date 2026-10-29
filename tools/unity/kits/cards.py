@@ -27,7 +27,7 @@ REL = 'Assets/SecondFace/Kits/Trees/tex'
 CARDS = {
     'pine_branch': dict(model='pine_sapling_medium', variant='a', keep=('twig', 'bark'), drop=('dead',), band=1.3, depth=1.0, px=1024),
     'fir_branch': dict(model='fir_sapling_medium', variant='a', keep=('twigs', 'branches'), drop=('dead',), band=1.2, depth=1.0, px=1024),
-    'broadleaf_cluster': dict(model='tree_small_02', variant=None, keep=('leaves', 'branches'), drop=('trunk',), band=1.3, depth=1.2, px=1024),
+    'broadleaf_cluster': dict(model='tree_small_02', variant=None, keep=('leaves', 'branches'), drop=('trunk',), band=1.2, depth=1.2, reach=1.5, px=1024),
     'pine_crown': dict(model='pine_sapling_medium', variant='a', keep=('twig', 'bark', 'dead'), whole=True, px=1024),
 }
 def unlit(mat):
@@ -147,7 +147,7 @@ def bake(name, spec):
         right = np.array([np.cos(a0), np.sin(a0), 0.0]); fwd = np.array([-np.sin(a0), np.cos(a0), 0.0])
         along = d[:, 0] * right[0] + d[:, 1] * right[1]; across = d[:, 0] * fwd[0] + d[:, 1] * fwd[1]
         sector = sel & (np.abs(across) < spec['depth'] / 2) & (along > 0)
-        reach = float(np.quantile(along[sector], 0.97))
+        reach = min(float(np.quantile(along[sector], 0.97)), spec.get('reach', 99.0))   # a cap keeps a sparse crown's card dense
         x0, x1 = 0.1, reach + 0.05
         w, hgt, depth = x1 - x0, spec['band'], spec['depth']
         mid = np.array([trunk[0], trunk[1], zc]) + right * (x0 + x1) / 2

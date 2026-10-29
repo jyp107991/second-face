@@ -1,9 +1,125 @@
 {
+ "broadleaf": {
+  "id": "broadleaf",
+  "licence": "ours (Sapling) + CC0 cards",
+  "note": "sheltered broadleaf",
+  "path": "Assets/SecondFace/Kits/Trees/broadleaf_1.fbx",
+  "place": "scatter",
+  "size": [
+   5.56,
+   6.63,
+   5.39
+  ],
+  "tris": 1566,
+  "use": "tree",
+  "variants": [
+   {
+    "lod_tris": [
+     1566,
+     220,
+     4
+    ],
+    "path": "Assets/SecondFace/Kits/Trees/broadleaf_1.fbx",
+    "size": [
+     5.56,
+     6.63,
+     5.39
+    ],
+    "tris": 1566
+   },
+   {
+    "lod_tris": [
+     1536,
+     216,
+     4
+    ],
+    "path": "Assets/SecondFace/Kits/Trees/broadleaf_2.fbx",
+    "size": [
+     7.34,
+     9.78,
+     7.36
+    ],
+    "tris": 1536
+   },
+   {
+    "lod_tris": [
+     1386,
+     214,
+     4
+    ],
+    "path": "Assets/SecondFace/Kits/Trees/broadleaf_3.fbx",
+    "size": [
+     5.04,
+     6.93,
+     5.73
+    ],
+    "tris": 1386
+   }
+  ]
+ },
+ "fir": {
+  "id": "fir",
+  "licence": "ours (Sapling) + CC0 cards",
+  "note": "dense fir of the high ground and the Wet",
+  "path": "Assets/SecondFace/Kits/Trees/fir_1.fbx",
+  "place": "scatter",
+  "size": [
+   4.49,
+   8.74,
+   4.32
+  ],
+  "tris": 2408,
+  "use": "tree",
+  "variants": [
+   {
+    "lod_tris": [
+     2408,
+     382,
+     4
+    ],
+    "path": "Assets/SecondFace/Kits/Trees/fir_1.fbx",
+    "size": [
+     4.49,
+     8.74,
+     4.32
+    ],
+    "tris": 2408
+   },
+   {
+    "lod_tris": [
+     2264,
+     382,
+     4
+    ],
+    "path": "Assets/SecondFace/Kits/Trees/fir_2.fbx",
+    "size": [
+     5.22,
+     10.72,
+     4.97
+    ],
+    "tris": 2264
+   },
+   {
+    "lod_tris": [
+     2376,
+     384,
+     4
+    ],
+    "path": "Assets/SecondFace/Kits/Trees/fir_3.fbx",
+    "size": [
+     4.62,
+     9.1,
+     4.34
+    ],
+    "tris": 2376
+   }
+  ]
+ },
  "pine": {
   "id": "pine",
   "licence": "ours (Sapling) + CC0 cards",
   "note": "conifer of the Teeth",
-  "path": "Assets/SecondFace/Kits/Trees/pine_1_lod0.fbx",
+  "path": "Assets/SecondFace/Kits/Trees/pine_1.fbx",
   "place": "scatter",
   "size": [
    6.63,
@@ -14,7 +130,12 @@
   "use": "tree",
   "variants": [
    {
-    "path": "Assets/SecondFace/Kits/Trees/pine_1_lod0.fbx",
+    "lod_tris": [
+     1820,
+     358,
+     4
+    ],
+    "path": "Assets/SecondFace/Kits/Trees/pine_1.fbx",
     "size": [
      6.63,
      10.51,
@@ -23,7 +144,12 @@
     "tris": 1820
    },
    {
-    "path": "Assets/SecondFace/Kits/Trees/pine_2_lod0.fbx",
+    "lod_tris": [
+     1932,
+     366,
+     4
+    ],
+    "path": "Assets/SecondFace/Kits/Trees/pine_2.fbx",
     "size": [
      7.81,
      13.94,
@@ -32,7 +158,12 @@
     "tris": 1932
    },
    {
-    "path": "Assets/SecondFace/Kits/Trees/pine_3_lod0.fbx",
+    "lod_tris": [
+     1844,
+     364,
+     4
+    ],
+    "path": "Assets/SecondFace/Kits/Trees/pine_3.fbx",
     "size": [
      6.75,
      10.95,
