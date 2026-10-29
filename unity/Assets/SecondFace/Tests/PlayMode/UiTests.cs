@@ -1028,6 +1028,50 @@ namespace SecondFace.Tests
             Directory.Delete(dir, true);
         }
 
+        /// <summary>P5.3l: photo mode's controls (hour, face, lens, look at, frame) over the view, the frame's bands, hide and
+        /// show, a picture that could not be taken saying so.</summary>
+        [UnityTest, Timeout(120000)]
+        public IEnumerator PhotoControlsAndFrames()
+        {
+            _ui = Offscreen(1600, 720, out _rt);
+            _ui.SafeAreaOverride = new Rect(0.05f, 0.04f, 0.95f, 0.96f);
+            _ui.Root.Insert(0, World());
+            var host = new GameObject("photo mode (no game)");
+            var mode = host.AddComponent<SecondFace.Game.Play.PhotoMode>();
+            var closed = false;
+            var screen = _ui.Open(new PhotoScreen(mode, () => closed = true));
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(screen.Root.Query<Button>(className: "sf-photo__chip").ToList().Count(b => b.name.StartsWith("face-")), Is.EqualTo(Expressions.Names.Length));
+            screen.Root.Q<Slider>("photo-hour").value = 18.5f;
+            Assert.That(mode.Hour, Is.EqualTo(18.5f).Within(0.01f));
+            Press(screen.Root.Q<Button>("face-half_smile"));
+            Assert.That(mode.Face, Is.EqualTo("half_smile"));
+            Assert.That(screen.Root.Q<Button>("face-half_smile").ClassListContains("sf-photo__chip--on"), Is.True);
+            Press(screen.Root.Q<Button>("look-face"));
+            Assert.That(mode.OnFace, Is.True);
+            screen.Root.Q<Slider>("photo-lens").value = 40f;
+            Assert.That(mode.Lens, Is.EqualTo(40f).Within(0.01f));
+            for (var i = 0; i < 2; i++) yield return null;
+            Assert.That(Save(_rt, "ui_photo"), Is.GreaterThan(0.95f));
+            Press(screen.Root.Q<Button>("frame-wide"));
+            for (var i = 0; i < 2; i++) yield return null;
+            Assert.That(screen.Root.Q("photo-bands").childCount, Is.EqualTo(2), "bands above and below a wide frame");
+            Press(screen.Root.Q<Button>("frame-portrait"));
+            for (var i = 0; i < 2; i++) yield return null;
+            Assert.That(screen.Root.Q("photo-bands").childCount, Is.EqualTo(2), "and beside an upright one");
+            Assert.That(Save(_rt, "ui_photo_upright"), Is.GreaterThan(0.95f));
+            Assert.That(screen.TakePicture(), Is.Null, "no camera here: no picture");
+            Assert.That(screen.Root.Q<Label>("photo-note").text, Is.EqualTo(Strings.Get("photo.not_taken")));
+            Press(screen.Root.Q<Button>("photo-hide"));
+            Assert.That(screen.ControlsHidden, Is.True);
+            Assert.That(screen.Root.Q("photo-panel").style.display.value, Is.EqualTo(DisplayStyle.None));
+            Press(screen.Root.Q<Button>("photo-show"));
+            Assert.That(screen.ControlsHidden, Is.False);
+            Press(screen.Root.Q<Button>("photo-done"));
+            Assert.That(closed, Is.True, "done closes photo mode");
+            Object.Destroy(host);
+        }
+
         private static Label Text(string cls, string text)
         {
             var l = new Label(text);

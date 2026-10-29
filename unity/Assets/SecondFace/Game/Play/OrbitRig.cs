@@ -22,6 +22,14 @@ namespace SecondFace.Game.Play
         /// <summary>How far a drag turns the camera (the settings' turn speed) and whether it turns the other way.</summary>
         public float TurnSpeed = 1f;
         public bool InvertTurn;
+        /// <summary>The limits in force (the constants' by default; the photo mode loosens them: <see cref="Limit"/>).</summary>
+        public float PitchMin { get; private set; } = MinPitch;
+        public float PitchMax { get; private set; } = MaxPitch;
+        public float DistanceMin { get; private set; } = MinDistance;
+        public float DistanceMax { get; private set; } = MaxDistance;
+        public float PanMax { get; private set; } = PanLimit;
+        /// <summary>How high over the leader's feet the camera looks (the chest; the head for a portrait).</summary>
+        public float TargetHeight = 1.3f;
 
         public CinemachineCamera Virtual { get; private set; }
         public Transform Target { get; private set; }
@@ -65,7 +73,7 @@ namespace SecondFace.Game.Play
             _orbit.TrackerSettings = tracker;
             _orbit.HorizontalAxis.Range = new Vector2(-180f, 180f);
             _orbit.HorizontalAxis.Wrap = true;
-            _orbit.VerticalAxis.Range = new Vector2(MinPitch, MaxPitch);
+            _orbit.VerticalAxis.Range = new Vector2(PitchMin, PitchMax);
             _orbit.RadialAxis.Range = new Vector2(1f, 1f);
             _orbit.RadialAxis.Value = 1f;
             var composer = vgo.AddComponent<CinemachineRotationComposer>();
@@ -81,7 +89,7 @@ namespace SecondFace.Game.Play
             dx *= TurnSpeed * (InvertTurn ? -1f : 1f);
             dy *= TurnSpeed;
             _yawGoal += dx * YawPerPixel;
-            _pitchGoal = Mathf.Clamp(_pitchGoal - dy * PitchPerPixel, MinPitch, MaxPitch);
+            _pitchGoal = Mathf.Clamp(_pitchGoal - dy * PitchPerPixel, PitchMin, PitchMax);
             if (dt > 0) { _yawFling = dx * YawPerPixel / dt; _pitchFling = -dy * PitchPerPixel / dt; }
         }
 
@@ -92,14 +100,14 @@ namespace SecondFace.Game.Play
         public void Zoom(float ratio)
         {
             if (ratio <= 0) return;
-            _distanceGoal = Mathf.Clamp(_distanceGoal / ratio, MinDistance, MaxDistance);
+            _distanceGoal = Mathf.Clamp(_distanceGoal / ratio, DistanceMin, DistanceMax);
         }
 
         /// <summary>The look target moved over the ground by this much (kept within <see cref="PanLimit"/> m).</summary>
         public void PanBy(Vector3 world)
         {
             world.y = 0;
-            Pan = Vector3.ClampMagnitude(Pan + world, PanLimit);
+            Pan = Vector3.ClampMagnitude(Pan + world, PanMax);
         }
 
         /// <summary>Turns the view to a heading (degrees clockwise from north), eased or at once.</summary>
@@ -114,8 +122,8 @@ namespace SecondFace.Game.Play
         public void View(float yaw, float pitch, float distance)
         {
             _yawGoal = yaw;
-            _pitchGoal = Mathf.Clamp(pitch, MinPitch, MaxPitch);
-            _distanceGoal = Mathf.Clamp(distance, MinDistance, MaxDistance);
+            _pitchGoal = Mathf.Clamp(pitch, PitchMin, PitchMax);
+            _distanceGoal = Mathf.Clamp(distance, DistanceMin, DistanceMax);
             Pan = Vector3.zero;
             Snap();
         }
@@ -125,6 +133,41 @@ namespace SecondFace.Game.Play
         {
             Leader = leader;
             if (leader != null) _lastLeader = leader.position;
+        }
+
+        /// <summary>Turns the camera by degrees (a stick or keys held: no fling), as the settings' speed and direction say.</summary>
+        public void Turn(float yaw, float pitch)
+        {
+            var k = TurnSpeed * (InvertTurn ? -1f : 1f);
+            _yawGoal += yaw * k;
+            _pitchGoal = Mathf.Clamp(_pitchGoal + pitch * TurnSpeed, PitchMin, PitchMax);
+            _yawFling = _pitchFling = 0f;
+        }
+
+        /// <summary>The camera's limits: pitch, distance and how far the view may pan from the leader.</summary>
+        public void Limit(float pitchMin, float pitchMax, float distanceMin, float distanceMax, float panMax)
+        {
+            PitchMin = pitchMin; PitchMax = pitchMax; DistanceMin = distanceMin; DistanceMax = distanceMax; PanMax = panMax;
+            if (_orbit != null) _orbit.VerticalAxis.Range = new Vector2(PitchMin, PitchMax);
+            _pitchGoal = Mathf.Clamp(_pitchGoal, PitchMin, PitchMax);
+            _distanceGoal = Mathf.Clamp(_distanceGoal, DistanceMin, DistanceMax);
+            Pan = Vector3.ClampMagnitude(Pan, PanMax);
+        }
+
+        /// <summary>The game's limits again.</summary>
+        public void Unlimit() => Limit(MinPitch, MaxPitch, MinDistance, MaxDistance, PanLimit);
+
+        /// <summary>The lens's vertical field of view (28° in play).</summary>
+        public float FieldOfView
+        {
+            get => Virtual != null ? Virtual.Lens.FieldOfView : 28f;
+            set
+            {
+                if (Virtual == null) return;
+                var lens = Virtual.Lens;
+                lens.FieldOfView = value;
+                Virtual.Lens = lens;
+            }
         }
 
         /// <summary>Back to the leader (a double tap on them).</summary>
@@ -144,7 +187,7 @@ namespace SecondFace.Game.Play
             if (!_held)
             {
                 var decay = Mathf.Exp(-dt * 4f / FlingSeconds);
-                _yawGoal += _yawFling * dt; _pitchGoal = Mathf.Clamp(_pitchGoal + _pitchFling * dt, MinPitch, MaxPitch);
+                _yawGoal += _yawFling * dt; _pitchGoal = Mathf.Clamp(_pitchGoal + _pitchFling * dt, PitchMin, PitchMax);
                 _yawFling *= decay; _pitchFling *= decay;
             }
             var k = 1f - Mathf.Exp(-dt / Smoothing);
@@ -159,7 +202,7 @@ namespace SecondFace.Game.Play
 
         private void Apply(Vector3 lead)
         {
-            if (Leader != null) Target.position = Leader.position + Vector3.up * 1.3f + lead + Pan;
+            if (Leader != null) Target.position = Leader.position + Vector3.up * TargetHeight + lead + Pan;
             if (_orbit == null) return;
             _orbit.Radius = Distance;
             _orbit.HorizontalAxis.Value = Mathf.DeltaAngle(0f, Yaw);

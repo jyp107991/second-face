@@ -199,8 +199,18 @@ namespace SecondFace.Game.UI
             _stack.Add(screen);
             Refresh();
             screen.Shown();
+            if (Gamepad.current != null) FocusFirst(screen);   // the pad navigates from the first choice
             StackChanged?.Invoke();
             return screen;
+        }
+
+        /// <summary>Focuses a screen's first enabled button (where a pad's navigation starts); false when it has none.</summary>
+        public bool FocusFirst(UIScreen screen)
+        {
+            var first = screen?.Root?.Query<Button>().Where(b => b.enabledInHierarchy && b.focusable && b.resolvedStyle.display != DisplayStyle.None).First();
+            if (first == null) return false;
+            first.Focus();
+            return true;
         }
 
         /// <summary>Closes a screen and every screen opened over it.</summary>

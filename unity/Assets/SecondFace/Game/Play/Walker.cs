@@ -61,6 +61,30 @@ namespace SecondFace.Game.Play
             return true;
         }
 
+        /// <summary>Walks it in a direction while a stick or keys are held (<paramref name="amount"/> 0..1: a walk, a jog
+        /// at full tilt), turning it that way; nothing held stops it. A tap's errand is dropped.</summary>
+        public void Steer(Vector3 direction, float amount)
+        {
+            direction.y = 0f;
+            if (amount < 0.15f || direction.sqrMagnitude < 1e-4f)
+            {
+                if (_steering && Agent.isOnNavMesh) { Agent.ResetPath(); Agent.velocity = Vector3.zero; }
+                _steering = false;
+                return;
+            }
+            if (!Agent.isOnNavMesh && !Settle()) return;
+            _steering = true;
+            Goal = null;
+            if (Agent.hasPath) Agent.ResetPath();
+            var dir = direction.normalized;
+            Agent.velocity = dir * (amount > 0.9f ? JogSpeed : WalkSpeed * Mathf.Lerp(0.6f, 1f, Mathf.InverseLerp(0.15f, 0.9f, amount)));
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(dir, Vector3.up), Agent.angularSpeed * Time.deltaTime);
+        }
+
+        /// <summary>A stick or keys are walking it.</summary>
+        public bool Steering => _steering;
+        private bool _steering;
+
         /// <summary>Puts it on the NavMesh under it once there is one (the mesh is built after it is set down).</summary>
         public bool Settle()
         {

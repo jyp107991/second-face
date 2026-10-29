@@ -1399,6 +1399,126 @@ MonoBehaviour:
     m_Key: saves.overwrite_no
     m_Metadata:
       m_Items: []
+  - m_Id: 56837596889088
+    m_Key: pause.photo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837630443520
+    m_Key: photo.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837630443521
+    m_Key: photo.hour
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837630443522
+    m_Key: photo.face
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837630443523
+    m_Key: photo.face_still
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837630443524
+    m_Key: photo.face_half_smile
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837630443525
+    m_Key: photo.face_grin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837630443526
+    m_Key: photo.face_hard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637824
+    m_Key: photo.face_wary
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637825
+    m_Key: photo.face_worn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637826
+    m_Key: photo.face_sneer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637827
+    m_Key: photo.face_squint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637828
+    m_Key: photo.lens
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637829
+    m_Key: photo.look_at
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637830
+    m_Key: photo.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637831
+    m_Key: photo.face_close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637832
+    m_Key: photo.frame
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637833
+    m_Key: photo.frame_screen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637834
+    m_Key: photo.frame_wide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637835
+    m_Key: photo.frame_portrait
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637836
+    m_Key: photo.frame_square
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637837
+    m_Key: photo.take
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637838
+    m_Key: photo.hide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637839
+    m_Key: photo.show
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637840
+    m_Key: photo.done
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637841
+    m_Key: photo.taken
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637842
+    m_Key: photo.not_taken
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637843
+    m_Key: hud.saved
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637844
+    m_Key: hud.not_saved
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637845
+    m_Key: hud.no_quicksave
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

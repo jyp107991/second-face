@@ -17,6 +17,36 @@ pause.save	Save
 pause.load	Load
 pause.settings	Settings
 pause.quit	To the title
+pause.photo	Photo mode
+photo.title	Photo
+photo.hour	Light
+photo.face	Face
+photo.face_still	Still
+photo.face_half_smile	Half a smile
+photo.face_grin	Grin
+photo.face_hard	Hard
+photo.face_wary	Wary
+photo.face_worn	Worn out
+photo.face_sneer	Sneer
+photo.face_squint	Squint
+photo.lens	Lens
+photo.look_at	Look at
+photo.body	The whole of you
+photo.face_close	The face
+photo.frame	Frame
+photo.frame_screen	Screen
+photo.frame_wide	Wide
+photo.frame_portrait	Upright
+photo.frame_square	Square
+photo.take	Take it
+photo.hide	Hide
+photo.show	Show
+photo.done	Done
+photo.taken	Kept with your photographs.
+photo.not_taken	That one did not keep.
+hud.saved	Saved.
+hud.not_saved	Not saved.
+hud.no_quicksave	No quicksave yet.
 menu.back	Back
 settings.title	Settings
 settings.words	Words

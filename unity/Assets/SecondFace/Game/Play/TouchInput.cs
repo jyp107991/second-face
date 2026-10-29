@@ -23,6 +23,8 @@ namespace SecondFace.Game.Play
         public Camera Camera;
         /// <summary>How near a tap must fall to the walker on screen to be a tap on them, pixels.</summary>
         public float OnWalkerPixels = 70f;
+        /// <summary>Gestures move the camera only: a tap neither walks nor opens anything (photo mode, P5.3l).</summary>
+        public bool CameraOnly;
 
         public Gestures Gestures { get; } = new();
         /// <summary>A tap landed on a person or thing: it and the screen point (pixels, origin bottom-left). With no
@@ -88,9 +90,9 @@ namespace SecondFace.Game.Play
             }
             if (g.DoubleTap is { } d)
             {
-                if (OnWalker(d.x, d.y)) Rig.Recentre(); else Send(d.x, d.y);
+                if (CameraOnly || OnWalker(d.x, d.y)) Rig.Recentre(); else Send(d.x, d.y);
             }
-            if (g.Tap is { } t) Tap(new Vector2(t.x, t.y));
+            if (g.Tap is { } t && !CameraOnly) Tap(new Vector2(t.x, t.y));
         }
 
         /// <summary>A tap: on a person or thing it is theirs (<see cref="Tapped"/>), on the ground the walker goes there.</summary>

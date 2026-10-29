@@ -325,6 +325,110 @@ namespace SecondFace.Tests
             Assert.That(boot.Hud.Root.resolvedStyle.display, Is.EqualTo(UnityEngine.UIElements.DisplayStyle.Flex), "the HUD is back");
         }
 
+        /// <summary>P5.3l: photo mode on the walker (the world stops, the hour and the face change and go back, a picture is
+        /// kept and cropped to its frame) and the pad (the left stick walks the way the camera looks, the right turns it,
+        /// a bumper turns the view 90°, act opens the radial on someone near, start pauses; with a pad the first choice is
+        /// focused).</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator PhotoModeAndThePad()
+        {
+            Bootstrap boot = null;
+            yield return Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            for (var i = 0; i < 5; i++) yield return null;
+            var minutes = boot.Stage.Clock.Minutes;
+            var photo = boot.OpenPhoto();
+            Assert.That(photo, Is.Not.Null, "photo mode opens");
+            var mode = boot.GetComponent<PhotoMode>();
+            Assert.That(Time.timeScale, Is.EqualTo(0f), "the world stops");
+            var sun = boot.Stage.Sky.Sun.transform.forward;
+            mode.SetHour(18.25f);
+            Assert.That(Vector3.Angle(sun, boot.Stage.Sky.Sun.transform.forward), Is.GreaterThan(10f), "the sun moves with the hour while the world is stopped");
+            mode.LookAtFace(true);
+            mode.SetLens(24f);
+            walk.Rig.View(walk.Walker.transform.eulerAngles.y + 180f, 8f, 2.4f);   // in front of them, at eye height
+            Assert.That(FaceExpression.Set(walk.Walker.gameObject, "half_smile"), Is.GreaterThan(0), "the face's units are on the body");
+            mode.SetFace("half_smile");
+            for (var i = 0; i < 4; i++) yield return null;
+            var path = photo.TakePicture();
+            Assert.That(path, Is.Not.Null, "a picture is kept");
+            Assert.That(File.Exists(path), Is.True);
+            var pic = new Texture2D(2, 2);
+            Assert.That(pic.LoadImage(File.ReadAllBytes(path)), Is.True);
+            Assert.That(pic.width, Is.EqualTo(PhotoMode.Width), "at full width");
+            File.Copy(path, Path.Combine(ScreenshotTests.OutDir(), "photo_face.jpg"), true);
+            mode.SetFrame("portrait");
+            mode.LookAtFace(false);
+            walk.Rig.View(walk.Walker.transform.eulerAngles.y + 160f, 14f, 4.5f);
+            for (var i = 0; i < 4; i++) yield return null;
+            var upright = photo.TakePicture();
+            Assert.That(pic.LoadImage(File.ReadAllBytes(upright)), Is.True);
+            Assert.That(pic.width / (float)pic.height, Is.EqualTo(0.8f).Within(0.01f), "cropped to an upright frame");
+            File.Copy(upright, Path.Combine(ScreenshotTests.OutDir(), "photo_upright.jpg"), true);
+            Object.Destroy(pic);
+            File.Delete(path); File.Delete(upright);
+            photo.Close();
+            yield return null;
+            Assert.That(boot.Photo, Is.Null, "photo mode is done");
+            Assert.That(Time.timeScale, Is.EqualTo(1f), "the world goes on");
+            Assert.That(boot.Stage.Clock.Minutes, Is.EqualTo(minutes).Within(1.0), "at the hour it was");
+            Assert.That(walk.Rig.PitchMin, Is.EqualTo(OrbitRig.MinPitch), "the camera's limits back");
+
+            // the pad: the left stick walks the way the camera looks
+            var pad = walk.Pad;
+            Assert.That(pad, Is.Not.Null, "the pad's input");
+            walk.Rig.View(walk.Rig.Yaw, 50f, 20f);
+            var at = walk.Walker.transform.position;
+            var camFwd = Camera.main.transform.forward; camFwd.y = 0; camFwd.Normalize();
+            for (var i = 0; i < 40; i++) { pad.Next = new PadFrame { Move = new Vector2(0f, 1f) }; yield return null; }
+            var moved = walk.Walker.transform.position - at; moved.y = 0;
+            Assert.That(moved.magnitude, Is.GreaterThan(0.5f), "walked");
+            Assert.That(Vector3.Dot(moved.normalized, camFwd), Is.GreaterThan(0.7f), "the way the camera looks");
+            for (var i = 0; i < 10; i++) { pad.Next = new PadFrame(); yield return null; }
+            Assert.That(walk.Walker.Steering, Is.False, "and stopped when let go");
+            // the right stick turns the camera; a bumper turns the view a quarter
+            var yaw = walk.Rig.Yaw;
+            for (var i = 0; i < 20; i++) { pad.Next = new PadFrame { Look = new Vector2(1f, 0f) }; yield return null; }
+            Assert.That(Mathf.DeltaAngle(yaw, walk.Rig.Yaw), Is.GreaterThan(5f), "turned");
+            yaw = walk.Rig.Yaw;
+            pad.Next = new PadFrame { TurnRight = true };
+            for (var i = 0; i < 60; i++) yield return null;
+            Assert.That(Mathf.DeltaAngle(yaw, walk.Rig.Yaw), Is.EqualTo(90f).Within(3f), "a quarter turn");
+            // act: the radial over someone near
+            var near = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None).OrderBy(i => Vector3.Distance(i.transform.position, walk.Walker.transform.position)).First();
+            Assert.That(UnityEngine.AI.NavMesh.SamplePosition(near.transform.position + near.transform.forward * 1.5f, out var by, 3f, UnityEngine.AI.NavMesh.AllAreas), Is.True, "ground by them");
+            walk.Walker.Agent.Warp(by.position);
+            yield return null;
+            Assert.That(Vector3.Distance(walk.Walker.transform.position, near.transform.position), Is.LessThan(4f), $"beside {near.Title}");
+            pad.Next = new PadFrame { Act = true };
+            yield return null;
+            Assert.That(boot.UI.Top, Is.TypeOf<RadialMenu>(), "act opens the radial on who is near");
+            boot.UI.CloseAll();
+            // start pauses, and again goes back
+            pad.Next = new PadFrame { Pause = true };
+            yield return null;
+            Assert.That(boot.UI.Top, Is.TypeOf<PauseScreen>(), "start pauses");
+            pad.Next = new PadFrame { Pause = true };
+            yield return null;
+            Assert.That(boot.UI.Top, Is.Null, "and goes back");
+            // a pad present: the pause's first choice has the focus
+            var device = UnityEngine.InputSystem.InputSystem.AddDevice<UnityEngine.InputSystem.Gamepad>();
+            try
+            {
+                var pause = boot.OpenPause();
+                yield return null;
+                Assert.That(pause.Root.panel.focusController.focusedElement, Is.SameAs(pause.Root.Q<Button>("pause-resume")), "the pad starts on the first choice");
+                pause.Close();
+            }
+            finally { UnityEngine.InputSystem.InputSystem.RemoveDevice(device); }
+            yield return null;
+            // quicksave from the keys or the pad, said on the HUD
+            pad.Next = new PadFrame { QuickSave = true };
+            yield return null;
+            Assert.That(boot.Session.Read("quick"), Is.Not.Null, "quicksaved");
+            Assert.That(boot.Hud.NoteText, Is.EqualTo(Strings.Get("hud.saved")));
+        }
+
         [UnityTest, Timeout(900000)]
         public IEnumerator TheOverlaysButtonRunsTheMeasuringTour()
         {

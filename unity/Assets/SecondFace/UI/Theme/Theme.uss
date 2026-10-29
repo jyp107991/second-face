@@ -1281,3 +1281,134 @@
 }
 .sf-hud__menu:enabled:hover { background-color: rgba(40, 35, 30, 0.86); }
 .sf-hud__menu:enabled:active { background-color: rgba(8, 7, 6, 0.9); }
+
+/* ---- a line for a moment over the HUD (Hud.Note) ---- */
+.sf-hud__note {
+    position: absolute;
+    top: 20px;
+    left: 38%;
+    right: 38%;
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-22);
+    color: var(--plate-text);
+    -unity-text-align: middle-center;
+}
+
+/* ---- photo mode (PhotoScreen.cs): controls on a narrow plate, the frame as dark bands ---- */
+.sf-photo__bands { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.sf-photo__band { position: absolute; background-color: rgba(0, 0, 0, 0.6); }
+.sf-photo__safe { flex-grow: 1; }
+.sf-photo__panel {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    bottom: 20px;
+    width: 380px;
+    padding: 14px 18px;
+}
+.sf-photo__title {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: var(--fs-30);
+    color: var(--plate-text);
+    margin-bottom: 4px;
+}
+.sf-photo__heading {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-16);
+    letter-spacing: 2px;
+    color: var(--plate-dim);
+    margin: 12px 0 4px 0;
+}
+.sf-photo__row { flex-direction: row; align-items: center; }
+.sf-photo__value { width: 80px; font-size: var(--fs-22); color: var(--plate-text); -unity-text-align: middle-right; }
+.sf-photo__slider { flex-grow: 1; margin: 0; min-height: 48px; }
+.sf-photo__slider .unity-base-slider__tracker { height: 4px; margin-top: -2px; border-width: 0; border-radius: 2px; background-color: rgba(242, 234, 219, 0.35); }
+.sf-photo__slider .unity-base-slider__dragger {
+    width: 30px;
+    height: 30px;
+    margin-top: -15px;
+    border-width: 2px;
+    border-color: var(--plate-text);
+    border-radius: 15px;
+    background-color: var(--ochre);
+}
+.sf-photo__scroll { flex-grow: 1; flex-shrink: 1; flex-basis: 0; }
+.sf-photo__scroll .unity-scroll-view__content-container { flex-shrink: 0; }
+.sf-photo__scroll .unity-scroll-view__content-container > * { flex-shrink: 0; }
+.sf-photo__chips { flex-direction: row; flex-wrap: wrap; flex-shrink: 0; }
+.sf-photo__chip {
+    min-height: 52px;
+    min-width: 0;
+    margin: 0 6px 6px 0;
+    padding: 0 12px;
+    border-width: 2px;
+    border-color: rgba(242, 234, 219, 0.25);
+    border-radius: 3px;
+    background-color: rgba(242, 234, 219, 0.06);
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-20);
+    color: var(--plate-text);
+}
+.sf-photo__chip:enabled:hover { background-color: rgba(242, 234, 219, 0.14); }
+.sf-photo__chip:enabled:focus { border-color: var(--ochre); }
+.sf-photo__chip--on { border-color: var(--ochre); background-color: rgba(196, 138, 44, 0.28); }
+.sf-photo__actions { position: absolute; right: 20px; bottom: 20px; flex-direction: row; align-items: center; }
+.sf-photo__take {
+    min-width: 200px;
+    min-height: 88px;
+    margin: 0 0 0 12px;
+    border-width: 0;
+    border-radius: 44px;
+    background-color: var(--ochre);
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-28);
+    color: var(--ink);
+}
+.sf-photo__take:enabled:hover { background-color: #D59B3A; }
+.sf-photo__take:enabled:focus { border-width: 3px; border-color: var(--plate-text); }
+.sf-photo__small {
+    min-height: 64px;
+    min-width: 0;
+    margin: 0 0 0 12px;
+    padding: 0 20px;
+    border-width: 0;
+    border-radius: 6px;
+    background-color: var(--plate);
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-22);
+    color: var(--plate-text);
+}
+.sf-photo__small:enabled:hover { background-color: rgba(40, 35, 30, 0.86); }
+.sf-photo__small:enabled:focus { border-width: 3px; border-color: var(--ochre); }
+.sf-photo__show { position: absolute; right: 20px; top: 20px; opacity: 0.8; }
+.sf-photo__note {
+    position: absolute;
+    bottom: 130px;
+    left: 30%;
+    right: 30%;
+    padding: 10px 16px;
+    border-radius: 6px;
+    background-color: var(--plate);
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: var(--fs-24);
+    color: var(--plate-text);
+    -unity-text-align: middle-center;
+}
+
+/* ---- focus (P5.3l: the pad moves the focus; the default theme's focused button is grey, so each kind keeps its own
+   colour and shows focus by its border) ---- */
+.sf-button:enabled:focus { background-color: var(--ink); }
+.sf-button--quiet:enabled:focus { background-color: rgba(36, 32, 27, 0.08); }
+.sf-button--plate:enabled:focus { background-color: var(--plate); }
+.sf-creation__choice:enabled:focus { background-color: #F4EEDF; border-color: var(--ochre); }
+.sf-creation__choice--on:enabled:focus { background-color: #F8EFD9; }
+.sf-start__choice:enabled:focus { background-color: rgba(242, 234, 219, 0.08); }
+.sf-pause__choice:enabled:focus { background-color: rgba(242, 234, 219, 0.14); }
+.sf-photo__chip:enabled:focus { background-color: rgba(242, 234, 219, 0.06); border-color: var(--ochre); }
+.sf-photo__chip--on:enabled:focus { background-color: rgba(196, 138, 44, 0.28); }
+.sf-photo__small:enabled:focus { background-color: var(--plate); }
+.sf-photo__take:enabled:focus { background-color: var(--ochre); }
+.sf-hud__action:enabled:focus { background-color: var(--plate); }
+.sf-saves__card:enabled:focus { background-color: #F4EEDF; }
+.sf-photo__chip:enabled:active, .sf-photo__chip:enabled:hover:active { background-color: rgba(242, 234, 219, 0.2); }
+.sf-photo__chip--on:enabled:active, .sf-photo__chip--on:enabled:hover, .sf-photo__chip--on:enabled:hover:active { background-color: rgba(196, 138, 44, 0.34); }

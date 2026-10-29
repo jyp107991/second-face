@@ -26,7 +26,8 @@ namespace SecondFace.Game.UI
         /// <summary>The objective was tapped (the notebook opens at the quest).</summary>
         public event Action ObjectiveTapped;
 
-        private readonly Label _when, _quest, _line;
+        private readonly Label _when, _quest, _line, _note;
+        private IVisualElementScheduledItem _noteOff;
         private readonly VisualElement _actions;
         private readonly List<Member> _members = new();
         private Action _notebook, _map, _pack, _menu;
@@ -66,6 +67,12 @@ namespace SecondFace.Game.UI
             MenuButton.Add(Icons.Make("menu", 34f));
             MenuButton.style.display = DisplayStyle.None;
             area.Add(MenuButton);
+
+            _note = Text("sf-hud__note");
+            _note.name = "hud-note";
+            _note.AddToClassList("sf-plate");
+            _note.style.display = DisplayStyle.None;
+            area.Add(_note);
 
             Party = new VisualElement { name = "hud-party", pickingMode = PickingMode.Ignore };
             Party.AddToClassList("sf-hud__party");
@@ -109,6 +116,18 @@ namespace SecondFace.Game.UI
             MapButton.style.display = map != null ? DisplayStyle.Flex : DisplayStyle.None;
             PackButton.style.display = pack != null ? DisplayStyle.Flex : DisplayStyle.None;
         }
+
+        /// <summary>A line for a moment at the top (a quicksave made, a load failed).</summary>
+        public void Note(string text)
+        {
+            _note.text = text;
+            _note.style.display = DisplayStyle.Flex;
+            _noteOff?.Pause();
+            _noteOff = _note.schedule.Execute(() => _note.style.display = DisplayStyle.None).StartingIn(2400);
+        }
+
+        /// <summary>The line shown now (null when none; tests read it).</summary>
+        public string NoteText => _note.style.display == DisplayStyle.None ? null : _note.text;
 
         /// <summary>What the menu button does (the pause); null hides it.</summary>
         public void Menu(Action menu)

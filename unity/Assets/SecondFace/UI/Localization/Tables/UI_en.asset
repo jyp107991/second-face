@@ -1408,6 +1408,126 @@ MonoBehaviour:
     m_Localized: Keep it
     m_Metadata:
       m_Items: []
+  - m_Id: 56837596889088
+    m_Localized: Photo mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837630443520
+    m_Localized: Photo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837630443521
+    m_Localized: Light
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837630443522
+    m_Localized: Face
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837630443523
+    m_Localized: Still
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837630443524
+    m_Localized: Half a smile
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837630443525
+    m_Localized: Grin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837630443526
+    m_Localized: Hard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637824
+    m_Localized: Wary
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637825
+    m_Localized: Worn out
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637826
+    m_Localized: Sneer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637827
+    m_Localized: Squint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637828
+    m_Localized: Lens
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637829
+    m_Localized: Look at
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637830
+    m_Localized: The whole of you
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637831
+    m_Localized: The face
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637832
+    m_Localized: Frame
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637833
+    m_Localized: Screen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637834
+    m_Localized: Wide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637835
+    m_Localized: Upright
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637836
+    m_Localized: Square
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637837
+    m_Localized: Take it
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637838
+    m_Localized: Hide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637839
+    m_Localized: Show
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637840
+    m_Localized: Done
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637841
+    m_Localized: Kept with your photographs.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637842
+    m_Localized: That one did not keep.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637843
+    m_Localized: Saved.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637844
+    m_Localized: Not saved.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56837634637845
+    m_Localized: No quicksave yet.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

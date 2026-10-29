@@ -40,7 +40,9 @@ namespace SecondFace.Game
         public static System.Func<Session> MakeSession;
         /// <summary>The title while it is open.</summary>
         public TitleScreen Title { get; private set; }
-        private bool _awaitingSetDown, _autosaveOnSetDown;
+        private bool _awaitingSetDown, _autosaveOnSetDown, _padWired;
+        /// <summary>Photo mode while it is open (null otherwise).</summary>
+        public PhotoScreen Photo { get; private set; }
         private string _status = "LOADING…";
         private string _error;
         private TitleCard _card;
@@ -177,9 +179,46 @@ namespace SecondFace.Game
             _awaitingSetDown = false;
             if (_card != null && _card.IsOpen) _card.Close();
             if (Session != null) Apply(Session.Settings);
+            WirePad();
             if (_autosaveOnSetDown) StartCoroutine(AutosaveSoon());
             _autosaveOnSetDown = false;
             _hudNext = 0f;
+        }
+
+        /// <summary>The pad's and the keys' buttons (P5.3l): what the HUD's open, the pause (and out of it, and out of
+        /// photo mode), acting on what is near, photo mode, quicksave and quickload.</summary>
+        private void WirePad()
+        {
+            var pad = Walkabout != null ? Walkabout.Pad : null;
+            if (pad == null || _padWired) return;
+            _padWired = true;
+            pad.Act += () => Walkabout.ActNearest();
+            pad.Pack += () => OpenPack();
+            pad.Map += () => OpenMap();
+            pad.Notebook += () => OpenNotebook(null);
+            pad.Photo += () => OpenPhoto();
+            pad.Pause += () =>
+            {
+                if (Photo != null && Photo.IsOpen) Photo.Close();
+                else if (UI != null && UI.Top is PauseScreen pause) pause.Close();
+                else if (UI != null && UI.Top == null) OpenPause();
+            };
+            pad.QuickSave += () => _hud?.Note(Strings.Get(Save(Session.Quick) != null ? "hud.saved" : "hud.not_saved"));
+            pad.QuickLoad += () => { if (!Load(Session.Quick)) _hud?.Note(Strings.Get("hud.no_quicksave")); };
+        }
+
+        /// <summary>Photo mode over the game (null when there is no walker): the world stops until it is done.</summary>
+        public PhotoScreen OpenPhoto()
+        {
+            if (UI == null || Walkabout == null || Walkabout.Walker == null || Tour != null) return null;
+            if (Photo != null && Photo.IsOpen) return Photo;
+            UI.CloseAll();
+            var mode = gameObject.AddComponent<PhotoMode>();
+            mode.Walkabout = Walkabout;
+            mode.Pad = Walkabout.Pad;
+            if (!mode.Begin()) { Destroy(mode); return null; }
+            Photo = UI.Open(new PhotoScreen(mode, () => { mode.End(); Destroy(mode); Photo = null; }));
+            return Photo;
         }
 
         /// <summary>The auto slot once the camera has settled on the walker (a picture taken in the frame they are set
@@ -233,6 +272,7 @@ namespace SecondFace.Game
                 Save = () => OpenSaves(true),
                 Load = Session != null && Session.Latest() != null ? () => OpenSaves(false) : null,
                 Settings = () => OpenSettings(),
+                Photo = () => OpenPhoto(),
                 Quit = QuitToTitle,
             }));
         }

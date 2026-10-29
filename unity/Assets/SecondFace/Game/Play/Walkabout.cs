@@ -32,6 +32,8 @@ namespace SecondFace.Game.Play
         public OrbitRig Rig { get; private set; }
         public WorldNav Nav { get; private set; }
         public TouchInput Input { get; private set; }
+        /// <summary>The gamepad and the keys (P5.3l).</summary>
+        public PadInput Pad { get; private set; }
         public bool Paused { get; private set; }
         /// <summary>The walker stands on a built NavMesh and the camera follows them.</summary>
         public bool Ready => Walker != null && Nav != null && Nav.Ready && Walker.Agent.isOnNavMesh;
@@ -106,6 +108,7 @@ namespace SecondFace.Game.Play
             if (Walker != null) Destroy(Walker.gameObject);
             Walker = null;
             if (Input != null) Input.Walker = null;
+            if (Pad != null) Pad.Walker = null;
             if (Rig != null) Rig.Leader = null;
         }
 
@@ -162,6 +165,12 @@ namespace SecondFace.Game.Play
                 Input.Tapped += OnTapped;
             }
             Input.Walker = Walker;
+            if (Pad == null)
+            {
+                Pad = gameObject.AddComponent<PadInput>();
+                Pad.Rig = Rig; Pad.Camera = Stage.Camera;
+            }
+            Pad.Walker = Walker;
             if (Townsfolk == 0) Townsfolk = Populate(assets);
             SetDown?.Invoke();
         }
@@ -214,6 +223,29 @@ namespace SecondFace.Game.Play
                 if (Registry.WorldMap.Locations.TryGetValue(other, out var l) && l.Hidden == true) continue;
                 known.Add(other);
             }
+        }
+
+        /// <summary>The radial over the nearest person or thing within reach, those ahead first (the pad's act button).</summary>
+        public bool ActNearest(float reach = 4f)
+        {
+            if (Walker == null || Stage == null || Stage.Camera == null) return false;
+            Interactable best = null;
+            var bestScore = float.MaxValue;
+            var p = Walker.transform.position;
+            var fwd = Walker.transform.forward;
+            foreach (var it in FindObjectsByType<Interactable>(FindObjectsSortMode.None))
+            {
+                var to = it.transform.position - p;
+                to.y = 0f;
+                var d = to.magnitude;
+                if (d > reach) continue;
+                var score = d * (d < 0.01f || Vector3.Dot(fwd, to / d) > 0.3f ? 1f : 2f);
+                if (score < bestScore) { bestScore = score; best = it; }
+            }
+            if (best == null) return false;
+            var screen = Stage.Camera.WorldToScreenPoint(best.transform.position + Vector3.up * 1.2f);
+            OnTapped(best, new Vector2(screen.x, screen.y));
+            return true;
         }
 
         /// <summary>The radial over a tapped person (or thing).</summary>

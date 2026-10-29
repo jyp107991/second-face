@@ -644,9 +644,18 @@ settings, or back to the title. Seen in `docs/evidence/unity/p5/ui_title.jpg`, `
 `ui_settings_large.jpg`, `ui_saves_load.jpg`, `ui_saves.jpg`, `ui_saves_overwrite.jpg`, `ui_pause.jpg` and
 `walkabout_player.jpg`. The measuring tour (step 24) now runs from inside a game: begin one (or continue), then the
 three-finger tap and its button as before.
-**Next action:** P5.3l: photo mode and the gamepad (BUILD_PLAN P5 "Order of work"; 3k, the combat bar and log, is
-built with P6's combat). Blender and the MakeHuman assets are in the session scratchpad, `blender/` and `mhc/`; if a
-fresh session lacks them, see `tools/unity/people/`. **`play-people` is released**
+**Photo mode and the pad (P5.3l, 2026-10-29):** photo mode, from the pause (or P): the world stops, the camera is free
+round you (closer, lower and higher than in play, a wider or longer lens, on your face or the whole of you), you can
+set the hour for the light, make a face (still, half a smile, a grin, hard, wary, worn out, a sneer, a squint), frame
+it (the screen, wide, upright, square) and take it: the picture is kept at 2560 px across with your photographs (on the
+phone, in its gallery). A gamepad now plays: the left stick walks, the right turns the camera, the triggers zoom, the
+bumpers turn the view a quarter, A acts on who is near, Y the pack, X the map, the view button the notebook, start
+pauses; the keyboard too (WASD, Q/E, R/F, Space, I, M, Tab, P, F5/F9). Seen in `docs/evidence/unity/p5/ui_photo.jpg`,
+`ui_photo_upright.jpg`, and two pictures photo mode kept, `photo_face.jpg` (evening light, half a smile) and
+`photo_upright.jpg`.
+**Next action:** P6 step 1: interactions and loot (BUILD_PLAN P6; P5 is done but for 3k, the combat bar and log, which
+comes with P6.4's combat, and the local map, pins and travel, with P6.5). Blender and the MakeHuman assets are in the
+session scratchpad, `blender/` and `mhc/`; if a fresh session lacks them, see `tools/unity/people/`. **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).
 Step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until Mid ≥ 30 fps).

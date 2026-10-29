@@ -457,7 +457,7 @@ from fixture state and captured (`UiTests`, the panel drawn into a texture):
   over the skin; (3) body sliders (build, muscle) and hair choices from the people pipeline (shapes refitted on every
   garment, hair pieces as wardrobe items in a hair slot).
 - ~~3j. Title, settings (text size, contrast, controls), saves and pause~~ (done, below).
-- 3k. The combat bar and log (with P6). 3l. Photo mode and the gamepad.
+- 3k. The combat bar and log (with P6). ~~3l. Photo mode and the gamepad~~ (done, below).
 
 *As built (P5.3a, 2026-10-29).* `Game.UI.UIService` (made by `Bootstrap` from the Boot scene's `UIAssets`; wired by
 Second Face/Wire the Boot scene, checked by `BuildGuard`): one `UIDocument` on a runtime copy of `UI/Panel.asset`
@@ -693,6 +693,35 @@ the camera as it was, the state the saved one; a save from the pause; to the tit
 `walkabout_player.jpg` (the walker in the player's own body). Not yet: the quality tier as a setting (with Adaptive
 Performance, P6.7), the tips and the combat settings' effect (with the tips and the fights), remapped keys and the pad
 (3l), autosave on entering a place (with places to enter, P6), the camp screen (with P6's systems).
+
+*As built (P5.3l, 2026-10-29).* Photo mode and the gamepad. The people pipeline's expression list named MakeHuman
+units that do not exist (`mouth-smile`, `brow-down`, …), so only the blinks, wide eyes and open mouth were baked; it
+now names the real ones (squints, brows down, up and inner up, the corner puller and depression of the mouth, pressed
+and parted lips, the upper lip raised, the nose's wings) and the player bases carry 20 expression units (89 shapes);
+the cast keeps its five until it is next rebuilt. Core `Npc.Expressions`: eight faces as unit weights (still, half a
+smile, a grin, hard, wary, worn out, a sneer, a squint against the sun); `People.FaceExpression.Set` puts one on every
+renderer carrying the units. `Play.PhotoMode`: time scale 0 and the clock held (the sky re-lit on demand: it refreshes
+on game time), the brain on unscaled time, the rig's limits loosened (`OrbitRig.Limit`: pitch 5–85°, 1.2–30 m, 12 m of
+pan; `Unlimit` after), a lens of 15–60° (`OrbitRig.FieldOfView`), the look at the chest or the eyes (from the head
+bone), the hour, the face, a frame (the screen's, a wide 2.39:1, an upright 4:5, a square); `Take` renders the game
+camera at 2560 px across, crops it to the frame and keeps a JPEG (q95) in `persistentDataPath/Photos`, and on Android
+hands it to the phone's gallery (MediaStore through JNI; untested off the device); `End` restores the hour, the face,
+the camera, the touches and time. `UI.PhotoScreen`: the controls on a narrow plate (scrolling when short), the frame's
+crop as dark bands, take, hide (a show button stays), done; touches on the view only move the camera
+(`TouchInput.CameraOnly`). Opened from the pause or P. `Play.PadInput` (BUILD_PLAN §6.F): the left stick or WASD walks
+the way the camera looks (`Walker.Steer`: the NavMesh agent's velocity, a jog at full tilt, turning that way), the right
+stick turns the camera (`OrbitRig.Turn`, at the settings' speed and direction), the triggers or R/F zoom, the bumpers
+or Q/E turn the view 90°, south or Space acts on the nearest person or thing ahead (the radial,
+`Walkabout.ActNearest`), north/I the pack, west/M the map, view/Tab the notebook, start the pause (and out of it, and
+out of photo mode), P photo mode, F5/F9 quicksave and quickload (said on the HUD, `Hud.Note`); with a screen open the
+pad is the interface's: `UIService` focuses a screen's first button when a pad is connected, and every button kind has
+its own focus colour. Tests: `UiTests.PhotoControlsAndFrames`, `BootTests.PhotoModeAndThePad` (the world stops, the sun
+moves with the hour, a face's units set, a picture kept at full width and an upright one cropped to 4:5, all restored;
+the stick walks the way the camera looks and stops, the camera turns, a quarter turn, act opens the radial beside
+someone, start pauses and unpauses, a virtual pad focuses the pause's first choice, a quicksave said on the HUD).
+Evidence `ui_photo.jpg`, `ui_photo_upright.jpg`, `photo_face.jpg`, `photo_upright.jpg` (pictures photo mode kept). Not
+yet: remapping keys and buttons (with the settings once there are enough actions to map), depth of field in the photo,
+a gallery screen in the game, the cast's expressions (with its next rebuild), faces in conversation (with P6).
 
 ### P6 — Systems and combat
 1. Interactions and loot (`Play/`): tap on a thing → radial of verbs from content (`talk`, `look`, `take`, `use`,
@@ -1923,6 +1952,17 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   `flex-grow: 0`. Labels inside a `Button` inherit its centred text: align them on their own container.
 - **Scale text with USS variables** (P5.3j): custom properties inherit, so a class on the root that redefines every
   size variable re-sets all the words; literal font sizes cannot be scaled (the theme has none now: keep it so).
+- **Name MakeHuman's units as they are** (P5.3l): the expression list asked for `mouth-smile`, `brow-down` and others
+  that MakeHuman does not have, matched by prefix, so they were skipped without a word. List exact names and count the
+  shapes after a build (`blend shapes` in the log).
+- **The sky refreshes on game time** (P5.3l): `SkyController` steps on `Time.deltaTime`, so with time stopped a new hour
+  shows only after `Apply()`.
+- **The default theme's pressed and focused buttons are grey** (P5.3l): a button that stays on screen after it is
+  pressed (a chip) keeps the default `:active`/`:focus` background over ours; give every button kind its own colours
+  for those states. A wrapped row of chips in a fixed-height column is laid out too short and overlaps what follows:
+  scroll the column and keep its children from shrinking.
+- **`new Button(Method)` with a method that returns a value** picks the `Background` overload and fails; pass a lambda.
+- **A test that adds a virtual pad** needs `Unity.InputSystem` in the test assembly's references.
 - **The local compile checks do not build the PlayMode tests**: a test's missing `using UnityEngine.UIElements` (for
   `Q<T>`) only shows in Unity's own compile; read `playmode.log` for `error CS` when a run writes no results.
 

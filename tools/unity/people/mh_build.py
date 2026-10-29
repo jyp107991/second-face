@@ -263,11 +263,16 @@ def expression_units():
     out = []
     root = os.path.join(MH, 'targets', 'expression', 'units', 'caucasian')
     if not os.path.isdir(root): root = os.path.join(MH, 'targets', 'expression', 'units')
-    wanted = ('eye-left-closure', 'eye-right-closure', 'mouth-open', 'mouth-smile', 'mouth-frown', 'brow-left-up', 'brow-right-up', 'brow-down',
-              'lips-part', 'eye-left-opened-up', 'eye-right-opened-up', 'nose-wrinkle', 'mouth-pucker', 'jaw-drop')
+    # MakeHuman's own unit names (P5.3l: the list named units it does not have, mouth-smile, brow-down, ..., and only the
+    # blinks, the wide eyes and the open mouth were baked): blinks and squints, the brows, a smile and a frown, pressed
+    # and parted lips, a sneer; the photo mode's expressions and the conversations' faces are made of them
+    wanted = {'eye-left-closure', 'eye-right-closure', 'eye-left-opened-up', 'eye-right-opened-up', 'eye-left-slit', 'eye-right-slit',
+              'eyebrows-left-down', 'eyebrows-right-down', 'eyebrows-left-up', 'eyebrows-right-up', 'eyebrows-left-inner-up',
+              'eyebrows-right-inner-up', 'mouth-open', 'mouth-corner-puller', 'mouth-depression', 'mouth-compression', 'mouth-parling',
+              'mouth-upward-retraction', 'nose-left-elevation', 'nose-right-elevation'}
     if os.path.isdir(root):
         for f in sorted(os.listdir(root)):
-            if f.endswith('.target') and any(f.startswith(w) for w in wanted): out.append(('expression/units/' + os.path.basename(root) + '/' + f[:-7], 'expr_' + f[:-7]))
+            if f.endswith('.target') and f[:-7] in wanted: out.append(('expression/units/' + os.path.basename(root) + '/' + f[:-7], 'expr_' + f[:-7]))
     return out
 
 # ----------------------------------------------------------------------------------------------------------------

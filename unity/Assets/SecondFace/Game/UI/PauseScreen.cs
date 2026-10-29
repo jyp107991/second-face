@@ -8,14 +8,14 @@ namespace SecondFace.Game.UI
     public sealed class PauseModel
     {
         public string Line;
-        public Action Save, Load, Settings, Quit;
+        public Action Save, Load, Settings, Photo, Quit;
     }
 
     /// <summary>
     /// The pause (P5.3j): the world stops behind a scrim (time stands still while it is open, and under the save, load and
     /// settings screens opened from it) and a column of choices: back to the game, save, load, settings, back to the
     /// title (the game is saved to the auto slot first). The HUD's menu button and the back gesture on the open world
-    /// open it.
+    /// open it; photo mode is opened from it too.
     /// </summary>
     public sealed class PauseScreen : UIScreen
     {
@@ -47,6 +47,7 @@ namespace SecondFace.Game.UI
             Choice(column, "pause-resume", "pause.resume", Close);
             Choice(column, "pause-save", "pause.save", () => _m.Save?.Invoke()).SetEnabled(_m.Save != null);
             Choice(column, "pause-load", "pause.load", () => _m.Load?.Invoke()).SetEnabled(_m.Load != null);
+            Choice(column, "pause-photo", "pause.photo", () => _m.Photo?.Invoke()).SetEnabled(_m.Photo != null);
             Choice(column, "pause-settings", "pause.settings", () => _m.Settings?.Invoke());
             Choice(column, "pause-quit", "pause.quit", () => _m.Quit?.Invoke());
             // a tap on the scrim beside the column goes back to the game
