@@ -26,7 +26,9 @@ install() {
   # is never mistaken for an installed one.
   exec 9>/tmp/second-face-unity-install.lock
   flock 9
-  if [ -x "$UNITY" ]; then echo "editor present: $UNITY"; return; fi
+  # release and close the lock before anything else starts: a child (Xvfb, the editor) that inherits fd 9 keeps the
+  # lock after a killed run and every later run waits on it forever (seen 2026-10-29)
+  if [ -x "$UNITY" ]; then echo "editor present: $UNITY"; exec 9>&-; return; fi
   local part="$UNITY_HOME.partial"
   rm -rf -- "$part"; mkdir -p "$part"
   echo "downloading and unpacking Unity $VERSION (about 10 min) ..."
@@ -35,6 +37,7 @@ install() {
   [ -x "$part/Editor/Unity" ] || { echo "install failed: Editor/Unity missing after unpacking"; exit 1; }
   mkdir -p "$(dirname "$UNITY_HOME")"; mv -- "$part" "$UNITY_HOME"
   echo "editor installed: $UNITY"
+  exec 9>&-
 }
 
 licence_text() {   # the .ulf contents from either variable; never echoed to the terminal
