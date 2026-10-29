@@ -415,6 +415,15 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    correctly, Foot IK, the gaze level; faces (§6.C.4 "P4.9"): painted brows, lips by skin tone, the aged skin.
 9. **Done**: `people_cast_1..4` (32 people), `people_lod_0..2`, `people_walk`, `people_portraits`, plus
    `people_sculpt_*`, `people_wardrobe_*`, `people_motion_slope`, `people_ragdoll`. Capture `people_cast_lineup` (30 people), `people_lod`, `people_walk`, `people_portraits`.
+10. **Built (P4.10, 2026-10-29; captures `people_wardrobe`, `ui_pack_figure`).** `SecondFace/Cloth`, the player's
+   garments' shader (`PeopleMaterials` gives it to cloth under People/Player; everyone else keeps URP Lit with their
+   look baked): URP PBR like `SecondFace/Skin`, double-sided with the 0.5 alpha cut the Lit cloth had, plus three values
+   the wardrobe sets per garment through its property block: `_Inflate`, how far a layer stands off the ones under it
+   along its normals (`Wardrobe.StandOff`: over 12 mm, feet 4 mm; a coat and the shirt under it were both fitted to the
+   bare body, so the shirt showed through the coat in patches), `_Grime` (darker, duller, a dirt colour, heaviest
+   towards the hem by the garment's height above the feet, in noise patches) and `_Wear` (sun-faded: paler, greyer),
+   from the content's garment looks (`Dresser`; the player's own clothes are `LivedIn`, 0.2). Every pass (forward,
+   shadow, depth, depth-normals) inflates and cuts the same way, so the shadow and the depth prepass match.
 
 ### P5 — Camera, touch and UI
 1. `CameraService` with Cinemachine 3: an orbit rig around the party leader (§6.F), tactical camera in combat,
@@ -588,11 +597,9 @@ issue worn, a pipe in hand, a worn zip gun, rounds, water, bandages, food, salva
 stall have a trade verb (the walker goes over, the table opens with their face); the HUD's pack button opens the pack
 on the player's body (`WorldAssets.PlayerM`/`PlayerF`). A panel drawing into a texture repaints only what is marked
 dirty, so each draw of the figure marks its image (`PackScreen.DrawFigure`). Captures `ui_pack`, `ui_pack_worn`,
-`ui_pack_figure` (the figure's own texture), `ui_barter`, `ui_barter_haggle`. Known: a garment worn over another, both
-fitted to the bare body, lets the one under it show through in patches (the duster's long cardigan over the shirt,
-`ui_pack_figure`); the fix is the next step, P4.10: a cloth shader (URP PBR with alpha clip, as the cloth's Lit
-materials now) with a per-layer offset along the normals set by the wardrobe for each slot, which is also where the
-runtime grime goes. Not yet: item models (the drawings stand until P6.1 brings things to pick up; then an icon bake
+`ui_pack_figure` (the figure's own texture), `ui_barter`, `ui_barter_haggle`. A garment worn over another, both fitted
+to the bare body, let the one under it show through in patches (the duster's long cardigan over the shirt) until
+P4.10's cloth shader (below). Not yet: item models (the drawings stand until P6.1 brings things to pick up; then an icon bake
 renders each model like a portrait), the procedural gear (wraps, goggles, plates), the held weapon and visible chrome
 on the figure (P4 follow-ups), the full wardrobe of every garment on the player's bases (a duster on the player's body
 is the long cardigan and the cargo trousers; the tank top under it is not built yet), dropping things (with loot).

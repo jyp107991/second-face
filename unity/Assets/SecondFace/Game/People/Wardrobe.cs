@@ -10,7 +10,9 @@ namespace SecondFace.Game.People
     /// into this person's levels of detail, and hides the skin it covers through the skin shader's mask (SecondFace/Skin:
     /// a 128 x 128 texture over the MakeHuman base vertices). One garment per slot; a garment that hides the hair (a hat)
     /// switches the hair off while it is worn. A dye is a tint on the garment's material (a property block). The face
-    /// sculpt is refreshed so collars and hats follow the face.
+    /// sculpt is refreshed so collars and hats follow the face. On the player's cloth shader (SecondFace/Cloth, P4.10) each
+    /// slot's garments stand off the layers under them (<see cref="StandOff"/>: a coat over the shirt, boots over the
+    /// trousers, all fitted to the bare body) and take the content's grime and wear (<see cref="Weather"/>).
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class Wardrobe : MonoBehaviour
@@ -26,6 +28,12 @@ namespace SecondFace.Game.People
 
         private static readonly int HiddenMaskId = Shader.PropertyToID("_HiddenMask");
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int InflateId = Shader.PropertyToID("_Inflate");
+        private static readonly int GrimeId = Shader.PropertyToID("_Grime");
+        private static readonly int WearId = Shader.PropertyToID("_Wear");
+
+        /// <summary>How far a slot's garments stand off the layers under them (m).</summary>
+        public static float StandOff(string slot) => slot switch { "over" => 0.012f, "feet" => 0.004f, _ => 0f };
         public const int MaskSize = 128;
 
         private readonly Dictionary<string, Worn> _worn = new();
@@ -81,6 +89,20 @@ namespace SecondFace.Game.People
             }
         }
 
+        /// <summary>Dirt (heaviest at the hem) and sun-fading on a worn garment, 0..1 each.</summary>
+        public void Weather(string slot, float grime, float wear)
+        {
+            if (!_worn.TryGetValue(slot, out var w)) return;
+            var block = new MaterialPropertyBlock();
+            foreach (var r in w.Renderers)
+            {
+                r.GetPropertyBlock(block);
+                block.SetFloat(GrimeId, Mathf.Clamp01(grime));
+                block.SetFloat(WearId, Mathf.Clamp01(wear));
+                r.SetPropertyBlock(block);
+            }
+        }
+
         private bool Put(string id)
         {
             var g = Set != null ? Set.Find(id) : null;
@@ -100,6 +122,10 @@ namespace SecondFace.Game.People
                 r.transform.localRotation = rot;
                 r.transform.localScale = scale;
                 r.name = $"{g.Slot}:{r.name}";
+                var block = new MaterialPropertyBlock();
+                r.GetPropertyBlock(block);
+                block.SetFloat(InflateId, StandOff(g.Slot));
+                r.SetPropertyBlock(block);
                 worn.Renderers.Add(r);
             }
             Gone(instance);

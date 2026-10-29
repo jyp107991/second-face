@@ -136,9 +136,11 @@ namespace SecondFace.EditorTools
             var matDir = dir + "/Materials";
             Directory.CreateDirectory(matDir);
             var matPath = $"{matDir}/{kind}_{tex}.mat";
-            // the player's skin hides under worn garments (SecondFace/Skin, the wardrobe's mask); everyone else is URP Lit
+            // the player's skin hides under worn garments (SecondFace/Skin, the wardrobe's mask) and the player's garments
+            // stand off each other in layers and take the content's grime (SecondFace/Cloth, P4.10); everyone else is URP Lit
             var wardrobeSkin = kind == "skin" && dir.EndsWith("/Player");
-            var shader = Shader.Find(wardrobeSkin ? "SecondFace/Skin" : "Universal Render Pipeline/Lit");
+            var wardrobeCloth = kind == "cloth" && dir.EndsWith("/Player");
+            var shader = Shader.Find(wardrobeSkin ? "SecondFace/Skin" : wardrobeCloth ? "SecondFace/Cloth" : "Universal Render Pipeline/Lit");
             if (shader == null) { Debug.LogError($"PeopleMaterials: shader for {kind} not found"); return null; }
             var m = AssetDatabase.LoadAssetAtPath<Material>(matPath);
             var created = m == null;

@@ -1,0 +1,275 @@
+// The player's garments (P4.10): URP PBR (main light with shadows, additional lights, screen-space occlusion, fog),
+// double-sided with an alpha cut like the people's Lit cloth, plus what the wardrobe sets per garment: _Inflate, the
+// distance a layer stands off the ones under it along its normals (a coat over a shirt both fitted to the bare body
+// let the shirt show through), and the content's look of a worn piece: _Grime, dirt heaviest towards the hem (by the
+// garment's own height above the feet), broken up by a little noise, and _Wear, sun-fading (paler, greyer).
+Shader "SecondFace/Cloth"
+{
+    Properties
+    {
+        _BaseMap ("Albedo (A cut-out)", 2D) = "white" {}
+        _BaseColor ("Tint", Color) = (1, 1, 1, 1)
+        _BumpMap ("Normal", 2D) = "bump" {}
+        _BumpScale ("Normal strength", Float) = 1
+        _Smoothness ("Smoothness", Range(0, 1)) = 0.32
+        _Cutoff ("Alpha cut-off", Range(0, 1)) = 0.5
+        _Inflate ("Stand-off along the normals (m)", Range(0, 0.03)) = 0
+        _Grime ("Grime", Range(0, 1)) = 0
+        _Wear ("Sun and wear", Range(0, 1)) = 0
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 0
+    }
+    SubShader
+    {
+        Tags { "Queue" = "AlphaTest" "RenderType" = "TransparentCutout" "RenderPipeline" = "UniversalPipeline" }
+        Cull [_Cull]
+
+        HLSLINCLUDE
+        #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+        TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
+        TEXTURE2D(_BumpMap); SAMPLER(sampler_BumpMap);
+        CBUFFER_START(UnityPerMaterial)
+            float4 _BaseMap_ST;
+            half4 _BaseColor;
+            half _BumpScale, _Smoothness, _Cutoff, _Grime, _Wear;
+            float _Inflate;
+        CBUFFER_END
+
+        struct Attributes
+        {
+            float4 positionOS : POSITION;
+            float3 normalOS : NORMAL;
+            float4 tangentOS : TANGENT;
+            float2 uv : TEXCOORD0;
+            UNITY_VERTEX_INPUT_INSTANCE_ID
+        };
+
+        // the garment pushed out along its normals by its layer's stand-off
+        float3 Inflated(Attributes v) { return v.positionOS.xyz + normalize(v.normalOS) * _Inflate; }
+
+        half Cut(float2 uv) { return SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv).a * _BaseColor.a - _Cutoff; }
+
+        // a cheap value noise (for the grime's patches)
+        float Hash(float3 p) { p = frac(p * 0.3183099 + 0.1); p *= 17.0; return frac(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+        float Noise(float3 x)
+        {
+            float3 i = floor(x), f = frac(x);
+            f = f * f * (3.0 - 2.0 * f);
+            return lerp(lerp(lerp(Hash(i), Hash(i + float3(1, 0, 0)), f.x), lerp(Hash(i + float3(0, 1, 0)), Hash(i + float3(1, 1, 0)), f.x), f.y),
+                        lerp(lerp(Hash(i + float3(0, 0, 1)), Hash(i + float3(1, 0, 1)), f.x), lerp(Hash(i + float3(0, 1, 1)), Hash(i + float3(1, 1, 1)), f.x), f.y), f.z);
+        }
+        ENDHLSL
+
+        Pass
+        {
+            Name "ForwardLit"
+            Tags { "LightMode" = "UniversalForward" }
+
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex Vert
+            #pragma fragment Frag
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
+            #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
+            #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
+            #pragma multi_compile_fog
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
+            struct Varyings
+            {
+                float4 positionCS : SV_POSITION;
+                float2 uv : TEXCOORD0;
+                float3 positionWS : TEXCOORD1;
+                half3 normalWS : TEXCOORD2;
+                half4 tangentWS : TEXCOORD3;
+                float3 positionOS : TEXCOORD4;
+                half fog : TEXCOORD5;
+            };
+
+            Varyings Vert(Attributes v)
+            {
+                UNITY_SETUP_INSTANCE_ID(v);
+                Varyings o;
+                float3 pos = Inflated(v);
+                VertexPositionInputs p = GetVertexPositionInputs(pos);
+                VertexNormalInputs n = GetVertexNormalInputs(v.normalOS, v.tangentOS);
+                o.positionCS = p.positionCS;
+                o.positionWS = p.positionWS;
+                o.normalWS = n.normalWS;
+                o.tangentWS = half4(n.tangentWS, v.tangentOS.w * GetOddNegativeScale());
+                o.uv = TRANSFORM_TEX(v.uv, _BaseMap);
+                o.positionOS = pos;
+                o.fog = ComputeFogFactor(p.positionCS.z);
+                return o;
+            }
+
+            half4 Frag(Varyings i, FRONT_FACE_TYPE face : FRONT_FACE_SEMANTIC) : SV_Target
+            {
+                half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv) * _BaseColor;
+                clip(albedo.a - _Cutoff);
+                half smoothness = _Smoothness;
+                // sun and wear: paler and greyer
+                if (_Wear > 0.001h)
+                {
+                    half grey = dot(albedo.rgb, half3(0.3h, 0.59h, 0.11h));
+                    albedo.rgb = lerp(albedo.rgb, lerp(grey.xxx, albedo.rgb, 0.55h) * 1.08h + 0.03h, _Wear);
+                }
+                // grime: heaviest at the hem and the feet, in patches; dirt also dulls the cloth
+                if (_Grime > 0.001h)
+                {
+                    half hem = pow(saturate(1.15h - (half)i.positionOS.y / 1.1h), 1.5h);
+                    half patch = (half)(0.55 + 0.9 * Noise(i.positionOS * 9.0) * Noise(i.positionOS * 2.3 + 7.0));
+                    half g = saturate(_Grime * (0.25h + 0.75h * hem) * patch);
+                    albedo.rgb = lerp(albedo.rgb, albedo.rgb * 0.55h + half3(0.32h, 0.27h, 0.21h) * 0.35h, g);
+                    smoothness *= 1.0h - 0.6h * g;
+                }
+                half3 normalTS = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, i.uv), _BumpScale);
+                half3 nrm = IS_FRONT_VFACE(face, i.normalWS, -i.normalWS);
+                half3 bitangent = i.tangentWS.w * cross(nrm, i.tangentWS.xyz);
+                half3 normalWS = NormalizeNormalPerPixel(TransformTangentToWorld(normalTS, half3x3(i.tangentWS.xyz, bitangent, nrm)));
+
+                InputData input = (InputData)0;
+                input.positionWS = i.positionWS;
+                input.positionCS = i.positionCS;
+                input.normalWS = normalWS;
+                input.viewDirectionWS = GetWorldSpaceNormalizeViewDir(i.positionWS);
+                input.shadowCoord = TransformWorldToShadowCoord(i.positionWS);
+                input.fogCoord = i.fog;
+                input.bakedGI = SampleSH(normalWS);
+                input.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(i.positionCS);
+                input.shadowMask = half4(1, 1, 1, 1);
+
+                SurfaceData surface = (SurfaceData)0;
+                surface.albedo = albedo.rgb;
+                surface.metallic = 0;
+                surface.smoothness = smoothness;
+                surface.occlusion = 1;
+                surface.normalTS = normalTS;
+                surface.alpha = 1;
+
+                half4 colour = UniversalFragmentPBR(input, surface);
+                colour.rgb = MixFog(colour.rgb, i.fog);
+                return half4(colour.rgb, 1);
+            }
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags { "LightMode" = "ShadowCaster" }
+            ZWrite On
+            ZTest LEqual
+            ColorMask 0
+
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex Vert
+            #pragma fragment Frag
+            #pragma multi_compile_instancing
+            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
+            float3 _LightDirection;
+            float3 _LightPosition;
+
+            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; };
+
+            Varyings Vert(Attributes v)
+            {
+                UNITY_SETUP_INSTANCE_ID(v);
+                Varyings o;
+                float3 ws = TransformObjectToWorld(Inflated(v));
+                float3 n = TransformObjectToWorldNormal(v.normalOS);
+                #if defined(_CASTING_PUNCTUAL_LIGHT_SHADOW)
+                    float3 l = normalize(_LightPosition - ws);
+                #else
+                    float3 l = _LightDirection;
+                #endif
+                float4 cs = TransformWorldToHClip(ApplyShadowBias(ws, n, l));
+                #if UNITY_REVERSED_Z
+                    cs.z = min(cs.z, UNITY_NEAR_CLIP_VALUE);
+                #else
+                    cs.z = max(cs.z, UNITY_NEAR_CLIP_VALUE);
+                #endif
+                o.positionCS = cs;
+                o.uv = TRANSFORM_TEX(v.uv, _BaseMap);
+                return o;
+            }
+
+            half4 Frag(Varyings i) : SV_Target { clip(Cut(i.uv)); return 0; }
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "DepthOnly"
+            Tags { "LightMode" = "DepthOnly" }
+            ZWrite On
+            ColorMask R
+
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex Vert
+            #pragma fragment Frag
+            #pragma multi_compile_instancing
+
+            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; };
+
+            Varyings Vert(Attributes v)
+            {
+                UNITY_SETUP_INSTANCE_ID(v);
+                Varyings o;
+                o.positionCS = TransformObjectToHClip(Inflated(v));
+                o.uv = TRANSFORM_TEX(v.uv, _BaseMap);
+                return o;
+            }
+
+            half Frag(Varyings i) : SV_Target { clip(Cut(i.uv)); return i.positionCS.z; }
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "DepthNormals"
+            Tags { "LightMode" = "DepthNormals" }
+            ZWrite On
+
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex Vert
+            #pragma fragment Frag
+            #pragma multi_compile_instancing
+            #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
+
+            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; half3 normalWS : TEXCOORD1; };
+
+            Varyings Vert(Attributes v)
+            {
+                UNITY_SETUP_INSTANCE_ID(v);
+                Varyings o;
+                o.positionCS = TransformObjectToHClip(Inflated(v));
+                o.uv = TRANSFORM_TEX(v.uv, _BaseMap);
+                o.normalWS = TransformObjectToWorldNormal(v.normalOS);
+                return o;
+            }
+
+            half4 Frag(Varyings i, FRONT_FACE_TYPE face : FRONT_FACE_SEMANTIC) : SV_Target
+            {
+                clip(Cut(i.uv));
+                float3 n = normalize(IS_FRONT_VFACE(face, i.normalWS, -i.normalWS));
+                #if defined(_GBUFFER_NORMALS_OCT)
+                    float2 oct = PackNormalOctQuadEncode(n);
+                    return half4(PackFloat2To888(saturate(oct * 0.5 + 0.5)), 0);
+                #else
+                    return half4(n, 0);
+                #endif
+            }
+            ENDHLSL
+        }
+    }
+    Fallback Off
+}

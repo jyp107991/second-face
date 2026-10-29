@@ -9,7 +9,8 @@ namespace SecondFace.Game.People
     /// Puts an outfit from the rules (Core <c>Wear.Of</c>: base clothes, worn armour, the weapon in hand) on a person's
     /// <see cref="Wardrobe"/> (P5.3h): slot by slot, the outfit's garment where the person's set has it built, the set's
     /// own garment where it has not (so a coat whose shirt is not built yet keeps the shirt under it); a dye or a tint
-    /// colours the garment. Procedural gear, the held weapon and visible chrome are not built as garments yet.
+    /// colours the garment, and its grime and wear (the content's, else <see cref="LivedIn"/>) weather it. Procedural
+    /// gear, the held weapon and visible chrome are not built as garments yet.
     /// </summary>
     public static class Dresser
     {
@@ -17,7 +18,11 @@ namespace SecondFace.Game.People
         {
             public string Id, Slot;
             public Color Colour;
+            public float Grime, Wear;
         }
+
+        /// <summary>The grime of a garment the content gives none (the player's own clothes are lived in).</summary>
+        public const float LivedIn = 0.2f;
 
         /// <summary>What a set would wear for an outfit, by slot.</summary>
         public static List<Piece> Pick(WardrobeSet set, Outfit o)
@@ -27,7 +32,7 @@ namespace SecondFace.Game.People
             foreach (var id in set.Outfit)
             {
                 var g = set.Find(id);
-                if (g != null) bySlot[g.Slot] = new Piece { Id = id, Slot = g.Slot, Colour = Color.white };
+                if (g != null) bySlot[g.Slot] = new Piece { Id = id, Slot = g.Slot, Colour = Color.white, Grime = (float)(o?.Grime ?? LivedIn), Wear = (float)(o?.Wear ?? 0) };
             }
             var looks = new List<GarmentLook>();
             if (!string.IsNullOrEmpty(o?.Suit)) looks.Add(new GarmentLook { Name = o.Suit, Tint = o.SuitTint });
@@ -36,7 +41,11 @@ namespace SecondFace.Game.People
             {
                 var g = l.Name != null ? set.Find(l.Name) : null;
                 if (g == null) continue;
-                bySlot[g.Slot] = new Piece { Id = g.Id, Slot = g.Slot, Colour = Colour(l.Dye ?? l.Tint) };
+                bySlot[g.Slot] = new Piece
+                {
+                    Id = g.Id, Slot = g.Slot, Colour = Colour(l.Dye ?? l.Tint),
+                    Grime = (float)(l.Grime ?? o.Grime ?? LivedIn), Wear = (float)(l.Wear ?? o.Wear ?? 0),
+                };
             }
             return bySlot.Values.ToList();
         }
@@ -47,7 +56,11 @@ namespace SecondFace.Game.People
             if (w == null || w.Set == null) return;
             var pieces = Pick(w.Set, o);
             w.Wear(pieces.Select(p => p.Id));
-            foreach (var p in pieces) w.Dye(p.Slot, p.Colour);
+            foreach (var p in pieces)
+            {
+                w.Dye(p.Slot, p.Colour);
+                w.Weather(p.Slot, p.Grime, p.Wear);
+            }
         }
 
         /// <summary>A content colour (0xRRGGBB) as a garment tint; white (its own colour) when none.</summary>

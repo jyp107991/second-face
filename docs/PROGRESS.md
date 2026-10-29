@@ -614,18 +614,20 @@ side, their face across the table, and a haggle you can see before you try it (y
 what you would win, what a refusal costs, the odds; once a day each). Seen in `docs/evidence/unity/p5/ui_pack.jpg`,
 `ui_pack_worn.jpg`, `ui_pack_figure.jpg`, `ui_barter.jpg` and `ui_barter_haggle.jpg`. Still to come: things drawn
 from real models once there are things to pick up (P6), and the wraps, goggles, plates and weapon in hand shown on the
-figure. Known: the shirt shows through the coat in patches (both were fitted to the bare body); fixed next.
-**Next action:** P4.10, the cloth shader (layers stand off each other along the normals, so a coat covers the shirt
-under it; the runtime grime goes in the same shader; BUILD_PLAN "As built (P5.3h)" says how), then P5.3i (character
-creation and the sculptor, with the body sliders; BUILD_PLAN P5 "Order of work"). **`play-people` is released**
+figure.
+**Clothes in layers (P4.10, 2026-10-29):** the player's clothes have a shader of their own: a coat now sits over the
+shirt under it instead of the shirt showing through in patches, and each garment can be dirtied (most at the hem) and
+sun-faded as the game describes it. Seen in `docs/evidence/unity/p4/people_wardrobe.jpg` and
+`docs/evidence/unity/p5/ui_pack_figure.jpg`.
+**Next action:** P5.3i (character creation and the sculptor, with the body sliders; BUILD_PLAN P5 "Order of work"). **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).
 Step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until Mid ≥ 30 fps).
 Later playable builds: run the Android workflow by hand with `release: play-<name>` (its release job waits for that
 run's tests and APK, then makes the tag and the release page; this session's git proxy refuses tag pushes; release
 runs have their own concurrency group, so a push does not cancel them). P4 follow-ups, folded into later steps: NPC
-outfits merged into one renderer (crowd cost), body sliders (with the sculptor, P5.3i), runtime grime in a cloth
-shader; garment models import as people (Humanoid) and log "Invalid Avatar Rig Configuration" (harmless: the wardrobe
+outfits merged into one renderer (crowd cost), body sliders (with the sculptor, P5.3i), the cloth shader for the
+cast (the player's garments have it, P4.10: layers, grime, wear); garment models import as people (Humanoid) and log "Invalid Avatar Rig Configuration" (harmless: the wardrobe
 rebinds their bones by name; import them without an avatar); per-person walk variety (two captured walks). P5 (camera,
 touch and UI) is under way, the road to `play-ch1`.
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
