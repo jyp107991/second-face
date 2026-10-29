@@ -645,16 +645,28 @@ for _f in body_faces:
     for _a in _ix:
         BODY_NEIGHBOURS.setdefault(_a, set()).update(b for b in _ix if b != _a)
 
-def close_holes(hidden, rounds=4, share=0.6):
+def close_holes(hidden, rounds=4, share=0.6, island=200):
     """A garment's hidden body vertices with the small islands inside them filled: a vertex whose neighbours are at
     least `share` hidden is hidden too (nipples and knuckles stood through a sweater the garment's own list skipped).
-    The garment's edges barely move: a vertex there has about half its neighbours hidden."""
+    The garment's edges barely move: a vertex there has about half its neighbours hidden. Then every patch of body the
+    garment encloses whole, up to `island` vertices (P4.13: a nipple under a sweater is 50, which a fuller bust pushed
+    through the cloth; the navel under trousers 18-30), where the openings left are the head, a hand or a foot (1000+)."""
     hidden = set(hidden)
     for _ in range(rounds):
         add = {v for v, ns in BODY_NEIGHBOURS.items()
                if v not in hidden and ns and sum(1 for n in ns if n in hidden) >= share * len(ns)}
         if not add: break
         hidden |= add
+    seen = set()
+    for start in BODY_NEIGHBOURS:
+        if start in hidden or start in seen: continue
+        patch, stack = [], [start]
+        seen.add(start)
+        while stack:
+            u = stack.pop(); patch.append(u)
+            for n in BODY_NEIGHBOURS[u]:
+                if n not in hidden and n not in seen: seen.add(n); stack.append(n)
+        if len(patch) <= island: hidden.update(patch)
     return hidden
 
 def slot(key):
@@ -756,8 +768,9 @@ def decimated(src, target, name, rig):
     a = o.modifiers.new('Armature', 'ARMATURE'); a.object = rig
     return o
 
-def transfer_shapes(src, dst):
-    """Gives `dst` the shape keys of `src` by nearest vertex at rest (a decimated or thinned copy of the same part)."""
+def transfer_shapes(src, dst, only=None):
+    """Gives `dst` the shape keys of `src` by nearest vertex at rest (a decimated or thinned copy of the same part);
+    `only`: just the keys whose names start with it."""
     keys = src.data.shape_keys
     if not keys or len(keys.key_blocks) < 2: return
     basis = keys.key_blocks[0].data
@@ -767,6 +780,7 @@ def transfer_shapes(src, dst):
     near = [kd.find(v.co)[1] for v in dst.data.vertices]
     if not dst.data.shape_keys: dst.shape_key_add(name='Basis', from_mix=False)
     for kb in keys.key_blocks[1:]:
+        if only and not kb.name.startswith(only): continue
         d = [kb.data[i].co - basis[i].co for i in near]
         if max(x.length for x in d) < 1e-6: continue
         sk = dst.shape_key_add(name=kb.name, from_mix=False)
@@ -810,8 +824,10 @@ def lod_chain(rig, keep_shapes=False, parts=None, cloth_total=None):
             if part(o) == 'Cloth': b = max(60, b * tris(o) / cloth_tris)   # the clothes share their budget by size
             made.append(decimated(o, min(b, tris(o)), f'{o.name}_LOD{level}', rig))
             if part(o) == 'Body': copy_base_index(o, made[-1])
-            # the player's sculpted face shows at the game camera too (their LOD1); nobody's LOD2 has shapes
+            # the player's sculpted face shows at the game camera too (their LOD1); far off (LOD2) only the body's own
+            # shapes, so a body made from a base (P4.13) keeps its build, bust and seat at a distance
             if keep_shapes and level == 1: transfer_shapes(o, made[-1])
+            if keep_shapes and level == 2: transfer_shapes(o, made[-1], only='body-')
         totals.append(sum(tris(o) for o in made))
     for o in parts: o.name = o.name + '_LOD0'; o.data.name = o.name
     print(f'  LOD triangles {totals}' + (f'; capped {", ".join(report)}' if report else ''))
@@ -830,6 +846,17 @@ def macro_delta(spec, key, to):
     """The whole body as one macro moves to another value (the creation's body sliders, P5.3i): deltas over base
     vertices, MakeHuman space."""
     now, there = macro_sum(spec), macro_sum({**spec, key: to})
+    out = []
+    for i in set(now) | set(there):
+        a, b = now.get(i, (0.0, 0.0, 0.0)), there.get(i, (0.0, 0.0, 0.0))
+        d = (b[0] - a[0], b[1] - a[1], b[2] - a[2])
+        if abs(d[0]) + abs(d[1]) + abs(d[2]) > 1e-7: out.append((i, d[0], d[1], d[2]))
+    return out
+
+def macro_delta_to(spec, changes):
+    """The whole body as several macros move at once (an ancestry in full: the three are one mix): deltas over base
+    vertices, MakeHuman space."""
+    now, there = macro_sum(spec), macro_sum({**spec, **changes})
     out = []
     for i in set(now) | set(there):
         a, b = now.get(i, (0.0, 0.0, 0.0)), there.get(i, (0.0, 0.0, 0.0))
@@ -915,6 +942,26 @@ def build_person(spec):
     # every shape's deltas over all base vertices (hidden and helper ones too), MakeHuman space: the proxies are refitted
     # with them so hair, brows, lashes, eyes and hats follow the face (proxy() below)
     shapes = []
+    def keep_stature(name, deltas):
+        """A whole-body shape at the base's own stature (P4.13: a person's height is their stature, a scale at runtime,
+        so a macro that also grows or shrinks the body, as ancestry and age do, would count it twice): the shaped body
+        scaled about the ground until its crown is back where the base's is. Deltas over all base vertices."""
+        acc = {}
+        for i, dx, dy, dz in deltas:
+            a = acc.setdefault(i, [0.0, 0.0, 0.0]); a[0] += dx; a[1] += dy; a[2] += dz
+        top0 = max(v[i][1] for i in body_idx)
+        ys1 = [v[i][1] + acc.get(i, (0.0, 0.0, 0.0))[1] for i in body_idx]
+        top1, g1 = max(ys1), min(ys1)
+        k = (top0 - ground) / max(1e-6, top1 - g1)
+        out = []
+        for i in range(len(v)):
+            d = acc.get(i, (0.0, 0.0, 0.0))
+            x, y, z = v[i][0] + d[0], v[i][1] + d[1], v[i][2] + d[2]
+            e = (x * k - v[i][0], ground + (y - g1) * k - v[i][1], z * k - v[i][2])
+            if abs(e[0]) + abs(e[1]) + abs(e[2]) > 1e-7: out.append((i, e[0], e[1], e[2]))
+        print(f'    {name}: the body {100 * (1 / k - 1):+.1f}% tall, kept at the base\'s stature')
+        return out
+
     def add_shape(name, deltas, w=1.0):
         sk = body.shape_key_add(name=name, from_mix=False)
         acc = {}
@@ -954,7 +1001,33 @@ def build_person(spec):
             at = spec.get(key, 0.5)
             for label, to in (('decr', max(0.0, at - 0.3)), ('incr', min(1.0, at + 0.5))):
                 d = macro_delta(spec, key, to)
-                if d: add_shape(f'body-{key}-{label}', d); nshapes += 1
+                if d: add_shape(f'body-{key}-{label}', keep_stature(f'body-{key}-{label}', d)); nshapes += 1
+        # the cast as data (P4.13, the owner's note: bodies as varied as in life): everyone is made from these bases, so
+        # they carry the body's own shapes too, each refitted on every proxy like the rest. The macros: a woman's bust
+        # (the cup, small to full) and its firmness, age (to 70, over body and face), each ancestry in full; the
+        # measures: seat, hips, waist, shoulders, chest, belly, arm and thigh girth, the stomach's tone.
+        if spec['gender'] < 0.5:
+            for key, short in (('breastSize', 'bust'), ('breastFirmness', 'firm')):
+                for label, to in (('decr', 0.0), ('incr', 1.0)):
+                    d = macro_delta(spec, key, to)
+                    if d: add_shape(f'body-{short}-{label}', keep_stature(f'body-{short}-{label}', d)); nshapes += 1
+        d = macro_delta(spec, 'age', 70)
+        if d: add_shape('body-age-incr', keep_stature('body-age-incr', d)); nshapes += 1
+        for en in ('african', 'asian', 'caucasian'):
+            d = macro_delta_to(spec, {'african': 1.0 if en == 'african' else 0.0, 'asian': 1.0 if en == 'asian' else 0.0,
+                                      'caucasian': 1.0 if en == 'caucasian' else 0.0})
+            if d: add_shape(f'body-{en}', keep_stature(f'body-{en}', d)); nshapes += 1
+        for short, mod in (('seat', 'buttocks-volume|decr|incr'), ('hips', 'hip-scale-horiz|decr|incr'),
+                           ('waist', 'measure-waist-circ|decr|incr'), ('shoulders', 'torso-scale-horiz|decr|incr'),
+                           ('chest', 'measure-bust-circ|decr|incr'), ('belly', 'stomach-pregnant|decr|incr'),
+                           ('arms', 'measure-upperarm-circ|decr|incr'), ('thighs', 'measure-thigh-circ|decr|incr'),
+                           ('tone', 'stomach-tone|decr|incr')):
+            for sign, label in ((1.0, 'incr'), (-1.0, 'decr')):
+                ds = []
+                for rel, w in modifier_targets(mod, sign):
+                    t = target(rel)
+                    if t: ds.extend(t)
+                if ds: add_shape(f'body-{short}-{label}', ds); nshapes += 1
     print(f'  {nshapes} blend shapes')
 
     # --- armature

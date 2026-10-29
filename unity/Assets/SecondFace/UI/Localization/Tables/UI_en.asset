@@ -1838,6 +1838,50 @@ MonoBehaviour:
     m_Localized: '{0} saw you take it.'
     m_Metadata:
       m_Items: []
+  - m_Id: 146507995398144
+    m_Localized: Shoulders
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924096
+    m_Localized: Chest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924097
+    m_Localized: Bust
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924098
+    m_Localized: Lift
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924099
+    m_Localized: Waist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924100
+    m_Localized: Belly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924101
+    m_Localized: Hips
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924102
+    m_Localized: Seat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924103
+    m_Localized: Arms
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924104
+    m_Localized: Thighs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924105
+    m_Localized: Softer or firmer middle
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

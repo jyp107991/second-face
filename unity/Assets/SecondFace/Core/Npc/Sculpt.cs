@@ -70,13 +70,34 @@ namespace SecondFace.Core.Npc
             new("neck-scale-horiz", "neck", "neck width", "decr", "incr"),
         };
 
-        /// <summary>The body's sliders (P5.3i): the weight and muscle macros a step either way over the whole body, every
-        /// garment and hair refitted to them by the build (mh_build "body-weight", "body-muscle").</summary>
+        /// <summary>The body's sliders (P5.3i, P4.13): the weight and muscle macros a step either way over the whole body;
+        /// a woman's bust and its firmness (the macros, to either end); the measures (seat, hips, waist, shoulders, chest,
+        /// belly, arm and thigh girth, the stomach's tone), a step either way; age to 70 and each ancestry in full (single
+        /// shapes, 0..1). Every garment and hair is refitted to them by the build (mh_build, the names must match); the
+        /// male base has no bust shapes (a missing shape is skipped).</summary>
         public static readonly SculptSlider[] Body =
         {
             new("body-weight", "body", "build", "decr", "incr"),
             new("body-muscle", "body", "muscle", "decr", "incr"),
+            new("body-bust", "body", "bust", "decr", "incr"),
+            new("body-firm", "body", "firmness", "decr", "incr"),
+            new("body-seat", "body", "seat", "decr", "incr"),
+            new("body-hips", "body", "hips", "decr", "incr"),
+            new("body-waist", "body", "waist", "decr", "incr"),
+            new("body-shoulders", "body", "shoulders", "decr", "incr"),
+            new("body-chest", "body", "chest", "decr", "incr"),
+            new("body-belly", "body", "belly", "decr", "incr"),
+            new("body-arms", "body", "arms", "decr", "incr"),
+            new("body-thighs", "body", "thighs", "decr", "incr"),
+            new("body-tone", "body", "tone", "decr", "incr"),
+            new("body-age", "body", "years", null, "body-age-incr"),
+            new("body-african", "body", "african", null, "body-african"),
+            new("body-asian", "body", "asian", null, "body-asian"),
+            new("body-caucasian", "body", "caucasian", null, "body-caucasian"),
         };
+
+        /// <summary>The body sliders only a woman's base carries.</summary>
+        public static bool WomanOnly(string id) => id == "body-bust" || id == "body-firm";
 
         /// <summary>The face's sliders and the body's.</summary>
         public static IEnumerable<SculptSlider> All { get { foreach (var s in Sliders) yield return s; foreach (var s in Body) yield return s; } }

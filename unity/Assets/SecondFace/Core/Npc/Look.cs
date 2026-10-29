@@ -18,10 +18,15 @@ namespace SecondFace.Core.Npc
         [JsonProperty("face")] public Dictionary<string, float> Face = new();
         /// <summary>-1..1: shorter or taller (±6 %).</summary>
         [JsonProperty("height")] public float Height;
+        /// <summary>A stature in cm (the people of the Reach, <see cref="Bodies"/>); 0: the base's own, by <see cref="Height"/>.</summary>
+        [JsonProperty("stature")] public float Stature;
         /// <summary>-1..1: leaner or heavier.</summary>
         [JsonProperty("build")] public float Build;
         /// <summary>-1..1: softer or harder worked.</summary>
         [JsonProperty("muscle")] public float Muscle;
+        /// <summary>The body's own shapes by slider id (<see cref="Sculpt.Body"/>: bust, seat, hips, waist, shoulders and the
+        /// rest), beside <see cref="Build"/> and <see cref="Muscle"/>.</summary>
+        [JsonProperty("shape")] public Dictionary<string, float> Shape = new();
         /// <summary>-1..1: lighter or darker than the body's own skin.</summary>
         [JsonProperty("skin")] public float Skin;
         /// <summary>-1..1: cooler (rosier) or warmer (more golden).</summary>
@@ -86,14 +91,16 @@ namespace SecondFace.Core.Npc
         /// <summary>The hair a body was built with (what <see cref="PlayerLook.Hair"/> null means).</summary>
         public static string OwnHair(string body) => body == "m" ? "sf_crop" : "sf_braid";
 
-        /// <summary>The face's values with the body's (the sculptor drives both).</summary>
+        /// <summary>The face's values with the body's (the sculptor drives both): the body's own shapes, then build and
+        /// muscle.</summary>
         public static Dictionary<string, float> Shape(PlayerLook look)
         {
-            var d = new Dictionary<string, float>(look.Face ?? new Dictionary<string, float>())
-            {
-                ["body-weight"] = System.Math.Clamp(look.Build, -1f, 1f),
-                ["body-muscle"] = System.Math.Clamp(look.Muscle, -1f, 1f),
-            };
+            var d = new Dictionary<string, float>(look.Face ?? new Dictionary<string, float>());
+            if (look.Shape != null)
+                foreach (var kv in look.Shape)
+                    if (kv.Key.StartsWith("body-")) d[kv.Key] = kv.Value;
+            d["body-weight"] = System.Math.Clamp(look.Build, -1f, 1f);
+            d["body-muscle"] = System.Math.Clamp(look.Muscle, -1f, 1f);
             return d;
         }
 

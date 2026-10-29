@@ -712,16 +712,25 @@ clothes, standing, sneaking and walking, for you and everyone near (6 cm in befo
 **A new opening, designed (2026-10-29, the owner's note):** `docs/OPENINGS.md` studies how the great games open and
 sets the rules for ours; the new beginning itself is written in the secret story plan (you no longer begin inside a
 shelter: you begin with a home, a trade and people of your own). It is built into the content as P7's first step.
-**Next action (owner's notes, 2026-10-29, continuing):** real variety in women's and men's bodies (breasts and
-buttocks; height, build and muscle tone) through the people pipeline, then the cast for the whole game (every named
-character from the content and role-based people everywhere, loaded by region; a size budget so it fits the app). Then P6 step 3 part 2's remainder: owners and witnesses for what is taken (a container or a pile that belongs to
-someone; taking it while seen is theft, told about town and held against you by the local reputation), the steal verb
-(pickpocketing, with real risk), crowds hiding you; then P6 step 4, combat. P6.3 left for later: shade outdoors by a
-shadow ray (with the places' colliders, P6.4), noise by the ground, sight cones shown while sneaking, a crouched idle.
-P6.2 left for later: the townsfolk sitting at their seats and sleeping in their beds (seats
+**Bodies as varied as in life (P4.13 steps 1-2, 2026-10-29, the owner's note):** people can now be made from two base
+bodies and their own measurements, so the game can have as many people as it needs without a model each (the
+townsfolk move over to it in the next steps; the creation and the lineup use it now). A woman's
+bust runs from small to full and its lift falls with the years; seats, hips, waists, thighs, shoulders, chests, arms and
+bellies vary; men and women are as tall as real people are (most men 168-182 cm, women 156-168, with the short and the
+tall); bodies stay lean unless their owner is comfortable (merchants, the megacity's rich), and muscle comes with hard
+work. Ancestry, age, skin, hair and greying follow who a person is. The arms stay clear of every one of these bodies.
+Character creation gained the same body sliders. Seen in `docs/evidence/unity/p4/people_bodies_*.jpg` (front, side,
+close). Also fixed: skin no longer shows through a sweater on a fuller figure.
+**Next action:** P4.13 step 3, the wardrobe for the whole cast: every garment the content dresses people in (117)
+built for the two bases, one texture each, dyed in the shader, with a size budget for the app; then step 4,
+`PeopleService` making everyone from the bases and their measurements, dressed by the content's outfit rules; step 5,
+extras with jobs in every place; step 6, the old per-person cast models retired, with a lineup of 60 as evidence. Then
+P7's first step, the new opening, in the content. Then P6 step 4, combat. P6.3 left for later: shade outdoors by a
+shadow ray (with the places' colliders, P6.4), noise by the ground, sight cones shown while sneaking, a crouched idle,
+the steal verb on people. P6.2 left for later: the townsfolk sitting at their seats and sleeping in their beds (seats
 and beds with owners), crowds yielding to the walker, doors that open for whoever walks through, the cast loaded per
-region (Addressables), people on the roads. P6.1 left for later: doors that lock (with the door models), a share of a stack by a long press, the search of the
-fallen (with combat), owners and witnesses for what is taken (with stealth, P6.3). Blender and the MakeHuman assets are in the session
+region (Addressables), people on the roads. P6.1 left for later: doors that lock (with the door models), a share of a
+stack by a long press, the search of the fallen (with combat). Blender and the MakeHuman assets are in the session
 scratchpad, `blender/` and `mhc/`; if a fresh session lacks them, see `tools/unity/people/`. **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).

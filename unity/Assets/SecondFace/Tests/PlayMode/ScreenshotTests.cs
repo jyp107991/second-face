@@ -278,9 +278,13 @@ namespace SecondFace.Tests
             foreach (var f in faces)
             {
                 var bodies = f.Renderers.Where(r => r.name.StartsWith("Body_")).ToList();
-                Assert.That(bodies.Select(r => r.name), Is.EquivalentTo(new[] { "Body_LOD0", "Body_LOD1" }), $"{f.name}: the sculpted body at LOD0 and LOD1");
-                foreach (var body in bodies)
-                    Assert.That(shapes.Where(s => body.sharedMesh.GetBlendShapeIndex(s) < 0), Is.Empty, $"{f.name} {body.name}: every sculptor shape");
+                Assert.That(bodies.Select(r => r.name), Is.EquivalentTo(new[] { "Body_LOD0", "Body_LOD1", "Body_LOD2" }), $"{f.name}: the sculpted body at every level");
+                var womanOnly = f.name.StartsWith("player_m") ? SecondFace.Core.Npc.Sculpt.Body.Where(b => SecondFace.Core.Npc.Sculpt.WomanOnly(b.Id)).SelectMany(b => new[] { b.Id + "-" + b.Low, b.Id + "-" + b.High }).ToList() : new List<string>();
+                foreach (var body in bodies.Where(r => r.name != "Body_LOD2"))
+                    Assert.That(shapes.Where(s => body.sharedMesh.GetBlendShapeIndex(s) < 0).Except(womanOnly), Is.Empty, $"{f.name} {body.name}: every sculptor shape");
+                // the far level keeps the body's own shapes (P4.13: everyone is made from these bases, seen from afar too)
+                var far = bodies.First(r => r.name == "Body_LOD2");
+                Assert.That(shapes.Where(s => s.StartsWith("body-") && far.sharedMesh.GetBlendShapeIndex(s) < 0).Except(womanOnly), Is.Empty, $"{f.name}: the body's shapes at LOD2");
                 // the brows are painted into the skin (P4.9), so they follow the face with it
                 Assert.That(f.Renderers.Any(r => r.name.StartsWith("Eyes_")), Is.True, $"{f.name}: the eyes follow the face");
             }
@@ -370,6 +374,116 @@ namespace SecondFace.Tests
                 cam.transform.rotation = Quaternion.Euler(1f, 0, 0);
                 yield return null;
                 yield return Capture($"people_wardrobe_{id.Replace("player_", "")}", 1920, 1080);
+            }
+        }
+
+        /// <summary>P4.13 (the owner's notes: bodies as varied as in life, nothing clips): nine women and nine men made by
+        /// <see cref="SecondFace.Core.Npc.Bodies"/> on the player's two bases, by trade, means and age, seen from the front
+        /// and the side (`people_bodies_<f|m>_<front|side>`). Statures, hips and chests are measured from each body's own
+        /// torso as its shapes make it, and the arms stay out of every one of them as they idle.</summary>
+        [UnityTest, Timeout(600000)]
+        public IEnumerator BodiesVaryAsInLife()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Player.unity";
+            if (!File.Exists(path)) { Assert.Ignore("player scene not built"); yield break; }
+            yield return LoadTestScene(path);
+            for (var i = 0; i < 5; i++) yield return null;
+            var built = GameObject.Find("player_f_built");
+            Assert.That(built, Is.Not.Null);
+            var controller = built.GetComponent<Animator>().runtimeAnimatorController;
+            var women = new[] { ("settler", 24), ("trader", 38), ("street", 19), ("gilded", 45), ("labourer", 31), ("medic", 52), ("guard", 27), ("pilgrim", 63), ("corp", 35) };
+            var men = new[] { ("guard", 29), ("trader", 47), ("street", 22), ("gilded", 55), ("labourer", 34), ("raider", 26), ("tech", 41), ("nomad", 60), ("fisher", 38) };
+            var cam = Camera.main;
+            cam.fieldOfView = 22f;
+            for (var b = 0; b < 2; b++)
+            {
+                var male = b == 1;
+                var id = male ? "player_m" : "player_f";
+                GameObject prefab = null;
+#if UNITY_EDITOR
+                prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/SecondFace/Prefabs/people/{id}.prefab");
+#endif
+                if (prefab == null) { Assert.Ignore("player prefabs not built"); yield break; }
+                var who = male ? men : women;
+                var row = new List<(GameObject Go, SecondFace.Core.Npc.PlayerLook Look)>();
+                var z = 40f + b * 12f;
+                for (var i = 0; i < who.Length; i++)
+                {
+                    var (role, age) = who[i];
+                    var look = SecondFace.Core.Npc.Bodies.For($"lineup_{id}_{i}", male, age, role);
+                    var go = Object.Instantiate(prefab, new Vector3((i - (who.Length - 1) / 2f) * 0.75f, 0f, z), Quaternion.Euler(0, 180f, 0));
+                    go.name = $"{id}_{role}_{age}";
+                    go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
+                    var anim = go.GetComponent<Animator>();
+                    anim.runtimeAnimatorController = controller;
+                    anim.applyRootMotion = false;
+                    anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                    go.AddComponent<SecondFace.Game.People.ArmClearance>();
+                    row.Add((go, look));
+                }
+                yield return null;
+                yield return null;
+                foreach (var (go, look) in row)
+                {
+                    SecondFace.Game.People.LookView.Apply(go, look);
+                    go.GetComponent<SecondFace.Game.People.FaceSculpt>().Refresh();
+                }
+                // the arms against each torso as it is now, idling
+                var deepest = 0f;
+                var t0 = Time.realtimeSinceStartup;
+                while (Time.realtimeSinceStartup - t0 < 2.5f)
+                {
+                    yield return null;
+                    foreach (var (go, _) in row) deepest = Mathf.Max(deepest, go.GetComponent<SecondFace.Game.People.ArmClearance>().Depth());
+                }
+                // each body's torso as its shapes make it, in its own frame (scaled to the world)
+                var hips = new List<float>(); var chest = new List<float>(); var tall = new List<float>();
+                foreach (var (go, look) in row)
+                {
+                    var p = go.GetComponent<SecondFace.Game.People.TorsoProfile>();
+                    Assert.That(p, Is.Not.Null, $"{go.name}: measured");
+                    var s = go.transform.localScale.y;
+                    p.Sample(0f, out _, out _, out var hx, out _);
+                    p.Sample(male ? 0.42f : 0.38f, out _, out _, out _, out var cz);
+                    hips.Add(2f * hx * s); chest.Add(2f * cz * s); tall.Add(look.Stature);
+                    Debug.Log($"people_bodies: {go.name} {look.Stature:0.0} cm, build {look.Build:+0.00;-0.00}, muscle {look.Muscle:+0.00;-0.00}, belly {look.Shape["body-belly"]:+0.00;-0.00}, hips {2f * hx * s * 100f:0.0} cm wide, chest {2f * cz * s * 100f:0.0} cm deep"
+                        + (male ? "" : $", bust {look.Shape["body-bust"]:+0.00;-0.00}, seat {look.Shape["body-seat"]:+0.00;-0.00}"));
+                }
+                Debug.Log($"people_bodies_{id}: {tall.Min():0} to {tall.Max():0} cm tall; hips {hips.Min() * 100f:0.0} to {hips.Max() * 100f:0.0} cm; chest {chest.Min() * 100f:0.0} to {chest.Max() * 100f:0.0} cm deep; arms at most {deepest * 100f:0.0} cm in");
+                Assert.That(tall.Max() - tall.Min(), Is.GreaterThan(male ? 12f : 10f), "short and tall");
+                Assert.That(hips.Max() - hips.Min(), Is.GreaterThan(0.03f), "narrow and wide hips");
+                Assert.That(chest.Max() - chest.Min(), Is.GreaterThan(0.03f), "flat and full chests");
+                Assert.That(deepest, Is.LessThan(0.012f), "arms clear of every body");
+                foreach (var a in row.Select(r => r.Go.GetComponent<Animator>())) a.speed = 0f;
+                foreach (var g in row.Select(r => r.Go.GetComponent<LODGroup>()).Where(g => g != null)) g.ForceLOD(0);
+                // lit from the camera's side (the scene's sun is set for the other captures)
+                var sun = Object.FindObjectsByType<Light>(FindObjectsSortMode.None).FirstOrDefault(l => l.type == LightType.Directional && l.name == "Sun");
+                if (sun != null) sun.transform.rotation = Quaternion.Euler(35f, 20f, 0f);
+                cam.transform.position = new Vector3(0f, 0.92f, z - 9.4f);
+                cam.transform.rotation = Quaternion.Euler(0.5f, 0, 0);
+                yield return null;
+                var tag = id.Replace("player_", "");
+                yield return Capture($"people_bodies_{tag}_front", 1920, 1000);
+                foreach (var (go, _) in row) go.transform.rotation = Quaternion.Euler(0, 270f, 0);
+                yield return null;
+                yield return Capture($"people_bodies_{tag}_side", 1920, 1000);
+                if (male)
+                {
+                    // the bodies under the shirt (a check that the shapes, not the cloth, make the figure)
+                    foreach (var (go, _) in row) go.GetComponent<SecondFace.Game.People.Wardrobe>().Unequip("top");
+                    yield return null;
+                    yield return Capture($"people_bodies_{tag}_bare", 1920, 1000);
+                    foreach (var (go, _) in row) go.GetComponent<SecondFace.Game.People.Wardrobe>().Wear(go.GetComponent<SecondFace.Game.People.Wardrobe>().Set.Outfit);
+                    foreach (var (go, look) in row) SecondFace.Game.People.LookView.Apply(go, look);
+                    yield return null;
+                }
+                // close, three-quarters, about the fullest figure
+                var full = male ? row.OrderByDescending(r => r.Look.Build).First() : row.OrderByDescending(r => r.Look.Shape["body-bust"]).First();
+                foreach (var (go, _) in row) go.transform.rotation = Quaternion.Euler(0, 215f, 0);
+                cam.transform.position = new Vector3(full.Go.transform.position.x + 0.4f, 1.15f, z - 3.4f);
+                cam.transform.LookAt(new Vector3(full.Go.transform.position.x, 1.05f, z));
+                yield return null;
+                yield return Capture($"people_bodies_{tag}_close", 1280, 1000);
             }
         }
 

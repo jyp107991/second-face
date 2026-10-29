@@ -1827,6 +1827,50 @@ MonoBehaviour:
     m_Key: loot.seen_taking
     m_Metadata:
       m_Items: []
+  - m_Id: 146507995398144
+    m_Key: create.shape.body-shoulders
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924096
+    m_Key: create.shape.body-chest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924097
+    m_Key: create.shape.body-bust
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924098
+    m_Key: create.shape.body-firm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924099
+    m_Key: create.shape.body-waist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924100
+    m_Key: create.shape.body-belly
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924101
+    m_Key: create.shape.body-hips
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924102
+    m_Key: create.shape.body-seat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924103
+    m_Key: create.shape.body-arms
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924104
+    m_Key: create.shape.body-thighs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 146508049924105
+    m_Key: create.shape.body-tone
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

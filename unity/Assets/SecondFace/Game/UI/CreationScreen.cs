@@ -380,6 +380,10 @@ namespace SecondFace.Game.UI
 
         // --- the body ----------------------------------------------------------------------------------------------
 
+        /// <summary>The body's shapes the creation offers, top to toe (not age or ancestry: the face and skin are chosen).</summary>
+        private static readonly string[] BodyShapes =
+            { "body-shoulders", "body-chest", "body-bust", "body-firm", "body-arms", "body-waist", "body-belly", "body-tone", "body-hips", "body-seat", "body-thighs" };
+
         private void BodyPage()
         {
             Heading("create.body_type");
@@ -410,6 +414,17 @@ namespace SecondFace.Game.UI
                 Creation.Look.Muscle = v;
                 if (Figure != null) { Figure.Look(Creation.Look); DrawFigure(); }
             }, "slider-muscle");
+            // the body's own shapes (P4.13), a woman's bust and its lift on her body only
+            foreach (var id in BodyShapes)
+            {
+                if (Sculpt.WomanOnly(id) && Creation.Look.Body != "f") continue;
+                var shape = id;
+                Slider(Strings.Get("create.shape." + shape), -1f, 1f, Creation.Look.Shape.TryGetValue(shape, out var at) ? at : 0f, v =>
+                {
+                    Creation.Look.Shape[shape] = v;
+                    if (Figure != null) { Figure.Look(Creation.Look); DrawFigure(); }
+                }, "slider-" + shape);
+            }
             Heading("create.clothes");
             var wardrobe = Figure != null ? Figure.Wardrobe : null;
             if (wardrobe == null || wardrobe.Set == null) return;

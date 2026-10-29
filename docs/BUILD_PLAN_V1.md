@@ -460,6 +460,45 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    the turn comes at once and eases off at 90° a second. On the walker and on the townsfolk seen in full; off while
    seated (hands on the lap). Test `BootTests.ArmsStayOutOfTheBody`: 6.2 cm in without it; 0.0 cm standing, sneaking
    and walking with it, and 0.0 for all 18 townsfolk.
+13. **P4.13, the cast as data (owner's notes 2026-10-29: "dimorphism still does not account for realistic wide bodily
+   variation like breasts and butt for women and height/muscle tone for men"; "for a 60+ hour playthrough there must
+   be far more [than 32]"). Steps 1-2 done 2026-10-29; steps 3-6 planned.** A body each the P4.1 way is ~3 MB of mesh
+   and ~2.7 MB of textures (32 = 214 MB): hundreds would not fit the repository or the app. Everyone is instead a
+   **base body** (the player's two, already carrying the face sculptor's shapes, with every garment and hair refitted
+   to them) with **parameters**.
+   *As built (steps 1-2):* the bases carry the body's own shapes, each refitted on every proxy and kept on LOD2 (the
+   far level shows a body's shape too): `body-weight`, `body-muscle` (a step either way), a woman's `body-bust`
+   (MakeHuman's cup macro to 0 and to 1) and `body-firm`, the measures `body-seat` (buttocks volume), `-hips`,
+   `-waist`, `-shoulders` (torso width), `-chest` (bust girth), `-belly` (MakeHuman's stomach, a full one at +1),
+   `-arms`, `-thighs`, `-tone` (each `-decr`/`-incr`), and the single `body-age-incr` (the macro to 70) and
+   `body-african`/`-asian`/`-caucasian` (the whole mix to each one: weights summing to 1 give any mix exactly). Every
+   macro shape is built at the base's own stature (`keep_stature`, pitfall §8). 30 shapes on the woman, 26 on the man,
+   all measured by `TorsoMeasure` as changes to the torso (the arms' clearance follows every body; `WardrobeBuild`
+   measures each base as it builds it). Core `Sculpt.Body` drives them (`Sculpt.WomanOnly` for the bust pair);
+   `PlayerLook` gained `Shape` (the body's shapes by slider) and `Stature` (cm; 0 keeps the Height slider);
+   `Looks.Shape` merges them for `FaceSculpt`; `LookView.Scale` takes a stature against the base's own (164 / 177 cm).
+   Core `Npc.Bodies.For(id, male, age, role, means, frame, ancestry)` is the population model, seeded by the id:
+   stature N(175, 7.5) for men and N(162, 6.5) for women clamped at ±2.5σ, less 0.08 cm a year after 45; build by
+   means (destitute 0.10, working 0.22, comfortable 0.45, rich 0.50 on the weight macro, with age and less with labour),
+   muscle by labour and sex; a woman's cup N(0.45, 0.25) and more with weight (the chest's girth with it), firmness
+   falling with the years, seat, hips and thighs; a man's shoulders, chest and arms with his muscle; a belly only with
+   weight past 0.45 and age past 45; ancestry from the content's tag, else the Reach's own mix; the face from the
+   sculptor's reroll; skin, undertone and freckles from ancestry and outdoor work; hair by the grooming rule, greying
+   with age. 9 Core tests (`BodiesTests`: statures and their spread, the same id the same person, the bust's range and
+   none on a man, heavy bodies for the comfortable only, muscle with the work, content tags win, the shapes reach the
+   sculptor). The creation's body page has the shapes as sliders (shoulders, chest, bust and lift on the woman's body,
+   arms, waist, belly, tone, hips, seat, thighs). Evidence: `ScreenshotTests.BodiesVaryAsInLife`, nine women and nine
+   men by trade, means and age on the bases, front, side and close (`docs/evidence/unity/p4/people_bodies_*.jpg`):
+   women 147-169 cm, hips 33-38 cm, men 165-183 cm, hips 29-37 cm, the arms 0.0 cm in on every one.
+   *Planned:* (3) the wardrobe gains every garment the content dresses people in (`garments.json`: 117, 177 builds
+   with the unisex ones on both bases), each with one texture dyed in the shader (not one a person), the body shapes
+   refitted, the face's only on what is worn on the head; size budget first (FBX and textures per garment, the APK's
+   share). (4) `PeopleService` makes everyone from a base, `Bodies.For` and the content's outfit rules (`Outfits`,
+   `Dresser`), the content's own look where it has one; the 32 cast bodies stay until (6). (5) every place gets
+   **extras** with functions beyond its named people (porters, guards, water-sellers, beggars, drovers, travellers on
+   the road), with routines from the place's spots, seats and beds. (6) the per-person cast meshes retired; a lineup of
+   60 generated people as evidence (the spread of stature, bust, seat, shoulders and muscle measured against the
+   targets).
 ### P5 — Camera, touch and UI
 1. `CameraService` with Cinemachine 3: an orbit rig around the party leader (§6.F), tactical camera in combat,
    conversation cameras (over-shoulder two-shot, portrait inserts), the photo mode.
@@ -2226,6 +2265,15 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   so a `Townsfolk` held from before is an empty, destroyed group; fetch `People.Town(id)` after the load.
 - **The local compile checks do not build the PlayMode tests**: a test's missing `using UnityEngine.UIElements` (for
   `Q<T>`) only shows in Unity's own compile; read `playmode.log` for `error CS` when a run writes no results.
+- **A macro shape changes the body's height too** (P4.13): MakeHuman's ancestry macros make a body 6.4 % shorter
+  (Asian) or 4.3 % taller (African), age to 70 0.6-1.2 % shorter; a person scaled to their stature on top of that
+  shape was counted twice (a 165 cm labourer looked like a boy). Every whole-body shape is built at the base's own
+  stature (`keep_stature` in mh_build: the shaped body scaled about the ground until its crown is the base's), and a
+  person's height is only their `Stature`.
+- **A garment's hidden list misses what it encloses** (P4.13): a body vertex is hidden when a garment vertex refers to
+  it, and a sweater refers to nothing on the nipples (50 vertices each), so a fuller bust pushed skin through the
+  cloth. `close_holes` hides every patch of body the garment encloses whole up to 200 vertices (navels 18-30; the
+  smallest real opening, a foot, is 1000+). Look at a close capture of the fullest figure after any body change.
 
 ---
 

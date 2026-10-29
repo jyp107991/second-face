@@ -106,6 +106,8 @@ namespace SecondFace.EditorTools
             if (!string.IsNullOrEmpty(hairPath) && hairPath.EndsWith("_d.png"))
                 sculpt.AgedHair = AssetDatabase.LoadAssetAtPath<Texture2D>(hairPath.Substring(0, hairPath.Length - 6) + "_aged_d.png");
             go.AddComponent<Wardrobe>().Set = set;
+            // the torso and the body's shapes measured afresh for the arms' clearance (the owner's note: nothing clips)
+            TorsoMeasure.Measure(go);
             PrefabUtility.SaveAsPrefabAsset(go, $"{WorldAssetsBuild.PeopleDir}/{m.@base}.prefab");
             UnityEngine.Object.DestroyImmediate(go);
             Debug.Log($"WardrobeBuild: {m.@base}, {set.Garments.Count} garments, wears {string.Join(", ", set.Outfit)}");
