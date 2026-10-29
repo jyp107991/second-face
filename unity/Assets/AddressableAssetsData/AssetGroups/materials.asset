@@ -75,6 +75,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - material
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1f6e1371923d478709a131bc11d97949
+    m_Address: materials/trail
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 203b792d03e87d4a1a959fa60a4e693e
     m_Address: materials/nature_tree_small_02_0
     m_ReadOnly: 0
@@ -147,6 +153,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - material
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3a8456b370747872eb0b9f109671594a
+    m_Address: materials/burlap
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3c1d8345b596df80c86cb9954ec7482f
     m_Address: materials/nature_wild_rooibos_bush_0
     m_ReadOnly: 0
@@ -209,6 +221,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 60b9e430ce221ce298d07b9d3bf38437
     m_Address: materials/card_fir_1_crown
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - material
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 61c82bcf4296bf4e1a7f62bd654475aa
+    m_Address: materials/stony_ground
     m_ReadOnly: 0
     m_SerializedLabels:
     - material

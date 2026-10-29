@@ -21,7 +21,7 @@ namespace SecondFace.EditorTools
         public const string ControllerPath = "Assets/SecondFace/People/Locomotion.controller";
         public const string MaskPath = "Assets/SecondFace/People/UpperBody.mask";
         /// <summary>Bump when the layout changes; the controller carries it as the parameter "v&lt;Version&gt;".</summary>
-        public const int Version = 4;
+        public const int Version = 5;
         public const string GestureLayer = "Gesture";
         private static readonly string[] Moving = { "walk_slow", "walk", "walk_brisk", "jog", "run" };
         private static readonly string[] Idles = { "idle", "idle_b", "idle_c", "idle_d" };
@@ -50,6 +50,9 @@ namespace SecondFace.EditorTools
 
             // base: idle variants, then the moving clips at their speeds
             var state = ctl.CreateBlendTreeInController("Locomotion", out var tree, 0);
+            // Foot IK (§6.E): feet go where the capture put them; without it the retargeted legs, longer or shorter than
+            // the captured subject's, left the feet 1-2 cm over the floor (P4.8)
+            state.iKOnFeet = true;
             tree.blendType = BlendTreeType.Simple1D;
             tree.blendParameter = "Speed";
             tree.useAutomaticThresholds = false;

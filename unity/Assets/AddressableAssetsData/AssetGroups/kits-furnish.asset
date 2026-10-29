@@ -1,0 +1,148 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: kits-furnish
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: kits-furnish
+  m_GUID: 8b2fbdcbc929563c4919960f7c585fd7
+  m_SerializeEntries:
+  - m_GUID: 03125afd0bdb5485da6468ad445b9d5a
+    m_Address: kits-furnish/sandbags
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0a084da018106c83ab7f07806b0a60d3
+    m_Address: kits-furnish/tent
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 125c0bfd01372ebfda1976ef0ccf71b3
+    m_Address: kits-furnish/hand_pump
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1f088ac8c286681ab9b23279f62c3765
+    m_Address: kits-furnish/planter
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2f203465dd5899b9ba6ba5581a93e56d
+    m_Address: kits-furnish/machine
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3314bd1d25e5e985fb75673689c93524
+    m_Address: kits-furnish/table
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 38c10ca75b5e0d6da9717ac67253337b
+    m_Address: kits-furnish/vault_door
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 43868b38dda227b34ab9ff10343dd58a
+    m_Address: kits-furnish/fire_barrel
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5102e75bc809c9785878a90648a641b6
+    m_Address: kits-furnish/wagon
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5e8a811c8094f7b3b91b8fd3eb9c3bb3
+    m_Address: kits-furnish/cot
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 659ab55199f8ef210a0615e9e47c761f
+    m_Address: kits-furnish/campfire
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7d95b939420c51e999fa8f7eae4bf551
+    m_Address: kits-furnish/tire_pile
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 80e0ed1f727d36bb8b853956e980a131
+    m_Address: kits-furnish/counter
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 946a1a1df5f671d2ab85fdcb09d36af5
+    m_Address: kits-furnish/stove
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9adfbdb69f3b1b4c485ffa53a775de8f
+    m_Address: kits-furnish/car_wreck
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9d7232903ca5dc3099fd414946ac0881
+    m_Address: kits-furnish/blanket
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b6971b6c1481f8fab88e9fff86ae8786
+    m_Address: kits-furnish/debris
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d5f2144d953b1c9709eba7be6d0b4682
+    m_Address: kits-furnish/chair
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dbd4dfffef8e31c049e306872e7e393c
+    m_Address: kits-furnish/shelf
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e9d31742544200a36a21eb100d8946ef
+    m_Address: kits-furnish/bed
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - kit
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 1c12ab3b1775f45449309f6c0586d14c, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: d2fa5883a347d397ba57f632f67bebbf, type: 2}
+    - {fileID: 11400000, guid: cfa0a939e47a94e799796d3fb3817f76, type: 2}
+    m_SchemaDisplayOrder:
+    - kits-furnish_BundledAssetGroupSchema
+    - kits-furnish_ContentUpdateGroupSchema
+  m_IncludeInBuild: 1
+  m_IncludeInBuildMigrated: 1

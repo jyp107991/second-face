@@ -969,9 +969,10 @@ front and side; standing, both hands hang at the thighs and beside the body; nev
 `Gaze` (Humanoid look-at in the IK pass: the head drawn level ahead, or to a `Target`, head 0.75, body 0.05) keeps faces
 within 2° of level in the walk and the idles; the walker and the townsfolk carry it beside `FootPlant`, and a fall stops
 it. The slope test now compares each foot with the same person on flat ground (an idle stands with one heel a little
-raised): planted, the feet stand within 2.4 cm of their flat height on 14°. Open: that residual (a foot's reported IK goal
-sits 1-2 cm under the ankle the solver places; reading the ankle bone instead feeds back the last frame's solved pose);
-the common walk (CMU 07_01) swings the forward arm with the elbow well bent, a subject's style: give people one of
+raised): planted, each foot stands at its flat height on 14° (to the millimetre). That needed Foot IK on the locomotion
+state (§6.E asked for it; it was off, `LocomotionBuild` version 5): without it the retargeted legs, longer or shorter
+than the captured subject's, left the feet 1-2 cm over the floor, so the feet's IK goals (where the capture put them)
+sat that far under the animated ankles. Open: the common walk (CMU 07_01) swings the forward arm with the elbow well bent, a subject's style: give people one of
 the two captured walks each (and blend a little of the other) for variety.
 
 ### 6.F Camera and touch
@@ -1604,6 +1605,9 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   or spine. Leave the scene on a keyed T-pose frame outside the baked range when writing a clip.
 - **`new HumanDescription()` zeroes the muscle settings** (P4.8): set Unity's defaults (twist 0.5, stretch 0.05) when
   resetting the mapping in an importer.
+- **Turn Foot IK on for Humanoid locomotion states** (P4.8): without it feet float (or sink) by the difference between
+  the captured and the target leg, and a foot IK goal read in `OnAnimatorIK` is not where the ankle is drawn. Bone
+  transforms read in `OnAnimatorIK` hold the last frame's solved pose: never build IK targets from them (it feeds back).
 
 ---
 
