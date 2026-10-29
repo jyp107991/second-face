@@ -529,10 +529,19 @@ whose own textures carried prints or logos are washed plain in the bake (wardrob
 hats get hair that fits under them. Ten of them now stand about Shale in the walkabout instead of the trial people. CI
 run 54 failed two world tests because the Boot screenshot test left the app running into later tests; every test that
 boots the app now clears it (pitfall logged).
+**The player's face (P4 step 2, 2026-10-29):** the player now has two bases, each carrying the face sculptor's 35
+sliders (head shape, brows, eyes, nose, cheeks, mouth, chin, ears, neck) and an "aged" version of the same face for the
+photograph. Hair, brows, eyelashes, eyes and collars follow the face as it changes, at close range and at the game
+camera. A reroll draws a face with six to ten strong features and always lands visibly far from the last one. The
+sculptor screen itself comes with the other screens (P5). Hair seen up close showed two braids sweeping a fringe over
+the forehead (against the hair rule), and eight of the cast had them: re-haired (tied back or buzzed). Our own hair
+for the rule's other forms (work braids, rough buns, uneven crops) is a follow-up.
 **Next action:** step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until
-Mid ≥ 30 fps); tag `play-walkabout` once the Android run of this commit is green
-(`git tag play-walkabout <sha> && git push origin play-walkabout`); then P4 step 2: the player prefab with all face
-shapes and the sculptor's bindings (BUILD_PLAN §6.B.5), then wardrobe runtime (P4 step 3).
+Mid ≥ 30 fps); the playable build `play-walkabout` is released by running the Android workflow by hand with
+the input `release: play-walkabout` (its release job waits for that run's tests and APK, then makes the tag and the
+release page; this session's git proxy refuses tag pushes); then P4 step 3: wardrobe runtime (the player's
+garments as separate skinned meshes swapped on equip; NPC outfits merged into one renderer at bake; dye and grime as
+material parameters; body sliders refitted on every garment).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,

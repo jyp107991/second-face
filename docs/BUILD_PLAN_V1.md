@@ -364,7 +364,8 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
 1. **Built (P4.1, 2026-10-29; §6.B.7–B.8; captures `people_cast_1..4`, `people_lod_0..2`).** The full pipeline to `People/Cast/`: a `people.json` brief per role and region (body, face, ancestry mix,
    lifestyle, skin, hair, wardrobe) → `mh_build.py` builds all; LOD1 (6 K) and LOD2 (2 K) by Blender decimate
    with the same rig; `LODGroup` set by the postprocessor. Budget ≤ 8 MB per person, ≤ 15 K triangles LOD0.
-2. The player prefab with all face shapes; the sculptor UI binds to blend-shape weights (§6.B.5).
+2. **Built (P4.2a, 2026-10-29; §6.B.5 "As built"; captures `people_sculpt_*`): the shapes, their binding and the
+   rerolls; the sculptor screen itself is P5.** The player prefab with all face shapes; the sculptor UI binds to blend-shape weights (§6.B.5).
 3. Wardrobe runtime (§6.D, §6.Q): the player's garments are separate skinned meshes on the shared rig, swapped on
    equip; every NPC's outfit is merged into one SkinnedMeshRenderer when the NPC prefab is baked (two renderers
    roughly double the skinning cost). Dye and grime are material parameters, not textures.
@@ -743,6 +744,25 @@ incr/decr pairs (slider −1..1 → one of the pair at |v|). The ageing photogra
 the `age` macro delta on the base before the shapes — the tool exports an `_aged` body shape key for the player
 only; the portrait camera renders both).
 
+**As built (P4.2a, 2026-10-29).** `tools/unity/people/briefs/player.json`: `player_f` and `player_m` (age 24, a
+middle mix of ancestries, 2 K skin, plain re-dyed work clothes, the tied-back bun / a buzz), `sculpt: true` and
+`aged: 62`, built to `People/Player/` (about 30 s each). The body carries the 64 sculptor shapes (`FACE_SHAPES`: 29
+pairs and 6 head shapes), the expression units and `aged` (the age macros' difference to 62 on the head and neck only,
+fading out down the neck, less the head's mean shift, so the older head sits on the same body). **Every proxy is
+refitted per shape**: `mh_build` keeps each shape's deltas over all base vertices and fits the proxy again with them
+(the garment's scale held at rest: a garment's scale vertices can be anywhere, and a face slider must not resize boots);
+a part gets a shape only where it moves more than 0.1 mm, so hair, brows, lashes, eyes and collars follow the face and
+boots carry none. This applies to everyone (NPCs' brows and lashes now follow their expressions). Capped LOD0 parts take
+their shapes back by nearest vertex (`transfer_shapes`); the player's LOD1 keeps every shape the same way (their face
+shows at the game camera); no LOD2 has shapes. Runtime: Core `Npc/Sculpt` (the 35 sliders in nine groups with labels,
+`Weights` → every driven shape at 0..100, `Reroll` with six to ten strong features and a minimum distance of 1.6 between
+rerolls; tests) and Game `People/FaceSculpt` (values by slider id, `Aged` 0..1, applied to every renderer that carries
+the shapes). `Test_Player` (*Build player test scene*) shows each base as built, rerolled twice and aged; captures
+`people_sculpt_<f|m>_<face>`; the test checks every shape on the body at LOD0 and LOD1, that brows and eyes follow, and
+that a reroll moves the head (13 mm) and not the feet. Open: the aged face is geometry only (MakeHuman's age shapes are
+subtle); the photograph also needs the skin aged (a `<id>__skin_aged_d` bake for the portrait camera, P4 step 6). Body
+sliders (build, weight, height) are not shapes yet: they need the same refit on every garment (P4 step 3, wardrobe).
+
 **B.6 Weight.** Per person today: 22 MB FBX for six = ~3.7 MB each (fine), but 110 MB of textures for six. Rules:
 skin 2 K (player and companions), 1 K for everyone else; cloth and hair cards 1 K; brows/lashes have no texture
 (strand geometry); normal maps only on skin and cloth with real relief. Shared garments share one baked texture
@@ -796,7 +816,12 @@ indigo, faded reds and greens) so a crowd reads as many people at the game camer
    kept under the dust hood (no hair mesh: the hood hides it). Seen in the engine and rejected (2026-10-28):
    `cortu_short_messy_hair` hangs a fringe over the eyes (bangs; p1 got a dense crop painted into the skin
    instead), `o4saken_long01` under the balaclava-like hood pokes through it, and `elvs_reverse_french_braid_bun`
-   sweeps a heavy styled fringe across the forehead (keep it for the back-of-head-only variants, or not at all). Card hair is re-coloured by `bake_hair`
+   sweeps a heavy styled fringe across the forehead (keep it for the back-of-head-only variants, or not at all).
+   **Seen again at portrait distance (P4.2, 2026-10-29): `elvs_unkempt_french_braid` sweeps the same fringe across
+   the forehead from the front, so it is forbidden too; the cast had picked up the rejected ones (eight people) and is
+   re-haired: of the cards only `rehmanpolanski_hair_bun_brown` (tied back) stays, everyone else is buzzed, cropped or
+   balding in the skin, or wrapped.** One card hair is too few for a world: hair cards of our own for the rule's other
+   forms (work braids, rough buns, cropped uneven, matted under a wrap) are a P4 follow-up. Card hair is re-coloured by `bake_hair`
    (`hair_look: W(colour, dust, grey)`, colours in `HAIR_COLOURS`) and ships without normal maps.
 2. **Shaved, buzzed and balding heads are painted into the skin** (done for p5 and p3, 2026-10-28). The plan once
    said to build a cap mesh from the base mesh's `helper-hair` group: that group is not a cap but 198 loose strips
@@ -1440,6 +1465,15 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   are fitted to the head and shoulders only and leave the wearer naked; wear one over `donitz_monk_robe`. Check a
   garment's fitted extent before briefing it (its reference vertices' heights on `base.obj`).
 - **Hair cards stand through hats** (P4.1b): a brief with a hat takes cropped, buzzed or no hair.
+- **A garment's scale vertices are not local** (P4.2a): MakeHuman fits a proxy with per-axis scales measured between
+  two reference vertices that can be on the head even for boots; refitting a proxy for a face shape with those moved
+  resized whole garments. Refit with the rest scale.
+- **The session's git proxy refuses tag pushes** (step 25): `git push origin play-walkabout` hangs up and GitHub
+  has no tag. A playable build is released by running the Android workflow by hand with `release: play-<name>`
+  (`workflow_dispatch`); its `release` job runs only after that run's tests and APK passed and creates the tag at the
+  run's commit with the release. A pushed `play-*` tag (from a machine that can) still works.
+- **Judge hair from the front at portrait distance** (P4.2a): two braids passed in the lineup (from 7 m) and showed a
+  swept fringe in the close-ups. Brief a hair only after seeing it in `people_sculpt_*` or a portrait.
 
 ---
 

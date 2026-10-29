@@ -12,6 +12,7 @@ Material slot names tell the Unity importer which texture to use (skin:<file>, h
 """
 import bpy, bmesh, json, math, os, re, sys, hashlib, shutil
 from mathutils import Vector
+from mathutils.kdtree import KDTree
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'kits'))
 import kitlib as K
 
@@ -659,15 +660,32 @@ def decimated(src, target, name, rig):
     a = o.modifiers.new('Armature', 'ARMATURE'); a.object = rig
     return o
 
-def lod_chain(rig):
+def transfer_shapes(src, dst):
+    """Gives `dst` the shape keys of `src` by nearest vertex at rest (a decimated or thinned copy of the same part)."""
+    keys = src.data.shape_keys
+    if not keys or len(keys.key_blocks) < 2: return
+    basis = keys.key_blocks[0].data
+    kd = KDTree(len(basis))
+    for i, p in enumerate(basis): kd.insert(p.co, i)
+    kd.balance()
+    near = [kd.find(v.co)[1] for v in dst.data.vertices]
+    if not dst.data.shape_keys: dst.shape_key_add(name='Basis', from_mix=False)
+    for kb in keys.key_blocks[1:]:
+        d = [kb.data[i].co - basis[i].co for i in near]
+        if max(x.length for x in d) < 1e-6: continue
+        sk = dst.shape_key_add(name=kb.name, from_mix=False)
+        for k, dv in enumerate(d): sk.data[k].co = sk.data[k].co + dv
+
+def lod_chain(rig, keep_shapes=False):
     parts = [o for o in rig.children if o.type == 'MESH']
     report = []
-    # LOD0 caps on parts without shape keys (the body keeps its face shapes)
+    # LOD0 caps on everything but the body (which keeps its face shapes whole); a capped part takes its shapes back
     for o in parts:
         cap = LOD0_CAP.get(part(o))
-        if cap and not o.data.shape_keys and tris(o) > cap:
+        if cap and part(o) != 'Body' and tris(o) > cap:
             before = tris(o)
             c = decimated(o, cap, o.name + '_capped', rig)
+            transfer_shapes(o, c)
             old = o.data; o.data = c.data; bpy.data.objects.remove(c); bpy.data.meshes.remove(old)
             report.append(f'{o.name} {before}->{tris(o)}')
     totals = [sum(tris(o) for o in parts)]
@@ -680,9 +698,39 @@ def lod_chain(rig):
             if b is None: continue
             if part(o) == 'Cloth': b = max(60, b * tris(o) / cloth_tris)   # the clothes share their budget by size
             made.append(decimated(o, min(b, tris(o)), f'{o.name}_LOD{level}', rig))
+            # the player's sculpted face shows at the game camera too (their LOD1); nobody's LOD2 has shapes
+            if keep_shapes and level == 1: transfer_shapes(o, made[-1])
         totals.append(sum(tris(o) for o in made))
     for o in parts: o.name = o.name + '_LOD0'; o.data.name = o.name
     print(f'  LOD triangles {totals}' + (f'; capped {", ".join(report)}' if report else ''))
+
+def aged_head(spec, v, body_idx):
+    """The same head older, for the photograph (BUILD_PLAN §6.B.5): the age macros' difference between the person's age
+    and spec['aged'], on the head and neck only (fading out down the neck) and less the head's mean shift, so the older
+    head sits on the body as it is. Deltas over base vertices, MakeHuman space."""
+    def macro_sum(p):
+        acc = {}
+        for rel, w in macro_targets(p):
+            t = target(rel)
+            if not t: continue
+            for i, dx, dy, dz in t:
+                a = acc.setdefault(i, [0.0, 0.0, 0.0]); a[0] += dx * w; a[1] += dy * w; a[2] += dz * w
+        return acc
+    now, old = macro_sum(spec), macro_sum({**spec, 'age': spec['aged']})
+    ys = [v[i][1] for i in body_idx]; top, ground = max(ys), min(ys); h = top - ground
+    lo, hi = top - 0.21 * h, top - 0.16 * h   # from the neck's base to under the jaw
+    out, full = [], []
+    for i in set(now) | set(old):
+        y = v[i][1]
+        m = 0.0 if y <= lo else 1.0 if y >= hi else (y - lo) / (hi - lo)
+        if m <= 0: continue
+        m = m * m * (3 - 2 * m)
+        a, b = now.get(i, (0.0, 0.0, 0.0)), old.get(i, (0.0, 0.0, 0.0))
+        d = [b[k] - a[k] for k in range(3)]
+        out.append((i, d, m))
+        if m >= 1: full.append(d)
+    mean = [sum(d[k] for d in full) / max(1, len(full)) for k in range(3)]
+    return [(i, (d[0] - mean[0]) * m, (d[1] - mean[1]) * m, (d[2] - mean[2]) * m) for i, d, m in out]
 
 def build_person(spec):
     K.reset(); K._mats.clear()
@@ -732,11 +780,17 @@ def build_person(spec):
 
     # --- blend shapes relative to the baked body
     body.shape_key_add(name='Basis', from_mix=False)
+    # every shape's deltas over all base vertices (hidden and helper ones too), MakeHuman space: the proxies are refitted
+    # with them so hair, brows, lashes, eyes and hats follow the face (proxy() below)
+    shapes = []
     def add_shape(name, deltas, w=1.0):
         sk = body.shape_key_add(name=name, from_mix=False)
+        acc = {}
         for i, dx, dy, dz in deltas:
+            a = acc.setdefault(i, [0.0, 0.0, 0.0]); a[0] += dx * w; a[1] += dy * w; a[2] += dz * w
             if i in remap:
                 k = remap[i]; d = to_bl_dir((dx * w, dy * w, dz * w)); sk.data[k].co = sk.data[k].co + d
+        shapes.append((name, acc))
     nshapes = 0
     # The sculptor's shapes only on the player (spec 'sculpt'); NPCs have their face baked and keep the expressions.
     for mod in (FACE_SHAPES if spec.get('sculpt') else []):
@@ -757,6 +811,8 @@ def build_person(spec):
     for rel, name in expression_units():
         t = target(rel)
         if t: add_shape(name, t); nshapes += 1
+    if spec.get('sculpt') and spec.get('aged'):
+        add_shape('aged', aged_head(spec, v, body_idx)); nshapes += 1
     print(f'  {nshapes} blend shapes')
 
     # --- armature
@@ -826,19 +882,24 @@ def build_person(spec):
             print(f'  {kind}: dropped {len(pf) - len(kept_f)} transparent faces of {len(pf)}')
             pf = [[(km[i], t) for i, t in f] for f in kept_f]
             refs = [refs[i] for i in keep]
-        scale = {}
+        scale_refs = []
         for ax in ('x_scale', 'y_scale', 'z_scale'):
             if ax in meta:
                 # MakeHuman proxy.py TMatrix.getScale: the third value is the reference distance the offsets were authored at
-                a, b, den = int(meta[ax][0]), int(meta[ax][1]), float(meta[ax][2])
-                scale[ax[0]] = abs(v[a][('xyz'.index(ax[0]))] - v[b][('xyz'.index(ax[0]))]) / (den or 1.0)
-        sx, sy, sz = scale.get('x', 1.0), scale.get('y', 1.0), scale.get('z', 1.0)
-        fitted = []
-        for r in refs:
-            i0, i1, i2, w0, w1, w2, ox, oy, oz = r
-            p = [w0 * v[i0][k] + w1 * v[i1][k] + w2 * v[i2][k] for k in range(3)]
-            p[0] += ox * sx; p[1] += oy * sy; p[2] += oz * sz
-            fitted.append(p)
+                scale_refs.append((ax[0], int(meta[ax][0]), int(meta[ax][1]), float(meta[ax][2])))
+        def fit(at, scale_at=None):
+            sa = scale_at or at
+            scale = {ax: abs(sa(a)['xyz'.index(ax)] - sa(b)['xyz'.index(ax)]) / (den or 1.0) for ax, a, b, den in scale_refs}
+            sx, sy, sz = scale.get('x', 1.0), scale.get('y', 1.0), scale.get('z', 1.0)
+            out = []
+            for r in refs:
+                i0, i1, i2, w0, w1, w2, ox, oy, oz = r
+                p0, p1, p2 = at(i0), at(i1), at(i2)
+                p = [w0 * p0[k] + w1 * p1[k] + w2 * p2[k] for k in range(3)]
+                p[0] += ox * sx; p[1] += oy * sy; p[2] += oz * sz
+                out.append(p)
+            return out
+        fitted = fit(lambda i: v[i])
         pm = bpy.data.meshes.new(kind)
         pm.from_pydata([to_bl(p) for p in fitted], [], [[i for i, _ in f] for f in pf])
         puv = pm.uv_layers.new(name='UVMap'); li = 0
@@ -886,6 +947,19 @@ def build_person(spec):
                 for pi, w in lst: vg.add([pi], min(1.0, w), 'REPLACE')
         m = po.modifiers.new('Armature', 'ARMATURE'); m.object = rig
         po.parent = rig
+        # the body's shapes, refitted: a proxy moves with the vertices it is fitted to (only shapes that touch it). The
+        # garment's scale stays the rest one: its scale vertices can be anywhere (a head vertex sizes boots), and a face
+        # slider must not resize the boots.
+        if shapes and len(pm.vertices) == len(fitted):
+            touched_any = {i for r in refs for i in r[:3]}
+            for sname, d in shapes:
+                if touched_any.isdisjoint(d): continue
+                moved = fit(lambda i: [v[i][k] + d[i][k] for k in range(3)] if i in d else v[i], scale_at=lambda i: v[i])
+                deltas = [to_bl_dir([m_[k] - f_[k] for k in range(3)]) for m_, f_ in zip(moved, fitted)]
+                if max(dl.length for dl in deltas) < 1e-4: continue   # under a tenth of a millimetre: not this part's shape
+                if not pm.shape_keys: po.shape_key_add(name='Basis', from_mix=False)
+                sk = po.shape_key_add(name=sname, from_mix=False)
+                for k, dl in enumerate(deltas): sk.data[k].co = sk.data[k].co + dl
         return po
     # The MakeHuman data ships one eye texture (brown); other colours are tints applied by the material in Unity.
     proxy('Eyes', 'eyes', 'high-poly', 'eyes', tex_name='eye_brown', mat_override='../materials/brown.mhmat', skin_to='Head', drop_clear=True)
@@ -934,7 +1008,7 @@ def build_person(spec):
         print('  no skin', spec['skin'])
 
     # --- levels of detail (P4.1, BUILD_PLAN §6.B): caps on LOD0, decimated LOD1 and LOD2 named for Unity's LODGroup
-    lod_chain(rig)
+    lod_chain(rig, keep_shapes=bool(spec.get('sculpt')))
 
     # --- export
     path = os.path.join(OUT, spec['id'] + '.fbx')

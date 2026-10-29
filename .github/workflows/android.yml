@@ -10,6 +10,11 @@ on:
     # a playable build for the owner (BUILD_PLAN §1: play-walkabout, play-ch1, ...): the APK goes on a release page
     tags: ['play-*']
   workflow_dispatch:
+    inputs:
+      release:
+        description: "A playable build: the release (and tag) to publish this run's APK as, e.g. play-walkabout (empty: none)"
+        required: false
+        default: ''
 
 concurrency:
   group: android-${{ github.ref }}
@@ -22,7 +27,7 @@ jobs:
     timeout-minutes: 90
     if: ${{ !cancelled() }}
     permissions:
-      contents: write      # a play-* tag's release
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -76,13 +81,39 @@ jobs:
           path: build/Android
           retention-days: 30
 
-      - name: Release a playable build
-        if: startsWith(github.ref, 'refs/tags/play-')
-        uses: softprops/action-gh-release@v2
+  # A playable build (BUILD_PLAN §1) is released only when the same run's tests and APK both passed: pushed as a play-*
+  # tag, or run by hand with the release input (the tag is then made at this commit by the release itself; the
+  # session's git proxy does not push tags).
+  release:
+    name: Release a playable build
+    needs: [build, test]
+    if: ${{ !cancelled() && needs.build.result == 'success' && needs.test.result == 'success' && (startsWith(github.ref, 'refs/tags/play-') || inputs.release != '') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: The release's name
+        id: tag
+        env:
+          INPUT: ${{ inputs.release }}
+          REF: ${{ github.ref_name }}
+        run: |
+          tag="${INPUT:-$REF}"
+          [[ "$tag" =~ ^play-[a-z0-9-]+$ ]] || { echo "::error::a playable build is named play-<name> (got '$tag')"; exit 1; }
+          echo "name=$tag" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@v4
         with:
-          name: ${{ github.ref_name }}
-          body: "The Second Face, playable build ${{ github.ref_name }} (see docs/PROGRESS.md for what it holds and how to play it). Install SecondFace.apk on an Android phone."
-          files: build/Android/*.apk
+          name: SecondFace-Android-APK
+          path: apk
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ steps.tag.outputs.name }}
+          body: "The Second Face, playable build ${{ steps.tag.outputs.name }} (see docs/PROGRESS.md for what it holds and how to play it). Install SecondFace.apk on an Android phone."
+          files: apk/**/*.apk
 
   test:
     name: Unity tests and screenshots

@@ -37,7 +37,7 @@ namespace SecondFace.Tests
             {
                 "Second Face/Build terrain test scene", "Second Face/Build material sheet scene", "Second Face/Build shelter test scene",
                 "Second Face/Build frontier test scene", "Second Face/Build people test scene", "Second Face/Build vegetation test scene",
-                "Second Face/Build trees test scene", "Second Face/Build cast test scene",
+                "Second Face/Build trees test scene", "Second Face/Build cast test scene", "Second Face/Build player test scene",
             })
             {
                 try { EditorApplication.ExecuteMenuItem(item); }
@@ -257,6 +257,64 @@ namespace SecondFace.Tests
                 yield return Capture($"people_lod_{l}", 900, 1200);
             }
             lod.ForceLOD(-1);
+        }
+
+        /// <summary>P4 step 2: the player's two bases, each as built, with two rerolled faces and aged
+        /// (`people_sculpt_<f|m>_<built|reroll_a|reroll_b|aged>`). Every sculptor shape is on the body at LOD0 and LOD1; the face drives the head's proxies too;
+        /// a rerolled face moves the head's vertices and leaves the feet where they were.</summary>
+        [UnityTest, Timeout(600000)]
+        public IEnumerator PlayerFacesAreSculptedWhenBuilt()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Player.unity";
+            if (!File.Exists(path)) { Assert.Ignore("player scene not built"); yield break; }
+            yield return LoadTestScene(path);
+            for (var i = 0; i < 10; i++) yield return null;
+            var root = GameObject.Find("Players");
+            Assert.That(root, Is.Not.Null);
+            foreach (var a in root.GetComponentsInChildren<Animator>()) a.speed = 0f;
+            var faces = root.GetComponentsInChildren<SecondFace.Game.People.FaceSculpt>();
+            Assert.That(faces.Length, Is.EqualTo(8), "two bases, four faces each");
+            var shapes = SecondFace.Core.Npc.Sculpt.Shapes().ToList();
+            foreach (var f in faces)
+            {
+                var bodies = f.Renderers.Where(r => r.name.StartsWith("Body_")).ToList();
+                Assert.That(bodies.Select(r => r.name), Is.EquivalentTo(new[] { "Body_LOD0", "Body_LOD1" }), $"{f.name}: the sculpted body at LOD0 and LOD1");
+                foreach (var body in bodies)
+                    Assert.That(shapes.Where(s => body.sharedMesh.GetBlendShapeIndex(s) < 0), Is.Empty, $"{f.name} {body.name}: every sculptor shape");
+                Assert.That(f.Renderers.Any(r => r.name.StartsWith("Brows_")) && f.Renderers.Any(r => r.name.StartsWith("Eyes_")), Is.True, $"{f.name}: the brows and eyes follow the face");
+            }
+            // a rerolled face changes the head, not the feet
+            var built = faces.First(f => f.name == "player_f_built");
+            var rerolled = faces.First(f => f.name == "player_f_reroll_a");
+            // baked with scale, in the person's own frame (the renderer's rotation, no translation), y up from the feet
+            Vector3[] Baked(SecondFace.Game.People.FaceSculpt f)
+            {
+                var r = f.Renderers.First(x => x.name == "Body_LOD0"); var m = new Mesh(); r.BakeMesh(m, true);
+                var rot = Quaternion.Inverse(f.transform.rotation) * r.transform.rotation;
+                return m.vertices.Select(x => rot * x + (r.transform.position - f.transform.position)).ToArray();
+            }
+            var v0 = Baked(built); var v1 = Baked(rerolled);
+            float head = 0, feet = 0;
+            for (var i = 0; i < v0.Length; i++)
+            {
+                var d = (v1[i] - v0[i]).magnitude;
+                if (v0[i].y > 1.4f) head = Mathf.Max(head, d); else if (v0[i].y < 0.3f) feet = Mathf.Max(feet, d);
+            }
+            Debug.Log($"people_sculpt: the reroll moved the head up to {head * 1000f:0.0} mm, the feet {feet * 1000f:0.00} mm");
+            Assert.That(head, Is.GreaterThan(0.004f), "the face changed");
+            Assert.That(feet, Is.LessThan(0.0005f), "the feet stayed");
+            // each face close, from the front and a little to the side (`people_sculpt_<base>_<face>`)
+            var cam = Camera.main;
+            cam.fieldOfView = 20f;
+            foreach (var f in faces)
+            {
+                var headBone = f.GetComponent<Animator>().GetBoneTransform(HumanBodyBones.Head);
+                var at = headBone.position + Vector3.up * 0.06f;
+                cam.transform.position = at + f.transform.rotation * new Vector3(0.18f, 0.02f, 0.85f);
+                cam.transform.LookAt(at);
+                yield return null;
+                yield return Capture("people_sculpt_" + f.name.Replace("player_", ""), 640, 720);
+            }
         }
 
         [UnityTest, Timeout(600000)]
