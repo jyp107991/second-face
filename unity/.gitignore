@@ -22,8 +22,7 @@ crashlytics-build.properties
 # built in CI by the editor scripts (terrain test, layers, materials)
 /Assets/SecondFace/Generated/
 /Assets/SecondFace/Scenes/Test_*.unity*
-# materials the people importer generates beside the models
-/Assets/SecondFace/People/**/Materials/
+# materials the people importer generates beside the models are committed (step 25): the walkabout's bound person
+# prefabs refer to them by GUID, which must survive a fresh clone (as the library materials do)
 /Assets/SecondFace/Motion/_tmp/
 /Assets/SecondFace/Generated.meta
-/Assets/SecondFace/People/**/Materials.meta

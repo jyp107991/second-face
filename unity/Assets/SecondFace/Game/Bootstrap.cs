@@ -1,6 +1,7 @@
 using System.Collections;
 using System.IO;
 using SecondFace.Core.Content;
+using SecondFace.Game.Play;
 using SecondFace.Game.World;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -10,14 +11,18 @@ namespace SecondFace.Game
     /// <summary>
     /// The one authored object in the Boot scene. Locks the app to landscape full screen, loads the content
     /// registries from StreamingAssets and hands over to the game. Until the game exists, it shows a title card with
-    /// what loaded and then raises the world round Shale for the measuring tour (<see cref="MeasureTour"/>, step 23),
-    /// with the <see cref="DebugOverlay"/> one three-finger tap away.
+    /// what loaded, then raises the world round Shale (<see cref="WorldStage"/>) and sets the player's stand-in down in
+    /// it (<see cref="Walkabout"/>, step 25), with the <see cref="DebugOverlay"/> one three-finger tap away and on it a
+    /// button that runs the measuring tour (<see cref="MeasureTour"/>, step 23) and walks again.
     /// </summary>
     public sealed class Bootstrap : MonoBehaviour
     {
         public static ContentDb Content { get; private set; }
         /// <summary>What the world needs (set in the Boot scene by Second Face/Wire the Boot scene).</summary>
         public WorldAssets World;
+        public WorldStage Stage { get; private set; }
+        public Walkabout Walkabout { get; private set; }
+        /// <summary>The measuring tour while it runs (null while walking).</summary>
         public MeasureTour Tour { get; private set; }
         private string _status = "LOADING…";
         private string _error;
@@ -63,11 +68,41 @@ namespace SecondFace.Game
             _status = $"THE SECOND FACE\n{db.Count("maps")} places · {db.Count("npcs")} people · {db.Count("dialogues")} conversations · {db.Count("quests")} quests · {db.Count("items")} items\n{Screen.width}×{Screen.height} {SystemInfo.graphicsDeviceType} · {SystemInfo.deviceModel}";
             var overlay = DebugOverlay.Ensure();
             if (World == null) yield break;
-            Tour = gameObject.AddComponent<MeasureTour>();
-            Tour.Assets = World;
-            Tour.Camera = Camera.main;
-            overlay.World = Tour.WorldLine;
-            overlay.Report = Tour.Report;
+            Stage = gameObject.AddComponent<WorldStage>();
+            Stage.Assets = World;
+            Stage.Camera = Camera.main;
+            Walkabout = gameObject.AddComponent<Walkabout>();
+            Walkabout.Stage = Stage;
+            overlay.World = () => Tour != null ? Tour.WorldLine() : Walkabout.Line();
+            overlay.Report = () => _lastTour;
+            overlay.ButtonLabel = () => Tour != null ? "walk" : "measure (tour)";
+            overlay.Button = ToggleTour;
+        }
+
+        private string _lastTour;
+
+        /// <summary>Runs the measuring tour (the walkabout pauses and lends it the camera) or stops it and walks again.</summary>
+        public void ToggleTour()
+        {
+            if (Stage == null || !Stage.Raised) return;
+            if (Tour == null)
+            {
+                Walkabout.Pause(true);
+                Tour = gameObject.AddComponent<MeasureTour>();
+                Tour.Stage = Stage;
+            }
+            else
+            {
+                _lastTour = Tour.Report() ?? _lastTour;
+                Destroy(Tour);
+                Tour = null;
+                Walkabout.Pause(false);
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (Tour != null) _lastTour = Tour.Report() ?? _lastTour;
         }
 
         private GUIStyle _style;
@@ -77,10 +112,10 @@ namespace SecondFace.Game
             _style ??= new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(Screen.height * 0.045f), alignment = TextAnchor.MiddleCenter, wordWrap = true };
             _style.normal.textColor = new Color(0.93f, 0.86f, 0.70f);
             if (_error != null) { GUI.Label(new Rect(0, 0, Screen.width, Screen.height), "CONTENT FAILED\n" + _error, _style); return; }
-            if (Tour == null) { GUI.Label(new Rect(0, 0, Screen.width, Screen.height), _status, _style); return; }
-            if (Tour.Ready) return;
+            if (Walkabout == null) { GUI.Label(new Rect(0, 0, Screen.width, Screen.height), _status, _style); return; }
+            if (Walkabout.Walker != null || Tour != null) return;
             // the title card stays over the world while it comes in
-            GUI.Label(new Rect(0, 0, Screen.width, Screen.height), _status + "\n" + Tour.Status, _style);
+            GUI.Label(new Rect(0, 0, Screen.width, Screen.height), _status + "\n" + (Stage.Status ?? "setting the walker down…"), _style);
         }
     }
 }

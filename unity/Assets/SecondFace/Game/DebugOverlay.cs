@@ -23,6 +23,9 @@ namespace SecondFace.Game
         public System.Func<string> World;
         /// <summary>Lines from the measuring tour (its views' means and worst frames).</summary>
         public System.Func<string> Report;
+        /// <summary>A button under the text (the walkabout's "tour" / "walk" switch) and its label; none when null.</summary>
+        public System.Action Button;
+        public System.Func<string> ButtonLabel;
         public float RefreshSeconds = 0.5f;
 
         /// <summary>The text shown, refreshed every <see cref="RefreshSeconds"/> (tests read it).</summary>
@@ -33,7 +36,8 @@ namespace SecondFace.Game
         private readonly Queue<(float t, float ms)> _frames = new();
         private float _since;
         private bool _three;
-        private GUIStyle _style;
+        private GUIStyle _style, _buttonStyle;
+        private Rect _box, _button;   // where they were drawn (IMGUI space: y down)
         private readonly StringBuilder _sb = new();
 
         public static DebugOverlay Ensure()
@@ -136,7 +140,23 @@ namespace SecondFace.Game
             _style.normal.textColor = new Color(0.95f, 0.92f, 0.82f);
             var size = _style.CalcSize(new GUIContent(Text));
             var inset = Mathf.Max(16f, Screen.safeArea.x + 8f);
-            GUI.Box(new Rect(inset, Mathf.Max(8f, Screen.height - Screen.safeArea.yMax + 8f), size.x, size.y), Text, _style);
+            _box = new Rect(inset, Mathf.Max(8f, Screen.height - Screen.safeArea.yMax + 8f), size.x, size.y);
+            GUI.Box(_box, Text, _style);
+            _button = Rect.zero;
+            if (Button == null) return;
+            _buttonStyle ??= new GUIStyle(GUI.skin.button) { fontSize = _style.fontSize, padding = new RectOffset(24, 24, 12, 12) };
+            var label = ButtonLabel?.Invoke() ?? "…";
+            var bs = _buttonStyle.CalcSize(new GUIContent(label));
+            _button = new Rect(_box.x, _box.yMax + 8f, Mathf.Max(bs.x, 160f), bs.y);
+            if (GUI.Button(_button, label, _buttonStyle)) Button();
+        }
+
+        /// <summary>Whether a screen point (the Input System's: y up) falls on the overlay while it shows.</summary>
+        public bool Covers(Vector2 screen)
+        {
+            if (!Visible) return false;
+            var p = new Vector2(screen.x, Screen.height - screen.y);
+            return _box.Contains(p) || _button.Contains(p);
         }
     }
 }

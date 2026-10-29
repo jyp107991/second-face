@@ -17,3 +17,11 @@ MonoBehaviour:
   Details: {fileID: 11400000, guid: dd14bb12d1317b9a2b02a2b8371e7f9a, type: 2}
   Places: {fileID: 11400000, guid: 51a1384adcfe129b1b8b642fa0e93efd, type: 2}
   Sky: {fileID: 11400000, guid: 8a3b6fe1d4aa51e5882624ef8e45f875, type: 2}
+  Walker: {fileID: 3473508892800369715, guid: 7f6c736df455d776db4bd4f7d0e175ac, type: 3}
+  Townsfolk:
+  - {fileID: 7073085139788629574, guid: e8226a976953dc9f7970cb04bd49aa69, type: 3}
+  - {fileID: 5712156908797745181, guid: 76dfc9fcc5c7839dfb27bb01843f0275, type: 3}
+  - {fileID: 3167420293168118820, guid: 43a736df8115c8a20af28afaa973c67c, type: 3}
+  - {fileID: 3168515035803878096, guid: 873c2da198a8a459881deead9ec54b56, type: 3}
+  - {fileID: 1032221886656905424, guid: 93ee8835f8172f1f3bc0cdf0924aabda, type: 3}
+  Locomotion: {fileID: 9100000, guid: d48b81ce77cb2e95c8b00171183ffc6e, type: 2}

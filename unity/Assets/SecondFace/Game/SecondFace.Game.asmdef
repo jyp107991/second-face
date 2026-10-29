@@ -9,7 +9,8 @@
     "Unity.TextMeshPro",
     "Unity.Addressables",
     "Unity.ResourceManager",
-    "Unity.AI.Navigation"
+    "Unity.AI.Navigation",
+    "Unity.Cinemachine"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

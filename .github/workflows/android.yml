@@ -7,6 +7,8 @@ on:
   push:
     branches: [main]
     paths: ['unity/**', '.github/workflows/android.yml']
+    # a playable build for the owner (BUILD_PLAN §1: play-walkabout, play-ch1, ...): the APK goes on a release page
+    tags: ['play-*']
   workflow_dispatch:
 
 concurrency:
@@ -19,6 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     if: ${{ !cancelled() }}
+    permissions:
+      contents: write      # a play-* tag's release
     steps:
       - uses: actions/checkout@v4
         with:
@@ -71,6 +75,14 @@ jobs:
           name: SecondFace-Android-APK
           path: build/Android
           retention-days: 30
+
+      - name: Release a playable build
+        if: startsWith(github.ref, 'refs/tags/play-')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body: "The Second Face, playable build ${{ github.ref_name }} (see docs/PROGRESS.md for what it holds and how to play it). Install SecondFace.apk on an Android phone."
+          files: build/Android/*.apk
 
   test:
     name: Unity tests and screenshots

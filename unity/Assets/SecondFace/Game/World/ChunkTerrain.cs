@@ -203,6 +203,7 @@ namespace SecondFace.Game.World
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 r.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
                 r.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.BlendProbesAndSkybox;
+                go.AddComponent<Unity.AI.Navigation.NavMeshModifier>().ignoreFromBuild = true;   // nobody walks on the water
             }
             var s = p.Water;
             var mesh = go.GetComponent<MeshFilter>().sharedMesh;

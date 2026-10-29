@@ -837,6 +837,23 @@ Collision: `CinemachineDeoccluder` against `Occluder` layer only (walls, large r
 - Double tap on the leader: recentre. A compass button recentres yaw to north.
 Gamepad: right stick orbit, left stick move, triggers zoom, bumpers rotate 90°.
 
+*As built (step 25).* Core `Input.Gestures` (pure, `GesturesTests`): fed the fingers each frame, it reports drag
+(after 12 px), tap (< 220 ms, still), double tap (≤ 300 ms, ≤ 40 px), long press (450 ms, once), pinch ratio and
+centroid pan (two fingers; such a touch never taps). `Game.Play.TouchInput` reads `Touchscreen.current` (a mouse in
+the editor: left = finger, wheel = zoom, right = pan), skips touches that begin on the debug overlay, and drives
+`OrbitRig` (Cinemachine 3: `CinemachineCamera` + `CinemachineOrbitalFollow` in world-space binding +
+`CinemachineRotationComposer`, a brain on the camera; goals eased over 0.08 s, fling decaying over 0.5 s, the look
+target at chest height led by velocity × 0.4 s plus the pan) and the `Walker` (a P2 person on a `NavMeshAgent`,
+r 0.3 h 1.8, walk 1.4 m/s, jog 3.2 beyond 22 m; `People/Locomotion.controller`: a 1D blend on Speed over idle,
+walk_slow, walk, walk_brisk, jog at their captured speeds, built by `LocomotionBuild`). A tap raycasts the terrain's
+collider and goes to the nearest walkable point within 4 m; a double tap on the walker recentres. `WorldNav` builds one
+NavMesh 160 × 120 × 160 m round the walker (voxel 0.15 m; terrain, props as boxes, places; the water sheet carries an
+ignore modifier) and rebuilds when they come within 40 m of its edge; places build none of their own meanwhile
+(`PlaceNav.Disabled`). `Walkabout` sets the walker at Shale's spawn and the other five P2 people (bound prefabs in
+`Prefabs/people/`) at its people's posts, idling out of step; the overlay's button lends the camera to the measuring
+tour and takes it back. Not yet: long press (waypoint pin), the compass button, UI picking, gamepad, deoccluder,
+walking in water is not prevented (the river bed is walkable).
+
 **F.3 Conversation cameras.** On talk: a two-shot over the player's shoulder (`CinemachineCamera` per role,
 blended 0.6 s), portrait inserts from the cached RT; the world keeps running behind with the mix ducked.
 **F.4 Tactical camera (combat).** Pitch locked 55°, distance 14–22 m, free pan, snaps to the acting unit on turn
@@ -1368,6 +1385,13 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   read as null afterwards (the asset on disk is fine). Read what you need before `EditorSceneManager.OpenScene`.
 - **The project uses the Input System only** (`activeInputHandler: 1`): `UnityEngine.Input` throws. Read
   `Touchscreen.current` / `Keyboard.current` (and reference `Unity.InputSystem` in the check projects).
+- **A model's materials bound in the editor do not reach a runtime instance** (step 25): the P2 people's slots are
+  placeholders that `PeopleMaterials.Bind` replaces on scene instances; `Instantiate` of the FBX at runtime stood white.
+  Runtime people come from bound prefabs (`WorldAssetsBuild.Person` → `Prefabs/people/`).
+- **Cinemachine 3's `BindingMode` lives in `Unity.Cinemachine.TargetTracking`**; `TrackerSettings` is a struct (copy,
+  change, assign back).
+- **A runtime NavMesh from render meshes walks on water**: the water sheet is a mesh; mark it `NavMeshModifier.
+  ignoreFromBuild`.
 - **Foam by depth is wide on a gentle beach** (step 22): 0.45 m of depth spans ~13 m of a 1:30 shore, a white strip
   like snow. Foam within ~0.2 m of depth, broken by noise, faint on a river.
 
@@ -1504,6 +1528,9 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
     measured views; `WorldAssets` on the Boot scene (`BuildGuard` checks it); frame timing stats on; CI builds with
     `-Development`; `BootTests` runs the Boot scene end to end (`docs/evidence/unity/p3/boot_overlay_editor.txt`).
 24. P3.7 device measurement by the owner with the overlay; numbers in PORT.md §5; fix until Mid ≥ 30 fps.
-25. P5.1–P5.2 pulled forward: the orbit camera and the touch input on the streamed world, a walking stand-in for the
-    player; tag `play-walkabout` (§1) for the owner to install.
+25. ~~P5.1–P5.2 pulled forward: the orbit camera and the touch input on the streamed world, a walking stand-in for the
+    player; tag `play-walkabout` (§1) for the owner to install~~ (done 2026-10-29, §6.F "As built (step 25)"): the
+    app starts in the walkabout at Shale; `BootTests` walks from the spawn into the saloon (`walkabout_street`,
+    `walkabout_saloon`) and runs the tour from the overlay's button. A `play-*` tag builds the APK onto a release page
+    (android.yml).
 Then P4 from §5, step by step (P5 continues after it from P5.3).

@@ -24,14 +24,39 @@ namespace SecondFace.Game.World
 
         public bool Ready { get; private set; }
         public int Sources { get; private set; }
+        /// <summary>While the world's own NavMesh follows the walker (<see cref="WorldNav"/>, step 25), places build none:
+        /// two meshes over the same ground do not join.</summary>
+        public static bool Disabled;
         private AsyncOperation _build;
         private NavMeshDataInstance _instance;
 
         private void Start()
         {
+            if (Disabled) { Ready = true; return; }
             var world = new Bounds(transform.TransformPoint(Centre), Size);
+            var sources = Collect(world);
+            Sources = sources.Count;
+            var settings = Settings();
+            var data = new NavMeshData(settings.agentTypeID);
+            _instance = NavMesh.AddNavMeshData(data);
+            _build = NavMeshBuilder.UpdateNavMeshDataAsync(data, settings, sources, world);
+        }
+
+        /// <summary>The build settings for a person (the default agent type, a person's radius and height).</summary>
+        public static NavMeshBuildSettings Settings()
+        {
+            var settings = NavMesh.GetSettingsByID(0);
+            settings.agentRadius = AgentRadius;
+            settings.agentHeight = AgentHeight;
+            return settings;
+        }
+
+        /// <summary>The sources in a volume: render meshes and terrains, a mesh the player cannot read as its bounding box,
+        /// anything under a NavMeshModifier set to ignore (the doors) left out.</summary>
+        public static List<NavMeshBuildSource> Collect(Bounds world)
+        {
             var markups = new List<NavMeshBuildMarkup>();
-            foreach (var m in GetComponentsInChildren<NavMeshModifier>(true))
+            foreach (var m in FindObjectsByType<NavMeshModifier>(FindObjectsSortMode.None))
                 if (m.ignoreFromBuild) markups.Add(new NavMeshBuildMarkup { root = m.transform, ignoreFromBuild = true });
             var sources = new List<NavMeshBuildSource>();
             NavMeshBuilder.CollectSources(world, ~0, NavMeshCollectGeometry.RenderMeshes, 0, markups, sources);
@@ -48,13 +73,7 @@ namespace SecondFace.Game.World
                     area = s.area,
                 };
             }
-            Sources = sources.Count;
-            var settings = NavMesh.GetSettingsByID(0);
-            settings.agentRadius = AgentRadius;
-            settings.agentHeight = AgentHeight;
-            var data = new NavMeshData(settings.agentTypeID);
-            _instance = NavMesh.AddNavMeshData(data);
-            _build = NavMeshBuilder.UpdateNavMeshDataAsync(data, settings, sources, world);
+            return sources;
         }
 
         private void Update()

@@ -508,9 +508,18 @@ is loaded, the rendering tier, the phone, and a table with each view's mean, 95t
 draw calls. The APK is now a development build. **For the owner (step 24):** install the APK from the latest green
 Android run, let it run one full lap (about a minute and a half after the world appears), take a screenshot with the
 overlay showing and send it (on Vulkan, the default; the tier line says which).
-**Next action:** step 24 waits on the owner's screenshot (record it in PORT.md §5, then fix until Mid ≥ 30 fps);
-meanwhile `docs/BUILD_PLAN_V1.md` §10 step 25 (orbit camera and touch input on the streamed world, a walking
-stand-in; tag `play-walkabout`).
+**The walkabout (plan §10 step 25, 2026-10-29; playable build `play-walkabout`):** the app now sets you down at the
+edge of Shale as a stand-in (one of the trial people, in a long coat) and you can walk: drag one finger to turn the
+camera round (it keeps turning a little when you let go), pinch to come closer or pull back, two fingers to look
+across the ground, tap the ground to walk there (far taps jog), double-tap your figure to bring the view back to
+them. Walking into a building opens it. The other five trial people stand about the town, idling. The world streams
+round you as you walk. The measuring tour is now a button under the overlay ("measure (tour)", then "walk" to come
+back). **For the owner:** install `play-walkabout` (the release page of the tag, or the APK from its Android run),
+walk round Shale and out into the scrub, and send impressions and the overlay's tour table (three-finger tap, the
+button, wait for a full lap of about 80 s, screenshot). Known gaps: the people are the trial models without their
+final hair and clothes (P4), no long-press pin or compass yet, you can wade the river.
+**Next action:** step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until
+Mid ≥ 30 fps); meanwhile P4 from `docs/BUILD_PLAN_V1.md` §5, step 1 (the people pipeline to `People/Cast/`).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,
