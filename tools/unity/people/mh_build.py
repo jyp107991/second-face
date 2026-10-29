@@ -204,8 +204,28 @@ PALETTE = {
     'rust_dye': (0.48, 0.26, 0.18), 'wool_undyed': (0.62, 0.57, 0.48), 'wool_brown': (0.33, 0.26, 0.20),
     'charcoal': (0.16, 0.16, 0.17), 'bone': (0.72, 0.68, 0.58), 'graphite_synth': (0.12, 0.12, 0.14),
     'wine': (0.30, 0.10, 0.14), 'ochre': (0.60, 0.42, 0.22), 'leather_dark': (0.22, 0.15, 0.11), 'leather_tan': (0.45, 0.32, 0.22),
+    # the uniforms of the dead (WORLD.md §7), ninety years faded: warden grey, dock-company orange, rail-crew hi-vis,
+    # clinic whites; and a river green
+    'warden_grey': (0.40, 0.41, 0.42), 'dock_orange': (0.66, 0.36, 0.17), 'hivis_faded': (0.70, 0.62, 0.24),
+    'clinic_white': (0.78, 0.77, 0.72), 'river_green': (0.27, 0.33, 0.28),
 }
 def W(**look): return look
+
+# Garments whose community texture carries a print, a logo, lettering or a fashion motif (wardrobe rule: none of
+# those): the bake flattens their own texture at least this far towards plain grey, so only the dye, the weave noise
+# and the wear show. Checked on a contact sheet of every garment the briefs use (P4.1).
+PRINTED = {
+    'drednicolson_asymmetric_tunic_and_sash': 0.95, 'toigo_harem_pants': 0.95, 'elvs_emt_uniform_jacket_female': 0.95,
+    'elvs_emt_uniform_jacket_male': 0.95, 'elvs_racing_fire_suit_female1': 0.95, 'elvs_racing_fire_suit_male1': 0.95,
+    'elvs_zombie_killer_sneakers': 0.95, 'punkduck_running_shoes_01': 0.95, 'elvs_covid_goggles1': 0.95,
+    'punkduck_goggles': 0.9, 'mindfront_female_trousers_1': 0.85, 'mindfront_patrol_cap': 0.85, 'culturalibre_bandana_mask': 0.85,
+    'punkduck_medieval_boots': 0.85, 'punkduck_wetsuit': 0.85, 'mindfront_lusekofta': 0.75, 'mindfront_sherpa_hat': 0.75,
+    'elvs_male_logo_tshirt1': 0.95, 'drednicolson_short-tail_camo_tee': 0.95, 'punkduck_deathnote_t-shirt': 0.95,
+}
+# Garments that cover the body without deleting the skin under them (their mhclo has no delete_verts): the body's
+# vertices they are fitted to are hidden, or the skin shows through. The `donitz_monk_robe_hood*` garments are the hood
+# alone (fitted to the head and shoulders), worn over `donitz_monk_robe`: on their own they leave the wearer naked.
+COVERS = {'donitz_monk_robe', 'donitz_monk_robe_hood', 'donitz_monk_robe_hood_down', 'donitz_monk_robe_hood_off', 'maciekg_wizard_robe'}
 
 # Hair rule (owner, 2026-10-28, binding): gritty and functional — shaved or buzzed, cropped uneven, tied back, rough
 # braids, long hair matted under a wrap or hood, balding; dull, dusty, sun-bleached or greying; never a styled cut,
@@ -220,7 +240,8 @@ HAIR_COLOURS = {   # as seen (sRGB), already dulled
 
 # The people themselves are briefs (tools/unity/people/briefs/*.json, P4.1): BRIEF names the file (the bake-off's by default)
 BRIEF = os.environ.get('BRIEF', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'briefs', 'bakeoff.json'))
-PEOPLE = json.load(open(BRIEF))['people']
+_brief = json.load(open(BRIEF))
+PEOPLE = [{**_brief.get('defaults', {}), **p} for p in _brief['people']]
 
 # Blend shapes kept on every exported body: a face sculptor set (incr/decr pairs) and expression units.
 FACE_SHAPES = [
@@ -479,6 +500,8 @@ def bake_skin(body, skin_src, name, look, weights):
         at = N.new('ShaderNodeAttribute'); at.attribute_name = key; return at.outputs['Fac']
     lin = lambda c: tuple(x ** 2.2 for x in c)
     t = N.new('ShaderNodeTexImage'); t.image = bpy.data.images.load(skin_src); col = t.outputs['Color']
+    # tone: a deeper complexion from a lighter skin texture (the packs hold one dark skin), a melanin-brown multiply
+    if look.get('tone', 0) > 0: col = mixrgb(look['tone'], col, mixrgb(1.0, col, lin((0.40, 0.27, 0.19)), 'MULTIPLY'))
     # sun: a warm darkening, stronger where the skin faces up, mottled
     sun = math('MULTIPLY', math('MULTIPLY', math('ADD', math('MULTIPLY', attr('up'), 0.55), 0.45),
                                 math('ADD', math('MULTIPLY', noise(8.0, 2.0), 0.6), 0.7)), look.get('sun', 0.5) * 0.6)
@@ -514,16 +537,17 @@ def bake_skin(body, skin_src, name, look, weights):
     sc = bpy.context.scene; sc.render.engine = 'CYCLES'; sc.cycles.samples = 1; sc.cycles.device = 'CPU'
     sc.render.bake.margin = 8; sc.render.bake.use_clear = True
     planes = []
+    size = int(look.get('size', 2048))   # 2 K for the player and companions, 1 K for everyone else (BUILD_PLAN §6.B.6)
     for src, cs in ((col, 'sRGB'), (smooth, 'Non-Color')):
-        img = bpy.data.images.new('bake_' + name + cs, 2048, 2048); img.colorspace_settings.name = cs; tgt.image = img
+        img = bpy.data.images.new('bake_' + name + cs, size, size); img.colorspace_settings.name = cs; tgt.image = img
         for l in list(em.inputs['Color'].links): L.remove(l)
         L.new(src, em.inputs['Color'])
         bpy.ops.object.bake(type='EMIT')
-        px = np.empty(2048 * 2048 * 4, np.float32); img.pixels.foreach_get(px); planes.append(px.reshape(-1, 4))
+        px = np.empty(size * size * 4, np.float32); img.pixels.foreach_get(px); planes.append(px.reshape(-1, 4))
         bpy.data.images.remove(img)
     rgba = planes[0].copy(); rgba[:, 3] = planes[1][:, 0]
     rgba[planes[1][:, 0] == 0, 3] = 0.42      # outside the islands (the bake's clear colour): ordinary skin
-    out_img = bpy.data.images.new('skin_' + name, 2048, 2048, alpha=True)
+    out_img = bpy.data.images.new('skin_' + name, size, size, alpha=True)
     out_img.pixels.foreach_set(rgba.ravel())
     out_img.filepath_raw = dst; out_img.file_format = 'PNG'; out_img.save()
     bpy.data.images.remove(out_img)
@@ -684,11 +708,13 @@ def build_person(spec):
 
     # --- body mesh (body group only, minus the vertices the clothes hide), uv from vt
     hidden = set()
-    for g, _ in spec.get('clothes', []):
+    for g, look in spec.get('clothes', []):
         d = find_dir(g, COMMUNITY, os.path.join(MH, 'clothes'))
         if d is None: print('  no garment', g); continue
-        _, _, dels = read_mhclo(os.path.join(d, g + '.mhclo'))
+        _, refs, dels = read_mhclo(os.path.join(d, g + '.mhclo'))
         hidden.update(dels)
+        if g in COVERS or (look or {}).get('hide'):
+            hidden.update(i for r in refs for i in r[:3])
     faces_kept = [f for f in body_faces if not all(i in hidden for i, _ in f)]
     used = sorted({i for f in faces_kept for i, _ in f})
     remap = {i: k for k, i in enumerate(used)}
@@ -702,7 +728,7 @@ def build_person(spec):
     me.validate(); me.update()
     for p in me.polygons: p.use_smooth = True
     body = bpy.data.objects.new('Body', me); bpy.context.scene.collection.objects.link(body)
-    body.data.materials.append(slot('skin:' + spec['skin'] + '_d'))
+    body.data.materials.append(slot('skin:' + spec['id'] + '__skin_d'))   # the person's own skin, baked below
 
     # --- blend shapes relative to the baked body
     body.shape_key_add(name='Basis', from_mix=False)
@@ -830,7 +856,9 @@ def build_person(spec):
             if 'diffuseTexture' in mm:
                 tp = os.path.join(os.path.dirname(mat_path), mm['diffuseTexture'])
                 if os.path.exists(tp): src_d = tp
-            if look is not None: tex = bake_cloth(po, src_d, (tex_name or name) + '_d', look)
+            if look is not None:
+                if name in PRINTED: look = {**look, 'flat': max(look.get('flat', 0.5), PRINTED[name])}
+                tex = bake_cloth(po, src_d, (tex_name or name) + '_d', look)
             elif hair_look is not None and src_d: tex = bake_hair(src_d, (tex_name or name) + '_d', hair_look)
             elif src_d: tex = copy_texture(src_d, (tex_name or name) + '_d')
             # hair cards ship without normal maps (BUILD_PLAN §6.B.6; some packs' are object-space, wrong in Unity). A
@@ -887,18 +915,19 @@ def build_person(spec):
                 neck = {i for b in ('neck01', 'neck02', 'neck03') for i, x in weights_mh.get(b, []) if x > 0.3}
                 in_head = np.array([i in head for i in used]); in_face = in_head | np.array([i in neck for i in used])
                 eye = np.mean([np.mean([v[i] for i in EYE_GROUPS[g]], axis=0) for g in EYE_GROUPS], axis=0)
-                top = P[in_head, 1].max()
+                top = P[in_head, 1].max() if in_head.any() else P[:, 1].max()   # a full head wrap hides the whole head
                 mag = np.zeros(len(used))
                 for t in ('mouth/mouth-upperlip-volume-incr', 'mouth/mouth-lowerlip-volume-incr'):
                     for i, dx, dy, dz in target(t) or []:
                         if i in remap: mag[remap[i]] = max(mag[remap[i]], (dx * dx + dy * dy + dz * dz) ** 0.5)
                 lips = np.clip(mag / (0.35 * mag.max()), 0, 1) if mag.max() > 0 else mag
                 scalp = np.zeros(len(used)); beard = np.zeros(len(used))
-                if spec.get('scalp'):
+                if spec.get('scalp') and in_head.any():
                     scalp[in_head] = hair_weight(P[in_head], top, eye, spec['scalp'].get('mode', 'buzz'), spec['scalp'].get('recede', 0.0))
-                beard[in_face] = beard_weight(P[in_face], top, eye, lips[in_face])
+                if in_face.any(): beard[in_face] = beard_weight(P[in_face], top, eye, lips[in_face])
                 up = np.array([(vx.normal.z + 1) / 2 for vx in body.data.vertices])
                 look = dict(spec.get('skin_look', {})); look['scalp'] = spec.get('scalp')
+                look['size'] = spec.get('skin_size', 2048)
                 own = bake_skin(body, tp, spec['id'] + '__skin_d', look, {'scalp': scalp, 'beard': beard, 'lips': lips, 'up': up})
                 body.data.materials.clear(); body.data.materials.append(slot('skin:' + own))
     else:

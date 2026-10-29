@@ -19,9 +19,14 @@ MonoBehaviour:
   Sky: {fileID: 11400000, guid: 8a3b6fe1d4aa51e5882624ef8e45f875, type: 2}
   Walker: {fileID: 3473508892800369715, guid: 7f6c736df455d776db4bd4f7d0e175ac, type: 3}
   Townsfolk:
-  - {fileID: 7073085139788629574, guid: e8226a976953dc9f7970cb04bd49aa69, type: 3}
-  - {fileID: 5712156908797745181, guid: 76dfc9fcc5c7839dfb27bb01843f0275, type: 3}
-  - {fileID: 3167420293168118820, guid: 43a736df8115c8a20af28afaa973c67c, type: 3}
-  - {fileID: 3168515035803878096, guid: 873c2da198a8a459881deead9ec54b56, type: 3}
-  - {fileID: 1032221886656905424, guid: 93ee8835f8172f1f3bc0cdf0924aabda, type: 3}
+  - {fileID: 8986221291955259547, guid: 5cfb23b1dad0b262ea55d3ae3329e695, type: 3}
+  - {fileID: 1393974216823851399, guid: e16a79aa6a402f4c4af71820afcb0e27, type: 3}
+  - {fileID: 3179647767029758272, guid: a13582d897dfe471fb35f44053817591, type: 3}
+  - {fileID: 5775507854851489883, guid: adf55aa9df0d0edea9c5292cc6374c0a, type: 3}
+  - {fileID: 1272917746545643104, guid: a2e224dc8ea146eb0ad5cc3fee039471, type: 3}
+  - {fileID: 8216478254266774210, guid: 36dea4549687ac9fcb38426ec9124b35, type: 3}
+  - {fileID: 8780991685459674273, guid: a9843a671413681a499adfdd9f97638e, type: 3}
+  - {fileID: 4076701257671222121, guid: 86074827d407e4b369d673930dbe3279, type: 3}
+  - {fileID: 3677702626408596720, guid: 09fb49fd095f28527b5f5a703035de46, type: 3}
+  - {fileID: 9094183397666744723, guid: bbfaac0cc7035e4e2b92ce8a10059a7b, type: 3}
   Locomotion: {fileID: 9100000, guid: d48b81ce77cb2e95c8b00171183ffc6e, type: 2}

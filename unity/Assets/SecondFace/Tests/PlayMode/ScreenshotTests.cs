@@ -37,7 +37,7 @@ namespace SecondFace.Tests
             {
                 "Second Face/Build terrain test scene", "Second Face/Build material sheet scene", "Second Face/Build shelter test scene",
                 "Second Face/Build frontier test scene", "Second Face/Build people test scene", "Second Face/Build vegetation test scene",
-                "Second Face/Build trees test scene",
+                "Second Face/Build trees test scene", "Second Face/Build cast test scene",
             })
             {
                 try { EditorApplication.ExecuteMenuItem(item); }
@@ -86,6 +86,7 @@ namespace SecondFace.Tests
                 while (op != null && !op.isDone) yield return null;
             }
             loadedScene = default;
+            if (Object.FindAnyObjectByType<SecondFace.Game.Bootstrap>() != null) yield return BootTests.Clear();   // the Boot scene's app outlives it
         }
 
         /// <summary>Where captures go: unity/Screenshots (ignored by git; CI uploads it).</summary>
@@ -213,6 +214,49 @@ namespace SecondFace.Tests
                 yield return null;
                 yield return Capture("portrait_" + person.name, 900, 1200);
             }
+        }
+
+        /// <summary>P4.1: the cast in rows of eight, a capture per row (`people_cast_<row>`), and one person at each of
+        /// their three levels of detail from the same framing (`people_lod_<n>`), with each level's triangles logged.</summary>
+        [UnityTest, Timeout(600000)]
+        public IEnumerator CastLineupAndLevelsAreCapturedWhenBuilt()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Cast.unity";
+            if (!File.Exists(path)) { Assert.Ignore("cast scene not built"); yield break; }
+            yield return LoadTestScene(path);
+            for (var i = 0; i < 10; i++) yield return null;
+            var cast = GameObject.Find("Cast");
+            Assert.That(cast, Is.Not.Null);
+            foreach (var a in cast.GetComponentsInChildren<Animator>()) a.speed = 0f;
+            var cam = Camera.main;
+            var rows = (cast.transform.childCount + 7) / 8;
+            for (var r = 0; r < rows; r++)
+            {
+                cam.transform.position = new Vector3(r * 10f, 1.0f, -7.5f);
+                cam.transform.rotation = Quaternion.Euler(2f, 0, 0);
+                cam.fieldOfView = 28f;
+                yield return null;
+                yield return Capture($"people_cast_{r + 1}", 1920, 1080);
+            }
+            // levels of detail: the first person, framed as the game camera sees a person nearby, each level forced
+            var person = cast.transform.GetChild(0);
+            var lod = person.GetComponentInChildren<LODGroup>();
+            Assert.That(lod, Is.Not.Null, "levels of detail on the cast");
+            var lods = lod.GetLODs();
+            var focus = person.position + Vector3.up * 1.0f;
+            cam.transform.position = focus + new Vector3(0, 1.2f, -3.2f);
+            cam.transform.LookAt(focus);
+            for (var l = 0; l < lods.Length; l++)
+            {
+                lod.ForceLOD(l);
+                long tris = 0;
+                foreach (var r in lods[l].renderers)
+                    if (r is SkinnedMeshRenderer s) for (var k = 0; k < s.sharedMesh.subMeshCount; k++) tris += s.sharedMesh.GetIndexCount(k) / 3;
+                Debug.Log($"people_lod_{l}: {person.name} LOD{l} {tris} triangles, {lods[l].renderers.Length} renderers");
+                yield return null;
+                yield return Capture($"people_lod_{l}", 900, 1200);
+            }
+            lod.ForceLOD(-1);
         }
 
         [UnityTest, Timeout(600000)]

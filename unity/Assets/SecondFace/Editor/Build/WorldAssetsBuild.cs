@@ -31,8 +31,10 @@ namespace SecondFace.EditorTools
             a.Sky = AssetDatabase.LoadAssetAtPath<SkyProfile>("Assets/SecondFace/Sky/SkyProfile.asset");
             // the walkabout (step 25): the drifter walks, the other P2 people stand about the town
             a.Walker = Person("p3_drifter_m");
-            a.Townsfolk = new[] { "p1_labourer_m", "p2_settler_f", "p5_street_m", "p6_nomad_f", "p4_gilded_f" }
-                .Select(Person).Where(g => g != null).ToArray();
+            // the people of Shale and the Sallow from the cast (P4.1), else the other P2 people
+            a.Townsfolk = Townsfolk.Select(n => Person(n, CastTestScene.Dir)).Where(g => g != null).ToArray();
+            if (a.Townsfolk.Length == 0)
+                a.Townsfolk = new[] { "p1_labourer_m", "p2_settler_f", "p5_street_m", "p6_nomad_f", "p4_gilded_f" }.Select(Person).Where(g => g != null).ToArray();
             a.Locomotion = LocomotionBuild.Build();
             if (fresh) AssetDatabase.CreateAsset(a, AssetPath); else EditorUtility.SetDirty(a);
             AssetDatabase.SaveAssets();
@@ -41,22 +43,30 @@ namespace SecondFace.EditorTools
         }
 
         public const string PeopleDir = "Assets/SecondFace/Prefabs/people";
+        /// <summary>The cast who stand about Shale in the walkabout: the Sallow's own, the Choir's pair, a mender and a
+        /// rider of the Wheel.</summary>
+        public static readonly string[] Townsfolk =
+        {
+            "cast_sal_01", "cast_sal_02", "cast_sal_04", "cast_sal_05", "cast_chr_01", "cast_mnd_01", "cast_sal_03", "cast_sal_06",
+            "cast_chr_02", "cast_whl_01",
+        };
 
         /// <summary>A P2 person as a prefab with their materials bound (the model's own slots are placeholders that
         /// <see cref="PeopleMaterials"/> binds in the editor; an instance made at runtime would stand white). Built when
         /// missing, committed: a rebuild renumbers the prefab.</summary>
-        public static GameObject Person(string name) => Person(name, false);
+        public static GameObject Person(string name) => Person(name, PeopleTestScene.Dir, false);
+        public static GameObject Person(string name, string modelDir) => Person(name, modelDir, false);
 
-        public static GameObject Person(string name, bool force)
+        public static GameObject Person(string name, string modelDir, bool force)
         {
             var path = $"{PeopleDir}/{name}.prefab";
             var existing = AssetDatabase.LoadAssetAtPath<GameObject>(path);
             if (existing != null && !force) return existing;
-            var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{PeopleTestScene.Dir}/{name}.fbx");
-            if (model == null) { Debug.LogWarning($"WorldAssetsBuild: no {name}.fbx (tools/unity/people/mh_build.py)"); return null; }
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{modelDir}/{name}.fbx");
+            if (model == null) { Debug.LogWarning($"WorldAssetsBuild: no {modelDir}/{name}.fbx (tools/unity/people/mh_build.py)"); return null; }
             System.IO.Directory.CreateDirectory(PeopleDir);
             var go = (GameObject)PrefabUtility.InstantiatePrefab(model);
-            PeopleMaterials.Bind(go, PeopleTestScene.Dir);
+            PeopleMaterials.Bind(go, modelDir);
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);
             return prefab;
@@ -66,7 +76,8 @@ namespace SecondFace.EditorTools
         [MenuItem("Second Face/Rebuild people prefabs")]
         public static void RebuildPeople()
         {
-            foreach (var n in new[] { "p1_labourer_m", "p2_settler_f", "p3_drifter_m", "p4_gilded_f", "p5_street_m", "p6_nomad_f" }) Person(n, true);
+            foreach (var n in new[] { "p1_labourer_m", "p2_settler_f", "p3_drifter_m", "p4_gilded_f", "p5_street_m", "p6_nomad_f" }) Person(n, PeopleTestScene.Dir, true);
+            foreach (var n in Townsfolk) Person(n, CastTestScene.Dir, true);
             AssetDatabase.SaveAssets();
             Debug.Log("WorldAssetsBuild: people prefabs rebuilt");
         }

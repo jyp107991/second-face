@@ -361,7 +361,7 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    memory; fix until Mid ≥ 30 fps in the densest frontier place.
 
 ### P4 — People
-1. The full pipeline to `People/Cast/`: a `people.json` brief per role and region (body, face, ancestry mix,
+1. **Built (P4.1, 2026-10-29; §6.B.7–B.8; captures `people_cast_1..4`, `people_lod_0..2`).** The full pipeline to `People/Cast/`: a `people.json` brief per role and region (body, face, ancestry mix,
    lifestyle, skin, hair, wardrobe) → `mh_build.py` builds all; LOD1 (6 K) and LOD2 (2 K) by Blender decimate
    with the same rig; `LODGroup` set by the postprocessor. Budget ≤ 8 MB per person, ≤ 15 K triangles LOD0.
 2. The player prefab with all face shapes; the sculptor UI binds to blend-shape weights (§6.B.5).
@@ -763,6 +763,25 @@ shapes and only show in close-ups (a conversation's two people); a lower-poly LO
 data: `tools/unity/people/briefs/*.json` (`BRIEF`, `REL` env), the bake-off's in `bakeoff.json`. The bound person
 prefabs are rebuilt after a model changes (*Second Face/Rebuild people prefabs*). Brows painted into the skin (instead
 of thinned strands) would read better at LOD1: open.
+
+**B.8 The cast (built 2026-10-29, P4.1b).** `tools/unity/people/briefs/cast.json` holds 32 people, each a role and a
+region: the Sallow's labourers, water carrier, raiders, deputy and prospector; the rail corridor's crews and a trader;
+the glass flats' salt workers and an elder; the drowned shore's fisher, river trader and runner; the northern wet's
+timber, dam and boat people; the Teeth's miner and herder; the Ashlands' scavengers; a Tollmen convoy guard and clerk;
+two of the Choir; a mender; Meridian's warden, sinker, crew and one of the Tenured; a rider of the Wheel. Built to
+`People/Cast/` (`BRIEF=…/cast.json REL=Assets/SecondFace/People/Cast`, about 12 s a person, `ONLY=id,id` for a few):
+LOD0 29–46 K, LOD1 6.1–7.2 K, LOD2 1.8–3.7 K triangles; 6.7 MB a person on disk (FBX 2.7 MB, skin 1 K, garments 1 K,
+garment normals shared), within B.6. The brief's `defaults` apply to everyone (`skin_size` 1024); `skin_look.tone`
+darkens the skin bake. Three wardrobe guards in `mh_build.py`: `PRINTED` (garments whose own texture carries a print,
+logo, lettering or fashion motif bake at least that far towards plain, so only dye, weave and wear show: the wardrobe
+rule); `COVERS` (garments with no `delete_verts` hide the body vertices they are fitted to, or the skin pokes through);
+a hat needs hair that fits under it (cropped, buzzed or none) or the hair cards stand through the hat. Ten of the cast
+stand about Shale in the walkabout (`WorldAssetsBuild.Townsfolk`, bound prefabs by *Rebuild people prefabs*). The lineup
+is `Test_Cast` (*Build cast test scene*: rows of eight side by side, each framed alone) and the captures are
+`people_cast_1..4` and `people_lod_0..2`. Open: the cast's binaries are committed (215 MB; every full rebuild adds as
+much to the history): before the cast grows past ~60, build people in CI from the briefs (cached by the briefs' and
+the script's hash) instead of committing them. The lineup leans grey and charcoal: the next brief pass spreads the dyes (rust, ochre,
+indigo, faded reds and greens) so a crowd reads as many people at the game camera.
 
 ### 6.C Hair and grooming (the hair rule in practice)
 
@@ -1413,6 +1432,14 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   ignoreFromBuild`.
 - **Foam by depth is wide on a gentle beach** (step 22): 0.45 m of depth spans ~13 m of a 1:30 shore, a white strip
   like snow. Foam within ~0.2 m of depth, broken by noise, faint on a river.
+- **The bootstrap outlives its scene** (CI run 54): `Bootstrap` and the overlay are `DontDestroyOnLoad`, so a test that
+  loads the Boot scene and only unloads the scene leaves the app raising the world; its walkabout then sets the walker
+  down in a later test's world on that test's destroyed camera. Every test that boots the app ends with
+  `BootTests.Clear()`.
+- **The monk robe "hood" garments are the hood alone** (P4.1b): `donitz_monk_robe_hood`, `_hood_down` and `_hood_off`
+  are fitted to the head and shoulders only and leave the wearer naked; wear one over `donitz_monk_robe`. Check a
+  garment's fitted extent before briefing it (its reference vertices' heights on `base.obj`).
+- **Hair cards stand through hats** (P4.1b): a brief with a hat takes cropped, buzzed or no hair.
 
 ---
 

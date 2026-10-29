@@ -36,7 +36,11 @@ namespace SecondFace.Tests
         }
 
         [UnityTearDown]
-        public IEnumerator TearDown()
+        public IEnumerator TearDown() => Clear();
+
+        /// <summary>Everything the app made, gone: the bootstrap and the overlay outlive scenes (DontDestroyOnLoad), and a
+        /// walkabout left running sets its walker down in a later test's world on a camera that test destroys (CI run 54).</summary>
+        public static IEnumerator Clear()
         {
             foreach (var b in Object.FindObjectsByType<Bootstrap>(FindObjectsSortMode.None)) Object.Destroy(b.gameObject);
             if (DebugOverlay.Instance != null) Object.Destroy(DebugOverlay.Instance.gameObject);
@@ -79,7 +83,7 @@ namespace SecondFace.Tests
             Bootstrap boot = null;
             yield return Boot(b => boot = b);
             var walk = boot.Walkabout;
-            Assert.That(walk.Townsfolk, Is.EqualTo(5), "the P2 people stand about the town");
+            Assert.That(walk.Townsfolk, Is.GreaterThanOrEqualTo(5), "people stand about the town");
             // levels of detail (P4.1): the game camera's person is LOD1, about 6 K triangles (they were 95-141 K whole)
             var lod = walk.Walker.GetComponentInChildren<LODGroup>();
             Assert.That(lod, Is.Not.Null, "the walker's levels of detail");

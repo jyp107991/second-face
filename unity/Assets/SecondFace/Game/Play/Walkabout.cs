@@ -34,6 +34,7 @@ namespace SecondFace.Game.Play
             if (assets.Walker == null || assets.Locomotion == null) { Debug.LogWarning("Walkabout: no walker in the world assets (Second Face/Build world assets)"); yield break; }
             var centre = Stage.World.PlaceCentre("shale");
             yield return Stage.WaitAround(centre, "shale", LoadTimeout);
+            if (Stage.Camera == null) yield break;   // the camera went while the world came in (the scene was left)
             var spawn = Stage.Marker("shale", "spawn");
             var at = spawn != null ? spawn.transform.position : centre;
             var yaw = spawn != null ? spawn.transform.eulerAngles.y : 0f;

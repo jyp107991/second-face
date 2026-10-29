@@ -522,10 +522,17 @@ final hair and clothes (P4), no long-press pin or compass yet, you can wade the 
 triangles each; their eyebrows and eyelashes alone were tens of thousands of hair strands). Each now comes in three
 levels: the full person for close-ups, a ~6 thousand triangle version for the game camera and a ~2 thousand one far
 off, switched by how big they are on screen. The people descriptions are now data files the pipeline reads.
+**The cast (P4.1b, 2026-10-29):** 32 people built from a data file of roles and regions (labourers, raiders, a
+deputy, rail crews, salt workers, fishers, timber and dam people, miners, scavengers, Tollmen, the Choir, a mender, the
+megacity's poor and rich, a rider of the Wheel), each with the three levels of detail and about 6.7 MB on disk. Garments
+whose own textures carried prints or logos are washed plain in the bake (wardrobe rule); robes hide the skin under them;
+hats get hair that fits under them. Ten of them now stand about Shale in the walkabout instead of the trial people. CI
+run 54 failed two world tests because the Boot screenshot test left the app running into later tests; every test that
+boots the app now clears it (pitfall logged).
 **Next action:** step 24 (the owner's measurement) waits on the screenshot (record it in PORT.md §5, then fix until
-Mid ≥ 30 fps); tag `play-walkabout` once the Android run of this commit is green; then P4.1b: the cast briefs (about
-30 people across the regions and trades, `tools/unity/people/briefs/cast.json`) built to `People/Cast/`, the lineup
-capture `people_cast_lineup` and `people_lod`.
+Mid ≥ 30 fps); tag `play-walkabout` once the Android run of this commit is green
+(`git tag play-walkabout <sha> && git push origin play-walkabout`); then P4 step 2: the player prefab with all face
+shapes and the sculptor's bindings (BUILD_PLAN §6.B.5), then wardrobe runtime (P4 step 3).
 - [x] P0 Foundation (APK built by CI, run 5): decision recorded (CLAUDE.md, UPGRADE.md, PORT.md); .NET SDK in the session; content export
       tool (`npm run export`); `unity/` project (6000.3.27f1, URP mobile settings from Unity's own template,
       landscape only, immersive, IL2CPP arm64, Vulkan+GLES3); `Core` (pure C#: Rng matching the web sequence,
