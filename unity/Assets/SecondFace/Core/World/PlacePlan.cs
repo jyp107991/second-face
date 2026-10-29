@@ -597,6 +597,9 @@ namespace SecondFace.Core.World
                 // a fire is somewhere to camp (P6.1): one without an id is named by where it stands
                 if (Camp.IsFire(kind))
                     plan.Markers.Add(new Marker { Kind = "fire", Id = id ?? $"fire_{Num.RoundInt(x)}_{Num.RoundInt(y)}", X = cx, Z = cz, Yaw = yaw });
+                // and a chair somewhere to sit (its front, where the sitter faces, is -z at its yaw)
+                if (kind == "chair")
+                    plan.Markers.Add(new Marker { Kind = "seat", Id = id ?? $"seat_{Num.RoundInt(x)}_{Num.RoundInt(y)}", X = cx, Z = cz, Yaw = yaw, Ref = kind });
             }
             foreach (var p in map.Props ?? new List<Scene.PropPlacement>()) Add(p.Kind, p.Id, p.X, p.Y, p.Rot, p.Rad == true, p.Scale);
             for (var j = 0; j < plan.Rows; j++)

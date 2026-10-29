@@ -506,9 +506,23 @@ namespace SecondFace.Tests
             Assert.That(clock.Minutes, Is.EqualTo(m0 + 240).Within(0.01), "four hours on the world's clock");
             Assert.That(g.Pc.Sheet.Hp, Is.GreaterThan(3), "rested");
             Assert.That(walk.Camping.Said, Does.StartWith("You rest 4 hours"));
+            // sitting on the ground by it, facing it (the world is stopped; the body is not)
+            var t1 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t1 < 1.5f) yield return null;
+            Assert.That(walk.Walker.Seated, Is.True, "sat down at the fire");
+            Assert.That(walk.Walker.Animator.GetCurrentAnimatorStateInfo(0).IsName("sit_ground"), Is.True);
+            var toFire = fire.transform.position - walk.Walker.transform.position;
+            toFire.y = 0f;
+            Assert.That(Vector3.Angle(walk.Walker.transform.forward, toFire), Is.LessThan(20f), "facing the fire");
+            var hipsAt = walk.Walker.Animator.GetBoneTransform(HumanBodyBones.Hips).position.y - walk.Walker.transform.position.y;
+            Debug.Log($"BootTests: seated on the ground, hips {hipsAt:0.00} m up");
+            Assert.That(hipsAt, Is.LessThan(0.45f), "on the ground");
+            walk.Rig.View(walk.Rig.Yaw, 30f, 6f);
+            for (var i = 0; i < 20; i++) yield return null;
             yield return ScreenshotTests.Capture("walkabout_camp", 1920, 1080);
             walk.Camping.Close();
             Assert.That(Time.timeScale, Is.EqualTo(1f), "the world moves again");
+            Assert.That(walk.Walker.Seated, Is.False, "up again when camp is broken");
             // out of doors the HUD's camp makes camp where the walker stands
             Assert.That(walk.Indoors(), Is.False);
             Assert.That(boot.Hud.CampButton.resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex), "the HUD's camp");
@@ -582,6 +596,51 @@ namespace SecondFace.Tests
             Assert.That(walk.Piles.Count, Is.EqualTo(0), "the emptied bundle goes");
             Assert.That(g.Containers.ContainsKey(pile.Key), Is.False, "and its pile");
             boot.UI.CloseAll();
+        }
+
+        /// <summary>P6.1: a chair is somewhere to sit: the walker goes to its front, turns and sits with the hips on the
+        /// seat, and gets up to walk again.</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator TheWalkerSitsOnAChair()
+        {
+            Bootstrap boot = null;
+            yield return Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            var seats = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None).Where(t => t.Verbs.Contains("sit")).ToList();
+            Assert.That(seats.Count, Is.EqualTo(11), "Shale's chairs");
+            var at = walk.Walker.transform.position;
+            var chair = seats.OrderBy(c => Vector3.Distance(c.transform.position, at)).First();
+            walk.StartCoroutine(walk.Use(chair, "sit", "shale", SecondFace.Core.Content.Registry.Maps["shale"]));
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 40f && !walk.Walker.Seated) yield return null;
+            Assert.That(walk.Walker.Seated, Is.True, "walked to the chair and sat");
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 1.5f) yield return null;
+            Assert.That(walk.Walker.Animator.GetCurrentAnimatorStateInfo(0).IsName("sit"), Is.True);
+            var outward = chair.transform.rotation * Vector3.back;
+            Assert.That(Vector3.Angle(walk.Walker.transform.forward, outward), Is.LessThan(10f), "facing out of the chair");
+            var flat = walk.Walker.transform.position - chair.transform.position;
+            flat.y = 0f;
+            Assert.That(flat.magnitude, Is.LessThan(0.2f), "over the seat");
+            var floorY = walk.Walker.transform.position.y;
+            var hips = walk.Walker.Animator.GetBoneTransform(HumanBodyBones.Hips).position.y - floorY;
+            var foot = walk.Walker.Animator.GetBoneTransform(HumanBodyBones.LeftFoot).position.y - floorY;
+            Debug.Log($"BootTests: seated on a chair, hips {hips:0.00} m over the floor, a foot {foot:0.00}");
+            Assert.That(hips, Is.InRange(0.38f, 0.62f), "on the seat (0.48 m), not under it or over it");
+            Assert.That(foot, Is.LessThan(0.16f), "the feet on the floor");
+            var look = walk.Walker.transform.forward;
+            walk.Rig.View(Mathf.Atan2(look.x, look.z) * Mathf.Rad2Deg + 150f, 28f, 4.5f);
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 1f) yield return null;
+            yield return ScreenshotTests.Capture("walkabout_sit", 1920, 1080);
+            // a walk gets them up first
+            var footing = walk.Walker.Footing;
+            Assert.That(walk.Walker.GoTo(footing + outward * 3f), Is.True);
+            Assert.That(walk.Walker.Seated, Is.False, "up");
+            Assert.That(Vector3.Distance(walk.Walker.transform.position, footing), Is.LessThan(0.3f), "where they sat down from");
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 15f && walk.Walker.Goal != null) yield return null;
+            Assert.That(walk.Walker.Goal, Is.Null, "and walks");
         }
 
         [UnityTest, Timeout(900000)]

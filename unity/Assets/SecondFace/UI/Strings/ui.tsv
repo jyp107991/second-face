@@ -446,3 +446,5 @@ ground.title	On the ground
 pack.drop	Drop
 pack.drop_all	Drop all
 pack.dropped	{0} left on the ground.
+seat.chair	A chair
+verb.sit	Sit

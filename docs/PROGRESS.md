@@ -670,9 +670,14 @@ on with it. Seen in `docs/evidence/unity/p6/ui_camp.jpg`, `ui_camp_done.jpg`, `u
 stack; keys and papers stay with you): it lies at your feet in a tied sack, where it stays (saved with the game), and
 another thing dropped near it joins the same sack. Tap the sack to take from it: you walk over, stoop for it, and its
 things lie beside your pack; empty it and it is gone. Seen in `docs/evidence/unity/p6/walkabout_ground.jpg`.
-**Next action:** P6.1 part 2c: sitting (on the town's chairs and stools, and on the ground at the fire while camped;
-the sit motions are in the controller), beds that are yours to sleep in, doors that lock; then P6 step 2 (schedules
-across the world). Blender and the MakeHuman assets are in the session
+**Sitting (P6.1 part 2c, 2026-10-29):** tap a chair (the saloon has a few) and sit: you walk to it, turn and sit down
+with your feet on the floor; walk anywhere and you get up first. When you make camp out of doors you sit on the ground,
+facing the fire if there is one, and get up when you break camp. Seen in `docs/evidence/unity/p6/walkabout_sit.jpg` and
+`walkabout_camp.jpg`.
+**Next action:** P6 step 2: schedules across the world (`Npc/Schedule` → a people service: actors as data when far,
+as agents within 120 m, as full actors within 60 m; the townsfolk keep their hours, sit at their seats, sleep in their
+beds). P6.1 left for later: doors that lock (with the door models), a share of a stack by a long press, the search of the
+fallen (with combat), owners and witnesses for what is taken (with stealth, P6.3). Blender and the MakeHuman assets are in the session
 scratchpad, `blender/` and `mhc/`; if a fresh session lacks them, see `tools/unity/people/`. **`play-people` is released**
 (2026-10-29, commit a62d94d: the natural motion, the generated hair, the faces;
 https://github.com/jyp107991/second-face/releases/tag/play-people, `SecondFace.apk`, 338 MB development build).

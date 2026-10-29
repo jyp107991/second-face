@@ -107,7 +107,7 @@ namespace SecondFace.Game.Play
         {
             if (Walker != null)
             {
-                var p = Walker.transform.position;
+                var p = Walker.Footing;
                 Game.Spot = new WorldSpot
                 {
                     X = p.x, Y = p.y, Z = p.z, Yaw = Walker.transform.eulerAngles.y,
@@ -246,11 +246,12 @@ namespace SecondFace.Game.Play
             var n = 0;
             foreach (var m in place.GetComponentsInChildren<PlaceMarker>())
             {
-                if (m.Kind != "container" && m.Kind != "talk" && m.Kind != "fire") continue;
+                if (m.Kind != "container" && m.Kind != "talk" && m.Kind != "fire" && m.Kind != "seat") continue;
                 var map = Registry.Maps.TryGetValue(string.IsNullOrEmpty(m.Map) ? placeId : m.Map, out var d) ? d : null;
                 string title;
                 string verb;
                 if (m.Kind == "fire") { title = Strings.Get("camp.fire"); verb = "camp"; }
+                else if (m.Kind == "seat") { title = Strings.Get("seat.chair"); verb = "sit"; }
                 else if (m.Kind == "talk")
                 {
                     if (map?.Talk == null || !map.Talk.TryGetValue(m.Id, out var t)) continue;
@@ -279,7 +280,9 @@ namespace SecondFace.Game.Play
             var at = thing.transform.position;
             var away = Walker.transform.position - at;
             away.y = 0f;
-            var spot = at + (away.sqrMagnitude > 0.01f ? away.normalized : thing.transform.forward) * 1.0f;
+            // a chair is sat on from its front (-z at its yaw); anything else is used from the walker's side of it
+            var front = thing.transform.rotation * Vector3.back;
+            var spot = verb == "sit" ? at + front * 0.75f : at + (away.sqrMagnitude > 0.01f ? away.normalized : thing.transform.forward) * 1.0f;
             if (Walker.GoTo(spot))
             {
                 var t0 = Time.time;
@@ -292,6 +295,15 @@ namespace SecondFace.Game.Play
             var face = at - Walker.transform.position;
             face.y = 0f;
             if (face.sqrMagnitude > 0.01f) Walker.transform.rotation = Quaternion.LookRotation(face, Vector3.up);
+            if (verb == "sit")
+            {
+                // the hips over the seat, a hand's breadth forward of its middle, facing out of the chair; on the floor the
+                // walker stands on (a place's markers lie at its ground; a room's floor is higher)
+                var seat = at + front * 0.06f;
+                seat.y = Walker.transform.position.y;
+                Walker.Sit("sit", seat, thing.transform.eulerAngles.y + 180f);
+                yield break;
+            }
             if (verb == "take")
             {
                 // stoop to it, and open it as the hands reach the ground
@@ -329,6 +341,11 @@ namespace SecondFace.Game.Play
             }
             var name = place == null ? Strings.Get("camp.open_land")
                 : inPlace ? place.Name : Strings.Get("camp.near", place.Name);
+            // the walker sits on the ground (facing the fire, if there is one) while the camp is made; the world stops,
+            // so the body moves on unscaled time and gets up when camp is broken; a bed of one's own is not sat by
+            var fire = NearestFire();
+            var sits = fire != null || !Indoors();
+            if (sits) SitDown(fire);
             Camping = ui.Open(new CampScreen(new CampModel
             {
                 Game = Game,
@@ -349,8 +366,32 @@ namespace SecondFace.Game.Play
                     var who = FindObjectsByType<Interactable>(FindObjectsSortMode.None).FirstOrDefault(i => i.Id == id);
                     if (who != null) StartCoroutine(Respond(who, "talk"));
                 },
+                Done = () => { if (sits) GetUp(); },
             }));
             return Camping;
+        }
+
+        /// <summary>Sits on the ground where the walker is, facing a fire if there is one (the animator on unscaled time:
+        /// camp stops the world).</summary>
+        private void SitDown(PlaceMarker fire)
+        {
+            if (Walker == null) return;
+            if (Walker.Animator != null) Walker.Animator.updateMode = AnimatorUpdateMode.UnscaledTime;
+            var yaw = Walker.transform.eulerAngles.y;
+            if (fire != null)
+            {
+                var to = fire.transform.position - Walker.transform.position;
+                to.y = 0f;
+                if (to.sqrMagnitude > 0.01f) yaw = Quaternion.LookRotation(to, Vector3.up).eulerAngles.y;
+            }
+            Walker.Sit("sit_ground", Walker.Footing, yaw);
+        }
+
+        private void GetUp()
+        {
+            if (Walker == null) return;
+            Walker.Stand();
+            if (Walker.Animator != null) Walker.Animator.updateMode = AnimatorUpdateMode.Normal;
         }
 
         /// <summary>The walker is inside a building (or under the ground).</summary>
@@ -362,18 +403,23 @@ namespace SecondFace.Game.Play
         }
 
         /// <summary>A fire is within reach of the walker.</summary>
-        public bool NearFire()
+        public bool NearFire() => NearestFire() != null;
+
+        /// <summary>The nearest fire within reach of the walker (null when none).</summary>
+        public PlaceMarker NearestFire()
         {
-            if (Walker == null) return false;
-            var p = Walker.transform.position;
+            if (Walker == null) return null;
+            var p = Walker.Footing;
+            PlaceMarker best = null;
+            var bestD = Reach;
             foreach (var m in FindObjectsByType<PlaceMarker>(FindObjectsSortMode.None))
             {
                 if (m.Kind != "fire") continue;
                 var to = m.transform.position - p;
                 to.y = 0f;
-                if (to.magnitude <= Reach) return true;
+                if (to.magnitude <= bestD) { bestD = to.magnitude; best = m; }
             }
-            return false;
+            return best;
         }
 
         /// <summary>The place the walker is nearest (null before they are set down, or with no world laid out).</summary>

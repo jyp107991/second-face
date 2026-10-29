@@ -1802,6 +1802,14 @@ MonoBehaviour:
     m_Localized: '{0} left on the ground.'
     m_Metadata:
       m_Items: []
+  - m_Id: 85155515842560
+    m_Localized: A chair
+    m_Metadata:
+      m_Items: []
+  - m_Id: 85155549396992
+    m_Localized: Sit
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

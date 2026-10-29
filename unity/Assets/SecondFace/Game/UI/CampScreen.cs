@@ -27,6 +27,8 @@ namespace SecondFace.Game.UI
         public Action<double> Then;
         /// <summary>A companion to talk to (the camp closes first).</summary>
         public Action<string> Talk;
+        /// <summary>When camp is broken (the walker gets up).</summary>
+        public Action Done;
     }
 
     /// <summary>
@@ -107,7 +109,11 @@ namespace SecondFace.Game.UI
             Refresh();
         }
 
-        protected internal override void Hidden() => Time.timeScale = _timeScale;
+        protected internal override void Hidden()
+        {
+            Time.timeScale = _timeScale;
+            _m.Done?.Invoke();
+        }
 
         protected internal override bool Back()
         {

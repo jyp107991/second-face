@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -17,6 +18,17 @@ namespace SecondFace.Game.Play
         public const float PickupFrom = 0.7f, PickupSpeed = 1.4f, PickupLowest = 2.3f;
         private static readonly int Speed = Animator.StringToHash("Speed");
         private static readonly int Pickup = Animator.StringToHash("pickup");
+        private static readonly int Locomotion = Animator.StringToHash("Locomotion");
+        /// <summary>How long sitting down or getting up takes (the body moves and the motion blends over it).</summary>
+        public const float SitTime = 0.6f;
+
+        /// <summary>Sitting (on a chair, on the ground): the agent holds still and the body is placed by hand; any walk
+        /// gets it up first.</summary>
+        public bool Seated { get; private set; }
+        private Vector3 _standAt;
+        private Coroutine _seating;
+        /// <summary>Where it stands, or would stand up to while seated (what a save keeps).</summary>
+        public Vector3 Footing => Seated ? _standAt : transform.position;
 
         public NavMeshAgent Agent { get; private set; }
         public Animator Animator { get; private set; }
@@ -40,7 +52,9 @@ namespace SecondFace.Game.Play
             {
                 w.Animator.runtimeAnimatorController = locomotion;
                 w.Animator.applyRootMotion = false;
-                w.Animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
+                // always: the player is always in view, and photo mode, portraits, the IK and a sit read the pose
+                // (culled, a body nothing has rendered yet keeps a stale pose: in batch tests, every body)
+                w.Animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
                 w.Animator.gameObject.AddComponent<SecondFace.Game.People.FootPlant>();
                 w.Animator.gameObject.AddComponent<SecondFace.Game.People.Gaze>();
             }
@@ -56,6 +70,7 @@ namespace SecondFace.Game.Play
         /// <summary>Sends it to the walkable point nearest a world point (false if there is none near).</summary>
         public bool GoTo(Vector3 point)
         {
+            if (Seated) Stand();
             if (!Agent.isOnNavMesh && !Settle()) return false;
             if (!NavMesh.SamplePosition(point, out var hit, SampleRadius, NavMesh.AllAreas)) return false;
             Agent.speed = Vector3.Distance(transform.position, hit.position) > JogBeyond ? JogSpeed : WalkSpeed;
@@ -75,6 +90,7 @@ namespace SecondFace.Game.Play
                 _steering = false;
                 return;
             }
+            if (Seated) Stand();
             if (!Agent.isOnNavMesh && !Settle()) return;
             _steering = true;
             Goal = null;
@@ -95,6 +111,68 @@ namespace SecondFace.Game.Play
             return (PickupLowest - PickupFrom) / PickupSpeed;
         }
 
+        /// <summary>Sits (a state of the controller: "sit" on a chair, "sit_ground" on the ground) with the hips over
+        /// <paramref name="seat"/> facing <paramref name="yaw"/>: it stops, the body moves there as the motion blends in,
+        /// and it stays until <see cref="Stand"/> (a walk does it). Where it stood is where it gets up to.</summary>
+        public void Sit(string state, Vector3 seat, float yaw)
+        {
+            if (Animator == null || !Animator.HasState(0, Animator.StringToHash(state))) return;
+            if (Agent.isOnNavMesh) { Agent.ResetPath(); Agent.velocity = Vector3.zero; }
+            Goal = null;
+            _steering = false;
+            if (!Seated) _standAt = transform.position;
+            Seated = true;
+            Planting(false);
+            Agent.updatePosition = false;
+            Agent.updateRotation = false;
+            Animator.CrossFadeInFixedTime(state, SitTime * 0.8f, 0);
+            Move(seat, Quaternion.Euler(0f, yaw, 0f));
+        }
+
+        /// <summary>Gets up where it sat down from and walks again.</summary>
+        public void Stand()
+        {
+            if (!Seated) return;
+            Seated = false;
+            if (_seating != null) StopCoroutine(_seating);
+            _seating = null;
+            if (Animator != null) Animator.CrossFadeInFixedTime(Locomotion, SitTime * 0.6f, 0);
+            transform.position = _standAt;
+            if (Agent.isOnNavMesh) Agent.Warp(_standAt);
+            Agent.updatePosition = true;
+            Agent.updateRotation = true;
+            Planting(true);
+        }
+
+        /// <summary>Foot planting on or off: a seated body rests its feet where the capture put them (the humanoid IK is
+        /// full-body: feet held to the floor in a sit pull the hips up off the seat).</summary>
+        private void Planting(bool on)
+        {
+            var plant = Animator != null ? Animator.GetComponent<SecondFace.Game.People.FootPlant>() : null;
+            if (plant != null) plant.enabled = on;
+        }
+
+        private void Move(Vector3 to, Quaternion facing)
+        {
+            if (_seating != null) StopCoroutine(_seating);
+            _seating = StartCoroutine(Moving(to, facing));
+        }
+
+        private IEnumerator Moving(Vector3 to, Quaternion facing)
+        {
+            var from = transform.position;
+            var turn = transform.rotation;
+            // unscaled: a camp stops time, and the walker still sits down by the fire
+            for (var t = 0f; t < 1f; t += Time.unscaledDeltaTime / SitTime)
+            {
+                var k = Mathf.SmoothStep(0f, 1f, t);
+                transform.SetPositionAndRotation(Vector3.Lerp(from, to, k), Quaternion.Slerp(turn, facing, k));
+                yield return null;
+            }
+            transform.SetPositionAndRotation(to, facing);
+            _seating = null;
+        }
+
         /// <summary>A stick or keys are walking it.</summary>
         public bool Steering => _steering;
         private bool _steering;
@@ -109,7 +187,7 @@ namespace SecondFace.Game.Play
 
         private void Update()
         {
-            if (!Agent.isOnNavMesh) Settle();
+            if (!Agent.isOnNavMesh && !Seated) Settle();
             if (Goal is { } g && Agent.isOnNavMesh && !Agent.pathPending && Agent.remainingDistance <= Agent.stoppingDistance + 0.05f) Goal = null;
             if (Animator != null) Animator.SetFloat(Speed, Agent.velocity.magnitude, 0.12f, Time.deltaTime);
         }

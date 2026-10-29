@@ -9,7 +9,7 @@ namespace SecondFace.Game.UI
     /// </summary>
     public static class Icons
     {
-        public static readonly string[] Names = { "notebook", "map", "pack", "talk", "look", "take", "use", "steal", "give", "attack", "trade", "menu", "open", "camp" };
+        public static readonly string[] Names = { "notebook", "map", "pack", "talk", "look", "take", "use", "steal", "give", "attack", "trade", "menu", "open", "camp", "sit" };
 
         public static VisualElement Make(string name, float size = 40f)
         {
@@ -37,6 +37,14 @@ namespace SecondFace.Game.UI
                     p.ClosePath();
                     p.MoveTo(P(0.16f, 0.66f)); p.LineTo(P(0.84f, 0.66f));   // a board across
                     p.MoveTo(P(0.16f, 0.46f)); p.LineTo(P(0.30f, 0.16f)); p.LineTo(P(0.92f, 0.28f)); p.LineTo(P(0.84f, 0.46f));   // the lid
+                    p.Stroke();
+                    break;
+                case "sit":   // a chair seen from the side
+                    p.BeginPath();
+                    p.MoveTo(P(0.30f, 0.14f)); p.LineTo(P(0.34f, 0.56f)); p.LineTo(P(0.74f, 0.56f));   // the back, the seat
+                    p.MoveTo(P(0.34f, 0.56f)); p.LineTo(P(0.32f, 0.88f));                              // the back legs
+                    p.MoveTo(P(0.72f, 0.56f)); p.LineTo(P(0.74f, 0.88f));                              // the front legs
+                    p.MoveTo(P(0.33f, 0.74f)); p.LineTo(P(0.73f, 0.74f));                              // a rung
                     p.Stroke();
                     break;
                 case "camp":   // a flame over two crossed sticks

@@ -1791,6 +1791,14 @@ MonoBehaviour:
     m_Key: pack.dropped
     m_Metadata:
       m_Items: []
+  - m_Id: 85155515842560
+    m_Key: seat.chair
+    m_Metadata:
+      m_Items: []
+  - m_Id: 85155549396992
+    m_Key: verb.sit
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

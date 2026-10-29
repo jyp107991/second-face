@@ -800,6 +800,24 @@ to, stooped for, taken; the bundle and the pile gone). Evidence `docs/evidence/u
 a share of a stack by a long press (drop one or all for now), item models instead of the bundle for a single big
 thing (with the item models), the search of the fallen (with combat).
 
+*As built (P6.1 part 2c, 2026-10-29).* Sitting. Core `PlacePlan` marks every chair with a `seat` marker (its id or
+`seat_<x>_<y>`, the chair's yaw; Shale has eleven; `PlacePlanTests`). `Walkabout.Equip` makes them interactables (verb
+sit, a chair icon); `Use` walks the walker to the chair's front (0.75 m out along -z at its yaw, where the furnish kit
+puts a seat's front) and `Walker.Sit("sit", seat, yaw + 180)` turns and lowers the body over the seat on the floor the
+walker stands on (a place's markers lie at its ground; a room's floor is higher): the agent holds still
+(`updatePosition` off), the body moves over 0.6 s on unscaled time as the controller cross-fades to the captured sit,
+foot planting is off (the humanoid IK is full-body: feet held to a floor would pull the hips off the seat); any walk
+(`GoTo`, `Steer`) gets up first, back to where it sat down from (`Walker.Footing`, also what a save keeps). Camp sits the
+walker on the ground (`sit_ground`) facing the fire within reach, the animator on unscaled time while the camp stops the
+world, and gets up when camp is broken; a bed of one's own (camp forced indoors with no fire) is not sat by. The
+walker's animator now always animates (it was `CullUpdateTransforms`: in batch tests no renderer is ever visible, so a
+culled body kept a stale walking pose and every sit measured the same hips height). Tests:
+`BootTests.TheWalkerSitsOnAChair` (Shale's eleven chairs; the nearest walked to and sat on: the hips 0.47 m over the
+floor, a foot on it, facing out; a walk gets them up where they sat down from), `BootTests.TheWalkerMakesCamp` (sat on the
+ground at the fire facing it, hips 0.13 m; up when camp is broken). Evidence `docs/evidence/unity/p6/walkabout_sit.jpg`,
+`walkabout_camp.jpg`. Not yet: stools and benches as seats (none in the content yet besides the market bench stall),
+lying down in a bed, the townsfolk sitting at their schedules' seats (P6.2), doors that lock (with the door models).
+
 ### P7 — Chapter One on the phone
 The opening through the stranger's map, end to end on device, at the standard: every scene, conversation, check
 and reward of Chapter One works from the content, saved and resumed. A playtest script (PlayMode, fixture-driven)
@@ -2037,6 +2055,11 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   an exit time), or the walker stands about before and after.
 - **Material colours the ground shares vanish on it** (P6.1): undyed burlap on the desert gravel was invisible from the
   game camera; darken or dye whatever lies on the ground.
+- **A culled animator keeps a stale pose in batch tests** (P6.1): with `CullUpdateTransforms` the states advance but
+  the bones are not written while no renderer is visible, and in `-batchmode` tests none ever is; anything that reads
+  the pose (a sit's hips, IK, a portrait) reads the last pose rendered. The player's walker always animates; probes of
+  a body in an empty test scene set `AlwaysAnimate` and wait in real time (batch frames are about a millisecond long, so
+  a frame count is no wait at all).
 - **Time passed by a screen goes through the world's clock** (P6.1): while walking the `TimeService` leads and the game
   state's minutes are only written at a save; read the clock into the state before a rest or a hunt, set it back after,
   and re-light the sky by hand (the screen stops time, so the sky would not turn by itself).
