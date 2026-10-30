@@ -325,7 +325,8 @@ namespace SecondFace.Core.Npc
             return "wavy";
         }
 
-        /// <summary>A hair of <see cref="Looks.Hair"/> for a hair form and a sex, by the grooming rule.</summary>
+        /// <summary>A hair of <see cref="Looks.Hair"/> for a hair form and a sex, by the grooming rule. Few women cropped
+        /// (R5: a fifth of them were, and with no hair round the face a cropped woman's face read as a man's).</summary>
         public static string HairStyle(Rng rng, string texture, bool male) => texture switch
         {
             "coily" => male
@@ -333,10 +334,10 @@ namespace SecondFace.Core.Npc
                 : Pick(rng, ("sf_cornrows", 0.25), ("sf_coils", 0.2), ("sf_matted", 0.2), ("sf_braid", 0.15), ("sf_bun", 0.1), ("buzz", 0.1)),
             "straight" => male
                 ? Pick(rng, ("sf_crop", 0.45), ("buzz", 0.25), ("sf_bun", 0.15), ("sf_matted", 0.1), ("sf_braid", 0.05))
-                : Pick(rng, ("sf_bun", 0.36), ("sf_braid", 0.31), ("sf_crop", 0.21), ("sf_matted", 0.1), ("buzz", 0.02)),
+                : Pick(rng, ("sf_bun", 0.41), ("sf_braid", 0.36), ("sf_crop", 0.11), ("sf_matted", 0.1), ("buzz", 0.02)),
             _ => male
                 ? Pick(rng, ("buzz", 0.3), ("sf_crop", 0.45), ("sf_matted", 0.15), ("sf_bun", 0.1))
-                : Pick(rng, ("sf_braid", 0.31), ("sf_bun", 0.27), ("sf_crop", 0.22), ("sf_matted", 0.16), ("buzz", 0.04)),
+                : Pick(rng, ("sf_braid", 0.36), ("sf_bun", 0.33), ("sf_crop", 0.11), ("sf_matted", 0.16), ("buzz", 0.04)),
         };
 
         /// <summary>A hair colour for a shade of <see cref="Looks.HairColours"/> at a share of grey: the shade itself, salt and

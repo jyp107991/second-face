@@ -830,8 +830,11 @@ and pepper (`PlayerLook.HairBase`), no dark holes in grey hair; close-ups by `Pe
 (`beards_r5c_closeups.jpg`). Apparent age and sex by real-photo networks (`gate/apparent.py`, §12): our women are read as
 men twice as often as real women (inner face alone), our over-58s twelve years young with the head and neck in frame
 (the inner face reads its age). The sexes' cues tried (`SexCues`: faces pushed to each sex's side inside its range, finest
-and heaviest brows): the network barely moves, so its gap lies in makeup or rendering, not shape (§12). **Next action:**
-beards and hair from the Defender grooms' strands as cards
+and heaviest brows): the network barely moves, so its gap lies in makeup or rendering, not shape (§12). R5 part 4: the
+square notch at the front of every hairline (a rule against the face cut the forehead's bulge) is gone; fewer women
+cropped; **188 of 252** (`hair_r5d_closeups.jpg`, `board_r5d_shale.jpg`). **Next action:** the skin's colour zones (real
+faces are warm at the cheeks and nose, darker round the eyes; ours are one colour: plastic next to the boards' photos),
+then beards and hair from the Defender grooms' strands as cards
 (procedural cards are at their limit: beards read as shreds up close), the older
 women whose faces read masculine (the sex's soft cues: a check beside the measures), the pale band under some jaws; then
 the Defender grooms as cards for every style and R6 (the Shale sheets). Each ends with the gate and the boards. Refit after any shape or render change with every round in `$scratchpad/gate_iter/*` as `--extra` (2D: only

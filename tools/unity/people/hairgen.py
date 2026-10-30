@@ -10,7 +10,7 @@ import json, os
 import numpy as np
 
 STYLES = ('sf_crop', 'sf_bun', 'sf_braid', 'sf_matted', 'sf_coils', 'sf_cornrows')
-VERSION = 29   # bump when the generator changes: mh_build regenerates into its cache by name + version
+VERSION = 31   # bump when the generator changes: mh_build regenerates into its cache by name + version
 ATLAS = 1024
 COLS = {'sheet': 0, 'clump': 1, 'wisp': 2, 'matted': 3}
 
@@ -48,7 +48,9 @@ def hair_weight(P, top, eye, mode, recede=0.0):
     band = (a > 55) & (a < 125) & (e > -35) & (e < 25)
     rr = np.linalg.norm(d, axis=1)
     if band.any(): w[band & (rr > np.median(rr[band]) * 1.06)] = 0.0
-    w[P[:, 2] > eye[2] + 0.1] = 0.0
+    # nothing on the face in front of the eyes (the brows, the brow ridge), below the hairline only: the forehead bulges
+    # forward at the hairline's middle too, and cut there it left a square notch in every hairline (R5, v31)
+    w[(P[:, 2] > eye[2] + 0.1) & (e < 20)] = 0.0
     return w
 
 
@@ -743,6 +745,9 @@ def atlas(rng, size=ATLAS):
             for _ in range(60):
                 x0 = rng.uniform(0, cw); w = rng.uniform(1.5, 4)
                 start = np.maximum(start, np.clip(1 - np.abs(xs - x0) / w, 0, 1) * rng.uniform(0.0, 0.3))
+            # (v30: none late at the column's two edges, where the layer's u stalls at its triangle wave's turns and one
+            # texel column spans a face: a late start there cut a square notch into the front of every hairline)
+            start *= smoothstep(np.minimum(xs, cw - 1 - xs) / 12.0)
             col[..., 3] = smoothstep((yy - start[None, :]) / 0.06)
             col[..., :3] = 0.42
         elif under:

@@ -292,3 +292,12 @@ finest brows on women and the heaviest on men, and both. The network's reading b
 this instrument keys on (makeup's dark lash line and lip colour, which our world mostly lacks) or in the rendering. Faces are
 not pushed past real ranges to please a crude instrument; the owner's eye and the boards decide the sexes' read, and a
 better instrument (a FairFace-trained network, needing PyTorch and more disk than this session has) is the next measure.
+
+R5 part 4 (same day): **the square notch at the front of every hairline** was the hair weight's rule against the face
+(nothing more than 1 cm in front of the eyes' depth), which also caught the forehead's bulge at the hairline's middle: the
+layer had an inner border there and its strands never started over a patch 1.5-2 cm wide. The rule now holds below the
+hairline only (`hairgen.py` v31; the painted scalp's bake follows, being the same weight). Found by measuring, not by eye:
+the layer reached the line all round, but the strand coordinate stayed low 12 mm inside it at the front, and the patch's
+border edges showed a row at 31 degrees. Fewer women cropped (a fifth, now a tenth; Bodies.HairStyle): with no hair round
+the face, a cropped woman's face read as a man's to the eye and to the network alike. The braid made from the Defender's
+real groom reads more like hair than the procedural layers do (strand flow, flyaways, volume): the next lever.

@@ -2545,6 +2545,10 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   next import convert the metas back.
 - **A per-strand hash on UVs needs the UVs to run across strands everywhere.** The hair layer's u is a triangle wave
   round its flow; where it folds, a 7 mm face spans a few strand columns and a per-column choice paints the whole face.
+- **Measure a hair defect's geometry before guessing at its shading (R5).** A square notch at the front of every hairline
+  survived two shader and atlas guesses; the generated layer's border edges (edges used by one face) showed an inner row at
+  the front, and the hair weight's rule against the face (more than 1 cm in front of the eyes) had zeroed the forehead's
+  bulge at the hairline. Rules meant for the face must be bounded to the face.
 
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)
 
