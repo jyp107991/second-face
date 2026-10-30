@@ -811,9 +811,12 @@ colour with straps and a waist band; every generated garment's UVs now fill its 
 dyes on the generated bomber and cargo read as a unitard. P4.15c done: the skin's main light by pre-integrated
 scattering (`Shaders/Skin/skin_lut.png`), pores over the bake (`skin_pores_n.png`, depth 0.5), a faint second specular
 lobe (0.04: at 0.15 foreheads shone like oil), a soft Kajiya-Kay band along the hair (`_HairSheen`); the materials get
-them in `PeopleImportPostprocessor` (`skin_p415c.jpg`). **Next action:** travellers on the roads (P4.13 5b), then the
-new opening in the content (owner note D), then P6 step 4, combat; the people's open items above (the crop, white dyes on
-the generated pieces) when they next come up. (Superseded record of P4.15c's plan:
+them in `PeopleImportPostprocessor` (`skin_p415c.jpg`). **Owner pass 10 (2026-10-30, binding): the people are judged
+against real people from now on** (`docs/PEOPLE_REALISM.md`: the diagnosis, the plausibility gate, steps R1-R6; CLAUDE.md
+§2). **Next action:** R1, the gate: ANSUR II and FairFace into `tools/unity/people/ref/`, the 3D measuring tool, the 2D
+landmark comparison, the reference boards, `PeoplePlausibilityTests`, the baseline published. Parked until the gate is
+green: travellers on the roads (git stash "wip: travellers on the roads"; `WayPath`, `Extras.FirstName/BarksOf`), the
+new opening (owner note D), P6 step 4 (combat). (Superseded record of P4.15c's plan:
 the patch is drafted (pre-integrated scattering from `tools/unity/people/skin_lut.py`, pores from
 `tools/unity/people/skin_detail.py`, a second sharper specular lobe, a faint Kajiya-Kay band on hair); copy the lookup
 and pore textures to `Assets/SecondFace/Shaders/Skin/`, apply, rebuild the wardrobes, render before and after.)

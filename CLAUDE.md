@@ -139,6 +139,12 @@ The owner wants to play unspoiled.
   man's very thin lips, an Asian woman's blue eyes are each unlikely; those examples are illustrative, not the list). It is
   not stereotyping; it reflects the aesthetic diversity that occurs along those lines in life, for immersion. The catalogue
   of regularities, with sources, is `docs/PEOPLE_RESEARCH.md` §6; the model is Core `Faces` and `Peoples`.
+- **Real people or nothing: the plausibility gate** (owner, 2026-10-30, pass 10, binding): no character model is accepted
+  unless it coheres with real images and measurements of real people who share its ancestry, sex and age: proportions
+  of head, neck, face and body within the real range (ANSUR II, FairFace, published facial norms), each archetype
+  defined from real photographs, the real variation within each ancestry (never one face per race), no two people of a
+  place alike, beards and hair as hair (never painted blocks or wigs), and grey hair only from 55 (necessary, not
+  sufficient) and in step with a face that looks its age. The diagnosis, the gate and the plan: `docs/PEOPLE_REALISM.md`.
 - **A new origin** (owner, 2026-10-29, binding): the player is NOT a shelter-dweller who ventures out for the first
   time (too derivative of Fallout, to the point of an IP breach). The opening gives the player character a life of
   their own and the people in it, so the player cares about them as much as about the hero, and it builds the world,
