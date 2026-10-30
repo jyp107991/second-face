@@ -10,7 +10,7 @@ import json, os
 import numpy as np
 
 STYLES = ('sf_crop', 'sf_bun', 'sf_braid', 'sf_matted', 'sf_coils', 'sf_cornrows')
-VERSION = 28   # bump when the generator changes: mh_build regenerates into its cache by name + version
+VERSION = 29   # bump when the generator changes: mh_build regenerates into its cache by name + version
 ATLAS = 1024
 COLS = {'sheet': 0, 'clump': 1, 'wisp': 2, 'matted': 3}
 
@@ -678,8 +678,10 @@ def gen_beard_full(B, rng):
     lipz = lambda fr: beard_zones(fr)[1]
     chinz = lambda fr: np.maximum(beard_zones(fr)[0], beard_zones(fr)[2])
     beard_cards(F, m, rng, 800, lambda fr: np.maximum(jawz(fr), lipz(fr)), 0.12, 0.032, 'clump', lift0=0.01, lift1=0.025, k=4, lipzone=lipz)
-    beard_cards(F, m, rng, 800, chinz, 0.26, 0.042, 'clump', hang=0.35, lift0=0.02, lift1=0.065, k=6, lipzone=lipz)
-    beard_cards(F, m, rng, 120, chinz, 0.22, 0.028, 'wisp', hang=0.4, lift0=0.03, lift1=0.075, k=5, lipzone=lipz)
+    # (R5, v29: the hanging layer in fine strands over the painted beard, not leaf-wide locks: at 4 mm wide each card's end
+    # read as a flake, the beard as shreds)
+    beard_cards(F, m, rng, 500, chinz, 0.24, 0.036, 'clump', hang=0.35, lift0=0.015, lift1=0.05, k=5, lipzone=lipz)
+    beard_cards(F, m, rng, 700, chinz, 0.24, 0.03, 'wisp', hang=0.4, lift0=0.02, lift1=0.065, k=4, lipzone=lipz)
     return m
 
 

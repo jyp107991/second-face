@@ -826,7 +826,9 @@ measured bare of its beard, looks fitted when first shown; **190 of 252 pass** w
 and the years in the skin's relief (`Skin.shader` `WrinkleAt`; §10). R5 part 2: the hair grows from the head (no bald band:
 the layer starts at the painted line, roots tinted under it), strands and locks instead of a plastic shell, grey as salt
 and pepper (`PlayerLook.HairBase`), no dark holes in grey hair; close-ups by `PeopleGateTests.HairCloseups`; **184 of 252**
-(§11, `hair_r5b_closeups.jpg`, `board_r5b_old.jpg`). **Next action:** the white full beard (a bright block), the older
+(§11, `hair_r5b_closeups.jpg`, `board_r5b_old.jpg`); part 3: sparse light stubble, finer full beards, **186 of 252**
+(`beards_r5c_closeups.jpg`). **Next action:** beards and hair from the Defender grooms' strands as cards (procedural cards
+are at their limit: beards read as shreds up close), the older
 women whose faces read masculine (the sex's soft cues: a check beside the measures), the pale band under some jaws; then
 the Defender grooms as cards for every style and R6 (the Shale sheets). Each ends with the gate and the boards. Refit after any shape or render change with every round in `$scratchpad/gate_iter/*` as `--extra` (2D: only
 rounds rendered as now, from round 10). Loop: `PeopleGateTests.MeasureThePeople` -> `faces2d.py` -> `gate.py`

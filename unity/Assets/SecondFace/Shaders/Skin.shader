@@ -284,7 +284,9 @@ Shader "SecondFace/Skin"
             float e = degrees(atan2(d.y, length(d.xz)));
             float az = abs(degrees(atan2(d.x, d.z)));
             float fw = smoothstep(0.0, 1.0, (e - (Hairline(az) - 2.0)) / 8.0);
-            if (az > 55 && az < 125 && e > -35 && e < 25 && r > 1.025) fw = 0;   // the ears stand out of the skull
+            // the ears stand out of the skull (hairgen.py: 6 % past the band's median radius; at 1.025 the temples of a bald
+            // head were cut out of the scalp as pale wedges, R5)
+            if (az > 55 && az < 125 && e > -35 && e < 25 && r > 1.05) fw = 0;
             w = (half)fw;
             if (w < 0.01h) return;
             stub = saturate(1.0h - dot(a, half3(0.3h, 0.59h, 0.11h)) / max(dot(_BareSkin.rgb, half3(0.3h, 0.59h, 0.11h)), 0.02h));
@@ -365,6 +367,9 @@ Shader "SecondFace/Skin"
                 // under a head of hair a tint of its colour, as the scalp shows between the strands (a shaved scalp's stubble
                 // is dots; roots painted as dots read as a shaved head under a wig)
                 half grain = _ScalpColour.a > 1.5h ? (half)(0.85 + 0.15 * Noise3(p * 40.0)) : (half)(0.75 + 0.25 * Noise3(p * 300.0));
+                // a light stubble is sparse against the skin (a white horseshoe on a bald head painted at a dark one's
+                // density read as a flat pale wedge, R5)
+                if (_ScalpColour.a < 1.5h) grain *= 1.0h - 0.55h * saturate(dot(_ScalpColour.rgb, half3(0.3h, 0.59h, 0.11h)) * 2.5h);
                 a = lerp(a, _ScalpColour.rgb, saturate(sstub * 1.6h) * (_ScalpColour.a > 1.5h ? 0.85h : sw) * (1.0h - sbald) * grain);
             }
             bool head = dot(p, p) > 0.01 && p.y > -1.3 && length(p) < 1.6;

@@ -208,9 +208,7 @@ Shader "SecondFace/Cloth"
                     smoothness *= 1.0h - 0.6h * g;
                 }
                 half3 normalTS = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, i.uv), _BumpScale);
-                // (a hair card is a few strands thick: lit alike from both sides, R5: a twisted lock's back read as a black
-                // hole in grey hair)
-                half3 nrm = _HairSheen > 0.001h ? (half3)i.normalWS : IS_FRONT_VFACE(face, i.normalWS, -i.normalWS);
+                half3 nrm = IS_FRONT_VFACE(face, i.normalWS, -i.normalWS);
                 half3 bitangent = i.tangentWS.w * cross(nrm, i.tangentWS.xyz);
                 half3 normalWS = NormalizeNormalPerPixel(TransformTangentToWorld(normalTS, half3x3(i.tangentWS.xyz, bitangent, nrm)));
 

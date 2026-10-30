@@ -253,3 +253,10 @@ Still wrong, seen on the board: a full white beard reads as a bright block; an o
 masculine though she passes every measure (the gate holds proportions, not the sex's softer cues: brow ridge, jaw angle,
 skin); a pale band under the jaw of some women; and the card hair is still far from the benchmark's (the Defender demo's
 real grooms as cards for every style is the next lever).
+
+R5 part 3 (same day): a bald man's horseshoe of white stubble had been painted at a dark stubble's density (a flat pale
+wedge at the temples): light stubble is now sparse against the skin; the full beard's hanging layer is fine strands over
+the painted beard instead of leaf-wide locks (`hairgen.py` v29); the two-sided lighting of hair cards is the standard one
+again (lighting both faces alike was not the cure for the grey bun and lit beards' undersides). **Gate: 186 of 252**
+(`gate_r5c.txt`, `beards_r5c_closeups.jpg`). The beards still read as shreds up close: procedural cards are at their
+limit, and the next lever is the same as the hair's (real grooms as cards).
