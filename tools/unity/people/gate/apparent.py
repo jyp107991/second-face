@@ -1,10 +1,12 @@
 """How old and which sex the people look, by two networks trained on real photographs (Levi & Hassner's age and gender
 networks on Adience, from the ONNX model zoo: age_googlenet.onnx, gender_googlenet.onnx), read the same way on FairFace's
 real frontal adults (the gate's faces, fairface_stats.json's boxes) and on our portraits, so ours are compared with real
-people read by the same instrument, never with the label itself (docs/PEOPLE_REALISM.md §10, §12). A diagnostic, not a
-gate: the instrument is crude (it reads real people young and a third of real women as men), so only the gap between real
-and ours means anything.
-Usage: python3 -I apparent.py <models dir> <FairFace validation.parquet> <unity/test-results> [--pad 0.05]
+people read by the same instrument, never with the label itself (docs/PEOPLE_REALISM.md §10, §12). The instrument is
+crude (it reads real people young and a third of real women as men), so only the gap between real and ours means
+anything: the gate's age rule (gate.py) holds a person's reading to the spread of real people's readings of their age
+class; the sex reading stays a diagnostic.
+Usage: python3 -I apparent.py <models dir> <FairFace validation.parquet> <unity/test-results> [--pad 0.6]
+(writes test-results/people_apparent.json for the gate's age rule; pad 0.6 frames the head as a portrait is seen)
 (run with the gate's venv: onnxruntime, pyarrow, Pillow)"""
 import io, json, os, sys
 import numpy as np
@@ -36,7 +38,7 @@ def main(models, parquet, results, pad):
         i = int(k)
         if ages[i] < 3: continue
         a, pf = read(crop(Image.open(io.BytesIO(imgs[i].as_py()['bytes'])), F['boxes'][k], pad))
-        real.append((BAND[ages[i]], 'f' if gens[i] == 1 else 'm', a, pf))
+        real.append((BAND[ages[i]], 'f' if gens[i] == 1 else 'm', a, pf, i))
     faces = {f['Id']: f for f in json.load(open(os.path.join(results, 'people_faces2d.json')))}
     ours = []
     for p in json.load(open(os.path.join(results, 'people_measures.json'))):
@@ -46,15 +48,20 @@ def main(models, parquet, results, pad):
         ours.append((p['Age'], p['Sex'], a, pf, p['Id']))
     print(f'apparent age (crop pad {pad}), real FairFace against ours:')
     for lo, hi in ((18, 30), (30, 45), (45, 58), (58, 100)):
-        r = [a for b, s, a, _ in real if lo <= b < hi]; o = [a for b, s, a, _, _ in ours if lo <= b < hi]
+        r = [a for b, s, a, *_ in real if lo <= b < hi]; o = [a for b, s, a, _, _ in ours if lo <= b < hi]
         print(f'  {lo}-{hi}: real {np.mean(r):.1f} (n {len(r)})  ours {np.mean(o):.1f} (n {len(o)})')
+    # for the gate's age rule (gate.py): each person's apparent age, and each real face's (FairFace index: its age class
+    # by the band's middle, its apparent age), from which the gate takes each class's spread
+    json.dump({'pad': pad, 'people': {i: a for _, _, a, _, i in ours},
+               'faces': {str(i): [b, round(a, 2)] for b, _, a, _, i in real}},
+              open(os.path.join(results, 'people_apparent.json'), 'w'), indent=1)
     print('read as the other sex (P(own sex) < 0.5):')
     for s in 'fm':
         own = lambda pf: pf if s == 'f' else 1 - pf
-        r = [own(pf) for _, x, _, pf in real if x == s]; o = [own(pf) for _, x, _, pf, _ in ours if x == s]
+        r = [own(pf) for _, x, _, pf, _ in real if x == s]; o = [own(pf) for _, x, _, pf, _ in ours if x == s]
         print(f'  {"women" if s == "f" else "men"}: real {np.mean(np.array(r) < 0.5):.0%} (n {len(r)})  ours {np.mean(np.array(o) < 0.5):.0%} (n {len(o)})')
 
 
 if __name__ == '__main__':
-    pad = float(sys.argv[sys.argv.index('--pad') + 1]) if '--pad' in sys.argv else 0.05
+    pad = float(sys.argv[sys.argv.index('--pad') + 1]) if '--pad' in sys.argv else 0.6
     main(sys.argv[1], sys.argv[2], sys.argv[3], pad)

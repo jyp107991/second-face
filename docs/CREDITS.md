@@ -105,5 +105,8 @@ Used modified (refit to the game's bodies, re-dyed, weathered, resampled texture
 - **FairFace** — Kärkkäinen, K. and Joo, J. (2021), "FairFace: Face Attribute Dataset for Balanced Race, Gender, and
   Age", WACV; the dataset under **CC BY 4.0** (HuggingFaceM4/FairFace). Landmark statistics in
   `tools/unity/people/gate/fairface_stats.json`; its photographs appear in the reference boards
-  (`docs/evidence/unity/p4/realism/`), beside our people, for comparison.
+  (`docs/evidence/unity/p4/realism/`), beside our people, for comparison. **In the game**: every adult's face is drawn
+  from FairFace faces fitted in our sculptor's basis (R3: `tools/unity/people/gate/fairface_shapes.json`,
+  `faces_fit.json`, and Core's `FacesData.cs`, adapted from the dataset; no photograph ships), so the game's credits
+  name FairFace and its licence.
 - **MediaPipe Face Landmarker** (Google, Apache 2.0) measures both.

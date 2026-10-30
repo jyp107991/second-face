@@ -2549,6 +2549,21 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   survived two shader and atlas guesses; the generated layer's border edges (edges used by one face) showed an inner row at
   the front, and the hair weight's rule against the face (more than 1 cm in front of the eyes) had zeroed the forehead's
   bulge at the hairline. Rules meant for the face must be bounded to the face.
+- **Run a gate on the real people it is built from before trusting it (R3).** Ten checks, each at the 3rd-97th or 5th-95th
+  percentile, passed 54 % of real ANSUR soldiers and 36 % of real FairFace faces: a person typical on every count at once
+  is rare. Held to it, the solver pulled everyone towards the middle (less variety, more look-alikes). A gate is a joint
+  region calibrated to pass a stated share of real people (held out), and `gate.py` prints the real pass rate it holds.
+- **A blend of two real faces is not a real face's spread.** w·a + (1−w)·b lies nearer the middle (a 60/40 mix keeps 72 %
+  of the spread): scale the blend's difference from the pool's mean back by 1/√(w²+(1−w)²) (`RealFaces.Blend`).
+- **A fitted slider's value means different things on different bases.** Real faces fitted on the female base use the
+  square-jaw and small-eye sliders where the male base does not; hold dimorphism, ancestry and age in measured
+  proportions, never in slider values that real faces set. And never let a frontal photograph set a depth slider (the
+  brow ridge, the nose's projection, the mouth forward): fitted, they took up other sliders' share of the outline.
+- **Compare with small real groups within their sampling error.** FairFace has 34-91 faces at rest per people and sex: a
+  per-people sex difference of half an sd can be noise. Tests hold ours to the real difference within both samples'
+  error, and only where the real data establishes a difference (`FacesTests.AsReal`).
+- **When fits sit at a slider's end, the basis is short there.** Count the fits pinned at each slider's ends
+  (`faces_fit.json`); past a few per cent, extend the slider (`Sculpt.Extended`) and refit, or the people inherit the base.
 
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)
 

@@ -18,7 +18,11 @@ Run:
 1. `tools/unity/editor.sh test playmode "SecondFace.Tests.PeopleGateTests"`: measures every person (test-results/
    people_measures.json, heads/*.bin, portraits/*.png) and the sculptor shapes' responses (heads/resp_*.bin).
 2. `faces2d.py <unity/test-results> <face_landmarker.task>`: the portraits' landmark proportions.
-3. `gate.py <unity/test-results>`: the verdict (people_gate.json; exit 1 if anyone fails).
+3. `gate.py <unity/test-results>`: the verdict (people_gate.json; exit 1 if anyone fails). Joint checks calibrated on
+   real people (docs/PEOPLE_REALISM.md §13): 3D, the head and neck measures given the stature within the distance that
+   holds 97.5 % of the ANSUR group; 2D, the proportions, the whole shape and (after step 8) the apparent age at one
+   coverage that 97.5 % of FairFace's faces at rest pass; it prints the real pass rates it was calibrated to. Single
+   measures outside the real percentiles are notes.
 4. `board.py <unity/test-results> <validation.parquet> <out.jpg> [ids]`: the reference boards for the owner.
 5. `response.py <unity/test-results>`: the response of each measure to each shape (`response.json`).
 6. `response2d.py <unity/test-results>`: the face proportions' response (`response2d.json`). Both response scripts refit
@@ -27,7 +31,8 @@ Run:
    `fairface_stats.json`. Core `Proportions` then solves every adult to real measures (docs/PEOPLE_REALISM.md §8).
 8. `apparent.py <models dir> <validation.parquet> <unity/test-results> [--pad 0.05|0.6]` (venv, `python -I`): apparent age
    and sex by Levi & Hassner's Adience networks (ONNX model zoo `age_googlenet.onnx`, `gender_googlenet.onnx`), real
-   FairFace against ours; a diagnostic, not a gate (docs/PEOPLE_REALISM.md §12).
+   FairFace against ours (docs/PEOPLE_REALISM.md §12); writes people_apparent.json (ours and every real face's reading),
+   which the gate's age rule reads: run it before step 3.
 9. `PeopleGateTests.HairCloseups` (`SF_HAIR_IDS=cluster_sex_age_k,...`; `SF_HAIR_PARTS=1`; `SF_HAIR_GREY`): heads at
    0.95 m from three sides into test-results/hair, for judging hair and beards up close.
 
@@ -36,3 +41,8 @@ section, not at the throat), eye spacing, neck girth 3.5 cm under the menton, tr
 suprasternale; stature from Unity. The gate does not hold stature itself (the people's own, from their peoples' real
 statures; ANSUR's tails are cut by enlistment standards), nor proportions to stature beyond ANSUR's statures.
 
+Real faces (R3, docs/PEOPLE_REALISM.md §13): `fairface_shapes.py <validation.parquet> <face_landmarker.task>` measures
+FairFace's frontal adults' whole shapes (`shapes.py`: 69 landmarks, aligned) -> `fairface_shapes.json`; `faces_fit.py
+<unity/test-results> --lam 0.1` (after a run with the one-slider response portraits) fits each face at rest in our
+sculptor's basis -> `faces_fit.json`; `gen_core.py` then also writes Core's `FacesData.cs` (the fitted faces, the
+sliders' real ranges, the 2D gate's model), from which Core `RealFaces` draws every adult's face.

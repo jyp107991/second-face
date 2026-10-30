@@ -234,14 +234,14 @@ namespace SecondFace.Tests
         [Test]
         public void AWomansFaceIsNeverAMans()
         {
+            // the jaw's sliders come from real faces fitted on each sex's own base since R3 (FacesData), so a value means
+            // something else on a man's base and a woman's: the jaw is held where it shows, in the measured proportions against
+            // real women's and men's (FacesTests.AWomansFaceIsAWomansAndAMansAMans) and in the head's measures (ProportionsTests);
+            // here, men's jaws measure wider than women's and every face is its own
             var women = Many(false, 300);
             var men = Many(true, 300);
-            // (the neck's girth is a real woman's, ProportionsTests: the solver's, not a cap on the slider)
-            Assert.That(women.All(l => l.Face["chin-bones"] <= 0.15f && l.Face["chin-width"] <= 0.2f), Is.True, "no square jaw on a woman");
-            Assert.That(women.All(l => !l.Face.ContainsKey("head-square") || l.Face["head-square"] <= 0.3f), Is.True);
-            // (the jaw's width is the real faces' since R2, Proportions: the dimorphism is in the means)
-            Assert.That(men.Count(l => l.Face["chin-bones"] > 0.4f), Is.GreaterThan(25), "men with a jaw");
-            Assert.That(women.Average(l => l.Face["chin-bones"]), Is.LessThan(men.Average(l => l.Face["chin-bones"]) - 0.15), "women's jaws finer");
+            var jaw = Array.IndexOf(ProportionsData.Ratios2, "jaw_face");
+            Assert.That(women.Average(l => Proportions.Predict2(l, false)[jaw]), Is.LessThan(men.Average(l => Proportions.Predict2(l, true)[jaw])), "women's jaws finer");
             Assert.That(women.Select(l => string.Join(",", l.Face.OrderBy(kv => kv.Key).Select(kv => kv.Value.ToString("0.00")))).Distinct().Count(), Is.EqualTo(women.Count), "every face its own");
         }
 

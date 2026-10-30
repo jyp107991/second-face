@@ -85,9 +85,12 @@ def menton(P, T, sell):
     """The chin's lowest point on the midline. The chin's underside runs back and down to the throat, so the lowest point
     in front of the throat is the throat's top, not the chin (R2 found every face measured that way, the face up to 2 cm
     long). On the midline section's front contour: the throat, the deepest point of the neck's front 13-21 cm under the
-    nose's root; pogonion, the first bulge above it (the chin, before the fold under the lower lip); menton, the lowest
-    point of the chin in front of 70 % of the way from the throat to pogonion (its lower front corner, where the bony
-    chin's lowest point lies under the skin)."""
+    nose's root; the chin's underside, the first place under the mouth where the contour falls back by 1.5 cm within 1 cm
+    and stays back;
+    pogonion, the first bulge upwards from the throat over the underside (the chin, before the fold under the lower lip), no
+    higher than 3 cm over it; menton, the lowest point of the chin in front of 70 % of the way from the throat to pogonion
+    (its lower front corner, where the bony chin's lowest point lies under the skin). (R3: without the underside, a thick or
+    long neck's larynx was taken for the chin, and a retruded chin's contour ran on to the lips.)"""
     S = section(P, T, 0.0007)   # (just off the midline: its vertices lie on it, and a cut through a vertex is lost)
     S = S[(S[:, 1] < sell[1] - 0.04) & (S[:, 1] > sell[1] - 0.24) & (S[:, 2] > sell[2] - 0.12)]
     ys = np.arange(sell[1] - 0.05, sell[1] - 0.24, -0.002)
@@ -95,16 +98,28 @@ def menton(P, T, sell):
     for i, a in enumerate(ys):
         k = (S[:, 1] <= a) & (S[:, 1] > a - 0.002)
         if k.any(): front[i] = S[k, 2].max()
+    def lowest(ip, it):
+        zp, zc = front[ip], front[it]
+        box = (S[:, 1] <= ys[ip]) & (S[:, 1] >= ys[it]) & (S[:, 2] > zc + 0.7 * (zp - zc))
+        return S[box][int(np.argmin(S[box][:, 1]))]
+    # the chin's underside: the first place from 8 cm under the nose's root where the contour falls back 1.5 cm within 1 cm
+    # and stays back for the next 2 cm (under a full lower lip it falls back too, but the chin comes forward again)
+    drop = None
+    start = int(np.searchsorted(-ys, -(sell[1] - 0.08)))
+    for i in range(start, len(ys) - 15):
+        ahead = front[i + 5:i + 15]
+        if not np.isnan(front[i]) and not np.isnan(ahead).all() and front[i] - np.nanmax(ahead) > 0.015: drop = i; break
     neck = (ys < sell[1] - 0.13) & (ys > sell[1] - 0.21) & ~np.isnan(front)
     it = int(np.flatnonzero(neck)[np.argmin(front[neck])])
+    # upwards from the throat to the first bulge over the chin's underside (a bulge under it is the larynx), no higher than
+    # 3 cm over it (a retruded chin's contour runs on to the lips)
+    top = max(0, drop - 15) if drop is not None else 0
     ip, best = it, front[it]
-    for i in range(it - 1, -1, -1):           # upwards from the throat
+    for i in range(it - 1, top - 1, -1):
         if np.isnan(front[i]): continue
         if front[i] > best: ip, best = i, front[i]
-        elif front[i] < best - 0.0015: break   # past the chin, into the fold under the lip
-    zp, zc = front[ip], front[it]
-    box = (S[:, 1] <= ys[ip]) & (S[:, 1] >= ys[it]) & (S[:, 2] > zc + 0.7 * (zp - zc))
-    return S[box][int(np.argmin(S[box][:, 1]))]
+        elif front[i] < best - 0.0015 and (drop is None or i <= drop + 2): break
+    return lowest(ip, it)
 
 
 def suprasternale(P, T, ment):

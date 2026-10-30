@@ -59,6 +59,8 @@ namespace SecondFace.Core.Npc
             public string Type;
             public string Cluster;
             public double Attractive;
+            /// <summary>The real faces it was drawn from (<see cref="RealFaces.Source"/>), or null.</summary>
+            public string Source;
             public string Archetype => $"{Cluster}/{Type}";
         }
 
@@ -233,30 +235,13 @@ namespace SecondFace.Core.Npc
             // fullness: the body's weight in the face; a lean, hungry body's hollows; a muscled man is never gaunt
             var full = Math.Clamp(who.Build * 0.8 + Bodies.Normal(rng) * 0.12, -1, 1.2);
             if (who.Male && who.Muscle > 0) full = Math.Max(full, -1 + who.Muscle * 1.8);   // the more muscle, the less gaunt he can be
-            Put("head-fat", 0.45 * full); Put("cheek-volume", 0.35 * full); Put("chin-width", 0.06 * full);
-            Put("neck-double", Math.Max(0, full - 0.3) * 0.7);
-            if (full < 0)
-            {
-                Put("cheek-volume", 0.35 * full); Put("forehead-temple", 0.45 * full); Put("cheek-inner", 0.25 * full); Put("eye-bag", -0.15 * full);
-            }
-            else Put("cheek-bones", -0.12 * full);   // a full face hides its cheekbones
-            if (who.Male && who.Muscle > 0)
-            {
-                // a muscled man's face: the neck and the jaw's muscle, and cheeks that are never hollow
-                Put("neck-scale-horiz", 0.3 * who.Muscle); Put("chin-width", 0.12 * who.Muscle); Put("cheek-volume", 0.25 * who.Muscle);
-                Put("forehead-temple", 0.15 * who.Muscle);
-            }
+            Build(Put, who, full);
 
             // the years as the face shows them, sooner on a hard life; the young softer
             var apparent = Apparent(who.Age, who.Hardness);
             var old = Math.Clamp((apparent - 25) / 45, 0, 1);
             var young = Math.Clamp((22 - who.Age) / 8, 0, 1);
-            Put("eye-bag", 0.6 * old); Put("nose-point", -0.5 * old); Put("nose-scale-vert", 0.2 * old);
-            Put("mouth-upperlip-volume", -0.4 * old); Put("mouth-lowerlip-volume", -0.35 * old); Put("mouth-laugh-lines", 0.7 * old);
-            Put("eye-height2", -0.3 * old); Put("cheek-trans", -0.35 * old); Put("eyebrows-trans", -0.2 * old); Put("neck-double", 0.25 * old);
-            Put("ear-scale", 0.25 * old); Put("head-age", 0.6 * old - 0.4 * young); Put("forehead-temple", -0.25 * old);
-            Put("mouth-angles", -0.25 * old); Put("eye-eyefold", -0.25 * old);
-            Put("cheek-volume", -0.25 * old * (full > 0.3 ? 0.3 : 1) + 0.2 * young); Put("eye-scale", 0.15 * young);
+            Years(Put, old, young, full);
 
             // what the striking share: for a woman large eyes, full lips, high cheekbones, a fine nose; for a man a strong jaw
             // and cheekbones (the skew the owner asks for, never past the sex's own range)
@@ -273,6 +258,41 @@ namespace SecondFace.Core.Npc
                 Put(s.Id, Bodies.Normal(rng) * sigma * k);
             }
 
+            // R3 (owner, pass 10: no imaginary faces): an adult's own shape from real faces of their people, sex and years
+            // (RealFaces), the build and the years laid on it as differences from what the real faces' own years gave them; the
+            // sliders a frontal face does not show (the profile, the head's depth) keep their people's rules above
+            string source = null;
+            if (who.Age >= 18)
+            {
+                // (the body's fullness in sds of real faces': the build, and a muscled man's mass)
+                // (the striking nearer their people's middle and the plain further from it: an average face is an attractive
+                // one, Langlois and Roggman 1990; the scale's mean over the drawn attractiveness is one, so the people's spread
+                // is kept on the whole)
+                var spread = 1.31 - 0.5 * att;
+                var real = RealFaces.Pick(rng, who.Male, who.Cluster, who.Age, 1.5 * full + (who.Male ? 0.6 * Math.Max(0, who.Muscle) : 0), spread);
+                if (real != null)
+                {
+                    var delta = new Dictionary<string, double>();
+                    void D(string id, double dv) => delta[id] = (delta.TryGetValue(id, out var d0) ? d0 : 0) + dv;
+                    Build(D, who, full);
+                    Years(D, old, young, full);
+                    // (less what the real faces' own years already gave them)
+                    Years((id, dv) => D(id, -dv), Math.Clamp((real.Years - 25) / 45, 0, 1), 0, 0);
+                    // what the striking share, as above
+                    if (who.Male) { D("chin-bones", 0.15 * lift); D("cheek-bones", 0.15 * lift); }
+                    else { D("eye-scale", 0.15 * lift); D("mouth-lowerlip-volume", 0.12 * lift); D("cheek-bones", 0.15 * lift); }
+                    // blended with the real spread kept (RealFaces.Blend), scaled from the pool's middle as above
+                    var blend = RealFaces.Values(real, RealFaces.Mean(RealFaces.Pool(who.Male, who.Cluster, who.Age)).V, spread);
+                    for (var k = 0; k < FacesData.Sliders.Length; k++)
+                    {
+                        var id = FacesData.Sliders[k];
+                        if (Array.IndexOf(FacesData.Set, id) < 0) continue;
+                        v[id] = blend[k] + Bodies.Normal(rng) * 0.04 + (delta.TryGetValue(id, out var dd) ? dd : 0);
+                    }
+                    source = RealFaces.Source(real, spread);
+                }
+            }
+
             // clamped to the sex's ranges and, for the striking, short of the extremes
             var limit = 1.0 - 0.2 * att;
             var values = new Dictionary<string, float>();
@@ -282,12 +302,43 @@ namespace SecondFace.Core.Npc
                 if (s.Paired)
                 {
                     var (lo, hi) = Sculpt.Range(s.Id, who.Male);
-                    x = Math.Clamp(x, Math.Max(lo, -limit), Math.Min(hi, limit));
+                    x = Math.Clamp(x, Math.Max(lo, -limit * Sculpt.Reach(s.Id)), Math.Min(hi, limit * Sculpt.Reach(s.Id)));
                 }
                 else x = Math.Clamp(x, 0, Sculpt.HeadCap(s.Id, who.Male));
                 values[s.Id] = (float)Math.Round(x, 3);
             }
-            return new Face { Values = values, Type = picked, Cluster = who.Cluster, Attractive = att };
+            return new Face { Values = values, Type = picked, Cluster = who.Cluster, Attractive = att, Source = source };
+        }
+
+        /// <summary>The body's weight and muscle in the face: fullness or a lean, hungry body's hollows; a muscled man's neck
+        /// and jaw, never gaunt.</summary>
+        private static void Build(Action<string, double> Put, Who who, double full)
+        {
+            Put("head-fat", 0.45 * full); Put("cheek-volume", 0.35 * full); Put("chin-width", 0.06 * full);
+            Put("neck-double", Math.Max(0, full - 0.3) * 0.7);
+            if (full < 0)
+            {
+                Put("cheek-volume", 0.35 * full); Put("forehead-temple", 0.45 * full); Put("cheek-inner", 0.25 * full); Put("eye-bag", -0.15 * full);
+            }
+            else Put("cheek-bones", -0.12 * full);   // a full face hides its cheekbones
+            if (who.Male && who.Muscle > 0)
+            {
+                // a muscled man's face: the neck and the jaw's muscle, and cheeks that are never hollow
+                Put("neck-scale-horiz", 0.3 * who.Muscle); Put("chin-width", 0.12 * who.Muscle); Put("cheek-volume", 0.25 * who.Muscle);
+                Put("forehead-temple", 0.15 * who.Muscle);
+            }
+        }
+
+        /// <summary>The years as the face shows them (<paramref name="old"/> 0 at 25 .. 1 at 70 apparent; <paramref name="young"/>
+        /// under 22), less on a full face's cheeks.</summary>
+        private static void Years(Action<string, double> Put, double old, double young, double full)
+        {
+            Put("eye-bag", 0.6 * old); Put("nose-point", -0.5 * old); Put("nose-scale-vert", 0.2 * old);
+            Put("mouth-upperlip-volume", -0.4 * old); Put("mouth-lowerlip-volume", -0.35 * old); Put("mouth-laugh-lines", 0.7 * old);
+            Put("eye-height2", -0.3 * old); Put("cheek-trans", -0.35 * old); Put("eyebrows-trans", -0.2 * old); Put("neck-double", 0.25 * old);
+            Put("ear-scale", 0.25 * old); Put("head-age", 0.6 * old - 0.4 * young); Put("forehead-temple", -0.25 * old);
+            Put("mouth-angles", -0.25 * old); Put("eye-eyefold", -0.25 * old);
+            Put("cheek-volume", -0.25 * old * (full > 0.3 ? 0.3 : 1) + 0.2 * young); Put("eye-scale", 0.15 * young);
         }
 
         /// <summary>Another face for the same person (the creation's "another face"): another structure when their ancestry

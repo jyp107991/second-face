@@ -50,19 +50,21 @@ is the diagnosis and the plan; it overrides earlier people plans where they diff
 A person the game makes is accepted only if all three hold, and a test fails the build otherwise:
 
 1. **3D measures in range.** Measured on the person's mesh (`tools/unity/people/measure.py`: the base with their shape
-   values, the ANSUR landmarks): every measure within the 3rd-97th percentile of their sex and ancestry in ANSUR II, and
-   the measures together within the 95 % ellipse (Mahalanobis distance on the group's covariance, so a face cannot be
-   at the edge on everything at once).
+   values, the ANSUR landmarks): the head and neck measures given the person's stature within the region that holds
+   97.5 % of the real people of their sex and ancestry in ANSUR II (the whitened distance from the group's conditional
+   mean; §13: not each measure to its own percentiles, which half of the real people fail).
 2. **2D proportions in range.** The same face-landmark model (MediaPipe Face Landmarker, Apache 2.0) run on our
-   portrait render (85 mm equivalent, 1.6 m, soft key light) and on the group's FairFace photos; each normalised ratio
-   (face width to height, eye spacing, nose width, mouth width, jaw width, forehead height, brow to eye) within the
-   real group's 5th-95th percentile.
+   portrait render (85 mm equivalent, 1.6 m, soft key light) and on the group's FairFace photos: the normalised ratios
+   (face width to height, eye spacing, nose width, mouth width, jaw width, the lower face, the lips, brow to eye), the
+   face's whole shape and its apparent age, together within the region that holds 97.5 % of the real faces at rest of
+   their people and sex (one coverage for the three; §13).
 3. **Seen beside real people.** Every evidence sheet sets each person beside four real photos of their group and age
    band (the reference board), and the owner judges that. No sheet without the boards.
 
 Two more rules ride on the gate: **distinct people** (no two people of one place closer in face-shape space than the
-real nearest-neighbour distance within a group of that size), and **age coherence** (the face's apparent age from its
-measures and skin within ten years of the person's age; grey hair only from 55, see §4.4).
+real nearest-neighbour distance within a group of that size), and **age coherence** (the face's apparent age, read by a
+network trained on real photographs, within the spread of real people of the person's age class read the same way: part
+of the 2D check, §13; grey hair only from 55, see §4.4).
 
 ## 4. Fixing the generator to pass it
 
@@ -101,7 +103,7 @@ and an Unreal export. None is a substitute for the gate; each would be held to i
 - **R1** the gate: ANSUR II and FairFace in, the measuring tool, the 2D landmark comparison, the reference boards,
   `PeoplePlausibilityTests`; run it on the current people and publish the failures (the honest baseline).
 - **R2** head, neck and body proportions from the regressions; re-run the gate. Done: 206 of 252 pass (§8).
-- **R3** faces fitted to real faces per group; distinctness; re-run.
+- **R3** faces fitted to real faces per group; distinctness; re-run. The gate recalibrated on real people (§13).
 - **R4** age in the face; greying from 55.
 - **R5** beards as geometry; hair fitted to the head.
 - **R6** the Shale sheets with reference boards, to the owner.
@@ -309,3 +311,74 @@ the gate's portrait (gate 185 of 252, `gate_r5e.txt`; noise against 188). **Know
 studio renders without the game's post-processing (ACES, grading, vignette: `World.Look`); applying the look to its
 camera, through `Camera.Render` or the render request alike, changed nothing in batch mode, so the portraits and boards are
 linear and fair skin clips brighter than the phone shows. Open: find why, so the boards show the game's grade.
+
+## 13. R3: faces from real faces, and a gate calibrated on real people (2026-10-30)
+
+**The gate rejected real people.** Run on the real people it is built from, the old gate failed most of them: one check
+per measure at the 3rd-97th percentile passed 54 % of real ANSUR II soldiers, and one per ratio at the 5th-95th passed 36 %
+of real FairFace faces at rest. Each check alone keeps 90-94 %; ten together keep only the people typical on every count,
+which real people are not. Held to it, the solver pulled everyone towards the middle on every measure at once (its
+targets kept a margin inside each range): the opposite of real variety, and the source of look-alikes. Recalibrated
+(`gate.py`, `ansur_stats.py`):
+
+- **3D**: the head and neck measures given the stature, whitened by the group's conditional covariance; a person fails
+  beyond the distance that holds 97.5 % of the group's real people (each held out of the mean and covariance it is
+  measured against: the small groups' in-sample distances run short). Limits 4.26-4.51.
+- **2D**: the face's proportions (nine ratios) whitened by the spread within a people (pooled per sex: FairFace has
+  34-91 faces at rest per people and sex), its whole shape (69 landmarks, symmetrised, in the sex's whitened shape space,
+  `shapes.py`) and its apparent age (§12's network, against real people of its age class), with one coverage for the three
+  chosen so that 97.5 % of the real faces pass all three (men 97.6 % of 496, women 97.7 % of 348).
+- So about 95 % of real people would pass the gate, and every one of ours must. Single measures outside the real
+  percentiles stay in the report as notes (real people have them too). Distinct people: the simulated real groups are
+  held to the same joint regions.
+- **As groups**: each age class's mean apparent age against real people's (`population` in `gate.py`): one person's
+  reading can lie in the wide real spread while a whole class reads years off.
+
+**Faces drawn from real faces** (`fairface_shapes.py`, `faces_fit.py`, Core `RealFaces`, `FacesData`): FairFace's 844
+frontal faces at rest (lips together), each fitted in our sculptor's basis on its sex's base (ridge; the people's and
+age's macros fixed). Every adult's face is three real faces of their people, sex and age class blended (none more than
+60 %: two people of one place sharing a face stayed alike), the blend's difference from the pool's middle scaled back to
+one face's spread (a plain 60/40 mix of two keeps 72 % of their spread, and people blended so came out alike). A person
+keeps their source (`PlayerLook.FaceSource`), and the boards show it beside them. The frontal photograph sets the 40
+sliders it measurably moves, never the depth sliders (the head's length, the brow ridge, the nose's projection, the mouth
+and chin forward): a photograph cannot see depth, and fitted they took up other sliders' share of the outline.
+
+- **The basis's limits, measured**: where fits sat at a slider's end (the brows' height for a fifth of women and an
+  eighth of men; men's chin and nose length for a tenth), the slider reaches further (`Sculpt.Extended`). The fits now
+  reach 82-89 % of women's shapes and 83-95 % of men's (from 79-87 % and 82-93 %).
+- **The body in the face**: the real faces are drawn weighted by how their fullness fits the body's (facial adiposity
+  follows body mass: Coetzee, Perrett and Stephen 2009), so a muscled man is hardly ever gaunt; the head and neck measures
+  are drawn given the body's mass as well (ANSUR II: a man's neck 20 mm round thicker per sd of BMI at his stature, r about
+  0.8; his cheeks 3 mm wider), so a heavy or muscled man's neck is thicker.
+- **Attractiveness**: the striking nearer their people's middle and the plain further from it (averageness: Langlois and
+  Roggman 1990), the people's spread kept on the whole.
+- **At the source**: each blend is checked against the gate's 2D checks before it is used, and the head's draw is held
+  inside the 3D region less room for the model's error.
+
+**The tests that held hand rules**, rewritten against real data: a slider set by a real fit means different things on a
+man's base and a woman's (real women's jaws fit with the female base's square shape; their eyes with the eye-size slider
+below zero), so dimorphism, ancestry and age are held where they show, in the measured proportions: ours must differ
+between the sexes, the peoples and the ages as real faces do, within the sampling error of both (three standard errors
+for two dozen comparisons), wherever the real faces establish a difference. Per people, FairFace's sex differences are
+noise; pooled, they hold. Sliders a frontal face does not show keep their archetype rules.
+
+**A measuring fault found on the way**: on a thick or long neck the chin finder (`measure.py`) took the larynx for the
+chin (faces measured 4-6 sd long, their necks measured round the jaw), and on a chin set back behind the lips it ran on
+to the lips (faces measured up to 7 mm short: many West and East African faces from the real faces). It now anchors on
+the chin's underside; the response models were refitted on every round (2,772 people) with it.
+
+**Result** (`gate_r3.txt`, `board_r3_shale.jpg`): **245 of 252** pass the person-by-person gate (185 before R3); 3D head
+and neck 2, face shape 1 (an authored raider's broad frame), and two pairs alike (each pair shares real faces: FairFace
+has 6-60 faces per people, sex and decade, and nothing yet stops two people of one place drawing the same one). **The
+gate as a whole fails**, and the boards fail by eye:
+
+- **The years**: as groups, our 20-29s read 4 years older than real people of that age, our 50-59s 13 years younger and
+  our 60-69s 10 younger. The geometry of real old faces is in our people now; what ages a face in a photograph beyond its
+  outline (the skin, the eyelids and the jaw's soft tissue, the neck, thinning hair) is not. Next: R4.
+- **The sexes**: three in four of our women are read as men by the network (real women: 37 %), and on the board several
+  women read as young men to the eye (Ada Vey, Issa Lind, Mags Durrow): their real faces' proportions are there, but
+  not what people read sex by beyond proportions (hair round the face, the brows' and lashes' darkness, the lips' colour,
+  the skin's smoothness and the soft tissue over the cheeks). Next, with R4: those cues, measured on the population.
+- **Look-alikes**: the people of one place drawn without sharing a real face (a place-level rule in Core).
+
+The geometric gate is necessary, not sufficient: no person is accepted on its numbers while the boards say otherwise.

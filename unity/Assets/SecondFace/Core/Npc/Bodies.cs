@@ -203,11 +203,13 @@ namespace SecondFace.Core.Npc
 
             // the face from the archetypes of their ancestry (both, for two), sex, build and muscle, and the years as a life
             // like theirs shows them (owner, pass 9: coherent bundles of features, not a reroll; Faces)
-            look.Face = Faces.Draw(rng, new Faces.Who
+            var drawn = Faces.Draw(rng, new Faces.Who
             {
                 Male = male, Age = age, Cluster = cluster, Second = second, Share = share,
                 Build = look.Build, Muscle = look.Muscle, Hardness = hard,
-            }).Values;
+            });
+            look.Face = drawn.Values;
+            look.FaceSource = drawn.Source;
             // the body ages with the face (the skin's age follows it, LookView)
             s["body-age"] = (float)Math.Clamp((Faces.Apparent(age, hard) - 24) / 46.0, 0, 1);
 

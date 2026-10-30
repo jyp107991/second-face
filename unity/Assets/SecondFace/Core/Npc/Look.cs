@@ -47,6 +47,9 @@ namespace SecondFace.Core.Npc
         /// <summary>The hair's own colour before the grey (0: <see cref="HairColour"/> is the whole of it): drawn as salt and
         /// pepper, each strand this or white by <see cref="Grey"/> (R5).</summary>
         [JsonProperty("hairBase")] public int HairBase;
+        /// <summary>The real faces this face was drawn from (<see cref="RealFaces.Source"/>: "ff:A+B:w", FairFace's indices),
+        /// or null (R3).</summary>
+        [JsonProperty("faceSource")] public string FaceSource;
         [JsonProperty("eyes")] public string Eyes = "brown";
         /// <summary>One of <see cref="Looks.Scars"/>, or null.</summary>
         [JsonProperty("scar")] public string Scar;

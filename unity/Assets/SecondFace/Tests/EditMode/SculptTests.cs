@@ -27,10 +27,13 @@ namespace SecondFace.Tests
         {
             var shapes = Sculpt.Shapes().ToList();
             Assert.That(shapes.Distinct().Count(), Is.EqualTo(shapes.Count));
-            var w = Sculpt.Weights(new Dictionary<string, float> { ["eye-scale"] = 3f, ["head-oval"] = -1f, ["not-a-slider"] = 1f }, aged: 2f);
+            var w = Sculpt.Weights(new Dictionary<string, float> { ["eye-scale"] = 3f, ["nose-scale-horiz"] = 3f, ["head-oval"] = -1f, ["not-a-slider"] = 1f }, aged: 2f);
             Assert.That(w.Select(x => x.Shape), Is.EqualTo(shapes), "the weights cover exactly the sculptor's shapes, in order");
             var d = w.ToDictionary(x => x.Shape, x => x.Weight);
-            Assert.That(d["eye-scale-incr"], Is.EqualTo(100f));
+            Assert.That(d["nose-scale-horiz-incr"], Is.EqualTo(100f));
+            // a slider the real faces take past the shape's end (Sculpt.Extended, R3) is clamped to its own reach
+            Assert.That(Sculpt.Reach("eye-scale"), Is.GreaterThan(1f));
+            Assert.That(d["eye-scale-incr"], Is.EqualTo(100f * Sculpt.Reach("eye-scale")).Within(1e-3f));
             Assert.That(d["head-oval"], Is.EqualTo(0f), "single shapes do not go below zero");
             Assert.That(d[Sculpt.Aged], Is.EqualTo(100f));
             Assert.That(Sculpt.Sliders.All(s => Sculpt.Groups.Contains(s.Group)), Is.True);

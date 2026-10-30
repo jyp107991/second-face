@@ -833,11 +833,21 @@ men twice as often as real women (inner face alone), our over-58s twelve years y
 and heaviest brows): the network barely moves, so its gap lies in makeup or rendering, not shape (§12). R5 part 4: the
 square notch at the front of every hairline (a rule against the face cut the forehead's bulge) is gone; fewer women
 cropped; **188 of 252** (`hair_r5d_closeups.jpg`, `board_r5d_shale.jpg`). The skin's colour zones are in
-(`Skin.shader` `Zones`; 185 of 252). **Next action:** the gate studio's missing post-processing (its portraits are linear,
-not the game's grade; §12), then beards and hair from the Defender grooms' strands as cards
-(procedural cards are at their limit: beards read as shreds up close), the older
-women whose faces read masculine (the sex's soft cues: a check beside the measures), the pale band under some jaws; then
-the Defender grooms as cards for every style and R6 (the Shale sheets). Each ends with the gate and the boards. Refit after any shape or render change with every round in `$scratchpad/gate_iter/*` as `--extra` (2D: only
+(`Skin.shader` `Zones`; 185 of 252). **R3 done (2026-10-30): faces from real faces, and the gate calibrated on real
+people** (`docs/PEOPLE_REALISM.md` §13). The old gate failed most real people (one check per measure: 54 % of ANSUR's, 36 %
+of FairFace's faces passed), so it is now joint regions that pass 97.5 % of real people (3D: head and neck given stature;
+2D: proportions, whole shape and apparent age at one coverage), plus a population check of each age class's apparent age.
+Every adult's face is three real FairFace faces of their people, sex and decade blended with the real spread kept (Core
+`RealFaces`, `FacesData`; `gate/fairface_shapes.py`, `faces_fit.py`), picked for the body's fullness, the striking nearer
+the middle; head and neck drawn given the body's mass (ANSUR); depth sliders never set from photographs; brows, chin and
+nose reach further (`Sculpt.Extended`); the chin finder fixed (it took a larynx for a chin) and the response models
+refitted; Core tests hold dimorphism, ancestry and age against real faces within sampling error. **245 of 252** pass
+person by person (`gate_r3.txt`, `board_r3_shale.jpg`), **but the gate fails as a whole and the boards fail by eye**: our
+50-69s read 10-13 years young, three in four women are read as men (real 37 %), and two pairs share real faces.
+**Next action:** R4 and the sexes' cues together, measured on the population with `apparent.py` and judged on the boards:
+what ages a face beyond its outline (skin, eyelids, the jaw's and neck's soft tissue, thinning hair) and what people read
+sex by beyond proportions (hair round the face, brows' and lashes' darkness, lip colour, skin, the cheeks' soft tissue);
+then no shared real face within a place; then the studio's post-processing, beards from real grooms and R6. Each ends with the gate and the boards. Refit after any shape or render change with every round in `$scratchpad/gate_iter/*` as `--extra` (2D: only
 rounds rendered as now, from round 10). Loop: `PeopleGateTests.MeasureThePeople` -> `faces2d.py` -> `gate.py`
 -> `board.py`; after shape changes `response.py`/`response2d.py` -> `gen_core.py`. Parked until the gate is
 green: travellers on the roads (git stash "wip: travellers on the roads"; `WayPath`, `Extras.FirstName/BarksOf`), the

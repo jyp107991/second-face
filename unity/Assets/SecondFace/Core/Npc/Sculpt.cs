@@ -13,7 +13,8 @@ namespace SecondFace.Core.Npc
             Id = id; Group = group; Label = label; Low = low; High = high;
         }
         public bool Paired => Low != null;
-        public float Min => Paired ? -1f : 0f;
+        public float Min => Paired ? -Sculpt.Reach(Id) : 0f;
+        public float Max => Sculpt.Reach(Id);
     }
 
     /// <summary>
@@ -156,12 +157,26 @@ namespace SecondFace.Core.Npc
         /// at zero when its slider is elsewhere, so applying the list over an earlier face leaves nothing behind. Values
         /// out of range are clamped; ids that are not sliders (and not <see cref="Aged"/>) are ignored.
         /// </summary>
+        /// <summary>The shapes real faces carry past MakeHuman's own end (R3: fitted to FairFace, a third of real faces wanted a
+        /// thinner lower lip than the base's thinnest, a quarter of women smaller and less open eyes, a sixth a wider mouth):
+        /// blend shapes are linear, so these reach a share further (a weight past 100).</summary>
+        public static readonly Dictionary<string, float> Extended = new()
+        {
+            ["mouth-scale-horiz"] = 1.6f, ["mouth-lowerlip-height"] = 1.6f, ["eye-scale"] = 1.6f, ["eye-height2"] = 1.6f,
+            // the brows' height and, on men, the chin's and the nose's length (R3: a fifth of real women's and an eighth of
+            // real men's faces fitted with the brows at an end, a tenth of men's with the chin or the nose at one)
+            ["eyebrows-trans"] = 1.6f, ["chin-height"] = 1.4f, ["nose-scale-vert"] = 1.4f,
+        };
+
+        /// <summary>How far a slider reaches either way (1, or further for <see cref="Extended"/>).</summary>
+        public static float Reach(string id) => Extended.TryGetValue(id, out var r) ? r : 1f;
+
         public static List<(string Shape, float Weight)> Weights(IReadOnlyDictionary<string, float> values, float aged = 0f)
         {
             var l = new List<(string, float)>((Sliders.Length + Body.Length) * 2 + 1);
             foreach (var s in All)
             {
-                var v = values != null && values.TryGetValue(s.Id, out var x) ? Math.Clamp(x, s.Min, 1f) : 0f;
+                var v = values != null && values.TryGetValue(s.Id, out var x) ? Math.Clamp(x, s.Min, s.Max) : 0f;
                 if (s.Paired)
                 {
                     l.Add((s.Id + "-" + s.Low, v < 0 ? -v * 100f : 0f));
@@ -219,14 +234,16 @@ namespace SecondFace.Core.Npc
         /// <summary>The range a sex's faces keep to on a slider (the whole range when it marks no sex).</summary>
         public static (float Lo, float Hi) Range(string id, bool male)
         {
+            // the real faces' range where they set the slider (R3), else the sex's rule
+            if (RealFaces.Range(id, male) is { } real) return real;
             if (BySex.TryGetValue(id, out var r)) return male ? r.M : r.F;
             var s = Slider(id);
-            return (s != null ? s.Min : -1f, 1f);
+            return (s != null ? s.Min : -1f, s != null ? s.Max : 1f);
         }
 
         /// <summary>How far a sex's faces take the head's single shapes: a square, long or wide-jawed (triangular) head
         /// barely on a woman; a round one or a heart only softly on a man.</summary>
-        public static float HeadCap(string id, bool? male) => male switch
+        public static float HeadCap(string id, bool? male) => male is bool m && RealFaces.Range(id, m) is { } real ? real.Hi : male switch
         {
             false => id == "head-square" || id == "head-rectangular" ? 0.3f : id == "head-triangular" ? 0.25f : 0.85f,
             true => id == "head-round" || id == "head-oval" || id == "head-invertedtriangular" ? 0.55f : 0.85f,

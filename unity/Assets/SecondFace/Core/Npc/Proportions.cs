@@ -4,12 +4,13 @@ using System.Collections.Generic;
 namespace SecondFace.Core.Npc
 {
     /// <summary>
-    /// Heads, faces and necks held to real people (owner, pass 10; docs/PEOPLE_REALISM.md §4.1). Each adult draws their head
-    /// breadth and length, cheek width, face height, eye spacing, neck girth, the vault's height over the ears and the head
-    /// and neck's height from the real people of their sex and ancestry (ANSUR II, <see cref="ProportionsData"/>: the group's covariance given their stature, so the measures vary
-    /// together as real ones do), kept inside the group's 3rd-97th percentiles on every measure and on every proportion
-    /// between them. The sculptor's size shapes (<see cref="Free"/>) are then solved, with the bases' measured response to
-    /// each, to reach those measures, moving the archetype's own values as little as they can.
+    /// Heads, faces and necks held to real people (owner, pass 10; docs/PEOPLE_REALISM.md §4.1, §13). Each adult draws their
+    /// head breadth and length, cheek width, face height, eye spacing, neck girth, the vault's height over the ears and the
+    /// head and neck's height from the real people of their sex and ancestry (ANSUR II, <see cref="ProportionsData"/>: the
+    /// group's covariance given their stature, so the measures vary together as real ones do), held inside the region that
+    /// holds 97.5 % of the group's real people (the gate's 3D check, R3: not each measure to its own percentiles, which half
+    /// of the real people fail). The sculptor's size shapes (<see cref="Free"/>) are then solved, with the bases' measured
+    /// response to each, to reach those measures, moving the archetype's own values as little as they can.
     /// </summary>
     public static class Proportions
     {
@@ -34,6 +35,9 @@ namespace SecondFace.Core.Npc
         /// archetypes' rule, Faces: no flared or squared mandible, no broad chin).</summary>
         public static (double Lo, double Hi) Range(string id, bool male)
         {
+            // the real faces' range where they set the shape (R3: the hand-written women's jaw rules were narrower than real
+            // women's jaws), never past the limit
+            if (RealFaces.Range(id, male) is { } real) return (Math.Max(real.Lo, -Limit * Sculpt.Reach(id)), Math.Min(real.Hi, Limit * Sculpt.Reach(id)));
             if (!male)
                 switch (id)
                 {
@@ -53,10 +57,6 @@ namespace SecondFace.Core.Npc
         /// <summary>The neck's shapes answer to the neck alone, its girth and the head and neck's height (fitted to the other
         /// measures as well, the solver found combinations the model got wrong: R2).</summary>
         private static bool NeckOnly(string id) => id.StartsWith("neck-");
-        // a target is kept this share of each percentile range inside it: room for the response model's error, most for the
-        // measures it predicts least well (the face's height and the neck's girth, which the chin's place moves: R2)
-        private static readonly double[] Margins = { 0.05, 0.05, 0.05, 0.12, 0.05, 0.15, 0, 0.1, 0.1 };
-        private static readonly double[] RatioMargins = { 0.15, 0.12, 0.05, 0.05, 0.05, 0.12, 0.05, 0.1 };
 
         // the measures in ProportionsData.Measures' order: the stature conditions the draw and sets the scale, the rest are
         // the person's to take
@@ -135,34 +135,39 @@ namespace SecondFace.Core.Npc
             return m;
         }
 
-        /// <summary>Whether measures are inside the group's range on every measure and every ratio (with
-        /// <paramref name="margins"/>, each range's share of room kept clear), skipping the ratios <paramref name="skip"/> marks.</summary>
-        public static bool InRange(double[] m, ProportionsData.Group g, bool margins = false, bool[] skip = null)
+        /// <summary>The room a target keeps inside the gate's limits for the response model's error, in whitened distance
+        /// (its error is about a third of a real sd on most measures and three quarters on the neck's girth, R2; on the face's
+        /// proportions about a quarter).</summary>
+        public const double Room3 = 0.5, Room2 = 0.4;
+
+        /// <summary>The whitened distance of a person's head and neck measures (<see cref="ProportionsData.Measures"/>' order)
+        /// from their group's mean given their stature, the stature taken within 2.5 sd of the group's (the gate's 3D check,
+        /// tools/unity/people/gate/ansur_stats.py cond_dist).</summary>
+        public static double Joint(double[] m, ProportionsData.Group g)
         {
-            for (var i = 0; i < K; i++)
+            var (mu, L, _) = Conditional(g, m[Stature]);
+            var n = mu.Length;
+            var z = new double[n];
+            double d2 = 0;
+            for (int a = 0, i = 0; i < K; i++)
             {
-                if (i == Stature) continue;   // the person's own (Bodies), not the survey's
-                var pad = (margins ? Margins[i] : 0) * (g.P97[i] - g.P3[i]);
-                if (m[i] < g.P3[i] + pad || m[i] > g.P97[i] - pad) return false;
+                if (i == Stature) continue;
+                var e = m[i] - mu[a];
+                for (var b = 0; b < a; b++) e -= L[a, b] * z[b];
+                z[a] = e / L[a, a];
+                d2 += z[a] * z[a];
+                a++;
             }
-            var r = Ratios(m);
-            for (var i = 0; i < r.Length; i++)
-            {
-                if (skip != null && skip[i]) continue;
-                var pad = (margins ? RatioMargins[i] : 0) * (g.RatioP97[i] - g.RatioP3[i]);
-                if (r[i] < g.RatioP3[i] + pad || r[i] > g.RatioP97[i] - pad) return false;
-            }
-            return true;
+            return Math.Sqrt(d2);
         }
 
-        /// <summary>The person's own measures (mm, in <see cref="ProportionsData.Measures"/>' order with their stature in
-        /// its place), drawn from the real people of their sex and ancestry given their stature, inside every range (drawn
-        /// towards the group's middle as far as a range needs).</summary>
-        public static double[] Target(bool male, string cluster, double stature, uint seed)
+        /// <summary>The group's head and neck measures given a stature (clamped to 2.5 sd of the group's) and, when given, the
+        /// body's mass (<paramref name="bmi"/>: its body mass index given the stature, in sds; ANSUR II: a heavy body's neck
+        /// is thicker, its face a little wider): their mean, the Cholesky factor of their covariance, and the indices they
+        /// stand for.</summary>
+        private static (double[] Mu, double[,] L, List<int> Idx) Conditional(ProportionsData.Group g, double stature, double? bmi = null)
         {
-            var g = ProportionsData.Groups[Group(male, cluster)];
             double C(int i, int j) => g.Cov[i * K + j];
-            // the group given the stature (a stature outside the group's own is taken at its edge)
             var sd = Math.Sqrt(C(Stature, Stature));
             var s = Math.Clamp(stature, g.Mean[Stature] - 2.5 * sd, g.Mean[Stature] + 2.5 * sd);
             var idx = new List<int>();
@@ -176,15 +181,35 @@ namespace SecondFace.Core.Npc
                 mu[a] = g.Mean[i] + C(i, Stature) / C(Stature, Stature) * (s - g.Mean[Stature]);
                 for (var b = 0; b < n; b++) cov[a, b] = C(i, idx[b]) - C(i, Stature) * C(idx[b], Stature) / C(Stature, Stature);
             }
-            var L = Cholesky(cov);
+            if (bmi is { } z)
+                for (var a = 0; a < n; a++)
+                {
+                    mu[a] += g.Bmi[idx[a]] * z;
+                    for (var b = 0; b < n; b++) cov[a, b] -= g.Bmi[idx[a]] * g.Bmi[idx[b]];
+                }
+            return (mu, Cholesky(cov), idx);
+        }
+
+        /// <summary>A body's mass index given its stature, in sds of real people's, from its build and (a man's) muscle.</summary>
+        public static double Bmi(PlayerLook look) => Math.Clamp(1.5 * look.Build + 0.5 * Math.Max(0, look.Muscle), -2.5, 2.5);
+
+        /// <summary>The person's own measures (mm, in <see cref="ProportionsData.Measures"/>' order with their stature in
+        /// its place), drawn from the real people of their sex and ancestry given their stature and their body's mass
+        /// (<see cref="Bmi"/>), inside the region that holds 97.5 % of them given the stature less <see cref="Room3"/> (a draw
+        /// past it taken towards the middle along its own direction).</summary>
+        public static double[] Target(bool male, string cluster, double stature, uint seed, double bmi = 0)
+        {
+            var g = ProportionsData.Groups[Group(male, cluster)];
             var rng = new Rng(seed);
-            var z = new double[n];
-            for (var i = 0; i < n; i++) z[i] = Bodies.Normal(rng);
-            double[] At(double f)
+            var z = new double[K - 1];
+            for (var i = 0; i < z.Length; i++) z[i] = Bodies.Normal(rng);
+            var room = g.Joint - Room3;
+            double[] At(double f, double k)
             {
+                var (mu, L, idx) = Conditional(g, stature, bmi * k);
                 var t = new double[K];
                 t[Stature] = stature;
-                for (var a = 0; a < n; a++)
+                for (var a = 0; a < mu.Length; a++)
                 {
                     var v = mu[a];
                     for (var b = 0; b <= a; b++) v += f * L[a, b] * z[b];
@@ -192,30 +217,19 @@ namespace SecondFace.Core.Npc
                 }
                 return t;
             }
-            // a ratio already out of range for the group's middle at this stature (the head against a stature beyond
-            // the survey's) is not held: it cannot be met by the head
-            var skip = new bool[ProportionsData.Ratios.Length];
-            var rm = Ratios(At(0));
-            for (var i = 0; i < rm.Length; i++) skip[i] = rm[i] < g.RatioP3[i] || rm[i] > g.RatioP97[i];
-            if (InRange(At(1), g, true, skip)) return At(1);
-            // the draw scaled towards the middle until it fits (along a line each measure and ratio is monotone, so the
-            // fitting scales are one interval from zero)
+            // held by the gate's own measure (the distance given the stature alone); a body's mass past what real people of
+            // the stature carry in their heads is taken in first, then the draw
+            var kb = 1.0;
+            while (kb > 0 && Joint(At(0, kb), g) > room) kb -= 0.125;
+            kb = Math.Max(0, kb);
+            if (Joint(At(1, kb), g) <= room) return At(1, kb);
             double lo = 0, hi = 1;
-            for (var k = 0; k < 14; k++)
+            for (var it = 0; it < 14; it++)
             {
                 var f = (lo + hi) / 2;
-                if (InRange(At(f), g, true, skip)) lo = f; else hi = f;
+                if (Joint(At(f, kb), g) <= room) lo = f; else hi = f;
             }
-            // a measure the group's middle at this stature already overshoots (a long neck on a stature past the
-            // survey's) held at the range's edge
-            var target = At(lo);
-            for (var i = 0; i < K; i++)
-            {
-                if (i == Stature) continue;
-                var pad = Margins[i] * (g.P97[i] - g.P3[i]);
-                target[i] = Math.Clamp(target[i], g.P3[i] + pad, g.P97[i] - pad);
-            }
-            return target;
+            return At(lo, kb);
         }
 
         /// <summary>The FairFace group of a sex, people and age (as tools/unity/people/gate/gate.py chooses it: the age band
@@ -343,44 +357,30 @@ namespace SecondFace.Core.Npc
         /// <summary>How many draws a person gets to cohere with real people.</summary>
         public const int Attempts = 10;
 
-        /// <summary>How far a person's predicted measures and face proportions fall outside the real ranges of their group
-        /// (ANSUR II's 3rd-97th percentiles, FairFace's 5th-95th), each in shares of its range, with room kept for the
-        /// response model's error (its out-of-sample error on the people rendered: R2); 0 when everything is inside.</summary>
+        /// <summary>How far a person's predicted measures and face proportions fall outside the regions that hold the real
+        /// people of their group (the gate's checks: <see cref="Joint"/> against the group's limit, and the face's proportions
+        /// against the real faces at rest, <see cref="RealFaces.Distance2"/>), each less its room for the response model's
+        /// error and in shares of its limit; 0 when both are inside.</summary>
         public static double Miss(PlayerLook look, bool male, string cluster, double age)
         {
             var g = ProportionsData.Groups[Group(male, cluster)];
-            var m = Predict(look, male);
-            double miss = 0;
-            void Add(double x, double lo, double hi, double pad)
-            {
-                var r = hi - lo;
-                lo += pad * r; hi -= pad * r;
-                if (x < lo) miss += (lo - x) / r; else if (x > hi) miss += (x - hi) / r;
-            }
-            for (var i = 0; i < K; i++)
-                if (i != Stature) Add(m[i], g.P3[i], g.P97[i], ModelError[i]);
-            var beyond = m[Stature] < g.P3[Stature] || m[Stature] > g.P97[Stature];
-            var r3 = Ratios(m);
-            for (var i = 0; i < r3.Length; i++)
-                if (!(beyond && ProportionsData.Ratios[i].EndsWith("_stature"))) Add(r3[i], g.RatioP3[i], g.RatioP97[i], RatioModelError[i]);
+            var miss = Math.Max(0, Joint(Predict(look, male), g) - (g.Joint - Room3)) / g.Joint;
             var m2 = Predict2(look, male);
-            var f = FaceGroup(male, cluster, age);
-            if (m2 != null && f != null)
-                for (var i = 0; i < m2.Length; i++) Add(m2[i], f.P5[i], f.P95[i], 0.08);
+            if (m2 != null)
+            {
+                var (d, lim) = RealFaces.Distance2(m2, male, cluster);
+                miss += Math.Max(0, d - (lim - Room2)) / lim;
+            }
             return miss;
         }
 
-        // the room each measure keeps for the model's error, in shares of its range (the neck's girth is the least
-        // predictable: about 17 mm against a 90 mm range; the face's proportions about a quarter of a real sd)
-        private static readonly double[] ModelError = { 0.04, 0.04, 0.04, 0.1, 0.02, 0.2, 0, 0.06, 0.1 };
-        private static readonly double[] RatioModelError = { 0.15, 0.08, 0.05, 0.04, 0.04, 0.08, 0.04, 0.08 };
 
         private static void FitOnce(PlayerLook look, bool male, string cluster, double age, uint seed, Dictionary<string, float> anchors)
         {
             var g = ProportionsData.Groups[Group(male, cluster)];
             var stature = StatureMm(look, male);
             var scale = Bodies.ScaleOf(look);
-            var target = Target(male, cluster, stature, seed);
+            var target = Target(male, cluster, stature, seed, Bmi(look));
             var faces = (male ? ProportionsData.Neutral2_m : ProportionsData.Neutral2_f) != null ? FaceGroup(male, cluster, age) : null;
             var n2 = faces != null ? ProportionsData.Ratios2.Length : 0;
             var D = K + n2;
@@ -480,6 +480,11 @@ namespace SecondFace.Core.Npc
             {
                 // the face's height over width and the inner eye spacing over width follow from the head's measures
                 var target2 = Target2(faces, seed, new Dictionary<int, double> { [0] = head[K], [2] = head[K + 2] });
+                // a face drawn from real faces keeps their own proportions (R3), the solver weighing them against the head's
+                // measures
+                if (RealFaces.Ratios(look.FaceSource, male, cluster, age) is { } own)
+                    for (var i = 0; i < n2 && i < own.Length; i++)
+                        target2[i] = own[i];
                 for (var i = 0; i < n2; i++)
                 {
                     t[K + i] = target2[i];

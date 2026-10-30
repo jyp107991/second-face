@@ -19,9 +19,7 @@ namespace SecondFace.Tests
     /// bizygomatic breadth, face height (sellion to menton), interpupillary breadth, neck circumference (just under the
     /// chin) and stature, in millimetres. Shale's people and a sample of every ancestry, sex and age. Written to
     /// test-results/people_measures.json for tools/unity/people/gate/gate.py, which holds them to the real ranges.
-    /// The gate's renders run in the session's editor, not in CI (Heavy: hundreds of people per test; BUILD_PLAN §7.0).
     /// </summary>
-    [Category("Heavy")]
     public class PeopleGateTests
     {
         public sealed class Measured
@@ -33,6 +31,9 @@ namespace SecondFace.Tests
             /// the stature scale: the response model predicts their measures from these.</summary>
             public Dictionary<string, float> Sliders = new();
             public double Scale;
+            /// <summary>The real faces their face was drawn from (<see cref="SecondFace.Core.Npc.PlayerLook.FaceSource"/>), set
+            /// beside them on the boards (R3).</summary>
+            public string FaceSource;
         }
 
         /// <summary>The response of the head and neck to each of the sculptor's shapes (docs/PEOPLE_REALISM.md §4.1-4.2): each
@@ -137,7 +138,8 @@ namespace SecondFace.Tests
                 var mm = Measure(go, SecondFace.Game.People.LookView.Scale(w.Look), Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", "heads", w.Id + ".bin")));
                 if (mm == null) failed++;
                 else results.Add(new Measured { Id = w.Id, Name = w.Name, Sex = w.Male ? "m" : "f", Heritage = w.Look.Heritage, Age = w.Age, Source = w.Source, Mm = mm,
-                                                Sliders = SecondFace.Core.Npc.Looks.Shape(w.Look), Scale = SecondFace.Game.People.LookView.Scale(w.Look) });
+                                                Sliders = SecondFace.Core.Npc.Looks.Shape(w.Look), Scale = SecondFace.Game.People.LookView.Scale(w.Look),
+                                                FaceSource = w.Look.FaceSource });
                 if (studio != null && mm != null)
                 {
                     // scaled to their stature as in the game: as they look (portraits_look, the boards), and with no beard
@@ -171,7 +173,7 @@ namespace SecondFace.Tests
         /// show them, once per variant (SF_SEX_VARIANTS, comma-separated: base; brows, a woman's finest brows and a man's
         /// heaviest; face, each sex's face pushed to its own side on the sliders that mark sex, inside the sex's range; both),
         /// into test-results/sexcues/&lt;variant&gt;/, for apparent.py's sex reading.</summary>
-        [UnityTest, Timeout(3600000)]
+        [UnityTest, Timeout(3600000), Category("Heavy")]   // an experiment, run by name in the session's editor
         public IEnumerator SexCues()
         {
             GameObject F = null, M = null;
@@ -229,7 +231,7 @@ namespace SecondFace.Tests
         /// comma-separated; a default spread of hairs, colours and ages without it) from the front, three-quarters and the
         /// side at 0.95 m in the gate's studio, into test-results/hair: the hairline, the strands and the grey seen as the
         /// conversation camera sees them, without the whole gate's round.</summary>
-        [UnityTest, Timeout(900000)]
+        [UnityTest, Timeout(900000), Category("Heavy")]   // a close-up tool, run by name in the session's editor
         public IEnumerator HairCloseups()
         {
             GameObject F = null, M = null;
