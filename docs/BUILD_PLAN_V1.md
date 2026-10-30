@@ -552,6 +552,23 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    (subsurface-like diffusion, specular lobes, pore detail), hair (anisotropic highlights), cloth (sheen, fabric detail,
    wear in the normal), the people's lighting and URP's post (tonemapping, colour grading, ambient occlusion, bloom),
    judged at the game camera and in conversation.
+   *As built (steps 1-4, 2026-10-30; the rebuild and the showcase pending):* `GarmentDef.retired` keeps a piece in
+   the frozen web catalogue but out of the world (`garmentsFor` skips it, `garmentsInWorld()` is what the exporter
+   writes, the validator refuses an authored outfit in one); the outfit tables lost their face chances, their
+   respirators and their goggles over the eyes (goggles go up on the brow). `Bodies.Child(male, age)` is how much of
+   the eleven-year-old is left (all to 11, gone at 17/16) and `Bodies.Growth` the chart's stature; `Young()` scales
+   the grown measures out, removes the bust and the tattoo, softens the face. `Bodies.Clusters`, `Community(seed)`
+   (two or three clusters raised, per place: `Extras` passes the map's), `Cluster`, `Mix` (a quarter of people of two
+   clusters), `Tone`, `Undertone`, `HairShade`, `LightEyes`; the skin shader's `_Tone` now spans the whole human range
+   (to a third of the bake's shade at 1, lifted most of the way to white at -1). `Bodies.Figures` (straight 42 %,
+   pear 20 %, inverted triangle 14 %, hourglass 15 %, apple 9 %, apples rising with weight) centre the figure
+   sliders; new shapes `body-vshape`, `body-pecs`, `body-legs`, and for the woman `body-lift`, `body-spacing`,
+   `body-point`, `body-fullness`, `body-child` (mh_build; the sculptor rows and strings too). `mh_build.drape()`
+   pushes a garment's refit outward under a cone (7 cm reach, 0.45 slope) for the bust and chest shapes, so cloth
+   spans the cleavage and the fold. `Sculpt.Reroll(rng, previous, male)` folds each sex-marked slider into its range
+   (`BySex`) and caps the head shapes by sex. `HandPose` curls the fingers at rest after the animation (a Humanoid
+   finger no clip drives keeps the bind pose, flat and spread; the P4.8 note that they rest relaxed was wrong), added
+   wherever `ArmClearance` is. Palettes and dye chances in `outfits.ts` from `docs/WARDROBE.md`.
 ### P5 — Camera, touch and UI
 1. `CameraService` with Cinemachine 3: an orbit rig around the party leader (§6.F), tactical camera in combat,
    conversation cameras (over-shoulder two-shot, portrait inserts), the photo mode.
@@ -2337,6 +2354,20 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   cloth. `close_holes` hides every patch of body the garment encloses whole up to 200 vertices (navels 18-30; the
   smallest real opening, a foot, is 1000+). Look at a close capture of the fullest figure after any body change.
 
+- **Fingers flat and spread on everyone (P4.14, the owner's screenshot).** The capture clips carry no finger
+  curves, and a Humanoid finger no clip drives keeps the mesh's bind pose (MakeHuman's: straight, spread), not a
+  relaxed one; the P4.8 note said otherwise and was never checked at hand size. `HandPose` curls them after the
+  animation. Check hands in every people capture at close range.
+- **A woman with a man's jaw (P4.14).** `Sculpt.Reroll` drew every slider sex-blind at up to full strength: a square
+  head, a full jaw, a wide chin and a thick neck landed on women. The reroll now folds each sex-marked slider into its
+  sex's range (`BySex`) and caps the head shapes; `Bodies.For` and the creation pass the sex. A dimorphism rule that
+  is not in the random draw is not in the game.
+- **Cloth shrink-wrapped to the bust (P4.14).** A garment refitted to a body shape follows the skin into the cleavage
+  and the fold under the breast. `drape()` in mh_build pushes the refit outward under a cone (7 cm reach, 0.45
+  slope) for the bust and chest shapes, so the cloth spans them. Any shape that makes a hollow needs the same.
+- **Retiring a garment can leave a role with no top or legs.** With the chest-pocket shirts gone, the rich men had no
+  `top` (the outfits test caught it: `gilded/m/3 legs,feet`); the pilgrims lost their only trousers. Tag a plain
+  piece into the role before retiring the last one, and run `npm run check`.
 ---
 
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)

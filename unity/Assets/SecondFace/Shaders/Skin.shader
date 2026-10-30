@@ -178,8 +178,11 @@ Shader "SecondFace/Skin"
         void Look(inout half3 a, inout half smooth, float3 p)
         {
             // tone: darker towards a deep brown, lighter as if less sun ever reached it
-            if (_Tone > 0.001h) a *= lerp(half3(1, 1, 1), half3(0.5h, 0.38h, 0.3h), _Tone);
-            else if (_Tone < -0.001h) a = lerp(a, 1.0h - (1.0h - a) * half3(0.62h, 0.7h, 0.74h), -_Tone * 0.8h);
+            // the whole human range over the mid-tone bake (P4.14): to 1, deep dark (the bake's shade at a third, warm
+            // and a little bluer in the shadows); to -1, very fair (the bake's shade lifted most of the way to white, a
+            // touch pink)
+            if (_Tone > 0.001h) a *= lerp(half3(1, 1, 1), half3(0.3h, 0.21h, 0.17h), pow(_Tone, 0.85h));
+            else if (_Tone < -0.001h) a = lerp(a, 1.0h - (1.0h - a) * half3(0.4h, 0.52h, 0.58h), -_Tone);
             // undertone: warmer (golden, olive) or rosier
             a *= _Undertone >= 0 ? 1.0h + _Undertone * half3(0.05h, 0.0h, -0.08h) : 1.0h + (-_Undertone) * half3(0.03h, -0.03h, 0.02h);
             bool head = dot(p, p) > 0.01 && p.y > -1.3 && length(p) < 1.6;

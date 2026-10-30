@@ -649,6 +649,8 @@ namespace SecondFace.Tests
                 var anim = go.GetComponent<Animator>();
                 anim.runtimeAnimatorController = controller;
                 anim.applyRootMotion = false;
+                go.AddComponent<SecondFace.Game.People.HandPose>();   // as in the game: hands at rest, arms clear of the body
+                go.AddComponent<SecondFace.Game.People.ArmClearance>();
                 yield return null;
                 var wardrobe = go.GetComponent<SecondFace.Game.People.Wardrobe>();
                 SecondFace.Game.People.Dresser.Dress(wardrobe, w.Outfit);

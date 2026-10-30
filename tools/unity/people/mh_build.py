@@ -99,6 +99,10 @@ def tri(v):
 def macro_targets(p):
     g = {'female': 1 - p['gender'], 'male': p['gender']}
     old = max(0.0, min(1.0, (p['age'] - 25) / 65.0)); a = {'young': 1 - old, 'old': old}
+    if p['age'] < 18:
+        # the young (P4.14): towards MakeHuman's eleven-year-old ('child'), all of it at eleven (grown at eighteen here, so
+        # the bases at 24 are untouched)
+        c = max(0.0, min(1.0, (18 - p['age']) / 7.0)); a = {'child': c, 'young': 1 - c}
     mu, we = tri(p['muscle']), tri(p['weight'])
     es = (p['african'] + p['asian'] + p['caucasian']) or 1.0
     eth = {'african': p['african'] / es, 'asian': p['asian'] / es, 'caucasian': p['caucasian'] / es}
@@ -821,6 +825,34 @@ def decimated(src, target, name, rig):
     a = o.modifiers.new('Armature', 'ARMATURE'); a.object = rig
     return o
 
+# the shapes a garment drapes over rather than follows (P4.14, the owner: clothes drape over breasts rather than
+# shrink-wrap): the bust and its set, the chest's girth
+DRAPE_SHAPES = ('body-bust', 'body-firm', 'body-lift', 'body-spacing', 'body-point', 'body-fullness', 'body-chest')
+
+def drape(pm, deltas, reach=0.07, slope=0.45):
+    """Cloth over a shape rather than shrink-wrapped to it: each garment vertex is pushed out along its own normal until it
+    is as far out as the most protruding vertex near it allows under a tent of `slope` (m out per m across, cloth cannot
+    bridge a gap flat), within `reach` m; so a top spans the cleavage and the fold under the breast instead of following
+    the skin into them. Deltas in Blender space over the proxy's vertices; only ever further out, never in."""
+    n = len(deltas)
+    if n != len(pm.vertices): return deltas
+    normals = [vv.normal.copy() for vv in pm.vertices]
+    out = [dl.dot(normals[k]) for k, dl in enumerate(deltas)]
+    moving = [k for k in range(n) if out[k] > 1e-4]
+    if not moving: return deltas
+    kd = KDTree(len(moving))
+    for j, k in enumerate(moving): kd.insert(pm.vertices[k].co, j)
+    kd.balance()
+    res = list(deltas)
+    for k in range(n):
+        best = out[k]
+        for co, j, dist in kd.find_range(pm.vertices[k].co, reach):
+            m = moving[j]
+            tent = out[m] * max(0.0, normals[k].dot(normals[m])) - dist * slope
+            if tent > best: best = tent
+        if best > out[k] + 1e-5: res[k] = deltas[k] + normals[k] * (best - out[k])
+    return res
+
 def transfer_shapes(src, dst, only=None):
     """Gives `dst` the shape keys of `src` by nearest vertex at rest (a decimated or thinned copy of the same part);
     `only`: just the keys whose names start with it."""
@@ -1071,11 +1103,29 @@ def build_person(spec):
             d = macro_delta_to(spec, {'african': 1.0 if en == 'african' else 0.0, 'asian': 1.0 if en == 'asian' else 0.0,
                                       'caucasian': 1.0 if en == 'caucasian' else 0.0})
             if d: add_shape(f'body-{en}', keep_stature(f'body-{en}', d)); nshapes += 1
+        # a child's body (P4.14, children made as children): the eleven-year-old at the base's stature, the runtime
+        # scaling them to their own (Bodies.Child, Bodies.Growth)
+        d = macro_delta(spec, 'age', 11)
+        if d: add_shape('body-child', keep_stature('body-child', d)); nshapes += 1
+        # long or short in the leg (the thigh and the shin together) at the same stature
+        for sign, label in ((1.0, 'incr'), (-1.0, 'decr')):
+            ds = []
+            for mod in ('upperlegs-height|decr|incr', 'lowerlegs-height|decr|incr'):
+                for rel, w in modifier_targets(mod, sign):
+                    t = target(rel)
+                    if t: ds.extend((i, dx * w, dy * w, dz * w) for i, dx, dy, dz in t)
+            if ds: add_shape(f'body-legs-{label}', keep_stature(f'body-legs-{label}', ds)); nshapes += 1
         for short, mod in (('seat', 'buttocks-volume|decr|incr'), ('hips', 'hip-scale-horiz|decr|incr'),
                            ('waist', 'measure-waist-circ|decr|incr'), ('shoulders', 'torso-scale-horiz|decr|incr'),
                            ('chest', 'measure-bust-circ|decr|incr'), ('belly', 'stomach-pregnant|decr|incr'),
                            ('arms', 'measure-upperarm-circ|decr|incr'), ('thighs', 'measure-thigh-circ|decr|incr'),
-                           ('tone', 'stomach-tone|decr|incr')):
+                           ('tone', 'stomach-tone|decr|incr'), ('vshape', 'torso-vshape|decr|incr'),
+                           ('pecs', 'torso-muscle-pectoral|decr|incr')) + (
+                          # a woman's breasts as real ones vary (P4.14): set high or low, wide or close, pointed or round,
+                          # fuller above or below
+                          (('lift', 'breast-trans|down|up'), ('spacing', 'breast-dist|decr|incr'),
+                           ('point', 'breast-point|decr|incr'), ('fullness', 'breast-volume-vert|down|up'))
+                          if spec['gender'] < 0.5 else ()):
             for sign, label in ((1.0, 'incr'), (-1.0, 'decr')):
                 ds = []
                 for rel, w in modifier_targets(mod, sign):
@@ -1226,6 +1276,7 @@ def build_person(spec):
                 moved = fit(lambda i: [v[i][k] + d[i][k] for k in range(3)] if i in d else v[i], scale_at=lambda i: v[i])
                 deltas = [to_bl_dir([m_[k] - f_[k] for k in range(3)]) for m_, f_ in zip(moved, fitted)]
                 if max(dl.length for dl in deltas) < 1e-4: continue   # under a tenth of a millimetre: not this part's shape
+                if folder_name == 'clothes' and sname.startswith(DRAPE_SHAPES): deltas = drape(pm, deltas)
                 if not pm.shape_keys: po.shape_key_add(name='Basis', from_mix=False)
                 sk = po.shape_key_add(name=sname, from_mix=False)
                 for k, dl in enumerate(deltas): sk.data[k].co = sk.data[k].co + dl

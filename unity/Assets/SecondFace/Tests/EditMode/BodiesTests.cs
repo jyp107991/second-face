@@ -148,6 +148,101 @@ namespace SecondFace.Tests
         }
 
         [Test]
+        public void PeopleComeInClustersAndEveryPlaceHasItsOwn()
+        {
+            // P4.14, the owner: people too homogeneous. Most people are mostly of one ancestry; the Reach's crowd has every
+            // cluster in it; a place's community raises a few of them, differently from the next place's
+            var crowd = Many(false, 400).Concat(Many(true, 400)).ToList();
+            double Top(PlayerLook l) => Math.Max(l.Shape["body-african"], Math.Max(l.Shape["body-asian"], l.Shape["body-caucasian"]));
+            Assert.That(crowd.Count(l => Top(l) >= 0.7) / (double)crowd.Count, Is.GreaterThan(0.6), "mostly of one ancestry");
+            Assert.That(crowd.Count(l => l.Shape["body-african"] >= 0.7), Is.GreaterThan(80));
+            Assert.That(crowd.Count(l => l.Shape["body-asian"] >= 0.7), Is.GreaterThan(80));
+            Assert.That(crowd.Count(l => l.Shape["body-caucasian"] >= 0.7), Is.GreaterThan(80));
+            var a = Bodies.Community(11u); var b = Bodies.Community(1234567u);
+            Assert.That(a.Sum(), Is.EqualTo(1).Within(1e-6));
+            Assert.That(a.Max(), Is.GreaterThan(0.25), "a community has its founders");
+            Assert.That(Array.IndexOf(a, a.Max()) != Array.IndexOf(b, b.Max()) || Math.Abs(a.Max() - b.Max()) > 0.02, Is.True, "two places differ");
+            var here = Enumerable.Range(0, 300).Select(i => Bodies.For($"x_here_{i}", i % 2 == 0, 30, "settler", community: a)).ToList();
+            var there = Enumerable.Range(0, 300).Select(i => Bodies.For($"x_here_{i}", i % 2 == 0, 30, "settler", community: b)).ToList();
+            Assert.That(here.Average(l => l.Shape["body-african"]) != there.Average(l => l.Shape["body-african"]) || here.Average(l => l.Shape["body-asian"]) != there.Average(l => l.Shape["body-asian"]), Is.True);
+        }
+
+        [Test]
+        public void SkinHairAndEyesFollowAncestry()
+        {
+            var crowd = Many(false, 400).Concat(Many(true, 400)).ToList();
+            Assert.That(crowd.Min(l => l.Skin), Is.LessThan(-0.6f), "very fair skins");
+            Assert.That(crowd.Max(l => l.Skin), Is.GreaterThan(0.8f), "very dark skins");
+            Assert.That(crowd.Count(l => l.Skin > -0.3f && l.Skin < 0.3f), Is.GreaterThan(100), "and every shade between");
+            var fair = crowd.Where(l => l.Shape["body-caucasian"] >= 0.85).ToList();
+            var dark = crowd.Where(l => l.Shape["body-african"] >= 0.85).ToList();
+            Assert.That(fair.Average(l => l.Skin), Is.LessThan(dark.Average(l => l.Skin) - 0.8f));
+            int Shade(PlayerLook l) => Array.IndexOf(Looks.HairColours, l.HairColour);
+            Assert.That(fair.Count(l => Shade(l) >= 3 && Shade(l) <= 6), Is.GreaterThan(fair.Count / 5), "fair and red hair among the north European");
+            Assert.That(dark.Count(l => Shade(l) >= 3 && Shade(l) <= 6), Is.EqualTo(0), "none elsewhere");
+            Assert.That(dark.Count(l => l.Eyes == "blue" || l.Eyes == "green" || l.Eyes == "grey"), Is.LessThan(dark.Count / 20));
+        }
+
+        [Test]
+        public void ChildrenAreChildren()
+        {
+            var boy = Bodies.For("npc_boy", true, 8, "settler");
+            var girl = Bodies.For("npc_girl", false, 12, "settler");
+            var youth = Bodies.For("npc_youth", true, 15, "labourer");
+            var grown = Bodies.For("npc_grown", false, 18, "settler");
+            Assert.That(boy.Stature, Is.EqualTo(Bodies.Growth(true, 8)).Within(Bodies.Growth(true, 8) * 0.12));
+            Assert.That(boy.Stature, Is.LessThan(140));
+            Assert.That(boy.Shape["body-child"], Is.EqualTo(1f));
+            Assert.That(boy.Beard, Is.Null);
+            Assert.That(boy.Tattoo, Is.Null);
+            Assert.That(boy.Build, Is.LessThan(0f));
+            Assert.That(girl.Shape["body-child"], Is.GreaterThan(0.6f));
+            Assert.That(girl.Shape["body-bust"], Is.LessThanOrEqualTo(-girl.Shape["body-child"]), "no bust on a girl");
+            Assert.That(girl.Stature, Is.LessThan(165));
+            Assert.That(youth.Shape["body-child"], Is.GreaterThan(0f).And.LessThan(0.5f));
+            Assert.That(grown.Shape.ContainsKey("body-child"), Is.False);
+            Assert.That(Bodies.Growth(true, 17.5), Is.EqualTo(Bodies.ManMean).Within(1));
+            Assert.That(Bodies.Growth(false, 17.5), Is.EqualTo(Bodies.WomanMean).Within(1));
+        }
+
+        [Test]
+        public void WomensFiguresAreOfEveryTypeAndBreastsVary()
+        {
+            // P4.14, the owner: not all pears; real breasts. The figure types at their real shares, hips not wide by
+            // default; the set, spacing, shape and fullness of the breasts spread
+            var women = Many(false, 600);
+            var wideHips = women.Count(l => l.Shape["body-hips"] > 0.3f) / (double)women.Count;
+            Assert.That(wideHips, Is.LessThan(0.4), "not all pears");
+            Assert.That(women.Count(l => l.Shape["body-vshape"] > 0.25f), Is.GreaterThan(30), "some inverted triangles");
+            Assert.That(women.Count(l => l.Shape["body-waist"] < -0.3f && l.Shape["body-hips"] > 0.1f), Is.GreaterThan(30), "some hourglasses");
+            Assert.That(women.Count(l => l.Shape["body-waist"] > 0.3f), Is.GreaterThan(20), "some apples");
+            var shares = Bodies.FigureShare(0);
+            Assert.That(shares.Sum(), Is.EqualTo(1).Within(1e-6));
+            Assert.That(Bodies.FigureShare(0.4)[4], Is.GreaterThan(shares[4]), "apples with weight");
+            foreach (var key in new[] { "body-lift", "body-spacing", "body-point", "body-fullness" })
+            {
+                var (_, sd) = Stats(women.Select(l => (double)l.Shape[key]));
+                Assert.That(sd, Is.GreaterThan(0.2), key);
+            }
+            Assert.That(women.Where(l => l.Shape["body-bust"] > 0.5f).Average(l => l.Shape["body-lift"]), Is.LessThan(women.Where(l => l.Shape["body-bust"] < -0.3f).Average(l => l.Shape["body-lift"])), "a full bust sits lower");
+            var men = Many(true, 300, "guard");
+            Assert.That(men.All(l => !l.Shape.ContainsKey("body-lift") && !l.Shape.ContainsKey("body-bust")), Is.True);
+            Assert.That(men.Average(l => l.Shape["body-pecs"]), Is.GreaterThan(Many(true, 300, "trader").Average(l => l.Shape["body-pecs"])), "pectorals with the work");
+        }
+
+        [Test]
+        public void AWomansFaceIsNeverAMans()
+        {
+            var women = Many(false, 300);
+            var men = Many(true, 300);
+            Assert.That(women.All(l => l.Face["chin-bones"] <= 0.15f && l.Face["neck-scale-horiz"] <= 0.1f && l.Face["chin-width"] <= 0.2f), Is.True, "no square jaw or thick neck on a woman");
+            Assert.That(women.All(l => !l.Face.ContainsKey("head-square") || l.Face["head-square"] <= 0.3f), Is.True);
+            Assert.That(men.Count(l => l.Face["chin-bones"] > 0.4f), Is.GreaterThan(25), "men with a jaw");
+            Assert.That(women.Count(l => l.Face["chin-bones"] < -0.4f), Is.GreaterThan(25), "women with a fine one");
+            Assert.That(women.Select(l => string.Join(",", l.Face.OrderBy(kv => kv.Key).Select(kv => kv.Value.ToString("0.00")))).Distinct().Count(), Is.EqualTo(women.Count), "every face its own");
+        }
+
+        [Test]
         public void ToSliderMapsEachSideOfTheBase()
         {
             Assert.That(Bodies.ToSlider(0.25, 0.25, 0, 0.75), Is.EqualTo(0).Within(1e-9));

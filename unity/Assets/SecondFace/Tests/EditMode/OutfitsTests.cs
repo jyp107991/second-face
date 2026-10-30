@@ -50,7 +50,7 @@ namespace SecondFace.Tests
         [Test]
         public void HelmetsHideHairCapsCropIt()
         {
-            Assert.That(Outfits.HairMode(new Outfit { Layers = new List<GarmentLook> { new GarmentLook { Name = "culturalibre_skull_helmet" } } }), Is.EqualTo("hide"));
+            Assert.That(Outfits.HairMode(new Outfit { Layers = new List<GarmentLook> { new GarmentLook { Name = "donitz_monk_robe_hood" } } }), Is.EqualTo("hide"));
             Assert.That(Outfits.HairMode(new Outfit { Layers = new List<GarmentLook> { new GarmentLook { Name = "jujube_newsboy_cap" }, new GarmentLook { Name = "cortu_cargo_pants" } } }), Is.EqualTo("crop"));
             Assert.That(Outfits.HairMode(new Outfit { Layers = new List<GarmentLook> { new GarmentLook { Name = "cortu_cargo_pants" } } }), Is.Null);
             Assert.That(Outfits.HairMode(new Outfit { Gear = new List<GearLook> { new GearLook { Kind = "headwrap" } } }), Is.EqualTo("hide"));
@@ -76,7 +76,7 @@ namespace SecondFace.Tests
         {
             var db = ContentFixture.Db();
             var garments = Registry.Table<GarmentDef>(db, "garments", strict: true);
-            Assert.That(garments.Count, Is.GreaterThan(100));
+            Assert.That(garments.Count, Is.GreaterThan(85), "the catalogue less the retired pieces (P4.14: nothing that hides a face)");
             foreach (var g in garments.Values) Assert.That(Garments.Slots, Does.Contain(g.Slot));
             var roles = ((Newtonsoft.Json.Linq.JObject)db.Table("outfits"))["roles"].ToObject<Dictionary<string, RoleDef>>(Registry.Strict);
             Assert.That(roles.Keys, Is.EquivalentTo(Outfits.Roles));

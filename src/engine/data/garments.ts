@@ -21,6 +21,12 @@ export interface GarmentDef {
   hair?: 'hide' | 'crop';
   /** A full piece that leaves the legs to separate trousers (tunics, long jackets). */
   legsFree?: boolean;
+  /**
+   * Out of the world, with the reason (owner, 2026-10-30: faces are never hidden; no costume, print or logo; no shirt
+   * whose pockets sit on the chest). Kept in the catalogue only because the frozen web game's assets still carry it:
+   * nothing dresses in it and it is not exported to the Unity project.
+   */
+  retired?: string;
 }
 
 export const GARMENTS: Record<string, GarmentDef> = {
@@ -28,16 +34,16 @@ export const GARMENTS: Record<string, GarmentDef> = {
   'elvs_crude_t-shirt_male': { slot: 'top', fit: 'm', tags: ['rag', 'work', 'casual', 'raider'], dye: true },
   'joepal_crude_t-shirt_female': { slot: 'top', fit: 'f', tags: ['rag', 'work', 'casual', 'raider'], dye: true },
   'toigo_basic_tucked_t-shirt': { slot: 'top', fit: 'u', tags: ['work', 'street', 'vault'], dye: true },
-  namuhekam_male_polo_shirt: { slot: 'top', fit: 'm', tags: ['corp', 'vault'], dye: true },
+  namuhekam_male_polo_shirt: { slot: 'top', fit: 'm', tags: ['corp', 'vault', 'formal', 'rich'], dye: true },
   toigo_fisherman_sweater: { slot: 'top', fit: 'u', tags: ['cold', 'work', 'water', 'casual'], dye: true },
   elvs_hooded_sweat_jacket1: { slot: 'top', fit: 'u', tags: ['street', 'casual', 'cold'], dye: true },
-  elvs_male_shirt_tie_tucked1: { slot: 'top', fit: 'm', tags: ['corp', 'rich'], dye: true },
-  elvs_male_shirt_untucked_bd1: { slot: 'top', fit: 'm', tags: ['casual', 'formal', 'street'], dye: true },
+  elvs_male_shirt_tie_tucked1: { slot: 'top', fit: 'm', tags: ['corp', 'rich'], dye: true, retired: 'pockets on the chest' },
+  elvs_male_shirt_untucked_bd1: { slot: 'top', fit: 'm', tags: ['casual', 'formal', 'street'], dye: true, retired: 'pockets on the chest' },
   elvs_male_boho_top1: { slot: 'top', fit: 'm', tags: ['faith', 'casual', 'nomad'], dye: true },
   janexx_old_female_sweater: { slot: 'top', fit: 'f', tags: ['cold', 'casual', 'rag'], dye: true },
   mindfront_cardigan_long_open_front: { slot: 'top', fit: 'f', tags: ['cold', 'casual', 'faith', 'rich'], dye: true },
   mindfront_knitted_sweater_01: { slot: 'top', fit: 'u', tags: ['cold', 'casual', 'work'], dye: true },
-  mindfront_knitted_sweater_02: { slot: 'top', fit: 'u', tags: ['cold', 'casual', 'work'], dye: true },
+  mindfront_knitted_sweater_02: { slot: 'top', fit: 'u', tags: ['cold', 'casual', 'work', 'formal'], dye: true },
   'drednicolson_short-tail_camo_tee': { slot: 'top', fit: 'f', tags: ['military', 'raider', 'work'] },
   elvs_lara_tank1: { slot: 'top', fit: 'f', tags: ['work', 'raider', 'street', 'sport'], dye: true },
   elvs_male_muscle_shirt1: { slot: 'top', fit: 'm', tags: ['work', 'raider', 'street'], dye: true },
@@ -47,24 +53,24 @@ export const GARMENTS: Record<string, GarmentDef> = {
   punkduck_sleeveless_shirt: { slot: 'top', fit: 'f', tags: ['casual', 'work', 'faith'], dye: true },
   punkduck_v_neck_top: { slot: 'top', fit: 'f', tags: ['casual', 'street', 'rich'], dye: true },
   punkduck_sleeveless_crop_top: { slot: 'top', fit: 'f', tags: ['street', 'sport', 'raider'], dye: true },
-  rehmanpolanski_viking_tunic: { slot: 'top', fit: 'm', tags: ['rag', 'nomad', 'raider'] },
+  rehmanpolanski_viking_tunic: { slot: 'top', fit: 'm', tags: ['rag', 'nomad', 'raider'], retired: 'costume (mail and a printed emblem)' },
 
   // Over layers and gear
   mindfront_tactical_vest_male: { slot: 'over', fit: 'm', tags: ['military', 'raider', 'corp'] },
   mindfront_tactical_vest_female: { slot: 'over', fit: 'f', tags: ['military', 'raider', 'corp'] },
-  punkduck_wireless_headset: { slot: 'gear', fit: 'u', tags: ['tech', 'corp', 'street'] },
+  punkduck_wireless_headset: { slot: 'gear', fit: 'u', tags: ['tech', 'corp', 'street'], retired: 'an oversized headset' },
   punkduck_stethoscope: { slot: 'gear', fit: 'u', tags: ['medical'] },
 
   // Legs
   cortu_cargo_pants: { slot: 'legs', fit: 'u', tags: ['work', 'military', 'raider', 'casual'], dye: true },
   cortu_jeans_shorts: { slot: 'legs', fit: 'u', tags: ['water'] },
   toigo_wool_pants: { slot: 'legs', fit: 'm', tags: ['work', 'formal', 'cold'], dye: true },
-  toigo_harem_pants: { slot: 'legs', fit: 'u', tags: ['nomad', 'faith', 'street'], dye: true },
+  toigo_harem_pants: { slot: 'legs', fit: 'u', tags: ['nomad', 'faith', 'street'], dye: true, retired: 'a printed fabric' },
   elvs_jeans_bootcut: { slot: 'legs', fit: 'm', tags: ['work', 'casual', 'raider'] },
   elvs_jeans_straight_leg: { slot: 'legs', fit: 'm', tags: ['work', 'casual', 'street'] },
   elvs_male_trouser: { slot: 'legs', fit: 'm', tags: ['formal', 'corp', 'rich'], dye: true },
-  mindfront_female_trousers_1: { slot: 'legs', fit: 'f', tags: ['work', 'casual', 'formal'], dye: true },
-  mindfront_male_trousers_1: { slot: 'legs', fit: 'm', tags: ['work', 'casual'], dye: true },
+  mindfront_female_trousers_1: { slot: 'legs', fit: 'f', tags: ['work', 'casual', 'formal', 'faith', 'nomad'], dye: true },
+  mindfront_male_trousers_1: { slot: 'legs', fit: 'm', tags: ['work', 'casual', 'faith', 'nomad'], dye: true },
   mindfront_male_trousers_2: { slot: 'legs', fit: 'm', tags: ['formal', 'corp', 'casual'], dye: true },
   punkduck_female_tight_jeans: { slot: 'legs', fit: 'f', tags: ['casual', 'street', 'work', 'raider'] },
   punkduck_male_classic_jeans: { slot: 'legs', fit: 'm', tags: ['casual', 'work', 'street'] },
@@ -77,14 +83,14 @@ export const GARMENTS: Record<string, GarmentDef> = {
   donitz_monk_robe: { slot: 'full', fit: 'u', tags: ['faith', 'rag', 'nomad'], dye: true },
   joachip_cyborg_suit: { slot: 'full', fit: 'u', tags: ['tech', 'work', 'vault'] },
   'matcreator_mc-skinsuit_2022': { slot: 'full', fit: 'u', tags: ['tech', 'corp'], dye: true },
-  thegreatengineer_galactic_warrior_uniform: { slot: 'full', fit: 'f', tags: ['corp', 'military', 'tech'] },
+  thegreatengineer_galactic_warrior_uniform: { slot: 'full', fit: 'f', tags: ['corp', 'military', 'tech'], retired: 'costume' },
   elvs_male_coveralls_1: { slot: 'full', fit: 'm', tags: ['work', 'vault', 'tech'], dye: true },
-  elvs_racing_fire_suit_male1: { slot: 'full', fit: 'm', tags: ['nomad', 'sport', 'work'] },
-  elvs_racing_fire_suit_female1: { slot: 'full', fit: 'f', tags: ['nomad', 'sport', 'work'] },
+  elvs_racing_fire_suit_male1: { slot: 'full', fit: 'm', tags: ['nomad', 'sport', 'work'], retired: 'printed logos' },
+  elvs_racing_fire_suit_female1: { slot: 'full', fit: 'f', tags: ['nomad', 'sport', 'work'], retired: 'printed logos' },
   mindfront_m_suit_01: { slot: 'full', fit: 'm', tags: ['rich', 'corp'], dye: true },
   punkduck_wetsuit: { slot: 'full', fit: 'u', tags: ['water', 'sport'] },
   punkduck_diver_suit: { slot: 'full', fit: 'u', tags: ['water'] },   // fins and all: the water trades only (not every 'work' role)
-  mindfront_f_ninja: { slot: 'full', fit: 'f', tags: ['street', 'military', 'raider'], dye: true },
+  mindfront_f_ninja: { slot: 'full', fit: 'f', tags: ['street', 'military', 'raider'], dye: true, retired: 'hides the face' },
   elvs_halter_style_pantsuit1: { slot: 'full', fit: 'f', tags: ['rich'], dye: true },
   elvs_sporty_tracksuit_hoodie_dress1: { slot: 'full', fit: 'f', tags: ['street', 'sport', 'casual'], dye: true },
 
@@ -116,10 +122,10 @@ export const GARMENTS: Record<string, GarmentDef> = {
 
   // Head
   jujube_newsboy_cap: { slot: 'head', fit: 'u', tags: ['work', 'casual', 'street'], dye: true, hair: 'crop' },
-  jujube_bag_on_head: { slot: 'head', fit: 'u', tags: ['raider'], hair: 'hide' },
-  grinsegold_uncle_joshis_hat: { slot: 'head', fit: 'u', tags: ['work', 'nomad'], hair: 'crop' },
-  culturalibre_skull_helmet: { slot: 'head', fit: 'u', tags: ['raider'], hair: 'hide' },
-  culturalibre_warrior_helmet: { slot: 'head', fit: 'u', tags: ['raider', 'military'], hair: 'hide' },
+  jujube_bag_on_head: { slot: 'head', fit: 'u', tags: ['raider'], hair: 'hide', retired: 'hides the face' },
+  grinsegold_uncle_joshis_hat: { slot: 'head', fit: 'u', tags: ['work', 'nomad'], hair: 'crop', retired: 'costume' },
+  culturalibre_skull_helmet: { slot: 'head', fit: 'u', tags: ['raider'], hair: 'hide', retired: 'hides the face' },
+  culturalibre_warrior_helmet: { slot: 'head', fit: 'u', tags: ['raider', 'military'], hair: 'hide', retired: 'hides the face' },
   elvs_slouchy_beanie1: { slot: 'head', fit: 'u', tags: ['street', 'cold', 'casual'], dye: true, hair: 'crop' },
   mindfront_knitted_hat_01: { slot: 'head', fit: 'u', tags: ['cold', 'work', 'water'], dye: true, hair: 'crop' },
   elvs_male_flat_cap1: { slot: 'head', fit: 'm', tags: ['work', 'casual'], hair: 'crop' },
@@ -133,7 +139,7 @@ export const GARMENTS: Record<string, GarmentDef> = {
   donitz_monk_robe_hood: { slot: 'head', fit: 'u', tags: ['faith'], hair: 'hide' },
   donitz_monk_robe_hood_down: { slot: 'gear', fit: 'u', tags: ['faith'] },
   'culturalibre_hero-heroine_hood_1': { slot: 'head', fit: 'u', tags: ['street', 'raider'], hair: 'hide' },
-  'culturalibre_hero-heroine_hood_2': { slot: 'head', fit: 'u', tags: ['street', 'raider'], hair: 'hide' },
+  'culturalibre_hero-heroine_hood_2': { slot: 'head', fit: 'u', tags: ['street', 'raider'], hair: 'hide', retired: 'hides the face' },
 
   // Eyes
   spamrakuen_sagerfrogs_glasses_01: { slot: 'eyes', fit: 'u', tags: ['casual', 'formal'] },
@@ -141,18 +147,18 @@ export const GARMENTS: Record<string, GarmentDef> = {
   spamrakuen_tbm_glasses_frames_01: { slot: 'eyes', fit: 'u', tags: ['formal', 'corp', 'medical'] },
   frankyaye_glasses_library_male: { slot: 'eyes', fit: 'u', tags: ['formal', 'casual', 'tech'] },
   kwnet_at_optical_glasses: { slot: 'eyes', fit: 'u', tags: ['casual', 'tech', 'medical'] },
-  punkduck_goggles: { slot: 'eyes', fit: 'u', tags: ['nomad', 'work', 'raider', 'tech'] },
-  elvs_covid_goggles1: { slot: 'eyes', fit: 'u', tags: ['medical', 'work', 'tech'] },
-  'punkduck_sport-sunglasses': { slot: 'eyes', fit: 'u', tags: ['street', 'sport', 'raider', 'nomad'] },
-  elvs_ladies_sunglass1: { slot: 'eyes', fit: 'u', tags: ['rich'] },
-  punkduck_glasses_modern_form: { slot: 'eyes', fit: 'u', tags: ['rich', 'corp'] },
+  punkduck_goggles: { slot: 'eyes', fit: 'u', tags: ['nomad', 'work', 'raider', 'tech'], retired: 'hides the eyes' },
+  elvs_covid_goggles1: { slot: 'eyes', fit: 'u', tags: ['medical', 'work', 'tech'], retired: 'hides the eyes' },
+  'punkduck_sport-sunglasses': { slot: 'eyes', fit: 'u', tags: ['street', 'sport', 'raider', 'nomad'], retired: 'hides the eyes' },
+  elvs_ladies_sunglass1: { slot: 'eyes', fit: 'u', tags: ['rich'], retired: 'hides the eyes' },
+  punkduck_glasses_modern_form: { slot: 'eyes', fit: 'u', tags: ['rich', 'corp'], retired: 'hides the eyes' },
 
   // Face
-  joepal_medical_mouth_protection: { slot: 'face', fit: 'u', tags: ['medical', 'work'] },
-  elvs_covid_mask: { slot: 'face', fit: 'u', tags: ['medical', 'street', 'work'], dye: true },
-  gredal_gas_mask: { slot: 'face', fit: 'u', tags: ['raider', 'military', 'work', 'tech'] },
-  culturalibre_bandana_mask: { slot: 'face', fit: 'u', tags: ['raider', 'nomad', 'rag', 'work', 'street'], dye: true },
-  elvs_plague_doctor_mask: { slot: 'face', fit: 'u', tags: ['rich', 'faith'] },
+  joepal_medical_mouth_protection: { slot: 'face', fit: 'u', tags: ['medical', 'work'], retired: 'hides the face' },
+  elvs_covid_mask: { slot: 'face', fit: 'u', tags: ['medical', 'street', 'work'], dye: true, retired: 'hides the face' },
+  gredal_gas_mask: { slot: 'face', fit: 'u', tags: ['raider', 'military', 'work', 'tech'], retired: 'hides the face' },
+  culturalibre_bandana_mask: { slot: 'face', fit: 'u', tags: ['raider', 'nomad', 'rag', 'work', 'street'], dye: true, retired: 'hides the face' },
+  elvs_plague_doctor_mask: { slot: 'face', fit: 'u', tags: ['rich', 'faith'], retired: 'hides the face' },
 
   // Hands
   toigo_gloves_short: { slot: 'hands', fit: 'u', tags: ['work', 'formal', 'cold'], dye: true },
@@ -160,7 +166,12 @@ export const GARMENTS: Record<string, GarmentDef> = {
   learning_mma_fighting_gloves: { slot: 'hands', fit: 'u', tags: ['raider', 'street', 'sport'], dye: true },
 };
 
-/** Garments for a slot that suit a fit (unisex pieces suit both). */
+/** Garments for a slot that suit a fit (unisex pieces suit both), retired ones left out. */
 export function garmentsFor(slot: GarmentSlot, fit: 'm' | 'f'): string[] {
-  return Object.entries(GARMENTS).filter(([, g]) => g.slot === slot && (g.fit === 'u' || g.fit === fit)).map(([id]) => id);
+  return Object.entries(GARMENTS).filter(([, g]) => !g.retired && g.slot === slot && (g.fit === 'u' || g.fit === fit)).map(([id]) => id);
+}
+
+/** The garments still in the world (what the Unity project is given). */
+export function garmentsInWorld(): Record<string, GarmentDef> {
+  return Object.fromEntries(Object.entries(GARMENTS).filter(([, g]) => !g.retired));
 }

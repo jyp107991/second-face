@@ -78,7 +78,7 @@ namespace SecondFace.Core.Stats
             Sheet.Traits = o.Traits.Where(Registry.Traits.ContainsKey).Take(MaxTraits).ToList();
             if (newLook)
             {
-                Look.Face = Sculpt.Reroll(new Rng(unchecked((uint)(o.AppearanceSeed * 2654435761L + 1))));
+                Look.Face = Sculpt.Reroll(new Rng(unchecked((uint)(o.AppearanceSeed * 2654435761L + 1))), null, Look.Body == "m");
                 Look.Build = o.Frame == "broad" ? 0.4f : o.Frame == "narrow" ? -0.35f : 0f;
                 Look.Muscle = o.Frame == "broad" ? 0.3f : 0f;
             }

@@ -12,8 +12,8 @@ namespace SecondFace.Core.Npc
     /// default (life is hard: heavy bodies belong to the comfortable), muscle by the work; a woman's bust across the whole
     /// range (fuller with a fuller build), its firmness going with the years; seat, hips and waist; a man's shoulders,
     /// chest and arms with his muscle; a belly with weight and age; the face drawn by the sculptor's reroll (a character,
-    /// not an average); ancestry from the content's tag, else the Reach's mix; skin from ancestry and the sun of the
-    /// work; hair by the grooming rule, greying with age. What the content says of a person (age, ancestry) wins; its
+    /// not an average); ancestry from the content's tag, else a cluster from the place's community (P4.14); skin from ancestry and the sun
+    /// of the work, hair and eye colours as found in that ancestry; hair by the grooming rule, greying with age. What the content says of a person (age, ancestry) wins; its
     /// "frame" is how the web game marked a person's sex (Routine.Male), not a build.
     /// </summary>
     public static class Bodies
@@ -61,16 +61,17 @@ namespace SecondFace.Core.Npc
         };
 
         /// <summary>A person's look (for the base of their sex) from who they are.</summary>
-        public static PlayerLook For(string id, bool male, double age, string role = null, Means? means = null, string ancestry = null)
+        public static PlayerLook For(string id, bool male, double age, string role = null, Means? means = null, string ancestry = null, double[] community = null)
         {
             var rng = new Rng(Seed(id));
             var m = means ?? MeansOf(role, rng);
             var labour = Labour(role);
             var look = new PlayerLook { Body = male ? "m" : "f" };
 
-            // stature, a little lost after 45
+            // stature, a little lost after 45; the young by the growth chart
             var mean = male ? ManMean : WomanMean;
             var sd = male ? ManSd : WomanSd;
+            if (age < 18) { mean = Growth(male, age); sd = mean * 0.04; }
             var stature = Math.Clamp(mean + Normal(rng) * sd, mean - 2.5 * sd, mean + 2.5 * sd) - Math.Max(0, age - 45) * 0.08;
             look.Stature = (float)Math.Round(stature, 1);
 
@@ -94,48 +95,67 @@ namespace SecondFace.Core.Npc
             var s = look.Shape;
             if (!male)
             {
-                // the cup across the whole range (fuller with a fuller build), the chest's girth with it
-                var cup = Math.Clamp(0.45 + Normal(rng) * 0.25 + heavy * 0.6, 0.02, 1);
+                // a figure of one of the real types at their real frequencies (P4.14, the owner: not all pears), each its
+                // own within it; the cup across the whole range (fuller with a fuller build), set, spacing, shape and
+                // fullness as real breasts vary, lower and fuller below with size and the years
+                var f = Figures[PickIndex(rng, FigureShare(heavy))];
+                var cup = Math.Clamp(0.4 + Normal(rng) * 0.2 + f.Bust + heavy * 0.6, 0.02, 1);
                 var firm = Math.Clamp(0.8 - Math.Max(0, age - 20) * 0.01 + Normal(rng) * 0.08, 0.08, 0.9);
                 s["body-bust"] = (float)ToSlider(cup, BaseBust, 0, 1);
                 s["body-firm"] = (float)ToSlider(firm, BaseFirm, 0, 1);
-                s["body-seat"] = Clamp1(0.15 + Normal(rng) * 0.4 + heavy * 0.6);
-                s["body-hips"] = Clamp1(0.05 + Normal(rng) * 0.33 + heavy * 0.5);
-                s["body-shoulders"] = Clamp1(-0.05 + Normal(rng) * 0.2 + strong * 0.5);
-                s["body-chest"] = Clamp1(Normal(rng) * 0.1 + (cup - 0.45) * 0.9);
-                s["body-thighs"] = Clamp1(0.1 + Normal(rng) * 0.15 + strong * 0.5 + heavy * 0.8);
+                s["body-seat"] = Clamp1(f.Seat + Normal(rng) * 0.2 + heavy * 0.6);
+                s["body-hips"] = Clamp1(f.Hips + Normal(rng) * 0.18 + heavy * 0.5);
+                s["body-shoulders"] = Clamp1(f.Shoulders + Normal(rng) * 0.15 + strong * 0.5);
+                s["body-vshape"] = Clamp1(f.Taper + Normal(rng) * 0.12 + strong * 0.3);
+                s["body-chest"] = Clamp1(Normal(rng) * 0.1 + (cup - 0.4) * 0.9);
+                s["body-thighs"] = Clamp1(f.Thighs + Normal(rng) * 0.12 + strong * 0.5 + heavy * 0.8);
+                s["body-lift"] = Clamp1(Normal(rng) * 0.3 - (cup - 0.4) * 0.6 - Math.Max(0, age - 30) * 0.012 + (firm - 0.6) * 0.5);
+                s["body-spacing"] = Clamp1(Normal(rng) * 0.35);
+                s["body-point"] = Clamp1(Normal(rng) * 0.35);
+                s["body-fullness"] = Clamp1(Normal(rng) * 0.3 - Math.Max(0, age - 25) * 0.008 - (cup - 0.4) * 0.3);
+                s["body-waist"] = Clamp1(f.Waist + Normal(rng) * 0.15 + heavy * 1.2 + Math.Max(0, age - 35) * 0.004);
             }
             else
             {
                 s["body-seat"] = Clamp1(-0.05 + Normal(rng) * 0.25 + heavy * 0.4);
                 s["body-hips"] = Clamp1(Normal(rng) * 0.2 + heavy * 0.3);
                 s["body-shoulders"] = Clamp1(0.05 + Normal(rng) * 0.25 + strong * 0.8);
-                s["body-chest"] = Clamp1(Normal(rng) * 0.2 + strong * 0.8 + heavy * 0.4);
+                s["body-vshape"] = Clamp1(Normal(rng) * 0.2 + strong * 0.6 - heavy * 0.4);
+                // the chest a man's: the pectorals with the muscle, flat when lean, never a bust
+                s["body-chest"] = Clamp1(Normal(rng) * 0.15 + strong * 0.6 + heavy * 0.3);
+                s["body-pecs"] = Clamp1(0.1 + Normal(rng) * 0.15 + strong * 0.9);
                 s["body-thighs"] = Clamp1(Normal(rng) * 0.15 + strong * 0.5 + heavy * 0.8);
+                s["body-waist"] = Clamp1(Normal(rng) * 0.2 + heavy * 1.2 + Math.Max(0, age - 35) * 0.004);
             }
-            s["body-waist"] = Clamp1(Normal(rng) * 0.2 + heavy * 1.2 + Math.Max(0, age - 35) * 0.004);
+            s["body-legs"] = Clamp1(Normal(rng) * 0.35);
             // a belly (the shape is a full one) only with weight and the years; a lean young body is flat
             s["body-belly"] = (float)Math.Clamp(-0.2 + Normal(rng) * 0.08 + Math.Max(0, weight - 0.45) * 1.5 + Math.Max(0, age - 45) * (male ? 0.006 : 0.003), -0.4, 0.8);
             s["body-arms"] = Clamp1(Normal(rng) * 0.1 + strong * 0.8 + heavy * 0.6);
             s["body-tone"] = Clamp1(Normal(rng) * 0.15 + strong * 2 - heavy * 2);
             s["body-age"] = (float)Math.Clamp((age - 24) / 46.0, 0, 1);
 
-            // ancestry: the content's, else the Reach's mix with each person their own
-            var mix = Ancestry(ancestry) ?? Mix(rng);
+            // ancestry (P4.14, the owner: people too homogeneous): the content's tag, else a cluster drawn from the
+            // community's weights (most people mostly of one ancestry, a share of two), each their own small way off it
+            var tagged = Ancestry(ancestry);
+            var cluster = tagged != null ? ancestry : Cluster(rng, community);
+            var mix = tagged ?? Mix(rng, cluster);
             s["body-african"] = (float)mix.Af;
             s["body-asian"] = (float)mix.As;
             s["body-caucasian"] = (float)mix.Ca;
 
             // the face: a character, not an average
-            look.Face = Sculpt.Reroll(rng);
+            look.Face = Sculpt.Reroll(rng, null, male);
 
-            // skin: darker with African ancestry and with outdoor work; undertone and freckles by the light-skinned
+            // skin: the cluster's tone (very light to very dark, the whole human range) with the person's own shade, the
+            // sun of outdoor work (which darkens the light most), undertone warm or rosy by ancestry, freckles on the fair
             var outdoor = labour >= 1 ? 1 : role == "drifter" || role == "pilgrim" || role == "nomad" ? 0.8 : 0.3;
-            look.Skin = Clamp1(1.5 * (mix.Af - 0.25) + 0.25 * outdoor - 0.25 * (mix.Ca - 0.5) + Normal(rng) * 0.15);
-            look.Undertone = Clamp1(Normal(rng) * 0.3 + (mix.As > 0.5 ? 0.2 : 0));
-            look.Freckles = mix.Ca > 0.7 && rng.Chance(0.3) ? (float)rng.Range(0.1, 0.6) : 0f;
+            var tone = Tone(cluster) + Normal(rng) * 0.14;
+            tone += 0.22 * outdoor * (1 - Math.Max(0, tone)) - 0.08 * (1 - outdoor);
+            look.Skin = Clamp1(tone);
+            look.Undertone = Clamp1(Undertone(cluster) + Normal(rng) * 0.25);
+            look.Freckles = look.Skin < -0.45 && rng.Chance(0.35) ? (float)rng.Range(0.1, 0.6) : 0f;
 
-            // hair by the grooming rule; greying with age
+            // hair by the grooming rule; its colour by ancestry (fair hair only where it is found), greying with age
             var hair = male
                 ? Pick(rng, ("buzz", 0.3), ("sf_crop", 0.45), ("sf_matted", 0.15), ("sf_bun", 0.1))
                 : Pick(rng, ("sf_braid", 0.3), ("sf_bun", 0.25), ("sf_crop", 0.2), ("sf_matted", 0.15), ("buzz", 0.1));
@@ -143,12 +163,11 @@ namespace SecondFace.Core.Npc
             var grey = Math.Clamp((age - 38) / 30.0 + Normal(rng) * 0.15, 0, 1);
             if (grey > 0.66) look.HairColour = Looks.HairColours[rng.Int(8, 9)];
             else if (grey > 0.33) look.HairColour = Looks.HairColours[7];
-            else if (mix.Ca > 0.7) look.HairColour = Looks.HairColours[rng.Int(1, 6)];
-            else look.HairColour = Looks.HairColours[rng.Int(0, 2)];
-            look.Eyes = mix.Ca > 0.7 && rng.Chance(0.55) ? rng.Pick(new[] { "hazel", "green", "grey_green", "blue_grey", "blue", "grey" })
+            else look.HairColour = Looks.HairColours[HairShade(rng, cluster)];
+            look.Eyes = rng.Chance(LightEyes(cluster)) ? rng.Pick(new[] { "hazel", "green", "grey_green", "blue_grey", "blue", "grey" })
                 : rng.Pick(new[] { "brown", "dark", "brown", "hazel" });
             // a man's face: mostly unshaven out here, fuller with the years; the comfortable keep it trimmed or shaved
-            if (male)
+            if (male && age >= 16)
             {
                 var clean = m == Means.Rich ? 0.55 : m == Means.Comfortable ? 0.3 : 0.08;
                 look.Beard = rng.Chance(clean) ? null
@@ -157,7 +176,44 @@ namespace SecondFace.Core.Npc
             }
             if (rng.Chance(0.12 + labour * 0.18)) look.Scar = rng.Pick(Looks.Scars);
             if (rng.Chance(0.12)) look.Tattoo = rng.Pick(Looks.Tattoos);
+            if (male && age < 18 && look.Beard != null) look.Beard = "stubble_light";
+            Young(look, Child(male, age));
             return look;
+        }
+
+        /// <summary>How much of a child's body is left at an age (the <c>body-child</c> shape: MakeHuman's eleven-year-old
+        /// at the base's stature): all of it to eleven, gone by seventeen for a boy and sixteen for a girl.</summary>
+        public static double Child(bool male, double age) => male ? Math.Clamp((17 - age) / 6, 0, 1) : Math.Clamp((16 - age) / 5, 0, 1);
+
+        // the growth chart's middle (cm, by year from 2 to 18), scaled to the Reach's grown statures
+        private static readonly double[] BoysChart = { 87, 96, 103, 110, 116, 122, 128, 133, 138, 143, 149, 156, 164, 170, 174, 176, 177 };
+        private static readonly double[] GirlsChart = { 86, 95, 102, 109, 115, 122, 128, 133, 138, 144, 151, 157, 160, 162, 162.5, 163, 163 };
+
+        /// <summary>The middle stature of the young at an age (the growth chart, scaled to the Reach's grown means).</summary>
+        public static double Growth(bool male, double age)
+        {
+            var chart = male ? BoysChart : GirlsChart;
+            var t = Math.Clamp(age - 2, 0, chart.Length - 1);
+            var i = (int)Math.Floor(t);
+            var at = i >= chart.Length - 1 ? chart[chart.Length - 1] : chart[i] + (chart[i + 1] - chart[i]) * (t - i);
+            return at * (male ? ManMean / BoysChart[chart.Length - 1] : WomanMean / GirlsChart[chart.Length - 1]);
+        }
+
+        /// <summary>A body as young as it is: the child's shape in, the grown body's measures and bust out by as much, lean,
+        /// little muscle, the face's character softened; no tattoo on a child.</summary>
+        private static void Young(PlayerLook look, double child)
+        {
+            if (child <= 0) return;
+            var keep = (float)(1 - child);
+            var s = look.Shape;
+            foreach (var k in s.Keys.ToList())
+                if (k != "body-african" && k != "body-asian" && k != "body-caucasian" && k != "body-age") s[k] *= keep;
+            if (look.Body == "f") s["body-bust"] = (float)Math.Min(s["body-bust"], -child);   // no bust on a girl
+            s["body-child"] = (float)child;
+            look.Build = (float)Math.Clamp(look.Build * keep - 0.3 * child, -1, 1);
+            look.Muscle = (float)Math.Clamp(look.Muscle * keep - 0.4 * child, -1, 1);
+            foreach (var k in look.Face.Keys.ToList()) look.Face[k] *= (float)(1 - 0.5 * child);
+            look.Tattoo = null;
         }
 
         /// <summary>
@@ -207,6 +263,38 @@ namespace SecondFace.Core.Npc
             return "sf_crop";
         }
 
+        /// <summary>A woman's figure type (the shape sliders' centres for it): the real types, as measured across thousands
+        /// of women (Simmons, Istook and Devarajan 2004): straight most often, then the pear, the inverted triangle, the
+        /// hourglass and the apple (more of those with a fuller build).</summary>
+        public sealed class Figure
+        {
+            public string Id; public double Share, Shoulders, Taper, Bust, Waist, Hips, Seat, Thighs;
+        }
+
+        public static readonly Figure[] Figures =
+        {
+            new() { Id = "straight", Share = 0.42, Shoulders = 0.0, Taper = 0.0, Bust = -0.05, Waist = 0.2, Hips = -0.15, Seat = -0.1, Thighs = -0.1 },
+            new() { Id = "pear", Share = 0.2, Shoulders = -0.25, Taper = -0.15, Bust = -0.12, Waist = -0.1, Hips = 0.4, Seat = 0.35, Thighs = 0.35 },
+            new() { Id = "inverted_triangle", Share = 0.14, Shoulders = 0.4, Taper = 0.35, Bust = 0.08, Waist = 0.05, Hips = -0.3, Seat = -0.15, Thighs = -0.2 },
+            new() { Id = "hourglass", Share = 0.15, Shoulders = 0.1, Taper = 0.1, Bust = 0.2, Waist = -0.45, Hips = 0.3, Seat = 0.25, Thighs = 0.1 },
+            new() { Id = "apple", Share = 0.09, Shoulders = 0.05, Taper = 0.0, Bust = 0.12, Waist = 0.45, Hips = -0.1, Seat = -0.1, Thighs = 0.0 },
+        };
+
+        /// <summary>The figures' shares for a build: the apple grows with weight, the rest in proportion.</summary>
+        public static double[] FigureShare(double heavy)
+        {
+            var w = Figures.Select(f => f.Share * (f.Id == "apple" ? Math.Exp(Math.Max(0, heavy) * 3) : 1)).ToArray();
+            var t = w.Sum();
+            return w.Select(x => x / t).ToArray();
+        }
+
+        private static int PickIndex(Rng rng, double[] shares)
+        {
+            var x = rng.Next();
+            for (var i = 0; i < shares.Length; i++) { x -= shares[i]; if (x <= 0) return i; }
+            return shares.Length - 1;
+        }
+
         /// <summary>A macro value as the base's slider: below the base towards its decr shape, above towards its incr.</summary>
         public static double ToSlider(double value, double at, double low, double high)
         {
@@ -214,13 +302,83 @@ namespace SecondFace.Core.Npc
             return high - at <= 1e-6 ? 0 : Math.Min(1, (value - at) / (high - at));
         }
 
-        /// <summary>The Reach's mix with a person's own draw: mostly mixed, now and then most of one.</summary>
-        private static (double Af, double As, double Ca) Mix(Rng rng)
+        /// <summary>The ancestry clusters of the Reach and their shares in a crowd with no community of its own.</summary>
+        public static readonly (string Id, double Share)[] Clusters =
         {
-            double af = 0.3 * Math.Exp(Normal(rng) * 0.8), @as = 0.25 * Math.Exp(Normal(rng) * 0.8), ca = 0.45 * Math.Exp(Normal(rng) * 0.8);
+            ("north_european", 0.15), ("mediterranean", 0.13), ("west_african", 0.15), ("east_african", 0.1), ("east_asian", 0.12),
+            ("southeast_asian", 0.08), ("south_asian", 0.1), ("latin_american", 0.1), ("indigenous_american", 0.07),
+        };
+
+        /// <summary>A place's community: the clusters' shares with two or three of them raised (a town is founded by
+        /// someone), from the place's seed. The crowd of a place then reads as that place's, not the same mix everywhere.</summary>
+        public static double[] Community(uint seed)
+        {
+            var rng = new Rng(unchecked(seed * 2654435761u + 97u));
+            var w = Clusters.Select(c => c.Share).ToArray();
+            var n = rng.Int(2, 3);
+            for (var k = 0; k < n; k++) w[rng.Int(0, w.Length - 1)] *= rng.Range(2.5, 4.5);
+            var t = w.Sum();
+            return w.Select(x => x / t).ToArray();
+        }
+
+        /// <summary>A person's cluster drawn from a community's weights (the Reach's shares when none).</summary>
+        public static string Cluster(Rng rng, double[] community = null)
+        {
+            var w = community != null && community.Length == Clusters.Length ? community : Clusters.Select(c => c.Share).ToArray();
+            var t = w.Sum();
+            var x = rng.Next() * t;
+            for (var i = 0; i < w.Length; i++) { x -= w[i]; if (x <= 0) return Clusters[i].Id; }
+            return Clusters[Clusters.Length - 1].Id;
+        }
+
+        /// <summary>A person's MakeHuman mix for their cluster: mostly that cluster, their own small way off it; one in four
+        /// is of two clusters (a parent from each).</summary>
+        public static (double Af, double As, double Ca) Mix(Rng rng, string cluster)
+        {
+            var a = Ancestry(cluster) ?? (0.3, 0.25, 0.45);
+            double af = a.Af, @as = a.As, ca = a.Ca;
+            if (rng.Chance(0.25))
+            {
+                var b = Ancestry(Cluster(rng)) ?? (0.3, 0.25, 0.45);
+                var t = rng.Range(0.25, 0.5);
+                af = af * (1 - t) + b.Af * t; @as = @as * (1 - t) + b.As * t; ca = ca * (1 - t) + b.Ca * t;
+            }
+            af = Math.Max(0, af + Normal(rng) * 0.04); @as = Math.Max(0, @as + Normal(rng) * 0.04); ca = Math.Max(0, ca + Normal(rng) * 0.04);
             var sum = af + @as + ca;
             return (af / sum, @as / sum, ca / sum);
         }
+
+        /// <summary>A cluster's skin tone against the bases' mid-tone bake (-1 very light to 1 very dark).</summary>
+        public static double Tone(string cluster) => cluster switch
+        {
+            "north_european" => -0.8, "mediterranean" => -0.35, "east_asian" => -0.5, "southeast_asian" => 0.0,
+            "south_asian" => 0.3, "latin_american" => 0.0, "indigenous_american" => 0.15, "east_african" => 0.75, "west_african" => 0.9,
+            _ => 0.0,
+        };
+
+        /// <summary>A cluster's undertone (warm + to rosy -).</summary>
+        public static double Undertone(string cluster) => cluster switch
+        {
+            "east_asian" or "southeast_asian" => 0.35, "south_asian" or "latin_american" or "indigenous_american" => 0.15,
+            "north_european" => -0.3, "mediterranean" => -0.05, _ => 0.0,
+        };
+
+        /// <summary>A hair shade (an index into <see cref="Looks.HairColours"/>: black, dark brown, brown, light brown, dark
+        /// blond, blond, red) for a cluster: fair and red hair only among the north European, brown among the
+        /// Mediterranean, black or near it elsewhere.</summary>
+        public static int HairShade(Rng rng, string cluster) => cluster switch
+        {
+            "north_european" => PickIndex(rng, new[] { 0.08, 0.2, 0.25, 0.17, 0.12, 0.13, 0.05 }),
+            "mediterranean" => PickIndex(rng, new[] { 0.3, 0.38, 0.22, 0.08, 0.01, 0.0, 0.01 }),
+            "latin_american" or "south_asian" => PickIndex(rng, new[] { 0.55, 0.35, 0.1 }),
+            _ => PickIndex(rng, new[] { 0.75, 0.25 }),
+        };
+
+        /// <summary>How often a cluster's eyes are light (blue, green, grey, hazel-green).</summary>
+        public static double LightEyes(string cluster) => cluster switch
+        {
+            "north_european" => 0.7, "mediterranean" => 0.25, "latin_american" => 0.08, "south_asian" => 0.04, _ => 0.01,
+        };
 
         private static string Pick(Rng rng, params (string Id, double W)[] choices)
         {

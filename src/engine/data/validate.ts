@@ -119,7 +119,10 @@ export function validateContent(c: ContentBundle): string[] {
       if (!e.spot && !e.at && e.activity !== 'away') errs.push(`npc ${key}: schedule entry has no spot`);
     }
     if (n.settlement && c.settlements && !c.settlements[n.settlement]) errs.push(`npc ${key}: unknown settlement ${n.settlement}`);
-    for (const g of n.outfit?.layers ?? []) if (!GARMENTS[g.name]) errs.push(`npc ${key}: unknown garment ${g.name}`);
+    for (const g of n.outfit?.layers ?? []) {
+      if (!GARMENTS[g.name]) errs.push(`npc ${key}: unknown garment ${g.name}`);
+      else if (GARMENTS[g.name].retired) errs.push(`npc ${key}: garment ${g.name} is retired (${GARMENTS[g.name].retired})`);
+    }
   }
   for (const [key, st] of Object.entries(c.settlements ?? {})) {
     if (st.type && !SETTLEMENT_TYPES[st.type]) errs.push(`settlement ${key}: unknown type ${st.type}`);

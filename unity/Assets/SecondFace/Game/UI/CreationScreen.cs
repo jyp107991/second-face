@@ -289,7 +289,7 @@ namespace SecondFace.Game.UI
         private void Face()
         {
             var actions = Row();
-            Act(actions, "create.another_face", () => { Creation.Look.Face = Sculpt.Reroll(_m.Rng, Creation.Look.Face); Restyle(); Refresh(); });
+            Act(actions, "create.another_face", () => { Creation.Look.Face = Sculpt.Reroll(_m.Rng, Creation.Look.Face, Creation.Look.Body == "m"); Restyle(); Refresh(); });
             Act(actions, "create.even_face", () => { Creation.Look.Face = new Dictionary<string, float>(); Restyle(); Refresh(); }, quiet: true);
             var groups = Row("sf-creation__chips");
             foreach (var g in Sculpt.Groups)
@@ -387,7 +387,8 @@ namespace SecondFace.Game.UI
 
         /// <summary>The body's shapes the creation offers, top to toe (not age or ancestry: the face and skin are chosen).</summary>
         private static readonly string[] BodyShapes =
-            { "body-shoulders", "body-chest", "body-bust", "body-firm", "body-arms", "body-waist", "body-belly", "body-tone", "body-hips", "body-seat", "body-thighs" };
+            { "body-shoulders", "body-vshape", "body-chest", "body-pecs", "body-bust", "body-firm", "body-lift", "body-spacing", "body-point", "body-fullness",
+              "body-arms", "body-waist", "body-belly", "body-tone", "body-hips", "body-seat", "body-thighs", "body-legs" };
 
         private void BodyPage()
         {

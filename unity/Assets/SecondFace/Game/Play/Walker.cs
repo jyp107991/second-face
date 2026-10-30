@@ -63,6 +63,7 @@ namespace SecondFace.Game.Play
                 w.Animator.gameObject.AddComponent<SecondFace.Game.People.FootPlant>();
                 w.Animator.gameObject.AddComponent<SecondFace.Game.People.Gaze>();
                 w.Animator.gameObject.AddComponent<SecondFace.Game.People.ArmClearance>();
+                w.Animator.gameObject.AddComponent<SecondFace.Game.People.HandPose>();
             }
             return w;
         }

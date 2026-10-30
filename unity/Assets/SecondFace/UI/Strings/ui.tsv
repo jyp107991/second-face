@@ -391,7 +391,11 @@ create.muscle	Softer or harder worked
 create.shape.body-shoulders	Shoulders
 create.shape.body-chest	Chest
 create.shape.body-bust	Bust
-create.shape.body-firm	Lift
+create.shape.body-firm	Firmness
+create.shape.body-lift	Set high or low
+create.shape.body-spacing	Set wide or close
+create.shape.body-point	Rounder or more pointed
+create.shape.body-fullness	Fuller below or above
 create.shape.body-waist	Waist
 create.shape.body-belly	Belly
 create.shape.body-hips	Hips
@@ -399,6 +403,9 @@ create.shape.body-seat	Seat
 create.shape.body-arms	Arms
 create.shape.body-thighs	Thighs
 create.shape.body-tone	Softer or firmer middle
+create.shape.body-vshape	Taper to the waist
+create.shape.body-pecs	Pectorals
+create.shape.body-legs	Shorter or longer legs
 hair.buzz	Shaved
 hair.sf_crop	Cropped short
 hair.sf_bun	Tied in a bun

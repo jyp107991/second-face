@@ -79,6 +79,7 @@ namespace SecondFace.Core.Npc
         {
             var mapSeed = map.Seed.HasValue ? (uint)(long)map.Seed.Value : Bodies.Seed(map.Id);
             var rng = new Rng(unchecked(mapSeed * 7919u + (uint)index * 104729u));
+            var community = Bodies.Community(mapSeed);   // the place's own mix of people
             var roles = def.Roles != null && def.Roles.Count > 0 ? def.Roles : DefaultRoles.ToList();
             var spots = def.Spots ?? new List<string>();
             var out_ = new List<Extra>();
@@ -89,7 +90,7 @@ namespace SecondFace.Core.Npc
                 var role = rng.Pick(roles);
                 var age = def.Ages != null && def.Ages.Count >= 2 ? Math.Round(rng.Range(def.Ages[0], def.Ages[1])) : Math.Round(17 + 50 * rng.Next() * rng.Next() + 10 * rng.Next());
                 var male = rng.Chance(MaleShare(role));
-                var look = Bodies.For(id, male, age, role);
+                var look = Bodies.For(id, male, age, role, community: community);
                 var pool = Names[Pool(look, rng)];
                 var name = rng.Pick(male ? pool.M : pool.F);
                 // a spot each while they last, then about the area; a definition with neither keeps them at the map's middle

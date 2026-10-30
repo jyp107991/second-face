@@ -30,9 +30,18 @@ describe('outfits', () => {
   });
 
   it('helmets hide hair, caps crop it', () => {
-    expect(outfitHairMode({ layers: [{ name: 'culturalibre_skull_helmet' }] })).toBe('hide');
+    expect(outfitHairMode({ layers: [{ name: 'donitz_monk_robe_hood' }] })).toBe('hide');
     expect(outfitHairMode({ layers: [{ name: 'jujube_newsboy_cap' }, { name: 'cortu_cargo_pants' }] })).toBe('crop');
     expect(outfitHairMode({ layers: [{ name: 'cortu_cargo_pants' }] })).toBeUndefined();
+  });
+
+  it('nothing in the world hides a face, and nobody is dressed in a retired piece', () => {
+    for (const [id, g] of Object.entries(GARMENTS)) if (!g.retired) expect(g.slot, id).not.toBe('face');
+    for (const role of OUTFIT_ROLES) for (const fit of ['m', 'f'] as const) for (let seed = 1; seed <= 60; seed++) {
+      const o = dressFor(seed, role, fit);
+      for (const g of o.layers!) expect(GARMENTS[g.name].retired, `${role}/${fit}/${seed}: ${g.name}`).toBeUndefined();
+      for (const g of o.gear!) expect(['goggles', 'respirator', 'bandana'], `${role}/${fit}/${seed}`).not.toContain(g.kind);
+    }
   });
 
   it('faction looks add a marker piece and recolour; gear never doubles up a region', () => {

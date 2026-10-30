@@ -274,6 +274,7 @@ namespace SecondFace.Game.Play
                 anim.gameObject.AddComponent<FootPlant>();
                 anim.gameObject.AddComponent<Gaze>();
                 anim.gameObject.AddComponent<ArmClearance>();
+                anim.gameObject.AddComponent<HandPose>();
             }
             var def = r.Def;
             var name = string.IsNullOrEmpty(def.Name) ? Bootstrap.Content?.Entry("npcs", def.Id)?["name"]?.ToString() : def.Name;

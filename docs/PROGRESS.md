@@ -742,8 +742,23 @@ undyed clothes look too clean and pale in a crowd, dirt on clothes barely shows,
 wardrobe from real research; women not all pear-shaped and real breasts; men's shirts must not read as breasts; push
 Unity's graphics; far more difference between peoples. The Shale showcase (`docs/evidence/unity/p4/shale/`, every
 resident in their outfit) is the yardstick, re-rendered after each step.
-**Next action:** P4.14 (BUILD_PLAN P4 item 14), people to the standard, in its six steps: the wardrobe cleared and
-children made as children; peoples by ancestry; colour; bodies; a cyberpunk wardrobe; graphics. Then travellers on
+**P4.14 in progress (2026-10-30, WIP checkpoint):** steps 1-4 are written and the two base bodies are being rebuilt
+with the new shapes. Done in code: 24 pieces retired from the wardrobe (every mask, sack, gas mask, plague mask, goggles
+over the eyes, opaque glasses, closed helmet, the headset, both chest-pocket shirts, the printed suits, the costume
+pieces; `garments.ts` says why for each, and the Unity project no longer receives them); children are children (a
+child's body shape, statures by a growth chart, no beard, no bust); ancestry comes in clusters (most people mostly one
+ancestry, every place with its own community mix), with skin from very fair to very dark, hair and eye colours as found
+in each ancestry; colour palettes by trade and faction from the research (`docs/WARDROBE.md`), dye chances raised,
+nothing grey by default; women's figures of the five real types at their real shares, breasts varying in set, spacing,
+shape and fullness, tops draping over them (a cone-tent filter in the garment refit) instead of shrink-wrapping; men's
+chests as pectorals; a woman's face never a man's (the reroll keeps jaw, chin, neck, brow in the sex's range); hands at
+rest (fingers curled; they stood flat and spread in the mesh's bind pose because no clip drives them); the showcase now
+renders people as the game poses them. The owner's screenshot (a woman with a square jaw, flat spread hands, a sleeve
+the arm came through) is the check: a close-up render of that resident must be clean before the next sheet goes out.
+**Next action:** when the Blender rebuild finishes (`$S/build_p414.log` ends `done`), run
+`PlayerTestScene.Build`, then a close-up of the complained resident (arms, hands, sleeves, jaw) and fix what remains;
+then re-render `ShaleResidentsAsTheyAre` (fix the sheet crop so heads are whole) and send the sheets; commit with the
+rebuilt assets. Then P4.14 step 5 (the cyberpunk pieces, `docs/WARDROBE.md` §3) and step 6 (graphics). Then travellers on
 the roads (P4.13 5b). Then
 P7's first step, the new opening, in the content. Then P6 step 4, combat. P6.3 left for later: shade outdoors by a
 shadow ray (with the places' colliders, P6.4), noise by the ground, sight cones shown while sneaking, a crouched idle,

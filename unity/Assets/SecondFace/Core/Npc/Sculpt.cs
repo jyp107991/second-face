@@ -72,8 +72,9 @@ namespace SecondFace.Core.Npc
 
         /// <summary>The body's sliders (P5.3i, P4.13): the weight and muscle macros a step either way over the whole body;
         /// a woman's bust and its firmness (the macros, to either end); the measures (seat, hips, waist, shoulders, chest,
-        /// belly, arm and thigh girth, the stomach's tone), a step either way; age to 70 and each ancestry in full (single
-        /// shapes, 0..1). Every garment and hair is refitted to them by the build (mh_build, the names must match); the
+        /// belly, arm and thigh girth, the stomach's tone, the taper, the pectorals, the legs' length; a woman's breasts set high
+        /// or low, wide or close, pointed or round, fuller above or below), a step either way; age to 70, each ancestry in full and a child's
+        /// body (single shapes, 0..1; the child's is the population's, not the sculptor's: <see cref="Bodies.Child"/>). Every garment and hair is refitted to them by the build (mh_build, the names must match); the
         /// male base has no bust shapes (a missing shape is skipped).</summary>
         public static readonly SculptSlider[] Body =
         {
@@ -90,14 +91,22 @@ namespace SecondFace.Core.Npc
             new("body-arms", "body", "arms", "decr", "incr"),
             new("body-thighs", "body", "thighs", "decr", "incr"),
             new("body-tone", "body", "tone", "decr", "incr"),
+            new("body-vshape", "body", "taper", "decr", "incr"),
+            new("body-pecs", "body", "pectorals", "decr", "incr"),
+            new("body-legs", "body", "legs", "decr", "incr"),
+            new("body-lift", "body", "set", "decr", "incr"),
+            new("body-spacing", "body", "spacing", "decr", "incr"),
+            new("body-point", "body", "point", "decr", "incr"),
+            new("body-fullness", "body", "fullness", "decr", "incr"),
             new("body-age", "body", "years", null, "body-age-incr"),
             new("body-african", "body", "african", null, "body-african"),
             new("body-asian", "body", "asian", null, "body-asian"),
             new("body-caucasian", "body", "caucasian", null, "body-caucasian"),
+            new("body-child", "body", "child", null, "body-child"),
         };
 
         /// <summary>The body sliders only a woman's base carries.</summary>
-        public static bool WomanOnly(string id) => id == "body-bust" || id == "body-firm";
+        public static bool WomanOnly(string id) => id == "body-bust" || id == "body-firm" || id == "body-lift" || id == "body-spacing" || id == "body-point" || id == "body-fullness";
 
         /// <summary>The face's sliders and the body's.</summary>
         public static IEnumerable<SculptSlider> All { get { foreach (var s in Sliders) yield return s; foreach (var s in Body) yield return s; } }
@@ -158,21 +167,73 @@ namespace SecondFace.Core.Npc
         /// near the middle, so a face has a character instead of an average of small changes. Drawn again (up to 20
         /// times) until it lies at least <see cref="RerollDistance"/> from <paramref name="previous"/>.
         /// </summary>
-        public static Dictionary<string, float> Reroll(Rng rng, IReadOnlyDictionary<string, float> previous = null)
+        /// <summary>
+        /// The face's sliders that mark a sex (the owner, 2026-10-29: dimorphism as pronounced as in life; the jaw, brow,
+        /// chin and neck of a woman are never a man's): each the range a woman's draw keeps to and the range a man's does.
+        /// Unlisted sliders run the whole range for both.
+        /// </summary>
+        private static readonly Dictionary<string, ((float Lo, float Hi) F, (float Lo, float Hi) M)> BySex = new()
+        {
+            ["chin-bones"] = ((-1f, 0.15f), (-0.25f, 1f)),          // the jaw: narrow and soft on a woman, square on a man
+            ["chin-width"] = ((-1f, 0.2f), (-0.3f, 1f)),
+            ["chin-prominent"] = ((-0.8f, 0.35f), (-0.3f, 1f)),
+            ["chin-height"] = ((-0.8f, 0.4f), (-0.4f, 0.9f)),
+            ["neck-scale-horiz"] = ((-1f, 0.1f), (-0.3f, 1f)),
+            ["head-scale-horiz"] = ((-0.9f, 0.3f), (-0.4f, 0.9f)),
+            ["head-fat"] = ((-0.8f, 0.5f), (-0.6f, 0.8f)),
+            ["eyebrows-trans"] = ((-0.2f, 1f), (-1f, 0.3f)),         // brows higher and finer on a woman, low and heavy on a man
+            ["eyebrows-angle"] = ((-0.4f, 0.8f), (-0.8f, 0.5f)),
+            ["nose-volume"] = ((-1f, 0.3f), (-0.5f, 1f)),
+            ["nose-scale-horiz"] = ((-1f, 0.35f), (-0.5f, 1f)),
+            ["nose-hump"] = ((-0.9f, 0.4f), (-0.5f, 1f)),
+            ["cheek-bones"] = ((-0.3f, 1f), (-0.8f, 0.6f)),
+            ["cheek-volume"] = ((-0.3f, 0.9f), (-0.9f, 0.5f)),
+            ["mouth-upperlip-volume"] = ((-0.3f, 1f), (-1f, 0.4f)),
+            ["mouth-lowerlip-volume"] = ((-0.3f, 1f), (-1f, 0.4f)),
+            ["eye-scale"] = ((-0.3f, 1f), (-1f, 0.5f)),
+            ["forehead-scale-vert"] = ((-0.6f, 0.8f), (-0.8f, 0.6f)),
+        };
+
+        /// <summary>The head's single shapes a sex keeps away from (a square or long head on a woman; a round one on a man
+        /// only softly).</summary>
+        private static float HeadCap(string id, bool? male) => male switch
+        {
+            false => id == "head-square" || id == "head-rectangular" ? 0.3f : id == "head-triangular" ? 0.5f : 0.85f,
+            true => id == "head-round" || id == "head-oval" ? 0.55f : 0.85f,
+            _ => 0.85f,
+        };
+
+        /// <summary>
+        /// A new face with character (UPGRADE: rerolls with real variance; the owner: a character, not an average): one
+        /// head shape and six to ten strong sliders, the rest near the middle; every slider within its sex's range
+        /// (<see cref="BySex"/>) when the sex is given; at least <see cref="RerollDistance"/> from the previous face.
+        /// </summary>
+        public static Dictionary<string, float> Reroll(Rng rng, IReadOnlyDictionary<string, float> previous = null, bool? male = null)
         {
             Dictionary<string, float> face = null;
             for (var attempt = 0; attempt < 20; attempt++)
             {
                 face = new Dictionary<string, float>();
                 var heads = Array.FindAll(Sliders, s => !s.Paired);
-                face[rng.Pick(heads).Id] = (float)rng.Range(0.35, 0.85);
+                var head = rng.Pick(heads).Id;
+                var cap = HeadCap(head, male);
+                face[head] = (float)rng.Range(Math.Min(0.35, cap - 0.1), cap);
                 var paired = Array.FindAll(Sliders, s => s.Paired);
                 for (var i = paired.Length - 1; i > 0; i--) { var j = rng.Int(0, i); (paired[i], paired[j]) = (paired[j], paired[i]); }
                 var strong = rng.Int(6, 10);
                 for (var i = 0; i < paired.Length; i++)
                 {
-                    var mag = i < strong ? rng.Range(0.45, 1.0) : rng.Range(0.0, 0.2);
-                    face[paired[i].Id] = (float)(rng.Chance(0.5) ? mag : -mag);
+                    var mag = i < strong ? rng.Range(0.45, 0.85) : rng.Range(0.0, 0.2);
+                    var v = (float)(rng.Chance(0.5) ? mag : -mag);
+                    if (male.HasValue && BySex.TryGetValue(paired[i].Id, out var r))
+                    {
+                        var (lo, hi) = male.Value ? r.M : r.F;
+                        // the sex's range: a draw past it is folded back inside, so a strong slider stays strong its own way
+                        if (v > hi) v = Math.Max(lo, hi - (v - hi));
+                        if (v < lo) v = Math.Min(hi, lo + (lo - v));
+                        v = Math.Clamp(v, lo, hi);
+                    }
+                    face[paired[i].Id] = v;
                 }
                 if (previous == null || Distance(face, previous) >= RerollDistance) break;
             }

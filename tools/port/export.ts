@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { CHROME, CONCLUSIONS, DIALOGUES, FACTIONS, ITEMS, LEADS, LETTERS, MAPS, NPCS, ORIGINS, PERKS, QUESTS, REGIONS, ROAD_ENCOUNTERS, SETTLEMENTS, TRAITS, WORLD_EVENTS, WORLD_MAP } from '../../src/content';
 import { ACT_LEVEL, REFERENCE_BUILDS } from '../../src/content/rules/builds';
-import { GARMENTS } from '../../src/engine/data/garments';
+import { garmentsInWorld } from '../../src/engine/data/garments';
 import { ROLES, FACTION_LOOK } from '../../src/engine/data/outfits';
 import { SITES } from '../../src/content/world/sites';
 
@@ -53,6 +53,6 @@ dump('road_encounters', ROAD_ENCOUNTERS);
 dump('factions', FACTIONS);
 dump('letters', LETTERS);
 dump('sites', SITES);
-dump('garments', GARMENTS);
+dump('garments', garmentsInWorld());   // retired pieces stay with the frozen web game
 dump('outfits', { roles: ROLES, factions: FACTION_LOOK });
 dump('builds', { actLevel: ACT_LEVEL, reference: REFERENCE_BUILDS });
