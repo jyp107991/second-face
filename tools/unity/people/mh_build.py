@@ -910,6 +910,31 @@ LOD_BUDGET = [
 
 def tris(o): return sum(len(p.vertices) - 2 for p in o.data.polygons)
 
+# how far a level of detail's surface may stray from the whole mesh's (m): the game camera's person (LOD1, 10-45 % of the
+# screen's height) within a few pixels, the far one (LOD2) a little more, a capped LOD0 (the close-up) hardly at all
+LOD_TOLERANCE = {'_LOD1': 0.025, '_LOD2': 0.05, '_capped': 0.01}
+
+def lod_tolerance(name):
+    for k, t in LOD_TOLERANCE.items():
+        if name.endswith(k): return t
+    return 0.025
+
+def stray(whole, coarse):
+    """The farthest a coarse mesh's surface lies from the whole one: each face's centre and edge midpoints, by the
+    nearest point on the whole mesh's surface (both at rest, in the same space)."""
+    from mathutils.bvhtree import BVHTree
+    if not whole.polygons or not coarse.polygons: return 0.0
+    bvh = BVHTree.FromPolygons([v.co.copy() for v in whole.vertices], [tuple(p.vertices) for p in whole.polygons])
+    worst = 0.0
+    co = [v.co for v in coarse.vertices]
+    for p in coarse.polygons:
+        vs = [co[i] for i in p.vertices]
+        pts = [sum(vs, Vector()) / len(vs)] + [(vs[i] + vs[(i + 1) % len(vs)]) / 2 for i in range(len(vs))]
+        for q in pts:
+            hit = bvh.find_nearest(q)
+            if hit[0] is not None and hit[3] > worst: worst = hit[3]
+    return worst
+
 def part(o):
     for k in ('Body', 'Cloth', 'Hair', 'Eyes', 'Brows', 'Lashes'):
         if o.name.startswith(k): return k
@@ -976,10 +1001,24 @@ def decimated(src, target, name, rig):
     ratio = max(0.002, min(1.0, target / max(1, tris(src))))
     arms = [m for m in src.modifiers if m.type == 'ARMATURE']
     for m in arms: m.show_viewport = False
-    dec = src.modifiers.new('LODDecimate', 'DECIMATE'); dec.ratio = ratio; dec.use_collapse_triangulate = True
     dg = bpy.context.evaluated_depsgraph_get()
-    me = bpy.data.meshes.new_from_object(src.evaluated_get(dg), preserve_all_data_layers=True, depsgraph=dg)
-    src.modifiers.remove(dec)
+    whole = bpy.data.meshes.new_from_object(src.evaluated_get(dg), preserve_all_data_layers=False, depsgraph=dg)
+    tol = lod_tolerance(name)
+    tried = []
+    while True:
+        dec = src.modifiers.new('LODDecimate', 'DECIMATE'); dec.ratio = ratio; dec.use_collapse_triangulate = True
+        dg = bpy.context.evaluated_depsgraph_get()
+        me = bpy.data.meshes.new_from_object(src.evaluated_get(dg), preserve_all_data_layers=True, depsgraph=dg)
+        src.modifiers.remove(dec)
+        off = stray(whole, me)
+        tried.append(f'{ratio:.3f}:{off * 100:.1f}cm')
+        # a collapse that bridged two parts of the cloth stands out of it as a sliver (P4.15b: a fin beside the leg):
+        # less reduction until the coarse surface keeps to the whole one, or none at all
+        if off <= tol or ratio >= 1.0: break
+        bpy.data.meshes.remove(me)
+        ratio = min(1.0, ratio * 1.6)
+    if len(tried) > 1: print(f'    {name}: kept within {tol * 100:.1f} cm after {" ".join(tried)}')
+    bpy.data.meshes.remove(whole)
     for m in arms: m.show_viewport = True
     me.name = name
     o = bpy.data.objects.new(name, me); bpy.context.scene.collection.objects.link(o)

@@ -142,6 +142,9 @@ namespace SecondFace.Game.People
             else if (g.Slot == "top" || g.Slot == "legs") Remove(FullSlot);
             Bones();
             var instance = Instantiate(g.Prefab);
+            // the garment model's own levels of detail go now: destroyed at the frame's end (Gone), its LOD group took the
+            // renderers back out of the person's group with it, and every level drew at once (P4.15b)
+            foreach (var own in instance.GetComponentsInChildren<LODGroup>(true)) DestroyImmediate(own);
             var worn = new Worn { Garment = g };
             foreach (var r in instance.GetComponentsInChildren<SkinnedMeshRenderer>(true))
             {

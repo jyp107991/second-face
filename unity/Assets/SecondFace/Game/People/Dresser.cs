@@ -40,6 +40,9 @@ namespace SecondFace.Game.People
             foreach (var l in looks)
             {
                 var g = l.Name != null ? set.Find(l.Name) : null;
+                // a garment the set lacks (not built, or its import failed): another of the same slot from the set, chosen
+                // by the name so the same person always gets the same stand-in, never bare skin where clothes were meant
+                if (g == null && l.Name != null && Core.Npc.Garments.Def(l.Name) is { } def) g = StandIn(set, def.Slot, l.Name);
                 if (g == null) continue;
                 bySlot[g.Slot] = new Piece
                 {
@@ -48,6 +51,16 @@ namespace SecondFace.Game.People
                 };
             }
             return bySlot.Values.ToList();
+        }
+
+        /// <summary>A garment of the set for a slot, picked by a name's stable hash (null when the set has none for it).</summary>
+        public static WardrobeSet.Garment StandIn(WardrobeSet set, string slot, string name)
+        {
+            var all = set.Garments.Where(g => g.Slot == slot && g.Prefab != null).ToList();
+            if (all.Count == 0) return null;
+            uint h = 2166136261;
+            foreach (var c in name) h = (h ^ c) * 16777619;
+            return all[(int)(h % (uint)all.Count)];
         }
 
         /// <summary>Dresses a person for an outfit (the wardrobe takes off what is not in it).</summary>

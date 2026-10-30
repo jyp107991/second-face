@@ -66,13 +66,17 @@ namespace SecondFace.EditorTools
             set.Base = m.@base;
             set.Outfit = m.outfit ?? Array.Empty<string>();
             set.Garments.Clear();
+            var missing = new System.Collections.Generic.List<string>();
             foreach (var e in m.garments ?? Array.Empty<Entry>())
             {
                 var prefab = Bound($"{Dir}/{e.model}.fbx", $"{GarmentDir}/{e.model}.prefab");
-                if (prefab == null) continue;
+                if (prefab == null) { missing.Add(e.id); continue; }
                 set.Garments.Add(new WardrobeSet.Garment { Id = e.id, Slot = e.slot, HidesHair = e.hidesHair, Hides = e.hides ?? Array.Empty<int>(), Prefab = prefab });
             }
             if (fresh) AssetDatabase.CreateAsset(set, setPath); else EditorUtility.SetDirty(set);
+            // a garment of the manifest that did not load is a broken build (an import cut short, an empty .meta): loud, not
+            // a person dressed in whatever is left (P4.15b pitfall)
+            if (missing.Count > 0) Debug.LogError($"WardrobeBuild: {m.@base} is missing {missing.Count} of its garments: {string.Join(", ", missing)}");
 
             // the base: bound, with its face and its wardrobe
             var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{Dir}/{m.@base}.fbx");
