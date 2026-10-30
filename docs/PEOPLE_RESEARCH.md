@@ -18,7 +18,7 @@ attribution file (`docs/CREDITS.md`) lists what we ship.
 | — **Vitruvian** | added in CharMorph 0.4 | CC0 | Not in the database snapshot pulled (the release zip was unreachable from here); to look at when reachable. |
 | **Blender Studio Human Base Meshes v1.4.1** | 17 CC0 meshes: realistic male and female bodies, animation and sculpt heads, eye, hand, skull, skeleton; clean quad topology with UVs; no textures, no morphs, no rig | CC0 | Excellent topology to sculpt on; building a generator on it (morph library, textures) is months of work. A fallback for custom hero heads. |
 | **Mixamo** | ~30 fixed characters and the animation library | Adobe terms: usable embedded in a commercial game, not redistributable | Not a generator; the animations are already a source for motion. |
-| Daz Genesis, Character Creator, MetaHuman | the industry's generators | paid interactive licence / Unreal-only | Out. |
+| Daz Genesis, Character Creator, MetaHuman | the industry's generators | paid interactive licence; MetaHuman's licence allows other engines since June 2025, but its downloads (Fab) need an Epic login we cannot automate | Out. |
 
 ## 2. Skin, eyes, hair, brows (the engine side)
 
@@ -30,6 +30,13 @@ attribution file (`docs/CREDITS.md`) lists what we ship.
   sclera, iris and cornea maps.
 - **Hair:** cards of our own (P4.7) with better alphas: *Hair Alphas For Days* (OpenGameArt, CC0) as the strand
   alphas; an anisotropic (Kajiya-Kay) highlight in the hair shader; the grooming rule unchanged.
+- **Hair from real grooms (P4.16, owner 2026-10-30):** the owner found the generated hairline awful and asked for the
+  best free hair. The best free *grooms* for Unity are the strand hairstyles of Unity's own HDRP Defender character
+  demo (TressFX, made by Unity's artists; educational and non-commercial use with attribution, which the owner's
+  personal game is). Strands are too heavy for a phone's crowd, so they are turned into cards (`tools/unity/people/
+  groom.py`): the hairline is measured from their roots (the shell's edge and the painted stubble follow it), their
+  baby hairs and front wisps become fine cards along it, and the Loose groom's crown braids make `sf_braid`. MetaHuman
+  grooms would be the next step up, but Fab's downloads need the owner's Epic login.
 - **Eyebrows:** always: Reom's 12 brow styles converted to cards, and painted brows under them for distance.
 - **Post:** ACES tonemapping over an HDR frame, grading, bloom on the brightest, vignette; SSAO on the mid tier.
 

@@ -2494,6 +2494,19 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   head; the beard keeps its pigmented hairs (`BeardBase`) and a share gone white (`BeardGrey`), drawn hair by hair
   (salt and pepper); the palette's greys are neutral. Greying spreads by a personal pace factor (lognormal), so years
   before a people's onset there are only a few grey hairs, and the beard follows the same curve about six years ahead.
+- **The hairline: drawn by eye, cut along faces, dropped at a distance (P4.16; the owner: "the hairline looks
+  awful").** Three faults. (1) The hair weight's hairline model (`hairgen.hair_weight`, the Skin shader's `Hairline`)
+  was drawn by eye; measured against real grooms (the roots of the Defender demo's hairstyles, the 3rd percentile of
+  their elevation per 10 degrees of azimuth) it sat up to 18 degrees high at the temples and sideburns and 20 to 30
+  degrees high behind the ears, where real hair runs down to the nape's corners: bare bays behind the ears. (2) The
+  shell kept or dropped whole faces of the fine scalp, so its edge stepped in 7 mm stairs. (3) At the game camera's
+  level (600 triangles) the shell, one island bigger than the whole budget, was dropped by `thin()`, which keeps or
+  drops islands whole: from play distance everyone's hair was a dozen loose locks over the painted stubble. Fixes: the
+  measured table (`HAIRLINE_AZ`/`HAIRLINE_EL`, the shader's the same; the bake's stubble follows it); the shell cut along
+  a smooth, slightly irregular contour of the hair weight (`clip_patch`, `wobble`); hair levels decimate the shell to
+  half their budget and thin the rest (`mh_build.layer_down`; budgets 16 K close-up, 1.6 K, 400); the grooms' baby
+  hairs and front wisps as fine cards on every drawn-back style (`groom.py`). Check a style's levels by islands
+  (largest island and count per level), not by the triangle total alone.
 - **Offsets by people move the population's mean.** Each people's stature against the Reach's mean must be centred over
   the Reach's shares, or the Reach shrinks (`Bodies.MeanStatureOffset`); a static average over a table declared later in
   the class is null at type initialisation (a property, not a field).

@@ -363,10 +363,13 @@ GENERATED_GARMENTS = {
 }
 
 WEBBING, METAL, DARKER, HEM = (0.13, 0.12, 0.11), (0.52, 0.52, 0.54), (0.3, 0.29, 0.27), (0.2, 0.19, 0.18)
+# P4.16b: the vest is waxed canvas in its own colour, not dyed (a runtime dye of peach or white over a vest this tight
+# read as bare skin under straps), and its webbing is the shoulder straps and the waist band only (a chest strap across
+# the bust read as a bra band)
+GENERATED_GARMENTS['sf_vest_harness']['tint'] = 'olive_wax'
 GENERATED_GARMENTS['sf_vest_harness']['boxes'] = [
     dict(x=(0.05, 0.09), y=(-1, 1), z=(1.0, 1.4), col=WEBBING, mirror=True),    # shoulder straps, front and back
     dict(x=(-1, 1), y=(-1, 1), z=(0.93, 0.99), col=WEBBING),                     # the waist band
-    dict(x=(-1, 1), y=(-1, 0), z=(1.12, 1.17), col=WEBBING),                     # a chest strap, front
 ]
 GENERATED_GARMENTS['sf_bomber_cropped']['boxes'] = [
     dict(x=(-0.008, 0.008), y=(-1, 0), z=(0.95, 1.37), col=METAL),               # the zip
@@ -433,6 +436,7 @@ def content_wardrobe(spec):
         if only and g not in only.split(','): continue
         look = dict(CONTENT_LOOK if d.get('dye') else OWN_LOOK, hide=d['slot'] in HIDING_SLOTS, shared=True)
         if g in GENERATED_GARMENTS and 'boxes' in GENERATED_GARMENTS[g]: look['boxes'] = GENERATED_GARMENTS[g]['boxes']
+        if g in GENERATED_GARMENTS and 'tint' in GENERATED_GARMENTS[g] and not d.get('dye'): look['tint'] = GENERATED_GARMENTS[g]['tint']
         out.append({'g': g, 'slot': d['slot'], 'look': look, 'hides_hair': d['slot'] == 'head'})
     return out
 
@@ -902,10 +906,13 @@ def slot(key):
 # (strand brows and lashes ran to 30-40 K and 17 K triangles, a tactical vest to 37 K). LOD1 is the game camera's person
 # (13-44 % of the screen's height at 8-26 m), ~6 K; LOD2 the far one, ~2 K. Per-part budgets in triangles; None drops
 # the part at that level. Unity groups the objects by their _LOD<n> suffix into one LODGroup on import.
-LOD0_CAP = {'Brows': 3000, 'Lashes': 1500, 'Hair': 6000, 'Cloth': 4000}
+# P4.16: hair's close-up holds a groomed style whole (crown braids, a plait, the hairline's fine hairs: 8-14 K; thinned to
+# 6 K it lost the hairline's hairs at random), and the game camera's hair is its scalp layer decimated plus locks (at
+# 600 the layer, one island bigger than the budget, was dropped: 12 loose locks over a painted scalp)
+LOD0_CAP = {'Brows': 3000, 'Lashes': 1500, 'Hair': 16000, 'Cloth': 4000}
 LOD_BUDGET = [
-    {'Body': 3000, 'Cloth': 2400, 'Hair': 600, 'Eyes': 200, 'Brows': 500, 'Lashes': None},
-    {'Body': 1000, 'Cloth': 800, 'Hair': 150, 'Eyes': None, 'Brows': None, 'Lashes': None},
+    {'Body': 3000, 'Cloth': 2400, 'Hair': 1600, 'Eyes': 200, 'Brows': 500, 'Lashes': None},
+    {'Body': 1000, 'Cloth': 800, 'Hair': 400, 'Eyes': None, 'Brows': None, 'Lashes': None},
 ]
 
 def tris(o): return sum(len(p.vertices) - 2 for p in o.data.polygons)
@@ -982,6 +989,48 @@ def thin(me, target):
         bmesh.ops.delete(bm, geom=list({id(f): f for f in drop}.values()), context='FACES')
     bm.to_mesh(me); bm.free()
 
+def islands_of(bm):
+    bm.faces.ensure_lookup_table()
+    seen, out = set(), []
+    for f in bm.faces:
+        if f.index in seen: continue
+        stack, isl = [f], []
+        seen.add(f.index)
+        while stack:
+            g = stack.pop(); isl.append(g)
+            for e in g.edges:
+                for h in e.link_faces:
+                    if h.index not in seen: seen.add(h.index); stack.append(h)
+        out.append(isl)
+    return out
+
+def layer_down(me, target, groups=()):
+    """Hair whose scalp layer (one island) is more than 70 % of a level's budget (P4.16): thin() kept or dropped islands
+    whole, and dropped it. The layer is decimated (collapse) to half the budget instead and the rest thinned to the other
+    half; returns the budget left for thin()."""
+    bm = bmesh.new(); bm.from_mesh(me)
+    isl = islands_of(bm)
+    big = max(isl, key=lambda i: sum(len(f.verts) - 2 for f in i))
+    n = sum(len(f.verts) - 2 for f in big)
+    if n <= 0.7 * target or len(isl) < 2: bm.free(); return target
+    ids = {f.index for f in big}
+    layer = me.copy()
+    lb = bmesh.new(); lb.from_mesh(layer); lb.faces.ensure_lookup_table()
+    bmesh.ops.delete(lb, geom=[f for f in lb.faces if f.index not in ids], context='FACES')
+    lb.to_mesh(layer); lb.free()
+    bmesh.ops.delete(bm, geom=list(big), context='FACES')
+    bm.to_mesh(me); bm.free()
+    tmp = bpy.data.objects.new('layer_down', layer); bpy.context.scene.collection.objects.link(tmp)
+    for g in groups: tmp.vertex_groups.new(name=g)   # the skin weights carried through the decimation
+    dec = tmp.modifiers.new('LayerDecimate', 'DECIMATE'); dec.ratio = max(0.01, 0.5 * target / n); dec.use_collapse_triangulate = True
+    dg = bpy.context.evaluated_depsgraph_get()
+    down = bpy.data.meshes.new_from_object(tmp.evaluated_get(dg), preserve_all_data_layers=True, depsgraph=dg)
+    left = max(1, target - sum(len(p.vertices) - 2 for p in down.polygons))
+    thin(me, left)
+    bm = bmesh.new(); bm.from_mesh(me); bm.from_mesh(down); bm.to_mesh(me); bm.free()
+    bpy.data.objects.remove(tmp); bpy.data.meshes.remove(layer); bpy.data.meshes.remove(down)
+    return None
+
 def decimated(src, target, name, rig):
     """A copy of a skinned mesh decimated (collapse) to about `target` triangles, at rest, without its shape keys, with
     its vertex groups, materials and armature; strands and cards thinned by whole islands first."""
@@ -992,7 +1041,7 @@ def decimated(src, target, name, rig):
         for m in arms: m.show_viewport = False
         me = bpy.data.meshes.new_from_object(src.evaluated_get(bpy.context.evaluated_depsgraph_get()), preserve_all_data_layers=True, depsgraph=bpy.context.evaluated_depsgraph_get())
         for m in arms: m.show_viewport = True
-        thin(me, target)
+        if part(src) != 'Hair' or layer_down(me, target, [vg.name for vg in src.vertex_groups]) is not None: thin(me, target)
         me.name = name
         o = bpy.data.objects.new(name, me); bpy.context.scene.collection.objects.link(o)
         for vg in src.vertex_groups: o.vertex_groups.new(name=vg.name)

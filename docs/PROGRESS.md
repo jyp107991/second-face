@@ -795,8 +795,17 @@ ring) retired; the men's bronzed bake balanced to the women's (`_BakeBalance`, m
 end rosier; a place's extras each their own name; beards redrawn (the owner's screenshot: a beard on the nose, blond
 brows and beard on a brown man; BUILD_PLAN §8): masks on measured landmarks, salt and pepper hair by hair, brows that
 keep their colour, greying by a personal pace. Tests: `PeoplesTests.AnAuthoredGreySaysHowGreyNotWhatColour`,
-`ExtrasTests` (names). **Next action:** check the full Shale sheets, commit the evidence in
-`docs/evidence/unity/p4/shale/`, send them. Then P4.15c, the skin and hair shaders:
+`ExtrasTests` (names). P4.15b done (`docs/evidence/unity/p4/shale/shale_p415_*`).
+**P4.16, the hairline (the owner: "the hairline looks awful"; use the best free hair; the owner chose Unity's Defender
+demo grooms, personal non-commercial use, credited in `docs/CREDITS.md`):** the grooms are read at build time
+(`SF_GROOMS` = the demo's "Hair Files"; `tools/unity/people/tfx.py`, `groom.py`) and turned into our cards. The hairline
+is measured from their roots (`hairgen.HAIRLINE_*`, the Skin shader's `Hairline()`: lower at the temples, the
+sideburns and behind the ears), the shell is cut along a smooth contour, the grooms' baby hairs and front wisps lie
+along it on the bun, the matted hair and the crop, `sf_braid` is now the Loose groom's crown braids into a plait, the
+crop's cards are narrow and lie flat, and hair keeps its scalp layer at the game camera's levels (it had been dropped:
+everyone's hair from play distance was a dozen locks over painted stubble; BUILD_PLAN §8). Bases rebuilt
+(`hairgen.py` v18). **Next action:** `PlayerTestScene.Build`, the Shale render, the sheets into
+`docs/evidence/unity/p4/shale/` (`shale_p416_*`), commit, push, send. Then P4.15c, the skin and hair shaders:
 the patch is drafted (pre-integrated scattering from `tools/unity/people/skin_lut.py`, pores from
 `tools/unity/people/skin_detail.py`, a second sharper specular lobe, a faint Kajiya-Kay band on hair); copy the lookup
 and pore textures to `Assets/SecondFace/Shaders/Skin/`, apply, rebuild the wardrobes, render before and after.

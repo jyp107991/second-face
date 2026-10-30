@@ -10,7 +10,7 @@ import json, os
 import numpy as np
 
 STYLES = ('sf_crop', 'sf_bun', 'sf_braid', 'sf_matted', 'sf_coils', 'sf_cornrows')
-VERSION = 17   # bump when the generator changes: mh_build regenerates into its cache by name + version
+VERSION = 18   # bump when the generator changes: mh_build regenerates into its cache by name + version
 ATLAS = 1024
 COLS = {'sheet': 0, 'clump': 1, 'wisp': 2, 'matted': 3}
 
@@ -28,13 +28,20 @@ def head_angles(P, top, eye):
     d = P - c
     return np.degrees(np.arctan2(d[:, 1], np.hypot(d[:, 0], d[:, 2]))), np.abs(np.degrees(np.arctan2(d[:, 0], d[:, 2]))), d
 
+# the hairline (P4.16): the elevation where hair starts by azimuth, measured on real grooms (the Defender demo's, groom.py:
+# the 3rd percentile of their roots' elevation per 10 degrees, Loose, BuzzCut and Afro alike). The model before it was
+# drawn by eye and sat high at the temples and well above the ears' backs, where real hair runs down to the nape's
+# corners (bare bays behind the ears). The Skin shader's Hairline() is the same table.
+HAIRLINE_AZ = [0, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115, 125, 150, 180]
+HAIRLINE_EL = [26, 26, 22, 14, 3, -6, -16, -6, 1, -17, -44, -48, -44, -49]
+
 def hair_weight(P, top, eye, mode, recede=0.0):
     """Stubble weight per head vertex from a hairline model around the skull: elevation above a threshold that falls
     from the forehead to the temples, the ear tops and the nape; 'bald' keeps the horseshoe on the sides and back
     only. Ears (outside the skull's silhouette) and the face get none. Tuned on the base mesh with a shaded preview
     from four sides (BUILD_PLAN §6.C.2)."""
     e, a, d = head_angles(P, top, eye)
-    t = np.interp(a, [0, 40, 75, 100, 140, 180], [30 + recede, 24 + recede, 4, -10, -38, -58])
+    t = np.interp(a, HAIRLINE_AZ, np.array(HAIRLINE_EL) + recede * (np.array(HAIRLINE_AZ) <= 45))
     w = smoothstep((e - (t - 2)) / 8.0)
     if mode == 'bald':
         w *= smoothstep((np.interp(a, [0, 60, 90, 130, 180], [-90, -90, 18, 26, 30]) - e) / 8.0)
@@ -245,60 +252,102 @@ def border_distance(V, faces):
     return dist
 
 
-def shell(B, m, goal, lift, rng, reach=0.25, segments=10, fade=0.12, col='sheet'):
+def clip_patch(V, N, F, f):
+    """The faces F over points V (normals N) cut along the field f = 0, the part where f >= 0 kept (P4.16: a face kept or
+    dropped whole stepped along the faces, the hairline's stairs). Returns the kept part's points, normals and faces
+    (triangles and quads), the points on the cut shared by the faces meeting there."""
+    P, NN, index = [], [], {}
+    def vert(i):
+        if ('v', i) not in index: index[('v', i)] = len(P); P.append(V[i]); NN.append(N[i])
+        return index[('v', i)]
+    def cut(i, j):
+        key = ('e', min(i, j), max(i, j))
+        if key not in index:
+            t = f[i] / (f[i] - f[j])
+            index[key] = len(P); P.append(V[i] + (V[j] - V[i]) * t)
+            n = N[i] + (N[j] - N[i]) * t; NN.append(n / max(np.linalg.norm(n), 1e-9))
+        return index[key]
+    out = []
+    for face in F:
+        vals = [f[i] for i in face]
+        if min(vals) >= 0: out.append(tuple(vert(i) for i in face)); continue
+        if max(vals) < 0: continue
+        for tri in ((face[0], face[1], face[2]), (face[0], face[2], face[3])) if len(face) == 4 else (tuple(face),):
+            poly = []
+            for k in range(3):
+                a, b = tri[k], tri[(k + 1) % 3]
+                if f[a] >= 0: poly.append(vert(a))
+                if (f[a] >= 0) != (f[b] >= 0): poly.append(cut(a, b))
+            if len(poly) >= 3: out.append(tuple(poly))
+    return np.array(P), np.array(NN), out
+
+
+def wobble(B, P, rng, scale=(14.0, 34.0), waves=7):
+    """A smooth irregularity in [-1, 1] over the scalp's points P (by direction from the head's centre): a hairline is
+    not a drawn curve. Waves 1.5 to 4.5 cm long."""
+    U = P - B.c
+    U /= np.maximum(np.linalg.norm(U, axis=1, keepdims=True), 1e-9)
+    w = np.zeros(len(P))
+    for _ in range(waves):
+        d = rng.normal(0, 1, 3); d /= np.linalg.norm(d)
+        w += np.sin(U @ d * rng.uniform(*scale) + rng.uniform(0, 2 * np.pi))
+    return w / np.sqrt(waves / 2.0)
+
+
+def shell(B, m, goal, lift, rng, reach=0.25, segments=10, fade=0.12, col='sheet', field=None):
     """Hair lying on the scalp as one continuous layer `lift` above the skin (no shingles of separate cards): the
     scalp's own faces (subdivided once, `Base.fine_scalp`) lifted, the strands of the atlas's sheet column running from the hairline toward `goal` (v along
     the flow, u round the flow's axis in mirrored segments so the strands stay fine), the hairline soft: over `fade` (dm)
     in from the layer's edge, measured along the scalp, the sheet's strands start one by one (a fade by the hair weight
     alone was ~5 mm wide and cut a hard contour, v9). `reach`: how far down the hair weight the layer goes (lower:
-    further over the temples and the nape)."""
-    V, N = B.FV, B.FN
-    faces = [f for f in B.FF if all(B.Fhw[i] > reach for i in f)]
+    further over the temples and the nape). The edge is cut along the contour where the hair weight is `reach`, a little
+    irregular, not along the faces (P4.16, v18); `field` (per fine scalp point, >= 0 where the layer is) replaces it."""
+    f = B.Fhw - reach + 0.12 * wobble(B, B.FV, rng) if field is None else field
+    V, N, faces = clip_patch(B.FV, B.FN, B.FF, f)
+    if not faces: return
     a = (goal - B.c) / np.linalg.norm(goal - B.c)
     e1 = np.cross(a, [0.0, 1.0, 0.0]); e1 /= np.linalg.norm(e1)
     e2 = np.cross(a, e1)
-    verts = sorted({i for f in faces for i in f})
-    dirs = {i: (V[i] - B.c) / np.linalg.norm(V[i] - B.c) for i in verts}
-    ang = {i: float(np.arccos(np.clip(dirs[i] @ a, -1, 1))) for i in verts}
-    amax = max(ang.values())
+    dirs = (V - B.c) / np.linalg.norm(V - B.c, axis=1, keepdims=True)
+    ang = np.arccos(np.clip(dirs @ a, -1, 1))
+    amax = ang.max()
     border = border_distance(V, faces)
-    pos, uv = {}, {}
-    for i in verts:
+    base = len(m.v)
+    for i in range(len(V)):
         edge = smoothstep(border.get(i, 0.0) / fade)                    # 0 at the layer's edge: the hairline
         flow = 1.0 - ang[i] / amax                                      # 0 far from the goal, 1 at it
-        v = edge * (0.34 + 0.64 * flow)                                 # the sheet's strand starts lie in v < 0.36
+        v = edge * (0.34 + 0.56 * flow)                                 # the sheet's strand starts lie in v < 0.36, its
+                                                                        # tips above 0.92 (a bare patch at the goal, v18)
         phi = np.arctan2(dirs[i] @ e2, dirs[i] @ e1)
         sseg = (phi + np.pi) / (2 * np.pi) * segments
         tri = 1 - abs(2 * (sseg - np.floor(sseg)) - 1)
         # a little uneven (hair, not a helmet), down onto the skin at the hairline (no step there, nor its shadow)
-        pos[i] = V[i] + N[i] * ((lift + rng.uniform(0, 0.012)) * (0.25 + 0.75 * edge))
-        uv[i] = (COLS[col] * 0.25 + tri * 0.24 + 0.005, v)
-    index = {}
-    for i in verts:
-        index[i] = len(m.v); m.v.append(tuple(pos[i])); m.vt.append(uv[i])
-    for f in faces: m.f.append(tuple(index[i] for i in f))
+        m.v.append(tuple(V[i] + N[i] * ((lift + rng.uniform(0, 0.012)) * (0.25 + 0.75 * edge))))
+        m.vt.append((COLS[col] * 0.25 + tri * 0.24 + 0.005, v))
+    for face in faces: m.f.append(tuple(base + i for i in face))
 
 
 def gen_crop(B, rng):
-    """Cropped uneven: a short layer combed back and down over the scalp, and short cards for the uneven ends, none
-    over the forehead (no fringe)."""
+    """Cropped uneven: a short layer combed back and down over the scalp, and short narrow cards lying close over it for
+    the cut's uneven ends, none over the forehead (no fringe). P4.16: the cards were 8-14 mm wide leaves, 1-3 cm long,
+    rooted up to the hairline, which read as pebbles and a ragged edge; now 3-6 mm wide, 1.2-2.8 cm long, low, rooted
+    inside the hairline (the shell's fade and the hairline's own fine hairs make the edge)."""
     m = Mesh()
-    # a crisp hairline (short hair), and no more cards than the hair's budget keeps whole (mh_build thinned 1300 to 60 %
-    # at random, and the layer's hairline showed through the gaps as bald patches)
-    shell(B, m, B.surf(B.c + np.array([0.0, -0.6, -0.8]), 0.0), 0.012, rng, reach=0.35, fade=0.06)
-    for r in rng.choice(B.scalp, size=700, replace=True):
+    shell(B, m, B.surf(B.c + np.array([0.0, -0.6, -0.8]), 0.0), 0.012, rng, reach=0.35, fade=0.08)
+    inner = B.scalp[np.array([B.hw[int(i)] for i in B.scalp]) > 0.8]
+    for r in rng.choice(inner, size=900, replace=True):
         p0 = B.surf(B.V[r] + rng.normal(0, 0.05, 3), 0.0)   # roots scattered between the scalp's vertices
         # combed: from the front to the crown backwards, on the sides and back downwards; a cut's uneven lengths
         comb = np.array([0.0, -0.35, -1.0]) if p0[2] > B.c[2] else np.array([np.sign(p0[0]) * 0.25, -1.0, -0.3])
-        comb = comb / np.linalg.norm(comb) + rng.normal(0, 0.18, 3)
-        length = rng.uniform(0.1, 0.3) * (0.6 if p0[2] > B.eye[2] - 0.35 else 1.0)   # shorter at the front
-        k = 4
-        lift = rng.uniform(0.008, 0.02)
+        comb = comb / np.linalg.norm(comb) + rng.normal(0, 0.12, 3)
+        length = rng.uniform(0.12, 0.28)
+        k = 5
+        lift = rng.uniform(0.006, 0.014)
         pts = [B.surf(p0, lift)]
         for j in range(1, k):
-            pts.append(B.surf(pts[-1] + comb / np.linalg.norm(comb) * length / (k - 1), lift + 0.004 * j))
+            pts.append(B.surf(pts[-1] + comb / np.linalg.norm(comb) * length / (k - 1), lift + 0.002 * j))
         pts = np.array(pts)
-        m.ribbon(pts, outward(B, pts), spindle(k, rng.uniform(0.08, 0.14), 0.4, 0.15, 0.35), 'clump', rng, twist=rng.normal(0, 0.2))
+        m.ribbon(pts, outward(B, pts), spindle(k, rng.uniform(0.035, 0.06), 0.5, 0.2, 0.3), 'clump', rng, twist=rng.normal(0, 0.15))
     return m
 
 
@@ -343,16 +392,27 @@ def gen_braid(B, rng):
     # a small knot at the nape where the drawn-back hair is gathered (it hides the cards' ends)
     axis = (Nk - B.c) / np.linalg.norm(Nk - B.c)
     knot(m, Nk + axis * 0.05, axis, 18, (0.09, 0.13), (0.05, 0.08), 'clump', rng)
-    # the plait: three strands round a centre line down the back, 0.1 dm off the skin
-    length, k = 2.7, 34
+    plait(B, m, Nk, rng)
+    return m
+
+
+def plait(B, m, Nk, rng, length=2.7, k=34, girth=1.0):
+    """A plait from Nk (behind the head) down the back: three strands round a centre line 0.1 dm off the skin, two
+    crossed cards each, thinning to a tie and a splayed tail. `girth` scales its width."""
     ys = Nk[1] - np.linspace(0, length, k)
     cz = np.array([max(B.back(y) - 0.13, -9) for y in ys])
     cz[0] = min(cz[0], Nk[2])
     centre = np.stack([np.zeros(k), ys, cz], axis=1)
     centre[:, 2] = np.minimum(centre[:, 2], Nk[2] - 0.02 * np.arange(k) / k)
+    # from high on the head (the crown braids' meeting) down over the back of the skull, not into it
+    for j in range(k):
+        if ys[j] > B.c[1] - 1.2:
+            centre[j, 2] = min(centre[j, 2], B.surf(np.array([0.0, ys[j], B.c[2] - 1.0]), 0.09)[2])
+    centre[1:-1, 2] = np.minimum(centre[1:-1, 2], 0.5 * (centre[:-2, 2] + centre[2:, 2]))
     lat = np.array([1.0, 0, 0]); dep = np.array([0, 0, -1.0])
     wave = 2 * np.pi * np.linspace(0, length / 0.32, k)
     thin = np.linspace(1.0, 0.55, k)
+    thin = thin * girth
     for s in range(3):
         ph = wave + s * 2 * np.pi / 3
         pts = centre + (np.sin(ph) * 0.12 * thin)[:, None] * lat + (np.cos(ph) * 0.06 * thin)[:, None] * dep
@@ -365,8 +425,7 @@ def gen_braid(B, rng):
         d = np.array([rng.normal(0, 0.25), -1.0, rng.normal(0, 0.15)]); d /= np.linalg.norm(d)
         L = rng.uniform(0.2, 0.38)
         pts = np.array([tip + d * L * j / 4 for j in range(5)])
-        m.ribbon(pts, np.repeat(dep[None], 5, 0), taper(5, 0.09, 0.03), 'clump', rng)
-    return m
+        m.ribbon(pts, np.repeat(dep[None], 5, 0), taper(5, 0.09 * girth, 0.03), 'clump', rng)
 
 
 def gen_matted(B, rng):
@@ -588,14 +647,18 @@ def write(B, name, mesh, out_dir, tex):
 
 
 def generate(mh, out_dir):
-    """Writes every style under out_dir/hair/<name>/ unless this version is there already. Returns {name: quads}."""
-    stamp = os.path.join(out_dir, 'hair', f'.v{VERSION}')
+    """Writes every style under out_dir/hair/<name>/ unless this version is there already. Returns {name: quads}.
+    With SF_GROOMS (the Defender demo's grooms, groom.py) some styles are made or finished from real grooms."""
+    import groom
+    grooms = groom.generators()
+    gens = dict(GENERATORS, **grooms)
+    stamp = os.path.join(out_dir, 'hair', f'.v{VERSION}' + ('g' if grooms else ''))
     if os.path.exists(stamp): return {}
     B = Base(mh)
     tex = atlas(np.random.default_rng(7))
     made = {}
     for i, name in enumerate(STYLES):
-        made[name] = write(B, name, GENERATORS[name](B, np.random.default_rng(100 + i)), out_dir, tex)
+        made[name] = write(B, name, gens[name](B, np.random.default_rng(100 + i)), out_dir, tex)
     open(stamp, 'w').close()
     return made
 

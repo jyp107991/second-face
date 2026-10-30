@@ -87,3 +87,13 @@ Used modified (refit to the game's bodies, re-dyed, weathered, resampled texture
   **CC0**; the hair cards' and eyebrows' alphas.
 - **CMU Graphics Lab Motion Capture Database** (http://mocap.cs.cmu.edu) — the captured motion, free for any use;
   converted by `tools/unity/motion/cmu2fbx.py`.
+
+## Hair grooms (P4.16)
+
+- **HDRP Defender Character Demo** — the hairstyles' strand grooms ("Hair Files": AMD TressFX `.tfx`, the Loose, Blonde,
+  Afro and BuzzCut styles) from **Unity Technologies**, https://github.com/UnityTechnologies/HDRP-Defender-Character-Demo.
+  The demo's character package is offered for educational and non-commercial use with attribution to Unity; the owner's
+  game is for personal, non-commercial use (owner's decision, 2026-10-30). The grooms are not shipped: `tools/unity/people/groom.py`
+  reads them at build time (`SF_GROOMS`) and makes our own hair cards from their courses (the crown braids, the
+  hairline's fine hairs and its measured shape). The demo's textures, meshes and shaders are not used.
+

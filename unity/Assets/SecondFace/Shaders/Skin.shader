@@ -205,13 +205,14 @@ Shader "SecondFace/Skin"
         // fair, red), and pattern balding takes it away in Hamilton-Norwood's order, the temples and the crown first, the
         // horseshoe over the ears and round the back never.
         float Lin(float x, float x0, float x1, float y0, float y1) { return lerp(y0, y1, saturate((x - x0) / (x1 - x0))); }
+        // the hairline measured on real grooms (P4.16): hairgen.py HAIRLINE_AZ / HAIRLINE_EL, the same table
+        static const float HairAz[14] = { 0, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115, 125, 150, 180 };
+        static const float HairEl[14] = { 26, 26, 22, 14, 3, -6, -16, -6, 1, -17, -44, -48, -44, -49 };
         float Hairline(float az)
         {
-            if (az < 40) return Lin(az, 0, 40, 30, 24);
-            if (az < 75) return Lin(az, 40, 75, 24, 4);
-            if (az < 100) return Lin(az, 75, 100, 4, -10);
-            if (az < 140) return Lin(az, 100, 140, -10, -38);
-            return Lin(az, 140, 180, -38, -58);
+            [unroll] for (int k = 1; k < 14; k++)
+                if (az < HairAz[k]) return Lin(az, HairAz[k - 1], HairAz[k], HairEl[k - 1], HairEl[k]);
+            return HairEl[13];
         }
         float Horseshoe(float az)
         {
