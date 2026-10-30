@@ -106,3 +106,21 @@ and an Unreal export. None is a substitute for the gate; each would be held to i
 - **R5** beards as geometry; hair fitted to the head.
 - **R6** the Shale sheets with reference boards, to the owner.
 Each step ends with the gate's numbers and the boards; nothing is sent as "better" that the gate fails.
+
+## 7. Baseline (R1, 2026-10-30)
+
+The gate built (`tools/unity/people/gate/`, `PeopleGateTests`), run on 252 adults (Shale's 39 and a sample of every
+people, sex and age): **0 pass**. 3D (ANSUR II): neck girth 2.5 cm under the chin out of range in 191 (men: the shoulders
+rise to the jaw, no neck, 118 of 124; women: necks too thin or too thick), head breadth in 133 (men's mostly too narrow:
+pencil heads; some women's far too wide: the balloon), head length in 107 (men's too long), cheek width wider than the
+skull in 53 women (impossible), faces too short in 52 women and too long in 25 men, eyes too close in 54 women. 2D
+(FairFace): inner eye spacing out of range in 144, jaw width in 98, lips in 77, mouth width in 74, face height to width
+in 69. The response model (`response.py`) predicts head breadth, length, cheek width and eye spacing within 1-3 mm from
+the sliders, and shows hidden couplings: leg length (`body-legs`) shrinks the head by 14 mm breadth and 19 mm length;
+the male base is 145 mm broad and 205 long at neutral (real 154 and 200), its neck girth 471 mm (real 397: no neck), the
+female base's neck 304 (real 330). Evidence: `docs/evidence/unity/p4/realism/board_baseline_r1.jpg`,
+`gate_baseline_r1.txt`.
+
+Next (R2): the bases gain neck length and depth shapes, leg length stops scaling the head, and Core `Proportions` solves
+each person's sliders, with the response model, to measures sampled from the real covariance of their sex and ancestry
+(ANSUR II), so every person is in range and the variation within a people is the real variation.

@@ -97,3 +97,13 @@ Used modified (refit to the game's bodies, re-dyed, weathered, resampled texture
   reads them at build time (`SF_GROOMS`) and makes our own hair cards from their courses (the crown braids, the
   hairline's fine hairs and its measured shape). The demo's textures, meshes and shaders are not used.
 
+
+## Real people for the plausibility gate (pass 10, `docs/PEOPLE_REALISM.md`)
+
+- **ANSUR II** — the 2012 US Army anthropometric survey's public data (6,068 adults; public domain),
+  https://www.openlab.psu.edu/ansur2/. Summary statistics in `tools/unity/people/gate/ansur_stats.json`.
+- **FairFace** — Kärkkäinen, K. and Joo, J. (2021), "FairFace: Face Attribute Dataset for Balanced Race, Gender, and
+  Age", WACV; the dataset under **CC BY 4.0** (HuggingFaceM4/FairFace). Landmark statistics in
+  `tools/unity/people/gate/fairface_stats.json`; its photographs appear in the reference boards
+  (`docs/evidence/unity/p4/realism/`), beside our people, for comparison.
+- **MediaPipe Face Landmarker** (Google, Apache 2.0) measures both.

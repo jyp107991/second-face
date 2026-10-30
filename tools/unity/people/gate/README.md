@@ -1,0 +1,23 @@
+# The plausibility gate (docs/PEOPLE_REALISM.md)
+
+Every person the game makes is held to real people of their sex, ancestry and age.
+
+Data (fetched, not shipped):
+- ANSUR II (US Army 2012, public domain): `ANSUR_II_MALE_Public.csv`, `ANSUR_II_FEMALE_Public.csv` from
+  https://tools.openlab.psu.edu/publicData/ -> `ansur_stats.py` -> `ansur_stats.json` (committed).
+- FairFace (Kärkkäinen and Joo 2021, CC BY 4.0): HuggingFaceM4/FairFace `0.25/validation-*.parquet` ->
+  `fairface_stats.py` -> `fairface_stats.json` (committed; per group the ratios' percentiles, covariance and the
+  neutral faces nearest the median for the reference boards).
+
+Landmarks: MediaPipe Face Landmarker (Apache 2.0) in a venv (`pip install mediapipe pyarrow`; the model
+`face_landmarker.task` from storage.googleapis.com/mediapipe-models). In a container without EGL, build stub
+`libEGL.so.1` / `libGLESv2.so.2` exporting the symbols `libmediapipe.so` imports (all returning 0; the CPU path never
+calls them) and run with `LD_LIBRARY_PATH` pointing at them.
+
+Run:
+1. `tools/unity/editor.sh test playmode "SecondFace.Tests.PeopleGateTests"`: measures every person (test-results/
+   people_measures.json, heads/*.bin, portraits/*.png) and the sculptor shapes' responses (heads/resp_*.bin).
+2. `faces2d.py <unity/test-results> <face_landmarker.task>`: the portraits' landmark proportions.
+3. `gate.py <unity/test-results>`: the verdict (people_gate.json; exit 1 if anyone fails).
+4. `board.py <unity/test-results> <validation.parquet> <out.jpg> [ids]`: the reference boards for the owner.
+5. `response.py <unity/test-results>`: the response of each measure to each shape (`response.json`).

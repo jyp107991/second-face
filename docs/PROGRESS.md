@@ -813,8 +813,10 @@ scattering (`Shaders/Skin/skin_lut.png`), pores over the bake (`skin_pores_n.png
 lobe (0.04: at 0.15 foreheads shone like oil), a soft Kajiya-Kay band along the hair (`_HairSheen`); the materials get
 them in `PeopleImportPostprocessor` (`skin_p415c.jpg`). **Owner pass 10 (2026-10-30, binding): the people are judged
 against real people from now on** (`docs/PEOPLE_REALISM.md`: the diagnosis, the plausibility gate, steps R1-R6; CLAUDE.md
-§2). **Next action:** R1, the gate: ANSUR II and FairFace into `tools/unity/people/ref/`, the 3D measuring tool, the 2D
-landmark comparison, the reference boards, `PeoplePlausibilityTests`, the baseline published. Parked until the gate is
+§2). R1 done: the gate (`tools/unity/people/gate/`, README there; `PeopleGateTests`), baseline 0 of 252 pass
+(`docs/PEOPLE_REALISM.md` §7, `docs/evidence/unity/p4/realism/`). **Next action:** R2: neck length and depth shapes on
+the bases (mh_build FACE_SHAPES + Core Sculpt), `body-legs` masked off the head, Core `Proportions` (response model +
+ANSUR targets per person), rebuild, re-run the gate until the 3D half passes. Parked until the gate is
 green: travellers on the roads (git stash "wip: travellers on the roads"; `WayPath`, `Extras.FirstName/BarksOf`), the
 new opening (owner note D), P6 step 4 (combat). (Superseded record of P4.15c's plan:
 the patch is drafted (pre-integrated scattering from `tools/unity/people/skin_lut.py`, pores from
