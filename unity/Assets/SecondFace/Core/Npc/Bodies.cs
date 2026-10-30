@@ -63,6 +63,19 @@ namespace SecondFace.Core.Npc
             _ => null,
         };
 
+        /// <summary>No grey hair before this age (owner, pass 10: grey only from 55; the head, the beard and the brows).</summary>
+        public const double GreyFrom = 55;
+
+        /// <summary>The body's scale: a stature against the base's own height with the person's shapes (a longer neck or
+        /// head makes a taller body: Proportions.HeightMm), else the look's height (±6 %).</summary>
+        public static float ScaleOf(PlayerLook look)
+        {
+            if (look.Stature <= 0f) return 1f + 0.06f * Math.Clamp(look.Height, -1f, 1f);
+            var h = Proportions.HeightMm(look);
+            var own = h > 0 ? h / 10.0 : look.Body == "m" ? BaseMan : BaseWoman;
+            return (float)Math.Clamp(look.Stature / own, 0.8, 1.2);
+        }
+
         /// <summary>A person's look (for the base of their sex) from who they are.</summary>
         public static PlayerLook For(string id, bool male, double age, string role = null, Means? means = null, string ancestry = null, double[] community = null)
         {
@@ -203,7 +216,9 @@ namespace SecondFace.Core.Npc
             // thirty-eight)
             var greyPace = Normal(rng);
             var grey = Math.Clamp(greyBase * Math.Exp(0.6 * greyPace) + Math.Max(0, greyPace) * 0.03, 0, 1);
-            if (age < 30) grey = Math.Min(grey, 0.1);
+            // the owner's rule (pass 10): grey hair only from 55, a necessary condition, not a sufficient one (the share
+            // and amount rise after it by the person's own pace)
+            if (age < GreyFrom) grey = 0;
             look.Grey = (float)grey;
             look.HairColour = GreyShade(shade, grey);
             // light eyes are recessive: of two ancestries, light only as often as both carry them
@@ -247,7 +262,7 @@ namespace SecondFace.Core.Npc
                 var beardShade = shade;
                 if (!red && (cluster == "north_european" || second == "north_european") && shade >= 1 && shade <= 4 && rng.Chance(0.25)) beardShade = 6;
                 // (on the people's own curve, about six years ahead of the head)
-                var beardGrey = Math.Clamp(Peoples.Grey(age + 6, greyOnset, greySpan) * Math.Exp(0.6 * greyPace) + Math.Max(0, greyPace) * 0.03, grey, 1);
+                var beardGrey = age < GreyFrom ? 0 : Math.Clamp(Peoples.Grey(age + 6, greyOnset, greySpan) * Math.Exp(0.6 * greyPace) + Math.Max(0, greyPace) * 0.03, grey, 1);
                 if (beardShade != shade || beardGrey > grey + 0.01) look.BeardColour = GreyShade(beardShade, beardGrey);
                 look.BeardBase = Looks.HairColours[beardShade];
                 look.BeardGrey = (float)beardGrey;
@@ -263,6 +278,8 @@ namespace SecondFace.Core.Npc
             if (rng.Chance(0.12 + labour * 0.18)) look.Scar = rng.Pick(Looks.Scars);
             if (rng.Chance(0.12)) look.Tattoo = rng.Pick(Looks.Tattoos);
             if (male && age < 18 && look.Beard != null) look.Beard = "stubble_light";
+            // the head, face and neck held to real people of their sex and ancestry (pass 10, docs/PEOPLE_REALISM.md §4.1)
+            if (age >= 18) Proportions.Fit(look, male, cluster, age, Seed(id + "/proportions"));
             Young(look, child);
             return look;
         }
@@ -409,7 +426,7 @@ namespace SecondFace.Core.Npc
         /// the nearest of ours, skin tone (0 pale to 1 dark, against the bases' mid-tone bake), undertone, freckles
         /// eyes and a beard.
         /// </summary>
-        public static PlayerLook Over(PlayerLook look, Newtonsoft.Json.Linq.JObject over)
+        public static PlayerLook Over(PlayerLook look, Newtonsoft.Json.Linq.JObject over, double age = 99)
         {
             if (look == null || over == null) return look;
             if (over["hair"] is Newtonsoft.Json.Linq.JObject hair)
@@ -421,21 +438,25 @@ namespace SecondFace.Core.Npc
                     // the authored colour with the years' grey over it (the web game's colours did not age; a seventy-year-old
                     // keeps the grey their people show at seventy), the brows from it as from any hair
                     var authored = (int)hair["color"];
-                    look.HairColour = IsGrey(authored) ? authored : GreyColour(authored, look.Grey);
-                    if (IsGrey(authored))
+                    // an authored grey on someone under 55 is not kept (owner, pass 10): their own colour stays
+                    if (!(IsGrey(authored) && age < GreyFrom))
                     {
-                        // an authored grey says how grey, not what colour the hair was: the brows and the beard's dark hairs
-                        // keep the person's own (P4.15b: a brown man of fifty-five drawn with blond brows and beard), and
-                        // the beard is at least as grey as the head
-                        look.Grey = Math.Max(look.Grey, (float)GreyOf(authored));
-                        if (look.BeardBase != 0) look.BeardGrey = Math.Max(look.BeardGrey, Math.Min(1f, look.Grey + 0.1f));
+                        look.HairColour = IsGrey(authored) ? authored : GreyColour(authored, look.Grey);
+                        if (IsGrey(authored))
+                        {
+                            // an authored grey says how grey, not what colour the hair was: the brows and the beard's dark hairs
+                            // keep the person's own (P4.15b: a brown man of fifty-five drawn with blond brows and beard), and
+                            // the beard is at least as grey as the head
+                            look.Grey = Math.Max(look.Grey, (float)GreyOf(authored));
+                            if (look.BeardBase != 0) look.BeardGrey = Math.Max(look.BeardGrey, Math.Min(1f, look.Grey + 0.1f));
+                        }
+                        else
+                        {
+                            look.BrowColour = BrowColourOf(authored, Math.Max(0, look.Grey - 0.5));
+                            if (look.Body == "m") look.BeardBase = authored;
+                        }
+                        if (look.BeardBase != 0) look.BeardColour = GreyColour(look.BeardBase, look.BeardGrey);
                     }
-                    else
-                    {
-                        look.BrowColour = BrowColourOf(authored, Math.Max(0, look.Grey - 0.5));
-                        if (look.Body == "m") look.BeardBase = authored;
-                    }
-                    if (look.BeardBase != 0) look.BeardColour = GreyColour(look.BeardBase, look.BeardGrey);
                 }
             }
             if (over["scars"] is Newtonsoft.Json.Linq.JArray scars && scars.Count > 0)

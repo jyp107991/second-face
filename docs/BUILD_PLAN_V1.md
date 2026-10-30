@@ -2517,6 +2517,23 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
 - **Offsets by people move the population's mean.** Each people's stature against the Reach's mean must be centred over
   the Reach's shares, or the Reach shrinks (`Bodies.MeanStatureOffset`); a static average over a table declared later in
   the class is null at type initialisation (a property, not a field).
+- **Menton taken at the throat (R2).** "The lowest midline point in front of the throat" is the throat's top: the chin's
+  underside runs back and down. Every face height and neck girth measured that way was wrong. Fix: on the midline
+  section (a mesh cut, densified; the base's midline vertices lie on x = 0, so cut at 0.7 mm), find the throat (the neck
+  front's deepest point), the first bulge above it (the chin), and the lowest point of its front 30 % (`measure.py`). Plot
+  every new landmark on extreme shapes before trusting a number.
+- **A model fitted to one-slider samples fails on people (R2).** Shapes combine nonlinearly (the neck's girth most: it is
+  taken under a chin the shapes move); a linear model from ±1 renders was 41 mm off on necks. Fix: refit on every round's
+  rendered people with a free offset and ridge towards the one-slider values (weight 5); a looser refit learnt -170 mm a
+  unit and the solver drove every woman's neck to its thinnest. Shapes that can be exploited answer only to their own
+  measure (the neck's to the neck).
+- **Independent 2D and 3D targets fight (R2).** A face height over width drawn from FairFace and one drawn from ANSUR can
+  contradict; the solver compromises and both miss. Fix: draw the 2D proportions given those the head's solution sets.
+- **A head too tall reads as no neck (R2).** Women's vault was 10 mm too tall (tragion to top 138 mm, ANSUR 126): the chin
+  sank to the shoulders. Measure the vault (tragion to top of head) and the head and neck (vertex to suprasternale), not
+  only the face.
+- **Dotnet test filters did not apply** to the Core test project (every run ran all 209); run the suite in Release
+  (`dotnet test -c Release`, 4 min; Debug 14 min since people are solved).
 
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)
 

@@ -31,6 +31,9 @@ namespace SecondFace.Core.Npc
         public static readonly SculptSlider[] Sliders =
         {
             new("head-scale-horiz", "head", "head width", "decr", "incr"),
+            new("head-scale-depth", "head", "head length", "decr", "incr"),
+            new("head-back-scale-depth", "head", "back of the head", "decr", "incr"),
+            new("head-scale-vert", "head", "head height", "decr", "incr"),
             new("head-fat", "head", "head fullness", "decr", "incr"),
             new("head-age", "head", "head age", "decr", "incr"),
             new("forehead-scale-vert", "head", "forehead height", "decr", "incr"),
@@ -86,6 +89,8 @@ namespace SecondFace.Core.Npc
             new("ear-flap", "ears", "ears out", "decr", "incr"),
             new("neck-scale-horiz", "neck", "neck width", "decr", "incr"),
             new("neck-double", "neck", "under the chin", "decr", "incr"),
+            new("neck-scale-vert", "neck", "neck length", "decr", "incr"),
+            new("neck-scale-depth", "neck", "neck depth", "decr", "incr"),
         };
 
         /// <summary>The body's sliders (P5.3i, P4.13): the weight and muscle macros a step either way over the whole body;

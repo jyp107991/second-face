@@ -100,7 +100,7 @@ and an Unreal export. None is a substitute for the gate; each would be held to i
 
 - **R1** the gate: ANSUR II and FairFace in, the measuring tool, the 2D landmark comparison, the reference boards,
   `PeoplePlausibilityTests`; run it on the current people and publish the failures (the honest baseline).
-- **R2** head, neck and body proportions from the regressions; re-run the gate.
+- **R2** head, neck and body proportions from the regressions; re-run the gate. Done: 206 of 252 pass (§8).
 - **R3** faces fitted to real faces per group; distinctness; re-run.
 - **R4** age in the face; greying from 55.
 - **R5** beards as geometry; hair fitted to the head.
@@ -124,3 +124,52 @@ female base's neck 304 (real 330). Evidence: `docs/evidence/unity/p4/realism/boa
 Next (R2): the bases gain neck length and depth shapes, leg length stops scaling the head, and Core `Proportions` solves
 each person's sliders, with the response model, to measures sampled from the real covariance of their sex and ancestry
 (ANSUR II), so every person is in range and the variation within a people is the real variation.
+
+## 8. R2: proportions from real people (2026-10-30)
+
+**Result: 206 of 252 pass the gate** (82 %; baseline 0). Evidence: `docs/evidence/unity/p4/realism/gate_r2.txt`,
+`board_r2_shale.jpg` (Shale's people), `board_r2_peoples.jpg` (one woman and one man of every people at 35), each beside
+four real faces of their group.
+
+What was wrong, measured (each a cause of what the owner saw):
+- **The chin was measured at the throat.** The chin's underside runs back and down to the throat, so "the lowest point in
+  front of the throat" was the throat's top: every face height and neck girth before R2 was taken there. Menton is now
+  found on the midline section: the throat (the neck's deepest front point), the first bulge above it (the chin), the
+  lowest point of its front 30 % (`measure.py` `menton`). Checked on plots for short, long, receding and forward chins.
+- **Women's heads were 10 mm too tall in the vault** (tragion to top of head 138 mm against ANSUR's 126; head height
+  228 against ~218). The chin sat 10 mm lower, onto the shoulders: the "balloon" head and the "no neck" together. Two
+  ANSUR measures now hold it: tragion to top of head (the ear canal found as the ear's lower 45 %) and vertex to
+  suprasternale (head and neck over the notch above the breastbone, found on the midline section).
+- **Leg length scaled the head** (14 mm breadth): `keep_stature` now scales the body below the neck and carries the head.
+- **The male base had no neck** (girth 482 mm under the chin against 397); the bases gained neck length and depth and head
+  length, height and back-of-head shapes, and the solver fits them.
+- **Stature grew with the neck and head shapes** (2.5 %): the response model includes the body's height, and the stature
+  scale divides by it (`Bodies.ScaleOf`).
+- **Women's brows sat low** (a fifth under FairFace's 5th percentile of brow to lid): raised 2.4 mm.
+
+How each person is made now (Core `Proportions`, called from `Bodies.For` for every adult):
+1. Their measures (head breadth and length, cheek width, face height, eye spacing, neck girth, vault height, head and neck
+   height) drawn from ANSUR II's covariance for their sex and ancestry, given their stature, inside the 3rd-97th percentile
+   of every measure and proportion.
+2. The size shapes solved to reach them (coordinate descent on the response model, each shape held near the archetype's
+   value; the neck's shapes answer only to the neck).
+3. Their face's landmark proportions drawn from FairFace's covariance for their group and age band, given the two the
+   head already sets (face height over width, eye spacing), and the feature shapes solved to reach them.
+4. **The gate at the source**: the result is checked against every real range with room for the model's error, and a
+   person who falls outside is drawn again (up to 10 draws, the closest kept).
+
+The response model (`response.py`, `response2d.py`) is measured from one-slider renders and refitted on every round's
+rendered people (ridge towards the one-slider values, a free offset): out of sample, head measures within 1-3 mm, face
+height 3-9 mm, the face's proportions a quarter of a real sd; the neck's girth 16 mm (the hardest: it is taken under a chin
+the shapes move). Rounds 1-8 of renders are its training data.
+
+Still failing (46): marginal misses at range edges (most within 1 % of the bound); 2D misses on bearded men (the painted
+beard confuses the landmark model: R5); East and Southeast Asian faces' cheek width against the skull's (the bases have no
+shape that widens the skull alone; their round and oval types widen the cheeks more), and their cheek width's spread is
+0.44 of the real one for the same reason; the neck's length on some (vertex to suprasternale). **Base fixes for R5**: a
+skull-width shape (the cranium above the ears, fading out by the cheekbones) and a wider neck-length range, so the solver
+need not run shapes to their limits. Generation cost: about 6 ms a person (release build); looks should be made off the
+main thread or cached by id before crowds grow.
+
+What the boards show beyond proportions (the owner's standard is not met yet, and the gate does not measure it): plastic
+skin, small glassy eyes, hair that reads as a cap or a wig, painted block beards. These are R3-R5.

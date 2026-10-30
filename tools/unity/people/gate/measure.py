@@ -4,8 +4,10 @@ up, its triangles; metres at the base's scale). Landmarks by their anthropometri
 - euryon: the head's widest point, above the ears (the cranium 2.5-9 cm over the eyes)
 - glabella / opisthocranion: the most forward point of the brow on the midline / the most backward point of the head
 - zygion: the cheekbone arch's widest point, in front of the ear (the ear is cut off by its distance from the skull)
-- sellion: the deepest point of the nose's root; menton: the chin's lowest point
-- neck circumference: the girth just under the larynx (the body cut between the chin and the neck's base)
+- sellion: the deepest point of the nose's root; menton: the chin's lowest point (behind its lower front corner)
+- neck circumference: the girth just under the larynx (the body cut 3.5 cm under the menton)
+- tragion to top of head: the vault's height over the ear canal; vertex to suprasternale: the head and neck's height over
+  the notch above the breastbone (a head too tall, or a neck too short, shows in these two)
 Usage: python3 measure.py <heads dir> [--plot id,id out.png] -> prints / returns {id: {measure: mm}}"""
 import os, struct, sys
 import numpy as np
@@ -32,14 +34,35 @@ def frame(el, er, V):
     return P
 
 
-def cut(P, T, y):
-    """The points where the mesh crosses the plane at height y."""
+def cut(P, T, y, axis=1):
+    """The points where the mesh crosses the plane at y along the axis (1: a height; 0: across, the midline at 0)."""
     a, b = P[T[:, [0, 1, 2]]], P[T[:, [1, 2, 0]]]
     a, b = a.reshape(-1, 3), b.reshape(-1, 3)
-    s = (a[:, 1] - y) * (b[:, 1] - y)
+    s = (a[:, axis] - y) * (b[:, axis] - y)
     m = (s < 0)
-    f = (y - a[m, 1]) / (b[m, 1] - a[m, 1])
+    f = (y - a[m, axis]) / (b[m, axis] - a[m, axis])
     return a[m] + (b[m] - a[m]) * f[:, None]
+
+
+def section(P, T, v, axis=0, step=0.001):
+    """The mesh's section by the plane at v along the axis, as points every step along its segments (each triangle the
+    plane crosses gives one segment; the mesh is coarse, ~4 mm between vertices, so the section is filled in)."""
+    A = P[T]                                           # triangles x 3 corners x 3
+    s = A[:, :, axis] - v
+    out = []
+    crosses = []
+    for i, j in ((0, 1), (1, 2), (2, 0)):
+        m = s[:, i] * s[:, j] < 0
+        f = np.where(m, s[:, i] / np.where(m, s[:, i] - s[:, j], 1), 0)
+        crosses.append((m, A[:, i] + (A[:, j] - A[:, i]) * f[:, None]))
+    for (m1, q1), (m2, q2) in ((crosses[0], crosses[1]), (crosses[1], crosses[2]), (crosses[2], crosses[0])):
+        k = m1 & m2
+        a, b = q1[k], q2[k]
+        n = np.maximum(1, np.ceil(np.linalg.norm(b - a, axis=1) / step)).astype(int)
+        for t in range(int(n.max()) + 1 if len(n) else 0):
+            f = np.minimum(t / n, 1.0)
+            out.append(a + (b - a) * f[:, None])
+    return np.concatenate(out) if out else np.zeros((0, 3))
 
 
 def hull_perimeter(Q):
@@ -56,6 +79,74 @@ def hull_perimeter(Q):
         hi.append(p)
     H = np.array(lo[:-1] + hi[:-1])
     return float(np.linalg.norm(H - np.roll(H, -1, 0), axis=1).sum())
+
+
+def menton(P, T, sell):
+    """The chin's lowest point on the midline. The chin's underside runs back and down to the throat, so the lowest point
+    in front of the throat is the throat's top, not the chin (R2 found every face measured that way, the face up to 2 cm
+    long). On the midline section's front contour: the throat, the deepest point of the neck's front 13-21 cm under the
+    nose's root; pogonion, the first bulge above it (the chin, before the fold under the lower lip); menton, the lowest
+    point of the chin in front of 70 % of the way from the throat to pogonion (its lower front corner, where the bony
+    chin's lowest point lies under the skin)."""
+    S = section(P, T, 0.0007)   # (just off the midline: its vertices lie on it, and a cut through a vertex is lost)
+    S = S[(S[:, 1] < sell[1] - 0.04) & (S[:, 1] > sell[1] - 0.24) & (S[:, 2] > sell[2] - 0.12)]
+    ys = np.arange(sell[1] - 0.05, sell[1] - 0.24, -0.002)
+    front = np.full(len(ys), np.nan)
+    for i, a in enumerate(ys):
+        k = (S[:, 1] <= a) & (S[:, 1] > a - 0.002)
+        if k.any(): front[i] = S[k, 2].max()
+    neck = (ys < sell[1] - 0.13) & (ys > sell[1] - 0.21) & ~np.isnan(front)
+    it = int(np.flatnonzero(neck)[np.argmin(front[neck])])
+    ip, best = it, front[it]
+    for i in range(it - 1, -1, -1):           # upwards from the throat
+        if np.isnan(front[i]): continue
+        if front[i] > best: ip, best = i, front[i]
+        elif front[i] < best - 0.0015: break   # past the chin, into the fold under the lip
+    zp, zc = front[ip], front[it]
+    box = (S[:, 1] <= ys[ip]) & (S[:, 1] >= ys[it]) & (S[:, 2] > zc + 0.7 * (zp - zc))
+    return S[box][int(np.argmin(S[box][:, 1]))]
+
+
+def suprasternale(P, T, ment):
+    """The notch above the breastbone on the midline: on the section's front contour from 2 to 18 cm under the menton,
+    the point deepest behind the line from the throat (2.5 cm under the menton) to the chest's front (the most forward
+    point 10-18 cm under it)."""
+    S = section(P, T, 0.0007)
+    S = S[(S[:, 1] < ment[1] - 0.015) & (S[:, 1] > ment[1] - 0.20) & (S[:, 2] > ment[2] - 0.12)]
+    ys = np.arange(ment[1] - 0.02, ment[1] - 0.19, -0.002)
+    front = np.full(len(ys), np.nan)
+    for i, a in enumerate(ys):
+        k = (S[:, 1] <= a) & (S[:, 1] > a - 0.002)
+        if k.any(): front[i] = S[k, 2].max()
+    ok = ~np.isnan(front)
+    it = int(np.flatnonzero(ok & (ys <= ment[1] - 0.025))[0])
+    low = ok & (ys < ment[1] - 0.10)
+    ic = int(np.flatnonzero(low)[np.argmax(front[low])])
+    a, b = np.array([front[it], ys[it]]), np.array([front[ic], ys[ic]])
+    u = (b - a) / np.linalg.norm(b - a)
+    n = np.array([-u[1], u[0]])
+    if n[0] > 0: n = -n                                # into the body (backwards)
+    best, at = -1, None
+    for i in range(it, ic + 1):
+        if not ok[i]: continue
+        q = np.array([front[i], ys[i]])
+        dep = (q - a) @ n
+        if dep > best: best, at = dep, q
+    return np.array([0.0, at[1], at[0]])
+
+
+def tragion(P):
+    """The ear canal's height (tragion), both ears: the ear is the head's outermost 12 mm 4-12 cm behind the eyes and from
+    6 cm under them to 3 cm over; the canal lies 45 % of the way up from the lobe to the ear's top."""
+    x, y, z = np.abs(P[:, 0]), P[:, 1], P[:, 2]
+    hs = []
+    for side in (P[:, 0] > 0, P[:, 0] < 0):
+        band = side & (y > -0.06) & (y < 0.03) & (z > -0.12) & (z < -0.04)
+        if not band.any(): continue
+        ear = band & (x > x[band].max() - 0.012)
+        lo, hi = y[ear].min(), y[ear].max()
+        hs.append(lo + 0.45 * (hi - lo))
+    return float(np.mean(hs))
 
 
 def measure(path, keep=False):
@@ -80,22 +171,23 @@ def measure(path, keep=False):
     # sellion: the nose root's deepest midline point near the eyes; menton: the chin's lowest point in front of the throat
     root = mid & (y > -0.012) & (y < 0.02) & (z > glab[2] - 0.035)
     sell = P[root][np.argmin(z[root])]
-    chin = mid & (y < -0.06) & (y > -0.18) & (z > glab[2] - 0.06)
-    ment = P[chin][np.argmin(y[chin])]
+    ment = menton(P, T, sell)
     face_h = sell[1] - ment[1]
-    # neck: the girth 2.5 cm under the menton (ANSUR takes it just under the larynx), the cut's hull within 9 cm of the
+    # neck: the girth 3.5 cm under the menton (ANSUR takes it just under the larynx), the cut's hull within 9 cm of the
     # neck's middle. A fixed height on purpose: a woman's neck 7.6 cm wide there, or a man's shoulders rising to the jaw,
     # is what the gate must catch (the least girth lower down hid both)
-    yn = ment[1] - 0.025
+    yn = ment[1] - 0.035
     Q = cut(P, T, yn)
     nz = np.median(Q[:, 2]) if len(Q) else 0
     Q = Q[(np.abs(Q[:, 0]) < 0.09) & (np.abs(Q[:, 2] - nz) < 0.09)]
     neck = hull_perimeter(Q[:, [0, 2]])
-    stature = None
+    sst = suprasternale(P, T, ment)
+    vertex = P[:, 1].max()
     s = 1000.0 * scale
     out = {'headbreadth': breadth * s, 'headlength': hl * s, 'bizygomaticbreadth': bizyg * s, 'mentonsellionlength': face_h * s,
-           'interpupillarybreadth': float(np.linalg.norm(el - er)) * s, 'neckcircumference': neck * s}
-    if keep: out['_lm'] = {'glab': glab, 'opis': opis, 'sell': sell, 'ment': ment, 'yn': yn, 'P': P, 'crown': crown, 'cheek': cheek, 'neck': Q}
+           'interpupillarybreadth': float(np.linalg.norm(el - er)) * s, 'neckcircumference': neck * s,
+           'tragiontopofhead': (vertex - tragion(P)) * s, 'vertexsuprasternale': (vertex - sst[1]) * s}
+    if keep: out['_lm'] = {'glab': glab, 'opis': opis, 'sell': sell, 'ment': ment, 'sst': sst, 'yn': yn, 'P': P, 'crown': crown, 'cheek': cheek, 'neck': Q}
     return out
 
 

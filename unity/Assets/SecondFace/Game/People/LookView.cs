@@ -28,9 +28,7 @@ namespace SecondFace.Game.People
         private static readonly int BrowColourId = Shader.PropertyToID("_BrowColour");
 
         /// <summary>The body's scale: a stature against the base's own (<see cref="Bodies"/>), else the look's height (±6 %).</summary>
-        public static float Scale(PlayerLook look) => look.Stature > 0f
-            ? Mathf.Clamp(look.Stature / (float)(look.Body == "m" ? Bodies.BaseMan : Bodies.BaseWoman), 0.8f, 1.2f)
-            : 1f + 0.06f * Mathf.Clamp(look.Height, -1f, 1f);
+        public static float Scale(PlayerLook look) => Bodies.ScaleOf(look);
 
         /// <summary>A content colour (0xRRGGBB) as a colour.</summary>
         public static Color Colour(int rgb) => new(((rgb >> 16) & 255) / 255f, ((rgb >> 8) & 255) / 255f, (rgb & 255) / 255f, 1f);

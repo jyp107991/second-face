@@ -33,9 +33,10 @@ namespace SecondFace.Tests
             public double Scale;
         }
 
-        /// <summary>The response of the head and neck to each of the sculptor's shapes (docs/PEOPLE_REALISM.md §4.1): each base
-        /// with no slider set, then with each slider alone at its high end and (paired) its low end, each head dumped to
-        /// test-results/heads/resp_&lt;base&gt;_&lt;slider&gt;_&lt;p|n&gt;.bin for tools/unity/people/gate/response.py.</summary>
+        /// <summary>The response of the head and neck to each of the sculptor's shapes (docs/PEOPLE_REALISM.md §4.1-4.2): each
+        /// base with no slider set, then with each slider alone at its high end and (paired) its low end, each head dumped to
+        /// test-results/heads/resp_&lt;base&gt;_&lt;slider&gt;_&lt;p|n&gt;.bin for tools/unity/people/gate/response.py and its
+        /// portrait to test-results/portraits for response2d.py.</summary>
         [UnityTest, Timeout(1800000)]
         public IEnumerator MeasureShapeResponses()
         {
@@ -46,7 +47,10 @@ namespace SecondFace.Tests
 #endif
             if (F == null || M == null) { Assert.Ignore("the bases are not built"); yield break; }
             var dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", "heads"));
+            var studio = System.Environment.GetEnvironmentVariable("SF_GATE_PORTRAITS") != "0" ? new Studio() : null;
             var n = 0;
+            // the whole body's height per case (the heads are cut under the chin): a longer neck or head makes a taller body
+            var statures = new Dictionary<string, double>();
             foreach (var (name, model) in new[] { ("f", F), ("m", M) })
             {
                 var go = Object.Instantiate(model, new Vector3(900f, 0f, 0f), Quaternion.identity);
@@ -61,13 +65,27 @@ namespace SecondFace.Tests
                 }
                 foreach (var (tag, values) in cases)
                 {
-                    face.Set(values);
+                    // through the look, as the people are made (their brows, skin and hair as LookView draws them): a plain
+                    // look with this one slider set
+                    var look = new SecondFace.Core.Npc.PlayerLook { Body = name };
+                    foreach (var kv in values)
+                    {
+                        if (kv.Key == "body-weight") look.Build = kv.Value;
+                        else if (kv.Key == "body-muscle") look.Muscle = kv.Value;
+                        else if (kv.Key.StartsWith("body-")) look.Shape[kv.Key] = kv.Value;
+                        else look.Face[kv.Key] = kv.Value;
+                    }
+                    SecondFace.Game.People.LookView.Apply(go, look);
                     yield return null;
                     var mm = Measure(go, 1f, Path.Combine(dir, $"resp_{name}_{tag}.bin"));
-                    if (mm != null) n++;
+                    if (mm != null) { n++; statures[$"resp_{name}_{tag}"] = mm["stature"]; }
+                    // and its portrait, for the landmarks' response (response2d.py)
+                    if (mm != null && studio != null) studio.Shoot(go, $"resp_{name}_{tag}");
                 }
                 Object.Destroy(go);
             }
+            studio?.Dispose();
+            File.WriteAllText(Path.Combine(dir, "resp_statures.json"), JsonConvert.SerializeObject(statures, Formatting.Indented));
             Debug.Log($"PeopleGate: shape responses measured {n}");
             Assert.That(n, Is.GreaterThan(100));
         }
@@ -106,21 +124,7 @@ namespace SecondFace.Tests
 
             var results = new List<Measured>();
             var failed = 0;
-            // the portrait for the 2D half (faces2d.py against FairFace): as photographs are taken, an 85 mm lens at 1.6 m
-            // (16 degrees vertical), a soft key from the front left, a fill, a plain grey ground
-            var portraits = System.Environment.GetEnvironmentVariable("SF_GATE_PORTRAITS") != "0";
-            Camera cam = null; RenderTexture rt = null; Light key = null, fill = null;
-            if (portraits)
-            {
-                cam = new GameObject("gate_camera").AddComponent<Camera>();
-                cam.fieldOfView = 16.1f; cam.nearClipPlane = 0.1f; cam.farClipPlane = 10f;
-                cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.42f, 0.43f, 0.45f);
-                rt = new RenderTexture(512, 640, 24, RenderTextureFormat.ARGB32); cam.targetTexture = rt;
-                foreach (var l in Object.FindObjectsByType<Light>(FindObjectsSortMode.None)) l.enabled = false;
-                key = new GameObject("gate_key").AddComponent<Light>(); key.type = LightType.Directional; key.intensity = 1.1f;
-                fill = new GameObject("gate_fill").AddComponent<Light>(); fill.type = LightType.Directional; fill.intensity = 0.45f;
-                RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat; RenderSettings.ambientLight = new Color(0.45f, 0.45f, 0.47f);
-            }
+            var studio = System.Environment.GetEnvironmentVariable("SF_GATE_PORTRAITS") != "0" ? new Studio() : null;
             for (var i = 0; i < who.Count; i++)
             {
                 var w = who[i];
@@ -132,37 +136,73 @@ namespace SecondFace.Tests
                 if (mm == null) failed++;
                 else results.Add(new Measured { Id = w.Id, Name = w.Name, Sex = w.Male ? "m" : "f", Heritage = w.Look.Heritage, Age = w.Age, Source = w.Source, Mm = mm,
                                                 Sliders = SecondFace.Core.Npc.Looks.Shape(w.Look), Scale = SecondFace.Game.People.LookView.Scale(w.Look) });
-                if (portraits && mm != null && _eyes.HasValue)
+                if (studio != null && mm != null)
                 {
-                    // scaled to their stature as in the game, the camera square to the face at eye height
+                    // scaled to their stature as in the game
                     go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(w.Look);
                     yield return null;
-                    var (eye, fwd) = _eyes.Value;
-                    var at = go.transform.TransformPoint(eye * 1f);
-                    var dir = go.transform.TransformDirection(fwd);
-                    cam.transform.position = at + dir * 1.6f;
-                    cam.transform.LookAt(at);
-                    // the key from above the camera's left, the fill from its right: as a portrait is lit
-                    key.transform.rotation = cam.transform.rotation * Quaternion.Euler(28f, 30f, 0f);
-                    fill.transform.rotation = cam.transform.rotation * Quaternion.Euler(8f, -35f, 0f);
-                    cam.Render();
-                    var prev = RenderTexture.active; RenderTexture.active = rt;
-                    var tex = new Texture2D(rt.width, rt.height, TextureFormat.RGB24, false);
-                    tex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0); tex.Apply();
-                    RenderTexture.active = prev;
-                    var png = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", "portraits", w.Id + ".png"));
-                    Directory.CreateDirectory(Path.GetDirectoryName(png));
-                    File.WriteAllBytes(png, tex.EncodeToPNG());
-                    Object.Destroy(tex);
+                    studio.Shoot(go, w.Id);
                 }
                 Object.Destroy(go);
                 if (i % 20 == 19) yield return null;
             }
+            studio?.Dispose();
             var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", "people_measures.json"));
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             File.WriteAllText(path, JsonConvert.SerializeObject(results, Formatting.Indented));
             Debug.Log($"PeopleGate: measured {results.Count} people ({failed} could not be measured) -> {path}");
             Assert.That(failed, Is.EqualTo(0), "everyone measurable");
+        }
+
+        /// <summary>The portrait for the 2D half (faces2d.py against FairFace), as photographs are taken: an 85 mm lens at
+        /// 1.6 m (16 degrees vertical) square to the face at eye height, a soft key from above the camera's left, a fill from
+        /// its right, a plain grey ground. Shoots the person last measured (<see cref="Measure"/> finds their eyes) to
+        /// test-results/portraits/&lt;name&gt;.png.</summary>
+        private sealed class Studio : System.IDisposable
+        {
+            private readonly Camera _cam;
+            private readonly RenderTexture _rt;
+            private readonly Light _key, _fill;
+
+            public Studio()
+            {
+                _cam = new GameObject("gate_camera").AddComponent<Camera>();
+                _cam.fieldOfView = 16.1f; _cam.nearClipPlane = 0.1f; _cam.farClipPlane = 10f;
+                _cam.clearFlags = CameraClearFlags.SolidColor; _cam.backgroundColor = new Color(0.42f, 0.43f, 0.45f);
+                _rt = new RenderTexture(512, 640, 24, RenderTextureFormat.ARGB32); _cam.targetTexture = _rt;
+                foreach (var l in Object.FindObjectsByType<Light>(FindObjectsSortMode.None)) l.enabled = false;
+                _key = new GameObject("gate_key").AddComponent<Light>(); _key.type = LightType.Directional; _key.intensity = 1.1f;
+                _fill = new GameObject("gate_fill").AddComponent<Light>(); _fill.type = LightType.Directional; _fill.intensity = 0.45f;
+                RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat; RenderSettings.ambientLight = new Color(0.45f, 0.45f, 0.47f);
+            }
+
+            public void Shoot(GameObject go, string name)
+            {
+                if (!_eyes.HasValue) return;
+                var (eye, fwd) = _eyes.Value;
+                var at = go.transform.TransformPoint(eye);
+                var dir = go.transform.TransformDirection(fwd);
+                _cam.transform.position = at + dir * 1.6f;
+                _cam.transform.LookAt(at);
+                _key.transform.rotation = _cam.transform.rotation * Quaternion.Euler(28f, 30f, 0f);
+                _fill.transform.rotation = _cam.transform.rotation * Quaternion.Euler(8f, -35f, 0f);
+                _cam.Render();
+                var prev = RenderTexture.active; RenderTexture.active = _rt;
+                var tex = new Texture2D(_rt.width, _rt.height, TextureFormat.RGB24, false);
+                tex.ReadPixels(new Rect(0, 0, _rt.width, _rt.height), 0, 0); tex.Apply();
+                RenderTexture.active = prev;
+                var png = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", "portraits", name + ".png"));
+                Directory.CreateDirectory(Path.GetDirectoryName(png));
+                File.WriteAllBytes(png, tex.EncodeToPNG());
+                Object.Destroy(tex);
+            }
+
+            public void Dispose()
+            {
+                _cam.targetTexture = null;
+                _rt.Release();
+                Object.Destroy(_cam.gameObject); Object.Destroy(_key.gameObject); Object.Destroy(_fill.gameObject);
+            }
         }
 
         /// <summary>The last measured person's eye centre and facing, in their model's space (for the portrait).</summary>

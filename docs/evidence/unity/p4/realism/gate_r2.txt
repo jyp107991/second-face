@@ -1,0 +1,26 @@
+people 252: 206 pass, 46 fail
+  2d.face_hw                      8 fail
+  2d.lips_face                    8 fail
+  2d.icd_face                     8 fail
+  2d.lower_face                   7 fail
+  2d.nose_len                     7 fail
+  3d.vertexsuprasternale          6 fail
+  3d.head_neck                    5 fail
+  3d.zyg_head                     4 fail
+  3d.neckcircumference            3 fail
+  3d.face_hw                      2 fail
+  3d.mentonsellionlength          2 fail
+  3d.face_stature                 2 fail
+  2d.brow_eye                     2 fail
+  2d.mouth_face                   1 fail
+  2d.eye_face                     1 fail
+  2d.jaw_face                     1 fail
+  Deputy Jonah Reese     m 22 north_european       face_hw 0.703 [0.766-0.923]; lower_face 0.543 [0.548-0.643]; nose_len 0.457 [0.357-0.452]
+  Mags Durrow            f 50 mediterranean        vertexsuprasternale 279.9 [280.0-327.8]
+  Hollis Crane           m 70 north_european       lips_face 0.078 [0.086-0.15]
+  Dov Reese              m 55 south_asian          mouth_face 0.332 [0.335-0.49]
+  Old Teodor             m 71 southeast_asian      zyg_head 0.977 [0.876-0.975]
+  Rust Dog (Gant)        m 41 north_european       lower_face 0.544 [0.544-0.633]; nose_len 0.456 [0.368-0.456]
+  Mai                    f 33 east_asian           zyg_head 0.986 [0.856-0.978]
+  Mina                   f 27 latin_american       face_hw 0.763 [0.766-0.952]
+  Kai                    m 31 southeast_asian      face_hw 0.743 [0.745-0.91]

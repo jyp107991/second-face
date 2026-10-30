@@ -488,6 +488,12 @@ FACE_SHAPES = [
     'sym:cheek-bones|decr|incr', 'sym:cheek-volume|decr|incr', 'sym:eye-scale|decr|incr', 'sym:eye-trans|in|out', 'sym:eye-epicanthus|in|out',
     'sym:eye-bag|decr|incr', 'eyebrows-trans|down|up', 'eyebrows-angle|down|up', 'sym:ear-scale|decr|incr', 'forehead-scale-vert|decr|incr',
     'head-scale-horiz|decr|incr', 'head-fat|decr|incr', 'head-age|decr|incr', 'neck-scale-horiz|decr|incr',
+    # the neck's length and depth (pass 10: the male base had no neck under the jaw, the female's was too thin; Core
+    # Proportions solves them to the real girth, docs/PEOPLE_REALISM.md)
+    'neck-scale-vert|decr|incr', 'neck-scale-depth|decr|incr',
+    # the skull's length (front to back, the back of the head) and height: the male base's head was 205 mm long and 145
+    # broad (real 200 and 154, pencil heads), with no control but the brow ridge
+    'head-scale-depth|decr|incr', 'head-back-scale-depth|decr|incr', 'head-scale-vert|decr|incr',
     'head-oval', 'head-round', 'head-square', 'head-rectangular', 'head-triangular', 'head-diamond',
     # the archetypes' features (P4.15, owner pass 9; Core Faces): what MakeHuman's own ancestry, sex and age macros move,
     # measured by tools/unity/people/face_probe.py, so the archetypes can carry them further: the nose's flare, projection,
@@ -1288,7 +1294,7 @@ def build_person(spec):
     # every shape's deltas over all base vertices (hidden and helper ones too), MakeHuman space: the proxies are refitted
     # with them so hair, brows, lashes, eyes and hats follow the face (proxy() below)
     shapes = []
-    def keep_stature(name, deltas):
+    def keep_stature(name, deltas, carry_head=True):
         """A whole-body shape at the base's own stature (P4.13: a person's height is their stature, a scale at runtime,
         so a macro that also grows or shrinks the body, as ancestry and age do, would count it twice): the shaped body
         scaled about the ground until its crown is back where the base's is. Deltas over all base vertices."""
@@ -1299,11 +1305,23 @@ def build_person(spec):
         ys1 = [v[i][1] + acc.get(i, (0.0, 0.0, 0.0))[1] for i in body_idx]
         top1, g1 = max(ys1), min(ys1)
         k = (top0 - ground) / max(1e-6, top1 - g1)
+        # the body scaled, the head and neck only carried (pass 10, docs/PEOPLE_REALISM.md §7): a uniform scale made a
+        # long-legged person's head 14 mm narrower and a short-legged one's wider, and every macro's correction resized
+        # heads. Below the neck's root the scale; above its top the shift the neck's root makes; between, a blend
+        joints = skel['joints']
+        def jy(j): idx = joints[j]; return sum(v[i][1] + acc.get(i, (0.0, 0.0, 0.0))[1] for i in idx) / len(idx)
+        n0, n1 = jy('neck01____head'), jy('neck03____tail')
         out = []
         for i in range(len(v)):
             d = acc.get(i, (0.0, 0.0, 0.0))
             x, y, z = v[i][0] + d[0], v[i][1] + d[1], v[i][2] + d[2]
-            e = (x * k - v[i][0], ground + (y - g1) * k - v[i][1], z * k - v[i][2])
+            sx, sy, sz = x * k, ground + (y - g1) * k, z * k
+            t = min(1.0, max(0.0, (y - n0) / max(1e-6, n1 - n0))) if carry_head else 0.0
+            t = t * t * (3 - 2 * t)
+            # carried: the point keeps its size, moved as the neck's root moved (x and z about the body's axis)
+            cx, cy, cz = x, y + (ground + (n0 - g1) * k - n0), z
+            px, py, pz = sx + (cx - sx) * t, sy + (cy - sy) * t, sz + (cz - sz) * t
+            e = (px - v[i][0], py - v[i][1], pz - v[i][2])
             if abs(e[0]) + abs(e[1]) + abs(e[2]) > 1e-7: out.append((i, e[0], e[1], e[2]))
         print(f'    {name}: the body {100 * (1 / k - 1):+.1f}% tall, kept at the base\'s stature')
         return out
@@ -1368,7 +1386,8 @@ def build_person(spec):
         # a child's body (P4.14, children made as children): the eleven-year-old at the base's stature, the runtime
         # scaling them to their own (Bodies.Child, Bodies.Growth)
         d = macro_delta(spec, 'age', 11)
-        if d: add_shape('body-child', keep_stature('body-child', d)); nshapes += 1
+        # (scaled whole: a child's head is large for their body, and the runtime scales the child down to their stature)
+        if d: add_shape('body-child', keep_stature('body-child', d, carry_head=False)); nshapes += 1
         # long or short in the leg (the thigh and the shin together) at the same stature
         for sign, label in ((1.0, 'incr'), (-1.0, 'decr')):
             ds = []

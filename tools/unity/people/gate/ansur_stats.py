@@ -5,7 +5,8 @@ Usage: python3 ansur_stats.py <ANSUR_II_MALE_Public.csv> <ANSUR_II_FEMALE_Public
 import csv, json, math, os, sys
 import numpy as np
 
-MEASURES = ['headbreadth', 'headlength', 'bizygomaticbreadth', 'mentonsellionlength', 'interpupillarybreadth', 'neckcircumference', 'stature']
+MEASURES = ['headbreadth', 'headlength', 'bizygomaticbreadth', 'mentonsellionlength', 'interpupillarybreadth', 'neckcircumference', 'stature',
+            'tragiontopofhead', 'vertexsuprasternale']
 RACES = {'1': 'white', '2': 'black', '3': 'hispanic', '4': 'asian', '5': 'native_american'}
 
 
@@ -20,6 +21,7 @@ def ratios(m):
         'head_stature': m['headbreadth'] / m['stature'],                 # head breadth over stature
         'face_stature': m['mentonsellionlength'] / m['stature'],
         'ipd_zyg': m['interpupillarybreadth'] / m['bizygomaticbreadth'], # eye spacing over cheek width
+        'headneck_stature': m['vertexsuprasternale'] / m['stature'],     # the head and neck's height over stature
     }
 
 RATIOS = list(ratios({k: 1.0 for k in MEASURES}).keys())
@@ -33,7 +35,11 @@ def main(male, female, out):
             R = [r for r in rows if r['DODRace'] == code]
             if len(R) < 30: continue
             # ANSUR II records interpupillary breadth in tenths of a millimetre, the rest in millimetres
-            X = np.array([[float(r[k]) / (10.0 if k == 'interpupillarybreadth' else 1.0) for k in MEASURES] for r in R])
+            # (vertex to suprasternale: stature less the notch's height)
+            def get(r, k):
+                if k == 'vertexsuprasternale': return float(r['stature']) - float(r['suprasternaleheight'])
+                return float(r[k]) / (10.0 if k == 'interpupillarybreadth' else 1.0)
+            X = np.array([[get(r, k) for k in MEASURES] for r in R])
             Q = np.array([[v for v in ratios(dict(zip(MEASURES, x))).values()] for x in X])
             ages = np.array([float(r['Age']) for r in R])
             def block(A):

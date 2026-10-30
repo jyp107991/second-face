@@ -237,7 +237,7 @@ namespace SecondFace.Game.Play
         /// <summary>A person's body and face as the content has them: their id, sex, age, trade and ancestry
         /// (<see cref="Bodies"/>; the same every time), and what the content fixes of their look (hair, scars, skin).</summary>
         public static PlayerLook LookOf(NpcDef def, bool male) =>
-            Core.Npc.Bodies.Over(Core.Npc.Bodies.For(def.Id, male, def.Look?.Age ?? 35.0, def.Role, ancestry: def.Look?.Ancestry), def.Look?.Over);
+            Core.Npc.Bodies.Over(Core.Npc.Bodies.For(def.Id, male, def.Look?.Age ?? 35.0, def.Role, ancestry: def.Look?.Ancestry), def.Look?.Over, def.Look?.Age ?? 35.0);
 
         /// <summary>What a person wears: the content's own outfit, else its rules for their trade and faction, seeded as the
         /// web game seeded them.</summary>

@@ -149,12 +149,14 @@ namespace SecondFace.Core.Npc
         /// <summary>The brow styles by sex (<see cref="PlayerLook.Brows"/>), measured in the head frame from the MakeHuman
         /// community brows as fitted (tools/unity/people/brow_frame.py): a woman's fine and arched (mindfront 02), natural
         /// (03) and full (12); a man's sparse (04), natural (05) and heavy (07), lower, straighter and thicker. The strands
-        /// stand off the skin, so the skin under them sits 0.035-0.04 higher than their measured centre (checked in renders).</summary>
+        /// stand off the skin, so the skin under them sits 0.035-0.04 higher than their measured centre (checked in renders).
+        /// A woman's sit 0.03 higher again (2.4 mm): measured against FairFace (the gate's brow to upper lid over face height),
+        /// a fifth of the women fell under the real 5th percentile (R2).</summary>
         public static readonly Brow[] WomanBrows =
         {
-            new(0.175f, 0.578f, 0.265f, 0.325f, 0.6f, 0.271f, 0.052f, 0.03f, 0.72f),
-            new(0.198f, 0.622f, 0.295f, 0.312f, 0.45f, 0.255f, 0.048f, 0.035f, 0.85f),
-            new(0.176f, 0.6f, 0.288f, 0.338f, 0.62f, 0.272f, 0.079f, 0.06f, 0.95f),
+            new(0.175f, 0.578f, 0.295f, 0.355f, 0.6f, 0.301f, 0.052f, 0.03f, 0.72f),
+            new(0.198f, 0.622f, 0.325f, 0.342f, 0.45f, 0.285f, 0.048f, 0.035f, 0.85f),
+            new(0.176f, 0.6f, 0.318f, 0.368f, 0.62f, 0.302f, 0.079f, 0.06f, 0.95f),
         };
         public static readonly Brow[] ManBrows =
         {

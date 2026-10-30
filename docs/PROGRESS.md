@@ -814,9 +814,16 @@ lobe (0.04: at 0.15 foreheads shone like oil), a soft Kajiya-Kay band along the 
 them in `PeopleImportPostprocessor` (`skin_p415c.jpg`). **Owner pass 10 (2026-10-30, binding): the people are judged
 against real people from now on** (`docs/PEOPLE_REALISM.md`: the diagnosis, the plausibility gate, steps R1-R6; CLAUDE.md
 §2). R1 done: the gate (`tools/unity/people/gate/`, README there; `PeopleGateTests`), baseline 0 of 252 pass
-(`docs/PEOPLE_REALISM.md` §7, `docs/evidence/unity/p4/realism/`). **Next action:** R2: neck length and depth shapes on
-the bases (mh_build FACE_SHAPES + Core Sculpt), `body-legs` masked off the head, Core `Proportions` (response model +
-ANSUR targets per person), rebuild, re-run the gate until the 3D half passes. Parked until the gate is
+(`docs/PEOPLE_REALISM.md` §7, `docs/evidence/unity/p4/realism/`). R2 done: Core `Proportions` draws each adult's head and
+neck measures from ANSUR II and face proportions from FairFace and solves the shapes to them, then checks the result
+against every real range and redraws if it falls outside; menton re-measured (it had been the throat), women's vault 10 mm
+too tall found and held by two new ANSUR measures, stature scale allows for neck and head shapes, women's brows raised;
+**206 of 252 pass** (`docs/PEOPLE_REALISM.md` §8, `gate_r2.txt`, `board_r2_*.jpg`). Grey hair only from 55 (Core
+`Bodies.GreyFrom`; authored greys under 55 dropped). **Next action:** R3/R5 base fixes first (a skull-width shape and a
+wider neck-length range in `mh_build`, rebuild, re-measure the responses with `MeasureShapeResponses`, refit with every
+round in `$scratchpad/gate_iter/*` as `--extra`), then R4 (age in the face) and R5 (beards as geometry, hair fitted to the
+skull), each ending with the gate and the boards. Loop: `PeopleGateTests.MeasureThePeople` -> `faces2d.py` -> `gate.py`
+-> `board.py`; after shape changes `response.py`/`response2d.py` -> `gen_core.py`. Parked until the gate is
 green: travellers on the roads (git stash "wip: travellers on the roads"; `WayPath`, `Extras.FirstName/BarksOf`), the
 new opening (owner note D), P6 step 4 (combat). (Superseded record of P4.15c's plan:
 the patch is drafted (pre-integrated scattering from `tools/unity/people/skin_lut.py`, pores from

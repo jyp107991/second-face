@@ -21,3 +21,13 @@ Run:
 3. `gate.py <unity/test-results>`: the verdict (people_gate.json; exit 1 if anyone fails).
 4. `board.py <unity/test-results> <validation.parquet> <out.jpg> [ids]`: the reference boards for the owner.
 5. `response.py <unity/test-results>`: the response of each measure to each shape (`response.json`).
+6. `response2d.py <unity/test-results>`: the face proportions' response (`response2d.json`). Both response scripts refit
+   on the rendered people (`--extra dir,dir` adds earlier rounds, each laid out as test-results).
+7. `gen_core.py`: writes Core's table `Core/Npc/ProportionsData.cs` from `response*.json`, `ansur_stats.json` and
+   `fairface_stats.json`. Core `Proportions` then solves every adult to real measures (docs/PEOPLE_REALISM.md §8).
+
+Measures (`measure.py`): head breadth and length, cheek width, face height (sellion to menton, menton found on the midline
+section, not at the throat), eye spacing, neck girth 3.5 cm under the menton, tragion to top of head, vertex to
+suprasternale; stature from Unity. The gate does not hold stature itself (the people's own, from their peoples' real
+statures; ANSUR's tails are cut by enlistment standards), nor proportions to stature beyond ANSUR's statures.
+

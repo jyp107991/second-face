@@ -58,10 +58,13 @@ namespace SecondFace.Tests
             Assert.That(Share(straight, l => l.Hair == "sf_bun" || l.Hair == "sf_braid"), Is.GreaterThan(0.5));
             bool Greyed(PlayerLook l) => Array.IndexOf(Looks.HairColours, l.HairColour) < 0 || Array.IndexOf(Looks.HairColours, l.HairColour) >= 7;
             Assert.That(Share(Crowd("north_european", false, 26), Greyed), Is.LessThan(0.03), "no grey at twenty-six");
-            var ne = Share(Crowd("north_european", true, 52), Greyed);
-            var wa = Share(Crowd("west_african", true, 52), Greyed);
-            var ea = Share(Crowd("east_asian", true, 52), Greyed);
-            Assert.That(ne, Is.GreaterThan(wa + 0.25), "Europeans grey first");
+            // (no grey at all before 55, the owner's rule: Bodies.GreyFrom; the peoples' clocks show after it)
+            Assert.That(Share(Crowd("north_european", true, 54), Greyed), Is.EqualTo(0), "no grey before fifty-five");
+            // how grey, on average, at sixty: by then most have some grey, the peoples differ in how much
+            var ne = Crowd("north_european", true, 60).Average(l => l.Grey);
+            var wa = Crowd("west_african", true, 60).Average(l => l.Grey);
+            var ea = Crowd("east_asian", true, 60).Average(l => l.Grey);
+            Assert.That(ne, Is.GreaterThan(wa + 0.15), $"Europeans grey first ({ne:F2} against {wa:F2})");
             Assert.That(ea, Is.InRange(wa, ne), "Asians between");
             Assert.That(Peoples.Grey(50, 34, 34), Is.LessThan(0.5), "at fifty most are not yet half grey (Panhard 2012)");
         }
@@ -86,7 +89,7 @@ namespace SecondFace.Tests
             Assert.That(Share(ea, l => l.Beard == "full_beard"), Is.LessThan(0.03), "few full beards where beards grow sparse");
             Assert.That(Share(ea, l => l.Beard == null), Is.GreaterThan(Share(me, l => l.Beard == null) + 0.2));
             Assert.That(Share(me, l => l.Beard == "full_beard" || l.Beard == "short_beard"), Is.GreaterThan(Share(ea, l => l.Beard == "full_beard" || l.Beard == "short_beard") * 3));
-            var old = Crowd("mediterranean", true, 50, 300);
+            var old = Crowd("mediterranean", true, 58, 300);
             Assert.That(Share(old.Where(l => l.Beard != null), l => l.BeardColour != 0), Is.GreaterThan(0.3), "the beard greys before the head");
             var ne = Crowd("north_european", true, 30, 500);
             Assert.That(ne.Count(l => l.BeardColour == Bodies.GreyShade(6, 0)), Is.GreaterThan(10), "red beards under brown hair");

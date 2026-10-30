@@ -236,10 +236,12 @@ namespace SecondFace.Tests
         {
             var women = Many(false, 300);
             var men = Many(true, 300);
-            Assert.That(women.All(l => l.Face["chin-bones"] <= 0.15f && l.Face["neck-scale-horiz"] <= 0.1f && l.Face["chin-width"] <= 0.2f), Is.True, "no square jaw or thick neck on a woman");
+            // (the neck's girth is a real woman's, ProportionsTests: the solver's, not a cap on the slider)
+            Assert.That(women.All(l => l.Face["chin-bones"] <= 0.15f && l.Face["chin-width"] <= 0.2f), Is.True, "no square jaw on a woman");
             Assert.That(women.All(l => !l.Face.ContainsKey("head-square") || l.Face["head-square"] <= 0.3f), Is.True);
+            // (the jaw's width is the real faces' since R2, Proportions: the dimorphism is in the means)
             Assert.That(men.Count(l => l.Face["chin-bones"] > 0.4f), Is.GreaterThan(25), "men with a jaw");
-            Assert.That(women.Count(l => l.Face["chin-bones"] < -0.4f), Is.GreaterThan(25), "women with a fine one");
+            Assert.That(women.Average(l => l.Face["chin-bones"]), Is.LessThan(men.Average(l => l.Face["chin-bones"]) - 0.3), "women's jaws finer");
             Assert.That(women.Select(l => string.Join(",", l.Face.OrderBy(kv => kv.Key).Select(kv => kv.Value.ToString("0.00")))).Distinct().Count(), Is.EqualTo(women.Count), "every face its own");
         }
 

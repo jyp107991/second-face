@@ -49,11 +49,18 @@ def main(results):
         m = p['Mm']
         if g:
             for k, v in zip(A['measures'], range(len(A['measures']))):
+                # (stature is the person's own, from their people's real statures (Core Peoples), not the US Army's,
+                # whose enlistment standards cut both tails)
+                if k == 'stature': continue
                 lo, hi = g['measures']['p3'][v], g['measures']['p97'][v]
                 x = m.get(k)
                 if x is not None and not (lo <= x <= hi): out['fails'].append((f'3d.{k}', round(x, 1), round(lo, 1), round(hi, 1)))
             r = ratios3d(m)
+            si = A['measures'].index('stature')
+            beyond = not (g['measures']['p3'][si] <= m['stature'] <= g['measures']['p97'][si])
             for v, k in enumerate(A['ratios']):
+                # a proportion to stature is held only within the survey's statures (beyond them heads do not scale with it)
+                if beyond and k.endswith('_stature'): continue
                 lo, hi = g['ratios']['p3'][v], g['ratios']['p97'][v]
                 if not (lo <= r[k] <= hi): out['fails'].append((f'3d.{k}', round(r[k], 3), round(lo, 3), round(hi, 3)))
             out['r3d'] = {k: round(v, 3) for k, v in r.items()}
