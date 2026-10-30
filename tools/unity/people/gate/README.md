@@ -33,6 +33,10 @@ Run:
    and sex by Levi & Hassner's Adience networks (ONNX model zoo `age_googlenet.onnx`, `gender_googlenet.onnx`), real
    FairFace against ours (docs/PEOPLE_REALISM.md §12); writes people_apparent.json (ours and every real face's reading),
    which the gate's age rule reads: run it before step 3.
+10. `contrast.py <face_landmarker.task> <validation.parquet> <unity/test-results>` (venv, `python -P -E`: `-I` drops the user
+   site mediapipe's drawing utilities import from): facial contrast, how much darker the eyes, brows and lips are than the
+   skin round them and how much redder the lips, on FairFace's faces at rest and on ours, by sex and age (Russell 2009;
+   Porcheron, Mauger and Russell 2013; docs/PEOPLE_REALISM.md §14); writes people_contrast.json.
 9. `PeopleGateTests.HairCloseups` (`SF_HAIR_IDS=cluster_sex_age_k,...`; `SF_HAIR_PARTS=1`; `SF_HAIR_GREY`): heads at
    0.95 m from three sides into test-results/hair, for judging hair and beards up close.
 

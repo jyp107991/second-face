@@ -382,3 +382,30 @@ gate as a whole fails**, and the boards fail by eye:
 - **Look-alikes**: the people of one place drawn without sharing a real face (a place-level rule in Core).
 
 The geometric gate is necessary, not sufficient: no person is accepted on its numbers while the boards say otherwise.
+
+## 14. R4 and the sexes' cues, part 1: facial contrast (2026-10-30, in progress)
+
+**Measured first** (`gate/contrast.py`): how much darker the eyes, brows and lips are than the skin round them, and how much
+redder the lips, on FairFace's faces at rest and on our portraits the same way. Women's faces carry more of it than men's
+(Russell 2009) and it fades with the years and is read as age (Porcheron, Mauger and Russell 2013). Before:
+
+| | real women 20-39 | ours | real men 20-39 | ours |
+|---|---|---|---|---|
+| eyes (L* contrast) | +0.22 | -0.05 | +0.16 | -0.02 |
+| brows | +0.15 | +0.12 | +0.23 | +0.14 |
+| lips' redness (a* over the skin) | +8.1 | +1.9 | +5.5 | +4.5 |
+
+Our eyes were lighter than the skin round them, where real eyes read a third darker; our women's lips paler than our men's,
+the reverse of real faces. Split: real eye openings are 0.67 of the skin round them and the lids 0.76; ours 1.02 and 0.95.
+
+**Done**: the lash lines along the lids (`Skin.shader` `LashLines`, the lids' margins measured on both bases' eye openings
+in the head frame; the rest positions are per vertex, so a band under ~4 mm showed as a pixel), the lips redder and deeper
+by sex and years (`Looks.Contrast`), the white of the eye shaded towards the lids and yellower with the years, the iris no
+longer a mirror (the eyeball carries no cornea, and its gloss made brown eyes read silver), the top of the eyeball shaded
+by the upper lid, and ambient occlusion per vertex (`WardrobeBuild.Occlusion`, in the rest map's alpha). **Result**: the
+lips' redness now as real men's (5.4 against 5.5) and fading with the years as real lips do; women's 5.4 against 8.1. **The
+eyes did not move** (-0.01 against +0.22): the occlusion darkens the lids and the skin round them alike, and the eyeball's
+brightness is not what the gap is made of. What remains: the lashes themselves (strands thinned to a fifth at the build:
+they read as dots), the brows' and lids' shadows under light from above, and the photograph's tone curve, which the gate's
+studio does not have (§11: the game's post-processing does not reach its batch renders). Next: the studio's grade, then
+the lashes as cards.

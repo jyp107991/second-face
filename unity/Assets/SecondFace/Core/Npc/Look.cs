@@ -239,5 +239,27 @@ namespace SecondFace.Core.Npc
 
         /// <summary>How far the skin has gone to its aged bake (0 at 28 years shown, most of the way by 72).</summary>
         public static float SkinAge(PlayerLook look) => (float)System.Math.Pow(System.Math.Clamp((SkinYears(look) - 28f) / 44f, 0f, 1f), 1.2) * 0.85f;
+
+        /// <summary>The years the body shows (its age shape: 24 at none, 70 at all).</summary>
+        public static float ShownYears(PlayerLook look) => 24f + 46f * (look.Shape != null && look.Shape.TryGetValue("body-age", out var ba) ? ba : 0f);
+
+        /// <summary>
+        /// Facial contrast (SecondFace/Skin _Contrast; R4 and the sexes' cues, docs/PEOPLE_REALISM.md §14): the upper and lower
+        /// lash lines' strength and the lips' red and dark. Real women's eyes and lips stand darker and redder against their
+        /// skin than men's, and both fade with the years (Russell 2009; Porcheron, Mauger and Russell 2013; measured on
+        /// FairFace's faces at rest by gate/contrast.py: the eyes' contrast 0.22 for women and 0.16 for men at 20-39, the lips'
+        /// redness over the skin's a* 8.1 and 5.5, falling to 3.5 and 3.9 past sixty). Ours, without it, had eyes lighter
+        /// than their skin and women's lips paler than men's.
+        /// </summary>
+        public static (float Up, float Low, float Red, float Dark) Contrast(PlayerLook look)
+        {
+            var t = System.Math.Clamp((ShownYears(look) - 25f) / 45f, 0f, 1f);
+            float L(float a, float b) => a + (b - a) * t;
+            return look.Body == "f" ? (L(1f, 0.75f), L(0.55f, 0.35f), L(1f, 0.3f), L(0.45f, 0.25f))
+                                    : (L(0.75f, 0.6f), L(0.4f, 0.3f), L(0.3f, 0.1f), L(0.15f, 0.1f));
+        }
+
+        /// <summary>The white of the eye's years (yellower and duller from about thirty: SecondFace/Cloth _EyeYears).</summary>
+        public static float EyeYears(PlayerLook look) => System.Math.Clamp((ShownYears(look) - 30f) / 45f, 0f, 1f);
     }
 }

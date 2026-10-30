@@ -24,6 +24,7 @@ Shader "SecondFace/Cloth"
         _Recolour ("Recolour (a: how much)", Color) = (0, 0, 0, 0)
         _RecolourLum ("The texture's mean luminance", Float) = 0.2
         [Toggle] _RecolourIris ("Only the iris", Float) = 0
+        _EyeYears ("The eye's years (the white yellower and duller)", Range(0, 1)) = 0
         [Toggle(_ENVIRONMENTREFLECTIONS_OFF)] _EnvironmentReflectionsOff ("No sky reflection", Float) = 0
         [Toggle(_SPECULARHIGHLIGHTS_OFF)] _SpecularHighlightsOff ("No highlight", Float) = 0
         _HairSheen ("Hair: a soft band of light along the strands (0 none)", Range(0, 1)) = 0
@@ -44,7 +45,7 @@ Shader "SecondFace/Cloth"
             float4 _BaseMap_ST;
             half4 _BaseColor;
             half4 _Recolour;
-            half _BumpScale, _Smoothness, _Cutoff, _Grime, _Wear, _RecolourLum, _RecolourIris, _Dyed, _HairSheen, _Grey;
+            half _BumpScale, _Smoothness, _Cutoff, _Grime, _Wear, _RecolourLum, _RecolourIris, _Dyed, _HairSheen, _Grey, _EyeYears;
             float _Inflate;
         CBUFFER_END
 
@@ -177,6 +178,22 @@ Shader "SecondFace/Cloth"
                     if (_RecolourIris < 0.5h)
                         detail = min(pow(max(detail, 0.05h), 1.0h + 0.4h * saturate(dot(colour, half3(0.3h, 0.59h, 0.11h)) * 2.0h)), 0.95h / max(max(colour.r, colour.g), 0.05h));
                     albedo.rgb = lerp(albedo.rgb, colour * detail, w);
+                }
+                if (_RecolourIris > 0.5h)
+                {
+                    // the white of the eye as photographs show it (R4): never paper white, shaded towards where the lids and
+                    // lashes meet it (by the distance from the iris on each eyeball of the texture: the irises at (0.705,
+                    // 0.703) and (0.289, 0.291), 0.115 across), yellower and duller with the years; the wet highlight stays
+                    float d = min(distance(i.uv, float2(0.705, 0.703)), distance(i.uv, float2(0.289, 0.291)));
+                    half white = (half)smoothstep(0.1, 0.13, d);
+                    half shade = (half)smoothstep(0.12, 0.27, d);
+                    albedo.rgb *= lerp(1.0h, half3(0.86h, 0.8h, 0.76h) * (1.0h - 0.55h * shade) * (1.0h - _EyeYears * half3(0.1h, 0.14h, 0.24h)), white);
+                    // the upper lid and its lashes shade the top of the eyeball, iris and white alike (by the eyeball's
+                    // normal, which looks up there; faces are upright in the portraits and the game)
+                    albedo.rgb *= 1.0h - 0.55h * (half)smoothstep(-0.15, 0.45, normalize(i.normalWS).y);
+                    // the iris dull under the cornea (the eyeball carries no cornea shell, so its gloss made the iris a mirror of
+                    // the room: brown eyes read silver); the white wet; the highlight stays a small catchlight
+                    smoothness = lerp(0.42h, smoothness, white);
                 }
                 // hair: each strand and each clump of strands a little lighter or darker than the next (a column of the strand
                 // atlas, about three texels, and a band of about thirty), so the layer reads as strands and locks, not a

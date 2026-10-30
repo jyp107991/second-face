@@ -27,6 +27,8 @@ namespace SecondFace.Game.People
         private static readonly int Brow0Id = Shader.PropertyToID("_Brow0");
         private static readonly int Brow1Id = Shader.PropertyToID("_Brow1");
         private static readonly int BrowColourId = Shader.PropertyToID("_BrowColour");
+        private static readonly int ContrastId = Shader.PropertyToID("_Contrast");
+        private static readonly int EyeYearsId = Shader.PropertyToID("_EyeYears");
 
         /// <summary>The body's scale: a stature against the base's own (<see cref="Bodies"/>), else the look's height (±6 %).</summary>
         public static float Scale(PlayerLook look) => Bodies.ScaleOf(Bodies.Finish(look));
@@ -98,12 +100,16 @@ namespace SecondFace.Game.People
                     var bc = Colour(Looks.BrowRgb(look));
                     bc.a = brow.Density;
                     block.SetColor(BrowColourId, bc);
+                    // facial contrast by sex and years (R4): the lash lines, the lips' red and dark
+                    var c = Looks.Contrast(look);
+                    block.SetVector(ContrastId, new Vector4(c.Up, c.Low, c.Red, c.Dark));
                     r.SetPropertyBlock(block);
                 }
                 else if (r.name.StartsWith("Eyes_") && m.HasProperty(RecolourId))
                 {
                     r.GetPropertyBlock(block);
                     block.SetColor(RecolourId, Colour(Looks.EyeRgb(look.Eyes)));
+                    block.SetFloat(EyeYearsId, Looks.EyeYears(look));
                     r.SetPropertyBlock(block);
                 }
             }

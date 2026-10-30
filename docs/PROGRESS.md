@@ -844,7 +844,11 @@ nose reach further (`Sculpt.Extended`); the chin finder fixed (it took a larynx 
 refitted; Core tests hold dimorphism, ancestry and age against real faces within sampling error. **245 of 252** pass
 person by person (`gate_r3.txt`, `board_r3_shale.jpg`), **but the gate fails as a whole and the boards fail by eye**: our
 50-69s read 10-13 years young, three in four women are read as men (real 37 %), and two pairs share real faces.
-**Next action:** R4 and the sexes' cues together, measured on the population with `apparent.py` and judged on the boards:
+**R4 part 1 in progress** (`docs/PEOPLE_REALISM.md` §14): facial contrast measured against FairFace (`gate/contrast.py`);
+lash lines, lips by sex and years, the eye's white and iris, per-vertex occlusion in; lips now near real, the eyes not yet
+(ours as light as the skin, real a third darker). **Next action:** the gate studio's grade (the game's tone mapping in its
+batch renders; §11), then the lashes as cards, re-measured with `contrast.py` and `apparent.py`. Then, as below:
+R4 and the sexes' cues together, measured on the population with `apparent.py` and judged on the boards:
 what ages a face beyond its outline (skin, eyelids, the jaw's and neck's soft tissue, thinning hair) and what people read
 sex by beyond proportions (hair round the face, brows' and lashes' darkness, lip colour, skin, the cheeks' soft tissue);
 then no shared real face within a place; then the studio's post-processing, beards from real grooms and R6. Each ends with the gate and the boards. Refit after any shape or render change with every round in `$scratchpad/gate_iter/*` as `--extra` (2D: only

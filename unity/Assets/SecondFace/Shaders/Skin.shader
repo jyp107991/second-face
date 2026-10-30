@@ -35,6 +35,7 @@ Shader "SecondFace/Skin"
         _Brow0 ("Brow: inner x, outer x, inner height, tail height", Vector) = (0.19, 0.62, 0.25, 0.22)
         _Brow1 ("Brow: peak height, peak along, inner thickness, tail thickness", Vector) = (0.27, 0.45, 0.05, 0.035)
         _BrowColour ("Brow colour (A: density, 0 none)", Color) = (0.1, 0.07, 0.05, 0)
+        _Contrast ("Facial contrast: upper and lower lash lines, lips' red and dark", Vector) = (0, 0, 0, 0)
         [NoScaleOffset] _SkinLut ("Pre-integrated scattering (N.L across, curvature up)", 2D) = "white" {}
         _Sss ("Scattering by the lookup (0: the wrap approximation)", Range(0, 1)) = 0
         _CurvatureScale ("Curvature scale", Range(0.5, 8)) = 2
@@ -64,7 +65,7 @@ Shader "SecondFace/Skin"
             float _Scar, _Tattoo, _Beard;
             half4 _BeardColour;
             half4 _BareSkin, _ScalpColour, _BrowColour, _BakeBalance;
-            float4 _Brow0, _Brow1;
+            float4 _Brow0, _Brow1, _Contrast;
             half _Bald;
             half _Sss, _CurvatureScale, _PoreScale, _SharpLobe;
             float _PoreTiling;
@@ -364,6 +365,38 @@ Shader "SecondFace/Skin"
             return a;
         }
 
+        // --- facial contrast (R4 and the sexes' cues, docs/PEOPLE_REALISM.md §14): real eyes and lips are darker than the skin
+        // round them, women's more than men's, less with the years (Russell 2009; Porcheron, Mauger and Russell 2013), and
+        // ours were lighter. The lids' margins in the head frame (both bases' eye openings, measured: the inner corner at
+        // |x| 0.233, y 0.069, the outer at 0.507, 0.082; the upper lid 0.065 over the line between them, the lower 0.035
+        // under it): the lash lines along them, the upper the darker and wider, fading at the corners
+        half2 LashLines(float3 p)
+        {
+            float ax = abs(p.x);
+            if (p.z < 0.7 || ax < 0.17 || ax > 0.57 || p.y < -0.02 || p.y > 0.2) return 0;
+            float t = (ax - 0.37) / 0.137;
+            float tc = clamp(t, -1.0, 1.0);
+            float lid = 0.069 + 0.013 * (tc + 1.0) * 0.5;
+            float yu = lid + 0.065 * pow(max(1.0 - tc * tc, 0.0), 0.45);
+            float yl = lid - 0.035 * pow(max(1.0 - tc * tc, 0.0), 0.6);
+            float along = 1.0 - smoothstep(0.9, 1.12, abs(t));
+            // (outwards from each margin over the lid's visible strip: the upper lashes read as a fringe 2-3 mm thick from the
+            // front, the lower as a finer line, thickest at the outer half; the rest positions are the vertices', and the lids'
+            // first row of triangles is about 4 mm deep, so a narrower band showed as a pixel)
+            float du = p.y - yu, dl = yl - p.y;
+            half up = (half)(along * (1.0 - smoothstep(0.03, 0.055, du)) * smoothstep(-0.02, -0.008, du));
+            half lo = (half)(along * (1.0 - smoothstep(0.012, 0.03, dl)) * smoothstep(-0.02, -0.008, dl) * (0.35 + 0.65 * smoothstep(-0.3, 0.6, t)));
+            return half2(up, lo);
+        }
+
+        // the lips' red and dark, over the bake's lips (the mouth's line at y -0.67, the lips from -0.61 to -0.73, 0.22 to
+        // each side)
+        half LipsAt(float3 p)
+        {
+            float front = smoothstep(0.55, 0.75, p.z);
+            return (half)((1.0 - smoothstep(0.82, 1.08, length(float2(abs(p.x) / 0.22, (p.y + 0.67) / 0.058)))) * front);
+        }
+
         void Look(inout half3 a, inout half smooth, float3 p)
         {
             // the scalp: the bake's stubble off down to the bare skin (a little darker and duller than the forehead it was
@@ -416,6 +449,18 @@ Shader "SecondFace/Skin"
                 half b = BrowAt(p);
                 a = lerp(a, _BrowColour.rgb, b * 0.92h);
                 smooth = lerp(smooth, 0.2h, b);
+            }
+            if (dot(_Contrast, _Contrast) > 1e-6)
+            {
+                // the lash lines, as the lashes, their roots and their shadow read at a speaking distance: near black-brown
+                // whatever the hair (lashes are darker than the brows on nearly everyone; a colour from light brows barely
+                // showed); the lips redder and deeper, in the skin's own colour (never painted on: lips are skin with more
+                // blood under less of it)
+                half2 ll = LashLines(p);
+                half3 lash = lerp(half3(0.03h, 0.022h, 0.018h), _BrowColour.rgb * 0.5h, 0.2h);
+                a = lerp(a, lash, saturate(ll.x * (half)_Contrast.x + ll.y * (half)_Contrast.y * 0.8h));
+                half lips = LipsAt(p);
+                a *= lerp(1.0h, (1.0h + (half)_Contrast.z * half3(0.6h, -0.16h, -0.1h)) * (1.0h - 0.25h * (half)_Contrast.w), lips);
             }
             if (_Scar > -0.5)
             {
@@ -475,12 +520,14 @@ Shader "SecondFace/Skin"
             }
         }
 
-        // the base vertex's rest position in the head frame
-        float3 Rest(float2 baseIndex)
+        // the base vertex's rest position in the head frame, and in w its ambient occlusion (WardrobeBuild.Occlusion; 1 on maps
+        // built before it)
+        float4 Rest4(float2 baseIndex)
         {
             float2 texel = (floor(baseIndex + 0.5) + 0.5) / 128.0;
-            return SAMPLE_TEXTURE2D_LOD(_RestMap, sampler_point_clamp, texel, 0).xyz;
+            return SAMPLE_TEXTURE2D_LOD(_RestMap, sampler_point_clamp, texel, 0);
         }
+        float3 Rest(float2 baseIndex) { return Rest4(baseIndex).xyz; }
 
         ENDHLSL
 
@@ -512,6 +559,7 @@ Shader "SecondFace/Skin"
                 half hidden : TEXCOORD4;
                 half fog : TEXCOORD5;
                 float3 rest : TEXCOORD6;
+                half ao : TEXCOORD7;
             };
 
             Varyings Vert(Attributes v)
@@ -526,7 +574,9 @@ Shader "SecondFace/Skin"
                 o.tangentWS = half4(n.tangentWS, v.tangentOS.w * GetOddNegativeScale());
                 o.uv = TRANSFORM_TEX(v.uv, _BaseMap);
                 o.hidden = Hidden(v.baseIndex);
-                o.rest = Rest(v.baseIndex);
+                float4 r4 = Rest4(v.baseIndex);
+                o.rest = r4.xyz;
+                o.ao = (half)r4.w;
                 o.fog = ComputeFogFactor(p.positionCS.z);
                 return o;
             }
@@ -581,7 +631,8 @@ Shader "SecondFace/Skin"
                 surface.albedo = albedo.rgb;
                 surface.metallic = 0;
                 surface.smoothness = smooth;
-                surface.occlusion = 1;
+                // the sockets, creases and folds take less of the ambient light (R4)
+                surface.occlusion = saturate(i.ao);
                 surface.normalTS = normalTS;
                 surface.alpha = 1;
 

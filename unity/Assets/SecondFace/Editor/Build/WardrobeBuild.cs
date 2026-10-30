@@ -139,6 +139,73 @@ namespace SecondFace.EditorTools
         }
 
         /// <summary>
+        /// Each body vertex's ambient occlusion at rest (R4, docs/PEOPLE_REALISM.md §14): the share of the sky its hemisphere
+        /// sees past the body and the eyeballs within a head radius, cosine-weighted. The eye sockets, the lids' creases, under
+        /// the nose and the lips and the ears' folds take less of the ambient light (the studio's and the game's ambient
+        /// filled them evenly, and the eyes read lighter than the skin round them where real eyes read a third darker).
+        /// </summary>
+        public static float[] Occlusion(Mesh body, Mesh eyes, Vector3[] eyeVerts, float reach)
+        {
+            var verts = body.vertices;
+            var normals = body.normals;
+            var ao = Enumerable.Repeat(1f, verts.Length).ToArray();
+            if (normals.Length != verts.Length) return ao;
+            var root = new GameObject("rest_ao");
+            try
+            {
+                root.AddComponent<MeshCollider>().sharedMesh = body;
+                var eyeMesh = new Mesh { indexFormat = UnityEngine.Rendering.IndexFormat.UInt32, vertices = eyeVerts };
+                var tris = new System.Collections.Generic.List<int>();
+                for (var s = 0; s < eyes.subMeshCount; s++) tris.AddRange(eyes.GetTriangles(s));
+                eyeMesh.triangles = tris.ToArray();
+                var eye = new GameObject("rest_ao_eyes");
+                eye.transform.SetParent(root.transform, false);
+                eye.AddComponent<MeshCollider>().sharedMesh = eyeMesh;
+                Physics.SyncTransforms();
+                // a fixed cosine-weighted set of directions round +z (golden-angle spiral), turned onto each normal
+                const int rays = 48;
+                var dirs = new Vector3[rays];
+                for (var k = 0; k < rays; k++)
+                {
+                    var u = (k + 0.5f) / rays;
+                    var r = Mathf.Sqrt(u);
+                    var phi = k * 2.39996323f;
+                    dirs[k] = new Vector3(r * Mathf.Cos(phi), r * Mathf.Sin(phi), Mathf.Sqrt(1f - u));
+                }
+                for (var i = 0; i < verts.Length; i++)
+                {
+                    var nrm = normals[i].normalized;
+                    var t = Vector3.Cross(nrm, Mathf.Abs(nrm.y) < 0.9f ? Vector3.up : Vector3.right).normalized;
+                    var b = Vector3.Cross(nrm, t);
+                    var origin = verts[i] + nrm * (reach * 0.004f);
+                    var open = 0f;
+                    foreach (var d in dirs)
+                    {
+                        var dir = t * d.x + b * d.y + nrm * d.z;
+                        if (!Physics.Raycast(origin, dir, out var hit, reach)) { open += 1f; continue; }
+                        open += Mathf.Clamp01(hit.distance / reach);   // a far wall shades less than a near one
+                    }
+                    ao[i] = open / rays;
+                }
+            }
+            finally { UnityEngine.Object.DestroyImmediate(root); }
+            return ao;
+        }
+
+        /// <summary>The bases' rest maps (positions and occlusion) again, without the wardrobes.</summary>
+        [MenuItem("Second Face/Rebuild rest maps")]
+        public static void RestMaps()
+        {
+            foreach (var json in Directory.GetFiles(Dir, "*.wardrobe.json").OrderBy(p => p))
+            {
+                var m = JsonUtility.FromJson<Manifest>(File.ReadAllText(json));
+                var model = m == null ? null : AssetDatabase.LoadAssetAtPath<GameObject>($"{Dir}/{m.@base}.fbx");
+                if (model != null) RestMap(model, m.@base);
+            }
+            AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>
         /// Each base vertex's rest position in the head frame of the web game's skin painter (the eyes at (±0.36, 0.1,
         /// 0.88) head radii from the centre; z the face's way, y up), written into a 128 x 128 half-float texture at the
         /// texel of its MakeHuman base index (uv1, as the wardrobe's mask): SecondFace/Skin reads it per vertex to draw the
@@ -181,19 +248,26 @@ namespace SecondFace.EditorTools
             var centre = mid - upAxis * (0.1f * rad) - fwd * (0.88f * rad);
             const int n = Wardrobe.MaskSize;
             var px = new Color[n * n];
+            var ao = Occlusion(mesh, eyes.sharedMesh, ev, rad);
             for (var i = 0; i < verts.Length; i++)
             {
                 var idx = Mathf.RoundToInt(uv1[i].x) + Mathf.RoundToInt(uv1[i].y) * n;
                 if (idx < 0 || idx >= px.Length) continue;
                 var d = (verts[i] - centre) / rad;
-                px[idx] = new Color(Vector3.Dot(d, side), Vector3.Dot(d, upAxis), Vector3.Dot(d, fwd), 1f);
+                px[idx] = new Color(Vector3.Dot(d, side), Vector3.Dot(d, upAxis), Vector3.Dot(d, fwd), ao[i]);
             }
-            var tex = new Texture2D(n, n, TextureFormat.RGBAHalf, false, true) { name = baseId + "_rest", filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            var path = $"{Dir}/{baseId}_rest.asset";
+            // updated in place when it exists, so the materials that hold it keep it
+            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            var fresh = tex == null || tex.width != n || tex.format != TextureFormat.RGBAHalf;
+            if (fresh)
+            {
+                if (tex != null) AssetDatabase.DeleteAsset(path);
+                tex = new Texture2D(n, n, TextureFormat.RGBAHalf, false, true) { name = baseId + "_rest", filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            }
             tex.SetPixels(px);
             tex.Apply(false, false);
-            var path = $"{Dir}/{baseId}_rest.asset";
-            if (AssetDatabase.LoadAssetAtPath<Texture2D>(path) != null) AssetDatabase.DeleteAsset(path);
-            AssetDatabase.CreateAsset(tex, path);
+            if (fresh) AssetDatabase.CreateAsset(tex, path); else EditorUtility.SetDirty(tex);
             Debug.Log($"WardrobeBuild: {baseId} head frame: radius {rad * 100f:0.0} cm, eyes {Vector3.Distance(l, r2) * 100f:0.0} cm apart, up {upAxis}, the face along {fwd}");
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
