@@ -403,8 +403,16 @@ def generated_garment(name):
     used = sorted({i for f in faces for i, _ in f})
     km = {i: k for k, i in enumerate(used)}
     refs = [(i, i, i, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0) for i in used]
-    pf = [[(km[i], t) for i, t in f] for f in faces]
-    return refs, [st['verts'][i] for i in used], st['vts'], pf, g['thick']
+    # its UVs scaled up to fill the texture (P4.16b): in the helper's own layout a vest's whole torso was ~60 x 40 pixels
+    # of the 1024 bake, its straps blocks of stairs. Uniform, so the weave keeps its proportions.
+    used_t = sorted({t for f in faces for _, t in f if t >= 0})
+    U = [st['vts'][t] for t in used_t]
+    u0, v0 = min(u for u, _ in U), min(v for _, v in U)
+    span = max(max(u for u, _ in U) - u0, max(v for _, v in U) - v0) or 1.0
+    tm = {t: k for k, t in enumerate(used_t)}
+    vts = [(0.01 + 0.98 * (u - u0) / span, 0.01 + 0.98 * (v - v0) / span) for u, v in U]
+    pf = [[(km[i], tm[t] if t >= 0 else -1) for i, t in f] for f in faces]
+    return refs, [st['verts'][i] for i in used], vts, pf, g['thick']
 
 def vertex_normals(points, faces):
     """Area-weighted vertex normals of a face list over points (any space)."""

@@ -165,7 +165,7 @@ export const GARMENTS: Record<string, GarmentDef> = {
   // Generated pieces (P4.14 step 5, docs/WARDROBE.md §3): the cyberpunk cut, built on the bases themselves
   sf_base_highneck: { slot: 'top', fit: 'u', tags: ['work', 'street', 'tech', 'cold', 'nomad'], dye: true, generated: true },
   sf_bomber_cropped: { slot: 'top', fit: 'u', tags: ['street', 'casual', 'tech', 'raider'], dye: true, generated: true },
-  sf_vest_harness: { slot: 'over', fit: 'u', tags: ['raider', 'street', 'work', 'nomad', 'tech', 'military', 'corp'], dye: true, generated: true },
+  sf_vest_harness: { slot: 'over', fit: 'u', tags: ['raider', 'street', 'work', 'nomad', 'tech', 'military', 'corp'], generated: true },
   sf_duster_long: { slot: 'over', fit: 'u', tags: ['nomad', 'rag', 'raider', 'cold', 'street'], dye: true, generated: true },
   sf_cape_shoulder: { slot: 'over', fit: 'u', tags: ['nomad', 'faith', 'rag', 'cold'], dye: true, generated: true },
   sf_cargo_articulated: { slot: 'legs', fit: 'u', tags: ['work', 'street', 'tech', 'raider', 'military', 'nomad'], dye: true, generated: true },

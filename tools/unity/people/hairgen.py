@@ -10,7 +10,7 @@ import json, os
 import numpy as np
 
 STYLES = ('sf_crop', 'sf_bun', 'sf_braid', 'sf_matted', 'sf_coils', 'sf_cornrows')
-VERSION = 18   # bump when the generator changes: mh_build regenerates into its cache by name + version
+VERSION = 19   # bump when the generator changes: mh_build regenerates into its cache by name + version
 ATLAS = 1024
 COLS = {'sheet': 0, 'clump': 1, 'wisp': 2, 'matted': 3}
 
@@ -333,7 +333,7 @@ def gen_crop(B, rng):
     rooted up to the hairline, which read as pebbles and a ragged edge; now 3-6 mm wide, 1.2-2.8 cm long, low, rooted
     inside the hairline (the shell's fade and the hairline's own fine hairs make the edge)."""
     m = Mesh()
-    shell(B, m, B.surf(B.c + np.array([0.0, -0.6, -0.8]), 0.0), 0.012, rng, reach=0.35, fade=0.08)
+    shell(B, m, B.surf(B.c + np.array([0.0, -0.6, -0.8]), 0.0), 0.012, rng, reach=0.3, fade=0.15)   # a soft 1.5 cm edge (v19)
     inner = B.scalp[np.array([B.hw[int(i)] for i in B.scalp]) > 0.8]
     for r in rng.choice(inner, size=900, replace=True):
         p0 = B.surf(B.V[r] + rng.normal(0, 0.05, 3), 0.0)   # roots scattered between the scalp's vertices

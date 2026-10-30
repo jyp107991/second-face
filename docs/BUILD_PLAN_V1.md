@@ -2507,6 +2507,13 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   half their budget and thin the rest (`mh_build.layer_down`; budgets 16 K close-up, 1.6 K, 400); the grooms' baby
   hairs and front wisps as fine cards on every drawn-back style (`groom.py`). Check a style's levels by islands
   (largest island and count per level), not by the triangle total alone.
+- **A vest that read as bare skin under straps (P4.16b).** The generated harness vest was dyed at runtime like any
+  plain cloth, and a dye of peach or white over a garment that tight read as skin, its straps as a harness worn over
+  nothing; a chest strap across the bust read as a bra band. Its straps were also blocks of stairs: a generated
+  garment kept the body helper's UV layout, where a vest's whole torso was about 60 x 40 pixels of the 1024 bake. Now
+  the generated garments' UVs are scaled up to fill the texture (`mh_build.generated_garment`), the vest is waxed
+  canvas in its own colour (not dyed; `garments.ts`, `GENERATED_GARMENTS[...]['tint']`) with straps and a waist band
+  only. Look at a baked texture whole before judging a garment's drawn details.
 - **Offsets by people move the population's mean.** Each people's stature against the Reach's mean must be centred over
   the Reach's shares, or the Reach shrinks (`Bodies.MeanStatureOffset`); a static average over a table declared later in
   the class is null at type initialisation (a property, not a field).

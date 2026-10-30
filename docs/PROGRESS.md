@@ -804,8 +804,11 @@ sideburns and behind the ears), the shell is cut along a smooth contour, the gro
 along it on the bun, the matted hair and the crop, `sf_braid` is now the Loose groom's crown braids into a plait, the
 crop's cards are narrow and lie flat, and hair keeps its scalp layer at the game camera's levels (it had been dropped:
 everyone's hair from play distance was a dozen locks over painted stubble; BUILD_PLAN §8). Bases rebuilt
-(`hairgen.py` v18). **Next action:** `PlayerTestScene.Build`, the Shale render, the sheets into
-`docs/evidence/unity/p4/shale/` (`shale_p416_*`), commit, push, send. Then P4.15c, the skin and hair shaders:
+(`hairgen.py` v18); sheets `shale_p416_*` and `hairline_p416_before_after.jpg`. P4.16b: the harness vest, which read as
+bare skin under straps (runtime dye on a tight piece; its UVs ~60 x 40 pixels of the bake), is olive canvas in its own
+colour with straps and a waist band; every generated garment's UVs now fill its texture; the crop's edge fades over
+1.5 cm (`hairgen.py` v19; `vest_p416b.jpg`, `hair_p416b.jpg`). Open: the women's crop still reads as a thin cap; white
+dyes on the generated bomber and cargo read as a unitard. **Next action:** P4.15c, the skin and hair shaders:
 the patch is drafted (pre-integrated scattering from `tools/unity/people/skin_lut.py`, pores from
 `tools/unity/people/skin_detail.py`, a second sharper specular lobe, a faint Kajiya-Kay band on hair); copy the lookup
 and pore textures to `Assets/SecondFace/Shaders/Skin/`, apply, rebuild the wardrobes, render before and after.
