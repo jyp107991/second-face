@@ -122,6 +122,7 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _Grime: 0
+    - _HairSheen: 0
     - _Inflate: 0
     - _Metallic: 0
     - _OcclusionStrength: 1

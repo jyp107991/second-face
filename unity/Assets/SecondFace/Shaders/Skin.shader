@@ -34,6 +34,13 @@ Shader "SecondFace/Skin"
         _Brow0 ("Brow: inner x, outer x, inner height, tail height", Vector) = (0.19, 0.62, 0.25, 0.22)
         _Brow1 ("Brow: peak height, peak along, inner thickness, tail thickness", Vector) = (0.27, 0.45, 0.05, 0.035)
         _BrowColour ("Brow colour (A: density, 0 none)", Color) = (0.1, 0.07, 0.05, 0)
+        [NoScaleOffset] _SkinLut ("Pre-integrated scattering (N.L across, curvature up)", 2D) = "white" {}
+        _Sss ("Scattering by the lookup (0: the wrap approximation)", Range(0, 1)) = 0
+        _CurvatureScale ("Curvature scale", Range(0.5, 8)) = 2
+        [NoScaleOffset] _PoreMap ("Pores and surface lines (tangent normals, tiled)", 2D) = "bump" {}
+        _PoreTiling ("Pore tiling", Float) = 60
+        _PoreScale ("Pore depth", Range(0, 1)) = 0.35
+        _SharpLobe ("Share of a second, sharper specular lobe", Range(0, 0.5)) = 0.04
     }
     SubShader
     {
@@ -47,6 +54,8 @@ Shader "SecondFace/Skin"
         TEXTURE2D(_HiddenMask); SAMPLER(sampler_point_clamp);
         TEXTURE2D(_AgedMap);
         TEXTURE2D(_RestMap);
+        TEXTURE2D(_SkinLut); SAMPLER(sampler_SkinLut);
+        TEXTURE2D(_PoreMap); SAMPLER(sampler_PoreMap);
         CBUFFER_START(UnityPerMaterial)
             float4 _BaseMap_ST;
             half4 _BaseColor;
@@ -56,6 +65,8 @@ Shader "SecondFace/Skin"
             half4 _BareSkin, _ScalpColour, _BrowColour, _BakeBalance;
             float4 _Brow0, _Brow1;
             half _Bald;
+            half _Sss, _CurvatureScale, _PoreScale, _SharpLobe;
+            float _PoreTiling;
         CBUFFER_END
 
         struct Attributes
@@ -442,6 +453,10 @@ Shader "SecondFace/Skin"
                 half smooth = albedo.a * _Smoothness;
                 Look(albedo.rgb, smooth, i.rest);
                 half3 normalTS = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, i.uv), _BumpScale);
+                // pores and the surface's fine lines over the bake (P4.15c), finely tiled; the mips fade them with distance
+                // so they break up a close-up's highlights and leave the game camera's skin as it was
+                half3 pores = UnpackNormalScale(SAMPLE_TEXTURE2D(_PoreMap, sampler_PoreMap, i.uv * _PoreTiling), _PoreScale);
+                normalTS = normalize(half3(normalTS.xy + pores.xy, normalTS.z * pores.z));
                 half3 bitangent = i.tangentWS.w * cross(i.normalWS, i.tangentWS.xyz);
                 half3 normalWS = NormalizeNormalPerPixel(TransformTangentToWorld(normalTS, half3x3(i.tangentWS.xyz, bitangent, i.normalWS)));
 
@@ -469,9 +484,41 @@ Shader "SecondFace/Skin"
                 // the thin edges of ears, nose and fingers scatter the light behind them
                 Light main = GetMainLight(input.shadowCoord);
                 half ndl = dot(normalWS, main.direction);
-                half wrap = saturate((ndl + 0.55h) / 1.55h) - saturate(ndl);
                 half3 lit = main.color * main.distanceAttenuation * main.shadowAttenuation;
-                colour.rgb += albedo.rgb * half3(1.0h, 0.38h, 0.26h) * wrap * lit * 0.5h;
+                if (_Sss > 0.001h)
+                {
+                    // P4.15c, pre-integrated scattering (Penner and Borshukov 2011; tools/unity/people/skin_lut.py): the
+                    // main light's diffuse from a lookup of N.L against the surface's curvature, the curvature from the
+                    // screen derivatives of the interpolated normal (1/m; the lookup spans 0..500/m), the normal for it
+                    // eased toward the geometric one (light diffuses under the pores and fine lines). It replaces the
+                    // Lambert term URP lit the main light with; the shadow's edge reddens the same way.
+                    half alpha = 1;
+                    BRDFData brdf;
+                    InitializeBRDFData(surface.albedo, 0, half3(0, 0, 0), smooth, alpha, brdf);
+                    half3 light = main.color * main.distanceAttenuation;
+                    float curvature = length(fwidth(i.normalWS)) / max(length(fwidth(i.positionWS)), 1e-5);
+                    half v = saturate(curvature * 0.002 * _CurvatureScale);
+                    half3 soft = normalize(lerp(normalWS, normalize(i.normalWS), 0.5h));
+                    half3 scattered = SAMPLE_TEXTURE2D(_SkinLut, sampler_SkinLut, float2(dot(soft, main.direction) * 0.5 + 0.5, v)).rgb;
+                    half s = main.shadowAttenuation;
+                    half3 penumbra = pow(max(s, 1e-3h), half3(0.75h, 1.1h, 1.25h));
+                    colour.rgb += brdf.diffuse * light * (scattered * penumbra - saturate(ndl) * s) * _Sss;
+                    // a second, sharper specular lobe (the oil over the skin's rougher sheen; dual-lobe skin specular)
+                    BRDFData sharp = brdf;
+                    sharp.perceptualRoughness = brdf.perceptualRoughness * 0.55h;
+                    sharp.roughness = max(PerceptualRoughnessToRoughness(sharp.perceptualRoughness), HALF_MIN_SQRT);
+                    sharp.roughness2 = max(sharp.roughness * sharp.roughness, HALF_MIN);
+                    sharp.normalizationTerm = sharp.roughness * 4.0h + 2.0h;
+                    sharp.roughness2MinusOne = sharp.roughness2 - 1.0h;
+                    half3 radiance = light * s * saturate(ndl);
+                    colour.rgb += brdf.specular * (DirectBRDFSpecular(sharp, normalWS, main.direction, input.viewDirectionWS)
+                        - DirectBRDFSpecular(brdf, normalWS, main.direction, input.viewDirectionWS)) * _SharpLobe * radiance;
+                }
+                else
+                {
+                    half wrap = saturate((ndl + 0.55h) / 1.55h) - saturate(ndl);
+                    colour.rgb += albedo.rgb * half3(1.0h, 0.38h, 0.26h) * wrap * lit * 0.5h;
+                }
                 half rimv = pow(1.0h - saturate(dot(normalWS, input.viewDirectionWS)), 3.0h);
                 colour.rgb += albedo.rgb * half3(1.0h, 0.5h, 0.4h) * rimv * saturate(-ndl + 0.3h) * lit * 0.35h;
                 colour.rgb = MixFog(colour.rgb, i.fog);

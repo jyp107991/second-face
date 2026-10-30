@@ -45,6 +45,7 @@ Material:
     - _Dyed: 0
     - _EnvironmentReflectionsOff: 0
     - _Grime: 0
+    - _HairSheen: 0
     - _Inflate: 0
     - _RecolourIris: 0
     - _RecolourLum: 0.2

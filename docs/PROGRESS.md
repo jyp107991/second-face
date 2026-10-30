@@ -808,10 +808,15 @@ everyone's hair from play distance was a dozen locks over painted stubble; BUILD
 bare skin under straps (runtime dye on a tight piece; its UVs ~60 x 40 pixels of the bake), is olive canvas in its own
 colour with straps and a waist band; every generated garment's UVs now fill its texture; the crop's edge fades over
 1.5 cm (`hairgen.py` v19; `vest_p416b.jpg`, `hair_p416b.jpg`). Open: the women's crop still reads as a thin cap; white
-dyes on the generated bomber and cargo read as a unitard. **Next action:** P4.15c, the skin and hair shaders:
+dyes on the generated bomber and cargo read as a unitard. P4.15c done: the skin's main light by pre-integrated
+scattering (`Shaders/Skin/skin_lut.png`), pores over the bake (`skin_pores_n.png`, depth 0.5), a faint second specular
+lobe (0.04: at 0.15 foreheads shone like oil), a soft Kajiya-Kay band along the hair (`_HairSheen`); the materials get
+them in `PeopleImportPostprocessor` (`skin_p415c.jpg`). **Next action:** travellers on the roads (P4.13 5b), then the
+new opening in the content (owner note D), then P6 step 4, combat; the people's open items above (the crop, white dyes on
+the generated pieces) when they next come up. (Superseded record of P4.15c's plan:
 the patch is drafted (pre-integrated scattering from `tools/unity/people/skin_lut.py`, pores from
 `tools/unity/people/skin_detail.py`, a second sharper specular lobe, a faint Kajiya-Kay band on hair); copy the lookup
-and pore textures to `Assets/SecondFace/Shaders/Skin/`, apply, rebuild the wardrobes, render before and after.
+and pore textures to `Assets/SecondFace/Shaders/Skin/`, apply, rebuild the wardrobes, render before and after.)
 **Next action (superseded by the note above; kept for the record):** P4.14 step 5 polish and step 6: dye as a colour, not a tint (the cloth shader colourises by
 luminance when dyed, so a blue dye reads blue, not khaki-blue); retire the boxy tactical vests and the cyborg suit (the
 generated harness vest and base layer take their place); the duster's front cut cleaned of its hanging strips; hide

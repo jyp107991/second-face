@@ -166,6 +166,15 @@ namespace SecondFace.EditorTools
                     // the same skin older, for the photograph (mh_build's <id>__skin_aged_d; FaceSculpt.Aged blends to it)
                     var aged = tex.EndsWith("__skin_d") ? AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/tex/{tex.Substring(0, tex.Length - 2)}_aged_d.png") : null;
                     m.SetTexture("_AgedMap", aged);
+                    // P4.15c: light scattered under the skin by a lookup, and pores over the bake
+                    var lut = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/SecondFace/Shaders/Skin/skin_lut.png");
+                    var pores = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/SecondFace/Shaders/Skin/skin_pores_n.png");
+                    m.SetTexture("_SkinLut", lut);
+                    m.SetFloat("_Sss", lut != null ? 1f : 0f);
+                    if (pores != null) m.SetTexture("_PoreMap", pores);
+                    // the sharper lobe's peak is ~10x the broad one's: at 0.15 a forehead shone like oil, not weathered skin
+                    m.SetFloat("_SharpLobe", 0.04f);
+                    m.SetFloat("_PoreScale", 0.5f);
                     break;
                 case "skin":
                     m.SetFloat("_Metallic", 0f);
@@ -211,6 +220,8 @@ namespace SecondFace.EditorTools
                     {
                         // the player's hair, recoloured at creation (SecondFace/Cloth): its mean light here
                         m.SetFloat("_EnvironmentReflectionsOff", 1f); m.SetFloat("_SpecularHighlightsOff", 1f);
+                        // P4.15c: no gloss, but the soft band of light along the strands that dry hair still has
+                        if (kind == "hair") m.SetFloat("_HairSheen", 1f);
                         if (d != null) m.SetFloat("_RecolourLum", MeanLum($"{dir}/tex/{tex}.png", iris: false));
                     }
                     m.renderQueue = 2450;

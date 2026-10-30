@@ -86,8 +86,16 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _PoreMap:
+        m_Texture: {fileID: 2800000, guid: c2a126cf26e642b4be0ddcba8d11863b, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _RestMap:
         m_Texture: {fileID: 2800000, guid: 6a3e27ebc916444a0abe1c1d90f16338, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SkinLut:
+        m_Texture: {fileID: 2800000, guid: 3211e4bfe97b40e5a027a40f70c0d56f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
@@ -120,6 +128,7 @@ Material:
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _Cull: 2
+    - _CurvatureScale: 2
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
@@ -133,14 +142,18 @@ Material:
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
+    - _PoreScale: 0.5
+    - _PoreTiling: 60
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _Scar: -1
+    - _SharpLobe: 0.04
     - _Smoothness: 1
     - _SmoothnessTextureChannel: 1
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
+    - _Sss: 1
     - _Surface: 0
     - _Tattoo: -1
     - _Tone: 0

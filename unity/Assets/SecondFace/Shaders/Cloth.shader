@@ -26,6 +26,7 @@ Shader "SecondFace/Cloth"
         [Toggle] _RecolourIris ("Only the iris", Float) = 0
         [Toggle(_ENVIRONMENTREFLECTIONS_OFF)] _EnvironmentReflectionsOff ("No sky reflection", Float) = 0
         [Toggle(_SPECULARHIGHLIGHTS_OFF)] _SpecularHighlightsOff ("No highlight", Float) = 0
+        _HairSheen ("Hair: a soft band of light along the strands (0 none)", Range(0, 1)) = 0
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 0
     }
     SubShader
@@ -42,7 +43,7 @@ Shader "SecondFace/Cloth"
             float4 _BaseMap_ST;
             half4 _BaseColor;
             half4 _Recolour;
-            half _BumpScale, _Smoothness, _Cutoff, _Grime, _Wear, _RecolourLum, _RecolourIris, _Dyed;
+            half _BumpScale, _Smoothness, _Cutoff, _Grime, _Wear, _RecolourLum, _RecolourIris, _Dyed, _HairSheen;
             float _Inflate;
         CBUFFER_END
 
@@ -198,6 +199,22 @@ Shader "SecondFace/Cloth"
                 half nv = saturate(dot(normalWS, input.viewDirectionWS));
                 half sheen = pow(1.0h - nv, 4.0h) * (1.0h - smoothness) * saturate(dot(normalWS, mainL.direction) + 0.4h);
                 colour.rgb += (albedo.rgb * 0.5h + 0.5h) * sheen * mainL.color * mainL.shadowAttenuation * 0.3h;
+                if (_HairSheen > 0.001h)
+                {
+                    // P4.15c, hair: Kajiya-Kay along the strand (the cards run root to tip along v, so the strand is the
+                    // bitangent), two bands shifted along the normal, the second tinted by the hair; broad and faint, as
+                    // on dry, dusty hair, the shift broken up by the strands' own light and dark
+                    half3 strand = normalize(bitangent);
+                    half3 h = normalize(mainL.direction + input.viewDirectionWS);
+                    half jitter = (tex.r - 0.5h) * 0.6h;
+                    half3 t1 = normalize(strand + nrm * (0.08h + jitter));
+                    half3 t2 = normalize(strand + nrm * (-0.12h + jitter));
+                    half th1 = dot(t1, h), th2 = dot(t2, h);
+                    half band1 = pow(saturate(sqrt(1.0h - th1 * th1)), 28.0h);
+                    half band2 = pow(saturate(sqrt(1.0h - th2 * th2)), 9.0h);
+                    half lit = saturate(dot(nrm, mainL.direction) * 0.6h + 0.4h) * mainL.shadowAttenuation;
+                    colour.rgb += (band1 * 0.10h + band2 * 0.12h * albedo.rgb) * mainL.color * lit * _HairSheen;
+                }
                 colour.rgb = MixFog(colour.rgb, i.fog);
                 return half4(colour.rgb, 1);
             }
