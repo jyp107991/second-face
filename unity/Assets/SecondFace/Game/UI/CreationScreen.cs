@@ -354,7 +354,7 @@ namespace SecondFace.Game.UI
             foreach (var c in Looks.HairColours)
             {
                 var colour = c;
-                hair.Add(Swatch($"hair-{c:x6}", LookView.Colour(c), look.HairColour == c, () => { look.HairColour = colour; Show(); Refresh(); }));
+                hair.Add(Swatch($"hair-{c:x6}", LookView.Colour(c), look.HairColour == c, () => { look.HairColour = colour; look.HairBase = colour; Show(); Refresh(); }));
             }
             // the brows' style (fine, natural, full for a woman; sparse, natural, heavy for a man) and, for a man, the hairline
             Heading("create.brows");

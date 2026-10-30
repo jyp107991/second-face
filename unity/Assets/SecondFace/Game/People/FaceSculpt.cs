@@ -33,10 +33,13 @@ namespace SecondFace.Game.People
         /// <summary>The hair's colour chosen at creation (alpha 0: the texture's own); greys towards ash with
         /// <see cref="Aged"/> (on the player's recolouring hair shader, P5.3i).</summary>
         public Color HairColour;
-        /// <summary>A grown beard's colour (its strands, R5: the pigmented hairs' and the white ones' mean by their share;
-        /// alpha 0: the texture's own).</summary>
+        /// <summary>The share of the hair's strands gone white (salt and pepper, R5); the photograph's <see cref="Aged"/> greys
+        /// it further.</summary>
+        [Range(0f, 1f)] public float HairGrey;
+        /// <summary>A grown beard's pigmented hairs' colour (alpha 0: the texture's own), and the share of them gone white
+        /// (salt and pepper, R5).</summary>
         public Color BeardColour;
-        public static readonly Color AshGrey = new(0.62f, 0.6f, 0.57f, 1f);
+        [Range(0f, 1f)] public float BeardGrey;
 
         private readonly Dictionary<SkinnedMeshRenderer, Dictionary<string, int>> _index = new();
 
@@ -125,18 +128,20 @@ namespace SecondFace.Game.People
                 else if (r.name.Contains("Beard_") && BeardColour.a > 0.001f && m.HasProperty(RecolourId))
                 {
                     r.GetPropertyBlock(_block);
-                    var c = Color.Lerp(BeardColour, AshGrey, Aged * 0.9f);
+                    var c = BeardColour;
                     c.a = 1f;
                     _block.SetColor(RecolourId, c);
+                    _block.SetFloat(GreyId, Mathf.Clamp01(Mathf.Max(BeardGrey, Aged * 0.9f)));
                     r.SetPropertyBlock(_block);
                 }
                 else if (r.name.Contains("Hair_") && HairColour.a > 0.001f && m.HasProperty(RecolourId))   // own or a piece
                 {
-                    // the chosen colour, greying with age (the photograph is fully aged)
+                    // the chosen colour, its strands greying with age (the photograph is fully aged)
                     r.GetPropertyBlock(_block);
-                    var c = Color.Lerp(HairColour, AshGrey, Aged * 0.85f);
+                    var c = HairColour;
                     c.a = 1f;
                     _block.SetColor(RecolourId, c);
+                    _block.SetFloat(GreyId, Mathf.Clamp01(Mathf.Max(HairGrey, Aged * 0.85f)));
                     r.SetPropertyBlock(_block);
                 }
                 else if (AgedHair != null && r.name.StartsWith("Hair_") && m.HasProperty(BaseMapId))
@@ -153,6 +158,7 @@ namespace SecondFace.Game.People
         private static readonly int AgedMapId = Shader.PropertyToID("_AgedMap");
         private static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
         private static readonly int RecolourId = Shader.PropertyToID("_Recolour");
+        private static readonly int GreyId = Shader.PropertyToID("_Grey");
         private MaterialPropertyBlock _block;
     }
 }

@@ -165,6 +165,60 @@ namespace SecondFace.Tests
             Assert.That(failed, Is.EqualTo(0), "everyone measurable");
         }
 
+        /// <summary>The hair and the face up close (R5): a few of the sample people (SF_HAIR_IDS, "cluster_sex_age_k" each,
+        /// comma-separated; a default spread of hairs, colours and ages without it) from the front, three-quarters and the
+        /// side at 0.95 m in the gate's studio, into test-results/hair: the hairline, the strands and the grey seen as the
+        /// conversation camera sees them, without the whole gate's round.</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator HairCloseups()
+        {
+            GameObject F = null, M = null;
+#if UNITY_EDITOR
+            F = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_f.prefab");
+            M = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_m.prefab");
+#endif
+            if (F == null || M == null) { Assert.Ignore("the bases are not built"); yield break; }
+            UiTests.Content();
+            var ids = (System.Environment.GetEnvironmentVariable("SF_HAIR_IDS") ?? "north_european_f_65_0,mediterranean_f_50_0,east_asian_f_65_0,"
+                       + "west_african_f_35_0,north_european_m_65_1,latin_american_m_35_0,east_african_f_65_0,south_asian_f_22_0").Split(',');
+            var studio = new Studio();
+            var n = 0;
+            for (var i = 0; i < ids.Length; i++)
+            {
+                var parts = ids[i].Trim().Split('_');
+                if (parts.Length < 4) continue;
+                var cluster = string.Join("_", parts.Take(parts.Length - 3));
+                var male = parts[parts.Length - 3] == "m";
+                var age = double.Parse(parts[parts.Length - 2], System.Globalization.CultureInfo.InvariantCulture);
+                var id = $"gate_{cluster}_{parts[parts.Length - 3]}_{parts[parts.Length - 2]}_{parts[parts.Length - 1]}";
+                var look = SecondFace.Core.Npc.Bodies.For(id, male, age, "settler", ancestry: cluster);
+                if (float.TryParse(System.Environment.GetEnvironmentVariable("SF_HAIR_GREY"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var grey))
+                    look.Grey = grey;   // (a probe: the same head at another share of grey)
+                var go = Object.Instantiate(male ? M : F, new Vector3(500f + i * 3f, 0f, 0f), Quaternion.identity);
+                SecondFace.Game.People.LookView.Apply(go, look);
+                yield return null;
+                if (Measure(go, 1f) == null) { Object.Destroy(go); continue; }
+                go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
+                yield return null;
+                foreach (var (view, yaw) in new[] { ("front", 0f), ("three", 35f), ("side", 80f) })
+                    studio.Shoot(go, $"{id}_{view}", "hair", 0.95f, yaw, 0.03f);
+                // SF_HAIR_PARTS: the same three-quarter view with only the hair, and with only the body (what shows through)
+                if (System.Environment.GetEnvironmentVariable("SF_HAIR_PARTS") == "1")
+                {
+                    var rs = go.GetComponentsInChildren<SkinnedMeshRenderer>();
+                    foreach (var r in rs) r.enabled = r.name.Contains("Hair_");
+                    studio.Shoot(go, $"{id}_haironly", "hair", 0.95f, 35f, 0.03f);
+                    foreach (var r in rs) r.enabled = !r.name.Contains("Hair_");
+                    studio.Shoot(go, $"{id}_bodyonly", "hair", 0.95f, 35f, 0.03f);
+                }
+                n++;
+                Object.Destroy(go);
+            }
+            studio.Dispose();
+            Debug.Log($"PeopleGate: hair close-ups of {n} people");
+            Assert.That(n, Is.GreaterThan(0));
+        }
+
         /// <summary>The portrait for the 2D half (faces2d.py against FairFace), as photographs are taken: an 85 mm lens at
         /// 1.6 m (16 degrees vertical) square to the face at eye height, a soft key from above the camera's left, a fill from
         /// its right, a plain grey ground. Shoots the person last measured (<see cref="Measure"/> finds their eyes) to
@@ -187,13 +241,13 @@ namespace SecondFace.Tests
                 RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat; RenderSettings.ambientLight = new Color(0.45f, 0.45f, 0.47f);
             }
 
-            public void Shoot(GameObject go, string name, string folder = "portraits")
+            public void Shoot(GameObject go, string name, string folder = "portraits", float distance = 1.6f, float yaw = 0f, float up = 0f)
             {
                 if (!_eyes.HasValue) return;
                 var (eye, fwd) = _eyes.Value;
-                var at = go.transform.TransformPoint(eye);
-                var dir = go.transform.TransformDirection(fwd);
-                _cam.transform.position = at + dir * 1.6f;
+                var at = go.transform.TransformPoint(eye) + Vector3.up * up;
+                var dir = Quaternion.AngleAxis(yaw, Vector3.up) * go.transform.TransformDirection(fwd);
+                _cam.transform.position = at + dir * distance;
                 _cam.transform.LookAt(at);
                 _key.transform.rotation = _cam.transform.rotation * Quaternion.Euler(28f, 30f, 0f);
                 _fill.transform.rotation = _cam.transform.rotation * Quaternion.Euler(8f, -35f, 0f);

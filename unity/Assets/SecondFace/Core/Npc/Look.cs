@@ -44,6 +44,9 @@ namespace SecondFace.Core.Npc
         [JsonProperty("hairColour")] public int HairColour = 0x2b1d14;
         /// <summary>How grey the hair has gone (0..1; Bodies by the people's clock), kept so an authored colour greys with it.</summary>
         [JsonProperty("grey")] public float Grey;
+        /// <summary>The hair's own colour before the grey (0: <see cref="HairColour"/> is the whole of it): drawn as salt and
+        /// pepper, each strand this or white by <see cref="Grey"/> (R5).</summary>
+        [JsonProperty("hairBase")] public int HairBase;
         [JsonProperty("eyes")] public string Eyes = "brown";
         /// <summary>One of <see cref="Looks.Scars"/>, or null.</summary>
         [JsonProperty("scar")] public string Scar;
@@ -197,6 +200,11 @@ namespace SecondFace.Core.Npc
         }
 
         /// <summary>The beard's colour: its own, else the hair's a shade darker.</summary>
+        /// <summary>The colour of the hair's pigmented strands (<see cref="PlayerLook.HairBase"/>, else the hair's colour
+        /// whole), and the share of its strands gone white (none when the colour is the whole of it).</summary>
+        public static int HairPigment(PlayerLook look) => look.HairBase != 0 ? look.HairBase : look.HairColour;
+        public static float HairWhite(PlayerLook look) => look.HairBase != 0 ? Math.Clamp(look.Grey, 0f, 1f) : 0f;
+
         /// <summary>The colour of a beard's pigmented hairs (<see cref="PlayerLook.BeardBase"/>, else <see cref="BeardRgb"/>).</summary>
         public static int BeardPigment(PlayerLook look) => look.BeardBase != 0 ? look.BeardBase : BeardRgb(look);
 

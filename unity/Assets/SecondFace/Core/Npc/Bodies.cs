@@ -243,6 +243,7 @@ namespace SecondFace.Core.Npc
             grey *= GreyRamp(age, 10);
             look.Grey = (float)grey;
             look.HairColour = GreyShade(shade, grey);
+            look.HairBase = Looks.HairColours[shade];
             // light eyes are recessive: of two ancestries, light only as often as both carry them
             var light = second != null ? Math.Pow(LightEyes(cluster), 1 - share) * Math.Pow(LightEyes(second), share) : LightEyes(cluster);
             look.Eyes = rng.Chance(light) ? rng.Pick(new[] { "hazel", "green", "grey_green", "blue_grey", "blue", "grey" })
@@ -479,6 +480,7 @@ namespace SecondFace.Core.Npc
                         else
                         {
                             look.BrowColour = BrowColourOf(authored, Math.Max(0, look.Grey - 0.5));
+                            look.HairBase = authored;
                             if (look.Body == "m") look.BeardBase = authored;
                         }
                         if (look.BeardBase != 0) look.BeardColour = GreyColour(look.BeardBase, look.BeardGrey);

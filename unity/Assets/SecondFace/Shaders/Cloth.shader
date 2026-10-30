@@ -27,6 +27,7 @@ Shader "SecondFace/Cloth"
         [Toggle(_ENVIRONMENTREFLECTIONS_OFF)] _EnvironmentReflectionsOff ("No sky reflection", Float) = 0
         [Toggle(_SPECULARHIGHLIGHTS_OFF)] _SpecularHighlightsOff ("No highlight", Float) = 0
         _HairSheen ("Hair: a soft band of light along the strands (0 none)", Range(0, 1)) = 0
+        _Grey ("Hair: the share of strands gone white (salt and pepper)", Range(0, 1)) = 0
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 0
     }
     SubShader
@@ -43,7 +44,7 @@ Shader "SecondFace/Cloth"
             float4 _BaseMap_ST;
             half4 _BaseColor;
             half4 _Recolour;
-            half _BumpScale, _Smoothness, _Cutoff, _Grime, _Wear, _RecolourLum, _RecolourIris, _Dyed, _HairSheen;
+            half _BumpScale, _Smoothness, _Cutoff, _Grime, _Wear, _RecolourLum, _RecolourIris, _Dyed, _HairSheen, _Grey;
             float _Inflate;
         CBUFFER_END
 
@@ -151,7 +152,44 @@ Shader "SecondFace/Cloth"
                         half sat = (mx - mn) / max(mx, 0.001h);
                         w *= smoothstep(0.3h, 0.5h, sat) * (1.0h - smoothstep(0.3h, 0.55h, lum));
                     }
-                    albedo.rgb = lerp(albedo.rgb, _Recolour.rgb * min(lum / max(_RecolourLum, 0.001h), 2.0h), w);
+                    half3 colour = _Recolour.rgb;
+                    half detail = min(lum / max(_RecolourLum, 0.001h), 2.0h);
+                    if (_Grey > 0.001h)
+                    {
+                        // salt and pepper (R5): each strand (a column of the strand atlas, about three texels) pigmented or
+                        // white by the share gone white, the strands' own light and dark kept under a dull, yellowed white
+                        // that never clips (a white groom recoloured whole read as a flat cap); where a strand is under a
+                        // pixel, their mean (per-pixel white hairs sparkle)
+                        float sx = i.uv.x * 340.0;
+                        half white = step((half)Hash(float3(floor(sx), 7.3, 1.9)), _Grey);
+                        // and where a strand's column stretches over a few pixels (the layer's u is a triangle wave round the
+                        // flow, and where it folds back a whole 7 mm face spans a few columns: pigmented columns read as dark
+                        // slots in grey hair, R5), the mix; each strand only a third of the way from the mix to its own
+                        // colour (salt and pepper reads as a grey at a speaking distance; a card is many hairs), and the
+                        // locks (other columns) the mix
+                        white = lerp(white, _Grey, max((half)saturate(fwidth(sx) * 1.5 - 0.5), (half)saturate((0.35 - fwidth(sx)) * 6.0)));
+                        white = lerp(_Grey, white, 0.35h);
+                        if (i.uv.x >= 0.25) white = _Grey;
+                        colour = lerp(colour, half3(0.46h, 0.44h, 0.4h), white);
+                    }
+                    // a light hair's strands kept apart: the dark between them deeper the lighter the colour (on fair and grey
+                    // hair the bake's contrast alone flattened to a cap; dark hair hides it), and never past white
+                    if (_RecolourIris < 0.5h)
+                        detail = min(pow(max(detail, 0.05h), 1.0h + 0.4h * saturate(dot(colour, half3(0.3h, 0.59h, 0.11h)) * 2.0h)), 0.95h / max(max(colour.r, colour.g), 0.05h));
+                    albedo.rgb = lerp(albedo.rgb, colour * detail, w);
+                }
+                // hair: each strand and each clump of strands a little lighter or darker than the next (a column of the strand
+                // atlas, about three texels, and a band of about thirty), so the layer reads as strands and locks, not a
+                // smooth shell; where they are under a pixel, their mean (R5)
+                half strandFade = 1.0h, clumpFade = 1.0h, strandId = 0.5h, clumpId = 0.5h;
+                if (_HairSheen > 0.001h)
+                {
+                    float sx = i.uv.x * 340.0, cx = i.uv.x * 34.0;
+                    strandFade = (half)max(saturate(fwidth(sx) * 1.5 - 0.5), saturate(1.0 - fwidth(sx) * 10.0));
+                    clumpFade = (half)max(saturate(fwidth(cx) * 1.5 - 0.5), saturate(1.0 - fwidth(cx) * 100.0));
+                    strandId = (half)Hash(float3(floor(sx), 3.1, 8.7));
+                    clumpId = (half)Hash(float3(floor(cx), 5.3, 2.9));
+                    albedo.rgb *= lerp(0.72h + 0.56h * strandId, 1.0h, strandFade) * lerp(0.82h + 0.36h * clumpId, 1.0h, clumpFade);
                 }
                 // sun and wear: paler and greyer
                 if (_Wear > 0.001h)
@@ -170,7 +208,9 @@ Shader "SecondFace/Cloth"
                     smoothness *= 1.0h - 0.6h * g;
                 }
                 half3 normalTS = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, i.uv), _BumpScale);
-                half3 nrm = IS_FRONT_VFACE(face, i.normalWS, -i.normalWS);
+                // (a hair card is a few strands thick: lit alike from both sides, R5: a twisted lock's back read as a black
+                // hole in grey hair)
+                half3 nrm = _HairSheen > 0.001h ? (half3)i.normalWS : IS_FRONT_VFACE(face, i.normalWS, -i.normalWS);
                 half3 bitangent = i.tangentWS.w * cross(nrm, i.tangentWS.xyz);
                 half3 normalWS = NormalizeNormalPerPixel(TransformTangentToWorld(normalTS, half3x3(i.tangentWS.xyz, bitangent, nrm)));
 
@@ -201,19 +241,23 @@ Shader "SecondFace/Cloth"
                 colour.rgb += (albedo.rgb * 0.5h + 0.5h) * sheen * mainL.color * mainL.shadowAttenuation * 0.3h;
                 if (_HairSheen > 0.001h)
                 {
+                    // hair scatters light into its own shade: under a lock lifted a millimetre off the layer, the shadow map
+                    // cut the light to black (R5: dark holes in a grey bun); part of it given back, the lock's shade kept
+                    colour.rgb += albedo.rgb * mainL.color * saturate(dot(normalWS, mainL.direction) * 0.5h + 0.5h) * (1.0h - mainL.shadowAttenuation) * 0.45h;
                     // P4.15c, hair: Kajiya-Kay along the strand (the cards run root to tip along v, so the strand is the
-                    // bitangent), two bands shifted along the normal, the second tinted by the hair; broad and faint, as
-                    // on dry, dusty hair, the shift broken up by the strands' own light and dark
+                    // bitangent), two bands shifted along the normal, the second tinted by the hair; broad, as on dry,
+                    // dusty hair, the shift broken up by each strand and each clump (R5: one smooth band read as a plastic
+                    // shell; real hair's highlight is torn along its strands)
                     half3 strand = normalize(bitangent);
                     half3 h = normalize(mainL.direction + input.viewDirectionWS);
-                    half jitter = (tex.r - 0.5h) * 0.6h;
+                    half jitter = (tex.r - 0.5h) * 0.6h + lerp(strandId - 0.5h, 0.0h, strandFade) * 0.5h + lerp(clumpId - 0.5h, 0.0h, clumpFade) * 0.6h;
                     half3 t1 = normalize(strand + nrm * (0.08h + jitter));
                     half3 t2 = normalize(strand + nrm * (-0.12h + jitter));
                     half th1 = dot(t1, h), th2 = dot(t2, h);
                     half band1 = pow(saturate(sqrt(1.0h - th1 * th1)), 28.0h);
                     half band2 = pow(saturate(sqrt(1.0h - th2 * th2)), 9.0h);
                     half lit = saturate(dot(nrm, mainL.direction) * 0.6h + 0.4h) * mainL.shadowAttenuation;
-                    colour.rgb += (band1 * 0.10h + band2 * 0.12h * albedo.rgb) * mainL.color * lit * _HairSheen;
+                    colour.rgb += (band1 * 0.16h * (1.0h - 0.6h * saturate(dot(albedo.rgb, half3(0.3h, 0.59h, 0.11h)) * 2.5h)) + band2 * 0.35h * albedo.rgb) * mainL.color * lit * _HairSheen;
                 }
                 colour.rgb = MixFog(colour.rgb, i.fog);
                 return half4(colour.rgb, 1);

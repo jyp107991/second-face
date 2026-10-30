@@ -10,7 +10,7 @@ import json, os
 import numpy as np
 
 STYLES = ('sf_crop', 'sf_bun', 'sf_braid', 'sf_matted', 'sf_coils', 'sf_cornrows')
-VERSION = 21   # bump when the generator changes: mh_build regenerates into its cache by name + version
+VERSION = 28   # bump when the generator changes: mh_build regenerates into its cache by name + version
 ATLAS = 1024
 COLS = {'sheet': 0, 'clump': 1, 'wisp': 2, 'matted': 3}
 
@@ -295,15 +295,19 @@ def wobble(B, P, rng, scale=(14.0, 34.0), waves=7):
     return w / np.sqrt(waves / 2.0)
 
 
-def shell(B, m, goal, lift, rng, reach=0.25, segments=10, fade=0.12, col='sheet', field=None):
+def shell(B, m, goal, lift, rng, reach=0.02, segments=10, fade=0.03, col='sheet', field=None):
     """Hair lying on the scalp as one continuous layer `lift` above the skin (no shingles of separate cards): the
     scalp's own faces (subdivided once, `Base.fine_scalp`) lifted, the strands of the atlas's sheet column running from the hairline toward `goal` (v along
     the flow, u round the flow's axis in mirrored segments so the strands stay fine), the hairline soft: over `fade` (dm)
     in from the layer's edge, measured along the scalp, the sheet's strands start one by one (a fade by the hair weight
     alone was ~5 mm wide and cut a hard contour, v9). `reach`: how far down the hair weight the layer goes (lower:
     further over the temples and the nape). The edge is cut along the contour where the hair weight is `reach`, a little
-    irregular, not along the faces (P4.16, v18); `field` (per fine scalp point, >= 0 where the layer is) replaces it."""
-    f = B.Fhw - reach + 0.12 * wobble(B, B.FV, rng) if field is None else field
+    irregular, not along the faces (P4.16, v18); `field` (per fine scalp point, >= 0 where the layer is) replaces it.
+    R5 (v22-25): the layer starts at the painted hairline (hair weight 0.02, about the real trichion: nasion to hairline
+    61-64 mm on the base, real 63-66) and its strands within 3 mm of it (the base skin's baked stubble lies under it); at 0.25-0.3 with a 1.2-1.5 cm fade the
+    first strands stood a centimetre and more above the line, over a band of bare scalp (the owner: a wig on a bald
+    head). The edge's wobble is small (at 0.12 its notches were 1.5-2 cm bays of bare roots)."""
+    f = B.Fhw - reach + 0.03 * wobble(B, B.FV, rng) if field is None else field
     V, N, faces = clip_patch(B.FV, B.FN, B.FF, f)
     if not faces: return
     a = (goal - B.c) / np.linalg.norm(goal - B.c)
@@ -317,7 +321,9 @@ def shell(B, m, goal, lift, rng, reach=0.25, segments=10, fade=0.12, col='sheet'
     for i in range(len(V)):
         edge = smoothstep(border.get(i, 0.0) / fade)                    # 0 at the layer's edge: the hairline
         flow = 1.0 - ang[i] / amax                                      # 0 far from the goal, 1 at it
-        v = edge * (0.34 + 0.56 * flow)                                 # the sheet's strand starts lie in v < 0.36, its
+        v = edge * (0.4 + 0.5 * flow)                                   # the sheet's strand starts lie in v < 0.36 (all of
+                                                                        # them begun within the fade, v25: a clump that
+                                                                        # starts late left a bare notch at the front), its
                                                                         # tips above 0.92 (a bare patch at the goal, v18)
         phi = np.arctan2(dirs[i] @ e2, dirs[i] @ e1)
         sseg = (phi + np.pi) / (2 * np.pi) * segments
@@ -334,7 +340,7 @@ def gen_crop(B, rng):
     rooted up to the hairline, which read as pebbles and a ragged edge; now 3-6 mm wide, 1.2-2.8 cm long, low, rooted
     inside the hairline (the shell's fade and the hairline's own fine hairs make the edge)."""
     m = Mesh()
-    shell(B, m, B.surf(B.c + np.array([0.0, -0.6, -0.8]), 0.0), 0.012, rng, reach=0.3, fade=0.15)   # a soft 1.5 cm edge (v19)
+    shell(B, m, B.surf(B.c + np.array([0.0, -0.6, -0.8]), 0.0), 0.012, rng)   # a 1 cm edge from the painted line (v22)
     inner = B.scalp[np.array([B.hw[int(i)] for i in B.scalp]) > 0.8]
     for r in rng.choice(inner, size=900, replace=True):
         p0 = B.surf(B.V[r] + rng.normal(0, 0.05, 3), 0.0)   # roots scattered between the scalp's vertices
@@ -479,7 +485,7 @@ def gen_coils(B, rng):
     it all over, so the silhouette is a short fuzzed cap and not a combed shell (no fringe, no shaping)."""
     m = Mesh()
     goal = B.surf(B.c + np.array([0.0, 1.0, -0.15]), 0.0)   # the crown: coily hair stands out from the scalp, it does not flow
-    shell(B, m, goal, 0.1, rng, reach=0.32, fade=0.05, col='matted')
+    shell(B, m, goal, 0.1, rng, reach=0.16, fade=0.05, col='matted')
     for r in rng.choice(B.scalp, size=900, replace=True):
         p0 = B.surf(B.V[r] + rng.normal(0, 0.04, 3), 0.05)
         n = (p0 - B.c) / np.linalg.norm(p0 - B.c)
@@ -729,7 +735,9 @@ def atlas(rng, size=ATLAS):
             start = np.zeros(cw)
             for _ in range(14):
                 x0 = rng.uniform(0, cw); w = rng.uniform(12, 40)
-                start = np.maximum(start, smoothstep(1 - np.abs(xs - x0) / w) * rng.uniform(0.1, 0.3))
+                # (R5, v28: at 0.1-0.3 a wide clump starting late cut a square notch a centimetre wide into the hairline;
+                # the clumps start early and the single strands below break the edge)
+                start = np.maximum(start, smoothstep(1 - np.abs(xs - x0) / w) * rng.uniform(0.03, 0.12))
             for _ in range(60):
                 x0 = rng.uniform(0, cw); w = rng.uniform(1.5, 4)
                 start = np.maximum(start, np.clip(1 - np.abs(xs - x0) / w, 0, 1) * rng.uniform(0.0, 0.3))

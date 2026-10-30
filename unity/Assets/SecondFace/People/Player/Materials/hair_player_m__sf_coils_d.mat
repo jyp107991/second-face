@@ -45,11 +45,12 @@ Material:
     - _Cutoff: 0.4
     - _Dyed: 0
     - _EnvironmentReflectionsOff: 1
+    - _Grey: 0
     - _Grime: 0
     - _HairSheen: 1
     - _Inflate: 0
     - _RecolourIris: 0
-    - _RecolourLum: 0.045018166
+    - _RecolourLum: 0.045018274
     - _Smoothness: 0.25
     - _SpecularHighlightsOff: 1
     - _Wear: 0

@@ -31,6 +31,9 @@ namespace SecondFace.Game.People
         /// <summary>The body's scale: a stature against the base's own (<see cref="Bodies"/>), else the look's height (±6 %).</summary>
         public static float Scale(PlayerLook look) => Bodies.ScaleOf(Bodies.Finish(look));
 
+        /// <summary>A white hair's colour as the hair's shader draws it (SecondFace/Cloth, _Grey: linear 0.46, 0.44, 0.40).</summary>
+        public static readonly Color WhiteHair = new(0.71f, 0.70f, 0.67f, 1f);
+
         /// <summary>A content colour (0xRRGGBB) as a colour.</summary>
         public static Color Colour(int rgb) => new(((rgb >> 16) & 255) / 255f, ((rgb >> 8) & 255) / 255f, (rgb & 255) / 255f, 1f);
 
@@ -48,10 +51,12 @@ namespace SecondFace.Game.People
             var face = body.GetComponentInChildren<FaceSculpt>();
             if (face != null)
             {
-                face.HairColour = Colour(look.HairColour);
-                // the beard's strands: its pigmented hairs and the white ones, mixed by their share
-                var pig = Colour(Looks.BeardPigment(look));
-                face.BeardColour = Color.Lerp(pig, new Color(0.5f, 0.49f, 0.47f, 1f), Mathf.Clamp01(look.BeardGrey));   // white hair is a dull grey-white
+                // the hair's and the beard's strands: the pigmented ones' colour and the share gone white (salt and pepper,
+                // drawn per strand by the hair's shader, R5)
+                face.HairColour = Colour(Looks.HairPigment(look));
+                face.HairGrey = Looks.HairWhite(look);
+                face.BeardColour = Colour(Looks.BeardPigment(look));
+                face.BeardGrey = Mathf.Clamp01(look.BeardGrey);
                 // the years in the skin (the aged bake blended in from the late twenties, most of the way by seventy), later on
                 // darker and East Asian skin, sooner on a man's (Looks.SkinYears)
                 face.SkinAge = Looks.SkinAge(look);
@@ -79,9 +84,11 @@ namespace SecondFace.Game.People
                     var beard = Colour(Looks.BeardPigment(look));
                     beard.a = Mathf.Clamp01(look.BeardGrey);
                     block.SetColor(BeardColourId, beard);
-                    // the shaved scalp in the hair's colour, and the hairline as far back as the years have taken it
-                    var scalp = Colour(look.HairColour);
-                    scalp.a = 1f;
+                    // the scalp in the hair's colour (shaved: the stubble; under a head of hair: its roots, from the hairline
+                    // in), and the hairline as far back as the years have taken it
+                    var scalp = Color.Lerp(Colour(Looks.HairPigment(look)), WhiteHair, Looks.HairWhite(look));
+                    if (Looks.HairWhite(look) <= 0f) scalp = Colour(look.HairColour);
+                    scalp.a = look.Hair == "buzz" ? 1f : 2f;   // (null: the base's own hair)
                     block.SetColor(ScalpColourId, scalp);
                     block.SetFloat(BaldId, Mathf.Clamp01(look.Bald));
                     // the brows drawn in their style and colour (always there, whatever the skin's tone)

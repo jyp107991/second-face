@@ -109,6 +109,7 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _Grey: 0
     - _Grime: 0
     - _HairSheen: 1
     - _Inflate: 0
@@ -118,7 +119,7 @@ Material:
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _RecolourIris: 0
-    - _RecolourLum: 0.022455895
+    - _RecolourLum: 0.02245626
     - _Smoothness: 0.25
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 0

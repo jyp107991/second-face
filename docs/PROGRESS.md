@@ -822,9 +822,13 @@ too tall found and held by two new ANSUR measures, stature scale allows for neck
 `Bodies.GreyFrom`; authored greys under 55 dropped). R5 part 1 done: beards as hair cards (four styles, the male base's
 `beard` slot), grey from 55 coming in over ten years, a skull-width shape, the gate's distinct-people rule, the face
 measured bare of its beard, looks fitted when first shown; **190 of 252 pass** with real variety (`docs/PEOPLE_REALISM.md`
-§9, `board_r5a_*.jpg`). **Next action:** R4 (age in the face: an apparent-age check on the portraits, the face's ageing to
-match), then the hair (hairline at the person's own forehead, volume off the scalp) and the skin; each ends with the gate
-and the boards. Refit after any shape or render change with every round in `$scratchpad/gate_iter/*` as `--extra` (2D: only
+§9, `board_r5a_*.jpg`). R4 part 1: an apparent-age estimator against FairFace's bands (ours read the old a decade young)
+and the years in the skin's relief (`Skin.shader` `WrinkleAt`; §10). R5 part 2: the hair grows from the head (no bald band:
+the layer starts at the painted line, roots tinted under it), strands and locks instead of a plastic shell, grey as salt
+and pepper (`PlayerLook.HairBase`), no dark holes in grey hair; close-ups by `PeopleGateTests.HairCloseups`; **184 of 252**
+(§11, `hair_r5b_closeups.jpg`, `board_r5b_old.jpg`). **Next action:** the white full beard (a bright block), the older
+women whose faces read masculine (the sex's soft cues: a check beside the measures), the pale band under some jaws; then
+the Defender grooms as cards for every style and R6 (the Shale sheets). Each ends with the gate and the boards. Refit after any shape or render change with every round in `$scratchpad/gate_iter/*` as `--extra` (2D: only
 rounds rendered as now, from round 10). Loop: `PeopleGateTests.MeasureThePeople` -> `faces2d.py` -> `gate.py`
 -> `board.py`; after shape changes `response.py`/`response2d.py` -> `gen_core.py`. Parked until the gate is
 green: travellers on the roads (git stash "wip: travellers on the roads"; `WayPath`, `Extras.FirstName/BarksOf`), the

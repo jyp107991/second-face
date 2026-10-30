@@ -44,6 +44,7 @@ Material:
     - _Cutoff: 0.5
     - _Dyed: 0
     - _EnvironmentReflectionsOff: 0
+    - _Grey: 0
     - _Grime: 0
     - _HairSheen: 0
     - _Inflate: 0

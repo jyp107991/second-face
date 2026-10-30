@@ -217,7 +217,7 @@ def gen_crown_braid(B, rng):
     L = g['Loose']
     m = Mesh()
     meet = L['Braid_Back'][:, 0].mean(0)
-    hairgen.shell(B, m, meet, 0.014, rng, reach=0.2)
+    hairgen.shell(B, m, meet, 0.014, rng)
     cards(B, m, L['Top'], 300, 10, 0.1, 'clump', rng, wmin=0.04, spread=2.0, lift=-0.004)
     cards(B, m, L['Top_Flyaways'], 40, 8, 0.03, 'wisp', rng, wmin=0.01)
     for n in ('BraidL', 'BraidR'):

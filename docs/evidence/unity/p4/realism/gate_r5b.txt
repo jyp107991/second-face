@@ -1,0 +1,35 @@
+people 252: 184 pass, 68 fail
+  2d.icd_face                    11 fail
+  3d.face_stature                 9 fail
+  3d.head_neck                    9 fail
+  3d.headneck_stature             7 fail
+  2d.brow_eye                     7 fail
+  2d.jaw_face                     6 fail
+  3d.mentonsellionlength          6 fail
+  3d.vertexsuprasternale          5 fail
+  2d.lower_face                   5 fail
+  2d.nose_len                     5 fail
+  3d.face_hw                      4 fail
+  3d.neckcircumference            4 fail
+  3d.tragiontopofhead             3 fail
+  3d.ipd_zyg                      2 fail
+  2d.lips_face                    1 fail
+  3d.bizygomaticbreadth           1 fail
+  2d.nose_icd                     1 fail
+  2d.eye_face                     1 fail
+  Sheriff Ada Vey        f 48 north_european       distinct 3.38 [3.48-Sister Calla]
+  Factor Ozias Pike      m 44 north_european       jaw_face 0.875 [0.804-0.874]
+  Sister Calla           f 31 north_european       distinct 3.38 [3.48-Sheriff Ada Vey]
+  Mender Yusra Hadid     f 39 west_african         ipd_zyg 0.43 [0.431-0.52]
+  Ruth Avel              f 45 west_african         mentonsellionlength 126.2 [103.0-126.0]; vertexsuprasternale 325.3 [269.6-318.0]; face_stature 0.078 [0.063-0.077]; headneck_stature 0.202 [0.168-0.193]
+  Old Teodor             m 71 southeast_asian      distinct 3.32 [3.54-Kai]
+  Ilya Strand            m 41 north_european       lower_face 0.643 [0.544-0.633]; nose_len 0.357 [0.368-0.456]
+  Vasha Kade             f 33 mediterranean        icd_face 0.272 [0.229-0.272]
+  Rust Dog (Gant)        m 41 north_european       distinct 2.57 [2.8-Benno Strand]
+  Benno Strand           m 30 north_european       distinct 2.57 [2.8-Rust Dog (Gant)]
+  Yuki                   f 29 east_asian           icd_face 0.234 [0.241-0.286]; brow_eye 0.169 [0.171-0.232]; distinct 2.25 [3.15-Ana]
+  Lia                    f 27 southeast_asian      distinct 2.83 [3.31-Nita]
+  Rizal                  m 30 east_asian           face_stature 0.065 [0.065-0.079]
+  Ana                    f 35 east_asian           distinct 2.25 [3.15-Yuki]
+  Nita                   f 53 southeast_asian      distinct 2.83 [3.31-Lia]
+  Kai                    m 31 southeast_asian      distinct 3.32 [3.54-Old Teodor]

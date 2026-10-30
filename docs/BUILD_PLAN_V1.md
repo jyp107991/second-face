@@ -2534,6 +2534,17 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   only the face.
 - **Dotnet test filters did not apply** to the Core test project (every run ran all 209); run the suite in Release
   (`dotnet test -c Release`, 4 min; Debug 14 min since people are solved).
+- **Judge hair up close, not in the gate's portrait (R5).** A 512-pixel portrait hid a bald band, a plastic shell and dark
+  holes that a 0.95 m close-up shows at once: `PeopleGateTests.HairCloseups` (`SF_HAIR_IDS`; `SF_HAIR_PARTS=1` renders the
+  hair alone and the body alone, `SF_HAIR_GREY` forces a share of grey). Isolate before guessing: three plausible causes of
+  the grey bun's holes (shadow, scalp through the layer, whole locks one colour) were each fixed and changed nothing; the
+  probes showed the holes vanish at grey 1.0 and were the layer's folded UVs.
+- **A hair change in `hairgen.py` needs `VERSION` bumped**, or `mh_build` takes the cached hair (one wasted build). A
+  hair-only build (`WARDROBE_ONLY=sf_crop,...`) also rewrites every outfit FBX, the wardrobe json's order and the .meta files
+  in an older format: revert the outfit FBXs whose size is unchanged and the reordered wardrobe json/asset, and let Unity's
+  next import convert the metas back.
+- **A per-strand hash on UVs needs the UVs to run across strands everywhere.** The hair layer's u is a triangle wave
+  round its flow; where it folds, a 7 mm face spans a few strand columns and a per-column choice paints the whole face.
 
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)
 

@@ -146,6 +146,7 @@ Material:
     - _PoreTiling: 60
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _ScalpSink: 0.004
     - _Scar: -1
     - _SharpLobe: 0.04
     - _Smoothness: 1
@@ -159,6 +160,7 @@ Material:
     - _Tone: 0
     - _Undertone: 0
     - _WorkflowMode: 1
+    - _Wrinkles: 0
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:

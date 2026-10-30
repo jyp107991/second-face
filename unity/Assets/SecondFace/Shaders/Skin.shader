@@ -30,7 +30,7 @@ Shader "SecondFace/Skin"
         _BeardColour ("Beard colour", Color) = (0.12, 0.09, 0.07, 1)
         _BareSkin ("Bare skin (the bake's forehead, set by the build)", Color) = (0.75, 0.6, 0.5, 1)
         _BakeBalance ("The bake's colour balanced to the reference skin, linear (set by the build)", Vector) = (1, 1, 1, 1)
-        _ScalpColour ("Shaved scalp's hair colour (A: recolour on)", Color) = (0, 0, 0, 0)
+        _ScalpColour ("Scalp's hair colour (A: 1 shaved, 2 under a head of hair)", Color) = (0, 0, 0, 0)
         _Bald ("Pattern balding", Range(0, 1)) = 0
         _Brow0 ("Brow: inner x, outer x, inner height, tail height", Vector) = (0.19, 0.62, 0.25, 0.22)
         _Brow1 ("Brow: peak height, peak along, inner thickness, tail thickness", Vector) = (0.27, 0.45, 0.05, 0.035)
@@ -289,6 +289,11 @@ Shader "SecondFace/Skin"
             if (w < 0.01h) return;
             stub = saturate(1.0h - dot(a, half3(0.3h, 0.59h, 0.11h)) / max(dot(_BareSkin.rgb, half3(0.3h, 0.59h, 0.11h)), 0.02h));
             stub = max(stub, w * 0.4h);   // where the bake left a gap in the stubble (behind the ears), still stubble
+            // under a head of hair (_ScalpColour.a 2): its roots, dense a few millimetres in from the hairline, a light or
+            // grey hair's thinner (R5: the bare scalp between the forehead and the first strands read as a wig on a bald
+            // head)
+            if (_ScalpColour.a > 1.5h)
+                stub = max(stub, smoothstep(0.12h, 0.6h, w) * (0.95h - 0.9h * saturate(dot(_ScalpColour.rgb, half3(0.3h, 0.59h, 0.11h)) * 3.0h)));
             if (_Bald > 0.001h)
             {
                 // when this point goes as _Bald rises: the temples, then the front hairline back and the crown, the top last
@@ -337,7 +342,9 @@ Shader "SecondFace/Skin"
             if (sw > 0.01h)
             {
                 half3 bare = lerp(_BareSkin.rgb, dot(_BareSkin.rgb, half3(0.3h, 0.59h, 0.11h)).xxx, 0.15h) * (0.84h + 0.08h * (half)Noise3(p * 60.0));
-                a = lerp(a, bare, sw * (_ScalpColour.a > 0.5h ? 1.0h : sbald));
+                // (under a head of hair the skin is left as it is, its roots tinted below: the bare scalp's colour, sampled
+                // from the base's forehead, read as a pale band under the hairline, R5)
+                a = lerp(a, bare, sw * (_ScalpColour.a > 1.5h ? sbald : _ScalpColour.a > 0.5h ? 1.0h : sbald));
                 smooth = lerp(smooth, 0.38h, sw * sbald);   // a bare scalp shines a little, not like polish
             }
             // tone: darker towards a deep brown, lighter as if less sun ever reached it
@@ -354,7 +361,12 @@ Shader "SecondFace/Skin"
             a *= _Undertone >= 0 ? 1.0h + _Undertone * half3(0.05h, 0.0h, -0.08h) : 1.0h + (-_Undertone) * half3(0.03h, -0.03h, 0.02h);
             // the shaved scalp's stubble in the hair's own colour, as dense as the bake painted it, none where bald
             if (sw > 0.01h && _ScalpColour.a > 0.5h)
-                a = lerp(a, _ScalpColour.rgb, saturate(sstub * 1.6h) * sw * (1.0h - sbald) * (half)(0.75 + 0.25 * Noise3(p * 300.0)));
+            {
+                // under a head of hair a tint of its colour, as the scalp shows between the strands (a shaved scalp's stubble
+                // is dots; roots painted as dots read as a shaved head under a wig)
+                half grain = _ScalpColour.a > 1.5h ? (half)(0.85 + 0.15 * Noise3(p * 40.0)) : (half)(0.75 + 0.25 * Noise3(p * 300.0));
+                a = lerp(a, _ScalpColour.rgb, saturate(sstub * 1.6h) * (_ScalpColour.a > 1.5h ? 0.85h : sw) * (1.0h - sbald) * grain);
+            }
             bool head = dot(p, p) > 0.01 && p.y > -1.3 && length(p) < 1.6;
             if (!head) return;
             // freckles: across the nose and cheeks, thinning out to the temples
@@ -434,6 +446,7 @@ Shader "SecondFace/Skin"
             float2 texel = (floor(baseIndex + 0.5) + 0.5) / 128.0;
             return SAMPLE_TEXTURE2D_LOD(_RestMap, sampler_point_clamp, texel, 0).xyz;
         }
+
         ENDHLSL
 
         Pass

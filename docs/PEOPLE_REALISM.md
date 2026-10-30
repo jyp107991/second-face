@@ -221,3 +221,35 @@ man's skin, later on darker and East Asian skin, `Looks.SkinYears`), faded with 
 58+ -> 37.7 against real 43-47: the relief alone is a small part of what makes a face read old. Next: age in the shape
 (soft tissue's descent: cheeks, jowls, the upper lid's hood, thinner lips) and the hair's own defects, which the
 estimator and the owner both see first (the hair's edge above a band of bare scalp, a white groom read as a cap).
+
+## 11. R5 part 2: the hair grows from the head (2026-10-30)
+
+Seen up close first: a test that renders a few people's heads from the front, three-quarters and the side at 0.95 m
+(`PeopleGateTests.HairCloseups`, `SF_HAIR_IDS`), so each change is judged where the owner judges it, not in a 512-pixel
+portrait. What it showed, and what was done:
+
+- **The "wig on a bald head".** The painted hairline sat at a real height (nasion to hairline 61-64 mm on the base, real
+  63-66), but the hair's layer began a centimetre and more above it, over a band of bare scalp painted in a colour taken
+  from the base's forehead (paler than the person's toned skin). Now the layer starts at the painted line, its strands all
+  begun within 3 mm (`hairgen.py` v22-28: hair weight 0.02, a 3 mm ramp, a small wobble, no late-starting clump of
+  strands), the skin under a head of hair is left as it is, and the scalp under it takes a tint of the hair's colour from
+  just inside the line (dense under dark hair, faint under grey and white; `Skin.shader`, `_ScalpColour.a` 2).
+- **A smooth shell.** The layer shaded like plastic: one colour, one smooth highlight. Each strand and each lock of strands
+  is now a little lighter or darker than the next, and the highlight is torn along them (`Cloth.shader`, hair only; where
+  a strand is under a pixel, their mean).
+- **White and grey hair as a cap.** White recoloured whole clipped to a flat white. Now grey is salt and pepper: the
+  person's own colour (`PlayerLook.HairBase`) and a dull, yellowed white mixed by the share gone white, strand by strand on
+  the layer (a third of the way from the mix to each strand's own colour: at a speaking distance it reads as grey), the
+  locks taking the mix; the white never clips, and a light hair's strands are kept apart. The dark "holes" in a grey bun
+  were the layer's UVs folding back (a triangle wave round the flow), where whole faces took one pigmented strand's colour.
+- **The self-shadow of a lock** on the layer a millimetre below was cut to black; hair now gives back part of the light in
+  its own shade, and a card is lit alike from both sides.
+
+Measured, not kept: the bases' aged shape (MakeHuman's age macro, 24 to 62) on everyone by apparent age moved the
+estimator's reading of the over-58s by 0.1 year and added 36 mm to a woman's neck; dropped. **Gate: 184 of 252** (noise
+against 186; `gate_r5b.txt`). Evidence: `hair_r5b_closeups.jpg`, `board_r5b_old.jpg`.
+
+Still wrong, seen on the board: a full white beard reads as a bright block; an older East Asian woman's face reads
+masculine though she passes every measure (the gate holds proportions, not the sex's softer cues: brow ridge, jaw angle,
+skin); a pale band under the jaw of some women; and the card hair is still far from the benchmark's (the Defender demo's
+real grooms as cards for every style is the next lever).
