@@ -1098,5 +1098,83 @@ namespace SecondFace.Tests
             yield return null;
             yield return Capture("vegetation_teeth", 1920, 1080);
         }
+
+        /// <summary>P4.15 (owner, pass 9): the Reach's peoples as the generator makes them: every people, a woman and a man,
+        /// at 25 and at 60, each from the front three-quarter and in profile (`lineup_&lt;people&gt;_&lt;sex&gt;_&lt;age&gt;_{front,side}`),
+        /// then one man's hairline at four stages of balding and the brow styles of both sexes (`lineup_bald_*`,
+        /// `lineup_brows_*`). Logs each person's archetype draw: hair, beard, brows, skin, eyes, stature.</summary>
+        [UnityTest, Timeout(1200000)]
+        public IEnumerator PeoplesLineup()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Player.unity";
+            if (!File.Exists(path)) { Assert.Ignore("player scene not built"); yield break; }
+            yield return LoadTestScene(path);
+            for (var i = 0; i < 10; i++) yield return null;
+            var controller = GameObject.Find("player_f_built").GetComponent<Animator>().runtimeAnimatorController;
+            foreach (var r in Object.FindObjectsByType<Animator>(FindObjectsSortMode.None)) r.gameObject.SetActive(false);
+            GameObject F = null, M = null;
+#if UNITY_EDITOR
+            F = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_f.prefab");
+            M = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_m.prefab");
+#endif
+            Assert.That(F != null && M != null, Is.True, "the bases");
+            var sun = Object.FindObjectsByType<Light>(FindObjectsSortMode.None).FirstOrDefault(l => l.type == LightType.Directional);
+            if (sun != null) sun.transform.rotation = Quaternion.Euler(28f, 35f, 0f);
+            var cam = Camera.main;
+            var at = new Vector3(300f, 0f, 0f);
+            IEnumerator Shoot(SecondFace.Core.Npc.PlayerLook look, string name)
+            {
+                var male = look.Body == "m";
+                var go = Object.Instantiate(male ? M : F, at, Quaternion.Euler(0, 180f, 0));
+                go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
+                var anim = go.GetComponent<Animator>();
+                anim.runtimeAnimatorController = controller;
+                anim.applyRootMotion = false;
+                anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                yield return null;
+                var wardrobe = go.GetComponent<SecondFace.Game.People.Wardrobe>();
+                SecondFace.Game.People.Dresser.Dress(wardrobe, SecondFace.Game.People.PlayerBody.Own(wardrobe, look));
+                SecondFace.Game.People.LookView.Apply(go, look);
+                for (var k = 0; k < 30; k++) yield return null;
+                var lod = go.GetComponent<LODGroup>();
+                if (lod != null) lod.ForceLOD(0);
+                yield return null;
+                var head = anim.GetBoneTransform(HumanBodyBones.Head).position + new Vector3(0f, 0.06f, 0f);
+                cam.fieldOfView = 15f;
+                foreach (var (view, from) in new[] { ("front", new Vector3(0.38f, 0.03f, -1.15f)), ("side", new Vector3(1.2f, 0.03f, -0.02f)) })
+                {
+                    cam.transform.position = head + from;
+                    cam.transform.LookAt(head);
+                    yield return null;
+                    yield return Capture($"{name}_{view}", 384, 480);
+                }
+                Object.Destroy(go);
+                yield return null;
+            }
+            foreach (var (cluster, _) in SecondFace.Core.Npc.Bodies.Clusters)
+                foreach (var male in new[] { false, true })
+                    foreach (var age in new[] { 25, 60 })
+                    {
+                        var id = $"lineup_{cluster}_{(male ? "m" : "f")}_{age}";
+                        var look = SecondFace.Core.Npc.Bodies.For(id, male, age, "settler", SecondFace.Core.Npc.Bodies.Means.Working, cluster);
+                        Debug.Log($"lineup|{cluster}|{(male ? "m" : "f")}|{age}|stature={look.Stature:0}|hair={look.Hair}|colour={look.HairColour:x6}|beard={look.Beard}|bald={look.Bald:0.00}|brows={look.Brows}|skin={look.Skin:0.00}|eyes={look.Eyes}|figure={look.Figure}|lips={look.Face["mouth-upperlip-volume"]:0.00}|nose={look.Face["nose-scale-horiz"]:0.00}|depth={look.Face["nose-scale-depth"]:0.00}|fold={look.Face["eye-epicanthus"]:0.00}");
+                        yield return Shoot(look, id);
+                    }
+            // the hairline at four stages, and the brow styles
+            var bald = SecondFace.Core.Npc.Bodies.For("lineup_bald", true, 45, "settler", SecondFace.Core.Npc.Bodies.Means.Working, "north_european");
+            bald.Hair = "buzz";
+            foreach (var b in new[] { 0f, 0.3f, 0.6f, 1f })
+            {
+                var l = bald.Clone(); l.Bald = b;
+                yield return Shoot(l, $"lineup_bald_{b:0.0}");
+            }
+            foreach (var male in new[] { false, true })
+                for (var b = 0; b < 3; b++)
+                {
+                    var l = SecondFace.Core.Npc.Bodies.For("lineup_brows_" + (male ? "m" : "f"), male, 30, "settler", SecondFace.Core.Npc.Bodies.Means.Working, "mediterranean");
+                    l.Brows = b;
+                    yield return Shoot(l, $"lineup_brows_{(male ? "m" : "f")}{b}");
+                }
+        }
     }
 }

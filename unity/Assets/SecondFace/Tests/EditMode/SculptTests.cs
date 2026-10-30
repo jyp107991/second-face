@@ -6,7 +6,7 @@ using SecondFace.Core.Npc;
 
 namespace SecondFace.Tests
 {
-    /// <summary>The face sculptor's sliders as blend-shape weights (§6.B.5), and rerolls that really change the face.</summary>
+    /// <summary>The face sculptor's sliders as blend-shape weights (§6.B.5); faces themselves come from archetypes (FacesTests).</summary>
     public class SculptTests
     {
         [Test]
@@ -34,21 +34,6 @@ namespace SecondFace.Tests
             Assert.That(d["head-oval"], Is.EqualTo(0f), "single shapes do not go below zero");
             Assert.That(d[Sculpt.Aged], Is.EqualTo(100f));
             Assert.That(Sculpt.Sliders.All(s => Sculpt.Groups.Contains(s.Group)), Is.True);
-        }
-
-        [Test]
-        public void RerollsLandFarApart()
-        {
-            var rng = new Rng(1234);
-            Dictionary<string, float> last = null;
-            for (var i = 0; i < 50; i++)
-            {
-                var face = Sculpt.Reroll(rng, last);
-                Assert.That(face.Count(kv => Sculpt.Slider(kv.Key).Paired && System.Math.Abs(kv.Value) >= 0.45f), Is.InRange(6, 10), "six to ten strong features");
-                Assert.That(face.Count(kv => !Sculpt.Slider(kv.Key).Paired), Is.EqualTo(1), "one head shape");
-                if (last != null) Assert.That(Sculpt.Distance(face, last), Is.GreaterThanOrEqualTo(Sculpt.RerollDistance));
-                last = face;
-            }
         }
     }
 }

@@ -587,8 +587,55 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    a neck gaiter worn down, a shoulder cape. Baked by `bake_cloth` without a source (dye, weave, patches, wear); they
    hide the body under them by their nearest body vertices (`GEN_NEAR`). The catalogue lists them with
    `generated: true` (the web game has no mesh for them; its asset test skips them). `WARDROBE_ONLY` builds merge
-   into the wardrobe manifest, so a piece can be rebuilt alone. Still to do in step 5: the straps, seams, pockets and
-   tape drawn into their bakes; a lit trim for the megacity; hoods and sleeves cut asymmetric.
+   into the wardrobe manifest, so a piece can be rebuilt alone. Their details are drawn into the bake as boxes in the
+   garment's object space (`look['boxes']`, `bake_cloth`: straps and a waist band on the harness vest, a zip, ribbed
+   hem and collar band on the bomber, thigh pockets and knee panels on the cargo trousers, a buckle and pouches on the
+   belt, the turns of the arm wraps). A dye is a colour, not a tint: `Wardrobe.Dye` sets `_Dyed` and the cloth
+   shader takes the dye's own colour lit by the weave's luminance (the undyed bake is a khaki near 0.3 linear), so an
+   indigo reads indigo. The boxy tactical vests and the cyborg suit are retired (the riot vest item and the raider's
+   authored outfit wear the harness vest). Every tight garment hides the body vertices within 2.5 cm under its
+   surface (`GEN_UNDER`), besides what its author deleted (a buttock came through the cargo pants). Still to do in
+   step 5: a lit trim for the megacity; hoods and sleeves cut asymmetric; a looser silhouette for the shells (the
+   helper is a bodysuit, so the bomber and the duster sit close).
+15. **P4.15, people on the best free pipeline (owner's notes 2026-10-30, pass 8, binding; CLAUDE.md §2;
+   `docs/PEOPLE_RESEARCH.md`).** The bar is BG3 / CP2077 / KCD2 as far as a phone allows. Steps, each ending with
+   the Shale showcase and a close-up sheet of faces: (1) the bake-off, with renders: the MakeHuman base against
+   CharMorph's CC-BY/CC0 bases (Reom: 8.4 K vertices, 4K/8K Light and Dark skins, 111 morphs over ancestry, age,
+   sex, build and the face's bones, 51 ARKit expressions, 12 brow styles; Antonia; Vitruvian when reachable); the
+   winner's data read by our own loader in mh_build (the add-on never runs in the pipeline). (2) the chosen base
+   through the pipeline: body, LODs, rig (Humanoid), the hidden-body mask, the wardrobe refitted (the generated
+   pieces are cut from the base's own surface, so they carry over; the community garments are refitted by nearest
+   surface or retired), the sculptor's sliders mapped to the base's morphs. (3) faces that cohere: per sex and
+   ancestry cluster a library of archetypes (feature sets as morph values, authored and checked in renders), each
+   person an archetype varied a little, symmetric, no extremes; attractive by proportion, never by deformity;
+   eyebrows always (the base's brow styles as cards, painted brows beneath for distance); hair of our own on the
+   CC0 alphas with an anisotropic highlight; eyes with cornea refraction. (4) age and life expectancy: the age draw
+   per trade and place (median late twenties, few past fifty, sixty old and rare), the skin's age = years plus the
+   hardness of the life (wrinkle normals by age, greying earlier, posture), the rich ageing slowly. (5) the skin
+   shader: pre-integrated subsurface scattering (a curvature × N·L lookup), dual-lobe specular, a detail normal for
+   pores, the sun and grime of the work; cloth sheen; the look (ACES over HDR, grading, bloom, vignette; SSAO on the
+   mid tier) in the game and every people capture. (6) evidence: every Shale resident, the faces sheet, the kits,
+   the portraits; the device measurement.
+   *As built:* step 5's look is in (`Look`, `LookBuild`, `WorldAssets.Look`, HDR on, the skin's wrap light and the
+   cloth's sheen, the test scene's rim light). Step 1 done: Reom rendered by our loader (`docs/PEOPLE_RESEARCH.md` §5);
+   the MakeHuman topology stays (the wardrobe's fit depends on it; Reom's ancestry and female morphs are weak), Reom's
+   skin detail is the skin step's candidate. Step 3 rebuilt by the owner's pass 9 (CLAUDE.md §2, binding): **P4.15a,
+   looks from archetypes and real-world regularities.** Core `Faces`: ancestry vectors (nose, lips, lids, brow ridge,
+   cheekbones; Farkas 2005), sex vectors, five structures with shares by ancestry and sex, latent robustness, width and
+   fullness tied to the body's build and muscle, the years (sooner on a hard life: `Faces.Apparent`), a tight personal
+   spread skewed to the striking, blending for two ancestries; the random reroll is gone (creation draws within the
+   chosen heritage). Core `Peoples`: per people stature, leg length, hair form, greying onset and pace, men's balding
+   rate, beard density, brow density, women's figure shares, bust and seat, a man's frame, central fat (the catalogue
+   with sources: `docs/PEOPLE_RESEARCH.md` §6). `Bodies.For` builds everyone from both, with a childhood's food in the
+   stature, women lighter than the men of their people, freckles with red hair, recessive light eyes and fair hair in
+   two ancestries, beards that grey first and grow red under brown hair. Twenty-one more MakeHuman face targets in the
+   bases (`FACE_SHAPES`, measured by `tools/unity/people/face_probe.py`; the brow ridge by alias). SecondFace/Skin:
+   the brows drawn in the head frame (six styles measured from the MakeHuman brows, `brow_frame.py`; colour and
+   density per person; the baked brows went with the skin's tone and vanished on fair skins), the shaved scalp's
+   stubble recoloured to the hair (it was the base's dark brown on everyone), pattern balding in Norwood's order
+   (`_Bald`), the skin's years later on darker and East Asian skin (`Looks.SkinYears`). Creation: "your people" first,
+   another face within it, brow styles, a receding hairline. Tests: `FacesTests`, `PeoplesTests`. Evidence:
+   `PeoplesLineup` (every people, both sexes, 25 and 60, front and profile; balding and brow strips).
 ### P5 — Camera, touch and UI
 1. `CameraService` with Cinemachine 3: an orbit rig around the party leader (§6.F), tactical camera in combat,
    conversation cameras (over-shoulder two-shot, portrait inserts), the photo mode.
@@ -2397,6 +2444,14 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   (a waistband, a boot shaft); the layer stand-off alone cannot fix it. The cover mask (above) clips the inner garment
   under the outer one, by body vertex; any new garment must carry the `BaseIndex` uv for it.
 ---
+- **Brows that vanish on fair skin (P4.15).** The strand brows are dropped at import (they drew as dots), so the brows
+  were only the ones baked into the skin, and SecondFace/Skin's tone lifts a fair skin towards white, brows and all.
+  Brows are drawn after the tone now (`BrowAt`, `_Brow0/1`, `_BrowColour`), never baked (`skin_look.brows: 0`). The
+  same lift hid the shaved scalp's colour: the bake's stubble is the base's dark brown, recoloured to the person's hair
+  by how much it darkens the bare skin (`_BareSkin`, measured on the forehead by `WardrobeBuild.BareSkin`).
+- **Offsets by people move the population's mean.** Each people's stature against the Reach's mean must be centred over
+  the Reach's shares, or the Reach shrinks (`Bodies.MeanStatureOffset`); a static average over a table declared later in
+  the class is null at type initialisation (a property, not a field).
 
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)
 

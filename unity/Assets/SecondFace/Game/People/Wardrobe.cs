@@ -38,6 +38,7 @@ namespace SecondFace.Game.People
         };
         private readonly Dictionary<string, Texture2D> _covers = new();
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int DyedId = Shader.PropertyToID("_Dyed");
         private static readonly int InflateId = Shader.PropertyToID("_Inflate");
         private static readonly int GrimeId = Shader.PropertyToID("_Grime");
         private static readonly int WearId = Shader.PropertyToID("_Wear");
@@ -107,10 +108,12 @@ namespace SecondFace.Game.People
         {
             if (!_worn.TryGetValue(slot, out var w)) return;
             var block = new MaterialPropertyBlock();
+            var dyed = tint != Color.white;   // a dye colours the cloth; white leaves its own baked colour
             foreach (var r in w.Renderers)
             {
                 r.GetPropertyBlock(block);
                 block.SetColor(BaseColorId, tint);
+                block.SetFloat(DyedId, dyed ? 1f : 0f);
                 r.SetPropertyBlock(block);
             }
         }

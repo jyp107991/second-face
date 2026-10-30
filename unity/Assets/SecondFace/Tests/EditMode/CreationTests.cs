@@ -21,7 +21,8 @@ namespace SecondFace.Tests
             Assert.That(c.Sheet.Tagged, Is.EquivalentTo(first.Tagged));
             Assert.That(c.Sheet.Traits, Is.EquivalentTo(first.Traits));
             Assert.That(c.PointsLeft, Is.EqualTo(0), "an origin spends the standard 12");
-            Assert.That(c.Look.Face.Count, Is.EqualTo(Sculpt.Sliders.Count(x => x.Paired) + 1), "a face to start from: every paired slider and one head shape");
+            Assert.That(c.Look.Face.Count, Is.EqualTo(Sculpt.Sliders.Length), "a face to start from: every slider, drawn from an archetype");
+            Assert.That(Bodies.Clusters.Any(x => x.Id == c.Look.Heritage), Is.True, "of a people");
             var face = c.Look.Face;
             var other = Creation.Origins()[1];
             c.Choose(other.Id);

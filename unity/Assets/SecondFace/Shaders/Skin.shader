@@ -27,6 +27,12 @@ Shader "SecondFace/Skin"
         _Tattoo ("Tattoo (-1 none)", Float) = -1
         _Beard ("Beard (-1 none)", Float) = -1
         _BeardColour ("Beard colour", Color) = (0.12, 0.09, 0.07, 1)
+        _BareSkin ("Bare skin (the bake's forehead, set by the build)", Color) = (0.75, 0.6, 0.5, 1)
+        _ScalpColour ("Shaved scalp's hair colour (A: recolour on)", Color) = (0, 0, 0, 0)
+        _Bald ("Pattern balding", Range(0, 1)) = 0
+        _Brow0 ("Brow: inner x, outer x, inner height, tail height", Vector) = (0.19, 0.62, 0.25, 0.22)
+        _Brow1 ("Brow: peak height, peak along, inner thickness, tail thickness", Vector) = (0.27, 0.45, 0.05, 0.035)
+        _BrowColour ("Brow colour (A: density, 0 none)", Color) = (0.1, 0.07, 0.05, 0)
     }
     SubShader
     {
@@ -46,6 +52,9 @@ Shader "SecondFace/Skin"
             half _BumpScale, _Smoothness, _Aged, _Tone, _Undertone, _Freckles;
             float _Scar, _Tattoo, _Beard;
             half4 _BeardColour;
+            half4 _BareSkin, _ScalpColour, _BrowColour;
+            float4 _Brow0, _Brow1;
+            half _Bald;
         CBUFFER_END
 
         struct Attributes
@@ -175,8 +184,84 @@ Shader "SecondFace/Skin"
             if (id < 5.5) return max(chin, lip) * (0.75 + 0.25 * grain);           // goatee
             return lip * (0.75 + 0.25 * grain);                                    // moustache
         }
+        // --- the scalp (P4.15, owner pass 9): the head model of the build's painted stubble (tools/unity/people/hairgen.py
+        // hair_weight) in the head frame, seen from a point inside the skull behind the eyes: elevation and azimuth
+        // (degrees, 0 straight ahead). The bake's stubble is the base's dark brown: recoloured to the person's hair (grey,
+        // fair, red), and pattern balding takes it away in Hamilton-Norwood's order, the temples and the crown first, the
+        // horseshoe over the ears and round the back never.
+        float Lin(float x, float x0, float x1, float y0, float y1) { return lerp(y0, y1, saturate((x - x0) / (x1 - x0))); }
+        float Hairline(float az)
+        {
+            if (az < 40) return Lin(az, 0, 40, 30, 24);
+            if (az < 75) return Lin(az, 40, 75, 24, 4);
+            if (az < 100) return Lin(az, 75, 100, 4, -10);
+            if (az < 140) return Lin(az, 100, 140, -10, -38);
+            return Lin(az, 140, 180, -38, -58);
+        }
+        float Horseshoe(float az)
+        {
+            if (az < 60) return -90;
+            if (az < 90) return Lin(az, 60, 90, -90, 18);
+            if (az < 130) return Lin(az, 90, 130, 18, 26);
+            return Lin(az, 130, 180, 26, 30);
+        }
+        void Scalp(inout half3 a, inout half smooth, float3 p)
+        {
+            if (p.y < -0.7 || p.z > 1.0 || (_ScalpColour.a < 0.5h && _Bald < 0.001h)) return;
+            float3 d = p - float3(0.0, 0.312, 0.003);
+            float r = length(d);
+            float e = degrees(atan2(d.y, length(d.xz)));
+            float az = abs(degrees(atan2(d.x, d.z)));
+            float w = smoothstep(0.0, 1.0, (e - (Hairline(az) - 2.0)) / 8.0);
+            if (az > 55 && az < 125 && e > -35 && e < 25 && r > 1.025) w = 0;   // the ears stand out of the skull
+            if (w < 0.01) return;
+            half3 bare = _BareSkin.rgb;
+            half lum = dot(a, half3(0.3h, 0.59h, 0.11h));
+            half stub = saturate(1.0h - lum / max(dot(bare, half3(0.3h, 0.59h, 0.11h)), 0.02h));   // how much the stubble darkened it
+            if (_ScalpColour.a > 0.5h) a = lerp(a, lerp(bare, _ScalpColour.rgb, saturate(stub * 1.8h)), (half)w);
+            if (_Bald > 0.001h)
+            {
+                // when this point goes as _Bald rises: the temples, then the front hairline back and the crown, the top last
+                float above = e - Hairline(az);
+                float temple = smoothstep(0.0, 1.0, (az - 12.0) / 22.0) * (1.0 - smoothstep(0.0, 1.0, (az - 75.0) / 20.0));
+                float front = 0.18 + above / 65.0 - 0.14 * temple;
+                float crown = 0.28 + length(float2((180.0 - az) * 0.574, e - 52.0)) / 55.0;
+                float k = min(min(front, crown), 0.92);
+                if (e < Horseshoe(az) + 4.0) k = 9.0;
+                half bald = (half)(smoothstep(k - 0.06, k + 0.06, _Bald) * w);
+                a = lerp(a, bare, bald);
+                smooth = lerp(smooth, 0.5h, bald);   // a bare scalp shines a little
+            }
+        }
+
+        // --- the brows (P4.15): drawn, not baked, so they keep their colour over any skin tone (the baked brows went
+        // with the tone: fair skins lost them) and take the person's style: a centre line from the inner end up to its
+        // peak and down to the tail, thick at the head and tapering, the hairs rising from the inner end and lying
+        // outward along the brow
+        half BrowAt(float3 p)
+        {
+            if (_BrowColour.a < 0.01h || p.z < 0.55) return 0;
+            float ax = abs(p.x);
+            float t = (ax - _Brow0.x) / max(_Brow0.y - _Brow0.x, 1e-3);
+            if (t < -0.15 || t > 1.12) return 0;
+            float tc = saturate(t);
+            float pk = clamp(_Brow1.y, 0.1, 0.9);
+            float yc = tc < pk ? lerp(_Brow0.z, _Brow1.x, sin(1.5708 * tc / pk))
+                               : lerp(_Brow1.x, _Brow0.w, 1.0 - cos(1.5708 * (tc - pk) / (1.0 - pk)));
+            float w = lerp(_Brow1.z, _Brow1.w, tc) * 0.5 * lerp(1.0, 0.35, smoothstep(0.75, 1.05, t));
+            float across = abs(p.y - yc) / max(w, 1e-3);
+            float body = 1.0 - smoothstep(0.6, 1.0, across);
+            float ends = smoothstep(-0.12, 0.06, t) * (1.0 - smoothstep(0.95, 1.1, t));
+            float ang = lerp(1.2, 0.2, saturate(t * 2.2));
+            float2 dir = float2(cos(ang), sin(ang));
+            float2 q = float2(ax, p.y);
+            float hairs = smoothstep(0.3, 0.75, Noise3(float3(dot(q, float2(-dir.y, dir.x)) * 260.0, dot(q, dir) * 34.0, 7.0)));
+            return (half)saturate(body * ends * (0.4 + 0.6 * hairs) * lerp(0.6, 1.15, _BrowColour.a));
+        }
+
         void Look(inout half3 a, inout half smooth, float3 p)
         {
+            Scalp(a, smooth, p);
             // tone: darker towards a deep brown, lighter as if less sun ever reached it
             // the whole human range over the mid-tone bake (P4.14): to 1, deep dark (the bake's shade at a third, warm
             // and a little bluer in the shadows); to -1, very fair (the bake's shade lifted most of the way to white, a
@@ -194,6 +279,11 @@ Shader "SecondFace/Skin"
                 float n = Noise3(p * 46.0) * Noise3(p * 23.0 + 3.0);
                 half f = (half)(smoothstep(0.42 - 0.2 * _Freckles, 0.5 - 0.2 * _Freckles, n) * face * _Freckles);
                 a *= 1.0h - f * half3(0.22h, 0.32h, 0.4h);
+            }
+            {
+                half b = BrowAt(p);
+                a = lerp(a, _BrowColour.rgb, b * 0.92h);
+                smooth = lerp(smooth, 0.2h, b);
             }
             if (_Scar > -0.5)
             {
@@ -305,6 +395,15 @@ Shader "SecondFace/Skin"
                 surface.alpha = 1;
 
                 half4 colour = UniversalFragmentPBR(input, surface);
+                // skin is not opaque (P4.14 step 6): light wraps past the terminator reddened by the blood under it, and
+                // the thin edges of ears, nose and fingers scatter the light behind them
+                Light main = GetMainLight(input.shadowCoord);
+                half ndl = dot(normalWS, main.direction);
+                half wrap = saturate((ndl + 0.55h) / 1.55h) - saturate(ndl);
+                half3 lit = main.color * main.distanceAttenuation * main.shadowAttenuation;
+                colour.rgb += albedo.rgb * half3(1.0h, 0.38h, 0.26h) * wrap * lit * 0.5h;
+                half rimv = pow(1.0h - saturate(dot(normalWS, input.viewDirectionWS)), 3.0h);
+                colour.rgb += albedo.rgb * half3(1.0h, 0.5h, 0.4h) * rimv * saturate(-ndl + 0.3h) * lit * 0.35h;
                 colour.rgb = MixFog(colour.rgb, i.fog);
                 return half4(colour.rgb, 1);
             }

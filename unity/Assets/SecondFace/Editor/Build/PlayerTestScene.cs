@@ -52,6 +52,10 @@ namespace SecondFace.EditorTools
             var fill = new GameObject("Fill").AddComponent<Light>();
             fill.type = LightType.Directional; fill.intensity = 0.5f; fill.color = new Color(0.8f, 0.86f, 1f); fill.shadows = LightShadows.None;
             fill.transform.rotation = Quaternion.Euler(15f, -35f, 0f);
+            // a rim from behind and above (P4.14 step 6): the edge of a shoulder and the hair against the backdrop
+            var rim = new GameObject("Rim").AddComponent<Light>();
+            rim.type = LightType.Directional; rim.intensity = 0.9f; rim.color = new Color(1f, 0.92f, 0.8f); rim.shadows = LightShadows.None;
+            rim.transform.rotation = Quaternion.Euler(25f, -20f, 0f);
             var locomotion = LocomotionBuild.Build();
             var root = new GameObject("Players").transform;
             WardrobeBuild.Build();
@@ -59,12 +63,13 @@ namespace SecondFace.EditorTools
             {
                 var prefab = WardrobeBuild.Player(Bases[b]);
                 if (prefab == null) continue;
-                // the faces: as built, two rerolls (each far from the last), and the built face aged
+                // the faces: as built, two drawn from archetypes of two peoples (Faces), and the built face aged
                 var rng = new Rng(7u + (uint)b);
-                var a = Sculpt.Reroll(rng);
+                var male = Bases[b].EndsWith("_m");
+                var a = Faces.Draw(rng, new Faces.Who { Male = male, Cluster = "west_african" }).Values;
                 var faces = new (string name, Dictionary<string, float> face, float aged)[]
                 {
-                    ("built", null, 0f), ("reroll_a", a, 0f), ("reroll_b", Sculpt.Reroll(rng, a), 0f), ("aged", null, 1f),
+                    ("built", null, 0f), ("reroll_a", a, 0f), ("reroll_b", Faces.Draw(rng, new Faces.Who { Male = male, Cluster = "east_asian" }).Values, 0f), ("aged", null, 1f),
                 };
                 for (var i = 0; i < faces.Length; i++)
                 {
@@ -82,6 +87,7 @@ namespace SecondFace.EditorTools
             cam.backgroundColor = new Color(0.32f, 0.33f, 0.35f); cam.clearFlags = CameraClearFlags.SolidColor;
             cam.transform.position = new Vector3(0, 1.52f, -2.6f);
             cam.transform.rotation = Quaternion.Euler(1f, 0, 0);
+            SecondFace.Game.World.Look.Apply(cam, LookBuild.Build());   // tonemapped, graded, as the phone shows it
             EditorSceneManager.SaveScene(scene, ScenePath);
             AssetDatabase.SaveAssets();
             Debug.Log("PlayerTestScene: built");

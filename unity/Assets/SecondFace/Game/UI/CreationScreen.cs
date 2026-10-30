@@ -288,8 +288,24 @@ namespace SecondFace.Game.UI
 
         private void Face()
         {
+            // the player's people first (owner, pass 9): a face drawn from their archetypes, the skin, hair and eyes as they
+            // come among them; every slider after is the player's own
+            Heading("create.heritage");
+            var peoples = Row("sf-creation__chips");
+            foreach (var (id, _) in Bodies.Clusters)
+            {
+                var cluster = id;
+                var chip = Choice(Strings.Get("create.heritage." + id), Creation.Look.Heritage == id, () =>
+                {
+                    Creation.Heritage(cluster, _m.Rng);
+                    Restyle();
+                    Refresh();
+                }, "heritage-" + id);
+                chip.AddToClassList("sf-creation__chip");
+                peoples.Add(chip);
+            }
             var actions = Row();
-            Act(actions, "create.another_face", () => { Creation.Look.Face = Sculpt.Reroll(_m.Rng, Creation.Look.Face, Creation.Look.Body == "m"); Restyle(); Refresh(); });
+            Act(actions, "create.another_face", () => { Creation.NewFace(_m.Rng, Creation.Look.Face); Restyle(); Refresh(); });
             Act(actions, "create.even_face", () => { Creation.Look.Face = new Dictionary<string, float>(); Restyle(); Refresh(); }, quiet: true);
             var groups = Row("sf-creation__chips");
             foreach (var g in Sculpt.Groups)
@@ -340,6 +356,18 @@ namespace SecondFace.Game.UI
                 var colour = c;
                 hair.Add(Swatch($"hair-{c:x6}", LookView.Colour(c), look.HairColour == c, () => { look.HairColour = colour; Show(); Refresh(); }));
             }
+            // the brows' style (fine, natural, full for a woman; sparse, natural, heavy for a man) and, for a man, the hairline
+            Heading("create.brows");
+            var brows = Row("sf-creation__chips");
+            for (var b = 0; b < 3; b++)
+            {
+                var k = b;
+                var chip = Choice(Strings.Get($"create.brows.{look.Body}{b}"), look.Brows == b, () => { look.Brows = k; Show(); Refresh(); }, "brows-" + b);
+                chip.AddToClassList("sf-creation__chip");
+                brows.Add(chip);
+            }
+            if (look.Body == "m")
+                Slider(Strings.Get("create.hairline"), 0f, 1f, look.Bald, v => { look.Bald = v; Show(); }, "slider-hairline");
             Heading("create.eyes");
             var eyes = Row();
             eyes.AddToClassList("sf-creation__swatches");
@@ -401,6 +429,7 @@ namespace SecondFace.Game.UI
                 {
                     if (Creation.Look.Body == body) return;
                     Creation.Look.Body = body;
+                    Creation.NewFace(_m.Rng, null);   // a face of the body's own sex (a woman's jaw is never a man's)
                     MakeFigure();
                     Refresh();
                 }, "body-" + b));

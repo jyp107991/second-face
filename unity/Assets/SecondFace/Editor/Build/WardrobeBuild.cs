@@ -91,11 +91,14 @@ namespace SecondFace.EditorTools
             PeopleMaterials.Bind(go, Dir);
             // the skin's head frame for the marks drawn at creation (P5.3i)
             var rest = RestMap(model, m.@base);
+            var bare = BareSkin(model, rest);
             if (rest != null)
                 foreach (var r in go.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => r.name.StartsWith("Body_")))
                     if (r.sharedMaterial != null && r.sharedMaterial.HasProperty("_RestMap"))
                     {
                         r.sharedMaterial.SetTexture("_RestMap", rest);
+                        // the bare skin under the shaved scalp's stubble (P4.15: the stubble recoloured, the bald scalp bare)
+                        if (bare.HasValue && r.sharedMaterial.HasProperty("_BareSkin")) r.sharedMaterial.SetColor("_BareSkin", bare.Value);
                         EditorUtility.SetDirty(r.sharedMaterial);
                     }
             var sculpt = go.AddComponent<FaceSculpt>();
@@ -174,6 +177,39 @@ namespace SecondFace.EditorTools
             AssetDatabase.CreateAsset(tex, path);
             Debug.Log($"WardrobeBuild: {baseId} head frame: radius {rad * 100f:0.0} cm, eyes {Vector3.Distance(l, r2) * 100f:0.0} cm apart, the face along {fwd}");
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+
+        /// <summary>The bake's bare skin on the forehead (the mean of the skin texture over the forehead's vertices, in the
+        /// head frame between the brows and the hairline): the colour of a bald scalp and under the shaved stubble.</summary>
+        public static Color? BareSkin(GameObject model, Texture2D rest)
+        {
+            var renderers = model.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            var body = renderers.FirstOrDefault(r => r.name == "Body_LOD0") ?? renderers.FirstOrDefault(r => r.name.StartsWith("Body_"));
+            var tex = body != null && body.sharedMaterial != null ? body.sharedMaterial.GetTexture("_BaseMap") as Texture2D : null;
+            if (tex == null) return null;
+            var path = AssetDatabase.GetAssetPath(tex);
+            if (string.IsNullOrEmpty(path) || !System.IO.File.Exists(path)) return null;
+            var img = new Texture2D(2, 2);
+            if (!img.LoadImage(System.IO.File.ReadAllBytes(path))) return null;
+            var mesh = body.sharedMesh;
+            var uv = new System.Collections.Generic.List<Vector2>(); mesh.GetUVs(0, uv);
+            var uv1 = new System.Collections.Generic.List<Vector2>(); mesh.GetUVs(1, uv1);
+            var restPx = rest != null ? rest.GetPixels() : null;
+            Color sum = Color.clear; var n = 0;
+            for (var i = 0; i < uv.Count; i++)
+            {
+                if (restPx == null || i >= uv1.Count) break;
+                var idx = Mathf.RoundToInt(uv1[i].x) + Mathf.RoundToInt(uv1[i].y) * Wardrobe.MaskSize;
+                if (idx < 0 || idx >= restPx.Length) continue;
+                var p = restPx[idx];
+                if (p.g < 0.42f || p.g > 0.72f || p.b < 0.8f || Mathf.Abs(p.r) > 0.3f) continue;
+                sum += img.GetPixelBilinear(uv[i].x, uv[i].y); n++;
+            }
+            UnityEngine.Object.DestroyImmediate(img);
+            if (n < 10) { Debug.LogWarning($"WardrobeBuild: {model.name}: no forehead for the bare skin ({n})"); return null; }
+            var c = sum / n; c.a = 1f;
+            Debug.Log($"WardrobeBuild: {model.name} bare skin {c} over {n} forehead vertices");
+            return c;
         }
 
         private static GameObject Bound(string modelPath, string prefabPath)

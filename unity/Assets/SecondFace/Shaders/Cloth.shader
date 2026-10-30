@@ -19,6 +19,7 @@ Shader "SecondFace/Cloth"
         _Inflate ("Stand-off along the normals (m)", Range(0, 0.03)) = 0
         _Grime ("Grime", Range(0, 1)) = 0
         _Wear ("Sun and wear", Range(0, 1)) = 0
+        _Dyed ("Dyed (the tint is a dye: the cloth takes its colour)", Float) = 0
         [NoScaleOffset] _CoverMask ("Covered base vertices (128 x 128, by an outer garment)", 2D) = "black" {}
         _Recolour ("Recolour (a: how much)", Color) = (0, 0, 0, 0)
         _RecolourLum ("The texture's mean luminance", Float) = 0.2
@@ -41,7 +42,7 @@ Shader "SecondFace/Cloth"
             float4 _BaseMap_ST;
             half4 _BaseColor;
             half4 _Recolour;
-            half _BumpScale, _Smoothness, _Cutoff, _Grime, _Wear, _RecolourLum, _RecolourIris;
+            half _BumpScale, _Smoothness, _Cutoff, _Grime, _Wear, _RecolourLum, _RecolourIris, _Dyed;
             float _Inflate;
         CBUFFER_END
 
@@ -130,7 +131,12 @@ Shader "SecondFace/Cloth"
             half4 Frag(Varyings i, FRONT_FACE_TYPE face : FRONT_FACE_SEMANTIC) : SV_Target
             {
                 clip(0.5h - i.cover);
-                half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv) * _BaseColor;
+                half4 tex = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv);
+                half4 albedo = tex * _BaseColor;
+                // a dye is a colour, not a tint (P4.14, the owner: too much grey): dyed cloth takes the dye's own colour
+                // lit and shaded by the weave (the undyed bake is a khaki near 0.3 in linear light), so an indigo reads
+                // indigo and not khaki-blue; the patches of other cloth stay as lighter or darker of the same dye
+                if (_Dyed > 0.5h) albedo.rgb = _BaseColor.rgb * saturate(dot(tex.rgb, half3(0.299h, 0.587h, 0.114h)) / 0.3h);
                 clip(albedo.a - _Cutoff);
                 half smoothness = _Smoothness;
                 // a chosen colour with the texture's own light and dark (hair), or for the iris alone (eyes)
@@ -187,6 +193,11 @@ Shader "SecondFace/Cloth"
                 surface.alpha = 1;
 
                 half4 colour = UniversalFragmentPBR(input, surface);
+                // sheen (P4.14 step 6): a weave's nap catches the light at grazing angles, the rougher the more
+                Light mainL = GetMainLight(input.shadowCoord);
+                half nv = saturate(dot(normalWS, input.viewDirectionWS));
+                half sheen = pow(1.0h - nv, 4.0h) * (1.0h - smoothness) * saturate(dot(normalWS, mainL.direction) + 0.4h);
+                colour.rgb += (albedo.rgb * 0.5h + 0.5h) * sheen * mainL.color * mainL.shadowAttenuation * 0.3h;
                 colour.rgb = MixFog(colour.rgb, i.fog);
                 return half4(colour.rgb, 1);
             }

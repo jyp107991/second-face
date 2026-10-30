@@ -75,3 +75,15 @@ Used modified (refit to the game's bodies, re-dyed, weathered, resampled texture
   Literata Project Authors, https://github.com/googlefonts/literata) for the notebook, both under the SIL Open Font
   License 1.1, from the google/fonts repository. Literata is used as static instances cut from its variable font
   with fontTools (12 pt Regular and Italic, 36 pt SemiBold).
+
+## People on the best free pipeline (P4.15, `docs/PEOPLE_RESEARCH.md`)
+
+- **Reom** — base body, morphs and skin textures: mesh by **ComplexAce**, morphs and textures by **Hope**; distributed
+  with CharMorph (https://github.com/Upliner/CharMorph-db), **CC-BY** as declared in its `config.yaml`. Used as the base
+  of every person if the bake-off chooses it; refit, re-textured and reduced by our pipeline.
+- **Antonia Polygon** — female base by **Olaf Delgado-Friedrichs** with phantom3D, MikeJ, DieTrying (morphs), Fenrissa
+  and others (https://sites.google.com/site/antoniapolygon/), **CC-BY 3.0**; a candidate in the bake-off.
+- **Hair Alphas For Days** — hair strand alphas by **OwlishMedia** (https://opengameart.org/content/hair-alphas-for-days),
+  **CC0**; the hair cards' and eyebrows' alphas.
+- **CMU Graphics Lab Motion Capture Database** (http://mocap.cs.cmu.edu) — the captured motion, free for any use;
+  converted by `tools/unity/motion/cmu2fbx.py`.

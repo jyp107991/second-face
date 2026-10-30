@@ -7,7 +7,7 @@ export const ARMOR: ItemDef[] = [
     armor: { slot: 'body', dt: 2, dr: 15, durability: 300 } },
   { id: 'r_scrap', wear: { gear: [{ kind: 'harness' }, { kind: 'plates' }] }, name: 'Scrap Plate', desc: 'Road signs and hubcaps bolted to a harness. Loud.', category: 'armor', weight: 9, value: 260,
     armor: { slot: 'body', dt: 4, dr: 22, stealth: 15, durability: 350 } },
-  { id: 'r_riot', wear: { garment: { m: 'mindfront_tactical_vest_male', f: 'mindfront_tactical_vest_female' }, tint: 0x3a3d3a }, name: 'Riot Vest', desc: 'Pre-Burn police body armour, faded insignia picked off.', category: 'armor', weight: 6, value: 700,
+  { id: 'r_riot', wear: { garment: { m: 'sf_vest_harness', f: 'sf_vest_harness' }, tint: 0x3a3d3a }, name: 'Riot Vest', desc: 'Pre-Burn police body armour, faded insignia picked off.', category: 'armor', weight: 6, value: 700,
     armor: { slot: 'body', dt: 6, dr: 30, stealth: 5, durability: 450 } },
   { id: 'r_hood', wear: { gear: [{ kind: 'headwrap', color: 0x6b5a43 }, { kind: 'goggles' }] }, name: 'Dust Hood', desc: 'Wrapped cloth and goggles against the grit.', category: 'armor', weight: 0.3, value: 20,
     armor: { slot: 'head', dt: 0, dr: 3, radResist: 5, durability: 120 } },

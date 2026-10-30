@@ -37,6 +37,7 @@ namespace SecondFace.EditorTools
             // while the bases are not built
             a.Townsfolk = new[] { "p1_labourer_m", "p2_settler_f", "p5_street_m", "p6_nomad_f", "p4_gilded_f" }.Select(Person).Where(g => g != null).ToArray();
             a.Locomotion = LocomotionBuild.Build();
+            a.Look = LookBuild.Build();
             a.Sack = AssetDatabase.LoadAssetAtPath<Material>("Assets/SecondFace/Materials/Library/burlap.mat");
             a.Cast = new WorldAssets.CastEntry[0];   // the per-person cast models are retired (P4.13 step 6)
             // the player's bodies for the pack's figure (P5.3h), as WardrobeBuild made them

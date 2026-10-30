@@ -807,7 +807,7 @@ namespace SecondFace.Tests
             Assert.That(screen.Content.Query<Slider>().ToList().Count, Is.EqualTo(Sculpt.Sliders.Count(x => x.Group == "nose")));
             var face = new Dictionary<string, float>(screen.Creation.Look.Face);
             Press(screen.Content.Q<Button>("c-another_face"));
-            Assert.That(Sculpt.Distance(face, screen.Creation.Look.Face), Is.GreaterThanOrEqualTo(Sculpt.RerollDistance), "another face, a different one");
+            Assert.That(Sculpt.Distance(face, screen.Creation.Look.Face), Is.GreaterThanOrEqualTo(Faces.RedrawDistance), "another face, a different one");
             for (var i = 0; i < 3; i++) yield return null;
             screen.DrawFigure();
             yield return null;

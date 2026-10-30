@@ -197,6 +197,7 @@ def modifier_targets(mod, v):
 
 _tcache = {}
 GEN_NEAR = {}   # a built garment's nearest body vertex per vertex (the hide list of a generated garment)
+GEN_UNDER = {}   # the body vertices within 2.5 cm under a built garment's surface (hidden under a tight garment)
 def target(rel):
     if rel not in _tcache:
         p = os.path.join(MH, 'targets', rel + '.target')
@@ -339,7 +340,7 @@ GENERATED_GARMENTS = {
     # a long duster: torso and arms, open down the front below the waist (the skirt helper, its front strip cut), to the knee
     'sf_duster_long': dict(helpers=('helper-tights', 'helper-skirt'), thick=0.15, keep=lambda p, b, L:
         (b in TORSO_BONES | SHOULDER_BONES and p[1] >= L['hips'] - 0.1) or b in ARM_BONES or (b in NECK_BONES and p[1] <= L['neck'] + 0.4)
-        or (b == 'skirt' and p[1] >= L['knee'] - 0.3 and not (p[2] > 0 and abs(p[0]) < 0.5))),
+        or (b == 'skirt' and p[1] >= L['knee'] - 0.3 and not (p[2] > 0 and abs(p[0]) < 0.75))),
     # articulated cargo trousers: hips to the ankle
     'sf_cargo_articulated': dict(helpers=('helper-tights',), thick=0.08, keep=lambda p, b, L:
         (b in LEG_BONES and p[1] >= L['ankle'] + 0.3) or (b in TORSO_BONES and p[1] <= L['hips'] + 0.4)),
@@ -360,6 +361,30 @@ GENERATED_GARMENTS = {
         (b in SHOULDER_BONES) or (b in TORSO_BONES and p[1] >= L['chest_top'] - 0.7) or (b in ARM_BONES and p[1] >= L['shoulder'] - 1.0)
         or (b in NECK_BONES and p[1] <= L['neck'] + 0.3)),
 }
+
+WEBBING, METAL, DARKER, HEM = (0.13, 0.12, 0.11), (0.52, 0.52, 0.54), (0.3, 0.29, 0.27), (0.2, 0.19, 0.18)
+GENERATED_GARMENTS['sf_vest_harness']['boxes'] = [
+    dict(x=(0.05, 0.09), y=(-1, 1), z=(1.0, 1.4), col=WEBBING, mirror=True),    # shoulder straps, front and back
+    dict(x=(-1, 1), y=(-1, 1), z=(0.93, 0.99), col=WEBBING),                     # the waist band
+    dict(x=(-1, 1), y=(-1, 0), z=(1.12, 1.17), col=WEBBING),                     # a chest strap, front
+]
+GENERATED_GARMENTS['sf_bomber_cropped']['boxes'] = [
+    dict(x=(-0.008, 0.008), y=(-1, 0), z=(0.95, 1.37), col=METAL),               # the zip
+    dict(x=(-1, 1), y=(-1, 1), z=(0.9, 0.95), col=HEM),                         # the ribbed hem
+    dict(x=(-1, 1), y=(-1, 1), z=(1.38, 1.46), col=HEM),                        # the collar band
+]
+GENERATED_GARMENTS['sf_cargo_articulated']['boxes'] = [
+    dict(x=(0.1, 0.22), y=(-0.2, 0.2), z=(0.55, 0.72), col=DARKER, mirror=True),  # thigh pockets
+    dict(x=(0.0, 0.3), y=(-1, 0), z=(0.42, 0.52), col=DARKER, mirror=True),      # knee panels, front
+]
+GENERATED_GARMENTS['sf_belt_rig']['boxes'] = [
+    dict(x=(-0.03, 0.03), y=(-1, 0), z=(0.87, 0.95), col=METAL),                 # the buckle
+    dict(x=(0.1, 0.17), y=(-1, 1), z=(0.84, 0.92), col=DARKER, mirror=True),      # pouches
+]
+GENERATED_GARMENTS['sf_arm_wraps']['boxes'] = [
+    dict(x=(-1, 1), y=(-1, 1), z=(0.96, 0.975), col=HEM), dict(x=(-1, 1), y=(-1, 1), z=(1.0, 1.015), col=HEM),
+    dict(x=(-1, 1), y=(-1, 1), z=(1.04, 1.055), col=HEM), dict(x=(-1, 1), y=(-1, 1), z=(1.08, 1.095), col=HEM),   # the wrap's turns
+]
 
 def generated_garment(name):
     """A generated garment as a proxy: (refs, verts, vts, faces) over the helper vertices it keeps (each vertex riding
@@ -407,6 +432,7 @@ def content_wardrobe(spec):
         if g in have or d.get('fit', 'u') not in ('u', fit): continue
         if only and g not in only.split(','): continue
         look = dict(CONTENT_LOOK if d.get('dye') else OWN_LOOK, hide=d['slot'] in HIDING_SLOTS, shared=True)
+        if g in GENERATED_GARMENTS and 'boxes' in GENERATED_GARMENTS[g]: look['boxes'] = GENERATED_GARMENTS[g]['boxes']
         out.append({'g': g, 'slot': d['slot'], 'look': look, 'hides_hair': d['slot'] == 'head'})
     return out
 
@@ -451,6 +477,17 @@ FACE_SHAPES = [
     'sym:eye-bag|decr|incr', 'eyebrows-trans|down|up', 'eyebrows-angle|down|up', 'sym:ear-scale|decr|incr', 'forehead-scale-vert|decr|incr',
     'head-scale-horiz|decr|incr', 'head-fat|decr|incr', 'head-age|decr|incr', 'neck-scale-horiz|decr|incr',
     'head-oval', 'head-round', 'head-square', 'head-rectangular', 'head-triangular', 'head-diamond',
+    # the archetypes' features (P4.15, owner pass 9; Core Faces): what MakeHuman's own ancestry, sex and age macros move,
+    # measured by tools/unity/people/face_probe.py, so the archetypes can carry them further: the nose's flare, projection,
+    # bridge, tip and profile; the mouth's projection, the lower lip's height, the bow, the lines from nose to mouth; the
+    # jaw forward; the midface and the cheekbones' height; the eye's opening, tilt and lid crease; the brow ridge (alias:
+    # its target shares a name with the brows' height), the forehead's slope and the temples; the heart-shaped head; ears
+    # that stand out; the fold under the chin
+    'nose-flaring|decr|incr', 'nose-scale-depth|decr|incr', 'nose-width1|decr|incr', 'nose-point|down|up', 'nose-curve|concave|convex',
+    'mouth-trans|backward|forward', 'mouth-lowerlip-height|decr|incr', 'mouth-cupidsbow|decr|incr', 'mouth-laugh-lines|in|out',
+    'chin-prognathism|decr|incr', 'sym:cheek-inner|decr|incr', 'sym:cheek-trans|down|up', 'sym:eye-height2|decr|incr',
+    'sym:eye-corner1|down|up', 'sym:eye-eyefold|down|up', 'brow-ridge=eyebrows-trans|backward|forward', 'forehead-trans|backward|forward',
+    'forehead-temple|decr|incr', 'head-invertedtriangular', 'sym:ear-flap|decr|incr', 'neck-double|decr|incr',
 ]
 
 def expression_units():
@@ -575,6 +612,14 @@ def bake_cloth(po, src, name, look):
     for zb in look.get('tape', []):
         band = math('LESS_THAN', math('ABSOLUTE', math('SUBTRACT', z, zb)), 0.014)
         col = mixrgb('MIX', band, col, lin(look.get('tape_col', (0.8, 0.8, 0.75))))
+    # drawn details (the generated pieces, P4.14 step 5): boxes in the garment's object space (metres; x across, -y
+    # the front, z up; |x| when mirrored), each a colour over the cloth: straps, zips, hems, pockets, buckles
+    X, Y = sep.outputs['X'], sep.outputs['Y']
+    ax = math('ABSOLUTE', X)
+    def inside(axis, lo, hi): return math('MULTIPLY', math('GREATER_THAN', axis, lo), math('LESS_THAN', axis, hi))
+    for bx in look.get('boxes', []):
+        m = math('MULTIPLY', math('MULTIPLY', inside(ax if bx.get('mirror') else X, *bx['x']), inside(Y, *bx['y'])), inside(z, *bx['z']))
+        col = mixrgb('MIX', m, col, lin(bx['col']))
     L.new(col, em.inputs['Color'])
     tgt = N.new('ShaderNodeTexImage'); tgt.image = img; N.active = tgt
     po.data.materials.clear(); po.data.materials.append(mat)
@@ -1177,6 +1222,8 @@ def build_person(spec):
     nshapes = 0
     # The sculptor's shapes only on the player (spec 'sculpt'); NPCs have their face baked and keep the expressions.
     for mod in (FACE_SHAPES if spec.get('sculpt') else []):
+        alias = None
+        if '=' in mod: alias, mod = mod.split('=', 1)   # the shape's own name where the target's would clash
         parts = mod[4:].split('|') if mod.startswith('sym:') else mod.split('|')
         if len(parts) == 3:
             for sign, label in ((1.0, parts[2]), (-1.0, parts[1])):
@@ -1184,7 +1231,7 @@ def build_person(spec):
                 for rel, w in modifier_targets(mod, sign):
                     t = target(rel)
                     if t: ds.extend(t)
-                if ds: add_shape(f'{parts[0]}-{label}', ds); nshapes += 1
+                if ds: add_shape(f'{alias or parts[0]}-{label}', ds); nshapes += 1
         else:
             ds = []
             for rel, w in modifier_targets(mod, 1.0):
@@ -1379,8 +1426,10 @@ def build_person(spec):
                 kd = KDTree(len(body_idx))
                 for i in body_idx: kd.insert(to_bl(v[i]), i)
                 kd.balance(); spec['_body_kd'] = kd
-            near_body = [spec['_body_kd'].find(vv.co)[1] for vv in pm.vertices]
+            found = [spec['_body_kd'].find(vv.co) for vv in pm.vertices]
+            near_body = [f_[1] for f_ in found]
             GEN_NEAR[name] = near_body
+            GEN_UNDER[name] = sorted({f_[1] for f_ in found if f_[2] <= 0.025})   # the body right under the cloth
             bi = pm.uv_layers.new(name='BaseIndex')
             for loop in pm.loops:
                 k = near_body[loop.vertex_index]; bi.data[loop.index].uv = (k % 128, k // 128)
@@ -1580,6 +1629,7 @@ def build_person(spec):
                 hides = set(dels)
                 if g in COVERS or (look or {}).get('hide'):
                     hides.update(ref_vertices(refs))
+                    hides.update(GEN_UNDER.get(g, []))   # the skin right under the cloth (a buttock through the trousers)
                     hides = close_holes(hides, cover_points(refs, lambda i: v[i]), lambda i: v[i])
                 else: hides = close_holes(hides)
             manifest['garments'].append({'id': g, 'slot': w['slot'], 'model': name, 'hidesHair': bool(w.get('hides_hair')),

@@ -22,6 +22,8 @@ namespace SecondFace.Game.World
         /// <summary>The player's bodies (the player bases with their wardrobes, P4.2-P4.3): the pack's figure.</summary>
         public GameObject PlayerM, PlayerF;
         public RuntimeAnimatorController Locomotion;
+        /// <summary>The look's post-processing profile (P4.14 step 6, <see cref="Look"/>).</summary>
+        public UnityEngine.Rendering.VolumeProfile Look;
         /// <summary>The cloth of the bundles things dropped on the ground lie in (P6.1; the library's burlap).</summary>
         public Material Sack;
         /// <summary>Every body of the cast (P4.1, P4.11) with who it can stand in for: a place's people each wear one of

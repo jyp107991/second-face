@@ -78,10 +78,50 @@ namespace SecondFace.Core.Stats
             Sheet.Traits = o.Traits.Where(Registry.Traits.ContainsKey).Take(MaxTraits).ToList();
             if (newLook)
             {
-                Look.Face = Sculpt.Reroll(new Rng(unchecked((uint)(o.AppearanceSeed * 2654435761L + 1))), null, Look.Body == "m");
                 Look.Build = o.Frame == "broad" ? 0.4f : o.Frame == "narrow" ? -0.35f : 0f;
                 Look.Muscle = o.Frame == "broad" ? 0.3f : 0f;
+                var rng = new Rng(unchecked((uint)(o.AppearanceSeed * 2654435761L + 1)));
+                Heritage(Bodies.Cluster(rng), rng);   // each origin someone of their own people, to change after
             }
+        }
+
+        /// <summary>The structure of the last face drawn (another face prefers another).</summary>
+        public string FaceType { get; private set; }
+
+        /// <summary>
+        /// The player's people (owner, pass 9: faces from archetypes, the colouring as found among a people): the body's
+        /// ancestry, a skin, hair and eyes as they come among them, and a face drawn from their archetypes for the body's
+        /// sex, build and muscle. Every choice stays the player's to change after.
+        /// </summary>
+        public void Heritage(string cluster, Rng rng)
+        {
+            var mix = Bodies.Ancestry(cluster);
+            if (mix == null) return;
+            Look.Heritage = cluster;
+            Look.Shape["body-african"] = (float)mix.Value.Af;
+            Look.Shape["body-asian"] = (float)mix.Value.As;
+            Look.Shape["body-caucasian"] = (float)mix.Value.Ca;
+            Look.Skin = (float)Math.Clamp(Bodies.Tone(cluster) + Bodies.Normal(rng) * 0.1 + 0.1, -1, 1);   // a little sun: the work is outdoors
+            Look.Undertone = (float)Math.Clamp(Bodies.Undertone(cluster) + Bodies.Normal(rng) * 0.2, -1, 1);
+            Look.Freckles = Look.Skin < -0.45 && rng.Chance(0.3) ? (float)rng.Range(0.1, 0.5) : 0f;
+            Look.HairColour = Looks.HairColours[Bodies.HairShade(rng, cluster)];
+            Look.Eyes = rng.Chance(Bodies.LightEyes(cluster)) ? rng.Pick(new[] { "hazel", "green", "grey_green", "blue_grey", "blue", "grey" })
+                : rng.Pick(new[] { "brown", "dark", "brown", "hazel" });
+            NewFace(rng, null);
+        }
+
+        /// <summary>Another face of the same people, sex and build (another structure where they have more than one), far
+        /// enough from the last to read as someone else.</summary>
+        public void NewFace(Rng rng, IReadOnlyDictionary<string, float> previous)
+        {
+            var who = new Faces.Who
+            {
+                Male = Look.Body == "m", Age = 24, Cluster = Look.Heritage ?? "mediterranean", Build = Look.Build, Muscle = Look.Muscle,
+                Hardness = 0.3,
+            };
+            var f = previous == null ? Faces.Draw(rng, who) : Faces.Redraw(rng, who, previous, FaceType);
+            Look.Face = f.Values;
+            FaceType = f.Type;
         }
 
         /// <summary>Makes someone from scratch (the attributes, tags and traits stay as they are, to change).</summary>

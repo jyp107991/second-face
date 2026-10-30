@@ -24,5 +24,7 @@
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.InputSystem.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.InputSystem.dll')" />
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.Cinemachine.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.Cinemachine.dll')" />
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.Localization.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.Localization.dll')" />
+    <Reference Include="../unity/Library/ScriptAssemblies/Unity.RenderPipelines.Core.Runtime.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.RenderPipelines.Core.Runtime.dll')" />
+    <Reference Include="../unity/Library/ScriptAssemblies/Unity.RenderPipelines.Universal.Runtime.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.RenderPipelines.Universal.Runtime.dll')" />
   </ItemGroup>
 </Project>

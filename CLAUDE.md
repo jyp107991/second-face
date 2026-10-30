@@ -127,6 +127,18 @@ The owner wants to play unspoiled.
 - **Women's bodies: not all pears; real breasts** (owner, 2026-10-30, binding): women's figures span the real types
   (straight, hourglass, inverted triangle, apple, pear), not a pear by default; breasts vary in size, shape, spacing and
   lift as real ones do, at realistic scale, and clothes drape over them rather than shrink-wrap.
+- **People to the standard of BG3 / Cyberpunk 2077 / KCD2, with the best free assets** (owner, 2026-10-30, pass 8,
+  binding): lore-consistent variety of hairstyle, skin tone and facial features, skewed towards attractive combinations;
+  faces that cohere as real humans (never a random mix of features), always with eyebrows; sexual dimorphism clear and
+  realistic; photorealism as far as a 2026 phone allows (Unity can do more than it does now); people look their age,
+  and the population's ages follow a shorter, lore-consistent life expectancy; the pipeline uses the best free resources
+  and assets available for Unity game development, chosen by a bake-off with evidence (`docs/PEOPLE_RESEARCH.md`).
+- **Looks from archetypes and real-world regularities** (owner, 2026-10-30, pass 9, binding): no random reroll of
+  independent features. Faces and bodies come from defined archetypes: coherent, realistic bundles of features that go
+  together probabilistically by ancestry, sex, age and build (a woman's big jaw, a muscular man's gaunt face, a black
+  man's very thin lips, an Asian woman's blue eyes are each unlikely; those examples are illustrative, not the list). It is
+  not stereotyping; it reflects the aesthetic diversity that occurs along those lines in life, for immersion. The catalogue
+  of regularities, with sources, is `docs/PEOPLE_RESEARCH.md` §6; the model is Core `Faces` and `Peoples`.
 - **A new origin** (owner, 2026-10-29, binding): the player is NOT a shelter-dweller who ventures out for the first
   time (too derivative of Fallout, to the point of an IP breach). The opening gives the player character a life of
   their own and the people in it, so the player cares about them as much as about the hero, and it builds the world,

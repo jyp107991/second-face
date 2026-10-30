@@ -266,6 +266,24 @@ create.pronoun.he	he
 create.pronoun.they	they
 create.another_face	Another face
 create.even_face	An even face
+create.heritage	Your people
+create.heritage.north_european	North European
+create.heritage.mediterranean	Mediterranean
+create.heritage.west_african	West African
+create.heritage.east_african	East African
+create.heritage.east_asian	East Asian
+create.heritage.southeast_asian	Southeast Asian
+create.heritage.south_asian	South Asian
+create.heritage.latin_american	Latin American
+create.heritage.indigenous_american	Indigenous American
+create.brows	Brows
+create.brows.f0	Fine
+create.brows.f1	Natural
+create.brows.f2	Full
+create.brows.m0	Sparse
+create.brows.m1	Natural
+create.brows.m2	Heavy
+create.hairline	Hairline receding
 create.body_type	BODY TYPE
 create.body.f	Body one
 create.body.m	Body two
@@ -333,6 +351,27 @@ face.chin-bones	Jaw
 face.chin-cleft	Chin cleft
 face.ear-scale	Ear size
 face.neck-scale-horiz	Neck width
+face.head-invertedtriangular	Heart
+face.forehead-trans	Forehead slope
+face.forehead-temple	Temples
+face.brow-ridge	Brow ridge
+face.eye-height2	Eye opening
+face.eye-corner1	Eye tilt
+face.eye-eyefold	Lid crease
+face.nose-flaring	Nostril flare
+face.nose-scale-depth	Nose projection
+face.nose-width1	Bridge width
+face.nose-point	Tip lift
+face.nose-curve	Nose profile
+face.cheek-inner	Midface
+face.cheek-trans	Cheekbone height
+face.mouth-trans	Mouth forward
+face.mouth-lowerlip-height	Lower lip height
+face.mouth-cupidsbow	Cupid's bow
+face.mouth-laugh-lines	Smile lines
+face.chin-prognathism	Jaw forward
+face.ear-flap	Ears out
+face.neck-double	Under the chin
 attr.brawn	Brawn
 attr.brawn.desc	Raw strength. Carry weight, melee damage, heavy weapons, a little health.
 attr.senses	Senses

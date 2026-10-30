@@ -108,6 +108,7 @@ namespace SecondFace.Game
             Stage = gameObject.AddComponent<WorldStage>();
             Stage.Assets = World;
             Stage.Camera = Camera.main;
+            if (Stage.Camera != null) SecondFace.Game.World.Look.Apply(Stage.Camera, World != null ? World.Look : null);   // the look (P4.14 step 6)
             Walkabout = gameObject.AddComponent<Walkabout>();
             Walkabout.Stage = Stage;
             Walkabout.SetDown += SetDown;

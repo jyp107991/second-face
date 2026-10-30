@@ -25,9 +25,6 @@ namespace SecondFace.Core.Npc
     public static class Sculpt
     {
         public const string Aged = "aged";
-        /// <summary>The smallest change between two rerolls, in slider units over the whole face (UPGRADE: rerolls with
-        /// real variance).</summary>
-        public const float RerollDistance = 1.6f;
 
         public static readonly string[] Groups = { "head", "brows", "eyes", "nose", "cheeks", "mouth", "chin", "ears", "neck" };
 
@@ -43,31 +40,52 @@ namespace SecondFace.Core.Npc
             new("head-rectangular", "head", "long", null, "head-rectangular"),
             new("head-triangular", "head", "triangular", null, "head-triangular"),
             new("head-diamond", "head", "diamond", null, "head-diamond"),
+            new("head-invertedtriangular", "head", "heart", null, "head-invertedtriangular"),
+            new("forehead-trans", "head", "forehead slope", "backward", "forward"),
+            new("forehead-temple", "head", "temples", "decr", "incr"),
             new("eyebrows-trans", "brows", "brow height", "down", "up"),
             new("eyebrows-angle", "brows", "brow angle", "down", "up"),
+            new("brow-ridge", "brows", "brow ridge", "backward", "forward"),
             new("eye-scale", "eyes", "eye size", "decr", "incr"),
             new("eye-trans", "eyes", "eye spacing", "in", "out"),
             new("eye-epicanthus", "eyes", "eyelid fold", "in", "out"),
             new("eye-bag", "eyes", "eye bags", "decr", "incr"),
+            new("eye-height2", "eyes", "eye opening", "decr", "incr"),
+            new("eye-corner1", "eyes", "eye tilt", "down", "up"),
+            new("eye-eyefold", "eyes", "lid crease", "down", "up"),
             new("nose-scale-horiz", "nose", "nose width", "decr", "incr"),
             new("nose-scale-vert", "nose", "nose length", "decr", "incr"),
             new("nose-hump", "nose", "bridge hump", "decr", "incr"),
             new("nose-nostrils-width", "nose", "nostrils", "decr", "incr"),
             new("nose-point-width", "nose", "nose tip", "decr", "incr"),
             new("nose-volume", "nose", "nose size", "decr", "incr"),
+            new("nose-flaring", "nose", "nostril flare", "decr", "incr"),
+            new("nose-scale-depth", "nose", "projection", "decr", "incr"),
+            new("nose-width1", "nose", "bridge width", "decr", "incr"),
+            new("nose-point", "nose", "tip lift", "down", "up"),
+            new("nose-curve", "nose", "profile", "concave", "convex"),
             new("cheek-bones", "cheeks", "cheekbones", "decr", "incr"),
             new("cheek-volume", "cheeks", "cheek fullness", "decr", "incr"),
+            new("cheek-inner", "cheeks", "midface", "decr", "incr"),
+            new("cheek-trans", "cheeks", "cheekbone height", "down", "up"),
             new("mouth-scale-horiz", "mouth", "mouth width", "decr", "incr"),
             new("mouth-upperlip-volume", "mouth", "upper lip", "decr", "incr"),
             new("mouth-lowerlip-volume", "mouth", "lower lip", "decr", "incr"),
             new("mouth-angles", "mouth", "mouth corners", "down", "up"),
+            new("mouth-trans", "mouth", "mouth forward", "backward", "forward"),
+            new("mouth-lowerlip-height", "mouth", "lower lip height", "decr", "incr"),
+            new("mouth-cupidsbow", "mouth", "cupid's bow", "decr", "incr"),
+            new("mouth-laugh-lines", "mouth", "smile lines", "in", "out"),
             new("chin-prominent", "chin", "chin forward", "decr", "incr"),
             new("chin-width", "chin", "chin width", "decr", "incr"),
             new("chin-height", "chin", "chin height", "decr", "incr"),
             new("chin-bones", "chin", "jaw", "decr", "incr"),
             new("chin-cleft", "chin", "chin cleft", "decr", "incr"),
+            new("chin-prognathism", "chin", "jaw forward", "decr", "incr"),
             new("ear-scale", "ears", "ear size", "decr", "incr"),
+            new("ear-flap", "ears", "ears out", "decr", "incr"),
             new("neck-scale-horiz", "neck", "neck width", "decr", "incr"),
+            new("neck-double", "neck", "under the chin", "decr", "incr"),
         };
 
         /// <summary>The body's sliders (P5.3i, P4.13): the weight and muscle macros a step either way over the whole body;
@@ -163,11 +181,6 @@ namespace SecondFace.Core.Npc
         }
 
         /// <summary>
-        /// A random face: one head shape, then six to ten features pushed hard one way or the other and the rest left
-        /// near the middle, so a face has a character instead of an average of small changes. Drawn again (up to 20
-        /// times) until it lies at least <see cref="RerollDistance"/> from <paramref name="previous"/>.
-        /// </summary>
-        /// <summary>
         /// The face's sliders that mark a sex (the owner, 2026-10-29: dimorphism as pronounced as in life; the jaw, brow,
         /// chin and neck of a woman are never a man's): each the range a woman's draw keeps to and the range a man's does.
         /// Unlisted sliders run the whole range for both.
@@ -179,65 +192,39 @@ namespace SecondFace.Core.Npc
             ["chin-prominent"] = ((-0.8f, 0.35f), (-0.3f, 1f)),
             ["chin-height"] = ((-0.8f, 0.4f), (-0.4f, 0.9f)),
             ["neck-scale-horiz"] = ((-1f, 0.1f), (-0.3f, 1f)),
-            ["head-scale-horiz"] = ((-0.9f, 0.3f), (-0.4f, 0.9f)),
+            ["head-scale-horiz"] = ((-0.9f, 0.45f), (-0.4f, 0.9f)),
             ["head-fat"] = ((-0.8f, 0.5f), (-0.6f, 0.8f)),
             ["eyebrows-trans"] = ((-0.2f, 1f), (-1f, 0.3f)),         // brows higher and finer on a woman, low and heavy on a man
             ["eyebrows-angle"] = ((-0.4f, 0.8f), (-0.8f, 0.5f)),
             ["nose-volume"] = ((-1f, 0.3f), (-0.5f, 1f)),
-            ["nose-scale-horiz"] = ((-1f, 0.35f), (-0.5f, 1f)),
+            ["nose-scale-horiz"] = ((-1f, 0.6f), (-0.5f, 1f)),       // room for a broad nose on a woman of the ancestries that have one
             ["nose-hump"] = ((-0.9f, 0.4f), (-0.5f, 1f)),
             ["cheek-bones"] = ((-0.3f, 1f), (-0.8f, 0.6f)),
             ["cheek-volume"] = ((-0.3f, 0.9f), (-0.9f, 0.5f)),
-            ["mouth-upperlip-volume"] = ((-0.3f, 1f), (-1f, 0.4f)),
-            ["mouth-lowerlip-volume"] = ((-0.3f, 1f), (-1f, 0.4f)),
+            ["mouth-upperlip-volume"] = ((-0.3f, 1f), (-1f, 0.75f)),  // a man's lips thinner than a woman's of his people, not thin
+            ["mouth-lowerlip-volume"] = ((-0.3f, 1f), (-1f, 0.75f)),
             ["eye-scale"] = ((-0.3f, 1f), (-1f, 0.5f)),
             ["forehead-scale-vert"] = ((-0.6f, 0.8f), (-0.8f, 0.6f)),
+            ["brow-ridge"] = ((-1f, 0.15f), (-0.3f, 1f)),            // no brow ridge on a woman
+            ["chin-prognathism"] = ((-1f, 0.35f), (-0.5f, 1f)),
+            ["neck-double"] = ((-0.5f, 0.6f), (-0.5f, 0.8f)),
         };
 
-        /// <summary>The head's single shapes a sex keeps away from (a square or long head on a woman; a round one on a man
-        /// only softly).</summary>
-        private static float HeadCap(string id, bool? male) => male switch
+        /// <summary>The range a sex's faces keep to on a slider (the whole range when it marks no sex).</summary>
+        public static (float Lo, float Hi) Range(string id, bool male)
         {
-            false => id == "head-square" || id == "head-rectangular" ? 0.3f : id == "head-triangular" ? 0.5f : 0.85f,
-            true => id == "head-round" || id == "head-oval" ? 0.55f : 0.85f,
+            if (BySex.TryGetValue(id, out var r)) return male ? r.M : r.F;
+            var s = Slider(id);
+            return (s != null ? s.Min : -1f, 1f);
+        }
+
+        /// <summary>How far a sex's faces take the head's single shapes: a square, long or wide-jawed (triangular) head
+        /// barely on a woman; a round one or a heart only softly on a man.</summary>
+        public static float HeadCap(string id, bool? male) => male switch
+        {
+            false => id == "head-square" || id == "head-rectangular" ? 0.3f : id == "head-triangular" ? 0.25f : 0.85f,
+            true => id == "head-round" || id == "head-oval" || id == "head-invertedtriangular" ? 0.55f : 0.85f,
             _ => 0.85f,
         };
-
-        /// <summary>
-        /// A new face with character (UPGRADE: rerolls with real variance; the owner: a character, not an average): one
-        /// head shape and six to ten strong sliders, the rest near the middle; every slider within its sex's range
-        /// (<see cref="BySex"/>) when the sex is given; at least <see cref="RerollDistance"/> from the previous face.
-        /// </summary>
-        public static Dictionary<string, float> Reroll(Rng rng, IReadOnlyDictionary<string, float> previous = null, bool? male = null)
-        {
-            Dictionary<string, float> face = null;
-            for (var attempt = 0; attempt < 20; attempt++)
-            {
-                face = new Dictionary<string, float>();
-                var heads = Array.FindAll(Sliders, s => !s.Paired);
-                var head = rng.Pick(heads).Id;
-                var cap = HeadCap(head, male);
-                face[head] = (float)rng.Range(Math.Min(0.35, cap - 0.1), cap);
-                var paired = Array.FindAll(Sliders, s => s.Paired);
-                for (var i = paired.Length - 1; i > 0; i--) { var j = rng.Int(0, i); (paired[i], paired[j]) = (paired[j], paired[i]); }
-                var strong = rng.Int(6, 10);
-                for (var i = 0; i < paired.Length; i++)
-                {
-                    var mag = i < strong ? rng.Range(0.45, 0.85) : rng.Range(0.0, 0.2);
-                    var v = (float)(rng.Chance(0.5) ? mag : -mag);
-                    if (male.HasValue && BySex.TryGetValue(paired[i].Id, out var r))
-                    {
-                        var (lo, hi) = male.Value ? r.M : r.F;
-                        // the sex's range: a draw past it is folded back inside, so a strong slider stays strong its own way
-                        if (v > hi) v = Math.Max(lo, hi - (v - hi));
-                        if (v < lo) v = Math.Min(hi, lo + (lo - v));
-                        v = Math.Clamp(v, lo, hi);
-                    }
-                    face[paired[i].Id] = v;
-                }
-                if (previous == null || Distance(face, previous) >= RerollDistance) break;
-            }
-            return face;
-        }
     }
 }

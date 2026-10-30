@@ -42,8 +42,8 @@ describe('wardrobe: what is worn shows on the body', () => {
     expect(o.suit).toBe(BASE_OUTFIT.suit);
     // The base clothes (trousers, shirt, boots) stay underneath; the vest goes on over them, last in draw order.
     expect(o.layers?.[0]?.name).toBe(BASE_OUTFIT.layers?.[0]?.name);
-    expect(o.layers?.some((l) => /tactical_vest/.test(l.name))).toBe(true);
-    expect(o.layers?.findIndex((l) => /tactical_vest/.test(l.name))).toBeGreaterThan(0);
+    expect(o.layers?.some((l) => /vest/.test(l.name))).toBe(true);
+    expect(o.layers?.findIndex((l) => /vest/.test(l.name))).toBeGreaterThan(0);
   });
 
   it('visible chrome adds parts; hidden chrome shows nothing', () => {

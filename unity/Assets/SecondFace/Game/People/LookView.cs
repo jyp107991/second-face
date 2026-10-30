@@ -21,6 +21,11 @@ namespace SecondFace.Game.People
         private static readonly int RecolourId = Shader.PropertyToID("_Recolour");
         private static readonly int BeardId = Shader.PropertyToID("_Beard");
         private static readonly int BeardColourId = Shader.PropertyToID("_BeardColour");
+        private static readonly int ScalpColourId = Shader.PropertyToID("_ScalpColour");
+        private static readonly int BaldId = Shader.PropertyToID("_Bald");
+        private static readonly int Brow0Id = Shader.PropertyToID("_Brow0");
+        private static readonly int Brow1Id = Shader.PropertyToID("_Brow1");
+        private static readonly int BrowColourId = Shader.PropertyToID("_BrowColour");
 
         /// <summary>The body's scale: a stature against the base's own (<see cref="Bodies"/>), else the look's height (±6 %).</summary>
         public static float Scale(PlayerLook look) => look.Stature > 0f
@@ -39,9 +44,9 @@ namespace SecondFace.Game.People
             if (face != null)
             {
                 face.HairColour = Colour(look.HairColour);
-                // the years in the skin (the aged bake blended in from the late twenties, most of the way by seventy)
-                var years = 24f + 46f * (look.Shape != null && look.Shape.TryGetValue("body-age", out var ba) ? ba : 0f);
-                face.SkinAge = Mathf.Pow(Mathf.Clamp01((years - 28f) / 44f), 1.2f) * 0.85f;
+                // the years in the skin (the aged bake blended in from the late twenties, most of the way by seventy), later on
+                // darker and East Asian skin, sooner on a man's (Looks.SkinYears)
+                face.SkinAge = Looks.SkinAge(look);
                 face.Set(Looks.Shape(look));   // the face's sliders and the body's shapes, build and muscle
             }
             var scar = System.Array.IndexOf(Looks.Scars, look.Scar);
@@ -59,9 +64,21 @@ namespace SecondFace.Game.People
                     block.SetFloat(FrecklesId, Mathf.Clamp01(look.Freckles));
                     block.SetFloat(ScarId, scar);
                     block.SetFloat(TattooId, tattoo);
-                    // a beard only on a man's body, in the hair's colour a shade darker
+                    // a beard only on a man's body, in its own colour (greying first; red under brown hair) or the hair's darker
                     block.SetFloat(BeardId, look.Body == "m" ? System.Array.IndexOf(Looks.Beards, look.Beard) : -1);
-                    block.SetColor(BeardColourId, Colour(look.HairColour) * 0.8f);
+                    block.SetColor(BeardColourId, Colour(Looks.BeardRgb(look)));
+                    // the shaved scalp in the hair's colour, and the hairline as far back as the years have taken it
+                    var scalp = Colour(look.HairColour);
+                    scalp.a = 1f;
+                    block.SetColor(ScalpColourId, scalp);
+                    block.SetFloat(BaldId, Mathf.Clamp01(look.Bald));
+                    // the brows drawn in their style and colour (always there, whatever the skin's tone)
+                    var brow = Looks.BrowOf(look);
+                    block.SetVector(Brow0Id, new Vector4(brow.X0, brow.X1, brow.YHead, brow.YTail));
+                    block.SetVector(Brow1Id, new Vector4(brow.YPeak, brow.PeakT, brow.WHead, brow.WTail));
+                    var bc = Colour(Looks.BrowRgb(look));
+                    bc.a = brow.Density;
+                    block.SetColor(BrowColourId, bc);
                     r.SetPropertyBlock(block);
                 }
                 else if (r.name.StartsWith("Eyes_") && m.HasProperty(RecolourId))

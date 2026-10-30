@@ -762,7 +762,27 @@ too, and the skin ages with the years. Rendered and sent (2026-10-30): `docs/evi
 in colour, no faces hidden, children as children, ancestries apart), `closeup_mags.jpg` (the resident from the owner's
 screenshot: a woman's jaw, hands curled at her sides, nothing through the cloth), `kit_generated.jpg` (the ten generated
 pieces on both bases). Step 5's first batch is in: ten pieces cut from the helper meshes (`GENERATED_GARMENTS`).
-**Next action:** P4.14 step 5 polish and step 6: dye as a colour, not a tint (the cloth shader colourises by
+**Owner's notes (2026-10-30, pass 8, binding; CLAUDE.md §2):** faces, hair and skin variety far behind BG3 / CP2077 /
+KCD2; far from photorealism (Unity can do more, even on a phone); some have no eyebrows, faces incoherent, dimorphism
+not clear enough; people do not look their age, and the world's life expectancy is shorter; use the best free assets.
+This supersedes the P4.14 step 6 plan: the people are rebuilt on the best free pipeline found by a bake-off
+(`docs/PEOPLE_RESEARCH.md`), with coherent faces from phenotype presets, ages that show, brows always, a skin shader
+with subsurface scattering, better hair, and the look (ACES, grading, SSAO).
+**Owner's notes (2026-10-30, pass 9, binding; CLAUDE.md §2):** characters not differentiated enough by ancestry; faces
+must come from defined archetypes, coherent bundles of features that go together probabilistically by ancestry, sex,
+age and build, not a reroll of independent sliders; the owner's examples are illustrative, the regularities are to be
+worked out from the real world. **P4.15a (in progress):** the catalogue of regularities with sources is
+`docs/PEOPLE_RESEARCH.md` §6; the model is in Core (`Faces`: archetype faces; `Peoples`: stature, legs, hair form,
+greying, balding, beards, brows, figures and fat by people; `Bodies.For` assembles everyone from both; the random reroll
+is gone; creation picks "your people" first). The skin shader draws the brows (they vanished on fair skins), recolours
+the shaved scalp to the hair and recedes the hairline by Norwood's order. The base decision: MakeHuman topology stays
+(Reom rendered and compared, §5), with 21 more face targets. Tests: `FacesTests`, `PeoplesTests` (Core 203 pass).
+**Next action:** when the base rebuild finishes (mh_build on `briefs/player.json`, ~35 min), run
+`SecondFace.EditorTools.PlayerTestScene.Build`, then `ScreenshotTests.PeoplesLineup` and the Shale showcase; assemble the
+lineup sheet (people × sex × age, front and profile; balding and brow strips), check every regularity reads in the
+render (calibrate the archetype magnitudes where it does not), send it, commit with the assets. Then coily hair cards
+(the known gap, §6), then the skin step (Reom's detail, subsurface scattering).
+**Next action (superseded by the note above; kept for the record):** P4.14 step 5 polish and step 6: dye as a colour, not a tint (the cloth shader colourises by
 luminance when dyed, so a blue dye reads blue, not khaki-blue); retire the boxy tactical vests and the cyborg suit (the
 generated harness vest and base layer take their place); the duster's front cut cleaned of its hanging strips; hide
 lists for every tight garment from its nearest body vertices (the buttock through the cargo pants); straps, zips,

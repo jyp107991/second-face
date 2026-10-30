@@ -31,7 +31,8 @@ namespace SecondFace.Tests
             Assert.That(men.Sd, Is.EqualTo(Bodies.ManSd).Within(0.8));
             Assert.That(women.Sd, Is.EqualTo(Bodies.WomanSd).Within(0.8));
             var all = Many(true, 2000).Select(l => l.Stature).ToList();
-            Assert.That(all.Min(), Is.GreaterThanOrEqualTo(Bodies.ManMean - 2.5 * Bodies.ManSd - 0.06));
+            // the shortest people's own mean and a hungry childhood take the tail lower (Peoples, pass 9), never past it
+            Assert.That(all.Min(), Is.GreaterThanOrEqualTo(Bodies.ManMean - 2.5 * Bodies.ManSd - 8.5));
             Assert.That(all.Max() - all.Min(), Is.GreaterThan(30), "short and tall men both");
             var old = Stats(Many(false, 500, age: 75).Select(l => (double)l.Stature));
             Assert.That(old.Mean, Is.LessThan(women.Mean - 1.5), "a little lost after 45");

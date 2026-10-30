@@ -58,8 +58,8 @@ export const GARMENTS: Record<string, GarmentDef> = {
   rehmanpolanski_viking_tunic: { slot: 'top', fit: 'm', tags: ['rag', 'nomad', 'raider'], retired: 'costume (mail and a printed emblem)' },
 
   // Over layers and gear
-  mindfront_tactical_vest_male: { slot: 'over', fit: 'm', tags: ['military', 'raider', 'corp'] },
-  mindfront_tactical_vest_female: { slot: 'over', fit: 'f', tags: ['military', 'raider', 'corp'] },
+  mindfront_tactical_vest_male: { slot: 'over', fit: 'm', tags: ['military', 'raider', 'corp'], retired: 'a boxy costume vest (the generated harness vest instead)' },
+  mindfront_tactical_vest_female: { slot: 'over', fit: 'f', tags: ['military', 'raider', 'corp'], retired: 'a boxy costume vest (the generated harness vest instead)' },
   punkduck_wireless_headset: { slot: 'gear', fit: 'u', tags: ['tech', 'corp', 'street'], retired: 'an oversized headset' },
   punkduck_stethoscope: { slot: 'gear', fit: 'u', tags: ['medical'] },
 
@@ -83,7 +83,7 @@ export const GARMENTS: Record<string, GarmentDef> = {
   // Full outfits
   mindfront_kimono: { slot: 'full', fit: 'u', tags: ['rich'], dye: true },
   donitz_monk_robe: { slot: 'full', fit: 'u', tags: ['faith', 'rag', 'nomad'], dye: true },
-  joachip_cyborg_suit: { slot: 'full', fit: 'u', tags: ['tech', 'work', 'vault'] },
+  joachip_cyborg_suit: { slot: 'full', fit: 'u', tags: ['tech', 'work', 'vault'], retired: 'costume armour' },
   'matcreator_mc-skinsuit_2022': { slot: 'full', fit: 'u', tags: ['tech', 'corp'], dye: true },
   thegreatengineer_galactic_warrior_uniform: { slot: 'full', fit: 'f', tags: ['corp', 'military', 'tech'], retired: 'costume' },
   elvs_male_coveralls_1: { slot: 'full', fit: 'm', tags: ['work', 'vault', 'tech'], dye: true },
@@ -165,7 +165,7 @@ export const GARMENTS: Record<string, GarmentDef> = {
   // Generated pieces (P4.14 step 5, docs/WARDROBE.md §3): the cyberpunk cut, built on the bases themselves
   sf_base_highneck: { slot: 'top', fit: 'u', tags: ['work', 'street', 'tech', 'cold', 'nomad'], dye: true, generated: true },
   sf_bomber_cropped: { slot: 'top', fit: 'u', tags: ['street', 'casual', 'tech', 'raider'], dye: true, generated: true },
-  sf_vest_harness: { slot: 'over', fit: 'u', tags: ['raider', 'street', 'work', 'nomad', 'tech'], dye: true, generated: true },
+  sf_vest_harness: { slot: 'over', fit: 'u', tags: ['raider', 'street', 'work', 'nomad', 'tech', 'military', 'corp'], dye: true, generated: true },
   sf_duster_long: { slot: 'over', fit: 'u', tags: ['nomad', 'rag', 'raider', 'cold', 'street'], dye: true, generated: true },
   sf_cape_shoulder: { slot: 'over', fit: 'u', tags: ['nomad', 'faith', 'rag', 'cold'], dye: true, generated: true },
   sf_cargo_articulated: { slot: 'legs', fit: 'u', tags: ['work', 'street', 'tech', 'raider', 'military', 'nomad'], dye: true, generated: true },
