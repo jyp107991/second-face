@@ -19,7 +19,9 @@ namespace SecondFace.Tests
     /// bizygomatic breadth, face height (sellion to menton), interpupillary breadth, neck circumference (just under the
     /// chin) and stature, in millimetres. Shale's people and a sample of every ancestry, sex and age. Written to
     /// test-results/people_measures.json for tools/unity/people/gate/gate.py, which holds them to the real ranges.
+    /// The gate's renders run in the session's editor, not in CI (Heavy: hundreds of people per test; BUILD_PLAN §7.0).
     /// </summary>
+    [Category("Heavy")]
     public class PeopleGateTests
     {
         public sealed class Measured
@@ -163,6 +165,64 @@ namespace SecondFace.Tests
             File.WriteAllText(path, JsonConvert.SerializeObject(results, Formatting.Indented));
             Debug.Log($"PeopleGate: measured {results.Count} people ({failed} could not be measured) -> {path}");
             Assert.That(failed, Is.EqualTo(0), "everyone measurable");
+        }
+
+        /// <summary>The sexes' cues, an experiment (docs/PEOPLE_REALISM.md §12): the gate's sample people as its portraits
+        /// show them, once per variant (SF_SEX_VARIANTS, comma-separated: base; brows, a woman's finest brows and a man's
+        /// heaviest; face, each sex's face pushed to its own side on the sliders that mark sex, inside the sex's range; both),
+        /// into test-results/sexcues/&lt;variant&gt;/, for apparent.py's sex reading.</summary>
+        [UnityTest, Timeout(3600000)]
+        public IEnumerator SexCues()
+        {
+            GameObject F = null, M = null;
+#if UNITY_EDITOR
+            F = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_f.prefab");
+            M = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_m.prefab");
+#endif
+            if (F == null || M == null) { Assert.Ignore("the bases are not built"); yield break; }
+            UiTests.Content();
+            var variants = (System.Environment.GetEnvironmentVariable("SF_SEX_VARIANTS") ?? "base,brows,face,both").Split(',');
+            // the sliders that mark sex, each sex pushed to its own side by this much of its range's half
+            var marks = new[] { "brow-ridge", "chin-width", "chin-bones", "chin-prominent", "nose-volume", "nose-scale-horiz",
+                                "eye-scale", "mouth-upperlip-volume", "mouth-lowerlip-volume", "cheek-volume", "eyebrows-trans", "neck-scale-horiz" };
+            var womanSide = new Dictionary<string, float> { ["brow-ridge"] = -1, ["chin-width"] = -1, ["chin-bones"] = -1, ["chin-prominent"] = -1,
+                ["nose-volume"] = -1, ["nose-scale-horiz"] = -1, ["eye-scale"] = 1, ["mouth-upperlip-volume"] = 1, ["mouth-lowerlip-volume"] = 1,
+                ["cheek-volume"] = 1, ["eyebrows-trans"] = 1, ["neck-scale-horiz"] = -1 };
+            var studio = new Studio();
+            var n = 0;
+            foreach (var variant in variants)
+                foreach (var c in SecondFace.Core.Npc.Bodies.Clusters)
+                    foreach (var male in new[] { false, true })
+                        foreach (var age in new[] { 22.0, 35.0, 50.0, 65.0 })
+                            for (var k = 0; k < 3; k++)
+                            {
+                                var id = $"gate_{c.Id}_{(male ? "m" : "f")}_{age:0}_{k}";
+                                var look = SecondFace.Core.Npc.Bodies.For(id, male, age, "settler", ancestry: c.Id);
+                                SecondFace.Core.Npc.Bodies.Finish(look);
+                                if (variant is "brows" or "both") look.Brows = male ? 2 : 0;
+                                if (variant is "face" or "both")
+                                    foreach (var id2 in marks)
+                                    {
+                                        var (lo, hi) = SecondFace.Core.Npc.Sculpt.Range(id2, male);
+                                        var dir = womanSide[id2] * (male ? -1 : 1);
+                                        var v = look.Face.TryGetValue(id2, out var x) ? x : 0f;
+                                        look.Face[id2] = Mathf.Clamp(v + dir * 0.35f * (hi - lo) * 0.5f, lo, hi);
+                                    }
+                                var go = Object.Instantiate(male ? M : F, new Vector3(500f, 0f, 0f), Quaternion.identity);
+                                SecondFace.Game.People.LookView.Apply(go, look);
+                                yield return null;
+                                if (Measure(go, 1f) != null)
+                                {
+                                    go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
+                                    yield return null;
+                                    studio.Shoot(go, id, Path.Combine("sexcues", variant));
+                                    n++;
+                                }
+                                Object.Destroy(go);
+                            }
+            studio.Dispose();
+            Debug.Log($"PeopleGate: sex cues, {n} portraits");
+            Assert.That(n, Is.GreaterThan(0));
         }
 
         /// <summary>The hair and the face up close (R5): a few of the sample people (SF_HAIR_IDS, "cluster_sex_age_k" each,

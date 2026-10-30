@@ -283,3 +283,12 @@ with its hair and neck (pad 0.6).
   proportions gate passes them (it holds sizes and ratios, not the cues people read sex by: brow ridge and brows, the eye
   region, the jaw's angle, the nose, lips, a beard's shadow, skin). Next: those cues, measured with this instrument on the
   population (one-slider renders saturate it; only the aggregate moves), until the gap closes.
+
+**The sexes' cues, tried (same day; `PeopleGateTests.SexCues`, the gate's 216 sample people per variant):** each sex's face
+pushed to its own side on the twelve sliders that mark sex (a third of each range's half, inside the sex's range), the
+finest brows on women and the heaviest on men, and both. The network's reading barely moved: women read as men 81 % ->
+85 % (face), 72 % (brows), 77 % (both) from the inner face; 74 % -> 64 % (both) with the head. So the gap to real women
+(33-37 %) is not in the shapes and brows the sculptor holds inside real ranges; it lies in what real photographs carry and
+this instrument keys on (makeup's dark lash line and lip colour, which our world mostly lacks) or in the rendering. Faces are
+not pushed past real ranges to please a crude instrument; the owner's eye and the boards decide the sexes' read, and a
+better instrument (a FairFace-trained network, needing PyTorch and more disk than this session has) is the next measure.
