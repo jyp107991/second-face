@@ -126,6 +126,27 @@ namespace SecondFace.Tests
         }
 
         [Test]
+        public void AnAuthoredGreySaysHowGreyNotWhatColour()
+        {
+            // P4.15b, the owner: a brown man of fifty-five drawn with blond brows and beard. The content's grey hair leaves
+            // the brows their own dark colour (they grey a decade or more later) and the beard its dark hairs, salt and
+            // pepper, at least as grey as the head
+            double Lum(int c) => (((c >> 16) & 255) * 0.3 + ((c >> 8) & 255) * 0.59 + (c & 255) * 0.11) / 255.0;
+            var grey = Newtonsoft.Json.Linq.JObject.Parse("{\"facialHair\": \"short_beard\", \"hair\": {\"color\": " + 0x8a8782 + "}}");
+            var dark = 0;
+            for (var i = 0; i < 40; i++)
+            {
+                var l = Bodies.Over(Bodies.For($"npc_pt_grey_{i}", true, 55, "labourer", ancestry: "south_asian"), (Newtonsoft.Json.Linq.JObject)grey.DeepClone());
+                Assert.That(l.HairColour, Is.EqualTo(0x8a8782));
+                if (Lum(Looks.BrowRgb(l)) < 0.35) dark++;   // black to a medium-dark brown
+                Assert.That(Lum(Looks.BrowRgb(l)), Is.LessThan(0.45), "never pale brows at fifty-five");
+                Assert.That(Lum(Looks.BeardPigment(l)), Is.LessThan(0.3), "the beard's own hairs dark brown or black");
+                Assert.That(l.BeardGrey, Is.GreaterThanOrEqualTo(l.Grey - 0.001f), "the beard at least as grey as the head");
+            }
+            Assert.That(dark, Is.GreaterThanOrEqualTo(34), "dark brows under a grey head, for most (a few of the greyest greying)");
+        }
+
+        [Test]
         public void SkinShowsItsYearsByToneHeritageAndSex()
         {
             var fair = new PlayerLook { Body = "f", Skin = -0.7f, Heritage = "north_european" };

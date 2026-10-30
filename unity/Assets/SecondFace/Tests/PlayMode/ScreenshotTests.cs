@@ -607,7 +607,8 @@ namespace SecondFace.Tests
 
         /// <summary>Every resident of Shale as the game makes them (PeopleService: their body and face from Bodies and the
         /// content's look, their outfit the content's own or the rules', the background people from Extras), each full
-        /// length (`shale_resident_<nn>`); a line per person in the log for the contact sheet's labels.</summary>
+        /// length (`shale_resident_<nn>`) and the face (`shale_face_<nn>`); a line per person in the log for the contact
+        /// sheet's labels.</summary>
         [UnityTest, Timeout(900000)]
         public IEnumerator ShaleResidentsAsTheyAre()
         {
@@ -640,8 +641,11 @@ namespace SecondFace.Tests
                 who.Add((x.Def.Id, x.Def.Name, x.Def.Role, x.Male, x.Def.Look.Age ?? 35, x.Look, SecondFace.Core.Npc.Outfits.DressFor(x.Def.Look.Seed, x.Def.Role, x.Male ? "m" : "f", x.Def.Faction), "background"));
             var cam = Camera.main;
             cam.fieldOfView = 24f;
+            // SF_SHALE_ONLY (comma-separated indices): just those residents, for a quick look while tuning
+            var only = (System.Environment.GetEnvironmentVariable("SF_SHALE_ONLY") ?? "").Split(',', System.StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToHashSet();
             for (var i = 0; i < who.Count; i++)
             {
+                if (only.Count > 0 && !only.Contains(i)) continue;
                 var w = who[i];
                 var at = new Vector3(200f + i * 4f, 0f, 0f);
                 var go = Object.Instantiate(w.Male ? M : F, at, Quaternion.Euler(0, 200f, 0));
@@ -667,6 +671,17 @@ namespace SecondFace.Tests
                 yield return null;
                 Debug.Log($"shale_resident {i:00}|{w.Id}|{w.Name}|{w.Role}|{(w.Male ? "m" : "f")}|{w.Age:0}|{w.Look.Stature:0}|{w.Note}|{string.Join(", ", wardrobe.Wearing.Where(kv => kv.Key != "hair").Select(kv => kv.Value))}");
                 yield return Capture($"shale_resident_{i:00}", 640, 960);
+                // and the face, head and shoulders (`shale_face_<nn>`): the archetypes are judged here, not at full length
+                var head = anim.GetBoneTransform(HumanBodyBones.Head);
+                if (head != null)
+                {
+                    var face = head.position + new Vector3(0f, 0.06f, 0f);
+                    var toward = Vector3.ProjectOnPlane(go.transform.forward, Vector3.up).normalized;
+                    cam.transform.position = face + toward * 0.95f + Vector3.up * 0.02f;
+                    cam.transform.LookAt(face);
+                    yield return null;
+                    yield return Capture($"shale_face_{i:00}", 384, 480);
+                }
                 Object.Destroy(go);
             }
             Assert.That(who.Count, Is.GreaterThanOrEqualTo(25), "Shale's people");

@@ -61,7 +61,7 @@ export const GARMENTS: Record<string, GarmentDef> = {
   mindfront_tactical_vest_male: { slot: 'over', fit: 'm', tags: ['military', 'raider', 'corp'], retired: 'a boxy costume vest (the generated harness vest instead)' },
   mindfront_tactical_vest_female: { slot: 'over', fit: 'f', tags: ['military', 'raider', 'corp'], retired: 'a boxy costume vest (the generated harness vest instead)' },
   punkduck_wireless_headset: { slot: 'gear', fit: 'u', tags: ['tech', 'corp', 'street'], retired: 'an oversized headset' },
-  punkduck_stethoscope: { slot: 'gear', fit: 'u', tags: ['medical'] },
+  punkduck_stethoscope: { slot: 'gear', fit: 'u', tags: ['medical'], retired: 'comical (on our bases a thick grey ring round the neck, like an oversized headset, P4.15b)' },
 
   // Legs
   cortu_cargo_pants: { slot: 'legs', fit: 'u', tags: ['work', 'military', 'raider', 'casual'], dye: true },
@@ -138,9 +138,9 @@ export const GARMENTS: Record<string, GarmentDef> = {
   elvs_tophat1: { slot: 'head', fit: 'u', tags: ['rich'], hair: 'crop' },
   elvs_charity_veil1: { slot: 'head', fit: 'f', tags: ['faith'], hair: 'crop' },
   culturalibre_cl_don_quixote_hat: { slot: 'head', fit: 'u', tags: ['nomad', 'work'], hair: 'crop' },
-  donitz_monk_robe_hood: { slot: 'head', fit: 'u', tags: ['faith'], hair: 'hide' },
-  donitz_monk_robe_hood_down: { slot: 'gear', fit: 'u', tags: ['faith'] },
-  'culturalibre_hero-heroine_hood_1': { slot: 'head', fit: 'u', tags: ['street', 'raider'], hair: 'hide' },
+  donitz_monk_robe_hood: { slot: 'head', fit: 'u', tags: ['faith'], hair: 'hide', retired: 'hides the face (a cowl over the brow)' },
+  donitz_monk_robe_hood_down: { slot: 'gear', fit: 'u', tags: ['faith'], retired: 'hides the face (on the Unity bases it sits over the eyes, P4.15b)' },
+  'culturalibre_hero-heroine_hood_1': { slot: 'head', fit: 'u', tags: ['street', 'raider'], hair: 'hide', retired: 'costume (a superhero cowl, P4.15b)' },
   'culturalibre_hero-heroine_hood_2': { slot: 'head', fit: 'u', tags: ['street', 'raider'], hair: 'hide', retired: 'hides the face' },
 
   // Eyes

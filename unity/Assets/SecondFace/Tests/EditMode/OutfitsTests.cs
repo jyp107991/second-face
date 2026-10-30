@@ -50,7 +50,7 @@ namespace SecondFace.Tests
         [Test]
         public void HelmetsHideHairCapsCropIt()
         {
-            Assert.That(Outfits.HairMode(new Outfit { Layers = new List<GarmentLook> { new GarmentLook { Name = "donitz_monk_robe_hood" } } }), Is.EqualTo("hide"));
+            Assert.That(Outfits.HairMode(new Outfit { Layers = new List<GarmentLook> { new GarmentLook { Name = "mindfront_sherpa_hat" } } }), Is.EqualTo("hide"));   // a fur hat over the ears (the hoods are retired: they hid the face)
             Assert.That(Outfits.HairMode(new Outfit { Layers = new List<GarmentLook> { new GarmentLook { Name = "jujube_newsboy_cap" }, new GarmentLook { Name = "cortu_cargo_pants" } } }), Is.EqualTo("crop"));
             Assert.That(Outfits.HairMode(new Outfit { Layers = new List<GarmentLook> { new GarmentLook { Name = "cortu_cargo_pants" } } }), Is.Null);
             Assert.That(Outfits.HairMode(new Outfit { Gear = new List<GearLook> { new GearLook { Kind = "headwrap" } } }), Is.EqualTo("hide"));

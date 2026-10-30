@@ -195,7 +195,14 @@ namespace SecondFace.Core.Npc
                 var other = HairShade(rng, second);
                 if (Darkness(other) > Darkness(shade) && rng.Chance(0.5 + share)) shade = other;
             }
-            var grey = Math.Clamp(Peoples.Grey(age, Of(p => p.GreyOnset) - 2 * Math.Max(0, hard), Of(p => p.GreySpan)) + Normal(rng) * 0.12, 0, 1);
+            var greyOnset = Of(p => p.GreyOnset) - 2 * Math.Max(0, hard);
+            var greySpan = Of(p => p.GreySpan);
+            var greyBase = Peoples.Grey(age, greyOnset, greySpan);
+            // each person greys faster or slower than their people by a factor of their own, so the spread grows with the
+            // greying: years before the onset only a few hairs, rarely more (P4.15b: a third of a man's beard white at
+            // thirty-eight)
+            var greyPace = Normal(rng);
+            var grey = Math.Clamp(greyBase * Math.Exp(0.6 * greyPace) + Math.Max(0, greyPace) * 0.03, 0, 1);
             if (age < 30) grey = Math.Min(grey, 0.1);
             look.Grey = (float)grey;
             look.HairColour = GreyShade(shade, grey);
@@ -239,15 +246,19 @@ namespace SecondFace.Core.Npc
                 // a beard greys before the head, and a north European's often grows red under brown hair
                 var beardShade = shade;
                 if (!red && (cluster == "north_european" || second == "north_european") && shade >= 1 && shade <= 4 && rng.Chance(0.25)) beardShade = 6;
-                var beardGrey = Math.Min(1, grey + (age >= 30 ? 0.12 : 0));
+                // (on the people's own curve, about six years ahead of the head)
+                var beardGrey = Math.Clamp(Peoples.Grey(age + 6, greyOnset, greySpan) * Math.Exp(0.6 * greyPace) + Math.Max(0, greyPace) * 0.03, grey, 1);
                 if (beardShade != shade || beardGrey > grey + 0.01) look.BeardColour = GreyShade(beardShade, beardGrey);
+                look.BeardBase = Looks.HairColours[beardShade];
+                look.BeardGrey = (float)beardGrey;
             }
 
             // the brows: by sex (a woman's finer and arched, a man's heavier and straight), by people (dense where they are)
             // and by the years (a woman's thin, a man's grow bushy); darker than fair hair, greying after the head
             var browsTend = Of(p => p.Brows) + (male && age > 50 ? 0.5 : 0) - (!male && age > 50 ? 0.4 : 0);
             look.Brows = PickIndex(rng, BrowShares(browsTend));
-            look.BrowColour = BrowShade(shade, Math.Max(0, grey - 0.3));
+            // (the brows grey a decade or more after the head: a man of fifty-five with a grey head has dark brows still)
+            look.BrowColour = BrowShade(shade, Math.Max(0, grey - 0.5));
 
             if (rng.Chance(0.12 + labour * 0.18)) look.Scar = rng.Pick(Looks.Scars);
             if (rng.Chance(0.12)) look.Tattoo = rng.Pick(Looks.Tattoos);
@@ -295,6 +306,13 @@ namespace SecondFace.Core.Npc
             if (grey > 0.6) return Looks.HairColours[8];
             if (grey > 0.3) return Mix(colour, Looks.HairColours[7], (grey - 0.3) / 0.3 * 0.6 + 0.3);
             return grey > 0.12 ? Mix(colour, Looks.HairColours[7], grey) : colour;
+        }
+
+        /// <summary>How grey an authored grey reads (its lightness from the iron grey to white, as a share of grey).</summary>
+        public static double GreyOf(int c)
+        {
+            var l = (((c >> 16) & 255) + ((c >> 8) & 255) + (c & 255)) / 3.0;
+            return Math.Clamp(0.45 + (l - 120) / 90.0 * 0.55, 0.45, 1.0);
         }
 
         /// <summary>Whether a colour is already grey or white (low saturation, not dark).</summary>
@@ -404,7 +422,20 @@ namespace SecondFace.Core.Npc
                     // keeps the grey their people show at seventy), the brows from it as from any hair
                     var authored = (int)hair["color"];
                     look.HairColour = IsGrey(authored) ? authored : GreyColour(authored, look.Grey);
-                    look.BrowColour = BrowColourOf(authored, Math.Max(0, look.Grey - 0.3));
+                    if (IsGrey(authored))
+                    {
+                        // an authored grey says how grey, not what colour the hair was: the brows and the beard's dark hairs
+                        // keep the person's own (P4.15b: a brown man of fifty-five drawn with blond brows and beard), and
+                        // the beard is at least as grey as the head
+                        look.Grey = Math.Max(look.Grey, (float)GreyOf(authored));
+                        if (look.BeardBase != 0) look.BeardGrey = Math.Max(look.BeardGrey, Math.Min(1f, look.Grey + 0.1f));
+                    }
+                    else
+                    {
+                        look.BrowColour = BrowColourOf(authored, Math.Max(0, look.Grey - 0.5));
+                        if (look.Body == "m") look.BeardBase = authored;
+                    }
+                    if (look.BeardBase != 0) look.BeardColour = GreyColour(look.BeardBase, look.BeardGrey);
                 }
             }
             if (over["scars"] is Newtonsoft.Json.Linq.JArray scars && scars.Count > 0)

@@ -11,7 +11,7 @@ const sleep = (spot: string, from = 23, to = 6) => ({ from, to, spot, activity: 
 export const MARKET_NPCS: NpcDef[] = [
   {
     id: 'npc_mk_01', name: 'Half-Price', look: { seed: 9201, frame: 'narrow', age: 50, ancestry: 'east_asian', over: { hair: { style: 'none', color: 0x202020 }, facialHair: 'none', weathering: 0.3 } }, role: 'street',
-    outfit: { layers: [{ name: 'donitz_monk_robe', dye: 0x2a2a30, grime: 0.3, wear: 0.5 }, { name: 'donitz_monk_robe_hood', dye: 0x2a2a30, grime: 0.3 }, { name: 'toigo_gloves_short', dye: 0x1a1a1a }], grime: 0.3, wear: 0.5 },
+    outfit: { layers: [{ name: 'donitz_monk_robe', dye: 0x2a2a30, grime: 0.3, wear: 0.5 }, { name: 'sf_gaiter_down', dye: 0x2a2a30, grime: 0.3 }, { name: 'toigo_gloves_short', dye: 0x1a1a1a }], grime: 0.3, wear: 0.5 },
     level: 5, ...MK, courage: 50, dialogue: 'd_mk_broker', attrs: { wits: 9, presence: 7, senses: 7 }, skills: { barter: 70, speech: 55, stealth: 40 }, tolls: 300,
     equip: ['w_hand44'], inventory: [['a_38', 6]],
     schedule: [{ from: 0, to: 24, spot: 'hatch', activity: 'work' }],

@@ -44,6 +44,14 @@ namespace SecondFace.Tests
             var b = Extras.Of(shale);
             Assert.That(a.Select(x => x.Def.Name + x.Def.Role + x.Look.Stature), Is.EqualTo(b.Select(x => x.Def.Name + x.Def.Role + x.Look.Stature)));
             Assert.That(a.Select(x => x.Def.Name).Distinct().Count(), Is.GreaterThan(a.Count / 2), "names vary");
+            // no two of a place's people share a name while their people's names last (P4.15b: three Lias in Shale)
+            foreach (var map in Registry.Maps.Values.Where(m => m.Extras != null))
+            {
+                var x = Extras.Of(map);
+                var repeats = x.GroupBy(e => e.Def.Name).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+                Assert.That(repeats.Count, Is.LessThanOrEqualTo(x.Count / 9), $"{map.Id}: names given twice: {string.Join(", ", repeats)}");
+            }
+            Assert.That(a.Select(e => e.Def.Name).Distinct().Count(), Is.EqualTo(a.Count), "Shale's people, each their own name");
             Assert.That(a.Count(x => x.Male), Is.GreaterThan(0));
             Assert.That(a.Count(x => !x.Male), Is.GreaterThan(0));
         }

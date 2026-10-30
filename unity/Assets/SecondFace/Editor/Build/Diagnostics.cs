@@ -54,6 +54,18 @@ namespace SecondFace.EditorTools
                     if (left < 0 || v[i].x > v[left].x) left = i;
                 }
                 Debug.Log($"HEADFRAME {b}: top {v[top]} rest {R(top)} | most -z {v[front]} rest {R(front)} | most +z {v[back]} rest {R(back)} | most +x {v[left]} rest {R(left)} | bounds {mesh.bounds}");
+                // the face's relief in the frame: for cells of x (0.05) and y (0.05), the most forward z (the nose stands
+                // out of it; the beard's mask keeps off it, P4.15b)
+                var cells = new System.Collections.Generic.Dictionary<(int, int), float>();
+                for (var i = 0; i < v.Length; i++)
+                {
+                    var c = R(i);
+                    if (c.a < 0.5f || c.b < 0.3f || c.g < -0.8f || c.g > 0.35f || Mathf.Abs(c.r) > 0.6f) continue;
+                    var k = (Mathf.FloorToInt(c.r / 0.05f), Mathf.FloorToInt(c.g / 0.05f));
+                    cells[k] = cells.TryGetValue(k, out var z) ? Mathf.Max(z, c.b) : c.b;
+                }
+                for (var y = 6; y >= -16; y--)
+                    Debug.Log($"RELIEF {b} y {y * 0.05f:+0.00;-0.00}: " + string.Join(" ", Enumerable.Range(-12, 24).Select(x => cells.TryGetValue((x, y), out var z) ? $"{z:0.00}" : " -- ")));
             }
         }
 
@@ -211,7 +223,14 @@ namespace SecondFace.EditorTools
                 {
                     var go = (GameObject)PrefabUtility.InstantiatePrefab(g.Prefab);
                     var rs = go.GetComponentsInChildren<SkinnedMeshRenderer>(true).OrderBy(r => r.name).ToList();
-                    Mesh Bake(SkinnedMeshRenderer r) { var m = new Mesh(); r.BakeMesh(m); return m; }
+                    // each level's renderer has its own transform: compared in the model's space, not each one's own
+                    Mesh Bake(SkinnedMeshRenderer r)
+                    {
+                        var m = new Mesh(); r.BakeMesh(m);
+                        var to = go.transform.worldToLocalMatrix * Matrix4x4.TRS(r.transform.position, r.transform.rotation, Vector3.one);
+                        m.vertices = m.vertices.Select(p => to.MultiplyPoint3x4(p)).ToArray();
+                        return m;
+                    }
                     var full = rs.FirstOrDefault(r => r.name.EndsWith("_LOD0"));
                     if (full == null) { Object.DestroyImmediate(go); continue; }
                     var f = Bake(full).vertices;
@@ -222,9 +241,9 @@ namespace SecondFace.EditorTools
                     float Near(Vector3 p)
                     {
                         var k = Key(p);
+                        var best = float.MaxValue;   // the nearest so far, kept as the search widens
                         for (var ring = 0; ring < 8; ring++)
                         {
-                            var best = float.MaxValue;
                             for (var x = -ring; x <= ring; x++) for (var y = -ring; y <= ring; y++) for (var z = -ring; z <= ring; z++)
                             {
                                 if (Mathf.Max(Mathf.Abs(x), Mathf.Abs(y), Mathf.Abs(z)) != ring) continue;

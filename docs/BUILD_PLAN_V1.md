@@ -2462,6 +2462,38 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   temple) landed rotated. The frame now takes up from the body's long axis towards the head bone and the face's way
   from the head bone to the eyes (`Diagnostics.HeadFrame` logs the frame at the head's top and nose). Check marks with
   a coloured diagnostic before tuning them; the bare-skin sample had also been taken from the wrong place.
+- **Empty metas after a full disk (P4.15b).** The disk-full import of P4.15a left six garment `.meta` files at zero
+  bytes ("does not have a valid GUID and its corresponding Asset file will be ignored") and two more garments with a
+  broken import artifact ("Unknown error occurred while loading VirtualArtifacts/Primary/<guid>"). Unity skipped them,
+  `WardrobeBuild` quietly left them out of the sets, and every woman whose outfit named the fisherman sweater (also
+  the women's own starting top, so the Dresser had nothing to fall back on) rendered topless; some men went barefoot.
+  An empty meta was even committed. Guards now: `npm run check` fails on any empty `.meta` under `unity/Assets`;
+  `WardrobeBuild` logs an error naming every manifest garment that did not load; `WardrobeSetTests` holds each set to
+  its manifest; the Dresser takes a stand-in of the same slot for a garment the set lacks. Restore empty metas from
+  git (their GUIDs are referenced); a broken artifact is rebuilt only when the importer's inputs change (a forced
+  reimport reuses it): change the meta's `userData`, then reimport (`Diagnostics.ReimportPeople` with `SF_REIMPORT`).
+- **Every level of detail drawn at once (P4.15b).** A garment's model carries its own LOD group. `Wardrobe.Put` moved
+  its renderers onto the person and destroyed the model's root at the frame's end; when that LOD group went, it took
+  the renderers out of the person's group, so LOD0, LOD1 and LOD2 all drew from then on: z-fighting blotches on the
+  clothes, three times the cloth's draw cost, and the coarse levels' slivers as a fin of cloth beside a leg. Only in
+  play mode (the edit-mode builders destroy at once), so an edit-mode probe looked clean. The model's LOD group is now
+  destroyed before its renderers join the person's (`AGarmentDrawsOneLevelAtATime` renders a close-up and checks).
+- **Decimation that bridges two parts of the cloth (P4.15b).** Blender's collapse decimation at a fixed ratio left
+  slivers standing up to 18 cm out of some garments' coarse levels (a trouser's LOD2). `mh_build.decimated` now
+  measures each level against the whole surface (each face's centre and edge midpoints to the nearest point, BVH) and
+  reduces less until it keeps within 2.5 cm (LOD1), 5 cm (LOD2) or 1 cm (a capped LOD0); the log names every part it
+  had to spare. To compare levels in Unity, bake each renderer and bring it into the model's space first: each level
+  has its own transform (`Diagnostics.GarmentLods`).
+- **A beard on the nose; blond brows on a brown man (P4.15b, the owner's screenshot).** The beard's masks in
+  SecondFace/Skin took the nose's tip (y -0.40 in the head frame) for the mouth, so the moustache band and the lips'
+  cut-out sat on the nose and the beard grew over it. Landmarks are now measured, not guessed: `Diagnostics.HeadFrame`
+  prints the face's relief in the frame (eyes +0.08, nose tip -0.40, nose base -0.51, lips -0.61 to -0.73, chin
+  -0.85). The colours: an authored grey (the web game's `hair.color`) was taken as the hair's own colour, so the brows
+  were derived from grey and read blond, and the beard was one blended grey tint, warm, that read blond on brown skin.
+  Now an authored grey says how grey, not what colour: the brows keep the person's own shade and grey well after the
+  head; the beard keeps its pigmented hairs (`BeardBase`) and a share gone white (`BeardGrey`), drawn hair by hair
+  (salt and pepper); the palette's greys are neutral. Greying spreads by a personal pace factor (lognormal), so years
+  before a people's onset there are only a few grey hairs, and the beard follows the same curve about six years ahead.
 - **Offsets by people move the population's mean.** Each people's stature against the Reach's mean must be centred over
   the Reach's shares, or the Reach shrinks (`Bodies.MeanStatureOffset`); a static average over a table declared later in
   the class is null at type initialisation (a property, not a field).

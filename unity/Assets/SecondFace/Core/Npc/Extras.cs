@@ -70,12 +70,13 @@ namespace SecondFace.Core.Npc
         {
             var l = new List<Extra>();
             if (map?.Extras == null) return l;
-            for (var i = 0; i < map.Extras.Count; i++) l.AddRange(Make(map, i, map.Extras[i]));
+            var taken = new HashSet<string>();   // a place's names, so three women of one town are not all Lia (P4.15b)
+            for (var i = 0; i < map.Extras.Count; i++) l.AddRange(Make(map, i, map.Extras[i], taken));
             return l;
         }
 
         /// <summary>The extras of one of a map's definitions (ids <c>x_&lt;map&gt;_&lt;index&gt;_&lt;k&gt;</c>).</summary>
-        public static List<Extra> Make(MapDef map, int index, ExtrasDef def)
+        public static List<Extra> Make(MapDef map, int index, ExtrasDef def, HashSet<string> taken = null)
         {
             var mapSeed = map.Seed.HasValue ? (uint)(long)map.Seed.Value : Bodies.Seed(map.Id);
             var rng = new Rng(unchecked(mapSeed * 7919u + (uint)index * 104729u));
@@ -92,7 +93,16 @@ namespace SecondFace.Core.Npc
                 var male = rng.Chance(MaleShare(role));
                 var look = Bodies.For(id, male, age, role, community: community);
                 var pool = Names[Pool(look, rng)];
-                var name = rng.Pick(male ? pool.M : pool.F);
+                var names = male ? pool.M : pool.F;
+                var name = rng.Pick(names);
+                if (taken != null)
+                {
+                    // the next of the same people's names not yet given in the place (no draw of its own: the rest of
+                    // the place stays as it was); a repeat only once the pool is spent
+                    var at0 = Array.IndexOf(names, name);
+                    for (var step = 0; step < names.Length && taken.Contains(name); step++) name = names[(at0 + step + 1) % names.Length];
+                    taken.Add(name);
+                }
                 // a spot each while they last, then about the area; a definition with neither keeps them at the map's middle
                 string spot = null;
                 Tile at = null;

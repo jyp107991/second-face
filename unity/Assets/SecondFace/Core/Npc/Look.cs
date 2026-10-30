@@ -52,6 +52,10 @@ namespace SecondFace.Core.Npc
         /// <summary>The beard's own colour (0xRRGGBB; 0: the hair's, a shade darker): a beard greys before the head, and
         /// grows red under brown hair as often as not among the north European.</summary>
         [JsonProperty("beardColour")] public int BeardColour;
+        /// <summary>A greying beard as it is (P4.15b): the colour of its hairs that keep their pigment (0: the beard's colour) and
+        /// the share of them gone white; drawn hair by hair, salt and pepper, never one blended tint (which read blond).</summary>
+        [JsonProperty("beardBase")] public int BeardBase;
+        [JsonProperty("beardGrey")] public float BeardGrey;
         /// <summary>The brows' style (<see cref="Looks.BrowStyles"/>: 0 fine or sparse, 1 natural, 2 full or heavy, a woman's
         /// and a man's each their own) and colour (0: from the hair).</summary>
         [JsonProperty("brows")] public int Brows = 1;
@@ -84,7 +88,7 @@ namespace SecondFace.Core.Npc
         /// <summary>Hair colours: dull, dusty, sun-bleached or greying (the hair rule).</summary>
         public static readonly int[] HairColours =
         {
-            0x16110d, 0x2b1d14, 0x4a3322, 0x6b5039, 0x9c8160, 0xb5a07a, 0x6e2f17, 0x7d7a74, 0xa7a49c, 0xcfcbc1,
+            0x16110d, 0x2b1d14, 0x4a3322, 0x6b5039, 0x9c8160, 0xb5a07a, 0x6e2f17, 0x797875, 0xa4a3a0, 0xcfcecb,
         };
 
         /// <summary>Eye colours by id (the iris tint).</summary>
@@ -178,6 +182,9 @@ namespace SecondFace.Core.Npc
         }
 
         /// <summary>The beard's colour: its own, else the hair's a shade darker.</summary>
+        /// <summary>The colour of a beard's pigmented hairs (<see cref="PlayerLook.BeardBase"/>, else <see cref="BeardRgb"/>).</summary>
+        public static int BeardPigment(PlayerLook look) => look.BeardBase != 0 ? look.BeardBase : BeardRgb(look);
+
         public static int BeardRgb(PlayerLook look)
         {
             if (look.BeardColour != 0) return look.BeardColour;

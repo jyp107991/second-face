@@ -149,6 +149,7 @@ Material:
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
+    - _BakeBalance: {r: 1.0008192, g: 1.0016664, b: 0.9990174, a: 1}
     - _BareSkin: {r: 0.58978, g: 0.42566642, b: 0.34616426, a: 1}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _BeardColour: {r: 0.11999995, g: 0.089999996, b: 0.06999998, a: 1}

@@ -103,6 +103,14 @@ namespace SecondFace.EditorTools
                         r.sharedMaterial.SetTexture("_RestMap", rest);
                         // the bare skin under the shaved scalp's stubble (P4.15: the stubble recoloured, the bald scalp bare)
                         if (bare.HasValue && r.sharedMaterial.HasProperty("_BareSkin")) r.sharedMaterial.SetColor("_BareSkin", bare.Value);
+                        // every bake brought to one reference skin (P4.15b: the men's bake is a bronzed tan, more orange and
+                        // brighter than the women's), so a person's colour comes from their tone and people alone
+                        if (bare.HasValue && r.sharedMaterial.HasProperty("_BakeBalance"))
+                        {
+                            var bal = Balance(bare.Value);
+                            r.sharedMaterial.SetVector("_BakeBalance", bal);
+                            Debug.Log($"WardrobeBuild: {m.@base} bake balance {bal}");
+                        }
                         EditorUtility.SetDirty(r.sharedMaterial);
                     }
             var sculpt = go.AddComponent<FaceSculpt>();
@@ -221,6 +229,17 @@ namespace SecondFace.EditorTools
             var c = sum / n; c.a = 1f;
             Debug.Log($"WardrobeBuild: {model.name} bare skin {c} over {n} forehead vertices");
             return c;
+        }
+
+        /// <summary>The reference skin every bake is balanced to: the women's base's forehead as measured by
+        /// <see cref="BareSkin"/> (sRGB), a mid-tone; re-measure if that bake changes.</summary>
+        public static readonly Color ReferenceBare = new(0.590f, 0.426f, 0.346f);
+
+        /// <summary>Per channel, the reference skin over this bake's, in linear light (a ratio, so a vector, not a colour).</summary>
+        public static Vector4 Balance(Color bare)
+        {
+            float R(float reference, float own) => Mathf.Clamp(Mathf.GammaToLinearSpace(reference) / Mathf.Max(1e-3f, Mathf.GammaToLinearSpace(own)), 0.5f, 1.6f);
+            return new Vector4(R(ReferenceBare.r, bare.r), R(ReferenceBare.g, bare.g), R(ReferenceBare.b, bare.b), 1f);
         }
 
         private static GameObject Bound(string modelPath, string prefabPath)

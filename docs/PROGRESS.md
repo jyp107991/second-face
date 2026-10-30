@@ -782,11 +782,24 @@ Done since: the bases rebuilt with the 21 face targets and two coily hair styles
 beards, scars, tattoos, freckles and the brows, landed rotated: BUILD_PLAN §8); brows drawn after the tone; beards drawn as
 strands over shadowed skin; the bald scalp duller; the look profile's folder created; the base assets force-reimported
 after a disk-full import (`Diagnostics.ReimportPeople`); the lineup made resumable (`SF_LINEUP_SINCE`) because the
-headless editor's software GL faults now and then. **Next action:** finish the lineup render (rerun with
-`SF_LINEUP_SINCE` until it passes), assemble the sheets (`tools/unity/people/lineup_sheet.py`: people × sex × age,
-front and profile), check every regularity reads, copy the sheets to
-`docs/evidence/unity/p4/peoples/`, commit with the assets, send them. Then the Shale showcase again, then the skin step
-(Reom's detail, subsurface scattering) and the hair shader (the cards read chunky).
+headless editor's software GL faults now and then. P4.15a done (lineup sheets in `docs/evidence/unity/p4/peoples/`).
+**P4.15b, Shale's residents with the archetype people:** the first render showed five women topless, men barefoot and
+a fin of cloth beside some legs. Causes and fixes (BUILD_PLAN §8): empty `.meta` files and broken imports from the
+disk-full import dropped garments from the sets (restored; `npm run check` now fails on an empty meta; `WardrobeBuild`
+errors on a missing garment; the Dresser takes a stand-in); a garment's own LOD group took its renderers out of the
+person's, so all three levels drew at once (fixed in `Wardrobe.Put`); Blender's decimation left slivers in coarse
+levels (`mh_build` now checks each level against the whole surface; bases rebuilt). Tests: `WardrobeSetTests`. The
+Shale test also captures each face (`shale_face_NN`, `SF_SHALE_ONLY` for a few); `tools/unity/people/shale_sheet.py`
+builds both sheets. From the faces: the hoods that hid a face, the superhero cowl and the stethoscope (a grey neck
+ring) retired; the men's bronzed bake balanced to the women's (`_BakeBalance`, measured by `WardrobeBuild`); the fair
+end rosier; a place's extras each their own name; beards redrawn (the owner's screenshot: a beard on the nose, blond
+brows and beard on a brown man; BUILD_PLAN §8): masks on measured landmarks, salt and pepper hair by hair, brows that
+keep their colour, greying by a personal pace. Tests: `PeoplesTests.AnAuthoredGreySaysHowGreyNotWhatColour`,
+`ExtrasTests` (names). **Next action:** check the full Shale sheets, commit the evidence in
+`docs/evidence/unity/p4/shale/`, send them. Then P4.15c, the skin and hair shaders:
+the patch is drafted (pre-integrated scattering from `tools/unity/people/skin_lut.py`, pores from
+`tools/unity/people/skin_detail.py`, a second sharper specular lobe, a faint Kajiya-Kay band on hair); copy the lookup
+and pore textures to `Assets/SecondFace/Shaders/Skin/`, apply, rebuild the wardrobes, render before and after.
 **Next action (superseded by the note above; kept for the record):** P4.14 step 5 polish and step 6: dye as a colour, not a tint (the cloth shader colourises by
 luminance when dyed, so a blue dye reads blue, not khaki-blue); retire the boxy tactical vests and the cyborg suit (the
 generated harness vest and base layer take their place); the duster's front cut cleaned of its hanging strips; hide

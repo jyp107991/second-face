@@ -66,7 +66,10 @@ namespace SecondFace.Game.People
                     block.SetFloat(TattooId, tattoo);
                     // a beard only on a man's body, in its own colour (greying first; red under brown hair) or the hair's darker
                     block.SetFloat(BeardId, look.Body == "m" ? System.Array.IndexOf(Looks.Beards, look.Beard) : -1);
-                    block.SetColor(BeardColourId, Colour(Looks.BeardRgb(look)));
+                    // its pigmented hairs' colour, and in alpha the share gone white (salt and pepper, P4.15b)
+                    var beard = Colour(Looks.BeardPigment(look));
+                    beard.a = Mathf.Clamp01(look.BeardGrey);
+                    block.SetColor(BeardColourId, beard);
                     // the shaved scalp in the hair's colour, and the hairline as far back as the years have taken it
                     var scalp = Colour(look.HairColour);
                     scalp.a = 1f;

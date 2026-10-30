@@ -911,8 +911,9 @@ LOD_BUDGET = [
 def tris(o): return sum(len(p.vertices) - 2 for p in o.data.polygons)
 
 # how far a level of detail's surface may stray from the whole mesh's (m): the game camera's person (LOD1, 10-45 % of the
-# screen's height) within a few pixels, the far one (LOD2) a little more, a capped LOD0 (the close-up) hardly at all
-LOD_TOLERANCE = {'_LOD1': 0.025, '_LOD2': 0.05, '_capped': 0.01}
+# screen's height) within a few pixels, the far one (LOD2) a little more, a capped LOD0 (the close-up) within 2 cm (a
+# robe or a kimono strays 1-2 cm at any reduction: their layers; at 1 cm they went uncapped, a robe at 20 K triangles)
+LOD_TOLERANCE = {'_LOD1': 0.025, '_LOD2': 0.05, '_capped': 0.02}
 
 def lod_tolerance(name):
     for k, t in LOD_TOLERANCE.items():

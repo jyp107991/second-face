@@ -28,6 +28,7 @@ Shader "SecondFace/Skin"
         _Beard ("Beard (-1 none)", Float) = -1
         _BeardColour ("Beard colour", Color) = (0.12, 0.09, 0.07, 1)
         _BareSkin ("Bare skin (the bake's forehead, set by the build)", Color) = (0.75, 0.6, 0.5, 1)
+        _BakeBalance ("The bake's colour balanced to the reference skin, linear (set by the build)", Vector) = (1, 1, 1, 1)
         _ScalpColour ("Shaved scalp's hair colour (A: recolour on)", Color) = (0, 0, 0, 0)
         _Bald ("Pattern balding", Range(0, 1)) = 0
         _Brow0 ("Brow: inner x, outer x, inner height, tail height", Vector) = (0.19, 0.62, 0.25, 0.22)
@@ -52,7 +53,7 @@ Shader "SecondFace/Skin"
             half _BumpScale, _Smoothness, _Aged, _Tone, _Undertone, _Freckles;
             float _Scar, _Tattoo, _Beard;
             half4 _BeardColour;
-            half4 _BareSkin, _ScalpColour, _BrowColour;
+            half4 _BareSkin, _ScalpColour, _BrowColour, _BakeBalance;
             float4 _Brow0, _Brow1;
             half _Bald;
         CBUFFER_END
@@ -166,19 +167,30 @@ Shader "SecondFace/Skin"
             if (id < 6.5) return p.y < -0.4 && p.y > -0.85 && p.z > 0 && abs(p.x) > 0.45 && sin(p.y * 40.0) > 0.4 ? 1 : 0;   // jaw_stripes
             return p.z > 0.3 && p.y > 0.0 && p.y < 0.2 ? 0.8 : 0;                                                            // eye_band
         }
-        // a beard (Core Looks.Beards, in order) as how much of the skin is hair, in the head's frame: the jaw, chin
-        // and upper lip below the cheekbones and in front of the ears, never the lips, fading down the throat
+        // a beard (Core Looks.Beards, in order) as how much of the skin is hair, in the head's frame. The face's landmarks as
+        // measured in this frame (Diagnostics.HeadFrame's relief, P4.15b; the first masks took the nose's tip for the
+        // mouth and grew a beard over the nose): the eyes at y +0.08, the nose from -0.1 to its tip at -0.40 and its base
+        // at -0.51, about 0.2 to each side; the philtrum to -0.6; the lips from -0.61 to -0.73 (the mouth's line at -0.67)
+        // and 0.22 to each side; the chin's point near -0.85, the throat below -0.95
         float BeardAt(float id, float3 p)
         {
-            if (p.z < -0.05 || p.y > 0.0) return 0;
-            float lips = 1.0 - smoothstep(0.07, 0.12, length(float2(p.x * 0.75, p.y + 0.43)) * (p.z > 0.6 ? 1.0 : 9.0));
-            float cheeks = 1.0 - smoothstep(-0.28, -0.1, p.y + 0.12 * abs(p.x));        // below the cheekbones
-            float ears = 1.0 - smoothstep(0.72, 0.86, abs(p.x) - 0.15 * p.z);           // in front of the ears
+            if (p.z < -0.05 || p.y > 0.05) return 0;
+            float ax = abs(p.x);
+            float front = smoothstep(0.75, 0.9, p.z);
+            float lips = (1.0 - smoothstep(0.85, 1.15, length(float2(ax / 0.23, (p.y + 0.67) / 0.062)))) * front;
+            float nose = (1.0 - smoothstep(0.17, 0.24, ax)) * smoothstep(-0.53, -0.49, p.y) * front;
+            // the cheek line: from the mouth's corner up across the cheek to the sideburn in front of the ear, and under
+            // the nose for the moustache; a soft edge, never a level line
+            float side = lerp(-0.62, -0.02, pow(saturate((ax - 0.24) / 0.58), 1.4));
+            float cheekLine = lerp(-0.51, side, smoothstep(0.18, 0.28, ax));
+            float cheeks = 1.0 - smoothstep(cheekLine - 0.05, cheekLine + 0.05, p.y);
+            float ears = 1.0 - smoothstep(0.72, 0.86, ax - 0.15 * p.z);                 // in front of the ears
             float throat = p.y < -0.95 ? saturate(1.0 - (-0.95 - p.y) * 2.5) : 1.0;
-            float jaw = cheeks * ears * throat * (1.0 - lips);
-            float lip = (1.0 - smoothstep(0.22, 0.3, abs(p.x))) * step(-0.4, p.y) * (1.0 - smoothstep(-0.27, -0.22, p.y)) * step(0.62, p.z) * (1.0 - lips);
-            float chin = (1.0 - smoothstep(0.2, 0.28, abs(p.x))) * step(p.y, -0.47) * throat * (1.0 - lips);
-            float grain = Noise3(p * 140.0);
+            float bare = (1.0 - lips) * (1.0 - nose);
+            float jaw = cheeks * ears * throat * bare;
+            float lip = (1.0 - smoothstep(0.24, 0.3, ax)) * (1.0 - smoothstep(-0.515, -0.495, p.y)) * smoothstep(-0.625, -0.6, p.y) * front * bare;   // under the nose, over the lip
+            float chin = (1.0 - smoothstep(0.22, 0.3, ax)) * (1.0 - smoothstep(-0.76, -0.72, p.y)) * throat * bare;
+            float grain = lerp(Noise3(p * 140.0), 0.5, saturate(length(fwidth(p)) * 140.0 - 0.4));   // its average where finer than a pixel
             if (id < 0.5) return jaw * 0.18 * (0.5 + grain);                       // stubble_light
             if (id < 1.5) return jaw * 0.32 * (0.5 + grain);                       // stubble
             if (id < 2.5) return jaw * 0.48 * (0.5 + grain);                       // stubble_heavy
@@ -280,8 +292,12 @@ Shader "SecondFace/Skin"
             // the whole human range over the mid-tone bake (P4.14): to 1, deep dark (the bake's shade at a third, warm
             // and a little bluer in the shadows); to -1, very fair (the bake's shade lifted most of the way to white, a
             // touch pink)
+            // P4.15b: each base's bake first brought to the reference skin's colour (the men's bake is a bronzed tan, far
+            // more orange than the women's: everyone's tone comes from the people model, not from which bake they wear)
+            a *= _BakeBalance.rgb;
             if (_Tone > 0.001h) a *= lerp(half3(1, 1, 1), half3(0.3h, 0.21h, 0.17h), pow(_Tone, 0.85h));
-            else if (_Tone < -0.001h) a = lerp(a, 1.0h - (1.0h - a) * half3(0.4h, 0.52h, 0.58h), -_Tone);
+            // the fair end rosy beige, not white: green and blue lifted less than red (P4.15b: the fairest read as plaster)
+            else if (_Tone < -0.001h) a = lerp(a, 1.0h - (1.0h - a) * half3(0.45h, 0.62h, 0.72h), -_Tone);
             // undertone: warmer (golden, olive) or rosier
             a *= _Undertone >= 0 ? 1.0h + _Undertone * half3(0.05h, 0.0h, -0.08h) : 1.0h + (-_Undertone) * half3(0.03h, -0.03h, 0.02h);
             // the shaved scalp's stubble in the hair's own colour, as dense as the bake painted it, none where bald
@@ -316,23 +332,41 @@ Shader "SecondFace/Skin"
                 // and the jaw (streaks long in y), thicker where the beard is dense, the skin showing between them, the
                 // edges ragged
                 half b = (half)saturate(BeardAt(_Beard, p));
-                b *= (half)smoothstep(0.15, 0.55, b + (Noise3(p * 34.0) - 0.5) * 0.45);
+                // denser and thinner in patches, the edge a falloff, never a cut line (P4.15b: a ragged hard edge)
+                b *= (half)saturate(0.85 + (Noise3(p * 34.0) - 0.5) * 0.35);
+                // the hairs are far finer than a pixel at the game's distances: where they are, their average instead of
+                // their aliasing (P4.15b: beards read as sandpaper)
+                float px = length(fwidth(p));
                 float strands = Noise3(float3(p.x * 230.0, p.y * 38.0, p.z * 230.0)) * 0.7 + Noise3(p * 420.0) * 0.3;
+                // (still clumped and streaked down the jaw at a scale the eye can resolve: never a flat tint)
+                float clumps = Noise3(float3(p.x * 70.0, p.y * 16.0, p.z * 70.0));
+                strands = lerp(strands, 0.3 + 0.4 * clumps, saturate(px * 230.0 - 0.4));
+                // salt and pepper (P4.15b): the beard's colour is its pigmented hairs', alpha the share gone white; each
+                // hair one or the other, never a blend of the two (a blended grey on brown skin read as blond)
+                half3 pigment = _BeardColour.rgb;
+                half share = _BeardColour.a;
+                const half3 whiteHair = half3(0.6h, 0.6h, 0.58h);
+                half3 mean = lerp(pigment, whiteHair, share);
                 if (_Beard < 2.5)
                 {
-                    half dots = (half)smoothstep(0.55, 0.75, Noise3(p * 520.0));
-                    a = lerp(a, a * half3(0.66h, 0.66h, 0.7h), b);
-                    a = lerp(a, _BeardColour.rgb, b * dots * 0.55h);
+                    half fine = (half)saturate(px * 520.0 - 0.4);
+                    half dots = (half)lerp(smoothstep(0.55, 0.75, Noise3(p * 520.0)), 0.2 + 0.25 * Noise3(p * 90.0), fine);
+                    half white = (half)lerp(step(Noise3(p * 520.0 + 17.0), share), share, fine);
+                    // the skin seen through cut hairs takes their colour, a little deeper: a dark shadow on fair skin, next
+                    // to nothing on dark skin under dark hair, a grey haze under grey (P4.15b: a grey patch on dark skin)
+                    a = lerp(a, lerp(a, mean, 0.5h) * 0.88h, b * 0.7h);
+                    a = lerp(a, lerp(pigment, whiteHair, white), b * dots * 0.45h);
                 }
                 else
                 {
-                    // strands over about half the skin where the beard is dense, fewer towards its edges: the skin, shadowed,
-                    // shows between them
-                    half hair = (half)(smoothstep(0.42, 0.62, strands) * b);
-                    a = lerp(a, a * half3(0.55h, 0.55h, 0.6h), b * 0.7h);
-                    a = lerp(a, _BeardColour.rgb * (half)(0.8 + 0.4 * Noise3(p * 90.0)), hair * 0.85h);
+                    // strands over most of the skin where the beard is dense, fewer towards its edges; between them deeper
+                    // hair, not bare dark skin (P4.15b: a white beard read as zebra stripes)
+                    half hair = (half)(smoothstep(0.32, 0.6, strands) * b);
+                    half white = (half)lerp(step(Noise3(float3(p.x * 230.0 + 17.0, p.y * 38.0 + 3.0, p.z * 230.0)), share), share, saturate(px * 230.0 - 0.4));
+                    a = lerp(a, mean * 0.55h + a * 0.2h, b * 0.75h);
+                    a = lerp(a, lerp(pigment, whiteHair, white) * (half)(0.85 + 0.3 * Noise3(p * 90.0)), hair * 0.85h);
                 }
-                smooth = lerp(smooth, 0.15h, b);
+                smooth = lerp(smooth, 0.15h, b * (_Beard < 2.5 ? 0.4h : 0.9h));   // stubble barely dulls the skin
             }
             if (_Tattoo > -0.5)
             {
