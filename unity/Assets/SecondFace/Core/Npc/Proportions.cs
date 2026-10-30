@@ -18,7 +18,7 @@ namespace SecondFace.Core.Npc
         /// nose's form, the lips' shape, the brows' angle) stays the archetype's.</summary>
         public static readonly string[] Free =
         {
-            "head-scale-horiz", "head-scale-depth", "head-back-scale-depth", "head-scale-vert", "forehead-scale-vert", "chin-height",
+            "head-scale-horiz", "head-cranium", "head-scale-depth", "head-back-scale-depth", "head-scale-vert", "forehead-scale-vert", "chin-height",
             "cheek-bones", "eye-trans", "neck-scale-horiz", "neck-scale-depth", "neck-scale-vert",
             // and the features the face's proportions turn on (its width at the jaw, the eyes', nose's and mouth's size,
             // the lips, the brows' height)
@@ -48,15 +48,15 @@ namespace SecondFace.Core.Npc
         public const double Limit = 0.85;
 
         // the cost of moving a shape by its whole range, against a measure missed by one of the group's sd
-        private const double Stay = 0.25;
+        private const double Stay = 0.12;
 
         /// <summary>The neck's shapes answer to the neck alone, its girth and the head and neck's height (fitted to the other
         /// measures as well, the solver found combinations the model got wrong: R2).</summary>
         private static bool NeckOnly(string id) => id.StartsWith("neck-");
         // a target is kept this share of each percentile range inside it: room for the response model's error, most for the
         // measures it predicts least well (the face's height and the neck's girth, which the chin's place moves: R2)
-        private static readonly double[] Margins = { 0.08, 0.08, 0.08, 0.2, 0.08, 0.2, 0, 0.15, 0.15 };
-        private static readonly double[] RatioMargins = { 0.25, 0.2, 0.08, 0.08, 0.08, 0.2, 0.08, 0.15 };
+        private static readonly double[] Margins = { 0.05, 0.05, 0.05, 0.12, 0.05, 0.15, 0, 0.1, 0.1 };
+        private static readonly double[] RatioMargins = { 0.15, 0.12, 0.05, 0.05, 0.05, 0.12, 0.05, 0.1 };
 
         // the measures in ProportionsData.Measures' order: the stature conditions the draw and sets the scale, the rest are
         // the person's to take
@@ -244,7 +244,7 @@ namespace SecondFace.Core.Npc
         public static double[] Target2(ProportionsData.Faces2 g, uint seed, IReadOnlyDictionary<int, double> given = null)
         {
             var n = g.Mean.Length;
-            double Pad(int i) => 0.1 * (g.P95[i] - g.P5[i]);
+            double Pad(int i) => 0.06 * (g.P95[i] - g.P5[i]);
             var mu = (double[])g.Mean.Clone();
             var cov = new double[n, n];
             for (var i = 0; i < n; i++)

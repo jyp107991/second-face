@@ -33,6 +33,9 @@ namespace SecondFace.Game.People
         /// <summary>The hair's colour chosen at creation (alpha 0: the texture's own); greys towards ash with
         /// <see cref="Aged"/> (on the player's recolouring hair shader, P5.3i).</summary>
         public Color HairColour;
+        /// <summary>A grown beard's colour (its strands, R5: the pigmented hairs' and the white ones' mean by their share;
+        /// alpha 0: the texture's own).</summary>
+        public Color BeardColour;
         public static readonly Color AshGrey = new(0.62f, 0.6f, 0.57f, 1f);
 
         private readonly Dictionary<SkinnedMeshRenderer, Dictionary<string, int>> _index = new();
@@ -117,6 +120,14 @@ namespace SecondFace.Game.People
                 {
                     r.GetPropertyBlock(_block);
                     _block.SetFloat(AgedId, Mathf.Max(Aged, SkinAge));
+                    r.SetPropertyBlock(_block);
+                }
+                else if (r.name.Contains("Beard_") && BeardColour.a > 0.001f && m.HasProperty(RecolourId))
+                {
+                    r.GetPropertyBlock(_block);
+                    var c = Color.Lerp(BeardColour, AshGrey, Aged * 0.9f);
+                    c.a = 1f;
+                    _block.SetColor(RecolourId, c);
                     r.SetPropertyBlock(_block);
                 }
                 else if (r.name.Contains("Hair_") && HairColour.a > 0.001f && m.HasProperty(RecolourId))   // own or a piece

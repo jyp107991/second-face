@@ -10,7 +10,7 @@ import json, os
 import numpy as np
 
 STYLES = ('sf_crop', 'sf_bun', 'sf_braid', 'sf_matted', 'sf_coils', 'sf_cornrows')
-VERSION = 19   # bump when the generator changes: mh_build regenerates into its cache by name + version
+VERSION = 21   # bump when the generator changes: mh_build regenerates into its cache by name + version
 ATLAS = 1024
 COLS = {'sheet': 0, 'clump': 1, 'wisp': 2, 'matted': 3}
 
@@ -57,6 +57,7 @@ def hair_weight(P, top, eye, mode, recede=0.0):
 # ------------------------------------------------------------------------------------------------------------------
 class Base:
     def __init__(self, mh):
+        self.mh = mh
         V, groups, F, g = [], {}, [], None
         for line in open(os.path.join(mh, '3dobjs', 'base.obj')):
             if line.startswith('v '): V.append(tuple(map(float, line.split()[1:4])))
@@ -526,6 +527,183 @@ def gen_cornrows(B, rng):
     return m
 
 
+# ------------------------------------------------------------------------------------------------------------------
+# beards (R5, owner pass 10: "beards as hair, not block overlays"): cards rooted on the face where the Skin shader paints
+# the beard (BeardAt, the same zones: the cheek line from the mouth's corner up to the sideburn, the lips and the nose
+# bare, the throat fading out), lying along the skin in the way facial hair grows (down the cheeks and jaw, down and out
+# from the philtrum, back along the jaw's underside towards the throat), dense in the middle and thinning to the edges;
+# a full beard leaves the skin and hangs. The painted beard stays under them as the skin's shadow.
+# ------------------------------------------------------------------------------------------------------------------
+BEARDS = ('sf_beard_short', 'sf_beard_full', 'sf_goatee', 'sf_moustache')
+
+
+class Face:
+    """The face's skin for beards: the head frame of the Skin shader's marks (eyes at (+-0.36, 0.1, 0.88) head radii from
+    its centre; tools/unity/people/brow_frame.py) and the skin's faces from the brows down to the neck, split in four."""
+
+    def __init__(self, B, mh):
+        groups, g = {}, None
+        for line in open(os.path.join(mh, '3dobjs', 'base.obj')):
+            if line.startswith('g '): g = line.split(None, 1)[1].strip()
+            elif line.startswith('f ') and g in ('joint-l-eye', 'joint-r-eye'):
+                groups.setdefault(g, set()).update(int(t.split('/')[0]) - 1 for t in line.split()[1:])
+        le = B.V[sorted(groups['joint-l-eye'])].mean(0); re = B.V[sorted(groups['joint-r-eye'])].mean(0)
+        self.rad = np.linalg.norm(le - re) / (2 * 0.36)
+        self.centre = (le + re) / 2 - np.array([0, 0.1 * self.rad, 0.88 * self.rad])
+        fr = (B.V - self.centre) / self.rad
+        near = (fr[:, 1] < 0.15) & (fr[:, 1] > -1.35) & (fr[:, 2] > -0.3) & (np.abs(fr[:, 0]) < 0.95)
+        faces = [f for f in B.F if all(near[i] for i in f)]
+        # points spread over the faces by area (quads split in two), each with its normal: the roots are drawn from these
+        P, N, A = [], [], []
+        for f in faces:
+            for t in ((f[0], f[1], f[2]), (f[0], f[2], f[3])) if len(f) == 4 else ((f[0], f[1], f[2]),):
+                a, b, c = B.V[list(t)]
+                n = np.cross(b - a, c - a)
+                area = np.linalg.norm(n) / 2
+                P.append((a, b, c)); N.append(B.N[list(t)]); A.append(area)
+        self.tri = np.array(P); self.tn = np.array(N); self.area = np.array(A)
+        self.skin = B.V[[i for f in faces for i in f]]
+        self.B = B
+
+    def frame(self, p): return (np.asarray(p) - self.centre) / self.rad
+
+    def sample(self, rng, n, weight):
+        """n points on the skin drawn by area times weight(frame point): (points, normals, frame points)."""
+        r1, r2 = rng.random(len(self.area) * 4), rng.random(len(self.area) * 4)
+        # first a dense candidate cloud (4 per triangle), then n of them by weight
+        k = np.repeat(np.arange(len(self.area)), 4)
+        s = np.sqrt(r1); u, v = 1 - s, s * (1 - r2); w = s * r2
+        pts = u[:, None] * self.tri[k, 0] + v[:, None] * self.tri[k, 1] + w[:, None] * self.tri[k, 2]
+        nrm = u[:, None] * self.tn[k, 0] + v[:, None] * self.tn[k, 1] + w[:, None] * self.tn[k, 2]
+        nrm /= np.maximum(np.linalg.norm(nrm, axis=1, keepdims=True), 1e-9)
+        fr = self.frame(pts)
+        p = self.area[k] * np.maximum(weight(fr), 0)
+        if p.sum() <= 0: return pts[:0], nrm[:0], fr[:0]
+        pick = rng.choice(len(pts), size=min(n, int((p > 0).sum())), replace=False, p=p / p.sum())
+        return pts[pick], nrm[pick], fr[pick]
+
+    def lift(self, p, h):
+        """p pushed out to at least h above the skin (its nearest skin point's distance)."""
+        d = np.linalg.norm(self.skin - p, axis=1)
+        i = np.argmin(d)
+        if d[i] >= h: return p
+        q = p - self.skin[i]
+        nq = np.linalg.norm(q)
+        out = q / nq if nq > 1e-6 else self.B.N[0]
+        return self.skin[i] + out * h
+
+
+def _ss(e0, e1, x):
+    t = np.clip((x - e0) / (e1 - e0), 0, 1)
+    return t * t * (3 - 2 * t)
+
+
+def beard_zones(p):
+    """The Skin shader's BeardAt zones on frame points p (n x 3), without its grain: (jaw, lip, chin), each 0..1."""
+    x, y, z = p[:, 0], p[:, 1], p[:, 2]
+    ax = np.abs(x)
+    face = (z >= -0.05) & (y <= 0.05)
+    front = _ss(0.75, 0.9, z)
+    lips = (1 - _ss(0.85, 1.15, np.hypot(ax / 0.23, (y + 0.67) / 0.062))) * front
+    nose = (1 - _ss(0.17, 0.24, ax)) * _ss(-0.53, -0.49, y) * front
+    side = -0.62 + (-0.02 + 0.62) * np.clip((ax - 0.24) / 0.58, 0, 1) ** 1.4
+    cheek_line = -0.51 + (side + 0.51) * _ss(0.18, 0.28, ax)
+    cheeks = 1 - _ss(cheek_line - 0.05, cheek_line + 0.05, y)
+    ears = 1 - _ss(0.72, 0.86, ax - 0.15 * z)
+    throat = np.where(y < -0.95, np.clip(1 - (-0.95 - y) * 2.5, 0, 1), 1.0)
+    bare = (1 - lips) * (1 - nose)
+    jaw = cheeks * ears * throat * bare
+    lip = (1 - _ss(0.24, 0.3, ax)) * (1 - _ss(-0.515, -0.495, y)) * _ss(-0.625, -0.6, y) * front * bare
+    chin = (1 - _ss(0.22, 0.3, ax)) * (1 - _ss(-0.76, -0.72, y)) * throat * bare
+    return jaw * face, lip * face, chin * face
+
+
+def growth(fr, n, lipzone):
+    """The way a facial hair grows at frame point fr with skin normal n: down the cheeks and jaw (a little towards the
+    chin's front), down and out from the philtrum, back along the jaw's underside towards the throat; along the skin."""
+    sx = np.sign(fr[0]) if abs(fr[0]) > 1e-4 else 1.0
+    if lipzone: g = np.array([sx * 0.55, -1.0, 0.1])
+    elif n[1] < -0.55: g = np.array([0.0, -0.25, -1.0])
+    else: g = np.array([-sx * 0.12 * (abs(fr[0]) > 0.3), -1.0, 0.3])
+    t = g - (g @ n) * n
+    return t / max(np.linalg.norm(t), 1e-9)
+
+
+def beard_cards(F, m, rng, count, weight, length, width, col, hang=0.0, lift0=0.012, lift1=0.03, k=5, lipzone=None):
+    """count cards rooted by weight(frame) (their density), each `length` (dm, scaled by the zone's weight at its root so
+    the edges are short and sparse) along the growth direction over the skin, `hang` of its length falling free under
+    gravity (a full beard), its lift from the skin rising from lift0 to lift1."""
+    P, N, FR = F.sample(rng, count, weight)
+    for p, n, fr in zip(P, N, FR):
+        wz = float(np.clip(weight(fr[None, :])[0], 0, 1))
+        L = length * rng.uniform(0.7, 1.15) * (0.45 + 0.55 * wz)
+        lz = lipzone(fr[None, :])[0] > 0.3 if lipzone else False
+        d = growth(fr, n, lz)
+        pts = [F.lift(p + n * lift0, lift0)]
+        for j in range(1, k):
+            f = j / (k - 1)
+            dj = d if f <= 1 - hang else d * (1 - hang) + np.array([0.0, -1.0, 0.15]) * hang
+            dj = dj + rng.normal(0, 0.12, 3)
+            dj /= np.linalg.norm(dj)
+            q = pts[-1] + dj * L / (k - 1)
+            pts.append(F.lift(q, lift0 + (lift1 - lift0) * f))
+        pts = np.array(pts)
+        out = np.repeat(n[None, :], k, axis=0)
+        m.ribbon(pts, out, spindle(k, width * rng.uniform(0.8, 1.2), root=0.5, tip=0.25, at=0.35), col, rng,
+                 twist=rng.normal(0, 0.25))
+
+
+def gen_beard_short(B, rng):
+    """A beard cut short with a knife: 8-14 mm over the jaw, the chin and the lip, dense in the middle, sparse at the
+    cheek line and the neck."""
+    F = Face(B, B.mh); m = Mesh()
+    jawz = lambda fr: beard_zones(fr)[0]
+    lipz = lambda fr: beard_zones(fr)[1]
+    beard_cards(F, m, rng, 1100, lambda fr: np.maximum(jawz(fr), lipz(fr)), 0.11, 0.028, 'clump', lift0=0.008, lift1=0.022, k=4, lipzone=lipz)
+    beard_cards(F, m, rng, 300, jawz, 0.09, 0.02, 'wisp', lift0=0.012, lift1=0.03, k=4, lipzone=lipz)
+    return m
+
+
+def gen_beard_full(B, rng):
+    """A full beard grown out, kept rough but not long: 20-35 mm, hanging a little below the jaw, over a short layer that
+    fills it to the skin (R5: at 40-60 mm it read as a costume)."""
+    F = Face(B, B.mh); m = Mesh()
+    jawz = lambda fr: beard_zones(fr)[0]
+    lipz = lambda fr: beard_zones(fr)[1]
+    chinz = lambda fr: np.maximum(beard_zones(fr)[0], beard_zones(fr)[2])
+    beard_cards(F, m, rng, 800, lambda fr: np.maximum(jawz(fr), lipz(fr)), 0.12, 0.032, 'clump', lift0=0.01, lift1=0.025, k=4, lipzone=lipz)
+    beard_cards(F, m, rng, 800, chinz, 0.26, 0.042, 'clump', hang=0.35, lift0=0.02, lift1=0.065, k=6, lipzone=lipz)
+    beard_cards(F, m, rng, 120, chinz, 0.22, 0.028, 'wisp', hang=0.4, lift0=0.03, lift1=0.075, k=5, lipzone=lipz)
+    return m
+
+
+def gen_goatee(B, rng):
+    """The chin and the moustache only."""
+    F = Face(B, B.mh); m = Mesh()
+    z = lambda fr: np.maximum(beard_zones(fr)[1], beard_zones(fr)[2])
+    beard_cards(F, m, rng, 450, z, 0.14, 0.026, 'clump', lift0=0.008, lift1=0.025, k=4, lipzone=lambda fr: beard_zones(fr)[1])
+    beard_cards(F, m, rng, 180, z, 0.12, 0.018, 'wisp', lift0=0.012, lift1=0.03, k=4, lipzone=lambda fr: beard_zones(fr)[1])
+    return m
+
+
+def moustache_zone(fr):
+    """The lip zone thinning towards the mouth's corners (a moustache is fullest under the nose)."""
+    return beard_zones(fr)[1] * (1 - 0.65 * np.clip(np.abs(fr[:, 0]) / 0.28, 0, 1) ** 2)
+
+
+def gen_moustache(B, rng):
+    """Over the lip, down and out from the philtrum, fullest under the nose."""
+    F = Face(B, B.mh); m = Mesh()
+    z = moustache_zone
+    beard_cards(F, m, rng, 260, z, 0.13, 0.024, 'clump', lift0=0.008, lift1=0.022, k=4, lipzone=z)
+    beard_cards(F, m, rng, 120, z, 0.11, 0.016, 'wisp', lift0=0.012, lift1=0.028, k=4, lipzone=z)
+    return m
+
+
+BEARD_GENERATORS = {'sf_beard_short': gen_beard_short, 'sf_beard_full': gen_beard_full, 'sf_goatee': gen_goatee,
+                    'sf_moustache': gen_moustache}
+
+
 GENERATORS = {'sf_crop': gen_crop, 'sf_bun': gen_bun, 'sf_braid': gen_braid, 'sf_matted': gen_matted, 'sf_coils': gen_coils,
               'sf_cornrows': gen_cornrows}
 
@@ -659,6 +837,8 @@ def generate(mh, out_dir):
     made = {}
     for i, name in enumerate(STYLES):
         made[name] = write(B, name, gens[name](B, np.random.default_rng(100 + i)), out_dir, tex)
+    for i, name in enumerate(BEARDS):
+        made[name] = write(B, name, BEARD_GENERATORS[name](B, np.random.default_rng(200 + i)), out_dir, tex)
     open(stamp, 'w').close()
     return made
 

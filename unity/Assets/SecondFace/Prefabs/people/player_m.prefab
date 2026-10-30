@@ -124,6 +124,7 @@ MonoBehaviour:
   SkinAge: 0
   AgedHair: {fileID: 2800000, guid: 81bbc20659ca174e7b8ffd5c55a45d32, type: 3}
   HairColour: {r: 0, g: 0, b: 0, a: 0}
+  BeardColour: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &3269136221382126803
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -173,3 +173,32 @@ main thread or cached by id before crowds grow.
 
 What the boards show beyond proportions (the owner's standard is not met yet, and the gate does not measure it): plastic
 skin, small glassy eyes, hair that reads as a cap or a wig, painted block beards. These are R3-R5.
+
+## 9. R5 part 1: beards as hair, the skull's width, distinct people (2026-10-30)
+
+**Gate: 190 of 252 pass** (75 %; R2 206, but now with the real variety: the solver pulls less to the archetype and keeps
+smaller margins, and the gate holds a new rule, below). Evidence: `gate_r5a.txt`, `board_r5a_men.jpg`,
+`board_r5a_shale.jpg`.
+
+- **Beards are hair** (owner: "block overlays"): cards rooted where the Skin shader paints the beard (the same zones:
+  `hairgen.py` `beard_zones` is its `BeardAt`), lying along the skin as facial hair grows (down the cheeks and jaw, down and
+  out from the philtrum, back along the jaw's underside), dense in the middle and sparse at the cheek line and the neck; a
+  full beard 20-35 mm, hanging a little (at 40-60 mm it read as a costume). Four styles (short, full, goatee, moustache)
+  as `beard` pieces on the male base (`Wardrobe.Beard`, `Looks.BeardPiece`); stubble stays paint; the strands take the
+  beard's colour, a grey beard's white a dull grey-white. The painted beard stays under them as the skin's shadow.
+- **Grey from 55, coming in over ten years** (`Bodies.GreyRamp`): no one jumps from none to half grey on a birthday; the
+  beard over eight.
+- **The skull's width alone** (`head-cranium`, built in `mh_build`): ±8.5 mm of head breadth, the cheeks' width unchanged.
+  The solver uses it where the cheeks would pass the skull.
+- **Distinct people** (gate rule, `gate.py distinct`): each adult's measures and face proportions whitened by their own
+  group's covariance; two people of one sex and people in one place closer than the 5th percentile of the nearest pair
+  among as many real people (inside the gate's ranges) both fail. R2's tighter solver left 21 such people in Shale; now 5.
+- **The face measured bare**: a beard hides the mouth's corners and the chin and widens the outline, so the 2D half
+  measures each face on a beard-free render (`portraits/`), and the boards show people as they look (`portraits_look/`).
+- **Looks fitted when first shown** (`Bodies.For(fit: false)`, `Bodies.Finish` in `LookView.Apply`): a place's people
+  are made as data when it loads; the few milliseconds of each one's fit come as they come near.
+
+Still failing (62): edge misses spread over the measures (a third within 5 % of a range), most among the over-60s (ANSUR
+stops at 58; FairFace's 60+ bands are thin), and five similar pairs. Next: R4 (age in the face: an apparent-age check, the
+face's ageing to match), then the hair (the hairline at the person's own forehead, volume off the scalp) and the skin.
+

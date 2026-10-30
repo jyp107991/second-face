@@ -49,7 +49,9 @@ def main(results, parquet, out, ids=None):
     d.text((8, 8), 'Each row: ours (left), then four real people of the same sex, ancestry and age band (FairFace, CC BY 4.0)', fill=(230, 230, 230))
     for r, p in enumerate(who):
         y = 30 + r * (ch + 44)
-        port = os.path.join(results, 'portraits', p['id'] + '.png')
+        # as they look (with their beard), else the bare portrait the landmarks were measured on
+        port = os.path.join(results, 'portraits_look', p['id'] + '.png')
+        if not os.path.exists(port): port = os.path.join(results, 'portraits', p['id'] + '.png')
         if os.path.exists(port):
             sheet.paste(face_crop(Image.open(port).convert('RGB'), ours.get(p['id'])).resize((cw, ch)), (0, y))
         for k, i in enumerate(rows[p['id']]):

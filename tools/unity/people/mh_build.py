@@ -923,10 +923,10 @@ def slot(key):
 # P4.16: hair's close-up holds a groomed style whole (crown braids, a plait, the hairline's fine hairs: 8-14 K; thinned to
 # 6 K it lost the hairline's hairs at random), and the game camera's hair is its scalp layer decimated plus locks (at
 # 600 the layer, one island bigger than the budget, was dropped: 12 loose locks over a painted scalp)
-LOD0_CAP = {'Brows': 3000, 'Lashes': 1500, 'Hair': 16000, 'Cloth': 4000}
+LOD0_CAP = {'Brows': 3000, 'Lashes': 1500, 'Hair': 16000, 'Beard': 9000, 'Cloth': 4000}
 LOD_BUDGET = [
-    {'Body': 3000, 'Cloth': 2400, 'Hair': 1600, 'Eyes': 200, 'Brows': 500, 'Lashes': None},
-    {'Body': 1000, 'Cloth': 800, 'Hair': 400, 'Eyes': None, 'Brows': None, 'Lashes': None},
+    {'Body': 3000, 'Cloth': 2400, 'Hair': 1600, 'Beard': 900, 'Eyes': 200, 'Brows': 500, 'Lashes': None},
+    {'Body': 1000, 'Cloth': 800, 'Hair': 400, 'Beard': 250, 'Eyes': None, 'Brows': None, 'Lashes': None},
 ]
 
 def tris(o): return sum(len(p.vertices) - 2 for p in o.data.polygons)
@@ -958,13 +958,13 @@ def stray(whole, coarse):
     return worst
 
 def part(o):
-    for k in ('Body', 'Cloth', 'Hair', 'Eyes', 'Brows', 'Lashes'):
+    for k in ('Body', 'Cloth', 'Hair', 'Beard', 'Eyes', 'Brows', 'Lashes'):
         if o.name.startswith(k): return k
     return 'Cloth'
 
 # strands and cards are many small islands that collapse cannot merge: they are thinned instead, whole islands kept
 # evenly through the mesh until the budget is met
-STRANDS = ('Brows', 'Lashes', 'Hair')
+STRANDS = ('Brows', 'Lashes', 'Hair', 'Beard')
 
 def thin(me, target):
     bm = bmesh.new(); bm.from_mesh(me)
@@ -1353,6 +1353,21 @@ def build_person(spec):
                 t = target(rel)
                 if t: ds.extend(t)
             if ds: add_shape(parts[0], ds); nshapes += 1
+    if spec.get('sculpt'):
+        # the skull's width alone (R2, docs/PEOPLE_REALISM.md §8): MakeHuman's head width widens the cheeks with the
+        # skull and its round and oval types the cheeks more, so no face could have a broad skull over narrow cheeks (East
+        # and Southeast Asian faces fell out of the real range). The cranium widened about the midline, fully from 3 cm
+        # over the eyes up, fading to nothing 1 cm under them (the cheekbones keep their width)
+        ey = sum(v[i][1] for g in EYE_GROUPS.values() for i in g) / sum(len(g) for g in EYE_GROUPS.values())
+        top = max(v[i][1] for i in body_idx)
+        for sign, label in ((1.0, 'incr'), (-1.0, 'decr')):
+            ds = []
+            for i in range(len(v)):
+                x, y = v[i][0], v[i][1]
+                if y < ey - 0.1 or y > top + 0.05: continue
+                t = min(1.0, max(0.0, (y - (ey - 0.1)) / 0.4)); t = t * t * (3 - 2 * t)
+                if abs(x) * t > 1e-6: ds.append((i, sign * 0.06 * x * t, 0.0, 0.0))
+            if ds: add_shape(f'head-cranium-{label}', ds); nshapes += 1
     for rel, name in expression_units():
         t = target(rel)
         if t: add_shape(name, t); nshapes += 1
@@ -1755,6 +1770,7 @@ def build_person(spec):
         # the hair to choose at creation (P5.3i): each form of hair of our own alone on the rig, in a 'hair' slot (the
         # base's own hair goes while one is worn; none at all leaves the painted buzz)
         for h in spec.get('hairs', []):
+            if os.environ.get('WARDROBE_ONLY') and h not in os.environ['WARDROBE_ONLY'].split(','): continue
             before = set(bpy.data.objects)
             hl = spec.get('hair_look') or {}
             po = proxy('Hair_' + h, 'hair', h, 'hair', hair_look=hl, tex_name=spec['id'] + '__' + h)
@@ -1773,6 +1789,28 @@ def build_person(spec):
             manifest['garments'].append({'id': h, 'slot': 'hair', 'model': name, 'hidesHair': False, 'hides': []})
             for o in made: bpy.data.objects.remove(o, do_unlink=True)
             print(f'  wardrobe: {name} (hair)')
+        # beards as hair (R5, owner pass 10: never a painted block): each grown style alone on the rig, in a 'beard' slot;
+        # the painted beard stays under it as the skin's shadow, and stubble is the paint alone
+        for b in spec.get('beards', []):
+            if os.environ.get('WARDROBE_ONLY') and b not in os.environ['WARDROBE_ONLY'].split(','): continue
+            before = set(bpy.data.objects)
+            bl = spec.get('beard_look') or spec.get('hair_look') or {}
+            po = proxy('Beard_' + b, 'hair', b, 'hair', hair_look=bl, tex_name=spec['id'] + '__' + b)
+            if po is None: continue
+            lod_chain(rig, keep_shapes=bool(spec.get('sculpt')), parts=[po])
+            made = [o for o in bpy.data.objects if o not in before]
+            bpy.ops.object.select_all(action='DESELECT')
+            rig.select_set(True)
+            for o in made: o.select_set(True)
+            name = f'{spec["id"]}__beard_{b}'
+            gpath = os.path.join(OUT, name + '.fbx')
+            bpy.ops.export_scene.fbx(filepath=gpath, use_selection=True, apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y',
+                                     mesh_smooth_type='FACE', use_mesh_modifiers=False, add_leaf_bones=False, bake_anim=False, path_mode='STRIP',
+                                     embed_textures=False, use_armature_deform_only=False, primary_bone_axis='Y', secondary_bone_axis='X')
+            K.write_model_meta(gpath, f'{REL}/{name}.fbx')
+            manifest['garments'].append({'id': b, 'slot': 'beard', 'model': name, 'hidesHair': False, 'hides': []})
+            for o in made: bpy.data.objects.remove(o, do_unlink=True)
+            print(f'  wardrobe: {name} (beard)')
         mpath = os.path.join(OUT, spec['id'] + '.wardrobe.json')
         if os.environ.get('WARDROBE_ONLY') and os.path.exists(mpath):
             # a subset build keeps the rest of the wardrobe: the built pieces replace their old entries

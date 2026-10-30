@@ -91,7 +91,7 @@ namespace SecondFace.Core.Npc
                 var role = rng.Pick(roles);
                 var age = def.Ages != null && def.Ages.Count >= 2 ? Math.Round(rng.Range(def.Ages[0], def.Ages[1])) : Math.Round(17 + 50 * rng.Next() * rng.Next() + 10 * rng.Next());
                 var male = rng.Chance(MaleShare(role));
-                var look = Bodies.For(id, male, age, role, community: community);
+                var look = Bodies.For(id, male, age, role, community: community, fit: false);
                 var pool = Names[Pool(look, rng)];
                 var names = male ? pool.M : pool.F;
                 var name = rng.Pick(names);

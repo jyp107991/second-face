@@ -138,9 +138,20 @@ namespace SecondFace.Tests
                                                 Sliders = SecondFace.Core.Npc.Looks.Shape(w.Look), Scale = SecondFace.Game.People.LookView.Scale(w.Look) });
                 if (studio != null && mm != null)
                 {
-                    // scaled to their stature as in the game
+                    // scaled to their stature as in the game: as they look (portraits_look, the boards), and with no beard
+                    // for the landmarks (portraits: a beard hides the mouth's corners and the chin and widens the face's
+                    // outline, so the face's own proportions are measured bare, R5)
                     go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(w.Look);
                     yield return null;
+                    studio.Shoot(go, w.Id, "portraits_look");
+                    var beard = w.Look.Beard;
+                    if (beard != null)
+                    {
+                        w.Look.Beard = null;
+                        SecondFace.Game.People.LookView.Apply(go, w.Look);
+                        yield return null;
+                        w.Look.Beard = beard;
+                    }
                     studio.Shoot(go, w.Id);
                 }
                 Object.Destroy(go);
@@ -176,7 +187,7 @@ namespace SecondFace.Tests
                 RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat; RenderSettings.ambientLight = new Color(0.45f, 0.45f, 0.47f);
             }
 
-            public void Shoot(GameObject go, string name)
+            public void Shoot(GameObject go, string name, string folder = "portraits")
             {
                 if (!_eyes.HasValue) return;
                 var (eye, fwd) = _eyes.Value;
@@ -191,7 +202,7 @@ namespace SecondFace.Tests
                 var tex = new Texture2D(_rt.width, _rt.height, TextureFormat.RGB24, false);
                 tex.ReadPixels(new Rect(0, 0, _rt.width, _rt.height), 0, 0); tex.Apply();
                 RenderTexture.active = prev;
-                var png = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", "portraits", name + ".png"));
+                var png = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", folder, name + ".png"));
                 Directory.CreateDirectory(Path.GetDirectoryName(png));
                 File.WriteAllBytes(png, tex.EncodeToPNG());
                 Object.Destroy(tex);

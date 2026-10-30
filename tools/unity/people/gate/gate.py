@@ -25,6 +25,56 @@ def ratios3d(m):
     return ratios(m)
 
 
+def distinct(report, A, F, people):
+    """No two people of one place alike (docs/PEOPLE_REALISM.md §3: closer in face and head shape than real people of a
+    group that size come): each adult's measures and face proportions whitened by their own group's covariance (ANSUR
+    II, FairFace), so a real group's are standard normal; a pair of one sex and one people from one place closer than the
+    5th percentile of the nearest pair among as many real people (simulated) fails, both of them."""
+    import numpy as np
+    by = {p['Id']: p for p in people}
+    rng = np.random.default_rng(0)
+    groups = {}
+    for o in report:
+        if not o.get('r2d') or 'r3d' not in o: continue
+        place = o['source'].split('_')[0]
+        if place == 'sample': continue
+        # (people of one sex and one people: who could pass for each other; skin, hair and features tell the rest apart)
+        groups.setdefault((place, o['sex'], o['heritage']), []).append(o)
+    def white(mean, cov, x):
+        L = np.linalg.cholesky(np.array(cov) + 1e-9 * np.eye(len(mean)))
+        return np.linalg.solve(L, np.array(x) - np.array(mean))
+    for (place, sex, _), os_ in groups.items():
+        if len(os_) < 2: continue
+        Z = []
+        for o in os_:
+            g = A['groups'][f"{ANSUR.get(o['heritage'], 'white')}/{sex}"]['measures']
+            keep = [i for i, k in enumerate(A['measures']) if k != 'stature']
+            m = by[o['id']]['Mm']
+            z3 = white([g['mean'][i] for i in keep], [[g['cov'][i][j] for j in keep] for i in keep], [m[A['measures'][i]] for i in keep])
+            fg = F['groups'].get(f"{FAIRFACE.get(o['heritage'], 'white')}/{sex}/all")
+            # (nose length and lower face over face height add up to one: one of them)
+            k2 = [i for i, k in enumerate(F['ratios']) if k != 'nose_len']
+            z2 = white([fg['mean'][i] for i in k2], [[fg['cov'][i][j] for j in k2] for i in k2], [o['r2d'][F['ratios'][i]] for i in k2])
+            Z.append(np.concatenate([z3, z2]))
+        Z = np.array(Z); n, d = Z.shape
+        # (real people inside the gate's own ranges: ANSUR's 3rd-97th percentiles, FairFace's 5th-95th)
+        lim = np.array([1.88] * len(z3) + [1.645] * len(z2))
+        sims = []
+        for _ in range(400):
+            X = rng.standard_normal((n * 3, d))
+            X = X[(np.abs(X) <= lim).all(1)][:n]
+            if len(X) < n: continue
+            D = np.linalg.norm(X[:, None] - X[None], axis=-1) + np.eye(n) * 1e9
+            sims.append(D.min())
+        floor = float(np.percentile(sims, 5))
+        D = np.linalg.norm(Z[:, None] - Z[None], axis=-1)
+        for i in range(n):
+            for j in range(i + 1, n):
+                if D[i, j] < floor:
+                    for a, b in ((i, j), (j, i)):
+                        os_[a]['fails'].append(('3d.distinct', round(float(D[a, b]), 2), round(floor, 2), os_[b]['name']))
+
+
 def main(results):
     A = json.load(open(os.path.join(HERE, 'ansur_stats.json')))
     F = json.load(open(os.path.join(HERE, 'fairface_stats.json')))
@@ -78,6 +128,7 @@ def main(results):
         elif p['Id'] in faces: out['fails'].append(('2d.face_not_found', 0, 0, 0))
         for f in out['fails']: fails_by[f[0]] = fails_by.get(f[0], 0) + 1
         report.append(out)
+    distinct(report, A, F, people)
     passed = sum(1 for o in report if not o['fails'])
     print(f'people {len(report)}: {passed} pass, {len(report) - passed} fail')
     for k, n in sorted(fails_by.items(), key=lambda kv: -kv[1]): print(f'  {k:28s} {n:4d} fail')

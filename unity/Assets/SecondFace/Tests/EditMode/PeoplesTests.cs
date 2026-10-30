@@ -60,10 +60,11 @@ namespace SecondFace.Tests
             Assert.That(Share(Crowd("north_european", false, 26), Greyed), Is.LessThan(0.03), "no grey at twenty-six");
             // (no grey at all before 55, the owner's rule: Bodies.GreyFrom; the peoples' clocks show after it)
             Assert.That(Share(Crowd("north_european", true, 54), Greyed), Is.EqualTo(0), "no grey before fifty-five");
-            // how grey, on average, at sixty: by then most have some grey, the peoples differ in how much
-            var ne = Crowd("north_european", true, 60).Average(l => l.Grey);
-            var wa = Crowd("west_african", true, 60).Average(l => l.Grey);
-            var ea = Crowd("east_asian", true, 60).Average(l => l.Grey);
+            // how grey, on average, at sixty-five (the people's greying fully in, Bodies.GreyRamp): the peoples differ in how
+            // much
+            var ne = Crowd("north_european", true, 65).Average(l => l.Grey);
+            var wa = Crowd("west_african", true, 65).Average(l => l.Grey);
+            var ea = Crowd("east_asian", true, 65).Average(l => l.Grey);
             Assert.That(ne, Is.GreaterThan(wa + 0.15), $"Europeans grey first ({ne:F2} against {wa:F2})");
             Assert.That(ea, Is.InRange(wa, ne), "Asians between");
             Assert.That(Peoples.Grey(50, 34, 34), Is.LessThan(0.5), "at fifty most are not yet half grey (Panhard 2012)");
@@ -99,9 +100,9 @@ namespace SecondFace.Tests
         public void BrowsSkinAndFrecklesFollowSexPeopleAndAge()
         {
             Assert.That(Share(Crowd("south_asian", true, 30), l => l.Brows == 2), Is.GreaterThan(Share(Crowd("east_asian", true, 30), l => l.Brows == 2) + 0.2), "dense brows");
-            Assert.That(Share(Crowd("mediterranean", true, 65), l => l.Brows == 2), Is.GreaterThan(Share(Crowd("mediterranean", true, 30), l => l.Brows == 2) + 0.1), "bushy with the years");
+            Assert.That(Share(Crowd("mediterranean", true, 65, 900), l => l.Brows == 2), Is.GreaterThan(Share(Crowd("mediterranean", true, 30, 900), l => l.Brows == 2) + 0.1), "bushy with the years");
             foreach (var a in new[] { "north_european", "west_african", "east_asian" })
-                Assert.That(Crowd(a, false, 30).Average(l => l.Skin), Is.LessThan(Crowd(a, true, 30).Average(l => l.Skin) - 0.04), $"a woman a little lighter than the men of her people ({a})");
+                Assert.That(Crowd(a, false, 30, 900).Average(l => l.Skin), Is.LessThan(Crowd(a, true, 30, 900).Average(l => l.Skin) - 0.035), $"a woman a little lighter than the men of her people ({a}; the darkest tones meet the scale's end)");
             var fair = Crowd("north_european", false, 25, 800);
             var redheads = fair.Where(l => l.HairColour == Looks.HairColours[6]).ToList();
             Assert.That(redheads.Count, Is.GreaterThan(10));

@@ -127,7 +127,7 @@ namespace SecondFace.EditorTools
             var measured = 0;
             foreach (var g in set.Garments)
             {
-                if (g.Slot == "hair" || g.Prefab == null) continue;
+                if (g.Slot == "hair" || g.Slot == "beard" || g.Prefab == null) continue;
                 (g.Rx, g.Rz) = TorsoMeasure.Garment(go, g.Prefab);
                 if (g.Rx != null) measured++;
             }

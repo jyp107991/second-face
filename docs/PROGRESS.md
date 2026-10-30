@@ -819,10 +819,13 @@ neck measures from ANSUR II and face proportions from FairFace and solves the sh
 against every real range and redraws if it falls outside; menton re-measured (it had been the throat), women's vault 10 mm
 too tall found and held by two new ANSUR measures, stature scale allows for neck and head shapes, women's brows raised;
 **206 of 252 pass** (`docs/PEOPLE_REALISM.md` §8, `gate_r2.txt`, `board_r2_*.jpg`). Grey hair only from 55 (Core
-`Bodies.GreyFrom`; authored greys under 55 dropped). **Next action:** R3/R5 base fixes first (a skull-width shape and a
-wider neck-length range in `mh_build`, rebuild, re-measure the responses with `MeasureShapeResponses`, refit with every
-round in `$scratchpad/gate_iter/*` as `--extra`), then R4 (age in the face) and R5 (beards as geometry, hair fitted to the
-skull), each ending with the gate and the boards. Loop: `PeopleGateTests.MeasureThePeople` -> `faces2d.py` -> `gate.py`
+`Bodies.GreyFrom`; authored greys under 55 dropped). R5 part 1 done: beards as hair cards (four styles, the male base's
+`beard` slot), grey from 55 coming in over ten years, a skull-width shape, the gate's distinct-people rule, the face
+measured bare of its beard, looks fitted when first shown; **190 of 252 pass** with real variety (`docs/PEOPLE_REALISM.md`
+§9, `board_r5a_*.jpg`). **Next action:** R4 (age in the face: an apparent-age check on the portraits, the face's ageing to
+match), then the hair (hairline at the person's own forehead, volume off the scalp) and the skin; each ends with the gate
+and the boards. Refit after any shape or render change with every round in `$scratchpad/gate_iter/*` as `--extra` (2D: only
+rounds rendered as now, from round 10). Loop: `PeopleGateTests.MeasureThePeople` -> `faces2d.py` -> `gate.py`
 -> `board.py`; after shape changes `response.py`/`response2d.py` -> `gen_core.py`. Parked until the gate is
 green: travellers on the roads (git stash "wip: travellers on the roads"; `WayPath`, `Extras.FirstName/BarksOf`), the
 new opening (owner note D), P6 step 4 (combat). (Superseded record of P4.15c's plan:

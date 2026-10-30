@@ -15,6 +15,8 @@ namespace SecondFace.Core.Npc
     {
         /// <summary>The body: f or m (the player bases player_f, player_m; also the clothes' cut).</summary>
         [JsonProperty("body")] public string Body = "f";
+        /// <summary>A proportions fit left for when the person is first shown (Bodies.For with fit: false; Bodies.Finish).</summary>
+        [JsonIgnore] public (string Cluster, double Age, uint Seed)? Pending;
         /// <summary>The sculptor's values by slider id (<see cref="Sculpt"/>).</summary>
         [JsonProperty("face")] public Dictionary<string, float> Face = new();
         /// <summary>The person's people (an ancestry cluster of <see cref="Bodies.Clusters"/>): the face's archetypes, the
@@ -107,6 +109,17 @@ namespace SecondFace.Core.Npc
         /// <summary>Beards out here: stubble of three days and three weeks, cut short with a knife, grown full, a goatee or a
         /// moustache (painted on the skin in the hair's colour, SecondFace/Skin; the grooming rule: unkempt, never styled).</summary>
         public static readonly string[] Beards = { "stubble_light", "stubble", "stubble_heavy", "short_beard", "full_beard", "goatee", "moustache" };
+
+        /// <summary>A grown beard's piece of hair (R5, tools/unity/people/hairgen.py BEARDS), or null: stubble is painted on
+        /// the skin alone.</summary>
+        public static string BeardPiece(string beard) => beard switch
+        {
+            "short_beard" => "sf_beard_short",
+            "full_beard" => "sf_beard_full",
+            "goatee" => "sf_goatee",
+            "moustache" => "sf_moustache",
+            _ => null,
+        };
 
         /// <summary>Re-dyed salvage: undyed, olive, rust, ochre, slate, faded indigo, charcoal, oxblood, sand.</summary>
         public static readonly int[] Dyes = { 0xffffff, 0x5d6448, 0x7a4127, 0x8f6a2e, 0x4b5560, 0x3d4a66, 0x3a3836, 0x5a2a26, 0xa48f6c };

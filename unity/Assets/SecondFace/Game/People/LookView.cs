@@ -28,7 +28,7 @@ namespace SecondFace.Game.People
         private static readonly int BrowColourId = Shader.PropertyToID("_BrowColour");
 
         /// <summary>The body's scale: a stature against the base's own (<see cref="Bodies"/>), else the look's height (±6 %).</summary>
-        public static float Scale(PlayerLook look) => Bodies.ScaleOf(look);
+        public static float Scale(PlayerLook look) => Bodies.ScaleOf(Bodies.Finish(look));
 
         /// <summary>A content colour (0xRRGGBB) as a colour.</summary>
         public static Color Colour(int rgb) => new(((rgb >> 16) & 255) / 255f, ((rgb >> 8) & 255) / 255f, (rgb & 255) / 255f, 1f);
@@ -36,12 +36,21 @@ namespace SecondFace.Game.People
         public static void Apply(GameObject body, PlayerLook look)
         {
             if (body == null || look == null) return;
+            Bodies.Finish(look);   // a fit left for when the person is first shown
             var wardrobe = body.GetComponentInChildren<Wardrobe>();
-            if (wardrobe != null) wardrobe.Hair(look.Hair == Looks.OwnHair(look.Body) ? null : look.Hair);
+            if (wardrobe != null)
+            {
+                wardrobe.Hair(look.Hair == Looks.OwnHair(look.Body) ? null : look.Hair);
+                // a grown beard as strands over the painted one (R5); stubble stays paint
+                wardrobe.Beard(look.Body == "m" ? Looks.BeardPiece(look.Beard) : null);
+            }
             var face = body.GetComponentInChildren<FaceSculpt>();
             if (face != null)
             {
                 face.HairColour = Colour(look.HairColour);
+                // the beard's strands: its pigmented hairs and the white ones, mixed by their share
+                var pig = Colour(Looks.BeardPigment(look));
+                face.BeardColour = Color.Lerp(pig, new Color(0.5f, 0.49f, 0.47f, 1f), Mathf.Clamp01(look.BeardGrey));   // white hair is a dull grey-white
                 // the years in the skin (the aged bake blended in from the late twenties, most of the way by seventy), later on
                 // darker and East Asian skin, sooner on a man's (Looks.SkinYears)
                 face.SkinAge = Looks.SkinAge(look);

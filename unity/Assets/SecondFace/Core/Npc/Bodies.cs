@@ -63,8 +63,27 @@ namespace SecondFace.Core.Npc
             _ => null,
         };
 
+        /// <summary>A fit <see cref="For"/> left pending, done now (once).</summary>
+        public static PlayerLook Finish(PlayerLook look)
+        {
+            if (look?.Pending is { } p)
+            {
+                look.Pending = null;
+                Proportions.Fit(look, look.Body == "m", p.Cluster, p.Age, p.Seed);
+            }
+            return look;
+        }
+
         /// <summary>No grey hair before this age (owner, pass 10: grey only from 55; the head, the beard and the brows).</summary>
         public const double GreyFrom = 55;
+
+        /// <summary>How much of a people's greying a person of this age shows: none before <see cref="GreyFrom"/>, all of it
+        /// <paramref name="years"/> after (smoothly).</summary>
+        public static double GreyRamp(double age, double years)
+        {
+            var t = Math.Clamp((age - GreyFrom) / years, 0, 1);
+            return t * t * (3 - 2 * t);
+        }
 
         /// <summary>The body's scale: a stature against the base's own height with the person's shapes (a longer neck or
         /// head makes a taller body: Proportions.HeightMm), else the look's height (±6 %).</summary>
@@ -77,7 +96,9 @@ namespace SecondFace.Core.Npc
         }
 
         /// <summary>A person's look (for the base of their sex) from who they are.</summary>
-        public static PlayerLook For(string id, bool male, double age, string role = null, Means? means = null, string ancestry = null, double[] community = null)
+        /// <param name="fit">false leaves the proportions' fit (Proportions.Fit, a few milliseconds) for when the person is
+        /// first shown (<see cref="Finish"/>, LookView): a place's people are made as data when it loads.</param>
+        public static PlayerLook For(string id, bool male, double age, string role = null, Means? means = null, string ancestry = null, double[] community = null, bool fit = true)
         {
             var rng = new Rng(Seed(id));
             var m = means ?? MeansOf(role, rng);
@@ -216,9 +237,10 @@ namespace SecondFace.Core.Npc
             // thirty-eight)
             var greyPace = Normal(rng);
             var grey = Math.Clamp(greyBase * Math.Exp(0.6 * greyPace) + Math.Max(0, greyPace) * 0.03, 0, 1);
-            // the owner's rule (pass 10): grey hair only from 55, a necessary condition, not a sufficient one (the share
-            // and amount rise after it by the person's own pace)
-            if (age < GreyFrom) grey = 0;
+            // the owner's rule (pass 10): grey hair only from 55, a necessary condition, not a sufficient one; the people's
+            // own greying comes in over the ten years after it (no one jumps from none to half grey on a birthday, R5:
+            // a man of 55 with a white beard)
+            grey *= GreyRamp(age, 10);
             look.Grey = (float)grey;
             look.HairColour = GreyShade(shade, grey);
             // light eyes are recessive: of two ancestries, light only as often as both carry them
@@ -262,7 +284,7 @@ namespace SecondFace.Core.Npc
                 var beardShade = shade;
                 if (!red && (cluster == "north_european" || second == "north_european") && shade >= 1 && shade <= 4 && rng.Chance(0.25)) beardShade = 6;
                 // (on the people's own curve, about six years ahead of the head)
-                var beardGrey = age < GreyFrom ? 0 : Math.Clamp(Peoples.Grey(age + 6, greyOnset, greySpan) * Math.Exp(0.6 * greyPace) + Math.Max(0, greyPace) * 0.03, grey, 1);
+                var beardGrey = Math.Clamp(Math.Clamp(Peoples.Grey(age + 6, greyOnset, greySpan) * Math.Exp(0.6 * greyPace) + Math.Max(0, greyPace) * 0.03, 0, 1) * GreyRamp(age, 8), grey, 1);
                 if (beardShade != shade || beardGrey > grey + 0.01) look.BeardColour = GreyShade(beardShade, beardGrey);
                 look.BeardBase = Looks.HairColours[beardShade];
                 look.BeardGrey = (float)beardGrey;
@@ -279,7 +301,11 @@ namespace SecondFace.Core.Npc
             if (rng.Chance(0.12)) look.Tattoo = rng.Pick(Looks.Tattoos);
             if (male && age < 18 && look.Beard != null) look.Beard = "stubble_light";
             // the head, face and neck held to real people of their sex and ancestry (pass 10, docs/PEOPLE_REALISM.md §4.1)
-            if (age >= 18) Proportions.Fit(look, male, cluster, age, Seed(id + "/proportions"));
+            if (age >= 18)
+            {
+                if (fit) Proportions.Fit(look, male, cluster, age, Seed(id + "/proportions"));
+                else look.Pending = (cluster, age, Seed(id + "/proportions"));
+            }
             Young(look, child);
             return look;
         }

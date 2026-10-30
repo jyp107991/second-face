@@ -31,6 +31,7 @@ namespace SecondFace.Core.Npc
         public static readonly SculptSlider[] Sliders =
         {
             new("head-scale-horiz", "head", "head width", "decr", "incr"),
+            new("head-cranium", "head", "skull width", "decr", "incr"),
             new("head-scale-depth", "head", "head length", "decr", "incr"),
             new("head-back-scale-depth", "head", "back of the head", "decr", "incr"),
             new("head-scale-vert", "head", "head height", "decr", "incr"),

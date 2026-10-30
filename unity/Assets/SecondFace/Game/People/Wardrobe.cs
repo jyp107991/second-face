@@ -91,6 +91,16 @@ namespace SecondFace.Game.People
         }
 
         public const string HairSlot = "hair";
+        public const string BeardSlot = "beard";
+
+        /// <summary>A grown beard's piece (R5: beards as hair), or null for none (stubble is the skin's paint alone).</summary>
+        public void Beard(string id)
+        {
+            var now = _worn.TryGetValue(BeardSlot, out var w) ? w.Garment.Id : null;
+            if (now == id) return;
+            if (id == null || Set == null || Set.Find(id) == null || !Put(id)) Remove(BeardSlot);
+            Changed();
+        }
         public const string FullSlot = "full";
 
         /// <summary>The hair (P5.3i): null the body's own, "buzz" none (shaved), else a hair piece of the set by id.</summary>
