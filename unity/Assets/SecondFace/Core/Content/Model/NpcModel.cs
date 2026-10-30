@@ -62,6 +62,8 @@ namespace SecondFace.Core.Npc
         [JsonProperty("hair")] public string Hair;
         /// <summary>A full piece that leaves the legs to separate trousers (tunics, long jackets).</summary>
         [JsonProperty("legsFree")] public bool? LegsFree;
+        /// <summary>Cut from the base body's own surface by the build (P4.14 step 5): fits every body.</summary>
+        [JsonProperty("generated")] public bool? Generated;
     }
 
     /// <summary>How people in a role dress: style weights, optional pieces, palette, dye, grime and wear, body and hair.</summary>

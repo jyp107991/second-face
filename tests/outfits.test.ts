@@ -59,6 +59,6 @@ describe('outfits', () => {
   it('catalogue matches the built garment assets', () => {
     const m = JSON.parse(readFileSync('public/assets/human/human.json', 'utf8')) as { proxies: Record<string, { file?: string }> };
     const built = Object.keys(m.proxies).filter((k) => m.proxies[k].file).map((k) => k.replace(/^clothes_/, ''));
-    expect(Object.keys(GARMENTS).sort()).toEqual(built.sort());
+    expect(Object.keys(GARMENTS).filter((k) => !GARMENTS[k].generated).sort()).toEqual(built.sort());
   });
 });

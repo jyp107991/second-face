@@ -33,6 +33,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: 6dcbf9128fe30fb55df873e79e9848b0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _CoverMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _BumpScale: 1

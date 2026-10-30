@@ -649,24 +649,242 @@ namespace SecondFace.Tests
                 var anim = go.GetComponent<Animator>();
                 anim.runtimeAnimatorController = controller;
                 anim.applyRootMotion = false;
+                anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;   // else no bones are written in batch mode (see ResidentCloseUp)
                 go.AddComponent<SecondFace.Game.People.HandPose>();   // as in the game: hands at rest, arms clear of the body
                 go.AddComponent<SecondFace.Game.People.ArmClearance>();
                 yield return null;
                 var wardrobe = go.GetComponent<SecondFace.Game.People.Wardrobe>();
                 SecondFace.Game.People.Dresser.Dress(wardrobe, w.Outfit);
                 SecondFace.Game.People.LookView.Apply(go, w.Look);
-                for (var k = 0; k < 12; k++) yield return null;
-                anim.speed = 0f;
+                for (var k = 0; k < 30; k++) yield return null;
                 var lod = go.GetComponent<LODGroup>();
                 if (lod != null) lod.ForceLOD(0);
-                cam.transform.position = at + new Vector3(0f, 1.0f, -4.6f);
-                cam.transform.LookAt(at + new Vector3(0f, 0.93f, 0f));
+                // framed by stature: the whole person with a hat's worth of room, the tall as whole as the short
+                var h = w.Look.Stature / 100f;
+                var dist = Mathf.Max(4.2f, (h + 0.32f) / (2f * Mathf.Tan(12f * Mathf.Deg2Rad)));
+                cam.transform.position = at + new Vector3(0f, h * 0.55f, -dist);
+                cam.transform.LookAt(at + new Vector3(0f, h * 0.5f, 0f));
                 yield return null;
                 Debug.Log($"shale_resident {i:00}|{w.Id}|{w.Name}|{w.Role}|{(w.Male ? "m" : "f")}|{w.Age:0}|{w.Look.Stature:0}|{w.Note}|{string.Join(", ", wardrobe.Wearing.Where(kv => kv.Key != "hair").Select(kv => kv.Value))}");
                 yield return Capture($"shale_resident_{i:00}", 640, 960);
                 Object.Destroy(go);
             }
             Assert.That(who.Count, Is.GreaterThanOrEqualTo(25), "Shale's people");
+        }
+
+        /// <summary>P4.14: one resident up close, as the game poses them (the idle, the arm clearance, the hands at rest):
+        /// the whole figure, the torso and arms from the front and the side, the hands, the face, the back
+        /// (`resident_&lt;id&gt;_*`). The owner's screenshot (a square jaw on a woman, flat spread hands, a sleeve the arm
+        /// came through) is checked here before any sheet goes out. Logs what is worn against what renders.</summary>
+        [UnityTest, Timeout(600000)]
+        public IEnumerator ResidentCloseUp()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Player.unity";
+            if (!File.Exists(path)) { Assert.Ignore("player scene not built"); yield break; }
+            yield return LoadTestScene(path);
+            UiTests.Content();
+            for (var i = 0; i < 10; i++) yield return null;
+            var controller = GameObject.Find("player_f_built").GetComponent<Animator>().runtimeAnimatorController;
+            foreach (var r in Object.FindObjectsByType<Animator>(FindObjectsSortMode.None)) r.gameObject.SetActive(false);
+            GameObject F = null, M = null;
+#if UNITY_EDITOR
+            F = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_f.prefab");
+            M = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_m.prefab");
+#endif
+            Assert.That(F != null && M != null, Is.True, "the bases");
+            var sun = Object.FindObjectsByType<Light>(FindObjectsSortMode.None).FirstOrDefault(l => l.type == LightType.Directional);
+            if (sun != null) sun.transform.rotation = Quaternion.Euler(30f, 25f, 0f);
+            var ids = (System.Environment.GetEnvironmentVariable("SF_RESIDENTS") ?? "npc_sh_03,npc_sh_01").Split(',');
+            var map = SecondFace.Core.Content.Registry.Maps["shale"];
+            var cam = Camera.main;
+            var n = 0;
+            foreach (var id in ids)
+            {
+                var p = map.Npcs.FirstOrDefault(x => (x.Id ?? x.Def) == id);
+                if (p == null) continue;
+                var def = SecondFace.Core.Content.Registry.Npcs[p.Def];
+                var male = SecondFace.Core.Npc.Routine.Male(def.Look);
+                var look = SecondFace.Game.Play.PeopleService.LookOf(def, male);
+                var outfit = SecondFace.Game.Play.PeopleService.OutfitOf(def, male);
+                var at = new Vector3(300f + n * 6f, 0f, 0f);
+                var go = Object.Instantiate(male ? M : F, at, Quaternion.Euler(0, 180f, 0));
+                go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
+                var anim = go.GetComponent<Animator>();
+                anim.runtimeAnimatorController = controller;
+                anim.applyRootMotion = false;
+                // a culled Animator (the default mode, nothing seen by a camera in batch mode) writes no bones: the first
+                // evaluated frame, a blend out of the rest pose, stayed on the body (the owner's "weird arm position")
+                anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                var hands = go.AddComponent<SecondFace.Game.People.HandPose>();
+                var clear = go.AddComponent<SecondFace.Game.People.ArmClearance>();
+                yield return null;
+                var wardrobe = go.GetComponent<SecondFace.Game.People.Wardrobe>();
+                SecondFace.Game.People.Dresser.Dress(wardrobe, outfit);
+                SecondFace.Game.People.LookView.Apply(go, look);
+                for (var k = 0; k < 40; k++) yield return null;
+                var lod = go.GetComponent<LODGroup>();
+                if (lod != null) lod.ForceLOD(0);
+                var rendering = go.GetComponentsInChildren<Renderer>().Where(r => r.enabled && r.gameObject.activeInHierarchy).Select(r => r.name).OrderBy(x => x);
+                Debug.Log($"resident {id} {def.Name} {(male ? "m" : "f")} {look.Stature:0} cm hands={hands.Ready} clearance={clear.Turned.x:0.0}/{clear.Turned.y:0.0} face chin-bones={look.Face.GetValueOrDefault("chin-bones"):0.00} neck={look.Face.GetValueOrDefault("neck-scale-horiz"):0.00}\n  wearing: {string.Join(", ", wardrobe.Wearing.Select(kv => kv.Key + "=" + kv.Value))}\n  rendering: {string.Join(", ", rendering)}");
+                var head = anim.GetBoneTransform(HumanBodyBones.Head).position;
+                var chest = anim.GetBoneTransform(HumanBodyBones.Chest).position;
+                var hl = anim.GetBoneTransform(HumanBodyBones.LeftHand).position;
+                var hr = anim.GetBoneTransform(HumanBodyBones.RightHand).position;
+                var handsAt = (hl + hr) * 0.5f;
+                var shots = new (string Name, Vector3 From, Vector3 At, float Fov)[]
+                {
+                    ("full", at + new Vector3(0f, 1.0f, -4.6f), at + new Vector3(0f, 0.93f, 0f), 24f),
+                    ("torso", chest + new Vector3(0f, 0.05f, -2.1f), chest + new Vector3(0f, -0.05f, 0f), 24f),
+                    ("side", chest + new Vector3(1.9f, 0.1f, -0.9f), chest + new Vector3(0f, -0.1f, 0f), 24f),
+                    ("hands", hl + new Vector3(-0.35f, 0.1f, -0.75f), hl, 16f),
+                    ("hands_r", hr + new Vector3(0.45f, 0.05f, -0.6f), hr, 16f),
+                    ("face", head + new Vector3(0.25f, 0.05f, -0.9f), head + new Vector3(0f, 0.02f, 0f), 18f),
+                    ("back", chest + new Vector3(0f, 0.1f, 2.4f), chest + new Vector3(0f, -0.1f, 0f), 24f),
+                };
+                foreach (var sh in shots)
+                {
+                    cam.fieldOfView = sh.Fov;
+                    cam.transform.position = sh.From;
+                    cam.transform.LookAt(sh.At);
+                    yield return null;
+                    yield return Capture($"resident_{id}_{sh.Name}", 720, 960);
+                }
+                // the pose itself: the same person four ways, live (never frozen), after forty frames of the idle: bare
+                // (no hands, no clearance), hands at rest only, clearance only, both; with what the clearance sees each
+                // ten frames (diagnosis of the owner's "weird arm and hand position")
+                var profile = go.GetComponent<SecondFace.Game.People.TorsoProfile>();
+                var hips = anim.GetBoneTransform(HumanBodyBones.Hips);
+                float HandY(Animator a, Transform h)
+                {
+                    var hp = a.GetComponent<SecondFace.Game.People.TorsoProfile>(); var hb = a.GetBoneTransform(HumanBodyBones.Hips);
+                    if (hp == null || hb == null || h == null) return float.NaN;
+                    var rot = hb.rotation * Quaternion.Inverse(hp.HipsRest);
+                    return (Quaternion.Inverse(rot) * (h.position - hb.position)).y / Mathf.Max(0.01f, a.transform.lossyScale.y);
+                }
+                var st = anim.GetCurrentAnimatorStateInfo(0);
+                Debug.Log($"  pose: clips={string.Join(",", anim.GetCurrentAnimatorClipInfo(0).Select(c => c.clip.name + ":" + c.weight.ToString("0.00")))} norm={st.normalizedTime:0.00} ready={clear.Ready} depth={clear.Depth():0.000} bottom={(profile != null ? profile.Bottom : 0f):0.000} top={(profile != null ? profile.Bottom + profile.Step * (profile.Bins - 1) : 0f):0.000} handY={HandY(anim, anim.GetBoneTransform(HumanBodyBones.LeftHand)):0.000} hipsY={(hips != null ? hips.position.y - at.y : 0f):0.000}");
+                Object.Destroy(go);
+                cam.fieldOfView = 24f;
+                cam.transform.position = at + new Vector3(0f, 1.0f, -4.6f);
+                cam.transform.LookAt(at + new Vector3(0f, 0.93f, 0f));
+                foreach (var (nm, withHands, withClear) in new[] { ("bare", false, false), ("hands", true, false), ("clear", false, true), ("both", true, true) })
+                {
+                    var v = Object.Instantiate(male ? M : F, at, Quaternion.Euler(0, 180f, 0));
+                    v.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
+                    var va = v.GetComponent<Animator>();
+                    va.runtimeAnimatorController = controller;
+                    va.applyRootMotion = false;
+                    va.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                    if (withHands) v.AddComponent<SecondFace.Game.People.HandPose>();
+                    var vc = withClear ? v.AddComponent<SecondFace.Game.People.ArmClearance>() : null;
+                    yield return null;
+                    SecondFace.Game.People.Dresser.Dress(v.GetComponent<SecondFace.Game.People.Wardrobe>(), outfit);
+                    SecondFace.Game.People.LookView.Apply(v, look);
+                    var vl = v.GetComponent<LODGroup>();
+                    if (vl != null) vl.ForceLOD(0);
+                    var trace = new System.Text.StringBuilder();
+                    for (var k = 0; k < 40; k++)
+                    {
+                        yield return null;
+                        if (k % 10 == 9 && vc != null) trace.Append($" f{k + 1}:turned={vc.Turned.x:0.0}/{vc.Turned.y:0.0} depth={vc.Depth():0.000} handY={HandY(va, va.GetBoneTransform(HumanBodyBones.LeftHand)):0.000}");
+                    }
+                    var vs = va.GetCurrentAnimatorStateInfo(0);
+                    Debug.Log($"  pose {nm}: norm={vs.normalizedTime:0.00} clips={string.Join(",", va.GetCurrentAnimatorClipInfo(0).Select(c => c.clip.name + ":" + c.weight.ToString("0.00")))}{trace}");
+                    yield return Capture($"resident_{id}_pose_{nm}", 480, 960);
+                    Object.Destroy(v);
+                }
+                // the bind pose: the same person with the animator never run
+                var bind = Object.Instantiate(male ? M : F, at, Quaternion.Euler(0, 180f, 0));
+                bind.GetComponent<Animator>().enabled = false;
+                bind.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
+                yield return null;
+                SecondFace.Game.People.Dresser.Dress(bind.GetComponent<SecondFace.Game.People.Wardrobe>(), outfit);
+                SecondFace.Game.People.LookView.Apply(bind, look);
+                for (var k = 0; k < 3; k++) yield return null;
+                yield return Capture($"resident_{id}_pose_bind", 480, 960);
+                Object.Destroy(bind);
+                n++;
+            }
+            Assert.That(n, Is.GreaterThan(0), "a resident rendered");
+        }
+
+        /// <summary>P4.14 step 5: the generated pieces (cut from the helper meshes, mh_build GENERATED_GARMENTS) on both
+        /// bases, four kits each, live (`kit_&lt;f|m&gt;_&lt;kit&gt;` and `_side`): the base layer with cargo trousers, a
+        /// harness vest and a belt; the bomber with shin guards and arm wraps; the duster over the base with the gaiter;
+        /// the cape over the base; each dyed from the palettes.</summary>
+        [UnityTest, Timeout(600000)]
+        public IEnumerator GeneratedKit()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Player.unity";
+            if (!File.Exists(path)) { Assert.Ignore("player scene not built"); yield break; }
+            yield return LoadTestScene(path);
+            UiTests.Content();
+            for (var i = 0; i < 10; i++) yield return null;
+            var controller = GameObject.Find("player_f_built").GetComponent<Animator>().runtimeAnimatorController;
+            foreach (var r in Object.FindObjectsByType<Animator>(FindObjectsSortMode.None)) r.gameObject.SetActive(false);
+            GameObject F = null, M = null;
+#if UNITY_EDITOR
+            F = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_f.prefab");
+            M = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_m.prefab");
+#endif
+            Assert.That(F != null && M != null, Is.True, "the bases");
+            var sun = Object.FindObjectsByType<Light>(FindObjectsSortMode.None).FirstOrDefault(l => l.type == LightType.Directional);
+            if (sun != null) sun.transform.rotation = Quaternion.Euler(30f, 25f, 0f);
+            var kits = new (string Name, string[] Layers, int[] Dyes)[]
+            {
+                ("base", new[] { "sf_base_highneck", "sf_cargo_articulated", "sf_vest_harness", "sf_belt_rig", "maciekg_leather_boots" }, new[] { 0x2f4a73, 0x5c6b2f, 0x1d1b19, 0, 0 }),
+                ("bomber", new[] { "sf_bomber_cropped", "sf_cargo_articulated", "sf_shin_guards", "sf_arm_wraps", "mindfront_shoes_biker_boots_male" }, new[] { 0x8a1c1c, 0x2c2a28, 0, 0x3b4d5c, 0 }),
+                ("duster", new[] { "sf_base_highneck", "sf_cargo_articulated", "sf_duster_long", "sf_gaiter_down", "maciekg_leather_boots" }, new[] { 0xb8862b, 0x2f4a73, 0x3a3328, 0x7a2e2e, 0 }),
+                ("cape", new[] { "sf_base_highneck", "sf_cargo_articulated", "sf_cape_shoulder", "sf_belt_rig", "punkduck_medieval_boots" }, new[] { 0x5a2d4f, 0x8a3b1e, 0x2f6f6a, 0, 0 }),
+            };
+            var cam = Camera.main;
+            cam.fieldOfView = 24f;
+            var n = 0;
+            foreach (var male in new[] { false, true })
+            {
+                foreach (var kit in kits)
+                {
+                    var id = (male ? "kit_m_" : "kit_f_") + kit.Name;
+                    var look = SecondFace.Core.Npc.Bodies.For(id, male, 30, "street");
+                    var at = new Vector3(400f + n * 5f, 0f, 0f);
+                    var go = Object.Instantiate(male ? M : F, at, Quaternion.Euler(0, 180f, 0));
+                    go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
+                    var anim = go.GetComponent<Animator>();
+                    anim.runtimeAnimatorController = controller;
+                    anim.applyRootMotion = false;
+                    anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                    go.AddComponent<SecondFace.Game.People.HandPose>();
+                    go.AddComponent<SecondFace.Game.People.ArmClearance>();
+                    yield return null;
+                    var outfit = new SecondFace.Core.Npc.Outfit { Layers = new List<SecondFace.Core.Npc.GarmentLook>(), Gear = new List<SecondFace.Core.Npc.GearLook>(), Grime = 0.35, Wear = 0.4 };
+                    for (var k = 0; k < kit.Layers.Length; k++)
+                    {
+                        var gl = new SecondFace.Core.Npc.GarmentLook { Name = kit.Layers[k] };
+                        if (kit.Dyes[k] != 0) gl.Dye = kit.Dyes[k];
+                        outfit.Layers.Add(gl);
+                    }
+                    var wardrobe = go.GetComponent<SecondFace.Game.People.Wardrobe>();
+                    SecondFace.Game.People.Dresser.Dress(wardrobe, outfit);
+                    SecondFace.Game.People.LookView.Apply(go, look);
+                    for (var k = 0; k < 30; k++) yield return null;
+                    var lod = go.GetComponent<LODGroup>();
+                    if (lod != null) lod.ForceLOD(0);
+                    Debug.Log($"kit {id}: wearing {string.Join(", ", wardrobe.Wearing.Select(kv => kv.Key + "=" + kv.Value))}");
+                    var h = look.Stature / 100f;
+                    var dist = Mathf.Max(4.2f, (h + 0.32f) / (2f * Mathf.Tan(12f * Mathf.Deg2Rad)));
+                    cam.transform.position = at + new Vector3(0f, h * 0.55f, -dist);
+                    cam.transform.LookAt(at + new Vector3(0f, h * 0.5f, 0f));
+                    yield return null;
+                    yield return Capture(id, 640, 960);
+                    cam.transform.position = at + new Vector3(dist * 0.7f, h * 0.55f, -dist * 0.7f);
+                    cam.transform.LookAt(at + new Vector3(0f, h * 0.5f, 0f));
+                    yield return null;
+                    yield return Capture(id + "_side", 640, 960);
+                    Object.Destroy(go);
+                    n++;
+                }
+            }
+            Assert.That(n, Is.EqualTo(8));
         }
 
         /// <summary>P4 step 6: portraits in the engine under the studio light, cached; the player's two bases as they are

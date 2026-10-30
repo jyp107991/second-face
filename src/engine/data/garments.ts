@@ -27,6 +27,8 @@ export interface GarmentDef {
    * nothing dresses in it and it is not exported to the Unity project.
    */
   retired?: string;
+  /** Cut from the base body's own surface by the Unity build (tools/unity/people/mh_build.py GENERATED_GARMENTS), so it fits every body; the frozen web game has no mesh for it. */
+  generated?: boolean;
 }
 
 export const GARMENTS: Record<string, GarmentDef> = {
@@ -159,6 +161,18 @@ export const GARMENTS: Record<string, GarmentDef> = {
   gredal_gas_mask: { slot: 'face', fit: 'u', tags: ['raider', 'military', 'work', 'tech'], retired: 'hides the face' },
   culturalibre_bandana_mask: { slot: 'face', fit: 'u', tags: ['raider', 'nomad', 'rag', 'work', 'street'], dye: true, retired: 'hides the face' },
   elvs_plague_doctor_mask: { slot: 'face', fit: 'u', tags: ['rich', 'faith'], retired: 'hides the face' },
+
+  // Generated pieces (P4.14 step 5, docs/WARDROBE.md §3): the cyberpunk cut, built on the bases themselves
+  sf_base_highneck: { slot: 'top', fit: 'u', tags: ['work', 'street', 'tech', 'cold', 'nomad'], dye: true, generated: true },
+  sf_bomber_cropped: { slot: 'top', fit: 'u', tags: ['street', 'casual', 'tech', 'raider'], dye: true, generated: true },
+  sf_vest_harness: { slot: 'over', fit: 'u', tags: ['raider', 'street', 'work', 'nomad', 'tech'], dye: true, generated: true },
+  sf_duster_long: { slot: 'over', fit: 'u', tags: ['nomad', 'rag', 'raider', 'cold', 'street'], dye: true, generated: true },
+  sf_cape_shoulder: { slot: 'over', fit: 'u', tags: ['nomad', 'faith', 'rag', 'cold'], dye: true, generated: true },
+  sf_cargo_articulated: { slot: 'legs', fit: 'u', tags: ['work', 'street', 'tech', 'raider', 'military', 'nomad'], dye: true, generated: true },
+  sf_belt_rig: { slot: 'gear', fit: 'u', tags: ['work', 'raider', 'nomad', 'street', 'military'], generated: true },
+  sf_shin_guards: { slot: 'gear', fit: 'u', tags: ['raider', 'military', 'street', 'sport'], generated: true },
+  sf_gaiter_down: { slot: 'gear', fit: 'u', tags: ['nomad', 'work', 'cold', 'tech', 'street'], dye: true, generated: true },
+  sf_arm_wraps: { slot: 'hands', fit: 'u', tags: ['raider', 'street', 'work', 'nomad', 'sport'], dye: true, generated: true },
 
   // Hands
   toigo_gloves_short: { slot: 'hands', fit: 'u', tags: ['work', 'formal', 'cold'], dye: true },

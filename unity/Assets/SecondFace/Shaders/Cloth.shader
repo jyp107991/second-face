@@ -19,6 +19,7 @@ Shader "SecondFace/Cloth"
         _Inflate ("Stand-off along the normals (m)", Range(0, 0.03)) = 0
         _Grime ("Grime", Range(0, 1)) = 0
         _Wear ("Sun and wear", Range(0, 1)) = 0
+        [NoScaleOffset] _CoverMask ("Covered base vertices (128 x 128, by an outer garment)", 2D) = "black" {}
         _Recolour ("Recolour (a: how much)", Color) = (0, 0, 0, 0)
         _RecolourLum ("The texture's mean luminance", Float) = 0.2
         [Toggle] _RecolourIris ("Only the iris", Float) = 0
@@ -46,6 +47,9 @@ Shader "SecondFace/Cloth"
 
         struct Attributes
         {
+            // the vertex's nearest MakeHuman base vertex as (i % 128, i / 128) in uv1 (mh_build): an outer garment's
+            // cover mask hides this one under it (a waistband under a sweater, a boot's shaft under a trouser leg)
+            float2 baseIndex : TEXCOORD1;
             float4 positionOS : POSITION;
             float3 normalOS : NORMAL;
             float4 tangentOS : TANGENT;
@@ -57,6 +61,10 @@ Shader "SecondFace/Cloth"
         float3 Inflated(Attributes v) { return v.positionOS.xyz + normalize(v.normalOS) * _Inflate; }
 
         half Cut(float2 uv) { return SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv).a * _BaseColor.a - _Cutoff; }
+        TEXTURE2D(_CoverMask); SAMPLER(sampler_cover_point_clamp);
+        // 1 where an outer garment covers this vertex's body vertex (sampled per vertex, so a covered edge fades over
+        // half a triangle, as the skin's hidden mask does)
+        half Covered(float2 baseIndex) { return SAMPLE_TEXTURE2D_LOD(_CoverMask, sampler_cover_point_clamp, (floor(baseIndex + 0.5) + 0.5) / 128.0, 0).r; }
 
         // a cheap value noise (for the grime's patches)
         float Hash(float3 p) { p = frac(p * 0.3183099 + 0.1); p *= 17.0; return frac(p.x * p.y * p.z * (p.x + p.y + p.z)); }
@@ -98,6 +106,7 @@ Shader "SecondFace/Cloth"
                 half4 tangentWS : TEXCOORD3;
                 float3 positionOS : TEXCOORD4;
                 half fog : TEXCOORD5;
+                half cover : TEXCOORD6;
             };
 
             Varyings Vert(Attributes v)
@@ -114,11 +123,13 @@ Shader "SecondFace/Cloth"
                 o.uv = TRANSFORM_TEX(v.uv, _BaseMap);
                 o.positionOS = pos;
                 o.fog = ComputeFogFactor(p.positionCS.z);
+                o.cover = Covered(v.baseIndex);
                 return o;
             }
 
             half4 Frag(Varyings i, FRONT_FACE_TYPE face : FRONT_FACE_SEMANTIC) : SV_Target
             {
+                clip(0.5h - i.cover);
                 half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv) * _BaseColor;
                 clip(albedo.a - _Cutoff);
                 half smoothness = _Smoothness;
@@ -201,7 +212,7 @@ Shader "SecondFace/Cloth"
             float3 _LightDirection;
             float3 _LightPosition;
 
-            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; };
+            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; half cover : TEXCOORD1; };
 
             Varyings Vert(Attributes v)
             {
@@ -222,10 +233,11 @@ Shader "SecondFace/Cloth"
                 #endif
                 o.positionCS = cs;
                 o.uv = TRANSFORM_TEX(v.uv, _BaseMap);
+                o.cover = Covered(v.baseIndex);
                 return o;
             }
 
-            half4 Frag(Varyings i) : SV_Target { clip(Cut(i.uv)); return 0; }
+            half4 Frag(Varyings i) : SV_Target { clip(min(Cut(i.uv), 0.5h - i.cover)); return 0; }
             ENDHLSL
         }
 
@@ -242,7 +254,7 @@ Shader "SecondFace/Cloth"
             #pragma fragment Frag
             #pragma multi_compile_instancing
 
-            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; };
+            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; half cover : TEXCOORD1; };
 
             Varyings Vert(Attributes v)
             {
@@ -250,10 +262,11 @@ Shader "SecondFace/Cloth"
                 Varyings o;
                 o.positionCS = TransformObjectToHClip(Inflated(v));
                 o.uv = TRANSFORM_TEX(v.uv, _BaseMap);
+                o.cover = Covered(v.baseIndex);
                 return o;
             }
 
-            half Frag(Varyings i) : SV_Target { clip(Cut(i.uv)); return i.positionCS.z; }
+            half Frag(Varyings i) : SV_Target { clip(min(Cut(i.uv), 0.5h - i.cover)); return i.positionCS.z; }
             ENDHLSL
         }
 
@@ -270,7 +283,7 @@ Shader "SecondFace/Cloth"
             #pragma multi_compile_instancing
             #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
 
-            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; half3 normalWS : TEXCOORD1; };
+            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; half3 normalWS : TEXCOORD1; half cover : TEXCOORD2; };
 
             Varyings Vert(Attributes v)
             {
@@ -279,12 +292,13 @@ Shader "SecondFace/Cloth"
                 o.positionCS = TransformObjectToHClip(Inflated(v));
                 o.uv = TRANSFORM_TEX(v.uv, _BaseMap);
                 o.normalWS = TransformObjectToWorldNormal(v.normalOS);
+                o.cover = Covered(v.baseIndex);
                 return o;
             }
 
             half4 Frag(Varyings i, FRONT_FACE_TYPE face : FRONT_FACE_SEMANTIC) : SV_Target
             {
-                clip(Cut(i.uv));
+                clip(min(Cut(i.uv), 0.5h - i.cover));
                 float3 n = normalize(IS_FRONT_VFACE(face, i.normalWS, -i.normalWS));
                 #if defined(_GBUFFER_NORMALS_OCT)
                     float2 oct = PackNormalOctQuadEncode(n);

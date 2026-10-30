@@ -39,6 +39,9 @@ namespace SecondFace.Game.People
             if (face != null)
             {
                 face.HairColour = Colour(look.HairColour);
+                // the years in the skin (the aged bake blended in from the late twenties, most of the way by seventy)
+                var years = 24f + 46f * (look.Shape != null && look.Shape.TryGetValue("body-age", out var ba) ? ba : 0f);
+                face.SkinAge = Mathf.Pow(Mathf.Clamp01((years - 28f) / 44f), 1.2f) * 0.85f;
                 face.Set(Looks.Shape(look));   // the face's sliders and the body's shapes, build and muscle
             }
             var scar = System.Array.IndexOf(Looks.Scars, look.Scar);

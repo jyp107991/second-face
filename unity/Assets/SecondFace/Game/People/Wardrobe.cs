@@ -27,6 +27,16 @@ namespace SecondFace.Game.People
         }
 
         private static readonly int HiddenMaskId = Shader.PropertyToID("_HiddenMask");
+        private static readonly int CoverMaskId = Shader.PropertyToID("_CoverMask");
+        /// <summary>The slots whose garments lie over a slot's (P4.14): what they cover of the body, this slot's garment is
+        /// hidden under (the cloth shader's cover mask): a waistband under a sweater, a boot's shaft under a trouser
+        /// leg, a glove's cuff under a sleeve.</summary>
+        private static readonly Dictionary<string, string[]> Over = new()
+        {
+            ["legs"] = new[] { "top", FullSlot, "over" }, ["top"] = new[] { "over", FullSlot },
+            ["feet"] = new[] { "legs", FullSlot }, ["hands"] = new[] { "top", "over", FullSlot },
+        };
+        private readonly Dictionary<string, Texture2D> _covers = new();
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int InflateId = Shader.PropertyToID("_Inflate");
         private static readonly int GrimeId = Shader.PropertyToID("_Grime");
@@ -178,6 +188,7 @@ namespace SecondFace.Game.People
         {
             Levels();
             Hide();
+            Cover();
             var hatted = _worn.Values.Any(w => w.Garment.HidesHair);
             var ownGone = Shaved || _worn.ContainsKey(HairSlot);
             foreach (var r in GetComponentsInChildren<Renderer>(true))
@@ -233,9 +244,48 @@ namespace SecondFace.Game.People
             }
         }
 
+        /// <summary>Writes, for each worn garment, the mask of base vertices the garments over it cover (<see cref="Over"/>),
+        /// and gives it to the garment's renderers; none over it, the black texture.</summary>
+        private void Cover()
+        {
+            var block = new MaterialPropertyBlock();
+            foreach (var kv in _worn)
+            {
+                Texture2D tex = null;
+                if (Over.TryGetValue(kv.Key, out var outer))
+                {
+                    byte[] px = null;
+                    foreach (var o in outer)
+                    {
+                        if (!_worn.TryGetValue(o, out var ow) || ow.Garment.Hides == null) continue;
+                        px ??= new byte[MaskSize * MaskSize];
+                        foreach (var i in ow.Garment.Hides) if (i >= 0 && i < px.Length) px[i] = 255;
+                    }
+                    if (px != null)
+                    {
+                        if (!_covers.TryGetValue(kv.Key, out tex) || tex == null)
+                        {
+                            tex = new Texture2D(MaskSize, MaskSize, TextureFormat.R8, false, true)
+                                { name = "cover mask " + kv.Key, filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+                            _covers[kv.Key] = tex;
+                        }
+                        tex.SetPixelData(px, 0);
+                        tex.Apply(false, false);
+                    }
+                }
+                foreach (var r in kv.Value.Renderers)
+                {
+                    r.GetPropertyBlock(block);
+                    block.SetTexture(CoverMaskId, tex != null ? tex : Texture2D.blackTexture);
+                    r.SetPropertyBlock(block);
+                }
+            }
+        }
+
         private void OnDestroy()
         {
             if (_mask != null) Gone(_mask);
+            foreach (var t in _covers.Values) if (t != null) Gone(t);
         }
 
         /// <summary>Destroys now in the editor's edit mode (scene builders), at the frame's end in play.</summary>

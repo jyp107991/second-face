@@ -196,6 +196,7 @@ def modifier_targets(mod, v):
     return [(f'{folder}/{name}', w)]
 
 _tcache = {}
+GEN_NEAR = {}   # a built garment's nearest body vertex per vertex (the hide list of a generated garment)
 def target(rel):
     if rel not in _tcache:
         p = os.path.join(MH, 'targets', rel + '.target')
@@ -276,6 +277,123 @@ CONTENT_LOOK = W(tint='undyed', sat=0.15, flat=0.5, patch=0.25)
 OWN_LOOK = W(tint='own', sat=0.45, flat=0.15)
 HIDING_SLOTS = {'top', 'legs', 'full', 'feet', 'hands', 'face'}
 BAKED = set()   # shared garment textures baked in this run (the second base reuses them)
+
+# ----------------------------------------------------------------------------------------------------------------
+# Generated garments (P4.14 step 5, docs/WARDROBE.md §3): the cyberpunk pieces the community packs lack, cut from
+# MakeHuman's own helper meshes (the "tights" bodysuit and the "skirt", which every target shapes with the body) by
+# bone and landmark, pushed out by a thickness along their normals. Fitted like any proxy (each vertex rides its own
+# helper vertex), so they follow every body shape, the bust's drape and the clearance; baked by bake_cloth like the
+# rest (no source texture: the dye, the weave, the patches and the wear). Ids are ours (sf_*); the catalogue
+# (src/engine/data/garments.ts) lists them with `generated: true`.
+# ----------------------------------------------------------------------------------------------------------------
+ARM_BONES = {'upperarm01', 'upperarm02', 'lowerarm01', 'lowerarm02'}
+HAND_BONES = {'wrist', 'metacarpal1', 'metacarpal2', 'metacarpal3', 'metacarpal4'}
+SHOULDER_BONES = {'clavicle', 'shoulder01'}
+TORSO_BONES = {'root', 'spine01', 'spine02', 'spine03', 'spine04', 'spine05', 'pelvis', 'breast', 'special04', 'special05', 'special06'}
+NECK_BONES = {'neck01', 'neck02', 'neck03'}
+LEG_BONES = {'upperleg01', 'upperleg02', 'lowerleg01', 'lowerleg02'}
+FOOT_BONES = {'foot'}
+
+def _bone_of(name):
+    """A MakeHuman bone's family, sides and segments dropped ('upperarm01.L' -> 'upperarm01', 'pelvis.R' -> 'pelvis')."""
+    return name.split('.')[0]
+
+_gen_state = {}
+def generated_setup():
+    """The helper meshes, each helper vertex's strongest bone, and the landmarks (MakeHuman space, on the unshaped base)
+    the generated garments are cut by. Once."""
+    if _gen_state: return _gen_state
+    verts, vts, faces = read_obj(os.path.join(MH, '3dobjs', 'base.obj'), keep_groups={'helper-tights', 'helper-skirt'})
+    tights = read_groups(os.path.join(MH, '3dobjs', 'base.obj'), ('helper-tights', 'helper-skirt'))
+    strongest = {}
+    for b, wl in weights_mh.items():
+        fam = _bone_of(b)
+        for i, w in wl:
+            if i not in strongest or w > strongest[i][1]: strongest[i] = (fam, w)
+    joints = skel['joints']
+    def jpos(j):
+        idx = joints[j]; return tuple(sum(verts[i][k] for i in idx) / len(idx) for k in range(3))
+    L = {
+        'hips': jpos('root____head')[1], 'waist': jpos('spine05____tail')[1], 'chest_bottom': jpos('spine03____head')[1],
+        'chest_top': jpos('spine01____head')[1], 'neck': jpos('neck01____head')[1], 'neck_top': jpos('neck03____tail')[1],
+        'shoulder': jpos('upperarm01.L____head')[1], 'elbow': jpos('lowerarm01.L____head')[1], 'wrist': jpos('wrist.L____head')[1],
+        'thigh': jpos('upperleg01.L____head')[1], 'knee': jpos('lowerleg01.L____head')[1], 'ankle': jpos('foot.L____head')[1],
+        'shin_z': jpos('lowerleg01.L____head')[2],
+    }
+    _gen_state.update(verts=verts, vts=vts, faces=faces, groups=tights, bone={i: strongest[i][0] for i in strongest}, L=L)
+    print('  generated garments: landmarks ' + ', '.join(f'{k} {v:.2f}' for k, v in L.items()))
+    return _gen_state
+
+# each: the helper(s), a keep test over (position, bone family) in MakeHuman space, and the thickness in MakeHuman units
+# (0.1 = 1 cm). Landmarks L as above (y up, +z the front).
+GENERATED_GARMENTS = {
+    # a thermal base with a high neck: torso, arms to the wrist, the neck to under the chin
+    'sf_base_highneck': dict(helpers=('helper-tights',), thick=0.03, keep=lambda p, b, L:
+        (b in TORSO_BONES | SHOULDER_BONES and p[1] >= L['hips'] - 0.3) or b in ARM_BONES or (b in NECK_BONES and p[1] <= L['neck_top'] - 0.15)),
+    # a harness vest: torso and shoulders, sleeveless, a round neck, ending at the hip bone
+    'sf_vest_harness': dict(helpers=('helper-tights',), thick=0.12, keep=lambda p, b, L:
+        b in TORSO_BONES | SHOULDER_BONES and p[1] >= L['hips'] + 0.2 and not (p[1] > L['chest_top'] + 0.2 and abs(p[0]) < 0.8)),
+    # a cropped bomber: torso and arms, hem at the waist, a stand collar
+    'sf_bomber_cropped': dict(helpers=('helper-tights',), thick=0.15, keep=lambda p, b, L:
+        (b in TORSO_BONES | SHOULDER_BONES and p[1] >= L['waist'] - 0.25) or b in ARM_BONES or (b in NECK_BONES and p[1] <= L['neck'] + 0.5)),
+    # a long duster: torso and arms, open down the front below the waist (the skirt helper, its front strip cut), to the knee
+    'sf_duster_long': dict(helpers=('helper-tights', 'helper-skirt'), thick=0.15, keep=lambda p, b, L:
+        (b in TORSO_BONES | SHOULDER_BONES and p[1] >= L['hips'] - 0.1) or b in ARM_BONES or (b in NECK_BONES and p[1] <= L['neck'] + 0.4)
+        or (b == 'skirt' and p[1] >= L['knee'] - 0.3 and not (p[2] > 0 and abs(p[0]) < 0.5))),
+    # articulated cargo trousers: hips to the ankle
+    'sf_cargo_articulated': dict(helpers=('helper-tights',), thick=0.08, keep=lambda p, b, L:
+        (b in LEG_BONES and p[1] >= L['ankle'] + 0.3) or (b in TORSO_BONES and p[1] <= L['hips'] + 0.4)),
+    # a belt rig: a band at the hips
+    'sf_belt_rig': dict(helpers=('helper-tights',), thick=0.1, keep=lambda p, b, L:
+        b in TORSO_BONES | LEG_BONES and L['hips'] - 0.15 <= p[1] <= L['hips'] + 0.5),
+    # shin guards and knee caps: the front of the lower leg
+    'sf_shin_guards': dict(helpers=('helper-tights',), thick=0.12, keep=lambda p, b, L:
+        b in LEG_BONES and L['ankle'] + 0.45 <= p[1] <= L['knee'] + 0.5 and p[2] >= L['shin_z'] - 0.05),
+    # arm wraps: forearm and palm, fingers bare
+    'sf_arm_wraps': dict(helpers=('helper-tights',), thick=0.04, keep=lambda p, b, L:
+        b in {'lowerarm01', 'lowerarm02'} | HAND_BONES),
+    # a neck gaiter worn down: the neck and a bib over the upper chest and back
+    'sf_gaiter_down': dict(helpers=('helper-tights',), thick=0.06, keep=lambda p, b, L:
+        (b in NECK_BONES and p[1] <= L['neck_top'] - 0.1) or (b in TORSO_BONES | SHOULDER_BONES and p[1] >= L['chest_top'] - 0.5 and abs(p[0]) < 1.3)),
+    # a shoulder cape: the shoulders, the upper chest and back, the top of the arms
+    'sf_cape_shoulder': dict(helpers=('helper-tights',), thick=0.1, keep=lambda p, b, L:
+        (b in SHOULDER_BONES) or (b in TORSO_BONES and p[1] >= L['chest_top'] - 0.7) or (b in ARM_BONES and p[1] >= L['shoulder'] - 1.0)
+        or (b in NECK_BONES and p[1] <= L['neck'] + 0.3)),
+}
+
+def generated_garment(name):
+    """A generated garment as a proxy: (refs, verts, vts, faces) over the helper vertices it keeps (each vertex riding
+    its own helper vertex), and the thickness it is pushed out by."""
+    st = generated_setup(); g = GENERATED_GARMENTS[name]
+    keep = set()
+    for h in g['helpers']:
+        fam = 'skirt' if h == 'helper-skirt' else None
+        for i in st['groups'][h]:
+            b = fam or st['bone'].get(i, '')
+            if g['keep'](st['verts'][i], b, st['L']): keep.add(i)
+    faces = [f for f in st['faces'] if all(i in keep for i, _ in f)]
+    used = sorted({i for f in faces for i, _ in f})
+    km = {i: k for k, i in enumerate(used)}
+    refs = [(i, i, i, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0) for i in used]
+    pf = [[(km[i], t) for i, t in f] for f in faces]
+    return refs, [st['verts'][i] for i in used], st['vts'], pf, g['thick']
+
+def vertex_normals(points, faces):
+    """Area-weighted vertex normals of a face list over points (any space)."""
+    n = [[0.0, 0.0, 0.0] for _ in points]
+    for f in faces:
+        idx = [i for i, _ in f]
+        for a in range(1, len(idx) - 1):
+            p0, p1, p2 = points[idx[0]], points[idx[a]], points[idx[a + 1]]
+            u = [p1[k] - p0[k] for k in range(3)]; w = [p2[k] - p0[k] for k in range(3)]
+            c = (u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0])
+            for i in (idx[0], idx[a], idx[a + 1]):
+                for k in range(3): n[i][k] += c[k]
+    out = []
+    for x in n:
+        l = (x[0] ** 2 + x[1] ** 2 + x[2] ** 2) ** 0.5 or 1.0
+        out.append((x[0] / l, x[1] / l, x[2] / l))
+    return out
 
 def content_wardrobe(spec):
     path = spec.get('wardrobe_content')
@@ -908,7 +1026,7 @@ def lod_chain(rig, keep_shapes=False, parts=None, cloth_total=None):
             if b is None: continue
             if part(o) == 'Cloth': b = max(60, b * tris(o) / cloth_tris)   # the clothes share their budget by size
             made.append(decimated(o, min(b, tris(o)), f'{o.name}_LOD{level}', rig))
-            if part(o) == 'Body': copy_base_index(o, made[-1])
+            if 'BaseIndex' in o.data.uv_layers: copy_base_index(o, made[-1])   # the body's skin mask, a garment's cover mask
             # the player's sculpted face shows at the game camera too (their LOD1); far off (LOD2) only the body's own
             # shapes, so a body made from a base (P4.13) keeps its build, bust and seat at a distance
             if keep_shapes and level == 1: transfer_shapes(o, made[-1])
@@ -1179,10 +1297,15 @@ def build_person(spec):
     # --- proxies: eyes, brows, lashes, hair fitted by mhclo
     def proxy(kind, folder_name, name, mat_name, tex_name=None, mat_override=None, skin_to=None, look=None, hair_look=None,
               drop_clear=False):
-        d = find_dir(name, os.path.join(MH, folder_name), COMMUNITY, GENERATED)
-        if d is None: print('  no proxy', name); return None
-        meta, refs, deletes = read_mhclo(os.path.join(d, name + '.mhclo'))
-        pv, pvt, pf = read_obj(os.path.join(d, meta['obj_file'][0]))
+        gen_thick = None
+        if folder_name == 'clothes' and name in GENERATED_GARMENTS:
+            d = None; meta, deletes = {}, []
+            refs, pv, pvt, pf, gen_thick = generated_garment(name)
+        else:
+            d = find_dir(name, os.path.join(MH, folder_name), COMMUNITY, GENERATED)
+            if d is None: print('  no proxy', name); return None
+            meta, refs, deletes = read_mhclo(os.path.join(d, name + '.mhclo'))
+            pv, pvt, pf = read_obj(os.path.join(d, meta['obj_file'][0]))
         if drop_clear:
             # The high-poly eye is an eyeball under a cornea shell whose UVs all fall on the texture's small transparent
             # patch; the engine's mip levels blur that patch opaque and the shell hides the iris (BUILD_PLAN §6.B.3).
@@ -1218,6 +1341,14 @@ def build_person(spec):
                 p[0] += ox * sx; p[1] += oy * sy; p[2] += oz * sz
                 out.append(p)
             return out
+        if gen_thick is not None:
+            # a generated garment stands off its helper by its thickness, along the rest normals (the same push on
+            # every refit: the shapes move the helper, the cloth keeps its thickness)
+            rest = fit(lambda i: v[i])
+            push = [[nk * gen_thick for nk in n_] for n_ in vertex_normals(rest, pf)]
+            fit_bare = fit
+            def fit(at, scale_at=None):
+                return [[p[k] + push[j][k] for k in range(3)] for j, p in enumerate(fit_bare(at, scale_at))]
         fitted = fit(lambda i: v[i])
         pm = bpy.data.meshes.new(kind)
         pm.from_pydata([to_bl(p) for p in fitted], [], [[i for i, _ in f] for f in pf])
@@ -1226,11 +1357,38 @@ def build_person(spec):
             for _, vt in f: puv.data[li].uv = pvt[vt] if vt >= 0 and vt < len(pvt) else (0, 0); li += 1
         pm.validate(); pm.update()
         for p in pm.polygons: p.use_smooth = True
+        # the base's own bust draped (P4.14): the garment as fitted to the base less its bust, plus the bust's push
+        # under the drape's tent, so a top at rest spans the breasts as cloth does instead of following the skin
+        # between and under them; the shapes below refit against the same
+        bust_flat = None
+        if folder_name == 'clothes' and spec['gender'] < 0.5:
+            if '_bust_flat' not in spec:
+                spec['_bust_flat'] = {i: (dx, dy, dz) for i, dx, dy, dz in macro_delta(spec, 'breastSize', 0.0)}
+            bust_flat = spec['_bust_flat']
+            flat = fit(lambda i: [v[i][k] + bust_flat[i][k] for k in range(3)] if i in bust_flat else v[i], scale_at=lambda i: v[i])
+            bust = [to_bl_dir([f_[k] - fl[k] for k in range(3)]) for f_, fl in zip(fitted, flat)]
+            if max(b.length for b in bust) >= 1e-4:
+                draped = drape(pm, bust)
+                for k, fl in enumerate(flat): pm.vertices[k].co = to_bl(fl) + draped[k]
+                pm.update()
+            else: bust_flat = None
+        # each vertex's nearest body vertex as (i % 128, i // 128) in a second uv (as the body's own BaseIndex): the
+        # wardrobe hides a garment under an outer one by these (the cloth shader's cover mask, P4.14)
+        if folder_name == 'clothes':
+            if '_body_kd' not in spec:
+                kd = KDTree(len(body_idx))
+                for i in body_idx: kd.insert(to_bl(v[i]), i)
+                kd.balance(); spec['_body_kd'] = kd
+            near_body = [spec['_body_kd'].find(vv.co)[1] for vv in pm.vertices]
+            GEN_NEAR[name] = near_body
+            bi = pm.uv_layers.new(name='BaseIndex')
+            for loop in pm.loops:
+                k = near_body[loop.vertex_index]; bi.data[loop.index].uv = (k % 128, k // 128)
         po = bpy.data.objects.new(kind, pm); bpy.context.scene.collection.objects.link(po)
         # material and texture
-        mat_path = os.path.join(d, mat_override or meta.get('material', [name + '.mhmat'])[0])
+        mat_path = os.path.join(d, mat_override or meta.get('material', [name + '.mhmat'])[0]) if d else None
         tex = None
-        mm = read_mhmat(mat_path) if os.path.exists(mat_path) else {}
+        mm = read_mhmat(mat_path) if mat_path and os.path.exists(mat_path) else {}
         if mm or look is not None or hair_look is not None:
             src_d = None
             if 'diffuseTexture' in mm:
@@ -1274,9 +1432,22 @@ def build_person(spec):
             for sname, d in shapes:
                 if touched_any.isdisjoint(d): continue
                 moved = fit(lambda i: [v[i][k] + d[i][k] for k in range(3)] if i in d else v[i], scale_at=lambda i: v[i])
-                deltas = [to_bl_dir([m_[k] - f_[k] for k in range(3)]) for m_, f_ in zip(moved, fitted)]
+                if folder_name == 'clothes' and sname.startswith(DRAPE_SHAPES):
+                    if bust_flat is not None:
+                        # the shaped body less its bust, plus its bust's push under the tent, against the draped rest
+                        def at(i):
+                            p_ = list(v[i])
+                            if i in d: p_ = [p_[k] + d[i][k] for k in range(3)]
+                            if i in bust_flat: p_ = [p_[k] + bust_flat[i][k] for k in range(3)]
+                            return p_
+                        moved_flat = fit(at, scale_at=lambda i: v[i])
+                        pushed = drape(pm, [to_bl_dir([m_[k] - mf[k] for k in range(3)]) for m_, mf in zip(moved, moved_flat)])
+                        deltas = [to_bl(mf) + pu - pm.vertices[k].co for k, (mf, pu) in enumerate(zip(moved_flat, pushed))]
+                    else:
+                        deltas = drape(pm, [to_bl_dir([m_[k] - f_[k] for k in range(3)]) for m_, f_ in zip(moved, fitted)])
+                else:
+                    deltas = [to_bl_dir([m_[k] - f_[k] for k in range(3)]) for m_, f_ in zip(moved, fitted)]
                 if max(dl.length for dl in deltas) < 1e-4: continue   # under a tenth of a millimetre: not this part's shape
-                if folder_name == 'clothes' and sname.startswith(DRAPE_SHAPES): deltas = drape(pm, deltas)
                 if not pm.shape_keys: po.shape_key_add(name='Basis', from_mix=False)
                 sk = po.shape_key_add(name=sname, from_mix=False)
                 for k, dl in enumerate(deltas): sk.data[k].co = sk.data[k].co + dl
@@ -1401,12 +1572,16 @@ def build_person(spec):
                                      mesh_smooth_type='FACE', use_mesh_modifiers=False, add_leaf_bones=False, bake_anim=False, path_mode='STRIP',
                                      embed_textures=False, use_armature_deform_only=False, primary_bone_axis='Y', secondary_bone_axis='X')
             K.write_model_meta(gpath, f'{REL}/{name}.fbx')
-            _, refs, dels = read_mhclo(os.path.join(find_dir(g, COMMUNITY, os.path.join(MH, 'clothes')), g + '.mhclo'))
-            hides = set(dels)
-            if g in COVERS or (look or {}).get('hide'):
-                hides.update(ref_vertices(refs))
-                hides = close_holes(hides, cover_points(refs, lambda i: v[i]), lambda i: v[i])
-            else: hides = close_holes(hides)
+            if g in GENERATED_GARMENTS:
+                # cut from the helpers: the body vertices nearest its surface are what it covers
+                hides = close_holes(set(GEN_NEAR.get(g, []))) if (look or {}).get('hide') else set()
+            else:
+                _, refs, dels = read_mhclo(os.path.join(find_dir(g, COMMUNITY, os.path.join(MH, 'clothes')), g + '.mhclo'))
+                hides = set(dels)
+                if g in COVERS or (look or {}).get('hide'):
+                    hides.update(ref_vertices(refs))
+                    hides = close_holes(hides, cover_points(refs, lambda i: v[i]), lambda i: v[i])
+                else: hides = close_holes(hides)
             manifest['garments'].append({'id': g, 'slot': w['slot'], 'model': name, 'hidesHair': bool(w.get('hides_hair')),
                                          'hides': sorted(hides)})
             for o in made: bpy.data.objects.remove(o, do_unlink=True)
@@ -1432,7 +1607,13 @@ def build_person(spec):
             manifest['garments'].append({'id': h, 'slot': 'hair', 'model': name, 'hidesHair': False, 'hides': []})
             for o in made: bpy.data.objects.remove(o, do_unlink=True)
             print(f'  wardrobe: {name} (hair)')
-        with open(os.path.join(OUT, spec['id'] + '.wardrobe.json'), 'w') as f: json.dump(manifest, f, indent=1)
+        mpath = os.path.join(OUT, spec['id'] + '.wardrobe.json')
+        if os.environ.get('WARDROBE_ONLY') and os.path.exists(mpath):
+            # a subset build keeps the rest of the wardrobe: the built pieces replace their old entries
+            with open(mpath) as f: old = json.load(f)
+            built = {g['id'] for g in manifest['garments']}
+            manifest['garments'] = [g for g in old.get('garments', []) if g['id'] not in built] + manifest['garments']
+        with open(mpath, 'w') as f: json.dump(manifest, f, indent=1)
 
 os.makedirs(OUT, exist_ok=True)
 made = hairgen.generate(MH, GENERATED)

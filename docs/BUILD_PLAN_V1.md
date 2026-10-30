@@ -568,7 +568,27 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    spans the cleavage and the fold. `Sculpt.Reroll(rng, previous, male)` folds each sex-marked slider into its range
    (`BySex`) and caps the head shapes by sex. `HandPose` curls the fingers at rest after the animation (a Humanoid
    finger no clip drives keeps the bind pose, flat and spread; the P4.8 note that they rest relaxed was wrong), added
-   wherever `ArmClearance` is. Palettes and dye chances in `outfits.ts` from `docs/WARDROBE.md`.
+   wherever `ArmClearance` is. Palettes and dye chances in `outfits.ts` from `docs/WARDROBE.md`. Garments under
+   garments: every garment vertex carries its nearest body vertex in uv1 (`BaseIndex`, as the body does) and the
+   cloth shader clips where a `_CoverMask` (128 x 128, written by `Wardrobe.Cover()` from the outer slots' hide lists:
+   legs under top/full/over, top under over/full, feet under legs/full, hands under top/over/full) marks that vertex
+   covered: no waistband through a sweater, no boot shaft through a trouser leg. A woman's top at rest is fitted to the
+   base less its bust plus the bust's push under the drape's tent (`proxy()`, `_bust_flat`), and the bust shapes
+   refit against that, so cloth spans the breasts instead of following the skin between and under them. The years in
+   the skin: `FaceSculpt.SkinAge` (set by `LookView` from the body's age) blends the aged bake in without greying the
+   hair twice. The showcase and the close-up (`ResidentCloseUp`: whole, torso, side, each hand, face, back, and the idle
+   four ways) animate always and never freeze the Animator.
+   *As built (step 5, first batch, 2026-10-30):* `GENERATED_GARMENTS` in mh_build cuts ten pieces from MakeHuman's
+   helper meshes (the "tights" bodysuit and the "skirt", shaped by every target with the body) by bone family and
+   landmark (`generated_setup`: the joints' heights on the unshaped base), each vertex riding its own helper vertex
+   (refs of weight 1) and pushed out by the piece's thickness along the rest normals (`fit` wrapped in `proxy`): a
+   high-neck thermal base, a sleeveless harness vest, a cropped bomber with a stand collar, a long duster open down
+   the front (the skirt helper less its front strip), articulated cargo trousers, a belt rig, shin guards, arm wraps,
+   a neck gaiter worn down, a shoulder cape. Baked by `bake_cloth` without a source (dye, weave, patches, wear); they
+   hide the body under them by their nearest body vertices (`GEN_NEAR`). The catalogue lists them with
+   `generated: true` (the web game has no mesh for them; its asset test skips them). `WARDROBE_ONLY` builds merge
+   into the wardrobe manifest, so a piece can be rebuilt alone. Still to do in step 5: the straps, seams, pockets and
+   tape drawn into their bakes; a lit trim for the megacity; hoods and sleeves cut asymmetric.
 ### P5 — Camera, touch and UI
 1. `CameraService` with Cinemachine 3: an orbit rig around the party leader (§6.F), tactical camera in combat,
    conversation cameras (over-shoulder two-shot, portrait inserts), the photo mode.
@@ -2368,6 +2388,14 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
 - **Retiring a garment can leave a role with no top or legs.** With the chest-pocket shirts gone, the rich men had no
   `top` (the outfits test caught it: `gilded/m/3 legs,feet`); the pilgrims lost their only trousers. Tag a plain
   piece into the role before retiring the last one, and run `npm run check`.
+- **A frozen, culled Animator poses people wrongly in tests (P4.14; the owner's "weird arm and hand position").**
+  An Animator in its default culling mode writes no bones while no camera sees its renderers (batch mode: the
+  captures render on demand), so the first evaluated frame, a blend out of the rest pose with the hands in front of
+  the hips, stayed on the body and was frozen by `speed = 0`. Every test that poses a person sets
+  `cullingMode = AlwaysAnimate` and captures live; the game's own people (seen by a real camera) were never wrong.
+- **The pants through the sweater.** Two garments refitted to the same body intersect where the inner one is bulkier
+  (a waistband, a boot shaft); the layer stand-off alone cannot fix it. The cover mask (above) clips the inner garment
+  under the outer one, by body vertex; any new garment must carry the `BaseIndex` uv for it.
 ---
 
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)

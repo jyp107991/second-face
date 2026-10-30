@@ -25,6 +25,9 @@ namespace SecondFace.Game.People
 
         [SerializeField] private List<Entry> values = new();
         [Range(0f, 1f)] public float Aged;
+        /// <summary>The skin's age on its own (P4.14): the years in the skin without greying the hair (the hair's colour is
+        /// the population's), for everyone past their twenties; the photograph's <see cref="Aged"/> covers both.</summary>
+        [Range(0f, 1f)] public float SkinAge;
         /// <summary>The hair greyed (mh_build's &lt;id&gt;__&lt;hair&gt;_aged_d), worn while the face is mostly aged.</summary>
         public Texture AgedHair;
         /// <summary>The hair's colour chosen at creation (alpha 0: the texture's own); greys towards ash with
@@ -113,7 +116,7 @@ namespace SecondFace.Game.People
                 if (m.HasProperty(AgedId) && m.GetTexture(AgedMapId) != null)
                 {
                     r.GetPropertyBlock(_block);
-                    _block.SetFloat(AgedId, Aged);
+                    _block.SetFloat(AgedId, Mathf.Max(Aged, SkinAge));
                     r.SetPropertyBlock(_block);
                 }
                 else if (r.name.Contains("Hair_") && HairColour.a > 0.001f && m.HasProperty(RecolourId))   // own or a piece

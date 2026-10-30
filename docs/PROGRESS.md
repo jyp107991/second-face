@@ -755,11 +755,19 @@ chests as pectorals; a woman's face never a man's (the reroll keeps jaw, chin, n
 rest (fingers curled; they stood flat and spread in the mesh's bind pose because no clip drives them); the showcase now
 renders people as the game poses them. The owner's screenshot (a woman with a square jaw, flat spread hands, a sleeve
 the arm came through) is the check: a close-up render of that resident must be clean before the next sheet goes out.
-**Next action:** when the Blender rebuild finishes (`$S/build_p414.log` ends `done`), run
-`PlayerTestScene.Build`, then a close-up of the complained resident (arms, hands, sleeves, jaw) and fix what remains;
-then re-render `ShaleResidentsAsTheyAre` (fix the sheet crop so heads are whole) and send the sheets; commit with the
-rebuilt assets. Then P4.14 step 5 (the cyberpunk pieces, `docs/WARDROBE.md` §3) and step 6 (graphics). Then travellers on
-the roads (P4.13 5b). Then
+The close-up found the cause of the owner's "weird arm and hand position": the showcase froze a culled Animator on
+its first blended frame (a test fault; the game's pose was right), and the "limbs through clothing" was the trousers'
+waistband through the sweater, now clipped by a cover mask under outer garments; tops now drape over the bust at rest
+too, and the skin ages with the years. Rendered and sent (2026-10-30): `docs/evidence/unity/p4/shale/shale_p414_{1,2,3}.jpg` (every Shale resident, whole,
+in colour, no faces hidden, children as children, ancestries apart), `closeup_mags.jpg` (the resident from the owner's
+screenshot: a woman's jaw, hands curled at her sides, nothing through the cloth), `kit_generated.jpg` (the ten generated
+pieces on both bases). Step 5's first batch is in: ten pieces cut from the helper meshes (`GENERATED_GARMENTS`).
+**Next action:** P4.14 step 5 polish and step 6: dye as a colour, not a tint (the cloth shader colourises by
+luminance when dyed, so a blue dye reads blue, not khaki-blue); retire the boxy tactical vests and the cyborg suit (the
+generated harness vest and base layer take their place); the duster's front cut cleaned of its hanging strips; hide
+lists for every tight garment from its nearest body vertices (the buttock through the cargo pants); straps, zips,
+pockets, plates drawn into the generated pieces' bakes; then the graphics pass (skin, hair, cloth, lighting rig, post)
+and the sheet again. Then travellers on the roads (P4.13 5b). Then Then
 P7's first step, the new opening, in the content. Then P6 step 4, combat. P6.3 left for later: shade outdoors by a
 shadow ray (with the places' colliders, P6.4), noise by the ground, sight cones shown while sneaking, a crouched idle,
 the steal verb on people. P6.2 left for later: the townsfolk sitting at their seats and sleeping in their beds (seats
