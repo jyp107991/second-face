@@ -738,8 +738,13 @@ lighter); every person in the game is now made from the two base bodies with the
 clothes, and keeps whatever the story fixes about their look (hair, scars, skin, eyes). Sixty of them side by side:
 `docs/evidence/unity/p4/people_sixty.jpg` (men 163-189 cm, women 146-178 cm, every build and trade). Still to polish:
 undyed clothes look too clean and pale in a crowd, dirt on clothes barely shows, and the men have no beards yet.
-**Next action:** travellers on the roads (P4.13 5b), then the visual pass on the crowd's clothes (duller undyed cloth,
-grime that shows, beards on the bases). Then
+**Owner's notes (2026-10-30, binding):** too much grey; no masks, sacks or headsets hiding faces; a cyberpunk
+wardrobe from real research; women not all pear-shaped and real breasts; men's shirts must not read as breasts; push
+Unity's graphics; far more difference between peoples. The Shale showcase (`docs/evidence/unity/p4/shale/`, every
+resident in their outfit) is the yardstick, re-rendered after each step.
+**Next action:** P4.14 (BUILD_PLAN P4 item 14), people to the standard, in its six steps: the wardrobe cleared and
+children made as children; peoples by ancestry; colour; bodies; a cyberpunk wardrobe; graphics. Then travellers on
+the roads (P4.13 5b). Then
 P7's first step, the new opening, in the content. Then P6 step 4, combat. P6.3 left for later: shade outdoors by a
 shadow ray (with the places' colliders, P6.4), noise by the ground, sight cones shown while sneaking, a crouched idle,
 the steal verb on people. P6.2 left for later: the townsfolk sitting at their seats and sleeping in their beds (seats

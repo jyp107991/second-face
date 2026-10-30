@@ -352,6 +352,11 @@ namespace SecondFace.Game.UI
             Marks("scar", Looks.Scars, look.Scar, v => { look.Scar = v; Show(); Refresh(); });
             Heading("create.tattoo");
             Marks("tattoo", Looks.Tattoos, look.Tattoo, v => { look.Tattoo = v; Show(); Refresh(); });
+            if (look.Body == "m")
+            {
+                Heading("create.beard");
+                Marks("beard", Looks.Beards, look.Beard, v => { look.Beard = v; Show(); Refresh(); });
+            }
         }
 
         private static Button Swatch(string name, Color colour, bool on, Action act)

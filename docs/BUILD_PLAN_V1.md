@@ -531,6 +531,27 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    runtime grime barely shows at the game camera, a loose shirt hangs off a deep chest like a belly in profile, and
    no beard on the bases yet (`facialHair` in 61 people's looks).
    *Planned:* (5b) extras for the roads (travellers, caravans, patrols between places).
+14. **P4.14, people to the standard (owner's notes 2026-10-30, binding; CLAUDE.md §2).** The Shale showcase
+   (`ScreenshotTests.ShaleResidentsAsTheyAre`, `docs/evidence/unity/p4/shale/`) showed: a crowd in grey and beige;
+   masks, sack hoods, goggles, headsets and helmets hiding faces; men's shirt pockets reading as breasts; women all
+   pear-shaped, busts unconvincing; children with adult bodies; ancestries converging (the Reach's mix drew mostly
+   mixed, so faces and skin are alike); flat light and plain materials; printed lettering left on suits. Steps, each
+   ending with the Shale showcase re-rendered beside the last:
+   (1) the wardrobe cleared: no garment that hides the face (masks, sacks, gas masks, plague masks, goggles over the
+   eyes, opaque glasses, closed helmets) or an oversized headset; no shirt whose pockets sit on the chest; printed suits
+   out; children made as children (a `body-child` shape: the age macro to 11 at the base's stature, then their
+   stature by a growth chart). (2) the Reach's people by ancestry: a person is mostly one ancestry (some mixed),
+   skin from very dark to pale as ancestry and sun make it, eyes, hair colour and texture by ancestry, the face's
+   features through the ancestry macros at full strength. (3) colour: palettes from the research (`docs/WARDROBE.md`)
+   by trade, faction and means; most pieces dyed; saturated accents; the bake keeps a garment's own colour where it has
+   one. (4) bodies: women's figure types at real frequencies (straight, hourglass, inverted triangle, apple, pear),
+   breasts by size, projection, spacing and lift at realistic scale, and tops that drape rather than shrink-wrap; men's
+   chests as pectorals, never a bust. (5) a cyberpunk wardrobe from the research: new pieces built for the bases
+   (high-collar jackets and shells, techwear and layered panels, harnesses and rigs, utility belts, armour panels, ponchos
+   and wraps, knee and shin guards, wrist rigs, visible chrome), re-textured by our pipeline. (6) graphics: skin
+   (subsurface-like diffusion, specular lobes, pore detail), hair (anisotropic highlights), cloth (sheen, fabric detail,
+   wear in the normal), the people's lighting and URP's post (tonemapping, colour grading, ambient occlusion, bloom),
+   judged at the game camera and in conversation.
 ### P5 — Camera, touch and UI
 1. `CameraService` with Cinemachine 3: an orbit rig around the party leader (§6.F), tactical camera in combat,
    conversation cameras (over-shoulder two-shot, portrait inserts), the photo mode.

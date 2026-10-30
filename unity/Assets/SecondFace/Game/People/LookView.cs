@@ -19,6 +19,8 @@ namespace SecondFace.Game.People
         private static readonly int ScarId = Shader.PropertyToID("_Scar");
         private static readonly int TattooId = Shader.PropertyToID("_Tattoo");
         private static readonly int RecolourId = Shader.PropertyToID("_Recolour");
+        private static readonly int BeardId = Shader.PropertyToID("_Beard");
+        private static readonly int BeardColourId = Shader.PropertyToID("_BeardColour");
 
         /// <summary>The body's scale: a stature against the base's own (<see cref="Bodies"/>), else the look's height (±6 %).</summary>
         public static float Scale(PlayerLook look) => look.Stature > 0f
@@ -54,6 +56,9 @@ namespace SecondFace.Game.People
                     block.SetFloat(FrecklesId, Mathf.Clamp01(look.Freckles));
                     block.SetFloat(ScarId, scar);
                     block.SetFloat(TattooId, tattoo);
+                    // a beard only on a man's body, in the hair's colour a shade darker
+                    block.SetFloat(BeardId, look.Body == "m" ? System.Array.IndexOf(Looks.Beards, look.Beard) : -1);
+                    block.SetColor(BeardColourId, Colour(look.HairColour) * 0.8f);
                     r.SetPropertyBlock(block);
                 }
                 else if (r.name.StartsWith("Eyes_") && m.HasProperty(RecolourId))

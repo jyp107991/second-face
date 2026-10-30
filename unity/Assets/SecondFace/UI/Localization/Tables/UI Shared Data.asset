@@ -1871,6 +1871,38 @@ MonoBehaviour:
     m_Key: create.shape.body-tone
     m_Metadata:
       m_Items: []
+  - m_Id: 169359792521216
+    m_Key: create.beard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 169359830269952
+    m_Key: beard.stubble_light
+    m_Metadata:
+      m_Items: []
+  - m_Id: 169359830269953
+    m_Key: beard.stubble
+    m_Metadata:
+      m_Items: []
+  - m_Id: 169359830269954
+    m_Key: beard.stubble_heavy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 169359830269955
+    m_Key: beard.short_beard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 169359830269956
+    m_Key: beard.full_beard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 169359830269957
+    m_Key: beard.goatee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 169359830269958
+    m_Key: beard.moustache
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

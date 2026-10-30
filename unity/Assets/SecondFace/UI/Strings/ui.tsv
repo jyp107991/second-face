@@ -368,6 +368,7 @@ create.hair	HAIR
 create.eyes	EYES
 create.scar	A SCAR
 create.tattoo	A TATTOO
+create.beard	A BEARD
 create.none	None
 scar.brow_cut	Split brow
 scar.cheek_slash	Cheek slash
@@ -466,3 +467,10 @@ pack.drop_all	Drop all
 pack.dropped	{0} left on the ground.
 seat.chair	A chair
 verb.sit	Sit
+beard.stubble_light	Three days
+beard.stubble	A week
+beard.stubble_heavy	Three weeks
+beard.short_beard	Cut short
+beard.full_beard	Grown full
+beard.goatee	Goatee
+beard.moustache	Moustache

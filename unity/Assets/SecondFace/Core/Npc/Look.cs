@@ -41,6 +41,8 @@ namespace SecondFace.Core.Npc
         [JsonProperty("scar")] public string Scar;
         /// <summary>One of <see cref="Looks.Tattoos"/>, or null.</summary>
         [JsonProperty("tattoo")] public string Tattoo;
+        /// <summary>One of <see cref="Looks.Beards"/>, or null (a clean face; a woman's body has none).</summary>
+        [JsonProperty("beard")] public string Beard;
         /// <summary>The clothes' dyes by wardrobe slot (0xRRGGBB; a slot not listed keeps its cloth's own colour).</summary>
         [JsonProperty("dyes")] public Dictionary<string, int> Dyes = new();
 
@@ -80,6 +82,10 @@ namespace SecondFace.Core.Npc
 
         /// <summary>Tattoos: Cistern numbers, tallies and the marks people give themselves out here.</summary>
         public static readonly string[] Tattoos = { "nine_neck", "tally_cheek", "tear", "chin_lines", "brow_dots", "temple_spiral", "jaw_stripes", "eye_band" };
+
+        /// <summary>Beards out here: stubble of three days and three weeks, cut short with a knife, grown full, a goatee or a
+        /// moustache (painted on the skin in the hair's colour, SecondFace/Skin; the grooming rule: unkempt, never styled).</summary>
+        public static readonly string[] Beards = { "stubble_light", "stubble", "stubble_heavy", "short_beard", "full_beard", "goatee", "moustache" };
 
         /// <summary>Re-dyed salvage: undyed, olive, rust, ochre, slate, faded indigo, charcoal, oxblood, sand.</summary>
         public static readonly int[] Dyes = { 0xffffff, 0x5d6448, 0x7a4127, 0x8f6a2e, 0x4b5560, 0x3d4a66, 0x3a3836, 0x5a2a26, 0xa48f6c };

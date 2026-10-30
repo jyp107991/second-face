@@ -259,7 +259,7 @@ PALETTE = {
     'warden_grey': (0.40, 0.41, 0.42), 'dock_orange': (0.66, 0.36, 0.17), 'hivis_faded': (0.70, 0.62, 0.24),
     'clinic_white': (0.78, 0.77, 0.72), 'river_green': (0.27, 0.33, 0.28),
     # the wardrobe for the cast (P4.13): cloth left light for the dye it takes at runtime, and a garment's own colours
-    'undyed': (0.70, 0.67, 0.60), 'own': (0.40, 0.40, 0.40),
+    'undyed': (0.58, 0.55, 0.48), 'own': (0.40, 0.40, 0.40),
 }
 def W(**look): return look
 

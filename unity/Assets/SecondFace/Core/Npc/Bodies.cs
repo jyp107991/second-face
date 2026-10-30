@@ -147,6 +147,14 @@ namespace SecondFace.Core.Npc
             else look.HairColour = Looks.HairColours[rng.Int(0, 2)];
             look.Eyes = mix.Ca > 0.7 && rng.Chance(0.55) ? rng.Pick(new[] { "hazel", "green", "grey_green", "blue_grey", "blue", "grey" })
                 : rng.Pick(new[] { "brown", "dark", "brown", "hazel" });
+            // a man's face: mostly unshaven out here, fuller with the years; the comfortable keep it trimmed or shaved
+            if (male)
+            {
+                var clean = m == Means.Rich ? 0.55 : m == Means.Comfortable ? 0.3 : 0.08;
+                look.Beard = rng.Chance(clean) ? null
+                    : Pick(rng, ("stubble_light", 0.2), ("stubble", 0.25), ("stubble_heavy", 0.18), ("short_beard", 0.14 + Math.Max(0, age - 30) * 0.004),
+                        ("full_beard", 0.1 + Math.Max(0, age - 35) * 0.006), ("goatee", 0.06), ("moustache", 0.07));
+            }
             if (rng.Chance(0.12 + labour * 0.18)) look.Scar = rng.Pick(Looks.Scars);
             if (rng.Chance(0.12)) look.Tattoo = rng.Pick(Looks.Tattoos);
             return look;
@@ -157,7 +165,7 @@ namespace SecondFace.Core.Npc
         /// the hair's colour, and its style as one of ours by the grooming rule (a bob or a side part is tied back or
         /// cropped; shaved, buzzed and faded are the buzz; braids and cornrows the braid; long hair matted), scars by
         /// the nearest of ours, skin tone (0 pale to 1 dark, against the bases' mid-tone bake), undertone, freckles
-        /// and eyes. A beard has no shape on the bases yet and is left.
+        /// eyes and a beard.
         /// </summary>
         public static PlayerLook Over(PlayerLook look, Newtonsoft.Json.Linq.JObject over)
         {
@@ -173,6 +181,11 @@ namespace SecondFace.Core.Npc
                 {
                     "eye_scar" => "eye_line", "burn_left" => "burn_cheek", "burn_right" => "burn_jaw", var v => Array.IndexOf(Looks.Scars, v) >= 0 ? v : look.Scar,
                 };
+            if (over["facialHair"] != null)
+            {
+                var f = over["facialHair"].ToString();
+                look.Beard = f == "none" ? null : Array.IndexOf(Looks.Beards, f) >= 0 ? f : look.Beard;
+            }
             if (over["skinTone"] != null) look.Skin = (float)Math.Clamp(((double)over["skinTone"] - 0.35) * 2.2, -1, 1);
             if (over["skinUndertone"] != null) look.Undertone = (float)Math.Clamp((double)over["skinUndertone"], -1, 1);
             if (over["freckles"] != null) look.Freckles = (float)Math.Clamp((double)over["freckles"], 0, 1);

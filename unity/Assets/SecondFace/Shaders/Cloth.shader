@@ -146,8 +146,9 @@ Shader "SecondFace/Cloth"
                 {
                     half hem = pow(saturate(1.15h - (half)i.positionOS.y / 1.1h), 1.5h);
                     half patch = (half)(0.55 + 0.9 * Noise(i.positionOS * 9.0) * Noise(i.positionOS * 2.3 + 7.0));
-                    half g = saturate(_Grime * (0.25h + 0.75h * hem) * patch);
-                    albedo.rgb = lerp(albedo.rgb, albedo.rgb * 0.55h + half3(0.32h, 0.27h, 0.21h) * 0.35h, g);
+                    // over the whole piece (it is worn every day), heaviest at the hem; dull, brown, never black
+                    half g = saturate(_Grime * (0.55h + 0.65h * hem) * patch);
+                    albedo.rgb = lerp(albedo.rgb, albedo.rgb * 0.5h + half3(0.3h, 0.25h, 0.19h) * 0.4h, g);
                     smoothness *= 1.0h - 0.6h * g;
                 }
                 half3 normalTS = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, i.uv), _BumpScale);

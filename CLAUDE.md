@@ -119,6 +119,14 @@ The owner wants to play unspoiled.
   character has a body of their own, and every place is peopled with characters of varying functions, roles and
   importance (who work, guard, trade, beg, idle, travel) so that everywhere feels alive and dynamic, as realism and
   immersion demand over 60+ hours. Implementation: `docs/BUILD_PLAN_V1.md` §6.B (people) and P6.2.
+- **Clothes in colour, faces never hidden, cyberpunk in the cut** (owner, 2026-10-30, binding): a crowd of grey is not
+  realistic; clothes chosen for function still come in many colours (dyed, faded, mismatched, salvaged from everywhere).
+  No full-face coverings, sacks over heads, gas masks worn in town or oversized headsets: they look comical and hide the
+  face of the person the player talks to. The wardrobe must read as a futuristic, cyberpunk post-apocalypse, from real
+  research into cyberpunk aesthetics (`docs/WARDROBE.md`), still lore-bound by the wardrobe rule above.
+- **Women's bodies: not all pears; real breasts** (owner, 2026-10-30, binding): women's figures span the real types
+  (straight, hourglass, inverted triangle, apple, pear), not a pear by default; breasts vary in size, shape, spacing and
+  lift as real ones do, at realistic scale, and clothes drape over them rather than shrink-wrap.
 - **A new origin** (owner, 2026-10-29, binding): the player is NOT a shelter-dweller who ventures out for the first
   time (too derivative of Fallout, to the point of an IP breach). The opening gives the player character a life of
   their own and the people in it, so the player cares about them as much as about the hero, and it builds the world,

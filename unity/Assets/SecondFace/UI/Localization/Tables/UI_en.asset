@@ -1882,6 +1882,38 @@ MonoBehaviour:
     m_Localized: Softer or firmer middle
     m_Metadata:
       m_Items: []
+  - m_Id: 169359792521216
+    m_Localized: A BEARD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 169359830269952
+    m_Localized: Three days
+    m_Metadata:
+      m_Items: []
+  - m_Id: 169359830269953
+    m_Localized: A week
+    m_Metadata:
+      m_Items: []
+  - m_Id: 169359830269954
+    m_Localized: Three weeks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 169359830269955
+    m_Localized: Cut short
+    m_Metadata:
+      m_Items: []
+  - m_Id: 169359830269956
+    m_Localized: Grown full
+    m_Metadata:
+      m_Items: []
+  - m_Id: 169359830269957
+    m_Localized: Goatee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 169359830269958
+    m_Localized: Moustache
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

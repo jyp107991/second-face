@@ -25,6 +25,8 @@ Shader "SecondFace/Skin"
         _Freckles ("Freckles", Range(0, 1)) = 0
         _Scar ("Scar (-1 none)", Float) = -1
         _Tattoo ("Tattoo (-1 none)", Float) = -1
+        _Beard ("Beard (-1 none)", Float) = -1
+        _BeardColour ("Beard colour", Color) = (0.12, 0.09, 0.07, 1)
     }
     SubShader
     {
@@ -42,7 +44,8 @@ Shader "SecondFace/Skin"
             float4 _BaseMap_ST;
             half4 _BaseColor;
             half _BumpScale, _Smoothness, _Aged, _Tone, _Undertone, _Freckles;
-            float _Scar, _Tattoo;
+            float _Scar, _Tattoo, _Beard;
+            half4 _BeardColour;
         CBUFFER_END
 
         struct Attributes
@@ -151,6 +154,27 @@ Shader "SecondFace/Skin"
             if (id < 6.5) return p.y < -0.4 && p.y > -0.85 && p.z > 0 && abs(p.x) > 0.45 && sin(p.y * 40.0) > 0.4 ? 1 : 0;   // jaw_stripes
             return p.z > 0.3 && p.y > 0.0 && p.y < 0.2 ? 0.8 : 0;                                                            // eye_band
         }
+        // a beard (Core Looks.Beards, in order) as how much of the skin is hair, in the head's frame: the jaw, chin
+        // and upper lip below the cheekbones and in front of the ears, never the lips, fading down the throat
+        float BeardAt(float id, float3 p)
+        {
+            if (p.z < -0.05 || p.y > 0.0) return 0;
+            float lips = 1.0 - smoothstep(0.07, 0.12, length(float2(p.x * 0.75, p.y + 0.43)) * (p.z > 0.6 ? 1.0 : 9.0));
+            float cheeks = 1.0 - smoothstep(-0.28, -0.1, p.y + 0.12 * abs(p.x));        // below the cheekbones
+            float ears = 1.0 - smoothstep(0.72, 0.86, abs(p.x) - 0.15 * p.z);           // in front of the ears
+            float throat = p.y < -0.95 ? saturate(1.0 - (-0.95 - p.y) * 2.5) : 1.0;
+            float jaw = cheeks * ears * throat * (1.0 - lips);
+            float lip = (1.0 - smoothstep(0.22, 0.3, abs(p.x))) * step(-0.4, p.y) * (1.0 - smoothstep(-0.27, -0.22, p.y)) * step(0.62, p.z) * (1.0 - lips);
+            float chin = (1.0 - smoothstep(0.2, 0.28, abs(p.x))) * step(p.y, -0.47) * throat * (1.0 - lips);
+            float grain = Noise3(p * 140.0);
+            if (id < 0.5) return jaw * 0.18 * (0.5 + grain);                       // stubble_light
+            if (id < 1.5) return jaw * 0.32 * (0.5 + grain);                       // stubble
+            if (id < 2.5) return jaw * 0.48 * (0.5 + grain);                       // stubble_heavy
+            if (id < 3.5) return jaw * (0.72 + 0.28 * grain);                      // short_beard
+            if (id < 4.5) return saturate(jaw * 1.15 + chin * 0.4) * (0.82 + 0.18 * grain);   // full_beard
+            if (id < 5.5) return max(chin, lip) * (0.75 + 0.25 * grain);           // goatee
+            return lip * (0.75 + 0.25 * grain);                                    // moustache
+        }
         void Look(inout half3 a, inout half smooth, float3 p)
         {
             // tone: darker towards a deep brown, lighter as if less sun ever reached it
@@ -174,6 +198,13 @@ Shader "SecondFace/Skin"
                 // healed tissue: paler, a little pink, shinier
                 a = lerp(a, a * 1.16h + half3(0.07h, 0.02h, 0.03h), s * 0.85h);
                 smooth = lerp(smooth, 0.55h, s * 0.6h);
+            }
+            if (_Beard > -0.5)
+            {
+                // the hair's own colour where it is thick, a shadow under the skin where it is stubble
+                half b = (half)saturate(BeardAt(_Beard, p));
+                a = lerp(a, _Beard < 2.5 ? a * half3(0.62h, 0.62h, 0.66h) : _BeardColour.rgb, b);
+                smooth = lerp(smooth, 0.12h, b);
             }
             if (_Tattoo > -0.5)
             {

@@ -605,6 +605,68 @@ namespace SecondFace.Tests
             Assert.That(muscle.Sd, Is.GreaterThan(0.25), "soft to hard worked");
         }
 
+        /// <summary>Every resident of Shale as the game makes them (PeopleService: their body and face from Bodies and the
+        /// content's look, their outfit the content's own or the rules', the background people from Extras), each full
+        /// length (`shale_resident_<nn>`); a line per person in the log for the contact sheet's labels.</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator ShaleResidentsAsTheyAre()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Player.unity";
+            if (!File.Exists(path)) { Assert.Ignore("player scene not built"); yield break; }
+            yield return LoadTestScene(path);
+            UiTests.Content();
+            for (var i = 0; i < 5; i++) yield return null;
+            var controller = GameObject.Find("player_f_built").GetComponent<Animator>().runtimeAnimatorController;
+            foreach (var r in Object.FindObjectsByType<Animator>(FindObjectsSortMode.None)) r.gameObject.SetActive(false);   // the scene's own people out of the way
+            var sun = Object.FindObjectsByType<Light>(FindObjectsSortMode.None).FirstOrDefault(l => l.type == LightType.Directional && l.name == "Sun");
+            if (sun != null) sun.transform.rotation = Quaternion.Euler(30f, 25f, 0f);
+            GameObject F = null, M = null;
+#if UNITY_EDITOR
+            F = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_f.prefab");
+            M = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_m.prefab");
+#endif
+            Assert.That(F != null && M != null, Is.True, "the bases");
+            var game = SecondFace.Core.State.States.NewGame("shale", 0, 0);
+            var map = SecondFace.Core.Content.Registry.Maps["shale"];
+            var who = new List<(string Id, string Name, string Role, bool Male, double Age, SecondFace.Core.Npc.PlayerLook Look, SecondFace.Core.Npc.Outfit Outfit, string Note)>();
+            foreach (var p in map.Npcs)
+            {
+                if (!SecondFace.Core.Content.Registry.Npcs.TryGetValue(p.Def, out var def)) continue;
+                var male = SecondFace.Core.Npc.Routine.Male(def.Look);
+                var now = p.If == null || SecondFace.Core.World.Logic.Test(p.If, game);
+                who.Add((p.Id ?? def.Id, def.Name, def.Role, male, def.Look?.Age ?? 35, SecondFace.Game.Play.PeopleService.LookOf(def, male), SecondFace.Game.Play.PeopleService.OutfitOf(def, male), now ? "" : "later"));
+            }
+            foreach (var x in SecondFace.Core.Npc.Extras.Of(map))
+                who.Add((x.Def.Id, x.Def.Name, x.Def.Role, x.Male, x.Def.Look.Age ?? 35, x.Look, SecondFace.Core.Npc.Outfits.DressFor(x.Def.Look.Seed, x.Def.Role, x.Male ? "m" : "f", x.Def.Faction), "background"));
+            var cam = Camera.main;
+            cam.fieldOfView = 24f;
+            for (var i = 0; i < who.Count; i++)
+            {
+                var w = who[i];
+                var at = new Vector3(200f + i * 4f, 0f, 0f);
+                var go = Object.Instantiate(w.Male ? M : F, at, Quaternion.Euler(0, 200f, 0));
+                go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(w.Look);
+                var anim = go.GetComponent<Animator>();
+                anim.runtimeAnimatorController = controller;
+                anim.applyRootMotion = false;
+                yield return null;
+                var wardrobe = go.GetComponent<SecondFace.Game.People.Wardrobe>();
+                SecondFace.Game.People.Dresser.Dress(wardrobe, w.Outfit);
+                SecondFace.Game.People.LookView.Apply(go, w.Look);
+                for (var k = 0; k < 12; k++) yield return null;
+                anim.speed = 0f;
+                var lod = go.GetComponent<LODGroup>();
+                if (lod != null) lod.ForceLOD(0);
+                cam.transform.position = at + new Vector3(0f, 1.0f, -4.6f);
+                cam.transform.LookAt(at + new Vector3(0f, 0.93f, 0f));
+                yield return null;
+                Debug.Log($"shale_resident {i:00}|{w.Id}|{w.Name}|{w.Role}|{(w.Male ? "m" : "f")}|{w.Age:0}|{w.Look.Stature:0}|{w.Note}|{string.Join(", ", wardrobe.Wearing.Where(kv => kv.Key != "hair").Select(kv => kv.Value))}");
+                yield return Capture($"shale_resident_{i:00}", 640, 960);
+                Object.Destroy(go);
+            }
+            Assert.That(who.Count, Is.GreaterThanOrEqualTo(25), "Shale's people");
+        }
+
         /// <summary>P4 step 6: portraits in the engine under the studio light, cached; the player's two bases as they are
         /// and aged, and three of the cast, in one sheet (`people_portraits`). The second ask returns the same texture;
         /// the person's layers and the world's lights are as they were after.</summary>
