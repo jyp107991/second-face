@@ -82,7 +82,7 @@ the test that holds it (Core `FacesTests`, `PeoplesTests`, `BodiesTests`):
 | Skin tone and undertone | the whole human range by people | a woman lighter than the men of her people from puberty | — | Jablonski & Chaplin 2000 | `Bodies.For` |
 | Freckles | fair north European skin | — | — | MC1R: red hair and freckles together | `Bodies.For` |
 | The skin's years | darker skin lines about a decade later; East Asian skin spots before it lines | a man's lines come first | a hard life ages it sooner, a sheltered one later | Vashi et al. 2016; Chung 2003; Tsukahara et al. 2013 | `Looks.SkinYears`, `Faces.Apparent` |
-| Hair form | coily in African ancestry; straight and thick in East and Southeast Asian and indigenous American; straight to wavy in European; wavy elsewhere | — | — | Loussouarn 2007; De La Mettrie et al. 2007 | `Peoples.Texture`, `Bodies.HairStyle` (coily hair cropped, braided or locked) |
+| Hair form | coily in African ancestry; straight and thick in East and Southeast Asian and indigenous American; straight to wavy in European; wavy elsewhere | — | — | Loussouarn 2007; De La Mettrie et al. 2007 | `Peoples.Texture`, `Bodies.HairStyle`: coily hair shaved, in a close crop of coils (`sf_coils`), cornrows (`sf_cornrows`), locks or braids, never the straight crop (`hairgen.py` v17) |
 | Hair colour | fair and red only among north Europeans; of two peoples the darker mostly wins | — | — | — | `Bodies.HairShade` |
 | Greying | first grey in the mid-thirties in Europeans, late thirties in Asians, mid-forties in Africans; slower after; fewer than a quarter half-grey at fifty | — | the beard before the head; the brows after | Panhard et al. 2012 | `Peoples.Grey`, `GreyShade`, `BrowShade` |
 | Pattern balding | north European and Mediterranean men most (a sixth by thirty, half by fifty, four in five by seventy); Chinese and Korean men about half; African lower; indigenous American lowest | men; a woman's thinning is diffuse and not drawn | temples and crown first, the horseshoe never | Hamilton 1951; Norwood 1975; Wang et al. 2010; Paik et al. 2001 | `Peoples.BaldingChance`, `_Bald` in SecondFace/Skin |
@@ -97,9 +97,8 @@ the test that holds it (Core `FacesTests`, `PeoplesTests`, `BodiesTests`):
 | Fat distribution | on the belly at a lower weight in South and East Asians | a man's on the belly, a woman's on hips and thighs | more with the years | WHO expert consultation 2004 (Asian BMI) | `Peoples.Central` |
 | Age of the population | — | — | a median in the late twenties, few past fifty (§4) | — | `Extras` ages |
 
-**Known gaps, next:** coily hair needs its own cards (the generated crop is straight-haired; coily people are drawn to
-the forms that read right meanwhile: close crops, braids, locks); a woman's diffuse thinning; age spots on fair skin in
-the sun; the eye's arcus and the yellowing sclera of the old.
+**Known gaps, next:** a woman's diffuse thinning; age spots on fair skin in the sun; the eye's arcus and the yellowing
+sclera of the old; longer coily forms (a puff, a full afro) under the grooming rule.
 
 ## 7. Evidence
 

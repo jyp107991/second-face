@@ -777,11 +777,16 @@ greying, balding, beards, brows, figures and fat by people; `Bodies.For` assembl
 is gone; creation picks "your people" first). The skin shader draws the brows (they vanished on fair skins), recolours
 the shaved scalp to the hair and recedes the hairline by Norwood's order. The base decision: MakeHuman topology stays
 (Reom rendered and compared, §5), with 21 more face targets. Tests: `FacesTests`, `PeoplesTests` (Core 203 pass).
-**Next action:** when the base rebuild finishes (mh_build on `briefs/player.json`, ~35 min), run
-`SecondFace.EditorTools.PlayerTestScene.Build`, then `ScreenshotTests.PeoplesLineup` and the Shale showcase; assemble the
-lineup sheet (people × sex × age, front and profile; balding and brow strips), check every regularity reads in the
-render (calibrate the archetype magnitudes where it does not), send it, commit with the assets. Then coily hair cards
-(the known gap, §6), then the skin step (Reom's detail, subsurface scattering).
+Done since: the bases rebuilt with the 21 face targets and two coily hair styles (`sf_coils`, `sf_cornrows`,
+`hairgen.py` v17); the skin's head frame fixed (it lay on its side in the mesh's own space, so every mark drawn in it,
+beards, scars, tattoos, freckles and the brows, landed rotated: BUILD_PLAN §8); brows drawn after the tone; beards drawn as
+strands over shadowed skin; the bald scalp duller; the look profile's folder created; the base assets force-reimported
+after a disk-full import (`Diagnostics.ReimportPeople`); the lineup made resumable (`SF_LINEUP_SINCE`) because the
+headless editor's software GL faults now and then. **Next action:** finish the lineup render (rerun with
+`SF_LINEUP_SINCE` until it passes), assemble the sheets (`tools/unity/people/lineup_sheet.py`: people × sex × age,
+front and profile), check every regularity reads, copy the sheets to
+`docs/evidence/unity/p4/peoples/`, commit with the assets, send them. Then the Shale showcase again, then the skin step
+(Reom's detail, subsurface scattering) and the hair shader (the cards read chunky).
 **Next action (superseded by the note above; kept for the record):** P4.14 step 5 polish and step 6: dye as a colour, not a tint (the cloth shader colourises by
 luminance when dyed, so a blue dye reads blue, not khaki-blue); retire the boxy tactical vests and the cyborg suit (the
 generated harness vest and base layer take their place); the duster's front cut cleaned of its hanging strips; hide

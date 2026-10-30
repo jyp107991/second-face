@@ -31,6 +31,8 @@ namespace SecondFace.EditorTools
             }
             if (fresh)
             {
+                var dir = System.IO.Path.GetDirectoryName(AssetPath).Replace('\\', '/');
+                if (!AssetDatabase.IsValidFolder(dir)) AssetDatabase.CreateFolder(System.IO.Path.GetDirectoryName(dir).Replace('\\', '/'), System.IO.Path.GetFileName(dir));
                 AssetDatabase.CreateAsset(profile, AssetPath);
             }
             var tone = Get<Tonemapping>();

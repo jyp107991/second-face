@@ -91,7 +91,7 @@ namespace SecondFace.EditorTools
             PeopleMaterials.Bind(go, Dir);
             // the skin's head frame for the marks drawn at creation (P5.3i)
             var rest = RestMap(model, m.@base);
-            var bare = BareSkin(model, rest);
+            var bare = BareSkin(go, rest);   // the bound instance: the model itself carries the importer's materials
             if (rest != null)
                 foreach (var r in go.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => r.name.StartsWith("Body_")))
                     if (r.sharedMaterial != null && r.sharedMaterial.HasProperty("_RestMap"))
@@ -153,13 +153,20 @@ namespace SecondFace.EditorTools
             var r2 = right.Aggregate(Vector3.zero, (a, v) => a + v) / right.Length;
             var mid = (l + r2) * 0.5f;
             var rad = Vector3.Distance(l, r2) / (2f * 0.36f);
-            // the face's way: from the head bone (at bind) towards the eyes, level
+            // the frame's axes in the mesh's own space, which is not the world's: a skinned mesh keeps the exporter's axes (the
+            // body's height runs along -Z there, P4.15; assuming Y up turned every mark drawn in this frame on its side). Up:
+            // from the body's middle to the head bone at bind; the face's way: from the head bone towards the eyes, square to up
             var headIndex = System.Array.FindIndex(body.bones, b => b != null && b.name.ToLowerInvariant() == "head");
-            var headPos = headIndex >= 0 ? mesh.bindposes[headIndex].inverse.MultiplyPoint(Vector3.zero) : mid - Vector3.forward * rad;
-            var fwd = Vector3.ProjectOnPlane(mid - headPos, Vector3.up);
-            fwd = fwd.sqrMagnitude > 1e-6f ? fwd.normalized : Vector3.forward;
-            var side = Vector3.Cross(Vector3.up, fwd);
-            var centre = mid - Vector3.up * (0.1f * rad) - fwd * (0.88f * rad);
+            var headPos = headIndex >= 0 ? mesh.bindposes[headIndex].inverse.MultiplyPoint(Vector3.zero) : mid;
+            // the body's long axis (its height), pointing to the head: exact, where the line from the body's middle to the head
+            // leaned with the posture (7 degrees, a centimetre at the brows)
+            var ext = mesh.bounds.extents;
+            var upAxis = ext.x >= ext.y && ext.x >= ext.z ? Vector3.right : ext.y >= ext.z ? Vector3.up : Vector3.forward;
+            if (Vector3.Dot(headPos - mesh.bounds.center, upAxis) < 0) upAxis = -upAxis;
+            var fwd = Vector3.ProjectOnPlane(mid - headPos, upAxis);
+            fwd = fwd.sqrMagnitude > 1e-8f ? fwd.normalized : Vector3.forward;
+            var side = Vector3.Cross(upAxis, fwd);
+            var centre = mid - upAxis * (0.1f * rad) - fwd * (0.88f * rad);
             const int n = Wardrobe.MaskSize;
             var px = new Color[n * n];
             for (var i = 0; i < verts.Length; i++)
@@ -167,7 +174,7 @@ namespace SecondFace.EditorTools
                 var idx = Mathf.RoundToInt(uv1[i].x) + Mathf.RoundToInt(uv1[i].y) * n;
                 if (idx < 0 || idx >= px.Length) continue;
                 var d = (verts[i] - centre) / rad;
-                px[idx] = new Color(Vector3.Dot(d, side), d.y, Vector3.Dot(d, fwd), 1f);
+                px[idx] = new Color(Vector3.Dot(d, side), Vector3.Dot(d, upAxis), Vector3.Dot(d, fwd), 1f);
             }
             var tex = new Texture2D(n, n, TextureFormat.RGBAHalf, false, true) { name = baseId + "_rest", filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
             tex.SetPixels(px);
@@ -175,7 +182,7 @@ namespace SecondFace.EditorTools
             var path = $"{Dir}/{baseId}_rest.asset";
             if (AssetDatabase.LoadAssetAtPath<Texture2D>(path) != null) AssetDatabase.DeleteAsset(path);
             AssetDatabase.CreateAsset(tex, path);
-            Debug.Log($"WardrobeBuild: {baseId} head frame: radius {rad * 100f:0.0} cm, eyes {Vector3.Distance(l, r2) * 100f:0.0} cm apart, the face along {fwd}");
+            Debug.Log($"WardrobeBuild: {baseId} head frame: radius {rad * 100f:0.0} cm, eyes {Vector3.Distance(l, r2) * 100f:0.0} cm apart, up {upAxis}, the face along {fwd}");
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
 
@@ -202,11 +209,11 @@ namespace SecondFace.EditorTools
                 var idx = Mathf.RoundToInt(uv1[i].x) + Mathf.RoundToInt(uv1[i].y) * Wardrobe.MaskSize;
                 if (idx < 0 || idx >= restPx.Length) continue;
                 var p = restPx[idx];
-                if (p.g < 0.42f || p.g > 0.72f || p.b < 0.8f || Mathf.Abs(p.r) > 0.3f) continue;
+                if (p.g < 0.36f || p.g > 0.85f || p.b < 0.55f || Mathf.Abs(p.r) > 0.42f) continue;   // the forehead's front, brows to hairline
                 sum += img.GetPixelBilinear(uv[i].x, uv[i].y); n++;
             }
             UnityEngine.Object.DestroyImmediate(img);
-            if (n < 10) { Debug.LogWarning($"WardrobeBuild: {model.name}: no forehead for the bare skin ({n})"); return null; }
+            if (n < 8) { Debug.LogWarning($"WardrobeBuild: {model.name}: no forehead for the bare skin ({n})"); return null; }
             var c = sum / n; c.a = 1f;
             Debug.Log($"WardrobeBuild: {model.name} bare skin {c} over {n} forehead vertices");
             return c;

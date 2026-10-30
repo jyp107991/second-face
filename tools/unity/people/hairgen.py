@@ -9,8 +9,8 @@ strands with gaps, wisps, matted locks; bake_hair recolours it by luminance (col
 import json, os
 import numpy as np
 
-STYLES = ('sf_crop', 'sf_bun', 'sf_braid', 'sf_matted')
-VERSION = 16   # bump when the generator changes: mh_build regenerates into its cache by name + version
+STYLES = ('sf_crop', 'sf_bun', 'sf_braid', 'sf_matted', 'sf_coils', 'sf_cornrows')
+VERSION = 17   # bump when the generator changes: mh_build regenerates into its cache by name + version
 ATLAS = 1024
 COLS = {'sheet': 0, 'clump': 1, 'wisp': 2, 'matted': 3}
 
@@ -245,7 +245,7 @@ def border_distance(V, faces):
     return dist
 
 
-def shell(B, m, goal, lift, rng, reach=0.25, segments=10, fade=0.12):
+def shell(B, m, goal, lift, rng, reach=0.25, segments=10, fade=0.12, col='sheet'):
     """Hair lying on the scalp as one continuous layer `lift` above the skin (no shingles of separate cards): the
     scalp's own faces (subdivided once, `Base.fine_scalp`) lifted, the strands of the atlas's sheet column running from the hairline toward `goal` (v along
     the flow, u round the flow's axis in mirrored segments so the strands stay fine), the hairline soft: over `fade` (dm)
@@ -272,7 +272,7 @@ def shell(B, m, goal, lift, rng, reach=0.25, segments=10, fade=0.12):
         tri = 1 - abs(2 * (sseg - np.floor(sseg)) - 1)
         # a little uneven (hair, not a helmet), down onto the skin at the hairline (no step there, nor its shadow)
         pos[i] = V[i] + N[i] * ((lift + rng.uniform(0, 0.012)) * (0.25 + 0.75 * edge))
-        uv[i] = (tri * 0.24 + 0.005, v)
+        uv[i] = (COLS[col] * 0.25 + tri * 0.24 + 0.005, v)
     index = {}
     for i in verts:
         index[i] = len(m.v); m.v.append(tuple(pos[i])); m.vt.append(uv[i])
@@ -413,7 +413,62 @@ def gen_matted(B, rng):
     return m
 
 
-GENERATORS = {'sf_crop': gen_crop, 'sf_bun': gen_bun, 'sf_braid': gen_braid, 'sf_matted': gen_matted}
+def gen_coils(B, rng):
+    """Coily hair cropped close (P4.15, the hair's form by people: tightly curled hair grows out, not down): a layer of
+    the matted strands a centimetre off the scalp, its hairline soft and rounded, and small tight coils standing out of
+    it all over, so the silhouette is a short fuzzed cap and not a combed shell (no fringe, no shaping)."""
+    m = Mesh()
+    goal = B.surf(B.c + np.array([0.0, 1.0, -0.15]), 0.0)   # the crown: coily hair stands out from the scalp, it does not flow
+    shell(B, m, goal, 0.1, rng, reach=0.32, fade=0.05, col='matted')
+    for r in rng.choice(B.scalp, size=900, replace=True):
+        p0 = B.surf(B.V[r] + rng.normal(0, 0.04, 3), 0.05)
+        n = (p0 - B.c) / np.linalg.norm(p0 - B.c)
+        e1 = np.cross(n, rng.normal(0, 1, 3)); e1 /= max(np.linalg.norm(e1), 1e-9)
+        e2 = np.cross(n, e1)
+        k, L = 4, rng.uniform(0.06, 0.11)
+        ts = np.linspace(0, 1, k)
+        ph = rng.uniform(0, 2 * np.pi) + ts * 3 * np.pi
+        pts = p0 + n[None] * (ts * L)[:, None] + (np.cos(ph)[:, None] * e1 + np.sin(ph)[:, None] * e2) * 0.012
+        m.ribbon(pts, np.repeat(e1[None], k, 0), spindle(k, rng.uniform(0.04, 0.06), 0.6, 0.35, 0.4), 'matted', rng, twist=rng.normal(0, 0.8))
+    return m
+
+
+def gen_cornrows(B, rng):
+    """Cornrows (P4.15: the work braid of coily hair, kept for weeks): the hair braided flat to the scalp in rows from the
+    hairline over the top to the nape, the scalp showing between them, short tails below the nape."""
+    m = Mesh()
+    rows = 13
+    for x0 in np.linspace(-1.55, 1.55, rows) + rng.normal(0, 0.03, rows):
+        # the row's centre line: from above the forehead over the top and down the back, a little towards the middle
+        centre = []
+        for t in np.linspace(0.0, 1.0, 30):
+            pitch = np.radians(22 + 200 * t)
+            d = np.array([x0 * (1.0 - 0.35 * t), np.sin(pitch), np.cos(pitch)])
+            q = B.surf(B.c + d, 0.035)
+            w = hair_weight(q[None], B.top, B.eye, 'buzz')[0]
+            if w < 0.3 and len(centre) < 2: continue    # start at the hairline
+            if w < 0.2 and len(centre) >= 2: break        # end at the nape's
+            centre.append(q)
+        if len(centre) < 4: continue
+        centre = np.array(centre); k = len(centre)
+        t_ = np.gradient(centre, axis=0); t_ /= np.maximum(np.linalg.norm(t_, axis=1, keepdims=True), 1e-9)
+        out = outward(B, centre)
+        side = np.cross(t_, out); side /= np.maximum(np.linalg.norm(side, axis=1, keepdims=True), 1e-9)
+        arc = np.concatenate([[0], np.cumsum(np.linalg.norm(np.diff(centre, axis=0), axis=1))])
+        wave = 2 * np.pi * arc / 0.16
+        for strand in range(3):
+            ph = wave + strand * 2 * np.pi / 3
+            pts = centre + side * (np.sin(ph) * 0.035)[:, None] + out * ((np.cos(ph) + 1) * 0.012)[:, None]
+            m.ribbon(pts, out, np.full(k, 0.09), 'clump', rng, twist=0.0)
+        # the tail below the last stitch
+        tip = centre[-1]; down = np.array([0.0, -1.0, -0.15]); down /= np.linalg.norm(down)
+        tail = np.array([tip + down * 0.35 * j / 4 + out[-1] * 0.02 * j for j in range(5)])
+        m.ribbon(tail, np.repeat(out[-1][None], 5, 0), taper(5, 0.09, 0.04), 'clump', rng)
+    return m
+
+
+GENERATORS = {'sf_crop': gen_crop, 'sf_bun': gen_bun, 'sf_braid': gen_braid, 'sf_matted': gen_matted, 'sf_coils': gen_coils,
+              'sf_cornrows': gen_cornrows}
 
 
 # ------------------------------------------------------------------------------------------------------------------

@@ -1151,11 +1151,20 @@ namespace SecondFace.Tests
                 Object.Destroy(go);
                 yield return null;
             }
+            // resumable (the software GL driver of the headless editor faults now and then, P4.15): with SF_LINEUP_SINCE (unix
+            // seconds) a person whose both captures were written since then is skipped, so a rerun finishes the lineup
+            long.TryParse(System.Environment.GetEnvironmentVariable("SF_LINEUP_SINCE") ?? "0", out var since);
+            bool Done(string name) => since > 0 && new[] { "front", "side" }.All(v =>
+            {
+                var f = Path.Combine(Application.dataPath, "..", "Screenshots", $"{name}_{v}.png");
+                return File.Exists(f) && new System.DateTimeOffset(File.GetLastWriteTimeUtc(f)).ToUnixTimeSeconds() >= since;
+            });
             foreach (var (cluster, _) in SecondFace.Core.Npc.Bodies.Clusters)
                 foreach (var male in new[] { false, true })
                     foreach (var age in new[] { 25, 60 })
                     {
                         var id = $"lineup_{cluster}_{(male ? "m" : "f")}_{age}";
+                        if (Done(id)) continue;
                         var look = SecondFace.Core.Npc.Bodies.For(id, male, age, "settler", SecondFace.Core.Npc.Bodies.Means.Working, cluster);
                         Debug.Log($"lineup|{cluster}|{(male ? "m" : "f")}|{age}|stature={look.Stature:0}|hair={look.Hair}|colour={look.HairColour:x6}|beard={look.Beard}|bald={look.Bald:0.00}|brows={look.Brows}|skin={look.Skin:0.00}|eyes={look.Eyes}|figure={look.Figure}|lips={look.Face["mouth-upperlip-volume"]:0.00}|nose={look.Face["nose-scale-horiz"]:0.00}|depth={look.Face["nose-scale-depth"]:0.00}|fold={look.Face["eye-epicanthus"]:0.00}");
                         yield return Shoot(look, id);
@@ -1165,16 +1174,68 @@ namespace SecondFace.Tests
             bald.Hair = "buzz";
             foreach (var b in new[] { 0f, 0.3f, 0.6f, 1f })
             {
+                if (Done($"lineup_bald_{b:0.0}")) continue;
                 var l = bald.Clone(); l.Bald = b;
                 yield return Shoot(l, $"lineup_bald_{b:0.0}");
             }
             foreach (var male in new[] { false, true })
                 for (var b = 0; b < 3; b++)
                 {
+                    if (Done($"lineup_brows_{(male ? "m" : "f")}{b}")) continue;
                     var l = SecondFace.Core.Npc.Bodies.For("lineup_brows_" + (male ? "m" : "f"), male, 30, "settler", SecondFace.Core.Npc.Bodies.Means.Working, "mediterranean");
                     l.Brows = b;
                     yield return Shoot(l, $"lineup_brows_{(male ? "m" : "f")}{b}");
                 }
         }
-    }
+    
+        /// <summary>P4.15 diagnostic: one person of each sex, the brows drawn bright red; logs what the skin's property block
+        /// holds after the wardrobe has settled (`diag_brows_{f,m}`).</summary>
+        [UnityTest, Timeout(300000)]
+        public IEnumerator BrowsDiagnostic()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Player.unity";
+            if (!File.Exists(path)) { Assert.Ignore("player scene not built"); yield break; }
+            yield return LoadTestScene(path);
+            for (var i = 0; i < 10; i++) yield return null;
+            var controller = GameObject.Find("player_f_built").GetComponent<Animator>().runtimeAnimatorController;
+            foreach (var r in Object.FindObjectsByType<Animator>(FindObjectsSortMode.None)) r.gameObject.SetActive(false);
+            GameObject F = null, M = null;
+#if UNITY_EDITOR
+            F = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_f.prefab");
+            M = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_m.prefab");
+#endif
+            var cam = Camera.main;
+            foreach (var male in new[] { false, true })
+            {
+                var look = SecondFace.Core.Npc.Bodies.For("diag", male, 30, "settler", SecondFace.Core.Npc.Bodies.Means.Working, "mediterranean");
+                look.BrowColour = 0xff0000;
+                var go = Object.Instantiate(male ? M : F, new Vector3(300f, 0f, 0f), Quaternion.Euler(0, 180f, 0));
+                Debug.Log($"diag {(male ? "m" : "f")}: instantiated");
+                var anim = go.GetComponent<Animator>();
+                anim.runtimeAnimatorController = controller;
+                anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                yield return null;
+                SecondFace.Game.People.LookView.Apply(go, look);
+                Debug.Log($"diag {(male ? "m" : "f")}: look applied");
+                for (var k = 0; k < 10; k++) yield return null;
+                var block = new MaterialPropertyBlock();
+                foreach (var r in go.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => r.name.StartsWith("Body_")))
+                {
+                    r.GetPropertyBlock(block);
+                    Debug.Log($"diag {(male ? "m" : "f")} {r.name} shader={r.sharedMaterial.shader.name} tone={block.GetFloat("_Tone")} brow0={block.GetVector("_Brow0")} brow1={block.GetVector("_Brow1")} browColour={block.GetColor("_BrowColour")} rest={(r.sharedMaterial.GetTexture("_RestMap") != null)} bare={r.sharedMaterial.GetColor("_BareSkin")} blendshapes={r.sharedMesh.blendShapeCount}");
+                }
+                var lod = go.GetComponent<LODGroup>();
+                if (lod != null) lod.ForceLOD(0);
+                var head = anim.GetBoneTransform(HumanBodyBones.Head).position + new Vector3(0f, 0.06f, 0f);
+                cam.fieldOfView = 15f;
+                cam.transform.position = head + new Vector3(0.2f, 0.03f, -1.1f);
+                cam.transform.LookAt(head);
+                yield return null;
+                Debug.Log($"diag {(male ? "m" : "f")}: capturing");
+                yield return Capture($"diag_brows_{(male ? "m" : "f")}", 512, 512);
+                Object.Destroy(go);
+                yield return null;
+            }
+        }
+}
 }

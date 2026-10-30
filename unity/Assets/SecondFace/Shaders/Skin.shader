@@ -87,6 +87,9 @@ Shader "SecondFace/Skin"
         float2 Local(float3 c, float3 p)
         {
             c = normalize(c);
+            // only on the mark's own side of the head: projected without a limit, a mark on the neck also printed on the
+            // crown behind it (P4.15)
+            if (dot(normalize(p), c) < 0.6) return float2(9.0, 9.0);
             float3 tx = normalize(cross(float3(0, 1, 0), c));
             float3 ty = normalize(cross(c, tx));
             float3 d = p - c;
@@ -205,20 +208,23 @@ Shader "SecondFace/Skin"
             if (az < 130) return Lin(az, 90, 130, 18, 26);
             return Lin(az, 130, 180, 26, 30);
         }
-        void Scalp(inout half3 a, inout half smooth, float3 p)
+        // the scalp's masks: w where the bake painted shaved stubble, stub how much it darkened the skin there (so the stubble
+        // can be taken off before the skin's tone and painted back after it in the hair's own colour: a fair skin's tone
+        // lifted the stubble to white and a shaved head read as bald), bald how much of it pattern balding has taken
+        void ScalpMasks(float3 p, half3 a, out half w, out half stub, out half bald)
         {
+            w = 0; stub = 0; bald = 0;
             if (p.y < -0.7 || p.z > 1.0 || (_ScalpColour.a < 0.5h && _Bald < 0.001h)) return;
             float3 d = p - float3(0.0, 0.312, 0.003);
             float r = length(d);
             float e = degrees(atan2(d.y, length(d.xz)));
             float az = abs(degrees(atan2(d.x, d.z)));
-            float w = smoothstep(0.0, 1.0, (e - (Hairline(az) - 2.0)) / 8.0);
-            if (az > 55 && az < 125 && e > -35 && e < 25 && r > 1.025) w = 0;   // the ears stand out of the skull
-            if (w < 0.01) return;
-            half3 bare = _BareSkin.rgb;
-            half lum = dot(a, half3(0.3h, 0.59h, 0.11h));
-            half stub = saturate(1.0h - lum / max(dot(bare, half3(0.3h, 0.59h, 0.11h)), 0.02h));   // how much the stubble darkened it
-            if (_ScalpColour.a > 0.5h) a = lerp(a, lerp(bare, _ScalpColour.rgb, saturate(stub * 1.8h)), (half)w);
+            float fw = smoothstep(0.0, 1.0, (e - (Hairline(az) - 2.0)) / 8.0);
+            if (az > 55 && az < 125 && e > -35 && e < 25 && r > 1.025) fw = 0;   // the ears stand out of the skull
+            w = (half)fw;
+            if (w < 0.01h) return;
+            stub = saturate(1.0h - dot(a, half3(0.3h, 0.59h, 0.11h)) / max(dot(_BareSkin.rgb, half3(0.3h, 0.59h, 0.11h)), 0.02h));
+            stub = max(stub, w * 0.4h);   // where the bake left a gap in the stubble (behind the ears), still stubble
             if (_Bald > 0.001h)
             {
                 // when this point goes as _Bald rises: the temples, then the front hairline back and the crown, the top last
@@ -227,10 +233,9 @@ Shader "SecondFace/Skin"
                 float front = 0.18 + above / 65.0 - 0.14 * temple;
                 float crown = 0.28 + length(float2((180.0 - az) * 0.574, e - 52.0)) / 55.0;
                 float k = min(min(front, crown), 0.92);
-                if (e < Horseshoe(az) + 4.0) k = 9.0;
-                half bald = (half)(smoothstep(k - 0.06, k + 0.06, _Bald) * w);
-                a = lerp(a, bare, bald);
-                smooth = lerp(smooth, 0.5h, bald);   // a bare scalp shines a little
+                // the horseshoe never goes, its upper edge soft (a hard line at the back read as a cap)
+                float keep = 1.0 - smoothstep(0.0, 1.0, (e - Horseshoe(az) - 2.0) / 10.0);
+                bald = (half)(smoothstep(k - 0.06, k + 0.06, _Bald) * (1.0 - keep));
             }
         }
 
@@ -248,7 +253,7 @@ Shader "SecondFace/Skin"
             float pk = clamp(_Brow1.y, 0.1, 0.9);
             float yc = tc < pk ? lerp(_Brow0.z, _Brow1.x, sin(1.5708 * tc / pk))
                                : lerp(_Brow1.x, _Brow0.w, 1.0 - cos(1.5708 * (tc - pk) / (1.0 - pk)));
-            float w = lerp(_Brow1.z, _Brow1.w, tc) * 0.5 * lerp(1.0, 0.35, smoothstep(0.75, 1.05, t));
+            float w = lerp(_Brow1.z, _Brow1.w, tc) * 0.62 * lerp(1.0, 0.4, smoothstep(0.75, 1.05, t));
             float across = abs(p.y - yc) / max(w, 1e-3);
             float body = 1.0 - smoothstep(0.6, 1.0, across);
             float ends = smoothstep(-0.12, 0.06, t) * (1.0 - smoothstep(0.95, 1.1, t));
@@ -261,7 +266,16 @@ Shader "SecondFace/Skin"
 
         void Look(inout half3 a, inout half smooth, float3 p)
         {
-            Scalp(a, smooth, p);
+            // the scalp: the bake's stubble off down to the bare skin (a little darker and duller than the forehead it was
+            // sampled from), which takes the skin's tone below with the face; the stubble painted back after the tone
+            half sw, sstub, sbald;
+            ScalpMasks(p, a, sw, sstub, sbald);
+            if (sw > 0.01h)
+            {
+                half3 bare = lerp(_BareSkin.rgb, dot(_BareSkin.rgb, half3(0.3h, 0.59h, 0.11h)).xxx, 0.15h) * (0.84h + 0.08h * (half)Noise3(p * 60.0));
+                a = lerp(a, bare, sw * (_ScalpColour.a > 0.5h ? 1.0h : sbald));
+                smooth = lerp(smooth, 0.38h, sw * sbald);   // a bare scalp shines a little, not like polish
+            }
             // tone: darker towards a deep brown, lighter as if less sun ever reached it
             // the whole human range over the mid-tone bake (P4.14): to 1, deep dark (the bake's shade at a third, warm
             // and a little bluer in the shadows); to -1, very fair (the bake's shade lifted most of the way to white, a
@@ -270,6 +284,9 @@ Shader "SecondFace/Skin"
             else if (_Tone < -0.001h) a = lerp(a, 1.0h - (1.0h - a) * half3(0.4h, 0.52h, 0.58h), -_Tone);
             // undertone: warmer (golden, olive) or rosier
             a *= _Undertone >= 0 ? 1.0h + _Undertone * half3(0.05h, 0.0h, -0.08h) : 1.0h + (-_Undertone) * half3(0.03h, -0.03h, 0.02h);
+            // the shaved scalp's stubble in the hair's own colour, as dense as the bake painted it, none where bald
+            if (sw > 0.01h && _ScalpColour.a > 0.5h)
+                a = lerp(a, _ScalpColour.rgb, saturate(sstub * 1.6h) * sw * (1.0h - sbald) * (half)(0.75 + 0.25 * Noise3(p * 300.0)));
             bool head = dot(p, p) > 0.01 && p.y > -1.3 && length(p) < 1.6;
             if (!head) return;
             // freckles: across the nose and cheeks, thinning out to the temples
@@ -294,10 +311,28 @@ Shader "SecondFace/Skin"
             }
             if (_Beard > -0.5)
             {
-                // the hair's own colour where it is thick, a shadow under the skin where it is stubble
+                // P4.15: a beard is hairs over skin, never a painted block. Stubble darkens the skin with fine dots of the
+                // beard's colour; a grown beard shadows the skin under it and lays strands over it that run down the cheeks
+                // and the jaw (streaks long in y), thicker where the beard is dense, the skin showing between them, the
+                // edges ragged
                 half b = (half)saturate(BeardAt(_Beard, p));
-                a = lerp(a, _Beard < 2.5 ? a * half3(0.62h, 0.62h, 0.66h) : _BeardColour.rgb, b);
-                smooth = lerp(smooth, 0.12h, b);
+                b *= (half)smoothstep(0.15, 0.55, b + (Noise3(p * 34.0) - 0.5) * 0.45);
+                float strands = Noise3(float3(p.x * 230.0, p.y * 38.0, p.z * 230.0)) * 0.7 + Noise3(p * 420.0) * 0.3;
+                if (_Beard < 2.5)
+                {
+                    half dots = (half)smoothstep(0.55, 0.75, Noise3(p * 520.0));
+                    a = lerp(a, a * half3(0.66h, 0.66h, 0.7h), b);
+                    a = lerp(a, _BeardColour.rgb, b * dots * 0.55h);
+                }
+                else
+                {
+                    // strands over about half the skin where the beard is dense, fewer towards its edges: the skin, shadowed,
+                    // shows between them
+                    half hair = (half)(smoothstep(0.42, 0.62, strands) * b);
+                    a = lerp(a, a * half3(0.55h, 0.55h, 0.6h), b * 0.7h);
+                    a = lerp(a, _BeardColour.rgb * (half)(0.8 + 0.4 * Noise3(p * 90.0)), hair * 0.85h);
+                }
+                smooth = lerp(smooth, 0.15h, b);
             }
             if (_Tattoo > -0.5)
             {

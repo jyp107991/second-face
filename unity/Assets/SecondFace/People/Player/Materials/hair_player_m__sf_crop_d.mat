@@ -116,6 +116,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
+    - _Dyed: 0
     - _EnvironmentReflections: 0
     - _EnvironmentReflectionsOff: 1
     - _GlossMapScale: 0

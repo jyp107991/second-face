@@ -40,6 +40,8 @@ namespace SecondFace.Core.Npc
         /// <summary>A hair of <see cref="Looks.Hair"/>; null: the body's own.</summary>
         [JsonProperty("hair")] public string Hair;
         [JsonProperty("hairColour")] public int HairColour = 0x2b1d14;
+        /// <summary>How grey the hair has gone (0..1; Bodies by the people's clock), kept so an authored colour greys with it.</summary>
+        [JsonProperty("grey")] public float Grey;
         [JsonProperty("eyes")] public string Eyes = "brown";
         /// <summary>One of <see cref="Looks.Scars"/>, or null.</summary>
         [JsonProperty("scar")] public string Scar;
@@ -106,8 +108,9 @@ namespace SecondFace.Core.Npc
         public static readonly int[] Dyes = { 0xffffff, 0x5d6448, 0x7a4127, 0x8f6a2e, 0x4b5560, 0x3d4a66, 0x3a3836, 0x5a2a26, 0xa48f6c };
 
         /// <summary>The hair to choose, as built for both bodies (the wardrobe's hair slot; "buzz" is no hair piece, the
-        /// scalp's painted stubble). The hair rule: shaved, cropped, tied back, braided, matted; never a styled cut.</summary>
-        public static readonly string[] Hair = { "buzz", "sf_crop", "sf_bun", "sf_braid", "sf_matted" };
+        /// scalp's painted stubble). The hair rule: shaved, cropped, tied back, braided, matted; never a styled cut. Coily hair
+        /// has its own forms (P4.15): a close crop of tight curls and cornrows braided flat to the scalp.</summary>
+        public static readonly string[] Hair = { "buzz", "sf_crop", "sf_bun", "sf_braid", "sf_matted", "sf_coils", "sf_cornrows" };
 
         /// <summary>The hair a body was built with (what <see cref="PlayerLook.Hair"/> null means).</summary>
         public static string OwnHair(string body) => body == "m" ? "sf_crop" : "sf_braid";
@@ -141,18 +144,19 @@ namespace SecondFace.Core.Npc
 
         /// <summary>The brow styles by sex (<see cref="PlayerLook.Brows"/>), measured in the head frame from the MakeHuman
         /// community brows as fitted (tools/unity/people/brow_frame.py): a woman's fine and arched (mindfront 02), natural
-        /// (03) and full (12); a man's sparse (04), natural (05) and heavy (07), lower, straighter and thicker.</summary>
+        /// (03) and full (12); a man's sparse (04), natural (05) and heavy (07), lower, straighter and thicker. The strands
+        /// stand off the skin, so the skin under them sits 0.035-0.04 higher than their measured centre (checked in renders).</summary>
         public static readonly Brow[] WomanBrows =
         {
-            new(0.175f, 0.578f, 0.225f, 0.285f, 0.6f, 0.231f, 0.052f, 0.03f, 0.72f),
-            new(0.198f, 0.622f, 0.255f, 0.272f, 0.45f, 0.215f, 0.048f, 0.035f, 0.85f),
-            new(0.176f, 0.6f, 0.248f, 0.298f, 0.62f, 0.232f, 0.079f, 0.06f, 0.95f),
+            new(0.175f, 0.578f, 0.265f, 0.325f, 0.6f, 0.271f, 0.052f, 0.03f, 0.72f),
+            new(0.198f, 0.622f, 0.295f, 0.312f, 0.45f, 0.255f, 0.048f, 0.035f, 0.85f),
+            new(0.176f, 0.6f, 0.288f, 0.338f, 0.62f, 0.272f, 0.079f, 0.06f, 0.95f),
         };
         public static readonly Brow[] ManBrows =
         {
-            new(0.184f, 0.624f, 0.251f, 0.272f, 0.55f, 0.214f, 0.045f, 0.035f, 0.68f),
-            new(0.192f, 0.69f, 0.245f, 0.279f, 0.4f, 0.211f, 0.085f, 0.075f, 0.85f),
-            new(0.15f, 0.641f, 0.257f, 0.299f, 0.5f, 0.26f, 0.095f, 0.08f, 1.0f),
+            new(0.184f, 0.624f, 0.286f, 0.307f, 0.55f, 0.249f, 0.05f, 0.04f, 0.68f),
+            new(0.192f, 0.69f, 0.28f, 0.314f, 0.4f, 0.246f, 0.085f, 0.075f, 0.85f),
+            new(0.15f, 0.641f, 0.292f, 0.334f, 0.5f, 0.295f, 0.095f, 0.08f, 1.0f),
         };
 
         public static Brow BrowOf(PlayerLook look)

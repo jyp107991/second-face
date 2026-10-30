@@ -51,7 +51,9 @@ namespace SecondFace.Tests
         public void HairTakesThePeoplesFormAndGreysOnTheirClock()
         {
             var coily = Crowd("west_african", true, 25);
-            Assert.That(Share(coily, l => l.Hair == "buzz" || l.Hair == "sf_matted" || l.Hair == "sf_braid"), Is.GreaterThan(0.8), "coily hair cropped close, locked or braided");
+            Assert.That(Share(coily, l => l.Hair is "buzz" or "sf_coils" or "sf_matted" or "sf_cornrows" or "sf_braid"), Is.GreaterThan(0.95), "coily hair cropped close, coiled, locked or braided");
+            Assert.That(Share(coily, l => l.Hair == "sf_crop"), Is.EqualTo(0), "never the straight crop");
+            Assert.That(Share(Crowd("north_european", true, 25), l => l.Hair is "sf_coils" or "sf_cornrows"), Is.EqualTo(0), "and coils only where hair coils");
             var straight = Crowd("east_asian", false, 25);
             Assert.That(Share(straight, l => l.Hair == "sf_bun" || l.Hair == "sf_braid"), Is.GreaterThan(0.5));
             bool Greyed(PlayerLook l) => Array.IndexOf(Looks.HairColours, l.HairColour) < 0 || Array.IndexOf(Looks.HairColours, l.HairColour) >= 7;
@@ -102,6 +104,25 @@ namespace SecondFace.Tests
             Assert.That(redheads.Count, Is.GreaterThan(10));
             Assert.That(Share(redheads, l => l.Freckles > 0), Is.GreaterThan(0.7), "red hair and freckles go together");
             Assert.That(fair.All(l => Looks.BrowRgb(l) != 0), Is.True);
+            Assert.That(Share(Crowd("east_asian", false, 25, 600), l => l.Freckles > 0), Is.LessThan(Share(fair, l => l.Freckles > 0) / 4), "freckles are the north European's");
+            Assert.That(Share(Crowd("mediterranean", false, 55, 400), l => l.Hair == "buzz"), Is.EqualTo(0), "an older woman of straight or wavy hair does not shave her head");
+        }
+
+        [Test]
+        public void TheContentsTagsAndColoursKeepTheRules()
+        {
+            Assert.That(Bodies.For("npc_pt_tag", false, 30, "settler", ancestry: "caucasian").Heritage, Is.EqualTo("north_european"), "the web game's broad tag");
+            // an authored colour greys with the years as the people's own would
+            var over = Newtonsoft.Json.Linq.JObject.Parse("{\"hair\": {\"color\": " + 0x202020 + "}}");
+            var old = Bodies.Over(Bodies.For("npc_pt_old", true, 72, "settler", ancestry: "mediterranean"), (Newtonsoft.Json.Linq.JObject)over.DeepClone());
+            var young = Bodies.Over(Bodies.For("npc_pt_young", true, 24, "settler", ancestry: "mediterranean"), (Newtonsoft.Json.Linq.JObject)over.DeepClone());
+            Assert.That(young.HairColour, Is.EqualTo(0x202020));
+            Assert.That(old.HairColour, Is.Not.EqualTo(0x202020), "black hair at seventy-two greys");
+            var white = Newtonsoft.Json.Linq.JObject.Parse("{\"hair\": {\"color\": " + 0xc8c0b4 + "}}");
+            Assert.That(Bodies.Over(Bodies.For("npc_pt_w", true, 72, "settler"), white).HairColour, Is.EqualTo(0xc8c0b4), "an authored grey stays");
+            var blond = Newtonsoft.Json.Linq.JObject.Parse("{\"hair\": {\"color\": " + 0xb5a07a + "}}");
+            var b = Bodies.Over(Bodies.For("npc_pt_b", false, 24, "settler", ancestry: "north_european"), blond);
+            Assert.That(Looks.BrowRgb(b), Is.Not.EqualTo(0xb5a07a), "brows darker than blond hair");
         }
 
         [Test]

@@ -45,6 +45,9 @@ namespace SecondFace.Core.Npc
             _ => 0.5,
         };
 
+        /// <summary>A content tag as one of the Reach's peoples (the web game's broad "caucasian" is the north European).</summary>
+        public static string People(string tag) => tag == "caucasian" || tag == "european" ? "north_european" : tag == "african" ? "west_african" : tag == "asian" ? "east_asian" : tag;
+
         /// <summary>The MakeHuman ancestry mix (african, asian, caucasian) for a content tag; null when untagged.</summary>
         public static (double Af, double As, double Ca)? Ancestry(string tag) => tag switch
         {
@@ -72,6 +75,7 @@ namespace SecondFace.Core.Npc
 
             // ancestry first, for it shapes the body as well as the face (P4.14, pass 9): the content's tag, else a cluster
             // drawn from the community's weights (most people mostly of one ancestry, a share of two)
+            ancestry = People(ancestry);
             var tagged = Ancestry(ancestry);
             var cluster = tagged != null ? ancestry : Cluster(rng, community);
             string second = null;
@@ -193,6 +197,7 @@ namespace SecondFace.Core.Npc
             }
             var grey = Math.Clamp(Peoples.Grey(age, Of(p => p.GreyOnset) - 2 * Math.Max(0, hard), Of(p => p.GreySpan)) + Normal(rng) * 0.12, 0, 1);
             if (age < 30) grey = Math.Min(grey, 0.1);
+            look.Grey = (float)grey;
             look.HairColour = GreyShade(shade, grey);
             // light eyes are recessive: of two ancestries, light only as often as both carry them
             var light = second != null ? Math.Pow(LightEyes(cluster), 1 - share) * Math.Pow(LightEyes(second), share) : LightEyes(cluster);
@@ -200,19 +205,23 @@ namespace SecondFace.Core.Npc
                 : rng.Pick(new[] { "brown", "dark", "brown", "hazel" });
             // freckles: almost always with red hair (the same gene), often on fair skin, more with the sun
             var red = shade == 6;
+            // (freckling is the north European's: MC1R variants are rare elsewhere, where the sun leaves spots instead)
+            var freckling = Of(p => p.Id == "north_european" ? 1.0 : p.Id == "mediterranean" ? 0.3 : 0.06);
             look.Freckles = red && rng.Chance(0.85) ? (float)rng.Range(0.3, 0.8)
-                : look.Skin < -0.45 && rng.Chance(0.3 + 0.15 * outdoor) ? (float)rng.Range(0.1, 0.55) : 0f;
+                : look.Skin < -0.45 && rng.Chance((0.3 + 0.15 * outdoor) * freckling) ? (float)rng.Range(0.1, 0.55) : 0f;
 
             // the hair by the grooming rule, in the forms the people's hair takes: coily hair cropped close, braided or
             // locked; straight hair cropped, tied up or braided; wavy hair any of them
-            look.Hair = HairStyle(rng, Texture(cluster, second, share, rng), male);
+            var texture = Texture(cluster, second, share, rng);
+            look.Hair = HairStyle(rng, texture, male);
+            if (!male && look.Hair == "buzz" && texture != "coily" && age > 40) look.Hair = rng.Chance(0.5) ? "sf_bun" : "sf_crop";
             // a man's pattern balding by his people's rate and his years: the temples and crown first; past the middle,
             // what is left is cropped close (out here nobody combs it over)
             if (male && age >= 18 && rng.Chance(Peoples.BaldingChance(age, Of(p => p.Balding))))
             {
                 look.Bald = (float)Math.Clamp((age - 18) / 40.0 * rng.Range(0.45, 1.2), 0.1, 1.0);
                 if (look.Bald > 0.45f) look.Hair = "buzz";
-                else if (look.Hair == "sf_matted" || look.Hair == "sf_bun" || look.Hair == "sf_braid") look.Hair = rng.Chance(0.5) ? "buzz" : "sf_crop";
+                else if (look.Hair is "sf_matted" or "sf_bun" or "sf_braid" or "sf_cornrows") look.Hair = rng.Chance(0.5) ? "buzz" : texture == "coily" ? "sf_coils" : "sf_crop";
             }
 
             // a man's face: mostly unshaven out here, fuller with the years; the comfortable keep it trimmed or shaved; as
@@ -265,32 +274,46 @@ namespace SecondFace.Core.Npc
         public static string HairStyle(Rng rng, string texture, bool male) => texture switch
         {
             "coily" => male
-                ? Pick(rng, ("buzz", 0.55), ("sf_matted", 0.23), ("sf_braid", 0.12), ("sf_crop", 0.1))
-                : Pick(rng, ("sf_braid", 0.4), ("sf_matted", 0.22), ("buzz", 0.2), ("sf_bun", 0.18)),
+                ? Pick(rng, ("buzz", 0.4), ("sf_coils", 0.25), ("sf_matted", 0.2), ("sf_cornrows", 0.1), ("sf_braid", 0.05))
+                : Pick(rng, ("sf_cornrows", 0.25), ("sf_coils", 0.2), ("sf_matted", 0.2), ("sf_braid", 0.15), ("sf_bun", 0.1), ("buzz", 0.1)),
             "straight" => male
                 ? Pick(rng, ("sf_crop", 0.45), ("buzz", 0.25), ("sf_bun", 0.15), ("sf_matted", 0.1), ("sf_braid", 0.05))
-                : Pick(rng, ("sf_bun", 0.35), ("sf_braid", 0.3), ("sf_crop", 0.2), ("sf_matted", 0.1), ("buzz", 0.05)),
+                : Pick(rng, ("sf_bun", 0.36), ("sf_braid", 0.31), ("sf_crop", 0.21), ("sf_matted", 0.1), ("buzz", 0.02)),
             _ => male
                 ? Pick(rng, ("buzz", 0.3), ("sf_crop", 0.45), ("sf_matted", 0.15), ("sf_bun", 0.1))
-                : Pick(rng, ("sf_braid", 0.3), ("sf_bun", 0.25), ("sf_crop", 0.2), ("sf_matted", 0.15), ("buzz", 0.1)),
+                : Pick(rng, ("sf_braid", 0.31), ("sf_bun", 0.27), ("sf_crop", 0.22), ("sf_matted", 0.16), ("buzz", 0.04)),
         };
 
         /// <summary>A hair colour for a shade of <see cref="Looks.HairColours"/> at a share of grey: the shade itself, salt and
         /// pepper (the shade towards the iron grey), then grey and white.</summary>
-        public static int GreyShade(int shade, double grey)
+        public static int GreyShade(int shade, double grey) => GreyColour(Looks.HairColours[shade], grey);
+
+        /// <summary><see cref="GreyShade"/> for any colour.</summary>
+        public static int GreyColour(int colour, double grey)
         {
             if (grey > 0.8) return Looks.HairColours[9];
             if (grey > 0.6) return Looks.HairColours[8];
-            if (grey > 0.3) return Mix(Looks.HairColours[shade], Looks.HairColours[7], (grey - 0.3) / 0.3 * 0.6 + 0.3);
-            return grey > 0.12 ? Mix(Looks.HairColours[shade], Looks.HairColours[7], grey) : Looks.HairColours[shade];
+            if (grey > 0.3) return Mix(colour, Looks.HairColours[7], (grey - 0.3) / 0.3 * 0.6 + 0.3);
+            return grey > 0.12 ? Mix(colour, Looks.HairColours[7], grey) : colour;
+        }
+
+        /// <summary>Whether a colour is already grey or white (low saturation, not dark).</summary>
+        public static bool IsGrey(int c)
+        {
+            int r = (c >> 16) & 255, g = (c >> 8) & 255, b = c & 255;
+            return Math.Max(r, Math.Max(g, b)) - Math.Min(r, Math.Min(g, b)) < 26 && (r + g + b) / 3 > 100;
         }
 
         /// <summary>The brows' colour for a hair shade: as dark as the hair, darker than fair or red hair (brows are seldom as
         /// light), towards grey as they grey.</summary>
-        public static int BrowShade(int shade, double grey)
+        public static int BrowShade(int shade, double grey) => BrowColourOf(Looks.HairColours[shade], grey);
+
+        /// <summary><see cref="BrowShade"/> for any hair colour.</summary>
+        public static int BrowColourOf(int hair, double grey)
         {
-            var c = Looks.HairColours[shade];
-            if (shade >= 3 && shade <= 6) c = Mix(c, Looks.HairColours[2], 0.4);
+            var c = hair;
+            var lum = (((c >> 16) & 255) * 0.3 + ((c >> 8) & 255) * 0.59 + (c & 255) * 0.11) / 255.0;
+            if (lum >= 0.3) c = Mix(c, Looks.HairColours[2], 0.4);
             return grey > 0.05 ? Mix(c, Looks.HairColours[8], Math.Min(1, grey * 1.2)) : c;
         }
 
@@ -375,7 +398,14 @@ namespace SecondFace.Core.Npc
             {
                 var style = hair["style"]?.ToString();
                 if (!string.IsNullOrEmpty(style)) look.Hair = HairOf(style);
-                if (hair["color"] != null && hair["color"].Type == Newtonsoft.Json.Linq.JTokenType.Integer) look.HairColour = (int)hair["color"];
+                if (hair["color"] != null && hair["color"].Type == Newtonsoft.Json.Linq.JTokenType.Integer)
+                {
+                    // the authored colour with the years' grey over it (the web game's colours did not age; a seventy-year-old
+                    // keeps the grey their people show at seventy), the brows from it as from any hair
+                    var authored = (int)hair["color"];
+                    look.HairColour = IsGrey(authored) ? authored : GreyColour(authored, look.Grey);
+                    look.BrowColour = BrowColourOf(authored, Math.Max(0, look.Grey - 0.3));
+                }
             }
             if (over["scars"] is Newtonsoft.Json.Linq.JArray scars && scars.Count > 0)
                 look.Scar = scars[0].ToString() switch
@@ -401,8 +431,10 @@ namespace SecondFace.Core.Npc
         /// <summary>One of our hair forms for a web game's hair style (the grooming rule: never a styled cut).</summary>
         public static string HairOf(string style)
         {
-            if (style == "none" || style.StartsWith("paint_shaved") || style.StartsWith("paint_buzz") || style.StartsWith("paint_fade") || style == "coily_twa") return "buzz";
-            if (style.Contains("braid") || style.Contains("cornrow")) return "sf_braid";
+            if (style == "none" || style.StartsWith("paint_shaved") || style.StartsWith("paint_buzz") || style.StartsWith("paint_fade")) return "buzz";
+            if (style.Contains("cornrow")) return "sf_cornrows";
+            if (style.Contains("coil") || style.Contains("afro") || style.Contains("twa")) return "sf_coils";
+            if (style.Contains("braid")) return "sf_braid";
             if (style.Contains("bob") || style.Contains("ponytail") || style.Contains("bun")) return "sf_bun";
             if (style.StartsWith("long") || style.Contains("dread") || style.Contains("matted")) return "sf_matted";
             return "sf_crop";
@@ -503,7 +535,7 @@ namespace SecondFace.Core.Npc
         /// <summary>A cluster's skin tone against the bases' mid-tone bake (-1 very light to 1 very dark).</summary>
         public static double Tone(string cluster) => cluster switch
         {
-            "north_european" => -0.8, "mediterranean" => -0.35, "east_asian" => -0.5, "southeast_asian" => 0.0,
+            "north_european" => -0.8, "mediterranean" => -0.35, "east_asian" => -0.3, "southeast_asian" => 0.08,
             "south_asian" => 0.3, "latin_american" => 0.0, "indigenous_american" => 0.15, "east_african" => 0.75, "west_african" => 0.9,
             _ => 0.0,
         };

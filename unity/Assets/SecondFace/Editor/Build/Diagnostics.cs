@@ -12,6 +12,48 @@ namespace SecondFace.EditorTools
     /// </summary>
     public static class Diagnostics
     {
+        /// <summary>The skin's head frame as baked (P4.15): the rest map's values at the top of the head, the nose's tip and the
+        /// eyes' height on each base, against the mesh's own positions (tools/unity/editor.sh run
+        /// SecondFace.EditorTools.Diagnostics.HeadFrame).</summary>
+        /// <summary>Reimports every person asset of the player bases from its source (after an import cut short, e.g. by a
+        /// full disk: "Build asset version error" in the log).</summary>
+        public static void ReimportPeople()
+        {
+            var paths = Directory.GetFiles("Assets/SecondFace/People/Player", "*.*", SearchOption.AllDirectories)
+                .Where(p => !p.EndsWith(".meta")).Select(p => p.Replace('\\', '/')).ToList();
+            AssetDatabase.StartAssetEditing();
+            try { foreach (var p in paths) AssetDatabase.ImportAsset(p, ImportAssetOptions.ForceUpdate); }
+            finally { AssetDatabase.StopAssetEditing(); }
+            AssetDatabase.Refresh();
+            Debug.Log($"DIAG reimported {paths.Count} person assets");
+        }
+
+        public static void HeadFrame()
+        {
+            foreach (var b in new[] { "player_f", "player_m" })
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/SecondFace/Prefabs/people/{b}.prefab");
+                var body = prefab.GetComponentsInChildren<SkinnedMeshRenderer>(true).First(r => r.name == "Body_LOD0");
+                var rest = body.sharedMaterial.GetTexture("_RestMap") as Texture2D;
+                var mesh = body.sharedMesh;
+                var v = mesh.vertices;
+                var ids = new System.Collections.Generic.List<Vector2>(); mesh.GetUVs(1, ids);
+                var px = rest.GetPixels();
+                Color R(int i) => px[Mathf.RoundToInt(ids[i].x) + Mathf.RoundToInt(ids[i].y) * 128];
+                int top = 0;
+                for (var i = 0; i < v.Length; i++) if (v[i].y > v[top].y) top = i;
+                int front = -1, back = -1, left = -1;
+                for (var i = 0; i < v.Length; i++)
+                {
+                    if (Mathf.Abs(v[i].y - (v[top].y - 0.13f)) > 0.02f || Mathf.Abs(v[i].x) > 0.09f) continue;
+                    if (front < 0 || v[i].z < v[front].z) front = i;
+                    if (back < 0 || v[i].z > v[back].z) back = i;
+                    if (left < 0 || v[i].x > v[left].x) left = i;
+                }
+                Debug.Log($"HEADFRAME {b}: top {v[top]} rest {R(top)} | most -z {v[front]} rest {R(front)} | most +z {v[back]} rest {R(back)} | most +x {v[left]} rest {R(left)} | bounds {mesh.bounds}");
+            }
+        }
+
         public static void Report()
         {
             foreach (var path in Directory.GetFiles("Assets/SecondFace/People/Bakeoff", "*.fbx").Take(2))
