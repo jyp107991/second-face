@@ -260,3 +260,26 @@ the painted beard instead of leaf-wide locks (`hairgen.py` v29); the two-sided l
 again (lighting both faces alike was not the cure for the grey bun and lit beards' undersides). **Gate: 186 of 252**
 (`gate_r5c.txt`, `beards_r5c_closeups.jpg`). The beards still read as shreds up close: procedural cards are at their
 limit, and the next lever is the same as the hair's (real grooms as cards).
+
+## 12. What the faces say: apparent age and sex read by real-photo networks (2026-10-30)
+
+`tools/unity/people/gate/apparent.py`: Levi & Hassner's age and gender networks (Adience; ONNX model zoo) read on FairFace's
+1,975 frontal adults and on our portraits the same way. The instrument is crude (it reads real people young and a third of
+real women as men), so only the gap between real and ours is evidence. Two crops: the inner face (pad 0.05) and the head
+with its hair and neck (pad 0.6).
+
+| | real, head (0.6) | ours, head | real, face (0.05) | ours, face |
+|---|---|---|---|---|
+| apparent age, 45-58 | 37.2 | 31.7 | 27.2 | 22.9 |
+| apparent age, 58+ | 49.2 | 37.4 | 36.0 | 41.5 |
+| women read as men | 37 % | 73 % | 33 % | 79 % |
+| men read as women | 3 % | 18 % | 11 % | 27 % |
+
+- **The years are missing outside the face.** The inner face of our over-58s reads older than real people's; with the
+  head, hair and neck in frame they read twelve years young. What ages a head beyond the face: the neck and jawline (soft
+  tissue under the chin, jowls, the neck's folds), thinning hair, ears. Next for R4.
+- **The sexes are not told apart as real ones are.** Our women are read as men twice as often as real women, our men as
+  women five times as often as real men, from the inner face alone; the neutral female base reads as a man outright. The
+  proportions gate passes them (it holds sizes and ratios, not the cues people read sex by: brow ridge and brows, the eye
+  region, the jaw's angle, the nose, lips, a beard's shadow, skin). Next: those cues, measured with this instrument on the
+  population (one-slider renders saturate it; only the aggregate moves), until the gap closes.

@@ -25,6 +25,11 @@ Run:
    on the rendered people (`--extra dir,dir` adds earlier rounds, each laid out as test-results).
 7. `gen_core.py`: writes Core's table `Core/Npc/ProportionsData.cs` from `response*.json`, `ansur_stats.json` and
    `fairface_stats.json`. Core `Proportions` then solves every adult to real measures (docs/PEOPLE_REALISM.md §8).
+8. `apparent.py <models dir> <validation.parquet> <unity/test-results> [--pad 0.05|0.6]` (venv, `python -I`): apparent age
+   and sex by Levi & Hassner's Adience networks (ONNX model zoo `age_googlenet.onnx`, `gender_googlenet.onnx`), real
+   FairFace against ours; a diagnostic, not a gate (docs/PEOPLE_REALISM.md §12).
+9. `PeopleGateTests.HairCloseups` (`SF_HAIR_IDS=cluster_sex_age_k,...`; `SF_HAIR_PARTS=1`; `SF_HAIR_GREY`): heads at
+   0.95 m from three sides into test-results/hair, for judging hair and beards up close.
 
 Measures (`measure.py`): head breadth and length, cheek width, face height (sellion to menton, menton found on the midline
 section, not at the throat), eye spacing, neck girth 3.5 cm under the menton, tragion to top of head, vertex to
