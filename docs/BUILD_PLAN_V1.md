@@ -2565,6 +2565,14 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
 - **When fits sit at a slider's end, the basis is short there.** Count the fits pinned at each slider's ends
   (`faces_fit.json`); past a few per cent, extend the slider (`Sculpt.Extended`) and refit, or the people inherit the base.
 
+- **A URP renderer made in code has no post-process data** (`UniversalRendererData.postProcessData` null): its cameras
+  silently render without tone mapping, grade, bloom or vignette, whatever the camera and volumes ask. The GLES3 tier was
+  made so: every editor and CI capture (the editor renders that tier) and GLES3 phones were ungraded until R4. `ProjectSetup`
+  assigns the package's PostProcessData; check `postProcessData` on every renderer asset when a look "does nothing".
+- **Compare people with people of the same mix.** A pooled real mean (FairFace's mix of peoples) against ours (another mix)
+  hides by-people differences of opposite sign: the eyes' contrast is positive on fair skin and negative on dark skin in
+  ours, and the pool read as "no change".
+
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)
 
 1. Combat stays turn-based with the §6.G depth (default: yes).

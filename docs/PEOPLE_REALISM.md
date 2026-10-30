@@ -409,3 +409,23 @@ brightness is not what the gap is made of. What remains: the lashes themselves (
 they read as dots), the brows' and lids' shadows under light from above, and the photograph's tone curve, which the gate's
 studio does not have (§11: the game's post-processing does not reach its batch renders). Next: the studio's grade, then
 the lashes as cards.
+
+**Part 1b (same day): the grade, and contrast by people.** The gate's portraits had no tone mapping or grade because the
+GLES3 tier's renderer (the editor's, CI's and older phones') was made in code without post-process data: every capture since
+the tiers were split rendered ungraded, and so did GLES3 phones (`ProjectSetup` now gives it the data; the studio renders
+with the game's look). Compared by people (FairFace's mix of peoples is not ours; sunglasses left out of the real faces):
+
+| eyes / lips' a* | real women | ours | real men | ours |
+|---|---|---|---|---|
+| white | +0.18 / 8.6 | +0.10 / 5.6 | +0.16 / 7.8 | +0.13 / 4.2 |
+| black | +0.13 / 3.4 | -0.17 / 1.1 | +0.10 / 2.9 | -0.18 / 2.2 |
+| east Asian | +0.26 / 11.2 | +0.14 / 6.5 | +0.21 / 6.5 | +0.08 / 5.8 |
+
+The brows and the lips' darkness are now within the real values by people (the lips no darker than the skin on dark skin,
+the brows softer there). **Still wrong**: on dark skin our eyes read lighter than the skin round them where real ones read
+darker (the white of the eye against dark skin; lids darkened by 38 % on dark skin did not close it), and the lips are less
+red than real (FairFace's women wear make-up, which our world mostly lacks: their values are a ceiling for women, men's
+the clean target). Apparent age and sex barely moved: the 20-29s now read 28, the 50-59s still 27 and the 60-69s 34; women
+read as men 67 % (real 37 %), men as women 17 % (real 3 %). Facial contrast is part of the read, not most of it: next the
+lashes as geometry the camera resolves, and what ages a face in a photograph beyond its contrast (`gate_r4a.txt`).
+

@@ -4,7 +4,8 @@ difference in facial contrast and its exaggeration by cosmetics", Perception 38)
 age (Porcheron, Mauger and Russell 2013, "Aspects of facial contrast decrease with age and are cues for age perception",
 PLoS ONE 8). Measured the same way on FairFace's frontal faces at rest (the gate's real faces, fairface_shapes.json) and
 on our portraits: MediaPipe's landmarks outline each feature and a ring of skin round it; CIELAB L* and a* are averaged
-in each; contrast = (skin - feature) / (skin + feature) for L*, feature - skin for a*.
+in each; contrast = (skin - feature) / (skin + feature) for L*, feature - skin for a*. Real faces behind dark glasses are
+left out (their eye openings dark and uniform).
 Usage: python -I contrast.py <face_landmarker.task> <FairFace validation.parquet> <unity/test-results>
 (writes test-results/people_contrast.json and prints real against ours by sex and age class)"""
 import io, json, os, sys
@@ -56,6 +57,9 @@ def measure(rgb, P):
     grow_out = {'eyes': 0.9, 'brows': 0.6, 'lips': 0.5}
     every = mask(L.shape, [q for v in feats.values() for q in v], 0.2)
     out = {}
+    # sunglasses (FairFace keeps them): an eye opening uniformly dark, without the white or a catchlight
+    opening = mask(L.shape, feats['eyes'], 0.0)
+    if opening.sum() >= 8: out['eye_open_sd'] = round(float(L[opening].std()), 2); out['eye_open_l'] = round(float(L[opening].mean()), 2)
     for k, polys in feats.items():
         inner = mask(L.shape, polys, grow_in[k])
         ring = mask(L.shape, polys, grow_out[k]) & ~mask(L.shape, polys, grow_in[k] + 0.15) & ~every
@@ -64,6 +68,11 @@ def measure(rgb, P):
         out[k] = round((ls - lf) / (ls + lf), 4)
         if k == 'lips': out['lips_a'] = round(float(A[inner].mean() - A[ring].mean()), 3)
     return out
+
+
+def Sunglasses(c):
+    """A face behind dark glasses: its eye openings dark and nearly uniform (no white, no catchlight)."""
+    return c.get('eye_open_l', 99) < 15 and c.get('eye_open_sd', 99) < 4
 
 
 def main(model, parquet, results):
@@ -77,7 +86,7 @@ def main(model, parquet, results):
         r = lm(rgb)
         if r is None: continue
         c = measure(rgb, r[0])
-        if c: rows.append({'i': f['i'], 'sex': f['sex'], 'race': f['race'], 'cls': f['age'], **c})
+        if c and not Sunglasses(c): rows.append({'i': f['i'], 'sex': f['sex'], 'race': f['race'], 'cls': f['age'], **c})
     people = json.load(open(os.path.join(results, 'people_measures.json')))
     ours = []
     for p in people:

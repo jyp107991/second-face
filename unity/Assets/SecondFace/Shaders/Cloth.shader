@@ -187,10 +187,11 @@ Shader "SecondFace/Cloth"
                     float d = min(distance(i.uv, float2(0.705, 0.703)), distance(i.uv, float2(0.289, 0.291)));
                     half white = (half)smoothstep(0.1, 0.13, d);
                     half shade = (half)smoothstep(0.12, 0.27, d);
-                    albedo.rgb *= lerp(1.0h, half3(0.86h, 0.8h, 0.76h) * (1.0h - 0.55h * shade) * (1.0h - _EyeYears * half3(0.1h, 0.14h, 0.24h)), white);
+                    // (measured, R4: real eye openings read a third darker than the skin round them, ours as light as it)
+                    albedo.rgb *= lerp(1.0h, half3(0.72h, 0.66h, 0.62h) * (1.0h - 0.65h * shade) * (1.0h - _EyeYears * half3(0.1h, 0.14h, 0.24h)), white);
                     // the upper lid and its lashes shade the top of the eyeball, iris and white alike (by the eyeball's
                     // normal, which looks up there; faces are upright in the portraits and the game)
-                    albedo.rgb *= 1.0h - 0.55h * (half)smoothstep(-0.15, 0.45, normalize(i.normalWS).y);
+                    albedo.rgb *= 1.0h - 0.7h * (half)smoothstep(-0.25, 0.4, normalize(i.normalWS).y);
                     // the iris dull under the cornea (the eyeball carries no cornea shell, so its gloss made the iris a mirror of
                     // the room: brown eyes read silver); the white wet; the highlight stays a small catchlight
                     smoothness = lerp(0.42h, smoothness, white);

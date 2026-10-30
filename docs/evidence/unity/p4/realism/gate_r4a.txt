@@ -1,0 +1,24 @@
+real people passing (held out): 3D 97.5 % of each ANSUR group; 2D men 97.6% of 496 (coverage 0.989), women 97.7% of 348 (coverage 0.995)
+people 252: 245 pass, 7 fail
+  3d.distinct                     4 fail
+  3d.head_and_neck                2 fail
+  2d.shape                        1 fail
+  notes (single measures outside the real 3rd-97th / 5th-95th: real people have these too): brow_eye 40, lips_face 27, mouth_face 26, tragiontopofhead 26, lower_face 22, nose_len 22, eye_face 21, neckcircumference 19
+  population: apparent age, 20-29: ours 28.0, real 24.4 (n 66; within 2.2)  FAIL
+  population: apparent age, 30-39: ours 27.1, real 29.6 (n 65; within 2.3)  FAIL
+  population: apparent age, 50-59: ours 27.0, real 42.2 (n 57; within 3.8)  FAIL
+  population: apparent age, 60-69: ours 34.3, real 47.5 (n 55; within 5.0)  FAIL
+  Factor Ozias Pike      m 44 north_european       distinct 3.02 [3.14-Teo Marsh]
+  Teo Marsh              m 46 north_european       distinct 3.02 [3.14-Factor Ozias Pike]
+  Rust Dog (Fenn)        m 29 mediterranean        distinct 2.58 [3.64-Kit Doran]
+  Rust Dog (Gant)        m 41 north_european       shape 7.81 [0-5.49]
+  Kit Doran              m 25 mediterranean        distinct 2.58 [3.64-Rust Dog (Fenn)]
+
+apparent age (crop pad 0.6), real FairFace against ours:
+  18-30: real 24.4 (n 746)  ours 28.0 (n 66)
+  30-45: real 29.6 (n 561)  ours 27.4 (n 69)
+  45-58: real 37.2 (n 543)  ours 26.9 (n 60)
+  58-100: real 49.2 (n 125)  ours 34.2 (n 57)
+read as the other sex (P(own sex) < 0.5):
+  women: real 37% (n 963)  ours 67% (n 128)
+  men: real 3% (n 1012)  ours 17% (n 124)

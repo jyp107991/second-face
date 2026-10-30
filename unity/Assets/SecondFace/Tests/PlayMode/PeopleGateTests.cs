@@ -301,6 +301,12 @@ namespace SecondFace.Tests
                 _key = new GameObject("gate_key").AddComponent<Light>(); _key.type = LightType.Directional; _key.intensity = 1.1f;
                 _fill = new GameObject("gate_fill").AddComponent<Light>(); _fill.type = LightType.Directional; _fill.intensity = 0.45f;
                 RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat; RenderSettings.ambientLight = new Color(0.45f, 0.45f, 0.47f);
+                // the game's look (tone mapping and grade), so a portrait shows what the phone shows (R4: the GLES3 tier the
+                // editor renders had no post-process data, and the portraits came out ungraded)
+#if UNITY_EDITOR
+                var look = AssetDatabase.LoadAssetAtPath<UnityEngine.Rendering.VolumeProfile>("Assets/SecondFace/Settings/Look.asset");
+                if (look != null) SecondFace.Game.World.Look.Apply(_cam, look);
+#endif
             }
 
             public void Shoot(GameObject go, string name, string folder = "portraits", float distance = 1.6f, float yaw = 0f, float up = 0f)

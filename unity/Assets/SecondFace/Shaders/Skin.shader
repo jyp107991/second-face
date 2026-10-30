@@ -384,9 +384,26 @@ Shader "SecondFace/Skin"
             // front, the lower as a finer line, thickest at the outer half; the rest positions are the vertices', and the lids'
             // first row of triangles is about 4 mm deep, so a narrower band showed as a pixel)
             float du = p.y - yu, dl = yl - p.y;
-            half up = (half)(along * (1.0 - smoothstep(0.03, 0.055, du)) * smoothstep(-0.02, -0.008, du));
+            half up = (half)(along * (1.0 - smoothstep(0.035, 0.07, du)) * smoothstep(-0.02, -0.008, du));
             half lo = (half)(along * (1.0 - smoothstep(0.012, 0.03, dl)) * smoothstep(-0.02, -0.008, dl) * (0.35 + 0.65 * smoothstep(-0.3, 0.6, t)));
             return half2(up, lo);
+        }
+
+        // the skin of the lids and under the eyes, round the openings (out to about 1 cm over the upper margin and 7 mm under
+        // the lower), soft-edged
+        half LidSkin(float3 p)
+        {
+            float ax = abs(p.x);
+            if (p.z < 0.6 || ax < 0.12 || ax > 0.66 || p.y < -0.12 || p.y > 0.3) return 0;
+            float t = (ax - 0.37) / 0.137;
+            float tc = clamp(t, -1.0, 1.0);
+            float lid = 0.069 + 0.013 * (tc + 1.0) * 0.5;
+            float yu = lid + 0.065 * pow(max(1.0 - tc * tc, 0.0), 0.45);
+            float yl = lid - 0.035 * pow(max(1.0 - tc * tc, 0.0), 0.6);
+            float along = 1.0 - smoothstep(1.0, 1.5, abs(t));
+            float up = 1.0 - smoothstep(0.06, 0.13, p.y - yu);
+            float lo = 1.0 - smoothstep(0.04, 0.09, yl - p.y);
+            return (half)(along * min(up, lo) * smoothstep(-0.02, 0.0, min(p.y - yu, yl - p.y) + 0.2));
         }
 
         // the lips' red and dark, over the bake's lips (the mouth's line at y -0.67, the lips from -0.61 to -0.73, 0.22 to
@@ -447,6 +464,8 @@ Shader "SecondFace/Skin"
             }
             {
                 half b = BrowAt(p);
+                // (a little softer on dark skin, whose brows stand out less: measured, R4)
+                b *= 0.7h + 0.3h * saturate(dot(a, half3(0.3h, 0.59h, 0.11h)) * 3.0h);
                 a = lerp(a, _BrowColour.rgb, b * 0.92h);
                 smooth = lerp(smooth, 0.2h, b);
             }
@@ -456,11 +475,16 @@ Shader "SecondFace/Skin"
                 // whatever the hair (lashes are darker than the brows on nearly everyone; a colour from light brows barely
                 // showed); the lips redder and deeper, in the skin's own colour (never painted on: lips are skin with more
                 // blood under less of it)
+                // (measured by people, R4: on darker skin real lids and under-eyes are darker than the face round them and the
+                // lips no darker than the skin; on fair skin the lips are the darker. Fairness as the zones take it)
+                half fair = saturate(dot(a, half3(0.3h, 0.59h, 0.11h)) * 3.0h);
                 half2 ll = LashLines(p);
                 half3 lash = lerp(half3(0.03h, 0.022h, 0.018h), _BrowColour.rgb * 0.5h, 0.2h);
                 a = lerp(a, lash, saturate(ll.x * (half)_Contrast.x + ll.y * (half)_Contrast.y * 0.8h));
+                half lid = LidSkin(p);
+                a *= 1.0h - lid * (1.0h - fair) * 0.38h;
                 half lips = LipsAt(p);
-                a *= lerp(1.0h, (1.0h + (half)_Contrast.z * half3(0.6h, -0.16h, -0.1h)) * (1.0h - 0.25h * (half)_Contrast.w), lips);
+                a *= lerp(1.0h, (1.0h + (half)_Contrast.z * half3(0.6h, -0.16h, -0.1h)) * (1.0h - 0.25h * (half)_Contrast.w * fair), lips);
             }
             if (_Scar > -0.5)
             {
