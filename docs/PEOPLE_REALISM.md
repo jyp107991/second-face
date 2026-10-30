@@ -202,3 +202,22 @@ Still failing (62): edge misses spread over the measures (a third within 5 % of 
 stops at 58; FairFace's 60+ bands are thin), and five similar pairs. Next: R4 (age in the face: an apparent-age check, the
 face's ageing to match), then the hair (the hairline at the person's own forehead, volume off the scalp) and the skin.
 
+
+## 10. R4 part 1: the apparent-age check, and the years in the skin's relief (2026-10-30)
+
+**The measure.** An apparent-age estimator trained on real photographs (Levi & Hassner's age network, Adience; ONNX model
+zoo), run on every gate portrait and, for calibration, on FairFace's real faces: the estimator reads real people young
+(FairFace 25 -> 24, 45 -> 34, 65 -> 47, 75 -> 52), so ours are compared with real faces of the same band, never with the
+age itself. Our portraits before this step: 18-30 -> 28.8, 45-58 -> 32.0, 58+ -> 37.7 (real 24, 34, 43-47). The young read
+older than real ones (smooth, plastic skin reads as no age in particular) and the old read a decade younger.
+
+**The skin's relief** (`Skin.shader` `WrinkleAt`, `Looks.Wrinkles`): forehead lines, the frown's two lines, crow's feet
+fanned from the eye's corner, the line under the eye and the tear trough, the nasolabial fold, marionette lines and the
+neck's rings, as a height field in the head's rest frame (so it follows the face's shapes) applied through the surface
+gradient, with their cavity darkened and a blotchier tone; none before thirty, most of the way by seventy (sooner on a
+man's skin, later on darker and East Asian skin, `Looks.SkinYears`), faded with distance so it never aliases on a phone.
+
+**Gate: 186 of 252** (noise against R5a's 190: the 2D landmarks move a little with the relief). Apparent age after it:
+58+ -> 37.7 against real 43-47: the relief alone is a small part of what makes a face read old. Next: age in the shape
+(soft tissue's descent: cheeks, jowls, the upper lid's hood, thinner lips) and the hair's own defects, which the
+estimator and the owner both see first (the hair's edge above a band of bare scalp, a white groom read as a cap).

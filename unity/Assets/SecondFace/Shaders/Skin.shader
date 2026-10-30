@@ -26,6 +26,7 @@ Shader "SecondFace/Skin"
         _Scar ("Scar (-1 none)", Float) = -1
         _Tattoo ("Tattoo (-1 none)", Float) = -1
         _Beard ("Beard (-1 none)", Float) = -1
+        _Wrinkles ("Wrinkles (the years in the skin's relief)", Range(0, 1)) = 0
         _BeardColour ("Beard colour", Color) = (0.12, 0.09, 0.07, 1)
         _BareSkin ("Bare skin (the bake's forehead, set by the build)", Color) = (0.75, 0.6, 0.5, 1)
         _BakeBalance ("The bake's colour balanced to the reference skin, linear (set by the build)", Vector) = (1, 1, 1, 1)
@@ -59,7 +60,7 @@ Shader "SecondFace/Skin"
         CBUFFER_START(UnityPerMaterial)
             float4 _BaseMap_ST;
             half4 _BaseColor;
-            half _BumpScale, _Smoothness, _Aged, _Tone, _Undertone, _Freckles;
+            half _BumpScale, _Smoothness, _Aged, _Tone, _Undertone, _Freckles, _Wrinkles;
             float _Scar, _Tattoo, _Beard;
             half4 _BeardColour;
             half4 _BareSkin, _ScalpColour, _BrowColour, _BakeBalance;
@@ -183,6 +184,45 @@ Shader "SecondFace/Skin"
         // mouth and grew a beard over the nose): the eyes at y +0.08, the nose from -0.1 to its tip at -0.40 and its base
         // at -0.51, about 0.2 to each side; the philtrum to -0.6; the lips from -0.61 to -0.73 (the mouth's line at -0.67)
         // and 0.22 to each side; the chin's point near -0.85, the throat below -0.95
+        // --- the years in the skin's relief (R4, owner pass 10: faces that look their age; measured against FairFace's age
+        // bands with an age estimator). Grooves in the head frame where faces line with age: the forehead's horizontal lines
+        // over the brows, the frown lines between them, crow's feet from the eyes' outer corners, a line under the eyes,
+        // the nasolabial folds from the nose's wings past the mouth's corners, the marionette lines below them, rings on
+        // the neck. 0 none .. 1 on a line's floor.
+        float Groove(float d, float w) { return 1.0 - smoothstep(0.0, w, abs(d)); }
+        float Lines(float phase, float sharp) { return pow(1.0 - abs(sin(phase)), sharp); }
+        float WrinkleAt(float3 p)
+        {
+            float ax = abs(p.x);
+            float front = smoothstep(0.55, 0.75, p.z);
+            // the forehead: lines about 9 mm apart, gently wavy, from over the brows to under the hairline
+            float fh = smoothstep(0.37, 0.43, p.y) * (1.0 - smoothstep(0.6, 0.68, p.y)) * (1.0 - smoothstep(0.36, 0.48, ax)) * front;
+            float w = fh * Lines((p.y - 0.37) * 30.0 + sin(p.x * 9.0) * 0.5, 6.0) * (0.7 + 0.3 * Noise3(p * 13.0));
+            // the frown lines: two short verticals between the brows
+            w = max(w, Groove(ax - 0.055, 0.014) * smoothstep(0.13, 0.18, p.y) * (1.0 - smoothstep(0.3, 0.36, p.y)) * front * 0.8);
+            // crow's feet: fanned from the outer corners, on the side of the face
+            float2 q = float2(ax - 0.53, p.y - 0.07);
+            float r = length(q);
+            float fan = smoothstep(0.03, 0.06, r) * (1.0 - smoothstep(0.15, 0.22, r)) * smoothstep(-0.02, 0.03, q.x) * smoothstep(0.1, 0.3, p.z);
+            w = max(w, fan * Lines(atan2(q.y, q.x) * 8.0, 8.0) * 0.9);
+            // under the eyes: a line curving under the lower lid
+            float ue = 0.07 - 0.12 - 0.25 * (ax - 0.36) * (ax - 0.36);
+            w = max(w, Groove(p.y - ue, 0.016) * smoothstep(0.2, 0.26, ax) * (1.0 - smoothstep(0.5, 0.56, ax)) * 0.7);
+            // the nasolabial folds: from the nose's wings out and down past the mouth's corners, the deepest
+            float t = saturate((-0.45 - p.y) / 0.32);
+            // (broad: a fold, not a scratch; the cheek's fullness sags over it)
+            float nl = Groove(ax - (0.2 + 0.11 * pow(t, 1.3)), 0.05) * smoothstep(-0.8, -0.74, p.y) * (1.0 - smoothstep(-0.46, -0.42, p.y)) * front;
+            w = max(w, nl);
+            // the tear troughs: a broad hollow under the inner half of each eye
+            w = max(w, Groove(length(float2((ax - 0.3) * 0.8, p.y + 0.06)), 0.09) * (1.0 - smoothstep(0.42, 0.5, ax)) * front * 0.55);
+            // the marionette lines: from the mouth's corners down towards the chin
+            float mt = saturate((-0.7 - p.y) / 0.18);
+            w = max(w, Groove(ax - (0.25 - 0.04 * mt), 0.018) * smoothstep(-0.92, -0.86, p.y) * (1.0 - smoothstep(-0.72, -0.69, p.y)) * front * 0.75);
+            // the neck: rings across its front
+            w = max(w, Lines(p.y * 26.0, 8.0) * smoothstep(-1.32, -1.25, p.y) * (1.0 - smoothstep(-1.08, -1.02, p.y)) * smoothstep(0.2, 0.5, p.z) * 0.6);
+            return w;
+        }
+
         float BeardAt(float id, float3 p)
         {
             if (p.z < -0.05 || p.y > 0.05) return 0;
@@ -459,6 +499,24 @@ Shader "SecondFace/Skin"
                 normalTS = normalize(half3(normalTS.xy + pores.xy, normalTS.z * pores.z));
                 half3 bitangent = i.tangentWS.w * cross(i.normalWS, i.tangentWS.xyz);
                 half3 normalWS = NormalizeNormalPerPixel(TransformTangentToWorld(normalTS, half3x3(i.tangentWS.xyz, bitangent, i.normalWS)));
+                if (_Wrinkles > 0.001h)
+                {
+                    // the lines with the years (R4): a shadow in the groove, and the groove as a height (0.6 mm at full) bent
+                    // into the normal by its slope on screen (Mikkelsen's surface gradient); where a line is finer than a
+                    // pixel, its average (no aliasing at the game's distance)
+                    float fine = saturate(1.6 - length(fwidth(i.rest)) * 90.0);
+                    float wr = WrinkleAt(i.rest) * _Wrinkles * fine;
+                    // (and the years' uneven tone: blotches a little darker and redder, more with the years)
+                    float blot = (Noise3(i.rest * 9.0) - 0.5) * _Wrinkles * fine * 0.5;
+                    albedo.rgb *= 1.0h - (half)wr * 0.26h;
+                    albedo.rgb *= 1.0h + (half)blot * half3(0.1h, -0.12h, -0.16h);
+                    float h = -wr * 0.0011;
+                    float3 dpdx = ddx(i.positionWS), dpdy = ddy(i.positionWS);
+                    float3 r1 = cross(dpdy, normalWS), r2 = cross(normalWS, dpdx);
+                    float det = dot(dpdx, r1);
+                    float3 grad = sign(det) * (ddx(h) * r1 + ddy(h) * r2);
+                    normalWS = (half3)normalize(abs(det) * (float3)normalWS - grad);
+                }
 
                 InputData input = (InputData)0;
                 input.positionWS = i.positionWS;

@@ -222,6 +222,10 @@ namespace SecondFace.Core.Npc
             return years;
         }
 
+        /// <summary>How deep the years' lines are in the skin's relief (SecondFace/Skin _Wrinkles, R4): none before about 30
+        /// years shown, a fifth at 45, over half by 65.</summary>
+        public static float Wrinkles(PlayerLook look) => (float)System.Math.Pow(System.Math.Clamp((SkinYears(look) - 30f) / 40f, 0f, 1f), 1.3);
+
         /// <summary>How far the skin has gone to its aged bake (0 at 28 years shown, most of the way by 72).</summary>
         public static float SkinAge(PlayerLook look) => (float)System.Math.Pow(System.Math.Clamp((SkinYears(look) - 28f) / 44f, 0f, 1f), 1.2) * 0.85f;
     }

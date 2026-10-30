@@ -23,6 +23,7 @@ namespace SecondFace.Game.People
         private static readonly int BeardColourId = Shader.PropertyToID("_BeardColour");
         private static readonly int ScalpColourId = Shader.PropertyToID("_ScalpColour");
         private static readonly int BaldId = Shader.PropertyToID("_Bald");
+        private static readonly int WrinklesId = Shader.PropertyToID("_Wrinkles");
         private static readonly int Brow0Id = Shader.PropertyToID("_Brow0");
         private static readonly int Brow1Id = Shader.PropertyToID("_Brow1");
         private static readonly int BrowColourId = Shader.PropertyToID("_BrowColour");
@@ -69,6 +70,7 @@ namespace SecondFace.Game.People
                     block.SetFloat(ToneId, Mathf.Clamp(look.Skin, -1f, 1f));
                     block.SetFloat(UndertoneId, Mathf.Clamp(look.Undertone, -1f, 1f));
                     block.SetFloat(FrecklesId, Mathf.Clamp01(look.Freckles));
+                    block.SetFloat(WrinklesId, Looks.Wrinkles(look));
                     block.SetFloat(ScarId, scar);
                     block.SetFloat(TattooId, tattoo);
                     // a beard only on a man's body, in its own colour (greying first; red under brown hair) or the hair's darker
