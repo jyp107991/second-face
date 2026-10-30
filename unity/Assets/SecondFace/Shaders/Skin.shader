@@ -335,6 +335,35 @@ Shader "SecondFace/Skin"
             return (half)saturate(body * ends * (0.4 + 0.6 * hairs) * lerp(0.6, 1.15, _BrowColour.a));
         }
 
+        // --- the face's colour zones (R5: one even colour read as plastic beside real photographs): blood under the skin
+        // warms the cheeks, the nose, the ears and the chin; the eye sockets are darker and cooler (more on darker skin
+        // and with the years); the forehead a little yellower; and the whole skin mottled at the scale of a few
+        // centimetres, never one flat tone. In the head frame (eyes y ~0.07, nose tip y -0.40, mouth y -0.67, cheeks
+        // |x| 0.3-0.5), after the tone, so blood shows over melanin as it does
+        half3 Zones(half3 a, float3 p)
+        {
+            if (p.y < -1.4 || p.y > 1.2) return a;
+            float ax = abs(p.x);
+            float front = smoothstep(0.35, 0.7, p.z);
+            half lum = dot(a, half3(0.3h, 0.59h, 0.11h));
+            half fair = saturate(lum * 3.0h);                       // blood shows most on light skin, still warms dark
+            float cheek = 1.0 - smoothstep(0.08, 0.22, length(float2((ax - 0.38) * 0.9, p.y + 0.25)));
+            float nose = (1.0 - smoothstep(0.1, 0.2, ax)) * smoothstep(-0.56, -0.48, p.y) * (1.0 - smoothstep(-0.2, 0.0, p.y));
+            float chin = (1.0 - smoothstep(0.12, 0.24, length(float2(ax * 0.8, p.y + 0.95))));
+            float ear = smoothstep(0.85, 0.95, ax) * smoothstep(-0.45, -0.3, p.y) * (1.0 - smoothstep(0.15, 0.3, p.y));
+            half blood = (half)(saturate(cheek * front * 0.9 + nose * front * 0.8 + chin * front * 0.4 + ear * 0.7) * (0.4 + 0.6 * Noise3(p * 7.0)));
+            a *= 1.0h + blood * (0.35h + 0.65h * fair) * half3(0.2h, -0.06h, -0.08h);
+            // the eye sockets: darker and a little violet below the inner eye, with the years more
+            float orbit = 1.0 - smoothstep(0.1, 0.24, length(float2((ax - 0.31) * 0.85, (p.y - 0.02) * 1.3)));
+            half dark = (half)(orbit * front) * (0.55h + 0.45h * (1.0h - fair) + 0.4h * _Wrinkles);
+            a *= 1.0h - dark * half3(0.14h, 0.16h, 0.12h);
+            // the forehead: a touch yellower
+            a *= 1.0h + (half)(smoothstep(0.32, 0.45, p.y) * front) * half3(0.015h, 0.01h, -0.025h);
+            // mottling: a few per cent of tone in patches of a few centimetres
+            a *= 1.0h + (half)((Noise3(p * 5.0) - 0.5) * 0.06 + (Noise3(p * 13.0 + 4.0) - 0.5) * 0.03);
+            return a;
+        }
+
         void Look(inout half3 a, inout half smooth, float3 p)
         {
             // the scalp: the bake's stubble off down to the bare skin (a little darker and duller than the forehead it was
@@ -361,6 +390,7 @@ Shader "SecondFace/Skin"
             else if (_Tone < -0.001h) a = lerp(a, 1.0h - (1.0h - a) * half3(0.45h, 0.62h, 0.72h), -_Tone);
             // undertone: warmer (golden, olive) or rosier
             a *= _Undertone >= 0 ? 1.0h + _Undertone * half3(0.05h, 0.0h, -0.08h) : 1.0h + (-_Undertone) * half3(0.03h, -0.03h, 0.02h);
+            a = Zones(a, p);
             // the shaved scalp's stubble in the hair's own colour, as dense as the bake painted it, none where bald
             if (sw > 0.01h && _ScalpColour.a > 0.5h)
             {

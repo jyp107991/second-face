@@ -301,3 +301,11 @@ the layer reached the line all round, but the strand coordinate stayed low 12 mm
 border edges showed a row at 31 degrees. Fewer women cropped (a fifth, now a tenth; Bodies.HairStyle): with no hair round
 the face, a cropped woman's face read as a man's to the eye and to the network alike. The braid made from the Defender's
 real groom reads more like hair than the procedural layers do (strand flow, flyaways, volume): the next lever.
+
+**The skin's colour zones** (same day; `Skin.shader` `Zones`): blood warms the cheeks, the nose, the ears and the chin
+(most on fair skin, still on dark); the eye sockets are darker and a little cooler (more on darker skin and with the
+years); the forehead a touch yellower; the whole skin mottled by a few per cent in patches of a few centimetres. Subtle at
+the gate's portrait (gate 185 of 252, `gate_r5e.txt`; noise against 188). **Known limit of the evidence:** the gate's
+studio renders without the game's post-processing (ACES, grading, vignette: `World.Look`); applying the look to its
+camera, through `Camera.Render` or the render request alike, changed nothing in batch mode, so the portraits and boards are
+linear and fair skin clips brighter than the phone shows. Open: find why, so the boards show the game's grade.
