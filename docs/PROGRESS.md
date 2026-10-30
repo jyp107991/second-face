@@ -733,8 +733,13 @@ novices in the orchard rows, scavengers among the fallen windpumps, salt cutters
 the megacity's crowds. Each has a first name, a face and body of their own, clothes for their trade, a spot or a
 stretch of ground, hours (most go home at night) and a few words to say. Shale went from 18 people to 32. Seen in
 `docs/evidence/unity/p6/walkabout_town_crowd.jpg`.
-**Next action:** P4.13 step 6, the old per-person cast models retired (everyone is made from the two bases now), with
-a lineup of 60 generated people as evidence; then travellers on the roads (5b). Then
+**One way to make everyone (P4.13 step 6, 2026-10-30):** the 32 old one-off character models are gone (214 MB
+lighter); every person in the game is now made from the two base bodies with their own measurements, face and
+clothes, and keeps whatever the story fixes about their look (hair, scars, skin, eyes). Sixty of them side by side:
+`docs/evidence/unity/p4/people_sixty.jpg` (men 163-189 cm, women 146-178 cm, every build and trade). Still to polish:
+undyed clothes look too clean and pale in a crowd, dirt on clothes barely shows, and the men have no beards yet.
+**Next action:** travellers on the roads (P4.13 5b), then the visual pass on the crowd's clothes (duller undyed cloth,
+grime that shows, beards on the bases). Then
 P7's first step, the new opening, in the content. Then P6 step 4, combat. P6.3 left for later: shade outdoors by a
 shadow ray (with the places' colliders, P6.4), noise by the ground, sight cones shown while sneaking, a crouched idle,
 the steal verb on people. P6.2 left for later: the townsfolk sitting at their seats and sleeping in their beds (seats

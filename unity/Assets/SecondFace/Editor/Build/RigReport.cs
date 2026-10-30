@@ -15,7 +15,7 @@ namespace SecondFace.EditorTools
     {
         private static readonly string[] Models =
         {
-            "Assets/SecondFace/People/Cast/cast_sal_01.fbx", "Assets/SecondFace/People/Player/player_f.fbx",
+            "Assets/SecondFace/People/Player/player_f.fbx",
             "Assets/SecondFace/Motion/walk.fbx", "Assets/SecondFace/Motion/idle.fbx",
         };
 

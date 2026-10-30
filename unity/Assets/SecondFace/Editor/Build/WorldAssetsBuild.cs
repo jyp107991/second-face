@@ -33,16 +33,12 @@ namespace SecondFace.EditorTools
             TorsoMeasure.MeasureEvery(false);
             // the walkabout (step 25): the drifter walks, the other P2 people stand about the town
             a.Walker = Person("p3_drifter_m");
-            // the people of Shale and the Sallow from the cast (P4.1), else the other P2 people
-            a.Townsfolk = Townsfolk.Select(n => Person(n, CastTestScene.Dir)).Where(g => g != null).ToArray();
-            if (a.Townsfolk.Length == 0)
-                a.Townsfolk = new[] { "p1_labourer_m", "p2_settler_f", "p5_street_m", "p6_nomad_f", "p4_gilded_f" }.Select(Person).Where(g => g != null).ToArray();
+            // the people are made from the player's two bases (P4.13; WorldAssets.PlayerF/M); the P2 people stand in only
+            // while the bases are not built
+            a.Townsfolk = new[] { "p1_labourer_m", "p2_settler_f", "p5_street_m", "p6_nomad_f", "p4_gilded_f" }.Select(Person).Where(g => g != null).ToArray();
             a.Locomotion = LocomotionBuild.Build();
             a.Sack = AssetDatabase.LoadAssetAtPath<Material>("Assets/SecondFace/Materials/Library/burlap.mat");
-            a.Cast = Cast().Select(c => new WorldAssets.CastEntry
-            {
-                Id = c.Id, Prefab = Person(c.Id, CastTestScene.Dir), Male = c.Male, Age = c.Age, Role = c.Role,
-            }).Where(c => c.Prefab != null).ToArray();
+            a.Cast = new WorldAssets.CastEntry[0];   // the per-person cast models are retired (P4.13 step 6)
             // the player's bodies for the pack's figure (P5.3h), as WardrobeBuild made them
             a.PlayerM = AssetDatabase.LoadAssetAtPath<GameObject>($"{PeopleDir}/player_m.prefab");
             a.PlayerF = AssetDatabase.LoadAssetAtPath<GameObject>($"{PeopleDir}/player_f.prefab");
@@ -53,22 +49,6 @@ namespace SecondFace.EditorTools
         }
 
         public const string PeopleDir = "Assets/SecondFace/Prefabs/people";
-
-        /// <summary>The cast brief (tools/unity/people/briefs/cast.json): each body's id, sex, age and trade.</summary>
-        public static (string Id, bool Male, float Age, string Role)[] Cast()
-        {
-            var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "..", "tools", "unity", "people", "briefs", "cast.json"));
-            if (!System.IO.File.Exists(path)) { Debug.LogWarning($"WorldAssetsBuild: no cast brief at {path}"); return new (string, bool, float, string)[0]; }
-            var people = Newtonsoft.Json.Linq.JObject.Parse(System.IO.File.ReadAllText(path))["people"];
-            return people.Select(p => ((string)p["id"], (double)p["gender"] >= 0.5, (float)(double)p["age"], (string)p["role"])).ToArray();
-        }
-        /// <summary>The cast who stand about Shale in the walkabout: the Sallow's own, the Choir's pair, a mender and a
-        /// rider of the Wheel.</summary>
-        public static readonly string[] Townsfolk =
-        {
-            "cast_sal_01", "cast_sal_02", "cast_sal_04", "cast_sal_05", "cast_chr_01", "cast_mnd_01", "cast_sal_03", "cast_sal_06",
-            "cast_chr_02", "cast_whl_01",
-        };
 
         /// <summary>A P2 person as a prefab with their materials bound (the model's own slots are placeholders that
         /// <see cref="PeopleMaterials"/> binds in the editor; an instance made at runtime would stand white). Built when
@@ -96,8 +76,6 @@ namespace SecondFace.EditorTools
         public static void RebuildPeople()
         {
             foreach (var n in new[] { "p1_labourer_m", "p2_settler_f", "p3_drifter_m", "p4_gilded_f", "p5_street_m", "p6_nomad_f" }) Person(n, PeopleTestScene.Dir, true);
-            foreach (var n in Townsfolk) Person(n, CastTestScene.Dir, true);
-            foreach (var c in Cast()) if (System.Array.IndexOf(Townsfolk, c.Id) < 0) Person(c.Id, CastTestScene.Dir, true);
             AssetDatabase.SaveAssets();
             Debug.Log("WorldAssetsBuild: people prefabs rebuilt");
         }

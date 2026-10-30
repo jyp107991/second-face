@@ -130,6 +130,24 @@ namespace SecondFace.Tests
         }
 
         [Test]
+        public void TheContentsLookOverridesTheDraw()
+        {
+            var look = Bodies.For("npc_x", true, 40, "guard");
+            var over = Newtonsoft.Json.Linq.JObject.Parse("{\"hair\":{\"style\":\"cut_sidepart\",\"color\":1183243},\"scars\":[\"eye_scar\"],\"skinTone\":0.9,\"eyes\":\"bluegreen\",\"facialHair\":\"full_beard\"}");
+            Bodies.Over(look, over);
+            Assert.That(look.Hair, Is.EqualTo("sf_crop"), "a side part is cropped (the grooming rule)");
+            Assert.That(look.HairColour, Is.EqualTo(1183243));
+            Assert.That(look.Scar, Is.EqualTo("eye_line"));
+            Assert.That(look.Skin, Is.GreaterThan(0.9f), "dark");
+            Assert.That(look.Eyes, Is.EqualTo("grey_green"));
+            Assert.That(Bodies.HairOf("bob02"), Is.EqualTo("sf_bun"));
+            Assert.That(Bodies.HairOf("paint_shaved"), Is.EqualTo("buzz"));
+            Assert.That(Bodies.HairOf("elvs_unkempt_french_braid"), Is.EqualTo("sf_braid"));
+            Assert.That(Bodies.HairOf("long01"), Is.EqualTo("sf_matted"));
+            Assert.That(Looks.Hair, Does.Contain(Bodies.HairOf("cut_quiff")));
+        }
+
+        [Test]
         public void ToSliderMapsEachSideOfTheBase()
         {
             Assert.That(Bodies.ToSlider(0.25, 0.25, 0, 0.75), Is.EqualTo(0).Within(1e-9));

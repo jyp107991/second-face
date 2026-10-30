@@ -373,7 +373,7 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    memory; fix until Mid ≥ 30 fps in the densest frontier place.
 
 ### P4 — People
-1. **Built (P4.1, 2026-10-29; §6.B.7–B.8; captures `people_cast_1..4`, `people_lod_0..2`).** The full pipeline to `People/Cast/`: a `people.json` brief per role and region (body, face, ancestry mix,
+1. **Built (P4.1, 2026-10-29; §6.B.7–B.8; captures `people_cast_1..4`, `people_lod_0..2`; retired in P4.13 step 6).** The full pipeline to `People/Cast/`: a `people.json` brief per role and region (body, face, ancestry mix,
    lifestyle, skin, hair, wardrobe) → `mh_build.py` builds all; LOD1 (6 K) and LOD2 (2 K) by Blender decimate
    with the same rig; `LODGroup` set by the postprocessor. Budget ≤ 8 MB per person, ≤ 15 K triangles LOD0.
 2. **Built (P4.2a, 2026-10-29; §6.B.5 "As built"; captures `people_sculpt_*`): the shapes, their binding and the
@@ -520,13 +520,17 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    in for all 29. The catalogue's diving suit is the water trades' only (it was tagged `work` too, and a labourer in
    fins stood in the plaza). Tests: `ExtrasTests` (every place's count, ids, names, trades, talk, barks, sex, spots;
    the same people every time; hours and away), `BootTests.ShaleIsAliveWithItsExtras` (`walkabout_town_crowd.jpg`).
-   *Planned:* (5b) extras for the roads (travellers, caravans, patrols between places); (5) every place gets
-   **extras** with functions beyond its named people: first the content's own (`MapDef.Extras`: 204 in 17 places, with
-   trades, spots, hours, barks and factions, the web game's `makeExtras` ported with its random sequence), then extras
-   for the places that have none (porters, guards, water-sellers, beggars, drovers, travellers on the road), with
-   routines from the place's spots, seats and beds. (6) the per-person cast meshes retired; a lineup of
-   60 generated people as evidence (the spread of stature, bust, seat, shoulders and muscle measured against the
-   targets).
+   *As built (step 6, 2026-10-30):* the per-person cast models are retired (214 MB: People/Cast, the cast prefabs,
+   `Test_Cast` and `CastTestScene`; `WorldAssets.Cast` empty; the P2 people stand in only while the bases are not
+   built). The content's look overrides reach the bodies (`Bodies.Over`: hair colour, hair style by the grooming rule,
+   scars, skin tone, undertone, freckles, eyes; a beard waits for a beard on the bases). The conversation-camera and
+   motion tests use the bases. Evidence: `ScreenshotTests.SixtyOfTheReach`, thirty women and thirty men of every trade
+   and age, made and dressed (`docs/evidence/unity/p4/people_sixty.jpg`): men 175.3 ± 6.2 cm (163-189), women
+   161.0 ± 7.5 cm (146-178), busts ± 0.51 and seats ± 0.41 on their sliders, men's muscle ± 0.51.
+   *Open (visual pass):* undyed cloth bakes too light (a crowd of near-white shirts; bake `undyed` duller), the
+   runtime grime barely shows at the game camera, a loose shirt hangs off a deep chest like a belly in profile, and
+   no beard on the bases yet (`facialHair` in 61 people's looks).
+   *Planned:* (5b) extras for the roads (travellers, caravans, patrols between places).
 ### P5 — Camera, touch and UI
 1. `CameraService` with Cinemachine 3: an orbit rig around the party leader (§6.F), tactical camera in combat,
    conversation cameras (over-shoulder two-shot, portrait inserts), the photo mode.
@@ -1417,7 +1421,10 @@ is `Test_Cast` (*Build cast test scene*: rows of eight side by side, each framed
 `people_cast_1..4` and `people_lod_0..2`. Open: the cast's binaries are committed (215 MB; every full rebuild adds as
 much to the history): before the cast grows past ~60, build people in CI from the briefs (cached by the briefs' and
 the script's hash) instead of committing them. The lineup leans grey and charcoal: the next brief pass spreads the dyes (rust, ochre,
-indigo, faded reds and greens) so a crowd reads as many people at the game camera.
+indigo, faded reds and greens) so a crowd reads as many people at the game camera. **Retired (P4.13 step 6, 2026-10-30):** the per-person
+cast models, their prefabs, `Test_Cast` and its builder were deleted (214 MB out of the tree and the app): everyone is
+made from the player's two bases with their own measurements (§P4 item 13). `cast.json` stays as a record of the brief
+format; a rebuild to `People/Cast` is only ever for comparison, never committed.
 
 ### 6.C Hair and grooming (the hair rule in practice)
 

@@ -216,49 +216,6 @@ namespace SecondFace.Tests
             }
         }
 
-        /// <summary>P4.1: the cast in rows of eight, a capture per row (`people_cast_<row>`), and one person at each of
-        /// their three levels of detail from the same framing (`people_lod_<n>`), with each level's triangles logged.</summary>
-        [UnityTest, Timeout(600000)]
-        public IEnumerator CastLineupAndLevelsAreCapturedWhenBuilt()
-        {
-            const string path = "Assets/SecondFace/Scenes/Test_Cast.unity";
-            if (!File.Exists(path)) { Assert.Ignore("cast scene not built"); yield break; }
-            yield return LoadTestScene(path);
-            for (var i = 0; i < 10; i++) yield return null;
-            var cast = GameObject.Find("Cast");
-            Assert.That(cast, Is.Not.Null);
-            foreach (var a in cast.GetComponentsInChildren<Animator>()) a.speed = 0f;
-            var cam = Camera.main;
-            var rows = (cast.transform.childCount + 7) / 8;
-            for (var r = 0; r < rows; r++)
-            {
-                cam.transform.position = new Vector3(r * 10f, 1.0f, -7.5f);
-                cam.transform.rotation = Quaternion.Euler(2f, 0, 0);
-                cam.fieldOfView = 28f;
-                yield return null;
-                yield return Capture($"people_cast_{r + 1}", 1920, 1080);
-            }
-            // levels of detail: the first person, framed as the game camera sees a person nearby, each level forced
-            var person = cast.transform.GetChild(0);
-            var lod = person.GetComponentInChildren<LODGroup>();
-            Assert.That(lod, Is.Not.Null, "levels of detail on the cast");
-            var lods = lod.GetLODs();
-            var focus = person.position + Vector3.up * 1.0f;
-            cam.transform.position = focus + new Vector3(0, 1.2f, -3.2f);
-            cam.transform.LookAt(focus);
-            for (var l = 0; l < lods.Length; l++)
-            {
-                lod.ForceLOD(l);
-                long tris = 0;
-                foreach (var r in lods[l].renderers)
-                    if (r is SkinnedMeshRenderer s) for (var k = 0; k < s.sharedMesh.subMeshCount; k++) tris += s.sharedMesh.GetIndexCount(k) / 3;
-                Debug.Log($"people_lod_{l}: {person.name} LOD{l} {tris} triangles, {lods[l].renderers.Length} renderers");
-                yield return null;
-                yield return Capture($"people_lod_{l}", 900, 1200);
-            }
-            lod.ForceLOD(-1);
-        }
-
         /// <summary>P4 step 2: the player's two bases, each as built, with two rerolled faces and aged
         /// (`people_sculpt_<f|m>_<built|reroll_a|reroll_b|aged>`). Every sculptor shape is on the body at LOD0 and LOD1; the face drives the head's proxies too;
         /// a rerolled face moves the head's vertices and leaves the feet where they were.</summary>
@@ -572,6 +529,82 @@ namespace SecondFace.Tests
             }
         }
 
+        /// <summary>P4.13 step 6 (the cast as data, in place of the 32 cast models): sixty people of the Reach, thirty women
+        /// and thirty men of every trade and age, each made from a base by <see cref="SecondFace.Core.Npc.Bodies"/> and
+        /// dressed by the outfit rules, in four rows of fifteen (`people_sixty_<1..4>`); the spread of stature, bust,
+        /// seat, shoulders and muscle measured against the targets.</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator SixtyOfTheReach()
+        {
+            const string path = "Assets/SecondFace/Scenes/Test_Player.unity";
+            if (!File.Exists(path)) { Assert.Ignore("player scene not built"); yield break; }
+            yield return LoadTestScene(path);
+            UiTests.Content();
+            for (var i = 0; i < 5; i++) yield return null;
+            var controller = GameObject.Find("player_f_built").GetComponent<Animator>().runtimeAnimatorController;
+            var sun = Object.FindObjectsByType<Light>(FindObjectsSortMode.None).FirstOrDefault(l => l.type == LightType.Directional && l.name == "Sun");
+            if (sun != null) sun.transform.rotation = Quaternion.Euler(35f, 20f, 0f);
+            var cam = Camera.main;
+            cam.fieldOfView = 22f;
+            var roles = SecondFace.Core.Npc.Outfits.Roles;
+            var all = new List<(bool Male, SecondFace.Core.Npc.PlayerLook Look)>();
+            for (var row = 0; row < 4; row++)
+            {
+                var male = row >= 2;
+                var id = male ? "player_m" : "player_f";
+                GameObject prefab = null;
+#if UNITY_EDITOR
+                prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/SecondFace/Prefabs/people/{id}.prefab");
+#endif
+                if (prefab == null) { Assert.Ignore("player prefabs not built"); yield break; }
+                var z = 100f + row * 12f;
+                var people = new List<GameObject>();
+                for (var i = 0; i < 15; i++)
+                {
+                    var n = row * 15 + i;
+                    var role = roles[(n * 7) % roles.Length];
+                    var age = 17 + (n * 11) % 56;
+                    var look = SecondFace.Core.Npc.Bodies.For($"reach_{n}", male, age, role);
+                    all.Add((male, look));
+                    var go = Object.Instantiate(prefab, new Vector3((i - 7f) * 0.62f, 0f, z), Quaternion.Euler(0, 180f, 0));
+                    go.name = $"reach_{n}_{role}_{age}";
+                    go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
+                    var anim = go.GetComponent<Animator>();
+                    anim.runtimeAnimatorController = controller;
+                    anim.applyRootMotion = false;
+                    people.Add(go);
+                    yield return null;
+                    SecondFace.Game.People.Dresser.Dress(go.GetComponent<SecondFace.Game.People.Wardrobe>(), SecondFace.Core.Npc.Outfits.DressFor(2000 + n * 37, role, male ? "m" : "f"));
+                    SecondFace.Game.People.LookView.Apply(go, look);
+                }
+                for (var k = 0; k < 20; k++) yield return null;
+                foreach (var a in people.Select(p => p.GetComponent<Animator>())) a.speed = 0f;
+                foreach (var g in people.Select(p => p.GetComponent<LODGroup>()).Where(g => g != null)) g.ForceLOD(0);
+                cam.transform.position = new Vector3(0f, 0.9f, z - 8.6f);
+                cam.transform.rotation = Quaternion.Euler(0.5f, 0, 0);
+                yield return null;
+                yield return Capture($"people_sixty_{row + 1}", 1920, 900);
+            }
+            // the spread, against the targets (Bodies: men 175 +- 7.5 cm, women 162 +- 6.5; the bust across its range)
+            (double Mean, double Sd) Stat(IEnumerable<double> xs) { var l = xs.ToList(); var m = l.Average(); return (m, System.Math.Sqrt(l.Sum(x => (x - m) * (x - m)) / l.Count)); }
+            var men = all.Where(p => p.Male).Select(p => p.Look).ToList();
+            var women = all.Where(p => !p.Male).Select(p => p.Look).ToList();
+            var (mm, ms) = Stat(men.Select(l => (double)l.Stature));
+            var (wm, ws) = Stat(women.Select(l => (double)l.Stature));
+            var bust = Stat(women.Select(l => (double)l.Shape["body-bust"]));
+            var seat = Stat(women.Select(l => (double)l.Shape["body-seat"]));
+            var shoulders = Stat(men.Select(l => (double)l.Shape["body-shoulders"]));
+            var muscle = Stat(men.Select(l => (double)l.Muscle));
+            Debug.Log($"people_sixty: men {mm:0.0} +- {ms:0.0} cm ({men.Min(l => l.Stature):0}-{men.Max(l => l.Stature):0}), women {wm:0.0} +- {ws:0.0} cm ({women.Min(l => l.Stature):0}-{women.Max(l => l.Stature):0}); "
+                + $"bust {bust.Mean:+0.00;-0.00} +- {bust.Sd:0.00}, seat {seat.Mean:+0.00;-0.00} +- {seat.Sd:0.00}; men's shoulders +- {shoulders.Sd:0.00}, muscle +- {muscle.Sd:0.00}");
+            Assert.That(mm - wm, Is.InRange(9.0, 17.0), "dimorphism in stature");
+            Assert.That(ms, Is.InRange(4.5, 10.5), "men's spread");
+            Assert.That(ws, Is.InRange(4.0, 9.5), "women's spread");
+            Assert.That(bust.Sd, Is.GreaterThan(0.25), "busts across the range");
+            Assert.That(seat.Sd, Is.GreaterThan(0.2), "seats across the range");
+            Assert.That(muscle.Sd, Is.GreaterThan(0.25), "soft to hard worked");
+        }
+
         /// <summary>P4 step 6: portraits in the engine under the studio light, cached; the player's two bases as they are
         /// and aged, and three of the cast, in one sheet (`people_portraits`). The second ask returns the same texture;
         /// the person's layers and the world's lights are as they were after.</summary>
@@ -586,7 +619,7 @@ namespace SecondFace.Tests
             Assert.That(people.All(p => p != null), Is.True, "the player's bases in the scene");
             var keptBefore = SecondFace.Game.People.Portraits.Count;   // other tests' people may still be kept
 #if UNITY_EDITOR
-            foreach (var id in new[] { "cast_sal_02", "cast_chr_02", "cast_sal_04" })
+            foreach (var id in new string[0])   // the cast models are retired (P4.13); the bases are the people
             {
                 var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/SecondFace/Prefabs/people/{id}.prefab");
                 if (prefab == null) continue;

@@ -18,7 +18,7 @@ namespace SecondFace.Tests
     /// </summary>
     public class PeopleMotionTests : IPrebuildSetup
     {
-        private const string Person = "Assets/SecondFace/Prefabs/people/cast_sal_01.prefab";
+        private const string Person = "Assets/SecondFace/Prefabs/people/player_m.prefab";   // a base (P4.13: the cast models retired)
         private readonly List<Object> _made = new();
 
         public void Setup()
@@ -141,7 +141,7 @@ namespace SecondFace.Tests
         public IEnumerator CapturedMotionHoldsHumanPosesWhenBuilt()
         {
 #if UNITY_EDITOR
-            var names = new[] { "cast_sal_01", "cast_sal_02", "cast_mnd_01" };
+            var names = new[] { "player_m", "player_f" };
             var prefabs = new List<GameObject>();
             foreach (var n in names) { var p = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/SecondFace/Prefabs/people/{n}.prefab"); if (p != null) prefabs.Add(p); }
             var controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/SecondFace/People/Locomotion.controller");

@@ -25,8 +25,8 @@ namespace SecondFace.Tests
     /// </summary>
     public class ConversationCameraTests
     {
-        private const string PersonA = "Assets/SecondFace/Prefabs/people/cast_sal_01.prefab";
-        private const string PersonB = "Assets/SecondFace/Prefabs/people/cast_chr_01.prefab";
+        private const string PersonA = "Assets/SecondFace/Prefabs/people/player_m.prefab";   // the bases (P4.13: the cast models retired)
+        private const string PersonB = "Assets/SecondFace/Prefabs/people/player_f.prefab";
         private readonly List<Object> _made = new();
         private T Made<T>(T o) where T : Object { _made.Add(o); return o; }
 

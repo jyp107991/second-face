@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SecondFace.Core.Npc
 {
@@ -149,6 +150,48 @@ namespace SecondFace.Core.Npc
             if (rng.Chance(0.12 + labour * 0.18)) look.Scar = rng.Pick(Looks.Scars);
             if (rng.Chance(0.12)) look.Tattoo = rng.Pick(Looks.Tattoos);
             return look;
+        }
+
+        /// <summary>
+        /// What the content says of a person's look over the drawn one (<see cref="LookDef.Over"/>, the web game's keys):
+        /// the hair's colour, and its style as one of ours by the grooming rule (a bob or a side part is tied back or
+        /// cropped; shaved, buzzed and faded are the buzz; braids and cornrows the braid; long hair matted), scars by
+        /// the nearest of ours, skin tone (0 pale to 1 dark, against the bases' mid-tone bake), undertone, freckles
+        /// and eyes. A beard has no shape on the bases yet and is left.
+        /// </summary>
+        public static PlayerLook Over(PlayerLook look, Newtonsoft.Json.Linq.JObject over)
+        {
+            if (look == null || over == null) return look;
+            if (over["hair"] is Newtonsoft.Json.Linq.JObject hair)
+            {
+                var style = hair["style"]?.ToString();
+                if (!string.IsNullOrEmpty(style)) look.Hair = HairOf(style);
+                if (hair["color"] != null && hair["color"].Type == Newtonsoft.Json.Linq.JTokenType.Integer) look.HairColour = (int)hair["color"];
+            }
+            if (over["scars"] is Newtonsoft.Json.Linq.JArray scars && scars.Count > 0)
+                look.Scar = scars[0].ToString() switch
+                {
+                    "eye_scar" => "eye_line", "burn_left" => "burn_cheek", "burn_right" => "burn_jaw", var v => Array.IndexOf(Looks.Scars, v) >= 0 ? v : look.Scar,
+                };
+            if (over["skinTone"] != null) look.Skin = (float)Math.Clamp(((double)over["skinTone"] - 0.35) * 2.2, -1, 1);
+            if (over["skinUndertone"] != null) look.Undertone = (float)Math.Clamp((double)over["skinUndertone"], -1, 1);
+            if (over["freckles"] != null) look.Freckles = (float)Math.Clamp((double)over["freckles"], 0, 1);
+            if (over["eyes"] != null)
+            {
+                var e = over["eyes"].ToString() switch { "brownlight" => "hazel", "bluegreen" => "grey_green", var v => v };
+                if (Looks.Eyes.Any(x => x.Id == e)) look.Eyes = e;
+            }
+            return look;
+        }
+
+        /// <summary>One of our hair forms for a web game's hair style (the grooming rule: never a styled cut).</summary>
+        public static string HairOf(string style)
+        {
+            if (style == "none" || style.StartsWith("paint_shaved") || style.StartsWith("paint_buzz") || style.StartsWith("paint_fade") || style == "coily_twa") return "buzz";
+            if (style.Contains("braid") || style.Contains("cornrow")) return "sf_braid";
+            if (style.Contains("bob") || style.Contains("ponytail") || style.Contains("bun")) return "sf_bun";
+            if (style.StartsWith("long") || style.Contains("dread") || style.Contains("matted")) return "sf_matted";
+            return "sf_crop";
         }
 
         /// <summary>A macro value as the base's slider: below the base towards its decr shape, above towards its incr.</summary>
