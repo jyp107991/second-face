@@ -149,6 +149,7 @@ namespace SecondFace.Tests
                     // outline, so the face's own proportions are measured bare, R5)
                     go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(w.Look);
                     yield return null;
+                    studio.Meter = Studio.MeterFor(w.Look);
                     studio.Shoot(go, w.Id, "portraits_look");
                     var beard = w.Look.Beard;
                     if (beard != null)
@@ -219,6 +220,7 @@ namespace SecondFace.Tests
                                 {
                                     go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
                                     yield return null;
+                                    studio.Meter = Studio.MeterFor(look);
                                     studio.Shoot(go, id, Path.Combine("sexcues", variant));
                                     n++;
                                 }
@@ -264,6 +266,7 @@ namespace SecondFace.Tests
                 if (Measure(go, 1f) == null) { Object.Destroy(go); continue; }
                 go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
                 yield return null;
+                studio.Meter = Studio.MeterFor(look);
                 foreach (var (view, yaw) in new[] { ("front", 0f), ("three", 35f), ("side", 80f) })
                     studio.Shoot(go, $"{id}_{view}", "hair", 0.95f, yaw, 0.03f);
                 // SF_HAIR_PARTS: the same three-quarter view with only the hair, and with only the body (what shows through)
@@ -292,6 +295,18 @@ namespace SecondFace.Tests
             private readonly Camera _cam;
             private readonly RenderTexture _rt;
             private readonly Light _key, _fill;
+
+            /// <summary>The exposure a camera metering on this face would give it, over a light-skinned face's (R4c): a
+            /// photograph makes up about a third of the face's reflectance in its exposure (FairFace's darkest cheeks read
+            /// 0.51 of the lightest in luminance where dermatology measures 0.36: 0.36^(1-k) = 0.51, k = 0.34), so their
+            /// portraits are compared with photographs taken the same way. The game's scenes are not metered per face.</summary>
+            public float Meter = 1f;
+
+            public static float MeterFor(SecondFace.Core.Npc.PlayerLook look)
+            {
+                double Y(double l) { var f = (l + 16) / 116; return f * f * f; }
+                return (float)System.Math.Pow(Y(SecondFace.Core.Npc.SkinColour.Lightness(look)) / Y(57), -0.34);
+            }
 
             public Studio()
             {
@@ -323,7 +338,7 @@ namespace SecondFace.Tests
                 hdr.ReadPixels(new Rect(0, 0, _rt.width, _rt.height), 0, 0);
                 RenderTexture.active = prev;
                 var tex = new Texture2D(_rt.width, _rt.height, TextureFormat.RGB24, false);
-                tex.SetPixels32(Grade(hdr.GetPixels()));
+                tex.SetPixels32(Grade(hdr.GetPixels(), Meter));
                 tex.Apply();
                 Object.Destroy(hdr);
                 var png = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", folder, name + ".png"));
@@ -340,11 +355,11 @@ namespace SecondFace.Tests
             /// crashed (R4, docs/PEOPLE_REALISM.md §14). Bloom and the vignette are left out: they hardly touch a face in the
             /// frame's middle.
             /// </summary>
-            private static Color32[] Grade(Color[] px)
+            private static Color32[] Grade(Color[] px, float meter = 1f)
             {
                 const float cut = 0.011361f, a = 5.555556f, b = 0.047996f, c = 0.244161f, d = 0.386036f, e = 5.301883f, f = 0.092819f;
                 const float mid = 0.4135884f, contrast = 1.12f, saturation = 1.1f;
-                var exposure = Mathf.Pow(2f, 0.25f);
+                var exposure = Mathf.Pow(2f, 0.25f) * meter;
                 float LogC(float x) => x > cut ? c * Mathf.Log10(a * x + b) + d : e * x + f;
                 float Lin(float x) => x > e * cut + f ? (Mathf.Pow(10f, (x - d) / c) - b) / a : (x - f) / e;
                 float Aces(float x) { x *= 0.6f; return Mathf.Clamp01(x * (2.51f * x + 0.03f) / (x * (2.43f * x + 0.59f) + 0.14f)); }

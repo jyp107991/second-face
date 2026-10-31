@@ -250,7 +250,7 @@ namespace SecondFace.Core.Npc
             // light eyes are recessive: of two ancestries, light only as often as both carry them
             var light = second != null ? Math.Pow(LightEyes(cluster), 1 - share) * Math.Pow(LightEyes(second), share) : LightEyes(cluster);
             look.Eyes = rng.Chance(light) ? rng.Pick(new[] { "hazel", "green", "grey_green", "blue_grey", "blue", "grey" })
-                : rng.Pick(new[] { "brown", "dark", "brown", "hazel" });
+                : DarkEyes(rng.Next(), SkinColour.Lightness(look.Skin));
             // freckles: almost always with red hair (the same gene), often on fair skin, more with the sun
             var red = shade == 6;
             // (freckling is the north European's: MC1R variants are rare elsewhere, where the sun leaves spots instead)
@@ -615,6 +615,18 @@ namespace SecondFace.Core.Npc
             af = Math.Max(0, af + Normal(rng) * 0.04); @as = Math.Max(0, @as + Normal(rng) * 0.04); ca = Math.Max(0, ca + Normal(rng) * 0.04);
             var sum = af + @as + ca;
             return ((af / sum, @as / sum, ca / sum), second, t);
+        }
+
+        /// <summary>Brown eyes' shade by the skin's pigment (R4c): the iris's melanin follows the skin's, so on the darkest skin
+        /// nearly every brown eye is a very dark brown (FairFace's Black faces' irises L* 16-17 where their skin reads 27-29;
+        /// drawn from the same mix as everyone's, ours read as light as the skin), a quarter of them on light skin, and hazel
+        /// rarely past a medium-dark skin.</summary>
+        public static string DarkEyes(double u, double skinL)
+        {
+            var pigment = Math.Clamp((57 - skinL) / 21, 0, 1);
+            var dark = 0.25 + 0.7 * pigment;
+            if (u < dark) return "dark";
+            return (u - dark) / (1 - dark) > 1 - 0.25 * (1 - pigment) ? "hazel" : "brown";
         }
 
         /// <summary>A cluster's skin tone (-1 the fairest to 1 the darkest): the cheek's lightness its adults were measured at,

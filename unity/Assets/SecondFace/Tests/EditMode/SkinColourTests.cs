@@ -80,6 +80,16 @@ namespace SecondFace.Tests
         }
 
         [Test]
+        public void BrownEyesAreDarkestOnTheDarkestSkin()
+        {
+            double Dark(string people) => Enumerable.Range(0, 400).Select(i => Bodies.For($"npc_sc_iris_{people}_{i}", i % 2 == 0, 30, "clerk", ancestry: people))
+                .Count(l => l.Eyes == "dark") / 400.0;
+            Assert.That(Dark("west_african"), Is.GreaterThan(0.8), "nearly every West African's eyes a very dark brown");
+            Assert.That(Dark("east_asian"), Is.InRange(0.15, 0.45));
+            Assert.That(Enumerable.Range(0, 400).Count(i => Bodies.For($"npc_sc_iris_h_{i}", false, 30, "clerk", ancestry: "east_african").Eyes == "hazel"), Is.LessThan(8), "hazel rare on dark skin");
+        }
+
+        [Test]
         public void TheMultiplierTakesTheReferenceToTheTarget()
         {
             var r = (SkinColour.Decode(SkinColour.Reference.R), SkinColour.Decode(SkinColour.Reference.G), SkinColour.Decode(SkinColour.Reference.B));

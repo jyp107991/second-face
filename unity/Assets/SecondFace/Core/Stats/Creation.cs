@@ -106,7 +106,7 @@ namespace SecondFace.Core.Stats
             Look.Freckles = Look.Skin < -0.3 && rng.Chance(0.3) ? (float)rng.Range(0.1, 0.5) : 0f;
             Look.HairColour = Looks.HairColours[Bodies.HairShade(rng, cluster)];
             Look.Eyes = rng.Chance(Bodies.LightEyes(cluster)) ? rng.Pick(new[] { "hazel", "green", "grey_green", "blue_grey", "blue", "grey" })
-                : rng.Pick(new[] { "brown", "dark", "brown", "hazel" });
+                : Bodies.DarkEyes(rng.Next(), SkinColour.Lightness(Look.Skin));
             NewFace(rng, null);
         }
 
