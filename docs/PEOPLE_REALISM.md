@@ -498,3 +498,30 @@ person 243 of 252 (six look-alike pairs, two head-and-neck, one age). **R4 conti
 colour and contrast, from the boards: the soft tissue (nasolabial folds, jowls, under-eye bags, hollow temples, thinner
 lips, the brow's descent), crow's feet and the cheeks' texture, and R5's white hair (a cap) and white beards (read as
 teeth); each measured with `apparent.py` on the population and judged on the boards.
+
+## 16. R4d: what ages a face beyond its colour and contrast (2026-10-31, in progress)
+
+**What the age reader keys on** (image-space edits of our portraits, `agesens` in the session's scratch): sharpening the
+skin's surface detail read our 30+ people 6 years older and blurring 3 younger; a lighter iris, brighter or yellower whites,
+the frame darker or brighter, desaturated: under 2 years. So the years are in the skin's surface (lines, creases, uneven
+tone) before its colour.
+
+**Done**: the lines (`Looks.Wrinkles`) from 25 years shown, linear to 70 (they barely began before fifty), darker and
+deeper (half the skin's light at a groove's floor, 1.7 mm), more uneven tone and sun spots; the aged bake (made for 62, its
+folds baked as creases) in from 25 and whole by 62 (`Looks.SkinAge`; a third of the way in at fifty before).
+
+| apparent age | real | round 19 | lines (20) | + aged bake (21) |
+|---|---|---|---|---|
+| 30-45 | 29.6 | 22.7 | 22.8 | 22.8 |
+| 45-58 | 37.2 | 22.5 | 25.8 | 27.1 |
+| 58+ | 49.2 | 28.3 | 31.7 | 32.5 |
+
+**Tried and reverted**: holding the head-age slider at the years instead of fitting it (in the real faces' fits it carried
+a sex difference, women 0.59 and men 0.31 at every decade, not the years). It aged the oldest 2 more years but women read
+as men 66 % (from 55 %) and two dimorphism tests failed (brow-to-eye, the eyes' spacing between peoples); fitted as a
+ridged difference from the years it still lost the sex difference. The sculptor's `aged` shape is MakeHuman's age macro on
+the head, which `body-age` already applies by the years: the base's own geometric ageing is in and is weak.
+
+**Still**: the 30-45s read 23, the old 15 years young; sharpening still adds 4 years. The boards' plainest defects come
+next because they bear on age and sex together: white hair reads as a cap and white beards as teeth (R5), and old men are
+read as women (P(male) 0.17 among our 45+).

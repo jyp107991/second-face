@@ -1,0 +1,18 @@
+apparent age (crop pad 0.6), real FairFace against ours:
+  18-30: real 24.4 (n 746)  ours 23.5 (n 66)
+  30-45: real 29.6 (n 561)  ours 22.8 (n 69)
+  45-58: real 37.2 (n 543)  ours 27.1 (n 60)
+  58-100: real 49.2 (n 125)  ours 32.5 (n 57)
+read as the other sex (P(own sex) < 0.5):
+  women: real 37% (n 963)  ours 60% (n 128)
+  men: real 3% (n 1012)  ours 15% (n 124)
+real people passing (held out): 3D 97.5 % of each ANSUR group; 2D men 97.6% of 496 (coverage 0.989), women 97.7% of 348 (coverage 0.995)
+people 252: 242 pass, 10 fail
+  3d.distinct                     8 fail
+  3d.head_and_neck                2 fail
+  2d.age                          1 fail
+  notes (single measures outside the real 3rd-97th / 5th-95th: real people have these too): lips_face 40, brow_eye 37, mouth_face 26, tragiontopofhead 26, eye_face 23, jaw_face 22, nose_icd 20, lower_face 20
+  population: apparent age, 20-29: ours 23.5, real 24.4 (n 66; within 1.8)
+  population: apparent age, 30-39: ours 22.4, real 29.6 (n 65; within 1.9)  FAIL
+  population: apparent age, 50-59: ours 27.2, real 42.2 (n 57; within 3.7)  FAIL
+  population: apparent age, 60-69: ours 32.6, real 47.5 (n 55; within 5.5)  FAIL
