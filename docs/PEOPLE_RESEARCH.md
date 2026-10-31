@@ -110,3 +110,23 @@ sclera of the old; longer coily forms (a puff, a full afro) under the grooming r
 ## 7. Evidence
 
 Renders of the candidates and of the chosen pipeline: `docs/evidence/unity/p4/research/`.
+
+## 7. A second search (owner, 2026-10-31): existing people to work from
+
+The owner, after round 41: our faces are worse than The Sims 4's; find the best existing assets usable for a strictly
+non-commercial game, no accounts. Found (web search, 2026-10-31):
+
+| Candidate | What | Licence | Account | Verdict |
+|---|---|---|---|---|
+| **Microsoft Rocketbox** | 115 rigged people (adults of several ancestries and ages, professions, children); faces from photographs, 2K colour/normal/specular, four levels of detail, facial blend shapes (visemes, FACS, ARKit) | MIT | none (public GitHub, no LFS) | **Rendered in our studio beside ours** (`docs/evidence/unity/p4/research/rocketbox_vs_ours.jpg`): real people at once, ancestry, sex and age plain, under Unity's plain Lit material. The base to adopt. |
+| **ICT FaceKit (light)** | a face model from ~200 light-stage scans: 100 identity shapes, 53 ARKit expressions, eyes, teeth, lashes | MIT | none | Real faces' shape variety, no skin: a later source of variety on top. |
+| MetaHuman | the best | allowed outside Unreal since mid-2025 (reported) | Epic login | Out (no accounts). |
+| Reallusion CC base; Ten24 / 3D Scan Store heads | good bases and scans | free / non-commercial | login or e-mail | Out (no accounts). |
+| MB-Lab | a generator with phenotypes | AGPL (fine for non-commercial) | none | Below Rocketbox's photographed faces. |
+| Unity *Enemies* | one top-end head | Asset Store EULA | Unity login | HDRP, one person: out. |
+
+Rocketbox evaluation: four people (`Female_Adult_03`, `Female_Adult_07`, `Male_Adult_05`, `Male_Adult_12`) imported by a
+scoped postprocessor (`RocketboxImportPostprocessor`; Rocketbox's own is project-wide and is not used), their 3ds Max
+materials bound by name (`PeopleGateTests.RocketboxProbe`). Owed: the hair's alpha (blue fringes on the long hair), the
+clothes (modern, baked into the body's texture: to re-dress or re-texture by the wardrobe rule), variety past 115 faces,
+and the character creator on a fixed-face library.

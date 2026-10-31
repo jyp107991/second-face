@@ -110,3 +110,6 @@ Used modified (refit to the game's bodies, re-dyed, weathered, resampled texture
   `faces_fit.json`, and Core's `FacesData.cs`, adapted from the dataset; no photograph ships), so the game's credits
   name FairFace and its licence.
 - **MediaPipe Face Landmarker** (Google, Apache 2.0) measures both.
+- **Microsoft Rocketbox Avatar Library** (Microsoft, MIT; github.com/microsoft/Microsoft-Rocketbox): rigged people with
+  photographed faces, under evaluation as the base for the game's people (`unity/Assets/ThirdParty/Rocketbox`, licence
+  beside them; `docs/PEOPLE_RESEARCH.md` §7).

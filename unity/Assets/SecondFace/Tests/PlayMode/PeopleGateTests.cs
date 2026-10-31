@@ -349,6 +349,73 @@ namespace SecondFace.Tests
             Assert.That(n, Is.GreaterThan(0));
         }
 
+        /// <summary>Microsoft Rocketbox avatars under evaluation (Assets/ThirdParty/Rocketbox, MIT; docs/PEOPLE_RESEARCH.md §7),
+        /// in the gate's studio as ours are probed: front, three-quarters and the side into test-results/probe/rb_&lt;name&gt;_*.</summary>
+        [UnityTest, Timeout(900000), Category("Heavy")]   // an evaluation tool, run by name in the session's editor
+        public IEnumerator RocketboxProbe()
+        {
+            var root = "Assets/ThirdParty/Rocketbox";
+            var dirs = Directory.Exists(root) ? Directory.GetDirectories(root) : new string[0];
+            if (dirs.Length == 0) { Assert.Ignore("no Rocketbox avatars"); yield break; }
+            var studio = new Studio();
+            var n = 0;
+            foreach (var dir in dirs)
+            {
+                var name = Path.GetFileName(dir);
+                GameObject model = null;
+#if UNITY_EDITOR
+                model = AssetDatabase.LoadAssetAtPath<GameObject>($"{root}/{name}/{name}.fbx");
+#endif
+                if (model == null) continue;
+                var go = Object.Instantiate(model, new Vector3(900f + n * 3f, 0f, 0f), Quaternion.identity);
+                // the highest level of detail only
+                foreach (var t in go.GetComponentsInChildren<Transform>(true))
+                {
+                    var low = t.name.ToLowerInvariant();
+                    if (low.Contains("poly") && !low.Contains("hipoly")) t.gameObject.SetActive(false);
+                }
+                foreach (var r in go.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                    foreach (var m in r.materials)
+                    {
+                        // the textures by the material's name (f003_head: f003_head_color, _normal, _specular; f003_opacity:
+                        // f003_opacity_color), as the 3ds Max export left them unbound
+                        var mat = m.name.Replace(" (Instance)", "");
+                        Texture Tex(string suffix)
+                        {
+#if UNITY_EDITOR
+                            return AssetDatabase.LoadAssetAtPath<Texture2D>($"{root}/{name}/{mat}_{suffix}.png");
+#else
+                            return null;
+#endif
+                        }
+                        if (Tex("color") is { } col) { m.SetTexture("_BaseMap", col); m.SetTexture("_MainTex", col); }
+                        if (Tex("normal") is { } nrm) { m.SetTexture("_BumpMap", nrm); m.EnableKeyword("_NORMALMAP"); m.SetFloat("_BumpScale", 1f); }
+                        var tex = m.HasProperty("_BaseMap") ? m.GetTexture("_BaseMap") : null;
+                        Debug.Log($"Rocketbox {name}: {r.name} material {m.name} shader {m.shader.name} base {(tex != null ? tex.name : "-")}");
+                        if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", Color.white);
+                        if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", 0.35f);
+                        // the hair, brows and lashes: cut out by the opacity texture's alpha, both faces drawn
+                        if (tex != null && tex.name.ToLowerInvariant().Contains("opacity"))
+                        {
+                            m.SetFloat("_AlphaClip", 1f); m.EnableKeyword("_ALPHATEST_ON"); m.SetFloat("_Cutoff", 0.35f);
+                            m.SetFloat("_Cull", 0f); m.SetFloat("_Smoothness", 0.25f);
+                        }
+                    }
+                var anim = go.GetComponent<Animator>();
+                var head = anim != null && anim.isHuman ? anim.GetBoneTransform(HumanBodyBones.Head) : go.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Bip01 Head");
+                if (head == null) { Debug.Log($"Rocketbox {name}: no head bone"); Object.Destroy(go); continue; }
+                yield return null;
+                var eye = go.transform.InverseTransformPoint(head.position) + new Vector3(0f, 0.085f, 0f);
+                _eyes = (eye, Vector3.forward);
+                foreach (var (view, yaw) in new[] { ("front", 0f), ("three", 35f), ("side", 85f) })
+                    studio.Shoot(go, $"rb_{name}_{view}", "probe", 1.3f, yaw, -0.03f);
+                n++;
+                Object.Destroy(go);
+            }
+            studio.Dispose();
+            Assert.That(n, Is.GreaterThan(0));
+        }
+
         private sealed class ProbeLook
         {
             public string body, hair;
