@@ -383,7 +383,8 @@ namespace SecondFace.Tests
                         Texture Tex(string suffix)
                         {
 #if UNITY_EDITOR
-                            return AssetDatabase.LoadAssetAtPath<Texture2D>($"{root}/{name}/{mat}_{suffix}.png");
+                            return AssetDatabase.LoadAssetAtPath<Texture2D>($"{root}/{name}/{mat}_{suffix}.jpg")
+                                   ?? AssetDatabase.LoadAssetAtPath<Texture2D>($"{root}/{name}/{mat}_{suffix}.png");
 #else
                             return null;
 #endif
@@ -411,6 +412,55 @@ namespace SecondFace.Tests
                     studio.Shoot(go, $"rb_{name}_{view}", "probe", 1.3f, yaw, -0.03f);
                 n++;
                 Object.Destroy(go);
+                // RB2: the sculptor's shapes carried onto this head (<name>_sculpt.fbx), each pushed to its end
+                GameObject sculpt = null;
+#if UNITY_EDITOR
+                sculpt = AssetDatabase.LoadAssetAtPath<GameObject>($"{root}/{name}/{name}_sculpt.fbx");
+#endif
+                if (sculpt == null) continue;
+                var sg = Object.Instantiate(sculpt, new Vector3(950f + n * 3f, 0f, 0f), Quaternion.identity);
+                foreach (var r in sg.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                    foreach (var m in r.materials)
+                    {
+                        var mat = m.name.Replace(" (Instance)", "");
+                        Texture2D T(string suffix)
+                        {
+#if UNITY_EDITOR
+                            return AssetDatabase.LoadAssetAtPath<Texture2D>($"{root}/{name}/{mat}_{suffix}.jpg") ?? AssetDatabase.LoadAssetAtPath<Texture2D>($"{root}/{name}/{mat}_{suffix}.png");
+#else
+                            return null;
+#endif
+                        }
+                        if (T("color") is { } col) { m.SetTexture("_BaseMap", col); m.SetTexture("_MainTex", col); }
+                        if (T("normal") is { } nrm) { m.SetTexture("_BumpMap", nrm); m.EnableKeyword("_NORMALMAP"); }
+                        m.SetColor("_BaseColor", Color.white); m.SetFloat("_Smoothness", 0.35f);
+                        if (mat.EndsWith("_opacity")) { m.SetFloat("_AlphaClip", 1f); m.EnableKeyword("_ALPHATEST_ON"); m.SetFloat("_Cutoff", 0.35f); m.SetFloat("_Cull", 0f); m.SetFloat("_Smoothness", 0.25f); }
+                    }
+                var smr = sg.GetComponentsInChildren<SkinnedMeshRenderer>(true).First(r => r.sharedMesh != null && r.sharedMesh.blendShapeCount > 0);
+                var sanim = sg.GetComponent<Animator>();
+                var shead = sanim != null && sanim.isHuman ? sanim.GetBoneTransform(HumanBodyBones.Head) : sg.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Bip01 Head");
+                var variants = new (string Tag, (string Key, float W)[] Set)[]
+                {
+                    ("base", new (string, float)[0]),
+                    ("nose_wide", new[] { ("nose-scale-horiz-incr", 100f), ("nose-flaring-incr", 60f) }),
+                    ("nose_narrow", new[] { ("nose-scale-horiz-decr", 100f) }),
+                    ("lips_full", new[] { ("mouth-upperlip-volume-incr", 100f), ("mouth-lowerlip-volume-incr", 100f) }),
+                    ("jaw_strong", new[] { ("chin-width-incr", 100f), ("chin-bones-incr", 100f), ("chin-prominent-incr", 60f) }),
+                    ("eyes_big", new[] { ("eye-scale-incr", 100f) }),
+                    ("cheekbones", new[] { ("cheek-bones-incr", 100f), ("cheek-volume-decr", 60f) }),
+                    ("face_long", new[] { ("chin-height-incr", 100f) }),
+                    ("mouth_wide", new[] { ("mouth-scale-horiz-incr", 100f) }),
+                };
+                foreach (var (tag, set) in variants)
+                {
+                    for (var b = 0; b < smr.sharedMesh.blendShapeCount; b++) smr.SetBlendShapeWeight(b, 0f);
+                    foreach (var (key, w) in set) { var bi = smr.sharedMesh.GetBlendShapeIndex(key); if (bi >= 0) smr.SetBlendShapeWeight(bi, w); }
+                    yield return null;
+                    _eyes = (sg.transform.InverseTransformPoint(shead.position) + new Vector3(0f, 0.085f, 0f), Vector3.forward);
+                    foreach (var (view, yaw) in new[] { ("front", 0f), ("three", 35f) })
+                        studio.Shoot(sg, $"rbs_{name}_{tag}_{view}", "probe", 1.3f, yaw, -0.03f);
+                }
+                Object.Destroy(sg);
             }
             studio.Dispose();
             Assert.That(n, Is.GreaterThan(0));

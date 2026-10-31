@@ -130,3 +130,13 @@ scoped postprocessor (`RocketboxImportPostprocessor`; Rocketbox's own is project
 materials bound by name (`PeopleGateTests.RocketboxProbe`). Owed: the hair's alpha (blue fringes on the long hair), the
 clothes (modern, baked into the body's texture: to re-dress or re-texture by the wardrobe rule), variety past 115 faces,
 and the character creator on a fixed-face library.
+
+**The owner's decision (2026-10-31): Rocketbox's faces are the base, with substantial but realistic customisation on top.**
+RB2, the sculptor on a real face (`tools/unity/people/rocketbox_sculpt.py`, Blender): our base head is fitted to the
+Rocketbox head by nine landmarks (the eyes from the eye bones, nose tip, lips, chin, ears, crown, back: 1-19 mm apart after
+a similarity, a thin-plate warp closes them), each Rocketbox vertex of the head (skin and hair) is bound to the closest
+point of the warped head, and each of our sculptor's shapes (139 face shapes) is carried across as a Rocketbox shape
+key. First result (`docs/evidence/unity/p4/research/rocketbox_sculpt_f07.jpg`, each shape at its full reach): the nose's
+width, the lips, the mouth's width, the jaw, the cheekbones and the face's length move the real face and it stays a
+person; at full reach the jaw and the long face go too far and the chin's skin stretches (natural ranges, as ours). The
+eyes' size barely moves (Rocketbox's eyes are in the head's mesh).
