@@ -59,8 +59,8 @@ namespace SecondFace.Core.Npc
 
         /// <summary>Three real faces of the person's <see cref="Pool"/> blended (no one more than 0.6: two people sharing a face
         /// stay apart), whose blend (its difference from the pool's middle scaled by <paramref name="spread"/>) coheres with
-        /// the real faces of their people and sex as the gate holds them (<see cref="Distance2"/>, <see cref="ShapeDistance"/>,
-        /// each less <see cref="Proportions.Room2"/>; a few draws, the last kept); null where there are none.</summary>
+        /// the real faces of their people and sex as the gate holds them (the outline's proportions, <see cref="Distance2"/>,
+        /// less <see cref="Proportions.Room2"/>; a few draws, the last kept); null where there are none.</summary>
         public static Mix Pick(Rng rng, bool male, string cluster, double age, double fullness = 0, double spread = 1, ICollection<int> avoid = null)
         {
             var all = Pool(male, cluster, age);
@@ -112,10 +112,10 @@ namespace SecondFace.Core.Npc
                 var w2 = (1 - w1) * rng.Range(0.5, 0.75);
                 last = new Mix { Faces = new[] { a, b, c }, W = new[] { w1, w2, 1 - w1 - w2 } };
                 var r = Blend(last, f => f.R, mean.R, spread);
-                var z = Blend(last, f => f.Z.Select(v => (double)v).ToArray(), mean.Z, spread);
                 var (d2, lim2) = Distance2(r, male, cluster);
-                var (ds, lims) = ShapeDistance(z, male, cluster);
-                if (d2 <= lim2 - Proportions.Room2 && ds <= lims - Proportions.Room2) break;
+                // (the outline's proportions: the whole landmark shape carries the features, which are the archetype's now,
+                // overhaul O2)
+                if (d2 <= lim2 - Proportions.Room2) break;
             }
             return last;
         }

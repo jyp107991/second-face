@@ -213,7 +213,7 @@ namespace SecondFace.Core.Npc
             ["chin-width"] = ((-1f, 0.2f), (-0.3f, 1f)),
             ["chin-prominent"] = ((-0.8f, 0.35f), (-0.3f, 1f)),
             ["chin-height"] = ((-0.8f, 0.4f), (-0.4f, 0.9f)),
-            ["neck-scale-horiz"] = ((-1f, 0.1f), (-0.3f, 1f)),
+            ["neck-scale-horiz"] = ((-1f, 0.1f), (-0.3f, 1f)),      // (round the base as corrected: its women's neck 3 sd thin, O3)
             ["head-scale-horiz"] = ((-0.9f, 0.45f), (-0.4f, 0.9f)),
             ["head-fat"] = ((-0.8f, 0.5f), (-0.6f, 0.8f)),
             ["eyebrows-trans"] = ((-0.2f, 1f), (-1f, 0.3f)),         // brows higher and finer on a woman, low and heavy on a man
@@ -223,8 +223,8 @@ namespace SecondFace.Core.Npc
             ["nose-hump"] = ((-0.9f, 0.4f), (-0.5f, 1f)),
             ["cheek-bones"] = ((-0.3f, 1f), (-0.8f, 0.6f)),
             ["cheek-volume"] = ((-0.3f, 0.9f), (-0.9f, 0.5f)),
-            ["mouth-upperlip-volume"] = ((-0.3f, 1f), (-1f, 0.75f)),  // a man's lips thinner than a woman's of his people, not thin
-            ["mouth-lowerlip-volume"] = ((-0.3f, 1f), (-1f, 0.75f)),
+            ["mouth-upperlip-volume"] = ((-0.6f, 1f), (-1f, 0.75f)),  // a man's lips thinner than a woman's of his people, not thin
+            ["mouth-lowerlip-volume"] = ((-0.6f, 1f), (-1f, 0.75f)),  // (an old woman's thin: the bases' lips are a woman's full ones, O3)
             ["eye-scale"] = ((-0.3f, 1f), (-1f, 0.5f)),
             ["forehead-scale-vert"] = ((-0.6f, 0.8f), (-0.8f, 0.6f)),
             ["brow-ridge"] = ((-1f, 0.15f), (-0.3f, 1f)),            // no brow ridge on a woman
@@ -235,12 +235,60 @@ namespace SecondFace.Core.Npc
         /// <summary>The range a sex's faces keep to on a slider (the whole range when it marks no sex).</summary>
         public static (float Lo, float Hi) Range(string id, bool male)
         {
-            // the real faces' range where they set the slider (R3), else the sex's rule
-            if (RealFaces.Range(id, male) is { } real) return real;
+            // round the base as corrected to real people (Faces.WomanBase, ManBase, O3), never past the slider's ends
+            var (lo, hi) = OwnRange(id, male);
+            var off = Faces.BaseOffset(id, male);
+            if (off == 0f) return (lo, hi);
+            var s = Slider(id);
+            return (Math.Max(lo + off, s?.Min ?? -1f), Math.Min(hi + off, s?.Max ?? 1f));
+        }
+
+        private static (float Lo, float Hi) OwnRange(string id, bool male)
+        {
+            // the real faces' range where they set the slider (R3), else the sex's rule (never the neck's or the skull's width:
+            // a photograph's fit sees neither the neck's girth nor the skull under the hair, and held to it the women's necks
+            // stayed 3 sd thin, O3)
+            if (!id.StartsWith("neck-") && id != "head-cranium" && RealFaces.Range(id, male) is { } real) return real;
             if (BySex.TryGetValue(id, out var r)) return male ? r.M : r.F;
             var s = Slider(id);
             return (s != null ? s.Min : -1f, s != null ? s.Max : 1f);
         }
+
+        /// <summary>The features (overhaul O2, docs/PEOPLE_REALISM.md §17): the eyes and lids, the brows, the nose, the mouth and
+        /// lips, the cheeks' fullness, the ears, the chin's cleft. A face's features come from the archetypes, coherent bundles
+        /// by people, sex, age and build, with a share of a real face's own difference, never solved to hit a measured ratio
+        /// (R3 solved them so: eleven of a face's sliders past 0.6, some past the sculpt's own end, and the faces read as
+        /// non-human, the owner, round 39). The structure (the head's size and shape, the face's outline, jaw, chin,
+        /// cheekbones, neck) is what the real measures solve.</summary>
+        public static readonly HashSet<string> Features = new()
+        {
+            "eye-bag", "eye-corner1", "eye-epicanthus", "eye-eyefold", "eye-height2", "eye-scale", "eyebrows-angle", "eyebrows-trans",
+            "nose-curve", "nose-flaring", "nose-hump", "nose-nostrils-width", "nose-point", "nose-point-width", "nose-scale-depth",
+            "nose-scale-horiz", "nose-scale-vert", "nose-volume", "nose-width1",
+            "mouth-angles", "mouth-cupidsbow", "mouth-laugh-lines", "mouth-lowerlip-height", "mouth-lowerlip-volume", "mouth-scale-horiz",
+            "mouth-trans", "mouth-upperlip-volume", "cheek-inner", "cheek-trans", "cheek-volume", "ear-flap", "ear-scale", "chin-cleft",
+        };
+
+        /// <summary>The range a slider stays natural in for generated faces (O1: each feature rendered alone on both bases from
+        /// -1 to +1 and judged by eye; alone, all read human across their range, but stacked several near their ends no longer
+        /// do, so features keep inside 0.8, and tighter where one alone already turns: the lids' opening and the eyes' size
+        /// stare past about +0.5, the mouth's corners are an expression past 0.3, the lower lip drops the mouth open past
+        /// +0.55, a drooping tip shows the nostrils past -0.5; the structure, the head's and the jaw's shapes, inside 0.35: at
+        /// 0.5 the head's single shapes made moon faces, O2). Round the bases as corrected to real people (Faces.WomanBase,
+        /// ManBase: the ranges move with the correction). The sculptor's own sliders keep their whole reach.</summary>
+        public static (float Lo, float Hi) Natural(string id) => !Features.Contains(id) ? (-0.35f, 0.35f) : id switch
+        {
+            "eye-height2" => (-0.7f, 0.45f),
+            "eye-scale" => (-0.7f, 0.5f),
+            "mouth-angles" => (-0.3f, 0.3f),
+            "mouth-lowerlip-height" => (-0.7f, 0.55f),
+            "nose-point" => (-0.5f, 0.7f),
+            _ => (-0.8f, 0.8f),
+        };
+
+        /// <summary>How far generated faces take any of the head's single shapes (round, square, oval...): at 0.5 a round or
+        /// square head read as a moon face (overhaul O2).</summary>
+        public const float HeadShapeCap = 0.3f;
 
         /// <summary>How far a sex's faces take the head's single shapes: a square, long or wide-jawed (triangular) head
         /// barely on a woman; a round one or a heart only softly on a man.</summary>

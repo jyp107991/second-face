@@ -145,7 +145,8 @@ def faces_table():
         L.append(f'        public static readonly float[] Hi_{sex} = {{ ' + ', '.join(f'{x:.3f}f' for x in np.minimum(hi + pad, bound)) + ' };')
     # the gate's 2D proportions check (gate.py face_model, without the age rule): the ratios it holds, the spread within a
     # people pooled per sex, and the distance from a people's mean that holds the real faces at its coverage
-    keys = [k for k in F if k != 'nose_len']
+    from gate import OUTLINE
+    keys = OUTLINE
     real = [f for f in json.load(open(os.path.join(HERE, 'fairface_shapes.json')))['faces'] if f['gap'] < 0.035]
     M = face_model(real, fit['space'], keys)
     L.append('        /// <summary>The 2D gate\'s proportions check (gate.py): the ratios it holds (indices into R), each sex\'s')

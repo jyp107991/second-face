@@ -14,21 +14,16 @@ namespace SecondFace.Core.Npc
     /// </summary>
     public static class Proportions
     {
-        /// <summary>The shapes the solver moves: the head's and the neck's size, the cheekbones, the eyes' spacing, the chin's
-        /// height, and the features the face's measured proportions turn on. The face's character (its shape types, the
-        /// nose's form, the lips' shape, the brows' angle) stays the archetype's.</summary>
+        /// <summary>The shapes the solver moves: the head's size, the skull's width, the vault's height and the neck. The face's shape (its outline, jaw, chin,
+        /// cheekbones) and its features are the archetype's (overhaul O2, docs/PEOPLE_REALISM.md §17: solved to the head's
+        /// measured sizes and the face's measured proportions, the head's single shapes widened and rounded every face, eleven
+        /// of its sliders past 0.6, and the faces read as non-human; with the shape left to the archetypes and only the size
+        /// solved they read as people).</summary>
         public static readonly string[] Free =
         {
-            "head-scale-horiz", "head-cranium", "head-scale-depth", "head-back-scale-depth", "head-scale-vert", "forehead-scale-vert", "chin-height",
-            "cheek-bones", "eye-trans", "neck-scale-horiz", "neck-scale-depth", "neck-scale-vert",
-            // and the features the face's proportions turn on (its width at the jaw, the eyes', nose's and mouth's size,
-            // the lips, the brows' height)
-            "chin-width", "chin-bones", "head-square", "head-fat", "eye-scale", "nose-scale-horiz", "nose-scale-vert",
-            // the round and oval types widen the cheeks more than the skull: traded only where the cheeks would pass the
-            // skull's width (R2: East and Southeast Asian faces)
-            "head-round", "head-oval",
-            "mouth-scale-horiz", "mouth-upperlip-volume", "mouth-lowerlip-volume", "mouth-lowerlip-height", "mouth-cupidsbow",
-            "eyebrows-trans",
+            "head-scale-horiz", "head-scale-vert", "head-scale-depth",
+            // the skull's width (not the face's: R2's skull-width shape), the vault's height, the neck
+            "head-cranium", "forehead-scale-vert", "neck-scale-horiz", "neck-scale-depth", "neck-scale-vert",
         };
 
         /// <summary>A free shape's range for a sex: <see cref="Limit"/> either way, but never a man's jaw on a woman (the
@@ -37,7 +32,15 @@ namespace SecondFace.Core.Npc
         {
             // the real faces' range where they set the shape (R3: the hand-written women's jaw rules were narrower than real
             // women's jaws), never past the limit
-            if (RealFaces.Range(id, male) is { } real) return (Math.Max(real.Lo, -Limit * Sculpt.Reach(id)), Math.Min(real.Hi, Limit * Sculpt.Reach(id)));
+            var limit = id == "head-scale-horiz" ? Limit : id.StartsWith("head-scale") ? DepthLimit
+                : id is "head-cranium" or "neck-scale-horiz" or "neck-scale-depth" ? BodyLimit : ShapeLimit;
+            // round the base as corrected to real people (Faces.WomanBase, ManBase, O3), never past the slider's own ends
+            var off = Faces.BaseOffset(id, male);
+            var s = Sculpt.Slider(id);
+            double min = s?.Min ?? -1, max = s?.Max ?? 1;
+            (double, double) Own(double lo, double hi) => (Math.Max(lo, min), Math.Min(hi, max));
+            if (!id.StartsWith("neck-") && id != "head-cranium" && RealFaces.Range(id, male) is { } real)
+                return Own(Math.Max(real.Lo, off - limit * Sculpt.Reach(id)), Math.Min(real.Hi, off + limit * Sculpt.Reach(id)));
             if (!male)
                 switch (id)
                 {
@@ -45,22 +48,28 @@ namespace SecondFace.Core.Npc
                     case "chin-width": return (-Limit, 0.2);
                     case "head-square": return (0, 0.3);
                 }
-            return (-Limit, Limit);
+            return Own(off - limit, off + limit);
         }
 
-        /// <summary>How far a free shape may go either way (a shape at its end distorts the mesh).</summary>
-        public const double Limit = 0.85;
+        /// <summary>How far the head's width may go either way: a size, not a shape (overhaul O2: at 0.85 the head's scales
+        /// made faces wide and round).</summary>
+        public const double Limit = 0.2;
+
+        /// <summary>How far the head's height and depth may go either way: further than its width (they draw the head out, not
+        /// the face round; held to <see cref="Limit"/>, short women's heads stayed 3 sd short, the stature's scale taking
+        /// their heads down with their bodies, O3).</summary>
+        public const double DepthLimit = 0.4;
+
+        /// <summary>How far the vault's height and the neck's length may go either way (they leave the face's shape as it
+        /// is).</summary>
+        public const double ShapeLimit = 0.35;
+
+        /// <summary>How far the skull's width and the neck's girth may go either way: further, since they leave the face as it
+        /// is and the bases start short of real people (the skulls 1.5 to 3 sd narrow, the women's necks 3 sd thin: O3).</summary>
+        public const double BodyLimit = 0.8;
 
         // the cost of moving a shape by its whole range, against a measure missed by one of the group's sd
         private const double Stay = 0.12;
-
-        /// <summary>The head's measures a face's proportions set (its cheekbones' breadth, its height, the pupils' spacing).</summary>
-        private static readonly int[] FaceMeasures = { 2, 3, 4 };
-
-        /// <summary>A real face's proportions against the head's measures in the solve, and how firmly the head's other
-        /// measures hold while the face is solved first (#116: measured on 960 draws, the spread and the sexes' difference
-        /// nearest real people's with every head inside the real region).</summary>
-        private const double FaceWeight = 3.0, PreHold = 0.3;
 
         /// <summary>The neck's shapes answer to the neck alone, its girth and the head and neck's height (fitted to the other
         /// measures as well, the solver found combinations the model got wrong: R2).</summary>
@@ -104,9 +113,20 @@ namespace SecondFace.Core.Npc
         public static double[] Predict(PlayerLook look, bool male)
         {
             var m = Base(Looks.Shape(look), male);
-            var s = Bodies.ScaleOf(look);
-            for (var i = 0; i < K; i++) m[i] *= s;
+            var f = Factors(look);
+            for (var i = 0; i < K; i++) m[i] *= f[i];
             return m;
+        }
+
+        /// <summary>Each measure's scale from the base's: the body's, and on the head the head's own on top
+        /// (<see cref="Bodies.HeadScaleOf"/>; the head and neck's height takes it over the vault, under half).</summary>
+        public static double[] Factors(PlayerLook look)
+        {
+            double s = Bodies.ScaleOf(look), h = Bodies.HeadScaleOf(look);
+            var f = new double[K];
+            for (var i = 0; i < K; i++)
+                f[i] = s * (i is Hb or Hl or Zy or Fh or Ipd or Vault ? h : i == HeadNeck ? 1 + 0.45 * (h - 1) : 1);
+            return f;
         }
 
         /// <summary>The body's height (mm) at the base's scale with the person's shapes: a longer neck or head makes a taller
@@ -159,7 +179,7 @@ namespace SecondFace.Core.Npc
             double d2 = 0;
             for (int a = 0, i = 0; i < K; i++)
             {
-                if (i == Stature) continue;
+                if (i == Stature || i == Fh) continue;
                 var e = m[i] - mu[a];
                 for (var b = 0; b < a; b++) e -= L[a, b] * z[b];
                 z[a] = e / L[a, a];
@@ -180,7 +200,7 @@ namespace SecondFace.Core.Npc
             var sd = Math.Sqrt(C(Stature, Stature));
             var s = Math.Clamp(stature, g.Mean[Stature] - 2.5 * sd, g.Mean[Stature] + 2.5 * sd);
             var idx = new List<int>();
-            for (var i = 0; i < K; i++) if (i != Stature) idx.Add(i);
+            for (var i = 0; i < K; i++) if (i != Stature && i != Fh) idx.Add(i);   // (the face's height not held, Unheld)
             var n = idx.Count;
             var mu = new double[n];
             var cov = new double[n, n];
@@ -282,86 +302,6 @@ namespace SecondFace.Core.Npc
             return At(lo, kb);
         }
 
-        /// <summary>The FairFace group of a sex, people and age (as tools/unity/people/gate/gate.py chooses it: the age band
-        /// when it has the faces, else all ages), or null.</summary>
-        public static ProportionsData.Faces2 FaceGroup(bool male, string cluster, double age)
-        {
-            var race = cluster switch
-            {
-                "west_african" or "east_african" => "black",
-                "latin_american" or "indigenous_american" => "latino",
-                "east_asian" => "east_asian",
-                "southeast_asian" => "southeast_asian",
-                "south_asian" => "indian",
-                _ => "white",
-            };
-            var band = age < 30 ? "20-29" : age < 40 ? "30-39" : age < 50 ? "40-49" : age < 60 ? "50-59" : "60+";
-            var sex = male ? "m" : "f";
-            return ProportionsData.FaceGroups.TryGetValue($"{race}/{sex}/{band}", out var g) ? g
-                : ProportionsData.FaceGroups.TryGetValue($"{race}/{sex}/all", out g) ? g : null;
-        }
-
-        /// <summary>The person's face proportions (the landmark ratios of tools/unity/people/gate/landmarks.py), drawn from
-        /// the real faces of their group (its covariance, so the proportions vary together as real faces' do), inside the
-        /// group's 5th-95th percentiles on each. The ratios in <paramref name="given"/> (by index) are held at their values (kept
-        /// in range) and the rest drawn given them: the head's measures already set them.</summary>
-        public static double[] Target2(ProportionsData.Faces2 g, uint seed, IReadOnlyDictionary<int, double> given = null)
-        {
-            var n = g.Mean.Length;
-            double Pad(int i) => 0.06 * (g.P95[i] - g.P5[i]);
-            var mu = (double[])g.Mean.Clone();
-            var cov = new double[n, n];
-            for (var i = 0; i < n; i++)
-                for (var j = 0; j < n; j++) cov[i, j] = g.Cov[i * n + j];
-            if (given != null)
-                foreach (var kv in given)
-                {
-                    // the Gaussian given each held ratio in turn: its mean moved by the regression on it, its spread what is
-                    // left (one at a time is the same as all at once)
-                    var c = kv.Key;
-                    var v = Math.Clamp(kv.Value, g.P5[c] + Pad(c), g.P95[c] - Pad(c));
-                    var cc = cov[c, c];
-                    if (cc < 1e-12) continue;
-                    var col = new double[n];
-                    for (var i = 0; i < n; i++) col[i] = cov[i, c];
-                    var d = v - mu[c];
-                    for (var i = 0; i < n; i++)
-                    {
-                        mu[i] += col[i] / cc * d;
-                        for (var j = 0; j < n; j++) cov[i, j] -= col[i] * col[j] / cc;
-                    }
-                    mu[c] = v;
-                }
-            var L = Cholesky(cov);
-            var rng = new Rng(seed ^ 0x9e3779b9u);
-            var z = new double[n];
-            for (var i = 0; i < n; i++) z[i] = Bodies.Normal(rng);
-            double[] At(double a)
-            {
-                var t = new double[n];
-                for (var i = 0; i < n; i++)
-                {
-                    t[i] = mu[i];
-                    for (var j = 0; j <= i; j++) t[i] += a * L[i, j] * z[j];
-                }
-                return t;
-            }
-            bool Fits(double[] t)
-            {
-                for (var i = 0; i < n; i++)
-                    if (t[i] < g.P5[i] + Pad(i) - 1e-9 || t[i] > g.P95[i] - Pad(i) + 1e-9) return false;
-                return true;
-            }
-            if (Fits(At(1))) return At(1);
-            double lo = 0, hi = 1;
-            for (var k = 0; k < 14; k++)
-            {
-                var a = (lo + hi) / 2;
-                if (Fits(At(a))) lo = a; else hi = a;
-            }
-            return At(lo);
-        }
-
         /// <summary>The person's face proportions as the bases' response predicts them from their shapes, or null without
         /// the 2D response.</summary>
         public static double[] Predict2(PlayerLook look, bool male)
@@ -375,8 +315,7 @@ namespace SecondFace.Core.Npc
         }
 
         /// <summary>Solves the person's <see cref="Free"/> shapes so their head and neck take their own drawn measures
-        /// (<see cref="Target"/>) and their face its own drawn proportions (<see cref="Target2"/>), each shape kept near
-        /// the archetype's value.</summary>
+        /// (<see cref="Target"/>), each shape kept near the archetype's value.</summary>
         public static void Fit(PlayerLook look, bool male, string cluster, double age, uint seed)
         {
             if (look == null) return;
@@ -395,11 +334,8 @@ namespace SecondFace.Core.Npc
             {
                 look.Face = new Dictionary<string, float>(archetype);
                 var s = attempt == 0 ? seed : unchecked(seed * 2654435761u + (uint)attempt * 40503u);
-                // (the face first in the first half of the draws; a face whose own measures leave no head inside the real
-                // region is fitted head first in the rest, as every face was before #116)
-                var faceFirst = attempt < Attempts / 2;
-                FitOnce(look, male, cluster, age, s, anchors, faceFirst);
-                FitOnce(look, male, cluster, age, s, anchors, faceFirst);
+                FitOnce(look, male, cluster, age, s, anchors);
+                FitOnce(look, male, cluster, age, s, anchors);
                 var miss = Miss(look, male, cluster, age);
                 if (miss < bestMiss) { bestMiss = miss; best = look.Face; }
                 if (miss <= 0) break;
@@ -410,33 +346,23 @@ namespace SecondFace.Core.Npc
         /// <summary>How many draws a person gets to cohere with real people.</summary>
         public const int Attempts = 10;
 
-        /// <summary>How far a person's predicted measures and face proportions fall outside the regions that hold the real
-        /// people of their group (the gate's checks: <see cref="Joint"/> against the group's limit, and the face's proportions
-        /// against the real faces at rest, <see cref="RealFaces.Distance2"/>), each less its room for the response model's
-        /// error and in shares of its limit; 0 when both are inside.</summary>
+        /// <summary>How far a person's predicted measures fall outside the region that holds the real people of their group
+        /// (the gate's 3D check: <see cref="Joint"/> against the group's limit, less its room for the response model's error),
+        /// in shares of its limit; 0 inside. The face's proportions are the archetype's and the gate's 2D check guards them.</summary>
         public static double Miss(PlayerLook look, bool male, string cluster, double age)
         {
             var g = ProportionsData.Groups[Group(male, cluster)];
-            var miss = Math.Max(0, Joint(Predict(look, male), g) - (g.Joint - Room3)) / g.Joint;
-            var m2 = Predict2(look, male);
-            if (m2 != null)
-            {
-                var (d, lim) = RealFaces.Distance2(m2, male, cluster);
-                miss += Math.Max(0, d - (lim - Room2)) / lim;
-            }
-            return miss;
+            return Math.Max(0, Joint(Predict(look, male), g) - (g.Joint - Room3)) / g.Joint;
         }
 
 
-        private static void FitOnce(PlayerLook look, bool male, string cluster, double age, uint seed, Dictionary<string, float> anchors, bool faceFirst = true)
+        private static void FitOnce(PlayerLook look, bool male, string cluster, double age, uint seed, Dictionary<string, float> anchors)
         {
             var g = ProportionsData.Groups[Group(male, cluster)];
             var stature = StatureMm(look, male);
-            var scale = Bodies.ScaleOf(look);
+            var scale = Factors(look);
             var target = Target(male, cluster, stature, seed, Bmi(look));
-            var faces = (male ? ProportionsData.Neutral2_m : ProportionsData.Neutral2_f) != null ? FaceGroup(male, cluster, age) : null;
-            var n2 = faces != null ? ProportionsData.Ratios2.Length : 0;
-            var D = K + n2;
+            const int D = K;
 
             // what the shapes the solver leaves give, and the free shapes' own response (3D in base mm, then 2D)
             var fixedShape = Looks.Shape(look);
@@ -444,8 +370,8 @@ namespace SecondFace.Core.Npc
             var starts = new List<double>();
             foreach (var id in Free)
             {
-                var p = Response(id + "_p", male, n2 > 0);
-                var n = Response(id + "_n", male, n2 > 0);
+                var p = Response(id + "_p", male, false);
+                var n = Response(id + "_n", male, false);
                 if (p == null && n == null) continue;
                 var a = anchors[id];
                 var start = fixedShape.TryGetValue(id, out var v) ? v : 0f;
@@ -456,16 +382,19 @@ namespace SecondFace.Core.Npc
                 free.Add((id, p ?? new double[D], n ?? new double[D], Math.Clamp(a, lo, hi), lo, hi));
                 starts.Add(Math.Clamp(start, lo, hi));
             }
-            var baseM = Base(fixedShape, male, n2 > 0);
+            var baseM = Base(fixedShape, male, false);
             // the targets in the base's units (the measures over the stature's scale), each weighed by the group's spread
             var t = new double[D];
             var w = new double[D];
             for (var i = 0; i < K; i++)
             {
                 if (i == Stature) continue;   // set by the scale, not by shapes
-                t[i] = target[i] / scale;
-                var sd = Math.Sqrt(g.Cov[i * K + i]) / scale;
+                t[i] = target[i] / scale[i];
+                var sd = Math.Sqrt(g.Cov[i * K + i]) / scale[i];
                 w[i] = 1 / (sd * sd);
+                // (the face's height not: the mesh's sellion and a caliper's differ with the nose's bridge; the photographs hold
+                // the same anatomy, measured alike on ours and on real faces, overhaul O2)
+                if (i == Fh) w[i] = 0;
             }
             var x = starts.ToArray();
             double[] Solve()
@@ -527,52 +456,7 @@ namespace SecondFace.Core.Npc
                 for (var i = 0; i < D; i++) pred[i] = res[i] + t[i];
                 return pred;
             }
-            // a face drawn from real faces (R3) is solved first against its own proportions, the head's measures that the face
-            // itself sets (FaceMeasures) left free; the head and neck are then drawn given those, with the stature (#116: drawn
-            // apart, from soldiers' heads and photographs' faces, the two split the difference and our faces kept 0.6-0.8 of
-            // real people's spread in those proportions)
-            var own = n2 > 0 ? RealFaces.Ratios(look.FaceSource, male, cluster, age) : null;
-            if (own != null && faceFirst)
-            {
-                // (the face's proportions weigh three times the head's measures: held equal, men's faces came out shorter for their
-                // width than real men's, the sexes' difference gone)
-                for (var i = 0; i < n2 && i < own.Length; i++)
-                {
-                    t[K + i] = own[i];
-                    w[K + i] = FaceWeight / faces.Cov[i * n2 + i];
-                }
-                // first the face, the head's other measures held lightly (they size the head; held fully, a broad skull
-                // widened the face against its own proportions)
-                var w3 = (double[])w.Clone();
-                for (var i = 0; i < K; i++) w[i] = Array.IndexOf(FaceMeasures, i) >= 0 ? 0 : w[i] * PreHold;
-                var pre = Solve();
-                Array.Copy(w3, w, K);
-                var seen = new Dictionary<int, double>();
-                foreach (var i in FaceMeasures) seen[i] = pre[i] * scale;
-                var given = Target(male, cluster, stature, seed, Bmi(look), seen);
-                for (var i = 0; i < K; i++)
-                    if (i != Stature) t[i] = given[i] / scale;
-                Solve();
-                for (var j = 0; j < x.Length; j++) look.Face[free[j].Id] = (float)Math.Round(x[j], 3);
-                return;
-            }
-            // the head and neck first; then the face's proportions, drawn given the height over width the head now has
-            var head = Solve();
-            if (n2 > 0)
-            {
-                // the face's height over width and the inner eye spacing over width follow from the head's measures
-                var target2 = Target2(faces, seed, new Dictionary<int, double> { [0] = head[K], [2] = head[K + 2] });
-                // a face drawn from real faces keeps their own proportions (R3)
-                if (own != null)
-                    for (var i = 0; i < n2 && i < own.Length; i++)
-                        target2[i] = own[i];
-                for (var i = 0; i < n2; i++)
-                {
-                    t[K + i] = target2[i];
-                    w[K + i] = 1 / faces.Cov[i * n2 + i];
-                }
-                Solve();
-            }
+            Solve();
             for (var j = 0; j < x.Length; j++) look.Face[free[j].Id] = (float)Math.Round(x[j], 3);
         }
 

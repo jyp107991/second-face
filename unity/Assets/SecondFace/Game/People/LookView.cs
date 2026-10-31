@@ -43,6 +43,10 @@ namespace SecondFace.Game.People
         {
             if (body == null || look == null) return;
             Bodies.Finish(look);   // a fit left for when the person is first shown
+            // the head's own size against the body's scale (real heads hardly grow with the stature, Bodies.HeadScaleOf)
+            var anim = body.GetComponentInChildren<Animator>();
+            var headBone = anim != null && anim.isHuman ? anim.GetBoneTransform(HumanBodyBones.Head) : null;
+            if (headBone != null) headBone.localScale = Vector3.one * Bodies.HeadScaleOf(look);
             var wardrobe = body.GetComponentInChildren<Wardrobe>();
             if (wardrobe != null)
             {

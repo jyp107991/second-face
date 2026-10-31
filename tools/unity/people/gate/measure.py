@@ -183,20 +183,40 @@ def measure(path, keep=False):
     hl = glab[2] - opis[2]
     cheek = (y < -0.005) & (y > -0.035) & (z > -0.055)
     bizyg = x[cheek].max() - x[cheek].min()
-    # sellion: the nose root's deepest midline point near the eyes; menton: the chin's lowest point in front of the throat
-    root = mid & (y > -0.012) & (y < 0.02) & (z > glab[2] - 0.035)
-    sell = P[root][np.argmin(z[root])]
+    # sellion: the deepest point of the nasofrontal angle, the midline profile's point farthest behind the line from the
+    # glabella to the nose's tip (overhaul O2: the most backward point within a window of the eyes' height slid down a low,
+    # flat bridge to the window's foot, and our faces measured 16 mm short of real ones where photographs found them right);
+    # menton: the chin's lowest point in front of the throat
+    tipz = mid & (y < 0.0) & (y > -0.06)
+    tip = P[tipz][np.argmax(z[tipz])]
+    # (the profile: the most forward midline point in each millimetre of height between them, in the upper 45 %)
+    prof = []
+    for yb in np.arange(glab[1] - 0.45 * (glab[1] - tip[1]), glab[1], 0.001):   # (its upper part: a scooped bridge's own hollow is not the root)
+        k = mid & (y >= yb) & (y < yb + 0.001)
+        if k.any(): prof.append(P[k][np.argmax(z[k])])
+    prof = np.array(prof)
+    u = np.array([tip[1] - glab[1], tip[2] - glab[2]]); u /= np.linalg.norm(u)
+    behind = (prof[:, 1] - glab[1]) * u[1] - (prof[:, 2] - glab[2]) * u[0]
+    # (the points near the deepest weighed in: on a flat bridge a single deepest point jumped a centimetre between faces)
+    dep = np.abs(behind)
+    wts = np.exp((dep - dep.max()) / 0.0006)
+    sell = (prof * wts[:, None]).sum(0) / wts.sum()
     ment = menton(P, T, sell)
     face_h = sell[1] - ment[1]
-    # neck: the girth 3.5 cm under the menton (ANSUR takes it just under the larynx), the cut's hull within 9 cm of the
-    # neck's middle. A fixed height on purpose: a woman's neck 7.6 cm wide there, or a man's shoulders rising to the jaw,
-    # is what the gate must catch (the least girth lower down hid both)
-    yn = ment[1] - 0.035
-    Q = cut(P, T, yn)
-    nz = np.median(Q[:, 2]) if len(Q) else 0
-    Q = Q[(np.abs(Q[:, 0]) < 0.09) & (np.abs(Q[:, 2] - nz) < 0.09)]
-    neck = hull_perimeter(Q[:, [0, 2]])
     sst = suprasternale(P, T, ment)
+    # neck: the least girth of the upper neck, from 2 cm under the menton to the neck's middle (ANSUR takes it just under the
+    # larynx), each cut's hull within 9 cm of the neck's middle (overhaul O2: cut at a fixed 3.5 cm under the menton, a
+    # short neck's cut fell on its flare to the shoulders, the girth grew 68 mm with a longer chin, and every neck was
+    # thinned to make up for it)
+    neck, yn, Q = None, None, None
+    for yc in np.arange(ment[1] - 0.02, (ment[1] + sst[1]) / 2 - 1e-6, -0.004):
+        q = cut(P, T, yc)
+        if not len(q): continue
+        nz = np.median(q[:, 2])
+        q = q[(np.abs(q[:, 0]) < 0.09) & (np.abs(q[:, 2] - nz) < 0.09)]
+        if len(q) < 3: continue
+        g = hull_perimeter(q[:, [0, 2]])
+        if neck is None or g < neck: neck, yn, Q = g, yc, q
     vertex = P[:, 1].max()
     s = 1000.0 * scale
     out = {'headbreadth': breadth * s, 'headlength': hl * s, 'bizygomaticbreadth': bizyg * s, 'mentonsellionlength': face_h * s,

@@ -296,6 +296,50 @@ namespace SecondFace.Tests
             Assert.That(n, Is.GreaterThan(0));
         }
 
+        /// <summary>Looks rendered as written (overhaul §17, judged by eye): SF_PROBE names a JSON file of looks by name, each
+        /// {"body": "f"|"m", "face": {slider: value}, "shape": {slider: value}, "hair": id, "skin": tone}, shot from the front,
+        /// three-quarters and the side in the gate's studio into test-results/probe/&lt;name&gt;_&lt;view&gt;.png.</summary>
+        [UnityTest, Timeout(1800000), Category("Heavy")]   // a tool, run by name in the session's editor
+        public IEnumerator Probe()
+        {
+            GameObject F = null, M = null;
+#if UNITY_EDITOR
+            F = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_f.prefab");
+            M = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_m.prefab");
+#endif
+            var path = System.Environment.GetEnvironmentVariable("SF_PROBE");
+            if (F == null || M == null || string.IsNullOrEmpty(path) || !File.Exists(path)) { Assert.Ignore("no bases or no SF_PROBE file"); yield break; }
+            UiTests.Content();
+            var looks = JsonConvert.DeserializeObject<Dictionary<string, ProbeLook>>(File.ReadAllText(path));
+            var studio = new Studio();
+            var n = 0;
+            foreach (var (name, p) in looks)
+            {
+                var male = p.body == "m";
+                var look = new SecondFace.Core.Npc.PlayerLook { Body = male ? "m" : "f", Hair = p.hair, Skin = p.skin };
+                if (p.face != null) foreach (var kv in p.face) look.Face[kv.Key] = kv.Value;
+                if (p.shape != null) foreach (var kv in p.shape) look.Shape[kv.Key] = kv.Value;
+                var go = Object.Instantiate(male ? M : F, new Vector3(700f + n * 3f, 0f, 0f), Quaternion.identity);
+                SecondFace.Game.People.LookView.Apply(go, look);
+                yield return null;
+                if (Measure(go, 1f) == null) { Object.Destroy(go); continue; }
+                studio.Meter = Studio.MeterFor(look);
+                foreach (var (view, yaw) in new[] { ("front", 0f), ("three", 35f), ("side", 85f) })
+                    studio.Shoot(go, $"{name}_{view}", "probe", 1.1f, yaw, 0f);
+                n++;
+                Object.Destroy(go);
+            }
+            studio.Dispose();
+            Assert.That(n, Is.GreaterThan(0));
+        }
+
+        private sealed class ProbeLook
+        {
+            public string body, hair;
+            public float skin;
+            public Dictionary<string, float> face, shape;
+        }
+
         /// <summary>The hair and the face up close (R5): a few of the sample people (SF_HAIR_IDS, "cluster_sex_age_k" each,
         /// comma-separated; a default spread of hairs, colours and ages without it) from the front, three-quarters and the
         /// side at 0.95 m in the gate's studio, into test-results/hair: the hairline, the strands and the grey seen as the

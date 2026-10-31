@@ -83,6 +83,10 @@ def distinct(report, A, F, people):
 
 SHAPE_RACES = {'mediterranean': ('white', 'middle_eastern')}
 COVER = 0.975   # the share of real people of a group each part of the gate (3D, 2D) passes
+# the face's proportions the gate holds: its outline (height over width, the jaw's width, the eyes' spacing, the lower face's
+# share); the features' proportions (the eyes', nose's, mouth's and lips' size, the brows' height) and the whole landmark
+# shape are notes (overhaul O2, docs/PEOPLE_REALISM.md §17: held, they bent each face's features to a photograph's)
+OUTLINE = ['face_hw', 'jaw_face', 'icd_face', 'lower_face']
 
 
 def cond_dist(g, m):
@@ -97,7 +101,8 @@ def face_model(real, space, keys, apparent=None):
     proportions and of the whole shape (shapes.py, in the sex's whitened shape space, faces_fit.json), the spread within a
     people pooled over the peoples (one covariance per sex: a people has only 34-91 such faces), each real face's distance
     from its people's mean held out of that mean; with apparent.py's readings, each age class's real apparent ages. One
-    coverage q for the three checks, found so that COVER of the real faces with all three pass all three."""
+    coverage q for the checks (the proportions and the age; the whole shape is a note), found so that COVER of the real
+    faces pass them."""
     import numpy as np
     from shapes import symmetric
     ages = {}
@@ -134,7 +139,7 @@ def face_model(real, space, keys, apparent=None):
                 if a is not None and v is not None: A[j] = abs(2 * np.searchsorted(v, a[1]) / len(v) - 1)
         has = ~np.isnan(A) if ages else np.ones(len(fs), bool)
         def passes(q):
-            ok = (DR <= np.quantile(DR, q)) & (DS <= np.quantile(DS, q))
+            ok = DR <= np.quantile(DR, q)
             if ages: ok &= A <= q
             return ok[has].mean()
         lo, hi = COVER, 1.0
@@ -165,7 +170,7 @@ def face_check(out, f2, her, sex, model, keys):
         z = M['C'] @ (symmetric(f2['shape']) - M['mu']) / M['sd']
         d_s = float(np.linalg.norm((z - mZ) / M['sZ']))
         out['shape'] = round(d_s, 2)
-        if d_s > M['lim_s']: out['fails'].append(('2d.shape', round(d_s, 2), 0, round(M['lim_s'], 2)))
+        if d_s > M['lim_s']: out['notes'].append(('2d.shape', round(d_s, 2), 0, round(M['lim_s'], 2)))
 
 
 def age_check(out, ap, model):
@@ -224,8 +229,8 @@ def main(results):
     report, fails_by, notes_by = [], {}, {}
     ap_p = os.path.join(results, 'people_apparent.json')
     ap = json.load(open(ap_p)) if os.path.exists(ap_p) else None
-    # (nose length and lower face over face height add up to one: one of them)
-    keys = [k for k in F['ratios'] if k != 'nose_len']
+    # the outline's proportions (OUTLINE); the features' are noted with the single measures below
+    keys = OUTLINE
     real = [f for f in json.load(open(os.path.join(HERE, 'fairface_shapes.json')))['faces'] if f['gap'] < 0.035]
     model = face_model(real, json.load(open(os.path.join(HERE, 'faces_fit.json')))['space'], keys, ap)
     for p in people:

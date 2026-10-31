@@ -62,21 +62,24 @@ namespace SecondFace.Tests
                     Assert.That(back.B, Is.EqualTo(lab.B).Within(0.05));
                 }
             // the categories as dermatology draws them (ITA): a north European's light to intermediate, a west African's dark
-            var fair = Bodies.For("npc_sc_ita_f", false, 30, "clerk", ancestry: "north_european");
-            var dark = Bodies.For("npc_sc_ita_d", true, 30, "clerk", ancestry: "west_african");
-            Assert.That(SkinColour.Ita(SkinColour.Lab(fair.Skin, fair.Undertone)), Is.InRange(20, 60));
-            Assert.That(SkinColour.Ita(SkinColour.Lab(dark.Skin, dark.Undertone)), Is.LessThan(-30));
+            // (the peoples' means, over a dozen people each: one person is one draw of their people's own spread, overhaul O2)
+            var fair = Enumerable.Range(0, 12).Select(i => Bodies.For($"npc_sc_ita_f{i}", false, 30, "clerk", ancestry: "north_european")).ToList();
+            var dark = Enumerable.Range(0, 12).Select(i => Bodies.For($"npc_sc_ita_d{i}", true, 30, "clerk", ancestry: "west_african")).ToList();
+            Assert.That(fair.Average(l => SkinColour.Ita(SkinColour.Lab(l.Skin, l.Undertone))), Is.InRange(20, 60));
+            Assert.That(dark.Average(l => SkinColour.Ita(SkinColour.Lab(l.Skin, l.Undertone))), Is.LessThan(-30));
         }
 
         [Test]
         public void TheWhiteOfTheEyeDarkensAndWarmsWithTheSkin()
         {
             // (R4c: a photograph's white of the eye 1.13 times the skin round it on light skin, 1.44 on the darkest)
-            var fair = Looks.EyeWhite(Bodies.For("npc_sc_ew_f", false, 30, "clerk", ancestry: "north_european"));
-            var dark = Looks.EyeWhite(Bodies.For("npc_sc_ew_d", false, 30, "clerk", ancestry: "west_african"));
-            Assert.That(fair.R, Is.EqualTo(0.62f).Within(0.05f), "duller than a bare texture's for everyone");
-            Assert.That(dark.R, Is.LessThan(fair.R * 0.7f), "pigmented on dark skin");
-            Assert.That(dark.B / dark.R, Is.LessThan(fair.B / fair.R), "and warmer");
+            // (the peoples' means over a dozen people each: one person is one draw of their people's skin, overhaul O2)
+            var fairs = Enumerable.Range(0, 12).Select(i => Looks.EyeWhite(Bodies.For($"npc_sc_ew_f{i}", false, 30, "clerk", ancestry: "north_european"))).ToList();
+            var darks = Enumerable.Range(0, 12).Select(i => Looks.EyeWhite(Bodies.For($"npc_sc_ew_d{i}", false, 30, "clerk", ancestry: "west_african"))).ToList();
+            float fr = fairs.Average(c => c.R), fb = fairs.Average(c => c.B), dr = darks.Average(c => c.R), db = darks.Average(c => c.B);
+            Assert.That(fr, Is.EqualTo(0.62f).Within(0.05f), "duller than a bare texture's for everyone");
+            Assert.That(dr, Is.LessThan(fr * 0.7f), "pigmented on dark skin");
+            Assert.That(db / dr, Is.LessThan(fb / fr), "and warmer");
         }
 
         [Test]

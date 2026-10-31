@@ -81,7 +81,10 @@ namespace SecondFace.Tests
             var tol = 3.0 * Math.Sqrt(real.Se * real.Se + ours.Se * ours.Se);
             var say = $"{what}: ours {ours.Gap / sd:F2} sd against real {real.Gap / sd:F2} (within {tol / sd:F2})";
             Assert.That(Math.Abs(ours.Gap - real.Gap), Is.LessThanOrEqualTo(tol), say);
-            Assert.That(Math.Sign(ours.Gap), Is.EqualTo(Math.Sign(real.Gap)), say);
+            // the same way round, where either gap is clearly more than nothing (overhaul O2: a real gap of 0.16 sd and ours of
+            // -0.03, both inside the tolerance of none, are the same finding)
+            if (Math.Abs(ours.Gap) > tol || Math.Abs(real.Gap) > tol)
+                Assert.That(Math.Sign(ours.Gap), Is.EqualTo(Math.Sign(real.Gap)), say);
         }
 
         private static List<double> Col(IEnumerable<double[]> xs, int k) => xs.Select(x => x[k]).ToList();
@@ -134,8 +137,10 @@ namespace SecondFace.Tests
                 var w = Draw(cluster, false, 200);
                 var m = Draw(cluster, true, 200);
                 Assert.That(w.All(f => f.Values["brow-ridge"] <= 0.15f), Is.True, $"no brow ridge on a woman ({cluster})");
-                Assert.That(Mean(m, "brow-ridge") - Mean(w, "brow-ridge"), Is.GreaterThan(0.6), cluster);
-                Assert.That(Mean(w, "mouth-upperlip-volume") - Mean(m, "mouth-upperlip-volume"), Is.GreaterThan(0.3), cluster);
+                // (inside the structure's natural range, ±0.35: O1)
+                Assert.That(Mean(m, "brow-ridge") - Mean(w, "brow-ridge"), Is.GreaterThan(0.3), cluster);
+                // (a woman's fuller lips are her base's own, measured above as real faces' lips_face: the bases' gap alone a
+                // real sd and a half, so the sliders take some of it back, O3)
             }
         }
 
@@ -148,14 +153,19 @@ namespace SecondFace.Tests
                 var north = Draw("north_european", male, 300);
                 var east = Draw("east_asian", male, 300);
                 // the sliders a frontal face does not show: flared noses, low and projecting, full lips carried forward
-                Assert.That(Mean(west, "nose-flaring") - Mean(north, "nose-flaring"), Is.GreaterThan(0.6));
+                // (the frontal ones at the size the archetypes keep since their calibration to real faces' measured gaps,
+                // overhaul O2: written by hand at 0.6, west African noses measured 2.5 real sds wider than north Europeans'
+                // and lips 2.7 fuller, where real faces differ by 0.5 and 1.4; the bases' own ancestry shapes carry most of
+                // it, body-african alone a lips' gap of a real sd)
+                Assert.That(Mean(west, "nose-flaring") - Mean(north, "nose-flaring"), Is.GreaterThan(0.1));   // (the calibration, twice: O2)
                 Assert.That(Mean(north, "nose-scale-depth") - Mean(west, "nose-scale-depth"), Is.GreaterThan(0.6));
-                Assert.That(Mean(west, "mouth-upperlip-volume") - Mean(north, "mouth-upperlip-volume"), Is.GreaterThan(0.6));
+                Assert.That(Mean(west, "mouth-upperlip-volume") - Mean(north, "mouth-upperlip-volume"), Is.GreaterThan(0.2));
                 Assert.That(Mean(west, "mouth-trans") - Mean(north, "mouth-trans"), Is.GreaterThan(0.5));
                 // a low crease and a low bridge
                 Assert.That(Mean(north, "eye-eyefold") - Mean(east, "eye-eyefold"), Is.GreaterThan(0.4));
                 Assert.That(Mean(north, "nose-scale-depth") - Mean(east, "nose-scale-depth"), Is.GreaterThan(0.7));
-                Assert.That(Mean(north, "brow-ridge") - Mean(east, "brow-ridge"), Is.GreaterThan(0.5));
+                // (inside the structure's natural range, ±0.35, O1, and a woman's brow ridge only ever slight)
+                Assert.That(Mean(north, "brow-ridge") - Mean(east, "brow-ridge"), Is.GreaterThan(male ? 0.3 : 0.2));
                 // and within a people, the spread is small next to the gaps between peoples
                 var spread = Math.Sqrt(west.Average(f => Math.Pow(f.Values["mouth-upperlip-volume"] - Mean(west, "mouth-upperlip-volume"), 2)));
                 Assert.That(spread, Is.LessThan(0.25), "a people's own spread");
@@ -174,9 +184,8 @@ namespace SecondFace.Tests
                     }
                 }
             }
-            // the owner's example: a black man with very thin lips is unlikely
-            var men = Draw("west_african", true, 500, seed: 3);
-            Assert.That(men.Count(f => f.Values["mouth-upperlip-volume"] < 0f), Is.LessThan(10));
+            // the owner's example: a black man with very thin lips is unlikely (as the lips are measured: the base's own
+            // ancestry shape gives a west African man's lips a real sd of fullness, so his slider may sit under nought, O3)
             var lips = R("lips_face");
             var thin = RealOf("west_african", true).Select(f => f.R[lips]).OrderBy(x => x).ToArray()[0];
             Assert.That(Measured("west_african", true, 200).Count(x => x[lips] < thin), Is.LessThan(10), "lips thinner than any real west African man's");
@@ -199,7 +208,8 @@ namespace SecondFace.Tests
                 // girth with the body's mass is the head's measures' (ProportionsTests.AHeavyOrMuscledBodyHasAThickerNeck)
                 var heavy = Draw(cluster, false, 200, build: 0.9);
                 var thin = Draw(cluster, false, 200, build: -0.9);
-                Assert.That(Mean(heavy, "head-fat") - Mean(thin, "head-fat"), Is.GreaterThan(0.6), cluster);
+                // (the head's fullness inside its natural range, ±0.35: past it faces bloat, O1)
+                Assert.That(Mean(heavy, "head-fat") - Mean(thin, "head-fat"), Is.GreaterThan(0.45), cluster);
                 Assert.That(Mean(heavy, "cheek-volume") - Mean(thin, "cheek-volume"), Is.GreaterThan(0.4), cluster);
                 Assert.That(Mean(heavy, "neck-double"), Is.GreaterThan(0.15));
             }
@@ -212,7 +222,9 @@ namespace SecondFace.Tests
             var young = Draw("mediterranean", false, 200, age: 22);
             var old = Draw("mediterranean", false, 200, age: 62);
             Assert.That(Mean(old, "eye-bag") - Mean(young, "eye-bag"), Is.GreaterThan(0.45));
-            Assert.That(Mean(young, "mouth-upperlip-volume") - Mean(old, "mouth-upperlip-volume"), Is.GreaterThan(0.3), "lips thin");
+            // (the lips' thinning as the photographs measure it is held below, lips_face; the slider's own share of it, with the
+            // real faces' share on top since O2, at least a quarter)
+            Assert.That(Mean(young, "mouth-upperlip-volume") - Mean(old, "mouth-upperlip-volume"), Is.GreaterThan(0.25), "lips thin");
             Assert.That(Mean(old, "mouth-laugh-lines") - Mean(young, "mouth-laugh-lines"), Is.GreaterThan(0.5));
             // what it shows, as the real faces of the years: the lips thinner and the eyes smaller with age (across peoples
             // and sexes: FairFace's age classes are small)
@@ -275,7 +287,7 @@ namespace SecondFace.Tests
             Assert.That(asian.All(l => l.Heritage == "east_asian"), Is.True);
             var north = Enumerable.Range(0, 300).Select(i => Bodies.For("npc_t_ne_" + i, true, 30, "settler", ancestry: "north_european")).ToList();
             var west = Enumerable.Range(0, 300).Select(i => Bodies.For("npc_t_wa_" + i, true, 30, "settler", ancestry: "west_african")).ToList();
-            Assert.That(west.Average(l => l.Face["nose-flaring"]) - north.Average(l => l.Face["nose-flaring"]), Is.GreaterThan(0.6));
+            Assert.That(west.Average(l => l.Face["nose-flaring"]) - north.Average(l => l.Face["nose-flaring"]), Is.GreaterThan(0.1));   // (calibrated, O2)
             // a labourer's face older than a rich merchant's of the same years
             var hard = Enumerable.Range(0, 200).Select(i => Bodies.For("npc_t_h_" + i, true, 45, "labourer", Bodies.Means.Destitute)).ToList();
             var soft = Enumerable.Range(0, 200).Select(i => Bodies.For("npc_t_s_" + i, true, 45, "trader", Bodies.Means.Rich)).ToList();

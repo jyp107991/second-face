@@ -26,13 +26,18 @@ def ratios(m):
 
 RATIOS = list(ratios({k: 1.0 for k in MEASURES}).keys())
 STATURE = MEASURES.index('stature')
+# measured on our meshes otherwise than on the soldiers, so not held (overhaul O2, docs/PEOPLE_REALISM.md §17): the face's
+# height (menton-sellion): the sellion a caliper finds on a live face and the one our mesh's profile gives differ by up to a
+# centimetre with the nose's bridge, and the same anatomy is held in the photographs, measured alike on ours and on real
+# faces (gate.py, the face's height over width)
+UNHELD = [MEASURES.index('mentonsellionlength')]
 
 
 def cond_dist(mean, cov, x):
     """A person's head and neck measures given their stature: the whitened distance from the group's conditional mean
     (the stature clamped to 2.5 sd of the group's)."""
     mean, cov, x = np.asarray(mean, float), np.asarray(cov, float), np.asarray(x, float)
-    k = [i for i in range(len(mean)) if i != STATURE]
+    k = [i for i in range(len(mean)) if i != STATURE and i not in UNHELD]
     css = cov[STATURE, STATURE]
     s = np.clip(x[STATURE], mean[STATURE] - 2.5 * np.sqrt(css), mean[STATURE] + 2.5 * np.sqrt(css))
     cks = cov[k, STATURE]

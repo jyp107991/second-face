@@ -92,8 +92,24 @@ namespace SecondFace.Core.Npc
             if (look.Stature <= 0f) return 1f + 0.06f * Math.Clamp(look.Height, -1f, 1f);
             var h = Proportions.HeightMm(look);
             var own = h > 0 ? h / 10.0 : look.Body == "m" ? BaseMan : BaseWoman;
-            return (float)Math.Clamp(look.Stature / own, 0.8, 1.2);
+            var s = Math.Clamp(look.Stature / own, 0.8, 1.2);
+            // the head's own scale (HeadScaleOf) adds its share of the vault over its pivot to the height
+            s = Math.Clamp(look.Stature / (own + HeadAbovePivotCm * (Math.Pow(s, HeadAllometry - 1) - 1)), 0.8, 1.2);
+            return (float)s;
         }
+
+        /// <summary>How a head's size follows the stature: real heads hardly grow with the body (ANSUR II, the log of each
+        /// measure on the log of the stature within a sex: head breadth 0.07-0.14, the cheeks' 0.16-0.20, the eyes' spacing
+        /// 0.25-0.29, the vault's height 0.24-0.29, head length 0.35, the face's height 0.42). Scaled whole with the body, a
+        /// short woman's head came out 3 sd small (overhaul O3).</summary>
+        public const double HeadAllometry = 0.25;
+
+        // the head's height over its bone's pivot at the skull's base (cm, the bases'): what its scale adds to the stature
+        private const double HeadAbovePivotCm = 14.0;
+
+        /// <summary>The head's scale against the body's (<see cref="ScaleOf"/>): the body's undone on the head but for the
+        /// share real heads take (<see cref="HeadAllometry"/>); the head bone carries it (LookView).</summary>
+        public static float HeadScaleOf(PlayerLook look) => look.Stature <= 0f ? 1f : (float)Math.Pow(ScaleOf(look), HeadAllometry - 1);
 
         /// <summary>A person's look (for the base of their sex) from who they are.</summary>
         /// <param name="fit">false leaves the proportions' fit (Proportions.Fit, a few milliseconds) for when the person is
