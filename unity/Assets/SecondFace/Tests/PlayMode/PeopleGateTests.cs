@@ -296,17 +296,13 @@ namespace SecondFace.Tests
                 _cam = new GameObject("gate_camera").AddComponent<Camera>();
                 _cam.fieldOfView = 16.1f; _cam.nearClipPlane = 0.1f; _cam.farClipPlane = 10f;
                 _cam.clearFlags = CameraClearFlags.SolidColor; _cam.backgroundColor = new Color(0.42f, 0.43f, 0.45f);
-                _rt = new RenderTexture(512, 640, 24, RenderTextureFormat.ARGB32); _cam.targetTexture = _rt;
+                // rendered in linear HDR and graded on readback as the game's look grades it (Grade)
+                _rt = new RenderTexture(512, 640, 24, RenderTextureFormat.ARGBHalf, RenderTextureReadWrite.Linear); _cam.targetTexture = _rt;
+                _cam.allowHDR = true;
                 foreach (var l in Object.FindObjectsByType<Light>(FindObjectsSortMode.None)) l.enabled = false;
                 _key = new GameObject("gate_key").AddComponent<Light>(); _key.type = LightType.Directional; _key.intensity = 1.1f;
                 _fill = new GameObject("gate_fill").AddComponent<Light>(); _fill.type = LightType.Directional; _fill.intensity = 0.45f;
                 RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat; RenderSettings.ambientLight = new Color(0.45f, 0.45f, 0.47f);
-                // the game's look (tone mapping and grade), so a portrait shows what the phone shows (R4: the GLES3 tier the
-                // editor renders had no post-process data, and the portraits came out ungraded)
-#if UNITY_EDITOR
-                var look = AssetDatabase.LoadAssetAtPath<UnityEngine.Rendering.VolumeProfile>("Assets/SecondFace/Settings/Look.asset");
-                if (look != null) SecondFace.Game.World.Look.Apply(_cam, look);
-#endif
             }
 
             public void Shoot(GameObject go, string name, string folder = "portraits", float distance = 1.6f, float yaw = 0f, float up = 0f)
@@ -321,13 +317,46 @@ namespace SecondFace.Tests
                 _fill.transform.rotation = _cam.transform.rotation * Quaternion.Euler(8f, -35f, 0f);
                 _cam.Render();
                 var prev = RenderTexture.active; RenderTexture.active = _rt;
-                var tex = new Texture2D(_rt.width, _rt.height, TextureFormat.RGB24, false);
-                tex.ReadPixels(new Rect(0, 0, _rt.width, _rt.height), 0, 0); tex.Apply();
+                var hdr = new Texture2D(_rt.width, _rt.height, TextureFormat.RGBAHalf, false, true);
+                hdr.ReadPixels(new Rect(0, 0, _rt.width, _rt.height), 0, 0);
                 RenderTexture.active = prev;
+                var tex = new Texture2D(_rt.width, _rt.height, TextureFormat.RGB24, false);
+                tex.SetPixels32(Grade(hdr.GetPixels()));
+                tex.Apply();
+                Object.Destroy(hdr);
                 var png = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", folder, name + ".png"));
                 Directory.CreateDirectory(Path.GetDirectoryName(png));
                 File.WriteAllBytes(png, tex.EncodeToPNG());
                 Object.Destroy(tex);
+            }
+
+            /// <summary>
+            /// The game's look (Assets/SecondFace/Settings/Look.asset: post-exposure +0.25, contrast 12, saturation 10, ACES)
+            /// applied to a linear HDR frame as URP's grading does (contrast in LogC about ACES's middle grey, saturation by
+            /// luminance, then the tone curve; ACES by Narkowicz's fit), so a portrait shows what the phone shows. URP's own
+            /// post-processing cannot run here: the GLES3 tier the editor renders has none, and given it the software GL driver
+            /// crashed (R4, docs/PEOPLE_REALISM.md §14). Bloom and the vignette are left out: they hardly touch a face in the
+            /// frame's middle.
+            /// </summary>
+            private static Color32[] Grade(Color[] px)
+            {
+                const float cut = 0.011361f, a = 5.555556f, b = 0.047996f, c = 0.244161f, d = 0.386036f, e = 5.301883f, f = 0.092819f;
+                const float mid = 0.4135884f, contrast = 1.12f, saturation = 1.1f;
+                var exposure = Mathf.Pow(2f, 0.25f);
+                float LogC(float x) => x > cut ? c * Mathf.Log10(a * x + b) + d : e * x + f;
+                float Lin(float x) => x > e * cut + f ? (Mathf.Pow(10f, (x - d) / c) - b) / a : (x - f) / e;
+                float Aces(float x) { x *= 0.6f; return Mathf.Clamp01(x * (2.51f * x + 0.03f) / (x * (2.43f * x + 0.59f) + 0.14f)); }
+                var o = new Color32[px.Length];
+                for (var i = 0; i < px.Length; i++)
+                {
+                    var v = new Vector3(px[i].r, px[i].g, px[i].b) * exposure;
+                    v = new Vector3(Lin((LogC(v.x) - mid) * contrast + mid), Lin((LogC(v.y) - mid) * contrast + mid), Lin((LogC(v.z) - mid) * contrast + mid));
+                    var luma = Vector3.Dot(v, new Vector3(0.2126729f, 0.7151522f, 0.072175f));
+                    v = new Vector3(luma, luma, luma) + (v - new Vector3(luma, luma, luma)) * saturation;
+                    var g = new Color(Aces(Mathf.Max(v.x, 0f)), Aces(Mathf.Max(v.y, 0f)), Aces(Mathf.Max(v.z, 0f))).gamma;
+                    o[i] = g;
+                }
+                return o;
             }
 
             public void Dispose()

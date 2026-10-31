@@ -412,8 +412,10 @@ the lashes as cards.
 
 **Part 1b (same day): the grade, and contrast by people.** The gate's portraits had no tone mapping or grade because the
 GLES3 tier's renderer (the editor's, CI's and older phones') was made in code without post-process data: every capture since
-the tiers were split rendered ungraded, and so did GLES3 phones (`ProjectSetup` now gives it the data; the studio renders
-with the game's look). Compared by people (FairFace's mix of peoples is not ours; sunglasses left out of the real faces):
+the tiers were split rendered ungraded, and so do GLES3 phones. Given the data, the editor's software GL driver crashed
+drawing the people's lineup with the look on (`ScreenshotTests.PeoplesLineup`, a segfault in the driver's draw call), so the
+renderer is left as it was and the gate studio renders linear HDR and grades on readback as the look does (`Studio.Grade`:
+exposure, contrast in LogC, saturation, ACES). **Open**: GLES3 phones ungraded; to decide on a device. Compared by people (FairFace's mix of peoples is not ours; sunglasses left out of the real faces):
 
 | eyes / lips' a* | real women | ours | real men | ours |
 |---|---|---|---|---|

@@ -846,8 +846,9 @@ person by person (`gate_r3.txt`, `board_r3_shale.jpg`), **but the gate fails as 
 50-69s read 10-13 years young, three in four women are read as men (real 37 %), and two pairs share real faces.
 **R4 part 1 in progress** (`docs/PEOPLE_REALISM.md` §14): facial contrast measured against FairFace (`gate/contrast.py`);
 lash lines, lips by sex and years, the eye's white and iris, per-vertex occlusion in; lips now near real, the eyes not yet
-(ours as light as the skin, real a third darker). The GLES3 tier had no post-process data (every editor and CI capture,
-and GLES3 phones, ungraded since the tiers were split): fixed, the gate studio renders with the game's look; contrast is
+(ours as light as the skin, real a third darker). The GLES3 tier has no post-process data (every editor and CI capture,
+and GLES3 phones, ungraded since the tiers were split; given it, the editor's software GL crashed, so the gate studio grades
+on readback instead, and GLES3 phones are open for a device); contrast is
 compared by people; brows and lips' darkness now real, eyes near real on white men, still wrong on dark skin; age and sex
 reads barely moved (§14, `gate_r4a.txt`). **Next action:** the eyes on dark skin (the white against dark skin), the lashes
 as cards the camera resolves, then what ages a face beyond its contrast, re-measured with `contrast.py` and `apparent.py`. Then, as below:

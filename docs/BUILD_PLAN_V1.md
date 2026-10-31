@@ -2567,8 +2567,10 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
 
 - **A URP renderer made in code has no post-process data** (`UniversalRendererData.postProcessData` null): its cameras
   silently render without tone mapping, grade, bloom or vignette, whatever the camera and volumes ask. The GLES3 tier was
-  made so: every editor and CI capture (the editor renders that tier) and GLES3 phones were ungraded until R4. `ProjectSetup`
-  assigns the package's PostProcessData; check `postProcessData` on every renderer asset when a look "does nothing".
+  made so: every editor and CI capture (the editor renders that tier) and GLES3 phones are ungraded. Assigning the package's
+  PostProcessData crashed the editor's software GL driver (a segfault in its draw call, `PeoplesLineup`), so the tier stays
+  as it was and the people's gate grades its portraits on readback (`PeopleGateTests.Studio.Grade`); GLES3 phones are an
+  open decision for a device. Check `postProcessData` on every renderer asset when a look "does nothing".
 - **Compare people with people of the same mix.** A pooled real mean (FairFace's mix of peoples) against ours (another mix)
   hides by-people differences of opposite sign: the eyes' contrast is positive on fair skin and negative on dark skin in
   ours, and the pool read as "no change".

@@ -41,7 +41,6 @@ namespace SecondFace.EditorTools
 
         private const string GlesPipelinePath = PipelineDir + "/Mobile_GLES_RPAsset.asset";
         private const string GlesRendererPath = PipelineDir + "/Mobile_GLES_Renderer.asset";
-        private const string PostProcessDataPath = "Packages/com.unity.render-pipelines.universal/Runtime/Data/PostProcessData.asset";
 
         /// <summary>
         /// The two rendering tiers (BUILD_PLAN §6.Q): quality level "Vulkan" on Mobile_RPAsset (Forward+, the GPU Resident
@@ -83,15 +82,9 @@ namespace SecondFace.EditorTools
             var renderer = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(rendererPath);
             if (renderer == null) { renderer = ScriptableObject.CreateInstance<UniversalRendererData>(); AssetDatabase.CreateAsset(renderer, rendererPath); }
             if (renderer.renderingMode != mode) { renderer.renderingMode = mode; EditorUtility.SetDirty(renderer); }
-            // post-processing (the look: ACES, grading, bloom, vignette) needs the renderer's post data, and a renderer made
-            // in code has none: the GLES3 tier (the editor's, CI's and older phones') rendered without the look, and every
-            // capture and the people's gate portraits were ungraded (R4, docs/PEOPLE_REALISM.md §14)
-            if (renderer.postProcessData == null)
-            {
-                renderer.postProcessData = AssetDatabase.LoadAssetAtPath<PostProcessData>(PostProcessDataPath);
-                if (renderer.postProcessData != null) EditorUtility.SetDirty(renderer);
-                else Debug.LogWarning($"Second Face: no post-process data at {PostProcessDataPath}");
-            }
+            // (the GLES3 renderer has no post-process data, so that tier renders without the look: given the data, the editor's
+            // software GL driver crashed drawing many people with the look on, R4. Open: GLES3 phones are ungraded; decide on a
+            // device, docs/PEOPLE_REALISM.md §14)
             var pipeline = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(path);
             if (pipeline == null)
             {
