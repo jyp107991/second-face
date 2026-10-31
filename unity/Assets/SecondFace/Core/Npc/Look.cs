@@ -256,8 +256,10 @@ namespace SecondFace.Core.Npc
         {
             var t = System.Math.Clamp((ShownYears(look) - 25f) / 45f, 0f, 1f);
             float L(float a, float b) => a + (b - a) * t;
+            // (R4c: with the eye's white and iris measured, men's lash lines at 0.75 put their eyes' contrast above women's,
+            // the reverse of real faces; at 0.45 men's eyes read as real men's)
             return look.Body == "f" ? (L(1f, 0.75f), L(0.55f, 0.35f), L(1f, 0.3f), L(0.45f, 0.25f))
-                                    : (L(0.75f, 0.6f), L(0.4f, 0.3f), L(0.3f, 0.1f), L(0.15f, 0.1f));
+                                    : (L(0.45f, 0.35f), L(0.25f, 0.18f), L(0.3f, 0.1f), L(0.15f, 0.1f));
         }
 
         /// <summary>The white of the eye's years (yellower and duller from about thirty: SecondFace/Cloth _EyeYears).</summary>

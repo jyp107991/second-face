@@ -327,13 +327,17 @@ Shader "SecondFace/Skin"
                                : lerp(_Brow1.x, _Brow0.w, 1.0 - cos(1.5708 * (tc - pk) / (1.0 - pk)));
             float w = lerp(_Brow1.z, _Brow1.w, tc) * 0.62 * lerp(1.0, 0.4, smoothstep(0.75, 1.05, t));
             float across = abs(p.y - yc) / max(w, 1e-3);
-            float body = 1.0 - smoothstep(0.6, 1.0, across);
-            float ends = smoothstep(-0.12, 0.06, t) * (1.0 - smoothstep(0.95, 1.1, t));
+            float body = 1.0 - smoothstep(0.4, 1.05, across);
+            float ends = smoothstep(-0.12, 0.08, t) * (1.0 - smoothstep(0.9, 1.1, t));
             float ang = lerp(1.2, 0.2, saturate(t * 2.2));
             float2 dir = float2(cos(ang), sin(ang));
             float2 q = float2(ax, p.y);
-            float hairs = smoothstep(0.3, 0.75, Noise3(float3(dot(q, float2(-dir.y, dir.x)) * 260.0, dot(q, dir) * 34.0, 7.0)));
-            return (half)saturate(body * ends * (0.4 + 0.6 * hairs) * lerp(0.6, 1.15, _BrowColour.a));
+            // R4c: the hairs show at the brow's edges and tail and thin at its head; its core is dense, nearly even (crisp
+            // stripes over the whole brow read as a hatched stamp at portrait size)
+            float hairs = smoothstep(0.2, 0.85, Noise3(float3(dot(q, float2(-dir.y, dir.x)) * 260.0, dot(q, dir) * 34.0, 7.0)));
+            float edge = max(smoothstep(0.25, 0.9, across), smoothstep(0.7, 1.0, t) + (1.0 - smoothstep(-0.05, 0.15, t)));
+            float texture = lerp(0.85 + 0.15 * hairs, 0.25 + 0.75 * hairs, saturate(edge));
+            return (half)saturate(body * ends * texture * lerp(0.6, 1.1, _BrowColour.a));
         }
 
         // --- the face's colour zones (R5: one even colour read as plastic beside real photographs): blood under the skin

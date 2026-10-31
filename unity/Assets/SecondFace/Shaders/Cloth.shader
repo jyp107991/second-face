@@ -158,8 +158,8 @@ Shader "SecondFace/Cloth"
                     half3 colour = _Recolour.rgb;
                     // the iris as photographs show it (R4c, gate/contrast.py): about L* 19 in faces whose skin reads 30-45;
                     // ours read 21-26, and on dark skin lighter than the skin. The cornea's shade and the lid over its top
-                    // take most of the light a bare iris texture keeps
-                    if (_RecolourIris > 0.5h) colour *= 0.6h;
+                    // take part of the light a bare iris texture keeps (at 0.6 with the room's reflection occluded: 11-15)
+                    if (_RecolourIris > 0.5h) colour *= 0.75h;
                     half detail = min(lum / max(_RecolourLum, 0.001h), 2.0h);
                     if (_Grey > 0.001h)
                     {
