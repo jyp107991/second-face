@@ -2580,6 +2580,9 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   same old Library, was cut off before EditMode finished and saved nothing (runs 112-124 "cancelled"). The Library is now
   restored and saved as separate steps, the save `if: always()`, and the limit fits a cold import plus the full suite.
   A run reported "cancelled" is a failure to read, not noise.
+- **`cancel-in-progress` and checkpoint pushes never let a long job finish.** The Android workflow cancelled its running
+  run on every push to main; the test job takes over an hour and checkpoints are pushed every few minutes, so no test run
+  could end. Later pushes now wait (`cancel-in-progress: false`; GitHub keeps only the newest pending run).
 - **Skin colour is a measured quantity: calibrate it, don't shape it by eye.** The skin's tone was a curve on the bake (a
   third of its shade at the dark end, lifted most of the way to white at the fair), tuned by look; it put the darkest
   cheeks at L* 25 and the fairest past 70, three times the real luminance ratio between peoples, and the whites of the eyes
