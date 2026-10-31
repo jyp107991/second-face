@@ -32,6 +32,10 @@ def responses(heads):
         for f in sorted(os.listdir(heads)):
             if not f.startswith(f'resp_{base}_') or not f.endswith('.bin') or 'neutral' in f: continue
             tag = f[len(f'resp_{base}_'):-4]
+            # (a sample a later MeasureShapeResponses no longer takes is left behind, without its stature: not measured)
+            if f'resp_{base}_{tag}' not in st:
+                print(f'  {f}: not in resp_statures.json (left by an earlier run), skipped')
+                continue
             m = m_of(base, tag)
             R[tag] = [m[k] - neutral[k] for k in MEASURES]
         out[base] = {'neutral': [neutral[k] for k in MEASURES], 'shapes': R}
