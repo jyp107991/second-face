@@ -24,8 +24,9 @@ def bone(arm, name): return np.array(arm.matrix_world @ arm.data.bones[name].hea
 def landmarks(V, eL, eR):
     mid = (eL + eR) / 2; ipd = np.linalg.norm(eL - eR)
     up = np.array([0, 0, 1.0]); right = (eR - eL) / ipd
-    near = V[np.linalg.norm(V - mid, axis=1) < 2.2 * ipd]
-    fwd = mid - near.mean(0); fwd -= up * fwd.dot(up); fwd -= right * fwd.dot(right); fwd /= np.linalg.norm(fwd)
+    # the facing: -Y, as both bases and every Rocketbox avatar come in from FBX (estimated from the head's centroid, a
+    # long fringe in the head's own mesh turned it round)
+    fwd = np.array([0, -1.0, 0]); fwd -= up * fwd.dot(up); fwd -= right * fwd.dot(right); fwd /= np.linalg.norm(fwd)
     lat = (V - mid) @ right; z = (V - mid) @ up; f = (V - mid) @ fwd
     head = (np.abs(lat) < 1.6 * ipd) & (z > -2.4 * ipd) & (z < 2.6 * ipd) & (f > -3.5 * ipd)
     def best(mask, score):
