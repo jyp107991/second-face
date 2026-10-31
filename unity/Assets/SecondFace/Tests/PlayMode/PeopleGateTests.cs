@@ -376,8 +376,12 @@ namespace SecondFace.Tests
                 go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
                 yield return null;
                 studio.Meter = Studio.MeterFor(look);
+                // (SF_CLOSE_DIST, SF_CLOSE_UP: the whole face for a lineup, 1.3 m aimed 3 cm under the eyes; the hair's close-up
+                // by default)
+                var dist = float.TryParse(System.Environment.GetEnvironmentVariable("SF_CLOSE_DIST"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var dv) ? dv : 0.95f;
+                var upBy = float.TryParse(System.Environment.GetEnvironmentVariable("SF_CLOSE_UP"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var uv) ? uv : 0.03f;
                 foreach (var (view, yaw) in new[] { ("front", 0f), ("three", 35f), ("side", 80f) })
-                    studio.Shoot(go, $"{id}_{view}", "hair", 0.95f, yaw, 0.03f);
+                    studio.Shoot(go, $"{id}_{view}", "hair", dist, yaw, upBy);
                 // SF_HAIR_PARTS: the same three-quarter view with only the hair, and with only the body (what shows through)
                 if (System.Environment.GetEnvironmentVariable("SF_HAIR_PARTS") == "1")
                 {
