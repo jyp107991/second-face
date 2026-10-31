@@ -888,7 +888,8 @@ FairFace's photographs) and ours in the studio; framed alike, ours read young at
 but their years in the photograph's own frame (39.1, real 38.3): the skin carries the years, the coarse shape and the hair
 do not. The sex read is the hair: our women with hair drawn back read as men 75-80 %, with long matted hair 44 % (real
 women 37 %). Strands loose round the face were tried and reverted (single hairs did not show; clumps showed as tape): the
-drawn-back hair itself renders as a thin striped cap (`hair_strays_r35.jpg`). **Next action:** the next Android run (UI
+drawn-back hair itself renders as a thin striped cap (`hair_strays_r35.jpg`). **CI run 148 green** (the first full Android run with PlayMode tests to pass: APK, 73 tests, UI tests at 30 min each).
+**Next action:** keep CI green (UI
 tests 30 min); hair's pale flecks fixed (the near-white sheen band out, §16 round 37); **tied hair by another technique** (a layer under cards reads as a cap whatever its numbers, §16 round 36):
 a bake-off on close-ups between tied styles made from a real groom's strands (combed back to a knot or plait as the loose
 styles are) and free hair-card assets (licence fit, mobile cost), then `apparent.py` by hair; then the coarse years (soft
