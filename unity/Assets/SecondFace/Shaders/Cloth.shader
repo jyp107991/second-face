@@ -185,6 +185,7 @@ Shader "SecondFace/Cloth"
                         detail = min(pow(max(detail, 0.05h), 1.0h + 0.4h * saturate(dot(colour, half3(0.3h, 0.59h, 0.11h)) * 2.0h)), 0.95h / max(max(colour.r, colour.g), 0.05h));
                     albedo.rgb = lerp(albedo.rgb, colour * detail, w);
                 }
+                half eyeOcclusion = 1.0h;
                 if (_RecolourIris > 0.5h)
                 {
                     // the white of the eye as photographs show it (R4): never paper white, shaded towards where the lids and
@@ -199,9 +200,12 @@ Shader "SecondFace/Cloth"
                     // the upper lid and its lashes shade the top of the eyeball, iris and white alike (by the eyeball's
                     // normal, which looks up there; faces are upright in the portraits and the game)
                     albedo.rgb *= 1.0h - 0.7h * (half)smoothstep(-0.25, 0.4, normalize(i.normalWS).y);
-                    // the iris dull under the cornea (the eyeball carries no cornea shell, so its gloss made the iris a mirror of
-                    // the room: brown eyes read silver); the white wet; the highlight stays a small catchlight
-                    smoothness = lerp(0.42h, smoothness, white);
+                    // the iris under the cornea: a small sharp catchlight (glossy), and the room's reflection shaded by the lids
+                    // and brow (occluded), not mirrored over it (the eyeball carries no cornea shell: at full gloss brown eyes
+                    // read silver; dulled to 0.42 the broad reflection still outshone a dark iris and read grey, R4c: chroma 2-3
+                    // where real dark irises read 6-10); the white wet
+                    smoothness = lerp(0.85h, smoothness, white);
+                    eyeOcclusion = lerp(0.25h, 1.0h, white);
                 }
                 // hair: each strand and each clump of strands a little lighter or darker than the next (a column of the strand
                 // atlas, about three texels, and a band of about thirty), so the layer reads as strands and locks, not a
@@ -252,7 +256,7 @@ Shader "SecondFace/Cloth"
                 surface.albedo = albedo.rgb;
                 surface.metallic = 0;
                 surface.smoothness = smoothness;
-                surface.occlusion = 1;
+                surface.occlusion = eyeOcclusion;
                 surface.normalTS = normalTS;
                 surface.alpha = 1;
 
