@@ -336,8 +336,8 @@ Shader "SecondFace/Skin"
             // stripes over the whole brow read as a hatched stamp at portrait size)
             float hairs = smoothstep(0.2, 0.85, Noise3(float3(dot(q, float2(-dir.y, dir.x)) * 260.0, dot(q, dir) * 34.0, 7.0)));
             float edge = max(smoothstep(0.25, 0.9, across), smoothstep(0.7, 1.0, t) + (1.0 - smoothstep(-0.05, 0.15, t)));
-            float texture = lerp(0.85 + 0.15 * hairs, 0.25 + 0.75 * hairs, saturate(edge));
-            return (half)saturate(body * ends * texture * lerp(0.6, 1.1, _BrowColour.a));
+            float grain = lerp(0.85 + 0.15 * hairs, 0.25 + 0.75 * hairs, saturate(edge));
+            return (half)saturate(body * ends * grain * lerp(0.6, 1.1, _BrowColour.a));
         }
 
         // --- the face's colour zones (R5: one even colour read as plastic beside real photographs): blood under the skin
