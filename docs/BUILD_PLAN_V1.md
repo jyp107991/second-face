@@ -2608,6 +2608,12 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   lips and chin, the folds) was placed at the women's mouth (-0.67 in the head frame); the men's lower face is longer and
   their mouth sits at -0.75, so men's lip colour lay over the skin above the lip and stubble over the lower lip. Measure a
   landmark on each base (`WardrobeBuild.MouthLine` into `_Mouth`) and place masks from it; never one constant for both.
+- **The objective is realistic humans, judged by eye against real photographs; the gate's numbers are guards, never the
+  target** (owner, 2026-10-31). Round 39 passed 246 of 252 checks with faces that read as non-human (wide, puffy, the mouth
+  jutting and the chin falling back in profile, helmet hair, painted lines) and worse than earlier rounds: dozens of rounds
+  tuned ratios and network readings while the people got less human. Every change to people is first set beside real
+  photographs of people of the same ancestry, sex and age and judged by eye; a change that reads less human is reverted
+  whatever it does to the numbers, and a number may only veto, never justify.
 - **Two independent draws of one measure halve its variety.** Each head's measures were drawn from ANSUR II and its face
   from FairFace's real faces independently; where they overlap (the cheeks' breadth, the face's height, the eyes' spacing)
   the solver split the difference and our faces kept 0.57-0.74 of real people's spread there. Draw one given the other
