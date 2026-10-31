@@ -659,3 +659,13 @@ striped cap** (the shell's 2 mm lift, no volume over the crown or the ears, the 
 yellow plastic), and with it the head reads as a man's in a cap to the eye as to the reader. Next: the drawn-back styles'
 volume and shading (a real tied head of hair stands 5-10 mm off the crown and passes over the tops of the ears; its strands
 shade into each other), judged in close-ups first, then measured.
+
+**The drawn-back styles in close-up (round 36, `hair_drawnback_r36.jpg`)**: the crown braids (made from the Defender groom's
+top, 300 cards) read as shingled feathers with pale streaks and two dark tufts at the temples; the bun as a smooth cap with
+pale vertical stripes. The stripes are the shader's per-clump variation keyed to the layer's u, which folds round the head
+in ten mirrored segments, and the pale streaks the strands' own light lifted by the recolour's detail term. A thicker layer
+(3.5 mm), 260 finer locks and half the clump variation on the layer (tried, v35) changed little: a printed layer under cards
+reads as a cap whatever its numbers. **Tied hair needs another technique**: tied styles made from a real groom as the loose
+styles are (combed back to a knot or plait from the groom's own strands, cards that follow them), or hair-card assets chosen
+by a bake-off on close-ups (the owner's pass 8: the best free assets, by evidence). Until then the sex read stays at women
+as men 71 % (real 37 %).
