@@ -297,9 +297,9 @@ namespace SecondFace.Tests
         }
 
         /// <summary>The hair and the face up close (R5): a few of the sample people (SF_HAIR_IDS, "cluster_sex_age_k" each,
-        /// comma-separated; a default spread of hairs, colours and ages without it) from the front, three-quarters and the
-        /// side at 0.95 m in the gate's studio, into test-results/hair: the hairline, the strands and the grey seen as the
-        /// conversation camera sees them, without the whole gate's round.</summary>
+        /// comma-separated; a default spread of hairs, colours and ages without it) from the front, three-quarters, the side
+        /// and behind (a knot's or a plait's shape) at 0.95 m in the gate's studio, into test-results/hair: the hairline, the
+        /// strands and the grey seen as the conversation camera sees them, without the whole gate's round.
         [UnityTest, Timeout(900000), Category("Heavy")]   // a close-up tool, run by name in the session's editor
         public IEnumerator HairCloseups()
         {
@@ -332,7 +332,7 @@ namespace SecondFace.Tests
                 go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
                 yield return null;
                 studio.Meter = Studio.MeterFor(look);
-                foreach (var (view, yaw) in new[] { ("front", 0f), ("three", 35f), ("side", 80f) })
+                foreach (var (view, yaw) in new[] { ("front", 0f), ("three", 35f), ("side", 80f), ("back", 160f) })
                     studio.Shoot(go, $"{id}_{view}", "hair", 0.95f, yaw, 0.03f);
                 // SF_HAIR_PARTS: the same three-quarter view with only the hair, and with only the body (what shows through)
                 if (System.Environment.GetEnvironmentVariable("SF_HAIR_PARTS") == "1")

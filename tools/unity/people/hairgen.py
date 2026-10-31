@@ -10,7 +10,8 @@ import json, os
 import numpy as np
 
 STYLES = ('sf_crop', 'sf_bun', 'sf_braid', 'sf_matted', 'sf_coils', 'sf_cornrows')
-VERSION = 32   # bump when the generator changes: mh_build regenerates into its cache by name + version
+VERSION = 38   # bump when the generator changes: mh_build regenerates into its cache by name + version (past every
+               # stamp in the cache: an experiment's version left behind is taken as built)
 ATLAS = 1024
 COLS = {'sheet': 0, 'clump': 1, 'wisp': 2, 'matted': 3}
 
@@ -741,6 +742,7 @@ def atlas(rng, size=ATLAS):
     for c, (n, wmin, wmax, tipfade, gaps, under) in enumerate([(520, 2, 4, 0.0, 0.0, -1.0), (300, 2, 5, 0.3, 0.2, 0.7),
                                                                  (60, 1, 2, 0.7, 0.6, 0.0), (180, 2, 6, 0.2, 0.1, 0.6)]):
         col = np.zeros((size, cw, 4), np.float32)
+        prem = np.zeros((size, cw), np.float32); cover = np.zeros((size, cw), np.float32)   # colour composited over, premultiplied
         if under < 0:
             # the sheet: opaque strands all over; at the root (the shell's hairline) each strand starts at its own
             # height, so the hairline breaks into hairs instead of a cut contour following the mesh (v8)
@@ -760,14 +762,14 @@ def atlas(rng, size=ATLAS):
             # texel column spans a face: a late start there cut a square notch into the front of every hairline)
             start *= smoothstep(np.minimum(xs, cw - 1 - xs) / 12.0)
             col[..., 3] = smoothstep((yy - start[None, :]) / 0.06)
-            col[..., :3] = 0.42
+            prem[:] = 0.42 * col[..., 3]; cover[:] = col[..., 3]
         elif under:
             # a sheet under the strands down the middle of the card: it reads as a lock of hair, ragged only at its
             # sides and its tip, not as loose strands with the scalp between them
             x = np.linspace(-1, 1, cw)[None, :]
             sheet = under * (1 - smoothstep((np.abs(x) - 0.45) / 0.4)) * (1 - smoothstep((yy - 0.75) / 0.2)) * smoothstep(yy / 0.18 + 0.15)
             col[..., 3] = sheet
-            col[..., :3] = (sheet * 0.42)[..., None]
+            prem[:] = 0.42 * sheet; cover[:] = sheet
         for _ in range(n):
             x = rng.uniform(0, cw); w = rng.uniform(wmin, wmax)
             xs = np.arange(cw)[None, :]
@@ -778,10 +780,12 @@ def atlas(rng, size=ATLAS):
             a = prof * along
             lum = rng.uniform(0.38, 0.62) * (0.75 + 0.25 * yy)   # darker at the root
             col[..., 3] = np.maximum(col[..., 3], a)
-            col[..., :3] += (a * lum)[..., None] * (1 - col[..., 3:4] * 0.5)
-        col[..., :3] = np.clip(col[..., :3], 0, 1)
+            # each strand over what lies under it (round 39: added without covering it, then divided by the alpha, the
+            # strands summed past white: the sheet and clump columns were 0.97-1.0 with a few dark strands, which the
+            # recolour by luminance turned to hard stripes, and the wisps, few, stayed dark)
+            prem = a * lum + prem * (1 - a); cover = a + cover * (1 - a)
+        col[..., :3] = np.where(cover > 0.01, prem / np.maximum(cover, 1e-3), 0.45)[..., None]
         img[:, c * cw:(c + 1) * cw] = col
-    img[..., :3] = np.where(img[..., 3:4] > 0.01, img[..., :3] / np.maximum(img[..., 3:4], 0.3), 0.45)
     return np.clip(img[::-1], 0, 1)   # v = 0 at the bottom row of the image: roots at the bottom
 
 

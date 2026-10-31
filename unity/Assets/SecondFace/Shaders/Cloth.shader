@@ -211,7 +211,9 @@ Shader "SecondFace/Cloth"
                 }
                 // hair: each strand and each clump of strands a little lighter or darker than the next (a column of the strand
                 // atlas, about three texels, and a band of about thirty), so the layer reads as strands and locks, not a
-                // smooth shell; where they are under a pixel, their mean (R5)
+                // smooth shell; where they are under a pixel, their mean (R5). Half what it was (round 39): it made up for an
+                // atlas whose strands had summed to white; the atlas now carries their own light and dark, and both together
+                // striped white hair like a crocheted cap
                 half strandFade = 1.0h, clumpFade = 1.0h, strandId = 0.5h, clumpId = 0.5h;
                 if (_HairSheen > 0.001h)
                 {
@@ -220,7 +222,7 @@ Shader "SecondFace/Cloth"
                     clumpFade = (half)max(saturate(fwidth(cx) * 1.5 - 0.5), saturate(1.0 - fwidth(cx) * 100.0));
                     strandId = (half)Hash(float3(floor(sx), 3.1, 8.7));
                     clumpId = (half)Hash(float3(floor(cx), 5.3, 2.9));
-                    albedo.rgb *= lerp(0.72h + 0.56h * strandId, 1.0h, strandFade) * lerp(0.82h + 0.36h * clumpId, 1.0h, clumpFade);
+                    albedo.rgb *= lerp(0.86h + 0.28h * strandId, 1.0h, strandFade) * lerp(0.91h + 0.18h * clumpId, 1.0h, clumpFade);
                 }
                 // sun and wear: paler and greyer
                 if (_Wear > 0.001h)

@@ -13,7 +13,7 @@ import numpy as np
 
 import tfx
 import hairgen
-from hairgen import Mesh, outward, spindle, COLS
+from hairgen import Mesh, outward, spindle, taper, COLS
 
 GROOMS = os.environ.get('SF_GROOMS')
 
@@ -127,10 +127,10 @@ def kmeans(X, k, rng, iters=14):
     return lab
 
 
-def cards(B, m, strands, count, k, width, col, rng, wmin=0.012, spread=2.2, lift=0.0):
+def cards(B, m, strands, count, k, width, col, rng, wmin=0.012, spread=2.2, lift=0.0, root=0.45):
     """`count` cards from `strands` (n, m, 3, settled): clustered by their courses (the root weighed double), each card
     along its clump's mean course, as wide as the clump (`spread` times its spread, within [wmin, width] dm), narrow at
-    the root and the tip; atlas column `col`."""
+    the root (`root` of its width) and the tip; atlas column `col`."""
     if len(strands) == 0: return 0
     S, L = resample(smooth(strands), k)
     feats = np.concatenate([S[:, 0] * 2.0, S[:, k // 3], S[:, (2 * k) // 3], S[:, -1]], 1)
@@ -148,7 +148,7 @@ def cards(B, m, strands, count, k, width, col, rng, wmin=0.012, spread=2.2, lift
         else:
             w = np.full(k, wmin)
         w = np.convolve(np.pad(w, 1, mode='edge'), [0.25, 0.5, 0.25], mode='valid')
-        w *= spindle(k, 1.0, 0.45, 0.2, 0.25)
+        w *= spindle(k, 1.0, root, 0.2, 0.25)
         if lift: g = g + outward(B, g) * lift
         m.ribbon(g, outward(B, g), w, col, rng, twist=rng.normal(0, 0.15))
         made += 1
@@ -234,14 +234,15 @@ def gen_crown_braid(B, rng):
     return m
 
 
-def combed(B, m, G, rng, rho=0.24, count=760, k=12, crown=0.05, gather=0.09, width=0.07):
+def combed(B, m, G, rng, rho=0.24, count=700, k=12, front=0.035, gather=0.1, width=0.07, roughness=1.0, flyaways=40):
     """Hair drawn back to a gather point G (a knot's base, a plait's start) from the groom's own roots (round 39: a
     printed layer under cards read as a thin striped cap whatever its numbers). Every root of the Loose groom's scalp
     layers is combed over the skull along its great circle to G, stopping at the gather's rim (`rho`, radians from G); the
     hair stacks as real drawn-back hair does: each strand lies on the ones rooted between it and G (the front's over the
-    crown's), so the head of hair stands off the skull by its own volume, about `crown` (dm) halfway and `gather` at the
-    rim, and comes down onto the skin at every root (no edge standing off the hairline). Then cards along the clumps'
-    mean courses, as `cards` makes them. Returns the number of cards."""
+    crown's), so the head of hair stands off the skull by its own volume, `front` (dm) just past the hairline growing to
+    `gather` at the rim, and comes down onto the skin at every root (no edge standing off the hairline); rough as hair drawn back by hand
+    (`roughness`: sections shifted and lofted together) with `flyaways` slipped strands. Then cards along the clumps' mean
+    courses, as `cards` makes them. Returns the number of cards."""
     g, _ = demo(B)
     L = g['Loose']
     roots = np.concatenate([L[n][:, 0] for n in ('Top', 'Bottom', 'Braid_Back', 'BraidL', 'BraidR', 'Bangs')])
@@ -257,12 +258,6 @@ def combed(B, m, G, rng, rho=0.24, count=760, k=12, crown=0.05, gather=0.09, wid
     far = np.array([np.percentile(Th[bins == b], 97) if (bins == b).sum() > 4 else Th.max() for b in range(36)])
     far = np.maximum(far, np.convolve(np.pad(far, 1, mode='wrap'), [1 / 3] * 3, mode='valid'))
     Tmax = far[bins]
-    # the hair's thickness by the angle from G: the share of the roots beyond it over the ring's circumference there
-    ang = np.linspace(rho, Th.max(), 48)
-    beyond = np.array([(Th > a).mean() for a in ang]) / np.sin(ang)
-    beyond = beyond / beyond[0]
-    mid = np.interp(0.5 * (rho + np.median(Th)), ang, beyond)
-    thick = np.where(beyond >= mid, crown + (gather - crown) * (beyond - mid) / max(1 - mid, 1e-6), crown * beyond / max(mid, 1e-6))
     # along each root's great circle to G's direction, from the root to the gather's rim (all strands at once)
     th = Th[:, None] + (rho - Th[:, None]) * np.linspace(0, 1, k)[None, :]
     t = (Th[:, None] - th) / Th[:, None]
@@ -271,22 +266,87 @@ def combed(B, m, G, rng, rho=0.24, count=760, k=12, crown=0.05, gather=0.09, wid
     d /= np.linalg.norm(d, axis=2, keepdims=True)
     rank = np.clip((Th[:, None] - th) / np.maximum(Tmax[:, None] - th, 1e-6), 0, 1)
     rise = np.clip((Th[:, None] - th) / 0.18, 0, 1)
-    lift = 0.002 + np.interp(th, ang, thick) * rank ** 0.8 * rise * rise * (3 - 2 * rise)
-    R, _ = skull(B, (B.c + d).reshape(-1, 3))
-    S = B.c + d * (R.reshape(len(U), k) + lift)[..., None]
-    return cards(B, m, S, count, k, width, 'clump', rng, wmin=0.02, spread=1.8)
+    # the head of hair's thickness from the hairline (`front`) to the gather's rim (`gather`): more hair passes nearer G, and
+    # drawn-back hair is not packed flat (its loft; a packed cross-section alone gave 1-2 mm over the crown, a cap again)
+    p = np.clip((Tmax[:, None] - th) / np.maximum(Tmax[:, None] - rho, 1e-6), 0, 1)
+    thick = front + (gather - front) * p ** 0.7
+    # over the gap-filling layer (0.3 mm at its edge to 1.2 mm inside it: cards under it left a low tie's top as the bare
+    # layer), down to it at the root (a card standing 1.4 mm off the hairline cut a hard contour)
+    ease = rise * rise * (3 - 2 * rise)
+    lift = 0.003 + 0.011 * ease + thick * rank ** 0.8 * ease
+    # rough, not slicked: hair drawn back by hand lies in sections, shifted a few millimetres sideways and lofted unevenly
+    # together (a field over the head's directions, so neighbouring strands move as one), most at mid-course
+    mid = np.sin(np.pi * np.clip(t, 0, 1)) * rise
+    side = np.cross(d, np.gradient(d, axis=1))
+    side /= np.maximum(np.linalg.norm(side, axis=2, keepdims=True), 1e-9)
+    flat = d.reshape(-1, 3) + B.c
+    shift = hairgen.wobble(B, flat, rng, scale=(6.0, 14.0), waves=5).reshape(len(U), k)
+    loft = hairgen.wobble(B, flat, rng, scale=(8.0, 18.0), waves=5).reshape(len(U), k)
+    lift = lift * (1 + roughness * 0.35 * loft * mid)
+    R, _ = skull(B, flat)
+    S = B.c + d * (R.reshape(len(U), k) + lift)[..., None] + side * (roughness * 0.035 * shift * mid)[..., None]
+    made = cards(B, m, S, count, k, width, 'clump', rng, wmin=0.02, spread=1.8)
+    # flyaways: strands slipped from the drawn-back hair over the front and the crown, standing off it and ending loose
+    fr = np.flatnonzero(U @ np.array([0.0, 0.3, 1.0]) > 0.2)
+    for i in rng.choice(fr, size=min(flyaways, len(fr)), replace=False):
+        j0, j1 = int(rng.integers(1, k // 3)), int(rng.integers(k // 2, k - 1))
+        pts = S[i, j0:j1 + 1] + d[i, j0:j1 + 1] * (rng.uniform(0.01, 0.04) * np.sin(np.linspace(0, np.pi, j1 - j0 + 1)))[:, None]
+        m.ribbon(pts, d[i, j0:j1 + 1], spindle(len(pts), rng.uniform(0.012, 0.025)), 'wisp', rng, twist=rng.normal(0, 0.3))
+    return made
+
+
+def coil(B, m, G, axis, rng, turns=1.8, r0=0.3, r1=0.05, rope=0.17, plies=4, k=64):
+    """A knot as hair is wound into one (round 39: locks wound round a ring as flat cards stood up as spikes seen edge on):
+    the gathered hair twisted into a rope and coiled flat against the head at G, `turns` times from `r0` to `r1` (dm) round
+    the axis, the rope `rope` thick and made of `plies` twisted tubes with the strands' texture round them, thinning to its
+    end tucked in at the middle."""
+    e1 = np.cross(axis, [0.0, 1.0, 0.0]); e1 /= np.linalg.norm(e1); e2 = np.cross(axis, e1)
+    t = np.linspace(0, 1, k)
+    th = rng.uniform(0, 2 * np.pi) + t * 2 * np.pi * turns
+    rad = r0 + (r1 - r0) * t
+    thick = rope * (1.0 - 0.45 * t)
+    # the coil's centre line: round the axis, standing off the head by the rope's own thickness, the inner turns on top
+    # (a dome: a bun stands 3-5 cm off the head)
+    centre = G[None] + (np.cos(th)[:, None] * e1 + np.sin(th)[:, None] * e2) * rad[:, None] + axis[None] * (0.5 * thick + 1.3 * rope * t ** 0.8)[:, None]
+    tg = np.gradient(centre, axis=0); tg /= np.linalg.norm(tg, axis=1, keepdims=True)
+    a = np.cross(tg, axis); a /= np.maximum(np.linalg.norm(a, axis=1, keepdims=True), 1e-9); b = np.cross(tg, a)
+    for p in range(plies):
+        ph = 2 * np.pi * p / plies + t * 2 * np.pi * turns * 2.2      # the plies twist round the rope
+        off = (np.cos(ph)[:, None] * a + np.sin(ph)[:, None] * b) * (0.28 * thick)[:, None]
+        g = centre + off
+        r = 0.62 * thick * (1 + 0.12 * np.sin(7 * t + p))
+        sides = 6
+        base = len(m.v)
+        u0 = hairgen.COLS['clump'] * 0.25
+        tt = np.gradient(g, axis=0); tt /= np.linalg.norm(tt, axis=1, keepdims=True)
+        aa = np.cross(tt, axis); aa /= np.maximum(np.linalg.norm(aa, axis=1, keepdims=True), 1e-9); bb = np.cross(tt, aa)
+        for i in range(k):
+            for q in range(sides + 1):
+                ang = 2 * np.pi * q / sides
+                m.v.append(tuple(g[i] + (aa[i] * np.cos(ang) + bb[i] * np.sin(ang)) * r[i] * 0.5))
+                m.vt.append((u0 + 0.24 * q / sides, (i / (k - 1)) * 3 % 1.0))
+        for i in range(k - 1):
+            for q in range(sides):
+                c0 = base + i * (sides + 1) + q
+                m.f.append((c0, c0 + 1, c0 + sides + 2, c0 + sides + 1))
+    # a few loose ends at the coil's edge (rough, not pinned neat)
+    for s in range(8):
+        i = int(rng.integers(0, k // 2))
+        d = centre[i] - G; d -= axis * (d @ axis); d /= max(np.linalg.norm(d), 1e-9)
+        pts = np.array([centre[i] + (d * 0.6 + axis * 0.2 + rng.normal(0, 0.2, 3)) * 0.08 * j for j in range(4)])
+        m.ribbon(pts, np.repeat(axis[None], 4, 0), taper(4, 0.03, 0.01), 'wisp', rng)
 
 
 def gen_bun_groom(B, rng):
     """A rough bun from the groom (round 39): the hair combed back from its real roots to a knot high at the back of the
     head, with its own volume over the crown and the ears, a thin layer under it only to close the gaps between the cards,
-    the knot wound from uneven locks, the groom's hairline over the edge."""
+    the knot a rope coiled flat on the head (`coil`), the groom's hairline over the edge."""
     m = Mesh()
     G = B.surf(B.c + np.array([0.0, 0.42, -0.9]), 0.0)
-    hairgen.shell(B, m, G, 0.004, rng)
+    hairgen.shell(B, m, G, 0.0, rng)
     combed(B, m, G, rng)
     axis = (G - B.c) / np.linalg.norm(G - B.c)
-    hairgen.knot(m, G + axis * 0.19, axis, 46, (0.2, 0.3), (0.08, 0.15), 'clump', rng)
+    coil(B, m, G, axis, rng)
     hairline(B, m, rng)
     return m
 
@@ -296,8 +356,8 @@ def gen_braid_groom(B, rng):
     gathered in a small knot there and plaited down the back."""
     m = Mesh()
     Nk = B.surf(B.c + np.array([0.0, -0.5, -0.9]), 0.0)
-    hairgen.shell(B, m, Nk, 0.004, rng)
-    combed(B, m, Nk, rng, rho=0.16, gather=0.07)
+    hairgen.shell(B, m, Nk, 0.0, rng)
+    combed(B, m, Nk, rng, rho=0.16, gather=0.07, count=900)
     axis = (Nk - B.c) / np.linalg.norm(Nk - B.c)
     hairgen.knot(m, Nk + axis * 0.1, axis, 18, (0.09, 0.13), (0.05, 0.08), 'clump', rng)
     hairgen.plait(B, m, B.surf(Nk, 0.06), rng)
@@ -315,8 +375,9 @@ def dressed(gen):
 
 
 def generators():
-    """The styles the grooms make or finish (hairgen.generate takes these over its own when SF_GROOMS is there):
-    sf_braid becomes the crown braids, and the drawn-back and cropped styles get the real hairline."""
+    """The styles the grooms make or finish (hairgen.generate takes these over its own when SF_GROOMS is there): the
+    bun and the work braid combed from the groom's roots (round 39; the crown braids, `gen_crown_braid`, read as feathers
+    over a cap, round 36), and the matted and cropped styles get the real hairline."""
     if not GROOMS or not os.path.isdir(GROOMS): return {}
-    return {'sf_braid': gen_crown_braid, 'sf_bun': dressed(hairgen.gen_bun), 'sf_matted': dressed(hairgen.gen_matted),
+    return {'sf_braid': gen_braid_groom, 'sf_bun': gen_bun_groom, 'sf_matted': dressed(hairgen.gen_matted),
             'sf_crop': dressed(hairgen.gen_crop)}

@@ -711,3 +711,24 @@ the studio's light is near real photographs' (side-to-side fall 0.21 against rea
 against real 0.27-0.28, with real photographs' far wider spread of light): the light is a small part of the gap, the face's form
 the larger. The years at the gate's crop stay owed: the eyes' ageing (hooding over the crease, the lids' aperture), the
 midface's descent at a larger scale than this shape's blobs, and the studio fitted to the photographs' spread of light.
+
+**Tied hair from the groom's own roots, and the atlas that summed to white (round 39, `hair_tied_r39.jpg`)**: the bun and
+the work braid are now combed from the Defender groom's real roots (`groom.combed`): every root of the Loose groom's scalp
+layers follows its great circle over the skull to the gather point and stops at its rim, and the hair stacks as drawn-back
+hair does (each strand on the ones rooted between it and the knot, the front's over the crown's), from 3.5 mm thick past
+the hairline to 10 mm at the gather, down onto the skin at every root, rough as hair drawn back by hand (sections shifted
+and lofted together, 40 flyaways); cards follow the clumps' mean courses (700 for the bun, 900 for the nape's tie). The bun's
+knot is a rope of four twisted plies coiled flat and domed on the head (`coil`; 46 flat locks round a ring stood up as spikes
+seen edge on); the work braid is gathered at the nape into a small knot and plaited. Measured on the base, the hair's outer
+surface stands 6-7 mm over the crown and 3-4 mm over the ears (the old layer 2-3 mm). Previewed in Blender
+(`$scratchpad/tied`) before the close-ups. Three defects found on the way, fixed: (1) **the strand atlas had summed to white**:
+each strand was added without covering the ones under it and the sum divided by the alpha, so the sheet and clump columns
+were 0.97-1.0 with a few dark strands (the recolour by luminance turned those into hard stripes; the wisps, few, stayed near
+black); composited over, as designed, the strands are 0.37-0.51 (p50 0.43) and every hair and beard was rebuilt; the
+shader's own per-strand and per-clump variation, which had made up for it, is halved; (2) **a grey band along every
+hairline**: the scalp's root tint started 2-3 mm below the hair layer's first strands (`Skin.shader`, now from hair weight
+0.28); (3) cards rooted 1.4 mm off the skin cut a hard contour at the hairline (now down to the layer at the root). An
+experiment's hair version left in the build's cache (v33-35) made two builds reuse old hair: the version now goes past every
+stamp. Gate round 39 (`gate_r39.txt`): 246 of 252; women read as men 73 % (71 before), men 14 %: the drawn-back hair, however
+real, still takes the hair from round the face, which is what the reader (and the eye) reads a woman by. White hair still
+stripes (lit and unlit cards; owed with the beards' shading), and a bald scalp's paler colour ends in a visible line.

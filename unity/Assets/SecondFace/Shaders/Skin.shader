@@ -303,9 +303,10 @@ Shader "SecondFace/Skin"
             stub = max(stub, w * 0.4h);   // where the bake left a gap in the stubble (behind the ears), still stubble
             // under a head of hair (_ScalpColour.a 2): its roots, dense a few millimetres in from the hairline, a light or
             // grey hair's thinner (R5: the bare scalp between the forehead and the first strands read as a wig on a bald
-            // head)
+            // head), starting where the hair's layer shows its first strands (round 39: from 0.12 the half-tinted skin
+            // showed 2-3 mm below them as a grey band along every hairline)
             if (_ScalpColour.a > 1.5h)
-                stub = max(stub, smoothstep(0.12h, 0.6h, w) * (0.95h - 0.9h * saturate(dot(_ScalpColour.rgb, half3(0.3h, 0.59h, 0.11h)) * 3.0h)));
+                stub = max(stub, smoothstep(0.28h, 0.66h, w) * (0.95h - 0.9h * saturate(dot(_ScalpColour.rgb, half3(0.3h, 0.59h, 0.11h)) * 3.0h)));
             if (_Bald > 0.001h)
             {
                 // when this point goes as _Bald rises: the temples, then the front hairline back and the crown, the top last
