@@ -531,3 +531,11 @@ from the upper lip's skin, so they hung past the mouth's line in front of the pa
 over the lip now end at the lip's edge (`hairgen.LIP_EDGE`, v32) and the moustache's are 7-8 mm; rebuilt for the men's
 base (beards only). The moustache now sits on the lip; it still reads as a bright fringe more than hair (no shade between
 strands, white near paper on a metered dark face): the beards' shading is next.
+
+**Round 23 (close-ups of older people, `hair_*` captures)**: the sun spots of R4d read as a rash over every face (an even
+speckle, dark skin too); they are now sparse, clustered and mostly on fair skin, at a cost of half a year on the 45-58s
+(26.6; 58+ 32.5). White hair at 0.46 linear read as plaster on the head and paper in a moustache; it is the photographed
+white now (0.31/0.30/0.26). Still owed from the close-ups: women's short white hair sits like a cap (its shape: no volume
+off the scalp), white moustaches read as a fringe (no shade between strands); nine of ten hats carry no delete list, so
+they mask no skin under them. Sex read unchanged by any of this round's work: women as men 62 % (real 37 %), men as women
+15 % (real 3 %).
