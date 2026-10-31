@@ -155,3 +155,14 @@ one of them a woman, so the years are pooled across the sexes with a sex offset)
 softer, the face fuller (+0.09), the cheeks under the eyes hollower (-0.13), a double chin (+0.28). Rendered at the
 library's own ends from where each face sits (`docs/evidence/unity/p4/research/rocketbox_calibrated_extremes.jpg`): every
 end is a person.
+
+**The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
+layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own
+triangles (`rocketbox_head_map.py`, seam-safe). (1) The per-texel change with age, regressed over the 78 faces without soot,
+masks or beards (9 past 50, one a woman): aligned, but weak and patchy (blocks at the lids where the registration is
+loosest, stray creases): an average of the old washes their lines out, each in its own place. (2) One real older face's fine
+detail carried across (`rocketbox_age_donor.py`): the donor's hairline comes onto the forehead and her lines are faint.
+The library's older faces read older mostly by their form (the jaw, the cheeks, the lids), their tone's unevenness and their
+hair, little by the texture's fine lines at this resolution: the years go in as the measured shape change (the calibration's
+slopes), the tone's change by region, the greying, and the donor's detail masked to the skin away from the hairline,
+lids and lips; judged in renders before any of it ships.
