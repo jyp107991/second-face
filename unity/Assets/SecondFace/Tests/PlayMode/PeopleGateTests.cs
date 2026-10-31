@@ -316,16 +316,32 @@ namespace SecondFace.Tests
             foreach (var (name, p) in looks)
             {
                 var male = p.body == "m";
-                var look = new SecondFace.Core.Npc.PlayerLook { Body = male ? "m" : "f", Hair = p.hair, Skin = p.skin };
+                // a whole look as Core made it ("look"), or one written by hand
+                var look = p.look ?? new SecondFace.Core.Npc.PlayerLook { Body = male ? "m" : "f", Hair = p.hair, Skin = p.skin };
+                if (p.look != null) male = look.Body == "m";
                 if (p.face != null) foreach (var kv in p.face) look.Face[kv.Key] = kv.Value;
                 if (p.shape != null) foreach (var kv in p.shape) look.Shape[kv.Key] = kv.Value;
                 var go = Object.Instantiate(male ? M : F, new Vector3(700f + n * 3f, 0f, 0f), Quaternion.identity);
                 SecondFace.Game.People.LookView.Apply(go, look);
+                // the skin's material overridden for a probe ("mat": float properties, "vec": vector and colour properties)
+                if (p.mat != null || p.vec != null)
+                    foreach (var r in go.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                    {
+                        if (!r.name.StartsWith("Body_")) continue;
+                        var block = new MaterialPropertyBlock();
+                        r.GetPropertyBlock(block);
+                        if (p.mat != null) foreach (var kv in p.mat) block.SetFloat(kv.Key, kv.Value);
+                        if (p.vec != null) foreach (var kv in p.vec) block.SetVector(kv.Key, new Vector4(kv.Value[0], kv.Value[1], kv.Value[2], kv.Value.Length > 3 ? kv.Value[3] : 1f));
+                        r.SetPropertyBlock(block);
+                    }
+                studio.Light(p.key, p.fill, p.ambient);
                 yield return null;
                 if (Measure(go, 1f) == null) { Object.Destroy(go); continue; }
                 studio.Meter = Studio.MeterFor(look);
+                go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
+                yield return null;
                 foreach (var (view, yaw) in new[] { ("front", 0f), ("three", 35f), ("side", 85f) })
-                    studio.Shoot(go, $"{name}_{view}", "probe", 1.1f, yaw, 0f);
+                    studio.Shoot(go, $"{name}_{view}", "probe", 1.3f, yaw, -0.03f);
                 n++;
                 Object.Destroy(go);
             }
@@ -337,7 +353,10 @@ namespace SecondFace.Tests
         {
             public string body, hair;
             public float skin;
-            public Dictionary<string, float> face, shape;
+            public Dictionary<string, float> face, shape, mat;
+            public Dictionary<string, float[]> vec;
+            public float key = 1.1f, fill = 0.45f, ambient = 0.45f;
+            public SecondFace.Core.Npc.PlayerLook look;
         }
 
         /// <summary>The hair and the face up close (R5): a few of the sample people (SF_HAIR_IDS, "cluster_sex_age_k" each,
@@ -433,6 +452,13 @@ namespace SecondFace.Tests
                 _key = new GameObject("gate_key").AddComponent<Light>(); _key.type = LightType.Directional; _key.intensity = 1.1f;
                 _fill = new GameObject("gate_fill").AddComponent<Light>(); _fill.type = LightType.Directional; _fill.intensity = 0.45f;
                 RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat; RenderSettings.ambientLight = new Color(0.45f, 0.45f, 0.47f);
+            }
+
+            /// <summary>The studio's lights for a probe (the gate's: key 1.1, fill 0.45, ambient 0.45).</summary>
+            public void Light(float key, float fill, float ambient)
+            {
+                _key.intensity = key; _fill.intensity = fill;
+                RenderSettings.ambientLight = new Color(ambient, ambient, ambient * 1.04f);
             }
 
             public void Shoot(GameObject go, string name, string folder = "portraits", float distance = 1.6f, float yaw = 0f, float up = 0f)
