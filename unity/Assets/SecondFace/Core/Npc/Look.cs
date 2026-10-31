@@ -184,10 +184,16 @@ namespace SecondFace.Core.Npc
             new(0.15f, 0.641f, 0.292f, 0.334f, 0.5f, 0.295f, 0.095f, 0.08f, 1.0f),
         };
 
+        /// <summary>A person's brow (R4, the sexes' cues): measured against FairFace (gate/contrast.py) real men's brows stand
+        /// out from the skin half again as much as women's (L* contrast 0.225 against 0.144 at 20-39); ours were 0.171 and 0.142,
+        /// so men's are drawn denser, and women's a little finer at the same darkness (lightening our women's brows in the
+        /// portraits halved how often they were read as men, 52 to 35 %, real 37 %).</summary>
         public static Brow BrowOf(PlayerLook look)
         {
-            var set = look.Body == "m" ? ManBrows : WomanBrows;
-            return set[System.Math.Clamp(look.Brows, 0, set.Length - 1)];
+            var male = look.Body == "m";
+            var b = (male ? ManBrows : WomanBrows)[System.Math.Clamp(look.Brows, 0, 2)];
+            return male ? new Brow(b.X0, b.X1, b.YHead, b.YPeak, b.PeakT, b.YTail, b.WHead, b.WTail, System.Math.Min(1.15f, b.Density * 1.3f))
+                        : new Brow(b.X0, b.X1, b.YHead, b.YPeak, b.PeakT, b.YTail, b.WHead * 0.85f, b.WTail * 0.85f, b.Density);
         }
 
         /// <summary>The brows' colour: their own, else the hair's.</summary>
