@@ -489,3 +489,12 @@ brought to the young bake's colour per channel (`_AgedBalance`, `WardrobeBuild.A
 its cast does not (real skin darkens a little with the years: de Rigal et al. 2010). The boards also show what still reads
 young beside the real sources: smooth cheeks and lids, no sagging or folds, white hair as a cap and white moustaches as
 teeth (R5's beards and hair, owed).
+
+**Round 19 (R4c closed, `gate_r4c.txt`, `eyes_r4c_before.jpg` / `eyes_r4c_after.jpg`, `board_r4c_old.jpg`)**: with the aged
+bake balanced, older people keep their people's colour; the eye region as above. Apparent age barely moved (58+ 28.3, real
+49; 45-58 22.5, real 37): **the faces read young for what their shape and texture lack, not their colour or eyes.** Sex
+read: women as men 55 % (real 37 %, was 67 %), men as women 20 % (real 3 %, was 17 % and 29 % in between). Gate person by
+person 243 of 252 (six look-alike pairs, two head-and-neck, one age). **R4 continues** with what ages a face beyond its
+colour and contrast, from the boards: the soft tissue (nasolabial folds, jowls, under-eye bags, hollow temples, thinner
+lips, the brow's descent), crow's feet and the cheeks' texture, and R5's white hair (a cap) and white beards (read as
+teeth); each measured with `apparent.py` on the population and judged on the boards.

@@ -853,14 +853,18 @@ compared by people; brows and lips' darkness now real, eyes near real on white m
 reads barely moved (§14, `gate_r4a.txt`). CI's Unity test job had been cut off at 40 min since P4.15c without testing anything (a Library cache saved only on
 success, so every run imported from scratch): the cache now saves always and the limit is 150 min; first green run to
 confirm. Locally the full suite (Heavy included) crashes the software GL driver in `PeoplesLineup` after the people's
-renders; alone it passes. **R4c in progress** (task: skin colour as measured): the eyes on dark skin read light because our
-darkest cheeks rendered L* 16 against the fairest 61 (real photos 29 against 40; spectrophotometry about 35 against 62). The
-skin's colour now comes from Core `SkinColour` (tone to CIELAB from dermatology's measurements by people, one multiplier
-per channel over the balanced bake, `_ToneMul`), the peoples' tones rebased on it and tested per people (`SkinColourTests`:
-each people's indoor adults within 3 L* of the measured mean); half-done: the gate's render with it, then `contrast.py`'s new
-by-people table (skin L*, the white of the eye over the skin) and, if the white still stands out on dark skin, the
-sclera's pigment by skin. **Next action:** CI's test job green (read its first full run); then the eyes on dark skin (the white against dark skin), the lashes
-as cards the camera resolves, then what ages a face beyond its contrast, re-measured with `contrast.py` and `apparent.py`. Then, as below:
+renders; alone it passes. **R4c done** (`docs/PEOPLE_REALISM.md` §15): the skin's colour is measured (Core `SkinColour`:
+tone to the cheek's CIELAB from dermatology's spectrophotometer readings by people, tested per people; `_ToneMul` over the
+balanced bake; the aged bake balanced to the young bake's colour, `_AgedBalance`); the eye against it (`Looks.EyeWhite`
+by the skin's pigment, brown eyes' shade by pigment `Bodies.DarkEyes`, the iris a cornea's catchlight with the room's
+reflection occluded, men's lash lines lighter, brows dense at the core); the gate studio meters faces as a camera
+(`Studio.Meter`); `contrast.py` reports the eye region by parts and people; `ShaderTests.OurShadersCompile` in CI. Eyes now
+near real for most peoples; **apparent age still far young** (58+ read 28, real 49) and the sex read short (women as men 55
+%, men as women 20 %; real 37 % and 3 %): the boards show smooth faces without the soft tissue's years, white hair as a cap
+and white beards as teeth. CI's Android workflow no longer cancels a running test job on a push (run 128 the first to run
+the full suite; read it). **Next action:** read CI run 128 (the first full test run) and fix what it finds; then what ages a face beyond its colour and
+contrast (`docs/PEOPLE_REALISM.md` §15's list: soft tissue, crow's feet, the cheeks' texture; R5's white hair and beards),
+measured with `apparent.py` and judged on the boards. Then, as below:
 R4 and the sexes' cues together, measured on the population with `apparent.py` and judged on the boards:
 what ages a face beyond its outline (skin, eyelids, the jaw's and neck's soft tissue, thinning hair) and what people read
 sex by beyond proportions (hair round the face, brows' and lashes' darkness, lip colour, skin, the cheeks' soft tissue);
