@@ -269,8 +269,11 @@ namespace SecondFace.Core.Npc
             float L(float a, float b) => a + (b - a) * t;
             // (R4c: with the eye's white and iris measured, men's lash lines at 0.75 put their eyes' contrast above women's,
             // the reverse of real faces; at 0.45 men's eyes read as real men's)
-            return look.Body == "f" ? (L(1f, 0.75f), L(0.55f, 0.35f), L(1f, 0.3f), L(0.45f, 0.25f))
-                                    : (L(0.45f, 0.35f), L(0.25f, 0.18f), L(0.3f, 0.1f), L(0.15f, 0.1f));
+            // (R4c: with the skin's colour measured, the lips stood out redder and darker than real ones, men's most: a* over
+            // the skin 12.6 against 6.0 and L* contrast 0.12 against 0.05 at 20-39, the men's bake's lips the redder; women's
+            // 11.4 against 8.5, real women's with lipstick. So the red and dark below the bake's for men, women's less red)
+            return look.Body == "f" ? (L(1f, 0.75f), L(0.55f, 0.35f), L(0.45f, 0.0f), L(0.2f, 0.05f))
+                                    : (L(0.45f, 0.35f), L(0.25f, 0.18f), L(-0.45f, -0.4f), L(-0.35f, -0.3f));
         }
 
         /// <summary>The white of the eye's years (yellower and duller from about thirty: SecondFace/Cloth _EyeYears).</summary>
