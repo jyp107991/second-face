@@ -690,3 +690,24 @@ are the soft tissue's form**: the cheeks and temples hollowing, the folds deepen
 hooding, the jowls and the neck sagging. Our faces carry the real faces' outlines (fitted from frontal landmarks, R3), not
 their depth, and the base's ageing shape is weak. Next: ageing in the head's form (blend shapes for the soft tissue's descent,
 authored from measured ageing of real faces' 3D form, by age and sex), judged at the gate's crop with `apparent.py`.
+
+**The soft tissue's descent as a shape (round 39, `face-years`)**: `tools/unity/people/face_years.py` authors it in the head
+frame of the skin painter (eyes at ±0.36, 0.1 head radii; the mouth's line from the base's `joint-mouth`) and `mh_build.py`
+adds it to both sculpt bases as the `face-years` shape key (every proxy refitted to it): the temples and the cheeks under
+the bones hollow, the nasolabial groove deepens with the cheek's fat over it, marionette lines and jowls, the lower lid's
+bag over the tear trough, the brow's tail and the upper lid descend, the neck's front loosens; at most 4.3 mm at full
+weight (seventy-five), from the orders of the ageing literature (Coleman and Grover 2006; Shaw and Kahn 2007). Core's
+`body-faceage` drives it from the years shown (from 35, whole by 75); `MeasureShapeResponses` measured it (3D: the face's
+length +1.9 / +2.5 mm, the neck +5.5 / +10.5 mm; 2D: the face's width over height +0.013) and the response models were refitted
+with every saved round. Read with `AgeCues` at the gate's crop, framed as FairFace frames its faces: at 65 women 30.2 and men
+38.3 (27.8 and 35.5 as drawn before it), the full shape on every age 30.8 / 38.9; real 60-69 read 47.5. On the base head under a
+raking light (`$scratchpad/fy`) the full shape reads as mild hollows and grooves, at twice its size as lumps and dents (a
+caricature): its size stays. In the portrait studio's soft light the faces with and without it look alike.
+**What else the reader answers to (2D probes on the AgeCues portraits and on 320 real faces, same crop)**: broad local
+contrast on the face (an unsharp mask over 3 % of the face's box, the forms shaded harder) makes ours at 65 read 41.7 (34.2
+as drawn) and real 60+ 51.3 (48.5): it amplifies what our faces' forms and painted lines carry, three times as much as on real
+faces; the fine detail sharpened, low-frequency mottling or global contrast 0-1.5 years on either. Measured on the inner face,
+the studio's light is near real photographs' (side-to-side fall 0.21 against real 0.19-0.22; the coarse band's spread 0.24-0.25
+against real 0.27-0.28, with real photographs' far wider spread of light): the light is a small part of the gap, the face's form
+the larger. The years at the gate's crop stay owed: the eyes' ageing (hooding over the crease, the lids' aperture), the
+midface's descent at a larger scale than this shape's blobs, and the studio fitted to the photographs' spread of light.

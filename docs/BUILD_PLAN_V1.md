@@ -2613,6 +2613,10 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   the solver split the difference and our faces kept 0.57-0.74 of real people's spread there. Draw one given the other
   (`Proportions.Fit`: the face first, the head's measures given the face's, #116), and check a generator's spread against
   real people's (whitened sd near 1), not only its range.
+- **Judge a form change under a raking light, not only in the portrait studio.** The `face-years` shape (4.3 mm at most)
+  showed clearly on the base head lit from above and the side, and not at all in the studio's soft key and fill; at twice
+  its size it turned to lumps. Render a shape key on the bare head under a raking light first (`$scratchpad/fy`), then in
+  the studio, and size it there, not by what the soft light hides (PEOPLE_REALISM §16 round 39).
 
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)
 

@@ -896,17 +896,7 @@ styles are) and free hair-card assets (licence fit, mobile cost), then `apparent
 tissue's descent, §16 round 38: the years at a speaking distance are in the face's form, not its lines, hair or
 surroundings: blend shapes for hollowing cheeks and temples, deepening folds, hooding lids, sagging jowls and neck, from
 measured ageing of real faces' 3D form; research a licence-fit source first: FLAME and the Basel Face Model are
-non-commercial research only, so authored ourselves). **Plan for the soft-tissue shape (`face-years`)**: (1) in
-`mh_build.py` beside `head-cranium`, a procedural shape key on the sculpt bases built in the head frame (eyes at y +0.1 and
-x ±0.36 radii; the mouth from `joint-mouth`), displacements along the normal at full years (dm): temporal hollow (|x| 0.62, y
-+0.25, r 0.18) in 0.025; submalar hollow (|x| 0.42, y -0.42, r 0.16) in 0.03; nasolabial groove (nose wing |x| 0.2, y -0.45
-to past the mouth's corner) in 0.015, 0.03 wide, with the malar fat's bulge above-lateral of it out 0.015; marionette groove
-(mouth corner down to the jaw) in 0.01 and the jowl (|x| 0.45, under the mouth's line) out and down 0.02; the bag under the
-lower lid out 0.015 with the tear trough under it in 0.01; the lateral brow down 0.015 and the upper lid's skin hooding; the
-front of the neck out 0.015; (2) Core `Sculpt` a body-group slider `face-years` driven by the years in `Looks.Shape` like
-`body-age` (from 35, whole by 75; FacesTests' every-slider rule), (3) a full base rebuild (every proxy is refitted to every
-shape key), `MeasureShapeResponses` + refit, `PlayerTestScene.Build`, (4) `AgeCues` with a `soft` variant and the gate,
-judged on close-ups (no caricature) and at the gate's crop. Then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
+non-commercial research only, so authored ourselves). **The soft-tissue shape (`face-years`, §16 round 39) is in**: authored in `face_years.py`, a shape key on both sculpt bases (at most 4.3 mm at seventy-five; at twice that a caricature on a raking light), driven by Core `body-faceage` from the years shown; responses measured and refitted; Core 218 pass. It adds about 2.5 years at 65 at the gate's crop (women 30.2, men 38.3; real 47.5). 2D probes: the face's forms shaded harder add 7.5 years to ours and 2.8 to real faces, and the studio's light is near real photographs' (coarse form shading 0.24-0.25 against 0.27-0.28): the gap is mostly the face's form. Owed for the coarse years: the eyes' ageing (hooding, the lids' aperture), the midface's descent at a larger scale, the studio fitted to the photographs' spread of light. **Tied hair from the groom (round 39, in progress)**: `groom.combed` combs the Loose groom's real roots over the skull to the gather point with a stacked volume (`gen_bun_groom`, `gen_braid_groom`; not yet in `generators()`); preview in Blender (`$scratchpad/tied/gen.py`, `render.py`) before it replaces the drawn-back styles. Then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
 then the 30-45s' years (what reads 23 at 37: the face's fullness, the eyes, the brows' thinning), each measured with
 `apparent.py` and judged on the boards. Then, as below:
 R4 and the sexes' cues together, measured on the population with `apparent.py` and judged on the boards:
