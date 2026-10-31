@@ -25,6 +25,7 @@ Shader "SecondFace/Cloth"
         _RecolourLum ("The texture's mean luminance", Float) = 0.2
         [Toggle] _RecolourIris ("Only the iris", Float) = 0
         _EyeYears ("The eye's years (the white yellower and duller)", Range(0, 1)) = 0
+        _EyeWhite ("The white against the skin, a linear multiplier (Core Looks.EyeWhite)", Vector) = (1, 1, 1, 1)
         [Toggle(_ENVIRONMENTREFLECTIONS_OFF)] _EnvironmentReflectionsOff ("No sky reflection", Float) = 0
         [Toggle(_SPECULARHIGHLIGHTS_OFF)] _SpecularHighlightsOff ("No highlight", Float) = 0
         _HairSheen ("Hair: a soft band of light along the strands (0 none)", Range(0, 1)) = 0
@@ -46,6 +47,7 @@ Shader "SecondFace/Cloth"
             half4 _BaseColor;
             half4 _Recolour;
             half _BumpScale, _Smoothness, _Cutoff, _Grime, _Wear, _RecolourLum, _RecolourIris, _Dyed, _HairSheen, _Grey, _EyeYears;
+            half4 _EyeWhite;
             float _Inflate;
         CBUFFER_END
 
@@ -154,6 +156,10 @@ Shader "SecondFace/Cloth"
                         w *= smoothstep(0.3h, 0.5h, sat) * (1.0h - smoothstep(0.3h, 0.55h, lum));
                     }
                     half3 colour = _Recolour.rgb;
+                    // the iris as photographs show it (R4c, gate/contrast.py): about L* 19 in faces whose skin reads 30-45;
+                    // ours read 21-26, and on dark skin lighter than the skin. The cornea's shade and the lid over its top
+                    // take most of the light a bare iris texture keeps
+                    if (_RecolourIris > 0.5h) colour *= 0.6h;
                     half detail = min(lum / max(_RecolourLum, 0.001h), 2.0h);
                     if (_Grey > 0.001h)
                     {
@@ -188,7 +194,8 @@ Shader "SecondFace/Cloth"
                     half white = (half)smoothstep(0.1, 0.13, d);
                     half shade = (half)smoothstep(0.12, 0.27, d);
                     // (measured, R4: real eye openings read a third darker than the skin round them, ours as light as it)
-                    albedo.rgb *= lerp(1.0h, half3(0.72h, 0.66h, 0.62h) * (1.0h - 0.65h * shade) * (1.0h - _EyeYears * half3(0.1h, 0.14h, 0.24h)), white);
+                    // (R4c: and as bright against the skin as photographs show it, the conjunctiva's pigment on darker skin)
+                    albedo.rgb *= lerp(1.0h, half3(0.72h, 0.66h, 0.62h) * _EyeWhite.rgb * (1.0h - 0.65h * shade) * (1.0h - _EyeYears * half3(0.1h, 0.14h, 0.24h)), white);
                     // the upper lid and its lashes shade the top of the eyeball, iris and white alike (by the eyeball's
                     // normal, which looks up there; faces are upright in the portraits and the game)
                     albedo.rgb *= 1.0h - 0.7h * (half)smoothstep(-0.25, 0.4, normalize(i.normalWS).y);

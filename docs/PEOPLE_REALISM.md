@@ -431,3 +431,39 @@ the clean target). Apparent age and sex barely moved: the 20-29s now read 28, th
 read as men 67 % (real 37 %), men as women 17 % (real 3 %). Facial contrast is part of the read, not most of it: next the
 lashes as geometry the camera resolves, and what ages a face in a photograph beyond its contrast (`gate_r4a.txt`).
 
+
+## 15. R4c: the skin's colour as measured, and the eye against it (2026-10-31, in progress)
+
+**Found by measuring the eye region by parts** (opening, lids, skin ring; `contrast.py` now reports by people the skin's
+rendered L* round the eyes, the white of the eye over it, the iris's L* and chroma, and the lids' gap over the iris): our
+eyes read lighter than the skin on dark faces not because of the eye but because **our darkest skin rendered L* 16 against
+the fairest 61**, a luminance ratio three times the real one. The old tone was a curve on the bake tuned by look (a third of
+its shade at the dark end, lifted most of the way to white at the fair).
+
+**The skin's colour is now a measured quantity** (Core `SkinColour`): a tone maps to the cheek's CIELAB as dermatology
+measures it (spectrophotometer d/8, D65, specular included): L* = 54 - 20 t - 4 t^2, hue about 53 degrees (yellower with a
+warm undertone), chroma about 19, less on the darkest skin. The peoples' tones are rebased so their indoor adults' cheeks are
+where real ones were measured: British 59.6 (sd 5.5), Kurdish 58.0, Chinese 58.9, Thai 60.7 (Xiao et al. 2017, Skin Res
+Technol 23); Indian adults 53-63 (Pawar et al. 2024); Black African foreheads at ITA -33 (Liège) and mostly below -50 (Uganda,
+ten countries), L* about 35-40. The shader multiplies the balanced bake by one factor per channel (`_ToneMul`). Tested per
+people (`SkinColourTests`): mean cheek L* north European 61.0, Mediterranean 57.7, East Asian 58.6, Southeast Asian 56.7,
+Latin American 55.7, South Asian 52.8, Indigenous American 53.2, East African 38.2, West African 37.6, each within 1.5 of
+the measured mean, spreads 3.2-4.5.
+
+**Rendered** (round 14): the skin round the eyes now L* 39-43 on light skin (real photographs 38-40) and 20 on the darkest
+(real 27-29: photographs are exposed for each face, the game's scenes are not). Measured at the photographs' scale (ours
+brought to FairFace's 81 px between the eyes) nothing changed, so resolution was not the cause. What the parts then showed:
+
+| under 60 | white of the eye / skin | iris L* | lids' gap / iris |
+|---|---|---|---|
+| real, light skin (white) | 1.13 | 19-22 | 0.69-0.73 |
+| ours, north European | 1.38-1.58 | 30-35 | 0.68-0.78 |
+| real, darkest (black) | 1.40-1.48 | 16-17 | 0.70 |
+| ours, African | 2.68-2.79 | 22 | 0.71-0.85 |
+
+The eyes are as open as real ones; the white and the iris are too bright, most of all on dark skin (in exposure-free terms
+the white reflects 2.4 times the skin on light faces against 1.3 real, 8 times on dark against 2.1). The real values also
+say a dark face's white is itself darker (no brighter in a photograph exposed for that face: about half as bright
+physically, the conjunctiva's pigment). **Done next**: the white set from Core by the skin's measured lightness
+(`Looks.EyeWhite`: 0.62 for everyone, to about half that and warmer on the darkest skin) and the iris at 0.6 of its old
+albedo; re-measured below.

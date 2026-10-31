@@ -36,7 +36,10 @@ Run:
 10. `contrast.py <face_landmarker.task> <validation.parquet> <unity/test-results>` (venv, `python -P -E`: `-I` drops the user
    site mediapipe's drawing utilities import from): facial contrast, how much darker the eyes, brows and lips are than the
    skin round them and how much redder the lips, on FairFace's faces at rest and on ours, by sex and age (Russell 2009;
-   Porcheron, Mauger and Russell 2013; docs/PEOPLE_REALISM.md §14); writes people_contrast.json.
+   Porcheron, Mauger and Russell 2013; docs/PEOPLE_REALISM.md §14); writes people_contrast.json. Ours are measured at the
+   photographs' scale (the same distance between the eyes), and by people it reports the parts of the eye region (R4c, §15):
+   the skin's rendered L* round the eyes beside the model's cheek L*, the white of the eye over the skin, the iris's L* and
+   chroma (MediaPipe's iris points) and the lids' gap over the iris.
 9. `PeopleGateTests.HairCloseups` (`SF_HAIR_IDS=cluster_sex_age_k,...`; `SF_HAIR_PARTS=1`; `SF_HAIR_GREY`): heads at
    0.95 m from three sides into test-results/hair, for judging hair and beards up close.
 

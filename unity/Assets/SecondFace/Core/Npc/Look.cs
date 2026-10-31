@@ -262,5 +262,20 @@ namespace SecondFace.Core.Npc
 
         /// <summary>The white of the eye's years (yellower and duller from about thirty: SecondFace/Cloth _EyeYears).</summary>
         public static float EyeYears(PlayerLook look) => System.Math.Clamp((ShownYears(look) - 30f) / 45f, 0f, 1f);
+
+        /// <summary>
+        /// The white of the eye against the skin (SecondFace/Cloth _EyeWhite, R4c): measured on FairFace's faces at rest
+        /// (gate/contrast.py), its brightest a fifth brighter than the skin round the eyes on light skin (1.13) and only half
+        /// again as bright on the darkest (1.44): with the skin's colour measured, ours read 1.4-1.6 and 2.7-2.8. So a duller
+        /// white for everyone (the eye sits in the lids' and brow's shade, and photographs show it so), and on darker skin
+        /// the conjunctiva's own pigment, warmer and darker (in a photograph the face is exposed for, a dark face's white is
+        /// no brighter than a light one's: physically about half as bright).
+        /// </summary>
+        public static (float R, float G, float B) EyeWhite(PlayerLook look)
+        {
+            var pigment = (float)System.Math.Clamp((57 - SkinColour.Lightness(look)) / 21, 0, 1);
+            var w = 0.62f * (1 - 0.45f * pigment);
+            return (w, w * (1 - 0.08f * pigment), w * (1 - 0.18f * pigment));
+        }
     }
 }

@@ -69,6 +69,17 @@ namespace SecondFace.Tests
         }
 
         [Test]
+        public void TheWhiteOfTheEyeDarkensAndWarmsWithTheSkin()
+        {
+            // (R4c: a photograph's white of the eye 1.13 times the skin round it on light skin, 1.44 on the darkest)
+            var fair = Looks.EyeWhite(Bodies.For("npc_sc_ew_f", false, 30, "clerk", ancestry: "north_european"));
+            var dark = Looks.EyeWhite(Bodies.For("npc_sc_ew_d", false, 30, "clerk", ancestry: "west_african"));
+            Assert.That(fair.R, Is.EqualTo(0.62f).Within(0.05f), "duller than a bare texture's for everyone");
+            Assert.That(dark.R, Is.LessThan(fair.R * 0.7f), "pigmented on dark skin");
+            Assert.That(dark.B / dark.R, Is.LessThan(fair.B / fair.R), "and warmer");
+        }
+
+        [Test]
         public void TheMultiplierTakesTheReferenceToTheTarget()
         {
             var r = (SkinColour.Decode(SkinColour.Reference.R), SkinColour.Decode(SkinColour.Reference.G), SkinColour.Decode(SkinColour.Reference.B));
