@@ -633,7 +633,11 @@ Shader "SecondFace/Skin"
                     // (R4d: stronger than at first, 0.26 and 1.1 mm, which read only on the forehead at a photograph's scale;
                     // and spots of the sun's years, lentigines, finer than the blotches)
                     float blot = (Noise3(i.rest * 9.0) - 0.5) * _Wrinkles * fine * 0.9;
-                    float spots = smoothstep(0.62, 0.72, Noise3(i.rest * 31.0 + 5.0)) * _Wrinkles * fine * smoothstep(0.45, 0.7, i.rest.z);
+                    // (sparse and clustered where the sun falls, mostly on fair skin: at first an even speckle over every face
+                    // read as a rash)
+                    float spotFair = saturate(dot(albedo.rgb, half3(0.3h, 0.59h, 0.11h)) * 3.0);
+                    float spots = smoothstep(0.76, 0.84, Noise3(i.rest * 24.0 + 5.0)) * smoothstep(0.45, 0.7, Noise3(i.rest * 4.0 + 11.0))
+                                * _Wrinkles * fine * smoothstep(0.45, 0.7, i.rest.z) * (0.25 + 0.75 * spotFair);
                     albedo.rgb *= 1.0h - (half)wr * 0.5h;
                     albedo.rgb *= 1.0h + (half)blot * half3(0.1h, -0.12h, -0.16h);
                     albedo.rgb *= 1.0h - (half)spots * half3(0.16h, 0.22h, 0.28h);

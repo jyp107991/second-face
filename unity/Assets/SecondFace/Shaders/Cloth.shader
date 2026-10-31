@@ -177,7 +177,9 @@ Shader "SecondFace/Cloth"
                         white = lerp(white, _Grey, max((half)saturate(fwidth(sx) * 1.5 - 0.5), (half)saturate((0.35 - fwidth(sx)) * 6.0)));
                         white = lerp(_Grey, white, 0.35h);
                         if (i.uv.x >= 0.25) white = _Grey;
-                        colour = lerp(colour, half3(0.46h, 0.44h, 0.4h), white);
+                        // (R5: at 0.46 a white head read as plaster and a white moustache as paper beside the measured skin:
+                        // a head of hair shades itself, cards do not, so the white is the photographed one, not the fibre's)
+                        colour = lerp(colour, half3(0.31h, 0.3h, 0.26h), white);
                     }
                     // a light hair's strands kept apart: the dark between them deeper the lighter the colour (on fair and grey
                     // hair the bake's contrast alone flattened to a cap; dark hair hides it), and never past white
