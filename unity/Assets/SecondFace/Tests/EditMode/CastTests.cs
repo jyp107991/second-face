@@ -9,7 +9,8 @@ namespace SecondFace.Tests
 {
     /// <summary>
     /// The people of a place drawn apart (#112): no two of a town's named people, and none of its extras, share a real face
-    /// their faces were blended from (two who did read as kin), and a look is the same every time it is asked for.
+    /// their faces were blended from (two who did read as kin), in every place, a person placed in two of them included; and a
+    /// look is the same every time it is asked for.
     /// </summary>
     public sealed class CastTests
     {
@@ -18,33 +19,32 @@ namespace SecondFace.Tests
         [Test]
         public void NoTwoPeopleOfAPlaceShareARealFace()
         {
-            foreach (var mapId in new[] { "shale" })
+            var towns = 0;
+            foreach (var mapId in Registry.Maps.Keys.OrderBy(k => k, System.StringComparer.Ordinal))
             {
                 var map = Registry.Maps[mapId];
+                if (map.Npcs == null) continue;
                 var owner = new Dictionary<int, string>();
                 var named = 0;
                 foreach (var p in map.Npcs.Where(p => p.Def != null && Registry.Npcs.ContainsKey(p.Def)).Select(p => p.Def).Distinct())
                 {
                     var def = Registry.Npcs[p];
-                    if (!ReferenceEquals(Registry.Maps.Keys.OrderBy(k => k, System.StringComparer.Ordinal)
-                            .Select(k => Registry.Maps[k]).First(m => m.Npcs != null && m.Npcs.Any(x => x.Def == p)), map)) continue;   // placed first elsewhere
-                    var look = Cast.LookOf(def, Routine.Male(def.Look));
-                    foreach (var f in Cast.FacesOf(look))
+                    foreach (var f in Cast.FacesOf(Cast.LookOf(def, Routine.Male(def.Look))))
                     {
-                        Assert.That(owner.ContainsKey(f), Is.False, $"{def.Name} and {(owner.TryGetValue(f, out var o) ? o : "")} share real face {f}");
+                        Assert.That(owner.ContainsKey(f), Is.False, $"{mapId}: {def.Name} and {(owner.TryGetValue(f, out var o) ? o : "")} share real face {f}");
                         owner[f] = def.Name;
                     }
                     named++;
                 }
-                Assert.That(named, Is.GreaterThan(5), $"{mapId}'s named people");
-                var extras = Extras.Of(map);
-                foreach (var x in extras)
+                foreach (var x in Extras.Of(map))
                     foreach (var f in Cast.FacesOf(x.Look))
                     {
-                        Assert.That(owner.ContainsKey(f), Is.False, $"{x.Def.Name} (extra) and {(owner.TryGetValue(f, out var o) ? o : "")} share real face {f}");
+                        Assert.That(owner.ContainsKey(f), Is.False, $"{mapId}: {x.Def.Name} (extra) and {(owner.TryGetValue(f, out var o) ? o : "")} share real face {f}");
                         owner[f] = x.Def.Name;
                     }
+                if (named > 5) towns++;
             }
+            Assert.That(towns, Is.GreaterThan(1), "places with more than five named people");
         }
 
         [Test]
