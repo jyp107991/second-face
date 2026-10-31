@@ -2761,3 +2761,15 @@ hardening.** P4–P13 are listed in §5. Each step below is one commit (a few WI
     `walkabout_saloon`) and runs the tour from the overlay's button. A `play-*` tag builds the APK onto a release page
     (android.yml).
 Then P4 from §5, step by step (P5 continues after it from P5.3).
+- **A body scaled whole by its stature shrinks its head with it.** Every person was one uniform scale of the base, so a short
+  woman's head came out 3 sd small and the solver bent the face's shapes to make up for it; real heads grow far less than
+  bodies (ANSUR II: about stature^0.25). The head bone carries its own scale against the body's (`Bodies.HeadScaleOf`), and
+  every prediction of a head's measures takes it (`Proportions.Factors`). Check an allometry (log measure on log stature)
+  before scaling a part with the whole.
+- **A slider fitted to photographs is not a measure of what they cannot see.** R3's faces fitted from FairFace set the
+  neck's width and the skull's breadth (under the hair), and their ranges then bounded the solver: the women's necks stayed
+  3 sd thin and the skulls narrow. Bound a slider by real faces only where a photograph shows it.
+- **Hand-written dimorphism stacks on the bases' own.** The bases already differ as a man and a woman do; the archetypes' sex
+  rules (a woman's shorter chin and nose, a man's longer) on top of them made women's lower faces longer than men's (the
+  reverse of real faces) and their jaws twice as narrow for their cheeks as real women's. Measure the bases' own difference
+  first and write only what is left.

@@ -752,3 +752,42 @@ sent to the owner; then the gate as a guard):
 - O6. Profiles: a profile view on every board; the lips and chin against the face's line as real profiles of each people
   sit (soft-tissue norms), as a guard.
 - O7. The cast and Shale re-rendered; the owner's review.
+
+### 17.1 O1-O3 done in Core (2026-10-31)
+
+- **O1, the natural ranges** (`Sculpt.Natural`): features inside ±0.8, tighter where one alone turns (the lids' opening and
+  the eyes' size stare past about +0.5, the mouth's corners are an expression past 0.3, the lower lip opens the mouth past
+  +0.55, a drooping tip shows the nostrils past -0.5); the structure (the head's and the jaw's shapes) inside ±0.35 and the
+  head's single shapes (round, square, oval...) at most 0.3: at 0.5 they made moon faces. Isolation probes (the same face with
+  one group of sliders put back at a time) found the balloon faces in the structure, never in the features: features alone
+  read human.
+- **O2, features from the archetypes**: a face is its archetype (people, sex, structure, build, years, attractiveness) with
+  0.4 of a real face's own difference from its people (R3's blend less the pool's middle), clamped to the natural ranges round
+  the corrected base. The solver (`Proportions.Free`) moves only the head's size (its width ±0.2, its height and depth ±0.4),
+  the skull's width, the vault's height and the neck. The 3D face height is not held (the mesh's sellion and a caliper's
+  differ with the nose's bridge: measured 6.7 mm rms of noise); the gate's 2D check holds the outline only
+  (face_hw, jaw_face, icd_face, lower_face), the feature ratios are notes.
+- **The archetypes calibrated to real faces' gaps**: hand-written, they exaggerated each people's features (west African
+  noses 2.5 real sds wider than north Europeans', lips 2.7 fuller, where FairFace's faces at rest differ by 0.5 and 1.4) and
+  each sex's (women's lower faces longer than men's, the reverse of real faces; women's jaws narrow for their cheeks by 0.93 sd
+  against 0.41). The bases' own ancestry shapes (MakeHuman's body-african/-asian/-caucasian) already carry much of the
+  peoples' differences: body-african alone gives a man's lips a real sd of fullness. A bounded least squares
+  (`spreadexp/calib2.py`, each archetype value kept inside its natural range with room for the spread) took the people's and
+  the sexes' gaps in the feature ratios from 0.51 to 0.33 sd rms; the women's corrections go on the woman's archetype (her
+  absolute offsets show where the error sits), and east and south-east Asian women's eyes are set wider than their men's
+  (`Faces.WomenOf`: FairFace 0.8 against 0.4 sd). What is left (brows set low over east Asian eyes, 1.2-1.4 sd) is a note.
+- **O3, the bases corrected to real people** (`Faces.WomanBase`, `ManBase`; the natural and the solver's ranges are round
+  them): measured on the bases against ANSUR II and FairFace, two sources agreeing on each: the eyes 3-4 mm too close
+  together (the pupils' distance 0.7-1.9 sd short in 3D, the inner corners' about 1 sd in the photographs: eye-trans +0.3), the
+  skull 1.5-3 sd narrow over a face of the right width (+0.6, and the photographs' fits no longer bound it: a photograph
+  cannot see the skull under the hair), the women's neck 3 sd thin (279 mm against real women's 328: +0.4 width and depth,
+  the photographs' fits no longer bound it either), the woman's face short for its width against the man's (in 3D 1.25 sd
+  short where a man's is 0.4 long; men's faces 0.16 sd longer for their width in the photographs, the bases 0.85): the head
+  drawn out and the vault kept (head-scale-vert +0.2, forehead-scale-vert -0.25), not the chin (lengthened at the chin, her lower
+  face grew longer than a man's), and her jaw a little wider (head-triangular 0.15).
+- **The head's allometry**: every body was scaled whole by its stature, so a short woman's head shrank with her, 3 sd small at
+  the bottom of the range. Real heads hardly grow with the body (ANSUR II, log measure on log stature within a sex: head
+  breadth 0.07-0.14, the cheeks' 0.16-0.20, the eyes' spacing 0.25-0.29, the vault 0.24-0.29, head length 0.35, the face's
+  height 0.42): the head bone now carries stature^(0.25-1) against the body's scale (`Bodies.HeadScaleOf`, LookView), the
+  measures predicted with it (`Proportions.Factors`). In 3D every measure's mean now sits within ±0.5 sd of real people's
+  for both sexes, 0-2 of 280 people outside the region (were 24).
