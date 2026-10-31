@@ -2583,6 +2583,14 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
 - **`cancel-in-progress` and checkpoint pushes never let a long job finish.** The Android workflow cancelled its running
   run on every push to main; the test job takes over an hour and checkpoints are pushed every few minutes, so no test run
   could end. Later pushes now wait (`cancel-in-progress: false`; GitHub keeps only the newest pending run).
+- **HLSL that compiles for one target can fail on GL.** A shader local named `texture` (a GLSL built-in) failed the skin
+  shader's glcore/GLES compile, and every person in the gate rendered without it (no portraits, 6 tests failed). Avoid
+  GLSL names (`texture`, `sample`, `input`, `output`, `filter`) for locals; `ShaderTests.OurShadersCompile` (PlayMode, in
+  CI) now fails on any compile error in our shaders.
+- **A photograph meters on the face; a fixed studio does not.** Compared with FairFace, our darkest faces' features
+  measured against a skin rendered far darker than photographs show it (L* 19 against 28), which inflates every ratio to
+  the skin (the -16 in L* weighs most at the dark end). The gate studio meters each face as a camera (exposure by the
+  skin's measured reflectance to the power -0.34, fitted from the real data) before comparing.
 - **Skin colour is a measured quantity: calibrate it, don't shape it by eye.** The skin's tone was a curve on the bake (a
   third of its shade at the dark end, lifted most of the way to white at the fair), tuned by look; it put the darkest
   cheeks at L* 25 and the fairest past 70, three times the real luminance ratio between peoples, and the whites of the eyes
