@@ -878,10 +878,14 @@ sits 0.08 lower: `_Mouth`, `WardrobeBuild.MouthLine`), the lips' occlusion floor
 photographs, and a lower key moved the eyes', brows' and sex read's calibration away: a studio fitted to the photographs is
 owed). **Faces' spread (#116)**: ours varied 0.57-0.74 of real people's in the face's width, the eyes' spacing and the nose
 because each head's measures (ANSUR) and face (FairFace) were drawn apart and the solver split the difference; the face is
-now solved first and the head drawn given it (`Proportions.Fit`), 0.76-0.87 now, every head inside the real region (gate
-round to confirm). **CI run 138** (PlayMode only, 1 h 50 min): 71 of 73 pass, the hair capture skipped (local), the radial
+now solved first and the head drawn given it as loosely as its own spread (`Proportions.Fit`; response models refitted),
+rendered 0.71-0.76 in the face's width over height (0.60-0.62 before) and the heads' measures at real people's spread; **gate
+249 of 252** (no look-alike pair; 1 head, 1 age, 1 proportions). The photograph's last steps (224 px, JPEG 75) applied to
+ours read the same ages: the years are in the faces. **CI run 138** (PlayMode only, 1 h 50 min): 71 of 73 pass, the hair capture skipped (local), the radial
 UI test over its 15 min (17 min: UI frames on the runner are minutes each, the 3D tests 1-4 min; why is open): UI tests 30
-min. **Next action:** the gate round for #116 (look-alikes and 3D), then the next Android run; then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
+min. **Next action:** the next Android run (UI tests 30 min); R4d: what the age reader answers to on our older faces (render
+a few 60-year-olds with each ageing cue pushed past real, one at a time: the aged bake, the lines, the soft tissue's sag,
+grey hair, and measure each with `apparent.py`); then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
 then the 30-45s' years (what reads 23 at 37: the face's fullness, the eyes, the brows' thinning), each measured with
 `apparent.py` and judged on the boards. Then, as below:
 R4 and the sexes' cues together, measured on the population with `apparent.py` and judged on the boards:

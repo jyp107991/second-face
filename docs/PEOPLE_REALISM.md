@@ -615,7 +615,13 @@ the first face-first round (it had put shapes where they knew few people: 47 fac
 | the cheeks' breadth (3D) | 0.84 / 0.79 | 0.92 (rendered 1.11 / 1.02 at the firm hold) |
 
 Rendered (round 31, the firm hold): the gate 248 of 252 (245 before), **no look-alike pair**, no proportions or shape
-failure; 3 heads and 1 age remain. **The photograph's last steps tried and ruled out**: FairFace's images are 224 px JPEGs at
+failure; 3 heads and 1 age remain, but the faces' heights spread too wide. **Round 32 (the loose hold, `gate_r116.txt`): 249
+of 252**, no look-alike pair, 1 head, 1 age and 1 proportions failure (Pell, as before #116); rendered and whitened by
+real people's spread (women / men; round 13, before #116, in brackets): the face's width over its height 0.71 / 0.76 (0.60 /
+0.62), the cheeks' breadth 1.02 / 0.97 (0.86 / 0.80), the pupils' spacing 1.00 / 0.94 (0.79 / 0.75), the head's breadth 1.03
+/ 0.97 (0.90 / 0.85), the face's height 1.18 / 1.02 (1.10 / 1.00; 1.37 / 1.22 held firmly). The faces' 2D proportions stay
+below real (0.7-0.85: the real-face fits are ridge-shrunk, and a frontal render lacks the photographs' tilt), the heads'
+measures are now real's. **The photograph's last steps tried and ruled out**: FairFace's images are 224 px JPEGs at
 quality 75 (measured), the face filling the frame (207 px); ours brought to that size and saved so read the same ages (30-45
 22.8, 45-58 28.0, 58+ 33.7 against 23.0, 28.2, 34.1) and sexes: the years our faces lack are in the faces, not in the
 comparison.
