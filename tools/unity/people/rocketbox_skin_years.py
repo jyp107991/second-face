@@ -10,9 +10,11 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 
-def texel_map(tuv, tris, res):
-    """Each texel of the template layout's face box: its triangle and barycentric weights (-1 where none)."""
-    lo = tuv.reshape(-1, 2).min(0); hi = tuv.reshape(-1, 2).max(0); side = (hi - lo).max()
+def texel_map(tuv, tris, res, lo=None, side=None):
+    """Each texel of the template layout's face box (or of the square lo + side, when given): its triangle and barycentric
+    weights (-1 where none)."""
+    if lo is None:
+        lo = tuv.reshape(-1, 2).min(0); hi = tuv.reshape(-1, 2).max(0); side = (hi - lo).max()
     P = (tuv - lo) / side * (res - 1)
     tri_of = -np.ones((res, res), int); W = np.zeros((res, res, 3))
     for t in range(len(tris)):
@@ -46,7 +48,7 @@ def main(reg, tuvp, heads, ages_path, out, sheet, res=384):
     faces, ages, sexes = [], [], []
     for n, name in enumerate(R['names']):
         p = os.path.join(heads, name + '.jpg')
-        if name in A['skin_out'] or name not in A['ages'] or not os.path.exists(p): continue
+        if name in A['skin_out'] or name in A.get('beard', []) or name not in A['ages'] or not os.path.exists(p): continue
         img = np.asarray(Image.open(p).convert('RGB'), np.float32) / 255.0
         uvf = R['UV'][n]
         uv = (uvf[tris[tt]] * ww[:, :, None]).sum(1)
