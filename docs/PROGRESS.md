@@ -893,7 +893,9 @@ drawn-back hair itself renders as a thin striped cap (`hair_strays_r35.jpg`). **
 tests 30 min); hair's pale flecks fixed (the near-white sheen band out, §16 round 37); **tied hair by another technique** (a layer under cards reads as a cap whatever its numbers, §16 round 36):
 a bake-off on close-ups between tied styles made from a real groom's strands (combed back to a knot or plait as the loose
 styles are) and free hair-card assets (licence fit, mobile cost), then `apparent.py` by hair; then the coarse years (soft
-tissue's descent); then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
+tissue's descent, §16 round 38: the years at a speaking distance are in the face's form, not its lines, hair or
+surroundings: blend shapes for hollowing cheeks and temples, deepening folds, hooding lids, sagging jowls and neck, from
+measured ageing of real faces' 3D form; research a licence-fit source first); then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
 then the 30-45s' years (what reads 23 at 37: the face's fullness, the eyes, the brows' thinning), each measured with
 `apparent.py` and judged on the boards. Then, as below:
 R4 and the sexes' cues together, measured on the population with `apparent.py` and judged on the boards:

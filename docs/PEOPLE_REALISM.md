@@ -676,3 +676,17 @@ texels even, its transparent ones darker), not the recolour, not the scalp; the 
 0.16) lit the cards' small fragments. Only the band tinted by the hair stays, weaker (0.2): brown and dark hair now read in
 their own colour with a faint strand texture. The readers did not move (women as men 71 %, 58+ 31.3; gate 246 of 252): they
 read the head's coarse shape, not this. White hair still reads as a crocheted cap (owed with the tied styles).
+
+**Where the coarse years are (round 38)**: real FairFace faces read at the gate's crop with the face's box blurred read about
+20 at every age, and with everything but the face's box black read their years (46.5 at 58+ against 49.2 as they are): the
+network finds the years in the face, not the hair, neck or clothes round it. Ours, the face alone, read 30.3 at 58+. In the
+photograph's own frame (the face filling it) ours read their years; at the gate's crop (the face a third smaller) real faces
+read older and ours younger: what reads age at that scale is the face's coarse form under the light, not its fine lines.
+Probed on our portraits, each against 31.3 at 58+ as drawn: soft shadows a centimetre wide painted along the nasolabial
+folds, the bags' lower edge, the marionette lines and jowls and the temples 35.1 (and +4 at 45-57); the eye whites dimmed to
+real people's brightness over the skin (ours are brighter: women 1.42 against 1.17) 28.8, younger; with MakeHuman's own
+ageing shape at seventy, white hair or the lines at their deepest (round 34) 1-2 years. **The years at a speaking distance
+are the soft tissue's form**: the cheeks and temples hollowing, the folds deepening into grooves that cast shade, the lids
+hooding, the jowls and the neck sagging. Our faces carry the real faces' outlines (fitted from frontal landmarks, R3), not
+their depth, and the base's ageing shape is weak. Next: ageing in the head's form (blend shapes for the soft tissue's descent,
+authored from measured ageing of real faces' 3D form, by age and sex), judged at the gate's crop with `apparent.py`.
