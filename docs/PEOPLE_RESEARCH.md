@@ -140,3 +140,18 @@ key. First result (`docs/evidence/unity/p4/research/rocketbox_sculpt_f07.jpg`, e
 width, the lips, the mouth's width, the jaw, the cheekbones and the face's length move the real face and it stays a
 person; at full reach the jaw and the long face go too far and the chin's skin stretches (natural ranges, as ours). The
 eyes' size barely moves (Rocketbox's eyes are in the head's mesh).
+
+**The sliders' reach from the library itself (owner, 2026-10-31: no slider may make a face no one has; the young against
+the old say what the years do).** `rocketbox_register.py` fits our template head onto each of the 110 Rocketbox heads
+(nine facial landmarks a fringe cannot cover, a thin-plate warp, then projected onto the skin and smoothed: a median 3 mm
+from it), so every face is the same vertices; `rocketbox_template_keys.py` exports the sculptor's 139 shapes on those
+vertices; `rocketbox_calibrate.py` expresses each face's front in the shapes (non-negative least squares with a light
+ridge; shapes that barely touch the front left out; the shapes explain 59-63 % of how the faces differ) and writes
+`tools/unity/people/data/rocketbox_calibration.json`: per sex each slider's spread across the library (its reach, [2.5,
+97.5] %), each face's own place on every slider (so a face moves only as far as the library's furthest face in each
+direction), and each slider's change per year (ages judged by eye, `data/rocketbox_ages.json`; 14 of the 110 are past 50,
+one of them a woman, so the years are pooled across the sexes with a sex offset). The reach is about ±1 for the lips,
+±0.3-0.5 for the nose's width, 0.6-1.2 for the jaw; the years over a decade: the mouth wider (+0.14), the cupid's bow
+softer, the face fuller (+0.09), the cheeks under the eyes hollower (-0.13), a double chin (+0.28). Rendered at the
+library's own ends from where each face sits (`docs/evidence/unity/p4/research/rocketbox_calibrated_extremes.jpg`): every
+end is a person.
