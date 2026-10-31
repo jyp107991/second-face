@@ -568,3 +568,26 @@ over the eyes', the eyes' size, the cheekbones' breadth and the pupils' spacing 
 breadth, the face's height, the neck; the lips' height over the face is 1.26 in women, wider than real). The fits'
 ridge, the solver's anchoring to the archetype and the limits' room all pull towards the middle: to find and undo (#116),
 then the look-alike check again.
+
+**The lips' darkness traced (rounds 27-29, #115)**: measured by parts against FairFace (`lipsplit` in the session's scratch:
+the lips' outline split at the mouth's line, the ring of skin above and below it), men 20-59, L* contrast:
+
+| | all | upper lip | lower lip | the line | ring above / below | a* upper / lower |
+|---|---|---|---|---|---|---|
+| real | 0.044 | 0.116 | -0.010 | 0.140 | 37.6 / 36.7 | 4.8 / 6.4 |
+| ours before | 0.121 | 0.176 | 0.082 | 0.323 | 48.9 / 41.2 | 0.2 / 12.6 |
+| masks on the mouth (27) | 0.106 | 0.180 | 0.046 | 0.302 | 48.3 / 41.7 | 4.9 / 8.5 |
+| lips' occlusion floored (28) | 0.099 | 0.172 | 0.038 | 0.286 | 48.3 / 41.5 | 4.9 / 8.4 |
+
+Three causes. (1) Every mask round the mouth was placed at the women's mouth (-0.67 in the head frame); the men's lower face
+is longer and their mouth's line sits at -0.75 (measured on each base: the deepest occlusion on the midline under the nose,
+`WardrobeBuild.MouthLine` into `_Mouth`), so on men the lips' colour lay on the upper lip and the skin above it, and the
+painted stubble on the lower lip. The masks follow each base's mouth now. (2) The per-vertex occlusion of the lips' seam
+spread over the lips' inner halves: floored inside the lips (a small part of the line's darkness). (3) The gate's studio
+lights from 28 degrees above: the skin under our lower lip is 7-10 L* darker than above the lips, real photographs' 1-3. A
+key at 12 degrees halved that gradient and lightened the line (0.241), but moved the eyes' and brows' contrast further from
+real (women's eyes 0.140 against 0.206, men's brows 0.180 against 0.225), the lips' a* up and the men read as women from
+17 to 26 % (real 3 %): FairFace's light is not simply frontal, and every colour calibration so far was made under the 28
+degree key. The studio stays at 28 degrees; a studio fitted to the photographs' light on all these measures together is
+owed (with the studio's post-processing, #110). The men's lips remain twice real (0.099 against 0.044), most of it the
+line and the shading under the lower lip.

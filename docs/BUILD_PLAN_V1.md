@@ -2604,6 +2604,16 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   `SkinColour`, tested per people), one linear multiplier per channel over the balanced bake. Any physical quantity a
   shader fakes (albedo, reflectance, sizes) gets a measured target and a test before it gets a slider.
 
+- **A mask placed on one base is wrong on the other.** Every mask round the mouth (lips' colour, the painted stubble's bare
+  lips and chin, the folds) was placed at the women's mouth (-0.67 in the head frame); the men's lower face is longer and
+  their mouth sits at -0.75, so men's lip colour lay over the skin above the lip and stubble over the lower lip. Measure a
+  landmark on each base (`WardrobeBuild.MouthLine` into `_Mouth`) and place masks from it; never one constant for both.
+- **Two independent draws of one measure halve its variety.** Each head's measures were drawn from ANSUR II and its face
+  from FairFace's real faces independently; where they overlap (the cheeks' breadth, the face's height, the eyes' spacing)
+  the solver split the difference and our faces kept 0.57-0.74 of real people's spread there. Draw one given the other
+  (`Proportions.Fit`: the face first, the head's measures given the face's, #116), and check a generator's spread against
+  real people's (whitened sd near 1), not only its range.
+
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)
 
 1. Combat stays turn-based with the §6.G depth (default: yes).
