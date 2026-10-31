@@ -71,12 +71,13 @@ namespace SecondFace.Core.Npc
             var l = new List<Extra>();
             if (map?.Extras == null) return l;
             var taken = new HashSet<string>();   // a place's names, so three women of one town are not all Lia (P4.15b)
-            for (var i = 0; i < map.Extras.Count; i++) l.AddRange(Make(map, i, map.Extras[i], taken));
+            var faces = Cast.Faces(map);           // and its faces: none drawn from a real face its named people were (#112)
+            for (var i = 0; i < map.Extras.Count; i++) l.AddRange(Make(map, i, map.Extras[i], taken, faces));
             return l;
         }
 
         /// <summary>The extras of one of a map's definitions (ids <c>x_&lt;map&gt;_&lt;index&gt;_&lt;k&gt;</c>).</summary>
-        public static List<Extra> Make(MapDef map, int index, ExtrasDef def, HashSet<string> taken = null)
+        public static List<Extra> Make(MapDef map, int index, ExtrasDef def, HashSet<string> taken = null, HashSet<int> faces = null)
         {
             var mapSeed = map.Seed.HasValue ? (uint)(long)map.Seed.Value : Bodies.Seed(map.Id);
             var rng = new Rng(unchecked(mapSeed * 7919u + (uint)index * 104729u));
@@ -91,7 +92,8 @@ namespace SecondFace.Core.Npc
                 var role = rng.Pick(roles);
                 var age = def.Ages != null && def.Ages.Count >= 2 ? Math.Round(rng.Range(def.Ages[0], def.Ages[1])) : Math.Round(17 + 50 * rng.Next() * rng.Next() + 10 * rng.Next());
                 var male = rng.Chance(MaleShare(role));
-                var look = Bodies.For(id, male, age, role, community: community, fit: false);
+                var look = Bodies.For(id, male, age, role, community: community, fit: false, avoid: faces);
+                if (faces != null) faces.UnionWith(Cast.FacesOf(look));
                 var pool = Names[Pool(look, rng)];
                 var names = male ? pool.M : pool.F;
                 var name = rng.Pick(names);

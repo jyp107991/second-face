@@ -98,7 +98,7 @@ namespace SecondFace.Core.Npc
         /// <summary>A person's look (for the base of their sex) from who they are.</summary>
         /// <param name="fit">false leaves the proportions' fit (Proportions.Fit, a few milliseconds) for when the person is
         /// first shown (<see cref="Finish"/>, LookView): a place's people are made as data when it loads.</param>
-        public static PlayerLook For(string id, bool male, double age, string role = null, Means? means = null, string ancestry = null, double[] community = null, bool fit = true)
+        public static PlayerLook For(string id, bool male, double age, string role = null, Means? means = null, string ancestry = null, double[] community = null, bool fit = true, ICollection<int> avoid = null)
         {
             var rng = new Rng(Seed(id));
             var m = means ?? MeansOf(role, rng);
@@ -206,7 +206,7 @@ namespace SecondFace.Core.Npc
             var drawn = Faces.Draw(rng, new Faces.Who
             {
                 Male = male, Age = age, Cluster = cluster, Second = second, Share = share,
-                Build = look.Build, Muscle = look.Muscle, Hardness = hard,
+                Build = look.Build, Muscle = look.Muscle, Hardness = hard, Avoid = avoid,
             });
             look.Face = drawn.Values;
             look.FaceSource = drawn.Source;

@@ -48,6 +48,8 @@ namespace SecondFace.Core.Npc
             public double Muscle;
             /// <summary>How hard the life has been on the face (sun, wind, want, labour): -0.3 sheltered and well fed .. 1.</summary>
             public double Hardness;
+            /// <summary>The real faces others of the same place were drawn from, left out of this one's (<see cref="Cast"/>).</summary>
+            public ICollection<int> Avoid;
             /// <summary>0..1, how striking (the skew the owner asks for: towards the attractive); NaN draws it.</summary>
             public double Attractive = double.NaN;
         }
@@ -269,7 +271,7 @@ namespace SecondFace.Core.Npc
                 // one, Langlois and Roggman 1990; the scale's mean over the drawn attractiveness is one, so the people's spread
                 // is kept on the whole)
                 var spread = 1.31 - 0.5 * att;
-                var real = RealFaces.Pick(rng, who.Male, who.Cluster, who.Age, 1.5 * full + (who.Male ? 0.6 * Math.Max(0, who.Muscle) : 0), spread);
+                var real = RealFaces.Pick(rng, who.Male, who.Cluster, who.Age, 1.5 * full + (who.Male ? 0.6 * Math.Max(0, who.Muscle) : 0), spread, who.Avoid);
                 if (real != null)
                 {
                     var delta = new Dictionary<string, double>();

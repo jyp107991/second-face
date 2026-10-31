@@ -61,11 +61,25 @@ namespace SecondFace.Core.Npc
         /// stay apart), whose blend (its difference from the pool's middle scaled by <paramref name="spread"/>) coheres with
         /// the real faces of their people and sex as the gate holds them (<see cref="Distance2"/>, <see cref="ShapeDistance"/>,
         /// each less <see cref="Proportions.Room2"/>; a few draws, the last kept); null where there are none.</summary>
-        public static Mix Pick(Rng rng, bool male, string cluster, double age, double fullness = 0, double spread = 1)
+        public static Mix Pick(Rng rng, bool male, string cluster, double age, double fullness = 0, double spread = 1, ICollection<int> avoid = null)
         {
-            var near = Pool(male, cluster, age);
-            if (near.Count < 3) return null;
-            var mean = Mean(near);
+            var all = Pool(male, cluster, age);
+            if (all.Count < 3) return null;
+            var mean = Mean(all);
+            // the faces other people of the place already drew left out (#112: two people of a town sharing two of their
+            // three faces read as kin; Shale had three such pairs), widened a decade at a time where too few are left, the
+            // pool's middle kept
+            var near = all;
+            if (avoid != null && avoid.Count > 0)
+            {
+                var free = all.Where(f => !avoid.Contains(f.Id)).ToList();
+                var sex = male ? "m" : "f";
+                var every = Races(cluster).SelectMany(r => FacesData.Groups.TryGetValue($"{r}/{sex}", out var g) ? g : Array.Empty<FacesData.Real>()).ToList();
+                var cls = AgeClass(age);
+                for (var d = 1; free.Count < 3 && d <= 3; d++)
+                    free = every.Where(f => Math.Abs(f.Age - cls) <= d && !avoid.Contains(f.Id)).ToList();
+                if (free.Count >= 3) near = free;
+            }
             // a face's fullness goes with the body's (facial adiposity follows BMI: Coetzee, Perrett and Stephen 2009): each real
             // face weighted by how likely its fullness is given the person's (in the pool's own sd), so the heavy draw the
             // full faces and the lean the hollow ones, and a muscled man is hardly ever gaunt (owner, pass 9)
