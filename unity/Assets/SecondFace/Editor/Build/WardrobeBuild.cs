@@ -118,6 +118,13 @@ namespace SecondFace.EditorTools
                             r.sharedMaterial.SetVector("_AgedBalance", aged);
                             Debug.Log($"WardrobeBuild: {m.@base} aged balance {aged}");
                         }
+                        // the mouth's line on this base (the men's lower face is longer: their mouth sits 0.09 head radii lower
+                        // than the women's, where every mask round the mouth was placed)
+                        if (r.sharedMaterial.HasProperty("_Mouth") && MouthLine(rest) is { } mouth)
+                        {
+                            r.sharedMaterial.SetVector("_Mouth", new Vector4(mouth, 0f, 0f, 0f));
+                            Debug.Log($"WardrobeBuild: {m.@base} mouth line {mouth:0.000}");
+                        }
                         EditorUtility.SetDirty(r.sharedMaterial);
                     }
             var sculpt = go.AddComponent<FaceSculpt>();
@@ -277,6 +284,21 @@ namespace SecondFace.EditorTools
             if (fresh) AssetDatabase.CreateAsset(tex, path); else EditorUtility.SetDirty(tex);
             Debug.Log($"WardrobeBuild: {baseId} head frame: radius {rad * 100f:0.0} cm, eyes {Vector3.Distance(l, r2) * 100f:0.0} cm apart, up {upAxis}, the face along {fwd}");
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+
+        /// <summary>The mouth's line in a base's head frame: where the lips meet on the face's midline, the deepest occlusion
+        /// under the nose (the rest map's w), weighted by how deep; null without occlusion in the map.</summary>
+        public static float? MouthLine(Texture2D rest)
+        {
+            if (rest == null) return null;
+            double sum = 0, wsum = 0;
+            foreach (var c in rest.GetPixels())
+            {
+                if (Mathf.Abs(c.r) > 0.04f || c.b < 0.9f || c.g > -0.5f || c.g < -1.0f || c.a >= 0.45f) continue;
+                var w = 0.45 - c.a;
+                sum += w * c.g; wsum += w;
+            }
+            return wsum > 0 ? (float)(sum / wsum) : null;
         }
 
         /// <summary>The bake's bare skin on the forehead (the mean of the skin texture over the forehead's vertices, in the

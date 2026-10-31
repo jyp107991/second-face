@@ -552,3 +552,19 @@ closed is under 0.035). The lightening term (`_Contrast.w`) changed nothing betw
 per-vertex occlusion in the mouth's line, the bake's own lips). The sex read barely
 moved through all of it: women as men 58 %, men as women 15 % (real 37 and 3 %); the oldest read 2 years older with less
 red lips (58+ 34.3). What reads sex beyond these is in the face's and hair's shape: the next work there.
+
+**No shared real face within a place (#112, same day)**: two people of one town blending one or two of the same real
+faces read as kin (Shale: Pike and Marsh shared two, Fenn and Doran one, Mai and Ana two; the gate's look-alike pairs).
+Core `Cast` draws everyone named in one order (the maps by id, each map's people in placement order, a person where they
+are first placed), each leaving out the real faces of those drawn before who share any map with them (`RealFaces.Pick`'s
+avoid set, widened a decade at a time where fewer than three remain, the pool's middle kept); a place's extras leave out
+all of its named people's faces (`Extras.Of`). Drawing each place's people only against that place's earlier people left
+Marsh (first placed in another map) sharing two faces with Pike; held for every map now (`CastTests`). No two people of any
+place share a real face. The gate's look-alike check still fails one pair, Ada Vey and Calla (3.19 against 4.2), who share
+none: the check is statistical (a real group's nearest pair falls under its floor one time in twenty), and ours come close
+more often because **our faces and heads vary less than real people's**: whitened by their own people's real spread (1 for
+real people), ours are 0.57-0.72 in the face's width over its height, the eyes' spacing over the face, the nose's width
+over the eyes', the eyes' size, the cheekbones' breadth and the pupils' spacing (0.82-0.95 in the head's length and
+breadth, the face's height, the neck; the lips' height over the face is 1.26 in women, wider than real). The fits'
+ridge, the solver's anchoring to the archetype and the limits' room all pull towards the middle: to find and undo (#116),
+then the look-alike check again.

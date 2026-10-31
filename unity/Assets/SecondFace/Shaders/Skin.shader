@@ -36,6 +36,7 @@ Shader "SecondFace/Skin"
         _Brow1 ("Brow: peak height, peak along, inner thickness, tail thickness", Vector) = (0.27, 0.45, 0.05, 0.035)
         _BrowColour ("Brow colour (A: density, 0 none)", Color) = (0.1, 0.07, 0.05, 0)
         _Contrast ("Facial contrast: upper and lower lash lines, lips' red and dark", Vector) = (0, 0, 0, 0)
+        _Mouth ("The mouth's line in the head frame (x; WardrobeBuild.MouthLine)", Vector) = (-0.67, 0, 0, 0)
         [NoScaleOffset] _SkinLut ("Pre-integrated scattering (N.L across, curvature up)", 2D) = "white" {}
         _Sss ("Scattering by the lookup (0: the wrap approximation)", Range(0, 1)) = 0
         _CurvatureScale ("Curvature scale", Range(0.5, 8)) = 2
@@ -66,7 +67,7 @@ Shader "SecondFace/Skin"
             float _Scar, _Tattoo, _Beard;
             half4 _BeardColour;
             half4 _BareSkin, _ScalpColour, _BrowColour, _BakeBalance, _AgedBalance;
-            float4 _Brow0, _Brow1, _Contrast;
+            float4 _Brow0, _Brow1, _Contrast, _Mouth;
             half _Bald;
             half _Sss, _CurvatureScale, _PoreScale, _SharpLobe;
             float _PoreTiling;
@@ -185,13 +186,18 @@ Shader "SecondFace/Skin"
         // measured in this frame (Diagnostics.HeadFrame's relief, P4.15b; the first masks took the nose's tip for the
         // mouth and grew a beard over the nose): the eyes at y +0.08, the nose from -0.1 to its tip at -0.40 and its base
         // at -0.51, about 0.2 to each side; the philtrum to -0.6; the lips from -0.61 to -0.73 (the mouth's line at -0.67)
-        // and 0.22 to each side; the chin's point near -0.85, the throat below -0.95
+        // and 0.22 to each side; the chin's point near -0.85, the throat below -0.95. Those round the mouth are the women's
+        // base's; the men's lower face is longer and their mouth 0.08 lower (_Mouth.x, measured per base by WardrobeBuild:
+        // the men's lips' masks lay over the upper lip and the skin above it, the stubble over the lower lip, R4): they follow
+        // it, by MouthShift
         // --- the years in the skin's relief (R4, owner pass 10: faces that look their age; measured against FairFace's age
         // bands with an age estimator). Grooves in the head frame where faces line with age: the forehead's horizontal lines
         // over the brows, the frown lines between them, crow's feet from the eyes' outer corners, a line under the eyes,
         // the nasolabial folds from the nose's wings past the mouth's corners, the marionette lines below them, rings on
         // the neck. 0 none .. 1 on a line's floor.
         float Groove(float d, float w) { return 1.0 - smoothstep(0.0, w, abs(d)); }
+        // how much lower this base's mouth is than the women's, where the masks round it were placed
+        float MouthShift() { return _Mouth.x + 0.67; }
         float Lines(float phase, float sharp) { return pow(1.0 - abs(sin(phase)), sharp); }
         float WrinkleAt(float3 p)
         {
@@ -213,13 +219,14 @@ Shader "SecondFace/Skin"
             // the nasolabial folds: from the nose's wings out and down past the mouth's corners, the deepest
             float t = saturate((-0.45 - p.y) / 0.32);
             // (broad: a fold, not a scratch; the cheek's fullness sags over it)
-            float nl = Groove(ax - (0.2 + 0.11 * pow(t, 1.3)), 0.05) * smoothstep(-0.8, -0.74, p.y) * (1.0 - smoothstep(-0.46, -0.42, p.y)) * front;
+            float dm = MouthShift();
+            float nl = Groove(ax - (0.2 + 0.11 * pow(t, 1.3)), 0.05) * smoothstep(-0.8 + dm, -0.74 + dm, p.y) * (1.0 - smoothstep(-0.46, -0.42, p.y)) * front;
             w = max(w, nl);
             // the tear troughs: a broad hollow under the inner half of each eye
             w = max(w, Groove(length(float2((ax - 0.3) * 0.8, p.y + 0.06)), 0.09) * (1.0 - smoothstep(0.42, 0.5, ax)) * front * 0.55);
             // the marionette lines: from the mouth's corners down towards the chin
-            float mt = saturate((-0.7 - p.y) / 0.18);
-            w = max(w, Groove(ax - (0.25 - 0.04 * mt), 0.018) * smoothstep(-0.92, -0.86, p.y) * (1.0 - smoothstep(-0.72, -0.69, p.y)) * front * 0.75);
+            float mt = saturate((-0.7 + dm - p.y) / 0.18);
+            w = max(w, Groove(ax - (0.25 - 0.04 * mt), 0.018) * smoothstep(-0.92 + dm, -0.86 + dm, p.y) * (1.0 - smoothstep(-0.72 + dm, -0.69 + dm, p.y)) * front * 0.75);
             // the neck: rings across its front
             w = max(w, Lines(p.y * 26.0, 8.0) * smoothstep(-1.32, -1.25, p.y) * (1.0 - smoothstep(-1.08, -1.02, p.y)) * smoothstep(0.2, 0.5, p.z) * 0.6);
             return w;
@@ -230,7 +237,8 @@ Shader "SecondFace/Skin"
             if (p.z < -0.05 || p.y > 0.05) return 0;
             float ax = abs(p.x);
             float front = smoothstep(0.75, 0.9, p.z);
-            float lips = (1.0 - smoothstep(0.85, 1.15, length(float2(ax / 0.23, (p.y + 0.67) / 0.062)))) * front;
+            float dm = MouthShift();
+            float lips = (1.0 - smoothstep(0.85, 1.15, length(float2(ax / 0.23, (p.y - _Mouth.x) / 0.062)))) * front;
             float nose = (1.0 - smoothstep(0.17, 0.24, ax)) * smoothstep(-0.53, -0.49, p.y) * front;
             // the cheek line: from the mouth's corner up across the cheek to the sideburn in front of the ear, and under
             // the nose for the moustache; a soft edge, never a level line
@@ -242,7 +250,7 @@ Shader "SecondFace/Skin"
             float bare = (1.0 - lips) * (1.0 - nose);
             float jaw = cheeks * ears * throat * bare;
             float lip = (1.0 - smoothstep(0.24, 0.3, ax)) * (1.0 - smoothstep(-0.515, -0.495, p.y)) * smoothstep(-0.625, -0.6, p.y) * front * bare;   // under the nose, over the lip
-            float chin = (1.0 - smoothstep(0.22, 0.3, ax)) * (1.0 - smoothstep(-0.76, -0.72, p.y)) * throat * bare;
+            float chin = (1.0 - smoothstep(0.22, 0.3, ax)) * (1.0 - smoothstep(-0.76 + dm, -0.72 + dm, p.y)) * throat * bare;
             float grain = lerp(Noise3(p * 140.0), 0.5, saturate(length(fwidth(p)) * 140.0 - 0.4));   // its average where finer than a pixel
             if (id < 0.5) return jaw * 0.18 * (0.5 + grain);                       // stubble_light
             if (id < 1.5) return jaw * 0.32 * (0.5 + grain);                       // stubble
@@ -355,7 +363,7 @@ Shader "SecondFace/Skin"
             half fair = saturate(lum * 3.0h);                       // blood shows most on light skin, still warms dark
             float cheek = 1.0 - smoothstep(0.08, 0.22, length(float2((ax - 0.38) * 0.9, p.y + 0.25)));
             float nose = (1.0 - smoothstep(0.1, 0.2, ax)) * smoothstep(-0.56, -0.48, p.y) * (1.0 - smoothstep(-0.2, 0.0, p.y));
-            float chin = (1.0 - smoothstep(0.12, 0.24, length(float2(ax * 0.8, p.y + 0.95))));
+            float chin = (1.0 - smoothstep(0.12, 0.24, length(float2(ax * 0.8, p.y + 0.95 - MouthShift()))));
             float ear = smoothstep(0.85, 0.95, ax) * smoothstep(-0.45, -0.3, p.y) * (1.0 - smoothstep(0.15, 0.3, p.y));
             half blood = (half)(saturate(cheek * front * 0.9 + nose * front * 0.8 + chin * front * 0.4 + ear * 0.7) * (0.4 + 0.6 * Noise3(p * 7.0)));
             a *= 1.0h + blood * (0.35h + 0.65h * fair) * half3(0.2h, -0.06h, -0.08h);
@@ -411,12 +419,12 @@ Shader "SecondFace/Skin"
             return (half)(along * min(up, lo) * smoothstep(-0.02, 0.0, min(p.y - yu, yl - p.y) + 0.2));
         }
 
-        // the lips' red and dark, over the bake's lips (the mouth's line at y -0.67, the lips from -0.61 to -0.73, 0.22 to
-        // each side)
+        // the lips' red and dark, over the bake's lips (round the mouth's line, _Mouth.x: -0.67 on the women's base, -0.75 on
+        // the men's; 0.06 above and below it, 0.22 to each side)
         half LipsAt(float3 p)
         {
             float front = smoothstep(0.55, 0.75, p.z);
-            return (half)((1.0 - smoothstep(0.82, 1.08, length(float2(abs(p.x) / 0.22, (p.y + 0.67) / 0.058)))) * front);
+            return (half)((1.0 - smoothstep(0.82, 1.08, length(float2(abs(p.x) / 0.22, (p.y - _Mouth.x) / 0.058)))) * front);
         }
 
         void Look(inout half3 a, inout half smooth, float3 p)
