@@ -711,3 +711,44 @@ the studio's light is near real photographs' (side-to-side fall 0.21 against rea
 against real 0.27-0.28, with real photographs' far wider spread of light): the light is a small part of the gap, the face's form
 the larger. The years at the gate's crop stay owed: the eyes' ageing (hooding over the crease, the lids' aperture), the
 midface's descent at a larger scale than this shape's blobs, and the studio fitted to the photographs' spread of light.
+
+## 17. The overhaul: realistic features AND real shapes (2026-10-31, owner, binding)
+
+**The owner's verdict** (round 39's close-ups): the people look non-human, worse than before the gate. Before the checks
+against real faces were formalised (P4.15-P4.16) the features were right and the shapes mechanically wrong; since then the
+shapes and head sizes were optimised and the features were never checked. The objective is realistic humans, judged by eye
+beside real photographs; the checks only guard (BUILD_PLAN §8). No accounts or paid assets: this is done with what we have.
+
+**Diagnosis (measured)**: R3 fits each real FairFace face's landmark shape with all of our face's sliders, held only
+lightly to zero, so the fine features absorb whatever the outline, the photograph (pose, a slight smile, the lens) and our
+renders' detector biases leave over: on the gate's 252 people a face carries 86 sliders, a median of 11 past 0.6, the lower
+lip's height at a mean |0.85| (p90 1.36, past the sculpt's own range), the eyes' scale, the nose's height, the mouth's width
+and the brows' height at p90 1.2-1.4. Each alone at 1 is a plausible face; eleven together are not. The solver for the head's
+measures then works on top of them. Rendering adds a mannequin's look beside the photographs: smooth even skin, flat light,
+lips drawn as a line, a fixed stare, helmet hair.
+
+**The design**: two layers with different rules.
+- *Structure* (the head's size and shape, the face's outline, the jaw, chin, cheekbones' breadth, the neck, stature): solved
+  to real measurements (ANSUR II, FairFace's outline ratios), as the gate holds them.
+- *Features* (eyes, lids, brows, nose, mouth, lips, ears, the cheeks' fullness): coherent bundles as P4.15a drew them
+  (archetypes by people, sex, age and build), each slider kept inside the range where the sculpt stays a natural feature,
+  and never solved to hit a ratio; the real faces' feature ratios guide the archetypes' means, and what is left is a note,
+  not a fail.
+
+**Steps** (each ends with a board of ours beside real photographs of the same people, sex and age, judged by eye first and
+sent to the owner; then the gate as a guard):
+- O1. The features' natural ranges: every feature slider rendered on both bases from -1 to +1, judged by eye; the range kept
+  per slider (a table in Core `Sculpt`).
+- O2. Faces from real faces, outline only: `faces_fit.py` solves a real face with the structure sliders; feature sliders held
+  near the archetype (strong prior, inside O1's ranges). `Proportions` may not move features. Gate 2D: outline ratios
+  gated, feature ratios noted. Board: ours now, ours at R5d, ours at P4.16, real.
+- O3. Our features' systematic offsets from real faces fixed at their source (the base's default features, the painted brows'
+  place, the lips' paint), not by bending each face.
+- O4. Skin, lips, eyes as photographs show them: the skin's uneven tone and its specular broken up, lips with volume and a
+  soft border, lids, lashes and the eye's wet line, a face at rest rather than a stare; judged at the conversation camera's
+  distance and on boards.
+- O5. Hair: the strand atlas composited as designed (round 39's fix), the root tint under the hair, the tied styles judged
+  against photographs, white hair, the bald scalp's edge.
+- O6. Profiles: a profile view on every board; the lips and chin against the face's line as real profiles of each people
+  sit (soft-tissue norms), as a guard.
+- O7. The cast and Shale re-rendered; the owner's review.
