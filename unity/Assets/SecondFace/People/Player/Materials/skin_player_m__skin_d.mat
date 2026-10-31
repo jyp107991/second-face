@@ -172,6 +172,7 @@ Material:
     - _Brow1: {r: 0.27, g: 0.45, b: 0.05, a: 0.035}
     - _BrowColour: {r: 0.09999997, g: 0.06999998, b: 0.049999982, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Contrast: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _ScalpColour: {r: 0, g: 0, b: 0, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}

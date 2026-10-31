@@ -117,6 +117,7 @@ Material:
     - _Dyed: 0
     - _EnvironmentReflections: 1
     - _EnvironmentReflectionsOff: 0
+    - _EyeYears: 0
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0

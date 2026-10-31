@@ -2575,6 +2575,12 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   hides by-people differences of opposite sign: the eyes' contrast is positive on fair skin and negative on dark skin in
   ours, and the pool read as "no change".
 
+- **A CI cache saved only on success never recovers from a timeout.** The Unity test job's Library cache (`actions/cache`)
+  saves in its post step only when the job succeeds; once the project outgrew the job's 40 min, every run imported from the
+  same old Library, was cut off before EditMode finished and saved nothing (runs 112-124 "cancelled"). The Library is now
+  restored and saved as separate steps, the save `if: always()`, and the limit fits a cold import plus the full suite.
+  A run reported "cancelled" is a failure to read, not noise.
+
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)
 
 1. Combat stays turn-based with the §6.G depth (default: yes).

@@ -850,7 +850,10 @@ lash lines, lips by sex and years, the eye's white and iris, per-vertex occlusio
 and GLES3 phones, ungraded since the tiers were split; given it, the editor's software GL crashed, so the gate studio grades
 on readback instead, and GLES3 phones are open for a device); contrast is
 compared by people; brows and lips' darkness now real, eyes near real on white men, still wrong on dark skin; age and sex
-reads barely moved (§14, `gate_r4a.txt`). **Next action:** the eyes on dark skin (the white against dark skin), the lashes
+reads barely moved (§14, `gate_r4a.txt`). CI's Unity test job had been cut off at 40 min since P4.15c without testing anything (a Library cache saved only on
+success, so every run imported from scratch): the cache now saves always and the limit is 150 min; first green run to
+confirm. Locally the full suite (Heavy included) crashes the software GL driver in `PeoplesLineup` after the people's
+renders; alone it passes. **Next action:** CI's test job green (read its first full run); then the eyes on dark skin (the white against dark skin), the lashes
 as cards the camera resolves, then what ages a face beyond its contrast, re-measured with `contrast.py` and `apparent.py`. Then, as below:
 R4 and the sexes' cues together, measured on the population with `apparent.py` and judged on the boards:
 what ages a face beyond its outline (skin, eyelids, the jaw's and neck's soft tissue, thinning hair) and what people read
