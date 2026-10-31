@@ -883,9 +883,13 @@ rendered 0.71-0.76 in the face's width over height (0.60-0.62 before) and the he
 249 of 252** (no look-alike pair; 1 head, 1 age, 1 proportions). The photograph's last steps (224 px, JPEG 75) applied to
 ours read the same ages: the years are in the faces. **CI run 138** (PlayMode only, 1 h 50 min): 71 of 73 pass, the hair capture skipped (local), the radial
 UI test over its 15 min (17 min: UI frames on the runner are minutes each, the 3D tests 1-4 min; why is open): UI tests 30
-min. **Next action:** the next Android run (UI tests 30 min); R4d: what the age reader answers to on our older faces (render
-a few 60-year-olds with each ageing cue pushed past real, one at a time: the aged bake, the lines, the soft tissue's sag,
-grey hair, and measure each with `apparent.py`); then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
+min. **R4d, what the readers answer to (§16)**: the gate's age reading had real faces framed in black (its crop reaches past
+FairFace's photographs) and ours in the studio; framed alike, ours read young at the gate's crop (58+ 31.6, real 49.2)
+but their years in the photograph's own frame (39.1, real 38.3): the skin carries the years, the coarse shape and the hair
+do not. The sex read is the hair: our women with hair drawn back read as men 75-80 %, with long matted hair 44 % (real
+women 37 %). **Next action:** the next Android run (UI tests 30 min); women's hair round the face inside the grooming rule
+(the braid forward over the shoulder, strands escaping buns and wraps, more long hair matted or tied low), measured with
+`apparent.py` by hair and judged on the boards; then the coarse years (soft tissue's descent); then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
 then the 30-45s' years (what reads 23 at 37: the face's fullness, the eyes, the brows' thinning), each measured with
 `apparent.py` and judged on the boards. Then, as below:
 R4 and the sexes' cues together, measured on the population with `apparent.py` and judged on the boards:

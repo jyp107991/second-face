@@ -231,6 +231,69 @@ namespace SecondFace.Tests
             Assert.That(n, Is.GreaterThan(0));
         }
 
+        /// <summary>What the age reader answers to (R4d): the sample people at 35, 50 and 65, two of each people and sex, once per
+        /// variant (SF_AGE_VARIANTS, comma-separated: base; lines, the years' lines at their deepest; bake, the aged bake whole;
+        /// macro, the base's own ageing shape (MakeHuman's age, body-age) at seventy with the skin as the years have it; grey,
+        /// the hair white; all), into test-results/agecues/&lt;variant&gt;/, each cue pushed past real alone, so the reading of
+        /// each shows which our faces lack.</summary>
+        [UnityTest, Timeout(3600000), Category("Heavy")]   // an experiment, run by name in the session's editor
+        public IEnumerator AgeCues()
+        {
+            GameObject F = null, M = null;
+#if UNITY_EDITOR
+            F = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_f.prefab");
+            M = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/Prefabs/people/player_m.prefab");
+#endif
+            if (F == null || M == null) { Assert.Ignore("the bases are not built"); yield break; }
+            UiTests.Content();
+            var variants = (System.Environment.GetEnvironmentVariable("SF_AGE_VARIANTS") ?? "base,lines,bake,macro,grey,all").Split(',');
+            var wrinkles = Shader.PropertyToID("_Wrinkles");
+            var studio = new Studio();
+            var n = 0;
+            foreach (var variant in variants)
+                foreach (var c in SecondFace.Core.Npc.Bodies.Clusters)
+                    foreach (var male in new[] { false, true })
+                        foreach (var age in new[] { 35.0, 50.0, 65.0 })
+                            for (var k = 0; k < 2; k++)
+                            {
+                                var id = $"gate_{c.Id}_{(male ? "m" : "f")}_{age:0}_{k}";
+                                var look = SecondFace.Core.Npc.Bodies.For(id, male, age, "settler", ancestry: c.Id);
+                                SecondFace.Core.Npc.Bodies.Finish(look);
+                                var lines = SecondFace.Core.Npc.Looks.Wrinkles(look);
+                                var skin = SecondFace.Core.Npc.Looks.SkinAge(look);
+                                if (variant is "macro" or "all") { look.Shape ??= new Dictionary<string, float>(); look.Shape["body-age"] = 1f; }
+                                if (variant is "grey" or "all") look.Grey = 1f;
+                                if (variant is "lines" or "all") lines = 1f;
+                                if (variant is "bake" or "all") skin = 1f;
+                                var go = Object.Instantiate(male ? M : F, new Vector3(500f, 0f, 0f), Quaternion.identity);
+                                SecondFace.Game.People.LookView.Apply(go, look);
+                                // the skin's years set apart from the shape's (body-age carries both)
+                                var face = go.GetComponentInChildren<SecondFace.Game.People.FaceSculpt>();
+                                if (face != null) { face.SkinAge = skin; face.Apply(); }
+                                var block = new MaterialPropertyBlock();
+                                foreach (var r in go.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                                    if (r.name.StartsWith("Body_") && r.sharedMaterial != null && r.sharedMaterial.HasProperty(wrinkles))
+                                    {
+                                        r.GetPropertyBlock(block);
+                                        block.SetFloat(wrinkles, lines);
+                                        r.SetPropertyBlock(block);
+                                    }
+                                yield return null;
+                                if (Measure(go, 1f) != null)
+                                {
+                                    go.transform.localScale = Vector3.one * SecondFace.Game.People.LookView.Scale(look);
+                                    yield return null;
+                                    studio.Meter = Studio.MeterFor(look);
+                                    studio.Shoot(go, id, Path.Combine("agecues", variant));
+                                    n++;
+                                }
+                                Object.Destroy(go);
+                            }
+            studio.Dispose();
+            Debug.Log($"PeopleGate: age cues, {n} portraits");
+            Assert.That(n, Is.GreaterThan(0));
+        }
+
         /// <summary>The hair and the face up close (R5): a few of the sample people (SF_HAIR_IDS, "cluster_sex_age_k" each,
         /// comma-separated; a default spread of hairs, colours and ages without it) from the front, three-quarters and the
         /// side at 0.95 m in the gate's studio, into test-results/hair: the hairline, the strands and the grey seen as the

@@ -625,3 +625,27 @@ measures are now real's. **The photograph's last steps tried and ruled out**: Fa
 quality 75 (measured), the face filling the frame (207 px); ours brought to that size and saved so read the same ages (30-45
 22.8, 45-58 28.0, 58+ 33.7 against 23.0, 28.2, 34.1) and sexes: the years our faces lack are in the faces, not in the
 comparison.
+
+**What the readers answer to (R4d, rounds 33-34, #114)**: `PeopleGateTests.AgeCues` renders the sample people at 35, 50 and
+65 with one ageing cue pushed past real at a time; `apparent.py` reads them.
+
+*The instrument first.* The gate's crop (0.6 of the face's box round it) reaches past FairFace's photographs, which end at
+0.54 of a box side from the face's centre (each image is the face with FairFace's 0.25 margin, 224 px): the network saw real
+faces framed in black and ours in the studio, its clothes and hats. Ours are now framed as the photographs frame theirs,
+black past the same edges (`apparent.py framed`; `--no-frame` for the old reading). So read, ours are younger still at the
+gate's crop (30-45 21.7, 45-58 25.7, 58+ 31.6 against 29.6, 37.2, 49.2) and women read as men 70 % (real 37 %); but in the
+photograph's own frame, where the face fills the image and the network reads the skin's detail, ours read their years
+(23.2, 24.0, 28.8, 39.1 against 22.6, 26.2, 29.5, 38.3; printed as a diagnostic). **Our skin carries its years; what reads
+young is coarse: the head's and the soft tissue's shape, and the hair.** At the gate's crop, per cue (women / men at 65):
+the lines at their deepest 28.1 / 36.3 (27.8 / 35.5 as drawn; at 35 they add 6-8 years), the aged bake whole and MakeHuman's
+own ageing shape at seventy nothing, white hair 29.4 / 35.2, all of them 29.2 / 36.1: none of what we have makes a woman of
+65 read older than 30 at that scale.
+
+*The sex read is the hair.* Our sample women by hair, read as men at the gate's crop (in the photograph's frame): bun 80 %
+(75), braid 77 % (65), crop 75 % (62), long matted hair 44 % (28); men with long matted hair read as women 69 % (85), buzzed
+men 6 % (12). Hair round the face is what the network (and, on the boards, the eye: Ada Vey, Issa Lind, Mags Durrow) reads a
+woman by; our grooming rule (buns, braids, crops: practical, and real) draws nearly all of it back from the face. Next,
+inside the rule: the braid worn forward over the shoulder as working braids are, strands escaping buns and wraps round the
+face (hair pulled back by people who work outdoors does not stay put), more long hair matted or tied low; then the coarse
+years (the soft tissue's descent: jowls, the nasolabial fold's depth, the lids' hooding, the cheeks' hollowing, the neck),
+each judged with `apparent.py` and on the boards.
