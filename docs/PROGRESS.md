@@ -869,9 +869,9 @@ fits) and was reverted. **R5 beards**: moustache cards end at the lip (hairgen v
 **CI**: run 128 was the first test run to finish (2 h 19 min): the Unity job now runs PlayMode only (the Core workflow
 runs EditMode with .NET), UI tests have 15 min each, the wardrobe test checks a hat that hides; nine of ten hats hide no
 skin under them (no delete list in their proxies: a poke-through risk, owed). **Sexes' cues (R4, rounds 24-26)**: men's brows denser,
-women's finer, lips' red to real by sex; the sex read barely moved (women as men 58 %, men as women 15 %); our mouths rest
-parted (the lips' darkness 0.136 against 0.052). **Next action:** read the next Android run
-(PlayMode only); then the mouth at rest closed, then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
+women's finer, lips' red to real by sex; the sex read barely moved (women as men 58 %, men as women 15 %); the lips' darkness (0.136 against men's 0.052) does not
+answer the lightening term, the mouths being closed (to trace). **Next action:** read the next Android run
+(PlayMode only); then the lips' darkness traced, then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
 then the 30-45s' years (what reads 23 at 37: the face's fullness, the eyes, the brows' thinning), each measured with
 `apparent.py` and judged on the boards. Then, as below:
 R4 and the sexes' cues together, measured on the population with `apparent.py` and judged on the boards:

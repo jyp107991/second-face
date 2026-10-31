@@ -546,7 +546,9 @@ moved it (read as men 52 % to 35 %, real 37 %). Measured against FairFace, real 
 women's (0.225 against 0.144); ours were 0.171 and 0.142. Men's brows are now denser and women's finer (`Looks.BrowOf`):
 0.19-0.21 and 0.124. The same table showed our lips redder than real ones, men's twice (a* over the skin 12.6 against 6.0):
 men's lips now below the bake's red, women's less red (`Looks.Contrast`): men 7.7, women 9.2 (real 6.0 and 8.5, the women's
-with lipstick). The lips' darkness did not move (0.136 against men's real 0.052) whatever the colour: our mouths rest
-parted, the dark gap inside the lips' outline (the real faces were taken closed), a shape to fix. The sex read barely
+with lipstick). The lips' darkness did not move (0.136 against men's real 0.052) whatever the colour, and not because the mouths are
+open: measured as FairFace's faces are (inner lips' gap over the face's height), ours are closed (women 0.006, men 0.014;
+closed is under 0.035). The lightening term (`_Contrast.w`) changed nothing between rounds: to trace (the lips' mask, the
+per-vertex occlusion in the mouth's line, the bake's own lips). The sex read barely
 moved through all of it: women as men 58 %, men as women 15 % (real 37 and 3 %); the oldest read 2 years older with less
 red lips (58+ 34.3). What reads sex beyond these is in the face's and hair's shape: the next work there.
