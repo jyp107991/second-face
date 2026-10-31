@@ -539,3 +539,14 @@ white now (0.31/0.30/0.26). Still owed from the close-ups: women's short white h
 off the scalp), white moustaches read as a fringe (no shade between strands); nine of ten hats carry no delete list, so
 they mask no skin under them. Sex read unchanged by any of this round's work: women as men 62 % (real 37 %), men as women
 15 % (real 3 %).
+
+**The sexes' cues, rounds 24-26 (`gate_r4_sexcues.txt`)**: image-space edits of our women 18-45 against the sex reader
+(lips redder and darker, the eyes lined, skin smoother, the frame brighter, the brows lightened): only lightening the brows
+moved it (read as men 52 % to 35 %, real 37 %). Measured against FairFace, real men's brows stand out half again as much as
+women's (0.225 against 0.144); ours were 0.171 and 0.142. Men's brows are now denser and women's finer (`Looks.BrowOf`):
+0.19-0.21 and 0.124. The same table showed our lips redder than real ones, men's twice (a* over the skin 12.6 against 6.0):
+men's lips now below the bake's red, women's less red (`Looks.Contrast`): men 7.7, women 9.2 (real 6.0 and 8.5, the women's
+with lipstick). The lips' darkness did not move (0.136 against men's real 0.052) whatever the colour: our mouths rest
+parted, the dark gap inside the lips' outline (the real faces were taken closed), a shape to fix. The sex read barely
+moved through all of it: women as men 58 %, men as women 15 % (real 37 and 3 %); the oldest read 2 years older with less
+red lips (58+ 34.3). What reads sex beyond these is in the face's and hair's shape: the next work there.
