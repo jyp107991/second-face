@@ -451,8 +451,8 @@ namespace SecondFace.Tests
                     ("face_long", new[] { ("chin-height-incr", 100f) }),
                     ("mouth_wide", new[] { ("mouth-scale-horiz-incr", 100f) }),
                 };
-                // SF_RB_VARIANTS: the shapes' weights by face from a file (rocketbox_calibrate.py's reach: each slider at the
-                // library's own ends from where this face sits)
+                // SF_RB_VARIANTS: the shapes' weights by face from a file (rocketbox_features.py's limits: each slider at the
+                // library's own ends of its feature from where this face sits)
                 var vpath = System.Environment.GetEnvironmentVariable("SF_RB_VARIANTS");
                 if (!string.IsNullOrEmpty(vpath) && File.Exists(vpath))
                 {
@@ -466,7 +466,7 @@ namespace SecondFace.Tests
                     foreach (var (key, w) in set) { var bi = smr.sharedMesh.GetBlendShapeIndex(key); if (bi >= 0) smr.SetBlendShapeWeight(bi, w); }
                     yield return null;
                     _eyes = (sg.transform.InverseTransformPoint(shead.position) + new Vector3(0f, 0.085f, 0f), Vector3.forward);
-                        foreach (var (view, yaw) in new[] { ("front", 0f), ("three", 35f) })
+                    foreach (var (view, yaw) in new[] { ("front", 0f), ("three", 35f), ("side", 85f) })
                         studio.Shoot(sg, $"rbs_{name}_{tag}_{view}", "probe", 1.3f, yaw, -0.03f);
                 }
                 Object.Destroy(sg);

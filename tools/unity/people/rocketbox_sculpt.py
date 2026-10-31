@@ -1,9 +1,13 @@
 """RB2: our sculptor's face shapes (MakeHuman targets on player_f/m Body_LOD0) transferred onto a Rocketbox head.
-Fit: landmarks on both heads (eyes from the eye bones, nose tip, lips, chin, ears, crown, back), a similarity, then a
-thin-plate warp of our head onto theirs; each Rocketbox vertex of the head bound to the closest point of the warped
+Fit: landmarks on both heads (eyes from the eye bones; ears, crown and back; and the face's anatomy measured the same
+way on both by rocketbox_features.Face: the nose's root, tip, base and wings, the lips and the mouth's line, the fold
+under the lip, the chin's front, bottom and sides, the cheeks and the jaw), a similarity, then a thin-plate warp of our
+head onto theirs (with the chin's bottom pinned, a shape meant for the chin acts on the chin, not on the throat); each Rocketbox vertex of the head bound to the closest point of the warped
 head; each shape's offsets carried across by that binding. Usage: blender -b --python transfer.py -- <ours.fbx> <rb.fbx> <out.fbx>"""
-import bpy, sys, numpy as np, mathutils
+import bpy, sys, os, numpy as np, mathutils
 from mathutils.bvhtree import BVHTree
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import rocketbox_features as rbf
 ours_path, rb_path, out_path = sys.argv[sys.argv.index('--') + 1:][:3]
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.fbx(filepath=ours_path)
@@ -53,6 +57,26 @@ for p, mi in zip(rb_mesh.data.polygons, poly_mat):
     if mi in head_idx: vmask[list(p.vertices)] = True
 LO, midO, ipdO, fO = landmarks(V0, bone(ours_arm, 'LeftEye'), bone(ours_arm, 'RightEye'))
 LR, midR, ipdR, fR = landmarks(VR[vmask], bone(rb_arm, 'Bip01 LEye'), bone(rb_arm, 'Bip01 REye'))
+ANATOMY = ['n', 'prn', 'sn', 'ls', 'sto', 'li', 'lm', 'pog', 'me', 'alL', 'alR', 'chL', 'chR'] + [f + s for f in ('cheekbone_width', 'jaw_width', 'jaw_low_width', 'chin_width') for s in 'LR']
+def anatomy(V, tris, eL, eR):
+    """The face's anatomical landmarks (rocketbox_features.Face, in the eyes' frame in millimetres) back in the world."""
+    mid = (eL + eR) / 2; xa = (eL - eR) / np.linalg.norm(eL - eR); za = np.array([0, 0, 1.0]); za -= xa * za.dot(xa)
+    za /= np.linalg.norm(za); ya = np.cross(za, xa)
+    if ya[1] < 0: ya = -ya
+    Bm = np.stack([xa, ya, za]); F = rbf.Face((V - mid) @ Bm.T * 1000.0, tris)
+    return {k: mid + (F.L[k].at(F.V)[0] / 1000.0) @ Bm for k in ANATOMY if k in F.L}
+def triangles(o, keep=None):
+    t = []
+    for p in o.data.polygons:
+        if keep is not None and p.material_index not in keep: continue
+        v = list(p.vertices); t += [(v[0], v[k], v[k + 1]) for k in range(1, len(v) - 1)]
+    return np.array(t)
+TO = triangles(body); TR = triangles(rb_mesh, set(head_idx))
+AO = anatomy(V0, TO, bone(ours_arm, 'LeftEye'), bone(ours_arm, 'RightEye'))
+AR = anatomy(VR, TR, bone(rb_arm, 'Bip01 LEye'), bone(rb_arm, 'Bip01 REye'))
+for k in ('nose', 'lips', 'chin'): LO.pop(k); LR.pop(k)
+for k in ANATOMY:
+    if k in AO and k in AR: LO[k], LR[k] = AO[k], AR[k]
 # (the eyes' sides by the facing: whichever is on the right of the facing)
 names = list(LO)
 A = np.array([LO[k] for k in names]); B = np.array([LR[k] for k in names])

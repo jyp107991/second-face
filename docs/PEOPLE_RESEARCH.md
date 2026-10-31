@@ -156,6 +156,46 @@ softer, the face fuller (+0.09), the cheeks under the eyes hollower (-0.13), a d
 library's own ends from where each face sits (`docs/evidence/unity/p4/research/rocketbox_calibrated_extremes.jpg`): every
 end is a person.
 
+**Each major feature calibrated on its own (owner, 2026-10-31: "these chins are still ridiculous"; "each major feature
+should be distinctly calibrated").** The joint fit above let one slider soak up what others did (the chin's shapes took
+the throat's and the fold's differences) and its reach came out wide. It is replaced by measurement, feature by feature,
+in millimetres, on each head's own mesh with no fit in between (`rocketbox_surface.py` exports the 110 heads' exact
+triangles in their eyes' frame; `rocketbox_features.py` measures them):
+- *The profile* is the plane cut down the face's middle; its turning points are found the same way on every head: the
+  nose's root (deepest point between the brows), tip (front-most), base (where the columella's underside turns down into
+  the lip), the upper lip (front-most), the mouth's line (the deepest notch between the lips), the lower lip, the fold
+  under it, the chin's front and the chin's bottom (the last height before the profile jumps back to the throat).
+- *Widths* from horizontal cuts: the nose's wings (where the front falls back most steeply from the wing to the cheek),
+  the mouth (the notch between the lips followed outward, cut by cut, until it ends), the cheekbones and cheeks (across
+  the face's front at a set depth: the sides only widen on back to the ears), the jaw (widest in front of the ears below
+  the mouth, and a third of the way up from the chin), the chin across its front.
+- *What a slider does* is measured the same way on the four heads carrying the sculptor's shapes (each shape at full
+  weight: the profile's points followed on the skin, the widths cut again at the same heights); the four agree within a
+  few tenths of a millimetre on most sliders. Measuring them showed the old transfer had pinned only the chin's front: on
+  the men the chin's shapes moved the throat. The transfer (`rocketbox_sculpt.py`) now pins all of the measured anatomy
+  (28 landmarks: the profile's nine, the nose's wings, the mouth's corners, the cheeks, the jaw, the chin's sides), and
+  the chin's shapes act on the chin on every head.
+- *The library's spread* per sex is each feature's [5, 95] % across its heads (38 women, 72 men; outliers past 3.5 robust
+  deviations set aside); *each face's limits* on each slider are as far as that slider can go before its feature leaves
+  the library's spread from where this face is (never past one unit), so a face already at the library's longest chin
+  cannot lengthen it at all. Eye size and spacing do not vary in the library (every head of a sex shares its eye sockets):
+  their spread is the published one (between the pupils SD 3.8 mm, Dodgson 2004; the eye's opening SD about 1.5 mm, Farkas
+  1994), ±1.645 SD from each face.
+
+What the numbers say (`tools/unity/people/data/rocketbox_features.json`): one unit of chin-height adds 21.5 mm to the
+chin (mouth line to chin bottom), while the library's women differ by 5 mm across their middle 90 % (39-44 mm; men 43-56
+mm): a woman's chin may lengthen by a tenth of a unit and shorten by a third, which is why every chin at a "natural"
+half unit looked absurd. Likewise chin-width 19 mm per unit against a spread of 12 mm, cheek fullness 17 mm against 13,
+jaw-forward 7 mm against 5, while the nose's sliders (5-9 mm per unit against 8-12 mm of spread), the lips' (2-4 mm against
+3-6) and the mouth's width (10-13 mm against 16) keep most of their unit. Several sliders act on one feature (the chin's
+projection by chin-prominent and chin-prognathism): Core's `RocketboxSculpt.Clamp` holds any set of values so that their
+summed change of every feature stays inside that head's room (data generated into `RocketboxSculptData.cs` by
+`rocketbox_gen_core.py`; `RocketboxSculptTests`). Rendered at every limit on the four sculpted heads
+(`docs/evidence/unity/p4/research/rocketbox_limits_{chin,nose_mouth,cheeks_eyes}.jpg`, by `rocketbox_limits_sheet.py`):
+every end is a person; the chins differ as real chins do, no more. Twenty sliders are calibrated so far (the chin and jaw,
+the nose, the mouth and lips, the cheeks, the brow, the eyes); the rest (the head's outline, ears, neck, lids, the nose's
+tip and bridge width, the mouth's corners) keep their unit until they are measured the same way.
+
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own
 triangles (`rocketbox_head_map.py`, seam-safe). (1) The per-texel change with age, regressed over the 78 faces without soot,
