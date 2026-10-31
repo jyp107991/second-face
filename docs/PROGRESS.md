@@ -870,8 +870,18 @@ fits) and was reverted. **R5 beards**: moustache cards end at the lip (hairgen v
 runs EditMode with .NET), UI tests have 15 min each, the wardrobe test checks a hat that hides; nine of ten hats hide no
 skin under them (no delete list in their proxies: a poke-through risk, owed). **Sexes' cues (R4, rounds 24-26)**: men's brows denser,
 women's finer, lips' red to real by sex; the sex read barely moved (women as men 58 %, men as women 15 %); the lips' darkness (0.136 against men's 0.052) does not
-answer the lightening term, the mouths being closed (to trace). **Next action:** read the next Android run
-(PlayMode only); then the lips' darkness traced, then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
+answer the lightening term, the mouths being closed (to trace). **Look-alikes (#112) done**: Core `Cast` draws everyone named
+in one order, each leaving out the real faces of those before who share any map with them; no two people of a place share a
+real face (`CastTests`, every map). **Lips traced (#115, §16)**: the masks round the mouth follow each base's mouth (the men's
+sits 0.08 lower: `_Mouth`, `WardrobeBuild.MouthLine`), the lips' occlusion floored; men's lips' red near real, darkness
+0.099 against 0.044 (the line and the shade under the lower lip; the gate studio's 28 degree key lights from higher than the
+photographs, and a lower key moved the eyes', brows' and sex read's calibration away: a studio fitted to the photographs is
+owed). **Faces' spread (#116)**: ours varied 0.57-0.74 of real people's in the face's width, the eyes' spacing and the nose
+because each head's measures (ANSUR) and face (FairFace) were drawn apart and the solver split the difference; the face is
+now solved first and the head drawn given it (`Proportions.Fit`), 0.76-0.87 now, every head inside the real region (gate
+round to confirm). **CI run 138** (PlayMode only, 1 h 50 min): 71 of 73 pass, the hair capture skipped (local), the radial
+UI test over its 15 min (17 min: UI frames on the runner are minutes each, the 3D tests 1-4 min; why is open): UI tests 30
+min. **Next action:** the gate round for #116 (look-alikes and 3D), then the next Android run; then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
 then the 30-45s' years (what reads 23 at 37: the face's fullness, the eyes, the brows' thinning), each measured with
 `apparent.py` and judged on the boards. Then, as below:
 R4 and the sexes' cues together, measured on the population with `apparent.py` and judged on the boards:

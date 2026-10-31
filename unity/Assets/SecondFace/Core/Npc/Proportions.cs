@@ -54,6 +54,14 @@ namespace SecondFace.Core.Npc
         // the cost of moving a shape by its whole range, against a measure missed by one of the group's sd
         private const double Stay = 0.12;
 
+        /// <summary>The head's measures a face's proportions set (its cheekbones' breadth, its height, the pupils' spacing).</summary>
+        private static readonly int[] FaceMeasures = { 2, 3, 4 };
+
+        /// <summary>A real face's proportions against the head's measures in the solve, and how firmly the head's other
+        /// measures hold while the face is solved first (#116: measured on 960 draws, the spread and the sexes' difference
+        /// nearest real people's with every head inside the real region).</summary>
+        private const double FaceWeight = 3.0, PreHold = 0.3;
+
         /// <summary>The neck's shapes answer to the neck alone, its girth and the head and neck's height (fitted to the other
         /// measures as well, the solver found combinations the model got wrong: R2).</summary>
         private static bool NeckOnly(string id) => id.StartsWith("neck-");
@@ -165,7 +173,8 @@ namespace SecondFace.Core.Npc
         /// body's mass (<paramref name="bmi"/>: its body mass index given the stature, in sds; ANSUR II: a heavy body's neck
         /// is thicker, its face a little wider): their mean, the Cholesky factor of their covariance, and the indices they
         /// stand for.</summary>
-        private static (double[] Mu, double[,] L, List<int> Idx) Conditional(ProportionsData.Group g, double stature, double? bmi = null)
+        private static (double[] Mu, double[,] L, List<int> Idx) Conditional(ProportionsData.Group g, double stature, double? bmi = null,
+            IReadOnlyDictionary<int, double> observed = null, double looseness = 0)
         {
             double C(int i, int j) => g.Cov[i * K + j];
             var sd = Math.Sqrt(C(Stature, Stature));
@@ -187,6 +196,26 @@ namespace SecondFace.Core.Npc
                     mu[a] += g.Bmi[idx[a]] * z;
                     for (var b = 0; b < n; b++) cov[a, b] -= g.Bmi[idx[a]] * g.Bmi[idx[b]];
                 }
+            // and given measures observed with an error of looseness times their spread (one at a time is the same as all at
+            // once)
+            if (observed != null)
+                foreach (var kv in observed)
+                {
+                    var c = idx.IndexOf(kv.Key);
+                    if (c < 0) continue;
+                    var cc = cov[c, c] * (1 + looseness);
+                    if (cc < 1e-12) continue;
+                    var col = new double[n];
+                    for (var a = 0; a < n; a++) col[a] = cov[a, c];
+                    var d = kv.Value - mu[c];
+                    for (var a = 0; a < n; a++)
+                    {
+                        mu[a] += col[a] / cc * d;
+                        for (var b = 0; b < n; b++) cov[a, b] -= col[a] * col[b] / cc;
+                    }
+                }
+            // (a measure observed exactly leaves no spread of its own: kept positive for the factor)
+            for (var a = 0; a < n; a++) cov[a, a] = Math.Max(cov[a, a], 1e-6);
             return (mu, Cholesky(cov), idx);
         }
 
@@ -197,15 +226,34 @@ namespace SecondFace.Core.Npc
         /// its place), drawn from the real people of their sex and ancestry given their stature and their body's mass
         /// (<see cref="Bmi"/>), inside the region that holds 97.5 % of them given the stature less <see cref="Room3"/> (a draw
         /// past it taken towards the middle along its own direction).</summary>
-        public static double[] Target(bool male, string cluster, double stature, uint seed, double bmi = 0)
+        public static double[] Target(bool male, string cluster, double stature, uint seed, double bmi = 0, IReadOnlyDictionary<int, double> face = null)
         {
             var g = ProportionsData.Groups[Group(male, cluster)];
             var rng = new Rng(seed);
             var z = new double[K - 1];
             for (var i = 0; i < z.Length; i++) z[i] = Bodies.Normal(rng);
             var room = g.Joint - Room3;
+            // given the face's own measures (FaceMeasures, from its real faces' proportions), as firmly as the region allows:
+            // a face whose measures alone lie past it is taken as a looser observation, its measures drawn towards the group's
+            var looseness = 0.05;
+            if (face != null)
+                while (looseness < 50 && Joint(AtLoose(0, 1, looseness), g) > room) looseness *= 2;
+            double[] AtLoose(double f, double k, double loose)
+            {
+                var (mu, L, idx) = Conditional(g, stature, bmi * k, face, loose);
+                var t = new double[K];
+                t[Stature] = stature;
+                for (var a = 0; a < mu.Length; a++)
+                {
+                    var v = mu[a];
+                    for (var b = 0; b <= a; b++) v += f * L[a, b] * z[b];
+                    t[idx[a]] = v;
+                }
+                return t;
+            }
             double[] At(double f, double k)
             {
+                if (face != null) return AtLoose(f, k, looseness);
                 var (mu, L, idx) = Conditional(g, stature, bmi * k);
                 var t = new double[K];
                 t[Stature] = stature;
@@ -345,8 +393,11 @@ namespace SecondFace.Core.Npc
             {
                 look.Face = new Dictionary<string, float>(archetype);
                 var s = attempt == 0 ? seed : unchecked(seed * 2654435761u + (uint)attempt * 40503u);
-                FitOnce(look, male, cluster, age, s, anchors);
-                FitOnce(look, male, cluster, age, s, anchors);
+                // (the face first in the first half of the draws; a face whose own measures leave no head inside the real
+                // region is fitted head first in the rest, as every face was before #116)
+                var faceFirst = attempt < Attempts / 2;
+                FitOnce(look, male, cluster, age, s, anchors, faceFirst);
+                FitOnce(look, male, cluster, age, s, anchors, faceFirst);
                 var miss = Miss(look, male, cluster, age);
                 if (miss < bestMiss) { bestMiss = miss; best = look.Face; }
                 if (miss <= 0) break;
@@ -375,7 +426,7 @@ namespace SecondFace.Core.Npc
         }
 
 
-        private static void FitOnce(PlayerLook look, bool male, string cluster, double age, uint seed, Dictionary<string, float> anchors)
+        private static void FitOnce(PlayerLook look, bool male, string cluster, double age, uint seed, Dictionary<string, float> anchors, bool faceFirst = true)
         {
             var g = ProportionsData.Groups[Group(male, cluster)];
             var stature = StatureMm(look, male);
@@ -474,15 +525,43 @@ namespace SecondFace.Core.Npc
                 for (var i = 0; i < D; i++) pred[i] = res[i] + t[i];
                 return pred;
             }
+            // a face drawn from real faces (R3) is solved first against its own proportions, the head's measures that the face
+            // itself sets (FaceMeasures) left free; the head and neck are then drawn given those, with the stature (#116: drawn
+            // apart, from soldiers' heads and photographs' faces, the two split the difference and our faces kept 0.6-0.8 of
+            // real people's spread in those proportions)
+            var own = n2 > 0 ? RealFaces.Ratios(look.FaceSource, male, cluster, age) : null;
+            if (own != null && faceFirst)
+            {
+                // (the face's proportions weigh three times the head's measures: held equal, men's faces came out shorter for their
+                // width than real men's, the sexes' difference gone)
+                for (var i = 0; i < n2 && i < own.Length; i++)
+                {
+                    t[K + i] = own[i];
+                    w[K + i] = FaceWeight / faces.Cov[i * n2 + i];
+                }
+                // first the face, the head's other measures held lightly (they size the head; held fully, a broad skull
+                // widened the face against its own proportions)
+                var w3 = (double[])w.Clone();
+                for (var i = 0; i < K; i++) w[i] = Array.IndexOf(FaceMeasures, i) >= 0 ? 0 : w[i] * PreHold;
+                var pre = Solve();
+                Array.Copy(w3, w, K);
+                var seen = new Dictionary<int, double>();
+                foreach (var i in FaceMeasures) seen[i] = pre[i] * scale;
+                var given = Target(male, cluster, stature, seed, Bmi(look), seen);
+                for (var i = 0; i < K; i++)
+                    if (i != Stature) t[i] = given[i] / scale;
+                Solve();
+                for (var j = 0; j < x.Length; j++) look.Face[free[j].Id] = (float)Math.Round(x[j], 3);
+                return;
+            }
             // the head and neck first; then the face's proportions, drawn given the height over width the head now has
             var head = Solve();
             if (n2 > 0)
             {
                 // the face's height over width and the inner eye spacing over width follow from the head's measures
                 var target2 = Target2(faces, seed, new Dictionary<int, double> { [0] = head[K], [2] = head[K + 2] });
-                // a face drawn from real faces keeps their own proportions (R3), the solver weighing them against the head's
-                // measures
-                if (RealFaces.Ratios(look.FaceSource, male, cluster, age) is { } own)
+                // a face drawn from real faces keeps their own proportions (R3)
+                if (own != null)
                     for (var i = 0; i < n2 && i < own.Length; i++)
                         target2[i] = own[i];
                 for (var i = 0; i < n2; i++)
