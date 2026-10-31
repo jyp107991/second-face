@@ -17,9 +17,11 @@ on:
         default: ''
 
 concurrency:
-  # a release run (dispatched with `release`) has its own group: a later push to the branch must not cancel it
+  # a release run (dispatched with `release`) has its own group: a later push to the branch must not cancel it. A running
+  # test job is never cancelled by a later push (it takes an hour and more; checkpoint pushes every few minutes would cut off
+  # every run before it tested anything): later pushes wait, and only the newest waiting one runs next
   group: android-${{ github.ref }}-${{ inputs.release || 'ci' }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
