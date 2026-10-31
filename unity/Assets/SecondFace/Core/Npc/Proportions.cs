@@ -233,9 +233,11 @@ namespace SecondFace.Core.Npc
             var z = new double[K - 1];
             for (var i = 0; i < z.Length; i++) z[i] = Bodies.Normal(rng);
             var room = g.Joint - Room3;
-            // given the face's own measures (FaceMeasures, from its real faces' proportions), as firmly as the region allows:
-            // a face whose measures alone lie past it is taken as a looser observation, its measures drawn towards the group's
-            var looseness = 0.05;
+            // given the face's own measures (FaceMeasures, from its real faces' proportions) taken as an observation as
+            // uncertain as the group's own spread (a photograph's proportions carry the head's tilt, which a frontal render
+            // does not: held exactly, the rendered faces' heights spread a quarter to a third wider than real people's), and
+            // looser still where the face's measures alone would lie past the region
+            var looseness = 1.0;
             if (face != null)
                 while (looseness < 50 && Joint(AtLoose(0, 1, looseness), g) > room) looseness *= 2;
             double[] AtLoose(double f, double k, double loose)

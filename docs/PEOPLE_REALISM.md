@@ -591,3 +591,31 @@ real (women's eyes 0.140 against 0.206, men's brows 0.180 against 0.225), the li
 degree key. The studio stays at 28 degrees; a studio fitted to the photographs' light on all these measures together is
 owed (with the studio's post-processing, #110). The men's lips remain twice real (0.099 against 0.044), most of it the
 line and the shading under the lower lip.
+
+**Faces' and heads' spread restored (#116, rounds 30-32)**: drawn apart (each head's measures from ANSUR II's soldiers given
+the stature, its face from FairFace's real faces), the two met in the solver over the measures they share (the cheeks'
+breadth, the face's height, the pupils' spacing) and it split the difference: two independent draws averaged keep about
+0.7 of the spread, and ours kept 0.57-0.74 of real people's in the face's width over its height, the eyes' spacing and the
+nose (measured in Core on 960 draws, whitened by the real faces' spread within a people; the real-face fits themselves keep
+0.49-0.96 before any solving, ridge-shrunk). `Proportions.Fit` now solves a real face against its own proportions first (the
+head's other measures held lightly), reads off the measures the face sets, and draws the head and neck given them and the
+stature (the Gaussian conditioned on them, the face's measures taken as an observation as uncertain as the group's own
+spread: held exactly, the rendered faces' heights spread a quarter to a third wider than real, a photograph's proportions
+carrying the head's tilt a frontal render lacks); the face's proportions weigh three times the head's measures (held equal,
+men's faces came out shorter for their width than real men's and the sexes' difference test failed); the later half of the
+draws falls back to the head first, so every head stays inside the real region. The response models were refitted with
+the first face-first round (it had put shapes where they knew few people: 47 faces measured long, 7 heads failing).
+
+| whitened sd (real 1), Core, women / men | before | now |
+|---|---|---|
+| the face's width over its height | 0.66 / 0.57 | 0.74 / 0.71 |
+| the eyes' spacing over the face | 0.74 / 0.72 | 0.81 / 0.83 |
+| the eyes' size | 0.76 / 0.76 | 0.80 / 0.79 |
+| the nose's width over the eyes' spacing | 0.80 / 0.79 | 0.84 / 0.81 |
+| the cheeks' breadth (3D) | 0.84 / 0.79 | 0.92 (rendered 1.11 / 1.02 at the firm hold) |
+
+Rendered (round 31, the firm hold): the gate 248 of 252 (245 before), **no look-alike pair**, no proportions or shape
+failure; 3 heads and 1 age remain. **The photograph's last steps tried and ruled out**: FairFace's images are 224 px JPEGs at
+quality 75 (measured), the face filling the frame (207 px); ours brought to that size and saved so read the same ages (30-45
+22.8, 45-58 28.0, 58+ 33.7 against 23.0, 28.2, 34.1) and sexes: the years our faces lack are in the faces, not in the
+comparison.
