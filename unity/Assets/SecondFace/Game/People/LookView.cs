@@ -13,8 +13,7 @@ namespace SecondFace.Game.People
     /// </summary>
     public static class LookView
     {
-        private static readonly int ToneId = Shader.PropertyToID("_Tone");
-        private static readonly int UndertoneId = Shader.PropertyToID("_Undertone");
+        private static readonly int ToneMulId = Shader.PropertyToID("_ToneMul");
         private static readonly int FrecklesId = Shader.PropertyToID("_Freckles");
         private static readonly int ScarId = Shader.PropertyToID("_Scar");
         private static readonly int TattooId = Shader.PropertyToID("_Tattoo");
@@ -71,11 +70,12 @@ namespace SecondFace.Game.People
             {
                 var m = r.sharedMaterial;
                 if (m == null) continue;
-                if (r.name.StartsWith("Body_") && m.HasProperty(ToneId))
+                if (r.name.StartsWith("Body_") && m.HasProperty(ToneMulId))
                 {
                     r.GetPropertyBlock(block);
-                    block.SetFloat(ToneId, Mathf.Clamp(look.Skin, -1f, 1f));
-                    block.SetFloat(UndertoneId, Mathf.Clamp(look.Undertone, -1f, 1f));
+                    // the skin's colour as real cheeks are measured (SkinColour), over the reference bake
+                    var tone = SkinColour.Multiplier(look);
+                    block.SetVector(ToneMulId, new Vector4(tone.R, tone.G, tone.B, 1f));
                     block.SetFloat(FrecklesId, Mathf.Clamp01(look.Freckles));
                     block.SetFloat(WrinklesId, Looks.Wrinkles(look));
                     block.SetFloat(ScarId, scar);

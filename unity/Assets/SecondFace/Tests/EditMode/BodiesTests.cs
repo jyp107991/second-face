@@ -139,7 +139,7 @@ namespace SecondFace.Tests
             Assert.That(look.Hair, Is.EqualTo("sf_crop"), "a side part is cropped (the grooming rule)");
             Assert.That(look.HairColour, Is.EqualTo(1183243));
             Assert.That(look.Scar, Is.EqualTo("eye_line"));
-            Assert.That(look.Skin, Is.GreaterThan(0.9f), "dark");
+            Assert.That(SkinColour.Lightness(look), Is.LessThan(38), "dark");
             Assert.That(look.Eyes, Is.EqualTo("grey_green"));
             Assert.That(Bodies.HairOf("bob02"), Is.EqualTo("sf_bun"));
             Assert.That(Bodies.HairOf("paint_shaved"), Is.EqualTo("buzz"));
@@ -172,12 +172,13 @@ namespace SecondFace.Tests
         public void SkinHairAndEyesFollowAncestry()
         {
             var crowd = Many(false, 400).Concat(Many(true, 400)).ToList();
-            Assert.That(crowd.Min(l => l.Skin), Is.LessThan(-0.6f), "very fair skins");
-            Assert.That(crowd.Max(l => l.Skin), Is.GreaterThan(0.8f), "very dark skins");
-            Assert.That(crowd.Count(l => l.Skin > -0.3f && l.Skin < 0.3f), Is.GreaterThan(100), "and every shade between");
+            // (as cheeks are measured, SkinColour: L* 64 and over the fairest, under 34 the darkest)
+            Assert.That(crowd.Max(l => SkinColour.Lightness(l)), Is.GreaterThan(64), "very fair skins");
+            Assert.That(crowd.Min(l => SkinColour.Lightness(l)), Is.LessThan(34), "very dark skins");
+            Assert.That(crowd.Count(l => SkinColour.Lightness(l) > 40 && SkinColour.Lightness(l) < 52), Is.GreaterThan(60), "and every shade between");
             var fair = crowd.Where(l => l.Shape["body-caucasian"] >= 0.85).ToList();
             var dark = crowd.Where(l => l.Shape["body-african"] >= 0.85).ToList();
-            Assert.That(fair.Average(l => l.Skin), Is.LessThan(dark.Average(l => l.Skin) - 0.8f));
+            Assert.That(fair.Average(l => SkinColour.Lightness(l)), Is.GreaterThan(dark.Average(l => SkinColour.Lightness(l)) + 15));
             int Shade(PlayerLook l) => Array.IndexOf(Looks.HairColours, l.HairColour);
             Assert.That(fair.Count(l => Shade(l) >= 3 && Shade(l) <= 6), Is.GreaterThan(fair.Count / 5), "fair and red hair among the north European");
             Assert.That(dark.Count(l => Shade(l) >= 3 && Shade(l) <= 6), Is.EqualTo(0), "none elsewhere");

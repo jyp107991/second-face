@@ -3,7 +3,7 @@
 // hiding: each body vertex carries its MakeHuman base index in uv1 as (i % 128, i / 128); _HiddenMask is a 128 x 128 R8
 // mask of the base vertices the worn garments cover (written by Game.People.Wardrobe on equip). The vertex reads its texel
 // and every pass clips where the interpolated mask passes one half, so skin under clothes neither shows through nor
-// writes depth. The look made at creation (P5.3i): _Tone darker or lighter than the bake, _Undertone warmer or rosier,
+// writes depth. The look made at creation (P5.3i): _ToneMul the skin's colour over the bake (tone and undertone),
 // _Freckles, and a scar and a tattoo drawn in the head's own frame: _RestMap holds each base vertex's rest position in
 // the frame of the web game's skin painter (the eyes at (±0.36, 0.1, 0.88) head radii from its centre, baked by
 // WardrobeBuild), so a mark is placed once in 3D and stays on the skin whatever the face and the animation do.
@@ -20,8 +20,7 @@ Shader "SecondFace/Skin"
         [NoScaleOffset] _AgedMap ("Aged albedo (the photograph)", 2D) = "white" {}
         _Aged ("Aged", Range(0, 1)) = 0
         [NoScaleOffset] _RestMap ("Rest positions in the head frame (128 x 128)", 2D) = "black" {}
-        _Tone ("Darker (+) or lighter (-)", Range(-1, 1)) = 0
-        _Undertone ("Warmer (+) or rosier (-)", Range(-1, 1)) = 0
+        _ToneMul ("The skin's colour over the reference bake (linear, per channel; Core SkinColour)", Vector) = (1, 1, 1, 1)
         _Freckles ("Freckles", Range(0, 1)) = 0
         _Scar ("Scar (-1 none)", Float) = -1
         _Tattoo ("Tattoo (-1 none)", Float) = -1
@@ -61,7 +60,8 @@ Shader "SecondFace/Skin"
         CBUFFER_START(UnityPerMaterial)
             float4 _BaseMap_ST;
             half4 _BaseColor;
-            half _BumpScale, _Smoothness, _Aged, _Tone, _Undertone, _Freckles, _Wrinkles;
+            half _BumpScale, _Smoothness, _Aged, _Freckles, _Wrinkles;
+            half4 _ToneMul;
             float _Scar, _Tattoo, _Beard;
             half4 _BeardColour;
             half4 _BareSkin, _ScalpColour, _BrowColour, _BakeBalance;
@@ -428,18 +428,11 @@ Shader "SecondFace/Skin"
                 a = lerp(a, bare, sw * (_ScalpColour.a > 1.5h ? sbald : _ScalpColour.a > 0.5h ? 1.0h : sbald));
                 smooth = lerp(smooth, 0.38h, sw * sbald);   // a bare scalp shines a little, not like polish
             }
-            // tone: darker towards a deep brown, lighter as if less sun ever reached it
-            // the whole human range over the mid-tone bake (P4.14): to 1, deep dark (the bake's shade at a third, warm
-            // and a little bluer in the shadows); to -1, very fair (the bake's shade lifted most of the way to white, a
-            // touch pink)
-            // P4.15b: each base's bake first brought to the reference skin's colour (the men's bake is a bronzed tan, far
-            // more orange than the women's: everyone's tone comes from the people model, not from which bake they wear)
-            a *= _BakeBalance.rgb;
-            if (_Tone > 0.001h) a *= lerp(half3(1, 1, 1), half3(0.3h, 0.21h, 0.17h), pow(_Tone, 0.85h));
-            // the fair end rosy beige, not white: green and blue lifted less than red (P4.15b: the fairest read as plaster)
-            else if (_Tone < -0.001h) a = lerp(a, 1.0h - (1.0h - a) * half3(0.45h, 0.62h, 0.72h), -_Tone);
-            // undertone: warmer (golden, olive) or rosier
-            a *= _Undertone >= 0 ? 1.0h + _Undertone * half3(0.05h, 0.0h, -0.08h) : 1.0h + (-_Undertone) * half3(0.03h, -0.03h, 0.02h);
+            // tone and undertone: each base's bake first brought to the reference skin's colour (P4.15b: the men's bake is a
+            // bronzed tan, far more orange than the women's), then to the person's own cheek as dermatology measures real
+            // ones (R4c, Core SkinColour: L* 70 at the fairest to 30 at the darkest, the peoples where their adults were
+            // measured), one multiplier per channel, so the bake's own variation stays in proportion
+            a *= _BakeBalance.rgb * _ToneMul.rgb;
             a = Zones(a, p);
             // the shaved scalp's stubble in the hair's own colour, as dense as the bake painted it, none where bald
             if (sw > 0.01h && _ScalpColour.a > 0.5h)

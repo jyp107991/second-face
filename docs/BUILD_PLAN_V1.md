@@ -2580,6 +2580,13 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   same old Library, was cut off before EditMode finished and saved nothing (runs 112-124 "cancelled"). The Library is now
   restored and saved as separate steps, the save `if: always()`, and the limit fits a cold import plus the full suite.
   A run reported "cancelled" is a failure to read, not noise.
+- **Skin colour is a measured quantity: calibrate it, don't shape it by eye.** The skin's tone was a curve on the bake (a
+  third of its shade at the dark end, lifted most of the way to white at the fair), tuned by look; it put the darkest
+  cheeks at L* 25 and the fairest past 70, three times the real luminance ratio between peoples, and the whites of the eyes
+  stood out on dark faces like a mask's. A contrast measure taken within each image (eyes against skin) caught it where no
+  look did. Skin colour now comes from the dermatology literature's spectrophotometer readings by people (Core
+  `SkinColour`, tested per people), one linear multiplier per channel over the balanced bake. Any physical quantity a
+  shader fakes (albedo, reflectance, sizes) gets a measured target and a test before it gets a slider.
 
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)
 

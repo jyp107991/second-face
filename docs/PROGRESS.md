@@ -853,7 +853,13 @@ compared by people; brows and lips' darkness now real, eyes near real on white m
 reads barely moved (§14, `gate_r4a.txt`). CI's Unity test job had been cut off at 40 min since P4.15c without testing anything (a Library cache saved only on
 success, so every run imported from scratch): the cache now saves always and the limit is 150 min; first green run to
 confirm. Locally the full suite (Heavy included) crashes the software GL driver in `PeoplesLineup` after the people's
-renders; alone it passes. **Next action:** CI's test job green (read its first full run); then the eyes on dark skin (the white against dark skin), the lashes
+renders; alone it passes. **R4c in progress** (task: skin colour as measured): the eyes on dark skin read light because our
+darkest cheeks rendered L* 16 against the fairest 61 (real photos 29 against 40; spectrophotometry about 35 against 62). The
+skin's colour now comes from Core `SkinColour` (tone to CIELAB from dermatology's measurements by people, one multiplier
+per channel over the balanced bake, `_ToneMul`), the peoples' tones rebased on it and tested per people (`SkinColourTests`:
+each people's indoor adults within 3 L* of the measured mean); half-done: the gate's render with it, then `contrast.py`'s new
+by-people table (skin L*, the white of the eye over the skin) and, if the white still stands out on dark skin, the
+sclera's pigment by skin. **Next action:** CI's test job green (read its first full run); then the eyes on dark skin (the white against dark skin), the lashes
 as cards the camera resolves, then what ages a face beyond its contrast, re-measured with `contrast.py` and `apparent.py`. Then, as below:
 R4 and the sexes' cues together, measured on the population with `apparent.py` and judged on the boards:
 what ages a face beyond its outline (skin, eyelids, the jaw's and neck's soft tissue, thinning hair) and what people read

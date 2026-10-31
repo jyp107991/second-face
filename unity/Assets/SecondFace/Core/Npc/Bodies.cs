@@ -217,7 +217,8 @@ namespace SecondFace.Core.Npc
             // little lighter than the men of her people from puberty on (Jablonski and Chaplin 2000); the sun of outdoor work
             // (which darkens the light most); undertone warm or rosy by ancestry
             var outdoor = labour >= 1 ? 1 : role == "drifter" || role == "pilgrim" || role == "nomad" ? 0.8 : 0.3;
-            var tone = Tone(cluster) * (1 - share) + (second != null ? Tone(second) * share : 0) + Normal(rng) * 0.14;
+            // (the person's own shade about 4 L* units either way, as within a people measured in one place: Xiao et al. 2017)
+            var tone = Tone(cluster) * (1 - share) + (second != null ? Tone(second) * share : 0) + Normal(rng) * 0.2;
             if (!male) tone -= 0.08 * (1 - child);
             tone += 0.22 * outdoor * (1 - Math.Max(0, tone)) - 0.08 * (1 - outdoor);
             look.Skin = Clamp1(tone);
@@ -255,7 +256,7 @@ namespace SecondFace.Core.Npc
             // (freckling is the north European's: MC1R variants are rare elsewhere, where the sun leaves spots instead)
             var freckling = Of(p => p.Id == "north_european" ? 1.0 : p.Id == "mediterranean" ? 0.3 : 0.06);
             look.Freckles = red && rng.Chance(0.85) ? (float)rng.Range(0.3, 0.8)
-                : look.Skin < -0.45 && rng.Chance((0.3 + 0.15 * outdoor) * freckling) ? (float)rng.Range(0.1, 0.55) : 0f;
+                : look.Skin < -0.3 && rng.Chance((0.3 + 0.15 * outdoor) * freckling) ? (float)rng.Range(0.1, 0.55) : 0f;
 
             // the hair by the grooming rule, in the forms the people's hair takes: coily hair cropped close, braided or
             // locked; straight hair cropped, tied up or braided; wavy hair any of them
@@ -500,7 +501,8 @@ namespace SecondFace.Core.Npc
                 var f = over["facialHair"].ToString();
                 look.Beard = f == "none" ? null : Array.IndexOf(Looks.Beards, f) >= 0 ? f : look.Beard;
             }
-            if (over["skinTone"] != null) look.Skin = (float)Math.Clamp(((double)over["skinTone"] - 0.35) * 2.2, -1, 1);
+            // (the web game's 0 fair to 1 dark: a fair cheek at L* 62, a dark one at 33, SkinColour)
+            if (over["skinTone"] != null) look.Skin = (float)Math.Clamp(-0.5 + 1.4 * (double)over["skinTone"], -1, 1);
             if (over["skinUndertone"] != null) look.Undertone = (float)Math.Clamp((double)over["skinUndertone"], -1, 1);
             if (over["freckles"] != null) look.Freckles = (float)Math.Clamp((double)over["freckles"], 0, 1);
             if (over["eyes"] != null)
@@ -615,11 +617,13 @@ namespace SecondFace.Core.Npc
             return ((af / sum, @as / sum, ca / sum), second, t);
         }
 
-        /// <summary>A cluster's skin tone against the bases' mid-tone bake (-1 very light to 1 very dark).</summary>
+        /// <summary>A cluster's skin tone (-1 the fairest to 1 the darkest): the cheek's lightness its adults were measured at,
+        /// indoors (<see cref="SkinColour"/>: L* about 61 British and north European, 58 Kurdish and Mediterranean, 59 Chinese,
+        /// 57 Southeast Asian, 56 Latin American, 53 South Asian and Indigenous American, 37 East and 36 West African).</summary>
         public static double Tone(string cluster) => cluster switch
         {
-            "north_european" => -0.8, "mediterranean" => -0.35, "east_asian" => -0.3, "southeast_asian" => 0.08,
-            "south_asian" => 0.3, "latin_american" => 0.0, "indigenous_american" => 0.15, "east_african" => 0.75, "west_african" => 0.9,
+            "north_european" => -0.35, "mediterranean" => -0.18, "east_asian" => -0.23, "southeast_asian" => -0.12,
+            "south_asian" => 0.08, "latin_american" => -0.07, "indigenous_american" => 0.08, "east_african" => 0.77, "west_african" => 0.81,
             _ => 0.0,
         };
 

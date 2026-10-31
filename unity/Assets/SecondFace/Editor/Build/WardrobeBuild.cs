@@ -306,8 +306,9 @@ namespace SecondFace.EditorTools
         }
 
         /// <summary>The reference skin every bake is balanced to: the women's base's forehead as measured by
-        /// <see cref="BareSkin"/> (sRGB), a mid-tone; re-measure if that bake changes.</summary>
-        public static readonly Color ReferenceBare = new(0.590f, 0.426f, 0.346f);
+        /// <see cref="BareSkin"/> (sRGB), a mid-tone; re-measure if that bake changes (Core's SkinColour takes the people's
+        /// colours from it).</summary>
+        public static readonly Color ReferenceBare = new(SecondFace.Core.Npc.SkinColour.Reference.R, SecondFace.Core.Npc.SkinColour.Reference.G, SecondFace.Core.Npc.SkinColour.Reference.B);
 
         /// <summary>Per channel, the reference skin over this bake's, in linear light (a ratio, so a vector, not a colour).</summary>
         public static Vector4 Balance(Color bare)

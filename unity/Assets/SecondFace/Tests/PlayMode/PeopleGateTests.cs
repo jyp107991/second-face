@@ -34,6 +34,8 @@ namespace SecondFace.Tests
             /// <summary>The real faces their face was drawn from (<see cref="SecondFace.Core.Npc.PlayerLook.FaceSource"/>), set
             /// beside them on the boards (R3).</summary>
             public string FaceSource;
+            /// <summary>Their cheek's lightness as dermatology measures it (Core SkinColour, R4c), beside the rendered one.</summary>
+            public double SkinL;
         }
 
         /// <summary>The response of the head and neck to each of the sculptor's shapes (docs/PEOPLE_REALISM.md §4.1-4.2): each
@@ -139,7 +141,7 @@ namespace SecondFace.Tests
                 if (mm == null) failed++;
                 else results.Add(new Measured { Id = w.Id, Name = w.Name, Sex = w.Male ? "m" : "f", Heritage = w.Look.Heritage, Age = w.Age, Source = w.Source, Mm = mm,
                                                 Sliders = SecondFace.Core.Npc.Looks.Shape(w.Look), Scale = SecondFace.Game.People.LookView.Scale(w.Look),
-                                                FaceSource = w.Look.FaceSource });
+                                                FaceSource = w.Look.FaceSource, SkinL = SecondFace.Core.Npc.SkinColour.Lightness(w.Look) });
                 if (studio != null && mm != null)
                 {
                     // scaled to their stature as in the game: as they look (portraits_look, the boards), and with no beard

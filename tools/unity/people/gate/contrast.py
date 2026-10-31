@@ -5,7 +5,8 @@ age (Porcheron, Mauger and Russell 2013, "Aspects of facial contrast decrease wi
 PLoS ONE 8). Measured the same way on FairFace's frontal faces at rest (the gate's real faces, fairface_shapes.json) and
 on our portraits: MediaPipe's landmarks outline each feature and a ring of skin round it; CIELAB L* and a* are averaged
 in each; contrast = (skin - feature) / (skin + feature) for L*, feature - skin for a*. Real faces behind dark glasses are
-left out (their eye openings dark and uniform).
+left out (their eye openings dark and uniform). Also by people: the skin's rendered lightness round the eyes (R4c) and the
+white of the eye over it.
 Usage: python -I contrast.py <face_landmarker.task> <FairFace validation.parquet> <unity/test-results>
 (writes test-results/people_contrast.json and prints real against ours by sex and age class)"""
 import io, json, os, sys
@@ -23,6 +24,10 @@ EYE_L = [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 3
 BROW_R = [70, 63, 105, 66, 107, 55, 65, 52, 53, 46]
 BROW_L = [300, 293, 334, 296, 336, 285, 295, 282, 283, 276]
 FEATURES = ('eyes', 'brows', 'lips')
+# FairFace's races and ours
+PEOPLES = (('white', ('north_european',)), ('middle_eastern', ('mediterranean',)), ('east_asian', ('east_asian',)),
+           ('southeast_asian', ('southeast_asian',)), ('indian', ('south_asian',)), ('latino', ('latin_american', 'indigenous_american')),
+           ('black', ('west_african', 'east_african')))
 
 
 def lab(rgb):
@@ -67,6 +72,10 @@ def measure(rgb, P):
         lf, ls = float(L[inner].mean()), float(L[ring].mean())
         out[k] = round((ls - lf) / (ls + lf), 4)
         if k == 'lips': out['lips_a'] = round(float(A[inner].mean() - A[ring].mean()), 3)
+        if k == 'eyes':
+            # the skin round the eyes, and the brightest of the opening (the white of the eye) over it
+            out['skin_l'] = round(ls, 2)
+            if opening.sum() >= 8: out['white'] = round(float(np.percentile(L[opening], 90)) / max(ls, 1.0), 3)
     return out
 
 
@@ -98,7 +107,7 @@ def main(model, parquet, results):
         if r is None: continue
         c = measure(rgb, r[0])
         cls = 3 if p['Age'] < 30 else 4 if p['Age'] < 40 else 5 if p['Age'] < 50 else 6 if p['Age'] < 60 else 7 if p['Age'] < 70 else 8
-        if c: ours.append({'id': p['Id'], 'sex': p['Sex'], 'heritage': p.get('Heritage'), 'cls': cls, **c})
+        if c: ours.append({'id': p['Id'], 'sex': p['Sex'], 'heritage': p.get('Heritage'), 'cls': cls, 'model_l': p.get('SkinL'), **c})
     json.dump({'real': rows, 'ours': ours}, open(os.path.join(results, 'people_contrast.json'), 'w'))
     keys = list(FEATURES) + ['lips_a']
     def row(xs, k): return f"{np.mean([x[k] for x in xs]):+.3f}" if xs else '   -  '
@@ -108,6 +117,18 @@ def main(model, parquet, results):
             r = [x for x in rows if x['sex'] == sex and lo <= x['cls'] <= hi]
             o = [x for x in ours if x['sex'] == sex and lo <= x['cls'] <= hi]
             print(f"  {sex} {name:6s} real n {len(r):3d}: " + ' '.join(row(r, k) for k in keys) + f"   ours n {len(o):3d}: " + ' '.join(row(o, k) for k in keys))
+    # by people (FairFace's race for ours; its mix is not ours, and contrast differs with the skin's own lightness), adults
+    # under 60: the eyes' contrast, the skin's rendered L* round the eyes (photos are exposed for the face, so compare the
+    # ratio between peoples, not the level) and the white of the eye over the skin
+    print("by people, under 60: eyes contrast, skin L* (rendered; ours with the model's cheek L*), white of the eye / skin")
+    for race, ourpeople in PEOPLES:
+        for sex in 'fm':
+            r = [x for x in rows if x['race'] == race and x['sex'] == sex and x['cls'] <= 6]
+            o = [x for x in ours if x['heritage'] in ourpeople and x['sex'] == sex and x['cls'] <= 6]
+            if not r or not o: continue
+            m = lambda xs, k: np.mean([x[k] for x in xs if x.get(k) is not None])
+            print(f"  {race:16s} {sex} real n {len(r):3d}: {m(r, 'eyes'):+.3f} {m(r, 'skin_l'):5.1f} {m(r, 'white'):.2f}"
+                  f"   ours n {len(o):3d}: {m(o, 'eyes'):+.3f} {m(o, 'skin_l'):5.1f} ({m(o, 'model_l'):4.1f}) {m(o, 'white'):.2f}")
 
 
 if __name__ == '__main__':

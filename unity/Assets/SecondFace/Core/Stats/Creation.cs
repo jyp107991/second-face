@@ -103,7 +103,7 @@ namespace SecondFace.Core.Stats
             Look.Shape["body-caucasian"] = (float)mix.Value.Ca;
             Look.Skin = (float)Math.Clamp(Bodies.Tone(cluster) + Bodies.Normal(rng) * 0.1 + 0.1, -1, 1);   // a little sun: the work is outdoors
             Look.Undertone = (float)Math.Clamp(Bodies.Undertone(cluster) + Bodies.Normal(rng) * 0.2, -1, 1);
-            Look.Freckles = Look.Skin < -0.45 && rng.Chance(0.3) ? (float)rng.Range(0.1, 0.5) : 0f;
+            Look.Freckles = Look.Skin < -0.3 && rng.Chance(0.3) ? (float)rng.Range(0.1, 0.5) : 0f;
             Look.HairColour = Looks.HairColours[Bodies.HairShade(rng, cluster)];
             Look.Eyes = rng.Chance(Bodies.LightEyes(cluster)) ? rng.Pick(new[] { "hazel", "green", "grey_green", "blue_grey", "blue", "grey" })
                 : rng.Pick(new[] { "brown", "dark", "brown", "hazel" });

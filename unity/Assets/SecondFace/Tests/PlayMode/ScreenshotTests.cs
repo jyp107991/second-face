@@ -1237,7 +1237,7 @@ namespace SecondFace.Tests
                 foreach (var r in go.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => r.name.StartsWith("Body_")))
                 {
                     r.GetPropertyBlock(block);
-                    Debug.Log($"diag {(male ? "m" : "f")} {r.name} shader={r.sharedMaterial.shader.name} tone={block.GetFloat("_Tone")} brow0={block.GetVector("_Brow0")} brow1={block.GetVector("_Brow1")} browColour={block.GetColor("_BrowColour")} rest={(r.sharedMaterial.GetTexture("_RestMap") != null)} bare={r.sharedMaterial.GetColor("_BareSkin")} blendshapes={r.sharedMesh.blendShapeCount}");
+                    Debug.Log($"diag {(male ? "m" : "f")} {r.name} shader={r.sharedMaterial.shader.name} tone={block.GetVector("_ToneMul")} brow0={block.GetVector("_Brow0")} brow1={block.GetVector("_Brow1")} browColour={block.GetColor("_BrowColour")} rest={(r.sharedMaterial.GetTexture("_RestMap") != null)} bare={r.sharedMaterial.GetColor("_BareSkin")} blendshapes={r.sharedMesh.blendShapeCount}");
                 }
                 var lod = go.GetComponent<LODGroup>();
                 if (lod != null) lod.ForceLOD(0);

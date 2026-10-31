@@ -227,7 +227,8 @@ namespace SecondFace.Core.Npc
         public static float SkinYears(PlayerLook look)
         {
             var years = 24f + 46f * (look.Shape != null && look.Shape.TryGetValue("body-age", out var ba) ? ba : 0f);
-            years -= 10f * System.Math.Clamp((look.Skin + 0.2f) / 1.0f, 0f, 1f);
+            // (the shelter in the skin's melanin: none at a cheek of L* 57 or lighter, the whole decade by 37)
+            years -= 10f * (float)System.Math.Clamp((57 - SkinColour.Lightness(look)) / 20, 0, 1);
             if (look.Heritage == "east_asian" || look.Heritage == "southeast_asian") years -= 4f;
             if (look.Body == "m") years += 2f;
             return years;
