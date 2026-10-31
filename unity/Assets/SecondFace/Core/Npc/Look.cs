@@ -241,8 +241,10 @@ namespace SecondFace.Core.Npc
         /// every adult of ours as 23.</summary>
         public static float Wrinkles(PlayerLook look) => System.Math.Clamp((SkinYears(look) - 25f) / 45f, 0f, 1f);
 
-        /// <summary>How far the skin has gone to its aged bake (0 at 28 years shown, most of the way by 72).</summary>
-        public static float SkinAge(PlayerLook look) => (float)System.Math.Pow(System.Math.Clamp((SkinYears(look) - 28f) / 44f, 0f, 1f), 1.2) * 0.85f;
+        /// <summary>How far the skin has gone to its aged bake: from 25 years shown, all of it by 62, the age the bake was made
+        /// for (mh_build's aged face, its folds baked as creases). R4d: at 0.85 of it by 72 the bake's creases, the most
+        /// photographic of the years' detail, were a third of the way in at fifty.</summary>
+        public static float SkinAge(PlayerLook look) => System.Math.Clamp((SkinYears(look) - 25f) / 37f, 0f, 1f);
 
         /// <summary>The years the body shows (its age shape: 24 at none, 70 at all).</summary>
         public static float ShownYears(PlayerLook look) => 24f + 46f * (look.Shape != null && look.Shape.TryGetValue("body-age", out var ba) ? ba : 0f);

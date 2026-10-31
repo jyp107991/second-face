@@ -634,7 +634,7 @@ Shader "SecondFace/Skin"
                     // and spots of the sun's years, lentigines, finer than the blotches)
                     float blot = (Noise3(i.rest * 9.0) - 0.5) * _Wrinkles * fine * 0.9;
                     float spots = smoothstep(0.62, 0.72, Noise3(i.rest * 31.0 + 5.0)) * _Wrinkles * fine * smoothstep(0.45, 0.7, i.rest.z);
-                    albedo.rgb *= 1.0h - (half)wr * 0.4h;
+                    albedo.rgb *= 1.0h - (half)wr * 0.5h;
                     albedo.rgb *= 1.0h + (half)blot * half3(0.1h, -0.12h, -0.16h);
                     albedo.rgb *= 1.0h - (half)spots * half3(0.16h, 0.22h, 0.28h);
                     float h = -wr * 0.0017;
