@@ -672,8 +672,11 @@ Shader "SecondFace/Skin"
                 surface.albedo = albedo.rgb;
                 surface.metallic = 0;
                 surface.smoothness = smooth;
-                // the sockets, creases and folds take less of the ambient light (R4)
-                surface.occlusion = saturate(i.ao);
+                // the sockets, creases and folds take less of the ambient light (R4); over the lips no less than 0.7: the
+                // occlusion is the vertices', and those on the lips' seam see into the closed mouth, so the seam's darkness
+                // spread over the lips' inner halves (a band twice as dark as real people's, R4), where a real one is a
+                // crease a millimetre wide; the corners (past the mask) keep theirs
+                surface.occlusion = saturate(lerp(i.ao, max(i.ao, 0.7h), LipsAt(i.rest)));
                 surface.normalTS = normalTS;
                 surface.alpha = 1;
 
