@@ -2106,14 +2106,6 @@ MonoBehaviour:
     m_Localized: Cornrows
     m_Metadata:
       m_Items: []
-  - m_Id: 670192321806377
-    m_Localized: A bun, strands loose
-    m_Metadata:
-      m_Items: []
-  - m_Id: 670192321806378
-    m_Localized: A work braid, strands loose
-    m_Metadata:
-      m_Items: []
   references:
     version: 2
     RefIds: []

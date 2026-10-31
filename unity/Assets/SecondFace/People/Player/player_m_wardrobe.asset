@@ -7095,34 +7095,6 @@ MonoBehaviour:
     Prefab: {fileID: 5283184565826201464, guid: 5206130ce3d7d19e3a4281ba9e9f6a85, type: 3}
     Rx: []
     Rz: []
-  - Id: sf_beard_short
-    Slot: beard
-    HidesHair: 0
-    Hides: 
-    Prefab: {fileID: 6850268441534857512, guid: f0257aca8a30d8ed9bf889b115efc873, type: 3}
-    Rx: []
-    Rz: []
-  - Id: sf_beard_full
-    Slot: beard
-    HidesHair: 0
-    Hides: 
-    Prefab: {fileID: 7191374601138454159, guid: 1d3415c1a1799787b87be4932c1108e6, type: 3}
-    Rx: []
-    Rz: []
-  - Id: sf_goatee
-    Slot: beard
-    HidesHair: 0
-    Hides: 
-    Prefab: {fileID: 3227487146310739310, guid: eacab6b977b6aa76e9f702b03df35bbc, type: 3}
-    Rx: []
-    Rz: []
-  - Id: sf_moustache
-    Slot: beard
-    HidesHair: 0
-    Hides: 
-    Prefab: {fileID: 7428338729717503982, guid: 5632cc4c75e79aec98623113b0b47ae2, type: 3}
-    Rx: []
-    Rz: []
   - Id: mindfront_knitted_sweater_01
     Slot: top
     HidesHair: 0
@@ -7648,17 +7620,31 @@ MonoBehaviour:
     - 0
     - 0
     - 0.007416427
-  - Id: sf_bun_loose
-    Slot: hair
+  - Id: sf_beard_short
+    Slot: beard
     HidesHair: 0
     Hides: 
-    Prefab: {fileID: 4332233928546229146, guid: 6d9318d7a5f95d308a0bc95ebb54f7ae, type: 3}
+    Prefab: {fileID: 6850268441534857512, guid: f0257aca8a30d8ed9bf889b115efc873, type: 3}
     Rx: []
     Rz: []
-  - Id: sf_braid_loose
-    Slot: hair
+  - Id: sf_beard_full
+    Slot: beard
     HidesHair: 0
     Hides: 
-    Prefab: {fileID: 4203426081890854601, guid: 89a926156d237038e8c28c1048fb823d, type: 3}
+    Prefab: {fileID: 7191374601138454159, guid: 1d3415c1a1799787b87be4932c1108e6, type: 3}
+    Rx: []
+    Rz: []
+  - Id: sf_goatee
+    Slot: beard
+    HidesHair: 0
+    Hides: 
+    Prefab: {fileID: 3227487146310739310, guid: eacab6b977b6aa76e9f702b03df35bbc, type: 3}
+    Rx: []
+    Rz: []
+  - Id: sf_moustache
+    Slot: beard
+    HidesHair: 0
+    Hides: 
+    Prefab: {fileID: 7428338729717503982, guid: 5632cc4c75e79aec98623113b0b47ae2, type: 3}
     Rx: []
     Rz: []

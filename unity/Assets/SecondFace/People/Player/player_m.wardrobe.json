@@ -122290,34 +122290,6 @@
    "hides": []
   },
   {
-   "id": "sf_beard_short",
-   "slot": "beard",
-   "model": "player_m__beard_sf_beard_short",
-   "hidesHair": false,
-   "hides": []
-  },
-  {
-   "id": "sf_beard_full",
-   "slot": "beard",
-   "model": "player_m__beard_sf_beard_full",
-   "hidesHair": false,
-   "hides": []
-  },
-  {
-   "id": "sf_goatee",
-   "slot": "beard",
-   "model": "player_m__beard_sf_goatee",
-   "hidesHair": false,
-   "hides": []
-  },
-  {
-   "id": "sf_moustache",
-   "slot": "beard",
-   "model": "player_m__beard_sf_moustache",
-   "hidesHair": false,
-   "hides": []
-  },
-  {
    "id": "mindfront_knitted_sweater_01",
    "slot": "top",
    "model": "player_m__mindfront_knitted_sweater_01",
@@ -128078,16 +128050,30 @@
    ]
   },
   {
-   "id": "sf_bun_loose",
-   "slot": "hair",
-   "model": "player_m__hair_sf_bun_loose",
+   "id": "sf_beard_short",
+   "slot": "beard",
+   "model": "player_m__beard_sf_beard_short",
    "hidesHair": false,
    "hides": []
   },
   {
-   "id": "sf_braid_loose",
-   "slot": "hair",
-   "model": "player_m__hair_sf_braid_loose",
+   "id": "sf_beard_full",
+   "slot": "beard",
+   "model": "player_m__beard_sf_beard_full",
+   "hidesHair": false,
+   "hides": []
+  },
+  {
+   "id": "sf_goatee",
+   "slot": "beard",
+   "model": "player_m__beard_sf_goatee",
+   "hidesHair": false,
+   "hides": []
+  },
+  {
+   "id": "sf_moustache",
+   "slot": "beard",
+   "model": "player_m__beard_sf_moustache",
    "hidesHair": false,
    "hides": []
   }

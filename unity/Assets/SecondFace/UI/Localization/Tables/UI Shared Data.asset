@@ -2095,14 +2095,6 @@ MonoBehaviour:
     m_Key: hair.sf_cornrows
     m_Metadata:
       m_Items: []
-  - m_Id: 670192321806377
-    m_Key: hair.sf_bun_loose
-    m_Metadata:
-      m_Items: []
-  - m_Id: 670192321806378
-    m_Key: hair.sf_braid_loose
-    m_Metadata:
-      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

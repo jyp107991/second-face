@@ -649,3 +649,13 @@ inside the rule: the braid worn forward over the shoulder as working braids are,
 face (hair pulled back by people who work outdoors does not stay put), more long hair matted or tied low; then the coarse
 years (the soft tissue's descent: jowls, the nasolabial fold's depth, the lids' hooding, the cheeks' hollowing, the neck),
 each judged with `apparent.py` and on the boards.
+
+**Strands loose round the face tried and reverted (rounds 35-36, `hair_strays_r35.jpg`)**: buns and braids with strands
+escaped at the temples and in front of the ears (to the jaw's height, clear of a collar) for seven in ten women. As single
+hairs (the wisp column) they did not show at a speaking distance and the read did not move (women read as men 71 %; loose
+buns 87 %, plain 70 %); as clumps (the clump column, 5-7 mm) they showed as flat strips of tape, some across a brow or an eye.
+A card cannot make a stray at this scale. The close-ups show the real defect plainly: **drawn-back hair renders as a thin
+striped cap** (the shell's 2 mm lift, no volume over the crown or the ears, the strands' texture in hard stripes; blond as
+yellow plastic), and with it the head reads as a man's in a cap to the eye as to the reader. Next: the drawn-back styles'
+volume and shading (a real tied head of hair stands 5-10 mm off the crown and passes over the tops of the ears; its strands
+shade into each other), judged in close-ups first, then measured.

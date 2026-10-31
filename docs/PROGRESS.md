@@ -887,9 +887,11 @@ min. **R4d, what the readers answer to (§16)**: the gate's age reading had real
 FairFace's photographs) and ours in the studio; framed alike, ours read young at the gate's crop (58+ 31.6, real 49.2)
 but their years in the photograph's own frame (39.1, real 38.3): the skin carries the years, the coarse shape and the hair
 do not. The sex read is the hair: our women with hair drawn back read as men 75-80 %, with long matted hair 44 % (real
-women 37 %). **Next action:** the next Android run (UI tests 30 min); women's hair round the face inside the grooming rule
-(the braid forward over the shoulder, strands escaping buns and wraps, more long hair matted or tied low), measured with
-`apparent.py` by hair and judged on the boards; then the coarse years (soft tissue's descent); then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
+women 37 %). Strands loose round the face were tried and reverted (single hairs did not show; clumps showed as tape): the
+drawn-back hair itself renders as a thin striped cap (`hair_strays_r35.jpg`). **Next action:** the next Android run (UI
+tests 30 min); the drawn-back styles' volume and shading (5-10 mm off the crown, over the tops of the ears, strands shading
+into each other, no plastic blond), close-ups first, then `apparent.py` by hair; then the coarse years (soft tissue's
+descent); then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
 then the 30-45s' years (what reads 23 at 37: the face's fullness, the eyes, the brows' thinning), each measured with
 `apparent.py` and judged on the boards. Then, as below:
 R4 and the sexes' cues together, measured on the population with `apparent.py` and judged on the boards:

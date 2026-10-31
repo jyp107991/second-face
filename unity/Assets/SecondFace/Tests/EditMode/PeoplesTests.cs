@@ -55,8 +55,7 @@ namespace SecondFace.Tests
             Assert.That(Share(coily, l => l.Hair == "sf_crop"), Is.EqualTo(0), "never the straight crop");
             Assert.That(Share(Crowd("north_european", true, 25), l => l.Hair is "sf_coils" or "sf_cornrows"), Is.EqualTo(0), "and coils only where hair coils");
             var straight = Crowd("east_asian", false, 25);
-            Assert.That(Share(straight, l => l.Hair is "sf_bun" or "sf_braid" or "sf_bun_loose" or "sf_braid_loose"), Is.GreaterThan(0.5));
-            Assert.That(Share(straight, l => l.Hair is "sf_bun_loose" or "sf_braid_loose"), Is.GreaterThan(0.3), "most tied hair with strands loose round the face");
+            Assert.That(Share(straight, l => l.Hair == "sf_bun" || l.Hair == "sf_braid"), Is.GreaterThan(0.5));
             bool Greyed(PlayerLook l) => Array.IndexOf(Looks.HairColours, l.HairColour) < 0 || Array.IndexOf(Looks.HairColours, l.HairColour) >= 7;
             Assert.That(Share(Crowd("north_european", false, 26), Greyed), Is.LessThan(0.03), "no grey at twenty-six");
             // (no grey at all before 55, the owner's rule: Bodies.GreyFrom; the peoples' clocks show after it)
