@@ -862,9 +862,16 @@ reflection occluded, men's lash lines lighter, brows dense at the core); the gat
 near real for most peoples; **apparent age still far young** (58+ read 28, real 49) and the sex read short (women as men 55
 %, men as women 20 %; real 37 % and 3 %): the boards show smooth faces without the soft tissue's years, white hair as a cap
 and white beards as teeth. CI's Android workflow no longer cancels a running test job on a push (run 128 the first to run
-the full suite; read it). **Next action:** read CI run 128 (the first full test run) and fix what it finds; then what ages a face beyond its colour and
-contrast (`docs/PEOPLE_REALISM.md` §15's list: soft tissue, crow's feet, the cheeks' texture; R5's white hair and beards),
-measured with `apparent.py` and judged on the boards. Then, as below:
+the full suite; read it). **R4d in progress** (§16): the age reader keys on the skin's surface detail (sharpening +6 years, colour and eyes under 2);
+the lines start at 25 and read stronger, the aged bake is whole by 62: 45-58 read 27 and 58+ 33 (real 37 and 49; were 22.5
+and 28), the 30-45s still 23 (real 30). Holding head-age to the years cost the sex read (it carries a sex difference in the
+fits) and was reverted. **R5 beards**: moustache cards end at the lip (hairgen v32); they still read as a bright fringe.
+**CI**: run 128 was the first test run to finish (2 h 19 min): the Unity job now runs PlayMode only (the Core workflow
+runs EditMode with .NET), UI tests have 15 min each, the wardrobe test checks a hat that hides; nine of ten hats hide no
+skin under them (no delete list in their proxies: a poke-through risk, owed). **Next action:** read the next Android run
+(PlayMode only); then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
+then the 30-45s' years (what reads 23 at 37: the face's fullness, the eyes, the brows' thinning), each measured with
+`apparent.py` and judged on the boards. Then, as below:
 R4 and the sexes' cues together, measured on the population with `apparent.py` and judged on the boards:
 what ages a face beyond its outline (skin, eyelids, the jaw's and neck's soft tissue, thinning hair) and what people read
 sex by beyond proportions (hair round the face, brows' and lashes' darkness, lip colour, skin, the cheeks' soft tissue);
