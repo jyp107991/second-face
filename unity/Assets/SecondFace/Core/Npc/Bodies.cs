@@ -212,6 +212,9 @@ namespace SecondFace.Core.Npc
             look.FaceSource = drawn.Source;
             // the body ages with the face (the skin's age follows it, LookView)
             s["body-age"] = (float)Math.Clamp((Faces.Apparent(age, hard) - 24) / 46.0, 0, 1);
+            // and the soft tissue's descent (R4d: what reads the years at a speaking distance is the face's form, its hollows,
+            // grooves and sag; the base's own ageing barely shows them): from thirty-five, whole by seventy-five
+            s["body-faceage"] = (float)Math.Clamp((Faces.Apparent(age, hard) - 35) / 40.0, 0, 1);
 
             // skin: the people's tone (very light to very dark, the whole human range) with the person's own shade; a woman a
             // little lighter than the men of her people from puberty on (Jablonski and Chaplin 2000); the sun of outdoor work

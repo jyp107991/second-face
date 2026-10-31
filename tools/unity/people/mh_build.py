@@ -851,6 +851,7 @@ base_verts, base_vts, body_faces = read_obj(os.path.join(MH, '3dobjs', 'base.obj
 NV = len(base_verts)
 print('base', NV, 'verts;', len(body_faces), 'body faces')
 EYE_GROUPS = read_groups(os.path.join(MH, '3dobjs', 'base.obj'), ('joint-l-eye', 'joint-r-eye'))
+MOUTH_GROUP = sorted(read_groups(os.path.join(MH, '3dobjs', 'base.obj'), ('joint-mouth',))['joint-mouth'])
 
 # the body's vertex graph (base indices), for closing holes in what a garment hides
 BODY_NEIGHBOURS = {}
@@ -1368,6 +1369,13 @@ def build_person(spec):
                 t = min(1.0, max(0.0, (y - (ey - 0.1)) / 0.4)); t = t * t * (3 - 2 * t)
                 if abs(x) * t > 1e-6: ds.append((i, sign * 0.06 * x * t, 0.0, 0.0))
             if ds: add_shape(f'head-cranium-{label}', ds); nshapes += 1
+        # the soft tissue's descent with the years (R4d, face_years.py): hollows, grooves, bags, jowls and the neck, driven by
+        # Core's body-faceage from the years shown
+        import face_years
+        eyes = [[sum(v[i][k] for i in g) / len(g) for k in range(3)] for g in (EYE_GROUPS['joint-l-eye'], EYE_GROUPS['joint-r-eye'])]
+        mouth = [sum(v[i][k] for i in MOUTH_GROUP) / len(MOUTH_GROUP) for k in range(3)]
+        ds = face_years.deltas(v, vertex_normals(v, body_faces), eyes, mouth, body_idx)
+        if ds: add_shape('face-years', ds); nshapes += 1
     for rel, name in expression_units():
         t = target(rel)
         if t: add_shape(name, t); nshapes += 1

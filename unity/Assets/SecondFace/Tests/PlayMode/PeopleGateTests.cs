@@ -233,7 +233,8 @@ namespace SecondFace.Tests
 
         /// <summary>What the age reader answers to (R4d): the sample people at 35, 50 and 65, two of each people and sex, once per
         /// variant (SF_AGE_VARIANTS, comma-separated: base; lines, the years' lines at their deepest; bake, the aged bake whole;
-        /// macro, the base's own ageing shape (MakeHuman's age, body-age) at seventy with the skin as the years have it; grey,
+        /// macro, the base's own ageing shape (MakeHuman's age, body-age) at seventy with the skin as the years have it; soft,
+        /// the soft tissue's descent (body-faceage, face_years.py) at its full years; grey,
         /// the hair white; all), into test-results/agecues/&lt;variant&gt;/, each cue pushed past real alone, so the reading of
         /// each shows which our faces lack.</summary>
         [UnityTest, Timeout(3600000), Category("Heavy")]   // an experiment, run by name in the session's editor
@@ -246,7 +247,7 @@ namespace SecondFace.Tests
 #endif
             if (F == null || M == null) { Assert.Ignore("the bases are not built"); yield break; }
             UiTests.Content();
-            var variants = (System.Environment.GetEnvironmentVariable("SF_AGE_VARIANTS") ?? "base,lines,bake,macro,grey,all").Split(',');
+            var variants = (System.Environment.GetEnvironmentVariable("SF_AGE_VARIANTS") ?? "base,lines,bake,macro,soft,grey,all").Split(',');
             var wrinkles = Shader.PropertyToID("_Wrinkles");
             var studio = new Studio();
             var n = 0;
@@ -262,6 +263,7 @@ namespace SecondFace.Tests
                                 var lines = SecondFace.Core.Npc.Looks.Wrinkles(look);
                                 var skin = SecondFace.Core.Npc.Looks.SkinAge(look);
                                 if (variant is "macro" or "all") { look.Shape ??= new Dictionary<string, float>(); look.Shape["body-age"] = 1f; }
+                                if (variant is "soft" or "all") { look.Shape ??= new Dictionary<string, float>(); look.Shape["body-faceage"] = 1f; }
                                 if (variant is "grey" or "all") look.Grey = 1f;
                                 if (variant is "lines" or "all") lines = 1f;
                                 if (variant is "bake" or "all") skin = 1f;

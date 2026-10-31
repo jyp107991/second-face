@@ -124,6 +124,7 @@ namespace SecondFace.Core.Npc
             new("body-point", "body", "point", "decr", "incr"),
             new("body-fullness", "body", "fullness", "decr", "incr"),
             new("body-age", "body", "years", null, "body-age-incr"),
+            new("body-faceage", "body", "face's years", null, "face-years"),
             new("body-african", "body", "african", null, "body-african"),
             new("body-asian", "body", "asian", null, "body-asian"),
             new("body-caucasian", "body", "caucasian", null, "body-caucasian"),
