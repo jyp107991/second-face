@@ -111,6 +111,13 @@ namespace SecondFace.EditorTools
                             r.sharedMaterial.SetVector("_BakeBalance", bal);
                             Debug.Log($"WardrobeBuild: {m.@base} bake balance {bal}");
                         }
+                        // the aged bake brought to the young one's colour: its lines and spots, not its paler, bluer cast (R4c)
+                        if (r.sharedMaterial.HasProperty("_AgedBalance"))
+                        {
+                            var aged = AgedBalance(r.sharedMaterial.GetTexture("_BaseMap"), r.sharedMaterial.GetTexture("_AgedMap"));
+                            r.sharedMaterial.SetVector("_AgedBalance", aged);
+                            Debug.Log($"WardrobeBuild: {m.@base} aged balance {aged}");
+                        }
                         EditorUtility.SetDirty(r.sharedMaterial);
                     }
             var sculpt = go.AddComponent<FaceSculpt>();
@@ -309,6 +316,31 @@ namespace SecondFace.EditorTools
         /// <see cref="BareSkin"/> (sRGB), a mid-tone; re-measure if that bake changes (Core's SkinColour takes the people's
         /// colours from it).</summary>
         public static readonly Color ReferenceBare = new(SecondFace.Core.Npc.SkinColour.Reference.R, SecondFace.Core.Npc.SkinColour.Reference.G, SecondFace.Core.Npc.SkinColour.Reference.B);
+
+        /// <summary>Per channel, the young bake's mean over the aged bake's, in linear light, over the skin's texels (the
+        /// file's own pixels, read from disk: the imported textures are not readable); none when either is missing.</summary>
+        public static Vector4 AgedBalance(Texture young, Texture aged)
+        {
+            if (young == null || aged == null) return Vector4.one;
+            Vector3 Mean(Texture t)
+            {
+                var img = new Texture2D(2, 2);
+                img.LoadImage(File.ReadAllBytes(AssetDatabase.GetAssetPath(t)));
+                var px = img.GetPixels32();
+                UnityEngine.Object.DestroyImmediate(img);
+                var sum = Vector3.zero; var n = 0;
+                for (var i = 0; i < px.Length; i += 7)
+                {
+                    var c = px[i];
+                    if (c.r + c.g + c.b <= 60) continue;   // (the atlas's empty ground)
+                    sum += new Vector3(Mathf.GammaToLinearSpace(c.r / 255f), Mathf.GammaToLinearSpace(c.g / 255f), Mathf.GammaToLinearSpace(c.b / 255f));
+                    n++;
+                }
+                return n > 0 ? sum / n : Vector3.one;
+            }
+            var y = Mean(young); var a = Mean(aged);
+            return new Vector4(y.x / Mathf.Max(a.x, 1e-4f), y.y / Mathf.Max(a.y, 1e-4f), y.z / Mathf.Max(a.z, 1e-4f), 1f);
+        }
 
         /// <summary>Per channel, the reference skin over this bake's, in linear light (a ratio, so a vector, not a colour).</summary>
         public static Vector4 Balance(Color bare)

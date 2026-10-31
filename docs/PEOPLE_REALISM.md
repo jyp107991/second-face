@@ -467,3 +467,25 @@ say a dark face's white is itself darker (no brighter in a photograph exposed fo
 physically, the conjunctiva's pigment). **Done next**: the white set from Core by the skin's measured lightness
 (`Looks.EyeWhite`: 0.62 for everyone, to about half that and warmer on the darkest skin) and the iris at 0.6 of its old
 albedo; re-measured below.
+
+**Rounds 15-18** (the white and iris against the skin; the studio metered as a camera, exposure by the skin's measured
+reflectance to the power -0.34, fitted so dark cheeks read 0.51 of light ones as in FairFace where dermatology measures
+0.36; brown eyes by the skin's pigment, `Bodies.DarkEyes`; the iris a cornea's sharp catchlight with the room's reflection
+occluded, where the old broad gloss outshone a dark iris and read grey; men's lash lines lighter; brows dense at the core):
+
+| under 60, round 18 | eyes contrast real / ours | white / skin real / ours | iris L* real / ours |
+|---|---|---|---|
+| white women / men | +0.19 / +0.10, +0.16 / +0.17 | 1.13 / 1.32, 1.13 / 1.14 | 19 / 21, 22 / 20 |
+| East Asian women / men | +0.25 / +0.24, +0.21 / +0.20 | 0.94 / 1.20, 0.97 / 1.17 | 19 / 12, 18 / 17 |
+| Black women / men | +0.13 / +0.07, +0.10 / +0.10 | 1.40 / 1.74, 1.48 / 1.57 | 16 / 13, 17 / 15 |
+
+The eye region is now near real for most peoples. **But the faces read younger, not older**: apparent age 45-58 at 22.6
+and 58+ at 26.4 (round 13: 27 and 34; real 37 and 49). Image-space edits of our portraits (a lighter, greyer iris; brighter
+or yellower whites; the whole frame darker or brighter; desaturated) move the reading by at most 1.7 years, so the eyes are
+not what took the years away. **Found next**: the aged skin bake (blended in from the late twenties) is paler and bluer
+than the young one (blue +34 % on the women's base, +63 % on the men's), so every older person drifted pale and grey,
+darker skin most (on the board an old South Asian man rendered pink-pale beside dark brown sources). The aged bake is now
+brought to the young bake's colour per channel (`_AgedBalance`, `WardrobeBuild.AgedBalance`): its lines and spots stay,
+its cast does not (real skin darkens a little with the years: de Rigal et al. 2010). The boards also show what still reads
+young beside the real sources: smooth cheeks and lids, no sagging or folds, white hair as a cap and white moustaches as
+teeth (R5's beards and hair, owed).

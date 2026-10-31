@@ -19,6 +19,7 @@ Shader "SecondFace/Skin"
         [NoScaleOffset] _HiddenMask ("Hidden base vertices (128 x 128)", 2D) = "black" {}
         [NoScaleOffset] _AgedMap ("Aged albedo (the photograph)", 2D) = "white" {}
         _Aged ("Aged", Range(0, 1)) = 0
+        _AgedBalance ("The aged bake brought to the young bake's colour (linear, per channel; WardrobeBuild)", Vector) = (1, 1, 1, 1)
         [NoScaleOffset] _RestMap ("Rest positions in the head frame (128 x 128)", 2D) = "black" {}
         _ToneMul ("The skin's colour over the reference bake (linear, per channel; Core SkinColour)", Vector) = (1, 1, 1, 1)
         _Freckles ("Freckles", Range(0, 1)) = 0
@@ -64,7 +65,7 @@ Shader "SecondFace/Skin"
             half4 _ToneMul;
             float _Scar, _Tattoo, _Beard;
             half4 _BeardColour;
-            half4 _BareSkin, _ScalpColour, _BrowColour, _BakeBalance;
+            half4 _BareSkin, _ScalpColour, _BrowColour, _BakeBalance, _AgedBalance;
             float4 _Brow0, _Brow1, _Contrast;
             half _Bald;
             half _Sss, _CurvatureScale, _PoreScale, _SharpLobe;
@@ -606,8 +607,11 @@ Shader "SecondFace/Skin"
             {
                 clip(0.5h - i.hidden);
                 half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv);
-                // the same skin older (FaceSculpt.Aged, the photograph): blended from the aged bake
-                if (_Aged > 0.001h) albedo = lerp(albedo, SAMPLE_TEXTURE2D(_AgedMap, sampler_BaseMap, i.uv), _Aged);
+                // the same skin older (FaceSculpt.Aged, the photograph): blended from the aged bake, its lines and spots but
+                // not its colour (R4c: the aged bakes are paler and bluer than the young, so every older person drifted pale
+                // and grey, darker skin most; real skin darkens a little with the years, de Rigal et al. 2010), brought to
+                // the young bake's mean per channel
+                if (_Aged > 0.001h) albedo = lerp(albedo, SAMPLE_TEXTURE2D(_AgedMap, sampler_BaseMap, i.uv) * half4(_AgedBalance.rgb, 1.0h), _Aged);
                 albedo *= _BaseColor;
                 half smooth = albedo.a * _Smoothness;
                 Look(albedo.rgb, smooth, i.rest);
