@@ -274,19 +274,18 @@ Shader "SecondFace/Cloth"
                     // cut the light to black (R5: dark holes in a grey bun); part of it given back, the lock's shade kept
                     colour.rgb += albedo.rgb * mainL.color * saturate(dot(normalWS, mainL.direction) * 0.5h + 0.5h) * (1.0h - mainL.shadowAttenuation) * 0.45h;
                     // P4.15c, hair: Kajiya-Kay along the strand (the cards run root to tip along v, so the strand is the
-                    // bitangent), two bands shifted along the normal, the second tinted by the hair; broad, as on dry,
-                    // dusty hair, the shift broken up by each strand and each clump (R5: one smooth band read as a plastic
-                    // shell; real hair's highlight is torn along its strands)
+                    // bitangent), the band tinted by the hair; broad, as on dry, dusty hair, the shift broken up by each
+                    // strand and each clump (R5: one smooth band read as a plastic shell; real hair's highlight is torn along
+                    // its strands). R4: the second, near-white band (0.16) lit the cards' small fragments as pale flecks over
+                    // the crown and turned hanging hair grey in close-ups: only the tinted band, weaker (dull hair, the rule)
                     half3 strand = normalize(bitangent);
                     half3 h = normalize(mainL.direction + input.viewDirectionWS);
                     half jitter = (tex.r - 0.5h) * 0.6h + lerp(strandId - 0.5h, 0.0h, strandFade) * 0.5h + lerp(clumpId - 0.5h, 0.0h, clumpFade) * 0.6h;
-                    half3 t1 = normalize(strand + nrm * (0.08h + jitter));
                     half3 t2 = normalize(strand + nrm * (-0.12h + jitter));
-                    half th1 = dot(t1, h), th2 = dot(t2, h);
-                    half band1 = pow(saturate(sqrt(1.0h - th1 * th1)), 28.0h);
+                    half th2 = dot(t2, h);
                     half band2 = pow(saturate(sqrt(1.0h - th2 * th2)), 9.0h);
                     half lit = saturate(dot(nrm, mainL.direction) * 0.6h + 0.4h) * mainL.shadowAttenuation;
-                    colour.rgb += (band1 * 0.16h * (1.0h - 0.6h * saturate(dot(albedo.rgb, half3(0.3h, 0.59h, 0.11h)) * 2.5h)) + band2 * 0.35h * albedo.rgb) * mainL.color * lit * _HairSheen;
+                    colour.rgb += band2 * 0.2h * albedo.rgb * mainL.color * lit * _HairSheen;
                 }
                 colour.rgb = MixFog(colour.rgb, i.fog);
                 return half4(colour.rgb, 1);
