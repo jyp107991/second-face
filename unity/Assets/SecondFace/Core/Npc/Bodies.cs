@@ -263,13 +263,17 @@ namespace SecondFace.Core.Npc
             var texture = Texture(cluster, second, share, rng);
             look.Hair = HairStyle(rng, texture, male);
             if (!male && look.Hair == "buzz" && texture != "coily" && age > 40) look.Hair = rng.Chance(0.5) ? "sf_bun" : "sf_crop";
+            // hair drawn back by a woman who works outdoors does not stay put: most buns and braids with strands loose round
+            // the face (R4d: drawn back entirely, our women read as men three times in four; hair round the face is what the
+            // eye reads a woman by). Its own draw, so the rest of the person stays as drawn
+            if (!male && (look.Hair is "sf_bun" or "sf_braid") && new Rng(Seed(id + "/loose")).Chance(0.7)) look.Hair += "_loose";
             // a man's pattern balding by his people's rate and his years: the temples and crown first; past the middle,
             // what is left is cropped close (out here nobody combs it over)
             if (male && age >= 18 && rng.Chance(Peoples.BaldingChance(age, Of(p => p.Balding))))
             {
                 look.Bald = (float)Math.Clamp((age - 18) / 40.0 * rng.Range(0.45, 1.2), 0.1, 1.0);
                 if (look.Bald > 0.45f) look.Hair = "buzz";
-                else if (look.Hair is "sf_matted" or "sf_bun" or "sf_braid" or "sf_cornrows") look.Hair = rng.Chance(0.5) ? "buzz" : texture == "coily" ? "sf_coils" : "sf_crop";
+                else if (look.Hair is "sf_matted" or "sf_bun" or "sf_braid" or "sf_cornrows" or "sf_bun_loose" or "sf_braid_loose") look.Hair = rng.Chance(0.5) ? "buzz" : texture == "coily" ? "sf_coils" : "sf_crop";
             }
 
             // a man's face: mostly unshaven out here, fuller with the years; the comfortable keep it trimmed or shaved; as

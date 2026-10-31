@@ -248,4 +248,6 @@ def generators():
     sf_braid becomes the crown braids, and the drawn-back and cropped styles get the real hairline."""
     if not GROOMS or not os.path.isdir(GROOMS): return {}
     return {'sf_braid': gen_crown_braid, 'sf_bun': dressed(hairgen.gen_bun), 'sf_matted': dressed(hairgen.gen_matted),
-            'sf_crop': dressed(hairgen.gen_crop)}
+            'sf_crop': dressed(hairgen.gen_crop),
+            # the same with strands escaped round the face (hairgen.temple_strays, R4d)
+            'sf_bun_loose': hairgen.with_strays(dressed(hairgen.gen_bun)), 'sf_braid_loose': hairgen.with_strays(gen_crown_braid)}

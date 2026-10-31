@@ -9,8 +9,8 @@ strands with gaps, wisps, matted locks; bake_hair recolours it by luminance (col
 import json, os
 import numpy as np
 
-STYLES = ('sf_crop', 'sf_bun', 'sf_braid', 'sf_matted', 'sf_coils', 'sf_cornrows')
-VERSION = 32   # bump when the generator changes: mh_build regenerates into its cache by name + version
+STYLES = ('sf_crop', 'sf_bun', 'sf_braid', 'sf_matted', 'sf_coils', 'sf_cornrows', 'sf_bun_loose', 'sf_braid_loose')
+VERSION = 33   # bump when the generator changes: mh_build regenerates into its cache by name + version
 ATLAS = 1024
 COLS = {'sheet': 0, 'clump': 1, 'wisp': 2, 'matted': 3}
 
@@ -725,8 +725,51 @@ BEARD_GENERATORS = {'sf_beard_short': gen_beard_short, 'sf_beard_full': gen_bear
                     'sf_moustache': gen_moustache}
 
 
+def temple_strays(B, m, rng, n=7):
+    """Hair drawn back by people who work outdoors does not stay put (R4d: our women with all of it drawn back read as men
+    75-80 % of the time, with long hair 44 %, real women 37 %; hair round the face is what the eye reads a woman by first):
+    strands escaped at the temples and in front of the ears, `n` a side, hanging by the cheek a few millimetres off it to
+    about the jaw's height and never past it (a collar must stay clear), and two or three short ones at the hairline's
+    corners (no fringe: the hair rule)."""
+    jaw = B.eye[1] - 0.85
+    P = B.V[B.scalp]
+    for side in (-1.0, 1.0):
+        # roots at the temple and in front of the ear, inside the hairline (out from under the drawn-back layer)
+        temple = (side * P[:, 0] > 0.42) & (P[:, 2] > B.c[2] + 0.2) & (P[:, 1] > B.eye[1] + 0.05) & (P[:, 1] < B.eye[1] + 0.85)
+        pool = B.scalp[temple]
+        if len(pool) == 0: continue
+        for r in rng.choice(pool, size=n, replace=True):
+            p = B.surf(B.V[r] + rng.normal(0, 0.03, 3), 0.008)
+            d = np.array([side * rng.uniform(0.05, 0.2), -1.0, rng.uniform(-0.25, 0.05)])
+            pts = [p]
+            for j in range(1, 12):
+                d = d / np.linalg.norm(d) + rng.normal(0, 0.08, 3) * np.array([1, 0.2, 1])
+                q = B.surf(pts[-1] + d / np.linalg.norm(d) * 0.1, 0.008 + 0.006 * j)
+                if q[1] < jaw: break
+                pts.append(q)
+            if len(pts) < 4: continue
+            pts = np.array(pts)
+            m.ribbon(pts, outward(B, pts), taper(len(pts), rng.uniform(0.025, 0.04), 0.008), 'wisp', rng, twist=rng.normal(0, 0.2))
+        # the hairline's corner: a few short strands out of the drawn-back hair, over the temple, not the forehead
+        corner = B.scalp[(side * P[:, 0] > 0.3) & (side * P[:, 0] < 0.5) & (P[:, 1] > B.eye[1] + 0.6)]
+        for r in rng.choice(corner, size=min(3, len(corner)), replace=False) if len(corner) else []:
+            p = B.surf(B.V[r], 0.008)
+            d = np.array([side * 0.4, -1.0, 0.1])
+            pts = np.array([B.surf(p + d / np.linalg.norm(d) * 0.09 * j, 0.008 + 0.004 * j) for j in range(5)])
+            m.ribbon(pts, outward(B, pts), taper(5, 0.025, 0.008), 'wisp', rng)
+
+
+def with_strays(gen):
+    """A drawn-back style with strands escaped round the face (temple_strays)."""
+    def g(B, rng):
+        m = gen(B, rng)
+        temple_strays(B, m, rng)
+        return m
+    return g
+
+
 GENERATORS = {'sf_crop': gen_crop, 'sf_bun': gen_bun, 'sf_braid': gen_braid, 'sf_matted': gen_matted, 'sf_coils': gen_coils,
-              'sf_cornrows': gen_cornrows}
+              'sf_cornrows': gen_cornrows, 'sf_bun_loose': with_strays(gen_bun), 'sf_braid_loose': with_strays(gen_braid)}
 
 
 # ------------------------------------------------------------------------------------------------------------------

@@ -1851,7 +1851,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 146508049924098
-    m_Localized: Lift
+    m_Localized: Firmness
     m_Metadata:
       m_Items: []
   - m_Id: 146508049924099
@@ -1912,6 +1912,206 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 169359830269958
     m_Localized: Moustache
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192275668992
+    m_Localized: Your people
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192317612032
+    m_Localized: North European
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192317612033
+    m_Localized: Mediterranean
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192317612034
+    m_Localized: West African
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192317612035
+    m_Localized: East African
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192317612036
+    m_Localized: East Asian
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192317612037
+    m_Localized: Southeast Asian
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806336
+    m_Localized: South Asian
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806337
+    m_Localized: Latin American
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806338
+    m_Localized: Indigenous American
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806339
+    m_Localized: Brows
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806340
+    m_Localized: Fine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806341
+    m_Localized: Natural
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806342
+    m_Localized: Full
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806343
+    m_Localized: Sparse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806344
+    m_Localized: Natural
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806345
+    m_Localized: Heavy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806346
+    m_Localized: Hairline receding
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806347
+    m_Localized: Heart
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806348
+    m_Localized: Forehead slope
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806349
+    m_Localized: Temples
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806350
+    m_Localized: Brow ridge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806351
+    m_Localized: Eye opening
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806352
+    m_Localized: Eye tilt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806353
+    m_Localized: Lid crease
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806354
+    m_Localized: Nostril flare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806355
+    m_Localized: Nose projection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806356
+    m_Localized: Bridge width
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806357
+    m_Localized: Tip lift
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806358
+    m_Localized: Nose profile
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806359
+    m_Localized: Midface
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806360
+    m_Localized: Cheekbone height
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806361
+    m_Localized: Mouth forward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806362
+    m_Localized: Lower lip height
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806363
+    m_Localized: Cupid's bow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806364
+    m_Localized: Smile lines
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806365
+    m_Localized: Jaw forward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806366
+    m_Localized: Ears out
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806367
+    m_Localized: Under the chin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806368
+    m_Localized: Set high or low
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806369
+    m_Localized: Set wide or close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806370
+    m_Localized: Rounder or more pointed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806371
+    m_Localized: Fuller below or above
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806372
+    m_Localized: Taper to the waist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806373
+    m_Localized: Pectorals
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806374
+    m_Localized: Shorter or longer legs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806375
+    m_Localized: Coils, cropped close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806376
+    m_Localized: Cornrows
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806377
+    m_Localized: A bun, strands loose
+    m_Metadata:
+      m_Items: []
+  - m_Id: 670192321806378
+    m_Localized: A work braid, strands loose
     m_Metadata:
       m_Items: []
   references:

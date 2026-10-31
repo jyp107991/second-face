@@ -133,7 +133,7 @@ namespace SecondFace.Core.Npc
         /// <summary>The hair to choose, as built for both bodies (the wardrobe's hair slot; "buzz" is no hair piece, the
         /// scalp's painted stubble). The hair rule: shaved, cropped, tied back, braided, matted; never a styled cut. Coily hair
         /// has its own forms (P4.15): a close crop of tight curls and cornrows braided flat to the scalp.</summary>
-        public static readonly string[] Hair = { "buzz", "sf_crop", "sf_bun", "sf_braid", "sf_matted", "sf_coils", "sf_cornrows" };
+        public static readonly string[] Hair = { "buzz", "sf_crop", "sf_bun", "sf_braid", "sf_matted", "sf_coils", "sf_cornrows", "sf_bun_loose", "sf_braid_loose" };
 
         /// <summary>The hair a body was built with (what <see cref="PlayerLook.Hair"/> null means).</summary>
         public static string OwnHair(string body) => body == "m" ? "sf_crop" : "sf_braid";
