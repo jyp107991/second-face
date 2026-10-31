@@ -276,7 +276,7 @@ namespace SecondFace.Core.Npc
         /// +0.55, a drooping tip shows the nostrils past -0.5; the structure, the head's and the jaw's shapes, inside 0.35: at
         /// 0.5 the head's single shapes made moon faces, O2). Round the bases as corrected to real people (Faces.WomanBase,
         /// ManBase: the ranges move with the correction). The sculptor's own sliders keep their whole reach.</summary>
-        public static (float Lo, float Hi) Natural(string id) => !Features.Contains(id) ? (-0.35f, 0.35f) : id switch
+        public static (float Lo, float Hi) Natural(string id) => !Features.Contains(id) && !Defining.Contains(id) ? (-0.35f, 0.35f) : id switch
         {
             "eye-height2" => (-0.7f, 0.45f),
             "eye-scale" => (-0.7f, 0.5f),
@@ -284,6 +284,14 @@ namespace SecondFace.Core.Npc
             "mouth-lowerlip-height" => (-0.7f, 0.55f),
             "nose-point" => (-0.5f, 0.7f),
             _ => (-0.8f, 0.8f),
+        };
+
+        /// <summary>The structure that marks a sex and a people (the brow ridge, the jaw, the chin, the cheekbones): it keeps the
+        /// features' reach, not the head's shapes' 0.35 (held there, a man's jaw and brow and a people's cheekbones and chin came
+        /// out as everyone's, and the owner saw one face in every people and both sexes, 2026-10-31).</summary>
+        public static readonly HashSet<string> Defining = new()
+        {
+            "brow-ridge", "chin-bones", "chin-width", "chin-prominent", "chin-prognathism", "chin-height", "cheek-bones", "cheek-trans", "forehead-trans",
         };
 
         /// <summary>How far generated faces take any of the head's single shapes (round, square, oval...): at 0.5 a round or

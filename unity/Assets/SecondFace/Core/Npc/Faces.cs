@@ -88,16 +88,16 @@ namespace SecondFace.Core.Npc
                 ("eye-epicanthus", -0.1f), ("cheek-inner", -0.1f), ("chin-prominent", 0.15f)),
             // high bridges, often a hump or a convex line, longer noses; fuller lips than the north; heavy dark brows set low
             ["mediterranean"] = D(("nose-scale-depth", 0.3f), ("nose-hump", 0.3f), ("nose-curve", 0.25f), ("nose-scale-vert", 0.2f), ("nose-volume", 0.1f),
-                ("nose-scale-horiz", -0.11f), ("mouth-upperlip-volume", -0.01f), ("mouth-lowerlip-volume", 0.04f), ("brow-ridge", 0.2f),
-                ("eyebrows-trans", 0.23f), ("eye-scale", -0.03f), ("eye-eyefold", 0.05f), ("chin-prominent", 0.1f), ("eye-height2", -0.2f), ("nose-nostrils-width", -0.2f), ("nose-flaring", -0.13f), ("mouth-scale-horiz", -0.16f), ("eye-trans", 0.05f), ("mouth-cupidsbow", -0.09f), ("mouth-lowerlip-height", -0.1f)),
+                ("nose-scale-horiz", -0.05f), ("mouth-upperlip-volume", 0.05f), ("mouth-lowerlip-volume", 0.15f), ("brow-ridge", 0.2f),
+                ("eyebrows-trans", -0.1f), ("eye-scale", 0.1f), ("eye-eyefold", 0.05f), ("chin-prominent", 0.1f)),
             // broad noses with flared nostrils, a low bridge and little projection; full, everted lips carried forward; wide-set
             // eyes; a rounded forehead; little brow ridge
-            ["west_african"] = D(("nose-scale-horiz", -0.01f), ("nose-flaring", -0.12f), ("nose-nostrils-width", -0.5f), ("nose-scale-depth", -0.4f),
+            ["west_african"] = D(("nose-scale-horiz", 0.55f), ("nose-flaring", 0.55f), ("nose-nostrils-width", 0.45f), ("nose-scale-depth", -0.4f),
                 ("nose-width1", 0.25f), ("nose-curve", -0.35f), ("nose-hump", -0.3f), ("nose-scale-vert", -0.25f), ("nose-point-width", 0.3f),
-                ("nose-point", 0.15f), ("mouth-upperlip-volume", -0.04f), ("mouth-lowerlip-volume", -0.05f), ("mouth-lowerlip-height", -0.3f),
-                ("mouth-trans", 0.45f), ("mouth-scale-horiz", -0.22f), ("mouth-cupidsbow", -0.27f), ("brow-ridge", -0.1f), ("eye-trans", 0.3f),
-                ("eye-scale", -0.1f), ("eye-height2", -0.17f), ("forehead-trans", 0.15f), ("cheek-bones", 0.1f), ("chin-prominent", -0.1f),
-                ("chin-prognathism", 0.15f), ("eyebrows-trans", 0.83f)),
+                ("nose-point", 0.15f), ("mouth-upperlip-volume", 0.55f), ("mouth-lowerlip-volume", 0.5f), ("mouth-lowerlip-height", 0.4f),
+                ("mouth-trans", 0.45f), ("mouth-scale-horiz", 0.25f), ("mouth-cupidsbow", 0.1f), ("brow-ridge", -0.1f), ("eye-trans", 0.15f),
+                ("eye-scale", 0.1f), ("eye-height2", 0.1f), ("forehead-trans", 0.15f), ("cheek-bones", 0.1f), ("chin-prominent", -0.1f),
+                ("chin-prognathism", 0.15f)),
             // long, narrow faces; noses narrower than the west's with more bridge; full lips; large eyes; high cheekbones
             ["east_african"] = D(("nose-scale-horiz", 0.2f), ("nose-flaring", 0.2f), ("nose-scale-depth", -0.05f), ("nose-scale-vert", 0.1f),
                 ("nose-curve", -0.1f), ("mouth-upperlip-volume", 0.35f), ("mouth-lowerlip-volume", 0.35f), ("mouth-lowerlip-height", 0.25f),
@@ -105,32 +105,32 @@ namespace SecondFace.Core.Npc
                 ("cheek-trans", 0.15f), ("forehead-scale-vert", 0.2f), ("chin-height", 0.1f), ("head-scale-horiz", -0.2f), ("neck-scale-horiz", -0.1f)),
             // a low, broad nasal root and little projection; the epicanthic fold, a low or absent lid crease, a narrower
             // opening tilted up at the outer corner; wide cheekbones; a flat brow
-            ["east_asian"] = D(("nose-scale-depth", -0.55f), ("nose-width1", 0.35f), ("nose-hump", -0.35f), ("nose-curve", -0.25f), ("nose-scale-horiz", 0.05f),
-                ("nose-flaring", 0.1f), ("nose-scale-vert", -0.1f), ("nose-point", 0.1f), ("eye-epicanthus", 0.54f), ("eye-eyefold", -0.45f),
-                ("eye-height2", -0.84f), ("eye-corner1", 0.3f), ("eye-scale", 0.39f), ("brow-ridge", -0.4f), ("eyebrows-trans", 1.42f),
-                ("cheek-bones", 0.3f), ("head-scale-horiz", 0.2f), ("forehead-trans", -0.1f), ("mouth-upperlip-volume", 0.24f), ("mouth-trans", 0.1f),
-                ("mouth-scale-horiz", -0.19f), ("chin-prominent", -0.15f), ("chin-width", -0.05f), ("nose-nostrils-width", -0.49f), ("eye-trans", 0.08f), ("mouth-lowerlip-volume", 0.03f), ("mouth-lowerlip-height", -0.44f)),
+            ["east_asian"] = D(("nose-scale-depth", -0.55f), ("nose-width1", 0.35f), ("nose-hump", -0.35f), ("nose-curve", -0.25f), ("nose-scale-horiz", 0.1f),
+                ("nose-flaring", 0.05f), ("nose-scale-vert", -0.1f), ("nose-point", 0.1f), ("eye-epicanthus", 0.45f), ("eye-eyefold", -0.45f),
+                ("eye-height2", -0.25f), ("eye-corner1", 0.3f), ("eye-scale", -0.1f), ("brow-ridge", -0.4f), ("eyebrows-trans", -0.1f),
+                ("cheek-bones", 0.3f), ("head-scale-horiz", 0.2f), ("forehead-trans", -0.1f), ("mouth-upperlip-volume", 0.1f), ("mouth-trans", 0.1f),
+                ("mouth-scale-horiz", -0.15f), ("chin-prominent", -0.15f), ("chin-width", -0.05f)),
             // the low bridge with a broader, flared nose; fuller lips carried forward; less of the fold; rounder faces
-            ["southeast_asian"] = D(("nose-scale-depth", -0.45f), ("nose-width1", 0.3f), ("nose-scale-horiz", 0.18f), ("nose-flaring", 0.16f),
-                ("nose-nostrils-width", -0.19f), ("nose-curve", -0.2f), ("nose-hump", -0.3f), ("nose-scale-vert", -0.15f), ("eye-epicanthus", 0.16f),
-                ("eye-eyefold", -0.2f), ("eye-corner1", 0.15f), ("eye-scale", 0.51f), ("mouth-upperlip-volume", 0.17f), ("mouth-lowerlip-volume", 0.19f),
-                ("mouth-trans", 0.3f), ("mouth-lowerlip-height", -0.24f), ("brow-ridge", -0.3f), ("cheek-bones", 0.2f), ("head-scale-horiz", 0.1f),
-                ("forehead-trans", 0.1f), ("chin-prominent", -0.1f), ("eye-height2", -0.32f), ("eyebrows-trans", 1.05f), ("mouth-scale-horiz", -0.13f), ("eye-trans", 0.26f), ("mouth-cupidsbow", -0.09f)),
+            ["southeast_asian"] = D(("nose-scale-depth", -0.45f), ("nose-width1", 0.3f), ("nose-scale-horiz", 0.3f), ("nose-flaring", 0.3f),
+                ("nose-nostrils-width", 0.2f), ("nose-curve", -0.2f), ("nose-hump", -0.3f), ("nose-scale-vert", -0.15f), ("eye-epicanthus", 0.25f),
+                ("eye-eyefold", -0.2f), ("eye-corner1", 0.15f), ("eye-scale", 0.05f), ("mouth-upperlip-volume", 0.3f), ("mouth-lowerlip-volume", 0.3f),
+                ("mouth-trans", 0.3f), ("mouth-lowerlip-height", 0.15f), ("brow-ridge", -0.3f), ("cheek-bones", 0.2f), ("head-scale-horiz", 0.1f),
+                ("forehead-trans", 0.1f), ("chin-prominent", -0.1f)),
             // large eyes with a clear crease; a nose with some length and bridge; full lips; dense brows
-            ["south_asian"] = D(("nose-scale-depth", 0.15f), ("nose-scale-vert", 0.15f), ("nose-curve", 0.1f), ("nose-hump", 0.1f), ("nose-scale-horiz", 0.0f),
-                ("nose-flaring", 0.0f), ("nose-point", -0.05f), ("nose-point-width", 0.1f), ("eye-scale", 0.35f), ("eye-height2", -0.1f),
-                ("eye-eyefold", 0.1f), ("eyebrows-trans", 0.27f), ("mouth-upperlip-volume", 0.25f), ("mouth-lowerlip-volume", 0.27f),
-                ("mouth-lowerlip-height", -0.02f), ("mouth-trans", 0.1f), ("cheek-volume", 0.05f), ("chin-prominent", -0.05f), ("nose-nostrils-width", -0.22f), ("mouth-scale-horiz", -0.07f), ("eye-trans", 0.2f)),
+            ["south_asian"] = D(("nose-scale-depth", 0.15f), ("nose-scale-vert", 0.15f), ("nose-curve", 0.1f), ("nose-hump", 0.1f), ("nose-scale-horiz", 0.1f),
+                ("nose-flaring", 0.1f), ("nose-point", -0.05f), ("nose-point-width", 0.1f), ("eye-scale", 0.25f), ("eye-height2", 0.15f),
+                ("eye-eyefold", 0.1f), ("eyebrows-trans", -0.05f), ("mouth-upperlip-volume", 0.25f), ("mouth-lowerlip-volume", 0.3f),
+                ("mouth-lowerlip-height", 0.15f), ("mouth-trans", 0.1f), ("cheek-volume", 0.05f), ("chin-prominent", -0.05f)),
             // between the Iberian and the indigenous: broad cheekbones, a medium nose, fuller lips
-            ["latin_american"] = D(("nose-scale-depth", 0.05f), ("nose-scale-horiz", -0.03f), ("nose-flaring", -0.1f), ("nose-width1", 0.05f), ("nose-hump", 0.05f),
-                ("mouth-upperlip-volume", -0.01f), ("mouth-lowerlip-volume", 0.06f), ("mouth-trans", 0.1f), ("cheek-bones", 0.2f), ("head-scale-horiz", 0.1f),
-                ("eye-epicanthus", -0.01f), ("eye-eyefold", -0.05f), ("eye-scale", 0.15f), ("eye-height2", -0.22f), ("eyebrows-trans", 0.62f), ("nose-nostrils-width", -0.33f), ("mouth-scale-horiz", -0.24f), ("eye-trans", 0.05f), ("mouth-cupidsbow", -0.11f), ("mouth-lowerlip-height", -0.17f)),
+            ["latin_american"] = D(("nose-scale-depth", 0.05f), ("nose-scale-horiz", 0.15f), ("nose-flaring", 0.1f), ("nose-width1", 0.05f), ("nose-hump", 0.05f),
+                ("mouth-upperlip-volume", 0.15f), ("mouth-lowerlip-volume", 0.2f), ("mouth-trans", 0.1f), ("cheek-bones", 0.2f), ("head-scale-horiz", 0.1f),
+                ("eye-epicanthus", 0.05f), ("eye-eyefold", -0.05f)),
             // broad, prominent cheekbones on a wide face; a high-rooted, often convex nose; a lower lid crease and some of the
             // fold; a broad jaw
             ["indigenous_american"] = D(("cheek-bones", 0.5f), ("cheek-trans", 0.2f), ("head-scale-horiz", 0.3f), ("chin-width", 0.2f), ("chin-bones", 0.1f),
-                ("nose-scale-depth", 0.15f), ("nose-curve", 0.25f), ("nose-hump", 0.2f), ("nose-width1", 0.15f), ("nose-scale-horiz", -0.03f),
-                ("nose-scale-vert", 0.1f), ("eye-epicanthus", 0.19f), ("eye-eyefold", -0.3f), ("eye-height2", -0.37f), ("eye-corner1", 0.1f),
-                ("mouth-upperlip-volume", -0.11f), ("mouth-lowerlip-volume", -0.04f), ("mouth-scale-horiz", -0.14f), ("forehead-trans", -0.1f), ("eye-scale", 0.15f), ("eyebrows-trans", 0.62f), ("nose-nostrils-width", -0.33f), ("nose-flaring", -0.2f), ("eye-trans", 0.05f), ("mouth-cupidsbow", -0.11f), ("mouth-lowerlip-height", -0.17f)),
+                ("nose-scale-depth", 0.15f), ("nose-curve", 0.25f), ("nose-hump", 0.2f), ("nose-width1", 0.15f), ("nose-scale-horiz", 0.15f),
+                ("nose-scale-vert", 0.1f), ("eye-epicanthus", 0.25f), ("eye-eyefold", -0.3f), ("eye-height2", -0.15f), ("eye-corner1", 0.1f),
+                ("mouth-upperlip-volume", 0.05f), ("mouth-lowerlip-volume", 0.1f), ("mouth-scale-horiz", 0.1f), ("forehead-trans", -0.1f)),
         };
 
         /// <summary>The bases' own distance from real people, taken out of every face (overhaul O3, measured on the bases against
@@ -140,21 +140,21 @@ namespace SecondFace.Core.Npc
         /// the man's (in 3D the face's height 1.25 sd short where a man's is 0.4 long; in the photographs men's faces 0.16 sd
         /// longer for their width, the bases' 0.85), the whole face and not the chin (lengthened at the chin, the lower face
         /// grew longer than men's, the reverse of real faces): the head drawn out, the vault kept; and the woman's jaw narrow
-        /// for her cheeks against the man's (the photographs: 0.41 sd narrower, ours 0.93). The natural ranges
+        /// for her cheeks against the man's (the photographs: 0.41 sd narrower, ours 0.93). Round 40, measured on the renders
+        /// against FairFace's faces at rest and seen beside them, in every people and both sexes: the nose long over a short
+        /// lower face (1.1-2.1 sd), the nose narrow (0.9-1.9) and the mouth small (1.0-1.7; a photograph's nearer lens adds
+        /// about half a sd to the mouth's and the eyes' spacing against the cheeks', so half is taken), and the eyes, at
+        /// +0.3, wider set than they look in life (the 3D pupils' distance +0.25 sd, a baby's spacing to the eye): +0.15.
+        /// The natural ranges
         /// (Sculpt.Natural) and the solver's (Proportions.Range) are round these.</summary>
-        public static readonly Dictionary<string, float> WomanBase = D(("eye-trans", 0.3f), ("head-cranium", 0.6f), ("neck-scale-horiz", 0.4f), ("neck-scale-depth", 0.4f),
-            ("head-scale-vert", 0.2f), ("forehead-scale-vert", -0.25f), ("head-triangular", 0.15f));
-        public static readonly Dictionary<string, float> ManBase = D(("eye-trans", 0.3f), ("head-cranium", 0.6f));
+        public static readonly Dictionary<string, float> WomanBase = D(("eye-trans", 0.1f), ("head-cranium", 0.6f), ("neck-scale-horiz", 0.4f), ("neck-scale-depth", 0.4f), ("head-scale-vert", 0.2f), ("forehead-scale-vert", -0.25f));
+        public static readonly Dictionary<string, float> ManBase = D(("eye-trans", 0.1f), ("head-cranium", 0.6f));
 
         /// <summary>What a people's women differ in from its men beyond the sexes' common difference (FairFace's faces at rest:
         /// east and south-east Asian women's eyes 0.8 and 0.7 sd wider set than north European women's, the men's 0.4 and 0.5,
         /// the women's noses narrower for it; with one archetype for both sexes the women's spacing came out as the men's,
         /// overhaul O2).</summary>
-        public static readonly Dictionary<string, Dictionary<string, float>> WomenOf = new()
-        {
-            ["east_asian"] = D(("eye-trans", 0.25f)),
-            ["southeast_asian"] = D(("eye-trans", 0.2f)),
-        };
+        public static readonly Dictionary<string, Dictionary<string, float>> WomenOf = new();
 
         /// <summary>A slider's correction on a sex's base (<see cref="WomanBase"/>, <see cref="ManBase"/>), 0 where none.</summary>
         public static float BaseOffset(string id, bool male) => (male ? ManBase : WomanBase).TryGetValue(id, out var v) ? v : 0f;
@@ -164,19 +164,19 @@ namespace SecondFace.Core.Npc
         /// cheeks (her neck's slenderness is the base's own: O3). Her nose as long for her face as a man's (FairFace: a woman's
         /// nose 0.25 sd longer for her face than a man's, her lower face shorter; with a woman's nose shortened by hand, ours
         /// were the reverse, O2).</summary>
-        public static readonly Dictionary<string, float> Woman = D(("chin-bones", -0.15f), ("chin-width", -0.15f), ("chin-prominent", -0.1f),
-            ("chin-height", -0.15f), ("chin-prognathism", -0.1f), ("brow-ridge", -0.35f), ("eyebrows-trans", 0.35f), ("eyebrows-angle", 0.2f),
-            ("eye-scale", -0.21f), ("eye-height2", -0.01f), ("nose-volume", -0.3f), ("nose-scale-horiz", 0.14f),
-            ("nose-hump", -0.2f), ("nose-point", 0.1f), ("nose-flaring", -0.22f), ("mouth-upperlip-volume", -0.2f), ("mouth-lowerlip-volume", -0.08f),
-            ("mouth-cupidsbow", -0.1f), ("cheek-volume", 0.15f), ("cheek-bones", 0.15f), ("cheek-trans", 0.1f),
-            ("head-scale-horiz", -0.1f), ("nose-nostrils-width", 0.2f), ("mouth-scale-horiz", 0.14f), ("eye-trans", 0.08f), ("eye-epicanthus", 0.05f), ("mouth-lowerlip-height", -0.12f));
+        public static readonly Dictionary<string, float> Woman = D(("chin-bones", -0.35f), ("chin-width", -0.3f), ("chin-prominent", -0.1f),
+            ("chin-height", -0.15f), ("chin-prognathism", -0.1f), ("brow-ridge", -0.35f), ("eyebrows-trans", 0.3f), ("eyebrows-angle", 0.2f),
+            ("eye-scale", 0.25f), ("eye-height2", 0.15f), ("nose-volume", -0.3f), ("nose-scale-horiz", -0.2f), ("nose-scale-vert", -0.15f),
+            ("nose-hump", -0.2f), ("nose-point", 0.1f), ("nose-flaring", -0.1f), ("mouth-upperlip-volume", 0.2f), ("mouth-lowerlip-volume", 0.25f),
+            ("mouth-cupidsbow", 0.25f), ("cheek-volume", 0.15f), ("cheek-bones", 0.15f), ("cheek-trans", 0.1f), ("neck-scale-horiz", -0.35f),
+            ("head-scale-horiz", -0.1f));
 
         /// <summary>A man's: the jaw and chin broad and forward, the lower face longer, a brow ridge with the brows low and
         /// straight on it, a larger nose, thinner lips, leaner cheeks, a thick neck.</summary>
         public static readonly Dictionary<string, float> Man = D(("chin-bones", 0.35f), ("chin-width", 0.3f), ("chin-prominent", 0.2f),
-            ("chin-height", 0.15f), ("brow-ridge", 0.35f), ("eyebrows-trans", -0.3f), ("eyebrows-angle", -0.15f), ("eye-scale", 0.23f),
-            ("nose-volume", 0.2f), ("nose-scale-horiz", -0.07f), ("mouth-upperlip-volume", 0.0f),
-            ("mouth-lowerlip-volume", 0.09f), ("cheek-volume", -0.15f), ("neck-scale-horiz", 0.3f), ("head-scale-horiz", 0.05f), ("eye-height2", 0.15f), ("nose-nostrils-width", -0.15f), ("nose-flaring", 0.12f), ("mouth-scale-horiz", -0.14f));
+            ("chin-height", 0.15f), ("brow-ridge", 0.35f), ("eyebrows-trans", -0.25f), ("eyebrows-angle", -0.15f), ("eye-scale", -0.15f),
+            ("nose-volume", 0.2f), ("nose-scale-vert", 0.1f), ("nose-scale-horiz", 0.1f), ("mouth-upperlip-volume", -0.15f),
+            ("mouth-lowerlip-volume", -0.05f), ("cheek-volume", -0.15f), ("neck-scale-horiz", 0.3f), ("head-scale-horiz", 0.05f));
 
         /// <summary>A face structure's features (the head's single shapes and what goes with them), by sex: a man's broad face
         /// is square, a woman's round; a woman's long face is an oval drawn out, never a man's rectangle.</summary>
@@ -214,8 +214,8 @@ namespace SecondFace.Core.Npc
         };
 
         /// <summary>The structures' shares for a sex: the heart-shaped face mostly a woman's, the broad and angular more a man's.</summary>
-        private static readonly double[] WomanTypes = { 1.0, 0.9, 0.8, 1.2, 0.8 };
-        private static readonly double[] ManTypes = { 1.0, 1.0, 1.1, 0.4, 1.1 };
+        private static readonly double[] WomanTypes = { 1.0, 0.9, 0.8, 1.6, 0.8 };
+        private static readonly double[] ManTypes = { 1.0, 1.0, 1.2, 0.4, 1.2 };
 
         public static Dictionary<string, float> Of(string cluster) =>
             cluster != null && Ancestries.TryGetValue(cluster, out var d) ? d : Ancestries["mediterranean"];
@@ -292,7 +292,7 @@ namespace SecondFace.Core.Npc
             else { Put("eye-scale", 0.15 * lift); Put("mouth-upperlip-volume", 0.12 * lift); Put("mouth-lowerlip-volume", 0.12 * lift); Put("cheek-bones", 0.15 * lift); Put("nose-volume", -0.12 * lift); }
 
             // their own small difference, tighter on the striking
-            var sigma = 0.16 * (1.25 - 0.5 * att);
+            var sigma = 0.2 * (1.25 - 0.5 * att);   // (0.16: the owner saw variants of one face, 2026-10-31)
             foreach (var s in Sculpt.Sliders)
             {
                 if (!s.Paired) continue;
@@ -361,7 +361,8 @@ namespace SecondFace.Core.Npc
             Put("neck-double", Math.Max(0, full - 0.3) * 0.7);
             if (full < 0)
             {
-                Put("cheek-volume", 0.35 * full); Put("forehead-temple", 0.45 * full); Put("cheek-inner", 0.25 * full); Put("eye-bag", -0.15 * full);
+                // (the cheeks' hollow once, above: twice, with the temples, a lean face caved in)
+                Put("forehead-temple", 0.25 * full); Put("cheek-inner", 0.15 * full); Put("eye-bag", -0.1 * full);
             }
             else Put("cheek-bones", -0.12 * full);   // a full face hides its cheekbones
             if (who.Male && who.Muscle > 0)
@@ -376,12 +377,15 @@ namespace SecondFace.Core.Npc
         /// under 22), less on a full face's cheeks.</summary>
         private static void Years(Action<string, double> Put, double old, double young, double full)
         {
-            Put("eye-bag", 0.6 * old); Put("nose-point", -0.5 * old); Put("nose-scale-vert", 0.2 * old);
-            Put("mouth-upperlip-volume", -0.4 * old); Put("mouth-lowerlip-volume", -0.35 * old); Put("mouth-laugh-lines", 0.7 * old);
-            Put("eye-height2", -0.3 * old); Put("cheek-trans", -0.35 * old); Put("neck-double", 0.25 * old);
-            Put("ear-scale", 0.25 * old); Put("head-age", 0.6 * old - 0.4 * young); Put("forehead-temple", -0.25 * old);
-            Put("mouth-angles", -0.25 * old); Put("eye-eyefold", -0.25 * old);
-            Put("cheek-volume", -0.25 * old * (full > 0.3 ? 0.3 : 1) + 0.2 * young); Put("eye-scale", 0.15 * young - 0.15 * old);
+            // (the soft tissue's hollows kept slight: stacked with the face-years shape, the aged bake and the painted lines,
+            // each pushed for an age-reading network, a woman of fifty's cheeks and temples caved in as if struck, the owner,
+            // 2026-10-31)
+            Put("eye-bag", 0.4 * old); Put("nose-point", -0.4 * old); Put("nose-scale-vert", 0.15 * old);
+            Put("mouth-upperlip-volume", -0.4 * old); Put("mouth-lowerlip-volume", -0.35 * old); Put("mouth-laugh-lines", 0.35 * old);
+            Put("eye-height2", -0.2 * old); Put("cheek-trans", -0.1 * old); Put("neck-double", 0.2 * old);
+            Put("ear-scale", 0.2 * old); Put("head-age", 0.4 * old - 0.4 * young); Put("forehead-temple", -0.1 * old);
+            Put("mouth-angles", -0.15 * old); Put("eye-eyefold", -0.2 * old);
+            Put("cheek-volume", -0.1 * old * (full > 0.3 ? 0.3 : 1) + 0.2 * young); Put("eye-scale", 0.15 * young - 0.15 * old);
         }
 
         /// <summary>Another face for the same person (the creation's "another face"): another structure when their ancestry

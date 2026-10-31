@@ -244,13 +244,15 @@ namespace SecondFace.Core.Npc
         /// quarter at 36, over half by 50, all of it by 70 (fine lines and crow's feet from the late twenties, the nasolabial
         /// folds by the forties). R4d: from 30 and on a slow curve they barely showed before fifty, and the age reader, which
         /// keys on the skin's surface detail (sharpening our portraits read them 6 years older, blurring 3 younger), read
-        /// every adult of ours as 23.</summary>
-        public static float Wrinkles(PlayerLook look) => System.Math.Clamp((SkinYears(look) - 25f) / 45f, 0f, 1f);
+        /// every adult of ours as 23. The owner (2026-10-31): lines cut deep at thirty-five and a fifty-year-old's face scored
+        /// like seventy's; now from 32 years shown, at most 0.8 of the relief (faint at forty, clear at sixty).</summary>
+        public static float Wrinkles(PlayerLook look) => 0.8f * System.Math.Clamp((SkinYears(look) - 32f) / 43f, 0f, 1f);
 
         /// <summary>How far the skin has gone to its aged bake: from 25 years shown, all of it by 62, the age the bake was made
         /// for (mh_build's aged face, its folds baked as creases). R4d: at 0.85 of it by 72 the bake's creases, the most
-        /// photographic of the years' detail, were a third of the way in at fifty.</summary>
-        public static float SkinAge(PlayerLook look) => System.Math.Clamp((SkinYears(look) - 25f) / 37f, 0f, 1f);
+        /// photographic of the years' detail, were a third of the way in at fifty. Since 2026-10-31 from 30, all of it by 75
+        /// (the owner: faces scored and caved in at fifty).</summary>
+        public static float SkinAge(PlayerLook look) => System.Math.Clamp((SkinYears(look) - 30f) / 45f, 0f, 1f);
 
         /// <summary>The years the body shows (its age shape: 24 at none, 70 at all).</summary>
         public static float ShownYears(PlayerLook look) => 24f + 46f * (look.Shape != null && look.Shape.TryGetValue("body-age", out var ba) ? ba : 0f);
