@@ -669,3 +669,10 @@ reads as a cap whatever its numbers. **Tied hair needs another technique**: tied
 styles are (combed back to a knot or plait from the groom's own strands, cards that follow them), or hair-card assets chosen
 by a bake-off on close-ups (the owner's pass 8: the best free assets, by evidence). Until then the sex read stays at women
 as men 71 % (real 37 %).
+
+**Pale flecks in every head of hair (round 37, `hair_sheen_r37.jpg`)**: the close-ups showed pale flecks over the crown of
+every style and hanging hair gone grey. Isolated one term at a time with the hair rendered alone: not the texture (its opaque
+texels even, its transparent ones darker), not the recolour, not the scalp; the hair's primary Kajiya-Kay band (near white,
+0.16) lit the cards' small fragments. Only the band tinted by the hair stays, weaker (0.2): brown and dark hair now read in
+their own colour with a faint strand texture. The readers did not move (women as men 71 %, 58+ 31.3; gate 246 of 252): they
+read the head's coarse shape, not this. White hair still reads as a crocheted cap (owed with the tied styles).
