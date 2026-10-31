@@ -304,7 +304,10 @@ namespace SecondFace.Tests
                 Assert.That(set, Is.Not.Null, $"{id}: the wardrobe set");
                 Assert.That(people[0].Wearing.Values, Is.EquivalentTo(set.Outfit), $"{id}: the outfit on at start");
                 var over = set.Garments.First(g => g.Slot == "over").Id;
-                var hat = set.Garments.First(g => g.Slot == "head").Id;
+                // a hat that hides the scalp under it (of the hats only the knitted one carries the vertices it covers; the
+                // others' MakeHuman proxies have no delete list, so they hide nothing: run 128 found the men's first hat, a
+                // bowler, hid nothing)
+                var hat = set.Garments.First(g => g.Slot == "head" && g.Hides != null && g.Hides.Length > 0).Id;
                 Assert.That(people[1].Equip(over), Is.True);
                 people[2].Equip(over); people[2].Equip(hat);
                 people[3].Equip(over); people[3].Dye("over", new Color(0.45f, 0.5f, 0.7f)); people[3].Equip(hat);

@@ -10,7 +10,7 @@ import json, os
 import numpy as np
 
 STYLES = ('sf_crop', 'sf_bun', 'sf_braid', 'sf_matted', 'sf_coils', 'sf_cornrows')
-VERSION = 31   # bump when the generator changes: mh_build regenerates into its cache by name + version
+VERSION = 32   # bump when the generator changes: mh_build regenerates into its cache by name + version
 ATLAS = 1024
 COLS = {'sheet': 0, 'clump': 1, 'wisp': 2, 'matted': 3}
 
@@ -637,6 +637,10 @@ def growth(fr, n, lipzone):
     return t / max(np.linalg.norm(t), 1e-9)
 
 
+# the upper lip's edge in the head frame (the lips from -0.61 to -0.73, the mouth's line at -0.67: BeardAt's frame)
+LIP_EDGE = -0.615
+
+
 def beard_cards(F, m, rng, count, weight, length, width, col, hang=0.0, lift0=0.012, lift1=0.03, k=5, lipzone=None):
     """count cards rooted by weight(frame) (their density), each `length` (dm, scaled by the zone's weight at its root so
     the edges are short and sparse) along the growth direction over the skin, `hang` of its length falling free under
@@ -654,10 +658,17 @@ def beard_cards(F, m, rng, count, weight, length, width, col, hang=0.0, lift0=0.
             dj = dj + rng.normal(0, 0.12, 3)
             dj /= np.linalg.norm(dj)
             q = pts[-1] + dj * L / (k - 1)
-            pts.append(F.lift(q, lift0 + (lift1 - lift0) * f))
+            q = F.lift(q, lift0 + (lift1 - lift0) * f)
+            # a hair rooted over the lip ends at the lip's edge (R5: 13 mm moustache cards hung past the mouth's line in
+            # front of the parted lips, and white ones read as teeth)
+            if lz and F.frame(q)[1] < LIP_EDGE:
+                if len(pts) < 2: pts.append(pts[-1] + (q - pts[-1]) * 0.5)
+                break
+            pts.append(q)
         pts = np.array(pts)
-        out = np.repeat(n[None, :], k, axis=0)
-        m.ribbon(pts, out, spindle(k, width * rng.uniform(0.8, 1.2), root=0.5, tip=0.25, at=0.35), col, rng,
+        kk = len(pts)
+        out = np.repeat(n[None, :], kk, axis=0)
+        m.ribbon(pts, out, spindle(kk, width * rng.uniform(0.8, 1.2), root=0.5, tip=0.25, at=0.35), col, rng,
                  twist=rng.normal(0, 0.25))
 
 
@@ -705,8 +716,8 @@ def gen_moustache(B, rng):
     """Over the lip, down and out from the philtrum, fullest under the nose."""
     F = Face(B, B.mh); m = Mesh()
     z = moustache_zone
-    beard_cards(F, m, rng, 260, z, 0.13, 0.024, 'clump', lift0=0.008, lift1=0.022, k=4, lipzone=z)
-    beard_cards(F, m, rng, 120, z, 0.11, 0.016, 'wisp', lift0=0.012, lift1=0.028, k=4, lipzone=z)
+    beard_cards(F, m, rng, 300, z, 0.08, 0.022, 'clump', lift0=0.008, lift1=0.018, k=4, lipzone=z)
+    beard_cards(F, m, rng, 140, z, 0.07, 0.014, 'wisp', lift0=0.01, lift1=0.022, k=4, lipzone=z)
     return m
 
 

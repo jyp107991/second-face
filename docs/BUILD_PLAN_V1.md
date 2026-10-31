@@ -2587,6 +2587,11 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   shader's glcore/GLES compile, and every person in the gate rendered without it (no portraits, 6 tests failed). Avoid
   GLSL names (`texture`, `sample`, `input`, `output`, `filter`) for locals; `ShaderTests.OurShadersCompile` (PlayMode, in
   CI) now fails on any compile error in our shaders.
+- **The core's tests belong to .NET, not the editor's Mono.** The first CI run to finish (run 128) took 2 h 19 min, 46 min
+  of it EditMode: the pure-C# core's statistical tests (thousands of people drawn) ran about 18 times slower in Unity's Mono
+  on the runner than in .NET 9, and three passed their 180 s limit. The Core workflow already runs every EditMode test with
+  `dotnet test` in minutes; the Unity job now runs PlayMode only. The UI tests took 2-10 min each there (software
+  rendering) against limits of 2-4 min, so they have 15 min each: read a CI run's durations before setting a limit.
 - **A photograph meters on the face; a fixed studio does not.** Compared with FairFace, our darkest faces' features
   measured against a skin rendered far darker than photographs show it (L* 19 against 28), which inflates every ratio to
   the skin (the -16 in L* weighs most at the dark end). The gate studio meters each face as a camera (exposure by the

@@ -55,6 +55,7 @@ namespace SecondFace.Tests
     /// look darkens the skin, cuts a scar, inks a tattoo and recolours the hair and eyes on the figure (`ui_create_look`,
     /// and the face alone `ui_create_look_face`).
     /// </summary>
+    // (each test 15 min at most: on CI's software renderer they take 2-10 min, past the 2-4 min they were given; run 128)
     public class UiTests : IPrebuildSetup
     {
         public const string AssetPath = "Assets/SecondFace/UI/UIAssets.asset";
@@ -118,7 +119,7 @@ namespace SecondFace.Tests
 
         private static string FontOf(VisualElement e) => e.resolvedStyle.unityFontDefinition.fontAsset?.name;
 
-        [UnityTest, Timeout(120000)]
+        [UnityTest, Timeout(900000)]
         public IEnumerator FoundationIsThemedSafeAndCaptured()
         {
             _ui = Offscreen(1600, 720, out _rt);
@@ -216,7 +217,7 @@ namespace SecondFace.Tests
             return t;
         }
 
-        [UnityTest, Timeout(120000)]
+        [UnityTest, Timeout(900000)]
         public IEnumerator HudSitsInTheSafeAreaAndIsCaptured()
         {
             Assert.That(Strings.Get("hud.map"), Is.EqualTo("Map"), "the UI string table is built and loads");
@@ -287,7 +288,7 @@ namespace SecondFace.Tests
             Object.Destroy(face);
         }
 
-        [UnityTest, Timeout(120000)]
+        [UnityTest, Timeout(900000)]
         public IEnumerator RadialRingsThePointInsideTheSafeArea()
         {
             _ui = Offscreen(1600, 720, out _rt);
@@ -357,7 +358,7 @@ namespace SecondFace.Tests
     ""c"": { ""text"": ""No."", ""options"": [ { ""id"": ""fine"", ""text"": ""Fine."", ""exit"": true } ] }
   } }";
 
-        [UnityTest, Timeout(120000)]
+        [UnityTest, Timeout(900000)]
         public IEnumerator ConversationReadsAndChooses()
         {
             var def = JObject.Parse(Talk).ToObject<DialogueDef>();
@@ -419,7 +420,7 @@ namespace SecondFace.Tests
 
         private static QuestDef Quest(string json) => JObject.Parse(json).ToObject<QuestDef>();
 
-        [UnityTest, Timeout(120000)]
+        [UnityTest, Timeout(900000)]
         public IEnumerator NotebookShowsItsPagesAndTracks()
         {
             var defs = new Dictionary<string, QuestDef>
@@ -492,7 +493,7 @@ namespace SecondFace.Tests
             empty.Close();
         }
 
-        [UnityTest, Timeout(120000)]
+        [UnityTest, Timeout(900000)]
         public IEnumerator MapShowsKnownPlacesAndJourneys()
         {
             var assets = Assets();
@@ -601,7 +602,7 @@ namespace SecondFace.Tests
             return n / (float)px.Length;
         }
 
-        [UnityTest, Timeout(180000)]
+        [UnityTest, Timeout(900000)]
         public IEnumerator PackShowsTheFigureAndEquips()
         {
             var g = Kitted();
@@ -671,7 +672,7 @@ namespace SecondFace.Tests
             Assert.That(figure.Body == null && figure.Texture == null, Is.True, "the figure goes with the pack");
         }
 
-        [UnityTest, Timeout(180000)]
+        [UnityTest, Timeout(900000)]
         public IEnumerator BarterDealsAndHaggles()
         {
             var g = Kitted();
@@ -762,7 +763,7 @@ namespace SecondFace.Tests
             b.SendEvent(e);
         }
 
-        [UnityTest, Timeout(240000)]
+        [UnityTest, Timeout(900000)]
         public IEnumerator CreationMakesAPlayer()
         {
             Content();
@@ -922,7 +923,7 @@ namespace SecondFace.Tests
         /// <summary>P5.3j: the title (continue with the last save, new game, load, settings), the settings (a text size
         /// re-sets every word, contrast, the camera's turn; kept beside the saves), the saves (cards with their pictures;
         /// load one; save to an empty slot, and over a used one after asking) and the pause (time stops while it is open).</summary>
-        [UnityTest, Timeout(180000)]
+        [UnityTest, Timeout(900000)]
         public IEnumerator TitleSettingsSavesAndPause()
         {
             var dir = Path.Combine(Application.temporaryCachePath, "ui-saves-test");
@@ -1044,7 +1045,7 @@ namespace SecondFace.Tests
 
         /// <summary>P5.3l: photo mode's controls (hour, face, lens, look at, frame) over the view, the frame's bands, hide and
         /// show, a picture that could not be taken saying so.</summary>
-        [UnityTest, Timeout(120000)]
+        [UnityTest, Timeout(900000)]
         public IEnumerator PhotoControlsAndFrames()
         {
             _ui = Offscreen(1600, 720, out _rt);
@@ -1088,7 +1089,7 @@ namespace SecondFace.Tests
 
         /// <summary>P6.1: a container opened: its things beside the pack, a tap takes a stack and puts one back, take all
         /// empties it (the Tolls too), the weight carried under the pack.</summary>
-        [UnityTest, Timeout(120000)]
+        [UnityTest, Timeout(900000)]
         public IEnumerator LootTakesAndPuts()
         {
             var g = Kitted();

@@ -525,3 +525,9 @@ the head, which `body-age` already applies by the years: the base's own geometri
 **Still**: the 30-45s read 23, the old 15 years young; sharpening still adds 4 years. The boards' plainest defects come
 next because they bear on age and sex together: white hair reads as a cap and white beards as teeth (R5), and old men are
 read as women (P(male) 0.17 among our 45+).
+
+**R5, beards (same day)**: on the boards white moustaches read as teeth. The generator's moustache cards were 13 mm long
+from the upper lip's skin, so they hung past the mouth's line in front of the parted lips (white over dark). Cards rooted
+over the lip now end at the lip's edge (`hairgen.LIP_EDGE`, v32) and the moustache's are 7-8 mm; rebuilt for the men's
+base (beards only). The moustache now sits on the lip; it still reads as a bright fringe more than hair (no shade between
+strands, white near paper on a metered dark face): the beards' shading is next.

@@ -1,7 +1,8 @@
 name: Android
 
 # Builds the installable Android app from the Unity project on every push to main (and on demand), and runs the
-# Unity tests (EditMode + PlayMode) with the PlayMode screenshot captures uploaded as an artifact.
+# Unity PlayMode tests with their screenshot captures uploaded as an artifact. (The EditMode tests are the pure-C# core's:
+# the Core workflow runs them with .NET in minutes; in the editor's Mono on CI they took 46 min and timed out.)
 # Needs the owner's Unity licence secrets (docs/PORT.md §3): UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD.
 on:
   push:
@@ -122,8 +123,9 @@ jobs:
     name: Unity tests and screenshots
     runs-on: ubuntu-latest
     # a full pass: the Library's import from a cold cache (half an hour and more since the people and the world grew) plus
-    # EditMode and PlayMode, the people's gate render among them (~25 min). At 40 min every run since P4.15c was cut off
-    # before EditMode finished (runs 112-124), so nothing was tested and no cache was saved
+    # PlayMode, the people's gate render among them. At 40 min every run since P4.15c was cut off before EditMode finished
+    # (runs 112-124), so nothing was tested and no cache was saved; run 128, the first to finish, took 2 h 19 min with
+    # EditMode (46 min of it), now the Core workflow's
     timeout-minutes: 150
     if: ${{ !cancelled() }}
     permissions:
@@ -156,7 +158,7 @@ jobs:
           restore-keys: |
             Library-Tests-
 
-      - name: Run EditMode and PlayMode tests
+      - name: Run PlayMode tests
         uses: game-ci/unity-test-runner@v4
         id: tests
         env:
@@ -165,7 +167,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: unity
-          testMode: all
+          testMode: playmode
           # No quotes: GameCI passes them through literally, and a category of "!Heavy" (quotes included) matches
           # nothing, so Unity ran 0 tests and reported success (run 40663317991). Heavy captures run in the
           # session's editor (BUILD_PLAN §7.0).
@@ -186,7 +188,7 @@ jobs:
       - name: Fail if a test run executed nothing
         if: always() && steps.tests.outcome != 'skipped'
         run: |
-          for mode in editmode playmode; do
+          for mode in playmode; do
             f=test-results/$mode-results.xml
             n=$(grep -o '<test-run [^>]*' "$f" 2>/dev/null | grep -o ' total="[0-9]*"' | grep -o '[0-9]*' || true)
             echo "$mode: ${n:-no results} tests run"
