@@ -895,7 +895,18 @@ a bake-off on close-ups between tied styles made from a real groom's strands (co
 styles are) and free hair-card assets (licence fit, mobile cost), then `apparent.py` by hair; then the coarse years (soft
 tissue's descent, §16 round 38: the years at a speaking distance are in the face's form, not its lines, hair or
 surroundings: blend shapes for hollowing cheeks and temples, deepening folds, hooding lids, sagging jowls and neck, from
-measured ageing of real faces' 3D form; research a licence-fit source first); then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
+measured ageing of real faces' 3D form; research a licence-fit source first: FLAME and the Basel Face Model are
+non-commercial research only, so authored ourselves). **Plan for the soft-tissue shape (`face-years`)**: (1) in
+`mh_build.py` beside `head-cranium`, a procedural shape key on the sculpt bases built in the head frame (eyes at y +0.1 and
+x ±0.36 radii; the mouth from `joint-mouth`), displacements along the normal at full years (dm): temporal hollow (|x| 0.62, y
++0.25, r 0.18) in 0.025; submalar hollow (|x| 0.42, y -0.42, r 0.16) in 0.03; nasolabial groove (nose wing |x| 0.2, y -0.45
+to past the mouth's corner) in 0.015, 0.03 wide, with the malar fat's bulge above-lateral of it out 0.015; marionette groove
+(mouth corner down to the jaw) in 0.01 and the jowl (|x| 0.45, under the mouth's line) out and down 0.02; the bag under the
+lower lid out 0.015 with the tear trough under it in 0.01; the lateral brow down 0.015 and the upper lid's skin hooding; the
+front of the neck out 0.015; (2) Core `Sculpt` a body-group slider `face-years` driven by the years in `Looks.Shape` like
+`body-age` (from 35, whole by 75; FacesTests' every-slider rule), (3) a full base rebuild (every proxy is refitted to every
+shape key), `MeasureShapeResponses` + refit, `PlayerTestScene.Build`, (4) `AgeCues` with a `soft` variant and the gate,
+judged on close-ups (no caricature) and at the gate's crop. Then the beards' and white hair's shading (a bright fringe, a cap: shade between strands, no paper white),
 then the 30-45s' years (what reads 23 at 37: the face's fullness, the eyes, the brows' thinning), each measured with
 `apparent.py` and judged on the boards. Then, as below:
 R4 and the sexes' cues together, measured on the population with `apparent.py` and judged on the boards:
