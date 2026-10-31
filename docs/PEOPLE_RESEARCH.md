@@ -196,6 +196,52 @@ every end is a person; the chins differ as real chins do, no more. Twenty slider
 the nose, the mouth and lips, the cheeks, the brow, the eyes); the rest (the head's outline, ears, neck, lids, the nose's
 tip and bridge width, the mouth's corners) keep their unit until they are measured the same way.
 
+**Widened to real people's spreads where the library is narrower (owner, 2026-10-31: "B, but be sure and evidence based").**
+Where a published measurement has the same landmarks as one of ours, its adult spread by sex widens that feature's range
+(`tools/unity/people/data/published_face_norms.json`, each entry with its source and why its landmarks match ours):
+- *3D Facial Norms* (Weinberg et al. 2016, Cleft Palate-Craniofacial J 53:e185; FaceBase summary statistics, 3D
+  stereophotogrammetry of adults of European ancestry, pooled here over ages 18-40: about 640 men and 1,200 women per
+  measure; `data/tdfn_adult_pooled.json`): nose length n-sn, nose width al-al, mouth width ch-ch, upper vermilion ls-sto,
+  philtrum sn-ls, lower face sn-gn, face height n-gn, eye opening en-ex, and a lower bound on the eyes' spacing from en-en and
+  ex-ex.
+- *Arnett et al. 1999* (Am J Orthod Dentofacial Orthop 116:239, Tables I-II; cephalograms in natural head position, 26
+  women and 20 men chosen as facially balanced, so their spread understates the population's): the lower lip to the chin's
+  bottom (our chin length; its sd is also bounded from below by the 3D norms' sn-gn and sn-sto), the chin ahead of the fold
+  under the lip (B'-Pog'), the chin ahead of the nose's base (Pog' to the true vertical through subnasale).
+- *The rule, so that nothing is widened on a guess:* an end of a range moves out only as far as both readings of the study
+  agree: the nearer of (the library's median ± 1.645 sd) and (the study's mean ± 1.645 sd), and never inward of the
+  library's own [5, 95] %. The first reading allows for our landmarks sitting a few millimetres from the study's (found by
+  the mesh's shape, not by palpation or on X-rays; Arnett's are not corrected for magnification); the second keeps every
+  end inside the real people's own 5th-95th percentile. Features without a matching published measurement (the lower lip's
+  height, whose front-most point is not the vermilion border; the nose's projection; the jaw, cheekbone, cheek and chin
+  widths; the lips' and brow's projection; the bridge) keep the library's range.
+- *Result:* the women's chin may lengthen to 45.8 mm (from 43.7), come forward of the lip fold to 3.1 mm (from 2.0) and of
+  the nose's base to -1.9 mm (from -3.0); the women's mouth may narrow to 42.3 mm (the library's median and the 3D norms'
+  mean agree at 48.0 mm); the men's nose may lengthen to 62.3 mm; the upper lip widens a little both ways. Slider ends with
+  no room fall from 197 to 167 (women) and 227 to 224 (men). Rendered: `docs/evidence/unity/p4/research/rocketbox_limits_widened.jpg`.
+
+**Who the library covers (owner, 2026-10-31: "do we have enough as a base to cover all ancestry/sex/age combinations, with
+enough diversity within each group?").** No. Its 111 people, by ancestry judged by eye from the face textures
+(`data/rocketbox_ancestry.json`; the library ships no labels; ages from `data/rocketbox_ages.json`): 64 north European, 9
+Mediterranean or Middle Eastern (8 of them unsure: soot, beards), 10 possibly Latin American (all unsure), 8 East Asian, 6
+West African (5 of them men), 1 possibly Southeast Asian, none South Asian, East African or Indigenous American; 6 unsure, 5
+without a readable face, 2 masked. One woman is past 50 (no woman of colour is); every face past 50 is a north European
+man; no children. An independent count agrees on the skew (over 40 % are white men: Do et al. 2023, Frontiers in Virtual
+Reality 4:1248915). In the game's 9 ancestries x 2 sexes x 3 age bands (under 30, 30-49, 50+: 54 groups), 7 groups have three or more
+certain faces, 41 have no certain face and 37 no face at all. Within north Europeans the women are close variants (every woman of the female skeleton shares its
+eye sockets and face bones). What could fill it, all without accounts:
+- *VALID* (Do, Zelenty, Gonzalez-Franco, McMahan 2023; MIT; github.com/xrtlab/Validated-Avatar-Library-for-Inclusion-and-Diversity---VALID):
+  42 base faces, 7 groups (Indigenous American, Asian, Black, Hispanic, Middle Eastern and North African, Pacific Islander,
+  white) x 2 sexes x 3, each perceptually validated for race and sex by 132 people from 33 countries (labels in its
+  `Validated-Labels.csv`); built from averaged photographs in Autodesk Character Generator, so possibly less photoreal than
+  Rocketbox's photographed faces, young adults only, no South or Southeast Asian. To judge by eye beside Rocketbox before
+  adopting (a render bake-off, as for Rocketbox).
+- *New people from real ones of the same group:* every Rocketbox head is already registered to one layout; a new face can
+  be a blend of two or three real faces of the same ancestry and sex (shape and texture), then the calibrated sliders, so
+  every feature still comes from real people of that group and no two people of a place share a face.
+- *Age:* ageing from the library's older men and from published ageing measurements, since the library has almost no
+  older women.
+
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own
 triangles (`rocketbox_head_map.py`, seam-safe). (1) The per-texel change with age, regressed over the 78 faces without soot,

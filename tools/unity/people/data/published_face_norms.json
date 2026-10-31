@@ -1,0 +1,152 @@
+{
+ "_about": "Published spreads of adult faces, by sex, for the features rocketbox_features.py measures, where a published measurement has the same landmarks (docs/PEOPLE_RESEARCH.md \u00a77). Used only to WIDEN a feature's range where the Rocketbox library is narrower than real people, and only as far as both readings of the study agree: an end moves out to the nearer of (library median +- 1.645 sd) and (published mean +- 1.645 sd), and never inward of the library's own [5, 95] %. The first reading allows for our landmarks sitting a few mm from the study's (found by the mesh's shape, not by palpation or on X-rays); the second keeps every end inside the real people's own range. Features the library holds fixed (the eyes) move 1.645 sd from each face.",
+ "sources": {
+  "3dfn": "Weinberg SM et al. (2016) The 3D Facial Norms Database: Part 1. Cleft Palate-Craniofacial Journal 53(6):e185-e197, doi:10.1597/15-199. Summary statistics: FaceBase, https://www.facebase.org/resources/human/facial_norms/summary/tdfn_gui_summary.csv (downloaded 2026-10-31). 3D stereophotogrammetry (3dMD), direct surface landmarks; adults of European ancestry; here pooled over the one-year age bins 18-40 per sex (n per measure: about 640 men, 1200 women; pooled sd includes the spread between the bins' means).",
+  "arnett1999": "Arnett GW, Jelic JS, Kim J, et al. (1999) Soft tissue cephalometric analysis: diagnosis and treatment planning of dentofacial deformity. Am J Orthod Dentofacial Orthop 116(3):239-253, Table I and Table II. Lateral cephalograms in natural head position, 46 white adults (26 women, 20 men) chosen as 'facially balanced' (so its spread understates the population's; not stated to be corrected for radiographic magnification, which overstates it by about a tenth)."
+ },
+ "features": {
+  "chin_length": {
+   "ours": "mouth line (stomion) to the chin's bottom, vertical",
+   "published": "arnett1999 'Lower lip length' (lower lip superior to Me'); 3dfn lower bound: sd(sn-gn) - sd(sn-sto) (sd of a difference is at least the difference of the sds)",
+   "sd": {
+    "f": 2.42,
+    "m": 2.66
+   },
+   "mean": {
+    "f": 46.9,
+    "m": 54.3
+   }
+  },
+  "chin_projection": {
+   "ours": "chin's front (pogonion) ahead of the fold under the lip (deepest point between lower lip and chin), horizontal",
+   "published": "arnett1999 Table II 'B point'-Pogonion'' (horizontal, to the true vertical)",
+   "sd": {
+    "f": 1.1,
+    "m": 1.3
+   },
+   "mean": {
+    "f": 2.7,
+    "m": 3.6
+   }
+  },
+  "chin_forward": {
+   "ours": "chin's front ahead of the nose's base (subnasale), horizontal",
+   "published": "arnett1999 Table I 'Pogonion'' projection to the true vertical line through subnasale",
+   "sd": {
+    "f": 1.9,
+    "m": 1.8
+   },
+   "mean": {
+    "f": -2.6,
+    "m": -3.5
+   }
+  },
+  "nose_length": {
+   "ours": "nose's root (deepest point between the brows) to its base, vertical",
+   "published": "3dfn 'nasalheight' (n-sn)",
+   "sd": {
+    "f": 3.85,
+    "m": 3.95
+   },
+   "mean": {
+    "f": 54.68,
+    "m": 56.62
+   }
+  },
+  "nose_width": {
+   "ours": "the wings' widest points",
+   "published": "3dfn 'nasalwidth' (al-al)",
+   "sd": {
+    "f": 2.3,
+    "m": 2.59
+   },
+   "mean": {
+    "f": 32.58,
+    "m": 36.13
+   }
+  },
+  "mouth_width": {
+   "ours": "the mouth's corners",
+   "published": "3dfn 'labfiswidth' (ch-ch)",
+   "sd": {
+    "f": 3.48,
+    "m": 3.8
+   },
+   "mean": {
+    "f": 48.01,
+    "m": 50.75
+   }
+  },
+  "upper_lip": {
+   "ours": "upper lip's front-most point to the mouth line (the upper vermilion's height)",
+   "published": "3dfn 'upvermheight' (ls-sto)",
+   "sd": {
+    "f": 1.43,
+    "m": 1.75
+   },
+   "mean": {
+    "f": 7.4,
+    "m": 7.59
+   }
+  },
+  "philtrum": {
+   "ours": "nose's base to the upper lip's front-most point",
+   "published": "3dfn 'phillength' (sn-ls)",
+   "sd": {
+    "f": 2.48,
+    "m": 2.72
+   },
+   "mean": {
+    "f": 14.17,
+    "m": 16.29
+   }
+  },
+  "lower_face": {
+   "ours": "nose's base to the chin's bottom",
+   "published": "3dfn 'lowfaceheight' (sn-gn)",
+   "sd": {
+    "f": 4.97,
+    "m": 5.34
+   },
+   "mean": {
+    "f": 66.42,
+    "m": 73.0
+   }
+  },
+  "face_height": {
+   "ours": "nose's root to the chin's bottom",
+   "published": "3dfn 'morphfaceheight' (n-gn)",
+   "sd": {
+    "f": 6.03,
+    "m": 6.6
+   },
+   "mean": {
+    "f": 118.51,
+    "m": 127.03
+   }
+  },
+  "eye_size": {
+   "ours": "width of the eye's opening in the head mesh (held fixed by the library)",
+   "published": "3dfn 'palpfislength' (en-ex), left and right averaged",
+   "sd": {
+    "f": 1.96,
+    "m": 1.89
+   }
+  },
+  "eye_spacing": {
+   "ours": "distance between the eye openings' centres (held fixed by the library)",
+   "published": "3dfn lower bound for the mean of 'incanthwidth' (en-en) and 'outcanthwidth' (ex-ex): sqrt(sd_en^2 + sd_ex^2)/2 (their correlation is positive)",
+   "sd": {
+    "f": 2.37,
+    "m": 2.46
+   }
+  }
+ },
+ "not_matched": {
+  "lower_lip": "our point is the lower lip's front-most point, mid-vermilion, not its border (our median 5.4 mm against 3dfn's 8.7): different landmark, library only",
+  "nose_projection": "3dfn sn-prn is a straight-line distance including the columella's drop; ours is the forward distance only",
+  "jaw_width": "3dfn go-go is calipered on the bone; ours is the soft tissue's widest point",
+  "cheekbone_width": "3dfn zy-zy is the arches' widest; ours is across the cheeks' front",
+  "upper_lip_fwd, lower_lip_fwd, lips_forward, dorsum, brow_projection, chin_width, cheek_width, jaw_low_width": "no published measurement with the same landmarks found"
+ }
+}

@@ -8,9 +8,10 @@ followed under a shape to measure what one unit of a slider does to its feature.
 Per sex: the library's spread of each feature ([5, 95] % after outliers); each slider's millimetres per unit (median over
 the heads that carry the sculptor's shapes); each face's limits: as far as the library reaches on that feature from where
 this face is, never past one unit. Eye size and spacing do not vary in the library (every head of a sex shares the eye
-sockets) and are calibrated from published norms instead (PUBLISHED_SD).
+sockets) and are calibrated from published norms instead; features the library varies less than real people do are
+widened to published spreads (NORMS).
 Usage: python3 rocketbox_features.py <meshes.npz> <sculpt_meshes.npz> <out.json> [--debug name]"""
-import json, sys
+import json, os, sys
 import numpy as np
 
 SLIDERS = {
@@ -271,10 +272,30 @@ def mouth_corners(V, T, zsto, ysto):
 
 # each slider's two ends, as its shapes are named (Sculpt.cs): decr/incr unless named otherwise
 SIDES = {'eye-trans': ('in', 'out'), 'brow-ridge': ('backward', 'forward'), 'mouth-trans': ('backward', 'forward')}
-# what the library holds fixed (every head of a sex shares its eye sockets) has its spread from published adult norms
-# instead (standard deviations, mm): the distance between the pupils (Dodgson 2004, 3.8) and the eye's opening width
-# (Farkas 1994, about 1.5); a face may move 1.645 of them each way (the population's 5th to 95th percentile)
-PUBLISHED_SD = {'eye_spacing': 3.8, 'eye_size': 1.5}
+# Published adult spreads (tools/unity/people/data/published_face_norms.json, with sources and the landmark definitions
+# that make each one the same measurement as ours): a feature's range is widened to them where the library is narrower,
+# centred on the library's median; what the library holds fixed (the eyes) moves 1.645 published sd from each face.
+NORMS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'published_face_norms.json')
+
+
+def widen(dist, norms, sex):
+    """Each feature's range [lo, hi]: the library's [5, 95] %, each end widened where a published measurement with the
+    same landmarks spreads wider, as far as both readings of it agree: out to the nearer of (library median +- 1.645 sd)
+    and (published mean +- 1.645 sd), never inward of the library's own ends. Records where each end came from."""
+    for ft, q in dist.items():
+        q['lo'], q['hi'], q['from'] = q['p5'], q['p95'], 'library'
+        n = norms.get(ft)
+        if not n: continue
+        sd = n['sd'][sex]
+        if q['p95'] - q['p5'] < 1.0: q['fixed'] = True; q['sd'] = sd; q['from'] = 'published sd from each face (library fixed)'; continue
+        centred = (q['p50'] - 1.645 * sd, q['p50'] + 1.645 * sd)
+        absolute = (n['mean'][sex] - 1.645 * sd, n['mean'][sex] + 1.645 * sd) if 'mean' in n else centred
+        lo, hi = min(q['p5'], max(centred[0], absolute[0])), max(q['p95'], min(centred[1], absolute[1]))
+        if lo < q['lo'] or hi > q['hi']:
+            q['from'] = 'widened: ' + ('low' if lo < q['lo'] else '') + (' and ' if lo < q['lo'] and hi > q['hi'] else '') + ('high' if hi > q['hi'] else '')
+            q['lo'], q['hi'] = lo, hi
+
+
 SLIDER_FEATURES = {'mouth-upperlip-volume': ('upper_lip', 'upper_lip_fwd'), 'mouth-lowerlip-volume': ('lower_lip', 'lower_lip_fwd'),
                    'chin-bones': ('jaw_width', 'jaw_low_width'), 'chin-prominent': ('chin_projection', 'chin_forward'),
                    'nose-volume': ('nose_width', 'nose_length', 'nose_projection'), 'mouth-trans': ('lips_forward',)}
@@ -295,7 +316,8 @@ def main(meshes, sculpt_meshes, out, debug=None):
         F = Face(M[debug + '#V'].astype(float), M[debug + '#T'])
         for k, v in F.L.items(): print(k, v.at(F.V)[0].round(1))
         print({k: round(float(v), 1) for k, v in F.measures().items()}); return
-    res = {'_about': __doc__.split('\n')[0], 'sliders': SLIDERS, 'published_sd': PUBLISHED_SD, 'sexes': {}, 'faces': {}}
+    norms = json.load(open(NORMS))['features']
+    res = {'_about': __doc__.split('\n')[0], 'sliders': SLIDERS, 'norms': os.path.relpath(NORMS, os.path.dirname(os.path.abspath(__file__))), 'sexes': {}, 'faces': {}}
     # each slider's millimetres per unit on its feature(s): the median over every head carrying the sculptor's shapes
     # (the shapes are the same targets carried onto each head; the four heads agree within a few tenths of a mm on most)
     heads = sorted({k.split('#')[0] for k in C.files if k.endswith('#V')})
@@ -325,6 +347,7 @@ def main(meshes, sculpt_meshes, out, debug=None):
         Ms = {n: faces[n].measures() for n in sel}
         feats = list(next(iter(Ms.values())))
         dist = {ft: stats([Ms[n][ft] for n in sel]) for ft in feats}
+        widen(dist, norms, s)
         eff = EFF
         res['sexes'][s] = {'features': dist, 'heads': len(sel)}
         for n in sel:
@@ -335,8 +358,8 @@ def main(meshes, sculpt_meshes, out, debug=None):
                     units = 1.0
                     for f_, mm in by.items():
                         if abs(mm) < 0.4 or not np.isfinite(own[f_]): continue
-                        lo, hi = dist[f_]['p5'], dist[f_]['p95']
-                        if f_ in PUBLISHED_SD and hi - lo < 1.0: lo, hi = own[f_] - 1.645 * PUBLISHED_SD[f_], own[f_] + 1.645 * PUBLISHED_SD[f_]
+                        lo, hi = dist[f_]['lo'], dist[f_]['hi']
+                        if dist[f_].get('fixed'): lo, hi = own[f_] - 1.645 * dist[f_]['sd'], own[f_] + 1.645 * dist[f_]['sd']
                         room = (hi - own[f_]) if mm > 0 else (lo - own[f_])
                         units = min(units, float(np.clip(room / mm, 0, 1)))
                     if side == 'incr': rng[1] = units
@@ -347,7 +370,7 @@ def main(meshes, sculpt_meshes, out, debug=None):
     for s, d in res['sexes'].items():
         print(s, d['heads'], 'heads')
         for ft, q in d['features'].items():
-            print(f'  {ft:16s} p5 {q["p5"]:6.1f}  median {q["p50"]:6.1f}  p95 {q["p95"]:6.1f} mm (n {q["n"]}, out {q["dropped"]})')
+            print(f'  {ft:16s} p5 {q["p5"]:6.1f}  median {q["p50"]:6.1f}  p95 {q["p95"]:6.1f}  range {q["lo"]:6.1f}..{q["hi"]:6.1f} mm ({q["from"]}; n {q["n"]}, out {q["dropped"]})')
     for sid, by in res['mm_per_unit'].items():
         print(f'{sid:24s}', {side: {f_: round(v, 1) for f_, v in fv.items()} for side, fv in by.items()}, ' by head', res['mm_per_unit_by_head']['values'][sid])
 
