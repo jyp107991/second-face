@@ -58,7 +58,8 @@ def plan(manifest):
                     f = ident.get(base, base)
                     if len(used.get(f, [])) >= pr.MAX_USES or a in used.get(f, []) or not all(any(a in g and u in g for g in pr.RELATED) for u in used.get(f, [])): continue
                     spec, tone, und, hair, eyes, note = pr.recipe(a, rng)
-                    if any(f'mean:{g.split(":")[0]}_{sex}' not in groups.files for g in spec.split('+')): break
+                    if any((g.split(':')[0].replace('V.', 'V:', 1) if g.startswith('V.') else f'mean:{g.split(":")[0]}_{sex}') not in groups.files
+                           for g in spec.split('+')): break
                     # a dark photograph is never lightened by more than a third
                     if rt.cheek_lab(tone, und)[0] / rt.cheek_lab(pr.TONE[lab], pr.UNDERTONE.get(lab, 0))[0] > 1.33: continue
                     name = f'{a}_{sex}_{made[(a, sex)] + 1}'; used.setdefault(f, []).append(a)

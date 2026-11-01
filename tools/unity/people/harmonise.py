@@ -14,7 +14,7 @@ mesh and to every shape key, so the calibrated sculptor still works on the new p
 Writes <out>/<name>.fbx and <out>/<name>.json (what retone.py needs: the cheeks' and eyeballs' texture coordinates).
 Env: HARM_HIDE (gear to delete), HARM_SLIDERS (a JSON draw of the calibrated sliders to bake first).
 Usage: blender -b --python harmonise.py -- <rocketbox fbx> <groups.npz> <sex f|m> <source group> <target spec> <out dir> <name>
-  target spec: a VALID group (AIAN) or a mixture (AIAN:0.6+Hispanic:0.4)"""
+  target spec: a VALID group (AIAN), one VALID person (V.Black_F_2), or a mixture (AIAN:0.6+Hispanic:0.4, V.Black_F_1:0.5+Black:0.5)"""
 import bpy, sys, os, json
 import numpy as np
 from mathutils import Vector
@@ -29,7 +29,9 @@ Tv = G['T']
 mix = [(t.split(':')[0], float(t.split(':')[1]) if ':' in t else 1.0) for t in target.split('+')]
 wsum = sum(w for _, w in mix)
 Vs = G[f'mean:{source}_{sex}'].astype(float)
-Vt = sum(G[f'mean:{g}_{sex}'].astype(float) * (w / wsum) for g, w in mix)
+# a group (its validated mean) or one VALID person ('V.Black_F_2': that person's own face, so the new person is a blend
+# of the Rocketbox face and a real-looking individual of the target group, not the group's average)
+Vt = sum(G[g.replace('V.', 'V:', 1) if g.startswith('V.') else f'mean:{g}_{sex}'].astype(float) * (w / wsum) for g, w in mix)
 D = Vt - Vs                                            # the groups' difference, VALID's eyes' frame, mm
 
 bpy.ops.wm.read_factory_settings(use_empty=True)

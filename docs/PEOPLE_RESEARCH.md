@@ -413,6 +413,38 @@ stays Rocketbox's: its photographed heads and skin detail, its hair cards, bodie
   Asian (VALID's NHPI difference is small on these heads); (4) Business_Female_02's glasses texture is missing from the
   export (they render magenta).
 
+**More people, hair true to ancestry, no religious dress (owner, 2026-11-01: "blend etc to create variation; hair
+consistent with race, Black people cannot have weirdly white straight hairstyles; ditch all the Islamic clothing; there
+must be more usable models comparable to Rocketbox, search harder").**
+- *The search* (no accounts, non-commercial allowed). No second library of rigged, photographed people like Rocketbox is
+  free to download: the only comparable set is VALID (Google and UCF, 210 avatars on 42 people, perceptually validated by
+  132 participants from 33 countries; github.com/google/valid-avatar-library, archived April 2026), which we hold. Scanned
+  heads are sold (Digital Reality Lab, 3D Scan Store, Ten24: free samples personal-use or behind a sign-up, mostly white
+  men); CC-licensed scans on Sketchfab need an account to download; research captures of diverse real heads exist but are
+  terabytes and not game assets (Meta's Ava-256: 256 people, CC BY-NC 4.0, 4 TB); FFHQ-UV (50,000 face textures from
+  FFHQ, StyleGAN-made) has an unclear licence and no shapes; generators built on MakeHuman (Ara 3D Gen, CC0) are the look
+  the owner rejected. So more people come from what we hold: VALID's people as individuals (below) and variation on
+  every base (blending, hair, skin, age).
+- *VALID's people as individuals*: until now only VALID's group means were used. Its 35 validated people (3 Black women
+  and 3 Black men among them) are distinct faces judged by people as their group; `harmonise.py` now takes one person as
+  the target (`V.Black_F_2`): the Rocketbox face takes that person's own difference from the source group's mean, a blend
+  of two real-looking people, so each VALID person makes a new person on each base.
+- *Religious dress*: none on any base (owner); the hijab (two women) and the skullcap (one man) are modelled in the head,
+  and under the keffiyeh (two men) there is no scalp; these five wait for a grafted scalp and hair.
+- *Hair true to ancestry*: hair form varies along ancestry (De la Mettrie et al. 2007, Hum Biol 79:265, 2,449 people in 22
+  countries, eight curl types: African hair mostly the curliest, East Asian the straightest, European between); so a
+  Black person's hair is afro-textured or cropped (coils, afros, braids, cornrows, locs, twists, buzzed, shaved), never a
+  straight or blonde European style, within the gritty grooming rule. Rocketbox builds most hair into the head's own mesh
+  (a shell standing out from the skull, painted with hair, plus a few loose cards), so changing it means rebuilding the
+  scalp: `hair_graft.py` sizes a bald Rocketbox head's skull to each head (by the forehead: Rocketbox puts the eyes at one
+  spacing per sex), pulls the shell onto it, cuts the hair lying over skin (long hair down the neck, strands beside the
+  face, a fringe: there is more of the head's surface under it), and `scalp_paint.py` repaints the scalp cropped in the
+  hair colour; a donor's hairstyle (Rocketbox's shell and cards, VALID's wig, our own generated styles) is then fitted on,
+  its height above the scalp scalable (a short cut to a full one). Rocketbox-quality afro-textured hair in the library:
+  one afro (Female_Party_02) and the cropped and buzzed heads; VALID's wigs (one separate: a curly bob of flat ribbons) and
+  our own generated coils and cornrows (MakeHuman era) fall short of Rocketbox's look, so new afro-textured styles
+  (braids, locs, twists, cornrows) are to be made to that standard.
+
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own
 triangles (`rocketbox_head_map.py`, seam-safe). (1) The per-texel change with age, regressed over the 78 faces without soot,
