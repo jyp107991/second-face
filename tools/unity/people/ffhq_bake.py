@@ -6,7 +6,7 @@ landmarks found the same way as the Rocketbox head's (rocketbox_features.Face), 
 thin-plate warp; then each texel of the Rocketbox head's texture that lies on the face is taken to its point on the
 head, to the nearest point of the fitted carrier, and to that point's place in the FFHQ texture. Baked where the carrier
 holds real skin (outside FFHQ-UV's painted hair, inside 120 mm of the eyes, not the ears), with a feathered edge, and
-not within 16 mm of either eye (the photographs' eyes are closed; Rocketbox's lids and lashes stay). Writes
+not within 12 mm of either eye (the photographs' eyes are closed; Rocketbox's lids and lashes stay). Writes
 <out>/<head material>_ffhq_color.jpg (the bake, Rocketbox's layout), <out>/<head material>_ffhq_mask.png (where it
 holds) and <out>/ffhq.json (the face's cheek colour, and the tone and undertone that put Rocketbox's skin outside the
 face at that colour, for retone.py, which composites the two).
@@ -22,7 +22,7 @@ import rocketbox_features as rbf
 person_path, tex_dir, ffhq_png, out_dir = sys.argv[sys.argv.index('--') + 1:][:4]
 TOPO = os.environ['FFHQ_TOPO']; MASKS = os.environ.get('FFHQ_MASKS', os.path.dirname(TOPO))
 os.makedirs(out_dir, exist_ok=True)
-EYE_KEEP = 16.0; REACH = 120.0; EAR_X = 72.0; FEATHER = 10.0      # mm
+EYE_KEEP = 12.0; REACH = 120.0; EAR_X = 72.0; FEATHER = 8.0       # mm
 
 
 def load_png(path):
