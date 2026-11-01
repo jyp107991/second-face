@@ -2,7 +2,9 @@
 Blender (Cycles) with the same three lights, grey world and camera, framed on its own eyes (the eye bones), from the front
 and at three-quarters, so the libraries' faces can be judged side by side on equal terms. Rocketbox's materials are bound
 by name to the textures beside its FBX (<material>_color/_normal, the opacity texture's alpha cuts the hair and lashes);
-VALID's come embedded in its FBX. Usage: blender -b --python studio_render.py -- <out dir> <fbx> [<fbx> ...]"""
+VALID's come embedded in its FBX. Env: SF_SAMPLES (48), SF_THREADS, SF_SCALE (percent of 512 x 640), SF_VIEWS (front,three[,side]),
+SF_VARIANTS (a JSON file of shape-key settings per avatar).
+Usage: blender -b --python studio_render.py -- <out dir> <fbx> [<fbx> ...]"""
 import bpy, sys, os, math
 import numpy as np
 from mathutils import Vector
@@ -87,15 +89,27 @@ for path in paths:
     if d.length > 1e-6 and d.normalized().dot(fwd) < 0: fwd = -fwd
     studio(eye, fwd)
     sc = bpy.context.scene
-    sc.render.engine = 'CYCLES'; sc.cycles.samples = 48; sc.cycles.use_denoising = True; sc.cycles.device = 'CPU'
+    sc.render.engine = 'CYCLES'; sc.cycles.samples = int(os.environ.get('SF_SAMPLES', 48)); sc.cycles.use_denoising = True; sc.cycles.device = 'CPU'
+    if os.environ.get('SF_THREADS'): sc.render.threads_mode = 'FIXED'; sc.render.threads = int(os.environ['SF_THREADS'])
     sc.render.resolution_x, sc.render.resolution_y = 512, 640
+    sc.render.resolution_percentage = int(os.environ.get('SF_SCALE', 100))     # (QA sheets: 75)
     sc.view_settings.view_transform = 'AgX'; sc.view_settings.exposure = -1.5     # a fair cheek at about L* 70, as photographed
     cam_d = bpy.data.cameras.new('cam'); cam_d.lens = 85; cam = bpy.data.objects.new('cam', cam_d); sc.collection.objects.link(cam); sc.camera = cam
     target = eye - Vector((0, 0, 0.045))
-    for view, yaw in (('front', 0.0), ('three', 35.0)):
-        a = math.radians(yaw); d = fwd * math.cos(a) + fwd.cross(Vector((0, 0, 1))) * math.sin(a)
-        cam.location = target + d * 0.95 + Vector((0, 0, 0.01))
-        cam.rotation_euler = (target - cam.location).to_track_quat('-Z', 'Y').to_euler()
-        sc.render.filepath = os.path.join(out_dir, f'{name}_{view}.png')
-        bpy.ops.render.render(write_still=True)
-        print('rendered', sc.render.filepath)
+    # SF_VARIANTS: a JSON file {avatar name: {tag: {shape key: weight 0..1}}}: each variant rendered as <name>_<tag>_<view>
+    variants = {'': {}}
+    if os.environ.get('SF_VARIANTS'):
+        import json
+        variants = json.load(open(os.environ['SF_VARIANTS'])).get(name, {'': {}})
+    keyed = [o for o in meshes if o.data.shape_keys]
+    views = [v for v in (('front', 0.0), ('three', 35.0), ('side', 85.0)) if v[0] in os.environ.get('SF_VIEWS', 'front,three')]
+    for tag, setting in variants.items():
+        for o in keyed:
+            for kb in o.data.shape_keys.key_blocks[1:]: kb.value = float(setting.get(kb.name, 0.0))
+        for view, yaw in views:
+            a = math.radians(yaw); d = fwd * math.cos(a) + fwd.cross(Vector((0, 0, 1))) * math.sin(a)
+            cam.location = target + d * 0.95 + Vector((0, 0, 0.01))
+            cam.rotation_euler = (target - cam.location).to_track_quat('-Z', 'Y').to_euler()
+            sc.render.filepath = os.path.join(out_dir, f'{name}_{tag + "_" if tag else ""}{view}.png')
+            bpy.ops.render.render(write_still=True)
+            print('rendered', sc.render.filepath)

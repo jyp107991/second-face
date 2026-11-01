@@ -8,7 +8,8 @@ so lips follow the skin partly and the eyes' whites, the painted hair and the cl
 texture: hair, brows and lashes) and the painted hair on the head (brows, hairline, stubble) go to the target's hair
 colour (Core Looks.HairColours) with their own light and dark kept; the irises (the eyeballs' texture area, from
 harmonise.py) to a dark brown where the people's eyes are dark. Writes the textures under Rocketbox's names in <out dir>.
-Usage: python3 retone.py <base texture dir> <harmonise json> <out dir> <target cluster> [<tone shift>]"""
+Usage: python3 retone.py <base texture dir> <harmonise json> <out dir> <target cluster> [<tone shift>] [<tone> <undertone>]
+  (an explicit tone and undertone, as for a mixed people, replace the cluster's own)"""
 import json, math, os, shutil, sys
 import numpy as np
 from PIL import Image
@@ -19,7 +20,7 @@ TONE = {'north_european': -0.35, 'mediterranean': -0.18, 'east_asian': -0.23, 's
 UNDERTONE = {'east_asian': 0.35, 'southeast_asian': 0.35, 'south_asian': 0.15, 'latin_american': 0.15, 'indigenous_american': 0.15,
              'north_european': -0.3, 'mediterranean': -0.05}
 HAIR = {'black': 0x16110d, 'dark_brown': 0x2b1d14}
-HAIR_OF = {'mediterranean': 'dark_brown', 'latin_american': 'dark_brown'}
+HAIR_OF = {'mediterranean': 'dark_brown', 'latin_american': 'dark_brown'}  # (CANDELA: 57-95 % brown/black hair, Table 1)
 LIGHT_EYES = {'north_european': 0.7, 'mediterranean': 0.25, 'latin_american': 0.08, 'south_asian': 0.04}
 DARK_IRIS = 0x2a1a10
 CHEEKS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'rocketbox_cheeks.json')
@@ -57,10 +58,11 @@ def from_lch(L, C, h): return np.stack([L, C * np.cos(h), C * np.sin(h)], -1)
 def hex_lab(h): return srgb_to_lab(np.array([(h >> 16) & 255, (h >> 8) & 255, h & 255], float))
 
 
-def main(src, info, out, cluster, shift=0.0):
+def main(src, info, out, cluster, shift=0.0, tone=None, undertone=None):
     J = json.load(open(info)); os.makedirs(out, exist_ok=True)
     base_cluster = {'White': 'north_european', 'Black': 'west_african', 'Asian': 'east_asian', 'Hispanic': 'latin_american', 'MENA': 'mediterranean'}[J['source']]
-    s_lab, t_lab = cheek_lab(TONE[base_cluster], UNDERTONE.get(base_cluster, 0)), cheek_lab(TONE[cluster] + shift, UNDERTONE.get(cluster, 0))
+    s_lab = cheek_lab(TONE[base_cluster], UNDERTONE.get(base_cluster, 0))
+    t_lab = cheek_lab(TONE[cluster] + shift if tone is None else tone, UNDERTONE.get(cluster, 0) if undertone is None else undertone)
     hmat = J['cheek_material']; prefix = hmat[:-len('_head')]
     head = np.array(Image.open(os.path.join(src, f'{hmat}_color.jpg')).convert('RGB'), float)
     H, W = head.shape[:2]
@@ -124,11 +126,14 @@ def main(src, info, out, cluster, shift=0.0):
         nl = np.stack([hair_lab[0] * np.clip(l[..., 0] / max(ref, 1), 0.35, 1.8), hair_lab[1] + (l[..., 1] - np.median(l[m][:, 1])) * 0.2, hair_lab[2] + (l[..., 2] - np.median(l[m][:, 2])) * 0.2], -1)
         rgb = lab_to_srgb(nl)
         Image.fromarray(np.dstack([rgb, im[..., 3].astype(np.uint8)]), 'RGBA').save(os.path.join(out, f'{prefix}_opacity_color.png'))
-    for f in os.listdir(src):                                # the rest as they are (normals, specular)
-        if f.endswith(('_normal.jpg', '_specular.jpg')) and f.startswith(prefix): shutil.copy(os.path.join(src, f), os.path.join(out, f))
+    for f in os.listdir(src):                                # the rest as they are (normals, specular): linked, not copied
+        if f.endswith(('_normal.jpg', '_specular.jpg')) and f.startswith(prefix):
+            dst = os.path.join(out, f)
+            if os.path.lexists(dst): os.remove(dst)
+            os.symlink(os.path.abspath(os.path.join(src, f)), dst)
     print('wrote', out)
 
 
 if __name__ == '__main__':
     a = sys.argv[1:]
-    main(a[0], a[1], a[2], a[3], float(a[4]) if len(a) > 4 else 0.0)
+    main(a[0], a[1], a[2], a[3], float(a[4]) if len(a) > 4 else 0.0, float(a[5]) if len(a) > 5 else None, float(a[6]) if len(a) > 6 else None)

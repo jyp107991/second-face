@@ -1,0 +1,119 @@
+{
+ "_about": "What each Rocketbox person wears besides clothes, from the texture names its avatar ships with (Microsoft Rocketbox, Assets/Avatars/*/Textures). Headgear (helmet, hat, mask) hides the hair and reads as a uniform, so such a person is never a base for a new one (people_recipes.py).",
+ "gear": {
+  "Business_Female_02": [
+   "glasses"
+  ],
+  "Construction_Female_01": [
+   "helmet"
+  ],
+  "Construction_Male_01": [
+   "helmet"
+  ],
+  "Construction_Male_02": [
+   "helmet"
+  ],
+  "Construction_Male_03": [
+   "helmet"
+  ],
+  "Construction_Male_04": [
+   "helmet"
+  ],
+  "Construction_Male_05": [
+   "helmet"
+  ],
+  "Construction_Male_06": [
+   "helmet"
+  ],
+  "Construction_Male_07": [
+   "helmet"
+  ],
+  "Construction_Male_08": [
+   "helmet"
+  ],
+  "Fire_Female_01": [
+   "helmet",
+   "mask"
+  ],
+  "Fire_Female_02": [
+   "helmet",
+   "mask"
+  ],
+  "Fire_Female_03": [
+   "helmet",
+   "mask"
+  ],
+  "Fire_Male_01": [
+   "helmet"
+  ],
+  "Fire_Male_02": [
+   "helmet"
+  ],
+  "Fire_Male_03": [
+   "helmet"
+  ],
+  "Fire_Male_04": [
+   "helmet",
+   "mask"
+  ],
+  "Fire_Male_05": [
+   "helmet"
+  ],
+  "Fire_Male_06": [
+   "helmet"
+  ],
+  "Fire_Male_07": [
+   "helmet",
+   "mask"
+  ],
+  "Military_Female_01": [
+   "equipment",
+   "helmet"
+  ],
+  "Military_Female_02": [
+   "equipment",
+   "helmet"
+  ],
+  "Military_Male_01": [
+   "equipment",
+   "helmet"
+  ],
+  "Military_Male_03": [
+   "equipment",
+   "helmet"
+  ],
+  "Military_Male_04": [
+   "equipment",
+   "helmet"
+  ],
+  "Pilot_Female_01": [
+   "hat"
+  ],
+  "Pilot_Female_02": [
+   "hat"
+  ],
+  "Police_Female_01": [
+   "equipment",
+   "helmet"
+  ],
+  "Police_Male_01": [
+   "equipment"
+  ],
+  "Police_Male_02": [
+   "equipment",
+   "helmet"
+  ],
+  "Police_Male_03": [
+   "equipment"
+  ],
+  "Police_Male_04": [
+   "equipment"
+  ],
+  "Security_Female_01": [
+   "hat"
+  ],
+  "Security_Male_01": [
+   "equipment"
+  ]
+ }
+}

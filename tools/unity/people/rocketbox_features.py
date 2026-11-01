@@ -229,7 +229,9 @@ def widest(V, T, zz, ylo, yhi):
 
 def nose_wings(V, T, zz, y_sn):
     """The nose's wings: in each cut at heights zz, each side's point where the front falls back most steeply as it
-    leaves the wing for the cheek; the widest pair: ((left, right), z, width)."""
+    leaves the wing for the cheek, the wing's side at least 12 mm out and no more than 20 mm behind the nose's base
+    (further back is the cheek's own edge); of the heights, the one where the wings stand out most (the largest steps): ((left, right), z,
+    width)."""
     best = None
     for z in zz:
         Sz = section(V, T, 2, z); Q = Sz.at(V); res = []
@@ -240,11 +242,14 @@ def nose_wings(V, T, zz, y_sn):
             g = np.where(jx >= 0, Q[np.maximum(jx, 0), 1], np.nan)
             good = np.where(~np.isnan(g) & (xs >= 8) & (xs <= 26))[0]
             if len(good) < 4: break
-            kk = int(np.argmax(np.diff(g[good])))
-            res.append((Sz.take(np.array([jx[good[kk]]])), xs[good[kk]]))
-        if len(res) == 2 and (best is None or res[0][1] + res[1][1] > best[2]):
-            best = ((res[0][0], res[1][0]), z, res[0][1] + res[1][1])
-    return best
+            dg = np.diff(g[good])
+            near = (g[good][:-1] < y_sn + 20) & (xs[good][:-1] >= 12)
+            if not near.any(): break
+            dg = np.where(near, dg, -np.inf); kk = int(np.argmax(dg))
+            res.append((Sz.take(np.array([jx[good[kk]]])), xs[good[kk]], dg[kk]))
+        if len(res) == 2 and (best is None or res[0][2] + res[1][2] > best[3]):
+            best = ((res[0][0], res[1][0]), z, res[0][1] + res[1][1], res[0][2] + res[1][2])
+    return best[:3] if best else None
 
 
 def mouth_corners(V, T, zsto, ysto):

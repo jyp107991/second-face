@@ -36,11 +36,14 @@ def main(src, dst):
         if 'opacity' in name:
             arr = np.array(im.convert('RGBA'))
             Image.fromarray(fill(arr)).quantize(colors=256, method=Image.Quantize.FASTOCTREE).save(os.path.join(dst, name + '.png'), optimize=True)
-        elif name.endswith(('_color', '_normal', '_specular', '_wrinkle')):
-            size = 2048 if (name.endswith('_color') or name.endswith('head_normal')) else 1024
+        elif name.endswith(('_color', '_normal', '_specular', '_wrinkle')) or '_color_' in name:
+            # (a variant colour such as body_color_acu is saved under the plain name too, the one its material looks for)
+            size = 2048 if ('_color' in name or name.endswith('head_normal')) else 1024
             rgb = im.convert('RGB')
             if rgb.size[0] > size: rgb = rgb.resize((size, size), Image.LANCZOS)
             rgb.save(os.path.join(dst, name + '.jpg'), quality=95 if 'normal' in name else 90)
+            plain = name.split('_color_')[0] + '_color' if '_color_' in name else None
+            if plain and not os.path.exists(os.path.join(dst, plain + '.jpg')): rgb.save(os.path.join(dst, plain + '.jpg'), quality=90)
         print(name)
 
 

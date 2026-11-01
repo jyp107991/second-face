@@ -312,6 +312,37 @@ stays Rocketbox's: its photographed heads and skin detail, its hair cards, bodie
   lightening a dark photograph lifts its shadows into grey); (2) on dark skin the eyes' whites glare. So: each new person
   starts from the Rocketbox head nearest the target (by group and skin), never lightens a dark texture by more than a
   third, and dims the eyes' whites with the skin.
+- *Recipes per people, with their evidence (owner, 2026-11-01: "you can't make Latin Americans just a variant of Black";
+  `people_recipes.py`).* Latin Americans are a mixture of Indigenous American, European and African ancestry in the
+  proportions measured per country (Ruiz-Linares et al. 2014, PLoS Genet 10:e1004572, CANDELA, 7,342 people, Table 1,
+  American / African / European: Brazil 0.09/0.09/0.82, Chile 0.48/0.05/0.49, Colombia 0.29/0.11/0.60, Mexico
+  0.56/0.05/0.37, Peru 0.64/0.00/0.29; urban, student-heavy samples, so lean European): each person draws a country and
+  their own proportions around its mean, takes VALID's Indigenous American, White and Black shapes in them, and the
+  matching mixture of skin tones (the European part Iberian: Core's Mediterranean tone); bases are Rocketbox's own Latin-
+  or Mediterranean-looking people, never a Black base. East Africans (the Horn) take VALID's Black shape with 25-45 % of
+  its Middle Eastern one (Pagani et al. 2012, AJHG 91:83: some Ethiopians carry 40-50 % of their genome closer to non-
+  African, Levant-like populations). Indigenous American, Middle Eastern (the game's Mediterranean), West African and
+  East Asian take VALID's own validated group; Southeast Asian takes VALID's Asian group with Core's Southeast Asian tone
+  (VALID has no Southeast Asian group: a gap); Pacific Islander men take VALID's NHPI (no woman validated). South Asians
+  are not made: neither library has a validated source.
+- *Bases:* the Rocketbox people of that sex whose group (judged by eye) is nearest the target, in a set order per target
+  (`people_recipes.BASES`), each base used once per people (so no two of a people share a face), never lightening a dark
+  photograph by more than a third.
+- *Bases with headgear or a beard* (QA, first large set): many of the library's people in uniform wear helmets, hats or
+  masks (`data/rocketbox_gear.json`, from the textures they ship with), which hide the hair; such a person is never a
+  base. A bearded base keeps its beard (painted in its texture), which reads Mediterranean on a would-be Indigenous
+  American or East Asian man, so bearded bases are left out for peoples whose men's beards are sparse; a woman in a
+  hijab and a man in a skullcap are bases only for their own people. With these rules the library offers two bases for
+  Black women (both Latin-looking): a gap to fill another way.
+- *The nose's width corrected* (QA): the wing detection took the widest candidate over several heights, which on 25
+  heads (mostly women) was the cheek's edge (Female_Adult_07 at 50 mm). It now takes the most distinct wing edge at
+  least 12 mm out and no more than 20 mm behind the nose's base; the library's women's noses now span 28.8-36.0 mm
+  across their middle 90 %, as the 3D Facial Norms' adult women do (28.8-36.4), the men's 32.1-42.1 (norms 31.8-40.4).
+  The calibration and Core's data were regenerated.
+- *QA at scale* (owner: "show me much more"): `harmonise_batch.py` makes six people per people and sex from distinct bases
+  (88 in all), `studio_render.py` renders them and the whole library as it ships (114 people with textures, children
+  included), and 20 more people across groups, sexes and ages at their calibrated slider limits; `qa_sheets.py` lays them
+  out (`docs/evidence/unity/p4/research/qa_*.jpg`).
 - *The studio* (`studio_render.py`) was overexposed (a fair cheek at L* 87, which flattened every difference in skin);
   now 1.5 stops down (fair about 75, dark about 50). The VALID comparison sheets above were rendered before the fix.
 
