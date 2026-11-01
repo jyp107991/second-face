@@ -23,28 +23,60 @@ def plan(manifest):
     ages = json.load(open(os.path.join(HERE, 'data', 'rocketbox_ages.json')))
     out_skin, beards = set(ages.get('skin_out', [])), set(ages.get('beard', []))
     gear = json.load(open(os.path.join(HERE, 'data', 'rocketbox_gear.json')))['gear']
+    rv = os.path.join(HERE, 'data', 'rocketbox_review.json')
+    review = json.load(open(rv)) if os.path.exists(rv) else {}
+    # a face the library dresses more than once (rocketbox_identities.py) is one base: its uses are counted together,
+    # and of its people the one whose face is bare as shipped is taken before one whose gear has to come off
+    ident = {n: g[0] for g in review.get('identities', []) for n in g}
+    used = {}                                              # face -> the peoples it already serves
+    limits = json.load(open(os.path.join(HERE, 'data', 'rocketbox_features.json')))['faces']
     groups = __import__('numpy').load(f'{S}/valid/groups.npz')
     rng = random.Random(20261101)
     jobs = []
-    for a in PEOPLES:
-        for sex in 'fm':
-            cands = []
-            for lab in pr.BASES[a]:
+    # the bases are given out by nearness first: every people takes the faces of its own (by-eye) people before any
+    # people takes another's as a fallback (so a Latin American face goes to Latin Americans before it serves as a
+    # stand-in for anyone), then the next-nearest, and so on; within one step the scarcest peoples choose first (ORDER)
+    ranks = max(len(v) for v in pr.BASES.values()) + 1
+    made = {(a, sex): 0 for a in pr.ORDER for sex in 'fm'}
+    for rank in range(ranks):
+        for a in pr.ORDER:
+            labs = [a] if rank == 0 else pr.BASES[a][rank - 1:rank]
+            if not labs or (rank > 0 and labs[0] == a): continue
+            lab = labs[0]
+            for sex in 'fm':
                 pool = [n for n, l in sorted(anc.items()) if l.rstrip('?') == lab and ('Female' in n) == (sex == 'f') and n not in out_skin
-                        and os.path.exists(f'{S}/rbpop/fbx/{n}.fbx') and os.path.isdir(f'{S}/rblib/{n}') and pr.base_ok(n, a, gear, beards)]
-                rng.shuffle(pool); cands += [(n, lab) for n in pool]
-            made = 0
-            for base, lab in cands:
-                if made >= PER: break
-                spec, tone, und, hair, eyes, note = pr.recipe(a, rng)
-                if any(f'mean:{g.split(":")[0]}_{sex}' not in groups.files for g in spec.split('+')): break
-                # a dark photograph is never lightened by more than a third
-                if rt.cheek_lab(tone, und)[0] / rt.cheek_lab(pr.TONE[lab], pr.UNDERTONE.get(lab, 0))[0] > 1.33: continue
-                name = f'{a}_{sex}_{made + 1}'
-                jobs.append({'name': name, 'people': a, 'sex': sex, 'base': base, 'base_people': lab, 'source': pr.SOURCE[lab],
-                             'spec': spec, 'tone': round(tone, 3), 'undertone': round(und, 3), 'hair': hair, 'note': note})
-                made += 1
-            print(a, sex, made, 'of', len(cands), 'bases')
+                        and os.path.exists(f'{S}/rbpop/fbx/{n}.fbx') and os.path.isdir(f'{S}/rblib/{n}') and pr.base_ok(n, a, gear, beards, review)]
+                pool.sort(key=lambda n: n in review.get('gear_off', []))
+                faces = {}
+                for n in pool: faces.setdefault(ident.get(n, n), n)
+                pool = [n for f, n in sorted(faces.items())]
+                rng.shuffle(pool)
+                for base in pool:
+                    if made[(a, sex)] >= PER: break
+                    f = ident.get(base, base)
+                    if len(used.get(f, [])) >= pr.MAX_USES or a in used.get(f, []) or not all(any(a in g and u in g for g in pr.RELATED) for u in used.get(f, [])): continue
+                    spec, tone, und, hair, eyes, note = pr.recipe(a, rng)
+                    if any(f'mean:{g.split(":")[0]}_{sex}' not in groups.files for g in spec.split('+')): break
+                    # a dark photograph is never lightened by more than a third
+                    if rt.cheek_lab(tone, und)[0] / rt.cheek_lab(pr.TONE[lab], pr.UNDERTONE.get(lab, 0))[0] > 1.33: continue
+                    name = f'{a}_{sex}_{made[(a, sex)] + 1}'; used.setdefault(f, []).append(a)
+                    # this person's own draw of the calibrated sliders: up to half of each one's reach from this face
+                    lim = limits.get(base, {}).get('limits', {})
+                    sliders = {}
+                    for sid, (lo, hi) in lim.items():
+                        u = rng.uniform(lo, hi) * 0.5
+                        if abs(u) < 0.05: continue
+                        sides = pr.SIDES.get(sid, ('decr', 'incr'))
+                        sliders[f'{sid}-{sides[1] if u > 0 else sides[0]}'] = round(abs(u), 3)
+                    # the eyes: dark, or the base's own where it falls among the people's light-eyed share (retone.LIGHT_EYES)
+                    eyes_draw = 'own' if rng.random() < rt.LIGHT_EYES.get(hair, 0.01) else 'dark'
+                    jobs.append({'name': name, 'people': a, 'sex': sex, 'base': base, 'base_people': lab, 'source': pr.SOURCE[lab], 'sliders': sliders,
+                                 'eyes': eyes_draw, 'iris_shift': round(rng.uniform(-0.3, 0.4), 2),
+                                 'hide': ','.join(pr.GEAR_OFF) if base in review.get('gear_off', []) else '',
+                                 'spec': spec, 'tone': round(tone, 3), 'undertone': round(und, 3), 'hair': hair, 'note': note})
+                    made[(a, sex)] += 1
+    for k, v in made.items(): print(*k, v)
+    jobs.sort(key=lambda j: (pr.ORDER.index(j['people']), j['sex'], j['name']))
     json.dump({'jobs': jobs}, open(manifest, 'w'), indent=1)
     print(len(jobs), 'jobs')
 
@@ -54,15 +86,23 @@ def run(manifest, k, n):
     rdir = f'{S}/hq/render'; os.makedirs(rdir, exist_ok=True)
     env = dict(os.environ, SF_SCALE='75', SF_SAMPLES='24', SF_THREADS=str(max(1, 4 // n)))
     for j in jobs:
-        if os.path.exists(f'{rdir}/{j["name"]}_three.png'): continue
+        sig = f'{rdir}/{j["name"]}.job.json'               # a person is made again only when their recipe changed
+        if os.path.exists(f'{rdir}/{j["name"]}_three.png') and os.path.exists(sig) and json.load(open(sig)) == j: continue
         out = f'{S}/hq/{j["name"]}'
-        r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/harmonise.py', '--', f'{S}/rbpop/fbx/{j["base"]}.fbx', f'{S}/valid/groups.npz',
-                            j['sex'], j['source'], j['spec'], out, j['name']], capture_output=True, text=True)
+        sculpt = f'{S}/rblib/{j["base"]}/{j["base"]}_sculpt.fbx'
+        if not os.path.exists(sculpt):
+            player = f'{HERE}/../../../unity/Assets/SecondFace/People/Player/player_{"f" if j["sex"] == "f" else "m"}.fbx'
+            subprocess.run([BLENDER, '-b', '--python', f'{HERE}/rocketbox_sculpt.py', '--', player, f'{S}/rbpop/fbx/{j["base"]}.fbx', sculpt], capture_output=True, text=True)
+        henv = dict(os.environ, HARM_SLIDERS=json.dumps(j.get('sliders', {})), HARM_HIDE=j.get('hide', ''))
+        r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/harmonise.py', '--', sculpt if os.path.exists(sculpt) else f'{S}/rbpop/fbx/{j["base"]}.fbx',
+                            f'{S}/valid/groups.npz', j['sex'], j['source'], j['spec'], out, j['name']], capture_output=True, text=True, env=henv)
         if not os.path.exists(f'{out}/{j["name"]}.fbx'): print('harmonise failed', j['name'], r.stdout[-400:], r.stderr[-400:]); continue
-        r = subprocess.run([PY, f'{HERE}/retone.py', f'{S}/rblib/{j["base"]}', f'{out}/{j["name"]}.json', out, j['hair'], '0', str(j['tone']), str(j['undertone'])], capture_output=True, text=True)
+        r = subprocess.run([PY, f'{HERE}/retone.py', f'{S}/rblib/{j["base"]}', f'{out}/{j["name"]}.json', out, j['hair'], '0', str(j['tone']), str(j['undertone']),
+                            j.get('eyes', 'dark'), str(j.get('iris_shift', 0.0))], capture_output=True, text=True)
         print(j['name'], r.stdout.strip().split('\n')[0][:160])
         subprocess.run([BLENDER, '-b', '--python', f'{HERE}/studio_render.py', '--', rdir, f'{out}/{j["name"]}.fbx'], capture_output=True, text=True, env=env)
         shutil.copy(f'{out}/{j["name"]}.json', f'{rdir}/{j["name"]}.json')
+        if os.path.exists(f'{rdir}/{j["name"]}_three.png'): json.dump(j, open(sig, 'w'))
         shutil.rmtree(out, ignore_errors=True)
 
 

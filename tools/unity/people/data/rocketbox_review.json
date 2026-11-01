@@ -1,0 +1,223 @@
+{
+ "_about": "Rocketbox people judged by eye from the library rendered as it ships (docs/evidence/unity/p4/research/qa_library_*.jpg, 2026-11-01): headwear the gear materials do not show (caps, hats and hoods in the body's own mesh; a hijab, a keffiyeh, a skullcap) and facial hair. Read by people_recipes.base_ok: no base in a cap, hat, hood or helmet; a religious head covering only for its own people; no bearded base for a people whose men's beards are sparse. 'gear_off': people whose helmet, hat or gear comes off cleanly (rendered with it removed: the face and hair are modelled under it); they may be bases with their gear deleted. Goggles pushed up on a helmet come off with it (as loose pieces above the brow: rocketbox_gear_off.py); sunglasses, balaclavas, caps modelled in the head, and most firefighters' face shields are part of the head and do not come off (tried: Fire_Male_02/05/07, Fire_Female_03, Police_Female_01, Police_Male_02).",
+ "people": {
+  "Business_Male_05": {
+   "beard": "goatee"
+  },
+  "Chef_Female_01": {
+   "headwear": "hat"
+  },
+  "Construction_Male_01": {
+   "beard": "full"
+  },
+  "Delivery_Male_01": {
+   "headwear": "cap",
+   "beard": "full"
+  },
+  "Female_Adult_06": {
+   "headwear": "hijab"
+  },
+  "Female_Adult_10": {
+   "headwear": "hijab"
+  },
+  "Gardener_Male_01": {
+   "beard": "full"
+  },
+  "Male_Adult_04": {
+   "beard": "full"
+  },
+  "Male_Adult_05": {
+   "beard": "full"
+  },
+  "Male_Adult_15": {
+   "headwear": "skullcap",
+   "beard": "moustache"
+  },
+  "Male_Adult_17": {
+   "headwear": "cap",
+   "beard": "goatee"
+  },
+  "Male_Adult_18": {
+   "headwear": "hood"
+  },
+  "Male_Adult_19": {
+   "headwear": "keffiyeh",
+   "beard": "full"
+  },
+  "Male_Adult_21": {
+   "headwear": "keffiyeh",
+   "beard": "full"
+  },
+  "Medical_Male_03": {
+   "beard": "moustache"
+  },
+  "Medical_Male_04": {
+   "headwear": "cap"
+  },
+  "Medical_Male_05": {
+   "headwear": "cap"
+  },
+  "Military_Male_02": {
+   "headwear": "cap"
+  },
+  "Military_Male_05": {
+   "headwear": "cap"
+  },
+  "Military_Male_06": {
+   "headwear": "cap"
+  },
+  "Pilot_Male_01": {
+   "headwear": "hat"
+  },
+  "Pilot_Male_02": {
+   "headwear": "hat",
+   "beard": "moustache"
+  },
+  "Pilot_Male_03": {
+   "headwear": "hat"
+  },
+  "Police_Female_01": {
+   "headwear": "helmet"
+  },
+  "Police_Male_01": {
+   "headwear": "cap",
+   "beard": "moustache"
+  },
+  "Police_Male_02": {
+   "headwear": "helmet"
+  },
+  "Police_Male_03": {
+   "headwear": "hat"
+  },
+  "Police_Male_04": {
+   "headwear": "hat"
+  },
+  "Police_Male_05": {
+   "headwear": "hat"
+  },
+  "Police_Male_07": {
+   "beard": "stubble"
+  },
+  "Security_Male_01": {
+   "headwear": "hat"
+  },
+  "Sports_Male_01": {
+   "beard": "stubble"
+  },
+  "Wood_Male_01": {
+   "headwear": "cap",
+   "beard": "goatee"
+  }
+ },
+ "gear_off": [
+  "Pilot_Female_01",
+  "Pilot_Female_02",
+  "Military_Female_01",
+  "Military_Female_02",
+  "Construction_Female_01",
+  "Security_Female_01",
+  "Military_Male_04",
+  "Construction_Male_02",
+  "Construction_Male_03",
+  "Construction_Male_04",
+  "Construction_Male_05",
+  "Construction_Male_06",
+  "Construction_Male_07",
+  "Construction_Male_08",
+  "Military_Male_01",
+  "Fire_Male_03"
+ ],
+ "identities": [
+  [
+   "Business_Female_01",
+   "Military_Female_02",
+   "Pilot_Female_02"
+  ],
+  [
+   "Business_Male_01",
+   "Medical_Male_05"
+  ],
+  [
+   "Business_Male_05",
+   "Construction_Male_08"
+  ],
+  [
+   "Business_Male_07",
+   "Construction_Male_02"
+  ],
+  [
+   "Chef_Female_01",
+   "Female_Adult_03"
+  ],
+  [
+   "Construction_Male_01",
+   "Gardener_Male_01",
+   "Male_Adult_05"
+  ],
+  [
+   "Construction_Male_03",
+   "Male_Adult_12"
+  ],
+  [
+   "Construction_Male_04",
+   "Male_Adult_16"
+  ],
+  [
+   "Construction_Male_05",
+   "Male_Adult_13"
+  ],
+  [
+   "Construction_Male_06",
+   "Male_Adult_01",
+   "Medical_Male_04"
+  ],
+  [
+   "Construction_Male_07",
+   "Male_Adult_08"
+  ],
+  [
+   "Female_Adult_09",
+   "Pilot_Female_01"
+  ],
+  [
+   "Female_Adult_11",
+   "Medical_Female_01"
+  ],
+  [
+   "Fire_Female_01",
+   "Fire_Male_06",
+   "Military_Male_04"
+  ],
+  [
+   "Fire_Female_02",
+   "Fire_Male_02",
+   "Military_Male_01"
+  ],
+  [
+   "Fire_Female_03",
+   "Fire_Male_05"
+  ],
+  [
+   "Fire_Male_01",
+   "Sports_Male_04"
+  ],
+  [
+   "Fire_Male_03",
+   "Fire_Male_04"
+  ],
+  [
+   "Male_Adult_06",
+   "Medical_Male_02"
+  ],
+  [
+   "Male_Adult_17",
+   "Wood_Male_01"
+  ],
+  [
+   "Military_Female_01",
+   "Security_Female_01",
+   "Sports_Female_01"
+  ]
+ ],
+ "_identities": "people who share one face (rocketbox_identities.py: every measured feature within 1.5 mm, confirmed by eye); a face serves as a base once, whichever of its people is used"
+}

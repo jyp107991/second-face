@@ -30,6 +30,9 @@ def library(lib, out):
     anc = json.load(open(os.path.join(HERE, 'data', 'rocketbox_ancestry.json')))['ancestry']
     ages = json.load(open(os.path.join(HERE, 'data', 'rocketbox_ages.json')))['ages']
     names = sorted(f[:-10] for f in os.listdir(lib) if f.endswith('_front.png'))
+    # people who share one face (rocketbox_identities.py) carry the same mark, =1, =2, ...
+    rv = json.load(open(os.path.join(HERE, 'data', 'rocketbox_review.json')))
+    same = {n: i + 1 for i, g in enumerate(rv.get('identities', [])) for n in g}
     order = ['north_european', 'mediterranean', 'latin_american', 'east_asian', 'southeast_asian', 'west_african', 'unsure', 'unseen', 'masked']
     for who, test in (('women', lambda n: 'Female' in n and 'Child' not in n), ('men', lambda n: 'Male' in n and 'Child' not in n), ('children', lambda n: 'Child' in n)):
         ns = [n for n in names if test(n)]
@@ -37,11 +40,12 @@ def library(lib, out):
         cols, w, h = 10, 150, 188
         rows = (len(ns) + cols - 1) // cols
         s = Image.new('RGB', (cols * w, 22 + rows * (h + 14)), (236, 234, 230)); g = ImageDraw.Draw(s)
-        g.text((6, 5), f'Rocketbox {who}, as they ship ({len(ns)}), same studio: grouped by ancestry judged by eye (? = unsure), then age judged by eye', fill=(20, 20, 20), font=FONT)
+        faces = len({same.get(n, n) for n in ns})
+        g.text((6, 5), f'Rocketbox {who}, as they ship ({len(ns)} people, {faces} distinct faces: =n marks people who share one face), same studio: grouped by ancestry judged by eye (? = unsure), then age judged by eye', fill=(20, 20, 20), font=FONT)
         for i, n in enumerate(ns):
             x, y = (i % cols) * w, 22 + (i // cols) * (h + 14)
             s.paste(tile(os.path.join(lib, f'{n}_front.png'), 'front', w, h), (x, y + 12))
-            label(g, x, y, f'{anc.get(n, "?").replace("_european", " eur").replace("_american", " am").replace("_african", " afr").replace("mediterranean", "medit")} {ages.get(n, "")} {n.split("_")[0][:4]}{n.split("_")[-1]}', w)
+            label(g, x, y, f'{anc.get(n, "?").replace("_european", " eur").replace("_american", " am").replace("_african", " afr").replace("mediterranean", "medit").replace("southeast_asian", "se asian").replace("east_asian", "e asian")} {ages.get(n, "")} {n.split("_")[0][:4]}{n.split("_")[-1]}{" =" + str(same[n]) if n in same else ""}', w)
         p = os.path.join(out, f'qa_library_{who}.jpg'); s.save(p, quality=84); print('wrote', p, s.size)
 
 

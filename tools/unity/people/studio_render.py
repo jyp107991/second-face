@@ -3,7 +3,7 @@ Blender (Cycles) with the same three lights, grey world and camera, framed on it
 and at three-quarters, so the libraries' faces can be judged side by side on equal terms. Rocketbox's materials are bound
 by name to the textures beside its FBX (<material>_color/_normal, the opacity texture's alpha cuts the hair and lashes);
 VALID's come embedded in its FBX. Env: SF_SAMPLES (48), SF_THREADS, SF_SCALE (percent of 512 x 640), SF_VIEWS (front,three[,side]),
-SF_VARIANTS (a JSON file of shape-key settings per avatar).
+SF_VARIANTS (a JSON file of shape-key settings per avatar), SF_HIDE (gear to take off: helmet,mask,...).
 Usage: blender -b --python studio_render.py -- <out dir> <fbx> [<fbx> ...]"""
 import bpy, sys, os, math
 import numpy as np
@@ -73,20 +73,36 @@ for path in paths:
     bpy.ops.import_scene.fbx(filepath=path)
     arm = next(o for o in bpy.data.objects if o.type == 'ARMATURE')
     meshes = [o for o in bpy.data.objects if o.type == 'MESH']
-    rocketbox = any(b.name.startswith('Bip01') for b in arm.data.bones)
+    # SF_HIDE: gear taken off (rocketbox_gear_off.py: the faces of materials whose names hold any of these words, and
+    # with 'loose_above_brow' the loose pieces wholly above the brow)
+    hide = [w for w in os.environ.get('SF_HIDE', '').split(',') if w]
+    if hide:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import rocketbox_gear_off
+        eb = next((arm.data.bones[n] for n in ('Bip01 LEye', 'Bip02 LEye', 'LeftEye') if n in arm.data.bones), None)
+        rocketbox_gear_off.take_off(meshes, hide, (arm.matrix_world @ eb.head_local).z if eb else None)
+    rocketbox = any(b.name.startswith(('Bip01', 'Bip02')) for b in arm.data.bones)
     for o in meshes:
         if rocketbox: bind_rocketbox(o, os.path.dirname(path))
         skin_settings(o)
     def bone(names):
         for nm in names:
             if nm in arm.data.bones: return arm.matrix_world @ arm.data.bones[nm].head_local
-    eL, eR = bone(('Bip01 LEye', 'LeftEye')), bone(('Bip01 REye', 'RightEye'))
-    eye = (eL + eR) / 2
-    across = (eL - eR).normalized(); fwd = Vector((0, 0, 1)).cross(across).normalized()
-    # the facing: from the head's joint (behind the eyes, at the top of the neck) to the eyes, level
-    hj = bone(('Bip01 Head', 'Head'))
-    d = eye - hj; d -= across * d.dot(across); d.z = 0
-    if d.length > 1e-6 and d.normalized().dot(fwd) < 0: fwd = -fwd
+    eL, eR = bone(('Bip01 LEye', 'Bip02 LEye', 'LeftEye')), bone(('Bip01 REye', 'Bip02 REye', 'RightEye'))
+    hj = bone(('Bip01 Head', 'Bip02 Head', 'Head')) or bone(tuple(b.name for b in arm.data.bones if 'head' in b.name.lower()))
+    if hj is None: print('skip', name, 'no head bone'); continue
+    if eL is None or eR is None:
+        # no eye bones (the library's children): the eyes put where they sit on its adults, from the head's joint,
+        # scaled by the head's height, and the face taken to look along -y as every Rocketbox avatar does
+        top = max((o.matrix_world @ Vector(c)).z for o in meshes for c in o.bound_box)
+        k = (top - hj.z) / 0.205
+        eye = hj + Vector((0, -0.085 * k, 0.09 * k)); across = Vector((1, 0, 0)); fwd = Vector((0, -1, 0))
+    else:
+        eye = (eL + eR) / 2
+        across = (eL - eR).normalized(); fwd = Vector((0, 0, 1)).cross(across).normalized()
+        # the facing: from the head's joint (behind the eyes, at the top of the neck) to the eyes, level
+        d = eye - hj; d -= across * d.dot(across); d.z = 0
+        if d.length > 1e-6 and d.normalized().dot(fwd) < 0: fwd = -fwd
     studio(eye, fwd)
     sc = bpy.context.scene
     sc.render.engine = 'CYCLES'; sc.cycles.samples = int(os.environ.get('SF_SAMPLES', 48)); sc.cycles.use_denoising = True; sc.cycles.device = 'CPU'

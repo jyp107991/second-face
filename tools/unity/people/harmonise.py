@@ -12,6 +12,7 @@ closest point of the warped mean; the difference carried across, rotated and sca
 the eyeballs, and with each eye's surroundings held so the lids stay centred on Rocketbox's eyeballs. Applied to the
 mesh and to every shape key, so the calibrated sculptor still works on the new person.
 Writes <out>/<name>.fbx and <out>/<name>.json (what retone.py needs: the cheeks' and eyeballs' texture coordinates).
+Env: HARM_HIDE (gear to delete), HARM_SLIDERS (a JSON draw of the calibrated sliders to bake first).
 Usage: blender -b --python harmonise.py -- <rocketbox fbx> <groups.npz> <sex f|m> <source group> <target spec> <out dir> <name>
   target spec: a VALID group (AIAN) or a mixture (AIAN:0.6+Hispanic:0.4)"""
 import bpy, sys, os, json
@@ -35,6 +36,28 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.fbx(filepath=base_path)
 arm = next(o for o in bpy.data.objects if o.type == 'ARMATURE')
 mesh = max((o for o in bpy.data.objects if o.type == 'MESH'), key=lambda o: len(o.data.vertices))
+# HARM_HIDE: gear taken off (rocketbox_gear_off.py: the faces of materials whose names hold any of these words, and
+# with 'loose_above_brow' the loose pieces wholly above the brow, such as goggles left floating without their helmet)
+hide = [w for w in os.environ.get('HARM_HIDE', '').split(',') if w]
+if hide:
+    import rocketbox_gear_off
+    ez = (arm.matrix_world @ arm.data.bones['Bip01 LEye'].head_local).z
+    print('gear off:', rocketbox_gear_off.take_off([o for o in bpy.data.objects if o.type == 'MESH'], hide, ez), 'faces')
+# HARM_SLIDERS: this person's own draw of the calibrated sliders ({shape key: weight}), baked into the mesh and every
+# shape key before anything else (so the new person is an individual of their own, and the sculptor still works on top)
+draw = json.loads(os.environ.get('HARM_SLIDERS', '{}') or '{}')
+if draw and mesh.data.shape_keys:
+    kbs = mesh.data.shape_keys.key_blocks; ref = mesh.data.shape_keys.reference_key
+    a = np.zeros(len(mesh.data.vertices) * 3); ref.data.foreach_get('co', a); base0 = a.reshape(-1, 3)
+    mix = base0.copy()
+    for k, wgt in draw.items():
+        if k in kbs:
+            b = np.zeros(len(mesh.data.vertices) * 3); kbs[k].data.foreach_get('co', b); mix += (b.reshape(-1, 3) - base0) * float(wgt)
+    dmix = mix - base0
+    for kb in kbs:
+        b = np.zeros(len(mesh.data.vertices) * 3); kb.data.foreach_get('co', b); kb.data.foreach_set('co', (b.reshape(-1, 3) + dmix).ravel())
+    mesh.data.vertices.foreach_set('co', mix.ravel()); mesh.data.update()
+    print('slider draw baked:', len(draw), 'shapes, max move', round(float(np.linalg.norm(dmix, axis=1).max()) * 1000, 1), 'mm')
 bone = lambda n: np.array(arm.matrix_world @ arm.data.bones[n].head_local)
 eL, eR = bone('Bip01 LEye'), bone('Bip01 REye')
 mid = (eL + eR) / 2; xa = (eL - eR) / np.linalg.norm(eL - eR); za = np.array([0, 0, 1.0]); za -= xa * za.dot(xa); za /= np.linalg.norm(za)
@@ -152,8 +175,18 @@ for k, e in zip(('L', 'R'), eyes):
         mat = max(set(vuv[i][0] for i in ids), key=[vuv[i][0] for i in ids].count)
         uv = np.array([vuv[i][1] for i in ids if vuv[i][0] == mat])
         eyeballs[k] = {'material': mat, 'uv_min': uv.min(0).tolist(), 'uv_max': uv.max(0).tolist(), 'n': len(uv)}
+# the lids and orbits: the head's skin around each eye, from 18 mm below to 13 mm above its centre and 24 mm either
+# side (below the brows), in front of the eyeball; skin through and through (their creases and lash lines are shading
+# that retone.py never paints as hair)
+lids = []
+for e in eyes:
+    ids = [i for i in np.where(~ball & (np.abs(P[:, 0] - e[0]) < 24) & (P[:, 2] > -18) & (P[:, 2] < 13) & (P[:, 1] < 5))[0]
+           if i in vuv and vuv[i][0].endswith('_head')]
+    if ids:
+        uv = np.array([vuv[i][1] for i in ids])
+        lids.append({'material': vuv[ids[0]][0], 'uv_min': uv.min(0).tolist(), 'uv_max': uv.max(0).tolist(), 'n': len(ids)})
 json.dump({'base': os.path.basename(base_path), 'source': source, 'target': target, 'sex': sex,
-           'cheek_uv': [list(u) for _, u in cheek], 'cheek_material': cheek[0][0] if cheek else None, 'eyeballs': eyeballs,
+           'cheek_uv': [list(u) for _, u in cheek], 'cheek_material': cheek[0][0] if cheek else None, 'eyeballs': eyeballs, 'lids': lids,
            'landmarks': keys, 'scale': s, 'moved_max_mm': float(mag.max())}, open(os.path.join(out_dir, name + '.json'), 'w'))
 for o in [o for o in bpy.data.objects if o.type not in ('MESH', 'ARMATURE')]: bpy.data.objects.remove(o, do_unlink=True)
 bpy.ops.object.select_all(action='SELECT')

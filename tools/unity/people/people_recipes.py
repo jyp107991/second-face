@@ -14,11 +14,15 @@ each with its evidence. Used by harmonise_batch.py.
   validated group. Southeast Asian: VALID's Asian group with the Southeast Asian tone (VALID has no Southeast Asian
   group: flagged). Pacific Islander men: VALID's NHPI (no woman of that group was validated). South Asian: no validated
   source in either library, so none are made until one is found.
-- Bases: the Rocketbox people of the sex whose group (judged by eye, data/rocketbox_ancestry.json) is nearest the target,
-  in the order given (Indigenous Americans and Pacific Islanders from East Asian faces first: their nearest relatives
-  among the library's peoples); never one in headgear, never a bearded one for a people whose men's beards are sparse,
-  never one in a religious head covering outside its own people; a dark photograph is never lightened by more than a
-  third (it turns ashy)."""
+- Bases: a face (a Rocketbox person, or the several people the library dresses in one face: rocketbox_identities.py)
+  serves at most two peoples, and only two close to each other (RELATED), each time with its own draw of the sliders.
+  Faces are given out by nearness: every people first takes the faces of its own people (judged by eye,
+  data/rocketbox_ancestry.json), then the next-nearest people's in the order given (Indigenous Americans and Pacific
+  Islanders from East Asian faces first: their nearest relatives among the library's peoples; Black Africans from
+  European faces only last, as the library has one usable Black woman's face and one Black man's), the scarcest
+  peoples choosing first at each step (ORDER). Never one in headgear (unless it comes off cleanly), never a bearded one
+  for a people whose men's beards are sparse, never one in a religious head covering outside its own people; a dark
+  photograph is never lightened by more than a third (it turns ashy)."""
 import random
 
 CANDELA = {'Brazil': (0.09, 0.82, 0.09), 'Chile': (0.48, 0.49, 0.05), 'Colombia': (0.29, 0.60, 0.11),
@@ -27,6 +31,8 @@ TONE = {'north_european': -0.35, 'mediterranean': -0.18, 'east_asian': -0.23, 's
         'latin_american': -0.07, 'indigenous_american': 0.08, 'east_african': 0.77, 'west_african': 0.81}
 UNDERTONE = {'east_asian': 0.35, 'southeast_asian': 0.35, 'south_asian': 0.15, 'latin_american': 0.15, 'indigenous_american': 0.15,
              'north_european': -0.3, 'mediterranean': -0.05}
+# each slider's two ends, as its shapes are named (Sculpt.cs)
+SIDES = {'eye-trans': ('in', 'out'), 'brow-ridge': ('backward', 'forward'), 'mouth-trans': ('backward', 'forward')}
 # the VALID group a Rocketbox base of a given (by-eye) people is taken as, for the difference
 SOURCE = {'north_european': 'White', 'mediterranean': 'MENA', 'latin_american': 'Hispanic', 'east_asian': 'Asian',
           'southeast_asian': 'Asian', 'west_african': 'Black'}
@@ -34,22 +40,41 @@ BASES = {
     'latin_american': ['latin_american', 'mediterranean', 'north_european'],
     'indigenous_american': ['east_asian', 'southeast_asian', 'latin_american', 'mediterranean'],
     'mediterranean': ['mediterranean', 'latin_american', 'north_european'],
-    'west_african': ['west_african', 'latin_american', 'mediterranean'],
-    'east_african': ['west_african', 'mediterranean', 'latin_american'],
-    'east_asian': ['east_asian', 'southeast_asian', 'latin_american'],
-    'southeast_asian': ['southeast_asian', 'east_asian', 'latin_american'],
-    'pacific': ['east_asian', 'southeast_asian', 'latin_american', 'mediterranean'],
+    'west_african': ['west_african', 'latin_american', 'mediterranean', 'north_european'],
+    'east_african': ['west_african', 'mediterranean', 'latin_american', 'north_european'],
+    'east_asian': ['east_asian', 'southeast_asian'],
+    'southeast_asian': ['southeast_asian', 'east_asian'],
+    'pacific': ['latin_american', 'east_asian', 'southeast_asian'],
 }
+# the peoples in the order they take their bases at each step of nearness (harmonise_batch.plan): the scarcest first, so
+# each base serves the people that most needs it. East Asians are not made: the library has its own East Asian faces
+# (as shipped, with the calibrated sliders), and those few faces are needed as the nearest bases for Indigenous
+# Americans, Southeast Asians and Pacific Islanders, whom it lacks
+ORDER = ['west_african', 'east_african', 'pacific', 'indigenous_american', 'southeast_asian', 'mediterranean', 'latin_american']
 # a base is never: wearing headgear (data/rocketbox_gear.json: helmet, hat, mask); bearded, for a people whose men's beards
 # are sparse (Core PEOPLE_RESEARCH §6: East and Southeast Asian, Indigenous American men; Pacific Islanders by their
 # validated faces); or, outside its own people, wearing a religious head covering
 HEADGEAR = ('helmet', 'hat', 'mask')
 SPARSE_BEARD = {'east_asian', 'southeast_asian', 'indigenous_american', 'pacific'}
-OWN_PEOPLE_ONLY = {'Female_Adult_10': 'mediterranean', 'Male_Adult_15': 'mediterranean'}   # a hijab, a skullcap (judged by eye)
+OWN_PEOPLE_ONLY = {}   # (now in data/rocketbox_review.json: a hijab, a keffiyeh or a skullcap, only for its own people)
 
 
-def base_ok(base, target, gear, beards):
-    if any(g in gear.get(base, []) for g in HEADGEAR): return False
+# deleted from a gear_off base (rocketbox_gear_off.py): these materials, and loose pieces left above the brow (goggles)
+GEAR_OFF = ('helmet', 'hat', 'mask', 'flashlight', 'tools', 'equipment', 'knife', 'pistol', 'gun', 'loose_above_brow')
+# a base may serve two peoples at most, and only peoples close to each other, each time with its own draw of the
+# calibrated sliders (so the two are two people, not one face twice)
+RELATED = [{'east_asian', 'southeast_asian', 'indigenous_american', 'pacific'}, {'west_african', 'east_african'},
+           {'latin_american', 'mediterranean'}]
+MAX_USES = 2
+
+
+def base_ok(base, target, gear, beards, review=None):
+    rv = review or {}
+    if any(g in gear.get(base, []) for g in HEADGEAR) and base not in rv.get('gear_off', []): return False
+    r = rv.get('people', {}).get(base, {})
+    if r.get('headwear') in ('hat', 'cap', 'hood', 'helmet'): return False
+    if r.get('headwear') in ('hijab', 'keffiyeh', 'skullcap') and target != 'mediterranean': return False
+    if target in SPARSE_BEARD and r.get('beard') in ('full', 'goatee', 'moustache', 'stubble'): return False
     if target in SPARSE_BEARD and base in beards: return False
     if base in OWN_PEOPLE_ONLY and OWN_PEOPLE_ONLY[base] != target: return False
     return True
