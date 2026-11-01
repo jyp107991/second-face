@@ -1,0 +1,977 @@
+{
+ "_about": "Each Rocketbox person's hair colour as shipped (2026-11-01), for choosing bases: a base with blonde or light brown hair See rocketbox_hair.py.",
+ "hair": {
+  "Business_Female_01": {
+   "from": "cards",
+   "lab": [
+    5.9,
+    1.6,
+    3.9
+   ],
+   "light": false
+  },
+  "Business_Female_02": {
+   "from": "cards",
+   "lab": [
+    40.1,
+    8.1,
+    19.9
+   ],
+   "light": false
+  },
+  "Business_Female_03": {
+   "from": "cards",
+   "lab": [
+    3.6,
+    1.3,
+    1.6
+   ],
+   "light": false
+  },
+  "Business_Female_04": {
+   "from": "cards",
+   "lab": [
+    10.7,
+    4.6,
+    7.6
+   ],
+   "light": false
+  },
+  "Business_Male_01": {
+   "from": "cards",
+   "lab": [
+    8.9,
+    4.3,
+    6.6
+   ],
+   "light": false
+  },
+  "Business_Male_02": {
+   "from": "cards",
+   "lab": [
+    3.7,
+    0.2,
+    1.2
+   ],
+   "light": false
+  },
+  "Business_Male_03": {
+   "from": "cards",
+   "lab": [
+    8.8,
+    1.9,
+    4.0
+   ],
+   "light": false
+  },
+  "Business_Male_04": {
+   "from": "scalp",
+   "lab": [
+    63.1,
+    21.4,
+    26.4
+   ],
+   "light": false
+  },
+  "Business_Male_05": {
+   "from": "scalp",
+   "lab": [
+    11.2,
+    4.5,
+    7.2
+   ],
+   "light": false
+  },
+  "Business_Male_06": {
+   "from": "scalp",
+   "lab": [
+    11.1,
+    1.6,
+    5.3
+   ],
+   "light": false
+  },
+  "Business_Male_07": {
+   "from": "scalp",
+   "lab": [
+    65.4,
+    19.9,
+    28.0
+   ],
+   "light": false
+  },
+  "Chef_Female_01": {
+   "from": "scalp",
+   "lab": [
+    82.8,
+    0.4,
+    -2.1
+   ],
+   "light": false
+  },
+  "Construction_Female_01": {
+   "from": "scalp",
+   "lab": [
+    60.5,
+    7.8,
+    25.1
+   ],
+   "light": true
+  },
+  "Construction_Male_01": {
+   "from": "cards",
+   "lab": [
+    7.6,
+    -0.3,
+    -0.7
+   ],
+   "light": false
+  },
+  "Construction_Male_02": {
+   "from": "scalp",
+   "lab": [
+    42.7,
+    18.0,
+    25.3
+   ],
+   "light": false
+  },
+  "Construction_Male_03": {
+   "from": "scalp",
+   "lab": [
+    6.7,
+    1.4,
+    3.4
+   ],
+   "light": false
+  },
+  "Construction_Male_04": {
+   "from": "scalp",
+   "lab": [
+    43.0,
+    8.8,
+    23.5
+   ],
+   "light": true
+  },
+  "Construction_Male_05": {
+   "from": "scalp",
+   "lab": [
+    23.8,
+    13.0,
+    15.8
+   ],
+   "light": false
+  },
+  "Construction_Male_06": {
+   "from": "scalp",
+   "lab": [
+    9.2,
+    5.4,
+    7.4
+   ],
+   "light": false
+  },
+  "Construction_Male_07": {
+   "from": "scalp",
+   "lab": [
+    8.1,
+    4.8,
+    5.8
+   ],
+   "light": false
+  },
+  "Construction_Male_08": {
+   "from": "scalp",
+   "lab": [
+    18.6,
+    9.0,
+    13.9
+   ],
+   "light": false
+  },
+  "Delivery_Male_01": {
+   "from": "scalp",
+   "lab": [
+    16.9,
+    0.3,
+    4.2
+   ],
+   "light": false
+  },
+  "Female_Adult_01": {
+   "from": "cards",
+   "lab": [
+    50.9,
+    10.6,
+    26.6
+   ],
+   "light": true
+  },
+  "Female_Adult_02": {
+   "from": "cards",
+   "lab": [
+    9.6,
+    6.2,
+    8.3
+   ],
+   "light": false
+  },
+  "Female_Adult_03": {
+   "from": "cards",
+   "lab": [
+    4.9,
+    0.7,
+    1.7
+   ],
+   "light": false
+  },
+  "Female_Adult_04": {
+   "from": "cards",
+   "lab": [
+    66.8,
+    8.2,
+    31.1
+   ],
+   "light": true
+  },
+  "Female_Adult_05": {
+   "from": "cards",
+   "lab": [
+    5.3,
+    2.6,
+    3.0
+   ],
+   "light": false
+  },
+  "Female_Adult_06": {
+   "from": "cards",
+   "lab": [
+    85.0,
+    0.5,
+    0.7
+   ],
+   "light": false
+  },
+  "Female_Adult_07": {
+   "from": "cards",
+   "lab": [
+    8.8,
+    6.0,
+    8.0
+   ],
+   "light": false
+  },
+  "Female_Adult_08": {
+   "from": "cards",
+   "lab": [
+    13.5,
+    5.8,
+    9.4
+   ],
+   "light": false
+  },
+  "Female_Adult_09": {
+   "from": "cards",
+   "lab": [
+    22.4,
+    7.2,
+    13.5
+   ],
+   "light": false
+  },
+  "Female_Adult_10": {
+   "from": "cards",
+   "lab": [
+    4.9,
+    1.1,
+    0.4
+   ],
+   "light": false
+  },
+  "Female_Adult_11": {
+   "from": "cards",
+   "lab": [
+    5.9,
+    3.4,
+    3.3
+   ],
+   "light": false
+  },
+  "Female_Adult_12": {
+   "from": "cards",
+   "lab": [
+    13.3,
+    9.3,
+    11.2
+   ],
+   "light": false
+  },
+  "Female_Adult_13": {
+   "from": "cards",
+   "lab": [
+    62.0,
+    8.4,
+    27.5
+   ],
+   "light": true
+  },
+  "Female_Adult_14": {
+   "from": "cards",
+   "lab": [
+    23.5,
+    7.4,
+    15.0
+   ],
+   "light": false
+  },
+  "Female_Adult_15": {
+   "from": "cards",
+   "lab": [
+    26.5,
+    12.0,
+    20.4
+   ],
+   "light": false
+  },
+  "Female_Adult_17": {
+   "from": "cards",
+   "lab": [
+    48.5,
+    10.8,
+    25.0
+   ],
+   "light": true
+  },
+  "Female_Child_01": {
+   "from": "scalp",
+   "lab": [
+    44.2,
+    8.0,
+    24.0
+   ],
+   "light": true
+  },
+  "Female_Child_02": {
+   "from": "scalp",
+   "lab": [
+    19.3,
+    25.8,
+    4.9
+   ],
+   "light": false
+  },
+  "Female_Party_01": {
+   "from": "cards",
+   "lab": [
+    70.8,
+    6.1,
+    28.4
+   ],
+   "light": true
+  },
+  "Female_Party_02": {
+   "from": "cards",
+   "lab": [
+    5.0,
+    2.9,
+    4.4
+   ],
+   "light": false
+  },
+  "Fire_Female_01": {
+   "from": "cards",
+   "lab": [
+    61.9,
+    0.5,
+    3.8
+   ],
+   "light": false
+  },
+  "Fire_Female_02": {
+   "from": "cards",
+   "lab": [
+    85.4,
+    -0.0,
+    2.2
+   ],
+   "light": false
+  },
+  "Fire_Female_03": {
+   "from": "cards",
+   "lab": [
+    34.8,
+    -0.4,
+    0.7
+   ],
+   "light": false
+  },
+  "Fire_Male_01": {
+   "from": "scalp",
+   "lab": [
+    14.8,
+    6.4,
+    9.2
+   ],
+   "light": false
+  },
+  "Fire_Male_02": {
+   "from": "cards",
+   "lab": [
+    85.4,
+    0.3,
+    2.3
+   ],
+   "light": false
+  },
+  "Fire_Male_03": {
+   "from": "scalp",
+   "lab": [
+    16.1,
+    1.5,
+    6.1
+   ],
+   "light": false
+  },
+  "Fire_Male_04": {
+   "from": "cards",
+   "lab": [
+    73.6,
+    0.7,
+    3.6
+   ],
+   "light": false
+  },
+  "Fire_Male_05": {
+   "from": "cards",
+   "lab": [
+    31.0,
+    -0.4,
+    1.0
+   ],
+   "light": false
+  },
+  "Fire_Male_06": {
+   "from": "scalp",
+   "lab": [
+    35.4,
+    12.8,
+    20.1
+   ],
+   "light": false
+  },
+  "Fire_Male_07": {
+   "from": "cards",
+   "lab": [
+    73.6,
+    0.7,
+    3.6
+   ],
+   "light": false
+  },
+  "Gardener_Male_01": {
+   "from": "cards",
+   "lab": [
+    12.2,
+    3.5,
+    6.7
+   ],
+   "light": false
+  },
+  "Male_Adult_01": {
+   "from": "cards",
+   "lab": [
+    9.9,
+    5.9,
+    8.5
+   ],
+   "light": false
+  },
+  "Male_Adult_02": {
+   "from": "cards",
+   "lab": [
+    8.5,
+    3.1,
+    5.6
+   ],
+   "light": false
+  },
+  "Male_Adult_03": {
+   "from": "cards",
+   "lab": [
+    42.6,
+    10.6,
+    14.8
+   ],
+   "light": false
+  },
+  "Male_Adult_04": {
+   "from": "cards",
+   "lab": [
+    9.2,
+    3.2,
+    5.1
+   ],
+   "light": false
+  },
+  "Male_Adult_05": {
+   "from": "cards",
+   "lab": [
+    12.2,
+    3.5,
+    6.7
+   ],
+   "light": false
+  },
+  "Male_Adult_06": {
+   "from": "cards",
+   "lab": [
+    16.0,
+    6.9,
+    12.0
+   ],
+   "light": false
+  },
+  "Male_Adult_07": {
+   "from": "cards",
+   "lab": [
+    2.6,
+    2.0,
+    2.7
+   ],
+   "light": false
+  },
+  "Male_Adult_08": {
+   "from": "cards",
+   "lab": [
+    10.4,
+    5.9,
+    8.7
+   ],
+   "light": false
+  },
+  "Male_Adult_09": {
+   "from": "cards",
+   "lab": [
+    6.2,
+    0.9,
+    1.8
+   ],
+   "light": false
+  },
+  "Male_Adult_10": {
+   "from": "cards",
+   "lab": [
+    1.9,
+    1.0,
+    2.5
+   ],
+   "light": false
+  },
+  "Male_Adult_11": {
+   "from": "scalp",
+   "lab": [
+    23.6,
+    11.6,
+    16.8
+   ],
+   "light": false
+  },
+  "Male_Adult_12": {
+   "from": "scalp",
+   "lab": [
+    7.4,
+    0.8,
+    3.4
+   ],
+   "light": false
+  },
+  "Male_Adult_13": {
+   "from": "scalp",
+   "lab": [
+    30.4,
+    17.1,
+    20.4
+   ],
+   "light": false
+  },
+  "Male_Adult_14": {
+   "from": "scalp",
+   "lab": [
+    44.2,
+    17.8,
+    22.5
+   ],
+   "light": false
+  },
+  "Male_Adult_16": {
+   "from": "scalp",
+   "lab": [
+    63.6,
+    7.0,
+    26.0
+   ],
+   "light": true
+  },
+  "Male_Adult_17": {
+   "from": "scalp",
+   "lab": [
+    10.2,
+    -0.5,
+    2.9
+   ],
+   "light": false
+  },
+  "Male_Adult_20": {
+   "from": "scalp",
+   "lab": [
+    15.7,
+    8.4,
+    9.7
+   ],
+   "light": false
+  },
+  "Male_Child_01": {
+   "from": "scalp",
+   "lab": [
+    8.8,
+    4.5,
+    6.2
+   ],
+   "light": false
+  },
+  "Male_Child_02": {
+   "from": "scalp",
+   "lab": [
+    9.3,
+    2.5,
+    4.7
+   ],
+   "light": false
+  },
+  "Medical_Female_01": {
+   "from": "cards",
+   "lab": [
+    5.9,
+    3.4,
+    3.3
+   ],
+   "light": false
+  },
+  "Medical_Female_02": {
+   "from": "cards",
+   "lab": [
+    10.7,
+    4.6,
+    7.6
+   ],
+   "light": false
+  },
+  "Medical_Female_03": {
+   "from": "cards",
+   "lab": [
+    22.4,
+    7.2,
+    13.5
+   ],
+   "light": false
+  },
+  "Medical_Male_01": {
+   "from": "cards",
+   "lab": [
+    8.9,
+    4.3,
+    6.6
+   ],
+   "light": false
+  },
+  "Medical_Male_02": {
+   "from": "cards",
+   "lab": [
+    16.0,
+    6.9,
+    12.0
+   ],
+   "light": false
+  },
+  "Medical_Male_03": {
+   "from": "scalp",
+   "lab": [
+    44.1,
+    17.8,
+    22.5
+   ],
+   "light": false
+  },
+  "Medical_Male_04": {
+   "from": "scalp",
+   "lab": [
+    12.2,
+    5.7,
+    8.6
+   ],
+   "light": false
+  },
+  "Medical_Male_05": {
+   "from": "scalp",
+   "lab": [
+    13.4,
+    4.7,
+    7.2
+   ],
+   "light": false
+  },
+  "Military_Female_01": {
+   "from": "scalp",
+   "lab": [
+    42.3,
+    6.3,
+    26.3
+   ],
+   "light": true
+  },
+  "Military_Female_02": {
+   "from": "scalp",
+   "lab": [
+    7.6,
+    1.2,
+    4.3
+   ],
+   "light": false
+  },
+  "Military_Male_01": {
+   "from": "scalp",
+   "lab": [
+    7.7,
+    3.1,
+    4.8
+   ],
+   "light": false
+  },
+  "Military_Male_02": {
+   "from": "scalp",
+   "lab": [
+    17.9,
+    7.8,
+    12.2
+   ],
+   "light": false
+  },
+  "Military_Male_03": {
+   "from": "scalp",
+   "lab": [
+    16.6,
+    9.0,
+    14.3
+   ],
+   "light": false
+  },
+  "Military_Male_04": {
+   "from": "scalp",
+   "lab": [
+    39.0,
+    13.3,
+    21.2
+   ],
+   "light": false
+  },
+  "Military_Male_05": {
+   "from": "scalp",
+   "lab": [
+    12.9,
+    0.6,
+    5.2
+   ],
+   "light": false
+  },
+  "Military_Male_06": {
+   "from": "scalp",
+   "lab": [
+    7.7,
+    3.0,
+    4.4
+   ],
+   "light": false
+  },
+  "Pilot_Female_01": {
+   "from": "scalp",
+   "lab": [
+    18.7,
+    6.6,
+    10.9
+   ],
+   "light": false
+  },
+  "Pilot_Female_02": {
+   "from": "scalp",
+   "lab": [
+    7.6,
+    1.2,
+    4.3
+   ],
+   "light": false
+  },
+  "Pilot_Male_03": {
+   "from": "scalp",
+   "lab": [
+    10.6,
+    3.0,
+    6.5
+   ],
+   "light": false
+  },
+  "Police_Female_01": {
+   "from": "cards",
+   "lab": [
+    45.1,
+    0.0,
+    0.1
+   ],
+   "light": false
+  },
+  "Police_Male_01": {
+   "from": "scalp",
+   "lab": [
+    9.0,
+    3.6,
+    6.6
+   ],
+   "light": false
+  },
+  "Police_Male_02": {
+   "from": "cards",
+   "lab": [
+    7.8,
+    0.3,
+    0.0
+   ],
+   "light": false
+  },
+  "Police_Male_03": {
+   "from": "scalp",
+   "lab": [
+    9.5,
+    2.1,
+    3.9
+   ],
+   "light": false
+  },
+  "Police_Male_04": {
+   "from": "scalp",
+   "lab": [
+    22.0,
+    8.2,
+    13.7
+   ],
+   "light": false
+  },
+  "Police_Male_05": {
+   "from": "scalp",
+   "lab": [
+    7.2,
+    1.2,
+    2.8
+   ],
+   "light": false
+  },
+  "Police_Male_06": {
+   "from": "scalp",
+   "lab": [
+    10.7,
+    4.0,
+    6.2
+   ],
+   "light": false
+  },
+  "Police_Male_07": {
+   "from": "scalp",
+   "lab": [
+    10.9,
+    1.1,
+    4.8
+   ],
+   "light": false
+  },
+  "Security_Female_01": {
+   "from": "scalp",
+   "lab": [
+    31.1,
+    9.0,
+    22.8
+   ],
+   "light": true
+  },
+  "Security_Male_01": {
+   "from": "scalp",
+   "lab": [
+    45.0,
+    13.0,
+    16.5
+   ],
+   "light": false
+  },
+  "Sports_Female_01": {
+   "from": "scalp",
+   "lab": [
+    42.3,
+    6.3,
+    26.3
+   ],
+   "light": true
+  },
+  "Sports_Female_02": {
+   "from": "cards",
+   "lab": [
+    1.4,
+    0.2,
+    0.9
+   ],
+   "light": false
+  },
+  "Sports_Male_01": {
+   "from": "scalp",
+   "lab": [
+    22.2,
+    5.9,
+    12.9
+   ],
+   "light": false
+  },
+  "Sports_Male_02": {
+   "from": "scalp",
+   "lab": [
+    14.7,
+    5.8,
+    10.5
+   ],
+   "light": false
+  },
+  "Sports_Male_03": {
+   "from": "cards",
+   "lab": [
+    3.6,
+    0.9,
+    1.8
+   ],
+   "light": false
+  },
+  "Sports_Male_04": {
+   "from": "scalp",
+   "lab": [
+    18.3,
+    6.5,
+    9.0
+   ],
+   "light": false
+  },
+  "Wood_Male_01": {
+   "from": "scalp",
+   "lab": [
+    47.6,
+    4.1,
+    15.0
+   ],
+   "light": true
+  }
+ }
+}

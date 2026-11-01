@@ -26,6 +26,7 @@ def plan(manifest):
     gear = json.load(open(os.path.join(HERE, 'data', 'rocketbox_gear.json')))['gear']
     rv = os.path.join(HERE, 'data', 'rocketbox_review.json')
     review = json.load(open(rv)) if os.path.exists(rv) else {}
+    hair_of = json.load(open(os.path.join(HERE, 'data', 'rocketbox_hair.json')))['hair']
     # a face the library dresses more than once (rocketbox_identities.py) is one base: its uses are counted together,
     # and of its people the one whose face is bare as shipped is taken before one whose gear has to come off
     ident = {n: g[0] for g in review.get('identities', []) for n in g}
@@ -46,7 +47,7 @@ def plan(manifest):
             lab = labs[0]
             for sex in 'fm':
                 pool = [n for n, l in sorted(anc.items()) if l.rstrip('?') == lab and ('Female' in n) == (sex == 'f') and n not in out_skin
-                        and os.path.exists(f'{S}/rbpop/fbx/{n}.fbx') and os.path.isdir(f'{S}/rblib/{n}') and pr.base_ok(n, a, gear, beards, review)]
+                        and os.path.exists(f'{S}/rbpop/fbx/{n}.fbx') and os.path.isdir(f'{S}/rblib/{n}') and pr.base_ok(n, a, gear, beards, review, hair_of)]
                 pool.sort(key=lambda n: n in review.get('gear_off', []))
                 faces = {}
                 for n in pool: faces.setdefault(ident.get(n, n), n)
