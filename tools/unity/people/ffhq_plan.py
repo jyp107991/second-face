@@ -29,7 +29,10 @@ def main(faces_json, faces_dir, people, manifest, limit=None):
     for sex in 'fm':
         pool = [n for n, l in sorted(anc.items()) if ('Female' in n) == (sex == 'f') and 'Child' not in n and n not in out_skin
                 and l.rstrip('?') not in ('masked', 'unseen') and os.path.exists(f'{S}/rbpop/fbx/{n}.fbx') and os.path.isdir(f'{S}/rblib/{n}')
-                and pr.base_ok(n, people, gear, beards, review, hair_of)]
+                and pr.base_ok(n, people, gear, beards, review, hair_of)
+                # (a man's base never bearded: the photograph decides the facial hair, and a painted beard would show
+                # under the jaw)
+                and not (sex == 'm' and (n in beards or review.get('people', {}).get(n, {}).get('beard')))]
         faces_seen, uniq = set(), []
         for n in pool:
             f = ident.get(n, n)

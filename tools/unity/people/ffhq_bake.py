@@ -5,7 +5,7 @@ carrier: any HiFi3D++ head, here the demo's) is put into the same eyes' frame as
 landmarks found the same way as the Rocketbox head's (rocketbox_features.Face), and fitted onto it by a similarity and a
 thin-plate warp; then each texel of the Rocketbox head's texture that lies on the face is taken to its point on the
 head, to the nearest point of the fitted carrier, and to that point's place in the FFHQ texture. Baked where the carrier
-holds real skin (outside FFHQ-UV's painted hair, inside 120 mm of the eyes, not the ears), with a feathered edge, and
+holds real skin (outside FFHQ-UV's painted hair, inside 140 mm of the eyes, not the ears), with a feathered edge, and
 not within 12 mm of either eye (the photographs' eyes are closed; Rocketbox's lids and lashes stay). Writes
 <out>/<head material>_ffhq_color.jpg (the bake, Rocketbox's layout), <out>/<head material>_ffhq_mask.png (where it
 holds) and <out>/ffhq.json (the face's cheek colour, and the tone and undertone that put Rocketbox's skin outside the
@@ -22,7 +22,7 @@ import rocketbox_features as rbf
 person_path, tex_dir, ffhq_png, out_dir = sys.argv[sys.argv.index('--') + 1:][:4]
 TOPO = os.environ['FFHQ_TOPO']; MASKS = os.environ.get('FFHQ_MASKS', os.path.dirname(TOPO))
 os.makedirs(out_dir, exist_ok=True)
-EYE_KEEP = 12.0; REACH = 120.0; EAR_X = 72.0; FEATHER = 8.0       # mm
+EYE_KEEP = 12.0; REACH = 140.0; EAR_X = 72.0; FEATHER = 8.0       # mm (the reach covers the whole jaw and chin: a base's painted beard must not show through)
 
 
 def load_png(path):
@@ -96,6 +96,8 @@ Vs[:, 1] -= 12.0                                                    # the eyes' 
 near = (np.linalg.norm(Vs, axis=1) < 160) & (Vs[:, 2] > -130)       # the head alone: the carrier carries a neck and shoulders
 TV = F[near[F].all(1)]; TVT = FT[near[F].all(1)]
 FV = rbf.Face(Vs, TV)
+bake_v = (np.linalg.norm(Vs, axis=1) < 190) & (Vs[:, 2] > -165)   # the bake reaches under the jaw
+TV = F[bake_v[F].all(1)]; TVT = FT[bake_v[F].all(1)]
 keys = [k for k in FR.L if k in FV.L]
 for F_, X_ in ((FR, P), (FV, Vs)):
     if 'alL' in F_.L and abs(F_.L['alL'].at(X_)[0, 0] - F_.L['alR'].at(X_)[0, 0]) > 46: keys = [k for k in keys if k not in ('alL', 'alR')]
