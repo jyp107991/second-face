@@ -83,7 +83,7 @@ def sliders(slr, variants, out):
         heads, seen = [], set()
         for n in V:                                       # one row per face (rocketbox_identities.py)
             f = same.get(n.replace('_sculpt', ''), n)
-            if test(n) and f not in seen: seen.add(f); heads.append(n)
+            if test(n) and f not in seen and os.path.exists(os.path.join(slr, f'{n}_base_front.png')): seen.add(f); heads.append(n)
         if not heads: continue
         tags = list(V[heads[0]])
         cols = [('base', 'front'), ('base', 'side')] + [(t, view_of(t)) for t in tags if t != 'base']

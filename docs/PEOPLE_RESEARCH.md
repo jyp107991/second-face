@@ -384,7 +384,9 @@ stays Rocketbox's: its photographed heads and skin detail, its hair cards, bodie
   the eyes' size alone, and the groups' difference fades out from 26 mm to 15 mm from each eye's centre (the lids keep
   their own shape; it also removes white slivers at the outer corners where the lids parted from the eye). (7) Blonde
   kept as if grey: light, colourless hair is grey only on a base judged 55 or older (the owner's rule for grey hair);
-  younger light hair is blonde and takes the people's colour. (8) Eyeballs missed on one head: found by the island's
+  younger light hair is blonde and takes the people's colour; and as part of a Rocketbox head's hair is painted on the
+  scalp, lighter than the skin, where no retone can tell it from skin, a base with blonde or light brown hair
+  (`rocketbox_hair.py`, `data/rocketbox_hair.json`: 13 people) serves only a people whose hair is light. (8) Eyeballs missed on one head: found by the island's
   centre (within 12 mm of the eye) rather than its farthest vertex, which a slider draw can push past 20 mm.
 - *What VALID carries, measured* (`data/valid_compare.json` against `data/rocketbox_features.json`): VALID's Black
   against White means widen the nose by 8.3 mm (women) and 8.8 mm (men) and lower its projection by 2.5-4.2 mm, as
@@ -395,6 +397,18 @@ stays Rocketbox's: its photographed heads and skin detail, its hair cards, bodie
   Europeans or of mixed descent. The fix proposed: the lips' difference from Rocketbox's own groups (and published
   vermilion norms) as a bias on that person's slider draw, and hair cards from the library's own Black people moved
   onto the new head (the straight European hair is the other strong tell).
+- *QA at scale, the verdict by eye* (2026-11-01, sheets `docs/evidence/unity/p4/research/qa_library_*.jpg`,
+  `qa_sliders_*.jpg`, `qa_harmonised_*.jpg`: the library as it ships, the sliders at their limits on 15 more faces, and
+  60 harmonised people in seven peoples beside the faces they come from). Working: every new person stays in the house
+  style; skin, irises, brows and hair take the people's colours with no blonde, blue or black-browed leftovers; no staring
+  eyes; Latin Americans come from Latin, Mediterranean and European faces in CANDELA's measured mixtures, never from a
+  Black one; Mediterranean people (two in hijab, two in keffiyeh) and Southeast Asians from East Asian faces read true.
+  Not working: (1) a face serving two related peoples (West and East African; Indigenous American and Pacific Islander or
+  Southeast Asian; Latin American and Mediterranean) gives two people who look like one: half a slider draw does not make
+  a new person, so a face should serve one people only (fewer people where the library is thin); (2) Black people from
+  European faces (the nose, not the lips, not the hair: above); (3) Pacific Islander men from East Asian faces read East
+  Asian (VALID's NHPI difference is small on these heads); (4) Business_Female_02's glasses texture is missing from the
+  export (they render magenta).
 
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own
