@@ -74,6 +74,27 @@ def harmonised(lib, hq, manifest, out):
         p = os.path.join(out, f'qa_harmonised_{"_".join(pair)}.jpg'); s.save(p, quality=84); print('wrote', p, s.size)
 
 
+def real(lib, hq, manifest, faces_dir, out, name='qa_real_faces'):
+    """People with real photographed faces (ffhq_bake.py): the Rocketbox base as shipped | the photograph's texture
+    (FFHQ-UV, the face's centre) | the person from the front | at three-quarters."""
+    jobs = [j for j in json.load(open(manifest))['jobs'] if j.get('ffhq') and os.path.exists(os.path.join(hq, f'{j["name"]}_front.png'))]
+    if not jobs: return
+    w, h = 150, 188; per = 4; cols = 3
+    rows = (len(jobs) + cols - 1) // cols
+    s = Image.new('RGB', (cols * per * w, 22 + rows * (h + 26)), (236, 234, 230)); g = ImageDraw.Draw(s)
+    g.text((6, 5), f'Real faces ({len(jobs)}): Rocketbox base as shipped | the photograph (FFHQ-UV texture) | the person, front | three-quarters. Same studio.', fill=(20, 20, 20), font=FONT)
+    for i, j in enumerate(jobs):
+        x, y = (i % cols) * per * w, 22 + (i // cols) * (h + 26)
+        s.paste(tile(os.path.join(lib, f'{j["base"]}_front.png'), 'front', w, h), (x, y + 24))
+        ph = Image.open(os.path.join(faces_dir, os.path.basename(j['ffhq']))).convert('RGB').crop((290, 210, 734, 766)).resize((w, h))
+        s.paste(ph, (x + w, y + 24))
+        s.paste(tile(os.path.join(hq, f'{j["name"]}_front.png'), 'front', w, h), (x + 2 * w, y + 24))
+        s.paste(tile(os.path.join(hq, f'{j["name"]}_three.png'), 'three', w, h), (x + 3 * w, y + 24))
+        label(g, x, y, f'{j["name"]} <- {j["base"].replace("_Adult", "")}  shape {j["spec"]}', per * w)
+        label(g, x, y + 12, f'{j["note"]}  hair {j.get("graft", "own")} {j.get("graft_volume", "")}', per * w)
+    p = os.path.join(out, f'{name}.jpg'); s.save(p, quality=86); print('wrote', p, s.size)
+
+
 def sliders(slr, variants, out):
     V = json.load(open(variants))
     view_of = lambda tag: 'side' if tag.split('_')[0] in ('chin-height', 'chin-prominent', 'mouth-lowerlip-volume') else 'front'
