@@ -53,6 +53,11 @@ m = np.zeros((H, W), np.float32); m[ys, xs] = mask
 m = np.asarray(Image.fromarray((m * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(3)), np.float32) / 255.0
 Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8)).save(os.path.join(out_dir, f"{J['material']}_ffhq_color.jpg"), quality=94)
 Image.fromarray((np.clip(m, 0, 1) * 255).astype(np.uint8)).save(os.path.join(out_dir, f"{J['material']}_ffhq_mask.png"))
+# the scalp above the photograph's hairline (where FFHQ-UV paints hair), for scalp_paint.py: cropped hair, not skin
+if 'scalp' in M:
+    sc = np.zeros((H, W), np.uint8); sc[ys[M['scalp']], xs[M['scalp']]] = 255
+    sc = Image.fromarray(sc).filter(ImageFilter.MaxFilter(5))
+    sc.save(os.path.join(out_dir, f"{J['material']}_scalp_mask.png"))
 sel = on & cheek & (mask > 0.5)
 lab = np.median(srgb_to_lab(rgb[sel] * 255.0), 0) if sel.sum() > 20 else np.median(srgb_to_lab(rgb[on] * 255.0), 0)
 cal = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'rocketbox_cheeks.json')))['fit']

@@ -10,12 +10,20 @@ from PIL import Image, ImageDraw, ImageFilter
 def main(info_path, tex_dir, out_dir):
     J = json.load(open(info_path))
     h = int(J['hair'], 16); hair = np.array([(h >> 16) & 255, (h >> 8) & 255, h & 255], np.float32) / 255.0
-    for mat, polys in J.get('paint', {}).items():
+    mats = dict(J.get('paint', {}))
+    for f in os.listdir(tex_dir):                               # a scalp mask alone, with no faces pulled, still paints
+        if f.endswith('_scalp_mask.png'): mats.setdefault(f[:-len('_scalp_mask.png')], [])
+    for mat, polys in mats.items():
         src = os.path.join(tex_dir, f'{mat}_color.jpg')
         if not os.path.exists(src): continue
         im = Image.open(src).convert('RGB'); W, H = im.size
         mask = Image.new('L', (W, H), 0); g = ImageDraw.Draw(mask)
         for poly in polys: g.polygon([(u * W, (1 - v) * H) for u, v in poly], fill=255)
+        # (and the scalp above a real photograph's hairline, ffhq_bake_finish.py, when the face is a photograph's)
+        extra = os.path.join(tex_dir, f'{mat}_scalp_mask.png')
+        if os.path.exists(extra):
+            from PIL import ImageChops
+            mask = ImageChops.lighter(mask, Image.open(extra).convert('L').resize((W, H)))
         mask = mask.filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.GaussianBlur(4))
         a = np.asarray(im, np.float32) / 255.0
         lum = a @ np.array([0.2126, 0.7152, 0.0722], np.float32)

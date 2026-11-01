@@ -147,7 +147,7 @@ Q = pts[ys, xs].astype(np.float64)
 keep = (np.linalg.norm(Q, axis=1) < REACH) & (np.abs(Q[:, 0]) < EAR_X)
 ys, xs, Q = ys[keep], xs[keep], Q[keep]
 print('texels on the face', len(Q))
-UV = np.zeros((len(Q), 2), np.float32); mask = np.zeros(len(Q), np.float32)
+UV = np.zeros((len(Q), 2), np.float32); mask = np.zeros(len(Q), np.float32); scalp = np.zeros(len(Q), bool)
 for i in range(len(Q)):
     loc, nrm, fi, dist = tree.find_nearest(Vector(Q[i]))
     if fi is None or dist > 12: continue
@@ -158,13 +158,17 @@ for i in range(len(Q)):
     if abs(den) < 1e-12: continue
     wv = (d11 * d20 - d01 * d21) / den; ww = (d00 * d21 - d01 * d20) / den; wu = 1 - wv - ww
     uv = wu * VT[TVT[fi][0]] + wv * VT[TVT[fi][1]] + ww * VT[TVT[fi][2]]
-    if sample(hair.astype(np.float32), uv[None])[0] > 0.5: continue
+    if sample(hair.astype(np.float32), uv[None])[0] > 0.5:
+        # above the hairline (never the eyes: FFHQ-UV's hair mask covers the closed eyes too): scalp, painted as hair
+        e = min(np.linalg.norm(Q[i] - eyes[0]), np.linalg.norm(Q[i] - eyes[1]))
+        scalp[i] = (Q[i, 2] > 25 or Q[i, 1] > 30) and e > 1.6 * EYE_KEEP
+        continue
     UV[i] = uv
     r = np.linalg.norm(Q[i]); e = min(np.linalg.norm(Q[i] - eyes[0]), np.linalg.norm(Q[i] - eyes[1]))
     m = min(1.0, (REACH - r) / FEATHER) * min(1.0, max(0.0, (e - EYE_KEEP) / FEATHER)) * min(1.0, (EAR_X - abs(Q[i, 0])) / FEATHER) * min(1.0, (12 - dist) / 4)
     mask[i] = max(0.0, m)
 cheek = (np.abs(Q[:, 0]) > 28) & (np.abs(Q[:, 0]) < 52) & (Q[:, 2] < -15) & (Q[:, 2] > -45)
-np.savez_compressed(os.path.join(out_dir, 'ffhq_map.npz'), ys=ys, xs=xs, uv=UV, mask=mask, cheek=cheek, size=np.array([H, Wd]))
+np.savez_compressed(os.path.join(out_dir, 'ffhq_map.npz'), ys=ys, xs=xs, uv=UV, mask=mask, cheek=cheek, scalp=scalp, size=np.array([H, Wd]))
 json.dump({'ffhq': os.path.basename(ffhq_png), 'material': hmat, 'texels': int(len(Q)), 'baked': int((mask > 0.5).sum()),
            'landmarks': keys, 'residual_mm': res.round(1).tolist(), 'scale': round(float(s), 3)}, open(os.path.join(out_dir, 'ffhq.json'), 'w'))
 print('mapped', int((mask > 0.5).sum()), 'texels of', len(Q))
