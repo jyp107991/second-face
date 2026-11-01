@@ -184,6 +184,14 @@ def main(src, info, out, cluster, shift=0.0, tone=None, undertone=None, eyes=Non
             e = new[ys, xs]; t = e.copy()
             t[..., 0] *= 1 - 0.18 * dk; t[..., 1] += 2.5 * dk; t[..., 2] += 6 * dk
             new[ys, xs] = e * (1 - sc) + t * sc
+    # a real photographed face baked into this layout (ffhq_bake.py, RT_BAKE: its directory): composited over the retoned
+    # skin where its mask holds, so the face is the photograph's and the rest of the head Rocketbox's at its colour
+    bake_dir = os.environ.get('RT_BAKE')
+    if bake_dir and os.path.exists(os.path.join(bake_dir, f'{hmat}_ffhq_color.jpg')):
+        bk = srgb_to_lab(np.array(Image.open(os.path.join(bake_dir, f'{hmat}_ffhq_color.jpg')).convert('RGB'), float))
+        bm = np.array(Image.open(os.path.join(bake_dir, f'{hmat}_ffhq_mask.png')).convert('L'), float)[..., None] / 255.0
+        bm[eyes_box] = 0.0
+        new = new * (1 - bm) + bk * bm
     Image.fromarray(lab_to_srgb(new)).save(os.path.join(out, f'{hmat}_color.jpg'), quality=92)
     body_p = os.path.join(src, f'{prefix}_body_color.jpg')
     if os.path.exists(body_p):

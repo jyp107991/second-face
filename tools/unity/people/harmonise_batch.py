@@ -102,8 +102,21 @@ def run(manifest, k, n):
         r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/harmonise.py', '--', sculpt if os.path.exists(sculpt) else f'{S}/rbpop/fbx/{j["base"]}.fbx',
                             f'{S}/valid/groups.npz', j['sex'], j['source'], j['spec'], out, j['name']], capture_output=True, text=True, env=henv)
         if not os.path.exists(f'{out}/{j["name"]}.fbx'): print('harmonise failed', j['name'], r.stdout[-400:], r.stderr[-400:]); continue
-        r = subprocess.run([PY, f'{HERE}/retone.py', f'{S}/rblib/{j["base"]}', f'{out}/{j["name"]}.json', out, j['hair'], '0', str(j['tone']), str(j['undertone']),
-                            j.get('eyes', 'dark'), str(j.get('iris_shift', 0.0))], capture_output=True, text=True)
+        # a real photographed face (ffhq_bake.py): baked into this head's layout, harmonised, and the tone that puts the
+        # rest of the skin at the face's colour; retone.py composites it (RT_BAKE)
+        renv = dict(os.environ); tone, und = str(j['tone']), str(j['undertone'])
+        if j.get('ffhq'):
+            fenv = dict(os.environ, FFHQ_TOPO=f'{S}/ffhq/topo', FFHQ_MASKS=f'{S}/ffhq')
+            r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/ffhq_bake.py', '--', f'{out}/{j["name"]}.fbx', f'{S}/rblib/{j["base"]}', j['ffhq'], out],
+                               capture_output=True, text=True, env=fenv)
+            if not os.path.exists(f'{out}/ffhq_map.npz'): print('bake failed', j['name'], r.stdout[-300:], r.stderr[-300:]); continue
+            head_tex = next(f'{S}/rblib/{j["base"]}/{f}' for f in os.listdir(f'{S}/rblib/{j["base"]}') if f.endswith('_head_color.jpg'))
+            r = subprocess.run([PY, f'{HERE}/ffhq_bake_finish.py', out, j['ffhq'], head_tex], capture_output=True, text=True)
+            fj = json.load(open(f'{out}/ffhq.json')); tone, und = str(fj['tone']), str(fj['undertone']); renv['RT_BAKE'] = out
+            print(j['name'], 'ffhq', os.path.basename(j['ffhq']), 'baked', fj.get('baked'), 'cheek', fj.get('cheek_lab'))
+            os.remove(f'{out}/ffhq_map.npz')
+        r = subprocess.run([PY, f'{HERE}/retone.py', f'{S}/rblib/{j["base"]}', f'{out}/{j["name"]}.json', out, j['hair'], '0', tone, und,
+                            j.get('eyes', 'dark'), str(j.get('iris_shift', 0.0))], capture_output=True, text=True, env=renv)
         print(j['name'], r.stdout.strip().split('\n')[0][:160])
         # the hairstyle (hair_graft.py): the scalp rebuilt and a donor's hair put on ('-': buzzed), the scalp repainted
         if j.get('graft'):
