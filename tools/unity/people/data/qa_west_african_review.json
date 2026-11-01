@@ -1,0 +1,718 @@
+{
+ "people": "west_african",
+ "ours": [
+  {
+   "name": "Business_Female_01",
+   "kind": "base",
+   "base": "Business_Female_01",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "jaw_face-",
+    "lips_face+"
+   ],
+   "p_own_sex": 1.0,
+   "apparent_age": 28.6,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8209,
+    "jaw_face": 0.7742,
+    "icd_face": 0.2463,
+    "eye_face": 0.2106,
+    "nose_icd": 1.2331,
+    "mouth_face": 0.3979,
+    "lower_face": 0.5867,
+    "nose_len": 0.4134,
+    "lips_face": 0.1972,
+    "brow_eye": 0.2161
+   }
+  },
+  {
+   "name": "rb_west_african_f_01",
+   "kind": "made",
+   "base": "Business_Female_01",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "eye_face+"
+   ],
+   "p_own_sex": 1.0,
+   "apparent_age": 40.4,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8172,
+    "jaw_face": 0.7759,
+    "icd_face": 0.2667,
+    "eye_face": 0.2125,
+    "nose_icd": 1.099,
+    "mouth_face": 0.3799,
+    "lower_face": 0.601,
+    "nose_len": 0.399,
+    "lips_face": 0.181,
+    "brow_eye": 0.2134
+   }
+  },
+  {
+   "name": "rb_west_african_f_02",
+   "kind": "made",
+   "base": "Business_Female_01",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "jaw_face-",
+    "eye_face+",
+    "lips_face+"
+   ],
+   "p_own_sex": 1.0,
+   "apparent_age": 40.0,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8168,
+    "jaw_face": 0.7692,
+    "icd_face": 0.2516,
+    "eye_face": 0.2125,
+    "nose_icd": 1.2006,
+    "mouth_face": 0.4013,
+    "lower_face": 0.5957,
+    "nose_len": 0.4043,
+    "lips_face": 0.1978,
+    "brow_eye": 0.2146
+   }
+  },
+  {
+   "name": "rb_west_african_f_03",
+   "kind": "made",
+   "base": "Business_Female_01",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "jaw_face-",
+    "lips_face+"
+   ],
+   "p_own_sex": 1.0,
+   "apparent_age": 39.9,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8224,
+    "jaw_face": 0.7711,
+    "icd_face": 0.2351,
+    "eye_face": 0.2101,
+    "nose_icd": 1.2617,
+    "mouth_face": 0.4024,
+    "lower_face": 0.5919,
+    "nose_len": 0.4081,
+    "lips_face": 0.1974,
+    "brow_eye": 0.2174
+   }
+  },
+  {
+   "name": "rb_west_african_f_04",
+   "kind": "made",
+   "base": "Business_Female_01",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "jaw_face-",
+    "lips_face+"
+   ],
+   "p_own_sex": 1.0,
+   "apparent_age": 40.5,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8047,
+    "jaw_face": 0.7693,
+    "icd_face": 0.2613,
+    "eye_face": 0.2103,
+    "nose_icd": 1.1358,
+    "mouth_face": 0.3878,
+    "lower_face": 0.5979,
+    "nose_len": 0.4022,
+    "lips_face": 0.1932,
+    "brow_eye": 0.2175
+   }
+  },
+  {
+   "name": "rb_west_african_f_05",
+   "kind": "made",
+   "base": "Business_Female_01",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "eye_face+"
+   ],
+   "p_own_sex": 1.0,
+   "apparent_age": 24.8,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8381,
+    "jaw_face": 0.7795,
+    "icd_face": 0.2449,
+    "eye_face": 0.2173,
+    "nose_icd": 1.2331,
+    "mouth_face": 0.4146,
+    "lower_face": 0.5799,
+    "nose_len": 0.4201,
+    "lips_face": 0.185,
+    "brow_eye": 0.2124
+   }
+  },
+  {
+   "name": "rb_west_african_f_06",
+   "kind": "made",
+   "base": "Business_Female_01",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "eye_face+"
+   ],
+   "p_own_sex": 1.0,
+   "apparent_age": 34.0,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8323,
+    "jaw_face": 0.7768,
+    "icd_face": 0.2383,
+    "eye_face": 0.2142,
+    "nose_icd": 1.272,
+    "mouth_face": 0.4213,
+    "lower_face": 0.5871,
+    "nose_len": 0.4129,
+    "lips_face": 0.1826,
+    "brow_eye": 0.2119
+   }
+  },
+  {
+   "name": "rb_west_african_f_07",
+   "kind": "made",
+   "base": "Business_Female_01",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "jaw_face-",
+    "icd_face-",
+    "lips_face+"
+   ],
+   "p_own_sex": 1.0,
+   "apparent_age": 36.7,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8201,
+    "jaw_face": 0.7683,
+    "icd_face": 0.2295,
+    "eye_face": 0.2105,
+    "nose_icd": 1.2895,
+    "mouth_face": 0.3886,
+    "lower_face": 0.5976,
+    "nose_len": 0.4025,
+    "lips_face": 0.1965,
+    "brow_eye": 0.2172
+   }
+  },
+  {
+   "name": "rb_west_african_f_08",
+   "kind": "made",
+   "base": "Business_Female_01",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "jaw_face-",
+    "lips_face+"
+   ],
+   "p_own_sex": 1.0,
+   "apparent_age": 35.7,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8205,
+    "jaw_face": 0.7706,
+    "icd_face": 0.2512,
+    "eye_face": 0.2109,
+    "nose_icd": 1.1939,
+    "mouth_face": 0.423,
+    "lower_face": 0.5814,
+    "nose_len": 0.4186,
+    "lips_face": 0.1958,
+    "brow_eye": 0.2204
+   }
+  },
+  {
+   "name": "rb_west_african_f_09",
+   "kind": "made",
+   "base": "Business_Female_01",
+   "sex": "f",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 1.0,
+   "apparent_age": 28.7,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8128,
+    "jaw_face": 0.7816,
+    "icd_face": 0.2616,
+    "eye_face": 0.2105,
+    "nose_icd": 1.1605,
+    "mouth_face": 0.4112,
+    "lower_face": 0.5707,
+    "nose_len": 0.4294,
+    "lips_face": 0.1872,
+    "brow_eye": 0.2192
+   }
+  },
+  {
+   "name": "rb_west_african_f_10",
+   "kind": "made",
+   "base": "Business_Female_01",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "eye_face+",
+    "lips_face+"
+   ],
+   "p_own_sex": 1.0,
+   "apparent_age": 38.0,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8332,
+    "jaw_face": 0.7772,
+    "icd_face": 0.2359,
+    "eye_face": 0.2136,
+    "nose_icd": 1.2858,
+    "mouth_face": 0.4272,
+    "lower_face": 0.5779,
+    "nose_len": 0.4221,
+    "lips_face": 0.1941,
+    "brow_eye": 0.2208
+   }
+  },
+  {
+   "name": "Male_Adult_12",
+   "kind": "base",
+   "base": "Male_Adult_12",
+   "sex": "m",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 1.0,
+   "apparent_age": 40.2,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.847,
+    "jaw_face": 0.8254,
+    "icd_face": 0.2517,
+    "eye_face": 0.2075,
+    "nose_icd": 1.2889,
+    "mouth_face": 0.4142,
+    "lower_face": 0.6015,
+    "nose_len": 0.3985,
+    "lips_face": 0.1885,
+    "brow_eye": 0.1648
+   }
+  },
+  {
+   "name": "Military_Male_01",
+   "kind": "base",
+   "base": "Military_Male_01",
+   "sex": "m",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 1.0,
+   "apparent_age": 35.5,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.7976,
+    "jaw_face": 0.8317,
+    "icd_face": 0.2395,
+    "eye_face": 0.2057,
+    "nose_icd": 1.3682,
+    "mouth_face": 0.3862,
+    "lower_face": 0.5892,
+    "nose_len": 0.4108,
+    "lips_face": 0.1294,
+    "brow_eye": 0.1951
+   }
+  },
+  {
+   "name": "rb_west_african_m_01",
+   "kind": "made",
+   "base": "Male_Adult_12",
+   "sex": "m",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 1.0,
+   "apparent_age": 40.5,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8435,
+    "jaw_face": 0.8225,
+    "icd_face": 0.2594,
+    "eye_face": 0.2099,
+    "nose_icd": 1.2074,
+    "mouth_face": 0.412,
+    "lower_face": 0.5926,
+    "nose_len": 0.4074,
+    "lips_face": 0.1732,
+    "brow_eye": 0.1613
+   }
+  },
+  {
+   "name": "rb_west_african_m_02",
+   "kind": "made",
+   "base": "Military_Male_01",
+   "sex": "m",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 1.0,
+   "apparent_age": 40.5,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8087,
+    "jaw_face": 0.8239,
+    "icd_face": 0.2578,
+    "eye_face": 0.2055,
+    "nose_icd": 1.2231,
+    "mouth_face": 0.383,
+    "lower_face": 0.594,
+    "nose_len": 0.406,
+    "lips_face": 0.121,
+    "brow_eye": 0.1776
+   }
+  },
+  {
+   "name": "rb_west_african_m_03",
+   "kind": "made",
+   "base": "Male_Adult_12",
+   "sex": "m",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 1.0,
+   "apparent_age": 40.5,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8331,
+    "jaw_face": 0.8181,
+    "icd_face": 0.2664,
+    "eye_face": 0.2098,
+    "nose_icd": 1.2007,
+    "mouth_face": 0.4143,
+    "lower_face": 0.5891,
+    "nose_len": 0.4109,
+    "lips_face": 0.1819,
+    "brow_eye": 0.1651
+   }
+  },
+  {
+   "name": "rb_west_african_m_04",
+   "kind": "made",
+   "base": "Military_Male_01",
+   "sex": "m",
+   "outside_real_p5_p95": [
+    "icd_face-"
+   ],
+   "p_own_sex": 1.0,
+   "apparent_age": 28.5,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8135,
+    "jaw_face": 0.8134,
+    "icd_face": 0.2321,
+    "eye_face": 0.2109,
+    "nose_icd": 1.3408,
+    "mouth_face": 0.3974,
+    "lower_face": 0.585,
+    "nose_len": 0.415,
+    "lips_face": 0.1244,
+    "brow_eye": 0.1811
+   }
+  },
+  {
+   "name": "rb_west_african_m_05",
+   "kind": "made",
+   "base": "Male_Adult_12",
+   "sex": "m",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 1.0,
+   "apparent_age": 40.5,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8567,
+    "jaw_face": 0.8228,
+    "icd_face": 0.2363,
+    "eye_face": 0.2051,
+    "nose_icd": 1.3384,
+    "mouth_face": 0.3907,
+    "lower_face": 0.6096,
+    "nose_len": 0.3904,
+    "lips_face": 0.1944,
+    "brow_eye": 0.1615
+   }
+  },
+  {
+   "name": "rb_west_african_m_06",
+   "kind": "made",
+   "base": "Military_Male_01",
+   "sex": "m",
+   "outside_real_p5_p95": [
+    "icd_face-"
+   ],
+   "p_own_sex": 1.0,
+   "apparent_age": 40.5,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8239,
+    "jaw_face": 0.8139,
+    "icd_face": 0.2328,
+    "eye_face": 0.2102,
+    "nose_icd": 1.3403,
+    "mouth_face": 0.3803,
+    "lower_face": 0.5972,
+    "nose_len": 0.4028,
+    "lips_face": 0.1188,
+    "brow_eye": 0.1776
+   }
+  },
+  {
+   "name": "rb_west_african_m_07",
+   "kind": "made",
+   "base": "Male_Adult_12",
+   "sex": "m",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 1.0,
+   "apparent_age": 40.5,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8342,
+    "jaw_face": 0.8269,
+    "icd_face": 0.2452,
+    "eye_face": 0.2054,
+    "nose_icd": 1.2629,
+    "mouth_face": 0.4046,
+    "lower_face": 0.5831,
+    "nose_len": 0.4169,
+    "lips_face": 0.1723,
+    "brow_eye": 0.1706
+   }
+  },
+  {
+   "name": "rb_west_african_m_08",
+   "kind": "made",
+   "base": "Military_Male_01",
+   "sex": "m",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 1.0,
+   "apparent_age": 40.4,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8243,
+    "jaw_face": 0.8238,
+    "icd_face": 0.2529,
+    "eye_face": 0.2069,
+    "nose_icd": 1.2409,
+    "mouth_face": 0.3772,
+    "lower_face": 0.5912,
+    "nose_len": 0.4088,
+    "lips_face": 0.1195,
+    "brow_eye": 0.1721
+   }
+  },
+  {
+   "name": "rb_west_african_m_09",
+   "kind": "made",
+   "base": "Male_Adult_12",
+   "sex": "m",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 1.0,
+   "apparent_age": 40.5,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8321,
+    "jaw_face": 0.8234,
+    "icd_face": 0.2672,
+    "eye_face": 0.2096,
+    "nose_icd": 1.1826,
+    "mouth_face": 0.3852,
+    "lower_face": 0.587,
+    "nose_len": 0.413,
+    "lips_face": 0.178,
+    "brow_eye": 0.1633
+   }
+  },
+  {
+   "name": "rb_west_african_m_10",
+   "kind": "made",
+   "base": "Military_Male_01",
+   "sex": "m",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 1.0,
+   "apparent_age": 39.9,
+   "frontal": true,
+   "ratios": {
+    "face_hw": 0.8353,
+    "jaw_face": 0.8275,
+    "icd_face": 0.2367,
+    "eye_face": 0.2071,
+    "nose_icd": 1.3231,
+    "mouth_face": 0.3965,
+    "lower_face": 0.6113,
+    "nose_len": 0.3887,
+    "lips_face": 0.1413,
+    "brow_eye": 0.1721
+   }
+  }
+ ],
+ "others": [
+  {
+   "name": "Female_Adult_09",
+   "people": "north_european",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "jaw_face-",
+    "nose_icd-"
+   ],
+   "p_own_sex": 1.0
+  },
+  {
+   "name": "Female_Party_02",
+   "people": "latin_american",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "eye_face+",
+    "nose_icd-"
+   ],
+   "p_own_sex": 1.0
+  },
+  {
+   "name": "Female_Adult_12",
+   "people": "east_asian",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "eye_face+"
+   ],
+   "p_own_sex": 0.12
+  },
+  {
+   "name": "Female_Adult_08",
+   "people": "north_european",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "icd_face+",
+    "eye_face+",
+    "nose_icd-",
+    "lips_face+"
+   ],
+   "p_own_sex": 1.0
+  },
+  {
+   "name": "Sports_Female_02",
+   "people": "east_asian",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "jaw_face-",
+    "eye_face+"
+   ],
+   "p_own_sex": 1.0
+  },
+  {
+   "name": "Female_Adult_13",
+   "people": "north_european",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "nose_icd-"
+   ],
+   "p_own_sex": 1.0
+  },
+  {
+   "name": "Female_Adult_11",
+   "people": "east_asian",
+   "sex": "f",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 1.0
+  },
+  {
+   "name": "Female_Adult_07",
+   "people": "north_european",
+   "sex": "f",
+   "outside_real_p5_p95": [
+    "nose_icd-"
+   ],
+   "p_own_sex": 1.0
+  },
+  {
+   "name": "Male_Adult_11",
+   "people": "north_european",
+   "sex": "m",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 1.0
+  },
+  {
+   "name": "Male_Adult_04",
+   "people": "mediterranean",
+   "sex": "m",
+   "outside_real_p5_p95": [
+    "eye_face+",
+    "nose_icd+",
+    "lips_face+"
+   ],
+   "p_own_sex": 1.0
+  },
+  {
+   "name": "Male_Adult_09",
+   "people": "east_asian",
+   "sex": "m",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 0.98
+  },
+  {
+   "name": "Male_Adult_07",
+   "people": "north_european",
+   "sex": "m",
+   "outside_real_p5_p95": [
+    "eye_face+"
+   ],
+   "p_own_sex": 0.99
+  },
+  {
+   "name": "Police_Male_07",
+   "people": "mediterranean",
+   "sex": "m",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 1.0
+  },
+  {
+   "name": "Male_Adult_10",
+   "people": "east_asian",
+   "sex": "m",
+   "outside_real_p5_p95": [],
+   "p_own_sex": 1.0
+  },
+  {
+   "name": "Male_Adult_20",
+   "people": "north_european",
+   "sex": "m",
+   "outside_real_p5_p95": [
+    "eye_face+"
+   ],
+   "p_own_sex": 1.0
+  },
+  {
+   "name": "Business_Male_05",
+   "people": "mediterranean",
+   "sex": "m",
+   "outside_real_p5_p95": [
+    "eye_face+",
+    "lips_face+"
+   ],
+   "p_own_sex": 1.0
+  }
+ ],
+ "real": {
+  "f": {
+   "n": 24,
+   "outside_real_p5_p95_mean": 0.75,
+   "read_as_own_sex": 0.46,
+   "mean_pairwise_distance_sd": 4.01,
+   "ours_per_base_mean_pairwise_distance_sd": {
+    "Business_Female_01": 1.65
+   },
+   "ours_outside_mean": 1.73,
+   "ours_read_as_own_sex": 1.0,
+   "rocketbox_others_outside_mean": 1.62,
+   "rocketbox_others_read_as_own_sex": 0.88
+  },
+  "m": {
+   "n": 24,
+   "outside_real_p5_p95_mean": 0.83,
+   "read_as_own_sex": 0.92,
+   "mean_pairwise_distance_sd": 4.13,
+   "ours_per_base_mean_pairwise_distance_sd": {
+    "Male_Adult_12": 1.7,
+    "Military_Male_01": 1.78
+   },
+   "ours_outside_mean": 0.17,
+   "ours_read_as_own_sex": 1.0,
+   "rocketbox_others_outside_mean": 0.88,
+   "rocketbox_others_read_as_own_sex": 1.0
+  }
+ }
+}

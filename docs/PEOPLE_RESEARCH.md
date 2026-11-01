@@ -515,6 +515,36 @@ cards, painted hair and irises untouched); (3) the hair: the base's own for most
 Rocketbox's afro at a small volume. Nothing else is touched. The first sheet: `docs/evidence/unity/p4/research/qa_variations_black_v1.jpg`
 (ten women off Business_Female_01, ten men off Male_Adult_12 and Military_Male_01, each beside the base as shipped).
 
+**The first variations reviewed against real people and against Rocketbox's other peoples (2026-11-01, owner: "review
+them against photos of real Black people AND against other races' Rocketbox models to test for verisimilitude and
+photorealism and coherence with the overall Rocketbox aesthetic standard").** `qa_review.py` frames every face the same
+way and lays ours (the three bases as shipped, the 20 people made from them) above real Black people of the same sex aged
+20-49 (FairFace, CC BY 4.0: the neutral faces nearest each age band's median, not chosen by eye), and in a lineup with
+Rocketbox's own women and men of other peoples as shipped; it measures ten landmark proportions on every face (MediaPipe,
+`gate/landmarks.py`) against the real group's 5th-95th percentiles. Sheets: `qa_variations_black_v1.jpg` (all 20 beside
+their bases, front and three-quarters), `qa_west_african_vs_real.jpg`, `qa_west_african_vs_rocketbox.jpg`,
+`qa_black_hair_grafts_fail.jpg`; numbers `tools/unity/people/data/qa_west_african_review.json`. Verdict by eye first:
+- *Photorealism and coherence with Rocketbox: holds* wherever the base's own hair is kept. In the lineup the Black people
+  are indistinguishable in quality from Rocketbox's own (the same photographed skin, eyes and light), since nothing of the
+  texture is remade. Proportions agree with that: ours fall outside real people as often as Rocketbox's own other people
+  do (women 1.7 of 10 against 1.6; men 0.2 against 0.9).
+- *Men: pass.* Ten men off Male_Adult_12 and Military_Male_01 (gear off) read as real Black men, dark-skinned, within
+  real proportions; the cropped hair on men reads as hair.
+- *Women: each one passes, the set fails.* All ten are Business_Female_01, the library's only Black woman's face, and
+  read as one woman or sisters: measured, two of ours from one base sit 1.7 real standard deviations apart against 4.0
+  for two real Black women. All share her light-brown skin, where the real women run mostly darker. Her proportions sit
+  at the real edge (fuller lips and a narrower jaw than 95 % of real Black women; Rocketbox's house style: its other women
+  have narrower noses and longer eyes than real), and the female-side slider bias (fuller lips, narrower chin) pushes
+  further out: for her, that bias is to come off.
+- *Hair grafted onto women: fails* and is withdrawn. The small afro breaks into shards over the crown; the cropped cut is
+  a solid faceted cap with a spike on top (a painted block, against the plausibility rule). Only the bases' own hair is
+  used for women until a hairstyle to Rocketbox's standard exists.
+- The apparent-sex network (Levi and Hassner) reads half of the real Black women as men, so it is no evidence for or
+  against ours (it reads all of ours as their sex) and is left off the sheets.
+Next, for the owner's decision: one face cannot make many distinct Black women within Rocketbox's look; the options are
+to accept few (each look-alike kept far from her sisters), to stretch her further (full slider reach, a larger share of a
+real woman's proportions, a darker tone on her own photograph), each judged by eye before any is kept, or another source.
+
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own
 triangles (`rocketbox_head_map.py`, seam-safe). (1) The per-texel change with age, regressed over the 78 faces without soot,
