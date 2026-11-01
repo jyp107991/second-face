@@ -444,6 +444,15 @@ must be more usable models comparable to Rocketbox, search harder").**
   one afro (Female_Party_02) and the cropped and buzzed heads; VALID's wigs (one separate: a curly bob of flat ribbons) and
   our own generated coils and cornrows (MakeHuman era) fall short of Rocketbox's look, so new afro-textured styles
   (braids, locs, twists, cornrows) are to be made to that standard.
+- *First result* (`docs/evidence/unity/p4/research/qa_black_hair_v1.jpg`: the 20 West and East Africans with their hair
+  changed): no straight or blonde European hairstyle is left on any of them; the women wear Rocketbox's afro at three
+  volumes or hair drawn back tight, the men cropped or bald hair or their own. Hair is told from skin by the texture (a
+  texel far from the head's own cheek colour), so ears, face and neck are never touched; the skull is sized from the
+  head's own skin round the scalp where it shows. Open: a square dark patch at some men's hairlines (the repaint follows
+  the mesh's coarse faces: to be feathered along a hairline); a dark band at the grafted afro's front (the donor's shell);
+  women whose loose hair falls below the ears (a bob or longer, 12 of them) cannot have it changed yet, since below the
+  ears that hair is the head's own surface, so they serve no Black people; one afro is not enough: braids, locs, twists
+  and cornrows to Rocketbox's standard are next.
 
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own

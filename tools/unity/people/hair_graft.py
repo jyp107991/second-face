@@ -194,6 +194,10 @@ def hair_coloured(o, bm, head, tex_dir):
 # --- the skull --------------------------------------------------------------------------------------------------------
 bpy.ops.wm.read_factory_settings(use_empty=True)
 sobjs = import_fbx(os.environ['GRAFT_SKULL'])
+for o in sobjs:                                            # (its materials renamed: a target may share the bald head's names)
+    if o.type == 'MESH':
+        for m in o.data.materials:
+            if m: m.name = 'skull_' + m.name
 SK = Head(sobjs)
 
 
