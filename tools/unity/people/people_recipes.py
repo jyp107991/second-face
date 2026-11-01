@@ -21,7 +21,7 @@ each with its evidence. Used by harmonise_batch.py.
   Islanders from East Asian faces first: their nearest relatives among the library's peoples; Black Africans from
   European faces only last, as the library has one usable Black woman's face and one Black man's), the scarcest
   peoples choosing first at each step (ORDER). Never one in headgear (unless it comes off cleanly), never a bearded one
-  for a people whose men's beards are sparse, never one in a religious head covering outside its own people; a dark
+  for a people whose men's beards are sparse, never one in religious dress (owner: anachronistic in this world); a dark
   photograph is never lightened by more than a third (it turns ashy)."""
 import random
 
@@ -53,10 +53,9 @@ BASES = {
 ORDER = ['west_african', 'east_african', 'pacific', 'indigenous_american', 'southeast_asian', 'mediterranean', 'latin_american']
 # a base is never: wearing headgear (data/rocketbox_gear.json: helmet, hat, mask); bearded, for a people whose men's beards
 # are sparse (Core PEOPLE_RESEARCH §6: East and Southeast Asian, Indigenous American men; Pacific Islanders by their
-# validated faces); or, outside its own people, wearing a religious head covering
+# validated faces); or in religious dress
 HEADGEAR = ('helmet', 'hat', 'mask')
 SPARSE_BEARD = {'east_asian', 'southeast_asian', 'indigenous_american', 'pacific'}
-OWN_PEOPLE_ONLY = {}   # (now in data/rocketbox_review.json: a hijab, a keffiyeh or a skullcap, only for its own people)
 
 
 # deleted from a gear_off base (rocketbox_gear_off.py): these materials, and loose pieces left above the brow (goggles)
@@ -76,10 +75,11 @@ def base_ok(base, target, gear, beards, review=None, hair=None):
     if any(g in gear.get(base, []) for g in HEADGEAR) and base not in rv.get('gear_off', []): return False
     r = rv.get('people', {}).get(base, {})
     if r.get('headwear') in ('hat', 'cap', 'hood', 'helmet'): return False
-    if r.get('headwear') in ('hijab', 'keffiyeh', 'skullcap') and target != 'mediterranean': return False
+    # no religious dress at all (owner, 2026-11-01: anachronistic in this world): a hijab and a skullcap are modelled in
+    # the head, and under a keffiyeh there is no scalp, so these people wait for a scalp and hair grafted from another head
+    if r.get('headwear') in ('hijab', 'keffiyeh', 'skullcap'): return False
     if target in SPARSE_BEARD and r.get('beard') in ('full', 'goatee', 'moustache', 'stubble'): return False
     if target in SPARSE_BEARD and base in beards: return False
-    if base in OWN_PEOPLE_ONLY and OWN_PEOPLE_ONLY[base] != target: return False
     return True
 
 

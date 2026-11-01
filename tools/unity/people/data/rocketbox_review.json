@@ -1,5 +1,5 @@
 {
- "_about": "Rocketbox people judged by eye from the library rendered as it ships (docs/evidence/unity/p4/research/qa_library_*.jpg, 2026-11-01): headwear the gear materials do not show (caps, hats and hoods in the body's own mesh; a hijab, a keffiyeh, a skullcap) and facial hair. Read by people_recipes.base_ok: no base in a cap, hat, hood or helmet; a religious head covering only for its own people; no bearded base for a people whose men's beards are sparse. 'gear_off': people whose helmet, hat or gear comes off cleanly (rendered with it removed: the face and hair are modelled under it); they may be bases with their gear deleted. Goggles pushed up on a helmet come off with it (as loose pieces above the brow: rocketbox_gear_off.py); sunglasses, balaclavas, caps modelled in the head, and most firefighters' face shields are part of the head and do not come off (tried: Fire_Male_02/05/07, Fire_Female_03, Police_Female_01, Police_Male_02).",
+ "_about": "Rocketbox people judged by eye from the library rendered as it ships (docs/evidence/unity/p4/research/qa_library_*.jpg, 2026-11-01): headwear the gear materials do not show (caps, hats and hoods in the body's own mesh; a hijab, a keffiyeh, a skullcap) and facial hair. Read by people_recipes.base_ok: no base in a cap, hat, hood or helmet; no religious dress at all (owner, 2026-11-01); no bearded base for a people whose men's beards are sparse. 'gear_off': people whose helmet, hat or gear comes off cleanly (rendered with it removed: the face and hair are modelled under it); they may be bases with their gear deleted. Goggles pushed up on a helmet come off with it (as loose pieces above the brow: rocketbox_gear_off.py); sunglasses, balaclavas, caps modelled in the head, and most firefighters' face shields are part of the head and do not come off (tried: Fire_Male_02/05/07, Fire_Female_03, Police_Female_01, Police_Male_02).",
  "people": {
   "Business_Male_05": {
    "beard": "goatee"
@@ -219,5 +219,6 @@
    "Sports_Female_01"
   ]
  ],
- "_identities": "people who share one face (rocketbox_identities.py: every measured feature within 1.5 mm, confirmed by eye); a face serves as a base once, whichever of its people is used"
+ "_identities": "people who share one face (rocketbox_identities.py: every measured feature within 1.5 mm, confirmed by eye); a face serves as a base once, whichever of its people is used",
+ "_religious": "Female_Adult_06 and Female_Adult_10 (hijab, modelled in the head and body), Male_Adult_15 (skullcap, in the head), Male_Adult_19 and Male_Adult_21 (keffiyeh: a separate piece, but no scalp under it): never bases until a scalp and hair are grafted from another head (owner, 2026-11-01: religious dress is anachronistic in this world)"
 }

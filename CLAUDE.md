@@ -145,6 +145,11 @@ The owner wants to play unspoiled.
   defined from real photographs, the real variation within each ancestry (never one face per race), no two people of a
   place alike, beards and hair as hair (never painted blocks or wigs), and grey hair only from 55 (necessary, not
   sufficient) and in step with a face that looks its age. The diagnosis, the gate and the plan: `docs/PEOPLE_REALISM.md`.
+- **Hair true to ancestry; no religious dress** (owner, 2026-11-01, binding): a person's hair fits their ancestry (Black
+  people have afro-textured hair: cropped, shaved, coils, afros, braids, cornrows, locs, twists; never straight or blonde
+  European styles), within the gritty grooming rule above. No religious dress of any kind (hijab, keffiyeh, skullcap and
+  the like): it is anachronistic in this world. Many distinct people come from each base by blending and variation
+  (shape, hair, skin detail, age), not one face per person. Implementation: `docs/PEOPLE_RESEARCH.md` §7.
 - **A new origin** (owner, 2026-10-29, binding): the player is NOT a shelter-dweller who ventures out for the first
   time (too derivative of Fallout, to the point of an IP breach). The opening gives the player character a life of
   their own and the people in it, so the player cares about them as much as about the hero, and it builds the world,

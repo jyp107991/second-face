@@ -331,8 +331,10 @@ stays Rocketbox's: its photographed heads and skin detail, its hair cards, bodie
 - *Bases with headgear or a beard* (QA, first large set): many of the library's people in uniform wear helmets, hats or
   masks (`data/rocketbox_gear.json`, from the textures they ship with), which hide the hair; such a person is never a
   base. A bearded base keeps its beard (painted in its texture), which reads Mediterranean on a would-be Indigenous
-  American or East Asian man, so bearded bases are left out for peoples whose men's beards are sparse; a woman in a
-  hijab and a man in a skullcap are bases only for their own people. With these rules the library offers two bases for
+  American or East Asian man, so bearded bases are left out for peoples whose men's beards are sparse. No one in
+  religious dress is a base (owner, 2026-11-01: anachronistic in this world): the hijab (two women) and the skullcap (one
+  man) are modelled in the head, and under the keffiyeh (two men) there is no scalp, so these five wait for a scalp and
+  hair grafted from another head. With these rules the library offers two bases for
   Black women (both Latin-looking): a gap to fill another way.
 - *The nose's width corrected* (QA): the wing detection took the widest candidate over several heights, which on 25
   heads (mostly women) was the cheek's edge (Female_Adult_07 at 50 mm). It now takes the most distinct wing edge at
@@ -402,7 +404,8 @@ stays Rocketbox's: its photographed heads and skin detail, its hair cards, bodie
   60 harmonised people in seven peoples beside the faces they come from). Working: every new person stays in the house
   style; skin, irises, brows and hair take the people's colours with no blonde, blue or black-browed leftovers; no staring
   eyes; Latin Americans come from Latin, Mediterranean and European faces in CANDELA's measured mixtures, never from a
-  Black one; Mediterranean people (two in hijab, two in keffiyeh) and Southeast Asians from East Asian faces read true.
+  Black one; Mediterranean people and Southeast Asians from East Asian faces read true (the sheet still shows four in
+  religious dress, since removed by the owner's rule).
   Not working: (1) a face serving two related peoples (West and East African; Indigenous American and Pacific Islander or
   Southeast Asian; Latin American and Mediterranean) gives two people who look like one: half a slider draw does not make
   a new person, so a face should serve one people only (fewer people where the library is thin); (2) Black people from
