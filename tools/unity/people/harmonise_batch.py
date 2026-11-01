@@ -15,6 +15,7 @@ S = os.environ.get('SF_SCRATCH', '/tmp/claude-0/-home-user/891e7928-2458-548c-9e
 BLENDER = f'{S}/blender/blender-4.5.9-linux-x64/blender'
 PY = f'{S}/venv/bin/python'
 PER = 6
+NO_DRAW = {'eye-scale'}
 PEOPLES = ['latin_american', 'indigenous_american', 'mediterranean', 'west_african', 'east_african', 'east_asian', 'southeast_asian', 'pacific']
 
 
@@ -65,6 +66,8 @@ def plan(manifest):
                     sliders = {}
                     for sid, (lo, hi) in lim.items():
                         u = rng.uniform(lo, hi) * 0.5
+                        # (not the eyes' size: it opens or closes the lids round an eyeball that keeps its size)
+                        if sid in NO_DRAW: continue
                         if abs(u) < 0.05: continue
                         sides = pr.SIDES.get(sid, ('decr', 'incr'))
                         sliders[f'{sid}-{sides[1] if u > 0 else sides[0]}'] = round(abs(u), 3)

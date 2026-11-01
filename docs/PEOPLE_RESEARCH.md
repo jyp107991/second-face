@@ -345,6 +345,56 @@ stays Rocketbox's: its photographed heads and skin detail, its hair cards, bodie
   out (`docs/evidence/unity/p4/research/qa_*.jpg`).
 - *The studio* (`studio_render.py`) was overexposed (a fair cheek at L* 87, which flattened every difference in skin);
   now 1.5 stops down (fair about 75, dark about 50). The VALID comparison sheets above were rendered before the fix.
+- *Shared faces* (QA: identical slider limits on different people; `rocketbox_identities.py`,
+  `docs/evidence/unity/p4/research/rocketbox_shared_heads.jpg`). Rocketbox dresses some faces more than once: one woman's
+  face is a businesswoman, a pilot and a soldier; many builders are men of the library in hard hats. Two people whose every
+  measured feature lies within 1.5 mm are one face (distinct faces differ by 2 mm or more in some feature), confirmed by
+  eye: 48 people share 21 faces, so the library holds **83 distinct adult faces** (31 women's, 55 men's: a few faces are
+  dressed as both), not 110. A face is one base: its uses are counted together, and its labels by eye agree.
+- *What the library holds, by distinct usable face* (no headgear that stays on, no full mask; by eye): north European 19
+  women and 23 men; Mediterranean 1 woman and 5 men; Latin American 2 and 2; East Asian 3 and 3; Southeast Asian 1 woman;
+  Black 1 woman and 2 men (with Military_Male_01, whose helmet and goggles now come off). Everything beyond north European
+  is thin, and Black women and Southeast Asian men are nearly absent. This is why VALID's shapes are needed at all, and
+  why most new people of the thin groups start from a north European face.
+- *Bases by nearness* (`harmonise_batch.plan`): every people first takes the faces of its own people, then the
+  next-nearest people's in its order (`people_recipes.BASES`), the scarcest peoples choosing first at each step; a face
+  serves at most two peoples, only two close to each other (West and East African; East and Southeast Asian, Indigenous
+  American and Pacific Islander; Latin American and Mediterranean), each time with its own draw of the calibrated
+  sliders (up to half of each slider's reach). East Asians are not made: the library has its own, and they are the
+  nearest faces for three peoples it lacks. Black Africans take European faces only last.
+- *Gear off* (`rocketbox_gear_off.py`): a helmet or hat modelled as its own material comes off and leaves the face and
+  hair whole on most soldiers and some builders and firefighters (`data/rocketbox_review.json`, 'gear_off'); goggles
+  pushed up on a helmet are their own loose piece in the head's material and go with it (every loose piece lying wholly
+  above the brow, hair cards apart). Balaclavas, sunglasses, caps modelled in the head and most firefighters' face shields
+  are part of the head (tried on six).
+- *The eyes, lids and hair, corrected* (QA of the first Black people made from European faces): (1) the irises stayed
+  blue: they were found by colour, and a blue-grey iris has too little chroma; every Rocketbox eye shares one texture
+  layout (pupil within 0.09 of the eye island's half-width, iris to 0.30, measured on light and dark eyes alike), so the
+  iris is now found by place and given a dark brown taken from the library's own brown irises (L* 12-27, a* 8-11,
+  b* 8-14), keeping its pattern and catchlights; each person draws dark eyes or their base's own by their people's
+  light-eyed share. (2) An old man's grey brows went black under a white beard: painted hair now keeps its lightness
+  against the head's own hair cards (a grey brow under dark hair stays lighter than the hair), and grey hair cards stay
+  grey. (3) The lash lines and lid creases were painted as hair (eyeliner): the lids and orbits (texture boxes from the
+  mesh around each eye) are now skin through and through. (4) A light skin's paler, yellower orbits stayed pale on the
+  darkened skin: going darker, the skin's own variations of hue shrink towards its cheek's, and the lids darken a little
+  (periorbital hyperpigmentation is more common in darker skin: Sarkar et al. 2016, J Clin Aesthet Dermatol 9:49).
+  (5) On darker skin the whites of the eyes are a little dimmer and warmer, as conjunctival pigment is common in darkly
+  pigmented people (complexion-associated melanosis). (6) Staring eyes: the eye-scale slider widens or narrows the lids'
+  opening round an eyeball that keeps its size, and VALID's difference moved the lids too; people's own slider draws leave
+  the eyes' size alone, and the groups' difference fades out from 26 mm to 15 mm from each eye's centre (the lids keep
+  their own shape; it also removes white slivers at the outer corners where the lids parted from the eye). (7) Blonde
+  kept as if grey: light, colourless hair is grey only on a base judged 55 or older (the owner's rule for grey hair);
+  younger light hair is blonde and takes the people's colour. (8) Eyeballs missed on one head: found by the island's
+  centre (within 12 mm of the eye) rather than its farthest vertex, which a slider draw can push past 20 mm.
+- *What VALID carries, measured* (`data/valid_compare.json` against `data/rocketbox_features.json`): VALID's Black
+  against White means widen the nose by 8.3 mm (women) and 8.8 mm (men) and lower its projection by 2.5-4.2 mm, as
+  Rocketbox's own Black faces differ from its north European ones (nose +6.5 and +4.2 mm, projection -4.3 and -4.2 mm);
+  but VALID's Black avatars have thin upper lips (6.8 mm against 7.6 for its White women) and lips barely more forward,
+  where Rocketbox's photographed Black men have upper lips 2.2 mm fuller and lips 3.9 mm more forward than its north
+  European men. So a European face made Black takes the nose but not the lips: the people made that way read as darker
+  Europeans or of mixed descent. The fix proposed: the lips' difference from Rocketbox's own groups (and published
+  vermilion norms) as a bias on that person's slider draw, and hair cards from the library's own Black people moved
+  onto the new head (the straight European hair is the other strong tell).
 
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own

@@ -57,8 +57,9 @@ def harmonised(lib, hq, manifest, out):
     for k in range(0, len(peoples), 2):
         pair = peoples[k:k + 2]
         sel = [j for j in jobs if j['people'] in pair and os.path.exists(os.path.join(hq, f'{j["name"]}_front.png'))]
+        sel.sort(key=lambda j: (pair.index(j['people']), j['sex'], j['name']))
         if not sel: continue
-        w, h = 130, 162; per = 3; cols = 4                       # each person: base | result front | result three
+        w, h = 150, 188; per = 3; cols = 3                       # each person: base | result front | result three
         rows = (len(sel) + cols - 1) // cols
         s = Image.new('RGB', (cols * per * w, 22 + rows * (h + 26)), (236, 234, 230)); g = ImageDraw.Draw(s)
         g.text((6, 5), f'Harmonised {" and ".join(p.replace("_", " ") for p in pair)}: each person beside the Rocketbox person made into them (left, as shipped). Same studio.', fill=(20, 20, 20), font=FONT)
@@ -69,15 +70,20 @@ def harmonised(lib, hq, manifest, out):
             s.paste(tile(os.path.join(hq, f'{j["name"]}_three.png'), 'three', w, h), (x + 2 * w, y + 24))
             mix = j['spec'].replace('+', ' ').replace(':', ' ')
             label(g, x, y, f'{j["name"].replace("_american", "").replace("_african", "")} <- {j["base"].replace("_Adult", "")}', per * w)
-            label(g, x, y + 12, f'{j["note"] or mix}  tone {j["tone"]:+.2f}', per * w)
+            label(g, x, y + 12, f'{j["note"] or mix}  tone {j["tone"]:+.2f}  eyes {j.get("eyes", "dark")}{"  gear off" if j.get("hide") else ""}', per * w)
         p = os.path.join(out, f'qa_harmonised_{"_".join(pair)}.jpg'); s.save(p, quality=84); print('wrote', p, s.size)
 
 
 def sliders(slr, variants, out):
     V = json.load(open(variants))
     view_of = lambda tag: 'side' if tag.split('_')[0] in ('chin-height', 'chin-prominent', 'mouth-lowerlip-volume') else 'front'
+    rv = json.load(open(os.path.join(HERE, 'data', 'rocketbox_review.json')))
+    same = {n: g[0] for g in rv.get('identities', []) for n in g}
     for who, test in (('women', lambda n: 'Female' in n), ('men', lambda n: 'Male' in n)):
-        heads = [n for n in V if test(n)]
+        heads, seen = [], set()
+        for n in V:                                       # one row per face (rocketbox_identities.py)
+            f = same.get(n.replace('_sculpt', ''), n)
+            if test(n) and f not in seen: seen.add(f); heads.append(n)
         if not heads: continue
         tags = list(V[heads[0]])
         cols = [('base', 'front'), ('base', 'side')] + [(t, view_of(t)) for t in tags if t != 'base']

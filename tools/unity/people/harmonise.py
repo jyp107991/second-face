@@ -125,7 +125,7 @@ smooth = lambda e0, e1, x: np.clip((x - e0) / (e1 - e0), 0, 1) ** 2 * (3 - 2 * n
 me_z = FR.L['me'].at(P)[0, 2]
 w = smooth(me_z - 45, me_z - 8, P[:, 2]) * (1 - smooth(28, 58, P[:, 2])) * (1 - smooth(22, 55, P[:, 1]))
 eyes = [np.array([ipd_r, 0, 0.0]), np.array([-ipd_r, 0, 0.0])]
-# the eyeballs: the mesh's islands that lie wholly within 20 mm of an eye bone (Rocketbox's eyes are separate pieces of
+# the eyeballs: the mesh's small islands centred within 12 mm of an eye bone (Rocketbox's eyes are separate pieces of
 # the head's mesh); never moved, and the lids around them held (below)
 parent = list(range(len(P)))
 def find(i):
@@ -140,8 +140,14 @@ for e in eyes:
     d = np.linalg.norm(P - e, axis=1)
     for r in np.unique(roots[d < 20]):
         isl = roots == r
-        if isl.sum() < 400 and (d[isl] < 20).all(): ball |= isl
+        # (a small island centred on the eye: its vertices reach 19 mm from the bone as shipped, and a slider draw baked
+        # above may move it a little, so the island's centre is what is tested)
+        if isl.sum() < 400 and np.linalg.norm(P[isl].mean(0) - e) < 12: ball |= isl
 w[ball] = 0
+# the lids keep their own shape: the groups' difference fades out towards each eye (from 26 mm to 15 mm from its centre),
+# as Rocketbox's eyeballs do not change with it (an opening widened round a fixed eyeball stares)
+for e in eyes:
+    w *= smooth(15, 26, np.linalg.norm(P - e, axis=1))
 dP *= w[:, None]
 pinned = []
 for e in eyes:
@@ -170,7 +176,7 @@ front = P[:, 1] < -5
 cheek = [vuv[i] for i in np.where((np.abs(P[:, 0]) > 28) & (np.abs(P[:, 0]) < 52) & (P[:, 2] < -15) & (P[:, 2] > -45) & front)[0] if i in vuv and vuv[i][0].endswith('_head')]
 eyeballs = {}
 for k, e in zip(('L', 'R'), eyes):
-    ids = [i for i in np.where(ball & (np.linalg.norm(P - e, axis=1) < 20))[0] if i in vuv]
+    ids = [i for i in np.where(ball & (np.linalg.norm(P - e, axis=1) < 26))[0] if i in vuv]
     if ids:
         mat = max(set(vuv[i][0] for i in ids), key=[vuv[i][0] for i in ids].count)
         uv = np.array([vuv[i][1] for i in ids if vuv[i][0] == mat])

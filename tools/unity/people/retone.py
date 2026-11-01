@@ -87,7 +87,12 @@ def main(src, info, out, cluster, shift=0.0, tone=None, undertone=None, eyes=Non
     if os.path.exists(op):
         _im = np.array(Image.open(op).convert('RGBA'), float); _m = _im[..., 3] > 128
         if _m.any(): cards = np.median(srgb_to_lab(_im[..., :3][_m]), 0)
-    grey_cards = cards is not None and float(np.hypot(cards[1], cards[2])) < 9 and cards[0] > 30
+    # (grey, not blonde: a light, colourless hair is grey only on a base judged 55 or older, the owner's rule for grey
+    # hair, data/rocketbox_ages.json; a younger base's light hair is blonde and takes the people's colour)
+    ages = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'rocketbox_ages.json'))).get('ages', {})
+    base_name = os.path.basename(J.get('base', '')).replace('_sculpt.fbx', '').replace('.fbx', '')
+    grey_cards = (cards is not None and float(np.hypot(cards[1], cards[2])) < 9 and cards[0] > 30
+                  and ages.get(base_name, 0) >= 55)
     ref_hair = cards[0] if cards is not None else own[0] - 20
     # the lids (J['lids']: texture boxes of the skin around each eye): their creases and lash lines are shading, not hair
     lids = np.zeros((H, W), float)
@@ -100,7 +105,7 @@ def main(src, info, out, cluster, shift=0.0, tone=None, undertone=None, eyes=Non
         lids = np.array(Image.fromarray((lids * 255).astype(np.uint8)).filter(ImageFilter.BoxBlur(6)), float) / 255.0
     print('cheek in texture', own.round(1), '->', new_cheek.round(1), '(measured', s_lab.round(1), '->', t_lab.round(1), ') k', round(float(kL), 3), round(float(kC), 3), 'hue', round(math.degrees(float(dh)), 1))
 
-    def retone_skin(lab, eyes_box=None, painted_hair=True, lid_mask=None, ab=11.0):
+    def retone_skin(lab, eyes_box=None, painted_hair=True, lid_mask=None, ab=11.0, lips=True):
         # (ab: how far in a* and b* a texel may lie from the cheek and still be skin: wider on the head, whose orbits and
         # lids are greyer than its cheeks and whose non-skin, the eyes and the hair, is kept apart by other means)
         d = np.sqrt(((lab[..., 0] - own[0]) / 22) ** 2 + ((lab[..., 1] - own[1]) / ab) ** 2 + ((lab[..., 2] - own[2]) / ab) ** 2)
@@ -119,6 +124,7 @@ def main(src, info, out, cluster, shift=0.0, tone=None, undertone=None, eyes=Non
         # lightness and chroma change in full, keeping their own redness against it
         wl = np.clip((lab[..., 1] - own[1] - 3) / 6, 0, 1) * np.clip((own[0] + 8 - L) / 8, 0, 1) * (1 - w)
         if lid_mask is not None: wl = wl * (1 - lid_mask)
+        if not lips: wl = np.zeros_like(wl)                # (the body's texture has no lips, only clothes)
         w = w + wl
         # the painted hair (brows, hairline, stubble): darker than the skin, not of it
         wh = np.clip((own[0] - 14 - L) / 12, 0, 1) * (1 - w) * np.clip((own[1] + 3 - lab[..., 1]) / 4, 0, 1) * 0.7 if painted_hair and not grey_cards else np.zeros_like(w)
@@ -182,7 +188,7 @@ def main(src, info, out, cluster, shift=0.0, tone=None, undertone=None, eyes=Non
     body_p = os.path.join(src, f'{prefix}_body_color.jpg')
     if os.path.exists(body_p):
         b = srgb_to_lab(np.array(Image.open(body_p).convert('RGB'), float))
-        Image.fromarray(lab_to_srgb(retone_skin(b, painted_hair=False))).save(os.path.join(out, f'{prefix}_body_color.jpg'), quality=92)
+        Image.fromarray(lab_to_srgb(retone_skin(b, painted_hair=False, lips=False))).save(os.path.join(out, f'{prefix}_body_color.jpg'), quality=92)
     if os.path.exists(op) and not grey_cards:
         im = np.array(Image.open(op).convert('RGBA'), float); a = im[..., 3]
         l = srgb_to_lab(im[..., :3]); m = a > 128
