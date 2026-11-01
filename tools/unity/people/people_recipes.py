@@ -72,6 +72,9 @@ def base_ok(base, target, gear, beards, review=None, hair=None):
     # light (blonde or light brown) hair, data/rocketbox_hair.json, only for a people whose hair is light too: part of it is
     # painted on the scalp, lighter than the skin, and would stay blonde on a person whose hair is dark
     if target != 'north_european' and (hair or {}).get(base, {}).get('light'): return False
+    # a Black person's hair is afro-textured or cropped (owner): a base whose loose hair falls below the ears cannot have
+    # its hair changed (hair_graft.py), so it never serves a Black people
+    if target in ('west_african', 'east_african') and base in rv.get('hair_long', []): return False
     if any(g in gear.get(base, []) for g in HEADGEAR) and base not in rv.get('gear_off', []): return False
     r = rv.get('people', {}).get(base, {})
     if r.get('headwear') in ('hat', 'cap', 'hood', 'helmet'): return False

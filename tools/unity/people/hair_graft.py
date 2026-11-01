@@ -65,6 +65,7 @@ class Head:
         if d.length > 1e-6 and d.dot(y) < 0: y = -y
         self.R = Matrix((x, y, z))
         self.bvh = surface_bvh(surface if surface is not None else self.meshes, None if surface is not None else is_head)
+        self.full_bvh = surface_bvh(self.meshes)                   # every surface: skin, neck, clothes
         # the skull's centre: halfway from the eyes to the back of the head at 30 mm above them, as far up again
         o = self.mid + self.R.transposed() @ Vector((0, 0, 0.03))
         hit, n, i, dist = self.bvh.ray_cast(o, self.R.transposed() @ Vector((0, 1, 0)))
@@ -118,20 +119,20 @@ def brow_or_lash(P):
     return ext.max() < 75 and P[:, 1].max() < 14 and P[:, 2].min() > -22 and P[:, 2].max() < 48 and np.abs(P[:, 0]).max() < 72
 
 
-def protected(d, r=None, s=None):
+def protected(d, r=None, s=None, ears=True):
     """What stands out from a skull without being hair (d: unit direction from the skull centre, frame axes; elevation
     from z): the face (in front, below 18 degrees: the forehead's hairline lies about 20 degrees up), the ears (to the sides between 30 below and 12 above, standing out no
     more than 30 mm: hair beyond that is hair), and everything below 30 degrees under the centre (the neck, the jaw)."""
     el = math.degrees(math.asin(max(-1.0, min(1.0, d.z))))
     if el < -30: return True
     if d.y < -0.35 and el < 18: return True
-    if abs(d.x) > 0.7 and -30 < el < 22 and (r is None or s is None or r < s + 0.035): return True
+    if ears and abs(d.x) > 0.7 and -30 < el < 22 and (r is None or s is None or r < s + 0.035): return True
     return False
 
 
 def over_skin(head, p, eyes_mm=26.0):
-    """A layer of hair lying over skin (long hair down the neck and shoulders, strands beside the face, a fringe): from the
-    vertex towards the neck's axis at its own height there is more of the head's surface, at least 6 mm in. Never near the
+    """A layer of hair lying over skin or clothes (long hair down the neck and shoulders, strands beside the face, a
+    fringe): from the vertex towards the neck's axis at its own height there is another surface, at least 6 mm in. Never near the
     eyes (the lids lie over the eyeballs) nor on the face below the brows (the mouth's inside lies behind it)."""
     q = head.frame(p)
     el = math.degrees(math.atan2(q.z, math.hypot(q.x, q.y)))
@@ -144,7 +145,7 @@ def over_skin(head, p, eyes_mm=26.0):
     to = a - q; dist = to.length
     if dist < 0.02: return False
     dw = head.R.transposed() @ (to / dist)
-    hit, n, i, t = head.bvh.ray_cast(p + dw * 0.004, dw, dist - 0.012)
+    hit, n, i, t = head.full_bvh.ray_cast(p + dw * 0.004, dw, dist - 0.012)
     return hit is not None and t > 0.002
 
 
@@ -156,21 +157,85 @@ def hanging(q):
     return el < -25 and q.y > -0.04 and math.hypot(q.x, q.y - 0.01) > 0.075
 
 
+def srgb_lab(c):
+    """sRGB (0..1, ... x 3) to CIE L*a*b* (D65)."""
+    c = np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
+    xyz = c @ np.array([[0.4124, 0.3576, 0.1805], [0.2126, 0.7152, 0.0722], [0.0193, 0.1192, 0.9505]]).T / np.array([0.95047, 1.0, 1.08883])
+    f = np.where(xyz > 216 / 24389, np.cbrt(xyz), (24389 / 27 * xyz + 16) / 116)
+    return np.stack([116 * f[..., 1] - 16, 500 * (f[..., 0] - f[..., 1]), 200 * (f[..., 1] - f[..., 2])], -1)
+
+
+def hair_coloured(o, bm, head, tex_dir):
+    """Which of the head's vertices are painted as hair, not skin: their texel lies more than 13 in L*a*b* from the
+    head's own cheek, or 18 darker (the ears, the face and the neck are skin: whatever their shape, they stay)."""
+    uvl = bm.loops.layers.uv.active
+    mats = {i: m.name for i, m in enumerate(o.data.materials) if m}
+    out = {}
+    M = o.matrix_world
+    for mi, name in mats.items():
+        if not name.endswith('_head'): continue
+        path = os.path.join(tex_dir, f'{name}_color.jpg')
+        if not os.path.exists(path): continue
+        img = bpy.data.images.load(path); w, h = img.size
+        px = np.empty(w * h * 4, np.float32); img.pixels.foreach_get(px); px = px.reshape(h, w, 4)[..., :3]
+        verts = [v for v in bm.verts if v.link_loops and any(l.face.material_index == mi for l in v.link_loops)]
+        uv = np.array([tuple(next(l for l in v.link_loops if l.face.material_index == mi)[uvl].uv) for v in verts])
+        col = px[np.clip((uv[:, 1] * h).astype(int), 0, h - 1), np.clip((uv[:, 0] * w).astype(int), 0, w - 1)]
+        lab = srgb_lab(col.astype(np.float64))
+        P = np.array([tuple(head.R @ ((M @ v.co) - head.mid)) for v in verts]) * 1000.0
+        cheek = (np.abs(P[:, 0]) > 30) & (np.abs(P[:, 0]) < 55) & (P[:, 2] < -15) & (P[:, 2] > -45) & (P[:, 1] < 0)
+        ref = np.median(lab[cheek], 0) if cheek.sum() > 5 else np.median(lab, 0)
+        de = np.linalg.norm(lab - ref, axis=1)
+        for v, e, L in zip(verts, de, lab[:, 0]): out[v] = (e > 13) or (L < ref[0] - 18)
+        bpy.data.images.remove(img)
+    return out
+
+
 # --- the skull --------------------------------------------------------------------------------------------------------
 bpy.ops.wm.read_factory_settings(use_empty=True)
 sobjs = import_fbx(os.environ['GRAFT_SKULL'])
 SK = Head(sobjs)
 
 
-def skull_scale(head):
-    """How much larger head's skull is than the bald head's: their foreheads' distances from the skull centres, 10 degrees
-    up from straight ahead (skin on every head: below any hairline, above the brows), kept within 10 and 15 % of the eyes'
-    spacing ratio (Rocketbox places the eyes at one spacing per sex, so that alone cannot size a skull)."""
+def face_width(head):
+    """The face's width at the cheekbones (metres): the widest head-material vertices in front of the eyes' centres, 10 to
+    30 mm below them. Skin on every head, whatever the hair (a fringe hides the forehead)."""
+    w = 0.0
+    for o in head.meshes:
+        M = o.matrix_world
+        mi = {i for i, m in enumerate(o.data.materials) if m and m.name.endswith('_head')}
+        if not mi: continue
+        on = set()
+        for p in o.data.polygons:
+            if p.material_index in mi: on.update(p.vertices)
+        for i in on:
+            q = head.R @ ((M @ o.data.vertices[i].co) - head.mid)
+            if q.y < -0.005 and -0.03 < q.z < -0.01: w = max(w, abs(q.x))
+    return 2 * w
+
+
+def skull_scale(head, skin=None):
+    """How much larger head's skull is than the bald head's. From the head's own skin round the scalp where it shows (the
+    forehead, the temples, behind the ears and the nape: texels painted as skin, 10 to 40 degrees up, or behind), the
+    median of their distances from the skull centre against the bald head's in the same directions; where hair hides
+    them all (a fringe and a bob), the sex's typical size from the eyes' spacing (Rocketbox: one spacing per sex), a
+    little under, so that hair is never left standing inside a skull too large for it."""
     if getattr(head, 'k', None) is None:
-        d = Vector((0, -math.cos(math.radians(10)), math.sin(math.radians(10))))
-        rt, rs = head.scalp(d), SK.scalp(d)
         k0 = head.ipd / SK.ipd
-        head.k = k0 if (rt is None or rs is None) else min(max(rt / rs, 0.9 * k0), 1.15 * k0)
+        ratios = []
+        for p in (skin or []):
+            q = head.frame(p); r = q.length
+            if r < 1e-6: continue
+            d = q / r
+            el = math.degrees(math.asin(max(-1.0, min(1.0, d.z))))
+            front = d.y < -0.6 and 10 < el < 40
+            temple = abs(d.x) > 0.6 and 10 < el < 40
+            nape = d.y > 0.5 and -10 < el < 30
+            if not (front or temple or nape): continue
+            rs = SK.scalp(d)
+            if rs: ratios.append(r / rs)
+        head.k = float(np.median(ratios)) if len(ratios) >= 20 else 0.97 * k0
+        head.k_from = 'skin' if len(ratios) >= 20 else 'eyes'
     return head.k
 
 
@@ -198,13 +263,16 @@ for o in T.meshes:
     Mi = M.inverted()
     move, hang = {}, set()
     head_verts = {v for f in bm.faces if is_head(o, f.material_index) for v in f.verts}
+    painted = hair_coloured(o, bm, T, os.path.dirname(os.path.abspath(target_path)))
+    skull_scale(T, [M @ v.co for v in head_verts if painted.get(v) is not None and not painted[v]])
     for v in head_verts:
+        if not bool(painted.get(v, True)): continue                # painted as skin: never hair, whatever its shape
         q = T.frame(M @ v.co); r = q.length
         if r < 1e-6: continue
         d = q / r
         if over_skin(T, M @ v.co): hang.add(v); continue          # a layer of hair over skin: cut away
         s = skull_r(T, d)
-        if protected(d, r, s): continue
+        if protected(d, r, s, ears=False): continue
         if s is None or r <= s + 0.003: continue
         move[v] = Mi @ T.world(d * (s + 0.001))
     for f in bm.faces:
@@ -260,7 +328,10 @@ if donor_path != '-':
                 mname = next(m.name for m in ob.data.materials if m and m.name.endswith('_opacity'))
             else:
                 out_v = set()
+                painted_d = hair_coloured(ob, bm, D, src_dir)
+                skull_scale(D, [M @ v.co for v in painted_d if not bool(painted_d[v])])
                 for v in {v for f in bm.faces if is_head(ob, f.material_index) for v in f.verts}:
+                    if not bool(painted_d.get(v, True)): continue  # the donor's skin never comes with its hair
                     q = D.frame(M @ v.co); r = q.length
                     if r < 1e-6: continue
                     d = q / r
@@ -268,7 +339,7 @@ if donor_path != '-':
                     if over_skin(D, M @ v.co): out_v.add(v); continue
                     if protected(d, r, s): continue
                     if s is not None and r > s + 0.003: out_v.add(v)
-                keep = {f for f in bm.faces if is_head(ob, f.material_index) and sum(v in out_v for v in f.verts) >= len(f.verts) - 1}
+                keep = {f for f in bm.faces if is_head(ob, f.material_index) and all(v in out_v for v in f.verts)}
                 mname = next(m.name for m in ob.data.materials if m and m.name.endswith('_head'))
             bmesh.ops.delete(bm, geom=[f for f in bm.faces if f not in keep], context='FACES')
             bm.to_mesh(ob.data); bm.free()
@@ -343,7 +414,7 @@ for o in [o for o in bpy.data.objects if o.type == 'ARMATURE' and o is not T.arm
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.export_scene.fbx(filepath=out_path, use_selection=True, add_leaf_bones=False, bake_anim=False,
                          use_mesh_modifiers=False, mesh_smooth_type='FACE', path_mode='STRIP')
-info = {'target': os.path.basename(target_path), 'target_dir': tdir, 'hair': f'{hair_hex:06x}', 'paint': paint,
+info = {'target': os.path.basename(target_path), 'target_dir': tdir, 'skull_scale': round(T.k, 3), 'skull_from': T.k_from, 'hair': f'{hair_hex:06x}', 'paint': paint,
         'donor': os.path.basename(donor_path), 'cards_removed': removed_cards,
         'scalp_pulled': pulled, 'hanging_cut': cut, 'grafted_vertices': grafted, 'missed_rays': missed, 'textures': textures}
 json.dump(info, open(out_path[:-4] + '_graft.json', 'w'))

@@ -220,5 +220,20 @@
   ]
  ],
  "_identities": "people who share one face (rocketbox_identities.py: every measured feature within 1.5 mm, confirmed by eye); a face serves as a base once, whichever of its people is used",
- "_religious": "Female_Adult_06 and Female_Adult_10 (hijab, modelled in the head and body), Male_Adult_15 (skullcap, in the head), Male_Adult_19 and Male_Adult_21 (keffiyeh: a separate piece, but no scalp under it): never bases until a scalp and hair are grafted from another head (owner, 2026-11-01: religious dress is anachronistic in this world)"
+ "_religious": "Female_Adult_06 and Female_Adult_10 (hijab, modelled in the head and body), Male_Adult_15 (skullcap, in the head), Male_Adult_19 and Male_Adult_21 (keffiyeh: a separate piece, but no scalp under it): never bases until a scalp and hair are grafted from another head (owner, 2026-11-01: religious dress is anachronistic in this world)",
+ "hair_long": [
+  "Female_Adult_01",
+  "Female_Adult_03",
+  "Female_Adult_05",
+  "Female_Adult_08",
+  "Female_Adult_12",
+  "Female_Adult_13",
+  "Female_Adult_14",
+  "Female_Adult_15",
+  "Female_Adult_17",
+  "Female_Party_01",
+  "Business_Female_02",
+  "Business_Female_03"
+ ],
+ "_hair_long": "women whose loose hair falls below the ears (a bob or longer), judged by eye on the library sheet: their hair is the head's own surface below the ears, which hair_graft.py cannot take off without opening the head, so they take no new hairstyle (people_recipes.base_ok: never a base for a people whose hair differs from theirs, until that is solved)"
 }
