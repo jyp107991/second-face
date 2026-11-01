@@ -486,6 +486,13 @@ does not pick ancestry: he was dropped from the Black set). Found and fixed on t
 cheeks and jaw (the carrier is cut at 130 mm below the eyes before the landmarks); Blender's float images colour-manage
 on save (the sampling and colour work left Blender).
 
+*The first batch* (`docs/evidence/unity/p4/research/qa_real_black_women_v1.jpg`: 23 Black women, each from a different
+photograph, on ten Rocketbox women's heads with VALID's Black shapes): every one reads as a real, different Black woman:
+the photograph's skin, nose, lips and brows on the head, in Rocketbox's style. Open: the one afro (Rocketbox's) on most of
+them, with a hard front rim; a lighter ring of the base's lid skin round some eyes (the eye zone is now 12 mm); on the
+first men the base's painted beard showed under the jaw where the bake faded (the bake now reaches 140 mm and men's
+bases are never bearded; the men are being made again).
+
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own
 triangles (`rocketbox_head_map.py`, seam-safe). (1) The per-texel change with age, regressed over the 78 faces without soot,
