@@ -1,0 +1,5267 @@
+{
+ "_about": "VALID against Rocketbox (owner, 2026-11-01: \"use VALID, compare consistency first\"): the same features measured the",
+ "heads": {
+  "AIAN_F_1_Casual": {
+   "nose_length": [
+    61.8,
+    "above"
+   ],
+   "nose_projection": [
+    17.0,
+    "library"
+   ],
+   "upper_lip": [
+    7.1,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    2.2,
+    "library"
+   ],
+   "lower_lip": [
+    3.7,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    9.4,
+    "above"
+   ],
+   "philtrum": [
+    10.7,
+    "library"
+   ],
+   "chin_length": [
+    42.1,
+    "library"
+   ],
+   "chin_projection": [
+    1.4,
+    "library"
+   ],
+   "lower_face": [
+    59.9,
+    "library"
+   ],
+   "face_height": [
+    121.7,
+    "library"
+   ],
+   "mouth_width": [
+    54.0,
+    "library"
+   ],
+   "nose_width": [
+    30.1,
+    "below"
+   ],
+   "chin_forward": [
+    -7.8,
+    "library"
+   ],
+   "lips_forward": [
+    5.1,
+    "above"
+   ],
+   "dorsum": [
+    -4.1,
+    "library"
+   ],
+   "brow_projection": [
+    -1.9,
+    "library"
+   ],
+   "eye_spacing": [
+    62.7,
+    "above"
+   ],
+   "eye_size": [
+    26.5,
+    "below"
+   ],
+   "cheekbone_width": [
+    134.6,
+    "above"
+   ],
+   "jaw_width": [
+    122.5,
+    "library"
+   ],
+   "jaw_low_width": [
+    90.5,
+    "library"
+   ],
+   "chin_width": [
+    59.3,
+    "above"
+   ],
+   "cheek_width": [
+    113.7,
+    "above"
+   ]
+  },
+  "AIAN_F_2_Casual": {
+   "nose_length": [
+    58.0,
+    "library"
+   ],
+   "nose_projection": [
+    14.5,
+    "library"
+   ],
+   "upper_lip": [
+    6.2,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    2.9,
+    "library"
+   ],
+   "lower_lip": [
+    4.1,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    10.2,
+    "above"
+   ],
+   "philtrum": [
+    11.3,
+    "library"
+   ],
+   "chin_length": [
+    43.0,
+    "library"
+   ],
+   "chin_projection": [
+    1.4,
+    "library"
+   ],
+   "lower_face": [
+    60.4,
+    "library"
+   ],
+   "face_height": [
+    118.5,
+    "library"
+   ],
+   "mouth_width": [
+    54.0,
+    "library"
+   ],
+   "nose_width": [
+    31.0,
+    "library"
+   ],
+   "chin_forward": [
+    -7.6,
+    "library"
+   ],
+   "lips_forward": [
+    5.8,
+    "above"
+   ],
+   "dorsum": [
+    -2.9,
+    "library"
+   ],
+   "brow_projection": [
+    -2.7,
+    "library"
+   ],
+   "eye_spacing": [
+    62.5,
+    "above"
+   ],
+   "eye_size": [
+    27.2,
+    "below"
+   ],
+   "cheekbone_width": [
+    134.9,
+    "above"
+   ],
+   "jaw_width": [
+    122.8,
+    "library"
+   ],
+   "jaw_low_width": [
+    90.6,
+    "library"
+   ],
+   "chin_width": [
+    59.1,
+    "above"
+   ],
+   "cheek_width": [
+    114.5,
+    "above"
+   ]
+  },
+  "AIAN_M_1_Casual": {
+   "nose_length": [
+    57.8,
+    "library"
+   ],
+   "nose_projection": [
+    14.9,
+    "library"
+   ],
+   "upper_lip": [
+    8.2,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    3.8,
+    "library"
+   ],
+   "lower_lip": [
+    5.1,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    7.0,
+    "library"
+   ],
+   "philtrum": [
+    12.5,
+    "library"
+   ],
+   "chin_length": [
+    46.7,
+    "library"
+   ],
+   "chin_projection": [
+    1.8,
+    "library"
+   ],
+   "lower_face": [
+    67.4,
+    "library"
+   ],
+   "face_height": [
+    125.2,
+    "library"
+   ],
+   "mouth_width": [
+    58.0,
+    "library"
+   ],
+   "nose_width": [
+    38.1,
+    "library"
+   ],
+   "chin_forward": [
+    -4.1,
+    "library"
+   ],
+   "lips_forward": [
+    4.5,
+    "library"
+   ],
+   "dorsum": [
+    2.3,
+    "library"
+   ],
+   "brow_projection": [
+    1.1,
+    "above"
+   ],
+   "eye_spacing": [
+    65.1,
+    "above"
+   ],
+   "eye_size": [
+    26.6,
+    "below"
+   ],
+   "cheekbone_width": [
+    135.3,
+    "library"
+   ],
+   "jaw_width": [
+    126.7,
+    "library"
+   ],
+   "jaw_low_width": [
+    106.8,
+    "library"
+   ],
+   "chin_width": [
+    52.7,
+    "library"
+   ],
+   "cheek_width": [
+    113.3,
+    "below"
+   ]
+  },
+  "AIAN_M_2_Casual": {
+   "nose_length": [
+    54.5,
+    "library"
+   ],
+   "nose_projection": [
+    13.2,
+    "library"
+   ],
+   "upper_lip": [
+    7.6,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    1.0,
+    "library"
+   ],
+   "lower_lip": [
+    5.8,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    6.5,
+    "library"
+   ],
+   "philtrum": [
+    14.1,
+    "library"
+   ],
+   "chin_length": [
+    48.1,
+    "library"
+   ],
+   "chin_projection": [
+    1.6,
+    "library"
+   ],
+   "lower_face": [
+    69.8,
+    "library"
+   ],
+   "face_height": [
+    124.4,
+    "library"
+   ],
+   "mouth_width": [
+    59.0,
+    "library"
+   ],
+   "nose_width": [
+    35.5,
+    "library"
+   ],
+   "chin_forward": [
+    -5.8,
+    "library"
+   ],
+   "lips_forward": [
+    3.0,
+    "library"
+   ],
+   "dorsum": [
+    -2.2,
+    "library"
+   ],
+   "brow_projection": [
+    2.6,
+    "above"
+   ],
+   "eye_spacing": [
+    66.3,
+    "above"
+   ],
+   "eye_size": [
+    26.7,
+    "below"
+   ],
+   "cheekbone_width": [
+    134.8,
+    "library"
+   ],
+   "jaw_width": [
+    125.5,
+    "library"
+   ],
+   "jaw_low_width": [
+    107.7,
+    "library"
+   ],
+   "chin_width": [
+    53.3,
+    "library"
+   ],
+   "cheek_width": [
+    114.9,
+    "library"
+   ]
+  },
+  "Asian_F_1_Casual": {
+   "nose_length": [
+    51.6,
+    "library"
+   ],
+   "nose_projection": [
+    9.8,
+    "below"
+   ],
+   "upper_lip": [
+    8.2,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    2.4,
+    "library"
+   ],
+   "lower_lip": [
+    5.7,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    7.2,
+    "library"
+   ],
+   "philtrum": [
+    9.7,
+    "below"
+   ],
+   "chin_length": [
+    42.9,
+    "library"
+   ],
+   "chin_projection": [
+    2.3,
+    "widened"
+   ],
+   "lower_face": [
+    60.9,
+    "library"
+   ],
+   "face_height": [
+    112.5,
+    "library"
+   ],
+   "mouth_width": [
+    54.0,
+    "library"
+   ],
+   "nose_width": [
+    34.1,
+    "library"
+   ],
+   "chin_forward": [
+    -5.5,
+    "library"
+   ],
+   "lips_forward": [
+    3.6,
+    "library"
+   ],
+   "dorsum": [
+    -2.0,
+    "library"
+   ],
+   "brow_projection": [
+    -4.7,
+    "library"
+   ],
+   "eye_spacing": [
+    61.7,
+    "above"
+   ],
+   "eye_size": [
+    27.5,
+    "below"
+   ],
+   "cheekbone_width": [
+    133.3,
+    "library"
+   ],
+   "jaw_width": [
+    113.5,
+    "library"
+   ],
+   "jaw_low_width": [
+    84.4,
+    "library"
+   ],
+   "chin_width": [
+    48.9,
+    "library"
+   ],
+   "cheek_width": [
+    112.2,
+    "library"
+   ]
+  },
+  "Asian_F_2_Casual": {
+   "nose_length": [
+    51.7,
+    "library"
+   ],
+   "nose_projection": [
+    9.8,
+    "below"
+   ],
+   "upper_lip": [
+    8.2,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    2.4,
+    "library"
+   ],
+   "lower_lip": [
+    5.7,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    7.2,
+    "library"
+   ],
+   "philtrum": [
+    9.7,
+    "below"
+   ],
+   "chin_length": [
+    42.9,
+    "library"
+   ],
+   "chin_projection": [
+    2.3,
+    "widened"
+   ],
+   "lower_face": [
+    60.9,
+    "library"
+   ],
+   "face_height": [
+    112.5,
+    "library"
+   ],
+   "mouth_width": [
+    54.0,
+    "library"
+   ],
+   "nose_width": [
+    34.1,
+    "library"
+   ],
+   "chin_forward": [
+    -5.6,
+    "library"
+   ],
+   "lips_forward": [
+    3.6,
+    "library"
+   ],
+   "dorsum": [
+    -2.0,
+    "library"
+   ],
+   "brow_projection": [
+    -4.7,
+    "library"
+   ],
+   "eye_spacing": [
+    61.7,
+    "above"
+   ],
+   "eye_size": [
+    27.6,
+    "below"
+   ],
+   "cheekbone_width": [
+    133.3,
+    "above"
+   ],
+   "jaw_width": [
+    113.5,
+    "library"
+   ],
+   "jaw_low_width": [
+    84.4,
+    "library"
+   ],
+   "chin_width": [
+    48.9,
+    "library"
+   ],
+   "cheek_width": [
+    112.2,
+    "library"
+   ]
+  },
+  "Asian_F_3_Casual": {
+   "nose_length": [
+    52.5,
+    "library"
+   ],
+   "nose_projection": [
+    10.9,
+    "library"
+   ],
+   "upper_lip": [
+    8.4,
+    "widened"
+   ],
+   "upper_lip_fwd": [
+    3.7,
+    "above"
+   ],
+   "lower_lip": [
+    5.5,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    7.2,
+    "library"
+   ],
+   "philtrum": [
+    9.1,
+    "below"
+   ],
+   "chin_length": [
+    42.9,
+    "library"
+   ],
+   "chin_projection": [
+    2.3,
+    "widened"
+   ],
+   "lower_face": [
+    60.4,
+    "library"
+   ],
+   "face_height": [
+    112.9,
+    "library"
+   ],
+   "mouth_width": [
+    54.0,
+    "library"
+   ],
+   "nose_width": [
+    30.6,
+    "below"
+   ],
+   "chin_forward": [
+    -4.3,
+    "library"
+   ],
+   "lips_forward": [
+    4.3,
+    "library"
+   ],
+   "dorsum": [
+    -1.9,
+    "library"
+   ],
+   "brow_projection": [
+    -4.3,
+    "library"
+   ],
+   "eye_spacing": [
+    61.0,
+    "above"
+   ],
+   "eye_size": [
+    27.7,
+    "below"
+   ],
+   "cheekbone_width": [
+    133.4,
+    "above"
+   ],
+   "jaw_width": [
+    113.7,
+    "library"
+   ],
+   "jaw_low_width": [
+    84.8,
+    "library"
+   ],
+   "chin_width": [
+    48.9,
+    "library"
+   ],
+   "cheek_width": [
+    112.0,
+    "library"
+   ]
+  },
+  "Asian_M_1_Casual": {
+   "nose_length": [
+    51.8,
+    "library"
+   ],
+   "nose_projection": [
+    10.6,
+    "below"
+   ],
+   "upper_lip": [
+    6.3,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    3.1,
+    "library"
+   ],
+   "lower_lip": [
+    2.8,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    9.0,
+    "library"
+   ],
+   "philtrum": [
+    15.4,
+    "library"
+   ],
+   "chin_length": [
+    47.2,
+    "library"
+   ],
+   "chin_projection": [
+    -0.1,
+    "below"
+   ],
+   "lower_face": [
+    69.0,
+    "library"
+   ],
+   "face_height": [
+    120.7,
+    "library"
+   ],
+   "mouth_width": [
+    56.0,
+    "library"
+   ],
+   "nose_width": [
+    34.6,
+    "library"
+   ],
+   "chin_forward": [
+    -8.3,
+    "library"
+   ],
+   "lips_forward": [
+    6.1,
+    "above"
+   ],
+   "dorsum": [
+    -3.1,
+    "library"
+   ],
+   "brow_projection": [
+    -1.8,
+    "library"
+   ],
+   "eye_spacing": [
+    63.8,
+    "below"
+   ],
+   "eye_size": [
+    27.2,
+    "below"
+   ],
+   "cheekbone_width": [
+    138.2,
+    "library"
+   ],
+   "jaw_width": [
+    127.8,
+    "library"
+   ],
+   "jaw_low_width": [
+    98.5,
+    "below"
+   ],
+   "chin_width": [
+    64.8,
+    "above"
+   ],
+   "cheek_width": [
+    125.7,
+    "library"
+   ]
+  },
+  "Asian_M_2_Casual": {
+   "nose_length": [
+    54.2,
+    "library"
+   ],
+   "nose_projection": [
+    11.0,
+    "below"
+   ],
+   "upper_lip": [
+    6.7,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    3.8,
+    "library"
+   ],
+   "lower_lip": [
+    3.6,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    8.6,
+    "library"
+   ],
+   "philtrum": [
+    13.3,
+    "library"
+   ],
+   "chin_length": [
+    46.5,
+    "library"
+   ],
+   "chin_projection": [
+    1.4,
+    "library"
+   ],
+   "lower_face": [
+    66.5,
+    "library"
+   ],
+   "face_height": [
+    120.7,
+    "library"
+   ],
+   "mouth_width": [
+    54.0,
+    "library"
+   ],
+   "nose_width": [
+    33.5,
+    "below"
+   ],
+   "chin_forward": [
+    -5.9,
+    "library"
+   ],
+   "lips_forward": [
+    5.5,
+    "library"
+   ],
+   "dorsum": [
+    -2.8,
+    "library"
+   ],
+   "brow_projection": [
+    -2.4,
+    "library"
+   ],
+   "eye_spacing": [
+    63.7,
+    "below"
+   ],
+   "eye_size": [
+    27.0,
+    "below"
+   ],
+   "cheekbone_width": [
+    136.9,
+    "library"
+   ],
+   "jaw_width": [
+    127.9,
+    "library"
+   ],
+   "jaw_low_width": [
+    98.9,
+    "below"
+   ],
+   "chin_width": [
+    58.7,
+    "library"
+   ],
+   "cheek_width": [
+    117.2,
+    "library"
+   ]
+  },
+  "Asian_M_3_Casual": {
+   "nose_length": [
+    54.4,
+    "library"
+   ],
+   "nose_projection": [
+    11.2,
+    "below"
+   ],
+   "upper_lip": [
+    6.9,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    3.9,
+    "library"
+   ],
+   "lower_lip": [
+    3.0,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    8.6,
+    "library"
+   ],
+   "philtrum": [
+    14.0,
+    "library"
+   ],
+   "chin_length": [
+    46.1,
+    "library"
+   ],
+   "chin_projection": [
+    1.5,
+    "library"
+   ],
+   "lower_face": [
+    67.0,
+    "library"
+   ],
+   "face_height": [
+    121.4,
+    "library"
+   ],
+   "mouth_width": [
+    54.0,
+    "library"
+   ],
+   "nose_width": [
+    34.1,
+    "library"
+   ],
+   "chin_forward": [
+    -5.6,
+    "library"
+   ],
+   "lips_forward": [
+    5.5,
+    "library"
+   ],
+   "dorsum": [
+    -3.0,
+    "library"
+   ],
+   "brow_projection": [
+    -2.0,
+    "library"
+   ],
+   "eye_spacing": [
+    63.7,
+    "below"
+   ],
+   "eye_size": [
+    27.4,
+    "below"
+   ],
+   "cheekbone_width": [
+    136.2,
+    "library"
+   ],
+   "jaw_width": [
+    129.3,
+    "library"
+   ],
+   "jaw_low_width": [
+    101.0,
+    "below"
+   ],
+   "chin_width": [
+    59.6,
+    "library"
+   ],
+   "cheek_width": [
+    116.9,
+    "library"
+   ]
+  },
+  "Black_F_1_Casual": {
+   "nose_length": [
+    51.7,
+    "library"
+   ],
+   "nose_projection": [
+    9.8,
+    "below"
+   ],
+   "upper_lip": [
+    6.6,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    5.1,
+    "above"
+   ],
+   "lower_lip": [
+    5.7,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    8.3,
+    "library"
+   ],
+   "philtrum": [
+    13.3,
+    "widened"
+   ],
+   "chin_length": [
+    43.6,
+    "library"
+   ],
+   "chin_projection": [
+    1.0,
+    "library"
+   ],
+   "lower_face": [
+    63.5,
+    "library"
+   ],
+   "face_height": [
+    115.3,
+    "library"
+   ],
+   "mouth_width": [
+    56.0,
+    "library"
+   ],
+   "nose_width": [
+    40.1,
+    "library"
+   ],
+   "chin_forward": [
+    -3.4,
+    "library"
+   ],
+   "lips_forward": [
+    6.2,
+    "above"
+   ],
+   "dorsum": [
+    -3.1,
+    "library"
+   ],
+   "brow_projection": [
+    -3.3,
+    "library"
+   ],
+   "eye_spacing": [
+    62.2,
+    "above"
+   ],
+   "eye_size": [
+    27.1,
+    "below"
+   ],
+   "cheekbone_width": [
+    137.9,
+    "above"
+   ],
+   "jaw_width": [
+    122.2,
+    "library"
+   ],
+   "jaw_low_width": [
+    97.9,
+    "library"
+   ],
+   "chin_width": [
+    51.2,
+    "library"
+   ],
+   "cheek_width": [
+    125.0,
+    "above"
+   ]
+  },
+  "Black_F_2_Casual": {
+   "nose_length": [
+    51.9,
+    "library"
+   ],
+   "nose_projection": [
+    10.5,
+    "library"
+   ],
+   "upper_lip": [
+    6.8,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    3.9,
+    "above"
+   ],
+   "lower_lip": [
+    4.4,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    8.1,
+    "library"
+   ],
+   "philtrum": [
+    13.5,
+    "widened"
+   ],
+   "chin_length": [
+    41.6,
+    "library"
+   ],
+   "chin_projection": [
+    0.9,
+    "library"
+   ],
+   "lower_face": [
+    61.9,
+    "library"
+   ],
+   "face_height": [
+    113.8,
+    "library"
+   ],
+   "mouth_width": [
+    55.0,
+    "library"
+   ],
+   "nose_width": [
+    36.1,
+    "library"
+   ],
+   "chin_forward": [
+    -5.0,
+    "library"
+   ],
+   "lips_forward": [
+    5.5,
+    "above"
+   ],
+   "dorsum": [
+    -2.5,
+    "library"
+   ],
+   "brow_projection": [
+    -3.0,
+    "library"
+   ],
+   "eye_spacing": [
+    62.7,
+    "above"
+   ],
+   "eye_size": [
+    24.9,
+    "below"
+   ],
+   "cheekbone_width": [
+    135.3,
+    "above"
+   ],
+   "jaw_width": [
+    119.0,
+    "library"
+   ],
+   "jaw_low_width": [
+    97.5,
+    "library"
+   ],
+   "chin_width": [
+    49.6,
+    "library"
+   ],
+   "cheek_width": [
+    119.0,
+    "above"
+   ]
+  },
+  "Black_F_3_Casual": {
+   "nose_length": [
+    52.0,
+    "library"
+   ],
+   "nose_projection": [
+    10.9,
+    "library"
+   ],
+   "upper_lip": [
+    7.1,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    4.3,
+    "above"
+   ],
+   "lower_lip": [
+    4.2,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    7.9,
+    "library"
+   ],
+   "philtrum": [
+    13.3,
+    "widened"
+   ],
+   "chin_length": [
+    41.6,
+    "library"
+   ],
+   "chin_projection": [
+    0.8,
+    "library"
+   ],
+   "lower_face": [
+    62.0,
+    "library"
+   ],
+   "face_height": [
+    114.0,
+    "library"
+   ],
+   "mouth_width": [
+    55.0,
+    "library"
+   ],
+   "nose_width": [
+    37.0,
+    "library"
+   ],
+   "chin_forward": [
+    -4.2,
+    "library"
+   ],
+   "lips_forward": [
+    5.7,
+    "above"
+   ],
+   "dorsum": [
+    -2.3,
+    "library"
+   ],
+   "brow_projection": [
+    -3.2,
+    "library"
+   ],
+   "eye_spacing": [
+    62.4,
+    "above"
+   ],
+   "eye_size": [
+    25.2,
+    "below"
+   ],
+   "cheekbone_width": [
+    136.0,
+    "above"
+   ],
+   "jaw_width": [
+    119.3,
+    "library"
+   ],
+   "jaw_low_width": [
+    98.2,
+    "library"
+   ],
+   "chin_width": [
+    52.0,
+    "library"
+   ],
+   "cheek_width": [
+    120.0,
+    "above"
+   ]
+  },
+  "Black_M_1_Casual": {
+   "nose_length": [
+    48.5,
+    "below"
+   ],
+   "nose_projection": [
+    12.5,
+    "library"
+   ],
+   "upper_lip": [
+    7.3,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    6.8,
+    "above"
+   ],
+   "lower_lip": [
+    4.4,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    8.6,
+    "library"
+   ],
+   "philtrum": [
+    17.5,
+    "library"
+   ],
+   "chin_length": [
+    48.1,
+    "library"
+   ],
+   "chin_projection": [
+    2.8,
+    "library"
+   ],
+   "lower_face": [
+    72.9,
+    "library"
+   ],
+   "face_height": [
+    121.3,
+    "library"
+   ],
+   "mouth_width": [
+    54.0,
+    "library"
+   ],
+   "nose_width": [
+    41.1,
+    "library"
+   ],
+   "chin_forward": [
+    -2.7,
+    "library"
+   ],
+   "lips_forward": [
+    6.2,
+    "above"
+   ],
+   "dorsum": [
+    2.1,
+    "library"
+   ],
+   "brow_projection": [
+    -0.4,
+    "library"
+   ],
+   "eye_spacing": [
+    61.6,
+    "below"
+   ],
+   "eye_size": [
+    27.1,
+    "below"
+   ],
+   "cheekbone_width": [
+    140.1,
+    "above"
+   ],
+   "jaw_width": [
+    134.1,
+    "library"
+   ],
+   "jaw_low_width": [
+    109.2,
+    "library"
+   ],
+   "chin_width": [
+    57.9,
+    "library"
+   ],
+   "cheek_width": [
+    125.7,
+    "library"
+   ]
+  },
+  "Black_M_2_Casual": {
+   "nose_length": [
+    50.4,
+    "library"
+   ],
+   "nose_projection": [
+    12.7,
+    "library"
+   ],
+   "upper_lip": [
+    6.5,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    6.5,
+    "above"
+   ],
+   "lower_lip": [
+    3.5,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    8.5,
+    "library"
+   ],
+   "philtrum": [
+    17.8,
+    "library"
+   ],
+   "chin_length": [
+    44.6,
+    "library"
+   ],
+   "chin_projection": [
+    2.4,
+    "library"
+   ],
+   "lower_face": [
+    69.0,
+    "library"
+   ],
+   "face_height": [
+    119.3,
+    "widened"
+   ],
+   "mouth_width": [
+    56.0,
+    "library"
+   ],
+   "nose_width": [
+    43.1,
+    "library"
+   ],
+   "chin_forward": [
+    -2.7,
+    "library"
+   ],
+   "lips_forward": [
+    6.3,
+    "above"
+   ],
+   "dorsum": [
+    2.5,
+    "library"
+   ],
+   "brow_projection": [
+    -1.5,
+    "library"
+   ],
+   "eye_spacing": [
+    64.8,
+    "above"
+   ],
+   "eye_size": [
+    26.7,
+    "below"
+   ],
+   "cheekbone_width": [
+    135.9,
+    "library"
+   ],
+   "jaw_width": [
+    128.5,
+    "library"
+   ],
+   "jaw_low_width": [
+    100.5,
+    "below"
+   ],
+   "chin_width": [
+    51.2,
+    "library"
+   ],
+   "cheek_width": [
+    117.4,
+    "library"
+   ]
+  },
+  "Black_M_3_Casual": {
+   "nose_length": [
+    50.3,
+    "widened"
+   ],
+   "nose_projection": [
+    12.5,
+    "library"
+   ],
+   "upper_lip": [
+    6.7,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    4.3,
+    "library"
+   ],
+   "lower_lip": [
+    5.4,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    7.2,
+    "library"
+   ],
+   "philtrum": [
+    17.1,
+    "library"
+   ],
+   "chin_length": [
+    44.7,
+    "library"
+   ],
+   "chin_projection": [
+    3.4,
+    "library"
+   ],
+   "lower_face": [
+    68.4,
+    "library"
+   ],
+   "face_height": [
+    118.7,
+    "widened"
+   ],
+   "mouth_width": [
+    57.0,
+    "library"
+   ],
+   "nose_width": [
+    42.6,
+    "library"
+   ],
+   "chin_forward": [
+    -3.2,
+    "library"
+   ],
+   "lips_forward": [
+    4.1,
+    "library"
+   ],
+   "dorsum": [
+    2.6,
+    "library"
+   ],
+   "brow_projection": [
+    -2.9,
+    "library"
+   ],
+   "eye_spacing": [
+    64.9,
+    "above"
+   ],
+   "eye_size": [
+    27.2,
+    "below"
+   ],
+   "cheekbone_width": [
+    135.4,
+    "library"
+   ],
+   "jaw_width": [
+    128.6,
+    "library"
+   ],
+   "jaw_low_width": [
+    99.8,
+    "below"
+   ],
+   "chin_width": [
+    51.0,
+    "library"
+   ],
+   "cheek_width": [
+    116.3,
+    "library"
+   ]
+  },
+  "Hispanic_F_1_Casual": {
+   "nose_length": [
+    53.5,
+    "library"
+   ],
+   "nose_projection": [
+    11.3,
+    "library"
+   ],
+   "upper_lip": [
+    7.3,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    2.0,
+    "library"
+   ],
+   "lower_lip": [
+    2.1,
+    "below"
+   ],
+   "lower_lip_fwd": [
+    8.3,
+    "library"
+   ],
+   "philtrum": [
+    11.5,
+    "library"
+   ],
+   "chin_length": [
+    42.5,
+    "library"
+   ],
+   "chin_projection": [
+    1.4,
+    "library"
+   ],
+   "lower_face": [
+    61.4,
+    "library"
+   ],
+   "face_height": [
+    114.9,
+    "library"
+   ],
+   "mouth_width": [
+    52.0,
+    "library"
+   ],
+   "nose_width": [
+    31.0,
+    "library"
+   ],
+   "chin_forward": [
+    -7.1,
+    "library"
+   ],
+   "lips_forward": [
+    4.5,
+    "library"
+   ],
+   "dorsum": [
+    -2.5,
+    "library"
+   ],
+   "brow_projection": [
+    -2.4,
+    "library"
+   ],
+   "eye_spacing": [
+    61.2,
+    "above"
+   ],
+   "eye_size": [
+    27.6,
+    "below"
+   ],
+   "cheekbone_width": [
+    137.7,
+    "above"
+   ],
+   "jaw_width": [
+    123.4,
+    "library"
+   ],
+   "jaw_low_width": [
+    95.4,
+    "library"
+   ],
+   "chin_width": [
+    59.0,
+    "above"
+   ],
+   "cheek_width": [
+    120.1,
+    "above"
+   ]
+  },
+  "Hispanic_F_2_Casual": {
+   "nose_length": [
+    50.4,
+    "library"
+   ],
+   "nose_projection": [
+    9.8,
+    "below"
+   ],
+   "upper_lip": [
+    7.1,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    2.9,
+    "library"
+   ],
+   "lower_lip": [
+    2.1,
+    "below"
+   ],
+   "lower_lip_fwd": [
+    8.8,
+    "above"
+   ],
+   "philtrum": [
+    10.9,
+    "library"
+   ],
+   "chin_length": [
+    43.4,
+    "library"
+   ],
+   "chin_projection": [
+    1.8,
+    "library"
+   ],
+   "lower_face": [
+    61.4,
+    "library"
+   ],
+   "face_height": [
+    111.8,
+    "library"
+   ],
+   "mouth_width": [
+    52.0,
+    "library"
+   ],
+   "nose_width": [
+    31.1,
+    "library"
+   ],
+   "chin_forward": [
+    -6.4,
+    "library"
+   ],
+   "lips_forward": [
+    4.9,
+    "above"
+   ],
+   "dorsum": [
+    -1.7,
+    "library"
+   ],
+   "brow_projection": [
+    -2.2,
+    "library"
+   ],
+   "eye_spacing": [
+    60.2,
+    "below"
+   ],
+   "eye_size": [
+    26.8,
+    "below"
+   ],
+   "cheekbone_width": [
+    135.3,
+    "above"
+   ],
+   "jaw_width": [
+    121.7,
+    "library"
+   ],
+   "jaw_low_width": [
+    87.9,
+    "library"
+   ],
+   "chin_width": [
+    52.4,
+    "library"
+   ],
+   "cheek_width": [
+    117.8,
+    "above"
+   ]
+  },
+  "Hispanic_F_3_Casual": {
+   "nose_length": [
+    53.5,
+    "library"
+   ],
+   "nose_projection": [
+    13.5,
+    "library"
+   ],
+   "upper_lip": [
+    7.6,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    1.5,
+    "library"
+   ],
+   "lower_lip": [
+    3.7,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    8.6,
+    "above"
+   ],
+   "philtrum": [
+    12.2,
+    "library"
+   ],
+   "chin_length": [
+    41.6,
+    "library"
+   ],
+   "chin_projection": [
+    1.4,
+    "library"
+   ],
+   "lower_face": [
+    61.4,
+    "library"
+   ],
+   "face_height": [
+    114.8,
+    "library"
+   ],
+   "mouth_width": [
+    52.0,
+    "library"
+   ],
+   "nose_width": [
+    30.6,
+    "below"
+   ],
+   "chin_forward": [
+    -7.8,
+    "library"
+   ],
+   "lips_forward": [
+    4.4,
+    "library"
+   ],
+   "dorsum": [
+    -3.1,
+    "library"
+   ],
+   "brow_projection": [
+    -2.8,
+    "library"
+   ],
+   "eye_spacing": [
+    60.5,
+    "below"
+   ],
+   "eye_size": [
+    27.0,
+    "below"
+   ],
+   "cheekbone_width": [
+    135.9,
+    "above"
+   ],
+   "jaw_width": [
+    122.3,
+    "library"
+   ],
+   "jaw_low_width": [
+    90.5,
+    "library"
+   ],
+   "chin_width": [
+    59.4,
+    "above"
+   ],
+   "cheek_width": [
+    119.5,
+    "above"
+   ]
+  },
+  "Hispanic_M_1_Casual": {
+   "nose_length": [
+    54.3,
+    "library"
+   ],
+   "nose_projection": [
+    12.3,
+    "library"
+   ],
+   "upper_lip": [
+    5.1,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    1.7,
+    "library"
+   ],
+   "lower_lip": [
+    2.9,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    7.5,
+    "library"
+   ],
+   "philtrum": [
+    14.7,
+    "library"
+   ],
+   "chin_length": [
+    47.5,
+    "library"
+   ],
+   "chin_projection": [
+    0.7,
+    "library"
+   ],
+   "lower_face": [
+    67.4,
+    "library"
+   ],
+   "face_height": [
+    121.7,
+    "library"
+   ],
+   "mouth_width": [
+    56.0,
+    "library"
+   ],
+   "nose_width": [
+    37.0,
+    "library"
+   ],
+   "chin_forward": [
+    -8.0,
+    "library"
+   ],
+   "lips_forward": [
+    4.3,
+    "library"
+   ],
+   "dorsum": [
+    -1.6,
+    "library"
+   ],
+   "brow_projection": [
+    -3.1,
+    "library"
+   ],
+   "eye_spacing": [
+    67.0,
+    "above"
+   ],
+   "eye_size": [
+    26.0,
+    "below"
+   ],
+   "cheekbone_width": [
+    137.8,
+    "library"
+   ],
+   "jaw_width": [
+    133.2,
+    "library"
+   ],
+   "jaw_low_width": [
+    105.0,
+    "library"
+   ],
+   "chin_width": [
+    64.6,
+    "above"
+   ],
+   "cheek_width": [
+    125.3,
+    "library"
+   ]
+  },
+  "Hispanic_M_2_Casual": {
+   "nose_length": [
+    55.3,
+    "library"
+   ],
+   "nose_projection": [
+    13.7,
+    "library"
+   ],
+   "upper_lip": [
+    4.8,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    2.4,
+    "library"
+   ],
+   "lower_lip": [
+    2.6,
+    "below"
+   ],
+   "lower_lip_fwd": [
+    6.8,
+    "library"
+   ],
+   "philtrum": [
+    16.3,
+    "library"
+   ],
+   "chin_length": [
+    47.7,
+    "library"
+   ],
+   "chin_projection": [
+    2.0,
+    "library"
+   ],
+   "lower_face": [
+    68.8,
+    "library"
+   ],
+   "face_height": [
+    124.1,
+    "library"
+   ],
+   "mouth_width": [
+    58.0,
+    "library"
+   ],
+   "nose_width": [
+    35.0,
+    "library"
+   ],
+   "chin_forward": [
+    -4.9,
+    "library"
+   ],
+   "lips_forward": [
+    3.6,
+    "library"
+   ],
+   "dorsum": [
+    2.0,
+    "library"
+   ],
+   "brow_projection": [
+    -1.9,
+    "library"
+   ],
+   "eye_spacing": [
+    68.0,
+    "above"
+   ],
+   "eye_size": [
+    25.4,
+    "below"
+   ],
+   "cheekbone_width": [
+    136.2,
+    "library"
+   ],
+   "jaw_width": [
+    133.3,
+    "library"
+   ],
+   "jaw_low_width": [
+    101.7,
+    "library"
+   ],
+   "chin_width": [
+    59.1,
+    "library"
+   ],
+   "cheek_width": [
+    118.0,
+    "library"
+   ]
+  },
+  "Hispanic_M_3_Casual": {
+   "nose_length": [
+    54.9,
+    "library"
+   ],
+   "nose_projection": [
+    11.8,
+    "below"
+   ],
+   "upper_lip": [
+    5.1,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    0.5,
+    "library"
+   ],
+   "lower_lip": [
+    3.4,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    7.1,
+    "library"
+   ],
+   "philtrum": [
+    13.4,
+    "library"
+   ],
+   "chin_length": [
+    51.0,
+    "library"
+   ],
+   "chin_projection": [
+    3.9,
+    "library"
+   ],
+   "lower_face": [
+    69.4,
+    "library"
+   ],
+   "face_height": [
+    124.2,
+    "library"
+   ],
+   "mouth_width": [
+    56.0,
+    "library"
+   ],
+   "nose_width": [
+    36.5,
+    "library"
+   ],
+   "chin_forward": [
+    -4.6,
+    "library"
+   ],
+   "lips_forward": [
+    1.9,
+    "library"
+   ],
+   "dorsum": [
+    -2.3,
+    "library"
+   ],
+   "brow_projection": [
+    -2.4,
+    "library"
+   ],
+   "eye_spacing": [
+    66.2,
+    "above"
+   ],
+   "eye_size": [
+    26.0,
+    "below"
+   ],
+   "cheekbone_width": [
+    134.7,
+    "library"
+   ],
+   "jaw_width": [
+    129.5,
+    "library"
+   ],
+   "jaw_low_width": [
+    97.7,
+    "below"
+   ],
+   "chin_width": [
+    57.7,
+    "library"
+   ],
+   "cheek_width": [
+    118.9,
+    "library"
+   ]
+  },
+  "MENA_F_1_Casual": {
+   "nose_length": [
+    61.6,
+    "above"
+   ],
+   "nose_projection": [
+    16.8,
+    "library"
+   ],
+   "upper_lip": [
+    7.1,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    2.4,
+    "library"
+   ],
+   "lower_lip": [
+    2.8,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    8.2,
+    "library"
+   ],
+   "philtrum": [
+    10.8,
+    "library"
+   ],
+   "chin_length": [
+    42.5,
+    "library"
+   ],
+   "chin_projection": [
+    2.1,
+    "widened"
+   ],
+   "lower_face": [
+    60.5,
+    "library"
+   ],
+   "face_height": [
+    122.0,
+    "library"
+   ],
+   "mouth_width": [
+    54.0,
+    "library"
+   ],
+   "nose_width": [
+    30.6,
+    "below"
+   ],
+   "chin_forward": [
+    -5.7,
+    "library"
+   ],
+   "lips_forward": [
+    4.2,
+    "library"
+   ],
+   "dorsum": [
+    -4.1,
+    "library"
+   ],
+   "brow_projection": [
+    -3.2,
+    "library"
+   ],
+   "eye_spacing": [
+    59.4,
+    "below"
+   ],
+   "eye_size": [
+    27.2,
+    "below"
+   ],
+   "cheekbone_width": [
+    135.4,
+    "above"
+   ],
+   "jaw_width": [
+    115.7,
+    "library"
+   ],
+   "jaw_low_width": [
+    88.5,
+    "library"
+   ],
+   "chin_width": [
+    49.5,
+    "library"
+   ],
+   "cheek_width": [
+    114.2,
+    "above"
+   ]
+  },
+  "MENA_F_2_Casual": {
+   "nose_length": [
+    62.0,
+    "above"
+   ],
+   "nose_projection": [
+    16.6,
+    "library"
+   ],
+   "upper_lip": [
+    7.6,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    2.0,
+    "library"
+   ],
+   "lower_lip": [
+    2.4,
+    "below"
+   ],
+   "lower_lip_fwd": [
+    9.5,
+    "above"
+   ],
+   "philtrum": [
+    11.6,
+    "library"
+   ],
+   "chin_length": [
+    40.6,
+    "library"
+   ],
+   "chin_projection": [
+    1.6,
+    "library"
+   ],
+   "lower_face": [
+    59.9,
+    "library"
+   ],
+   "face_height": [
+    121.8,
+    "library"
+   ],
+   "mouth_width": [
+    56.0,
+    "library"
+   ],
+   "nose_width": [
+    31.1,
+    "library"
+   ],
+   "chin_forward": [
+    -7.9,
+    "library"
+   ],
+   "lips_forward": [
+    5.0,
+    "above"
+   ],
+   "dorsum": [
+    -4.5,
+    "library"
+   ],
+   "brow_projection": [
+    -2.9,
+    "library"
+   ],
+   "eye_spacing": [
+    60.4,
+    "below"
+   ],
+   "eye_size": [
+    28.3,
+    "below"
+   ],
+   "cheekbone_width": [
+    136.1,
+    "above"
+   ],
+   "jaw_width": [
+    116.1,
+    "library"
+   ],
+   "jaw_low_width": [
+    89.1,
+    "library"
+   ],
+   "chin_width": [
+    51.9,
+    "library"
+   ],
+   "cheek_width": [
+    115.6,
+    "above"
+   ]
+  },
+  "MENA_M_1_Casual": {
+   "nose_length": [
+    61.4,
+    "widened"
+   ],
+   "nose_projection": [
+    19.0,
+    "library"
+   ],
+   "upper_lip": [
+    5.4,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    0.9,
+    "library"
+   ],
+   "lower_lip": [
+    2.4,
+    "below"
+   ],
+   "lower_lip_fwd": [
+    6.9,
+    "library"
+   ],
+   "philtrum": [
+    10.9,
+    "below"
+   ],
+   "chin_length": [
+    47.5,
+    "library"
+   ],
+   "chin_projection": [
+    2.6,
+    "library"
+   ],
+   "lower_face": [
+    63.9,
+    "library"
+   ],
+   "face_height": [
+    125.3,
+    "library"
+   ],
+   "mouth_width": [
+    58.0,
+    "library"
+   ],
+   "nose_width": [
+    32.5,
+    "below"
+   ],
+   "chin_forward": [
+    -5.2,
+    "library"
+   ],
+   "lips_forward": [
+    2.6,
+    "library"
+   ],
+   "dorsum": [
+    2.6,
+    "library"
+   ],
+   "brow_projection": [
+    -3.0,
+    "library"
+   ],
+   "eye_spacing": [
+    64.8,
+    "above"
+   ],
+   "eye_size": [
+    26.1,
+    "below"
+   ],
+   "cheekbone_width": [
+    135.2,
+    "library"
+   ],
+   "jaw_width": [
+    130.4,
+    "library"
+   ],
+   "jaw_low_width": [
+    101.0,
+    "below"
+   ],
+   "chin_width": [
+    60.7,
+    "library"
+   ],
+   "cheek_width": [
+    117.8,
+    "library"
+   ]
+  },
+  "MENA_M_2_Casual": {
+   "nose_length": [
+    61.1,
+    "widened"
+   ],
+   "nose_projection": [
+    18.9,
+    "library"
+   ],
+   "upper_lip": [
+    4.7,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    1.1,
+    "library"
+   ],
+   "lower_lip": [
+    3.1,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    6.9,
+    "library"
+   ],
+   "philtrum": [
+    10.7,
+    "below"
+   ],
+   "chin_length": [
+    48.5,
+    "library"
+   ],
+   "chin_projection": [
+    2.6,
+    "library"
+   ],
+   "lower_face": [
+    64.0,
+    "library"
+   ],
+   "face_height": [
+    125.1,
+    "library"
+   ],
+   "mouth_width": [
+    58.0,
+    "library"
+   ],
+   "nose_width": [
+    39.6,
+    "library"
+   ],
+   "chin_forward": [
+    -4.9,
+    "library"
+   ],
+   "lips_forward": [
+    2.7,
+    "library"
+   ],
+   "dorsum": [
+    2.6,
+    "library"
+   ],
+   "brow_projection": [
+    -1.6,
+    "library"
+   ],
+   "eye_spacing": [
+    66.0,
+    "above"
+   ],
+   "eye_size": [
+    26.2,
+    "below"
+   ],
+   "cheekbone_width": [
+    136.0,
+    "library"
+   ],
+   "jaw_width": [
+    130.6,
+    "library"
+   ],
+   "jaw_low_width": [
+    101.9,
+    "library"
+   ],
+   "chin_width": [
+    60.4,
+    "library"
+   ],
+   "cheek_width": [
+    118.5,
+    "library"
+   ]
+  },
+  "MENA_M_3_Casual": {
+   "nose_length": [
+    60.6,
+    "widened"
+   ],
+   "nose_projection": [
+    18.8,
+    "library"
+   ],
+   "upper_lip": [
+    4.8,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    1.3,
+    "library"
+   ],
+   "lower_lip": [
+    3.3,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    6.8,
+    "library"
+   ],
+   "philtrum": [
+    10.7,
+    "below"
+   ],
+   "chin_length": [
+    50.6,
+    "library"
+   ],
+   "chin_projection": [
+    3.9,
+    "library"
+   ],
+   "lower_face": [
+    66.1,
+    "library"
+   ],
+   "face_height": [
+    126.7,
+    "library"
+   ],
+   "mouth_width": [
+    56.0,
+    "library"
+   ],
+   "nose_width": [
+    31.5,
+    "below"
+   ],
+   "chin_forward": [
+    -3.4,
+    "library"
+   ],
+   "lips_forward": [
+    2.1,
+    "library"
+   ],
+   "dorsum": [
+    2.6,
+    "library"
+   ],
+   "brow_projection": [
+    -2.1,
+    "library"
+   ],
+   "eye_spacing": [
+    65.4,
+    "above"
+   ],
+   "eye_size": [
+    26.1,
+    "below"
+   ],
+   "cheekbone_width": [
+    135.4,
+    "library"
+   ],
+   "jaw_width": [
+    130.3,
+    "library"
+   ],
+   "jaw_low_width": [
+    100.2,
+    "below"
+   ],
+   "chin_width": [
+    57.2,
+    "library"
+   ],
+   "cheek_width": [
+    118.0,
+    "library"
+   ]
+  },
+  "NHPI_M_1_Casual": {
+   "nose_length": [
+    54.3,
+    "library"
+   ],
+   "nose_projection": [
+    16.2,
+    "library"
+   ],
+   "upper_lip": [
+    8.0,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    4.9,
+    "above"
+   ],
+   "lower_lip": [
+    3.9,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    8.1,
+    "library"
+   ],
+   "philtrum": [
+    13.3,
+    "library"
+   ],
+   "chin_length": [
+    50.6,
+    "library"
+   ],
+   "chin_projection": [
+    1.8,
+    "library"
+   ],
+   "lower_face": [
+    71.9,
+    "library"
+   ],
+   "face_height": [
+    126.2,
+    "library"
+   ],
+   "mouth_width": [
+    54.0,
+    "library"
+   ],
+   "nose_width": [
+    38.5,
+    "library"
+   ],
+   "chin_forward": [
+    -4.0,
+    "library"
+   ],
+   "lips_forward": [
+    5.6,
+    "library"
+   ],
+   "dorsum": [
+    -2.7,
+    "library"
+   ],
+   "brow_projection": [
+    -4.0,
+    "library"
+   ],
+   "eye_spacing": [
+    63.9,
+    "below"
+   ],
+   "eye_size": [
+    27.2,
+    "below"
+   ],
+   "cheekbone_width": [
+    136.7,
+    "library"
+   ],
+   "jaw_width": [
+    138.9,
+    "library"
+   ],
+   "jaw_low_width": [
+    112.5,
+    "library"
+   ],
+   "chin_width": [
+    57.8,
+    "library"
+   ],
+   "cheek_width": [
+    124.0,
+    "library"
+   ]
+  },
+  "NHPI_M_2_Casual": {
+   "nose_length": [
+    56.5,
+    "library"
+   ],
+   "nose_projection": [
+    19.1,
+    "library"
+   ],
+   "upper_lip": [
+    5.8,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    4.0,
+    "library"
+   ],
+   "lower_lip": [
+    3.5,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    8.5,
+    "library"
+   ],
+   "philtrum": [
+    12.1,
+    "library"
+   ],
+   "chin_length": [
+    50.0,
+    "library"
+   ],
+   "chin_projection": [
+    1.6,
+    "library"
+   ],
+   "lower_face": [
+    67.9,
+    "library"
+   ],
+   "face_height": [
+    124.4,
+    "library"
+   ],
+   "mouth_width": [
+    57.0,
+    "library"
+   ],
+   "nose_width": [
+    42.0,
+    "library"
+   ],
+   "chin_forward": [
+    -5.1,
+    "library"
+   ],
+   "lips_forward": [
+    5.4,
+    "library"
+   ],
+   "dorsum": [
+    2.7,
+    "library"
+   ],
+   "brow_projection": [
+    -4.6,
+    "library"
+   ],
+   "eye_spacing": [
+    65.1,
+    "above"
+   ],
+   "eye_size": [
+    27.7,
+    "below"
+   ],
+   "cheekbone_width": [
+    138.2,
+    "library"
+   ],
+   "jaw_width": [
+    135.5,
+    "library"
+   ],
+   "jaw_low_width": [
+    112.7,
+    "library"
+   ],
+   "chin_width": [
+    62.2,
+    "above"
+   ],
+   "cheek_width": [
+    120.0,
+    "library"
+   ]
+  },
+  "White_F_1_Casual": {
+   "nose_length": [
+    55.2,
+    "library"
+   ],
+   "nose_projection": [
+    12.8,
+    "library"
+   ],
+   "upper_lip": [
+    7.4,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    3.1,
+    "library"
+   ],
+   "lower_lip": [
+    2.9,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    8.4,
+    "library"
+   ],
+   "philtrum": [
+    10.1,
+    "library"
+   ],
+   "chin_length": [
+    45.9,
+    "above"
+   ],
+   "chin_projection": [
+    0.8,
+    "library"
+   ],
+   "lower_face": [
+    63.4,
+    "library"
+   ],
+   "face_height": [
+    118.7,
+    "library"
+   ],
+   "mouth_width": [
+    54.0,
+    "library"
+   ],
+   "nose_width": [
+    29.0,
+    "below"
+   ],
+   "chin_forward": [
+    -6.8,
+    "library"
+   ],
+   "lips_forward": [
+    5.4,
+    "above"
+   ],
+   "dorsum": [
+    -2.6,
+    "library"
+   ],
+   "brow_projection": [
+    -3.4,
+    "library"
+   ],
+   "eye_spacing": [
+    60.0,
+    "below"
+   ],
+   "eye_size": [
+    27.4,
+    "below"
+   ],
+   "cheekbone_width": [
+    133.2,
+    "library"
+   ],
+   "jaw_width": [
+    115.5,
+    "library"
+   ],
+   "jaw_low_width": [
+    85.4,
+    "library"
+   ],
+   "chin_width": [
+    45.1,
+    "library"
+   ],
+   "cheek_width": [
+    112.1,
+    "library"
+   ]
+  },
+  "White_F_2_Casual": {
+   "nose_length": [
+    56.4,
+    "library"
+   ],
+   "nose_projection": [
+    13.1,
+    "library"
+   ],
+   "upper_lip": [
+    7.5,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    3.4,
+    "above"
+   ],
+   "lower_lip": [
+    2.9,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    8.9,
+    "above"
+   ],
+   "philtrum": [
+    9.8,
+    "library"
+   ],
+   "chin_length": [
+    43.0,
+    "library"
+   ],
+   "chin_projection": [
+    1.5,
+    "library"
+   ],
+   "lower_face": [
+    60.4,
+    "library"
+   ],
+   "face_height": [
+    116.7,
+    "library"
+   ],
+   "mouth_width": [
+    54.0,
+    "library"
+   ],
+   "nose_width": [
+    29.1,
+    "below"
+   ],
+   "chin_forward": [
+    -6.4,
+    "library"
+   ],
+   "lips_forward": [
+    5.4,
+    "above"
+   ],
+   "dorsum": [
+    -2.6,
+    "library"
+   ],
+   "brow_projection": [
+    -3.4,
+    "library"
+   ],
+   "eye_spacing": [
+    60.8,
+    "above"
+   ],
+   "eye_size": [
+    27.8,
+    "below"
+   ],
+   "cheekbone_width": [
+    134.9,
+    "above"
+   ],
+   "jaw_width": [
+    117.1,
+    "library"
+   ],
+   "jaw_low_width": [
+    87.6,
+    "library"
+   ],
+   "chin_width": [
+    47.4,
+    "library"
+   ],
+   "cheek_width": [
+    113.4,
+    "library"
+   ]
+  },
+  "White_F_3_Casual": {
+   "nose_length": [
+    57.0,
+    "library"
+   ],
+   "nose_projection": [
+    12.7,
+    "library"
+   ],
+   "upper_lip": [
+    7.8,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    3.5,
+    "above"
+   ],
+   "lower_lip": [
+    2.2,
+    "below"
+   ],
+   "lower_lip_fwd": [
+    8.2,
+    "library"
+   ],
+   "philtrum": [
+    9.5,
+    "below"
+   ],
+   "chin_length": [
+    41.6,
+    "library"
+   ],
+   "chin_projection": [
+    1.4,
+    "library"
+   ],
+   "lower_face": [
+    58.9,
+    "library"
+   ],
+   "face_height": [
+    115.8,
+    "library"
+   ],
+   "mouth_width": [
+    54.0,
+    "library"
+   ],
+   "nose_width": [
+    30.0,
+    "below"
+   ],
+   "chin_forward": [
+    -6.3,
+    "library"
+   ],
+   "lips_forward": [
+    5.2,
+    "above"
+   ],
+   "dorsum": [
+    -2.3,
+    "library"
+   ],
+   "brow_projection": [
+    -3.3,
+    "library"
+   ],
+   "eye_spacing": [
+    63.4,
+    "above"
+   ],
+   "eye_size": [
+    28.5,
+    "below"
+   ],
+   "cheekbone_width": [
+    134.9,
+    "above"
+   ],
+   "jaw_width": [
+    115.0,
+    "library"
+   ],
+   "jaw_low_width": [
+    86.6,
+    "library"
+   ],
+   "chin_width": [
+    51.1,
+    "library"
+   ],
+   "cheek_width": [
+    112.8,
+    "library"
+   ]
+  },
+  "White_M_1_Casual": {
+   "nose_length": [
+    58.5,
+    "library"
+   ],
+   "nose_projection": [
+    18.5,
+    "library"
+   ],
+   "upper_lip": [
+    4.9,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    4.0,
+    "library"
+   ],
+   "lower_lip": [
+    5.3,
+    "library"
+   ],
+   "lower_lip_fwd": [
+    9.8,
+    "above"
+   ],
+   "philtrum": [
+    15.0,
+    "library"
+   ],
+   "chin_length": [
+    45.0,
+    "library"
+   ],
+   "chin_projection": [
+    2.8,
+    "library"
+   ],
+   "lower_face": [
+    64.9,
+    "library"
+   ],
+   "face_height": [
+    123.4,
+    "library"
+   ],
+   "mouth_width": [
+    57.0,
+    "library"
+   ],
+   "nose_width": [
+    35.5,
+    "library"
+   ],
+   "chin_forward": [
+    -5.0,
+    "library"
+   ],
+   "lips_forward": [
+    5.5,
+    "library"
+   ],
+   "dorsum": [
+    -2.6,
+    "library"
+   ],
+   "brow_projection": [
+    -2.2,
+    "library"
+   ],
+   "eye_spacing": [
+    65.9,
+    "above"
+   ],
+   "eye_size": [
+    27.6,
+    "below"
+   ],
+   "cheekbone_width": [
+    134.1,
+    "library"
+   ],
+   "jaw_width": [
+    124.0,
+    "library"
+   ],
+   "jaw_low_width": [
+    103.3,
+    "library"
+   ],
+   "chin_width": [
+    56.4,
+    "library"
+   ],
+   "cheek_width": [
+    112.7,
+    "below"
+   ]
+  },
+  "White_M_2_Casual": {
+   "nose_length": [
+    58.6,
+    "library"
+   ],
+   "nose_projection": [
+    18.2,
+    "library"
+   ],
+   "upper_lip": [
+    7.2,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    1.3,
+    "library"
+   ],
+   "lower_lip": [
+    1.9,
+    "below"
+   ],
+   "lower_lip_fwd": [
+    6.8,
+    "library"
+   ],
+   "philtrum": [
+    10.8,
+    "below"
+   ],
+   "chin_length": [
+    46.0,
+    "library"
+   ],
+   "chin_projection": [
+    1.9,
+    "library"
+   ],
+   "lower_face": [
+    63.9,
+    "library"
+   ],
+   "face_height": [
+    122.5,
+    "library"
+   ],
+   "mouth_width": [
+    54.0,
+    "library"
+   ],
+   "nose_width": [
+    30.1,
+    "below"
+   ],
+   "chin_forward": [
+    -5.9,
+    "library"
+   ],
+   "lips_forward": [
+    3.1,
+    "library"
+   ],
+   "dorsum": [
+    2.9,
+    "library"
+   ],
+   "brow_projection": [
+    -0.3,
+    "library"
+   ],
+   "eye_spacing": [
+    68.2,
+    "above"
+   ],
+   "eye_size": [
+    25.8,
+    "below"
+   ],
+   "cheekbone_width": [
+    136.1,
+    "library"
+   ],
+   "jaw_width": [
+    130.7,
+    "library"
+   ],
+   "jaw_low_width": [
+    104.1,
+    "library"
+   ],
+   "chin_width": [
+    60.8,
+    "library"
+   ],
+   "cheek_width": [
+    113.4,
+    "below"
+   ]
+  },
+  "White_M_3_Casual": {
+   "nose_length": [
+    55.8,
+    "library"
+   ],
+   "nose_projection": [
+    13.7,
+    "library"
+   ],
+   "upper_lip": [
+    4.9,
+    "library"
+   ],
+   "upper_lip_fwd": [
+    2.5,
+    "library"
+   ],
+   "lower_lip": [
+    2.6,
+    "below"
+   ],
+   "lower_lip_fwd": [
+    6.5,
+    "library"
+   ],
+   "philtrum": [
+    16.1,
+    "library"
+   ],
+   "chin_length": [
+    47.6,
+    "library"
+   ],
+   "chin_projection": [
+    2.0,
+    "library"
+   ],
+   "lower_face": [
+    68.6,
+    "library"
+   ],
+   "face_height": [
+    124.4,
+    "library"
+   ],
+   "mouth_width": [
+    58.0,
+    "library"
+   ],
+   "nose_width": [
+    35.0,
+    "library"
+   ],
+   "chin_forward": [
+    -4.5,
+    "library"
+   ],
+   "lips_forward": [
+    3.5,
+    "library"
+   ],
+   "dorsum": [
+    -1.8,
+    "library"
+   ],
+   "brow_projection": [
+    -1.0,
+    "library"
+   ],
+   "eye_spacing": [
+    65.8,
+    "above"
+   ],
+   "eye_size": [
+    26.4,
+    "below"
+   ],
+   "cheekbone_width": [
+    137.8,
+    "library"
+   ],
+   "jaw_width": [
+    132.3,
+    "library"
+   ],
+   "jaw_low_width": [
+    103.9,
+    "library"
+   ],
+   "chin_width": [
+    58.4,
+    "library"
+   ],
+   "cheek_width": [
+    120.5,
+    "library"
+   ]
+  }
+ },
+ "features": {
+  "nose_length": {
+   "f": {
+    "valid_median": 53.5,
+    "valid_p5_p95": [
+     51.3,
+     61.9
+    ],
+    "rocketbox_median": 50.7,
+    "rocketbox_range": [
+     47.6,
+     59.0
+    ],
+    "offset": 2.8,
+    "inside_share": 0.81,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 54.9,
+    "valid_p5_p95": [
+     50.1,
+     61.1
+    ],
+    "rocketbox_median": 55.8,
+    "rocketbox_range": [
+     50.1,
+     62.3
+    ],
+    "offset": -0.9,
+    "inside_share": 0.95,
+    "n": 19
+   }
+  },
+  "nose_projection": {
+   "f": {
+    "valid_median": 12.0,
+    "valid_p5_p95": [
+     9.8,
+     16.9
+    ],
+    "rocketbox_median": 14.9,
+    "rocketbox_range": [
+     10.4,
+     17.7
+    ],
+    "offset": -2.9,
+    "inside_share": 0.75,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 13.7,
+    "valid_p5_p95": [
+     11.0,
+     19.0
+    ],
+    "rocketbox_median": 17.2,
+    "rocketbox_range": [
+     11.9,
+     20.4
+    ],
+    "offset": -3.5,
+    "inside_share": 0.79,
+    "n": 19
+   }
+  },
+  "upper_lip": {
+   "f": {
+    "valid_median": 7.4,
+    "valid_p5_p95": [
+     6.5,
+     8.3
+    ],
+    "rocketbox_median": 6.8,
+    "rocketbox_range": [
+     5.0,
+     9.2
+    ],
+    "offset": 0.6,
+    "inside_share": 1.0,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 6.3,
+    "valid_p5_p95": [
+     4.8,
+     8.0
+    ],
+    "rocketbox_median": 6.8,
+    "rocketbox_range": [
+     4.2,
+     11.1
+    ],
+    "offset": -0.5,
+    "inside_share": 1.0,
+    "n": 19
+   }
+  },
+  "upper_lip_fwd": {
+   "f": {
+    "valid_median": 2.9,
+    "valid_p5_p95": [
+     1.9,
+     4.5
+    ],
+    "rocketbox_median": 2.1,
+    "rocketbox_range": [
+     1.0,
+     3.2
+    ],
+    "offset": 0.8,
+    "inside_share": 0.62,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 3.1,
+    "valid_p5_p95": [
+     0.8,
+     6.5
+    ],
+    "rocketbox_median": 1.7,
+    "rocketbox_range": [
+     -0.8,
+     4.9
+    ],
+    "offset": 1.4,
+    "inside_share": 0.84,
+    "n": 19
+   }
+  },
+  "lower_lip": {
+   "f": {
+    "valid_median": 3.7,
+    "valid_p5_p95": [
+     2.1,
+     5.7
+    ],
+    "rocketbox_median": 5.4,
+    "rocketbox_range": [
+     2.8,
+     6.6
+    ],
+    "offset": -1.6,
+    "inside_share": 0.75,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 3.4,
+    "valid_p5_p95": [
+     2.4,
+     5.4
+    ],
+    "rocketbox_median": 5.8,
+    "rocketbox_range": [
+     2.8,
+     8.7
+    ],
+    "offset": -2.4,
+    "inside_share": 0.79,
+    "n": 19
+   }
+  },
+  "lower_lip_fwd": {
+   "f": {
+    "valid_median": 8.3,
+    "valid_p5_p95": [
+     7.2,
+     9.7
+    ],
+    "rocketbox_median": 6.4,
+    "rocketbox_range": [
+     3.8,
+     8.5
+    ],
+    "offset": 1.9,
+    "inside_share": 0.62,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 7.2,
+    "valid_p5_p95": [
+     6.5,
+     9.0
+    ],
+    "rocketbox_median": 6.1,
+    "rocketbox_range": [
+     3.5,
+     9.7
+    ],
+    "offset": 1.1,
+    "inside_share": 0.95,
+    "n": 19
+   }
+  },
+  "philtrum": {
+   "f": {
+    "valid_median": 10.9,
+    "valid_p5_p95": [
+     9.4,
+     13.4
+    ],
+    "rocketbox_median": 10.8,
+    "rocketbox_range": [
+     9.8,
+     14.9
+    ],
+    "offset": 0.1,
+    "inside_share": 0.75,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 14.0,
+    "valid_p5_p95": [
+     10.7,
+     17.5
+    ],
+    "rocketbox_median": 13.4,
+    "rocketbox_range": [
+     11.4,
+     18.0
+    ],
+    "offset": 0.5,
+    "inside_share": 0.79,
+    "n": 19
+   }
+  },
+  "chin_length": {
+   "f": {
+    "valid_median": 42.7,
+    "valid_p5_p95": [
+     41.3,
+     44.2
+    ],
+    "rocketbox_median": 41.8,
+    "rocketbox_range": [
+     38.7,
+     45.8
+    ],
+    "offset": 0.9,
+    "inside_share": 0.94,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 47.5,
+    "valid_p5_p95": [
+     44.7,
+     50.7
+    ],
+    "rocketbox_median": 49.9,
+    "rocketbox_range": [
+     43.3,
+     56.3
+    ],
+    "offset": -2.3,
+    "inside_share": 1.0,
+    "n": 19
+   }
+  },
+  "chin_projection": {
+   "f": {
+    "valid_median": 1.4,
+    "valid_p5_p95": [
+     0.8,
+     2.3
+    ],
+    "rocketbox_median": 1.3,
+    "rocketbox_range": [
+     0.6,
+     3.1
+    ],
+    "offset": 0.1,
+    "inside_share": 1.0,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 2.0,
+    "valid_p5_p95": [
+     0.6,
+     3.9
+    ],
+    "rocketbox_median": 2.0,
+    "rocketbox_range": [
+     0.4,
+     4.6
+    ],
+    "offset": -0.0,
+    "inside_share": 0.95,
+    "n": 19
+   }
+  },
+  "lower_face": {
+   "f": {
+    "valid_median": 60.9,
+    "valid_p5_p95": [
+     59.6,
+     63.5
+    ],
+    "rocketbox_median": 60.0,
+    "rocketbox_range": [
+     56.4,
+     68.1
+    ],
+    "offset": 0.9,
+    "inside_share": 1.0,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 67.9,
+    "valid_p5_p95": [
+     63.9,
+     72.0
+    ],
+    "rocketbox_median": 70.6,
+    "rocketbox_range": [
+     63.4,
+     79.4
+    ],
+    "offset": -2.7,
+    "inside_share": 1.0,
+    "n": 19
+   }
+  },
+  "face_height": {
+   "f": {
+    "valid_median": 115.1,
+    "valid_p5_p95": [
+     112.3,
+     121.9
+    ],
+    "rocketbox_median": 110.7,
+    "rocketbox_range": [
+     104.2,
+     122.8
+    ],
+    "offset": 4.4,
+    "inside_share": 1.0,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 124.1,
+    "valid_p5_p95": [
+     119.3,
+     126.2
+    ],
+    "rocketbox_median": 126.5,
+    "rocketbox_range": [
+     116.2,
+     141.6
+    ],
+    "offset": -2.4,
+    "inside_share": 1.0,
+    "n": 19
+   }
+  },
+  "mouth_width": {
+   "f": {
+    "valid_median": 54.0,
+    "valid_p5_p95": [
+     52.0,
+     56.0
+    ],
+    "rocketbox_median": 48.0,
+    "rocketbox_range": [
+     42.3,
+     60.0
+    ],
+    "offset": 6.0,
+    "inside_share": 1.0,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 56.0,
+    "valid_p5_p95": [
+     54.0,
+     58.1
+    ],
+    "rocketbox_median": 58.0,
+    "rocketbox_range": [
+     50.0,
+     64.0
+    ],
+    "offset": -2.0,
+    "inside_share": 1.0,
+    "n": 19
+   }
+  },
+  "nose_width": {
+   "f": {
+    "valid_median": 31.0,
+    "valid_p5_p95": [
+     29.1,
+     37.8
+    ],
+    "rocketbox_median": 34.8,
+    "rocketbox_range": [
+     31.0,
+     42.3
+    ],
+    "offset": -3.8,
+    "inside_share": 0.56,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 35.5,
+    "valid_p5_p95": [
+     31.4,
+     42.6
+    ],
+    "rocketbox_median": 38.6,
+    "rocketbox_range": [
+     33.6,
+     46.0
+    ],
+    "offset": -3.1,
+    "inside_share": 0.79,
+    "n": 19
+   }
+  },
+  "chin_forward": {
+   "f": {
+    "valid_median": -6.3,
+    "valid_p5_p95": [
+     -7.9,
+     -4.0
+    ],
+    "rocketbox_median": -5.0,
+    "rocketbox_range": [
+     -8.2,
+     -1.9
+    ],
+    "offset": -1.3,
+    "inside_share": 1.0,
+    "n": 16
+   },
+   "m": {
+    "valid_median": -4.9,
+    "valid_p5_p95": [
+     -8.0,
+     -2.7
+    ],
+    "rocketbox_median": -3.8,
+    "rocketbox_range": [
+     -8.8,
+     0.1
+    ],
+    "offset": -1.1,
+    "inside_share": 1.0,
+    "n": 19
+   }
+  },
+  "lips_forward": {
+   "f": {
+    "valid_median": 5.0,
+    "valid_p5_p95": [
+     3.6,
+     5.9
+    ],
+    "rocketbox_median": 3.4,
+    "rocketbox_range": [
+     0.8,
+     4.8
+    ],
+    "offset": 1.6,
+    "inside_share": 0.38,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 4.3,
+    "valid_p5_p95": [
+     2.1,
+     6.3
+    ],
+    "rocketbox_median": 2.7,
+    "rocketbox_range": [
+     0.6,
+     5.9
+    ],
+    "offset": 1.6,
+    "inside_share": 0.84,
+    "n": 19
+   }
+  },
+  "dorsum": {
+   "f": {
+    "valid_median": -2.5,
+    "valid_p5_p95": [
+     -4.2,
+     -1.8
+    ],
+    "rocketbox_median": -1.9,
+    "rocketbox_range": [
+     -5.8,
+     2.8
+    ],
+    "offset": -0.7,
+    "inside_share": 1.0,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 2.0,
+    "valid_p5_p95": [
+     -3.0,
+     2.7
+    ],
+    "rocketbox_median": -0.1,
+    "rocketbox_range": [
+     -7.0,
+     4.1
+    ],
+    "offset": 2.2,
+    "inside_share": 1.0,
+    "n": 19
+   }
+  },
+  "brow_projection": {
+   "f": {
+    "valid_median": -3.2,
+    "valid_p5_p95": [
+     -4.7,
+     -2.1
+    ],
+    "rocketbox_median": -3.5,
+    "rocketbox_range": [
+     -5.3,
+     -1.0
+    ],
+    "offset": 0.3,
+    "inside_share": 1.0,
+    "n": 16
+   },
+   "m": {
+    "valid_median": -2.0,
+    "valid_p5_p95": [
+     -4.1,
+     1.2
+    ],
+    "rocketbox_median": -2.7,
+    "rocketbox_range": [
+     -4.9,
+     1.0
+    ],
+    "offset": 0.7,
+    "inside_share": 0.89,
+    "n": 19
+   }
+  },
+  "eye_spacing": {
+   "f": {
+    "valid_median": 61.4,
+    "valid_p5_p95": [
+     59.8,
+     62.9
+    ],
+    "rocketbox_median": 60.6,
+    "rocketbox_range": [
+     60.6,
+     60.6
+    ],
+    "offset": 0.9,
+    "inside_share": 0.0,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 65.1,
+    "valid_p5_p95": [
+     63.5,
+     68.1
+    ],
+    "rocketbox_median": 64.7,
+    "rocketbox_range": [
+     64.7,
+     64.7
+    ],
+    "offset": 0.4,
+    "inside_share": 0.0,
+    "n": 19
+   }
+  },
+  "eye_size": {
+   "f": {
+    "valid_median": 27.3,
+    "valid_p5_p95": [
+     25.1,
+     28.3
+    ],
+    "rocketbox_median": 30.4,
+    "rocketbox_range": [
+     30.4,
+     30.4
+    ],
+    "offset": -3.1,
+    "inside_share": 0.0,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 26.7,
+    "valid_p5_p95": [
+     25.8,
+     27.6
+    ],
+    "rocketbox_median": 34.8,
+    "rocketbox_range": [
+     34.8,
+     34.8
+    ],
+    "offset": -8.1,
+    "inside_share": 0.0,
+    "n": 19
+   }
+  },
+  "cheekbone_width": {
+   "f": {
+    "valid_median": 135.1,
+    "valid_p5_p95": [
+     133.2,
+     137.7
+    ],
+    "rocketbox_median": 125.0,
+    "rocketbox_range": [
+     120.0,
+     133.3
+    ],
+    "offset": 10.1,
+    "inside_share": 0.12,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 136.1,
+    "valid_p5_p95": [
+     134.7,
+     138.4
+    ],
+    "rocketbox_median": 134.1,
+    "rocketbox_range": [
+     129.6,
+     139.6
+    ],
+    "offset": 2.0,
+    "inside_share": 0.95,
+    "n": 19
+   }
+  },
+  "jaw_width": {
+   "f": {
+    "valid_median": 118.1,
+    "valid_p5_p95": [
+     113.5,
+     123.0
+    ],
+    "rocketbox_median": 114.7,
+    "rocketbox_range": [
+     104.3,
+     137.7
+    ],
+    "offset": 3.3,
+    "inside_share": 1.0,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 130.3,
+    "valid_p5_p95": [
+     125.3,
+     135.8
+    ],
+    "rocketbox_median": 132.5,
+    "rocketbox_range": [
+     121.3,
+     141.9
+    ],
+    "offset": -2.1,
+    "inside_share": 1.0,
+    "n": 19
+   }
+  },
+  "jaw_low_width": {
+   "f": {
+    "valid_median": 88.8,
+    "valid_p5_p95": [
+     84.4,
+     97.9
+    ],
+    "rocketbox_median": 88.0,
+    "rocketbox_range": [
+     76.8,
+     111.5
+    ],
+    "offset": 0.8,
+    "inside_share": 1.0,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 101.9,
+    "valid_p5_p95": [
+     98.4,
+     112.5
+    ],
+    "rocketbox_median": 110.8,
+    "rocketbox_range": [
+     101.6,
+     116.7
+    ],
+    "offset": -8.9,
+    "inside_share": 0.58,
+    "n": 19
+   }
+  },
+  "chin_width": {
+   "f": {
+    "valid_median": 51.1,
+    "valid_p5_p95": [
+     46.8,
+     59.4
+    ],
+    "rocketbox_median": 50.5,
+    "rocketbox_range": [
+     43.0,
+     55.5
+    ],
+    "offset": 0.6,
+    "inside_share": 0.75,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 58.4,
+    "valid_p5_p95": [
+     51.2,
+     64.6
+    ],
+    "rocketbox_median": 55.8,
+    "rocketbox_range": [
+     50.0,
+     61.7
+    ],
+    "offset": 2.6,
+    "inside_share": 0.84,
+    "n": 19
+   }
+  },
+  "cheek_width": {
+   "f": {
+    "valid_median": 114.4,
+    "valid_p5_p95": [
+     112.1,
+     121.3
+    ],
+    "rocketbox_median": 107.6,
+    "rocketbox_range": [
+     100.3,
+     113.4
+    ],
+    "offset": 6.8,
+    "inside_share": 0.38,
+    "n": 16
+   },
+   "m": {
+    "valid_median": 118.0,
+    "valid_p5_p95": [
+     113.2,
+     125.7
+    ],
+    "rocketbox_median": 119.7,
+    "rocketbox_range": [
+     114.0,
+     126.8
+    ],
+    "offset": -1.8,
+    "inside_share": 0.84,
+    "n": 19
+   }
+  }
+ },
+ "matched": {
+  "White_f": {
+   "valid": [
+    "White_F_1_Casual",
+    "White_F_2_Casual",
+    "White_F_3_Casual"
+   ],
+   "rocketbox": [
+    "Business_Female_02",
+    "Business_Female_03",
+    "Business_Female_04",
+    "Construction_Female_01",
+    "Female_Adult_01",
+    "Female_Adult_02",
+    "Female_Adult_04",
+    "Female_Adult_05",
+    "Female_Adult_06",
+    "Female_Adult_07",
+    "Female_Adult_08",
+    "Female_Adult_09",
+    "Female_Adult_13",
+    "Female_Adult_14",
+    "Female_Adult_15",
+    "Female_Adult_17",
+    "Female_Party_01",
+    "Medical_Female_02",
+    "Medical_Female_03",
+    "Military_Female_01",
+    "Pilot_Female_01",
+    "Security_Female_01",
+    "Sports_Female_01"
+   ],
+   "medians_valid_rocketbox": {
+    "nose_length": [
+     56.4,
+     51.0
+    ],
+    "nose_projection": [
+     12.8,
+     15.3
+    ],
+    "upper_lip": [
+     7.5,
+     6.5
+    ],
+    "upper_lip_fwd": [
+     3.4,
+     2.0
+    ],
+    "lower_lip": [
+     2.9,
+     5.2
+    ],
+    "lower_lip_fwd": [
+     8.4,
+     6.4
+    ],
+    "philtrum": [
+     9.8,
+     10.9
+    ],
+    "chin_length": [
+     43.0,
+     41.7
+    ],
+    "chin_projection": [
+     1.4,
+     1.3
+    ],
+    "lower_face": [
+     60.4,
+     59.4
+    ],
+    "face_height": [
+     116.7,
+     109.2
+    ],
+    "mouth_width": [
+     54.0,
+     48.0
+    ],
+    "nose_width": [
+     29.1,
+     34.1
+    ],
+    "chin_forward": [
+     -6.4,
+     -5.8
+    ],
+    "lips_forward": [
+     5.4,
+     3.4
+    ],
+    "dorsum": [
+     -2.6,
+     -1.9
+    ],
+    "brow_projection": [
+     -3.4,
+     -3.5
+    ],
+    "eye_spacing": [
+     60.8,
+     60.6
+    ],
+    "eye_size": [
+     27.8,
+     30.4
+    ],
+    "cheekbone_width": [
+     134.9,
+     124.1
+    ],
+    "jaw_width": [
+     115.5,
+     112.3
+    ],
+    "jaw_low_width": [
+     86.6,
+     86.1
+    ],
+    "chin_width": [
+     47.4,
+     51.0
+    ],
+    "cheek_width": [
+     112.8,
+     106.7
+    ]
+   }
+  },
+  "White_m": {
+   "valid": [
+    "White_M_1_Casual",
+    "White_M_2_Casual",
+    "White_M_3_Casual"
+   ],
+   "rocketbox": [
+    "Business_Male_01",
+    "Business_Male_03",
+    "Business_Male_04",
+    "Business_Male_06",
+    "Business_Male_07",
+    "Construction_Male_01",
+    "Construction_Male_02",
+    "Construction_Male_04",
+    "Construction_Male_05",
+    "Construction_Male_06",
+    "Construction_Male_07",
+    "Fire_Male_07",
+    "Gardener_Male_01",
+    "Male_Adult_01",
+    "Male_Adult_02",
+    "Male_Adult_03",
+    "Male_Adult_05",
+    "Male_Adult_06",
+    "Male_Adult_07",
+    "Male_Adult_08",
+    "Male_Adult_11",
+    "Male_Adult_13",
+    "Male_Adult_14",
+    "Male_Adult_16",
+    "Male_Adult_20",
+    "Medical_Male_01",
+    "Medical_Male_02",
+    "Medical_Male_03",
+    "Medical_Male_04",
+    "Medical_Male_05",
+    "Military_Male_03",
+    "Pilot_Male_01",
+    "Pilot_Male_02",
+    "Pilot_Male_03",
+    "Police_Male_03",
+    "Police_Male_04",
+    "Police_Male_06",
+    "Security_Male_01",
+    "Sports_Male_01",
+    "Sports_Male_02",
+    "Sports_Male_04"
+   ],
+   "medians_valid_rocketbox": {
+    "nose_length": [
+     58.5,
+     55.6
+    ],
+    "nose_projection": [
+     18.2,
+     17.6
+    ],
+    "upper_lip": [
+     4.9,
+     6.6
+    ],
+    "upper_lip_fwd": [
+     2.5,
+     1.4
+    ],
+    "lower_lip": [
+     2.6,
+     5.4
+    ],
+    "lower_lip_fwd": [
+     6.8,
+     5.8
+    ],
+    "philtrum": [
+     15.0,
+     14.3
+    ],
+    "chin_length": [
+     46.0,
+     49.4
+    ],
+    "chin_projection": [
+     2.0,
+     2.4
+    ],
+    "lower_face": [
+     64.9,
+     69.9
+    ],
+    "face_height": [
+     123.4,
+     128.2
+    ],
+    "mouth_width": [
+     57.0,
+     56.0
+    ],
+    "nose_width": [
+     35.0,
+     38.0
+    ],
+    "chin_forward": [
+     -5.0,
+     -3.3
+    ],
+    "lips_forward": [
+     3.5,
+     2.2
+    ],
+    "dorsum": [
+     -1.8,
+     1.7
+    ],
+    "brow_projection": [
+     -1.0,
+     -3.1
+    ],
+    "eye_spacing": [
+     65.9,
+     64.7
+    ],
+    "eye_size": [
+     26.4,
+     34.8
+    ],
+    "cheekbone_width": [
+     136.1,
+     133.9
+    ],
+    "jaw_width": [
+     130.7,
+     132.2
+    ],
+    "jaw_low_width": [
+     103.9,
+     110.5
+    ],
+    "chin_width": [
+     58.4,
+     55.7
+    ],
+    "cheek_width": [
+     113.4,
+     118.4
+    ]
+   }
+  },
+  "Black_f": {
+   "valid": [
+    "Black_F_1_Casual",
+    "Black_F_2_Casual",
+    "Black_F_3_Casual"
+   ],
+   "rocketbox": [
+    "Fire_Female_02"
+   ],
+   "medians_valid_rocketbox": {
+    "nose_length": [
+     51.9,
+     48.3
+    ],
+    "nose_projection": [
+     10.5,
+     14.0
+    ],
+    "upper_lip": [
+     6.8,
+     4.2
+    ],
+    "upper_lip_fwd": [
+     4.3,
+     4.3
+    ],
+    "lower_lip": [
+     4.4,
+     4.8
+    ],
+    "lower_lip_fwd": [
+     8.1,
+     8.1
+    ],
+    "philtrum": [
+     13.3,
+     18.7
+    ],
+    "chin_length": [
+     41.6,
+     49.1
+    ],
+    "chin_projection": [
+     0.9,
+     1.0
+    ],
+    "lower_face": [
+     62.0,
+     72.0
+    ],
+    "face_height": [
+     114.0,
+     120.4
+    ],
+    "mouth_width": [
+     55.0,
+     60.0
+    ],
+    "nose_width": [
+     37.0,
+     46.0
+    ],
+    "chin_forward": [
+     -4.2,
+     -3.1
+    ],
+    "lips_forward": [
+     5.7,
+     5.7
+    ],
+    "dorsum": [
+     -2.5,
+     5.1
+    ],
+    "brow_projection": [
+     -3.2,
+     0.7
+    ],
+    "eye_spacing": [
+     62.4,
+     64.7
+    ],
+    "eye_size": [
+     25.2,
+     34.8
+    ],
+    "cheekbone_width": [
+     136.0,
+     134.7
+    ],
+    "jaw_width": [
+     119.3,
+     134.1
+    ],
+    "jaw_low_width": [
+     97.9,
+     112.1
+    ],
+    "chin_width": [
+     51.2,
+     57.7
+    ],
+    "cheek_width": [
+     120.0,
+     123.6
+    ]
+   }
+  },
+  "Black_m": {
+   "valid": [
+    "Black_M_1_Casual",
+    "Black_M_2_Casual",
+    "Black_M_3_Casual"
+   ],
+   "rocketbox": [
+    "Construction_Male_03",
+    "Fire_Male_02",
+    "Male_Adult_12",
+    "Male_Adult_18",
+    "Military_Male_01"
+   ],
+   "medians_valid_rocketbox": {
+    "nose_length": [
+     50.3,
+     50.7
+    ],
+    "nose_projection": [
+     12.5,
+     13.9
+    ],
+    "upper_lip": [
+     6.7,
+     11.3
+    ],
+    "upper_lip_fwd": [
+     6.5,
+     4.3
+    ],
+    "lower_lip": [
+     4.4,
+     6.5
+    ],
+    "lower_lip_fwd": [
+     8.5,
+     8.1
+    ],
+    "philtrum": [
+     17.5,
+     15.1
+    ],
+    "chin_length": [
+     44.7,
+     49.1
+    ],
+    "chin_projection": [
+     2.8,
+     0.8
+    ],
+    "lower_face": [
+     69.0,
+     72.0
+    ],
+    "face_height": [
+     119.3,
+     124.2
+    ],
+    "mouth_width": [
+     56.0,
+     60.0
+    ],
+    "nose_width": [
+     42.6,
+     43.1
+    ],
+    "chin_forward": [
+     -2.7,
+     -3.1
+    ],
+    "lips_forward": [
+     6.2,
+     5.7
+    ],
+    "dorsum": [
+     2.5,
+     -2.4
+    ],
+    "brow_projection": [
+     -1.5,
+     0.7
+    ],
+    "eye_spacing": [
+     64.8,
+     64.7
+    ],
+    "eye_size": [
+     27.1,
+     34.8
+    ],
+    "cheekbone_width": [
+     135.9,
+     134.7
+    ],
+    "jaw_width": [
+     128.6,
+     134.1
+    ],
+    "jaw_low_width": [
+     100.5,
+     112.1
+    ],
+    "chin_width": [
+     51.2,
+     57.3
+    ],
+    "cheek_width": [
+     117.4,
+     123.6
+    ]
+   }
+  },
+  "Asian_f": {
+   "valid": [
+    "Asian_F_1_Casual",
+    "Asian_F_2_Casual",
+    "Asian_F_3_Casual"
+   ],
+   "rocketbox": [
+    "Female_Adult_11",
+    "Female_Adult_12",
+    "Medical_Female_01",
+    "Sports_Female_02"
+   ],
+   "medians_valid_rocketbox": {
+    "nose_length": [
+     51.7,
+     48.2
+    ],
+    "nose_projection": [
+     9.8,
+     13.0
+    ],
+    "upper_lip": [
+     8.2,
+     6.5
+    ],
+    "upper_lip_fwd": [
+     2.4,
+     2.9
+    ],
+    "lower_lip": [
+     5.7,
+     6.1
+    ],
+    "lower_lip_fwd": [
+     7.2,
+     5.9
+    ],
+    "philtrum": [
+     9.7,
+     10.8
+    ],
+    "chin_length": [
+     42.9,
+     40.9
+    ],
+    "chin_projection": [
+     2.3,
+     0.7
+    ],
+    "lower_face": [
+     60.9,
+     58.7
+    ],
+    "face_height": [
+     112.5,
+     107.5
+    ],
+    "mouth_width": [
+     54.0,
+     52.0
+    ],
+    "nose_width": [
+     34.1,
+     33.5
+    ],
+    "chin_forward": [
+     -5.5,
+     -3.1
+    ],
+    "lips_forward": [
+     3.6,
+     4.2
+    ],
+    "dorsum": [
+     -2.0,
+     0.4
+    ],
+    "brow_projection": [
+     -4.7,
+     -0.8
+    ],
+    "eye_spacing": [
+     61.7,
+     60.7
+    ],
+    "eye_size": [
+     27.6,
+     30.7
+    ],
+    "cheekbone_width": [
+     133.3,
+     127.2
+    ],
+    "jaw_width": [
+     113.5,
+     119.3
+    ],
+    "jaw_low_width": [
+     84.4,
+     91.7
+    ],
+    "chin_width": [
+     48.9,
+     50.8
+    ],
+    "cheek_width": [
+     112.2,
+     107.9
+    ]
+   }
+  },
+  "Asian_m": {
+   "valid": [
+    "Asian_M_1_Casual",
+    "Asian_M_2_Casual",
+    "Asian_M_3_Casual"
+   ],
+   "rocketbox": [
+    "Business_Male_02",
+    "Male_Adult_09",
+    "Male_Adult_10",
+    "Police_Male_05"
+   ],
+   "medians_valid_rocketbox": {
+    "nose_length": [
+     54.2,
+     55.1
+    ],
+    "nose_projection": [
+     11.0,
+     16.2
+    ],
+    "upper_lip": [
+     6.7,
+     7.0
+    ],
+    "upper_lip_fwd": [
+     3.8,
+     2.1
+    ],
+    "lower_lip": [
+     3.0,
+     5.3
+    ],
+    "lower_lip_fwd": [
+     8.6,
+     4.6
+    ],
+    "philtrum": [
+     14.0,
+     15.5
+    ],
+    "chin_length": [
+     46.5,
+     46.1
+    ],
+    "chin_projection": [
+     1.4,
+     2.9
+    ],
+    "lower_face": [
+     67.0,
+     68.2
+    ],
+    "face_height": [
+     120.7,
+     124.5
+    ],
+    "mouth_width": [
+     54.0,
+     59.5
+    ],
+    "nose_width": [
+     34.1,
+     38.5
+    ],
+    "chin_forward": [
+     -5.9,
+     -1.2
+    ],
+    "lips_forward": [
+     5.5,
+     2.0
+    ],
+    "dorsum": [
+     -3.0,
+     -2.3
+    ],
+    "brow_projection": [
+     -2.0,
+     0.2
+    ],
+    "eye_spacing": [
+     63.7,
+     64.7
+    ],
+    "eye_size": [
+     27.2,
+     34.8
+    ],
+    "cheekbone_width": [
+     136.9,
+     136.1
+    ],
+    "jaw_width": [
+     127.9,
+     131.6
+    ],
+    "jaw_low_width": [
+     98.9,
+     108.6
+    ],
+    "chin_width": [
+     59.6,
+     53.3
+    ],
+    "cheek_width": [
+     117.2,
+     121.0
+    ]
+   }
+  },
+  "Hispanic_f": {
+   "valid": [
+    "Hispanic_F_1_Casual",
+    "Hispanic_F_2_Casual",
+    "Hispanic_F_3_Casual"
+   ],
+   "rocketbox": [
+    "Business_Female_01",
+    "Female_Adult_10",
+    "Female_Party_02",
+    "Fire_Female_01",
+    "Military_Female_02",
+    "Pilot_Female_02"
+   ],
+   "medians_valid_rocketbox": {
+    "nose_length": [
+     53.5,
+     54.7
+    ],
+    "nose_projection": [
+     11.3,
+     11.0
+    ],
+    "upper_lip": [
+     7.3,
+     8.4
+    ],
+    "upper_lip_fwd": [
+     2.0,
+     2.4
+    ],
+    "lower_lip": [
+     2.1,
+     6.3
+    ],
+    "lower_lip_fwd": [
+     8.6,
+     6.8
+    ],
+    "philtrum": [
+     11.5,
+     12.0
+    ],
+    "chin_length": [
+     42.5,
+     43.0
+    ],
+    "chin_projection": [
+     1.4,
+     1.7
+    ],
+    "lower_face": [
+     61.4,
+     63.4
+    ],
+    "face_height": [
+     114.8,
+     122.4
+    ],
+    "mouth_width": [
+     52.0,
+     49.0
+    ],
+    "nose_width": [
+     31.0,
+     37.0
+    ],
+    "chin_forward": [
+     -7.1,
+     -5.3
+    ],
+    "lips_forward": [
+     4.5,
+     3.7
+    ],
+    "dorsum": [
+     -2.5,
+     -4.0
+    ],
+    "brow_projection": [
+     -2.4,
+     -4.0
+    ],
+    "eye_spacing": [
+     60.5,
+     59.7
+    ],
+    "eye_size": [
+     27.0,
+     29.9
+    ],
+    "cheekbone_width": [
+     135.9,
+     125.4
+    ],
+    "jaw_width": [
+     122.3,
+     116.0
+    ],
+    "jaw_low_width": [
+     90.5,
+     88.2
+    ],
+    "chin_width": [
+     59.0,
+     46.1
+    ],
+    "cheek_width": [
+     119.5,
+     110.9
+    ]
+   }
+  },
+  "Hispanic_m": {
+   "valid": [
+    "Hispanic_M_1_Casual",
+    "Hispanic_M_2_Casual",
+    "Hispanic_M_3_Casual"
+   ],
+   "rocketbox": [
+    "Male_Adult_15",
+    "Male_Adult_17",
+    "Military_Male_04",
+    "Police_Male_01"
+   ],
+   "medians_valid_rocketbox": {
+    "nose_length": [
+     54.9,
+     56.8
+    ],
+    "nose_projection": [
+     12.3,
+     18.3
+    ],
+    "upper_lip": [
+     5.1,
+     6.5
+    ],
+    "upper_lip_fwd": [
+     1.7,
+     3.3
+    ],
+    "lower_lip": [
+     2.9,
+     6.2
+    ],
+    "lower_lip_fwd": [
+     7.1,
+     6.1
+    ],
+    "philtrum": [
+     14.7,
+     12.1
+    ],
+    "chin_length": [
+     47.7,
+     50.5
+    ],
+    "chin_projection": [
+     2.0,
+     1.9
+    ],
+    "lower_face": [
+     68.8,
+     68.9
+    ],
+    "face_height": [
+     124.1,
+     126.0
+    ],
+    "mouth_width": [
+     56.0,
+     58.0
+    ],
+    "nose_width": [
+     36.5,
+     37.8
+    ],
+    "chin_forward": [
+     -4.9,
+     -3.9
+    ],
+    "lips_forward": [
+     3.6,
+     3.8
+    ],
+    "dorsum": [
+     -1.6,
+     1.4
+    ],
+    "brow_projection": [
+     -2.4,
+     -2.8
+    ],
+    "eye_spacing": [
+     67.0,
+     64.8
+    ],
+    "eye_size": [
+     26.0,
+     34.8
+    ],
+    "cheekbone_width": [
+     136.2,
+     132.5
+    ],
+    "jaw_width": [
+     133.2,
+     126.1
+    ],
+    "jaw_low_width": [
+     101.7,
+     109.0
+    ],
+    "chin_width": [
+     59.1,
+     58.7
+    ],
+    "cheek_width": [
+     118.9,
+     118.8
+    ]
+   }
+  },
+  "MENA_m": {
+   "valid": [
+    "MENA_M_1_Casual",
+    "MENA_M_2_Casual",
+    "MENA_M_3_Casual"
+   ],
+   "rocketbox": [
+    "Business_Male_05",
+    "Construction_Male_08",
+    "Delivery_Male_01",
+    "Fire_Male_04",
+    "Male_Adult_04",
+    "Male_Adult_19",
+    "Male_Adult_21",
+    "Police_Male_07",
+    "Wood_Male_01"
+   ],
+   "medians_valid_rocketbox": {
+    "nose_length": [
+     61.1,
+     55.9
+    ],
+    "nose_projection": [
+     18.9,
+     18.0
+    ],
+    "upper_lip": [
+     4.8,
+     5.8
+    ],
+    "upper_lip_fwd": [
+     1.1,
+     2.0
+    ],
+    "lower_lip": [
+     3.1,
+     5.8
+    ],
+    "lower_lip_fwd": [
+     6.9,
+     7.3
+    ],
+    "philtrum": [
+     10.7,
+     13.4
+    ],
+    "chin_length": [
+     48.5,
+     51.6
+    ],
+    "chin_projection": [
+     2.6,
+     1.2
+    ],
+    "lower_face": [
+     64.0,
+     70.8
+    ],
+    "face_height": [
+     125.3,
+     129.0
+    ],
+    "mouth_width": [
+     58.0,
+     58.0
+    ],
+    "nose_width": [
+     32.5,
+     39.2
+    ],
+    "chin_forward": [
+     -4.9,
+     -5.6
+    ],
+    "lips_forward": [
+     2.6,
+     3.7
+    ],
+    "dorsum": [
+     2.6,
+     -1.5
+    ],
+    "brow_projection": [
+     -2.1,
+     -3.6
+    ],
+    "eye_spacing": [
+     65.4,
+     64.7
+    ],
+    "eye_size": [
+     26.1,
+     34.8
+    ],
+    "cheekbone_width": [
+     135.4,
+     134.0
+    ],
+    "jaw_width": [
+     130.4,
+     131.7
+    ],
+    "jaw_low_width": [
+     101.0,
+     109.7
+    ],
+    "chin_width": [
+     60.4,
+     55.4
+    ],
+    "cheek_width": [
+     118.0,
+     121.6
+    ]
+   }
+  }
+ }
+}

@@ -242,6 +242,39 @@ eye sockets and face bones). What could fill it, all without accounts:
 - *Age:* ageing from the library's older men and from published ageing measurements, since the library has almost no
   older women.
 
+**VALID against Rocketbox, consistency first (owner, 2026-11-01: "use VALID, compare consistency first").** VALID's
+35 validated faces (one outfit each: all but its two unvalidated Pacific Islander women) measured exactly as Rocketbox's
+(`rocketbox_surface.py` now reads VALID's HumanIK rig and one-material bodies; `valid_compare.py`, results in
+`data/valid_compare.json`) and rendered in one Blender studio with Rocketbox's four textured people (`studio_render.py`:
+same three lights, grey world, camera on the eyes; `docs/evidence/unity/p4/research/valid_vs_rocketbox.jpg` and
+`valid_all.jpg`).
+- *Build:* VALID's people come from Autodesk Character Generator: one 21,000-vertex mesh and one 2K texture for the whole
+  person (face, hands, clothes, teeth: the face gets about a fifth of it, half Rocketbox's detail across), hair as a solid
+  textured shell, 66 expression shapes, a HumanIK skeleton (84 bones; Rocketbox's is a 3ds Max biped: both retarget as
+  Unity humanoids). Rocketbox: a 2K texture for the head alone, hair as alpha cards, about 1,500-2,000 head vertices
+  (VALID's head about 6,700).
+- *Proportions:* mostly in the same range as Rocketbox and the published norms (chin length and projection, lips, face
+  height, jaw: 94-100 % of VALID's values inside the calibrated ranges); systematic differences: noses project 3 mm less,
+  women's mouths are 6 mm wider than Rocketbox's women and the 3D norms' (54 against 48 mm), and VALID's women are as wide
+  across the cheeks as its men (135 against 136 mm at the same cut; Rocketbox 124 against 134, real bizygomatic widths 130
+  against 138): weak sexual dimorphism in the face's width. Matched by ancestry (White against Rocketbox's north
+  Europeans, Black against West Africans, Asian against East Asians) the offsets hold within each group.
+- *Individuality:* VALID's faces are each an average of 4-7 photographs (its paper), and averaging takes out what makes a
+  face one person's. Two VALID faces of the same group and sex differ by 0.26-0.63 of what two real people do (mean
+  pairwise distance over ten features in units of the published sd, against its value for independent real people);
+  Rocketbox's north Europeans 1.04 (women) and 1.43 (men), its other groups 0.64-1.21. Across all seven groups VALID's
+  cheekbone width spans 4 mm, its mouth width 4 mm (one group of real people: about 11 mm).
+- *By eye* (same studio, `valid_vs_rocketbox.jpg`, `valid_all.jpg`): Rocketbox reads as photographed people (skin
+  detail, asymmetry, age); VALID as game avatars: smooth, symmetric, all in their twenties, the women of a group like
+  sisters, hair as solid shells, one face smeared where the photographs were averaged (Black_M_1's jaw). Its ancestry cues
+  are clear and varied across groups (the reason it was validated).
+- *Verdict:* not consistent enough to stand beside Rocketbox as people: in one crowd they would read as two art styles,
+  and inside each group as look-alikes. What VALID does give that nothing else free does: validated, ancestry-typical face
+  shapes for groups Rocketbox lacks (Indigenous American, Pacific Islander, more Black women, Asian men and women, Middle
+  Eastern women). Proposed use: its group shapes only (geometry, as an ancestry direction in the registered layout), put on
+  Rocketbox's photographed heads and skin, each person then spread around that centre by the real people's measured spread
+  (the published sds), never VALID's own skin, hair or bodies.
+
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own
 triangles (`rocketbox_head_map.py`, seam-safe). (1) The per-texel change with age, regressed over the 78 faces without soot,
