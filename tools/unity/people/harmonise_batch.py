@@ -119,7 +119,11 @@ def run(manifest, k, n):
         r = subprocess.run([PY, f'{HERE}/retone.py', f'{S}/rblib/{j["base"]}', f'{out}/{j["name"]}.json', out, j['hair'], '0', tone, und,
                             j.get('eyes', 'dark'), str(j.get('iris_shift', 0.0))], capture_output=True, text=True, env=renv)
         print(j['name'], r.stdout.strip().split('\n')[0][:160])
-        # the hairstyle (hair_graft.py): the scalp rebuilt and a donor's hair put on ('-': buzzed), the scalp repainted
+        # the hairstyle (hair_graft.py): the scalp rebuilt and a donor's hair put on ('-': buzzed), the scalp repainted;
+        # with the base's own hair kept, the scalp above a photograph's hairline is still painted as hair
+        if not j.get('graft') and j.get('ffhq'):
+            json.dump({'hair': j.get('hair_hex', '16110d'), 'paint': {}}, open(f'{out}/{j["name"]}_graft.json', 'w'))
+            subprocess.run([PY, f'{HERE}/scalp_paint.py', f'{out}/{j["name"]}_graft.json', out, out], capture_output=True, text=True)
         if j.get('graft'):
             g = j['graft']
             donor = '-' if g == '-' else (g if g.endswith('.fbx') or '+' in g else f'{S}/rblib/{g}/{g}.fbx')

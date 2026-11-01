@@ -150,6 +150,8 @@ keep = (np.linalg.norm(Q, axis=1) < REACH) & (np.abs(Q[:, 0]) < EAR_X)
 ys, xs, Q = ys[keep], xs[keep], Q[keep]
 print('texels on the face', len(Q))
 UV = np.zeros((len(Q), 2), np.float32); mask = np.zeros(len(Q), np.float32); scalp = np.zeros(len(Q), bool)
+z_ls = FR.L['ls'].at(P)[0, 2] if 'ls' in FR.L else -38.0; z_lm = FR.L['lm'].at(P)[0, 2] if 'lm' in FR.L else -72.0
+mouth = (np.abs(Q[:, 0]) < 34) & (Q[:, 2] < z_ls + 3) & (Q[:, 2] > z_lm - 3) & (Q[:, 1] < -15)
 for i in range(len(Q)):
     loc, nrm, fi, dist = tree.find_nearest(Vector(Q[i]))
     if fi is None or dist > 12: continue
@@ -170,7 +172,7 @@ for i in range(len(Q)):
     m = min(1.0, (REACH - r) / FEATHER) * min(1.0, max(0.0, (e - EYE_KEEP) / FEATHER)) * min(1.0, (EAR_X - abs(Q[i, 0])) / FEATHER) * min(1.0, (12 - dist) / 4)
     mask[i] = max(0.0, m)
 cheek = (np.abs(Q[:, 0]) > 28) & (np.abs(Q[:, 0]) < 52) & (Q[:, 2] < -15) & (Q[:, 2] > -45)
-np.savez_compressed(os.path.join(out_dir, 'ffhq_map.npz'), ys=ys, xs=xs, uv=UV, mask=mask, cheek=cheek, scalp=scalp, size=np.array([H, Wd]))
+np.savez_compressed(os.path.join(out_dir, 'ffhq_map.npz'), ys=ys, xs=xs, uv=UV, mask=mask, cheek=cheek, scalp=scalp, mouth=mouth, size=np.array([H, Wd]))
 json.dump({'ffhq': os.path.basename(ffhq_png), 'material': hmat, 'texels': int(len(Q)), 'baked': int((mask > 0.5).sum()),
            'landmarks': keys, 'residual_mm': res.round(1).tolist(), 'scale': round(float(s), 3)}, open(os.path.join(out_dir, 'ffhq.json'), 'w'))
 print('mapped', int((mask > 0.5).sum()), 'texels of', len(Q))

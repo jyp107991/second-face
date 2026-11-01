@@ -27,6 +27,14 @@ def sample(img, uv):
 
 on = mask > 0
 rgb = np.zeros((len(ys), 3), np.float32); rgb[on] = sample(tex, uv[on])
+# a photograph with parted lips shows teeth between them, which the carrier's closed lips put on the lips: pale, low-chroma
+# texels in the mouth's zone keep Rocketbox's own lips (the mask there goes to 0, feathered by the blur below)
+if 'mouth' in M:
+    ml = srgb_to_lab(rgb * 255.0); mC = np.hypot(ml[:, 1], ml[:, 2])
+    ref_L = float(np.median(ml[on & cheek][:, 0])) if (on & cheek).sum() > 20 else 45.0
+    teeth = on & M['mouth'] & (ml[:, 0] > ref_L + 12) & (mC < 14)
+    mask = np.where(teeth, 0.0, mask); on = mask > 0
+    print('teeth texels kept from the base', int(teeth.sum()))
 # harmonised to Rocketbox's house style, two ways. (1) Colour: FFHQ-UV's normalisation dulls the skin (a dark face's
 # cheek at chroma 13 where Rocketbox's photographed dark faces sit at 27-38, hue 49-64 degrees: Male_Adult_12,
 # Military_Male_01, Business_Female_01), so the face's chroma is brought to Rocketbox's for its lightness and its hue
@@ -41,6 +49,8 @@ Lc, Cc, hc = [(np.median(v[cheek_on]) if cheek_on.sum() > 20 else np.median(v)) 
 C_target = 26.7 + max(0.0, Lc - 35.0) * 0.4
 kC = float(np.clip(C_target / max(Cc, 1e-3), 1.0, 3.0))
 h_typ = math.radians(56.0); dh = 0.5 * float(np.angle(np.exp(1j * (h_typ - hc))))
+h_new = float(np.angle(np.exp(1j * (hc + dh))))
+dh += float(np.clip(h_new, math.radians(47.0), math.radians(66.0))) - h_new     # within Rocketbox's dark faces' hues
 lab = from_lch(L, np.clip(C * kC, 0, 60), h + dh)
 # a woman's lips a little more saturated and her skin smoother, as Rocketbox's own women are photographed (lightly made
 # up, softly lit): the lips (redder than the cheek) by 12 % in chroma
