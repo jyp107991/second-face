@@ -454,6 +454,38 @@ must be more usable models comparable to Rocketbox, search harder").**
   ears that hair is the head's own surface, so they serve no Black people; one afro is not enough: braids, locs, twists
   and cornrows to Rocketbox's standard are next.
 
+**Real faces (owner, 2026-11-01: "your Black people look horrible; find real-looking assets; represent real human
+faces").** Recolouring a European photograph never makes a Black person: the face must come from a photograph of a
+Black person. The source: **FFHQ-UV** (Bai et al., CVPR 2023, MIT licence; github.com/csbhr/FFHQ-UV, mirrored at
+huggingface.co/datasets/csbhr/FFHQ-UV), 54,165 facial texture maps made from the FFHQ photographs of real people,
+normalised to even light and a neutral expression, cleaned of hair and background, laid out on the HiFi3D++ head topology
+(20,481 vertices; the demo head of that repository is the carrier here). The maps ship in 55 archives of 1.1 GB; with
+little disk they are read by byte range (`ffhq_tools/lazyzip.py`: a sparse local file holds only the members fetched),
+scanned for skin tone (`ffhq_tools/scan.py`: median L*a*b* of the centre of the face, the ITA angle), and the dark faces
+judged by eye (FFHQ has no ancestry labels; ITA under -44 was almost always a Black face, and a few lighter Black faces
+with grey beards were kept by eye; tan, olive, pink-lit and child faces dropped): 36 Black adults from the first 3,000
+(23 women, 13 men), `black_faces_final.json`.
+The bake (`ffhq_bake.py`, `ffhq_bake_finish.py`): the carrier head is put into the eyes' frame used for every Rocketbox
+head (its eyes from the lid contours of the eyeball tool's vertex indices, 12 mm in front of the eye centres), its
+anatomical landmarks found exactly as a Rocketbox head's (rocketbox_features.Face), and it is fitted to the target head by
+a similarity and a near-interpolating thin-plate warp (residuals 0.1-1.7 mm on 23 landmarks). Each texel of the Rocketbox
+texture on the face (rasterised through its own triangles) goes to its point on the head, to the nearest point of the
+fitted carrier, and to that point's place in the photograph's texture. Baked within 120 mm of the eyes, not the ears, not
+within 16 mm of either eye (the photographs' eyes are closed: Rocketbox's lids and lashes stay), not FFHQ-UV's painted
+hair, with feathered edges. Harmonised to Rocketbox's house style two ways: FFHQ-UV's normalisation dulls the skin (a
+dark face's cheek at chroma 13 where Rocketbox's photographed dark faces sit at 27-38, hue 49-64 degrees), so the face's
+chroma is brought to Rocketbox's for its lightness and its hue halfway to Rocketbox's typical, keeping its own lightness
+and variation; and Rocketbox's textures carry the photograph's soft shading (under the brows, beside the nose) while
+FFHQ-UV's are even-lit, so the base head's own low-frequency shading is laid over the real face. The rest of the head is
+Rocketbox's, retoned to the face's cheek colour (retone.py, RT_BAKE composites the two); the shape is a VALID Black
+person's difference on the base (harmonise.py); the hair is grafted true to the people (hair_graft.py).
+First two tests (`docs/evidence/unity/p4/research/real_faces_test.jpg`): a real Black woman's face on Business_Female_01
+reads as her, in Rocketbox's style; a tan man's face on Male_Adult_08 reads as him (and shows that the tone filter alone
+does not pick ancestry: he was dropped from the Black set). Found and fixed on the way: the carrier fitted back to front
+(its "nose" the occiput: the facing is now from the head's bulk behind the eyes); its neck and shoulders counted as
+cheeks and jaw (the carrier is cut at 130 mm below the eyes before the landmarks); Blender's float images colour-manage
+on save (the sampling and colour work left Blender).
+
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own
 triangles (`rocketbox_head_map.py`, seam-safe). (1) The per-texel change with age, regressed over the 78 faces without soot,
