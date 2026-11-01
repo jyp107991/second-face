@@ -106,12 +106,13 @@ def run(manifest, k, n):
         # rest of the skin at the face's colour; retone.py composites it (RT_BAKE)
         renv = dict(os.environ); tone, und = str(j['tone']), str(j['undertone'])
         if j.get('ffhq'):
-            fenv = dict(os.environ, FFHQ_TOPO=f'{S}/ffhq/topo', FFHQ_MASKS=f'{S}/ffhq')
+            fenv = dict(os.environ, FFHQ_TOPO=f'{S}/ffhq/topo', FFHQ_MASKS=f'{S}/ffhq', FFHQ_EYE_KEEP='18' if j['sex'] == 'f' else '12',
+                        FFHQ_SEX=j['sex'], FFHQ_DETAIL='0.5' if j['sex'] == 'f' else '0.9')
             r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/ffhq_bake.py', '--', f'{out}/{j["name"]}.fbx', f'{S}/rblib/{j["base"]}', j['ffhq'], out],
                                capture_output=True, text=True, env=fenv)
             if not os.path.exists(f'{out}/ffhq_map.npz'): print('bake failed', j['name'], r.stdout[-300:], r.stderr[-300:]); continue
             head_tex = next(f'{S}/rblib/{j["base"]}/{f}' for f in os.listdir(f'{S}/rblib/{j["base"]}') if f.endswith('_head_color.jpg'))
-            r = subprocess.run([PY, f'{HERE}/ffhq_bake_finish.py', out, j['ffhq'], head_tex], capture_output=True, text=True)
+            r = subprocess.run([PY, f'{HERE}/ffhq_bake_finish.py', out, j['ffhq'], head_tex], capture_output=True, text=True, env=fenv)
             fj = json.load(open(f'{out}/ffhq.json')); tone, und = str(fj['tone']), str(fj['undertone']); renv['RT_BAKE'] = out
             print(j['name'], 'ffhq', os.path.basename(j['ffhq']), 'baked', fj.get('baked'), 'cheek', fj.get('cheek_lab'))
             os.remove(f'{out}/ffhq_map.npz')

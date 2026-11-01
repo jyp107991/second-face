@@ -22,7 +22,7 @@ import rocketbox_features as rbf
 person_path, tex_dir, ffhq_png, out_dir = sys.argv[sys.argv.index('--') + 1:][:4]
 TOPO = os.environ['FFHQ_TOPO']; MASKS = os.environ.get('FFHQ_MASKS', os.path.dirname(TOPO))
 os.makedirs(out_dir, exist_ok=True)
-EYE_KEEP = 12.0; REACH = 140.0; EAR_X = 72.0; FEATHER = 8.0       # mm (the reach covers the whole jaw and chin: a base's painted beard must not show through)
+EYE_KEEP = float(os.environ.get('FFHQ_EYE_KEEP', 12.0)); REACH = 140.0; EAR_X = 72.0; FEATHER = 8.0   # mm (the reach covers the whole jaw and chin: a base's painted beard must not show through; the eye zone 16 for women: Rocketbox's lids and lashes read as a woman's)
 
 
 def load_png(path):

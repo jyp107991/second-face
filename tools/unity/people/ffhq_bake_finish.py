@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from retone import srgb_to_lab
 
 out_dir, ffhq_png, base_jpg = sys.argv[1:4]
+DETAIL = float(os.environ.get('FFHQ_DETAIL', 0.8))          # how much of Rocketbox's fine skin detail goes over the face
 M = np.load(os.path.join(out_dir, 'ffhq_map.npz'))
 ys, xs, uv, mask, cheek = M['ys'], M['xs'], M['uv'], M['mask'], M['cheek']
 H, W = (int(v) for v in M['size'])
@@ -41,11 +42,24 @@ C_target = 26.7 + max(0.0, Lc - 35.0) * 0.4
 kC = float(np.clip(C_target / max(Cc, 1e-3), 1.0, 3.0))
 h_typ = math.radians(56.0); dh = 0.5 * float(np.angle(np.exp(1j * (h_typ - hc))))
 lab = from_lch(L, np.clip(C * kC, 0, 60), h + dh)
+# a woman's lips a little more saturated and her skin smoother, as Rocketbox's own women are photographed (lightly made
+# up, softly lit): the lips (redder than the cheek) by 12 % in chroma
+if os.environ.get('FFHQ_SEX') == 'f':
+    L2, C2, h2 = to_lch(lab)
+    lip = np.clip((lab[:, 1] - np.median(lab[:, 1]) - 4) / 6, 0, 1)
+    lab = from_lch(L2, C2 * (1 + 0.12 * lip), h2)
 baseL = srgb_to_lab(base * 255.0)[..., 0]
 blur = np.asarray(Image.fromarray(np.clip(baseL * 2.55, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(14)), np.float32) / 2.55
 shade = blur[ys[on], xs[on]]
 ref = float(np.median(shade[cheek_on])) if cheek_on.sum() > 20 else float(np.median(shade))
 lab[:, 0] = lab[:, 0] * np.clip(shade / max(ref, 1e-3), 0.6, 1.25) ** 0.7
+# (3) Detail: the photograph's texture holds the face at about 400 texels across, blurred by its normalisation, where
+# Rocketbox's holds it at about 700 with the photograph's pores and fine lines; so the base texture's fine detail (its
+# lightness above a 2.5-texel blur, which at this scale is pores and fine lines, not the person's features) is laid over
+# the real face, scaled to the face's lightness, so the face is as crisp as the heads beside it.
+fine = baseL - np.asarray(Image.fromarray(np.clip(baseL * 2.55, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(2.5)), np.float32) / 2.55
+fine = np.clip(fine, -12, 12)[ys[on], xs[on]]
+lab[:, 0] = np.clip(lab[:, 0] + fine * DETAIL * np.clip(lab[:, 0] / max(float(np.median(lab[:, 0])), 1.0), 0.5, 1.5), 2, 98)
 rgb[on] = lab_to_srgb(lab).astype(np.float32) / 255.0
 out = base.copy(); out[ys[on], xs[on]] = rgb[on]
 print('harmonised: cheek chroma', round(float(Cc), 1), '->', round(float(Cc * kC), 1), 'hue', round(math.degrees(float(hc)), 1), '->', round(math.degrees(float(hc + dh)), 1))
