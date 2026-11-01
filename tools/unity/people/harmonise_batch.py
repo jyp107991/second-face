@@ -104,6 +104,17 @@ def run(manifest, k, n):
         r = subprocess.run([PY, f'{HERE}/retone.py', f'{S}/rblib/{j["base"]}', f'{out}/{j["name"]}.json', out, j['hair'], '0', str(j['tone']), str(j['undertone']),
                             j.get('eyes', 'dark'), str(j.get('iris_shift', 0.0))], capture_output=True, text=True)
         print(j['name'], r.stdout.strip().split('\n')[0][:160])
+        # the hairstyle (hair_graft.py): the scalp rebuilt and a donor's hair put on ('-': buzzed), the scalp repainted
+        if j.get('graft'):
+            g = j['graft']
+            donor = '-' if g == '-' else (g if g.endswith('.fbx') or '+' in g else f'{S}/rblib/{g}/{g}.fbx')
+            genv = dict(os.environ, GRAFT_SKULL=f'{S}/rblib/Business_Male_04/Business_Male_04.fbx')
+            if j.get('graft_keep_tex'): genv['GRAFT_KEEP_TEX'] = '1'
+            if j.get('graft_volume'): genv['GRAFT_VOLUME'] = str(j['graft_volume'])
+            r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/hair_graft.py', '--', f'{out}/{j["name"]}.fbx', donor, f'{out}/{j["name"]}.fbx',
+                                j.get('hair_hex', '16110d')], capture_output=True, text=True, env=genv)
+            if not os.path.exists(f'{out}/{j["name"]}_graft.json'): print('graft failed', j['name'], r.stdout[-300:], r.stderr[-300:])
+            else: subprocess.run([PY, f'{HERE}/scalp_paint.py', f'{out}/{j["name"]}_graft.json', out, out], capture_output=True, text=True)
         subprocess.run([BLENDER, '-b', '--python', f'{HERE}/studio_render.py', '--', rdir, f'{out}/{j["name"]}.fbx'], capture_output=True, text=True, env=env)
         shutil.copy(f'{out}/{j["name"]}.json', f'{rdir}/{j["name"]}.json')
         if os.path.exists(f'{rdir}/{j["name"]}_three.png'): json.dump(j, open(sig, 'w'))

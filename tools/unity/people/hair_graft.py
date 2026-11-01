@@ -1,15 +1,24 @@
 """A hairstyle moved from one person onto another (owner, 2026-11-01: "hair must be consistent with race: Black people
-cannot have weirdly white straight hairstyles"; many people from each base by blending and variation). The target's own
-scalp hair is taken off (Rocketbox: the opacity material's loose pieces away from the brows and lashes, which stay); the
-donor's hair (VALID: its 'h_wig' mesh; Rocketbox: its opacity material's scalp pieces) is fitted to the target's skull: each
-hair vertex keeps its height above the donor's scalp along the ray from the donor's skull centre and is put at that height
-above the target's scalp along the same direction (both heads in their eyes' frames, so the hair sits where it sat:
-hairline, crown and nape); where a ray finds no scalp (hair hanging below the skull), the vertex follows the skulls'
-similarity. The hair is skinned to the target's head bone and keeps the donor's texture, retoned to the hair colour given.
-Usage: blender -b --python hair_graft.py -- <target fbx> <donor fbx>[+<donor hair fbx>] <out fbx> [<hair colour hex, e.g. 16110d>]
-  (the target's textures are linked beside the output by the caller; the donor's hair texture is written beside it.
-  Our own hairstyles (hairgen.py, groom.py) are separate files on the player's body: <player fbx>+<hair fbx>;
-  GRAFT_TEX: the hair's texture, when the FBX does not carry it)"""
+cannot have weirdly white straight hairstyles"; many people from each base by blending and variation).
+Rocketbox builds most of a hairstyle into the head's own mesh: a shell standing out from the skull, painted with hair in
+the head's texture, plus a few loose cards (the opacity material) for wisps; there is no bare skull under it. So:
+- the skull: a bald Rocketbox head (GRAFT_SKULL) in its eyes' frame, scaled to each head by the eyes' spacing, gives the
+  scalp's distance from the skull's centre in every direction;
+- the target's own hair comes off: its loose cards (not its brows and lashes) are deleted; the head's vertices that stand
+  out from the skull, above the face and away from the ears, are pulled onto it, and those hanging far below it (long
+  hair down the neck) are cut away; their texture is repainted as a close-cropped scalp in the hair colour (so a head
+  with no hairstyle grafted on is buzzed, and a grafted one has a scalp of hair under it, not skin);
+- the donor's hairstyle (Rocketbox: its shell and its cards, each with its own texture; VALID: its 'h_wig' mesh; ours,
+  hairgen.py/groom.py: a hair file on the player's body) is fitted to the target: each vertex keeps its height above the
+  donor's scalp along the ray from the donor's skull centre and is put at that height above the target's scalp along the
+  same direction (both in their eyes' frames, so the hair sits where it sat), skinned to the head bone, its textures
+  retoned to the hair colour with their own light and dark kept.
+With no donor ('-'), only the scalp is rebuilt (a buzzed head).
+Usage: blender -b --python hair_graft.py -- <target fbx> <donor fbx>[+<donor hair fbx>]|- <out fbx> <hair colour hex>
+  Writes <out>_graft.json with the scalp's texture polygons, which scalp_paint.py repaints (Blender's Python has no PIL).
+  Env: GRAFT_SKULL (the bald head's FBX), GRAFT_TEX (the donor hair's texture when its FBX does not carry it),
+  GRAFT_KEEP_TEX (keep the donor's hair textures as they are: its hair is already the colour wanted), GRAFT_VOLUME (the
+  hair's height above the scalp, scaled: 0.5 a short cut of the same hair, 1.3 a fuller one)."""
 import bpy, bmesh, sys, os, json, math
 import numpy as np
 from mathutils import Vector, Matrix
@@ -17,11 +26,14 @@ from mathutils.bvhtree import BVHTree
 
 args = sys.argv[sys.argv.index('--') + 1:]
 target_path, donor_path, out_path = args[:3]
-hair_hex = int(args[3], 16) if len(args) > 3 else None
+hair_hex = int(args[3], 16) if len(args) > 3 else 0x16110d
 out_dir = os.path.dirname(os.path.abspath(out_path)); os.makedirs(out_dir, exist_ok=True)
+VOLUME = float(os.environ.get('GRAFT_VOLUME', 1.0))     # the hair's height above the scalp, scaled (a short cut to a full one)
+HAIR_RGB = np.array([(hair_hex >> 16) & 255, (hair_hex >> 8) & 255, hair_hex & 255], np.float32) / 255.0
 
 EYE_L = ('Bip01 LEye', 'Bip02 LEye', 'LeftEye', 'eye.L'); EYE_R = ('Bip01 REye', 'Bip02 REye', 'RightEye', 'eye.R')
 HEAD = ('Bip01 Head', 'Bip02 Head', 'Head', 'head')
+UP = Vector((0, 0, 1))
 
 
 def import_fbx(path):
@@ -36,196 +48,303 @@ def bone_pos(arm, names):
     return None
 
 
-def eye_frame(arm, meshes):
-    """Origin at the eyes' midpoint; x across (left eye), z up, y back (into the head). VALID's eye bones may be absent: its
-    eye meshes are used instead."""
-    eL, eR = bone_pos(arm, EYE_L), bone_pos(arm, EYE_R)
-    if eL is None or eR is None:
-        em = {o.name: o for o in meshes}
-        if 'h_L_eye' in em and 'h_R_eye' in em:
+class Head:
+    """A head in its eyes' frame: origin at the eyes' midpoint; x across, y back (into the head), z up (rows of R)."""
+    def __init__(self, objs, surface=None):
+        self.arm = next(o for o in objs if o.type == 'ARMATURE')
+        self.meshes = [o for o in objs if o.type == 'MESH']
+        eL, eR = bone_pos(self.arm, EYE_L), bone_pos(self.arm, EYE_R)
+        if eL is None or eR is None:
+            em = {o.name: o for o in self.meshes}
             cen = lambda o: o.matrix_world @ (sum((v.co for v in o.data.vertices), Vector()) / len(o.data.vertices))
             eL, eR = cen(em['h_L_eye']), cen(em['h_R_eye'])
-    hj = bone_pos(arm, HEAD)
-    mid = (eL + eR) / 2
-    x = (eL - eR).normalized(); z = Vector((0, 0, 1)); z = (z - x * z.dot(x)).normalized(); y = z.cross(x)
-    d = hj - mid; d -= x * d.dot(x)
-    if d.length > 1e-6 and d.dot(y) < 0: y = -y                 # y points back, towards the head's joint
-    return mid, Matrix((x, y, z))                                 # rows: world -> frame is R @ (p - mid)
+        hj = bone_pos(self.arm, HEAD)
+        self.mid = (eL + eR) / 2; self.ipd = (eL - eR).length
+        x = (eL - eR).normalized(); z = (UP - x * UP.dot(x)).normalized(); y = z.cross(x)
+        d = hj - self.mid; d -= x * d.dot(x)
+        if d.length > 1e-6 and d.dot(y) < 0: y = -y
+        self.R = Matrix((x, y, z))
+        self.bvh = surface_bvh(surface if surface is not None else self.meshes, None if surface is not None else is_head)
+        # the skull's centre: halfway from the eyes to the back of the head at 30 mm above them, as far up again
+        o = self.mid + self.R.transposed() @ Vector((0, 0, 0.03))
+        hit, n, i, dist = self.bvh.ray_cast(o, self.R.transposed() @ Vector((0, 1, 0)))
+        self.c = o + self.R.transposed() @ Vector((0, (dist if hit is not None else 0.18) / 2, 0))
+
+    def frame(self, p):                      # world -> frame from the skull centre
+        return self.R @ (p - self.c)
+
+    def world(self, q):
+        return self.c + self.R.transposed() @ q
+
+    def scalp(self, d):                      # distance along frame direction d to its own surface
+        hit, n, i, dist = self.bvh.ray_cast(self.c, self.R.transposed() @ d)
+        return dist
 
 
-def surface_bvh(objs, keep=lambda o, mi: True):
-    """A BVH of the given meshes' faces (world space), only the faces whose material passes keep."""
+def is_head(o, mi):
+    return mi < len(o.data.materials) and o.data.materials[mi] is not None and o.data.materials[mi].name.endswith('_head')
+
+
+def is_cards(o, mi):
+    return mi < len(o.data.materials) and o.data.materials[mi] is not None and o.data.materials[mi].name.endswith('_opacity')
+
+
+def surface_bvh(objs, keep=None):
     verts, polys = [], []
     for o in objs:
         M = o.matrix_world; base = len(verts)
         verts += [M @ v.co for v in o.data.vertices]
-        polys += [[base + i for i in p.vertices] for p in o.data.polygons if keep(o, p.material_index)]
+        polys += [[base + i for i in p.vertices] for p in o.data.polygons if keep is None or keep(o, p.material_index)]
     return BVHTree.FromPolygons(verts, polys)
 
 
-def skull_centre(bvh, mid, R):
-    """The skull's centre: halfway between the brow (just in front of the eyes) and the back of the head along the eyes'
-    level, raised 30 mm (the cranium's centre lies above the eyes)."""
-    back = R.transposed() @ Vector((0, 1, 0)); up = R.transposed() @ Vector((0, 0, 1))
-    hit, n, i, dist = bvh.ray_cast(mid + up * 0.03, back)
-    depth = dist if hit is not None else 0.18
-    return mid + up * 0.03 + back * (depth / 2)
+def islands(bm, faces_ok):
+    seen = set()
+    for f0 in bm.faces:
+        if f0 in seen or not faces_ok(f0): continue
+        part, stack = [], [f0]; seen.add(f0)
+        while stack:
+            f = stack.pop(); part.append(f)
+            for v in f.verts:
+                for g in v.link_faces:
+                    if g not in seen and faces_ok(g): seen.add(g); stack.append(g)
+        yield part
 
 
 def brow_or_lash(P):
-    """A loose piece of hair cards that is a brow or lashes (mm, eyes' frame, y back): small, wholly in front of the eyes'
-    centres, between just under the eyes and the brows' top. Long hair hanging at eye level is neither: it reaches back."""
+    """A loose piece of cards that is a brow or lashes (mm, eyes' frame, y back): small, in front of the eyes' centres,
+    between just under the eyes and the brows' top. Long hair hanging at eye level is neither: it reaches back."""
     ext = P.max(0) - P.min(0)
     return ext.max() < 75 and P[:, 1].max() < 14 and P[:, 2].min() > -22 and P[:, 2].max() < 48 and np.abs(P[:, 0]).max() < 72
 
 
-def scalp_radius(bvh, c, d):
-    """Distance from the skull's centre to the scalp along d (the first surface met going out), or None."""
-    hit, n, i, dist = bvh.ray_cast(c, d)
-    return dist
+def protected(d, r=None, s=None):
+    """What stands out from a skull without being hair (d: unit direction from the skull centre, frame axes; elevation
+    from z): the face (in front, below 18 degrees: the forehead's hairline lies about 20 degrees up), the ears (to the sides between 30 below and 12 above, standing out no
+    more than 30 mm: hair beyond that is hair), and everything below 30 degrees under the centre (the neck, the jaw)."""
+    el = math.degrees(math.asin(max(-1.0, min(1.0, d.z))))
+    if el < -30: return True
+    if d.y < -0.35 and el < 18: return True
+    if abs(d.x) > 0.7 and -30 < el < 22 and (r is None or s is None or r < s + 0.035): return True
+    return False
 
 
-# --- the target -----------------------------------------------------------------------------------------------------
+def over_skin(head, p, eyes_mm=26.0):
+    """A layer of hair lying over skin (long hair down the neck and shoulders, strands beside the face, a fringe): from the
+    vertex towards the neck's axis at its own height there is more of the head's surface, at least 6 mm in. Never near the
+    eyes (the lids lie over the eyeballs) nor on the face below the brows (the mouth's inside lies behind it)."""
+    q = head.frame(p)
+    el = math.degrees(math.atan2(q.z, math.hypot(q.x, q.y)))
+    e = head.R @ (head.mid - head.c)                             # the eyes' midpoint from the skull centre
+    for sx in (-1, 1):
+        ex = Vector((e.x + sx * head.ipd / 2, e.y, e.z))
+        if (q - ex).length < eyes_mm / 1000.0: return False
+    if q.y < -0.04 and abs(q.x) < 0.045 and el < 15: return False
+    a = Vector((0.0, 0.01, q.z))
+    to = a - q; dist = to.length
+    if dist < 0.02: return False
+    dw = head.R.transposed() @ (to / dist)
+    hit, n, i, t = head.bvh.ray_cast(p + dw * 0.004, dw, dist - 0.012)
+    return hit is not None and t > 0.002
+
+
+def hanging(q):
+    """Long hair hanging below the skull, well clear of the neck (q: offset from the skull centre in the frame, metres, y
+    back): below the ear lobes (25 degrees under the centre), not in front (the face and jaw lie 60 mm and more ahead of
+    the centre), and more than 75 mm from the neck's axis, which runs down from the centre."""
+    el = math.degrees(math.atan2(q.z, math.hypot(q.x, q.y)))
+    return el < -25 and q.y > -0.04 and math.hypot(q.x, q.y - 0.01) > 0.075
+
+
+# --- the skull --------------------------------------------------------------------------------------------------------
 bpy.ops.wm.read_factory_settings(use_empty=True)
+sobjs = import_fbx(os.environ['GRAFT_SKULL'])
+SK = Head(sobjs)
+
+
+def skull_scale(head):
+    """How much larger head's skull is than the bald head's: their foreheads' distances from the skull centres, 10 degrees
+    up from straight ahead (skin on every head: below any hairline, above the brows), kept within 10 and 15 % of the eyes'
+    spacing ratio (Rocketbox places the eyes at one spacing per sex, so that alone cannot size a skull)."""
+    if getattr(head, 'k', None) is None:
+        d = Vector((0, -math.cos(math.radians(10)), math.sin(math.radians(10))))
+        rt, rs = head.scalp(d), SK.scalp(d)
+        k0 = head.ipd / SK.ipd
+        head.k = k0 if (rt is None or rs is None) else min(max(rt / rs, 0.9 * k0), 1.15 * k0)
+    return head.k
+
+
+def skull_r(head, d):
+    """The scalp's distance from head's skull centre along frame direction d: the bald head's, scaled to head."""
+    r = SK.scalp(d)
+    return None if r is None else r * skull_scale(head)
+
+
+# --- the target: its own hair off, the scalp rebuilt ----------------------------------------------------------------
 tobjs = import_fbx(target_path)
-tarm = next(o for o in tobjs if o.type == 'ARMATURE')
-tmeshes = [o for o in tobjs if o.type == 'MESH']
-tmid, tR = eye_frame(tarm, tmeshes)
-head_mat = lambda o, mi: mi < len(o.data.materials) and o.data.materials[mi] is not None and o.data.materials[mi].name.endswith('_head')
-tbvh = surface_bvh(tmeshes, head_mat)
-tc = skull_centre(tbvh, tmid, tR)
-
-# the target's own scalp hair off: loose pieces of the opacity material, except those around the brows and the eyes
-removed = 0
-for o in tmeshes:
-    idx = {i for i, m in enumerate(o.data.materials) if m and m.name.endswith('_opacity')}
-    if not idx: continue
+T = Head(tobjs)
+removed_cards = pulled = cut = 0
+paint_faces = []                                          # (head material image name, UV polygon) to repaint as scalp
+for o in T.meshes:
     bm = bmesh.new(); bm.from_mesh(o.data); M = o.matrix_world
-    seen, doomed = set(), []
-    for f0 in bm.faces:
-        if f0 in seen or f0.material_index not in idx: continue
-        part, stack = [], [f0]; seen.add(f0)
-        while stack:
-            f = stack.pop(); part.append(f)
-            for v in f.verts:
-                for g in v.link_faces:
-                    if g not in seen and g.material_index in idx: seen.add(g); stack.append(g)
-        P = np.array([tuple(tR @ ((M @ v.co) - tmid)) for f in part for v in f.verts]) * 1000.0   # mm, eyes' frame
-        if not brow_or_lash(P): doomed += part
-    if doomed:
-        removed += len(doomed)
-        bmesh.ops.delete(bm, geom=list(set(doomed)), context='FACES'); bm.to_mesh(o.data)
-    bm.free()
+    uvl = bm.loops.layers.uv.active
+    doomed = set()
+    # cards that are not brows or lashes
+    for part in islands(bm, lambda f: is_cards(o, f.material_index)):
+        P = np.array([tuple(T.R @ ((M @ v.co) - T.mid)) for f in part for v in f.verts]) * 1000.0
+        if not brow_or_lash(P): doomed.update(part)
+    removed_cards += len(doomed)
+    # the head's shell: pulled onto the skull, or cut where it hangs far below it
+    Mi = M.inverted()
+    move, hang = {}, set()
+    head_verts = {v for f in bm.faces if is_head(o, f.material_index) for v in f.verts}
+    for v in head_verts:
+        q = T.frame(M @ v.co); r = q.length
+        if r < 1e-6: continue
+        d = q / r
+        if over_skin(T, M @ v.co): hang.add(v); continue          # a layer of hair over skin: cut away
+        s = skull_r(T, d)
+        if protected(d, r, s): continue
+        if s is None or r <= s + 0.003: continue
+        move[v] = Mi @ T.world(d * (s + 0.001))
+    for f in bm.faces:
+        if not is_head(o, f.material_index): continue
+        vs = list(f.verts)
+        if all(v in hang for v in vs): doomed.add(f); cut += 1
+        elif any(v in move or v in hang for v in vs):
+            img = o.data.materials[f.material_index].name
+            paint_faces.append((img, [tuple(l[uvl].uv) for l in f.loops]))
+    for v, co in move.items(): v.co = co
+    pulled += len(move)
+    if doomed: bmesh.ops.delete(bm, geom=list(doomed), context='FACES')
+    bm.to_mesh(o.data); bm.free()
 
-# --- the donor's hair -----------------------------------------------------------------------------------------------
-donor_head, _, donor_hair = donor_path.partition('+')
-dobjs = import_fbx(donor_head)
-hobjs = import_fbx(donor_hair) if donor_hair else []
-darm = next(o for o in dobjs if o.type == 'ARMATURE')
-dmeshes = [o for o in dobjs if o.type == 'MESH']
-dmid, dR = eye_frame(darm, dmeshes)
-wig = next((o for o in dmeshes if o.name.lower().startswith('h_wig')), None)
-if hobjs:                                                        # our own hairstyle: its own file on the player's body
-    dbvh = surface_bvh(dmeshes)
-    hm = [o for o in hobjs if o.type == 'MESH']
-    hair = max(hm, key=lambda o: len(o.data.vertices))
-    for o in hobjs:
-        if o is not hair: bpy.data.objects.remove(o, do_unlink=True)
-    dobjs = dobjs + [hair]
-elif wig is not None:                                              # VALID: the wig is its own mesh; the skull is the head mesh
-    dhead = [o for o in dmeshes if o.name.startswith('H_')]
-    dbvh = surface_bvh(dhead)
-    hair = wig
-else:                                                            # Rocketbox: the opacity material's scalp pieces
-    dbvh = surface_bvh(dmeshes, head_mat)
-    hair = max((o for o in dmeshes if any(m and m.name.endswith('_opacity') for m in o.data.materials)), key=lambda o: len(o.data.vertices))
-    bm = bmesh.new(); bm.from_mesh(hair.data); M = hair.matrix_world
-    keep_idx = {i for i, m in enumerate(hair.data.materials) if m and m.name.endswith('_opacity')}
-    gone = [f for f in bm.faces if f.material_index not in keep_idx]
-    # (and the donor's brows and lashes: the same test as above)
-    seen = set()
-    for f0 in bm.faces:
-        if f0 in seen or f0.material_index not in keep_idx: continue
-        part, stack = [], [f0]; seen.add(f0)
-        while stack:
-            f = stack.pop(); part.append(f)
-            for v in f.verts:
-                for g in v.link_faces:
-                    if g not in seen and g.material_index in keep_idx: seen.add(g); stack.append(g)
-        P = np.array([tuple(dR @ ((M @ v.co) - dmid)) for f in part for v in f.verts]) * 1000.0
-        if brow_or_lash(P): gone += part
-    bmesh.ops.delete(bm, geom=list(set(gone)), context='FACES'); bm.to_mesh(hair.data); bm.free()
-dc = skull_centre(dbvh, dmid, dR)
+# the rebuilt scalp to repaint (scalp_paint.py, outside Blender): the faces' texture polygons per material
+tdir = os.path.dirname(os.path.abspath(target_path))
+paint = {}
+for m_, poly in paint_faces: paint.setdefault(m_, []).append([[round(u, 5), round(v, 5)] for u, v in poly])
 
-# fit: per vertex, its height above the donor's scalp along the ray from the donor's skull centre, put above the target's
-s_sim = 1.0
-dd = scalp_radius(dbvh, dc, dR.transposed() @ Vector((0, 0, 1))); td = scalp_radius(tbvh, tc, tR.transposed() @ Vector((0, 0, 1)))
-if dd and td: s_sim = td / dd
-Mw = hair.matrix_world.copy(); Mi = Mw.inverted()
-missed = 0
-new_co = []
-for v in hair.data.vertices:
-    p = Mw @ v.co
-    local = dR @ (p - dc)                                         # donor's frame, from its skull centre
-    r = local.length
-    if r < 1e-6: new_co.append(v.co.copy()); continue
-    dirf = local / r
-    rd = scalp_radius(dbvh, dc, dR.transposed() @ dirf)
-    rt = scalp_radius(tbvh, tc, tR.transposed() @ dirf)
-    if rd is None or rt is None or rd < 0.04 or rt < 0.04:
-        missed += 1
-        q = tc + tR.transposed() @ (local * s_sim)
-    else:
-        q = tc + tR.transposed() @ (dirf * (rt + (r - rd)))
-    new_co.append(Mi @ q)
-for v, co in zip(hair.data.vertices, new_co): v.co = co
-hair.data.update()
-
-# into the target: parented and skinned to the head bone
-hair.parent = None
-hair.matrix_world = Mw
-for mod in list(hair.modifiers): hair.modifiers.remove(mod)
-hair.vertex_groups.clear()
-hb = next(n for n in HEAD if n in tarm.data.bones)
-vg = hair.vertex_groups.new(name=hb); vg.add(list(range(len(hair.data.vertices))), 1.0, 'REPLACE')
-hair.parent = tarm; hair.matrix_parent_inverse = tarm.matrix_world.inverted()
-am = hair.modifiers.new('Armature', 'ARMATURE'); am.object = tarm
-hair.name = 'graft_hair'
-
-# the donor's hair texture beside the output, retoned to the hair colour (its own light and dark kept)
-tex_name = None
-if not hair.data.materials: hair.data.materials.append(bpy.data.materials.new('graft_hair'))
-for m in hair.data.materials:
-    if m is None: continue
-    m.use_nodes = True
-    imgs = [n.image for n in m.node_tree.nodes if n.type == 'TEX_IMAGE' and n.image is not None]
-    if os.environ.get('GRAFT_TEX'): imgs = [bpy.data.images.load(os.environ['GRAFT_TEX'])]
-    for img in imgs[:1]:
-        if True:
+# --- the donor's hairstyle ------------------------------------------------------------------------------------------
+grafted = 0; missed = 0; textures = []
+if donor_path != '-':
+    donor_head, _, donor_hair = donor_path.partition('+')
+    dobjs = import_fbx(donor_head)
+    hobjs = import_fbx(donor_hair) if donor_hair else []
+    dmeshes = [o for o in dobjs if o.type == 'MESH']
+    wig = next((o for o in dmeshes if o.name.lower().startswith('h_wig')), None)
+    pieces = []                                            # (object, texture path, kind)
+    if hobjs:                                              # ours: a hair file on the player's (bald) body
+        D = Head(dobjs, surface=dmeshes)
+        hm = [o for o in hobjs if o.type == 'MESH']
+        hair = max(hm, key=lambda o: len(o.data.vertices))
+        for o in hobjs:
+            if o is not hair: bpy.data.objects.remove(o, do_unlink=True)
+        pieces.append((hair, os.environ.get('GRAFT_TEX'), 'cards'))
+        own_scalp = True
+    elif wig is not None:                                  # VALID: the wig on its bald head
+        D = Head(dobjs, surface=[o for o in dmeshes if o.name.startswith('H_')])
+        pieces.append((wig, None, 'shell'))
+        own_scalp = True
+    else:                                                  # Rocketbox: its shell and its cards
+        D = Head(dobjs); own_scalp = False
+        src_dir = os.path.dirname(os.path.abspath(donor_head))
+        body = max((o for o in dmeshes), key=lambda o: len(o.data.vertices))
+        for kind in ('shell', 'cards'):
+            ob = body.copy(); ob.data = body.data.copy(); bpy.context.scene.collection.objects.link(ob)
+            bm = bmesh.new(); bm.from_mesh(ob.data); M = ob.matrix_world
+            keep = set()
+            if kind == 'cards':
+                for part in islands(bm, lambda f: is_cards(ob, f.material_index)):
+                    P = np.array([tuple(D.R @ ((M @ v.co) - D.mid)) for f in part for v in f.verts]) * 1000.0
+                    if not brow_or_lash(P): keep.update(part)
+                mname = next(m.name for m in ob.data.materials if m and m.name.endswith('_opacity'))
+            else:
+                out_v = set()
+                for v in {v for f in bm.faces if is_head(ob, f.material_index) for v in f.verts}:
+                    q = D.frame(M @ v.co); r = q.length
+                    if r < 1e-6: continue
+                    d = q / r
+                    s = skull_r(D, d)
+                    if over_skin(D, M @ v.co): out_v.add(v); continue
+                    if protected(d, r, s): continue
+                    if s is not None and r > s + 0.003: out_v.add(v)
+                keep = {f for f in bm.faces if is_head(ob, f.material_index) and sum(v in out_v for v in f.verts) >= len(f.verts) - 1}
+                mname = next(m.name for m in ob.data.materials if m and m.name.endswith('_head'))
+            bmesh.ops.delete(bm, geom=[f for f in bm.faces if f not in keep], context='FACES')
+            bm.to_mesh(ob.data); bm.free()
+            if len(ob.data.polygons) == 0: bpy.data.objects.remove(ob, do_unlink=True); continue
+            ob.data.materials.clear(); ob.data.materials.append(bpy.data.materials.new(f'graft_{kind}'))
+            for p in ob.data.polygons: p.material_index = 0
+            ext = '.png' if kind == 'cards' else '.jpg'
+            pieces.append((ob, os.path.join(src_dir, f'{mname}_color{ext}'), kind))
+    # fit every piece: its height above the donor's scalp, above the target's
+    for ob, tex, kind in pieces:
+        Mw = ob.matrix_world.copy(); Mi = Mw.inverted()
+        new = []
+        for v in ob.data.vertices:
+            q = D.frame(Mw @ v.co); r = q.length
+            if r < 1e-6: new.append(v.co.copy()); continue
+            d = q / r
+            rd = D.scalp(d) if own_scalp else skull_r(D, d)
+            rt = skull_r(T, d)
+            if rd is None or rt is None or rd < 0.04:
+                missed += 1; new.append(Mi @ T.world(q * (T.ipd / D.ipd)))
+            else:
+                new.append(Mi @ T.world(d * (rt + (r - rd) * VOLUME)))
+        for v, co in zip(ob.data.vertices, new): v.co = co
+        ob.data.update()
+        ob.parent = None; ob.matrix_world = Mw
+        for mod in list(ob.modifiers): ob.modifiers.remove(mod)
+        ob.vertex_groups.clear()
+        hb = next(n for n in HEAD if n in T.arm.data.bones)
+        vg = ob.vertex_groups.new(name=hb); vg.add(list(range(len(ob.data.vertices))), 1.0, 'REPLACE')
+        ob.parent = T.arm; ob.matrix_parent_inverse = T.arm.matrix_world.inverted()
+        am = ob.modifiers.new('Armature', 'ARMATURE'); am.object = T.arm
+        ob.name = f'graft_{kind}'
+        grafted += len(ob.data.vertices)
+        # its texture, retoned to the hair colour (light and dark kept), named as Rocketbox names its hair so the studio
+        # and the importer cut the cards by the texture's alpha
+        if not ob.data.materials: ob.data.materials.append(bpy.data.materials.new(f'graft_{kind}'))
+        img = None
+        if tex and os.path.exists(tex): img = bpy.data.images.load(tex)
+        else:
+            mm = ob.data.materials[0]
+            if mm.use_nodes: img = next((n.image for n in mm.node_tree.nodes if n.type == 'TEX_IMAGE' and n.image), None)
+        name = f'graft_{kind}_opacity' if kind == 'cards' else f'graft_{kind}_head'
+        ob.data.materials[0].name = name
+        if img is not None and os.environ.get('GRAFT_KEEP_TEX') and tex and os.path.exists(tex):
+            fn = name + ('_color.png' if kind == 'cards' else '_color.jpg')
+            dst = os.path.join(out_dir, fn)
+            if os.path.lexists(dst): os.remove(dst)
+            os.symlink(os.path.abspath(tex), dst); textures.append(fn)
+        elif img is not None:
             w, h = img.size
             px = np.array(img.pixels[:], dtype=np.float32).reshape(h, w, 4)
-            if hair_hex is not None:
-                col = np.array([(hair_hex >> 16) & 255, (hair_hex >> 8) & 255, hair_hex & 255], np.float32) / 255.0
-                lum = px[..., :3] @ np.array([0.2126, 0.7152, 0.0722], np.float32)
-                ref = float(np.median(lum[px[..., 3] > 0.5])) if (px[..., 3] > 0.5).any() else float(np.median(lum))
-                k = np.clip(lum / max(ref, 1e-3), 0.35, 2.2)[..., None]
-                px[..., :3] = np.clip(col[None, None, :] * k, 0, 1)
-            # (named as Rocketbox names its hair, so the studio and the importer cut it by the texture's alpha)
-            tex_name = 'graft_hair_opacity_color.png'
-            out_img = bpy.data.images.new('graft_hair_opacity_color', w, h, alpha=True)
+            lum = px[..., :3] @ np.array([0.2126, 0.7152, 0.0722], np.float32)
+            sel = px[..., 3] > 0.5
+            ref = float(np.median(lum[sel])) if sel.any() else float(np.median(lum))
+            k = np.clip(lum / max(ref, 1e-3), 0.35, 2.2)[..., None]
+            px[..., :3] = np.clip(HAIR_RGB[None, None, :] * k, 0, 1)
+            if kind != 'cards': px[..., 3] = 1.0
+            out_img = bpy.data.images.new(name + '_color', w, h, alpha=True)
             out_img.pixels = px.ravel().tolist()
-            out_img.filepath_raw = os.path.join(out_dir, tex_name); out_img.file_format = 'PNG'; out_img.save()
-    m.name = 'graft_hair_opacity'
-    break
+            fn = name + ('_color.png' if kind == 'cards' else '_color.jpg')
+            out_img.filepath_raw = os.path.join(out_dir, fn); out_img.file_format = 'PNG' if kind == 'cards' else 'JPEG'
+            out_img.save(); textures.append(fn)
+    keep_objs = {p[0] for p in pieces}
+    for o in dobjs + hobjs:
+        if o.name in bpy.data.objects and o not in keep_objs: bpy.data.objects.remove(o, do_unlink=True)
 
-# out: the target's objects and the grafted hair (the donor's rest removed)
-for o in dobjs:
-    if o is not hair and o.name in bpy.data.objects: bpy.data.objects.remove(o, do_unlink=True)
+# out: the target with its rebuilt scalp and the grafted hair (the skull's head removed)
+for o in sobjs:
+    if o.name in bpy.data.objects: bpy.data.objects.remove(o, do_unlink=True)
 for o in [o for o in bpy.data.objects if o.type not in ('MESH', 'ARMATURE')]: bpy.data.objects.remove(o, do_unlink=True)
+for o in [o for o in bpy.data.objects if o.type == 'ARMATURE' and o is not T.arm]: bpy.data.objects.remove(o, do_unlink=True)
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.export_scene.fbx(filepath=out_path, use_selection=True, add_leaf_bones=False, bake_anim=False,
                          use_mesh_modifiers=False, mesh_smooth_type='FACE', path_mode='STRIP')
-json.dump({'target': os.path.basename(target_path), 'donor': os.path.basename(donor_path), 'removed_faces': removed,
-           'hair_vertices': len(hair.data.vertices), 'missed_rays': missed, 'scale': round(s_sim, 3), 'texture': tex_name},
-          open(out_path[:-4] + '_graft.json', 'w'))
-print('grafted', len(hair.data.vertices), 'hair vertices; own hair faces removed', removed, '; rays missed', missed, '; scale', round(s_sim, 3))
+info = {'target': os.path.basename(target_path), 'target_dir': tdir, 'hair': f'{hair_hex:06x}', 'paint': paint,
+        'donor': os.path.basename(donor_path), 'cards_removed': removed_cards,
+        'scalp_pulled': pulled, 'hanging_cut': cut, 'grafted_vertices': grafted, 'missed_rays': missed, 'textures': textures}
+json.dump(info, open(out_path[:-4] + '_graft.json', 'w'))
+print('graft', {k: v for k, v in info.items() if k != 'paint'})
