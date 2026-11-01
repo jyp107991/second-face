@@ -9,7 +9,8 @@ texture: hair, brows and lashes) and the painted hair on the head (brows, hairli
 colour (Core Looks.HairColours) with their own light and dark kept; the irises (the eyeballs' texture area, from
 harmonise.py) to a dark brown where the people's eyes are dark. Writes the textures under Rocketbox's names in <out dir>.
 Usage: python3 retone.py <base texture dir> <harmonise json> <out dir> <target cluster> [<tone shift>] [<tone> <undertone>] [<eyes dark|own> <iris shift>]
-  (an explicit tone and undertone, as for a mixed people, replace the cluster's own; eyes: this person's draw, dark or
+  (an explicit tone and undertone, as for a mixed people, replace the cluster's own; tone 'own': the base's own skin,
+  hair and irises kept, its tone shifted by <tone shift> on its own photograph; eyes: this person's draw, dark or
   their base's own; iris shift: the brown iris's lightness, a fraction either way)"""
 import json, math, os, shutil, sys
 import numpy as np
@@ -62,8 +63,13 @@ def hex_lab(h): return srgb_to_lab(np.array([(h >> 16) & 255, (h >> 8) & 255, h 
 def main(src, info, out, cluster, shift=0.0, tone=None, undertone=None, eyes=None, iris_shift=0.0):
     J = json.load(open(info)); os.makedirs(out, exist_ok=True)
     base_cluster = {'White': 'north_european', 'Black': 'west_african', 'Asian': 'east_asian', 'Hispanic': 'latin_american', 'MENA': 'mediterranean'}[J['source']]
-    s_lab = cheek_lab(TONE[base_cluster], UNDERTONE.get(base_cluster, 0))
-    t_lab = cheek_lab(TONE[cluster] + shift if tone is None else tone, UNDERTONE.get(cluster, 0) if undertone is None else undertone)
+    # 'own' (owner, 2026-11-01: variations off Rocketbox's own bases, their photographs kept): the skin stays the base's
+    # own, shifted in tone by <shift> on its own photograph (its measured tone read back through the texture line),
+    # its hair cards, painted hair and irises untouched
+    own_mode = tone == 'own'
+    if not own_mode:
+        s_lab = cheek_lab(TONE[base_cluster], UNDERTONE.get(base_cluster, 0))
+        t_lab = cheek_lab(TONE[cluster] + shift if tone is None else tone, UNDERTONE.get(cluster, 0) if undertone is None else undertone)
     hmat = J['cheek_material']; prefix = hmat[:-len('_head')]
     head = np.array(Image.open(os.path.join(src, f'{hmat}_color.jpg')).convert('RGB'), float)
     H, W = head.shape[:2]
@@ -76,7 +82,18 @@ def main(src, info, out, cluster, shift=0.0, tone=None, undertone=None, eyes=Non
     # and the head keeps half its own difference from its people's texture mean (its individual tone)
     cal = json.load(open(CHEEKS))['fit']
     tex = lambda lab: np.array([cal[c][0] + cal[c][1] * lab[i] for i, c in enumerate('Lab')])
-    new_cheek = tex(t_lab) + (own - tex(s_lab)) * 0.5
+    if own_mode:
+        inv = np.array([(own[i] - cal[c][0]) / cal[c][1] for i, c in enumerate('Lab')])      # the base's cheek as measured
+        disc = 400 - 16 * (inv[0] - 54)                                                      # L = 54 - 20 t - 4 t^2
+        t0 = max(-1.0, min(1.0, (-20 + math.sqrt(max(disc, 0))) / 8 if disc >= 0 else 1.0))
+        u0 = max(-1.0, min(1.0, (math.degrees(math.atan2(inv[2], inv[1])) - 53) / 7))
+        s_lab = cheek_lab(t0, u0); t_lab = cheek_lab(t0 + shift, u0 if undertone is None else undertone)
+        new_cheek = own + (tex(t_lab) - tex(s_lab))
+        if eyes is None: eyes = 'own'
+        print('own tone', round(t0, 3), 'undertone', round(u0, 3), 'shift', shift)
+    else:
+        new_cheek = tex(t_lab) + (own - tex(s_lab)) * 0.5
+    keep_hair = own_mode or bool(os.environ.get('RT_KEEP_HAIR'))
     oL, oC, oh = to_lch(own); nL, nC, nh = to_lch(new_cheek)
     kL, kC, dh = nL / oL, nC / max(oC, 1e-6), nh - oh
     hair_lab = hex_lab(HAIR[HAIR_OF.get(cluster, 'black')])
@@ -143,7 +160,7 @@ def main(src, info, out, cluster, shift=0.0, tone=None, undertone=None, eyes=Non
         if e['material'] != hmat: continue
         x0, x1 = int(e['uv_min'][0] * W) - 4, int(e['uv_max'][0] * W) + 4; y0, y1 = int((1 - e['uv_max'][1]) * H) - 4, int((1 - e['uv_min'][1]) * H) + 4
         eyes_box[max(y0, 0):y1, max(x0, 0):x1] = True
-    new = retone_skin(lab, eyes_box, lid_mask=lids, ab=16.0)
+    new = retone_skin(lab, eyes_box, painted_hair=not keep_hair, lid_mask=lids, ab=16.0)
     # the irises: every Rocketbox eye shares one texture layout (the eyeball's island, J['eyeballs']): the pupil within
     # 0.09 of the island's half-width from its centre, the iris out to 0.30 (its dark limbal ring at 0.27), the sclera
     # beyond (measured on the library's textures, light and dark eyes alike). Where this person's eyes are dark, the iris
@@ -197,7 +214,7 @@ def main(src, info, out, cluster, shift=0.0, tone=None, undertone=None, eyes=Non
     if os.path.exists(body_p):
         b = srgb_to_lab(np.array(Image.open(body_p).convert('RGB'), float))
         Image.fromarray(lab_to_srgb(retone_skin(b, painted_hair=False, lips=False))).save(os.path.join(out, f'{prefix}_body_color.jpg'), quality=92)
-    if os.path.exists(op) and not grey_cards:
+    if os.path.exists(op) and not grey_cards and not keep_hair:
         im = np.array(Image.open(op).convert('RGBA'), float); a = im[..., 3]
         l = srgb_to_lab(im[..., :3]); m = a > 128
         ref = np.median(l[m][:, 0]) if m.any() else 50
@@ -214,5 +231,5 @@ def main(src, info, out, cluster, shift=0.0, tone=None, undertone=None, eyes=Non
 
 if __name__ == '__main__':
     a = sys.argv[1:]
-    main(a[0], a[1], a[2], a[3], float(a[4]) if len(a) > 4 else 0.0, float(a[5]) if len(a) > 5 else None, float(a[6]) if len(a) > 6 else None,
+    main(a[0], a[1], a[2], a[3], float(a[4]) if len(a) > 4 else 0.0, (a[5] if a[5] == 'own' else float(a[5])) if len(a) > 5 else None, float(a[6]) if len(a) > 6 and a[6] != 'own' else None,
          a[7] if len(a) > 7 else None, float(a[8]) if len(a) > 8 else 0.0)

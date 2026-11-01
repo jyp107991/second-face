@@ -150,6 +150,13 @@ The owner wants to play unspoiled.
   European styles), within the gritty grooming rule above. No religious dress of any kind (hijab, keffiyeh, skullcap and
   the like): it is anachronistic in this world. Many distinct people come from each base by blending and variation
   (shape, hair, skin detail, age), not one face per person. Implementation: `docs/PEOPLE_RESEARCH.md` §7.
+- **People are variations off Rocketbox's own bases; no assets from scratch** (owner, 2026-11-01, binding): the only people
+  that look human are Rocketbox's own, as shipped (its Black woman Business_Female_01 is the reference). Faces baked from
+  photographs (FFHQ-UV) and recoloured faces of other peoples were rejected ("a disfigured alien monster", "a plastic doll").
+  Every person is made from a Rocketbox base of their own people, keeping its photographed textures, varied only within
+  Rocketbox's look (calibrated sliders, a share of a real individual's proportions, a small tone shift on the base's own
+  photograph, hair within the ancestry rules). Never make a face or skin from scratch; never change a people's bases to
+  serve another people ("leave other races alone"). Tooling: `tools/unity/people/rb_variations.py`.
 - **A new origin** (owner, 2026-10-29, binding): the player is NOT a shelter-dweller who ventures out for the first
   time (too derivative of Fallout, to the point of an IP breach). The opening gives the player character a life of
   their own and the people in it, so the player cares about them as much as about the hero, and it builds the world,

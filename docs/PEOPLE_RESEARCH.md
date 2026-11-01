@@ -493,6 +493,28 @@ them, with a hard front rim; a lighter ring of the base's lid skin round some ey
 first men the base's painted beard showed under the jaw where the bake faded (the bake now reaches 140 mm and men's
 bases are never bearded; the men are being made again).
 
+**The owner's verdict on the real faces (2026-11-01): rejected.** Shown three people side by side, the owner found only
+Rocketbox's own Business_Female_01 as shipped human ("photo 3 is the only human looking model"); a photographed face
+baked onto a head read as "a disfigured alien monster", another as "a plastic doll / toy". The verdict is binding
+(CLAUDE.md §2): no assets from scratch, no faces from photographs; Black people, like everyone else, are **variations off
+Rocketbox's own bases of their people**, keeping those bases' photographed textures; and other peoples' bases are left
+alone. What failed, for the record: FFHQ-UV's normalised textures lose the photograph's shading and the skin's pores, and
+re-adding Rocketbox's shading and detail from another head does not bring back a face lit as one; the lids, brows and
+mouth of one person on another person's skin, however well fitted, read as a mask. The FFHQ tooling (`ffhq_bake.py`,
+`ffhq_bake_finish.py`, `ffhq_plan.py`, `ffhq_tools/`) stays in the repository as a record and is not used.
+
+**Variations off Rocketbox's own bases (`rb_variations.py`, 2026-11-01).** The library's own faces of a people (for
+Black people: Business_Female_01, also dressed as Pilot_Female_02 and Military_Female_02; Male_Adult_12, also
+Construction_Male_03; Military_Male_01 with its helmet off) are each the base of many people, varied only in ways that
+keep them Rocketbox's: (1) the shape: each person's own draw of the calibrated sliders at half reach from that face
+(a woman's on the female side of the features that differ by sex), and for every other person a share (0.3-0.55) of one
+VALID person of the people's difference from the group's mean (shape only, the face only, the lids held): a real
+individual's proportions, not a face swap; (2) the skin: the base's own photograph, shifted a little in tone either way
+(`retone.py` tone 'own': the base's measured tone read back through the texture line, the shift applied on it; its hair
+cards, painted hair and irises untouched); (3) the hair: the base's own for most, cropped (`hair_graft.py`), rarely
+Rocketbox's afro at a small volume. Nothing else is touched. The first sheet: `docs/evidence/unity/p4/research/qa_variations_black_v1.jpg`
+(ten women off Business_Female_01, ten men off Male_Adult_12 and Military_Male_01, each beside the base as shipped).
+
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own
 triangles (`rocketbox_head_map.py`, seam-safe). (1) The per-texel change with age, regressed over the 78 faces without soot,

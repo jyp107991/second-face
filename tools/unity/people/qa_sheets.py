@@ -95,6 +95,32 @@ def real(lib, hq, manifest, faces_dir, out, name='qa_real_faces'):
     p = os.path.join(out, f'{name}.jpg'); s.save(p, quality=86); print('wrote', p, s.size)
 
 
+def variations(lib, hq, manifest, out, name='qa_variations'):
+    """Variations off Rocketbox's own bases (rb_variations.py): each base as it ships (front and three-quarters) at the
+    head of its rows, then each person made from it: front | three-quarters, with what was varied."""
+    jobs = [j for j in json.load(open(manifest))['jobs'] if os.path.exists(os.path.join(hq, f'{j["name"]}_front.png'))]
+    if not jobs: return
+    w, h = 150, 188; cols = 5                                    # a base, then four people a row (two tiles each)
+    rows = []
+    for base in sorted({j['base'] for j in jobs}, key=lambda b: ('Female' not in b, b)):
+        js = [j for j in jobs if j['base'] == base]
+        for k in range(0, len(js), cols - 1): rows.append((base, js[k:k + cols - 1]))
+    s = Image.new('RGB', (cols * 2 * w, 22 + len(rows) * (h + 26)), (236, 234, 230)); g = ImageDraw.Draw(s)
+    g.text((6, 5), f'Variations off Rocketbox\'s own bases ({len(jobs)} people): the base as it ships (left pair), then the people made from it, front | three-quarters, own textures kept. Same studio.', fill=(20, 20, 20), font=FONT)
+    for r, (base, js) in enumerate(rows):
+        y = 22 + r * (h + 26)
+        s.paste(tile(os.path.join(lib, f'{base}_front.png'), 'front', w, h), (0, y + 24))
+        s.paste(tile(os.path.join(lib, f'{base}_three.png'), 'three', w, h), (w, y + 24))
+        label(g, 0, y, f'{base} as shipped', 2 * w)
+        for i, j in enumerate(js):
+            x = (i + 1) * 2 * w
+            s.paste(tile(os.path.join(hq, f'{j["name"]}_front.png'), 'front', w, h), (x, y + 24))
+            s.paste(tile(os.path.join(hq, f'{j["name"]}_three.png'), 'three', w, h), (x + w, y + 24))
+            label(g, x, y, j['name'].replace('rb_', '').replace('_african', ''), 2 * w)
+            label(g, x, y + 12, j['note'], 2 * w)
+    p = os.path.join(out, f'{name}.jpg'); s.save(p, quality=86); print('wrote', p, s.size)
+
+
 def sliders(slr, variants, out):
     V = json.load(open(variants))
     view_of = lambda tag: 'side' if tag.split('_')[0] in ('chin-height', 'chin-prominent', 'mouth-lowerlip-volume') else 'front'

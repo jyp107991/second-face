@@ -104,6 +104,7 @@ def run(manifest, k, n):
         if not os.path.exists(f'{out}/{j["name"]}.fbx'): print('harmonise failed', j['name'], r.stdout[-400:], r.stderr[-400:]); continue
         # a real photographed face (ffhq_bake.py): baked into this head's layout, harmonised, and the tone that puts the
         # rest of the skin at the face's colour; retone.py composites it (RT_BAKE)
+        # (tone 'own', rb_variations.py: the base's own skin, shifted by 'tone_shift')
         renv = dict(os.environ); tone, und = str(j['tone']), str(j['undertone'])
         if j.get('ffhq'):
             fenv = dict(os.environ, FFHQ_TOPO=f'{S}/ffhq/topo', FFHQ_MASKS=f'{S}/ffhq', FFHQ_EYE_KEEP='18' if j['sex'] == 'f' else '12',
@@ -116,7 +117,7 @@ def run(manifest, k, n):
             fj = json.load(open(f'{out}/ffhq.json')); tone, und = str(fj['tone']), str(fj['undertone']); renv['RT_BAKE'] = out
             print(j['name'], 'ffhq', os.path.basename(j['ffhq']), 'baked', fj.get('baked'), 'cheek', fj.get('cheek_lab'))
             os.remove(f'{out}/ffhq_map.npz')
-        r = subprocess.run([PY, f'{HERE}/retone.py', f'{S}/rblib/{j["base"]}', f'{out}/{j["name"]}.json', out, j['hair'], '0', tone, und,
+        r = subprocess.run([PY, f'{HERE}/retone.py', f'{S}/rblib/{j["base"]}', f'{out}/{j["name"]}.json', out, j['hair'], str(j.get('tone_shift', 0)), tone, und,
                             j.get('eyes', 'dark'), str(j.get('iris_shift', 0.0))], capture_output=True, text=True, env=renv)
         print(j['name'], r.stdout.strip().split('\n')[0][:160])
         # the hairstyle (hair_graft.py): the scalp rebuilt and a donor's hair put on ('-': buzzed), the scalp repainted;
