@@ -275,6 +275,46 @@ same three lights, grey world, camera on the eyes; `docs/evidence/unity/p4/resea
   Rocketbox's photographed heads and skin, each person then spread around that centre by the real people's measured spread
   (the published sds), never VALID's own skin, hair or bodies.
 
+**Harmonising VALID into Rocketbox's house style (owner, 2026-11-01: "take details from VALID that fill in archetype
+gaps and increase diversity across and within groups, while keeping the house style of Rocketbox").** Everything seen
+stays Rocketbox's: its photographed heads and skin detail, its hair cards, bodies and clothes. VALID gives one thing:
+- *Its groups' differences.* VALID's 35 people share one mesh (20,951 vertices), so each validated group's mean face per
+  sex is exact (`valid_groups.py`; validated labels from VALID's `Validated-Labels.csv`, its unvalidated faces left out).
+  A difference of two groups' means (Indigenous American women less White women) keeps what tells the groups apart and
+  cancels what VALID's construction does to every face alike (the averaging, the shallow noses, the wide women's faces).
+  Averaging photographs removes individuals' differences, not groups': the group difference is what averaging keeps. Its
+  size: 2-4 mm on average over the face (up to 7-12 mm at the nose, lips and cheekbones); a VALID face differs from its
+  own group's mean by under 1 mm.
+- *Carried onto a real Rocketbox head* (`harmonise.py`): VALID's source-group mean fitted to the head by the same
+  anatomical landmarks on both (`rocketbox_features.Face`; the nose's wings left out where either side's detection runs
+  onto the cheek), a similarity and a near-interpolating thin-plate warp (landmarks met within 0.5 mm), each Rocketbox
+  vertex bound to the closest point of the warped mean and the difference carried across. Kept to the face (faded out
+  below the chin, above the brow and behind the cheeks, since VALID's skull carries its hairstyles' bulk), never on the
+  eyeballs (Rocketbox's are separate islands of the head's mesh), with each eye's surroundings held so the lids stay
+  centred; applied to the mesh and every shape key, so the calibrated sculptor still works. The head keeps its own
+  individual form: two people made from two heads differ as real people do, and they share the target group's typical
+  one.
+- *Retoned* (`retone.py`): skin to the target people's measured cheek (Core SkinColour at Bodies.Tone and Undertone),
+  put on Rocketbox's own texture scale by a line per channel fitted on the library's faces of the peoples it has
+  (`data/rocketbox_cheeks.json`: its textures run about 7-10 L* above the measured cheeks of the same peoples at the
+  fair end and match them at the dark end), keeping half the head's own difference from its people; each texel by how
+  much it is skin, so the lips follow partly and the eyes' whites, clothes and hair stay. Hair cards and painted brows
+  and hairline to the people's hair colour (Core Looks.HairColours), irises to dark brown where the people's eyes are
+  dark (Core Bodies.LightEyes). Pacific Islanders have no measured tone in Core: they take the Southeast Asian one until
+  a measurement is found.
+- *First set* (`docs/evidence/unity/p4/research/harmonised_v1.jpg`: four Rocketbox people, nine new ones): every result
+  stays in the house style and reads as a real person; skin, lips, hair and eyes retone convincingly where the jump is
+  moderate (north European to Mediterranean or Indigenous American, East Asian to Latin American or Indigenous American,
+  north European to East Asian or Pacific Islander). The face shapes move as VALID's groups differ (2-5 mm on average,
+  up to 12 mm), which reads as the group's character on top of the person's own form, not as a new person. Two limits:
+  (1) large jumps keep the base's own group's cues and read as mixed ancestry (a north European woman made Black keeps her
+  narrow nose and thin lips under a widened nose; a West African man lightened to Latin American looks chalky and ashy:
+  lightening a dark photograph lifts its shadows into grey); (2) on dark skin the eyes' whites glare. So: each new person
+  starts from the Rocketbox head nearest the target (by group and skin), never lightens a dark texture by more than a
+  third, and dims the eyes' whites with the skin.
+- *The studio* (`studio_render.py`) was overexposed (a fair cheek at L* 87, which flattened every difference in skin);
+  now 1.5 stops down (fair about 75, dark about 50). The VALID comparison sheets above were rendered before the fix.
+
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own
 triangles (`rocketbox_head_map.py`, seam-safe). (1) The per-texel change with age, regressed over the 78 faces without soot,

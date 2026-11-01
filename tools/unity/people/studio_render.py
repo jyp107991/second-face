@@ -89,7 +89,7 @@ for path in paths:
     sc = bpy.context.scene
     sc.render.engine = 'CYCLES'; sc.cycles.samples = 48; sc.cycles.use_denoising = True; sc.cycles.device = 'CPU'
     sc.render.resolution_x, sc.render.resolution_y = 512, 640
-    sc.view_settings.view_transform = 'AgX'
+    sc.view_settings.view_transform = 'AgX'; sc.view_settings.exposure = -1.5     # a fair cheek at about L* 70, as photographed
     cam_d = bpy.data.cameras.new('cam'); cam_d.lens = 85; cam = bpy.data.objects.new('cam', cam_d); sc.collection.objects.link(cam); sc.camera = cam
     target = eye - Vector((0, 0, 0.045))
     for view, yaw in (('front', 0.0), ('three', 35.0)):

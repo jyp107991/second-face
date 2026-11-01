@@ -1,0 +1,75 @@
+{
+ "_about": "Rocketbox's cheek colour in its own textures (CIELAB, median over each face's cheeks, faces with a certain ancestry label and clean skin; tools/unity/people/data/rocketbox_ancestry.json, rocketbox_ages.json skin_out) beside the same peoples' measured cheeks (Core SkinColour.Lab at Bodies.Tone and Undertone). 'fit': texture = a + b * measured, per channel, weighted by sqrt(n), over the peoples with 4 or more faces; retone.py puts a target people's measured cheek on the textures' scale with it.",
+ "groups": {
+  "north_european": {
+   "n": 62,
+   "texture_median": [
+    67.5,
+    19.3,
+    24.4
+   ],
+   "texture_sd_L": 3.2,
+   "core_measured": [
+    60.5,
+    11.8,
+    14.5
+   ]
+  },
+  "east_asian": {
+   "n": 7,
+   "texture_median": [
+    68.7,
+    15.3,
+    26.0
+   ],
+   "texture_sd_L": 2.8,
+   "core_measured": [
+    58.4,
+    11.0,
+    16.0
+   ]
+  },
+  "west_african": {
+   "n": 4,
+   "texture_median": [
+    35.6,
+    16.8,
+    20.8
+   ],
+   "texture_sd_L": 2.4,
+   "core_measured": [
+    35.2,
+    8.1,
+    10.7
+   ]
+  },
+  "mediterranean": {
+   "n": 1,
+   "texture_median": [
+    60.9,
+    18.3,
+    27.6
+   ],
+   "texture_sd_L": 0.0,
+   "core_measured": [
+    57.5,
+    11.5,
+    15.1
+   ]
+  }
+ },
+ "fit": {
+  "L": [
+   -8.076,
+   1.255
+  ],
+  "a": [
+   8.283,
+   0.911
+  ],
+  "b": [
+   10.294,
+   0.974
+  ]
+ }
+}
