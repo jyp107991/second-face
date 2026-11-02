@@ -21,10 +21,26 @@ d_lab = srgb_to_lab(don[py, px]); h_lab = srgb_to_lab(head[ys, xs])
 fh = (np.abs(x) < 30) & (y < 20) & (z > CUT - FEATHER - 12) & (z < CUT - FEATHER)
 tf = np.median(h_lab[fh], 0) if fh.sum() > 50 else np.median(h_lab, 0)
 df = np.median(d_lab[fh], 0) if fh.sum() > 50 else np.median(d_lab, 0)
-skin = np.clip((d_lab[:, 0] - (df[0] - 12)) / 8, 0, 1)[:, None]            # the donor's skin (its hair is darker)
+# the donor's skin (its hair is darker): only texels about as light as its forehead are skin; its stubble's dots stay
+# hair, black as photographed (half-weighted dots, shifted to a lighter skin, read as red-brown)
+skin = np.clip((d_lab[:, 0] - (df[0] - 7)) / 5, 0, 1)[:, None]
 new = d_lab + skin * (tf - df)
+new[:, 1:] = new[:, 1:] * (0.4 + 0.6 * skin)                               # hair: towards neutral, never reddened
 out = head.copy()
 a = alpha[:, None]
 out[ys, xs] = lab_to_srgb(h_lab * (1 - a) + new * a).astype(np.float32)
 Image.fromarray(np.clip(out, 0, 255).astype(np.uint8)).save(head_jpg, quality=92)
+# the donor's normal map with it (its stubble's relief; both heads share Rocketbox's head layout, so the tangent frames
+# agree): <head>_normal.jpg beside the colour, written over a link as a file of its own
+hn, dn = head_jpg.replace('_color.jpg', '_normal.jpg'), donor_jpg.replace('_color.jpg', '_normal.jpg')
+if os.path.exists(hn) and os.path.exists(dn):
+    hnorm = np.asarray(Image.open(hn).convert('RGB'), np.float32)
+    dnorm = np.asarray(Image.open(dn).convert('RGB').resize((hnorm.shape[1], hnorm.shape[0])), np.float32)
+    Hn, Wn = hnorm.shape[:2]
+    pxn = np.clip((uvd[:, 0] * Wn).astype(int), 0, Wn - 1); pyn = np.clip(((1 - uvd[:, 1]) * Hn).astype(int), 0, Hn - 1)
+    ysn = np.clip((ys * Hn / H).astype(int), 0, Hn - 1); xsn = np.clip((xs * Wn / W).astype(int), 0, Wn - 1)
+    on_ = hnorm.copy(); on_[ysn, xsn] = hnorm[ysn, xsn] * (1 - a) + dnorm[pyn, pxn] * a
+    if os.path.islink(hn): os.remove(hn)
+    Image.fromarray(np.clip(on_, 0, 255).astype(np.uint8)).save(hn, quality=92)
+    print('normal map from the donor too')
 print('scalp from the donor:', int((alpha > 0.5).sum()), 'texels; forehead', tf.round(1), 'donor', df.round(1))

@@ -134,6 +134,24 @@ if os.environ.get('FFHQ_KEEP_LIPS') and 'mouth' in M:
     lipimg = out.copy(); lipimg[ys[lips], xs[lips]] = lab_to_srgb(nl).astype(np.float32) / 255.0
     out = out * (1 - mm) + lipimg * mm
     print('lips kept from the base, carried to this skin:', int(lips.sum()), 'texels')
+# FFHQ_SURROUND (with the broad colour from the base, on by default): the rest of the head's skin (the temples where the
+# photograph had hair, the ears, the jaw's underside and the neck) takes the same transform as the face's broad colour,
+# the base's own photograph scaled to this face's cheek, instead of retone.py's general tone: a band at the temple or a
+# step at the jaw was where the two transforms met (owner, 2026-11-02: "a seam where her face joins hair")
+if LFB > 0 and os.environ.get('FFHQ_SURROUND', '1') != '0':
+    bl = srgb_to_lab(base * 255.0)
+    sel_c = on & cheek
+    cb = np.median(bl[ys[sel_c], xs[sel_c]], 0) if sel_c.sum() > 20 else np.median(bl[ys, xs], 0)
+    cf = np.median(srgb_to_lab(out[ys[sel_c], xs[sel_c]] * 255.0), 0)
+    cbC, cfC = float(np.hypot(cb[1], cb[2])), float(np.hypot(cf[1], cf[2]))
+    ns = np.stack([bl[..., 0] * cf[0] / max(cb[0], 1.0), cf[1] + (bl[..., 1] - cb[1]) * cfC / max(cbC, 1.0),
+                   cf[2] + (bl[..., 2] - cb[2]) * cfC / max(cbC, 1.0)], -1)
+    # how far each of the base's texels is skin (its hair, eyes, teeth and gums are not): as retone.py tells skin
+    ws = np.clip(1.6 - np.sqrt(((bl[..., 0] - cb[0]) / 22) ** 2 + ((bl[..., 1] - cb[1]) / 16) ** 2 + ((bl[..., 2] - cb[2]) / 16) ** 2), 0, 1).astype(np.float32)
+    ns_rgb = lab_to_srgb(ns).astype(np.float32) / 255.0
+    out = out * m[..., None] + ns_rgb * (1 - m[..., None])
+    m = m + (1 - m) * ws
+    print('the surrounding skin in the same broad colour:', int((ws > 0.5).sum()), 'texels')
 Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8)).save(os.path.join(out_dir, f"{J['material']}_ffhq_color.jpg"), quality=94)
 Image.fromarray((np.clip(m, 0, 1) * 255).astype(np.uint8)).save(os.path.join(out_dir, f"{J['material']}_ffhq_mask.png"))
 

@@ -609,9 +609,17 @@ finished. What changed:
   brows never touched) come from a buzzed Rocketbox head's own photograph (Military_Male_01), carried texel by texel
   through both heads' eyes' frames (scaled to the eye spacing, turned about the ear-to-ear axis so the hairline sits
   `scalp_lift` mm higher or lower: no two men share a line), its skin matched to the face's own forehead and its hair kept
-  as photographed. Men on Male_Adult_12 first lose its shell hair (`hair_graft.py` with no donor), so the head reads as a
-  skull, not a helmet. First attempt's faults, fixed: the forehead colour was measured on the back of the head (hair), and
-  the side cut-outs left rectangles at the temples.
+  as photographed (its stubble's dots kept black, not lifted to a red-brown with the skin) and its normal map carried with
+  it (the stubble's relief: without it a scalp reads as a smooth grey helmet in the light). First attempt's faults, fixed:
+  the forehead colour was measured on the back of the head (hair), and the side cut-outs left rectangles at the temples.
+- *The head's own shape kept*: Male_Adult_12's short hair is a shell only 2-3 mm off his skull, so the men on his head keep
+  it and change only its texture. Rebuilding the skull from the bald template (`hair_graft.py` with no donor) left a
+  peaked, faceted crown: the template's forehead and crown differ from his by up to 7 mm either way, and on a low-poly
+  head only the vertices standing out were moved.
+- *The surrounding skin in the face's broad colour* (`ffhq_bake_finish.py`, `FFHQ_SURROUND`, on with `FFHQ_LF_BASE`): the
+  temples where a photograph had hair, the ears, under the jaw and the neck take the same transform as the face (the
+  base's own photograph scaled to the face's cheek) instead of `retone.py`'s general tone; the pale band at W2's and W4's
+  temples was where the two met.
 - *The cap off* (`rocketbox_gear_off.py`, 'loose_crown'): Military_Male_06's cap is a loose piece of the head's own
   material over a whole photographed scalp; pieces are found by edges within the head material (the head and body share
   vertices: joined through any vertex, the whole person went), never the largest, and taken off when they reach 95 mm
