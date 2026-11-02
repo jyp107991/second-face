@@ -110,6 +110,11 @@ Used modified (refit to the game's bodies, re-dyed, weathered, resampled texture
   `faces_fit.json`, and Core's `FacesData.cs`, adapted from the dataset; no photograph ships), so the game's credits
   name FairFace and its licence.
 - **MediaPipe Face Landmarker** (Google, Apache 2.0) measures both.
+- **Ava-256** — Martinez, J. et al. (2024), "Codec Avatar Studio: Paired Human Captures for Complete, Driveable, and
+  Generalizable Avatars", NeurIPS Datasets and Benchmarks (Meta; github.com/facebookresearch/ava-256), under **CC BY-NC
+  4.0**: real people captured in a dome of 80 cameras, each frame a tracked mesh and its photographed texture. Fetched
+  by byte range for review only (`tools/unity/people/ava/`): a few Black people's neutral frames, rendered beside
+  Rocketbox's for the owner (`docs/evidence/unity/p4/research/qa_black_sources_*.jpg`); nothing of it is in the game.
 - **Microsoft Rocketbox Avatar Library** (Microsoft, MIT; github.com/microsoft/Microsoft-Rocketbox): rigged people with
   photographed faces, under evaluation as the base for the game's people (`unity/Assets/ThirdParty/Rocketbox`, licence
   beside them; `docs/PEOPLE_RESEARCH.md` §7).

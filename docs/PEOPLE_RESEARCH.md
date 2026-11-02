@@ -545,6 +545,35 @@ Next, for the owner's decision: one face cannot make many distinct Black women w
 to accept few (each look-alike kept far from her sisters), to stretch her further (full slider reach, a larger share of a
 real woman's proportions, a darker tone on her own photograph), each judged by eye before any is kept, or another source.
 
+**Black people from every source, side by side (2026-11-02, owner: "the men are all the same guy and the women are all
+the same woman; the hair is bizarre; find more real Black assets; consider the most realistic Black faces drafted in this
+project's history, restore the best and present them beside the Rocketbox models and the new external assets; Black
+people only, leave other races alone").** Sheets: `docs/evidence/unity/p4/research/qa_black_sources_{women,men}.jpg`
+(`qa_black_sources.py`), one studio, front and three-quarters:
+1. *Rocketbox as shipped*: one Black woman's face and two Black men's (the pilot, the soldier-woman and the construction
+   worker reuse them; the two firefighters are fully masked). The finish is the best of all (photographed, rigged,
+   complete heads); the number is the problem.
+2. *The best earlier drafts*, chosen by eye from every round (the MakeHuman-era generator's Black people were looked at
+   and left out: CG dolls): four real photographed faces baked onto Rocketbox heads (FFHQ-UV: 000256 and 001202 with
+   cropped hair, 001110 and 000446 with an afro), one variation of Business_Female_01; three Rocketbox men's heads
+   darkened with VALID's Black shape (two of them older men, which the library lacks), two variations of
+   Military_Male_01. Left out: the baked women who read as men, the shattered hair grafts, the darkened European women.
+3. *External sources*. The search this time (no accounts): Unity's SyntheticHumans (GitHub, non-commercial licence: its
+   skins are grey detail maps tinted by a shader, the generated look already rejected: out); Meta's Multiface (public:
+   none of its 13 people is Black: out); deep3dstudio's free head scans (16K, 2.2 GB each, one free, not Black, behind a
+   store login: out); Digital Reality Lab's samples (an e-mail form: out); **Meta's Ava-256** (CC BY-NC 4.0, public
+   archives, no account): 256 real people captured in a dome of 80 cameras, each frame a tracked mesh and its
+   photographed texture. Screened by their mean textures (all 256, 5 MB in all), 20 dark-skinned people fetched by byte
+   range (`ava/ava_fetch.py`: one frame each, the first of a spoken sentence, where the eyes look ahead; the gaze drills
+   look up and the "neutral peak" half-closes the lids), colour-corrected as the authors' renderer does and rendered in
+   our studio (`ava/ava_render.py`): seven Black women and nine Black men (one older) kept, four others left out (South
+   Asian or uncertain). Beside them VALID's three Black women and three Black men, as shipped.
+What the sheets show: Ava-256's people are real and every one different (build, face, age, skin), the variety Rocketbox
+lacks, but they are raw captures (a face without eyeballs, a lumpy shell for hair, no back of the head, no rig, a 1024 px
+texture for the whole head, a cool cast); to be people in the game each would be carried onto a rigged Rocketbox head
+(its eyes, teeth, body and hair) with the capture's own shape and texture, which is the owner's call after the sheets.
+VALID is complete and rigged but smooth and doll-like beside Rocketbox. Rocketbox stays the reference for finish.
+
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own
 triangles (`rocketbox_head_map.py`, seam-safe). (1) The per-texel change with age, regressed over the 78 faces without soot,
