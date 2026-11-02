@@ -8,6 +8,7 @@ import numpy as np
 
 BROW_MM = 30.0
 HOOD_MM = 95.0
+CROWN_MM = 95.0
 
 
 def take_off(meshes, words, eye_z=None):
@@ -15,10 +16,33 @@ def take_off(meshes, words, eye_z=None):
     height in world space (metres), needed for 'loose_above_brow'. Returns the number of faces deleted."""
     gone = 0
     loose = 'loose_above_brow' in words and eye_z is not None
+    # 'loose_crown': a cap modelled as a loose part of the head's own material over a whole scalp (Military_Male_06):
+    # every loose piece (not hair) that reaches higher than the eyes by CROWN_MM
+    crown = 'loose_crown' in words and eye_z is not None
     # 'hood': a hood modelled into the clothes (no material of its own): every non-head face lying wholly above the
     # chin (higher than the eyes less HOOD_MM), around the head
     hood = 'hood' in words and eye_z is not None
-    words = [w for w in words if w not in ('loose_above_brow', 'hood')]
+    words = [w for w in words if w not in ('loose_above_brow', 'hood', 'loose_crown')]
+    if crown:
+        # pieces joined by edges within the head's material (the head and body share vertices, so joining through any
+        # vertex would take the whole person); never the largest piece, which is the head itself
+        for o in meshes:
+            hmi = {i for i, m in enumerate(o.data.materials) if m and m.name.lower().endswith('_head')}
+            if not hmi: continue
+            bm = bmesh.new(); bm.from_mesh(o.data); M = o.matrix_world
+            seen, parts = set(), []
+            for f0 in bm.faces:
+                if f0.material_index not in hmi or f0 in seen: continue
+                part, stack = [], [f0]; seen.add(f0)
+                while stack:
+                    f = stack.pop(); part.append(f)
+                    for e in f.edges:
+                        for g in e.link_faces:
+                            if g not in seen and g.material_index in hmi: seen.add(g); stack.append(g)
+                parts.append(part)
+            parts.sort(key=len, reverse=True)
+            doomed = [f for part in parts[1:] if max((M @ v.co).z for f in part for v in f.verts) > eye_z + CROWN_MM / 1000.0 for f in part]
+            bmesh.ops.delete(bm, geom=doomed, context='FACES'); bm.to_mesh(o.data); bm.free(); gone += len(doomed)
     if hood:
         for o in meshes:
             head_mi = {i for i, m in enumerate(o.data.materials) if m and (m.name.lower().endswith('_head') or m.name.lower().endswith('_opacity'))}

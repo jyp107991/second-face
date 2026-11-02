@@ -10,14 +10,15 @@ from retone import srgb_to_lab, lab_to_srgb
 
 mdir, head_jpg, donor_jpg = sys.argv[1:4]
 M = np.load(os.path.join(mdir, 'scalp_map.npz'))
-ys, xs, uvd, alpha, z, x = M['ys'], M['xs'], M['uvd'], M['alpha'], M['z'], M['x']
+ys, xs, uvd, alpha, z, x, y = M['ys'], M['xs'], M['uvd'], M['alpha'], M['z'], M['x'], M['y']
+CUT, FEATHER = (float(v) for v in M['cut'])
 head = np.asarray(Image.open(head_jpg).convert('RGB'), np.float32)
 H, W = head.shape[:2]
 don = np.asarray(Image.open(donor_jpg).convert('RGB').resize((W, H)), np.float32)
 px = np.clip((uvd[:, 0] * W).astype(int), 0, W - 1); py = np.clip(((1 - uvd[:, 1]) * H).astype(int), 0, H - 1)
 d_lab = srgb_to_lab(don[py, px]); h_lab = srgb_to_lab(head[ys, xs])
-# foreheads: this head's skin just below the cut, and the donor's at the same place
-fh = (np.abs(x) < 30) & (z > 0) & (z < 22)
+# foreheads: this head's own skin just below the blend (above the brows, at the front), and the donor's at the same place
+fh = (np.abs(x) < 30) & (y < 20) & (z > CUT - FEATHER - 12) & (z < CUT - FEATHER)
 tf = np.median(h_lab[fh], 0) if fh.sum() > 50 else np.median(h_lab, 0)
 df = np.median(d_lab[fh], 0) if fh.sum() > 50 else np.median(d_lab, 0)
 skin = np.clip((d_lab[:, 0] - (df[0] - 12)) / 8, 0, 1)[:, None]            # the donor's skin (its hair is darker)

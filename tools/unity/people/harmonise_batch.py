@@ -113,7 +113,7 @@ def run(manifest, k, n):
             if j.get('ava'):
                 # an Ava-256 person (ava/ava_internalise.py): the capture's real shape and skin on this Rocketbox head
                 r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/ava/ava_internalise.py', '--', f'{out}/{j["name"]}.fbx', j['ava'],
-                                    f'{S}/ext/ava/topo/face_topology.obj', out, j['name']], capture_output=True, text=True, env=fenv)
+                                    j.get('ava_topo', f'{S}/ext/ava/topo/face_topology.obj'), out, j['name']], capture_output=True, text=True, env=fenv)
                 print(j['name'], 'ava', [l for l in r.stdout.splitlines() if l.startswith(('landmarks', 'moved', 'mapped'))])
             else:
                 r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/ffhq_bake.py', '--', f'{out}/{j["name"]}.fbx', f'{S}/rblib/{j["base"]}', j['ffhq'], out],
@@ -147,7 +147,7 @@ def run(manifest, k, n):
         # a real photographed scalp and hairline from a donor head (scalp_photo.py): its height by 'scalp_lift' (mm)
         if j.get('scalp_photo'):
             dn = j['scalp_photo']
-            senv = dict(os.environ, SCALP_LIFT=str(j.get('scalp_lift', 0)), SCALP_CUT=str(j.get('scalp_cut', 18)))
+            senv = dict(os.environ, SCALP_LIFT=str(j.get('scalp_lift', 0)), SCALP_CUT=str(j.get('scalp_cut', 45)))
             r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/scalp_photo.py', '--', f'{out}/{j["name"]}.fbx', f'{S}/rblib/{dn}/{dn}.fbx', out],
                                capture_output=True, text=True, env=senv)
             if os.path.exists(f'{out}/scalp_map.npz'):
@@ -160,7 +160,7 @@ def run(manifest, k, n):
         subprocess.run([BLENDER, '-b', '--python', f'{HERE}/studio_render.py', '--', rdir, f'{out}/{j["name"]}.fbx'], capture_output=True, text=True, env=env)
         shutil.copy(f'{out}/{j["name"]}.json', f'{rdir}/{j["name"]}.json')
         if os.path.exists(f'{rdir}/{j["name"]}_three.png'): json.dump(j, open(sig, 'w'))
-        shutil.rmtree(out, ignore_errors=True)
+        if not os.environ.get('KEEP_OUT'): shutil.rmtree(out, ignore_errors=True)
 
 
 if __name__ == '__main__':

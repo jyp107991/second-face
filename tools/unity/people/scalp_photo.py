@@ -7,14 +7,14 @@ to the donor's head point at the same place (both in their eyes' frames, the don
 turned about the ear-to-ear axis so the donor's hairline lands SCALP_LIFT mm higher or lower), and takes that texel's
 place in the donor's texture. Writes <out>/scalp_map.npz for scalp_photo_finish.py, which samples and composites.
 Usage: blender -b --python scalp_photo.py -- <head fbx> <donor fbx> <out dir>
-Env: SCALP_CUT (mm above the eyes where the donor's skin starts to take over, 18), SCALP_LIFT (mm, 0), SCALP_FEATHER (12)."""
+Env: SCALP_CUT (mm above the eyes' centres by which the donor has taken over: above the brows, 45), SCALP_LIFT (mm, 0), SCALP_FEATHER (12)."""
 import bpy, sys, os, math
 import numpy as np
 from mathutils import Vector
 from mathutils.kdtree import KDTree
 
 head_path, donor_path, out_dir = sys.argv[sys.argv.index('--') + 1:][:3]
-CUT = float(os.environ.get('SCALP_CUT', 18.0)); LIFT = float(os.environ.get('SCALP_LIFT', 0.0)); FEATHER = float(os.environ.get('SCALP_FEATHER', 12.0))
+CUT = float(os.environ.get('SCALP_CUT', 45.0)); LIFT = float(os.environ.get('SCALP_LIFT', 0.0)); FEATHER = float(os.environ.get('SCALP_FEATHER', 12.0))
 os.makedirs(out_dir, exist_ok=True)
 
 
@@ -23,7 +23,7 @@ def load(path):
     bpy.ops.import_scene.fbx(filepath=path)
     objs = [o for o in bpy.data.objects if o not in before]
     arm = next(o for o in objs if o.type == 'ARMATURE')
-    mesh = max((o for o in objs if o.type == 'MESH'), key=lambda o: len(o.data.vertices))
+    mesh = max((o for o in objs if o.type == 'MESH' and any(m and m.name.endswith('_head') for m in o.data.materials)), key=lambda o: len(o.data.vertices))
     b = lambda n: np.array(arm.matrix_world @ arm.data.bones[n].head_local)
     eL, eR = b('Bip01 LEye'), b('Bip01 REye')
     mid = (eL + eR) / 2; xa = (eL - eR) / np.linalg.norm(eL - eR); za = np.array([0, 0, 1.0]); za -= xa * za.dot(xa); za /= np.linalg.norm(za)
@@ -69,11 +69,13 @@ def raster(P, TR, TUV, W, H, keep):
 bpy.ops.wm.read_factory_settings(use_empty=True)
 P, TR, TUV, hmat, ipd = load(head_path)
 for o in list(bpy.data.objects): bpy.data.objects.remove(o, do_unlink=True)
+for m in list(bpy.data.materials): bpy.data.materials.remove(m)    # (the donor's names must not come back as '.001')
+for m in list(bpy.data.meshes): bpy.data.meshes.remove(m)
 Pd, TRd, TUVd, dmat, ipd_d = load(donor_path)
 W = H = 2048
 # the scalp and the skin just under it: above the cut less a feather, on the head's crown and sides, never the ears' level
 # below the temples or the face
-up = lambda q: q[2] > CUT - FEATHER - 6 and np.linalg.norm(q) < 190
+up = lambda q: q[2] > CUT - FEATHER - 14 and np.linalg.norm(q) < 190
 ys, xs, Q = raster(P, TR, TUV, W, H, up)
 ysd, xsd, Qd = raster(Pd, TRd, TUVd, W, H, lambda q: q[2] > CUT - FEATHER - 40 and np.linalg.norm(q) < 200)
 Qd = Qd * (ipd / ipd_d)                                       # the donor at this head's size
@@ -90,8 +92,8 @@ for i, q in enumerate(Qq):
     uvd[i] = ((xsd[j] + 0.5) / W, 1 - (ysd[j] + 0.5) / H); dist[i] = d
 alpha = np.clip((Q[:, 2] - (CUT - FEATHER)) / FEATHER, 0, 1) * np.clip((20 - dist) / 8, 0, 1)
 # the sides: below the temples only behind the ear's front (the sideburns stay this head's own)
-side = (np.abs(Q[:, 0]) > 55) & (Q[:, 2] < CUT + 25) & (Q[:, 1] < 25)
-alpha[side] *= 0.0
+ramp = lambda e0, e1, v: np.clip((v - e0) / (e1 - e0), 0, 1)
+alpha *= 1 - ramp(48, 60, np.abs(Q[:, 0])) * ramp(CUT + 30, CUT + 15, Q[:, 2]) * ramp(30, 15, Q[:, 1])
 np.savez_compressed(os.path.join(out_dir, 'scalp_map.npz'), ys=ys, xs=xs, uvd=uvd, alpha=alpha.astype(np.float32), z=Q[:, 2].astype(np.float32),
-                    x=Q[:, 0].astype(np.float32), mat=np.array(hmat), dmat=np.array(dmat), size=np.array([H, W]))
+                    x=Q[:, 0].astype(np.float32), y=Q[:, 1].astype(np.float32), cut=np.array([CUT, FEATHER]), mat=np.array(hmat), dmat=np.array(dmat), size=np.array([H, W]))
 print('scalp map', len(Q), 'texels;', int((alpha > 0.5).sum()), 'from the donor; mean distance', round(float(dist.mean()), 1), 'mm')

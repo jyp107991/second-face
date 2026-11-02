@@ -595,6 +595,35 @@ sharper faces. Built (`data/black_picks_v1.json`, sheet `docs/evidence/unity/p4/
 - *M1 and M2*: lips and cheeks by the sculptor's shapes past the library's own range (upper lip 2.0, lower 1.6, Cupid's
   bow, cheek volume and inner cheek down, cheekbones up, chin narrower): the lips about 6 mm fuller, the cheeks leaner.
 
+**The owner's second round (2026-11-02): even skin, real hairlines, the hat and hood men.** The owner found the new
+people's skin uneven (M8 and M11 "leathery, grafted on like a mask, not organic like Rocketbox's bases"), the men's
+hairlines wrong (height, tidiness, a seam between face and hair) and asked for the Black men under a cap and a hood to be
+finished. What changed:
+- *Skin from the base's own photograph at broad scale* (`ffhq_bake_finish.py`, `FFHQ_LF_BASE`, `FFHQ_HF_GAIN`,
+  `FFHQ_LF_RADIUS`): a face's colour is split at about 1.4 % of the texture's width; above that scale (blotches, the
+  mask's edge, a scan's uneven light) the colour is the Rocketbox base's own photograph, scaled to the face's own cheek
+  colour; below it (pores, creases, stubble, the features' own darkness) the face is kept, a little softened for the men.
+  The face keeps its shape and its fine skin, and its broad tone runs as smoothly as Rocketbox's into the scalp and neck.
+- *A photographed scalp and hairline* (`scalp_photo.py`, `scalp_photo_finish.py`, a job's `scalp_photo`, `scalp_lift`,
+  `scalp_cut`): the scalp, the hairline and the upper forehead (from 45 mm above the eyes, feathered over 12 mm, the
+  brows never touched) come from a buzzed Rocketbox head's own photograph (Military_Male_01), carried texel by texel
+  through both heads' eyes' frames (scaled to the eye spacing, turned about the ear-to-ear axis so the hairline sits
+  `scalp_lift` mm higher or lower: no two men share a line), its skin matched to the face's own forehead and its hair kept
+  as photographed. Men on Male_Adult_12 first lose its shell hair (`hair_graft.py` with no donor), so the head reads as a
+  skull, not a helmet. First attempt's faults, fixed: the forehead colour was measured on the back of the head (hair), and
+  the side cut-outs left rectangles at the temples.
+- *The cap off* (`rocketbox_gear_off.py`, 'loose_crown'): Military_Male_06's cap is a loose piece of the head's own
+  material over a whole photographed scalp; pieces are found by edges within the head material (the head and body share
+  vertices: joined through any vertex, the whole person went), never the largest, and taken off when they reach 95 mm
+  above the eyes. Underneath, his own buzzed scalp as photographed.
+- *A face whose head ends at the hood* (`rb_face_source.py`, `ava_internalise.py` with `AVA_FRAMED`): Male_Adult_18's head
+  stops at the forehead (the hood was his crown), so his face is carried onto a whole Rocketbox head of his people
+  (Military_Male_06 with the cap off) exactly as an Ava-256 scan is: his head written out in the eyes' frame with its own
+  layout and photograph, its landmarks found as on every Rocketbox head, shape and skin moved across, the skin's broad
+  tone from the target's photograph. The eyes' own texture is kept within 8 mm (12 mm doubled the lower lid's crease).
+- *A hood off* (`rocketbox_gear_off.py`, 'hood'): a hood modelled into the clothes goes with every non-head face above the
+  chin, for heads that do have a crown under it.
+
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own
 triangles (`rocketbox_head_map.py`, seam-safe). (1) The per-texel change with age, regressed over the 78 faces without soot,

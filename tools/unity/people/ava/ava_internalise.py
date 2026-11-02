@@ -16,7 +16,8 @@ Writes ffhq_map.npz and ffhq.json in ffhq_bake.py's form, so ffhq_bake_finish.py
 colour, shading and fine detail and retone.py composites it.
 Usage: blender -b --python ava_internalise.py -- <person fbx> <capture dir> <topology obj> <out dir> <name>
 Env: AVA_SHAPE (how much of the capture's shape, 1.0), AVA_TOP (40), AVA_EYE_KEEP (12), AVA_REF (a capture whose
-landmarks are found and carried to this one by vertex)."""
+landmarks are found and carried to this one by vertex), AVA_FRAMED (the source's vertices are already in the eyes' frame:
+a Rocketbox face written out by rb_face_source.py)."""
 import bpy, sys, os, json
 import numpy as np
 from mathutils import Vector
@@ -86,7 +87,8 @@ def eyes_frame(V):
 
 
 V = np.load(os.path.join(cap, 'verts.npy')).astype(np.float64)
-Q = eyes_frame(V)
+# (a Rocketbox face as the source, rb_face_source.py: already in the eyes' frame)
+Q = V if os.environ.get('AVA_FRAMED') else eyes_frame(V)
 near = (np.linalg.norm(Q, axis=1) < 200)
 TV = F[near[F].all(1)]; TVT = FT[near[F].all(1)]
 # the landmarks: every capture shares one registered mesh (a vertex is the same point of the face on everyone), so they
