@@ -74,7 +74,38 @@ if EVEN > 0:
     med = float(np.nanmedian(Lim)); fill = np.where(np.isnan(Lim), med, Lim)
     big = np.asarray(Image.fromarray(np.clip(fill * 2.55, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(18)), np.float32) / 2.55
     lab[:, 0] = lab[:, 0] - EVEN * (big[ys[on], xs[on]] - med)
-lab[:, 0] = lab[:, 0] * np.clip(shade / max(ref, 1e-3), 0.6, 1.25) ** 0.7
+# FFHQ_LF_BASE (0..1): the skin's broad colour from the Rocketbox base's own photograph (owner, 2026-11-02: the new
+# people's skin was uneven, leathery and grafted on, not organic like Rocketbox's). The face keeps its own detail finer
+# than about FFHQ_LF_RADIUS (features, lines, pores: its identity), scaled by FFHQ_HF_GAIN; everything broader (the
+# capture's uneven light, blotches, casts) is replaced by the base's own variation at this face's cheek colour, so the
+# skin varies as a photographed Rocketbox face does and meets the rest of the head without an edge (the base's shading
+# comes with it, so the shading step is skipped)
+LFB = float(os.environ.get('FFHQ_LF_BASE', 0.0)); HFG = float(os.environ.get('FFHQ_HF_GAIN', 1.0))
+if LFB > 0:
+    rad = float(os.environ.get('FFHQ_LF_RADIUS', 0.014)) * W
+    def blur3(img, wmask):
+        out_ = np.zeros_like(img)
+        wb = np.asarray(Image.fromarray((wmask * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(rad)), np.float32) / 255.0
+        for c, (off, k) in enumerate(((0.0, 2.55), (128.0, 1.0), (128.0, 1.0))):
+            ch = np.clip((img[..., c] * k + off) * wmask, 0, 255)
+            bl = np.asarray(Image.fromarray(ch.astype(np.uint8)).filter(ImageFilter.GaussianBlur(rad)), np.float32)
+            out_[..., c] = (bl / np.maximum(wb, 1e-3) - off) / k
+        return out_
+    Fimg = np.zeros((H, W, 3), np.float32); wm = np.zeros((H, W), np.float32)
+    Fimg[ys[on], xs[on]] = lab; wm[ys[on], xs[on]] = 1.0
+    F_lf = blur3(Fimg, wm)[ys[on], xs[on]]
+    Bl = srgb_to_lab(base * 255.0).astype(np.float32)
+    B_lf = blur3(Bl, np.ones((H, W), np.float32))[ys[on], xs[on]]
+    cb = np.median(Bl[ys[on & cheek], xs[on & cheek]], 0) if (on & cheek).sum() > 20 else np.median(Bl[ys[on], xs[on]], 0)
+    cf = np.median(lab[cheek_on], 0) if cheek_on.sum() > 20 else np.median(lab, 0)
+    cbC, cfC = float(np.hypot(cb[1], cb[2])), float(np.hypot(cf[1], cf[2]))
+    hf = (lab - F_lf) * HFG
+    new = np.stack([cf[0] * B_lf[:, 0] / max(cb[0], 1.0), cf[1] + (B_lf[:, 1] - cb[1]) * cfC / max(cbC, 1.0),
+                    cf[2] + (B_lf[:, 2] - cb[2]) * cfC / max(cbC, 1.0)], -1) + hf
+    lab = lab * (1 - LFB) + new * LFB
+    print('broad colour from the base: strength', LFB, 'radius', round(rad, 1), 'px; detail gain', HFG)
+else:
+    lab[:, 0] = lab[:, 0] * np.clip(shade / max(ref, 1e-3), 0.6, 1.25) ** 0.7
 # (3) Detail: the photograph's texture holds the face at about 400 texels across, blurred by its normalisation, where
 # Rocketbox's holds it at about 700 with the photograph's pores and fine lines; so the base texture's fine detail (its
 # lightness above a 2.5-texel blur, which at this scale is pores and fine lines, not the person's features) is laid over

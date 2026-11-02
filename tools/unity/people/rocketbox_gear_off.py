@@ -7,6 +7,7 @@ import bmesh
 import numpy as np
 
 BROW_MM = 30.0
+HOOD_MM = 95.0
 
 
 def take_off(meshes, words, eye_z=None):
@@ -14,7 +15,16 @@ def take_off(meshes, words, eye_z=None):
     height in world space (metres), needed for 'loose_above_brow'. Returns the number of faces deleted."""
     gone = 0
     loose = 'loose_above_brow' in words and eye_z is not None
-    words = [w for w in words if w != 'loose_above_brow']
+    # 'hood': a hood modelled into the clothes (no material of its own): every non-head face lying wholly above the
+    # chin (higher than the eyes less HOOD_MM), around the head
+    hood = 'hood' in words and eye_z is not None
+    words = [w for w in words if w not in ('loose_above_brow', 'hood')]
+    if hood:
+        for o in meshes:
+            head_mi = {i for i, m in enumerate(o.data.materials) if m and (m.name.lower().endswith('_head') or m.name.lower().endswith('_opacity'))}
+            bm = bmesh.new(); bm.from_mesh(o.data); M = o.matrix_world
+            doomed = [f for f in bm.faces if f.material_index not in head_mi and min((M @ v.co).z for v in f.verts) > eye_z - HOOD_MM / 1000.0]
+            bmesh.ops.delete(bm, geom=doomed, context='FACES'); bm.to_mesh(o.data); bm.free(); gone += len(doomed)
     for o in meshes:
         idx = {i for i, m in enumerate(o.data.materials) if m and any(w in m.name.lower() for w in words)}
         hair = {i for i, m in enumerate(o.data.materials) if m and m.name.lower().endswith('_opacity')}

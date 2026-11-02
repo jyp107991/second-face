@@ -143,7 +143,20 @@ def run(manifest, k, n):
             r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/hair_graft.py', '--', f'{out}/{j["name"]}.fbx', donor, f'{out}/{j["name"]}.fbx',
                                 j.get('hair_hex', '16110d')], capture_output=True, text=True, env=genv)
             if not os.path.exists(f'{out}/{j["name"]}_graft.json'): print('graft failed', j['name'], r.stdout[-300:], r.stderr[-300:])
-            else: subprocess.run([PY, f'{HERE}/scalp_paint.py', f'{out}/{j["name"]}_graft.json', out, out], capture_output=True, text=True)
+            elif not j.get('scalp_photo'): subprocess.run([PY, f'{HERE}/scalp_paint.py', f'{out}/{j["name"]}_graft.json', out, out], capture_output=True, text=True)
+        # a real photographed scalp and hairline from a donor head (scalp_photo.py): its height by 'scalp_lift' (mm)
+        if j.get('scalp_photo'):
+            dn = j['scalp_photo']
+            senv = dict(os.environ, SCALP_LIFT=str(j.get('scalp_lift', 0)), SCALP_CUT=str(j.get('scalp_cut', 18)))
+            r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/scalp_photo.py', '--', f'{out}/{j["name"]}.fbx', f'{S}/rblib/{dn}/{dn}.fbx', out],
+                               capture_output=True, text=True, env=senv)
+            if os.path.exists(f'{out}/scalp_map.npz'):
+                M_ = __import__('numpy').load(f'{out}/scalp_map.npz')
+                hj = f'{out}/{str(M_["mat"])}_color.jpg'
+                if os.path.islink(hj): t_ = os.path.realpath(hj); os.remove(hj); shutil.copy(t_, hj)
+                r = subprocess.run([PY, f'{HERE}/scalp_photo_finish.py', out, hj, f'{S}/rblib/{dn}/{str(M_["dmat"])}_color.jpg'], capture_output=True, text=True)
+                print(j['name'], (r.stdout.strip() or r.stderr[-300:])[:200])
+            else: print('scalp map failed', j['name'], r.stdout[-300:], r.stderr[-300:])
         subprocess.run([BLENDER, '-b', '--python', f'{HERE}/studio_render.py', '--', rdir, f'{out}/{j["name"]}.fbx'], capture_output=True, text=True, env=env)
         shutil.copy(f'{out}/{j["name"]}.json', f'{rdir}/{j["name"]}.json')
         if os.path.exists(f'{rdir}/{j["name"]}_three.png'): json.dump(j, open(sig, 'w'))
