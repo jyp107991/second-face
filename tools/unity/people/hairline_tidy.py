@@ -137,14 +137,17 @@ el_h = np.convolve(np.pad(el_h, 3, mode='edge'), np.ones(7) / 7, mode='valid')
 # down to the sideburns and "above" and "below" it stop meaning hair and skin: there the head stays as photographed
 FRONT = math.radians(60.0)
 t = np.abs(centres)
-recede = np.sin(np.clip(t / FRONT, 0, 1) * math.pi / 2) ** 2
-el_n = el_h + (LIFT + RECEDE * recede) / R
+# (receding corners peak at the temples' points, about 40 degrees round; the whole move tapers to nothing by FRONT, so the
+# line comes down to the photographed temple smoothly, not in a notch)
+recede = np.exp(-((t - math.radians(40)) / math.radians(14)) ** 2)
+tp = np.clip((FRONT - t) / math.radians(16), 0, 1); tp = tp * tp * (3 - 2 * tp)
+el_n = el_h + (LIFT + RECEDE * recede) * tp / R
 rng = np.random.default_rng(SEED)
 noise = np.convolve(rng.normal(0, 1, len(centres) + 6), np.ones(4) / 4, mode='valid')[:len(centres)]
 noise = noise / max(np.abs(noise).max(), 1e-6) * 0.6                                  # mm
 # each texel near the line: its slice's old and new line, its height's source (piecewise linear), its hair and skin sources
 sel = (np.abs(az) < FRONT + math.radians(4)) & (Q[:, 2] > 15)
-ft = np.clip((FRONT - np.abs(az)) / math.radians(12), 0, 1); ft = ft * ft * (3 - 2 * ft)
+ft = np.clip((FRONT - np.abs(az)) / math.radians(16), 0, 1); ft = ft * ft * (3 - 2 * ft)
 a_i = np.clip(np.interp(az, centres, np.arange(len(centres))), 0, len(centres) - 1)
 eh = np.interp(a_i, np.arange(len(centres)), el_h); en = np.interp(a_i, np.arange(len(centres)), el_n)
 nz = np.interp(a_i, np.arange(len(centres)), noise)

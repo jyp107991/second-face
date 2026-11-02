@@ -634,9 +634,9 @@ finished. What changed:
 **The owner's third round (2026-11-02): "Black men's hairlines still are messy"; "the creases above his eyes make it obvious
 this is an artificial head with eyes pasted on".** Judged this time at the owner's own zoom (renders at 250 %, 1280 x 1600,
 `harmonise_batch.py` `HB_SCALE`, `HB_RDIR`): at 384 px the hairlines had looked right and were not.
-- *Every Black man on a truly buzzed Rocketbox head* (Military_Male_01, or Military_Male_06 with the cap off). Male_Adult_12's
-  short hair is a painted shell with a ragged, patchy line of its own; his own face (M1) is carried onto a buzzed head
-  like the hooded man's (`rb_face_source.py`).
+- *The scanned men on truly buzzed Rocketbox heads* (Military_Male_01, or Military_Male_06 with the cap off): Male_Adult_12's
+  short hair is a painted shell with a ragged, patchy line of its own. His own face (M1) stays on his own head, its line
+  tidied like the others' (carried onto a buzzed head it took that head's narrower skull and jaw and looked like M2).
 - *No scalp carried from another head*: at close range `scalp_photo.py`'s line was a band of stray dots running down the
   forehead (kept as a tool, not used for these men).
 - *The line tidied on the head's own photograph* (`hairline_tidy.py`, `hairline_tidy_finish.py`, a job's `hairline`:
@@ -645,8 +645,11 @@ this is an artificial head with eyes pasted on".** Judged this time at the owner
   hair taken from further up and skin from further down by order-keeping maps (one that turned back on itself repeated a
   strip: a row of dashes), joined by an edge about 2.5 mm wide that wanders under a millimetre. Sources are exact surface
   points (rays from the skull's centre), sampled bilinearly (snapping to texels streaked). The rework stops before the
-  temples, where the line turns down to the sideburns. The normal map loses the hair's relief wherever the colour is
-  skin above the brows (Rocketbox paints the stubble's bumps further down the temples than the hair: grey speckle).
+  temples (the move tapering to nothing by 60 degrees round, receding corners peaking at the temples' points about 40
+  degrees round), where the line turns down to the sideburns. The normal map loses the hair's relief wherever the colour
+  is skin above the brows (Rocketbox paints the stubble's bumps further down the temples than the hair: grey speckle), and
+  light specks in the hair (the scalp photograph's highlights: white flecks at close range) take their neighbourhood's
+  median.
 - *Hair is matte* (`studio_render.py`, `hair_matte`): hair painted into a head's texture (told from skin by its value
   against the skin's) takes roughness 0.88, little specular and half-strength relief; with skin's sheen a buzzed scalp
   read as shiny grey plaster. The same mask is needed in the game's skin shader (RB1).

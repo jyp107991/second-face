@@ -4,7 +4,7 @@ moved with the line). Usage: python3 hairline_tidy_finish.py <map dir> <head col
 The normal map beside it (<head>_normal.jpg) is reworked the same way, written over a link as a file of its own."""
 import os, sys
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 mdir, col_jpg = sys.argv[1:3]
 M = np.load(os.path.join(mdir, 'hairline_map.npz'))
@@ -21,7 +21,19 @@ for path in (col_jpg, col_jpg.replace('_color.jpg', '_normal.jpg')):
         return (im[y0, x0] * (1 - ty) * (1 - tx) + im[y0, x0 + 1] * (1 - ty) * tx + im[y0 + 1, x0] * ty * (1 - tx) + im[y0 + 1, x0 + 1] * ty * tx)
     out = im.copy()
     out[gy(ys), gx(xs)] = w * bilinear(hy, hx) + (1 - w) * bilinear(sy, sx)
-    if path == col_jpg: col_out = out
+    if path == col_jpg:
+        # light specks in the hair and the temples' stubble (the scalp photograph's highlights, which read as white flecks
+        # or grey speckle at close range): a texel much lighter than its neighbourhood's median, where that neighbourhood
+        # is darker than skin, takes the median
+        if 'fy' in M.files:
+            med = np.asarray(Image.fromarray(np.clip(out, 0, 255).astype(np.uint8)).filter(ImageFilter.MedianFilter(5)), np.float32)
+            cy, cx = gy(M['fy']), gx(M['fx'])
+            vs = float(np.median(out[gy(M['ky']), gx(M['kx'])].max(-1)))
+            V, Vm = out[cy, cx].max(-1), med[cy, cx].max(-1)
+            sp = (V > 1.3 * Vm) & (V > Vm + 15) & (Vm < 0.85 * vs)
+            out[cy[sp], cx[sp]] = med[cy[sp], cx[sp]]
+            print('light specks in the hair taken out:', int(sp.sum()))
+        col_out = out
     elif 'fy' in M.files:
         # the normal map: no hair relief on skin above the brows (its colour says skin: Rocketbox's bumps run on down the
         # temples and glint there as grey speckle)
