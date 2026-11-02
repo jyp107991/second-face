@@ -23,7 +23,9 @@ tf = np.median(h_lab[fh], 0) if fh.sum() > 50 else np.median(h_lab, 0)
 df = np.median(d_lab[fh], 0) if fh.sum() > 50 else np.median(d_lab, 0)
 # the donor's skin (its hair is darker): only texels about as light as its forehead are skin; its stubble's dots stay
 # hair, black as photographed (half-weighted dots, shifted to a lighter skin, read as red-brown)
-skin = np.clip((d_lab[:, 0] - (df[0] - 7)) / 5, 0, 1)[:, None]
+# (hair: at least 8 darker than the forehead; the forehead's own darker skin, its creases and shading, stays skin, or it
+# greys into a band under the hairline)
+skin = np.clip((d_lab[:, 0] - (df[0] - 14)) / 6, 0, 1)[:, None]
 new = d_lab + skin * (tf - df)
 new[:, 1:] = new[:, 1:] * (0.4 + 0.6 * skin)                               # hair: towards neutral, never reddened
 out = head.copy()

@@ -35,9 +35,26 @@ def load(path):
     mats = [m.name if m else '' for m in mesh.data.materials]
     hmi = {i for i, nm in enumerate(mats) if nm.endswith('_head')}
     uvl = mesh.data.uv_layers.active.data
+    # only the head itself: the largest piece of the head material joined by edges (not a cap, goggles or other gear
+    # modelled in it, whose texels are camouflage or straps)
+    polys = [p for p in mesh.data.polygons if p.material_index in hmi]
+    by_edge = {}
+    for p in polys:
+        for ek in p.edge_keys: by_edge.setdefault(ek, []).append(p.index)
+    root = {p.index: p.index for p in polys}
+    def find(i):
+        while root[i] != i: root[i] = root[root[i]]; i = root[i]
+        return i
+    for ps in by_edge.values():
+        for q in ps[1:]:
+            a_, b_ = find(ps[0]), find(q)
+            if a_ != b_: root[a_] = b_
+    sizes = {}
+    for p in polys: sizes[find(p.index)] = sizes.get(find(p.index), 0) + 1
+    main = max(sizes, key=sizes.get)
     TR, TUV = [], []
-    for p in mesh.data.polygons:
-        if p.material_index not in hmi: continue
+    for p in polys:
+        if find(p.index) != main: continue
         v = list(p.vertices); l = list(p.loop_indices)
         for k in range(1, len(v) - 1):
             TR.append((v[0], v[k], v[k + 1])); TUV.append((uvl[l[0]].uv[:], uvl[l[k]].uv[:], uvl[l[k + 1]].uv[:]))

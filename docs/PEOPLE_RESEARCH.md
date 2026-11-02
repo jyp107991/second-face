@@ -631,6 +631,11 @@ finished. What changed:
   tone from the target's photograph. The eyes' own texture is kept within 8 mm (12 mm doubled the lower lid's crease).
 - *A hood off* (`rocketbox_gear_off.py`, 'hood'): a hood modelled into the clothes goes with every non-head face above the
   chin, for heads that do have a crown under it.
+- Sheets: `docs/evidence/unity/p4/research/qa_black_picks_v2_{women,men}.jpg` (each beside its Rocketbox base and round 1)
+  and `qa_black_opened_v1.jpg` (the cap and hood men); jobs `tools/unity/people/data/black_picks_v2.json`. Pitfalls met:
+  the scalp step greyed the forehead's own darker skin as if it were stubble (hair now only 8+ darker than the forehead);
+  a donor head's gear modelled in its head material (a cap) leaked camouflage and strap texels into the scalp (only the
+  head's largest piece is used now).
 
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own
