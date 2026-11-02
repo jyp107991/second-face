@@ -631,6 +631,30 @@ finished. What changed:
   tone from the target's photograph. The eyes' own texture is kept within 8 mm (12 mm doubled the lower lid's crease).
 - *A hood off* (`rocketbox_gear_off.py`, 'hood'): a hood modelled into the clothes goes with every non-head face above the
   chin, for heads that do have a crown under it.
+**The owner's third round (2026-11-02): "Black men's hairlines still are messy"; "the creases above his eyes make it obvious
+this is an artificial head with eyes pasted on".** Judged this time at the owner's own zoom (renders at 250 %, 1280 x 1600,
+`harmonise_batch.py` `HB_SCALE`, `HB_RDIR`): at 384 px the hairlines had looked right and were not.
+- *Every Black man on a truly buzzed Rocketbox head* (Military_Male_01, or Military_Male_06 with the cap off). Male_Adult_12's
+  short hair is a painted shell with a ragged, patchy line of its own; his own face (M1) is carried onto a buzzed head
+  like the hooded man's (`rb_face_source.py`).
+- *No scalp carried from another head*: at close range `scalp_photo.py`'s line was a band of stray dots running down the
+  forehead (kept as a tool, not used for these men).
+- *The line tidied on the head's own photograph* (`hairline_tidy.py`, `hairline_tidy_finish.py`, a job's `hairline`:
+  lift, recede, seed): the line found from the texture (hair's density at one half, per 2-degree slice round the front),
+  moved per man (higher, lower, receding at the temples), the texture stretched smoothly round it, and near the new line
+  hair taken from further up and skin from further down by order-keeping maps (one that turned back on itself repeated a
+  strip: a row of dashes), joined by an edge about 2.5 mm wide that wanders under a millimetre. Sources are exact surface
+  points (rays from the skull's centre), sampled bilinearly (snapping to texels streaked). The rework stops before the
+  temples, where the line turns down to the sideburns. The normal map loses the hair's relief wherever the colour is
+  skin above the brows (Rocketbox paints the stubble's bumps further down the temples than the hair: grey speckle).
+- *Hair is matte* (`studio_render.py`, `hair_matte`): hair painted into a head's texture (told from skin by its value
+  against the skin's) takes roughness 0.88, little specular and half-strength relief; with skin's sheen a buzzed scalp
+  read as shiny grey plaster. The same mask is needed in the game's skin shader (RB1).
+- *The orbits' fine detail from the base* (`ffhq_bake_finish.py`, `FFHQ_ORBIT`; the maps now carry each texel's offset from
+  its nearest eye, `eo`): round each eye, up to the brow's lower edge, the folds, creases and pores are the Rocketbox base's
+  own, which lie where its lids are; the scanned face's own lid folds, photographed round eyes of another shape, doubled
+  them. Never the brows: a brow (hair well darker than its face's cheek, above the eye) of either face keeps the person's
+  own (the first try gave W6 the base's thin ginger brows).
 - Sheets: `docs/evidence/unity/p4/research/qa_black_picks_v2_{women,men}.jpg` (each beside its Rocketbox base and round 1)
   and `qa_black_opened_v1.jpg` (the cap and hood men); jobs `tools/unity/people/data/black_picks_v2.json`. Pitfalls met:
   the scalp step greyed the forehead's own darker skin as if it were stubble (hair now only 8+ darker than the forehead);

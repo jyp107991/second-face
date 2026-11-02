@@ -81,6 +81,7 @@ if EVEN > 0:
 # skin varies as a photographed Rocketbox face does and meets the rest of the head without an edge (the base's shading
 # comes with it, so the shading step is skipped)
 LFB = float(os.environ.get('FFHQ_LF_BASE', 0.0)); HFG = float(os.environ.get('FFHQ_HF_GAIN', 1.0))
+orbit_w = 0.0                                              # (where the orbits' detail is already the base's, FFHQ_ORBIT)
 if LFB > 0:
     rad = float(os.environ.get('FFHQ_LF_RADIUS', 0.014)) * W
     def blur3(img, wmask):
@@ -96,13 +97,36 @@ if LFB > 0:
     F_lf = blur3(Fimg, wm)[ys[on], xs[on]]
     Bl = srgb_to_lab(base * 255.0).astype(np.float32)
     B_lf = blur3(Bl, np.ones((H, W), np.float32))[ys[on], xs[on]]
+    B_hf = Bl[ys[on], xs[on]] - B_lf
     cb = np.median(Bl[ys[on & cheek], xs[on & cheek]], 0) if (on & cheek).sum() > 20 else np.median(Bl[ys[on], xs[on]], 0)
     cf = np.median(lab[cheek_on], 0) if cheek_on.sum() > 20 else np.median(lab, 0)
     cbC, cfC = float(np.hypot(cb[1], cb[2])), float(np.hypot(cf[1], cf[2]))
     hf = (lab - F_lf) * HFG
+    # FFHQ_ORBIT: round each eye, up to the brow's lower edge, the fine detail (the lid's folds and creases, the pores) is
+    # the base's own, which lies where its lids and eyes are: the face's own folds there, photographed round eyes of
+    # another shape, doubled the base's and read as eyes pasted on (owner, 2026-11-02). Full within an ellipse 18 mm to
+    # the side, 12 mm up and 15 mm down from the eye's centre, gone by a third further out.
+    if 'eo' in M and float(os.environ.get('FFHQ_ORBIT', 1.0)) > 0:
+        eo_ = M['eo'][on]
+        rho = np.sqrt((eo_[:, 0] / 18.0) ** 2 + (eo_[:, 2] / np.where(eo_[:, 2] > 0, 12.0, 15.0)) ** 2)
+        ow = np.clip((1.35 - rho) / 0.35, 0, 1); ow = ow * ow * (3 - 2 * ow) * float(os.environ.get('FFHQ_ORBIT', 1.0))
+        # never the brows: this person's brows stay theirs, and the base's (at its own height, often thinner and lighter)
+        # never come in; a brow is hair well darker than its own face's cheek, above the eye, slightly widened and softened
+        def brows(Lmap):
+            img = Image.fromarray((np.clip(Lmap, 0, 1) * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.GaussianBlur(3))
+            return np.asarray(img, np.float32)[ys[on], xs[on]] / 255.0
+        above = (eo_[:, 2] > 9).astype(np.float32)          # (not the lash line, lower)
+        La = np.zeros((H, W), np.float32); La[ys[on], xs[on]] = np.clip((cf[0] - 10 - lab[:, 0]) / 8, 0, 1) * above
+        Lb = np.zeros((H, W), np.float32); Lb[ys[on], xs[on]] = np.clip((cb[0] - 10 - Bl[ys[on], xs[on], 0]) / 8, 0, 1) * above
+        ow = (ow * (1 - np.maximum(brows(La), brows(Lb))))[:, None]
+        bhf = B_hf * np.array([cf[0] / max(cb[0], 1.0), cfC / max(cbC, 1.0), cfC / max(cbC, 1.0)], np.float32)
+        hf = hf * (1 - ow) + bhf * ow
+        orbit_w = ow[:, 0]
+        print('orbits: the base\'s own fine detail on', int((ow > 0.5).sum()), 'texels')
     new = np.stack([cf[0] * B_lf[:, 0] / max(cb[0], 1.0), cf[1] + (B_lf[:, 1] - cb[1]) * cfC / max(cbC, 1.0),
                     cf[2] + (B_lf[:, 2] - cb[2]) * cfC / max(cbC, 1.0)], -1) + hf
-    lab = lab * (1 - LFB) + new * LFB
+    lfb = (LFB + (1 - LFB) * orbit_w)[:, None] if np.ndim(orbit_w) else LFB     # (the orbits wholly: none of the face's own folds)
+    lab = lab * (1 - lfb) + new * lfb
     print('broad colour from the base: strength', LFB, 'radius', round(rad, 1), 'px; detail gain', HFG)
 else:
     lab[:, 0] = lab[:, 0] * np.clip(shade / max(ref, 1e-3), 0.6, 1.25) ** 0.7
@@ -112,7 +136,7 @@ else:
 # the real face, scaled to the face's lightness, so the face is as crisp as the heads beside it.
 fine = baseL - np.asarray(Image.fromarray(np.clip(baseL * 2.55, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(2.5)), np.float32) / 2.55
 fine = np.clip(fine, -12, 12)[ys[on], xs[on]]
-lab[:, 0] = np.clip(lab[:, 0] + fine * DETAIL * np.clip(lab[:, 0] / max(float(np.median(lab[:, 0])), 1.0), 0.5, 1.5), 2, 98)
+lab[:, 0] = np.clip(lab[:, 0] + fine * DETAIL * (1 - orbit_w) * np.clip(lab[:, 0] / max(float(np.median(lab[:, 0])), 1.0), 0.5, 1.5), 2, 98)
 rgb[on] = lab_to_srgb(lab).astype(np.float32) / 255.0
 out = base.copy(); out[ys[on], xs[on]] = rgb[on]
 print('harmonised: cheek chroma', round(float(Cc), 1), '->', round(float(Cc * kC), 1), 'hue', round(math.degrees(float(hc)), 1), '->', round(math.degrees(float(hc + dh)), 1))

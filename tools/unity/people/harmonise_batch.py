@@ -88,8 +88,9 @@ def plan(manifest):
 
 def run(manifest, k, n):
     jobs = json.load(open(manifest))['jobs'][k::n]
-    rdir = f'{S}/hq/render'; os.makedirs(rdir, exist_ok=True)
-    env = dict(os.environ, SF_SCALE='75', SF_SAMPLES='24', SF_THREADS=str(max(1, 4 // n)))
+    # (HB_RDIR, HB_SCALE: renders elsewhere and larger, for close inspection: a hairline judged at 384 px wide is not judged)
+    rdir = os.environ.get('HB_RDIR', f'{S}/hq/render'); os.makedirs(rdir, exist_ok=True)
+    env = dict(os.environ, SF_SCALE=os.environ.get('HB_SCALE', '75'), SF_SAMPLES='24', SF_THREADS=str(max(1, 4 // n)))
     for j in jobs:
         sig = f'{rdir}/{j["name"]}.job.json'               # a person is made again only when their recipe changed
         if os.path.exists(f'{rdir}/{j["name"]}_three.png') and os.path.exists(sig) and json.load(open(sig)) == j: continue
@@ -157,6 +158,18 @@ def run(manifest, k, n):
                 r = subprocess.run([PY, f'{HERE}/scalp_photo_finish.py', out, hj, f'{S}/rblib/{dn}/{str(M_["dmat"])}_color.jpg'], capture_output=True, text=True)
                 print(j['name'], (r.stdout.strip() or r.stderr[-300:])[:200])
             else: print('scalp map failed', j['name'], r.stdout[-300:], r.stderr[-300:])
+        # the hairline tidied and set at this man's own height on his head's own photographed scalp (hairline_tidy.py)
+        if j.get('hairline') is not None:
+            hl = j['hairline']; hj = next((f'{out}/{f}' for f in os.listdir(out) if f.endswith('_head_color.jpg')), None)
+            if hj:
+                if os.path.islink(hj): t_ = os.path.realpath(hj); os.remove(hj); shutil.copy(t_, hj)
+                tenv = dict(os.environ, HT_LIFT=str(hl.get('lift', 0)), HT_RECEDE=str(hl.get('recede', 0)), HT_SEED=str(hl.get('seed', 1)))
+                r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/hairline_tidy.py', '--', f'{out}/{j["name"]}.fbx', hj, out], capture_output=True, text=True, env=tenv)
+                print(j['name'], next((l for l in r.stdout.splitlines() if l.startswith('hairline')), r.stderr[-300:]))
+                if os.path.exists(f'{out}/hairline_map.npz'):
+                    r = subprocess.run([PY, f'{HERE}/hairline_tidy_finish.py', out, hj], capture_output=True, text=True)
+                    if r.returncode: print('hairline finish failed', j['name'], r.stderr[-300:])
+                    os.remove(f'{out}/hairline_map.npz')
         subprocess.run([BLENDER, '-b', '--python', f'{HERE}/studio_render.py', '--', rdir, f'{out}/{j["name"]}.fbx'], capture_output=True, text=True, env=env)
         shutil.copy(f'{out}/{j["name"]}.json', f'{rdir}/{j["name"]}.json')
         if os.path.exists(f'{rdir}/{j["name"]}_three.png'): json.dump(j, open(sig, 'w'))

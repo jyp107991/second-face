@@ -174,7 +174,9 @@ for i in range(len(Q)):
         * min(1.0, max(0.0, (TOP - Q[i, 2]) / 15.0))
     mask[i] = max(0.0, m)
 cheek = (np.abs(Q[:, 0]) > 28) & (np.abs(Q[:, 0]) < 52) & (Q[:, 2] < -15) & (Q[:, 2] > -45)
-np.savez_compressed(os.path.join(out_dir, 'ffhq_map.npz'), ys=ys, xs=xs, uv=UV, mask=mask, cheek=cheek, scalp=scalp, mouth=mouth, size=np.array([H, Wd]))
+near_eye = np.where(np.linalg.norm(Q - eyes[0], axis=1) < np.linalg.norm(Q - eyes[1], axis=1), 0, 1)
+eo = (Q - np.stack(eyes)[near_eye]).astype(np.float32)            # each texel from its nearest eye (mm): the orbits' zone
+np.savez_compressed(os.path.join(out_dir, 'ffhq_map.npz'), ys=ys, xs=xs, uv=UV, mask=mask, cheek=cheek, scalp=scalp, mouth=mouth, eo=eo, size=np.array([H, Wd]))
 json.dump({'ffhq': os.path.basename(ffhq_png), 'material': hmat, 'texels': int(len(Q)), 'baked': int((mask > 0.5).sum()),
            'landmarks': keys, 'residual_mm': res.round(1).tolist(), 'scale': round(float(s), 3)}, open(os.path.join(out_dir, 'ffhq.json'), 'w'))
 print('mapped', int((mask > 0.5).sum()), 'texels of', len(Q))

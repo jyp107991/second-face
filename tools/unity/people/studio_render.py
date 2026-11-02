@@ -32,11 +32,39 @@ def bind_rocketbox(mesh, folder):
         if m.name.endswith('_opacity'):
             nt.links.new(ti.outputs['Alpha'], bsdf.inputs['Alpha'])
         nrm = tex('normal')
+        nm = None
         if nrm is not None:
             nrm.colorspace_settings.name = 'Non-Color'
             tn = nt.nodes.new('ShaderNodeTexImage'); tn.image = nrm
             nm = nt.nodes.new('ShaderNodeNormalMap'); nt.links.new(tn.outputs['Color'], nm.inputs['Color'])
             nt.links.new(nm.outputs['Normal'], bsdf.inputs['Normal'])
+        if m.name.endswith('_head') and os.environ.get('SF_HAIR_MATTE', '1') != '0':
+            hair_matte(nt, bsdf, nm, col)
+
+
+def hair_matte(nt, bsdf, nm, col):
+    """Hair painted into a head's texture (a buzz cut, stubble, brows) is matte and its relief soft, not skin's sheen: lit
+    with skin's roughness and full-strength normals a buzzed scalp reads as shiny grey plaster. The hair is told from the
+    skin by its value against the skin's (texels far darker than the head's median skin), as a mask driving roughness,
+    specular and the normal map's strength."""
+    W, H = col.size
+    px = np.empty(W * H * 4, np.float32); col.pixels.foreach_get(px); px = px.reshape(H, W, 4)
+    V = px[..., :3].max(-1)
+    nz = V[V > 0.01]                                       # (the atlas's empty black left out)
+    skin = float(np.percentile(nz, 60)) if nz.size else 0.4  # most of a head's painted area is skin
+    hm = np.clip((0.6 * skin - V) / (0.25 * skin), 0, 1)
+    mi = bpy.data.images.new(col.name + '_hairmask', W, H, alpha=False, float_buffer=False)
+    mi.colorspace_settings.name = 'Non-Color'
+    out = np.ones((H, W, 4), np.float32); out[..., 0] = out[..., 1] = out[..., 2] = hm
+    mi.pixels.foreach_set(out.ravel())
+    tm = nt.nodes.new('ShaderNodeTexImage'); tm.image = mi
+    def lerp(a, b):
+        n = nt.nodes.new('ShaderNodeMath'); n.operation = 'MULTIPLY_ADD'
+        nt.links.new(tm.outputs['Color'], n.inputs[0]); n.inputs[1].default_value = b - a; n.inputs[2].default_value = a
+        return n.outputs[0]
+    nt.links.new(lerp(0.55, 0.88), bsdf.inputs['Roughness'])
+    if 'Specular IOR Level' in bsdf.inputs: nt.links.new(lerp(0.35, 0.12), bsdf.inputs['Specular IOR Level'])
+    if nm is not None: nt.links.new(lerp(1.0, 0.45), nm.inputs['Strength'])
 
 
 def skin_settings(mesh):
