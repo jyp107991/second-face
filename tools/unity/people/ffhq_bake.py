@@ -22,7 +22,8 @@ import rocketbox_features as rbf
 person_path, tex_dir, ffhq_png, out_dir = sys.argv[sys.argv.index('--') + 1:][:4]
 TOPO = os.environ['FFHQ_TOPO']; MASKS = os.environ.get('FFHQ_MASKS', os.path.dirname(TOPO))
 os.makedirs(out_dir, exist_ok=True)
-EYE_KEEP = float(os.environ.get('FFHQ_EYE_KEEP', 12.0)); REACH = 140.0; EAR_X = 72.0; FEATHER = 8.0   # mm (the reach covers the whole jaw and chin: a base's painted beard must not show through; the eye zone 16 for women: Rocketbox's lids and lashes read as a woman's)
+EYE_KEEP = float(os.environ.get('FFHQ_EYE_KEEP', 12.0)); REACH = 140.0; EAR_X = 72.0; FEATHER = 8.0
+TOP = float(os.environ.get('FFHQ_TOP', 1e9))   # mm above the eyes where the bake stops (feathered over 15 mm): the base's own hairline stays   # mm (the reach covers the whole jaw and chin: a base's painted beard must not show through; the eye zone 16 for women: Rocketbox's lids and lashes read as a woman's)
 
 
 def load_png(path):
@@ -169,7 +170,8 @@ for i in range(len(Q)):
         continue
     UV[i] = uv
     r = np.linalg.norm(Q[i]); e = min(np.linalg.norm(Q[i] - eyes[0]), np.linalg.norm(Q[i] - eyes[1]))
-    m = min(1.0, (REACH - r) / FEATHER) * min(1.0, max(0.0, (e - EYE_KEEP) / FEATHER)) * min(1.0, (EAR_X - abs(Q[i, 0])) / FEATHER) * min(1.0, (12 - dist) / 4)
+    m = min(1.0, (REACH - r) / FEATHER) * min(1.0, max(0.0, (e - EYE_KEEP) / FEATHER)) * min(1.0, (EAR_X - abs(Q[i, 0])) / FEATHER) * min(1.0, (12 - dist) / 4) \
+        * min(1.0, max(0.0, (TOP - Q[i, 2]) / 15.0))
     mask[i] = max(0.0, m)
 cheek = (np.abs(Q[:, 0]) > 28) & (np.abs(Q[:, 0]) < 52) & (Q[:, 2] < -15) & (Q[:, 2] > -45)
 np.savez_compressed(os.path.join(out_dir, 'ffhq_map.npz'), ys=ys, xs=xs, uv=UV, mask=mask, cheek=cheek, scalp=scalp, mouth=mouth, size=np.array([H, Wd]))

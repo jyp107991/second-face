@@ -574,6 +574,27 @@ texture for the whole head, a cool cast); to be people in the game each would be
 (its eyes, teeth, body and hair) with the capture's own shape and texture, which is the owner's call after the sheets.
 VALID is complete and rigged but smooth and doll-like beside Rocketbox. Rocketbox stays the reference for finish.
 
+**The owner's picks, built (2026-11-02).** From the one-by-one shortlist the owner kept eleven and binned the rest
+(the darkened European heads, the weaker bakes, VALID): W2 and W4 to be fixed (W2: block hair, lips, a seam at the
+hairline; W4: a stereotyped afro done badly, the seam, patchy skin, a masculine bone structure), W5-W7 and M6, M8, M10,
+M11 (Ava-256 scans) to be internalised in Rocketbox's style, M1 and M2 (Rocketbox's own men) to have fuller lips and
+sharper faces. Built (`data/black_picks_v1.json`, sheet `docs/evidence/unity/p4/research/qa_black_picks_v1.jpg`):
+- *Ava-256 into Rocketbox* (`ava/ava_internalise.py`, a harmonise_batch.py job with 'ava'): the capture in the eyes'
+  frame (its eyes where the shared texture layout puts them); landmarks found once on a reference capture whose profile
+  reads cleanly and taken on every other at the same vertices (the captures share one registered mesh; found on each
+  capture's own profile they failed on three men, the nose landing on the lips); a similarity and thin-plate fit; each
+  Rocketbox face vertex projected along its normal onto the fitted capture (never across the lips' gap) and moved to the
+  capture's real surface, the movement capped and smoothed over the mesh, faded out at the brow, cheeks and chin; the
+  eyeballs, lids and eye bones moved with their sockets' rim (a deep-set eye stays deep-set); the skin projected along
+  the surface's normal from the capture's texture below the hairline, then ffhq_bake_finish.py's harmonisation to
+  Rocketbox's colour, shading and fine detail (stubble and creases keep their own colour). Rocketbox keeps the eyes,
+  teeth, hair, ears, neck, body and rig. Women on Business_Female_01, men on Male_Adult_12 or Military_Male_01.
+- *W2 and W4*: re-baked onto Business_Female_01 with her own hair and hairline (the bake stops 40 mm above the eyes,
+  `FFHQ_TOP`; no painted scalp), her own lips carried to each face's skin (`FFHQ_KEEP_LIPS`), W4's blotches evened
+  (`FFHQ_EVEN`) and her bones Business_Female_01's.
+- *M1 and M2*: lips and cheeks by the sculptor's shapes past the library's own range (upper lip 2.0, lower 1.6, Cupid's
+  bow, cheek volume and inner cheek down, cheekbones up, chin narrower): the lips about 6 mm fuller, the cheeks leaner.
+
 **The skin's years from the library, first attempts (2026-10-31).** Each face's texture resampled into the template's
 layout through the registration (`rocketbox_skin_years.py`), and baked back into one face's own layout through its own
 triangles (`rocketbox_head_map.py`, seam-safe). (1) The per-texel change with age, regressed over the 78 faces without soot,

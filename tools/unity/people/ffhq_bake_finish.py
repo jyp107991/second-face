@@ -51,7 +51,10 @@ kC = float(np.clip(C_target / max(Cc, 1e-3), 1.0, 3.0))
 h_typ = math.radians(56.0); dh = 0.5 * float(np.angle(np.exp(1j * (h_typ - hc))))
 h_new = float(np.angle(np.exp(1j * (hc + dh))))
 dh += float(np.clip(h_new, math.radians(47.0), math.radians(66.0))) - h_new     # within Rocketbox's dark faces' hues
-lab = from_lch(L, np.clip(C * kC, 0, 60), h + dh)
+# (the skin only: hair, a beard's stubble and the darkest creases, much darker than the cheek, keep their own chroma and
+# hue, or they turn purple)
+sk = np.clip((L - (Lc - 22)) / 12, 0, 1)
+lab = from_lch(L, np.clip(C * (1 + (kC - 1) * sk), 0, 60), h + dh * sk)
 # a woman's lips a little more saturated and her skin smoother, as Rocketbox's own women are photographed (lightly made
 # up, softly lit): the lips (redder than the cheek) by 12 % in chroma
 if os.environ.get('FFHQ_SEX') == 'f':
@@ -62,6 +65,15 @@ baseL = srgb_to_lab(base * 255.0)[..., 0]
 blur = np.asarray(Image.fromarray(np.clip(baseL * 2.55, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(14)), np.float32) / 2.55
 shade = blur[ys[on], xs[on]]
 ref = float(np.median(shade[cheek_on])) if cheek_on.sum() > 20 else float(np.median(shade))
+# FFHQ_EVEN (0..1): the photograph's broad blotches (uneven light left in it, patchy skin) evened out: its lightness's
+# deviation from the face's median, blurred over about a centimetre, taken away by this share (fine detail, brows and
+# lips stay, being narrower than the blur)
+EVEN = float(os.environ.get('FFHQ_EVEN', 0.0))
+if EVEN > 0:
+    Lim = np.full((H, W), np.nan, np.float32); Lim[ys[on], xs[on]] = lab[:, 0]
+    med = float(np.nanmedian(Lim)); fill = np.where(np.isnan(Lim), med, Lim)
+    big = np.asarray(Image.fromarray(np.clip(fill * 2.55, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(18)), np.float32) / 2.55
+    lab[:, 0] = lab[:, 0] - EVEN * (big[ys[on], xs[on]] - med)
 lab[:, 0] = lab[:, 0] * np.clip(shade / max(ref, 1e-3), 0.6, 1.25) ** 0.7
 # (3) Detail: the photograph's texture holds the face at about 400 texels across, blurred by its normalisation, where
 # Rocketbox's holds it at about 700 with the photograph's pores and fine lines; so the base texture's fine detail (its
@@ -75,8 +87,25 @@ out = base.copy(); out[ys[on], xs[on]] = rgb[on]
 print('harmonised: cheek chroma', round(float(Cc), 1), '->', round(float(Cc * kC), 1), 'hue', round(math.degrees(float(hc)), 1), '->', round(math.degrees(float(hc + dh)), 1))
 m = np.zeros((H, W), np.float32); m[ys, xs] = mask
 m = np.asarray(Image.fromarray((m * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(3)), np.float32) / 255.0
+# FFHQ_KEEP_LIPS: the base's own lips (Rocketbox's, photographed: their shape, lines and gloss), carried to this face's
+# skin: their lightness by the ratio of this face's cheek to the base's, their colour kept as far from the cheek as the
+# base's lips are from its own (a darker skin's lips darker, as they are)
+if os.environ.get('FFHQ_KEEP_LIPS') and 'mouth' in M:
+    bl = srgb_to_lab(base * 255.0)
+    sel_c = on & cheek
+    cb = np.median(bl[ys[sel_c], xs[sel_c]], 0) if sel_c.sum() > 20 else np.median(bl[ys, xs], 0)
+    lips = M['mouth'] & (bl[ys, xs, 1] > cb[1] + 5)
+    cf = np.median(srgb_to_lab(out[ys[sel_c], xs[sel_c]] * 255.0), 0)      # this face's cheek, as baked
+    lb = bl[ys[lips], xs[lips]]
+    nl = np.stack([lb[:, 0] * cf[0] / max(cb[0], 1) * 0.97, cf[1] + (lb[:, 1] - cb[1]) * 0.85, cf[2] + (lb[:, 2] - cb[2]) * 0.85], -1)
+    mm = np.zeros((H, W), np.uint8); mm[ys[lips], xs[lips]] = 255
+    mm = np.asarray(Image.fromarray(mm).filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(2)), np.float32)[..., None] / 255.0
+    lipimg = out.copy(); lipimg[ys[lips], xs[lips]] = lab_to_srgb(nl).astype(np.float32) / 255.0
+    out = out * (1 - mm) + lipimg * mm
+    print('lips kept from the base, carried to this skin:', int(lips.sum()), 'texels')
 Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8)).save(os.path.join(out_dir, f"{J['material']}_ffhq_color.jpg"), quality=94)
 Image.fromarray((np.clip(m, 0, 1) * 255).astype(np.uint8)).save(os.path.join(out_dir, f"{J['material']}_ffhq_mask.png"))
+
 # the scalp above the photograph's hairline (where FFHQ-UV paints hair), for scalp_paint.py: cropped hair, not skin
 if 'scalp' in M:
     sc = np.zeros((H, W), np.uint8); sc[ys[M['scalp']], xs[M['scalp']]] = 255

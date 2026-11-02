@@ -106,23 +106,32 @@ def run(manifest, k, n):
         # rest of the skin at the face's colour; retone.py composites it (RT_BAKE)
         # (tone 'own', rb_variations.py: the base's own skin, shifted by 'tone_shift')
         renv = dict(os.environ); tone, und = str(j['tone']), str(j['undertone'])
-        if j.get('ffhq'):
+        if j.get('ffhq') or j.get('ava'):
             fenv = dict(os.environ, FFHQ_TOPO=f'{S}/ffhq/topo', FFHQ_MASKS=f'{S}/ffhq', FFHQ_EYE_KEEP='18' if j['sex'] == 'f' else '12',
-                        FFHQ_SEX=j['sex'], FFHQ_DETAIL='0.5' if j['sex'] == 'f' else '0.9')
-            r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/ffhq_bake.py', '--', f'{out}/{j["name"]}.fbx', f'{S}/rblib/{j["base"]}', j['ffhq'], out],
-                               capture_output=True, text=True, env=fenv)
+                        FFHQ_SEX=j['sex'], FFHQ_DETAIL='0.5' if j['sex'] == 'f' else '0.9', AVA_TEX=f'{S}/rblib/{j["base"]}')
+            fenv.update({k: str(v) for k, v in j.get('bake_env', {}).items()})
+            if j.get('ava'):
+                # an Ava-256 person (ava/ava_internalise.py): the capture's real shape and skin on this Rocketbox head
+                r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/ava/ava_internalise.py', '--', f'{out}/{j["name"]}.fbx', j['ava'],
+                                    f'{S}/ext/ava/topo/face_topology.obj', out, j['name']], capture_output=True, text=True, env=fenv)
+                print(j['name'], 'ava', [l for l in r.stdout.splitlines() if l.startswith(('landmarks', 'moved', 'mapped'))])
+            else:
+                r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/ffhq_bake.py', '--', f'{out}/{j["name"]}.fbx', f'{S}/rblib/{j["base"]}', j['ffhq'], out],
+                                   capture_output=True, text=True, env=fenv)
             if not os.path.exists(f'{out}/ffhq_map.npz'): print('bake failed', j['name'], r.stdout[-300:], r.stderr[-300:]); continue
             head_tex = next(f'{S}/rblib/{j["base"]}/{f}' for f in os.listdir(f'{S}/rblib/{j["base"]}') if f.endswith('_head_color.jpg'))
-            r = subprocess.run([PY, f'{HERE}/ffhq_bake_finish.py', out, j['ffhq'], head_tex], capture_output=True, text=True, env=fenv)
+            src_tex = j['ffhq'] if j.get('ffhq') else os.path.join(j['ava'], 'tex.png')
+            r = subprocess.run([PY, f'{HERE}/ffhq_bake_finish.py', out, src_tex, head_tex], capture_output=True, text=True, env=fenv)
+            if r.returncode: print('finish failed', j['name'], r.stderr[-400:])
             fj = json.load(open(f'{out}/ffhq.json')); tone, und = str(fj['tone']), str(fj['undertone']); renv['RT_BAKE'] = out
-            print(j['name'], 'ffhq', os.path.basename(j['ffhq']), 'baked', fj.get('baked'), 'cheek', fj.get('cheek_lab'))
+            print(j['name'], 'face', fj.get('ffhq'), 'baked', fj.get('baked'), 'cheek', fj.get('cheek_lab'))
             os.remove(f'{out}/ffhq_map.npz')
         r = subprocess.run([PY, f'{HERE}/retone.py', f'{S}/rblib/{j["base"]}', f'{out}/{j["name"]}.json', out, j['hair'], str(j.get('tone_shift', 0)), tone, und,
                             j.get('eyes', 'dark'), str(j.get('iris_shift', 0.0))], capture_output=True, text=True, env=renv)
         print(j['name'], r.stdout.strip().split('\n')[0][:160])
         # the hairstyle (hair_graft.py): the scalp rebuilt and a donor's hair put on ('-': buzzed), the scalp repainted;
         # with the base's own hair kept, the scalp above a photograph's hairline is still painted as hair
-        if not j.get('graft') and j.get('ffhq'):
+        if not j.get('graft') and j.get('ffhq') and not j.get('no_scalp_paint'):
             json.dump({'hair': j.get('hair_hex', '16110d'), 'paint': {}}, open(f'{out}/{j["name"]}_graft.json', 'w'))
             subprocess.run([PY, f'{HERE}/scalp_paint.py', f'{out}/{j["name"]}_graft.json', out, out], capture_output=True, text=True)
         if j.get('graft'):
