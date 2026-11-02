@@ -133,6 +133,11 @@ ok = ~np.isnan(el_h)
 if ok.sum() < 10: raise SystemExit('no hairline found')
 el_h = np.interp(centres, centres[ok], el_h[ok])
 el_h = np.convolve(np.pad(el_h, 3, mode='edge'), np.ones(7) / 7, mode='valid')
+# a hairline is a smooth curve (a painted one can be ragged: a scalloped line read as false): across the front it is fitted
+# by a low-order curve, the found line kept only beyond, where nothing is reworked
+fr = np.abs(centres) < math.radians(66)
+fit = np.polyval(np.polyfit(centres[fr], el_h[fr], 4), centres)
+el_h = np.where(fr, fit, el_h)
 # the new line: lifted, the temples receding more; the rework fades out before the temples (FRONT), where the line turns
 # down to the sideburns and "above" and "below" it stop meaning hair and skin: there the head stays as photographed
 FRONT = math.radians(60.0)

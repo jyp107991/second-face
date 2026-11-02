@@ -52,7 +52,7 @@ def hair_matte(nt, bsdf, nm, col):
     V = px[..., :3].max(-1)
     nz = V[V > 0.01]                                       # (the atlas's empty black left out)
     skin = float(np.percentile(nz, 60)) if nz.size else 0.4  # most of a head's painted area is skin
-    hm = np.clip((0.6 * skin - V) / (0.25 * skin), 0, 1)
+    hm = np.clip((0.78 * skin - V) / (0.3 * skin), 0, 1)       # (lighter brown hair at the temples too, not only black)
     mi = bpy.data.images.new(col.name + '_hairmask', W, H, alpha=False, float_buffer=False)
     mi.colorspace_settings.name = 'Non-Color'
     out = np.ones((H, W, 4), np.float32); out[..., 0] = out[..., 1] = out[..., 2] = hm
@@ -64,7 +64,7 @@ def hair_matte(nt, bsdf, nm, col):
         return n.outputs[0]
     nt.links.new(lerp(0.55, 0.88), bsdf.inputs['Roughness'])
     if 'Specular IOR Level' in bsdf.inputs: nt.links.new(lerp(0.35, 0.12), bsdf.inputs['Specular IOR Level'])
-    if nm is not None: nt.links.new(lerp(1.0, 0.45), nm.inputs['Strength'])
+    if nm is not None: nt.links.new(lerp(1.0, 0.35), nm.inputs['Strength'])
 
 
 def skin_settings(mesh):
