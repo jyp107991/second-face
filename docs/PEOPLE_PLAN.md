@@ -11,18 +11,20 @@ Usable now, one per distinct face (Rocketbox as shipped; gear that comes off cou
 
 | People | Women | Men |
 |---|---|---|
-| Black | 1, plus 5 new (pending the owner) | 2, plus 6 new (pending) |
+| Black | 1, plus 5 new (pending the owner) | 4 (2 opened from under a cap and a hood), plus 6 new (pending) |
 | North European | 19 | 23 |
 | Mediterranean / Middle Eastern | 0 | 4 |
 | Latin American | 1 | 1 |
 | East Asian | 3 | 3 |
 | Southeast Asian | 1 | 0 |
 | Mixed-looking | 0 | 1 |
-| **Total** | **25 + 5** | **34 + 6** |
+| **Total** | **25 + 5** | **36 + 6** |
 
 Ages: women 13 under 30, 11 at 30-49, 1 over 50; men 9, 18 and 7.
-Locked: 26 more faces (6 women, 20 men, among them 2 Black men, 2 Latin American, 4 Mediterranean, 1 East Asian) sit
-under hats, helmets or religious dress; they open with the bald cap of §3.
+Locked: 24 more faces (6 women, 18 men, among them 2 Latin American, 4 Mediterranean, 1 East Asian) sit under hats,
+helmets or religious dress; they open as the two Black men did (2026-11-02): gear modelled over a whole scalp comes off
+(`rocketbox_gear_off.py`), and a face whose head ends at the gear is carried onto a whole Rocketbox head of its people
+(`rb_face_source.py` with `ava/ava_internalise.py`).
 Gaps: no South Asian, East African, Indigenous American or Pacific face; one woman over 50; no children; few women of
 colour. The game has about 220 named characters, many over 50.
 
@@ -50,9 +52,10 @@ and it is built into each head, so it cannot be swapped as shipped. Grafting ano
 shards): the plan never moves shells.
 
 **How it is built**:
-- *A bald cap per base*: each head's built-in hair pulled onto its skull and smoothed, the scalp textured from Rocketbox's
-  own bald and buzzed men's photographed scalps (carried through the registered layout), never painted flat. A bald cap
-  is a buzz cut by itself. It also opens the 26 locked faces.
+- *A photographed scalp per base*: the scalp, hairline and upper forehead carried texel by texel from a buzzed Rocketbox
+  head's own photograph and normal map (`scalp_photo.py`, built 2026-11-02), skin matched to the face, the line at its own
+  height per person; never painted flat. Short shell hair (2-3 mm off the skull) keeps its shape; longer shells are pulled
+  onto the skull first. A photographed scalp is a buzz cut by itself.
 - *Hairstyles as separate card assets*, fitted to any bald cap by the skull fit already in use: Rocketbox's own tied and
   short styles taken off their heads as cards, the free hair meshes already in the project, and new afro-textured
   styles (coils, twists, braids, cornrows, locs) built as cards. Each style in several colours.
