@@ -67,12 +67,12 @@ def load(path):
     return P, np.array(TR), np.array(TUV, np.float64)
 
 
-def raster(P, TR, TUV, W, H):
+def raster(P, TR, TUV, W, H, front=True):
     pts = np.full((H, W, 3), np.nan, np.float32)
     for tri, uv in zip(TR, TUV):
         q = P[list(tri)]
         m = q.mean(0) - C
-        if q[:, 2].max() < 5 or m[1] > 40 or np.linalg.norm(q.mean(0)) > 190: continue    # the front half above the eyes
+        if front and (q[:, 2].max() < 5 or m[1] > 40 or np.linalg.norm(q.mean(0)) > 190): continue   # the front half above the eyes
         px = uv[:, 0] * W; py = (1 - uv[:, 1]) * H
         x0, x1 = int(max(px.min() - 1, 0)), int(min(px.max() + 2, W)); y0, y1 = int(max(py.min() - 1, 0)), int(min(py.max() + 2, H))
         if x1 <= x0 or y1 <= y0: continue
@@ -197,9 +197,14 @@ good = ~(np.isnan(hp[:, 0]) | np.isnan(sp[:, 0])); bi, hp, sp = bi[good], hp[goo
 # temples than its colour shows hair, so skin-coloured texels there glint as grey speckle with a hard edge where the bumps
 # stop; the finish flattens the relief wherever the (reworked) colour is skin
 reg = (Q[:, 2] > 22) & (np.abs(az) < math.radians(100))
+# the scalp all round (for the finish's despeckle and tone: never the brows, the beard or the face): above the brows, or
+# behind the ears down to the nape
+ys2, xs2, Q2 = raster(P, TR, TUV, W, H, front=False)
+scalp = (Q2[:, 2] > 30) | ((Q2[:, 1] > 30) & (Q2[:, 2] > -30))
 np.savez_compressed(os.path.join(out_dir, 'hairline_map.npz'), ys=ys[bi], xs=xs[bi], hy=hp[:, 1], hx=hp[:, 0], sy=sp[:, 1], sx=sp[:, 0],
                     w=w[bi].astype(np.float32), size=np.array([H, W]), fy=ys[reg], fx=xs[reg],
-                    fw=np.clip((Q[reg, 2] - 22) / 10, 0, 1).astype(np.float32), ky=ys[fore], kx=xs[fore])
+                    fw=np.clip((Q[reg, 2] - 22) / 10, 0, 1).astype(np.float32), ky=ys[fore], kx=xs[fore],
+                    scy=ys2[scalp].astype(np.int16), scx=xs2[scalp].astype(np.int16))
 lift_mm = (el_n - el_h) * R
 print('hairline: line found in', int(ok.sum()), 'of', len(centres), 'slices; at the middle', round(float(np.interp(0, centres, el_h) * R), 1),
       'mm round the skull; moved', round(float(lift_mm.min()), 1), 'to', round(float(lift_mm.max()), 1), 'mm;', len(bi), 'texels reworked')

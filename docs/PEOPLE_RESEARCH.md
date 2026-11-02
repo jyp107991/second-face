@@ -647,9 +647,12 @@ this is an artificial head with eyes pasted on".** Judged this time at the owner
   points (rays from the skull's centre), sampled bilinearly (snapping to texels streaked). The rework stops before the
   temples (the move tapering to nothing by 60 degrees round, receding corners peaking at the temples' points about 40
   degrees round), where the line turns down to the sideburns. The normal map loses the hair's relief wherever the colour
-  is skin above the brows (Rocketbox paints the stubble's bumps further down the temples than the hair: grey speckle), and
-  light specks in the hair (the scalp photograph's highlights: white flecks at close range) take their neighbourhood's
-  median.
+  is skin above the brows (Rocketbox paints the stubble's bumps further down the temples than the hair: grey speckle). On
+  the scalp all round (from the head's own positions: above the brows, or behind the ears; never brows, beard or face),
+  light specks in the hair (the photograph's sheen on the coils, about 94,000 texels on Military_Male_01: white flecks at
+  close range) take their 9-texel neighbourhood's median, and the hair's lighter brown zones are darkened towards the
+  scalp's darker tone (grey clouds under matte light, where a short cut reads as one dark field), fine texture kept. A
+  painted line (Male_Adult_12's) is fitted by a smooth curve across the front: a ragged one gave a scalloped line.
 - *Hair is matte* (`studio_render.py`, `hair_matte`): hair painted into a head's texture (told from skin by its value
   against the skin's) takes roughness 0.88, little specular and half-strength relief; with skin's sheen a buzzed scalp
   read as shiny grey plaster. The same mask is needed in the game's skin shader (RB1).

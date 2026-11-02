@@ -25,14 +25,28 @@ for path in (col_jpg, col_jpg.replace('_color.jpg', '_normal.jpg')):
         # light specks in the hair and the temples' stubble (the scalp photograph's highlights, which read as white flecks
         # or grey speckle at close range): a texel much lighter than its neighbourhood's median, where that neighbourhood
         # is darker than skin, takes the median
-        if 'fy' in M.files:
-            med = np.asarray(Image.fromarray(np.clip(out, 0, 255).astype(np.uint8)).filter(ImageFilter.MedianFilter(5)), np.float32)
-            cy, cx = gy(M['fy']), gx(M['fx'])
+        # (the whole scalp, from hairline_tidy.py's map of it, never the brows, beard or face; the specks come in clusters,
+        # so the neighbourhood is 9 texels wide)
+        if 'ky' in M.files:
+            med = np.asarray(Image.fromarray(np.clip(out, 0, 255).astype(np.uint8)).filter(ImageFilter.MedianFilter(9)), np.float32)
             vs = float(np.median(out[gy(M['ky']), gx(M['kx'])].max(-1)))
-            V, Vm = out[cy, cx].max(-1), med[cy, cx].max(-1)
-            sp = (V > 1.3 * Vm) & (V > Vm + 15) & (Vm < 0.85 * vs)
-            out[cy[sp], cx[sp]] = med[cy[sp], cx[sp]]
+            V, Vm = out.max(-1), med.max(-1)
+            scal = np.zeros((h, wd), np.float32)
+            if 'scy' in M.files: scal[gy(M['scy'].astype(np.int64)), gx(M['scx'].astype(np.int64))] = 1.0
+            else: scal[:int(0.62 * h)] = 1.0
+            scal = np.asarray(Image.fromarray((scal * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(5)).filter(ImageFilter.GaussianBlur(4)), np.float32) / 255.0
+            sp = (V > 1.25 * Vm) & (V > Vm + 12) & (Vm < 0.7 * vs) & (scal > 0.5)
+            out[sp] = med[sp]
             print('light specks in the hair taken out:', int(sp.sum()))
+            # the hair's broad tone evened: lighter brown zones of the photographed coils (grey clouds under matte light,
+            # where a short cut reads as one dark field) are darkened to the scalp's own darker tone; its fine texture kept
+            hm = np.clip((0.7 * vs - Vm) / (0.2 * vs), 0, 1) * scal
+            V = out.max(-1)
+            Vb = np.asarray(Image.fromarray(np.clip(V, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(12)), np.float32)
+            target = float(np.percentile(V[hm > 0.8], 35)) if (hm > 0.8).any() else 40.0
+            gain = np.clip(target / np.maximum(Vb, 1.0), 0.6, 1.0)
+            out = out * (1 - hm + hm * gain)[..., None]
+            print('hair tone evened towards', round(target, 1))
         col_out = out
     elif 'fy' in M.files:
         # the normal map: no hair relief on skin above the brows (its colour says skin: Rocketbox's bumps run on down the
