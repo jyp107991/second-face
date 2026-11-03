@@ -661,6 +661,29 @@ this is an artificial head with eyes pasted on".** Judged this time at the owner
   own, which lie where its lids are; the scanned face's own lid folds, photographed round eyes of another shape, doubled
   them. Never the brows: a brow (hair well darker than its face's cheek, above the eye) of either face keeps the person's
   own (the first try gave W6 the base's thin ginger brows).
+**The owner's fourth round (2026-11-03): "eyes weirdly high, still pasted on an eyeless face; weird messy side stubble";
+"what is this semicircle hairline from ear to ear? that is not how human hair grows".**
+- *The scanned face fitted to the eyes* (`ava/ava_internalise.py`): the source's eye centres (Ava-256: 12 mm behind the
+  points its layout marks as the eyes; a Rocketbox source: `eyes.npy` from `rb_face_source.py`) are landmarks weighted 8
+  in the similarity and the thin-plate fit, so the face lands with its own eyes on the Rocketbox eyes and its lids, folds
+  and brows keep their real relation to them. Moving the eyes to the face instead stretched the upper lid into a grey
+  band, and pushed them out when the source's eye depth (an assumption) was trusted; what the fit leaves (a millimetre or
+  two) moves the eyes in height, their depth still from the socket's rim.
+- *The eye's own zone, one photograph* (`AVA_EYE_KEEP` up and down, `AVA_EYE_SIDE` 17 mm to the side): an ellipse round
+  each eye, the Rocketbox eye, its lids and crease up to the brow's lower edge, out to the outer corner, feathered over 40 %
+  more; a 12 mm sphere let the scanned face's own upper lid show between eye and brow.
+- *A hairline the way hair grows* (`hairline_tidy.py`, `hairline_tidy_finish.py`, rewritten): not the photographed line
+  moved as one smoothed curve (which can only be an arc from ear to ear), but the anatomy of a man's line in the eyes'
+  frame: a nearly flat front (z = H - 3 (x/45)^2, H the photographed midline height plus `lift`), an M-shaped `recede`
+  peaking 40 mm out, the temporal line the photographed temple's own (the depth where hair begins, height by height,
+  fitted straight and averaged over both sides), joined by a rounded corner (a smooth maximum, 3 mm) and running down in
+  front of the ear to the sideburn. The texture is reworked on a map laid round the head (a ray from the skull's centre
+  every quarter degree: seam-free), hair taken from the photographed hair further in and skin from the clean skin further
+  out along the line's own normal, by a smooth shift (no stretch), within 15 mm of the line and, on the skin side above
+  the brows, as far as a receded line left hair; the temples' sparse stubble goes with it. Younger men low and straight
+  with defined corners; older men a modest M.
+- The renders sent are single versions, each at high resolution (an earlier crop came from a sheet's older column).
+
 - Sheets: `docs/evidence/unity/p4/research/qa_black_picks_v2_{women,men}.jpg` (each beside its Rocketbox base and round 1)
   and `qa_black_opened_v1.jpg` (the cap and hood men); jobs `tools/unity/people/data/black_picks_v2.json`. Pitfalls met:
   the scalp step greyed the forehead's own darker skin as if it were stubble (hair now only 8+ darker than the forehead);

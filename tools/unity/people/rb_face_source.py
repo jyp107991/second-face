@@ -48,6 +48,8 @@ for f in face:
         for l in tri: VT.append(l[uvk].uv[:]); idx.append((l.vert.index + 1, len(VT)))
         FL.append(idx)
 np.save(os.path.join(out, 'verts.npy'), P.astype(np.float32))
+ipd = float(np.linalg.norm(eL - eR) * 1000.0)                  # its eyeballs' centres (the subject's left, +x, first)
+np.save(os.path.join(out, 'eyes.npy'), np.array([[ipd / 2, 0, 0], [-ipd / 2, 0, 0]], np.float32))
 with open(os.path.join(out, 'topology.obj'), 'w') as fo:
     for u, v in VT: fo.write(f'vt {u:.6f} {v:.6f}\n')
     for idx in FL: fo.write('f ' + ' '.join(f'{vi}/{ti}' for vi, ti in idx) + '\n')

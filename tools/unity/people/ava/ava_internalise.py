@@ -16,9 +16,10 @@ Writes ffhq_map.npz and ffhq.json in ffhq_bake.py's form, so ffhq_bake_finish.py
 colour, shading and fine detail and retone.py composites it.
 Usage: blender -b --python ava_internalise.py -- <person fbx> <capture dir> <topology obj> <out dir> <name>
 Env: AVA_SHAPE (how much of the capture's shape, 1.0), AVA_TOP (40), AVA_EYE_KEEP (12), AVA_REF (a capture whose
-landmarks are found and carried to this one by vertex), AVA_FRAMED (the source's vertices are already in the eyes' frame:
+landmarks are found and carried to this one by vertex), AVA_EYE_MOVE (mm the eyes may move to the source's own, 10),
+AVA_FRAMED (the source's vertices are already in the eyes' frame:
 a Rocketbox face written out by rb_face_source.py)."""
-import bpy, sys, os, json
+import bpy, sys, os, json, math
 import numpy as np
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
@@ -28,7 +29,7 @@ import rocketbox_features as rbf
 person, cap, topo, out_dir, name = sys.argv[sys.argv.index('--') + 1:][:5]
 os.makedirs(out_dir, exist_ok=True)
 STRENGTH = float(os.environ.get('AVA_SHAPE', 1.0)); TOP = float(os.environ.get('AVA_TOP', 40.0))
-EYE_KEEP = float(os.environ.get('AVA_EYE_KEEP', 12.0)); REACH = 140.0; EAR_X = 72.0; FEATHER = 8.0
+EYE_KEEP = float(os.environ.get('AVA_EYE_KEEP', 12.0)); EK_SIDE = float(os.environ.get('AVA_EYE_SIDE', 17.0)); REACH = 140.0; EAR_X = 72.0; FEATHER = 8.0
 EYE_UV = ((0.393, 0.680), (0.611, 0.679))          # the eyes in Ava-256's texture layout (the same for every capture)
 smooth = lambda e0, e1, x: np.clip((x - e0) / (e1 - e0), 0, 1) ** 2 * (3 - 2 * np.clip((x - e0) / (e1 - e0), 0, 1))
 
@@ -105,9 +106,25 @@ keys = [k for k in FR.L if k in FV.L]
 for F_, X_ in ((FR, P), (FV, Q)):
     if 'alL' in F_.L and abs(F_.L['alL'].at(X_)[0, 0] - F_.L['alR'].at(X_)[0, 0]) > 46: keys = [k for k in keys if k not in ('alL', 'alR')]
 A = np.array([FV.L[k].at(Q)[0] for k in keys], float); B = np.array([FR.L[k].at(P)[0] for k in keys], float)
-ma, mb = A.mean(0), B.mean(0)
-U, Sg, Vt_ = np.linalg.svd((B - mb).T @ (A - ma)); Dg = np.eye(3); Dg[2, 2] = np.sign(np.linalg.det(U @ Vt_))
-R = U @ Dg @ Vt_; s = (Sg * np.diag(Dg)).sum() / ((A - ma) ** 2).sum(); t = mb - s * R @ ma
+# the source's own eyes (an Ava-256 capture's eyeballs lie 12 mm behind the points its texture layout marks as the eyes; a
+# Rocketbox face written out by rb_face_source.py carries its own, eyes.npy), fitted onto the Rocketbox eyes with a heavy
+# weight (owner, 2026-11-03: "eyes weirdly high, pasted on an eyeless face": fitted by the nose, mouth and chin alone the
+# scanned face's orbits sat a few millimetres off the Rocketbox eyes, so lids and brows met eyes that were not theirs;
+# moving the eyes instead stretched the lids). The face is placed so its eyes are where the head's are.
+src_eyes = None
+if os.path.exists(os.path.join(cap, 'eyes.npy')):
+    src_eyes = np.load(os.path.join(cap, 'eyes.npy')).astype(np.float64)
+elif not os.environ.get('AVA_FRAMED'):
+    ie = [int(np.argmin(np.linalg.norm(vuv - np.array(e_), axis=1))) for e_ in EYE_UV]
+    src_eyes = np.array(sorted([Q[i_] + np.array([0.0, 12.0, 0.0]) for i_ in ie], key=lambda v: -v[0]))   # (left, +x, first)
+wt = np.ones(len(A))
+if src_eyes is not None:
+    EW = float(os.environ.get('AVA_EYE_WEIGHT', 8.0))
+    A = np.vstack([A, src_eyes]); B = np.vstack([B, [[ipd / 2, 0, 0], [-ipd / 2, 0, 0]]]); wt = np.concatenate([wt, [EW, EW]])
+    keys = keys + ['eyeL', 'eyeR']
+ma, mb = (wt[:, None] * A).sum(0) / wt.sum(), (wt[:, None] * B).sum(0) / wt.sum()
+U, Sg, Vt_ = np.linalg.svd((B - mb).T @ ((A - ma) * wt[:, None])); Dg = np.eye(3); Dg[2, 2] = np.sign(np.linalg.det(U @ Vt_))
+R = U @ Dg @ Vt_; s = (Sg * np.diag(Dg)).sum() / (wt[:, None] * (A - ma) ** 2).sum(); t = mb - s * R @ ma
 sim = lambda Y: s * Y @ R.T + t
 Ps = sim(A); W = B - Ps; n = len(Ps); lam = 0.5
 K = np.linalg.norm(Ps[:, None] - Ps[None], axis=2)
@@ -196,17 +213,32 @@ dP *= (w * STRENGTH)[:, None]
 # the eyes go with their sockets: where the capture's eyes sit deeper (or further forward) than Rocketbox's, the
 # eyeballs, the lids round them and the eye's bone move with the orbit's own rim (its mean movement 22-34 mm from the
 # eye, at most 6 mm), so a deep-set eye stays deep-set instead of bulging out of a face that moved back round it
+# what the fit leaves between the source's eyes (carried by the same fit as its face) and the Rocketbox eyes: the eyes,
+# their lids and their bones go the rest of the way in height and width (at most AVA_EYE_MOVE mm), in depth with the
+# socket's rim
+EYE_MOVE = float(os.environ.get('AVA_EYE_MOVE', 4.0))         # (what the fit leaves: a little)
 eye_shift = []
-for e in eyes:
-    d = np.linalg.norm(P - e, axis=1); rim = (d > 22) & (d < 34) & (P[:, 1] < 15) & (np.linalg.norm(raw, axis=1) > 0)
-    off = raw[rim].mean(0) * STRENGTH if rim.any() else np.zeros(3)
-    off[0] = 0.0; off *= min(1.0, 6.0 / max(np.linalg.norm(off), 1e-9))
+for k_, e in enumerate(eyes):
+    d = np.linalg.norm(P - e, axis=1)
+    rim = (d > 22) & (d < 34) & (P[:, 1] < 15) & (np.linalg.norm(raw, axis=1) > 0)
+    off = raw[rim].mean(0) if rim.any() else np.zeros(3); off[0] = 0.0
+    off *= min(1.0, 6.0 / max(np.linalg.norm(off), 1e-9))
+    if src_eyes is not None:
+        # height (and a little width) from the source's own eyes; depth still from the socket's rim (the source's eyeball
+        # depth is an assumption, 12 mm behind its marked surface, and scaled with its face it pushed the eyes out)
+        so = sim(src_eyes[k_][None])[0] - e
+        off[2] = float(np.clip(so[2], -EYE_MOVE, EYE_MOVE)); off[0] = float(np.clip(so[0], -3.0, 3.0))
+        off[1] = float(np.clip(off[1], -3.0, 3.0))
+    off = off * STRENGTH
     near_e = 1 - smooth(16, 30, d)
     isl = ball & (d < 20)
     dP += near_e[:, None] * (off[None] - dP) * (~isl)[:, None]
     dP[isl] = off
     eye_shift.append(off)
-print('eyes moved with their sockets by', [o.round(1).tolist() for o in eye_shift], 'mm')
+print('eyes moved to the source\'s own by' if src_eyes is not None else 'eyes moved with their sockets by', [o.round(1).tolist() for o in eye_shift], 'mm')
+# (the skin's eye zones follow the eyes in height and width, never back into the socket: the lids stay in front, and a zone
+# moved back with a deeper eye let the scanned face's own upper lid show above the eye as a grey band)
+eyes = [e + np.array([o[0], 0.0, o[2]]) for e, o in zip(eyes, eye_shift)]
 mag = np.linalg.norm(dP, axis=1)
 print('moved', int((mag > 0.1).sum()), 'vertices; mean', round(float(mag[mag > 0.1].mean()), 2), 'max', round(float(mag.max()), 2), 'mm')
 dL = ((dP / 1000.0) @ Bm) @ np.linalg.inv(Mw[:3, :3]).T
@@ -277,8 +309,14 @@ for i in range(len(Qt)):
     if r is None: continue
     fi, b, dist = r
     UV[i] = b @ VT[TVT[fi]]
-    rr = np.linalg.norm(Qt[i]); e = min(np.linalg.norm(Qt[i] - eyes[0]), np.linalg.norm(Qt[i] - eyes[1]))
-    m = min(1.0, (REACH - rr) / FEATHER) * min(1.0, max(0.0, (e - EYE_KEEP) / FEATHER)) * min(1.0, (EAR_X - abs(Qt[i, 0])) / FEATHER) \
+    rr = np.linalg.norm(Qt[i])
+    # the eye's own zone (the Rocketbox eye, its lids, the crease and the skin up to the brow's lower edge, out to the
+    # outer corner) is one photograph's, the base's: an ellipse round the nearer eye, AVA_EYE_KEEP mm up and down and
+    # EK_SIDE to the side, feathered over 40 % more (a 12 mm sphere let the scanned face's own upper lid show between the
+    # eye and the brow as a grey band once the eyes were fitted onto its own)
+    eo_ = Qt[i] - (eyes[0] if np.linalg.norm(Qt[i] - eyes[0]) < np.linalg.norm(Qt[i] - eyes[1]) else eyes[1])
+    rho = math.sqrt((eo_[0] / EK_SIDE) ** 2 + (eo_[2] / EYE_KEEP) ** 2)
+    m = min(1.0, (REACH - rr) / FEATHER) * min(1.0, max(0.0, (rho - 1.0) / 0.4)) * min(1.0, (EAR_X - abs(Qt[i, 0])) / FEATHER) \
         * min(1.0, (12 - dist) / 4) * min(1.0, max(0.0, (TOP - Qt[i, 2]) / 15.0))
     mask[i] = max(0.0, m)
 cheek = (np.abs(Qt[:, 0]) > 28) & (np.abs(Qt[:, 0]) < 52) & (Qt[:, 2] < -15) & (Qt[:, 2] > -45)

@@ -115,7 +115,7 @@ def run(manifest, k, n):
                 # an Ava-256 person (ava/ava_internalise.py): the capture's real shape and skin on this Rocketbox head
                 r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/ava/ava_internalise.py', '--', f'{out}/{j["name"]}.fbx', j['ava'],
                                     j.get('ava_topo', f'{S}/ext/ava/topo/face_topology.obj'), out, j['name']], capture_output=True, text=True, env=fenv)
-                print(j['name'], 'ava', [l for l in r.stdout.splitlines() if l.startswith(('landmarks', 'moved', 'mapped'))])
+                print(j['name'], 'ava', [l for l in r.stdout.splitlines() if l.startswith(('landmarks', 'moved', 'mapped', 'eyes'))])
             else:
                 r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/ffhq_bake.py', '--', f'{out}/{j["name"]}.fbx', f'{S}/rblib/{j["base"]}', j['ffhq'], out],
                                    capture_output=True, text=True, env=fenv)
@@ -169,6 +169,7 @@ def run(manifest, k, n):
                 if os.path.exists(f'{out}/hairline_map.npz'):
                     r = subprocess.run([PY, f'{HERE}/hairline_tidy_finish.py', out, hj], capture_output=True, text=True)
                     if r.returncode: print('hairline finish failed', j['name'], r.stderr[-300:])
+                    else: print(j['name'], ' | '.join(r.stdout.strip().splitlines()))
                     os.remove(f'{out}/hairline_map.npz')
         subprocess.run([BLENDER, '-b', '--python', f'{HERE}/studio_render.py', '--', rdir, f'{out}/{j["name"]}.fbx'], capture_output=True, text=True, env=env)
         shutil.copy(f'{out}/{j["name"]}.json', f'{rdir}/{j["name"]}.json')

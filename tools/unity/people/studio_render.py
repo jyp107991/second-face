@@ -62,9 +62,9 @@ def hair_matte(nt, bsdf, nm, col):
         n = nt.nodes.new('ShaderNodeMath'); n.operation = 'MULTIPLY_ADD'
         nt.links.new(tm.outputs['Color'], n.inputs[0]); n.inputs[1].default_value = b - a; n.inputs[2].default_value = a
         return n.outputs[0]
-    nt.links.new(lerp(0.55, 0.88), bsdf.inputs['Roughness'])
+    nt.links.new(lerp(0.55, 0.8), bsdf.inputs['Roughness'])
     if 'Specular IOR Level' in bsdf.inputs: nt.links.new(lerp(0.35, 0.12), bsdf.inputs['Specular IOR Level'])
-    if nm is not None: nt.links.new(lerp(1.0, 0.35), nm.inputs['Strength'])
+    if nm is not None: nt.links.new(lerp(1.0, 0.65), nm.inputs['Strength'])     # (the coils' relief kept: no smooth cap)
 
 
 def skin_settings(mesh):
