@@ -165,8 +165,13 @@ def run(manifest, k, n):
                 if os.path.islink(hj): t_ = os.path.realpath(hj); os.remove(hj); shutil.copy(t_, hj)
                 tenv = dict(os.environ, HT_LIFT=str(hl.get('lift', 0)), HT_RECEDE=str(hl.get('recede', 0)), HT_SEED=str(hl.get('seed', 1)))
                 r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/hairline_tidy.py', '--', f'{out}/{j["name"]}.fbx', hj, out], capture_output=True, text=True, env=tenv)
-                print(j['name'], next((l for l in r.stdout.splitlines() if l.startswith('hairline')), r.stderr[-300:]))
+                print(j['name'], ' | '.join(l for l in r.stdout.splitlines() if l.startswith('hairline')) or r.stderr[-300:])
                 if os.path.exists(f'{out}/hairline_map.npz'):
+                    # (HB_HL_DEV: the map and the textures before the finish kept, to work on the finish alone)
+                    if os.environ.get('HB_HL_DEV'):
+                        dd = os.path.join(os.environ['HB_HL_DEV'], j['name']); os.makedirs(dd, exist_ok=True)
+                        for f_ in (f'{out}/hairline_map.npz', hj, hj.replace('_color.jpg', '_normal.jpg')):
+                            if os.path.exists(f_): shutil.copy(os.path.realpath(f_), os.path.join(dd, os.path.basename(f_)))
                     r = subprocess.run([PY, f'{HERE}/hairline_tidy_finish.py', out, hj], capture_output=True, text=True)
                     if r.returncode: print('hairline finish failed', j['name'], r.stderr[-300:])
                     else: print(j['name'], ' | '.join(r.stdout.strip().splitlines()))

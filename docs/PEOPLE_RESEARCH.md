@@ -684,6 +684,43 @@ this is an artificial head with eyes pasted on".** Judged this time at the owner
   with defined corners; older men a modest M.
 - The renders sent are single versions, each at high resolution (an earlier crop came from a sheet's older column).
 
+**The owner's fifth round (2026-11-03): "the hairline is just two perpendicular lines and it sits too high; look at real
+humans".** With it, a photograph of a real lined-up hairline: a lower front, each temple corner cut back into a recessed
+notch, the temporal line down to a forward-pointing temporal point above the ear, the sideburn down into the beard, coily
+hair dense right to the edge. The fourth round's line was a level front and a straight temple line joined by a 3 mm round
+(two half-planes), at the photographed height (75 to 92 mm above the eyes' centres).
+- *What real hairlines are* (sources): the hairline-design landmarks of Garg and Garg ("Decoding facial esthetics to
+  recreate an esthetic hairline", J Cutan Aesthet Surg): the midfrontal point measured up from the glabella; the
+  frontotemporal points at the end of the front; the temporal peak on the line from the frontotemporal point to the
+  lateral canthus (5 of its 8 cm from the frontotemporal point); the frontotemporal angle acute; the sideburn running from
+  the peak down and back. The 5A5P method: the temporal peak at least 2 cm behind the brow's tail. Facial norms for Kenyan
+  men beside African American and North American White norms (J Korean Assoc Oral Maxillofac Surg 2019): trichion to
+  glabella 61.4 +/- 3.2 mm, trichion to nasion about 72 mm.
+- *The line from landmarks on each head's own surface* (`hairline_tidy_finish.py`): the glabella on the midline at the
+  brows' height (17 mm above the eyes' centres; the most forward point of the midline is the forehead's bulge on a sloping
+  forehead and put two scanned faces' lines 11 mm too high); the trichion where the straight distance from it is 56 mm
+  plus the man's `lift` (53 to 57 mm across the men: young men's lines, below the population mean, which counts receded
+  men); the front nearly level to 0.58 of the eyes' span out; a corner cut at about 45 degrees; the recession's deepest
+  point about 19 mm behind the forehead's edge and 13 mm below the front (`recede` moves it up and back: a man's M); the
+  temporal line down and slightly forward to the temporal point (27 mm above the eyes' centres, about 2 cm behind the
+  brow's tail); its underside back and down to the sideburn, whose front edge drops in front of the ear (31 to 34 mm
+  behind the eyes) into the beard. Front points are found on the head by width and height, temple points by depth and
+  height; a centripetal Catmull-Rom curve joins them on the map round the head, and every point's signed distance to it
+  on the head (mm, hair positive) is the target.
+- *Hair and skin laid, not moved*: moving the photograph along the line's normal fanned it wherever the line bends (the
+  corners, the temporal point). The hair is laid in patches cut from the head's own dense hair (1 cm, feathered 2.5 mm,
+  blended so the grain keeps its contrast), measured in millimetres on the head and cut only where the map is true to it
+  (never near the crown, where its columns crowd), in the local hair's own tone; near the line all of it is laid (the
+  photograph's own fine edge hair otherwise stays as a lighter stripe above a lowered line), handing over to the
+  photograph's hair 2 to 4 cm in. Skin laid over stubble takes the clean skin's tone round about and the forehead's grain.
+  The normal map keeps its own broad shape there (the bake's curvature rounds these coarse heads) and takes only the grain.
+  The edge follows the coils (the laid hair's fine light and dark shift it by half a millimetre a standard deviation):
+  crisp at the hair's scale, never a ruled line. Light flecks on the skin beside the line go too.
+- *Pitfall*: a receded corner on a capped head (Military_Male_06; about 200 quads above the brow, ~15 mm a facet) shows a
+  broad facet as a pale sheen under the studio's key light, which no texture fix removed: recession kept moderate on these
+  heads (3 to 3.5 mm).
+- Checked in three views (front, three-quarter and profile) at 150 to 250 %; jobs `tools/unity/people/data/black_picks_v5.json`.
+
 - Sheets: `docs/evidence/unity/p4/research/qa_black_picks_v2_{women,men}.jpg` (each beside its Rocketbox base and round 1)
   and `qa_black_opened_v1.jpg` (the cap and hood men); jobs `tools/unity/people/data/black_picks_v2.json`. Pitfalls met:
   the scalp step greyed the forehead's own darker skin as if it were stubble (hair now only 8+ darker than the forehead);
