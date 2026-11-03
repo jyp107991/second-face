@@ -106,9 +106,8 @@ print('photographed line: midline', round(H0, 1), 'mm above the eyes; temporal l
 # - the glabella G: the brow ridge on the midline, between the brows;
 # - the midfrontal point (trichion) B: up the midline from G until the straight distance from G is the forehead's height,
 #   TRG = 56 + LIFT mm (a young man's line, below the population's mean, which counts receded men);
-# - the front: across the forehead, nearly level (rising a millimetre or two to its ends), to F at 0.6 of the eyes' span
-#   out (about above the outer end of the iris);
-# - the temple corner: from F the line is cut back and down (a corner at about 45 degrees, never a right angle) into the
+# - the front: dead level across the forehead, out to where it turns into the temple (0.73 of the eyes' span out);
+# - the temple corner: there the line turns back and down (on the side of the head, never a kink on the forehead) into the
 #   frontotemporal recession, whose deepest point N is about 16 mm behind the forehead's edge and 14 mm below the front
 #   (RECEDE moves it up and back: the M of a receding man);
 # - the temporal line: from N down and slightly forward to the temporal point D, the forward tip of the temple's hair,
@@ -147,12 +146,14 @@ def pick(z, x=None, y=None, side=1):
 
 
 R_ = RECEDE
-right = [('x', 0.25 * ipd, zB + 0.3), ('x', 0.45 * ipd, zB + 0.6 + 0.3 * R_), ('x', 0.58 * ipd, zB + 0.8 + 0.8 * R_),     # the front
-         ('x', 0.58 * ipd + 8.0 + 0.5 * R_, zB - 6.0 + 1.5 * R_),                                           # the corner cut (45 degrees)
-         ('y', 19.0 + 1.5 * R_, zB - 13.0 + 1.6 * R_),                                                       # the recession's deepest
-         ('y', 15.0 + 0.8 * R_, 0.5 * (zB - 13.0 + 1.6 * R_ + 27.0)),                                        # the temporal line
-         ('y', 9.0, 27.0), ('y', 12.0, 23.0),                                                                # the temporal point
-         ('y', 20.0, 15.0), ('y', 27.0, 6.0), ('y', 31.0, -6.0), ('y', 33.0, -20.0), ('y', 34.0, -34.0)]       # the sideburn
+# (the front dead level, many points along it so the curve cannot wander, out to where the forehead turns into the temple;
+# the turn down and back is on the side of the head, never a kink on the face of the forehead)
+right = [('x', k * ipd, zB + (0.3 * R_ if k > 0.6 else 0.0)) for k in (0.12, 0.25, 0.38, 0.5, 0.62, 0.73)] + [   # the front
+         ('y', 12.0 + 0.8 * R_, zB - 6.0 + 1.2 * R_),                                                       # the corner, turned
+         ('y', 21.0 + 1.5 * R_, zB - 14.0 + 1.6 * R_),                                                      # the recession's deepest
+         ('y', 16.0 + 0.8 * R_, 0.5 * (zB - 14.0 + 1.6 * R_ + 27.0)),                                       # the temporal line
+         ('y', 9.0, 27.0), ('y', 12.0, 23.0),                                                               # the temporal point
+         ('y', 20.0, 15.0), ('y', 27.0, 6.0), ('y', 31.0, -6.0), ('y', 33.0, -20.0), ('y', 34.0, -34.0)]      # the sideburn
 ctrl = []
 for side in (-1, 1):
     seq = right if side > 0 else right[::-1]
@@ -198,10 +199,10 @@ inside = MPath(poly).contains_points(np.stack([ii_.ravel(), jj_.ravel()], -1).as
 d = np.where(inside, dist, -dist)
 rng = np.random.default_rng(int(SEED))
 n1 = box(box(rng.normal(0, 1, (nE, nA)), 8), 8); n2 = box(rng.normal(0, 1, (nE, nA)), 3)
-d = d + n1 / max(np.abs(n1).max(), 1e-6) * 0.6 + n2 / max(np.abs(n2).max(), 1e-6) * 0.35
+d = d + n1 / max(np.abs(n1).max(), 1e-6) * 0.2 + n2 / max(np.abs(n2).max(), 1e-6) * 0.2      # (straight: only the coils roughen it)
 T = smooth(-1.2, 1.2, d)
 print('target line: glabella', np.round(G, 1).tolist(), 'trichion', round(zB, 1), 'mm above the eyes (', round(TRG, 1), 'mm from the glabella),',
-      'temporal point', np.round(P3(ctrl[[len(right) + 1 + 6]])[0], 1).tolist())
+      'temporal point', np.round(P3(ctrl[[len(right) + 1 + 9]])[0], 1).tolist())
 az_ok = smooth(np.radians(101), np.radians(84), np.abs(AZ))
 band = valid * smooth(-15, -12, -np.abs(d)) * smooth(-22, -14, Z) * az_ok
 # (on the skin side, above the brows, as far as a raised line left hair behind: never the brows themselves)

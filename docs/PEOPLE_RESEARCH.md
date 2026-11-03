@@ -720,6 +720,12 @@ hair dense right to the edge. The fourth round's line was a level front and a st
   broad facet as a pale sheen under the studio's key light, which no texture fix removed: recession kept moderate on these
   heads (3 to 3.5 mm).
 - Checked in three views (front, three-quarter and profile) at 150 to 250 %; jobs `tools/unity/people/data/black_picks_v5.json`.
+- *Then (owner, same day): "humans do not have random vertices on the top of the hairline; it should be straight".* The
+  corner cut began at 0.58 of the eyes' span out, on the face of the forehead (about above the outer iris), so the front
+  view showed a kink there. The front now runs dead level (constant height, many points so the curve cannot wander) out
+  to where the forehead turns into the temple (0.73 of the eyes' span), and the turn down and back happens on the side of
+  the head; the line's slow wander is cut to a fifth of a millimetre, leaving only the coils to roughen it. Jobs
+  `tools/unity/people/data/black_picks_v6.json`, sheet `docs/evidence/unity/p4/research/qa_black_men_v6.jpg`.
 
 - Sheets: `docs/evidence/unity/p4/research/qa_black_picks_v2_{women,men}.jpg` (each beside its Rocketbox base and round 1)
   and `qa_black_opened_v1.jpg` (the cap and hood men); jobs `tools/unity/people/data/black_picks_v2.json`. Pitfalls met:
