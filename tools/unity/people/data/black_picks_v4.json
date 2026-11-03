@@ -1,0 +1,308 @@
+{
+ "jobs": [
+  {
+   "name": "r5_W5",
+   "people": "west_african",
+   "sex": "f",
+   "base": "Business_Female_01",
+   "base_people": "west_african",
+   "source": "Black",
+   "sliders": {},
+   "eyes": "dark",
+   "iris_shift": 0.0,
+   "hide": "",
+   "spec": "Black",
+   "tone": 0.7,
+   "undertone": 0.0,
+   "hair": "west_african",
+   "note": "Ava-256 TLD140 internalised",
+   "ava": "$SCRATCH/ext/ava/caps/20230526--1657--TLD140",
+   "bake_env": {
+    "FFHQ_DETAIL": 0.6,
+    "AVA_REF": "$SCRATCH/ext/ava/caps/20230526--1657--TLD140",
+    "FFHQ_LF_BASE": 0.85,
+    "FFHQ_HF_GAIN": 0.9
+   }
+  },
+  {
+   "name": "r5_W6",
+   "people": "west_african",
+   "sex": "f",
+   "base": "Business_Female_01",
+   "base_people": "west_african",
+   "source": "Black",
+   "sliders": {},
+   "eyes": "dark",
+   "iris_shift": 0.0,
+   "hide": "",
+   "spec": "Black",
+   "tone": 0.7,
+   "undertone": 0.0,
+   "hair": "west_african",
+   "note": "Ava-256 UCD539 internalised",
+   "ava": "$SCRATCH/ext/ava/caps/20230330--1421--UCD539",
+   "bake_env": {
+    "FFHQ_DETAIL": 0.6,
+    "AVA_REF": "$SCRATCH/ext/ava/caps/20230526--1657--TLD140",
+    "FFHQ_LF_BASE": 0.85,
+    "FFHQ_HF_GAIN": 0.9
+   }
+  },
+  {
+   "name": "r5_W7",
+   "people": "west_african",
+   "sex": "f",
+   "base": "Business_Female_01",
+   "base_people": "west_african",
+   "source": "Black",
+   "sliders": {},
+   "eyes": "dark",
+   "iris_shift": 0.0,
+   "hide": "",
+   "spec": "Black",
+   "tone": 0.7,
+   "undertone": 0.0,
+   "hair": "west_african",
+   "note": "Ava-256 YYA788 internalised",
+   "ava": "$SCRATCH/ext/ava/caps/20230718--1434--YYA788",
+   "bake_env": {
+    "FFHQ_DETAIL": 0.6,
+    "AVA_REF": "$SCRATCH/ext/ava/caps/20230526--1657--TLD140",
+    "FFHQ_LF_BASE": 0.85,
+    "FFHQ_HF_GAIN": 0.9
+   }
+  },
+  {
+   "name": "r5_M2",
+   "people": "west_african",
+   "sex": "m",
+   "base": "Military_Male_01",
+   "base_people": "west_african",
+   "source": "Black",
+   "sliders": {
+    "mouth-upperlip-volume-incr": 2.0,
+    "mouth-lowerlip-volume-incr": 1.6,
+    "mouth-cupidsbow-incr": 1.0,
+    "cheek-volume-decr": 1.2,
+    "cheek-inner-decr": 1.0,
+    "cheek-bones-incr": 1.0,
+    "chin-width-decr": 0.6
+   },
+   "eyes": "own",
+   "iris_shift": 0.0,
+   "hide": "helmet,hat,mask,flashlight,tools,equipment,knife,pistol,gun,loose_above_brow",
+   "spec": "Black",
+   "tone": "own",
+   "undertone": "own",
+   "hair": "west_african",
+   "note": "M2: fuller lips, sharper face",
+   "tone_shift": 0,
+   "hairline": {
+    "lift": -2,
+    "recede": 0,
+    "seed": 3
+   }
+  },
+  {
+   "name": "r5_M8",
+   "people": "west_african",
+   "sex": "m",
+   "base": "Military_Male_01",
+   "base_people": "west_african",
+   "source": "Black",
+   "sliders": {},
+   "eyes": "dark",
+   "iris_shift": 0.0,
+   "hide": "helmet,hat,mask,flashlight,tools,equipment,knife,pistol,gun,loose_above_brow",
+   "spec": "Black",
+   "tone": 0.7,
+   "undertone": 0.0,
+   "hair": "west_african",
+   "note": "Ava-256 QVU001 internalised",
+   "ava": "$SCRATCH/ext/ava/caps/20230915--1648--QVU001",
+   "bake_env": {
+    "FFHQ_DETAIL": 0.5,
+    "AVA_REF": "$SCRATCH/ext/ava/caps/20230526--1657--TLD140",
+    "FFHQ_LF_BASE": 0.85,
+    "FFHQ_HF_GAIN": 0.75
+   },
+   "hairline": {
+    "lift": 2,
+    "recede": 2,
+    "seed": 4
+   }
+  },
+  {
+   "name": "r5_M11",
+   "people": "west_african",
+   "sex": "m",
+   "base": "Military_Male_01",
+   "base_people": "west_african",
+   "source": "Black",
+   "sliders": {},
+   "eyes": "dark",
+   "iris_shift": 0.0,
+   "hide": "helmet,hat,mask,flashlight,tools,equipment,knife,pistol,gun,loose_above_brow",
+   "spec": "Black",
+   "tone": 0.7,
+   "undertone": 0.0,
+   "hair": "west_african",
+   "note": "Ava-256 HAZ933 internalised",
+   "ava": "$SCRATCH/ext/ava/caps/20220811--1704--HAZ933",
+   "bake_env": {
+    "FFHQ_DETAIL": 0.5,
+    "AVA_REF": "$SCRATCH/ext/ava/caps/20230526--1657--TLD140",
+    "FFHQ_LF_BASE": 0.85,
+    "FFHQ_HF_GAIN": 0.65
+   },
+   "hairline": {
+    "lift": 3,
+    "recede": 6,
+    "seed": 5
+   }
+  },
+  {
+   "name": "r5_M10",
+   "people": "west_african",
+   "sex": "m",
+   "base": "Military_Male_06",
+   "base_people": "west_african",
+   "source": "Black",
+   "sliders": {},
+   "eyes": "dark",
+   "iris_shift": 0.0,
+   "hide": "loose_crown",
+   "spec": "Black",
+   "tone": 0.7,
+   "undertone": 0.0,
+   "hair": "west_african",
+   "note": "Ava-256 RGA575 internalised",
+   "ava": "$SCRATCH/ext/ava/caps/20220307--1342--RGA575",
+   "bake_env": {
+    "FFHQ_DETAIL": 0.5,
+    "AVA_REF": "$SCRATCH/ext/ava/caps/20230526--1657--TLD140",
+    "FFHQ_LF_BASE": 0.85,
+    "FFHQ_HF_GAIN": 0.75
+   },
+   "hairline": {
+    "lift": -3,
+    "recede": 0,
+    "seed": 6
+   }
+  },
+  {
+   "name": "r5_M6",
+   "people": "west_african",
+   "sex": "m",
+   "base": "Military_Male_06",
+   "base_people": "west_african",
+   "source": "Black",
+   "sliders": {},
+   "eyes": "dark",
+   "iris_shift": 0.0,
+   "hide": "loose_crown",
+   "spec": "Black",
+   "tone": 0.7,
+   "undertone": 0.0,
+   "hair": "west_african",
+   "note": "Ava-256 DOT682 internalised",
+   "ava": "$SCRATCH/ext/ava/caps/20210819--0903--DOT682",
+   "bake_env": {
+    "FFHQ_DETAIL": 0.5,
+    "AVA_REF": "$SCRATCH/ext/ava/caps/20230526--1657--TLD140",
+    "FFHQ_LF_BASE": 0.85,
+    "FFHQ_HF_GAIN": 0.75
+   },
+   "hairline": {
+    "lift": 3,
+    "recede": 7,
+    "seed": 7
+   }
+  },
+  {
+   "name": "r5_C1",
+   "people": "west_african",
+   "sex": "m",
+   "base": "Military_Male_06",
+   "base_people": "west_african",
+   "source": "Black",
+   "sliders": {},
+   "eyes": "own",
+   "iris_shift": 0.0,
+   "hide": "loose_crown",
+   "spec": "Black",
+   "tone": "own",
+   "tone_shift": 0.0,
+   "undertone": "own",
+   "hair": "west_african",
+   "note": "cap off",
+   "hairline": {
+    "lift": 0,
+    "recede": 0,
+    "seed": 8
+   }
+  },
+  {
+   "name": "r5_H1",
+   "people": "west_african",
+   "sex": "m",
+   "base": "Military_Male_06",
+   "base_people": "west_african",
+   "source": "Black",
+   "sliders": {},
+   "eyes": "dark",
+   "iris_shift": 0.0,
+   "hide": "loose_crown",
+   "spec": "Black",
+   "tone": 0.7,
+   "undertone": 0.0,
+   "hair": "west_african",
+   "note": "Male_Adult_18 face (hood) on Military_Male_01",
+   "ava": "$SCRATCH/ext/rbsrc_Male_Adult_18",
+   "bake_env": {
+    "AVA_FRAMED": 1,
+    "FFHQ_DETAIL": 0.5,
+    "FFHQ_LF_BASE": 0.85,
+    "FFHQ_HF_GAIN": 0.9,
+    "AVA_EYE_KEEP": 8
+   },
+   "ava_topo": "$SCRATCH/ext/rbsrc_Male_Adult_18/topology.obj",
+   "hairline": {
+    "lift": 2,
+    "recede": 4,
+    "seed": 9
+   }
+  },
+  {
+   "name": "r5_M1",
+   "people": "west_african",
+   "sex": "m",
+   "base": "Male_Adult_12",
+   "base_people": "west_african",
+   "source": "Black",
+   "sliders": {
+    "mouth-upperlip-volume-incr": 2.0,
+    "mouth-lowerlip-volume-incr": 1.6,
+    "mouth-cupidsbow-incr": 1.0,
+    "cheek-volume-decr": 1.2,
+    "cheek-inner-decr": 1.0,
+    "cheek-bones-incr": 1.0,
+    "chin-width-decr": 0.6
+   },
+   "eyes": "own",
+   "iris_shift": 0.0,
+   "hide": "",
+   "spec": "Black",
+   "tone": "own",
+   "undertone": "own",
+   "hair": "west_african",
+   "note": "M1: fuller lips, sharper face",
+   "tone_shift": 0,
+   "hairline": {
+    "lift": -2,
+    "recede": 0,
+    "seed": 10
+   }
+  }
+ ]
+}
