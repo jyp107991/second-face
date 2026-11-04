@@ -727,6 +727,36 @@ hair dense right to the edge. The fourth round's line was a level front and a st
   the head; the line's slow wander is cut to a fifth of a millimetre, leaving only the coils to roughen it. Jobs
   `tools/unity/people/data/black_picks_v6.json`, sheet `docs/evidence/unity/p4/research/qa_black_men_v6.jpg`.
 
+**The locked faces opened (2026-11-04, owner: "fix everything; do not return until all the realism checks are complete").**
+Twenty faces were locked: five under religious dress, fifteen under caps, helmets and masks. Every one is held to the
+written gate (`docs/PEOPLE_QA.md`) and the look before the owner sees it.
+- *Caps that are loose pieces* (eleven heads): the cap is a loose part of the head's own material over a whole,
+  photographed scalp. `rocketbox_gear_off.py` takes it off with its band and badge (`loose_crown`, now also every loose
+  piece above the eyes that reaches 40 mm over them), glasses modelled in the head (`loose_eyewear`: eye pieces kept by
+  size, under 40 mm; a lens spans 53), and a breathing mask's clear visor (`visor`: the opacity material's faces farther
+  than 25 mm from both eyes, the lashes kept). The head is then the person as shipped. Fire_Female_03's head is a man's
+  face, the same as Military_Male_03's, so it opens no woman: he is opened from his own head.
+- *Caps welded into the head* (Delivery_Male_01's beanie, Male_Adult_17's cap, both pilots' caps) and *religious dress*
+  (the five): the face is carried onto a whole Rocketbox head of the same people (`rb_face_source.py` + `ava_internalise.py`),
+  above the brows only skin (`RBF_CAP`), a dark-haired face onto a dark-haired base (a light base's scalp relief,
+  recoloured dark, caught the key light as crumpled leather).
+- *Causes found and fixed*: (1) lips sunk 2 mm (MA15): the profile's upper lip was read 2 mm under the nose on a base whose
+  lip slopes back all the way down, so the fit laid the source's lips on its mouth's line; a lip with no forward peak is
+  now its most prominent point against the span's chord, and the result matches the source's own Burstone distances
+  (2.0 / 1.06 mm against 1.92 / 1.10). (2) A mouth askew (FA06): her corners were read on another crease; the corner
+  search may not wander 5 mm off the mouth's line, and lopsided or narrow corners are no landmark. (3) Beards cut by a
+  straight line in front of the ear, with bare skin to the sideburn and a pale patch at the temple: a bearded face is now
+  carried back to the ear's front (`AVA_EAR_FRONT`), its sideburn with it, fading into the new head's hair over 16 mm,
+  and its beard keeps its own broad colour (`FFHQ_BEARD`; under the base's it was lost). (4) Pale bands at the temples
+  and the side of the face (FA10, MA19): skin in the hijab's or keffiyeh's shadow was taken for hair and left out, and the
+  face kept 15 % of its own broad colour where it met the base's skin; hair is now told by depth of darkness and lack of
+  chroma, light colourless cloth above the brows is left out, and near the carried area's edges the broad colour is
+  wholly the base's (`FFHQ_EDGE`). (5) The lip-gap swap (for parted photographed lips) is off for closed mouths: it left
+  one side of FA06's lip pale.
+- *Gate rules added*: a bearded man's temples are judged above his sideburn; a head's own photographed hairline is held to
+  its own place on the head (within 3 mm of the head as shipped, measured as its height above the eyes, not from the new
+  face's glabella); a balding head as photographed is not held to the forehead band.
+
 - Sheets: `docs/evidence/unity/p4/research/qa_black_picks_v2_{women,men}.jpg` (each beside its Rocketbox base and round 1)
   and `qa_black_opened_v1.jpg` (the cap and hood men); jobs `tools/unity/people/data/black_picks_v2.json`. Pitfalls met:
   the scalp step greyed the forehead's own darker skin as if it were stubble (hair now only 8+ darker than the forehead);

@@ -29,7 +29,7 @@ import rocketbox_features as rbf
 person, cap, topo, out_dir, name = sys.argv[sys.argv.index('--') + 1:][:5]
 os.makedirs(out_dir, exist_ok=True)
 STRENGTH = float(os.environ.get('AVA_SHAPE', 1.0)); TOP = float(os.environ.get('AVA_TOP', 40.0))
-EYE_KEEP = float(os.environ.get('AVA_EYE_KEEP', 12.0)); EK_SIDE = float(os.environ.get('AVA_EYE_SIDE', 17.0)); REACH = 140.0; EAR_X = float(os.environ.get('AVA_EAR_X', 72.0)); FEATHER = 8.0
+EYE_KEEP = float(os.environ.get('AVA_EYE_KEEP', 12.0)); EK_SIDE = float(os.environ.get('AVA_EYE_SIDE', 17.0)); REACH = float(os.environ.get('AVA_REACH', 140.0)); EAR_X = float(os.environ.get('AVA_EAR_X', 72.0)); FEATHER = 8.0
 EYE_UV = ((0.393, 0.680), (0.611, 0.679))          # the eyes in Ava-256's texture layout (the same for every capture)
 smooth = lambda e0, e1, x: np.clip((x - e0) / (e1 - e0), 0, 1) ** 2 * (3 - 2 * np.clip((x - e0) / (e1 - e0), 0, 1))
 

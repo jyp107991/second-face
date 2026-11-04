@@ -149,6 +149,9 @@ G = np.array([0.0, yc[jg], zc[jg]])
 jt = next((j for j in range(jg + 10, nE - 8) if valid[j, i0] and zc[j] > 35 and col_[j:j + 8].all()), None)
 if jt is not None:
     res['hairline_trg_mm'] = round(float(np.linalg.norm(np.array([0, yc[jt], zc[jt]]) - G)), 1)
+    # (the line's own height on the head, above the eyes: where a carried face's brow sits deeper or higher than the
+    # base's, the trichion-glabella distance changes though the line has not moved)
+    res['hairline_z_mm'] = round(float(zc[jt]), 1)
     edge = []
     for xs in np.linspace(-0.6 * 63, 0.6 * 63, 25):
         sel = front & (np.abs(X - xs) < 1.0) & (Z > 30) & (Z < 110)
@@ -186,7 +189,11 @@ if len(prof) > 50:
     prn = pick(-55, -15, np.argmin)
     sn = pick(prn[0] - 20, prn[0] - 4, np.argmax) if prn else None
     ls = pick(sn[0] - 20, sn[0] - 3, np.argmin) if sn else None
-    li = pick(ls[0] - 24, ls[0] - 5, np.argmin) if ls else None
+    # (the mouth's line, the deepest point of the notch under the upper lip, then the lower lip, the most forward point under
+    # that notch: taken as the most forward point within 24 mm of the upper lip, it fell on the upper lip's own slope where
+    # the upper lip stands out more, Military_Male_05, and the mouth's measures were read inside the upper lip)
+    sto = pick(ls[0] - 14, ls[0] - 2, np.argmax) if ls else None
+    li = pick(sto[0] - 12, sto[0] - 0.5, np.argmin) if sto else None
     sm = pick(li[0] - 22, li[0] - 3, np.argmax) if li else None
     pg = pick(sm[0] - 26, sm[0] - 2, np.argmin) if sm else None
     if pg:
@@ -289,8 +296,7 @@ if 'PU_L' in M.files:
 lip_pts = locals().get('ls'), locals().get('li')
 if all(p_ is not None for p_ in lip_pts) and skin.any():
     zLs, zLi = float(lip_pts[0][0]), float(lip_pts[1][0])
-    kk = np.where((zz < zLs) & (zz > zLi))[0]
-    zSt = float(zz[kk[np.argmax(yy[kk])]]) if len(kk) else 0.5 * (zLs + zLi)          # (the mouth's line on the midline)
+    zSt = float(sto[0]) if locals().get('sto') is not None else 0.5 * (zLs + zLi)       # (the mouth's line on the midline)
     a_s, b_s = float(np.median(LAB[..., 1][skin])), float(np.median(LAB[..., 2][skin]))
     red = blur((LAB[..., 1] - a_s) - 0.5 * (LAB[..., 2] - b_s), r_mm(1.0), front)    # (lips: redder, less yellow than skin)
     row = front & (np.abs(Z - zSt) < 2.0) & (np.abs(X) < 34) & (red > 3.0)

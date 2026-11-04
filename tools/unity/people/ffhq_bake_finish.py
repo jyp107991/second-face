@@ -45,24 +45,37 @@ if 'mouth' in M:
 # the new head's bare temple or forehead (owner: "facial hair like blocks misplaced on faces"): the new head's own skin
 # and hair stay there. Its brows and lids are kept, and its beard, which lies below the cheek line.
 def sideburn_zone(q_):
-    # (in front of each ear, within 22 mm of its front and below the ear's top: a sideburn; never the temple beside the
-    # eye, where a source's long side hair under its cap read as dark bars, owner's MA15)
+    # (in front of each ear, within about 22 mm of its front and below the ear's top: a sideburn; never the temple beside
+    # the eye, where a source's long side hair under its cap read as dark bars, owner's MA15. A weight, 0..1: the sideburn
+    # fades into the new head's own hair above over 16 mm, never stopping at a line, MA15's second try)
     if 'ear_y' in M:
         ey = np.where(q_[:, 0] > 0, M['ear_y'][0], M['ear_y'][1])
-        return (np.abs(q_[:, 0]) > 50) & (q_[:, 1] > ey - 22) & (q_[:, 2] < 4)
-    return np.zeros(len(q_), bool)
+        sm = lambda a, b, v: np.clip((v - a) / (b - a), 0, 1)
+        return sm(46, 54, np.abs(q_[:, 0])) * sm(-28, -18, q_[:, 1] - ey) * (1 - sm(-12, 4, q_[:, 2]))
+    return np.zeros(len(q_), np.float32)
 if 'eo' in M and os.environ.get('FFHQ_HAIR_ABOVE', '0') != '1':
     eo = M['eo']; hl = srgb_to_lab(rgb * 255.0)
     ref_L = float(np.median(hl[on & cheek][:, 0])) if (on & cheek).sum() > 20 else 50.0
     brow = (eo[:, 2] > 4) & (eo[:, 2] < 30) & (np.abs(eo[:, 0]) < 26)
     lids = np.linalg.norm(eo, axis=1) < 15
-    hair_above = on & (eo[:, 2] > -12) & ~brow & ~lids & (hl[:, 0] < ref_L - 16)
+    # (a weight: as dark as hair, from 18 L* under the cheek's over 8, and above the cheek line, by 6 mm; skin in a hijab's
+    # or a keffiyeh's shadow is not hair, it keeps its skin's hue: FA10's and MA19's shaded temples were taken for hair and
+    # left as pale bands. Feathered in the texture below, so no carried edge is a line)
+    hC = np.hypot(hl[:, 1], hl[:, 2]); refC = float(np.median(hC[on & cheek])) if (on & cheek).sum() > 20 else 20.0
+    hairlike = np.clip((ref_L - 18 - hl[:, 0]) / 8, 0, 1) * np.clip((0.85 * refC - hC) / (0.3 * refC) + (ref_L - 32 - hl[:, 0]) / 8, 0, 1)
+    hair_above = on * np.clip((eo[:, 2] + 15) / 6, 0, 1) * (~brow) * (~lids) * hairlike
+    # (and a head cloth's light edge above the brows, carried in faces whose centre was skin: light and colourless, as no
+    # skin is; MA19's keffiyeh left a pale line across his forehead)
+    cloth = on * np.clip((eo[:, 2] - 8) / 6, 0, 1) * np.clip((hl[:, 0] - ref_L - 4) / 6, 0, 1) * np.clip((0.6 * refC - hC) / (0.2 * refC), 0, 1)
+    hair_above = np.maximum(hair_above, cloth)
     if os.environ.get('FFHQ_BEARD') == '1' and 'q' in M:
         # (a bearded man's sideburn, on the side in front of the ear and below its top, joins his beard to his hair: it is
         # his own and comes with the beard, never left as a bare gap between the two)
-        q_ = M['q']; hair_above &= ~sideburn_zone(q_)
-    mask = np.where(hair_above, 0.0, mask); on = mask > 0
-    print('hair above the cheek line kept from the new head', int(hair_above.sum()))
+        q_ = M['q']; hair_above = hair_above * (1 - sideburn_zone(q_))
+    hi = np.zeros((H, W), np.float32); hi[ys, xs] = hair_above
+    hb = np.asarray(Image.fromarray((np.clip(hi, 0, 1) * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(0.005 * W)), np.float32)[ys, xs] / 255.0
+    mask = mask * (1 - np.clip(np.maximum(hair_above, hb) * 1.2, 0, 1)); on = mask > 0
+    print('hair above the cheek line kept from the new head', int((hair_above > 0.5).sum()))
 # harmonised to Rocketbox's house style, two ways. (1) Colour: FFHQ-UV's normalisation dulls the skin (a dark face's
 # cheek at chroma 13 where Rocketbox's photographed dark faces sit at 27-38, hue 49-64 degrees: Male_Adult_12,
 # Military_Male_01, Business_Female_01), so the face's chroma is brought to Rocketbox's for its lightness and its hue
@@ -154,14 +167,23 @@ if LFB > 0:
     new = np.stack([cf[0] * B_lf[:, 0] / max(cb[0], 1.0), cf[1] + (B_lf[:, 1] - cb[1]) * cfC / max(cbC, 1.0),
                     cf[2] + (B_lf[:, 2] - cb[2]) * cfC / max(cbC, 1.0)], -1) + hf
     lfb = (LFB + (1 - LFB) * orbit_w)[:, None] if np.ndim(orbit_w) else LFB     # (the orbits wholly: none of the face's own folds)
+    # near the carried face's edges (the temples, the jaw's angle, the neck) its broad colour is wholly the base's: a
+    # source shaded by its hijab or cap left a faint band where its last 15 % met the base's own skin (FA10's side, owner
+    # 2026-11-04 "a seam across the side of the face"); the face's own broad colour stays only well inside its area
+    if os.environ.get('FFHQ_EDGE', '1') != '0':
+        mt = np.zeros((H, W), np.float32); mt[ys, xs] = mask
+        mb = np.asarray(Image.fromarray((np.clip(mt, 0, 1) * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.012 * W)), np.float32)[ys[on], xs[on]] / 255.0
+        ew = np.clip((0.92 - mb) / 0.3, 0, 1)
+        lfb = np.broadcast_to(lfb, (len(lab), 1)) if np.ndim(lfb) else np.full((len(lab), 1), float(lfb))
+        lfb = lfb + (1 - lfb) * ew[:, None]
+        print('edges: the base\'s broad colour on', int((ew > 0.5).sum()), 'texels')
     if os.environ.get('FFHQ_BEARD') == '1' and 'eo' in M:
         # (a beard is broad and dark: under the base's broad colour it was lost, owner's MA19; it keeps its own, its density
         # and its natural edge, wherever the face's own broad lightness is well under its cheek's below the cheek line)
-        # (the lips too keep their own: under the base's broad colour the beard round the mouth was lost in a pale block,
-        # owner's MA15; the nostrils' shadow is the base's)
+        # (the lips and nostrils too keep their own: under the base's broad colour the beard round the mouth was lost in a
+        # pale block, MA15, and a zone left out under the nose cut a moustache with a straight step, Delivery_Male_01)
         eo_b = M['eo'][on]
-        nose = ((np.abs(M['q'][on][:, 0]) < 20) & (eo_b[:, 2] < -30) & (eo_b[:, 2] > -55)) if 'q' in M else np.zeros(len(eo_b), bool)
-        bw = np.clip((cf[0] - 5 - F_lf[:, 0]) / 8, 0, 1) * np.clip((-6 - eo_b[:, 2]) / 8, 0, 1) * (~nose)
+        bw = np.clip((cf[0] - 5 - F_lf[:, 0]) / 8, 0, 1) * np.clip((-6 - eo_b[:, 2]) / 8, 0, 1)
         if 'q' in M:
             q_b = M['q'][on]; bw = np.maximum(bw, np.clip((cf[0] - 5 - F_lf[:, 0]) / 8, 0, 1) * sideburn_zone(q_b))
         lfb = (np.broadcast_to(lfb, (len(lab), 1)) if np.ndim(lfb) else np.full((len(lab), 1), lfb)) * (1 - bw[:, None])

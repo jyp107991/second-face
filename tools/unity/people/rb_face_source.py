@@ -61,7 +61,8 @@ for f in face:
         # the new head's own)
         zc = float(np.mean([P[v.index, 2] for v in f.verts]))
         hue = math.degrees(math.atan2(b_, a_))
-        if zc > 18.0 and not (32.0 <= hue <= 85.0 and ch > 7.0 and 25.0 < L_ < 92.0): continue
+        # (above the brows, 35 mm over the eyes: the brows, dark and colourless, are the face's own; the caps begin at 43)
+        if zc > 35.0 and not (32.0 <= hue <= 85.0 and ch > 7.0 and 25.0 < L_ < 92.0): continue
     kept.append(f)
 if len(kept) < len(face): print('face source: cloth left out,', len(face) - len(kept), 'faces')
 face = kept

@@ -61,8 +61,15 @@ def check(path, sex, short=False, own=None, base=None, bald=False, beard=False):
         # (a line not drawn by us, the head's own as photographed: within 3 mm of that head as shipped is its own; real
         # Rocketbox men measure up to 70 mm, Police_Male_07; a drawn line, --short, is always held to the band)
         bt = b.get('hairline_trg_mm')
-        own_line = not short and bt is not None and abs(r['hairline_trg_mm'] - bt) <= 3.0
-        print(f'{"ok  " if ok or own_line else "FAIL"} {"hairline_trg_mm":20s} {r["hairline_trg_mm"]:8.2f}   (real foreheads {lo}-{hi} mm' + (f'; the head as shipped {bt:.1f}, its own line within 3' if bt is not None and not short else '') + ')')
+        # (the line itself in place on the head: its height above the eyes within 3 mm of the head as shipped; where the
+        # carried face's brow sits deeper or higher, the distance from the glabella changes without the line moving)
+        if r.get('hairline_z_mm') is not None and b.get('hairline_z_mm') is not None:
+            own_line = not short and abs(r['hairline_z_mm'] - b['hairline_z_mm']) <= 3.0
+            note = f'; its line {r["hairline_z_mm"]:.1f} mm above the eyes, the head as shipped {b["hairline_z_mm"]:.1f}, its own within 3'
+        else:
+            own_line = not short and bt is not None and abs(r['hairline_trg_mm'] - bt) <= 3.0
+            note = f'; the head as shipped {bt:.1f}, its own line within 3' if bt is not None else ''
+        print(f'{"ok  " if ok or own_line else "FAIL"} {"hairline_trg_mm":20s} {r["hairline_trg_mm"]:8.2f}   (real foreheads {lo}-{hi} mm' + (note if not short else '') + ')')
         ok = ok or own_line
         if not ok: fails.append('hairline_trg_mm')
     for k, lim in ABS.items():
