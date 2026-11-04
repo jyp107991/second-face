@@ -3,7 +3,8 @@
 face, its first hit on the head's skin and that point's place in the texture. Rays round a head from its centre (the
 hairline's map) meet the mouth's inside before the chin; a face is judged the way it is seen.
 Usage: blender -b --python qa_map.py -- <person fbx> <its head colour jpg> <out dir>
-Writes <out>/qa_map.npz: size (texture), PU, PV (texture px), PXYZ (mm, eyes' frame), grid (x0, z0, step)."""
+Writes <out>/qa_map.npz: size (texture), PU, PV (texture px), PXYZ (mm, eyes' frame), grid (x0, z0, step); the same for each
+side, seen from the subject's left and right (PU_L, PV_L, PXYZ_L, PU_R, ...; sgrid: y0, z0, step)."""
 import bpy, sys, os
 import numpy as np
 from mathutils import Vector
@@ -65,5 +66,28 @@ for j, z in enumerate(zs):
         wv = (d11 * d20 - d01 * d21) / den; ww = (d00 * d21 - d01 * d20) / den
         uv = np.array([1 - wv - ww, wv, ww]) @ TUV[fi]
         PU[j, i] = uv[0] * W - 0.5; PV[j, i] = (1 - uv[1]) * H - 0.5; PXYZ[j, i] = p
-np.savez_compressed(os.path.join(out_dir, 'qa_map.npz'), size=np.array([H, W]), PU=PU, PV=PV, PXYZ=PXYZ, grid=np.array([X0, Z0, STEP]))
-print('qa map', PU.shape, int(np.isfinite(PU).sum()), 'hits')
+# and each side, seen straight on from the subject's left (+x) and right (-x): the temples, sideburns and the beard's
+# join, which the front sees edge-on
+Y0, Y1 = -70.0, 120.0
+ys_ = np.arange(Y0, Y1 + 1e-9, STEP)
+side = {}
+for tag, sx in (('L', 1.0), ('R', -1.0)):
+    SU = np.full((len(zs), len(ys_)), np.nan, np.float32); SV = SU.copy(); SP = np.full((len(zs), len(ys_), 3), np.nan, np.float32)
+    dv = Vector((-sx, 0.0, 0.0))
+    for j, z in enumerate(zs):
+        for i, y in enumerate(ys_):
+            loc, nrm, fi, dist = bvh.ray_cast(Vector((sx * 300.0, float(y), float(z))), dv, 600.0)
+            if fi is None: continue
+            a_, b_, c_ = (P[k] for k in TR[fi]); p = np.array(loc)
+            v0, v1, v2 = b_ - a_, c_ - a_, p - a_
+            d00, d01, d11, d20, d21 = v0 @ v0, v0 @ v1, v1 @ v1, v2 @ v0, v2 @ v1
+            den = d00 * d11 - d01 * d01
+            if abs(den) < 1e-12: continue
+            wv = (d11 * d20 - d01 * d21) / den; ww = (d00 * d21 - d01 * d20) / den
+            uv = np.array([1 - wv - ww, wv, ww]) @ TUV[fi]
+            SU[j, i] = uv[0] * W - 0.5; SV[j, i] = (1 - uv[1]) * H - 0.5; SP[j, i] = p
+    side[tag] = (SU, SV, SP)
+np.savez_compressed(os.path.join(out_dir, 'qa_map.npz'), size=np.array([H, W]), PU=PU, PV=PV, PXYZ=PXYZ, grid=np.array([X0, Z0, STEP]),
+                    PU_L=side['L'][0], PV_L=side['L'][1], PXYZ_L=side['L'][2], PU_R=side['R'][0], PV_R=side['R'][1], PXYZ_R=side['R'][2],
+                    sgrid=np.array([Y0, Z0, STEP]))
+print('qa map', PU.shape, int(np.isfinite(PU).sum()), 'hits; sides', side['L'][0].shape)

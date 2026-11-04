@@ -9,7 +9,7 @@ photographed people, the game's house style. Measures are taken against them, ne
 
 1. **Build** (harmonise_batch.py). Only from a Rocketbox base or a real scan; nothing painted or modelled from scratch.
 2. **Measured gate** (automatic, in the batch: `qa_map.py` → `qa_realism.py` → `qa_gate.py`): the head's texture read as
-   the face is seen (straight on, 0.4 mm a pixel) and measured against the same measures on 27 shipped Rocketbox heads
+   the face is seen (straight on, 0.4 mm a pixel, and each side straight on) and measured against the same measures on 27 shipped Rocketbox heads
    (`tools/unity/people/data/qa_reference.json`). The verdict and a map of what was measured (skin read, regions, steps
    and specks found) are written beside the renders (`<name>_qa.json`, `<name>_qa.jpg`). A FAIL stops the person.
 3. **Renders** at 250 % (1280 × 1600): front, three-quarter and profile, in the one studio (`studio_render.py`).
@@ -32,6 +32,11 @@ Each limit is the shipped heads' 95th percentile with a tenth more (lower is bet
 | eye_ring: L* step from the lids' ring to the skin beyond | "eyes pasted on to an eyeless face", a grey band over the eye | shipped p95 × 1.1 |
 | beard_edge_grad: hardness of a beard's boundary | "facial hair like blocks misplaced on faces" | shipped bearded men's p95 × 1.1 |
 | beard_high_frac: beard-dark skin just under the eyes | a beard patch where none grows | shipped p95 × 1.1 |
+| lip_upper_mm, lip_lower_mm: each lip's distance in front of the subnasale-pogonion line (Burstone), on the midline profile | "lips sink into face weirdly" | within 1.5 mm of the real face's own |
+| lip_lr_dE, lip_pale_frac, mouth_line_asym_mm, mouth_corner_asym_mm: the lips' colour left against right, the share of the lips that has lost its colour, the mouth's line and corners left against right | "whats wrong with this lip? colour and symmetry off" | the worse of shipped p95 and the face's own, × 1.1 |
+| side_islands_mm2, side_patchiness: each side seen straight on: hair joined to neither the scalp's hair nor the beard, and how patchy the side hair is | "hair on side is all patchy and uneven and not aligned to either facial hair or hair on top" | against the head it is built on as shipped |
+| side_seam: a long sharp tone step on the side of the face | a seam across the temple | shipped p95 × 1.1 |
+| zone_dark: dark patches at the temples and cheekbones the head as shipped does not have | carried hair, "blocks misplaced on faces" | at most 0.08 more than the head as shipped |
 | hairline_trg_mm: trichion's distance from the glabella | "sits too high" | men 52-64 mm, women 49-62 mm (Kenyan and African American norms, 61 ± 3 mm in men) |
 | hairline_wobble_mm, hairline_tilt_mm (short hair) | "random vertices", "two perpendicular lines" | 2.5 mm each (straight and level) |
 
@@ -71,3 +76,9 @@ never covered.
 | semicircle hairline, two perpendicular lines, too high, random vertices | a line built from a smoothed photograph, then half-planes, then a corner cut on the forehead | hairline_trg_mm, wobble, tilt; the look (hairline) |
 | messy side stubble | the photograph's sparse temple hair left beside a new line | the look (hairline) |
 | a pale patch at a receding corner | a coarse facet catching the key light | the look (skin) |
+| a face carried with its painted hijab: a pale oval band round the face | the cloth in the face's own texture | seam; the face source now leaves cloth out |
+| lips sunk into the face in profile | lips laid on the inside of the source's mouth | lip_upper_mm, lip_lower_mm |
+| side hair patchy, not joined to the beard or the hair on top; a smudge at the temple | the source's temple hair and beard carried onto a head with its own sideburn | zone_dark, side_islands_mm2, side_patchiness |
+| a lip that lost its colour, the mouth's corner askew | the source's lip gap swapped for the new head's lips | lip_lr_dE, lip_pale_frac, mouth_corner_asym_mm |
+| the skullcap not taken off | the cap welded into the head mesh | the look (style: no religious dress) |
+| a seam across the side of the face at ear height | the carried face's edge | side_seam; the look |

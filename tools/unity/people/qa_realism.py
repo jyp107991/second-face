@@ -16,6 +16,8 @@ Measures (all on clean skin unless said; L* is CIE lightness):
 - beard_edge_grad (when a beard is painted): how hard its boundary is (darkness per mm at the 99th percentile): a block's
   edge is a step; beard_high_frac: how much of the mid-cheek, under the cheekbone, is beard-dark (a patch where none grows).
 Skin is told by its hue (32-85 degrees, chroma over 7): cloth, white, red patterns and lips never count as skin.
+- lip_lr_dE, lip_pale_frac, mouth_line_asym_mm, mouth_corner_asym_mm: the lips' colour left against right, the share of
+  the lips that has lost its colour, and the mouth's line and corners left against right.
 Usage: python3 qa_realism.py <qa_map dir> <head colour jpg> <out json> [<label>]"""
 import json, os, sys
 import numpy as np
@@ -93,6 +95,7 @@ for k, m in regions.items():
     med[k] = round(float(np.median(L[s])), 2) if s.sum() > 200 else None
 have = [v for v in med.values() if v is not None]
 res = {'label': label, 'region_L': med, 'skin_px': int(skin.sum())}
+Cskin = float(np.median(chroma[skin])) if skin.any() else 18.0
 res['tone_spread'] = round(max(have) - min(have), 2) if len(have) > 2 else None
 sd = [abs(med[a] - med[b]) for a, b in (('temple_L', 'temple_R'), ('cheek_L', 'cheek_R')) if med[a] is not None and med[b] is not None]
 res['side_diff'] = round(max(sd), 2) if sd else None
@@ -134,7 +137,6 @@ for e in eyes:
     ok = front & (L > 0.55 * Lmed) & ~((Z > 6) & (L < Lloc - 6))
     ring = ok & (dd > 13) & (dd < 19)
     out_ = ok & (dd > 20) & (dd < 27) & (Z > -30)
-    if os.environ.get('QA_DEBUG'): print('eye ring px', int(ring.sum()), int(out_.sum()))
     if ring.sum() > 100 and out_.sum() > 100: er.append(abs(float(np.median(L[ring])) - float(np.median(L[out_]))))
 res['eye_ring'] = round(max(er), 2) if er else None
 # the hairline: hair above the forehead, where the skin ends going up the midline and across
@@ -169,6 +171,155 @@ if (bz & (dk > 0.5)).sum() * GSTEP * GSTEP > 400:                          # (4 
     res['beard_edge_grad'] = round(float(np.percentile(g[edge], 99)), 3) if edge.sum() > 200 else None
     high = front & skinlike & (np.abs(X) > 28) & (np.abs(X) < 42) & (Z > -28) & (Z < -18)     # (mid-cheek, under the cheekbone)
     res['beard_high_frac'] = round(float((dk[high] > 0.5).mean()), 3) if high.sum() > 200 else None
+# the lips in profile (owner: "lips sink into face weirdly"): on the midline, each lip's distance in front of the line from
+# under the nose (subnasale) to the chin's front (soft-tissue pogonion), Burstone's line; a sunken mouth sits behind it
+mid = valid & (np.abs(X) < 1.5)
+prof = {}
+for j in range(nE):
+    sel = mid[j]
+    if sel.any(): prof[float(Z[j][sel].mean())] = float(np.median(Y[j][sel]))
+if len(prof) > 50:
+    zz = np.array(sorted(prof)); yy = np.array([prof[z] for z in zz])
+    def pick(lo, hi, fn):
+        k = np.where((zz > lo) & (zz < hi))[0]
+        return (zz[k[fn(yy[k])]], yy[k[fn(yy[k])]]) if len(k) else None
+    prn = pick(-55, -15, np.argmin)
+    sn = pick(prn[0] - 20, prn[0] - 4, np.argmax) if prn else None
+    ls = pick(sn[0] - 20, sn[0] - 3, np.argmin) if sn else None
+    li = pick(ls[0] - 24, ls[0] - 5, np.argmin) if ls else None
+    sm = pick(li[0] - 22, li[0] - 3, np.argmax) if li else None
+    pg = pick(sm[0] - 26, sm[0] - 2, np.argmin) if sm else None
+    if pg:
+        a = np.array([sn[1], sn[0]]); b = np.array([pg[1], pg[0]]); dv_ = (b - a) / np.linalg.norm(b - a)
+        nv = np.array([-dv_[1], dv_[0]])
+        if nv[0] > 0: nv = -nv                                              # (forward is towards -y)
+        res['lip_upper_mm'] = round(float((np.array([ls[1], ls[0]]) - a) @ nv), 2)
+        res['lip_lower_mm'] = round(float((np.array([li[1], li[0]]) - a) @ nv), 2)
+# each side, seen straight on (owner: "hair on side is all patchy and uneven and not aligned to either facial hair or hair
+# on top"): islands of hair joined to neither the scalp's hair nor the beard, the side hair's patchiness, and, on a bearded
+# man, the bare gap between his sideburn and his beard
+if 'PU_L' in M.files:
+    from scipy import ndimage
+    SY0, SZ0, SST = (float(v) for v in M['sgrid'])
+    isl, patch, gaps, side_seams = [], [], [], []
+    for t in ('L', 'R'):
+        SU, SV, SP = M['PU_' + t], M['PV_' + t], M['PXYZ_' + t]
+        sv = np.isfinite(SU); SX, SYy, SZz = (np.nan_to_num(SP[..., k]).astype(np.float64) for k in range(3))
+        SL = lab(np.where(sv[..., None], bil(col, SV * hh / H, SU * ww / W), 0.0))[..., 0]
+        rs = lambda mm: max(1, int(round(mm / SST / 1.7)))
+        ax_ = np.abs(SX); ax_s = blur(ax_, rs(12), sv)
+        # (the ear: its rim stands off the skull, and rim, hollow and tragus make the side's only sharp changes of depth)
+        gyx, gxx = np.gradient(np.where(sv, ax_, np.nan)); rough = np.nan_to_num(np.hypot(gyx, gxx)) / SST
+        ear = sv & (SYy > 30) & (SZz > -50) & (SZz < 30) & ((ax_ > ax_s + 5) | (blur((rough > 1.2).astype(np.float64), rs(2), sv) > 0.25))
+        if ear.any():
+            labe, ne = ndimage.label(ear)
+            if ne: ear = labe == (1 + int(np.argmax(ndimage.sum(np.ones_like(ax_), labe, range(1, ne + 1)))))
+        # (the whole ear: its rim stands off the skull; the hollow and the lobe inside the rim's outline are ear too)
+        if ear.any():
+            ear = blur(ear.astype(np.float64), rs(6), sv) > 0.02                # (the tragus and the hollow's front, the lobe's shadow)
+            hull = ear.copy()
+            for j in np.where(ear.any(1))[0]:
+                k = np.where(ear[j])[0]; hull[j, k.min():k.max() + 1] = True
+            for i in np.where(ear.any(0))[0]:
+                k = np.where(ear[:, i])[0]; hull[k.min():k.max() + 1, i] = True
+            ear = blur(hull.astype(np.float64), rs(4), sv) > 0.02
+        zone = sv & ~ear & (SYy > 5) & (SYy < 105) & (SZz > -95) & (SZz < 70) & ~((SYy < 18) & (SZz > -15) & (SZz < 32))
+        SLAB = lab(np.where(sv[..., None], bil(col, SV * hh / H, SU * ww / W), 0.0)); SC = np.hypot(SLAB[..., 1], SLAB[..., 2])
+        dark_ = np.clip((0.85 * Lmed - blur(SL, rs(1.2), sv)) / (0.35 * Lmed), 0, 1)
+        grey_ = np.clip((0.55 * Cskin - blur(SC, rs(1.2), sv)) / (0.3 * Cskin), 0, 1) * (blur(SL, rs(1.2), sv) > 0.5 * Lmed)   # (grey and white hair: no skin's colour)
+        dks = np.maximum(dark_, grey_) * zone
+        # (stubble is many small dark points: read as one area at the scale of a couple of millimetres)
+        hairm = ndimage.binary_closing(blur(dks, rs(1.5), zone) > 0.45, iterations=max(1, rs(1.5))) & zone
+        labl, n = ndimage.label(hairm)
+        if n:
+            areas = ndimage.sum(np.ones_like(dks), labl, range(1, n + 1)) * SST * SST
+            tops = ndimage.maximum(SZz, labl, range(1, n + 1)); mids = ndimage.mean(SZz, labl, range(1, n + 1))
+            scalp_set = {i for i in range(n) if tops[i] > 45}
+            beard_set = {i for i in range(n) if mids[i] < -15 and areas[i] > 150}
+            scalp_i = max(scalp_set, key=lambda i: areas[i]) if scalp_set else -1
+            beard_i = max(beard_set, key=lambda i: areas[i]) if beard_set else -1
+            isl.append(float(sum(a for i, a in enumerate(areas) if i not in scalp_set | beard_set and a > 40)))
+            # (a beard and a sideburn: rows of the band in front of the ear, from the scalp's hair down to the beard)
+            if beard_i >= 0 and ear.any():
+                yf = float(np.percentile(SYy[ear], 3))
+                band = zone & (SYy > yf - 22) & (SYy < yf - 2)
+                rows = [(float(SZz[j][band[j]].mean()), float(dks[j][band[j]].mean())) for j in range(dks.shape[0]) if band[j].sum() > 10]
+                rows = sorted(rows)
+                hi = [z for z, d in rows if d > 0.5]
+                bz_ = [z for z, d in rows if d > 0.5 and z < -10]; sz_ = [z for z, d in rows if d > 0.5 and z > -10]
+                if bz_ and sz_:
+                    lo_, up_ = max(bz_), min(sz_)
+                    gap, run, last = 0.0, 0.0, None
+                    for z, d in rows:
+                        if lo_ < z < up_:
+                            if d < 0.25: run += (z - last) if last is not None else 0.0
+                            else: run = 0.0
+                            gap = max(gap, run)
+                        last = z
+                    gaps.append(round(gap, 1))
+                else: gaps.append(99.0 if (bz_ and not sz_) else 0.0)
+        if os.environ.get('QA_DEBUG') and n:
+            im = np.clip(np.where(sv[..., None], bil(col, SV * hh / H, SU * ww / W), 0.0), 0, 255).astype(np.uint8)
+            cls = np.zeros(labl.shape, np.int32)
+            for i in range(n):
+                cls[labl == i + 1] = 1 if i in scalp_set else 2 if i in beard_set else (3 if areas[i] > 40 else 0)
+            for c_, rgb in ((1, (0, 200, 0)), (2, (0, 120, 255)), (3, (255, 0, 0))): im[cls == c_] = (im[cls == c_] * 0.4 + np.array(rgb) * 0.6).astype(np.uint8)
+            im[ear] = (im[ear] * 0.5 + np.array([200, 0, 200]) * 0.5).astype(np.uint8)
+            Image.fromarray(im[::-1]).save(os.environ['QA_DEBUG'].replace('.jpg', f'_side{t}.jpg'))
+        # (a seam on the side of the face: a sharp, long step of tone on the side's skin, away from the ear and the hair)
+        Sh = np.degrees(np.arctan2(SLAB[..., 2], SLAB[..., 1])); sskin = zone & (Sh > 32) & (Sh < 85) & (SC > 7) & (dks < 0.15)
+        sskin &= blur(sskin.astype(np.float64), rs(3), sv) > 0.97
+        sd_ = np.abs(blur(SL, rs(1.2), sskin) - blur(SL, rs(4), sskin)) * sskin
+        sl_, sn_ = ndimage.label(sd_ > 1.4)
+        for i, sl0 in enumerate(ndimage.find_objects(sl_) if sn_ else []):
+            m_ = sl_[sl0] == i + 1
+            if m_.sum() < 8: continue
+            pts = np.stack([SYy[sl0][m_], SZz[sl0][m_]], -1); side_seams.append(float(np.linalg.norm(pts.max(0) - pts.min(0))))
+        hz = zone & (SZz > -45) & (SZz < 35) & (dks > 0.25)
+        if hz.sum() > 300:
+            d2 = blur(dks, rs(2), zone) - blur(dks, rs(8), zone)
+            patch.append(float(np.std(d2[hz])))
+    res['side_islands_mm2'] = round(max(isl), 1) if isl else None
+    res['side_patchiness'] = round(max(patch), 3) if patch else None
+    res['sideburn_gap_mm'] = max(gaps) if gaps else None
+    res['side_seam'] = round(max(side_seams), 1) if side_seams else 0.0
+# the lips (owner 2026-11-04, "whats wrong with this lip? colour and symmetry off"): the lips told from the skin by their
+# redness; their colour left against right, any part of them that has lost its colour (a pale patch on a lip), and the
+# mouth's line (the dark line between the lips) left against right, as a real mouth is near-symmetric
+lip_pts = locals().get('ls'), locals().get('li')
+if all(p_ is not None for p_ in lip_pts) and skin.any():
+    zLs, zLi = float(lip_pts[0][0]), float(lip_pts[1][0])
+    kk = np.where((zz < zLs) & (zz > zLi))[0]
+    zSt = float(zz[kk[np.argmax(yy[kk])]]) if len(kk) else 0.5 * (zLs + zLi)          # (the mouth's line on the midline)
+    a_s, b_s = float(np.median(LAB[..., 1][skin])), float(np.median(LAB[..., 2][skin]))
+    red = blur((LAB[..., 1] - a_s) - 0.5 * (LAB[..., 2] - b_s), r_mm(1.0), front)    # (lips: redder, less yellow than skin)
+    row = front & (np.abs(Z - zSt) < 2.0) & (np.abs(X) < 34) & (red > 3.0)
+    if row.sum() > 20:
+        xl, xr = float(X[row].min()), float(X[row].max())
+        res['mouth_corner_asym_mm'] = round(abs(xr + xl), 2)                       # (corners equally far from the midline)
+        hw = 0.8 * min(abs(xl), abs(xr))
+        lbox = front & (np.abs(X) < hw) & (Z < zLs + 2.0) & (Z > zLi - 3.0) & (L > 0.3 * Lmed)
+        Lm, Rm = lbox & (X > 3) & (red > 3.0), lbox & (X < -3) & (red > 3.0)
+        if Lm.sum() > 80 and Rm.sum() > 80:
+            res['lip_lr_dE'] = round(float(np.linalg.norm(np.median(LAB[Lm], 0) - np.median(LAB[Rm], 0))), 2)
+        if lbox.sum() > 150:
+            res['lip_pale_frac'] = round(float((red[lbox] < 2.0).mean()), 3)          # (lip that has lost its colour)
+        line = {}
+        Lb = blur(L, 1, front)
+        for xs in [v * sg for v in np.arange(1.0, hw + 1e-6, 1.0) for sg in (1, -1)]:
+            sel = front & (np.abs(X - xs) < 0.6) & (np.abs(Z - zSt) < 4.0)
+            if sel.sum() > 5: line[round(float(xs), 1)] = float(Z[sel][np.argmin(Lb[sel])])
+        diffs = [abs(line[x] - line[-x]) for x in line if x > 3 and -x in line]
+        if diffs: res['mouth_line_asym_mm'] = round(max(diffs), 2)
+        if os.environ.get('QA_DEBUG'):                              # (the mouth: the lbox, its colourless part, the line)
+            im = np.clip(Cc, 0, 255).astype(np.uint8).copy()
+            im[lbox] = (im[lbox] * 0.6 + np.array([255, 0, 255]) * 0.4).astype(np.uint8)
+            im[lbox & (red < 2.0)] = (0, 255, 255)
+            for x_, z_ in line.items():
+                j_ = int(round((z_ - GZ0) / GSTEP)); i_ = int(round((x_ - GX0) / GSTEP))
+                if 0 <= j_ < nE and 0 <= i_ < nA: im[j_, i_] = (255, 255, 0)
+            j0, j1 = int((-95 - GZ0) / GSTEP), int((-35 - GZ0) / GSTEP); i0_, i1_ = int((-40 - GX0) / GSTEP), int((40 - GX0) / GSTEP)
+            Image.fromarray(im[j0:j1, i0_:i1_][::-1]).resize(((i1_ - i0_) * 3, (j1 - j0) * 3)).save(os.environ['QA_DEBUG'].replace('.jpg', '_mouth.jpg'))
 # dark patches where the head as shipped has none: hair carried onto a bare temple or forehead (a misplaced block)
 zd = {'temple_L': front & (X > 46) & (X < 64) & (Z > -5) & (Z < 32), 'temple_R': front & (X < -46) & (X > -64) & (Z > -5) & (Z < 32),
       'cheekbone_L': front & (X > 30) & (X < 50) & (Z > -18) & (Z < -6), 'cheekbone_R': front & (X < -30) & (X > -50) & (Z > -18) & (Z < -6)}
