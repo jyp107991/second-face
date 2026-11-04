@@ -107,6 +107,7 @@ def run(manifest, k, n):
         # rest of the skin at the face's colour; retone.py composites it (RT_BAKE)
         # (tone 'own', rb_variations.py: the base's own skin, shifted by 'tone_shift')
         renv = dict(os.environ); tone, und = str(j['tone']), str(j['undertone'])
+        if j.get('keep_hair'): renv['RT_KEEP_HAIR'] = '1'                  # (the base's hair as shipped: its wisps keep their colour)
         if j.get('ffhq') or j.get('ava'):
             fenv = dict(os.environ, FFHQ_TOPO=f'{S}/ffhq/topo', FFHQ_MASKS=f'{S}/ffhq', FFHQ_EYE_KEEP='18' if j['sex'] == 'f' else '12',
                         FFHQ_SEX=j['sex'], FFHQ_DETAIL='0.5' if j['sex'] == 'f' else '0.9', AVA_TEX=f'{S}/rblib/{j["base"]}')
@@ -176,6 +177,16 @@ def run(manifest, k, n):
                     if r.returncode: print('hairline finish failed', j['name'], r.stderr[-300:])
                     else: print(j['name'], ' | '.join(r.stdout.strip().splitlines()))
                     os.remove(f'{out}/hairline_map.npz')
+        # the realism gate (docs/PEOPLE_QA.md): measured on the head as it is seen, against Rocketbox's own heads
+        if os.environ.get('HB_QA', '1') != '0':
+            hq = next((f'{out}/{f}' for f in sorted(os.listdir(out)) if f.endswith('_head_color.jpg') and 'ffhq' not in f), None)
+            if hq:
+                subprocess.run([BLENDER, '-b', '--python', f'{HERE}/qa_map.py', '--', f'{out}/{j["name"]}.fbx', hq, f'{out}/qa'], capture_output=True, text=True)
+                if os.path.exists(f'{out}/qa/qa_map.npz'):
+                    subprocess.run([PY, f'{HERE}/qa_realism.py', f'{out}/qa', hq, f'{rdir}/{j["name"]}_qa.json', j['name']], capture_output=True, text=True,
+                                   env=dict(os.environ, QA_DEBUG=f'{rdir}/{j["name"]}_qa.jpg'))
+                    r = subprocess.run([PY, f'{HERE}/qa_gate.py', 'check', f'{rdir}/{j["name"]}_qa.json', '--sex', j['sex']] + (['--short'] if j.get('hairline') else []) + (['--own', j['qa_own']] if j.get('qa_own') else []) + (['--base', f'{S}/qa_ref/{j["base"]}.json'] if os.path.exists(f'{S}/qa_ref/{j["base"]}.json') else []), capture_output=True, text=True)
+                    print(j['name'], 'gate:', ' | '.join(l for l in r.stdout.splitlines() if l.startswith(('FAIL', 'GATE'))))
         subprocess.run([BLENDER, '-b', '--python', f'{HERE}/studio_render.py', '--', rdir, f'{out}/{j["name"]}.fbx'], capture_output=True, text=True, env=env)
         shutil.copy(f'{out}/{j["name"]}.json', f'{rdir}/{j["name"]}.json')
         if os.path.exists(f'{rdir}/{j["name"]}_three.png'): json.dump(j, open(sig, 'w'))

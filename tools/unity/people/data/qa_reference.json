@@ -1,0 +1,78 @@
+{
+ "_about": "Rocketbox heads as shipped, measured by qa_realism.py: the realism gate's bands (p5, p50, p95).",
+ "n": 27,
+ "heads": [
+  "Business_Female_01",
+  "Business_Female_02",
+  "Business_Female_04",
+  "Business_Male_01",
+  "Business_Male_03",
+  "Business_Male_05",
+  "Construction_Male_01",
+  "Female_Adult_02",
+  "Female_Adult_05",
+  "Female_Adult_07",
+  "Female_Adult_09",
+  "Female_Adult_11",
+  "Female_Adult_12",
+  "Female_Adult_14",
+  "Female_Party_02",
+  "Gardener_Male_01",
+  "Male_Adult_01",
+  "Male_Adult_04",
+  "Male_Adult_05",
+  "Male_Adult_08",
+  "Male_Adult_12",
+  "Medical_Female_03",
+  "Medical_Male_01",
+  "Medical_Male_03",
+  "Military_Male_01",
+  "Police_Male_07",
+  "Sports_Male_01"
+ ],
+ "tone_spread": [
+  4.694,
+  9.7,
+  16.332
+ ],
+ "side_diff": [
+  0.619,
+  1.47,
+  5.124
+ ],
+ "blotch": [
+  1.315,
+  1.897,
+  2.409
+ ],
+ "seam": [
+  0.0,
+  0.0,
+  8.4
+ ],
+ "specks_per_10cm2": [
+  0.0,
+  0.0,
+  8.764
+ ],
+ "eye_ring": [
+  2.889,
+  4.49,
+  10.655
+ ],
+ "beard_edge_grad": [
+  0.345,
+  0.41,
+  0.566
+ ],
+ "beard_high_frac": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "detail": [
+  0.796,
+  1.032,
+  1.914
+ ]
+}

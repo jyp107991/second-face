@@ -40,6 +40,24 @@ for f0 in bm.faces:
                 if g not in seen and g.material_index == hmi: seen.add(g); st.append(g)
     parts.append(part)
 face = max(parts, key=len)
+# (a head whose cloth is painted in its own texture, a hijab round the face: the cloth's faces are left out, told by colour
+# (white, grey or black, with no skin's hue), so only the face's skin, brows and lips are carried)
+img0 = bpy.data.images.load(os.path.join(tex_dir, mats[hmi] + '_color.jpg')); tw, th = img0.size
+px = np.empty(tw * th * 4, np.float32); img0.pixels.foreach_get(px); px = px.reshape(th, tw, 4)[..., :3]
+def lab_of(c):
+    c = np.where(c > 0.04045, ((c + 0.055) / 1.055) ** 2.4, c / 12.92)
+    xyz = c @ np.array([[0.4124, 0.3576, 0.1805], [0.2126, 0.7152, 0.0722], [0.0193, 0.1192, 0.9505]]).T / np.array([0.9505, 1.0, 1.089])
+    f = np.where(xyz > 0.008856, np.cbrt(xyz), 7.787 * xyz + 16 / 116)
+    return 116 * f[1] - 16, 500 * (f[0] - f[1]), 200 * (f[1] - f[2])
+kept = []
+for f in face:
+    uv = np.mean([l[uvk].uv[:] for l in f.loops], axis=0)
+    c = px[min(th - 1, max(0, int(uv[1] * th))), min(tw - 1, max(0, int(uv[0] * tw)))]
+    L_, a_, b_ = lab_of(c.astype(np.float64)); ch = (a_ * a_ + b_ * b_) ** 0.5
+    if ch < 5.0 and L_ > 35: continue                                    # (white and grey cloth)
+    kept.append(f)
+if len(kept) < len(face): print('face source: cloth left out,', len(face) - len(kept), 'faces')
+face = kept
 VT, FL = [], []
 for f in face:
     ls = list(f.loops)

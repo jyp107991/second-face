@@ -14,7 +14,8 @@ The texture is reworked on a map laid round the head (azimuth and elevation from
 degree a pixel, every point a ray to the head's own surface: seam-free, unlike the texture's layout), in the finish.
 This half (Blender) writes the map's geometry and the texels' places on it: <out>/hairline_map.npz.
 Usage: blender -b --python hairline_tidy.py -- <head fbx> <its head colour jpg> <out dir>
-Env: HT_LIFT (mm, 0), HT_RECEDE (mm, 0), HT_SEED (the edge's wander, 1)."""
+Env: HT_LIFT (mm, 0), HT_RECEDE (mm, 0), HT_SEED (the edge's wander, 1), HT_EL0 (the map's lowest elevation, degrees, -40;
+the realism gate takes -75 to reach the chin and jaw)."""
 import bpy, sys, os, math
 import numpy as np
 from mathutils import Vector
@@ -24,7 +25,7 @@ head_path, col_path, out_dir = sys.argv[sys.argv.index('--') + 1:][:3]
 LIFT = float(os.environ.get('HT_LIFT', 0.0)); RECEDE = float(os.environ.get('HT_RECEDE', 0.0)); SEED = int(os.environ.get('HT_SEED', 1))
 os.makedirs(out_dir, exist_ok=True)
 C = np.array([0.0, 45.0, 10.0])                              # the skull's centre in the eyes' frame (mm)
-STEP = math.radians(0.25); AZ0, AZ1 = math.radians(-105), math.radians(105); EL0, EL1 = math.radians(-40), math.radians(86)
+STEP = math.radians(0.25); AZ0, AZ1 = math.radians(-105), math.radians(105); EL0, EL1 = math.radians(float(os.environ.get('HT_EL0', -40))), math.radians(86)
 
 
 def load(path):

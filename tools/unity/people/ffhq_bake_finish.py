@@ -35,6 +35,21 @@ if 'mouth' in M:
     teeth = on & M['mouth'] & (ml[:, 0] > ref_L + 12) & (mC < 14)
     mask = np.where(teeth, 0.0, mask); on = mask > 0
     print('teeth texels kept from the base', int(teeth.sum()))
+    # (and the dark line between parted lips, which a closed mouth lays on its lower lip as a smudge)
+    gap = on & M['mouth'] & (ml[:, 0] < ref_L - 28)
+    mask = np.where(gap, 0.0, mask); on = mask > 0
+    print('lip-gap texels kept from the base', int(gap.sum()))
+# a face's own hair above its cheek line (sideburns, temple hair, a hairline the source reached) is never carried onto
+# the new head's bare temple or forehead (owner: "facial hair like blocks misplaced on faces"): the new head's own skin
+# and hair stay there. Its brows and lids are kept, and its beard, which lies below the cheek line.
+if 'eo' in M and os.environ.get('FFHQ_HAIR_ABOVE', '0') != '1':
+    eo = M['eo']; hl = srgb_to_lab(rgb * 255.0)
+    ref_L = float(np.median(hl[on & cheek][:, 0])) if (on & cheek).sum() > 20 else 50.0
+    brow = (eo[:, 2] > 4) & (eo[:, 2] < 30) & (np.abs(eo[:, 0]) < 26)
+    lids = np.linalg.norm(eo, axis=1) < 15
+    hair_above = on & (eo[:, 2] > -12) & ~brow & ~lids & (hl[:, 0] < ref_L - 16)
+    mask = np.where(hair_above, 0.0, mask); on = mask > 0
+    print('hair above the cheek line kept from the new head', int(hair_above.sum()))
 # harmonised to Rocketbox's house style, two ways. (1) Colour: FFHQ-UV's normalisation dulls the skin (a dark face's
 # cheek at chroma 13 where Rocketbox's photographed dark faces sit at 27-38, hue 49-64 degrees: Male_Adult_12,
 # Military_Male_01, Business_Female_01), so the face's chroma is brought to Rocketbox's for its lightness and its hue
