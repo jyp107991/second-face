@@ -97,6 +97,13 @@ class Face:
         ksn = m[kmax + (after[0] if len(after) else len(slope) - 1 - kmax)]
         L['sn'] = (S.take(np.array([ix[ksn]])), zs[ksn]); zsn = zs[ksn]
         zls = turn(zsn - 2, zsn - 24, np.argmax, 'ls')
+        if zls >= zsn - 2.5:
+            # (no forward peak: an upper lip that slopes back from the nose's base all the way down, Police_Male_06 as
+            # shaped; the lip's point is then its most prominent against the chord of that span, not the span's top,
+            # which put the lip 2 mm under the nose and the mouth's corners 8 mm apart)
+            m = win(zsn - 2, zsn - 24); zz, ff = zs[m], f[m]
+            chord = ff[0] + (ff[-1] - ff[0]) * (zz - zz[0]) / (zz[-1] - zz[0])
+            k = m[int(np.argmax(ff - chord))]; L['ls'] = (S.take(np.array([ix[k]])), zs[k]); zls = zs[k]
         # the mouth's line: the deepest notch between the lips (depth against the profile 1.5 mm above and below), not
         # the deepest point, which runs on down when the lower lip sits back
         m = win(zls - 2, zls - 15)
@@ -256,8 +263,9 @@ def mouth_corners(V, T, zsto, ysto):
     """The mouth's corners: the mouth's line is a notch between the lips in every cut along the face (x = c); going out
     from the middle, each corner is where that notch ends. (left Pts, right Pts)."""
     out = []
+    z0 = zsto
     for sgn in (1, -1):
-        last = None
+        last = None; zsto = z0
         for c in np.arange(4.0, 40.0, 1.0):
             Sx = section(V, T, 0, sgn * c); P = Sx.at(V)
             keep = (np.abs(P[:, 2] - zsto) < 9) & (P[:, 1] < ysto + 30)
@@ -268,7 +276,9 @@ def mouth_corners(V, T, zsto, ysto):
             m = np.where(np.abs(zs - zsto) <= 5)[0]
             depth = np.array([(f[max(k - 4, 0)] + f[min(k + 4, len(f) - 1)]) / 2 - f[k] for k in m])
             k = int(np.argmax(depth))
-            if depth[k] < 0.3: break
+            # (the notch followed out may not wander off the mouth's line onto another crease, the cheek's or the chin's:
+            # Female_Adult_06's corners were read 9 mm under her mouth, one 32 mm out and one 16)
+            if depth[k] < 0.3 or abs(zs[m[k]] - z0) > 5.0: break
             last = Sx.take(np.array([ix[m[k]]])); zsto = zs[m[k]]
         if last is None: return None
         out.append(last)

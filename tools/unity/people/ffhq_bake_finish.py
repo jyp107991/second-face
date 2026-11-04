@@ -36,18 +36,31 @@ if 'mouth' in M:
     mask = np.where(teeth, 0.0, mask); on = mask > 0
     print('teeth texels kept from the base', int(teeth.sum()))
     # (and the dark line between parted lips, which a closed mouth lays on its lower lip as a smudge)
-    gap = on & M['mouth'] & (ml[:, 0] < ref_L - 28)
+    # (only for a photograph with parted lips, FFHQ_LIP_GAP=1: on a closed mouth that is the mouth's own line, and keeping
+    # the base's there left one side of a carried lip pale and the mouth askew, owner 2026-11-04)
+    gap = on & M['mouth'] & (ml[:, 0] < ref_L - 28) & (os.environ.get('FFHQ_LIP_GAP') == '1')
     mask = np.where(gap, 0.0, mask); on = mask > 0
     print('lip-gap texels kept from the base', int(gap.sum()))
 # a face's own hair above its cheek line (sideburns, temple hair, a hairline the source reached) is never carried onto
 # the new head's bare temple or forehead (owner: "facial hair like blocks misplaced on faces"): the new head's own skin
 # and hair stay there. Its brows and lids are kept, and its beard, which lies below the cheek line.
+def sideburn_zone(q_):
+    # (in front of each ear, within 22 mm of its front and below the ear's top: a sideburn; never the temple beside the
+    # eye, where a source's long side hair under its cap read as dark bars, owner's MA15)
+    if 'ear_y' in M:
+        ey = np.where(q_[:, 0] > 0, M['ear_y'][0], M['ear_y'][1])
+        return (np.abs(q_[:, 0]) > 50) & (q_[:, 1] > ey - 22) & (q_[:, 2] < 4)
+    return np.zeros(len(q_), bool)
 if 'eo' in M and os.environ.get('FFHQ_HAIR_ABOVE', '0') != '1':
     eo = M['eo']; hl = srgb_to_lab(rgb * 255.0)
     ref_L = float(np.median(hl[on & cheek][:, 0])) if (on & cheek).sum() > 20 else 50.0
     brow = (eo[:, 2] > 4) & (eo[:, 2] < 30) & (np.abs(eo[:, 0]) < 26)
     lids = np.linalg.norm(eo, axis=1) < 15
     hair_above = on & (eo[:, 2] > -12) & ~brow & ~lids & (hl[:, 0] < ref_L - 16)
+    if os.environ.get('FFHQ_BEARD') == '1' and 'q' in M:
+        # (a bearded man's sideburn, on the side in front of the ear and below its top, joins his beard to his hair: it is
+        # his own and comes with the beard, never left as a bare gap between the two)
+        q_ = M['q']; hair_above &= ~sideburn_zone(q_)
     mask = np.where(hair_above, 0.0, mask); on = mask > 0
     print('hair above the cheek line kept from the new head', int(hair_above.sum()))
 # harmonised to Rocketbox's house style, two ways. (1) Colour: FFHQ-UV's normalisation dulls the skin (a dark face's
@@ -141,6 +154,18 @@ if LFB > 0:
     new = np.stack([cf[0] * B_lf[:, 0] / max(cb[0], 1.0), cf[1] + (B_lf[:, 1] - cb[1]) * cfC / max(cbC, 1.0),
                     cf[2] + (B_lf[:, 2] - cb[2]) * cfC / max(cbC, 1.0)], -1) + hf
     lfb = (LFB + (1 - LFB) * orbit_w)[:, None] if np.ndim(orbit_w) else LFB     # (the orbits wholly: none of the face's own folds)
+    if os.environ.get('FFHQ_BEARD') == '1' and 'eo' in M:
+        # (a beard is broad and dark: under the base's broad colour it was lost, owner's MA19; it keeps its own, its density
+        # and its natural edge, wherever the face's own broad lightness is well under its cheek's below the cheek line)
+        # (the lips too keep their own: under the base's broad colour the beard round the mouth was lost in a pale block,
+        # owner's MA15; the nostrils' shadow is the base's)
+        eo_b = M['eo'][on]
+        nose = ((np.abs(M['q'][on][:, 0]) < 20) & (eo_b[:, 2] < -30) & (eo_b[:, 2] > -55)) if 'q' in M else np.zeros(len(eo_b), bool)
+        bw = np.clip((cf[0] - 5 - F_lf[:, 0]) / 8, 0, 1) * np.clip((-6 - eo_b[:, 2]) / 8, 0, 1) * (~nose)
+        if 'q' in M:
+            q_b = M['q'][on]; bw = np.maximum(bw, np.clip((cf[0] - 5 - F_lf[:, 0]) / 8, 0, 1) * sideburn_zone(q_b))
+        lfb = (np.broadcast_to(lfb, (len(lab), 1)) if np.ndim(lfb) else np.full((len(lab), 1), lfb)) * (1 - bw[:, None])
+        print('beard keeps its own broad colour on', int((bw > 0.5).sum()), 'texels')
     lab = lab * (1 - lfb) + new * lfb
     print('broad colour from the base: strength', LFB, 'radius', round(rad, 1), 'px; detail gain', HFG)
 else:

@@ -29,7 +29,7 @@ import rocketbox_features as rbf
 person, cap, topo, out_dir, name = sys.argv[sys.argv.index('--') + 1:][:5]
 os.makedirs(out_dir, exist_ok=True)
 STRENGTH = float(os.environ.get('AVA_SHAPE', 1.0)); TOP = float(os.environ.get('AVA_TOP', 40.0))
-EYE_KEEP = float(os.environ.get('AVA_EYE_KEEP', 12.0)); EK_SIDE = float(os.environ.get('AVA_EYE_SIDE', 17.0)); REACH = 140.0; EAR_X = 72.0; FEATHER = 8.0
+EYE_KEEP = float(os.environ.get('AVA_EYE_KEEP', 12.0)); EK_SIDE = float(os.environ.get('AVA_EYE_SIDE', 17.0)); REACH = 140.0; EAR_X = float(os.environ.get('AVA_EAR_X', 72.0)); FEATHER = 8.0
 EYE_UV = ((0.393, 0.680), (0.611, 0.679))          # the eyes in Ava-256's texture layout (the same for every capture)
 smooth = lambda e0, e1, x: np.clip((x - e0) / (e1 - e0), 0, 1) ** 2 * (3 - 2 * np.clip((x - e0) / (e1 - e0), 0, 1))
 
@@ -105,7 +105,14 @@ else:
 keys = [k for k in FR.L if k in FV.L]
 for F_, X_ in ((FR, P), (FV, Q)):
     if 'alL' in F_.L and abs(F_.L['alL'].at(X_)[0, 0] - F_.L['alR'].at(X_)[0, 0]) > 46: keys = [k for k in keys if k not in ('alL', 'alR')]
+# (a mouth whose corners were not found, the notch ending at once, is no landmark: a mouth is at least 36 mm wide)
+for F_, X_ in ((FR, P), (FV, Q)):
+    if 'chL' in F_.L:
+        cL, cR = F_.L['chL'].at(X_)[0], F_.L['chR'].at(X_)[0]
+        # (nor one whose corners are lopsided: a real mouth at rest is near symmetric, its corners level within a few mm)
+        if cL[0] - cR[0] < 36 or abs(cL[0] + cR[0]) > 5 or abs(cL[2] - cR[2]) > 4: keys = [k for k in keys if k not in ('chL', 'chR')]
 A = np.array([FV.L[k].at(Q)[0] for k in keys], float); B = np.array([FR.L[k].at(P)[0] for k in keys], float)
+print('landmark pairs', {k: (np.round(a, 1).tolist(), np.round(b, 1).tolist()) for k, a, b in zip(keys, A, B) if k in ('sn', 'ls', 'sto', 'li', 'lm', 'pog', 'chL')})
 # the source's own eyes (an Ava-256 capture's eyeballs lie 12 mm behind the points its texture layout marks as the eyes; a
 # Rocketbox face written out by rb_face_source.py carries its own, eyes.npy), fitted onto the Rocketbox eyes with a heavy
 # weight (owner, 2026-11-03: "eyes weirdly high, pasted on an eyeless face": fitted by the nose, mouth and chin alone the
@@ -255,6 +262,8 @@ for bn, off in (('Bip01 LEye', eye_shift[0]), ('Bip01 REye', eye_shift[1])):
     eb.head += dl; eb.tail += dl
 bpy.ops.object.mode_set(mode='OBJECT')
 P2 = P + dP
+if os.environ.get('AVA_DEBUG'):
+    np.savez_compressed(os.environ['AVA_DEBUG'], P=P, dP=dP, raw=raw, bound=bound, w=w, Vsim=Vsim, Vw=Vw, TV=np.array(TV), A=A, B=B, keys=np.array(keys), wt=wt)
 
 # --- skin: the Rocketbox texture's face texels to the capture's texture --------------------------------------------
 tex_dir = os.path.dirname(person)
@@ -286,6 +295,16 @@ ys, xs = np.where(~np.isnan(pts[..., 0]))
 Qt = pts[ys, xs].astype(np.float64); Nt = nrm[ys, xs].astype(np.float64)
 keep = (np.linalg.norm(Qt, axis=1) < REACH) & (np.abs(Qt[:, 0]) < EAR_X)
 ys, xs, Qt, Nt = ys[keep], xs[keep], Qt[keep], Nt[keep]
+# AVA_EAR_FRONT: the face carried back to the ear's front on each side (a bearded man's beard and sideburn whole, never
+# cut by a straight line across the jaw: owner, "facial hair like blocks misplaced on faces"); the ears stay the head's
+# own. Each ear's front is where the ear stands out from the head's side (|x| beyond 74 mm at the ear's height).
+EAR_Y = None
+if os.environ.get('AVA_EAR_FRONT'):
+    EAR_Y = {}
+    for sg in (1, -1):
+        e_ = (sg * P2[:, 0] > 74) & (P2[:, 2] > -45) & (P2[:, 2] < 15) & (P2[:, 1] > 30)
+        EAR_Y[sg] = float(np.percentile(P2[e_, 1], 2)) - 4.0 if e_.sum() > 20 else 70.0
+    print('ear fronts at y', {k: round(v, 1) for k, v in EAR_Y.items()})
 treeS = BVHTree.FromPolygons([tuple(map(float, v)) for v in Vsim], [tuple(map(int, f)) for f in TV])
 UV = np.zeros((len(Qt), 2), np.float32); mask = np.zeros(len(Qt), np.float32)
 z_ls = FR.L['ls'].at(P2)[0, 2] if 'ls' in FR.L else -38.0; z_lm = FR.L['lm'].at(P2)[0, 2] if 'lm' in FR.L else -72.0
@@ -318,12 +337,15 @@ for i in range(len(Qt)):
     rho = math.sqrt((eo_[0] / EK_SIDE) ** 2 + (eo_[2] / EYE_KEEP) ** 2)
     m = min(1.0, (REACH - rr) / FEATHER) * min(1.0, max(0.0, (rho - 1.0) / 0.4)) * min(1.0, (EAR_X - abs(Qt[i, 0])) / FEATHER) \
         * min(1.0, (12 - dist) / 4) * min(1.0, max(0.0, (TOP - Qt[i, 2]) / 15.0))
+    if EAR_Y is not None and abs(Qt[i, 0]) > 50:
+        m *= min(1.0, max(0.0, (EAR_Y[1 if Qt[i, 0] > 0 else -1] - Qt[i, 1]) / FEATHER))
     mask[i] = max(0.0, m)
 cheek = (np.abs(Qt[:, 0]) > 28) & (np.abs(Qt[:, 0]) < 52) & (Qt[:, 2] < -15) & (Qt[:, 2] > -45)
 near_eye = np.where(np.linalg.norm(Qt - eyes[0], axis=1) < np.linalg.norm(Qt - eyes[1], axis=1), 0, 1)
 eo = (Qt - np.stack(eyes)[near_eye]).astype(np.float32)          # each texel from its nearest eye (mm): the orbits' zone
 np.savez_compressed(os.path.join(out_dir, 'ffhq_map.npz'), ys=ys, xs=xs, uv=UV, mask=mask, cheek=cheek, scalp=np.zeros(len(Qt), bool), eo=eo,
-                    mouth=mouth, size=np.array([H, Wd]))
+                    mouth=mouth, size=np.array([H, Wd]), q=Qt.astype(np.float32),
+                    **({'ear_y': np.array([EAR_Y[1], EAR_Y[-1]], np.float32)} if EAR_Y is not None else {}))
 json.dump({'ffhq': 'ava:' + os.path.basename(cap.rstrip('/')), 'material': hmat, 'texels': int(len(Qt)), 'baked': int((mask > 0.5).sum()),
            'landmarks': keys, 'residual_mm': res.round(1).tolist(), 'scale': round(float(s), 3)}, open(os.path.join(out_dir, 'ffhq.json'), 'w'))
 print('mapped', int((mask > 0.5).sum()), 'texels of', len(Qt))

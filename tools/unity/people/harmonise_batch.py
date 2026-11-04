@@ -116,7 +116,7 @@ def run(manifest, k, n):
                 # an Ava-256 person (ava/ava_internalise.py): the capture's real shape and skin on this Rocketbox head
                 r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/ava/ava_internalise.py', '--', f'{out}/{j["name"]}.fbx', j['ava'],
                                     j.get('ava_topo', f'{S}/ext/ava/topo/face_topology.obj'), out, j['name']], capture_output=True, text=True, env=fenv)
-                print(j['name'], 'ava', [l for l in r.stdout.splitlines() if l.startswith(('landmarks', 'moved', 'mapped', 'eyes'))])
+                print(j['name'], 'ava', [l for l in r.stdout.splitlines() if l.startswith(('landmark', 'moved', 'mapped', 'eyes', 'ear fronts'))])
             else:
                 r = subprocess.run([BLENDER, '-b', '--python', f'{HERE}/ffhq_bake.py', '--', f'{out}/{j["name"]}.fbx', f'{S}/rblib/{j["base"]}', j['ffhq'], out],
                                    capture_output=True, text=True, env=fenv)
@@ -185,7 +185,7 @@ def run(manifest, k, n):
                 if os.path.exists(f'{out}/qa/qa_map.npz'):
                     subprocess.run([PY, f'{HERE}/qa_realism.py', f'{out}/qa', hq, f'{rdir}/{j["name"]}_qa.json', j['name']], capture_output=True, text=True,
                                    env=dict(os.environ, QA_DEBUG=f'{rdir}/{j["name"]}_qa.jpg'))
-                    r = subprocess.run([PY, f'{HERE}/qa_gate.py', 'check', f'{rdir}/{j["name"]}_qa.json', '--sex', j['sex']] + (['--short'] if j.get('hairline') else []) + (['--own', j['qa_own']] if j.get('qa_own') else []) + (['--base', f'{S}/qa_ref/{j["base"]}.json'] if os.path.exists(f'{S}/qa_ref/{j["base"]}.json') else []), capture_output=True, text=True)
+                    r = subprocess.run([PY, f'{HERE}/qa_gate.py', 'check', f'{rdir}/{j["name"]}_qa.json', '--sex', j['sex']] + (['--short'] if j.get('hairline') else []) + (['--bald'] if j.get('bald') else []) + (['--beard'] if str(j.get('bake_env', {}).get('FFHQ_BEARD', '')) == '1' else []) + (['--own', j['qa_own']] if j.get('qa_own') else []) + (['--base', f'{S}/qa_ref/{j["base"]}.json'] if os.path.exists(f'{S}/qa_ref/{j["base"]}.json') else []), capture_output=True, text=True)
                     print(j['name'], 'gate:', ' | '.join(l for l in r.stdout.splitlines() if l.startswith(('FAIL', 'GATE'))))
         subprocess.run([BLENDER, '-b', '--python', f'{HERE}/studio_render.py', '--', rdir, f'{out}/{j["name"]}.fbx'], capture_output=True, text=True, env=env)
         shutil.copy(f'{out}/{j["name"]}.json', f'{rdir}/{j["name"]}.json')

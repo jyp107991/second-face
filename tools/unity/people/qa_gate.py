@@ -3,7 +3,7 @@ Rocketbox's own heads as shipped (data/qa_reference.json, made by `python3 qa_ga
 passes a measure when it is no worse than the library's own people: within the band the shipped heads span (their 95th
 percentile, with a tenth more), the trichion within real men's and women's forehead heights, a beard's edge no harder
 than the library's bearded men's. Nothing fails silently: every measure is printed with its band.
-Usage: python3 qa_gate.py check <person qa json> [--sex m|f] [--short] [--own <the face's source as shipped, qa json>]
+Usage: python3 qa_gate.py check <person qa json> [--sex m|f] [--short] [--bald] [--beard] [--own <the face's source as shipped, qa json>]
        [--base <the head it is built on as shipped, qa json>]
        (--short: a short hairline's straightness too; exit 1 on a failure)
        python3 qa_gate.py reference <shipped qa json>...         (writes data/qa_reference.json)"""
@@ -34,7 +34,7 @@ def reference(paths):
     print(json.dumps(out, indent=1))
 
 
-def check(path, sex, short=False, own=None, base=None):
+def check(path, sex, short=False, own=None, base=None, bald=False, beard=False):
     """own: the same measures on the real person the face comes from, as shipped: a real face's own unevenness, freckles or
     stubble is no fault; a made person is held to the worse of the library's band and that face's own value."""
     ref = json.load(open(REF)); r = json.load(open(path)); fails = []
@@ -52,9 +52,18 @@ def check(path, sex, short=False, own=None, base=None):
         ok = lo <= r[k] <= hi
         print(f'{"ok  " if ok else "FAIL"} {k:20s} {r[k]:8.2f}   (shipped heads {ref[k][0]:.2f}-{ref[k][2]:.2f}; band {lo:.2f}-{hi:.2f})')
         if not ok: fails.append(k)
-    if r.get('hairline_trg_mm') is not None and sex in TRG:
+    # (bald: a head as photographed whose hair has receded, Police_Male_01's; his own line, never drawn, is no fault. A
+    # line we draw or carry is always held to the band)
+    if bald and r.get('hairline_trg_mm') is not None:
+        print(f'info {"hairline_trg_mm":20s} {r["hairline_trg_mm"]:8.2f}   (a balding head as photographed: not held to the band)')
+    elif r.get('hairline_trg_mm') is not None and sex in TRG:
         lo, hi = TRG[sex]; ok = lo <= r['hairline_trg_mm'] <= hi
-        print(f'{"ok  " if ok else "FAIL"} {"hairline_trg_mm":20s} {r["hairline_trg_mm"]:8.2f}   (real foreheads {lo}-{hi} mm)')
+        # (a line not drawn by us, the head's own as photographed: within 3 mm of that head as shipped is its own; real
+        # Rocketbox men measure up to 70 mm, Police_Male_07; a drawn line, --short, is always held to the band)
+        bt = b.get('hairline_trg_mm')
+        own_line = not short and bt is not None and abs(r['hairline_trg_mm'] - bt) <= 3.0
+        print(f'{"ok  " if ok or own_line else "FAIL"} {"hairline_trg_mm":20s} {r["hairline_trg_mm"]:8.2f}   (real foreheads {lo}-{hi} mm' + (f'; the head as shipped {bt:.1f}, its own line within 3' if bt is not None and not short else '') + ')')
+        ok = ok or own_line
         if not ok: fails.append('hairline_trg_mm')
     for k, lim in ABS.items():
         if r.get(k) is None or not short: continue
@@ -63,6 +72,9 @@ def check(path, sex, short=False, own=None, base=None):
         if not ok: fails.append(k)
     # (dark patches at the temples or cheekbones that the head as shipped does not have: carried hair, a misplaced block)
     for k, v in (r.get('zone_dark') or {}).items():
+        # (a bearded man's temples above his sideburn; everyone else's whole temple; the 'hi' zones are not judged alone)
+        if beard and k in ('temple_L', 'temple_R'): continue
+        if not beard and k.startswith('temple_hi'): continue
         bv = (b.get('zone_dark') or {}).get(k)
         if v is None or bv is None: continue
         ok = v - bv <= 0.08
@@ -102,4 +114,4 @@ if __name__ == '__main__':
         sex = sys.argv[sys.argv.index('--sex') + 1] if '--sex' in sys.argv else ''
         own = sys.argv[sys.argv.index('--own') + 1] if '--own' in sys.argv else None
         base = sys.argv[sys.argv.index('--base') + 1] if '--base' in sys.argv else None
-        sys.exit(0 if check(sys.argv[2], sex, '--short' in sys.argv, own, base) else 1)
+        sys.exit(0 if check(sys.argv[2], sex, '--short' in sys.argv, own, base, '--bald' in sys.argv, '--beard' in sys.argv) else 1)

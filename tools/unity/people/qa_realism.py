@@ -322,7 +322,10 @@ if all(p_ is not None for p_ in lip_pts) and skin.any():
             Image.fromarray(im[j0:j1, i0_:i1_][::-1]).resize(((i1_ - i0_) * 3, (j1 - j0) * 3)).save(os.environ['QA_DEBUG'].replace('.jpg', '_mouth.jpg'))
 # dark patches where the head as shipped has none: hair carried onto a bare temple or forehead (a misplaced block)
 zd = {'temple_L': front & (X > 46) & (X < 64) & (Z > -5) & (Z < 32), 'temple_R': front & (X < -46) & (X > -64) & (Z > -5) & (Z < 32),
-      'cheekbone_L': front & (X > 30) & (X < 50) & (Z > -18) & (Z < -6), 'cheekbone_R': front & (X < -30) & (X > -50) & (Z > -18) & (Z < -6)}
+      'cheekbone_L': front & (X > 30) & (X < 50) & (Z > -18) & (Z < -6), 'cheekbone_R': front & (X < -30) & (X > -50) & (Z > -18) & (Z < -6),
+      # (the temples above a sideburn's top: a bearded man's sideburn, joined to his beard and his hair, lies in the
+      # temple zone's lower part and is his own; what is dark above it is carried hair or a block)
+      'temple_hi_L': front & (X > 46) & (X < 64) & (Z > 8) & (Z < 32), 'temple_hi_R': front & (X < -46) & (X > -64) & (Z > 8) & (Z < 32)}
 res['zone_dark'] = {k: round(float((L[m] < 0.62 * Lmed).mean()), 3) if m.sum() > 200 else None for k, m in zd.items()}
 if os.environ.get('QA_DEBUG'):                                  # (the map with the skin read, the regions and the steps found)
     im = np.clip(Cc, 0, 255).astype(np.uint8).copy()

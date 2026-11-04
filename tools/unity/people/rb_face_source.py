@@ -8,7 +8,7 @@ Only the head's largest piece is kept (not the eyeballs, teeth or loose gear).
 Usage: blender -b --python rb_face_source.py -- <person fbx> <its texture dir (rblib)> <out dir>
 Writes <out>/verts.npy, <out>/topology.obj (vt and f only), <out>/tex.png; ava_internalise.py reads them with
 AVA_FRAMED=1 (the vertices are already in the eyes' frame)."""
-import bpy, bmesh, sys, os
+import bpy, bmesh, sys, os, math
 import numpy as np
 
 person, tex_dir, out = sys.argv[sys.argv.index('--') + 1:][:3]
@@ -55,6 +55,13 @@ for f in face:
     c = px[min(th - 1, max(0, int(uv[1] * th))), min(tw - 1, max(0, int(uv[0] * tw)))]
     L_, a_, b_ = lab_of(c.astype(np.float64)); ch = (a_ * a_ + b_ * b_) ** 0.5
     if ch < 5.0 and L_ > 35: continue                                    # (white and grey cloth)
+    if os.environ.get('RBF_CAP'):
+        # (a cap or beanie welded into the head, Delivery_Male_01's, Male_Adult_17's, the pilots': above the brows only skin
+        # is carried, by its hue and chroma as the realism gate tells skin; the cap's cloth and the hair under its edge stay
+        # the new head's own)
+        zc = float(np.mean([P[v.index, 2] for v in f.verts]))
+        hue = math.degrees(math.atan2(b_, a_))
+        if zc > 18.0 and not (32.0 <= hue <= 85.0 and ch > 7.0 and 25.0 < L_ < 92.0): continue
     kept.append(f)
 if len(kept) < len(face): print('face source: cloth left out,', len(face) - len(kept), 'faces')
 face = kept

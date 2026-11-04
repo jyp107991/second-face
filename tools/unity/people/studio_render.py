@@ -108,7 +108,8 @@ for path in paths:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         import rocketbox_gear_off
         eb = next((arm.data.bones[n] for n in ('Bip01 LEye', 'Bip02 LEye', 'LeftEye') if n in arm.data.bones), None)
-        rocketbox_gear_off.take_off(meshes, hide, (arm.matrix_world @ eb.head_local).z if eb else None)
+        eps = [np.array(arm.matrix_world @ arm.data.bones[b].head_local) for b in ('Bip01 LEye', 'Bip01 REye') if b in arm.data.bones] or None
+        rocketbox_gear_off.take_off(meshes, hide, (arm.matrix_world @ eb.head_local).z if eb else None, eps)
     rocketbox = any(b.name.startswith(('Bip01', 'Bip02')) for b in arm.data.bones)
     for o in meshes:
         if rocketbox: bind_rocketbox(o, os.path.dirname(path))

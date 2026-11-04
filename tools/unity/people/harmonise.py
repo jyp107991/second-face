@@ -44,7 +44,8 @@ hide = [w for w in os.environ.get('HARM_HIDE', '').split(',') if w]
 if hide:
     import rocketbox_gear_off
     ez = (arm.matrix_world @ arm.data.bones['Bip01 LEye'].head_local).z
-    print('gear off:', rocketbox_gear_off.take_off([o for o in bpy.data.objects if o.type == 'MESH'], hide, ez), 'faces')
+    eps = [np.array(arm.matrix_world @ arm.data.bones[b].head_local) for b in ('Bip01 LEye', 'Bip01 REye')]
+    print('gear off:', rocketbox_gear_off.take_off([o for o in bpy.data.objects if o.type == 'MESH'], hide, ez, eps), 'faces')
 # HARM_SLIDERS: this person's own draw of the calibrated sliders ({shape key: weight}), baked into the mesh and every
 # shape key before anything else (so the new person is an individual of their own, and the sculptor still works on top)
 draw = json.loads(os.environ.get('HARM_SLIDERS', '{}') or '{}')
