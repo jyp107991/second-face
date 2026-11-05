@@ -1503,21 +1503,23 @@ export class Game extends EventBus<GameEvents> {
   /** Start a fresh game with a newly created character. */
   newGame(sheet: CharacterSheet, appearance: Appearance, pronouns: Pronouns, origin?: string): void {
     const inventory = emptyInventory();
-    // Starting kit (Cistern issue). Kept deliberately thin: scarcity starts at the door.
-    for (const [id, n] of [['r_jumpsuit', 1], ['w_shiv', 1], ['c_knitkit', 1], ['c_algae', 3], ['c_water', 2]] as const) addItem(inventory, makeItem(id, n));
-    equip(inventory, inventory.items.findIndex((i) => i.def === 'r_jumpsuit'));
+    // Starting kit (a Knock household's). Kept deliberately thin: scarcity starts at home.
+    for (const [id, n] of [['r_scrap', 1], ['w_shiv', 1], ['c_bandage', 1], ['c_jerky', 2], ['c_water', 1]] as const) addItem(inventory, makeItem(id, n));
+    equip(inventory, inventory.items.findIndex((i) => i.def === 'r_scrap'));
     equip(inventory, inventory.items.findIndex((i) => i.def === 'w_shiv'));
-    inventory.tolls = 0;
+    inventory.tolls = 20;
     syncGear(sheet, inventory);
-    const start = MAPS.cistern9 ? 'cistern9' : 'dev_yard';
-    this.state = newGameState(start, 15, 9, { sheet, appearance, pronouns, inventory });
+    // The opening (owner's note 2026-10-29): a home at Knock, on the slope above the Cistern's door, on a hatch day.
+    const start = MAPS.c9_mouth ? 'c9_mouth' : 'dev_yard';
+    this.state = newGameState(start, 9, 20, { sheet, appearance, pronouns, inventory });
     this.state.origin = origin;
+    this.state.minutes = 7 * 60;
     this.paused = false;
-    if (QUESTS.q_ch1_door) this.quests.questStart('q_ch1_door');
-    // The Cistern's atlases know the nearest town.
+    if (QUESTS.q_ch1_knock) this.quests.questStart('q_ch1_knock');
+    // Knock knows the road north.
     this.state.world.knownLocations = ['cistern9', 'shale'];
     this.state.world.at = 'cistern9';
-    void this.loadLocation(start, 'start').then(() => this.save('auto'));
+    void this.loadLocation(start, 'home').then(() => this.save('auto'));
   }
 
   // --- Save / load ---------------------------------------------------------

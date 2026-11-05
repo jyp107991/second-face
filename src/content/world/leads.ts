@@ -2,6 +2,11 @@ import type { ConclusionDef, LeadDef } from '../../engine/world/frontier';
 
 /** Clues for the notebook's leads board, and the conclusions they support. */
 export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
+  { id: 'l_toll_faces', label: 'Faces on the cards', text: 'Every toll card carries a printed likeness, and the Guild sends copies south with its forecasts to whoever pays.' },
+  { id: 'l_outriders_asking', label: 'Outriders asking', text: 'Four days before he reached Knock, Guild outriders rode north from the Tollhouse asking after an old man, wounded and masked.' },
+  { id: 'l_corin_outrider', label: 'Corin rode with them', text: 'Corin Asch rode with Guild outriders twenty years ago, and knows Brannick Hale by sight.' },
+  { id: 'l_hatch_value', label: 'The bale\'s value', text: 'MOTHER valued Knock\'s wool at four units this week and five last month, for the same wool.' },
+  { id: 'l_larkspur', label: '"Larkspur"', text: 'With his last breath, under the wind, the stranger said a word: Larkspur.' },
   { id: 'l_walked_west', label: 'Walked west', text: 'The stranger walked a long way west on a bad wound, into the afternoon sun.' },
   { id: 'l_sealed_wound', label: 'Machine-sealed wound', text: 'His old wound was sealed by a machine, not stitched — real hospital work.' },
   { id: 'l_burned_mark', label: 'Burned-off mark', text: 'He deliberately burned a printed mark off his forearm.' },

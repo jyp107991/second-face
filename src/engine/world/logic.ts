@@ -67,6 +67,8 @@ export type Effect =
   | { after: { minutes: number; id: string; effects: Effect[] } }
   | { join: string } | { leave: string }
   | { time: number }
+  /** Time passes until the next time the clock shows this hour (0-23): a night's watch, a sleep to dawn. */
+  | { until: number }
   | { event: string; data?: unknown }
   /** Join a faction (expels conflicting memberships unless `cover` names the faction you really serve). */
   | { enlist: string; rank?: string; cover?: string }
@@ -180,6 +182,7 @@ export function apply(effects: Effect[] | undefined, g: GameState, host: LogicHo
     else if ('join' in e) { if (!w.party.includes(e.join)) w.party.push(e.join); }
     else if ('leave' in e) w.party = w.party.filter((p) => p !== e.leave);
     else if ('time' in e) g.minutes += e.time;
+    else if ('until' in e) { const at = ((e.until * 60 - (g.minutes % 1440)) % 1440 + 1440) % 1440; g.minutes += at === 0 ? 1440 : at; }
     else if ('event' in e) host.event?.(e.event, e.data);
     else if ('enlist' in e) {
       const defs = factionDefs();
