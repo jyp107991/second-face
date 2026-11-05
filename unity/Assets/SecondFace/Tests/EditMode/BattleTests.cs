@@ -69,6 +69,52 @@ namespace SecondFace.Tests
             Assert.That(b.Preview(p, e).Ok, Is.True);
         }
 
+        /// <summary>A field where sight runs out at 15 m (a rise, a wall between): nobody can shoot across it.</summary>
+        private sealed class ShortSight : IBattleField
+        {
+            private readonly OpenField _open = new();
+            public double PathLength(BattleUnit u, double x, double z) => _open.PathLength(u, x, z);
+            public bool LineOfSight(BattleUnit a, BattleUnit b) => Battle.Distance(a, b) < 15;
+            public bool LineOfSightFrom(double x, double z, BattleUnit b) => Math.Sqrt((x - b.PX) * (x - b.PX) + (z - b.PZ) * (z - b.PZ)) < 15;
+            public string Cover(BattleUnit att, BattleUnit def) => "none";
+            public CombatContext Context(BattleUnit def) => new CombatContext();
+            public IEnumerable<(double X, double Z)> Candidates(BattleUnit u, double reach) => _open.Candidates(u, reach);
+        }
+
+        [Test]
+        public void NobodyWaitsForeverOutOfSight()
+        {
+            // two riflemen 40 m apart with no line between them: each closes in rather than waiting, and the player's own
+            // body on the AI never runs or gives up
+            var b = new Battle(new ShortSight(), new Rng(5));
+            var p = Unit("p", 0, 0, false, "w_pistol9", "a_9mm", player: true);
+            var e = Unit("e", 40, 0, true, "w_pistol9", "a_9mm");
+            b.Start(new[] { p, e });
+            var u = b.NextTurn();
+            var a = b.Choose(u);
+            Assert.That(a.Kind, Is.EqualTo("move"), $"{u.C.Id} {a.Kind} ({a.Why})");
+            Assert.That(Math.Abs(a.X - (u == p ? e.PX : p.PX)), Is.LessThan(40), "towards the other");
+            p.C.Morale = 1; p.C.Sheet.Hp = 2;
+            foreach (var x in new[] { "flee", "surrender" }) Assert.That(b.Choose(p).Kind, Is.Not.EqualTo(x));
+        }
+
+        [Test]
+        public void TheSideThatStartsItMovesFirst()
+        {
+            // a fight the player's side began (a signal to a rifle on the rise): all of that side act before the other
+            for (var seed = 1u; seed <= 8; seed++)
+            {
+                var b = new Battle(new OpenField(), new Rng(seed));
+                var p = Unit("p", 0, 0, false, "w_pistol9", "a_9mm", player: true);
+                var ally = Unit("ally", 20, 20, false, "w_pistol9", "a_9mm");
+                var e1 = Unit("e1", 9, 2, true, "w_pipe");
+                var e2 = Unit("e2", 10, -3, true, "w_machete");
+                b.Start(new[] { e1, p, e2, ally }, false, ourMove: true);
+                Assert.That(b.Order.Take(2).All(u => !u.Hostile), Is.True, $"seed {seed}: {string.Join(", ", b.Order.Select(u => u.C.Id))}");
+                Assert.That(b.Order.Skip(2).All(u => u.Hostile), Is.True);
+            }
+        }
+
         [Test]
         public void AiFightsToAnEndOnBothSides()
         {

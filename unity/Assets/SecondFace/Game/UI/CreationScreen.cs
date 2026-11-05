@@ -18,6 +18,8 @@ namespace SecondFace.Game.UI
     {
         public Creation Creation = Creation.Start();
         public GameObject BodyF, BodyM;
+        /// <summary>The Rocketbox people (the player is one of them when given).</summary>
+        public SecondFace.Game.People.RocketboxCatalog Rocketbox;
         public RuntimeAnimatorController Idle;
         public Rng Rng = new();
         /// <summary>The player as made and the origin they came from (null when made from scratch).</summary>
@@ -133,7 +135,8 @@ namespace SecondFace.Game.UI
         private void MakeFigure()
         {
             Figure?.Dispose();
-            var prefab = Creation.Look.Body == "m" ? _m.BodyM : _m.BodyF;
+            if (_m.Rocketbox != null && (Creation.Look.Rb == null || _m.Rocketbox.Get(Creation.Look.Rb) == null)) PickPerson(0);
+            var prefab = PlayerBody.Base(Creation.Look, _m.BodyF, _m.BodyM, _m.Rocketbox);
             Figure = Figure.Create(prefab, _m.Idle, 720, 800);   // about the stage's own shape: nothing cropped
             if (Figure == null) return;
             _figureImage.image = Figure.Texture;
@@ -286,6 +289,24 @@ namespace SecondFace.Game.UI
 
         // --- the face ----------------------------------------------------------------------------------------------
 
+        private bool Rb => _m.Rocketbox != null && Creation.Look.Rb != null;
+
+        /// <summary>The Rocketbox people this player may be (their sex, their people first).</summary>
+        private List<RbPerson> Choices() =>
+            RbPeople.PlayerChoices(Creation.Look.Body == "m", Creation.Look.Heritage).Where(p => _m.Rocketbox != null && _m.Rocketbox.Get(p.Id) != null).ToList();
+
+        /// <summary>Steps to the next (or previous) person; 0 keeps the current one if it is still a choice, else the first.
+        /// A new person starts from their own photographed face.</summary>
+        private void PickPerson(int step)
+        {
+            var c = Choices();
+            if (c.Count == 0) { Creation.Look.Rb = null; return; }
+            var i = c.FindIndex(p => p.Id == Creation.Look.Rb);
+            var next = c[i < 0 ? 0 : ((i + step) % c.Count + c.Count) % c.Count].Id;
+            if (next != Creation.Look.Rb) Creation.Look.Face = new Dictionary<string, float>();
+            Creation.Look.Rb = next;
+        }
+
         private void Face()
         {
             // the player's people first (owner, pass 9): a face drawn from their archetypes, the skin, hair and eyes as they
@@ -298,14 +319,28 @@ namespace SecondFace.Game.UI
                 var chip = Choice(Strings.Get("create.heritage." + id), Creation.Look.Heritage == id, () =>
                 {
                     Creation.Heritage(cluster, _m.Rng);
+                    if (Rb) { PickPerson(0); MakeFigure(); }
                     Restyle();
                     Refresh();
                 }, "heritage-" + id);
                 chip.AddToClassList("sf-creation__chip");
                 peoples.Add(chip);
             }
+            if (Rb)
+            {
+                // who they are among Knock's world's people (Rocketbox's own, as photographed); the sliders after shape them
+                Heading("create.person");
+                var who = Row();
+                var c = Choices();
+                var at = c.FindIndex(p => p.Id == Creation.Look.Rb);
+                Act(who, "create.person_prev", () => { PickPerson(-1); MakeFigure(); Refresh(); }, name: "person-prev");
+                var index = new Label($"{at + 1} / {c.Count}") { name = "person-index" };
+                index.AddToClassList("sf-creation__slider-label");
+                who.Add(index);
+                Act(who, "create.person_next", () => { PickPerson(1); MakeFigure(); Refresh(); }, name: "person-next");
+            }
             var actions = Row();
-            Act(actions, "create.another_face", () => { Creation.NewFace(_m.Rng, Creation.Look.Face); Restyle(); Refresh(); });
+            if (!Rb) Act(actions, "create.another_face", () => { Creation.NewFace(_m.Rng, Creation.Look.Face); Restyle(); Refresh(); });
             Act(actions, "create.even_face", () => { Creation.Look.Face = new Dictionary<string, float>(); Restyle(); Refresh(); }, quiet: true);
             var groups = Row("sf-creation__chips");
             foreach (var g in Sculpt.Groups)
@@ -319,7 +354,8 @@ namespace SecondFace.Game.UI
             {
                 var slider = s;
                 var v = Creation.Look.Face.TryGetValue(s.Id, out var x) ? x : 0f;
-                Slider(Strings.Get("face." + s.Id), s.Min, 1f, v, nv =>
+                var (lo, hi) = Rb && RocketboxSculpt.Knows(Creation.Look.Rb) && RocketboxSculpt.Calibrated(s.Id) ? RocketboxSculpt.Limits(Creation.Look.Rb, s.Id) : (s.Min, 1f);
+                Slider(Strings.Get("face." + s.Id), Mathf.Max(s.Min, lo), Mathf.Min(1f, hi), v, nv =>
                 {
                     Creation.Look.Face[slider.Id] = nv;
                     var face = Figure != null ? Figure.Face : null;
@@ -335,6 +371,15 @@ namespace SecondFace.Game.UI
         {
             var look = Creation.Look;
             void Show() { if (Figure != null) { Figure.Look(look); DrawFigure(); } }
+            if (Rb)
+            {
+                // a Rocketbox person's skin, hair and eyes are their own, as photographed (the owner's people rule)
+                Heading("create.skin");
+                var own = new Label(Strings.Get("create.look_own"));
+                own.AddToClassList("sf-creation__note");
+                _page.Add(own);
+                return;
+            }
             Heading("create.skin");
             Slider(Strings.Get("create.tone"), -1f, 1f, look.Skin, v => { look.Skin = v; Show(); }, "slider-tone");
             Slider(Strings.Get("create.undertone"), -1f, 1f, look.Undertone, v => { look.Undertone = v; Show(); }, "slider-undertone");
@@ -418,6 +463,27 @@ namespace SecondFace.Game.UI
             { "body-shoulders", "body-vshape", "body-chest", "body-pecs", "body-bust", "body-firm", "body-lift", "body-spacing", "body-point", "body-fullness",
               "body-arms", "body-waist", "body-belly", "body-tone", "body-hips", "body-seat", "body-thighs", "body-legs" };
 
+        /// <summary>A Rocketbox person's own clothes in the player's dyes: the top, the legs, a second piece.</summary>
+        private void RbClothes()
+        {
+            Heading("create.clothes");
+            var now = PlayerBody.Dyes(Creation.Look);
+            foreach (var (slot, current) in new[] { ("top", now.Top), ("legs", now.Legs), ("accent", now.Accent) })
+            {
+                var part = slot;
+                var label = new Label(Strings.Get("create.dye.rb_" + part));
+                label.AddToClassList("sf-creation__slider-label");
+                _page.Add(label);
+                var swatches = Row();
+                swatches.AddToClassList("sf-creation__swatches");
+                foreach (var dye in Looks.Dyes)
+                {
+                    var colour = dye;
+                    swatches.Add(Swatch($"dye-{part}-{colour:x6}", LookView.Colour(colour), current == colour, () => { Creation.Look.Dyes[part] = colour; Restyle(); Refresh(); }));
+                }
+            }
+        }
+
         private void BodyPage()
         {
             Heading("create.body_type");
@@ -430,6 +496,7 @@ namespace SecondFace.Game.UI
                     if (Creation.Look.Body == body) return;
                     Creation.Look.Body = body;
                     Creation.NewFace(_m.Rng, null);   // a face of the body's own sex (a woman's jaw is never a man's)
+                    if (_m.Rocketbox != null) { Creation.Look.Rb = null; PickPerson(0); }
                     MakeFigure();
                     Refresh();
                 }, "body-" + b));
@@ -439,6 +506,7 @@ namespace SecondFace.Game.UI
                 Creation.Look.Height = v;
                 if (Figure != null) { Figure.Scale = LookView.Scale(Creation.Look); DrawFigure(); }
             }, "slider-height");
+            if (Rb) { RbClothes(); return; }
             Slider(Strings.Get("create.build"), -1f, 1f, Creation.Look.Build, v =>
             {
                 Creation.Look.Build = v;

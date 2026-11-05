@@ -29,7 +29,7 @@ namespace SecondFace.Tests
         private static IEnumerator Wait(float seconds) { var t = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t < seconds) yield return null; }
         private static float Flat(Vector3 a, Vector3 b) { a.y = 0; b.y = 0; return Vector3.Distance(a, b); }
 
-        private static IEnumerator NewGame(System.Action<Bootstrap> done)
+        internal static IEnumerator NewGame(System.Action<Bootstrap> done, bool Capture = false)
         {
             if (Directory.Exists(SavesDir)) Directory.Delete(SavesDir, true);
             Bootstrap.MakeSession = () => new Session(new DirectoryBackend(SavesDir));
@@ -49,6 +49,18 @@ namespace SecondFace.Tests
             for (var i = 0; i < 3; i++) yield return null;
             BootTests.Press(creation.Content.Q<UnityEngine.UIElements.Button>("origin-" + SecondFace.Core.Stats.Creation.Origins()[2].Id));
             creation.Content.Q<UnityEngine.UIElements.TextField>("name").value = "Wren Ashby";
+            if (Capture)
+            {
+                // the player is one of the world's own people (a Rocketbox person), their face sculpted, their clothes dyed
+                BootTests.Press(creation.Root.Q<UnityEngine.UIElements.Button>("tab-face"));
+                for (var i = 0; i < 6; i++) yield return null;
+                yield return ScreenshotTests.CaptureWithUi("knock_create_face", 1920, 1080);
+                var next = creation.Root.Q<UnityEngine.UIElements.Button>("person-next");
+                if (next != null) { BootTests.Press(next); for (var i = 0; i < 6; i++) yield return null; yield return ScreenshotTests.CaptureWithUi("knock_create_face_next", 1920, 1080); }
+                BootTests.Press(creation.Root.Q<UnityEngine.UIElements.Button>("tab-body"));
+                for (var i = 0; i < 6; i++) yield return null;
+                yield return ScreenshotTests.CaptureWithUi("knock_create_body", 1920, 1080);
+            }
             Assert.That(creation.Finish(), Is.True);
             while (Time.realtimeSinceStartup - t0 < 420f && (boot.Walkabout == null || !boot.Walkabout.Ready)) yield return null;
             Assert.That(boot.Walkabout.Ready, Is.True, $"set down ({boot.Walkabout.Line()})");
@@ -59,9 +71,10 @@ namespace SecondFace.Tests
         public IEnumerator TheOpeningPlaysAtHome()
         {
             Bootstrap boot = null;
-            yield return NewGame(b => boot = b);
+            yield return NewGame(b => boot = b, Capture: true);
             var walk = boot.Walkabout;
             var g = walk.Game;
+            Assert.That(SecondFace.Game.People.PlayerBody.Look(g.Pc).Rb, Is.Not.Null, "the player is one of Rocketbox's people");
             // home: the place above the Cistern's door, inside Maud's house, at seven on hatch day, the day's quest begun
             Assert.That(g.LocationId, Is.EqualTo("cistern9"));
             var home = boot.Stage.Marker("cistern9", "spawn", "home");
@@ -89,7 +102,7 @@ namespace SecondFace.Tests
             walk.Rig.View(200f, 48f, 16f);
             boot.Stage.Clock.SetHour(9);
             yield return Wait(3f);
-            yield return ScreenshotTests.Capture("knock_square", 1920, 1080);
+            yield return ScreenshotTests.CaptureWithUi("knock_square", 1920, 1080);
             // a conversation from the content: Maud's morning
             var it = maud.GetComponent<Interactable>();
             Assert.That(it, Is.Not.Null);
@@ -98,12 +111,20 @@ namespace SecondFace.Tests
             while (Time.realtimeSinceStartup - t0 < 20f && (walk.Conversation == null || !walk.Conversation.IsOpen)) yield return null;
             Assert.That(walk.Conversation != null && walk.Conversation.IsOpen, Is.True, "Maud talks");
             yield return Wait(1.5f);
-            yield return ScreenshotTests.Capture("knock_maud", 1920, 1080);
+            yield return ScreenshotTests.CaptureWithUi("knock_maud", 1920, 1080);
             yield return Wait(1.2f);
-            yield return ScreenshotTests.Capture("knock_maud_b", 1920, 1080);   // (her idle in motion: a held pose would show twice)
+            yield return ScreenshotTests.CaptureWithUi("knock_maud_b", 1920, 1080);   // (her idle in motion: a held pose would show twice)
             walk.Conversation.Close();
             yield return Wait(1f);
             Assert.That(g.Flags.ContainsKey("kn_maud_woke"), Is.True, "her first line's effects ran");
+            // a chore's thing: the drop-hatch beside the Cistern's door talks (MOTHER's side of hatch day)
+            var hatch = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None).FirstOrDefault(i => i.Id == "hatch");
+            Assert.That(hatch, Is.Not.Null, "the hatch can be used");
+            Assert.That(walk.LookAt(hatch, SecondFace.Core.Content.Registry.Maps["c9_mouth"]), Is.True, "the hatch talks");
+            yield return Wait(1.5f);
+            yield return ScreenshotTests.CaptureWithUi("knock_hatch", 1920, 1080);
+            walk.Conversation.Close();
+            yield return Wait(0.5f);
             // the watch: the clock moves to ten at night, the stranger is placed, the trigger at the apron brings his talk
             SecondFace.Core.World.Logic.Apply(Newtonsoft.Json.Linq.JArray.Parse("[{\"until\": 22}, {\"set\": \"kn_night\"}]"), g);
             boot.Stage.Clock.Minutes = g.Minutes;
@@ -122,7 +143,7 @@ namespace SecondFace.Tests
             var sr = walk.People.ResidentsOf("cistern9").FirstOrDefault(r => r.Def.Id == "npc_kn_stranger");
             Assert.That(sr?.Rb?.Male, Is.True, $"the stranger is a man ({sr?.Rb?.Id})");
             yield return Wait(1.5f);
-            yield return ScreenshotTests.Capture("knock_night", 1920, 1080);
+            yield return ScreenshotTests.CaptureWithUi("knock_night", 1920, 1080);
             walk.Conversation.Close();
             yield return Wait(1f);
             // a fight: the outriders in the square in the morning, and the choice to fight
@@ -143,18 +164,15 @@ namespace SecondFace.Tests
             walk.Rig.Follow(lead);
             walk.Rig.View(200f, 45f, 14f);
             yield return Wait(2.5f);
-            yield return ScreenshotTests.Capture("knock_fight", 1920, 1080);
-            // the player ends turns until the fight ends (Corin and the outriders fight it out by the AI)
+            yield return ScreenshotTests.CaptureWithUi("knock_fight", 1920, 1080);
+            // the player fights as the allies' AI would (a fair, unskilled player), beside Corin, until the fight ends
             t0 = Time.realtimeSinceStartup;
-            while (Time.realtimeSinceStartup - t0 < 400f && walk.Combat.Active)
+            var turns = 0;
+            while (Time.realtimeSinceStartup - t0 < 600f && walk.Combat.Active)
             {
-                var bar = boot.UI.Hud.Q<UnityEngine.UIElements.VisualElement>("combat-bar");
-                if (bar != null)
-                {
-                    var end = bar.Query<UnityEngine.UIElements.Button>().ToList().LastOrDefault();
-                    if (end != null) BootTests.Press(end);
-                }
-                yield return Wait(0.5f);
+                if (walk.Combat.PlayersTurn) { turns++; yield return walk.Combat.PlayerTurnByAi(); }
+                if (turns == 2) { yield return ScreenshotTests.CaptureWithUi("knock_fight_turn", 1920, 1080); turns++; }
+                yield return null;
             }
             Debug.Log($"KnockTests: the fight {(walk.Combat.Active ? "still on" : "ended")}; dead: {string.Join(",", g.Npcs.Where(n => n.Value.Dead == true).Select(n => n.Key))}; pc hp {g.Pc.Sheet.Hp}");
             Assert.That(walk.Combat.Active, Is.False, "the fight ended");

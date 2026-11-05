@@ -29,6 +29,8 @@ namespace SecondFace.Tests
             var cat = AssetDatabase.LoadAssetAtPath<RocketboxCatalog>("Assets/SecondFace/People/Rocketbox/RocketboxCatalog.asset");
             var assets = AssetDatabase.LoadAssetAtPath<WorldAssets>("Assets/SecondFace/World/WorldAssets.asset");
             if (cat == null || cat.People.Length == 0 || assets == null || assets.Locomotion == null) { Assert.Ignore("no Rocketbox catalogue or locomotion built"); yield break; }
+            if (Object.FindAnyObjectByType<SecondFace.Game.Bootstrap>() != null) yield return BootTests.Clear();
+            foreach (var other in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None)) { other.enabled = false; other.tag = "Untagged"; }
             var made = new System.Collections.Generic.List<(string Name, Animator A)>();
             foreach (var id in new[] { "Female_Adult_01", "Male_Adult_08" })
             {
@@ -57,6 +59,17 @@ namespace SecondFace.Tests
                 Debug.Log($"RocketboxIdle: {name} human {a.isHuman} avatar {(a.avatar != null ? a.avatar.name + (a.avatar.isValid ? " valid" : " INVALID") : "none")} controller {a.runtimeAnimatorController?.name} state {state.fullPathHash} t {state.normalizedTime:0.00} enabled {a.enabled} | upper arm {arm:0}° from down, head up {Vector3.SignedAngle(Vector3.ProjectOnPlane(head.up, a.transform.right), a.transform.up, a.transform.right):0}°");
                 if (arm > 28f) bad.Add($"{name}: arm {arm:0}° from hanging");
             }
+            // the head's carriage from the side, against the player's own body (judged by eye: level, not tipped back)
+            var sun = new GameObject("sun").AddComponent<Light>(); sun.type = LightType.Directional; sun.transform.rotation = Quaternion.Euler(40f, 60f, 0f);
+            var cam = new GameObject("cam") { tag = "MainCamera" }.AddComponent<Camera>();
+            cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.72f, 0.76f, 0.8f); cam.fieldOfView = 18f;
+            foreach (var (_, a) in made) { a.transform.root.rotation = Quaternion.Euler(0f, 90f, 0f); if (a.GetComponent<SecondFace.Game.People.Gaze>() == null) a.gameObject.AddComponent<SecondFace.Game.People.Gaze>(); }
+            yield return null; yield return null;
+            cam.transform.position = new Vector3(0f, 1.35f, -9f); cam.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+            yield return ScreenshotTests.Capture("rb_idle_side", 1600, 800);
+            foreach (var (_, a) in made) a.transform.root.rotation = Quaternion.Euler(0f, 180f, 0f);
+            yield return ScreenshotTests.Capture("rb_idle_front", 1600, 800);
+            Object.Destroy(cam.gameObject); Object.Destroy(sun.gameObject);
             foreach (var (_, a) in made) Object.Destroy(a.transform.root.gameObject);
             Assert.That(bad, Is.Empty, string.Join("; ", bad));
 #else
@@ -107,16 +120,16 @@ namespace SecondFace.Tests
                     var role = p?.Roles?.FirstOrDefault(r => r == "settler") ?? p?.Roles?.FirstOrDefault() ?? "settler";
                     RbDress.Apply(go, RbPeople.DyesFor(p, "lineup_" + e.Id, role, null));
                     var anim = go.GetComponentInChildren<Animator>();
-                    if (anim != null && assets != null && assets.Locomotion != null) { anim.runtimeAnimatorController = assets.Locomotion; anim.applyRootMotion = false; anim.cullingMode = AnimatorCullingMode.AlwaysAnimate; }
+                    if (anim != null && assets != null && assets.Locomotion != null) { anim.runtimeAnimatorController = assets.Locomotion; anim.applyRootMotion = false; anim.cullingMode = AnimatorCullingMode.AlwaysAnimate; anim.gameObject.AddComponent<SecondFace.Game.People.Gaze>(); }
                     made.Add(go);
                     Debug.Log($"RocketboxLineup: sheet {sheet} #{i} {e.Id} ({p?.Style}, as {role})");
                 }
                 var t = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t < 1.5f) yield return null;
-                cam.transform.position = new Vector3(0f, 0.95f, -6.9f);
-                cam.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+                cam.transform.position = new Vector3(0f, 1.45f, -7.4f);
+                cam.transform.rotation = Quaternion.Euler(4f, 0f, 0f);
                 yield return ScreenshotTests.Capture($"rb_lineup_{sheet}", 2560, 1000);
-                cam.transform.position = new Vector3(0f, 0.95f, 6.9f);
-                cam.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+                cam.transform.position = new Vector3(0f, 1.45f, 7.4f);
+                cam.transform.rotation = Quaternion.Euler(4f, 180f, 0f);
                 yield return ScreenshotTests.Capture($"rb_lineup_back_{sheet}", 2560, 1000);
                 foreach (var go in made) Object.Destroy(go);
                 yield return null;

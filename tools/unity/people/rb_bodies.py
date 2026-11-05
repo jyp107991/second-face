@@ -96,6 +96,8 @@ def entry(n, src, bake, opened=None):
     e = dict(id=opened['name'] if opened else n, source=src, sex=opened['sex'] if opened else sex,
              age=AGES.get(face), people=opened['people'] if opened else people_of(n), body=base, face=face)
     if opened: e['face_of'] = opened.get('label', '')
+    # the face sculptor's shape keys: on every opened face's own export, and on a library body's calibration export
+    e['sculpt'] = bool(opened) or bool(RBLIB and os.path.exists(os.path.join(RBLIB, n, n + '_sculpt.fbx')))
     style = STYLE.get(base)
     out = OUT.get(base) if not opened else None
     if not opened:
@@ -122,6 +124,8 @@ def entry(n, src, bake, opened=None):
     return e
 
 
+RBLIB = None   # the scratch library (rblib/), set by the main run
+
 # head gear that is not over the face and reads as working kit (hard hats on labourers): kept
 STYLE_OK_GEAR = {'Construction_Female_01', 'Construction_Male_02', 'Construction_Male_03', 'Construction_Male_05',
                  'Construction_Male_06', 'Construction_Male_07', 'Construction_Male_08', 'Wood_Male_01', 'Delivery_Male_01'}
@@ -130,6 +134,7 @@ if __name__ == '__main__':
     bake = sys.argv[1]
     S = os.path.dirname(os.path.dirname(os.path.abspath(bake)))
     rblib = os.path.join(os.path.dirname(os.path.abspath(bake.rstrip('/'))), '..', 'rblib')
+    RBLIB = rblib
     people = []
     names = sorted(AGES.keys() | set(STYLE) | set(OUT))
     # (a locked face opened: the opened person stands for it, the capped original is not used)

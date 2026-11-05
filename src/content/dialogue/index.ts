@@ -25,11 +25,11 @@ import { STACKS_DIALOGUES } from './md_stacks';
 import { BRIDGEWARD_DIALOGUES } from './md_bridgeward';
 import { CROWN_DIALOGUES } from './md_crown';
 import { d_dw_approach, d_dw_cato, d_dw_clerk, d_dw_console, d_dw_diary_table, d_dw_door, d_dw_juno, d_dw_oriel, d_dw_panel, d_dw_pumps, d_dw_sable, d_dw_valve, d_dw_wick } from './drywells';
-import { d_kn_maud, d_kn_hatch, d_kn_grille, d_kn_linnet, d_kn_buyer, d_kn_factor, d_kn_dace, d_kn_rib, d_kn_mast, d_kn_corin, d_kn_windpump, d_kn_snare, d_kn_postbook, d_kn_door, d_kn_tollsign, d_kn_watch, d_kn_stranger, d_kn_outriders } from './knock';
+import { d_kn_maud, d_kn_hatch, d_kn_grille, d_kn_linnet, d_kn_buyer, d_kn_factor, d_kn_dace, d_kn_rib, d_kn_mast, d_kn_corin, d_kn_windpump, d_kn_snare, d_kn_postbook, d_kn_door, d_kn_tollsign, d_kn_watch, d_kn_stranger, d_kn_outriders, d_kn_bed } from './knock';
 import { d_c9_archive, d_c9_body, d_c9_bram, d_c9_great_door, d_c9_ines, d_c9_mother, d_c9_pell, d_c9_shaft, d_c9_tamsin, d_c9_teague } from './ch1_cistern';
 
 export const DIALOGUES: Record<string, DialogueDef> = Object.fromEntries([
-  d_dev_guide, d_kn_maud, d_kn_hatch, d_kn_grille, d_kn_linnet, d_kn_buyer, d_kn_factor, d_kn_dace, d_kn_rib, d_kn_mast, d_kn_corin, d_kn_windpump, d_kn_snare, d_kn_postbook, d_kn_door, d_kn_tollsign, d_kn_watch, d_kn_stranger, d_kn_outriders, d_c9_pell, d_c9_ines, d_c9_tamsin, d_c9_bram, d_c9_mother, d_c9_teague, d_c9_shaft, d_c9_archive, d_c9_body, d_c9_great_door,
+  d_dev_guide, d_kn_maud, d_kn_hatch, d_kn_grille, d_kn_linnet, d_kn_buyer, d_kn_factor, d_kn_dace, d_kn_rib, d_kn_mast, d_kn_corin, d_kn_windpump, d_kn_snare, d_kn_postbook, d_kn_door, d_kn_tollsign, d_kn_watch, d_kn_stranger, d_kn_outriders, d_kn_bed, d_c9_pell, d_c9_ines, d_c9_tamsin, d_c9_bram, d_c9_mother, d_c9_teague, d_c9_shaft, d_c9_archive, d_c9_body, d_c9_great_door,
   d_sh_mags, d_sh_room, d_sh_pumps, d_sh_nell, d_sh_ada, d_sh_jonah, d_sh_issa, d_sh_pike, d_sh_calla, d_sh_hollis, d_sh_yusra, d_sh_dov, d_sh_pardo, d_sh_ruth, d_sh_tracks,
   d_rd_gate, d_rd_brindle, d_rd_kessler, d_rd_vasha, d_rd_wren, d_rd_teo, d_rd_cage, d_rd_table, d_rd_perpetua, d_rd_jack, d_rd_tank, d_rd_chest, d_tribute, d_rd_truck, d_map,
   d_th_gate, d_th_sergeant, d_th_clerk, d_th_ledger, d_th_terminal, d_th_fence, d_th_rates, d_th_bikes, d_th_outrider_a, d_th_outrider_b, d_th_quartermaster, d_th_debtor, d_th_caravan,

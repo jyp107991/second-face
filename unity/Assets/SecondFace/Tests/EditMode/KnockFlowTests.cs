@@ -108,6 +108,18 @@ namespace SecondFace.Tests
         }
 
         [Test]
+        public void TheCotSleepsTheNightThrough()
+        {
+            // after the stranger, going home to bed is enough (Maud asleep or not): the morning and its riders come
+            var (g, q) = Weakling();
+            g.Flags["kn_night"] = true; g.Flags["kn_stranger_dead"] = true;
+            g.Minutes = 23 * 60;
+            Talk("d_kn_bed", g, q, "(Sleep until morning.)");
+            Assert.That((g.Minutes % 1440) / 60, Is.EqualTo(7));
+            Assert.That(g.Flags.ContainsKey("kn_outriders"), Is.True);
+        }
+
+        [Test]
         public void FightingTheOutridersMovesTheStoryOn()
         {
             var (g, q) = Weakling();

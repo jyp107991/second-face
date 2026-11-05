@@ -546,3 +546,10 @@ combat.lost	You go down. Everything goes dark.
 combat.truce	They back off.
 travel.not_yet	Not yet. Knock still needs you.
 travel.on_the_road	On the road to {0}
+create.person	Who you are
+create.person_prev	Before
+create.person_next	Next
+create.look_own	Your skin, hair and eyes are your own. Shape the face on the face page.
+create.dye.rb_top	Shirt and jacket
+create.dye.rb_legs	Trousers
+create.dye.rb_accent	The rest

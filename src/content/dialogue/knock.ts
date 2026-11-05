@@ -562,7 +562,7 @@ export const d_kn_rib: DialogueDef = {
     share_fail: { text: '"No." Abner drops the copper. Nell steps round him. "Our mast now."', options: [{ text: 'Then we do this the other way.', effects: [{ set: 'kn_rib_fight' }], next: 'fight' }, { text: '(Back off.)', next: 'back_off' }] },
     sneak_fail: { text: 'A stone turns under your boot. Nell is between you and the box with her shiv out. "Thief," she says, delighted.', options: [{ text: '(Fight.)', effects: [{ set: 'kn_rib_fight' }], next: 'fight' }, { text: '(Back off.)', next: 'back_off' }] },
     back_off: { text: 'You back off. Dace swears quietly. "Fine. Their mast." You walk home with what the crates near the gap gave you.', effects: [{ set: 'kn_rib_done' }, { set: 'kn_rib_backed_off' }], options: [{ text: '(Leave.)', exit: true }] },
-    fight: { text: 'Abner swings the coil off his arm. Dace steps up beside you with the pry bar. Nobody says anything else.', options: [{ text: '(Fight.)', exit: true }] },
+    fight: { text: 'Abner swings the coil off his arm. Dace steps up beside you with his length of pipe. Nobody says anything else.', options: [{ text: '(Fight.)', exit: true }] },
     done: { text: 'The Rib is quiet.', options: [{ text: '(Leave.)', exit: true }] },
   },
 };
@@ -659,6 +659,20 @@ export const d_kn_snare: DialogueDef = {
     botched: { speaker: 'narrator', text: 'You get one hare out and the wire kinks in your hands. The loop won\'t sit right. Corin will notice that too.', effects: [{ set: 'kn_snares_done' }, { give: 'c_meat', count: 1 }, { xp: 10 }], options: [{ text: '(Go.)', exit: true }] },
     taken: { speaker: 'narrator', text: 'One hare. The loops hang slack behind you.', effects: [{ set: 'kn_snares_done' }, { xp: 10 }], options: [{ text: '(Go.)', exit: true }] },
     empty: { speaker: 'narrator', text: 'An empty loop.', options: [{ text: '(Leave it.)', exit: true }] },
+  },
+};
+
+// ---- your cot: bed after the night's watch (the objective says "go home to bed"; Maud also comes down) ------------
+export const d_kn_bed: DialogueDef = {
+  id: 'd_kn_bed', owner: 'npc_kn_maud',
+  start: [{ if: { all: [{ flag: 'kn_stranger_dead' }, { not: { flag: 'kn_outriders' } }] }, node: 'night' }, { node: 'day' }],
+  nodes: {
+    night: {
+      speaker: 'narrator',
+      text: 'Your cot behind the partition, the blanket folded back the way Maud leaves it. The photograph is still in your hand. You don\'t remember deciding to keep holding it.',
+      options: [{ id: 'bed.sleep', text: '(Sleep until morning.)', effects: [{ until: 7 }, { set: 'kn_outriders' }], exit: true }, { text: '(Not yet.)', exit: true }],
+    },
+    day: { speaker: 'narrator', text: 'Your cot behind the partition. Not now; there is the day to get through first.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -832,7 +846,7 @@ export const d_kn_outriders: DialogueDef = {
       options: [{ text: '(Go to Maud.)', exit: true }],
     },
     fight: {
-      text: 'Hale sees your arm, and looks up at the rise, and sighs like a man who expected nothing better. "Corin Asch," he says. "Twenty years." His hand goes to his revolver.',
+      text: 'Hale sees your arm, and looks up at the rise, and sighs like a man who expected nothing better. "Corin Asch," he says. "Twenty years." His hand goes to his revolver. Behind you, Dace comes out of the lane with his pipe.',
       options: [{ text: '(Fight.)', exit: true }],
     },
     again: { text: '"We\'re done talking."', options: [{ text: '(Step back.)', exit: true }] },

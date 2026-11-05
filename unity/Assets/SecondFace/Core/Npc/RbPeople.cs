@@ -20,6 +20,8 @@ namespace SecondFace.Core.Npc
         /// it ("denim", "leather" or null: always dyed).</summary>
         public int[] Own;
         public string[] OwnKind;
+        /// <summary>Their export carries the face sculptor's shape keys (a player may be them).</summary>
+        public bool Face;
     }
 
     /// <summary>A person's three dyes and how worn their clothes are (the Person shader's _Dye0-2, _Grime, _Wear).</summary>
@@ -44,6 +46,18 @@ namespace SecondFace.Core.Npc
         {
             _byId ??= All.ToDictionary(p => p.Id);
             return id != null && _byId.TryGetValue(id, out var p) ? p : null;
+        }
+
+        /// <summary>Who a player may be: of the body's sex, the face sculptable, office and hospital wear left out unless
+        /// the player's people has nobody else (a face of one's own people before the cut of a jacket: the library has one
+        /// Black woman, in a blazer); the player's own people first, the peoples nearest them after.</summary>
+        public static List<RbPerson> PlayerChoices(bool male, string people)
+        {
+            var own = people != null ? Bodies.People(people) : null;
+            var fit = All.Where(p => p.Male == male && p.Face && p.Roles.Length > 0).ToList();
+            var wear = fit.Where(p => p.Style != "formal" && p.Style != "medic").ToList();
+            if (own != null && !wear.Any(p => Kin(own, p.People) >= 1)) wear.AddRange(fit.Where(p => !wear.Contains(p) && Kin(own, p.People) >= 1));
+            return wear.OrderByDescending(p => Kin(own, p.People)).ThenBy(p => p.Age).ThenBy(p => p.Id).ToList();
         }
 
         /// <summary>Peoples near each other in looks (a face of one stands for the other when the library has none).</summary>

@@ -77,11 +77,14 @@ namespace SecondFace.Core.Combat
         public BattleUnit Player => Units.FirstOrDefault(u => u.C.IsPlayer);
         public IEnumerable<BattleUnit> EnemiesOf(BattleUnit u) => Units.Where(o => o.Alive && !o.Fled && (u.Hostile ? !o.Hostile : o.Hostile));
 
-        public void Start(IEnumerable<BattleUnit> units, bool pit = false)
+        /// <param name="ourMove">The player's side started it (a signal, a word that turned to a fight): in initiative
+        /// order still, but all of the player's side act before the other's.</param>
+        public void Start(IEnumerable<BattleUnit> units, bool pit = false, bool ourMove = false)
         {
             Units.Clear(); Units.AddRange(units);
             Pit = pit; Active = true; Round = 1; XpEarned = 0; Outcome = null; _idx = 0;
             Order = CombatRules.TurnOrder(Rng, Units.Select(u => u.C)).Select(c => Units.First(u => u.C == c)).ToList();
+            if (ourMove) Order = Order.Where(u => !u.Hostile).Concat(Order.Where(u => u.Hostile)).ToList();
             Say("Combat!");
         }
 
@@ -127,6 +130,9 @@ namespace SecondFace.Core.Combat
             }
             return false;
         }
+
+        /// <summary>Nobody has done anything for rounds on end (no line, no path): the fight breaks off as a truce.</summary>
+        public void Standoff() { if (Active) Finish("truce"); }
 
         private void Finish(string outcome)
         {
@@ -306,8 +312,9 @@ namespace SecondFace.Core.Combat
             var s = u.C.Sheet;
             var hpFrac = s.Hp / (double)Sheet.Derived(s).MaxHp;
             var acts = new List<AiStep> { new() { Kind = "wait", Score = 1 } };
-            if (u.C.Morale < 10 && hpFrac < 0.35) acts.Add(new AiStep { Kind = "surrender", Score = 120 });
-            if (u.C.Morale < 20)
+            // (the player's own body never gives up or runs on the AI's say: an auto-turn fights or holds)
+            if (!u.C.IsPlayer && u.C.Morale < 10 && hpFrac < 0.35) acts.Add(new AiStep { Kind = "surrender", Score = 120 });
+            if (!u.C.IsPlayer && u.C.Morale < 20)
             {
                 (double X, double Z)? bestT = null; var bestD = double.NegativeInfinity;
                 foreach (var t in Field.Candidates(u, Reach(u)))
@@ -331,7 +338,8 @@ namespace SecondFace.Core.Combat
                     if (!pv.Ok) continue;
                     var exp = pv.Chance / 100.0 * AvgDamage(u);
                     var kill = f.C.Sheet.Hp <= AvgDamage(u) ? 25 : 0;
-                    acts.Add(new AiStep { Kind = "attack", Target = f, Score = 20 + exp * 3 + kill + (f.C.IsPlayer ? 3 : 0) + (pv.Chance < 12 ? -25 : 0) });
+                    // the nearest a little before the far (who is on you is who you shoot), the player no more than anyone
+                    acts.Add(new AiStep { Kind = "attack", Target = f, Score = 20 + exp * 3 + kill - Distance(u, f) * 0.12 + (pv.Chance < 12 ? -25 : 0) });
                     if (wd.Burst != null)
                     {
                         var pb = Preview(u, f, null, true);
@@ -366,6 +374,19 @@ namespace SecondFace.Core.Combat
                     best.Score = 10 + (best.Score - here);
                     best.Why = "position";
                     acts.Add(best);
+                }
+                else if (!acts.Any(a => a.Kind == "attack" || a.Kind == "burst"))
+                {
+                    // no shot from here and nowhere better in reach (out of sight, out of range): close in on the nearest, to
+                    // a few metres short, so a fight never stands still with everyone waiting for a line that never comes
+                    var target = foes.OrderBy(f => Distance(u, f)).First();
+                    var d = Distance(u, target);
+                    var go = Math.Min(Reach(u), Math.Max(0, d - 4));
+                    if (go > 0.5)
+                    {
+                        var k = go / d;
+                        acts.Add(new AiStep { Kind = "move", X = u.PX + (target.PX - u.PX) * k, Z = u.PZ + (target.PZ - u.PZ) * k, Score = 25, Why = "close in" });
+                    }
                 }
             }
             return acts.OrderByDescending(a => a.Score).First();

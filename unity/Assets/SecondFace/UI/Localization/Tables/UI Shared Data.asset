@@ -2095,6 +2095,130 @@ MonoBehaviour:
     m_Key: hair.sf_cornrows
     m_Metadata:
       m_Items: []
+  - m_Id: 2475108686217216
+    m_Key: verb.aim_head
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108711383040
+    m_Key: verb.aim_legs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577344
+    m_Key: verb.burst
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577345
+    m_Key: combat.start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577346
+    m_Key: combat.your_turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577347
+    m_Key: combat.their_turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577348
+    m_Key: combat.move_cost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577349
+    m_Key: combat.too_far
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577350
+    m_Key: combat.end_turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577351
+    m_Key: combat.reload
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577352
+    m_Key: combat.heal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577353
+    m_Key: combat.ap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577354
+    m_Key: combat.chance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577355
+    m_Key: combat.hit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577356
+    m_Key: combat.crit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577357
+    m_Key: combat.miss
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577358
+    m_Key: combat.down
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577359
+    m_Key: combat.fled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577360
+    m_Key: combat.surrender
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577361
+    m_Key: combat.won
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577362
+    m_Key: combat.lost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577363
+    m_Key: combat.truce
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577364
+    m_Key: travel.not_yet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577365
+    m_Key: travel.on_the_road
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577366
+    m_Key: create.person
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577367
+    m_Key: create.person_prev
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577368
+    m_Key: create.person_next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577369
+    m_Key: create.look_own
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577370
+    m_Key: create.dye.rb_top
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577371
+    m_Key: create.dye.rb_legs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2475108715577372
+    m_Key: create.dye.rb_accent
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

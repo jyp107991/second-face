@@ -70,6 +70,7 @@
    "people": "west_african",
    "body": "Business_Female_01",
    "face": "Business_Female_01",
+   "sculpt": true,
    "style": "formal",
    "roles": [
     "corp",
@@ -117,6 +118,7 @@
    "people": "north_european",
    "body": "Business_Female_02",
    "face": "Business_Female_02",
+   "sculpt": true,
    "style": "formal",
    "roles": [
     "corp",
@@ -155,6 +157,7 @@
    "people": "north_european",
    "body": "Business_Female_03",
    "face": "Business_Female_03",
+   "sculpt": true,
    "style": "formal",
    "roles": [
     "corp",
@@ -202,6 +205,7 @@
    "people": "north_european",
    "body": "Business_Female_04",
    "face": "Business_Female_04",
+   "sculpt": true,
    "style": "formal",
    "roles": [
     "corp",
@@ -240,6 +244,7 @@
    "people": "north_european",
    "body": "Business_Male_01",
    "face": "Business_Male_01",
+   "sculpt": true,
    "style": "formal",
    "roles": [
     "corp",
@@ -278,6 +283,7 @@
    "people": "east_asian",
    "body": "Business_Male_02",
    "face": "Business_Male_02",
+   "sculpt": true,
    "style": "formal",
    "roles": [
     "corp",
@@ -316,6 +322,7 @@
    "people": "north_european",
    "body": "Business_Male_03",
    "face": "Business_Male_03",
+   "sculpt": true,
    "style": "formal",
    "roles": [
     "corp",
@@ -354,6 +361,7 @@
    "people": "north_european",
    "body": "Business_Male_04",
    "face": "Business_Male_04",
+   "sculpt": true,
    "style": "formal",
    "roles": [
     "corp",
@@ -392,6 +400,7 @@
    "people": "mediterranean",
    "body": "Business_Male_05",
    "face": "Business_Male_05",
+   "sculpt": true,
    "style": "formal",
    "roles": [
     "corp",
@@ -430,6 +439,7 @@
    "people": "north_european",
    "body": "Business_Male_06",
    "face": "Business_Male_06",
+   "sculpt": true,
    "style": "shirt",
    "roles": [
     "guard",
@@ -471,6 +481,7 @@
    "people": "north_european",
    "body": "Business_Male_07",
    "face": "Business_Male_07",
+   "sculpt": true,
    "style": "shirt",
    "roles": [
     "guard",
@@ -512,6 +523,7 @@
    "people": "southeast_asian",
    "body": "Chef_Female_01",
    "face": "Chef_Female_01",
+   "sculpt": false,
    "style": null,
    "roles": [],
    "out": "a chef's whites and a hairnet (costume)",
@@ -557,6 +569,7 @@
    "people": "north_european",
    "body": "Construction_Female_01",
    "face": "Construction_Female_01",
+   "sculpt": false,
    "style": "work",
    "roles": [
     "labourer",
@@ -609,6 +622,7 @@
    "people": "north_european",
    "body": "Construction_Male_01",
    "face": "Construction_Male_01",
+   "sculpt": true,
    "style": null,
    "roles": [],
    "out": "a welder's visor down over the face",
@@ -645,6 +659,7 @@
    "people": "north_european",
    "body": "Construction_Male_02",
    "face": "Construction_Male_02",
+   "sculpt": false,
    "style": "work",
    "roles": [
     "labourer",
@@ -688,6 +703,7 @@
    "people": "west_african",
    "body": "Construction_Male_03",
    "face": "Construction_Male_03",
+   "sculpt": true,
    "style": "work",
    "roles": [
     "labourer",
@@ -731,6 +747,7 @@
    "people": "north_european",
    "body": "Construction_Male_04",
    "face": "Construction_Male_04",
+   "sculpt": false,
    "style": null,
    "roles": [],
    "out": "farmer's dungarees (owner rule: no dungarees)",
@@ -776,6 +793,7 @@
    "people": "north_european",
    "body": "Construction_Male_05",
    "face": "Construction_Male_05",
+   "sculpt": true,
    "style": "work",
    "roles": [
     "labourer",
@@ -819,6 +837,7 @@
    "people": "north_european",
    "body": "Construction_Male_06",
    "face": "Construction_Male_06",
+   "sculpt": true,
    "style": "work",
    "roles": [
     "labourer",
@@ -862,6 +881,7 @@
    "people": "north_european",
    "body": "Construction_Male_07",
    "face": "Construction_Male_07",
+   "sculpt": false,
    "style": "work",
    "roles": [
     "labourer",
@@ -914,6 +934,7 @@
    "people": "mediterranean",
    "body": "Construction_Male_08",
    "face": "Construction_Male_08",
+   "sculpt": true,
    "style": "work",
    "roles": [
     "labourer",
@@ -966,6 +987,7 @@
    "people": "mediterranean",
    "body": "Delivery_Male_01",
    "face": "Delivery_Male_01",
+   "sculpt": false,
    "style": "work",
    "roles": [],
    "dye": [
@@ -1002,6 +1024,7 @@
    "people": "north_european",
    "body": "Female_Adult_01",
    "face": "Female_Adult_01",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -1046,6 +1069,7 @@
    "people": "north_european",
    "body": "Female_Adult_02",
    "face": "Female_Adult_02",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -1099,6 +1123,7 @@
    "people": "southeast_asian",
    "body": "Female_Adult_03",
    "face": "Female_Adult_03",
+   "sculpt": true,
    "style": "street",
    "roles": [
     "street",
@@ -1148,6 +1173,7 @@
    "people": "north_european",
    "body": "Female_Adult_04",
    "face": "Female_Adult_04",
+   "sculpt": true,
    "style": "street",
    "roles": [
     "street",
@@ -1188,6 +1214,7 @@
    "people": "north_european",
    "body": "Female_Adult_05",
    "face": "Female_Adult_05",
+   "sculpt": true,
    "style": "formal",
    "roles": [
     "corp",
@@ -1226,6 +1253,7 @@
    "people": "mediterranean",
    "body": "Female_Adult_06",
    "face": "Female_Adult_06",
+   "sculpt": true,
    "style": null,
    "roles": [],
    "out": "religious dress",
@@ -1262,6 +1290,7 @@
    "people": "north_european",
    "body": "Female_Adult_07",
    "face": "Female_Adult_07",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -1306,6 +1335,7 @@
    "people": "north_european",
    "body": "Female_Adult_08",
    "face": "Female_Adult_08",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -1350,6 +1380,7 @@
    "people": "north_european",
    "body": "Female_Adult_09",
    "face": "Female_Adult_09",
+   "sculpt": true,
    "style": "coat",
    "roles": [
     "trader",
@@ -1392,6 +1423,7 @@
    "people": "latin_american",
    "body": "Female_Adult_10",
    "face": "Female_Adult_10",
+   "sculpt": true,
    "style": null,
    "roles": [],
    "out": "religious dress",
@@ -1428,6 +1460,7 @@
    "people": "east_asian",
    "body": "Female_Adult_11",
    "face": "Female_Adult_11",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -1472,6 +1505,7 @@
    "people": "east_asian",
    "body": "Female_Adult_12",
    "face": "Female_Adult_12",
+   "sculpt": true,
    "style": "street",
    "roles": [
     "street",
@@ -1512,6 +1546,7 @@
    "people": "north_european",
    "body": "Female_Adult_13",
    "face": "Female_Adult_13",
+   "sculpt": false,
    "style": "casual",
    "roles": [
     "settler",
@@ -1556,6 +1591,7 @@
    "people": "north_european",
    "body": "Female_Adult_14",
    "face": "Female_Adult_14",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -1600,6 +1636,7 @@
    "people": "north_european",
    "body": "Female_Adult_15",
    "face": "Female_Adult_15",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -1653,6 +1690,7 @@
    "people": null,
    "body": "Female_Adult_16",
    "face": "Female_Adult_16",
+   "sculpt": false,
    "style": null,
    "roles": [],
    "out": "no style assigned",
@@ -1666,6 +1704,7 @@
    "people": "north_european",
    "body": "Female_Adult_17",
    "face": "Female_Adult_17",
+   "sculpt": false,
    "style": "casual",
    "roles": [
     "settler",
@@ -1710,6 +1749,7 @@
    "people": "north_european",
    "body": "Female_Party_01",
    "face": "Female_Party_01",
+   "sculpt": false,
    "style": null,
    "roles": [],
    "out": "party clothes (modern fashion)",
@@ -1746,6 +1786,7 @@
    "people": "latin_american",
    "body": "Female_Party_02",
    "face": "Female_Party_02",
+   "sculpt": true,
    "style": null,
    "roles": [],
    "out": "party clothes (modern fashion)",
@@ -1782,6 +1823,7 @@
    "people": "latin_american",
    "body": "Fire_Female_01",
    "face": "Fire_Female_01",
+   "sculpt": false,
    "style": "heavy",
    "roles": [],
    "out": "head gear left on: helmet, mask",
@@ -1827,6 +1869,7 @@
    "people": "west_african",
    "body": "Fire_Female_02",
    "face": "Fire_Female_02",
+   "sculpt": true,
    "style": "heavy",
    "roles": [],
    "out": "head gear left on: helmet, mask",
@@ -1872,6 +1915,7 @@
    "people": "unsure",
    "body": "Fire_Female_03",
    "face": "Fire_Female_03",
+   "sculpt": false,
    "style": "heavy",
    "roles": [],
    "out": "head gear left on: helmet, mask",
@@ -1917,6 +1961,7 @@
    "people": "north_european",
    "body": "Fire_Male_01",
    "face": "Fire_Male_01",
+   "sculpt": false,
    "style": "heavy",
    "roles": [],
    "out": "head gear left on: helmet",
@@ -1953,6 +1998,7 @@
    "people": "west_african",
    "body": "Fire_Male_02",
    "face": "Fire_Male_02",
+   "sculpt": false,
    "style": "heavy",
    "roles": [],
    "out": "head gear left on: helmet",
@@ -1998,6 +2044,7 @@
    "people": "mediterranean",
    "body": "Fire_Male_03",
    "face": "Fire_Male_03",
+   "sculpt": false,
    "style": "heavy",
    "roles": [],
    "out": "head gear left on: helmet",
@@ -2043,6 +2090,7 @@
    "people": "mediterranean",
    "body": "Fire_Male_04",
    "face": "Fire_Male_04",
+   "sculpt": false,
    "style": "heavy",
    "roles": [],
    "out": "head gear left on: helmet, mask",
@@ -2088,6 +2136,7 @@
    "people": "unsure",
    "body": "Fire_Male_05",
    "face": "Fire_Male_05",
+   "sculpt": false,
    "style": "heavy",
    "roles": [],
    "out": "head gear left on: helmet",
@@ -2124,6 +2173,7 @@
    "people": "latin_american",
    "body": "Fire_Male_06",
    "face": "Fire_Male_06",
+   "sculpt": false,
    "style": "heavy",
    "roles": [],
    "out": "head gear left on: helmet",
@@ -2169,6 +2219,7 @@
    "people": "north_european",
    "body": "Fire_Male_07",
    "face": "Fire_Male_07",
+   "sculpt": true,
    "style": "heavy",
    "roles": [],
    "out": "head gear left on: helmet, mask",
@@ -2205,6 +2256,7 @@
    "people": "north_european",
    "body": "Gardener_Male_01",
    "face": "Gardener_Male_01",
+   "sculpt": true,
    "style": "work",
    "roles": [
     "labourer",
@@ -2257,6 +2309,7 @@
    "people": "north_european",
    "body": "Male_Adult_01",
    "face": "Male_Adult_01",
+   "sculpt": false,
    "style": "casual",
    "roles": [
     "settler",
@@ -2301,6 +2354,7 @@
    "people": "north_european",
    "body": "Male_Adult_02",
    "face": "Male_Adult_02",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -2345,6 +2399,7 @@
    "people": "north_european",
    "body": "Male_Adult_03",
    "face": "Male_Adult_03",
+   "sculpt": false,
    "style": "coat",
    "roles": [
     "trader",
@@ -2387,6 +2442,7 @@
    "people": "mediterranean",
    "body": "Male_Adult_04",
    "face": "Male_Adult_04",
+   "sculpt": true,
    "style": "street",
    "roles": [
     "street",
@@ -2427,6 +2483,7 @@
    "people": "north_european",
    "body": "Male_Adult_05",
    "face": "Male_Adult_05",
+   "sculpt": true,
    "style": "work",
    "roles": [
     "labourer",
@@ -2479,6 +2536,7 @@
    "people": "north_european",
    "body": "Male_Adult_06",
    "face": "Male_Adult_06",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -2523,6 +2581,7 @@
    "people": "north_european",
    "body": "Male_Adult_07",
    "face": "Male_Adult_07",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -2576,6 +2635,7 @@
    "people": "north_european",
    "body": "Male_Adult_08",
    "face": "Male_Adult_08",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -2620,6 +2680,7 @@
    "people": "east_asian",
    "body": "Male_Adult_09",
    "face": "Male_Adult_09",
+   "sculpt": true,
    "style": "street",
    "roles": [
     "street",
@@ -2660,6 +2721,7 @@
    "people": "east_asian",
    "body": "Male_Adult_10",
    "face": "Male_Adult_10",
+   "sculpt": true,
    "style": "street",
    "roles": [
     "street",
@@ -2700,6 +2762,7 @@
    "people": "north_european",
    "body": "Male_Adult_11",
    "face": "Male_Adult_11",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -2744,6 +2807,7 @@
    "people": "west_african",
    "body": "Male_Adult_12",
    "face": "Male_Adult_12",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -2788,6 +2852,7 @@
    "people": "north_european",
    "body": "Male_Adult_13",
    "face": "Male_Adult_13",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -2832,6 +2897,7 @@
    "people": "north_european",
    "body": "Male_Adult_14",
    "face": "Male_Adult_14",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -2876,6 +2942,7 @@
    "people": "latin_american",
    "body": "Male_Adult_15",
    "face": "Male_Adult_15",
+   "sculpt": true,
    "style": null,
    "roles": [],
    "out": "religious dress",
@@ -2912,6 +2979,7 @@
    "people": "north_european",
    "body": "Male_Adult_16",
    "face": "Male_Adult_16",
+   "sculpt": false,
    "style": "casual",
    "roles": [
     "settler",
@@ -2956,6 +3024,7 @@
    "people": "latin_american",
    "body": "Male_Adult_17",
    "face": "Male_Adult_17",
+   "sculpt": false,
    "style": "street",
    "roles": [],
    "dye": [
@@ -3001,6 +3070,7 @@
    "people": "west_african",
    "body": "Male_Adult_18",
    "face": "Male_Adult_18",
+   "sculpt": true,
    "style": "street",
    "roles": [],
    "out": "a hood up over the head (its face is carried onto a whole head, the Black picks)",
@@ -3037,6 +3107,7 @@
    "people": "mediterranean",
    "body": "Male_Adult_19",
    "face": "Male_Adult_19",
+   "sculpt": true,
    "style": null,
    "roles": [],
    "out": "religious dress",
@@ -3073,6 +3144,7 @@
    "people": "north_european",
    "body": "Male_Adult_20",
    "face": "Male_Adult_20",
+   "sculpt": true,
    "style": "street",
    "roles": [
     "street",
@@ -3113,6 +3185,7 @@
    "people": "mediterranean",
    "body": "Male_Adult_21",
    "face": "Male_Adult_21",
+   "sculpt": true,
    "style": null,
    "roles": [],
    "out": "religious dress",
@@ -3149,6 +3222,7 @@
    "people": "east_asian",
    "body": "Medical_Female_01",
    "face": "Medical_Female_01",
+   "sculpt": true,
    "style": "medic",
    "roles": [
     "medic"
@@ -3186,6 +3260,7 @@
    "people": "north_european",
    "body": "Medical_Female_02",
    "face": "Medical_Female_02",
+   "sculpt": true,
    "style": "medic",
    "roles": [
     "medic"
@@ -3232,6 +3307,7 @@
    "people": "north_european",
    "body": "Medical_Female_03",
    "face": "Medical_Female_03",
+   "sculpt": true,
    "style": "work",
    "roles": [
     "labourer",
@@ -3284,6 +3360,7 @@
    "people": "north_european",
    "body": "Medical_Male_01",
    "face": "Medical_Male_01",
+   "sculpt": true,
    "style": "medic",
    "roles": [
     "medic"
@@ -3321,6 +3398,7 @@
    "people": "north_european",
    "body": "Medical_Male_02",
    "face": "Medical_Male_02",
+   "sculpt": false,
    "style": "work",
    "roles": [
     "labourer",
@@ -3373,6 +3451,7 @@
    "people": "north_european",
    "body": "Medical_Male_03",
    "face": "Medical_Male_03",
+   "sculpt": true,
    "style": "medic",
    "roles": [
     "medic"
@@ -3410,6 +3489,7 @@
    "people": "north_european",
    "body": "Medical_Male_04",
    "face": "Medical_Male_04",
+   "sculpt": false,
    "style": null,
    "roles": [],
    "out": "a surgical mask and cap over the face",
@@ -3446,6 +3526,7 @@
    "people": "north_european",
    "body": "Medical_Male_05",
    "face": "Medical_Male_05",
+   "sculpt": false,
    "style": null,
    "roles": [],
    "out": "a surgical mask and gown over the face",
@@ -3491,6 +3572,7 @@
    "people": "north_european",
    "body": "Military_Female_01",
    "face": "Military_Female_01",
+   "sculpt": false,
    "style": "field",
    "roles": [],
    "out": "head gear left on: helmet",
@@ -3527,6 +3609,7 @@
    "people": "west_african",
    "body": "Military_Female_02",
    "face": "Military_Female_02",
+   "sculpt": true,
    "style": "field",
    "roles": [],
    "out": "head gear left on: helmet",
@@ -3563,6 +3646,7 @@
    "people": "west_african",
    "body": "Military_Male_01",
    "face": "Military_Male_01",
+   "sculpt": true,
    "style": "field",
    "roles": [],
    "out": "head gear left on: helmet",
@@ -3599,6 +3683,7 @@
    "people": "unsure",
    "body": "Military_Male_02",
    "face": "Military_Male_02",
+   "sculpt": true,
    "style": "field",
    "roles": [],
    "dye": [
@@ -3635,6 +3720,7 @@
    "people": "north_european",
    "body": "Military_Male_03",
    "face": "Military_Male_03",
+   "sculpt": true,
    "style": "field",
    "roles": [],
    "out": "head gear left on: helmet",
@@ -3680,6 +3766,7 @@
    "people": "latin_american",
    "body": "Military_Male_04",
    "face": "Military_Male_04",
+   "sculpt": true,
    "style": "field",
    "roles": [],
    "out": "head gear left on: helmet",
@@ -3716,6 +3803,7 @@
    "people": "north_european",
    "body": "Military_Male_05",
    "face": "Military_Male_05",
+   "sculpt": true,
    "style": "field",
    "roles": [],
    "dye": [
@@ -3752,6 +3840,7 @@
    "people": "west_african",
    "body": "Military_Male_06",
    "face": "Military_Male_06",
+   "sculpt": true,
    "style": "field",
    "roles": [],
    "out": "a cap left on (its face is used opened, the Black picks)",
@@ -3788,6 +3877,7 @@
    "people": "north_european",
    "body": "Pilot_Female_01",
    "face": "Pilot_Female_01",
+   "sculpt": false,
    "style": "shirt",
    "roles": [],
    "out": "head gear left on: hat",
@@ -3824,6 +3914,7 @@
    "people": "west_african",
    "body": "Pilot_Female_02",
    "face": "Pilot_Female_02",
+   "sculpt": true,
    "style": "shirt",
    "roles": [],
    "out": "head gear left on: hat",
@@ -3860,6 +3951,7 @@
    "people": "north_european",
    "body": "Pilot_Male_01",
    "face": "Pilot_Male_01",
+   "sculpt": false,
    "style": "shirt",
    "roles": [],
    "dye": [
@@ -3896,6 +3988,7 @@
    "people": "north_european",
    "body": "Pilot_Male_02",
    "face": "Pilot_Male_02",
+   "sculpt": false,
    "style": "shirt",
    "roles": [],
    "dye": [
@@ -3932,6 +4025,7 @@
    "people": "north_european",
    "body": "Pilot_Male_03",
    "face": "Pilot_Male_03",
+   "sculpt": true,
    "style": "shirt",
    "roles": [],
    "dye": [
@@ -3968,6 +4062,7 @@
    "people": null,
    "body": "Police_Female_01",
    "face": "Police_Female_01",
+   "sculpt": false,
    "style": null,
    "roles": [],
    "out": "a riot helmet over the face",
@@ -4004,6 +4099,7 @@
    "people": "latin_american",
    "body": "Police_Male_01",
    "face": "Police_Male_01",
+   "sculpt": true,
    "style": "shirt",
    "roles": [],
    "dye": [
@@ -4049,6 +4145,7 @@
    "people": null,
    "body": "Police_Male_02",
    "face": "Police_Male_02",
+   "sculpt": false,
    "style": null,
    "roles": [],
    "out": "a balaclava and helmet over the face",
@@ -4085,6 +4182,7 @@
    "people": "north_european",
    "body": "Police_Male_03",
    "face": "Police_Male_03",
+   "sculpt": true,
    "style": "shirt",
    "roles": [],
    "dye": [
@@ -4121,6 +4219,7 @@
    "people": "north_european",
    "body": "Police_Male_04",
    "face": "Police_Male_04",
+   "sculpt": true,
    "style": "shirt",
    "roles": [],
    "dye": [
@@ -4157,6 +4256,7 @@
    "people": "east_asian",
    "body": "Police_Male_05",
    "face": "Police_Male_05",
+   "sculpt": true,
    "style": "shirt",
    "roles": [],
    "dye": [
@@ -4193,6 +4293,7 @@
    "people": "north_european",
    "body": "Police_Male_06",
    "face": "Police_Male_06",
+   "sculpt": true,
    "style": "field",
    "roles": [
     "guard",
@@ -4243,6 +4344,7 @@
    "people": "mediterranean",
    "body": "Police_Male_07",
    "face": "Police_Male_07",
+   "sculpt": true,
    "style": "field",
    "roles": [
     "guard",
@@ -4293,6 +4395,7 @@
    "people": "north_european",
    "body": "Security_Female_01",
    "face": "Security_Female_01",
+   "sculpt": false,
    "style": "shirt",
    "roles": [],
    "out": "head gear left on: hat",
@@ -4329,6 +4432,7 @@
    "people": "north_european",
    "body": "Security_Male_01",
    "face": "Security_Male_01",
+   "sculpt": true,
    "style": "shirt",
    "roles": [],
    "dye": [
@@ -4365,6 +4469,7 @@
    "people": "north_european",
    "body": "Sports_Female_01",
    "face": "Sports_Female_01",
+   "sculpt": true,
    "style": null,
    "roles": [],
    "out": "swimwear",
@@ -4401,6 +4506,7 @@
    "people": "east_asian",
    "body": "Sports_Female_02",
    "face": "Sports_Female_02",
+   "sculpt": true,
    "style": "street",
    "roles": [
     "street",
@@ -4441,6 +4547,7 @@
    "people": "north_european",
    "body": "Sports_Male_01",
    "face": "Sports_Male_01",
+   "sculpt": true,
    "style": null,
    "roles": [],
    "out": "swimwear",
@@ -4468,6 +4575,7 @@
    "people": "north_european",
    "body": "Sports_Male_02",
    "face": "Sports_Male_02",
+   "sculpt": true,
    "style": null,
    "roles": [],
    "out": "a football kit",
@@ -4513,6 +4621,7 @@
    "people": "unsure",
    "body": "Sports_Male_03",
    "face": "Sports_Male_03",
+   "sculpt": false,
    "style": null,
    "roles": [],
    "out": "a football kit",
@@ -4558,6 +4667,7 @@
    "people": "north_european",
    "body": "Sports_Male_04",
    "face": "Sports_Male_04",
+   "sculpt": true,
    "style": "casual",
    "roles": [
     "settler",
@@ -4611,6 +4721,7 @@
    "people": "latin_american",
    "body": "Wood_Male_01",
    "face": "Wood_Male_01",
+   "sculpt": false,
    "style": "work",
    "roles": [
     "labourer",
@@ -4655,6 +4766,7 @@
    "body": "Medical_Female_02",
    "face": "Female_Adult_06",
    "face_of": "Female_Adult_06's face (was under a hijab) on Medical_Female_02",
+   "sculpt": true,
    "style": "medic",
    "roles": [
     "medic"
@@ -4702,6 +4814,7 @@
    "body": "Business_Female_04",
    "face": "Female_Adult_10",
    "face_of": "Female_Adult_10's face (was under a hijab) on Business_Female_04",
+   "sculpt": true,
    "style": "formal",
    "roles": [
     "corp",
@@ -4741,6 +4854,7 @@
    "body": "Military_Male_02",
    "face": "Male_Adult_15",
    "face_of": "Male_Adult_15's face and beard (was under a skullcap) on Military_Male_02",
+   "sculpt": true,
    "style": "field",
    "roles": [
     "guard",
@@ -4783,6 +4897,7 @@
    "body": "Police_Male_07",
    "face": "Male_Adult_19",
    "face_of": "Male_Adult_19's face (was under a keffiyeh) on Police_Male_07, the base's own beard",
+   "sculpt": true,
    "style": "field",
    "roles": [
     "guard",
@@ -4834,6 +4949,7 @@
    "body": "Business_Male_05",
    "face": "Male_Adult_21",
    "face_of": "Male_Adult_21's face (was under a keffiyeh) on Business_Male_05",
+   "sculpt": true,
    "style": "formal",
    "roles": [
     "corp",
@@ -4873,6 +4989,7 @@
    "body": "Police_Male_05",
    "face": "Police_Male_05",
    "face_of": "Police_Male_05, cap off, as photographed",
+   "sculpt": true,
    "style": "shirt",
    "roles": [
     "guard",
@@ -4915,6 +5032,7 @@
    "body": "Military_Male_02",
    "face": "Military_Male_02",
    "face_of": "Military_Male_02, cap off, as photographed",
+   "sculpt": true,
    "style": "field",
    "roles": [
     "guard",
@@ -4957,6 +5075,7 @@
    "body": "Military_Male_05",
    "face": "Military_Male_05",
    "face_of": "Military_Male_05, cap off, as photographed",
+   "sculpt": true,
    "style": "field",
    "roles": [
     "guard",
@@ -4999,6 +5118,7 @@
    "body": "Pilot_Male_03",
    "face": "Pilot_Male_03",
    "face_of": "Pilot_Male_03, cap off, as photographed",
+   "sculpt": true,
    "style": "shirt",
    "roles": [
     "guard",
@@ -5041,6 +5161,7 @@
    "body": "Police_Male_01",
    "face": "Police_Male_01",
    "face_of": "Police_Male_01, cap off, as photographed (balding)",
+   "sculpt": true,
    "style": "shirt",
    "roles": [
     "guard",
@@ -5092,6 +5213,7 @@
    "body": "Police_Male_03",
    "face": "Police_Male_03",
    "face_of": "Police_Male_03, cap off, as photographed",
+   "sculpt": true,
    "style": "shirt",
    "roles": [
     "guard",
@@ -5134,6 +5256,7 @@
    "body": "Security_Male_01",
    "face": "Security_Male_01",
    "face_of": "Security_Male_01, cap off, as photographed",
+   "sculpt": true,
    "style": "shirt",
    "roles": [
     "guard",
@@ -5176,6 +5299,7 @@
    "body": "Military_Male_03",
    "face": "Military_Male_03",
    "face_of": "Military_Male_03, helmet and glasses off, as photographed",
+   "sculpt": true,
    "style": "field",
    "roles": [
     "guard",
@@ -5227,6 +5351,7 @@
    "body": "Fire_Male_07",
    "face": "Fire_Male_07",
    "face_of": "Fire_Male_07, helmet and breathing mask off, as photographed",
+   "sculpt": true,
    "style": "heavy",
    "roles": [
     "labourer",
@@ -5267,6 +5392,7 @@
    "body": "Police_Male_04",
    "face": "Police_Male_04",
    "face_of": "Police_Male_04, beret off, scalp from Police_Male_06's photograph",
+   "sculpt": true,
    "style": "shirt",
    "roles": [
     "guard",
@@ -5309,6 +5435,7 @@
    "body": "Military_Male_05",
    "face": "Delivery_Male_01",
    "face_of": "Delivery_Male_01's face and beard (beanie welded in) on Military_Male_05",
+   "sculpt": true,
    "style": "field",
    "roles": [
     "guard",
@@ -5351,6 +5478,7 @@
    "body": "Business_Male_05",
    "face": "Male_Adult_17",
    "face_of": "Male_Adult_17's face and goatee (cap welded in) on Business_Male_05, the base's brows",
+   "sculpt": true,
    "style": "formal",
    "roles": [
     "corp",
@@ -5390,6 +5518,7 @@
    "body": "Business_Male_03",
    "face": "Pilot_Male_01",
    "face_of": "Pilot_Male_01's face (cap welded in) on Business_Male_03, the base's brows, its styled hair cards off",
+   "sculpt": true,
    "style": "formal",
    "roles": [
     "corp",
@@ -5429,6 +5558,7 @@
    "body": "Male_Adult_05",
    "face": "Pilot_Male_02",
    "face_of": "Pilot_Male_02's face and grey moustache (cap welded in) on Male_Adult_05, the base's brows, its styled hair cards off",
+   "sculpt": true,
    "style": "work",
    "roles": [
     "labourer",

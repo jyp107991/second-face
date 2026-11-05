@@ -21,7 +21,7 @@ export const KNOCK: NpcDef[] = [
   },
   {
     id: 'npc_kn_dace', name: 'Dace Moro', look: { seed: 1203, frame: 'broad', age: 26, ancestry: 'mediterranean' }, role: 'labourer', level: 2, ...KN, courage: 45,
-    dialogue: 'd_kn_dace', ally: { flag: 'kn_rib_fight' }, attrs: { brawn: 6 }, skills: { melee: 35, mechanics: 25 },
+    dialogue: 'd_kn_dace', ally: { any: [{ flag: 'kn_rib_fight' }, { flag: 'kn_out_fight' }] }, attrs: { brawn: 6 }, skills: { melee: 35, mechanics: 25 }, equip: ['w_pipe'],
     schedule: [{ from: 7, to: 14, spot: 'dace_gate', activity: 'idle' }, { from: 14, to: 19, spot: 'dace_square', activity: 'idle' }, { from: 19, to: 23, spot: 'dace_shack', activity: 'idle' }, sleep('dace_shack', 23, 7)],
     barks: ['Copper\'s copper. The mast doesn\'t care who strips it.', 'Maud thinks I\'m a debt with legs.', 'One more run and I\'m square. One more.'],
   },

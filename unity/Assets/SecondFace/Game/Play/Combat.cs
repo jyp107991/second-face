@@ -37,6 +37,8 @@ namespace SecondFace.Game.Play
         public bool Active => _battle != null && _battle.Active;
         /// <summary>The fight ended: victory, fled, defeat or truce.</summary>
         public event System.Action<string> Ended;
+        /// <summary>A fight is about to start (the game saves).</summary>
+        public event System.Action Starting;
 
         private Battle _battle;
         private readonly Dictionary<BattleUnit, Transform> _bodies = new();
@@ -57,17 +59,27 @@ namespace SecondFace.Game.Play
             if (!Walkabout.Busy) Check();
         }
 
-        /// <summary>Starts a fight if anyone standing near has turned hostile.</summary>
-        public bool Check()
+        /// <summary>The game's difficulty (enemy aim and damage; the settings' choice), read as each fight starts.</summary>
+        public static System.Func<(int HitMod, double DmgMul)> Difficulty;
+
+        private float _talkAt = -100f;
+        private float _quietUntil = -100f;   // (a fight that broke off: not taken up again at once)
+
+        /// <summary>Starts a fight if anyone standing near has turned hostile. <paramref name="fromTalk"/>: the story just
+        /// moved on in words (a conversation's choice): a fight that starts from it is the player's side's move first.</summary>
+        public bool Check(bool fromTalk = false)
         {
+            if (fromTalk) _talkAt = Time.unscaledTime;
             if (Active || Walkabout?.Walker == null || People == null) return false;
-            if (People.Settling) return false;   // (the people the story just moved are still being stood up: looked at again soon)
+            if (People.Settling || Time.unscaledTime < _quietUntil) return false;
+            if (Walkabout.Game?.Pc?.Sheet != null && Walkabout.Game.Pc.Sheet.Hp <= 0) return false;   // (down: the defeat is under way)   // (the people the story just moved are still being stood up: looked at again soon)
             var g = Walkabout.Game;
             var at = Walkabout.Walker.transform.position;
             var hostile = People.StandingPeople.Where(p => p.Def?.HostileIf != null && (at - p.transform.position).sqrMagnitude < Reach * Reach
                                                            && Logic.Test(p.Def.HostileIf, g) && !Dead(g, p)).ToList();
             if (hostile.Count == 0) return false;
-            StartCoroutine(Fight(hostile));
+            Starting?.Invoke();   // (saved first: a fight lost goes back to just before it)
+            StartCoroutine(Fight(hostile, Time.unscaledTime - _talkAt < 5f));
             return true;
         }
 
@@ -92,7 +104,7 @@ namespace SecondFace.Game.Play
             return u;
         }
 
-        private IEnumerator Fight(List<Townsperson> hostiles)
+        private IEnumerator Fight(List<Townsperson> hostiles, bool ourMove = false)
         {
             var g = Walkabout.Game;
             _bodies.Clear(); _people.Clear();
@@ -113,20 +125,26 @@ namespace SecondFace.Game.Play
                 if (p.Def?.Ally != null && !hostiles.Contains(p) && (wp - p.transform.position).sqrMagnitude < AllyReach * AllyReach && Logic.Test(p.Def.Ally, g) && !Dead(g, p))
                     units.Add(UnitOf(p, false));
             _battle = new Battle(new NavField(this), new Rng(g.RngState != 0 ? g.RngState : 7u));
-            _battle.Start(units);
+            var (hitMod, dmgMul) = Difficulty != null ? Difficulty() : (0, 1.0);
+            _battle.EnemyHitMod = hitMod; _battle.EnemyDmgMul = dmgMul;
+            _battle.Start(units, false, ourMove);
             Debug.Log("Combat: " + string.Join(", ", units.Select(x => $"{x.C.Name} ({(x == _player ? "you" : x.Hostile ? "hostile" : "ally")}, hp {x.C.Sheet.Hp})")));
             Walkabout.Walker.GoTo(Walkabout.Walker.transform.position);
             ShowBar(true);
             Say(Strings.Get("combat.start"));
             if (Walkabout.Input != null) Walkabout.Input.GroundTap = OnGround;
             var shown = 0;
+            var quiet = 0;   // turns in a row in which nobody spent anything
             while (_battle.Active)
             {
                 var u = _battle.NextTurn();
                 if (u == null) break;
                 FlushLog(ref shown);
+                var logged = _battle.Log.Count;
                 if (u == _player) yield return PlayerTurn();
                 else yield return AiTurn(u);
+                quiet = u.C.Ap >= CombatRules.MaxAp(u.C) && _battle.Log.Count == logged ? quiet + 1 : 0;
+                if (quiet >= _battle.Order.Count * 3) { _battle.Standoff(); _quietUntil = Time.unscaledTime + 60f; }
                 _battle.EndTurn();
                 FlushLog(ref shown);
                 yield return null;
@@ -190,6 +208,19 @@ namespace SecondFace.Game.Play
             return true;
         }
 
+        /// <summary>The player's turn is up and waiting for a choice.</summary>
+        public bool PlayersTurn => Active && _battle.Current == _player && !_busy && !_playerDone;
+
+        /// <summary>The player's turn played as the allies' AI would play it (the playthrough tests; later an auto-turn).</summary>
+        public IEnumerator PlayerTurnByAi()
+        {
+            if (!PlayersTurn) yield break;
+            _busy = true;
+            yield return AiTurn(_player);
+            _busy = false;
+            _playerDone = true;
+        }
+
         private bool _busy;
         private IEnumerator Run(IEnumerator step)
         {
@@ -211,6 +242,7 @@ namespace SecondFace.Game.Play
             {
                 var ap = u.C.Ap;
                 var a = _battle.Choose(u);
+                Debug.Log($"Combat AI: {u.C.Name} ({u.C.Ap} AP) {a.Kind}{(a.Target != null ? " " + a.Target.C.Name : "")} at {Time.realtimeSinceStartup:0.0}s");
                 switch (a.Kind)
                 {
                     case "wait": step = 99; break;
@@ -241,17 +273,24 @@ namespace SecondFace.Game.Play
             var metres = Mathf.Min(PathLength(path), u.C.Ap * (float)Battle.MetresPerAp);
             var goal = PointAlong(path, metres);
             var t0 = Time.time;
+            // a fight's moves are at a jog (a walk across a square under fire reads as a stroll, and drags the turn)
             if (u == _player)
             {
                 Walkabout.Walker.GoTo(goal);
-                while (Walkabout.Walker != null && Walkabout.Walker.Goal != null && Time.time - t0 < 8f) yield return null;
+                Walkabout.Walker.Agent.speed = Mathf.Max(Walkabout.Walker.Agent.speed, Walker.JogSpeed);
+                while (Walkabout.Walker != null && Walkabout.Walker.Goal != null && Time.time - t0 < 6f) yield return null;
             }
             else if (_people.TryGetValue(u, out var p) && p.Agent != null && p.Agent.enabled && p.Agent.isOnNavMesh)
             {
+                var pace = p.Agent.speed;
+                p.Agent.speed = Walker.JogSpeed;
                 p.Agent.SetDestination(goal);
                 yield return null;
                 while (p != null && p.Agent.pathPending && Time.time - t0 < 2f) yield return null;
-                while (p != null && p.Agent.remainingDistance > 0.3f && Time.time - t0 < 8f) yield return null;
+                // there when within the agent's own stopping distance (a townsperson stops 0.4 m short: the old 0.3 m test
+                // never passed, and every move waited out its cap)
+                while (p != null && p.Agent.isOnNavMesh && p.Agent.remainingDistance > p.Agent.stoppingDistance + 0.1f && Time.time - t0 < 6f) yield return null;
+                if (p != null && p.Agent != null) p.Agent.speed = pace;
             }
             else { body.position = goal; yield return null; }
             var end = body.position;

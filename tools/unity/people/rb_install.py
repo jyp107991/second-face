@@ -14,6 +14,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument('scratch'); ap.add_argument('bake'); ap.add_argument('--only', default=None); ap.add_argument('--dry', action='store_true')
 ap.add_argument('--size', type=int, default=1024)
 ap.add_argument('--masks', action='store_true', help='redo only the dye masks and hair opacity textures')
+ap.add_argument('--fbx', action='store_true', help='redo only the FBX (the sculpt export where there is one)')
 A = ap.parse_args()
 cat = json.load(open(os.path.join(HERE, 'data', 'rb_bodies.json')))
 only = set(A.only.split(',')) if A.only else None
@@ -49,7 +50,11 @@ for p in cat['people']:
         op = os.path.join(src, om + '_color.png')
         if os.path.exists(op): put_image(op, os.path.join(d, om + '_color.png'), A.size, keep_alpha=True, png=True)
         n += 1; continue
-    shutil.copyfile(os.path.realpath(fbx), os.path.join(d, p['id'] + '.fbx'))
+    # the calibration's sculpt export where there is one: the same rig, mesh and slots with the face sculptor's shape keys
+    # (the player's face is sculpted on a Rocketbox head; the opened faces' own exports carry them already)
+    sculpt = os.path.join(src, name + '_sculpt.fbx')
+    shutil.copyfile(os.path.realpath(sculpt if os.path.exists(sculpt) else fbx), os.path.join(d, p['id'] + '.fbx'))
+    if A.fbx: n += 1; continue
     put_image(os.path.join(src, hm + '_color.jpg'), os.path.join(d, hm + '_color.jpg'), A.size)
     if os.path.exists(os.path.join(src, hm + '_normal.jpg')):
         put_image(os.path.join(src, hm + '_normal.jpg'), os.path.join(d, hm + '_normal.jpg'), A.size // 2)

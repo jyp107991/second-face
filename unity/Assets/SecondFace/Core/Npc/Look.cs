@@ -15,6 +15,10 @@ namespace SecondFace.Core.Npc
     {
         /// <summary>The body: f or m (the player bases player_f, player_m; also the clothes' cut).</summary>
         [JsonProperty("body")] public string Body = "f";
+        /// <summary>The Rocketbox person the player is (the owner's people rule: every person a Rocketbox base, L4): their
+        /// photographed face, sculpted by <see cref="Face"/>, their body and hair as they are, their own clothes in the
+        /// look's dyes (top, legs, accent). Null: the older player bases.</summary>
+        [JsonProperty("rb")] public string Rb;
         /// <summary>A proportions fit left for when the person is first shown (Bodies.For with fit: false; Bodies.Finish).</summary>
         [JsonIgnore] public (string Cluster, double Age, uint Seed)? Pending;
         /// <summary>The sculptor's values by slider id (<see cref="Sculpt"/>).</summary>

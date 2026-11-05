@@ -41,6 +41,21 @@ namespace SecondFace.Tests
         }
 
         [Test]
+        public void APlayerIsSomeoneOfTheirOwnSexAndPeople()
+        {
+            foreach (var male in new[] { false, true })
+                foreach (var people in new[] { "west_african", "north_european", "east_asian", "south_asian" })
+                {
+                    var c = RbPeople.PlayerChoices(male, people);
+                    Assert.That(c, Is.Not.Empty, $"{(male ? "men" : "women")} of {people}");
+                    Assert.That(c.All(p => p.Male == male && p.Face), Is.True);
+                    Assert.That(c.Where(p => p.Style == "formal" || p.Style == "medic").All(p => p.People == Bodies.People(people)), Is.True, "office wear only for a people with nobody else");
+                }
+            var w = RbPeople.PlayerChoices(false, "west_african");
+            Assert.That(w[0].People, Is.EqualTo("west_african"), "their own people first: " + w[0].Id);
+        }
+
+        [Test]
         public void ApartReadsLightnessAndHue()
         {
             Assert.That(RbPeople.Apart(0xc46a2a, 0xc46a2a), Is.False, "one dye");

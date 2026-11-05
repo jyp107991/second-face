@@ -110,6 +110,23 @@ props = [
     {'kind': 'barrel_rust', 'x': 31, 'y': 28}, {'kind': 'lamp_post', 'x': 24, 'y': 33}, {'kind': 'tire_pile', 'x': 39, 'y': 10},
 ]
 
+# the hamlet lived in (QA play-ch1: the square read as bare ground): hatch day's stalls and goods on the square, the
+# carts that brought them, water and gardens by the doors, the toll stand's sandbags; nothing on the lane or a doorway
+DRESSING = [
+    ('tent', 19, 21, 0), ('tent', 35, 22, 2), ('wagon', 38, 25, 1), ('blanket', 21, 21, 0), ('blanket', 23, 21, 1),
+    ('crate', 32, 24, 0), ('crate', 17, 22, 0), ('barrel', 38, 21, 0), ('chair', 23, 22, 3), ('crate', 20, 20, 0),
+    ('sandbags', 32, 9, 1), ('barrel', 32, 3, 0), ('wagon', 21, 6, 0),
+    ('planter', 8, 27, 0), ('barrel', 9, 27, 0), ('planter', 21, 29, 0), ('planter', 47, 26, 0), ('barrel', 42, 26, 0),
+    ('planter', 8, 35, 0), ('crate', 3, 35, 0), ('fire_barrel', 31, 30, 0), ('blanket', 12, 38, 0),
+    ('rock_small', 46, 40, 0), ('cactus', 36, 13, 0), ('dead_tree', 8, 42, 0), ('rock_small', 42, 22, 0),
+]
+_taken = {(p_['x'], p_['y']) for p_ in props}
+for (k, x, y, rot) in DRESSING:
+    assert rows[y][x] in '.r', f'{k} at {x},{y} on {rows[y][x]!r}'
+    assert (x, y) not in _taken, f'{k} at {x},{y} on another prop'
+    _taken.add((x, y))
+    props.append({'kind': k, 'x': x, 'y': y, 'rot': rot} if rot else {'kind': k, 'x': x, 'y': y})
+
 knock = {
     'id': 'c9_mouth', 'name': 'Knock', 'seed': 91, 'settlement': 'cistern9',
     'layout': rows,
@@ -153,6 +170,7 @@ knock = {
         'snare_c': {'dialogue': 'd_kn_snare', 'name': 'A snare'},
         'mast_head': {'dialogue': 'd_kn_mast', 'name': 'The mast head'},
         'post_table': {'dialogue': 'd_kn_postbook', 'name': 'The post-book'},
+        'pc_bed': {'dialogue': 'd_kn_bed', 'name': 'Your cot'},
         'watch_stool': {'dialogue': 'd_kn_watch', 'name': 'The watch stool'},
         'toll_sign': {'dialogue': 'd_kn_tollsign', 'name': 'The toll board'},
     },
@@ -181,7 +199,9 @@ knock = {
     },
     'npcs': [
         # Maud and the household
-        {'def': 'npc_kn_maud', 'x': 12, 'y': 18, 'facing': 2},
+        # (the night the stranger comes she comes down in her nightdress, by the door, until the player goes to bed)
+        {'def': 'npc_kn_maud', 'x': 12, 'y': 18, 'facing': 2, 'if': {'not': {'all': [{'flag': 'kn_stranger_dead'}, {'not': {'flag': 'kn_outriders'}}]}}},
+        {'def': 'npc_kn_maud', 'id': 'maud_night', 'x': 24, 'y': 38, 'facing': 0, 'schedule': [], 'if': {'all': [{'flag': 'kn_stranger_dead'}, {'not': {'flag': 'kn_outriders'}}]}},
         {'def': 'npc_kn_linnet', 'x': 9, 'y': 21, 'facing': 1, 'if': {'any': [{'not': {'flag': 'kn_linnet_away'}}, {'flag': 'kn_linnet_home'}]}},
         {'def': 'npc_kn_linnet', 'id': 'linnet_post', 'x': 34, 'y': 6, 'facing': 1, 'schedule': [], 'if': {'all': [{'flag': 'kn_linnet_away'}, {'not': {'flag': 'kn_linnet_home'}}]}},
         {'def': 'npc_kn_dace', 'x': 13, 'y': 8, 'facing': 3, 'if': {'not': {'all': [{'flag': 'kn_rib_open'}, {'not': {'flag': 'kn_rib_done'}}]}}},

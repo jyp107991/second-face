@@ -98,6 +98,54 @@ namespace SecondFace.Tests
         }
 
         /// <summary>Reads back the main camera's frame at the given size and writes a PNG.</summary>
+        /// <summary>The camera and the interface over it, as the player sees the screen: the game's panel is drawn into a
+        /// texture of the capture's size for two frames and laid over the camera's render.</summary>
+        public static IEnumerator CaptureWithUi(string name, int width = 1920, int height = 1080)
+        {
+            var ui = SecondFace.Game.UI.UIService.Instance;
+            if (ui == null || ui.Panel == null) { yield return Capture(name, width, height); yield break; }
+            yield return null;
+            var cam = Camera.main;
+            Assert.That(cam, Is.Not.Null, "no main camera");
+            cam.transform.rotation = cam.transform.rotation.normalized;
+            var rt = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
+            var request = new RenderPipeline.StandardRequest { destination = rt };
+            if (RenderPipeline.SupportsRenderRequest(cam, request)) RenderPipeline.SubmitRenderRequest(cam, request);
+            else { var prev = cam.targetTexture; cam.targetTexture = rt; cam.Render(); cam.targetTexture = prev; }
+            var world = Read(rt);
+            var prt = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
+            prt.Create();
+            var was = ui.Panel.targetTexture;
+            ui.Panel.targetTexture = prt;
+            for (var i = 0; i < 3; i++) yield return null;
+            var over = Read(prt);
+            ui.Panel.targetTexture = was;
+            var a = world.GetPixels32(); var b = over.GetPixels32();
+            for (var i = 0; i < a.Length; i++)
+            {
+                var k = b[i].a / 255f;
+                a[i] = new Color32((byte)Mathf.Min(255, b[i].r + a[i].r * (1f - k)), (byte)Mathf.Min(255, b[i].g + a[i].g * (1f - k)), (byte)Mathf.Min(255, b[i].b + a[i].b * (1f - k)), 255);
+            }
+            world.SetPixels32(a);
+            world.Apply();
+            var path = Path.Combine(OutDir(), name + ".png");
+            File.WriteAllBytes(path, world.EncodeToPNG());
+            Debug.Log("screenshot: " + path);
+            Object.Destroy(world); Object.Destroy(over);
+            rt.Release(); Object.Destroy(rt); prt.Release(); Object.Destroy(prt);
+        }
+
+        private static Texture2D Read(RenderTexture rt)
+        {
+            var tex = new Texture2D(rt.width, rt.height, TextureFormat.RGBA32, false);
+            var active = RenderTexture.active;
+            RenderTexture.active = rt;
+            tex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+            tex.Apply();
+            RenderTexture.active = active;
+            return tex;
+        }
+
         public static IEnumerator Capture(string name, int width = 1600, int height = 720)
         {
             // Never WaitForEndOfFrame here: in -batchmode no frame end is ever signalled and the test hangs for ever

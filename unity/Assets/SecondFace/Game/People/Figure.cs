@@ -70,6 +70,7 @@ namespace SecondFace.Game.People
         /// <summary>Puts a look on the figure (<see cref="LookView"/>); a hair piece it puts on joins the studio's layer.</summary>
         public void Look(PlayerLook look)
         {
+            if (look?.Rb != null && Wardrobe == null) { PlayerBody.ApplyRocketbox(Body, look); Scale = PlayerBody.RbScale(look); Layer(); return; }
             LookView.Apply(Body, look);
             Layer();
         }

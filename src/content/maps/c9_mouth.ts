@@ -560,6 +560,141 @@ export const c9_mouth: MapDef = {
       kind: "tire_pile",
       x: 39,
       y: 10
+    },
+    {
+      kind: "tent",
+      x: 19,
+      y: 21
+    },
+    {
+      kind: "tent",
+      x: 35,
+      y: 22,
+      rot: 2
+    },
+    {
+      kind: "wagon",
+      x: 38,
+      y: 25,
+      rot: 1
+    },
+    {
+      kind: "blanket",
+      x: 21,
+      y: 21
+    },
+    {
+      kind: "blanket",
+      x: 23,
+      y: 21,
+      rot: 1
+    },
+    {
+      kind: "crate",
+      x: 32,
+      y: 24
+    },
+    {
+      kind: "crate",
+      x: 17,
+      y: 22
+    },
+    {
+      kind: "barrel",
+      x: 38,
+      y: 21
+    },
+    {
+      kind: "chair",
+      x: 23,
+      y: 22,
+      rot: 3
+    },
+    {
+      kind: "crate",
+      x: 20,
+      y: 20
+    },
+    {
+      kind: "sandbags",
+      x: 32,
+      y: 9,
+      rot: 1
+    },
+    {
+      kind: "barrel",
+      x: 32,
+      y: 3
+    },
+    {
+      kind: "wagon",
+      x: 21,
+      y: 6
+    },
+    {
+      kind: "planter",
+      x: 8,
+      y: 27
+    },
+    {
+      kind: "barrel",
+      x: 9,
+      y: 27
+    },
+    {
+      kind: "planter",
+      x: 21,
+      y: 29
+    },
+    {
+      kind: "planter",
+      x: 47,
+      y: 26
+    },
+    {
+      kind: "barrel",
+      x: 42,
+      y: 26
+    },
+    {
+      kind: "planter",
+      x: 8,
+      y: 35
+    },
+    {
+      kind: "crate",
+      x: 3,
+      y: 35
+    },
+    {
+      kind: "fire_barrel",
+      x: 31,
+      y: 30
+    },
+    {
+      kind: "blanket",
+      x: 12,
+      y: 38
+    },
+    {
+      kind: "rock_small",
+      x: 46,
+      y: 40
+    },
+    {
+      kind: "cactus",
+      x: 36,
+      y: 13
+    },
+    {
+      kind: "dead_tree",
+      x: 8,
+      y: 42
+    },
+    {
+      kind: "rock_small",
+      x: 42,
+      y: 22
     }
   ],
   lights: [
@@ -711,6 +846,10 @@ export const c9_mouth: MapDef = {
     post_table: {
       dialogue: "d_kn_postbook",
       name: "The post-book"
+    },
+    pc_bed: {
+      dialogue: "d_kn_bed",
+      name: "Your cot"
     },
     watch_stool: {
       dialogue: "d_kn_watch",
@@ -1014,7 +1153,41 @@ export const c9_mouth: MapDef = {
       def: "npc_kn_maud",
       x: 12,
       y: 18,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          all: [
+            {
+              flag: "kn_stranger_dead"
+            },
+            {
+              not: {
+                flag: "kn_outriders"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      def: "npc_kn_maud",
+      id: "maud_night",
+      x: 24,
+      y: 38,
+      facing: 0,
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "kn_stranger_dead"
+          },
+          {
+            not: {
+              flag: "kn_outriders"
+            }
+          }
+        ]
+      }
     },
     {
       def: "npc_kn_linnet",

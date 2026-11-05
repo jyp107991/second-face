@@ -102,6 +102,7 @@ namespace SecondFace.Game
             Session = MakeSession != null ? MakeSession() : Session.OnDevice();
             Apply(Session.Settings);
             Session.SettingsChanged += Apply;
+            Play.Combat.Difficulty = () => Session?.Settings != null ? Session.Settings.Mods : (0, 1.0);
             if (UI != null) UI.BackUnhandled += () => { if (Walkabout != null && Walkabout.Walker != null && Tour == null) OpenPause(); };
             var overlay = DebugOverlay.Ensure();
             if (World == null) yield break;
@@ -115,6 +116,14 @@ namespace SecondFace.Game
             Walkabout.Said += line => _hud?.Note(line);
             // a fight lost: the game ends; the title offers the last save (the autosave is not overwritten by the defeat)
             Walkabout.Defeated += () => { Walkabout?.End(); OpenTitle(); };
+            // the auto slot kept close behind the story (a conversation's end, a fight's start), never more than twice a
+            // minute: a fight lost goes back to just before it, not to the morning
+            Walkabout.Milestone += () =>
+            {
+                if (Time.unscaledTime - _autoAt < 30f || Walkabout == null || !Walkabout.Begun || Walkabout.Walker == null) return;
+                _autoAt = Time.unscaledTime;
+                Autosave();
+            };
             Walkabout.Asked += (name, _) => { if (name == "map") OpenMap(); };
             overlay.World = () => Tour != null ? Tour.WorldLine() : Walkabout.Line();
             overlay.Report = () => _lastTour;
@@ -152,7 +161,7 @@ namespace SecondFace.Game
             if (UI == null || World == null) return null;
             return UI.Open(new CreationScreen(new CreationModel
             {
-                BodyF = World.PlayerF, BodyM = World.PlayerM, Idle = World.Locomotion,
+                BodyF = World.PlayerF, BodyM = World.PlayerM, Idle = World.Locomotion, Rocketbox = World.Rocketbox,
                 Done = (pc, origin) =>
                 {
                     var g = States.NewGame(Play.Walkabout.StartAt, 0, 0, pc);
@@ -262,6 +271,8 @@ namespace SecondFace.Game
         }
 
         /// <summary>Saves to the auto slot (when the settings keep autosaves).</summary>
+        private float _autoAt = -100f;
+
         public SaveMeta Autosave() => Session != null && Session.Settings.Autosave ? Save(Session.Auto) : null;
 
         private void OnApplicationPause(bool paused) { if (paused) Autosave(); }
@@ -410,7 +421,7 @@ namespace SecondFace.Game
             var look = SecondFace.Game.People.PlayerBody.Look(Walkabout.Game.Pc);
             return UI.Open(new PackScreen(new PackModel
             {
-                Game = Walkabout.Game, Body = SecondFace.Game.People.PlayerBody.Base(look, assets.PlayerF, assets.PlayerM),
+                Game = Walkabout.Game, Body = SecondFace.Game.People.PlayerBody.Base(look, assets.PlayerF, assets.PlayerM, assets.Rocketbox),
                 Idle = assets.Locomotion, Fit = look.Body, Look = look,
                 Drop = Walkabout.Walker != null ? (i, n) => Walkabout.Drop(i, n) != null : null,
             }));
@@ -447,7 +458,7 @@ namespace SecondFace.Game
         /// <summary>Sets out for a known place from the map (P7: the journey as a card while the world streams in, not a
         /// load): the hours pass, the walker is set down at the place's spawn. Not out of the opening's home before the
         /// story lets the player go (the stranger's road waits for them); leaving it so is leaving by the toll road.</summary>
-        private void TravelTo(string here, string to)
+        public void TravelTo(string here, string to)
         {
             if (Walkabout == null || to == null || to == here) return;
             var g = Walkabout.Snapshot();

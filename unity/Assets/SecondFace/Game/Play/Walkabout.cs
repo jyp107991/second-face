@@ -42,6 +42,8 @@ namespace SecondFace.Game.Play
         public bool Paused { get; private set; }
         /// <summary>The walker stands on a built NavMesh and the camera follows them.</summary>
         public bool Ready => Walker != null && Nav != null && Nav.Ready && Walker.Agent.isOnNavMesh;
+        /// <summary>The last setting down has put the walker down (none is under way).</summary>
+        public bool Placed => _down == _placing;
         /// <summary>How many of the world's people stand in it now (those near the walker).</summary>
         public int Townsfolk => People != null ? People.Standing : 0;
         /// <summary>The world's people keeping their routines (P6.2; null until the walker is first set down).</summary>
@@ -107,10 +109,14 @@ namespace SecondFace.Game.Play
         /// turned hostile.</summary>
         public void Settle()
         {
+            Milestone?.Invoke();
             Quests.Update();
             if (People != null) People.Refresh();
-            if (Combat != null) Combat.Check();
+            if (Combat != null) Combat.Check(true);
         }
+        /// <summary>The story moved on (a conversation closed, a fight is about to start): a moment to keep (the auto slot).</summary>
+        public event System.Action Milestone;
+
         /// <summary>The barter table open now (null when none).</summary>
         public BarterScreen Trade { get; private set; }
 
@@ -222,7 +228,7 @@ namespace SecondFace.Game.Play
             if (ticket != _placing || Stage.Camera == null) yield break;   // left meanwhile, or the camera went with the scene
             if (Stage.Clock != null) Stage.Clock.Minutes = Game.Minutes;
             if (Walker != null) Destroy(Walker.gameObject);
-            var body = PlayerBody.Base(PlayerBody.Look(Game.Pc), assets.PlayerF, assets.PlayerM);
+            var body = PlayerBody.Base(PlayerBody.Look(Game.Pc), assets.PlayerF, assets.PlayerM, assets.Rocketbox);
             Walker = Walker.Create(body != null ? body : assets.Walker, assets.Locomotion, at, yaw);
             _down = ticket;
             if (body != null) PlayerBody.Apply(Walker.gameObject, Game.Pc);
@@ -244,6 +250,7 @@ namespace SecondFace.Game.Play
                 Combat = gameObject.AddComponent<Combat>();
                 Combat.Walkabout = this;
                 Combat.Ended += outcome => { if (outcome == "defeat") Defeated?.Invoke(); else Settle(); };
+                Combat.Starting += () => Milestone?.Invoke();
             }
             if (Triggers == null) { Triggers = gameObject.AddComponent<Triggers>(); Triggers.Walkabout = this; }
             if (Pad == null)
@@ -840,6 +847,31 @@ namespace SecondFace.Game.Play
             // while a load sets the walker down elsewhere the world streams round where they are going, not where they were
             if (!Paused && Walker != null && _down == _placing) Stage.World.Focus = Walker.transform.position;
             if (Begun && Walker != null && Time.timeScale > 0f) Game.PlaytimeSec += Time.unscaledDeltaTime;
+            if (Ready && Time.unscaledTime >= _nextVisit) { _nextVisit = Time.unscaledTime + 0.5f; Visit(); }
+        }
+
+        private float _nextVisit;
+
+        /// <summary>The place the walker stands in is where the game is (the web game's map entry): its id the game's
+        /// location, the place known on the map, and its maps visited (<c>visited_&lt;map&gt;</c>, which the story's
+        /// "reach Shale", "go to the overpass" wait for), however the walker came there: on foot or by the map.</summary>
+        public void Visit()
+        {
+            if (_down != _placing) return;   // (a setting down under way: the walker still stands where they were)
+            var layout = Stage?.World?.Layout;
+            if (layout == null || Walker == null || Game == null) return;
+            var at = Walker.transform.position;
+            foreach (var p in layout.Places.Values)
+            {
+                if (p.Centre == null || p.Size == null || !p.Contains(at.x, at.z, 4f)) continue;
+                var changed = false;
+                if (Game.LocationId != p.Id) { Game.LocationId = p.Id; changed = true; }
+                if (!Game.World.KnownLocations.Contains(p.Id)) { Game.World.KnownLocations.Add(p.Id); changed = true; }
+                foreach (var map in new[] { p.Map, p.Id })
+                    if (!string.IsNullOrEmpty(map) && !Game.Flags.ContainsKey("visited_" + map)) { Game.Flags["visited_" + map] = true; changed = true; }
+                if (changed) { Quests.Update(); People?.Refresh(); }
+                return;
+            }
         }
 
         /// <summary>Hands the camera to someone else (the measuring tour) or takes it back.</summary>
