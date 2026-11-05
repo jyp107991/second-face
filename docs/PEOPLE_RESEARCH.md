@@ -752,7 +752,22 @@ written gate (`docs/PEOPLE_QA.md`) and the look before the owner sees it.
   face kept 15 % of its own broad colour where it met the base's skin; hair is now told by depth of darkness and lack of
   chroma, light colourless cloth above the brows is left out, and near the carried area's edges the broad colour is
   wholly the base's (`FFHQ_EDGE`). (5) The lip-gap swap (for parted photographed lips) is off for closed mouths: it left
-  one side of FA06's lip pale.
+  one side of FA06's lip pale. (6) A sideburn left alone as a dark block in front of the ear (Male_Adult_17): his long
+  sideburn ran below the cheek line under his cap, so its lower half was carried as beard; a face carried without its
+  sideburn now leaves the whole zone in front of each ear to the new head (`FFHQ_SIDEBURN=0`). (7) A full beard stopping
+  short of the ear with a bare band (Delivery_Male_01): it faded out over 16 mm before the ear under the base's skin; it
+  now runs to the ear and keeps its own colour there (`FFHQ_BEARD_TO_EAR`, a 5 mm fade). (8) Pale lips and a white line
+  along a closed mouth (Pilot_Male_02 on Male_Adult_05): the base's own grey moustache in the broad colour over the lips,
+  and the projection reaching into the source's lip slit; the mouth keeps its own broad colour (`FFHQ_MOUTH_OWN`) and the
+  slit's texels take the lips' colour round them (`FFHQ_TEETH_FILL`). (9) Faceted crowns on every head that wore a cap or
+  helmet (edges of 23 mm where the cap hid the scalp): the crown, from 55 mm over the eyes, is cut finer inside and
+  rounded onto its own best-fit curve, eased in over 15 mm, its border and normals kept (`crown_smooth`); a first try that
+  also cut the border left a crease across the forehead and a lumpy outline, and one that began at 35 mm dented the
+  temples. (10) Carried skin more orange than its photograph: the colour step meant for FFHQ's dulled photographs brought
+  every Rocketbox face to a house chroma (Pilot_Male_02's cheek from 30 to 38); a face carried from its own Rocketbox head
+  now keeps its photographed colour. (11) A beard stopping short of the ear (Delivery_Male_01 on Military_Male_05): the
+  two heads' ears sit at different depths, so the head's skin just in front of its ear met the source's ear; the ears'
+  fronts are now landmarks too (`AVA_EAR_LM`), so the source's cheek reaches the head's ear.
 - *Gate rules added*: a bearded man's temples are judged above his sideburn; a head's own photographed hairline is held to
   its own place on the head (within 3 mm of the head as shipped, measured as its height above the eyes, not from the new
   face's glabella); a balding head as photographed is not held to the forehead band.

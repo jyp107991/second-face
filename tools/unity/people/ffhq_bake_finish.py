@@ -33,6 +33,36 @@ if 'mouth' in M:
     ml = srgb_to_lab(rgb * 255.0); mC = np.hypot(ml[:, 1], ml[:, 2])
     ref_L = float(np.median(ml[on & cheek][:, 0])) if (on & cheek).sum() > 20 else 45.0
     teeth = on & M['mouth'] & (ml[:, 0] > ref_L + 12) & (mC < 14)
+    if os.environ.get('FFHQ_TEETH_FILL') == '1':
+        # (FFHQ_TEETH_FILL: a thin line of them along a closed mouth is the inside of the source's lip slit, which the
+        # projection reached between its lips: under the blur below, half the base's lips came in and a white line stayed
+        # on the lower lip, Pilot_Male_02's. Those texels, widened by one, take the face's own lip colour round them)
+        # (and any thin bright line inside the mouth, lighter than the lips round it by 7 L* within 3 texels and by 9
+        # within 8: the slit's inside is often pinkish, not white, and the colourless test above missed it)
+        Lm = np.zeros((H, W), np.float32); Lm[ys[on], xs[on]] = ml[on, 0]; wm_ = np.zeros((H, W), np.float32); wm_[ys[on], xs[on]] = 1.0
+        def nb(img, r):
+            a_ = np.asarray(Image.fromarray(np.clip(img * 2.55, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(r)), np.float32) / 2.55
+            w_ = np.asarray(Image.fromarray((wm_ * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(r)), np.float32) / 255.0
+            return (a_ / np.maximum(w_, 1e-3))[ys, xs]
+        thin = on & M['mouth'] & (ml[:, 0] - nb(Lm, 3) > 7) & (ml[:, 0] - nb(Lm, 8) > 9)
+        teeth = teeth | thin
+        print('thin bright lines in the mouth', int(thin.sum()))
+        ti = np.zeros((H, W), np.float32); ti[ys, xs] = teeth
+        td = np.asarray(Image.fromarray((ti * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(3)), np.float32)[ys, xs] > 127
+        td = td & on & M['mouth']
+        good = on & M['mouth'] & ~td
+        r_ = 0.003 * W
+        wi = np.zeros((H, W), np.float32); wi[ys[good], xs[good]] = 1.0
+        wb = np.asarray(Image.fromarray((wi * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(r_)), np.float32) / 255.0
+        fill = np.zeros((len(ys), 3), np.float32)
+        for c in range(3):
+            ci = np.zeros((H, W), np.float32); ci[ys[good], xs[good]] = rgb[good, c]
+            cb_ = np.asarray(Image.fromarray((ci * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(r_)), np.float32) / 255.0
+            fill[:, c] = (cb_ / np.maximum(wb, 1e-3))[ys, xs]
+        ok = td & (wb[ys, xs] > 0.05)
+        rgb[ok] = fill[ok]
+        print('teeth texels filled with the lips round them', int(ok.sum()))
+        teeth = td & ~ok
     mask = np.where(teeth, 0.0, mask); on = mask > 0
     print('teeth texels kept from the base', int(teeth.sum()))
     # (and the dark line between parted lips, which a closed mouth lays on its lower lip as a smudge)
@@ -68,7 +98,9 @@ if 'eo' in M and os.environ.get('FFHQ_HAIR_ABOVE', '0') != '1':
     # skin is; MA19's keffiyeh left a pale line across his forehead)
     cloth = on * np.clip((eo[:, 2] - 8) / 6, 0, 1) * np.clip((hl[:, 0] - ref_L - 4) / 6, 0, 1) * np.clip((0.6 * refC - hC) / (0.2 * refC), 0, 1)
     hair_above = np.maximum(hair_above, cloth)
-    if os.environ.get('FFHQ_BEARD') == '1' and 'q' in M:
+    if os.environ.get('FFHQ_BEARD') == '1' and 'q' in M and os.environ.get('FFHQ_SIDEBURN', '1') != '0':
+        # (FFHQ_SIDEBURN=0: a goatee or moustache joins no sideburn, and a source's sideburn carried alone read as a block
+        # in front of the ear, Male_Adult_17's; the new head's own sideburn stays)
         # (a bearded man's sideburn, on the side in front of the ear and below its top, joins his beard to his hair: it is
         # his own and comes with the beard, never left as a bare gap between the two)
         q_ = M['q']; hair_above = hair_above * (1 - sideburn_zone(q_))
@@ -76,6 +108,35 @@ if 'eo' in M and os.environ.get('FFHQ_HAIR_ABOVE', '0') != '1':
     hb = np.asarray(Image.fromarray((np.clip(hi, 0, 1) * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(0.005 * W)), np.float32)[ys, xs] / 255.0
     mask = mask * (1 - np.clip(np.maximum(hair_above, hb) * 1.2, 0, 1)); on = mask > 0
     print('hair above the cheek line kept from the new head', int((hair_above > 0.5).sum()))
+    if os.environ.get('FFHQ_SIDEBURN', '1') == '0' and 'q' in M and 'ear_y' in M:
+        # (FFHQ_SIDEBURN=0, and the source's sideburn ran below the cheek line, down the side in front of the ear: its lower
+        # part was taken for beard and carried alone, a dark block with bare skin above it, Male_Adult_17's under his cap.
+        # The whole zone in front of each ear is the new head's own, its skin and its own side hair, feathered by 10 mm)
+        q_ = M['q']; ey = np.where(q_[:, 0] > 0, M['ear_y'][0], M['ear_y'][1])
+        sm_ = lambda a, b, v: np.clip((v - a) / (b - a), 0, 1)
+        sz = sm_(42, 52, np.abs(q_[:, 0])) * sm_(-36, -24, q_[:, 1] - ey) * sm_(-62, -50, q_[:, 2])
+        si = np.zeros((H, W), np.float32); si[ys, xs] = sz
+        sb = np.asarray(Image.fromarray((np.clip(si, 0, 1) * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.006 * W)), np.float32)[ys, xs] / 255.0
+        mask = mask * (1 - np.clip(np.maximum(sz, sb), 0, 1)); on = mask > 0
+        print('sideburn zone left to the new head on', int((sz > 0.5).sum()), 'texels')
+# FFHQ_BASE_BROWS: the new head's own brows (Rocketbox's photographed brows over its own eyes, which AVA_EYE_KEEP keeps):
+# for a face whose brows lay under a peaked cap's brim, carried they came out as flat blocks (the pilots')
+if os.environ.get('FFHQ_BASE_BROWS') == '1' and 'eo' in M:
+    eb = M['eo']
+    bz = np.clip((eb[:, 2] - 0.0) / 5, 0, 1) * np.clip((36.0 - eb[:, 2]) / 6, 0, 1) * np.clip((30.0 - np.abs(eb[:, 0])) / 6, 0, 1)
+    mask = mask * (1 - bz); on = mask > 0
+    print('brows left to the new head on', int((bz > 0.5).sum()), 'texels')
+# FFHQ_NO_BEARD: the face carried without its beard, which stays the new head's own (Rocketbox's photographed beard): for a
+# face whose beard is only half seen, the rest under a keffiyeh (MA19), carried it ended in a hard edge mid-cheek
+if os.environ.get('FFHQ_NO_BEARD') == '1' and 'eo' in M:
+    bl_ = srgb_to_lab(rgb * 255.0); eo_n = M['eo']
+    refL_n = float(np.median(bl_[on & cheek][:, 0])) if (on & cheek).sum() > 20 else 50.0
+    lipish = (M['mouth'] if 'mouth' in M else np.zeros(len(eo_n), bool)) & (bl_[:, 1] > np.median(bl_[on & cheek][:, 1]) + 4)
+    bd_ = on * np.clip((refL_n - 8 - bl_[:, 0]) / 8, 0, 1) * np.clip((-8 - eo_n[:, 2]) / 8, 0, 1) * (~lipish)
+    bi = np.zeros((H, W), np.float32); bi[ys, xs] = bd_
+    bb = np.asarray(Image.fromarray((np.clip(bi, 0, 1) * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.GaussianBlur(0.006 * W)), np.float32)[ys, xs] / 255.0
+    mask = mask * (1 - np.clip(np.maximum(bd_, bb) * 1.3, 0, 1)); on = mask > 0
+    print('beard left to the new head on', int((bb > 0.5).sum()), 'texels')
 # harmonised to Rocketbox's house style, two ways. (1) Colour: FFHQ-UV's normalisation dulls the skin (a dark face's
 # cheek at chroma 13 where Rocketbox's photographed dark faces sit at 27-38, hue 49-64 degrees: Male_Adult_12,
 # Military_Male_01, Business_Female_01), so the face's chroma is brought to Rocketbox's for its lightness and its hue
@@ -92,6 +153,11 @@ kC = float(np.clip(C_target / max(Cc, 1e-3), 1.0, 3.0))
 h_typ = math.radians(56.0); dh = 0.5 * float(np.angle(np.exp(1j * (h_typ - hc))))
 h_new = float(np.angle(np.exp(1j * (hc + dh))))
 dh += float(np.clip(h_new, math.radians(47.0), math.radians(66.0))) - h_new     # within Rocketbox's dark faces' hues
+if os.environ.get('AVA_FRAMED') == '1' and os.environ.get('FFHQ_HOUSE_CHROMA') != '1':
+    # (a Rocketbox face carried from its own head, rb_face_source.py, is already a photograph in the house style: it keeps
+    # its own colour; brought to the target above, made for FFHQ's dulled skin, Pilot_Male_02's cheek went from chroma 30
+    # to 38, more orange than his photograph, and his pale lips lost their contrast with it)
+    kC, dh = 1.0, 0.0
 # (the skin only: hair, a beard's stubble and the darkest creases, much darker than the cheek, keep their own chroma and
 # hue, or they turn purple)
 sk = np.clip((L - (Lc - 22)) / 12, 0, 1)
@@ -184,10 +250,32 @@ if LFB > 0:
         # pale block, MA15, and a zone left out under the nose cut a moustache with a straight step, Delivery_Male_01)
         eo_b = M['eo'][on]
         bw = np.clip((cf[0] - 5 - F_lf[:, 0]) / 8, 0, 1) * np.clip((-6 - eo_b[:, 2]) / 8, 0, 1)
-        if 'q' in M:
+        if 'q' in M and os.environ.get('FFHQ_SIDEBURN', '1') != '0':
             q_b = M['q'][on]; bw = np.maximum(bw, np.clip((cf[0] - 5 - F_lf[:, 0]) / 8, 0, 1) * sideburn_zone(q_b))
+        # (never at the carried area's edges: there the base's broad colour wins, so a beard or the neck's shadow fades out
+        # instead of stopping at a line, MA21's neck)
+        if 'ew' in dir():
+            if os.environ.get('FFHQ_BEARD_TO_EAR') == '1' and 'q' in M and 'ear_y' in M:
+                # (FFHQ_BEARD_TO_EAR: a full beard runs back to the ear: in front of each ear, below its top, the carried
+                # area's edge is the ear itself, and the beard keeps its own colour up to it; under the base's skin there it
+                # stopped short of the ear with a bare band, Delivery_Male_01's, against his own photograph)
+                q_e = M['q'][on]; ey_e = np.where(q_e[:, 0] > 0, M['ear_y'][0], M['ear_y'][1])
+                sm_e = lambda a, b, v: np.clip((v - a) / (b - a), 0, 1)
+                ez_ = sm_e(42, 52, np.abs(q_e[:, 0])) * sm_e(-40, -28, q_e[:, 1] - ey_e) * (1 - sm_e(-4, 6, q_e[:, 2]))
+                bw = bw * (1 - ew * (1 - ez_))
+            else:
+                bw = bw * (1 - ew)
         lfb = (np.broadcast_to(lfb, (len(lab), 1)) if np.ndim(lfb) else np.full((len(lab), 1), lfb)) * (1 - bw[:, None])
         print('beard keeps its own broad colour on', int((bw > 0.5).sum()), 'texels')
+    if os.environ.get('FFHQ_MOUTH_OWN') == '1' and 'mouth' in M:
+        # (FFHQ_MOUTH_OWN: the lips keep the face's own broad colour, their red and their moustache, where the base has a
+        # moustache of its own over its lips: its grey laid on the carried lips left them pale, Pilot_Male_02's on
+        # Male_Adult_05, lip_pale 0.51 against 0.29 as shipped. Feathered, so the mouth meets the base's colour softly)
+        mi = np.zeros((H, W), np.float32); mi[ys, xs] = M['mouth'].astype(np.float32)
+        mw = np.asarray(Image.fromarray((mi * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.GaussianBlur(0.006 * W)), np.float32)[ys[on], xs[on]] / 255.0
+        mw = np.clip(mw * 1.4, 0, 1)
+        lfb = (np.broadcast_to(lfb, (len(lab), 1)) if np.ndim(lfb) else np.full((len(lab), 1), lfb)) * (1 - mw[:, None])
+        print('mouth keeps its own broad colour on', int((mw > 0.5).sum()), 'texels')
     lab = lab * (1 - lfb) + new * lfb
     print('broad colour from the base: strength', LFB, 'radius', round(rad, 1), 'px; detail gain', HFG)
 else:
@@ -198,6 +286,16 @@ else:
 # the real face, scaled to the face's lightness, so the face is as crisp as the heads beside it.
 fine = baseL - np.asarray(Image.fromarray(np.clip(baseL * 2.55, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(2.5)), np.float32) / 2.55
 fine = np.clip(fine, -12, 12)[ys[on], xs[on]]
+if os.environ.get('FFHQ_MOUTH_OWN') == '1' and 'mouth' in M:
+    # (and none of the base's fine detail on the lips: the base's own lip crease, a few texels under the carried mouth's
+    # line, came through as a bright streak along the lower lip, Pilot_Male_02's on Male_Adult_05)
+    # (the red of the lips only, redder than the cheek by 4 a*: the moustache and the goatee round them keep it, or their
+    # hair went soft and grey, the second try)
+    ca_ = float(np.median(lab[cheek[on]][:, 1])) if cheek[on].sum() > 20 else float(np.median(lab[:, 1]))
+    lipw = M['mouth'][on] & (lab[:, 1] > ca_ + 4)
+    mi2 = np.zeros((H, W), np.float32); mi2[ys[on], xs[on]] = lipw.astype(np.float32)
+    mw2 = np.asarray(Image.fromarray((mi2 * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.5)), np.float32)[ys[on], xs[on]] / 255.0
+    fine = fine * (1 - np.clip(mw2 * 1.2, 0, 1))
 lab[:, 0] = np.clip(lab[:, 0] + fine * DETAIL * (1 - orbit_w) * np.clip(lab[:, 0] / max(float(np.median(lab[:, 0])), 1.0), 0.5, 1.5), 2, 98)
 rgb[on] = lab_to_srgb(lab).astype(np.float32) / 255.0
 out = base.copy(); out[ys[on], xs[on]] = rgb[on]
@@ -238,6 +336,18 @@ if LFB > 0 and os.environ.get('FFHQ_SURROUND', '1') != '0':
     out = out * m[..., None] + ns_rgb * (1 - m[..., None])
     m = m + (1 - m) * ws
     print('the surrounding skin in the same broad colour:', int((ws > 0.5).sum()), 'texels')
+if os.environ.get('FFHQ_BASE_BROWS') == '1' and 'eo' in M:
+    # (and those brows keep their own photographed darkness: retone.py, toning the base's skin to this face, took them for
+    # skin and they all but vanished; the brow hair, well darker than the base's cheek in the brows' zone, is laid in as is)
+    bl2 = srgb_to_lab(base * 255.0)[..., 0]
+    cbL = float(np.median(bl2[ys[cheek], xs[cheek]]))
+    eb = M['eo']
+    bzz = np.clip(eb[:, 2] / 5, 0, 1) * np.clip((36.0 - eb[:, 2]) / 6, 0, 1) * np.clip((30.0 - np.abs(eb[:, 0])) / 6, 0, 1)
+    wbv = bzz * np.clip((cbL - 6 - bl2[ys, xs]) / 8, 0, 1)
+    wb = np.zeros((H, W), np.float32); wb[ys, xs] = wbv
+    wb = np.asarray(Image.fromarray((np.clip(wb, 0, 1) * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.5)), np.float32) / 255.0
+    out = out * (1 - wb[..., None]) + base * wb[..., None]; m = np.maximum(m, wb)
+    print('brows kept at their own darkness on', int((wb > 0.5).sum()), 'texels')
 Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8)).save(os.path.join(out_dir, f"{J['material']}_ffhq_color.jpg"), quality=94)
 Image.fromarray((np.clip(m, 0, 1) * 255).astype(np.uint8)).save(os.path.join(out_dir, f"{J['material']}_ffhq_mask.png"))
 

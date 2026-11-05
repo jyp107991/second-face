@@ -9,6 +9,8 @@ import numpy as np
 BROW_MM = 30.0
 HOOD_MM = 95.0
 CROWN_MM = 95.0
+CROWN_SMOOTH_MM = 55.0
+CROWN_RAMP_MM = 15.0
 
 
 def take_off(meshes, words, eye_z=None, eye_pts=None):
@@ -23,7 +25,7 @@ def take_off(meshes, words, eye_z=None, eye_pts=None):
     # chin (higher than the eyes less HOOD_MM), around the head
     hood = 'hood' in words and eye_z is not None
     words_all = list(words)
-    words = [w for w in words if w not in ('loose_above_brow', 'hood', 'loose_crown', 'loose_eyewear', 'visor')]
+    words = [w for w in words if w not in ('loose_above_brow', 'hood', 'loose_crown', 'loose_eyewear', 'visor', 'crown_smooth', 'hair_cards')]
     if crown:
         # pieces joined by edges within the head's material (the head and body share vertices, so joining through any
         # vertex would take the whole person); never the largest piece, which is the head itself
@@ -87,6 +89,74 @@ def take_off(meshes, words, eye_z=None, eye_pts=None):
             doomed = [f for f in bm.faces if f.material_index in omi and
                       min(np.linalg.norm(np.array(tuple(M @ f.calc_center_median())) - e) for e in eye_pts) > 0.025]
             bmesh.ops.delete(bm, geom=doomed, context='FACES'); bm.to_mesh(o.data); bm.free(); gone += len(doomed)
+    if 'hair_cards' in words_all and eye_z is not None:
+        # a styled top of loose hair cards (the opacity material) over the head's own short photographed hair: gelled
+        # spikes, never this world's grooming (owner: no gel or product), and at a close look a crown of flat triangles
+        # (Male_Adult_05's). Every card whose centre lies 30 mm over the eyes comes off; the lashes and brows lie lower
+        for o in meshes:
+            omi = {i for i, m in enumerate(o.data.materials) if m and m.name.lower().endswith('_opacity')}
+            if not omi: continue
+            bm = bmesh.new(); bm.from_mesh(o.data); M = o.matrix_world
+            doomed = [f for f in bm.faces if f.material_index in omi and (M @ f.calc_center_median()).z > eye_z + 0.030]
+            bmesh.ops.delete(bm, geom=doomed, context='FACES'); bm.to_mesh(o.data); bm.free(); gone += len(doomed)
+    if 'crown_smooth' in words_all and eye_z is not None:
+        # the crown under a cap is modelled coarse, as the cap hid it (edges of 23 mm, against 14-18 on the forehead):
+        # with the cap off its corners showed in the silhouette (Police_Male_01's bald crown, Pilot_Male_03's; owner:
+        # "humans do not have random vertices"). Inside the crown (every face of the head's material wholly above the
+        # forehead, 55 mm over the eyes: the temples are the head's own) each edge is cut twice, and every point inside it is set at the mean distance of its neighbours from
+        # the crown's own best-fit sphere's centre (a few rounds), so the new points lie on the crown's curve and its old
+        # corners round off; the crown's border stays where it is, with its own normals, so it meets the forehead with no
+        # line (a smooth subdivision of the border too left a crease across the forehead and a lumpy outline, the first try)
+        for o in meshes:
+            hmi = {i for i, m in enumerate(o.data.materials) if m and m.name.lower().endswith('_head')}
+            if not hmi: continue
+            me = o.data; M = o.matrix_world; zc = eye_z + CROWN_SMOOTH_MM / 1000.0
+            cn = [tuple(c.vector) for c in me.corner_normals]
+            old, pv = {}, {}
+            for p in me.polygons:
+                key = frozenset(p.vertices)
+                for li, vi in zip(p.loop_indices, p.vertices):
+                    old[(vi, key)] = cn[li]; pv.setdefault(vi, []).append(cn[li])
+            nv0 = len(me.vertices)
+            bm = bmesh.new(); bm.from_mesh(me)
+            sel = {f for f in bm.faces if f.material_index in hmi and min((M @ v.co).z for v in f.verts) > zc}
+            if not sel: bm.free(); continue
+            inner = [e for e in {e for f in sel for e in f.edges} if len(e.link_faces) == 2 and all(g in sel for g in e.link_faces)]
+            border = {v for f in sel for e in f.edges if e not in inner for v in e.verts}
+            P = np.array([tuple(v.co) for v in {v for f in sel for v in f.verts}])
+            A = np.c_[2 * P, np.ones(len(P))]; sol = np.linalg.lstsq(A, (P ** 2).sum(1), rcond=None)[0]; ctr = sol[:3]
+            # (by index: Blender's Python handles to the vertices die with the subdivision; their order stays, the new
+            # vertices come after the old)
+            bm.verts.index_update(); n0 = len(bm.verts)
+            s0 = {v.index for f in sel for v in f.verts}; bset = {v.index for v in border}
+            bmesh.ops.subdivide_edges(bm, edges=inner, cuts=2, smooth=0.0, use_grid_fill=True)
+            bm.verts.ensure_lookup_table(); bm.verts.index_update()
+            crown_v = [bm.verts[i] for i in sorted(s0 - bset)] + [bm.verts[i] for i in range(n0, len(bm.verts))]
+            for _ in range(6):
+                rr = {}
+                for v in crown_v:
+                    nb = [e.other_vert(v) for e in v.link_edges]
+                    if not nb: continue
+                    rr[v] = float(np.mean([np.linalg.norm(np.array(tuple(w.co)) - ctr) for w in nb]))
+                for v, r in rr.items():
+                    d = np.array(tuple(v.co)) - ctr; n = np.linalg.norm(d)
+                    # (eased in over CROWN_RAMP_MM above the crown's border: moved in full there, the temples took a dent
+                    # where the rounded crown met the head's own forehead, Police_Male_05's and Military_Male_02's)
+                    wz = min(1.0, max(0.0, ((M @ v.co).z - zc) / (CROWN_RAMP_MM / 1000.0)))
+                    if n > 1e-9: v.co = tuple(ctr + d / n * (n + (r - n) * wz))
+            moved = {v.index for v in crown_v}
+            bm.to_mesh(me); bm.free(); me.update()
+            new_n = []
+            for p in me.polygons:
+                key = frozenset(p.vertices)
+                for vi in p.vertices:
+                    if vi >= nv0 or (vi in moved and vi not in bset): n = tuple(me.vertices[vi].normal)
+                    elif (vi, key) in old: n = old[(vi, key)]
+                    else:
+                        a = np.mean(pv[vi], 0); n = tuple(a / max(np.linalg.norm(a), 1e-9))
+                    new_n.append(n)
+            me.normals_split_custom_set(new_n)
+            print('crown smoothed:', len(sel), 'faces,', len(me.vertices) - nv0, 'new vertices, sphere radius', round(float(np.sqrt(sol[3] + (ctr ** 2).sum())), 4))
     if hood:
         for o in meshes:
             head_mi = {i for i, m in enumerate(o.data.materials) if m and (m.name.lower().endswith('_head') or m.name.lower().endswith('_opacity'))}

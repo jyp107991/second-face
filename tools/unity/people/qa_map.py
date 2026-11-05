@@ -89,5 +89,5 @@ for tag, sx in (('L', 1.0), ('R', -1.0)):
     side[tag] = (SU, SV, SP)
 np.savez_compressed(os.path.join(out_dir, 'qa_map.npz'), size=np.array([H, W]), PU=PU, PV=PV, PXYZ=PXYZ, grid=np.array([X0, Z0, STEP]),
                     PU_L=side['L'][0], PV_L=side['L'][1], PXYZ_L=side['L'][2], PU_R=side['R'][0], PV_R=side['R'][1], PXYZ_R=side['R'][2],
-                    sgrid=np.array([Y0, Z0, STEP]))
+                    sgrid=np.array([Y0, Z0, STEP]), headb=((b('Bip01 Head') - mid) @ Bm.T * 1000.0))
 print('qa map', PU.shape, int(np.isfinite(PU).sum()), 'hits; sides', side['L'][0].shape)

@@ -185,7 +185,7 @@ def run(manifest, k, n):
                 if os.path.exists(f'{out}/qa/qa_map.npz'):
                     subprocess.run([PY, f'{HERE}/qa_realism.py', f'{out}/qa', hq, f'{rdir}/{j["name"]}_qa.json', j['name']], capture_output=True, text=True,
                                    env=dict(os.environ, QA_DEBUG=f'{rdir}/{j["name"]}_qa.jpg'))
-                    r = subprocess.run([PY, f'{HERE}/qa_gate.py', 'check', f'{rdir}/{j["name"]}_qa.json', '--sex', j['sex']] + (['--short'] if j.get('hairline') else []) + (['--bald'] if j.get('bald') else []) + (['--beard'] if str(j.get('bake_env', {}).get('FFHQ_BEARD', '')) == '1' else []) + (['--own', j['qa_own']] if j.get('qa_own') else []) + (['--base', f'{S}/qa_ref/{j["base"]}.json'] if os.path.exists(f'{S}/qa_ref/{j["base"]}.json') else []), capture_output=True, text=True)
+                    r = subprocess.run([PY, f'{HERE}/qa_gate.py', 'check', f'{rdir}/{j["name"]}_qa.json', '--sex', j['sex']] + (['--short'] if j.get('hairline') else []) + (['--bald'] if j.get('bald') else []) + (['--beard'] if str(j.get('bake_env', {}).get('FFHQ_BEARD', '')) == '1' and str(j.get('bake_env', {}).get('FFHQ_SIDEBURN', '1')) != '0' else []) + (['--own', j['qa_own']] if j.get('qa_own') else []) + (['--base', f'{S}/qa_ref/{j["base"]}.json'] if os.path.exists(f'{S}/qa_ref/{j["base"]}.json') else []), capture_output=True, text=True)
                     print(j['name'], 'gate:', ' | '.join(l for l in r.stdout.splitlines() if l.startswith(('FAIL', 'GATE'))))
         subprocess.run([BLENDER, '-b', '--python', f'{HERE}/studio_render.py', '--', rdir, f'{out}/{j["name"]}.fbx'], capture_output=True, text=True, env=env)
         shutil.copy(f'{out}/{j["name"]}.json', f'{rdir}/{j["name"]}.json')

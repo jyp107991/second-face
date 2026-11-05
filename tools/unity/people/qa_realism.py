@@ -152,6 +152,19 @@ if jt is not None:
     # (the line's own height on the head, above the eyes: where a carried face's brow sits deeper or higher than the
     # base's, the trichion-glabella distance changes though the line has not moved)
     res['hairline_z_mm'] = round(float(zc[jt]), 1)
+    # (and where the midline crosses halfway between the forehead's skin and the scalp's hair: the line's own place, which
+    # a darker or lighter carried face does not move, MA19's base's soft front read 5 mm higher under a darker skin)
+    colL = np.array([float(np.nanmean(np.where(valid[j, i0 - 2:i0 + 3], L[j, i0 - 2:i0 + 3], np.nan))) if valid[j, i0 - 2:i0 + 3].any() else np.nan for j in range(nE)])
+    fore = colL[(zc > 30) & (zc < 45)]; hair = colL[(zc > zc[jt]) & (zc < zc[jt] + 25)]
+    fore, hair = fore[np.isfinite(fore)], hair[np.isfinite(hair)]
+    if len(fore) > 5 and len(hair) > 5:
+        midL = 0.5 * (float(np.median(fore)) + float(np.percentile(hair, 25)))
+        jm = next((j for j in range(jg + 10, nE - 6) if np.isfinite(colL[j]) and zc[j] > 35 and np.all(colL[j:j + 6] < midL)), None)
+        if jm is not None:
+            res['hairline_zmid_mm'] = round(float(zc[jm]), 1)
+            # (and from the head's bone, which a carried face's eyes, moved to their own height, do not move: MA19's eyes
+            # went 4 mm down and his base's unchanged line read 4 mm higher above them)
+            if 'headb' in M.files: res['hairline_zhead_mm'] = round(float(zc[jm] - float(M['headb'][2])), 1)
     edge = []
     for xs in np.linspace(-0.6 * 63, 0.6 * 63, 25):
         sel = front & (np.abs(X - xs) < 1.0) & (Z > 30) & (Z < 110)
@@ -305,6 +318,13 @@ if all(p_ is not None for p_ in lip_pts) and skin.any():
         res['mouth_corner_asym_mm'] = round(abs(xr + xl), 2)                       # (corners equally far from the midline)
         hw = 0.8 * min(abs(xl), abs(xr))
         lbox = front & (np.abs(X) < hw) & (Z < zLs + 2.0) & (Z > zLi - 3.0) & (L > 0.3 * Lmed)
+        # (never a moustache over the upper lip: hair is not lip that has lost its colour. Above the mouth's line, a texel
+        # that is not red, has less than 0.7 of the skin's chroma and the grain of hair, its lightness varying within 0.6
+        # mm twice as much as the skin's, is left out; a pale patch on a lip is smooth and keeps its skin's chroma, and
+        # still counts. Pilot_Male_02's grey moustache read as 0.36 of his lips gone pale on Male_Adult_05)
+        csk_ = float(np.median(chroma[skin])); mL_ = blur(L, r_mm(0.6), front)
+        sdL_ = np.sqrt(np.maximum(blur(L * L, r_mm(0.6), front) - mL_ * mL_, 0)); ssk_ = float(np.median(sdL_[skin]))
+        lbox &= ~((Z > zSt + 1.0) & (red < 2.0) & (chroma < 0.7 * csk_) & (sdL_ > 2.0 * ssk_))
         Lm, Rm = lbox & (X > 3) & (red > 3.0), lbox & (X < -3) & (red > 3.0)
         if Lm.sum() > 80 and Rm.sum() > 80:
             res['lip_lr_dE'] = round(float(np.linalg.norm(np.median(LAB[Lm], 0) - np.median(LAB[Rm], 0))), 2)

@@ -125,6 +125,24 @@ elif not os.environ.get('AVA_FRAMED'):
     ie = [int(np.argmin(np.linalg.norm(vuv - np.array(e_), axis=1))) for e_ in EYE_UV]
     src_eyes = np.array(sorted([Q[i_] + np.array([0.0, 12.0, 0.0]) for i_ in ie], key=lambda v: -v[0]))   # (left, +x, first)
 wt = np.ones(len(A))
+if os.environ.get('AVA_EAR_LM'):
+    # AVA_EAR_LM: each ear's front a landmark too (where the ear stands out from the side of the head, at its 2nd
+    # percentile forward), so the source's cheek reaches the head's ear: with only the face's own landmarks, a source whose
+    # ears sat 5 mm further forward laid its ear's skin in front of the head's ear, a bare band between beard and ear,
+    # Delivery_Male_01's on Military_Male_05
+    def ear_fronts(X, idx):
+        out_ = {}
+        for sg in (1, -1):
+            e_ = np.zeros(len(X), bool); e_[idx] = True
+            e_ &= (sg * X[:, 0] > 74) & (X[:, 2] > -45) & (X[:, 2] < 15) & (X[:, 1] > 30) & (X[:, 1] < 110)
+            if e_.sum() < 20: return None
+            y0 = np.percentile(X[e_, 1], 2); out_[sg] = X[e_ & (X[:, 1] < y0 + 3)].mean(0)
+        return out_
+    ea, eb = ear_fronts(Q, np.unique(TV)), ear_fronts(P, np.unique(TR))
+    if ea and eb:
+        A = np.vstack([A, ea[1], ea[-1]]); B = np.vstack([B, eb[1], eb[-1]])
+        wt = np.concatenate([wt, [float(os.environ['AVA_EAR_LM'])] * 2]); keys = keys + ['earL', 'earR']
+        print('ear landmarks: source', np.round(ea[1], 1).tolist(), np.round(ea[-1], 1).tolist(), 'head', np.round(eb[1], 1).tolist(), np.round(eb[-1], 1).tolist())
 if src_eyes is not None:
     EW = float(os.environ.get('AVA_EYE_WEIGHT', 8.0))
     A = np.vstack([A, src_eyes]); B = np.vstack([B, [[ipd / 2, 0, 0], [-ipd / 2, 0, 0]]]); wt = np.concatenate([wt, [EW, EW]])
@@ -299,13 +317,33 @@ ys, xs, Qt, Nt = ys[keep], xs[keep], Qt[keep], Nt[keep]
 # cut by a straight line across the jaw: owner, "facial hair like blocks misplaced on faces"); the ears stay the head's
 # own. Each ear's front is where the ear stands out from the head's side (|x| beyond 74 mm at the ear's height).
 EAR_Y = None
+# (a beard's back edge thins out over this many mm before the ear, never a straight cut, Delivery_Male_01's)
+EAR_FEATHER = float(os.environ.get('AVA_EAR_FEATHER', FEATHER))
 if os.environ.get('AVA_EAR_FRONT'):
     EAR_Y = {}
     for sg in (1, -1):
         e_ = (sg * P2[:, 0] > 74) & (P2[:, 2] > -45) & (P2[:, 2] < 15) & (P2[:, 1] > 30)
-        EAR_Y[sg] = float(np.percentile(P2[e_, 1], 2)) - 4.0 if e_.sum() > 20 else 70.0
+        EAR_Y[sg] = float(np.percentile(P2[e_, 1], 2)) + float(os.environ.get('AVA_EAR_SHIFT', -4.0)) if e_.sum() > 20 else 70.0
     print('ear fronts at y', {k: round(v, 1) for k, v in EAR_Y.items()})
 treeS = BVHTree.FromPolygons([tuple(map(float, v)) for v in Vsim], [tuple(map(int, f)) for f in TV])
+# AVA_BORDER (mm; 8 for a Rocketbox face source, AVA_FRAMED): the face fades out over the last millimetres before the
+# source's own edge, where its cap, hijab or keffiyeh was cut away: the photograph's skin there carries the cloth's rim
+# pressed into it (MA15's skullcap left a thin dark line up his temple)
+BORDER = float(os.environ.get('AVA_BORDER', 8.0 if os.environ.get('AVA_FRAMED') else 0.0))
+border_tree = None
+if BORDER > 0:
+    from mathutils.kdtree import KDTree
+    from collections import Counter
+    ec = Counter(tuple(sorted(e)) for f in TV for e in ((f[0], f[1]), (f[1], f[2]), (f[2], f[0])))
+    # (the cut edges only: never the lids' rims round the eye openings, nor the lips' inner edge)
+    _e = [np.array([ipd / 2, 0, 0.0]), np.array([-ipd / 2, 0, 0.0])]
+    bverts = sorted({v for e, c in ec.items() if c == 1 for v in e
+                     if min(np.linalg.norm(Vsim[v] - e_) for e_ in _e) > 24 and not (abs(Vsim[v][0]) < 36 and -95 < Vsim[v][2] < -40)})
+    if bverts:
+        border_tree = KDTree(len(bverts))
+        for k_, v_ in enumerate(bverts): border_tree.insert(Vector(tuple(map(float, Vsim[v_]))), k_)
+        border_tree.balance()
+    print('source border', len(bverts), 'vertices; fade', BORDER, 'mm')
 UV = np.zeros((len(Qt), 2), np.float32); mask = np.zeros(len(Qt), np.float32)
 z_ls = FR.L['ls'].at(P2)[0, 2] if 'ls' in FR.L else -38.0; z_lm = FR.L['lm'].at(P2)[0, 2] if 'lm' in FR.L else -72.0
 mouth = (np.abs(Qt[:, 0]) < 34) & (Qt[:, 2] < z_ls + 3) & (Qt[:, 2] > z_lm - 3) & (Qt[:, 1] < -15)
@@ -321,12 +359,13 @@ def project(pt, n):
             den = d00 * d11 - d01 * d01
             if abs(den) < 1e-12: continue
             wv = (d11 * d20 - d01 * d21) / den; ww = (d00 * d21 - d01 * d20) / den
-            return fi, np.array([1 - wv - ww, wv, ww]), float(np.linalg.norm(np.array(loc) - pt))
+            bd = border_tree.find(loc)[2] if border_tree is not None else 1e9
+            return fi, np.array([1 - wv - ww, wv, ww]), float(np.linalg.norm(np.array(loc) - pt)), bd
     return None
 for i in range(len(Qt)):
     r = project(Qt[i], Nt[i])
     if r is None: continue
-    fi, b, dist = r
+    fi, b, dist, bd = r
     UV[i] = b @ VT[TVT[fi]]
     rr = np.linalg.norm(Qt[i])
     # the eye's own zone (the Rocketbox eye, its lids, the crease and the skin up to the brow's lower edge, out to the
@@ -335,12 +374,15 @@ for i in range(len(Qt)):
     # eye and the brow as a grey band once the eyes were fitted onto its own)
     eo_ = Qt[i] - (eyes[0] if np.linalg.norm(Qt[i] - eyes[0]) < np.linalg.norm(Qt[i] - eyes[1]) else eyes[1])
     rho = math.sqrt((eo_[0] / EK_SIDE) ** 2 + (eo_[2] / EYE_KEEP) ** 2)
-    m = min(1.0, (REACH - rr) / FEATHER) * min(1.0, max(0.0, (rho - 1.0) / 0.4)) * min(1.0, (EAR_X - abs(Qt[i, 0])) / FEATHER) \
+    m = min(1.0, (REACH - rr) / (20.0 if REACH > 150 else FEATHER)) * min(1.0, max(0.0, (rho - 1.0) / 0.4)) * min(1.0, (EAR_X - abs(Qt[i, 0])) / FEATHER) \
         * min(1.0, (12 - dist) / 4) * min(1.0, max(0.0, (TOP - Qt[i, 2]) / 15.0))
-    if EAR_Y is not None and abs(Qt[i, 0]) > 50:
-        m *= min(1.0, max(0.0, (EAR_Y[1 if Qt[i, 0] > 0 else -1] - Qt[i, 1]) / FEATHER))
+    if BORDER > 0: m *= min(1.0, max(0.0, (bd - 1.5) / BORDER))
+    if EAR_Y is not None:
+        # (never behind the ears' front, at the sides or across the back of the head: a longer reach for a beard took in
+        # the back of the skull, MA17's source's hair and all)
+        m *= min(1.0, max(0.0, (EAR_Y[1 if Qt[i, 0] > 0 else -1] - Qt[i, 1]) / EAR_FEATHER))
     mask[i] = max(0.0, m)
-cheek = (np.abs(Qt[:, 0]) > 28) & (np.abs(Qt[:, 0]) < 52) & (Qt[:, 2] < -15) & (Qt[:, 2] > -45)
+cheek = (np.abs(Qt[:, 0]) > 28) & (np.abs(Qt[:, 0]) < 52) & (Qt[:, 2] < -15) & (Qt[:, 2] > -45) & (Qt[:, 1] < 30)   # (the face's front only)
 near_eye = np.where(np.linalg.norm(Qt - eyes[0], axis=1) < np.linalg.norm(Qt - eyes[1], axis=1), 0, 1)
 eo = (Qt - np.stack(eyes)[near_eye]).astype(np.float32)          # each texel from its nearest eye (mm): the orbits' zone
 np.savez_compressed(os.path.join(out_dir, 'ffhq_map.npz'), ys=ys, xs=xs, uv=UV, mask=mask, cheek=cheek, scalp=np.zeros(len(Qt), bool), eo=eo,

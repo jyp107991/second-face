@@ -63,7 +63,13 @@ def check(path, sex, short=False, own=None, base=None, bald=False, beard=False):
         bt = b.get('hairline_trg_mm')
         # (the line itself in place on the head: its height above the eyes within 3 mm of the head as shipped; where the
         # carried face's brow sits deeper or higher, the distance from the glabella changes without the line moving)
-        if r.get('hairline_z_mm') is not None and b.get('hairline_z_mm') is not None:
+        if r.get('hairline_zhead_mm') is not None and b.get('hairline_zhead_mm') is not None:
+            own_line = not short and abs(r['hairline_zhead_mm'] - b['hairline_zhead_mm']) <= 3.0
+            note = f'; its line {r["hairline_zhead_mm"]:.1f} mm from the head bone, the head as shipped {b["hairline_zhead_mm"]:.1f}, its own within 3'
+        elif r.get('hairline_zmid_mm') is not None and b.get('hairline_zmid_mm') is not None:
+            own_line = not short and abs(r['hairline_zmid_mm'] - b['hairline_zmid_mm']) <= 3.0
+            note = f'; its line {r["hairline_zmid_mm"]:.1f} mm above the eyes, the head as shipped {b["hairline_zmid_mm"]:.1f}, its own within 3'
+        elif r.get('hairline_z_mm') is not None and b.get('hairline_z_mm') is not None:
             own_line = not short and abs(r['hairline_z_mm'] - b['hairline_z_mm']) <= 3.0
             note = f'; its line {r["hairline_z_mm"]:.1f} mm above the eyes, the head as shipped {b["hairline_z_mm"]:.1f}, its own within 3'
         else:
@@ -107,7 +113,9 @@ def check(path, sex, short=False, own=None, base=None, bald=False, beard=False):
             ok = r[k] <= lim
             print(f'{"ok  " if ok else "FAIL"} {k:20s} {r[k]:8.2f}   (the head as shipped {b[k]:.2f}; limit {lim:.2f})')
             if not ok: fails.append(k)
-        if r.get('sideburn_gap_mm') is not None and sex == 'm':
+        # (a beard's join only: a clean-shaven man's sideburn joins no beard; the head as shipped with its beard joined, under
+        # 30 mm, or a carried beard, --beard)
+        if r.get('sideburn_gap_mm') is not None and sex == 'm' and (beard or (b.get('sideburn_gap_mm') or 999) < 30):
             lim = max(4.0, (b.get('sideburn_gap_mm') or 0.0) + 2.0); ok = r['sideburn_gap_mm'] <= lim
             print(f'{"ok  " if ok else "FAIL"} {"sideburn_gap_mm":20s} {r["sideburn_gap_mm"]:8.2f}   (sideburn into beard: limit {lim:.1f})')
             if not ok: fails.append('sideburn_gap_mm')

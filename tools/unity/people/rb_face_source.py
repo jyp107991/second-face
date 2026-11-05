@@ -55,14 +55,36 @@ for f in face:
     c = px[min(th - 1, max(0, int(uv[1] * th))), min(tw - 1, max(0, int(uv[0] * tw)))]
     L_, a_, b_ = lab_of(c.astype(np.float64)); ch = (a_ * a_ + b_ * b_) ** 0.5
     if ch < 5.0 and L_ > 35: continue                                    # (white and grey cloth)
+    if os.environ.get('RBF_RIM'):
+        # (a skullcap welded into the head and coloured like skin, Male_Adult_15's: the face is cut along the cap's rim, 42
+        # mm above the eyes at the brow and down to 15 at the top of the ear; the carry fades out before that cut edge,
+        # AVA_BORDER, so the rim's shadow pressed into the skin is not carried)
+        cx = float(np.mean([P[v.index, 0] for v in f.verts])); cz = float(np.mean([P[v.index, 2] for v in f.verts]))
+        rt, rs = float(os.environ.get('RBF_RIM_TOP', 42.0)), float(os.environ.get('RBF_RIM_SIDE', 15.0))   # (a beanie sits lower at the sides)
+        lim = rt - (rt - rs) * min(1.0, abs(cx) / 65.0) ** 2
+        if os.environ.get('RBF_RIM_EAR'):
+            # (in front of the ear the cap's edge sits higher, over the ear's top: the sideburn under it is the face's own
+            # and joins its beard to the new head's side hair; cut lower there, a bare gap of 15 mm was left between the
+            # two, Delivery_Male_01's)
+            cy = float(np.mean([P[v.index, 1] for v in f.verts]))
+            if abs(cx) > 58.0 and cy > 20.0: lim = max(lim, float(os.environ['RBF_RIM_EAR']))
+        if cz > lim: continue
     if os.environ.get('RBF_CAP'):
         # (a cap or beanie welded into the head, Delivery_Male_01's, Male_Adult_17's, the pilots': above the brows only skin
         # is carried, by its hue and chroma as the realism gate tells skin; the cap's cloth and the hair under its edge stay
         # the new head's own)
         zc = float(np.mean([P[v.index, 2] for v in f.verts]))
         hue = math.degrees(math.atan2(b_, a_))
+        # (a peaked cap's brim, welded in front of the brows: its underside faces down, its top up; rays from the brows hit
+        # it first and laid the brim's colour on them as blocks, the pilots'. The brows' and forehead's skin faces forward)
+        if zc > 12.0:
+            vs_ = [P[v.index] for v in f.verts]; nn = np.cross(vs_[1] - vs_[0], vs_[2] - vs_[0])
+            if np.linalg.norm(nn) > 1e-9:
+                nn = nn / np.linalg.norm(nn); cen = np.mean(vs_, 0)
+                if nn @ (cen - np.array([0.0, 45.0, 10.0])) < 0: nn = -nn
+                if nn[2] < -0.35 or (nn[2] > 0.75 and cen[1] < -30): continue
         # (above the brows, 35 mm over the eyes: the brows, dark and colourless, are the face's own; the caps begin at 43)
-        if zc > 35.0 and not (32.0 <= hue <= 85.0 and ch > 7.0 and 25.0 < L_ < 92.0): continue
+        if zc > float(os.environ.get('RBF_CAP_Z', 35.0)) and not (32.0 <= hue <= 85.0 and ch > 7.0 and 25.0 < L_ < 92.0): continue
     kept.append(f)
 if len(kept) < len(face): print('face source: cloth left out,', len(face) - len(kept), 'faces')
 face = kept
