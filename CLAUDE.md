@@ -157,6 +157,13 @@ The owner wants to play unspoiled.
   Rocketbox's look (calibrated sliders, a share of a real individual's proportions, a small tone shift on the base's own
   photograph, hair within the ancestry rules). Never make a face or skin from scratch; never change a people's bases to
   serve another people ("leave other races alone"). Tooling: `tools/unity/people/rb_variations.py`.
+- **Aesthetics locked; autonomous to v1** (owner, 2026-11-05, binding): "looks good enough apart from lore inconsistent
+  outfits. lock in aesthetics and then go fully autonomous into building to v1 complete first version of game. dont stop
+  until you have something i can play and test. make sure you review output before you give to me - play as a player and
+  as a game reviewer using best practice on game reviewing/testing. dont stop until you have a quality assured v1
+  output." The people pipeline as gated (`docs/PEOPLE_QA.md`) is locked: no more face rounds. The outfits are made
+  lore-bound (the wardrobe rule) on the locked people. Then the game is built to v1 without waiting on the owner; every
+  build is played through as a player and reviewed as a game critic (`docs/QA.md`) before it is handed over.
 - **A new origin** (owner, 2026-10-29, binding): the player is NOT a shelter-dweller who ventures out for the first
   time (too derivative of Fallout, to the point of an IP breach). The opening gives the player character a life of
   their own and the people in it, so the player cares about them as much as about the hero, and it builds the world,

@@ -300,6 +300,25 @@ Steps (each a commit with `npm run check` green and screenshots under `docs/evid
 - [ ] U8 Characters and relationships: motive bibles, arcs, romances rewritten; natural talk over exposition.
 - Then B3.11+ resumes (the content tracker below is unchanged; the maps become places in the one world).
 
+### 2e. THE DRIVE TO v1 (owner, 2026-11-05, binding: "lock in aesthetics and then go fully autonomous into building to v1")
+The people are locked (the gate, `docs/PEOPLE_QA.md`; the 19 opened faces approved "good enough"). The owner's one
+objection: **outfits are lore-inconsistent** (Rocketbox ships suits, police, pilot, military, fire, medical, sports and
+party clothes). Then the game is built to v1 without waiting; every build goes through `docs/QA.md` (played as a player,
+tested, reviewed as a critic) before it is handed over. Order (each line is several steps; tick as done):
+- **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
+  prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
+  elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
+- **L2 Body catalogue and palettes** (`data/rb_bodies.json`, `data/outfits_rb.json`): which bodies each role and region
+  may wear (work, casual, coats; suits only for the megacity's corp and rich), the dye palettes of `docs/WARDROBE.md`.
+- **L3 Rocketbox in Unity** (RB1): people as FBX + textures → prefabs, the `SecondFace/Person` shader (skin, hair
+  cut-out, dyed garments from the masks, wear and grime), Mesh LODs; the faces carried onto lore-bodied bases where
+  their own body's clothes cannot be made lore-bound.
+- **L4 The cast and the player on Rocketbox**: the game's people (named and extras) mapped to Rocketbox people and
+  outfits; the player from Rocketbox bases with the sculptor's shapes (RB2), hair, skin and clothing colours.
+- **G1 The new opening** (owner notes D, `docs/OPENINGS.md`; story in `story/` only).
+- **G2 Combat** (P6, DESIGN_UNITY §5.2) · **G3 Chapter One on the phone** (P7) → build `play-ch1`, QA, hand over.
+- **G4…** P8 → P13 as `docs/BUILD_PLAN_V1.md` §5, each playable build through `docs/QA.md`.
+
 ### 2d. The Unity game (owner decisions 2026-10-28; `docs/PORT.md` is the plan — read it)
 **Pass 7 (owner, 2026-10-28): a redesign, not a port.** Keep only the narrative/thematic layer; rebuild the world,
 every asset, the people, camera, UI, audio and the play systems to the highest aesthetic and functional standard a
