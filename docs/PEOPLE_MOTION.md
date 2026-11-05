@@ -23,7 +23,10 @@ It is binding. It sits beside the face and skin gate (`docs/PEOPLE_QA.md`) and i
    `PlayerBody.Base` for the player), with every runtime component the game adds switched on (`Ambient`, `FootPlant`,
    `Gaze`, `ArmClearance`, `HandPose`), the game's controller (`Locomotion.controller`), the game's speeds
    (`Townsfolk.WalkSpeed`, `Walker.WalkSpeed`/`JogSpeed`, `Stealth.SneakSpeed`) and the game's conversation behaviour
-   (turning to face, `Walkabout.Responding`). A bare rig, a single clip, a component turned off "to isolate it", or a
+   (turning to face, `Walkabout.Face`). The player's body has no `Ambient` in the game, so it is not given one: it
+   neither idles by a hash nor gestures. Two settings differ from play and change no pose: every body animates even
+   unseen (`AlwaysAnimate`, so every frame is measured), and the random gestures wait (the gate plays each in turn).
+   A bare rig, a single clip, a component turned off "to isolate it", or a
    pose set by hand never counts as a pass.
 2. **Every state, every frame.** The gate (`Tests/PlayMode/HumanMotionGateTests.cs`) plays each state below and
    measures every rendered frame (the mesh-based measures at 6 Hz or more):
@@ -69,9 +72,9 @@ every frame. Angles are degrees, distances centimetres. "Down" and "horizon" are
 | H2 | Head on the body | yaw of the face relative to the chest | ≤ 30 | 45 | the eyes take a gaze shift up to about 30° and the head joins only beyond about 25° [4][5]; a sustained look further round turns the body |
 | H3 | Head upright | roll of the face from vertical | ≤ 10 | 15 | a level head; a tilt is an expression, not a rest pose |
 | F1 | Soles on the ground | height of the lowest heel and ball skin above the ground under each (baked mesh) | −1.5 to +2.5 | −3 to +4 | standing feet bear weight: no floating, no sinking |
-| F2 | Heels down | heel height minus ball height | ≤ 2 | 4 | quiet standing is flat-footed (no tiptoe) |
-| F3 | Stance | heel-centre separation; each foot's turn out from the body's front | 8–35; ≤ 25 | 5–45; 35 | preferred quiet stance: 17 cm between heel centres, 14° between the feet [6]; self-selected widths 16–18 ± 4–5 cm [7][8] |
-| F4 | Standing still | a planted foot's horizontal speed | mean ≤ 3 cm/s; frames > 10 cm/s ≤ 2 % | — | foot skate is counted above 10 cm/s at contact [9] |
+| F2 | Heels down | heel height minus ball height | −2 to +2 | −4 to +4 | quiet standing is flat-footed (no tiptoe, no toes in the air) |
+| F3 | Stance | heels' width across the body (F3w); one foot ahead of the other (F3a); each foot's turn out from the body's front (F3s) | 8–32; ≤ 28; ≤ 25 | 5–40; 35; 35 | preferred quiet stance: 17 cm between heel centres, 14° between the feet [6]; self-selected widths 16–18 ± 4–5 cm [7][8]; a relaxed stagger is under a foot's length |
+| F4 | Standing still | a foot bearing weight (its sole within 2 cm of the lowest it has been in that state): its horizontal speed | mean ≤ 3 cm/s; frames > 10 cm/s ≤ 2 % | — | foot skate is counted above 10 cm/s at contact [9] |
 | C1 | Nothing clips | depth of a hand or forearm vertex inside the torso, hip or thigh skin (baked mesh, against the skin's normals) | ≤ 0.5 | 1.5 | the owner's rule: arms, hands and clothing never sink into a body (CLAUDE.md §2) |
 
 ### 2.2 Gestures
@@ -90,10 +93,11 @@ F1 and F2 apply to the planted foot, and at the end the chest faces the partner 
 | Id | Measure | How it is measured | Limit | Basis |
 |---|---|---|---|---|
 | W1 | No foot skate | a foot whose sole is within 2.5 cm of the ground: its horizontal speed | mean ≤ 8 cm/s; frames > 15 cm/s ≤ 5 % | foot-skate measures in motion research count sliding above 10 cm/s at contact heights of 2.5–10 cm [9][10] |
-| W2 | Stride matches speed | the ground speed the clip's feet imply against the body's ground speed | within 10 % | a stride is the body's speed divided by its cadence; a mismatch is seen as gliding or treading |
+| W2 | Stride matches speed | a planted foot's speed as a share of the body's (0 when the stride fits the speed) | mean ≤ 0.10 | a stride is the body's speed divided by its cadence; a mismatch slides the planted foot (gliding or treading) |
 | W3 | Arm swing | upper arm from down; opposite to the legs | ≤ 35 (p98), cap 45 | |
 | W4 | Head level | face pitch | −20 to +8 | looking where they go |
 | W5 | Head on the body | face yaw on the chest | ≤ 25 | |
+| W6 | Stance foot on the ground | the sole's height while that foot bears weight | −1.5 to +2.5 (cap −3 to +4) | as F1 |
 | C1 | Nothing clips | as §2.1 | as §2.1 | |
 
 ### 2.5 Two people talking

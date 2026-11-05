@@ -53,19 +53,23 @@ namespace SecondFace.Game.Play
             var w = go.AddComponent<Walker>();
             w.Agent = agent;
             w.Animator = go.GetComponentInChildren<Animator>();
-            if (w.Animator != null)
-            {
-                w.Animator.runtimeAnimatorController = locomotion;
-                w.Animator.applyRootMotion = false;
-                // always: the player is always in view, and photo mode, portraits, the IK and a sit read the pose
-                // (culled, a body nothing has rendered yet keeps a stale pose: in batch tests, every body)
-                w.Animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-                w.Animator.gameObject.AddComponent<SecondFace.Game.People.FootPlant>();
-                w.Animator.gameObject.AddComponent<SecondFace.Game.People.Gaze>();
-                w.Animator.gameObject.AddComponent<SecondFace.Game.People.ArmClearance>();
-                w.Animator.gameObject.AddComponent<SecondFace.Game.People.HandPose>();
-            }
+            if (w.Animator != null) Animate(w.Animator, locomotion);
             return w;
+        }
+
+        /// <summary>The player's body's animation as the game gives it: the locomotion controller without root motion, always
+        /// animated (the player is always in view, and photo mode, portraits, the IK and a sit read the pose; culled, a body
+        /// nothing has rendered yet keeps a stale pose), feet on the ground, gaze, arms clear of the body, hands at rest.
+        /// The motion and posture gate (docs/PEOPLE_MOTION.md) makes the player's body with this.</summary>
+        public static void Animate(Animator animator, RuntimeAnimatorController locomotion)
+        {
+            animator.runtimeAnimatorController = locomotion;
+            animator.applyRootMotion = false;
+            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+            animator.gameObject.AddComponent<SecondFace.Game.People.FootPlant>();
+            animator.gameObject.AddComponent<SecondFace.Game.People.Gaze>();
+            animator.gameObject.AddComponent<SecondFace.Game.People.ArmClearance>();
+            animator.gameObject.AddComponent<SecondFace.Game.People.HandPose>();
         }
 
         private void Awake()

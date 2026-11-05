@@ -759,18 +759,7 @@ namespace SecondFace.Game.Play
                     while (Walker != null && Walker.Goal != null && Time.time - t0 < 10f) yield return null;
                 }
                 if (Walker == null || person == null) yield break;
-                var to = Walker.transform.position - person.position;
-                to.y = 0;
-                if (to.sqrMagnitude > 0.01f)
-                {
-                    var from = person.rotation;
-                    var goal = Quaternion.LookRotation(to.normalized, Vector3.up);
-                    for (var t = 0f; t < 1f && person != null; t += Time.deltaTime / 0.6f)
-                    {
-                        person.rotation = Quaternion.Slerp(from, goal, Mathf.SmoothStep(0f, 1f, t));
-                        yield return null;
-                    }
-                }
+                yield return Face(person, Walker.transform.position);
             }
             if (person == null) yield break;
             if (gaze != null) gaze.Target = walkerHead;
@@ -783,6 +772,25 @@ namespace SecondFace.Game.Play
             else yield return new WaitForSeconds(6f);
             if (gaze != null && gaze.Target == walkerHead) gaze.Target = null;
             if (walkerGaze != null && walkerGaze.Target == head) walkerGaze.Target = null;
+        }
+
+        /// <summary>Turns a person to face a point (the conversation turn), over a time that grows with the turn (half a
+        /// second for a glance round, 1.3 s for about-face) so their feet step round (FootPlant). The motion and posture gate
+        /// plays this (docs/PEOPLE_MOTION.md §2.3).</summary>
+        public static IEnumerator Face(Transform person, Vector3 point, float seconds = -1f)
+        {
+            var to = point - person.position;
+            to.y = 0;
+            if (to.sqrMagnitude <= 0.01f) yield break;
+            var from = person.rotation;
+            var goal = Quaternion.LookRotation(to.normalized, Vector3.up);
+            if (seconds <= 0f) seconds = Mathf.Lerp(0.5f, 1.3f, Quaternion.Angle(from, goal) / 180f);
+            for (var t = 0f; t < 1f && person != null; t += Time.deltaTime / seconds)
+            {
+                person.rotation = Quaternion.Slerp(from, goal, Mathf.SmoothStep(0f, 1f, t));
+                yield return null;
+            }
+            if (person != null) person.rotation = goal;
         }
 
         /// <summary>Opens a person's conversation from the content in the panel (false when they have none).</summary>
@@ -799,12 +807,11 @@ namespace SecondFace.Game.Play
             var panel = new DialoguePanel(runner,
                 id => Registry.Npcs.TryGetValue(id, out var n) && !string.IsNullOrEmpty(n.Name) ? n.Name : who.Title,
                 id => id == who.Id && face != null ? Portraits.Of(face) : null);
-            // the conversation cameras (P5.3e): the two-shot first, then the speaker's insert and the two-shot by turns
+            // the conversation view (CLAUDE.md §2, overhead always): the game view eases closer over the two of them and
+            // stays there, line after line; no cuts, never eye level
             if (Stage.Camera != null && Walker != null)
             {
                 var shots = ConversationCamera.Begin(Stage.Camera, Walker.transform, who.transform);
-                var lines = 0;
-                panel.Presented += _ => { if (shots != null) shots.Cut(lines++ % 2 == 0 ? ConversationCamera.Shot.TwoShot : ConversationCamera.Shot.Other); };
                 panel.Ended += () => { if (shots != null) shots.End(); };
             }
             // the clock: the conversation's time effects (a watch until ten, a sleep to dawn) move the world's clock

@@ -24,6 +24,7 @@ no S1/S2 open at hand-over). Spoiler rule: story beats are named, never explaine
 | PlayMode `KnockTests` | a new game at home at seven, Maud's talk, the hatch, the watch, the stranger's scene on the apron, the outriders' fight to its end | see §2.3 |
 | PlayMode `ChapterOneTests` | the road to Shale by the map, Shale reached, the sheriff talks; the overpass, Kessler talks, the paper ends the quest | see §2.3 |
 | PlayMode suite (CI) | boot, saves, pause, every screen, camp, loot, sneaking, theft, people's hours | see §2.3 |
+| PlayMode `HumanMotionGateTests` | the motion and posture gate (`docs/PEOPLE_MOTION.md`): every measure, every state, ten people as the game makes them; the clips loop as their sidecars say | see §2.3 |
 
 ### Findings (fixed before hand-over unless marked open)
 | Id | Sev | What | Where | Status |
@@ -42,6 +43,13 @@ no S1/S2 open at hand-over). Spoiler rule: story beats are named, never explaine
 | T12 | S3 | The difficulty setting never reached a fight | `Combat.Difficulty` | fixed |
 | T13 | S3 | Fight moves waited out an 8 s cap each (a townsperson's stopping distance never passed the arrival test) and were walked, not jogged | `Combat.MoveUnit` | fixed |
 | T14 | S1 (CI) | The catalogue build failed on a checkout without the people installed | `RocketboxPeopleBuild` | fixed |
+| T15 | S2 | None of the 28 captured clips looped: the clip settings were set where Unity has no clips yet, so every walk froze after one stride and was dragged along, and every idle froze after a few seconds (found by the motion gate, `docs/PEOPLE_MOTION.md`) | `MotionImportPostprocessor` | fixed |
+| T16 | S2 | Hands curled into claws: the relaxed curl was added on top of Rocketbox's own bent fingers (A5 p98 69°) | `HandPose` | fixed |
+| T17 | S2 | Heads turned up to 69° on still bodies when someone spoke from the side; the head carried a roll with it | `Gaze` | fixed |
+| T18 | S2 | Feet floated about 3 cm; a foot the clip lifted was left hovering; stances up to 46 cm wide; feet slid when the body turned to talk | `FootPlant`, `Walkabout.Face` | in progress |
+| T19 | S2 | Hands sank 2-5 cm into the side of the thigh; some men's arms hung 8-14 cm off the body (no torso data on the Rocketbox people, so the arm clearance was off) | `ArmClearance`, `RocketboxPeopleBuild` | in progress |
+| T20 | S2 | The conversation camera dropped to eye level with over-the-shoulder cuts, against the overhead rule | `ConversationCamera` | fixed |
+| T21 | S3 | White marks painted on a balding man's scalp (`Male_Adult_03`) | outfit bake | open |
 
 ## 3. Pass one: player
 

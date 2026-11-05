@@ -41,11 +41,11 @@ The three benchmarks, and what we take from each on a phone:
   and entered through the door with no transition; the lighting Volume blends over a second.
 - **Combat framing**: the camera eases to fit the actors engaged, a tactical top-down toggle shows the field flat,
   the turn's actor is always in frame, and a double tap on any actor orbits to them.
-- **Conversation** is a scene: the world stays, the camera cuts between an over-shoulder, a two-shot and inserts on
-  whoever speaks, with shallow depth of field and the companions in shot reacting; the panel sits beside, with a
-  live portrait rendered from the same face; every cut is skippable and the conversation can be read from the
-  log. No black-screen close-ups. The shots are generated from a small grammar (who speaks, who listens, tone),
-  not authored per line.
+- **Conversation stays overhead** (owner 2026-11-05, binding, CLAUDE.md §2 "Overhead, always"): the world stays and
+  the game view eases closer over the two people (the rig's pitch range, about 9 m), framing them in the part of the
+  screen the panel leaves free, one view for the whole conversation; no eye-level shots, no over-the-shoulder cuts, no
+  inserts. Faces are read in the panel's live portrait, rendered from the same face. Superseded: the earlier plan of
+  cuts between over-shoulder, two-shot and inserts.
 - **Light is the mood.** A realtime sun and sky by time of day, real lights after dark (fires, lanterns, neon,
   headlamps) with shadows, grading per region and mood from a Volume profile; bright and clear is the default,
   dust, haze, storm and gloom are events or choices for a place.

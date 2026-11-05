@@ -16,6 +16,16 @@ namespace SecondFace.Game.People
     {
         public float Margin = 0.02f;
         public float Release = 90f;
+        /// <summary>Standing still, no gesture: an arm hanging away from the body is drawn in until the hand rests this far
+        /// from the side of the hip or thigh (docs/PEOPLE_MOTION.md A4), by at most <see cref="RestMax"/>°, at
+        /// <see cref="RestRate"/>° a second.</summary>
+        public float RestGap = 0.025f, RestMax = 18f, RestRate = 30f;
+
+        private static readonly int SpeedId = Animator.StringToHash("Speed");
+        private float _restL, _restR;
+        private Vector3 _restAxisL, _restAxisR;
+        private int _gestureLayer = -2;
+        private bool _hasSpeed;
 
         private Animator _animator;
         private TorsoProfile _profile;
@@ -42,12 +52,79 @@ namespace SecondFace.Game.People
             _ru = _animator.GetBoneTransform(HumanBodyBones.RightUpperArm);
             _rl = _animator.GetBoneTransform(HumanBodyBones.RightLowerArm);
             _rh = _animator.GetBoneTransform(HumanBodyBones.RightHand);
+            _gestureLayer = -2;
+            _hasSpeed = false;
+            if (_animator.runtimeAnimatorController != null)
+                foreach (var p in _animator.parameters) if (p.nameHash == SpeedId) _hasSpeed = true;
+        }
+
+        /// <summary>Standing still and not gesturing (the arms hang).</summary>
+        private bool Resting()
+        {
+            if (_animator.runtimeAnimatorController == null) return false;
+            if (_gestureLayer == -2)
+            {
+                _gestureLayer = _animator.GetLayerIndex(Ambient.GestureLayer);
+                _hasSpeed = false;
+                foreach (var p in _animator.parameters) if (p.nameHash == SpeedId) _hasSpeed = true;
+            }
+            if (_hasSpeed && _animator.GetFloat(SpeedId) > 0.1f) return false;
+            if (_gestureLayer >= 0 && _animator.GetLayerWeight(_gestureLayer) > 0.05f) return false;
+            var state = _animator.GetCurrentAnimatorStateInfo(0);
+            return !state.IsTag("sit") && !state.IsName("pickup") && !state.IsName("sneak");
+        }
+
+        /// <summary>Draws a hanging arm in to rest at the body's side (and lets it go again, at the same rate, about the axis
+        /// it was drawn in on).</summary>
+        private void Rest(Transform upper, Transform lower, Transform hand, ref float angle, ref Vector3 axis, bool resting, float dt)
+        {
+            if (upper == null || lower == null || hand == null) return;
+            var need = 0f;
+            if (resting)
+            {
+                var along = hand.position - lower.position;
+                var p = hand.position + along.normalized * 0.08f;   // the hand's middle
+                if (Gap(p, out var gap, out var inward) && gap > RestGap)
+                {
+                    var arm = p - upper.position;
+                    var ax = Vector3.Cross(arm, inward);
+                    if (ax.sqrMagnitude > 1e-8f)
+                    {
+                        need = Mathf.Min(RestMax, Mathf.Atan2(gap - RestGap, arm.magnitude) * Mathf.Rad2Deg);
+                        axis = ax.normalized;
+                    }
+                }
+            }
+            angle = Mathf.MoveTowards(angle, need, RestRate * dt);
+            if (angle > 0.01f && axis.sqrMagnitude > 0.5f) upper.rotation = Quaternion.AngleAxis(angle, axis) * upper.rotation;
+        }
+
+        /// <summary>How far a point outside the torso stands from its surface (m), and the way in (world, level).</summary>
+        public bool Gap(Vector3 p, out float gap, out Vector3 inward)
+        {
+            gap = 0f; inward = Vector3.zero;
+            if (!Ready) return false;
+            var rot = _hips.rotation * Quaternion.Inverse(_profile.HipsRest);
+            var scale = Mathf.Max(0.01f, transform.lossyScale.y);
+            var local = Quaternion.Inverse(rot) * (p - _hips.position) / scale;
+            if (!_profile.Sample(local.y, out var cx, out var cz, out var rx, out var rz)) return false;
+            var dx = (local.x - cx) / rx;
+            var dz = (local.z - cz) / rz;
+            var q = Mathf.Sqrt(dx * dx + dz * dz);
+            if (q <= 1f) return false;
+            var d = new Vector2(local.x - cx, local.z - cz);
+            gap = d.magnitude * (1f - 1f / q) * scale;
+            inward = rot * new Vector3(-d.x, 0f, -d.y).normalized;
+            return true;
         }
 
         private void LateUpdate()
         {
             if (!Ready) return;
             var dt = Time.deltaTime > 0f ? Time.deltaTime : Time.unscaledDeltaTime;
+            var resting = Resting();
+            Rest(_lu, _ll, _lh, ref _restL, ref _restAxisL, resting, dt);
+            Rest(_ru, _rl, _rh, ref _restR, ref _restAxisR, resting, dt);
             Clear(_lu, _ll, _lh, ref _angleL, ref _axisL, dt);
             Clear(_ru, _rl, _rh, ref _angleR, ref _axisR, dt);
         }

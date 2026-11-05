@@ -3,13 +3,14 @@ using UnityEngine;
 namespace SecondFace.Game.People
 {
     /// <summary>
-    /// Hands at rest (P4.14, the owner's note: hands flat and spread). The captured clips carry no finger motion
-    /// (tools/unity/motion/cmu2fbx.py drops the capture's single finger bone), and a Humanoid finger no clip drives keeps
-    /// the mesh's own bind pose, MakeHuman's: straight and spread. After the animation each frame, every finger is curled
-    /// towards the palm by a relaxed amount (more at the knuckle than the tip, the little finger most, the index least),
-    /// about an axis found once from the bind pose (across the finger, in the palm's plane), so the curl follows the hand
-    /// wherever the clip takes it. Fingers a clip does drive would be curled over; none do yet, and <see cref="Curl"/> at
-    /// 0 leaves the clip's own.
+    /// Hands at rest (P4.14, the owner's note: hands flat and spread; docs/PEOPLE_MOTION.md A5: half-curled, never flat,
+    /// never a claw or a fist). The captured clips carry no finger motion, so a Humanoid finger keeps whatever its avatar's
+    /// neutral is: MakeHuman's straight and spread, Rocketbox's already bent. After the animation each frame, every finger
+    /// joint is brought to a relaxed bend of its own (<see cref="Relaxed"/>, more at the middle joint than the knuckle and
+    /// the tip, the little finger most, the index least), measured as the bend between the bone before and the bone after
+    /// it in the finger's own plane (about an axis found once from the bind pose: across the finger, in the palm's plane).
+    /// It sets the bend, it does not add to it, so a neutral already bent is not curled over into a claw.
+    /// <see cref="Curl"/> at 0 leaves the fingers as they are.
     /// </summary>
     [RequireComponent(typeof(Animator))]
     public sealed class HandPose : MonoBehaviour
@@ -17,7 +18,7 @@ namespace SecondFace.Game.People
         /// <summary>The curl's strength (1 relaxed; 0 the clip's own fingers).</summary>
         [Range(0f, 1f)] public float Curl = 1f;
 
-        private struct Joint { public Transform Bone; public Quaternion Bind; public Vector3 Axis; public float Degrees; }
+        private struct Joint { public Transform Bone, Parent, Next; public Vector3 Axis; public float Degrees; public bool Thumb; }
         private Joint[] _joints;
         public bool Ready => _joints != null && _joints.Length > 0;
 
@@ -37,7 +38,7 @@ namespace SecondFace.Game.People
         };
 
         /// <summary>The relaxed curl at the knuckle, the middle joint and the tip (degrees, before a finger's scale).</summary>
-        public static readonly float[] Relaxed = { 22f, 28f, 14f };
+        public static readonly float[] Relaxed = { 26f, 34f, 16f };
 
         private void Awake() => Bind();
 
@@ -75,12 +76,13 @@ namespace SecondFace.Game.People
                 {
                     var b = bones[k];
                     if (b == null) continue;
-                    var next = k + 1 < bones.Length ? bones[k + 1] : null;
+                    var parent = k == 0 ? hand : bones[k - 1];
+                    var next = k + 1 < bones.Length ? bones[k + 1] : (b.childCount > 0 ? b.GetChild(0) : null);
                     var dir = next != null ? (next.position - b.position).normalized : along;
                     // the curl turns the finger's direction towards the palm: about the axis across it in the palm's plane
                     var axis = Vector3.Cross(dir, normal).normalized;
-                    if (axis.sqrMagnitude < 1e-6f) continue;
-                    into.Add(new Joint { Bone = b, Bind = b.localRotation, Axis = Quaternion.Inverse(b.rotation) * axis, Degrees = Relaxed[k] * f.Scale });
+                    if (axis.sqrMagnitude < 1e-6f || parent == null) continue;
+                    into.Add(new Joint { Bone = b, Parent = parent, Next = next, Axis = Quaternion.Inverse(b.rotation) * axis, Degrees = Relaxed[k] * f.Scale });
                 }
             }
             // the thumb: a little in towards the palm at its root
@@ -89,7 +91,7 @@ namespace SecondFace.Game.People
             {
                 var dir = (tp != null && tp != thumb ? tp.position - thumb.position : across).normalized;
                 var axis = Vector3.Cross(dir, normal).normalized;
-                if (axis.sqrMagnitude > 1e-6f) into.Add(new Joint { Bone = thumb, Bind = thumb.localRotation, Axis = Quaternion.Inverse(thumb.rotation) * axis, Degrees = 10f });
+                if (axis.sqrMagnitude > 1e-6f) into.Add(new Joint { Bone = thumb, Axis = Quaternion.Inverse(thumb.rotation) * axis, Degrees = 10f, Thumb = true });
             }
         }
 
@@ -97,7 +99,23 @@ namespace SecondFace.Game.People
         {
             if (_joints == null || Curl <= 0f) return;
             foreach (var j in _joints)
-                if (j.Bone != null) j.Bone.localRotation = j.Bone.localRotation * Quaternion.AngleAxis(j.Degrees * Curl, j.Axis);
+            {
+                if (j.Bone == null) continue;
+                if (j.Thumb || j.Parent == null || j.Next == null)
+                {
+                    // the thumb (and a tip with nothing beyond it to measure): a little in, as before
+                    if (j.Thumb) j.Bone.localRotation = j.Bone.localRotation * Quaternion.AngleAxis(j.Degrees * Curl, j.Axis);
+                    continue;
+                }
+                // the bend now, in the finger's plane: from the bone before's line to this bone's, about the curl axis
+                var axis = j.Bone.rotation * j.Axis;
+                var before = Vector3.ProjectOnPlane(j.Bone.position - j.Parent.position, axis);
+                var after = Vector3.ProjectOnPlane(j.Next.position - j.Bone.position, axis);
+                if (before.sqrMagnitude < 1e-10f || after.sqrMagnitude < 1e-10f) continue;
+                var now = Vector3.SignedAngle(before, after, axis);
+                var turn = Mathf.Clamp((j.Degrees - now) * Curl, -60f, 60f);
+                j.Bone.rotation = Quaternion.AngleAxis(turn, axis) * j.Bone.rotation;
+            }
         }
     }
 }

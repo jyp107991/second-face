@@ -81,6 +81,9 @@ namespace SecondFace.EditorTools
                 r.skinnedMotionVectors = false;
                 r.updateWhenOffscreen = false;
             }
+            // the torso's cross-sections at rest, so the arms are kept out of it and drawn in to rest at its sides
+            // (ArmClearance; docs/PEOPLE_MOTION.md A4, C1)
+            TorsoMeasure.Measure(go);
             var path = $"{dir}/{id}.prefab";
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);

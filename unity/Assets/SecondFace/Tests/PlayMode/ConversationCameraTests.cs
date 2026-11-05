@@ -17,11 +17,10 @@ using UnityEditor;
 namespace SecondFace.Tests
 {
     /// <summary>
-    /// The conversation cameras (P5.3e): two of the cast face each other on open ground; the two-shot over the player's
-    /// shoulder, the insert on the other and its reverse each frame their subject in the part of the screen the
-    /// conversation page leaves free, at eye height, with nothing in the way; a wall where the first two-shot would
-    /// stand moves it to the other shoulder. Each shot is captured with the conversation page drawn over it
-    /// (`conversation_twoshot`, `conversation_other`, `conversation_player`).
+    /// The conversation cameras (P5.3e): two of the cast face each other on open ground; the view stays overhead (CLAUDE.md §2) at
+    /// the game rig's pitch, frames both of them in the part of the screen the conversation page leaves free, keeps the one
+    /// view from line to line, and moves off a wall in its way. Captured with the conversation page drawn over it
+    /// (`conversation_twoshot`, `conversation_other`).
     /// </summary>
     public class ConversationCameraTests
     {
@@ -83,28 +82,35 @@ namespace SecondFace.Tests
             var panel = ui.Open(new DialoguePanel(new DialogueRunner(JObject.Parse(UiTests.Talk).ToObject<DialogueDef>(), g), _ => "Teller Vos") { CharsPerSecond = 0f });
 
             var shots = Made(ConversationCamera.Begin(cam, player, other, 0f));
-            foreach (var (shot, name) in new[] { (ConversationCamera.Shot.TwoShot, "conversation_twoshot"), (ConversationCamera.Shot.Other, "conversation_other"), (ConversationCamera.Shot.Player, "conversation_player") })
+            // overhead, always (CLAUDE.md §2): every line keeps the one view over the two of them, at the game rig's pitch
+            foreach (var (shot, name) in new[] { (ConversationCamera.Shot.TwoShot, "conversation_twoshot"), (ConversationCamera.Shot.Other, "conversation_other") })
             {
                 shots.Cut(shot);
                 for (var i = 0; i < 3; i++) yield return null;
-                var vp = cam.WorldToViewportPoint(shots.Subject);
-                Assert.That(vp.z, Is.GreaterThan(0f), $"{shot}: the subject is in front");
-                Assert.That(vp.x, Is.InRange(0.05f, shots.Frame - 0.05f), $"{shot}: the subject is left of the page");
-                Assert.That(vp.x, Is.EqualTo(shots.Frame * 0.5f).Within(0.08f), $"{shot}: centred in the free part");
-                Assert.That(vp.y, Is.EqualTo(shots.EyeLine).Within(0.06f), $"{shot}: the eyes on the upper third");
+                var pitch = Vector3.Angle(Vector3.ProjectOnPlane(cam.transform.forward, Vector3.up), cam.transform.forward);
+                Assert.That(cam.transform.forward.y, Is.LessThan(0f), $"{shot}: looking down");
+                Assert.That(pitch, Is.InRange(OrbitRig.MinPitch, 72f), $"{shot}: overhead, not eye level ({pitch:0}°)");
+                Assert.That(cam.transform.position.y - player.position.y, Is.GreaterThan(4f), $"{shot}: above the people");
+                foreach (var who in new[] { player, other })
+                {
+                    var vp = cam.WorldToViewportPoint(ConversationCamera.Head(who));
+                    Assert.That(vp.z, Is.GreaterThan(0f), $"{shot}: {who.name} in front");
+                    Assert.That(vp.x, Is.InRange(0.04f, shots.Frame - 0.02f), $"{shot}: {who.name} left of the page");
+                    Assert.That(vp.y, Is.InRange(0.15f, 0.9f), $"{shot}: {who.name} in frame");
+                }
+                var mid = cam.WorldToViewportPoint(shots.Subject);
+                Assert.That(mid.x, Is.EqualTo(shots.Frame * 0.5f).Within(0.08f), $"{shot}: centred in the free part");
                 Composite(cam, uiRt, name);
             }
-            shots.Cut(ConversationCamera.Shot.TwoShot);
-            for (var i = 0; i < 3; i++) yield return null;
             var open = cam.transform.position;
-            // a wall where the two-shot stood: it moves to the other shoulder
+            // a wall where the view stood: it turns round or rises, and still looks down on them
             var wall = Made(GameObject.CreatePrimitive(PrimitiveType.Cube));
-            wall.transform.localScale = new Vector3(0.6f, 3f, 0.6f);
-            wall.transform.position = open;
+            wall.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+            wall.transform.position = Vector3.Lerp(open, shots.Subject, 0.4f);
             shots.Cut(ConversationCamera.Shot.TwoShot);
             for (var i = 0; i < 3; i++) yield return null;
-            var right = Vector3.Cross(Vector3.up, (other.position - player.position).normalized);
-            Assert.That(Vector3.Dot(cam.transform.position - player.position, right) * Vector3.Dot(open - player.position, right), Is.LessThan(0f), "the shot moved to the other shoulder");
+            Assert.That(Vector3.Distance(cam.transform.position, open), Is.GreaterThan(1f), "the view moved off the wall");
+            Assert.That(cam.transform.forward.y, Is.LessThan(-0.5f), "still overhead");
             shots.End();
             panel.Close();
             Object.Destroy(ui.gameObject);

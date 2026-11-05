@@ -640,7 +640,7 @@ output it changed. "Read" means: open the PNG with the Read tool and judge it ag
    `PeoplesLineup` (every people, both sexes, 25 and 60, front and profile; balding and brow strips).
 ### P5 — Camera, touch and UI
 1. `CameraService` with Cinemachine 3: an orbit rig around the party leader (§6.F), tactical camera in combat,
-   conversation cameras (over-shoulder two-shot, portrait inserts), the photo mode.
+   the conversation view (overhead, closer over the pair; superseded the over-shoulder shots, 2026-11-05), the photo mode.
 2. `InputService`: new Input System actions (touch gestures recognised in code per §6.F.2; gamepad bindings).
 3. UI Toolkit screens in `UI/` with one USS theme (no cursive; the field-notebook look): HUD, radial action menu,
    dialogue, notebook (quests, leads, people, letters), map and travel, inventory with the live paper doll,
@@ -658,7 +658,7 @@ from fixture state and captured (`UiTests`, the panel drawn into a texture):
   below; a tap opens it, per §6.F.2).
 - ~~3d. Dialogue panel bound to Core dialogue (the scene stays visible; options as notebook lines; skip heard lines; log)~~
   (done, below).
-- ~~3e. Conversation cameras (over-shoulder two-shot, portrait inserts; Cinemachine)~~ (done, below).
+- ~~3e. Conversation cameras (over-shoulder two-shot, portrait inserts; Cinemachine)~~ (done, below; replaced 2026-11-05 by the overhead conversation view).
 - ~~3f. The notebook (leads, quests, people, letters, decisions) as a book~~ (done, below).
 - ~~3g. The map and travel (world and local; pins)~~ (the world map done, below; the local map, pins and the travel
   itself follow: the local map as a top-down render of the place round the player, pins on a long press, the journey
@@ -733,6 +733,15 @@ current line (the log is a scroll up). A choice logs and goes to `DialogueRunner
 and raises `Ended`; back takes the content's way out if there is one. `Bootstrap` installs the typed `Registry` after
 loading the content; the walkabout's talk opens the person's content conversation on its own fresh game state
 (`Walkabout.Game`), with their portrait. Captures `ui_dialogue`, `ui_dialogue_log`.
+
+*Superseded 2026-11-05 (owner: "i told you to make an overhead game like bg3/divinity original sin"; CLAUDE.md §2
+"Overhead, always").* `ConversationCamera` is now one overhead view for the whole conversation: pitch 48° (inside the
+rig's 35-62°), 9 m from the point between the two heads, the game lens (28°), the pair centred in the screen's left
+`Frame` (54 %); the game view's own yaw is kept when it shows the other's face (within 70° of the line from the player
+to them), else the least turn that does; a wall or roof in the way turns it ±30°, ±55°, then raises it to 62° and 70°.
+No cuts between lines (`Cut` keeps its name for callers and re-frames the same view). `ConversationCameraTests` checks
+the pitch, that both heads sit left of the page, the centring, and the move off a wall. The record of the first
+version follows.
 
 *As built (P5.3e, 2026-10-29).* `Game.Play.ConversationCamera`: a `CinemachineCamera` at priority 50 over the game
 camera (the brain blends 0.6 s in and out, ease in-out; cuts within the conversation are instant: the one camera is
@@ -1727,8 +1736,9 @@ ignore modifier) and rebuilds when they come within 40 m of its edge; places bui
 tour and takes it back. Not yet: long press (waypoint pin), the compass button, UI picking, gamepad, deoccluder,
 walking in water is not prevented (the river bed is walkable).
 
-**F.3 Conversation cameras.** On talk: a two-shot over the player's shoulder (`CinemachineCamera` per role,
-blended 0.6 s), portrait inserts from the cached RT; the world keeps running behind with the mix ducked.
+**F.3 Conversation view.** On talk: the game view eases (0.6 s) closer over the two people and stays overhead at the
+rig's pitch for the whole conversation (2026-11-05, superseding the over-shoulder two-shot); the face is read in the
+panel's live portrait; the world keeps running behind with the mix ducked.
 **F.4 Tactical camera (combat).** Pitch locked 55°, distance 14–22 m, free pan, snaps to the acting unit on turn
 start with a 0.4 s blend, a top-down toggle at 80°.
 

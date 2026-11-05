@@ -172,8 +172,8 @@ runs smoothly on device. Fallbacks for GLES3 phones are listed where a feature n
   schedules that walk the whole open world.
 - Must: PhysX for cover, doors, props, projectiles (raycasts with per-part hit zones), knockback, destructible
   cover, shell casings.
-- Must: Cinemachine — the iso rig (one-finger turn, pinch, two-finger pan, collision), conversation shots
-  (over-shoulder, two-shot), combat focus, impulse shake; Timeline for scripted moments; a photo mode.
+- Must: Cinemachine — the iso rig (one-finger turn, pinch, two-finger pan, collision), the overhead
+  conversation view (closer over the pair, never eye level), combat focus, impulse shake; Timeline for scripted moments; a photo mode.
 - Must: Input System (touch, gamepad, keyboard/mouse, rebinding); UI Toolkit for all UI (USS themes, runtime data
   binding, responsive to every phone aspect); Localization wired from day one.
 - Must: Audio Mixer with snapshots (indoor, outdoor, combat, conversation), spatial sources, footsteps by terrain
