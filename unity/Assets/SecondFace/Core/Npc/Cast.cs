@@ -46,6 +46,19 @@ namespace SecondFace.Core.Npc
             return used;
         }
 
+        /// <summary>The named people drawn before this one who share a map with them (in the one order everyone is drawn in).</summary>
+        public static List<string> Before(string npcId)
+        {
+            Fresh();
+            var before = new List<string>();
+            if (!_order.TryGetValue(npcId, out var at)) return before;
+            var seen = new HashSet<string>();
+            foreach (var mapId in _maps[npcId])
+                foreach (var p in Registry.Maps[mapId].Npcs)
+                    if (p.Def != null && _order.TryGetValue(p.Def, out var o) && o < at && seen.Add(p.Def)) before.Add(p.Def);
+            return before;
+        }
+
         /// <summary>The real faces of the people drawn before this one who share a map with them.</summary>
         public static HashSet<int> Avoid(string npcId)
         {

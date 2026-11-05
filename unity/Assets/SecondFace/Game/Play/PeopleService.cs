@@ -31,6 +31,9 @@ namespace SecondFace.Game.Play
         public bool Male;
         public PlayerLook Look;
         public Outfit Outfit;
+        /// <summary>The Rocketbox person they are (L3; null: made from the bases) and their dyes.</summary>
+        public RbPerson Rb;
+        public RbDyes Dyes;
     }
 
     /// <summary>
@@ -62,6 +65,8 @@ namespace SecondFace.Game.Play
         /// <summary>The two base bodies everyone is made from (P4.13: the player's, with the wardrobe for the whole cast).</summary>
         public GameObject BaseF, BaseM;
         public bool FromBases => BaseF != null && BaseM != null;
+        /// <summary>The Rocketbox people (L3): when set, everyone the library has a person for is that person, re-dyed.</summary>
+        public RocketboxCatalog Rocketbox;
         /// <summary>One of the people was tapped and a verb chosen.</summary>
         public event Action<Interactable, string> Chosen;
 
@@ -144,8 +149,33 @@ namespace SecondFace.Game.Play
                     if (wear.TryGetValue(m.Id, out var body))
                         town.Residents.Add(new Resident { Id = m.Id, Def = def, Placement = placement, Map = map, Body = body, Post = m.transform.position });
             }
+            if (Rocketbox != null) AssignPeople(town);
             _towns[id] = town;
             _next = 0f;   // look at once who is near
+        }
+
+        /// <summary>Each of a place's people given their Rocketbox person (L3): the named first (each the same everywhere,
+        /// <see cref="RbPeople.Named"/>), then the extras, no two of the place the same person; and their dyes.</summary>
+        private void AssignPeople(Group town)
+        {
+            var built = Rocketbox.Ids();
+            var used = new HashSet<string>();
+            foreach (var r in town.Residents.OrderBy(r => Registry.Npcs.ContainsKey(r.Def.Id) ? 0 : 1))
+            {
+                var named = Registry.Npcs.ContainsKey(r.Def.Id);
+                var p = named ? RbPeople.Named(r.Def, r.Male) : null;
+                if (p == null || used.Contains(p.Id) || !built.Contains(p.Id))
+                {
+                    var avoid = new HashSet<string>(used);
+                    foreach (var q in RbPeople.All) if (!built.Contains(q.Id)) avoid.Add(q.Id);
+                    p = RbPeople.Pick(r.Id, r.Male, r.Def.Look?.Age ?? 35.0, r.Def.Role, r.Def.Look?.Ancestry, avoid);
+                    if (p != null && avoid.Contains(p.Id)) p = null;
+                }
+                if (p == null) continue;
+                used.Add(p.Id);
+                r.Rb = p;
+                r.Dyes = RbPeople.DyesFor(p, r.Id, r.Def.Role, r.Def.Faction);
+            }
         }
 
         /// <summary>The place's background people (P4.13 step 5, <see cref="Extras"/>): each of its maps' extras as a
@@ -248,13 +278,15 @@ namespace SecondFace.Game.Play
         /// keeping their routine.</summary>
         private void Make(Group town, Resident r)
         {
-            var model = r.Look != null ? (r.Male ? BaseM : BaseF) : Bodies.FirstOrDefault(b => b.Id == r.Body)?.Prefab;
+            var rb = r.Rb != null && Rocketbox != null ? Rocketbox.Get(r.Rb.Id) : null;
+            var model = rb != null ? rb : r.Look != null ? (r.Male ? BaseM : BaseF) : Bodies.FirstOrDefault(b => b.Id == r.Body)?.Prefab;
             if (model == null) return;
             // under the place's people, not the place: a place hides its surface while the walker is under it, and people
             // are not its surface
             var go = Instantiate(model, r.Post, Quaternion.Euler(0, Hash(r.Id) * 360f, 0), town.Folk.transform);
             go.name = "townsfolk_" + r.Id;
-            if (r.Look != null)
+            if (rb != null) RbDress.Apply(go, r.Dyes);
+            else if (r.Look != null)
             {
                 // their stature, dressed for their trade, then their body, face, skin and hair over what they wear
                 go.transform.localScale = Vector3.one * LookView.Scale(r.Look);

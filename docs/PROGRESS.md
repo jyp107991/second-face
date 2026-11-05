@@ -305,6 +305,18 @@ The people are locked (the gate, `docs/PEOPLE_QA.md`; the 19 opened faces approv
 objection: **outfits are lore-inconsistent** (Rocketbox ships suits, police, pilot, military, fire, medical, sports and
 party clothes). Then the game is built to v1 without waiting; every build goes through `docs/QA.md` (played as a player,
 tested, reviewed as a critic) before it is handed over. Order (each line is several steps; tick as done):
+- **Done so far (2026-11-05):** L1 outfit bake built and run on the whole library (`rb_outfit_map.py` maps each body
+  texel to the body; `rb_outfit.py` keeps skin, splits garments by colour within body parts merging soft-edged shading,
+  paints out prints, insignia, name tapes, stripes, argyle and camouflage, writes neutral cloth + a dye mask with wear and
+  patches); before/after sheets `docs/evidence/unity/p4/outfits/{as_shipped,rebaked}_*.jpg`. L2 catalogue
+  `tools/unity/people/data/rb_bodies.json` (`rb_bodies.py`: 79 usable people, 25 women and 54 men; costumes, swimwear,
+  sportswear, dungarees, face-hiding gear and religious dress out with reasons; capped originals replaced by their opened
+  faces) and Core `RbPeople` (pick per person by sex, trade style, people and age, no repeats in a place; dyes from the
+  trade/faction palettes). L3 code: `SecondFace/Person` shader (dye mask, wear, grime by body height), importer v2,
+  `RocketboxPeopleBuild` (prefabs + `RocketboxCatalog`), `PeopleService` stands the Rocketbox person when a catalogue is
+  built. G2 started: Core `Combat/Battle.cs` (the web encounter + utility AI in pure C#, AP by metres, stepwise for the
+  Unity side; `BattleTests` green). Next: `rb_install.py` (disk!) → editor import → prefabs → Shale capture; then the
+  combat scene layer (P6.4), then the opening (G1).
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.

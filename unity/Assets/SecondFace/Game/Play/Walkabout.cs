@@ -241,6 +241,7 @@ namespace SecondFace.Game.Play
             // everyone made from the two bases and their own measurements, dressed from the whole cast's wardrobe (P4.13)
             People.BaseF = assets.PlayerF;
             People.BaseM = assets.PlayerM;
+            People.Rocketbox = assets.Rocketbox != null && assets.Rocketbox.People.Length > 0 ? assets.Rocketbox : null;
             People.Begin(Game);
             if (spawner != null)
                 foreach (var (id, place) in spawner.Standing()) Equip(place, id);

@@ -40,6 +40,8 @@ namespace SecondFace.EditorTools
             a.Look = LookBuild.Build();
             a.Sack = AssetDatabase.LoadAssetAtPath<Material>("Assets/SecondFace/Materials/Library/burlap.mat");
             a.Cast = new WorldAssets.CastEntry[0];   // the per-person cast models are retired (P4.13 step 6)
+            // the game's people (L3): Rocketbox's, re-dyed (tools/unity/people/rb_install.py installs them)
+            a.Rocketbox = RocketboxPeopleBuild.Build();
             // the player's bodies for the pack's figure (P5.3h), as WardrobeBuild made them
             a.PlayerM = AssetDatabase.LoadAssetAtPath<GameObject>($"{PeopleDir}/player_m.prefab");
             a.PlayerF = AssetDatabase.LoadAssetAtPath<GameObject>($"{PeopleDir}/player_f.prefab");

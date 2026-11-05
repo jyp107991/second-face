@@ -29,6 +29,8 @@ namespace SecondFace.Game.World
         /// <summary>Every body of the cast (P4.1, P4.11) with who it can stand in for: a place's people each wear one of
         /// their sex and nearest age (P6.2, Core <c>Routine.Assign</c>).</summary>
         public CastEntry[] Cast;
+        /// <summary>The game's Rocketbox people (L3): everyone the library has a person for stands as that person.</summary>
+        public SecondFace.Game.People.RocketboxCatalog Rocketbox;
 
         [System.Serializable]
         public sealed class CastEntry
