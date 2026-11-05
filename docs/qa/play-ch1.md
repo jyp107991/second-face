@@ -46,10 +46,13 @@ no S1/S2 open at hand-over). Spoiler rule: story beats are named, never explaine
 | T15 | S2 | None of the 28 captured clips looped: the clip settings were set where Unity has no clips yet, so every walk froze after one stride and was dragged along, and every idle froze after a few seconds (found by the motion gate, `docs/PEOPLE_MOTION.md`) | `MotionImportPostprocessor` | fixed |
 | T16 | S2 | Hands curled into claws: the relaxed curl was added on top of Rocketbox's own bent fingers (A5 p98 69°) | `HandPose` | fixed |
 | T17 | S2 | Heads turned up to 69° on still bodies when someone spoke from the side; the head carried a roll with it | `Gaze` | fixed |
-| T18 | S2 | Feet floated about 3 cm; a foot the clip lifted was left hovering; stances up to 46 cm wide; feet slid when the body turned to talk | `FootPlant`, `Walkabout.Face` | in progress |
-| T19 | S2 | Hands sank 2-5 cm into the side of the thigh; some men's arms hung 8-14 cm off the body (no torso data on the Rocketbox people, so the arm clearance was off) | `ArmClearance`, `RocketboxPeopleBuild` | in progress |
+| T18 | S2 | Feet floated about 3 cm; a foot the clip lifted was left hovering; stances up to 46 cm wide; feet slid when the body turned to talk (Unity's foot goals were missed by 4-7 cm: now a bone-level leg solve, exact; planted, flat, narrowed, stepping on turns) | `FootPlant`, `Walkabout.Face` | in progress: soles, width, flatness pass; a foot in the air too often while looking round, sliding in the turn |
+| T19 | S2 | Hands sank 2-5 cm into the side of the thigh; some men's arms hung 8-14 cm off the body (no torso data on the Rocketbox people, so the arm clearance was off) | `ArmClearance`, `RocketboxPeopleBuild` | in progress: torsos and thighs (four widths a station, skirts included) measured; skin margins; still arms a little wide (A1, A4) and some fingers in |
 | T20 | S2 | The conversation camera dropped to eye level with over-the-shoulder cuts, against the overhead rule | `ConversationCamera` | fixed |
 | T21 | S3 | White marks painted on a balding man's scalp (`Male_Adult_03`) | outfit bake | open |
+| T22 | S2 | idle_c (CMU 111_28) holds the hands up in front of the body; every person shared it | `LocomotionBuild.Idles` | fixed (out of the pool) |
+| T23 | S2 | Palms turned forward and up in the walk's arm swing (a waiter's carry) | `HandPose` | fixed (A6 passes) |
+| T24 | S2 | Walking: the planted heel and ball slide (W1 median 18 cm/s at 1.25 m/s; the sneak's short loop worse) | clips, `FootPlant` | open |
 
 ## 3. Pass one: player
 

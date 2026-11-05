@@ -54,6 +54,7 @@ namespace SecondFace.Tests
 
         private static readonly Lim F4 = new() { M = "F4", MeanMax = 3f, Over = 10f, OverFrac = 0.02f };
         private static readonly Lim C1 = L("C1", -Inf, 0.5f, -Inf, 1.5f);
+        private static readonly Lim A6 = L("A6", 50f, Inf, 35f, Inf);
         private static readonly Lim F1 = L("F1", -1.5f, 2.5f, -3f, 4f);
         private static readonly Lim F2 = L("F2", -2f, 2f, -4f, 4f);
 
@@ -62,6 +63,7 @@ namespace SecondFace.Tests
             L("A1", -Inf, 20f, -Inf, 28f), L("A2", 5f, 35f, 0f, 50f), L("A3", -Inf, 30f, -Inf, 40f), L("A4", -Inf, 6f, -Inf, 10f),
             L("A5", 8f, 55f, 3f, 75f), L("S1", -Inf, 6f, -Inf, 10f), L("H1", -15f, 8f, -25f, 12f), L("H2", -Inf, 30f, -Inf, 45f),
             L("H3", -Inf, 10f, -Inf, 15f), F1, F2, L("F3w", 8f, 32f, 5f, 40f), L("F3a", -Inf, 28f, -Inf, 35f), L("F3s", -Inf, 25f, -Inf, 35f), F4, C1,
+            new() { M = "F5", MeanMax = 0.12f }, A6,
         };
 
         private static Lim[] GestureLimits(string g) => new[]
@@ -75,8 +77,11 @@ namespace SecondFace.Tests
         private static readonly Lim[] WalkLimits =
         {
             new() { M = "W1", MeanMax = 8f, Over = 15f, OverFrac = 0.05f }, new() { M = "W2", MeanMax = 0.10f }, L("W6", -1.5f, 2.5f, -3f, 4f),
-            L("W3", -Inf, 35f, -Inf, 45f), L("W4", -20f, 8f, -25f, 12f), L("W5", -Inf, 25f, -Inf, 35f), C1,
+            L("W3", -Inf, 35f, -Inf, 45f), L("W4", -20f, 8f, -25f, 12f), L("W5", -Inf, 25f, -Inf, 35f), C1, A6,
         };
+
+        /// <summary>Jogging swings the arms further than walking (no sourced limit yet: held at 45° and reviewed by eye).</summary>
+        private static readonly Lim[] JogLimits = WalkLimits.Select(l => l.M == "W3" ? L("W3", -Inf, 45f, -Inf, 55f) : l).ToArray();
 
         private static readonly Lim[] TalkLimits = StandLimits.Concat(new[] { L("T2", -Inf, 20f, -Inf, 20f), L("T3", 0.9f, 1.6f, 0.9f, 1.6f) }).ToArray();
 
@@ -84,6 +89,7 @@ namespace SecondFace.Tests
         {
             if (state.StartsWith("gesture:")) return GestureLimits(state.Substring(8));
             if (state == "turn") return TurnLimits;
+            if (state.EndsWith(":jog")) return JogLimits;
             if (state.StartsWith("walk:") || state.StartsWith("bend:")) return WalkLimits;
             if (state == "talk") return TalkLimits;
             return StandLimits;
@@ -236,7 +242,7 @@ namespace SecondFace.Tests
             }
 
             // 1. standing: the four idles on the flat
-            for (var idle = 0; idle < 4; idle++)
+            for (var idle = 0; idle < Ambient.IdleCount; idle++)
             {
                 foreach (var s in people) s.A.SetFloat("Idle", idle);
                 yield return Wait(1.2f);

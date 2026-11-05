@@ -16,8 +16,8 @@ namespace SecondFace.Game.People
     {
         public Transform Target;
         public float HeadWeight = 0.9f;
-        public float BodyWeight = 0.15f;
-        public float MaxYaw = 24f, MaxUp = 10f, MaxDown = 14f;
+        public float BodyWeight = 0.25f;
+        public float MaxYaw = 20f, MaxUp = 10f, MaxDown = 14f;
         /// <summary>The most the head is let lean to one side (a clip's tilt beyond it is taken out), degrees.</summary>
         public float MaxRoll = 6f;
 

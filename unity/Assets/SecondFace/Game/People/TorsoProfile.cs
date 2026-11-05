@@ -33,6 +33,14 @@ namespace SecondFace.Game.People
         public List<Shape> Shapes = new();
         /// <summary>The renderer whose blend-shape weights set how much of each shape is on.</summary>
         public SkinnedMeshRenderer Body;
+        /// <summary>Below this height in the frame the body is two thighs, not one section (the sections there circle both legs
+        /// and would hold a hand off the side of a thigh by the width of the other).</summary>
+        public float Fork = -0.08f;
+        /// <summary>Each thigh's skin about its bone, from the hip joint to the knee at <see cref="ThighStations"/> stations, the
+        /// widest at each in four directions of the body's frame (out, front, in, back: station × 4 + direction; m at rest
+        /// scale); null when not measured (the sections alone are used).</summary>
+        public float[] ThighL, ThighR;
+        public const int ThighStations = 6;
 
         private int[] _shapeIndex;
         private float[] _wornRx, _wornRz;

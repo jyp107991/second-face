@@ -99,6 +99,20 @@ namespace SecondFace.Tests
             for (var i = 0; i < saved.Length; i++) _pose.muscles[i] = saved[i];
             _hp.SetHumanPose(ref _pose);
             // how high the ankle stands over the heel's sole and the ball over its own, in the bind pose (feet flat)
+            for (var side = 0; side < 2; side++)
+            {
+                var part = side == 0 ? Part.FootL : Part.FootR;
+                var ankle = side == 0 ? _bindAnkleL : _bindAnkleR; var toes = side == 0 ? _bindToeL : _bindToeR;
+                var fwd = Flat(toes - ankle).normalized; var toesAlong = Vector3.Dot(toes - ankle, fwd);
+                float bh = float.MaxValue, bb = float.MaxValue;
+                for (var i = 0; i < bind.Length; i++)
+                {
+                    if (_seg[i] != (byte)part) continue;
+                    var along = Vector3.Dot(bind[i] - ankle, fwd);
+                    if (along < -0.01f && bind[i].y < bh) { bh = bind[i].y; _solePoint[side * 2] = i; }
+                    else if (along > toesAlong - 0.04f && along < toesAlong + 0.02f && bind[i].y < bb) { bb = bind[i].y; _solePoint[side * 2 + 1] = i; }
+                }
+            }
             _ankleSoleL = SoleOffset(bind, Part.FootL, _bindAnkleL, _bindToeL, out _toeSoleL);
             _ankleSoleR = SoleOffset(bind, Part.FootR, _bindAnkleR, _bindToeR, out _toeSoleR);
             Debug.Log($"MotionProbe {Person}: ankle over the heel's sole {_ankleSoleL * 100f:0.0}/{_ankleSoleR * 100f:0.0} cm, ball {_toeSoleL * 100f:0.0}/{_toeSoleR * 100f:0.0} cm, bind sole {MinFoot(bind) - _root.position.y:0.000} m from the root");
@@ -285,8 +299,7 @@ namespace SecondFace.Tests
                         side++;
                         if (h > low + 0.02f) continue;
                         var v = Flat(an - pan).magnitude / dt;
-                        if (k == K.Walk) { Add("W1", v * 100f); if (body > 0.3f) Add("W2", v / body); }
-                        else Add("F4", v * 100f);
+                        if (k != K.Walk) Add("F4", v * 100f);   // walking skate is measured on the soles themselves (MeshMeasures)
                     }
                     if (TracePath != null && State != null && TraceState != null && State.StartsWith(TraceState))
                         System.IO.File.AppendAllText(TracePath, $"{State},{Time.time:0.000},{root.x:0.000},{root.z:0.000},{ankleL.y - GroundY(ankleL) - _ankleSoleL:0.000},{toeL.y - GroundY(toeL) - _toeSoleL:0.000},{ankleL.z:0.000},{ankleR.y - GroundY(ankleR) - _ankleSoleR:0.000},{toeR.y - GroundY(toeR) - _toeSoleR:0.000},{ankleR.z:0.000},{_a.GetFloat("Speed"):0.000},{_hips.position.z - root.z:0.000}\n");
@@ -302,11 +315,12 @@ namespace SecondFace.Tests
                     Add("F3s", Vector3.Angle(Flat(toeR - ankleR).normalized, fwd));
                 }
                 // the mesh, a few times a second
-                if (Time.time >= _nextBake)
+                if (Time.time >= _nextBake || k == K.Walk)
                 {
                     _nextBake = Time.time + 1f / BakeHz;
                     MeshMeasures(k);
                 }
+                if (k == K.Stand || k == K.Walk) Palms(k);
             }
             _prevAnkleL = ankleL; _prevAnkleR = ankleR; _prevToeL = toeL; _prevToeR = toeR; _prevRoot = root; _havePrev = true;
         }
@@ -337,6 +351,37 @@ namespace SecondFace.Tests
         }
 
         // the mesh: soles, hands at the thighs, nothing inside the body
+        private readonly Vector3[] _sole = new Vector3[4];
+        private readonly float[] _soleH = { 1f, 1f, 1f, 1f };
+        /// <summary>The vertices of each foot's heel and ball, chosen at rest (left heel, left ball, right heel, right ball).</summary>
+        private readonly int[] _solePoint = { -1, -1, -1, -1 };
+        private float _soleT;
+        private Vector3 _soleRoot;
+
+        /// <summary>Which way each palm faces against the body's front (A6, degrees: 0 facing forward, 90 facing the thigh,
+        /// 180 facing back). Relaxed arms, hanging or swinging, never turn the palms forward.</summary>
+        private void Palms(K k)
+        {
+            var fwd = Flat(_root.forward).normalized;
+            foreach (var (hand, index, middle, little, thumb) in new[]
+                     {
+                         (HumanBodyBones.LeftHand, HumanBodyBones.LeftIndexProximal, HumanBodyBones.LeftMiddleProximal, HumanBodyBones.LeftLittleProximal, HumanBodyBones.LeftThumbDistal),
+                         (HumanBodyBones.RightHand, HumanBodyBones.RightIndexProximal, HumanBodyBones.RightMiddleProximal, HumanBodyBones.RightLittleProximal, HumanBodyBones.RightThumbDistal),
+                     })
+            {
+                var h = B(hand); var i = B(index); var m = B(middle); var l = B(little); var t = B(thumb);
+                if (h == null || i == null || m == null || l == null) continue;
+                var across = (l.position - i.position).normalized;
+                var along = (m.position - h.position).normalized;
+                var n = Vector3.Cross(across, along).normalized;
+                // the palm's side is the side the curled fingers' tips and the thumb lie on
+                var md = B(middle + 2);
+                var probe = md != null ? md.position : (t != null ? t.position : m.position + n);
+                if (Vector3.Dot(probe - m.position, n) < 0f) n = -n;
+                Add("A6", Vector3.Angle(n, fwd));
+            }
+        }
+
         private readonly Dictionary<Vector3Int, List<int>> _grid = new();
         private const float Cell = 0.03f;
 
@@ -345,18 +390,43 @@ namespace SecondFace.Tests
             var v = Bake(out var n);
             if (v.Length != _seg.Length) { Error = "the baked mesh changed its vertex count"; return; }
             var hasNormals = n != null && n.Length == v.Length;
-            // the stance foot's sole while walking: the lower of the two feet's lowest skin over the ground
+            // walking, on the soles themselves: each foot's lowest skin over the ground and where it is; a sole within 2.5 cm
+            // of the ground two samples running is down, and its sliding is the skate (W1, W2; Mir et al. 2023 measure on
+            // foot vertices below H = 2.5 cm); the lower foot's sole is the stance's height (W6)
             if (k == K.Walk)
             {
                 var lowest = float.MaxValue;
-                for (var i = 0; i < v.Length; i++)
-                    if (_seg[i] == (byte)Part.FootL || _seg[i] == (byte)Part.FootR)
+                var body = _soleT > 0f && Time.time > _soleT ? Flat(_root.position - _soleRoot).magnitude / (Time.time - _soleT) : 0f;
+                for (var side = 0; side < 2; side++)
+                {
+                    var part = side == 0 ? Part.FootL : Part.FootR;
+                    var ankle = side == 0 ? B(HumanBodyBones.LeftFoot).position : B(HumanBodyBones.RightFoot).position;
+                    var g = GroundY(ankle);
+                    if (float.IsNaN(g)) continue;
+                    var low = float.MaxValue;
+                    for (var i = 0; i < v.Length; i++) if (_seg[i] == (byte)part) low = Mathf.Min(low, v[i].y);
+                    if (low < float.MaxValue) lowest = Mathf.Min(lowest, low - g);
+                    // the skate on fixed points of the sole (its heel and its ball: a rolling foot's lowest point moves along
+                    // the foot as a real one's does, a fixed point down on the ground does not move)
+                    for (var q = 0; q < 2; q++)
                     {
-                        var g = GroundY(v[i]);
-                        if (!float.IsNaN(g)) lowest = Mathf.Min(lowest, v[i].y - g);
+                        var j = _solePoint[side * 2 + q];
+                        if (j < 0) continue;
+                        var h = v[j].y - g;
+                        var slot = side * 2 + q;
+                        if (h < 0.025f && _soleH[slot] < 0.025f && _soleT > 0f && Time.time > _soleT)
+                        {
+                            var speed = Flat(v[j] - _sole[slot]).magnitude / (Time.time - _soleT);
+                            Add("W1", speed * 100f);
+                            if (body > 0.3f) Add("W2", speed / body);
+                        }
+                        _sole[slot] = v[j]; _soleH[slot] = h;
                     }
+                }
                 if (lowest < float.MaxValue) Add("W6", lowest * 100f);
+                _soleT = Time.time; _soleRoot = _root.position;
             }
+            else _soleT = 0f;
             // soles
             if (k != K.Walk)
                 foreach (var (part, ankle, toes) in new[] { (Part.FootL, B(HumanBodyBones.LeftFoot), B(HumanBodyBones.LeftToes)), (Part.FootR, B(HumanBodyBones.RightFoot), B(HumanBodyBones.RightToes)) })
@@ -378,8 +448,11 @@ namespace SecondFace.Tests
                     var gh = GroundY(heel.Value); var gb = GroundY(ball.Value);
                     if (float.IsNaN(gh) || float.IsNaN(gb)) continue;
                     var hh = (heel.Value.y - gh) * 100f; var bh = (ball.Value.y - gb) * 100f;
-                    // a lifted foot (a step) is not standing on anything: only a foot with some of its sole down is held to F1
-                    if (Mathf.Min(hh, bh) < 3f || k == K.Stand) { Add("F1", hh); Add("F1", bh); Add("F2", hh - bh); }
+                    // a lifted foot (a step) is not standing on anything: only a foot with some of its sole down is held to F1;
+                    // how much of the time a standing foot is in the air is F5
+                    var up = Mathf.Min(hh, bh) >= 3f;
+                    if (k == K.Stand) Add("F5", up ? 1f : 0f);
+                    if (!up) { Add("F1", hh); Add("F1", bh); Add("F2", hh - bh); }
                 }
             // the body's surface near the hands: torso, hips and thighs, in a grid
             _grid.Clear();

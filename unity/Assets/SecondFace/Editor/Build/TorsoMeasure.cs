@@ -82,9 +82,11 @@ namespace SecondFace.EditorTools
                         Rz = srz.Select((v, k) => v - rz[k]).ToArray(),
                     });
                 }
+            p.ThighL = Thigh(renderers, anim, HumanBodyBones.LeftUpperLeg, HumanBodyBones.LeftLowerLeg, scale);
+            p.ThighR = Thigh(renderers, anim, HumanBodyBones.RightUpperLeg, HumanBodyBones.RightLowerLeg, scale);
             p.Measured = TorsoProfile.Version;
             var waist = Mathf.RoundToInt((0.1f - p.Bottom) / p.Step);
-            Debug.Log($"TorsoMeasure: {root.name}: {renderers.Count} meshes; at the hips ±{rx[Mathf.RoundToInt(-p.Bottom / p.Step)]:0.000} × ±{rz[Mathf.RoundToInt(-p.Bottom / p.Step)]:0.000} m, the waist ±{rx[waist]:0.000} m; {p.Shapes.Count} shapes");
+            Debug.Log($"TorsoMeasure: {root.name}: thighs {(p.ThighL != null ? string.Join("/", p.ThighL.Select(v => v.ToString("0.000"))) : "-")}; at the hips ±{rx[Mathf.RoundToInt(-p.Bottom / p.Step)]:0.000} × ±{rz[Mathf.RoundToInt(-p.Bottom / p.Step)]:0.000} m, the waist ±{rx[waist]:0.000} m; {p.Shapes.Count} shapes");
             return true;
         }
 
@@ -149,6 +151,72 @@ namespace SecondFace.EditorTools
                 var n = m.GetBlendShapeName(i);
                 if (n.StartsWith("body-")) yield return n;
             }
+        }
+
+        /// <summary>A thigh's skin about its bone: the widest distance from the hip-to-knee line of the vertices the thigh
+        /// moves (its own bone or a twist bone under it, not the shin's), at stations from hip to knee; null when none.</summary>
+        private static float[] Thigh(List<SkinnedMeshRenderer> renderers, Animator anim, HumanBodyBones upperBone, HumanBodyBones lowerBone, float scale)
+        {
+            var upper = anim.GetBoneTransform(upperBone); var lower = anim.GetBoneTransform(lowerBone);
+            if (upper == null || lower == null) return null;
+            var shin = new HashSet<Transform>(lower.GetComponentsInChildren<Transform>(true));
+            var h = upper.position; var k = lower.position; var axis = k - h; var len2 = axis.sqrMagnitude;
+            // what hangs from the pelvis below the hips' fork (a skirt, a coat's tails) is round the nearer thigh too
+            var hips = anim.GetBoneTransform(HumanBodyBones.Hips);
+            var spine = anim.GetBoneTransform(HumanBodyBones.Spine);
+            var otherUpper = anim.GetBoneTransform(upperBone == HumanBodyBones.LeftUpperLeg ? HumanBodyBones.RightUpperLeg : HumanBodyBones.LeftUpperLeg);
+            var otherLower = anim.GetBoneTransform(lowerBone == HumanBodyBones.LeftLowerLeg ? HumanBodyBones.RightLowerLeg : HumanBodyBones.LeftLowerLeg);
+            var forkY = hips != null ? hips.position.y - 0.08f * scale : float.MinValue;
+            float Line(Vector3 p, Vector3 a, Vector3 b) { var ab = b - a; var t = Mathf.Clamp01(Vector3.Dot(p - a, ab) / Mathf.Max(ab.sqrMagnitude, 1e-8f)); return Vector3.Distance(p, a + ab * t); }
+            if (len2 < 1e-6f) return null;
+            var n = TorsoProfile.ThighStations;
+            var r = new float[n * 4];
+            var have = new bool[n * 4];
+            var inv = Quaternion.Inverse(anim.transform.rotation);
+            var baked = new Mesh();
+            foreach (var rd in renderers)
+            {
+                rd.BakeMesh(baked, false);
+                var verts = baked.vertices;
+                var weights = rd.sharedMesh.boneWeights;
+                var bones = rd.bones;
+                for (var i = 0; i < verts.Length && i < weights.Length; i++)
+                {
+                    var bi = weights[i].boneIndex0;
+                    if (bi < 0 || bi >= bones.Length || bones[bi] == null) continue;
+                    var b = bones[bi];
+                    var p = rd.transform.TransformPoint(verts[i]);
+                    var thigh = b == upper || (b.IsChildOf(upper) && !shin.Contains(b));
+                    var hung = !thigh && (b == hips || b == spine) && p.y < forkY && otherUpper != null && otherLower != null
+                               && Line(p, h, k) <= Line(p, otherUpper.position, otherLower.position);
+                    if (!thigh && !hung) continue;
+                    var t = Vector3.Dot(p - h, axis) / len2;
+                    if (t < 0f || t > 1f) continue;
+                    var off = p - (h + axis * t);
+                    var d = off.magnitude;
+                    if (d > 0.3f * scale) continue;
+                    var st = Mathf.Clamp(Mathf.RoundToInt(t * (n - 1)), 0, n - 1);
+                    // the sector the vertex lies in round the bone, in the body's frame: out (+x), front (+z), in, back
+                    var lo = inv * off;
+                    var sector = ((Mathf.RoundToInt(Mathf.Atan2(lo.z, lo.x) / (Mathf.PI * 0.5f)) % 4) + 4) % 4;
+                    var j = st * 4 + sector;
+                    r[j] = Mathf.Max(r[j], d / scale);
+                    have[j] = true;
+                }
+            }
+            Object.DestroyImmediate(baked);
+            if (!have.Any(x => x)) return null;
+            for (var sector = 0; sector < 4; sector++)
+                for (var st = 0; st < n; st++)
+                    if (!have[st * 4 + sector])
+                    {
+                        int a = st - 1, b = st + 1;
+                        while (a >= 0 && !have[a * 4 + sector]) a--;
+                        while (b < n && !have[b * 4 + sector]) b++;
+                        r[st * 4 + sector] = a >= 0 && b < n ? Mathf.Lerp(r[a * 4 + sector], r[b * 4 + sector], (st - a) / (float)(b - a))
+                            : a >= 0 ? r[a * 4 + sector] : b < n ? r[b * 4 + sector] : 0.06f;
+                    }
+            return r;
         }
 
         /// <summary>The torso's sections: per height bin the middle and half-width (x) and half-depth (z), gaps filled

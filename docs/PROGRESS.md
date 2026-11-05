@@ -329,6 +329,23 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   the broad frame (sex follows the frame), Shale and the overpass speak of the player's home as Knock.
   **Next:** composite UI captures (the panel drawn over the camera), the fight re-run with Corin, the Knock square's
   density, the Chapter One flow in Unity (Knock → Shale → overpass → the map), then the play-ch1 QA report.
+- **Done 2026-11-05 (evening), the owner's "humans that look and move like humans" and "overhead like BG3/DOS2":**
+  the rule is now a measured gate (`docs/PEOPLE_MOTION.md`, CLAUDE.md §2, QA.md): `HumanMotionGateTests` +
+  `MotionProbe` measure every frame, on people made by `PeopleService.Animate` / `Walker.Animate`, arms, elbows, hands to
+  thighs, fingers, shoulders, head (pitch, turn on the chest, roll), soles (baked mesh), stance, sliding feet, walking
+  skate and stance height, clipping (hand/forearm inside torso or thigh), the conversation turn and two people talking;
+  writes `unity/test-results/motion_gate.{json,md}` and captures at the game camera. It found and fixed: **no captured
+  clip ever looped** (settings set at OnPreprocessModel, where Unity has no clips: walks froze after a stride and were
+  dragged; now `OnPreprocessAnimation` + `OnPostprocessAnimation`, height baked from the feet, turn and travel left as
+  unapplied root motion; `TheCapturedClipsLoopAsTheirSidecarsSay`), claw hands (`HandPose` sets an absolute relaxed bend),
+  heads wrenched round and tilted (`Gaze` holds yaw 24°, pitch, and levels roll), idle_c out (hands held up in front).
+  Conversations stay overhead (`ConversationCamera` rewritten: one view at 48° pitch, 9 m, no cuts; tests updated).
+  In progress: `FootPlant` rewritten as a bone-level two-bone leg solve after the animation (Unity's humanoid foot goals
+  were missed by 4-7 cm), feet planted, flat, narrowed, stepping on turns; `ArmClearance` rest pull and per-thigh
+  surfaces (`TorsoProfile.ThighL/R`, measured in `TorsoMeasure` from `RocketboxPeopleBuild`). **Next:** run the gate
+  (`tools/unity/editor.sh test playmode "HumanMotionGateTests.PeopleStandAndMoveLikePeople"`) until it is green; then
+  the full set (`EveryPersonStandsAndMovesLikePeople`, Heavy); the waiter-palms arm swing in the walk (forearm twist);
+  then KnockTests/ChapterOneTests with the looping clips, and the play-ch1 report.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.

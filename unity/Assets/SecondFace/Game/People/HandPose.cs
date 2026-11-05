@@ -95,8 +95,49 @@ namespace SecondFace.Game.People
             }
         }
 
+        private Transform _armL, _armR, _wristL, _wristR, _idxL, _idxR, _midL, _midR, _litL, _litR, _tipL, _tipR;
+
+        /// <summary>The forearm's roll that keeps a relaxed palm from facing forward (docs/PEOPLE_MOTION.md A6: retargeted
+        /// clips turn some swinging hands palm-up, a waiter's carry): when the palm faces within <see cref="PalmFront"/>° of
+        /// the body's front, the forearm is rolled about its own line towards the body's side, at most <see cref="MaxRoll"/>°.</summary>
+        public float PalmFront = 60f, MaxRoll = 80f;
+
+        private void Palms()
+        {
+            var a = GetComponent<Animator>();
+            if (a == null || !a.isHuman) return;
+            if (_armL == null)
+            {
+                _armL = a.GetBoneTransform(HumanBodyBones.LeftLowerArm); _armR = a.GetBoneTransform(HumanBodyBones.RightLowerArm);
+                _wristL = a.GetBoneTransform(HumanBodyBones.LeftHand); _wristR = a.GetBoneTransform(HumanBodyBones.RightHand);
+                _idxL = a.GetBoneTransform(HumanBodyBones.LeftIndexProximal); _idxR = a.GetBoneTransform(HumanBodyBones.RightIndexProximal);
+                _midL = a.GetBoneTransform(HumanBodyBones.LeftMiddleProximal); _midR = a.GetBoneTransform(HumanBodyBones.RightMiddleProximal);
+                _litL = a.GetBoneTransform(HumanBodyBones.LeftLittleProximal); _litR = a.GetBoneTransform(HumanBodyBones.RightLittleProximal);
+                _tipL = a.GetBoneTransform(HumanBodyBones.LeftMiddleDistal); _tipR = a.GetBoneTransform(HumanBodyBones.RightMiddleDistal);
+            }
+            var fwd = transform.forward; fwd.y = 0f; fwd.Normalize();
+            Roll(_armL, _wristL, _idxL, _midL, _litL, _tipL, fwd, transform.right);
+            Roll(_armR, _wristR, _idxR, _midR, _litR, _tipR, fwd, -transform.right);
+        }
+
+        private void Roll(Transform arm, Transform wrist, Transform index, Transform middle, Transform little, Transform tip, Vector3 fwd, Vector3 inward)
+        {
+            if (arm == null || wrist == null || index == null || middle == null || little == null) return;
+            var n = Vector3.Cross((little.position - index.position).normalized, (middle.position - wrist.position).normalized).normalized;
+            var probe = tip != null ? tip.position : middle.position + n;
+            if (Vector3.Dot(probe - middle.position, n) < 0f) n = -n;
+            var facing = Vector3.Angle(n, fwd);
+            if (facing >= PalmFront) return;
+            var axis = (wrist.position - arm.position).normalized;
+            var from = Vector3.ProjectOnPlane(n, axis); var to = Vector3.ProjectOnPlane(inward, axis);
+            if (from.sqrMagnitude < 1e-6f || to.sqrMagnitude < 1e-6f) return;
+            var turn = Mathf.Clamp(Vector3.SignedAngle(from, to, axis), -MaxRoll, MaxRoll) * Mathf.InverseLerp(PalmFront, PalmFront - 30f, facing);
+            arm.rotation = Quaternion.AngleAxis(turn, axis) * arm.rotation;
+        }
+
         private void LateUpdate()
         {
+            Palms();
             if (_joints == null || Curl <= 0f) return;
             foreach (var j in _joints)
             {

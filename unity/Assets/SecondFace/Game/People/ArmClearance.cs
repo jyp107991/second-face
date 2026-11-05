@@ -19,7 +19,7 @@ namespace SecondFace.Game.People
         /// <summary>Standing still, no gesture: an arm hanging away from the body is drawn in until the hand rests this far
         /// from the side of the hip or thigh (docs/PEOPLE_MOTION.md A4), by at most <see cref="RestMax"/>°, at
         /// <see cref="RestRate"/>° a second.</summary>
-        public float RestGap = 0.025f, RestMax = 18f, RestRate = 30f;
+        public float RestGap = 0.035f, RestMax = 18f, RestRate = 30f;
 
         private static readonly int SpeedId = Animator.StringToHash("Speed");
         private float _restL, _restR;
@@ -29,7 +29,7 @@ namespace SecondFace.Game.People
 
         private Animator _animator;
         private TorsoProfile _profile;
-        private Transform _hips, _lu, _ll, _lh, _ru, _rl, _rh;
+        private Transform _hips, _lu, _ll, _lh, _ru, _rl, _rh, _tl, _kl, _tr, _kr, _lm, _lt, _rm, _rt;
         private float _angleL, _angleR;
         private Vector3 _axisL = Vector3.forward, _axisR = Vector3.forward;
 
@@ -52,6 +52,10 @@ namespace SecondFace.Game.People
             _ru = _animator.GetBoneTransform(HumanBodyBones.RightUpperArm);
             _rl = _animator.GetBoneTransform(HumanBodyBones.RightLowerArm);
             _rh = _animator.GetBoneTransform(HumanBodyBones.RightHand);
+            _lm = _animator.GetBoneTransform(HumanBodyBones.LeftMiddleProximal); _lt = _animator.GetBoneTransform(HumanBodyBones.LeftMiddleDistal);
+            _rm = _animator.GetBoneTransform(HumanBodyBones.RightMiddleProximal); _rt = _animator.GetBoneTransform(HumanBodyBones.RightMiddleDistal);
+            _tl = _animator.GetBoneTransform(HumanBodyBones.LeftUpperLeg); _kl = _animator.GetBoneTransform(HumanBodyBones.LeftLowerLeg);
+            _tr = _animator.GetBoneTransform(HumanBodyBones.RightUpperLeg); _kr = _animator.GetBoneTransform(HumanBodyBones.RightLowerLeg);
             _gestureLayer = -2;
             _hasSpeed = false;
             if (_animator.runtimeAnimatorController != null)
@@ -104,17 +108,33 @@ namespace SecondFace.Game.People
         {
             gap = 0f; inward = Vector3.zero;
             if (!Ready) return false;
+            var best = float.MaxValue;
+            foreach (var (hip, knee, radii) in new[] { (_tl, _kl, _profile.ThighL), (_tr, _kr, _profile.ThighR) })
+                if (ThighGap(p, hip, knee, radii, out var g, out var o) && g < best)
+                {
+                    best = g;
+                    var flat = new Vector3(-o.x, 0f, -o.z);
+                    inward = flat.sqrMagnitude > 1e-8f ? flat.normalized : -o;
+                }
             var rot = _hips.rotation * Quaternion.Inverse(_profile.HipsRest);
             var scale = Mathf.Max(0.01f, transform.lossyScale.y);
             var local = Quaternion.Inverse(rot) * (p - _hips.position) / scale;
-            if (!_profile.Sample(local.y, out var cx, out var cz, out var rx, out var rz)) return false;
+            var thighs = _profile.ThighL != null && local.y < _profile.Fork;
+            if (thighs || !_profile.Sample(local.y, out var cx, out var cz, out var rx, out var rz))
+            {
+                if (best == float.MaxValue || best <= 0f) return false;
+                gap = best;
+                return true;
+            }
             var dx = (local.x - cx) / rx;
             var dz = (local.z - cz) / rz;
             var q = Mathf.Sqrt(dx * dx + dz * dz);
             if (q <= 1f) return false;
             var d = new Vector2(local.x - cx, local.z - cz);
-            gap = d.magnitude * (1f - 1f / q) * scale;
-            inward = rot * new Vector3(-d.x, 0f, -d.y).normalized;
+            var sectionGap = d.magnitude * (1f - 1f / q) * scale;
+            if (sectionGap < best) { best = sectionGap; inward = rot * new Vector3(-d.x, 0f, -d.y).normalized; }
+            if (best <= 0f) return false;
+            gap = best;
             return true;
         }
 
@@ -151,16 +171,27 @@ namespace SecondFace.Game.People
             var along = wrist - elbow;
             var best = 0f;
             var axis = Vector3.zero;
-            for (var k = 0; k < 4; k++)
+            // the elbow, the forearm, the wrist, the hand's middle and the fingers' ends (a hand at rest reaches a hand's
+            // length past the wrist: the fingers sink in first)
+            var (knuckle, tip) = hand == _lh ? (_lm, _lt) : (_rm, _rt);
+            var handDir = knuckle != null ? (knuckle.position - wrist).normalized : along.normalized;
+            var end = tip != null ? tip.position : wrist + handDir * 0.16f;
+            // each point's own skin stands off its bone line (the forearm's ~4 cm, the wrist's 3, the hand's half-thickness):
+            // the margin is the body's gap plus that
+            var size = Mathf.Max(0.5f, transform.lossyScale.y);
+            for (var k = 0; k < 6; k++)
             {
+                var skin = size * (k switch { 0 => 0.045f, 1 => 0.04f, 2 => 0.03f, 3 => 0.02f, 4 => 0.015f, _ => 0.01f });
                 var p = k switch
                 {
                     0 => elbow,
                     1 => Vector3.Lerp(elbow, wrist, 0.5f),
                     2 => wrist,
-                    _ => wrist + along.normalized * 0.08f,   // the hand's middle
+                    3 => wrist + handDir * 0.08f,   // the hand's middle
+                    4 => knuckle != null ? knuckle.position : wrist + handDir * 0.1f,
+                    _ => end,
                 };
-                if (!Inside(p, margin, out var push)) continue;
+                if (!Inside(p, margin + skin, out var push)) continue;
                 var arm = p - shoulder;
                 var a = Mathf.Atan2(push.magnitude, arm.magnitude) * Mathf.Rad2Deg;
                 if (a <= best) continue;
@@ -172,25 +203,74 @@ namespace SecondFace.Game.People
             return (best, axis);
         }
 
-        /// <summary>Whether a point is inside the torso (grown by <paramref name="margin"/>), and the way out (world, m).</summary>
+        /// <summary>A point's place against a thigh's skin (the thigh's bone line, its measured widths): how far outside it
+        /// is (negative: inside), and the way out from the bone (world).</summary>
+        private bool ThighGap(Vector3 p, Transform hip, Transform knee, float[] radii, out float gap, out Vector3 outward)
+        {
+            gap = float.MaxValue; outward = Vector3.zero;
+            if (hip == null || knee == null || radii == null || radii.Length < 2 || _profile == null) return false;
+            var axis = knee.position - hip.position;
+            var len2 = axis.sqrMagnitude;
+            if (len2 < 1e-6f) return false;
+            var t = Vector3.Dot(p - hip.position, axis) / len2;
+            if (t < -0.05f || t > 1f) return false;
+            t = Mathf.Clamp01(t);
+            var off = p - (hip.position + axis * t);
+            var d = off.magnitude;
+            if (d < 1e-5f) { off = transform.right; d = 1e-5f; }
+            float r;
+            var stations = TorsoProfile.ThighStations;
+            if (radii.Length == stations * 4)
+            {
+                // four widths a station (out, front, in, back in the body's frame), blended by the point's direction
+                var frame = _hips.rotation * Quaternion.Inverse(_profile.HipsRest);
+                var lo = Quaternion.Inverse(frame) * off;
+                var th = Mathf.Atan2(lo.z, lo.x);
+                float c = Mathf.Cos(th), sn = Mathf.Sin(th);
+                float R(int st) => radii[st * 4 + 0] * Mathf.Max(0f, c) * Mathf.Max(0f, c) + radii[st * 4 + 1] * Mathf.Max(0f, sn) * Mathf.Max(0f, sn)
+                                 + radii[st * 4 + 2] * Mathf.Max(0f, -c) * Mathf.Max(0f, -c) + radii[st * 4 + 3] * Mathf.Max(0f, -sn) * Mathf.Max(0f, -sn);
+                var f = t * (stations - 1);
+                var i = Mathf.Min((int)f, stations - 2);
+                r = Mathf.Lerp(R(i), R(i + 1), f - i);
+            }
+            else
+            {
+                var f = t * (radii.Length - 1);
+                var i = Mathf.Min((int)f, radii.Length - 2);
+                r = Mathf.Lerp(radii[i], radii[i + 1], f - i);
+            }
+            r *= Mathf.Max(0.01f, transform.lossyScale.y);
+            gap = d - r;
+            outward = off / d;
+            return true;
+        }
+
+        /// <summary>Whether a point is inside the torso or a thigh (grown by <paramref name="margin"/>), and the way out (world,
+        /// m).</summary>
         public bool Inside(Vector3 p, float margin, out Vector3 push)
         {
             push = Vector3.zero;
             if (!Ready) return false;
+            foreach (var (hip, knee, radii) in new[] { (_tl, _kl, _profile.ThighL), (_tr, _kr, _profile.ThighR) })
+                if (ThighGap(p, hip, knee, radii, out var g, out var o) && g < margin && (margin - g) > push.magnitude)
+                    push = o * (margin - g);
             var rot = _hips.rotation * Quaternion.Inverse(_profile.HipsRest);
             var scale = Mathf.Max(0.01f, transform.lossyScale.y);
             var local = Quaternion.Inverse(rot) * (p - _hips.position) / scale;
-            if (!_profile.Sample(local.y, out var cx, out var cz, out var rx, out var rz)) return false;
+            // below the fork, where the thighs are measured, the sections (round both legs) do not hold a hand off
+            if (_profile.ThighL != null && local.y < _profile.Fork) return push.sqrMagnitude > 0f;
+            if (!_profile.Sample(local.y, out var cx, out var cz, out var rx, out var rz)) return push.sqrMagnitude > 0f;
             rx += margin / scale; rz += margin / scale;
             var dx = (local.x - cx) / rx;
             var dz = (local.z - cz) / rz;
             var q = Mathf.Sqrt(dx * dx + dz * dz);
-            if (q >= 1f) return false;
+            if (q >= 1f) return push.sqrMagnitude > 0f;
             // out along the line from the section's middle (straight out sideways from the very middle)
             Vector2 way = q > 0.05f ? new Vector2(dx, dz) / q : new Vector2(local.x >= cx ? 1f : -1f, 0f);
             var exit = new Vector2(cx + way.x * rx, cz + way.y * rz);
             var move = exit - new Vector2(local.x, local.z);
-            push = rot * new Vector3(move.x, 0f, move.y) * scale;
+            var section = rot * new Vector3(move.x, 0f, move.y) * scale;
+            if (section.sqrMagnitude > push.sqrMagnitude) push = section;
             return true;
         }
 

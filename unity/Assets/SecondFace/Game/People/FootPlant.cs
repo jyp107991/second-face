@@ -3,31 +3,29 @@ using UnityEngine;
 namespace SecondFace.Game.People
 {
     /// <summary>
-    /// Feet on the ground they stand on (BUILD_PLAN §6.E, P4 step 4; docs/PEOPLE_MOTION.md F1-F4, §2.3). The clips were
-    /// captured on flat floors by bodies of other sizes, and the world is not flat. In the base layer's IK pass:
+    /// Feet on the ground they stand on (BUILD_PLAN §6.E, P4 step 4; docs/PEOPLE_MOTION.md F1-F4, §2.3, W6). The clips were
+    /// captured on flat floors by bodies of other sizes, and the world is not flat. After the animation each frame, on the
+    /// bones themselves (an analytic two-bone solve of each leg, exact: Unity's humanoid foot goals were missed by 4-7 cm on
+    /// these rigs, 2026-11-05):
     /// <list type="bullet">
-    /// <item>Soles on the ground: after each frame the ankle's height over the ground is compared with the body's own ankle
-    /// height over a flat sole (from its bind pose), and the whole body is moved by the difference next frame (a feedback
-    /// on the lower foot: a clip that would float the body or sink it is corrected, whatever the avatar).</item>
-    /// <item>Uneven ground: each foot is moved by the height of the ground under it relative to the person's footing, turned
-    /// to the slope, and the pelvis drops by the lower foot's depth so that leg can reach.</item>
+    /// <item>Soles on the ground: the hips are moved up or down so the lower foot's sole meets the ground under it (the
+    /// ankle at the body's own height over a flat sole, from its bind pose), whatever height the clip carried them at.</item>
+    /// <item>Uneven ground: walking, each foot is lifted or lowered by the ground under it against the person's footing.</item>
     /// <item>Standing: the feet are planted. Each is held where it was put down (a body turning or shifting over it does not
-    /// slide it), flat on the ground, no wider apart than <see cref="MaxStance"/>; when the place the clip wants it in has
-    /// gone more than <see cref="StepReach"/> from it, or turned more than <see cref="StepTurn"/>, it steps there (lifted on
-    /// an arc over <see cref="StepTime"/> s, one foot at a time).</item>
-    /// <item>Walking: the clip's stride, nudged by the ground (a full plant would drag it).</item>
+    /// slide it), flat on the ground and turned to it, sole down, no wider apart than <see cref="MaxStance"/> nor further
+    /// ahead of the other than <see cref="MaxStagger"/>; when the place the clip wants it in has gone more than
+    /// <see cref="StepReach"/> from it, or turned more than <see cref="StepTurn"/>, it steps there (lifted on an arc over
+    /// <see cref="StepTime"/> s, one foot at a time).</item>
     /// </list>
-    /// Humanoid IK (Animator.SetIKPosition), no rig: cheap enough for every person within the game camera's reach.
+    /// Runs before the arms' clearance (it moves the hips). Cheap: a few raycasts and two bone solves a person.
     /// </summary>
     [RequireComponent(typeof(Animator))]
+    [DefaultExecutionOrder(-20)]
     public sealed class FootPlant : MonoBehaviour
     {
         public LayerMask Ground = Physics.DefaultRaycastLayers;
-        /// <summary>How far above and below its animated place a foot looks for ground, m.</summary>
+        /// <summary>How far above and below a foot looks for ground, m.</summary>
         public float Reach = 0.45f;
-        /// <summary>The weight while walking at a normal pace (standing is 1).</summary>
-        public float WalkingWeight = 0.35f;
-        public float Smoothing = 20f;
         /// <summary>Below this speed a person stands (m/s).</summary>
         public float StandSpeed = 0.12f;
         /// <summary>The widest a standing person's heels stand apart, m (the preferred quiet stance is 0.17 m; McIlroy &amp; Maki).</summary>
@@ -38,47 +36,51 @@ namespace SecondFace.Game.People
 
         private static readonly int SpeedId = Animator.StringToHash("Speed");
         private Animator _animator;
-        private bool _hasSpeed;
-        private float _pelvis, _left, _right, _sink, _cL, _cR;
-        private Transform _footL, _footR;
-        private float _ankleL, _ankleR;   // the ankle's height over a flat sole, from the bind pose (world m at the body's scale)
+        private bool _hasSpeed, _ready;
+        private Transform _hips, _upL, _loL, _footL, _toeL, _upR, _loR, _footR, _toeR;
+        private float _ankleL, _ankleR, _bindScale = 1f;   // the ankle's height over a flat sole at rest (world m at the bind scale)
+        private Quaternion _restL, _restR;                  // each foot's rotation at rest, in the body's frame (flat, sole down)
+        private float _headingL, _headingR;                 // each foot's heading at rest in the body's frame, degrees
+        private float _sink, _plant, _low;
+        private Vector3 _was;
 
         private struct Foot
         {
             public bool Planted, Stepping;
             public Vector3 Pin, From, To;
             public float PinYaw, FromYaw, ToYaw, T;
-            /// <summary>The height the clip puts this foot down at (over the footing), the lowest it has been lately: a planted
-            /// foot stays there, whatever the clip does with it.</summary>
-            public float Down;
         }
 
-        /// <summary>How far each foot bone ended from where its IK goal put it last frame (tests read it), m.</summary>
-        public Vector2 GoalError { get; private set; }
-        private Vector3 _goalL, _goalR;
-
         private Foot _l, _r;
-        private float _plant;   // 0 walking .. 1 planted
 
-        /// <summary>The last offsets applied (tests read them): left foot, right foot, pelvis, m.</summary>
-        public Vector3 Offsets => new(_left, _right, _pelvis);
-        /// <summary>How far the whole body is moved down to put its soles on the ground, m.</summary>
+        /// <summary>How far the hips are moved to put the soles on the ground, m (down is negative).</summary>
         public float Sink => _sink;
+        /// <summary>Kept for tests: how far each foot bone ended from where this put it (0: exact).</summary>
+        public Vector2 GoalError { get; private set; }
+        public Vector3 Offsets => new(0f, 0f, _sink);
+        /// <summary>Where each foot is now (tests read them): left, right.</summary>
+        public (Vector3, Vector3) Probed => (_footL != null ? _footL.position : Vector3.zero, _footR != null ? _footR.position : Vector3.zero);
 
         private void Awake()
         {
             _animator = GetComponent<Animator>();
             Bind();
-            if (_animator != null && _animator.isHuman)
-            {
-                // at rest, before any clip: the body stands on its root
-                _footL = _animator.GetBoneTransform(HumanBodyBones.LeftFoot);
-                _footR = _animator.GetBoneTransform(HumanBodyBones.RightFoot);
-                var y = transform.position.y;
-                _bindScale = Mathf.Max(0.01f, transform.lossyScale.y);
-                _ankleL = _footL != null ? Mathf.Clamp(_footL.position.y - y, 0.03f, 0.2f) : 0.08f;
-                _ankleR = _footR != null ? Mathf.Clamp(_footR.position.y - y, 0.03f, 0.2f) : 0.08f;
-            }
+            if (_animator == null || !_animator.isHuman) return;
+            Transform B(HumanBodyBones b) => _animator.GetBoneTransform(b);
+            _hips = B(HumanBodyBones.Hips);
+            _upL = B(HumanBodyBones.LeftUpperLeg); _loL = B(HumanBodyBones.LeftLowerLeg); _footL = B(HumanBodyBones.LeftFoot); _toeL = B(HumanBodyBones.LeftToes);
+            _upR = B(HumanBodyBones.RightUpperLeg); _loR = B(HumanBodyBones.RightLowerLeg); _footR = B(HumanBodyBones.RightFoot); _toeR = B(HumanBodyBones.RightToes);
+            _ready = _hips != null && _upL != null && _loL != null && _footL != null && _upR != null && _loR != null && _footR != null;
+            if (!_ready) return;
+            // at rest, before any clip: the body stands on its root, feet flat
+            var y = transform.position.y;
+            _bindScale = Mathf.Max(0.01f, transform.lossyScale.y);
+            _ankleL = Mathf.Clamp(_footL.position.y - y, 0.03f, 0.2f);
+            _ankleR = Mathf.Clamp(_footR.position.y - y, 0.03f, 0.2f);
+            var inv = Quaternion.Inverse(transform.rotation);
+            _restL = inv * _footL.rotation; _restR = inv * _footR.rotation;
+            _headingL = Heading(inv * Ahead(_footL, _toeL));
+            _headingR = Heading(inv * Ahead(_footR, _toeR));
         }
 
         /// <summary>Looks again at the controller's parameters (after a controller is given at runtime).</summary>
@@ -89,95 +91,94 @@ namespace SecondFace.Game.People
                 foreach (var p in _animator.parameters) if (p.nameHash == SpeedId) _hasSpeed = true;
         }
 
-        private void OnDisable() { _l.Planted = _r.Planted = false; _l.Stepping = _r.Stepping = false; }
+        private void OnDisable() { _l = default; _r = default; }
 
-        private void OnAnimatorIK(int layer)
-        {
-            if (layer != 0 || _animator == null) return;
-            var speed = _hasSpeed ? _animator.GetFloat(SpeedId) : 0f;
-            var weight = Mathf.Lerp(1f, WalkingWeight, Mathf.Clamp01(speed / 1.4f));
-            var footing = transform.position.y;
-            var dt = Time.deltaTime > 0 ? Time.deltaTime : 1f / 30f;
-            var k = 1f - Mathf.Exp(-Smoothing * dt);
-            var hitL = Probe(AvatarIKGoal.LeftFoot, footing, out var targetL, out var normalL);
-            var hitR = Probe(AvatarIKGoal.RightFoot, footing, out var targetR, out var normalR);
-            _left = Mathf.Lerp(_left, hitL ? targetL : 0f, k);
-            _right = Mathf.Lerp(_right, hitR ? targetR : 0f, k);
-            // the pelvis follows the lower foot's ground directly (from the smoothed feet it lagged a second step behind),
-            // and the whole body sinks or rises to put the soles on the ground
-            var low = Mathf.Min(hitL ? targetL : 0f, hitR ? targetR : 0f);
-            _pelvis = Mathf.Lerp(_pelvis, Mathf.Min(0f, low) * weight, k);
-            _animator.bodyPosition += Vector3.up * (_pelvis + _sink);
-            // standing: planted feet; walking: the clip's (a body set down somewhere else lifts its feet from where they were)
-            if ((transform.position - _was).sqrMagnitude > 0.25f) { _l.Planted = _r.Planted = false; _l.Stepping = _r.Stepping = false; }
-            _was = transform.position;
-            var standing = speed < StandSpeed;
-            _plant = Mathf.MoveTowards(_plant, standing ? 1f : 0f, dt / 0.15f);
-            if (!standing) { _l.Planted = _r.Planted = false; _l.Stepping = _r.Stepping = false; }
-            var animL = _animator.GetIKPosition(AvatarIKGoal.LeftFoot) + Vector3.up * (_left + _sink + _cL);
-            var animR = _animator.GetIKPosition(AvatarIKGoal.RightFoot) + Vector3.up * (_right + _sink + _cR);
-            var rotL = Quaternion.FromToRotation(Vector3.up, hitL ? normalL : Vector3.up) * _animator.GetIKRotation(AvatarIKGoal.LeftFoot);
-            var rotR = Quaternion.FromToRotation(Vector3.up, hitR ? normalR : Vector3.up) * _animator.GetIKRotation(AvatarIKGoal.RightFoot);
-            if (_plant > 0f)
-            {
-                var (wantL, wantR) = Narrow(animL, animR);
-                Plant(ref _l, ref _r, wantL, Yaw(rotL), dt);
-                Plant(ref _r, ref _l, wantR, Yaw(rotR), dt);
-                animL = Vector3.Lerp(animL, Placed(ref _l, wantL, rotL, out rotL), _plant);
-                animR = Vector3.Lerp(animR, Placed(ref _r, wantR, rotR, out rotR), _plant);
-            }
-            Set(AvatarIKGoal.LeftFoot, animL, rotL, weight);
-            Set(AvatarIKGoal.RightFoot, animR, rotR, weight);
-            _goalL = animL; _goalR = animR;
-        }
+        private Vector3 Ahead(Transform foot, Transform toe) => toe != null ? toe.position - foot.position : transform.forward;
+        private static float Heading(Vector3 v) => Mathf.Atan2(v.x, v.z) * Mathf.Rad2Deg;
 
-        /// <summary>After the IK: how far the lower ankle stands off its flat-sole height over the ground; the body is moved by
-        /// that next frame.</summary>
         private void LateUpdate()
         {
-            if (_footL == null || _footR == null || !enabled || _animator == null || !_animator.enabled) return;
-            GoalError = new Vector2(Vector3.Distance(_footL.position, _goalL), Vector3.Distance(_footR.position, _goalR));
-            var gl = GroundUnder(_footL.position); var gr = GroundUnder(_footR.position);
-            if (float.IsNaN(gl) && float.IsNaN(gr)) return;
-            var scale = Mathf.Max(0.01f, transform.lossyScale.y);
-            var el = float.IsNaN(gl) ? float.MaxValue : _footL.position.y - gl - _ankleL * scale / Mathf.Max(0.01f, _bindScale);
-            var er = float.IsNaN(gr) ? float.MaxValue : _footR.position.y - gr - _ankleR * scale / Mathf.Max(0.01f, _bindScale);
-            // (a foot in the air on a step is not standing on anything)
-            if (_l.Stepping) el = float.MaxValue;
-            if (_r.Stepping) er = float.MaxValue;
-            var e = Mathf.Min(el, er);   // the lower foot bears the weight
-            if (e == float.MaxValue || Mathf.Abs(e) > 0.3f) return;
-            var dt = Time.deltaTime > 0 ? Time.deltaTime : 1f / 30f;
-            var standing = _plant > 0.5f;
-            var gain = standing ? 12f : 4f;   // gently while walking: the stance ankle rises and falls with the stride
-            var k = 1f - Mathf.Exp(-gain * dt);
-            _sink = Mathf.Clamp(_sink - e * k, -0.15f, 0.15f);
-            // standing, both feet bear weight: the higher is brought down to the ground too (a clip's raised foot, a shift of
-            // weight left hovering); walking, each foot is the clip's
-            if (standing)
+            if (!_ready || _animator == null || !_animator.enabled) return;
+            var dt = Time.deltaTime;
+            if (dt <= 0f) return;
+            var scale = Mathf.Max(0.01f, transform.lossyScale.y) / _bindScale;
+            var ankleL = _ankleL * scale; var ankleR = _ankleR * scale;
+            var speed = _hasSpeed ? _animator.GetFloat(SpeedId) : 0f;
+            var standing = speed < StandSpeed;
+            // a body set down somewhere else lifts its feet from where they were
+            if ((transform.position - _was).sqrMagnitude > 0.25f) { _l = default; _r = default; _sink = 0f; }
+            _was = transform.position;
+            _plant = Mathf.MoveTowards(_plant, standing ? 1f : 0f, dt / 0.15f);
+            if (!standing) { _l.Planted = _r.Planted = false; _l.Stepping = _r.Stepping = false; }
+
+            // the ground under each foot as the clip has it
+            var gL = GroundAt(_footL.position, out var nL); var gR = GroundAt(_footR.position, out var nR);
+            if (float.IsNaN(gL) && float.IsNaN(gR)) return;
+            if (float.IsNaN(gL)) { gL = gR; nL = nR; }
+            if (float.IsNaN(gR)) { gR = gL; nR = nL; }
+            // the hips: the lower foot's sole onto its ground (walking, gently: the stance ankle rises and falls with the
+            // stride; standing, at once)
+            var eL = _footL.position.y - gL - ankleL;
+            var eR = _footR.position.y - gR - ankleR;
+            var e = Mathf.Min(eL, eR);
+            // moving, by the stride's lowest (the lower envelope over the last strides: a running foot lands on its ball with
+            // the ankle high, and the body is not to be pulled down to it)
+            _low = Mathf.Min(e, _low + 0.08f * dt);
+            var want = Mathf.Clamp(-(standing ? e : _low), -0.15f, 0.15f);
+            _sink = Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-(standing ? 25f : 3f) * dt));
+            _hips.position += Vector3.up * _sink;
+
+            // where each foot goes: walking, the clip's place lifted by the ground's step under it; standing, planted
+            var footing = transform.position.y;
+            var wantL = _footL.position + Vector3.up * Mathf.Clamp(gL - footing, -Reach, Reach) * (1f - _plant);
+            var wantR = _footR.position + Vector3.up * Mathf.Clamp(gR - footing, -Reach, Reach) * (1f - _plant);
+            var yawL = Heading(Ahead(_footL, _toeL)); var yawR = Heading(Ahead(_footR, _toeR));
+            if (_plant > 0f)
             {
-                if (el != float.MaxValue) _cL = Mathf.Clamp(_cL - (el - e) * k, -0.12f, 0.02f);
-                if (er != float.MaxValue) _cR = Mathf.Clamp(_cR - (er - e) * k, -0.12f, 0.02f);
+                var (nl, nr) = Narrow(_footL.position, _footR.position);
+                Plant(ref _l, ref _r, nl, yawL, dt, true);
+                Plant(ref _r, ref _l, nr, yawR, dt, false);
+                var pl = Placed(ref _l, ankleL, out var hl, out var normL);
+                var pr = Placed(ref _r, ankleR, out var hr, out var normR);
+
+                wantL = Vector3.Lerp(wantL, pl, _plant);
+                wantR = Vector3.Lerp(wantR, pr, _plant);
+                Solve(_upL, _loL, _footL, wantL);
+                Solve(_upR, _loR, _footR, wantR);
+                // flat on the ground, turned its way, sole down
+                _footL.rotation = Quaternion.Slerp(_footL.rotation, Flat(_restL, _headingL, hl, normL), _plant);
+                _footR.rotation = Quaternion.Slerp(_footR.rotation, Flat(_restR, _headingR, hr, normR), _plant);
             }
-            else { _cL = Mathf.Lerp(_cL, 0f, k); _cR = Mathf.Lerp(_cR, 0f, k); }
+            else
+            {
+                if (Mathf.Abs(wantL.y - _footL.position.y) > 0.005f) Solve(_upL, _loL, _footL, wantL);
+                if (Mathf.Abs(wantR.y - _footR.position.y) > 0.005f) Solve(_upR, _loR, _footR, wantR);
+            }
+            GoalError = new Vector2(Vector3.Distance(_footL.position, wantL), Vector3.Distance(_footR.position, wantR));
         }
 
-        private float _bindScale = 1f;
-        private Vector3 _was;
-
-        private Vector3 GroundNormal(Vector3 p)
+        private float GroundAt(Vector3 p, out Vector3 normal)
         {
             var from = new Vector3(p.x, p.y + Reach, p.z);
-            return Physics.Raycast(from, Vector3.down, out var hit, Reach * 2.5f, Ground, QueryTriggerInteraction.Ignore) ? hit.normal : Vector3.up;
+            if (Physics.Raycast(from, Vector3.down, out var hit, Reach * 2.5f, Ground, QueryTriggerInteraction.Ignore))
+            {
+                normal = hit.normal;
+                return hit.point.y;
+            }
+            normal = Vector3.up;
+            return float.NaN;
         }
 
-        private float GroundUnder(Vector3 p)
+        /// <summary>A foot at rest turned to a heading (world, degrees) and tilted to the ground's normal: flat, sole down.</summary>
+        private Quaternion Flat(Quaternion rest, float restHeading, float heading, Vector3 normal)
         {
-            var from = new Vector3(p.x, p.y + Reach, p.z);
-            return Physics.Raycast(from, Vector3.down, out var hit, Reach * 2.5f, Ground, QueryTriggerInteraction.Ignore) ? hit.point.y : float.NaN;
+            var yaw = transform.rotation.eulerAngles.y;
+            var turned = Quaternion.AngleAxis(heading - restHeading - yaw, Vector3.up) * transform.rotation * rest;
+            return Quaternion.FromToRotation(Vector3.up, normal) * turned;
         }
 
-        /// <summary>The feet the clip wants, drawn together to <see cref="MaxStance"/> across the body if it stands them wider.</summary>
+        /// <summary>The feet the clip wants, drawn together to <see cref="MaxStance"/> across the body and
+        /// <see cref="MaxStagger"/> along it if it stands them wider.</summary>
         private (Vector3, Vector3) Narrow(Vector3 l, Vector3 r)
         {
             var right = transform.right; right.y = 0f; right.Normalize();
@@ -192,19 +193,29 @@ namespace SecondFace.Game.People
             return (l, r);
         }
 
-        private static float Yaw(Quaternion q)
+        /// <summary>Puts a foot down where it is, or steps it to where the clip wants it (one foot at a time).</summary>
+        /// <summary>A place for one foot held to the stance against where the other foot stands now: no wider than
+        /// <see cref="MaxStance"/>, not crossed over it, no further ahead or behind than <see cref="MaxStagger"/>.</summary>
+        private Vector3 Against(Vector3 want, Vector3 other, bool left)
         {
-            var f = q * Vector3.forward;
-            if (Mathf.Abs(f.y) > 0.9f) f = q * Vector3.up;
-            return Mathf.Atan2(f.x, f.z) * Mathf.Rad2Deg;
+            var right = transform.right; right.y = 0f; right.Normalize();
+            var ahead = Vector3.Cross(right, Vector3.up);
+            var size = Mathf.Max(0.5f, transform.lossyScale.y);
+            var side = left ? -1f : 1f;   // the left foot stands to the body's left of the right one
+            var across = Vector3.Dot(want - other, right) * side;
+            var max = MaxStance * size; var min = 0.07f * size;
+            if (across > max) want -= right * side * (across - max);
+            else if (across < min) want += right * side * (min - across);
+            var along = Vector3.Dot(want - other, ahead);
+            var stagger = MaxStagger * size;
+            if (Mathf.Abs(along) > stagger) want -= ahead * Mathf.Sign(along) * (Mathf.Abs(along) - stagger);
+            return want;
         }
 
-        /// <summary>Puts a foot down where it is, or steps it to where the clip wants it (one foot at a time).</summary>
-        private void Plant(ref Foot f, ref Foot other, Vector3 want, float wantYaw, float dt)
+        private void Plant(ref Foot f, ref Foot other, Vector3 want, float wantYaw, float dt, bool left)
         {
-            var over = want.y - transform.position.y;
-            if (!f.Planted) { f.Planted = true; f.Pin = want; f.PinYaw = wantYaw; f.Stepping = false; f.Down = over; return; }
-            f.Down = Mathf.Min(over, f.Down + 0.03f * dt);   // follows the clip down at once, up only slowly
+            if (other.Planted && !other.Stepping) want = Against(want, other.Pin, left);
+            if (!f.Planted) { f.Planted = true; f.Pin = want; f.PinYaw = wantYaw; f.Stepping = false; return; }
             if (f.Stepping)
             {
                 f.T += dt / StepTime;
@@ -215,59 +226,50 @@ namespace SecondFace.Game.People
             if (other.Stepping) return;
             var off = Vector3.ProjectOnPlane(want - f.Pin, Vector3.up).magnitude;
             var turn = Mathf.Abs(Mathf.DeltaAngle(f.PinYaw, wantYaw));
-            if (off > StepReach || turn > StepTurn)
-            {
-                f.Stepping = true; f.T = 0f; f.From = f.Pin; f.FromYaw = f.PinYaw; f.To = want; f.ToYaw = wantYaw;
-            }
+            if (off > StepReach || turn > StepTurn) { f.Stepping = true; f.T = 0f; f.From = f.Pin; f.FromYaw = f.PinYaw; f.To = want; f.ToYaw = wantYaw; }
         }
 
-        /// <summary>Where a planted foot is now and how it is turned: on its pin, or on its step's arc (at the height the clip
-        /// and the ground give the place it is held).</summary>
-        private Vector3 Placed(ref Foot f, Vector3 want, Quaternion animRot, out Quaternion rot)
+        /// <summary>Where a planted foot's ankle goes (its sole on the ground under its place, or on its step's arc), its
+        /// heading and the ground's normal there.</summary>
+        private Vector3 Placed(ref Foot f, float ankle, out float heading, out Vector3 normal)
         {
-            Vector3 at; float yaw;
+            Vector3 at;
+            var lift = 0f;
             if (f.Stepping)
             {
                 var t = Mathf.Clamp01(f.T);
                 var s = t * t * (3f - 2f * t);
                 at = Vector3.Lerp(f.From, f.To, s);
-                at.y = Mathf.Lerp(f.From.y, want.y, s) + StepLift * Mathf.Sqrt(Mathf.Sin(t * Mathf.PI));
-                yaw = Mathf.LerpAngle(f.FromYaw, f.ToYaw, s);
+                heading = Mathf.LerpAngle(f.FromYaw, f.ToYaw, s);
+                lift = StepLift * Mathf.Sqrt(Mathf.Sin(t * Mathf.PI));
             }
-            else { at = f.Pin; at.y = transform.position.y + f.Down; yaw = f.PinYaw; }
-            // flat on the ground under it, pointing its way (a standing foot bears weight: no heel or toes in the air)
-            var n = GroundNormal(at);
-            var dir = Quaternion.AngleAxis(yaw, Vector3.up) * Vector3.forward;
-            rot = Quaternion.LookRotation(Vector3.ProjectOnPlane(dir, n).normalized, n);
+            else { at = f.Pin; heading = f.PinYaw; }
+            var g = GroundAt(at, out normal);
+            if (!float.IsNaN(g)) at.y = g + ankle + lift;
             return at;
         }
 
-        /// <summary>Where each foot was probed last (tests read them): left, right.</summary>
-        public (Vector3, Vector3) Probed { get; private set; }
-
-        /// <summary>The ground's height under a foot relative to the footing, and its normal.</summary>
-        private bool Probe(AvatarIKGoal goal, float footing, out float offset, out Vector3 normal)
+        /// <summary>An analytic two-bone solve: the thigh and shin turned so the ankle reaches the target, the knee kept in the
+        /// plane it bends in now (forward when the leg is straight).</summary>
+        private void Solve(Transform up, Transform lo, Transform foot, Vector3 target)
         {
-            var foot = _animator.GetIKPosition(goal);
-            Probed = goal == AvatarIKGoal.LeftFoot ? (foot, Probed.Item2) : (Probed.Item1, foot);
-            var from = new Vector3(foot.x, footing + Reach, foot.z);
-            if (Physics.Raycast(from, Vector3.down, out var hit, Reach * 2f, Ground, QueryTriggerInteraction.Ignore))
-            {
-                offset = hit.point.y - footing;
-                normal = hit.normal;
-                return true;
-            }
-            offset = 0f; normal = Vector3.up;
-            return false;
-        }
-
-        private void Set(AvatarIKGoal goal, Vector3 position, Quaternion rotation, float weight)
-        {
-            var w = Mathf.Lerp(weight, 1f, _plant);
-            _animator.SetIKPositionWeight(goal, w);
-            _animator.SetIKRotationWeight(goal, w);
-            _animator.SetIKPosition(goal, position);
-            _animator.SetIKRotation(goal, rotation);
+            var h = up.position; var k = lo.position; var a = foot.position;
+            var l1 = (k - h).magnitude; var l2 = (a - k).magnitude;
+            if (l1 < 1e-4f || l2 < 1e-4f) return;
+            var to = target - h;
+            var d = Mathf.Clamp(to.magnitude, Mathf.Abs(l1 - l2) + 1e-3f, l1 + l2 - 1e-4f);
+            var dir = to.sqrMagnitude > 1e-8f ? to.normalized : (a - h).normalized;
+            var pole = Vector3.ProjectOnPlane(k - h, dir);
+            if (pole.sqrMagnitude < 1e-6f) pole = Vector3.ProjectOnPlane(transform.forward, dir);
+            pole.Normalize();
+            var x = (l1 * l1 - l2 * l2 + d * d) / (2f * d);
+            var y = Mathf.Sqrt(Mathf.Max(0f, l1 * l1 - x * x));
+            var knee = h + dir * x + pole * y;
+            var end = h + dir * d;
+            var keep = foot.rotation;
+            up.rotation = Quaternion.FromToRotation(k - h, knee - h) * up.rotation;
+            lo.rotation = Quaternion.FromToRotation(foot.position - lo.position, end - lo.position) * lo.rotation;
+            foot.rotation = keep;   // the foot keeps its own turn (set after, flat, when planted)
         }
     }
 }

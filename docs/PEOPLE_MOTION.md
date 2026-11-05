@@ -67,14 +67,16 @@ every frame. Angles are degrees, distances centimetres. "Down" and "horizon" are
 | A3 | Forearm hang | angle of elbow→wrist from down | ≤ 30 | 40 | follows A1 + A2 |
 | A4 | Hand at the thigh | gap from the hand's skin to the nearest thigh or hip skin (baked mesh) | ≤ 6 | 10 | the arms hang with the palms towards the thighs [1] |
 | A5 | Relaxed fingers | bend at the knuckle and the middle joint, index to little finger | 8–55 | 3–75 | a hand at rest is half-curled: never flat and spread, never a fist |
+| A6 | Palms not forward | the angle between the palm's facing and the body's front (0 forward, 90 the thigh, 180 back) | ≥ 50 | ≥ 35 | relaxed arms hang and swing with the palms to the thighs or behind; a palm turned forward or up is a carry, not a rest |
 | S1 | Shoulders down | the shoulder's raise above the avatar's neutral (Humanoid "Shoulder Down-Up") | ≤ 6 | 10 | relaxed shoulders; raised ones read as tension or cold |
 | H1 | Head level | the face's forward from the horizon (+ up) | −15 to +8 | −25 to +12 | natural head position: the Frankfort plane 2° ± 4° from horizontal, extremes about ±11° [2][3] |
 | H2 | Head on the body | yaw of the face relative to the chest | ≤ 30 | 45 | the eyes take a gaze shift up to about 30° and the head joins only beyond about 25° [4][5]; a sustained look further round turns the body |
 | H3 | Head upright | roll of the face from vertical | ≤ 10 | 15 | a level head; a tilt is an expression, not a rest pose |
-| F1 | Soles on the ground | height of the lowest heel and ball skin above the ground under each (baked mesh) | −1.5 to +2.5 | −3 to +4 | standing feet bear weight: no floating, no sinking |
+| F1 | Soles on the ground | height of the lowest heel and ball skin above the ground under each (baked mesh), for a foot with some of its sole down (a foot 3 cm up or more is stepping: F5) | −1.5 to +2.5 | −3 to +4 | standing feet bear weight: no floating, no sinking |
 | F2 | Heels down | heel height minus ball height | −2 to +2 | −4 to +4 | quiet standing is flat-footed (no tiptoe, no toes in the air) |
 | F3 | Stance | heels' width across the body (F3w); one foot ahead of the other (F3a); each foot's turn out from the body's front (F3s) | 8–32; ≤ 28; ≤ 25 | 5–40; 35; 35 | preferred quiet stance: 17 cm between heel centres, 14° between the feet [6]; self-selected widths 16–18 ± 4–5 cm [7][8]; a relaxed stagger is under a foot's length |
 | F4 | Standing still | a foot bearing weight (its sole within 2 cm of the lowest it has been in that state): its horizontal speed | mean ≤ 3 cm/s; frames > 10 cm/s ≤ 2 % | — | foot skate is counted above 10 cm/s at contact [9] |
+| F5 | Feet down | the share of the standing time a foot is off the ground (a sole 3 cm up or more: a step) | mean ≤ 0.12 | — | quiet standing shifts weight and now and then steps; it does not keep a foot in the air |
 | C1 | Nothing clips | depth of a hand or forearm vertex inside the torso, hip or thigh skin (baked mesh, against the skin's normals) | ≤ 0.5 | 1.5 | the owner's rule: arms, hands and clothing never sink into a body (CLAUDE.md §2) |
 
 ### 2.2 Gestures
@@ -92,12 +94,13 @@ F1 and F2 apply to the planted foot, and at the end the chest faces the partner 
 
 | Id | Measure | How it is measured | Limit | Basis |
 |---|---|---|---|---|
-| W1 | No foot skate | a foot whose sole is within 2.5 cm of the ground: its horizontal speed | mean ≤ 8 cm/s; frames > 15 cm/s ≤ 5 % | foot-skate measures in motion research count sliding above 10 cm/s at contact heights of 2.5–10 cm [9][10] |
+| W1 | No foot skate | a foot whose lowest skin is within 2.5 cm of the ground (baked mesh, every frame): its sole's horizontal speed | mean ≤ 8 cm/s; frames > 15 cm/s ≤ 5 % | foot-skate measures in motion research count sliding above 10 cm/s at contact heights of 2.5–10 cm [9][10] |
 | W2 | Stride matches speed | a planted foot's speed as a share of the body's (0 when the stride fits the speed) | mean ≤ 0.10 | a stride is the body's speed divided by its cadence; a mismatch slides the planted foot (gliding or treading) |
-| W3 | Arm swing | upper arm from down; opposite to the legs | ≤ 35 (p98), cap 45 | |
+| W3 | Arm swing | upper arm from down; opposite to the legs | walking ≤ 35 (p98), cap 45; jogging ≤ 45, cap 55 (no sourced limit yet: reviewed by eye) | |
 | W4 | Head level | face pitch | −20 to +8 | looking where they go |
 | W5 | Head on the body | face yaw on the chest | ≤ 25 | |
 | W6 | Stance foot on the ground | the sole's height while that foot bears weight | −1.5 to +2.5 (cap −3 to +4) | as F1 |
+| A6 | Palms not forward | as §2.1 | as §2.1 | |
 | C1 | Nothing clips | as §2.1 | as §2.1 | |
 
 ### 2.5 Two people talking

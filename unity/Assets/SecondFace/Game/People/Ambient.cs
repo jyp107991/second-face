@@ -15,6 +15,8 @@ namespace SecondFace.Game.People
         public static readonly string[] Talk = { "talk", "talk_b", "argue" };
         public static readonly string[] Idle = { "drink", "stretch", "yawn", "yawn_b", "wave" };
         public const string GestureLayer = "Gesture";
+        /// <summary>How many idles the controller blends between on "Idle" (LocomotionBuild.Idles).</summary>
+        public const int IdleCount = 3;
 
         public float MinGap = 7f, MaxGap = 20f;
         /// <summary>Talks more than the others (set by whoever places them).</summary>
@@ -39,7 +41,7 @@ namespace SecondFace.Game.People
             _seed = Hash(name);
             if (_animator == null || _animator.runtimeAnimatorController == null) return;
             _layer = _animator.GetLayerIndex(GestureLayer);
-            _animator.SetFloat(IdleId, _seed % 4);
+            _animator.SetFloat(IdleId, _seed % IdleCount);
             _animator.Play(0, 0, Random01());
             _next = Time.time + Mathf.Lerp(MinGap * 0.3f, MaxGap, Random01());
         }
