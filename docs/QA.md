@@ -34,12 +34,17 @@ Each build's test plan lists its features; for each, the tester runs:
   background the app, change the language and text size, run at the lowest quality tier.
 - **Softlocks**: any state with no way forward (a door that never opens, a quest that cannot finish, a conversation
   with no exit, a companion who never comes back) is S1.
+- **Humans gate** (CLAUDE.md §2, `docs/PEOPLE_MOTION.md`): the motion and posture gate passes on the full set of
+  people (`HumanMotionGateTests`, all categories), and every capture with people in it is reviewed at the game's own
+  cameras against §3 of that document, item by item, in writing, in the build's report. Any failure is S2.
+- **Overhead**: every in-game view (exploring, combat, conversations) is the overhead camera; a capture from any other
+  view is not evidence for the build (photo mode, character creation and portraits aside).
 - **Persistence**: what the player changed survives a save, a quit and a load (containers, people, flags, the clock).
 - **Performance**: frame time on the device tier (Mid ≥ 30 fps, Flagship 60), memory, load times, battery drain over
   30 minutes; no hitch over 100 ms when walking into a place.
 
 Severity: **S1** crash, softlock, save loss, spoiler leak; **S2** blocks or badly misleads progress, a broken rule of
-the owner's (CLAUDE.md §2); **S3** a feature works wrongly but can be worked round; **S4** minor (a typo, a clipping
+the owner's (CLAUDE.md §2), a failed humans gate or an item of its checklist failed in review; **S3** a feature works wrongly but can be worked round; **S4** minor (a typo, a clipping
 garment in one pose); **S5** cosmetic polish. A build ships to the owner with no S1/S2 open; S3s are listed.
 
 ## 3. Pass three: review it as a critic
@@ -53,7 +58,7 @@ and the single change that would raise it most:
 | Characters | companions' and major characters' depth, distinctness, arcs, relationships that respond |
 | Gameplay | the core loop (explore, talk, check, fight, loot, travel), combat depth and fairness, meaningful choices, reactivity |
 | World | density of the content, reasons to explore, lore coherence, places that feel lived in |
-| Presentation | visuals against the standard (DESIGN_UNITY.md), the people (PEOPLE_QA.md), the wardrobe rule, UI clarity, audio |
+| Presentation | visuals against the standard (DESIGN_UNITY.md), the people's faces (PEOPLE_QA.md) and how they stand and move (PEOPLE_MOTION.md), the overhead camera, the wardrobe rule, UI clarity, audio |
 | Technical | frame rate, loading (none after the title), stability, saves |
 | Mobile fit | touch controls, readability on a phone, session length, battery, offline |
 
@@ -63,5 +68,6 @@ on any axis is a finding to fix before the build is called done.
 ## 4. The build report
 
 `docs/qa/<build>.md`: the build, what it contains, the three passes' notes, the findings table (id, severity, what,
-where, steps, status), the scores, and what was fixed before hand-over. The owner's playtest notes go in the same file
+where, steps, status), the humans gate's table (each measure's worst person and state against its limit) and its
+written capture review, the scores, and what was fixed before hand-over. The owner's playtest notes go in the same file
 when they come.

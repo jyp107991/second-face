@@ -164,6 +164,20 @@ The owner wants to play unspoiled.
   output." The people pipeline as gated (`docs/PEOPLE_QA.md`) is locked: no more face rounds. The outfits are made
   lore-bound (the wardrobe rule) on the locked people. Then the game is built to v1 without waiting on the owner; every
   build is played through as a player and reviewed as a game critic (`docs/QA.md`) before it is handed over.
+- **Humans look and move like humans: measured, in game conditions** (owner, 2026-11-05, binding; the upgrade
+  directive's rule restated after it was broken: arms held out, feet on tiptoe, the head wrenched round, raised
+  shoulders, all passed): every person, in every state the game shows (standing, looking at someone, gestures, turning,
+  walking, jogging, sneaking, two people talking), passes the motion and posture gate in `docs/PEOPLE_MOTION.md`:
+  limits from real people for the arms, elbows, hands, fingers, shoulders, head, feet, stance, sliding feet, strides and
+  clipping, measured every frame on people made by the game's own code with every runtime system on
+  (`HumanMotionGateTests`), and every capture reviewed at the game's own cameras, item by item, in writing. A failure is
+  S2 and blocks a build. A single measure, a bare idle, a component switched off, a capture from a camera the game does
+  not use, or an explanation ("a gesture", "the clip's own pose", "only for a moment") never passes it.
+- **Overhead, always** (owner, 2026-11-05, binding: "i told you to make an overhead game like bg3/divinity original
+  sin"): play is seen from above as in DOS2 and BG3's exploration view. Exploring, combat and conversations all keep
+  the overhead game camera (the rig's pitch, 35-62°); a conversation eases the camera closer over the two people and
+  frames them beside the page, and never drops to eye level or cuts to over-the-shoulder shots. Only photo mode,
+  character creation and portraits use other views.
 - **A new origin** (owner, 2026-10-29, binding): the player is NOT a shelter-dweller who ventures out for the first
   time (too derivative of Fallout, to the point of an IP breach). The opening gives the player character a life of
   their own and the people in it, so the player cares about them as much as about the hero, and it builds the world,
