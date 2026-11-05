@@ -317,6 +317,18 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   built. G2 started: Core `Combat/Battle.cs` (the web encounter + utility AI in pure C#, AP by metres, stepwise for the
   Unity side; `BattleTests` green). Next: `rb_install.py` (disk!) → editor import → prefabs → Shale capture; then the
   combat scene layer (P6.4), then the opening (G1).
+- **Done 2026-11-05 (later):** the 79 people installed and built (prefabs, catalogue); in-engine review found and fixed
+  the dye masks undyed wherever cloth had no wear (`rb_install.py` resized RGBA premultiplied: now per channel), a
+  blazer body on a hamlet's people (`Female_Adult_05` is office wear now), one dye head to foot (legs now apart from the
+  top, `RbPeople.Apart`), bodies picked for trades their clothes are not (`RbPeople.Pick` is strict while one fits).
+  G1/G2 in Unity: map triggers (`Triggers`, re-tested while the player stands inside), the turn-based fight in the
+  open world (`Combat`, allies from 80 m), people reconciled when the story moves on instead of all re-made (a fight
+  waits for them: `PeopleService.Settling`), the overpass built as a place. Tests: `KnockTests` (PlayMode: home at
+  seven, Maud's talk, the watch, the stranger, the fight), `KnockFlowTests` (the whole opening on Core with the export),
+  `RbPeopleTests`, `RocketboxLineupTests` (idle measured; dyed lineup sheets `rb_lineup_*`). Content: three men given
+  the broad frame (sex follows the frame), Shale and the overpass speak of the player's home as Knock.
+  **Next:** composite UI captures (the panel drawn over the camera), the fight re-run with Corin, the Knock square's
+  density, the Chapter One flow in Unity (Knock → Shale → overpass → the map), then the play-ch1 QA report.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.

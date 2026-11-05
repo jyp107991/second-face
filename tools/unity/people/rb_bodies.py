@@ -35,7 +35,7 @@ STYLE = {
     'Construction_Male_06': 'work', 'Construction_Male_07': 'work', 'Construction_Male_08': 'work',
     'Delivery_Male_01': 'work', 'Gardener_Male_01': 'work', 'Wood_Male_01': 'work',
     'Female_Adult_01': 'casual', 'Female_Adult_02': 'casual', 'Female_Adult_03': 'street', 'Female_Adult_04': 'street',
-    'Female_Adult_05': 'casual', 'Female_Adult_07': 'casual', 'Female_Adult_08': 'casual', 'Female_Adult_09': 'coat',
+    'Female_Adult_05': 'formal', 'Female_Adult_07': 'casual', 'Female_Adult_08': 'casual', 'Female_Adult_09': 'coat',
     'Female_Adult_11': 'casual', 'Female_Adult_12': 'street', 'Female_Adult_13': 'casual', 'Female_Adult_14': 'casual',
     'Female_Adult_15': 'casual', 'Female_Adult_17': 'casual',
     'Male_Adult_01': 'casual', 'Male_Adult_02': 'casual', 'Male_Adult_03': 'coat', 'Male_Adult_04': 'street',

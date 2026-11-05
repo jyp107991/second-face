@@ -30,6 +30,8 @@ namespace SecondFace.Game.Play
         /// <summary>A tap landed on a person or thing: it and the screen point (pixels, origin bottom-left). With no
         /// listener the tap walks there as on the ground.</summary>
         public event Action<Interactable, Vector2> Tapped;
+        /// <summary>While set (a fight), a tap on the ground goes here instead of walking the walker there.</summary>
+        public Func<Vector3, bool> GroundTap;
         /// <summary>The last point a tap sent the walker to (tests read it).</summary>
         public Vector3? LastTap { get; private set; }
 
@@ -133,6 +135,7 @@ namespace SecondFace.Game.Play
                 point = ray.GetPoint(e);
             }
             LastTap = point;
+            if (GroundTap != null) return GroundTap(point);
             return Walker.GoTo(point);
         }
     }

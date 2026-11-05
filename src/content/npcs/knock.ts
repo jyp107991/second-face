@@ -77,7 +77,7 @@ export const KNOCK: NpcDef[] = [
   },
   // the night
   {
-    id: 'npc_kn_stranger', name: 'A man in a dust mask', look: { seed: 1231, frame: 'narrow', age: 63, ancestry: 'mediterranean' }, role: 'drifter', level: 4, team: 'none', settlement: 'cistern9', courage: 90,
+    id: 'npc_kn_stranger', name: 'A man on the road', look: { seed: 1231, frame: 'broad', age: 63, ancestry: 'mediterranean' }, role: 'drifter', level: 4, team: 'none', settlement: 'cistern9', courage: 90,
     dialogue: 'd_kn_stranger', schedule: [],
   },
   // day two: the outriders

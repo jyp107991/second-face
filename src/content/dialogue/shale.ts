@@ -166,7 +166,7 @@ export const d_sh_ada: DialogueDef = {
       effects: [{ set: 'sh_ada_met' }],
       passives: [{ attr: 'wits', dc: 7, text: 'A folded letter under the blotter, Tollmen seal up. She moves a cup onto it as you look.', effects: [{ learn: 'ada_letter' }] }],
       options: [
-        { id: 'ada.cut', text: 'The salt cut. Cistern 9. A man died at our door and I\'m finding out who he was.', next: 'cut' },
+        { id: 'ada.cut', text: 'The salt cut. Knock, under Cistern 9\'s door. A man died at that door and I\'m finding out who he was.', next: 'cut' },
         { id: 'ada.lie', text: 'Passing through.', check: { skill: 'speech', dc: 40 }, next: 'lie_ok', fail: 'lie_no' },
         { id: 'ada.pip', text: 'There\'s a Rust Dog child in the Choir tent.', if: { all: [{ knows: 'pip_is_dog' }, { not: { knows: 'pip_reported' } }] }, next: 'pip' },
         { id: 'ada.books', text: 'The Dry Well is Pike\'s. Mags signed it over two months ago.', if: { all: [{ knows: 'mags_cooked' }, { not: { knows: 'mags_exposed' } }, { not: { knows: 'mags_helped' } }, { not: { knows: 'mags_squeezed' } }] }, next: 'books' },
@@ -174,8 +174,8 @@ export const d_sh_ada: DialogueDef = {
       ],
     },
     cut: {
-      text: '"Cistern 9." She says it like a name from a story. "So the bunker\'s real, and it opens. Noted." A pause. "A dead man at your door — tall, old, walking like he\'d been shot? He came through here. Three weeks back. Bought water from Pardo with a ring and asked for the east road and the overpass. I told him the overpass would kill him. He thanked me."',
-      effects: [{ learn: 'ada_saw_stranger' }, { lead: 'l_stranger_shale' }, { trust: { npc: 'npc_sh_01', by: 5 } }, { news: { tag: 'cistern_person', text: 'someone from the salt-cut bunker is in town', valence: 2, size: 4, at: 'shale' } }],
+      text: '"Knock." She says it like a name from a story. "The hamlet that sits on the bunker\'s step and trades through a slot. I\'d heard there were people out there. Noted." A pause. "A dead man at that door — tall, old, walking like he\'d been shot? He came through here. Three weeks back. Bought water from Pardo with a ring and asked for the east road and the overpass. I told him the overpass would kill him. He thanked me."',
+      effects: [{ learn: 'ada_saw_stranger' }, { lead: 'l_stranger_shale' }, { trust: { npc: 'npc_sh_01', by: 5 } }, { news: { tag: 'cistern_person', text: 'someone from Knock, under the salt-cut bunker, is in town', valence: 2, size: 4, at: 'shale' } }],
       options: [{ text: 'Did he say his name?', next: 'name' }, { text: 'What\'s at the overpass?', next: 'overpass' }, { text: 'I\'ll ask around.', next: 'rules' }],
     },
     lie_ok: { text: '"Everybody\'s passing through. Some of them stop." She lets it go, and you can see her file it. "Rules are short."', options: [{ text: 'Go on.', next: 'rules' }] },
@@ -426,9 +426,9 @@ export const d_sh_pike: DialogueDef = {
     stranger_no: { text: '"Fifteen. The rate does not move because the buyer is clever."', options: [{ text: 'Fine.', next: 'stranger' }, { text: 'Not today.', next: 'intro' }] },
     who: { text: '"A guild. We hold the roads between the posts, we carry, we insure, we lend. The Reach moves because we move it." He smiles with the top half of his face. "Everything you own came through a Tollhouse, or it was stolen from someone whose did."', effects: [{ learn: 'loc_tollhouse' }, { learn: 'tollmen_guild' }], options: [{ text: 'Noted.', next: 'intro' }] },
     seed: {
-      text: '"Any variety. Any quantity. Viable, which I test." He does not explain who wants it. "You came from the salt cut, I\'m told. A shelter like that keeps a seed bank, or it wouldn\'t have lasted the first winter. I would pay very well. I would pay in advance."',
+      text: '"Any variety. Any quantity. Viable, which I test." He does not explain who wants it. "You came from the salt cut, I\'m told, where the old shelter is. A shelter like that keeps a seed bank, or it wouldn\'t have lasted the first winter, and you people trade at its hatch. I would pay very well. I would pay in advance."',
       effects: [{ learn: 'pike_seed_offer' }, { lead: 'l_seed_buyer' }],
-      options: [{ id: 'pike.seed.get', text: 'The Cistern kept a bank. I could ask.', if: { quest: 'q_a1_seed', status: 'none' }, effects: [{ quest: 'q_a1_seed', start: true }], next: 'seed_get' }, { text: 'I\'ll think about it.', next: 'intro' }, { id: 'pike.seed.who', text: 'Who\'s it for?', check: { skill: 'speech', dc: 50 }, next: 'seed_who', fail: 'seed_who_no', once: true }],
+      options: [{ id: 'pike.seed.get', text: 'The Cistern keeps a bank. I could ask at the Grille.', if: { quest: 'q_a1_seed', status: 'none' }, effects: [{ quest: 'q_a1_seed', start: true }], next: 'seed_get' }, { text: 'I\'ll think about it.', next: 'intro' }, { id: 'pike.seed.who', text: 'Who\'s it for?', check: { skill: 'speech', dc: 50 }, next: 'seed_who', fail: 'seed_who_no', once: true }],
     },
     seed_who: { text: '"A client east of the Teeth with a great deal of glass and not enough green under it." He stops, surprised at himself, and his face closes like a ledger. "Rates are posted."', effects: [{ learn: 'seed_client_east' }], options: [{ text: 'Noted.', next: 'intro' }] },
     seed_who_no: { text: '"A client. As per." The ledger closes.', options: [{ text: 'Fine.', next: 'intro' }] },

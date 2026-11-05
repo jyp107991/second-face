@@ -17,6 +17,7 @@ namespace SecondFace.EditorTools
         {
             "Assets/SecondFace/People/Player/player_f.fbx",
             "Assets/SecondFace/Motion/walk.fbx", "Assets/SecondFace/Motion/idle.fbx",
+            "Assets/SecondFace/People/Rocketbox/Female_Adult_01/Female_Adult_01.fbx", "Assets/SecondFace/People/Rocketbox/Male_Adult_08/Male_Adult_08.fbx",
         };
 
         private static readonly (HumanBodyBones bone, HumanBodyBones child)[] Limbs =

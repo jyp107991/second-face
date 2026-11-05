@@ -729,11 +729,11 @@ export const d_kn_stranger: DialogueDef = {
   nodes: {
     arrive: {
       speaker: 'narrator',
-      text: 'He comes down the road past the dark stand like a man walking into a wind, one hand on the rock, one leg dragging. A dust mask, leather and tin. He doesn\'t look at the shacks or the lamp. He goes straight to the Cistern door and beats on it with his fist, slow, the way you\'d knock on a door you\'d knocked on before, and slides down it to sit.',
+      text: 'He comes down the road past the dark stand like a man walking into a wind, one hand on the rock, one leg dragging, a dust mask of leather and tin pulled down at his throat. He doesn\'t look at the shacks or the lamp. He goes straight to the Cistern door and beats on it with his fist, slow, the way you\'d knock on a door you\'d knocked on before, and slides down it to sit.',
       options: [{ text: '(Go to him.)', next: 'face' }],
     },
     face: {
-      text: 'You bring the lamp. He turns his head. Above the mask his eyes find your face, and widen, and something in them gives way, relief or grief. "You," he says. Just that. "You."',
+      text: 'You bring the lamp. He turns his head. His eyes find your face, and widen, and something in them gives way, relief or grief. "You," he says. Just that. "You."',
       passives: [
         { if: { origin: 'door_watch' }, label: 'Night Watch', text: 'Under his breath, under the wind, a word you almost don\'t hear and won\'t forget: "Larkspur."', effects: [{ learn: 'stranger_name' }, { lead: 'l_larkspur' }] },
         { attr: 'senses', dc: 7, text: 'Blood to the knee, old and new. A sunburn down one side of his face only.', effects: [{ learn: 'stranger_walked_west' }, { lead: 'l_walked_west' }] },
@@ -773,7 +773,7 @@ export const d_kn_stranger: DialogueDef = {
     },
     body: {
       speaker: 'narrator',
-      text: [{ if: { flag: 'kn_body_searched' }, text: 'He sits against the door as if waiting for it to open. Someone has put a blanket over his knees.' }, { text: 'His pack is light: a notebook in tight marks that aren\'t quite letters, a tin cup, no map, no water. The dust mask, when you ease it off, has a sign painted on its brow with care: half a sun with no ground under it, or an open hand. On his left forearm, a neat square burn, old and deliberate.' }],
+      text: [{ if: { flag: 'kn_body_searched' }, text: 'He sits against the door as if waiting for it to open. Someone has put a blanket over his knees.' }, { text: 'His pack is light: a notebook in tight marks that aren\'t quite letters, a tin cup, no map, no water. The dust mask at his throat, when you ease it off, has a sign painted on its brow with care: half a sun with no ground under it, or an open hand. On his left forearm, a neat square burn, old and deliberate.' }],
       passives: [{ attr: 'senses', dc: 6, text: 'Inside the mask\'s rim, scratched letters, worn almost smooth.', effects: [{ learn: 'mask_scratches' }] }],
       effects: [{ give: 'k_notebook' }, { give: 'k_mask' }, { set: 'kn_body_searched' }, { set: 'c9_examined' }, { set: 'c9_pack_given' }, { learn: 'sigil_seen' }, { learn: 'stranger_mark' }, { lead: 'l_sigil' }, { lead: 'l_burned_mark' }],
       options: [{ text: '(Leave him with Knock, and go to Maud.)', exit: true }],
@@ -787,7 +787,7 @@ export const d_kn_outriders: DialogueDef = {
   start: [{ if: { flag: 'kn_outriders_met' }, node: 'again' }, { node: 'arrive' }],
   nodes: {
     arrive: {
-      text: 'Three riders in the square on tired horses, Guild sashes faded to the colour of the road. The one in front is grey at the temples and polite about it. "Brannick Hale, outrider, the Tollmen\'s Guild. We\'re after an old man in a dust mask carrying stolen Guild property. He came this way. We know he came this way." He looks at you, and at your face, a moment too long. "You found him."',
+      text: 'Three riders in the square on tired horses, Guild sashes faded to the colour of the road. The one in front is grey at the temples and polite about it. "Brannick Hale, outrider, the Tollmen\'s Guild. We\'re after an old man with a dust mask at his throat, carrying stolen Guild property. He came this way. We know he came this way." He looks at you, and at your face, a moment too long. "You found him."',
       passives: [
         { attr: 'wits', dc: 6, text: 'He came straight to the post-house. He knew which house.', effects: [{ learn: 'kn_hale_knew_house' }] },
         { if: { knows: 'corin_rode_with_hale' }, label: 'Corin', text: 'Up on the rise, a glint: Corin, on his belly, with the rifle.' },

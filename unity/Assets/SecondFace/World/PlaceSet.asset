@@ -17,3 +17,5 @@ MonoBehaviour:
     Address: places/shale
   - Id: cistern9
     Address: places/cistern9
+  - Id: rustdogs
+    Address: places/rustdogs

@@ -27,5 +27,7 @@ MonoBehaviour:
   PlayerM: {fileID: 6726620675166629814, guid: d3f9370a32c9bf9c49456cb2aee4a833, type: 3}
   PlayerF: {fileID: 2539535584533208972, guid: 24ebc521b512534f6acb1415836c3c61, type: 3}
   Locomotion: {fileID: 9100000, guid: d48b81ce77cb2e95c8b00171183ffc6e, type: 2}
+  Look: {fileID: 11400000, guid: 660c5e1730b1ebbfbbf3fb8cb02a295a, type: 2}
   Sack: {fileID: 2100000, guid: 3a8456b370747872eb0b9f109671594a, type: 2}
   Cast: []
+  Rocketbox: {fileID: 11400000, guid: 05a8a46f43f8c39a288f32c81b923fd9, type: 2}

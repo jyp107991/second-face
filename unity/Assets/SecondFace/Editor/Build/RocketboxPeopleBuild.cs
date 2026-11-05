@@ -25,6 +25,8 @@ namespace SecondFace.EditorTools
         public static RocketboxCatalog Build()
         {
             var root = RocketboxImportPostprocessor.People.TrimEnd('/');
+            // (no people installed, as on a checkout without them: no catalogue, and the game stands its own figures)
+            if (!Directory.Exists(root)) { Debug.LogWarning($"RocketboxPeopleBuild: no {root} (tools/unity/people/rb_install.py)"); return null; }
             var cat = AssetDatabase.LoadAssetAtPath<RocketboxCatalog>(CatalogPath);
             var fresh = cat == null;
             if (fresh) cat = ScriptableObject.CreateInstance<RocketboxCatalog>();

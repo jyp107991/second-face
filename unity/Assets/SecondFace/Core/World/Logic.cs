@@ -186,6 +186,12 @@ namespace SecondFace.Core.World
                 else if (e.TryGetValue("join", out var join)) { if (!w.Party.Contains((string)join)) w.Party.Add((string)join); }
                 else if (e.TryGetValue("leave", out var leave)) w.Party.Remove((string)leave);
                 else if (e.TryGetValue("time", out var time)) g.Minutes += (double)time;
+                else if (e.TryGetValue("until", out var until))
+                {
+                    // time passes to the next time the clock shows this hour (a night's watch, a sleep to dawn)
+                    var at = (((double)until * 60 - g.Minutes % 1440) % 1440 + 1440) % 1440;
+                    g.Minutes += at == 0 ? 1440 : at;
+                }
                 else if (e.TryGetValue("event", out var ev)) host.Event((string)ev, e["data"]);
                 else if (e.TryGetValue("enlist", out var enlist))
                 {

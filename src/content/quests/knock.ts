@@ -60,7 +60,7 @@ export const q_ch1_knock: QuestDef = {
       next: [{ if: { flag: 'kn_stranger_dead' }, stage: 'dead' }],
     },
     dead: {
-      journal: 'A man in a dust mask came up the road with a bullet in his hip and knocked on the Cistern\'s door, and looked at my face as if he knew it, and said "you", and died. He put a photograph in my hand. It\'s me. Older, in a ruined city, dated forty-one years ago.',
+      journal: 'A man with a dust mask at his throat came up the road with a bullet in his hip and knocked on the Cistern\'s door, and looked at my face as if he knew it, and said "you", and died. He put a photograph in my hand. It\'s me. Older, in a ruined city, dated forty-one years ago.',
       objectives: [
         { id: 'search', text: 'Search the stranger\'s pack', done: { flag: 'kn_body_searched' } },
         { id: 'pell', text: 'Tell Pell through the Grille', done: { seen: 'grille.night.after' }, optional: true },
@@ -86,7 +86,7 @@ export const q_ch1_outriders: QuestDef = {
   ],
   stages: {
     square: {
-      journal: 'Three Guild outriders are in Knock\'s square, asking after an old man in a dust mask "carrying stolen Guild property". They came straight to Maud\'s door.',
+      journal: 'Three Guild outriders are in Knock\'s square, asking after an old man with a dust mask "carrying stolen Guild property". They came straight to Maud\'s door.',
       objectives: [{ id: 'meet', text: 'Face the outriders in the square', done: { any: [{ flag: 'kn_outriders_gone' }, { flag: 'kn_out_fight' }] } }],
       next: [
         { if: { flag: 'kn_out_fight' }, stage: 'fight' },
@@ -124,9 +124,9 @@ export const q_ch1_outriders: QuestDef = {
         { id: 'linnet', text: 'Decide about Linnet', done: { flag: 'kn_linnet_decided' }, optional: true },
         { id: 'tamsin', text: 'Say goodbye to Tamsin at the Grille', done: { flag: 'kn_tamsin_farewell' }, optional: true },
         { id: 'corin', text: 'See Corin before you go', done: { flag: 'kn_corin_rifle' }, optional: true },
-        { id: 'road', text: 'Take the toll road north', done: { flag: 'c9_left' } },
+        { id: 'road', text: 'Take the toll road north to Shale', done: { any: [{ flag: 'c9_left' }, { knows: 'seen_shale' }] } },
       ],
-      next: [{ if: { flag: 'c9_left' }, stage: 'done' }],
+      next: [{ if: { any: [{ flag: 'c9_left' }, { knows: 'seen_shale' }] }, stage: 'done' }],
     },
     done: {
       journal: 'I left Knock by the toll road. The stranger came from somewhere along it, and somebody along it shot him.',

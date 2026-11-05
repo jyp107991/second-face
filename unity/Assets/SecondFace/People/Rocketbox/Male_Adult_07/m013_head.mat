@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: m013_head
+  m_Shader: {fileID: 4800000, guid: e1ac5961db0fb5b5d919f04d23e945ab, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 83b8188e5e29f44368b42ae7834e79f5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: 9bc7babb3990b33f98299af90e31fff7, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _CoverMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DyeMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BumpScale: 1
+    - _Cull: 2
+    - _Cutoff: 0
+    - _DyeOn: 0
+    - _Dyed: 0
+    - _EnvironmentReflectionsOff: 0
+    - _EyeYears: 0
+    - _Grey: 0
+    - _Grime: 0
+    - _HairSheen: 0
+    - _Inflate: 0
+    - _RecolourIris: 0
+    - _RecolourLum: 0.2
+    - _Smoothness: 0.36
+    - _SpecularHighlightsOff: 0
+    - _Wear: 0
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Dye0: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - _Dye1: {r: 0.29999998, g: 0.29999998, b: 0.29999998, a: 1}
+    - _Dye2: {r: 0.39999998, g: 0.34999996, b: 0.29999998, a: 1}
+    - _EyeWhite: {r: 1, g: 1, b: 1, a: 1}
+    - _Recolour: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

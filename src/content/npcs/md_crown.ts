@@ -72,7 +72,7 @@ export const CROWN_NPCS: NpcDef[] = [
     barks: ['Mother sold the Chair before she had it. I was in the room.', 'Tillie looks at the window. I look at the lift.', 'Everyone up here is being filed, and smiling for it.'],
   },
   {
-    id: 'npc_cr_11', name: 'Mr Quill', look: { seed: 9711, frame: 'narrow', age: 44, ancestry: 'east_asian', over: { hair: { style: 'short04', color: 0x101010 }, weathering: 0 } }, role: 'corp',
+    id: 'npc_cr_11', name: 'Mr Quill', look: { seed: 9711, frame: 'broad', age: 44, ancestry: 'east_asian', over: { hair: { style: 'short04', color: 0x101010 }, weathering: 0 } }, role: 'corp',
     level: 5, ...CR, courage: 30, dialogue: 'd_cr_quill', faction: 'concern', attrs: { wits: 10, presence: 8 }, skills: { barter: 70, speech: 60 }, tolls: 1000,
     schedule: stand('quill'),
     barks: ['The Concern does not usually attend. This season warranted it.', 'Futures are the only thing the Crown still makes. We buy what is made.', 'Nobody has to decide anything tonight. The Chair will.'],

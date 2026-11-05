@@ -69,7 +69,7 @@ namespace SecondFace.Tests
         /// <summary>The saves of a test's app, apart from the device's (emptied first).</summary>
         public static string SavesDir => Path.Combine(Application.temporaryCachePath, "boot-saves-test");
 
-        private static void Press(UnityEngine.UIElements.Button b)
+        internal static void Press(UnityEngine.UIElements.Button b)
         {
             Assert.That(b, Is.Not.Null, "the button");
             Assert.That(b.enabledInHierarchy, Is.True, $"{b.name} can be pressed");
@@ -84,6 +84,8 @@ namespace SecondFace.Tests
         {
             if (Directory.Exists(SavesDir)) Directory.Delete(SavesDir, true);
             Bootstrap.MakeSession = () => new Session(new DirectoryBackend(SavesDir));
+            // these tests walk the town: their new game begins at Shale, not the opening's home (KnockTests)
+            SecondFace.Game.Play.Walkabout.StartAt = "shale";
             SceneManager.LoadScene("Boot");
             yield return null;
             var boot = Object.FindAnyObjectByType<Bootstrap>();

@@ -65,7 +65,7 @@ export const d_rd_kessler: DialogueDef = {
         { attr: 'senses', dc: 7, text: 'The coach smells of dog, and of soap. Somebody here washes.' },
       ],
       options: [
-        { id: 'kessler.cut', text: 'Both. I\'m from the salt cut — Cistern 9. A man died at our door.', next: 'cut' },
+        { id: 'kessler.cut', text: 'Both. I\'m from the salt cut — Knock, under Cistern 9\'s door. A man died at that door.', next: 'cut' },
         { id: 'kessler.manners', text: 'Manners. I\'d like to keep them.', next: 'menu' },
       ],
     },
@@ -99,7 +99,7 @@ export const d_rd_kessler: DialogueDef = {
       text: 'Eighty Tolls. Or the rifle on your back, if it\'s the bolt gun — Jack says the bolt gun shoots straight, and nothing here does.',
       options: [
         { id: 'kessler.pay', text: '(Pay. 80 Tolls)', if: { item: 'tolls', count: 80 }, effects: [{ take: 'tolls', count: 80 }, ...MAP_EFFECTS('bought', 'You bought the stranger\'s map from Kessler for eighty Tolls.')], next: 'handover' },
-        { id: 'kessler.rifle', text: '(Hand over the bolt rifle.)', if: { item: 'w_bolt308' }, effects: [{ take: 'w_bolt308' }, ...MAP_EFFECTS('rifle', 'You traded the Cistern\'s bolt rifle to Kessler for the stranger\'s map.')], next: 'handover' },
+        { id: 'kessler.rifle', text: '(Hand over the bolt rifle.)', if: { item: 'w_bolt308' }, effects: [{ take: 'w_bolt308' }, ...MAP_EFFECTS('rifle', 'You traded Corin\'s bolt rifle to Kessler for the stranger\'s map.')], next: 'handover' },
         { text: 'Too much.', next: 'map' },
       ],
     },

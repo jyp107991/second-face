@@ -370,7 +370,7 @@ export const q_a1_seed: QuestDef = {
   ],
   stages: {
     fetch: {
-      journal: 'Factor Pike buys viable seed at absurd prices, in advance, for a client east of the Teeth he will not name. Cistern 9 kept a seed bank for ninety years; the Elder keeps its key. The guild would pay a great deal. The Choir would plant it.',
+      journal: 'Factor Pike buys viable seed at absurd prices, in advance, for a client east of the Teeth he will not name. Cistern 9 has kept a seed bank behind its door for ninety years; Ines at the Grille might pass a case out through the hatch. The guild would pay a great deal. The Choir would plant it.',
       objectives: [{ id: 'case', text: 'Get a case of viable seed from the Cistern', done: { item: 'k_seed_case' } }],
       next: [{ if: { item: 'k_seed_case' }, stage: 'deliver' }],
     },

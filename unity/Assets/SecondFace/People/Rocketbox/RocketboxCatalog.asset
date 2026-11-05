@@ -1,0 +1,173 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09d368a4301a7dde3ba4c7ef8d5f3504, type: 3}
+  m_Name: RocketboxCatalog
+  m_EditorClassIdentifier: SecondFace.Game::SecondFace.Game.People.RocketboxCatalog
+  People:
+  - Id: Business_Female_01
+    Prefab: {fileID: 6022275280887752964, guid: 30166bbe4a7ae35bc99bdbcd398511f8, type: 3}
+  - Id: Business_Female_02
+    Prefab: {fileID: 6419883321918174583, guid: a663e4b5e4534fb7b8295dcc87b6cf53, type: 3}
+  - Id: Business_Female_03
+    Prefab: {fileID: 8610561763299412530, guid: c9300d183943deb3f8fbc70bbf53e58a, type: 3}
+  - Id: Business_Female_04
+    Prefab: {fileID: 5871293974740518987, guid: 56acaeb04125e90c1be00f5ca786fa52, type: 3}
+  - Id: Business_Male_01
+    Prefab: {fileID: 5523457920088371767, guid: c478145149d72272597e9bc61e5c27a1, type: 3}
+  - Id: Business_Male_02
+    Prefab: {fileID: 3737956336389646225, guid: e68d0493f02978af099148b1e11dace6, type: 3}
+  - Id: Business_Male_03
+    Prefab: {fileID: 7455591186670611034, guid: ca68feef95783d4369380e5b9506a89d, type: 3}
+  - Id: Business_Male_04
+    Prefab: {fileID: 6534721503646465951, guid: ec6489d3eff8946daa8332bd14de7d4f, type: 3}
+  - Id: Business_Male_05
+    Prefab: {fileID: 4099827049874678381, guid: 635b97ba53caeadd5bc2c17e536cfba3, type: 3}
+  - Id: Business_Male_06
+    Prefab: {fileID: 9158220684998543084, guid: 71ae28a9b9457dcba997da5892bef406, type: 3}
+  - Id: Business_Male_07
+    Prefab: {fileID: 6913237021803142244, guid: 35086b19e2c4df8d78e13909e3050fc9, type: 3}
+  - Id: cap_DM01s
+    Prefab: {fileID: 2445767751337491186, guid: 59bfe776b2d8a6a18aa6fc7f1697876a, type: 3}
+  - Id: cap_Fire_Male_07n
+    Prefab: {fileID: 8662414286021473487, guid: dbfed72a917bd31e5adb974c1ec68cc9, type: 3}
+  - Id: cap_MA17k
+    Prefab: {fileID: 8161282995198340800, guid: 0c65989837022b40abe6f4a4da6ab10c, type: 3}
+  - Id: cap_Military_Male_02n
+    Prefab: {fileID: 970178945141281419, guid: 40aaf210a74e80b2da56f9954fd9ecaa, type: 3}
+  - Id: cap_Military_Male_03n
+    Prefab: {fileID: 3199759102020551570, guid: 6819099eecb76a24fa0dfe9635d08808, type: 3}
+  - Id: cap_Military_Male_05n
+    Prefab: {fileID: 8423646739552330477, guid: a310496720c8b417b9546197ca2390e9, type: 3}
+  - Id: cap_Pilot_Male_03n
+    Prefab: {fileID: 328949885416599333, guid: b60d984edad598f5f9e2c34735742426, type: 3}
+  - Id: cap_PM01i
+    Prefab: {fileID: 453214188093706663, guid: 9452ec99ba784fc54afff6ba396f95ff, type: 3}
+  - Id: cap_PM02m
+    Prefab: {fileID: 979074437688495695, guid: 09351bd4dfdefc651b2d2b000a750693, type: 3}
+  - Id: cap_Police_Male_01n
+    Prefab: {fileID: 3110826212962967805, guid: 6569379e434f6476ca792e1faca15aff, type: 3}
+  - Id: cap_Police_Male_03n
+    Prefab: {fileID: 985582612965080414, guid: ed9d1861926600336b5967b186b308d6, type: 3}
+  - Id: cap_Police_Male_04n
+    Prefab: {fileID: 2631290621352165432, guid: d203cd88bdeaec31fb3491e32f5fd87f, type: 3}
+  - Id: cap_Police_Male_05n
+    Prefab: {fileID: 1845943070108598898, guid: 4e05b06727017d5a3bc8616f5e87e95e, type: 3}
+  - Id: cap_Security_Male_01n
+    Prefab: {fileID: 837623114722429585, guid: c97f8aab953295020a5686b94a2dc70e, type: 3}
+  - Id: Construction_Female_01
+    Prefab: {fileID: 3382114281341215039, guid: 9cddcd1dd8144e258b2ceaac356e9985, type: 3}
+  - Id: Construction_Male_02
+    Prefab: {fileID: 4198778155055929182, guid: b42aa8e98fdbdfa0b8449a1ca2c02b47, type: 3}
+  - Id: Construction_Male_03
+    Prefab: {fileID: 5094414872602897726, guid: c3a7d84f9d5e3abbb9ecaefc9e161a59, type: 3}
+  - Id: Construction_Male_05
+    Prefab: {fileID: 5217039080430231049, guid: 2e3080d66609c7e2bbdb17ad5f7e4e67, type: 3}
+  - Id: Construction_Male_06
+    Prefab: {fileID: 6600951912531828777, guid: ba688ea738e007861b123d34f2df543b, type: 3}
+  - Id: Construction_Male_07
+    Prefab: {fileID: 5951882882831546257, guid: 83e6077826b4f17c1b10692856782173, type: 3}
+  - Id: Construction_Male_08
+    Prefab: {fileID: 874258022480159562, guid: f394b3c787f8d98ddb47f7f0ab339d29, type: 3}
+  - Id: Female_Adult_01
+    Prefab: {fileID: 756508232188498261, guid: ee91ee22c8ba535a693e55c00264de24, type: 3}
+  - Id: Female_Adult_02
+    Prefab: {fileID: 8260744380835263026, guid: c29e61512dd52e9ab82835400b77a6cc, type: 3}
+  - Id: Female_Adult_03
+    Prefab: {fileID: 7491688659180431062, guid: e603febbfa5efff21a2bfb19a97c35ea, type: 3}
+  - Id: Female_Adult_04
+    Prefab: {fileID: 4609799414883692685, guid: b2199b0752bbc7ff68e87224f135a3ab, type: 3}
+  - Id: Female_Adult_05
+    Prefab: {fileID: 5776373160526775760, guid: 846aba9bd213e1d7c9caf8ddb4a3b1e6, type: 3}
+  - Id: Female_Adult_07
+    Prefab: {fileID: 8753351449800817576, guid: 962087772d7957c959b7f95e1f4b6c27, type: 3}
+  - Id: Female_Adult_08
+    Prefab: {fileID: 4856505505139302981, guid: d9e85b32293014f4a90b91c2d4445e32, type: 3}
+  - Id: Female_Adult_09
+    Prefab: {fileID: 1793451881816053408, guid: fc0f4fb8421964a0089f3e34b1b19aeb, type: 3}
+  - Id: Female_Adult_11
+    Prefab: {fileID: 6141468203805177057, guid: 95302aa360b95643192ff73eb4efea4a, type: 3}
+  - Id: Female_Adult_12
+    Prefab: {fileID: 167232821007687702, guid: 8cd8a5e86c9789c5baa4855253d78b92, type: 3}
+  - Id: Female_Adult_13
+    Prefab: {fileID: 9117896867839779774, guid: 161144dedba5dc5e7886a82ef30d8fc6, type: 3}
+  - Id: Female_Adult_14
+    Prefab: {fileID: 7240070264491514563, guid: 379438ba59a9fb05bb221f133f327ba2, type: 3}
+  - Id: Female_Adult_15
+    Prefab: {fileID: 1668165757860636402, guid: d959d7edaa51099f9a469bb3dc96323a, type: 3}
+  - Id: Female_Adult_17
+    Prefab: {fileID: 7073111157124497972, guid: 2ca5c0b3fb950665fa1552a6a57a7d05, type: 3}
+  - Id: Gardener_Male_01
+    Prefab: {fileID: 8554933639368380745, guid: d25a98884f72c325480ef93a50ed1b42, type: 3}
+  - Id: Male_Adult_01
+    Prefab: {fileID: 7217807410438017039, guid: 4332b8ed12868fbf7aac46dd8bd74b05, type: 3}
+  - Id: Male_Adult_02
+    Prefab: {fileID: 5710072229327601447, guid: 00f746a467747f35cb9eafca227f10d6, type: 3}
+  - Id: Male_Adult_03
+    Prefab: {fileID: 4614648833554648383, guid: 413dbf1c9c7656b91b72d783274d0d4d, type: 3}
+  - Id: Male_Adult_04
+    Prefab: {fileID: 3342813485199050522, guid: cf4ed088f4d70efdfbe674d30f274cdf, type: 3}
+  - Id: Male_Adult_05
+    Prefab: {fileID: 3877735776404747098, guid: 723bbf6acb6d6b6b285fdb8476e9d792, type: 3}
+  - Id: Male_Adult_06
+    Prefab: {fileID: 2629013398441746106, guid: 9c4b65f7d9d9fc994a6930fd3e46170a, type: 3}
+  - Id: Male_Adult_07
+    Prefab: {fileID: 7085456561800455271, guid: b21f9b2363e85db318d493ee4a37f635, type: 3}
+  - Id: Male_Adult_08
+    Prefab: {fileID: 1145964009777256619, guid: aa79055cb7f16d1519066cfb7459fa04, type: 3}
+  - Id: Male_Adult_09
+    Prefab: {fileID: 3639172104017032626, guid: 250595ef1664e486e8eb5ba3fd9fc545, type: 3}
+  - Id: Male_Adult_10
+    Prefab: {fileID: 5340038278009179767, guid: 5bffee7bc5063b3dc89435e840a0a161, type: 3}
+  - Id: Male_Adult_11
+    Prefab: {fileID: 1092171820045513788, guid: 4555a829a16d99b6d803e0cfa1f5b4c5, type: 3}
+  - Id: Male_Adult_12
+    Prefab: {fileID: 7160554134509909235, guid: aa80be859bebd5e389f88115683b08f4, type: 3}
+  - Id: Male_Adult_13
+    Prefab: {fileID: 3030987807779717392, guid: 8566443c307f30188bd3be3a7e761ff9, type: 3}
+  - Id: Male_Adult_14
+    Prefab: {fileID: 3866997537968609840, guid: b7e154987b1ffa9e0a2996d9838e5103, type: 3}
+  - Id: Male_Adult_16
+    Prefab: {fileID: 1605132753614989008, guid: d26374ee7bc54b90395ab2993e32d8a7, type: 3}
+  - Id: Male_Adult_20
+    Prefab: {fileID: 4766675841806616541, guid: 95e1979a20295d9f4a462cb405f224a4, type: 3}
+  - Id: Medical_Female_01
+    Prefab: {fileID: 6952417948147481825, guid: ff95cd4ce10f007a4bc11b70b9bbaf37, type: 3}
+  - Id: Medical_Female_02
+    Prefab: {fileID: 4472551564720419618, guid: 74fd0b15495fb50c8a0e5631e9da0cbc, type: 3}
+  - Id: Medical_Female_03
+    Prefab: {fileID: 2551603882325402961, guid: 9a20583b037d6dad586a2582071d9ce1, type: 3}
+  - Id: Medical_Male_01
+    Prefab: {fileID: 3421107473353338556, guid: a383d1cc4553fdc68b43f51e1ef55847, type: 3}
+  - Id: Medical_Male_02
+    Prefab: {fileID: 4972429601208295954, guid: 3b0e70dad82f59d9badaefb04afde77d, type: 3}
+  - Id: Medical_Male_03
+    Prefab: {fileID: 3270186176323231640, guid: 64993d8e17f4e1618a39b4bbf507b3e4, type: 3}
+  - Id: Police_Male_06
+    Prefab: {fileID: 6258282033717808833, guid: 709a5f0c919b6b380a5ad4cecf578bf7, type: 3}
+  - Id: Police_Male_07
+    Prefab: {fileID: 5537320107734161252, guid: 0f8a8f9dd78ce7c41b209d71127ce4d1, type: 3}
+  - Id: rel_FA06k
+    Prefab: {fileID: 5849719020022438561, guid: ed20d5c8cb36f69f48e1b307a27a8647, type: 3}
+  - Id: rel_FA10k
+    Prefab: {fileID: 4331896217613247404, guid: c46287dd5243e86b6aee25bbf650f96e, type: 3}
+  - Id: rel_MA15s
+    Prefab: {fileID: 5519739723904102256, guid: 71cfc25da758b6252bd6fc5f2ee1ba0b, type: 3}
+  - Id: rel_MA19k
+    Prefab: {fileID: 1247611783726557533, guid: 12b770c6e8164542e808bc44d2b39fe0, type: 3}
+  - Id: rel_MA21pk
+    Prefab: {fileID: 7479388572028121142, guid: 95490f545ff87192c87d74df40962722, type: 3}
+  - Id: Sports_Female_02
+    Prefab: {fileID: 3377022315161494065, guid: 0efdd895ecd712a06bf222810bcb4340, type: 3}
+  - Id: Sports_Male_04
+    Prefab: {fileID: 7562927775397286957, guid: 1859cc63e33d0a637aded908797f412a, type: 3}
+  - Id: Wood_Male_01
+    Prefab: {fileID: 8446589098660766459, guid: 85e9a179adf62ff08ad6cecad8f517a6, type: 3}

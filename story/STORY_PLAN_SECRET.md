@@ -392,3 +392,21 @@ Maud; *Pressure*: the hatch water's readings never change — the Cistern's pump
 Watch** (stealth and senses; hears *Larkspur*; *The Word*) · **Road Clerk** (keeps the Tollmen post's book on hatch
 days; reads city shorthand; *Copyist*: the toll cards' likenesses go to the city — the PC's own card was copied).
 **Avoided by design:** no shelter emergence, no amnesia, no chosen one, no kidnapped kin as the motive.
+
+### §18 as built (2026-11-05, content: `src/content/{maps/c9_mouth,npcs/knock,dialogue/knock,quests/knock}.ts`)
+- Built as designed, with these changes: the Rib's threat is two road strippers, Abner and Nell Rusk, not wild dogs (the
+  Unity build has no animal models yet; people also give the chore a talk/barter/stealth/fight choice). The stranger is
+  unnamed in Knock ("a man in a dust mask"); only the Night Watch hears *Larkspur*. Kessler still has the map.
+- MOTHER's hatch is taught by dialogue (a valuation, a haggle that MOTHER logs as "diligence", which later lowers the
+  plea's DC); Maud is the barter screen. Pell, Ines, Tamsin and Bram speak through the Grille (node speakers).
+- Linnet's echoing choice is at the toll stand (pay 15 Tolls or 3 water, talk the buyer down, get Factor Orme to side
+  with you — then you owe Orme —, walk away and let her be beaten, or fight). Her later fate reads `kn_linnet_choice`,
+  `kn_linnet_to_shale`, `kn_linnet_stays`, `kn_linnet_will_run`.
+- The outriders' choice: give the notebook (keep the photo), lie (buried with him), hide (photo in the boot), or fight
+  beside Corin (who knows Hale). Whatever happens the post-house burns and Maud is hurt; MOTHER can be persuaded to open
+  out of turn (`kn_maud_saved`), else she walks crooked (`kn_maud_scarred`). Ines refuses (`kn_ines_refused`; with a
+  Speech check she says why: she watched her mother weld the door at nine).
+- Dace's leak (two Tolls off his debt for "who came up the road") is learned only by asking him afterwards.
+- TODO (P8): Shale's trace dialogue should read the opening's flags (Linnet in Shale at Mags's; Orme's debt; Dace in Shale
+  or at the Tollhouse on the debt route); the letters-home line from Knock (Maud, Linnet, Tamsin; Tamsin's escape after
+  the first letter); the old shelter-interior content is retired from the critical path but still in the content.

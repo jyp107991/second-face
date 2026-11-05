@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Linq;
 using SecondFace.Core.Content;
@@ -59,13 +60,17 @@ namespace SecondFace.Game.Play
         public GroundPiles Piles { get; private set; }
         /// <summary>The game being played (<see cref="Begin"/>; a new game at Shale until one is begun): the conversations,
         /// the notebook, the pack and the saves run on it.</summary>
-        public GameState Game { get; private set; } = States.NewGame("shale", 0, 0);
+        public GameState Game { get; private set; } = States.NewGame(StartAt, 0, 0);
         /// <summary>A game has begun (the walker is set down once the world is in).</summary>
         public bool Begun { get; private set; }
         /// <summary>The walker was set down for the game begun last (a new game, or a load).</summary>
         public event System.Action SetDown;
         /// <summary>The quests on <see cref="Game"/>: the conversations run with it as their host, so what is said can start
         /// and move the content's quests (the notebook and the HUD follow them).</summary>
+        /// <summary>Where a new game begins (the opening: the home place above the Cistern's door), its spawn and quest.</summary>
+        public const string StartPlace = "cistern9", StartSpawn = "home", StartQuest = "q_ch1_knock";
+        /// <summary>Where the next new game begins (tests of the town set it to Shale).</summary>
+        public static string StartAt = StartPlace;
         public QuestEngine Quests => _quests ??= new QuestEngine(Registry.Quests, Game, new Host(this));
         private QuestEngine _quests;
         /// <summary>What the content asks of the world that the walkabout does not do itself (the map; later the fight,
@@ -77,6 +82,35 @@ namespace SecondFace.Game.Play
         private Interactable _speaking;
         /// <summary>The conversation open now (null when none).</summary>
         public DialoguePanel Conversation { get; private set; }
+        /// <summary>Fights (P6.4) and the maps' area triggers (P7), made with the walker.</summary>
+        public Combat Combat { get; private set; }
+        public Triggers Triggers { get; private set; }
+        /// <summary>The player lost a fight.</summary>
+        public event System.Action Defeated;
+        /// <summary>A conversation, a trade or a fight is under way: the world's own events wait.</summary>
+        public bool Busy => (Conversation != null && Conversation.IsOpen) || (Trade != null && Trade.IsOpen) || (Combat != null && Combat.Active) || _responding > 0;
+        private int _responding;
+
+        /// <summary>A map trigger fires: its line said, its effects applied, the quests and the people brought up to date.</summary>
+        public void Fire(Core.Scene.TriggerDef def)
+        {
+            if (!string.IsNullOrEmpty(def.Text)) Said?.Invoke(def.Text);
+            if (Stage != null && Stage.Clock != null) Game.Minutes = Stage.Clock.Minutes;
+            var before = Game.Minutes;
+            if (def.Effects != null) Logic.Apply(def.Effects, Game, new Host(this));
+            if (Stage != null && Stage.Clock != null && Game.Minutes != before) Stage.Clock.Minutes += Game.Minutes - before;
+            Quests.Update();
+            if (People != null) People.Refresh();
+        }
+
+        /// <summary>The story moved on after a conversation or a fight: the quests, the places' people, a fight if anyone
+        /// turned hostile.</summary>
+        public void Settle()
+        {
+            Quests.Update();
+            if (People != null) People.Refresh();
+            if (Combat != null) Combat.Check();
+        }
         /// <summary>The barter table open now (null when none).</summary>
         public BarterScreen Trade { get; private set; }
 
@@ -86,13 +120,12 @@ namespace SecondFace.Game.Play
         {
             var inv = Game.Pc.Inventory;
             if (inv.Items.Count > 0 || inv.Equipped.Count > 0 || Registry.Items.Count == 0) return;
-            foreach (var (id, n) in new[] { ("r_jumpsuit", 1), ("w_pipe", 1), ("w_zip38", 1), ("a_38", 6), ("c_water", 2), ("c_bandage", 2), ("c_jerky", 1), ("j_scrap", 3), ("j_cloth", 2), ("t_lamp", 1) })
+            // a Knock household's kit, as the web game's new game gives it: thin, scarcity starts at home
+            foreach (var (id, n) in new[] { ("r_scrap", 1), ("w_shiv", 1), ("c_bandage", 1), ("c_jerky", 2), ("c_water", 1) })
                 if (Items.Has(id)) Inv.AddItem(inv, Inv.MakeItem(id, n));
-            inv.Tolls = 40;
-            Inv.Equip(inv, inv.Items.FindIndex(i => i.Def == "r_jumpsuit"));
-            Inv.Equip(inv, inv.Items.FindIndex(i => i.Def == "w_pipe"));
-            var zip = inv.Items.Find(i => i.Def == "w_zip38");
-            if (zip != null) zip.Cond = 0.55;
+            inv.Tolls = 20;
+            Inv.Equip(inv, inv.Items.FindIndex(i => i.Def == "r_scrap"));
+            Inv.Equip(inv, inv.Items.FindIndex(i => i.Def == "w_shiv"));
             Inv.SyncGear(Game.Pc.Sheet, inv);
         }
 
@@ -102,10 +135,20 @@ namespace SecondFace.Game.Play
         /// the world round them is in. Called while walking (a load), the walker goes there at once.</summary>
         public void Begin(GameState state, bool fresh = false)
         {
-            Game = state ?? States.NewGame("shale", 0, 0);
+            Game = state ?? States.NewGame(StartAt, 0, 0);
             _quests = null;
             Begun = true;
-            if (fresh || state == null) Kit();   // a loaded game keeps what it carries, even nothing
+            if (fresh || state == null)
+            {
+                Kit();   // a loaded game keeps what it carries, even nothing
+                // the opening (owner's note D): hatch day at Knock, seven in the morning, the day's quest begun
+                if (Game.LocationId == StartPlace && Game.Spot == null)
+                {
+                    Game.Minutes = Math.Floor(Game.Minutes / 1440) * 1440 + 7 * 60;
+                    if (Registry.Quests.ContainsKey(StartQuest)) Quests.QuestStart(StartQuest);
+                }
+            }
+            Know("cistern9");
             Know("shale");
             if (_raised) StartCoroutine(Place());
         }
@@ -167,14 +210,15 @@ namespace SecondFace.Game.Play
             if (spot != null) { at = new Vector3(spot.X, spot.Y, spot.Z); yaw = spot.Yaw; }
             else
             {
-                var centre = Stage.World.PlaceCentre("shale");
-                yield return Stage.WaitAround(centre, "shale", LoadTimeout);
+                var place = string.IsNullOrEmpty(Game.LocationId) || !Stage.World.Layout.Places.ContainsKey(Game.LocationId) ? "shale" : Game.LocationId;
+                var centre = Stage.World.PlaceCentre(place);
+                yield return Stage.WaitAround(centre, place, LoadTimeout);
                 if (ticket != _placing) yield break;
-                var marker = Stage.Marker("shale", "spawn");
+                var marker = Stage.Marker(place, "spawn", StartSpawn) ?? Stage.Marker(place, "spawn");
                 at = marker != null ? marker.transform.position : centre;
                 yaw = marker != null ? marker.transform.eulerAngles.y : 0f;
             }
-            yield return Stage.WaitAround(at, People == null ? "shale" : null, LoadTimeout);
+            yield return Stage.WaitAround(at, People == null ? (Game.LocationId ?? "shale") : null, LoadTimeout);
             if (ticket != _placing || Stage.Camera == null) yield break;   // left meanwhile, or the camera went with the scene
             if (Stage.Clock != null) Stage.Clock.Minutes = Game.Minutes;
             if (Walker != null) Destroy(Walker.gameObject);
@@ -195,6 +239,13 @@ namespace SecondFace.Game.Play
                 Input.Tapped += OnTapped;
             }
             Input.Walker = Walker;
+            if (Combat == null)
+            {
+                Combat = gameObject.AddComponent<Combat>();
+                Combat.Walkabout = this;
+                Combat.Ended += outcome => { if (outcome == "defeat") Defeated?.Invoke(); else Settle(); };
+            }
+            if (Triggers == null) { Triggers = gameObject.AddComponent<Triggers>(); Triggers.Walkabout = this; }
             if (Pad == null)
             {
                 Pad = gameObject.AddComponent<PadInput>();
@@ -243,6 +294,8 @@ namespace SecondFace.Game.Play
             People.BaseM = assets.PlayerM;
             People.Rocketbox = assets.Rocketbox != null && assets.Rocketbox.People.Length > 0 ? assets.Rocketbox : null;
             People.Begin(Game);
+            if (Combat != null) Combat.People = People;
+            if (Triggers != null) Triggers.Spawner = spawner;
             if (spawner != null)
                 foreach (var (id, place) in spawner.Standing()) Equip(place, id);
             if (Watch == null)
@@ -485,8 +538,31 @@ namespace SecondFace.Game.Play
                     if (who != null) StartCoroutine(AfterTalk(() => OpenTrade(who)));
                     break;
                 case "heal": Camp.HealAll(Game); break;
+                case "talk":
+                    // someone comes to talk (a trigger: the stranger at the door, the riders in the square)
+                    StartCoroutine(Comes(data?["npc"]?.ToString()));
+                    break;
                 default: Asked?.Invoke(name, data); break;
             }
+        }
+
+        /// <summary>Someone comes to talk: once they stand (the trigger that brings them may have just placed them, and the
+        /// people service stands a few a frame), their conversation opens; a few seconds at most.</summary>
+        private IEnumerator Comes(string id)
+        {
+            if (string.IsNullOrEmpty(id)) yield break;
+            var t = Time.unscaledTime;
+            Interactable it = null;
+            while (Time.unscaledTime - t < 8f)
+            {
+                var person = People?.StandingPeople.FirstOrDefault(p => p.Def != null && (p.Def.Id == id || p.Id == id));
+                it = person != null ? person.GetComponent<Interactable>() : null;
+                if (it != null) break;
+                yield return null;
+            }
+            if (it == null) { Debug.LogWarning($"Walkabout: {id} was to come and talk, and is not standing"); yield break; }
+            while (Conversation != null && Conversation.IsOpen) yield return null;
+            yield return Respond(it, "talk");
         }
 
         /// <summary>Closes the conversation (after the choice that asked has run) and then does something.</summary>
@@ -629,6 +705,7 @@ namespace SecondFace.Game.Play
         /// <summary>The radial over a tapped person (or thing).</summary>
         private void OnTapped(Interactable it, Vector2 screen)
         {
+            if (Combat != null && Combat.Tapped(it, screen)) return;
             var ui = UIService.Instance;
             if (ui == null) { it.Choose(it.Verbs.FirstOrDefault()); return; }
             var verbs = it.Verbs.Select(v => new RadialVerb(v, !it.Closed.Contains(v))).ToList();
@@ -646,8 +723,11 @@ namespace SecondFace.Game.Play
                 townsperson.Held = true;
                 if (townsperson.Agent != null && townsperson.Agent.enabled && townsperson.Agent.isOnNavMesh) townsperson.Agent.ResetPath();
             }
-            yield return Responding(who, verb);
+            _responding++;
+            try { yield return Responding(who, verb); }
+            finally { _responding--; }
             if (townsperson != null) townsperson.Held = false;
+            Settle();
         }
 
         private IEnumerator Responding(Interactable who, string verb)
@@ -720,7 +800,14 @@ namespace SecondFace.Game.Play
                 panel.Presented += _ => { if (shots != null) shots.Cut(lines++ % 2 == 0 ? ConversationCamera.Shot.TwoShot : ConversationCamera.Shot.Other); };
                 panel.Ended += () => { if (shots != null) shots.End(); };
             }
-            panel.Presented += _ => Quests.Update();   // a choice's effects may move a quest on
+            // the clock: the conversation's time effects (a watch until ten, a sleep to dawn) move the world's clock
+            if (Stage != null && Stage.Clock != null) Game.Minutes = Stage.Clock.Minutes;
+            var minutes = Game.Minutes;
+            panel.Presented += _ =>
+            {
+                Quests.Update();   // a choice's effects may move a quest on
+                if (Stage != null && Stage.Clock != null && Game.Minutes != minutes) { Stage.Clock.Minutes += Game.Minutes - minutes; minutes = Game.Minutes; }
+            };
             Conversation = ui.Open(panel);
             return true;
         }

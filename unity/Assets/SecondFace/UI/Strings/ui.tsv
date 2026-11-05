@@ -522,3 +522,27 @@ beard.short_beard	Cut short
 beard.full_beard	Grown full
 beard.goatee	Goatee
 beard.moustache	Moustache
+verb.aim_head	Aimed: head
+verb.aim_legs	Aimed: legs
+verb.burst	Burst
+combat.start	Fight!
+combat.your_turn	Your turn. {0} AP.
+combat.their_turn	{0}'s turn.
+combat.move_cost	Move: {0} AP. Tap again to go.
+combat.too_far	Too far for the AP you have.
+combat.end_turn	End turn
+combat.reload	Reload
+combat.heal	Patch up
+combat.ap	AP {0}/{1}
+combat.chance	{0}: {1}%
+combat.hit	{0} hits {1} for {2}.
+combat.crit	{0} hits {1} hard: {2}!
+combat.miss	{0} misses {1}.
+combat.down	{0} is down.
+combat.fled	{0} runs.
+combat.surrender	{0} throws down their weapon.
+combat.won	The fight is over.
+combat.lost	You go down. Everything goes dark.
+combat.truce	They back off.
+travel.not_yet	Not yet. Knock still needs you.
+travel.on_the_road	On the road to {0}

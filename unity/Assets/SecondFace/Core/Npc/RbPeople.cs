@@ -74,11 +74,17 @@ namespace SecondFace.Core.Npc
             var rng = new Rng(Bodies.Seed("rb:" + id));
             RbPerson best = null;
             var bestScore = double.NegativeInfinity;
+            // a body whose clothes do not stand for the trade is never chosen while one that does is free (a blazer on a
+            // hamlet's wool-trader, a medic's whites on a raider); only when the library has none of that trade for this sex
+            var strict = role != null && All.Any(p => p.Male == male && Array.IndexOf(p.Roles, role) >= 0 && (avoid == null || !avoid.Contains(p.Id)));
             foreach (var p in All)
             {
                 if (p.Male != male || p.Roles.Length == 0) continue;
+                var fits = role == null || Array.IndexOf(p.Roles, role) >= 0;
+                if (strict && !fits) continue;
+                if (!fits && (p.Style == "formal" || p.Style == "medic")) continue;   // never office or hospital wear out of its trade
                 var s = 0.0;
-                if (role != null && Array.IndexOf(p.Roles, role) >= 0) s += 3;
+                if (role != null && fits) s += 3;
                 else if (role != null) s -= 2;
                 s += 4 * Kin(people, p.People);
                 s -= Math.Abs(age - p.Age) / 9.0;
@@ -99,7 +105,7 @@ namespace SecondFace.Core.Npc
             IReadOnlyList<int> palette = F?.Palette != null && F.Palette.Count > 0 ? F.Palette : R?.Palette != null && R.Palette.Count > 0 ? R.Palette : Fallback;
             var dyeChance = R?.Dye ?? 0.8;
             // the legs mostly in the palette's darker, work-worn dyes (a crowd's trousers are not its brightest pieces)
-            var dark = palette.Where(c => Lum(c) < 0.32).ToList();
+            var dark = palette.Where(c => Lum(c) < 0.2).ToList();
             int Choose(int channel, IReadOnlyList<int> from)
             {
                 var own = p?.Own != null && channel < p.Own.Length ? p.Own[channel] : -1;
@@ -108,18 +114,43 @@ namespace SecondFace.Core.Npc
                 if (own >= 0 && !rng.Chance(dyeChance)) return kind != null ? own : Muted(own);
                 return rng.Pick(from);
             }
-            var d = new RbDyes
+            var d = new RbDyes { Top = Choose(0, palette) };
+            // the legs apart from the top (one colour head to foot reads as a suit or a uniform): a few tries for a dye far
+            // enough from the top's in lightness or hue, else the darkest of the palette
+            for (var k = 0; k < 8; k++)
             {
-                Top = Choose(0, palette),
-                Legs = Choose(1, dark.Count >= 2 && rng.Chance(0.7) ? dark : palette),
-                Accent = Choose(2, palette),
-            };
+                d.Legs = Choose(1, dark.Count >= 2 && rng.Chance(0.7) ? dark : palette);
+                if (Apart(d.Top, d.Legs)) break;
+                if (k == 7) d.Legs = palette.Where(c => Apart(d.Top, c)).DefaultIfEmpty(0x2b2621).OrderBy(Lum).First();
+            }
+            d.Accent = Choose(2, palette);
             if (d.Accent == d.Top && palette.Count > 1) d.Accent = palette[(palette.ToList().IndexOf(d.Top) + 1) % palette.Count];
             var grime = F?.Grime ?? R?.Grime ?? new List<double> { 0.2, 0.5 };
             var wear = R?.Wear ?? new List<double> { 0.3, 0.6 };
             d.Grime = rng.Range(grime[0], grime[1]);
             d.Wear = rng.Range(wear[0], wear[1]);
             return d;
+        }
+
+        /// <summary>Two dyes that read as two garments: a clear step in lightness, or in hue at a fair chroma.</summary>
+        public static bool Apart(int a, int b)
+        {
+            var (la, aa, ba) = Lab(a); var (lb, ab, bb) = Lab(b);
+            var dl = Math.Abs(la - lb);
+            var dc = Math.Sqrt((aa - ab) * (aa - ab) + (ba - bb) * (ba - bb));
+            return dl >= 14 || dc >= 28;
+        }
+
+        /// <summary>CIELAB (D65) of an sRGB colour.</summary>
+        public static (double L, double A, double B) Lab(int c)
+        {
+            static double L(int v) { var x = v / 255.0; return x <= 0.04045 ? x / 12.92 : Math.Pow((x + 0.055) / 1.055, 2.4); }
+            double r = L((c >> 16) & 255), g = L((c >> 8) & 255), b = L(c & 255);
+            var x = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.9505;
+            var y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            var z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.089;
+            static double F(double t) => t > 0.008856 ? Math.Pow(t, 1.0 / 3) : 7.787 * t + 16.0 / 116;
+            return (116 * F(y) - 16, 500 * (F(x) - F(y)), 200 * (F(y) - F(z)));
         }
 
         private static readonly int[] Fallback = { 0x8a3b1e, 0x2f4a73, 0xb8862b, 0x5c6b2f, 0x7a2e2e, 0x2f6f6a, 0xc46a2a, 0xc9bda4 };

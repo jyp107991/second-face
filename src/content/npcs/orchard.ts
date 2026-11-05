@@ -5,7 +5,7 @@ const OR = { team: 'choir', faction: 'choir', settlement: 'shale' } as const;
 
 export const ORCHARD_NPCS: NpcDef[] = [
   {
-    id: 'npc_or_01', name: 'Brother Anselm Quade', look: { seed: 7301, frame: 'narrow', age: 57, ancestry: 'east_african', over: { hair: { style: 'paint_shaved', color: 0x1a1410 }, facialHair: 'short_beard', weathering: 0.6 } }, role: 'pilgrim',
+    id: 'npc_or_01', name: 'Brother Anselm Quade', look: { seed: 7301, frame: 'broad', age: 57, ancestry: 'east_african', over: { hair: { style: 'paint_shaved', color: 0x1a1410 }, facialHair: 'short_beard', weathering: 0.6 } }, role: 'pilgrim',
     level: 3, ...OR, courage: 35, dialogue: 'd_or_anselm', attrs: { wits: 7, presence: 6, grit: 6 }, skills: { survival: 45, medicine: 30, speech: 35 }, tolls: 9,
     inventory: [['c_fruit', 3], ['c_water', 2]],
     schedule: [{ from: 5, to: 12, spot: 'keeper_rows', activity: 'work' }, { from: 12, to: 14, spot: 'keeper_fire', activity: 'idle' }, { from: 14, to: 19, spot: 'keeper_rows', activity: 'work' }, { from: 19, to: 22, spot: 'keeper_fire', activity: 'idle' }, { from: 22, to: 5, spot: 'keeper_cot', activity: 'sleep' }],

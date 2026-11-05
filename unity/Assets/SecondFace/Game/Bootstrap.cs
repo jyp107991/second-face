@@ -113,6 +113,8 @@ namespace SecondFace.Game
             Walkabout.Stage = Stage;
             Walkabout.SetDown += SetDown;
             Walkabout.Said += line => _hud?.Note(line);
+            // a fight lost: the game ends; the title offers the last save (the autosave is not overwritten by the defeat)
+            Walkabout.Defeated += () => { Walkabout?.End(); OpenTitle(); };
             Walkabout.Asked += (name, _) => { if (name == "map") OpenMap(); };
             overlay.World = () => Tour != null ? Tour.WorldLine() : Walkabout.Line();
             overlay.Report = () => _lastTour;
@@ -153,7 +155,7 @@ namespace SecondFace.Game
                 BodyF = World.PlayerF, BodyM = World.PlayerM, Idle = World.Locomotion,
                 Done = (pc, origin) =>
                 {
-                    var g = States.NewGame("shale", 0, 0, pc);
+                    var g = States.NewGame(Play.Walkabout.StartAt, 0, 0, pc);
                     g.Origin = origin;
                     Begin(g, true);
                 },
@@ -438,7 +440,33 @@ namespace SecondFace.Game
                 Heading = Mathf.Atan2(face.x, face.z) * Mathf.Rad2Deg,
                 Plan = to => SecondFace.Core.World.Travel.PlanTrip(Registry.WorldMap, here, to,
                     new SecondFace.Core.World.TravelOptions { Known = id => known.Contains(id), Hour = hour }),
+                Travel = to => TravelTo(here, to),
             }));
+        }
+
+        /// <summary>Sets out for a known place from the map (P7: the journey as a card while the world streams in, not a
+        /// load): the hours pass, the walker is set down at the place's spawn. Not out of the opening's home before the
+        /// story lets the player go (the stranger's road waits for them); leaving it so is leaving by the toll road.</summary>
+        private void TravelTo(string here, string to)
+        {
+            if (Walkabout == null || to == null || to == here) return;
+            var g = Walkabout.Snapshot();
+            if (Walkabout.Busy) return;
+            if (here == Play.Walkabout.StartPlace && !g.Flags.ContainsKey("kn_free_to_leave"))
+            {
+                _hud?.Note(Strings.Get("travel.not_yet"));
+                return;
+            }
+            var trip = SecondFace.Core.World.Travel.PlanTrip(Registry.WorldMap, here, to,
+                new SecondFace.Core.World.TravelOptions { Known = id => g.World.KnownLocations.Contains(id) || id == here || id == to, Hour = Stage.Clock != null ? Stage.Clock.Hour : 8.0 });
+            if (here == Play.Walkabout.StartPlace) g.Flags["c9_left"] = true;
+            g.Minutes += (trip != null ? trip.Hours : 4.0) * 60.0;
+            g.LocationId = to;
+            g.Spot = null;
+            if (!g.World.KnownLocations.Contains(to)) g.World.KnownLocations.Add(to);
+            UI?.CloseAll();
+            Begin(g);
+            _card?.Set(Strings.Get("travel.on_the_road", Registry.WorldMap.Locations.TryGetValue(to, out var loc) && !string.IsNullOrEmpty(loc.Name) ? loc.Name : to).ToUpperInvariant());
         }
 
         private void LateUpdate()

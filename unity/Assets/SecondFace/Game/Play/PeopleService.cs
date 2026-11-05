@@ -92,6 +92,8 @@ namespace SecondFace.Game.Play
         public Townsfolk Town(string place) => _towns.TryGetValue(place, out var t) ? t.Folk : null;
         /// <summary>A place's people as data (empty when the place is not standing).</summary>
         public IReadOnlyList<Resident> ResidentsOf(string place) => _towns.TryGetValue(place, out var t) ? t.Residents : new List<Resident>();
+        /// <summary>Everyone standing in the world now.</summary>
+        public IEnumerable<Townsperson> StandingPeople => _towns.Values.SelectMany(t => t.Folk.People).Where(p => p != null);
         /// <summary>Someone standing in the world, by id (null when none).</summary>
         public Townsperson Of(string id) => _towns.Values.Select(t => t.Folk.Of(id)).FirstOrDefault(p => p != null);
         /// <summary>Someone of the world's places as data, by id (null when none).</summary>
@@ -121,6 +123,17 @@ namespace SecondFace.Game.Play
             folk.Clock = Clock;
             folk.Bind(place, main);
             var town = new Group { Id = id, Place = place, Folk = folk };
+            Fill(town, place, main);
+            if (Rocketbox != null) AssignPeople(town);
+            _towns[id] = town;
+            _signatures[id] = Signature(town);
+            Stir();
+        }
+
+        /// <summary>A place's people as data, as the story now has them (whose conditions hold, the dead left out, the
+        /// extras), into <paramref name="town"/>.</summary>
+        private void Fill(Group town, GameObject place, string main)
+        {
             var who = new List<(PlaceMarker M, NpcPlacement P, NpcDef D, MapDef Map)>();
             foreach (var m in place.GetComponentsInChildren<PlaceMarker>())
             {
@@ -128,6 +141,7 @@ namespace SecondFace.Game.Play
                 var placement = map.Npcs?.FirstOrDefault(p => (p.Id ?? p.Def) == m.Id);
                 if (placement == null || !Registry.Npcs.TryGetValue(placement.Def, out var def)) continue;
                 if (placement.If != null && !Logic.Test(placement.If, _game)) continue;
+                if (IsDead(placement.Def) || IsDead(m.Id)) continue;   // the dead stay dead
                 who.Add((m, placement, def, map));
             }
             if (FromBases)
@@ -149,18 +163,47 @@ namespace SecondFace.Game.Play
                     if (wear.TryGetValue(m.Id, out var body))
                         town.Residents.Add(new Resident { Id = m.Id, Def = def, Placement = placement, Map = map, Body = body, Post = m.transform.position });
             }
-            if (Rocketbox != null) AssignPeople(town);
-            _towns[id] = town;
-            _next = 0f;   // look at once who is near
         }
+
+        /// <summary>The story moved on in a standing place: who leaves goes, who arrives comes, and everyone who stays stays
+        /// as they stand (no one popping out and back, and a fight's sides taken from the people already there).</summary>
+        private void Reconcile(Group town)
+        {
+            var main = World != null && World.Layout.Places.TryGetValue(town.Id, out var info) && !string.IsNullOrEmpty(info.Map) ? info.Map : town.Id;
+            var fresh = new Group { Id = town.Id, Place = town.Place, Folk = town.Folk };
+            Fill(fresh, town.Place, main);
+            var now = new HashSet<string>(fresh.Residents.Select(r => r.Id));
+            var had = town.Residents.ToDictionary(r => r.Id);
+            foreach (var old in town.Residents.Where(r => !now.Contains(r.Id)).ToList())
+            {
+                if (old.Person != null) town.Folk.Remove(old.Person);
+                old.Person = null;
+                _queue.RemoveAll(q => q.Who == old);
+            }
+            var next = fresh.Residents.Select(r => had.TryGetValue(r.Id, out var kept) ? kept : r).ToList();
+            town.Residents.Clear();
+            town.Residents.AddRange(next);
+            if (Rocketbox != null) AssignPeople(town);
+            _signatures[town.Id] = Signature(town);
+            Stir();
+        }
+
+        private bool _stirred;
+        private float _stirredAt;
+        /// <summary>Look at once who is near (and say the place is settling until that look has stood them up).</summary>
+        private void Stir() { _next = 0f; _stirred = true; _stirredAt = Time.unscaledTime; }
+
+        /// <summary>The people just changed (a place came, the story moved on) and those near are still being stood up: a
+        /// fight waits for this before it takes sides (a few seconds at most, so one who cannot be stood never stops it).</summary>
+        public bool Settling => (_stirred || _queue.Count > 0) && Time.unscaledTime - _stirredAt < 3f;
 
         /// <summary>Each of a place's people given their Rocketbox person (L3): the named first (each the same everywhere,
         /// <see cref="RbPeople.Named"/>), then the extras, no two of the place the same person; and their dyes.</summary>
         private void AssignPeople(Group town)
         {
             var built = Rocketbox.Ids();
-            var used = new HashSet<string>();
-            foreach (var r in town.Residents.OrderBy(r => Registry.Npcs.ContainsKey(r.Def.Id) ? 0 : 1))
+            var used = new HashSet<string>(town.Residents.Where(r => r.Rb != null).Select(r => r.Rb.Id));
+            foreach (var r in town.Residents.Where(r => r.Rb == null).OrderBy(r => Registry.Npcs.ContainsKey(r.Def.Id) ? 0 : 1))
             {
                 var named = Registry.Npcs.ContainsKey(r.Def.Id);
                 var p = named ? RbPeople.Named(r.Def, r.Male) : null;
@@ -201,6 +244,43 @@ namespace SecondFace.Game.Play
                         Male = x.Male, Look = x.Look, Outfit = Outfits.DressFor(x.Def.Look.Seed, x.Def.Role, x.Male ? "m" : "f", x.Def.Faction),
                     });
                 }
+            }
+        }
+
+        private bool IsDead(string id) => id != null && _game != null && _game.Npcs.TryGetValue(id, out var n) && n.Dead == true;
+
+        /// <summary>Who of a place's named people should stand there now (their placements' conditions, the dead out).</summary>
+        private string Signature(Group town)
+        {
+            var main = World != null && World.Layout.Places.TryGetValue(town.Id, out var info) && !string.IsNullOrEmpty(info.Map) ? info.Map : town.Id;
+            var ids = new List<string>();
+            foreach (var m in town.Place.GetComponentsInChildren<PlaceMarker>())
+            {
+                if (m.Kind != "npc" || !Registry.Maps.TryGetValue(string.IsNullOrEmpty(m.Map) ? main : m.Map, out var map)) continue;
+                var placement = map.Npcs?.FirstOrDefault(p => (p.Id ?? p.Def) == m.Id);
+                if (placement == null) continue;
+                if (placement.If != null && !Logic.Test(placement.If, _game)) continue;
+                if (IsDead(placement.Def) || IsDead(m.Id)) continue;
+                ids.Add(m.Id);
+            }
+            return string.Join(",", ids);
+        }
+
+        private readonly Dictionary<string, string> _signatures = new();
+
+        /// <summary>The story moved on (a conversation, a quest, a fight): every standing place whose named people should
+        /// now be different (someone arrives, someone leaves, someone died) has its people brought again. Those held (in
+        /// a conversation or a fight) are never dropped mid-way: the refresh waits for them.</summary>
+        public void Refresh()
+        {
+            if (_game == null) return;
+            foreach (var town in _towns.Values.ToList())
+            {
+                if (town.Place == null) continue;
+                var sig = Signature(town);
+                if (_signatures.TryGetValue(town.Id, out var was) && was == sig) continue;
+                if (town.Residents.Any(r => r.Person != null && r.Person.Held)) continue;
+                Reconcile(town);
             }
         }
 
@@ -262,6 +342,7 @@ namespace SecondFace.Game.Play
                 }
             }
             _queue.Sort((a, b) => a.D.CompareTo(b.D));
+            _stirred = false;
         }
 
         /// <summary>A person's body and face as the content has them: their id, sex, age, trade and ancestry

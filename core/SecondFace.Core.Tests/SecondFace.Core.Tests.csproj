@@ -9,6 +9,8 @@
   <ItemGroup>
     <!-- The same test files Unity's EditMode runner compiles. -->
     <Compile Include="../../unity/Assets/SecondFace/Tests/EditMode/**/*.cs" />
+    <!-- (a test drafted outside the project while the editor runs: -p:ExtraTests=/path/to/File.cs) -->
+    <Compile Include="$(ExtraTests)" Condition="'$(ExtraTests)' != ''" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />

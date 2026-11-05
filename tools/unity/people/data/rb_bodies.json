@@ -1188,16 +1188,10 @@
    "people": "north_european",
    "body": "Female_Adult_05",
    "face": "Female_Adult_05",
-   "style": "casual",
+   "style": "formal",
    "roles": [
-    "settler",
-    "trader",
-    "street",
-    "tech",
-    "drifter",
-    "nomad",
-    "pilgrim",
-    "medic"
+    "corp",
+    "gilded"
    ],
    "dye": [
     {

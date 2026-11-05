@@ -33,7 +33,7 @@ namespace SecondFace.EditorTools
         public const string Dir = "Assets/SecondFace/Prefabs/places";
         public const string SetPath = "Assets/SecondFace/World/PlaceSet.asset";
         /// <summary>The places built so far; the rest stand as bare pads until their kits are made.</summary>
-        public static readonly string[] Ids = { "shale", "cistern9" };
+        public static readonly string[] Ids = { "shale", "cistern9", "rustdogs" };
 
         /// <summary>A place's interior map under the ground (step 21b), reached from its surface map's main exit to it.</summary>
         private static readonly Dictionary<string, string> Below = new() { ["cistern9"] = "cistern9" };

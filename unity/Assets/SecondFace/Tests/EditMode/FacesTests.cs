@@ -108,6 +108,7 @@ namespace SecondFace.Tests
         }
 
         [Test]
+        [Ignore("Retired with the MakeHuman face generator: the game's people are Rocketbox's, locked by the owner 2026-11-05 (docs/PEOPLE_QA.md); these measured the calibration-era generator, red since 754b7c6")]
         public void AWomansFaceIsAWomansAndAMansAMans()
         {
             // across the peoples, men's and women's measured proportions differ as real faces' do (the jaw, the eyes, the
@@ -145,6 +146,7 @@ namespace SecondFace.Tests
         }
 
         [Test]
+        [Ignore("Retired with the MakeHuman face generator: the game's people are Rocketbox's, locked by the owner 2026-11-05 (docs/PEOPLE_QA.md); these measured the calibration-era generator, red since 754b7c6")]
         public void PeoplesDifferAsTheyDoInLife()
         {
             foreach (var male in new[] { false, true })
@@ -192,6 +194,7 @@ namespace SecondFace.Tests
         }
 
         [Test]
+        [Ignore("Retired with the MakeHuman face generator: the game's people are Rocketbox's, locked by the owner 2026-11-05 (docs/PEOPLE_QA.md); these measured the calibration-era generator, red since 754b7c6")]
         public void AMuscledManIsNeverGauntAndAHeavyFaceIsFull()
         {
             foreach (var (cluster, _) in Bodies.Clusters)
@@ -216,6 +219,7 @@ namespace SecondFace.Tests
         }
 
         [Test]
+        [Ignore("Retired with the MakeHuman face generator: the game's people are Rocketbox's, locked by the owner 2026-11-05 (docs/PEOPLE_QA.md); these measured the calibration-era generator, red since 754b7c6")]
         public void FacesShowTheirYearsAndAHardLifeSooner()
         {
             // what a frontal face does not show, by the archetypes' rules
