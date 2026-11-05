@@ -767,7 +767,11 @@ written gate (`docs/PEOPLE_QA.md`) and the look before the owner sees it.
   every Rocketbox face to a house chroma (Pilot_Male_02's cheek from 30 to 38); a face carried from its own Rocketbox head
   now keeps its photographed colour. (11) A beard stopping short of the ear (Delivery_Male_01 on Military_Male_05): the
   two heads' ears sit at different depths, so the head's skin just in front of its ear met the source's ear; the ears'
-  fronts are now landmarks too (`AVA_EAR_LM`), so the source's cheek reaches the head's ear.
+  fronts are now landmarks too (`AVA_EAR_LM`, weight 0.6: at 1 the moustache's edge under the nose hardened past the
+  library's), so the source's cheek reaches the head's ear. (12) Styled hair cards (Male_Adult_05's gelled spikes,
+  Business_Male_03's slit side-sweep) come off (`hair_cards`), leaving each head's own short photographed hair, as the
+  grooming rule asks. (13) The lip measures: a moustache over the upper lip is left out of the lip box, and a mouth's
+  corners are where the lips' own red ends, not the farthest reddish skin; the 50 reference heads were re-measured.
 - *Gate rules added*: a bearded man's temples are judged above his sideburn; a head's own photographed hairline is held to
   its own place on the head (within 3 mm of the head as shipped, measured as its height above the eyes, not from the new
   face's glabella); a balding head as photographed is not held to the forehead band.

@@ -25,7 +25,7 @@ def take_off(meshes, words, eye_z=None, eye_pts=None):
     # chin (higher than the eyes less HOOD_MM), around the head
     hood = 'hood' in words and eye_z is not None
     words_all = list(words)
-    words = [w for w in words if w not in ('loose_above_brow', 'hood', 'loose_crown', 'loose_eyewear', 'visor', 'crown_smooth', 'hair_cards')]
+    words = [w for w in words if w not in ('loose_above_brow', 'hood', 'loose_crown', 'loose_eyewear', 'visor', 'hair_cards') and not w.startswith('crown_smooth')]
     if crown:
         # pieces joined by edges within the head's material (the head and body share vertices, so joining through any
         # vertex would take the whole person); never the largest piece, which is the head itself
@@ -97,9 +97,21 @@ def take_off(meshes, words, eye_z=None, eye_pts=None):
             omi = {i for i, m in enumerate(o.data.materials) if m and m.name.lower().endswith('_opacity')}
             if not omi: continue
             bm = bmesh.new(); bm.from_mesh(o.data); M = o.matrix_world
-            doomed = [f for f in bm.faces if f.material_index in omi and (M @ f.calc_center_median()).z > eye_z + 0.030]
+            # (and the short cards at the temples and over the ears, lower: every card above the cheekbones, 10 mm under the
+            # eyes, and over 25 mm from both eyes, the lashes lying within 20; small dark stubs stayed over Business_Male_03's
+            # ears with the first cut at 30 mm over the eyes)
+            def card_off(f):
+                c_ = M @ f.calc_center_median()
+                if c_.z > eye_z + 0.030: return True
+                if eye_pts is None or c_.z < eye_z - 0.010: return False
+                return min(np.linalg.norm(np.array(tuple(c_)) - e) for e in eye_pts) > 0.025
+            doomed = [f for f in bm.faces if f.material_index in omi and card_off(f)]
             bmesh.ops.delete(bm, geom=doomed, context='FACES'); bm.to_mesh(o.data); bm.free(); gone += len(doomed)
-    if 'crown_smooth' in words_all and eye_z is not None:
+    cs_w = next((w for w in words_all if w.startswith('crown_smooth')), None)
+    if cs_w is not None and eye_z is not None:
+        # ('crown_smoothNN': the crown from NN mm over the eyes, for a head whose hairline sits high: Male_Adult_05's receding
+        # temple corner lies above 55 mm and took a streak when rounded)
+        cs_mm = float(cs_w[len('crown_smooth'):]) if cs_w[len('crown_smooth'):] else CROWN_SMOOTH_MM
         # the crown under a cap is modelled coarse, as the cap hid it (edges of 23 mm, against 14-18 on the forehead):
         # with the cap off its corners showed in the silhouette (Police_Male_01's bald crown, Pilot_Male_03's; owner:
         # "humans do not have random vertices"). Inside the crown (every face of the head's material wholly above the
@@ -110,7 +122,7 @@ def take_off(meshes, words, eye_z=None, eye_pts=None):
         for o in meshes:
             hmi = {i for i, m in enumerate(o.data.materials) if m and m.name.lower().endswith('_head')}
             if not hmi: continue
-            me = o.data; M = o.matrix_world; zc = eye_z + CROWN_SMOOTH_MM / 1000.0
+            me = o.data; M = o.matrix_world; zc = eye_z + cs_mm / 1000.0
             cn = [tuple(c.vector) for c in me.corner_normals]
             old, pv = {}, {}
             for p in me.polygons:
@@ -129,6 +141,12 @@ def take_off(meshes, words, eye_z=None, eye_pts=None):
             # vertices come after the old)
             bm.verts.index_update(); n0 = len(bm.verts)
             s0 = {v.index for f in sel for v in f.verts}; bset = {v.index for v in border}
+            # (each old point's own smooth normal, carried onto the new points by the subdivision, to ease the new surface's
+            # normals in: the points barely moved near the border took their flat facets' normals, a crease at a receding
+            # temple, Male_Adult_05's)
+            lay = bm.verts.layers.float_vector.new('crown_n0'); bm.verts.ensure_lookup_table()
+            for i in s0:
+                a_ = np.mean(pv[i], 0); bm.verts[i][lay] = tuple(a_ / max(np.linalg.norm(a_), 1e-9))
             bmesh.ops.subdivide_edges(bm, edges=inner, cuts=2, smooth=0.0, use_grid_fill=True)
             bm.verts.ensure_lookup_table(); bm.verts.index_update()
             crown_v = [bm.verts[i] for i in sorted(s0 - bset)] + [bm.verts[i] for i in range(n0, len(bm.verts))]
@@ -145,12 +163,17 @@ def take_off(meshes, words, eye_z=None, eye_pts=None):
                     wz = min(1.0, max(0.0, ((M @ v.co).z - zc) / (CROWN_RAMP_MM / 1000.0)))
                     if n > 1e-9: v.co = tuple(ctr + d / n * (n + (r - n) * wz))
             moved = {v.index for v in crown_v}
+            bm.normal_update(); blend = {}
+            for v in crown_v:
+                wz = min(1.0, max(0.0, ((M @ v.co).z - zc) / (CROWN_RAMP_MM / 1000.0)))
+                n_ = wz * np.array(tuple(v.normal)) + (1 - wz) * np.array(tuple(v[lay]))
+                blend[v.index] = tuple(n_ / max(np.linalg.norm(n_), 1e-9))
             bm.to_mesh(me); bm.free(); me.update()
             new_n = []
             for p in me.polygons:
                 key = frozenset(p.vertices)
                 for vi in p.vertices:
-                    if vi >= nv0 or (vi in moved and vi not in bset): n = tuple(me.vertices[vi].normal)
+                    if vi in blend and vi not in bset: n = blend[vi]
                     elif (vi, key) in old: n = old[(vi, key)]
                     else:
                         a = np.mean(pv[vi], 0); n = tuple(a / max(np.linalg.norm(a), 1e-9))

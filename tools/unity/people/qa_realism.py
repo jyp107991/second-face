@@ -315,6 +315,24 @@ if all(p_ is not None for p_ in lip_pts) and skin.any():
     row = front & (np.abs(Z - zSt) < 2.0) & (np.abs(X) < 34) & (red > 3.0)
     if row.sum() > 20:
         xl, xr = float(X[row].min()), float(X[row].max())
+        # (the corners where the lips' own red ends, walking out from the midline along the mouth's line: past a third of
+        # the lips' redness at their middle, for two steps; reddish skin beyond a corner is no lip, MA19's right cheek
+        # beside his mouth read as a corner 10 mm further out than the left)
+        band = front & (np.abs(Z - zSt) < 2.0)
+        def colmax(x0):
+            c_ = band & (np.abs(X - x0) < 0.6)
+            return float(red[c_].max()) if c_.any() else -1e9
+        mid_ = np.median([colmax(x0) for x0 in np.arange(-6.0, 6.01, 1.0)])
+        thr_ = max(3.0, 0.33 * mid_)
+        def walk(sg):
+            last, miss = 0.0, 0
+            for x0 in np.arange(1.0, 34.01, 0.5):
+                if colmax(sg * x0) > thr_: last, miss = x0, 0
+                else:
+                    miss += 1
+                    if miss >= 4: break
+            return sg * last
+        xl, xr = walk(-1), walk(1)
         res['mouth_corner_asym_mm'] = round(abs(xr + xl), 2)                       # (corners equally far from the midline)
         hw = 0.8 * min(abs(xl), abs(xr))
         lbox = front & (np.abs(X) < hw) & (Z < zLs + 2.0) & (Z > zLi - 3.0) & (L > 0.3 * Lmed)
