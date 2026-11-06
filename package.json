@@ -11,8 +11,9 @@
     "validate": "tsx scripts/validate.ts",
     "decimate": "node tools/mh/decimate.mjs",
     "test": "vitest run",
-    "check": "npm run typecheck && npm run validate && npm run test",
-    "export": "tsx tools/port/export.ts"
+    "check": "npm run typecheck && npm run validate && npm run test && node tools/qa/people_gate.mjs",
+    "export": "tsx tools/port/export.ts",
+    "people-gate": "node tools/qa/people_gate.mjs"
   },
   "dependencies": {
     "@fontsource/barlow-condensed": "^5.3.0",

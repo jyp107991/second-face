@@ -55,40 +55,40 @@ namespace SecondFace.EditorTools
         private static readonly Def[] Defs =
         {
             // work trousers, from the hips to the top of the boot
-            new() { Id = "cargo", Cloth = RbLayerSet.Fabric.Twill, Colour = RbLayerSet.Dye.Legs, Thick = 0.012f,
+            new() { Id = "cargo", Cloth = RbLayerSet.Fabric.Twill, Colour = RbLayerSet.Dye.Legs, Thick = 0.006f,
                 Keep = (v, j) => ((v.F is Fam.Thigh or Fam.Shin) && v.P.y >= j.Ankle + 0.06f) || (v.F == Fam.Torso && v.P.y <= j.Hips + 0.07f) },
             // boots: the foot and a shaft to mid-shin, over the trousers' hem (the sole stays where it is: no foot through the ground)
-            new() { Id = "boots", Cloth = RbLayerSet.Fabric.Leather, Colour = RbLayerSet.Dye.Leather, Thick = 0.006f, Tile = 0.2f,
+            new() { Id = "boots", Cloth = RbLayerSet.Fabric.Leather, Colour = RbLayerSet.Dye.Leather, Thick = 0.004f, Tile = 0.2f,
                 Keep = (v, j) => v.F == Fam.Foot || (v.F == Fam.Shin && v.P.y <= j.Ankle + 0.2f),
-                ThickAt = (v, j) => v.N.y < -0.35f ? 0f : v.F == Fam.Foot ? (v.P.y < 0.03f ? 0.004f : 0.007f) : Mathf.Lerp(0.008f, 0.022f, Mathf.InverseLerp(j.Ankle + 0.02f, j.Ankle + 0.08f, v.P.y)) },
+                ThickAt = (v, j) => v.N.y < -0.35f ? 0f : v.F == Fam.Foot ? (v.P.y < 0.03f ? 0.003f : 0.004f) : Mathf.Lerp(0.006f, 0.012f, Mathf.InverseLerp(j.Ankle + 0.02f, j.Ankle + 0.08f, v.P.y)) },
             // a neck gaiter worn down: the neck and a bib on the upper chest and back
-            new() { Id = "gaiter", Cloth = RbLayerSet.Fabric.Knit, Colour = RbLayerSet.Dye.Accent, Thick = 0.014f,
+            new() { Id = "gaiter", Cloth = RbLayerSet.Fabric.Knit, Colour = RbLayerSet.Dye.Accent, Thick = 0.008f,
                 Keep = (v, j) => (v.F == Fam.Neck && v.P.y <= j.NeckTop - 0.03f)
                                  || ((v.F is Fam.Torso or Fam.Shoulder) && Mathf.Abs(v.P.x) <= 0.11f && (v.P.z > 0f ? v.P.y >= j.ChestTop - 0.02f : v.P.y >= j.Neck - 0.03f)) },
             // a work jacket: torso to the waist, sleeves to the wrist, a stand collar
-            new() { Id = "bomber", Cloth = RbLayerSet.Fabric.Twill, Colour = RbLayerSet.Dye.Shell, Thick = 0.02f,
+            new() { Id = "bomber", Cloth = RbLayerSet.Fabric.Twill, Colour = RbLayerSet.Dye.Shell, Thick = 0.009f,
                 Keep = (v, j) => ((v.F is Fam.Torso or Fam.Shoulder) && v.P.y >= j.Waist - 0.04f) || v.F == Fam.UpperArm
                                  || (v.F == Fam.Forearm && Vector3.Distance(v.P, v.Side < 0 ? j.WristL : j.WristR) > 0.025f) || (v.F == Fam.Neck && v.P.y <= j.Neck + 0.04f) },
             // a harness vest: torso and shoulders, sleeveless, a round neck at the front, to the waist
-            new() { Id = "vest", Cloth = RbLayerSet.Fabric.Canvas, Colour = RbLayerSet.Dye.Shell, Thick = 0.026f,
+            new() { Id = "vest", Cloth = RbLayerSet.Fabric.Canvas, Colour = RbLayerSet.Dye.Shell, Thick = 0.013f,
                 Keep = (v, j) => (v.F is Fam.Torso or Fam.Shoulder) && v.P.y >= j.Waist - 0.06f && !(v.P.y > j.ChestTop - 0.03f && Mathf.Abs(v.P.x) < 0.075f && v.P.z > 0f)
                                  && Vector3.Distance(v.P, v.P.x < 0 ? j.ShoulderL : j.ShoulderR) > 0.05f },
             // its webbing: two shoulder straps front and back and a band at the waist
-            new() { Id = "straps", Cloth = RbLayerSet.Fabric.Webbing, Colour = RbLayerSet.Dye.Dark, Thick = 0.034f, Tile = 0.15f,
+            new() { Id = "straps", Cloth = RbLayerSet.Fabric.Webbing, Colour = RbLayerSet.Dye.Dark, Thick = 0.017f, Tile = 0.15f,
                 Keep = (v, j) => (v.F is Fam.Torso or Fam.Shoulder) && v.P.y >= j.Waist - 0.06f
                                  && ((Mathf.Abs(Mathf.Abs(v.P.x) - 0.095f) < 0.02f && v.P.y >= j.Chest - 0.06f) || Mathf.Abs(v.P.y - (j.Waist + 0.0f)) < 0.025f) },
             // a shoulder cape: the shoulders, the upper chest, the back to below the shoulder blades, the top of the arms
-            new() { Id = "cape", Cloth = RbLayerSet.Fabric.Canvas, Colour = RbLayerSet.Dye.Accent, Thick = 0.04f,
+            new() { Id = "cape", Cloth = RbLayerSet.Fabric.Canvas, Colour = RbLayerSet.Dye.Accent, Thick = 0.019f,
                 Keep = (v, j) => v.F == Fam.Shoulder || ((v.F is Fam.Torso) && (v.P.y >= j.ChestTop - 0.06f || (v.P.z < -0.02f && v.P.y >= j.Chest - 0.08f)))
                                  || (v.F == Fam.UpperArm && Vector3.Distance(v.P, v.P.x < 0 ? j.ShoulderL : j.ShoulderR) < 0.13f) || (v.F == Fam.Neck && v.P.y <= j.Neck + 0.02f) },
             // a belt at the hips, over the trousers and the vest's hem
-            new() { Id = "belt", Cloth = RbLayerSet.Fabric.Leather, Colour = RbLayerSet.Dye.Leather, Thick = 0.032f, Tile = 0.2f,
+            new() { Id = "belt", Cloth = RbLayerSet.Fabric.Leather, Colour = RbLayerSet.Dye.Leather, Thick = 0.017f, Tile = 0.2f,
                 Keep = (v, j) => v.F == Fam.Torso && Mathf.Abs(v.P.y - (j.Hips + 0.035f)) < 0.028f },
             // arm wraps: the forearm's lower half and the palm, the fingers bare
-            new() { Id = "wraps", Cloth = RbLayerSet.Fabric.Canvas, Colour = RbLayerSet.Dye.Linen, Thick = 0.005f, Tile = 0.15f,
+            new() { Id = "wraps", Cloth = RbLayerSet.Fabric.Canvas, Colour = RbLayerSet.Dye.Linen, Thick = 0.004f, Tile = 0.15f,
                 Keep = (v, j) => (v.F == Fam.Forearm && Vector3.Distance(v.P, v.Side < 0 ? j.WristL : j.WristR) < 0.14f) || v.F == Fam.Hand },
             // shin guards: the front of the shin, knee to boot, over the trousers and the boot's shaft
-            new() { Id = "shins", Cloth = RbLayerSet.Fabric.Leather, Colour = RbLayerSet.Dye.Leather, Thick = 0.038f, Tile = 0.2f,
+            new() { Id = "shins", Cloth = RbLayerSet.Fabric.Leather, Colour = RbLayerSet.Dye.Leather, Thick = 0.015f, Tile = 0.2f,
                 Keep = (v, j) => (v.F is Fam.Shin or Fam.Thigh) && v.P.y >= j.Ankle + 0.1f && v.P.y <= j.Knee + 0.06f
                                  && v.P.z > Mathf.Lerp(v.Side < 0 ? j.AnkleL.z : j.AnkleR.z, v.Side < 0 ? j.KneeL.z : j.KneeR.z, Mathf.InverseLerp(j.Ankle, j.Knee, v.P.y)) },
         };
@@ -252,7 +252,7 @@ namespace SecondFace.EditorTools
             var map = new Dictionary<int, int>();
             var P = new List<Vector3>(); var N = new List<Vector3>(); var U = new List<Vector2>(); var W = new List<BoneWeight>(); var T = new List<int>();
             var inner = new Dictionary<int, int>();
-            var lo = float.MaxValue; var hi = float.MinValue;
+            var lo = float.MaxValue; var hi = float.MinValue; var outermost = 0f;
             Vector2 Uv(V v, float tile)
             {
                 var a = new Vector3(Mathf.Abs(v.N.x), Mathf.Abs(v.N.y), Mathf.Abs(v.N.z));
@@ -263,6 +263,7 @@ namespace SecondFace.EditorTools
             {
                 if (map.TryGetValue(i, out var k)) return k;
                 var thick = def.ThickAt != null ? def.ThickAt(V[i], j) : def.Thick;
+                outermost = Mathf.Max(outermost, thick);
                 k = P.Count;
                 P.Add(pos[i] + nor[i].normalized * (thick / meshScale)); N.Add(nor[i]); U.Add(Uv(V[i], def.Tile)); W.Add(bw[i]);
                 map[i] = k;
@@ -298,7 +299,8 @@ namespace SecondFace.EditorTools
             }
             count = P.Count;
             yMin = lo; yMax = hi;
-            w.Write(def.Id); w.Write((byte)def.Cloth); w.Write((byte)def.Colour); w.Write(def.Thick);
+            // (its thickness as built: the outermost offset of any of its vertices, what G1 holds it to)
+            w.Write(def.Id); w.Write((byte)def.Cloth); w.Write((byte)def.Colour); w.Write(count > 0 ? outermost : def.Thick);
             w.Write(count > 0 ? yMin : 0f); w.Write(count > 0 ? yMax : 0f);
             w.Write(count);
             for (var i = 0; i < count; i++)

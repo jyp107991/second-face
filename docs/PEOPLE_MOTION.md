@@ -16,6 +16,9 @@ It is binding. It sits beside the face and skin gate (`docs/PEOPLE_QA.md`) and i
 | A wrong pose was **explained away** ("a gesture", "the clip") and passed | §1.5 no excuses |
 | Nothing measured **motion** (sliding feet, a body spun on the spot, strides that do not match the speed) | §2.3, §2.4 motion measures |
 | The person reviewing was also the one who built it, with nothing written down | §1.6 written review, item by item |
+| **Second failure (2026-11-06):** with this gate written and red (972 measures past their limits), images of people were still sent to the owner, and new garments were shown that made people look padded and rubbery | §1.8 the lock: nothing with people in it reaches the owner while the gate is red, enforced by `npm run check` and CI, not by intention |
+| Clothes were not measured at all: shells 2-4 cm off the body (a real jacket stands ~1-1.6 cm off), smooth, no seams | §2.6 garments (G1-G4) and checklist item 10 |
+| The rule lived only in prose, so it could be talked past | §1.8: a machine check that fails the build |
 
 ## 1. The procedure (every build that reaches the owner; every change to people, animation, IK or cameras)
 
@@ -52,6 +55,14 @@ It is binding. It sits beside the face and skin gate (`docs/PEOPLE_QA.md`) and i
    The review goes into the build's QA report (`docs/qa/<build>.md`) before anything reaches the owner.
 7. **Severity.** A measure past its limit, or an item of §3 failed, is **S2** (the owner's rule broken, CLAUDE.md §2):
    no build reaches the owner with it open.
+8. **The lock (2026-11-06).** While the gate is red, **nothing with a person in it goes to the owner**: no image, no
+   capture, no build, no "evidence" sheet; progress is reported in words, with the failing measures listed by name and
+   number. The gate writes its verdict to `docs/qa/gates/motion_gate.json` (committed). `tools/qa/people_gate.mjs`, run by
+   `npm run check` and by CI, fails when an image of people is added or changed under `docs/evidence/` while that verdict
+   is red (red-gate working captures live only under a `_red/` folder and are never sent), and when an evidence folder
+   of people has no `REVIEW.md` answering every item of §3 for each of its images; the Android workflow's release job
+   runs it with `--release`, so no playable build is published while the verdict is red. A red check is fixed by making
+   the people pass, never by moving the images, loosening a limit or skipping the check.
 
 ## 2. The measures and their limits
 
@@ -108,6 +119,21 @@ F1 and F2 apply to the planted foot, and at the end the chest faces the partner 
 The talking distance 0.9–1.6 m between the bodies' centres (Hall's personal-to-social distance, 0.46–1.2 m and 1.2–3.6 m
 [11]); each chest faces the other within 20°; H1 and H2 as §2.1 on both; both stand (F1–F4).
 
+### 2.6 Garments (clothes look like cloth on a body)
+
+A garment over the body (the layers, `RbLayerSet`) is held to what real clothes do. Ease (how much larger than the body
+a garment is round) is ~5-8 cm round the chest for a fitted shirt, ~6.75 cm (5.2-8.3) for a man's jacket [12] and ~10 cm
+for a fitted jacket [13], 3-4 in for an unlined jacket and 4-5 in for a coat [14]: radially (ease / 2π) a shirt stands
+0.8-1.3 cm off the body, a jacket 1.1-1.6 cm, a coat 1.6-2.1 cm, and a layer over another garment adds only the
+difference.
+
+| Id | Measure | How it is measured | Limit |
+|---|---|---|---|
+| G1 | Stand-off | each layer's offset from the body's surface (cm), the outermost of each kind | trousers ≤ 0.7; boot foot ≤ 0.5, shaft ≤ 1.3; gaiter ≤ 0.9; jacket ≤ 1.0; vest ≤ 1.4; straps ≤ 1.8; cape ≤ 2.0; belt ≤ 1.8; wraps ≤ 0.4; shin guards ≤ 1.6 |
+| G2 | Order | a layer worn over another stands further out than it (straps over the vest, the vest over the jacket, the belt over the trousers and the vest, boots' shafts and shin guards over the trousers) | always |
+| G3 | Nothing through | an inner layer's surface (or the body's) through an outer layer in any state of §2 | ≤ 0.3 cm (C1's method on the layer's own mesh) |
+| G4 | Cloth, not shells | seams, hems, folds and wear visible at the game camera's closest zoom; no smooth, padded or rubbery surface; colours of the wardrobe rule, not mud | review, §3 item 10 |
+
 ## 3. The review checklist (each capture, each person, in writing)
 
 1. Arms hang from relaxed shoulders, elbows a little bent, hands resting at the side of the thigh, palms in.
@@ -121,6 +147,8 @@ The talking distance 0.9–1.6 m between the bodies' centres (Hall's personal-to
 7. Walking: feet do not glide; stride and cadence fit the speed; arms swing against the legs.
 8. Nothing passes through anything: hands, arms, clothes, hair against the body and each other.
 9. Beside a photograph of real people doing the same: would a stranger say this looks like a person?
+10. Clothes look like cloth on a body: as thick as real clothes, layered in the right order, with seams, hems, folds
+    and wear; not padded, inflated, rubbery or painted on; lore-bound (the wardrobe rule).
 
 ## 4. Changes to this gate
 
@@ -145,3 +173,8 @@ review finds becomes a measure here before it is fixed, so it cannot come back u
    https://arxiv.org/pdf/2108.10399
 10. Mir et al. 2023: foot skate as height-weighted toe-vertex speed below H = 2.5 cm. https://arxiv.org/pdf/2304.02061
 11. Hall, The Hidden Dimension (1966): proxemic distances (personal 0.46–1.2 m, social 1.2–3.6 m).
+12. Preferred chest ease of men's formal jackets, median 6.75 cm (5.2-8.3 cm), Fashion and Textiles 2018.
+    https://fashionandtextiles.springeropen.com/articles/10.1186/s40691-018-0165-x/tables/7
+13. Ease of fitted jackets for older women, ~10 cm at the bust. https://koreascience.or.kr/article/JAKO200211922012857.page?&lang=en
+14. Singer, The Perfect Fit, via Threads: blouse 2.5-3 in, unlined jacket 3-4 in, coat 4-5 in.
+    https://www.threadsmagazine.com/forum/sufficient-ease

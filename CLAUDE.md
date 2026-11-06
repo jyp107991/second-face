@@ -173,6 +173,11 @@ The owner wants to play unspoiled.
   (`HumanMotionGateTests`), and every capture reviewed at the game's own cameras, item by item, in writing. A failure is
   S2 and blocks a build. A single measure, a bare idle, a component switched off, a capture from a camera the game does
   not use, or an explanation ("a gesture", "the clip's own pose", "only for a moment") never passes it.
+  **The lock** (owner, 2026-11-06, after images were sent with the gate red): while the gate is red, NOTHING with a
+  person in it goes to the owner (no image, capture, build or evidence sheet); report progress in words with the failing
+  measures named. Clothes are part of "look like humans": garments stand off the body as real clothes do, in order, with
+  seams and folds, never padded or rubbery (`docs/PEOPLE_MOTION.md` §2.6). Enforced by `npm run check` and CI
+  (`tools/qa/people_gate.mjs` over `docs/qa/gates/motion_gate.json`); a red check is fixed only by making the people pass.
 - **Overhead, always** (owner, 2026-11-05, binding: "i told you to make an overhead game like bg3/divinity original
   sin"): play is seen from above as in DOS2 and BG3's exploration view. Exploring, combat and conversations all keep
   the overhead game camera (the rig's pitch, 35-62°); a conversation eases the camera closer over the two people and

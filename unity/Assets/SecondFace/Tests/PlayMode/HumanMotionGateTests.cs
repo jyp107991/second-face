@@ -179,6 +179,41 @@ namespace SecondFace.Tests
 #endif
         }
 
+        /// <summary>G1 and G2 (docs/PEOPLE_MOTION.md §2.6): every Rocketbox person's layers stand off the body as real clothes do
+        /// (radial ease from apparel norms: a jacket ~1-1.6 cm), and each layer worn over another stands further out than it.</summary>
+        [Test]
+        public void LayersStandOffAsClothDoes()
+        {
+#if UNITY_EDITOR
+            var cat = AssetDatabase.LoadAssetAtPath<RocketboxCatalog>("Assets/SecondFace/People/Rocketbox/RocketboxCatalog.asset");
+            if (cat == null || cat.People.Length == 0) { Assert.Ignore("no Rocketbox catalogue built"); return; }
+            var limit = new Dictionary<string, float>
+            {
+                ["cargo"] = 0.7f, ["boots"] = 1.3f, ["gaiter"] = 0.9f, ["bomber"] = 1.0f, ["vest"] = 1.4f, ["straps"] = 1.8f,
+                ["cape"] = 2.0f, ["belt"] = 1.8f, ["wraps"] = 0.4f, ["shins"] = 1.6f,
+            };
+            var over = new[] { ("straps", "vest"), ("vest", "bomber"), ("cape", "bomber"), ("belt", "cargo"), ("belt", "vest"), ("shins", "cargo"), ("shins", "boots"), ("boots", "cargo") };
+            var wrong = new List<string>();
+            var n = 0;
+            foreach (var e in cat.People)
+            {
+                var set = e?.Prefab != null ? e.Prefab.GetComponentInChildren<RbLayerSet>(true) : null;
+                if (set == null || set.Data == null) { wrong.Add($"{e?.Id}: no layers built"); continue; }
+                var layers = set.Layers;
+                n++;
+                foreach (var (id, layer) in layers)
+                    if (limit.TryGetValue(id, out var cm) && layer.Thickness * 100f > cm + 1e-3f) wrong.Add($"{e.Id} {id}: {layer.Thickness * 100f:0.0} cm off the body (G1 ≤ {cm})");
+                foreach (var (outer, inner) in over)
+                    if (layers.TryGetValue(outer, out var o) && layers.TryGetValue(inner, out var i) && o.Thickness <= i.Thickness && !(outer == "boots" && inner == "cargo"))
+                        wrong.Add($"{e.Id}: {outer} ({o.Thickness * 100f:0.0} cm) not over {inner} ({i.Thickness * 100f:0.0} cm) (G2)");
+            }
+            Assert.That(n, Is.GreaterThan(0), "no layer sets");
+            Assert.That(wrong, Is.Empty, string.Join("; ", wrong.Take(40)));
+#else
+            Assert.Ignore("editor only");
+#endif
+        }
+
         /// <summary>Every captured clip imported as its sidecar says (docs/PEOPLE_MOTION.md W1): a walk, an idle or a jog that
         /// does not loop plays one cycle and then holds its last frame, and the body is dragged along on it.</summary>
         [Test]
@@ -588,6 +623,7 @@ namespace SecondFace.Tests
             File.WriteAllText(Path.Combine(dir, report + ".json"), JsonConvert.SerializeObject(table, Formatting.Indented));
             File.WriteAllText(Path.Combine(dir, report + ".md"), Markdown(table));
             Debug.Log($"HumanMotionGate {report}: {table.Count} measures, {table.Count(r => !(bool)r["pass"])} past their limits\n" + string.Join("\n", fails.Take(200)));
+            Verdict(report, table.Count, fails);
             Object.Destroy(root);
             yield return null;
             if (assert) Assert.That(fails, Is.Empty, $"{fails.Count} measures past their limits (docs/PEOPLE_MOTION.md):\n" + string.Join("\n", fails.Take(80)));
@@ -595,6 +631,25 @@ namespace SecondFace.Tests
             Assert.Ignore("editor only");
             yield break;
 #endif
+        }
+
+        /// <summary>The gate's verdict where the lock reads it (docs/qa/gates/motion_gate.json; tools/qa/people_gate.mjs, run by
+        /// npm run check and CI): while it is red nothing with a person in it goes to the owner (docs/PEOPLE_MOTION.md §1.8).</summary>
+        private static void Verdict(string report, int measures, List<string> fails)
+        {
+            if (report != "motion_gate" && !report.StartsWith("motion_gate_full")) return;
+            var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "docs", "qa", "gates", "motion_gate.json"));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            string lastGreen = null;
+            try { if (File.Exists(path)) lastGreen = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(path)).Value<string>("lastGreen"); } catch (System.Exception) { }
+            var now = System.DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+            var green = fails.Count == 0;
+            var verdict = new Dictionary<string, object>
+            {
+                ["date"] = now, ["set"] = report, ["green"] = green, ["measures"] = measures, ["failures"] = fails.Count,
+                ["lastGreen"] = green ? now : lastGreen, ["failing"] = fails.Take(60).ToList(),
+            };
+            File.WriteAllText(path, JsonConvert.SerializeObject(verdict, Formatting.Indented));
         }
 
         /// <summary>A gesture is still playing on the gesture layer.</summary>
