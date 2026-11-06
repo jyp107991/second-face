@@ -50,7 +50,7 @@ namespace SecondFace.Game.People
         private Vector3 _lastL, _lastR; private bool _haveLast;
         // moving, a foot down on the ground is held where it came down until the clip lifts it (W1: a planted foot
         // does not creep; the clips' strides never quite match the body's pace): its place, and a short release after
-        private struct Lock { public bool On; public Vector3 At, From; public float Release; }
+        private struct Lock { public bool On; public Vector3 At, From; public float Release; public int Pivot; }
         private Lock _lockL, _lockR;
         /// <summary>A foot locks when its sole is this near the ground and slower than <see cref="SwingSlow"/>; it lets go
         /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
@@ -179,7 +179,9 @@ namespace SecondFace.Game.People
             // moving, by the stride's lowest (the lower envelope over the last strides: a running foot lands on its ball with
             // the ankle high, and the body is not to be pulled down to it)
             _low = Mathf.Min(e, _low + 0.08f * dt);
-            var want = Mathf.Clamp(-(standing ? e : _low), -0.15f, 0.15f);
+            // standing, low enough that both feet reach the ground (the higher foot's need: on the lower one's alone the
+            // other floated up to 3 cm, F1); moving, by the stride's lowest
+            var want = Mathf.Clamp(-(standing ? Mathf.Max(eL, eR) : _low), -0.15f, 0.15f);
             _sink = Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-(standing ? 25f : 3f) * dt));
             _hips.position += Vector3.up * _sink;
 
@@ -222,24 +224,36 @@ namespace SecondFace.Game.People
                 _lastL = _footL.position; _lastR = _footR.position; _haveLast = true;
                 if (dipL < clearL) wantL.y += clearL - dipL;
                 if (dipR < clearR) wantR.y += clearR - dipR;
-                wantL = Held(ref _lockL, wantL, dipL, speedL, dt);
-                wantR = Held(ref _lockR, wantR, dipR, speedR, dt);
+                var body = speed / Mathf.Max(0.5f, PaceScale);
+                wantL = Held(ref _lockL, wantL, dipL, speedL, body, _footL, _toeL, _heelL, _ballL, _tipL, dt);
+                wantR = Held(ref _lockR, wantR, dipR, speedR, body, _footR, _toeR, _heelR, _ballR, _tipR, dt);
                 if ((wantL - _footL.position).sqrMagnitude > 4e-6f) Solve(_upL, _loL, _footL, wantL);
                 if ((wantR - _footR.position).sqrMagnitude > 4e-6f) Solve(_upR, _loR, _footR, wantR);
             }
             GoalError = new Vector2(Vector3.Distance(_footL.position, wantL), Vector3.Distance(_footR.position, wantR));
         }
 
-        /// <summary>Where a moving foot goes along the ground: held at the place it came down while it is down (its sole
-        /// within <see cref="LockDown"/>, slow), and let go back to the clip's over <see cref="LockRelease"/> s.</summary>
-        private Vector3 Held(ref Lock k, Vector3 want, float sole, float speed, float dt)
+        /// <summary>Where a moving foot goes along the ground: while it is down (its sole within <see cref="LockDown"/>,
+        /// slow for the pace) the point it stands on (the heel, then the ball, then the toe's tip, as a foot rolls) is held
+        /// where it touched, the ankle following the clip's roll about it; let go back to the clip's over
+        /// <see cref="LockRelease"/> s.</summary>
+        private Vector3 Held(ref Lock k, Vector3 want, float sole, float speed, float body, Transform foot, Transform toe, Vector3 heel, Vector3 ball, Vector3 tip, float dt)
         {
-            if (!k.On && k.Release <= 0f && sole < LockDown && speed < SwingSlow) { k.On = true; k.At = want; }
+            // the sole point now lowest, where the clip has it with the ankle at the place wanted
+            var shift = want - foot.position;
+            Vector3 At(int i) => (i == 0 ? foot.TransformPoint(heel) : i == 1 ? foot.TransformPoint(ball) : (toe != null ? toe : foot).TransformPoint(tip)) + shift;
+            var low = 0; var lowY = At(0).y;
+            for (var i = 1; i < 3; i++) { var y = At(i).y; if (y < lowY - 0.003f) { lowY = y; low = i; } }
+            var slow = Mathf.Max(SwingSlow, 0.35f * body);
+            if (!k.On && k.Release <= 0f && sole < LockDown && speed < slow) { k.On = true; k.Pivot = low; k.At = At(low); }
             if (k.On)
             {
-                var off = new Vector2(want.x - k.At.x, want.z - k.At.z).magnitude;
-                if (sole > LockLift || off > LockReach) { k.On = false; k.Release = 1f; k.From = k.At; }
-                else return new Vector3(k.At.x, want.y, k.At.z);
+                // rolling on: the pivot moves forward to the next point once that one is the lower, pinned where it is
+                if (low > k.Pivot) { var held = new Vector3(k.At.x, 0f, k.At.z) - new Vector3(At(k.Pivot).x, 0f, At(k.Pivot).z); k.Pivot = low; k.At = At(low) + held; }
+                var c = At(k.Pivot);
+                var off = new Vector2(c.x - k.At.x, c.z - k.At.z);
+                if (sole > LockLift || off.magnitude > LockReach) { k.On = false; k.Release = 1f; k.From = want - new Vector3(off.x, 0f, off.y); }
+                else return want - new Vector3(off.x, 0f, off.y);
             }
             if (k.Release > 0f)
             {

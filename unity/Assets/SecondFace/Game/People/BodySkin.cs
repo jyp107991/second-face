@@ -269,8 +269,14 @@ namespace SecondFace.Game.People
             var nn = N[c0] + (c1 >= 0 ? N[c1] : Vector3.zero) + (c2 >= 0 ? N[c2] : Vector3.zero);
             normal = nn.sqrMagnitude > 1e-8f ? nn.normalized : N[c0];
             // outside: the gap to the surface's plane at the nearest point (never more than to the point itself)
-            var plane = Vector3.Dot(p - P[c0], N[c0]);
-            depth = inside > 0f ? inside : -(plane > 0f ? Mathf.Min(Mathf.Sqrt(d0), plane) : Mathf.Sqrt(d0));
+            // outside: the gap to the patch of skin the nearest point stands for (a disc in its plane, half its spacing
+            // across): its whole plane read a hand hanging below a buttock or before a thigh as touching it, 2026-11-06
+            var v0 = p - P[c0];
+            var plane = Vector3.Dot(v0, N[c0]);
+            var across = Mathf.Sqrt(Mathf.Max(0f, v0.sqrMagnitude - plane * plane));
+            var patch = 0.5f * _spacing[c0];
+            var gap = across <= patch ? Mathf.Abs(plane) : Mathf.Sqrt((across - patch) * (across - patch) + plane * plane);
+            depth = inside > 0f ? inside : -gap;
             return true;
         }
 
