@@ -444,6 +444,19 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   21, C1 17, W6 17, A4 15, F4 1, T1 1, W2 1). **Open:** W1 (the jog: a held flat foot's other sole point still moves
   0.16-0.19 m/s; next, a held foot keeps its roll too and takes only the clip's pitch), W6 (the sneak, the jog), A1 (men's
   upper arms on the chest's side), C1, A4; then the whole cast.
+- **2026-11-06 (evening), the feet solved in the quick set; the gate made reproducible** (red; committed 132; runs
+  g85-g96). Feet: a held foot keeps the turn and roll it came down with and takes only the clip's pitch (its sole kept at
+  its height through that turn); walking, the last foot down stays down until the other is (no flight in a walk); a foot
+  let go lifts at once, and takes the swing's full clearance, only while the other foot is down; the game's turn to face
+  someone 1.05 s for 180°. W1 21 → 0, W2 1 → 0, W6 17 → 13, T1 → 0. Arms: at rest the hand rests beside the thigh or on
+  its front, whichever hangs nearer under the shoulder (a lean took the shoulder 13 cm in from its hip); an elbow pushed
+  by the body stands out only while the upper arm is within 17°; the belt 1.1 cm off the skin (people rebuilt); moving
+  arms 6 mm further off the body (a uniformed man's swing). **The gate now runs at a fixed 1/60 s of game time**
+  (`Time.captureDeltaTime`; the test machine's frames had run 4-131 ms and the same code's verdicts differed by 3-6 a
+  measure), documented in `docs/PEOPLE_MOTION.md` §1.9. g95: 95, all better but A4 16 (one cell at exactly 6.0 cm).
+  **Open:** A1 54 (broad and uniformed men's arms stand out over their waists at rest; looks), A4 (men's resting hands
+  6-14 cm off the thigh), C1 12 (one uniformed man: the game's skin stands about 1 cm under his uniform's surface at
+  the chest's side), W6 13 (the jog's push-off); then the whole cast.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
