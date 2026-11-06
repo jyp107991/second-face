@@ -57,7 +57,7 @@ namespace SecondFace.Game.People
         private Vector3 _lastL, _lastR; private bool _haveLast;
         // moving, a foot down on the ground is held where it came down until the clip lifts it (W1: a planted foot
         // does not creep; the clips' strides never quite match the body's pace): its place, and a short release after
-        private struct Lock { public bool On; public Vector3 At, From; public float Release, Last, Over; public int Pivot; }
+        private struct Lock { public bool On; public Vector3 At, From; public float Release, Last; public int Pivot; }
         private Lock _lockL, _lockR;
         /// <summary>A foot locks when its sole is this near the ground and slower than <see cref="SwingSlow"/>; it lets go
         /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
@@ -199,7 +199,7 @@ namespace SecondFace.Game.People
             var eR = _footR.position.y - gR - ankleR;
             var e = Mathf.Min(eL, eR);
             // moving, by the stride's lowest (the lower envelope over the last strides: a running foot lands on its ball with
-            // the ankle high, and the body is not to be pulled down to it; a held foot is put down on the ground itself, Held)
+            // the ankle high, and the body is not to be pulled down to it)
             _low = Mathf.Min(e, _low + 0.08f * dt);
             // standing, low enough that both feet reach the ground (the higher foot's need: on the lower one's alone the
             // other floated up to 3 cm, F1); moving, by the stride's lowest
@@ -304,20 +304,13 @@ namespace SecondFace.Game.People
                 var c = At(k.Pivot);
                 var off = new Vector2(c.x - k.At.x, c.z - k.At.z);
                 if (sole > LockLift || off.magnitude > LockReach) { k.On = false; k.Release = 1f; k.From = want - new Vector3(off.x, 0f, off.y); }
-                else
-                {
-                    // and down on the ground: a held point the clip carries over it is put on it by the leg (a jogging stance
-                    // floated 3-5 cm, W6, 2026-11-06); one the clip puts into it was lifted out before
-                    var over = float.IsNaN(ground) ? 0f : Mathf.Max(0f, c.y - ground);
-                    k.Over = over;
-                    return want - new Vector3(off.x, over, off.y);
-                }
+                else return want - new Vector3(off.x, 0f, off.y);
             }
             if (k.Release > 0f)
             {
                 k.Release = Mathf.Max(0f, k.Release - dt / LockRelease);
                 var t = k.Release * k.Release * (3f - 2f * k.Release);
-                return new Vector3(Mathf.Lerp(want.x, k.From.x, t), want.y - k.Over * t, Mathf.Lerp(want.z, k.From.z, t));
+                return new Vector3(Mathf.Lerp(want.x, k.From.x, t), want.y, Mathf.Lerp(want.z, k.From.z, t));
             }
             return want;
         }
