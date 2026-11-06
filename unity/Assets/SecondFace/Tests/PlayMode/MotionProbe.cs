@@ -506,10 +506,12 @@ namespace SecondFace.Tests
         private string ElbowTrace()
         {
             if (_ac == null) _ac = GetComponent<SecondFace.Game.People.ArmClearance>();
-            if (_ac == null || _ac.Diag == null || _ac.Diag.Length < 16) return ",,,";
+            if (_ac == null || _ac.Diag == null || _ac.Diag.Length < 16) return ",,,,,,,,,";
             var d = _ac.Diag;
-            return $"{d[12]:0},{d[13]:0},{d[14]:0.0},{d[15]:0.0}";
+            // and each hand's place: the learned extra offset and the skin's furthest out beside the leg (cm), the hand's gap (m)
+            return $"{d[12]:0},{d[13]:0},{d[14]:0.0},{d[15]:0.0},{d[4]:0.0},{d[10]:0.0},{d[5]:0.0},{d[11]:0.0},{d[1]:0.000},{d[3]:0.000}";
         }
+        private readonly float[] _footLow = new float[2];
 
         private string FootDiag()
         {
@@ -608,6 +610,7 @@ namespace SecondFace.Tests
                     var low = float.MaxValue;
                     for (var i = 0; i < v.Length; i++) if (_seg[i] == (byte)part) low = Mathf.Min(low, v[i].y);
                     if (low < float.MaxValue && low - g < lowest) { lowest = low - g; lowestSide = side; }
+                    if (low < float.MaxValue) _footLow[side] = low - g;
                     // the skate on fixed points of the sole (its heel and its ball: a rolling foot's lowest point moves along
                     // the foot as a real one's does, a fixed point down on the ground does not move)
                     for (var q = 0; q < 2; q++)
@@ -636,8 +639,8 @@ namespace SecondFace.Tests
                     var dtS = _soleT > 0f && Time.time > _soleT ? Time.time - _soleT : 0f;
                     string Sp(int q) => dtS > 0f && _solePoint[q] >= 0 ? (Flat(v[_solePoint[q]] - _soleWas[q]).magnitude / dtS).ToString("0.00") : "";
                     var path = TracePath.Replace(".csv", "_soles.csv");
-                    if (!System.IO.File.Exists(path)) System.IO.File.WriteAllText(path, "state,t,body,hL,bL,hR,bR,vhL,vbL,vhR,vbR,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR,sink,low,eL,eR,gL,gR,slipL,slipR,rL,rR,gapL,gapR\n");
-                    System.IO.File.AppendAllText(path, $"{State},{Time.time:0.000},{body:0.00},{_soleH[0]:0.000},{_soleH[1]:0.000},{_soleH[2]:0.000},{_soleH[3]:0.000},{Sp(0)},{Sp(1)},{Sp(2)},{Sp(3)},{FootDiag()},{Gap(0, v)},{Gap(1, v)}\n");
+                    if (!System.IO.File.Exists(path)) System.IO.File.WriteAllText(path, "state,t,body,hL,bL,hR,bR,vhL,vbL,vhR,vbR,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR,sink,low,eL,eR,gL,gR,slipL,slipR,rL,rR,gapL,gapR,lowL,lowR\n");
+                    System.IO.File.AppendAllText(path, $"{State},{Time.time:0.000},{body:0.00},{_soleH[0]:0.000},{_soleH[1]:0.000},{_soleH[2]:0.000},{_soleH[3]:0.000},{Sp(0)},{Sp(1)},{Sp(2)},{Sp(3)},{FootDiag()},{Gap(0, v)},{Gap(1, v)},{_footLow[0]:0.000},{_footLow[1]:0.000}\n");
                 }
                 for (var q = 0; q < 4; q++) if (_solePoint[q] >= 0) _soleWas[q] = v[_solePoint[q]];
                 _soleT = Time.time; _soleRoot = _root.position;
