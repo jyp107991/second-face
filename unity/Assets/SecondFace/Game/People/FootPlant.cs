@@ -72,7 +72,7 @@ namespace SecondFace.Game.People
         /// <summary>Moving, a foot faster than this (m/s, along the ground) is in its swing: it is held at least
         /// <see cref="SwingClear"/> off the ground, less as it slows, so it comes down only as it stops (a real heel
         /// meets the ground at under about 1 m/s; the clips' feet glided in at 2-4 m/s, 2026-11-06).</summary>
-        public float SwingFast = 1.5f, SwingSlow = 0.5f, SwingClear = 0.03f;
+        public float SwingFast = 1.5f, SwingSlow = 0.5f, SwingClear = 0.035f;   // (3 cm on the game's sole points left the gate's ball 2.4-2.9 cm up as the sneak's foot swung through, W1)
         /// <summary>The swing's clearance comes in from <see cref="ClearSlow"/> to <see cref="ClearFast"/> (m/s, the clip's
         /// lowest sole point's speed, the point the gate measures): a foot moving faster stands <see cref="SwingClear"/> up.
         /// Not for a foot held down, nor one coming down slower than a swing; at once for one let go from a hold.</summary>
@@ -375,8 +375,10 @@ namespace SecondFace.Game.People
             if (!k.On && k.Release <= 0f && sole < LockDown && (speed < slow || landing)) { k.On = true; k.Pivot = low; k.At = At(low); k.Min = Mathf.Max(0f, sole); k.W = 0f; }
             if (k.On)
             {
-                // rolling on: the pivot moves forward to the next point once that one is the lower, pinned where it is
-                if (low > k.Pivot) { var held = new Vector3(k.At.x, 0f, k.At.z) - new Vector3(At(k.Pivot).x, 0f, At(k.Pivot).z); k.Pivot = low; k.At = At(low) + held; }
+                // rolling: the pivot moves to whichever point is now the lower, pinned where it is (forward as a heel-first
+                // foot rolls to its toe, and back as a toe-first one comes down onto its ball and heel: held on the tip, the
+                // sneak's ball and heel swept down about it and slid, W1, 2026-11-06)
+                if (low != k.Pivot) { var held = new Vector3(k.At.x, 0f, k.At.z) - new Vector3(At(k.Pivot).x, 0f, At(k.Pivot).z); k.Pivot = low; k.At = At(low) + held; }
                 var c = At(k.Pivot);
                 var off = new Vector2(c.x - k.At.x, c.z - k.At.z);
                 // and down on the ground: the clip's stance stood a held foot 2-3 cm up, still, in the jog and the sneak
