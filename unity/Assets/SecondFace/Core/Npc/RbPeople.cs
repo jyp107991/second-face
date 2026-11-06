@@ -29,6 +29,61 @@ namespace SecondFace.Core.Npc
     {
         public int Top, Legs, Accent;
         public double Grime, Wear;
+        /// <summary>The layers worn over the body's own clothes (RbLayers.All: the wardrobe rule, owner 2026-11-06: no one
+        /// on the frontier goes about in a clean tee and shorts), their canvas's dye and their leather's tone.</summary>
+        public string[] Layers;
+        public int Shell, Leather;
+    }
+
+    /// <summary>
+    /// The layers a Rocketbox person wears over their body's own clothes (the wardrobe rule: salvaged, layered, patched,
+    /// taped and rigged; owner 2026-11-06: "how is this post apocalyptic/cyberpunk? they look like they are going for a stroll
+    /// in california"). Each layer is cut from the person's own skin at build time (Editor RocketboxLayers) and dyed at
+    /// runtime. Chosen per person by their trade, deterministically; the game adds work trousers over bare legs whatever
+    /// the trade (Game RbLayerSet.BareLegs). Megacity's rich and its corp people wear none: their clean cloth is their
+    /// costume.
+    /// </summary>
+    public static class RbLayers
+    {
+        /// <summary>Every layer, in the order they are put on (each over the ones before).</summary>
+        public static readonly string[] All = { "cargo", "boots", "gaiter", "bomber", "vest", "straps", "cape", "belt", "wraps", "shins" };
+
+        private static readonly Dictionary<string, (string Layer, double Chance)[]> ByRole = new()
+        {
+            ["settler"] = new[] { ("cargo", 0.35), ("boots", 1.0), ("vest", 0.45), ("gaiter", 0.35), ("belt", 0.6), ("wraps", 0.3), ("cape", 0.15) },
+            ["labourer"] = new[] { ("cargo", 0.6), ("boots", 1.0), ("vest", 0.55), ("straps", 0.3), ("belt", 0.8), ("wraps", 0.5), ("shins", 0.3), ("gaiter", 0.3) },
+            ["fisher"] = new[] { ("cargo", 0.5), ("boots", 1.0), ("vest", 0.5), ("gaiter", 0.5), ("belt", 0.5), ("wraps", 0.4) },
+            ["trader"] = new[] { ("boots", 1.0), ("vest", 0.5), ("cape", 0.35), ("gaiter", 0.5), ("belt", 0.85), ("cargo", 0.25) },
+            ["guard"] = new[] { ("bomber", 0.6), ("vest", 0.5), ("straps", 0.5), ("boots", 1.0), ("belt", 1.0), ("shins", 0.45), ("gaiter", 0.45), ("cargo", 0.5) },
+            ["raider"] = new[] { ("vest", 0.75), ("straps", 0.7), ("shins", 0.6), ("wraps", 0.6), ("boots", 1.0), ("gaiter", 0.5), ("belt", 0.8), ("cape", 0.3), ("cargo", 0.5) },
+            ["drifter"] = new[] { ("cape", 0.7), ("wraps", 0.6), ("boots", 1.0), ("gaiter", 0.6), ("belt", 0.55), ("cargo", 0.45), ("vest", 0.25) },
+            ["nomad"] = new[] { ("cape", 0.75), ("wraps", 0.55), ("boots", 1.0), ("gaiter", 0.65), ("belt", 0.6), ("cargo", 0.45) },
+            ["pilgrim"] = new[] { ("cape", 0.8), ("wraps", 0.4), ("boots", 1.0), ("gaiter", 0.4), ("belt", 0.4) },
+            ["medic"] = new[] { ("vest", 0.5), ("boots", 1.0), ("belt", 0.7), ("wraps", 0.3), ("gaiter", 0.3), ("cargo", 0.4) },
+            ["tech"] = new[] { ("bomber", 0.55), ("vest", 0.35), ("straps", 0.3), ("boots", 1.0), ("belt", 0.75), ("gaiter", 0.45), ("wraps", 0.35), ("cargo", 0.45) },
+            ["street"] = new[] { ("bomber", 0.7), ("boots", 1.0), ("gaiter", 0.5), ("straps", 0.35), ("wraps", 0.35), ("belt", 0.5), ("cargo", 0.35) },
+            ["vault"] = new[] { ("boots", 1.0), ("belt", 0.5), ("vest", 0.3) },
+        };
+
+        /// <summary>Canvas tones any trade can come by: waxed olive, sand, rust, faded indigo, charcoal, bone.</summary>
+        public static readonly int[] Canvas = { 0x5b5a3c, 0xa08a62, 0x8a4a2c, 0x3f4a5c, 0x2f2f2d, 0xc9bda2, 0x6b5a3a, 0x7a2f26 };
+
+        /// <summary>Leather and boot tones: worn browns, oxblood, black, sun-bleached tan.</summary>
+        public static readonly int[] Leathers = { 0x3b2a1e, 0x4a3324, 0x5c3f2a, 0x2a2420, 0x1e1b19, 0x4d2620, 0x6e5338, 0x3a3226 };
+
+        /// <summary>The layers for a person of a trade, each by its chance, with what each needs under it kept (straps go on a vest).</summary>
+        public static string[] For(string role, Rng rng)
+        {
+            if (role is "gilded" or "corp" || role == null || !ByRole.TryGetValue(role, out var table)) return role is "gilded" or "corp" ? new string[0] : For("settler", rng);
+            var on = new HashSet<string>();
+            foreach (var (layer, chance) in table) if (rng.Chance(chance)) on.Add(layer);
+            if (on.Contains("straps")) on.Add("vest");
+            if (on.Contains("bomber") && on.Contains("cape") && rng.Chance(0.5)) on.Remove("cape");
+            // at least one piece over the torso for every trade that wears layers: the body's own shirt never stands alone
+            if (!on.Contains("vest") && !on.Contains("bomber") && !on.Contains("cape") && !on.Contains("gaiter"))
+                on.Add(rng.Chance(0.5) ? "vest" : rng.Chance(0.5) ? "cape" : "gaiter");
+            return All.Where(on.Contains).ToArray();
+        }
     }
 
     /// <summary>
@@ -143,6 +198,15 @@ namespace SecondFace.Core.Npc
             var wear = R?.Wear ?? new List<double> { 0.3, 0.6 };
             d.Grime = rng.Range(grime[0], grime[1]);
             d.Wear = rng.Range(wear[0], wear[1]);
+            // the layers over the body's own clothes, their canvas apart from both garments under it, their leather
+            var lr = new Rng(Bodies.Seed("layers:" + id));
+            d.Layers = RbLayers.For(role, lr);
+            d.Shell = palette[lr.Int(0, palette.Count - 1)];
+            for (var k = 0; k < 6 && !(Apart(d.Shell, d.Top) && Apart(d.Shell, d.Legs)); k++) d.Shell = palette[lr.Int(0, palette.Count - 1)];
+            // a small palette with nothing apart from both: the canvas tones of any trade (waxed olive, sand, rust, charcoal)
+            if (!(Apart(d.Shell, d.Top) || Apart(d.Shell, d.Legs)))
+                d.Shell = RbLayers.Canvas.Where(c => Apart(c, d.Top) && Apart(c, d.Legs)).DefaultIfEmpty(RbLayers.Canvas.OrderByDescending(c => Math.Abs(Lum(c) - Lum(d.Top))).First()).First();
+            d.Leather = RbLayers.Leathers[lr.Int(0, RbLayers.Leathers.Length - 1)];
             return d;
         }
 

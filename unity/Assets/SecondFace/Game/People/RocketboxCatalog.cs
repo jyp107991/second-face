@@ -70,6 +70,9 @@ namespace SecondFace.Game.People
                     r.SetPropertyBlock(mpb, i);
                 }
             }
+            // and what they wear over it (the wardrobe rule: layered, rigged, never a clean tee alone)
+            var layers = go.GetComponentInChildren<RbLayerSet>(true);
+            if (layers != null && d.Layers != null) layers.Wear(d.Layers, d);
         }
     }
 }

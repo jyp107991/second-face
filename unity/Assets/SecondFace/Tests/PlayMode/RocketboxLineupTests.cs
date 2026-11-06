@@ -78,6 +78,66 @@ namespace SecondFace.Tests
 #endif
         }
 
+        /// <summary>The wardrobe rule's review sheet (owner 2026-11-06: "a stroll in california"): eight people of eight trades,
+        /// dressed and layered as the game dresses them (RbDress with Core's layers), animated as the game animates them, from
+        /// the front, the back and the game camera. A tool, run by name.</summary>
+        [UnityTest, Timeout(900000), Category("Heavy")]
+        public IEnumerator LayeredTrades()
+        {
+#if UNITY_EDITOR
+            var cat = AssetDatabase.LoadAssetAtPath<RocketboxCatalog>("Assets/SecondFace/People/Rocketbox/RocketboxCatalog.asset");
+            var assets = AssetDatabase.LoadAssetAtPath<WorldAssets>("Assets/SecondFace/World/WorldAssets.asset");
+            if (cat == null || assets == null) { Assert.Ignore("not built"); yield break; }
+            if (Object.FindAnyObjectByType<SecondFace.Game.Bootstrap>() != null) yield return BootTests.Clear();
+            foreach (var other in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None)) { other.enabled = false; other.tag = "Untagged"; }
+            var root = new GameObject("trades");
+            var sun = new GameObject("sun").AddComponent<Light>(); sun.transform.SetParent(root.transform);
+            sun.type = LightType.Directional; sun.intensity = 1.6f; sun.shadows = LightShadows.Soft; sun.transform.rotation = Quaternion.Euler(42f, 150f, 0f);
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat; RenderSettings.ambientLight = new Color(0.55f, 0.55f, 0.58f);
+            var ground = GameObject.CreatePrimitive(PrimitiveType.Plane); ground.transform.SetParent(root.transform); ground.transform.localScale = new Vector3(4f, 1f, 3f);
+            ground.GetComponent<Renderer>().sharedMaterial.color = new Color(0.6f, 0.56f, 0.5f);
+            var cast = new[] { ("Male_Adult_01", "settler"), ("Female_Adult_01", "labourer"), ("Male_Adult_08", "guard"), ("Female_Adult_04", "raider"),
+                               ("Construction_Male_03", "drifter"), ("Female_Adult_09", "trader"), ("Male_Adult_12", "tech"), ("Female_Adult_03", "nomad") };
+            var made = new System.Collections.Generic.List<GameObject>();
+            for (var i = 0; i < cast.Length; i++)
+            {
+                var (id, role) = cast[i];
+                var prefab = cat.Get(id);
+                if (prefab == null) continue;
+                var go = Object.Instantiate(prefab, root.transform);
+                go.transform.position = new Vector3((i - (cast.Length - 1) * 0.5f) * 0.9f, 0f, 0f);
+                go.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+                var d = RbPeople.DyesFor(RbPeople.Of(id), "trades_" + id, role, null);
+                RbDress.Apply(go, d);
+                var a = go.GetComponentInChildren<Animator>();
+                var amb = SecondFace.Game.Play.PeopleService.Animate(a, assets.Locomotion, id); amb.MinGap = amb.MaxGap = 1e6f;
+                a.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                var set = go.GetComponentInChildren<RbLayerSet>();
+                Debug.Log($"LayeredTrades: {id} as {role}: {string.Join("+", d.Layers ?? new string[0])}; layer set {(set != null ? $"{set.Layers.Count} layers, bare legs {set.BareLegs}" : "NONE")}");
+                made.Add(go);
+            }
+            var t = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t < 2f) yield return null;
+            var cam = new GameObject("cam") { tag = "MainCamera" }.AddComponent<Camera>(); cam.transform.SetParent(root.transform);
+            cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.72f, 0.76f, 0.8f); cam.fieldOfView = 24f; cam.nearClipPlane = 0.1f;
+            cam.transform.SetPositionAndRotation(new Vector3(0f, 1.0f, -9.2f), Quaternion.Euler(3f, 0f, 0f));
+            yield return ScreenshotTests.Capture("trades_front", 2560, 1100);
+            cam.transform.SetPositionAndRotation(new Vector3(0f, 1.0f, 9.2f), Quaternion.Euler(3f, 180f, 0f));
+            yield return ScreenshotTests.Capture("trades_back", 2560, 1100);
+            cam.fieldOfView = 28f;
+            for (var i = 0; i < made.Count; i += 3)
+            {
+                var focus = made[i].transform.position + Vector3.up * 1.2f;
+                var rot = Quaternion.Euler(50f, 200f, 0f);
+                cam.transform.SetPositionAndRotation(focus - rot * Vector3.forward * 8f, rot);
+                yield return ScreenshotTests.Capture($"trades_game_{i}", 1600, 900);
+            }
+            Object.Destroy(root);
+#else
+            Assert.Ignore("editor only");
+            yield break;
+#endif
+        }
+
         [UnityTest, Timeout(1800000), Category("Heavy")]
         public IEnumerator DyedLineup()
         {

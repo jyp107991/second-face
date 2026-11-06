@@ -97,6 +97,88 @@ namespace SecondFace.Tests
 
         // ---------------------------------------------------------------- the gate
 
+        /// <summary>The feet, close (a review tool, run by name): four people as the game makes them, standing, then two talking
+        /// as the game sets them, each pair of feet from four sides at shin height and from the game camera's pitch, 1200 px;
+        /// and the lowest skin of each foot against the ground, logged.</summary>
+        [UnityTest, Timeout(900000), Category("Heavy")]
+        public IEnumerator FeetCloseUp()
+        {
+#if UNITY_EDITOR
+            var cat = AssetDatabase.LoadAssetAtPath<RocketboxCatalog>("Assets/SecondFace/People/Rocketbox/RocketboxCatalog.asset");
+            var assets = AssetDatabase.LoadAssetAtPath<WorldAssets>("Assets/SecondFace/World/WorldAssets.asset");
+            if (cat == null || assets == null) { Assert.Ignore("not built"); yield break; }
+            yield return BootTests.Clear();
+            var root = new GameObject("feet");
+            var ground = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            ground.transform.SetParent(root.transform); ground.transform.localScale = new Vector3(40f, 1f, 40f); ground.transform.position = new Vector3(0f, -0.5f, 0f);
+            ground.GetComponent<Renderer>().sharedMaterial.color = new Color(0.62f, 0.6f, 0.56f);
+            var sun = new GameObject("sun").AddComponent<Light>(); sun.transform.SetParent(root.transform);
+            sun.type = LightType.Directional; sun.intensity = 1.5f; sun.shadows = LightShadows.Soft; sun.transform.rotation = Quaternion.Euler(50f, 150f, 0f);
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat; RenderSettings.ambientLight = new Color(0.6f, 0.6f, 0.62f);
+            var ids = new[] { "Female_Adult_01", "Male_Adult_01", "Business_Female_02", "Construction_Male_03" };
+            var made = new List<(string Id, GameObject Go)>();
+            for (var i = 0; i < ids.Length; i++)
+            {
+                var go = Object.Instantiate(cat.Get(ids[i]), new Vector3(i * 3f, 0f, 0f), Quaternion.identity, root.transform);
+                var p = RbPeople.Of(ids[i]);
+                RbDress.Apply(go, RbPeople.DyesFor(p, "feet_" + ids[i], p?.Roles?.FirstOrDefault() ?? "settler", null));
+                var a = go.GetComponentInChildren<Animator>();
+                var amb = PeopleService.Animate(a, assets.Locomotion, ids[i]); amb.MinGap = amb.MaxGap = 1e6f;
+                a.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                made.Add((ids[i], go));
+            }
+            yield return Wait(3f);
+            var cam = new GameObject("cam") { tag = "MainCamera" }.AddComponent<Camera>(); cam.transform.SetParent(root.transform);
+            cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.7f, 0.75f, 0.8f); cam.nearClipPlane = 0.05f;
+            IEnumerator Shots(string tag)
+            {
+                foreach (var (id, go) in made)
+                {
+                    var a = go.GetComponentInChildren<Animator>();
+                    var lf = a.GetBoneTransform(HumanBodyBones.LeftFoot).position; var rf = a.GetBoneTransform(HumanBodyBones.RightFoot).position;
+                    var mid = (lf + rf) * 0.5f; mid.y = 0.08f;
+                    // the lowest skin under each foot, against the ground (y 0)
+                    var smr = go.GetComponentsInChildren<SkinnedMeshRenderer>().OrderByDescending(r => r.sharedMesh.vertexCount).First();
+                    var mesh = new Mesh(); smr.BakeMesh(mesh, true);
+                    var l2w = Matrix4x4.TRS(smr.transform.position, smr.transform.rotation, Vector3.one);
+                    float lowL = 9f, lowR = 9f;
+                    foreach (var v0 in mesh.vertices)
+                    {
+                        var v = l2w.MultiplyPoint3x4(v0);
+                        if ((v - lf).sqrMagnitude < 0.2f * 0.2f) lowL = Mathf.Min(lowL, v.y);
+                        if ((v - rf).sqrMagnitude < 0.2f * 0.2f) lowR = Mathf.Min(lowR, v.y);
+                    }
+                    Object.Destroy(mesh);
+                    Debug.Log($"FeetCloseUp {tag} {id}: lowest skin by the left foot {lowL * 100f:0.0} cm, right {lowR * 100f:0.0} cm; ankles {lf.y * 100f:0.0} / {rf.y * 100f:0.0} cm up");
+                    cam.fieldOfView = 35f;
+                    for (var k = 0; k < 4; k++)
+                    {
+                        var dir = Quaternion.Euler(0f, 90f * k + go.transform.eulerAngles.y, 0f) * Vector3.forward;
+                        cam.transform.SetPositionAndRotation(mid + dir * 1.3f + Vector3.up * 0.15f, Quaternion.LookRotation(-dir + Vector3.down * 0.1f, Vector3.up));
+                        yield return ScreenshotTests.Capture($"feet_{tag}_{id}_{k}", 900, 600);
+                    }
+                    // as the game camera sees them (pitch 48°, closest zoom), the whole person
+                    cam.fieldOfView = 28f;
+                    var rot = Quaternion.Euler(48f, go.transform.eulerAngles.y + 180f, 0f);
+                    cam.transform.SetPositionAndRotation(go.transform.position + Vector3.up * 1.0f - rot * Vector3.forward * 4.5f, rot);
+                    yield return ScreenshotTests.Capture($"feet_{tag}_{id}_game", 900, 900);
+                }
+            }
+            yield return Shots("stand");
+            // two talking, as the game sets them: the first two face each other at 1.3 m and turn as the game turns them
+            made[1].Go.transform.SetPositionAndRotation(made[0].Go.transform.position + Vector3.forward * 1.3f, Quaternion.Euler(0f, 180f, 0f));
+            yield return Wait(0.5f);
+            var runner = root.AddComponent<Runner>();
+            runner.StartCoroutine(Walkabout.Face(made[0].Go.transform, made[1].Go.transform.position));
+            yield return Wait(3f);
+            yield return Shots("talk");
+            Object.Destroy(root);
+#else
+            Assert.Ignore("editor only");
+            yield break;
+#endif
+        }
+
         /// <summary>Every captured clip imported as its sidecar says (docs/PEOPLE_MOTION.md W1): a walk, an idle or a jog that
         /// does not loop plays one cycle and then holds its last frame, and the body is dragged along on it.</summary>
         [Test]

@@ -32,6 +32,7 @@ namespace SecondFace.EditorTools
             if (fresh) cat = ScriptableObject.CreateInstance<RocketboxCatalog>();
             var shader = Shader.Find("SecondFace/Person");
             var entries = new List<RocketboxCatalog.Entry>();
+            _cloths = null;
             if (Directory.Exists(root) && shader != null)
                 foreach (var dir in Directory.GetDirectories(root).OrderBy(d => d))
                 {
@@ -56,6 +57,8 @@ namespace SecondFace.EditorTools
             }
             return null;
         }
+
+        private static Material[] _cloths;
 
         private static GameObject Person(string id, string dir, Shader shader)
         {
@@ -84,6 +87,8 @@ namespace SecondFace.EditorTools
             // the torso's cross-sections at rest, so the arms are kept out of it and drawn in to rest at its sides
             // (ArmClearance; docs/PEOPLE_MOTION.md A4, C1)
             TorsoMeasure.Measure(go);
+            // the layers worn over the body's own clothes, cut from its skin (the wardrobe rule)
+            RocketboxLayers.Build(go, dir, id, _cloths ??= RocketboxLayers.Materials());
             var path = $"{dir}/{id}.prefab";
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);

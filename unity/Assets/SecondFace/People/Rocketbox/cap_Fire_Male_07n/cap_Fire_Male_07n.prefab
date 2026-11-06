@@ -71,6 +71,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b93f59678e4893d03a2cbd1afbfbe869, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7638243765700452203}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b93f59678e4893d03a2cbd1afbfbe869, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3514212447337315097}
   m_SourcePrefab: {fileID: 100100000, guid: b93f59678e4893d03a2cbd1afbfbe869, type: 3}
 --- !u!1 &8662414286021473487 stripped
 GameObject:
@@ -346,3 +349,25 @@ MonoBehaviour:
   - 0.10301937
   - 0.08269541
   - 0.09583693
+--- !u!114 &3514212447337315097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8662414286021473487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31b1ddcc6fa3e837fabe8c3367d9e2a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SecondFace.Game::SecondFace.Game.People.RbLayerSet
+  Data: {fileID: 4900000, guid: 07567f713ef06443f8cae5a8d26c6cf3, type: 3}
+  BareLegs: 0
+  BareArms: 0
+  Fabrics:
+  - {fileID: 2100000, guid: 304a1aba41731e2418a1ca378ff4dcf6, type: 2}
+  - {fileID: 2100000, guid: f4093da9f65bb2f8dae980a6b8e3a2af, type: 2}
+  - {fileID: 2100000, guid: 7a839ed115064a14aaa64df0ee3782a8, type: 2}
+  - {fileID: 2100000, guid: 6e33638bc862207e5b27f5db8cecdc37, type: 2}
+  - {fileID: 2100000, guid: d518a0e46d9739743b6c9f9fc728fe02, type: 2}
+  Built: 1

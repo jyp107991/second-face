@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using SecondFace.Core.Npc;
@@ -61,6 +62,32 @@ namespace SecondFace.Tests
             Assert.That(RbPeople.Apart(0xc46a2a, 0xc46a2a), Is.False, "one dye");
             Assert.That(RbPeople.Apart(0xc46a2a, 0x2b2621), Is.True, "orange over near black");
             Assert.That(RbPeople.Apart(0x8a3b1e, 0x2f4a73), Is.True, "rust over indigo");
+        }
+
+        /// <summary>The wardrobe rule (owner 2026-11-06: "a stroll in california"): every frontier trade wears boots and a piece
+        /// over its shirt; raiders and guards gear up, drifters cover up; the megacity's rich and corp wear none; the choice
+        /// is the same for the same person, and a crowd of one trade is not all alike.</summary>
+        [Test]
+        public void EveryFrontierTradeWearsLayers()
+        {
+            foreach (var trade in Trades)
+            {
+                var seen = new HashSet<string>();
+                for (var k = 0; k < 40; k++)
+                {
+                    var d = RbPeople.DyesFor(RbPeople.All[k % RbPeople.All.Count], $"{trade}_{k}", trade, null);
+                    Assert.That(d.Layers, Does.Contain("boots"), $"{trade} #{k}: boots");
+                    Assert.That(d.Layers.Intersect(new[] { "vest", "bomber", "cape", "gaiter" }), Is.Not.Empty, $"{trade} #{k}: something over the shirt");
+                    if (d.Layers.Contains("straps")) Assert.That(d.Layers, Does.Contain("vest"), "straps go on a vest");
+                    Assert.That(RbPeople.Apart(d.Shell, d.Top) || RbPeople.Apart(d.Shell, d.Legs), Is.True, $"{trade} #{k}: the layer's dye stands apart");
+                    seen.Add(string.Join("+", d.Layers));
+                    var again = RbPeople.DyesFor(RbPeople.All[k % RbPeople.All.Count], $"{trade}_{k}", trade, null);
+                    Assert.That(again.Layers, Is.EqualTo(d.Layers), "the same person, the same layers");
+                }
+                Assert.That(seen.Count, Is.GreaterThan(6), $"{trade}: a crowd is not all alike ({seen.Count} outfits in 40)");
+            }
+            foreach (var rich in new[] { "gilded", "corp" })
+                Assert.That(RbPeople.DyesFor(RbPeople.All[0], "rich", rich, null).Layers, Is.Empty, rich);
         }
     }
 }
