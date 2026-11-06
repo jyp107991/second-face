@@ -420,6 +420,23 @@ namespace SecondFace.Game.People
             if (Mathf.Abs(sag) <= keep) return;
             var turn = sag - Mathf.Sign(sag) * keep;   // about the body's right: + moves the arm back
             TurnArm(upper, first, turn, right);
+            // what the ease brought into the body: a forearm or hand turned out at the elbow (pushed out at the shoulder,
+            // a jogging arm swung straight back to 45-47°, W3, 2026-11-06), then the upper arm at the shoulder
+            var elbow = lower.position;
+            var best = 0f; var ax = Vector3.zero;
+            for (int i = _skin.Begin(first + 1), to = _skin.End(first + 2); i < to; i++)
+            {
+                var p = _skin.P[i];
+                if (!_skin.Depth(p, out var d, out var n) || d + SkinMargin <= 0f) continue;
+                var arm = p - elbow;
+                if (arm.sqrMagnitude < 0.0025f) continue;
+                var ang = Mathf.Atan2(d + SkinMargin, arm.magnitude) * Mathf.Rad2Deg;
+                if (ang <= best) continue;
+                var c = Vector3.Cross(arm, n);
+                if (c.sqrMagnitude < 1e-8f) continue;
+                best = ang; ax = c.normalized;
+            }
+            if (best > 0.01f) TurnForearm(lower, first, Mathf.Min(best, 30f), ax);
             var (more, dir2) = SkinNeed(upper, first);
             if (more > 0.01f) TurnArm(upper, first, more, dir2);
         }
