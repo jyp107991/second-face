@@ -308,16 +308,27 @@ namespace SecondFace.EditorTools
             }
             var hipsY = root.InverseTransformPoint(B(HumanBodyBones.Hips).position).y;
             var cells = new Dictionary<(int, int, int, SkinPart), (int I, float D)>();
+            var inner = 0;
             for (var i = 0; i < pos.Length; i++)
             {
                 if (!use[i]) continue;
-                var best = float.MaxValue; var part = SkinPart.None; var along = 0f;
+                var best = float.MaxValue; var part = SkinPart.None; var along = 0f; var axis = Vector3.zero;
                 foreach (var (a, b, p) in segs)
                 {
                     var d = Along(world[i], a, b, out var t);
-                    if (d < best) { best = d; part = p; along = t; }
+                    if (d < best) { best = d; part = p; along = t; axis = a + (b - a) * t; }
                 }
                 if (part == SkinPart.None) continue;
+                // the body's surface faces away from its bones: a vertex whose normal faces its bone's axis is a garment's
+                // inside (a jacket's lining at the hem, a turned-up cuff), and a hand by it read as outside the body while
+                // 4-5 cm into the thigh (2026-11-06)
+                if (part is SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR)
+                {
+                    var bw0 = bw[i];
+                    var n = (bones[bw0.boneIndex0].localToWorldMatrix * bp[bw0.boneIndex0]).MultiplyVector(nor[i]).normalized;
+                    var away = world[i] - axis;
+                    if (away.sqrMagnitude > 1e-6f && Vector3.Dot(n, away.normalized) < -0.2f) { inner++; continue; }
+                }
                 // the upper arm's third nearest the elbow (against the waist a gap shows; higher, the arm rests on the side of
                 // the chest, a contact the soft tissue of both takes, hidden in the crease: docs/PEOPLE_MOTION.md C1)
                 if ((part == SkinPart.UpperArmL || part == SkinPart.UpperArmR) && along < 0.65f) continue;
@@ -371,7 +382,7 @@ namespace SecondFace.EditorTools
             skin.Body = smr;
             skin.Carrying = female ? 14f : 10f;
             skin.Built = BodySkin.Version;
-            Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")})");
+            Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")}; {inner} inside faces left out)");
         }
 
         private static HumanBodyBones Parse(string name) => (HumanBodyBones)Enum.Parse(typeof(HumanBodyBones), name);
