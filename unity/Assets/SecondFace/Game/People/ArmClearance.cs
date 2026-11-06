@@ -195,7 +195,10 @@ namespace SecondFace.Game.People
 
         /// <summary>With the skin: an elbow is held this far from the waist at rest (A1: the upper arm hangs close by the
         /// side), surface to surface.</summary>
-        public float ElbowGap = 0.02f;
+        public float ElbowGap = 0.005f;
+        /// <summary>With the skin: how far the shoulder's hold may turn a resting arm out to bring the elbow off the waist
+        /// (degrees; the captured arms hang 2-4 cm into these bodies' waists).</summary>
+        public float RestOut = 15f;
         /// <summary>The forearm's turn out at the elbow is held within these (degrees: straight to a wide valgus).</summary>
         public float CarryMin = 0f, CarryMax = 22f;
 
@@ -227,7 +230,7 @@ namespace SecondFace.Game.People
             if (upper == null || lower == null || hand == null) return;
             var shoulder = upper.position;
             if (forward > 0.001f) upper.rotation = Quaternion.AngleAxis(forward, Vector3.Cross(lower.position - shoulder, transform.forward).normalized) * upper.rotation;
-            if (inward > 0.001f) upper.rotation = Quaternion.AngleAxis(inward, Vector3.Cross(lower.position - shoulder, -Outward(side)).normalized) * upper.rotation;
+            if (Mathf.Abs(inward) > 0.001f) upper.rotation = Quaternion.AngleAxis(inward, Vector3.Cross(lower.position - shoulder, -Outward(side)).normalized) * upper.rotation;
             var c = carry >= 0f ? carry : BaseCarry(upper, lower, hand);
             var ax = CarryAxis(upper, lower, hand, side);
             if (c > 0.001f && ax != Vector3.zero) lower.rotation = Quaternion.AngleAxis(c, ax) * lower.rotation;
@@ -284,7 +287,9 @@ namespace SecondFace.Game.People
                 // 1. the elbow to the waist: the lower upper arm and the forearm's first 8 cm
                 var gapE = Mathf.Min(Gap(_skin.Begin(first), _skin.End(first), 1, 0.08f), Gap(_skin.Begin(first + 1), _skin.End(first + 1), 1, 0.08f, elbow, 0.08f));
                 Diag[side < 0 ? 0 : 2] = gapE;
-                wantIn = Mathf.Clamp(inward + Mathf.Atan2(gapE - ElbowGap, upperLen) * Mathf.Rad2Deg, 0f, RestMax);
+                // in or out (negative): the elbow held just off the waist, before the hand is judged (the push-out after
+                // it carried the hand 10 cm off the thigh unseen, 2026-11-06)
+                wantIn = Mathf.Clamp(inward + Mathf.Atan2(gapE - ElbowGap, upperLen) * Mathf.Rad2Deg, -RestOut, RestMax);
                 // 2. the hand forward to the thigh's side: its middle against the thigh's middle line at its height
                 var c = Vector3.zero;
                 for (var i = hs; i < he; i++) c += _skin.P[i];
