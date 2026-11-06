@@ -247,6 +247,9 @@ namespace SecondFace.Game.People
         /// 27 cells about it, the three nearest; inside only when all three face away from it (one nearest point may be the
         /// inside of a hem). False when no body point is near (more than a cell or so away: outside). <paramref name="depth"/>:
         /// how deep inside (m, positive), or outside, minus the gap to the surface's plane at the nearest point.</summary>
+        /// <summary>The widest patch of skin one point stands for (m).</summary>
+        public const float PatchMax = 0.04f;
+
         public bool Depth(Vector3 p, out float depth, out Vector3 normal)
         {
             Near = -1;
@@ -272,13 +275,16 @@ namespace SecondFace.Game.People
             Near = c0;
             // inside only behind each of the three, and over it, not beside it: a point beside the top of a shoulder or
             // below a hem is behind their planes and outside the body (such false contacts pushed arms out, 2026-11-06)
+            // (a point stands for a patch of skin no wider than PatchMax, however far its neighbours: a lone point on the
+            // upper back, 17 cm from them, read an upper arm swinging 14 cm out to the side as inside the torso and pushed
+            // it out to 41-44°, W3 and A1, 2026-11-06)
             float Under(int c)
             {
                 var v = p - P[c];
                 var d = -Vector3.Dot(v, N[c]);
                 if (d <= 0f) return d;
                 var across = (v + N[c] * d).magnitude;
-                return across <= Mathf.Max(_spacing[c], d) ? d : -1f;
+                return across <= Mathf.Max(Mathf.Min(_spacing[c], PatchMax), d) ? d : -1f;
             }
             var inside = Under(c0);
             if (c1 >= 0) inside = Mathf.Min(inside, Under(c1));
@@ -291,7 +297,7 @@ namespace SecondFace.Game.People
             var v0 = p - P[c0];
             var plane = Vector3.Dot(v0, N[c0]);
             var across = Mathf.Sqrt(Mathf.Max(0f, v0.sqrMagnitude - plane * plane));
-            var patch = 0.5f * _spacing[c0];
+            var patch = 0.5f * Mathf.Min(_spacing[c0], PatchMax);
             var gap = across <= patch ? Mathf.Abs(plane) : Mathf.Sqrt((across - patch) * (across - patch) + plane * plane);
             depth = inside > 0f ? inside : -gap;
             return true;

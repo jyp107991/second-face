@@ -69,7 +69,15 @@ namespace SecondFace.Game.People
         /// <summary>Moving, a foot faster than this (m/s, along the ground) is in its swing: it is held at least
         /// <see cref="SwingClear"/> off the ground, less as it slows, so it comes down only as it stops (a real heel
         /// meets the ground at under about 1 m/s; the clips' feet glided in at 2-4 m/s, 2026-11-06).</summary>
-        public float SwingFast = 1.5f, SwingSlow = 0.5f, SwingClear = 0.03f;
+        public float SwingFast = 1.5f, SwingSlow = 0.5f, SwingClear = 0.035f;
+        /// <summary>The swing's clearance comes in from <see cref="ClearSlow"/> to <see cref="ClearFast"/> (m/s): a foot
+        /// moving faster stands <see cref="SwingClear"/> or more up, out of the ground's reach, and one under 0.5 m/s (a foot
+        /// bearing weight, W6) no more than 2.5 cm (ramped up to 1.5 m/s, swinging
+        /// and released feet slid along under 2.5 cm at 0.5-1.6 m/s, the sneak at 3 cm with its lowest point in reach: W1,
+        /// 2026-11-06). The speed is the clip's foot's or the foot's as shown, whichever is faster (a held foot let go is
+        /// eased back to the clip's along the ground).</summary>
+        public float ClearSlow = 0.2f, ClearFast = 0.6f;
+        private Vector3 _shownL, _shownR, _shownLastL, _shownLastR; private int _shownFrames;
 
         private struct Foot
         {
@@ -179,7 +187,7 @@ namespace SecondFace.Game.People
             var standing = speed < StandSpeed;
             // a body set down somewhere else lifts its feet from where they were
             var moved = new Vector2(transform.position.x - _was.x, transform.position.z - _was.z).magnitude / dt;
-            if ((transform.position - _was).sqrMagnitude > 0.25f) { _l = default; _r = default; _sink = 0f; _haveEnd = false; _lockL = default; _lockR = default; moved = 0f; }
+            if ((transform.position - _was).sqrMagnitude > 0.25f) { _l = default; _r = default; _sink = 0f; _haveEnd = false; _lockL = default; _lockR = default; moved = 0f; _shownFrames = 0; }
             _was = transform.position;
             // the body's own pace over the ground (the locomotion's "Speed" is a clip's, not the body's: Pace)
             _bodySpeed = Mathf.Lerp(_bodySpeed, moved, 1f - Mathf.Exp(-10f * dt));
@@ -187,7 +195,7 @@ namespace SecondFace.Game.People
             _plant = standing ? Mathf.MoveTowards(_plant, 1f, dt / 0.15f) : 0f;
             var setOff = !standing && _wasStanding && _haveEnd;
             if (!standing) { _l.Planted = _r.Planted = false; _l.Stepping = _r.Stepping = false; }
-            else { _haveLast = false; _lockL = default; _lockR = default; }
+            else { _haveLast = false; _lockL = default; _lockR = default; _shownFrames = 0; }
 
             // the ground under each foot as the clip has it
             var gL = GroundAt(_footL.position, out var nL); var gR = GroundAt(_footR.position, out var nR);
@@ -217,6 +225,7 @@ namespace SecondFace.Game.People
             var yawL = Heading(Ahead(_footL, _toeL)); var yawR = Heading(Ahead(_footR, _toeR));
             if (_plant > 0f)
             {
+                _shownFrames = 0;   // (the feet as shown while moving are counted afresh when it sets off)
                 var (nl, nr) = Narrow(_footL.position, _footR.position);
                 Plant(ref _l, ref _r, nl, yawL, dt, true);
                 Plant(ref _r, ref _l, nr, yawR, dt, false);
@@ -237,13 +246,14 @@ namespace SecondFace.Game.People
                 var dipL = SoleOver(_footL, _toeL, _heelL, _backL, _ballL, _tipL, gL) + (wantL.y - _footL.position.y);
                 var dipR = SoleOver(_footR, _toeR, _heelR, _backR, _ballR, _tipR, gR) + (wantR.y - _footR.position.y);
                 // the swing's clearance: how high a foot moving at this pace must stand
-                float Clear(Vector3 now, Vector3 last)
+                float Clear(Vector3 now, Vector3 last, Vector3 shown, Vector3 shownLast)
                 {
                     if (!_haveLast) return 0f;
                     var v = new Vector2(now.x - last.x, now.z - last.z).magnitude / dt;
-                    return SwingClear * Mathf.Clamp01((v - SwingSlow) / (SwingFast - SwingSlow));
+                    if (_shownFrames >= 2) v = Mathf.Max(v, new Vector2(shown.x - shownLast.x, shown.z - shownLast.z).magnitude / dt);
+                    return SwingClear * Mathf.Clamp01((v - ClearSlow) / (ClearFast - ClearSlow));
                 }
-                var clearL = Clear(_footL.position, _lastL); var clearR = Clear(_footR.position, _lastR);
+                var clearL = Clear(_footL.position, _lastL, _shownL, _shownLastL); var clearR = Clear(_footR.position, _lastR, _shownR, _shownLastR);
                 var speedL = _haveLast ? new Vector2(_footL.position.x - _lastL.x, _footL.position.z - _lastL.z).magnitude / dt : 0f;
                 var speedR = _haveLast ? new Vector2(_footR.position.x - _lastR.x, _footR.position.z - _lastR.z).magnitude / dt : 0f;
                 _lastL = _footL.position; _lastR = _footR.position; _haveLast = true;
@@ -278,6 +288,7 @@ namespace SecondFace.Game.People
                 wantR = Reachable(_upR, _loR, _footR, wantR);
                 if ((wantL - _footL.position).sqrMagnitude > 4e-6f) Solve(_upL, _loL, _footL, wantL);
                 if ((wantR - _footR.position).sqrMagnitude > 4e-6f) Solve(_upR, _loR, _footR, wantR);
+                _shownLastL = _shownL; _shownLastR = _shownR; _shownL = _footL.position; _shownR = _footR.position; _shownFrames++;
             }
             GoalError = new Vector2(Vector3.Distance(_footL.position, wantL), Vector3.Distance(_footR.position, wantR));
             End(_footL, _toeL, _heelL, _ballL, _tipL, _endL, gL, out _endDipL); _endRotL = _footL.rotation;
