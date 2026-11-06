@@ -60,7 +60,7 @@ namespace SecondFace.Tests
             string L(Vector3 w) { var v = inv * (w - _hips.position) * 100f; return $"({v.x:0},{v.y:0},{v.z:0})"; }
             string N(Vector3 n) { var v = inv * n; return $"({v.x:0.0},{v.y:0.0},{v.z:0.0})"; }
             var parts = new List<string>();
-            string[] names = { "L elbow", "L hand", "R elbow", "R hand" };
+            string[] names = { "L push", "L hand", "R push", "R hand" };
             for (var q = 0; q < 4; q++)
             {
                 int a = _ac.DiagAt[q * 2], b = _ac.DiagAt[q * 2 + 1];

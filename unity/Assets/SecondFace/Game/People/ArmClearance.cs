@@ -336,7 +336,6 @@ namespace SecondFace.Game.People
             var g = Gap(_skin.Begin(first + 2), _skin.End(first + 2), 2, float.MaxValue);
             var left = first == BodySkin.Part.UpperArmL;
             DiagAt[left ? 2 : 6] = _gapArm; DiagAt[left ? 3 : 7] = _gapBody;
-            DiagAt[left ? 0 : 4] = -1; DiagAt[left ? 1 : 5] = -1;
             return g < float.MaxValue ? g : -1f;
         }
 
@@ -609,6 +608,9 @@ namespace SecondFace.Game.People
                 var ax = Vector3.Cross(arm, n);
                 if (ax.sqrMagnitude < 1e-8f) continue;
                 best = a; axis = ax.normalized;
+                // for the gate's report: the arm's point and the body's point the push is for (the elbow slots at rest)
+                var left = first == BodySkin.Part.UpperArmL;
+                DiagAt[left ? 0 : 4] = i; DiagAt[left ? 1 : 5] = _skin.Near;
             }
             return (best, axis);
         }
