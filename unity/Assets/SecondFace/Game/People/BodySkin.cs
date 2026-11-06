@@ -64,7 +64,9 @@ namespace SecondFace.Game.People
 
         // the body's points filed by cell, searched in the 27 cells about a point (as the gate's MotionProbe does: a
         // Rocketbox thigh has a vertex every 4-5 cm, so a point deep in it may have none within one cell's width)
-        private const float Cell = 0.03f;
+        // 5 cm cells: the 27 about a point reach at least 5 cm (with 3 cm, an arm 3 cm into a torso whose points stand 4-5
+        // cm apart found none near and read as outside, while the gate saw it 3 cm in, 2026-11-06)
+        private const float Cell = 0.05f;
         private const int Buckets = 2048;
         private readonly int[] _head = new int[Buckets];
         private int[] _next;
