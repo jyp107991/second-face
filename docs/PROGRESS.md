@@ -466,6 +466,20 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   (hair cards); his left knee bent inward at rest; the vest layer reads as a stiff slab; a business blazer (lore: only the
   megacity's rich) whose stiff hem stands his hands out. **Open:** A1 54 (four broad or uniformed men, 20-25°, in every
   standing state), W6 13, A4 9, C1 5, F4 1; the whole cast running now.
+- **2026-11-06 (night), the whole cast measured** (red; whole-cast verdict committed `60642cc1`). 79 people at the fixed
+  step: **1513** past their limits — A1 742, A4 511, W6 116, C1 90, A3 33, W3 10, F4 7, F5 2, F1 1, F2 1; **W1 and W2
+  none** (the feet's slide and pace are solved across the cast). The resting arms are 83 % of it, almost all men: every
+  family of men fails A1 (cap_* 222 in 14 people, Male_Adult 146 in 15, Construction_Male 81, Business_Male 69, Medical
+  86, rel_* 50, Police 28), women hardly (Female_Adult 9 in 4). 28 people fail A1 in all 17 standing states, mostly
+  uniformed or coated bodies whose Rocketbox outfit carries stiff gear in the body mesh (duty belts, lab coats, a
+  blazer's flared hem). Traced (`_x`, Male_Adult_12): the elbow on the side the idle leans toward is pushed out by the
+  waist at elbow height (lean 0.5-0.8, bend at its most), the other arm hangs at 9-14°. Tried: counting only the upper
+  arm's lower part as touching (A1 54 → 29 on the quick set but C1 5 → 61, the elbow sinking into the waist; told as
+  the gate tells it, A1 57: reverted). **The conflict is geometric** (waist and stiff clothes beside the elbow wider
+  than an arm hanging within 20° allows, the gate counting a sunken elbow as C1). **Next:** (1) the off-lore stiff
+  outfits (uniforms, lab coats, blazers: lore allows suits only on the megacity's rich) reworked or kept to roles where
+  they fit, a cast decision to put to the owner in words; (2) for the men in plain clothes, the elbow's response to the
+  waist in the leaning idles; then W6 116 (the jog's and sneak's stance), C1 90, A3 33.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
