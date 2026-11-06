@@ -266,6 +266,10 @@ namespace SecondFace.Game.People
                 wantL = Held(ref _lockL, wantL, dipL, speedL, body, _footL, _toeL, _heelL, _ballL, _tipL, gL, dt);
                 wantR = Held(ref _lockR, wantR, dipR, speedR, body, _footR, _toeR, _heelR, _ballR, _tipR, gR, dt);
                 Diag[3] = _lockL.On ? 1f : _lockL.Release > 0f ? 0.5f : 0f; Diag[7] = _lockR.On ? 1f : _lockR.Release > 0f ? 0.5f : 0f;
+                // within the leg's reach, by height alone: an unreachable place (a held foot put down under a straight leg)
+                // was reached toward and slid the foot along the ground (W1, 2026-11-06)
+                wantL = Reachable(_upL, _loL, _footL, wantL);
+                wantR = Reachable(_upR, _loR, _footR, wantR);
                 if ((wantL - _footL.position).sqrMagnitude > 4e-6f) Solve(_upL, _loL, _footL, wantL);
                 if ((wantR - _footR.position).sqrMagnitude > 4e-6f) Solve(_upR, _loR, _footR, wantR);
             }
@@ -315,6 +319,19 @@ namespace SecondFace.Game.People
                 var t = k.Release * k.Release * (3f - 2f * k.Release);
                 return new Vector3(Mathf.Lerp(want.x, k.From.x, t), want.y - k.Over * t, Mathf.Lerp(want.z, k.From.z, t));
             }
+            return want;
+        }
+
+        /// <summary>A place for the ankle the leg can reach: the same spot on the ground, no lower than the leg's length allows.</summary>
+        private static Vector3 Reachable(Transform up, Transform lo, Transform foot, Vector3 want)
+        {
+            var h = up.position;
+            var len = (lo.position - h).magnitude + (foot.position - lo.position).magnitude - 0.005f;
+            var v = want - h;
+            if (v.sqrMagnitude <= len * len) return want;
+            var flat = new Vector2(v.x, v.z).magnitude;
+            if (flat >= len) return want;   // too far along the ground: left to the solve
+            want.y = Mathf.Max(want.y, h.y - Mathf.Sqrt(len * len - flat * flat));
             return want;
         }
 
