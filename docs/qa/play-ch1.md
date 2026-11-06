@@ -53,6 +53,9 @@ no S1/S2 open at hand-over). Spoiler rule: story beats are named, never explaine
 | T22 | S2 | idle_c (CMU 111_28) holds the hands up in front of the body; every person shared it | `LocomotionBuild.Idles` | fixed (out of the pool) |
 | T23 | S2 | Palms turned forward and up in the walk's arm swing (a waiter's carry) | `HandPose` | fixed (A6 passes) |
 | T24 | S2 | Walking: the planted heel and ball slide (W1 median 18 cm/s at 1.25 m/s; the sneak's short loop worse) | clips, `FootPlant` | open |
+| T25 | S2 | The owner (2026-11-06): the outfits read "a stroll in California": Rocketbox's own tees, shorts, jeans and sneakers, only re-dyed | `RocketboxLayers`, Core `RbLayers`, `RbLayerSet` | in progress: ten layers cut from each body's skin and worn by trade (boots over the trousers, vests, capes, jackets, rigs, wraps; bare legs covered; `docs/evidence/unity/p4/layers/`). Still open: the shells are plain (no seams, pockets, buckles), jackets read padded on the low-poly bodies, a settler in a white tee with only a gaiter is still too clean, construction hard hats, colours too muted |
+| T26 | S2 | Shadows in stair-stepped blocks (1024 px over 50 m, one cascade, hard) | URP assets | fixed (2048 px, two cascades, soft, 40 m) |
+| T27 | S2 | Seen from behind and above, long jeans pooled over the shoes: legs read as stumps (the owner: "look at the feet") | wardrobe | fixed for frontier trades (boots over the trousers); the feet measured on the ground in every view (`FeetCloseUp`) |
 
 ## 3. Pass one: player
 
