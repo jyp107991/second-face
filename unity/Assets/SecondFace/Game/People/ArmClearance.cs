@@ -320,22 +320,25 @@ namespace SecondFace.Game.People
             if (w < 0.99f) return;
             var gapE = Mathf.Min(Gap(_skin.Begin(first), _skin.End(first), 1, 0.08f), Gap(_skin.Begin(first + 1), _skin.End(first + 1), 1, 0.08f, lower.position, 0.08f));
             Diag[side < 0 ? 12 : 13] = poleOut * 100f; Diag[side < 0 ? 14 : 15] = flexAdd;
+            // the bend first (it swings the forearm forward off the hip, the belt, a vest's hem, and leaves the upper arm
+            // hanging), the elbow out to the side only after (out first stood broad men's upper arms 19-28° off the
+            // vertical, A1, 2026-11-06)
             if (gapE < ElbowGap)
             {
-                if (poleOut < 1f) poleOut = Mathf.Min(1f, poleOut + 0.05f);
-                else flexAdd = Mathf.Min(FlexMore, flexAdd + 1f);
+                if (flexAdd < FlexMore) flexAdd = Mathf.Min(FlexMore, flexAdd + 1f);
+                else poleOut = Mathf.Min(1f, poleOut + 0.05f);
             }
             else if (gapE > ElbowGap + 0.01f)
             {
-                if (flexAdd > 0f) flexAdd = Mathf.Max(0f, flexAdd - 0.5f);
-                else poleOut = Mathf.Max(PoleOut, poleOut - 0.02f);
+                if (poleOut > PoleOut) poleOut = Mathf.Max(PoleOut, poleOut - 0.02f);
+                else flexAdd = Mathf.Max(0f, flexAdd - 0.5f);
             }
         }
 
         /// <summary>At rest: the elbow's lean out to the side (0 straight back, 1 straight out) it starts from, and how much
         /// further the elbow may bend (degrees) to stand clear of a broad chest with the hand still at the thigh.</summary>
-        public float PoleOut = 0.35f, FlexMore = 16f;
-        private float _poleOutL = 0.35f, _poleOutR = 0.35f, _flexAddL, _flexAddR;
+        public float PoleOut = 0.2f, FlexMore = 16f;
+        private float _poleOutL = 0.2f, _poleOutR = 0.2f, _flexAddL, _flexAddR;
 
         /// <summary>The hand's gap to the body now (m), for the report.</summary>
         private float HandGap(BodySkin.Part first)
