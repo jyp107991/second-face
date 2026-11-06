@@ -440,6 +440,26 @@ namespace SecondFace.Tests
 
         private static Vector3 Flat(Vector3 v) => new(v.x, 0f, v.z);
 
+        /// <summary>What the game's own skin says at a clipping vertex: its nearest arm point, how deep it reads it, and the body
+        /// point it judged by (for the report: a clip the game does not see is a skin problem, one it sees is a push undone).</summary>
+        private string Runtime(Vector3[] v, int at)
+        {
+            var skin = GetComponent<SecondFace.Game.People.BodySkin>();
+            if (skin == null || !skin.Ready || at < 0) return "";
+            var p = v[at];
+            int best = -1; var bd = float.MaxValue;
+            for (int i = skin.Begin(SecondFace.Game.People.BodySkin.Part.UpperArmL), to = skin.End(SecondFace.Game.People.BodySkin.Part.HandR); i < to; i++)
+            {
+                var d = (skin.P[i] - p).sqrMagnitude;
+                if (d < bd) { bd = d; best = i; }
+            }
+            if (best < 0) return "";
+            var inside = skin.Depth(skin.P[best], out var depth, out var n);
+            var near = skin.Near;
+            var nearDesc = near >= 0 ? $"{skin.PartOf(near)} point {near} off {skin.Off(near) * 100f:0.0} cm, {(skin.P[near] - skin.P[best]).magnitude * 100f:0.0} cm away" : "none";
+            return $"; the game's nearest arm point ({skin.PartOf(best)} {best}, {Mathf.Sqrt(bd) * 100f:0.0} cm from it) reads {(inside ? (depth * 100f).ToString("0.0") : "nothing")} cm, by {nearDesc}";
+        }
+
         private SecondFace.Game.People.FootPlant _fp;
         private string FootDiag()
         {
@@ -631,6 +651,7 @@ namespace SecondFace.Tests
             }
             var depthMax = 0f;
             string worst = null;
+            var worstVertex = -1;
             var gapL = float.MaxValue; var gapR = float.MaxValue;
             // the hips' and thighs' points for the hands' gap, every one (the gap may be wider than the grid's reach; every
             // third of a Rocketbox mesh's points, 4-5 cm apart, overstated the gap by several cm)
@@ -684,13 +705,14 @@ namespace SecondFace.Tests
                 {
                     if (depth <= depthMax || !InBody(v[i])) continue;
                     depthMax = depth;
+                    worstVertex = i;
                     worst = $"{(Part)_seg[i]} vertex {i} {depth * 100f:0.0} cm under {(Part)_seg[i0]} vertex {i0} (at {(v[i0].y - _root.position.y):0.00} m, normal {n[i0].x:0.00},{n[i0].y:0.00},{n[i0].z:0.00} in the body's frame {Quaternion.Inverse(_root.rotation) * n[i0]})";
                     break;
                 }
                 _candidates.Clear();
             }
             Add("C1", depthMax * 100f);
-            if (depthMax > 0.015f && worst != null && (!WorstClip.TryGetValue(State, out var w) || w.Item1 < depthMax)) WorstClip[State] = (depthMax, worst);
+            if (depthMax > 0.015f && worst != null && (!WorstClip.TryGetValue(State, out var w) || w.Item1 < depthMax)) WorstClip[State] = (depthMax, worst + Runtime(v, worstVertex));
             if (k == K.Stand)
             {
                 if (gapL < float.MaxValue) Add("A4", Mathf.Sqrt(gapL) * 100f);
