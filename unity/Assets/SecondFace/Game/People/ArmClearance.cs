@@ -292,7 +292,9 @@ namespace SecondFace.Game.People
         {
             if (upper == null || lower == null || hand == null) return;
             if (carry < 0f) carry = BaseCarry(upper, lower, hand);
-            var step = RestRate * dt;
+            // drawn in at RestRate; let go faster once the person moves or gestures (a roll held into a jog's first strides
+            // threw the arm's swing past its cap, W3, 2026-11-06)
+            var step = (resting ? RestRate : Release) * dt;
             var shoulder = upper.position; var elbow = lower.position;
             var upperLen = Mathf.Max(0.15f, (elbow - shoulder).magnitude);
             var hs = _skin.Begin(first + 2); var he = _skin.End(first + 2);

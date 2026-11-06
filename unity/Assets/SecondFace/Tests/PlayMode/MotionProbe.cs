@@ -465,6 +465,7 @@ namespace SecondFace.Tests
         // the mesh: soles, hands at the thighs, nothing inside the body
         private readonly Vector3[] _sole = new Vector3[4];
         private readonly float[] _soleH = { 1f, 1f, 1f, 1f };
+        private readonly Vector3[] _soleWas = new Vector3[4];
         /// <summary>The vertices of each foot's heel and ball, chosen at rest (left heel, left ball, right heel, right ball).</summary>
         private readonly int[] _solePoint = { -1, -1, -1, -1 };
         private float _soleT;
@@ -540,6 +541,17 @@ namespace SecondFace.Tests
                 // the stance's height: the lower foot's sole, while it bears weight (nearly still: not a swing, not a jog's
                 // flight, when both feet are off the ground and moving)
                 if (lowestSide >= 0 && still[lowestSide] < 0.5f) Add("W6", lowest * 100f);
+                // the soles' trace (the gate's own heel and ball points, over the ground, and how fast each moves) beside
+                // what the foot plant saw, frame by frame
+                if (TracePath != null && State != null && TraceState != null && State.StartsWith(TraceState))
+                {
+                    var dtS = _soleT > 0f && Time.time > _soleT ? Time.time - _soleT : 0f;
+                    string Sp(int q) => dtS > 0f && _solePoint[q] >= 0 ? (Flat(v[_solePoint[q]] - _soleWas[q]).magnitude / dtS).ToString("0.00") : "";
+                    var path = TracePath.Replace(".csv", "_soles.csv");
+                    if (!System.IO.File.Exists(path)) System.IO.File.WriteAllText(path, "state,t,body,hL,bL,hR,bR,vhL,vbL,vhR,vbR,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR\n");
+                    System.IO.File.AppendAllText(path, $"{State},{Time.time:0.000},{body:0.00},{_soleH[0]:0.000},{_soleH[1]:0.000},{_soleH[2]:0.000},{_soleH[3]:0.000},{Sp(0)},{Sp(1)},{Sp(2)},{Sp(3)},{FootDiag()}\n");
+                }
+                for (var q = 0; q < 4; q++) if (_solePoint[q] >= 0) _soleWas[q] = v[_solePoint[q]];
                 _soleT = Time.time; _soleRoot = _root.position;
             }
             else _soleT = 0f;
