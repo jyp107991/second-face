@@ -192,8 +192,8 @@ namespace SecondFace.Game.People
                     // the place nudged by the gap the hand really has (its shape, the fingers' curl, a coat's hem)
                     if (_restW > 0.99f)
                     {
-                        if (Diag[1] > -0.5f) _adaptL = Mathf.Clamp(_adaptL + Mathf.Clamp((SkinGap - Diag[1]) * 0.5f, -0.01f, 0.01f), -0.03f, 0.12f);
-                        if (Diag[3] > -0.5f) _adaptR = Mathf.Clamp(_adaptR + Mathf.Clamp((SkinGap - Diag[3]) * 0.5f, -0.01f, 0.01f), -0.03f, 0.12f);
+                        if (Diag[1] > -0.5f) _adaptL = Mathf.Clamp(_adaptL + Mathf.Clamp((_wantGapL - Diag[1]) * 0.5f, -0.01f, 0.01f), -0.03f, 0.12f);
+                        if (Diag[3] > -0.5f) _adaptR = Mathf.Clamp(_adaptR + Mathf.Clamp((_wantGapR - Diag[3]) * 0.5f, -0.01f, 0.01f), -0.03f, 0.12f);
                     }
                     Diag[0] = Diag[2] = 0f;
                 }
@@ -233,7 +233,7 @@ namespace SecondFace.Game.People
         /// Blended in over <see cref="RestIn"/> s on coming to rest, out over <see cref="RestOut2"/> s on moving or gesturing.</summary>
         public bool RestReach = true;
         public float RestFlex = 15f, RestFront = 15f, RestIn = 0.6f, RestOut2 = 0.25f, RestFar = 0.035f;
-        private float _restW, _flexVar = float.NaN, _frontVar, _adaptL, _adaptR;
+        private float _restW, _flexVar = float.NaN, _frontVar, _adaptL, _adaptR, _wantGapL = 0.01f, _wantGapR = 0.01f;
 
         private void RestArm(Transform upper, Transform lower, Transform hand, int side, BodySkin.Part first, float w)
         {
@@ -294,7 +294,9 @@ namespace SecondFace.Game.People
                 // out to 20-30° as the hips swayed under a broad shoulder, A1, 2026-11-06)
                 var hang = new Vector3(S.x, 0f, S.z) + fwd * (l2 * Mathf.Sin(flex) * 0.8f);
                 var side0 = Vector3.Dot(hang - new Vector3(axis.x, 0f, axis.z), dir) - (surf + 0.015f);
-                var want = Mathf.Clamp(side0, SkinGap, RestFar) + adapt;
+                var gapWant = Mathf.Clamp(side0, SkinGap, RestFar);
+                if (side < 0) _wantGapL = gapWant; else _wantGapR = gapWant;
+                var want = gapWant + adapt;
                 var across = hang - dir * Vector3.Dot(hang - new Vector3(axis.x, 0f, axis.z), dir);
                 var flat = new Vector3(across.x, 0f, across.z) + dir * (surf + 0.015f + want);
                 var h = new Vector2(flat.x - S.x, flat.z - S.z).magnitude;
