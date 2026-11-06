@@ -67,7 +67,7 @@ namespace SecondFace.Game.People
         /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
         /// <see cref="LockRelease"/> s.</summary>
         /// <summary>How far above the toe's tip the ball may be and still be what a held foot stands on (m).</summary>
-        public float BallOverTip = 0.03f;
+        public float BallOverTip = 0.08f;   // (3 cm: a jogging forefoot pointed 60° came down on its tip and the ball slid as it turned about it, W2)
         public float LockDown = 0.025f, LockLift = 0.03f, LockReach = 0.12f, LockRelease = 0.12f;   // (down from 2.5 cm, where the gate counts a sole as down: caught at 2, a jogging foot landed sliding 1.2-1.5 m/s through the last half centimetre, W1/W2)
         /// <summary>Moving, a foot faster than this (m/s, along the ground) is in its swing: it is held at least
         /// <see cref="SwingClear"/> off the ground, less as it slows, so it comes down only as it stops (a real heel
@@ -178,7 +178,7 @@ namespace SecondFace.Game.People
         /// <summary>The most a moving foot is pointed toes-down while its ankle is low (degrees), fading from full at
         /// <see cref="PitchLow"/>.x of the ankle's height over a flat sole to none at .y (m); its toes straightened
         /// toward flat over the same.</summary>
-        public float LandPitch = 25f;   // (only coming down, not held: held too, it lifted the jog's stance foot at push-off 3-8 cm, W6, 2026-11-06)
+        public float LandPitch = 90f;   // (off: a 25° limit lifted the jog's stance foot 3-8 cm, held or coming down, W6, 2026-11-06; the ball's pivot holds the landing instead)
         private float _lastEL, _lastER;
         public Vector2 PitchLow = new Vector2(0.04f, 0.10f);
 
