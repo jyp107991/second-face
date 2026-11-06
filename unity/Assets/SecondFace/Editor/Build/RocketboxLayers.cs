@@ -386,6 +386,13 @@ namespace SecondFace.EditorTools
                 // gate saw 1.6-3 cm into the chest's side while walking and gesturing, 2026-11-06)
                 if ((part == SkinPart.UpperArmL || part == SkinPart.UpperArmR) && along < 0.6f) continue;
                 var cell = part switch { SkinPart.HandL or SkinPart.HandR => 0.02f, SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR => 0.025f, _ => 0.03f };
+                // the torso's and thighs' sides, where the arms and hands rest, every 1.5 cm (with the side panels thin under
+                // the arms, arms rest on the body itself, and points 3-6 cm apart missed them 2 cm into it, C1, 2026-11-06)
+                if (part is SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR)
+                {
+                    var nb = root.InverseTransformDirection((bones[bw[i].boneIndex0].localToWorldMatrix * bp[bw[i].boneIndex0]).MultiplyVector(nor[i])).normalized;
+                    if (BodySkin.SideShare(nb.x) > 0.3f || Mathf.Abs(nb.x) > 0.45f) cell = 0.015f;
+                }
                 var q = world[i] / cell;
                 var key = (Mathf.FloorToInt(q.x), Mathf.FloorToInt(q.y), Mathf.FloorToInt(q.z), part);
                 var centre = new Vector3(key.Item1 + 0.5f, key.Item2 + 0.5f, key.Item3 + 0.5f) * cell;
