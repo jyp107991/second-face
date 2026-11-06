@@ -177,9 +177,9 @@ namespace SecondFace.Game.People
                 _skin.Pose();
                 SkinRest(_lu, _ll, _lh, BodySkin.Part.UpperArmL, -1, ref _restL, ref _fwdL, ref _twistL, ref _carryL, resting, dt);
                 SkinRest(_ru, _rl, _rh, BodySkin.Part.UpperArmR, 1, ref _restR, ref _fwdR, ref _twistR, ref _carryR, resting, dt);
-                if (!resting) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
                 SkinClear(_lu, BodySkin.Part.UpperArmL, ref _angleL, ref _axisL, dt);
                 SkinClear(_ru, BodySkin.Part.UpperArmR, ref _angleR, ref _axisR, dt);
+                if (!resting) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
                 Diag[4] = _restL; Diag[5] = _fwdL; Diag[6] = _carryL; Diag[7] = _angleL;
                 Diag[10] = _restR; Diag[11] = _fwdR; Diag[8] = _carryR; Diag[9] = _angleR;
                 Diag[12] = _twistL; Diag[13] = _twistR;
@@ -252,19 +252,29 @@ namespace SecondFace.Game.People
         }
 
         /// <summary>Moving: an upper arm's swing past <see cref="SwingSoft"/>° from the vertical is eased, a share
-        /// <see cref="SwingKeep"/> of the excess kept (docs/PEOPLE_MOTION.md W3: a jogging arm swings to about 45°; the
-        /// captured jog's peaks, with the push-out round a coat, reached 55-61°, 2026-11-06).</summary>
+        /// <see cref="SwingKeep"/> of the excess kept, by its swing forward and back alone, after the clearance has set how
+        /// far out it stands (docs/PEOPLE_MOTION.md W3: a jogging arm swings to about 45°; the captured jog's peaks, with the
+        /// push-out round a coat, reached 55-61°; easing it toward the vertical drew it into the body and the clearance
+        /// pushed it straight back, 2026-11-06); then cleared of the body again where the ease brought it in.</summary>
         public float SwingSoft = 38f, SwingKeep = 0.4f;
 
         private void Swing(Transform upper, Transform lower, BodySkin.Part first)
         {
             if (upper == null || lower == null) return;
-            var dir = lower.position - upper.position;
+            var dir = (lower.position - upper.position).normalized;
             var a = Vector3.Angle(dir, Vector3.down);
             if (a <= SwingSoft) return;
-            var ax = Vector3.Cross(dir, Vector3.down);
-            if (ax.sqrMagnitude < 1e-8f) return;
-            TurnArm(upper, first, (a - SwingSoft) * (1f - SwingKeep), ax);   // the skin's points with it, for the clearance after
+            var want = SwingSoft + (a - SwingSoft) * SwingKeep;
+            // the swing forward (+) or back (-) and the stand out to the side, degrees
+            var fwd = transform.forward; var right = transform.right;
+            var sag = Mathf.Atan2(Vector3.Dot(dir, fwd), Mathf.Max(1e-4f, -dir.y)) * Mathf.Rad2Deg;
+            var side = Mathf.Asin(Mathf.Clamp(Mathf.Abs(Vector3.Dot(dir, right)), 0f, 1f)) * Mathf.Rad2Deg;
+            var keep = Mathf.Sqrt(Mathf.Max(0f, want * want - side * side));
+            if (Mathf.Abs(sag) <= keep) return;
+            var turn = sag - Mathf.Sign(sag) * keep;   // about the body's right: + moves the arm back
+            TurnArm(upper, first, turn, right);
+            var (more, dir2) = SkinNeed(upper, first);
+            if (more > 0.01f) TurnArm(upper, first, more, dir2);
         }
 
         /// <summary>Turns an upper arm at the shoulder, and its points with it.</summary>
