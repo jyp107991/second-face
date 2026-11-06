@@ -44,8 +44,9 @@ namespace SecondFace.Game.People
         private sealed class Set
         {
             public string[] Layers;
+            public bool[] ThinSides;
             public readonly int[] Start = new int[Parts + 1];
-            public byte[] B0, B1, Flags;
+            public byte[] B0, B1, Flags, Side;
             public float[] W;
             public Vector3[] P0, P1, N0, N1;
             public uint[] Mask;
@@ -124,16 +125,18 @@ namespace SecondFace.Game.People
             using (var gz = new GZipStream(new MemoryStream(data.bytes), CompressionMode.Decompress))
             using (var r = new BinaryReader(gz))
             {
-                if (new string(r.ReadChars(4)) != "RBS1") throw new InvalidDataException("not a body skin");
+                var magic = new string(r.ReadChars(4));
+                if (magic != "RBS1" && magic != "RBS2") throw new InvalidDataException("not a body skin");
+                var v2 = magic == "RBS2";   // each layer's thinning at the sides, and each point's facing sideways
                 var nl = r.ReadInt32();
-                s.Layers = new string[nl];
-                for (var k = 0; k < nl; k++) s.Layers[k] = r.ReadString();
+                s.Layers = new string[nl]; s.ThinSides = new bool[nl];
+                for (var k = 0; k < nl; k++) { s.Layers[k] = r.ReadString(); if (v2) s.ThinSides[k] = r.ReadByte() != 0; }
                 var counts = new int[Parts];
                 for (var p = 0; p < Parts; p++) counts[p] = r.ReadInt32();
                 var n = 0;
                 for (var p = 0; p < Parts; p++) { s.Start[p] = n; n += counts[p]; }
                 s.Start[Parts] = n;
-                s.B0 = new byte[n]; s.B1 = new byte[n]; s.Flags = new byte[n]; s.W = new float[n]; s.Mask = new uint[n];
+                s.B0 = new byte[n]; s.B1 = new byte[n]; s.Flags = new byte[n]; s.W = new float[n]; s.Mask = new uint[n]; s.Side = new byte[n];
                 s.P0 = new Vector3[n]; s.P1 = new Vector3[n]; s.N0 = new Vector3[n]; s.N1 = new Vector3[n];
                 var used = new HashSet<int>();
                 Vector3 V() => new(r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
@@ -142,6 +145,7 @@ namespace SecondFace.Game.People
                     s.B0[i] = r.ReadByte(); s.B1[i] = r.ReadByte(); s.W[i] = r.ReadByte() / 255f;
                     s.P0[i] = V(); s.N0[i] = V(); s.P1[i] = V(); s.N1[i] = V();
                     s.Flags[i] = r.ReadByte(); s.Mask[i] = r.ReadUInt32();
+                    if (v2) s.Side[i] = r.ReadByte();
                     used.Add(s.B0[i]); used.Add(s.B1[i]);
                 }
                 s.UsedBones = new int[used.Count];
@@ -167,7 +171,9 @@ namespace SecondFace.Game.People
             {
                 var m = _set.Mask[i] & worn;
                 var off = 0f;
-                for (var k = 0; m != 0; k++, m >>= 1) if ((m & 1) != 0) off = Mathf.Max(off, thick[k]);
+                var side = _set.Side[i] / 255f;
+                for (var k = 0; m != 0; k++, m >>= 1)
+                    if ((m & 1) != 0) off = Mathf.Max(off, _set.ThinSides[k] ? Mathf.Lerp(thick[k], Mathf.Min(thick[k], SideThick), side) : thick[k]);
                 _off[i] = off;
             }
         }
@@ -247,6 +253,12 @@ namespace SecondFace.Game.People
         /// 27 cells about it, the three nearest; inside only when all three face away from it (one nearest point may be the
         /// inside of a hem). False when no body point is near (more than a cell or so away: outside). <paramref name="depth"/>:
         /// how deep inside (m, positive), or outside, minus the gap to the surface's plane at the nearest point.</summary>
+        /// <summary>Layers that thin at the torso's sides (a vest's, a jacket's, webbing's side panels under the arms) are
+        /// this thick there (m), by how far the skin faces sideways (<see cref="SideShare"/>): at their full thickness a broad
+        /// man's arm was held out off them, A1 21-29°, 2026-11-06.</summary>
+        public const float SideThick = 0.004f;
+        public static float SideShare(float lateralNormal) => Mathf.InverseLerp(0.55f, 0.85f, Mathf.Abs(lateralNormal));
+
         /// <summary>The widest patch of skin one point stands for (m).</summary>
         public const float PatchMax = 0.06f;
 

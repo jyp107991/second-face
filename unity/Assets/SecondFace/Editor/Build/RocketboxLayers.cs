@@ -49,6 +49,7 @@ namespace SecondFace.EditorTools
             public float Thick;
             public Func<V, Joints, bool> Keep;
             public Func<V, Joints, float> ThickAt;   // optional per-vertex thickness (boots: thin at the foot, a shaft over the trousers)
+            public bool ThinSides;   // thinner at the torso's sides, as BodySkin.SideThick (its side panels under the arms)
             public float Tile = 0.3f;
         }
 
@@ -66,15 +67,18 @@ namespace SecondFace.EditorTools
                 Keep = (v, j) => (v.F == Fam.Neck && v.P.y <= j.NeckTop - 0.03f)
                                  || ((v.F is Fam.Torso or Fam.Shoulder) && Mathf.Abs(v.P.x) <= 0.11f && (v.P.z > 0f ? v.P.y >= j.ChestTop - 0.02f : v.P.y >= j.Neck - 0.03f)) },
             // a work jacket: torso to the waist, sleeves to the wrist, a stand collar
-            new() { Id = "bomber", Cloth = RbLayerSet.Fabric.Twill, Colour = RbLayerSet.Dye.Shell, Thick = 0.009f,
+            new() { Id = "bomber", Cloth = RbLayerSet.Fabric.Twill, Colour = RbLayerSet.Dye.Shell, Thick = 0.009f, ThinSides = true,
+                ThickAt = (v, j) => v.F == Fam.Torso ? Mathf.Lerp(0.009f, Mathf.Min(0.009f, BodySkin.SideThick), BodySkin.SideShare(v.N.x)) : 0.009f,
                 Keep = (v, j) => ((v.F is Fam.Torso or Fam.Shoulder) && v.P.y >= j.Waist - 0.04f) || v.F == Fam.UpperArm
                                  || (v.F == Fam.Forearm && Vector3.Distance(v.P, v.Side < 0 ? j.WristL : j.WristR) > 0.025f) || (v.F == Fam.Neck && v.P.y <= j.Neck + 0.04f) },
             // a harness vest: torso and shoulders, sleeveless, a round neck at the front, to the waist
-            new() { Id = "vest", Cloth = RbLayerSet.Fabric.Canvas, Colour = RbLayerSet.Dye.Shell, Thick = 0.013f,
+            new() { Id = "vest", Cloth = RbLayerSet.Fabric.Canvas, Colour = RbLayerSet.Dye.Shell, Thick = 0.013f, ThinSides = true,
+                ThickAt = (v, j) => v.F == Fam.Torso ? Mathf.Lerp(0.013f, Mathf.Min(0.013f, BodySkin.SideThick), BodySkin.SideShare(v.N.x)) : 0.013f,
                 Keep = (v, j) => (v.F is Fam.Torso or Fam.Shoulder) && v.P.y >= j.Waist - 0.06f && !(v.P.y > j.ChestTop - 0.03f && Mathf.Abs(v.P.x) < 0.075f && v.P.z > 0f)
                                  && Vector3.Distance(v.P, v.P.x < 0 ? j.ShoulderL : j.ShoulderR) > 0.05f },
             // its webbing: two shoulder straps front and back and a band at the waist
-            new() { Id = "straps", Cloth = RbLayerSet.Fabric.Webbing, Colour = RbLayerSet.Dye.Dark, Thick = 0.017f, Tile = 0.15f,
+            new() { Id = "straps", Cloth = RbLayerSet.Fabric.Webbing, Colour = RbLayerSet.Dye.Dark, Thick = 0.017f, Tile = 0.15f, ThinSides = true,
+                ThickAt = (v, j) => v.F == Fam.Torso ? Mathf.Lerp(0.017f, Mathf.Min(0.017f, BodySkin.SideThick), BodySkin.SideShare(v.N.x)) : 0.017f,
                 Keep = (v, j) => (v.F is Fam.Torso or Fam.Shoulder) && v.P.y >= j.Waist - 0.06f
                                  && ((Mathf.Abs(Mathf.Abs(v.P.x) - 0.095f) < 0.02f && v.P.y >= j.Chest - 0.06f) || Mathf.Abs(v.P.y - (j.Waist + 0.0f)) < 0.025f) },
             // a shoulder cape: the shoulders, the upper chest, the back to below the shoulder blades, the top of the arms
@@ -400,9 +404,9 @@ namespace SecondFace.EditorTools
             using (var gz = new GZipStream(ms, System.IO.Compression.CompressionLevel.Optimal, true))
             using (var w = new BinaryWriter(gz))
             {
-                w.Write("RBS1".ToCharArray());
+                w.Write("RBS2".ToCharArray());
                 w.Write(Defs.Length);
-                foreach (var def in Defs) w.Write(def.Id);
+                foreach (var def in Defs) { w.Write(def.Id); w.Write((byte)(def.ThinSides ? 1 : 0)); }
                 for (var p = 0; p < 9; p++) w.Write(byPart[p].Count);
                 for (var p = 0; p < 9; p++)
                     foreach (var i in byPart[p])
@@ -423,6 +427,9 @@ namespace SecondFace.EditorTools
                         uint mask = 0;
                         for (var k = 0; k < keeps.Count && k < 32; k++) if (keeps[k][i]) mask |= 1u << k;
                         w.Write(mask);
+                        // how far it faces sideways, in the body's frame (where layers thin under the arms)
+                        var nw = (bones[b.boneIndex0].localToWorldMatrix * bp[b.boneIndex0]).MultiplyVector(nor[i]);
+                        w.Write((byte)Mathf.RoundToInt(BodySkin.SideShare(root.InverseTransformDirection(nw).normalized.x) * 255f));
                     }
             }
             var outPath = $"{dir}/{id}_skin.bytes";
