@@ -187,25 +187,6 @@ namespace SecondFace.Tests
                     else if (along > toesAlong - 0.04f && along < toesAlong + 0.02f && bind[i].y < bb) { bb = bind[i].y; _solePoint[side * 2 + 1] = i; }
                 }
             }
-            // the game's own skin points (BodySkin, posed from the bones) against the mesh they were taken from: each should
-            // lie on a vertex (a misfit here makes ArmClearance hold the arms off a body that is not there)
-            var skin = GetComponent<SecondFace.Game.People.BodySkin>();
-            if (skin != null && skin.Ready)
-            {
-                skin.Pose();
-                var worstFit = 0f; var sumFit = 0.0; var worstAt = -1; var normalOff = 0;
-                for (var k = 0; k < skin.Count; k++)
-                {
-                    var best = float.MaxValue; var bi = -1;
-                    for (var i = 0; i < bind.Length; i++) { var d = (bind[i] - skin.P[k]).sqrMagnitude; if (d < best) { best = d; bi = i; } }
-                    var dist = Mathf.Sqrt(best) - skin.Off(k);
-                    sumFit += dist;
-                    if (dist > worstFit) { worstFit = dist; worstAt = k; }
-                    if (bi >= 0 && _bindNormals != null && Vector3.Dot(_bindNormals[bi], skin.N[k]) < 0.5f) normalOff++;
-                }
-                SkinWhy = $"{skin.Explain(0)}; the person at {_root.position}, the body renderer at {_smr.transform.position}";
-                SkinFit = $"mean {sumFit / Mathf.Max(1, skin.Count) * 100:0.00} cm, worst {worstFit * 100:0.0} cm (point {worstAt}), normals off {normalOff} of {skin.Count}; its body {(skin.Body != null ? skin.Body.name + (skin.Body.transform.IsChildOf(_root) ? " (this person's)" : " (NOT this person's)") : "none")}";
-            }
             _ankleSoleL = SoleOffset(bind, Part.FootL, _bindAnkleL, _bindToeL, out _toeSoleL);
             _ankleSoleR = SoleOffset(bind, Part.FootR, _bindAnkleR, _bindToeR, out _toeSoleR);
             Debug.Log($"MotionProbe {Person}: ankle over the heel's sole {_ankleSoleL * 100f:0.0}/{_ankleSoleR * 100f:0.0} cm, ball {_toeSoleL * 100f:0.0}/{_toeSoleR * 100f:0.0} cm, bind sole {MinFoot(bind) - _root.position.y:0.000} m from the root");
@@ -558,6 +539,29 @@ namespace SecondFace.Tests
                     if (k == K.Stand) Add("F5", up ? 1f : 0f);
                     if (!up) { Add("F1", hh); Add("F1", bh); Add("F2", hh - bh); }
                 }
+            // once, standing: the game's own skin points (BodySkin, posed from the bones as they are now) against this very
+            // mesh: each should lie on one of its vertices (calibration is no moment for it: SetHumanPose there moves the
+            // skeleton until the animation takes it back)
+            if (SkinFit == null && k == K.Stand)
+            {
+                var skin = GetComponent<SecondFace.Game.People.BodySkin>();
+                if (skin != null && skin.Ready)
+                {
+                    skin.Pose();
+                    var worstFit = 0f; var sumFit = 0.0; var worstAt = -1; var normalOff = 0;
+                    for (var q = 0; q < skin.Count; q++)
+                    {
+                        var best = float.MaxValue; var bi = -1;
+                        for (var i = 0; i < v.Length; i++) { var d = (v[i] - skin.P[q]).sqrMagnitude; if (d < best) { best = d; bi = i; } }
+                        var dist = Mathf.Max(0f, Mathf.Sqrt(best) - skin.Off(q));
+                        sumFit += dist;
+                        if (dist > worstFit) { worstFit = dist; worstAt = q; }
+                        if (bi >= 0 && hasNormals && Vector3.Dot(n[bi], skin.N[q]) < 0.5f) normalOff++;
+                    }
+                    SkinFit = $"{State}: mean {sumFit / Mathf.Max(1, skin.Count) * 100:0.00} cm, worst {worstFit * 100:0.0} cm (point {worstAt}), normals off {normalOff} of {skin.Count}";
+                    SkinWhy = skin.Explain(worstAt);
+                }
+            }
             // the body's surface near the hands: torso, hips and thighs, in a grid
             _grid.Clear();
             for (var i = 0; i < v.Length; i++)
@@ -571,9 +575,10 @@ namespace SecondFace.Tests
             var depthMax = 0f;
             string worst = null;
             var gapL = float.MaxValue; var gapR = float.MaxValue;
-            // coarse body points for the hands' gap (the gap may be wider than the grid's reach)
+            // the hips' and thighs' points for the hands' gap, every one (the gap may be wider than the grid's reach; every
+            // third of a Rocketbox mesh's points, 4-5 cm apart, overstated the gap by several cm)
             var coarse = new List<int>();
-            for (var i = 0; i < v.Length; i += 3)
+            for (var i = 0; i < v.Length; i++)
             {
                 var s = (Part)_seg[i];
                 if (s == Part.ThighL || s == Part.ThighR || (s == Part.Torso && v[i].y < _hips.position.y + 0.15f)) coarse.Add(i);
