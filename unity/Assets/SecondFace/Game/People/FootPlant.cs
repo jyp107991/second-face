@@ -170,6 +170,25 @@ namespace SecondFace.Game.People
         private readonly Vector3[] _pts = new Vector3[4], _solePtsL = new Vector3[4], _solePtsR = new Vector3[4];
         private bool _haveSoleL, _haveSoleR;
 
+        /// <summary>The most a moving foot is pointed toes-down while its ankle is low (degrees), fading from full at
+        /// <see cref="PitchLow"/>.x of the ankle's height over a flat sole to none at .y (m).</summary>
+        public float LandPitch = 25f;
+        public Vector2 PitchLow = new Vector2(0.04f, 0.10f);
+
+        private void Pitch(Transform foot, Vector3 heel, Vector3 ball, float e)
+        {
+            var w = Mathf.Clamp01((PitchLow.y - e) / (PitchLow.y - PitchLow.x));
+            if (w <= 0f) return;
+            var d = foot.TransformPoint(ball) - foot.TransformPoint(heel);
+            var flat = new Vector3(d.x, 0f, d.z);
+            if (flat.sqrMagnitude < 1e-6f) return;
+            var pitch = Mathf.Atan2(-d.y, flat.magnitude) * Mathf.Rad2Deg;
+            if (pitch <= LandPitch) return;
+            var to = (pitch - w * (pitch - LandPitch)) * Mathf.Deg2Rad;
+            var want = (flat.normalized * Mathf.Cos(to) + Vector3.down * Mathf.Sin(to)) * d.magnitude;
+            foot.rotation = Quaternion.FromToRotation(d, want) * foot.rotation;
+        }
+
         private float SoleOver(Transform foot, Transform toe, Vector3 heel, Vector3 back, Vector3 ball, Vector3 tip, float ground)
         {
             var y = Mathf.Min(Mathf.Min(foot.TransformPoint(heel).y, foot.TransformPoint(back).y), Mathf.Min(foot.TransformPoint(ball).y, (toe != null ? toe : foot).TransformPoint(tip).y));
@@ -257,6 +276,10 @@ namespace SecondFace.Game.People
             else
             {
                 // a foot the clip (or the hips' height) puts into the ground is lifted out of it, by its own lowest point
+                // a foot near the ground with its ankle low is pointed no more than LandPitch toes-down (the jog retargeted
+                // onto broad men came down with the foot pointed 60° down, its toe tip 14 cm under the ground: lifted onto
+                // it and held, the heel 25 cm up, W2, 2026-11-06); at push-off the ankle is high and the foot is left be
+                Pitch(_footL, _heelL, _ballL, eL); Pitch(_footR, _heelR, _ballR, eR);
                 var dipL = SoleOver(_footL, _toeL, _heelL, _backL, _ballL, _tipL, gL) + (wantL.y - _footL.position.y);
                 var dipR = SoleOver(_footR, _toeR, _heelR, _backR, _ballR, _tipR, gR) + (wantR.y - _footR.position.y);
                 // the swing's clearance: how high a foot moving at this pace must stand
