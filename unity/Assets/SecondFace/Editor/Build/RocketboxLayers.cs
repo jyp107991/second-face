@@ -331,7 +331,9 @@ namespace SecondFace.EditorTools
                 }
                 // the upper arm's third nearest the elbow (against the waist a gap shows; higher, the arm rests on the side of
                 // the chest, a contact the soft tissue of both takes, hidden in the crease: docs/PEOPLE_MOTION.md C1)
-                if ((part == SkinPart.UpperArmL || part == SkinPart.UpperArmR) && along < 0.65f) continue;
+                // (from 0.6, a little above the gate's 0.65: the game's sampled points missed the band's top edge, which the
+                // gate saw 1.6-3 cm into the chest's side while walking and gesturing, 2026-11-06)
+                if ((part == SkinPart.UpperArmL || part == SkinPart.UpperArmR) && along < 0.6f) continue;
                 var cell = part switch { SkinPart.HandL or SkinPart.HandR => 0.02f, SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR => 0.025f, _ => 0.03f };
                 var q = world[i] / cell;
                 var key = (Mathf.FloorToInt(q.x), Mathf.FloorToInt(q.y), Mathf.FloorToInt(q.z), part);
