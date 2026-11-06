@@ -372,6 +372,20 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   so the arm is pushed out; the hand-gap reading was wrong (a plane, not a patch) and turned forearms out: fixed.
   **Open:** the sneak still slides (its body faces away from its travel in Unity although not in the FBX: find why, or
   re-cut another forward sneak, CMU 142_22 or 139_31); A1/A3 after the hand fix; F4 (the turn steps); W1/W6 in the jog.
+- **2026-11-06 (08:40Z), the gate's work, cont.** (red; quick set 624 → 440 past limits, not yet recorded: a verdict is
+  committed only when no measure is worse than the committed one). Found by logging where each arm and sole touches:
+  the elbows really rest on the waist (the shoulder hold is right) but the clips hang the bent forearm 15-23° out, hands
+  12-17 cm off the thigh: a fourth arm hold, the upper arm's inward roll (`ArmClearance.TwistMax` 50°), brought them to
+  2-5 cm; the upper arm held within 4° of the vertical at rest (A1). The body skin took garment linings (jacket hems'
+  inside faces) for the body's surface and read a hand 4-5 cm into the thigh as outside: the builder leaves points whose
+  normals face their bone out (C1 110 → ~55). Walking: the plant blended planted feet back to the clip on setting off
+  (1 m/s drag) and locked a heel only once slow (3-4 frames of slide each strike): now feet that were down stay held
+  and heels lock as they land; the soles come from each body's own mesh (`BodySkin.SoleL/R`: the ankle-based guess sat
+  1-2.5 cm over the real heel); the pace plays one captured stride at a time at a cadence scaled to the body's legs
+  (`Pace`, "LocoRate"; blending two subjects' strides slid men's feet at up to 4 m/s), the slowest gait that reaches
+  the pace; townsfolk now set their pace through `Pace` as the walker does (they bypassed it). The gate no longer counts
+  its own teleport between walks as a skate. **Open:** A4 (hands' p98 in idle_b), A1 (men), C1, W1/W6 (start/stop and
+  heel strike residue), the sneak (still slides: re-cut), F4 (turn), T1; then the whole cast.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
