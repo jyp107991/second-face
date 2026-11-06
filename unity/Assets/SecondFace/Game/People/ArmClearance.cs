@@ -256,7 +256,7 @@ namespace SecondFace.Game.People
         /// far out it stands (docs/PEOPLE_MOTION.md W3: a jogging arm swings to about 45°; the captured jog's peaks, with the
         /// push-out round a coat, reached 55-61°; easing it toward the vertical drew it into the body and the clearance
         /// pushed it straight back, 2026-11-06); then cleared of the body again where the ease brought it in.</summary>
-        public float SwingSoft = 38f, SwingKeep = 0.4f;
+        public float SwingSoft = 35f, SwingKeep = 0.35f;
 
         private void Swing(Transform upper, Transform lower, BodySkin.Part first)
         {
