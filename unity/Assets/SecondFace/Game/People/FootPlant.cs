@@ -178,8 +178,15 @@ namespace SecondFace.Game.People
         /// <summary>The most a moving foot is pointed toes-down while its ankle is low (degrees), fading from full at
         /// <see cref="PitchLow"/>.x of the ankle's height over a flat sole to none at .y (m); its toes straightened
         /// toward flat over the same.</summary>
-        public float LandPitch = 90f;   // (off: held at 25° the jog's stance foot stood 3-8 cm up, W6 0.3 → 3-7 cm, 2026-11-06; the slide it was for went with the ball's pivot)
+        public float LandPitch = 25f;   // (only coming down, not held: held too, it lifted the jog's stance foot at push-off 3-8 cm, W6, 2026-11-06)
+        private float _lastEL, _lastER;
         public Vector2 PitchLow = new Vector2(0.04f, 0.10f);
+
+        private void Toes(Transform toe, Quaternion toeRest, float e)
+        {
+            var w = Mathf.Clamp01((PitchLow.y - e) / (PitchLow.y - PitchLow.x));
+            if (w > 0f && toe != null) toe.localRotation = Quaternion.Slerp(toe.localRotation, toeRest, w);
+        }
 
         private void Pitch(Transform foot, Transform toe, Quaternion toeRest, Vector3 heel, Vector3 ball, float e)
         {
@@ -288,7 +295,10 @@ namespace SecondFace.Game.People
                 // a foot near the ground with its ankle low is pointed no more than LandPitch toes-down (the jog retargeted
                 // onto broad men came down with the foot pointed 60° down, its toe tip 14 cm under the ground: lifted onto
                 // it and held, the heel 25 cm up, W2, 2026-11-06); at push-off the ankle is high and the foot is left be
-                Pitch(_footL, _toeL, _toeRestL, _heelL, _ballL, eL); Pitch(_footR, _toeR, _toeRestR, _heelR, _ballR, eR);
+                // the foot's pitch only as it comes down to land (not once held: at push-off it lifted the toe off the ground)
+                if (!_lockL.On && eL < _lastEL) Pitch(_footL, _toeL, _toeRestL, _heelL, _ballL, eL); else Toes(_toeL, _toeRestL, eL);
+                if (!_lockR.On && eR < _lastER) Pitch(_footR, _toeR, _toeRestR, _heelR, _ballR, eR); else Toes(_toeR, _toeRestR, eR);
+                _lastEL = eL; _lastER = eR;
                 var dipL = SoleOver(_footL, _toeL, _heelL, _backL, _ballL, _tipL, gL) + (wantL.y - _footL.position.y);
                 var dipR = SoleOver(_footR, _toeR, _heelR, _backR, _ballR, _tipR, gR) + (wantR.y - _footR.position.y);
                 // the swing's clearance: how high a foot moving at this pace must stand
