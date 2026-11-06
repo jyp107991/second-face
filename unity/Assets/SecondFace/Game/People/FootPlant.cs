@@ -72,7 +72,7 @@ namespace SecondFace.Game.People
         /// <summary>Moving, a foot faster than this (m/s, along the ground) is in its swing: it is held at least
         /// <see cref="SwingClear"/> off the ground, less as it slows, so it comes down only as it stops (a real heel
         /// meets the ground at under about 1 m/s; the clips' feet glided in at 2-4 m/s, 2026-11-06).</summary>
-        public float SwingFast = 1.5f, SwingSlow = 0.5f, SwingClear = 0.035f;   // (3 cm on the game's sole points left the gate's ball 2.4-2.9 cm up as the sneak's foot swung through, W1)
+        public float SwingFast = 1.5f, SwingSlow = 0.5f, SwingClear = 0.03f;   // (3.5 held walking feet up as they bore weight, W6 23 → 33)
         /// <summary>The swing's clearance comes in from <see cref="ClearSlow"/> to <see cref="ClearFast"/> (m/s, the clip's
         /// lowest sole point's speed, the point the gate measures): a foot moving faster stands <see cref="SwingClear"/> up.
         /// Not for a foot held down, nor one coming down slower than a swing; at once for one let go from a hold.</summary>
@@ -395,7 +395,9 @@ namespace SecondFace.Game.People
             {
                 k.Release = Mathf.Max(0f, k.Release - dt / LockRelease);
                 var t = k.Release * k.Release * (3f - 2f * k.Release);
-                return new Vector3(Mathf.Lerp(want.x, k.From.x, t), want.y - k.Drop * t, Mathf.Lerp(want.z, k.From.z, t));
+                // (no lowering as it goes: lifted to the swing's clearance at once, the hold's lowering left the sneak's
+                // heel 1-2 cm up sliding at 0.75 m/s, W1, 2026-11-06)
+                return new Vector3(Mathf.Lerp(want.x, k.From.x, t), want.y, Mathf.Lerp(want.z, k.From.z, t));
             }
             k.Drop = 0f;
             return want;
