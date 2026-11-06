@@ -77,6 +77,11 @@ namespace SecondFace.Game.People
         /// lowest sole point's speed, the point the gate measures): a foot moving faster stands <see cref="SwingClear"/> up.
         /// Not for a foot held down, nor one coming down slower than a swing; at once for one let go from a hold.</summary>
         public float ClearSlow = 0.5f, ClearFast = 1.5f;
+        /// <summary>Moving, each foot goes where the captured subject's ankle went (the clip's own foot goal, Mecanim's IK
+        /// goal: the source's ankle scaled to this body, with the stride's travel), not where the retargeted leg puts it: a
+        /// leg of other proportions bent to the clip's angles puts its ankle elsewhere, and in a crouch it drifts through
+        /// every stance (the sneak's stance feet went 12 cm from where they came down and slid, W1/W2, 2026-11-06).</summary>
+        public bool FollowGoals = true;
         private Vector3 _shownL, _shownR, _shownLastL, _shownLastR; private int _shownFrames;
 
         private struct Foot
@@ -100,7 +105,7 @@ namespace SecondFace.Game.People
         public float Sink => _sink;
         /// <summary>For the gate's trace (tests read it), moving, each foot this frame: its lowest sole point over the ground
         /// before any lift, the swing's clearance wanted, the lift given, whether it is held (1) or let go (0.5); left then right.</summary>
-        public float[] Diag = new float[12];
+        public float[] Diag = new float[14];
         /// <summary>Kept for tests: how far each foot bone ended from where this put it (0: exact).</summary>
         public Vector2 GoalError { get; private set; }
         public Vector3 Offsets => new(0f, 0f, _sink);
@@ -161,10 +166,10 @@ namespace SecondFace.Game.People
         /// <summary>How high a foot's lowest sole point stands over its ground now, m (negative: in it).</summary>
         /// <summary>How fast the clip's lowest sole point moves along the ground (m/s): the same point the gate measures (the
         /// ankle turns forward about a still heel as it lands). <paramref name="last"/> keeps this frame's four points.</summary>
-        private float SoleSpeed(Transform foot, Transform toe, Vector3 heel, Vector3 back, Vector3 ball, Vector3 tip, Vector3[] last, ref bool have, float dt)
+        private float SoleSpeed(Transform foot, Transform toe, Vector3 heel, Vector3 back, Vector3 ball, Vector3 tip, Vector3[] last, ref bool have, float dt, Vector3 shift)
         {
             var t = toe != null ? toe : foot;
-            _pts[0] = foot.TransformPoint(heel); _pts[1] = foot.TransformPoint(back); _pts[2] = foot.TransformPoint(ball); _pts[3] = t.TransformPoint(tip);
+            _pts[0] = foot.TransformPoint(heel) + shift; _pts[1] = foot.TransformPoint(back) + shift; _pts[2] = foot.TransformPoint(ball) + shift; _pts[3] = t.TransformPoint(tip) + shift;
             var low = 0;
             for (var i = 1; i < 4; i++) if (_pts[i].y < _pts[low].y) low = i;
             var v = have ? new Vector2(_pts[low].x - last[low].x, _pts[low].z - last[low].z).magnitude / dt : 0f;
@@ -272,6 +277,17 @@ namespace SecondFace.Game.People
             var wantL = _footL.position + Vector3.up * Mathf.Clamp(gL - footing, -Reach, Reach) * (1f - _plant);
             var wantR = _footR.position + Vector3.up * Mathf.Clamp(gR - footing, -Reach, Reach) * (1f - _plant);
             var yawL = Heading(Ahead(_footL, _toeL)); var yawR = Heading(Ahead(_footR, _toeR));
+            // moving, along the ground where the clip's own goals have the ankles (FollowGoals)
+            var goalL = Vector3.zero; var goalR = Vector3.zero;
+            if (!standing && FollowGoals && _animator.isHuman)
+            {
+                var a = _animator.GetIKPosition(AvatarIKGoal.LeftFoot); var b = _animator.GetIKPosition(AvatarIKGoal.RightFoot);
+                // (a goal far off is not the clip's: none yet, or a body set down elsewhere)
+                if ((new Vector2(a.x - _footL.position.x, a.z - _footL.position.z)).sqrMagnitude < 0.09f) goalL = new Vector3(a.x - _footL.position.x, 0f, a.z - _footL.position.z);
+                if ((new Vector2(b.x - _footR.position.x, b.z - _footR.position.z)).sqrMagnitude < 0.09f) goalR = new Vector3(b.x - _footR.position.x, 0f, b.z - _footR.position.z);
+                wantL += goalL; wantR += goalR;
+            }
+            Diag[12] = goalL.magnitude; Diag[13] = goalR.magnitude;
             if (_plant > 0f)
             {
                 _shownFrames = 0; _haveSoleL = _haveSoleR = false;   // (the feet's speeds are counted afresh when it sets off)
@@ -306,8 +322,8 @@ namespace SecondFace.Game.People
                 // and held up by that it bore weight 2.5-3.5 cm up, W6, 2026-11-06)
                 // by the clip's lowest sole point's speed (the ankle's held a landing foot 2.5-3.5 cm up while its heel
                 // was still, W6, 2026-11-06)
-                var soleVL = SoleSpeed(_footL, _toeL, _heelL, _backL, _ballL, _tipL, _solePtsL, ref _haveSoleL, dt);
-                var soleVR = SoleSpeed(_footR, _toeR, _heelR, _backR, _ballR, _tipR, _solePtsR, ref _haveSoleR, dt);
+                var soleVL = SoleSpeed(_footL, _toeL, _heelL, _backL, _ballL, _tipL, _solePtsL, ref _haveSoleL, dt, goalL);
+                var soleVR = SoleSpeed(_footR, _toeR, _heelR, _backR, _ballR, _tipR, _solePtsR, ref _haveSoleR, dt, goalR);
                 // a foot let go from a hold rises at once before it is eased back to the clip's (it slid along the ground
                 // at 1.2-1.6 m/s, W1); a foot coming down slower than a swing gets none, so it lands when the clip lands it
                 // (held 3 cm up until it slowed, it left both feet off the ground for frames, the other lifting: W6)
@@ -320,9 +336,9 @@ namespace SecondFace.Game.People
                 }
                 var clearL = Clear(soleVL, dipL, _lockL.Last, _lockL.Release > 0f);
                 var clearR = Clear(soleVR, dipR, _lockR.Last, _lockR.Release > 0f);
-                var speedL = _haveLast ? new Vector2(_footL.position.x - _lastL.x, _footL.position.z - _lastL.z).magnitude / dt : 0f;
-                var speedR = _haveLast ? new Vector2(_footR.position.x - _lastR.x, _footR.position.z - _lastR.z).magnitude / dt : 0f;
-                _lastL = _footL.position; _lastR = _footR.position; _haveLast = true;
+                var speedL = _haveLast ? new Vector2(wantL.x - _lastL.x, wantL.z - _lastL.z).magnitude / dt : 0f;
+                var speedR = _haveLast ? new Vector2(wantR.x - _lastR.x, wantR.z - _lastR.z).magnitude / dt : 0f;
+                _lastL = wantL; _lastR = wantR; _haveLast = true;
                 // (a foot held on the ground is down: lifted only out of it, never to the swing's clearance, which keyed
                 // on the clip's own foot sliding under the hold stood jogging feet 2.4 cm up, still, W6, 2026-11-06)
                 var wantClearL = _lockL.On ? 0f : clearL; var wantClearR = _lockR.On ? 0f : clearR;
@@ -398,7 +414,13 @@ namespace SecondFace.Game.People
                 k.W = Mathf.MoveTowards(k.W, 1f, dt / 0.04f);
                 var rise = Mathf.Clamp01((sole - k.Min) / Mathf.Max(0.002f, LockLift - k.Min));
                 k.Drop = k.Min * k.W * (1f - rise);
-                if (sole > LockLift || off.magnitude > LockReach) { k.On = false; k.Release = 1f; k.From = want - new Vector3(off.x, 0f, off.y); }
+                if (sole > LockLift || off.magnitude > LockReach)
+                {
+                    k.On = false; k.Release = 1f; k.From = want - new Vector3(off.x, 0f, off.y);
+                    // and up to the swing's clearance at once, this frame too (its clearance was none while it was held: let go
+                    // on the ground, it slid 2 cm along it that frame, W1, 2026-11-06)
+                    want.y += Mathf.Max(0f, SwingClear - Mathf.Max(0f, sole));
+                }
                 else return want - new Vector3(off.x, k.Drop, off.y);
             }
             if (k.Release > 0f)

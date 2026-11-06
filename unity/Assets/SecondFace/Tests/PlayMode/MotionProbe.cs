@@ -500,7 +500,8 @@ namespace SecondFace.Tests
             if (_fp == null) return "";
             var d = _fp.Diag;
             var s = $"{d[0]:0.000},{d[1]:0.000},{d[2]:0.000},{d[3]:0.0},{d[4]:0.000},{d[5]:0.000},{d[6]:0.000},{d[7]:0.0}";
-            return d.Length >= 12 ? s + $",{d[8]:0.000},{d[9]:0.000},{d[10]:0.000},{d[11]:0.000}" : s + ",,,,";
+            s = d.Length >= 12 ? s + $",{d[8]:0.000},{d[9]:0.000},{d[10]:0.000},{d[11]:0.000}" : s + ",,,,";
+            return d.Length >= 14 ? s + $",{d[12]:0.000},{d[13]:0.000}" : s + ",,";
         }
 
         private static readonly (HumanBodyBones Hand, HumanBodyBones P, HumanBodyBones M, HumanBodyBones D)[] Digits =
@@ -616,7 +617,7 @@ namespace SecondFace.Tests
                     var dtS = _soleT > 0f && Time.time > _soleT ? Time.time - _soleT : 0f;
                     string Sp(int q) => dtS > 0f && _solePoint[q] >= 0 ? (Flat(v[_solePoint[q]] - _soleWas[q]).magnitude / dtS).ToString("0.00") : "";
                     var path = TracePath.Replace(".csv", "_soles.csv");
-                    if (!System.IO.File.Exists(path)) System.IO.File.WriteAllText(path, "state,t,body,hL,bL,hR,bR,vhL,vbL,vhR,vbR,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR,sink,low,eL,eR\n");
+                    if (!System.IO.File.Exists(path)) System.IO.File.WriteAllText(path, "state,t,body,hL,bL,hR,bR,vhL,vbL,vhR,vbR,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR,sink,low,eL,eR,gL,gR\n");
                     System.IO.File.AppendAllText(path, $"{State},{Time.time:0.000},{body:0.00},{_soleH[0]:0.000},{_soleH[1]:0.000},{_soleH[2]:0.000},{_soleH[3]:0.000},{Sp(0)},{Sp(1)},{Sp(2)},{Sp(3)},{FootDiag()}\n");
                 }
                 for (var q = 0; q < 4; q++) if (_solePoint[q] >= 0) _soleWas[q] = v[_solePoint[q]];
