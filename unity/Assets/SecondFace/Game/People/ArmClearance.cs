@@ -178,6 +178,9 @@ namespace SecondFace.Game.People
                 SkinRest(_lu, _ll, _lh, BodySkin.Part.UpperArmL, -1, ref _restL, ref _fwdL, ref _twistL, ref _carryL, resting, dt);
                 SkinRest(_ru, _rl, _rh, BodySkin.Part.UpperArmR, 1, ref _restR, ref _fwdR, ref _twistR, ref _carryR, resting, dt);
                 if (!resting) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
+                // a forearm or hand in the body is turned out at the elbow first, then what is left at the shoulder
+                ForearmClear(_ll, BodySkin.Part.UpperArmL, ref _fAngleL, ref _fAxisL, dt);
+                ForearmClear(_rl, BodySkin.Part.UpperArmR, ref _fAngleR, ref _fAxisR, dt);
                 SkinClear(_lu, BodySkin.Part.UpperArmL, ref _angleL, ref _axisL, dt);
                 SkinClear(_ru, BodySkin.Part.UpperArmR, ref _angleR, ref _axisR, dt);
                 Diag[4] = _restL; Diag[5] = _fwdL; Diag[6] = _carryL; Diag[7] = _angleL;
@@ -400,6 +403,37 @@ namespace SecondFace.Game.People
         /// <summary>With the body's skin: the upper arm turned at the shoulder just enough to bring the deepest point of
         /// the arm (the lower upper arm, the forearm, the hand and fingers) <see cref="SkinMargin"/> out of the body or its
         /// clothes, then again for what is left (twice); the turn comes at once and goes at <see cref="Release"/>° a second.</summary>
+        /// <summary>The most a forearm is turned at the elbow to bring it or its hand out of the body (degrees).</summary>
+        public float ForearmMax = 25f;
+        private float _fAngleL, _fAngleR;
+        private Vector3 _fAxisL = Vector3.forward, _fAxisR = Vector3.forward;
+
+        /// <summary>A forearm or hand in the body or its clothes turned out at the elbow, as a real arm swings its forearm
+        /// clear of the hip (the whole arm pushed out at the shoulder swung a jogging arm to 55-63° from the vertical, W3,
+        /// 2026-11-06); at once, let go at <see cref="Release"/>° a second.</summary>
+        private void ForearmClear(Transform lower, BodySkin.Part first, ref float angle, ref Vector3 axis, float dt)
+        {
+            if (lower == null) return;
+            var elbow = lower.position;
+            var best = 0f; var dir = Vector3.zero;
+            for (int i = _skin.Begin(first + 1), to = _skin.End(first + 2); i < to; i++)
+            {
+                var p = _skin.P[i];
+                if (!_skin.Depth(p, out var d, out var n) || d + SkinMargin <= 0f) continue;
+                var arm = p - elbow;
+                if (arm.sqrMagnitude < 0.0025f) continue;   // within 5 cm of the elbow: the shoulder's to clear
+                var a = Mathf.Atan2(d + SkinMargin, arm.magnitude) * Mathf.Rad2Deg;
+                if (a <= best) continue;
+                var c = Vector3.Cross(arm, n);
+                if (c.sqrMagnitude < 1e-8f) continue;
+                best = a; dir = c.normalized;
+            }
+            best = Mathf.Min(best, ForearmMax);
+            if (best > 0f) axis = dir;
+            angle = best >= angle ? best : Mathf.MoveTowards(angle, best, Release * dt);
+            if (angle > 0.01f) TurnForearm(lower, first, angle, axis);
+        }
+
         private void SkinClear(Transform upper, BodySkin.Part first, ref float angle, ref Vector3 axis, float dt)
         {
             if (upper == null) return;
