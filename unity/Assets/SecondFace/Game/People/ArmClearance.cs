@@ -177,6 +177,7 @@ namespace SecondFace.Game.People
                 _skin.Pose();
                 SkinRest(_lu, _ll, _lh, BodySkin.Part.UpperArmL, -1, ref _restL, ref _fwdL, ref _twistL, ref _carryL, resting, dt);
                 SkinRest(_ru, _rl, _rh, BodySkin.Part.UpperArmR, 1, ref _restR, ref _fwdR, ref _twistR, ref _carryR, resting, dt);
+                if (!resting) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
                 SkinClear(_lu, BodySkin.Part.UpperArmL, ref _angleL, ref _axisL, dt);
                 SkinClear(_ru, BodySkin.Part.UpperArmR, ref _angleR, ref _axisR, dt);
                 Diag[4] = _restL; Diag[5] = _fwdL; Diag[6] = _carryL; Diag[7] = _angleL;
@@ -248,6 +249,22 @@ namespace SecondFace.Game.People
             var c = carry >= 0f ? carry : BaseCarry(upper, lower, hand);
             var ax = CarryAxis(upper, lower, hand, side);
             if (c > 0.001f && ax != Vector3.zero) lower.rotation = Quaternion.AngleAxis(c, ax) * lower.rotation;
+        }
+
+        /// <summary>Moving: an upper arm's swing past <see cref="SwingSoft"/>° from the vertical is eased, a share
+        /// <see cref="SwingKeep"/> of the excess kept (docs/PEOPLE_MOTION.md W3: a jogging arm swings to about 45°; the
+        /// captured jog's peaks, with the push-out round a coat, reached 55-61°, 2026-11-06).</summary>
+        public float SwingSoft = 38f, SwingKeep = 0.4f;
+
+        private void Swing(Transform upper, Transform lower, BodySkin.Part first)
+        {
+            if (upper == null || lower == null) return;
+            var dir = lower.position - upper.position;
+            var a = Vector3.Angle(dir, Vector3.down);
+            if (a <= SwingSoft) return;
+            var ax = Vector3.Cross(dir, Vector3.down);
+            if (ax.sqrMagnitude < 1e-8f) return;
+            TurnArm(upper, first, (a - SwingSoft) * (1f - SwingKeep), ax);   // the skin's points with it, for the clearance after
         }
 
         /// <summary>Turns an upper arm at the shoulder, and its points with it.</summary>

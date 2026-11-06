@@ -375,7 +375,8 @@ namespace SecondFace.Game.People
             var size = Mathf.Max(0.5f, transform.lossyScale.y);
             var side = left ? -1f : 1f;   // the left foot stands to the body's left of the right one
             var across = Vector3.Dot(want - other, right) * side;
-            var max = MaxStance * size; var min = 0.07f * size;
+            // no narrower than 9 cm across (F3w: quiet stances run 8-32; 7 cm let a step land at 7.7, 2026-11-06)
+            var max = MaxStance * size; var min = 0.09f * size;
             if (across > max) want -= right * side * (across - max);
             else if (across < min) want += right * side * (min - across);
             var along = Vector3.Dot(want - other, ahead);
