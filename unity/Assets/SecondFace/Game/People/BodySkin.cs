@@ -302,9 +302,12 @@ namespace SecondFace.Game.People
                 // behind its plane lay 3.2 cm across from its nearest point, read as outside, C1, 2026-11-06)
                 return across <= Mathf.Max(Mathf.Min(_spacing[c], PatchMax), DeepAcross * d) ? d : -1f;
             }
-            var inside = Under(c0);
-            if (c1 >= 0) inside = Mathf.Min(inside, Under(c1));
-            if (c2 >= 0) inside = Mathf.Min(inside, Under(c2));
+            // inside when two of the three say so (the linings that called for all three are left out of the skin now; with
+            // points 1.5-2.5 cm apart one of three often lay on another facet, a vest's edge, and hid upper arms 1.5-2 cm in
+            // under the arm, C1, 2026-11-06)
+            float u0 = Under(c0), u1 = c1 >= 0 ? Under(c1) : -1f, u2 = c2 >= 0 ? Under(c2) : -1f;
+            var ins = (u0 > 0f ? 1 : 0) + (u1 > 0f ? 1 : 0) + (u2 > 0f ? 1 : 0);
+            var inside = ins >= 2 ? Mathf.Min(u0 > 0f ? u0 : float.MaxValue, Mathf.Min(u1 > 0f ? u1 : float.MaxValue, u2 > 0f ? u2 : float.MaxValue)) : -1f;
             var nn = N[c0] + (c1 >= 0 ? N[c1] : Vector3.zero) + (c2 >= 0 ? N[c2] : Vector3.zero);
             normal = nn.sqrMagnitude > 1e-8f ? nn.normalized : N[c0];
             // outside: the gap to the surface's plane at the nearest point (never more than to the point itself)
