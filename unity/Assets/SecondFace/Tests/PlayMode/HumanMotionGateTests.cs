@@ -250,10 +250,24 @@ namespace SecondFace.Tests
         }
 
         [UnityTest, Timeout(3600000)]
-        public IEnumerator PeopleStandAndMoveLikePeople() => Gate(Quick, "motion_gate", captures: true);
+        public IEnumerator PeopleStandAndMoveLikePeople() => Fixed(Gate(Quick, "motion_gate", captures: true));
+
+        /// <summary>The gate's frames each a fixed 1/60 s of game time (a phone's frame), whatever the machine running it
+        /// takes to draw them: the same code measures the same, run after run (the test machine's frames ran 4-131 ms and
+        /// the same code's verdicts differed by 3-6 failures a measure, so "no measure worse" compared noise,
+        /// docs/PEOPLE_MOTION.md §1.9, 2026-11-06).</summary>
+        private static IEnumerator Fixed(IEnumerator inner)
+        {
+            var keep = Time.captureDeltaTime;
+            Time.captureDeltaTime = 1f / 60f;
+            try { while (inner.MoveNext()) yield return inner.Current; }
+            finally { Time.captureDeltaTime = keep; }
+        }
 
         [UnityTest, Timeout(7200000), Category("Heavy")]
-        public IEnumerator EveryPersonStandsAndMovesLikePeople()
+        public IEnumerator EveryPersonStandsAndMovesLikePeople() => Fixed(EveryPerson());
+
+        private IEnumerator EveryPerson()
         {
 #if UNITY_EDITOR
             var cat = AssetDatabase.LoadAssetAtPath<RocketboxCatalog>("Assets/SecondFace/People/Rocketbox/RocketboxCatalog.asset");
