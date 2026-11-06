@@ -457,6 +457,43 @@ namespace SecondFace.Game.People
             var left = first == BodySkin.Part.UpperArmL;
             Diag[left ? 16 : 17] = turn;
             if (!skin) { upper.rotation = Quaternion.AngleAxis(turn, right) * upper.rotation; return; }
+            // eased, then pushed out of the body; when that push is large (the ease took the hand into the back), half the
+            // ease is tried and whichever leaves the arm nearer the vertical kept (an arm swung 70° back on a curve was
+            // eased into the back and pushed out to 57°, past W3's cap, 2026-11-06)
+            int from = _skin.Begin(first), to = _skin.End(first + 2);
+            Keep(upper, lower, from, to, 0);
+            var aFull = EaseOut(upper, lower, first, turn, right, left, out var pushed);
+            if (pushed <= PushRetry) return;
+            Keep(upper, lower, from, to, 1);
+            Back(upper, lower, from, to, 0);
+            var aHalf = EaseOut(upper, lower, first, turn * 0.5f, right, left, out _);
+            if (aHalf >= aFull) Back(upper, lower, from, to, 1);
+        }
+
+        /// <summary>A push out of the body after the stride's ease past which a gentler ease is tried (degrees).</summary>
+        public float PushRetry = 8f;
+        private readonly Quaternion[] _keptU = new Quaternion[2], _keptL = new Quaternion[2];
+        private Vector3[][] _keptP = new Vector3[2][], _keptN = new Vector3[2][];
+
+        private void Keep(Transform upper, Transform lower, int from, int to, int slot)
+        {
+            _keptU[slot] = upper.rotation; _keptL[slot] = lower.rotation;
+            var n = to - from;
+            if (_keptP[slot] == null || _keptP[slot].Length < n) { _keptP[slot] = new Vector3[n]; _keptN[slot] = new Vector3[n]; }
+            System.Array.Copy(_skin.P, from, _keptP[slot], 0, n); System.Array.Copy(_skin.N, from, _keptN[slot], 0, n);
+        }
+
+        private void Back(Transform upper, Transform lower, int from, int to, int slot)
+        {
+            upper.rotation = _keptU[slot]; lower.rotation = _keptL[slot];
+            var n = to - from;
+            System.Array.Copy(_keptP[slot], 0, _skin.P, from, n); System.Array.Copy(_keptN[slot], 0, _skin.N, from, n);
+        }
+
+        /// <summary>The stride's ease at the shoulder, then what it brought into the body pushed out; the arm's angle from
+        /// the vertical after, and how far the shoulder pushed (degrees).</summary>
+        private float EaseOut(Transform upper, Transform lower, BodySkin.Part first, float turn, Vector3 right, bool left, out float pushed)
+        {
             TurnArm(upper, first, turn, right);
             // what the ease brought into the body: a forearm or hand turned out at the elbow (pushed out at the shoulder,
             // a jogging arm swung straight back to 45-47°, W3, 2026-11-06), then the upper arm at the shoulder
@@ -499,6 +536,8 @@ namespace SecondFace.Game.People
             }
             // the shoulder's push after the ease (negative: out to the side), and the elbow's in thousandths
             Diag[left ? 18 : 19] = (outward ? -more : more) + best * 0.001f;
+            pushed = more;
+            return Vector3.Angle(lower.position - upper.position, Vector3.down);
         }
 
         /// <summary>Turns an upper arm at the shoulder, and its points with it.</summary>
