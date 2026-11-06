@@ -457,6 +457,15 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   **Open:** A1 54 (broad and uniformed men's arms stand out over their waists at rest; looks), A4 (men's resting hands
   6-14 cm off the thigh), C1 12 (one uniformed man: the game's skin stands about 1 cm under his uniform's surface at
   the chest's side), W6 13 (the jog's push-off); then the whole cast.
+- **2026-11-06 (late), quick set 132 → 94 → 82 committed** (red). g96: a resting hand 6 mm off the clothes (A4); g98:
+  the resting palm turns in and a little back, thumb forward, at most 35°, half in the forearm and half at the wrist (a
+  relaxed hand hangs palm in; the clips' hung palm back, their width across the leg; turned fully in, the curled fingers
+  pointed at the thigh and stood the arm out, A1 +4). Tried and reverted: choosing the hand's place by the solved upper
+  arm's angle (A1 54 → 86: the place jumped about); the elbow kept at the skin with the clothes giving 30 % (C1 better,
+  A1 54 → 67). **Seen in the gate's own captures (for later, S2):** white streaks on the side of an older man's head
+  (hair cards); his left knee bent inward at rest; the vest layer reads as a stiff slab; a business blazer (lore: only the
+  megacity's rich) whose stiff hem stands his hands out. **Open:** A1 54 (four broad or uniformed men, 20-25°, in every
+  standing state), W6 13, A4 9, C1 5, F4 1; the whole cast running now.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
