@@ -75,6 +75,7 @@ namespace SecondFace.Tests
             return $"{name} {skin.PartOf(a)} {L(skin.P[a])} -> {skin.PartOf(b)} {L(skin.P[b])} off {skin.Off(b) * 100f:0.0} n {N(skin.N[b])} d {(skin.P[a] - skin.P[b]).magnitude * 100f:0.0}";
         }
         private SecondFace.Game.People.ArmClearance _ac;
+        private float _traceA1L, _traceA1R;   // the upper arms from down this frame, for the trace
         private int[] _bodyTris;
         private Vector3[] _cv;
         private float[] _tyLo, _tyHi;
@@ -358,6 +359,7 @@ namespace SecondFace.Tests
                 {
                     var u = B(up).position; var e = B(lo).position; var h = B(hand).position;
                     var a1 = Vector3.Angle(e - u, Vector3.down);
+                    if (up == HumanBodyBones.LeftUpperArm) _traceA1L = a1; else _traceA1R = a1;
                     if (k == K.Stand) { Add("A1", a1); Add("A2", Vector3.Angle(e - u, h - e)); Add("A3", Vector3.Angle(h - e, Vector3.down)); }
                     if (k == K.Walk)
                     {
@@ -419,7 +421,7 @@ namespace SecondFace.Tests
                         if (k != K.Walk) Add("F4", v * 100f);   // walking skate is measured on the soles themselves (MeshMeasures)
                     }
                     if (TracePath != null && State != null && TraceState != null && State.StartsWith(TraceState))
-                        System.IO.File.AppendAllText(TracePath, $"{State},{Time.time:0.000},{root.x:0.000},{root.z:0.000},{ankleL.y - GroundY(ankleL) - _ankleSoleL:0.000},{toeL.y - GroundY(toeL) - _toeSoleL:0.000},{ankleL.z:0.000},{ankleR.y - GroundY(ankleR) - _ankleSoleR:0.000},{toeR.y - GroundY(toeR) - _toeSoleR:0.000},{ankleR.z:0.000},{_a.GetFloat("Speed"):0.000},{_hips.position.z - root.z:0.000},{FootDiag()}\n");
+                        System.IO.File.AppendAllText(TracePath, $"{State},{Time.time:0.000},{root.x:0.000},{root.z:0.000},{ankleL.y - GroundY(ankleL) - _ankleSoleL:0.000},{toeL.y - GroundY(toeL) - _toeSoleL:0.000},{ankleL.z:0.000},{ankleR.y - GroundY(ankleR) - _ankleSoleR:0.000},{toeR.y - GroundY(toeR) - _toeSoleR:0.000},{ankleR.z:0.000},{_a.GetFloat("Speed"):0.000},{_hips.position.z - root.z:0.000},{FootDiag()},{_traceA1L:0.0},{_traceA1R:0.0}\n");
                 }
                 // the stance
                 if (k == K.Stand)

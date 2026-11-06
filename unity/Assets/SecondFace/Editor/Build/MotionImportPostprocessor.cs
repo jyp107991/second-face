@@ -8,7 +8,8 @@ namespace SecondFace.EditorTools
     /// <summary>
     /// Captured-motion clips (Assets/SecondFace/Motion/*.fbx, written by tools/unity/motion/cmu2fbx.py) import as Humanoid
     /// animations: avatar from the clip's own skeleton, loop settings from the sidecar JSON, root motion kept only for
-    /// clips that travel (falls); walks play in place and the game moves the body.
+    /// clips that travel (falls); walks play in place and the game moves the body, their stride's surge and sway baked
+    /// into the pose.
     /// The clip settings go in at <see cref="OnPreprocessAnimation"/>, where the file's takes are known (at
     /// OnPreprocessModel the default clips are still empty: until 2026-11-05 every clip imported with Unity's defaults, no
     /// loop, so a walk froze after one stride and was dragged; docs/PEOPLE_MOTION.md W1), and are made sure of again on
@@ -18,16 +19,20 @@ namespace SecondFace.EditorTools
     public sealed class MotionImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 6;
+        public override uint GetVersion() => 7;
 
         private bool IsClip => assetPath.StartsWith("Assets/SecondFace/Motion/") && assetPath.EndsWith(".fbx");
 
-        private (bool Loop, bool Root) Sidecar()
+        private (bool Loop, bool Root) Sidecar() { var (l, r, _) = Sidecar3(); return (l, r); }
+
+        /// <summary>Loop, travel, and whether the clip is a gait (a speed: it plays in place, its stride's own surge and
+        /// sway kept in the pose).</summary>
+        private (bool Loop, bool Root, bool Gait) Sidecar3()
         {
             var sidecar = Path.ChangeExtension(assetPath, ".json");
-            if (!File.Exists(sidecar)) return (false, false);
+            if (!File.Exists(sidecar)) return (false, false, false);
             var j = JObject.Parse(File.ReadAllText(sidecar));
-            return (j.Value<bool?>("loop") ?? false, j.Value<bool?>("root") ?? false);
+            return (j.Value<bool?>("loop") ?? false, j.Value<bool?>("root") ?? false, (j.Value<double?>("speed") ?? 0.0) > 0.0);
         }
 
         private void OnPreprocessModel()
@@ -48,7 +53,7 @@ namespace SecondFace.EditorTools
         {
             if (!IsClip) return;
             var imp = (ModelImporter)assetImporter;
-            var (loop, root) = Sidecar();
+            var (loop, root, gait) = Sidecar3();
             var defaults = imp.defaultClipAnimations;
             var clips = imp.clipAnimations != null && imp.clipAnimations.Length > 0 ? imp.clipAnimations : defaults;
             if (clips == null || clips.Length == 0) return;
@@ -65,7 +70,10 @@ namespace SecondFace.EditorTools
                 // (the capture file's own axes) laid the bodies over (2026-11-05).
                 c.loopTime = loop; c.loopPose = loop;
                 c.lockRootRotation = false; c.keepOriginalOrientation = false;
-                c.lockRootPositionXZ = false; c.keepOriginalPositionXZ = false;
+                // a gait's surge and sway (the stride's own changes of speed, left in by cmu2fbx.py) baked into the pose:
+                // as root motion they were thrown away, the body held still while the game moved it at a constant pace,
+                // and every stance foot slid by the difference (W1/W2, 2026-11-06)
+                c.lockRootPositionXZ = gait; c.keepOriginalPositionXZ = false;
                 c.lockRootHeightY = !root; c.keepOriginalPositionY = false; c.heightFromFeet = !root;
             }
             imp.clipAnimations = clips;
@@ -74,11 +82,11 @@ namespace SecondFace.EditorTools
         private void OnPostprocessAnimation(GameObject root, AnimationClip clip)
         {
             if (!IsClip || clip == null) return;
-            var (loop, travels) = Sidecar();
+            var (loop, travels, gait) = Sidecar3();
             var s = AnimationUtility.GetAnimationClipSettings(clip);
             s.loopTime = loop; s.loopBlend = loop;
             s.loopBlendOrientation = false; s.keepOriginalOrientation = false;
-            s.loopBlendPositionXZ = false; s.keepOriginalPositionXZ = false;
+            s.loopBlendPositionXZ = gait; s.keepOriginalPositionXZ = false;
             s.loopBlendPositionY = !travels; s.keepOriginalPositionY = false; s.heightFromFeet = !travels;
             AnimationUtility.SetAnimationClipSettings(clip, s);
         }
