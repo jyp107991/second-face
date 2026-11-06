@@ -32,7 +32,7 @@ namespace SecondFace.Game.People
         public float MaxStance = 0.27f;
         /// <summary>The farthest one standing foot is ahead of the other, m.</summary>
         public float MaxStagger = 0.22f;
-        public float StepReach = 0.17f, StepTurn = 32f, StepTime = 0.28f, StepLift = 0.07f;   // (0.32 s left a foot up 13 % of the time on a slope, F5)
+        public float StepReach = 0.2f, StepTurn = 32f, StepTime = 0.28f, StepLift = 0.07f;   // (0.32 s left a foot up 13 % of the time on a slope, F5; a reach of 0.17 stepped often enough after a look or a gesture to leave a foot up 13 % of the time, F5)
         /// <summary>The share of a step over which the foot travels across (before it, the foot lifts; after it, it comes
         /// down where it is going).</summary>
         public Vector2 StepTravel = new Vector2(0.1f, 0.85f);
@@ -105,7 +105,9 @@ namespace SecondFace.Game.People
         public float Sink => _sink;
         /// <summary>For the gate's trace (tests read it), moving, each foot this frame: its lowest sole point over the ground
         /// before any lift, the swing's clearance wanted, the lift given, whether it is held (1) or let go (0.5); left then right.</summary>
-        public float[] Diag = new float[14];
+        public float[] Diag = new float[16];
+        /// <summary>For the gate's trace: each foot's ball where it ended this frame (world), left, right.</summary>
+        public Vector3 BallL, BallR;
         /// <summary>Kept for tests: how far each foot bone ended from where this put it (0: exact).</summary>
         public Vector2 GoalError { get; private set; }
         public Vector3 Offsets => new(0f, 0f, _sink);
@@ -371,6 +373,9 @@ namespace SecondFace.Game.People
                 if ((wantL - _footL.position).sqrMagnitude > 4e-6f) Solve(_upL, _loL, _footL, wantL);
                 if ((wantR - _footR.position).sqrMagnitude > 4e-6f) Solve(_upR, _loR, _footR, wantR);
                 _shownLastL = _shownL; _shownLastR = _shownR; _shownL = _footL.position; _shownR = _footR.position; _shownFrames++;
+                // for the gate's trace: how far each held foot's pivot ended from where it is held (m; -1 not held)
+                Diag[14] = Slip(_lockL, _footL, _toeL, _heelL, _ballL, _tipL); Diag[15] = Slip(_lockR, _footR, _toeR, _heelR, _ballR, _tipR);
+                BallL = _footL.TransformPoint(_ballL); BallR = _footR.TransformPoint(_ballR);
             }
             GoalError = new Vector2(Vector3.Distance(_footL.position, wantL), Vector3.Distance(_footR.position, wantR));
             End(_footL, _toeL, _heelL, _ballL, _tipL, _endL, gL, out _endDipL); _endRotL = _footL.rotation;
@@ -417,9 +422,8 @@ namespace SecondFace.Game.People
                 if (sole > LockLift || off.magnitude > LockReach)
                 {
                     k.On = false; k.Release = 1f; k.From = want - new Vector3(off.x, 0f, off.y);
-                    // and up to the swing's clearance at once, this frame too (its clearance was none while it was held: let go
-                    // on the ground, it slid 2 cm along it that frame, W1, 2026-11-06)
-                    want.y += Mathf.Max(0f, SwingClear - Mathf.Max(0f, sole));
+                    // (not lifted to the swing's clearance this frame: a foot let go while still slow jumped 3 cm up as it
+                    // bore weight, W6 23 → 30, 2026-11-06)
                 }
                 else return want - new Vector3(off.x, k.Drop, off.y);
             }
@@ -433,6 +437,13 @@ namespace SecondFace.Game.People
             }
             k.Drop = 0f;
             return want;
+        }
+
+        private static float Slip(Lock k, Transform foot, Transform toe, Vector3 heel, Vector3 ball, Vector3 tip)
+        {
+            if (!k.On) return -1f;
+            var p = k.Pivot == 0 ? foot.TransformPoint(heel) : k.Pivot == 1 ? foot.TransformPoint(ball) : (toe != null ? toe : foot).TransformPoint(tip);
+            return new Vector2(p.x - k.At.x, p.z - k.At.z).magnitude;
         }
 
         /// <summary>A place for the ankle the leg can reach: the same spot on the ground, no lower than the leg's length allows.</summary>
@@ -558,10 +569,9 @@ namespace SecondFace.Game.People
                 at = Vector3.Lerp(f.From, f.To, s);
                 heading = Mathf.LerpAngle(f.FromYaw, f.ToYaw, s);
                 // off the ground and down again quickly (a foot lingering 2.5-3 cm up read as a sole not down, F1): 3 cm
-                // up within the step's first 6 %, so on the first frame at any frame rate under 60 a second; and not held
-                // up longer than that (a lift of sin^0.25 kept it 3 cm up for 97 % of the step: after a gesture's two
-                // steps a foot was up 13 % of the time, F5, 2026-11-06)
-                lift = StepLift * Mathf.Pow(Mathf.Sin(t * Mathf.PI), 0.5f);
+                // up within the step's first 1.6 %, so already on the first frame at any frame rate under 200 a second
+                // (sin^0.5 left it 2.5-3 cm up a frame each way: F1 at the turn, 2026-11-06)
+                lift = StepLift * Mathf.Pow(Mathf.Sin(t * Mathf.PI), 0.25f);
             }
             else { at = f.Pin; heading = f.PinYaw; }
             var g = GroundAt(at, out normal);
