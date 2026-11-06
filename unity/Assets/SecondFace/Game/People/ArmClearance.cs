@@ -266,9 +266,6 @@ namespace SecondFace.Game.People
             // the wrist's height: under the shoulder by the reach at that bend, over the place beside the leg (twice: the
             // leg's width there depends on the height)
             var wristY = S.y - reach * 0.985f;
-            var elbowY = S.y - l1 * 0.97f;
-            ref var elbowWas = ref (side < 0 ? ref _elbowL : ref _elbowR);
-            var elbowNow = elbowWas.sqrMagnitude > 0f ? transform.TransformPoint(elbowWas) : E;
             var wrist = Vector3.zero;
             var found = false;
             for (var pass = 0; pass < 2; pass++)
@@ -278,25 +275,16 @@ namespace SecondFace.Game.People
                 // the leg's (and hip's) side: the furthest its skin stands out that way along the hand's height, the wrist
                 // to the fingertips (a hand placed by the thigh at its middle sat 3-4 cm into the hip above, 2026-11-06)
                 var surf = float.MinValue;
-                var eo = new Vector3(elbowNow.x - axis.x, 0f, elbowNow.z - axis.z);
-                var elbowOff = Vector3.Dot(eo, dir);
                 void Look(int lo, int hi, bool lowOnly)
                 {
                     for (var i = lo; i < hi; i++)
                     {
                         if (lowOnly && !_skin.Low(i)) continue;
                         var p = _skin.P[i];
-                        if (p.y > elbowY - 0.03f || p.y < wristY - 0.19f) continue;
+                        if (p.y > wristY + 0.02f || p.y < wristY - 0.19f) continue;
                         var off = p - axis; off.y = 0f;
                         if (Vector3.Dot(off, dir) <= 0f || Vector3.Dot(off, outward) < -0.02f) continue;
-                        var o = Vector3.Dot(off, dir);
-                        if (p.y <= wristY + 0.02f) { surf = Mathf.Max(surf, o); continue; }
-                        // along the forearm, between the wrist and the elbow: the wrist out far enough for the forearm's
-                        // line, from the elbow, to pass the skin with its own thickness (placed by the band under the wrist
-                        // alone, the hand left the forearm on the hip as the weight shifted onto that leg, and the elbow
-                        // pushed out after it stood the upper arm 22-27° off the vertical, A1, 2026-11-06)
-                        var t = Mathf.Max(0.35f, (elbowY - p.y) / Mathf.Max(0.05f, elbowY - wristY));
-                        surf = Mathf.Max(surf, elbowOff + (o + ForearmR - elbowOff) / t - 0.015f - SkinGap);
+                        surf = Mathf.Max(surf, Vector3.Dot(off, dir));
                     }
                 }
                 Look(_skin.Begin(thigh), _skin.End(thigh), false);
@@ -327,7 +315,6 @@ namespace SecondFace.Game.People
             var x = (l1 * l1 - l2 * l2 + d * d) / (2f * d);
             var y = Mathf.Sqrt(Mathf.Max(0f, l1 * l1 - x * x));
             var elbowAt = S + sw * x + pole * y;
-            elbowWas = transform.InverseTransformPoint(elbowAt);
             var dU = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(E - S, elbowAt - S), w);
             dU.ToAngleAxis(out var aU, out var axU);
             if (aU > 0.01f && axU.sqrMagnitude > 0.5f) TurnArm(upper, first, aU, axU);
@@ -356,7 +343,10 @@ namespace SecondFace.Game.People
             if (gapE < ElbowRest)
             {
                 if (flexAdd < FlexMore && hang < HangMax) flexAdd = Mathf.Min(FlexMore, flexAdd + 1f);
-                else poleOut = Mathf.Min(1f, poleOut + 0.05f);
+                // out to the side only while the upper arm hangs within UpperMax: past it the arm rests against the side
+                // (a contact) rather than standing out from it (the waist, pushed out as the weight shifted onto that leg,
+                // stood the elbow out until the upper arm was 22-27° off the vertical, A1, 2026-11-06)
+                else if (upperHang < UpperMax) poleOut = Mathf.Min(1f, poleOut + 0.05f);
             }
             else if (gapE > ElbowRest + 0.01f)
             {
@@ -382,10 +372,8 @@ namespace SecondFace.Game.People
         public float PoleOut = 0.2f, FlexMore = 10f, ElbowRest = -0.002f;
         /// <summary>At rest, clear of the body: the upper arm is kept within this of the vertical (degrees; the gate's A1 is
         /// 20) by the elbow's lean in toward the waist, as far as <see cref="PoleIn"/> (in, as a negative lean).</summary>
-        public float UpperAim = 16f, PoleIn = -0.6f;
-        /// <summary>The forearm's half-thickness the hand's place leaves it beside the hip with (m).</summary>
-        public float ForearmR = 0.03f;
-        private Vector3 _elbowL, _elbowR;   // where the rest solve put each elbow last, in the body's frame
+        public float UpperAim = 16f, PoleIn = -0.6f, UpperMax = 18.5f;
+
         /// <summary>The share of the clothes' thickness under the upper arm and the elbow that an arm at rest may press in
         /// (canvas and webbing give; the vest's 1.3 cm and the strap's 1.7 cm at the waist held broad men's elbows out and
         /// their upper arms 19-28° off the vertical, A1, 2026-11-06). Never the bare skin: the gate's C1 is on the body.</summary>

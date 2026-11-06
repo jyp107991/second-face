@@ -367,11 +367,10 @@ namespace SecondFace.Game.People
                     _footL.rotation = Quaternion.Slerp(keepL, _endRotL, _unplant);
                     _footR.rotation = Quaternion.Slerp(keepR, _endRotR, _unplant);
                 }
-                // (the other foot down as it is shown, after its own swing's clearance: by the clip's height alone, a foot
-                // let go was lifted 3 cm while the other stood higher, and was the lower foot bearing weight, W6, 2026-11-06)
-                var shownL = Mathf.Max(dipL, wantClearL); var shownR = Mathf.Max(dipR, wantClearR);
-                wantL = Held(ref _lockL, wantL, dipL, speedL, body, _footL, _toeL, _heelL, _ballL, _tipL, gL, dt, shownR < SwingClear - 0.005f);
-                wantR = Held(ref _lockR, wantR, dipR, speedR, body, _footR, _toeR, _heelR, _ballR, _tipR, gR, dt, shownL < SwingClear - 0.005f);
+                // (the other foot down by the clip's height: by its height as shown, after its swing's clearance, the
+                // sneak's rear foot was let go unlifted and slid, W2 1 → 10, 2026-11-06)
+                wantL = Held(ref _lockL, wantL, dipL, speedL, body, _footL, _toeL, _heelL, _ballL, _tipL, gL, dt, dipR < SwingClear - 0.005f);
+                wantR = Held(ref _lockR, wantR, dipR, speedR, body, _footR, _toeR, _heelR, _ballR, _tipR, gR, dt, dipL < SwingClear - 0.005f);
                 Diag[3] = _lockL.On ? 1f : _lockL.Release > 0f ? 0.5f : 0f; Diag[7] = _lockR.On ? 1f : _lockR.Release > 0f ? 0.5f : 0f;
                 // within the leg's reach, by height alone: an unreachable place (a held foot put down under a straight leg)
                 // was reached toward and slid the foot along the ground (W1, 2026-11-06)
