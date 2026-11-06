@@ -361,7 +361,14 @@ namespace SecondFace.Tests
                         var dir = (e - u).normalized; var fw = _root.forward; var rt = _root.right;
                         var sag = Mathf.Atan2(Vector3.Dot(dir, fw), Mathf.Max(1e-4f, -dir.y)) * Mathf.Rad2Deg;
                         var side = Mathf.Asin(Mathf.Clamp(Mathf.Abs(Vector3.Dot(dir, rt)), 0f, 1f)) * Mathf.Rad2Deg;
-                        if (State != null && (!SwingPeak.TryGetValue(State, out var pk) || pk.A < a1)) SwingPeak[State] = (a1, sag, side, up == HumanBodyBones.LeftUpperArm ? "L" : "R");
+                        if (State != null && (!SwingPeak.TryGetValue(State, out var pk) || pk.A < a1))
+                        {
+                            // what the game's swing did on that frame: its ease and the push out of the body after it
+                            if (_ac == null) _ac = GetComponent<SecondFace.Game.People.ArmClearance>();
+                            var l = up == HumanBodyBones.LeftUpperArm;
+                            var what = _ac != null && _ac.Diag.Length >= 20 ? $" (ease {_ac.Diag[l ? 16 : 17]:0.0}, push {_ac.Diag[l ? 18 : 19]:0.000})" : "";
+                            SwingPeak[State] = (a1, sag, side, (l ? "L" : "R") + what);
+                        }
                     }
                 }
                 if (k == K.Stand) Fingers();

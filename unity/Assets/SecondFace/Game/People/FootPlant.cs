@@ -33,6 +33,9 @@ namespace SecondFace.Game.People
         /// <summary>The farthest one standing foot is ahead of the other, m.</summary>
         public float MaxStagger = 0.22f;
         public float StepReach = 0.17f, StepTurn = 32f, StepTime = 0.32f, StepLift = 0.07f;
+        /// <summary>The share of a step over which the foot travels across (before it, the foot lifts; after it, it comes
+        /// down where it is going).</summary>
+        public Vector2 StepTravel = new Vector2(0.1f, 0.85f);
 
         private static readonly int SpeedId = Animator.StringToHash("Speed");
         private Animator _animator;
@@ -409,8 +412,12 @@ namespace SecondFace.Game.People
             if (f.Stepping)
             {
                 f.T += dt / StepTime;
-                f.To = want; f.ToYaw = wantYaw;   // the place keeps moving with a turning body
-                if (f.T >= 1f) { f.Stepping = false; f.Pin = want; f.PinYaw = wantYaw; }
+                // the place keeps moving with a turning body until the foot is over it, then the foot comes straight down
+                // (a foot that followed the turn to its last frame slid 10-16 cm/s as it touched, F4, 2026-11-06)
+                if (f.T < StepTravel.y) { f.To = want; f.ToYaw = wantYaw; }
+                // down on the frame that would take it past the step's end (the first and last frames of a step, 1-3 % of
+                // the way, stood the foot 2.5-3 cm up whatever the frame rate: a sole read as neither down nor stepping, F1)
+                if (f.T + dt / StepTime >= 1f) { f.Stepping = false; f.Pin = f.To; f.PinYaw = f.ToYaw; }
                 return;
             }
             if (other.Stepping) return;
@@ -428,11 +435,14 @@ namespace SecondFace.Game.People
             if (f.Stepping)
             {
                 var t = Mathf.Clamp01(f.T);
-                var s = t * t * (3f - 2f * t);
+                // up first, across, then down (a real step's foot leaves and meets the ground nearly vertically)
+                var u = Mathf.Clamp01((t - StepTravel.x) / (StepTravel.y - StepTravel.x));
+                var s = u * u * (3f - 2f * u);
                 at = Vector3.Lerp(f.From, f.To, s);
                 heading = Mathf.LerpAngle(f.FromYaw, f.ToYaw, s);
-                // off the ground and down again quickly (a foot lingering 2.5-3 cm up read as a sole not down, F1)
-                lift = StepLift * Mathf.Pow(Mathf.Sin(t * Mathf.PI), 0.35f);
+                // off the ground and down again quickly (a foot lingering 2.5-3 cm up read as a sole not down, F1): 3 cm
+                // up within the step's first 1.6 %, so already on the first frame at any frame rate under 200 a second
+                lift = StepLift * Mathf.Pow(Mathf.Sin(t * Mathf.PI), 0.25f);
             }
             else { at = f.Pin; heading = f.PinYaw; }
             var g = GroundAt(at, out normal);

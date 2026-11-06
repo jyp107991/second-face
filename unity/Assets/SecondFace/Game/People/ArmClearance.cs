@@ -48,7 +48,7 @@ namespace SecondFace.Game.People
         /// <summary>For the gate's report (tests read it): resting, each arm's elbow and hand gaps (m), and its holds
         /// (in, forward, carry at the elbow, the push-out), this frame; left then right.</summary>
         public bool DiagResting;
-        public float[] Diag = new float[16];
+        public float[] Diag = new float[20];
         /// <summary>For the gate's report: the arm's point and the body's point that gave each gap this frame (left elbow,
         /// left hand, right elbow, right hand; arm then body; -1 none).</summary>
         public int[] DiagAt = new int[8];
@@ -179,6 +179,7 @@ namespace SecondFace.Game.People
             var dt = Time.deltaTime > 0f ? Time.deltaTime : Time.unscaledDeltaTime;
             var resting = Resting();
             DiagResting = resting;
+            Diag[16] = Diag[17] = Diag[18] = Diag[19] = 0f;
             if (SkinReady && Near())
             {
                 if (RestReach)
@@ -325,17 +326,26 @@ namespace SecondFace.Game.People
             // vertical, A1, 2026-11-06)
             // resting against the side is a contact, not a clip (the gate's C1 allows 0.5 cm into the skin; 0.5 cm off it
             // bent every elbow to its most, the forearms past 30°, A3)
+            // the forearm hangs no further from the vertical than HangMax (A3 is 30°: a broad woman's bend with her upper
+            // arm out stood her forearm 30.5-31° off it, 2026-11-06): past it, the elbow straightens, and stands out instead
+            var hang = Vector3.Angle(hand.position - lower.position, Vector3.down);
+            var flexMin = 6f - (RestFlex + _flexVar);
             if (gapE < ElbowRest)
             {
-                if (flexAdd < FlexMore) flexAdd = Mathf.Min(FlexMore, flexAdd + 1f);
+                if (flexAdd < FlexMore && hang < HangMax) flexAdd = Mathf.Min(FlexMore, flexAdd + 1f);
                 else poleOut = Mathf.Min(1f, poleOut + 0.05f);
             }
             else if (gapE > ElbowRest + 0.01f)
             {
                 if (poleOut > PoleOut) poleOut = Mathf.Max(PoleOut, poleOut - 0.02f);
-                else flexAdd = Mathf.Max(0f, flexAdd - 0.5f);
+                else if (flexAdd > 0f) flexAdd = Mathf.Max(0f, flexAdd - 0.5f);
             }
+            if (hang > HangMax) flexAdd = Mathf.Max(flexMin, flexAdd - 0.5f);
+            else if (flexAdd < 0f && hang < HangMax - 2f) flexAdd = Mathf.Min(0f, flexAdd + 0.5f);
         }
+
+        /// <summary>At rest: the most the forearm may hang off the vertical (degrees; the gate's A3 is 30).</summary>
+        public float HangMax = 28f;
 
         /// <summary>At rest: the elbow's lean out to the side (0 straight back, 1 straight out) it starts from, and how much
         /// further the elbow may bend (degrees) to stand clear of a broad chest with the hand still at the thigh.</summary>
@@ -436,6 +446,8 @@ namespace SecondFace.Game.People
             var keep = Mathf.Sqrt(Mathf.Max(0f, want * want - side * side));
             if (Mathf.Abs(sag) <= keep) return;
             var turn = sag - Mathf.Sign(sag) * keep;   // about the body's right: + moves the arm back
+            var left = first == BodySkin.Part.UpperArmL;
+            Diag[left ? 16 : 17] = turn;
             if (!skin) { upper.rotation = Quaternion.AngleAxis(turn, right) * upper.rotation; return; }
             TurnArm(upper, first, turn, right);
             // what the ease brought into the body: a forearm or hand turned out at the elbow (pushed out at the shoulder,
@@ -457,6 +469,7 @@ namespace SecondFace.Game.People
             if (best > 0.01f) TurnForearm(lower, first, Mathf.Min(best, 30f), ax);
             var (more, dir2) = SkinNeed(upper, first);
             if (more > 0.01f) TurnArm(upper, first, more, dir2);
+            Diag[left ? 18 : 19] = more + best * 0.001f;   // the shoulder's push after the ease (and the elbow's, in thousandths)
         }
 
         /// <summary>Turns an upper arm at the shoulder, and its points with it.</summary>
