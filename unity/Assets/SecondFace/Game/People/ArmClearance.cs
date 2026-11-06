@@ -23,7 +23,7 @@ namespace SecondFace.Game.People
         /// <summary>With the skin: a resting hand that hangs behind the thigh's middle (into the buttock, the clip taken on
         /// a flatter body) is brought forward to the thigh's side, by at most this many degrees at the shoulder.</summary>
         public float RestForward = 14f;
-        public float SkinRange = 30f;
+        public float SkinRange = 60f;   // as far as people are fully animated (PeopleService: 60 m); the sections missed a chest past 30 m
         public float Margin = 0.02f;
         public float Release = 90f;
         /// <summary>Standing still, no gesture: an arm hanging away from the body is drawn in until the hand rests this far
