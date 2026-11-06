@@ -81,9 +81,14 @@ namespace SecondFace.Game.People
         public void Bind()
         {
             _set = Read(Data);
-            if (Body == null)
+            // this person's own body renderer, never one outside them (a reference that resolved to the prefab asset posed
+            // every point at the scene's origin, 2026-11-06: the gate's fit check found them metres from the body)
+            if (Body == null || !Body.transform.IsChildOf(transform))
+            {
+                Body = null;
                 foreach (var r in GetComponentsInChildren<SkinnedMeshRenderer>(true))
                     if (!r.name.StartsWith("layer_") && r.sharedMesh != null && (Body == null || r.sharedMesh.vertexCount > Body.sharedMesh.vertexCount)) Body = r;
+            }
             _bones = Body != null ? Body.bones : null;
             P = N = null;
             if (_set == null || _bones == null) { _set = null; return; }

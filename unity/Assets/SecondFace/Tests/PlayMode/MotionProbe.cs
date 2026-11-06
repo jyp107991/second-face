@@ -203,7 +203,7 @@ namespace SecondFace.Tests
                     if (dist > worstFit) { worstFit = dist; worstAt = k; }
                     if (bi >= 0 && _bindNormals != null && Vector3.Dot(_bindNormals[bi], skin.N[k]) < 0.5f) normalOff++;
                 }
-                SkinFit = $"mean {sumFit / Mathf.Max(1, skin.Count) * 100:0.00} cm, worst {worstFit * 100:0.0} cm (point {worstAt}), normals off {normalOff} of {skin.Count}";
+                SkinFit = $"mean {sumFit / Mathf.Max(1, skin.Count) * 100:0.00} cm, worst {worstFit * 100:0.0} cm (point {worstAt}), normals off {normalOff} of {skin.Count}; its body {(skin.Body != null ? skin.Body.name + (skin.Body.transform.IsChildOf(_root) ? " (this person's)" : " (NOT this person's)") : "none")}";
             }
             _ankleSoleL = SoleOffset(bind, Part.FootL, _bindAnkleL, _bindToeL, out _toeSoleL);
             _ankleSoleR = SoleOffset(bind, Part.FootR, _bindAnkleR, _bindToeR, out _toeSoleR);
