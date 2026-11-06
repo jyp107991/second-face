@@ -246,14 +246,17 @@ namespace SecondFace.Game.People
                 var dipL = SoleOver(_footL, _toeL, _heelL, _backL, _ballL, _tipL, gL) + (wantL.y - _footL.position.y);
                 var dipR = SoleOver(_footR, _toeR, _heelR, _backR, _ballR, _tipR, gR) + (wantR.y - _footR.position.y);
                 // the swing's clearance: how high a foot moving at this pace must stand
-                float Clear(Vector3 now, Vector3 last, Vector3 shown, Vector3 shownLast)
+                // (the foot as shown only while it is let go from a hold: its ankle turns about a still heel as it lands,
+                // and held up by that it bore weight 2.5-3.5 cm up, W6, 2026-11-06)
+                float Clear(Vector3 now, Vector3 last, Vector3 shown, Vector3 shownLast, bool releasing)
                 {
                     if (!_haveLast) return 0f;
                     var v = new Vector2(now.x - last.x, now.z - last.z).magnitude / dt;
-                    if (_shownFrames >= 2) v = Mathf.Max(v, new Vector2(shown.x - shownLast.x, shown.z - shownLast.z).magnitude / dt);
+                    if (releasing && _shownFrames >= 2) v = Mathf.Max(v, new Vector2(shown.x - shownLast.x, shown.z - shownLast.z).magnitude / dt);
                     return SwingClear * Mathf.Clamp01((v - ClearSlow) / (ClearFast - ClearSlow));
                 }
-                var clearL = Clear(_footL.position, _lastL, _shownL, _shownLastL); var clearR = Clear(_footR.position, _lastR, _shownR, _shownLastR);
+                var clearL = Clear(_footL.position, _lastL, _shownL, _shownLastL, _lockL.Release > 0f);
+                var clearR = Clear(_footR.position, _lastR, _shownR, _shownLastR, _lockR.Release > 0f);
                 var speedL = _haveLast ? new Vector2(_footL.position.x - _lastL.x, _footL.position.z - _lastL.z).magnitude / dt : 0f;
                 var speedR = _haveLast ? new Vector2(_footR.position.x - _lastR.x, _footR.position.z - _lastR.z).magnitude / dt : 0f;
                 _lastL = _footL.position; _lastR = _footR.position; _haveLast = true;

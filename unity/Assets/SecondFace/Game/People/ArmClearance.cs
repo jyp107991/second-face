@@ -234,6 +234,9 @@ namespace SecondFace.Game.People
         /// Blended in over <see cref="RestIn"/> s on coming to rest, out over <see cref="RestOut2"/> s on moving or gesturing.</summary>
         public bool RestReach = true;
         public float RestFlex = 15f, RestFront = 15f, RestIn = 0.6f, RestOut2 = 0.25f, RestFar = 0.035f;
+        /// <summary>At rest, the furthest the hand is placed from under the shoulder: the shoulder-to-wrist line this far off
+        /// the vertical at most (degrees).</summary>
+        public float RestReachMax = 24f;
         private float _restW, _flexVar = float.NaN, _frontVar, _adaptL, _adaptR, _wantGapL = 0.01f, _wantGapR = 0.01f;
 
         private void RestArm(Transform upper, Transform lower, Transform hand, int side, BodySkin.Part first, float w)
@@ -293,6 +296,10 @@ namespace SecondFace.Game.People
                 if (side < 0) _wantGapL = SkinGap; else _wantGapR = SkinGap;
                 var flat = new Vector3(axis.x, 0f, axis.z) + dir * (surf + 0.015f + SkinGap + adapt);
                 var h = new Vector2(flat.x - S.x, flat.z - S.z).magnitude;
+                // never further out than a hanging arm reaches (the band below the wrist now and then caught something wide
+                // for a few frames and threw the arm out to 31-41°, A1, 2026-11-06)
+                var hMax = reach * Mathf.Sin(RestReachMax * Mathf.Deg2Rad);
+                if (h > hMax) { var sf = new Vector3(S.x, 0f, S.z); flat = sf + (flat - sf).normalized * hMax; h = hMax; }
                 wristY = S.y - Mathf.Sqrt(Mathf.Max(0.04f * reach * reach, reach * reach - h * h));
                 wrist = new Vector3(flat.x, wristY, flat.z);
             }

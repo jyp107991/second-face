@@ -248,7 +248,7 @@ namespace SecondFace.Game.People
         /// inside of a hem). False when no body point is near (more than a cell or so away: outside). <paramref name="depth"/>:
         /// how deep inside (m, positive), or outside, minus the gap to the surface's plane at the nearest point.</summary>
         /// <summary>The widest patch of skin one point stands for (m).</summary>
-        public const float PatchMax = 0.04f;
+        public const float PatchMax = 0.06f;
 
         public bool Depth(Vector3 p, out float depth, out Vector3 normal)
         {
@@ -277,7 +277,7 @@ namespace SecondFace.Game.People
             // below a hem is behind their planes and outside the body (such false contacts pushed arms out, 2026-11-06)
             // (a point stands for a patch of skin no wider than PatchMax, however far its neighbours: a lone point on the
             // upper back, 17 cm from them, read an upper arm swinging 14 cm out to the side as inside the torso and pushed
-            // it out to 41-44°, W3 and A1, 2026-11-06)
+            // it out to 41-44°, W3 and A1, 2026-11-06; 4 cm lost hands 3 cm into thighs whose points stand 4 cm apart)
             float Under(int c)
             {
                 var v = p - P[c];
