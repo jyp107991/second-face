@@ -232,7 +232,7 @@ namespace SecondFace.Game.People
         /// cm off it whatever their limits, 2026-11-06. Each person's flex and forward differ a little (from their name).
         /// Blended in over <see cref="RestIn"/> s on coming to rest, out over <see cref="RestOut2"/> s on moving or gesturing.</summary>
         public bool RestReach = true;
-        public float RestFlex = 15f, RestFront = 15f, RestIn = 0.6f, RestOut2 = 0.25f;
+        public float RestFlex = 15f, RestFront = 15f, RestIn = 0.6f, RestOut2 = 0.25f, RestFar = 0.035f;
         private float _restW, _flexVar = float.NaN, _frontVar, _adaptL, _adaptR;
 
         private void RestArm(Transform upper, Transform lower, Transform hand, int side, BodySkin.Part first, float w)
@@ -289,7 +289,14 @@ namespace SecondFace.Game.People
                 found = true;
                 var adapt = side < 0 ? _adaptL : _adaptR;
                 Diag[side < 0 ? 4 : 10] = adapt * 100f; Diag[side < 0 ? 5 : 11] = surf * 100f;
-                var flat = new Vector3(axis.x, 0f, axis.z) + dir * (surf + 0.015f + SkinGap + adapt);
+                // where the hand would hang, straight down from the shoulder (a little forward with the bend), drawn in or out
+                // only to lie between SkinGap and RestFar off the leg's side (the hand that followed the thigh tilted the arm
+                // out to 20-30° as the hips swayed under a broad shoulder, A1, 2026-11-06)
+                var hang = new Vector3(S.x, 0f, S.z) + fwd * (l2 * Mathf.Sin(flex) * 0.8f);
+                var side0 = Vector3.Dot(hang - new Vector3(axis.x, 0f, axis.z), dir) - (surf + 0.015f);
+                var want = Mathf.Clamp(side0, SkinGap, RestFar) + adapt;
+                var across = hang - dir * Vector3.Dot(hang - new Vector3(axis.x, 0f, axis.z), dir);
+                var flat = new Vector3(across.x, 0f, across.z) + dir * (surf + 0.015f + want);
                 var h = new Vector2(flat.x - S.x, flat.z - S.z).magnitude;
                 wristY = S.y - Mathf.Sqrt(Mathf.Max(0.04f * reach * reach, reach * reach - h * h));
                 wrist = new Vector3(flat.x, wristY, flat.z);
