@@ -302,6 +302,9 @@ namespace SecondFace.Game.People
         private float HandGap(BodySkin.Part first)
         {
             var g = Gap(_skin.Begin(first + 2), _skin.End(first + 2), 2, float.MaxValue);
+            var left = first == BodySkin.Part.UpperArmL;
+            DiagAt[left ? 2 : 6] = _gapArm; DiagAt[left ? 3 : 7] = _gapBody;
+            DiagAt[left ? 0 : 4] = -1; DiagAt[left ? 1 : 5] = -1;
             return g < float.MaxValue ? g : -1f;
         }
 
