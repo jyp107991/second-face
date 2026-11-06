@@ -784,7 +784,9 @@ namespace SecondFace.Game.Play
             if (to.sqrMagnitude <= 0.01f) yield break;
             var from = person.rotation;
             var goal = Quaternion.LookRotation(to.normalized, Vector3.up);
-            if (seconds <= 0f) seconds = Mathf.Lerp(0.5f, 1.3f, Quaternion.Angle(from, goal) / 180f);
+            // (a person turns about a second for 180°: at 1.3 s the gate's conversation turn found the chest still 20-23° off
+            // the one who spoke, T1, 2026-11-06)
+            if (seconds <= 0f) seconds = Mathf.Lerp(0.5f, 1.05f, Quaternion.Angle(from, goal) / 180f);
             for (var t = 0f; t < 1f && person != null; t += Time.deltaTime / seconds)
             {
                 person.rotation = Quaternion.Slerp(from, goal, Mathf.SmoothStep(0f, 1f, t));

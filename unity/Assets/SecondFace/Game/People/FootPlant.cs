@@ -61,7 +61,7 @@ namespace SecondFace.Game.People
         private Vector3 _lastL, _lastR; private bool _haveLast;
         // moving, a foot down on the ground is held where it came down until the clip lifts it (W1: a planted foot
         // does not creep; the clips' strides never quite match the body's pace): its place, and a short release after
-        private struct Lock { public bool On, HaveTurn; public Vector3 At, From, Fwd; public Quaternion Rest, Corr; public float Release, Last, Min, W, Drop; public int Pivot; }
+        private struct Lock { public bool On, HaveTurn; public Vector3 At, From, Fwd; public Quaternion Rest, Corr; public float Release, Last, Min, W, Drop, Wait; public int Pivot; }
         private Lock _lockL, _lockR;
         /// <summary>A foot locks when its sole is this near the ground and slower than <see cref="SwingSlow"/>; it lets go
         /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
@@ -77,6 +77,8 @@ namespace SecondFace.Game.People
         /// lowest sole point's speed, the point the gate measures): a foot moving faster stands <see cref="SwingClear"/> up.
         /// Not for a foot held down, nor one coming down slower than a swing; at once for one let go from a hold.</summary>
         public float ClearSlow = 0.5f, ClearFast = 1.5f;
+        /// <summary>Below this pace (m/s) a gait has no flight: a held foot is kept down until the other foot is.</summary>
+        public float WalkFlight = 1.8f;
         /// <summary>Moving, each foot goes where the captured subject's ankle went (the clip's own foot goal, Mecanim's IK
         /// goal: the source's ankle scaled to this body, with the stride's travel), not where the retargeted leg puts it: a
         /// leg of other proportions bent to the clip's angles puts its ankle elsewhere, and in a crouch it drifts through
@@ -442,7 +444,13 @@ namespace SecondFace.Game.People
                 k.W = Mathf.MoveTowards(k.W, 1f, dt / 0.04f);
                 var rise = Mathf.Clamp01((sole - k.Min) / Mathf.Max(0.002f, LockLift - k.Min));
                 k.Drop = k.Min * k.W * (1f - rise);
-                if (sole > LockLift || off.magnitude > LockReach)
+                // walking (no flight in it), the last foot down stays down until the other is: kept on the ground as the clip
+                // lifts it, then let rise (the sneak's rear toe rose 3 cm while the front foot was still in its swing's
+                // clearance, both off the ground and the slower bearing the weight 2.7-3 cm up, W6, 2026-11-06)
+                var waitFor = !otherDown && body < WalkFlight;
+                k.Wait = Mathf.MoveTowards(k.Wait, waitFor ? 1f : 0f, dt / 0.06f);
+                if (k.Wait > 0f) k.Drop = Mathf.Lerp(k.Drop, Mathf.Max(k.Drop, sole) * k.W, k.Wait);
+                if ((sole > LockLift && k.Wait < 0.05f) || off.magnitude > LockReach)
                 {
                     k.On = false; k.Release = 1f; k.From = want - new Vector3(off.x, 0f, off.y);
                     // while the other foot is down too, up to the swing's clearance at once, this frame too (its clearance
