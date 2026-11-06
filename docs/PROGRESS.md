@@ -437,8 +437,13 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   puts it: a leg of other proportions bent to the clip's angles drifted through every stance, 12 cm in the sneak's
   crouch (W2 10 → 1, W1 30 → 21); a foot let go gets its swing clearance that same frame; the landing pitch limit is off
   again (it turned feet up about the ankle and stood the jog's stance foot 3-8 cm up, W6). g80: 137, but W6 24 and F5 1
-  (each one worse than the committed verdict), so not committed. **Open:** W1 (the jog's landings: 25-40 % of its down
-  frames over 15 cm/s), W6 (the jog), A1 60 (men's upper arms on the chest's side), A4 13, C1 16; then the whole cast.
+  (each one worse than the committed verdict), so not committed. Then: a foot let go lifts to its swing clearance at once
+  only while the other foot is down too (lifted when it was the last foot down, slow, it stood 3 cm up bearing the
+  weight, W6); the soles' points are chosen as the gate chooses its own (its parts, not each vertex's bone; people
+  rebuilt); a held foot keeps the heading it came down with. **g84 committed: 196 → 132, no measure worse** (A1 59, W1
+  21, C1 17, W6 17, A4 15, F4 1, T1 1, W2 1). **Open:** W1 (the jog: a held flat foot's other sole point still moves
+  0.16-0.19 m/s; next, a held foot keeps its roll too and takes only the clip's pitch), W6 (the sneak, the jog), A1 (men's
+  upper arms on the chest's side), C1, A4; then the whole cast.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
