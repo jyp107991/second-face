@@ -354,9 +354,7 @@ namespace SecondFace.Game.People
             // shoulder to thigh ran inside broad chests and vests, and the push-out at the shoulder took the hand 8-12 cm off
             // it, 2026-11-06
             if (w < 0.99f) return;
-            // (the upper arm by its lower part only: higher, it rests on the chest's side, a contact both soft tissues take
-            // and the gate allows, C1; counted, a broad man's chest and lats stood his elbows out, A1, 2026-11-06)
-            var gapE = Mathf.Min(LowerGap(first, upper.position, lower.position), Gap(_skin.Begin(first + 1), _skin.End(first + 1), 1, 0.08f, lower.position, 0.08f, ClothGive));
+            var gapE = Mathf.Min(Gap(_skin.Begin(first), _skin.End(first), 1, 0.08f, null, 0f, ClothGive), Gap(_skin.Begin(first + 1), _skin.End(first + 1), 1, 0.08f, lower.position, 0.08f, ClothGive));
             Diag[side < 0 ? 12 : 13] = poleOut * 100f; Diag[side < 0 ? 14 : 15] = flexAdd;
             // the bend first (it swings the forearm forward off the hip, the belt, a vest's hem, and leaves the upper arm
             // hanging), the elbow out to the side only after (out first stood broad men's upper arms 19-28° off the
@@ -401,10 +399,7 @@ namespace SecondFace.Game.People
         public float PoleOut = 0.2f, FlexMore = 10f, ElbowRest = -0.002f;   // (at 0, with the cloth giving 30 %, broad men's elbows stood out: A1 54 → 67, 2026-11-06)
         /// <summary>At rest, clear of the body: the upper arm is kept within this of the vertical (degrees; the gate's A1 is
         /// 20) by the elbow's lean in toward the waist, as far as <see cref="PoleIn"/> (in, as a negative lean).</summary>
-        public float UpperAim = 16f, PoleIn = -0.6f, UpperMax = 17f;
-        /// <summary>At rest, the share of the upper arm's length, from the elbow, whose contact with the body counts (the
-        /// gate's C1 counts the third nearest the elbow; higher, the arm rests on the chest's side).</summary>
-        public float ElbowShare = 0.4f;   // (18.5 let the p98 overshoot to 20-24, A1)
+        public float UpperAim = 16f, PoleIn = -0.6f, UpperMax = 17f;   // (18.5 let the p98 overshoot to 20-24, A1)
         /// <summary>At rest, the furthest forward of the thigh's side the hand may be placed (degrees), and how fast its place
         /// turns there (degrees a second).</summary>
         public float RestFrontMax = 80f, FrontRate = 90f;
@@ -649,23 +644,6 @@ namespace SecondFace.Game.People
 
         /// <summary>The nearest a set of the arm's points comes to the body's surface (m; negative: inside), or
         /// <paramref name="far"/> when none is near.</summary>
-        /// <summary>The upper arm's gap to the body by its part nearest the elbow alone (from 1 - <see cref="ElbowShare"/> of
-        /// the way from the shoulder, along the bone, as the gate's C1 tells it), the clothes giving <see cref="ClothGive"/>.</summary>
-        private float LowerGap(BodySkin.Part first, Vector3 shoulder, Vector3 elbow)
-        {
-            var gap = float.MaxValue;
-            var ua = elbow - shoulder; var len2 = Mathf.Max(1e-6f, ua.sqrMagnitude);
-            for (int i = _skin.Begin(first), to = _skin.End(first); i < to; i++)
-            {
-                var p = _skin.P[i];
-                if (Vector3.Dot(p - shoulder, ua) / len2 < 1f - ElbowShare) continue;
-                if (!_skin.Depth(p, out var d, out _)) continue;
-                var g = -d + (_skin.Near >= 0 ? ClothGive * _skin.Off(_skin.Near) : 0f);
-                if (g < gap) gap = g;
-            }
-            return gap == float.MaxValue ? 0.08f : gap;
-        }
-
         private float Gap(int from, int to, int stride, float far, Vector3? within = null, float radius = 0f, float soft = 0f)
         {
             var gap = float.MaxValue;
@@ -807,13 +785,9 @@ namespace SecondFace.Game.People
             var hand = _skin.Begin(first + 2);
             var lowerArm = first == BodySkin.Part.UpperArmL ? _ll : _rl;
             var elbowAt = lowerArm != null ? lowerArm.position : upper.position;
-            // at rest, the upper arm by its lower part only (as the elbow's contact above, and the gate's C1)
-            var upperEnd = _skin.Begin(first + 1);
-            var ua = elbowAt - shoulder; var uaLen2 = Mathf.Max(1e-6f, ua.sqrMagnitude);
             for (var i = from; i < to; i++)
             {
                 var p = _skin.P[i];
-                if (_restW > 0.99f && i < upperEnd && Vector3.Dot(p - shoulder, ua) / uaLen2 < 1f - ElbowShare) continue;
                 if (!_skin.Depth(p, out var d, out var n)) continue;
                 // the upper arm and the forearm by the elbow may press into the clothes a little (ClothGive); the hand not
                 if (_restW > 0.99f && i < hand && _skin.Near >= 0 && (i < _skin.Begin(first + 1) || (p - elbowAt).sqrMagnitude < 0.0064f)) d -= ClothGive * _skin.Off(_skin.Near);
