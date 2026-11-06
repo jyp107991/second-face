@@ -261,6 +261,8 @@ namespace SecondFace.Game.People
 
         /// <summary>The widest patch of skin one point stands for (m).</summary>
         public const float PatchMax = 0.06f;
+        /// <summary>How far across from a point, as a multiple of how deep behind its plane, a point is still read as under it.</summary>
+        public const float DeepAcross = 2.2f;
 
         public bool Depth(Vector3 p, out float depth, out Vector3 normal)
         {
@@ -296,7 +298,9 @@ namespace SecondFace.Game.People
                 var d = -Vector3.Dot(v, N[c]);
                 if (d <= 0f) return d;
                 var across = (v + N[c] * d).magnitude;
-                return across <= Mathf.Max(Mathf.Min(_spacing[c], PatchMax), d) ? d : -1f;
+                // (and as far across as 2.2 times as deep: under the arm the chest's wall turns in, and an upper arm 1.6 cm
+                // behind its plane lay 3.2 cm across from its nearest point, read as outside, C1, 2026-11-06)
+                return across <= Mathf.Max(Mathf.Min(_spacing[c], PatchMax), DeepAcross * d) ? d : -1f;
             }
             var inside = Under(c0);
             if (c1 >= 0) inside = Mathf.Min(inside, Under(c1));
