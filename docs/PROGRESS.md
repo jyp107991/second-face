@@ -394,6 +394,18 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   A4 151 → 85, C1 → 55. Also: the pace picks the slowest gait that reaches the pace (the run's arms swung past W3's cap);
   a moving arm's swing is eased forward and back past 33° after the clearance. **Open:** A1 (~86), A4 (~85), W1/W6
   (start, stop, heel strike), the sneak, F4 (turn), T1; then the whole cast.
+- **2026-11-06 (12:20Z), arms on the skin, steps in the turn** (red; committed quick-set verdict 304; runs since at
+  231-256). The resting arm's controller bends the elbow first and only then stands it out (out first stood broad men's
+  upper arms 19-28° off the vertical, A1), lets an arm at rest press half a garment's thickness into canvas and webbing
+  (`ClothGive`, never the bare skin), and straightens the elbow when the forearm passes 28° (A3). The body skin's builder
+  had left out the chest's own points (it judged torso faces against the shoulder's bone, not the spine's) and its depth
+  test looked in 3 cm cells (a hand deep in a thigh read as outside): both fixed. The stride's swing is eased only while
+  striding (it was easing waves and shrugs), and also past the skin's range; the skin itself now holds the arms out to
+  60 m, as far as people are fully animated (far walkers clipped their chests, C1 50 → 39). Turning in place, each
+  step lifts, crosses and sets down (it followed the turning body to its last frame: 10-16 cm/s slides as it touched,
+  F4) and lands on the frame that would take it past its end (the first and last frames stood the foot 2.5-3 cm up at
+  any frame rate, F1). **Open:** A1 (~85), A4 (~44), C1 (~39: gesture hands into the thighs), W1/W6, the sneak, then
+  the whole cast.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
