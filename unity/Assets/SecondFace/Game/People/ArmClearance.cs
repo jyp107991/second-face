@@ -199,8 +199,8 @@ namespace SecondFace.Game.People
                 SkinClear(_lu, BodySkin.Part.UpperArmL, ref _angleL, ref _axisL, dt);
                 SkinClear(_ru, BodySkin.Part.UpperArmR, ref _angleR, ref _axisR, dt);
                 if (!resting) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
-                Diag[4] = _restL; Diag[5] = _fwdL; Diag[6] = _carryL; Diag[7] = _angleL;
-                Diag[10] = _restR; Diag[11] = _fwdR; Diag[8] = _carryR; Diag[9] = _angleR;
+                if (!RestReach) { Diag[4] = _restL; Diag[5] = _fwdL; Diag[10] = _restR; Diag[11] = _fwdR; }
+                Diag[6] = _carryL; Diag[7] = _angleL; Diag[8] = _carryR; Diag[9] = _angleR;
                 Diag[12] = _twistL; Diag[13] = _twistR;
                 return;
             }
@@ -273,6 +273,7 @@ namespace SecondFace.Game.People
                 if (surf == float.MinValue) break;
                 found = true;
                 var adapt = side < 0 ? _adaptL : _adaptR;
+                Diag[side < 0 ? 4 : 10] = adapt * 100f; Diag[side < 0 ? 5 : 11] = surf * 100f;
                 var flat = new Vector3(axis.x, 0f, axis.z) + dir * (surf + 0.015f + SkinGap + adapt);
                 var h = new Vector2(flat.x - S.x, flat.z - S.z).magnitude;
                 wristY = S.y - Mathf.Sqrt(Mathf.Max(0.04f * reach * reach, reach * reach - h * h));
