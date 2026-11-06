@@ -428,6 +428,17 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   a stride's ease that pushes the hand into the body is tried at half. The gate's soles trace now starts afresh each run
   (it was appended to: earlier analyses mixed runs). **Open:** A1 61 (men's upper arms against the chest's side), W1 30
   (jog and sneak), W6 23, A4 21, C1 47, W2 10 (sneak), T1 3; then the whole cast.
+- **2026-11-06 (later), the arms off the chest's sides, the feet on the capture's own path** (red; committed 196; runs
+  g76-g81 while finding it). Arms: the vest's, bomber's and straps' side panels under the arms are thin (RBS2 skin: a
+  side share per point, the layer 4 mm there), the torso's and thighs' sides sampled at 1.5 cm; the skin's depth test
+  takes a deep armpit contact (DeepAcross) and calls a point inside when two of its three nearest planes agree; walkers
+  keep their skin clearance at any range (C1 47 → 16, A4 21 → 13). Feet: walking, each foot now goes along the ground
+  where the captured subject's ankle went (the clip's own foot goal, scaled to the body), not where the retargeted leg
+  puts it: a leg of other proportions bent to the clip's angles drifted through every stance, 12 cm in the sneak's
+  crouch (W2 10 → 1, W1 30 → 21); a foot let go gets its swing clearance that same frame; the landing pitch limit is off
+  again (it turned feet up about the ankle and stood the jog's stance foot 3-8 cm up, W6). g80: 137, but W6 24 and F5 1
+  (each one worse than the committed verdict), so not committed. **Open:** W1 (the jog's landings: 25-40 % of its down
+  frames over 15 cm/s), W6 (the jog), A1 60 (men's upper arms on the chest's side), A4 13, C1 16; then the whole cast.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.

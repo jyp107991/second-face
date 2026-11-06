@@ -183,7 +183,7 @@ namespace SecondFace.Game.People
         /// <summary>The most a moving foot is pointed toes-down while its ankle is low (degrees), fading from full at
         /// <see cref="PitchLow"/>.x of the ankle's height over a flat sole to none at .y (m); its toes straightened
         /// toward flat over the same.</summary>
-        public float LandPitch = 25f;   // (from landing to mid-stance only, while the ankle comes down: at push-off it lifted the stance foot 3-8 cm, W6; the men's jog landed pointed 60° on a toe tip 9-14 cm under the ground, the heel 25 cm up, W2, 2026-11-06)
+        public float LandPitch = 90f;   // (off: a 25° limit turned the foot up about its ankle and stood the jog's stance foot 3-8 cm up, W6, landing or held; the clip's own goals keep the men's jog from sliding on its pointed foot instead, W2 0.15 → passing, 2026-11-06)
         private float _lastEL, _lastER;
         public Vector2 PitchLow = new Vector2(0.04f, 0.10f);
 
@@ -558,8 +558,10 @@ namespace SecondFace.Game.People
                 at = Vector3.Lerp(f.From, f.To, s);
                 heading = Mathf.LerpAngle(f.FromYaw, f.ToYaw, s);
                 // off the ground and down again quickly (a foot lingering 2.5-3 cm up read as a sole not down, F1): 3 cm
-                // up within the step's first 1.6 %, so already on the first frame at any frame rate under 200 a second
-                lift = StepLift * Mathf.Pow(Mathf.Sin(t * Mathf.PI), 0.25f);
+                // up within the step's first 6 %, so on the first frame at any frame rate under 60 a second; and not held
+                // up longer than that (a lift of sin^0.25 kept it 3 cm up for 97 % of the step: after a gesture's two
+                // steps a foot was up 13 % of the time, F5, 2026-11-06)
+                lift = StepLift * Mathf.Pow(Mathf.Sin(t * Mathf.PI), 0.5f);
             }
             else { at = f.Pin; heading = f.PinYaw; }
             var g = GroundAt(at, out normal);
