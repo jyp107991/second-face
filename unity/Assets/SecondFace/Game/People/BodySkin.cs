@@ -72,6 +72,14 @@ namespace SecondFace.Game.People
         public int Begin(Part p) => _set.Start[(int)p];
         public int End(Part p) => _set.Start[(int)p + 1];
         public bool Low(int i) => (_set.Flags[i] & LowFlag) != 0;
+        /// <summary>The body's point nearest to the last point <see cref="Depth"/> judged (-1: none near), for reports.</summary>
+        public int Near = -1;
+        /// <summary>The part a point belongs to.</summary>
+        public Part PartOf(int i)
+        {
+            for (var p = Part.HandR; p > Part.Torso; p--) if (i >= _set.Start[(int)p]) return p;
+            return Part.Torso;
+        }
         /// <summary>How far point <paramref name="i"/> stands out from the bare skin (its layers), m.</summary>
         public float Off(int i) => _off[i];
 
@@ -234,6 +242,7 @@ namespace SecondFace.Game.People
         /// how deep inside (m, positive), or outside, minus the gap to the surface's plane at the nearest point.</summary>
         public bool Depth(Vector3 p, out float depth, out Vector3 normal)
         {
+            Near = -1;
             depth = 0f; normal = Vector3.zero;
             int c0 = -1, c1 = -1, c2 = -1;
             float d0 = float.MaxValue, d1 = float.MaxValue, d2 = float.MaxValue;
@@ -253,6 +262,7 @@ namespace SecondFace.Game.People
                             else { c2 = j; d2 = d; }
                         }
             if (c0 < 0) return false;
+            Near = c0;
             // inside only behind each of the three, and over it, not beside it: a point beside the top of a shoulder or
             // below a hem is behind their planes and outside the body (such false contacts pushed arms out, 2026-11-06)
             float Under(int c)

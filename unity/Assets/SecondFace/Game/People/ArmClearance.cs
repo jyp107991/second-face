@@ -49,6 +49,10 @@ namespace SecondFace.Game.People
         /// (in, forward, carry at the elbow, the push-out), this frame; left then right.</summary>
         public bool DiagResting;
         public float[] Diag = new float[12];
+        /// <summary>For the gate's report: the arm's point and the body's point that gave each gap this frame (left elbow,
+        /// left hand, right elbow, right hand; arm then body; -1 none).</summary>
+        public int[] DiagAt = new int[8];
+        private int _gapArm = -1, _gapBody = -1;
 
         /// <summary>The turn given to each upper arm this frame, degrees (tests read it).</summary>
         public Vector2 Turned => new(_angleL, _angleR);
@@ -259,10 +263,11 @@ namespace SecondFace.Game.People
         private float Gap(int from, int to, int stride, float far, Vector3? within = null, float radius = 0f)
         {
             var gap = float.MaxValue;
+            _gapArm = _gapBody = -1;
             for (var i = from; i < to; i += stride)
             {
                 if (within.HasValue && (_skin.P[i] - within.Value).sqrMagnitude > radius * radius) continue;
-                if (_skin.Depth(_skin.P[i], out var d, out _)) gap = Mathf.Min(gap, -d);
+                if (_skin.Depth(_skin.P[i], out var d, out _) && -d < gap) { gap = -d; _gapArm = i; _gapBody = _skin.Near; }
             }
             return gap == float.MaxValue ? far : gap;
         }
@@ -285,8 +290,13 @@ namespace SecondFace.Game.People
             if (resting && he > hs)
             {
                 // 1. the elbow to the waist: the lower upper arm and the forearm's first 8 cm
-                var gapE = Mathf.Min(Gap(_skin.Begin(first), _skin.End(first), 1, 0.08f), Gap(_skin.Begin(first + 1), _skin.End(first + 1), 1, 0.08f, elbow, 0.08f));
+                var gapU = Gap(_skin.Begin(first), _skin.End(first), 1, 0.08f);
+                int ua = _gapArm, ub = _gapBody;
+                var gapF = Gap(_skin.Begin(first + 1), _skin.End(first + 1), 1, 0.08f, elbow, 0.08f);
+                var gapE = Mathf.Min(gapU, gapF);
+                if (gapU <= gapF) { _gapArm = ua; _gapBody = ub; }
                 Diag[side < 0 ? 0 : 2] = gapE;
+                DiagAt[side < 0 ? 0 : 4] = _gapArm; DiagAt[side < 0 ? 1 : 5] = _gapBody;
                 // in or out (negative): the elbow held just off the waist, before the hand is judged (the push-out after
                 // it carried the hand 10 cm off the thigh unseen, 2026-11-06)
                 wantIn = Mathf.Clamp(inward + Mathf.Atan2(gapE - ElbowGap, upperLen) * Mathf.Rad2Deg, -RestOut, RestMax);
@@ -305,7 +315,12 @@ namespace SecondFace.Game.People
                 // 3. the hand off the thigh by the forearm's turn at the elbow
                 var gapH = Gap(hs, he, 2, float.MaxValue);
                 if (gapH == float.MaxValue)
-                    for (var i = hs; i < he; i += 4) gapH = Mathf.Min(gapH, _skin.NearestLow(_skin.P[i], out _, 2));
+                    for (var i = hs; i < he; i += 4)
+                    {
+                        var g = _skin.NearestLow(_skin.P[i], out var at, 2);
+                        if (g < gapH) { gapH = g; _gapArm = i; _gapBody = at; }
+                    }
+                DiagAt[side < 0 ? 2 : 6] = _gapArm; DiagAt[side < 0 ? 3 : 7] = _gapBody;
                 Diag[side < 0 ? 1 : 3] = gapH < float.MaxValue ? gapH : -1f;
                 if (gapH < float.MaxValue)
                     wantCarry = Mathf.Clamp(carry + Mathf.Atan2(SkinGap - gapH, Mathf.Max(0.2f, (c - elbow).magnitude)) * Mathf.Rad2Deg, CarryMin, CarryMax);

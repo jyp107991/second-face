@@ -46,6 +46,27 @@ namespace SecondFace.Tests
         private readonly List<(int I, int Near, float Depth)> _candidates = new();
         // the arm clearance's own view, per state (for the report: why the arms are where they are)
         public readonly Dictionary<string, (int N, int Resting, double[] Sum)> ArmDiag = new();
+        /// <summary>Where each arm's nearest contact with the body is, once per resting state (arm point, body point, the
+        /// body point's part, layer offset and facing, in the body's frame about the hips, cm).</summary>
+        public readonly Dictionary<string, string> ArmWhere = new();
+
+        private string Where()
+        {
+            var skin = GetComponent<SecondFace.Game.People.BodySkin>();
+            if (skin == null || !skin.Ready) return "no skin";
+            var inv = Quaternion.Inverse(_root.rotation);
+            string L(Vector3 w) { var v = inv * (w - _hips.position) * 100f; return $"({v.x:0},{v.y:0},{v.z:0})"; }
+            string N(Vector3 n) { var v = inv * n; return $"({v.x:0.0},{v.y:0.0},{v.z:0.0})"; }
+            var parts = new List<string>();
+            string[] names = { "L elbow", "L hand", "R elbow", "R hand" };
+            for (var q = 0; q < 4; q++)
+            {
+                int a = _ac.DiagAt[q * 2], b = _ac.DiagAt[q * 2 + 1];
+                if (a < 0 || b < 0 || a >= skin.Count || b >= skin.Count) { parts.Add($"{names[q]} none"); continue; }
+                parts.Add($"{names[q]} {skin.PartOf(a)} {L(skin.P[a])} -> {skin.PartOf(b)} {L(skin.P[b])} off {skin.Off(b) * 100f:0.0} n {N(skin.N[b])} d {(skin.P[a] - skin.P[b]).magnitude * 100f:0.0}");
+            }
+            return string.Join("; ", parts);
+        }
         private SecondFace.Game.People.ArmClearance _ac;
         private int[] _bodyTris;
         private Vector3[] _cv;
@@ -401,6 +422,7 @@ namespace SecondFace.Tests
                     if (!ArmDiag.TryGetValue(State, out var ad)) ad = (0, 0, new double[12]);
                     for (var q = 0; q < 12; q++) ad.Sum[q] += _ac.Diag[q];
                     ArmDiag[State] = (ad.N + 1, ad.Resting + (_ac.DiagResting ? 1 : 0), ad.Sum);
+                    if (ad.N == 90 && _ac.DiagResting && !ArmWhere.ContainsKey(State)) ArmWhere[State] = Where();
                 }
             }
             _prevAnkleL = ankleL; _prevAnkleR = ankleR; _prevToeL = toeL; _prevToeR = toeR; _prevRoot = root; _havePrev = true;
