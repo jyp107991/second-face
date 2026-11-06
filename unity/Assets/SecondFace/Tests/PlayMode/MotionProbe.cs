@@ -466,6 +466,7 @@ namespace SecondFace.Tests
         private readonly Vector3[] _sole = new Vector3[4];
         private readonly float[] _soleH = { 1f, 1f, 1f, 1f };
         private readonly Vector3[] _soleWas = new Vector3[4];
+        private string _soleState;
         /// <summary>The vertices of each foot's heel and ball, chosen at rest (left heel, left ball, right heel, right ball).</summary>
         private readonly int[] _solePoint = { -1, -1, -1, -1 };
         private float _soleT;
@@ -506,6 +507,9 @@ namespace SecondFace.Tests
             // walking, on the soles themselves: each foot's lowest skin over the ground and where it is; a sole within 2.5 cm
             // of the ground two samples running is down, and its sliding is the skate (W1, W2; Mir et al. 2023 measure on
             // foot vertices below H = 2.5 cm); the lower foot's sole is the stance's height (W6)
+            // a new state starts the soles' history afresh (the gate sets the person back at the start of the next walk: a
+            // teleport, not a step; it read as a 2-3 m/s skate, 2026-11-06)
+            if (State != _soleState) { _soleT = 0f; _soleState = State; }
             if (k == K.Walk)
             {
                 var lowest = float.MaxValue; var lowestSide = -1;

@@ -117,7 +117,7 @@ F1 and F2 apply to the planted foot, and at the end the chest faces the partner 
 
 | Id | Measure | How it is measured | Limit | Basis |
 |---|---|---|---|---|
-| W1 | No foot skate | a foot whose lowest skin is within 2.5 cm of the ground (baked mesh, every frame): its sole's horizontal speed | mean ≤ 8 cm/s; frames > 15 cm/s ≤ 5 % | foot-skate measures in motion research count sliding above 10 cm/s at contact heights of 2.5–10 cm [9][10] |
+| W1 | No foot skate | a foot whose lowest skin is within 2.5 cm of the ground (baked mesh, every frame, from the second frame of a state: the gate sets the person down at the start of each walk, a teleport, not a step): its sole's horizontal speed | mean ≤ 8 cm/s; frames > 15 cm/s ≤ 5 % | foot-skate measures in motion research count sliding above 10 cm/s at contact heights of 2.5–10 cm [9][10] |
 | W2 | Stride matches speed | a planted foot's speed as a share of the body's (0 when the stride fits the speed) | mean ≤ 0.10 | a stride is the body's speed divided by its cadence; a mismatch slides the planted foot (gliding or treading) |
 | W3 | Arm swing | upper arm from down; opposite to the legs | walking ≤ 35 (p98), cap 45; jogging ≤ 45, cap 55 (no sourced limit yet: reviewed by eye) | |
 | W4 | Head level | face pitch | −20 to +8 | looking where they go |

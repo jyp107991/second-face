@@ -41,7 +41,14 @@ namespace SecondFace.Game.People
         private float _ankleL, _ankleR, _bindScale = 1f;   // the ankle's height over a flat sole at rest (world m at the bind scale)
         private Quaternion _restL, _restR;                  // each foot's rotation at rest, in the body's frame (flat, sole down)
         private float _headingL, _headingR;                 // each foot's heading at rest in the body's frame, degrees
-        private float _sink, _plant, _low;
+        private float _sink, _plant, _low, _unplant;
+        // where each foot ended last frame (its sole points in the world, its turn, how high its sole stood): a person who
+        // sets off keeps a foot that was down where it stood, held on the point it stands on, until the stride lifts it
+        // (the planted feet were blended back to the clip's over 0.15 s and dragged at 1 m/s, 2026-11-06)
+        private readonly Vector3[] _endL = new Vector3[3], _endR = new Vector3[3];
+        private Quaternion _endRotL = Quaternion.identity, _endRotR = Quaternion.identity;
+        private float _endDipL = 1f, _endDipR = 1f;
+        private bool _wasStanding = true, _haveEnd;
         private Vector3 _was;
         // each foot's sole at rest, in its bones' frames: the heel's and the ball's contact under the foot bone, the toe's tip
         // under the toes (a foot rolling heel to toe touches the ground with one of them; the ankle alone does not say how
@@ -50,7 +57,7 @@ namespace SecondFace.Game.People
         private Vector3 _lastL, _lastR; private bool _haveLast;
         // moving, a foot down on the ground is held where it came down until the clip lifts it (W1: a planted foot
         // does not creep; the clips' strides never quite match the body's pace): its place, and a short release after
-        private struct Lock { public bool On; public Vector3 At, From; public float Release; public int Pivot; }
+        private struct Lock { public bool On; public Vector3 At, From; public float Release, Last; public int Pivot; }
         private Lock _lockL, _lockR;
         /// <summary>A foot locks when its sole is this near the ground and slower than <see cref="SwingSlow"/>; it lets go
         /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
@@ -161,9 +168,11 @@ namespace SecondFace.Game.People
             var speed = _hasSpeed ? _animator.GetFloat(SpeedId) : 0f;
             var standing = speed < StandSpeed;
             // a body set down somewhere else lifts its feet from where they were
-            if ((transform.position - _was).sqrMagnitude > 0.25f) { _l = default; _r = default; _sink = 0f; }
+            if ((transform.position - _was).sqrMagnitude > 0.25f) { _l = default; _r = default; _sink = 0f; _haveEnd = false; _lockL = default; _lockR = default; }
             _was = transform.position;
-            _plant = Mathf.MoveTowards(_plant, standing ? 1f : 0f, dt / 0.15f);
+            // setting off: no blend back to the clip (it slid the feet); the feet that were down are held where they stood
+            _plant = standing ? Mathf.MoveTowards(_plant, 1f, dt / 0.15f) : 0f;
+            var setOff = !standing && _wasStanding && _haveEnd;
             if (!standing) { _l.Planted = _r.Planted = false; _l.Stepping = _r.Stepping = false; }
             else { _haveLast = false; _lockL = default; _lockR = default; }
 
@@ -230,6 +239,20 @@ namespace SecondFace.Game.People
                 Diag[0] = dipL; Diag[1] = clearL; Diag[2] = Mathf.Max(0f, clearL - dipL);
                 Diag[4] = dipR; Diag[5] = clearR; Diag[6] = Mathf.Max(0f, clearR - dipR);
                 var body = speed / Mathf.Max(0.5f, PaceScale);
+                if (setOff)
+                {
+                    Seed(ref _lockL, _endL, _endDipL);
+                    Seed(ref _lockR, _endR, _endDipR);
+                    _unplant = 1f;
+                }
+                if (_unplant > 0f)
+                {
+                    // the planted (flat) turn eased back into the clip's
+                    _unplant = Mathf.MoveTowards(_unplant, 0f, dt / 0.15f);
+                    var keepL = _footL.rotation; var keepR = _footR.rotation;
+                    _footL.rotation = Quaternion.Slerp(keepL, _endRotL, _unplant);
+                    _footR.rotation = Quaternion.Slerp(keepR, _endRotR, _unplant);
+                }
                 wantL = Held(ref _lockL, wantL, dipL, speedL, body, _footL, _toeL, _heelL, _ballL, _tipL, dt);
                 wantR = Held(ref _lockR, wantR, dipR, speedR, body, _footR, _toeR, _heelR, _ballR, _tipR, dt);
                 Diag[3] = _lockL.On ? 1f : _lockL.Release > 0f ? 0.5f : 0f; Diag[7] = _lockR.On ? 1f : _lockR.Release > 0f ? 0.5f : 0f;
@@ -237,6 +260,10 @@ namespace SecondFace.Game.People
                 if ((wantR - _footR.position).sqrMagnitude > 4e-6f) Solve(_upR, _loR, _footR, wantR);
             }
             GoalError = new Vector2(Vector3.Distance(_footL.position, wantL), Vector3.Distance(_footR.position, wantR));
+            End(_footL, _toeL, _heelL, _ballL, _tipL, _endL, gL, out _endDipL); _endRotL = _footL.rotation;
+            End(_footR, _toeR, _heelR, _ballR, _tipR, _endR, gR, out _endDipR); _endRotR = _footR.rotation;
+            _haveEnd = true;
+            _wasStanding = standing;
         }
 
         /// <summary>Where a moving foot goes along the ground: while it is down (its sole within <see cref="LockDown"/>,
@@ -251,7 +278,11 @@ namespace SecondFace.Game.People
             var low = 0; var lowY = At(0).y;
             for (var i = 1; i < 3; i++) { var y = At(i).y; if (y < lowY - 0.003f) { lowY = y; low = i; } }
             var slow = Mathf.Max(SwingSlow, 0.35f * body);
-            if (!k.On && k.Release <= 0f && sole < LockDown && speed < slow) { k.On = true; k.Pivot = low; k.At = At(low); }
+            // down: slow for the pace, or coming down onto the ground (a heel that touched at 0.4-0.7 m/s slid 3-4 frames
+            // before it was slow enough to hold, 2026-11-06)
+            var landing = sole < k.Last - 0.001f && speed < SwingFast;
+            k.Last = sole;
+            if (!k.On && k.Release <= 0f && sole < LockDown && (speed < slow || landing)) { k.On = true; k.Pivot = low; k.At = At(low); }
             if (k.On)
             {
                 // rolling on: the pivot moves forward to the next point once that one is the lower, pinned where it is
@@ -268,6 +299,24 @@ namespace SecondFace.Game.People
                 return new Vector3(Mathf.Lerp(want.x, k.From.x, t), want.y, Mathf.Lerp(want.z, k.From.z, t));
             }
             return want;
+        }
+
+        /// <summary>A foot's sole points where it ended this frame, and how high the lowest stood over its ground.</summary>
+        private static void End(Transform foot, Transform toe, Vector3 heel, Vector3 ball, Vector3 tip, Vector3[] at, float ground, out float dip)
+        {
+            at[0] = foot.TransformPoint(heel); at[1] = foot.TransformPoint(ball); at[2] = (toe != null ? toe : foot).TransformPoint(tip);
+            dip = float.IsNaN(ground) ? 1f : Mathf.Min(at[0].y, Mathf.Min(at[1].y, at[2].y)) - ground;
+        }
+
+        /// <summary>A foot that was down when its person set off, held on the sole point it stood on.</summary>
+        private void Seed(ref Lock k, Vector3[] at, float dip)
+        {
+            k = default;
+            k.Last = dip;
+            if (dip > LockDown + 0.005f) return;
+            var low = 0;
+            for (var i = 1; i < 3; i++) if (at[i].y < at[low].y - 0.003f) low = i;
+            k.On = true; k.Pivot = low; k.At = at[low];
         }
 
         private float GroundAt(Vector3 p, out Vector3 normal)
