@@ -85,8 +85,9 @@ namespace SecondFace.EditorTools
             new() { Id = "cape", Cloth = RbLayerSet.Fabric.Canvas, Colour = RbLayerSet.Dye.Accent, Thick = 0.019f,
                 Keep = (v, j) => v.F == Fam.Shoulder || ((v.F is Fam.Torso) && (v.P.y >= j.ChestTop - 0.06f || (v.P.z < -0.02f && v.P.y >= j.Chest - 0.08f)))
                                  || (v.F == Fam.UpperArm && Vector3.Distance(v.P, v.P.x < 0 ? j.ShoulderL : j.ShoulderR) < 0.13f) || (v.F == Fam.Neck && v.P.y <= j.Neck + 0.02f) },
-            // a belt at the hips, over the trousers and the vest's hem
-            new() { Id = "belt", Cloth = RbLayerSet.Fabric.Leather, Colour = RbLayerSet.Dye.Leather, Thick = 0.017f, Tile = 0.2f,
+            // a belt at the hips, over the trousers (6 mm) and its own 5 mm of leather (at 1.7 cm off the skin it stood the
+            // resting hand and the arm out where they hang past it, A1/A4, 2026-11-06)
+            new() { Id = "belt", Cloth = RbLayerSet.Fabric.Leather, Colour = RbLayerSet.Dye.Leather, Thick = 0.011f, Tile = 0.2f,
                 Keep = (v, j) => v.F == Fam.Torso && Mathf.Abs(v.P.y - (j.Hips + 0.035f)) < 0.028f },
             // arm wraps: the forearm's lower half and the palm, the fingers bare
             new() { Id = "wraps", Cloth = RbLayerSet.Fabric.Canvas, Colour = RbLayerSet.Dye.Linen, Thick = 0.004f, Tile = 0.15f,

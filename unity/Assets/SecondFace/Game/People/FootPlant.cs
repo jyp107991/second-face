@@ -333,15 +333,17 @@ namespace SecondFace.Game.People
                 // a foot let go from a hold rises at once before it is eased back to the clip's (it slid along the ground
                 // at 1.2-1.6 m/s, W1); a foot coming down slower than a swing gets none, so it lands when the clip lands it
                 // (held 3 cm up until it slowed, it left both feet off the ground for frames, the other lifting: W6)
-                float Clear(float v, float dip, float lastDip, bool releasing)
+                float Clear(float v, float dip, float lastDip, bool releasing, bool otherDown)
                 {
                     if (!_haveLast) return 0f;
-                    if (releasing) return SwingClear;
+                    // (let go while the other foot is down; the last foot down, slow, rises as a swing does: lifted 3 cm
+                    // at once it bore the weight 3 cm up, W6, 2026-11-06)
+                    if (releasing && otherDown) return SwingClear;
                     if (dip < lastDip - 0.001f && v < SwingFast) return 0f;
                     return SwingClear * Mathf.Clamp01((v - ClearSlow) / (ClearFast - ClearSlow));
                 }
-                var clearL = Clear(soleVL, dipL, _lockL.Last, _lockL.Release > 0f);
-                var clearR = Clear(soleVR, dipR, _lockR.Last, _lockR.Release > 0f);
+                var clearL = Clear(soleVL, dipL, _lockL.Last, _lockL.Release > 0f, dipR < SwingClear - 0.005f);
+                var clearR = Clear(soleVR, dipR, _lockR.Last, _lockR.Release > 0f, dipL < SwingClear - 0.005f);
                 var speedL = _haveLast ? new Vector2(wantL.x - _lastL.x, wantL.z - _lastL.z).magnitude / dt : 0f;
                 var speedR = _haveLast ? new Vector2(wantR.x - _lastR.x, wantR.z - _lastR.z).magnitude / dt : 0f;
                 _lastL = wantL; _lastR = wantR; _haveLast = true;

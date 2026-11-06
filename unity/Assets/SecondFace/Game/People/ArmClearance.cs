@@ -393,7 +393,7 @@ namespace SecondFace.Game.People
         public float PoleOut = 0.2f, FlexMore = 10f, ElbowRest = -0.002f;
         /// <summary>At rest, clear of the body: the upper arm is kept within this of the vertical (degrees; the gate's A1 is
         /// 20) by the elbow's lean in toward the waist, as far as <see cref="PoleIn"/> (in, as a negative lean).</summary>
-        public float UpperAim = 16f, PoleIn = -0.6f, UpperMax = 18.5f;
+        public float UpperAim = 16f, PoleIn = -0.6f, UpperMax = 17f;   // (18.5 let the p98 overshoot to 20-24, A1)
         /// <summary>At rest, the furthest forward of the thigh's side the hand may be placed (degrees), and how fast its place
         /// turns there (degrees a second).</summary>
         public float RestFrontMax = 80f, FrontRate = 90f;
