@@ -18,6 +18,11 @@ namespace SecondFace.Game.People
         /// <summary>With the body's own skin (<see cref="BodySkin"/>, within <see cref="SkinRange"/> m of the camera): an
         /// arm is held this far off the body's surface, or its clothes'.</summary>
         public float SkinMargin = 0.003f;
+        /// <summary>Moving (not at rest), the arm is held this much further off the body's skin (m): the skin the game holds
+        /// stands under a uniform's surface by about a centimetre in places, and a walking man's swinging arms went 0.8-1.1
+        /// cm into his chest's side (C1, 2026-11-06). At rest the hand's place and the elbow's contact set it instead.</summary>
+        public float MoveMargin = 0.006f;
+        private float Margin3 => SkinMargin + MoveMargin * (1f - _restW);
         /// <summary>With the skin: a resting hand hangs this far from the side of the hip or thigh (A4), surface to surface.</summary>
         public float SkinGap = 0.01f;
         /// <summary>With the skin: a resting hand that hangs behind the thigh's middle (into the buttock, the clip taken on
@@ -390,7 +395,7 @@ namespace SecondFace.Game.People
 
         /// <summary>At rest: the elbow's lean out to the side (0 straight back, 1 straight out) it starts from, and how much
         /// further the elbow may bend (degrees) to stand clear of a broad chest with the hand still at the thigh.</summary>
-        public float PoleOut = 0.2f, FlexMore = 10f, ElbowRest = 0f;   // (-2 mm and the cloth's half given left a uniformed man's arms 0.6-1.1 cm into his chest's side at rest, C1, 2026-11-06)
+        public float PoleOut = 0.2f, FlexMore = 10f, ElbowRest = -0.002f;   // (at 0, with the cloth giving 30 %, broad men's elbows stood out: A1 54 → 67, 2026-11-06)
         /// <summary>At rest, clear of the body: the upper arm is kept within this of the vertical (degrees; the gate's A1 is
         /// 20) by the elbow's lean in toward the waist, as far as <see cref="PoleIn"/> (in, as a negative lean).</summary>
         public float UpperAim = 16f, PoleIn = -0.6f, UpperMax = 17f;   // (18.5 let the p98 overshoot to 20-24, A1)
@@ -402,7 +407,7 @@ namespace SecondFace.Game.People
         /// <summary>The share of the clothes' thickness under the upper arm and the elbow that an arm at rest may press in
         /// (canvas and webbing give; the vest's 1.3 cm and the strap's 1.7 cm at the waist held broad men's elbows out and
         /// their upper arms 19-28° off the vertical, A1, 2026-11-06). Never the bare skin: the gate's C1 is on the body.</summary>
-        public float ClothGive = 0.3f;
+        public float ClothGive = 0.5f;
         private float _poleOutL = 0.2f, _poleOutR = 0.2f, _flexAddL, _flexAddR;
 
         /// <summary>The hand's gap to the body now (m), for the report.</summary>
@@ -543,10 +548,10 @@ namespace SecondFace.Game.People
             for (int i = _skin.Begin(first + 1), to = _skin.End(first + 2); i < to; i++)
             {
                 var p = _skin.P[i];
-                if (!_skin.Depth(p, out var d, out var n) || d + SkinMargin <= 0f) continue;
+                if (!_skin.Depth(p, out var d, out var n) || d + Margin3 <= 0f) continue;
                 var arm = p - elbow;
                 if (arm.sqrMagnitude < 0.0025f) continue;
-                var ang = Mathf.Atan2(d + SkinMargin, arm.magnitude) * Mathf.Rad2Deg;
+                var ang = Mathf.Atan2(d + Margin3, arm.magnitude) * Mathf.Rad2Deg;
                 if (ang <= best) continue;
                 var c = Vector3.Cross(arm, n);
                 if (c.sqrMagnitude < 1e-8f) continue;
@@ -748,9 +753,9 @@ namespace SecondFace.Game.People
                 if (!_skin.Depth(p, out var d, out var n)) continue;
                 // the upper arm and the forearm by the elbow may press into the clothes a little (ClothGive); the hand not
                 if (_restW > 0.99f && i < hand && _skin.Near >= 0 && (i < _skin.Begin(first + 1) || (p - elbowAt).sqrMagnitude < 0.0064f)) d -= ClothGive * _skin.Off(_skin.Near);
-                if (d + SkinMargin <= 0f) continue;
+                if (d + Margin3 <= 0f) continue;
                 var arm = p - shoulder;
-                var a = Mathf.Atan2(d + SkinMargin, arm.magnitude) * Mathf.Rad2Deg;
+                var a = Mathf.Atan2(d + Margin3, arm.magnitude) * Mathf.Rad2Deg;
                 if (a <= best) continue;
                 var ax = Vector3.Cross(arm, n);
                 if (ax.sqrMagnitude < 1e-8f) continue;
