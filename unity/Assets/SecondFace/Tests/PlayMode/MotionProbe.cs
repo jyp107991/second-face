@@ -421,7 +421,7 @@ namespace SecondFace.Tests
                         if (k != K.Walk) Add("F4", v * 100f);   // walking skate is measured on the soles themselves (MeshMeasures)
                     }
                     if (TracePath != null && State != null && TraceState != null && State.StartsWith(TraceState))
-                        System.IO.File.AppendAllText(TracePath, $"{State},{Time.time:0.000},{root.x:0.000},{root.z:0.000},{ankleL.y - GroundY(ankleL) - _ankleSoleL:0.000},{toeL.y - GroundY(toeL) - _toeSoleL:0.000},{ankleL.z:0.000},{ankleR.y - GroundY(ankleR) - _ankleSoleR:0.000},{toeR.y - GroundY(toeR) - _toeSoleR:0.000},{ankleR.z:0.000},{_a.GetFloat("Speed"):0.000},{_hips.position.z - root.z:0.000},{FootDiag()},{_traceA1L:0.0},{_traceA1R:0.0},{ArmDiag()}\n");
+                        System.IO.File.AppendAllText(TracePath, $"{State},{Time.time:0.000},{root.x:0.000},{root.z:0.000},{ankleL.y - GroundY(ankleL) - _ankleSoleL:0.000},{toeL.y - GroundY(toeL) - _toeSoleL:0.000},{ankleL.z:0.000},{ankleR.y - GroundY(ankleR) - _ankleSoleR:0.000},{toeR.y - GroundY(toeR) - _toeSoleR:0.000},{ankleR.z:0.000},{_a.GetFloat("Speed"):0.000},{_hips.position.z - root.z:0.000},{FootDiag()},{_traceA1L:0.0},{_traceA1R:0.0},{ElbowTrace()}\n");
                 }
                 // the stance
                 if (k == K.Stand)
@@ -502,9 +502,8 @@ namespace SecondFace.Tests
             return new Vector2(g.x - b.x, g.z - b.z).magnitude.ToString("0.000");
         }
 
-        private SecondFace.Game.People.ArmClearance _ac;
         /// <summary>For the trace: each elbow's lean out (x100) and its bend added at rest (degrees), left then right.</summary>
-        private string ArmDiag()
+        private string ElbowTrace()
         {
             if (_ac == null) _ac = GetComponent<SecondFace.Game.People.ArmClearance>();
             if (_ac == null || _ac.Diag == null || _ac.Diag.Length < 16) return ",,,";
