@@ -47,6 +47,19 @@ namespace SecondFace.Game.People
         // under the toes (a foot rolling heel to toe touches the ground with one of them; the ankle alone does not say how
         // low a tilted foot reaches: heels sank 2-3 cm through the floor at every heel strike, 11 cm in the jog, 2026-11-06)
         private Vector3 _heelL, _ballL, _tipL, _heelR, _ballR, _tipR;
+        private Vector3 _lastL, _lastR; private bool _haveLast;
+        // moving, a foot down on the ground is held where it came down until the clip lifts it (W1: a planted foot
+        // does not creep; the clips' strides never quite match the body's pace): its place, and a short release after
+        private struct Lock { public bool On; public Vector3 At, From; public float Release; }
+        private Lock _lockL, _lockR;
+        /// <summary>A foot locks when its sole is this near the ground and slower than <see cref="SwingSlow"/>; it lets go
+        /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
+        /// <see cref="LockRelease"/> s.</summary>
+        public float LockDown = 0.02f, LockLift = 0.03f, LockReach = 0.12f, LockRelease = 0.12f;
+        /// <summary>Moving, a foot faster than this (m/s, along the ground) is in its swing: it is held at least
+        /// <see cref="SwingClear"/> off the ground, less as it slows, so it comes down only as it stops (a real heel
+        /// meets the ground at under about 1 m/s; the clips' feet glided in at 2-4 m/s, 2026-11-06).</summary>
+        public float SwingFast = 1.5f, SwingSlow = 0.5f, SwingClear = 0.03f;
 
         private struct Foot
         {
@@ -149,6 +162,7 @@ namespace SecondFace.Game.People
             _was = transform.position;
             _plant = Mathf.MoveTowards(_plant, standing ? 1f : 0f, dt / 0.15f);
             if (!standing) { _l.Planted = _r.Planted = false; _l.Stepping = _r.Stepping = false; }
+            else { _haveLast = false; _lockL = default; _lockR = default; }
 
             // the ground under each foot as the clip has it
             var gL = GroundAt(_footL.position, out var nL); var gR = GroundAt(_footR.position, out var nR);
@@ -195,12 +209,45 @@ namespace SecondFace.Game.People
                 // a foot the clip (or the hips' height) puts into the ground is lifted out of it, by its own lowest point
                 var dipL = SoleOver(_footL, _toeL, _heelL, _ballL, _tipL, gL) + (wantL.y - _footL.position.y);
                 var dipR = SoleOver(_footR, _toeR, _heelR, _ballR, _tipR, gR) + (wantR.y - _footR.position.y);
-                if (dipL < 0f) wantL.y -= dipL;
-                if (dipR < 0f) wantR.y -= dipR;
-                if (Mathf.Abs(wantL.y - _footL.position.y) > 0.002f) Solve(_upL, _loL, _footL, wantL);
-                if (Mathf.Abs(wantR.y - _footR.position.y) > 0.002f) Solve(_upR, _loR, _footR, wantR);
+                // the swing's clearance: how high a foot moving at this pace must stand
+                float Clear(Vector3 now, Vector3 last)
+                {
+                    if (!_haveLast) return 0f;
+                    var v = new Vector2(now.x - last.x, now.z - last.z).magnitude / dt;
+                    return SwingClear * Mathf.Clamp01((v - SwingSlow) / (SwingFast - SwingSlow));
+                }
+                var clearL = Clear(_footL.position, _lastL); var clearR = Clear(_footR.position, _lastR);
+                var speedL = _haveLast ? new Vector2(_footL.position.x - _lastL.x, _footL.position.z - _lastL.z).magnitude / dt : 0f;
+                var speedR = _haveLast ? new Vector2(_footR.position.x - _lastR.x, _footR.position.z - _lastR.z).magnitude / dt : 0f;
+                _lastL = _footL.position; _lastR = _footR.position; _haveLast = true;
+                if (dipL < clearL) wantL.y += clearL - dipL;
+                if (dipR < clearR) wantR.y += clearR - dipR;
+                wantL = Held(ref _lockL, wantL, dipL, speedL, dt);
+                wantR = Held(ref _lockR, wantR, dipR, speedR, dt);
+                if ((wantL - _footL.position).sqrMagnitude > 4e-6f) Solve(_upL, _loL, _footL, wantL);
+                if ((wantR - _footR.position).sqrMagnitude > 4e-6f) Solve(_upR, _loR, _footR, wantR);
             }
             GoalError = new Vector2(Vector3.Distance(_footL.position, wantL), Vector3.Distance(_footR.position, wantR));
+        }
+
+        /// <summary>Where a moving foot goes along the ground: held at the place it came down while it is down (its sole
+        /// within <see cref="LockDown"/>, slow), and let go back to the clip's over <see cref="LockRelease"/> s.</summary>
+        private Vector3 Held(ref Lock k, Vector3 want, float sole, float speed, float dt)
+        {
+            if (!k.On && k.Release <= 0f && sole < LockDown && speed < SwingSlow) { k.On = true; k.At = want; }
+            if (k.On)
+            {
+                var off = new Vector2(want.x - k.At.x, want.z - k.At.z).magnitude;
+                if (sole > LockLift || off > LockReach) { k.On = false; k.Release = 1f; k.From = k.At; }
+                else return new Vector3(k.At.x, want.y, k.At.z);
+            }
+            if (k.Release > 0f)
+            {
+                k.Release = Mathf.Max(0f, k.Release - dt / LockRelease);
+                var t = k.Release * k.Release * (3f - 2f * k.Release);
+                return new Vector3(Mathf.Lerp(want.x, k.From.x, t), want.y, Mathf.Lerp(want.z, k.From.z, t));
+            }
+            return want;
         }
 
         private float GroundAt(Vector3 p, out Vector3 normal)

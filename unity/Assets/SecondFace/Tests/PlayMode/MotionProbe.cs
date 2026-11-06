@@ -41,6 +41,9 @@ namespace SecondFace.Tests
         private byte[] _seg;
         private bool[] _armLow;
         private readonly List<(int I, int Near, float Depth)> _candidates = new();
+        // the arm clearance's own view, per state (for the report: why the arms are where they are)
+        public readonly Dictionary<string, (int N, int Resting, double[] Sum)> ArmDiag = new();
+        private SecondFace.Game.People.ArmClearance _ac;
         private int[] _bodyTris;
         private Vector3[] _cv;
         private float[] _tyLo, _tyHi;
@@ -389,6 +392,13 @@ namespace SecondFace.Tests
                     MeshMeasures(k);
                 }
                 if (k == K.Stand || k == K.Walk) Palms(k);
+                if (_ac == null) _ac = GetComponent<SecondFace.Game.People.ArmClearance>();
+                if (_ac != null && State != null)
+                {
+                    if (!ArmDiag.TryGetValue(State, out var ad)) ad = (0, 0, new double[12]);
+                    for (var q = 0; q < 12; q++) ad.Sum[q] += _ac.Diag[q];
+                    ArmDiag[State] = (ad.N + 1, ad.Resting + (_ac.DiagResting ? 1 : 0), ad.Sum);
+                }
             }
             _prevAnkleL = ankleL; _prevAnkleR = ankleR; _prevToeL = toeL; _prevToeR = toeR; _prevRoot = root; _havePrev = true;
         }

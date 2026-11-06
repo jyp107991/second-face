@@ -600,6 +600,12 @@ namespace SecondFace.Tests
             {
                 if (s.Probe.Error != null) fails.Add($"{s.Probe.Person}: {s.Probe.Error}");
                 foreach (var (st, (d, where)) in s.Probe.WorstClip) Debug.Log($"HumanMotionGate clip: {s.Probe.Person} {st}: {where}");
+                foreach (var (st, (nn, rest, sum)) in s.Probe.ArmDiag)
+                {
+                    if (nn == 0) continue;
+                    string M(int q, float scale = 1f) => (sum[q] / nn * scale).ToString("0.0");
+                    Debug.Log($"HumanMotionGate arms: {s.Probe.Person} {st}: resting {rest * 100 / nn}%, L gapE {M(0, 100)} gapH {M(1, 100)} cm in {M(4)} fwd {M(5)} carry {M(6)} out {M(7)}; R gapE {M(2, 100)} gapH {M(3, 100)} cm in {M(10)} fwd {M(11)} carry {M(8)} out {M(9)}");
+                }
                 foreach (var (state, measures) in s.Probe.Samples)
                     foreach (var lim in LimitsFor(state))
                     {

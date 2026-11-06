@@ -45,6 +45,11 @@ namespace SecondFace.Game.People
         private float _angleL, _angleR;
         private Vector3 _axisL = Vector3.forward, _axisR = Vector3.forward;
 
+        /// <summary>For the gate's report (tests read it): resting, each arm's elbow and hand gaps (m), and its holds
+        /// (in, forward, carry at the elbow, the push-out), this frame; left then right.</summary>
+        public bool DiagResting;
+        public float[] Diag = new float[12];
+
         /// <summary>The turn given to each upper arm this frame, degrees (tests read it).</summary>
         public Vector2 Turned => new(_angleL, _angleR);
         public bool Ready => (SkinReady || (_profile != null && _profile.Bins > 1)) && _hips != null && _lu != null && _ru != null;
@@ -159,6 +164,7 @@ namespace SecondFace.Game.People
             if (!Ready) return;
             var dt = Time.deltaTime > 0f ? Time.deltaTime : Time.unscaledDeltaTime;
             var resting = Resting();
+            DiagResting = resting;
             if (SkinReady && Near())
             {
                 // what is held from the frames before, on the bones; then the skin posed from them
@@ -169,6 +175,8 @@ namespace SecondFace.Game.People
                 SkinRest(_ru, _rl, _rh, BodySkin.Part.UpperArmR, 1, ref _restR, ref _fwdR, ref _carryR, resting, dt);
                 SkinClear(_lu, BodySkin.Part.UpperArmL, ref _angleL, ref _axisL, dt);
                 SkinClear(_ru, BodySkin.Part.UpperArmR, ref _angleR, ref _axisR, dt);
+                Diag[4] = _restL; Diag[5] = _fwdL; Diag[6] = _carryL; Diag[7] = _angleL;
+                Diag[10] = _restR; Diag[11] = _fwdR; Diag[8] = _carryR; Diag[9] = _angleR;
                 return;
             }
             if (_profile == null || _profile.Bins < 2) return;
@@ -275,6 +283,7 @@ namespace SecondFace.Game.People
             {
                 // 1. the elbow to the waist: the lower upper arm and the forearm's first 8 cm
                 var gapE = Mathf.Min(Gap(_skin.Begin(first), _skin.End(first), 1, 0.08f), Gap(_skin.Begin(first + 1), _skin.End(first + 1), 1, 0.08f, elbow, 0.08f));
+                Diag[side < 0 ? 0 : 2] = gapE;
                 wantIn = Mathf.Clamp(inward + Mathf.Atan2(gapE - ElbowGap, upperLen) * Mathf.Rad2Deg, 0f, RestMax);
                 // 2. the hand forward to the thigh's side: its middle against the thigh's middle line at its height
                 var c = Vector3.zero;
@@ -292,6 +301,7 @@ namespace SecondFace.Game.People
                 var gapH = Gap(hs, he, 2, float.MaxValue);
                 if (gapH == float.MaxValue)
                     for (var i = hs; i < he; i += 4) gapH = Mathf.Min(gapH, _skin.NearestLow(_skin.P[i], out _, 2));
+                Diag[side < 0 ? 1 : 3] = gapH < float.MaxValue ? gapH : -1f;
                 if (gapH < float.MaxValue)
                     wantCarry = Mathf.Clamp(carry + Mathf.Atan2(SkinGap - gapH, Mathf.Max(0.2f, (c - elbow).magnitude)) * Mathf.Rad2Deg, CarryMin, CarryMax);
             }
