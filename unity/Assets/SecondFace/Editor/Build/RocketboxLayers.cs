@@ -399,6 +399,35 @@ namespace SecondFace.EditorTools
                 var dc = (world[i] - centre).sqrMagnitude;
                 if (!cells.TryGetValue(key, out var have) || dc < have.D) cells[key] = (i, dc);
             }
+            // each vertex's foot as the gate tells it (MotionProbe: the nearest of its segments in the neutral pose, the foot's
+            // being the foot to the toes and on 7 cm past them): the soles' points are chosen from these, as the gate's are
+            // (by the vertex's own bone the right foot's ball stood 3-5 cm from the gate's along the ground, at the sole's
+            // other edge, and was held while the gate's slid, W1/W2, 2026-11-06)
+            var footOf = new byte[world.Length];
+            {
+                var footSegs = new List<(Vector3 A, Vector3 Bp, byte F)>();
+                void FS(HumanBodyBones x, HumanBodyBones y, byte t) { var tx = B(x); var ty = B(y); if (tx != null && ty != null) footSegs.Add((tx.position, ty.position, t)); }
+                void FT(HumanBodyBones x, HumanBodyBones from, float len, byte t) { var tx = B(x); var tf = B(from); if (tx != null && tf != null) footSegs.Add((tx.position, tx.position + (tx.position - tf.position).normalized * len, t)); }
+                FS(HumanBodyBones.Hips, HumanBodyBones.Spine, 0); FS(HumanBodyBones.Spine, HumanBodyBones.Chest, 0);
+                if (B(HumanBodyBones.UpperChest) != null) { FS(HumanBodyBones.Chest, HumanBodyBones.UpperChest, 0); FS(HumanBodyBones.UpperChest, HumanBodyBones.Neck, 0); }
+                else FS(HumanBodyBones.Chest, HumanBodyBones.Neck, 0);
+                FS(HumanBodyBones.LeftShoulder, HumanBodyBones.LeftUpperArm, 0); FS(HumanBodyBones.RightShoulder, HumanBodyBones.RightUpperArm, 0);
+                FS(HumanBodyBones.Neck, HumanBodyBones.Head, 0);
+                if (B(HumanBodyBones.Head) != null) footSegs.Add((B(HumanBodyBones.Head).position, B(HumanBodyBones.Head).position + Vector3.up * 0.18f, 0));
+                FS(HumanBodyBones.LeftUpperArm, HumanBodyBones.LeftLowerArm, 0); FS(HumanBodyBones.RightUpperArm, HumanBodyBones.RightLowerArm, 0);
+                FS(HumanBodyBones.LeftLowerArm, HumanBodyBones.LeftHand, 0); FS(HumanBodyBones.RightLowerArm, HumanBodyBones.RightHand, 0);
+                FT(HumanBodyBones.LeftHand, HumanBodyBones.LeftLowerArm, 0.17f, 0); FT(HumanBodyBones.RightHand, HumanBodyBones.RightLowerArm, 0.17f, 0);
+                FS(HumanBodyBones.LeftUpperLeg, HumanBodyBones.LeftLowerLeg, 0); FS(HumanBodyBones.RightUpperLeg, HumanBodyBones.RightLowerLeg, 0);
+                FS(HumanBodyBones.LeftLowerLeg, HumanBodyBones.LeftFoot, 0); FS(HumanBodyBones.RightLowerLeg, HumanBodyBones.RightFoot, 0);
+                FS(HumanBodyBones.LeftFoot, HumanBodyBones.LeftToes, 1); FS(HumanBodyBones.RightFoot, HumanBodyBones.RightToes, 2);
+                FT(HumanBodyBones.LeftToes, HumanBodyBones.LeftFoot, 0.07f, 1); FT(HumanBodyBones.RightToes, HumanBodyBones.RightFoot, 0.07f, 2);
+                for (var i = 0; i < world.Length; i++)
+                {
+                    var fbd = float.MaxValue; byte fpart = 0;
+                    foreach (var (sa, sb, sf) in footSegs) { var sd = Along(lp[i], sa, sb, out _); if (sd < fbd) { fbd = sd; fpart = sf; } }
+                    footOf[i] = fpart;
+                }
+            }
             boneSrc = anim;
             if (copy != null) UnityEngine.Object.DestroyImmediate(copy);
             var byPart = new List<int>[9];
@@ -446,27 +475,27 @@ namespace SecondFace.EditorTools
             skin.Data = AssetDatabase.LoadAssetAtPath<TextAsset>(outPath);
             skin.Body = smr;
             skin.Carrying = female ? 14f : 10f;
-            skin.SoleL = Sole(HumanBodyBones.LeftFoot, HumanBodyBones.LeftToes);
-            skin.SoleR = Sole(HumanBodyBones.RightFoot, HumanBodyBones.RightToes);
+            skin.SoleL = Sole(HumanBodyBones.LeftFoot, HumanBodyBones.LeftToes, 1);
+            skin.SoleR = Sole(HumanBodyBones.RightFoot, HumanBodyBones.RightToes, 2);
             // a foot's sole from its own vertices (those the foot or toes bone moves most): as the gate finds its heel and
             // ball (MotionProbe), and the back of the heel and the toe's tip at the sole
-            Vector3[] Sole(HumanBodyBones footBone, HumanBodyBones toeBone)
+            Vector3[] Sole(HumanBodyBones footBone, HumanBodyBones toeBone, byte side)
             {
                 var foot = B(footBone); var toe = B(toeBone);
                 if (foot == null) return new Vector3[0];
-                int fi = System.Array.IndexOf(bones, foot), ti = toe != null ? System.Array.IndexOf(bones, toe) : -1;
                 var ankle = foot.position;
                 var ahead = (toe != null ? toe.position : ankle + root.forward * 0.12f) - ankle; ahead.y = 0f;
                 var fwd = ahead.sqrMagnitude > 1e-6f ? ahead.normalized : root.forward;
                 var toesAlong = Vector3.Dot((toe != null ? toe.position : ankle + fwd * 0.12f) - ankle, fwd);
                 var sole = float.MaxValue;
-                for (var i = 0; i < world.Length; i++) if (bw[i].boneIndex0 == fi || bw[i].boneIndex0 == ti) sole = Mathf.Min(sole, world[i].y);
+                bool Mine(int i) => footOf[i] == side;
+                for (var i = 0; i < world.Length; i++) if (Mine(i)) sole = Mathf.Min(sole, world[i].y);
                 if (sole == float.MaxValue) return new Vector3[0];
                 int heel = -1, back = -1, ball = -1, tip = -1;
                 float hy = float.MaxValue, ba = float.MaxValue, by = float.MaxValue, ta = float.MinValue;
                 for (var i = 0; i < world.Length; i++)
                 {
-                    if (bw[i].boneIndex0 != fi && bw[i].boneIndex0 != ti) continue;
+                    if (!Mine(i)) continue;
                     var p = world[i]; var along = Vector3.Dot(p - ankle, fwd);
                     if (along < -0.01f && p.y < hy) { hy = p.y; heel = i; }
                     if (along > toesAlong - 0.04f && along < toesAlong + 0.02f && p.y < by) { by = p.y; ball = i; }

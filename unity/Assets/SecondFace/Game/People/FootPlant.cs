@@ -105,7 +105,7 @@ namespace SecondFace.Game.People
         public float Sink => _sink;
         /// <summary>For the gate's trace (tests read it), moving, each foot this frame: its lowest sole point over the ground
         /// before any lift, the swing's clearance wanted, the lift given, whether it is held (1) or let go (0.5); left then right.</summary>
-        public float[] Diag = new float[16];
+        public float[] Diag = new float[18];
         /// <summary>For the gate's trace: each foot's ball where it ended this frame (world), left, right.</summary>
         public Vector3 BallL, BallR;
         /// <summary>Kept for tests: how far each foot bone ended from where this put it (0: exact).</summary>
@@ -288,6 +288,10 @@ namespace SecondFace.Game.People
                 if ((new Vector2(a.x - _footL.position.x, a.z - _footL.position.z)).sqrMagnitude < 0.09f) goalL = new Vector3(a.x - _footL.position.x, 0f, a.z - _footL.position.z);
                 if ((new Vector2(b.x - _footR.position.x, b.z - _footR.position.z)).sqrMagnitude < 0.09f) goalR = new Vector3(b.x - _footR.position.x, 0f, b.z - _footR.position.z);
                 wantL += goalL; wantR += goalR;
+                // (for the gate's trace: how far the clip's own foot turn, taken as the foot's turn at rest, is from the
+                // retargeted foot's, degrees)
+                Diag[16] = Quaternion.Angle(_animator.GetIKRotation(AvatarIKGoal.LeftFoot) * _restL, _footL.rotation);
+                Diag[17] = Quaternion.Angle(_animator.GetIKRotation(AvatarIKGoal.RightFoot) * _restR, _footR.rotation);
             }
             Diag[12] = goalL.magnitude; Diag[13] = goalR.magnitude;
             if (_plant > 0f)
@@ -363,8 +367,9 @@ namespace SecondFace.Game.People
                     _footL.rotation = Quaternion.Slerp(keepL, _endRotL, _unplant);
                     _footR.rotation = Quaternion.Slerp(keepR, _endRotR, _unplant);
                 }
-                wantL = Held(ref _lockL, wantL, dipL, speedL, body, _footL, _toeL, _heelL, _ballL, _tipL, gL, dt);
-                wantR = Held(ref _lockR, wantR, dipR, speedR, body, _footR, _toeR, _heelR, _ballR, _tipR, gR, dt);
+                var heldR = _lockR.On;
+                wantL = Held(ref _lockL, wantL, dipL, speedL, body, _footL, _toeL, _heelL, _ballL, _tipL, gL, dt, heldR);
+                wantR = Held(ref _lockR, wantR, dipR, speedR, body, _footR, _toeR, _heelR, _ballR, _tipR, gR, dt, _lockL.On);
                 Diag[3] = _lockL.On ? 1f : _lockL.Release > 0f ? 0.5f : 0f; Diag[7] = _lockR.On ? 1f : _lockR.Release > 0f ? 0.5f : 0f;
                 // within the leg's reach, by height alone: an unreachable place (a held foot put down under a straight leg)
                 // was reached toward and slid the foot along the ground (W1, 2026-11-06)
@@ -388,7 +393,7 @@ namespace SecondFace.Game.People
         /// slow for the pace) the point it stands on (the heel, then the ball, then the toe's tip, as a foot rolls) is held
         /// where it touched, the ankle following the clip's roll about it; let go back to the clip's over
         /// <see cref="LockRelease"/> s.</summary>
-        private Vector3 Held(ref Lock k, Vector3 want, float sole, float speed, float body, Transform foot, Transform toe, Vector3 heel, Vector3 ball, Vector3 tip, float ground, float dt)
+        private Vector3 Held(ref Lock k, Vector3 want, float sole, float speed, float body, Transform foot, Transform toe, Vector3 heel, Vector3 ball, Vector3 tip, float ground, float dt, bool otherHeld)
         {
             // the sole point now lowest, where the clip has it with the ankle at the place wanted
             var shift = want - foot.position;
@@ -422,8 +427,11 @@ namespace SecondFace.Game.People
                 if (sole > LockLift || off.magnitude > LockReach)
                 {
                     k.On = false; k.Release = 1f; k.From = want - new Vector3(off.x, 0f, off.y);
-                    // (not lifted to the swing's clearance this frame: a foot let go while still slow jumped 3 cm up as it
-                    // bore weight, W6 23 → 30, 2026-11-06)
+                    // while the other foot bears the weight, up to the swing's clearance at once, this frame too (its
+                    // clearance was none while it was held: let go on the ground, the sneak's foot slid 2 cm along it that
+                    // frame, W1/W2 10 → 1); the last foot on the ground (a jog's push-off) is left to leave it as the clip
+                    // lifts it (lifted at once, slow, it stood 3 cm up while it bore the weight, W6 23 → 30, 2026-11-06)
+                    if (otherHeld) want.y += Mathf.Max(0f, SwingClear - Mathf.Max(0f, sole));
                 }
                 else return want - new Vector3(off.x, k.Drop, off.y);
             }
