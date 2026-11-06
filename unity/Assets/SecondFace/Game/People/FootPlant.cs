@@ -57,7 +57,7 @@ namespace SecondFace.Game.People
         private Vector3 _lastL, _lastR; private bool _haveLast;
         // moving, a foot down on the ground is held where it came down until the clip lifts it (W1: a planted foot
         // does not creep; the clips' strides never quite match the body's pace): its place, and a short release after
-        private struct Lock { public bool On; public Vector3 At, From; public float Release, Last; public int Pivot; }
+        private struct Lock { public bool On; public Vector3 At, From; public float Release, Last, Over; public int Pivot; }
         private Lock _lockL, _lockR;
         /// <summary>A foot locks when its sole is this near the ground and slower than <see cref="SwingSlow"/>; it lets go
         /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
@@ -198,19 +198,9 @@ namespace SecondFace.Game.People
             var eL = _footL.position.y - gL - ankleL;
             var eR = _footR.position.y - gR - ankleR;
             var e = Mathf.Min(eL, eR);
-            // moving, by the stance's sole: the lowest sole point of a foot bearing weight (nearly still, under SwingSlow),
-            // its lower envelope over the last strides (by the ankle, a jogging foot that lands on its ball held the body up
-            // and the stance sole floated 3-5 cm, W6, 2026-11-06); in a jog's flight it only eases back
-            if (!standing && _haveLast)
-            {
-                var stance = float.MaxValue;
-                if (new Vector2(_footL.position.x - _lastL.x, _footL.position.z - _lastL.z).magnitude / dt < SwingSlow)
-                    stance = Mathf.Min(stance, SoleOver(_footL, _toeL, _heelL, _backL, _ballL, _tipL, gL));
-                if (new Vector2(_footR.position.x - _lastR.x, _footR.position.z - _lastR.z).magnitude / dt < SwingSlow)
-                    stance = Mathf.Min(stance, SoleOver(_footR, _toeR, _heelR, _backR, _ballR, _tipR, gR));
-                _low = stance < float.MaxValue ? Mathf.Min(stance, _low + 0.08f * dt) : _low + 0.08f * dt;
-            }
-            else _low = Mathf.Min(e, _low + 0.08f * dt);
+            // moving, by the stride's lowest (the lower envelope over the last strides: a running foot lands on its ball with
+            // the ankle high, and the body is not to be pulled down to it; a held foot is put down on the ground itself, Held)
+            _low = Mathf.Min(e, _low + 0.08f * dt);
             // standing, low enough that both feet reach the ground (the higher foot's need: on the lower one's alone the
             // other floated up to 3 cm, F1); moving, by the stride's lowest
             var want = Mathf.Clamp(-(standing ? Mathf.Max(eL, eR) : _low), -0.15f, 0.15f);
@@ -273,8 +263,8 @@ namespace SecondFace.Game.People
                     _footL.rotation = Quaternion.Slerp(keepL, _endRotL, _unplant);
                     _footR.rotation = Quaternion.Slerp(keepR, _endRotR, _unplant);
                 }
-                wantL = Held(ref _lockL, wantL, dipL, speedL, body, _footL, _toeL, _heelL, _ballL, _tipL, dt);
-                wantR = Held(ref _lockR, wantR, dipR, speedR, body, _footR, _toeR, _heelR, _ballR, _tipR, dt);
+                wantL = Held(ref _lockL, wantL, dipL, speedL, body, _footL, _toeL, _heelL, _ballL, _tipL, gL, dt);
+                wantR = Held(ref _lockR, wantR, dipR, speedR, body, _footR, _toeR, _heelR, _ballR, _tipR, gR, dt);
                 Diag[3] = _lockL.On ? 1f : _lockL.Release > 0f ? 0.5f : 0f; Diag[7] = _lockR.On ? 1f : _lockR.Release > 0f ? 0.5f : 0f;
                 if ((wantL - _footL.position).sqrMagnitude > 4e-6f) Solve(_upL, _loL, _footL, wantL);
                 if ((wantR - _footR.position).sqrMagnitude > 4e-6f) Solve(_upR, _loR, _footR, wantR);
@@ -290,7 +280,7 @@ namespace SecondFace.Game.People
         /// slow for the pace) the point it stands on (the heel, then the ball, then the toe's tip, as a foot rolls) is held
         /// where it touched, the ankle following the clip's roll about it; let go back to the clip's over
         /// <see cref="LockRelease"/> s.</summary>
-        private Vector3 Held(ref Lock k, Vector3 want, float sole, float speed, float body, Transform foot, Transform toe, Vector3 heel, Vector3 ball, Vector3 tip, float dt)
+        private Vector3 Held(ref Lock k, Vector3 want, float sole, float speed, float body, Transform foot, Transform toe, Vector3 heel, Vector3 ball, Vector3 tip, float ground, float dt)
         {
             // the sole point now lowest, where the clip has it with the ankle at the place wanted
             var shift = want - foot.position;
@@ -310,13 +300,20 @@ namespace SecondFace.Game.People
                 var c = At(k.Pivot);
                 var off = new Vector2(c.x - k.At.x, c.z - k.At.z);
                 if (sole > LockLift || off.magnitude > LockReach) { k.On = false; k.Release = 1f; k.From = want - new Vector3(off.x, 0f, off.y); }
-                else return want - new Vector3(off.x, 0f, off.y);
+                else
+                {
+                    // and down on the ground: a held point the clip carries over it is put on it by the leg (a jogging stance
+                    // floated 3-5 cm, W6, 2026-11-06); one the clip puts into it was lifted out before
+                    var over = float.IsNaN(ground) ? 0f : Mathf.Max(0f, c.y - ground);
+                    k.Over = over;
+                    return want - new Vector3(off.x, over, off.y);
+                }
             }
             if (k.Release > 0f)
             {
                 k.Release = Mathf.Max(0f, k.Release - dt / LockRelease);
                 var t = k.Release * k.Release * (3f - 2f * k.Release);
-                return new Vector3(Mathf.Lerp(want.x, k.From.x, t), want.y, Mathf.Lerp(want.z, k.From.z, t));
+                return new Vector3(Mathf.Lerp(want.x, k.From.x, t), want.y - k.Over * t, Mathf.Lerp(want.z, k.From.z, t));
             }
             return want;
         }
