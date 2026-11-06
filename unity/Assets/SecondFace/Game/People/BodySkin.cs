@@ -262,7 +262,7 @@ namespace SecondFace.Game.People
         /// <summary>The widest patch of skin one point stands for (m).</summary>
         public const float PatchMax = 0.06f;
         /// <summary>How far across from a point, as a multiple of how deep behind its plane, a point is still read as under it.</summary>
-        public const float DeepAcross = 2.2f;
+        public const float DeepAcross = 3f;
 
         public bool Depth(Vector3 p, out float depth, out Vector3 normal)
         {
