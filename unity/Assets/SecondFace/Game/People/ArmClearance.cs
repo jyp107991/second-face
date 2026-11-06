@@ -24,7 +24,7 @@ namespace SecondFace.Game.People
         public float MoveMargin = 0.006f;
         private float Margin3 => SkinMargin + MoveMargin * (1f - _restW);
         /// <summary>With the skin: a resting hand hangs this far from the side of the hip or thigh (A4), surface to surface.</summary>
-        public float SkinGap = 0.01f;
+        public float SkinGap = 0.006f;   // (1 cm off the clothes stood resting hands 6.0-6.5 cm from the thigh's skin, A4, 2026-11-06)
         /// <summary>With the skin: a resting hand that hangs behind the thigh's middle (into the buttock, the clip taken on
         /// a flatter body) is brought forward to the thigh's side, by at most this many degrees at the shoulder.</summary>
         public float RestForward = 14f;
