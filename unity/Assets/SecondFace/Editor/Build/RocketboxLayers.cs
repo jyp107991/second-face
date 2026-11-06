@@ -267,6 +267,30 @@ namespace SecondFace.EditorTools
                 var m = bones[b.boneIndex0].localToWorldMatrix * bp[b.boneIndex0];
                 world[i] = m.MultiplyPoint3x4(pos[i]);
             }
+            // the parts told apart where the gate tells them apart (MotionProbe.Calibrate): in the Humanoid's neutral pose,
+            // every muscle at 0, the arms down by the body. In the bind pose the arms stand out and the chest's side under
+            // them lies nearer the upper arm's line than the spine's: it was left out with the upper arm's top, and arms
+            // went 2-4 cm into it unseen, the game's nearest point 4-7 cm off (2026-11-06). The points keep their bind-pose
+            // places (world); only which part each is comes from the neutral pose (lp, ln).
+            var lp = world; Vector3[] ln = null;
+            var saved = root.GetComponentsInChildren<Transform>(true).Select(x => (Tr: x, Pos: x.localPosition, Rot: x.localRotation, Scale: x.localScale)).ToArray();
+            if (anim.avatar != null && anim.avatar.isHuman)
+            {
+                var hp = new HumanPoseHandler(anim.avatar, root);
+                var hpose = new HumanPose();
+                hp.GetHumanPose(ref hpose);
+                for (var k = 0; k < hpose.muscles.Length; k++) hpose.muscles[k] = 0f;
+                hp.SetHumanPose(ref hpose);
+                var baked = new Mesh();
+                smr.BakeMesh(baked, true);
+                var l2w = Matrix4x4.TRS(smr.transform.position, smr.transform.rotation, Vector3.one);
+                lp = baked.vertices; ln = baked.normals;
+                for (var k = 0; k < lp.Length; k++) lp[k] = l2w.MultiplyPoint3x4(lp[k]);
+                if (ln != null && ln.Length == lp.Length) for (var k = 0; k < ln.Length; k++) ln[k] = smr.transform.rotation * ln[k]; else ln = null;
+                UnityEngine.Object.DestroyImmediate(baked);
+                hp.Dispose();
+                if (lp.Length != world.Length) { lp = world; ln = null; }
+            }
             // the segments the gate tells the parts apart by (MotionProbe.Segments)
             var segs = new List<(Vector3 A, Vector3 Bp, SkinPart P)>();
             void Seg(HumanBodyBones a, HumanBodyBones b, SkinPart p) { var ta = B(a); var tb = B(b); if (ta != null && tb != null) segs.Add((ta.position, tb.position, p)); }
@@ -309,40 +333,24 @@ namespace SecondFace.EditorTools
             }
             var hipsY = root.InverseTransformPoint(B(HumanBodyBones.Hips).position).y;
             var cells = new Dictionary<(int, int, int, SkinPart), (int I, float D)>();
-            var inner = 0; var moved = 0;
-            // the share of a vertex's weight carried by a bone or anything under it
-            static float Carried(BoneWeight b, Transform[] bs, Transform under)
-            {
-                if (under == null) return 0f;
-                float W(int k, float w) => k >= 0 && k < bs.Length && bs[k] != null && bs[k].IsChildOf(under) ? w : 0f;
-                return W(b.boneIndex0, b.weight0) + W(b.boneIndex1, b.weight1) + W(b.boneIndex2, b.weight2) + W(b.boneIndex3, b.weight3);
-            }
+            var inner = 0;
             for (var i = 0; i < pos.Length; i++)
             {
                 if (!use[i]) continue;
                 var best = float.MaxValue; var part = SkinPart.None; var along = 0f; var axis = Vector3.zero;
                 foreach (var (a, b, p) in segs)
                 {
-                    var d = Along(world[i], a, b, out var t);
+                    var d = Along(lp[i], a, b, out var t);
                     if (d < best) { best = d; part = p; along = t; axis = a + (b - a) * t; }
                 }
                 if (part == SkinPart.None) continue;
-                // the chest's side under the arm lies nearer the upper arm's line than the spine's with the arms out (the
-                // bind pose), and was left out with the upper arm's top: told apart by what carries it, a vertex the upper
-                // arm does not mostly move is the torso's (arms went 2-3 cm into the chest's side unseen, the game's
-                // nearest point 5.5-7.6 cm off, 2026-11-06)
-                if ((part == SkinPart.UpperArmL || part == SkinPart.UpperArmR) && along < 0.6f
-                    && Carried(bw[i], bones, B(part == SkinPart.UpperArmL ? HumanBodyBones.LeftUpperArm : HumanBodyBones.RightUpperArm)) < 0.5f)
-                {
-                    part = SkinPart.Torso; moved++;
-                }
                 // the body's surface faces away from its bones: a vertex whose normal faces its bone's axis is a garment's
                 // inside (a jacket's lining at the hem, a turned-up cuff), and a hand by it read as outside the body while
                 // 4-5 cm into the thigh (2026-11-06)
                 if (part is SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR)
                 {
                     var bw0 = bw[i];
-                    var n = (bones[bw0.boneIndex0].localToWorldMatrix * bp[bw0.boneIndex0]).MultiplyVector(nor[i]).normalized;
+                    var n = ln != null ? ln[i].normalized : (bones[bw0.boneIndex0].localToWorldMatrix * bp[bw0.boneIndex0]).MultiplyVector(nor[i]).normalized;
                     // the torso faces away from its spine (from the shoulder's segment, the chest's side under the arm read as
                     // facing in and was left out: arms went 2-3 cm into it unseen, 2026-11-06)
                     if (part == SkinPart.Torso)
@@ -350,11 +358,11 @@ namespace SecondFace.EditorTools
                         var bd = float.MaxValue;
                         for (var k = 0; k < spine; k++)
                         {
-                            var dd = Along(world[i], segs[k].A, segs[k].Bp, out var tt);
+                            var dd = Along(lp[i], segs[k].A, segs[k].Bp, out var tt);
                             if (dd < bd) { bd = dd; axis = segs[k].A + (segs[k].Bp - segs[k].A) * tt; }
                         }
                     }
-                    var away = world[i] - axis;
+                    var away = lp[i] - axis;
                     if (away.sqrMagnitude > 1e-6f && Vector3.Dot(n, away.normalized) < -0.2f) { inner++; continue; }
                 }
                 // the upper arm's third nearest the elbow (against the waist a gap shows; higher, the arm rests on the side of
@@ -369,6 +377,7 @@ namespace SecondFace.EditorTools
                 var dc = (world[i] - centre).sqrMagnitude;
                 if (!cells.TryGetValue(key, out var have) || dc < have.D) cells[key] = (i, dc);
             }
+            foreach (var sv in saved) { sv.Tr.localPosition = sv.Pos; sv.Tr.localRotation = sv.Rot; sv.Tr.localScale = sv.Scale; }
             var byPart = new List<int>[9];
             for (var p = 0; p < 9; p++) byPart[p] = new List<int>();
             foreach (var (key, (i, _)) in cells) byPart[(int)key.Item4].Add(i);
@@ -443,7 +452,7 @@ namespace SecondFace.EditorTools
                 return new[] { foot.InverseTransformPoint(world[heel]), foot.InverseTransformPoint(world[back]), foot.InverseTransformPoint(world[ball]), (toe != null ? toe : foot).InverseTransformPoint(world[tip]) };
             }
             skin.Built = BodySkin.Version;
-            Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")}; {inner} inside faces left out; {moved} of the chest's side under the arm kept as the torso's)");
+            Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")}; {inner} inside faces left out; parts told apart in the neutral pose)");
         }
 
         private static HumanBodyBones Parse(string name) => (HumanBodyBones)Enum.Parse(typeof(HumanBodyBones), name);
