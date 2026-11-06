@@ -42,7 +42,7 @@ namespace SecondFace.Tests
         private bool[] _armLow;
         private Vector3[] _bindNormals;
         /// <summary>How well the game's skin points (BodySkin) lie on the mesh, at calibration (for the report).</summary>
-        public string SkinFit;
+        public string SkinFit, SkinWhy;
         private readonly List<(int I, int Near, float Depth)> _candidates = new();
         // the arm clearance's own view, per state (for the report: why the arms are where they are)
         public readonly Dictionary<string, (int N, int Resting, double[] Sum)> ArmDiag = new();
@@ -203,6 +203,7 @@ namespace SecondFace.Tests
                     if (dist > worstFit) { worstFit = dist; worstAt = k; }
                     if (bi >= 0 && _bindNormals != null && Vector3.Dot(_bindNormals[bi], skin.N[k]) < 0.5f) normalOff++;
                 }
+                SkinWhy = $"{skin.Explain(0)}; the person at {_root.position}, the body renderer at {_smr.transform.position}";
                 SkinFit = $"mean {sumFit / Mathf.Max(1, skin.Count) * 100:0.00} cm, worst {worstFit * 100:0.0} cm (point {worstAt}), normals off {normalOff} of {skin.Count}; its body {(skin.Body != null ? skin.Body.name + (skin.Body.transform.IsChildOf(_root) ? " (this person's)" : " (NOT this person's)") : "none")}";
             }
             _ankleSoleL = SoleOffset(bind, Part.FootL, _bindAnkleL, _bindToeL, out _toeSoleL);

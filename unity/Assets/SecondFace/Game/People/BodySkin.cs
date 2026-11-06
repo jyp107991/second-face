@@ -187,6 +187,14 @@ namespace SecondFace.Game.People
             }
         }
 
+        /// <summary>One point's posing, for a report: its bones, their places, its stored offsets and where it is now.</summary>
+        public string Explain(int i)
+        {
+            if (!Ready || i < 0 || i >= P.Length) return "not ready";
+            var b0 = _bones[_set.B0[i]]; var b1 = _bones[_set.B1[i]];
+            return $"point {i}: bones {b0.name} at {b0.position} and {b1.name} at {b1.position}, weight {_set.W[i]:0.00}, offsets {_set.P0[i]} / {_set.P1[i]}, posed at {P[i]}, used bones {_set.UsedBones.Length}";
+        }
+
         /// <summary>Turns a range of points (one arm's, after its bone is turned) about a pivot.</summary>
         public void Turn(int from, int to, Vector3 pivot, Quaternion q)
         {
