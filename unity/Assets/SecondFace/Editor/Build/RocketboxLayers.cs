@@ -309,7 +309,14 @@ namespace SecondFace.EditorTools
             }
             var hipsY = root.InverseTransformPoint(B(HumanBodyBones.Hips).position).y;
             var cells = new Dictionary<(int, int, int, SkinPart), (int I, float D)>();
-            var inner = 0;
+            var inner = 0; var moved = 0;
+            // the share of a vertex's weight carried by a bone or anything under it
+            static float Carried(BoneWeight b, Transform[] bs, Transform under)
+            {
+                if (under == null) return 0f;
+                float W(int k, float w) => k >= 0 && k < bs.Length && bs[k] != null && bs[k].IsChildOf(under) ? w : 0f;
+                return W(b.boneIndex0, b.weight0) + W(b.boneIndex1, b.weight1) + W(b.boneIndex2, b.weight2) + W(b.boneIndex3, b.weight3);
+            }
             for (var i = 0; i < pos.Length; i++)
             {
                 if (!use[i]) continue;
@@ -320,6 +327,15 @@ namespace SecondFace.EditorTools
                     if (d < best) { best = d; part = p; along = t; axis = a + (b - a) * t; }
                 }
                 if (part == SkinPart.None) continue;
+                // the chest's side under the arm lies nearer the upper arm's line than the spine's with the arms out (the
+                // bind pose), and was left out with the upper arm's top: told apart by what carries it, a vertex the upper
+                // arm does not mostly move is the torso's (arms went 2-3 cm into the chest's side unseen, the game's
+                // nearest point 5.5-7.6 cm off, 2026-11-06)
+                if ((part == SkinPart.UpperArmL || part == SkinPart.UpperArmR) && along < 0.6f
+                    && Carried(bw[i], bones, B(part == SkinPart.UpperArmL ? HumanBodyBones.LeftUpperArm : HumanBodyBones.RightUpperArm)) < 0.5f)
+                {
+                    part = SkinPart.Torso; moved++;
+                }
                 // the body's surface faces away from its bones: a vertex whose normal faces its bone's axis is a garment's
                 // inside (a jacket's lining at the hem, a turned-up cuff), and a hand by it read as outside the body while
                 // 4-5 cm into the thigh (2026-11-06)
@@ -427,7 +443,7 @@ namespace SecondFace.EditorTools
                 return new[] { foot.InverseTransformPoint(world[heel]), foot.InverseTransformPoint(world[back]), foot.InverseTransformPoint(world[ball]), (toe != null ? toe : foot).InverseTransformPoint(world[tip]) };
             }
             skin.Built = BodySkin.Version;
-            Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")}; {inner} inside faces left out)");
+            Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")}; {inner} inside faces left out; {moved} of the chest's side under the arm kept as the torso's)");
         }
 
         private static HumanBodyBones Parse(string name) => (HumanBodyBones)Enum.Parse(typeof(HumanBodyBones), name);
