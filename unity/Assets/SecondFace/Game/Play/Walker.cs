@@ -17,10 +17,9 @@ namespace SecondFace.Game.Play
         public const float WalkSpeed = 1.4f, JogSpeed = 3.2f, JogBeyond = 22f, SampleRadius = 4f;
         /// <summary>The controller's pickup (LocomotionBuild): played from 0.7 s in at 1.4 times, lowest at the clip's 2.3 s.</summary>
         public const float PickupFrom = 0.7f, PickupSpeed = 1.4f, PickupLowest = 2.3f;
-        private static readonly int Speed = Animator.StringToHash("Speed");
         private static readonly int Pickup = Animator.StringToHash("pickup");
         private static readonly int Locomotion = Animator.StringToHash("Locomotion");
-        private static readonly int SneakOn = Animator.StringToHash("Sneak"), SneakRate = Animator.StringToHash("SneakRate");
+        private static readonly int SneakOn = Animator.StringToHash("Sneak");
         /// <summary>How long sitting down or getting up takes (the body moves and the motion blends over it).</summary>
         public const float SitTime = 0.6f;
 
@@ -214,8 +213,7 @@ namespace SecondFace.Game.Play
             if (Goal is { } g && Agent.isOnNavMesh && !Agent.pathPending && Agent.remainingDistance <= Agent.stoppingDistance + 0.05f) Goal = null;
             if (Animator != null)
             {
-                Animator.SetFloat(Speed, Agent.velocity.magnitude, 0.12f, Time.deltaTime);
-                if (Sneaking) Animator.SetFloat(SneakRate, Mathf.Clamp(Agent.velocity.magnitude / Stealth.SneakSpeed, 0f, 1.6f), 0.1f, Time.deltaTime);
+                SecondFace.Game.People.Pace.Set(Animator, Agent.velocity.magnitude, Sneaking);
             }
         }
     }

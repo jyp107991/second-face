@@ -64,6 +64,8 @@ namespace SecondFace.Game.People
         private readonly int[] _head = new int[Buckets];
         private int[] _next;
         private Vector3Int[] _cell;
+        // how far apart the body's points stand about each one (its fourth nearest neighbour, measured once)
+        private float[] _spacing;
 
         public bool Ready => _set != null && _bones != null && P != null;
         public int Count => _set?.W.Length ?? 0;
@@ -169,6 +171,7 @@ namespace SecondFace.Game.People
             }
             for (var h = 0; h < Buckets; h++) _head[h] = -1;
             var body = _set.Start[(int)Part.ThighR + 1];
+            if (_spacing == null || _spacing.Length != body) Spacing(body);
             for (var i = 0; i < body; i++)
             {
                 var c = CellOf(P[i]);
@@ -186,6 +189,26 @@ namespace SecondFace.Game.People
             {
                 P[i] = pivot + q * (P[i] - pivot);
                 N[i] = q * N[i];
+            }
+        }
+
+        private void Spacing(int body)
+        {
+            _spacing = new float[body];
+            var near = new float[4];
+            for (var i = 0; i < body; i++)
+            {
+                for (var k = 0; k < 4; k++) near[k] = float.MaxValue;
+                for (var j = 0; j < body; j++)
+                {
+                    if (j == i) continue;
+                    var d = (P[j] - P[i]).sqrMagnitude;
+                    if (d >= near[3]) continue;
+                    var k2 = 3;
+                    while (k2 > 0 && near[k2 - 1] > d) { near[k2] = near[k2 - 1]; k2--; }
+                    near[k2] = d;
+                }
+                _spacing[i] = near[3] < float.MaxValue ? Mathf.Sqrt(near[3]) : 0.05f;
             }
         }
 
@@ -217,13 +240,24 @@ namespace SecondFace.Game.People
                             else { c2 = j; d2 = d; }
                         }
             if (c0 < 0) return false;
-            var inside = -Vector3.Dot(p - P[c0], N[c0]);
-            if (c1 >= 0) inside = Mathf.Min(inside, -Vector3.Dot(p - P[c1], N[c1]));
-            if (c2 >= 0) inside = Mathf.Min(inside, -Vector3.Dot(p - P[c2], N[c2]));
+            // inside only behind each of the three, and over it, not beside it: a point beside the top of a shoulder or
+            // below a hem is behind their planes and outside the body (such false contacts pushed arms out, 2026-11-06)
+            float Under(int c)
+            {
+                var v = p - P[c];
+                var d = -Vector3.Dot(v, N[c]);
+                if (d <= 0f) return d;
+                var across = (v + N[c] * d).magnitude;
+                return across <= Mathf.Max(_spacing[c], d) ? d : -1f;
+            }
+            var inside = Under(c0);
+            if (c1 >= 0) inside = Mathf.Min(inside, Under(c1));
+            if (c2 >= 0) inside = Mathf.Min(inside, Under(c2));
             var nn = N[c0] + (c1 >= 0 ? N[c1] : Vector3.zero) + (c2 >= 0 ? N[c2] : Vector3.zero);
             normal = nn.sqrMagnitude > 1e-8f ? nn.normalized : N[c0];
             // outside: the gap to the surface's plane at the nearest point (never more than to the point itself)
-            depth = inside > 0f ? inside : -Mathf.Min(Mathf.Sqrt(d0), Mathf.Max(0f, Vector3.Dot(p - P[c0], N[c0])));
+            var plane = Vector3.Dot(p - P[c0], N[c0]);
+            depth = inside > 0f ? inside : -(plane > 0f ? Mathf.Min(Mathf.Sqrt(d0), plane) : Mathf.Sqrt(d0));
             return true;
         }
 

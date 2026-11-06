@@ -231,6 +231,10 @@ namespace SecondFace.Tests
                 {
                     n++;
                     if (clip.isLooping != loop) wrong.Add($"{Path.GetFileName(path)}: loops {clip.isLooping}, its sidecar says {loop}");
+                    // and is the whole take its sidecar describes (not a stale cut of an older export)
+                    var frames = side.Value<int?>("frames"); var fps = side.Value<float?>("fps") ?? 30f;
+                    if (frames is { } f && f > 1 && Mathf.Abs(clip.length - (f - 1) / fps) > 1.5f / fps && Mathf.Abs(clip.length - f / fps) > 1.5f / fps)
+                        wrong.Add($"{Path.GetFileName(path)}: {clip.length:0.00} s long, its sidecar says {f} frames ({f / fps:0.00} s)");
                 }
             }
             Assert.That(n, Is.GreaterThan(0), "no captured clips found");
@@ -455,8 +459,7 @@ namespace SecondFace.Tests
                     foreach (var s in people)
                     {
                         s.Go.transform.position += Vector3.forward * step;
-                        s.A.SetFloat("Speed", speed, 0.12f, dt);
-                        if (sneak) s.A.SetFloat("SneakRate", Mathf.Clamp(speed / 0.85f, 0f, 1.6f), 0.1f, dt);
+                        Pace.Set(s.A, speed, sneak, 0.12f, dt);   // as the game's walker sets it
                     }
                     if (captures && (name is "walk" or "jog") && travelled > length * 0.45f && frames < 10 && Time.time >= nextFrame)
                     {
@@ -483,7 +486,7 @@ namespace SecondFace.Tests
                     Place(new Vector3(0f, 0f, -10f), -90f);
                     var centres = people.Select(s => s.Go.transform.position + Vector3.forward * 3f).ToList();
                     var theta = 0f;
-                    foreach (var s in people) s.A.SetFloat("Speed", v);
+                    foreach (var s in people) Pace.Set(s.A, v, false, 0f);
                     yield return Wait(0.8f);
                     Record("bend:" + name, MotionProbe.K.Walk);
                     var t1 = Time.time;
@@ -497,7 +500,7 @@ namespace SecondFace.Tests
                             var pos = centres[i] + new Vector3(-Mathf.Sin(theta), 0f, -Mathf.Cos(theta)) * 3f;
                             var tangent = new Vector3(-Mathf.Cos(theta), 0f, Mathf.Sin(theta));
                             s.Go.transform.SetPositionAndRotation(pos, Quaternion.LookRotation(tangent, Vector3.up));
-                            s.A.SetFloat("Speed", v, 0.12f, dt);
+                            Pace.Set(s.A, v, false, 0.12f, dt);
                         }
                         yield return null;
                     }
@@ -652,7 +655,7 @@ namespace SecondFace.Tests
                 ["date"] = now, ["set"] = report, ["people"] = InputsHash("people"), ["measures"] = InputsHash("measures"),
                 ["bodies"] = people, ["green"] = green, ["cells"] = measures, ["failures"] = fails.Count,
                 // each measure's failures (the lock holds every later verdict to no more of any)
-                ["byMeasure"] = fails.Select(f => f.Split(':')[0].Split(' ').Last()).GroupBy(m => m).OrderBy(g => g.Key, System.StringComparer.Ordinal)
+                ["byMeasure"] = fails.Select(f => f.Substring(0, Mathf.Max(0, f.IndexOf(": "))).Split(' ').Last()).GroupBy(m => m).OrderBy(g => g.Key, System.StringComparer.Ordinal)
                     .ToDictionary(g => g.Key, g => g.Count()),
                 ["lastGreen"] = green ? now : lastGreen, ["failing"] = fails.Take(60).ToList(),
             };

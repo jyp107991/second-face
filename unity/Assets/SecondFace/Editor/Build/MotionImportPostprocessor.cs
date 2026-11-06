@@ -18,7 +18,7 @@ namespace SecondFace.EditorTools
     public sealed class MotionImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 5;
+        public override uint GetVersion() => 6;
 
         private bool IsClip => assetPath.StartsWith("Assets/SecondFace/Motion/") && assetPath.EndsWith(".fbx");
 
@@ -49,10 +49,16 @@ namespace SecondFace.EditorTools
             if (!IsClip) return;
             var imp = (ModelImporter)assetImporter;
             var (loop, root) = Sidecar();
-            var clips = imp.clipAnimations != null && imp.clipAnimations.Length > 0 ? imp.clipAnimations : imp.defaultClipAnimations;
+            var defaults = imp.defaultClipAnimations;
+            var clips = imp.clipAnimations != null && imp.clipAnimations.Length > 0 ? imp.clipAnimations : defaults;
             if (clips == null || clips.Length == 0) return;
             foreach (var c in clips)
             {
+                // the whole take, every time: a range kept in the .meta from an older export cut the re-exported sneak to
+                // its first 15 of 39 frames, half a stride (2026-11-06)
+                if (defaults != null)
+                    foreach (var d in defaults)
+                        if (d.takeName == c.takeName || defaults.Length == 1) { c.firstFrame = d.firstFrame; c.lastFrame = d.lastFrame; break; }
                 // looping as the sidecar says; the body's height baked in from the feet (the soles stay on the root's
                 // ground); its turn and travel left as root motion, which the game does not apply (applyRootMotion is off),
                 // so the body stays upright, facing the root's way, in place. Baking the orientation from the original

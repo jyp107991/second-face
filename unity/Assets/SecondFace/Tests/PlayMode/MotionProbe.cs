@@ -40,6 +40,70 @@ namespace SecondFace.Tests
         private SkinnedMeshRenderer _smr;
         private byte[] _seg;
         private bool[] _armLow;
+        private readonly List<(int I, int Near, float Depth)> _candidates = new();
+        private int[] _bodyTris;
+        private Vector3[] _cv;
+        private float[] _tyLo, _tyHi;
+
+        /// <summary>The body's torso and thighs as they are posed now (their triangles, and each one's height range).</summary>
+        private void Collide(Vector3[] v)
+        {
+            if (_bodyTris == null)
+            {
+                var all = _baked.triangles;
+                var keep = new List<int>();
+                bool Body(int i) { var s = (Part)_seg[i]; return s == Part.Torso || s == Part.ThighL || s == Part.ThighR; }
+                for (var t = 0; t + 2 < all.Length; t += 3)
+                    if (Body(all[t]) && Body(all[t + 1]) && Body(all[t + 2])) { keep.Add(all[t]); keep.Add(all[t + 1]); keep.Add(all[t + 2]); }
+                _bodyTris = keep.ToArray();
+                _tyLo = new float[_bodyTris.Length / 3]; _tyHi = new float[_bodyTris.Length / 3];
+            }
+            _cv = v;
+            for (int t = 0, k = 0; t < _bodyTris.Length; t += 3, k++)
+            {
+                float a = v[_bodyTris[t]].y, b = v[_bodyTris[t + 1]].y, c = v[_bodyTris[t + 2]].y;
+                _tyLo[k] = Mathf.Min(a, Mathf.Min(b, c)); _tyHi[k] = Mathf.Max(a, Mathf.Max(b, c));
+            }
+        }
+
+        /// <summary>Whether a point is inside the body's torso and thighs: level rays out from it (away from the body's
+        /// middle, and to either side of that), each counting the surface's crossings, both faces, within 0.8 m; odd is
+        /// in (two rays of three).</summary>
+        private bool InBody(Vector3 p)
+        {
+            var away = p - _hips.position; away.y = 0f;
+            away = away.sqrMagnitude > 1e-6f ? away.normalized : _root.right;
+            var votes = 0;
+            foreach (var dir in new[] { away, Quaternion.AngleAxis(90f, Vector3.up) * away, Quaternion.AngleAxis(-90f, Vector3.up) * away })
+            {
+                var crossings = 0;
+                for (int t = 0, k = 0; t < _bodyTris.Length; t += 3, k++)
+                {
+                    if (p.y < _tyLo[k] || p.y > _tyHi[k]) continue;   // a level ray meets only triangles spanning its height
+                    if (Hit(p, dir, _cv[_bodyTris[t]], _cv[_bodyTris[t + 1]], _cv[_bodyTris[t + 2]], 0.8f)) crossings++;
+                }
+                if ((crossings & 1) == 1) votes++;
+            }
+            return votes >= 2;
+        }
+
+        /// <summary>Möller-Trumbore, both faces: does the ray from o along d meet the triangle within max?</summary>
+        private static bool Hit(Vector3 o, Vector3 d, Vector3 a, Vector3 b, Vector3 c, float max)
+        {
+            var e1 = b - a; var e2 = c - a;
+            var q = Vector3.Cross(d, e2);
+            var det = Vector3.Dot(e1, q);
+            if (Mathf.Abs(det) < 1e-10f) return false;
+            var f = 1f / det;
+            var sv = o - a;
+            var u = f * Vector3.Dot(sv, q);
+            if (u < 0f || u > 1f) return false;
+            var r = Vector3.Cross(sv, e1);
+            var w = f * Vector3.Dot(d, r);
+            if (w < 0f || u + w > 1f) return false;
+            var t = f * Vector3.Dot(e2, r);
+            return t > 1e-5f && t < max;
+        }
         private float _ankleSoleL, _ankleSoleR, _toeSoleL, _toeSoleR;
         private Vector3 _prevAnkleL, _prevAnkleR, _prevToeL, _prevToeR, _prevRoot;
         private bool _havePrev;
@@ -399,7 +463,8 @@ namespace SecondFace.Tests
             // foot vertices below H = 2.5 cm); the lower foot's sole is the stance's height (W6)
             if (k == K.Walk)
             {
-                var lowest = float.MaxValue;
+                var lowest = float.MaxValue; var lowestSide = -1;
+                var still = new[] { float.MaxValue, float.MaxValue };   // each foot's slowest sole point now (m/s)
                 var body = _soleT > 0f && Time.time > _soleT ? Flat(_root.position - _soleRoot).magnitude / (Time.time - _soleT) : 0f;
                 for (var side = 0; side < 2; side++)
                 {
@@ -409,7 +474,7 @@ namespace SecondFace.Tests
                     if (float.IsNaN(g)) continue;
                     var low = float.MaxValue;
                     for (var i = 0; i < v.Length; i++) if (_seg[i] == (byte)part) low = Mathf.Min(low, v[i].y);
-                    if (low < float.MaxValue) lowest = Mathf.Min(lowest, low - g);
+                    if (low < float.MaxValue && low - g < lowest) { lowest = low - g; lowestSide = side; }
                     // the skate on fixed points of the sole (its heel and its ball: a rolling foot's lowest point moves along
                     // the foot as a real one's does, a fixed point down on the ground does not move)
                     for (var q = 0; q < 2; q++)
@@ -418,6 +483,7 @@ namespace SecondFace.Tests
                         if (j < 0) continue;
                         var h = v[j].y - g;
                         var slot = side * 2 + q;
+                        if (_soleT > 0f && Time.time > _soleT) still[side] = Mathf.Min(still[side], Flat(v[j] - _sole[slot]).magnitude / (Time.time - _soleT));
                         if (h < 0.025f && _soleH[slot] < 0.025f && _soleT > 0f && Time.time > _soleT)
                         {
                             var speed = Flat(v[j] - _sole[slot]).magnitude / (Time.time - _soleT);
@@ -427,7 +493,9 @@ namespace SecondFace.Tests
                         _sole[slot] = v[j]; _soleH[slot] = h;
                     }
                 }
-                if (lowest < float.MaxValue) Add("W6", lowest * 100f);
+                // the stance's height: the lower foot's sole, while it bears weight (nearly still: not a swing, not a jog's
+                // flight, when both feet are off the ground and moving)
+                if (lowestSide >= 0 && still[lowestSide] < 0.5f) Add("W6", lowest * 100f);
                 _soleT = Time.time; _soleRoot = _root.position;
             }
             else _soleT = 0f;
@@ -502,11 +570,7 @@ namespace SecondFace.Tests
                 if (i2 >= 0 && hasNormals)
                 {
                     var depth = Mathf.Min(-Vector3.Dot(p - v[i0], n[i0]), Mathf.Min(-Vector3.Dot(p - v[i1], n[i1]), -Vector3.Dot(p - v[i2], n[i2])));
-                    if (depth > depthMax)
-                    {
-                        depthMax = depth;
-                        worst = $"{(Part)_seg[i]} vertex {i} {depth * 100f:0.0} cm under {(Part)_seg[i0]} vertex {i0} (at {(v[i0].y - _root.position.y):0.00} m, normal {n[i0].x:0.00},{n[i0].y:0.00},{n[i0].z:0.00} in the body's frame {Quaternion.Inverse(_root.rotation) * n[i0]})";
-                    }
+                    if (depth > 0f) _candidates.Add((i, i0, depth));
                 }
                 if (hand && k == K.Stand && (i % 2 == 0))
                 {
@@ -514,6 +578,22 @@ namespace SecondFace.Tests
                     foreach (var j in coarse) g = Mathf.Min(g, (v[j] - p).sqrMagnitude);
                     if (s == Part.HandL) gapL = Mathf.Min(gapL, g); else gapR = Mathf.Min(gapR, g);
                 }
+            }
+            // a candidate is in the body only if rays from it cross the body's surface an odd number of times (two of three
+            // level rays): the three nearest points can all face away from a point beside the top of a shoulder or below
+            // a hem, which is outside (2026-11-06)
+            if (_candidates.Count > 0)
+            {
+                Collide(v);
+                _candidates.Sort((x, y) => y.Depth.CompareTo(x.Depth));   // the deepest first: the first confirmed is the measure
+                foreach (var (i, i0, depth) in _candidates)
+                {
+                    if (depth <= depthMax || !InBody(v[i])) continue;
+                    depthMax = depth;
+                    worst = $"{(Part)_seg[i]} vertex {i} {depth * 100f:0.0} cm under {(Part)_seg[i0]} vertex {i0} (at {(v[i0].y - _root.position.y):0.00} m, normal {n[i0].x:0.00},{n[i0].y:0.00},{n[i0].z:0.00} in the body's frame {Quaternion.Inverse(_root.rotation) * n[i0]})";
+                    break;
+                }
+                _candidates.Clear();
             }
             Add("C1", depthMax * 100f);
             if (depthMax > 0.015f && worst != null && (!WorstClip.TryGetValue(State, out var w) || w.Item1 < depthMax)) WorstClip[State] = (depthMax, worst);
@@ -527,6 +607,7 @@ namespace SecondFace.Tests
         private void OnDestroy()
         {
             if (_baked != null) Destroy(_baked);
+            _cv = null;
             _hp?.Dispose();
         }
     }

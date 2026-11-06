@@ -57,6 +57,14 @@ namespace SecondFace.Game.People
 
         private Foot _l, _r;
 
+        /// <summary>The captured walks' subjects stood with their hip joints this high (m; the clips' sidecars, CMU 07, 08,
+        /// 16, 35, 136: 0.93-0.94).</summary>
+        public const float SourceHip = 0.935f;
+        /// <summary>How much longer this body's stride would need to be to match the clips' speeds: the clip's speed over
+        /// this body's (a retargeted stride is as long as the legs that take it: a shorter body at the clip's speed slides
+        /// its planted foot, 2026-11-06). <see cref="Pace"/> scales the locomotion's speed by it.</summary>
+        public float PaceScale { get; private set; } = 1f;
+
         /// <summary>How far the hips are moved to put the soles on the ground, m (down is negative).</summary>
         public float Sink => _sink;
         /// <summary>Kept for tests: how far each foot bone ended from where this put it (0: exact).</summary>
@@ -79,6 +87,7 @@ namespace SecondFace.Game.People
             // at rest, before any clip: the body stands on its root, feet flat
             var y = transform.position.y;
             _bindScale = Mathf.Max(0.01f, transform.lossyScale.y);
+            PaceScale = Mathf.Clamp(SourceHip / Mathf.Max(0.5f, _hips.position.y - y), 0.8f, 1.25f);
             _ankleL = Mathf.Clamp(_footL.position.y - y, 0.03f, 0.2f);
             _ankleR = Mathf.Clamp(_footR.position.y - y, 0.03f, 0.2f);
             var inv = Quaternion.Inverse(transform.rotation);
@@ -148,9 +157,10 @@ namespace SecondFace.Game.People
             if (float.IsNaN(gR)) { gR = gL; nR = nL; }
             // the hips: the lower foot's sole onto its ground (walking, gently: the stance ankle rises and falls with the
             // stride; standing, at once)
-            // standing, the ankle over a flat sole; moving, the foot's lowest sole point (a tilted foot reaches lower)
-            var eL = standing ? _footL.position.y - gL - ankleL : SoleOver(_footL, _toeL, _heelL, _ballL, _tipL, gL);
-            var eR = standing ? _footR.position.y - gR - ankleR : SoleOver(_footR, _toeR, _heelR, _ballR, _tipR, gR);
+            // the ankle over a flat sole (a tilted foot's lower reach is taken out by lifting that foot, below: the hips
+            // set on it floated every stance by the heel strike's dip, 2026-11-06)
+            var eL = _footL.position.y - gL - ankleL;
+            var eR = _footR.position.y - gR - ankleR;
             var e = Mathf.Min(eL, eR);
             // moving, by the stride's lowest (the lower envelope over the last strides: a running foot lands on its ball with
             // the ankle high, and the body is not to be pulled down to it)
