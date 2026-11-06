@@ -318,7 +318,7 @@ namespace SecondFace.Game.People
             // shoulder to thigh ran inside broad chests and vests, and the push-out at the shoulder took the hand 8-12 cm off
             // it, 2026-11-06
             if (w < 0.99f) return;
-            var gapE = Mathf.Min(Gap(_skin.Begin(first), _skin.End(first), 1, 0.08f), Gap(_skin.Begin(first + 1), _skin.End(first + 1), 1, 0.08f, lower.position, 0.08f));
+            var gapE = Mathf.Min(Gap(_skin.Begin(first), _skin.End(first), 1, 0.08f, null, 0f, ClothGive), Gap(_skin.Begin(first + 1), _skin.End(first + 1), 1, 0.08f, lower.position, 0.08f, ClothGive));
             Diag[side < 0 ? 12 : 13] = poleOut * 100f; Diag[side < 0 ? 14 : 15] = flexAdd;
             // the bend first (it swings the forearm forward off the hip, the belt, a vest's hem, and leaves the upper arm
             // hanging), the elbow out to the side only after (out first stood broad men's upper arms 19-28° off the
@@ -338,6 +338,10 @@ namespace SecondFace.Game.People
         /// <summary>At rest: the elbow's lean out to the side (0 straight back, 1 straight out) it starts from, and how much
         /// further the elbow may bend (degrees) to stand clear of a broad chest with the hand still at the thigh.</summary>
         public float PoleOut = 0.2f, FlexMore = 16f;
+        /// <summary>The share of the clothes' thickness under the upper arm and the elbow that an arm at rest may press in
+        /// (canvas and webbing give; the vest's 1.3 cm and the strap's 1.7 cm at the waist held broad men's elbows out and
+        /// their upper arms 19-28° off the vertical, A1, 2026-11-06). Never the bare skin: the gate's C1 is on the body.</summary>
+        public float ClothGive = 0.5f;
         private float _poleOutL = 0.2f, _poleOutR = 0.2f, _flexAddL, _flexAddR;
 
         /// <summary>The hand's gap to the body now (m), for the report.</summary>
@@ -473,14 +477,17 @@ namespace SecondFace.Game.People
 
         /// <summary>The nearest a set of the arm's points comes to the body's surface (m; negative: inside), or
         /// <paramref name="far"/> when none is near.</summary>
-        private float Gap(int from, int to, int stride, float far, Vector3? within = null, float radius = 0f)
+        private float Gap(int from, int to, int stride, float far, Vector3? within = null, float radius = 0f, float soft = 0f)
         {
             var gap = float.MaxValue;
             _gapArm = _gapBody = -1;
             for (var i = from; i < to; i += stride)
             {
                 if (within.HasValue && (_skin.P[i] - within.Value).sqrMagnitude > radius * radius) continue;
-                if (_skin.Depth(_skin.P[i], out var d, out _) && -d < gap) { gap = -d; _gapArm = i; _gapBody = _skin.Near; }
+                if (!_skin.Depth(_skin.P[i], out var d, out _)) continue;
+                // soft: a share of the clothes' thickness there may be pressed in (canvas and webbing give under an arm)
+                var g = -d + (soft > 0f && _skin.Near >= 0 ? soft * _skin.Off(_skin.Near) : 0f);
+                if (g < gap) { gap = g; _gapArm = i; _gapBody = _skin.Near; }
             }
             return gap == float.MaxValue ? far : gap;
         }
@@ -608,10 +615,16 @@ namespace SecondFace.Game.People
             var shoulder = upper.position;
             var best = 0f; var axis = Vector3.zero;
             var from = _skin.Begin(first); var to = _skin.End(first + 2);
+            var hand = _skin.Begin(first + 2);
+            var lowerArm = first == BodySkin.Part.UpperArmL ? _ll : _rl;
+            var elbowAt = lowerArm != null ? lowerArm.position : upper.position;
             for (var i = from; i < to; i++)
             {
                 var p = _skin.P[i];
-                if (!_skin.Depth(p, out var d, out var n) || d + SkinMargin <= 0f) continue;
+                if (!_skin.Depth(p, out var d, out var n)) continue;
+                // the upper arm and the forearm by the elbow may press into the clothes a little (ClothGive); the hand not
+                if (i < hand && _skin.Near >= 0 && (i < _skin.Begin(first + 1) || (p - elbowAt).sqrMagnitude < 0.0064f)) d -= ClothGive * _skin.Off(_skin.Near);
+                if (d + SkinMargin <= 0f) continue;
                 var arm = p - shoulder;
                 var a = Mathf.Atan2(d + SkinMargin, arm.magnitude) * Mathf.Rad2Deg;
                 if (a <= best) continue;
