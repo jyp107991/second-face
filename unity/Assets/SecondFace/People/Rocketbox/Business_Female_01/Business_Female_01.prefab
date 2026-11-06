@@ -396,6 +396,7 @@ MonoBehaviour:
   Built: 1
   P: []
   N: []
+  Near: -1
 --- !u!137 &8299133405980306206 stripped
 SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: 3206126946717777739, guid: 43bcba5f693daa6eebc328f4918bbcf4, type: 3}
