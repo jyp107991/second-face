@@ -41,6 +41,7 @@ namespace SecondFace.Game.People
         private Animator _animator;
         private bool _hasSpeed, _ready;
         private Transform _hips, _upL, _loL, _footL, _toeL, _upR, _loR, _footR, _toeR;
+        private Quaternion _toeRestL = Quaternion.identity, _toeRestR = Quaternion.identity;   // the toes flat (the bind pose)
         private float _ankleL, _ankleR, _bindScale = 1f;   // the ankle's height over a flat sole at rest (world m at the bind scale)
         private Quaternion _restL, _restR;                  // each foot's rotation at rest, in the body's frame (flat, sole down)
         private float _headingL, _headingR;                 // each foot's heading at rest in the body's frame, degrees
@@ -116,6 +117,8 @@ namespace SecondFace.Game.People
             _ready = _hips != null && _upL != null && _loL != null && _footL != null && _upR != null && _loR != null && _footR != null;
             if (!_ready) return;
             // at rest, before any clip: the body stands on its root, feet flat
+            if (_toeL != null) _toeRestL = _toeL.localRotation;
+            if (_toeR != null) _toeRestR = _toeR.localRotation;
             var y = transform.position.y;
             _bindScale = Mathf.Max(0.01f, transform.lossyScale.y);
             PaceScale = Mathf.Clamp(SourceHip / Mathf.Max(0.5f, _hips.position.y - y), 0.8f, 1.25f);
@@ -171,14 +174,18 @@ namespace SecondFace.Game.People
         private bool _haveSoleL, _haveSoleR;
 
         /// <summary>The most a moving foot is pointed toes-down while its ankle is low (degrees), fading from full at
-        /// <see cref="PitchLow"/>.x of the ankle's height over a flat sole to none at .y (m).</summary>
+        /// <see cref="PitchLow"/>.x of the ankle's height over a flat sole to none at .y (m); its toes straightened
+        /// toward flat over the same.</summary>
         public float LandPitch = 25f;
         public Vector2 PitchLow = new Vector2(0.04f, 0.10f);
 
-        private void Pitch(Transform foot, Vector3 heel, Vector3 ball, float e)
+        private void Pitch(Transform foot, Transform toe, Quaternion toeRest, Vector3 heel, Vector3 ball, float e)
         {
             var w = Mathf.Clamp01((PitchLow.y - e) / (PitchLow.y - PitchLow.x));
             if (w <= 0f) return;
+            // and the toes straightened toward flat (the jog's toes curled down at landing put their tips 6-7 cm under the
+            // ground: the foot was held on them and its ball slid as it turned about them, W1/W2, 2026-11-06)
+            if (toe != null) toe.localRotation = Quaternion.Slerp(toe.localRotation, toeRest, w);
             var d = foot.TransformPoint(ball) - foot.TransformPoint(heel);
             var flat = new Vector3(d.x, 0f, d.z);
             if (flat.sqrMagnitude < 1e-6f) return;
@@ -279,7 +286,7 @@ namespace SecondFace.Game.People
                 // a foot near the ground with its ankle low is pointed no more than LandPitch toes-down (the jog retargeted
                 // onto broad men came down with the foot pointed 60° down, its toe tip 14 cm under the ground: lifted onto
                 // it and held, the heel 25 cm up, W2, 2026-11-06); at push-off the ankle is high and the foot is left be
-                Pitch(_footL, _heelL, _ballL, eL); Pitch(_footR, _heelR, _ballR, eR);
+                Pitch(_footL, _toeL, _toeRestL, _heelL, _ballL, eL); Pitch(_footR, _toeR, _toeRestR, _heelR, _ballR, eR);
                 var dipL = SoleOver(_footL, _toeL, _heelL, _backL, _ballL, _tipL, gL) + (wantL.y - _footL.position.y);
                 var dipR = SoleOver(_footR, _toeR, _heelR, _backR, _ballR, _tipR, gR) + (wantR.y - _footR.position.y);
                 // the swing's clearance: how high a foot moving at this pace must stand
