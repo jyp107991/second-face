@@ -97,7 +97,7 @@ namespace SecondFace.Game.People
         public float Sink => _sink;
         /// <summary>For the gate's trace (tests read it), moving, each foot this frame: its lowest sole point over the ground
         /// before any lift, the swing's clearance wanted, the lift given, whether it is held (1) or let go (0.5); left then right.</summary>
-        public float[] Diag = new float[8];
+        public float[] Diag = new float[12];
         /// <summary>Kept for tests: how far each foot bone ended from where this put it (0: exact).</summary>
         public Vector2 GoalError { get; private set; }
         public Vector3 Offsets => new(0f, 0f, _sink);
@@ -230,6 +230,7 @@ namespace SecondFace.Game.People
             var want = Mathf.Clamp(-(standing ? Mathf.Max(eL, eR) : _low), -0.15f, 0.15f);
             _sink = Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-(standing ? 25f : 3f) * dt));
             _hips.position += Vector3.up * _sink;
+            Diag[8] = _sink; Diag[9] = _low; Diag[10] = eL; Diag[11] = eR;
 
             // where each foot goes: walking, the clip's place lifted by the ground's step under it; standing, planted
             var footing = transform.position.y;

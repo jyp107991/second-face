@@ -347,7 +347,7 @@ namespace SecondFace.Tests
                 {
                     probe.TracePath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", report + (i == 0 ? "" : "_m") + "_trace.csv"));
                     probe.TraceState = "";   // every state (the feet, frame by frame)
-                    File.WriteAllText(probe.TracePath, "state,t,rootx,rootz,heelL,ballL,ankleLz,heelR,ballR,ankleRz,speed,hipsz,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR,a1L,a1R\n");
+                    File.WriteAllText(probe.TracePath, "state,t,rootx,rootz,heelL,ballL,ankleLz,heelR,ballR,ankleRz,speed,hipsz,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR,sink,low,eL,eR,a1L,a1R\n");
                 }
                 Assert.That(probe.Calibrate(), Is.True, $"{ids[i]}: {probe.Error}");
                 var mark = new GameObject("mark_" + ids[i]).transform;
