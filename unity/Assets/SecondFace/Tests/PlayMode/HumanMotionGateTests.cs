@@ -253,11 +253,14 @@ namespace SecondFace.Tests
             var ids = new string[0];
 #endif
             var failed = new List<string>();
+            var measured = new int[1];
             for (var i = 0; i < ids.Length; i += 10)
             {
                 var batch = ids.Skip(i).Take(10).ToArray();
-                yield return Gate(batch, $"motion_gate_full_{i / 10}", captures: false, failures: failed, assert: false);
+                yield return Gate(batch, $"motion_gate_full_{i / 10}", captures: false, failures: failed, assert: false, measured: measured);
             }
+            // one verdict for the whole cast (the lock counts the gate green only on it: docs/PEOPLE_MOTION.md §1.9)
+            Verdict("motion_gate_full", measured[0], failed, ids.Length);
             Assert.That(failed, Is.Empty, $"{failed.Count} measures past their limits:\n" + string.Join("\n", failed.Take(80)));
         }
 
@@ -278,7 +281,7 @@ namespace SecondFace.Tests
 
         private static IEnumerator Wait(float seconds) { var t = Time.time; while (Time.time - t < seconds) yield return null; }
 
-        private IEnumerator Gate(string[] ids, string report, bool captures, List<string> failures = null, bool assert = true)
+        private IEnumerator Gate(string[] ids, string report, bool captures, List<string> failures = null, bool assert = true, int[] measured = null)
         {
 #if UNITY_EDITOR
             var cat = AssetDatabase.LoadAssetAtPath<RocketboxCatalog>("Assets/SecondFace/People/Rocketbox/RocketboxCatalog.asset");
@@ -623,7 +626,8 @@ namespace SecondFace.Tests
             File.WriteAllText(Path.Combine(dir, report + ".json"), JsonConvert.SerializeObject(table, Formatting.Indented));
             File.WriteAllText(Path.Combine(dir, report + ".md"), Markdown(table));
             Debug.Log($"HumanMotionGate {report}: {table.Count} measures, {table.Count(r => !(bool)r["pass"])} past their limits\n" + string.Join("\n", fails.Take(200)));
-            Verdict(report, table.Count, fails);
+            if (measured != null) measured[0] += table.Count;
+            if (report == "motion_gate") Verdict(report, table.Count, fails, ids.Length);
             Object.Destroy(root);
             yield return null;
             if (assert) Assert.That(fails, Is.Empty, $"{fails.Count} measures past their limits (docs/PEOPLE_MOTION.md):\n" + string.Join("\n", fails.Take(80)));
@@ -635,9 +639,8 @@ namespace SecondFace.Tests
 
         /// <summary>The gate's verdict where the lock reads it (docs/qa/gates/motion_gate.json; tools/qa/people_gate.mjs, run by
         /// npm run check and CI): while it is red nothing with a person in it goes to the owner (docs/PEOPLE_MOTION.md §1.8).</summary>
-        private static void Verdict(string report, int measures, List<string> fails)
+        private static void Verdict(string report, int measures, List<string> fails, int people)
         {
-            if (report != "motion_gate" && !report.StartsWith("motion_gate_full")) return;
             var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "docs", "qa", "gates", "motion_gate.json"));
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             string lastGreen = null;
@@ -646,10 +649,51 @@ namespace SecondFace.Tests
             var green = fails.Count == 0;
             var verdict = new Dictionary<string, object>
             {
-                ["date"] = now, ["set"] = report, ["green"] = green, ["measures"] = measures, ["failures"] = fails.Count,
+                ["date"] = now, ["set"] = report, ["people"] = InputsHash("people"), ["measures"] = InputsHash("measures"),
+                ["bodies"] = people, ["green"] = green, ["cells"] = measures, ["failures"] = fails.Count,
+                // each measure's failures (the lock holds every later verdict to no more of any)
+                ["byMeasure"] = fails.Select(f => f.Split(':')[0].Split(' ').Last()).GroupBy(m => m).OrderBy(g => g.Key, System.StringComparer.Ordinal)
+                    .ToDictionary(g => g.Key, g => g.Count()),
                 ["lastGreen"] = green ? now : lastGreen, ["failing"] = fails.Take(60).ToList(),
             };
             File.WriteAllText(path, JsonConvert.SerializeObject(verdict, Formatting.Indented));
+        }
+
+        /// <summary>What the verdict was measured on (docs/qa/gates/motion_gate_inputs.json, as tools/qa/people_gate.mjs
+        /// hashes it): SHA-256 over each file's path and the SHA-256 of its bytes, in path order. A verdict whose hashes are
+        /// not the tree's is stale and counts as red.</summary>
+        public static string InputsHash(string key)
+        {
+            var root = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
+            var spec = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(Path.Combine(root, "docs", "qa", "gates", "motion_gate_inputs.json")));
+            var files = new SortedSet<string>(System.StringComparer.Ordinal);
+            foreach (var pattern in spec[key].Select(t => (string)t))
+            {
+                var paths = new List<string> { root };
+                var segs = pattern.Split('/');
+                for (var i = 0; i < segs.Length; i++)
+                {
+                    var last = i == segs.Length - 1;
+                    var re = new System.Text.RegularExpressions.Regex("^" + System.Text.RegularExpressions.Regex.Escape(segs[i]).Replace("\\*", "[^/]*") + "$");
+                    var next = new List<string>();
+                    foreach (var p in paths)
+                    {
+                        if (!Directory.Exists(p)) continue;
+                        var names = (last ? Directory.GetFiles(p) : Directory.GetDirectories(p)).Select(Path.GetFileName).OrderBy(n => n, System.StringComparer.Ordinal);
+                        foreach (var n in names) if (re.IsMatch(n)) next.Add(Path.Combine(p, n));
+                    }
+                    paths = next;
+                }
+                foreach (var f in paths) files.Add(Path.GetRelativePath(root, f).Replace('\\', '/'));
+            }
+            using var sha = System.Security.Cryptography.SHA256.Create();
+            var sb = new StringBuilder();
+            foreach (var rel in files)
+            {
+                var h = sha.ComputeHash(File.ReadAllBytes(Path.Combine(root, rel)));
+                sb.Append(rel).Append('\n').Append(System.BitConverter.ToString(h).Replace("-", "").ToLowerInvariant()).Append('\n');
+            }
+            return System.BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(sb.ToString()))).Replace("-", "").ToLowerInvariant();
         }
 
         /// <summary>A gesture is still playing on the gesture layer.</summary>

@@ -57,10 +57,13 @@ namespace SecondFace.Game.People
         /// <summary>Posed by <see cref="Pose"/> (world): each point on the surface (its layers' thickness out) and its normal.</summary>
         public Vector3[] P, N;
 
-        private const float Cell = 0.04f;
-        private const int Buckets = 1024;
+        // the body's points filed by cell, searched in the 27 cells about a point (as the gate's MotionProbe does: a
+        // Rocketbox thigh has a vertex every 4-5 cm, so a point deep in it may have none within one cell's width)
+        private const float Cell = 0.03f;
+        private const int Buckets = 2048;
         private readonly int[] _head = new int[Buckets];
         private int[] _next;
+        private Vector3Int[] _cell;
 
         public bool Ready => _set != null && _bones != null && P != null;
         public int Count => _set?.W.Length ?? 0;
@@ -85,7 +88,7 @@ namespace SecondFace.Game.People
             foreach (var b in _set.UsedBones)
                 if (b >= _bones.Length || _bones[b] == null) { Debug.LogWarning($"BodySkin {name}: bone {b} missing"); _set = null; return; }
             var n = _set.W.Length;
-            P = new Vector3[n]; N = new Vector3[n]; _next = new int[n];
+            P = new Vector3[n]; N = new Vector3[n]; _next = new int[n]; _cell = new Vector3Int[n];
             _off ??= new float[n];
             if (_off.Length != n) _off = new float[n];
             _m = new Matrix4x4[_bones.Length];
@@ -168,7 +171,9 @@ namespace SecondFace.Game.People
             var body = _set.Start[(int)Part.ThighR + 1];
             for (var i = 0; i < body; i++)
             {
-                var h = Hash(P[i]);
+                var c = CellOf(P[i]);
+                _cell[i] = c;
+                var h = Hash(c.x, c.y, c.z);
                 _next[i] = _head[h];
                 _head[h] = i;
             }
@@ -184,39 +189,42 @@ namespace SecondFace.Game.People
             }
         }
 
-        private static int Hash(Vector3 p) => Hash(Mathf.FloorToInt(p.x / Cell), Mathf.FloorToInt(p.y / Cell), Mathf.FloorToInt(p.z / Cell));
+        private static Vector3Int CellOf(Vector3 p) => new(Mathf.FloorToInt(p.x / Cell), Mathf.FloorToInt(p.y / Cell), Mathf.FloorToInt(p.z / Cell));
         private static int Hash(int x, int y, int z) => (int)(((uint)(x * 73856093) ^ (uint)(y * 19349663) ^ (uint)(z * 83492791)) & (Buckets - 1));
 
-        /// <summary>How deep a point lies under the body's surface (m; negative outside, then about how far, at most
-        /// <see cref="Cell"/>), and the surface's normal there. Inside only when the three nearest body points all face
-        /// away from it (as the gate decides it: one nearest point may be the inside of a hem).</summary>
-        public float Depth(Vector3 p, out Vector3 normal)
+        /// <summary>Where a point is against the body's surface, as the gate decides it: among the body's points in the
+        /// 27 cells about it, the three nearest; inside only when all three face away from it (one nearest point may be the
+        /// inside of a hem). False when no body point is near (more than a cell or so away: outside). <paramref name="depth"/>:
+        /// how deep inside (m, positive), or outside, minus the gap to the surface's plane at the nearest point.</summary>
+        public bool Depth(Vector3 p, out float depth, out Vector3 normal)
         {
-            normal = Vector3.zero;
+            depth = 0f; normal = Vector3.zero;
             int c0 = -1, c1 = -1, c2 = -1;
-            float d0 = Cell * Cell, d1 = Cell * Cell, d2 = Cell * Cell;
-            int x = Mathf.FloorToInt(p.x / Cell), y = Mathf.FloorToInt(p.y / Cell), z = Mathf.FloorToInt(p.z / Cell);
+            float d0 = float.MaxValue, d1 = float.MaxValue, d2 = float.MaxValue;
+            var c = CellOf(p);
             for (var dx = -1; dx <= 1; dx++)
                 for (var dy = -1; dy <= 1; dy++)
                     for (var dz = -1; dz <= 1; dz++)
-                        for (var j = _head[Hash(x + dx, y + dy, z + dz)]; j >= 0; j = _next[j])
+                        for (var j = _head[Hash(c.x + dx, c.y + dy, c.z + dz)]; j >= 0; j = _next[j])
                         {
                             if (j == c0 || j == c1 || j == c2) continue;
+                            var cj = _cell[j];
+                            if (cj.x != c.x + dx || cj.y != c.y + dy || cj.z != c.z + dz) continue;   // another cell in the bucket
                             var d = (P[j] - p).sqrMagnitude;
                             if (d >= d2) continue;
                             if (d < d0) { c2 = c1; d2 = d1; c1 = c0; d1 = d0; c0 = j; d0 = d; }
                             else if (d < d1) { c2 = c1; d2 = d1; c1 = j; d1 = d; }
                             else { c2 = j; d2 = d; }
                         }
-            if (c0 < 0) return -Cell;
-            var depth = -Vector3.Dot(p - P[c0], N[c0]);
-            if (c1 >= 0) depth = Mathf.Min(depth, -Vector3.Dot(p - P[c1], N[c1]));
-            if (c2 >= 0) depth = Mathf.Min(depth, -Vector3.Dot(p - P[c2], N[c2]));
+            if (c0 < 0) return false;
+            var inside = -Vector3.Dot(p - P[c0], N[c0]);
+            if (c1 >= 0) inside = Mathf.Min(inside, -Vector3.Dot(p - P[c1], N[c1]));
+            if (c2 >= 0) inside = Mathf.Min(inside, -Vector3.Dot(p - P[c2], N[c2]));
             var nn = N[c0] + (c1 >= 0 ? N[c1] : Vector3.zero) + (c2 >= 0 ? N[c2] : Vector3.zero);
             normal = nn.sqrMagnitude > 1e-8f ? nn.normalized : N[c0];
-            if (depth > 0f) return depth;
             // outside: the gap to the surface's plane at the nearest point (never more than to the point itself)
-            return -Mathf.Min(Mathf.Sqrt(d0), Mathf.Max(0f, Vector3.Dot(p - P[c0], N[c0])));
+            depth = inside > 0f ? inside : -Mathf.Min(Mathf.Sqrt(d0), Mathf.Max(0f, Vector3.Dot(p - P[c0], N[c0])));
+            return true;
         }
 
         /// <summary>The nearest point of the hips and thighs to <paramref name="p"/> (index; -1 none) and its distance.</summary>

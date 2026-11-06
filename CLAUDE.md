@@ -178,6 +178,9 @@ The owner wants to play unspoiled.
   measures named. Clothes are part of "look like humans": garments stand off the body as real clothes do, in order, with
   seams and folds, never padded or rubbery (`docs/PEOPLE_MOTION.md` §2.6). Enforced by `npm run check` and CI
   (`tools/qa/people_gate.mjs` over `docs/qa/gates/motion_gate.json`); a red check is fixed only by making the people pass.
+  A verdict counts only for the code it measured (hashed: a stale one is red), green only over the whole cast (never
+  the quick ten), and no commit may make any measure worse; every report to the owner starts with the gate's state
+  (`npm run people-gate`) and never calls people work done while it is not green (`docs/PEOPLE_MOTION.md` §1.9).
 - **Overhead, always** (owner, 2026-11-05, binding: "i told you to make an overhead game like bg3/divinity original
   sin"): play is seen from above as in DOS2 and BG3's exploration view. Exploring, combat and conversations all keep
   the overhead game camera (the rig's pitch, 35-62°); a conversation eases the camera closer over the two people and

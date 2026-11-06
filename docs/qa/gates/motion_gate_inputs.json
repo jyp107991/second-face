@@ -1,0 +1,24 @@
+{
+  "about": "What a motion gate verdict was measured on (docs/PEOPLE_MOTION.md §1.9). 'people': everything that decides how the game's people look and move; 'measures': the gate's own measures and limits. Each is hashed (SHA-256 over each file's path and the SHA-256 of its bytes, in path order) by HumanMotionGateTests when it writes docs/qa/gates/motion_gate.json, and again by tools/qa/people_gate.mjs: a verdict whose hashes are not the tree's is stale and counts as red. A '*' matches within one path segment. Add a file here when it starts to decide how people look or move; never take one out to make a verdict fresh.",
+  "people": [
+    "unity/Assets/SecondFace/Game/People/*.cs",
+    "unity/Assets/SecondFace/Game/Play/PeopleService.cs",
+    "unity/Assets/SecondFace/Game/Play/Walker.cs",
+    "unity/Assets/SecondFace/Core/Npc/RbPeople.cs",
+    "unity/Assets/SecondFace/Editor/Build/RocketboxLayers.cs",
+    "unity/Assets/SecondFace/Editor/Build/RocketboxPeopleBuild.cs",
+    "unity/Assets/SecondFace/Editor/Build/TorsoMeasure.cs",
+    "unity/Assets/SecondFace/Editor/Build/LocomotionBuild.cs",
+    "unity/Assets/SecondFace/Editor/Build/MotionImportPostprocessor.cs",
+    "unity/Assets/SecondFace/Motion/*.fbx",
+    "unity/Assets/SecondFace/Motion/*.json",
+    "unity/Assets/SecondFace/People/Locomotion.controller",
+    "unity/Assets/SecondFace/People/Rocketbox/*/*.prefab",
+    "unity/Assets/SecondFace/People/Rocketbox/*/*_layers.bytes",
+    "unity/Assets/SecondFace/People/Rocketbox/*/*_skin.bytes"
+  ],
+  "measures": [
+    "unity/Assets/SecondFace/Tests/PlayMode/MotionProbe.cs",
+    "unity/Assets/SecondFace/Tests/PlayMode/HumanMotionGateTests.cs"
+  ]
+}

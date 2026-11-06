@@ -17,6 +17,7 @@ It is binding. It sits beside the face and skin gate (`docs/PEOPLE_QA.md`) and i
 | Nothing measured **motion** (sliding feet, a body spun on the spot, strides that do not match the speed) | §2.3, §2.4 motion measures |
 | The person reviewing was also the one who built it, with nothing written down | §1.6 written review, item by item |
 | **Second failure (2026-11-06):** with this gate written and red (972 measures past their limits), images of people were still sent to the owner, and new garments were shown that made people look padded and rubbery | §1.8 the lock: nothing with people in it reaches the owner while the gate is red, enforced by `npm run check` and CI, not by intention |
+| **Third failure (2026-11-06):** the gate stayed red while other work went on; walking was reported as passing "but for the sneak" when every walk had failed every run (planted soles sliding about 55 cm/s, swinging feet through the floor); a change that made the arms worse (931 → 1100 failures) was committed; the gate had never once been green | §1.9: a verdict counts only for the code it measured (hashed), green only over the whole cast, and no commit makes any measure worse; every report starts with the gate's state |
 | Clothes were not measured at all: shells 2-4 cm off the body (a real jacket stands ~1-1.6 cm off), smooth, no seams | §2.6 garments (G1-G4) and checklist item 10 |
 | The rule lived only in prose, so it could be talked past | §1.8: a machine check that fails the build |
 
@@ -63,6 +64,17 @@ It is binding. It sits beside the face and skin gate (`docs/PEOPLE_QA.md`) and i
    of people has no `REVIEW.md` answering every item of §3 for each of its images; the Android workflow's release job
    runs it with `--release`, so no playable build is published while the verdict is red. A red check is fixed by making
    the people pass, never by moving the images, loosening a limit or skipping the check.
+9. **A verdict is only as good as what it measured (2026-11-06).** The gate stamps its verdict with two hashes
+   (`docs/qa/gates/motion_gate_inputs.json`): of everything that decides how people look and move (their code, the
+   built bodies and layers, the clips and the controller) and of its own measures and limits. A verdict whose hashes
+   are not the tree's is **stale and counts as red**: any change to the people is measured again before anything is
+   said about them. **Green means the whole cast** (`EveryPersonStandsAndMovesLikePeople`, every body of the
+   catalogue, one verdict): the quick ten are a working check and never count as green. **No commit makes people
+   worse**: a verdict with more failures than the one it replaces on any measure (the same measures, the same set)
+   fails `npm run check` and CI; a regression is fixed or reverted, never committed. Files are added to the inputs
+   when they start to decide how people look or move, and never taken out to make a verdict fresh. **Every report
+   to the owner starts with the gate's state** as `npm run people-gate` prints it (green, or red with the failing
+   measures and their counts, or stale), and never calls people work done while it is not green.
 
 ## 2. The measures and their limits
 

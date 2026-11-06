@@ -346,6 +346,21 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   (`tools/unity/editor.sh test playmode "HumanMotionGateTests.PeopleStandAndMoveLikePeople"`) until it is green; then
   the full set (`EveryPersonStandsAndMovesLikePeople`, Heavy); the waiter-palms arm swing in the walk (forearm twist);
   then KnockTests/ChapterOneTests with the looping clips, and the play-ch1 report.
+- **2026-11-06, the people gate (read `npm run people-gate` first; it is RED and has never been green).** The owner
+  asked again why "humans that look and move like humans" is not obeyed. Honest state: the people do not pass; an earlier
+  note here said walking passed "but for the sneak": wrong, every walk failed every run. Entrenched
+  (`docs/PEOPLE_MOTION.md` §1.8-1.9, CLAUDE.md §2): the lock (no image, capture, build or sheet of people to the owner
+  while red; `--release` refuses a playable build), verdicts hashed against the people's code and data and the gate's
+  measures (`docs/qa/gates/motion_gate_inputs.json`: stale = red), green only over the whole cast, no commit may make a
+  measure worse, every report opens with the gate's state. Found and fixed so far: the stride tool measured the feet on
+  the capture room's z (the sneak cut at half a stride; `cmu2fbx.py`, sneak re-exported 39 frames); arms tested against
+  the real skin (`BodySkin`, points from each body's mesh, posed every frame, searched as the gate searches) instead of
+  ellipses; the elbow's carrying angle restored (a Humanoid elbow is a hinge); three arm holds that each own one joint
+  (elbow to the waist at the shoulder, hand forward off the buttock, hand off the thigh at the elbow) replacing two that
+  fought; the head's turn on the chest held to 26° (H2 now passes); `FootPlant` keeps the body's height on each foot's
+  lowest sole point and lifts a foot the clip puts into the floor (heels went 2-3 cm through at every heel strike, 11 cm
+  in the jog). **Next:** read the gate's result, fix what is left by measure (A1/A3/A4/C1 arms; F1/F4/F5 standing feet;
+  W1/W2/W6 walking; T1, A6, W3), never committing a worse verdict; then the whole cast (`EveryPersonStandsAndMovesLikePeople`).
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
