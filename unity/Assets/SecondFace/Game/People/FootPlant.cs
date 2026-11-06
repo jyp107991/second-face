@@ -65,7 +65,7 @@ namespace SecondFace.Game.People
         /// <summary>A foot locks when its sole is this near the ground and slower than <see cref="SwingSlow"/>; it lets go
         /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
         /// <see cref="LockRelease"/> s.</summary>
-        public float LockDown = 0.02f, LockLift = 0.03f, LockReach = 0.12f, LockRelease = 0.12f;
+        public float LockDown = 0.025f, LockLift = 0.03f, LockReach = 0.12f, LockRelease = 0.12f;   // (down from 2.5 cm, where the gate counts a sole as down: caught at 2, a jogging foot landed sliding 1.2-1.5 m/s through the last half centimetre, W1/W2)
         /// <summary>Moving, a foot faster than this (m/s, along the ground) is in its swing: it is held at least
         /// <see cref="SwingClear"/> off the ground, less as it slows, so it comes down only as it stops (a real heel
         /// meets the ground at under about 1 m/s; the clips' feet glided in at 2-4 m/s, 2026-11-06).</summary>

@@ -255,7 +255,8 @@ namespace SecondFace.EditorTools
         {
             var mesh = smr.sharedMesh;
             var root = anim.transform;
-            Transform B(HumanBodyBones b) => anim.GetBoneTransform(b);
+            var boneSrc = anim;   // whose bones the segments are taken from (a posed copy while the parts are told apart)
+            Transform B(HumanBodyBones b) => boneSrc.GetBoneTransform(b);
             var pos = mesh.vertices; var nor = mesh.normals; var bw = mesh.boneWeights; var bp = mesh.bindposes;
             var bones = smr.bones;
             if (bw.Length != pos.Length || bones.Length > 255) { Debug.LogWarning($"RocketboxLayers: {id}: no skin points (weights {bw.Length}, bones {bones.Length})"); return; }
@@ -273,23 +274,33 @@ namespace SecondFace.EditorTools
             // went 2-4 cm into it unseen, the game's nearest point 4-7 cm off (2026-11-06). The points keep their bind-pose
             // places (world); only which part each is comes from the neutral pose (lp, ln).
             var lp = world; Vector3[] ln = null;
-            var saved = root.GetComponentsInChildren<Transform>(true).Select(x => (Tr: x, Pos: x.localPosition, Rot: x.localRotation, Scale: x.localScale)).ToArray();
+            // (on a copy: posing the person itself and setting it back left float-noise overrides on 88 bones' rotations in
+            // the prefabs, 2026-11-06)
+            GameObject copy = null;
             if (anim.avatar != null && anim.avatar.isHuman)
             {
-                var hp = new HumanPoseHandler(anim.avatar, root);
-                var hpose = new HumanPose();
-                hp.GetHumanPose(ref hpose);
-                for (var k = 0; k < hpose.muscles.Length; k++) hpose.muscles[k] = 0f;
-                hp.SetHumanPose(ref hpose);
-                var baked = new Mesh();
-                smr.BakeMesh(baked, true);
-                var l2w = Matrix4x4.TRS(smr.transform.position, smr.transform.rotation, Vector3.one);
-                lp = baked.vertices; ln = baked.normals;
-                for (var k = 0; k < lp.Length; k++) lp[k] = l2w.MultiplyPoint3x4(lp[k]);
-                if (ln != null && ln.Length == lp.Length) for (var k = 0; k < ln.Length; k++) ln[k] = smr.transform.rotation * ln[k]; else ln = null;
-                UnityEngine.Object.DestroyImmediate(baked);
-                hp.Dispose();
-                if (lp.Length != world.Length) { lp = world; ln = null; }
+                copy = UnityEngine.Object.Instantiate(go);
+                copy.hideFlags = HideFlags.HideAndDontSave;
+                var cAnim = copy.GetComponentInChildren<Animator>();
+                var cSmr = copy.GetComponentsInChildren<SkinnedMeshRenderer>(true).FirstOrDefault(r => r.sharedMesh == mesh);
+                if (cAnim != null && cSmr != null)
+                {
+                    var hp = new HumanPoseHandler(cAnim.avatar, cAnim.transform);
+                    var hpose = new HumanPose();
+                    hp.GetHumanPose(ref hpose);
+                    for (var k = 0; k < hpose.muscles.Length; k++) hpose.muscles[k] = 0f;
+                    hp.SetHumanPose(ref hpose);
+                    var baked = new Mesh();
+                    cSmr.BakeMesh(baked, true);
+                    var l2w = Matrix4x4.TRS(cSmr.transform.position, cSmr.transform.rotation, Vector3.one);
+                    lp = baked.vertices; ln = baked.normals;
+                    for (var k = 0; k < lp.Length; k++) lp[k] = l2w.MultiplyPoint3x4(lp[k]);
+                    if (ln != null && ln.Length == lp.Length) for (var k = 0; k < ln.Length; k++) ln[k] = cSmr.transform.rotation * ln[k]; else ln = null;
+                    UnityEngine.Object.DestroyImmediate(baked);
+                    hp.Dispose();
+                    if (lp.Length != world.Length) { lp = world; ln = null; }
+                    else boneSrc = cAnim;
+                }
             }
             // the segments the gate tells the parts apart by (MotionProbe.Segments)
             var segs = new List<(Vector3 A, Vector3 Bp, SkinPart P)>();
@@ -331,7 +342,7 @@ namespace SecondFace.EditorTools
                 if (name.Contains("opacity") || name.Contains("hair") || name.Contains("lash") || name.Contains("eye")) continue;
                 foreach (var i in mesh.GetTriangles(sub)) use[i] = true;
             }
-            var hipsY = root.InverseTransformPoint(B(HumanBodyBones.Hips).position).y;
+            var hipsY = root.InverseTransformPoint(anim.GetBoneTransform(HumanBodyBones.Hips).position).y;   // (the bind pose's, not the copy's)
             var cells = new Dictionary<(int, int, int, SkinPart), (int I, float D)>();
             var inner = 0;
             for (var i = 0; i < pos.Length; i++)
@@ -377,7 +388,8 @@ namespace SecondFace.EditorTools
                 var dc = (world[i] - centre).sqrMagnitude;
                 if (!cells.TryGetValue(key, out var have) || dc < have.D) cells[key] = (i, dc);
             }
-            foreach (var sv in saved) { sv.Tr.localPosition = sv.Pos; sv.Tr.localRotation = sv.Rot; sv.Tr.localScale = sv.Scale; }
+            boneSrc = anim;
+            if (copy != null) UnityEngine.Object.DestroyImmediate(copy);
             var byPart = new List<int>[9];
             for (var p = 0; p < 9; p++) byPart[p] = new List<int>();
             foreach (var (key, (i, _)) in cells) byPart[(int)key.Item4].Add(i);
