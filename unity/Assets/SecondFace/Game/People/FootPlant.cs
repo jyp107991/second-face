@@ -178,7 +178,7 @@ namespace SecondFace.Game.People
         /// <summary>The most a moving foot is pointed toes-down while its ankle is low (degrees), fading from full at
         /// <see cref="PitchLow"/>.x of the ankle's height over a flat sole to none at .y (m); its toes straightened
         /// toward flat over the same.</summary>
-        public float LandPitch = 25f;
+        public float LandPitch = 90f;   // (off: held at 25° the jog's stance foot stood 3-8 cm up, W6 0.3 → 3-7 cm, 2026-11-06; the slide it was for went with the ball's pivot)
         public Vector2 PitchLow = new Vector2(0.04f, 0.10f);
 
         private void Pitch(Transform foot, Transform toe, Quaternion toeRest, Vector3 heel, Vector3 ball, float e)
