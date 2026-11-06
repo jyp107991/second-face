@@ -32,7 +32,7 @@ namespace SecondFace.Game.People
         public float MaxStance = 0.27f;
         /// <summary>The farthest one standing foot is ahead of the other, m.</summary>
         public float MaxStagger = 0.22f;
-        public float StepReach = 0.13f, StepTurn = 28f, StepTime = 0.32f, StepLift = 0.07f;
+        public float StepReach = 0.17f, StepTurn = 32f, StepTime = 0.32f, StepLift = 0.07f;
 
         private static readonly int SpeedId = Animator.StringToHash("Speed");
         private Animator _animator;
@@ -198,9 +198,19 @@ namespace SecondFace.Game.People
             var eL = _footL.position.y - gL - ankleL;
             var eR = _footR.position.y - gR - ankleR;
             var e = Mathf.Min(eL, eR);
-            // moving, by the stride's lowest (the lower envelope over the last strides: a running foot lands on its ball with
-            // the ankle high, and the body is not to be pulled down to it)
-            _low = Mathf.Min(e, _low + 0.08f * dt);
+            // moving, by the stance's sole: the lowest sole point of a foot bearing weight (nearly still, under SwingSlow),
+            // its lower envelope over the last strides (by the ankle, a jogging foot that lands on its ball held the body up
+            // and the stance sole floated 3-5 cm, W6, 2026-11-06); in a jog's flight it only eases back
+            if (!standing && _haveLast)
+            {
+                var stance = float.MaxValue;
+                if (new Vector2(_footL.position.x - _lastL.x, _footL.position.z - _lastL.z).magnitude / dt < SwingSlow)
+                    stance = Mathf.Min(stance, SoleOver(_footL, _toeL, _heelL, _backL, _ballL, _tipL, gL));
+                if (new Vector2(_footR.position.x - _lastR.x, _footR.position.z - _lastR.z).magnitude / dt < SwingSlow)
+                    stance = Mathf.Min(stance, SoleOver(_footR, _toeR, _heelR, _backR, _ballR, _tipR, gR));
+                _low = stance < float.MaxValue ? Mathf.Min(stance, _low + 0.08f * dt) : _low + 0.08f * dt;
+            }
+            else _low = Mathf.Min(e, _low + 0.08f * dt);
             // standing, low enough that both feet reach the ground (the higher foot's need: on the lower one's alone the
             // other floated up to 3 cm, F1); moving, by the stride's lowest
             var want = Mathf.Clamp(-(standing ? Mathf.Max(eL, eR) : _low), -0.15f, 0.15f);
@@ -414,7 +424,8 @@ namespace SecondFace.Game.People
                 var s = t * t * (3f - 2f * t);
                 at = Vector3.Lerp(f.From, f.To, s);
                 heading = Mathf.LerpAngle(f.FromYaw, f.ToYaw, s);
-                lift = StepLift * Mathf.Sqrt(Mathf.Sin(t * Mathf.PI));
+                // off the ground and down again quickly (a foot lingering 2.5-3 cm up read as a sole not down, F1)
+                lift = StepLift * Mathf.Pow(Mathf.Sin(t * Mathf.PI), 0.35f);
             }
             else { at = f.Pin; heading = f.PinYaw; }
             var g = GroundAt(at, out normal);
