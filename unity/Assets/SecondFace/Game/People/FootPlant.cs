@@ -32,7 +32,7 @@ namespace SecondFace.Game.People
         public float MaxStance = 0.27f;
         /// <summary>The farthest one standing foot is ahead of the other, m.</summary>
         public float MaxStagger = 0.22f;
-        public float StepReach = 0.17f, StepTurn = 32f, StepTime = 0.32f, StepLift = 0.07f;
+        public float StepReach = 0.17f, StepTurn = 32f, StepTime = 0.28f, StepLift = 0.07f;   // (0.32 s left a foot up 13 % of the time on a slope, F5)
         /// <summary>The share of a step over which the foot travels across (before it, the foot lifts; after it, it comes
         /// down where it is going).</summary>
         public Vector2 StepTravel = new Vector2(0.1f, 0.85f);
@@ -66,6 +66,8 @@ namespace SecondFace.Game.People
         /// <summary>A foot locks when its sole is this near the ground and slower than <see cref="SwingSlow"/>; it lets go
         /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
         /// <see cref="LockRelease"/> s.</summary>
+        /// <summary>How far above the toe's tip the ball may be and still be what a held foot stands on (m).</summary>
+        public float BallOverTip = 0.03f;
         public float LockDown = 0.025f, LockLift = 0.03f, LockReach = 0.12f, LockRelease = 0.12f;   // (down from 2.5 cm, where the gate counts a sole as down: caught at 2, a jogging foot landed sliding 1.2-1.5 m/s through the last half centimetre, W1/W2)
         /// <summary>Moving, a foot faster than this (m/s, along the ground) is in its swing: it is held at least
         /// <see cref="SwingClear"/> off the ground, less as it slows, so it comes down only as it stops (a real heel
@@ -362,6 +364,9 @@ namespace SecondFace.Game.People
             Vector3 At(int i) => (i == 0 ? foot.TransformPoint(heel) : i == 1 ? foot.TransformPoint(ball) : (toe != null ? toe : foot).TransformPoint(tip)) + shift;
             var low = 0; var lowY = At(0).y;
             for (var i = 1; i < 3; i++) { var y = At(i).y; if (y < lowY - 0.003f) { lowY = y; low = i; } }
+            // a forefoot comes down on its ball: held on the toe's tip, the foot turned about it and the ball slid (the
+            // jog, 0.5 m/s while held, W1/W2, 2026-11-06)
+            if (low == 2 && At(1).y - lowY < BallOverTip) low = 1;
             var slow = Mathf.Max(SwingSlow, 0.35f * body);
             // down: slow for the pace, or coming down onto the ground (a heel that touched at 0.4-0.7 m/s slid 3-4 frames
             // before it was slow enough to hold, 2026-11-06)
