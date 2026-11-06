@@ -6,7 +6,8 @@ The CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu) is free for all 
 trial is read (ASF skeleton, AMC frames), gaits are cut to one stride by the legs' rhythm and loops are seam-blended
 (the same rules as the web pipeline's tools/assets/motion/cmu.mjs), then written as BVH, imported into Blender,
 the bones renamed to Mecanim names, and exported as FBX with the animation baked at 30 fps. Unity imports each as a
-Humanoid clip that retargets to every person. Walks play in place (root travel removed); falls keep root motion.
+Humanoid clip that retargets to every person. Walks play in place (the steady travel removed, the stride's own surge
+and sway kept in the pose); falls keep root motion.
 """
 import bpy, math, os, sys
 from mathutils import Quaternion, Vector, Euler, Matrix
@@ -216,11 +217,26 @@ def build_clip(d):
         # room showed only the stance width, and the stride was cut at half its length, 2026-11-06)
         feet_z = [(r['feet'][0] - r['feet'][1]).dot(travel) for r in rows]
         P, start, seam = gait_cycle(feet_z)
-        a, b = rows[start]['pos'], rows[start + P]['pos']
-        speed = (b.z - a.z) / (P / SRC_FPS)
+        a, b = rows[start]['pos'].copy(), rows[start + P]['pos'].copy()
+        dv = Vector((b.x - a.x, 0.0, b.z - a.z))
+        speed = dv.length / (P / SRC_FPS)
+        # the stride's own heading (the trial's start-to-end line can be off it: the sneak's subject curved, and its body
+        # faced away from its travel and slid sideways through each loop, 2026-11-06)
+        Y2 = Quaternion((0, 1, 0), -math.atan2(dv.x, dv.z))
+        for r in rows:
+            p = Y2 @ Vector((r['pos'].x - a.x, 0.0, r['pos'].z - a.z))
+            r['pos'] = Vector((p.x, r['pos'].y, p.z))
+            r['loc']['root'] = (Y2 @ r['loc']['root']).normalized()
+        # in place, but only the steady travel taken out: the stride's own surge and sway stay in the pose (a pelvis held
+        # still while the game moved the body at a constant pace slid every stance foot by the stride's changes of speed,
+        # W1/W2/W6, 2026-11-06); Unity bakes them into the pose (MotionImportPostprocessor: gaits)
+        for j, r in enumerate(rows):
+            r['pos'] = Vector((r['pos'].x, r['pos'].y, r['pos'].z - speed * (j - start) / SRC_FPS))
         cyc = cut_loop(rows, start, P, seam)
-        mx = sum(r['pos'].x for r in cyc) / len(cyc)
-        for r in cyc: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, 0.0))
+        mx = sum(r['pos'].x for r in cyc) / len(cyc); mz = sum(r['pos'].z for r in cyc) / len(cyc)
+        for r in cyc: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, r['pos'].z - mz))
+        surge = max(r['pos'].z for r in cyc) - min(r['pos'].z for r in cyc); sway = max(r['pos'].x for r in cyc) - min(r['pos'].x for r in cyc)
+        print(f'  {d["name"]}: stride {dv.length:.2f} m over {P / SRC_FPS:.2f} s, off the trial line by {math.degrees(math.atan2(dv.x, dv.z)):.1f} deg, surge {surge * 100:.1f} cm, sway {sway * 100:.1f} cm')
         out = resample(cyc, OUT_FPS)
     elif d.get('loop') == 'seam':
         seam = round(d.get('seam', 1.0) * SRC_FPS); P = len(rows) - seam
