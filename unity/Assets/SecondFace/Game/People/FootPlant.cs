@@ -32,7 +32,7 @@ namespace SecondFace.Game.People
         public float MaxStance = 0.27f;
         /// <summary>The farthest one standing foot is ahead of the other, m.</summary>
         public float MaxStagger = 0.22f;
-        public float StepReach = 0.17f, StepTurn = 32f, StepTime = 0.28f, StepLift = 0.07f;   // (0.32 s left a foot up 13 % of the time on a slope, F5; 0.2 left a planted foot out of the leg's reach in a turn, F1)
+        public float StepReach = 0.17f, StepTurn = 32f, StepTime = 0.26f, StepLift = 0.05f;   // (0.32 s left a foot up 13 % of the time on a slope, F5; 0.28 s and 7 cm up after a yawn or an argument, F5; a reach of 0.2 left a planted foot out of the leg's reach in a turn, F1)
         /// <summary>The share of a step over which the foot travels across (before it, the foot lifts; after it, it comes
         /// down where it is going).</summary>
         public Vector2 StepTravel = new Vector2(0.1f, 0.85f);
@@ -402,7 +402,11 @@ namespace SecondFace.Game.People
             if (k.On)
             {
                 if (!k.HaveTurn) Hold(ref k, foot, toe);
+                // (the sole kept as high over the ground as the clip's turn had it: turned about the ankle, the jog's held
+                // foot went 6-7 cm into the ground and stood 5 cm over it, W6, 2026-11-06)
+                var before = Lowest(foot, toe, heel, ball, tip);
                 foot.rotation = Pitched(ref k, foot.rotation);
+                want.y += before - Lowest(foot, toe, heel, ball, tip);
                 turned = true;
             }
             // the sole point now lowest, where the clip has it with the ankle at the place wanted
@@ -450,7 +454,12 @@ namespace SecondFace.Game.People
             {
                 k.Release = Mathf.Max(0f, k.Release - dt / LockRelease);
                 var t = k.Release * k.Release * (3f - 2f * k.Release);
-                if (!turned) foot.rotation = Quaternion.Slerp(Quaternion.identity, k.Corr, t) * foot.rotation;
+                if (!turned)
+                {
+                    var before = Lowest(foot, toe, heel, ball, tip);
+                    foot.rotation = Quaternion.Slerp(Quaternion.identity, k.Corr, t) * foot.rotation;
+                    want.y += before - Lowest(foot, toe, heel, ball, tip);
+                }
                 // (no lowering as it goes: lifted to the swing's clearance at once, the hold's lowering left the sneak's
                 // heel 1-2 cm up sliding at 0.75 m/s, W1, 2026-11-06)
                 return new Vector3(Mathf.Lerp(want.x, k.From.x, t), want.y, Mathf.Lerp(want.z, k.From.z, t));
@@ -465,6 +474,10 @@ namespace SecondFace.Game.People
             var p = k.Pivot == 0 ? foot.TransformPoint(heel) : k.Pivot == 1 ? foot.TransformPoint(ball) : (toe != null ? toe : foot).TransformPoint(tip);
             return new Vector2(p.x - k.At.x, p.z - k.At.z).magnitude;
         }
+
+        /// <summary>The height of a foot's lowest sole point (world).</summary>
+        private static float Lowest(Transform foot, Transform toe, Vector3 heel, Vector3 ball, Vector3 tip)
+            => Mathf.Min(foot.TransformPoint(heel).y, Mathf.Min(foot.TransformPoint(ball).y, (toe != null ? toe : foot).TransformPoint(tip).y));
 
         /// <summary>A held foot's turn as it came down, and its heading along the ground.</summary>
         private void Hold(ref Lock k, Transform foot, Transform toe)

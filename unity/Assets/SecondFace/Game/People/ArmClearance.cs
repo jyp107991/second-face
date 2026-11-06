@@ -308,7 +308,8 @@ namespace SecondFace.Game.People
             var toW = wrist - S;
             var d = Mathf.Clamp(toW.magnitude, Mathf.Abs(l1 - l2) + 1e-3f, l1 + l2 - 1e-4f);
             var sw = toW.normalized;
-            var pole = Vector3.ProjectOnPlane(-fwd * (1f - poleOut) + outward * poleOut, sw);
+            // (out to the side for a positive lean, in toward the waist for a negative one, back between)
+            var pole = Vector3.ProjectOnPlane(-fwd * (1f - Mathf.Abs(poleOut)) + outward * poleOut, sw);
             if (pole.sqrMagnitude < 1e-6f) return;
             pole.Normalize();
             var x = (l1 * l1 - l2 * l2 + d * d) / (2f * d);
@@ -337,6 +338,7 @@ namespace SecondFace.Game.People
             // arm out stood her forearm 30.5-31° off it, 2026-11-06; held at 28 it still reached 29-31 at its p98, the push
             // out after it adding a degree or two): past it, the elbow straightens, and stands out instead
             var hang = Vector3.Angle(hand.position - lower.position, Vector3.down);
+            var upperHang = Vector3.Angle(lower.position - upper.position, Vector3.down);
             var flexMin = 6f - (RestFlex + _flexVar);
             if (gapE < ElbowRest)
             {
@@ -345,8 +347,15 @@ namespace SecondFace.Game.People
             }
             else if (gapE > ElbowRest + 0.01f)
             {
+                // clear of the body: the elbow in toward the waist while the upper arm stands out past UpperAim, bent a
+                // little more if that is not enough (the upper arm hangs by the side and the forearm carries the hand out
+                // past the hips, as a real arm does: the elbow back and out stood broad women's and men's upper arms
+                // 20-27° off the vertical, A1, 2026-11-06); back out toward PoleOut once well inside it
                 if (poleOut > PoleOut) poleOut = Mathf.Max(PoleOut, poleOut - 0.02f);
-                else if (flexAdd > 0f) flexAdd = Mathf.Max(0f, flexAdd - 0.5f);
+                else if (upperHang > UpperAim && poleOut > PoleIn) poleOut = Mathf.Max(PoleIn, poleOut - 0.02f);
+                else if (upperHang > UpperAim && flexAdd < FlexMore && hang < HangMax) flexAdd = Mathf.Min(FlexMore, flexAdd + 0.5f);
+                else if (upperHang < UpperAim - 3f && poleOut < PoleOut) poleOut = Mathf.Min(PoleOut, poleOut + 0.01f);
+                else if (upperHang < UpperAim && flexAdd > 0f) flexAdd = Mathf.Max(0f, flexAdd - 0.5f);
             }
             if (hang > HangMax) flexAdd = Mathf.Max(flexMin, flexAdd - 0.5f);
             else if (flexAdd < 0f && hang < HangMax - 2f) flexAdd = Mathf.Min(0f, flexAdd + 0.5f);
@@ -358,6 +367,9 @@ namespace SecondFace.Game.People
         /// <summary>At rest: the elbow's lean out to the side (0 straight back, 1 straight out) it starts from, and how much
         /// further the elbow may bend (degrees) to stand clear of a broad chest with the hand still at the thigh.</summary>
         public float PoleOut = 0.2f, FlexMore = 10f, ElbowRest = -0.002f;
+        /// <summary>At rest, clear of the body: the upper arm is kept within this of the vertical (degrees; the gate's A1 is
+        /// 20) by the elbow's lean in toward the waist, as far as <see cref="PoleIn"/> (in, as a negative lean).</summary>
+        public float UpperAim = 16f, PoleIn = -0.6f;
         /// <summary>The share of the clothes' thickness under the upper arm and the elbow that an arm at rest may press in
         /// (canvas and webbing give; the vest's 1.3 cm and the strap's 1.7 cm at the waist held broad men's elbows out and
         /// their upper arms 19-28° off the vertical, A1, 2026-11-06). Never the bare skin: the gate's C1 is on the body.</summary>
