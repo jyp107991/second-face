@@ -247,10 +247,13 @@ namespace SecondFace.Game.People
                 var speedL = _haveLast ? new Vector2(_footL.position.x - _lastL.x, _footL.position.z - _lastL.z).magnitude / dt : 0f;
                 var speedR = _haveLast ? new Vector2(_footR.position.x - _lastR.x, _footR.position.z - _lastR.z).magnitude / dt : 0f;
                 _lastL = _footL.position; _lastR = _footR.position; _haveLast = true;
-                if (dipL < clearL) wantL.y += clearL - dipL;
-                if (dipR < clearR) wantR.y += clearR - dipR;
-                Diag[0] = dipL; Diag[1] = clearL; Diag[2] = Mathf.Max(0f, clearL - dipL);
-                Diag[4] = dipR; Diag[5] = clearR; Diag[6] = Mathf.Max(0f, clearR - dipR);
+                // (a foot held on the ground is down: lifted only out of it, never to the swing's clearance, which keyed
+                // on the clip's own foot sliding under the hold stood jogging feet 2.4 cm up, still, W6, 2026-11-06)
+                var wantClearL = _lockL.On ? 0f : clearL; var wantClearR = _lockR.On ? 0f : clearR;
+                if (dipL < wantClearL) wantL.y += wantClearL - dipL;
+                if (dipR < wantClearR) wantR.y += wantClearR - dipR;
+                Diag[0] = dipL; Diag[1] = clearL; Diag[2] = Mathf.Max(0f, wantClearL - dipL);
+                Diag[4] = dipR; Diag[5] = clearR; Diag[6] = Mathf.Max(0f, wantClearR - dipR);
                 var body = _bodySpeed;
                 if (setOff)
                 {

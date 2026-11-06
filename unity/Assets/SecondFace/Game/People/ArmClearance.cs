@@ -331,15 +331,18 @@ namespace SecondFace.Game.People
             // out after it adding a degree or two): past it, the elbow straightens, and stands out instead
             var hang = Vector3.Angle(hand.position - lower.position, Vector3.down);
             var flexMin = 6f - (RestFlex + _flexVar);
-            if (gapE < ElbowRest)
+            // in proportion to the gap, both ways, so the elbow settles where it touches (stepped out by 0.05 and back only
+            // once a centimetre clear, it ratcheted out: broad men's elbows stood 80 % of the way out, A1 21-29°, 2026-11-06)
+            var err = gapE - ElbowRest;
+            if (err < 0f)
             {
-                if (flexAdd < FlexMore && hang < HangMax) flexAdd = Mathf.Min(FlexMore, flexAdd + 1f);
-                else poleOut = Mathf.Min(1f, poleOut + 0.05f);
+                if (flexAdd < FlexMore && hang < HangMax) flexAdd = Mathf.Min(FlexMore, flexAdd + Mathf.Clamp(-err * 300f, 0.1f, 1f));
+                else poleOut = Mathf.Min(1f, poleOut + Mathf.Clamp(-err * 8f, 0.004f, 0.05f));
             }
-            else if (gapE > ElbowRest + 0.01f)
+            else if (err > 0.002f)
             {
-                if (poleOut > PoleOut) poleOut = Mathf.Max(PoleOut, poleOut - 0.02f);
-                else if (flexAdd > 0f) flexAdd = Mathf.Max(0f, flexAdd - 0.5f);
+                if (poleOut > PoleOut) poleOut = Mathf.Max(PoleOut, poleOut - Mathf.Clamp(err * 4f, 0.002f, 0.02f));
+                else if (flexAdd > 0f) flexAdd = Mathf.Max(0f, flexAdd - Mathf.Clamp(err * 100f, 0.05f, 0.5f));
             }
             if (hang > HangMax) flexAdd = Mathf.Max(flexMin, flexAdd - 0.5f);
             else if (flexAdd < 0f && hang < HangMax - 2f) flexAdd = Mathf.Min(0f, flexAdd + 0.5f);
