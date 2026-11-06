@@ -178,7 +178,7 @@ namespace SecondFace.Game.People
         /// <summary>The most a moving foot is pointed toes-down while its ankle is low (degrees), fading from full at
         /// <see cref="PitchLow"/>.x of the ankle's height over a flat sole to none at .y (m); its toes straightened
         /// toward flat over the same.</summary>
-        public float LandPitch = 90f;   // (off: a 25° limit lifted the jog's stance foot 3-8 cm, held or coming down, W6, 2026-11-06; the ball's pivot holds the landing instead)
+        public float LandPitch = 25f;   // (from landing to mid-stance only, while the ankle comes down: at push-off it lifted the stance foot 3-8 cm, W6; the men's jog landed pointed 60° on a toe tip 9-14 cm under the ground, the heel 25 cm up, W2, 2026-11-06)
         private float _lastEL, _lastER;
         public Vector2 PitchLow = new Vector2(0.04f, 0.10f);
 
@@ -296,8 +296,8 @@ namespace SecondFace.Game.People
                 // onto broad men came down with the foot pointed 60° down, its toe tip 14 cm under the ground: lifted onto
                 // it and held, the heel 25 cm up, W2, 2026-11-06); at push-off the ankle is high and the foot is left be
                 // the foot's pitch only as it comes down to land (not once held: at push-off it lifted the toe off the ground)
-                if (!_lockL.On && eL < _lastEL) Pitch(_footL, _toeL, _toeRestL, _heelL, _ballL, eL); else Toes(_toeL, _toeRestL, eL);
-                if (!_lockR.On && eR < _lastER) Pitch(_footR, _toeR, _toeRestR, _heelR, _ballR, eR); else Toes(_toeR, _toeRestR, eR);
+                if (eL < _lastEL) Pitch(_footL, _toeL, _toeRestL, _heelL, _ballL, eL); else Toes(_toeL, _toeRestL, eL);
+                if (eR < _lastER) Pitch(_footR, _toeR, _toeRestR, _heelR, _ballR, eR); else Toes(_toeR, _toeRestR, eR);
                 _lastEL = eL; _lastER = eR;
                 var dipL = SoleOver(_footL, _toeL, _heelL, _backL, _ballL, _tipL, gL) + (wantL.y - _footL.position.y);
                 var dipR = SoleOver(_footR, _toeR, _heelR, _backR, _ballR, _tipR, gR) + (wantR.y - _footR.position.y);
