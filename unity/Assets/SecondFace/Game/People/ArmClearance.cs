@@ -209,8 +209,9 @@ namespace SecondFace.Game.People
         public float CarryMin = 0f, CarryMax = 22f;
         /// <summary>With the skin, at rest: how far the upper arm may be rolled inward about its own length (degrees; the
         /// shoulder's internal rotation, about 70° in life) to bring a bent forearm from pointing out to pointing forward, so the
-        /// hand comes to the thigh (the captured arms hung their forearms 15-23° out, hands 12-17 cm off the thigh, 2026-11-06).</summary>
-        public float TwistMax = 50f;
+        /// hand comes to the thigh (the captured arms hung their forearms 15-23° out, hands 12-17 cm off the thigh, 2026-11-06;
+        /// 50° left broad men's hands 6-13 cm off), drawn in at <see cref="TwistRate"/>° a second.</summary>
+        public float TwistMax = 65f, TwistRate = 60f;
         /// <summary>With the skin, at rest: the upper arm hangs no further behind the vertical than this (degrees; A1, a
         /// relaxed arm hangs straight down by the side).</summary>
         public float ArmBack = 4f;
@@ -398,7 +399,8 @@ namespace SecondFace.Game.People
             }
             var nf = Mathf.MoveTowards(forward, wantFwd, step);
             var ni = Mathf.MoveTowards(inward, wantIn, step);
-            var nt = Mathf.MoveTowards(twist, wantTwist, step);
+            // the roll comes back at twice the rate after a gesture (the hands hung wide for 1.7 s after each, A4, 2026-11-06)
+            var nt = Mathf.MoveTowards(twist, wantTwist, (resting ? TwistRate : Release) * dt);
             var nc = Mathf.MoveTowards(carry, wantCarry, step);
             TurnArm(upper, first, nf - forward, Vector3.Cross(lower.position - upper.position, transform.forward));
             TurnArm(upper, first, ni - inward, Vector3.Cross(lower.position - upper.position, -Outward(side)));
