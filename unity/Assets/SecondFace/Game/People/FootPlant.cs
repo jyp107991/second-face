@@ -32,7 +32,7 @@ namespace SecondFace.Game.People
         public float MaxStance = 0.27f;
         /// <summary>The farthest one standing foot is ahead of the other, m.</summary>
         public float MaxStagger = 0.22f;
-        public float StepReach = 0.17f, StepTurn = 32f, StepTime = 0.26f, StepLift = 0.05f;   // (0.32 s left a foot up 13 % of the time on a slope, F5; 0.28 s and 7 cm up after a yawn or an argument, F5; a reach of 0.2 left a planted foot out of the leg's reach in a turn, F1)
+        public float StepReach = 0.17f, StepTurn = 32f, StepTime = 0.28f, StepLift = 0.07f;   // (0.32 s left a foot up 13 % of the time on a slope, F5; 0.26 s and 5 cm moved the feet more in turns and looks, F1/F4/T1; a reach of 0.2 left a planted foot out of the leg's reach in a turn, F1)
         /// <summary>The share of a step over which the foot travels across (before it, the foot lifts; after it, it comes
         /// down where it is going).</summary>
         public Vector2 StepTravel = new Vector2(0.1f, 0.85f);
@@ -367,8 +367,11 @@ namespace SecondFace.Game.People
                     _footL.rotation = Quaternion.Slerp(keepL, _endRotL, _unplant);
                     _footR.rotation = Quaternion.Slerp(keepR, _endRotR, _unplant);
                 }
-                wantL = Held(ref _lockL, wantL, dipL, speedL, body, _footL, _toeL, _heelL, _ballL, _tipL, gL, dt, dipR < SwingClear - 0.005f);
-                wantR = Held(ref _lockR, wantR, dipR, speedR, body, _footR, _toeR, _heelR, _ballR, _tipR, gR, dt, dipL < SwingClear - 0.005f);
+                // (the other foot down as it is shown, after its own swing's clearance: by the clip's height alone, a foot
+                // let go was lifted 3 cm while the other stood higher, and was the lower foot bearing weight, W6, 2026-11-06)
+                var shownL = Mathf.Max(dipL, wantClearL); var shownR = Mathf.Max(dipR, wantClearR);
+                wantL = Held(ref _lockL, wantL, dipL, speedL, body, _footL, _toeL, _heelL, _ballL, _tipL, gL, dt, shownR < SwingClear - 0.005f);
+                wantR = Held(ref _lockR, wantR, dipR, speedR, body, _footR, _toeR, _heelR, _ballR, _tipR, gR, dt, shownL < SwingClear - 0.005f);
                 Diag[3] = _lockL.On ? 1f : _lockL.Release > 0f ? 0.5f : 0f; Diag[7] = _lockR.On ? 1f : _lockR.Release > 0f ? 0.5f : 0f;
                 // within the leg's reach, by height alone: an unreachable place (a held foot put down under a straight leg)
                 // was reached toward and slid the foot along the ground (W1, 2026-11-06)
