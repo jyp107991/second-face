@@ -49,6 +49,8 @@ namespace SecondFace.Tests
         /// <summary>Where each arm's nearest contact with the body is, once per resting state (arm point, body point, the
         /// body point's part, layer offset and facing, in the body's frame about the hips, cm).</summary>
         public readonly Dictionary<string, string> ArmWhere = new();
+        /// <summary>Walking: each state's widest arm swing (degrees from down), and its forward/back and sideways parts.</summary>
+        public readonly Dictionary<string, (float A, float Sag, float Side, string Arm)> SwingPeak = new();
 
         private string Where()
         {
@@ -352,7 +354,15 @@ namespace SecondFace.Tests
                     var u = B(up).position; var e = B(lo).position; var h = B(hand).position;
                     var a1 = Vector3.Angle(e - u, Vector3.down);
                     if (k == K.Stand) { Add("A1", a1); Add("A2", Vector3.Angle(e - u, h - e)); Add("A3", Vector3.Angle(h - e, Vector3.down)); }
-                    if (k == K.Walk) Add("W3", a1);
+                    if (k == K.Walk)
+                    {
+                        Add("W3", a1);
+                        // the swing's makeup at its widest in each state (forward/back, out to the side), for the report
+                        var dir = (e - u).normalized; var fw = _root.forward; var rt = _root.right;
+                        var sag = Mathf.Atan2(Vector3.Dot(dir, fw), Mathf.Max(1e-4f, -dir.y)) * Mathf.Rad2Deg;
+                        var side = Mathf.Asin(Mathf.Clamp(Mathf.Abs(Vector3.Dot(dir, rt)), 0f, 1f)) * Mathf.Rad2Deg;
+                        if (State != null && (!SwingPeak.TryGetValue(State, out var pk) || pk.A < a1)) SwingPeak[State] = (a1, sag, side, up == HumanBodyBones.LeftUpperArm ? "L" : "R");
+                    }
                 }
                 if (k == K.Stand) Fingers();
                 // the shoulders, in the avatar's own muscle space (degrees above its neutral)

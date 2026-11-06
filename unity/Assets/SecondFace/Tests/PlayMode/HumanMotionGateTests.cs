@@ -609,6 +609,7 @@ namespace SecondFace.Tests
                 foreach (var (st, (d, where)) in s.Probe.WorstClip) Debug.Log($"HumanMotionGate clip: {s.Probe.Person} {st}: {where}");
                 if (s.Probe.SkinFit != null) Debug.Log($"HumanMotionGate skin fit: {s.Probe.Person}: {s.Probe.SkinFit}; {s.Probe.SkinWhy}");
                 foreach (var (st, where) in s.Probe.ArmWhere) Debug.Log($"HumanMotionGate arm contact: {s.Probe.Person} {st}: {where}");
+                foreach (var (st, pk) in s.Probe.SwingPeak) Debug.Log($"HumanMotionGate swing peak: {s.Probe.Person} {st}: {pk.Arm} {pk.A:0.0}° (forward {pk.Sag:0.0}, out {pk.Side:0.0})");
                 foreach (var (st, (nn, rest, sum)) in s.Probe.ArmDiag)
                 {
                     if (nn == 0) continue;
