@@ -390,7 +390,7 @@ namespace SecondFace.Game.People
 
         /// <summary>At rest: the elbow's lean out to the side (0 straight back, 1 straight out) it starts from, and how much
         /// further the elbow may bend (degrees) to stand clear of a broad chest with the hand still at the thigh.</summary>
-        public float PoleOut = 0.2f, FlexMore = 10f, ElbowRest = -0.002f;
+        public float PoleOut = 0.2f, FlexMore = 10f, ElbowRest = 0f;   // (-2 mm and the cloth's half given left a uniformed man's arms 0.6-1.1 cm into his chest's side at rest, C1, 2026-11-06)
         /// <summary>At rest, clear of the body: the upper arm is kept within this of the vertical (degrees; the gate's A1 is
         /// 20) by the elbow's lean in toward the waist, as far as <see cref="PoleIn"/> (in, as a negative lean).</summary>
         public float UpperAim = 16f, PoleIn = -0.6f, UpperMax = 17f;   // (18.5 let the p98 overshoot to 20-24, A1)
@@ -402,7 +402,7 @@ namespace SecondFace.Game.People
         /// <summary>The share of the clothes' thickness under the upper arm and the elbow that an arm at rest may press in
         /// (canvas and webbing give; the vest's 1.3 cm and the strap's 1.7 cm at the waist held broad men's elbows out and
         /// their upper arms 19-28° off the vertical, A1, 2026-11-06). Never the bare skin: the gate's C1 is on the body.</summary>
-        public float ClothGive = 0.5f;
+        public float ClothGive = 0.3f;
         private float _poleOutL = 0.2f, _poleOutR = 0.2f, _flexAddL, _flexAddR;
 
         /// <summary>The hand's gap to the body now (m), for the report.</summary>
