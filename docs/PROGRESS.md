@@ -418,6 +418,16 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   stride's own heading, surge and sway (`cmu2fbx.py`, baked into the pose on import). The resting hand is placed no
   further out than a hanging arm reaches (a few-frame glitch threw arms to 31-41°). The forearm held within 25° (A3).
   **Open:** the jog's and the sneak's W1/W2, C1 after the rebuild, then the whole cast.
+- **2026-11-06 (16:10Z), verdict 304 → 196, no measure worse** (red; committed `9f9f7b9`). The body skin's parts are
+  now told apart as the gate tells them, in the Humanoid's neutral pose (the builder poses a copy; people rebuilt), so the
+  chest's side under the arm is in the game's skin (C1 back under 50 with arms closer in). Feet: a held foot is caught
+  at 2.5 cm (where the gate counts a sole as down), stands on its ball rather than its toe's tip, and its pivot moves to
+  whichever sole point is lowest; a foot near the ground with its ankle low is pointed no more than 25° toes-down and
+  its toes are straightened (the jog retargeted onto broad men landed with the toe tip 14 cm under the ground and was
+  held up on it); a landing foot gets no swing clearance, a released one rises at once; standing steps 0.28 s. Arms:
+  a stride's ease that pushes the hand into the body is tried at half. The gate's soles trace now starts afresh each run
+  (it was appended to: earlier analyses mixed runs). **Open:** A1 61 (men's upper arms against the chest's side), W1 30
+  (jog and sneak), W6 23, A4 21, C1 47, W2 10 (sneak), T1 3; then the whole cast.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
