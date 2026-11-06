@@ -348,6 +348,7 @@ namespace SecondFace.Game.People
             var dL = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(W2 - E2, (S + sw * d) - E2), w);
             dL.ToAngleAxis(out var aL, out var axL);
             if (aL > 0.01f && axL.sqrMagnitude > 0.5f) TurnForearm(lower, first, aL, axL);
+            PalmIn(lower, hand, side, first, w);
             // the elbow and the upper arm off the chest and waist: the elbow out to the side first (the pole), then bent
             // further (a broad man's elbow stands out and bends a little more, the hand still at the thigh): the line from
             // shoulder to thigh ran inside broad chests and vests, and the push-out at the shoulder took the hand 8-12 cm off
@@ -584,6 +585,41 @@ namespace SecondFace.Game.People
             Diag[left ? 18 : 19] = (outward ? -more : more) + best * 0.001f;
             pushed = more;
             return Vector3.Angle(lower.position - upper.position, Vector3.down);
+        }
+
+        /// <summary>At rest: the hand turned about the forearm's length until its palm faces the leg, half in the forearm and
+        /// half at the wrist, at most <see cref="PalmMax"/>°, eased at <see cref="PalmRate"/>° a second (a relaxed arm hangs
+        /// palm in; the clips' hands hung palm back, their width across the leg, and the hand placed off the thigh by its
+        /// nearest edge stood 4-6 cm further out with the arm after it, A1/A4, 2026-11-06).</summary>
+        public float PalmMax = 50f, PalmRate = 120f;
+        private float _palmL, _palmR;
+        private void PalmIn(Transform lower, Transform hand, int side, BodySkin.Part first, float w)
+        {
+            Transform Bn(HumanBodyBones l, HumanBodyBones r) => _animator.GetBoneTransform(side < 0 ? l : r);
+            var idx = Bn(HumanBodyBones.LeftIndexProximal, HumanBodyBones.RightIndexProximal);
+            var mid = Bn(HumanBodyBones.LeftMiddleProximal, HumanBodyBones.RightMiddleProximal);
+            var lit = Bn(HumanBodyBones.LeftLittleProximal, HumanBodyBones.RightLittleProximal);
+            var midD = Bn(HumanBodyBones.LeftMiddleDistal, HumanBodyBones.RightMiddleDistal);
+            ref var now = ref (side < 0 ? ref _palmL : ref _palmR);
+            if (idx == null || mid == null || lit == null) return;
+            // the palm's side as the gate reads it (A6): the side the curled fingers lie on
+            var n = Vector3.Cross((lit.position - idx.position).normalized, (mid.position - hand.position).normalized);
+            if (n.sqrMagnitude < 1e-8f) return;
+            n.Normalize();
+            var probe = midD != null ? midD.position : mid.position + n;
+            if (Vector3.Dot(probe - mid.position, n) < 0f) n = -n;
+            var axis = hand.position - lower.position;
+            if (axis.sqrMagnitude < 1e-6f) return;
+            axis.Normalize();
+            var a = Vector3.ProjectOnPlane(n, axis); var b = Vector3.ProjectOnPlane(-Outward(side), axis);
+            if (a.sqrMagnitude < 1e-6f || b.sqrMagnitude < 1e-6f) return;
+            var want = Mathf.Clamp(Vector3.SignedAngle(a, b, axis), -PalmMax, PalmMax) * w;
+            now = Mathf.MoveTowards(now, want, PalmRate * Time.deltaTime);
+            if (Mathf.Abs(now) < 0.01f) return;
+            TurnForearm(lower, first, 0.5f * now, axis);
+            var q = Quaternion.AngleAxis(0.5f * now, axis);
+            hand.rotation = q * hand.rotation;
+            _skin.Turn(_skin.Begin(first + 2), _skin.End(first + 2), hand.position, q);
         }
 
         /// <summary>Turns an upper arm at the shoulder, and its points with it.</summary>
