@@ -209,6 +209,7 @@ namespace SecondFace.EditorTools
             var meshScale = Mathf.Max(1e-4f, smr.transform.lossyScale.y);
             var invRoot = Quaternion.Inverse(root.rotation);
 
+            var keeps = new List<bool[]>();
             using var ms = new MemoryStream();
             using (var gz = new GZipStream(ms, System.IO.Compression.CompressionLevel.Optimal, true))
             using (var w = new BinaryWriter(gz))
@@ -223,6 +224,7 @@ namespace SecondFace.EditorTools
                 {
                     var keep = new bool[pos.Length];
                     for (var i = 0; i < pos.Length; i++) keep[i] = def.Keep(V[i], j);
+                    keeps.Add(keep);
                     var kept = new List<int>();
                     for (var t = 0; t + 2 < tris.Count; t += 3)
                         if (keep[tris[t]] && keep[tris[t + 1]] && keep[tris[t + 2]]) { kept.Add(tris[t]); kept.Add(tris[t + 1]); kept.Add(tris[t + 2]); }
@@ -239,7 +241,137 @@ namespace SecondFace.EditorTools
             set.BareLegs = bareLegs; set.BareArms = bareArms;
             set.Fabrics = cloths;
             set.Built = RbLayerSet.Version;
+            Skin(go, anim, smr, dir, id, keeps);
             return true;
+        }
+
+        private enum SkinPart : byte { None = 255, Torso = 0, ThighL, ThighR, UpperArmL, ForearmL, HandL, UpperArmR, ForearmR, HandR }
+
+        /// <summary>The body's own skin where an arm meets it (<see cref="BodySkin"/>): the body's vertices told apart by
+        /// the nearest bone (as the gate's MotionProbe tells them), one kept per cell (the torso and thighs every 2.5 cm,
+        /// the hand every 2 cm, the forearm and the lower upper arm every 3 cm), each with its two strongest bones, the
+        /// layers that cover it, and whether it is the hips' or thighs' side a resting hand hangs beside.</summary>
+        private static void Skin(GameObject go, Animator anim, SkinnedMeshRenderer smr, string dir, string id, List<bool[]> keeps)
+        {
+            var mesh = smr.sharedMesh;
+            var root = anim.transform;
+            Transform B(HumanBodyBones b) => anim.GetBoneTransform(b);
+            var pos = mesh.vertices; var nor = mesh.normals; var bw = mesh.boneWeights; var bp = mesh.bindposes;
+            var bones = smr.bones;
+            if (bw.Length != pos.Length || bones.Length > 255) { Debug.LogWarning($"RocketboxLayers: {id}: no skin points (weights {bw.Length}, bones {bones.Length})"); return; }
+            // the vertices as posed now (the prefab at its bind pose), in the world
+            var world = new Vector3[pos.Length];
+            for (var i = 0; i < pos.Length; i++)
+            {
+                var b = bw[i];
+                var m = bones[b.boneIndex0].localToWorldMatrix * bp[b.boneIndex0];
+                world[i] = m.MultiplyPoint3x4(pos[i]);
+            }
+            // the segments the gate tells the parts apart by (MotionProbe.Segments)
+            var segs = new List<(Vector3 A, Vector3 Bp, SkinPart P)>();
+            void Seg(HumanBodyBones a, HumanBodyBones b, SkinPart p) { var ta = B(a); var tb = B(b); if (ta != null && tb != null) segs.Add((ta.position, tb.position, p)); }
+            void Tip(HumanBodyBones a, HumanBodyBones from, float len, SkinPart p) { var ta = B(a); var tf = B(from); if (ta != null && tf != null) segs.Add((ta.position, ta.position + (ta.position - tf.position).normalized * len, p)); }
+            Seg(HumanBodyBones.Hips, HumanBodyBones.Spine, SkinPart.Torso);
+            Seg(HumanBodyBones.Spine, HumanBodyBones.Chest, SkinPart.Torso);
+            if (B(HumanBodyBones.UpperChest) != null) { Seg(HumanBodyBones.Chest, HumanBodyBones.UpperChest, SkinPart.Torso); Seg(HumanBodyBones.UpperChest, HumanBodyBones.Neck, SkinPart.Torso); }
+            else Seg(HumanBodyBones.Chest, HumanBodyBones.Neck, SkinPart.Torso);
+            Seg(HumanBodyBones.LeftShoulder, HumanBodyBones.LeftUpperArm, SkinPart.Torso);
+            Seg(HumanBodyBones.RightShoulder, HumanBodyBones.RightUpperArm, SkinPart.Torso);
+            Seg(HumanBodyBones.Neck, HumanBodyBones.Head, SkinPart.None);
+            if (B(HumanBodyBones.Head) != null) segs.Add((B(HumanBodyBones.Head).position, B(HumanBodyBones.Head).position + Vector3.up * 0.18f, SkinPart.None));
+            Seg(HumanBodyBones.LeftUpperArm, HumanBodyBones.LeftLowerArm, SkinPart.UpperArmL);
+            Seg(HumanBodyBones.RightUpperArm, HumanBodyBones.RightLowerArm, SkinPart.UpperArmR);
+            Seg(HumanBodyBones.LeftLowerArm, HumanBodyBones.LeftHand, SkinPart.ForearmL);
+            Seg(HumanBodyBones.RightLowerArm, HumanBodyBones.RightHand, SkinPart.ForearmR);
+            Tip(HumanBodyBones.LeftHand, HumanBodyBones.LeftLowerArm, 0.17f, SkinPart.HandL);
+            Tip(HumanBodyBones.RightHand, HumanBodyBones.RightLowerArm, 0.17f, SkinPart.HandR);
+            Seg(HumanBodyBones.LeftUpperLeg, HumanBodyBones.LeftLowerLeg, SkinPart.ThighL);
+            Seg(HumanBodyBones.RightUpperLeg, HumanBodyBones.RightLowerLeg, SkinPart.ThighR);
+            Seg(HumanBodyBones.LeftLowerLeg, HumanBodyBones.LeftFoot, SkinPart.None);
+            Seg(HumanBodyBones.RightLowerLeg, HumanBodyBones.RightFoot, SkinPart.None);
+            Seg(HumanBodyBones.LeftFoot, HumanBodyBones.LeftToes, SkinPart.None);
+            Seg(HumanBodyBones.RightFoot, HumanBodyBones.RightToes, SkinPart.None);
+            static float Along(Vector3 p, Vector3 a, Vector3 b, out float t)
+            {
+                var ab = b - a;
+                t = Mathf.Clamp01(Vector3.Dot(p - a, ab) / Mathf.Max(ab.sqrMagnitude, 1e-8f));
+                return Vector3.Distance(p, a + ab * t);
+            }
+            // the triangles of the body (and head) only: never the hair's, the lashes', the eyes'
+            var use = new bool[pos.Length];
+            var mats = smr.sharedMaterials;
+            for (var sub = 0; sub < mesh.subMeshCount; sub++)
+            {
+                var name = sub < mats.Length && mats[sub] != null ? mats[sub].name.ToLowerInvariant() : "";
+                if (name.Contains("opacity") || name.Contains("hair") || name.Contains("lash") || name.Contains("eye")) continue;
+                foreach (var i in mesh.GetTriangles(sub)) use[i] = true;
+            }
+            var hipsY = root.InverseTransformPoint(B(HumanBodyBones.Hips).position).y;
+            var cells = new Dictionary<(int, int, int, SkinPart), (int I, float D)>();
+            for (var i = 0; i < pos.Length; i++)
+            {
+                if (!use[i]) continue;
+                var best = float.MaxValue; var part = SkinPart.None; var along = 0f;
+                foreach (var (a, b, p) in segs)
+                {
+                    var d = Along(world[i], a, b, out var t);
+                    if (d < best) { best = d; part = p; along = t; }
+                }
+                if (part == SkinPart.None) continue;
+                // the upper arm's third nearest the elbow (against the waist a gap shows; higher, the arm rests on the side of
+                // the chest, a contact the soft tissue of both takes, hidden in the crease: docs/PEOPLE_MOTION.md C1)
+                if ((part == SkinPart.UpperArmL || part == SkinPart.UpperArmR) && along < 0.65f) continue;
+                var cell = part switch { SkinPart.HandL or SkinPart.HandR => 0.02f, SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR => 0.025f, _ => 0.03f };
+                var q = world[i] / cell;
+                var key = (Mathf.FloorToInt(q.x), Mathf.FloorToInt(q.y), Mathf.FloorToInt(q.z), part);
+                var centre = new Vector3(key.Item1 + 0.5f, key.Item2 + 0.5f, key.Item3 + 0.5f) * cell;
+                var dc = (world[i] - centre).sqrMagnitude;
+                if (!cells.TryGetValue(key, out var have) || dc < have.D) cells[key] = (i, dc);
+            }
+            var byPart = new List<int>[9];
+            for (var p = 0; p < 9; p++) byPart[p] = new List<int>();
+            foreach (var (key, (i, _)) in cells) byPart[(int)key.Item4].Add(i);
+            for (var p = 0; p < 9; p++) byPart[p].Sort();
+            var female = mats.Any(m => m != null && m.name.ToLowerInvariant().TrimStart('s').StartsWith("f") && m.name.ToLowerInvariant().EndsWith("_body"));
+
+            using var ms = new MemoryStream();
+            using (var gz = new GZipStream(ms, System.IO.Compression.CompressionLevel.Optimal, true))
+            using (var w = new BinaryWriter(gz))
+            {
+                w.Write("RBS1".ToCharArray());
+                w.Write(Defs.Length);
+                foreach (var def in Defs) w.Write(def.Id);
+                for (var p = 0; p < 9; p++) w.Write(byPart[p].Count);
+                for (var p = 0; p < 9; p++)
+                    foreach (var i in byPart[p])
+                    {
+                        var b = bw[i];
+                        // the two strongest bones (the weights come sorted, strongest first)
+                        int b0 = b.boneIndex0, b1 = b.weight1 > 0f ? b.boneIndex1 : b.boneIndex0;
+                        var s = b.weight0 + (b.weight1 > 0f ? b.weight1 : 0f);
+                        var w0 = s > 0f ? b.weight0 / s : 1f;
+                        w.Write((byte)b0); w.Write((byte)b1); w.Write((byte)Mathf.RoundToInt(w0 * 255f));
+                        void Put(Vector3 v) { w.Write(v.x); w.Write(v.y); w.Write(v.z); }
+                        Put(bp[b0].MultiplyPoint3x4(pos[i])); Put(bp[b0].MultiplyVector(nor[i]).normalized);
+                        Put(bp[b1].MultiplyPoint3x4(pos[i])); Put(bp[b1].MultiplyVector(nor[i]).normalized);
+                        // low: the hips' and thighs' side, from 25 cm under the hip joints to 15 cm over them
+                        var y = root.InverseTransformPoint(world[i]).y;
+                        var low = p <= (int)SkinPart.ThighR && y < hipsY + 0.15f && y > hipsY - 0.45f;
+                        w.Write((byte)(low ? BodySkin.LowFlag : 0));
+                        uint mask = 0;
+                        for (var k = 0; k < keeps.Count && k < 32; k++) if (keeps[k][i]) mask |= 1u << k;
+                        w.Write(mask);
+                    }
+            }
+            var outPath = $"{dir}/{id}_skin.bytes";
+            File.WriteAllBytes(outPath, ms.ToArray());
+            AssetDatabase.ImportAsset(outPath);
+            var skin = go.GetComponent<BodySkin>() ?? go.AddComponent<BodySkin>();
+            skin.Data = AssetDatabase.LoadAssetAtPath<TextAsset>(outPath);
+            skin.Body = smr;
+            skin.Carrying = female ? 14f : 10f;
+            skin.Built = BodySkin.Version;
+            Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")})");
         }
 
         private static HumanBodyBones Parse(string name) => (HumanBodyBones)Enum.Parse(typeof(HumanBodyBones), name);

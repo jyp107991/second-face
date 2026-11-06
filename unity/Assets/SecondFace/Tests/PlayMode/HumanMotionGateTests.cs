@@ -332,7 +332,7 @@ namespace SecondFace.Tests
                 if (i == 0)
                 {
                     probe.TracePath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", report + "_trace.csv"));
-                    probe.TraceState = "walk:";
+                    probe.TraceState = "";   // every state (the feet, frame by frame)
                     File.WriteAllText(probe.TracePath, "state,t,rootx,rootz,heelL,ballL,ankleLz,heelR,ballR,ankleRz,speed,hipsz\n");
                 }
                 Assert.That(probe.Calibrate(), Is.True, $"{ids[i]}: {probe.Error}");
@@ -372,7 +372,7 @@ namespace SecondFace.Tests
             foreach (var s in people)
             {
                 var fp = s.A.GetComponent<FootPlant>(); var ac = s.A.GetComponent<ArmClearance>();
-                Debug.Log($"HumanMotionGate systems: {s.Probe.Person}: foot goals missed by {(fp != null ? fp.GoalError * 100f : Vector2.zero)} cm, sink {(fp != null ? fp.Sink * 100f : 0f):0.0} cm; arm clearance {(ac != null && ac.Ready ? "ready" : "NOT READY")}, depth {(ac != null ? ac.Depth() * 100f : 0f):0.0} cm, turned {(ac != null ? ac.Turned : Vector2.zero)}");
+                Debug.Log($"HumanMotionGate systems: {s.Probe.Person}: foot goals missed by {(fp != null ? fp.GoalError * 100f : Vector2.zero)} cm, sink {(fp != null ? fp.Sink * 100f : 0f):0.0} cm; arm clearance {(ac != null && ac.Ready ? (ac.SkinReady ? "ready on the skin" : "ready on the SECTIONS (no BodySkin)") : "NOT READY")}, depth {(ac != null ? ac.Depth() * 100f : 0f):0.0} cm, turned {(ac != null ? ac.Turned : Vector2.zero)}");
             }
             // 2. on the slope (facing up it), then back
             Place(new Vector3(0f, 0f, 70f), 0f);

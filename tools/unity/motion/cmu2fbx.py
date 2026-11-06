@@ -204,11 +204,17 @@ def build_clip(d):
     f0 = min(n - 2, round(d['range'][0] * SRC_FPS)) if d.get('range') else 0
     f1 = min(n, round(d['range'][1] * SRC_FPS)) if d.get('range') else n
     rows = build_rows(bones, frames, f0, f1)
+    # the direction of travel in the capture's own frame (the feet are measured in it: canonical turns only the root)
+    a0, b0 = rows[0]['pos'], rows[-1]['pos']
+    travel = Vector((b0.x - a0.x, 0.0, b0.z - a0.z))
+    travel = travel.normalized() if travel.length > 1e-6 else Vector((0.0, 0.0, 1.0))
     rows = canonical(rows, d.get('loop') == 'gait' or d.get('root'))
     hip = hip_height(bones)
     speed = 0.0
     if d.get('loop') == 'gait':
-        feet_z = [r['feet'][0].z - r['feet'][1].z for r in rows]
+        # one foot ahead of the other along the travel (not along the capture room's z: a subject walking across the
+        # room showed only the stance width, and the stride was cut at half its length, 2026-11-06)
+        feet_z = [(r['feet'][0] - r['feet'][1]).dot(travel) for r in rows]
         P, start, seam = gait_cycle(feet_z)
         a, b = rows[start]['pos'], rows[start + P]['pos']
         speed = (b.z - a.z) / (P / SRC_FPS)

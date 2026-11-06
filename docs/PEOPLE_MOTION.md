@@ -75,7 +75,7 @@ every frame. Angles are degrees, distances centimetres. "Down" and "horizon" are
 |---|---|---|---|---|---|
 | A1 | Upper arm hang | angle of shoulder→elbow from down | ≤ 20 | 28 | relaxed standing: shoulders neutral, arms resting at the side [1] |
 | A2 | Elbow bend | angle between upper arm and forearm | 5–35 | 0–50 | neutral standing elbow flexion: median 15.5°, IQR 13–18° [1] |
-| A3 | Forearm hang | angle of elbow→wrist from down | ≤ 30 | 40 | follows A1 + A2 |
+| A3 | Forearm hang | angle of elbow→wrist from down | ≤ 30 | 40 | follows A1 + A2 and the elbow's carrying angle: with the elbow straight the forearm turns out from the upper arm's line, 15 ± 5° in women and 11 ± 4° in men [15] (a Humanoid elbow is a hinge, so retargeted clips lose it and the game restores it: `ArmClearance`) |
 | A4 | Hand at the thigh | gap from the hand's skin to the nearest thigh or hip skin (baked mesh) | ≤ 6 | 10 | the arms hang with the palms towards the thighs [1] |
 | A5 | Relaxed fingers | bend at the knuckle and the middle joint, index to little finger | 8–55 | 3–75 | a hand at rest is half-curled: never flat and spread, never a fist |
 | A6 | Palms not forward | the angle between the palm's facing and the body's front (0 forward, 90 the thigh, 180 back) | ≥ 50 | ≥ 35 | relaxed arms hang and swing with the palms to the thighs or behind; a palm turned forward or up is a carry, not a rest |
@@ -88,7 +88,7 @@ every frame. Angles are degrees, distances centimetres. "Down" and "horizon" are
 | F3 | Stance | heels' width across the body (F3w); one foot ahead of the other (F3a); each foot's turn out from the body's front (F3s) | 8–32; ≤ 28; ≤ 25 | 5–40; 35; 35 | preferred quiet stance: 17 cm between heel centres, 14° between the feet [6]; self-selected widths 16–18 ± 4–5 cm [7][8]; a relaxed stagger is under a foot's length |
 | F4 | Standing still | a foot bearing weight (its sole within 2 cm of the lowest it has been in that state): its horizontal speed | mean ≤ 3 cm/s; frames > 10 cm/s ≤ 2 % | — | foot skate is counted above 10 cm/s at contact [9] |
 | F5 | Feet down | the share of the standing time a foot is off the ground (a sole 3 cm up or more: a step) | mean ≤ 0.12 | — | quiet standing shifts weight and now and then steps; it does not keep a foot in the air |
-| C1 | Nothing clips | depth of a hand or forearm vertex inside the torso, hip or thigh skin (baked mesh, against the skin's normals) | ≤ 0.5 | 1.5 | the owner's rule: arms, hands and clothing never sink into a body (CLAUDE.md §2) |
+| C1 | Nothing clips | depth of a hand, forearm or lower upper-arm vertex (the upper arm's third nearest the elbow, which hangs clear of the waist; higher, the arm rests on the side of the chest, a contact both soft tissues take) inside the torso, hip or thigh skin (baked mesh, against the skin's normals) | ≤ 0.5 | 1.5 | the owner's rule: arms, hands and clothing never sink into a body (CLAUDE.md §2) |
 
 ### 2.2 Gestures
 
@@ -177,4 +177,5 @@ review finds becomes a measure here before it is fixed, so it cannot come back u
     https://fashionandtextiles.springeropen.com/articles/10.1186/s40691-018-0165-x/tables/7
 13. Ease of fitted jackets for older women, ~10 cm at the bust. https://koreascience.or.kr/article/JAKO200211922012857.page?&lang=en
 14. Singer, The Perfect Fit, via Threads: blouse 2.5-3 in, unlined jacket 3-4 in, coat 4-5 in.
+15. Elbow carrying angle in healthy adults (600 students, full extension): 10.97 ± 4.27° in men, 15.07 ± 4.95° in women; young adults 9.77 ± 2.82° and 13.94 ± 3.97°. https://mjiri.iums.ac.ir/article-1-1044-en.pdf ; https://svuijm.journals.ekb.eg/article_360976.html
     https://www.threadsmagazine.com/forum/sufficient-ease

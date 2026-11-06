@@ -13,6 +13,7 @@ namespace SecondFace.Game.People
     /// <see cref="Curl"/> at 0 leaves the fingers as they are.
     /// </summary>
     [RequireComponent(typeof(Animator))]
+    [DefaultExecutionOrder(5)]   // before ArmClearance (10), which holds the curled fingers off the body
     public sealed class HandPose : MonoBehaviour
     {
         /// <summary>The curl's strength (1 relaxed; 0 the clip's own fingers).</summary>

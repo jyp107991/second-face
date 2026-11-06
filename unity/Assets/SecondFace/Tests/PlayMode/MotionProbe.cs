@@ -39,6 +39,7 @@ namespace SecondFace.Tests
         private int _shoulderL = -1, _shoulderR = -1;
         private SkinnedMeshRenderer _smr;
         private byte[] _seg;
+        private bool[] _armLow;
         private float _ankleSoleL, _ankleSoleR, _toeSoleL, _toeSoleR;
         private Vector3 _prevAnkleL, _prevAnkleR, _prevToeL, _prevToeR, _prevRoot;
         private bool _havePrev;
@@ -86,15 +87,18 @@ namespace SecondFace.Tests
             var v = Bake(out _);
             var segs = Segments();
             _seg = new byte[v.Length];
+            _armLow = new bool[v.Length];
             for (var i = 0; i < v.Length; i++)
             {
-                var best = float.MaxValue; var part = Part.None;
+                var best = float.MaxValue; var part = Part.None; var along = 0f;
                 foreach (var (a, b, p) in segs)
                 {
                     var d = DistSeg(v[i], a, b);
-                    if (d < best) { best = d; part = p; }
+                    if (d < best) { best = d; part = p; var ab = b - a; along = Mathf.Clamp01(Vector3.Dot(v[i] - a, ab) / Mathf.Max(ab.sqrMagnitude, 1e-8f)); }
                 }
                 _seg[i] = (byte)part;
+                // the upper arm's third nearest the elbow (higher, it rests on the side of the chest: docs/PEOPLE_MOTION.md C1)
+                _armLow[i] = (part == Part.UpperArmL || part == Part.UpperArmR) && along >= 0.65f;
             }
             for (var i = 0; i < saved.Length; i++) _pose.muscles[i] = saved[i];
             _hp.SetHumanPose(ref _pose);
@@ -478,7 +482,7 @@ namespace SecondFace.Tests
             {
                 var s = (Part)_seg[i];
                 var hand = s == Part.HandL || s == Part.HandR;
-                if (!hand && s != Part.ForearmL && s != Part.ForearmR) continue;
+                if (!hand && s != Part.ForearmL && s != Part.ForearmR && !_armLow[i]) continue;
                 var p = v[i];
                 var c = new Vector3Int(Mathf.FloorToInt(p.x / Cell), Mathf.FloorToInt(p.y / Cell), Mathf.FloorToInt(p.z / Cell));
                 // the three nearest points of the body's surface: inside only when all three face away from the point (a

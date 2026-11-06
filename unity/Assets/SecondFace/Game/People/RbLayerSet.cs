@@ -167,6 +167,14 @@ namespace SecondFace.Game.People
                 }
                 profile.Wearing(new[] { (gx, gx) });
             }
+            // and of each layer where it lies over the skin
+            var skin = GetComponentInChildren<BodySkin>();
+            if (skin != null)
+            {
+                var thick = new Dictionary<string, float>();
+                foreach (var id in want) if (all.TryGetValue(id, out var layer)) thick[id] = layer.Thickness;
+                skin.Wear(thick);
+            }
         }
 
         private static int Colour(Dye slot, RbDyes d) => slot switch

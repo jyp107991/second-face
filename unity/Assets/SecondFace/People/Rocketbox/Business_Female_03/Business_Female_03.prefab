@@ -78,7 +78,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0f21e0946653930f3bf7f7b2dd9c8f65, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3013870200822221412}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0f21e0946653930f3bf7f7b2dd9c8f65, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2906866907178359296}
   m_SourcePrefab: {fileID: 100100000, guid: 0f21e0946653930f3bf7f7b2dd9c8f65, type: 3}
+--- !u!137 &1216474901794262459 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -1486613499002422568, guid: 0f21e0946653930f3bf7f7b2dd9c8f65, type: 3}
+  m_PrefabInstance: {fileID: 8917045470816696163}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &8610561763299412530 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 0f21e0946653930f3bf7f7b2dd9c8f65, type: 3}
@@ -375,3 +383,21 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 6e33638bc862207e5b27f5db8cecdc37, type: 2}
   - {fileID: 2100000, guid: d518a0e46d9739743b6c9f9fc728fe02, type: 2}
   Built: 1
+--- !u!114 &2906866907178359296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8610561763299412530}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6adaafd2831c7717eb1ea37a24584a6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SecondFace.Game::SecondFace.Game.People.BodySkin
+  Data: {fileID: 4900000, guid: 7b91617b5e8d29e909a6c2f74ef04391, type: 3}
+  Body: {fileID: 1216474901794262459}
+  Carrying: 14
+  Built: 1
+  P: []
+  N: []

@@ -12,8 +12,18 @@ namespace SecondFace.Game.People
     /// <see cref="Release"/> degrees a second (no pop when the hand moves away). Off while seated (hands rest on the lap).
     /// </summary>
     [RequireComponent(typeof(Animator))]
+    [DefaultExecutionOrder(10)]   // after the clip, the foot plant, the gaze and the hands (HandPose: 5)
     public sealed class ArmClearance : MonoBehaviour
     {
+        /// <summary>With the body's own skin (<see cref="BodySkin"/>, within <see cref="SkinRange"/> m of the camera): an
+        /// arm is held this far off the body's surface, or its clothes'.</summary>
+        public float SkinMargin = 0.003f;
+        /// <summary>With the skin: a resting hand hangs this far from the side of the hip or thigh (A4), surface to surface.</summary>
+        public float SkinGap = 0.01f;
+        /// <summary>With the skin: a resting hand that hangs behind the thigh's middle (into the buttock, the clip taken on
+        /// a flatter body) is brought forward to the thigh's side, by at most this many degrees at the shoulder.</summary>
+        public float RestForward = 14f;
+        public float SkinRange = 30f;
         public float Margin = 0.02f;
         public float Release = 90f;
         /// <summary>Standing still, no gesture: an arm hanging away from the body is drawn in until the hand rests this far
@@ -29,13 +39,17 @@ namespace SecondFace.Game.People
 
         private Animator _animator;
         private TorsoProfile _profile;
+        private BodySkin _skin;
+        private float _fwdL, _fwdR;
         private Transform _hips, _lu, _ll, _lh, _ru, _rl, _rh, _tl, _kl, _tr, _kr, _lm, _lt, _rm, _rt;
         private float _angleL, _angleR;
         private Vector3 _axisL = Vector3.forward, _axisR = Vector3.forward;
 
         /// <summary>The turn given to each upper arm this frame, degrees (tests read it).</summary>
         public Vector2 Turned => new(_angleL, _angleR);
-        public bool Ready => _profile != null && _profile.Bins > 1 && _hips != null && _lu != null && _ru != null;
+        public bool Ready => (SkinReady || (_profile != null && _profile.Bins > 1)) && _hips != null && _lu != null && _ru != null;
+        /// <summary>The arms are held off the body's own skin (not the torso's sections).</summary>
+        public bool SkinReady => _skin != null && _skin.Ready;
 
         private void Awake() => Bind();
 
@@ -44,6 +58,8 @@ namespace SecondFace.Game.People
         {
             _animator = GetComponent<Animator>();
             _profile = GetComponent<TorsoProfile>();
+            _skin = GetComponent<BodySkin>();
+            if (_skin != null && !_skin.Ready) _skin.Bind();
             if (_animator == null || !_animator.isHuman) return;
             _hips = _animator.GetBoneTransform(HumanBodyBones.Hips);
             _lu = _animator.GetBoneTransform(HumanBodyBones.LeftUpperArm);
@@ -143,10 +159,167 @@ namespace SecondFace.Game.People
             if (!Ready) return;
             var dt = Time.deltaTime > 0f ? Time.deltaTime : Time.unscaledDeltaTime;
             var resting = Resting();
+            if (SkinReady && Near())
+            {
+                Carry(_lu, _ll, _lh, -1);
+                Carry(_ru, _rl, _rh, 1);
+                _skin.Pose();
+                SkinRest(_lu, _ll, _lh, BodySkin.Part.UpperArmL, -1, ref _restL, ref _fwdL, resting, dt);
+                SkinRest(_ru, _rl, _rh, BodySkin.Part.UpperArmR, 1, ref _restR, ref _fwdR, resting, dt);
+                SkinClear(_lu, BodySkin.Part.UpperArmL, ref _angleL, ref _axisL, dt);
+                SkinClear(_ru, BodySkin.Part.UpperArmR, ref _angleR, ref _axisR, dt);
+                return;
+            }
+            if (_profile == null || _profile.Bins < 2) return;
             Rest(_lu, _ll, _lh, ref _restL, ref _restAxisL, resting, dt);
             Rest(_ru, _rl, _rh, ref _restR, ref _restAxisR, resting, dt);
             Clear(_lu, _ll, _lh, ref _angleL, ref _axisL, dt);
             Clear(_ru, _rl, _rh, ref _angleR, ref _axisR, dt);
+        }
+
+        /// <summary>Close enough to the camera for the skin (a person further off is a few pixels high: the sections do).</summary>
+        private bool Near()
+        {
+            var cam = Camera.main;
+            return cam == null || (cam.transform.position - _hips.position).sqrMagnitude < SkinRange * SkinRange;
+        }
+
+        /// <summary>The elbow's carrying angle (docs/PEOPLE_MOTION.md A3): with the elbow straight the forearm turns out
+        /// from the upper arm's line, women's more than men's. A Humanoid elbow is a hinge, so retargeted clips lose it,
+        /// and a straight arm hangs its hand into a wider hip. It fades as the elbow bends (gone at a right angle).</summary>
+        private void Carry(Transform upper, Transform lower, Transform hand, int side)
+        {
+            if (upper == null || lower == null || hand == null || _skin.Carrying <= 0f) return;
+            var ua = (lower.position - upper.position).normalized;
+            var fa = hand.position - lower.position;
+            var k = Mathf.Cos(Vector3.Angle(ua, fa) * Mathf.Deg2Rad);
+            if (k <= 0f) return;
+            // out from the body, across the upper arm
+            var outward = transform.right * side;
+            var lateral = outward - ua * Vector3.Dot(outward, ua);
+            var w = lateral.magnitude;
+            if (w < 0.2f) return;
+            var axis = Vector3.Cross(fa, lateral / w);
+            if (axis.sqrMagnitude < 1e-8f) return;
+            lower.rotation = Quaternion.AngleAxis(_skin.Carrying * k * k * Mathf.Min(1f, w), axis.normalized) * lower.rotation;
+        }
+
+        /// <summary>Turns an upper arm at the shoulder, and its points with it.</summary>
+        private void TurnArm(Transform upper, BodySkin.Part first, float degrees, Vector3 axis)
+        {
+            if (degrees <= 0.001f || axis.sqrMagnitude < 1e-8f) return;
+            var q = Quaternion.AngleAxis(degrees, axis.normalized);
+            upper.rotation = q * upper.rotation;
+            _skin.Turn(_skin.Begin(first), _skin.End(first + 2), upper.position, q);
+        }
+
+        /// <summary>A resting arm, with the body's skin: brought forward until the hand hangs beside the thigh's middle,
+        /// not behind it, then drawn in until the hand is <see cref="SkinGap"/> off the hip or thigh (A4). Each is held
+        /// from frame to frame and moves at <see cref="RestRate"/>° a second (and lets go at that rate once moving).</summary>
+        private void SkinRest(Transform upper, Transform lower, Transform hand, BodySkin.Part first, int side, ref float inward, ref float forward, bool resting, float dt)
+        {
+            if (upper == null || lower == null || hand == null) return;
+            var hs = _skin.Begin(first + 2); var he = _skin.End(first + 2);
+            if (he <= hs) return;
+            var shoulder = upper.position;
+            var inDir = -transform.right * side;
+            var fwdDir = transform.forward;
+            // the turns held from the frames before
+            Vector3 Centre()
+            {
+                var c = Vector3.zero;
+                for (var i = hs; i < he; i++) c += _skin.P[i];
+                return c / (he - hs);
+            }
+            var arm = Centre() - shoulder;
+            TurnArm(upper, first, forward, Vector3.Cross(arm, fwdDir));
+            arm = Centre() - shoulder;
+            TurnArm(upper, first, inward, Vector3.Cross(arm, inDir));
+            var wantFwd = 0f; var wantIn = 0f;
+            if (resting)
+            {
+                var centre = Centre();
+                arm = centre - shoulder;
+                var len = Mathf.Max(0.2f, arm.magnitude);
+                // forward: the hand's middle against the thigh's middle line at its height (hip joint to knee)
+                var (hip, knee) = side < 0 ? (_tl, _kl) : (_tr, _kr);
+                if (hip != null && knee != null)
+                {
+                    var t = Mathf.Clamp01(Vector3.Dot(centre - hip.position, knee.position - hip.position) / Mathf.Max(1e-4f, (knee.position - hip.position).sqrMagnitude));
+                    var mid = Vector3.Lerp(hip.position, knee.position, t);
+                    var behind = Vector3.Dot(mid - centre, fwdDir);   // > 0: the hand is behind the thigh's middle
+                    wantFwd = Mathf.Clamp(forward + Mathf.Atan2(behind, len) * Mathf.Rad2Deg, 0f, RestForward);
+                }
+                // in: the hand's nearest skin to the hips and thighs
+                var gap = float.MaxValue;
+                for (var i = hs; i < he; i += 2)
+                {
+                    var d = _skin.Depth(_skin.P[i], out _);
+                    if (d > -0.039f) gap = Mathf.Min(gap, -d);
+                }
+                if (gap == float.MaxValue)
+                    for (var i = hs; i < he; i += 4) gap = Mathf.Min(gap, _skin.NearestLow(_skin.P[i], out _, 2));
+                if (gap < float.MaxValue) wantIn = Mathf.Clamp(inward + Mathf.Atan2(gap - SkinGap, len) * Mathf.Rad2Deg, 0f, RestMax);
+            }
+            var nf = Mathf.MoveTowards(forward, wantFwd, RestRate * dt);
+            var ni = Mathf.MoveTowards(inward, wantIn, RestRate * dt);
+            arm = Centre() - shoulder;
+            if (nf > forward) TurnArm(upper, first, nf - forward, Vector3.Cross(arm, fwdDir));
+            else TurnArm(upper, first, forward - nf, Vector3.Cross(arm, -fwdDir));
+            arm = Centre() - shoulder;
+            if (ni > inward) TurnArm(upper, first, ni - inward, Vector3.Cross(arm, inDir));
+            else TurnArm(upper, first, inward - ni, Vector3.Cross(arm, -inDir));
+            forward = nf; inward = ni;
+        }
+
+        /// <summary>With the body's skin: the upper arm turned at the shoulder just enough to bring the deepest point of
+        /// the arm (the lower upper arm, the forearm, the hand and fingers) <see cref="SkinMargin"/> out of the body or its
+        /// clothes, then again for what is left (twice); the turn comes at once and goes at <see cref="Release"/>° a second.</summary>
+        private void SkinClear(Transform upper, BodySkin.Part first, ref float angle, ref Vector3 axis, float dt)
+        {
+            if (upper == null) return;
+            var (need, dir) = SkinNeed(upper, first);
+            if (need > 0f) axis = dir;
+            angle = need >= angle ? need : Mathf.MoveTowards(angle, need, Release * dt);
+            if (angle <= 0.01f) return;
+            TurnArm(upper, first, angle, axis);
+            for (var pass = 0; pass < 2; pass++)
+            {
+                var (more, dir2) = SkinNeed(upper, first);
+                if (more <= 0.01f) break;
+                TurnArm(upper, first, more, dir2);
+            }
+        }
+
+        private (float Angle, Vector3 Axis) SkinNeed(Transform upper, BodySkin.Part first)
+        {
+            var shoulder = upper.position;
+            var best = 0f; var axis = Vector3.zero;
+            var from = _skin.Begin(first); var to = _skin.End(first + 2);
+            for (var i = from; i < to; i++)
+            {
+                var p = _skin.P[i];
+                var d = _skin.Depth(p, out var n);
+                if (d + SkinMargin <= 0f) continue;
+                var arm = p - shoulder;
+                var a = Mathf.Atan2(d + SkinMargin, arm.magnitude) * Mathf.Rad2Deg;
+                if (a <= best) continue;
+                var ax = Vector3.Cross(arm, n);
+                if (ax.sqrMagnitude < 1e-8f) continue;
+                best = a; axis = ax.normalized;
+            }
+            return (best, axis);
+        }
+
+        /// <summary>How deep the arms are in the body's skin now (m), as the gate measures it.</summary>
+        private float SkinDepth()
+        {
+            _skin.Pose();
+            var deepest = 0f;
+            foreach (var first in new[] { BodySkin.Part.UpperArmL, BodySkin.Part.UpperArmR })
+                for (int i = _skin.Begin(first), to = _skin.End(first + 2); i < to; i++)
+                    deepest = Mathf.Max(deepest, _skin.Depth(_skin.P[i], out _));
+            return deepest;
         }
 
         private void Clear(Transform upper, Transform lower, Transform hand, ref float angle, ref Vector3 axis, float dt)
@@ -274,9 +447,12 @@ namespace SecondFace.Game.People
             return true;
         }
 
-        /// <summary>How deep the arms are in the torso now (no margin), m: what a viewer would see sunk in.</summary>
+        /// <summary>How deep the arms are in the body now (no margin), m: what a viewer would see sunk in (the body's own
+        /// skin where it has one; the torso's sections otherwise).</summary>
         public float Depth()
         {
+            if (SkinReady) return SkinDepth();
+            if (_profile == null || _profile.Bins < 2) return 0f;
             var deepest = 0f;
             foreach (var (u, l, h) in new[] { (_lu, _ll, _lh), (_ru, _rl, _rh) })
             {

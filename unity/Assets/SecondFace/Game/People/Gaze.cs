@@ -20,25 +20,42 @@ namespace SecondFace.Game.People
         public float MaxYaw = 20f, MaxUp = 10f, MaxDown = 14f;
         /// <summary>The most the head is let lean to one side (a clip's tilt beyond it is taken out), degrees.</summary>
         public float MaxRoll = 6f;
+        /// <summary>The most the head is let turn on the chest (docs/PEOPLE_MOTION.md H2: the eyes take a look up to about
+        /// 30° and the head joins beyond 25°; further round, the body turns). A clip's own turn beyond it (an idle that looks
+        /// over its shoulder) is taken back to it, degrees.</summary>
+        public float MaxNeckYaw = 26f;
 
         private Animator _animator;
 
-        private Transform _head;
-        private Quaternion _faceOff = Quaternion.identity;
+        private Transform _head, _chest;
+        private Quaternion _faceOff = Quaternion.identity, _chestOff = Quaternion.identity;
 
         private void Awake()
         {
             _animator = GetComponent<Animator>();
-            // at rest the face looks along the body's front: the head bone's own axes against it
+            // at rest the face and the chest look along the body's front: the bones' own axes against it
             _head = _animator != null && _animator.isHuman ? _animator.GetBoneTransform(HumanBodyBones.Head) : null;
+            _chest = _animator != null && _animator.isHuman
+                ? _animator.GetBoneTransform(HumanBodyBones.UpperChest) ?? _animator.GetBoneTransform(HumanBodyBones.Chest) ?? _animator.GetBoneTransform(HumanBodyBones.Spine)
+                : null;
             if (_head != null) _faceOff = Quaternion.Inverse(_head.rotation) * transform.rotation;
+            if (_chest != null) _chestOff = Quaternion.Inverse(_chest.rotation) * transform.rotation;
         }
 
-        /// <summary>After the animation: a head leaning to one side beyond <see cref="MaxRoll"/> is brought upright to it
-        /// (docs/PEOPLE_MOTION.md H3; look-at turns and nods the head, it does not level it).</summary>
+        /// <summary>After the animation: a head turned on the chest beyond <see cref="MaxNeckYaw"/> is brought back to it
+        /// (H2), and one leaning to one side beyond <see cref="MaxRoll"/> is brought upright to it (H3; look-at turns and
+        /// nods the head, it does not level it).</summary>
         private void LateUpdate()
         {
             if (_head == null || !enabled) return;
+            if (_chest != null)
+            {
+                var chest = _chest.rotation * _chestOff;
+                var face = Quaternion.Inverse(chest) * (_head.rotation * _faceOff * Vector3.forward);
+                var yaw = Mathf.Atan2(face.x, face.z) * Mathf.Rad2Deg;
+                if (Mathf.Abs(yaw) > MaxNeckYaw)
+                    _head.rotation = Quaternion.AngleAxis(-(yaw - Mathf.Sign(yaw) * MaxNeckYaw), chest * Vector3.up) * _head.rotation;
+            }
             var q = _head.rotation * _faceOff;
             var right = q * Vector3.right;
             var roll = Mathf.Asin(Mathf.Clamp(Vector3.Dot(right, Vector3.up), -1f, 1f)) * Mathf.Rad2Deg;
