@@ -319,12 +319,28 @@ namespace SecondFace.Game.People
             var baseFront = Mathf.Clamp(RestFront + _frontVar, 0f, 30f);
             ref var frontNow = ref (side < 0 ? ref _frontL : ref _frontR);
             if (float.IsNaN(frontNow)) frontNow = baseFront;
-            var best = frontNow; var bestH = Place(frontNow, out _, out var hNow) ? hNow : float.MaxValue;
-            for (var c = 0; c < 3; c++)
+            // judged by how far the upper arm itself then hangs off the vertical, the arm solved as below (a hand before the
+            // thigh is taken up by the elbow's bend, the elbow being back; one beside a wide hip leans the whole arm out:
+            // judged by the hand's distance from under the shoulder, broad men's upper arms stood 20-25°, A1, 2026-11-06)
+            var leanNow = poleOut;   // (a ref local cannot be used inside a local function)
+            float UpperAt(Vector3 w)
             {
-                var cand = Mathf.Min(RestFrontMax, baseFront + c * 30f);
+                var tw = w - S;
+                var dd = Mathf.Clamp(tw.magnitude, Mathf.Abs(l1 - l2) + 1e-3f, l1 + l2 - 1e-4f);
+                var sd = tw.normalized;
+                var pl = Vector3.ProjectOnPlane(-fwd * (1f - Mathf.Abs(leanNow)) + outward * leanNow, sd);
+                if (pl.sqrMagnitude < 1e-6f) return Vector3.Angle(sd, Vector3.down);
+                pl.Normalize();
+                var xx = (l1 * l1 - l2 * l2 + dd * dd) / (2f * dd);
+                var yy = Mathf.Sqrt(Mathf.Max(0f, l1 * l1 - xx * xx));
+                return Vector3.Angle(sd * xx + pl * yy, Vector3.down);
+            }
+            var best = frontNow; var bestA = Place(frontNow, out var wNow, out _) ? UpperAt(wNow) : float.MaxValue;
+            for (var c = -1; c < 3; c++)
+            {
+                var cand = Mathf.Clamp(baseFront + c * 25f, -RestBack, RestFrontMax);
                 if (Mathf.Abs(cand - frontNow) < 1f) continue;
-                if (Place(cand, out _, out var hc) && hc < bestH - 0.005f) { best = cand; bestH = hc; }
+                if (Place(cand, out var wc, out _)) { var ac = UpperAt(wc); if (ac < bestA - 0.5f) { best = cand; bestA = ac; } }
             }
             frontNow = Mathf.MoveTowards(frontNow, best, FrontRate * Time.deltaTime);
             if (side < 0) _wantGapL = SkinGap; else _wantGapR = SkinGap;
@@ -402,7 +418,7 @@ namespace SecondFace.Game.People
         public float UpperAim = 16f, PoleIn = -0.6f, UpperMax = 17f;   // (18.5 let the p98 overshoot to 20-24, A1)
         /// <summary>At rest, the furthest forward of the thigh's side the hand may be placed (degrees), and how fast its place
         /// turns there (degrees a second).</summary>
-        public float RestFrontMax = 80f, FrontRate = 90f;
+        public float RestFrontMax = 60f, FrontRate = 90f, RestBack = 15f;
         private float _frontL = float.NaN, _frontR = float.NaN;
 
         /// <summary>The share of the clothes' thickness under the upper arm and the elbow that an arm at rest may press in
