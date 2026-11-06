@@ -406,6 +406,18 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   F4) and lands on the frame that would take it past its end (the first and last frames stood the foot 2.5-3 cm up at
   any frame rate, F1). **Open:** A1 (~85), A4 (~44), C1 (~39: gesture hands into the thighs), W1/W6, the sneak, then
   the whole cast.
+- **2026-11-06 (13:30Z), what the game's skin got wrong** (red; committed 304; runs at 238-413 while finding it). Logged
+  where the game pushes an arm and what it pushes against: (1) a lone skin point on the upper back, 17 cm from its
+  neighbours, stood for a 17 cm patch and read arms 14 cm out to the side as inside the torso, so they were pushed
+  out (A1 79-88 → 28 with the patch capped; `BodySkin.PatchMax` 6 cm, as 4 lost real hand clips); (2) the chest's side
+  under the arm had no skin points at all (nearest 5.5-7.6 cm off): the builder told parts apart by the nearest bone in
+  the bind pose, where the arms stand out and the chest's side lies nearer the upper arm's line; now by what carries
+  each vertex (people rebuilt). Feet: held feet are set down on the ground and get no swing clearance (W6 26 → 10);
+  the swing clearance is keyed to the clip's lowest sole point, the point the gate measures (W6), and a released foot
+  rises before it slides back; turn steps lift, cross and set down (F1, F4 → 0). Gait clips re-cut keeping each
+  stride's own heading, surge and sway (`cmu2fbx.py`, baked into the pose on import). The resting hand is placed no
+  further out than a hanging arm reaches (a few-frame glitch threw arms to 31-41°). The forearm held within 25° (A3).
+  **Open:** the jog's and the sneak's W1/W2, C1 after the rebuild, then the whole cast.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
