@@ -397,7 +397,7 @@ namespace SecondFace.Tests
                         if (k != K.Walk) Add("F4", v * 100f);   // walking skate is measured on the soles themselves (MeshMeasures)
                     }
                     if (TracePath != null && State != null && TraceState != null && State.StartsWith(TraceState))
-                        System.IO.File.AppendAllText(TracePath, $"{State},{Time.time:0.000},{root.x:0.000},{root.z:0.000},{ankleL.y - GroundY(ankleL) - _ankleSoleL:0.000},{toeL.y - GroundY(toeL) - _toeSoleL:0.000},{ankleL.z:0.000},{ankleR.y - GroundY(ankleR) - _ankleSoleR:0.000},{toeR.y - GroundY(toeR) - _toeSoleR:0.000},{ankleR.z:0.000},{_a.GetFloat("Speed"):0.000},{_hips.position.z - root.z:0.000}\n");
+                        System.IO.File.AppendAllText(TracePath, $"{State},{Time.time:0.000},{root.x:0.000},{root.z:0.000},{ankleL.y - GroundY(ankleL) - _ankleSoleL:0.000},{toeL.y - GroundY(toeL) - _toeSoleL:0.000},{ankleL.z:0.000},{ankleR.y - GroundY(ankleR) - _ankleSoleR:0.000},{toeR.y - GroundY(toeR) - _toeSoleR:0.000},{ankleR.z:0.000},{_a.GetFloat("Speed"):0.000},{_hips.position.z - root.z:0.000},{FootDiag()}\n");
                 }
                 // the stance
                 if (k == K.Stand)
@@ -419,8 +419,8 @@ namespace SecondFace.Tests
                 if (_ac == null) _ac = GetComponent<SecondFace.Game.People.ArmClearance>();
                 if (_ac != null && State != null)
                 {
-                    if (!ArmDiag.TryGetValue(State, out var ad)) ad = (0, 0, new double[12]);
-                    for (var q = 0; q < 12; q++) ad.Sum[q] += _ac.Diag[q];
+                    if (!ArmDiag.TryGetValue(State, out var ad)) ad = (0, 0, new double[_ac.Diag.Length]);
+                    for (var q = 0; q < _ac.Diag.Length && q < ad.Sum.Length; q++) ad.Sum[q] += _ac.Diag[q];
                     ArmDiag[State] = (ad.N + 1, ad.Resting + (_ac.DiagResting ? 1 : 0), ad.Sum);
                     if (ad.N == 90 && _ac.DiagResting && !ArmWhere.ContainsKey(State)) ArmWhere[State] = Where();
                 }
@@ -429,6 +429,15 @@ namespace SecondFace.Tests
         }
 
         private static Vector3 Flat(Vector3 v) => new(v.x, 0f, v.z);
+
+        private SecondFace.Game.People.FootPlant _fp;
+        private string FootDiag()
+        {
+            if (_fp == null) _fp = GetComponent<SecondFace.Game.People.FootPlant>();
+            if (_fp == null) return "";
+            var d = _fp.Diag;
+            return $"{d[0]:0.000},{d[1]:0.000},{d[2]:0.000},{d[3]:0.0},{d[4]:0.000},{d[5]:0.000},{d[6]:0.000},{d[7]:0.0}";
+        }
 
         private static readonly (HumanBodyBones Hand, HumanBodyBones P, HumanBodyBones M, HumanBodyBones D)[] Digits =
         {

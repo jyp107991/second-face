@@ -340,7 +340,7 @@ namespace SecondFace.Tests
                 {
                     probe.TracePath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", report + "_trace.csv"));
                     probe.TraceState = "";   // every state (the feet, frame by frame)
-                    File.WriteAllText(probe.TracePath, "state,t,rootx,rootz,heelL,ballL,ankleLz,heelR,ballR,ankleRz,speed,hipsz\n");
+                    File.WriteAllText(probe.TracePath, "state,t,rootx,rootz,heelL,ballL,ankleLz,heelR,ballR,ankleRz,speed,hipsz,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR\n");
                 }
                 Assert.That(probe.Calibrate(), Is.True, $"{ids[i]}: {probe.Error}");
                 var mark = new GameObject("mark_" + ids[i]).transform;
@@ -606,7 +606,7 @@ namespace SecondFace.Tests
                 {
                     if (nn == 0) continue;
                     string M(int q, float scale = 1f) => (sum[q] / nn * scale).ToString("0.0");
-                    Debug.Log($"HumanMotionGate arms: {s.Probe.Person} {st}: resting {rest * 100 / nn}%, L gapE {M(0, 100)} gapH {M(1, 100)} cm in {M(4)} fwd {M(5)} carry {M(6)} out {M(7)}; R gapE {M(2, 100)} gapH {M(3, 100)} cm in {M(10)} fwd {M(11)} carry {M(8)} out {M(9)}");
+                    Debug.Log($"HumanMotionGate arms: {s.Probe.Person} {st}: resting {rest * 100 / nn}%, L gapE {M(0, 100)} gapH {M(1, 100)} cm in {M(4)} fwd {M(5)} carry {M(6)} out {M(7)} roll {M(12)} back {M(14)}; R gapE {M(2, 100)} gapH {M(3, 100)} cm in {M(10)} fwd {M(11)} carry {M(8)} out {M(9)} roll {M(13)} back {M(15)}");
                 }
                 foreach (var (state, measures) in s.Probe.Samples)
                     foreach (var lim in LimitsFor(state))

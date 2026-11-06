@@ -80,6 +80,9 @@ namespace SecondFace.Game.People
 
         /// <summary>How far the hips are moved to put the soles on the ground, m (down is negative).</summary>
         public float Sink => _sink;
+        /// <summary>For the gate's trace (tests read it), moving, each foot this frame: its lowest sole point over the ground
+        /// before any lift, the swing's clearance wanted, the lift given, whether it is held (1) or let go (0.5); left then right.</summary>
+        public float[] Diag = new float[8];
         /// <summary>Kept for tests: how far each foot bone ended from where this put it (0: exact).</summary>
         public Vector2 GoalError { get; private set; }
         public Vector3 Offsets => new(0f, 0f, _sink);
@@ -224,9 +227,12 @@ namespace SecondFace.Game.People
                 _lastL = _footL.position; _lastR = _footR.position; _haveLast = true;
                 if (dipL < clearL) wantL.y += clearL - dipL;
                 if (dipR < clearR) wantR.y += clearR - dipR;
+                Diag[0] = dipL; Diag[1] = clearL; Diag[2] = Mathf.Max(0f, clearL - dipL);
+                Diag[4] = dipR; Diag[5] = clearR; Diag[6] = Mathf.Max(0f, clearR - dipR);
                 var body = speed / Mathf.Max(0.5f, PaceScale);
                 wantL = Held(ref _lockL, wantL, dipL, speedL, body, _footL, _toeL, _heelL, _ballL, _tipL, dt);
                 wantR = Held(ref _lockR, wantR, dipR, speedR, body, _footR, _toeR, _heelR, _ballR, _tipR, dt);
+                Diag[3] = _lockL.On ? 1f : _lockL.Release > 0f ? 0.5f : 0f; Diag[7] = _lockR.On ? 1f : _lockR.Release > 0f ? 0.5f : 0f;
                 if ((wantL - _footL.position).sqrMagnitude > 4e-6f) Solve(_upL, _loL, _footL, wantL);
                 if ((wantR - _footR.position).sqrMagnitude > 4e-6f) Solve(_upR, _loR, _footR, wantR);
             }
