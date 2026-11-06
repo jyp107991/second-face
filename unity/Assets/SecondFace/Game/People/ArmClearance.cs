@@ -323,12 +323,14 @@ namespace SecondFace.Game.People
             // the bend first (it swings the forearm forward off the hip, the belt, a vest's hem, and leaves the upper arm
             // hanging), the elbow out to the side only after (out first stood broad men's upper arms 19-28° off the
             // vertical, A1, 2026-11-06)
-            if (gapE < ElbowGap)
+            // resting against the side is a contact, not a clip (the gate's C1 allows 0.5 cm into the skin; 0.5 cm off it
+            // bent every elbow to its most, the forearms past 30°, A3)
+            if (gapE < ElbowRest)
             {
                 if (flexAdd < FlexMore) flexAdd = Mathf.Min(FlexMore, flexAdd + 1f);
                 else poleOut = Mathf.Min(1f, poleOut + 0.05f);
             }
-            else if (gapE > ElbowGap + 0.01f)
+            else if (gapE > ElbowRest + 0.01f)
             {
                 if (poleOut > PoleOut) poleOut = Mathf.Max(PoleOut, poleOut - 0.02f);
                 else flexAdd = Mathf.Max(0f, flexAdd - 0.5f);
@@ -337,7 +339,7 @@ namespace SecondFace.Game.People
 
         /// <summary>At rest: the elbow's lean out to the side (0 straight back, 1 straight out) it starts from, and how much
         /// further the elbow may bend (degrees) to stand clear of a broad chest with the hand still at the thigh.</summary>
-        public float PoleOut = 0.2f, FlexMore = 16f;
+        public float PoleOut = 0.2f, FlexMore = 10f, ElbowRest = -0.002f;
         /// <summary>The share of the clothes' thickness under the upper arm and the elbow that an arm at rest may press in
         /// (canvas and webbing give; the vest's 1.3 cm and the strap's 1.7 cm at the waist held broad men's elbows out and
         /// their upper arms 19-28° off the vertical, A1, 2026-11-06). Never the bare skin: the gate's C1 is on the body.</summary>
@@ -623,7 +625,7 @@ namespace SecondFace.Game.People
                 var p = _skin.P[i];
                 if (!_skin.Depth(p, out var d, out var n)) continue;
                 // the upper arm and the forearm by the elbow may press into the clothes a little (ClothGive); the hand not
-                if (i < hand && _skin.Near >= 0 && (i < _skin.Begin(first + 1) || (p - elbowAt).sqrMagnitude < 0.0064f)) d -= ClothGive * _skin.Off(_skin.Near);
+                if (_restW > 0.99f && i < hand && _skin.Near >= 0 && (i < _skin.Begin(first + 1) || (p - elbowAt).sqrMagnitude < 0.0064f)) d -= ClothGive * _skin.Off(_skin.Near);
                 if (d + SkinMargin <= 0f) continue;
                 var arm = p - shoulder;
                 var a = Mathf.Atan2(d + SkinMargin, arm.magnitude) * Mathf.Rad2Deg;
