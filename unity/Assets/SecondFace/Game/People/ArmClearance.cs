@@ -252,7 +252,9 @@ namespace SecondFace.Game.People
             var l1 = (E - S).magnitude; var l2 = (W - E).magnitude;
             if (l1 < 0.05f || l2 < 0.05f) return;
             var fwd = transform.forward; var outward = Outward(side);
-            var flex = Mathf.Clamp(RestFlex + _flexVar, 6f, 30f) * Mathf.Deg2Rad;
+            ref var poleOut = ref (side < 0 ? ref _poleOutL : ref _poleOutR);
+            ref var flexAdd = ref (side < 0 ? ref _flexAddL : ref _flexAddR);
+            var flex = Mathf.Clamp(RestFlex + _flexVar + flexAdd, 6f, 32f) * Mathf.Deg2Rad;
             var reach = Mathf.Sqrt(l1 * l1 + l2 * l2 + 2f * l1 * l2 * Mathf.Cos(flex));
             var dir = (Quaternion.AngleAxis(-side * Mathf.Clamp(RestFront + _frontVar, 0f, 30f), Vector3.up) * outward).normalized;
             var leg = knee.position - hip.position;
@@ -297,7 +299,7 @@ namespace SecondFace.Game.People
             var toW = wrist - S;
             var d = Mathf.Clamp(toW.magnitude, Mathf.Abs(l1 - l2) + 1e-3f, l1 + l2 - 1e-4f);
             var sw = toW.normalized;
-            var pole = Vector3.ProjectOnPlane(-fwd + outward * 0.35f, sw);
+            var pole = Vector3.ProjectOnPlane(-fwd * (1f - poleOut) + outward * poleOut, sw);
             if (pole.sqrMagnitude < 1e-6f) return;
             pole.Normalize();
             var x = (l1 * l1 - l2 * l2 + d * d) / (2f * d);
@@ -310,25 +312,28 @@ namespace SecondFace.Game.People
             var dL = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(W2 - E2, (S + sw * d) - E2), w);
             dL.ToAngleAxis(out var aL, out var axL);
             if (aL > 0.01f && axL.sqrMagnitude > 0.5f) TurnForearm(lower, first, aL, axL);
-            // the elbow off the waist: the whole arm swung out about the shoulder-wrist line, which leaves the hand where it
-            // was put (the clearance pushed men's arms out at the shoulder instead, 5-8°, and their hands 7-8 cm off the
-            // thigh, 2026-11-06)
-            var line = hand.position - S;
-            if (line.sqrMagnitude < 1e-4f) return;
-            line.Normalize();
-            var e = lower.position; var r = e - (S + line * Vector3.Dot(e - S, line));
-            var sign = Vector3.Dot(Vector3.Cross(line, r), outward) >= 0f ? 1f : -1f;
-            ref var swivel = ref (side < 0 ? ref _swivelL : ref _swivelR);
-            if (swivel > 0.01f) TurnArm(upper, first, sign * swivel * w, line);
+            // the elbow and the upper arm off the chest and waist: the elbow out to the side first (the pole), then bent
+            // further (a broad man's elbow stands out and bends a little more, the hand still at the thigh): the line from
+            // shoulder to thigh ran inside broad chests and vests, and the push-out at the shoulder took the hand 8-12 cm off
+            // it, 2026-11-06
             if (w < 0.99f) return;
             var gapE = Mathf.Min(Gap(_skin.Begin(first), _skin.End(first), 1, 0.08f), Gap(_skin.Begin(first + 1), _skin.End(first + 1), 1, 0.08f, lower.position, 0.08f));
-            var step = Mathf.Clamp(Mathf.Atan2(ElbowGap - gapE, Mathf.Max(0.03f, r.magnitude)) * Mathf.Rad2Deg, -3f, 3f);
-            swivel = Mathf.Clamp(swivel + step, 0f, SwivelMax);
+            if (gapE < ElbowGap)
+            {
+                if (poleOut < 1f) poleOut = Mathf.Min(1f, poleOut + 0.05f);
+                else flexAdd = Mathf.Min(FlexMore, flexAdd + 1f);
+            }
+            else if (gapE > ElbowGap + 0.01f)
+            {
+                if (flexAdd > 0f) flexAdd = Mathf.Max(0f, flexAdd - 0.5f);
+                else poleOut = Mathf.Max(PoleOut, poleOut - 0.02f);
+            }
         }
 
-        /// <summary>At rest: how far the arm may be swung out about the shoulder-wrist line to keep the elbow off the waist (degrees).</summary>
-        public float SwivelMax = 45f;
-        private float _swivelL, _swivelR;
+        /// <summary>At rest: the elbow's lean out to the side (0 straight back, 1 straight out) it starts from, and how much
+        /// further the elbow may bend (degrees) to stand clear of a broad chest with the hand still at the thigh.</summary>
+        public float PoleOut = 0.35f, FlexMore = 16f;
+        private float _poleOutL = 0.35f, _poleOutR = 0.35f, _flexAddL, _flexAddR;
 
         /// <summary>The hand's gap to the body now (m), for the report.</summary>
         private float HandGap(BodySkin.Part first)
