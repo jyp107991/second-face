@@ -327,7 +327,8 @@ namespace SecondFace.Game.People
             // resting against the side is a contact, not a clip (the gate's C1 allows 0.5 cm into the skin; 0.5 cm off it
             // bent every elbow to its most, the forearms past 30°, A3)
             // the forearm hangs no further from the vertical than HangMax (A3 is 30°: a broad woman's bend with her upper
-            // arm out stood her forearm 30.5-31° off it, 2026-11-06): past it, the elbow straightens, and stands out instead
+            // arm out stood her forearm 30.5-31° off it, 2026-11-06; held at 28 it still reached 29-31 at its p98, the push
+            // out after it adding a degree or two): past it, the elbow straightens, and stands out instead
             var hang = Vector3.Angle(hand.position - lower.position, Vector3.down);
             var flexMin = 6f - (RestFlex + _flexVar);
             if (gapE < ElbowRest)
@@ -345,7 +346,7 @@ namespace SecondFace.Game.People
         }
 
         /// <summary>At rest: the most the forearm may hang off the vertical (degrees; the gate's A3 is 30).</summary>
-        public float HangMax = 28f;
+        public float HangMax = 25f;
 
         /// <summary>At rest: the elbow's lean out to the side (0 straight back, 1 straight out) it starts from, and how much
         /// further the elbow may bend (degrees) to stand clear of a broad chest with the hand still at the thigh.</summary>
@@ -468,8 +469,29 @@ namespace SecondFace.Game.People
             }
             if (best > 0.01f) TurnForearm(lower, first, Mathf.Min(best, 30f), ax);
             var (more, dir2) = SkinNeed(upper, first);
-            if (more > 0.01f) TurnArm(upper, first, more, dir2);
-            Diag[left ? 18 : 19] = more + best * 0.001f;   // the shoulder's push after the ease (and the elbow's, in thousandths)
+            var outward = false;
+            if (more > 0.01f)
+            {
+                // the push out of the body, back (the way it came in) or out to the side, whichever leaves the arm nearer
+                // the vertical: pushed back off a tool belt a stride's arm stood 46° off it, past W3's cap, 2026-11-06
+                TurnArm(upper, first, more, dir2);
+                var aBack = Vector3.Angle(lower.position - upper.position, Vector3.down);
+                TurnArm(upper, first, -more, dir2);
+                var sideAx = Vector3.Cross(lower.position - upper.position, Outward(left ? -1 : 1));
+                TurnArm(upper, first, more, sideAx);
+                var (rest, dir3) = SkinNeed(upper, first);
+                if (rest > 0.01f) TurnArm(upper, first, rest, dir3);
+                var aOut = Vector3.Angle(lower.position - upper.position, Vector3.down);
+                if (aOut + 0.5f < aBack) outward = true;
+                else
+                {
+                    if (rest > 0.01f) TurnArm(upper, first, -rest, dir3);
+                    TurnArm(upper, first, -more, sideAx);
+                    TurnArm(upper, first, more, dir2);
+                }
+            }
+            // the shoulder's push after the ease (negative: out to the side), and the elbow's in thousandths
+            Diag[left ? 18 : 19] = (outward ? -more : more) + best * 0.001f;
         }
 
         /// <summary>Turns an upper arm at the shoulder, and its points with it.</summary>

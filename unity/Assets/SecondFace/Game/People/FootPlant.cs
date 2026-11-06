@@ -60,7 +60,7 @@ namespace SecondFace.Game.People
         private Vector3 _lastL, _lastR; private bool _haveLast;
         // moving, a foot down on the ground is held where it came down until the clip lifts it (W1: a planted foot
         // does not creep; the clips' strides never quite match the body's pace): its place, and a short release after
-        private struct Lock { public bool On; public Vector3 At, From; public float Release, Last; public int Pivot; }
+        private struct Lock { public bool On; public Vector3 At, From; public float Release, Last, Min, W, Drop; public int Pivot; }
         private Lock _lockL, _lockR;
         /// <summary>A foot locks when its sole is this near the ground and slower than <see cref="SwingSlow"/>; it lets go
         /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
@@ -299,22 +299,30 @@ namespace SecondFace.Game.People
             // before it was slow enough to hold, 2026-11-06)
             var landing = sole < k.Last - 0.001f && speed < SwingFast;
             k.Last = sole;
-            if (!k.On && k.Release <= 0f && sole < LockDown && (speed < slow || landing)) { k.On = true; k.Pivot = low; k.At = At(low); }
+            if (!k.On && k.Release <= 0f && sole < LockDown && (speed < slow || landing)) { k.On = true; k.Pivot = low; k.At = At(low); k.Min = Mathf.Max(0f, sole); k.W = 0f; }
             if (k.On)
             {
                 // rolling on: the pivot moves forward to the next point once that one is the lower, pinned where it is
                 if (low > k.Pivot) { var held = new Vector3(k.At.x, 0f, k.At.z) - new Vector3(At(k.Pivot).x, 0f, At(k.Pivot).z); k.Pivot = low; k.At = At(low) + held; }
                 var c = At(k.Pivot);
                 var off = new Vector2(c.x - k.At.x, c.z - k.At.z);
+                // and down on the ground: the clip's stance stood a held foot 2-3 cm up, still, in the jog and the sneak
+                // (W6, 2026-11-06); the lowering eases in as it touches and goes as the clip lifts it, so it is gone by the
+                // time the foot lets go (no drop to undo while it moves)
+                k.Min = Mathf.Min(k.Min, Mathf.Max(0f, sole));
+                k.W = Mathf.MoveTowards(k.W, 1f, dt / 0.04f);
+                var rise = Mathf.Clamp01((sole - k.Min) / Mathf.Max(0.002f, LockLift - k.Min));
+                k.Drop = k.Min * k.W * (1f - rise);
                 if (sole > LockLift || off.magnitude > LockReach) { k.On = false; k.Release = 1f; k.From = want - new Vector3(off.x, 0f, off.y); }
-                else return want - new Vector3(off.x, 0f, off.y);
+                else return want - new Vector3(off.x, k.Drop, off.y);
             }
             if (k.Release > 0f)
             {
                 k.Release = Mathf.Max(0f, k.Release - dt / LockRelease);
                 var t = k.Release * k.Release * (3f - 2f * k.Release);
-                return new Vector3(Mathf.Lerp(want.x, k.From.x, t), want.y, Mathf.Lerp(want.z, k.From.z, t));
+                return new Vector3(Mathf.Lerp(want.x, k.From.x, t), want.y - k.Drop * t, Mathf.Lerp(want.z, k.From.z, t));
             }
+            k.Drop = 0f;
             return want;
         }
 
@@ -346,7 +354,7 @@ namespace SecondFace.Game.People
             if (dip > LockDown + 0.005f) return;
             var low = 0;
             for (var i = 1; i < 3; i++) if (at[i].y < at[low].y - 0.003f) low = i;
-            k.On = true; k.Pivot = low; k.At = at[low];
+            k.On = true; k.Pivot = low; k.At = at[low]; k.Min = Mathf.Max(0f, dip); k.W = 1f;
         }
 
         private float GroundAt(Vector3 p, out Vector3 normal)

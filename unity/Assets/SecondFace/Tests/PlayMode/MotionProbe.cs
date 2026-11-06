@@ -56,18 +56,23 @@ namespace SecondFace.Tests
         {
             var skin = GetComponent<SecondFace.Game.People.BodySkin>();
             if (skin == null || !skin.Ready) return "no skin";
+            var parts = new List<string>();
+            string[] names = { "L push", "L hand", "R push", "R hand" };
+            for (var q = 0; q < 4; q++) parts.Add(Where(q, names[q]));
+            return string.Join("; ", parts);
+        }
+
+        /// <summary>One of the game's last arm-to-body points (0 left push, 1 left hand, 2 right push, 3 right hand).</summary>
+        private string Where(int q, string name)
+        {
+            var skin = GetComponent<SecondFace.Game.People.BodySkin>();
+            if (skin == null || !skin.Ready || _ac == null) return $"{name} no skin";
             var inv = Quaternion.Inverse(_root.rotation);
             string L(Vector3 w) { var v = inv * (w - _hips.position) * 100f; return $"({v.x:0},{v.y:0},{v.z:0})"; }
             string N(Vector3 n) { var v = inv * n; return $"({v.x:0.0},{v.y:0.0},{v.z:0.0})"; }
-            var parts = new List<string>();
-            string[] names = { "L push", "L hand", "R push", "R hand" };
-            for (var q = 0; q < 4; q++)
-            {
-                int a = _ac.DiagAt[q * 2], b = _ac.DiagAt[q * 2 + 1];
-                if (a < 0 || b < 0 || a >= skin.Count || b >= skin.Count) { parts.Add($"{names[q]} none"); continue; }
-                parts.Add($"{names[q]} {skin.PartOf(a)} {L(skin.P[a])} -> {skin.PartOf(b)} {L(skin.P[b])} off {skin.Off(b) * 100f:0.0} n {N(skin.N[b])} d {(skin.P[a] - skin.P[b]).magnitude * 100f:0.0}");
-            }
-            return string.Join("; ", parts);
+            int a = _ac.DiagAt[q * 2], b = _ac.DiagAt[q * 2 + 1];
+            if (a < 0 || b < 0 || a >= skin.Count || b >= skin.Count) return $"{name} none";
+            return $"{name} {skin.PartOf(a)} {L(skin.P[a])} -> {skin.PartOf(b)} {L(skin.P[b])} off {skin.Off(b) * 100f:0.0} n {N(skin.N[b])} d {(skin.P[a] - skin.P[b]).magnitude * 100f:0.0}";
         }
         private SecondFace.Game.People.ArmClearance _ac;
         private int[] _bodyTris;
@@ -366,7 +371,7 @@ namespace SecondFace.Tests
                             // what the game's swing did on that frame: its ease and the push out of the body after it
                             if (_ac == null) _ac = GetComponent<SecondFace.Game.People.ArmClearance>();
                             var l = up == HumanBodyBones.LeftUpperArm;
-                            var what = _ac != null && _ac.Diag.Length >= 20 ? $" (ease {_ac.Diag[l ? 16 : 17]:0.0}, push {_ac.Diag[l ? 18 : 19]:0.000})" : "";
+                            var what = _ac != null && _ac.Diag.Length >= 20 ? $" (ease {_ac.Diag[l ? 16 : 17]:0.0}, push {_ac.Diag[l ? 18 : 19]:0.000}{(Mathf.Abs(_ac.Diag[l ? 18 : 19]) > 0.01f ? ": " + Where(l ? 0 : 2, "at") : "")})" : "";
                             SwingPeak[State] = (a1, sag, side, (l ? "L" : "R") + what);
                         }
                     }
