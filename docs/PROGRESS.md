@@ -386,6 +386,14 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   the pace; townsfolk now set their pace through `Pace` as the walker does (they bypassed it). The gate no longer counts
   its own teleport between walks as a skate. **Open:** A4 (hands' p98 in idle_b), A1 (men), C1, W1/W6 (start/stop and
   heel strike residue), the sneak (still slides: re-cut), F4 (turn), T1; then the whole cast.
+- **2026-11-06 (09:55Z), resting arms by reach** (red; committed quick-set verdict 437; runs since at 323-352). The four
+  resting holds are replaced (`ArmClearance.RestReach`): the hand is placed beside the thigh's widest along its own
+  height, `SkinGap` off the skin, a little forward, at the height the arm reaches with the elbow bent ~15° (each person's
+  bend and forward vary by name), the arm solved to it (two bones, the elbow back), the place nudged each frame by the
+  hand's real gap, and the elbow swung off the waist about the shoulder-wrist line (the hand stays). A2 and A3 now pass;
+  A4 151 → 85, C1 → 55. Also: the pace picks the slowest gait that reaches the pace (the run's arms swung past W3's cap);
+  a moving arm's swing is eased forward and back past 33° after the clearance. **Open:** A1 (~86), A4 (~85), W1/W6
+  (start, stop, heel strike), the sneak, F4 (turn), T1; then the whole cast.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
