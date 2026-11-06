@@ -260,49 +260,70 @@ namespace SecondFace.Game.People
             ref var flexAdd = ref (side < 0 ? ref _flexAddL : ref _flexAddR);
             var flex = Mathf.Clamp(RestFlex + _flexVar + flexAdd, 6f, 32f) * Mathf.Deg2Rad;
             var reach = Mathf.Sqrt(l1 * l1 + l2 * l2 + 2f * l1 * l2 * Mathf.Cos(flex));
-            var dir = (Quaternion.AngleAxis(-side * Mathf.Clamp(RestFront + _frontVar, 0f, 30f), Vector3.up) * outward).normalized;
             var leg = knee.position - hip.position;
             var thigh = side < 0 ? BodySkin.Part.ThighL : BodySkin.Part.ThighR;
-            // the wrist's height: under the shoulder by the reach at that bend, over the place beside the leg (twice: the
-            // leg's width there depends on the height)
-            var wristY = S.y - reach * 0.985f;
-            var wrist = Vector3.zero;
-            var found = false;
-            for (var pass = 0; pass < 2; pass++)
+            // the hand's place beside the leg, turned this far forward from its side (degrees): the wrist's height under the
+            // shoulder by the reach at that bend, over the place beside the leg (twice: the leg's width there depends on the
+            // height), and how far that is from under the shoulder
+            bool Place(float front, out Vector3 at, out float off)
             {
-                var t = Mathf.Clamp01((wristY - 0.08f - hip.position.y) / Mathf.Min(-1e-3f, leg.y));
-                var axis = hip.position + leg * t;
-                // the leg's (and hip's) side: the furthest its skin stands out that way along the hand's height, the wrist
-                // to the fingertips (a hand placed by the thigh at its middle sat 3-4 cm into the hip above, 2026-11-06)
-                var surf = float.MinValue;
-                void Look(int lo, int hi, bool lowOnly)
+                var dir = (Quaternion.AngleAxis(-side * front, Vector3.up) * outward).normalized;
+                var wristY = S.y - reach * 0.985f;
+                at = Vector3.zero; off = float.MaxValue;
+                var any = false;
+                for (var pass = 0; pass < 2; pass++)
                 {
-                    for (var i = lo; i < hi; i++)
+                    var t = Mathf.Clamp01((wristY - 0.08f - hip.position.y) / Mathf.Min(-1e-3f, leg.y));
+                    var axis = hip.position + leg * t;
+                    // the leg's (and hip's) side: the furthest its skin stands out that way along the hand's height, the
+                    // wrist to the fingertips (a hand placed by the thigh at its middle sat 3-4 cm into the hip above)
+                    var surf = float.MinValue;
+                    void Look(int lo, int hi, bool lowOnly)
                     {
-                        if (lowOnly && !_skin.Low(i)) continue;
-                        var p = _skin.P[i];
-                        if (p.y > wristY + 0.02f || p.y < wristY - 0.19f) continue;
-                        var off = p - axis; off.y = 0f;
-                        if (Vector3.Dot(off, dir) <= 0f || Vector3.Dot(off, outward) < -0.02f) continue;
-                        surf = Mathf.Max(surf, Vector3.Dot(off, dir));
+                        for (var i = lo; i < hi; i++)
+                        {
+                            if (lowOnly && !_skin.Low(i)) continue;
+                            var p = _skin.P[i];
+                            if (p.y > wristY + 0.02f || p.y < wristY - 0.19f) continue;
+                            var o = p - axis; o.y = 0f;
+                            if (Vector3.Dot(o, dir) <= 0f || Vector3.Dot(o, outward) < -0.02f) continue;
+                            surf = Mathf.Max(surf, Vector3.Dot(o, dir));
+                        }
                     }
+                    Look(_skin.Begin(thigh), _skin.End(thigh), false);
+                    Look(_skin.Begin(BodySkin.Part.Torso), _skin.End(BodySkin.Part.Torso), true);
+                    if (surf == float.MinValue) break;
+                    any = true;
+                    var adapt = side < 0 ? _adaptL : _adaptR;
+                    Diag[side < 0 ? 4 : 10] = adapt * 100f; Diag[side < 0 ? 5 : 11] = surf * 100f;
+                    var flat = new Vector3(axis.x, 0f, axis.z) + dir * (surf + 0.015f + SkinGap + adapt);
+                    var h = new Vector2(flat.x - S.x, flat.z - S.z).magnitude;
+                    // never further out than a hanging arm reaches (the band below the wrist now and then caught something
+                    // wide for a few frames and threw the arm out to 31-41°, A1, 2026-11-06)
+                    var hMax = reach * Mathf.Sin(RestReachMax * Mathf.Deg2Rad);
+                    if (h > hMax) { var sf = new Vector3(S.x, 0f, S.z); flat = sf + (flat - sf).normalized * hMax; h = hMax; }
+                    wristY = S.y - Mathf.Sqrt(Mathf.Max(0.04f * reach * reach, reach * reach - h * h));
+                    at = new Vector3(flat.x, wristY, flat.z);
+                    off = h;
                 }
-                Look(_skin.Begin(thigh), _skin.End(thigh), false);
-                Look(_skin.Begin(BodySkin.Part.Torso), _skin.End(BodySkin.Part.Torso), true);
-                if (surf == float.MinValue) break;
-                found = true;
-                var adapt = side < 0 ? _adaptL : _adaptR;
-                Diag[side < 0 ? 4 : 10] = adapt * 100f; Diag[side < 0 ? 5 : 11] = surf * 100f;
-                if (side < 0) _wantGapL = SkinGap; else _wantGapR = SkinGap;
-                var flat = new Vector3(axis.x, 0f, axis.z) + dir * (surf + 0.015f + SkinGap + adapt);
-                var h = new Vector2(flat.x - S.x, flat.z - S.z).magnitude;
-                // never further out than a hanging arm reaches (the band below the wrist now and then caught something wide
-                // for a few frames and threw the arm out to 31-41°, A1, 2026-11-06)
-                var hMax = reach * Mathf.Sin(RestReachMax * Mathf.Deg2Rad);
-                if (h > hMax) { var sf = new Vector3(S.x, 0f, S.z); flat = sf + (flat - sf).normalized * hMax; h = hMax; }
-                wristY = S.y - Mathf.Sqrt(Mathf.Max(0.04f * reach * reach, reach * reach - h * h));
-                wrist = new Vector3(flat.x, wristY, flat.z);
+                return any;
             }
+            // beside the thigh, or on its front where that hangs nearer under the shoulder (a real arm hangs from the
+            // shoulder: leaning away from the hip it stands over, the shoulder went 13 cm in from it and the hand kept at the
+            // hip's side stood the arm 25-28° off the vertical, A1, 2026-11-06); the turn eased, kept unless 5 mm better
+            var baseFront = Mathf.Clamp(RestFront + _frontVar, 0f, 30f);
+            ref var frontNow = ref (side < 0 ? ref _frontL : ref _frontR);
+            if (float.IsNaN(frontNow)) frontNow = baseFront;
+            var best = frontNow; var bestH = Place(frontNow, out _, out var hNow) ? hNow : float.MaxValue;
+            for (var c = 0; c < 3; c++)
+            {
+                var cand = Mathf.Min(RestFrontMax, baseFront + c * 30f);
+                if (Mathf.Abs(cand - frontNow) < 1f) continue;
+                if (Place(cand, out _, out var hc) && hc < bestH - 0.005f) { best = cand; bestH = hc; }
+            }
+            frontNow = Mathf.MoveTowards(frontNow, best, FrontRate * Time.deltaTime);
+            if (side < 0) _wantGapL = SkinGap; else _wantGapR = SkinGap;
+            var found = Place(frontNow, out var wrist, out _);
             if (!found) return;
             // the two-bone solve, the elbow back (and a little out)
             var toW = wrist - S;
@@ -373,6 +394,10 @@ namespace SecondFace.Game.People
         /// <summary>At rest, clear of the body: the upper arm is kept within this of the vertical (degrees; the gate's A1 is
         /// 20) by the elbow's lean in toward the waist, as far as <see cref="PoleIn"/> (in, as a negative lean).</summary>
         public float UpperAim = 16f, PoleIn = -0.6f, UpperMax = 18.5f;
+        /// <summary>At rest, the furthest forward of the thigh's side the hand may be placed (degrees), and how fast its place
+        /// turns there (degrees a second).</summary>
+        public float RestFrontMax = 80f, FrontRate = 90f;
+        private float _frontL = float.NaN, _frontR = float.NaN;
 
         /// <summary>The share of the clothes' thickness under the upper arm and the elbow that an arm at rest may press in
         /// (canvas and webbing give; the vest's 1.3 cm and the strap's 1.7 cm at the waist held broad men's elbows out and
