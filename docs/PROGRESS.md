@@ -361,6 +361,17 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   lowest sole point and lifts a foot the clip puts into the floor (heels went 2-3 cm through at every heel strike, 11 cm
   in the jog). **Next:** read the gate's result, fix what is left by measure (A1/A3/A4/C1 arms; F1/F4/F5 standing feet;
   W1/W2/W6 walking; T1, A6, W3), never committing a worse verdict; then the whole cast (`EveryPersonStandsAndMovesLikePeople`).
+- **2026-11-06 (later), the gate's work so far** (red: 1070 of 4220 at 06:44Z; `npm run people-gate`). Found and fixed:
+  the sneak clip played only its first 15 of 39 frames (a stale range in the .meta; `MotionImportPostprocessor` v6 takes
+  the whole take, the clip test checks lengths); a retargeted stride is as long as the legs (`Pace`: the speed scaled by
+  each body's leg length); the gate's C1 called points beside a shoulder or under a hem inside (now confirmed by ray
+  parity on the baked mesh) and the game's skin test likewise (now over the skin, not beside it); the gate's skin-fit
+  check (the game's skin points lie on the mesh, mean under 0.1 cm); A4 now over every vertex; walking: swinging feet
+  held clear until they slow, planted feet locked on the point they stand on (heel, ball, toe as they roll); standing:
+  hips low enough for both feet. Diagnosed: at rest the clips put the lower upper arm 2-4 cm into these bodies' waists,
+  so the arm is pushed out; the hand-gap reading was wrong (a plane, not a patch) and turned forearms out: fixed.
+  **Open:** the sneak still slides (its body faces away from its travel in Unity although not in the FBX: find why, or
+  re-cut another forward sneak, CMU 142_22 or 139_31); A1/A3 after the hand fix; F4 (the turn steps); W1/W6 in the jog.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
