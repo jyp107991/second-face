@@ -87,6 +87,16 @@ namespace SecondFace.Game.People
                 foreach (var p in _animator.parameters) if (p.nameHash == SpeedId) _hasSpeed = true;
         }
 
+        private float _movedAt = -10f;
+
+        /// <summary>Walking or running, or stopping from it in the last 0.8 s, and not gesturing.</summary>
+        private bool Striding()
+        {
+            if (_gestureLayer >= 0 && _animator.GetLayerWeight(_gestureLayer) > 0.05f) return false;
+            if (_hasSpeed && _animator.GetFloat(SpeedId) > 0.1f) _movedAt = Time.time;
+            return Time.time - _movedAt < 0.8f;
+        }
+
         /// <summary>Standing still and not gesturing (the arms hang).</summary>
         private bool Resting()
         {
@@ -198,7 +208,8 @@ namespace SecondFace.Game.People
                 }
                 SkinClear(_lu, BodySkin.Part.UpperArmL, ref _angleL, ref _axisL, dt);
                 SkinClear(_ru, BodySkin.Part.UpperArmR, ref _angleR, ref _axisR, dt);
-                if (!resting) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
+                // in the stride (and the last swings as the person stops), never in a gesture (a wave or a shrug is meant high)
+                if (Striding()) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
                 if (!RestReach) { Diag[4] = _restL; Diag[5] = _fwdL; Diag[10] = _restR; Diag[11] = _fwdR; }
                 Diag[6] = _carryL; Diag[7] = _angleL; Diag[8] = _carryR; Diag[9] = _angleR;
                 Diag[12] = _twistL; Diag[13] = _twistR;
