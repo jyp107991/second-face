@@ -591,7 +591,7 @@ namespace SecondFace.Game.People
         /// half at the wrist, at most <see cref="PalmMax"/>°, eased at <see cref="PalmRate"/>° a second (a relaxed arm hangs
         /// palm in; the clips' hands hung palm back, their width across the leg, and the hand placed off the thigh by its
         /// nearest edge stood 4-6 cm further out with the arm after it, A1/A4, 2026-11-06).</summary>
-        public float PalmMax = 50f, PalmRate = 120f;
+        public float PalmMax = 35f, PalmRate = 120f;
         private float _palmL, _palmR;
         private void PalmIn(Transform lower, Transform hand, int side, BodySkin.Part first, float w)
         {
@@ -611,7 +611,9 @@ namespace SecondFace.Game.People
             var axis = hand.position - lower.position;
             if (axis.sqrMagnitude < 1e-6f) return;
             axis.Normalize();
-            var a = Vector3.ProjectOnPlane(n, axis); var b = Vector3.ProjectOnPlane(-Outward(side), axis);
+            // (in and a little back, the thumb forward, as a relaxed hand hangs: turned fully in, the curled fingers pointed at the
+            // thigh and stood the hand further off it, A1 59 → 63, 2026-11-06)
+            var a = Vector3.ProjectOnPlane(n, axis); var b = Vector3.ProjectOnPlane(-Outward(side) * 0.8f - transform.forward * 0.6f, axis);
             if (a.sqrMagnitude < 1e-6f || b.sqrMagnitude < 1e-6f) return;
             var want = Mathf.Clamp(Vector3.SignedAngle(a, b, axis), -PalmMax, PalmMax) * w;
             now = Mathf.MoveTowards(now, want, PalmRate * Time.deltaTime);
