@@ -69,14 +69,11 @@ namespace SecondFace.Game.People
         /// <summary>Moving, a foot faster than this (m/s, along the ground) is in its swing: it is held at least
         /// <see cref="SwingClear"/> off the ground, less as it slows, so it comes down only as it stops (a real heel
         /// meets the ground at under about 1 m/s; the clips' feet glided in at 2-4 m/s, 2026-11-06).</summary>
-        public float SwingFast = 1.5f, SwingSlow = 0.5f, SwingClear = 0.035f;
-        /// <summary>The swing's clearance comes in from <see cref="ClearSlow"/> to <see cref="ClearFast"/> (m/s): a foot
-        /// moving faster stands <see cref="SwingClear"/> or more up, out of the ground's reach, and one under 0.5 m/s (a foot
-        /// bearing weight, W6) no more than 2.5 cm (ramped up to 1.5 m/s, swinging
-        /// and released feet slid along under 2.5 cm at 0.5-1.6 m/s, the sneak at 3 cm with its lowest point in reach: W1,
-        /// 2026-11-06). The speed is the clip's foot's or the foot's as shown, whichever is faster (a held foot let go is
-        /// eased back to the clip's along the ground).</summary>
-        public float ClearSlow = 0.15f, ClearFast = 0.64f;
+        public float SwingFast = 1.5f, SwingSlow = 0.5f, SwingClear = 0.03f;
+        /// <summary>The swing's clearance comes in from <see cref="ClearSlow"/> to <see cref="ClearFast"/> (m/s, the clip's
+        /// lowest sole point's speed, the point the gate measures): a foot moving faster stands <see cref="SwingClear"/> up.
+        /// Not for a foot held down, nor one coming down slower than a swing; at once for one let go from a hold.</summary>
+        public float ClearSlow = 0.5f, ClearFast = 1.5f;
         private Vector3 _shownL, _shownR, _shownLastL, _shownLastR; private int _shownFrames;
 
         private struct Foot
@@ -268,14 +265,18 @@ namespace SecondFace.Game.People
                 // was still, W6, 2026-11-06)
                 var soleVL = SoleSpeed(_footL, _toeL, _heelL, _backL, _ballL, _tipL, _solePtsL, ref _haveSoleL, dt);
                 var soleVR = SoleSpeed(_footR, _toeR, _heelR, _backR, _ballR, _tipR, _solePtsR, ref _haveSoleR, dt);
-                float Clear(float v, Vector3 shown, Vector3 shownLast, bool releasing)
+                // a foot let go from a hold rises at once before it is eased back to the clip's (it slid along the ground
+                // at 1.2-1.6 m/s, W1); a foot coming down slower than a swing gets none, so it lands when the clip lands it
+                // (held 3 cm up until it slowed, it left both feet off the ground for frames, the other lifting: W6)
+                float Clear(float v, float dip, float lastDip, bool releasing)
                 {
                     if (!_haveLast) return 0f;
-                    if (releasing && _shownFrames >= 2) v = Mathf.Max(v, new Vector2(shown.x - shownLast.x, shown.z - shownLast.z).magnitude / dt);
+                    if (releasing) return SwingClear;
+                    if (dip < lastDip - 0.001f && v < SwingFast) return 0f;
                     return SwingClear * Mathf.Clamp01((v - ClearSlow) / (ClearFast - ClearSlow));
                 }
-                var clearL = Clear(soleVL, _shownL, _shownLastL, _lockL.Release > 0f);
-                var clearR = Clear(soleVR, _shownR, _shownLastR, _lockR.Release > 0f);
+                var clearL = Clear(soleVL, dipL, _lockL.Last, _lockL.Release > 0f);
+                var clearR = Clear(soleVR, dipR, _lockR.Last, _lockR.Release > 0f);
                 var speedL = _haveLast ? new Vector2(_footL.position.x - _lastL.x, _footL.position.z - _lastL.z).magnitude / dt : 0f;
                 var speedR = _haveLast ? new Vector2(_footR.position.x - _lastR.x, _footR.position.z - _lastR.z).magnitude / dt : 0f;
                 _lastL = _footL.position; _lastR = _footR.position; _haveLast = true;
