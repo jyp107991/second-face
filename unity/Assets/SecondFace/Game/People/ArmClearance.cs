@@ -215,6 +215,8 @@ namespace SecondFace.Game.People
                 Diag[12] = _twistL; Diag[13] = _twistR;
                 return;
             }
+            // the stride's swing eased far off too (past the skin's range a jogging arm still swung back to 45-47°, W3)
+            if (Striding()) { Swing(_lu, _ll, BodySkin.Part.UpperArmL, false); Swing(_ru, _rl, BodySkin.Part.UpperArmR, false); }
             if (_profile == null || _profile.Bins < 2) return;
             Rest(_lu, _ll, _lh, ref _restL, ref _restAxisL, resting, dt);
             Rest(_ru, _rl, _rh, ref _restR, ref _restAxisR, resting, dt);
@@ -405,7 +407,7 @@ namespace SecondFace.Game.People
         /// pushed it straight back, 2026-11-06); then cleared of the body again where the ease brought it in.</summary>
         public float SwingSoft = 30f, SwingKeep = 0.2f;
 
-        private void Swing(Transform upper, Transform lower, BodySkin.Part first)
+        private void Swing(Transform upper, Transform lower, BodySkin.Part first, bool skin = true)
         {
             if (upper == null || lower == null) return;
             var dir = (lower.position - upper.position).normalized;
@@ -419,6 +421,7 @@ namespace SecondFace.Game.People
             var keep = Mathf.Sqrt(Mathf.Max(0f, want * want - side * side));
             if (Mathf.Abs(sag) <= keep) return;
             var turn = sag - Mathf.Sign(sag) * keep;   // about the body's right: + moves the arm back
+            if (!skin) { upper.rotation = Quaternion.AngleAxis(turn, right) * upper.rotation; return; }
             TurnArm(upper, first, turn, right);
             // what the ease brought into the body: a forearm or hand turned out at the elbow (pushed out at the shoulder,
             // a jogging arm swung straight back to 45-47°, W3, 2026-11-06), then the upper arm at the shoulder
