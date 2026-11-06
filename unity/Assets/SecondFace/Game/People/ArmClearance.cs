@@ -212,7 +212,7 @@ namespace SecondFace.Game.People
                 if (Striding()) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
                 if (!RestReach) { Diag[4] = _restL; Diag[5] = _fwdL; Diag[10] = _restR; Diag[11] = _fwdR; }
                 Diag[6] = _carryL; Diag[7] = _angleL; Diag[8] = _carryR; Diag[9] = _angleR;
-                Diag[12] = _twistL; Diag[13] = _twistR;
+                if (!RestReach) { Diag[12] = _twistL; Diag[13] = _twistR; }
                 return;
             }
             // the stride's swing eased far off too (past the skin's range a jogging arm still swung back to 45-47°, W3)
@@ -289,16 +289,8 @@ namespace SecondFace.Game.People
                 found = true;
                 var adapt = side < 0 ? _adaptL : _adaptR;
                 Diag[side < 0 ? 4 : 10] = adapt * 100f; Diag[side < 0 ? 5 : 11] = surf * 100f;
-                // where the hand would hang, straight down from the shoulder (a little forward with the bend), drawn in or out
-                // only to lie between SkinGap and RestFar off the leg's side (the hand that followed the thigh tilted the arm
-                // out to 20-30° as the hips swayed under a broad shoulder, A1, 2026-11-06)
-                var hang = new Vector3(S.x, 0f, S.z) + fwd * (l2 * Mathf.Sin(flex) * 0.8f);
-                var side0 = Vector3.Dot(hang - new Vector3(axis.x, 0f, axis.z), dir) - (surf + 0.015f);
-                var gapWant = Mathf.Clamp(side0, SkinGap, RestFar);
-                if (side < 0) _wantGapL = gapWant; else _wantGapR = gapWant;
-                var want = gapWant + adapt;
-                var across = hang - dir * Vector3.Dot(hang - new Vector3(axis.x, 0f, axis.z), dir);
-                var flat = new Vector3(across.x, 0f, across.z) + dir * (surf + 0.015f + want);
+                if (side < 0) _wantGapL = SkinGap; else _wantGapR = SkinGap;
+                var flat = new Vector3(axis.x, 0f, axis.z) + dir * (surf + 0.015f + SkinGap + adapt);
                 var h = new Vector2(flat.x - S.x, flat.z - S.z).magnitude;
                 wristY = S.y - Mathf.Sqrt(Mathf.Max(0.04f * reach * reach, reach * reach - h * h));
                 wrist = new Vector3(flat.x, wristY, flat.z);
@@ -327,6 +319,7 @@ namespace SecondFace.Game.People
             // it, 2026-11-06
             if (w < 0.99f) return;
             var gapE = Mathf.Min(Gap(_skin.Begin(first), _skin.End(first), 1, 0.08f), Gap(_skin.Begin(first + 1), _skin.End(first + 1), 1, 0.08f, lower.position, 0.08f));
+            Diag[side < 0 ? 12 : 13] = poleOut * 100f; Diag[side < 0 ? 14 : 15] = flexAdd;
             if (gapE < ElbowGap)
             {
                 if (poleOut < 1f) poleOut = Mathf.Min(1f, poleOut + 0.05f);
