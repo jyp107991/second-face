@@ -26,7 +26,7 @@ namespace SecondFace.EditorTools
         public const string ControllerPath = "Assets/SecondFace/People/Locomotion.controller";
         public const string MaskPath = "Assets/SecondFace/People/UpperBody.mask";
         /// <summary>Bump when the layout changes; the controller carries it as the parameter "v&lt;Version&gt;".</summary>
-        public const int Version = 8;
+        public const int Version = 9;
         /// <summary>The pickup clip (CMU 26_09, 6 s) stands still for its first 0.9 s, is lowest at 2.3 s and upright
         /// again by 3.7 s: it is played from 0.7 s in, 1.4 times as fast, and leaves for the locomotion at 62 %.</summary>
         public const float PickupFrom = 0.7f, PickupSpeed = 1.4f, PickupExit = 0.62f;
@@ -59,6 +59,8 @@ namespace SecondFace.EditorTools
             ctl.AddParameter("Idle", AnimatorControllerParameterType.Float);
             ctl.AddParameter("Sneak", AnimatorControllerParameterType.Bool);
             ctl.AddParameter(new AnimatorControllerParameter { name = "SneakRate", type = AnimatorControllerParameterType.Float, defaultFloat = 1f });
+            // the cadence the one clip playing is sped up or slowed to (Pace: one captured stride at a time)
+            ctl.AddParameter(new AnimatorControllerParameter { name = "LocoRate", type = AnimatorControllerParameterType.Float, defaultFloat = 1f });
             ctl.AddParameter($"v{Version}", AnimatorControllerParameterType.Bool);
 
             // base: idle variants, then the moving clips at their speeds
@@ -66,6 +68,8 @@ namespace SecondFace.EditorTools
             // Foot IK (§6.E): feet go where the capture put them; without it the retargeted legs, longer or shorter than
             // the captured subject's, left the feet 1-2 cm over the floor (P4.8)
             state.iKOnFeet = true;
+            state.speedParameterActive = true;
+            state.speedParameter = "LocoRate";
             tree.blendType = BlendTreeType.Simple1D;
             tree.blendParameter = "Speed";
             tree.useAutomaticThresholds = false;

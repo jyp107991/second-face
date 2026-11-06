@@ -41,7 +41,7 @@ namespace SecondFace.Game.People
         private float _ankleL, _ankleR, _bindScale = 1f;   // the ankle's height over a flat sole at rest (world m at the bind scale)
         private Quaternion _restL, _restR;                  // each foot's rotation at rest, in the body's frame (flat, sole down)
         private float _headingL, _headingR;                 // each foot's heading at rest in the body's frame, degrees
-        private float _sink, _plant, _low, _unplant;
+        private float _sink, _plant, _low, _unplant, _bodySpeed;
         // where each foot ended last frame (its sole points in the world, its turn, how high its sole stood): a person who
         // sets off keeps a foot that was down where it stood, held on the point it stands on, until the stride lifts it
         // (the planted feet were blended back to the clip's over 0.15 s and dragged at 1 m/s, 2026-11-06)
@@ -168,8 +168,11 @@ namespace SecondFace.Game.People
             var speed = _hasSpeed ? _animator.GetFloat(SpeedId) : 0f;
             var standing = speed < StandSpeed;
             // a body set down somewhere else lifts its feet from where they were
-            if ((transform.position - _was).sqrMagnitude > 0.25f) { _l = default; _r = default; _sink = 0f; _haveEnd = false; _lockL = default; _lockR = default; }
+            var moved = new Vector2(transform.position.x - _was.x, transform.position.z - _was.z).magnitude / dt;
+            if ((transform.position - _was).sqrMagnitude > 0.25f) { _l = default; _r = default; _sink = 0f; _haveEnd = false; _lockL = default; _lockR = default; moved = 0f; }
             _was = transform.position;
+            // the body's own pace over the ground (the locomotion's "Speed" is a clip's, not the body's: Pace)
+            _bodySpeed = Mathf.Lerp(_bodySpeed, moved, 1f - Mathf.Exp(-10f * dt));
             // setting off: no blend back to the clip (it slid the feet); the feet that were down are held where they stood
             _plant = standing ? Mathf.MoveTowards(_plant, 1f, dt / 0.15f) : 0f;
             var setOff = !standing && _wasStanding && _haveEnd;
@@ -238,7 +241,7 @@ namespace SecondFace.Game.People
                 if (dipR < clearR) wantR.y += clearR - dipR;
                 Diag[0] = dipL; Diag[1] = clearL; Diag[2] = Mathf.Max(0f, clearL - dipL);
                 Diag[4] = dipR; Diag[5] = clearR; Diag[6] = Mathf.Max(0f, clearR - dipR);
-                var body = speed / Mathf.Max(0.5f, PaceScale);
+                var body = _bodySpeed;
                 if (setOff)
                 {
                     Seed(ref _lockL, _endL, _endDipL);

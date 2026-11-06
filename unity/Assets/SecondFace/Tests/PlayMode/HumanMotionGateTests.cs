@@ -236,6 +236,11 @@ namespace SecondFace.Tests
                     if (frames is { } f && f > 1 && Mathf.Abs(clip.length - (f - 1) / fps) > 1.5f / fps && Mathf.Abs(clip.length - f / fps) > 1.5f / fps)
                         wrong.Add($"{Path.GetFileName(path)}: {clip.length:0.00} s long, its sidecar says {f} frames ({f / fps:0.00} s)");
                 }
+                // the pace's table of the moving clips (Pace.Clips) as the sidecars have them
+                var name = Path.GetFileNameWithoutExtension(json);
+                foreach (var c in Pace.Clips.Where(c => c.Name == name))
+                    if (Mathf.Abs(c.Speed - (side.Value<float?>("speed") ?? 0f)) > 0.002f || Mathf.Abs(c.Hip - (side.Value<float?>("hip") ?? 0f)) > 0.002f)
+                        wrong.Add($"Pace.Clips {name}: {c.Speed} m/s, hip {c.Hip} m; its sidecar says {side.Value<float?>("speed")} m/s, hip {side.Value<float?>("hip")} m");
             }
             Assert.That(n, Is.GreaterThan(0), "no captured clips found");
             Assert.That(wrong, Is.Empty, string.Join("; ", wrong));

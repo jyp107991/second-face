@@ -45,12 +45,11 @@ namespace SecondFace.Game.Play
         /// all; past Suspicious they look; at Noticed they have seen them.</summary>
         public double Awareness { get; set; }
 
-        private static readonly int Speed = Animator.StringToHash("Speed");
-
         private void Update()
         {
             if (Agent == null || !Agent.enabled) return;
-            if (Animator != null) Animator.SetFloat(Speed, Agent.velocity.magnitude, 0.12f, Time.deltaTime);
+            // the pace as the walker and the gate set it (by this body's legs, one clip at a time: PEOPLE_MOTION W1, W2)
+            if (Animator != null) SecondFace.Game.People.Pace.Set(Animator, Agent.velocity.magnitude);
             if (Agent.isOnNavMesh && !Agent.pathPending && Agent.hasPath && Agent.pathStatus == NavMeshPathStatus.PathPartial && Agent.remainingDistance < 0.3f) Short = true;
         }
     }
