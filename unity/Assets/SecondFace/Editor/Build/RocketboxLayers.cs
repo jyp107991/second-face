@@ -381,6 +381,37 @@ namespace SecondFace.EditorTools
             skin.Data = AssetDatabase.LoadAssetAtPath<TextAsset>(outPath);
             skin.Body = smr;
             skin.Carrying = female ? 14f : 10f;
+            skin.SoleL = Sole(HumanBodyBones.LeftFoot, HumanBodyBones.LeftToes);
+            skin.SoleR = Sole(HumanBodyBones.RightFoot, HumanBodyBones.RightToes);
+            // a foot's sole from its own vertices (those the foot or toes bone moves most): as the gate finds its heel and
+            // ball (MotionProbe), and the back of the heel and the toe's tip at the sole
+            Vector3[] Sole(HumanBodyBones footBone, HumanBodyBones toeBone)
+            {
+                var foot = B(footBone); var toe = B(toeBone);
+                if (foot == null) return new Vector3[0];
+                int fi = System.Array.IndexOf(bones, foot), ti = toe != null ? System.Array.IndexOf(bones, toe) : -1;
+                var ankle = foot.position;
+                var ahead = (toe != null ? toe.position : ankle + root.forward * 0.12f) - ankle; ahead.y = 0f;
+                var fwd = ahead.sqrMagnitude > 1e-6f ? ahead.normalized : root.forward;
+                var toesAlong = Vector3.Dot((toe != null ? toe.position : ankle + fwd * 0.12f) - ankle, fwd);
+                var sole = float.MaxValue;
+                for (var i = 0; i < world.Length; i++) if (bw[i].boneIndex0 == fi || bw[i].boneIndex0 == ti) sole = Mathf.Min(sole, world[i].y);
+                if (sole == float.MaxValue) return new Vector3[0];
+                int heel = -1, back = -1, ball = -1, tip = -1;
+                float hy = float.MaxValue, ba = float.MaxValue, by = float.MaxValue, ta = float.MinValue;
+                for (var i = 0; i < world.Length; i++)
+                {
+                    if (bw[i].boneIndex0 != fi && bw[i].boneIndex0 != ti) continue;
+                    var p = world[i]; var along = Vector3.Dot(p - ankle, fwd);
+                    if (along < -0.01f && p.y < hy) { hy = p.y; heel = i; }
+                    if (along > toesAlong - 0.04f && along < toesAlong + 0.02f && p.y < by) { by = p.y; ball = i; }
+                    if (p.y > sole + 0.02f) continue;
+                    if (along < ba) { ba = along; back = i; }
+                    if (along > ta) { ta = along; tip = i; }
+                }
+                if (heel < 0 || back < 0 || ball < 0 || tip < 0) return new Vector3[0];
+                return new[] { foot.InverseTransformPoint(world[heel]), foot.InverseTransformPoint(world[back]), foot.InverseTransformPoint(world[ball]), (toe != null ? toe : foot).InverseTransformPoint(world[tip]) };
+            }
             skin.Built = BodySkin.Version;
             Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")}; {inner} inside faces left out)");
         }

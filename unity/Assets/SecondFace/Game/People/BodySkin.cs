@@ -32,6 +32,11 @@ namespace SecondFace.Game.People
         /// straight (women 15 ± 5°, men 11 ± 4°; docs/PEOPLE_MOTION.md A3).</summary>
         public float Carrying = 12f;
         public int Built;
+        /// <summary>Each foot's sole from its own mesh (built with the skin): the heel's lowest point behind the ankle, the back
+        /// of the heel at the sole, the ball under the toe joint (in the foot bone's frame) and the toe's tip (in the toes'
+        /// frame). The foot plant holds and lifts the feet by them (a sole guessed from the ankle sat 1-2.5 cm over the real
+        /// heel, which skated at 3-5 m/s, 2026-11-06).</summary>
+        public Vector3[] SoleL = new Vector3[0], SoleR = new Vector3[0];
 
         /// <summary>A point of the hips or the thighs, beside which a resting hand hangs (A4).</summary>
         public const byte LowFlag = 1;

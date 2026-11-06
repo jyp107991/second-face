@@ -53,7 +53,7 @@ namespace SecondFace.Game.People
         // each foot's sole at rest, in its bones' frames: the heel's and the ball's contact under the foot bone, the toe's tip
         // under the toes (a foot rolling heel to toe touches the ground with one of them; the ankle alone does not say how
         // low a tilted foot reaches: heels sank 2-3 cm through the floor at every heel strike, 11 cm in the jog, 2026-11-06)
-        private Vector3 _heelL, _ballL, _tipL, _heelR, _ballR, _tipR;
+        private Vector3 _heelL, _ballL, _tipL, _heelR, _ballR, _tipR, _backL, _backR;
         private Vector3 _lastL, _lastR; private bool _haveLast;
         // moving, a foot down on the ground is held where it came down until the clip lifts it (W1: a planted foot
         // does not creep; the clips' strides never quite match the body's pace): its place, and a short release after
@@ -119,6 +119,13 @@ namespace SecondFace.Game.People
             _headingR = Heading(inv * Ahead(_footR, _toeR));
             SolePoints(_footL, _toeL, y, out _heelL, out _ballL, out _tipL);
             SolePoints(_footR, _toeR, y, out _heelR, out _ballR, out _tipR);
+            _backL = _heelL; _backR = _heelR;
+            // the soles as the body's own mesh has them, where the people were built with them (BodySkin)
+            if (TryGetComponent<BodySkin>(out var skin))
+            {
+                if (skin.SoleL is { Length: 4 }) { _heelL = skin.SoleL[0]; _backL = skin.SoleL[1]; _ballL = skin.SoleL[2]; _tipL = skin.SoleL[3]; }
+                if (skin.SoleR is { Length: 4 }) { _heelR = skin.SoleR[0]; _backR = skin.SoleR[1]; _ballR = skin.SoleR[2]; _tipR = skin.SoleR[3]; }
+            }
         }
 
         /// <summary>A foot's sole at rest (flat on the floor at height <paramref name="floor"/>): the heel's contact a fifth
@@ -139,9 +146,9 @@ namespace SecondFace.Game.People
         }
 
         /// <summary>How high a foot's lowest sole point stands over its ground now, m (negative: in it).</summary>
-        private float SoleOver(Transform foot, Transform toe, Vector3 heel, Vector3 ball, Vector3 tip, float ground)
+        private float SoleOver(Transform foot, Transform toe, Vector3 heel, Vector3 back, Vector3 ball, Vector3 tip, float ground)
         {
-            var y = Mathf.Min(foot.TransformPoint(heel).y, Mathf.Min(foot.TransformPoint(ball).y, (toe != null ? toe : foot).TransformPoint(tip).y));
+            var y = Mathf.Min(Mathf.Min(foot.TransformPoint(heel).y, foot.TransformPoint(back).y), Mathf.Min(foot.TransformPoint(ball).y, (toe != null ? toe : foot).TransformPoint(tip).y));
             return y - ground;
         }
 
@@ -224,8 +231,8 @@ namespace SecondFace.Game.People
             else
             {
                 // a foot the clip (or the hips' height) puts into the ground is lifted out of it, by its own lowest point
-                var dipL = SoleOver(_footL, _toeL, _heelL, _ballL, _tipL, gL) + (wantL.y - _footL.position.y);
-                var dipR = SoleOver(_footR, _toeR, _heelR, _ballR, _tipR, gR) + (wantR.y - _footR.position.y);
+                var dipL = SoleOver(_footL, _toeL, _heelL, _backL, _ballL, _tipL, gL) + (wantL.y - _footL.position.y);
+                var dipR = SoleOver(_footR, _toeR, _heelR, _backR, _ballR, _tipR, gR) + (wantR.y - _footR.position.y);
                 // the swing's clearance: how high a foot moving at this pace must stand
                 float Clear(Vector3 now, Vector3 last)
                 {
