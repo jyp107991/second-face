@@ -600,6 +600,7 @@ namespace SecondFace.Tests
             {
                 if (s.Probe.Error != null) fails.Add($"{s.Probe.Person}: {s.Probe.Error}");
                 foreach (var (st, (d, where)) in s.Probe.WorstClip) Debug.Log($"HumanMotionGate clip: {s.Probe.Person} {st}: {where}");
+                if (s.Probe.SkinFit != null) Debug.Log($"HumanMotionGate skin fit: {s.Probe.Person}: {s.Probe.SkinFit}");
                 foreach (var (st, (nn, rest, sum)) in s.Probe.ArmDiag)
                 {
                     if (nn == 0) continue;

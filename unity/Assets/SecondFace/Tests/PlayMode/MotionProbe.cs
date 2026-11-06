@@ -40,6 +40,9 @@ namespace SecondFace.Tests
         private SkinnedMeshRenderer _smr;
         private byte[] _seg;
         private bool[] _armLow;
+        private Vector3[] _bindNormals;
+        /// <summary>How well the game's skin points (BodySkin) lie on the mesh, at calibration (for the report).</summary>
+        public string SkinFit;
         private readonly List<(int I, int Near, float Depth)> _candidates = new();
         // the arm clearance's own view, per state (for the report: why the arms are where they are)
         public readonly Dictionary<string, (int N, int Resting, double[] Sum)> ArmDiag = new();
@@ -139,7 +142,7 @@ namespace SecondFace.Tests
                 if (names[i] == "Right Shoulder Down-Up") _shoulderR = i;
             }
             _hp = new HumanPoseHandler(_a.avatar, _root);
-            var bind = Bake(out _);   // the bind pose: standing, feet flat on the floor
+            var bind = Bake(out _bindNormals);   // the bind pose: standing, feet flat on the floor
             _bindAnkleL = B(HumanBodyBones.LeftFoot).position; _bindAnkleR = B(HumanBodyBones.RightFoot).position;
             _bindToeL = B(HumanBodyBones.LeftToes) != null ? B(HumanBodyBones.LeftToes).position : _bindAnkleL + _root.forward * 0.12f;
             _bindToeR = B(HumanBodyBones.RightToes) != null ? B(HumanBodyBones.RightToes).position : _bindAnkleR + _root.forward * 0.12f;
@@ -183,6 +186,24 @@ namespace SecondFace.Tests
                     if (along < -0.01f && bind[i].y < bh) { bh = bind[i].y; _solePoint[side * 2] = i; }
                     else if (along > toesAlong - 0.04f && along < toesAlong + 0.02f && bind[i].y < bb) { bb = bind[i].y; _solePoint[side * 2 + 1] = i; }
                 }
+            }
+            // the game's own skin points (BodySkin, posed from the bones) against the mesh they were taken from: each should
+            // lie on a vertex (a misfit here makes ArmClearance hold the arms off a body that is not there)
+            var skin = GetComponent<SecondFace.Game.People.BodySkin>();
+            if (skin != null && skin.Ready)
+            {
+                skin.Pose();
+                var worstFit = 0f; var sumFit = 0.0; var worstAt = -1; var normalOff = 0;
+                for (var k = 0; k < skin.Count; k++)
+                {
+                    var best = float.MaxValue; var bi = -1;
+                    for (var i = 0; i < bind.Length; i++) { var d = (bind[i] - skin.P[k]).sqrMagnitude; if (d < best) { best = d; bi = i; } }
+                    var dist = Mathf.Sqrt(best) - skin.Off(k);
+                    sumFit += dist;
+                    if (dist > worstFit) { worstFit = dist; worstAt = k; }
+                    if (bi >= 0 && _bindNormals != null && Vector3.Dot(_bindNormals[bi], skin.N[k]) < 0.5f) normalOff++;
+                }
+                SkinFit = $"mean {sumFit / Mathf.Max(1, skin.Count) * 100:0.00} cm, worst {worstFit * 100:0.0} cm (point {worstAt}), normals off {normalOff} of {skin.Count}";
             }
             _ankleSoleL = SoleOffset(bind, Part.FootL, _bindAnkleL, _bindToeL, out _toeSoleL);
             _ankleSoleR = SoleOffset(bind, Part.FootR, _bindAnkleR, _bindToeR, out _toeSoleR);
