@@ -323,8 +323,8 @@ namespace SecondFace.Game.People
                     wantFwd = forward + Mathf.Atan2(behind, Mathf.Max(0.2f, (c - shoulder).magnitude)) * Mathf.Rad2Deg;
                 }
                 // and the upper arm no further back than ArmBack from the vertical (A1)
-                var ua = (elbow - shoulder).normalized;
-                var back = Mathf.Asin(Mathf.Clamp(-Vector3.Dot(ua, transform.forward), -1f, 1f)) * Mathf.Rad2Deg;
+                var armDir = (elbow - shoulder).normalized;
+                var back = Mathf.Asin(Mathf.Clamp(-Vector3.Dot(armDir, transform.forward), -1f, 1f)) * Mathf.Rad2Deg;
                 Diag[side < 0 ? 14 : 15] = back;
                 wantFwd = Mathf.Clamp(Mathf.Max(wantFwd, forward + back - ArmBack), 0f, RestForward);
                 // 3. the hand off the thigh by the forearm's turn at the elbow
@@ -348,8 +348,8 @@ namespace SecondFace.Game.People
                     {
                         var to = _skin.P[_gapBody] - _skin.P[_gapArm];
                         var dir = to.sqrMagnitude > 1e-8f ? to.normalized : -Outward(side);
-                        var off = _skin.P[_gapArm] - shoulder; off -= ua * Vector3.Dot(off, ua);
-                        gain = Vector3.Dot(Vector3.Cross(ua * side, off), dir);
+                        var off = _skin.P[_gapArm] - shoulder; off -= armDir * Vector3.Dot(off, armDir);
+                        gain = Vector3.Dot(Vector3.Cross(armDir * side, off), dir);
                     }
                     var carryWant = Mathf.Clamp(carry + Mathf.Atan2(-err, Mathf.Max(0.2f, (c - elbow).magnitude)) * Mathf.Rad2Deg, CarryMin, CarryMax);
                     var rollWant = gain > 0.02f ? Mathf.Clamp(twist + Mathf.Clamp(err / gain, -0.5f, 0.5f) * Mathf.Rad2Deg, 0f, TwistMax) : twist;
