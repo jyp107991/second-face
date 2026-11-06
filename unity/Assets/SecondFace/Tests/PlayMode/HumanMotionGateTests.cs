@@ -341,9 +341,11 @@ namespace SecondFace.Tests
                 var probe = a.gameObject.AddComponent<MotionProbe>();
                 probe.Person = ids[i] + (asPlayer ? " (player)" : "");
                 probe.Ground = grounds;
-                if (i == 0)
+                // the first person, and the first man (their strides differ: one woman's trace hid the men's skate), traced
+                var traced = i == 0 || (ids[i].Contains("Male") && !ids.Take(i).Any(x => x.Contains("Male")));
+                if (traced)
                 {
-                    probe.TracePath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", report + "_trace.csv"));
+                    probe.TracePath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", report + (i == 0 ? "" : "_m") + "_trace.csv"));
                     probe.TraceState = "";   // every state (the feet, frame by frame)
                     File.WriteAllText(probe.TracePath, "state,t,rootx,rootz,heelL,ballL,ankleLz,heelR,ballR,ankleRz,speed,hipsz,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR\n");
                 }

@@ -23,7 +23,7 @@ namespace SecondFace.Game.People
         {
             ("walk_slow", 0.923f, 0.9317f), ("walk", 1.368f, 0.9317f), ("walk_brisk", 1.95f, 0.9317f), ("jog", 3.159f, 1.0002f), ("run", 3.611f, 0.9924f),
         };
-        /// <summary>The cadence a clip may be played at before the next clip takes over, as a share of its own.</summary>
+        /// <summary>The cadence a clip may be played at before the next (faster) clip takes over, as a share of its own.</summary>
         public const float RateMin = 0.8f, RateMax = 1.25f;
 
         /// <summary>This body's hip height, m (the foot plant measures it; the captured walkers' when it cannot).</summary>
@@ -34,15 +34,16 @@ namespace SecondFace.Game.People
         public static (float Speed, float Rate) For(float speed, float hip)
         {
             hip = Mathf.Max(0.3f, hip);
-            var best = 0; var bestErr = float.MaxValue; var rate = 1f;
-            for (var i = 0; i < Clips.Length; i++)
-            {
-                var r = speed * Clips[i].Hip / (hip * Clips[i].Speed);
-                var e = r > 1e-4f ? Mathf.Abs(Mathf.Log(r)) : float.MaxValue;
-                if (e < bestErr) { bestErr = e; best = i; rate = r; }
-            }
+            float Rate(int i) => speed * Clips[i].Hip / (hip * Clips[i].Speed);
+            // the slowest gait that reaches the pace without hurrying past RateMax (people do not break into a run while a
+            // jog will do: the run's arms swung past their cap at a jogging pace, W3, 2026-11-06)
+            var best = Clips.Length - 1;
+            for (var i = 0; i < Clips.Length; i++) if (Rate(i) <= RateMax) { best = i; break; }
+            var rate = Rate(best);
             // slower than the slowest walk is played at its own cadence: blended with the idle
             if (best == 0 && rate < RateMin) return (speed * Clips[0].Hip / hip, 1f);
+            // between two gaits' ranges: the nearer cadence
+            if (best > 0 && rate < RateMin && Mathf.Abs(Mathf.Log(Rate(best - 1))) < Mathf.Abs(Mathf.Log(rate))) { best--; rate = Rate(best); }
             return (Clips[best].Speed, Mathf.Clamp(rate, 0.5f, 1.6f));
         }
 
