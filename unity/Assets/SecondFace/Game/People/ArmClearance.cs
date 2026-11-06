@@ -171,12 +171,25 @@ namespace SecondFace.Game.People
             DiagResting = resting;
             if (SkinReady && Near())
             {
-                // what is held from the frames before, on the bones; then the skin posed from them
-                Held(_lu, _ll, _lh, -1, _restL, _fwdL, _twistL, _carryL);
-                Held(_ru, _rl, _rh, 1, _restR, _fwdR, _twistR, _carryR);
-                _skin.Pose();
-                SkinRest(_lu, _ll, _lh, BodySkin.Part.UpperArmL, -1, ref _restL, ref _fwdL, ref _twistL, ref _carryL, resting, dt);
-                SkinRest(_ru, _rl, _rh, BodySkin.Part.UpperArmR, 1, ref _restR, ref _fwdR, ref _twistR, ref _carryR, resting, dt);
+                if (RestReach)
+                {
+                    // at rest the hand is placed where a relaxed hand hangs and the arm reaches it (blended in and out)
+                    _restW = Mathf.MoveTowards(_restW, resting ? 1f : 0f, dt / (resting ? RestIn : RestOut2));
+                    _skin.Pose();
+                    RestArm(_lu, _ll, _lh, -1, BodySkin.Part.UpperArmL, _restW);
+                    RestArm(_ru, _rl, _rh, 1, BodySkin.Part.UpperArmR, _restW);
+                    Diag[1] = RestGap(BodySkin.Part.UpperArmL); Diag[3] = RestGap(BodySkin.Part.UpperArmR);
+                    Diag[0] = Diag[2] = 0f;
+                }
+                else
+                {
+                    // what is held from the frames before, on the bones; then the skin posed from them
+                    Held(_lu, _ll, _lh, -1, _restL, _fwdL, _twistL, _carryL);
+                    Held(_ru, _rl, _rh, 1, _restR, _fwdR, _twistR, _carryR);
+                    _skin.Pose();
+                    SkinRest(_lu, _ll, _lh, BodySkin.Part.UpperArmL, -1, ref _restL, ref _fwdL, ref _twistL, ref _carryL, resting, dt);
+                    SkinRest(_ru, _rl, _rh, BodySkin.Part.UpperArmR, 1, ref _restR, ref _fwdR, ref _twistR, ref _carryR, resting, dt);
+                }
                 SkinClear(_lu, BodySkin.Part.UpperArmL, ref _angleL, ref _axisL, dt);
                 SkinClear(_ru, BodySkin.Part.UpperArmR, ref _angleR, ref _axisR, dt);
                 if (!resting) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
@@ -190,6 +203,90 @@ namespace SecondFace.Game.People
             Rest(_ru, _rl, _rh, ref _restR, ref _restAxisR, resting, dt);
             Clear(_lu, _ll, _lh, ref _angleL, ref _axisL, dt);
             Clear(_ru, _rl, _rh, ref _angleR, ref _axisR, dt);
+        }
+
+        /// <summary>With the skin, at rest: the hand is placed where a relaxed hand hangs, beside the thigh with its middle
+        /// <see cref="SkinGap"/> off the skin, a little forward of the side (<see cref="RestFront"/>°), at the height the arm
+        /// reaches with the elbow bent <see cref="RestFlex"/>° (relaxed standing: 15.5°, IQR 13-18°, docs/PEOPLE_MOTION.md
+        /// A2), and the shoulder and elbow are turned to reach it, the elbow back (an analytic two-bone solve). Four holds
+        /// that each nudged one joint toward the thigh (in, forward, the upper arm's roll, the elbow's carry) left hands 5-10
+        /// cm off it whatever their limits, 2026-11-06. Each person's flex and forward differ a little (from their name).
+        /// Blended in over <see cref="RestIn"/> s on coming to rest, out over <see cref="RestOut2"/> s on moving or gesturing.</summary>
+        public bool RestReach = true;
+        public float RestFlex = 15f, RestFront = 15f, RestIn = 0.6f, RestOut2 = 0.25f;
+        private float _restW, _flexVar = float.NaN, _frontVar;
+
+        private void RestArm(Transform upper, Transform lower, Transform hand, int side, BodySkin.Part first, float w)
+        {
+            if (w <= 0.001f || upper == null || lower == null || hand == null) return;
+            var (hip, knee) = side < 0 ? (_tl, _kl) : (_tr, _kr);
+            if (hip == null || knee == null) return;
+            if (float.IsNaN(_flexVar))
+            {
+                // the person's own: from their name, stable from run to run
+                var h = 17u;
+                foreach (var ch in transform.root.name) h = h * 31u + ch;
+                _flexVar = ((h % 1000u) / 999f - 0.5f) * 8f;            // ±4°
+                _frontVar = (((h / 1000u) % 1000u) / 999f - 0.5f) * 16f; // ±8°
+            }
+            var S = upper.position; var E = lower.position; var W = hand.position;
+            var l1 = (E - S).magnitude; var l2 = (W - E).magnitude;
+            if (l1 < 0.05f || l2 < 0.05f) return;
+            var fwd = transform.forward; var outward = Outward(side);
+            var flex = Mathf.Clamp(RestFlex + _flexVar, 6f, 30f) * Mathf.Deg2Rad;
+            var reach = Mathf.Sqrt(l1 * l1 + l2 * l2 + 2f * l1 * l2 * Mathf.Cos(flex));
+            // the hand's middle hangs 7 cm under the wrist; both under the shoulder by the arm's reach
+            var wristY = S.y - reach * 0.985f;
+            var midY = wristY - 0.07f;
+            var dir = (Quaternion.AngleAxis(-side * Mathf.Clamp(RestFront + _frontVar, 0f, 30f), Vector3.up) * outward).normalized;
+            // the thigh's side there: the furthest its skin (and the hip's) stands out that way at the hand's height
+            var leg = knee.position - hip.position;
+            var t = Mathf.Clamp01((midY - hip.position.y) / Mathf.Min(-1e-3f, leg.y));
+            var axis = hip.position + leg * t;
+            var surf = float.MinValue;
+            var thigh = side < 0 ? BodySkin.Part.ThighL : BodySkin.Part.ThighR;
+            void Look(int lo, int hi, bool lowOnly)
+            {
+                for (var i = lo; i < hi; i++)
+                {
+                    if (lowOnly && !_skin.Low(i)) continue;
+                    var p = _skin.P[i];
+                    if (Mathf.Abs(p.y - midY) > 0.035f) continue;
+                    var off = p - axis; off.y = 0f;
+                    // on this side of the leg only (not the other thigh's points)
+                    if (Vector3.Dot(off, dir) <= 0f || Vector3.Dot(off, outward) < -0.02f) continue;
+                    surf = Mathf.Max(surf, Vector3.Dot(off, dir));
+                }
+            }
+            Look(_skin.Begin(thigh), _skin.End(thigh), false);
+            Look(_skin.Begin(BodySkin.Part.Torso), _skin.End(BodySkin.Part.Torso), true);
+            if (surf == float.MinValue) return;
+            var mid = new Vector3(axis.x, midY, axis.z) + dir * (surf + 0.015f + SkinGap);
+            var wrist = mid + Vector3.up * 0.07f;
+            // the two-bone solve, the elbow back (and a little out)
+            var toW = wrist - S;
+            var d = Mathf.Clamp(toW.magnitude, Mathf.Abs(l1 - l2) + 1e-3f, l1 + l2 - 1e-4f);
+            var sw = toW.normalized;
+            var pole = Vector3.ProjectOnPlane(-fwd + outward * 0.35f, sw);
+            if (pole.sqrMagnitude < 1e-6f) return;
+            pole.Normalize();
+            var x = (l1 * l1 - l2 * l2 + d * d) / (2f * d);
+            var y = Mathf.Sqrt(Mathf.Max(0f, l1 * l1 - x * x));
+            var elbowAt = S + sw * x + pole * y;
+            var dU = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(E - S, elbowAt - S), w);
+            dU.ToAngleAxis(out var aU, out var axU);
+            if (aU > 0.01f && axU.sqrMagnitude > 0.5f) TurnArm(upper, first, aU, axU);
+            var E2 = lower.position; var W2 = hand.position;
+            var dL = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(W2 - E2, (S + sw * d) - E2), w);
+            dL.ToAngleAxis(out var aL, out var axL);
+            if (aL > 0.01f && axL.sqrMagnitude > 0.5f) TurnForearm(lower, first, aL, axL);
+        }
+
+        /// <summary>The hand's gap to the body now (m), for the report.</summary>
+        private float RestGap(BodySkin.Part first)
+        {
+            var g = Gap(_skin.Begin(first + 2), _skin.End(first + 2), 2, float.MaxValue);
+            return g < float.MaxValue ? g : -1f;
         }
 
         /// <summary>Close enough to the camera for the skin (a person further off is a few pixels high: the sections do).</summary>
