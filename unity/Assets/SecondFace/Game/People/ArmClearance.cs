@@ -178,7 +178,7 @@ namespace SecondFace.Game.People
                     _skin.Pose();
                     RestArm(_lu, _ll, _lh, -1, BodySkin.Part.UpperArmL, _restW);
                     RestArm(_ru, _rl, _rh, 1, BodySkin.Part.UpperArmR, _restW);
-                    Diag[1] = RestGap(BodySkin.Part.UpperArmL); Diag[3] = RestGap(BodySkin.Part.UpperArmR);
+                    Diag[1] = HandGap(BodySkin.Part.UpperArmL); Diag[3] = HandGap(BodySkin.Part.UpperArmR);
                     Diag[0] = Diag[2] = 0f;
                 }
                 else
@@ -283,7 +283,7 @@ namespace SecondFace.Game.People
         }
 
         /// <summary>The hand's gap to the body now (m), for the report.</summary>
-        private float RestGap(BodySkin.Part first)
+        private float HandGap(BodySkin.Part first)
         {
             var g = Gap(_skin.Begin(first + 2), _skin.End(first + 2), 2, float.MaxValue);
             return g < float.MaxValue ? g : -1f;
