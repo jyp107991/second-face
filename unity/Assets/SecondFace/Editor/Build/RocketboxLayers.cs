@@ -275,6 +275,7 @@ namespace SecondFace.EditorTools
             Seg(HumanBodyBones.Spine, HumanBodyBones.Chest, SkinPart.Torso);
             if (B(HumanBodyBones.UpperChest) != null) { Seg(HumanBodyBones.Chest, HumanBodyBones.UpperChest, SkinPart.Torso); Seg(HumanBodyBones.UpperChest, HumanBodyBones.Neck, SkinPart.Torso); }
             else Seg(HumanBodyBones.Chest, HumanBodyBones.Neck, SkinPart.Torso);
+            var spine = segs.Count;   // the segments before this are the spine's (the torso's own axis)
             Seg(HumanBodyBones.LeftShoulder, HumanBodyBones.LeftUpperArm, SkinPart.Torso);
             Seg(HumanBodyBones.RightShoulder, HumanBodyBones.RightUpperArm, SkinPart.Torso);
             Seg(HumanBodyBones.Neck, HumanBodyBones.Head, SkinPart.None);
@@ -326,6 +327,17 @@ namespace SecondFace.EditorTools
                 {
                     var bw0 = bw[i];
                     var n = (bones[bw0.boneIndex0].localToWorldMatrix * bp[bw0.boneIndex0]).MultiplyVector(nor[i]).normalized;
+                    // the torso faces away from its spine (from the shoulder's segment, the chest's side under the arm read as
+                    // facing in and was left out: arms went 2-3 cm into it unseen, 2026-11-06)
+                    if (part == SkinPart.Torso)
+                    {
+                        var bd = float.MaxValue;
+                        for (var k = 0; k < spine; k++)
+                        {
+                            var dd = Along(world[i], segs[k].A, segs[k].Bp, out var tt);
+                            if (dd < bd) { bd = dd; axis = segs[k].A + (segs[k].Bp - segs[k].A) * tt; }
+                        }
+                    }
                     var away = world[i] - axis;
                     if (away.sqrMagnitude > 1e-6f && Vector3.Dot(n, away.normalized) < -0.2f) { inner++; continue; }
                 }
