@@ -1023,14 +1023,16 @@ namespace SecondFace.Game.People
             if (upper == null) return;
             var left = first == BodySkin.Part.UpperArmL;
             var lower = left ? _ll : _rl; var handT = left ? _lh : _rh;
-            // at rest, a hand or forearm in the thigh or the hip is turned out of it at the elbow first, within the forearm's
-            // hang and the elbow's bend, and only what that leaves is taken at the shoulder (turned out at the shoulder for
-            // the hand, the whole arm stood 20-27° off the vertical: of the resting arms' pushes, the hand on the thigh 1830,
-            // the forearm on it 521, the upper arm on the chest 238, A1/A4, 2026-11-07)
+            // at rest, a hand in the thigh is turned out of it at the elbow first, within the forearm's hang and the elbow's
+            // bend, and only what that leaves is taken at the shoulder (turned out at the shoulder for the hand, the whole arm
+            // stood 20-27° off the vertical: of the resting arms' pushes, the hand on the thigh 1830, the forearm 521, the upper
+            // arm on the chest 238, A1, 2026-11-07; the forearm's own contacts, on the hip, a belt, a pouch, are left to the
+            // shoulder: turned out at the elbow for them, the hand swung off the thigh, A4 328 -> 492, and the forearm past
+            // its hang, A3 5 -> 17)
             if (ElbowFirst && UpperFirst && RestReach && _restW > 0.99f && lower != null && handT != null)
                 for (var ePass = 0; ePass < 2; ePass++)
                 {
-                    var (nE, axE) = SkinNeedAbout(lower.position, _skin.Begin(first + 1), _skin.End(first + 2), first);
+                    var (nE, axE) = SkinNeedAbout(lower.position, _skin.Begin(first + 2), _skin.End(first + 2), first);
                     if (nE <= 0.01f) break;
                     var eUa = (lower.position - upper.position).normalized;
                     var eFa0 = handT.position - lower.position;
@@ -1039,7 +1041,7 @@ namespace SecondFace.Game.People
                     {
                         var eFa = Quaternion.AngleAxis(nE * eShare, axE) * eFa0;
                         var eHang = Vector3.Angle(eFa, Vector3.down); var eBend = Vector3.Angle(eUa, eFa);
-                        if (eHang > HangMax + 3f && eHang > Vector3.Angle(eFa0, Vector3.down)) continue;
+                        if (eHang > HangMax && eHang > Vector3.Angle(eFa0, Vector3.down)) continue;
                         if (eBend > BendMax + 4f || eBend < BendFloor) continue;
                         TurnForearm(lower, first, nE * eShare, axE);
                         eTurned = true;
@@ -1079,7 +1081,7 @@ namespace SecondFace.Game.People
 
         /// <summary>At rest: the hand kept where it was placed when the arm is pushed out for its upper arm's contact.</summary>
         public bool KeepHand = true;
-        /// <summary>At rest: the forearm and hand turned out of the body at the elbow before the arm is at the shoulder.</summary>
+        /// <summary>At rest: the hand turned out of the body at the elbow before the arm is at the shoulder.</summary>
         public bool ElbowFirst = true;
         private static readonly float[] ElbowShares = { 1f, 0.5f };
 
