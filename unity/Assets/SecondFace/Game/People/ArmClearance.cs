@@ -215,6 +215,13 @@ namespace SecondFace.Game.People
                 }
                 SkinClear(_lu, BodySkin.Part.UpperArmL, ref _angleL, ref _axisL, dt);
                 SkinClear(_ru, BodySkin.Part.UpperArmR, ref _angleR, ref _axisR, dt);
+                // at rest, the hands set at their gap again after the arms were cleared of the body (turned out at the shoulder
+                // for a forearm on the hip or the chest's side, the hand went with them, 6-9 cm off the thigh, A4, 2026-11-07)
+                if (RestReach && UpperFirst && _restW > 0.99f)
+                {
+                    SetHand(_ll, _lh, BodySkin.Part.UpperArmL, _restW, Outward(-1));
+                    SetHand(_rl, _rh, BodySkin.Part.UpperArmR, _restW, Outward(1));
+                }
                 // in the stride (and the last swings as the person stops), never in a gesture (a wave or a shrug is meant high)
                 if (Striding()) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
                 if (!RestReach) { Diag[4] = _restL; Diag[5] = _fwdL; Diag[10] = _restR; Diag[11] = _fwdR; }
@@ -575,9 +582,11 @@ namespace SecondFace.Game.People
                 var q = Quaternion.FromToRotation(W - E, to - E);
                 q.ToAngleAxis(out var a, out var ax);
                 if (a < 0.01f || ax.sqrMagnitude < 0.5f) return;
-                // (within the forearm's hang: past it the hand stays where it is)
-                if (Vector3.Angle(q * (W - E), Vector3.down) > HangMax + 2f && Vector3.Angle(q * (W - E), Vector3.down) > Vector3.Angle(W - E, Vector3.down)) return;
+                // (within the forearm's hang: past it the hand stays where it is; A3 is 30)
+                if (Vector3.Angle(q * (W - E), Vector3.down) > HangMax + 3f && Vector3.Angle(q * (W - E), Vector3.down) > Vector3.Angle(W - E, Vector3.down)) return;
                 TurnForearm(lower, first, a, ax);
+                // (and never back into the body: the forearm by the hip)
+                if (SkinNeed(lower, first, true).Angle > 0.5f) { TurnForearm(lower, first, -a, ax); return; }
             }
         }
 
@@ -979,6 +988,8 @@ namespace SecondFace.Game.People
             var fa = want.normalized;
             var bend = Vector3.Angle(ua, fa);
             if (bend > BendMax + 4f) fa = Vector3.RotateTowards(fa, ua, (bend - BendMax - 4f) * Mathf.Deg2Rad, 0f).normalized;
+            // (within the forearm's hang, A3)
+            if (Vector3.Angle(fa, Vector3.down) > HangMax + 3f) fa = Vector3.RotateTowards(Vector3.down, fa, (HangMax + 3f) * Mathf.Deg2Rad, 0f).normalized;
             Quaternion.FromToRotation(cur, fa * cur.magnitude).ToAngleAxis(out var aK, out var axK);
             if (aK > 0.01f && axK.sqrMagnitude > 0.5f) TurnForearm(lower, first, aK, axK);
             if (SkinNeed(upper, first, true).Angle > 0.01f) TurnForearm(lower, first, -aK, axK);   // (the forearm and hand never back into the body)
