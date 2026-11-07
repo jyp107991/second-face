@@ -221,6 +221,8 @@ namespace SecondFace.Game.People
                 {
                     SetHand(_ll, _lh, BodySkin.Part.UpperArmL, _restW, Outward(-1));
                     SetHand(_rl, _rh, BodySkin.Part.UpperArmR, _restW, Outward(1));
+                    KeepHang(_lu, _ll, _lh, BodySkin.Part.UpperArmL);
+                    KeepHang(_ru, _rl, _rh, BodySkin.Part.UpperArmR);
                 }
                 // in the stride (and the last swings as the person stops), never in a gesture (a wave or a shrug is meant high)
                 if (Striding()) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
@@ -588,6 +590,29 @@ namespace SecondFace.Game.People
                 // (and never back into the body: the forearm by the hip)
                 if (SkinNeed(lower, first, true).Angle > 0.5f) { TurnForearm(lower, first, -a, ax); return; }
             }
+        }
+
+        /// <summary>At rest, a forearm hanging further off the vertical than <see cref="HangMax"/> + 3° (round a wide hip, after
+        /// the arm was pushed out of the body) is brought back by the elbow, not the hand: the elbow moved the way the forearm
+        /// leans, the hand where it was (a woman's forearm stood 30-31° off the vertical, A3, 2026-11-07).</summary>
+        private void KeepHang(Transform upper, Transform lower, Transform hand, BodySkin.Part first)
+        {
+            if (upper == null || lower == null || hand == null) return;
+            var S = upper.position; var E = lower.position; var H = hand.position;
+            var fa = H - E; var l1 = (E - S).magnitude; var l2 = fa.magnitude;
+            if (l1 < 0.05f || l2 < 0.05f) return;
+            var hang = Vector3.Angle(fa, Vector3.down);
+            var max = HangMax + 3f;
+            if (hang <= max) return;
+            var lean = new Vector3(fa.x, 0f, fa.z);
+            if (lean.sqrMagnitude < 1e-6f) return;
+            var move = l2 * (Mathf.Sin(hang * Mathf.Deg2Rad) - Mathf.Sin(max * Mathf.Deg2Rad));
+            var axis = Vector3.Cross(E - S, lean.normalized);
+            if (axis.sqrMagnitude < 1e-8f) return;
+            TurnArm(upper, first, Mathf.Min(6f, move / l1 * Mathf.Rad2Deg), axis);
+            var E2 = lower.position; var W2 = hand.position;
+            Quaternion.FromToRotation(W2 - E2, H - E2).ToAngleAxis(out var a, out var ax);
+            if (a > 0.01f && ax.sqrMagnitude > 0.5f) TurnForearm(lower, first, a, ax);
         }
 
         /// <summary>At rest: the most the forearm may hang off the vertical (degrees; the gate's A3 is 30).</summary>
@@ -1017,7 +1042,15 @@ namespace SecondFace.Game.People
                 var arm = p - shoulder;
                 var a = Mathf.Atan2(d + Margin3, arm.magnitude) * Mathf.Rad2Deg;
                 if (a <= best) continue;
-                var ax = Vector3.Cross(arm, n);
+                // (a surface facing along the arm, the top of a pouch under a hanging forearm, is left sideways: about the
+                // shoulder the arm cannot lift off it, and the forearm stayed 0.5-0.8 cm in, C1, 2026-11-07)
+                var pushTo = n;
+                if (Mathf.Abs(Vector3.Dot(arm.normalized, n)) > 0.6f)
+                {
+                    var nh = new Vector3(n.x, 0f, n.z);
+                    pushTo = nh.sqrMagnitude > 0.09f ? nh.normalized : Outward(first == BodySkin.Part.UpperArmL ? -1 : 1);
+                }
+                var ax = Vector3.Cross(arm, pushTo);
                 if (ax.sqrMagnitude < 1e-8f) continue;
                 best = a; axis = ax.normalized; _needAt = i;
                 // for the gate's report: the arm's point and the body's point the push is for (the elbow slots at rest)
