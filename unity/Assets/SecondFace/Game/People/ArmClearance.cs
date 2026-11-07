@@ -502,6 +502,7 @@ namespace SecondFace.Game.People
             dL.ToAngleAxis(out var aL, out var axL);
             if (aL > 0.01f && axL.sqrMagnitude > 0.5f) TurnForearm(lower, first, aL, axL);
             PalmIn(lower, hand, side, first, w);
+            HangHand(hand, side, first, w, fwd, outward);
             if (w < 0.99f) return;
             // the elbow (and the forearm by it) off the waist and the chest's side: out only as far as it must, back in as
             // far as it may
@@ -510,6 +511,27 @@ namespace SecondFace.Game.People
             if (gapE < ElbowRest) abd = Mathf.Min(AbdMax, abd + AbdRate * dt);
             else if (gapE > ElbowRest + 0.01f) abd = Mathf.Max(AbdMin, abd - 0.5f * AbdRate * dt);
             Diag[side < 0 ? 12 : 13] = abd; Diag[side < 0 ? 14 : 15] = Vector3.Angle(hand.position - lower.position, Vector3.down);
+        }
+
+        /// <summary>At rest the hand hangs along the leg (down, <see cref="HandTaper"/>° in, as the thigh narrows), turned at
+        /// the wrist at most <see cref="HandHang"/>°: on the forearm's line, a forearm coming in from an elbow out over the
+        /// waist carried the fingers 3 cm into the thigh, the place was pushed out 3-5 cm after them and the hand hung 6-9 cm
+        /// off the thigh (A4, 2026-11-07).</summary>
+        public float HandHang = 25f, HandTaper = 6f;
+
+        private void HangHand(Transform hand, int side, BodySkin.Part first, float w, Vector3 fwd, Vector3 outward)
+        {
+            if (HandHang <= 0f) return;
+            var mid = _animator.GetBoneTransform(side < 0 ? HumanBodyBones.LeftMiddleProximal : HumanBodyBones.RightMiddleProximal);
+            if (mid == null) return;
+            var hd = Vector3.ProjectOnPlane(mid.position - hand.position, fwd);
+            var want = Vector3.ProjectOnPlane(Vector3.down * Mathf.Cos(HandTaper * Mathf.Deg2Rad) - outward * Mathf.Sin(HandTaper * Mathf.Deg2Rad), fwd);
+            if (hd.sqrMagnitude < 1e-6f || want.sqrMagnitude < 1e-6f) return;
+            var a = Mathf.Clamp(Vector3.SignedAngle(hd, want, fwd), -HandHang, HandHang) * w;
+            if (Mathf.Abs(a) < 0.01f) return;
+            var q = Quaternion.AngleAxis(a, fwd);
+            hand.rotation = q * hand.rotation;
+            _skin.Turn(_skin.Begin(first + 2), _skin.End(first + 2), hand.position, q);
         }
 
         /// <summary>At rest: the most the forearm may hang off the vertical (degrees; the gate's A3 is 30).</summary>

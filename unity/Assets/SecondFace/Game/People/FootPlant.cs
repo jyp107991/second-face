@@ -430,7 +430,9 @@ namespace SecondFace.Game.People
             // before it was slow enough to hold, 2026-11-06)
             var landing = sole < k.Last - 0.001f && speed < SwingFast;
             k.Last = sole;
-            if (!k.On && k.Release <= 0f && sole < LockDown && (speed < slow || landing)) { k.On = true; k.Pivot = low; k.At = At(low); k.Min = Mathf.Max(0f, sole); k.W = 0f; Hold(ref k, foot, toe); turned = true; }
+            // (walking, a foot coming down while the other is in the air waits for it from its first held frame: eased in over
+            // 0.06 s, the foot landing as a jog slowed to a stop rose 4.5-5 cm with the clip while held, W6, 2026-11-07)
+            if (!k.On && k.Release <= 0f && sole < LockDown && (speed < slow || landing)) { k.On = true; k.Pivot = low; k.At = At(low); k.Min = Mathf.Max(0f, sole); k.Wait = !otherDown && body < WalkFlight ? 1f : 0f; k.W = k.Wait; Hold(ref k, foot, toe); turned = true; }
             if (k.On)
             {
                 // rolling: the pivot moves to whichever point is now the lower, pinned where it is (forward as a heel-first
