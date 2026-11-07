@@ -1023,6 +1023,30 @@ namespace SecondFace.Game.People
             if (upper == null) return;
             var left = first == BodySkin.Part.UpperArmL;
             var lower = left ? _ll : _rl; var handT = left ? _lh : _rh;
+            // at rest, a hand or forearm in the thigh or the hip is turned out of it at the elbow first, within the forearm's
+            // hang and the elbow's bend, and only what that leaves is taken at the shoulder (turned out at the shoulder for
+            // the hand, the whole arm stood 20-27° off the vertical: of the resting arms' pushes, the hand on the thigh 1830,
+            // the forearm on it 521, the upper arm on the chest 238, A1/A4, 2026-11-07)
+            if (ElbowFirst && UpperFirst && RestReach && _restW > 0.99f && lower != null && handT != null)
+                for (var ePass = 0; ePass < 2; ePass++)
+                {
+                    var (nE, axE) = SkinNeedAbout(lower.position, _skin.Begin(first + 1), _skin.End(first + 2), first);
+                    if (nE <= 0.01f) break;
+                    var eUa = (lower.position - upper.position).normalized;
+                    var eFa0 = handT.position - lower.position;
+                    var eTurned = false;
+                    foreach (var eShare in ElbowShares)
+                    {
+                        var eFa = Quaternion.AngleAxis(nE * eShare, axE) * eFa0;
+                        var eHang = Vector3.Angle(eFa, Vector3.down); var eBend = Vector3.Angle(eUa, eFa);
+                        if (eHang > HangMax + 3f && eHang > Vector3.Angle(eFa0, Vector3.down)) continue;
+                        if (eBend > BendMax + 4f || eBend < BendFloor) continue;
+                        TurnForearm(lower, first, nE * eShare, axE);
+                        eTurned = true;
+                        break;
+                    }
+                    if (!eTurned) break;
+                }
             var wrist0 = handT != null ? handT.position : Vector3.zero;
             var (need, dir) = SkinNeed(upper, first);
             var forUpper = _needAt >= _skin.Begin(first) && _needAt < _skin.Begin(first + 1);
@@ -1055,6 +1079,39 @@ namespace SecondFace.Game.People
 
         /// <summary>At rest: the hand kept where it was placed when the arm is pushed out for its upper arm's contact.</summary>
         public bool KeepHand = true;
+        /// <summary>At rest: the forearm and hand turned out of the body at the elbow before the arm is at the shoulder.</summary>
+        public bool ElbowFirst = true;
+        private static readonly float[] ElbowShares = { 1f, 0.5f };
+
+        /// <summary>The turn about <paramref name="pivot"/> (the elbow) that brings the deepest of the arm's points
+        /// <paramref name="from"/>..<paramref name="to"/> <see cref="SkinMargin"/> out of the body, and its axis (as
+        /// <see cref="SkinNeed"/> does about the shoulder; the points by the elbow itself, which no turn there moves, left out).</summary>
+        private (float Angle, Vector3 Axis) SkinNeedAbout(Vector3 pivot, int from, int to, BodySkin.Part first)
+        {
+            var best = 0f; var axis = Vector3.zero;
+            var hand = _skin.Begin(first + 2);
+            for (var i = from; i < to; i++)
+            {
+                var p = _skin.P[i];
+                var arm = p - pivot;
+                if (arm.sqrMagnitude < 0.0025f) continue;
+                if (!_skin.Depth(p, out var d, out var n)) continue;
+                if (i < hand && _skin.Near >= 0 && arm.sqrMagnitude < 0.0064f) d -= ClothGive * _skin.Off(_skin.Near);
+                if (d + Margin3 <= 0f) continue;
+                var a = Mathf.Atan2(d + Margin3, arm.magnitude) * Mathf.Rad2Deg;
+                if (a <= best) continue;
+                var pushTo = n;
+                if (Mathf.Abs(Vector3.Dot(arm.normalized, n)) > 0.6f)
+                {
+                    var nh = new Vector3(n.x, 0f, n.z);
+                    pushTo = nh.sqrMagnitude > 0.09f ? nh.normalized : Outward(first == BodySkin.Part.UpperArmL ? -1 : 1);
+                }
+                var ax = Vector3.Cross(arm, pushTo);
+                if (ax.sqrMagnitude < 1e-8f) continue;
+                best = a; axis = ax.normalized;
+            }
+            return (best, axis);
+        }
         private int _needAt = -1;
 
         private (float Angle, Vector3 Axis) SkinNeed(Transform upper, BodySkin.Part first, bool lowerOnly = false)
