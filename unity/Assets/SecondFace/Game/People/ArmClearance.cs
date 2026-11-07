@@ -330,6 +330,7 @@ namespace SecondFace.Game.People
             if (side < 0) _wantGapL = SkinGap; else _wantGapR = SkinGap;
             var found = Place(frontNow, out var wrist, out _);
             if (!found) return;
+            if (UpperFirst) { UpperFirstArm(upper, lower, hand, side, first, w, S, E, l1, l2, wrist, fwd, outward); return; }
             // the two-bone solve, the elbow back (and a little out)
             var toW = wrist - S;
             var d = Mathf.Clamp(toW.magnitude, Mathf.Abs(l1 - l2) + 1e-3f, l1 + l2 - 1e-4f);
@@ -389,6 +390,47 @@ namespace SecondFace.Game.People
             }
             if (hang > HangMax) flexAdd = Mathf.Max(flexMin, flexAdd - 0.5f);
             else if (flexAdd < 0f && hang < HangMax - 2f) flexAdd = Mathf.Min(0f, flexAdd + 0.5f);
+        }
+
+        /// <summary>At rest, the upper arm placed first: it hangs from the shoulder, out to the side only as far as the elbow
+        /// needs to clear the waist (<see cref="AbdMin"/> to <see cref="AbdMax"/>°, eased), <see cref="UpperForward"/>° forward;
+        /// the forearm then reaches for the hand's place beside the thigh, no further than <see cref="HangMax"/>° off the
+        /// vertical. A relaxed arm hangs this way: its upper arm near the vertical, its forearm carrying the hand past the hip.
+        /// Solved from the hand's place back to the shoulder, the elbow bent back further and pushed out as it met the waist,
+        /// and the men's upper arms stood 20-31° off the vertical at rest, every family of them (A1, 742 of 1513 across the
+        /// cast, 2026-11-06).</summary>
+        public bool UpperFirst = true;
+        public float AbdMin = 3f, AbdMax = 17f, AbdStart = 8f, AbdRate = 30f, UpperForward = 3f;
+        private float _abdL = float.NaN, _abdR = float.NaN;
+
+        private void UpperFirstArm(Transform upper, Transform lower, Transform hand, int side, BodySkin.Part first, float w,
+            Vector3 S, Vector3 E, float l1, float l2, Vector3 wrist, Vector3 fwd, Vector3 outward)
+        {
+            ref var abd = ref (side < 0 ? ref _abdL : ref _abdR);
+            if (float.IsNaN(abd)) abd = AbdStart;
+            var ra = abd * Mathf.Deg2Rad; var rf = UpperForward * Mathf.Deg2Rad;
+            var ua = Vector3.down * Mathf.Cos(ra) + outward * Mathf.Sin(ra);
+            ua = (ua * Mathf.Cos(rf) + fwd * Mathf.Sin(rf)).normalized;
+            var elbowAt = S + ua * l1;
+            var fa = wrist - elbowAt;
+            fa = fa.sqrMagnitude > 1e-6f ? fa.normalized : Vector3.down;
+            if (Vector3.Angle(fa, Vector3.down) > HangMax) fa = Vector3.RotateTowards(Vector3.down, fa, HangMax * Mathf.Deg2Rad, 0f).normalized;
+            var dU = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(E - S, elbowAt - S), w);
+            dU.ToAngleAxis(out var aU, out var axU);
+            if (aU > 0.01f && axU.sqrMagnitude > 0.5f) TurnArm(upper, first, aU, axU);
+            var E2 = lower.position; var W2 = hand.position;
+            var dL = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(W2 - E2, fa * l2), w);
+            dL.ToAngleAxis(out var aL, out var axL);
+            if (aL > 0.01f && axL.sqrMagnitude > 0.5f) TurnForearm(lower, first, aL, axL);
+            PalmIn(lower, hand, side, first, w);
+            if (w < 0.99f) return;
+            // the elbow (and the forearm by it) off the waist and the chest's side: out only as far as it must, back in as
+            // far as it may
+            var gapE = Mathf.Min(Gap(_skin.Begin(first), _skin.End(first), 1, 0.08f, null, 0f, ClothGive), Gap(_skin.Begin(first + 1), _skin.End(first + 1), 1, 0.08f, lower.position, 0.08f, ClothGive));
+            var dt = Time.deltaTime;
+            if (gapE < ElbowRest) abd = Mathf.Min(AbdMax, abd + AbdRate * dt);
+            else if (gapE > ElbowRest + 0.01f) abd = Mathf.Max(AbdMin, abd - 0.5f * AbdRate * dt);
+            Diag[side < 0 ? 12 : 13] = abd; Diag[side < 0 ? 14 : 15] = Vector3.Angle(hand.position - lower.position, Vector3.down);
         }
 
         /// <summary>At rest: the most the forearm may hang off the vertical (degrees; the gate's A3 is 30).</summary>
