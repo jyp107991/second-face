@@ -15,6 +15,11 @@ namespace SecondFace.Game.Play
     public sealed class Walker : MonoBehaviour
     {
         public const float WalkSpeed = 1.4f, JogSpeed = 3.2f, JogBeyond = 22f, SampleRadius = 4f;
+        /// <summary>How fast the player's body gets up to pace and slows to a stop (m/s²), as the townsfolk's: at 10 it went
+        /// from standing to a jog in 0.32 s, one step, and stopped as short; the clips' strides lagged the body by up to
+        /// 1.2 m/s and a planted foot slid as the jog set off (W1) and floated as it stopped (W6, 2026-11-07). People take
+        /// two or three steps to get up to a jog and to stop from one.</summary>
+        public const float Acceleration = 6f;
         /// <summary>The controller's pickup (LocomotionBuild): played from 0.7 s in at 1.4 times, lowest at the clip's 2.3 s.</summary>
         public const float PickupFrom = 0.7f, PickupSpeed = 1.4f, PickupLowest = 2.3f;
         private static readonly int Pickup = Animator.StringToHash("pickup");
@@ -46,7 +51,7 @@ namespace SecondFace.Game.Play
             go.name = "Walker";
             var agent = go.AddComponent<NavMeshAgent>();
             agent.radius = 0.3f; agent.height = 1.8f;
-            agent.speed = WalkSpeed; agent.acceleration = 10f; agent.angularSpeed = 720f;
+            agent.speed = WalkSpeed; agent.acceleration = Acceleration; agent.angularSpeed = 720f;
             agent.stoppingDistance = 0.15f; agent.autoBraking = true;
             agent.obstacleAvoidanceType = ObstacleAvoidanceType.LowQualityObstacleAvoidance;
             var w = go.AddComponent<Walker>();

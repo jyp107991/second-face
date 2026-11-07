@@ -476,7 +476,7 @@ namespace SecondFace.Tests
             foreach (var s in people) if (s.Gaze != null) s.Gaze.Target = null;
             // 6. walking, jogging, sneaking: straight from a standstill to a stop, and round a 3 m bend
             Camera walkCam = null;
-            foreach (var (name, v, sneak, accel) in new[] { ("sneak", 0.85f, true, 6f), ("walk", Townsfolk.WalkSpeed, false, 6f), ("walk_player", Walker.WalkSpeed, false, 10f), ("jog", Walker.JogSpeed, false, 10f) })
+            foreach (var (name, v, sneak, accel) in new[] { ("sneak", 0.85f, true, 6f), ("walk", Townsfolk.WalkSpeed, false, 6f), ("walk_player", Walker.WalkSpeed, false, Walker.Acceleration), ("jog", Walker.JogSpeed, false, Walker.Acceleration) })
             {
                 Place(new Vector3(0f, 0f, -30f), 0f);
                 foreach (var s in people) { s.A.SetBool("Sneak", sneak); s.A.SetFloat("Speed", 0f); }
