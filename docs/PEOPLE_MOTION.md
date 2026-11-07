@@ -70,7 +70,11 @@ It is binding. It sits beside the face and skin gate (`docs/PEOPLE_QA.md`) and i
    are not the tree's is **stale and counts as red**: any change to the people is measured again before anything is
    said about them. The gate runs its frames at a fixed 1/60 s of game time (a phone's frame; `Time.captureDeltaTime`),
    whatever the machine takes to draw them, so the same code measures the same run after run and a comparison of
-   verdicts compares the people, not the test machine's load (its frames had run 4-131 ms). **Green means the whole cast** (`EveryPersonStandsAndMovesLikePeople`, every body of the
+   verdicts compares the people, not the test machine's load (its frames had run 4-131 ms). Its waits and the probe's
+   mesh samples count frames, never compare `Time.time` (a float whose size depends on how long the editor took to
+   start: a wait by it ended a frame sooner or later from run to run, and the same code's whole-cast verdicts came out
+   1073 and 1085, 174 lines apart, 2026-11-07); a check of the gate itself is two runs of the same code, line for line
+   the same. **Green means the whole cast** (`EveryPersonStandsAndMovesLikePeople`, every body of the
    catalogue, one verdict): the quick ten are a working check and never count as green. **No commit makes people
    worse**: a verdict with more failures than the one it replaces on any measure (the same measures, the same set)
    fails `npm run check` and CI; a regression is fixed or reverted, never committed. Files are added to the inputs

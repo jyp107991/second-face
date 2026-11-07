@@ -302,7 +302,17 @@ namespace SecondFace.Tests
 
         private sealed class Runner : MonoBehaviour { }
 
-        private static IEnumerator Wait(float seconds) { var t = Time.time; while (Time.time - t < seconds) yield return null; }
+        /// <summary>Waits this long, in frames when the gate's frames are fixed (docs/PEOPLE_MOTION.md §1.9): a wait by
+        /// Time.time compared floats whose size depends on how long the editor took to start, so the same wait ended a frame
+        /// sooner or later from run to run, every state after it began on another frame and the same code's verdicts differed
+        /// (1073 and 1085, 174 lines, 2026-11-07).</summary>
+        private static IEnumerator Wait(float seconds)
+        {
+            if (Time.captureDeltaTime > 0f) { for (int n = Frames(seconds), i = 0; i < n; i++) yield return null; yield break; }
+            var t = Time.time; while (Time.time - t < seconds) yield return null;
+        }
+
+        private static int Frames(float seconds) => Time.captureDeltaTime > 0f ? Mathf.Max(1, Mathf.RoundToInt(seconds / Time.captureDeltaTime)) : int.MaxValue;
 
         private IEnumerator Gate(string[] ids, string report, bool captures, List<string> failures = null, bool assert = true, int[] measured = null)
         {
@@ -433,8 +443,7 @@ namespace SecondFace.Tests
                 foreach (var s in people) if (s.Ambient != null) s.Ambient.Gesture(g);
                 Record("gesture:" + g, MotionProbe.K.Gesture);
                 yield return Wait(0.5f);
-                var t0 = Time.time;
-                while (Time.time - t0 < 15f && people.Any(s => Playing(s.A))) yield return null;
+                for (int n = Frames(15f), f0 = 0; f0 < n && people.Any(s => Playing(s.A)); f0++) yield return null;
                 Stop();
                 yield return Wait(0.6f);
                 Record("after:" + g, MotionProbe.K.Stand);
@@ -511,8 +520,7 @@ namespace SecondFace.Tests
                     foreach (var s in people) Pace.Set(s.A, v, false, 0f);
                     yield return Wait(0.8f);
                     Record("bend:" + name, MotionProbe.K.Walk);
-                    var t1 = Time.time;
-                    while (Time.time - t1 < 6f)
+                    for (int n1 = Frames(6f), f1 = 0; f1 < n1; f1++)
                     {
                         var dt = Time.deltaTime;
                         theta += v / 3f * dt;
@@ -559,8 +567,7 @@ namespace SecondFace.Tests
             }
             Record("gesture:talk (conversation)", MotionProbe.K.Gesture);
             yield return Wait(0.5f);
-            var t2 = Time.time;
-            while (Time.time - t2 < 15f && people.Any(s => Playing(s.A))) yield return null;
+            for (int n2 = Frames(15f), f2 = 0; f2 < n2 && people.Any(s => Playing(s.A)); f2++) yield return null;
             Stop();
             yield return Wait(0.6f);
             Record("talk", MotionProbe.K.Stand);

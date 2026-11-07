@@ -147,6 +147,7 @@ namespace SecondFace.Tests
         /// <summary>Where to write a per-frame trace of the feet (a CSV), for the states whose name starts with <see cref="TraceState"/>.</summary>
         public string TracePath, TraceState;
         private float _nextBake;
+        private int _bakeCount = int.MaxValue / 2;
         private Mesh _baked;
 
         private enum Part : byte { None, Torso, Head, UpperArmL, UpperArmR, ForearmL, ForearmR, HandL, HandR, ThighL, ThighR, ShinL, ShinR, FootL, FootR }
@@ -434,8 +435,12 @@ namespace SecondFace.Tests
                     Add("F3s", Vector3.Angle(Flat(toeR - ankleR).normalized, fwd));
                 }
                 // the mesh, a few times a second
-                if (Time.time >= _nextBake || k == K.Walk)
+                // (by frames when the gate's frames are fixed: by Time.time the frames baked shifted from run to run with the
+                // editor's start, docs/PEOPLE_MOTION.md §1.9, 2026-11-07)
+                var every = Time.captureDeltaTime > 0f ? Mathf.Max(1, Mathf.RoundToInt(1f / (BakeHz * Time.captureDeltaTime))) : 0;
+                if (every > 0 ? (++_bakeCount >= every || k == K.Walk) : (Time.time >= _nextBake || k == K.Walk))
                 {
+                    _bakeCount = 0;
                     _nextBake = Time.time + 1f / BakeHz;
                     MeshMeasures(k);
                 }
