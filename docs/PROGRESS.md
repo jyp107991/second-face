@@ -523,6 +523,18 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   reverted); a landing foot held down at once only on the move (kept). Nothing changed since the committed verdict
   touches the standing feet, and two runs differing only by a diagnostic differed by 3-9 failures on the arms' measures:
   **the same code is run again now (full8) to measure the gate's run-to-run spread** before more is changed for F1/F4/F5.
+- **2026-11-07 (afternoon), the gate made deterministic; whole cast 1105** (full9, red, not committed: F4 7 → 13 and
+  W1 0 → 6 worse). The run-to-run spread was the gate's own timing (waits and mesh bakes on the editor's clock, people
+  made in a frame timed from another pose, clocks from differences of the absolute time): now frame-counted, two fixed
+  warm-up frames, the probe's and the arm clearance's own clocks from 0; two runs of the same code give the same
+  failures. full9 against the committed 1513: A1 742 → 602, A4 511 → 327, A3 33 → 4, C1 90 → 80, W6 116 → 59, W3 10,
+  F1 1, F2 1, F5 2, A2 0. Since: the jogging foot let go of at 2.5 cm and kept from locking again until it leaves the
+  ground or swings (the women's jog W1 gone; the men's walk W1 came back and is fixed by the swing); **F4 traced**: the
+  standing feet's slides after a yawn and in a look were a foot still in the air, mid-step, when the state began, taken
+  for one bearing weight against its lowest so far: the probe now judges it against its lowest in the whole state, as
+  the measure's definition says (docs/PEOPLE_MOTION.md F4); **W6 in the jog traced**: the foot let go of into the
+  flight crept at 0.4-0.5 m/s as the clip lifted it 4-5 cm in a frame: let go over 0.05 s in flight. **Next:** the quick
+  set, then the whole cast; commit the verdict only with every measure at or under the committed one.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
