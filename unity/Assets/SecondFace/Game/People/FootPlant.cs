@@ -440,7 +440,9 @@ namespace SecondFace.Game.People
             // from locking again the men's feet slid 5-6 % of their frames, W1)
             // (or swung: a walking foot's lowest point clears the ground by under 3 cm, and kept from locking until it rose
             // past it the men's feet slid through every stride, W1 5-12 %, 2026-11-07)
-            if (sole > LockLift || speed > slow) k.NoRelock = false;
+            // (jogging, by leaving the ground only: the ankle runs ahead fast as the heel rises over the ball, and read as a
+            // swing it let the foot lock again mid-roll, W1, 2026-11-07)
+            if (sole > LockLift || (speed > slow && body < WalkFlight)) k.NoRelock = false;
             if (!k.On && k.Release <= 0f && sole < LockDown && (speed < slow || landing) && !(k.NoRelock && body > StandStill)) { k.On = true; k.Pivot = low; k.At = At(low); k.Min = Mathf.Max(0f, sole); k.Wait = !otherDown && body < WalkFlight && body > StandStill ? 1f : 0f; k.W = k.Wait; Hold(ref k, foot, toe); turned = true; }
             if (k.On)
             {
