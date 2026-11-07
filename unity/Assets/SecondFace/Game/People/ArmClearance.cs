@@ -217,6 +217,8 @@ namespace SecondFace.Game.People
                 SkinClear(_ru, BodySkin.Part.UpperArmR, ref _angleR, ref _axisR, dt);
                 // in the stride (and the last swings as the person stops), never in a gesture (a wave or a shrug is meant high)
                 if (Striding()) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
+                // DIAG (temporary): the hands' gap after every turn (cm), in the surface slots the trace prints
+                if (RestReach) { Diag[5] = HandGap(BodySkin.Part.UpperArmL) * 100f; Diag[11] = HandGap(BodySkin.Part.UpperArmR) * 100f; }
                 if (!RestReach) { Diag[4] = _restL; Diag[5] = _fwdL; Diag[10] = _restR; Diag[11] = _fwdR; }
                 Diag[6] = _carryL; Diag[7] = _angleL; Diag[8] = _carryR; Diag[9] = _angleR;
                 if (!RestReach) { Diag[12] = _twistL; Diag[13] = _twistR; }
