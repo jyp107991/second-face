@@ -1086,7 +1086,9 @@ namespace SecondFace.Game.People
                 {
                     var eFa = Quaternion.AngleAxis(nE * eShare, axE) * eFa0;
                     var eHang = Vector3.Angle(eFa, Vector3.down); var eBend = Vector3.Angle(eUa, eFa);
-                    if (eHang > HangMax && eHang > Vector3.Angle(eFa0, Vector3.down)) continue;
+                    // (to 3° past the resting hang, under A3's 30: held to it, the forearm already round a wide thigh took
+                    // none, and the shoulder all, A1, 2026-11-07)
+                    if (eHang > HangMax + 3f && eHang > Vector3.Angle(eFa0, Vector3.down)) continue;
                     if (eBend > BendMax + 4f || eBend < BendFloor) continue;
                     TurnForearm(lower, first, nE * eShare, axE);
                     eTurned = true;
