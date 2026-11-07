@@ -1094,6 +1094,9 @@ namespace SecondFace.Game.People
         /// <summary>At rest: the hand turned out of the body at the elbow before the arm is at the shoulder.</summary>
         public bool ElbowFirst = true;
         private static readonly float[] ElbowShares = { 1f, 0.5f };
+        /// <summary>How far the elbow's turn takes the hand out of the thigh (m): the skin's points there are 1.5-4 cm apart on
+        /// a curved surface, and taken to 3 mm by them the hand lay 1.6-2.7 cm into the thigh's front (C1 79 -> 112, 2026-11-07).</summary>
+        public float ElbowMargin = 0.012f;
 
         /// <summary>The turn about <paramref name="pivot"/> (the elbow) that brings the deepest of the arm's points
         /// <paramref name="from"/>..<paramref name="to"/> <see cref="SkinMargin"/> out of the body, and its axis (as
@@ -1111,8 +1114,8 @@ namespace SecondFace.Game.People
                 if (arm.sqrMagnitude < 0.0144f) continue;
                 if (!_skin.Depth(p, out var d, out var n)) continue;
                 if (i < hand && _skin.Near >= 0 && arm.sqrMagnitude < 0.0064f) d -= ClothGive * _skin.Off(_skin.Near);
-                if (d + Margin3 <= 0f) continue;
-                var a = Mathf.Atan2(d + Margin3, arm.magnitude) * Mathf.Rad2Deg;
+                if (d + ElbowMargin <= 0f) continue;
+                var a = Mathf.Atan2(d + ElbowMargin, arm.magnitude) * Mathf.Rad2Deg;
                 if (a <= best) continue;
                 var pushTo = n;
                 if (Mathf.Abs(Vector3.Dot(arm.normalized, n)) > 0.6f)
