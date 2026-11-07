@@ -448,7 +448,7 @@ namespace SecondFace.EditorTools
             using (var gz = new GZipStream(ms, System.IO.Compression.CompressionLevel.Optimal, true))
             using (var w = new BinaryWriter(gz))
             {
-                w.Write("RBS3".ToCharArray());
+                w.Write("RBS4".ToCharArray());
                 w.Write(Defs.Length);
                 foreach (var def in Defs) { w.Write(def.Id); w.Write((byte)(def.ThinSides ? 1 : 0)); }
                 for (var p = 0; p < 9; p++) w.Write(byPart[p].Count);
@@ -456,14 +456,22 @@ namespace SecondFace.EditorTools
                     foreach (var i in byPart[p])
                     {
                         var b = bw[i];
-                        // the two strongest bones (the weights come sorted, strongest first)
+                        // every bone that moves it, as the GPU skins it (RBS4): the two strongest first, then the rest (with only
+                        // the two, a hip's point weighted to the pelvis, a thigh and the spine stood 2.5 cm off the skin, and a
+                        // forearm went 0.5-1 cm into the hip unseen, C1, 2026-11-07)
                         int b0 = b.boneIndex0, b1 = b.weight1 > 0f ? b.boneIndex1 : b.boneIndex0;
-                        var s = b.weight0 + (b.weight1 > 0f ? b.weight1 : 0f);
-                        var w0 = s > 0f ? b.weight0 / s : 1f;
-                        w.Write((byte)b0); w.Write((byte)b1); w.Write((byte)Mathf.RoundToInt(w0 * 255f));
+                        var sum = b.weight0 + b.weight1 + b.weight2 + b.weight3;
+                        if (sum <= 0f) sum = 1f;
+                        var w0 = b.weight0 / sum; var w1 = b.weight1 > 0f ? b.weight1 / sum : 0f;
+                        w.Write((byte)b0); w.Write((byte)b1); w.Write(w0); w.Write(w1);
+                        var extra = new System.Collections.Generic.List<(int B, float W)>();
+                        if (b.weight2 > 0.001f) extra.Add((b.boneIndex2, b.weight2 / sum));
+                        if (b.weight3 > 0.001f) extra.Add((b.boneIndex3, b.weight3 / sum));
                         void Put(Vector3 v) { w.Write(v.x); w.Write(v.y); w.Write(v.z); }
                         Put(bp[b0].MultiplyPoint3x4(pos[i])); Put(bp[b0].MultiplyVector(nor[i]).normalized);
                         Put(bp[b1].MultiplyPoint3x4(pos[i])); Put(bp[b1].MultiplyVector(nor[i]).normalized);
+                        w.Write((byte)extra.Count);
+                        foreach (var (xb, xw) in extra) { w.Write((byte)xb); w.Write(xw); Put(bp[xb].MultiplyPoint3x4(pos[i])); Put(bp[xb].MultiplyVector(nor[i]).normalized); }
                         // low: the hips' and thighs' side, from 25 cm under the hip joints to 15 cm over them
                         var y = root.InverseTransformPoint(world[i]).y;
                         var low = p <= (int)SkinPart.ThighR && y < hipsY + 0.15f && y > hipsY - 0.45f;
@@ -478,7 +486,7 @@ namespace SecondFace.EditorTools
                         var fd = flL != null && flL[i] != Vector3.zero ? flL[i] : flR != null && flR[i] != Vector3.zero ? flR[i] : Vector3.zero;
                         var fs = fd == Vector3.zero ? 0 : flL != null && flL[i] != Vector3.zero ? 1 : 2;
                         w.Write((byte)fs);
-                        if (fs != 0) { Put(bp[b0].MultiplyVector(fd)); Put(bp[b1].MultiplyVector(fd)); }
+                        if (fs != 0) { Put(bp[b0].MultiplyVector(fd)); Put(bp[b1].MultiplyVector(fd)); foreach (var (xb, _) in extra) Put(bp[xb].MultiplyVector(fd)); }
                     }
             }
             var outPath = $"{dir}/{id}_skin.bytes";
