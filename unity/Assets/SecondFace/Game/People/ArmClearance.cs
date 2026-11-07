@@ -1085,7 +1085,7 @@ namespace SecondFace.Game.People
 
         /// <summary>The turn about <paramref name="pivot"/> (the elbow) that brings the deepest of the arm's points
         /// <paramref name="from"/>..<paramref name="to"/> <see cref="SkinMargin"/> out of the body, and its axis (as
-        /// <see cref="SkinNeed"/> does about the shoulder; the points by the elbow itself, which no turn there moves, left out).</summary>
+        /// <see cref="SkinNeed"/> does about the shoulder; the points within 12 cm of the elbow left out).</summary>
         private (float Angle, Vector3 Axis) SkinNeedAbout(Vector3 pivot, int from, int to, BodySkin.Part first)
         {
             var best = 0f; var axis = Vector3.zero;
@@ -1094,7 +1094,9 @@ namespace SecondFace.Game.People
             {
                 var p = _skin.P[i];
                 var arm = p - pivot;
-                if (arm.sqrMagnitude < 0.0025f) continue;
+                // (the forearm's outer half and the hand only: in by the elbow, a short lever, the turn for a centimetre swung
+                // the hand 10-20 cm off the thigh, A4, 2026-11-07; those are left to the shoulder)
+                if (arm.sqrMagnitude < 0.0144f) continue;
                 if (!_skin.Depth(p, out var d, out var n)) continue;
                 if (i < hand && _skin.Near >= 0 && arm.sqrMagnitude < 0.0064f) d -= ClothGive * _skin.Off(_skin.Near);
                 if (d + Margin3 <= 0f) continue;
