@@ -197,7 +197,7 @@ namespace SecondFace.Game.People
                     RestArm(_ru, _rl, _rh, 1, BodySkin.Part.UpperArmR, _restW);
                     Diag[1] = HandGap(BodySkin.Part.UpperArmL); Diag[3] = HandGap(BodySkin.Part.UpperArmR);
                     // the place nudged by the gap the hand really has (its shape, the fingers' curl, a coat's hem)
-                    if (_restW > 0.99f)
+                    if (_restW > 0.99f && !UpperFirst)
                     {
                         if (Diag[1] > -0.5f) _adaptL = Mathf.Clamp(_adaptL + Mathf.Clamp((_wantGapL - Diag[1]) * 0.5f, -0.01f, 0.01f), -0.03f, 0.12f);
                         if (Diag[3] > -0.5f) _adaptR = Mathf.Clamp(_adaptR + Mathf.Clamp((_wantGapR - Diag[3]) * 0.5f, -0.01f, 0.01f), -0.03f, 0.12f);
@@ -518,6 +518,7 @@ namespace SecondFace.Game.People
             if (aL > 0.01f && axL.sqrMagnitude > 0.5f) TurnForearm(lower, first, aL, axL);
             PalmIn(lower, hand, side, first, w);
             HangHand(hand, side, first, w, fwd, outward);
+            SetHand(lower, hand, first, w, outward);
             if (w < 0.99f) return;
             // the elbow (and the forearm by it) off the waist and the chest's side: out only as far as it must, back in as
             // far as it may
@@ -547,6 +548,33 @@ namespace SecondFace.Game.People
             var q = Quaternion.AngleAxis(a, fwd);
             hand.rotation = q * hand.rotation;
             _skin.Turn(_skin.Begin(first + 2), _skin.End(first + 2), hand.position, q);
+        }
+
+        /// <summary>At rest the hand is set at <see cref="SkinGap"/> off the leg as it really hangs: its gap measured on its own
+        /// points, the wrist moved in or out by what is missing (the forearm turned at the elbow, never the arm at the shoulder),
+        /// twice, at most <see cref="SetMax"/> a frame. Nudged over frames instead (the place pushed out by the gap seen before
+        /// the arm was cleared of the body), the hand was placed 3 cm into the thigh in some frames and pushed out of it at the
+        /// shoulder in others, 6-9 cm off it (A4, 2026-11-07).</summary>
+        public float SetMax = 0.04f;
+
+        private void SetHand(Transform lower, Transform hand, BodySkin.Part first, float w, Vector3 outward)
+        {
+            if (w < 0.99f) return;
+            for (var pass = 0; pass < 2; pass++)
+            {
+                var g = HandGap(first);
+                if (g < 0f && g <= -0.5f) return;   // (no leg near the hand)
+                var move = Mathf.Clamp(SkinGap - g, -SetMax, SetMax);
+                if (Mathf.Abs(move) < 0.002f) return;
+                var E = lower.position; var W = hand.position;
+                var to = W + outward * move;
+                var q = Quaternion.FromToRotation(W - E, to - E);
+                q.ToAngleAxis(out var a, out var ax);
+                if (a < 0.01f || ax.sqrMagnitude < 0.5f) return;
+                // (within the forearm's hang: past it the hand stays where it is)
+                if (Vector3.Angle(q * (W - E), Vector3.down) > HangMax + 2f && Vector3.Angle(q * (W - E), Vector3.down) > Vector3.Angle(W - E, Vector3.down)) return;
+                TurnForearm(lower, first, a, ax);
+            }
         }
 
         /// <summary>At rest: the most the forearm may hang off the vertical (degrees; the gate's A3 is 30).</summary>

@@ -29,7 +29,10 @@ namespace SecondFace.EditorTools
         public const float RestAbd = 6f;
         /// <summary>Made room for beyond touching (m): the game keeps an arm 3 mm off the body (ArmClearance.SkinMargin).</summary>
         public const float Clear = 0.003f;
-        public const float TorsoMax = 0.012f, ArmMax = 0.007f, TorsoShare = 0.6f;
+        public const float TorsoMax = 0.025f, ArmMax = 0.015f, TorsoShare = 0.6f;
+        /// <summary>The arm's places the overlap is taken over (degrees out from the reference, and forward or back of it):
+        /// where a resting arm really lies as the body sways and the idles shift.</summary>
+        private static readonly (float Out, float Fwd)[] Sweep = { (0f, 0f), (-3f, 0f), (4f, 0f), (0f, -8f), (0f, 8f), (4f, -8f), (4f, 8f) };
 
         public static string PathFor(string fbxPath) => fbxPath.Substring(0, fbxPath.Length - Path.GetExtension(fbxPath).Length) + "_flank.bytes";
 
@@ -199,34 +202,46 @@ namespace SecondFace.EditorTools
                     {
                         if (part[i] == 0)
                         {
-                            // the chest's side inside the hanging arm: pressed in toward the spine
-                            var v = wp[i] - S; var t = Vector3.Dot(v, ax) / l1;
-                            if (t < 0.15f || t > 1.05f) continue;
-                            var rv = v - ax * (t * l1);
-                            var phi = Mathf.Atan2(Vector3.Dot(rv, e2), Vector3.Dot(rv, e1)) * Mathf.Rad2Deg;
-                            int tb = Mathf.Clamp((int)(t * TB), 0, TB - 1), pb = ((int)Mathf.Floor((phi + 360f) / 15f)) % PB;
-                            var ra = Mathf.Max(rA[tb, pb], Mathf.Max(rA[tb, (pb + 1) % PB], rA[tb, (pb + PB - 1) % PB]));
-                            if (ra <= 0f) continue;
-                            var o = ra + Clear - rv.magnitude;
-                            if (o <= 0f) continue;
+                            // the chest's side inside the hanging arm, wherever in the sweep it lies: pressed in toward the spine
+                            var bestO = 0f; var bestEase = 0f;
+                            foreach (var (so, sf) in Sweep)
+                            {
+                                var rot = Quaternion.AngleAxis(-sf, Vector3.Cross(ax, root.forward).normalized * 1f) * Quaternion.AngleAxis(so * side, root.forward);
+                                var v = Quaternion.Inverse(rot) * (wp[i] - S); var t = Vector3.Dot(v, ax) / l1;
+                                if (t < 0.15f || t > 1.05f) continue;
+                                var rv = v - ax * (t * l1);
+                                var phi = Mathf.Atan2(Vector3.Dot(rv, e2), Vector3.Dot(rv, e1)) * Mathf.Rad2Deg;
+                                int tb = Mathf.Clamp((int)(t * TB), 0, TB - 1), pb = ((int)Mathf.Floor((phi + 360f) / 15f)) % PB;
+                                var ra = Mathf.Max(rA[tb, pb], Mathf.Max(rA[tb, (pb + 1) % PB], rA[tb, (pb + PB - 1) % PB]));
+                                if (ra <= 0f) continue;
+                                var oo = ra + Clear - rv.magnitude;
+                                var ee = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.15f, 0.3f, t)) * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(1.05f, 0.9f, t));
+                                if (oo * ee > bestO * bestEase || bestEase == 0f) { if (oo > 0f) { bestO = oo; bestEase = ee; } }
+                            }
+                            if (bestO <= 0f) continue;
                             var inward = -wn[i]; inward.y = 0f;
                             if (inward.sqrMagnitude < 0.04f) continue;   // (a surface facing up or down is not the chest's side)
-                            overT = Mathf.Max(overT, o); nT++;
-                            // eased out at the band's ends (the armpit, the elbow) so the surface bends, never steps
-                            var ease = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.15f, 0.3f, t)) * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(1.05f, 0.9f, t));
-                            amount[s][i] = Mathf.Min(TorsoMax, TorsoShare * o) * ease;
+                            overT = Mathf.Max(overT, bestO); nT++;
+                            amount[s][i] = Mathf.Min(TorsoMax, TorsoShare * bestO) * bestEase;
                             dirs[s][i] = inward.normalized;
                         }
                         else if (part[i] == armPart)
                         {
-                            // the arm's inner side inside the chest's: pressed in toward its bone
+                            // the arm's inner side inside the chest's, wherever in the sweep it lies: pressed in toward its bone
                             var v = wp[i] - S; var t = Vector3.Dot(v, ax) / l1;
-                            if (t < 0.2f || t > 1f || wp[i].y < yLo || wp[i].y > yHi) continue;
-                            var h = wp[i] - SpineAt(wp[i].y); h.y = 0f;
-                            var yb = YBin(wp[i].y); var qb = QBin(h);
-                            var rt = Mathf.Max(rT[yb, qb], Mathf.Max(rT[yb, (qb + 1) % QB], rT[yb, (qb + QB - 1) % QB]));
-                            if (rt <= 0f) continue;
-                            var o = rt + Clear - h.magnitude;
+                            if (t < 0.2f || t > 1f) continue;
+                            var o = 0f;
+                            foreach (var (so, sf) in Sweep)
+                            {
+                                var rot = Quaternion.AngleAxis(-sf, Vector3.Cross(ax, root.forward).normalized) * Quaternion.AngleAxis(so * side, root.forward);
+                                var pw = S + rot * v;
+                                if (pw.y < yLo || pw.y > yHi) continue;
+                                var h = pw - SpineAt(pw.y); h.y = 0f;
+                                var yb = YBin(pw.y); var qb = QBin(h);
+                                var rt = Mathf.Max(rT[yb, qb], Mathf.Max(rT[yb, (qb + 1) % QB], rT[yb, (qb + QB - 1) % QB]));
+                                if (rt <= 0f) continue;
+                                o = Mathf.Max(o, rt + Clear - h.magnitude);
+                            }
                             if (o <= 0f) continue;
                             var rv = v - ax * (t * l1);
                             if (rv.sqrMagnitude < 1e-6f) continue;

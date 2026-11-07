@@ -496,6 +496,16 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   them to the body's mesh as `sf_flank_L/R`, the shells cut from it take them (RBL2) and the game's skin points too
   (RBS3); `ArmClearance.Flank()` weighs them every frame (full while the upper arm hangs within 25° of the torso's line,
   none past 45°).
+- **2026-11-07 (later), the whole cast with the correctives** (red, not committed: five measures worse). 1513 → **1387**:
+  A1 742 → 595, W6 116 → 52, W3 10 → 9 better; A4 511 → 564, C1 90 → 101, A3 33 → 51, F4 7 → 10, F5 2 → 3 worse.
+  Quick set g106 60 (A1 54 → 18 with the correctives), g109 60. The contacts across the cast are two kinds: the upper
+  arm against the chest's side 30 cm above the hips (the uniformed, coated and broad men: their overlap with the arm
+  hung at 6° is 3.5-8.6 cm, more than the correctives' 1.9 cm) and the hand against the thigh 10-20 cm under the hips
+  (everyone): placed into the thigh in some frames and pushed out of it at the shoulder, the hand hung 6-9 cm off it
+  in others (A4). Tried and kept: the hand turned at the wrist to hang along the leg, the elbow's bend from the upper
+  arm tilted back; neither moved A4. **Next (building):** the hand set at its gap on its own points within the frame,
+  turned at the elbow (the slow nudge of its place switched off); the correctives' caps 2.5 cm (chest) and 1.5 cm (arm),
+  taken over seven places of the arm where it really rests; then the quick set and the whole cast.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
