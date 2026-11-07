@@ -516,6 +516,13 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   moves them (RBS4: the hips' points had stood up to 2.5 cm off the skin; now 0.0) and every 1.5 cm on the hips'
   up-facing tops. **Next:** the hand's correction kept within the elbow's bend (33°); the arms' points every 1.8 cm;
   the people rebuilt; the quick set, then the whole cast.
+- **2026-11-07 (late morning), whole cast 1215 → 1081 → 1146 → 1073** (red, not committed). The best (full7, `ed2d4f8b`):
+  A1 742 → 605, A4 511 → 310, A3 33 → 2-5, C1 90 → 73, W6 116 → 54, W3 10 → 9, A2 0; **still worse only F1 1 → 2,
+  F4 7 → 10, F5 2 → 4** (standing feet after a gesture: a weight-bearing foot sliding past 10 cm/s in 2-5 % of the frames,
+  a foot up 13 % of the time against 12 %). Tried: standing feet let go of a hold slowly (W6 54 → 101, F4 unchanged:
+  reverted); a landing foot held down at once only on the move (kept). Nothing changed since the committed verdict
+  touches the standing feet, and two runs differing only by a diagnostic differed by 3-9 failures on the arms' measures:
+  **the same code is run again now (full8) to measure the gate's run-to-run spread** before more is changed for F1/F4/F5.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
