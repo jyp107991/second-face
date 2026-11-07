@@ -448,6 +448,7 @@ namespace SecondFace.Game.People
                     else if (bendNow > bendWant + 4f) back = Mathf.Max(0f, back - BackRate * Time.deltaTime);
                 }
                 UpperFirstArm(upper, lower, hand, side, first, w, S, E, l1, l2, wristE, fwd, outward, ua, ref abd);
+                Diag[side < 0 ? 4 : 10] = back;   // (for the gate's trace: the upper arm's tilt back, degrees)
                 return;
             }
             // the two-bone solve, the elbow back (and a little out)
@@ -1098,14 +1099,17 @@ namespace SecondFace.Game.People
             var forUpper = _needAt >= _skin.Begin(first) && _needAt < _skin.Begin(first + 1);
             if (need > 0f) axis = dir;
             angle = need >= angle ? need : Mathf.MoveTowards(angle, need, Release * dt);
+            var pushed = 0f;   // (for the gate's trace: the shoulder's turns out of the body this frame, degrees)
             if (angle > 0.01f)
             {
                 TurnArm(upper, first, angle, axis);
+                pushed += angle;
                 for (var pass = 0; pass < 2; pass++)
                 {
                     var (more, dir2) = SkinNeed(upper, first, false, elbowFirst);
                     if (more <= 0.01f) break;
                     TurnArm(upper, first, more, dir2);
+                    pushed += more;
                 }
                 // at rest, a push for the upper arm's own contact (against the chest's side) keeps the hand where it was
                 // placed: the forearm turned back to it at the elbow, within the elbow's bend (turned out at the shoulder, the
@@ -1114,6 +1118,7 @@ namespace SecondFace.Game.People
             }
             Stage(first, 1);
             if (left) _elbowTurnedL = false; else _elbowTurnedR = false;
+            Diag[left ? 5 : 11] = pushed;
             if (!elbowFirst) return;
             for (var ePass = 0; ePass < 2; ePass++)
             {
@@ -1151,6 +1156,7 @@ namespace SecondFace.Game.People
                 TurnArm(upper, first, rest, dirR);
                 restDone += rest;
             }
+            Diag[left ? 5 : 11] = pushed + restDone;
             Stage(first, 3);
         }
 
