@@ -29,10 +29,11 @@ namespace SecondFace.EditorTools
         public const float RestAbd = 6f;
         /// <summary>Made room for beyond touching (m): the game keeps an arm 3 mm off the body (ArmClearance.SkinMargin).</summary>
         public const float Clear = 0.003f;
-        /// <summary>The most each side gives (m). (2.5 and 1.5 cm left the arms of the men whose padded jackets and vests are
-        /// in the body's own mesh 3-6 cm inside them at rest, the overlap 6-10 cm, and kept out they hung 20-30° off the
-        /// vertical in every state, A1/A4, 2026-11-07: a padded side gives as far, and under the arm it is not seen.)</summary>
-        public const float TorsoMax = 0.05f, ArmMax = 0.025f, TorsoShare = 0.6f;
+        /// <summary>The most each side gives (m). (5 and 2.5 cm, for the men whose padded jackets and vests are in the body's
+        /// own mesh, the overlap 6-10 cm, moved the whole cast only 1053 -> 1030 and turned one forearm past its cap, A3:
+        /// their arms are held out by gear at the torso's side and back, the belt and the thighs, not the chest's side,
+        /// 2026-11-07.)</summary>
+        public const float TorsoMax = 0.025f, ArmMax = 0.015f, TorsoShare = 0.6f;
         /// <summary>The arm's places the overlap is taken over (degrees out from the reference, and forward or back of it):
         /// where a resting arm really lies as the body sways and the idles shift.</summary>
         private static readonly (float Out, float Fwd)[] Sweep = { (0f, 0f), (-3f, 0f), (4f, 0f), (0f, -8f), (0f, 8f), (4f, -8f), (4f, 8f) };
