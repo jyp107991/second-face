@@ -591,6 +591,8 @@ namespace SecondFace.Game.People
                 var upperDir = E - _animator.GetBoneTransform(first == BodySkin.Part.UpperArmL ? HumanBodyBones.LeftUpperArm : HumanBodyBones.RightUpperArm).position;
                 var bendTo = Vector3.Angle(upperDir, q * (W - E));
                 if (bendTo > BendMax + 5f && bendTo > Vector3.Angle(upperDir, W - E)) return;
+                // (nor straightened: moved out from an elbow already out, the arm stood 4° from straight, A2)
+                if (bendTo < BendFloor && bendTo < Vector3.Angle(upperDir, W - E)) return;
                 TurnForearm(lower, first, a, ax);
                 // (and never back into the body: the forearm by the hip)
                 if (SkinNeed(lower, first, true).Angle > 0.5f) { TurnForearm(lower, first, -a, ax); return; }
@@ -614,11 +616,21 @@ namespace SecondFace.Game.People
             var move = l2 * (Mathf.Sin(hang * Mathf.Deg2Rad) - Mathf.Sin(max * Mathf.Deg2Rad));
             var axis = Vector3.Cross(E - S, lean.normalized);
             if (axis.sqrMagnitude < 1e-8f) return;
-            TurnArm(upper, first, Mathf.Min(6f, move / l1 * Mathf.Rad2Deg), axis);
+            var turn = Mathf.Min(6f, move / l1 * Mathf.Rad2Deg);
+            TurnArm(upper, first, turn, axis);
             var E2 = lower.position; var W2 = hand.position;
             Quaternion.FromToRotation(W2 - E2, H - E2).ToAngleAxis(out var a, out var ax);
             if (a > 0.01f && ax.sqrMagnitude > 0.5f) TurnForearm(lower, first, a, ax);
+            // (never straightening the elbow: the elbow out the way the forearm leans can line the two up, A2)
+            if (Vector3.Angle(lower.position - upper.position, hand.position - lower.position) < BendFloor)
+            {
+                if (a > 0.01f && ax.sqrMagnitude > 0.5f) TurnForearm(lower, first, -a, ax);
+                TurnArm(upper, first, -turn, axis);
+            }
         }
+
+        /// <summary>At rest, the least the elbow is bent by any correction after the arm is placed (degrees; A2's p2 is 5).</summary>
+        public float BendFloor = 6f;
 
         /// <summary>At rest: the most the forearm may hang off the vertical (degrees; the gate's A3 is 30).</summary>
         public float HangMax = 25f;

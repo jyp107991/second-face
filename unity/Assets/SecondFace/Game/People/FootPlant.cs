@@ -81,6 +81,8 @@ namespace SecondFace.Game.People
         public float WalkFlight = 1.8f;
         /// <summary>The sole's lift at which a held foot lets go as it pushes off into a jog's flight (m).</summary>
         public float LockLiftFlight = 0.012f;
+        /// <summary>The body's pace below which the person is standing (m/s): a held foot is let go of slowly.</summary>
+        public float StandStill = 0.3f;
         /// <summary>Moving, each foot goes where the captured subject's ankle went (the clip's own foot goal, Mecanim's IK
         /// goal: the source's ankle scaled to this body, with the stride's travel), not where the retargeted leg puts it: a
         /// leg of other proportions bent to the clip's angles puts its ankle elsewhere, and in a crouch it drifts through
@@ -475,7 +477,9 @@ namespace SecondFace.Game.People
                 // out of the hold at once, slowing as it nears the clip's own place (smoothstep's slow start held the jog's
                 // push-off foot crawling while it rose 3-5 cm, the lower foot bearing no weight read as one bearing it, W6,
                 // 2026-11-07)
-                var t = k.Release * k.Release;
+                // (standing, the old slow start and end: let go at once, a standing foot slid 10+ cm/s as it left its hold after a
+                // gesture, F4 7 -> 11, 2026-11-07)
+                var t = body > StandStill ? k.Release * k.Release : k.Release * k.Release * (3f - 2f * k.Release);
                 if (!turned)
                 {
                     var before = Lowest(foot, toe, heel, ball, tip);
