@@ -728,8 +728,11 @@ namespace SecondFace.Game.People
 
         /// <summary>The share of the clothes' thickness under the upper arm and the elbow that an arm at rest may press in
         /// (canvas and webbing give; the vest's 1.3 cm and the strap's 1.7 cm at the waist held broad men's elbows out and
-        /// their upper arms 19-28° off the vertical, A1, 2026-11-06). Never the bare skin: the gate's C1 is on the body.</summary>
-        public float ClothGive = 0.5f;
+        /// their upper arms 19-28° off the vertical, A1, 2026-11-06). Never the bare skin: the gate's C1 is on the body.
+        /// (At half, the men whose elbows rest on a jacket's or a shirt's side at the waist hung their upper arms 20-27° off
+        /// the vertical in every state, the arm's swing out at its 15-17° all along, A1, 2026-11-07: cloth pressed between an
+        /// arm and the body gives all but its weave, and between them it is not seen.)</summary>
+        public float ClothGive = 0.85f;
         private float _poleOutL = 0.2f, _poleOutR = 0.2f, _flexAddL, _flexAddR;
 
         /// <summary>The hand's gap to the body now (m), for the report.</summary>
