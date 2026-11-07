@@ -144,6 +144,12 @@ namespace SecondFace.Tests
         private bool _havePrev;
         private string _minState;
         private float _minL = float.MaxValue, _minR = float.MaxValue;
+        // F4: this visit's feet (height over the sole, horizontal speed cm/s, side), judged each frame against the lowest
+        // each foot has been in the visit so far, so that once the visit ends against its lowest in the whole visit (a
+        // foot still in the air when the state began, 7 cm up and stepping, was taken for one bearing weight against the
+        // lowest so far and its step counted as a slide, 2026-11-07); _f4Base: the samples of earlier visits, final
+        private readonly List<(float H, float V, int Side)> _f4Now = new();
+        private int _f4Base;
         /// <summary>Where to write a per-frame trace of the feet (a CSV), for the states whose name starts with <see cref="TraceState"/>.</summary>
         public string TracePath, TraceState;
         private float _nextBake;
@@ -405,7 +411,11 @@ namespace SecondFace.Tests
                 else if (k != K.Turn) { Add("H1", pitch); Add("H2", yaw); Add("H3", Mathf.Abs(roll)); }
                 // the feet: a foot is down (bearing weight) while its sole is within 2 cm of the lowest it has been in this
                 // state (floating feet are caught by F1 and W6, not by missing every contact); sliding while down
-                if (_minState != State) { _minState = State; _minL = _minR = float.MaxValue; }
+                if (_minState != State)
+                {
+                    _minState = State; _minL = _minR = float.MaxValue; _f4Now.Clear();
+                    _f4Base = State != null && Samples.TryGetValue(State, out var f4Was) && f4Was.TryGetValue("F4", out var f4WasList) ? f4WasList.Count : 0;
+                }
                 if (_havePrev)
                 {
                     var body = Flat(root - _prevRoot).magnitude / dt;
@@ -419,11 +429,17 @@ namespace SecondFace.Tests
                         var hh = an.y - ga - aS;
                         var h = hh;
                         if (side == 0) _minL = Mathf.Min(_minL, h); else _minR = Mathf.Min(_minR, h);
-                        var low = side == 0 ? _minL : _minR;
-                        side++;
-                        if (h > low + 0.02f) continue;
                         var v = Flat(an - pan).magnitude / dt;
-                        if (k != K.Walk) Add("F4", v * 100f);   // walking skate is measured on the soles themselves (MeshMeasures)
+                        if (k != K.Walk) _f4Now.Add((h, v * 100f, side));   // walking skate is measured on the soles themselves (MeshMeasures)
+                        side++;
+                    }
+                    if (k != K.Walk && _f4Now.Count > 0 && !string.IsNullOrEmpty(State))
+                    {
+                        if (!Samples.TryGetValue(State, out var f4Map)) Samples[State] = f4Map = new Dictionary<string, List<float>>();
+                        if (!f4Map.TryGetValue("F4", out var f4List)) f4Map["F4"] = f4List = new List<float>();
+                        if (f4List.Count > _f4Base) f4List.RemoveRange(_f4Base, f4List.Count - _f4Base);
+                        foreach (var (fh, fv, fs) in _f4Now)
+                            if (fh <= (fs == 0 ? _minL : _minR) + 0.02f) f4List.Add(fv);
                     }
                     if (TracePath != null && State != null && TraceState != null && State.StartsWith(TraceState))
                         System.IO.File.AppendAllText(TracePath, $"{State},{Time.time:0.000},{root.x:0.000},{root.z:0.000},{ankleL.y - GroundY(ankleL) - _ankleSoleL:0.000},{toeL.y - GroundY(toeL) - _toeSoleL:0.000},{ankleL.z:0.000},{ankleR.y - GroundY(ankleR) - _ankleSoleR:0.000},{toeR.y - GroundY(toeR) - _toeSoleR:0.000},{ankleR.z:0.000},{_a.GetFloat("Speed"):0.000},{_hips.position.z - root.z:0.000},{FootDiag()},{_traceA1L:0.0},{_traceA1R:0.0},{ElbowTrace()}\n");
