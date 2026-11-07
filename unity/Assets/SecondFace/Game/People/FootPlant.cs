@@ -437,7 +437,9 @@ namespace SecondFace.Game.People
             // (only on the move: standing, a stepping foot held down at once from its landing was let go of sliding, F4 7 -> 11)
             // (on the move, a foot let go of locks again only once it has left the ground: pushing off, its ball still under
             // 2.5 cm, it locked again mid-roll and slid 0.3 m/s held at the wrong point, W1, 2026-11-07)
-            if (sole > LockLift) k.NoRelock = false;
+            // (or swung: a walking foot's lowest point clears the ground by under 3 cm, and kept from locking until it rose
+            // past it the men's feet slid through every stride, W1 5-12 %, 2026-11-07)
+            if (sole > LockLift || speed > Mathf.Max(SwingSlow, 0.35f * body)) k.NoRelock = false;
             if (!k.On && k.Release <= 0f && sole < LockDown && (speed < slow || landing) && !(k.NoRelock && body > StandStill)) { k.On = true; k.Pivot = low; k.At = At(low); k.Min = Mathf.Max(0f, sole); k.Wait = !otherDown && body < WalkFlight && body > StandStill ? 1f : 0f; k.W = k.Wait; Hold(ref k, foot, toe); turned = true; }
             if (k.On)
             {
