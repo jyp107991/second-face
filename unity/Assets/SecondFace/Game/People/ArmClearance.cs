@@ -1098,11 +1098,16 @@ namespace SecondFace.Game.People
             Stage(first, 2);
             // (what the elbow could not take, at the shoulder, again for what is left, as the first turn is: once, a hand 5 cm
             // into the thigh was left 1 cm in it, the turn's arc and the skin's facing apart, C1, 2026-11-07)
-            for (var rPass = 0; rPass < 3; rPass++)
+            // (at most RestCap° in all: for a man whose gear held the hand, three turns stood the forearm 60-67° off the
+            // vertical, A3, and the hand off the thigh, A4, 2026-11-07)
+            var restDone = 0f;
+            for (var rPass = 0; rPass < 3 && restDone < RestCap; rPass++)
             {
                 var (rest, dirR) = SkinNeed(upper, first);
                 if (rest <= 0.01f) break;
+                rest = Mathf.Min(rest, RestCap - restDone);
                 TurnArm(upper, first, rest, dirR);
+                restDone += rest;
             }
             Stage(first, 3);
         }
@@ -1131,6 +1136,8 @@ namespace SecondFace.Game.People
         /// a curved surface, and taken to 3 mm by them the hand lay 1.6-2.7 cm into the thigh's front (C1 79 -> 112, 2026-11-07).</summary>
         public float ElbowMargin = 0.012f;
         private bool _elbowTurnedL, _elbowTurnedR;
+        /// <summary>The most the shoulder turns, in all, for what the elbow could not take of a hand in the body (degrees).</summary>
+        public float RestCap = 12f;
 
         /// <summary>The turn about <paramref name="pivot"/> (the elbow) that brings the deepest of the arm's points
         /// <paramref name="from"/>..<paramref name="to"/> <see cref="SkinMargin"/> out of the body, and its axis (as
