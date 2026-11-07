@@ -24,7 +24,7 @@ namespace SecondFace.Game.People
         public float MoveMargin = 0.006f;
         private float Margin3 => SkinMargin + MoveMargin * (1f - _restW);
         /// <summary>With the skin: a resting hand hangs this far from the side of the hip or thigh (A4), surface to surface.</summary>
-        public float SkinGap = 0.006f;   // (1 cm off the clothes stood resting hands 6.0-6.5 cm from the thigh's skin, A4, 2026-11-06)
+        public float SkinGap = 0.004f;   // (1 cm off the clothes stood resting hands 6.0-6.5 cm from the thigh's skin, A4, 2026-11-06; 0.6 cm left the men's hands over their cargo pockets 6.1-7 cm from it, 2026-11-07)
         /// <summary>With the skin: a resting hand that hangs behind the thigh's middle (into the buttock, the clip taken on
         /// a flatter body) is brought forward to the thigh's side, by at most this many degrees at the shoulder.</summary>
         public float RestForward = 14f;
@@ -1134,7 +1134,7 @@ namespace SecondFace.Game.People
         private static readonly float[] ElbowShares = { 1f, 0.5f };
         /// <summary>How far the elbow's turn takes the hand out of the thigh (m): the skin's points there are 1.5-4 cm apart on
         /// a curved surface, and taken to 3 mm by them the hand lay 1.6-2.7 cm into the thigh's front (C1 79 -> 112, 2026-11-07).</summary>
-        public float ElbowMargin = 0.012f;
+        public float ElbowMargin = 0.01f;
         private bool _elbowTurnedL, _elbowTurnedR;
         /// <summary>The most the shoulder turns, in all, for what the elbow could not take of a hand in the body (degrees).</summary>
         public float RestCap = 12f;
