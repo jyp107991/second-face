@@ -674,7 +674,7 @@ namespace SecondFace.Game.People
         /// leg though the wrist stands out over a hip, a belt or a pocket: until its nearest point is <see cref="HandInGap"/> off
         /// the body, at most <see cref="HandInMax"/>° (a palm to the thigh flexes toward it), never into it (the men's hands
         /// hung 6-9 cm off the thigh's skin with the arm cleared of the hip, A4 312, 2026-11-07).</summary>
-        public float HandInMax = 20f, HandInGap = 0.01f;
+        public float HandInMax = 20f, HandInGap = 0.015f;   // (at 1 cm by the skin's points the curled fingers touched the thigh's skin, C1 p98 0.5-0.6, 45 -> 53)
 
         private void HandIn(Transform hand, BodySkin.Part first)
         {
