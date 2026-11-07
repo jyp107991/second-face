@@ -539,8 +539,9 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   foot let go of while jogging locks again only once it has left the ground (its ankle runs ahead as the heel rises
   and read as a swing); and **the player's body gets up to pace and stops at 6 m/s², as the townsfolk do** (at 10 it
   jogged from standing in one step, the strides lagged the body by up to 1.2 m/s and the planted foot slid; people take
-  two or three steps to get up to a jog). The gate's walks take the walker's own value. Whole cast running (full10).
-  **Next:** commit its verdict only with every measure at or under the committed one; then the arms: the upper arm's
+  two or three steps to get up to a jog). The gate's walks take the walker's own value. **Whole cast 1513 → 1053,
+  committed** (full10, no measure worse): A1 742 → 604, A4 511 → 328, W6 116 → 23, A3 33 → 5, C1 90 → 79, F4 7 → 0;
+  W3 10, F1 1, F2 1, F5 2 as they were; W1 0, A2 0. Still red. **Next:** the arms: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
