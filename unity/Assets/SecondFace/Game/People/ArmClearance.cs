@@ -1054,7 +1054,10 @@ namespace SecondFace.Game.People
             // 2026-11-07)
             var elbowFirst = ElbowFirst && UpperFirst && RestReach && _restW > 0.99f && lower != null && handT != null;
             var wrist0 = handT != null ? handT.position : Vector3.zero;
-            var (need, dir) = SkinNeed(upper, first, false, elbowFirst);
+            // (the shoulder first for the upper arm and the forearm by the elbow only: turned for the forearm's outer half
+            // along the thigh, the whole arm stood out and carried the hand 6 cm off the thigh, A1/A4, 2026-11-07)
+            var near = elbowFirst ? 0.12f : -1f;
+            var (need, dir) = SkinNeed(upper, first, false, elbowFirst, near);
             var forUpper = _needAt >= _skin.Begin(first) && _needAt < _skin.Begin(first + 1);
             if (need > 0f) axis = dir;
             angle = need >= angle ? need : Mathf.MoveTowards(angle, need, Release * dt);
@@ -1063,7 +1066,7 @@ namespace SecondFace.Game.People
                 TurnArm(upper, first, angle, axis);
                 for (var pass = 0; pass < 2; pass++)
                 {
-                    var (more, dir2) = SkinNeed(upper, first, false, elbowFirst);
+                    var (more, dir2) = SkinNeed(upper, first, false, elbowFirst, near);
                     if (more <= 0.01f) break;
                     TurnArm(upper, first, more, dir2);
                 }
@@ -1077,7 +1080,7 @@ namespace SecondFace.Game.People
             if (!elbowFirst) return;
             for (var ePass = 0; ePass < 2; ePass++)
             {
-                var (nE, axE) = SkinNeedAbout(lower.position, _skin.Begin(first + 2), _skin.End(first + 2), first);
+                var (nE, axE) = SkinNeedAbout(lower.position, _skin.Begin(first + 1), _skin.End(first + 2), first);
                 if (nE <= 0.01f) break;
                 var eUa = (lower.position - upper.position).normalized;
                 var eFa0 = handT.position - lower.position;
@@ -1173,7 +1176,7 @@ namespace SecondFace.Game.People
         }
         private int _needAt = -1;
 
-        private (float Angle, Vector3 Axis) SkinNeed(Transform upper, BodySkin.Part first, bool lowerOnly = false, bool noHand = false)
+        private (float Angle, Vector3 Axis) SkinNeed(Transform upper, BodySkin.Part first, bool lowerOnly = false, bool noHand = false, float nearElbow = -1f)
         {
             var shoulder = upper.position;
             var best = 0f; var axis = Vector3.zero; _needAt = -1;
@@ -1184,6 +1187,8 @@ namespace SecondFace.Game.People
             for (var i = from; i < to; i++)
             {
                 var p = _skin.P[i];
+                // (the forearm's points within nearElbow of the elbow only, when asked: its outer half is the elbow's to turn)
+                if (nearElbow > 0f && i >= _skin.Begin(first + 1) && (p - elbowAt).sqrMagnitude > nearElbow * nearElbow) continue;
                 if (!_skin.Depth(p, out var d, out var n)) continue;
                 // the upper arm and the forearm by the elbow may press into the clothes a little (ClothGive); the hand not
                 if (_restW > 0.99f && i < hand && _skin.Near >= 0 && (i < _skin.Begin(first + 1) || (p - elbowAt).sqrMagnitude < 0.0064f)) d -= ClothGive * _skin.Off(_skin.Near);
