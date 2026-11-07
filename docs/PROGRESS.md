@@ -533,8 +533,16 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   standing feet's slides after a yawn and in a look were a foot still in the air, mid-step, when the state began, taken
   for one bearing weight against its lowest so far: the probe now judges it against its lowest in the whole state, as
   the measure's definition says (docs/PEOPLE_MOTION.md F4); **W6 in the jog traced**: the foot let go of into the
-  flight crept at 0.4-0.5 m/s as the clip lifted it 4-5 cm in a frame: let go over 0.05 s in flight. **Next:** the quick
-  set, then the whole cast; commit the verdict only with every measure at or under the committed one.
+  flight crept at 0.4-0.5 m/s as the clip lifted it 4-5 cm in a frame. Then, quick set by quick set (41 in the
+  deterministic baseline → 47 → 44 → 37 → 36 → 38 → **35**, W1 0): a foot lifted into a jog's flight goes with the clip
+  at once (eased out over 0.05 s, one let go of on the ground as a jog set off was carried along it at 4.7 m/s); any
+  foot let go of while jogging locks again only once it has left the ground (its ankle runs ahead as the heel rises
+  and read as a swing); and **the player's body gets up to pace and stops at 6 m/s², as the townsfolk do** (at 10 it
+  jogged from standing in one step, the strides lagged the body by up to 1.2 m/s and the planted foot slid; people take
+  two or three steps to get up to a jog). The gate's walks take the walker's own value. Whole cast running (full10).
+  **Next:** commit its verdict only with every measure at or under the committed one; then the arms: the upper arm's
+  peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
+  once and released at 90°/s, while the controller's own abduction stays 8-12°.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.
