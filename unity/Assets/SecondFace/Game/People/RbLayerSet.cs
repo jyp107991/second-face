@@ -20,6 +20,8 @@ namespace SecondFace.Game.People
     public sealed class RbLayerSet : MonoBehaviour
     {
         public const int Version = 1;
+        /// <summary>The flank correctives' shapes (Editor BodyCorrectives), on the body's mesh and the shells cut from it.</summary>
+        public const string FlankL = "sf_flank_L", FlankR = "sf_flank_R";
 
         /// <summary>The shells (gzip): "RBL1", the bind poses, then per layer its id, fabric, dye slot, thickness, the
         /// heights it covers, and its vertices (position, normal, uv, four bone indices and weights) and triangles.</summary>
@@ -58,7 +60,9 @@ namespace SecondFace.Game.People
             using (var gz = new GZipStream(new MemoryStream(data.bytes), CompressionMode.Decompress))
             using (var r = new BinaryReader(gz))
             {
-                if (new string(r.ReadChars(4)) != "RBL1") throw new InvalidDataException("not a layer set");
+                var magic = new string(r.ReadChars(4));
+                if (magic != "RBL1" && magic != "RBL2") throw new InvalidDataException("not a layer set");
+                var v2 = magic == "RBL2";   // the flank correctives of the skin each shell was cut from
                 var nb = r.ReadInt32();
                 var bind = new Matrix4x4[nb];
                 for (var b = 0; b < nb; b++)
@@ -91,6 +95,19 @@ namespace SecondFace.Game.People
                     if (nv > 65535) mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
                     mesh.vertices = pos; mesh.normals = nor; mesh.uv = uv; mesh.boneWeights = bw; mesh.bindposes = bind;
                     mesh.triangles = tris;
+                    if (v2 && r.ReadByte() != 0)
+                    {
+                        var dl = new Vector3[nv]; var dr = new Vector3[nv];
+                        for (var i = 0; i < nv; i++)
+                        {
+                            var fs = r.ReadByte();
+                            if (fs == 0) continue;
+                            var d = new Vector3(r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
+                            if (fs == 1) dl[i] = d; else dr[i] = d;
+                        }
+                        mesh.AddBlendShapeFrame(FlankL, 100f, dl, null, null);
+                        mesh.AddBlendShapeFrame(FlankR, 100f, dr, null, null);
+                    }
                     mesh.RecalculateTangents();
                     mesh.RecalculateBounds();
                     mesh.UploadMeshData(true);

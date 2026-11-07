@@ -1,0 +1,328 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using UnityEditor;
+using UnityEngine;
+
+namespace SecondFace.EditorTools
+{
+    /// <summary>
+    /// The flank correctives (docs/PEOPLE_MOTION.md A1, C1): where a resting upper arm lies against the side of the chest,
+    /// real flesh gives on both sides, the chest wall's and the arm's own, and the arm hangs near the vertical. A skinned
+    /// mesh gives nowhere: lowered from its bind pose, the lower upper arm of a broad body lies 1-3 cm inside the ribcage's
+    /// side, and kept out of it the arm hung 15-25° off the vertical (the men's resting arms, 742 of the whole cast's 1513
+    /// failures, 2026-11-07; every contact that held them out was the upper arm 10-20 cm below the shoulder against the
+    /// torso 30-40 cm above the hips). Each person gets two blend shapes on the body's own mesh, "sf_flank_L" and
+    /// "sf_flank_R": with the upper arm hanging <see cref="RestAbd"/>° out from the torso's line, the overlap of the two
+    /// surfaces (plus <see cref="Clear"/>) is taken <see cref="TorsoShare"/> by the chest's side, pressed in toward the
+    /// spine (at most <see cref="TorsoMax"/>), and the rest by the arm's inner side, pressed in toward its bone (at most
+    /// <see cref="ArmMax"/>), smoothed over the surface and welded at its seams. Written beside the FBX as
+    /// &lt;id&gt;_flank.bytes: the import (RocketboxImportPostprocessor) adds the shapes to the body's mesh, RocketboxLayers
+    /// carries them into the shells cut from it and into the game's skin points (BodySkin), and ArmClearance weighs them
+    /// by how near the arm hangs to the body, every frame.
+    /// </summary>
+    public static class BodyCorrectives
+    {
+        public const string Magic = "RBF1";
+        public const string ShapeL = "sf_flank_L", ShapeR = "sf_flank_R";
+        /// <summary>The reference: the upper arm this far out from the torso's line (degrees), the forearm bent 15° forward.</summary>
+        public const float RestAbd = 6f;
+        /// <summary>Made room for beyond touching (m): the game keeps an arm 3 mm off the body (ArmClearance.SkinMargin).</summary>
+        public const float Clear = 0.003f;
+        public const float TorsoMax = 0.012f, ArmMax = 0.007f, TorsoShare = 0.6f;
+
+        public static string PathFor(string fbxPath) => fbxPath.Substring(0, fbxPath.Length - Path.GetExtension(fbxPath).Length) + "_flank.bytes";
+
+        /// <summary>The deltas (the body mesh's own space, per vertex, zero where none) read from a file's bytes, for a mesh
+        /// of <paramref name="vertexCount"/> vertices; false when the file is not for it.</summary>
+        public static bool Read(byte[] bytes, int vertexCount, out Vector3[] left, out Vector3[] right)
+        {
+            left = right = null;
+            if (bytes == null || bytes.Length < 12) return false;
+            using var r = new BinaryReader(new MemoryStream(bytes));
+            if (new string(r.ReadChars(4)) != Magic) return false;
+            if (r.ReadInt32() != vertexCount) return false;
+            left = new Vector3[vertexCount]; right = new Vector3[vertexCount];
+            foreach (var side in new[] { left, right })
+            {
+                var n = r.ReadInt32();
+                for (var k = 0; k < n; k++)
+                {
+                    var i = r.ReadInt32();
+                    var d = new Vector3(r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
+                    if (i >= 0 && i < vertexCount) side[i] = d;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>Reads the deltas beside a person's FBX (null when there are none or they are for another mesh).</summary>
+        public static (Vector3[] L, Vector3[] R) ReadFor(string fbxPath, int vertexCount)
+        {
+            var path = PathFor(fbxPath);
+            if (!File.Exists(path)) return (null, null);
+            return Read(File.ReadAllBytes(path), vertexCount, out var l, out var r) ? (l, r) : (null, null);
+        }
+
+        /// <summary>Measures a person (a prefab instance at its bind pose, made from <paramref name="fbxPath"/>) and writes
+        /// its flank deltas; true when written.</summary>
+        public static bool Build(GameObject go, string fbxPath, string id)
+        {
+            var anim = go.GetComponentInChildren<Animator>();
+            var smr = go.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => r.sharedMesh != null).OrderByDescending(r => r.sharedMesh.vertexCount).FirstOrDefault();
+            if (anim == null || !anim.isHuman || anim.avatar == null || smr == null) return false;
+            var mesh = smr.sharedMesh;
+            var pos = mesh.vertices; var bw = mesh.boneWeights; var bp = mesh.bindposes;
+            if (bw.Length != pos.Length) return false;
+            var copy = Object.Instantiate(go);
+            copy.hideFlags = HideFlags.HideAndDontSave;
+            try
+            {
+                var cAnim = copy.GetComponentInChildren<Animator>();
+                var cSmr = copy.GetComponentsInChildren<SkinnedMeshRenderer>(true).FirstOrDefault(r => r.sharedMesh == mesh);
+                if (cAnim == null || cSmr == null) return false;
+                Transform B(HumanBodyBones b) => cAnim.GetBoneTransform(b);
+                // the neutral pose (every muscle at 0), then each arm hung as the reference
+                var hp = new HumanPoseHandler(cAnim.avatar, cAnim.transform);
+                var hpose = new HumanPose();
+                hp.GetHumanPose(ref hpose);
+                for (var k = 0; k < hpose.muscles.Length; k++) hpose.muscles[k] = 0f;
+                hp.SetHumanPose(ref hpose);
+                hp.Dispose();
+                var root = cAnim.transform;
+                var hips = B(HumanBodyBones.Hips); var neck = B(HumanBodyBones.Neck);
+                if (hips == null || neck == null) return false;
+                var down = (hips.position - neck.position).normalized;
+                foreach (var (u, l, h, side) in new[] { (HumanBodyBones.LeftUpperArm, HumanBodyBones.LeftLowerArm, HumanBodyBones.LeftHand, -1), (HumanBodyBones.RightUpperArm, HumanBodyBones.RightLowerArm, HumanBodyBones.RightHand, 1) })
+                {
+                    var tu = B(u); var tl = B(l); var th = B(h);
+                    if (tu == null || tl == null || th == null) return false;
+                    var outward = Vector3.ProjectOnPlane(root.right * side, down).normalized;
+                    var ua = (down * Mathf.Cos(RestAbd * Mathf.Deg2Rad) + outward * Mathf.Sin(RestAbd * Mathf.Deg2Rad)).normalized;
+                    tu.rotation = Quaternion.FromToRotation(tl.position - tu.position, ua) * tu.rotation;
+                    var fwd = Vector3.ProjectOnPlane(root.forward, ua).normalized;
+                    var fa = (ua * Mathf.Cos(15f * Mathf.Deg2Rad) + fwd * Mathf.Sin(15f * Mathf.Deg2Rad)).normalized;
+                    tl.rotation = Quaternion.FromToRotation(th.position - tl.position, fa) * tl.rotation;
+                }
+                var baked = new Mesh();
+                cSmr.BakeMesh(baked, true);
+                var l2w = Matrix4x4.TRS(cSmr.transform.position, cSmr.transform.rotation, Vector3.one);
+                var wp = baked.vertices; var wn = baked.normals;
+                Object.DestroyImmediate(baked);
+                if (wp.Length != pos.Length || wn.Length != pos.Length) return false;
+                for (var i = 0; i < wp.Length; i++) { wp[i] = l2w.MultiplyPoint3x4(wp[i]); wn[i] = (cSmr.transform.rotation * wn[i]).normalized; }
+                var bones = cSmr.bones;
+
+                // the body's own surface (never the hair's, the lashes', the eyes')
+                var use = new bool[pos.Length];
+                var mats = smr.sharedMaterials;
+                for (var sub = 0; sub < mesh.subMeshCount; sub++)
+                {
+                    var name = sub < mats.Length && mats[sub] != null ? mats[sub].name.ToLowerInvariant() : "";
+                    if (name.Contains("opacity") || name.Contains("hair") || name.Contains("lash") || name.Contains("eye")) continue;
+                    foreach (var i in mesh.GetTriangles(sub)) use[i] = true;
+                }
+                // each vertex's part by the bones that move it (by place, posed, a chest's side inside the hanging arm lies
+                // nearer the arm's bone than the spine and reads as the arm's): 0 the torso, 1 the left upper arm, 2 the
+                // right, 3 anything else or a mix (the armpit's own seam)
+                var fam = new Dictionary<Transform, int>();
+                foreach (var hb in new[] { HumanBodyBones.Hips, HumanBodyBones.Spine, HumanBodyBones.Chest, HumanBodyBones.UpperChest, HumanBodyBones.Neck, HumanBodyBones.LeftShoulder, HumanBodyBones.RightShoulder })
+                    if (B(hb) != null) fam[B(hb)] = 0;
+                if (B(HumanBodyBones.LeftUpperArm) != null) fam[B(HumanBodyBones.LeftUpperArm)] = 1;
+                if (B(HumanBodyBones.RightUpperArm) != null) fam[B(HumanBodyBones.RightUpperArm)] = 2;
+                for (var hb = HumanBodyBones.Hips; hb < HumanBodyBones.LastBone; hb++)
+                    if (B(hb) != null && !fam.ContainsKey(B(hb))) fam[B(hb)] = 3;
+                var boneFam = new int[bones.Length];
+                for (var k = 0; k < bones.Length; k++)
+                {
+                    boneFam[k] = 3;
+                    for (var t = bones[k]; t != null; t = t.parent)
+                        if (fam.TryGetValue(t, out var f)) { boneFam[k] = f; break; }
+                }
+                var part = new int[pos.Length];
+                for (var i = 0; i < pos.Length; i++)
+                {
+                    part[i] = 3;
+                    if (!use[i]) continue;
+                    var b = bw[i];
+                    var w = new float[4];
+                    void Fam(int bi, float wt) { if (wt > 0f && bi >= 0 && bi < bones.Length) w[boneFam[bi]] += wt; }
+                    Fam(b.boneIndex0, b.weight0); Fam(b.boneIndex1, b.weight1); Fam(b.boneIndex2, b.weight2); Fam(b.boneIndex3, b.weight3);
+                    for (var f = 0; f < 3; f++) if (w[f] >= 0.6f) part[i] = f;
+                }
+                // the spine's line, for the torso's own radius about it
+                var spineLo = hips.position; var spineHi = neck.position;
+                Vector3 SpineAt(float y) => Vector3.Lerp(spineLo, spineHi, Mathf.Clamp01((y - spineLo.y) / Mathf.Max(1e-4f, spineHi.y - spineLo.y)));
+
+                var amount = new float[2][]; var dirs = new Vector3[2][];
+                var report = new List<string>();
+                for (var s = 0; s < 2; s++)
+                {
+                    var side = s == 0 ? -1 : 1;
+                    var armPart = s == 0 ? 1 : 2;
+                    var tu = B(s == 0 ? HumanBodyBones.LeftUpperArm : HumanBodyBones.RightUpperArm);
+                    var tl = B(s == 0 ? HumanBodyBones.LeftLowerArm : HumanBodyBones.RightLowerArm);
+                    var S = tu.position; var E = tl.position; var l1 = (E - S).magnitude;
+                    var ax = (E - S) / l1;
+                    var e1 = Vector3.ProjectOnPlane(root.right * side, ax).normalized; var e2 = Vector3.Cross(ax, e1);
+                    amount[s] = new float[pos.Length]; dirs[s] = new Vector3[pos.Length];
+                    // the arm's surface about its bone: the furthest it stands from the bone, by length (5 % bins) and turn (15°)
+                    const int TB = 20, PB = 24;
+                    var rA = new float[TB, PB];
+                    for (var i = 0; i < pos.Length; i++)
+                    {
+                        if (part[i] != armPart) continue;
+                        var v = wp[i] - S; var t = Vector3.Dot(v, ax) / l1;
+                        if (t < 0f || t > 1f) continue;
+                        var rv = v - ax * (t * l1);
+                        var phi = Mathf.Atan2(Vector3.Dot(rv, e2), Vector3.Dot(rv, e1)) * Mathf.Rad2Deg;
+                        int tb = Mathf.Min(TB - 1, (int)(t * TB)), pb = ((int)Mathf.Floor((phi + 360f) / 15f)) % PB;
+                        rA[tb, pb] = Mathf.Max(rA[tb, pb], rv.magnitude);
+                    }
+                    // the torso's surface about the spine, level, by height (1.5 cm) and turn (5°), this side only
+                    const float YB = 0.015f; const int QB = 72;
+                    var yLo = E.y - 0.06f; var yHi = S.y;
+                    var nyb = Mathf.Max(1, Mathf.CeilToInt((yHi - yLo) / YB));
+                    var rT = new float[nyb, QB];
+                    int YBin(float y) => Mathf.Clamp((int)((y - yLo) / YB), 0, nyb - 1);
+                    int QBin(Vector3 h) => ((int)Mathf.Floor((Mathf.Atan2(h.z, h.x) * Mathf.Rad2Deg + 360f) / 5f)) % QB;
+                    for (var i = 0; i < pos.Length; i++)
+                    {
+                        if (part[i] != 0 || wp[i].y < yLo || wp[i].y > yHi) continue;
+                        var h = wp[i] - SpineAt(wp[i].y); h.y = 0f;
+                        if (Vector3.Dot(h, root.right) * side <= 0f) continue;
+                        var yb = YBin(wp[i].y); var qb = QBin(h);
+                        rT[yb, qb] = Mathf.Max(rT[yb, qb], h.magnitude);
+                    }
+                    float overT = 0f, overA = 0f; int nT = 0, nA = 0;
+                    for (var i = 0; i < pos.Length; i++)
+                    {
+                        if (part[i] == 0)
+                        {
+                            // the chest's side inside the hanging arm: pressed in toward the spine
+                            var v = wp[i] - S; var t = Vector3.Dot(v, ax) / l1;
+                            if (t < 0.15f || t > 1.05f) continue;
+                            var rv = v - ax * (t * l1);
+                            var phi = Mathf.Atan2(Vector3.Dot(rv, e2), Vector3.Dot(rv, e1)) * Mathf.Rad2Deg;
+                            int tb = Mathf.Clamp((int)(t * TB), 0, TB - 1), pb = ((int)Mathf.Floor((phi + 360f) / 15f)) % PB;
+                            var ra = Mathf.Max(rA[tb, pb], Mathf.Max(rA[tb, (pb + 1) % PB], rA[tb, (pb + PB - 1) % PB]));
+                            if (ra <= 0f) continue;
+                            var o = ra + Clear - rv.magnitude;
+                            if (o <= 0f) continue;
+                            var inward = -wn[i]; inward.y = 0f;
+                            if (inward.sqrMagnitude < 0.04f) continue;   // (a surface facing up or down is not the chest's side)
+                            overT = Mathf.Max(overT, o); nT++;
+                            // eased out at the band's ends (the armpit, the elbow) so the surface bends, never steps
+                            var ease = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.15f, 0.3f, t)) * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(1.05f, 0.9f, t));
+                            amount[s][i] = Mathf.Min(TorsoMax, TorsoShare * o) * ease;
+                            dirs[s][i] = inward.normalized;
+                        }
+                        else if (part[i] == armPart)
+                        {
+                            // the arm's inner side inside the chest's: pressed in toward its bone
+                            var v = wp[i] - S; var t = Vector3.Dot(v, ax) / l1;
+                            if (t < 0.2f || t > 1f || wp[i].y < yLo || wp[i].y > yHi) continue;
+                            var h = wp[i] - SpineAt(wp[i].y); h.y = 0f;
+                            var yb = YBin(wp[i].y); var qb = QBin(h);
+                            var rt = Mathf.Max(rT[yb, qb], Mathf.Max(rT[yb, (qb + 1) % QB], rT[yb, (qb + QB - 1) % QB]));
+                            if (rt <= 0f) continue;
+                            var o = rt + Clear - h.magnitude;
+                            if (o <= 0f) continue;
+                            var rv = v - ax * (t * l1);
+                            if (rv.sqrMagnitude < 1e-6f) continue;
+                            overA = Mathf.Max(overA, o); nA++;
+                            var ease = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.2f, 0.35f, t));
+                            amount[s][i] = Mathf.Min(ArmMax, (1f - TorsoShare) * o) * ease;
+                            dirs[s][i] = -rv.normalized;
+                        }
+                    }
+                    report.Add($"{(s == 0 ? "L" : "R")} chest {nT} points, over {overT * 100f:0.0} cm; arm {nA}, over {overA * 100f:0.0} cm");
+                }
+
+                // smoothed over the surface (neighbours by triangle, seams welded by place)
+                var nbr = new List<int>[pos.Length];
+                for (var sub = 0; sub < mesh.subMeshCount; sub++)
+                {
+                    var tris = mesh.GetTriangles(sub);
+                    for (var t = 0; t + 2 < tris.Length; t += 3)
+                        for (var e = 0; e < 3; e++)
+                        {
+                            int a = tris[t + e], b = tris[t + (e + 1) % 3];
+                            if (!use[a] || !use[b]) continue;
+                            (nbr[a] ??= new List<int>()).Add(b); (nbr[b] ??= new List<int>()).Add(a);
+                        }
+                }
+                var weld = new Dictionary<(int, int, int), List<int>>();
+                for (var i = 0; i < pos.Length; i++)
+                {
+                    if (!use[i]) continue;
+                    var key = (Mathf.RoundToInt(pos[i].x * 1e4f), Mathf.RoundToInt(pos[i].y * 1e4f), Mathf.RoundToInt(pos[i].z * 1e4f));
+                    if (!weld.TryGetValue(key, out var g)) weld[key] = g = new List<int>();
+                    g.Add(i);
+                }
+                var outL = new Vector3[pos.Length]; var outR = new Vector3[pos.Length];
+                for (var s = 0; s < 2; s++)
+                {
+                    var a = amount[s]; var d = dirs[s];
+                    // the chest's and the arm's apart (they press opposite ways): a vertex keeps its own part's direction
+                    for (var pass = 0; pass < 3; pass++)
+                    {
+                        var next = (float[])a.Clone();
+                        for (var i = 0; i < pos.Length; i++)
+                        {
+                            if (nbr[i] == null) continue;
+                            var sum = 0f; var c = 0;
+                            foreach (var j in nbr[i]) { if (part[j] != part[i]) continue; sum += a[j]; c++; }
+                            if (c == 0) continue;
+                            var avg = sum / c;
+                            // the first pass spreads (a dent's edge never steps), the next two smooth
+                            next[i] = pass == 0 ? Mathf.Max(a[i], 0.5f * (a[i] + avg)) : 0.5f * (a[i] + avg);
+                            if (next[i] > 0f && d[i] == Vector3.zero)
+                                foreach (var j in nbr[i]) if (part[j] == part[i] && d[j] != Vector3.zero) { d[i] = d[j]; break; }
+                        }
+                        a = next;
+                    }
+                    foreach (var g in weld.Values)
+                    {
+                        if (g.Count < 2) continue;
+                        var m = 0f; var dir = Vector3.zero;
+                        foreach (var i in g) { m = Mathf.Max(m, a[i]); dir += d[i]; }
+                        dir = dir.sqrMagnitude > 1e-8f ? dir.normalized : Vector3.zero;
+                        foreach (var i in g) { a[i] = m; d[i] = dir; }
+                    }
+                    var o = s == 0 ? outL : outR;
+                    for (var i = 0; i < pos.Length; i++)
+                    {
+                        if (a[i] < 1e-4f || d[i] == Vector3.zero) continue;
+                        // from the world back to the mesh's own space, through this vertex's skinning as posed
+                        var b = bw[i];
+                        var m = new Matrix4x4();
+                        void Add(int bi, float w) { if (w <= 0f) return; var mm = bones[bi].localToWorldMatrix * bp[bi]; for (var k = 0; k < 16; k++) m[k] += mm[k] * w; }
+                        Add(b.boneIndex0, b.weight0); Add(b.boneIndex1, b.weight1); Add(b.boneIndex2, b.weight2); Add(b.boneIndex3, b.weight3);
+                        o[i] = m.inverse.MultiplyVector(d[i] * a[i]);
+                    }
+                }
+                var path = PathFor(fbxPath);
+                using (var ms = new MemoryStream())
+                {
+                    using (var w = new BinaryWriter(ms, System.Text.Encoding.UTF8, true))
+                    {
+                        w.Write(Magic.ToCharArray());
+                        w.Write(pos.Length);
+                        foreach (var o in new[] { outL, outR })
+                        {
+                            var idx = Enumerable.Range(0, pos.Length).Where(i => o[i] != Vector3.zero).ToList();
+                            w.Write(idx.Count);
+                            foreach (var i in idx) { w.Write(i); w.Write(o[i].x); w.Write(o[i].y); w.Write(o[i].z); }
+                        }
+                    }
+                    var bytes = ms.ToArray();
+                    if (!File.Exists(path) || !File.ReadAllBytes(path).SequenceEqual(bytes)) File.WriteAllBytes(path, bytes);
+                }
+                Debug.Log($"BodyCorrectives: {id}: {string.Join("; ", report)}; {outL.Count(v => v != Vector3.zero)} + {outR.Count(v => v != Vector3.zero)} vertices");
+                return true;
+            }
+            finally { Object.DestroyImmediate(copy); }
+        }
+    }
+}

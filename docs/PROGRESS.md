@@ -480,6 +480,22 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   outfits (uniforms, lab coats, blazers: lore allows suits only on the megacity's rich) reworked or kept to roles where
   they fit, a cast decision to put to the owner in words; (2) for the men in plain clothes, the elbow's response to the
   waist in the leaning idles; then W6 116 (the jog's and sneak's stance), C1 90, A3 33.
+- **2026-11-07, the resting arms' real cause, and the flank correctives** (red). The resting arm is now placed upper arm
+  first (`ArmClearance.UpperFirst`: the upper arm hangs from the shoulder, out only as far as its contact needs, 3-17°;
+  the forearm reaches the hand's place beside the thigh from the elbow so placed; the elbow's bend held 10-28°, since a
+  hand straight under a hanging upper arm left women's arms 1-4° from straight, A2); a push that clears the upper arm off
+  the body keeps the hand where it was placed (the forearm turned back at the elbow: turned out at the shoulder, the
+  whole arm had carried the hand 5-9 cm off the thigh, A4); a foot pushing off into a jog's flight lets go at 1.2 cm
+  (held to 3 cm it rose slow and still, W6). Quick set g103 152 → g104 92 → g105 80 (A1 36, A4 27, C1 7, W6 9, F4 1)
+  against the committed 82 (A4 and C1 still worse: not committed). **The cause:** in the whole cast's contact log every
+  upper-arm contact that holds an arm out is the arm 18-21 cm below the shoulder against the chest's side, 30-40 cm
+  above the hips, never the waist: a skinned mesh does not give there as flesh does. **The fix, built:** flank
+  correctives (`Editor/Build/BodyCorrectives.cs`): per person, with the arm hung 6° from the torso's line, the two
+  surfaces' overlap (+3 mm) taken 60 % by the chest's side (pressed in toward the spine, at most 1.2 cm) and 40 % by the
+  arm's inner side (at most 7 mm), smoothed and welded, written beside the FBX (`<id>_flank.bytes`); the importer adds
+  them to the body's mesh as `sf_flank_L/R`, the shells cut from it take them (RBL2) and the game's skin points too
+  (RBS3); `ArmClearance.Flank()` weighs them every frame (full while the upper arm hangs within 25° of the torso's line,
+  none past 45°).
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.

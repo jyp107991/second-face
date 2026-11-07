@@ -79,6 +79,8 @@ namespace SecondFace.Game.People
         public float ClearSlow = 0.5f, ClearFast = 1.5f;
         /// <summary>Below this pace (m/s) a gait has no flight: a held foot is kept down until the other foot is.</summary>
         public float WalkFlight = 1.8f;
+        /// <summary>The sole's lift at which a held foot lets go as it pushes off into a jog's flight (m).</summary>
+        public float LockLiftFlight = 0.012f;
         /// <summary>Moving, each foot goes where the captured subject's ankle went (the clip's own foot goal, Mecanim's IK
         /// goal: the source's ankle scaled to this body, with the stride's travel), not where the retargeted leg puts it: a
         /// leg of other proportions bent to the clip's angles puts its ankle elsewhere, and in a crouch it drifts through
@@ -450,7 +452,10 @@ namespace SecondFace.Game.People
                 var waitFor = !otherDown && body < WalkFlight;
                 k.Wait = Mathf.MoveTowards(k.Wait, waitFor ? 1f : 0f, dt / 0.06f);
                 if (k.Wait > 0f) k.Drop = Mathf.Lerp(k.Drop, Mathf.Max(k.Drop, sole) * k.W, k.Wait);
-                if ((sole > LockLift && k.Wait < 0.05f) || off.magnitude > LockReach)
+                // (pushing off into a jog's flight, the other foot in the air, let go lower: held to 3 cm, the foot rose slow
+                // and still, the lower of two in the air read as bearing the weight 4-5 cm up, W6, 2026-11-07)
+                var lift = !otherDown && body >= WalkFlight ? LockLiftFlight : LockLift;
+                if ((sole > lift && k.Wait < 0.05f) || off.magnitude > LockReach)
                 {
                     k.On = false; k.Release = 1f; k.From = want - new Vector3(off.x, 0f, off.y);
                     // while the other foot is down too, up to the swing's clearance at once, this frame too (its clearance
@@ -465,7 +470,10 @@ namespace SecondFace.Game.People
             if (k.Release > 0f)
             {
                 k.Release = Mathf.Max(0f, k.Release - dt / LockRelease);
-                var t = k.Release * k.Release * (3f - 2f * k.Release);
+                // out of the hold at once, slowing as it nears the clip's own place (smoothstep's slow start held the jog's
+                // push-off foot crawling while it rose 3-5 cm, the lower foot bearing no weight read as one bearing it, W6,
+                // 2026-11-07)
+                var t = k.Release * k.Release;
                 if (!turned)
                 {
                     var before = Lowest(foot, toe, heel, ball, tip);

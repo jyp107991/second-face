@@ -215,11 +215,13 @@ namespace SecondFace.EditorTools
             var invRoot = Quaternion.Inverse(root.rotation);
 
             var keeps = new List<bool[]>();
+            // the flank correctives (BodyCorrectives) the body's mesh has: the shells cut from it take them too
+            var (flL, flR) = BodyCorrectives.ReadFor(AssetDatabase.GetAssetPath(mesh), pos.Length);
             using var ms = new MemoryStream();
             using (var gz = new GZipStream(ms, System.IO.Compression.CompressionLevel.Optimal, true))
             using (var w = new BinaryWriter(gz))
             {
-                w.Write("RBL1".ToCharArray());
+                w.Write("RBL2".ToCharArray());
                 var bp = mesh.bindposes;
                 w.Write(bp.Length);
                 foreach (var m in bp) for (var k = 0; k < 16; k++) w.Write(m[k]);
@@ -233,7 +235,7 @@ namespace SecondFace.EditorTools
                     var kept = new List<int>();
                     for (var t = 0; t + 2 < tris.Count; t += 3)
                         if (keep[tris[t]] && keep[tris[t + 1]] && keep[tris[t + 2]]) { kept.Add(tris[t]); kept.Add(tris[t + 1]); kept.Add(tris[t + 2]); }
-                    WriteLayer(w, def, kept, pos, nor, bw, V, j, meshScale, out var nv, out var yMin, out var yMax);
+                    WriteLayer(w, def, kept, pos, nor, bw, V, j, meshScale, flL, flR, out var nv, out var yMin, out var yMax);
                     report.Add($"{def.Id} {nv}");
                 }
                 Debug.Log($"RocketboxLayers: {id}: {string.Join(", ", report)}; bare legs {bareLegs}, bare arms {bareArms}");
@@ -246,7 +248,7 @@ namespace SecondFace.EditorTools
             set.BareLegs = bareLegs; set.BareArms = bareArms;
             set.Fabrics = cloths;
             set.Built = RbLayerSet.Version;
-            Skin(go, anim, smr, dir, id, keeps);
+            Skin(go, anim, smr, dir, id, keeps, flL, flR);
             return true;
         }
 
@@ -256,7 +258,7 @@ namespace SecondFace.EditorTools
         /// the nearest bone (as the gate's MotionProbe tells them), one kept per cell (the torso and thighs every 2.5 cm,
         /// the hand every 2 cm, the forearm and the lower upper arm every 3 cm), each with its two strongest bones, the
         /// layers that cover it, and whether it is the hips' or thighs' side a resting hand hangs beside.</summary>
-        private static void Skin(GameObject go, Animator anim, SkinnedMeshRenderer smr, string dir, string id, List<bool[]> keeps)
+        private static void Skin(GameObject go, Animator anim, SkinnedMeshRenderer smr, string dir, string id, List<bool[]> keeps, Vector3[] flL, Vector3[] flR)
         {
             var mesh = smr.sharedMesh;
             var root = anim.transform;
@@ -441,7 +443,7 @@ namespace SecondFace.EditorTools
             using (var gz = new GZipStream(ms, System.IO.Compression.CompressionLevel.Optimal, true))
             using (var w = new BinaryWriter(gz))
             {
-                w.Write("RBS2".ToCharArray());
+                w.Write("RBS3".ToCharArray());
                 w.Write(Defs.Length);
                 foreach (var def in Defs) { w.Write(def.Id); w.Write((byte)(def.ThinSides ? 1 : 0)); }
                 for (var p = 0; p < 9; p++) w.Write(byPart[p].Count);
@@ -467,6 +469,11 @@ namespace SecondFace.EditorTools
                         // how far it faces sideways, in the body's frame (where layers thin under the arms)
                         var nw = (bones[b.boneIndex0].localToWorldMatrix * bp[b.boneIndex0]).MultiplyVector(nor[i]);
                         w.Write((byte)Mathf.RoundToInt(BodySkin.SideShare(root.InverseTransformDirection(nw).normalized.x) * 255f));
+                        // the flank corrective that moves it (1 left, 2 right), in each of its two bones' frames
+                        var fd = flL != null && flL[i] != Vector3.zero ? flL[i] : flR != null && flR[i] != Vector3.zero ? flR[i] : Vector3.zero;
+                        var fs = fd == Vector3.zero ? 0 : flL != null && flL[i] != Vector3.zero ? 1 : 2;
+                        w.Write((byte)fs);
+                        if (fs != 0) { Put(bp[b0].MultiplyVector(fd)); Put(bp[b1].MultiplyVector(fd)); }
                     }
             }
             var outPath = $"{dir}/{id}_skin.bytes";
@@ -514,13 +521,14 @@ namespace SecondFace.EditorTools
         private static HumanBodyBones Parse(string name) => (HumanBodyBones)Enum.Parse(typeof(HumanBodyBones), name);
 
         private static void WriteLayer(BinaryWriter w, Def def, List<int> kept, Vector3[] pos, Vector3[] nor, BoneWeight[] bw, V[] V, Joints j, float meshScale,
-            out int count, out float yMin, out float yMax)
+            Vector3[] flL, Vector3[] flR, out int count, out float yMin, out float yMax)
         {
             // the layer's own vertices: each kept body vertex offset outward (in the mesh's own units), and a hem: every open
             // edge (by position: a UV seam is not an edge of the garment) turned back down to the body
             var map = new Dictionary<int, int>();
             var P = new List<Vector3>(); var N = new List<Vector3>(); var U = new List<Vector2>(); var W = new List<BoneWeight>(); var T = new List<int>();
             var inner = new Dictionary<int, int>();
+            var src = new List<int>();   // each layer vertex's body vertex (for the flank correctives)
             var lo = float.MaxValue; var hi = float.MinValue; var outermost = 0f;
             Vector2 Uv(V v, float tile)
             {
@@ -534,7 +542,7 @@ namespace SecondFace.EditorTools
                 var thick = def.ThickAt != null ? def.ThickAt(V[i], j) : def.Thick;
                 outermost = Mathf.Max(outermost, thick);
                 k = P.Count;
-                P.Add(pos[i] + nor[i].normalized * (thick / meshScale)); N.Add(nor[i]); U.Add(Uv(V[i], def.Tile)); W.Add(bw[i]);
+                P.Add(pos[i] + nor[i].normalized * (thick / meshScale)); N.Add(nor[i]); U.Add(Uv(V[i], def.Tile)); W.Add(bw[i]); src.Add(i);
                 map[i] = k;
                 lo = Mathf.Min(lo, V[i].P.y); hi = Mathf.Max(hi, V[i].P.y);
                 return k;
@@ -543,7 +551,7 @@ namespace SecondFace.EditorTools
             {
                 if (inner.TryGetValue(i, out var k)) return k;
                 k = P.Count;
-                P.Add(pos[i] + nor[i].normalized * (0.0015f / meshScale)); N.Add(nor[i]); U.Add(Uv(V[i], def.Tile) + new Vector2(0.02f, 0f)); W.Add(bw[i]);
+                P.Add(pos[i] + nor[i].normalized * (0.0015f / meshScale)); N.Add(nor[i]); U.Add(Uv(V[i], def.Tile) + new Vector2(0.02f, 0f)); W.Add(bw[i]); src.Add(i);
                 inner[i] = k;
                 return k;
             }
@@ -587,6 +595,18 @@ namespace SecondFace.EditorTools
             }
             w.Write(T.Count);
             foreach (var t in T) w.Write(t);
+            // the flank correctives of the body's vertices it was cut from (RBL2): the shell gives with the skin under it
+            var any = flL != null && flR != null && src.Any(i => flL[i] != Vector3.zero || flR[i] != Vector3.zero);
+            w.Write((byte)(any ? 1 : 0));
+            if (!any) return;
+            foreach (var i in src)
+            {
+                var fs = flL[i] != Vector3.zero ? 1 : flR[i] != Vector3.zero ? 2 : 0;
+                w.Write((byte)fs);
+                if (fs == 0) continue;
+                var d = fs == 1 ? flL[i] : flR[i];
+                w.Write(d.x); w.Write(d.y); w.Write(d.z);
+            }
         }
 
         /// <summary>The body material's dye mask (RGB: the garments' dye groups), read from its file (the imported texture is

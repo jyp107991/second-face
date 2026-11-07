@@ -181,6 +181,7 @@ namespace SecondFace.Game.People
         private void LateUpdate()
         {
             if (!Ready) return;
+            Flank();
             var dt = Time.deltaTime > 0f ? Time.deltaTime : Time.unscaledDeltaTime;
             var resting = Resting();
             DiagResting = resting;
@@ -230,6 +231,47 @@ namespace SecondFace.Game.People
             Clear(_ru, _rl, _rh, ref _angleR, ref _axisR, dt);
         }
 
+        /// <summary>The flank correctives (Editor BodyCorrectives): the chest's side and the arm's inner side give where a
+        /// hanging upper arm lies against them, as real flesh does, in full while the upper arm hangs within
+        /// <see cref="FlankFull"/>° of the torso's line, not at all past <see cref="FlankNone"/>° (a raised arm leaves the
+        /// side as it was). On the body's mesh, every shell cut from it, and the skin's points the arms are kept out of.</summary>
+        public float FlankFull = 25f, FlankNone = 45f;
+        private readonly System.Collections.Generic.List<(SkinnedMeshRenderer R, int L, int Rt)> _flank = new();
+        private int _flankKids = -1;
+        private float _flankWL = -1f, _flankWR = -1f;
+
+        private void Flank()
+        {
+            var hips = _animator.GetBoneTransform(HumanBodyBones.Hips); var neck = _animator.GetBoneTransform(HumanBodyBones.Neck);
+            if (hips == null || neck == null || _lu == null || _ll == null || _ru == null || _rl == null) return;
+            var down = (hips.position - neck.position).normalized;
+            float Weight(Transform u, Transform l) => 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(FlankFull, FlankNone, Vector3.Angle(l.position - u.position, down)));
+            var wl = Weight(_lu, _ll); var wr = Weight(_ru, _rl);
+            if (_skin != null) { _skin.FlankL = wl; _skin.FlankR = wr; }
+            // (the shells are put on and off as the person dresses: found again when the renderers under the body change)
+            var host = _skin != null && _skin.Body != null ? _skin.Body.transform.parent : transform;
+            var kids = host != null ? host.childCount : 0;
+            if (kids != _flankKids)
+            {
+                _flankKids = kids; _flank.Clear(); _flankWL = _flankWR = -1f;
+                foreach (var r in GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                {
+                    var m = r.sharedMesh;
+                    if (m == null) continue;
+                    int il = m.GetBlendShapeIndex(RbLayerSet.FlankL), ir = m.GetBlendShapeIndex(RbLayerSet.FlankR);
+                    if (il >= 0 || ir >= 0) _flank.Add((r, il, ir));
+                }
+            }
+            if (Mathf.Abs(wl - _flankWL) < 0.002f && Mathf.Abs(wr - _flankWR) < 0.002f) return;
+            _flankWL = wl; _flankWR = wr;
+            foreach (var (r, il, ir) in _flank)
+            {
+                if (r == null) continue;
+                if (il >= 0) r.SetBlendShapeWeight(il, wl * 100f);
+                if (ir >= 0) r.SetBlendShapeWeight(ir, wr * 100f);
+            }
+        }
+
         /// <summary>With the skin, at rest: the hand is placed where a relaxed hand hangs, beside the thigh with its middle
         /// <see cref="SkinGap"/> off the skin, a little forward of the side (<see cref="RestFront"/>°), at the height the arm
         /// reaches with the elbow bent <see cref="RestFlex"/>° (relaxed standing: 15.5°, IQR 13-18°, docs/PEOPLE_MOTION.md
@@ -267,13 +309,14 @@ namespace SecondFace.Game.People
             var reach = Mathf.Sqrt(l1 * l1 + l2 * l2 + 2f * l1 * l2 * Mathf.Cos(flex));
             var leg = knee.position - hip.position;
             var thigh = side < 0 ? BodySkin.Part.ThighL : BodySkin.Part.ThighR;
+            var fromElbow = false; var elbowPlaced = Vector3.zero;
             // the hand's place beside the leg, turned this far forward from its side (degrees): the wrist's height under the
             // shoulder by the reach at that bend, over the place beside the leg (twice: the leg's width there depends on the
             // height), and how far that is from under the shoulder
             bool Place(float front, out Vector3 at, out float off)
             {
                 var dir = (Quaternion.AngleAxis(-side * front, Vector3.up) * outward).normalized;
-                var wristY = S.y - reach * 0.985f;
+                var wristY = fromElbow ? elbowPlaced.y - l2 * 0.97f : S.y - reach * 0.985f;
                 at = Vector3.zero; off = float.MaxValue;
                 var any = false;
                 for (var pass = 0; pass < 2; pass++)
@@ -302,6 +345,18 @@ namespace SecondFace.Game.People
                     var adapt = side < 0 ? _adaptL : _adaptR;
                     Diag[side < 0 ? 4 : 10] = adapt * 100f; Diag[side < 0 ? 5 : 11] = surf * 100f;
                     var flat = new Vector3(axis.x, 0f, axis.z) + dir * (surf + 0.015f + SkinGap + adapt);
+                    if (fromElbow)
+                    {
+                        // from the placed elbow: the wrist where the forearm reaches, beside the leg, the forearm no further
+                        // off the vertical than HangMax
+                        var he = new Vector2(flat.x - elbowPlaced.x, flat.z - elbowPlaced.z).magnitude;
+                        var heMax = l2 * Mathf.Sin(HangMax * Mathf.Deg2Rad);
+                        if (he > heMax) { var ef = new Vector3(elbowPlaced.x, 0f, elbowPlaced.z); flat = ef + (flat - ef).normalized * heMax; he = heMax; }
+                        wristY = elbowPlaced.y - Mathf.Sqrt(Mathf.Max(0.2f * l2 * l2, l2 * l2 - he * he));
+                        at = new Vector3(flat.x, wristY, flat.z);
+                        off = he;
+                        continue;
+                    }
                     var h = new Vector2(flat.x - S.x, flat.z - S.z).magnitude;
                     // never further out than a hanging arm reaches (the band below the wrist now and then caught something
                     // wide for a few frames and threw the arm out to 31-41°, A1, 2026-11-06)
@@ -330,7 +385,16 @@ namespace SecondFace.Game.People
             if (side < 0) _wantGapL = SkinGap; else _wantGapR = SkinGap;
             var found = Place(frontNow, out var wrist, out _);
             if (!found) return;
-            if (UpperFirst) { UpperFirstArm(upper, lower, hand, side, first, w, S, E, l1, l2, wrist, fwd, outward); return; }
+            if (UpperFirst)
+            {
+                ref var abd = ref (side < 0 ? ref _abdL : ref _abdR);
+                if (float.IsNaN(abd)) abd = AbdStart;
+                var ua = UpperDir(abd, fwd, outward);
+                elbowPlaced = S + ua * l1; fromElbow = true;
+                if (!Place(frontNow, out var wristE, out _)) return;
+                UpperFirstArm(upper, lower, hand, side, first, w, S, E, l1, l2, wristE, fwd, outward, ua, ref abd);
+                return;
+            }
             // the two-bone solve, the elbow back (and a little out)
             var toW = wrist - S;
             var d = Mathf.Clamp(toW.magnitude, Mathf.Abs(l1 - l2) + 1e-3f, l1 + l2 - 1e-4f);
@@ -400,20 +464,35 @@ namespace SecondFace.Game.People
         /// and the men's upper arms stood 20-31° off the vertical at rest, every family of them (A1, 742 of 1513 across the
         /// cast, 2026-11-06).</summary>
         public bool UpperFirst = true;
-        public float AbdMin = 3f, AbdMax = 17f, AbdStart = 8f, AbdRate = 30f, UpperForward = 3f;
+        public float AbdMin = 3f, AbdMax = 17f, AbdStart = 8f, AbdRate = 30f, UpperForward = 0f;
         private float _abdL = float.NaN, _abdR = float.NaN;
 
-        private void UpperFirstArm(Transform upper, Transform lower, Transform hand, int side, BodySkin.Part first, float w,
-            Vector3 S, Vector3 E, float l1, float l2, Vector3 wrist, Vector3 fwd, Vector3 outward)
+        /// <summary>The upper arm's direction at rest: down, <paramref name="abd"/>° out to the side, <see cref="UpperForward"/>°
+        /// forward (negative: back).</summary>
+        private Vector3 UpperDir(float abd, Vector3 fwd, Vector3 outward)
         {
-            ref var abd = ref (side < 0 ? ref _abdL : ref _abdR);
-            if (float.IsNaN(abd)) abd = AbdStart;
             var ra = abd * Mathf.Deg2Rad; var rf = UpperForward * Mathf.Deg2Rad;
             var ua = Vector3.down * Mathf.Cos(ra) + outward * Mathf.Sin(ra);
-            ua = (ua * Mathf.Cos(rf) + fwd * Mathf.Sin(rf)).normalized;
+            return (ua * Mathf.Cos(rf) + fwd * Mathf.Sin(rf)).normalized;
+        }
+
+        /// <summary>At rest the elbow bends between these (degrees; the gate's A2 is 5-35, relaxed standing 15.5°, IQR 13-18):
+        /// the hand placed straight under a hanging upper arm left women's arms 1-4° from straight (A2), 2026-11-07.</summary>
+        public float BendMin = 10f, BendMax = 28f;
+
+        private void UpperFirstArm(Transform upper, Transform lower, Transform hand, int side, BodySkin.Part first, float w,
+            Vector3 S, Vector3 E, float l1, float l2, Vector3 wrist, Vector3 fwd, Vector3 outward, Vector3 ua, ref float abd)
+        {
             var elbowAt = S + ua * l1;
             var fa = wrist - elbowAt;
             fa = fa.sqrMagnitude > 1e-6f ? fa.normalized : Vector3.down;
+            // the bend held in its range: more by swinging the forearm forward (never further in, into the thigh), less by
+            // bringing it back toward the upper arm's line
+            var bendMin = Mathf.Max(BendMin, Mathf.Min(BendMax - 4f, RestFlex + _flexVar - 5f));
+            var fwdPerp = Vector3.ProjectOnPlane(fwd, ua).normalized;
+            for (var k = 0; k < 40 && Vector3.Angle(ua, fa) < bendMin; k++) fa = Vector3.RotateTowards(fa, fwdPerp, Mathf.Deg2Rad, 0f).normalized;
+            var bend = Vector3.Angle(ua, fa);
+            if (bend > BendMax) fa = Vector3.RotateTowards(fa, ua, (bend - BendMax) * Mathf.Deg2Rad, 0f).normalized;
             if (Vector3.Angle(fa, Vector3.down) > HangMax) fa = Vector3.RotateTowards(Vector3.down, fa, HangMax * Mathf.Deg2Rad, 0f).normalized;
             var dU = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(E - S, elbowAt - S), w);
             dU.ToAngleAxis(out var aU, out var axU);
@@ -806,7 +885,11 @@ namespace SecondFace.Game.People
         private void SkinClear(Transform upper, BodySkin.Part first, ref float angle, ref Vector3 axis, float dt)
         {
             if (upper == null) return;
+            var left = first == BodySkin.Part.UpperArmL;
+            var lower = left ? _ll : _rl; var handT = left ? _lh : _rh;
+            var wrist0 = handT != null ? handT.position : Vector3.zero;
             var (need, dir) = SkinNeed(upper, first);
+            var forUpper = _needAt >= _skin.Begin(first) && _needAt < _skin.Begin(first + 1);
             if (need > 0f) axis = dir;
             angle = need >= angle ? need : Mathf.MoveTowards(angle, need, Release * dt);
             if (angle <= 0.01f) return;
@@ -817,13 +900,30 @@ namespace SecondFace.Game.People
                 if (more <= 0.01f) break;
                 TurnArm(upper, first, more, dir2);
             }
+            // at rest, a push for the upper arm's own contact (against the chest's side) keeps the hand where it was placed:
+            // the forearm turned back to it at the elbow, within the elbow's bend (turned out at the shoulder, the whole arm
+            // carried the hand 5-9 cm off the thigh, A4, 2026-11-07)
+            if (!KeepHand || !forUpper || _restW < 0.99f || lower == null || handT == null) return;
+            var E = lower.position; var cur = handT.position - E; var want = wrist0 - E;
+            if (cur.sqrMagnitude < 1e-6f || want.sqrMagnitude < 1e-6f) return;
+            var ua = (E - upper.position).normalized;
+            var fa = want.normalized;
+            var bend = Vector3.Angle(ua, fa);
+            if (bend > BendMax + 4f) fa = Vector3.RotateTowards(fa, ua, (bend - BendMax - 4f) * Mathf.Deg2Rad, 0f).normalized;
+            Quaternion.FromToRotation(cur, fa * cur.magnitude).ToAngleAxis(out var aK, out var axK);
+            if (aK > 0.01f && axK.sqrMagnitude > 0.5f) TurnForearm(lower, first, aK, axK);
+            if (SkinNeed(upper, first, true).Angle > 0.01f) TurnForearm(lower, first, -aK, axK);   // (the forearm and hand never back into the body)
         }
 
-        private (float Angle, Vector3 Axis) SkinNeed(Transform upper, BodySkin.Part first)
+        /// <summary>At rest: the hand kept where it was placed when the arm is pushed out for its upper arm's contact.</summary>
+        public bool KeepHand = true;
+        private int _needAt = -1;
+
+        private (float Angle, Vector3 Axis) SkinNeed(Transform upper, BodySkin.Part first, bool lowerOnly = false)
         {
             var shoulder = upper.position;
-            var best = 0f; var axis = Vector3.zero;
-            var from = _skin.Begin(first); var to = _skin.End(first + 2);
+            var best = 0f; var axis = Vector3.zero; _needAt = -1;
+            var from = _skin.Begin(lowerOnly ? first + 1 : first); var to = _skin.End(first + 2);
             var hand = _skin.Begin(first + 2);
             var lowerArm = first == BodySkin.Part.UpperArmL ? _ll : _rl;
             var elbowAt = lowerArm != null ? lowerArm.position : upper.position;
@@ -839,7 +939,7 @@ namespace SecondFace.Game.People
                 if (a <= best) continue;
                 var ax = Vector3.Cross(arm, n);
                 if (ax.sqrMagnitude < 1e-8f) continue;
-                best = a; axis = ax.normalized;
+                best = a; axis = ax.normalized; _needAt = i;
                 // for the gate's report: the arm's point and the body's point the push is for (the elbow slots at rest)
                 var left = first == BodySkin.Part.UpperArmL;
                 DiagAt[left ? 0 : 4] = i; DiagAt[left ? 1 : 5] = _skin.Near;

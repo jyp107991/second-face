@@ -51,7 +51,13 @@ namespace SecondFace.Game.People
             public Vector3[] P0, P1, N0, N1;
             public uint[] Mask;
             public int[] UsedBones;
+            /// <summary>The flank corrective that moves each point (0 none, 1 left, 2 right; RBS3) and its move in each bone's frame.</summary>
+            public byte[] FlankSide;
+            public Vector3[] D0, D1;
         }
+
+        /// <summary>The flank correctives' weights now (0-1; ArmClearance sets them as it sets the body's own shapes).</summary>
+        [System.NonSerialized] public float FlankL, FlankR;
 
         private static readonly Dictionary<TextAsset, Set> Cache = new();
 
@@ -126,8 +132,9 @@ namespace SecondFace.Game.People
             using (var r = new BinaryReader(gz))
             {
                 var magic = new string(r.ReadChars(4));
-                if (magic != "RBS1" && magic != "RBS2") throw new InvalidDataException("not a body skin");
-                var v2 = magic == "RBS2";   // each layer's thinning at the sides, and each point's facing sideways
+                if (magic != "RBS1" && magic != "RBS2" && magic != "RBS3") throw new InvalidDataException("not a body skin");
+                var v2 = magic != "RBS1";   // each layer's thinning at the sides, and each point's facing sideways
+                var v3 = magic == "RBS3";   // the flank correctives
                 var nl = r.ReadInt32();
                 s.Layers = new string[nl]; s.ThinSides = new bool[nl];
                 for (var k = 0; k < nl; k++) { s.Layers[k] = r.ReadString(); if (v2) s.ThinSides[k] = r.ReadByte() != 0; }
@@ -138,6 +145,7 @@ namespace SecondFace.Game.People
                 s.Start[Parts] = n;
                 s.B0 = new byte[n]; s.B1 = new byte[n]; s.Flags = new byte[n]; s.W = new float[n]; s.Mask = new uint[n]; s.Side = new byte[n];
                 s.P0 = new Vector3[n]; s.P1 = new Vector3[n]; s.N0 = new Vector3[n]; s.N1 = new Vector3[n];
+                if (v3) { s.FlankSide = new byte[n]; s.D0 = new Vector3[n]; s.D1 = new Vector3[n]; }
                 var used = new HashSet<int>();
                 Vector3 V() => new(r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
                 for (var i = 0; i < n; i++)
@@ -146,6 +154,7 @@ namespace SecondFace.Game.People
                     s.P0[i] = V(); s.N0[i] = V(); s.P1[i] = V(); s.N1[i] = V();
                     s.Flags[i] = r.ReadByte(); s.Mask[i] = r.ReadUInt32();
                     if (v2) s.Side[i] = r.ReadByte();
+                    if (v3 && (s.FlankSide[i] = r.ReadByte()) != 0) { s.D0[i] = V(); s.D1[i] = V(); }
                     used.Add(s.B0[i]); used.Add(s.B1[i]);
                 }
                 s.UsedBones = new int[used.Count];
@@ -192,6 +201,11 @@ namespace SecondFace.Game.People
                 ref var m1 = ref _m[_set.B1[i]];
                 var p = m0.MultiplyPoint3x4(_set.P0[i]) * w + m1.MultiplyPoint3x4(_set.P1[i]) * (1f - w);
                 var nn = (m0.MultiplyVector(_set.N0[i]) * w + m1.MultiplyVector(_set.N1[i]) * (1f - w)).normalized;
+                if (_set.FlankSide != null && _set.FlankSide[i] != 0)
+                {
+                    var fw = _set.FlankSide[i] == 1 ? FlankL : FlankR;
+                    if (fw > 0f) p += (m0.MultiplyVector(_set.D0[i]) * w + m1.MultiplyVector(_set.D1[i]) * (1f - w)) * fw;
+                }
                 P[i] = p + nn * _off[i];
                 N[i] = nn;
             }

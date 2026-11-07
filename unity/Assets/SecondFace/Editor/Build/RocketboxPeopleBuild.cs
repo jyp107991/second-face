@@ -33,6 +33,28 @@ namespace SecondFace.EditorTools
             var shader = Shader.Find("SecondFace/Person");
             var entries = new List<RocketboxCatalog.Entry>();
             _cloths = null;
+            // the flank correctives first: measured on each person as imported, written beside the FBX, and the FBX
+            // imported again with them where they changed (RocketboxImportPostprocessor adds them to the body's mesh)
+            if (Directory.Exists(root) && shader != null)
+            {
+                var again = new List<string>();
+                foreach (var dir in Directory.GetDirectories(root).OrderBy(d => d))
+                {
+                    var id = Path.GetFileName(dir);
+                    var fbx = $"{root}/{id}/{id}.fbx";
+                    var model = AssetDatabase.LoadAssetAtPath<GameObject>(fbx);
+                    if (model == null) continue;
+                    var flank = BodyCorrectives.PathFor(fbx);
+                    var before = File.Exists(flank) ? File.ReadAllBytes(flank) : null;
+                    var go = (GameObject)PrefabUtility.InstantiatePrefab(model);
+                    try { BodyCorrectives.Build(go, fbx, id); }
+                    finally { Object.DestroyImmediate(go); }
+                    var after = File.Exists(flank) ? File.ReadAllBytes(flank) : null;
+                    if (after != null && (before == null || !before.SequenceEqual(after))) again.Add(fbx);
+                }
+                foreach (var fbx in again) { AssetDatabase.ImportAsset(BodyCorrectives.PathFor(fbx)); AssetDatabase.ImportAsset(fbx, ImportAssetOptions.ForceUpdate); }
+                if (again.Count > 0) Debug.Log($"RocketboxPeopleBuild: flank correctives for {again.Count} people");
+            }
             if (Directory.Exists(root) && shader != null)
                 foreach (var dir in Directory.GetDirectories(root).OrderBy(d => d))
                 {

@@ -13,7 +13,7 @@ namespace SecondFace.EditorTools
     /// </summary>
     public sealed class RocketboxImportPostprocessor : AssetPostprocessor
     {
-        public override uint GetVersion() => 2;
+        public override uint GetVersion() => 3;
 
         private const string Dir = "Assets/ThirdParty/Rocketbox/";
         public const string People = "Assets/SecondFace/People/Rocketbox/";
@@ -61,6 +61,16 @@ namespace SecondFace.EditorTools
                     c[i] = new Color(Mathf.Clamp01((v[i][axis] - lo[axis]) / Mathf.Max(size[axis], 1e-4f)), 0f, 0f, 1f);
                 m.colors = c;
             }
+            // the flank correctives, once measured (BodyCorrectives, beside the FBX): on the body's own mesh, the largest
+            Mesh body = null;
+            foreach (var r in meshes) if (r.sharedMesh != null && (body == null || r.sharedMesh.vertexCount > body.vertexCount)) body = r.sharedMesh;
+            var flank = BodyCorrectives.PathFor(assetPath);
+            if (body == null || !System.IO.File.Exists(flank)) return;
+            context.DependsOnSourceAsset(flank);
+            var (fl, fr) = BodyCorrectives.ReadFor(assetPath, body.vertexCount);
+            if (fl == null) { Debug.LogWarning($"RocketboxImportPostprocessor: {flank} is not for {assetPath}'s body ({body.vertexCount} vertices)"); return; }
+            if (body.GetBlendShapeIndex(BodyCorrectives.ShapeL) < 0) body.AddBlendShapeFrame(BodyCorrectives.ShapeL, 100f, fl, null, null);
+            if (body.GetBlendShapeIndex(BodyCorrectives.ShapeR) < 0) body.AddBlendShapeFrame(BodyCorrectives.ShapeR, 100f, fr, null, null);
         }
 
         private void OnPreprocessTexture()
