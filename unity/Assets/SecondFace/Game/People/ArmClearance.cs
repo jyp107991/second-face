@@ -1093,9 +1093,14 @@ namespace SecondFace.Game.People
                 if (!eTurned) break;
             }
             Stage(first, 2);
-            // (what the elbow could not take, at the shoulder)
-            var (rest, dirR) = SkinNeed(upper, first);
-            if (rest > 0.01f) TurnArm(upper, first, rest, dirR);
+            // (what the elbow could not take, at the shoulder, again for what is left, as the first turn is: once, a hand 5 cm
+            // into the thigh was left 1 cm in it, the turn's arc and the skin's facing apart, C1, 2026-11-07)
+            for (var rPass = 0; rPass < 3; rPass++)
+            {
+                var (rest, dirR) = SkinNeed(upper, first);
+                if (rest <= 0.01f) break;
+                TurnArm(upper, first, rest, dirR);
+            }
             Stage(first, 3);
         }
 
