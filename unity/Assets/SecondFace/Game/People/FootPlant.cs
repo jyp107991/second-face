@@ -61,7 +61,7 @@ namespace SecondFace.Game.People
         private Vector3 _lastL, _lastR; private bool _haveLast;
         // moving, a foot down on the ground is held where it came down until the clip lifts it (W1: a planted foot
         // does not creep; the clips' strides never quite match the body's pace): its place, and a short release after
-        private struct Lock { public bool On, HaveTurn, NoRelock; public Vector3 At, From, Fwd; public Quaternion Rest, Corr; public float Release, Last, Min, W, Drop, Wait, ReleaseTime; public int Pivot; }
+        private struct Lock { public bool On, HaveTurn, NoRelock; public Vector3 At, From, Fwd; public Quaternion Rest, Corr; public float Release, Last, Min, W, Drop, Wait; public int Pivot; }
         private Lock _lockL, _lockR;
         /// <summary>A foot locks when its sole is this near the ground and slower than <see cref="SwingSlow"/>; it lets go
         /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
@@ -79,10 +79,6 @@ namespace SecondFace.Game.People
         public float ClearSlow = 0.5f, ClearFast = 1.5f;
         /// <summary>Below this pace (m/s) a gait has no flight: a held foot is kept down until the other foot is.</summary>
         public float WalkFlight = 1.8f;
-        /// <summary>Pushing off into a jog's flight, how long a foot let go of takes to rejoin the clip (s): over
-        /// <see cref="LockRelease"/> it crept along the ground's line at 0.4-0.5 m/s as the clip lifted it 4-5 cm in a frame,
-        /// the lower of two feet in the air read as one bearing the weight (W6, 2026-11-07).</summary>
-        public float LockReleaseFlight = 0.05f;
         /// <summary>The sole's lift at which a held foot lets go as it pushes off into a jog's flight (m).</summary>
         public float LockLiftFlight = 0.025f;   // (at 1.2 cm the ball was let go of under the gate's 2.5 cm and slid 0.2-0.4 m/s as it blended out, W1 0 -> 6, 2026-11-07)
         /// <summary>The body's pace below which the person is standing (m/s): a held foot is let go of slowly.</summary>
@@ -470,10 +466,15 @@ namespace SecondFace.Game.People
                 // (pushing off into a jog's flight, the other foot in the air, let go lower: held to 3 cm, the foot rose slow
                 // and still, the lower of two in the air read as bearing the weight 4-5 cm up, W6, 2026-11-07)
                 var lift = !otherDown && body >= WalkFlight ? LockLiftFlight : LockLift;
-                if ((sole > lift && k.Wait < 0.05f) || off.magnitude > LockReach)
+                var lifted = sole > lift && k.Wait < 0.05f;
+                if (lifted || off.magnitude > LockReach)
                 {
-                    k.On = false; k.Release = 1f; k.NoRelock = !otherDown && body >= WalkFlight; k.From = want - new Vector3(off.x, 0f, off.y);
-                    k.ReleaseTime = !otherDown && body >= WalkFlight ? LockReleaseFlight : LockRelease;
+                    // lifted into a jog's flight, the foot goes with the clip at once: eased out of the hold it crept along
+                    // the ground's line at 0.15-0.5 m/s as the clip lifted it 4-5 cm in a frame, the lower of two feet in the
+                    // air read as one bearing the weight (W6); over 0.05 s, a foot let go of on the ground as a jog set off
+                    // (its clip 12 cm from the hold) was carried along it at 4.7 m/s (W1, 2026-11-07)
+                    var flight = lifted && !otherDown && body >= WalkFlight;
+                    k.On = false; k.Release = flight ? 0f : 1f; k.NoRelock = flight; k.From = want - new Vector3(off.x, 0f, off.y);
                     // while the other foot is down too, up to the swing's clearance at once, this frame too (its clearance
                     // was none while it was held: let go on the ground, the sneak's foot slid 2 cm along it that frame,
                     // W1/W2 10 → 1); the last foot on the ground (a jog's push-off) is left to leave it as the clip lifts
@@ -485,7 +486,7 @@ namespace SecondFace.Game.People
             }
             if (k.Release > 0f)
             {
-                k.Release = Mathf.Max(0f, k.Release - dt / (k.ReleaseTime > 0f ? k.ReleaseTime : LockRelease));
+                k.Release = Mathf.Max(0f, k.Release - dt / LockRelease);
                 // out of the hold at once, slowing as it nears the clip's own place (smoothstep's slow start held the jog's
                 // push-off foot crawling while it rose 3-5 cm, the lower foot bearing no weight read as one bearing it, W6,
                 // 2026-11-07)
