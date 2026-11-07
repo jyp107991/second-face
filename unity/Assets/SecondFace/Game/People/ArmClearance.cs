@@ -569,11 +569,8 @@ namespace SecondFace.Game.People
             // far as it may
             var gapE = Mathf.Min(Gap(_skin.Begin(first), _skin.End(first), 1, 0.08f, null, 0f, ClothGive), Gap(_skin.Begin(first + 1), _skin.End(first + 1), 1, 0.08f, lower.position, 0.08f, ClothGive));
             var dt = Time.deltaTime;
-            // (back in as soon as the elbow is 4 mm clear, as fast as it went out: let back only past 1.2 cm and at half the
-            // pace, the idles' sway bringing the waist to the elbow every few seconds ratcheted the arm out to 15-17°, the
-            // upper arm 20-26° off the vertical, A1, 2026-11-07)
             if (gapE < ElbowRest) abd = Mathf.Min(AbdMax, abd + AbdRate * dt);
-            else if (gapE > ElbowRest + 0.004f) abd = Mathf.Max(AbdMin, abd - AbdRate * dt);
+            else if (gapE > ElbowRest + 0.01f) abd = Mathf.Max(AbdMin, abd - 0.5f * AbdRate * dt);
             Diag[side < 0 ? 12 : 13] = abd; Diag[side < 0 ? 14 : 15] = Vector3.Angle(hand.position - lower.position, Vector3.down);
         }
 
