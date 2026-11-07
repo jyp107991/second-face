@@ -249,6 +249,10 @@ namespace SecondFace.Game.People
         /// <see cref="FlankFull"/>° of the torso's line, not at all past <see cref="FlankNone"/>° (a raised arm leaves the
         /// side as it was). On the body's mesh, every shell cut from it, and the skin's points the arms are kept out of.</summary>
         public float FlankFull = 25f, FlankNone = 45f;
+        /// <summary>And in full while the upper arm swings no further than <see cref="SwingFull"/>° forward or back of the
+        /// torso's line, not at all past <see cref="SwingNone"/>°: swung forward or back in a walk or a gesture, the arm
+        /// leaves the side it lay against, which is seen again as it was (degrees).</summary>
+        public float SwingFull = 15f, SwingNone = 30f;
         private readonly System.Collections.Generic.List<(SkinnedMeshRenderer R, int L, int Rt)> _flank = new();
         private int _flankKids = -1;
         private float _flankWL = -1f, _flankWR = -1f;
@@ -258,7 +262,15 @@ namespace SecondFace.Game.People
             var hips = _animator.GetBoneTransform(HumanBodyBones.Hips); var neck = _animator.GetBoneTransform(HumanBodyBones.Neck);
             if (hips == null || neck == null || _lu == null || _ll == null || _ru == null || _rl == null) return;
             var down = (hips.position - neck.position).normalized;
-            float Weight(Transform u, Transform l) => 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(FlankFull, FlankNone, Vector3.Angle(l.position - u.position, down)));
+            var ahead = Vector3.ProjectOnPlane(transform.forward, down);
+            ahead = ahead.sqrMagnitude > 1e-6f ? ahead.normalized : transform.forward;
+            float Weight(Transform u, Transform l)
+            {
+                var arm = l.position - u.position;
+                var w = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(FlankFull, FlankNone, Vector3.Angle(arm, down)));
+                var swing = Mathf.Abs(Mathf.Atan2(Vector3.Dot(arm, ahead), Mathf.Max(1e-4f, Vector3.Dot(arm, down))) * Mathf.Rad2Deg);
+                return w * (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(SwingFull, SwingNone, swing)));
+            }
             var wl = Weight(_lu, _ll); var wr = Weight(_ru, _rl);
             if (_skin != null) { _skin.FlankL = wl; _skin.FlankR = wr; }
             // (the shells are put on and off as the person dresses: found again when the renderers under the body change)
