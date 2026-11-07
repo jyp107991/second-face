@@ -586,6 +586,11 @@ namespace SecondFace.Game.People
                 if (a < 0.01f || ax.sqrMagnitude < 0.5f) return;
                 // (within the forearm's hang: past it the hand stays where it is; A3 is 30)
                 if (Vector3.Angle(q * (W - E), Vector3.down) > HangMax + 3f && Vector3.Angle(q * (W - E), Vector3.down) > Vector3.Angle(W - E, Vector3.down)) return;
+                // (and within the elbow's bend: the hand drawn in to the thigh from an elbow out over a uniform's belt bent the
+                // elbow 35-50°, A2, 2026-11-07)
+                var upperDir = E - _animator.GetBoneTransform(first == BodySkin.Part.UpperArmL ? HumanBodyBones.LeftUpperArm : HumanBodyBones.RightUpperArm).position;
+                var bendTo = Vector3.Angle(upperDir, q * (W - E));
+                if (bendTo > BendMax + 5f && bendTo > Vector3.Angle(upperDir, W - E)) return;
                 TurnForearm(lower, first, a, ax);
                 // (and never back into the body: the forearm by the hip)
                 if (SkinNeed(lower, first, true).Angle > 0.5f) { TurnForearm(lower, first, -a, ax); return; }

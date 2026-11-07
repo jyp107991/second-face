@@ -506,6 +506,16 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   arm tilted back; neither moved A4. **Next (building):** the hand set at its gap on its own points within the frame,
   turned at the elbow (the slow nudge of its place switched off); the correctives' caps 2.5 cm (chest) and 1.5 cm (arm),
   taken over seven places of the arm where it really rests; then the quick set and the whole cast.
+- **2026-11-07 (morning), whole cast 1513 → 1215** (red, not committed: A2 and C1 worse). A1 742 → 596, A4 511 → 283,
+  A3 33 → 2, W6 116 → 59, F5 2 → 1; **A2 0 → 152** (the uniformed and coated men's elbows bent past 35°: the hand drawn in
+  to the thigh from an elbow out over a duty belt) and **C1 90 → 103** (two men: a forearm's inner side between the
+  game's points, 3 cm apart, 1.7 cm into the hip; an upper arm's top band missed). Kept since the last entry: the hand
+  set at its gap within the frame along the leg's own facing, twice (before and after the arm is cleared of the body);
+  the forearm's corrections within 28° of the vertical and out of the hip; a forearm hanging past 28° brought back by
+  the elbow; a push off a surface facing along the arm goes sideways; the game's skin points posed by every bone that
+  moves them (RBS4: the hips' points had stood up to 2.5 cm off the skin; now 0.0) and every 1.5 cm on the hips'
+  up-facing tops. **Next:** the hand's correction kept within the elbow's bend (33°); the arms' points every 1.8 cm;
+  the people rebuilt; the quick set, then the whole cast.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.

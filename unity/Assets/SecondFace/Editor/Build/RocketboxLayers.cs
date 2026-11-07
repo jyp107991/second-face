@@ -388,7 +388,9 @@ namespace SecondFace.EditorTools
                 // (from 0.6, a little above the gate's 0.65: the game's sampled points missed the band's top edge, which the
                 // gate saw 1.6-3 cm into the chest's side while walking and gesturing, 2026-11-06)
                 if ((part == SkinPart.UpperArmL || part == SkinPart.UpperArmR) && along < 0.6f) continue;
-                var cell = part switch { SkinPart.HandL or SkinPart.HandR => 0.02f, SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR => 0.025f, _ => 0.03f };
+                // (the arms every 1.8 cm: at 3 cm a forearm's inner side between two points lay 1.7 cm into the hip while the
+                // nearest point read 1.9 cm out of it, C1, 2026-11-07)
+                var cell = part switch { SkinPart.HandL or SkinPart.HandR => 0.02f, SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR => 0.025f, _ => 0.018f };
                 // the torso's and thighs' sides, where the arms and hands rest, every 1.5 cm (with the side panels thin under
                 // the arms, arms rest on the body itself, and points 3-6 cm apart missed them 2 cm into it, C1, 2026-11-06)
                 if (part is SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR)
