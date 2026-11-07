@@ -473,8 +473,10 @@ namespace SecondFace.Game.People
                     // the ground's line at 0.15-0.5 m/s as the clip lifted it 4-5 cm in a frame, the lower of two feet in the
                     // air read as one bearing the weight (W6); over 0.05 s, a foot let go of on the ground as a jog set off
                     // (its clip 12 cm from the hold) was carried along it at 4.7 m/s (W1, 2026-11-07)
-                    var flight = lifted && !otherDown && body >= WalkFlight;
-                    k.On = false; k.Release = flight ? 0f : 1f; k.NoRelock = flight; k.From = want - new Vector3(off.x, 0f, off.y);
+                    // (and any foot let go of while jogging is kept from locking again until it leaves the ground: let go of by
+                    // its reach as a jog set off, it locked again mid-roll and its ball slid 0.3 m/s, W1, 2026-11-07)
+                    var jogging = !otherDown && body >= WalkFlight;
+                    k.On = false; k.Release = lifted && jogging ? 0f : 1f; k.NoRelock = jogging; k.From = want - new Vector3(off.x, 0f, off.y);
                     // while the other foot is down too, up to the swing's clearance at once, this frame too (its clearance
                     // was none while it was held: let go on the ground, the sneak's foot slid 2 cm along it that frame,
                     // W1/W2 10 → 1); the last foot on the ground (a jog's push-off) is left to leave it as the clip lifts
