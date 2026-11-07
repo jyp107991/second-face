@@ -549,8 +549,14 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   side and back, the belt and the thighs); the correctives weighed off as the arm swings forward or back (kept, 1051, A1
   +2); the hand and forearm turned out of the thigh and hip at the elbow before the shoulder: A1 604 -> 518 but A4 328 ->
   492 and A3 5 -> 17 (for the forearm's own contacts the hand swung off the thigh). Now: the elbow-first turn for the
-  hand's contacts only, within the forearm's 25° (whole cast running, full14). **Next:** commit it if no measure is
-  worse; the forearm's contacts on the hip and the belt (521) by bending the elbow forward over them; the gear-held men.
+  hand's contacts only, within the forearm's 25°; then, run by run (a picked set, GATE_PEOPLE, reproduces the whole
+  cast's people exactly in a quarter of the time): the shoulder turned first for the upper arm and forearm only, then
+  the hand at the elbow, then the shoulder again for what is left, repeated (once, a hand 5 cm into the thigh was left
+  1 cm in it: the trace now carries each hand's depth at every step of the clearance), at most 12° in all (a gear-held
+  man's forearm stood 60-67° off the vertical); the forearm's hang kept by up to 10° at the shoulder; resting hands
+  4 mm off the body. **Whole cast 1053 -> 977, committed** (full18, no measure worse): A1 604 -> 578, A4 328 -> 312,
+  C1 79 -> 45, A3 5, W6 23, W3 10, F1 1, F2 1, F5 2. Still red. **Next:** the arms that remain (A1 578, A4 312): the
+  gear-held men (cap_Military, cap_Police, cap_Fire, Medical), the forearm on the hip and the belt; the jog's W6 23.
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
