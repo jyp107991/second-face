@@ -589,7 +589,10 @@ namespace SecondFace.Game.People
             {
                 var g = HandGap(first);
                 if (g < 0f && g <= -0.5f) return;   // (no leg near the hand)
-                var move = Mathf.Clamp(SkinGap - g, -SetMax, SetMax);
+                // (a hand the elbow turned out of the thigh this frame is not drawn back in past the elbow's margin: drawn to
+                // the gap it lay in the thigh between the skin's points again, C1, 2026-11-07)
+                var gapWant = (first == BodySkin.Part.UpperArmL ? _elbowTurnedL : _elbowTurnedR) ? Mathf.Max(SkinGap, ElbowMargin) : SkinGap;
+                var move = Mathf.Clamp(gapWant - g, -SetMax, SetMax);
                 if (Mathf.Abs(move) < 0.002f) return;
                 // along the leg's own facing where the hand is nearest it, level (moved only sideways, a hand on the thigh's
                 // front went 4 cm further out a pass without leaving it, the arm all but straight, A2 and A4, 2026-11-07)
@@ -1049,6 +1052,7 @@ namespace SecondFace.Game.People
                 // whole arm carried the hand 5-9 cm off the thigh, A4, 2026-11-07)
                 if (KeepHand && forUpper && _restW >= 0.99f && lower != null && handT != null) KeepHandAt(upper, lower, handT, first, wrist0);
             }
+            if (left) _elbowTurnedL = false; else _elbowTurnedR = false;
             if (!elbowFirst) return;
             for (var ePass = 0; ePass < 2; ePass++)
             {
@@ -1065,6 +1069,7 @@ namespace SecondFace.Game.People
                     if (eBend > BendMax + 4f || eBend < BendFloor) continue;
                     TurnForearm(lower, first, nE * eShare, axE);
                     eTurned = true;
+                    if (left) _elbowTurnedL = true; else _elbowTurnedR = true;
                     break;
                 }
                 if (!eTurned) break;
@@ -1097,6 +1102,7 @@ namespace SecondFace.Game.People
         /// <summary>How far the elbow's turn takes the hand out of the thigh (m): the skin's points there are 1.5-4 cm apart on
         /// a curved surface, and taken to 3 mm by them the hand lay 1.6-2.7 cm into the thigh's front (C1 79 -> 112, 2026-11-07).</summary>
         public float ElbowMargin = 0.012f;
+        private bool _elbowTurnedL, _elbowTurnedR;
 
         /// <summary>The turn about <paramref name="pivot"/> (the elbow) that brings the deepest of the arm's points
         /// <paramref name="from"/>..<paramref name="to"/> <see cref="SkinMargin"/> out of the body, and its axis (as
@@ -1117,12 +1123,11 @@ namespace SecondFace.Game.People
                 if (d + ElbowMargin <= 0f) continue;
                 var a = Mathf.Atan2(d + ElbowMargin, arm.magnitude) * Mathf.Rad2Deg;
                 if (a <= best) continue;
-                var pushTo = n;
-                if (Mathf.Abs(Vector3.Dot(arm.normalized, n)) > 0.6f)
-                {
-                    var nh = new Vector3(n.x, 0f, n.z);
-                    pushTo = nh.sqrMagnitude > 0.09f ? nh.normalized : Outward(first == BodySkin.Part.UpperArmL ? -1 : 1);
-                }
+                // out halfway between the thigh's facing and the body's side, level (along the facing, a hand on the thigh's
+                // front went round onto it, where its points lie far apart, and 1.5-2.7 cm into it, C1, 2026-11-07)
+                var nh = new Vector3(n.x, 0f, n.z);
+                var side = Outward(first == BodySkin.Part.UpperArmL ? -1 : 1);
+                var pushTo = nh.sqrMagnitude > 0.09f ? (nh.normalized + side).normalized : side;
                 var ax = Vector3.Cross(arm, pushTo);
                 if (ax.sqrMagnitude < 1e-8f) continue;
                 best = a; axis = ax.normalized;
