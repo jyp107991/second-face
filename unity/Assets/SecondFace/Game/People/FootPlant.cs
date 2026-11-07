@@ -434,7 +434,8 @@ namespace SecondFace.Game.People
             k.Last = sole;
             // (walking, a foot coming down while the other is in the air waits for it from its first held frame: eased in over
             // 0.06 s, the foot landing as a jog slowed to a stop rose 4.5-5 cm with the clip while held, W6, 2026-11-07)
-            if (!k.On && k.Release <= 0f && sole < LockDown && (speed < slow || landing)) { k.On = true; k.Pivot = low; k.At = At(low); k.Min = Mathf.Max(0f, sole); k.Wait = !otherDown && body < WalkFlight ? 1f : 0f; k.W = k.Wait; Hold(ref k, foot, toe); turned = true; }
+            // (only on the move: standing, a stepping foot held down at once from its landing was let go of sliding, F4 7 -> 11)
+            if (!k.On && k.Release <= 0f && sole < LockDown && (speed < slow || landing)) { k.On = true; k.Pivot = low; k.At = At(low); k.Min = Mathf.Max(0f, sole); k.Wait = !otherDown && body < WalkFlight && body > StandStill ? 1f : 0f; k.W = k.Wait; Hold(ref k, foot, toe); turned = true; }
             if (k.On)
             {
                 // rolling: the pivot moves to whichever point is now the lower, pinned where it is (forward as a heel-first
@@ -477,9 +478,7 @@ namespace SecondFace.Game.People
                 // out of the hold at once, slowing as it nears the clip's own place (smoothstep's slow start held the jog's
                 // push-off foot crawling while it rose 3-5 cm, the lower foot bearing no weight read as one bearing it, W6,
                 // 2026-11-07)
-                // (standing, the old slow start and end: let go at once, a standing foot slid 10+ cm/s as it left its hold after a
-                // gesture, F4 7 -> 11, 2026-11-07)
-                var t = body > StandStill ? k.Release * k.Release : k.Release * k.Release * (3f - 2f * k.Release);
+                var t = k.Release * k.Release;
                 if (!turned)
                 {
                     var before = Lowest(foot, toe, heel, ball, tip);
