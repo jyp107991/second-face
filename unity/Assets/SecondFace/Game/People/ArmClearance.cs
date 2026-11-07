@@ -606,10 +606,10 @@ namespace SecondFace.Game.People
             {
                 var g = HandGap(first);
                 if (g < 0f && g <= -0.5f) return;   // (no leg near the hand)
-                // (a hand the elbow turned out of the thigh this frame is not drawn back in past the elbow's margin: drawn to
-                // the gap it lay in the thigh between the skin's points again, C1, 2026-11-07)
-                var gapWant = (first == BodySkin.Part.UpperArmL ? _elbowTurnedL : _elbowTurnedR) ? Mathf.Max(SkinGap, ElbowMargin) : SkinGap;
-                var move = Mathf.Clamp(gapWant - g, -SetMax, SetMax);
+                // (a hand the elbow turned out of the thigh is drawn back to the same gap as any: kept at the elbow's margin,
+                // the men's hands rested 6.1-7 cm off the thigh's skin over their cargo pockets, A4 328 -> 331, 2026-11-07;
+                // the shoulder's repeated turn keeps them out of it)
+                var move = Mathf.Clamp(SkinGap - g, -SetMax, SetMax);
                 if (Mathf.Abs(move) < 0.002f) return;
                 // along the leg's own facing where the hand is nearest it, level (moved only sideways, a hand on the thigh's
                 // front went 4 cm further out a pass without leaving it, the arm all but straight, A2 and A4, 2026-11-07)
