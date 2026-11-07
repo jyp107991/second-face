@@ -541,7 +541,17 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   jogged from standing in one step, the strides lagged the body by up to 1.2 m/s and the planted foot slid; people take
   two or three steps to get up to a jog). The gate's walks take the walker's own value. **Whole cast 1513 → 1053,
   committed** (full10, no measure worse): A1 742 → 604, A4 511 → 328, W6 116 → 23, A3 33 → 5, C1 90 → 79, F4 7 → 0;
-  W3 10, F1 1, F2 1, F5 2 as they were; W1 0, A2 0. Still red. **Next:** the arms: the upper arm's
+  W3 10, F1 1, F2 1, F5 2 as they were; W1 0, A2 0. Still red.
+- **2026-11-07 (late afternoon), the arms.** What holds a resting arm out, counted over the whole cast's contacts (the
+  push that turns the arm, per state and side): the hand on the thigh 1830, the forearm on the thigh 521, the upper arm on
+  the chest's side 238. Tried: the flank correctives' caps to 5/2.5 cm for the men whose padded jackets and vests are in
+  the body's mesh (overlap 6-10 cm): 1053 -> 1030 with A3 worse, reverted (their arms are held by gear at the torso's
+  side and back, the belt and the thighs); the correctives weighed off as the arm swings forward or back (kept, 1051, A1
+  +2); the hand and forearm turned out of the thigh and hip at the elbow before the shoulder: A1 604 -> 518 but A4 328 ->
+  492 and A3 5 -> 17 (for the forearm's own contacts the hand swung off the thigh). Now: the elbow-first turn for the
+  hand's contacts only, within the forearm's 25° (whole cast running, full14). **Next:** commit it if no measure is
+  worse; the forearm's contacts on the hip and the belt (521) by bending the elbow forward over them; the gear-held men.
+  Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
