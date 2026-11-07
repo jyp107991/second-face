@@ -555,8 +555,13 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   1 cm in it: the trace now carries each hand's depth at every step of the clearance), at most 12° in all (a gear-held
   man's forearm stood 60-67° off the vertical); the forearm's hang kept by up to 10° at the shoulder; resting hands
   4 mm off the body. **Whole cast 1053 -> 977, committed** (full18, no measure worse): A1 604 -> 578, A4 328 -> 312,
-  C1 79 -> 45, A3 5, W6 23, W3 10, F1 1, F2 1, F5 2. Still red. **Next:** the arms that remain (A1 578, A4 312): the
-  gear-held men (cap_Military, cap_Police, cap_Fire, Medical), the forearm on the hip and the belt; the jog's W6 23.
+  C1 79 -> 45, A3 5, W6 23, W3 10, F1 1, F2 1, F5 2. Then a resting hand off the thigh curls in at the wrist toward
+  it (as a relaxed hand's fingers rest on the leg though the wrist stands out over a hip or a pocket), at most 20°, to
+  1.5 cm off the body by the game's points, never into it: **whole cast 977 -> 848, committed** (full20): A4 312 -> 190,
+  C1 45 -> 42, A1 578 -> 574, the rest as they were. Tried and not kept: the elbow's turn past the forearm's resting
+  hang (no change); the elbow for the forearm's outer half (A1 down, A4 93 -> 125 on the picked ten). Still red.
+  **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
+  the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
