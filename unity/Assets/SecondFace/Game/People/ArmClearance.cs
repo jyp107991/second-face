@@ -652,7 +652,10 @@ namespace SecondFace.Game.People
             var move = l2 * (Mathf.Sin(hang * Mathf.Deg2Rad) - Mathf.Sin(max * Mathf.Deg2Rad));
             var axis = Vector3.Cross(E - S, lean.normalized);
             if (axis.sqrMagnitude < 1e-8f) return;
-            var turn = Mathf.Min(6f, move / l1 * Mathf.Rad2Deg);
+            // (at most 10° at the shoulder: each frame starts again from the clip's pose, so the cap is the most it can bring
+            // back, not a pace; at 6 a woman's forearm round a wide hip, the arm pushed out three times for the hand, hung 31-33°
+            // off the vertical, A3, 2026-11-07)
+            var turn = Mathf.Min(10f, move / l1 * Mathf.Rad2Deg);
             TurnArm(upper, first, turn, axis);
             var E2 = lower.position; var W2 = hand.position;
             Quaternion.FromToRotation(W2 - E2, H - E2).ToAngleAxis(out var a, out var ax);
