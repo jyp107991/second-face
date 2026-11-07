@@ -243,6 +243,8 @@ namespace SecondFace.Game.People
                     Stage(BodySkin.Part.UpperArmL, 4); Stage(BodySkin.Part.UpperArmR, 4);
                     KeepHang(_lu, _ll, _lh, BodySkin.Part.UpperArmL);
                     KeepHang(_ru, _rl, _rh, BodySkin.Part.UpperArmR);
+                    HandIn(_lh, BodySkin.Part.UpperArmL);
+                    HandIn(_rh, BodySkin.Part.UpperArmR);
                     Stage(BodySkin.Part.UpperArmL, 5); Stage(BodySkin.Part.UpperArmR, 5);
                 }
                 // in the stride (and the last swings as the person stops), never in a gesture (a wave or a shrug is meant high)
@@ -665,6 +667,44 @@ namespace SecondFace.Game.People
             {
                 if (a > 0.01f && ax.sqrMagnitude > 0.5f) TurnForearm(lower, first, -a, ax);
                 TurnArm(upper, first, -turn, axis);
+            }
+        }
+
+        /// <summary>At rest, a hand hanging off the thigh curls in at the wrist toward it, as a relaxed hand's fingers rest on the
+        /// leg though the wrist stands out over a hip, a belt or a pocket: until its nearest point is <see cref="HandInGap"/> off
+        /// the body, at most <see cref="HandInMax"/>° (a palm to the thigh flexes toward it), never into it (the men's hands
+        /// hung 6-9 cm off the thigh's skin with the arm cleared of the hip, A4 312, 2026-11-07).</summary>
+        public float HandInMax = 20f, HandInGap = 0.01f;
+
+        private void HandIn(Transform hand, BodySkin.Part first)
+        {
+            if (HandInMax <= 0f || hand == null) return;
+            var done = 0f;
+            for (var pass = 0; pass < 2 && done < HandInMax; pass++)
+            {
+                var g = HandGap(first);
+                if (g < 0f || g <= HandInGap || _gapArm < 0 || _gapBody < 0) return;
+                var r = _skin.P[_gapArm] - hand.position;
+                if (r.sqrMagnitude < 0.0009f) return;
+                var axis = Vector3.Cross(r, -_skin.N[_gapBody]);
+                if (axis.sqrMagnitude < 1e-8f) return;
+                var a = Mathf.Min(HandInMax - done, Mathf.Atan2(g - HandInGap, r.magnitude) * Mathf.Rad2Deg);
+                if (a < 0.2f) return;
+                var q = Quaternion.AngleAxis(a, axis.normalized);
+                hand.rotation = q * hand.rotation;
+                _skin.Turn(_skin.Begin(first + 2), _skin.End(first + 2), hand.position, q);
+                // (never into the body: turned back if any point of the hand went in)
+                var into = false;
+                for (int i = _skin.Begin(first + 2), to = _skin.End(first + 2); i < to && !into; i++)
+                    if (_skin.Depth(_skin.P[i], out var d, out _) && d > 0f) into = true;
+                if (into)
+                {
+                    var back = Quaternion.Inverse(q);
+                    hand.rotation = back * hand.rotation;
+                    _skin.Turn(_skin.Begin(first + 2), _skin.End(first + 2), hand.position, back);
+                    return;
+                }
+                done += a;
             }
         }
 
