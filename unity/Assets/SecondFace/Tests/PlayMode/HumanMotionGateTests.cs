@@ -371,9 +371,12 @@ namespace SecondFace.Tests
                 probe.Ground = grounds;
                 // the first person, and the first man (their strides differ: one woman's trace hid the men's skate), traced
                 var traced = i == 0 || (ids[i].Contains("Male") && !ids.Take(i).Any(x => x.Contains("Male")));
-                if (traced)
+                // (and anyone named in GATE_TRACE, for a look at their frames: "_" and their name in the trace's file name)
+                var also = System.Environment.GetEnvironmentVariable("GATE_TRACE");
+                var named = !traced && !string.IsNullOrEmpty(also) && also.Split(',').Contains(ids[i]);
+                if (traced || named)
                 {
-                    probe.TracePath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", report + (i == 0 ? "" : "_m") + "_trace.csv"));
+                    probe.TracePath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", report + (named ? "_" + ids[i] : i == 0 ? "" : "_m") + "_trace.csv"));
                     File.Delete(probe.TracePath.Replace(".csv", "_soles.csv"));   // (it is appended to: each run afresh)
                     probe.TraceState = "";   // every state (the feet, frame by frame)
                     File.WriteAllText(probe.TracePath, "state,t,rootx,rootz,heelL,ballL,ankleLz,heelR,ballR,ankleRz,speed,hipsz,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR,sink,low,eL,eR,gL,gR,slipL,slipR,rL,rR,a1L,a1R,poleL,poleR,flexL,flexR,adaptL,adaptR,surfL,surfR,hgapL,hgapR\n");

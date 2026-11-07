@@ -61,7 +61,7 @@ namespace SecondFace.Game.People
         private Vector3 _lastL, _lastR; private bool _haveLast;
         // moving, a foot down on the ground is held where it came down until the clip lifts it (W1: a planted foot
         // does not creep; the clips' strides never quite match the body's pace): its place, and a short release after
-        private struct Lock { public bool On, HaveTurn; public Vector3 At, From, Fwd; public Quaternion Rest, Corr; public float Release, Last, Min, W, Drop, Wait; public int Pivot; }
+        private struct Lock { public bool On, HaveTurn, NoRelock; public Vector3 At, From, Fwd; public Quaternion Rest, Corr; public float Release, Last, Min, W, Drop, Wait; public int Pivot; }
         private Lock _lockL, _lockR;
         /// <summary>A foot locks when its sole is this near the ground and slower than <see cref="SwingSlow"/>; it lets go
         /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
@@ -80,7 +80,7 @@ namespace SecondFace.Game.People
         /// <summary>Below this pace (m/s) a gait has no flight: a held foot is kept down until the other foot is.</summary>
         public float WalkFlight = 1.8f;
         /// <summary>The sole's lift at which a held foot lets go as it pushes off into a jog's flight (m).</summary>
-        public float LockLiftFlight = 0.012f;
+        public float LockLiftFlight = 0.025f;   // (at 1.2 cm the ball was let go of under the gate's 2.5 cm and slid 0.2-0.4 m/s as it blended out, W1 0 -> 6, 2026-11-07)
         /// <summary>The body's pace below which the person is standing (m/s): a held foot is let go of slowly.</summary>
         public float StandStill = 0.3f;
         /// <summary>Moving, each foot goes where the captured subject's ankle went (the clip's own foot goal, Mecanim's IK
@@ -435,7 +435,10 @@ namespace SecondFace.Game.People
             // (walking, a foot coming down while the other is in the air waits for it from its first held frame: eased in over
             // 0.06 s, the foot landing as a jog slowed to a stop rose 4.5-5 cm with the clip while held, W6, 2026-11-07)
             // (only on the move: standing, a stepping foot held down at once from its landing was let go of sliding, F4 7 -> 11)
-            if (!k.On && k.Release <= 0f && sole < LockDown && (speed < slow || landing)) { k.On = true; k.Pivot = low; k.At = At(low); k.Min = Mathf.Max(0f, sole); k.Wait = !otherDown && body < WalkFlight && body > StandStill ? 1f : 0f; k.W = k.Wait; Hold(ref k, foot, toe); turned = true; }
+            // (on the move, a foot let go of locks again only once it has left the ground: pushing off, its ball still under
+            // 2.5 cm, it locked again mid-roll and slid 0.3 m/s held at the wrong point, W1, 2026-11-07)
+            if (sole > LockLift) k.NoRelock = false;
+            if (!k.On && k.Release <= 0f && sole < LockDown && (speed < slow || landing) && !(k.NoRelock && body > StandStill)) { k.On = true; k.Pivot = low; k.At = At(low); k.Min = Mathf.Max(0f, sole); k.Wait = !otherDown && body < WalkFlight && body > StandStill ? 1f : 0f; k.W = k.Wait; Hold(ref k, foot, toe); turned = true; }
             if (k.On)
             {
                 // rolling: the pivot moves to whichever point is now the lower, pinned where it is (forward as a heel-first
@@ -462,7 +465,7 @@ namespace SecondFace.Game.People
                 var lift = !otherDown && body >= WalkFlight ? LockLiftFlight : LockLift;
                 if ((sole > lift && k.Wait < 0.05f) || off.magnitude > LockReach)
                 {
-                    k.On = false; k.Release = 1f; k.From = want - new Vector3(off.x, 0f, off.y);
+                    k.On = false; k.Release = 1f; k.NoRelock = true; k.From = want - new Vector3(off.x, 0f, off.y);
                     // while the other foot is down too, up to the swing's clearance at once, this frame too (its clearance
                     // was none while it was held: let go on the ground, the sneak's foot slid 2 cm along it that frame,
                     // W1/W2 10 → 1); the last foot on the ground (a jog's push-off) is left to leave it as the clip lifts
