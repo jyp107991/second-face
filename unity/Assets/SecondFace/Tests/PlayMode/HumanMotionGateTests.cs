@@ -260,6 +260,10 @@ namespace SecondFace.Tests
         {
             var keep = Time.captureDeltaTime;
             Time.captureDeltaTime = 1f / 60f;
+            // (two fixed frames before anything is made: the step takes effect from the next frame, and people made in the
+            // frame still timed by the editor's clock started from another pose, the first 18 s of two runs of the same code
+            // apart, 2026-11-07)
+            yield return null; yield return null;
             try { while (inner.MoveNext()) yield return inner.Current; }
             finally { Time.captureDeltaTime = keep; }
         }
