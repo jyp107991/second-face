@@ -217,8 +217,6 @@ namespace SecondFace.Game.People
                 SkinClear(_ru, BodySkin.Part.UpperArmR, ref _angleR, ref _axisR, dt);
                 // in the stride (and the last swings as the person stops), never in a gesture (a wave or a shrug is meant high)
                 if (Striding()) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
-                // DIAG (temporary): the hands' gap after every turn (cm), in the surface slots the trace prints
-                if (RestReach) { Diag[5] = HandGap(BodySkin.Part.UpperArmL) * 100f; Diag[11] = HandGap(BodySkin.Part.UpperArmR) * 100f; }
                 if (!RestReach) { Diag[4] = _restL; Diag[5] = _fwdL; Diag[10] = _restR; Diag[11] = _fwdR; }
                 Diag[6] = _carryL; Diag[7] = _angleL; Diag[8] = _carryR; Diag[9] = _angleR;
                 if (!RestReach) { Diag[12] = _twistL; Diag[13] = _twistR; }
@@ -390,10 +388,21 @@ namespace SecondFace.Game.People
             if (UpperFirst)
             {
                 ref var abd = ref (side < 0 ? ref _abdL : ref _abdR);
+                ref var back = ref (side < 0 ? ref _backL : ref _backR);
                 if (float.IsNaN(abd)) abd = AbdStart;
-                var ua = UpperDir(abd, fwd, outward);
+                var ua = UpperDir(abd, back, fwd, outward);
                 elbowPlaced = S + ua * l1; fromElbow = true;
                 if (!Place(frontNow, out var wristE, out _)) return;
+                // the elbow's bend from the elbow's place, not the hand's: the upper arm tilted back as far as the bend needs
+                // (the forearm swung forward for it carried the hand round into the thigh's fuller front, 3 cm in, and the
+                // push out of it stood the hand 6-9 cm off the thigh, A4, 2026-11-07)
+                var bendNow = Vector3.Angle(ua, wristE - elbowPlaced);
+                var bendWant = Mathf.Max(BendMin, Mathf.Min(BendMax - 4f, RestFlex + _flexVar - 5f));
+                if (w > 0.99f)
+                {
+                    if (bendNow < bendWant) back = Mathf.Min(BackMax, back + BackRate * Time.deltaTime);
+                    else if (bendNow > bendWant + 4f) back = Mathf.Max(0f, back - BackRate * Time.deltaTime);
+                }
                 UpperFirstArm(upper, lower, hand, side, first, w, S, E, l1, l2, wristE, fwd, outward, ua, ref abd);
                 return;
             }
@@ -467,13 +476,15 @@ namespace SecondFace.Game.People
         /// cast, 2026-11-06).</summary>
         public bool UpperFirst = true;
         public float AbdMin = 3f, AbdMax = 17f, AbdStart = 8f, AbdRate = 30f, UpperForward = 0f;
-        private float _abdL = float.NaN, _abdR = float.NaN;
+        /// <summary>At rest, the furthest back the upper arm tilts for the elbow's bend (degrees), and how fast (degrees a second).</summary>
+        public float BackMax = 12f, BackRate = 20f;
+        private float _abdL = float.NaN, _abdR = float.NaN, _backL, _backR;
 
         /// <summary>The upper arm's direction at rest: down, <paramref name="abd"/>° out to the side, <see cref="UpperForward"/>°
         /// forward (negative: back).</summary>
-        private Vector3 UpperDir(float abd, Vector3 fwd, Vector3 outward)
+        private Vector3 UpperDir(float abd, float back, Vector3 fwd, Vector3 outward)
         {
-            var ra = abd * Mathf.Deg2Rad; var rf = UpperForward * Mathf.Deg2Rad;
+            var ra = abd * Mathf.Deg2Rad; var rf = (UpperForward - back) * Mathf.Deg2Rad;
             var ua = Vector3.down * Mathf.Cos(ra) + outward * Mathf.Sin(ra);
             return (ua * Mathf.Cos(rf) + fwd * Mathf.Sin(rf)).normalized;
         }
@@ -492,7 +503,9 @@ namespace SecondFace.Game.People
             // bringing it back toward the upper arm's line
             var bendMin = Mathf.Max(BendMin, Mathf.Min(BendMax - 4f, RestFlex + _flexVar - 5f));
             var fwdPerp = Vector3.ProjectOnPlane(fwd, ua).normalized;
-            for (var k = 0; k < 40 && Vector3.Angle(ua, fa) < bendMin; k++) fa = Vector3.RotateTowards(fa, fwdPerp, Mathf.Deg2Rad, 0f).normalized;
+            var backNow = side < 0 ? _backL : _backR;
+            if (backNow >= BackMax - 0.01f)
+                for (var k = 0; k < 40 && Vector3.Angle(ua, fa) < bendMin; k++) fa = Vector3.RotateTowards(fa, fwdPerp, Mathf.Deg2Rad, 0f).normalized;
             var bend = Vector3.Angle(ua, fa);
             if (bend > BendMax) fa = Vector3.RotateTowards(fa, ua, (bend - BendMax) * Mathf.Deg2Rad, 0f).normalized;
             if (Vector3.Angle(fa, Vector3.down) > HangMax) fa = Vector3.RotateTowards(Vector3.down, fa, HangMax * Mathf.Deg2Rad, 0f).normalized;
