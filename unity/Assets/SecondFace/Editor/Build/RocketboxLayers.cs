@@ -395,6 +395,11 @@ namespace SecondFace.EditorTools
                 {
                     var nb = root.InverseTransformDirection((bones[bw[i].boneIndex0].localToWorldMatrix * bp[bw[i].boneIndex0]).MultiplyVector(nor[i])).normalized;
                     if (BodySkin.SideShare(nb.x) > 0.3f || Mathf.Abs(nb.x) > 0.45f) cell = 0.015f;
+                    // and the tops of what the hips carry (a pouch's, a tool belt's, facing up under a hanging forearm): at 2.5 cm
+                    // the game's points there missed a forearm 2 cm into a pouch's top, read from the thigh's side as outside, C1,
+                    // 2026-11-07
+                    var yLow = root.InverseTransformPoint(world[i]).y;
+                    if (nb.y > 0.6f && yLow < hipsY + 0.3f && yLow > hipsY - 0.15f) cell = 0.015f;
                 }
                 var q = world[i] / cell;
                 var key = (Mathf.FloorToInt(q.x), Mathf.FloorToInt(q.y), Mathf.FloorToInt(q.z), part);
