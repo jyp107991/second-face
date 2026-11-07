@@ -566,8 +566,12 @@ namespace SecondFace.Game.People
                 if (g < 0f && g <= -0.5f) return;   // (no leg near the hand)
                 var move = Mathf.Clamp(SkinGap - g, -SetMax, SetMax);
                 if (Mathf.Abs(move) < 0.002f) return;
+                // along the leg's own facing where the hand is nearest it, level (moved only sideways, a hand on the thigh's
+                // front went 4 cm further out a pass without leaving it, the arm all but straight, A2 and A4, 2026-11-07)
+                var dir = outward;
+                if (_gapBody >= 0) { var n = _skin.N[_gapBody]; n.y = 0f; if (n.sqrMagnitude > 0.09f) dir = n.normalized; }
                 var E = lower.position; var W = hand.position;
-                var to = W + outward * move;
+                var to = W + dir * move;
                 var q = Quaternion.FromToRotation(W - E, to - E);
                 q.ToAngleAxis(out var a, out var ax);
                 if (a < 0.01f || ax.sqrMagnitude < 0.5f) return;
