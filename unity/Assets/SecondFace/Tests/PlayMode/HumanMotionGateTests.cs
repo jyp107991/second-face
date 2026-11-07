@@ -252,6 +252,17 @@ namespace SecondFace.Tests
         [UnityTest, Timeout(3600000)]
         public IEnumerator PeopleStandAndMoveLikePeople() => Fixed(Gate(Quick, "motion_gate", captures: true));
 
+        /// <summary>The gate over the people named in GATE_PEOPLE (a comma list), for a look at a few of the whole cast's
+        /// failures without its 35 minutes: written as test-results/motion_gate_pick.*, never a verdict (only the quick set's
+        /// and the whole cast's are, docs/PEOPLE_MOTION.md §1.9).</summary>
+        [UnityTest, Timeout(3600000)]
+        public IEnumerator PickedPeopleStandAndMove()
+        {
+            var ids = (System.Environment.GetEnvironmentVariable("GATE_PEOPLE") ?? "").Split(',').Select(x => x.Trim()).Where(x => x.Length > 0).ToArray();
+            if (ids.Length == 0) { Assert.Ignore("no GATE_PEOPLE"); yield break; }
+            yield return Fixed(Gate(ids, "motion_gate_pick", captures: false));
+        }
+
         /// <summary>The gate's frames each a fixed 1/60 s of game time (a phone's frame), whatever the machine running it
         /// takes to draw them: the same code measures the same, run after run (the test machine's frames ran 4-131 ms and
         /// the same code's verdicts differed by 3-6 failures a measure, so "no measure worse" compared noise,
