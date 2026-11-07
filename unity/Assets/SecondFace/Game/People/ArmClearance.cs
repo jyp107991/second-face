@@ -1023,49 +1023,59 @@ namespace SecondFace.Game.People
             if (upper == null) return;
             var left = first == BodySkin.Part.UpperArmL;
             var lower = left ? _ll : _rl; var handT = left ? _lh : _rh;
-            // at rest, a hand in the thigh is turned out of it at the elbow first, within the forearm's hang and the elbow's
-            // bend, and only what that leaves is taken at the shoulder (turned out at the shoulder for the hand, the whole arm
-            // stood 20-27° off the vertical: of the resting arms' pushes, the hand on the thigh 1830, the forearm 521, the upper
-            // arm on the chest 238, A1, 2026-11-07; the forearm's own contacts, on the hip, a belt, a pouch, are left to the
-            // shoulder: turned out at the elbow for them, the hand swung off the thigh, A4 328 -> 492, and the forearm past
-            // its hang, A3 5 -> 17)
-            if (ElbowFirst && UpperFirst && RestReach && _restW > 0.99f && lower != null && handT != null)
-                for (var ePass = 0; ePass < 2; ePass++)
-                {
-                    var (nE, axE) = SkinNeedAbout(lower.position, _skin.Begin(first + 2), _skin.End(first + 2), first);
-                    if (nE <= 0.01f) break;
-                    var eUa = (lower.position - upper.position).normalized;
-                    var eFa0 = handT.position - lower.position;
-                    var eTurned = false;
-                    foreach (var eShare in ElbowShares)
-                    {
-                        var eFa = Quaternion.AngleAxis(nE * eShare, axE) * eFa0;
-                        var eHang = Vector3.Angle(eFa, Vector3.down); var eBend = Vector3.Angle(eUa, eFa);
-                        if (eHang > HangMax && eHang > Vector3.Angle(eFa0, Vector3.down)) continue;
-                        if (eBend > BendMax + 4f || eBend < BendFloor) continue;
-                        TurnForearm(lower, first, nE * eShare, axE);
-                        eTurned = true;
-                        break;
-                    }
-                    if (!eTurned) break;
-                }
+            // at rest the shoulder is turned for the upper arm and the forearm only, and then the hand, if it is still in the
+            // thigh, out of it at the elbow, within the forearm's hang and the elbow's bend; the shoulder takes only what that
+            // leaves (turned out at the shoulder for the hand, the whole arm stood 20-27° off the vertical: of the resting
+            // arms' pushes, the hand on the thigh 1830, the forearm 521, the upper arm on the chest 238, A1; turned at the elbow
+            // first, the shoulder's turn for the forearm after it carried the hand off the thigh twice over, A4 328 -> 445,
+            // 2026-11-07)
+            var elbowFirst = ElbowFirst && UpperFirst && RestReach && _restW > 0.99f && lower != null && handT != null;
             var wrist0 = handT != null ? handT.position : Vector3.zero;
-            var (need, dir) = SkinNeed(upper, first);
+            var (need, dir) = SkinNeed(upper, first, false, elbowFirst);
             var forUpper = _needAt >= _skin.Begin(first) && _needAt < _skin.Begin(first + 1);
             if (need > 0f) axis = dir;
             angle = need >= angle ? need : Mathf.MoveTowards(angle, need, Release * dt);
-            if (angle <= 0.01f) return;
-            TurnArm(upper, first, angle, axis);
-            for (var pass = 0; pass < 2; pass++)
+            if (angle > 0.01f)
             {
-                var (more, dir2) = SkinNeed(upper, first);
-                if (more <= 0.01f) break;
-                TurnArm(upper, first, more, dir2);
+                TurnArm(upper, first, angle, axis);
+                for (var pass = 0; pass < 2; pass++)
+                {
+                    var (more, dir2) = SkinNeed(upper, first, false, elbowFirst);
+                    if (more <= 0.01f) break;
+                    TurnArm(upper, first, more, dir2);
+                }
+                // at rest, a push for the upper arm's own contact (against the chest's side) keeps the hand where it was
+                // placed: the forearm turned back to it at the elbow, within the elbow's bend (turned out at the shoulder, the
+                // whole arm carried the hand 5-9 cm off the thigh, A4, 2026-11-07)
+                if (KeepHand && forUpper && _restW >= 0.99f && lower != null && handT != null) KeepHandAt(upper, lower, handT, first, wrist0);
             }
-            // at rest, a push for the upper arm's own contact (against the chest's side) keeps the hand where it was placed:
-            // the forearm turned back to it at the elbow, within the elbow's bend (turned out at the shoulder, the whole arm
-            // carried the hand 5-9 cm off the thigh, A4, 2026-11-07)
-            if (!KeepHand || !forUpper || _restW < 0.99f || lower == null || handT == null) return;
+            if (!elbowFirst) return;
+            for (var ePass = 0; ePass < 2; ePass++)
+            {
+                var (nE, axE) = SkinNeedAbout(lower.position, _skin.Begin(first + 2), _skin.End(first + 2), first);
+                if (nE <= 0.01f) break;
+                var eUa = (lower.position - upper.position).normalized;
+                var eFa0 = handT.position - lower.position;
+                var eTurned = false;
+                foreach (var eShare in ElbowShares)
+                {
+                    var eFa = Quaternion.AngleAxis(nE * eShare, axE) * eFa0;
+                    var eHang = Vector3.Angle(eFa, Vector3.down); var eBend = Vector3.Angle(eUa, eFa);
+                    if (eHang > HangMax && eHang > Vector3.Angle(eFa0, Vector3.down)) continue;
+                    if (eBend > BendMax + 4f || eBend < BendFloor) continue;
+                    TurnForearm(lower, first, nE * eShare, axE);
+                    eTurned = true;
+                    break;
+                }
+                if (!eTurned) break;
+            }
+            // (what the elbow could not take, at the shoulder)
+            var (rest, dirR) = SkinNeed(upper, first);
+            if (rest > 0.01f) TurnArm(upper, first, rest, dirR);
+        }
+
+        private void KeepHandAt(Transform upper, Transform lower, Transform handT, BodySkin.Part first, Vector3 wrist0)
+        {
             var E = lower.position; var cur = handT.position - E; var want = wrist0 - E;
             if (cur.sqrMagnitude < 1e-6f || want.sqrMagnitude < 1e-6f) return;
             var ua = (E - upper.position).normalized;
@@ -1118,11 +1128,11 @@ namespace SecondFace.Game.People
         }
         private int _needAt = -1;
 
-        private (float Angle, Vector3 Axis) SkinNeed(Transform upper, BodySkin.Part first, bool lowerOnly = false)
+        private (float Angle, Vector3 Axis) SkinNeed(Transform upper, BodySkin.Part first, bool lowerOnly = false, bool noHand = false)
         {
             var shoulder = upper.position;
             var best = 0f; var axis = Vector3.zero; _needAt = -1;
-            var from = _skin.Begin(lowerOnly ? first + 1 : first); var to = _skin.End(first + 2);
+            var from = _skin.Begin(lowerOnly ? first + 1 : first); var to = noHand ? _skin.Begin(first + 2) : _skin.End(first + 2);
             var hand = _skin.Begin(first + 2);
             var lowerArm = first == BodySkin.Part.UpperArmL ? _ll : _rl;
             var elbowAt = lowerArm != null ? lowerArm.position : upper.position;
