@@ -93,13 +93,16 @@ namespace SecondFace.Game.People
         }
 
         private float _movedAt = -10f;
+        /// <summary>This one's own time (s, from 0, by the frames' steps): a difference of Time.time, a float whose size
+        /// depends on when the game started, put the stride's end a frame sooner or later from run to run.</summary>
+        private float _clock;
 
         /// <summary>Walking or running, or stopping from it in the last 0.8 s, and not gesturing.</summary>
         private bool Striding()
         {
             if (_gestureLayer >= 0 && _animator.GetLayerWeight(_gestureLayer) > 0.05f) return false;
-            if (_hasSpeed && _animator.GetFloat(SpeedId) > 0.1f) _movedAt = Time.time;
-            return Time.time - _movedAt < 0.8f;
+            if (_hasSpeed && _animator.GetFloat(SpeedId) > 0.1f) _movedAt = _clock;
+            return _clock - _movedAt < 0.8f;
         }
 
         /// <summary>Standing still and not gesturing (the arms hang).</summary>
@@ -181,6 +184,7 @@ namespace SecondFace.Game.People
         private void LateUpdate()
         {
             if (!Ready) return;
+            _clock += Time.deltaTime;
             Flank();
             var dt = Time.deltaTime > 0f ? Time.deltaTime : Time.unscaledDeltaTime;
             var resting = Resting();

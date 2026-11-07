@@ -147,6 +147,9 @@ namespace SecondFace.Tests
         /// <summary>Where to write a per-frame trace of the feet (a CSV), for the states whose name starts with <see cref="TraceState"/>.</summary>
         public string TracePath, TraceState;
         private float _nextBake;
+        /// <summary>The probe's own time (s, from 0, the frames' own steps): differences of Time.time, a float whose size
+        /// depends on how long the editor took to start, came out a few thousandths apart from run to run.</summary>
+        private float _clock;
         private int _bakeCount = int.MaxValue / 2;
         private Mesh _baked;
 
@@ -347,6 +350,7 @@ namespace SecondFace.Tests
         {
             if (_a == null || _hp == null) return;
             var dt = Time.deltaTime;
+            _clock += dt;
             var kind = Kind;
             var root = _root.position;
             var ankleL = B(HumanBodyBones.LeftFoot).position; var ankleR = B(HumanBodyBones.RightFoot).position;
@@ -605,7 +609,7 @@ namespace SecondFace.Tests
             {
                 var lowest = float.MaxValue; var lowestSide = -1;
                 var still = new[] { float.MaxValue, float.MaxValue };   // each foot's slowest sole point now (m/s)
-                var body = _soleT > 0f && Time.time > _soleT ? Flat(_root.position - _soleRoot).magnitude / (Time.time - _soleT) : 0f;
+                var body = _soleT > 0f && _clock > _soleT ? Flat(_root.position - _soleRoot).magnitude / (_clock - _soleT) : 0f;
                 for (var side = 0; side < 2; side++)
                 {
                     var part = side == 0 ? Part.FootL : Part.FootR;
@@ -624,10 +628,10 @@ namespace SecondFace.Tests
                         if (j < 0) continue;
                         var h = v[j].y - g;
                         var slot = side * 2 + q;
-                        if (_soleT > 0f && Time.time > _soleT) still[side] = Mathf.Min(still[side], Flat(v[j] - _sole[slot]).magnitude / (Time.time - _soleT));
-                        if (h < 0.025f && _soleH[slot] < 0.025f && _soleT > 0f && Time.time > _soleT)
+                        if (_soleT > 0f && _clock > _soleT) still[side] = Mathf.Min(still[side], Flat(v[j] - _sole[slot]).magnitude / (_clock - _soleT));
+                        if (h < 0.025f && _soleH[slot] < 0.025f && _soleT > 0f && _clock > _soleT)
                         {
-                            var speed = Flat(v[j] - _sole[slot]).magnitude / (Time.time - _soleT);
+                            var speed = Flat(v[j] - _sole[slot]).magnitude / (_clock - _soleT);
                             Add("W1", speed * 100f);
                             if (body > 0.3f) Add("W2", speed / body);
                         }
@@ -641,14 +645,14 @@ namespace SecondFace.Tests
                 // what the foot plant saw, frame by frame
                 if (TracePath != null && State != null && TraceState != null && State.StartsWith(TraceState))
                 {
-                    var dtS = _soleT > 0f && Time.time > _soleT ? Time.time - _soleT : 0f;
+                    var dtS = _soleT > 0f && _clock > _soleT ? _clock - _soleT : 0f;
                     string Sp(int q) => dtS > 0f && _solePoint[q] >= 0 ? (Flat(v[_solePoint[q]] - _soleWas[q]).magnitude / dtS).ToString("0.00") : "";
                     var path = TracePath.Replace(".csv", "_soles.csv");
                     if (!System.IO.File.Exists(path)) System.IO.File.WriteAllText(path, "state,t,body,hL,bL,hR,bR,vhL,vbL,vhR,vbR,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR,sink,low,eL,eR,gL,gR,slipL,slipR,rL,rR,gapL,gapR,lowL,lowR\n");
                     System.IO.File.AppendAllText(path, $"{State},{Time.time:0.000},{body:0.00},{_soleH[0]:0.000},{_soleH[1]:0.000},{_soleH[2]:0.000},{_soleH[3]:0.000},{Sp(0)},{Sp(1)},{Sp(2)},{Sp(3)},{FootDiag()},{Gap(0, v)},{Gap(1, v)},{_footLow[0]:0.000},{_footLow[1]:0.000}\n");
                 }
                 for (var q = 0; q < 4; q++) if (_solePoint[q] >= 0) _soleWas[q] = v[_solePoint[q]];
-                _soleT = Time.time; _soleRoot = _root.position;
+                _soleT = _clock; _soleRoot = _root.position;
             }
             else _soleT = 0f;
             // soles
