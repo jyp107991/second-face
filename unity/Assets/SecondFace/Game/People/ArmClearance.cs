@@ -54,6 +54,20 @@ namespace SecondFace.Game.People
         /// (in, forward, carry at the elbow, the push-out), this frame; left then right.</summary>
         public bool DiagResting;
         public float[] Diag = new float[20];
+        /// <summary>For the gate's trace: each hand's deepest point in the body's skin (m; negative: out of it) at each step
+        /// of a resting frame: before the clearance, after the shoulder, after the elbow, after the shoulder's remainder,
+        /// after the hand is set at its gap, after the forearm's hang is kept (left 0-5, right 6-11).</summary>
+        public float[] HandDepth = new float[12];
+        /// <summary>Set by the gate's trace only: the steps' depths are measured (in the game they are not).</summary>
+        public bool TraceStages;
+        private void Stage(BodySkin.Part first, int step)
+        {
+            if (!TraceStages) return;
+            var deep = -1f;
+            for (int i = _skin.Begin(first + 2), to = _skin.End(first + 2); i < to; i++)
+                if (_skin.Depth(_skin.P[i], out var d, out _)) deep = Mathf.Max(deep, d);
+            HandDepth[(first == BodySkin.Part.UpperArmL ? 0 : 6) + step] = deep;
+        }
         /// <summary>For the gate's report: the arm's point and the body's point that gave each gap this frame (left elbow,
         /// left hand, right elbow, right hand; arm then body; -1 none).</summary>
         public int[] DiagAt = new int[8];
@@ -217,6 +231,7 @@ namespace SecondFace.Game.People
                     SkinRest(_lu, _ll, _lh, BodySkin.Part.UpperArmL, -1, ref _restL, ref _fwdL, ref _twistL, ref _carryL, resting, dt);
                     SkinRest(_ru, _rl, _rh, BodySkin.Part.UpperArmR, 1, ref _restR, ref _fwdR, ref _twistR, ref _carryR, resting, dt);
                 }
+                Stage(BodySkin.Part.UpperArmL, 0); Stage(BodySkin.Part.UpperArmR, 0);
                 SkinClear(_lu, BodySkin.Part.UpperArmL, ref _angleL, ref _axisL, dt);
                 SkinClear(_ru, BodySkin.Part.UpperArmR, ref _angleR, ref _axisR, dt);
                 // at rest, the hands set at their gap again after the arms were cleared of the body (turned out at the shoulder
@@ -225,8 +240,10 @@ namespace SecondFace.Game.People
                 {
                     SetHand(_ll, _lh, BodySkin.Part.UpperArmL, _restW, Outward(-1));
                     SetHand(_rl, _rh, BodySkin.Part.UpperArmR, _restW, Outward(1));
+                    Stage(BodySkin.Part.UpperArmL, 4); Stage(BodySkin.Part.UpperArmR, 4);
                     KeepHang(_lu, _ll, _lh, BodySkin.Part.UpperArmL);
                     KeepHang(_ru, _rl, _rh, BodySkin.Part.UpperArmR);
+                    Stage(BodySkin.Part.UpperArmL, 5); Stage(BodySkin.Part.UpperArmR, 5);
                 }
                 // in the stride (and the last swings as the person stops), never in a gesture (a wave or a shrug is meant high)
                 if (Striding()) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
@@ -1052,6 +1069,7 @@ namespace SecondFace.Game.People
                 // whole arm carried the hand 5-9 cm off the thigh, A4, 2026-11-07)
                 if (KeepHand && forUpper && _restW >= 0.99f && lower != null && handT != null) KeepHandAt(upper, lower, handT, first, wrist0);
             }
+            Stage(first, 1);
             if (left) _elbowTurnedL = false; else _elbowTurnedR = false;
             if (!elbowFirst) return;
             for (var ePass = 0; ePass < 2; ePass++)
@@ -1074,9 +1092,11 @@ namespace SecondFace.Game.People
                 }
                 if (!eTurned) break;
             }
+            Stage(first, 2);
             // (what the elbow could not take, at the shoulder)
             var (rest, dirR) = SkinNeed(upper, first);
             if (rest > 0.01f) TurnArm(upper, first, rest, dirR);
+            Stage(first, 3);
         }
 
         private void KeepHandAt(Transform upper, Transform lower, Transform handT, BodySkin.Part first, Vector3 wrist0)

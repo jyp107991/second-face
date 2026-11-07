@@ -442,7 +442,7 @@ namespace SecondFace.Tests
                             if (fh <= (fs == 0 ? _minL : _minR) + 0.02f) f4List.Add(fv);
                     }
                     if (TracePath != null && State != null && TraceState != null && State.StartsWith(TraceState))
-                        System.IO.File.AppendAllText(TracePath, $"{State},{Time.time:0.000},{root.x:0.000},{root.z:0.000},{ankleL.y - GroundY(ankleL) - _ankleSoleL:0.000},{toeL.y - GroundY(toeL) - _toeSoleL:0.000},{ankleL.z:0.000},{ankleR.y - GroundY(ankleR) - _ankleSoleR:0.000},{toeR.y - GroundY(toeR) - _toeSoleR:0.000},{ankleR.z:0.000},{_a.GetFloat("Speed"):0.000},{_hips.position.z - root.z:0.000},{FootDiag()},{_traceA1L:0.0},{_traceA1R:0.0},{ElbowTrace()}\n");
+                        System.IO.File.AppendAllText(TracePath, $"{State},{Time.time:0.000},{root.x:0.000},{root.z:0.000},{ankleL.y - GroundY(ankleL) - _ankleSoleL:0.000},{toeL.y - GroundY(toeL) - _toeSoleL:0.000},{ankleL.z:0.000},{ankleR.y - GroundY(ankleR) - _ankleSoleR:0.000},{toeR.y - GroundY(toeR) - _toeSoleR:0.000},{ankleR.z:0.000},{_a.GetFloat("Speed"):0.000},{_hips.position.z - root.z:0.000},{FootDiag()},{_traceA1L:0.0},{_traceA1R:0.0},{ElbowTrace()},{StageTrace()}\n");
                 }
                 // the stance
                 if (k == K.Stand)
@@ -537,6 +537,14 @@ namespace SecondFace.Tests
             return $"{d[12]:0},{d[13]:0},{d[14]:0.0},{d[15]:0.0},{d[4]:0.0},{d[10]:0.0},{d[5]:0.0},{d[11]:0.0},{d[1]:0.000},{d[3]:0.000}";
         }
         private readonly float[] _footLow = new float[2];
+        /// <summary>Each hand's deepest point in the game's skin at each step of the arm clearance (cm; ArmClearance.HandDepth).</summary>
+        private string StageTrace()
+        {
+            if (_ac == null) _ac = GetComponent<SecondFace.Game.People.ArmClearance>();
+            if (_ac == null || _ac.HandDepth == null || _ac.HandDepth.Length < 12) return ",,,,,,,,,,,";
+            _ac.TraceStages = true;
+            return string.Join(",", _ac.HandDepth.Select(x => (x * 100f).ToString("0.0")));
+        }
 
         private string FootDiag()
         {
