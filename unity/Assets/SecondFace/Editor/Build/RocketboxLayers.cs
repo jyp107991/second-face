@@ -162,7 +162,7 @@ namespace SecondFace.EditorTools
                 nb.Sort();
                 sb.Append($" v{v} fate {fate[v]} part {partOf[v]}: nearest kept of its part {same * 100f:0.0} cm (v{ks}), of any {any * 100f:0.0} cm (v{ka} {(ka >= 0 ? partOf[ka] : SkinPart.None)}); mesh neighbours {string.Join("/", nb.Take(4).Select(x => (x * 100f).ToString("0.0")))} cm;");
             }
-            var holes = new int[5]; var holesFar = new int[5];
+            var holes = new int[6]; var holesFar = new int[6];
             for (var i = 0; i < lp.Length; i++)
             {
                 if (!use[i] || !(partOf[i] is SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR)) continue;
@@ -301,6 +301,27 @@ namespace SecondFace.EditorTools
         /// <summary>The body's skin points filled in every this far (m) over its triangles, where no vertex stands within
         /// <see cref="FillGap"/>.</summary>
         private const float FillStep = 0.025f, FillGap = 0.02f;
+        /// <summary>The covered test's cell and reach (m): a surface over a point, facing its way, this near hides it.</summary>
+        private const float CovCell = 0.04f, CovReach = 0.05f;
+
+        /// <summary>A ray from <paramref name="o"/> along <paramref name="d"/> meets the triangle (either face), how far.</summary>
+        private static bool RayHits(Vector3 o, Vector3 d, Vector3 a, Vector3 b, Vector3 c, out float dist)
+        {
+            dist = 0f;
+            var e1 = b - a; var e2 = c - a;
+            var pv = Vector3.Cross(d, e2);
+            var det = Vector3.Dot(e1, pv);
+            if (Mathf.Abs(det) < 1e-10f) return false;
+            var inv = 1f / det;
+            var tv = o - a;
+            var u = Vector3.Dot(tv, pv) * inv;
+            if (u < 0f || u > 1f) return false;
+            var qv = Vector3.Cross(tv, e1);
+            var v = Vector3.Dot(d, qv) * inv;
+            if (v < 0f || u + v > 1f) return false;
+            dist = Vector3.Dot(e2, qv) * inv;
+            return dist > 0f;
+        }
 
         private static BoneWeight BlendWeights(BoneWeight a, float wa, BoneWeight b, float wb, BoneWeight c, float wc)
         {
@@ -498,6 +519,55 @@ namespace SecondFace.EditorTools
             }
             for (var i = n0; i < use.Length; i++) use[i] = true;   // (the filled points: of the body's triangles only)
             var hipsY = root.InverseTransformPoint(anim.GetBoneTransform(HumanBodyBones.Hips).position).y;   // (the bind pose's, not the copy's)
+            // the body's triangles by cell, and its vertices' facings, for the covered test (below)
+            var wnor = new Vector3[pos.Length];
+            for (var i = 0; i < pos.Length; i++) { var b = bw[i]; wnor[i] = (bones[b.boneIndex0].localToWorldMatrix * bp[b.boneIndex0]).MultiplyVector(nor[i]).normalized; }
+            var covTris = new List<int>();
+            for (var sub = 0; sub < mesh.subMeshCount; sub++)
+            {
+                var name = sub < mats.Length && mats[sub] != null ? mats[sub].name.ToLowerInvariant() : "";
+                if (name.Contains("opacity") || name.Contains("hair") || name.Contains("lash") || name.Contains("eye")) continue;
+                covTris.AddRange(mesh.GetTriangles(sub));
+            }
+            var covGrid = new Dictionary<(int, int, int), List<int>>();
+            (int, int, int) CovCellOf(Vector3 q) => (Mathf.FloorToInt(q.x / CovCell), Mathf.FloorToInt(q.y / CovCell), Mathf.FloorToInt(q.z / CovCell));
+            for (var t = 0; t + 2 < covTris.Count; t += 3)
+            {
+                Vector3 a = world[covTris[t]], b = world[covTris[t + 1]], c = world[covTris[t + 2]];
+                var lo = Vector3.Min(a, Vector3.Min(b, c)) - Vector3.one * 0.01f; var hi = Vector3.Max(a, Vector3.Max(b, c)) + Vector3.one * 0.01f;
+                var cl = CovCellOf(lo); var ch = CovCellOf(hi);
+                for (var x = cl.Item1; x <= ch.Item1; x++) for (var y = cl.Item2; y <= ch.Item2; y++) for (var z = cl.Item3; z <= ch.Item3; z++)
+                {
+                    if (!covGrid.TryGetValue((x, y, z), out var l)) covGrid[(x, y, z)] = l = new List<int>();
+                    l.Add(t);
+                }
+            }
+            var covSeen = new HashSet<int>();
+            // a point of the torso or a thigh with another surface over it, facing the same way, within CovReach: the skin
+            // under a garment of the body's own mesh (a skirt's, a coat's, trousers' over the legs). The game's skin is the
+            // outer one, as the gate's is: kept, the hidden skin's points lay nearer a hand pressed 0.9-1.4 cm into the
+            // garment than the garment's own, and read it outside (C1, 2026-11-08)
+            bool Covered(int i)
+            {
+                var n = wnor[i];
+                if (n.sqrMagnitude < 0.5f) return false;
+                var o = world[i] + n * 0.003f;
+                covSeen.Clear();
+                for (var step = 0f; step <= CovReach + 1e-4f; step += CovCell * 0.5f)
+                {
+                    if (!covGrid.TryGetValue(CovCellOf(o + n * step), out var l)) continue;
+                    foreach (var t in l)
+                    {
+                        if (!covSeen.Add(t)) continue;
+                        int ia = covTris[t], ib = covTris[t + 1], ic = covTris[t + 2];
+                        if (ia == i || ib == i || ic == i) continue;
+                        var fn = wnor[ia] + wnor[ib] + wnor[ic];
+                        if (Vector3.Dot(fn, n) < 0.5f * fn.magnitude) continue;   // (the other thigh, an arm: facing back)
+                        if (RayHits(o, n, world[ia], world[ib], world[ic], out var dist) && dist <= CovReach) return true;
+                    }
+                }
+                return false;
+            }
             var cells = new Dictionary<(int, int, int, SkinPart), (int I, float D)>();
             var inner = 0;
             // (for SKIN_DIAG only: each vertex's fate, 0 not the body's, 1 no part, 2 a garment's inside, 3 the upper arm's
@@ -542,6 +612,7 @@ namespace SecondFace.EditorTools
                 // the chest, a contact the soft tissue of both takes, hidden in the crease: docs/PEOPLE_MOTION.md C1)
                 // (from 0.6, a little above the gate's 0.65: the game's sampled points missed the band's top edge, which the
                 // gate saw 1.6-3 cm into the chest's side while walking and gesturing, 2026-11-06)
+                if (part is SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR && Covered(i)) { fate[i] = 5; continue; }
                 fate[i] = 3;
                 if ((part == SkinPart.UpperArmL || part == SkinPart.UpperArmR) && along < 0.6f) continue;
                 fate[i] = 4;
