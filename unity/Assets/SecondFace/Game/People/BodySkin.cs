@@ -255,7 +255,6 @@ namespace SecondFace.Game.People
             for (var h = 0; h < Buckets; h++) _head[h] = -1;
             var body = _set.Start[(int)Part.ThighR + 1];
             if (_spacing == null || _spacing.Length != body) Spacing(body);
-            Mirror(body);
             for (var i = 0; i < body; i++)
             {
                 var c = CellOf(P[i]);
@@ -264,6 +263,9 @@ namespace SecondFace.Game.People
                 _next[i] = _head[h];
                 _head[h] = i;
             }
+            // (after the filing: mirrored before it, the batch read last frame's cells and an empty table, and found no body
+            // point near any arm's, 2026-11-08)
+            Mirror(body);
         }
 
         /// <summary>One point's posing, for a report: its bones, their places, its stored offsets and where it is now.</summary>
