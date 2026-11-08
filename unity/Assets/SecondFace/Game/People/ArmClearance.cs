@@ -766,8 +766,9 @@ namespace SecondFace.Game.People
                     hand.rotation = q * hand.rotation;
                     _skin.Turn(_skin.Begin(first + 2), _skin.End(first + 2), hand.position, q);
                     var into = false;
+                    _skin.DepthRange(_skin.Begin(first + 2), _skin.End(first + 2));
                     for (int i = _skin.Begin(first + 2), to = _skin.End(first + 2); i < to && !into; i++)
-                        if (_skin.Depth(_skin.P[i], out var d, out _) && d > 0f) into = true;
+                        if (_skin.Got(i, out var d, out _) && d > 0f) into = true;
                     if (!into) { a = full * share; break; }
                     var back = Quaternion.Inverse(q);
                     hand.rotation = back * hand.rotation;
@@ -939,10 +940,11 @@ namespace SecondFace.Game.People
             // a jogging arm swung straight back to 45-47°, W3, 2026-11-06), then the upper arm at the shoulder
             var elbow = lower.position;
             var best = 0f; var ax = Vector3.zero;
+            _skin.DepthRange(_skin.Begin(first + 1), _skin.End(first + 2));
             for (int i = _skin.Begin(first + 1), to = _skin.End(first + 2); i < to; i++)
             {
                 var p = _skin.P[i];
-                if (!_skin.Depth(p, out var d, out var n) || d + Margin3 <= 0f) continue;
+                if (!_skin.Got(i, out var d, out var n) || d + Margin3 <= 0f) continue;
                 var arm = p - elbow;
                 if (arm.sqrMagnitude < 0.0025f) continue;
                 var ang = Mathf.Atan2(d + Margin3, arm.magnitude) * Mathf.Rad2Deg;
@@ -1041,10 +1043,11 @@ namespace SecondFace.Game.People
         {
             var gap = float.MaxValue;
             _gapArm = _gapBody = -1;
+            _skin.DepthRange(from, to, stride);
             for (var i = from; i < to; i += stride)
             {
                 if (within.HasValue && (_skin.P[i] - within.Value).sqrMagnitude > radius * radius) continue;
-                if (!_skin.Depth(_skin.P[i], out var d, out _)) continue;
+                if (!_skin.Got(i, out var d, out _)) continue;
                 // soft: a share of the clothes' thickness there may be pressed in (canvas and webbing give under an arm)
                 var g = -d + (soft > 0f && _skin.Near >= 0 ? soft * _skin.Off(_skin.Near) : 0f);
                 if (g < gap) { gap = g; _gapArm = i; _gapBody = _skin.Near; }
@@ -1297,6 +1300,7 @@ namespace SecondFace.Game.People
         {
             var best = 0f; var axis = Vector3.zero;
             var hand = _skin.Begin(first + 2);
+            _skin.DepthRange(from, to);
             for (var i = from; i < to; i++)
             {
                 var p = _skin.P[i];
@@ -1304,7 +1308,7 @@ namespace SecondFace.Game.People
                 // (the forearm's outer half and the hand only: in by the elbow, a short lever, the turn for a centimetre swung
                 // the hand 10-20 cm off the thigh, A4, 2026-11-07; those are left to the shoulder)
                 if (arm.sqrMagnitude < 0.0144f) continue;
-                if (!_skin.Depth(p, out var d, out var n)) continue;
+                if (!_skin.Got(i, out var d, out var n)) continue;
                 if (i < hand && _skin.Near >= 0 && arm.sqrMagnitude < 0.0064f) d -= ClothGive * _skin.Off(_skin.Near);
                 if (d + ElbowMargin <= 0f) continue;
                 var a = Mathf.Atan2(d + ElbowMargin, arm.magnitude) * Mathf.Rad2Deg;
@@ -1331,12 +1335,13 @@ namespace SecondFace.Game.People
             var lowerArm = first == BodySkin.Part.UpperArmL ? _ll : _rl;
             var elbowAt = lowerArm != null ? lowerArm.position : upper.position;
             var forearm = _skin.Begin(first + 1);
+            _skin.DepthRange(from, to);
             for (var i = from; i < to; i++)
             {
                 var p = _skin.P[i];
                 // (the forearm's outer part left to the elbow, ElbowForearm)
                 if (nearElbow && i >= forearm && (p - elbowAt).sqrMagnitude >= 0.0144f) continue;
-                if (!_skin.Depth(p, out var d, out var n)) continue;
+                if (!_skin.Got(i, out var d, out var n)) continue;
                 // the upper arm and the forearm by the elbow may press into the clothes a little (ClothGive); the hand not
                 if (_restW > 0.99f && i < hand && _skin.Near >= 0 && (i < _skin.Begin(first + 1) || (p - elbowAt).sqrMagnitude < 0.0064f)) d -= ClothGive * _skin.Off(_skin.Near);
                 if (d + Margin3 <= 0f) continue;

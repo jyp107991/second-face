@@ -1,6 +1,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace SecondFace.Game.People
@@ -251,6 +255,7 @@ namespace SecondFace.Game.People
             for (var h = 0; h < Buckets; h++) _head[h] = -1;
             var body = _set.Start[(int)Part.ThighR + 1];
             if (_spacing == null || _spacing.Length != body) Spacing(body);
+            Mirror(body);
             for (var i = 0; i < body; i++)
             {
                 var c = CellOf(P[i]);
@@ -319,6 +324,151 @@ namespace SecondFace.Game.People
 
         /// <summary>For the gate's report: how often <see cref="Depth"/> was asked.</summary>
         public long DepthCalls;
+
+        // ---- many points at once (the arm clearance asks thousands a frame: 12-14 ms a person in the editor, 2026-11-08):
+        // the body's points, their filing and spacing mirrored once a frame, and a range of points asked in one Burst job,
+        // which reckons exactly as Depth does (the same filing, the same three nearest, the same tests, Vector3's own
+        // normalising), each point's answer kept by its index
+        /// <summary>After <see cref="DepthRange"/>: each asked point's depth, normal and nearest body point (-1: none near,
+        /// Depth's false).</summary>
+        public float[] QD; public Vector3[] QN; public int[] QNear;
+        private NativeArray<float3> _nP, _nN, _qIn, _qNo;
+        private NativeArray<int> _nHead, _nNext, _qNear;
+        private NativeArray<int3> _nCell;
+        private NativeArray<float> _nSpacing, _qD;
+        private int _nBody = -1;
+
+        private void Mirror(int body)
+        {
+            if (_nBody != body)
+            {
+                Release();
+                _nP = new NativeArray<float3>(body, Allocator.Persistent); _nN = new NativeArray<float3>(body, Allocator.Persistent);
+                _nNext = new NativeArray<int>(body, Allocator.Persistent); _nCell = new NativeArray<int3>(body, Allocator.Persistent);
+                _nSpacing = new NativeArray<float>(body, Allocator.Persistent); _nHead = new NativeArray<int>(Buckets, Allocator.Persistent);
+                _nBody = body;
+            }
+            NativeArray<Vector3>.Copy(P, 0, _nP.Reinterpret<Vector3>(), 0, body);
+            NativeArray<Vector3>.Copy(N, 0, _nN.Reinterpret<Vector3>(), 0, body);
+            NativeArray<int>.Copy(_next, 0, _nNext, 0, body);
+            NativeArray<Vector3Int>.Copy(_cell, 0, _nCell.Reinterpret<Vector3Int>(), 0, body);
+            NativeArray<float>.Copy(_spacing, 0, _nSpacing, 0, body);
+            _nHead.CopyFrom(_head);
+        }
+
+        private void Release()
+        {
+            if (_nP.IsCreated) { _nP.Dispose(); _nN.Dispose(); _nNext.Dispose(); _nCell.Dispose(); _nSpacing.Dispose(); _nHead.Dispose(); }
+            if (_qIn.IsCreated) { _qIn.Dispose(); _qNo.Dispose(); _qNear.Dispose(); _qD.Dispose(); }
+            _nBody = -1;
+        }
+
+        private void OnDestroy() => Release();
+
+        /// <summary>Asks <see cref="Depth"/> of points <paramref name="from"/>..<paramref name="to"/> (every
+        /// <paramref name="stride"/>th) at once; the answers in <see cref="QD"/>, <see cref="QN"/>, <see cref="QNear"/>.</summary>
+        public void DepthRange(int from, int to, int stride = 1)
+        {
+            if (to <= from || !_nP.IsCreated) return;
+            var m = (to - from + stride - 1) / stride;
+            if (!_qIn.IsCreated || _qIn.Length < m)
+            {
+                if (_qIn.IsCreated) { _qIn.Dispose(); _qNo.Dispose(); _qNear.Dispose(); _qD.Dispose(); }
+                var cap = Mathf.Max(m, 512);
+                _qIn = new NativeArray<float3>(cap, Allocator.Persistent); _qNo = new NativeArray<float3>(cap, Allocator.Persistent);
+                _qNear = new NativeArray<int>(cap, Allocator.Persistent); _qD = new NativeArray<float>(cap, Allocator.Persistent);
+            }
+            if (QD == null || QD.Length != P.Length) { QD = new float[P.Length]; QN = new Vector3[P.Length]; QNear = new int[P.Length]; }
+            var qv = _qIn.Reinterpret<Vector3>();
+            var k = 0;
+            for (var i = from; i < to; i += stride) qv[k++] = P[i];
+            new DepthJob { P = _nP, N = _nN, Head = _nHead, Next = _nNext, Cell = _nCell, Spacing = _nSpacing, Q = _qIn, D = _qD, No = _qNo, Near = _qNear, Count = m }.Run();
+            var nv = _qNo.Reinterpret<Vector3>();
+            k = 0;
+            for (var i = from; i < to; i += stride) { QD[i] = _qD[k]; QN[i] = nv[k]; QNear[i] = _qNear[k]; k++; }
+            DepthCalls += m;
+        }
+
+        /// <summary>The answer <see cref="DepthRange"/> kept for point <paramref name="i"/>, as <see cref="Depth"/> gives it
+        /// (and <see cref="Near"/> set as Depth sets it).</summary>
+        public bool Got(int i, out float depth, out Vector3 normal)
+        {
+            Near = QNear[i];
+            depth = Near >= 0 ? QD[i] : 0f; normal = Near >= 0 ? QN[i] : Vector3.zero;
+            return Near >= 0;
+        }
+
+        [BurstCompile(CompileSynchronously = true, FloatMode = FloatMode.Strict, FloatPrecision = FloatPrecision.Standard)]
+        private struct DepthJob : IJob
+        {
+            [ReadOnly] public NativeArray<float3> P, N, Q;
+            [ReadOnly] public NativeArray<int> Head, Next;
+            [ReadOnly] public NativeArray<int3> Cell;
+            [ReadOnly] public NativeArray<float> Spacing;
+            public NativeArray<float> D;
+            public NativeArray<float3> No;
+            public NativeArray<int> Near;
+            public int Count;
+
+            public void Execute()
+            {
+                for (var k = 0; k < Count; k++)
+                {
+                    var near = One(Q[k], out var d, out var n);
+                    D[k] = d; No[k] = n; Near[k] = near;
+                }
+            }
+
+            private static float Len(float3 v) => math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+            private static float Sq(float3 v) => v.x * v.x + v.y * v.y + v.z * v.z;
+            private static float Dot(float3 a, float3 b) => a.x * b.x + a.y * b.y + a.z * b.z;
+            // (as Vector3.normalized: divided by its length past 1e-5, else zero)
+            private static float3 Norm(float3 v) { var m = Len(v); return m > 1E-05f ? v / m : float3.zero; }
+
+            private float Under(float3 p, int c)
+            {
+                var v = p - P[c];
+                var d = -Dot(v, N[c]);
+                if (d <= 0f) return d;
+                var across = Len(v + N[c] * d);
+                return across <= math.max(math.min(Spacing[c], PatchMax), DeepAcross * d) ? d : -1f;
+            }
+
+            private int One(float3 p, out float depth, out float3 normal)
+            {
+                depth = 0f; normal = float3.zero;
+                int c0 = -1, c1 = -1, c2 = -1;
+                float d0 = float.MaxValue, d1 = float.MaxValue, d2 = float.MaxValue;
+                int cx = (int)math.floor(p.x / Cell), cy = (int)math.floor(p.y / Cell), cz = (int)math.floor(p.z / Cell);
+                for (var dx = -1; dx <= 1; dx++)
+                    for (var dy = -1; dy <= 1; dy++)
+                        for (var dz = -1; dz <= 1; dz++)
+                            for (var j = Head[Hash(cx + dx, cy + dy, cz + dz)]; j >= 0; j = Next[j])
+                            {
+                                if (j == c0 || j == c1 || j == c2) continue;
+                                var cj = Cell[j];
+                                if (cj.x != cx + dx || cj.y != cy + dy || cj.z != cz + dz) continue;
+                                var d = Sq(P[j] - p);
+                                if (d >= d2) continue;
+                                if (d < d0) { c2 = c1; d2 = d1; c1 = c0; d1 = d0; c0 = j; d0 = d; }
+                                else if (d < d1) { c2 = c1; d2 = d1; c1 = j; d1 = d; }
+                                else { c2 = j; d2 = d; }
+                            }
+                if (c0 < 0) return -1;
+                float u0 = Under(p, c0), u1 = c1 >= 0 ? Under(p, c1) : -1f, u2 = c2 >= 0 ? Under(p, c2) : -1f;
+                var ins = (u0 > 0f ? 1 : 0) + (u1 > 0f ? 1 : 0) + (u2 > 0f ? 1 : 0);
+                var inside = ins >= 2 ? math.min(u0 > 0f ? u0 : float.MaxValue, math.min(u1 > 0f ? u1 : float.MaxValue, u2 > 0f ? u2 : float.MaxValue)) : -1f;
+                var nn = N[c0] + (c1 >= 0 ? N[c1] : float3.zero) + (c2 >= 0 ? N[c2] : float3.zero);
+                normal = Sq(nn) > 1e-8f ? Norm(nn) : N[c0];
+                var v0 = p - P[c0];
+                var plane = Dot(v0, N[c0]);
+                var across = math.sqrt(math.max(0f, Sq(v0) - plane * plane));
+                var patch = 0.5f * math.min(Spacing[c0], PatchMax);
+                var gap = across <= patch ? math.abs(plane) : math.sqrt((across - patch) * (across - patch) + plane * plane);
+                depth = inside > 0f ? inside : -gap;
+                return c0;
+            }
+        }
 
         public bool Depth(Vector3 p, out float depth, out Vector3 normal)
         {
