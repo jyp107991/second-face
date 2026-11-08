@@ -30,6 +30,10 @@ namespace SecondFace.Tests
         public string Error { get; private set; }
         /// <summary>Per state, the deepest a hand or forearm went into the body, and where (for the report).</summary>
         public readonly Dictionary<string, (float, string)> WorstClip = new();
+        /// <summary>Per state, the furthest a resting hand stood off the hip or thigh past A4's limit, and where (for the
+        /// report: the gate's nearest hand and body vertices, and what the game's skin read then).</summary>
+        public readonly Dictionary<string, (float, string)> WorstHand = new();
+        private float _traceA4L = -1f, _traceA4R = -1f;   // the hands' last sampled gaps (cm), for the trace
 
         private Animator _a;
         private HumanPoseHandler _hp;
@@ -540,8 +544,9 @@ namespace SecondFace.Tests
         /// <summary>Each hand's deepest point in the game's skin at each step of the arm clearance (cm; ArmClearance.HandDepth).</summary>
         private string HoldTrace()
         {
-            if (_ac == null || _ac.Hold == null || _ac.Hold.Length < 8) return ",,,,,,,";
-            return string.Join(",", _ac.Hold.Select(x => x.ToString("0.00")));
+            var a4 = $",{_traceA4L:0.0},{_traceA4R:0.0}";
+            if (_ac == null || _ac.Hold == null || _ac.Hold.Length < 8) return ",,,,,,," + a4;
+            return string.Join(",", _ac.Hold.Select(x => x.ToString("0.00"))) + a4;
         }
 
         private string StageTrace()
@@ -749,6 +754,7 @@ namespace SecondFace.Tests
             string worst = null;
             var worstVertex = -1; var worstBody = -1;
             var gapL = float.MaxValue; var gapR = float.MaxValue;
+            int hvL = -1, bvL = -1, hvR = -1, bvR = -1;
             // the hips' and thighs' points for the hands' gap, every one (the gap may be wider than the grid's reach; every
             // third of a Rocketbox mesh's points, 4-5 cm apart, overstated the gap by several cm)
             var coarse = new List<int>();
@@ -785,9 +791,10 @@ namespace SecondFace.Tests
                 }
                 if (hand && k == K.Stand && (i % 2 == 0))
                 {
-                    var g = float.MaxValue;
-                    foreach (var j in coarse) g = Mathf.Min(g, (v[j] - p).sqrMagnitude);
-                    if (s == Part.HandL) gapL = Mathf.Min(gapL, g); else gapR = Mathf.Min(gapR, g);
+                    var g = float.MaxValue; var gj = -1;
+                    foreach (var j in coarse) { var dj = (v[j] - p).sqrMagnitude; if (dj < g) { g = dj; gj = j; } }
+                    if (s == Part.HandL) { if (g < gapL) { gapL = g; hvL = i; bvL = gj; } }
+                    else if (g < gapR) { gapR = g; hvR = i; bvR = gj; }
                 }
             }
             // a candidate is in the body only if rays from it cross the body's surface an odd number of times (two of three
@@ -813,6 +820,22 @@ namespace SecondFace.Tests
             {
                 if (gapL < float.MaxValue) Add("A4", Mathf.Sqrt(gapL) * 100f);
                 if (gapR < float.MaxValue) Add("A4", Mathf.Sqrt(gapR) * 100f);
+                _traceA4L = gapL < float.MaxValue ? Mathf.Sqrt(gapL) * 100f : -1f;
+                _traceA4R = gapR < float.MaxValue ? Mathf.Sqrt(gapR) * 100f : -1f;
+                // (the worst past the limit, and where: the gate's vertices and the game's own nearest hand and body points)
+                var inv = Quaternion.Inverse(_root.rotation);
+                string Lc(Vector3 w) { var r = inv * (w - _hips.position) * 100f; return $"({r.x:0},{r.y:0},{r.z:0})"; }
+                for (var side = 0; side < 2; side++)
+                {
+                    var a4 = side == 0 ? _traceA4L : _traceA4R;
+                    int hv = side == 0 ? hvL : hvR, bv = side == 0 ? bvL : bvR;
+                    if (a4 <= 6f || hv < 0 || bv < 0) continue;
+                    if (WorstHand.TryGetValue(State, out var wh) && wh.Item1 >= a4) continue;
+                    var game = _ac != null ? Where(side == 0 ? 1 : 3, side == 0 ? "L hand" : "R hand") : "no clearance";
+                    var gate = $"{(side == 0 ? "L" : "R")} {(Part)_seg[hv]} vertex {hv} {Lc(v[hv])} -> {(Part)_seg[bv]} vertex {bv} {Lc(v[bv])} {a4:0.0} cm";
+                    var arm = _ac != null && _ac.Diag.Length >= 4 ? $"; the game's hand gap then {_ac.Diag[side == 0 ? 1 : 3] * 100f:0.0} cm, resting {_ac.DiagResting}" : "";
+                    WorstHand[State] = (a4, $"{gate}; the game's {game}{arm}; a1 {(side == 0 ? _traceA1L : _traceA1R):0.0}");
+                }
             }
         }
 
