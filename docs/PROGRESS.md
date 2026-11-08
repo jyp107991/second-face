@@ -569,7 +569,8 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   the upper arm back in at 4 mm (A4 worse); the forearm's line rate-limited at 90°/s and the hand drawn in at 1 cm a
   pass (the spikes come from the rest arm's own placement, unchanged); the curl to 1.3 cm off the body (A4 192). Now
   the wrist's curl tries the whole turn, then half, then a quarter, before none, so a hand that one full curl would
-  press into the leg still curls part of the way (full25 running).
+  press into the leg still curls part of the way: **whole cast 848 -> 837, committed** (full25, no measure worse): C1 42
+  -> 31, A4 190, A1 574, A3 5, W6 23, W3 10, F1 1, F2 1, F5 2.
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
