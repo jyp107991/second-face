@@ -321,8 +321,11 @@ namespace SecondFace.Game.People
 
         /// <summary>The widest patch of skin one point stands for (m).</summary>
         public const float PatchMax = 0.06f;
-        /// <summary>How far across from a point, as a multiple of how deep behind its plane, a point is still read as under it.</summary>
-        public const float DeepAcross = 3f;
+        /// <summary>How far across from a point, as a multiple of how deep behind its plane, a point is still read as under it,
+        /// and never further than <see cref="DeepAcrossMax"/> (m): unbounded, arm points by the armpit 6-10 cm from the vests'
+        /// points, 2.5-6 cm behind their planes and 5-8.5 cm across, read as inside and held the gear-held men's arms out at
+        /// 30-40°, A1, 2026-11-08 (the case it was for: 1.6 cm deep, 3.2 cm across).</summary>
+        public const float DeepAcross = 3f, DeepAcrossMax = 0.04f;
 
         /// <summary>For the gate's report: how often <see cref="Depth"/> was asked.</summary>
         [System.NonSerialized] public long DepthCalls;
@@ -449,7 +452,7 @@ namespace SecondFace.Game.People
                 var d = -Dot(v, N[c]);
                 if (d <= 0f) return d;
                 var across = Len(v + N[c] * d);
-                return across <= math.max(math.min(Spacing[c], PatchMax), DeepAcross * d) ? d : -1f;
+                return across <= math.max(math.min(Spacing[c], PatchMax), math.min(DeepAcross * d, DeepAcrossMax)) ? d : -1f;
             }
 
             private int One(float3 p, out float depth, out float3 normal)
@@ -525,7 +528,7 @@ namespace SecondFace.Game.People
                 var across = (v + N[c] * d).magnitude;
                 // (and as far across as 2.2 times as deep: under the arm the chest's wall turns in, and an upper arm 1.6 cm
                 // behind its plane lay 3.2 cm across from its nearest point, read as outside, C1, 2026-11-06)
-                return across <= Mathf.Max(Mathf.Min(_spacing[c], PatchMax), DeepAcross * d) ? d : -1f;
+                return across <= Mathf.Max(Mathf.Min(_spacing[c], PatchMax), Mathf.Min(DeepAcross * d, DeepAcrossMax)) ? d : -1f;
             }
             // inside when two of the three say so (the linings that called for all three are left out of the skin now; with
             // points 1.5-2.5 cm apart one of three often lay on another facet, a vest's edge, and hid upper arms 1.5-2 cm in
@@ -578,7 +581,7 @@ namespace SecondFace.Game.People
                 var v = p - P[k];
                 var dd = -Vector3.Dot(v, N[k]);
                 var across = (v + N[k] * dd).magnitude;
-                var lim = Mathf.Max(Mathf.Min(_spacing[k], PatchMax), DeepAcross * dd);
+                var lim = Mathf.Max(Mathf.Min(_spacing[k], PatchMax), Mathf.Min(DeepAcross * dd, DeepAcrossMax));
                 var verdict = dd <= 0f ? "out" : across <= lim ? $"in {dd * 100f:0.0}" : $"beside ({across * 100f:0.0} > {lim * 100f:0.0})";
                 var r = inv * (P[k] - origin) * 100f; var nn = inv * N[k];
                 parts.Add($"{PartOf(k)} {k} ({r.x:0},{r.y:0},{r.z:0}) n ({nn.x:0.0},{nn.y:0.0},{nn.z:0.0}) off {Off(k) * 100f:0.0} sp {_spacing[k] * 100f:0.0} {Mathf.Sqrt((P[k] - p).sqrMagnitude) * 100f:0.0} cm away: {verdict}");
