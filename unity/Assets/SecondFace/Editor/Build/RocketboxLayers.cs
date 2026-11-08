@@ -323,6 +323,16 @@ namespace SecondFace.EditorTools
             return dist > 0f;
         }
 
+        /// <summary>The point at (<paramref name="u"/>, <paramref name="v"/>, <paramref name="w"/>) of a triangle on the curved
+        /// surface its corners' normals make (Phong tessellation: the flat point projected onto each corner's tangent plane,
+        /// blended).</summary>
+        private static Vector3 Phong(Vector3 a, Vector3 b, Vector3 c, Vector3 na, Vector3 nb, Vector3 nc, float u, float v, float w)
+        {
+            var p = a * u + b * v + c * w;
+            Vector3 On(Vector3 q, Vector3 n) { n = n.sqrMagnitude > 1e-8f ? n.normalized : Vector3.zero; return p - Vector3.Dot(p - q, n) * n; }
+            return On(a, na) * u + On(b, nb) * v + On(c, nc) * w;
+        }
+
         private static BoneWeight BlendWeights(BoneWeight a, float wa, BoneWeight b, float wb, BoneWeight c, float wc)
         {
             var acc = new Dictionary<int, float>();
@@ -419,10 +429,13 @@ namespace SecondFace.EditorTools
                     {
                         var (a, b, c, u, v, w) = fillOf[k];
                         var i = n0 + k;
-                        pos[i] = pos[a] * u + pos[b] * v + pos[c] * w;
+                        // on the surface the vertices' facings make (Phong): on the flat triangle, a thigh's filled point lay up
+                        // to 0.4 cm under the planes the gate measures by, and a hand held off it by 2 mm lay 0.6 cm in (C1,
+                        // 2026-11-08)
+                        pos[i] = Phong(pos[a], pos[b], pos[c], nor[a], nor[b], nor[c], u, v, w);
                         nor[i] = (nor[a] * u + nor[b] * v + nor[c] * w).normalized;
-                        world[i] = fillAt[k];
                         bw[i] = BlendWeights(bw[a], u, bw[b], v, bw[c], w);
+                        world[i] = (bones[bw[i].boneIndex0].localToWorldMatrix * bp[bw[i].boneIndex0]).MultiplyPoint3x4(pos[i]);
                         foreach (var x in keepsX) x[i] = (x[a] ? 1 : 0) + (x[b] ? 1 : 0) + (x[c] ? 1 : 0) >= 2;
                         if (flLx != null) flLx[i] = flL[a] * u + flL[b] * v + flL[c] * w;
                         if (flRx != null) flRx[i] = flR[a] * u + flR[b] * v + flR[c] * w;
