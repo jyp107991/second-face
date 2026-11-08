@@ -630,6 +630,16 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   **Next:** the two gear-held men whose arms stand far out (cap_Military_Male_03n and cap_Police_Male_03n: 73 of the 532,
   A1 33-48°, A4 11-19 cm, W3 in the walk; a back-facing point of the chest's gear at the side holds the upper arm out),
   traced; then the broad men at 21-25° (A1), the bend's push-off (W6), C1 9.
+  Since: the two traced. Their avatars are a true T-pose like every Rocketbox man's (rig report), and their flank
+  correctives are at full weight at rest; their elbows lay 2-4.5 cm into the vests at the out-angle's most. The
+  correctives' caps raised for the gear-held men (the arm's side 4 cm, the chest's 6 by the elbow, each its share of the
+  overlap; 16 bodies rebuilt): A1 on three broad men 51 -> 37, the outliers unmoved, W3 +1. The report now names the three
+  skin points that judged each push's arm point inside, and their verdicts: points 6-10 cm away, 2.5-6 cm behind their
+  planes and 5-8.5 cm across, read as under because the depth test let a patch reach 3x the depth across, unbounded.
+  Capped at 4 cm (the case it was for: 1.6 deep, 3.2 across): on the gear-held men and the clip-prone women (20 picked,
+  one listed twice) A1 221 -> 206, A4 39 -> 25, C1 9 -> 4, W3 8 -> 6, nothing worse; cap_Military_Male_03n 37-44° -> 24-29°.
+  cap_Police_Male_03n stays at 31-35° on real contact (his vest's side 2 cm from the arm's line). full33 (the whole cast)
+  running.
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
