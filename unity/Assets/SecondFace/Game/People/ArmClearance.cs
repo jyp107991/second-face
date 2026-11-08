@@ -1286,10 +1286,6 @@ namespace SecondFace.Game.People
         /// <summary>At rest, the furthest the elbow's turn for the forearm may take the hand from the thigh beyond where it
         /// hung (m).</summary>
         public float ElbowHandGrow = 0.02f;
-        /// <summary>At rest, the forearm's points this far and more from the elbow (m) are turned out at the elbow, nearer ones at
-        /// the shoulder (at 12 cm the forearm by the elbow on the hip, 14-28 states a broad man, was the shoulder's, A1; the
-        /// hand's place is kept by <see cref="ElbowHandGrow"/>, 2026-11-08).</summary>
-        public float ElbowNear = 0.06f;
         /// <summary>How far the elbow's turn takes the hand out of the thigh (m): the skin's points there are 1.5-4 cm apart on
         /// a curved surface, and taken to 3 mm by them the hand lay 1.6-2.7 cm into the thigh's front (C1 79 -> 112, 2026-11-07).</summary>
         public float ElbowMargin = 0.01f;
@@ -1311,7 +1307,7 @@ namespace SecondFace.Game.People
                 var arm = p - pivot;
                 // (the forearm's outer half and the hand only: in by the elbow, a short lever, the turn for a centimetre swung
                 // the hand 10-20 cm off the thigh, A4, 2026-11-07; those are left to the shoulder)
-                if (arm.sqrMagnitude < ElbowNear * ElbowNear) continue;
+                if (arm.sqrMagnitude < 0.0144f) continue;
                 if (!_skin.Got(i, out var d, out var n)) continue;
                 if (i < hand && _skin.Near >= 0 && arm.sqrMagnitude < 0.0064f) d -= ClothGive * _skin.Off(_skin.Near);
                 if (d + ElbowMargin <= 0f) continue;
@@ -1344,7 +1340,7 @@ namespace SecondFace.Game.People
             {
                 var p = _skin.P[i];
                 // (the forearm's outer part left to the elbow, ElbowForearm)
-                if (nearElbow && i >= forearm && (p - elbowAt).sqrMagnitude >= ElbowNear * ElbowNear) continue;
+                if (nearElbow && i >= forearm && (p - elbowAt).sqrMagnitude >= 0.0144f) continue;
                 if (!_skin.Got(i, out var d, out var n)) continue;
                 // the upper arm and the forearm by the elbow may press into the clothes a little (ClothGive); the hand not
                 if (_restW > 0.99f && i < hand && _skin.Near >= 0 && (i < _skin.Begin(first + 1) || (p - elbowAt).sqrMagnitude < 0.0064f)) d -= ClothGive * _skin.Off(_skin.Near);
