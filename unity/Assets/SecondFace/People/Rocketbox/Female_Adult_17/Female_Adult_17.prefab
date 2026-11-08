@@ -407,12 +407,6 @@ MonoBehaviour:
   P: []
   N: []
   Near: -1
-  PoseMs: 0
-  Poses: 0
-  DepthCalls: 0
-  QD: []
-  QN: []
-  QNear: 
 --- !u!137 &8464080824907211466 stripped
 SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: -7232886121493619281, guid: 4b65087d7cc024f1d8dbac01e6bc6f12, type: 3}

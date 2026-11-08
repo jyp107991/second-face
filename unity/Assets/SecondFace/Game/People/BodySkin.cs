@@ -207,7 +207,7 @@ namespace SecondFace.Game.People
         /// <summary>Poses every point from the bones as they are now, and files the body's points (torso, thighs) by cell
         /// for <see cref="Depth"/>.</summary>
         /// <summary>For the gate's report: the time posing has taken (ms) and how often.</summary>
-        public double PoseMs; public int Poses;
+        [System.NonSerialized] public double PoseMs; [System.NonSerialized] public int Poses;
         private readonly System.Diagnostics.Stopwatch _poseCost = new();
 
         public void Pose()
@@ -325,7 +325,7 @@ namespace SecondFace.Game.People
         public const float DeepAcross = 3f;
 
         /// <summary>For the gate's report: how often <see cref="Depth"/> was asked.</summary>
-        public long DepthCalls;
+        [System.NonSerialized] public long DepthCalls;
 
         // ---- many points at once (the arm clearance asks thousands a frame: 12-14 ms a person in the editor, 2026-11-08):
         // the body's points, their filing and spacing mirrored once a frame, and a range of points asked in one Burst job,
@@ -333,7 +333,7 @@ namespace SecondFace.Game.People
         // normalising), each point's answer kept by its index
         /// <summary>After <see cref="DepthRange"/>: each asked point's depth, normal and nearest body point (-1: none near,
         /// Depth's false).</summary>
-        public float[] QD; public Vector3[] QN; public int[] QNear;
+        [System.NonSerialized] public float[] QD; [System.NonSerialized] public Vector3[] QN; [System.NonSerialized] public int[] QNear;
         private NativeArray<float3> _nP, _nN, _qIn, _qNo;
         private NativeArray<int> _nHead, _nNext, _qNear;
         private NativeArray<int3> _nCell;

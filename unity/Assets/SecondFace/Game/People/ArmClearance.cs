@@ -216,7 +216,7 @@ namespace SecondFace.Game.People
         }
 
         /// <summary>For the gate's report: the time this has taken (ms) over the frames it ran.</summary>
-        public double CostMs; public int CostFrames;
+        [System.NonSerialized] public double CostMs; [System.NonSerialized] public int CostFrames;
         public BodySkin Skin => _skin;
         /// <summary>For the gate's report: each stage's time (ms, summed): 0 the flank, 1 the skin's pose, 2 the resting arms'
         /// placing, 3 the clearance, 4 the hands set at their gap, 5 the hang kept and the hands curled, 6 the swing and the
