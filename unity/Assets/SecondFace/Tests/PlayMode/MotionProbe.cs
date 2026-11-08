@@ -544,7 +544,8 @@ namespace SecondFace.Tests
         /// <summary>Each hand's deepest point in the game's skin at each step of the arm clearance (cm; ArmClearance.HandDepth).</summary>
         private string HoldTrace()
         {
-            var a4 = $",{_traceA4L:0.0},{_traceA4R:0.0}";
+            var sk = GetComponent<SecondFace.Game.People.BodySkin>();
+            var a4 = $",{_traceA4L:0.0},{_traceA4R:0.0},{(sk != null ? sk.FlankL : -1f):0.00},{(sk != null ? sk.FlankR : -1f):0.00}";
             if (_ac == null || _ac.Hold == null || _ac.Hold.Length < 8) return ",,,,,,," + a4;
             return string.Join(",", _ac.Hold.Select(x => x.ToString("0.00"))) + a4;
         }
