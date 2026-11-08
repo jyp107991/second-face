@@ -583,6 +583,20 @@ namespace SecondFace.EditorTools
             }
             var cells = new Dictionary<(int, int, int, SkinPart), (int I, float D)>();
             var inner = 0;
+            // the bones under each arm's upper arm, forearm and hand (the original's: the skin's weights name them)
+            HashSet<Transform> Under(HumanBodyBones hb) { var set = new HashSet<Transform>(); var t = anim.GetBoneTransform(hb); if (t != null) foreach (var c in t.GetComponentsInChildren<Transform>(true)) set.Add(c); return set; }
+            var armUL = Under(HumanBodyBones.LeftUpperArm); var armFL = Under(HumanBodyBones.LeftLowerArm); var armHL = Under(HumanBodyBones.LeftHand);
+            var armUR = Under(HumanBodyBones.RightUpperArm); var armFR = Under(HumanBodyBones.RightLowerArm); var armHR = Under(HumanBodyBones.RightHand);
+            float WeightUnder(int v, HashSet<Transform> set)
+            {
+                var b = bw[v]; var sum = 0f;
+                if (b.boneIndex0 < bones.Length && set.Contains(bones[b.boneIndex0])) sum += b.weight0;
+                if (b.boneIndex1 < bones.Length && set.Contains(bones[b.boneIndex1])) sum += b.weight1;
+                if (b.boneIndex2 < bones.Length && set.Contains(bones[b.boneIndex2])) sum += b.weight2;
+                if (b.boneIndex3 < bones.Length && set.Contains(bones[b.boneIndex3])) sum += b.weight3;
+                return sum;
+            }
+            var relabelled = 0;
             // (for SKIN_DIAG only: each vertex's fate, 0 not the body's, 1 no part, 2 a garment's inside, 3 the upper arm's
             // high part, 4 a candidate; and its part)
             var fate = new byte[pos.Length]; var partOf = new SkinPart[pos.Length];
@@ -599,6 +613,19 @@ namespace SecondFace.EditorTools
                 }
                 if (part == SkinPart.None) continue;
                 if (i >= n0 && !(part is SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR)) continue;   // (filled: the body's only)
+                // an arm's point only if the arm moves it: by place alone, the jacket's side at the waist lay nearer the upper
+                // arm's line than the spine's and was taken for the arm's inner side, though the spine moves it; the arm was
+                // pushed out of the chest to clear it, and it stayed where it was (the broad men's arms held 21-25° off the
+                // vertical, A1, 2026-11-08): a point whose arm bones weigh under half is the torso's
+                if (i < n0 && part is SkinPart.UpperArmL or SkinPart.ForearmL or SkinPart.HandL or SkinPart.UpperArmR or SkinPart.ForearmR or SkinPart.HandR)
+                {
+                    var left = part is SkinPart.UpperArmL or SkinPart.ForearmL or SkinPart.HandL;
+                    var wU = WeightUnder(i, left ? armUL : armUR); var wF = WeightUnder(i, left ? armFL : armFR); var wH = WeightUnder(i, left ? armHL : armHR);
+                    var byWeight = wH >= 0.5f ? (left ? SkinPart.HandL : SkinPart.HandR) : wF >= 0.5f ? (left ? SkinPart.ForearmL : SkinPart.ForearmR) : wU >= 0.5f ? (left ? SkinPart.UpperArmL : SkinPart.UpperArmR) : SkinPart.Torso;
+                    // (a deeper part by place than by weight is kept by place: the elbow's and wrist's seams; only a point the arm
+                    // does not move at all is given back to the torso)
+                    if (byWeight == SkinPart.Torso) { part = SkinPart.Torso; relabelled++; }
+                }
                 partOf[i] = part; fate[i] = 2;
                 // the body's surface faces away from its bones: a vertex whose normal faces its bone's axis is a garment's
                 // inside (a jacket's lining at the hem, a turned-up cuff), and a hand by it read as outside the body while
@@ -776,7 +803,7 @@ namespace SecondFace.EditorTools
                 return new[] { foot.InverseTransformPoint(world[heel]), foot.InverseTransformPoint(world[back]), foot.InverseTransformPoint(world[ball]), (toe != null ? toe : foot).InverseTransformPoint(world[tip]) };
             }
             skin.Built = BodySkin.Version;
-            Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")}; {inner} inside faces left out; parts told apart in the neutral pose)");
+            Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")}; {inner} inside faces left out; {relabelled} points the arms do not move given to the torso; parts told apart in the neutral pose)");
         }
 
         private static HumanBodyBones Parse(string name) => (HumanBodyBones)Enum.Parse(typeof(HumanBodyBones), name);
