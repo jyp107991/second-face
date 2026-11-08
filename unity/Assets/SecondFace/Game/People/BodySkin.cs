@@ -397,7 +397,10 @@ namespace SecondFace.Game.People
                     if ((ok ? near : -1) != QNear[i] || (ok && (Mathf.Abs(d - QD[i]) > 1e-6f || (n - QN[i]).sqrMagnitude > 1e-10f)))
                     {
                         _checks++;
-                        Debug.Log($"BodySkin batch mismatch {name} point {i}: managed {(ok ? near : -1)} {d:0.000000} {n}, batch {QNear[i]} {QD[i]:0.000000} {QN[i]}; mirrored {_nBody} of {_set.Start[(int)Part.ThighR + 1]}");
+                        var c = CellOf(P[i]);
+                        var kq = (i - from) / stride;
+                        var nb = near >= 0 ? near : 0;
+                        Debug.Log($"BodySkin batch mismatch {name} point {i} (query {kq} of {m}, at {P[i].x:0.0000},{P[i].y:0.0000},{P[i].z:0.0000}, asked {_qIn[kq].x:0.0000},{_qIn[kq].y:0.0000},{_qIn[kq].z:0.0000}; cell {c}): managed {(ok ? near : -1)} {d:0.000000} {n}, batch {QNear[i]} {QD[i]:0.000000} {QN[i]}; mirrored {_nBody} of {_set.Start[(int)Part.ThighR + 1]}; body point {nb} live {P[nb]} cell {_cell[nb]}, mirror {_nP[nb]} cell {_nCell[nb]}; head live {_head[Hash(_cell[nb].x, _cell[nb].y, _cell[nb].z)]} mirror {_nHead[Hash(_cell[nb].x, _cell[nb].y, _cell[nb].z)]}");
                     }
                 }
         }
