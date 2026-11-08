@@ -31,7 +31,9 @@ namespace SecondFace.EditorTools
         public static void Report()
         {
             var sb = new StringBuilder("RigReport\n");
-            foreach (var path in Models)
+            // (RIG_MODELS: a comma-separated list of model paths in place of the standing list)
+            var only = System.Environment.GetEnvironmentVariable("RIG_MODELS");
+            foreach (var path in string.IsNullOrEmpty(only) ? Models : only.Split(','))
             {
                 var imp = AssetImporter.GetAtPath(path) as ModelImporter;
                 var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
