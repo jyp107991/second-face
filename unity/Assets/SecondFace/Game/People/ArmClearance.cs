@@ -80,9 +80,17 @@ namespace SecondFace.Game.People
             Hold[o + 2] = (_skin.P[_gapBody].y - _hips.position.y) * 100f;
             Hold[o + 3] = gap * 100f;
         }
+        /// <summary>For the gate's trace (with <see cref="TraceStages"/>): each upper arm's angle off the vertical as the clip
+        /// left it (left 0, right 7) and after each step of a resting frame, as <see cref="HandDepth"/> (left 1-6, right 8-13).</summary>
+        [System.NonSerialized] public float[] StageA1 = new float[14];
         private void Stage(BodySkin.Part first, int step)
         {
             if (!TraceStages) return;
+            {
+                var l = first == BodySkin.Part.UpperArmL;
+                var up = l ? _lu : _ru; var lo = l ? _ll : _rl;
+                if (up != null && lo != null) StageA1[(l ? 0 : 7) + 1 + step] = Vector3.Angle(lo.position - up.position, Vector3.down);
+            }
             var deep = -1f;
             for (int i = _skin.Begin(first + 2), to = _skin.End(first + 2); i < to; i++)
                 if (_skin.Depth(_skin.P[i], out var d, out _)) deep = Mathf.Max(deep, d);
@@ -269,6 +277,11 @@ namespace SecondFace.Game.People
                 else
                 {
                     // what is held from the frames before, on the bones; then the skin posed from them
+                    if (TraceStages && _lu != null && _ll != null && _ru != null && _rl != null)
+                    {
+                        StageA1[0] = Vector3.Angle(_ll.position - _lu.position, Vector3.down);
+                        StageA1[7] = Vector3.Angle(_rl.position - _ru.position, Vector3.down);
+                    }
                     Held(_lu, _ll, _lh, -1, _restL, _fwdL, _twistL, _carryL);
                     Held(_ru, _rl, _rh, 1, _restR, _fwdR, _twistR, _carryR);
                     _skin.Pose();
