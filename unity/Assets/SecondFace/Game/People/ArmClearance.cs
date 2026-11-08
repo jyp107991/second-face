@@ -679,7 +679,8 @@ namespace SecondFace.Game.People
         /// leg though the wrist stands out over a hip, a belt or a pocket: until its nearest point is <see cref="HandInGap"/> off
         /// the body, at most <see cref="HandInMax"/>° (a palm to the thigh flexes toward it), never into it (the men's hands
         /// hung 6-9 cm off the thigh's skin with the arm cleared of the hip, A4 312, 2026-11-07).</summary>
-        public float HandInMax = 20f, HandInGap = 0.013f;   // (at 1 cm by the skin's points the curled fingers touched the thigh's skin, C1 p98 0.5-0.6, 45 -> 53)
+        public float HandInMax = 20f, HandInGap = 0.015f;
+        private static readonly float[] HandInShares = { 1f, 0.5f, 0.25f };   // (at 1 cm by the skin's points the curled fingers touched the thigh's skin, C1 p98 0.5-0.6, 45 -> 53)
 
         private void HandIn(Transform hand, BodySkin.Part first)
         {
@@ -693,22 +694,25 @@ namespace SecondFace.Game.People
                 if (r.sqrMagnitude < 0.0009f) return;
                 var axis = Vector3.Cross(r, -_skin.N[_gapBody]);
                 if (axis.sqrMagnitude < 1e-8f) return;
-                var a = Mathf.Min(HandInMax - done, Mathf.Atan2(g - HandInGap, r.magnitude) * Mathf.Rad2Deg);
-                if (a < 0.2f) return;
-                var q = Quaternion.AngleAxis(a, axis.normalized);
-                hand.rotation = q * hand.rotation;
-                _skin.Turn(_skin.Begin(first + 2), _skin.End(first + 2), hand.position, q);
-                // (never into the body: turned back if any point of the hand went in)
-                var into = false;
-                for (int i = _skin.Begin(first + 2), to = _skin.End(first + 2); i < to && !into; i++)
-                    if (_skin.Depth(_skin.P[i], out var d, out _) && d > 0f) into = true;
-                if (into)
+                var full = Mathf.Min(HandInMax - done, Mathf.Atan2(g - HandInGap, r.magnitude) * Mathf.Rad2Deg);
+                if (full < 0.2f) return;
+                // (never into the body: turned back if any point of the hand went in, and a half and a quarter of the turn
+                // tried before none: all or none, a hand that would have touched stayed uncurled, A4, 2026-11-08)
+                var a = 0f;
+                foreach (var share in HandInShares)
                 {
+                    var q = Quaternion.AngleAxis(full * share, axis.normalized);
+                    hand.rotation = q * hand.rotation;
+                    _skin.Turn(_skin.Begin(first + 2), _skin.End(first + 2), hand.position, q);
+                    var into = false;
+                    for (int i = _skin.Begin(first + 2), to = _skin.End(first + 2); i < to && !into; i++)
+                        if (_skin.Depth(_skin.P[i], out var d, out _) && d > 0f) into = true;
+                    if (!into) { a = full * share; break; }
                     var back = Quaternion.Inverse(q);
                     hand.rotation = back * hand.rotation;
                     _skin.Turn(_skin.Begin(first + 2), _skin.End(first + 2), hand.position, back);
-                    return;
                 }
+                if (a <= 0f) return;
                 done += a;
             }
         }
