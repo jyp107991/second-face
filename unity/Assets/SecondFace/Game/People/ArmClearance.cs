@@ -732,7 +732,7 @@ namespace SecondFace.Game.People
         /// (At half, the men whose elbows rest on a jacket's or a shirt's side at the waist hung their upper arms 20-27° off
         /// the vertical in every state, the arm's swing out at its 15-17° all along, A1, 2026-11-07: cloth pressed between an
         /// arm and the body gives all but its weave, and between them it is not seen.)</summary>
-        public float ClothGive = 0.85f;
+        public float ClothGive = 0.7f;   // (0.85: the whole cast's A1 574 -> 566 and A4 190 -> 172, but a gear-held man's forearm past its cap, A3, and C1 42 -> 45)
         private float _poleOutL = 0.2f, _poleOutR = 0.2f, _flexAddL, _flexAddR;
 
         /// <summary>The hand's gap to the body now (m), for the report.</summary>
