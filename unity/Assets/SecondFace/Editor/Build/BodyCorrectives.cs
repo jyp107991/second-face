@@ -330,6 +330,10 @@ namespace SecondFace.EditorTools
                 for (var s = 0; s < 2; s++)
                 {
                     var a = amount[s]; var d = dirs[s];
+                    // (never shallower than a vertex needs: smoothed toward neighbours that need nothing, the dents of the coarse
+                    // jackets, vertices 3-6 cm apart, kept a third of their depth: the chest's side moved 0.3-0.7 cm where the
+                    // broad men's elbows rested on it, 2-4 cm in, A1 21-25°, 2026-11-08)
+                    var need = (float[])a.Clone();
                     // the chest's and the arm's apart (they press opposite ways): a vertex keeps its own part's direction
                     for (var pass = 0; pass < 3; pass++)
                     {
@@ -342,7 +346,7 @@ namespace SecondFace.EditorTools
                             if (c == 0) continue;
                             var avg = sum / c;
                             // the first pass spreads (a dent's edge never steps), the next two smooth
-                            next[i] = pass == 0 ? Mathf.Max(a[i], 0.5f * (a[i] + avg)) : 0.5f * (a[i] + avg);
+                            next[i] = Mathf.Max(need[i], pass == 0 ? Mathf.Max(a[i], 0.5f * (a[i] + avg)) : 0.5f * (a[i] + avg));
                             if (next[i] > 0f && d[i] == Vector3.zero)
                                 foreach (var j in nbr[i]) if (part[j] == part[i] && d[j] != Vector3.zero) { d[i] = d[j]; break; }
                         }
