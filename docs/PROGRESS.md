@@ -560,6 +560,16 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   1.5 cm off the body by the game's points, never into it: **whole cast 977 -> 848, committed** (full20): A4 312 -> 190,
   C1 45 -> 42, A1 578 -> 574, the rest as they were. Tried and not kept: the elbow's turn past the forearm's resting
   hang (no change); the elbow for the forearm's outer half (A1 down, A4 93 -> 125 on the picked ten). Still red.
+- **2026-11-08 (night), the arms again.** Kept: moving or gesturing, the forearm's outer half and the hand are turned
+  out of the body at the elbow (at most 20°), before the shoulder, as a person moving keeps a hand off the hip: C1
+  42 -> 31 over the whole cast (full22, 838), but A4 191, one worse than the verdict, so not committed. The cloth
+  between a resting arm and the body may give 50 % of its thickness (85 %: a gear-held man's A3 and C1 worse; 70 %: A4
+  190 -> 178 and C1 32 but one woman's resting hand was placed 3.4 cm into the thigh through her trousers, standing
+  her arm 31-41° off the vertical in five states, A1 +1; 60 %: no A4 gain). Tried and reverted, each by a picked set:
+  the upper arm back in at 4 mm (A4 worse); the forearm's line rate-limited at 90°/s and the hand drawn in at 1 cm a
+  pass (the spikes come from the rest arm's own placement, unchanged); the curl to 1.3 cm off the body (A4 192). Now
+  the wrist's curl tries the whole turn, then half, then a quarter, before none, so a hand that one full curl would
+  press into the leg still curls part of the way (full25 running).
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
