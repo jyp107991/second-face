@@ -89,11 +89,16 @@ const spec = JSON.parse(readFileSync(INPUTS, 'utf8'));
 const now = { people: inputsHash(spec.people), measures: inputsHash(spec.measures) };
 const fresh = verdict.people === now.people.hash && verdict.measures === now.measures.hash;
 const full = /^motion_gate_full/.test(verdict.set ?? '');
-const green = verdict.green === true && fresh && full;
+// the whole cast measured: every person of the tree (a run stopped in its last batch once wrote 70 of the 79 as the cast's)
+const castDir = join(ROOT, 'unity/Assets/SecondFace/People/Rocketbox');
+const castNow = existsSync(castDir) ? readdirSync(castDir).filter((d) => existsSync(join(castDir, d, `${d}.fbx`))).length : 0;
+const whole = !full || (verdict.bodies === castNow && (verdict.cast === undefined || verdict.cast === castNow));
+const green = verdict.green === true && fresh && full && whole;
 const state = green ? 'green'
   : `RED (${[verdict.green === true ? null : `${verdict.failures ?? '?'} measures past their limits`,
       fresh ? null : 'STALE: the people or the measures changed since it ran (or it predates the hashes): run the gate',
-      full ? null : `set "${verdict.set ?? 'none'}" is not the whole cast`].filter(Boolean).join('; ')})`;
+      full ? null : `set "${verdict.set ?? 'none'}" is not the whole cast`,
+      whole ? null : `INCOMPLETE: it measured ${verdict.bodies ?? '?'} of the ${castNow} people`].filter(Boolean).join('; ')})`;
 const lastGreen = verdict.lastGreen ? Date.parse(verdict.lastGreen) : 0;
 const problems = [];
 

@@ -202,9 +202,20 @@ namespace SecondFace.Game.People
 
         /// <summary>Poses every point from the bones as they are now, and files the body's points (torso, thighs) by cell
         /// for <see cref="Depth"/>.</summary>
+        /// <summary>For the gate's report: the time posing has taken (ms) and how often.</summary>
+        public double PoseMs; public int Poses;
+        private readonly System.Diagnostics.Stopwatch _poseCost = new();
+
         public void Pose()
         {
             if (!Ready) return;
+            _poseCost.Restart();
+            PoseCore();
+            PoseMs += _poseCost.Elapsed.TotalMilliseconds; Poses++;
+        }
+
+        private void PoseCore()
+        {
             foreach (var b in _set.UsedBones) _m[b] = _bones[b].localToWorldMatrix;
             var n = _set.W.Length;
             for (var i = 0; i < n; i++)

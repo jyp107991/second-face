@@ -215,7 +215,19 @@ namespace SecondFace.Game.People
             return true;
         }
 
+        /// <summary>For the gate's report: the time this has taken (ms) over the frames it ran.</summary>
+        public double CostMs; public int CostFrames;
+        public BodySkin Skin => _skin;
+        private readonly System.Diagnostics.Stopwatch _cost = new();
+
         private void LateUpdate()
+        {
+            _cost.Restart();
+            Step();
+            CostMs += _cost.Elapsed.TotalMilliseconds; CostFrames++;
+        }
+
+        private void Step()
         {
             if (!Ready) return;
             _clock += Time.deltaTime;

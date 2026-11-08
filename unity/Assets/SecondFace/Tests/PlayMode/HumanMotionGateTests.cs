@@ -279,7 +279,9 @@ namespace SecondFace.Tests
             finally { Time.captureDeltaTime = keep; }
         }
 
-        [UnityTest, Timeout(7200000), Category("Heavy")]
+        // (4 h: with the skin's points filled in, the whole cast ran past 2 h and the test was stopped in its last batch,
+        // 2026-11-08)
+        [UnityTest, Timeout(14400000), Category("Heavy")]
         public IEnumerator EveryPersonStandsAndMovesLikePeople() => Fixed(EveryPerson());
 
         private IEnumerator EveryPerson()
@@ -292,13 +294,17 @@ namespace SecondFace.Tests
 #endif
             var failed = new List<string>();
             var measured = new int[1];
+            var done = 0;
             for (var i = 0; i < ids.Length; i += 10)
             {
                 var batch = ids.Skip(i).Take(10).ToArray();
                 yield return Gate(batch, $"motion_gate_full_{i / 10}", captures: false, failures: failed, assert: false, measured: measured);
+                done += batch.Length;
             }
-            // one verdict for the whole cast (the lock counts the gate green only on it: docs/PEOPLE_MOTION.md §1.9)
-            Verdict("motion_gate_full", measured[0], failed, ids.Length);
+            // one verdict for the whole cast (the lock counts the gate green only on it: docs/PEOPLE_MOTION.md §1.9), with the
+            // people it measured (a run stopped in its last batch wrote a verdict of 70 of the 79 as the whole cast's,
+            // 2026-11-08: tools/qa/people_gate.mjs holds a verdict short of the cast red)
+            Verdict("motion_gate_full", measured[0], failed, done, ids.Length);
             Assert.That(failed, Is.Empty, $"{failed.Count} measures past their limits:\n" + string.Join("\n", failed.Take(80)));
         }
 
@@ -429,7 +435,7 @@ namespace SecondFace.Tests
             foreach (var s in people)
             {
                 var fp = s.A.GetComponent<FootPlant>(); var ac = s.A.GetComponent<ArmClearance>();
-                Debug.Log($"HumanMotionGate systems: {s.Probe.Person}: foot goals missed by {(fp != null ? fp.GoalError * 100f : Vector2.zero)} cm, sink {(fp != null ? fp.Sink * 100f : 0f):0.0} cm; arm clearance {(ac != null && ac.Ready ? (ac.SkinReady ? "ready on the skin" : "ready on the SECTIONS (no BodySkin)") : "NOT READY")}, depth {(ac != null ? ac.Depth() * 100f : 0f):0.0} cm, turned {(ac != null ? ac.Turned : Vector2.zero)}");
+                Debug.Log($"HumanMotionGate systems: {s.Probe.Person}: foot goals missed by {(fp != null ? fp.GoalError * 100f : Vector2.zero)} cm, sink {(fp != null ? fp.Sink * 100f : 0f):0.0} cm; arm clearance {(ac != null && ac.Ready ? (ac.SkinReady ? "ready on the skin" : "ready on the SECTIONS (no BodySkin)") : "NOT READY")}, depth {(ac != null ? ac.Depth() * 100f : 0f):0.0} cm, turned {(ac != null ? ac.Turned : Vector2.zero)}; cost {(ac != null && ac.CostFrames > 0 ? ac.CostMs / ac.CostFrames : 0):0.000} ms a frame, skin posed {(ac != null && ac.CostFrames > 0 && ac.Skin != null ? (float)ac.Skin.Poses / ac.CostFrames : 0):0.0}x a frame at {(ac != null && ac.Skin is { Poses: > 0 } sk2 ? sk2.PoseMs / sk2.Poses : 0):0.000} ms, {(ac != null && ac.Skin != null ? ac.Skin.Count : 0)} points");
             }
             // 2. on the slope (facing up it), then back
             Place(new Vector3(0f, 0f, 70f), 0f);
@@ -686,7 +692,7 @@ namespace SecondFace.Tests
             File.WriteAllText(Path.Combine(dir, report + ".md"), Markdown(table));
             Debug.Log($"HumanMotionGate {report}: {table.Count} measures, {table.Count(r => !(bool)r["pass"])} past their limits\n" + string.Join("\n", fails.Take(200)));
             if (measured != null) measured[0] += table.Count;
-            if (report == "motion_gate") Verdict(report, table.Count, fails, ids.Length);
+            if (report == "motion_gate") Verdict(report, table.Count, fails, ids.Length, ids.Length);
             Object.Destroy(root);
             yield return null;
             if (assert) Assert.That(fails, Is.Empty, $"{fails.Count} measures past their limits (docs/PEOPLE_MOTION.md):\n" + string.Join("\n", fails.Take(80)));
@@ -698,7 +704,7 @@ namespace SecondFace.Tests
 
         /// <summary>The gate's verdict where the lock reads it (docs/qa/gates/motion_gate.json; tools/qa/people_gate.mjs, run by
         /// npm run check and CI): while it is red nothing with a person in it goes to the owner (docs/PEOPLE_MOTION.md §1.8).</summary>
-        private static void Verdict(string report, int measures, List<string> fails, int people)
+        private static void Verdict(string report, int measures, List<string> fails, int people, int cast)
         {
             var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "docs", "qa", "gates", "motion_gate.json"));
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -709,7 +715,7 @@ namespace SecondFace.Tests
             var verdict = new Dictionary<string, object>
             {
                 ["date"] = now, ["set"] = report, ["people"] = InputsHash("people"), ["measures"] = InputsHash("measures"),
-                ["bodies"] = people, ["green"] = green, ["cells"] = measures, ["failures"] = fails.Count,
+                ["bodies"] = people, ["cast"] = cast, ["green"] = green, ["cells"] = measures, ["failures"] = fails.Count,
                 // each measure's failures (the lock holds every later verdict to no more of any)
                 ["byMeasure"] = fails.Select(f => f.Substring(0, Mathf.Max(0, f.IndexOf(": "))).Split(' ').Last()).GroupBy(m => m).OrderBy(g => g.Key, System.StringComparer.Ordinal)
                     .ToDictionary(g => g.Key, g => g.Count()),
