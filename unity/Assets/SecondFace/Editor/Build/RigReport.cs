@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
@@ -50,9 +51,45 @@ namespace SecondFace.EditorTools
                 foreach (var t in go.GetComponentsInChildren<Transform>(true))
                     if (t != go.transform && byName.TryGetValue(t.name, out var s)) { t.localPosition = s.position; t.localRotation = s.rotation; }
                 Line(sb, "avatar ", anim);
+                Width(sb, go, anim);
                 Object.DestroyImmediate(go);
             }
             Debug.Log(sb.ToString());
+        }
+
+        /// <summary>In the avatar's pose: each shoulder joint's distance out from the spine, and the torso's half-width (its
+        /// vertices weighted to the spine and chest, not the arms) 10, 15 and 20 cm under the joint: where a hanging upper arm's
+        /// inner side meets the chest's.</summary>
+        private static void Width(StringBuilder sb, GameObject go, Animator anim)
+        {
+            var smr = go.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => r.sharedMesh != null).OrderByDescending(r => r.sharedMesh.vertexCount).FirstOrDefault();
+            if (smr == null) return;
+            var baked = new Mesh(); smr.BakeMesh(baked, true);
+            var v = baked.vertices; var bw = smr.sharedMesh.boneWeights; var bones = smr.bones;
+            var l2w = Matrix4x4.TRS(smr.transform.position, smr.transform.rotation, Vector3.one);
+            var hips = anim.GetBoneTransform(HumanBodyBones.Hips); var lu = anim.GetBoneTransform(HumanBodyBones.LeftUpperArm);
+            var root = anim.transform; var right = root.right;
+            var armBones = new HashSet<Transform>();
+            foreach (var hb in new[] { HumanBodyBones.LeftUpperArm, HumanBodyBones.RightUpperArm, HumanBodyBones.LeftLowerArm, HumanBodyBones.RightLowerArm, HumanBodyBones.LeftHand, HumanBodyBones.RightHand })
+            { var t = anim.GetBoneTransform(hb); if (t != null) foreach (var c in t.GetComponentsInChildren<Transform>(true)) armBones.Add(c); }
+            var sx = Mathf.Abs(Vector3.Dot(lu.position - hips.position, right));
+            sb.Append($"  width: joint out {sx * 100f:0.0} cm, up {(lu.position.y - hips.position.y) * 100f:0.0} cm;");
+            foreach (var below in new[] { 0.10f, 0.15f, 0.20f })
+            {
+                var y = lu.position.y - below; var w = 0f;
+                for (var i = 0; i < v.Length; i++)
+                {
+                    var b = bw[i];
+                    var armW = (armBones.Contains(bones[b.boneIndex0]) ? b.weight0 : 0f) + (armBones.Contains(bones[b.boneIndex1]) ? b.weight1 : 0f) + (armBones.Contains(bones[b.boneIndex2]) ? b.weight2 : 0f) + (armBones.Contains(bones[b.boneIndex3]) ? b.weight3 : 0f);
+                    if (armW > 0.1f) continue;
+                    var wp = l2w.MultiplyPoint3x4(v[i]);
+                    if (Mathf.Abs(wp.y - y) > 0.015f) continue;
+                    w = Mathf.Max(w, Mathf.Abs(Vector3.Dot(wp - hips.position, right)));
+                }
+                sb.Append($" torso {below * 100f:0} cm under it {w * 100f:0.0} cm out ({(w - sx) * 100f:+0.0;-0.0});");
+            }
+            sb.AppendLine();
+            Object.DestroyImmediate(baked);
         }
 
         private static void Line(StringBuilder sb, string label, Animator anim)

@@ -260,7 +260,8 @@ namespace SecondFace.Tests
         {
             var ids = (System.Environment.GetEnvironmentVariable("GATE_PEOPLE") ?? "").Split(',').Select(x => x.Trim()).Where(x => x.Length > 0).ToArray();
             if (ids.Length == 0) { Assert.Ignore("no GATE_PEOPLE"); yield break; }
-            yield return Fixed(Gate(ids, "motion_gate_pick", captures: false));
+            // (GATE_SHOTS=1: with the captures, every one picked, for a look at them as the gate measured them)
+            yield return Fixed(Gate(ids, "motion_gate_pick", captures: System.Environment.GetEnvironmentVariable("GATE_SHOTS") == "1"));
         }
 
         /// <summary>The gate's frames each a fixed 1/60 s of game time (a phone's frame), whatever the machine running it
@@ -624,7 +625,7 @@ namespace SecondFace.Tests
                 }
                 foreach (var s in people) { Object.Destroy(s.Partner); if (s.Gaze != null) s.Gaze.Target = null; }
                 yield return Wait(1f);
-                foreach (var k in new[] { 0, people.Count / 2, people.Count - 1 })
+                foreach (var k in report == "motion_gate_pick" ? Enumerable.Range(0, people.Count).ToArray() : new[] { 0, people.Count / 2, people.Count - 1 })
                 {
                     var s = people[k];
                     var focus = s.Go.transform.position + Vector3.up * 1.3f;

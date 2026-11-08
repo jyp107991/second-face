@@ -33,10 +33,12 @@ namespace SecondFace.EditorTools
         /// own mesh, the overlap 6-10 cm, moved the whole cast only 1053 -> 1030 and turned one forearm past its cap, A3:
         /// their arms are held out by gear at the torso's side and back, the belt and the thighs, not the chest's side,
         /// 2026-11-07.)</summary>
-        public const float TorsoMax = 0.025f, ArmMax = 0.04f, TorsoShare = 0.6f;   // (the arm's 2 cm held the gear-held men's elbows 2-4.5 cm into their vests at the out-angle's most, the arm pushed out to 30-40°, A1, their overlap 6-10 cm: 4, 2026-11-08)
+        public const float TorsoMax = 0.06f, ArmMax = 0.04f, TorsoShare = 0.6f;   // (the arm's 2 cm held the gear-held men's elbows 2-4.5 cm into their vests at the out-angle's most, the arm pushed out to 30-40°, A1, their overlap 6-10 cm: 4, 2026-11-08)
         /// <summary>The chest's side gives this much (m) from <see cref="DeepBelow"/> under the elbow up: the broad men's elbows
         /// at the reference lay 6-8 cm into their waists, a jacket's with them (A1 462 -> 451 at 4 cm, 2026-11-08).</summary>
-        public const float TorsoDeep = 0.06f, DeepBelow = 0.02f;   // (4 and 2 cm, 2026-11-08: A1 462 -> 451 but A4 83 -> 85 on the gear-held men whose correctives changed, their hands by the thighs 6.0-6.3 cm: back to 2.5 and 1.5)
+        public const float TorsoDeep = 0.06f, DeepBelow = 0.02f;
+        /// <summary>How much of the forearm from the elbow the waist gives for (a share of its length: about 12 cm).</summary>
+        public const float ForeReach = 0.45f;   // (4 and 2 cm, 2026-11-08: A1 462 -> 451 but A4 83 -> 85 on the gear-held men whose correctives changed, their hands by the thighs 6.0-6.3 cm: back to 2.5 and 1.5)
         /// <summary>The arm's places the overlap is taken over (degrees out from the reference, and forward or back of it):
         /// where a resting arm really lies as the body sways and the idles shift.</summary>
         private static readonly (float Out, float Fwd)[] Sweep = { (0f, 0f), (-3f, 0f), (4f, 0f), (0f, -8f), (0f, 8f), (4f, -8f), (4f, 8f) };
@@ -140,6 +142,9 @@ namespace SecondFace.EditorTools
                     if (B(hb) != null) fam[B(hb)] = 0;
                 if (B(HumanBodyBones.LeftUpperArm) != null) fam[B(HumanBodyBones.LeftUpperArm)] = 1;
                 if (B(HumanBodyBones.RightUpperArm) != null) fam[B(HumanBodyBones.RightUpperArm)] = 2;
+                // (and the forearms, 4 and 5: the elbow and the forearm by it rest on the waist, which gives for them too)
+                if (B(HumanBodyBones.LeftLowerArm) != null) fam[B(HumanBodyBones.LeftLowerArm)] = 4;
+                if (B(HumanBodyBones.RightLowerArm) != null) fam[B(HumanBodyBones.RightLowerArm)] = 5;
                 for (var hb = HumanBodyBones.Hips; hb < HumanBodyBones.LastBone; hb++)
                     if (B(hb) != null && !fam.ContainsKey(B(hb))) fam[B(hb)] = 3;
                 var boneFam = new int[bones.Length];
@@ -155,10 +160,10 @@ namespace SecondFace.EditorTools
                     part[i] = 3;
                     if (!use[i]) continue;
                     var b = bw[i];
-                    var w = new float[4];
+                    var w = new float[6];
                     void Fam(int bi, float wt) { if (wt > 0f && bi >= 0 && bi < bones.Length) w[boneFam[bi]] += wt; }
                     Fam(b.boneIndex0, b.weight0); Fam(b.boneIndex1, b.weight1); Fam(b.boneIndex2, b.weight2); Fam(b.boneIndex3, b.weight3);
-                    for (var f = 0; f < 3; f++) if (w[f] >= 0.6f) part[i] = f;
+                    for (var f = 0; f < 6; f++) if (f != 3 && w[f] >= 0.6f) part[i] = f;
                 }
                 // the spine's line, for the torso's own radius about it
                 var spineLo = hips.position; var spineHi = neck.position;
@@ -189,9 +194,26 @@ namespace SecondFace.EditorTools
                         int tb = Mathf.Min(TB - 1, (int)(t * TB)), pb = ((int)Mathf.Floor((phi + 360f) / 15f)) % PB;
                         rA[tb, pb] = Mathf.Max(rA[tb, pb], rv.magnitude);
                     }
+                    // the forearm's surface about its bone by the elbow, the same way (its first ForeReach of its length)
+                    var foreP = s == 0 ? 4 : 5;
+                    var W = B(s == 0 ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand).position;
+                    var l2 = (W - E).magnitude; var axF = (W - E) / Mathf.Max(1e-4f, l2);
+                    var f1 = Vector3.ProjectOnPlane(root.right * side, axF).normalized; var f2 = Vector3.Cross(axF, f1);
+                    const int FB = 10;
+                    var rF = new float[FB, PB];
+                    for (var i = 0; i < pos.Length; i++)
+                    {
+                        if (part[i] != foreP) continue;
+                        var u = wp[i] - E; var t2 = Vector3.Dot(u, axF) / l2;
+                        if (t2 < 0f || t2 > ForeReach) continue;
+                        var rv = u - axF * (t2 * l2);
+                        var phi = Mathf.Atan2(Vector3.Dot(rv, f2), Vector3.Dot(rv, f1)) * Mathf.Rad2Deg;
+                        int tb = Mathf.Min(FB - 1, (int)(t2 / ForeReach * FB)), pb = ((int)Mathf.Floor((phi + 360f) / 15f)) % PB;
+                        rF[tb, pb] = Mathf.Max(rF[tb, pb], rv.magnitude);
+                    }
                     // the torso's surface about the spine, level, by height (1.5 cm) and turn (5°), this side only
                     const float YB = 0.015f; const int QB = 72;
-                    var yLo = E.y - 0.06f; var yHi = S.y;
+                    var yLo = E.y - 0.14f; var yHi = S.y;
                     var nyb = Mathf.Max(1, Mathf.CeilToInt((yHi - yLo) / YB));
                     var rT = new float[nyb, QB];
                     int YBin(float y) => Mathf.Clamp((int)((y - yLo) / YB), 0, nyb - 1);
@@ -223,6 +245,24 @@ namespace SecondFace.EditorTools
                                 if (ra <= 0f) continue;
                                 var oo = ra + Clear - rv.magnitude;
                                 var ee = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.15f, 0.3f, t)) * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(1.05f, 0.9f, t));
+                                if (oo * ee > bestO * bestEase || bestEase == 0f) { if (oo > 0f) { bestO = oo; bestEase = ee; } }
+                            }
+                            // and inside the forearm by the elbow (the elbow rests on the waist with the forearm hanging by the hip:
+                            // the upper arm's alone left the broad men's elbows 1-2 cm into their waists at the out-angle's most,
+                            // A1 21-25°, 2026-11-08)
+                            foreach (var (so, sf) in Sweep)
+                            {
+                                var rot = Quaternion.AngleAxis(-sf, Vector3.Cross(ax, root.forward).normalized * 1f) * Quaternion.AngleAxis(so * side, root.forward);
+                                var u = Quaternion.Inverse(rot) * (wp[i] - S) - (E - S);
+                                var t2 = Vector3.Dot(u, axF) / l2;
+                                if (t2 < -0.02f || t2 > ForeReach) continue;
+                                var rv = u - axF * (t2 * l2);
+                                var phi = Mathf.Atan2(Vector3.Dot(rv, f2), Vector3.Dot(rv, f1)) * Mathf.Rad2Deg;
+                                int tb = Mathf.Clamp((int)(t2 / ForeReach * FB), 0, FB - 1), pb = ((int)Mathf.Floor((phi + 360f) / 15f)) % PB;
+                                var ra = Mathf.Max(rF[tb, pb], Mathf.Max(rF[tb, (pb + 1) % PB], rF[tb, (pb + PB - 1) % PB]));
+                                if (ra <= 0f) continue;
+                                var oo = ra + Clear - rv.magnitude;
+                                var ee = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(ForeReach, 0.6f * ForeReach, t2));
                                 if (oo * ee > bestO * bestEase || bestEase == 0f) { if (oo > 0f) { bestO = oo; bestEase = ee; } }
                             }
                             if (bestO <= 0f) continue;
