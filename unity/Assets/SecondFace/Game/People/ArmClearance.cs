@@ -249,6 +249,10 @@ namespace SecondFace.Game.People
                 }
                 // in the stride (and the last swings as the person stops), never in a gesture (a wave or a shrug is meant high)
                 if (Striding()) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
+                // moving or gesturing, the forearm's outer half and the hand out of the body at the elbow (a jogging woman's
+                // forearm swung 2-4.6 cm into her chest across the front, a talking man's into his belly; turned at the
+                // shoulder, a bent arm's forearm barely moves, C1, 2026-11-08)
+                if (ElbowFirst && _restW < 0.99f) { MoveElbowClear(_ll, BodySkin.Part.UpperArmL); MoveElbowClear(_rl, BodySkin.Part.UpperArmR); }
                 if (!RestReach) { Diag[4] = _restL; Diag[5] = _fwdL; Diag[10] = _restR; Diag[11] = _fwdR; }
                 Diag[6] = _carryL; Diag[7] = _angleL; Diag[8] = _carryR; Diag[9] = _angleR;
                 if (!RestReach) { Diag[12] = _twistL; Diag[13] = _twistR; }
@@ -732,7 +736,7 @@ namespace SecondFace.Game.People
         /// (At half, the men whose elbows rest on a jacket's or a shirt's side at the waist hung their upper arms 20-27° off
         /// the vertical in every state, the arm's swing out at its 15-17° all along, A1, 2026-11-07: cloth pressed between an
         /// arm and the body gives all but its weave, and between them it is not seen.)</summary>
-        public float ClothGive = 0.7f;   // (0.85: the whole cast's A1 574 -> 566 and A4 190 -> 172, but a gear-held man's forearm past its cap, A3, and C1 42 -> 45)
+        public float ClothGive = 0.5f;   // (0.85: the whole cast's A1 574 -> 566 and A4 190 -> 172, but a gear-held man's forearm past its cap, A3, and C1 42 -> 45; 0.7 still C1 +1, 2026-11-08)
         private float _poleOutL = 0.2f, _poleOutR = 0.2f, _flexAddL, _flexAddR;
 
         /// <summary>The hand's gap to the body now (m), for the report.</summary>
@@ -1180,6 +1184,20 @@ namespace SecondFace.Game.People
 
         /// <summary>At rest: the hand kept where it was placed when the arm is pushed out for its upper arm's contact.</summary>
         public bool KeepHand = true;
+        /// <summary>The most the elbow turns a moving forearm out of the body in one pass (degrees).</summary>
+        public float MoveElbowMax = 20f;
+
+        private void MoveElbowClear(Transform lower, BodySkin.Part first)
+        {
+            if (lower == null) return;
+            for (var pass = 0; pass < 2; pass++)
+            {
+                var (n, ax) = SkinNeedAbout(lower.position, _skin.Begin(first + 1), _skin.End(first + 2), first);
+                if (n <= 0.01f) return;
+                TurnForearm(lower, first, Mathf.Min(n, MoveElbowMax), ax);
+            }
+        }
+
         /// <summary>At rest: the hand turned out of the body at the elbow before the arm is at the shoulder.</summary>
         public bool ElbowFirst = true;
         private static readonly float[] ElbowShares = { 1f, 0.5f };
