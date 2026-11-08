@@ -81,6 +81,13 @@ namespace SecondFace.Game.People
         private const float Cell = 0.05f;
         private const int Buckets = 2048;
         private readonly int[] _head = new int[Buckets];
+        /// <summary>A second, finer filing of the body's points (m), searched first: when the three nearest it finds stand within
+        /// one fine cell, no point outside its 27 cells can be nearer and the answer is the coarse search's, at an eighth of the
+        /// points looked at (the arm clearance asks thousands of times a frame: 12-14 ms a person, 2026-11-08).</summary>
+        private const float FineCell = 0.025f;
+        private const int FineBuckets = 8192;
+        private readonly int[] _fhead = new int[FineBuckets];
+        private int[] _fnext; private Vector3Int[] _fcell;
         private int[] _next;
         private Vector3Int[] _cell;
         // how far apart the body's points stand about each one (its fourth nearest neighbour, measured once)
@@ -122,7 +129,7 @@ namespace SecondFace.Game.People
             foreach (var b in _set.UsedBones)
                 if (b >= _bones.Length || _bones[b] == null) { Debug.LogWarning($"BodySkin {name}: bone {b} missing"); _set = null; return; }
             var n = _set.W.Length;
-            P = new Vector3[n]; N = new Vector3[n]; _next = new int[n]; _cell = new Vector3Int[n];
+            P = new Vector3[n]; N = new Vector3[n]; _next = new int[n]; _cell = new Vector3Int[n]; _fnext = new int[n]; _fcell = new Vector3Int[n];
             _off ??= new float[n];
             if (_off.Length != n) _off = new float[n];
             _m = new Matrix4x4[_bones.Length];
@@ -249,8 +256,8 @@ namespace SecondFace.Game.People
                 N[i] = nn;
             }
             for (var h = 0; h < Buckets; h++) _head[h] = -1;
+            for (var h = 0; h < FineBuckets; h++) _fhead[h] = -1;
             var body = _set.Start[(int)Part.ThighR + 1];
-            if (_spacing == null || _spacing.Length != body) Spacing(body);
             for (var i = 0; i < body; i++)
             {
                 var c = CellOf(P[i]);
@@ -258,7 +265,13 @@ namespace SecondFace.Game.People
                 var h = Hash(c.x, c.y, c.z);
                 _next[i] = _head[h];
                 _head[h] = i;
+                var f = FineOf(P[i]);
+                _fcell[i] = f;
+                var fh = FineHash(f.x, f.y, f.z);
+                _fnext[i] = _fhead[fh];
+                _fhead[fh] = i;
             }
+            if (_spacing == null || _spacing.Length != body) Spacing(body);
         }
 
         /// <summary>One point's posing, for a report: its bones, their places, its stored offsets and where it is now.</summary>
@@ -281,25 +294,46 @@ namespace SecondFace.Game.People
 
         private void Spacing(int body)
         {
+            // each point's fourth nearest, from the coarse filing (exact when it stands within a cell: no point outside the 27
+            // cells can be nearer), else from all of them (every pair, once a person, hitched each one's first frame)
             _spacing = new float[body];
             var near = new float[4];
+            void Take(int i, int j)
+            {
+                if (j == i) return;
+                var d = (P[j] - P[i]).sqrMagnitude;
+                if (d >= near[3]) return;
+                var k2 = 3;
+                while (k2 > 0 && near[k2 - 1] > d) { near[k2] = near[k2 - 1]; k2--; }
+                near[k2] = d;
+            }
+            var seen = new HashSet<int>();
             for (var i = 0; i < body; i++)
             {
                 for (var k = 0; k < 4; k++) near[k] = float.MaxValue;
-                for (var j = 0; j < body; j++)
+                var c = _cell[i];
+                seen.Clear();
+                for (var dx = -1; dx <= 1; dx++)
+                    for (var dy = -1; dy <= 1; dy++)
+                        for (var dz = -1; dz <= 1; dz++)
+                            for (var j = _head[Hash(c.x + dx, c.y + dy, c.z + dz)]; j >= 0; j = _next[j])
+                            {
+                                var cj = _cell[j];
+                                if (cj.x != c.x + dx || cj.y != c.y + dy || cj.z != c.z + dz || !seen.Add(j)) continue;
+                                Take(i, j);
+                            }
+                if (near[3] > Cell * Cell)
                 {
-                    if (j == i) continue;
-                    var d = (P[j] - P[i]).sqrMagnitude;
-                    if (d >= near[3]) continue;
-                    var k2 = 3;
-                    while (k2 > 0 && near[k2 - 1] > d) { near[k2] = near[k2 - 1]; k2--; }
-                    near[k2] = d;
+                    for (var k = 0; k < 4; k++) near[k] = float.MaxValue;
+                    for (var j = 0; j < body; j++) Take(i, j);
                 }
                 _spacing[i] = near[3] < float.MaxValue ? Mathf.Sqrt(near[3]) : 0.05f;
             }
         }
 
         private static Vector3Int CellOf(Vector3 p) => new(Mathf.FloorToInt(p.x / Cell), Mathf.FloorToInt(p.y / Cell), Mathf.FloorToInt(p.z / Cell));
+        private static Vector3Int FineOf(Vector3 p) => new(Mathf.FloorToInt(p.x / FineCell), Mathf.FloorToInt(p.y / FineCell), Mathf.FloorToInt(p.z / FineCell));
+        private static int FineHash(int x, int y, int z) => (int)(((uint)(x * 73856093) ^ (uint)(y * 19349663) ^ (uint)(z * 83492791)) & (FineBuckets - 1));
         private static int Hash(int x, int y, int z) => (int)(((uint)(x * 73856093) ^ (uint)(y * 19349663) ^ (uint)(z * 83492791)) & (Buckets - 1));
 
         /// <summary>Where a point is against the body's surface, as the gate decides it: among the body's points in the
@@ -323,6 +357,32 @@ namespace SecondFace.Game.People
             depth = 0f; normal = Vector3.zero;
             int c0 = -1, c1 = -1, c2 = -1;
             float d0 = float.MaxValue, d1 = float.MaxValue, d2 = float.MaxValue;
+            // the fine filing first: exact when the third nearest stands within a fine cell
+            var f = FineOf(p);
+            for (var dx = -1; dx <= 1; dx++)
+                for (var dy = -1; dy <= 1; dy++)
+                    for (var dz = -1; dz <= 1; dz++)
+                        for (var j = _fhead[FineHash(f.x + dx, f.y + dy, f.z + dz)]; j >= 0; j = _fnext[j])
+                        {
+                            if (j == c0 || j == c1 || j == c2) continue;
+                            var fj = _fcell[j];
+                            if (fj.x != f.x + dx || fj.y != f.y + dy || fj.z != f.z + dz) continue;
+                            var d = (P[j] - p).sqrMagnitude;
+                            if (d >= d2) continue;
+                            if (d < d0) { c2 = c1; d2 = d1; c1 = c0; d1 = d0; c0 = j; d0 = d; }
+                            else if (d < d1) { c2 = c1; d2 = d1; c1 = j; d1 = d; }
+                            else { c2 = j; d2 = d; }
+                        }
+            if (c2 < 0 || d2 > FineCell * FineCell)
+            {
+                c0 = c1 = c2 = -1; d0 = d1 = d2 = float.MaxValue;
+                Coarse(p, ref c0, ref c1, ref c2, ref d0, ref d1, ref d2);
+            }
+            return Judge(p, c0, c1, c2, out depth, out normal);
+        }
+
+        private void Coarse(Vector3 p, ref int c0, ref int c1, ref int c2, ref float d0, ref float d1, ref float d2)
+        {
             var c = CellOf(p);
             for (var dx = -1; dx <= 1; dx++)
                 for (var dy = -1; dy <= 1; dy++)
@@ -338,6 +398,11 @@ namespace SecondFace.Game.People
                             else if (d < d1) { c2 = c1; d2 = d1; c1 = j; d1 = d; }
                             else { c2 = j; d2 = d; }
                         }
+        }
+
+        private bool Judge(Vector3 p, int c0, int c1, int c2, out float depth, out Vector3 normal)
+        {
+            depth = 0f; normal = Vector3.zero;
             if (c0 < 0) return false;
             Near = c0;
             // inside only behind each of the three, and over it, not beside it: a point beside the top of a shoulder or
