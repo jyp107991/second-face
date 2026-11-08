@@ -34,6 +34,7 @@ namespace SecondFace.Tests
         /// report: the gate's nearest hand and body vertices, and what the game's skin read then).</summary>
         public readonly Dictionary<string, (float, string)> WorstHand = new();
         private float _traceA4L = -1f, _traceA4R = -1f;   // the hands' last sampled gaps (cm), for the trace
+        private float _traceOutL, _traceFwdL, _traceOutR, _traceFwdR;   // the upper arms' lean out and forward (degrees), for the trace
 
         private Animator _a;
         private HumanPoseHandler _hp;
@@ -376,6 +377,13 @@ namespace SecondFace.Tests
                     var u = B(up).position; var e = B(lo).position; var h = B(hand).position;
                     var a1 = Vector3.Angle(e - u, Vector3.down);
                     if (up == HumanBodyBones.LeftUpperArm) _traceA1L = a1; else _traceA1R = a1;
+                    {
+                        // (for the trace: the upper arm's lean out to the side and forward, each off the vertical, degrees)
+                        var ua = Quaternion.Inverse(_root.rotation) * (e - u);
+                        var outS = (up == HumanBodyBones.LeftUpperArm ? -ua.x : ua.x);
+                        var o = Mathf.Atan2(outS, -ua.y) * Mathf.Rad2Deg; var f = Mathf.Atan2(ua.z, -ua.y) * Mathf.Rad2Deg;
+                        if (up == HumanBodyBones.LeftUpperArm) { _traceOutL = o; _traceFwdL = f; } else { _traceOutR = o; _traceFwdR = f; }
+                    }
                     if (k == K.Stand) { Add("A1", a1); Add("A2", Vector3.Angle(e - u, h - e)); Add("A3", Vector3.Angle(h - e, Vector3.down)); }
                     if (k == K.Walk)
                     {
@@ -546,7 +554,7 @@ namespace SecondFace.Tests
         private string HoldTrace()
         {
             var sk = GetComponent<SecondFace.Game.People.BodySkin>();
-            var a4 = $",{_traceA4L:0.0},{_traceA4R:0.0},{(sk != null ? sk.FlankL : -1f):0.00},{(sk != null ? sk.FlankR : -1f):0.00}";
+            var a4 = $",{_traceA4L:0.0},{_traceA4R:0.0},{(sk != null ? sk.FlankL : -1f):0.00},{(sk != null ? sk.FlankR : -1f):0.00},{_traceOutL:0.0},{_traceFwdL:0.0},{_traceOutR:0.0},{_traceFwdR:0.0}";
             if (_ac == null || _ac.Hold == null || _ac.Hold.Length < 8) return ",,,,,,," + a4;
             return string.Join(",", _ac.Hold.Select(x => x.ToString("0.00"))) + a4;
         }
