@@ -605,8 +605,6 @@ namespace SecondFace.Game.People
         /// the arm was cleared of the body), the hand was placed 3 cm into the thigh in some frames and pushed out of it at the
         /// shoulder in others, 6-9 cm off it (A4, 2026-11-07).</summary>
         public float SetMax = 0.04f;
-        /// <summary>The most the hand is drawn in toward the body in one pass (m).</summary>
-        public float SetIn = 0.01f;
 
         private void SetHand(Transform lower, Transform hand, BodySkin.Part first, float w, Vector3 outward)
         {
@@ -618,10 +616,7 @@ namespace SecondFace.Game.People
                 // (a hand the elbow turned out of the thigh this frame is not drawn back in past the elbow's margin: drawn to
                 // the gap it lay in the thigh between the skin's points again, C1, 2026-11-07)
                 var gapWant = (first == BodySkin.Part.UpperArmL ? _elbowTurnedL : _elbowTurnedR) ? Mathf.Max(SkinGap, ElbowMargin) : SkinGap;
-                // (drawn in toward the body at most SetIn a pass, set out at once: its nearest point switched to the far side
-                // of the thigh's curve, the hand was drawn 4 cm in, into the thigh where it is fuller, and the push out of it
-                // stood the arm 31-41° off the vertical for a frame, A1, 2026-11-08)
-                var move = Mathf.Clamp(gapWant - g, -SetIn, SetMax);
+                var move = Mathf.Clamp(gapWant - g, -SetMax, SetMax);
                 if (Mathf.Abs(move) < 0.002f) return;
                 // along the leg's own facing where the hand is nearest it, level (moved only sideways, a hand on the thigh's
                 // front went 4 cm further out a pass without leaving it, the arm all but straight, A2 and A4, 2026-11-07)
