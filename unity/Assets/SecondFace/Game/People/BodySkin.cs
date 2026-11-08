@@ -382,7 +382,7 @@ namespace SecondFace.Game.People
             var qv = _qIn.Reinterpret<Vector3>();
             var k = 0;
             for (var i = from; i < to; i += stride) qv[k++] = P[i];
-            new DepthJob { P = _nP, N = _nN, Head = _nHead, Next = _nNext, Cell = _nCell, Spacing = _nSpacing, Q = _qIn, D = _qD, No = _qNo, Near = _qNear, Count = m }.Run();
+            new DepthJob { P = _nP, N = _nN, Head = _nHead, Next = _nNext, Cells = _nCell, Spacing = _nSpacing, Q = _qIn, D = _qD, No = _qNo, Near = _qNear, Count = m }.Run();
             var nv = _qNo.Reinterpret<Vector3>();
             k = 0;
             for (var i = from; i < to; i += stride) { QD[i] = _qD[k]; QN[i] = nv[k]; QNear[i] = _qNear[k]; k++; }
@@ -403,7 +403,7 @@ namespace SecondFace.Game.People
         {
             [ReadOnly] public NativeArray<float3> P, N, Q;
             [ReadOnly] public NativeArray<int> Head, Next;
-            [ReadOnly] public NativeArray<int3> Cell;
+            [ReadOnly] public NativeArray<int3> Cells;
             [ReadOnly] public NativeArray<float> Spacing;
             public NativeArray<float> D;
             public NativeArray<float3> No;
@@ -446,7 +446,7 @@ namespace SecondFace.Game.People
                             for (var j = Head[Hash(cx + dx, cy + dy, cz + dz)]; j >= 0; j = Next[j])
                             {
                                 if (j == c0 || j == c1 || j == c2) continue;
-                                var cj = Cell[j];
+                                var cj = Cells[j];
                                 if (cj.x != cx + dx || cj.y != cy + dy || cj.z != cz + dz) continue;
                                 var d = Sq(P[j] - p);
                                 if (d >= d2) continue;
