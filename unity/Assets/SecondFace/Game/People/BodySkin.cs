@@ -105,6 +105,8 @@ namespace SecondFace.Game.People
         }
         /// <summary>How far point <paramref name="i"/> stands out from the bare skin (its layers), m.</summary>
         public float Off(int i) => _off[i];
+        /// <summary>For the gate's report: how far the flank corrective moves point <paramref name="i"/> at full weight (m; 0 none).</summary>
+        public float FlankMove(int i) => _set != null && _set.FlankSide != null && i >= 0 && i < _set.FlankSide.Length && _set.FlankSide[i] != 0 ? _set.D0[i].magnitude : 0f;
 
         private void Awake() => Bind();
 

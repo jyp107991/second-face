@@ -79,7 +79,10 @@ namespace SecondFace.Game.People
             Hold[o + 1] = bp == BodySkin.Part.Torso ? 0f : bp == BodySkin.Part.ThighL ? 1f : bp == BodySkin.Part.ThighR ? 2f : 3f;
             Hold[o + 2] = (_skin.P[_gapBody].y - _hips.position.y) * 100f;
             Hold[o + 3] = gap * 100f;
+            HoldFlank[side < 0 ? 0 : 1] = _skin.FlankMove(_gapBody) * 100f;
         }
+        /// <summary>For the gate's trace: how far the flank corrective moves the body's point that holds each elbow (cm).</summary>
+        [System.NonSerialized] public float[] HoldFlank = new float[2];
         /// <summary>For the gate's trace (with <see cref="TraceStages"/>): each upper arm's angle off the vertical as the clip
         /// left it (left 0, right 7) and after each step of a resting frame, as <see cref="HandDepth"/> (left 1-6, right 8-13).</summary>
         [System.NonSerialized] public float[] StageA1 = new float[14];

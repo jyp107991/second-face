@@ -554,7 +554,7 @@ namespace SecondFace.Tests
         private string HoldTrace()
         {
             var sk = GetComponent<SecondFace.Game.People.BodySkin>();
-            var a4 = $",{_traceA4L:0.0},{_traceA4R:0.0},{(sk != null ? sk.FlankL : -1f):0.00},{(sk != null ? sk.FlankR : -1f):0.00},{_traceOutL:0.0},{_traceFwdL:0.0},{_traceOutR:0.0},{_traceFwdR:0.0}," + (_ac != null && _ac.StageA1 != null ? string.Join(",", _ac.StageA1.Select(x => x.ToString("0.0"))) : ",,,,,,,,,,,,,");
+            var a4 = $",{_traceA4L:0.0},{_traceA4R:0.0},{(sk != null ? sk.FlankL : -1f):0.00},{(sk != null ? sk.FlankR : -1f):0.00},{_traceOutL:0.0},{_traceFwdL:0.0},{_traceOutR:0.0},{_traceFwdR:0.0}," + (_ac != null && _ac.StageA1 != null ? string.Join(",", _ac.StageA1.Select(x => x.ToString("0.0"))) + $",{_ac.HoldFlank[0]:0.00},{_ac.HoldFlank[1]:0.00}" : ",,,,,,,,,,,,,,,");
             if (_ac == null || _ac.Hold == null || _ac.Hold.Length < 8) return ",,,,,,," + a4;
             return string.Join(",", _ac.Hold.Select(x => x.ToString("0.00"))) + a4;
         }
