@@ -592,6 +592,14 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   eleven with all four: 106 -> 68 (C1 5 -> 3, A1 74 -> 53, A4 15 -> 3, A3 2 -> 0). full28 running. Cost: the skin points
   about 3x (16 MB of skin data in all), the gate's whole cast 35 -> about 70 min: to trim (task H3c: the fill only within
   the arms' reach; the spacing computed in the baker; the pose in Burst jobs).
+  full28 (562, every measure better: A1 446, A4 77, C1 9, A3 0, W6 19, W3 8, F5 1) was NOT committed: the test was stopped
+  at its 2 h limit in its last batch and still wrote a verdict, of 70 of the 79, as the cast's. Now the whole cast's test
+  runs to 4 h, the verdict records the people it measured and the cast, and `tools/qa/people_gate.mjs` holds one short of
+  the cast red (INCOMPLETE). The cost, measured (the report carries each stage's): the arm clearance 12-14 ms a person a
+  frame in the editor, 7-8 thousand skin asks; the skin's pose under 1 ms. A second, finer filing did not help (reverted);
+  a range of points asked at once in a Burst job (`BodySkin.DepthRange`, the same reckoning as `Depth`; `SKIN_CHECK=1`
+  compares every answer) took it to 7.4-10.2 ms with the same verdict on the picked three (24 past their limits; two
+  cells differ in their last digit: Mono's and Burst's float rounding). full29 running.
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
