@@ -1131,7 +1131,8 @@ namespace SecondFace.Game.People
             // 2026-11-07)
             var elbowFirst = ElbowFirst && UpperFirst && RestReach && _restW > 0.99f && lower != null && handT != null;
             var wrist0 = handT != null ? handT.position : Vector3.zero;
-            var (need, dir) = SkinNeed(upper, first, false, elbowFirst);
+            var elbowForearm = elbowFirst && ElbowForearm;
+            var (need, dir) = SkinNeed(upper, first, false, elbowFirst, elbowForearm);
             var forUpper = _needAt >= _skin.Begin(first) && _needAt < _skin.Begin(first + 1);
             if (need > 0f) axis = dir;
             angle = need >= angle ? need : Mathf.MoveTowards(angle, need, Release * dt);
@@ -1142,7 +1143,7 @@ namespace SecondFace.Game.People
                 pushed += angle;
                 for (var pass = 0; pass < 2; pass++)
                 {
-                    var (more, dir2) = SkinNeed(upper, first, false, elbowFirst);
+                    var (more, dir2) = SkinNeed(upper, first, false, elbowFirst, elbowForearm);
                     if (more <= 0.01f) break;
                     TurnArm(upper, first, more, dir2);
                     pushed += more;
@@ -1158,7 +1159,7 @@ namespace SecondFace.Game.People
             if (!elbowFirst) return;
             for (var ePass = 0; ePass < 2; ePass++)
             {
-                var (nE, axE) = SkinNeedAbout(lower.position, _skin.Begin(first + 2), _skin.End(first + 2), first);
+                var (nE, axE) = SkinNeedAbout(lower.position, _skin.Begin(elbowForearm ? first + 1 : first + 2), _skin.End(first + 2), first);
                 if (nE <= 0.01f) break;
                 var eUa = (lower.position - upper.position).normalized;
                 var eFa0 = handT.position - lower.position;
@@ -1229,6 +1230,11 @@ namespace SecondFace.Game.People
 
         /// <summary>At rest: the hand turned out of the body at the elbow before the arm is at the shoulder.</summary>
         public bool ElbowFirst = true;
+        /// <summary>At rest: the forearm's outer part (12 cm and more from the elbow) turned out of the hip and thigh at the
+        /// elbow too, before the shoulder (turned out at the shoulder for it, the broad men's whole arms stood 22-27° off the
+        /// vertical though their forearms hung at 14°: the shoulder's pushes for the forearm on the hip, 14-28 states a man,
+        /// on top of the elbow resting on the waist at 13-17°, A1, 2026-11-08).</summary>
+        public bool ElbowForearm = true;
         private static readonly float[] ElbowShares = { 1f, 0.5f };
         /// <summary>How far the elbow's turn takes the hand out of the thigh (m): the skin's points there are 1.5-4 cm apart on
         /// a curved surface, and taken to 3 mm by them the hand lay 1.6-2.7 cm into the thigh's front (C1 79 -> 112, 2026-11-07).</summary>
@@ -1269,7 +1275,7 @@ namespace SecondFace.Game.People
         }
         private int _needAt = -1;
 
-        private (float Angle, Vector3 Axis) SkinNeed(Transform upper, BodySkin.Part first, bool lowerOnly = false, bool noHand = false)
+        private (float Angle, Vector3 Axis) SkinNeed(Transform upper, BodySkin.Part first, bool lowerOnly = false, bool noHand = false, bool nearElbow = false)
         {
             var shoulder = upper.position;
             var best = 0f; var axis = Vector3.zero; _needAt = -1;
@@ -1277,9 +1283,12 @@ namespace SecondFace.Game.People
             var hand = _skin.Begin(first + 2);
             var lowerArm = first == BodySkin.Part.UpperArmL ? _ll : _rl;
             var elbowAt = lowerArm != null ? lowerArm.position : upper.position;
+            var forearm = _skin.Begin(first + 1);
             for (var i = from; i < to; i++)
             {
                 var p = _skin.P[i];
+                // (the forearm's outer part left to the elbow, ElbowForearm)
+                if (nearElbow && i >= forearm && (p - elbowAt).sqrMagnitude >= 0.0144f) continue;
                 if (!_skin.Depth(p, out var d, out var n)) continue;
                 // the upper arm and the forearm by the elbow may press into the clothes a little (ClothGive); the hand not
                 if (_restW > 0.99f && i < hand && _skin.Near >= 0 && (i < _skin.Begin(first + 1) || (p - elbowAt).sqrMagnitude < 0.0064f)) d -= ClothGive * _skin.Off(_skin.Near);
