@@ -46,6 +46,10 @@ namespace SecondFace.Game.People
         private Quaternion _restL, _restR;                  // each foot's rotation at rest, in the body's frame (flat, sole down)
         private float _headingL, _headingR;                 // each foot's heading at rest in the body's frame, degrees
         private float _sink, _plant, _low, _unplant, _bodySpeed;
+        private Vector3 _toeWasL, _toeWasR; private bool _haveToeWas;
+        /// <summary>Below this pace (m/s), a lower foot in the air moving slower than <see cref="CatchSlow"/> (m/s) and more than
+        /// <see cref="CatchLift"/> (m) up is set down by the hips: it bears the weight (W6).</summary>
+        public float CatchPace = 2.4f, CatchSlow = 0.6f, CatchLift = 0.015f;
         // where each foot ended last frame (its sole points in the world, its turn, how high its sole stood): a person who
         // sets off keeps a foot that was down where it stood, held on the point it stands on, until the stride lifts it
         // (the planted feet were blended back to the clip's over 0.15 s and dragged at 1 m/s, 2026-11-06)
@@ -275,8 +279,17 @@ namespace SecondFace.Game.People
             _low = Mathf.Min(e, _low + 0.08f * dt);
             // standing, low enough that both feet reach the ground (the higher foot's need: on the lower one's alone the
             // other floated up to 3 cm, F1); moving, by the stride's lowest
-            var want = Mathf.Clamp(-(standing ? Mathf.Max(eL, eR) : _low), -0.15f, 0.15f);
-            _sink = Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-(standing ? 25f : 3f) * dt));
+            // slowing from a jog, both feet off the ground (the jog's flight still in the blend at a walk's pace): the lower
+            // foot, nearly still, bears the weight, and the hips come down onto it at once (it rose 3.5-7 cm with the clip while
+            // its ball barely moved, W6, 2026-11-08)
+            var toeL = _toeL != null ? _toeL.position : _footL.position; var toeR = _toeR != null ? _toeR.position : _footR.position;
+            var toeVL = _haveToeWas ? new Vector2(toeL.x - _toeWasL.x, toeL.z - _toeWasL.z).magnitude / dt : 9f;
+            var toeVR = _haveToeWas ? new Vector2(toeR.x - _toeWasR.x, toeR.z - _toeWasR.z).magnitude / dt : 9f;
+            _toeWasL = toeL; _toeWasR = toeR; _haveToeWas = true;
+            var eLow = Mathf.Min(eL, eR);
+            var caught = !standing && _bodySpeed < CatchPace && eLow > CatchLift && (eL <= eR ? toeVL : toeVR) < CatchSlow;
+            var want = Mathf.Clamp(-(standing ? Mathf.Max(eL, eR) : caught ? Mathf.Max(_low, eLow) : _low), -0.15f, 0.15f);
+            _sink = Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-(standing || caught ? 25f : 3f) * dt));
             _hips.position += Vector3.up * _sink;
             Diag[8] = _sink; Diag[9] = _low; Diag[10] = eL; Diag[11] = eR;
 
