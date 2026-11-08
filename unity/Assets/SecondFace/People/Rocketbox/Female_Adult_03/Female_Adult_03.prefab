@@ -412,3 +412,9 @@ MonoBehaviour:
   P: []
   N: []
   Near: -1
+  PoseMs: 0
+  Poses: 0
+  DepthCalls: 0
+  QD: []
+  QN: []
+  QNear: 

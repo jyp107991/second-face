@@ -33,7 +33,7 @@ namespace SecondFace.EditorTools
         /// own mesh, the overlap 6-10 cm, moved the whole cast only 1053 -> 1030 and turned one forearm past its cap, A3:
         /// their arms are held out by gear at the torso's side and back, the belt and the thighs, not the chest's side,
         /// 2026-11-07.)</summary>
-        public const float TorsoMax = 0.025f, ArmMax = 0.015f, TorsoShare = 0.6f;
+        public const float TorsoMax = 0.04f, ArmMax = 0.02f, TorsoShare = 0.6f;   // (4 and 2 cm, 2026-11-08: the broad men's elbows at the reference lay 6-8 cm into their waists, a jacket's with them; with the skin filled the game sees the room)
         /// <summary>The arm's places the overlap is taken over (degrees out from the reference, and forward or back of it):
         /// where a resting arm really lies as the body sways and the idles shift.</summary>
         private static readonly (float Out, float Fwd)[] Sweep = { (0f, 0f), (-3f, 0f), (4f, 0f), (0f, -8f), (0f, 8f), (4f, -8f), (4f, 8f) };
