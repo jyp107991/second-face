@@ -70,6 +70,18 @@ namespace SecondFace.EditorTools
             return cat;
         }
 
+        /// <summary>SKIN_DIAG ("id:vertex,..."): the named people built again and the coverage of their skin points reported
+        /// (RocketboxLayers.SkinDiag), for the gate's clip lines whose nearest game point stood far off.</summary>
+        public static void DiagSkin()
+        {
+            var spec = System.Environment.GetEnvironmentVariable("SKIN_DIAG") ?? "";
+            var root = RocketboxImportPostprocessor.People.TrimEnd('/');
+            var shader = Shader.Find("SecondFace/Person");
+            _cloths = null;
+            foreach (var id in spec.Split(',').Select(x => x.Split(':')[0]).Where(x => x.Length > 0).Distinct())
+                Person(id, $"{root}/{id}", shader);
+        }
+
         private static Texture2D Tex(string dir, string slot, string suffix)
         {
             foreach (var ext in new[] { ".jpg", ".png" })

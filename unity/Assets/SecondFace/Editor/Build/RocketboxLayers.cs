@@ -134,6 +134,46 @@ namespace SecondFace.EditorTools
 
         /// <summary>Cuts the layers from a person at rest (a prefab's contents being built), writes them beside it and puts an
         /// RbLayerSet on it. False when it is not a person.</summary>
+        /// <summary>For SKIN_DIAG ("id:vertex,id:vertex,..."): the fate of the named vertices (as the gate names them in its clip
+        /// lines) and how far the nearest kept skin point is; and, for the person, the body's vertices more than 3 cm from any
+        /// kept point of their part, by fate.</summary>
+        private static void SkinDiag(string spec, string id, Vector3[] lp, bool[] use, byte[] fate, SkinPart[] partOf, List<int>[] byPart, int cells)
+        {
+            var mine = spec.Split(',').Select(x => x.Split(':')).Where(x => x.Length == 2 && x[0] == id).Select(x => int.Parse(x[1])).ToList();
+            if (mine.Count == 0) return;
+            float Near(Vector3 q, int part, out int at)
+            {
+                var b = float.MaxValue; at = -1;
+                for (var p = 0; p < 9; p++)
+                {
+                    if (part >= 0 && p != part) continue;
+                    foreach (var k in byPart[p]) { var d = (lp[k] - q).sqrMagnitude; if (d < b) { b = d; at = k; } }
+                }
+                return Mathf.Sqrt(b);
+            }
+            var sb = new System.Text.StringBuilder($"SKIN_DIAG {id}: {cells} points;");
+            foreach (var v in mine)
+            {
+                if (v < 0 || v >= lp.Length) { sb.Append($" v{v} out of range;"); continue; }
+                var same = Near(lp[v], (int)partOf[v], out var ks); var any = Near(lp[v], -1, out var ka);
+                // the mesh's own density there: the nearest other body vertices
+                var nb = new List<float>();
+                for (var k = 0; k < lp.Length; k++) if (k != v && use[k]) nb.Add((lp[k] - lp[v]).magnitude);
+                nb.Sort();
+                sb.Append($" v{v} fate {fate[v]} part {partOf[v]}: nearest kept of its part {same * 100f:0.0} cm (v{ks}), of any {any * 100f:0.0} cm (v{ka} {(ka >= 0 ? partOf[ka] : SkinPart.None)}); mesh neighbours {string.Join("/", nb.Take(4).Select(x => (x * 100f).ToString("0.0")))} cm;");
+            }
+            var holes = new int[5]; var holesFar = new int[5];
+            for (var i = 0; i < lp.Length; i++)
+            {
+                if (!use[i] || !(partOf[i] is SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR)) continue;
+                var d = Near(lp[i], (int)partOf[i], out _);
+                if (d > 0.03f) holes[fate[i]]++;
+                if (d > 0.045f) holesFar[fate[i]]++;
+            }
+            sb.Append($" torso/thigh vertices over 3 cm from a kept point, by fate (2 inside, 4 candidate): {string.Join("/", holes)}; over 4.5 cm: {string.Join("/", holesFar)}");
+            Debug.Log(sb.ToString());
+        }
+
         public static bool Build(GameObject go, string dir, string id, Material[] cloths)
         {
             var anim = go.GetComponentInChildren<Animator>();
@@ -258,6 +298,29 @@ namespace SecondFace.EditorTools
         /// the nearest bone (as the gate's MotionProbe tells them), one kept per cell (the torso and thighs every 2.5 cm,
         /// the hand every 2 cm, the forearm and the lower upper arm every 3 cm), each with its two strongest bones, the
         /// layers that cover it, and whether it is the hips' or thighs' side a resting hand hangs beside.</summary>
+        /// <summary>The body's skin points filled in every this far (m) over its triangles, where no vertex stands within
+        /// <see cref="FillGap"/>.</summary>
+        private const float FillStep = 0.025f, FillGap = 0.02f;
+
+        private static BoneWeight BlendWeights(BoneWeight a, float wa, BoneWeight b, float wb, BoneWeight c, float wc)
+        {
+            var acc = new Dictionary<int, float>();
+            void Add(int i, float w) { if (w > 0f) acc[i] = (acc.TryGetValue(i, out var x) ? x : 0f) + w; }
+            foreach (var (x, s) in new[] { (a, wa), (b, wb), (c, wc) })
+            {
+                Add(x.boneIndex0, x.weight0 * s); Add(x.boneIndex1, x.weight1 * s); Add(x.boneIndex2, x.weight2 * s); Add(x.boneIndex3, x.weight3 * s);
+            }
+            var top = acc.OrderByDescending(kv => kv.Value).Take(4).ToList();
+            var sum = top.Sum(kv => kv.Value);
+            if (sum <= 0f) return a;
+            var r = new BoneWeight();
+            if (top.Count > 0) { r.boneIndex0 = top[0].Key; r.weight0 = top[0].Value / sum; }
+            if (top.Count > 1) { r.boneIndex1 = top[1].Key; r.weight1 = top[1].Value / sum; }
+            if (top.Count > 2) { r.boneIndex2 = top[2].Key; r.weight2 = top[2].Value / sum; }
+            if (top.Count > 3) { r.boneIndex3 = top[3].Key; r.weight3 = top[3].Value / sum; }
+            return r;
+        }
+
         private static void Skin(GameObject go, Animator anim, SkinnedMeshRenderer smr, string dir, string id, List<bool[]> keeps, Vector3[] flL, Vector3[] flR)
         {
             var mesh = smr.sharedMesh;
@@ -274,6 +337,77 @@ namespace SecondFace.EditorTools
                 var b = bw[i];
                 var m = bones[b.boneIndex0].localToWorldMatrix * bp[b.boneIndex0];
                 world[i] = m.MultiplyPoint3x4(pos[i]);
+            }
+            // the body's big triangles filled in: a coarse body's vertices stand 3-6 cm apart on the hips, the thighs and the
+            // torso's side, and a hand or a forearm resting over a triangle's middle lay 1.7-1.9 cm under its skin while the
+            // game's nearest point, 4.4 cm off, read it outside (C1, 2026-11-08). Points every FillStep over each of the body's
+            // triangles where no vertex stands within FillGap, skinned by its corners' weights (kept only on the torso and the
+            // thighs, below)
+            var n0 = pos.Length;
+            var fillOf = new List<(int A, int B, int C, float U, float V, float W)>();
+            {
+                var matsF = smr.sharedMaterials;
+                var vcell = new Dictionary<(int, int, int), List<int>>();
+                (int, int, int) VC(Vector3 q) => (Mathf.FloorToInt(q.x / FillGap), Mathf.FloorToInt(q.y / FillGap), Mathf.FloorToInt(q.z / FillGap));
+                for (var i = 0; i < n0; i++) { var k = VC(world[i]); if (!vcell.TryGetValue(k, out var l)) vcell[k] = l = new List<int>(); l.Add(i); }
+                bool Near(Vector3 q)
+                {
+                    var c = VC(q);
+                    for (var dx = -1; dx <= 1; dx++) for (var dy = -1; dy <= 1; dy++) for (var dz = -1; dz <= 1; dz++)
+                        if (vcell.TryGetValue((c.Item1 + dx, c.Item2 + dy, c.Item3 + dz), out var l))
+                            foreach (var v in l) if ((world[v] - q).sqrMagnitude < FillGap * FillGap) return true;
+                    return false;
+                }
+                var made = new HashSet<(int, int, int)>();
+                var fillAt = new List<Vector3>();
+                for (var sub = 0; sub < mesh.subMeshCount; sub++)
+                {
+                    var name = sub < matsF.Length && matsF[sub] != null ? matsF[sub].name.ToLowerInvariant() : "";
+                    if (name.Contains("opacity") || name.Contains("hair") || name.Contains("lash") || name.Contains("eye")) continue;
+                    var tris = mesh.GetTriangles(sub);
+                    for (var t = 0; t + 2 < tris.Length; t += 3)
+                    {
+                        int a = tris[t], b = tris[t + 1], c = tris[t + 2];
+                        var len = Mathf.Max((world[a] - world[b]).magnitude, Mathf.Max((world[b] - world[c]).magnitude, (world[c] - world[a]).magnitude));
+                        if (len <= FillStep * 1.5f) continue;
+                        var n = Mathf.CeilToInt(len / FillStep);
+                        for (var iu = 0; iu <= n; iu++)
+                            for (var iv = 0; iv <= n - iu; iv++)
+                            {
+                                var iw = n - iu - iv;
+                                if ((iu == n) || (iv == n) || (iw == n)) continue;   // (the corners are the vertices)
+                                float u = iu / (float)n, v = iv / (float)n, w = iw / (float)n;
+                                var q = world[a] * u + world[b] * v + world[c] * w;
+                                var key = (Mathf.RoundToInt(q.x * 1000f), Mathf.RoundToInt(q.y * 1000f), Mathf.RoundToInt(q.z * 1000f));
+                                if (made.Contains(key) || Near(q)) continue;
+                                made.Add(key);
+                                fillOf.Add((a, b, c, u, v, w)); fillAt.Add(q);
+                            }
+                    }
+                }
+                if (fillOf.Count > 0)
+                {
+                    var n1 = n0 + fillOf.Count;
+                    Array.Resize(ref pos, n1); Array.Resize(ref nor, n1); Array.Resize(ref bw, n1); Array.Resize(ref world, n1);
+                    var keepsX = new List<bool[]>();
+                    foreach (var kp in keeps) { var x = new bool[n1]; Array.Copy(kp, x, Mathf.Min(kp.Length, n0)); keepsX.Add(x); }
+                    Vector3[] flLx = flL != null ? new Vector3[n1] : null, flRx = flR != null ? new Vector3[n1] : null;
+                    if (flLx != null) Array.Copy(flL, flLx, Mathf.Min(flL.Length, n0));
+                    if (flRx != null) Array.Copy(flR, flRx, Mathf.Min(flR.Length, n0));
+                    for (var k = 0; k < fillOf.Count; k++)
+                    {
+                        var (a, b, c, u, v, w) = fillOf[k];
+                        var i = n0 + k;
+                        pos[i] = pos[a] * u + pos[b] * v + pos[c] * w;
+                        nor[i] = (nor[a] * u + nor[b] * v + nor[c] * w).normalized;
+                        world[i] = fillAt[k];
+                        bw[i] = BlendWeights(bw[a], u, bw[b], v, bw[c], w);
+                        foreach (var x in keepsX) x[i] = (x[a] ? 1 : 0) + (x[b] ? 1 : 0) + (x[c] ? 1 : 0) >= 2;
+                        if (flLx != null) flLx[i] = flL[a] * u + flL[b] * v + flL[c] * w;
+                        if (flRx != null) flRx[i] = flR[a] * u + flR[b] * v + flR[c] * w;
+                    }
+                    keeps = keepsX; flL = flLx; flR = flRx;
+                }
             }
             // the parts told apart where the gate tells them apart (MotionProbe.Calibrate): in the Humanoid's neutral pose,
             // every muscle at 0, the arms down by the body. In the bind pose the arms stand out and the chest's side under
@@ -305,6 +439,19 @@ namespace SecondFace.EditorTools
                     if (ln != null && ln.Length == lp.Length) for (var k = 0; k < ln.Length; k++) ln[k] = cSmr.transform.rotation * ln[k]; else ln = null;
                     UnityEngine.Object.DestroyImmediate(baked);
                     hp.Dispose();
+                    // (the filled points where their corners are, posed)
+                    if (lp.Length == n0 && world.Length > n0)
+                    {
+                        var lpx = new Vector3[world.Length]; Array.Copy(lp, lpx, n0);
+                        var lnx = ln != null ? new Vector3[world.Length] : null; if (lnx != null) Array.Copy(ln, lnx, n0);
+                        for (var k = 0; k < fillOf.Count; k++)
+                        {
+                            var (a, b, c, u, v, w) = fillOf[k];
+                            lpx[n0 + k] = lp[a] * u + lp[b] * v + lp[c] * w;
+                            if (lnx != null) lnx[n0 + k] = (ln[a] * u + ln[b] * v + ln[c] * w).normalized;
+                        }
+                        lp = lpx; ln = lnx;
+                    }
                     if (lp.Length != world.Length) { lp = world; ln = null; }
                     else boneSrc = cAnim;
                 }
@@ -349,12 +496,18 @@ namespace SecondFace.EditorTools
                 if (name.Contains("opacity") || name.Contains("hair") || name.Contains("lash") || name.Contains("eye")) continue;
                 foreach (var i in mesh.GetTriangles(sub)) use[i] = true;
             }
+            for (var i = n0; i < use.Length; i++) use[i] = true;   // (the filled points: of the body's triangles only)
             var hipsY = root.InverseTransformPoint(anim.GetBoneTransform(HumanBodyBones.Hips).position).y;   // (the bind pose's, not the copy's)
             var cells = new Dictionary<(int, int, int, SkinPart), (int I, float D)>();
             var inner = 0;
+            // (for SKIN_DIAG only: each vertex's fate, 0 not the body's, 1 no part, 2 a garment's inside, 3 the upper arm's
+            // high part, 4 a candidate; and its part)
+            var fate = new byte[pos.Length]; var partOf = new SkinPart[pos.Length];
+            for (var i = 0; i < partOf.Length; i++) partOf[i] = SkinPart.None;
             for (var i = 0; i < pos.Length; i++)
             {
                 if (!use[i]) continue;
+                fate[i] = 1;
                 var best = float.MaxValue; var part = SkinPart.None; var along = 0f; var axis = Vector3.zero;
                 foreach (var (a, b, p) in segs)
                 {
@@ -362,6 +515,8 @@ namespace SecondFace.EditorTools
                     if (d < best) { best = d; part = p; along = t; axis = a + (b - a) * t; }
                 }
                 if (part == SkinPart.None) continue;
+                if (i >= n0 && !(part is SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR)) continue;   // (filled: the body's only)
+                partOf[i] = part; fate[i] = 2;
                 // the body's surface faces away from its bones: a vertex whose normal faces its bone's axis is a garment's
                 // inside (a jacket's lining at the hem, a turned-up cuff), and a hand by it read as outside the body while
                 // 4-5 cm into the thigh (2026-11-06)
@@ -387,7 +542,9 @@ namespace SecondFace.EditorTools
                 // the chest, a contact the soft tissue of both takes, hidden in the crease: docs/PEOPLE_MOTION.md C1)
                 // (from 0.6, a little above the gate's 0.65: the game's sampled points missed the band's top edge, which the
                 // gate saw 1.6-3 cm into the chest's side while walking and gesturing, 2026-11-06)
+                fate[i] = 3;
                 if ((part == SkinPart.UpperArmL || part == SkinPart.UpperArmR) && along < 0.6f) continue;
+                fate[i] = 4;
                 // (the arms every 1.8 cm: at 3 cm a forearm's inner side between two points lay 1.7 cm into the hip while the
                 // nearest point read 1.9 cm out of it, C1, 2026-11-07)
                 var cell = part switch { SkinPart.HandL or SkinPart.HandR => 0.02f, SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR => 0.025f, _ => 0.018f };
@@ -443,6 +600,7 @@ namespace SecondFace.EditorTools
             var byPart = new List<int>[9];
             for (var p = 0; p < 9; p++) byPart[p] = new List<int>();
             foreach (var (key, (i, _)) in cells) byPart[(int)key.Item4].Add(i);
+            if (System.Environment.GetEnvironmentVariable("SKIN_DIAG") is { Length: > 0 } diag) SkinDiag(diag, id, lp, use, fate, partOf, byPart, cells.Count);
             for (var p = 0; p < 9; p++) byPart[p].Sort();
             var female = mats.Any(m => m != null && m.name.ToLowerInvariant().TrimStart('s').StartsWith("f") && m.name.ToLowerInvariant().EndsWith("_body"));
 
