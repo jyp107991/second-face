@@ -618,6 +618,14 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   (A1 462, A4 83, C1 11, W3 8, F5 2, F1 1, F2 1, A3 1). Still red.
   **Next:** the deeper correctives only where they do not move the hands (A1 451 there); the bend's push-off (W6); A4 83;
   C1 11.
+  Since: the chest's side given 4 cm from 2 cm under the elbow up and 2.5 below it, the arm's 2 cm (people rebuilt); the
+  forearm's aim at rest to 27° (no change in the pick: taken back). The gear-held men's A4 traced with the gate's worst
+  hand per state (its hand and body vertices, the game's own points then): the game's skin had the hand 0.5-1.7 cm off
+  the thigh where the gate read 6.0-6.4 cm, because the gate measured to the thigh's nearest *vertex* and these thighs'
+  vertices stand 6-7 cm apart. **The gate's A4 now measures to the hips' and thighs' surface** (the nearest point on
+  their triangles; never more than the vertex's gap, so no hand reads nearer than it is; `docs/PEOPLE_MOTION.md` A4):
+  the picked two's A4 9 -> 1 (the one left real: Police_Male_06 on the slope, 10.6 cm off for a sample, the arm pushed
+  out to 24.6°). full32 (the whole cast on this) running.
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
