@@ -570,7 +570,13 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   pass (the spikes come from the rest arm's own placement, unchanged); the curl to 1.3 cm off the body (A4 192). Now
   the wrist's curl tries the whole turn, then half, then a quarter, before none, so a hand that one full curl would
   press into the leg still curls part of the way: **whole cast 848 -> 837, committed** (full25, no measure worse): C1 42
-  -> 31, A4 190, A1 574, A3 5, W6 23, W3 10, F1 1, F2 1, F5 2.
+  -> 31, A4 190, A1 574, A3 5, W6 23, W3 10, F1 1, F2 1, F5 2. What holds the men's arms out, from the trace (it now
+  carries the point that holds each resting elbow): the elbow itself rests on the waist 32-37 cm above the hips, the
+  upper arm's third nearest it on the torso (the out-angle 13-17°, its most 17°, and still 2-7 mm in; a gear-heavy man
+  3.3 cm), and on top the shoulder's pushes, median 3-5°, p98 10-14°, for the forearm on the hip (14-28 states a man).
+  Now: at rest the forearm's outer part (12 cm and more from the elbow) is turned out of the hip at the elbow before the
+  shoulder, and the hand drawn back to the thigh after it whole, else half, else a quarter; on the picked ten 182 -> 150
+  (A1 150 -> 122, A4 23 -> 21, A3 2 -> 1, C1 1 -> 0); full26 running.
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
