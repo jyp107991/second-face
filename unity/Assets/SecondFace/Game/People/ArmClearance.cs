@@ -218,6 +218,12 @@ namespace SecondFace.Game.People
         /// <summary>For the gate's report: the time this has taken (ms) over the frames it ran.</summary>
         public double CostMs; public int CostFrames;
         public BodySkin Skin => _skin;
+        /// <summary>For the gate's report: each stage's time (ms, summed): 0 the flank, 1 the skin's pose, 2 the resting arms'
+        /// placing, 3 the clearance, 4 the hands set at their gap, 5 the hang kept and the hands curled, 6 the swing and the
+        /// moving elbow.</summary>
+        public readonly double[] StageMs = new double[7];
+        private long _t0;
+        private void Mark(int s) { var t = System.Diagnostics.Stopwatch.GetTimestamp(); StageMs[s] += (t - _t0) * 1000.0 / System.Diagnostics.Stopwatch.Frequency; _t0 = t; }
         private readonly System.Diagnostics.Stopwatch _cost = new();
 
         private void LateUpdate()
@@ -230,8 +236,10 @@ namespace SecondFace.Game.People
         private void Step()
         {
             if (!Ready) return;
+            _t0 = System.Diagnostics.Stopwatch.GetTimestamp();
             _clock += Time.deltaTime;
             Flank();
+            Mark(0);
             var dt = Time.deltaTime > 0f ? Time.deltaTime : Time.unscaledDeltaTime;
             var resting = Resting();
             DiagResting = resting;
@@ -243,9 +251,11 @@ namespace SecondFace.Game.People
                     // at rest the hand is placed where a relaxed hand hangs and the arm reaches it (blended in and out)
                     _restW = Mathf.MoveTowards(_restW, resting ? 1f : 0f, dt / (resting ? RestIn : RestOut2));
                     _skin.Pose();
+                    Mark(1);
                     RestArm(_lu, _ll, _lh, -1, BodySkin.Part.UpperArmL, _restW);
                     RestArm(_ru, _rl, _rh, 1, BodySkin.Part.UpperArmR, _restW);
                     Diag[1] = HandGap(BodySkin.Part.UpperArmL); Diag[3] = HandGap(BodySkin.Part.UpperArmR);
+                    Mark(2);
                     // the place nudged by the gap the hand really has (its shape, the fingers' curl, a coat's hem)
                     if (_restW > 0.99f && !UpperFirst)
                     {
@@ -266,18 +276,21 @@ namespace SecondFace.Game.People
                 Stage(BodySkin.Part.UpperArmL, 0); Stage(BodySkin.Part.UpperArmR, 0);
                 SkinClear(_lu, BodySkin.Part.UpperArmL, ref _angleL, ref _axisL, dt);
                 SkinClear(_ru, BodySkin.Part.UpperArmR, ref _angleR, ref _axisR, dt);
+                Mark(3);
                 // at rest, the hands set at their gap again after the arms were cleared of the body (turned out at the shoulder
                 // for a forearm on the hip or the chest's side, the hand went with them, 6-9 cm off the thigh, A4, 2026-11-07)
                 if (RestReach && UpperFirst && _restW > 0.99f)
                 {
                     SetHand(_ll, _lh, BodySkin.Part.UpperArmL, _restW, Outward(-1));
                     SetHand(_rl, _rh, BodySkin.Part.UpperArmR, _restW, Outward(1));
+                    Mark(4);
                     Stage(BodySkin.Part.UpperArmL, 4); Stage(BodySkin.Part.UpperArmR, 4);
                     KeepHang(_lu, _ll, _lh, BodySkin.Part.UpperArmL);
                     KeepHang(_ru, _rl, _rh, BodySkin.Part.UpperArmR);
                     HandIn(_lh, BodySkin.Part.UpperArmL);
                     HandIn(_rh, BodySkin.Part.UpperArmR);
                     Stage(BodySkin.Part.UpperArmL, 5); Stage(BodySkin.Part.UpperArmR, 5);
+                    Mark(5);
                 }
                 // in the stride (and the last swings as the person stops), never in a gesture (a wave or a shrug is meant high)
                 if (Striding()) { Swing(_lu, _ll, BodySkin.Part.UpperArmL); Swing(_ru, _rl, BodySkin.Part.UpperArmR); }
@@ -285,6 +298,7 @@ namespace SecondFace.Game.People
                 // forearm swung 2-4.6 cm into her chest across the front, a talking man's into his belly; turned at the
                 // shoulder, a bent arm's forearm barely moves, C1, 2026-11-08)
                 if (ElbowFirst && _restW < 0.99f) { MoveElbowClear(_ll, BodySkin.Part.UpperArmL); MoveElbowClear(_rl, BodySkin.Part.UpperArmR); }
+                Mark(6);
                 if (!RestReach) { Diag[4] = _restL; Diag[5] = _fwdL; Diag[10] = _restR; Diag[11] = _fwdR; }
                 Diag[6] = _carryL; Diag[7] = _angleL; Diag[8] = _carryR; Diag[9] = _angleR;
                 if (!RestReach) { Diag[12] = _twistL; Diag[13] = _twistR; }

@@ -317,8 +317,12 @@ namespace SecondFace.Game.People
         /// <summary>How far across from a point, as a multiple of how deep behind its plane, a point is still read as under it.</summary>
         public const float DeepAcross = 3f;
 
+        /// <summary>For the gate's report: how often <see cref="Depth"/> was asked.</summary>
+        public long DepthCalls;
+
         public bool Depth(Vector3 p, out float depth, out Vector3 normal)
         {
+            DepthCalls++;
             Near = -1;
             depth = 0f; normal = Vector3.zero;
             int c0 = -1, c1 = -1, c2 = -1;
