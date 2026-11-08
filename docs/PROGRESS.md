@@ -604,6 +604,15 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   F2 1, F5 2. Still red.
   **Next:** A1 462 (the men whose elbow rests on the waist at the out-angle's most, and the gear-held men); A4 83; W6 23
   (the women's jog); C1 11; then the clearance's cost on device budgets (task H3c).
+  Since: the broad men's resting arms traced (the out-angle at its most, 17°, the elbow still 0.2-2.6 cm into the waist at
+  its side, the shoulder's pushes 2-7° on top: at the correctives' reference the elbow lay 6-8 cm into the waist, a
+  jacket's with it): the flank correctives to 4 cm on the chest's side and 2 cm on the arm's (A1 0.5-0.8° lower on those
+  men, the picked twelve's cells as they were: the cells near 20° will tell); the elbow's turn from 6 cm from it (no change,
+  reverted). The women's jog (W6) traced: slowing from a jog both feet were up at a walk's pace, the last foot down let go
+  as a jog's and rising with the clip, still; now below 2.4 m/s a slowing body walks (its last foot down waits for the
+  other), and a sole nearly still in the air with the other up is set down by the hips (by the soles as last shown):
+  the picked nine 10 -> 5, the rest at the cap's edge but for the bend's push-off (a foot held down while the clip lifted
+  it, let go 5.4 cm up with its heel slow: to look at). full30 running with these.
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
