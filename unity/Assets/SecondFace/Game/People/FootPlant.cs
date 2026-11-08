@@ -47,6 +47,11 @@ namespace SecondFace.Game.People
         private float _headingL, _headingR;                 // each foot's heading at rest in the body's frame, degrees
         private float _sink, _plant, _low, _unplant, _bodySpeed;
         private Vector3 _toeWasL, _toeWasR; private bool _haveToeWas;
+        private float _accel;
+        /// <summary>Slowing faster than this (m/s²) below <see cref="CatchPace"/>, the body walks: its last foot down waits for
+        /// the other (W6).</summary>
+        public float SlowingAccel = -0.5f;
+        private bool Walkish(float body) => body < WalkFlight || (body < CatchPace && _accel < SlowingAccel);
         /// <summary>Below this pace (m/s), a lower foot in the air moving slower than <see cref="CatchSlow"/> (m/s) and more than
         /// <see cref="CatchLift"/> (m) up is set down by the hips: it bears the weight (W6).</summary>
         public float CatchPace = 2.4f, CatchSlow = 0.6f, CatchLift = 0.015f;
@@ -255,7 +260,10 @@ namespace SecondFace.Game.People
             if ((transform.position - _was).sqrMagnitude > 0.25f) { _l = default; _r = default; _sink = 0f; _haveEnd = false; _lockL = default; _lockR = default; moved = 0f; _shownFrames = 0; _haveSoleL = _haveSoleR = false; }
             _was = transform.position;
             // the body's own pace over the ground (the locomotion's "Speed" is a clip's, not the body's: Pace)
+            var bodyWas = _bodySpeed;
             _bodySpeed = Mathf.Lerp(_bodySpeed, moved, 1f - Mathf.Exp(-10f * dt));
+            // slowing (m/s²), for the jog's last strides: a body slowing to a walk's pace walks
+            _accel = Mathf.Lerp(_accel, (_bodySpeed - bodyWas) / dt, 1f - Mathf.Exp(-8f * dt));
             // setting off: no blend back to the clip (it slid the feet); the feet that were down are held where they stood
             _plant = standing ? Mathf.MoveTowards(_plant, 1f, dt / 0.15f) : 0f;
             var setOff = !standing && _wasStanding && _haveEnd;
@@ -475,12 +483,14 @@ namespace SecondFace.Game.People
                 // walking (no flight in it), the last foot down stays down until the other is: kept on the ground as the clip
                 // lifts it, then let rise (the sneak's rear toe rose 3 cm while the front foot was still in its swing's
                 // clearance, both off the ground and the slower bearing the weight 2.7-3 cm up, W6, 2026-11-06)
-                var waitFor = !otherDown && body < WalkFlight;
+                // (and slowing from a jog below CatchPace: let go as a jog's, the last foot rose with the clip, still, both feet
+                // off the ground at a walk's pace, 3.5-7 cm up, W6, 2026-11-08)
+                var waitFor = !otherDown && Walkish(body);
                 k.Wait = Mathf.MoveTowards(k.Wait, waitFor ? 1f : 0f, dt / 0.06f);
                 if (k.Wait > 0f) k.Drop = Mathf.Lerp(k.Drop, Mathf.Max(k.Drop, sole) * k.W, k.Wait);
                 // (pushing off into a jog's flight, the other foot in the air, let go lower: held to 3 cm, the foot rose slow
                 // and still, the lower of two in the air read as bearing the weight 4-5 cm up, W6, 2026-11-07)
-                var lift = !otherDown && body >= WalkFlight ? LockLiftFlight : LockLift;
+                var lift = !otherDown && !Walkish(body) ? LockLiftFlight : LockLift;
                 var lifted = sole > lift && k.Wait < 0.05f;
                 if (lifted || off.magnitude > LockReach)
                 {
@@ -490,7 +500,7 @@ namespace SecondFace.Game.People
                     // (its clip 12 cm from the hold) was carried along it at 4.7 m/s (W1, 2026-11-07)
                     // (and any foot let go of while jogging is kept from locking again until it leaves the ground: let go of by
                     // its reach as a jog set off, it locked again mid-roll and its ball slid 0.3 m/s, W1, 2026-11-07)
-                    var jogging = !otherDown && body >= WalkFlight;
+                    var jogging = !otherDown && !Walkish(body);
                     k.On = false; k.Release = lifted && jogging ? 0f : 1f; k.NoRelock = jogging; k.From = want - new Vector3(off.x, 0f, off.y);
                     // while the other foot is down too, up to the swing's clearance at once, this frame too (its clearance
                     // was none while it was held: let go on the ground, the sneak's foot slid 2 cm along it that frame,
