@@ -60,6 +60,26 @@ namespace SecondFace.Game.People
         public float[] HandDepth = new float[12];
         /// <summary>Set by the gate's trace only: the steps' depths are measured (in the game they are not).</summary>
         public bool TraceStages;
+        /// <summary>For the gate's trace (with <see cref="TraceStages"/>): what holds a resting elbow out, each side (left 0-3,
+        /// right 4-7): the arm's point (0-1 along the upper arm from the shoulder, 1-2 along the forearm from the elbow), the
+        /// body's part (0 the torso, 1 or 2 a thigh), its height above the hips (cm) and the gap (cm).</summary>
+        public float[] Hold = new float[8];
+
+        private void HoldDiag(int side, Vector3 shoulder, Vector3 elbow, float gap)
+        {
+            var o = side < 0 ? 0 : 4;
+            if (_gapArm < 0 || _gapBody < 0 || _hips == null) { Hold[o] = -1f; Hold[o + 1] = -1f; Hold[o + 2] = 0f; Hold[o + 3] = gap * 100f; return; }
+            var p = _skin.P[_gapArm];
+            var part = _skin.PartOf(_gapArm);
+            var ua = elbow - shoulder;
+            Hold[o] = part == BodySkin.Part.UpperArmL || part == BodySkin.Part.UpperArmR
+                ? Mathf.Clamp01(Vector3.Dot(p - shoulder, ua) / Mathf.Max(1e-6f, ua.sqrMagnitude))
+                : 1f + Mathf.Clamp01((p - elbow).magnitude / 0.27f);
+            var bp = _skin.PartOf(_gapBody);
+            Hold[o + 1] = bp == BodySkin.Part.Torso ? 0f : bp == BodySkin.Part.ThighL ? 1f : bp == BodySkin.Part.ThighR ? 2f : 3f;
+            Hold[o + 2] = (_skin.P[_gapBody].y - _hips.position.y) * 100f;
+            Hold[o + 3] = gap * 100f;
+        }
         private void Stage(BodySkin.Part first, int step)
         {
             if (!TraceStages) return;
@@ -571,7 +591,12 @@ namespace SecondFace.Game.People
             if (w < 0.99f) return;
             // the elbow (and the forearm by it) off the waist and the chest's side: out only as far as it must, back in as
             // far as it may
-            var gapE = Mathf.Min(Gap(_skin.Begin(first), _skin.End(first), 1, 0.08f, null, 0f, ClothGive), Gap(_skin.Begin(first + 1), _skin.End(first + 1), 1, 0.08f, lower.position, 0.08f, ClothGive));
+            var gapU = Gap(_skin.Begin(first), _skin.End(first), 1, 0.08f, null, 0f, ClothGive);
+            int holdArm = _gapArm, holdBody = _gapBody;
+            var gapF = Gap(_skin.Begin(first + 1), _skin.End(first + 1), 1, 0.08f, lower.position, 0.08f, ClothGive);
+            if (gapU <= gapF) { _gapArm = holdArm; _gapBody = holdBody; }
+            var gapE = Mathf.Min(gapU, gapF);
+            if (TraceStages) HoldDiag(side, S, lower.position, gapE);
             var dt = Time.deltaTime;
             if (gapE < ElbowRest) abd = Mathf.Min(AbdMax, abd + AbdRate * dt);
             else if (gapE > ElbowRest + 0.01f) abd = Mathf.Max(AbdMin, abd - 0.5f * AbdRate * dt);

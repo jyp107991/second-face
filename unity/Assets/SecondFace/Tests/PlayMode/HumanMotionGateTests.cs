@@ -390,7 +390,7 @@ namespace SecondFace.Tests
                     probe.TracePath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", report + (named ? "_" + ids[i] : i == 0 ? "" : "_m") + "_trace.csv"));
                     File.Delete(probe.TracePath.Replace(".csv", "_soles.csv"));   // (it is appended to: each run afresh)
                     probe.TraceState = "";   // every state (the feet, frame by frame)
-                    File.WriteAllText(probe.TracePath, "state,t,rootx,rootz,heelL,ballL,ankleLz,heelR,ballR,ankleRz,speed,hipsz,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR,sink,low,eL,eR,gL,gR,slipL,slipR,rL,rR,a1L,a1R,poleL,poleR,flexL,flexR,adaptL,adaptR,surfL,surfR,hgapL,hgapR,dL0,dL1,dL2,dL3,dL4,dL5,dR0,dR1,dR2,dR3,dR4,dR5\n");
+                    File.WriteAllText(probe.TracePath, "state,t,rootx,rootz,heelL,ballL,ankleLz,heelR,ballR,ankleRz,speed,hipsz,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR,sink,low,eL,eR,gL,gR,slipL,slipR,rL,rR,a1L,a1R,poleL,poleR,flexL,flexR,adaptL,adaptR,surfL,surfR,hgapL,hgapR,dL0,dL1,dL2,dL3,dL4,dL5,dR0,dR1,dR2,dR3,dR4,dR5,holdtL,holdbL,holdyL,holdgL,holdtR,holdbR,holdyR,holdgR\n");
                 }
                 Assert.That(probe.Calibrate(), Is.True, $"{ids[i]}: {probe.Error}");
                 var mark = new GameObject("mark_" + ids[i]).transform;
