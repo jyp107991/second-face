@@ -337,6 +337,8 @@ namespace SecondFace.Game.People
         private NativeArray<int3> _nCell;
         private NativeArray<float> _nSpacing, _qD;
         private int _nBody = -1;
+        private static readonly bool CheckBatch = System.Environment.GetEnvironmentVariable("SKIN_CHECK") == "1";
+        private static int _checks;
 
         private void Mirror(int body)
         {
@@ -387,6 +389,17 @@ namespace SecondFace.Game.People
             k = 0;
             for (var i = from; i < to; i += stride) { QD[i] = _qD[k]; QN[i] = nv[k]; QNear[i] = _qNear[k]; k++; }
             DepthCalls += m;
+            if (CheckBatch && _checks < 40)
+                for (var i = from; i < to; i += stride)
+                {
+                    var ok = Depth(P[i], out var d, out var n);
+                    var near = Near;
+                    if ((ok ? near : -1) != QNear[i] || (ok && (Mathf.Abs(d - QD[i]) > 1e-6f || (n - QN[i]).sqrMagnitude > 1e-10f)))
+                    {
+                        _checks++;
+                        Debug.Log($"BodySkin batch mismatch {name} point {i}: managed {(ok ? near : -1)} {d:0.000000} {n}, batch {QNear[i]} {QD[i]:0.000000} {QN[i]}; mirrored {_nBody} of {_set.Start[(int)Part.ThighR + 1]}");
+                    }
+                }
         }
 
         /// <summary>The answer <see cref="DepthRange"/> kept for point <paramref name="i"/>, as <see cref="Depth"/> gives it
