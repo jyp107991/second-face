@@ -46,7 +46,7 @@ namespace SecondFace.Game.People
         private Quaternion _restL, _restR;                  // each foot's rotation at rest, in the body's frame (flat, sole down)
         private float _headingL, _headingR;                 // each foot's heading at rest in the body's frame, degrees
         private float _sink, _plant, _low, _unplant, _bodySpeed;
-        private Vector3 _toeWasL, _toeWasR; private bool _haveToeWas;
+        private float _dipWasL, _dipWasR, _soleVWasL, _soleVWasR; private bool _haveDipWas;
         private float _accel;
         /// <summary>Slowing faster than this (m/s²) below <see cref="CatchPace"/>, the body walks: its last foot down waits for
         /// the other (W6).</summary>
@@ -290,13 +290,17 @@ namespace SecondFace.Game.People
             // slowing from a jog, both feet off the ground (the jog's flight still in the blend at a walk's pace): the lower
             // foot, nearly still, bears the weight, and the hips come down onto it at once (it rose 3.5-7 cm with the clip while
             // its ball barely moved, W6, 2026-11-08)
-            var toeL = _toeL != null ? _toeL.position : _footL.position; var toeR = _toeR != null ? _toeR.position : _footR.position;
-            var toeVL = _haveToeWas ? new Vector2(toeL.x - _toeWasL.x, toeL.z - _toeWasL.z).magnitude / dt : 9f;
-            var toeVR = _haveToeWas ? new Vector2(toeR.x - _toeWasR.x, toeR.z - _toeWasR.z).magnitude / dt : 9f;
-            _toeWasL = toeL; _toeWasR = toeR; _haveToeWas = true;
-            var eLow = Mathf.Min(eL, eR);
-            var caught = !standing && _bodySpeed < CatchPace && eLow > CatchLift && (eL <= eR ? toeVL : toeVR) < CatchSlow;
-            var want = Mathf.Clamp(-(standing ? Mathf.Max(eL, eR) : caught ? Mathf.Max(_low, eLow) : _low), -0.15f, 0.15f);
+            // (by the soles as last shown, their lowest points and their pace: by the ankles and the lower of them, the foot in
+            // its swing was taken for the one down and the still one left 5-7 cm up, W6, 2026-11-08)
+            var catchBy = float.MaxValue;
+            if (_haveDipWas && !standing && _bodySpeed < CatchPace && _dipWasL > CatchLift && _dipWasR > CatchLift)
+            {
+                if (_soleVWasL < CatchSlow) catchBy = _dipWasL;
+                if (_soleVWasR < CatchSlow) catchBy = Mathf.Min(catchBy, _dipWasR);
+            }
+            var caught = catchBy < float.MaxValue;
+            var want = Mathf.Clamp(-(standing ? Mathf.Max(eL, eR) : _low), -0.15f, 0.15f);
+            if (caught) want = Mathf.Max(-0.15f, Mathf.Min(want, _sink - catchBy));
             _sink = Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-(standing || caught ? 25f : 3f) * dt));
             _hips.position += Vector3.up * _sink;
             Diag[8] = _sink; Diag[9] = _low; Diag[10] = eL; Diag[11] = eR;
@@ -357,6 +361,7 @@ namespace SecondFace.Game.People
                 // was still, W6, 2026-11-06)
                 var soleVL = SoleSpeed(_footL, _toeL, _heelL, _backL, _ballL, _tipL, _solePtsL, ref _haveSoleL, dt, goalL);
                 var soleVR = SoleSpeed(_footR, _toeR, _heelR, _backR, _ballR, _tipR, _solePtsR, ref _haveSoleR, dt, goalR);
+                _dipWasL = dipL; _dipWasR = dipR; _soleVWasL = soleVL; _soleVWasR = soleVR; _haveDipWas = true;
                 // a foot let go from a hold rises at once before it is eased back to the clip's (it slid along the ground
                 // at 1.2-1.6 m/s, W1); a foot coming down slower than a swing gets none, so it lands when the clip lands it
                 // (held 3 cm up until it slowed, it left both feet off the ground for frames, the other lifting: W6)
