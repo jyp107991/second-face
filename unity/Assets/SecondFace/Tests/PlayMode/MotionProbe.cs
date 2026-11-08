@@ -381,8 +381,8 @@ namespace SecondFace.Tests
                         // (for the trace: the upper arm's lean out to the side and forward, each off the vertical, degrees)
                         var ua = Quaternion.Inverse(_root.rotation) * (e - u);
                         var outS = (up == HumanBodyBones.LeftUpperArm ? -ua.x : ua.x);
-                        var o = Mathf.Atan2(outS, -ua.y) * Mathf.Rad2Deg; var f = Mathf.Atan2(ua.z, -ua.y) * Mathf.Rad2Deg;
-                        if (up == HumanBodyBones.LeftUpperArm) { _traceOutL = o; _traceFwdL = f; } else { _traceOutR = o; _traceFwdR = f; }
+                        var leanOut = Mathf.Atan2(outS, -ua.y) * Mathf.Rad2Deg; var leanFwd = Mathf.Atan2(ua.z, -ua.y) * Mathf.Rad2Deg;
+                        if (up == HumanBodyBones.LeftUpperArm) { _traceOutL = leanOut; _traceFwdL = leanFwd; } else { _traceOutR = leanOut; _traceFwdR = leanFwd; }
                     }
                     if (k == K.Stand) { Add("A1", a1); Add("A2", Vector3.Angle(e - u, h - e)); Add("A3", Vector3.Angle(h - e, Vector3.down)); }
                     if (k == K.Walk)
