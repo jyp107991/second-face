@@ -808,7 +808,7 @@ namespace SecondFace.Tests
                 _candidates.Clear();
             }
             Add("C1", depthMax * 100f);
-            if (depthMax > 0.015f && worst != null && (!WorstClip.TryGetValue(State, out var w) || w.Item1 < depthMax)) WorstClip[State] = (depthMax, worst + Runtime(v, worstVertex) + RuntimeBody(v, worstBody));
+            if (depthMax > 0.005f && worst != null && (!WorstClip.TryGetValue(State, out var w) || w.Item1 < depthMax)) WorstClip[State] = (depthMax, worst + Runtime(v, worstVertex) + RuntimeBody(v, worstBody));
             if (k == K.Stand)
             {
                 if (gapL < float.MaxValue) Add("A4", Mathf.Sqrt(gapL) * 100f);

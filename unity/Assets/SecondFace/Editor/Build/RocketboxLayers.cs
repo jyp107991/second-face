@@ -670,11 +670,13 @@ namespace SecondFace.EditorTools
                 var toesAlong = Vector3.Dot((toe != null ? toe.position : ankle + fwd * 0.12f) - ankle, fwd);
                 var sole = float.MaxValue;
                 bool Mine(int i) => footOf[i] == side;
-                for (var i = 0; i < world.Length; i++) if (Mine(i)) sole = Mathf.Min(sole, world[i].y);
+                // (the mesh's own vertices only: the filled points on a foot's triangles moved its heel and ball, W1 0 -> 2,
+                // W6 23 -> 36, 2026-11-08)
+                for (var i = 0; i < n0; i++) if (Mine(i)) sole = Mathf.Min(sole, world[i].y);
                 if (sole == float.MaxValue) return new Vector3[0];
                 int heel = -1, back = -1, ball = -1, tip = -1;
                 float hy = float.MaxValue, ba = float.MaxValue, by = float.MaxValue, ta = float.MinValue;
-                for (var i = 0; i < world.Length; i++)
+                for (var i = 0; i < n0; i++)
                 {
                     if (!Mine(i)) continue;
                     var p = world[i]; var along = Vector3.Dot(p - ankle, fwd);
