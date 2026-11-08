@@ -648,24 +648,34 @@ namespace SecondFace.Game.People
                 var dir = outward;
                 if (_gapBody >= 0) { var n = _skin.N[_gapBody]; n.y = 0f; if (n.sqrMagnitude > 0.09f) dir = n.normalized; }
                 var E = lower.position; var W = hand.position;
-                var to = W + dir * move;
-                var q = Quaternion.FromToRotation(W - E, to - E);
-                q.ToAngleAxis(out var a, out var ax);
-                if (a < 0.01f || ax.sqrMagnitude < 0.5f) return;
-                // (within the forearm's hang: past it the hand stays where it is; A3 is 30)
-                if (Vector3.Angle(q * (W - E), Vector3.down) > HangMax + 3f && Vector3.Angle(q * (W - E), Vector3.down) > Vector3.Angle(W - E, Vector3.down)) return;
-                // (and within the elbow's bend: the hand drawn in to the thigh from an elbow out over a uniform's belt bent the
-                // elbow 35-50°, A2, 2026-11-07)
                 var upperDir = E - _animator.GetBoneTransform(first == BodySkin.Part.UpperArmL ? HumanBodyBones.LeftUpperArm : HumanBodyBones.RightUpperArm).position;
-                var bendTo = Vector3.Angle(upperDir, q * (W - E));
-                if (bendTo > BendMax + 5f && bendTo > Vector3.Angle(upperDir, W - E)) return;
-                // (nor straightened: moved out from an elbow already out, the arm stood 4° from straight, A2)
-                if (bendTo < BendFloor && bendTo < Vector3.Angle(upperDir, W - E)) return;
-                TurnForearm(lower, first, a, ax);
-                // (and never back into the body: the forearm by the hip)
-                if (SkinNeed(lower, first, true).Angle > 0.5f) { TurnForearm(lower, first, -a, ax); return; }
+                // the whole move, else half, else a quarter (all or none, a hand drawn in from a forearm the elbow had turned
+                // out round the hip swung the forearm back into it, was left where it was, 6-6.4 cm off the thigh, A4, 2026-11-08)
+                var moved = false;
+                foreach (var share in SetShares)
+                {
+                    var to = W + dir * (move * share);
+                    var q = Quaternion.FromToRotation(W - E, to - E);
+                    q.ToAngleAxis(out var a, out var ax);
+                    if (a < 0.01f || ax.sqrMagnitude < 0.5f) return;
+                    // (within the forearm's hang: past it the hand stays where it is; A3 is 30)
+                    if (Vector3.Angle(q * (W - E), Vector3.down) > HangMax + 3f && Vector3.Angle(q * (W - E), Vector3.down) > Vector3.Angle(W - E, Vector3.down)) return;
+                    // (and within the elbow's bend: the hand drawn in to the thigh from an elbow out over a uniform's belt bent
+                    // the elbow 35-50°, A2, 2026-11-07)
+                    var bendTo = Vector3.Angle(upperDir, q * (W - E));
+                    if (bendTo > BendMax + 5f && bendTo > Vector3.Angle(upperDir, W - E)) return;
+                    // (nor straightened: moved out from an elbow already out, the arm stood 4° from straight, A2)
+                    if (bendTo < BendFloor && bendTo < Vector3.Angle(upperDir, W - E)) return;
+                    TurnForearm(lower, first, a, ax);
+                    // (and never back into the body: the forearm by the hip)
+                    if (SkinNeed(lower, first, true).Angle > 0.5f) { TurnForearm(lower, first, -a, ax); continue; }
+                    moved = true;
+                    break;
+                }
+                if (!moved) return;
             }
         }
+        private static readonly float[] SetShares = { 1f, 0.5f, 0.25f };
 
         /// <summary>At rest, a forearm hanging further off the vertical than <see cref="HangMax"/> + 3° (round a wide hip, after
         /// the arm was pushed out of the body) is brought back by the elbow, not the hand: the elbow moved the way the forearm
