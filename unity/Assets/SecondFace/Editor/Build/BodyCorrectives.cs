@@ -33,7 +33,10 @@ namespace SecondFace.EditorTools
         /// own mesh, the overlap 6-10 cm, moved the whole cast only 1053 -> 1030 and turned one forearm past its cap, A3:
         /// their arms are held out by gear at the torso's side and back, the belt and the thighs, not the chest's side,
         /// 2026-11-07.)</summary>
-        public const float TorsoMax = 0.025f, ArmMax = 0.015f, TorsoShare = 0.6f;   // (4 and 2 cm, 2026-11-08: A1 462 -> 451 but A4 83 -> 85 on the gear-held men whose correctives changed, their hands by the thighs 6.0-6.3 cm: back to 2.5 and 1.5)
+        public const float TorsoMax = 0.025f, ArmMax = 0.02f, TorsoShare = 0.6f;
+        /// <summary>The chest's side gives this much (m) from <see cref="DeepBelow"/> under the elbow up: the broad men's elbows
+        /// at the reference lay 6-8 cm into their waists, a jacket's with them (A1 462 -> 451 at 4 cm, 2026-11-08).</summary>
+        public const float TorsoDeep = 0.04f, DeepBelow = 0.02f;   // (4 and 2 cm, 2026-11-08: A1 462 -> 451 but A4 83 -> 85 on the gear-held men whose correctives changed, their hands by the thighs 6.0-6.3 cm: back to 2.5 and 1.5)
         /// <summary>The arm's places the overlap is taken over (degrees out from the reference, and forward or back of it):
         /// where a resting arm really lies as the body sways and the idles shift.</summary>
         private static readonly (float Out, float Fwd)[] Sweep = { (0f, 0f), (-3f, 0f), (4f, 0f), (0f, -8f), (0f, 8f), (4f, -8f), (4f, 8f) };
@@ -226,7 +229,11 @@ namespace SecondFace.EditorTools
                             var inward = -wn[i]; inward.y = 0f;
                             if (inward.sqrMagnitude < 0.04f) continue;   // (a surface facing up or down is not the chest's side)
                             overT = Mathf.Max(overT, bestO); nT++;
-                            amount[s][i] = Mathf.Min(TorsoMax, TorsoShare * bestO) * bestEase;
+                            // (deeper from a little under the elbow up, where the elbow rests on the waist; under it the hip's side,
+                            // where the hand rests, gives as before: given 4 cm there too, the hands of the gear-held men stood
+                            // 6.0-6.3 cm off it, A4 83 -> 85, 2026-11-08)
+                            var cap = wp[i].y >= E.y - DeepBelow ? TorsoDeep : TorsoMax;
+                            amount[s][i] = Mathf.Min(cap, TorsoShare * bestO) * bestEase;
                             dirs[s][i] = inward.normalized;
                         }
                         else if (part[i] == armPart)
