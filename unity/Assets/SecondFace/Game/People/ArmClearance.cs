@@ -679,7 +679,7 @@ namespace SecondFace.Game.People
         /// leg though the wrist stands out over a hip, a belt or a pocket: until its nearest point is <see cref="HandInGap"/> off
         /// the body, at most <see cref="HandInMax"/>° (a palm to the thigh flexes toward it), never into it (the men's hands
         /// hung 6-9 cm off the thigh's skin with the arm cleared of the hip, A4 312, 2026-11-07).</summary>
-        public float HandInMax = 20f, HandInGap = 0.015f;   // (at 1 cm by the skin's points the curled fingers touched the thigh's skin, C1 p98 0.5-0.6, 45 -> 53)
+        public float HandInMax = 20f, HandInGap = 0.013f;   // (at 1 cm by the skin's points the curled fingers touched the thigh's skin, C1 p98 0.5-0.6, 45 -> 53)
 
         private void HandIn(Transform hand, BodySkin.Part first)
         {
@@ -736,7 +736,7 @@ namespace SecondFace.Game.People
         /// (At half, the men whose elbows rest on a jacket's or a shirt's side at the waist hung their upper arms 20-27° off
         /// the vertical in every state, the arm's swing out at its 15-17° all along, A1, 2026-11-07: cloth pressed between an
         /// arm and the body gives all but its weave, and between them it is not seen.)</summary>
-        public float ClothGive = 0.7f;   // (0.85: the whole cast's A1 574 -> 566 and A4 190 -> 172, but a gear-held man's forearm past its cap, A3, and C1 42 -> 45; 0.7 kept A3 and costs C1 +1, which the moving elbow's clearance now pays, 2026-11-08)
+        public float ClothGive = 0.5f;   // (0.85: the whole cast's A1 574 -> 566 and A4 190 -> 172, but a gear-held man's forearm past its cap, A3, and C1 42 -> 45; 0.7: one woman's resting hand placed 3.4 cm into the thigh through her clothes and the push out stood her arm 31-41° off the vertical for a frame, A1 +1, 2026-11-08)
         private float _poleOutL = 0.2f, _poleOutR = 0.2f, _flexAddL, _flexAddR;
 
         /// <summary>The hand's gap to the body now (m), for the report.</summary>
