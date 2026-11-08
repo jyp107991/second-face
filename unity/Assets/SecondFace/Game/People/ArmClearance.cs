@@ -444,7 +444,7 @@ namespace SecondFace.Game.People
                         // from the placed elbow: the wrist where the forearm reaches, beside the leg, the forearm no further
                         // off the vertical than HangMax
                         var he = new Vector2(flat.x - elbowPlaced.x, flat.z - elbowPlaced.z).magnitude;
-                        var heMax = l2 * Mathf.Sin(HangMax * Mathf.Deg2Rad);
+                        var heMax = l2 * Mathf.Sin(HangReach * Mathf.Deg2Rad);
                         if (he > heMax) { var ef = new Vector3(elbowPlaced.x, 0f, elbowPlaced.z); flat = ef + (flat - ef).normalized * heMax; he = heMax; }
                         wristY = elbowPlaced.y - Mathf.Sqrt(Mathf.Max(0.2f * l2 * l2, l2 * l2 - he * he));
                         at = new Vector3(flat.x, wristY, flat.z);
@@ -603,7 +603,7 @@ namespace SecondFace.Game.People
                 for (var k = 0; k < 40 && Vector3.Angle(ua, fa) < bendMin; k++) fa = Vector3.RotateTowards(fa, fwdPerp, Mathf.Deg2Rad, 0f).normalized;
             var bend = Vector3.Angle(ua, fa);
             if (bend > BendMax) fa = Vector3.RotateTowards(fa, ua, (bend - BendMax) * Mathf.Deg2Rad, 0f).normalized;
-            if (Vector3.Angle(fa, Vector3.down) > HangMax) fa = Vector3.RotateTowards(Vector3.down, fa, HangMax * Mathf.Deg2Rad, 0f).normalized;
+            if (Vector3.Angle(fa, Vector3.down) > HangReach) fa = Vector3.RotateTowards(Vector3.down, fa, HangReach * Mathf.Deg2Rad, 0f).normalized;
             var dU = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(E - S, elbowAt - S), w);
             dU.ToAngleAxis(out var aU, out var axU);
             if (aU > 0.01f && axU.sqrMagnitude > 0.5f) TurnArm(upper, first, aU, axU);
@@ -784,6 +784,10 @@ namespace SecondFace.Game.People
 
         /// <summary>At rest: the most the forearm may hang off the vertical (degrees; the gate's A3 is 30).</summary>
         public float HangMax = 25f;
+        /// <summary>At rest, the furthest off the vertical the forearm is aimed to reach the hand's place by the thigh (degrees;
+        /// the other holds keep it within <see cref="HangMax"/> + 3): with the elbow nearer the waist, a gear-held man's
+        /// forearm held to 25° left his hand 6-12 cm off the wider hip below, A4, 2026-11-08.</summary>
+        public float HangReach = 27f;
 
         /// <summary>At rest: the elbow's lean out to the side (0 straight back, 1 straight out) it starts from, and how much
         /// further the elbow may bend (degrees) to stand clear of a broad chest with the hand still at the thigh.</summary>
