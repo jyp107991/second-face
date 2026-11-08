@@ -541,6 +541,9 @@ namespace SecondFace.Game.People
         /// <summary>At rest the elbow bends between these (degrees; the gate's A2 is 5-35, relaxed standing 15.5°, IQR 13-18):
         /// the hand placed straight under a hanging upper arm left women's arms 1-4° from straight (A2), 2026-11-07.</summary>
         public float BendMin = 10f, BendMax = 28f;
+        /// <summary>At rest, the most the forearm's line turns in a second (degrees).</summary>
+        public float ForearmRate = 90f;
+        private Vector3 _faL, _faR;
 
         private void UpperFirstArm(Transform upper, Transform lower, Transform hand, int side, BodySkin.Part first, float w,
             Vector3 S, Vector3 E, float l1, float l2, Vector3 wrist, Vector3 fwd, Vector3 outward, Vector3 ua, ref float abd)
@@ -558,6 +561,16 @@ namespace SecondFace.Game.People
             var bend = Vector3.Angle(ua, fa);
             if (bend > BendMax) fa = Vector3.RotateTowards(fa, ua, (bend - BendMax) * Mathf.Deg2Rad, 0f).normalized;
             if (Vector3.Angle(fa, Vector3.down) > HangMax) fa = Vector3.RotateTowards(Vector3.down, fa, HangMax * Mathf.Deg2Rad, 0f).normalized;
+            // at rest the forearm's line turns no faster than ForearmRate°/s (the hand's place switching from one side of
+            // the thigh's curve to the other swung it 9° in a frame, the hand 4 cm into the thigh, and the push out of it stood
+            // the arm 31-41° off the vertical for a frame, A1, 2026-11-08)
+            ref var faWas = ref (side < 0 ? ref _faL : ref _faR);
+            if (w > 0.99f && faWas.sqrMagnitude > 0.5f)
+            {
+                var was = transform.TransformDirection(faWas);
+                fa = Vector3.RotateTowards(was, fa, ForearmRate * Mathf.Deg2Rad * Time.deltaTime, 0f).normalized;
+            }
+            faWas = w > 0.99f ? transform.InverseTransformDirection(fa) : Vector3.zero;
             var dU = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(E - S, elbowAt - S), w);
             dU.ToAngleAxis(out var aU, out var axU);
             if (aU > 0.01f && axU.sqrMagnitude > 0.5f) TurnArm(upper, first, aU, axU);
