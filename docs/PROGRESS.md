@@ -576,7 +576,22 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   3.3 cm), and on top the shoulder's pushes, median 3-5°, p98 10-14°, for the forearm on the hip (14-28 states a man).
   Now: at rest the forearm's outer part (12 cm and more from the elbow) is turned out of the hip at the elbow before the
   shoulder, and the hand drawn back to the thigh after it whole, else half, else a quarter; on the picked ten 182 -> 150
-  (A1 150 -> 122, A4 23 -> 21, A3 2 -> 1, C1 1 -> 0); full26 running.
+  (A1 150 -> 122, A4 23 -> 21, A3 2 -> 1, C1 1 -> 0). full26 (816) not kept: A1 574 -> 523 but A4 209 (one man's
+  hand turned 10 cm off the thigh with the forearm: the elbow's turn now keeps the hand within 2 cm of where it hung,
+  else a smaller share, else the shoulder) and C1 43.
+- **2026-11-08 (morning), the game's skin.** The C1 that rose with the arms brought in were the game's own blind spots
+  (a diagnostic in the baker, SKIN_DIAG, names each clip's vertex and the points about it): (1) coarse bodies' vertices
+  stand 3-6 cm apart on the hips, thighs and the torso's side, and a hand over a triangle's middle lay 1.7 cm in while
+  the nearest game point, 4.4 cm off, read it outside: the torso's and thighs' triangles are now filled with points every
+  2.5 cm where no vertex stands within 2 cm, skinned by their corners' weights and set on the curved surface the
+  corners' normals make (Phong; on the flat triangle a thigh's point lay up to 0.4 cm under the planes the gate measures
+  by); (2) the hands' points every 1.2 cm (at 2 cm fingers between them lay 0.8-1.1 cm in the thigh); (3) the skin under
+  a garment of the body's own mesh (a skirt's, a coat's, trousers') left out: its points lay nearer a pressed hand than
+  the garment's and read it outside; (4) the soles' points from the mesh's own vertices again (filled points on a foot
+  moved its heel and ball: W1, W6). full27 (fill only, 512: A1 313, A4 56, A3 0, C1 94) showed the arms' gain; the picked
+  eleven with all four: 106 -> 68 (C1 5 -> 3, A1 74 -> 53, A4 15 -> 3, A3 2 -> 0). full28 running. Cost: the skin points
+  about 3x (16 MB of skin data in all), the gate's whole cast 35 -> about 70 min: to trim (task H3c: the fill only within
+  the arms' reach; the spacing computed in the baker; the pose in Burst jobs).
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
