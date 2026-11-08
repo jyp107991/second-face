@@ -755,6 +755,7 @@ namespace SecondFace.Tests
             var worstVertex = -1; var worstBody = -1;
             var gapL = float.MaxValue; var gapR = float.MaxValue;
             int hvL = -1, bvL = -1, hvR = -1, bvR = -1;
+            _handL.Clear(); _handR.Clear();
             // the hips' and thighs' points for the hands' gap, every one (the gap may be wider than the grid's reach; every
             // third of a Rocketbox mesh's points, 4-5 cm apart, overstated the gap by several cm)
             var coarse = new List<int>();
@@ -763,6 +764,9 @@ namespace SecondFace.Tests
                 var s = (Part)_seg[i];
                 if (s == Part.ThighL || s == Part.ThighR || (s == Part.Torso && v[i].y < _hips.position.y + 0.15f)) coarse.Add(i);
             }
+            if (_isCoarse == null || _isCoarse.Length != v.Length) _isCoarse = new bool[v.Length];
+            System.Array.Clear(_isCoarse, 0, _isCoarse.Length);
+            foreach (var j in coarse) _isCoarse[j] = true;
             for (var i = 0; i < v.Length; i++)
             {
                 var s = (Part)_seg[i];
@@ -793,8 +797,8 @@ namespace SecondFace.Tests
                 {
                     var g = float.MaxValue; var gj = -1;
                     foreach (var j in coarse) { var dj = (v[j] - p).sqrMagnitude; if (dj < g) { g = dj; gj = j; } }
-                    if (s == Part.HandL) { if (g < gapL) { gapL = g; hvL = i; bvL = gj; } }
-                    else if (g < gapR) { gapR = g; hvR = i; bvR = gj; }
+                    if (s == Part.HandL) { _handL.Add(i); if (g < gapL) { gapL = g; hvL = i; bvL = gj; } }
+                    else { _handR.Add(i); if (g < gapR) { gapR = g; hvR = i; bvR = gj; } }
                 }
             }
             // a candidate is in the body only if rays from it cross the body's surface an odd number of times (two of three
@@ -816,6 +820,15 @@ namespace SecondFace.Tests
             }
             Add("C1", depthMax * 100f);
             if (depthMax > 0.005f && worst != null && (!WorstClip.TryGetValue(State, out var w) || w.Item1 < depthMax)) WorstClip[State] = (depthMax, worst + Runtime(v, worstVertex) + RuntimeBody(v, worstBody));
+            // the hands' gap to the hips' and thighs' surface, not to their vertices: a coarse thigh's vertices stand 6-7 cm
+            // apart, so a hand resting 1.5 cm off its skin read 6 cm from the nearest vertex (A4, 2026-11-08); the nearest
+            // point on their triangles (the vertex's gap is never less: the surface passes through every vertex)
+            var cpL = bvL >= 0 ? v[bvL] : Vector3.zero; var cpR = bvR >= 0 ? v[bvR] : Vector3.zero;
+            if (k == K.Stand)
+            {
+                Surface(v, _handL, ref gapL, ref hvL, ref bvL, ref cpL);
+                Surface(v, _handR, ref gapR, ref hvR, ref bvR, ref cpR);
+            }
             if (k == K.Stand)
             {
                 if (gapL < float.MaxValue) Add("A4", Mathf.Sqrt(gapL) * 100f);
@@ -829,14 +842,84 @@ namespace SecondFace.Tests
                 {
                     var a4 = side == 0 ? _traceA4L : _traceA4R;
                     int hv = side == 0 ? hvL : hvR, bv = side == 0 ? bvL : bvR;
+                    var cp = side == 0 ? cpL : cpR;
                     if (a4 <= 6f || hv < 0 || bv < 0) continue;
                     if (WorstHand.TryGetValue(State, out var wh) && wh.Item1 >= a4) continue;
                     var game = _ac != null ? Where(side == 0 ? 1 : 3, side == 0 ? "L hand" : "R hand") : "no clearance";
-                    var gate = $"{(side == 0 ? "L" : "R")} {(Part)_seg[hv]} vertex {hv} {Lc(v[hv])} -> {(Part)_seg[bv]} vertex {bv} {Lc(v[bv])} {a4:0.0} cm";
+                    var gate = $"{(side == 0 ? "L" : "R")} {(Part)_seg[hv]} vertex {hv} {Lc(v[hv])} -> {(Part)_seg[bv]} by vertex {bv} at {Lc(cp)} {a4:0.0} cm";
                     var arm = _ac != null && _ac.Diag.Length >= 4 ? $"; the game's hand gap then {_ac.Diag[side == 0 ? 1 : 3] * 100f:0.0} cm, resting {_ac.DiagResting}" : "";
                     WorstHand[State] = (a4, $"{gate}; the game's {game}{arm}; a1 {(side == 0 ? _traceA1L : _traceA1R):0.0}");
                 }
             }
+        }
+
+        private readonly List<int> _handL = new(), _handR = new();
+        private bool[] _isCoarse;
+        private int[] _gapTris;
+
+        /// <summary>A hand's gap (squared, m²) brought down to the nearest point on the hips' and thighs' triangles (those
+        /// whose three vertices are among the gap's points), from its gap to their vertices.</summary>
+        private void Surface(Vector3[] v, List<int> hand, ref float gap2, ref int hv, ref int bv, ref Vector3 cp)
+        {
+            if (hand.Count == 0 || gap2 == float.MaxValue) return;
+            if (_gapTris == null)
+            {
+                var all = _baked.triangles;
+                var keep = new List<int>();
+                bool Body(int i) { var s = (Part)_seg[i]; return s == Part.Torso || s == Part.ThighL || s == Part.ThighR; }
+                for (var t = 0; t + 2 < all.Length; t += 3)
+                    if (Body(all[t]) && Body(all[t + 1]) && Body(all[t + 2])) { keep.Add(all[t]); keep.Add(all[t + 1]); keep.Add(all[t + 2]); }
+                _gapTris = keep.ToArray();
+            }
+            var lo = v[hand[0]]; var hi = lo;
+            foreach (var i in hand) { lo = Vector3.Min(lo, v[i]); hi = Vector3.Max(hi, v[i]); }
+            var best = Mathf.Sqrt(gap2);
+            for (var t = 0; t + 2 < _gapTris.Length; t += 3)
+            {
+                int a = _gapTris[t], b = _gapTris[t + 1], c = _gapTris[t + 2];
+                if (!_isCoarse[a] || !_isCoarse[b] || !_isCoarse[c]) continue;
+                var tlo = Vector3.Min(v[a], Vector3.Min(v[b], v[c])); var thi = Vector3.Max(v[a], Vector3.Max(v[b], v[c]));
+                if (BoxGap(lo, hi, tlo, thi) >= best) continue;
+                foreach (var i in hand)
+                {
+                    var p = v[i];
+                    if (BoxGap(p, p, tlo, thi) >= best) continue;
+                    var q = ClosestOnTriangle(p, v[a], v[b], v[c]);
+                    var d = (q - p).magnitude;
+                    if (d < best) { best = d; hv = i; bv = a; cp = q; }
+                }
+            }
+            gap2 = best * best;
+        }
+
+        private static float BoxGap(Vector3 alo, Vector3 ahi, Vector3 blo, Vector3 bhi)
+        {
+            var dx = Mathf.Max(0f, Mathf.Max(blo.x - ahi.x, alo.x - bhi.x));
+            var dy = Mathf.Max(0f, Mathf.Max(blo.y - ahi.y, alo.y - bhi.y));
+            var dz = Mathf.Max(0f, Mathf.Max(blo.z - ahi.z, alo.z - bhi.z));
+            return Mathf.Sqrt(dx * dx + dy * dy + dz * dz);
+        }
+
+        /// <summary>The nearest point to p on the triangle abc (Ericson, Real-Time Collision Detection, 5.1.5).</summary>
+        private static Vector3 ClosestOnTriangle(Vector3 p, Vector3 a, Vector3 b, Vector3 c)
+        {
+            var ab = b - a; var ac = c - a; var ap = p - a;
+            var d1 = Vector3.Dot(ab, ap); var d2 = Vector3.Dot(ac, ap);
+            if (d1 <= 0f && d2 <= 0f) return a;
+            var bp = p - b;
+            var d3 = Vector3.Dot(ab, bp); var d4 = Vector3.Dot(ac, bp);
+            if (d3 >= 0f && d4 <= d3) return b;
+            var vc = d1 * d4 - d3 * d2;
+            if (vc <= 0f && d1 >= 0f && d3 <= 0f) return a + ab * (d1 / (d1 - d3));
+            var cp = p - c;
+            var d5 = Vector3.Dot(ab, cp); var d6 = Vector3.Dot(ac, cp);
+            if (d6 >= 0f && d5 <= d6) return c;
+            var vb = d5 * d2 - d1 * d6;
+            if (vb <= 0f && d2 >= 0f && d6 <= 0f) return a + ac * (d2 / (d2 - d6));
+            var va = d3 * d6 - d5 * d4;
+            if (va <= 0f && (d4 - d3) >= 0f && (d5 - d6) >= 0f) return b + (c - b) * ((d4 - d3) / ((d4 - d3) + (d5 - d6)));
+            var denom = 1f / (va + vb + vc);
+            return a + ab * (vb * denom) + ac * (vc * denom);
         }
 
         private void OnDestroy()
