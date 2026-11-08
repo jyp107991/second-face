@@ -612,7 +612,12 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   as a jog's and rising with the clip, still; now below 2.4 m/s a slowing body walks (its last foot down waits for the
   other), and a sole nearly still in the air with the other up is set down by the hips (by the soles as last shown):
   the picked nine 10 -> 5, the rest at the cap's edge but for the bend's push-off (a foot held down while the clip lifted
-  it, let go 5.4 cm up with its heel slow: to look at). full30 running with these.
+  it, let go 5.4 cm up with its heel slow: to look at). full30 (569: A1 451, W6 11, C1 9) not kept: A4 83 -> 85 on the
+  gear-held men whose deeper correctives changed (their hands 6.0-6.3 cm off the thigh): the correctives back to 2.5 and
+  1.5 cm. **Whole cast 592 -> 580, committed** (full31, all 79, no measure worse): W6 23 -> 11, the rest as they were
+  (A1 462, A4 83, C1 11, W3 8, F5 2, F1 1, F2 1, A3 1). Still red.
+  **Next:** the deeper correctives only where they do not move the hands (A1 451 there); the bend's push-off (W6); A4 83;
+  C1 11.
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
