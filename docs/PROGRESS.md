@@ -599,7 +599,11 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   frame in the editor, 7-8 thousand skin asks; the skin's pose under 1 ms. A second, finer filing did not help (reverted);
   a range of points asked at once in a Burst job (`BodySkin.DepthRange`, the same reckoning as `Depth`; `SKIN_CHECK=1`
   compares every answer) took it to 7.4-10.2 ms with the same verdict on the picked three (24 past their limits; two
-  cells differ in their last digit: Mono's and Burst's float rounding). full29 running.
+  cells differ in their last digit: Mono's and Burst's float rounding). **Whole cast 837 -> 592, committed** (full29, all
+  79 measured, 93 min, no measure worse): A1 574 -> 462, A4 190 -> 83, C1 31 -> 11, A3 5 -> 1, W3 10 -> 8, W6 23, F1 1,
+  F2 1, F5 2. Still red.
+  **Next:** A1 462 (the men whose elbow rests on the waist at the out-angle's most, and the gear-held men); A4 83; W6 23
+  (the women's jog); C1 11; then the clearance's cost on device budgets (task H3c).
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
