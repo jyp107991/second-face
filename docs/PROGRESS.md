@@ -625,7 +625,11 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   vertices stand 6-7 cm apart. **The gate's A4 now measures to the hips' and thighs' surface** (the nearest point on
   their triangles; never more than the vertex's gap, so no hand reads nearer than it is; `docs/PEOPLE_MOTION.md` A4):
   the picked two's A4 9 -> 1 (the one left real: Police_Male_06 on the slope, 10.6 cm off for a sample, the arm pushed
-  out to 24.6°). full32 (the whole cast on this) running.
+  out to 24.6°). **Whole cast 580 -> 532, committed** (full32, all 79, no measure worse): A1 462 -> 451, A4 83 -> 48,
+  C1 11 -> 9; A3 1, W3 8, W6 11, F5 2, F1 1, F2 1 as they were. Still red.
+  **Next:** the two gear-held men whose arms stand far out (cap_Military_Male_03n and cap_Police_Male_03n: 73 of the 532,
+  A1 33-48°, A4 11-19 cm, W3 in the walk; a back-facing point of the chest's gear at the side holds the upper arm out),
+  traced; then the broad men at 21-25° (A1), the bend's push-off (W6), C1 9.
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
