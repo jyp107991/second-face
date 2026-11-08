@@ -76,7 +76,8 @@ namespace SecondFace.Tests
             string N(Vector3 n) { var v = inv * n; return $"({v.x:0.0},{v.y:0.0},{v.z:0.0})"; }
             int a = _ac.DiagAt[q * 2], b = _ac.DiagAt[q * 2 + 1];
             if (a < 0 || b < 0 || a >= skin.Count || b >= skin.Count) return $"{name} none";
-            return $"{name} {skin.PartOf(a)} {L(skin.P[a])} -> {skin.PartOf(b)} {L(skin.P[b])} off {skin.Off(b) * 100f:0.0} n {N(skin.N[b])} d {(skin.P[a] - skin.P[b]).magnitude * 100f:0.0}";
+            var why = name.EndsWith("push") ? $" [judged by: {skin.ExplainDepth(_ac.PushAt[q / 2], _hips.position, _root.rotation)}]" : "";
+            return $"{name} {skin.PartOf(a)} {L(skin.P[a])} -> {skin.PartOf(b)} {L(skin.P[b])} off {skin.Off(b) * 100f:0.0} n {N(skin.N[b])} d {(skin.P[a] - skin.P[b]).magnitude * 100f:0.0}{why}";
         }
         private SecondFace.Game.People.ArmClearance _ac;
         private float _traceA1L, _traceA1R;   // the upper arms from down this frame, for the trace

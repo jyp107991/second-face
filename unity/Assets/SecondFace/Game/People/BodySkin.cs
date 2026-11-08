@@ -547,6 +547,45 @@ namespace SecondFace.Game.People
             return true;
         }
 
+        /// <summary>For the gate's report: the three nearest points <see cref="Depth"/> judges <paramref name="p"/> by, each with
+        /// its part, place relative to <paramref name="origin"/> in <paramref name="frame"/> (cm), normal, clothes' offset,
+        /// spacing and its verdict (cm behind its plane, or "out").</summary>
+        public string ExplainDepth(Vector3 p, Vector3 origin, Quaternion frame)
+        {
+            if (!Ready) return "not ready";
+            int c0 = -1, c1 = -1, c2 = -1;
+            float d0 = float.MaxValue, d1 = float.MaxValue, d2 = float.MaxValue;
+            var c = CellOf(p);
+            for (var dx = -1; dx <= 1; dx++)
+                for (var dy = -1; dy <= 1; dy++)
+                    for (var dz = -1; dz <= 1; dz++)
+                        for (var j = _head[Hash(c.x + dx, c.y + dy, c.z + dz)]; j >= 0; j = _next[j])
+                        {
+                            if (j == c0 || j == c1 || j == c2) continue;
+                            var cj = _cell[j];
+                            if (cj.x != c.x + dx || cj.y != c.y + dy || cj.z != c.z + dz) continue;
+                            var d = (P[j] - p).sqrMagnitude;
+                            if (d >= d2) continue;
+                            if (d < d0) { c2 = c1; d2 = d1; c1 = c0; d1 = d0; c0 = j; d0 = d; }
+                            else if (d < d1) { c2 = c1; d2 = d1; c1 = j; d1 = d; }
+                            else { c2 = j; d2 = d; }
+                        }
+            var inv = Quaternion.Inverse(frame);
+            var parts = new System.Collections.Generic.List<string>();
+            foreach (var k in new[] { c0, c1, c2 })
+            {
+                if (k < 0) { parts.Add("none"); continue; }
+                var v = p - P[k];
+                var dd = -Vector3.Dot(v, N[k]);
+                var across = (v + N[k] * dd).magnitude;
+                var lim = Mathf.Max(Mathf.Min(_spacing[k], PatchMax), DeepAcross * dd);
+                var verdict = dd <= 0f ? "out" : across <= lim ? $"in {dd * 100f:0.0}" : $"beside ({across * 100f:0.0} > {lim * 100f:0.0})";
+                var r = inv * (P[k] - origin) * 100f; var nn = inv * N[k];
+                parts.Add($"{PartOf(k)} {k} ({r.x:0},{r.y:0},{r.z:0}) n ({nn.x:0.0},{nn.y:0.0},{nn.z:0.0}) off {Off(k) * 100f:0.0} sp {_spacing[k] * 100f:0.0} {Mathf.Sqrt((P[k] - p).sqrMagnitude) * 100f:0.0} cm away: {verdict}");
+            }
+            return string.Join(" | ", parts);
+        }
+
         /// <summary>The nearest point of the hips and thighs to <paramref name="p"/> (index; -1 none) and its distance.</summary>
         public float NearestLow(Vector3 p, out int at, int stride = 2)
         {

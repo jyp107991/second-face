@@ -91,6 +91,8 @@ namespace SecondFace.Game.People
         /// <summary>For the gate's report: the arm's point and the body's point that gave each gap this frame (left elbow,
         /// left hand, right elbow, right hand; arm then body; -1 none).</summary>
         public int[] DiagAt = new int[8];
+        /// <summary>For the gate's report: where the arm's point the last push was for stood when it was judged (left, right).</summary>
+        [System.NonSerialized] public Vector3[] PushAt = new Vector3[2];
         private int _gapArm = -1, _gapBody = -1;
 
         /// <summary>The turn given to each upper arm this frame, degrees (tests read it).</summary>
@@ -1362,6 +1364,7 @@ namespace SecondFace.Game.People
                 // for the gate's report: the arm's point and the body's point the push is for (the elbow slots at rest)
                 var left = first == BodySkin.Part.UpperArmL;
                 DiagAt[left ? 0 : 4] = i; DiagAt[left ? 1 : 5] = _skin.Near;
+                PushAt[left ? 0 : 1] = p;
             }
             return (best, axis);
         }
