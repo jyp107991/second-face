@@ -1174,6 +1174,7 @@ namespace SecondFace.Game.People
                 var eUa = (lower.position - upper.position).normalized;
                 var eFa0 = handT.position - lower.position;
                 var eTurned = false;
+                var gh0 = elbowForearm ? HandGap(first) : 0f;
                 foreach (var eShare in ElbowShares)
                 {
                     var eFa = Quaternion.AngleAxis(nE * eShare, axE) * eFa0;
@@ -1183,6 +1184,13 @@ namespace SecondFace.Game.People
                     if (eHang > HangMax + 3f && eHang > Vector3.Angle(eFa0, Vector3.down)) continue;
                     if (eBend > BendMax + 4f || eBend < BendFloor) continue;
                     TurnForearm(lower, first, nE * eShare, axE);
+                    // (the hand kept by the thigh: turned out round the hip with the forearm, a hand went 10 cm off the
+                    // thigh, A4 0 -> 17 states for one man, 2026-11-08; what the elbow cannot take so is the shoulder's)
+                    if (elbowForearm && gh0 > -0.5f)
+                    {
+                        var gh1 = HandGap(first);
+                        if (gh1 <= -0.5f || gh1 > Mathf.Max(gh0, 0f) + ElbowHandGrow) { TurnForearm(lower, first, -nE * eShare, axE); continue; }
+                    }
                     eTurned = true;
                     if (left) _elbowTurnedL = true; else _elbowTurnedR = true;
                     break;
@@ -1245,7 +1253,10 @@ namespace SecondFace.Game.People
         /// vertical though their forearms hung at 14°: the shoulder's pushes for the forearm on the hip, 14-28 states a man,
         /// on top of the elbow resting on the waist at 13-17°, A1, 2026-11-08).</summary>
         public bool ElbowForearm = true;
-        private static readonly float[] ElbowShares = { 1f, 0.5f };
+        private static readonly float[] ElbowShares = { 1f, 0.5f, 0.25f };
+        /// <summary>At rest, the furthest the elbow's turn for the forearm may take the hand from the thigh beyond where it
+        /// hung (m).</summary>
+        public float ElbowHandGrow = 0.02f;
         /// <summary>How far the elbow's turn takes the hand out of the thigh (m): the skin's points there are 1.5-4 cm apart on
         /// a curved surface, and taken to 3 mm by them the hand lay 1.6-2.7 cm into the thigh's front (C1 79 -> 112, 2026-11-07).</summary>
         public float ElbowMargin = 0.01f;
