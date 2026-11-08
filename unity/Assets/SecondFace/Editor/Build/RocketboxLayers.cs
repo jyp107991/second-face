@@ -547,7 +547,9 @@ namespace SecondFace.EditorTools
                 fate[i] = 4;
                 // (the arms every 1.8 cm: at 3 cm a forearm's inner side between two points lay 1.7 cm into the hip while the
                 // nearest point read 1.9 cm out of it, C1, 2026-11-07)
-                var cell = part switch { SkinPart.HandL or SkinPart.HandR => 0.02f, SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR => 0.025f, _ => 0.018f };
+                // (the hands every 1.2 cm: at 2 cm, with the thighs' skin filled in, resting hands held 2 mm off it by their points
+                // lay 0.8-1.1 cm into it at fingers between them, C1, 2026-11-08)
+                var cell = part switch { SkinPart.HandL or SkinPart.HandR => 0.012f, SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR => 0.025f, _ => 0.018f };
                 // the torso's and thighs' sides, where the arms and hands rest, every 1.5 cm (with the side panels thin under
                 // the arms, arms rest on the body itself, and points 3-6 cm apart missed them 2 cm into it, C1, 2026-11-06)
                 if (part is SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR)
