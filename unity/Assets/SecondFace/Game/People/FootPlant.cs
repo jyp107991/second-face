@@ -39,6 +39,9 @@ namespace SecondFace.Game.People
 
         private static readonly int SpeedId = Animator.StringToHash("Speed");
         private static readonly int SneakId = Animator.StringToHash("Sneak");
+        private Vector3 _goalPosL, _goalPosR;
+        private Quaternion _goalRotL = Quaternion.identity, _goalRotR = Quaternion.identity;
+        private bool _haveGoals;
         private Animator _animator;
         private bool _hasSpeed, _hasSneak, _ready;
         private Transform _hips, _upL, _loL, _footL, _toeL, _upR, _loR, _footR, _toeR;
@@ -247,6 +250,16 @@ namespace SecondFace.Game.People
 
         private void OnDisable() { _l = default; _r = default; }
 
+        /// <summary>The clip's own foot goals, read in the IK pass (read in LateUpdate, Unity warned every frame: 16-40 thousand
+        /// stack traces a gate run, hundreds of megabytes of log and the runs slowed).</summary>
+        private void OnAnimatorIK(int layer)
+        {
+            if (layer != 0 || _animator == null || !_animator.isHuman) return;
+            _goalPosL = _animator.GetIKPosition(AvatarIKGoal.LeftFoot); _goalPosR = _animator.GetIKPosition(AvatarIKGoal.RightFoot);
+            _goalRotL = _animator.GetIKRotation(AvatarIKGoal.LeftFoot); _goalRotR = _animator.GetIKRotation(AvatarIKGoal.RightFoot);
+            _haveGoals = true;
+        }
+
         private Vector3 Ahead(Transform foot, Transform toe) => toe != null ? toe.position - foot.position : transform.forward;
         private static Vector3 FlatDir(Vector3 v) { v.y = 0f; return v.sqrMagnitude > 1e-8f ? v.normalized : Vector3.forward; }
         private static Vector3 Toward(float heading) => new(Mathf.Sin(heading * Mathf.Deg2Rad), 0f, Mathf.Cos(heading * Mathf.Deg2Rad));
@@ -344,7 +357,9 @@ namespace SecondFace.Game.People
             }
             var want = Mathf.Clamp(-(standing ? standWant : _low), -0.15f, 0.15f);
             if (caught) want = Mathf.Max(-0.15f, Mathf.Min(want, _sink - catchBy));
-            var rate = standing || caught ? (standing && _bear >= 0 && want > _sink ? BearRate : 25f) : 3f;
+            // (down as fast as up while a foot steps: turning, the bearing leg's planted foot fell out of its reach as the body
+            // turned over it, and it hung 1-3 cm up for ten frames while the hips came down at 25, F1 in the turn)
+            var rate = standing || caught ? (standing && _bear >= 0 ? BearRate : 25f) : 3f;
             _sink = Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-rate * dt));
             _hips.position += Vector3.up * _sink;
             Diag[8] = _sink; Diag[9] = _low; Diag[10] = eL; Diag[11] = eR;
@@ -356,17 +371,17 @@ namespace SecondFace.Game.People
             var yawL = Heading(Ahead(_footL, _toeL)); var yawR = Heading(Ahead(_footR, _toeR));
             // moving, along the ground where the clip's own goals have the ankles (FollowGoals)
             var goalL = Vector3.zero; var goalR = Vector3.zero;
-            if (!standing && FollowGoals && _animator.isHuman)
+            if (!standing && FollowGoals && _animator.isHuman && _haveGoals)
             {
-                var a = _animator.GetIKPosition(AvatarIKGoal.LeftFoot); var b = _animator.GetIKPosition(AvatarIKGoal.RightFoot);
+                var a = _goalPosL; var b = _goalPosR;
                 // (a goal far off is not the clip's: none yet, or a body set down elsewhere)
                 if ((new Vector2(a.x - _footL.position.x, a.z - _footL.position.z)).sqrMagnitude < 0.09f) goalL = new Vector3(a.x - _footL.position.x, 0f, a.z - _footL.position.z);
                 if ((new Vector2(b.x - _footR.position.x, b.z - _footR.position.z)).sqrMagnitude < 0.09f) goalR = new Vector3(b.x - _footR.position.x, 0f, b.z - _footR.position.z);
                 wantL += goalL; wantR += goalR;
                 // (for the gate's trace: how far the clip's own foot turn, taken as the foot's turn at rest, is from the
                 // retargeted foot's, degrees)
-                Diag[16] = Quaternion.Angle(_animator.GetIKRotation(AvatarIKGoal.LeftFoot) * _restL, _footL.rotation);
-                Diag[17] = Quaternion.Angle(_animator.GetIKRotation(AvatarIKGoal.RightFoot) * _restR, _footR.rotation);
+                Diag[16] = Quaternion.Angle(_goalRotL * _restL, _footL.rotation);
+                Diag[17] = Quaternion.Angle(_goalRotR * _restR, _footR.rotation);
             }
             Diag[12] = goalL.magnitude; Diag[13] = goalR.magnitude;
             if (_plant > 0f)
@@ -812,10 +827,10 @@ namespace SecondFace.Game.People
         /// <summary>Standing, how long the weight takes to go over to the other leg before a foot that bears it steps (s): a
         /// real person shifts onto the other foot first (lifted at once, the straight leg left the body on the other, bent
         /// 30-36°, both knees bent for the step's first frames, K1, 2026-11-09).</summary>
-        public float ShiftTime = 0.05f;   // (0.12 s: the waiting foot, its leg out of reach as the hips rose, hung 1.4-4.3 cm off the ground and slid with a turning body, F1 and F4 in the turn; none: the hips rose after the foot was up, the bearing knee bent 12-20° for the step's first 2-3 frames, K1, 2026-11-09)
+        public float ShiftTime = 0.034f;   // (0.12 s: the waiting foot, its leg out of reach as the hips rose, hung 1.4-4.3 cm off the ground and slid with a turning body, F1 and F4 in the turn; none: the hips rose after the foot was up, the bearing knee bent 12-20° for the step's first 2-3 frames, K1; 0.05 s at 60/s: the waiting foot 2.5-3 cm up for a frame or two of each step, F1 2.7-2.9 in the turn, 2026-11-09)
         /// <summary>Standing, how fast the hips rise onto the leg that bears the weight while the other steps (1/s; settling
         /// at the standing 25 the bearing knee stood bent past 8° for 6-7 frames of each step, K1).</summary>
-        public float BearRate = 60f;
+        public float BearRate = 120f;
         /// <summary>Standing, how far the hips may go out past the outer foot, across, before that foot steps out under them (m;
         /// the gate's K4 is 2 cm).</summary>
         public float HipsBeyond = 0.012f;
