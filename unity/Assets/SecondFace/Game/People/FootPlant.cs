@@ -319,7 +319,10 @@ namespace SecondFace.Game.People
                     var reach = StanceStraight * leg;
                     return reach > flat ? up.position.y - (target.y + Mathf.Sqrt(reach * reach - flat * flat)) : float.NegativeInfinity;
                 }
-                var need = Mathf.Max(Need(_upL, _loL, _footL, gL, ankleL), Need(_upR, _loR, _footR, gR, ankleR));
+                // (the leg nearer under the body stands straight; the other foot is drawn in to where its leg reaches: lowered for
+                // the far foot instead, the hips came down 6-7.5 cm and both knees folded again, K1)
+                var nl = Need(_upL, _loL, _footL, gL, ankleL); var nr = Need(_upR, _loR, _footR, gR, ankleR);
+                var need = float.IsInfinity(nl) ? nr : float.IsInfinity(nr) ? nl : Mathf.Min(nl, nr);
                 if (!float.IsInfinity(need)) standWant = need;
             }
             var want = Mathf.Clamp(-(standing ? standWant : _low), -0.15f, 0.15f);
@@ -359,6 +362,8 @@ namespace SecondFace.Game.People
 
                 wantL = Vector3.Lerp(wantL, pl, _plant);
                 wantR = Vector3.Lerp(wantR, pr, _plant);
+                // a foot its leg cannot reach straight from the hips as set is drawn in toward them along the ground
+                wantL = InReach(_upL, _loL, _footL, wantL); wantR = InReach(_upR, _loR, _footR, wantR);
                 Solve(_upL, _loL, _footL, wantL);
                 Solve(_upR, _loR, _footR, wantR);
                 // flat on the ground, turned its way, sole down
@@ -596,6 +601,19 @@ namespace SecondFace.Game.People
         }
 
         /// <summary>A place for the ankle the leg can reach: the same spot on the ground, no lower than the leg's length allows.</summary>
+        private Vector3 InReach(Transform up, Transform lo, Transform foot, Vector3 want)
+        {
+            var h = up.position;
+            var r = StanceStraight * ((lo.position - h).magnitude + (foot.position - lo.position).magnitude);
+            var v = want - h;
+            if (v.sqrMagnitude <= r * r) return want;
+            var flatMax = Mathf.Sqrt(Mathf.Max(0f, r * r - v.y * v.y));
+            var flat = new Vector3(v.x, 0f, v.z);
+            if (flat.magnitude <= flatMax || flat.sqrMagnitude < 1e-8f) return want;
+            var at = h + flat.normalized * flatMax; at.y = want.y;
+            return at;
+        }
+
         private static Vector3 Reachable(Transform up, Transform lo, Transform foot, Vector3 want)
         {
             var h = up.position;
