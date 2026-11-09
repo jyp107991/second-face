@@ -638,8 +638,20 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   planes and 5-8.5 cm across, read as under because the depth test let a patch reach 3x the depth across, unbounded.
   Capped at 4 cm (the case it was for: 1.6 deep, 3.2 across): on the gear-held men and the clip-prone women (20 picked,
   one listed twice) A1 221 -> 206, A4 39 -> 25, C1 9 -> 4, W3 8 -> 6, nothing worse; cap_Military_Male_03n 37-44° -> 24-29°.
-  cap_Police_Male_03n stays at 31-35° on real contact (his vest's side 2 cm from the arm's line). full33 (the whole cast)
-  running.
+  cap_Police_Male_03n stays at 31-35° on real contact (his vest's side 2 cm from the arm's line). full33 stopped (the
+  owner asked for pictures as the work goes, 2026-11-08: progress pictures go to him marked with the gate's state).
+  **A1, found at last by measuring each step** (the trace now records the upper arm's angle after each step of the
+  resting clearance, its lean out and forward, and how far the corrective moves the point that holds the elbow): the
+  out-angle controller stops at its 17° with the elbow still 1-2.6 cm in, and the shoulder's push adds 2-7°; all of it
+  sideways. Every Rocketbox man has the same skeleton (shoulder joints 21.4 cm out): the slim men's chests stand 3-7 cm
+  inside the joints under the arm, the broad and jacketed men's 0-1. Four faults, each fixed in the build: (1) the
+  correctives' smoothing left the coarse jackets' dents a third deep (the chest moved 0.3-0.7 cm where 2-4 were needed):
+  never shallower than needed now; (2) they measured the arm unrolled, while at rest it is rolled in up to 65°: the
+  sleeve's widest at each length now; (3) skin points were given to the arm by place alone: a point the arm's bones do not
+  move is the torso's (31-79 a body); (4) the jacket's webbing under the arm, which the arm moves, lies 10 cm in from its
+  bone and is dragged into the chest as the arm hangs: arm points past 8 cm (forearm 7) off the bone are left out (to
+  run). Also the forearm by the elbow in the correctives, and the waist's cap to 6 cm. Male_Adult_05 17 -> 8 cells.
+  full34 (the whole cast on 1-3) running.
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
