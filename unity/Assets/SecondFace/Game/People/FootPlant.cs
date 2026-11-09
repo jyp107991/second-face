@@ -745,7 +745,9 @@ namespace SecondFace.Game.People
 
         private void Level()
         {
-            var spine = _animator.GetBoneTransform(HumanBodyBones.Spine);
+            // (the chest held, not the spine: on these rigs the thighs hang from the spine, and holding it held the legs as they
+            // were, K3 unchanged)
+            var spine = _animator.GetBoneTransform(HumanBodyBones.Chest) ?? _animator.GetBoneTransform(HumanBodyBones.Spine);
             if (spine == null) return;
             var across = _upR.position - _upL.position;
             var fwd = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
