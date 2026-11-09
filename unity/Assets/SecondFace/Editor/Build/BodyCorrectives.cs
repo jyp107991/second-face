@@ -283,6 +283,32 @@ namespace SecondFace.EditorTools
                             amount[s][i] = Mathf.Min(cap, TorsoShare * bestO) * bestEase;
                             dirs[s][i] = inward.normalized;
                         }
+                        else if (part[i] == foreP)
+                        {
+                            // the forearm's bulk by the elbow (a sleeve's cuff and the elbow's fold), where it lies in the waist's side as the
+                            // arm hangs: folded toward its bone by as much as it overlaps, its points well off the bone in full (the
+                            // elbows of the broad men's jackets lay 2-4 cm into their waists, C1, 2026-11-09)
+                            var u0 = wp[i] - E; var t0 = Vector3.Dot(u0, axF) / l2;
+                            if (t0 < 0f || t0 > ForeReach) continue;
+                            var o = 0f;
+                            foreach (var (so, sf) in Sweep)
+                            {
+                                var rot = Quaternion.AngleAxis(-sf, Vector3.Cross(ax, root.forward).normalized) * Quaternion.AngleAxis(so * side, root.forward);
+                                var pw = S + rot * (wp[i] - S);
+                                if (pw.y < yLo || pw.y > yHi) continue;
+                                var h = pw - SpineAt(pw.y); h.y = 0f;
+                                var yb = YBin(pw.y); var qb = QBin(h);
+                                var rt = Mathf.Max(rT[yb, qb], Mathf.Max(rT[yb, (qb + 1) % QB], rT[yb, (qb + QB - 1) % QB]));
+                                if (rt <= 0f) continue;
+                                o = Mathf.Max(o, rt + Clear - h.magnitude);
+                            }
+                            if (o <= 0f) continue;
+                            var rv0 = u0 - axF * (t0 * l2);
+                            if (rv0.sqrMagnitude < 1e-6f) continue;
+                            var ease0 = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(ForeReach, 0.6f * ForeReach, t0));
+                            amount[s][i] = (rv0.magnitude > WebReach ? Mathf.Min(WebMax, o) : Mathf.Min(ArmMax, (1f - TorsoShare) * o)) * ease0;
+                            dirs[s][i] = -rv0.normalized;
+                        }
                         else if (part[i] == armPart)
                         {
                             // the arm's inner side inside the chest's, wherever in the sweep it lies: pressed in toward its bone

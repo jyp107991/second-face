@@ -92,6 +92,36 @@ namespace SecondFace.EditorTools
             Object.DestroyImmediate(baked);
         }
 
+        /// <summary>RIG_WEIGHTS="id:v,v;id:v": each vertex's bones and weights, and its weight under each arm's upper arm,
+        /// forearm and hand (which part its own skinning makes it).</summary>
+        [MenuItem("Second Face/Report vertex weights")]
+        public static void Weights()
+        {
+            var spec = System.Environment.GetEnvironmentVariable("RIG_WEIGHTS") ?? "";
+            var sb = new StringBuilder("RigWeights\n");
+            foreach (var part in spec.Split(';'))
+            {
+                var kv = part.Split(':'); if (kv.Length != 2) continue;
+                var path = $"Assets/SecondFace/People/Rocketbox/{kv[0]}/{kv[0]}.fbx";
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (prefab == null) { sb.AppendLine($"{kv[0]}: missing"); continue; }
+                var anim = prefab.GetComponent<Animator>();
+                var smr = prefab.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => r.sharedMesh != null).OrderByDescending(r => r.sharedMesh.vertexCount).First();
+                var bw = smr.sharedMesh.boneWeights; var bones = smr.bones;
+                HashSet<Transform> Under(HumanBodyBones hb) { var set = new HashSet<Transform>(); var t = anim.GetBoneTransform(hb); if (t != null) foreach (var c in t.GetComponentsInChildren<Transform>(true)) set.Add(c); return set; }
+                var sets = new[] { ("UL", Under(HumanBodyBones.LeftUpperArm)), ("FL", Under(HumanBodyBones.LeftLowerArm)), ("UR", Under(HumanBodyBones.RightUpperArm)), ("FR", Under(HumanBodyBones.RightLowerArm)) };
+                foreach (var vs in kv[1].Split(','))
+                {
+                    if (!int.TryParse(vs, out var v) || v < 0 || v >= bw.Length) continue;
+                    var b = bw[v];
+                    var pairs = new[] { (b.boneIndex0, b.weight0), (b.boneIndex1, b.weight1), (b.boneIndex2, b.weight2), (b.boneIndex3, b.weight3) }.Where(x => x.Item2 > 0f);
+                    var under = string.Join(" ", sets.Select(st => $"{st.Item1} {pairs.Where(x => st.Item2.Contains(bones[x.Item1])).Sum(x => x.Item2):0.00}"));
+                    sb.AppendLine($"{kv[0]} v{v}: {string.Join(", ", pairs.Select(x => $"{bones[x.Item1].name} {x.Item2:0.00}"))} | {under}");
+                }
+            }
+            Debug.Log(sb.ToString());
+        }
+
         private static void Line(StringBuilder sb, string label, Animator anim)
         {
             var root = anim.transform;
