@@ -306,16 +306,21 @@ namespace SecondFace.Game.People
             // foot brought down by its own knee: the clip leaves both feet 3-6.5 cm up on these bodies, and set on the higher
             // foot's need the hips came down 3-8 cm and folded the standing knee 25-35°, the body crouched on knees falling in
             // ("looks like he needs to urinate", the owner, 2026-11-09)
+            // (lowered for both legs to reach their ground straight: set for the lower foot's leg alone, the other leg, the clip's
+            // straight one, could not reach and its heel stood 2-3 cm up, F1)
             var standWant = Mathf.Max(eL, eR);
             if (standing)
             {
-                var stL = eL <= eR;
-                var up = stL ? _upL : _upR; var lo = stL ? _loL : _loR; var ft = stL ? _footL : _footR;
-                var leg = (lo.position - up.position).magnitude + (ft.position - lo.position).magnitude;
-                var target = ft.position - Vector3.up * (stL ? eL : eR);
-                var h = target - up.position; var flat = new Vector2(h.x, h.z).magnitude;
-                var reach = StanceStraight * leg;
-                if (reach > flat) standWant = up.position.y - (target.y + Mathf.Sqrt(reach * reach - flat * flat));
+                float Need(Transform up, Transform lo, Transform ft, float g, float ankle)
+                {
+                    var leg = (lo.position - up.position).magnitude + (ft.position - lo.position).magnitude;
+                    var target = new Vector3(ft.position.x, g + ankle, ft.position.z);
+                    var hv = target - up.position; var flat = new Vector2(hv.x, hv.z).magnitude;
+                    var reach = StanceStraight * leg;
+                    return reach > flat ? up.position.y - (target.y + Mathf.Sqrt(reach * reach - flat * flat)) : float.NegativeInfinity;
+                }
+                var need = Mathf.Max(Need(_upL, _loL, _footL, gL, ankleL), Need(_upR, _loR, _footR, gR, ankleR));
+                if (!float.IsInfinity(need)) standWant = need;
             }
             var want = Mathf.Clamp(-(standing ? standWant : _low), -0.15f, 0.15f);
             if (caught) want = Mathf.Max(-0.15f, Mathf.Min(want, _sink - catchBy));
