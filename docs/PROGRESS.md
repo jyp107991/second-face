@@ -652,6 +652,20 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   bone and is dragged into the chest as the arm hangs: arm points past 8 cm (forearm 7) off the bone are left out (to
   run). Also the forearm by the elbow in the correctives, and the waist's cap to 6 cm. Male_Adult_05 17 -> 8 cells.
   full34 (the whole cast on 1-3) running.
+  **Whole cast 532 -> 233, committed** (full34: A1 451 -> 185, A4 48 -> 22, C1 9 -> 8, W3 8 -> 3, A3 1 -> 0). The webbing
+  filter (4) was tried and taken back: the far points were the bulky sleeves' own surface (A1 100 -> 22 on seven men, but
+  C1 0 -> 112); the correctives fold far sleeve points and the forearm's bulk instead (full35: 201, but A4 22 -> 35 on
+  cap_DM01s, whose hand the game holds off gear 3 cm out from his thigh: not committed, to fix).
+  **The owner's review of two standing men (2026-11-09): "looks like he needs to urinate" (a crouch on knees bent and falling
+  in) and a hip thrown out with the other knee turned in. The gate passed both: it did not measure the legs or the pelvis.**
+  Now it does (K1 the straighter knee's bend, K2 a straight knee turned in from the front, K3 pelvis tilt, K4 hips past the
+  outer foot, K5 a bent knee pointing in from its foot; `docs/PEOPLE_MOTION.md`). The cause: the idles leave the feet 3-6.5 cm
+  up on these bodies and the foot planting lowered the hips by the higher foot's need, folding the standing knee 25-35°;
+  the leg solve kept the clip's knee plane (turned in); the idles tilt the pelvis 7-8°. Now, standing: the hips lowered
+  just enough for the more stretched leg to stand straight (0.9995 of its length) to its planted place, the other bent; a
+  standing knee bent over its foot; the pelvis levelled to within 4° holding the chest (the thighs hang from the spine on
+  these rigs). Tried and taken back: the lower foot's leg alone (heels 2-3 cm up, F1 93), drawing the far foot in (it slid,
+  F4 130). On five people the leg measures 208 -> 16. full36 (the whole cast) running.
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
