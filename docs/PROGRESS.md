@@ -682,7 +682,18 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   K1 20 -> 1). The clip's foot goals are read in the IK pass (read in LateUpdate, Unity warned every frame: 16-40 thousand
   stack traces, hundreds of MB of log, slower runs; measures unchanged). cap_DM01s's A4 (hand 6-7 cm off the thigh) traced:
   SetHand refuses every inward move because the forearm would sink into his jacket's wide hem at the hip (letting moves
-  through that leave the forearm no deeper made it 10 cm, taken back). full38 (whole cast) running.
+  through that leave the forearm no deeper made it 10 cm, taken back). full38 (whole cast): 230 (A1 155, A4 36, F1 7,
+  F5 6, K4 5, K1 2; not committed: A4, F1, F5 worse than 233's). Then: a step begun this frame moves the hips onto the leg
+  that stays in that same frame (no wait: the waiting foot rose out of reach, F1; Wood_Male_01's foot hung up 44 % of the
+  time, F5/K4); a hand past the skin's reach of the thigh is drawn in all the same (Male_Adult_02 A4 7 -> 3); the flank
+  correctives give the torso 75 % of the overlap up to 8 cm (gear-held men A1 96 -> 89). full39: **199** (A1 136, A4 30,
+  C1 6, F1 9, F2 1, F3w 1, F5 1, K1 1, W3 3, W6 11); not committed: A4 30 > 22, F1 9 > 1, F3w 1 > 0. F1 is the step's
+  first frame (the hips rose onto the other leg in that frame while the foot's lift was still nought: 2.8-3 cm, neither
+  down nor stepping): the step now starts a frame into its lift; F3w: the sway step held to the stance's width.
+  **The gear-held men's A1, traced step by step** (ten men): every one rests at the upper arm's 17° cap (AbdMax) with the
+  elbow still 0.5-2 cm into the vest or jacket, then is turned out to 21-23° by the shoulder's hold; the line from the elbow
+  to a hand at the thigh passes through the gear's bulge. More corrective room barely moves them: the gear itself has to
+  lie closer at the sides (Police_Male_06's vest and holster are in his body mesh, no material of their own).
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
