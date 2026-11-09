@@ -681,16 +681,18 @@ namespace SecondFace.Game.People
             for (var pass = 0; pass < 2; pass++)
             {
                 var g = HandGap(first);
-                if (g < 0f && g <= -0.5f) return;   // (no leg near the hand)
+                // (no leg near the hand: past the skin's reach of it, the hand is drawn in a step toward the body all the same;
+                // left where it was, an arm the vest held out stood the hand 10-19 cm off the thigh for frames, A4, 2026-11-09)
+                var far = g <= -0.5f;
                 // (a hand the elbow turned out of the thigh this frame is not drawn back in past the elbow's margin: drawn to
                 // the gap it lay in the thigh between the skin's points again, C1, 2026-11-07)
                 var gapWant = (first == BodySkin.Part.UpperArmL ? _elbowTurnedL : _elbowTurnedR) ? Mathf.Max(SkinGap, ElbowMargin) : SkinGap;
-                var move = Mathf.Clamp(gapWant - g, -SetMax, SetMax);
+                var move = far ? -SetMax : Mathf.Clamp(gapWant - g, -SetMax, SetMax);
                 if (Mathf.Abs(move) < 0.002f) return;
                 // along the leg's own facing where the hand is nearest it, level (moved only sideways, a hand on the thigh's
                 // front went 4 cm further out a pass without leaving it, the arm all but straight, A2 and A4, 2026-11-07)
                 var dir = outward;
-                if (_gapBody >= 0) { var n = _skin.N[_gapBody]; n.y = 0f; if (n.sqrMagnitude > 0.09f) dir = n.normalized; }
+                if (!far && _gapBody >= 0) { var n = _skin.N[_gapBody]; n.y = 0f; if (n.sqrMagnitude > 0.09f) dir = n.normalized; }
                 var E = lower.position; var W = hand.position;
                 var upperDir = E - _animator.GetBoneTransform(first == BodySkin.Part.UpperArmL ? HumanBodyBones.LeftUpperArm : HumanBodyBones.RightUpperArm).position;
                 // the whole move, else half, else a quarter (all or none, a hand drawn in from a forearm the elbow had turned
