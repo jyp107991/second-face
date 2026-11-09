@@ -45,6 +45,8 @@ namespace SecondFace.EditorTools
         /// <summary>The arm's places the overlap is taken over (degrees out from the reference, and forward or back of it):
         /// where a resting arm really lies as the body sways and the idles shift.</summary>
         private static readonly (float Out, float Fwd)[] Sweep = { (0f, 0f), (-3f, 0f), (4f, 0f), (0f, -8f), (0f, 8f), (4f, -8f), (4f, 8f) };
+        /// <summary>The forearm's lean in from the reference toward the body (degrees) the waist makes room for by the elbow.</summary>
+        private static readonly float[] ForeLean = { 0f, 10f, 20f };
 
         public static string PathFor(string fbxPath) => fbxPath.Substring(0, fbxPath.Length - Path.GetExtension(fbxPath).Length) + "_flank.bytes";
 
@@ -261,16 +263,22 @@ namespace SecondFace.EditorTools
                             {
                                 var rot = Quaternion.AngleAxis(-sf, Vector3.Cross(ax, root.forward).normalized * 1f) * Quaternion.AngleAxis(so * side, root.forward);
                                 var u = Quaternion.Inverse(rot) * (wp[i] - S) - (E - S);
-                                var t2 = Vector3.Dot(u, axF) / l2;
-                                if (t2 < -0.02f || t2 > ForeReach) continue;
-                                var rv = u - axF * (t2 * l2);
-                                var phi = Mathf.Atan2(Vector3.Dot(rv, f2), Vector3.Dot(rv, f1)) * Mathf.Rad2Deg;
-                                int tb = Mathf.Clamp((int)(t2 / ForeReach * FB), 0, FB - 1), pb = ((int)Mathf.Floor((phi + 360f) / 15f)) % PB;
-                                var ra = rFMax[tb];
-                                if (ra <= 0f) continue;
-                                var oo = ra + Clear - rv.magnitude;
-                                var ee = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(ForeReach, 0.6f * ForeReach, t2));
-                                if (oo * ee > bestO * bestEase || bestEase == 0f) { if (oo > 0f) { bestO = oo; bestEase = ee; } }
+                                // (and the forearm leaning in from the elbow toward the hand's place at the thigh, as a resting arm's does:
+                                // by the reference's alone, the gear-held men's elbows rested 0.5-2 cm into their vests and jackets at the
+                                // upper arm's 17° cap, and the shoulder turned them out to 21-23°, A1, 2026-11-09)
+                                foreach (var lean in ForeLean)
+                                {
+                                    var axL = Vector3.RotateTowards(axF, -root.right * side, lean * Mathf.Deg2Rad, 0f).normalized;
+                                    var t2 = Vector3.Dot(u, axL) / l2;
+                                    if (t2 < -0.02f || t2 > ForeReach) continue;
+                                    var rv = u - axL * (t2 * l2);
+                                    int tb = Mathf.Clamp((int)(t2 / ForeReach * FB), 0, FB - 1);
+                                    var ra = rFMax[tb];
+                                    if (ra <= 0f) continue;
+                                    var oo = ra + Clear - rv.magnitude;
+                                    var ee = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(ForeReach, 0.6f * ForeReach, t2));
+                                    if (oo * ee > bestO * bestEase || bestEase == 0f) { if (oo > 0f) { bestO = oo; bestEase = ee; } }
+                                }
                             }
                             if (bestO <= 0f) continue;
                             var inward = -wn[i]; inward.y = 0f;
