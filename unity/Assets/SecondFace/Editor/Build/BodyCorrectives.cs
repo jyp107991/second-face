@@ -38,7 +38,10 @@ namespace SecondFace.EditorTools
         /// at the reference lay 6-8 cm into their waists, a jacket's with them (A1 462 -> 451 at 4 cm, 2026-11-08).</summary>
         public const float TorsoDeep = 0.06f, DeepBelow = 0.02f;
         /// <summary>How much of the forearm from the elbow the waist gives for (a share of its length: about 12 cm).</summary>
-        public const float ForeReach = 0.45f;   // (4 and 2 cm, 2026-11-08: A1 462 -> 451 but A4 83 -> 85 on the gear-held men whose correctives changed, their hands by the thighs 6.0-6.3 cm: back to 2.5 and 1.5)
+        public const float ForeReach = 0.45f;
+        /// <summary>The arm's points further than this off its bone (m) are the webbing under it, folded onto the arm by as much as
+        /// it overlaps the chest, up to <see cref="WebMax"/> (the game's skin leaves them out past 8 cm: RocketboxLayers).</summary>
+        public const float WebReach = 0.075f, WebMax = 0.09f;   // (4 and 2 cm, 2026-11-08: A1 462 -> 451 but A4 83 -> 85 on the gear-held men whose correctives changed, their hands by the thighs 6.0-6.3 cm: back to 2.5 and 1.5)
         /// <summary>The arm's places the overlap is taken over (degrees out from the reference, and forward or back of it):
         /// where a resting arm really lies as the body sways and the idles shift.</summary>
         private static readonly (float Out, float Fwd)[] Sweep = { (0f, 0f), (-3f, 0f), (4f, 0f), (0f, -8f), (0f, 8f), (4f, -8f), (4f, 8f) };
@@ -302,7 +305,10 @@ namespace SecondFace.EditorTools
                             if (rv.sqrMagnitude < 1e-6f) continue;
                             overA = Mathf.Max(overA, o); nA++;
                             var ease = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.2f, 0.35f, t));
-                            amount[s][i] = Mathf.Min(ArmMax, (1f - TorsoShare) * o) * ease;
+                            // (the webbing under the arm, points well off its bone that the arm's bones drag into the chest's side as it
+                            // hangs, folds onto the arm in full: left out of the game's skin it no longer holds the arm out, and as it
+                            // was it lay 2-4.4 cm into the chest, C1, 2026-11-09)
+                            amount[s][i] = (rv.magnitude > WebReach ? Mathf.Min(WebMax, o) : Mathf.Min(ArmMax, (1f - TorsoShare) * o)) * ease;
                             dirs[s][i] = -rv.normalized;
                         }
                     }
