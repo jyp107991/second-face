@@ -175,7 +175,8 @@ The owner wants to play unspoiled.
   not use, or an explanation ("a gesture", "the clip's own pose", "only for a moment") never passes it.
   **The lock** (owner, 2026-11-06, after images were sent with the gate red): while the gate is red, NOTHING with a
   person in it goes to the owner (no image, capture, build or evidence sheet); report progress in words with the failing
-  measures named. Clothes are part of "look like humans": garments stand off the body as real clothes do, in order, with
+  measures named. (Owner, 2026-11-08: "show pics as you go": progress pictures of the work in hand go to the owner while
+  the gate is red, each marked with the gate's state; never presented as passing or done.) Clothes are part of "look like humans": garments stand off the body as real clothes do, in order, with
   seams and folds, never padded or rubbery (`docs/PEOPLE_MOTION.md` §2.6). Enforced by `npm run check` and CI
   (`tools/qa/people_gate.mjs` over `docs/qa/gates/motion_gate.json`); a red check is fixed only by making the people pass.
   A verdict counts only for the code it measured (hashed: a stale one is red), green only over the whole cast (never
