@@ -292,6 +292,9 @@ namespace SecondFace.EditorTools
             return true;
         }
 
+        /// <summary>The furthest off its bone's line a point of the upper arm or the forearm is (m): a sleeve's skin stands 4-7
+        /// cm off it; further is the webbing under the arm the arm's bones move.</summary>
+        private const float UpperArmReach = 0.08f, ForearmReach = 0.07f;
         private enum SkinPart : byte { None = 255, Torso = 0, ThighL, ThighR, UpperArmL, ForearmL, HandL, UpperArmR, ForearmR, HandR }
 
         /// <summary>The body's own skin where an arm meets it (<see cref="BodySkin"/>): the body's vertices told apart by
@@ -596,7 +599,7 @@ namespace SecondFace.EditorTools
                 if (b.boneIndex3 < bones.Length && set.Contains(bones[b.boneIndex3])) sum += b.weight3;
                 return sum;
             }
-            var relabelled = 0;
+            var relabelled = 0; var webbing = 0;
             // (for SKIN_DIAG only: each vertex's fate, 0 not the body's, 1 no part, 2 a garment's inside, 3 the upper arm's
             // high part, 4 a candidate; and its part)
             var fate = new byte[pos.Length]; var partOf = new SkinPart[pos.Length];
@@ -625,6 +628,10 @@ namespace SecondFace.EditorTools
                     // (a deeper part by place than by weight is kept by place: the elbow's and wrist's seams; only a point the arm
                     // does not move at all is given back to the torso)
                     if (byWeight == SkinPart.Torso) { part = SkinPart.Torso; relabelled++; }
+                    // and only near the arm's bone: the jacket's webbing under the arm, which the upper arm moves, lay 10 cm in
+                    // from its bone, was dragged into the chest's side as the arm hung, and the arm was pushed out to clear it
+                    // (A1 21-25°, 2026-11-09): past ArmReach off its bone line a point of the arm is left out
+                    else if (part is SkinPart.UpperArmL or SkinPart.UpperArmR or SkinPart.ForearmL or SkinPart.ForearmR && best > (part is SkinPart.UpperArmL or SkinPart.UpperArmR ? UpperArmReach : ForearmReach)) { webbing++; continue; }
                 }
                 partOf[i] = part; fate[i] = 2;
                 // the body's surface faces away from its bones: a vertex whose normal faces its bone's axis is a garment's
@@ -803,7 +810,7 @@ namespace SecondFace.EditorTools
                 return new[] { foot.InverseTransformPoint(world[heel]), foot.InverseTransformPoint(world[back]), foot.InverseTransformPoint(world[ball]), (toe != null ? toe : foot).InverseTransformPoint(world[tip]) };
             }
             skin.Built = BodySkin.Version;
-            Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")}; {inner} inside faces left out; {relabelled} points the arms do not move given to the torso; parts told apart in the neutral pose)");
+            Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")}; {inner} inside faces left out; {relabelled} points the arms do not move given to the torso; {webbing} of the arms' webbing left out; parts told apart in the neutral pose)");
         }
 
         private static HumanBodyBones Parse(string name) => (HumanBodyBones)Enum.Parse(typeof(HumanBodyBones), name);
