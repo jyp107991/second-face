@@ -1363,7 +1363,10 @@ namespace SecondFace.Game.People
                 if (nearElbow && i >= forearm && (p - elbowAt).sqrMagnitude >= 0.0144f) continue;
                 if (!_skin.Got(i, out var d, out var n)) continue;
                 // the upper arm and the forearm by the elbow may press into the clothes a little (ClothGive); the hand not
-                if (_restW > 0.99f && i < hand && _skin.Near >= 0 && (i < _skin.Begin(first + 1) || (p - elbowAt).sqrMagnitude < 0.0064f)) d -= ClothGive * _skin.Off(_skin.Near);
+                // (at rest, the whole forearm: given by the elbow only, a hand that would come in to the thigh pressed the forearm's
+                // lower half into the hip's clothes and was refused, the hand left 5-5.5 cm off the thigh after the gestures, A4,
+                // 2026-11-09)
+                if (_restW > 0.99f && i < hand && _skin.Near >= 0) d -= ClothGive * _skin.Off(_skin.Near);
                 if (d + Margin3 <= 0f) continue;
                 var arm = p - shoulder;
                 var a = Mathf.Atan2(d + Margin3, arm.magnitude) * Mathf.Rad2Deg;
