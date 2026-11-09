@@ -77,6 +77,8 @@ namespace SecondFace.Game.People
         /// <see cref="LockRelease"/> s.</summary>
         /// <summary>How far above the toe's tip the ball may be and still be what a held foot stands on (m).</summary>
         public float BallOverTip = 0.08f;   // (3 cm: a jogging forefoot pointed 60° came down on its tip and the ball slid as it turned about it, W2)
+        /// <summary>Standing, the most of its length a leg is stretched to reach its ground before the hips come down for it.</summary>
+        public float StandReach = 0.995f;
         public float LockDown = 0.025f, LockLift = 0.03f, LockReach = 0.12f, LockRelease = 0.12f;   // (down from 2.5 cm, where the gate counts a sole as down: caught at 2, a jogging foot landed sliding 1.2-1.5 m/s through the last half centimetre, W1/W2)
         /// <summary>Moving, a foot faster than this (m/s, along the ground) is in its swing: it is held at least
         /// <see cref="SwingClear"/> off the ground, less as it slows, so it comes down only as it stops (a real heel
@@ -299,7 +301,21 @@ namespace SecondFace.Game.People
                 if (_soleVWasR < CatchSlow) catchBy = Mathf.Min(catchBy, _dipWasR);
             }
             var caught = catchBy < float.MaxValue;
-            var want = Mathf.Clamp(-(standing ? Mathf.Max(eL, eR) : _low), -0.15f, 0.15f);
+            // standing: the hips onto the lower foot's ground, and lower only as far as the other leg cannot reach its own
+            // straight; that foot comes down by its own knee (set on the higher foot's need, the hips' 2-3 cm folded the standing
+            // knee by 25-30° and it fell in, the whole body crouched: "looks like he needs to urinate", the owner, 2026-11-09)
+            var standWant = Mathf.Min(eL, eR);
+            if (standing)
+            {
+                var hiL = eL > eR;
+                var up = hiL ? _upL : _upR; var lo = hiL ? _loL : _loR; var ft = hiL ? _footL : _footR;
+                var hip = up.position - Vector3.up * standWant;
+                var target = ft.position - Vector3.up * (hiL ? eL : eR);
+                var reach = ((lo.position - up.position).magnitude + (ft.position - lo.position).magnitude) * StandReach;
+                var dist = (target - hip).magnitude;
+                if (dist > reach) standWant += dist - reach;
+            }
+            var want = Mathf.Clamp(-(standing ? standWant : _low), -0.15f, 0.15f);
             if (caught) want = Mathf.Max(-0.15f, Mathf.Min(want, _sink - catchBy));
             _sink = Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-(standing || caught ? 25f : 3f) * dt));
             _hips.position += Vector3.up * _sink;

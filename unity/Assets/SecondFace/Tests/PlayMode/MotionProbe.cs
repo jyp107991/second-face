@@ -35,6 +35,7 @@ namespace SecondFace.Tests
         public readonly Dictionary<string, (float, string)> WorstHand = new();
         private float _traceA4L = -1f, _traceA4R = -1f;   // the hands' last sampled gaps (cm), for the trace
         private float _traceOutL, _traceFwdL, _traceOutR, _traceFwdR;   // the upper arms' lean out and forward (degrees), for the trace
+        private string _traceK = ",,,";   // the knees' bend and their turn in (degrees), for the trace
 
         private Animator _a;
         private HumanPoseHandler _hp;
@@ -466,6 +467,24 @@ namespace SecondFace.Tests
                     Add("F3a", Mathf.Abs(Vector3.Dot(ankleL - ankleR, fwd)) * 100f);
                     Add("F3s", Vector3.Angle(Flat(toeL - ankleL).normalized, fwd));
                     Add("F3s", Vector3.Angle(Flat(toeR - ankleR).normalized, fwd));
+                    // the legs and the pelvis (the owner, 2026-11-09: a man crouched on both knees bent and falling in "looks like he
+                    // needs to urinate", another with his hip thrown out past his standing foot and the other knee turned in, and the
+                    // gate passed both)
+                    var hipL = B(HumanBodyBones.LeftUpperLeg).position; var hipR = B(HumanBodyBones.RightUpperLeg).position;
+                    var kneeL = B(HumanBodyBones.LeftLowerLeg).position; var kneeR = B(HumanBodyBones.RightLowerLeg).position;
+                    var flexL = Vector3.Angle(kneeL - hipL, ankleL - kneeL); var flexR = Vector3.Angle(kneeR - hipR, ankleR - kneeR);
+                    Add("K1", Mathf.Min(flexL, flexR));   // the straighter knee: one leg at least straight
+                    // a knee inside the line from its hip to its ankle, seen from the front (+ in)
+                    var valL = -Vector3.SignedAngle(Vector3.ProjectOnPlane(kneeL - hipL, fwd), Vector3.ProjectOnPlane(ankleL - kneeL, fwd), fwd);
+                    var valR = Vector3.SignedAngle(Vector3.ProjectOnPlane(kneeR - hipR, fwd), Vector3.ProjectOnPlane(ankleR - kneeR, fwd), fwd);
+                    Add("K2", valL); Add("K2", valR);
+                    var across = hipR - hipL;
+                    Add("K3", Mathf.Abs(Mathf.Asin(Mathf.Clamp(across.y / Mathf.Max(1e-4f, across.magnitude), -1f, 1f))) * Mathf.Rad2Deg);
+                    // the pelvis's middle past the outer edge of the feet's line: over the standing foot is a weight shift, beyond it a
+                    // hip thrown out (cm, + beyond)
+                    var mid = 0.5f * (ankleL + ankleR); var half = 0.5f * Mathf.Abs(Vector3.Dot(ankleL - ankleR, rt));
+                    Add("K4", (Mathf.Abs(Vector3.Dot(0.5f * (hipL + hipR) - mid, rt)) - half) * 100f);
+                    _traceK = $"{flexL:0.0},{flexR:0.0},{valL:0.0},{valR:0.0}";
                 }
                 // the mesh, a few times a second
                 // (by frames when the gate's frames are fixed: by Time.time the frames baked shifted from run to run with the
@@ -554,7 +573,7 @@ namespace SecondFace.Tests
         private string HoldTrace()
         {
             var sk = GetComponent<SecondFace.Game.People.BodySkin>();
-            var a4 = $",{_traceA4L:0.0},{_traceA4R:0.0},{(sk != null ? sk.FlankL : -1f):0.00},{(sk != null ? sk.FlankR : -1f):0.00},{_traceOutL:0.0},{_traceFwdL:0.0},{_traceOutR:0.0},{_traceFwdR:0.0}," + (_ac != null && _ac.StageA1 != null ? string.Join(",", _ac.StageA1.Select(x => x.ToString("0.0"))) + $",{_ac.HoldFlank[0]:0.00},{_ac.HoldFlank[1]:0.00}" : ",,,,,,,,,,,,,,,");
+            var a4 = $",{_traceA4L:0.0},{_traceA4R:0.0},{(sk != null ? sk.FlankL : -1f):0.00},{(sk != null ? sk.FlankR : -1f):0.00},{_traceOutL:0.0},{_traceFwdL:0.0},{_traceOutR:0.0},{_traceFwdR:0.0}," + (_ac != null && _ac.StageA1 != null ? string.Join(",", _ac.StageA1.Select(x => x.ToString("0.0"))) + $",{_ac.HoldFlank[0]:0.00},{_ac.HoldFlank[1]:0.00}" : ",,,,,,,,,,,,,,,") + "," + _traceK + $",{(_fp != null ? _fp.Sink * 100f : 0f):0.0}";
             if (_ac == null || _ac.Hold == null || _ac.Hold.Length < 8) return ",,,,,,," + a4;
             return string.Join(",", _ac.Hold.Select(x => x.ToString("0.00"))) + a4;
         }
