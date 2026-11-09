@@ -665,7 +665,17 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   just enough for the more stretched leg to stand straight (0.9995 of its length) to its planted place, the other bent; a
   standing knee bent over its foot; the pelvis levelled to within 4° holding the chest (the thighs hang from the spine on
   these rigs). Tried and taken back: the lower foot's leg alone (heels 2-3 cm up, F1 93), drawing the far foot in (it slid,
-  F4 130). On five people the leg measures 208 -> 16. full36 (the whole cast) running.
+  F4 130). On five people the leg measures 208 -> 16. full36 (the whole cast, 518; not committed: A4 30, W6 19, F5 3 worse
+  than 233's) showed what was left, each fixed and checked on seven people (pick78-82; K1 22 -> 0, K4 6 -> 0, K5 5 -> 0):
+  crouched to sneak the legs stay the clip's (straightened, the first strides floated a foot 8.7 cm, W6); the legs' needs
+  read the ground under the planted place (the slope); a weight-bearing foot steps after 0.05 s of the weight going over to
+  the other leg, the hips rising onto it at 60/s (lifted at once, the other knee stood bent 30-50° for the step's first
+  frames, K1; waited 0.12 s, the foot hung and slid, F1/F4); a stepping foot lands within its leg's reach; a planted foot
+  out of reach rises straight up; a bent knee aims over the foot as planted (K5); the outer foot steps out under hips a
+  gesture swayed past it (K4, the owner's thrown hip). Pictures to the owner (marked red). Left on the seven: A4 on
+  cap_DM01s (hand 6-7 cm off his thigh: the forearm held off his hip by the clearance, new since the stance work; testing
+  the pelvis levelling as its cause) and Police_Male_06 (his vest holds both elbows out, A1/A4, as in 233); F1 2.5-2.9 in
+  the turn. Then the whole cast again, committed only if no measure of 233's is worse.
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
