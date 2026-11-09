@@ -64,7 +64,7 @@ namespace SecondFace.Tests
             L("A5", 8f, 55f, 3f, 75f), L("S1", -Inf, 6f, -Inf, 10f), L("H1", -15f, 8f, -25f, 12f), L("H2", -Inf, 30f, -Inf, 45f),
             L("H3", -Inf, 10f, -Inf, 15f), F1, F2, L("F3w", 8f, 32f, 5f, 40f), L("F3a", -Inf, 28f, -Inf, 35f), L("F3s", -Inf, 25f, -Inf, 35f), F4, C1,
             new() { M = "F5", MeanMax = 0.12f }, A6,
-            L("K1", -Inf, 8f, -Inf, 12f), L("K2", -Inf, 6f, -Inf, 10f), L("K3", -Inf, 5f, -Inf, 8f), L("K4", -Inf, 2f, -Inf, 4f),
+            L("K1", -Inf, 8f, -Inf, 12f), L("K2", -Inf, 6f, -Inf, 10f), L("K3", -Inf, 5f, -Inf, 8f), L("K4", -Inf, 2f, -Inf, 4f), L("K5", -Inf, 15f, -Inf, 25f),
         };
 
         private static Lim[] GestureLimits(string g) => new[]

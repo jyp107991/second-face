@@ -477,7 +477,18 @@ namespace SecondFace.Tests
                     // a knee inside the line from its hip to its ankle, seen from the front (+ in)
                     var valL = -Vector3.SignedAngle(Vector3.ProjectOnPlane(kneeL - hipL, fwd), Vector3.ProjectOnPlane(ankleL - kneeL, fwd), fwd);
                     var valR = Vector3.SignedAngle(Vector3.ProjectOnPlane(kneeR - hipR, fwd), Vector3.ProjectOnPlane(ankleR - kneeR, fwd), fwd);
-                    Add("K2", valL); Add("K2", valR);
+                    // (seen from the front on a straight leg; a bent leg's knee is judged by where it points: over its foot, K5)
+                    if (flexL < 10f) Add("K2", valL);
+                    if (flexR < 10f) Add("K2", valR);
+                    float Track(Vector3 h, Vector3 kn, Vector3 an, Vector3 toe, float side)
+                    {
+                        var kd = Flat(kn - 0.5f * (h + an)); var fd = Flat(toe - an);
+                        if (kd.sqrMagnitude < 1e-4f || fd.sqrMagnitude < 1e-6f) return 0f;
+                        // + in: the knee pointing inside the foot's line
+                        return Vector3.SignedAngle(fd, kd, Vector3.up) * -side;
+                    }
+                    if (flexL >= 10f) Add("K5", Track(hipL, kneeL, ankleL, toeL, -1f));
+                    if (flexR >= 10f) Add("K5", Track(hipR, kneeR, ankleR, toeR, 1f));
                     var across = hipR - hipL;
                     Add("K3", Mathf.Abs(Mathf.Asin(Mathf.Clamp(across.y / Mathf.Max(1e-4f, across.magnitude), -1f, 1f))) * Mathf.Rad2Deg);
                     // the pelvis's middle past the outer edge of the feet's line: over the standing foot is a weight shift, beyond it a
