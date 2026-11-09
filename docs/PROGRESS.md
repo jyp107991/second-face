@@ -708,6 +708,10 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Business_Male_06, cap_Military_Male_02n: the upper arm against the vest's or jacket's side, the gear itself to lie closer at
   the sides, or the correctives' sweep to cover the arm swung forward); A4 21 (Police_Male_06 12, cap_DM01s 8); W6 11 (the
   women's jog); C1 8 (cap_Fire_Male_07n's gestures, borderline 0.5-0.6 by the waist); W3 3 (cap_Police_Male_03n's walk).
+  Measured (RigReport): every man's shoulder joint stands 21.4 cm out; Police_Male_06's torso 20 cm under it is 20.6 cm out
+  (0.8 inside the joint's line), cap_Police_Male_03n's 1.4-2.5 inside, Male_Adult_05's at it. Tried and taken back: the
+  correctives' sweep widened to 8° out and 12° forward and back (ten gear-held men A1 78 -> 73, but Police_Male_06's A4
+  12 -> 15: the whole cast's A4 would pass 21).
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
