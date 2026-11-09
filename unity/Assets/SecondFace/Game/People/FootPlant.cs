@@ -334,18 +334,7 @@ namespace SecondFace.Game.People
             {
                 // (each foot where it is planted: by the clip's own foot places the legs' needs were misjudged and both knees
                 // folded 16-31° with the hips 5.8 cm down)
-                float Need(Transform up, Transform lo, Transform ft, float g, float ankle, in Foot f)
-                {
-                    var leg = (lo.position - up.position).magnitude + (ft.position - lo.position).magnitude;
-                    var at = f.Planted && !f.Stepping ? f.Pin : ft.position;
-                    // (the ground under the planted place: by the clip's foot's, on the 10° slope the planted feet's ground was
-                    // misread by centimetres and neither leg came straight, K1 73 on the slope)
-                    var gAt = GroundAt(at, out _);
-                    var target = new Vector3(at.x, (float.IsNaN(gAt) ? g : gAt) + ankle, at.z);
-                    var hv = target - up.position; var flat = new Vector2(hv.x, hv.z).magnitude;
-                    var reach = StanceStraight * leg;
-                    return reach > flat ? up.position.y - (target.y + Mathf.Sqrt(reach * reach - flat * flat)) : float.NegativeInfinity;
-                }
+                float Need(Transform up, Transform lo, Transform ft, float g, float ankle, in Foot f) => LegNeed(up, lo, ft, g, ankle, f);
                 // (the leg that needs it more stands nearly straight, the other bends; drawing the far foot in instead slid it
                 // along the ground as the hips swayed, F4 2 -> 130, 2026-11-09)
                 var nl = Need(_upL, _loL, _footL, gL, ankleL, _l); var nr = Need(_upR, _loR, _footR, gR, ankleR, _r);
@@ -389,9 +378,23 @@ namespace SecondFace.Game.People
                 _shownFrames = 0; _haveSoleL = _haveSoleR = false;   // (the feet's speeds are counted afresh when it sets off)
                 var (nl, nr) = Narrow(_footL.position, _footR.position);
                 _bearAsked = false;
+                var bearWas = _bear;
                 Plant(ref _l, ref _r, nl, yawL, dt, true);
                 Plant(ref _r, ref _l, nr, yawR, dt, false);
                 if (_bearAsked) _bearT += dt; else { _bear = -1; _bearT = 0f; }
+                // a step begun this frame: the hips go over onto the leg that stays in this same frame (they were set before the
+                // step was chosen, by both legs: the bearing knee stood bent 30° under a foot already lifted, K1)
+                if (upright && _bear >= 0 && _bear != bearWas)
+                {
+                    var nb = _bear == 0 ? LegNeed(_upL, _loL, _footL, gL, ankleL, _l) : LegNeed(_upR, _loR, _footR, gR, ankleR, _r);
+                    if (!float.IsInfinity(nb))
+                    {
+                        var to = Mathf.Clamp(_sink - nb, -0.15f, 0.15f);
+                        var s2 = Mathf.Lerp(_sink, to, 1f - Mathf.Exp(-BearRate * dt));
+                        _hips.position += Vector3.up * (s2 - _sink);
+                        _sink = s2;
+                    }
+                }
                 var pl = Placed(ref _l, ankleL, out var hl, out var normL);
                 var pr = Placed(ref _r, ankleR, out var hr, out var normR);
                 // a planted foot its leg cannot reach (the weight going over to the other leg before it steps) rises straight up
@@ -827,7 +830,7 @@ namespace SecondFace.Game.People
         /// <summary>Standing, how long the weight takes to go over to the other leg before a foot that bears it steps (s): a
         /// real person shifts onto the other foot first (lifted at once, the straight leg left the body on the other, bent
         /// 30-36°, both knees bent for the step's first frames, K1, 2026-11-09).</summary>
-        public float ShiftTime = 0.034f;   // (0.12 s: the waiting foot, its leg out of reach as the hips rose, hung 1.4-4.3 cm off the ground and slid with a turning body, F1 and F4 in the turn; none: the hips rose after the foot was up, the bearing knee bent 12-20° for the step's first 2-3 frames, K1; 0.05 s at 60/s: the waiting foot 2.5-3 cm up for a frame or two of each step, F1 2.7-2.9 in the turn, 2026-11-09)
+        public float ShiftTime = 0f;   // (0.12 s: the waiting foot, its leg out of reach as the hips rose, hung 1.4-4.3 cm off the ground and slid with a turning body, F1 and F4 in the turn; none: the hips rose after the foot was up, the bearing knee bent 12-20° for the step's first 2-3 frames, K1; 0.05 s at 60/s, 0.034 at 120/s: the waiting foot, out of reach as the hips rose, 2.5-3 cm up for a frame or two of each step, F1 2.6-2.9 in the turn and after the gestures; now the hips go over in the frame the step starts, 2026-11-09)
         /// <summary>Standing, how fast the hips rise onto the leg that bears the weight while the other steps (1/s; settling
         /// at the standing 25 the bearing knee stood bent past 8° for 6-7 frames of each step, K1).</summary>
         public float BearRate = 120f;
@@ -838,6 +841,21 @@ namespace SecondFace.Game.People
         private int _bear = -1;           // standing: the leg bearing the weight while the other steps or is about to (0 left, 1 right; -1: by the legs' needs)
         private float _bearT;             // how long it has borne it (s)
         private bool _bearAsked, _loadL;  // a step this frame asked for it; the left leg is the one the hips are set by
+
+        /// <summary>Standing: how far the hips must come down (m, from where they are) for this leg to stand nearly straight
+        /// (<see cref="StanceStraight"/>) to the ground under where its foot is planted; -infinity when it cannot reach.</summary>
+        private float LegNeed(Transform up, Transform lo, Transform ft, float g, float ankle, in Foot f)
+        {
+            var leg = (lo.position - up.position).magnitude + (ft.position - lo.position).magnitude;
+            var at = f.Planted && !f.Stepping ? f.Pin : ft.position;
+            // (the ground under the planted place: by the clip's foot's, on the 10° slope the planted feet's ground was
+            // misread by centimetres and neither leg came straight, K1 73 on the slope)
+            var gAt = GroundAt(at, out _);
+            var target = new Vector3(at.x, (float.IsNaN(gAt) ? g : gAt) + ankle, at.z);
+            var hv = target - up.position; var flat = new Vector2(hv.x, hv.z).magnitude;
+            var reach = StanceStraight * leg;
+            return reach > flat ? up.position.y - (target.y + Mathf.Sqrt(reach * reach - flat * flat)) : float.NegativeInfinity;
+        }
 
         private void Level()
         {
