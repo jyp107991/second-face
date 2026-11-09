@@ -698,7 +698,16 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   F1 8 -> 0, K1 spikes gone); the sway step held to the stance's width (F3w 1 -> 0); the flank correctives make room at
   the waist for the forearm leaning 10-20° in from the elbow toward the thigh, as a resting arm's does (ten gear-held men:
   A1 89 -> 78, cap_DM01s A4 13 -> 7). Police_Male_06's right arm is held at the lower third of the upper arm against the
-  vest's side at chest height, swung 10° forward (outside the correctives' sweep): his A1 17 and A4 12 stay. full40 running.
+  vest's side at chest height, swung 10° forward (outside the correctives' sweep): his A1 17 and A4 12 stay. full40: 171
+  (A4 27 the only measure over 233's). A resting forearm may now press into the clothes by ClothGive's share along its whole
+  length (given by the elbow only, a hand that would come in pressed the forearm's lower half into the hip's clothes and was
+  refused: Male_Adult_02 A4 7 -> 1).
+  **Whole cast 233 -> 165, committed** (full41, 2de9a4e2: A1 185 -> 118, A4 22 -> 21, F5 2 -> 1, C1 8, F1 1, F2 1, W3 3,
+  W6 11; the legs measured: K1 1, K2-K5 0).
+  **Next:** A1 118 (the gear-held men: Police_Male_06, cap_Police_Male_03n, Construction_Male_02, rel_MA15s,
+  Business_Male_06, cap_Military_Male_02n: the upper arm against the vest's or jacket's side, the gear itself to lie closer at
+  the sides, or the correctives' sweep to cover the arm swung forward); A4 21 (Police_Male_06 12, cap_DM01s 8); W6 11 (the
+  women's jog); C1 8 (cap_Fire_Male_07n's gestures, borderline 0.5-0.6 by the waist); W3 3 (cap_Police_Male_03n's walk).
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
