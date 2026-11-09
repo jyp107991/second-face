@@ -389,8 +389,9 @@ namespace SecondFace.Game.People
                     var nb = _bear == 0 ? LegNeed(_upL, _loL, _footL, gL, ankleL, _l) : LegNeed(_upR, _loR, _footR, gR, ankleR, _r);
                     if (!float.IsInfinity(nb))
                     {
-                        var to = Mathf.Clamp(_sink - nb, -0.15f, 0.15f);
-                        var s2 = Mathf.Lerp(_sink, to, 1f - Mathf.Exp(-BearRate * dt));
+                        // (all the way in the frame: by BearRate's share, 87 % at 60 frames a second, the bearing knee stood bent
+                        // 12-14° under the foot already a frame into its lift, K1's cap)
+                        var s2 = Mathf.Clamp(_sink - nb, -0.15f, 0.15f);
                         _hips.position += Vector3.up * (s2 - _sink);
                         _sink = s2;
                     }
@@ -760,7 +761,12 @@ namespace SecondFace.Game.People
             var outer = Vector3.Dot(f.Pin - other.Pin, outward) > 0f;
             var swayed = outer && beyond > HipsBeyond;
             // (to 3 cm out past the hips: where the clip has the foot, the gesture's own sway left the hips past it)
-            if (swayed) want += outward * Mathf.Max(0f, beyond + 0.03f - Vector3.Dot(want - f.Pin, outward));
+            if (swayed)
+            {
+                want += outward * Mathf.Max(0f, beyond + 0.03f - Vector3.Dot(want - f.Pin, outward));
+                // (no wider than a stance is: stepped out past it, a woman stood 32.4 cm wide after a gesture, F3w)
+                if (other.Planted && !other.Stepping) want = Against(want, other.Pin, left);
+            }
             if (off > StepReach || turn > StepTurn || swayed)
             {
                 // a foot that bears the weight steps once the weight is over the other leg (ShiftTime)
@@ -771,7 +777,9 @@ namespace SecondFace.Game.People
                     _bearAsked = true;
                     return;
                 }
-                f.Stepping = true; f.T = 0f; f.From = f.Pin; f.FromYaw = f.PinYaw; f.To = InReach(want, left); f.ToYaw = wantYaw;
+                // (a frame into its lift already: begun at nought, the foot stood at its place as the hips rose onto the other leg
+                // in the same frame, and hung 2.8 cm up for that frame, neither down nor stepping, F1 in the turn)
+                f.Stepping = true; f.T = dt / StepTime; f.From = f.Pin; f.FromYaw = f.PinYaw; f.To = InReach(want, left); f.ToYaw = wantYaw;
                 _bear = bearer; _bearAsked = true;
             }
         }
