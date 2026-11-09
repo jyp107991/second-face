@@ -79,7 +79,7 @@ namespace SecondFace.Game.People
         public float BallOverTip = 0.08f;   // (3 cm: a jogging forefoot pointed 60° came down on its tip and the ball slid as it turned about it, W2)
         /// <summary>Standing, the weight-bearing leg's hip-to-ankle reach as a share of its length (0.998: the knee bent about
         /// 7°; ideal standing has the knees straight, docs/PEOPLE_MOTION.md K1).</summary>
-        public float StanceStraight = 0.998f;
+        public float StanceStraight = 0.9995f;   // (0.998 left the knee 7°, the gate's K1 is 8 at the p98)
         public float LockDown = 0.025f, LockLift = 0.03f, LockReach = 0.12f, LockRelease = 0.12f;   // (down from 2.5 cm, where the gate counts a sole as down: caught at 2, a jogging foot landed sliding 1.2-1.5 m/s through the last half centimetre, W1/W2)
         /// <summary>Moving, a foot faster than this (m/s, along the ground) is in its swing: it is held at least
         /// <see cref="SwingClear"/> off the ground, less as it slows, so it comes down only as it stops (a real heel
@@ -309,6 +309,7 @@ namespace SecondFace.Game.People
             // (lowered for both legs to reach their ground straight: set for the lower foot's leg alone, the other leg, the clip's
             // straight one, could not reach and its heel stood 2-3 cm up, F1)
             var standWant = Mathf.Max(eL, eR);
+            if (standing && PelvisLevel > 0f) Level();
             if (standing)
             {
                 // (each foot where it is planted: by the clip's own foot places the legs' needs were misjudged and both knees
@@ -365,8 +366,10 @@ namespace SecondFace.Game.People
 
                 wantL = Vector3.Lerp(wantL, pl, _plant);
                 wantR = Vector3.Lerp(wantR, pr, _plant);
-                Solve(_upL, _loL, _footL, wantL);
-                Solve(_upR, _loR, _footR, wantR);
+                // (standing, the knee bent over its foot: kept in the clip's own plane, a relaxed knee turned in 20-35°, K5, the
+                // owner's 'other knee turned in', 2026-11-09)
+                Solve(_upL, _loL, _footL, wantL, Ahead(_footL, _toeL));
+                Solve(_upR, _loR, _footR, wantR, Ahead(_footR, _toeR));
                 // flat on the ground, turned its way, sole down
                 _footL.rotation = Quaternion.Slerp(_footL.rotation, Flat(_restL, _headingL, hl, normL), _plant);
                 _footR.rotation = Quaternion.Slerp(_footR.rotation, Flat(_restR, _headingR, hr, normR), _plant);
@@ -736,7 +739,29 @@ namespace SecondFace.Game.People
 
         /// <summary>An analytic two-bone solve: the thigh and shin turned so the ankle reaches the target, the knee kept in the
         /// plane it bends in now (forward when the leg is straight).</summary>
-        private void Solve(Transform up, Transform lo, Transform foot, Vector3 target)
+        /// <summary>Standing, the most the pelvis tilts across (degrees; the gate's K3 is 5): a clip's hip dropped further is
+        /// levelled, the spine turned back so the chest stays (the idles' 7-8° read as a hip thrown, the owner, 2026-11-09).</summary>
+        public float PelvisLevel = 4f;
+
+        private void Level()
+        {
+            var spine = _animator.GetBoneTransform(HumanBodyBones.Spine);
+            if (spine == null) return;
+            var across = _upR.position - _upL.position;
+            var fwd = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+            var flat = Vector3.ProjectOnPlane(across, fwd);
+            if (flat.sqrMagnitude < 1e-6f) return;
+            var tilt = Mathf.Asin(Mathf.Clamp(flat.y / flat.magnitude, -1f, 1f)) * Mathf.Rad2Deg;
+            var over = Mathf.Abs(tilt) - PelvisLevel;
+            if (over <= 0f) return;
+            // (about the forward axis a positive turn raises the right side: a right hip high is turned down, a low one up)
+            var q = Quaternion.AngleAxis(-Mathf.Sign(tilt) * over, fwd);
+            var spineRot = spine.rotation;
+            _hips.rotation = q * _hips.rotation;
+            spine.rotation = spineRot;
+        }
+
+        private void Solve(Transform up, Transform lo, Transform foot, Vector3 target, Vector3? kneeOver = null)
         {
             var h = up.position; var k = lo.position; var a = foot.position;
             var l1 = (k - h).magnitude; var l2 = (a - k).magnitude;
@@ -745,6 +770,11 @@ namespace SecondFace.Game.People
             var d = Mathf.Clamp(to.magnitude, Mathf.Abs(l1 - l2) + 1e-3f, l1 + l2 - 1e-4f);
             var dir = to.sqrMagnitude > 1e-8f ? to.normalized : (a - h).normalized;
             var pole = Vector3.ProjectOnPlane(k - h, dir);
+            if (kneeOver.HasValue)
+            {
+                var over = Vector3.ProjectOnPlane(new Vector3(kneeOver.Value.x, 0f, kneeOver.Value.z), dir);
+                if (over.sqrMagnitude > 1e-6f) pole = over;
+            }
             if (pole.sqrMagnitude < 1e-6f) pole = Vector3.ProjectOnPlane(transform.forward, dir);
             pole.Normalize();
             var x = (l1 * l1 - l2 * l2 + d * d) / (2f * d);
