@@ -362,8 +362,12 @@ namespace SecondFace.Game.People
 
                 wantL = Vector3.Lerp(wantL, pl, _plant);
                 wantR = Vector3.Lerp(wantR, pr, _plant);
-                // a foot its leg cannot reach straight from the hips as set is drawn in toward them along the ground
-                wantL = InReach(_upL, _loL, _footL, wantL); wantR = InReach(_upR, _loR, _footR, wantR);
+                // a foot its leg cannot reach straight from the hips as set is drawn in toward them along the ground, and its place
+                // moved there once (drawn in afresh every frame as the hips swayed, the foot slid under them, F4 2 -> 133)
+                var inL = InReach(_upL, _loL, _footL, wantL); var inR = InReach(_upR, _loR, _footR, wantR);
+                if (!_l.Stepping && (inL - wantL).sqrMagnitude > 1e-6f) _l.Pin += new Vector3(inL.x - wantL.x, 0f, inL.z - wantL.z);
+                if (!_r.Stepping && (inR - wantR).sqrMagnitude > 1e-6f) _r.Pin += new Vector3(inR.x - wantR.x, 0f, inR.z - wantR.z);
+                wantL = inL; wantR = inR;
                 Solve(_upL, _loL, _footL, wantL);
                 Solve(_upR, _loR, _footR, wantR);
                 // flat on the ground, turned its way, sole down
