@@ -248,6 +248,8 @@ namespace SecondFace.Game.People
         private void OnDisable() { _l = default; _r = default; }
 
         private Vector3 Ahead(Transform foot, Transform toe) => toe != null ? toe.position - foot.position : transform.forward;
+        private static Vector3 FlatDir(Vector3 v) { v.y = 0f; return v.sqrMagnitude > 1e-8f ? v.normalized : Vector3.forward; }
+        private static Vector3 Toward(float heading) => new(Mathf.Sin(heading * Mathf.Deg2Rad), 0f, Mathf.Cos(heading * Mathf.Deg2Rad));
         private static float Heading(Vector3 v) => Mathf.Atan2(v.x, v.z) * Mathf.Rad2Deg;
 
         private void LateUpdate()
@@ -257,6 +259,7 @@ namespace SecondFace.Game.People
             if (dt <= 0f) return;
             var scale = Mathf.Max(0.01f, transform.lossyScale.y) / _bindScale;
             var ankleL = _ankleL * scale; var ankleR = _ankleR * scale;
+            _ankleNowL = ankleL; _ankleNowR = ankleR;
             var speed = _hasSpeed ? _animator.GetFloat(SpeedId) : 0f;
             var standing = speed < StandSpeed;
             // a body set down somewhere else lifts its feet from where they were
@@ -341,7 +344,8 @@ namespace SecondFace.Game.People
             }
             var want = Mathf.Clamp(-(standing ? standWant : _low), -0.15f, 0.15f);
             if (caught) want = Mathf.Max(-0.15f, Mathf.Min(want, _sink - catchBy));
-            _sink = Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-(standing || caught ? 25f : 3f) * dt));
+            var rate = standing || caught ? (standing && _bear >= 0 && want > _sink ? BearRate : 25f) : 3f;
+            _sink = Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-rate * dt));
             _hips.position += Vector3.up * _sink;
             Diag[8] = _sink; Diag[9] = _low; Diag[10] = eL; Diag[11] = eR;
 
@@ -375,13 +379,20 @@ namespace SecondFace.Game.People
                 if (_bearAsked) _bearT += dt; else { _bear = -1; _bearT = 0f; }
                 var pl = Placed(ref _l, ankleL, out var hl, out var normL);
                 var pr = Placed(ref _r, ankleR, out var hr, out var normR);
+                // a planted foot its leg cannot reach (the weight going over to the other leg before it steps) rises straight up
+                // over its place (reached toward, it slid with the hips as the body turned, F4)
+                // (by the standing reach: by the walk's, 5 mm short of the leg, every standing knee stood bent 12.6-12.8°, K1)
+                if (!_l.Stepping) pl = Reachable(_upL, _loL, _footL, pl, StanceStraight);
+                if (!_r.Stepping) pr = Reachable(_upR, _loR, _footR, pr, StanceStraight);
 
                 wantL = Vector3.Lerp(wantL, pl, _plant);
                 wantR = Vector3.Lerp(wantR, pr, _plant);
                 // (standing, the knee bent over its foot: kept in the clip's own plane, a relaxed knee turned in 20-35°, K5, the
                 // owner's 'other knee turned in', 2026-11-09)
-                Solve(_upL, _loL, _footL, wantL, Ahead(_footL, _toeL));
-                Solve(_upR, _loR, _footR, wantR, Ahead(_footR, _toeR));
+                // (over the foot as it is planted, turned its planted way: by the clip's own foot's turn, the knee pointed 15-29°
+                // inside the foot it was set down on, K5)
+                Solve(_upL, _loL, _footL, wantL, Vector3.Lerp(FlatDir(Ahead(_footL, _toeL)), Toward(hl), _plant));
+                Solve(_upR, _loR, _footR, wantR, Vector3.Lerp(FlatDir(Ahead(_footR, _toeR)), Toward(hr), _plant));
                 // flat on the ground, turned its way, sole down
                 _footL.rotation = Quaternion.Slerp(_footL.rotation, Flat(_restL, _headingL, hl, normL), _plant);
                 _footR.rotation = Quaternion.Slerp(_footR.rotation, Flat(_restR, _headingR, hr, normR), _plant);
@@ -617,10 +628,11 @@ namespace SecondFace.Game.People
         }
 
         /// <summary>A place for the ankle the leg can reach: the same spot on the ground, no lower than the leg's length allows.</summary>
-        private static Vector3 Reachable(Transform up, Transform lo, Transform foot, Vector3 want)
+        private static Vector3 Reachable(Transform up, Transform lo, Transform foot, Vector3 want, float share = 0f)
         {
             var h = up.position;
-            var len = (lo.position - h).magnitude + (foot.position - lo.position).magnitude - 0.005f;
+            var full = (lo.position - h).magnitude + (foot.position - lo.position).magnitude;
+            var len = share > 0f ? share * full : full - 0.005f;
             var v = want - h;
             if (v.sqrMagnitude <= len * len) return want;
             var flat = new Vector2(v.x, v.z).magnitude;
@@ -713,7 +725,7 @@ namespace SecondFace.Game.People
                 f.T += dt / StepTime;
                 // the place keeps moving with a turning body until the foot is over it, then the foot comes straight down
                 // (a foot that followed the turn to its last frame slid 10-16 cm/s as it touched, F4, 2026-11-06)
-                if (f.T < StepTravel.y) { f.To = want; f.ToYaw = wantYaw; }
+                if (f.T < StepTravel.y) { f.To = InReach(want, left); f.ToYaw = wantYaw; }
                 // down on the frame that would take it past the step's end (the first and last frames of a step, 1-3 % of
                 // the way, stood the foot 2.5-3 cm up whatever the frame rate: a sole read as neither down nor stepping, F1)
                 if (f.T + dt / StepTime >= 1f) { f.Stepping = false; f.Pin = f.To; f.PinYaw = f.ToYaw; }
@@ -722,19 +734,49 @@ namespace SecondFace.Game.People
             if (other.Stepping) return;
             var off = Vector3.ProjectOnPlane(want - f.Pin, Vector3.up).magnitude;
             var turn = Mathf.Abs(Mathf.DeltaAngle(f.PinYaw, wantYaw));
-            if (off > StepReach || turn > StepTurn)
+            // the hips past this foot, across (a gesture's sway carried them 7 cm beyond the outer foot with both feet left
+            // where they stood: the owner's 'hip thrown out', K4, 2026-11-09): the foot steps out under them
+            var right = transform.right; right.y = 0f; right.Normalize();
+            var outward = left ? -right : right;
+            var beyond = Vector3.Dot(_hips.position - f.Pin, outward);
+            var outer = Vector3.Dot(f.Pin - other.Pin, outward) > 0f;
+            var swayed = outer && beyond > HipsBeyond;
+            // (to 3 cm out past the hips: where the clip has the foot, the gesture's own sway left the hips past it)
+            if (swayed) want += outward * Mathf.Max(0f, beyond + 0.03f - Vector3.Dot(want - f.Pin, outward));
+            if (off > StepReach || turn > StepTurn || swayed)
             {
                 // a foot that bears the weight steps once the weight is over the other leg (ShiftTime)
                 var bearer = left ? 1 : 0;
-                if ((left ? _loadL : !_loadL) && other.Planted && (_bear != bearer || _bearT < ShiftTime))
+                if (ShiftTime > 0f && (left ? _loadL : !_loadL) && other.Planted && (_bear != bearer || _bearT < ShiftTime))
                 {
                     if (_bear != bearer) { _bear = bearer; _bearT = 0f; }
                     _bearAsked = true;
                     return;
                 }
-                f.Stepping = true; f.T = 0f; f.From = f.Pin; f.FromYaw = f.PinYaw; f.To = want; f.ToYaw = wantYaw;
+                f.Stepping = true; f.T = 0f; f.From = f.Pin; f.FromYaw = f.PinYaw; f.To = InReach(want, left); f.ToYaw = wantYaw;
                 _bear = bearer; _bearAsked = true;
             }
+        }
+
+        /// <summary>Standing, where a stepping foot comes down: no further from under its hip than its leg reaches the ground
+        /// at the hips' height now (they are set by the other leg, straight under the weight), so it lands on the ground and
+        /// the weight can stay where it is (put down out of reach, the foot stood off the ground until the hips came down
+        /// onto it, F1).</summary>
+        private Vector3 InReach(Vector3 to, bool left)
+        {
+            var up = left ? _upL : _upR; var lo = left ? _loL : _loR; var ft = left ? _footL : _footR;
+            if (up == null || lo == null || ft == null) return to;
+            var g = GroundAt(to, out _);
+            if (float.IsNaN(g)) return to;
+            var leg = StanceStraight * ((lo.position - up.position).magnitude + (ft.position - lo.position).magnitude);
+            var dy = up.position.y - (g + (left ? _ankleNowL : _ankleNowR));
+            if (dy <= 0f || dy >= leg) return to;
+            var flatMax = Mathf.Sqrt(leg * leg - dy * dy);
+            var d = new Vector2(to.x - up.position.x, to.z - up.position.z);
+            var m = d.magnitude;
+            if (m <= flatMax || m < 1e-4f) return to;
+            var k = flatMax / m;
+            return new Vector3(up.position.x + d.x * k, to.y, up.position.z + d.y * k);
         }
 
         /// <summary>Where a planted foot's ankle goes (its sole on the ground under its place, or on its step's arc), its
@@ -770,7 +812,14 @@ namespace SecondFace.Game.People
         /// <summary>Standing, how long the weight takes to go over to the other leg before a foot that bears it steps (s): a
         /// real person shifts onto the other foot first (lifted at once, the straight leg left the body on the other, bent
         /// 30-36°, both knees bent for the step's first frames, K1, 2026-11-09).</summary>
-        public float ShiftTime = 0.12f;
+        public float ShiftTime = 0.05f;   // (0.12 s: the waiting foot, its leg out of reach as the hips rose, hung 1.4-4.3 cm off the ground and slid with a turning body, F1 and F4 in the turn; none: the hips rose after the foot was up, the bearing knee bent 12-20° for the step's first 2-3 frames, K1, 2026-11-09)
+        /// <summary>Standing, how fast the hips rise onto the leg that bears the weight while the other steps (1/s; settling
+        /// at the standing 25 the bearing knee stood bent past 8° for 6-7 frames of each step, K1).</summary>
+        public float BearRate = 60f;
+        /// <summary>Standing, how far the hips may go out past the outer foot, across, before that foot steps out under them (m;
+        /// the gate's K4 is 2 cm).</summary>
+        public float HipsBeyond = 0.012f;
+        private float _ankleNowL, _ankleNowR;   // the ankles' heights over a flat sole this frame (m)
         private int _bear = -1;           // standing: the leg bearing the weight while the other steps or is about to (0 left, 1 right; -1: by the legs' needs)
         private float _bearT;             // how long it has borne it (s)
         private bool _bearAsked, _loadL;  // a step this frame asked for it; the left leg is the one the hips are set by
