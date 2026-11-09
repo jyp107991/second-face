@@ -33,10 +33,10 @@ namespace SecondFace.EditorTools
         /// own mesh, the overlap 6-10 cm, moved the whole cast only 1053 -> 1030 and turned one forearm past its cap, A3:
         /// their arms are held out by gear at the torso's side and back, the belt and the thighs, not the chest's side,
         /// 2026-11-07.)</summary>
-        public const float TorsoMax = 0.06f, ArmMax = 0.04f, TorsoShare = 0.6f;   // (the arm's 2 cm held the gear-held men's elbows 2-4.5 cm into their vests at the out-angle's most, the arm pushed out to 30-40°, A1, their overlap 6-10 cm: 4, 2026-11-08)
+        public const float TorsoMax = 0.08f, ArmMax = 0.04f, TorsoShare = 0.75f;   // (the arm's 2 cm held the gear-held men's elbows 2-4.5 cm into their vests at the out-angle's most, the arm pushed out to 30-40°, A1, their overlap 6-10 cm: 4, 2026-11-08)
         /// <summary>The chest's side gives this much (m) from <see cref="DeepBelow"/> under the elbow up: the broad men's elbows
         /// at the reference lay 6-8 cm into their waists, a jacket's with them (A1 462 -> 451 at 4 cm, 2026-11-08).</summary>
-        public const float TorsoDeep = 0.06f, DeepBelow = 0.02f;
+        public const float TorsoDeep = 0.08f, DeepBelow = 0.02f;
         /// <summary>How much of the forearm from the elbow the waist gives for (a share of its length: about 12 cm).</summary>
         public const float ForeReach = 0.45f;
         /// <summary>The arm's points further than this off its bone (m) are the webbing under it, folded onto the arm by as much as
