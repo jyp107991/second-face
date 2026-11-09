@@ -106,6 +106,10 @@ every frame. Angles are degrees, distances centimetres. "Down" and "horizon" are
 | F3 | Stance | heels' width across the body (F3w); one foot ahead of the other (F3a); each foot's turn out from the body's front (F3s) | 8–32; ≤ 28; ≤ 25 | 5–40; 35; 35 | preferred quiet stance: 17 cm between heel centres, 14° between the feet [6]; self-selected widths 16–18 ± 4–5 cm [7][8]; a relaxed stagger is under a foot's length |
 | F4 | Standing still | a foot bearing weight (its sole within 2 cm of the lowest it has been in that state, the whole state: a foot still in the air, mid-step, when the state begins is not bearing weight, 2026-11-07): its horizontal speed | mean ≤ 3 cm/s; frames > 10 cm/s ≤ 2 % | — | foot skate is counted above 10 cm/s at contact [9] |
 | F5 | Feet down | the share of the standing time a foot is off the ground (a sole 3 cm up or more: a step) | mean ≤ 0.12 | — | quiet standing shifts weight and now and then steps; it does not keep a foot in the air |
+| K1 | Standing on straight legs | the straighter knee's bend (the angle between thigh and shin) | ≤ 8 | 12 | in standing the knees are straight, neither bent nor locked back [16]; one leg may rest bent, never both: two bent knees are a crouch (the owner, 2026-11-09: "looks like he needs to urinate") |
+| K2 | Knees over the feet | each knee's turn in from its hip-to-ankle line, seen from the front (+ in) | ≤ 6 | 10 | the kneecaps face forward over the feet [16]; knees falling in read as a collapse |
+| K3 | Pelvis level | the line between the hip joints from the horizontal | ≤ 5 | 8 | in standing the pelvis is level [16]; a weight shift drops it a little, a hip hitched or dropped far is a pose |
+| K4 | Hips over the feet | the pelvis's middle past the outer foot across the body (cm, + beyond) | ≤ 2 | 4 | a weight shift brings the hips over the standing foot, not past it: a hip thrown out is a pose (the owner, 2026-11-09) |
 | C1 | Nothing clips | depth of a hand, forearm or lower upper-arm vertex (the upper arm's third nearest the elbow, which hangs clear of the waist; higher, the arm rests on the side of the chest, a contact both soft tissues take) inside the torso, hip or thigh skin (baked mesh: behind the three nearest skin points' planes, and inside by ray parity, two of three level rays crossing the skin an odd number of times; the planes alone call a point beside the top of a shoulder or below a hem inside) | ≤ 0.5 | 1.5 | the owner's rule: arms, hands and clothing never sink into a body (CLAUDE.md §2) |
 
 ### 2.2 Gestures
@@ -195,5 +199,8 @@ review finds becomes a measure here before it is fixed, so it cannot come back u
     https://fashionandtextiles.springeropen.com/articles/10.1186/s40691-018-0165-x/tables/7
 13. Ease of fitted jackets for older women, ~10 cm at the bust. https://koreascience.or.kr/article/JAKO200211922012857.page?&lang=en
 14. Singer, The Perfect Fit, via Threads: blouse 2.5-3 in, unlined jacket 3-4 in, coat 4-5 in.
+16. Kendall, McCreary, Provance, Rodgers & Romani, Muscles: Testing and Function with Posture and Pain (5th ed., 2005), ideal
+    alignment in standing: knees in neutral (neither flexed nor hyperextended), kneecaps facing forward, pelvis level. The
+    limits' numbers are this standard's, set against the owner's review of the captures (2026-11-09), not a measured norm.
 15. Elbow carrying angle in healthy adults (600 students, full extension): 10.97 ± 4.27° in men, 15.07 ± 4.95° in women; young adults 9.77 ± 2.82° and 13.94 ± 3.97°. https://mjiri.iums.ac.ir/article-1-1044-en.pdf ; https://svuijm.journals.ekb.eg/article_360976.html
     https://www.threadsmagazine.com/forum/sufficient-ease
