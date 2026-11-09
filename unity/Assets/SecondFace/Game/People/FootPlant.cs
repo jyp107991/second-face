@@ -80,8 +80,6 @@ namespace SecondFace.Game.People
         /// <summary>Standing, the weight-bearing leg's hip-to-ankle reach as a share of its length (0.998: the knee bent about
         /// 7°; ideal standing has the knees straight, docs/PEOPLE_MOTION.md K1).</summary>
         public float StanceStraight = 0.998f;
-        /// <summary>Standing, how short of its reach a foot is before it is drawn in, and how much further in it is drawn (m).</summary>
-        public float DrawMin = 0.005f, DrawSlack = 0.015f;
         public float LockDown = 0.025f, LockLift = 0.03f, LockReach = 0.12f, LockRelease = 0.12f;   // (down from 2.5 cm, where the gate counts a sole as down: caught at 2, a jogging foot landed sliding 1.2-1.5 m/s through the last half centimetre, W1/W2)
         /// <summary>Moving, a foot faster than this (m/s, along the ground) is in its swing: it is held at least
         /// <see cref="SwingClear"/> off the ground, less as it slows, so it comes down only as it stops (a real heel
@@ -313,18 +311,21 @@ namespace SecondFace.Game.People
             var standWant = Mathf.Max(eL, eR);
             if (standing)
             {
-                float Need(Transform up, Transform lo, Transform ft, float g, float ankle)
+                // (each foot where it is planted: by the clip's own foot places the legs' needs were misjudged and both knees
+                // folded 16-31° with the hips 5.8 cm down)
+                float Need(Transform up, Transform lo, Transform ft, float g, float ankle, in Foot f)
                 {
                     var leg = (lo.position - up.position).magnitude + (ft.position - lo.position).magnitude;
-                    var target = new Vector3(ft.position.x, g + ankle, ft.position.z);
+                    var at = f.Planted && !f.Stepping ? f.Pin : ft.position;
+                    var target = new Vector3(at.x, g + ankle, at.z);
                     var hv = target - up.position; var flat = new Vector2(hv.x, hv.z).magnitude;
                     var reach = StanceStraight * leg;
                     return reach > flat ? up.position.y - (target.y + Mathf.Sqrt(reach * reach - flat * flat)) : float.NegativeInfinity;
                 }
-                // (the leg nearer under the body stands straight; the other foot is drawn in to where its leg reaches: lowered for
-                // the far foot instead, the hips came down 6-7.5 cm and both knees folded again, K1)
-                var nl = Need(_upL, _loL, _footL, gL, ankleL); var nr = Need(_upR, _loR, _footR, gR, ankleR);
-                var need = float.IsInfinity(nl) ? nr : float.IsInfinity(nr) ? nl : Mathf.Min(nl, nr);
+                // (the leg that needs it more stands nearly straight, the other bends; drawing the far foot in instead slid it
+                // along the ground as the hips swayed, F4 2 -> 130, 2026-11-09)
+                var nl = Need(_upL, _loL, _footL, gL, ankleL, _l); var nr = Need(_upR, _loR, _footR, gR, ankleR, _r);
+                var need = float.IsInfinity(nl) ? nr : float.IsInfinity(nr) ? nl : Mathf.Max(nl, nr);
                 if (!float.IsInfinity(need)) standWant = need;
             }
             var want = Mathf.Clamp(-(standing ? standWant : _low), -0.15f, 0.15f);
@@ -364,20 +365,6 @@ namespace SecondFace.Game.People
 
                 wantL = Vector3.Lerp(wantL, pl, _plant);
                 wantR = Vector3.Lerp(wantR, pr, _plant);
-                // a foot its leg cannot reach straight from the hips as set is drawn in toward them along the ground, and its place
-                // moved there once (drawn in afresh every frame as the hips swayed, the foot slid under them, F4 2 -> 133)
-                var inL = InReach(_upL, _loL, _footL, wantL); var inR = InReach(_upR, _loR, _footR, wantR);
-                // (a step in, not a slide: moved only when short by more than DrawMin, and DrawSlack further in, so the hips' sway
-                // does not move it again; moved by the shortfall every frame the foot slid, F4 2 -> 132)
-                Vector3 DrawIn(ref Foot f, Vector3 want, Vector3 inReach)
-                {
-                    var d = new Vector3(inReach.x - want.x, 0f, inReach.z - want.z);
-                    if (f.Stepping || d.magnitude < DrawMin) return want;
-                    var move = d + d.normalized * DrawSlack;
-                    f.Pin += move;
-                    return want + move;
-                }
-                wantL = DrawIn(ref _l, wantL, inL); wantR = DrawIn(ref _r, wantR, inR);
                 Solve(_upL, _loL, _footL, wantL);
                 Solve(_upR, _loR, _footR, wantR);
                 // flat on the ground, turned its way, sole down
@@ -615,19 +602,6 @@ namespace SecondFace.Game.People
         }
 
         /// <summary>A place for the ankle the leg can reach: the same spot on the ground, no lower than the leg's length allows.</summary>
-        private Vector3 InReach(Transform up, Transform lo, Transform foot, Vector3 want)
-        {
-            var h = up.position;
-            var r = StanceStraight * ((lo.position - h).magnitude + (foot.position - lo.position).magnitude);
-            var v = want - h;
-            if (v.sqrMagnitude <= r * r) return want;
-            var flatMax = Mathf.Sqrt(Mathf.Max(0f, r * r - v.y * v.y));
-            var flat = new Vector3(v.x, 0f, v.z);
-            if (flat.magnitude <= flatMax || flat.sqrMagnitude < 1e-8f) return want;
-            var at = h + flat.normalized * flatMax; at.y = want.y;
-            return at;
-        }
-
         private static Vector3 Reachable(Transform up, Transform lo, Transform foot, Vector3 want)
         {
             var h = up.position;
