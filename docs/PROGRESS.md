@@ -676,6 +676,13 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   cap_DM01s (hand 6-7 cm off his thigh: the forearm held off his hip by the clearance, new since the stance work; testing
   the pelvis levelling as its cause) and Police_Male_06 (his vest holds both elbows out, A1/A4, as in 233); F1 2.5-2.9 in
   the turn. Then the whole cast again, committed only if no measure of 233's is worse.
+  full37 (stopped after two batches) showed the turn's F1 on four more men: turning, the bearing leg's planted foot fell out
+  of its reach as the body turned over it and hung 1-3 cm up while the hips came down at 25/s; now while a foot steps the
+  hips follow the bearing leg at 120/s both ways and the weight goes over in 0.034 s (eight people: F1 in the turn 5 -> 0,
+  K1 20 -> 1). The clip's foot goals are read in the IK pass (read in LateUpdate, Unity warned every frame: 16-40 thousand
+  stack traces, hundreds of MB of log, slower runs; measures unchanged). cap_DM01s's A4 (hand 6-7 cm off the thigh) traced:
+  SetHand refuses every inward move because the forearm would sink into his jacket's wide hem at the hip (letting moves
+  through that leave the forearm no deeper made it 10 cm, taken back). full38 (whole cast) running.
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
