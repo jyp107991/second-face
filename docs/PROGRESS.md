@@ -694,6 +694,11 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   elbow still 0.5-2 cm into the vest or jacket, then is turned out to 21-23° by the shoulder's hold; the line from the elbow
   to a hand at the thigh passes through the gear's bulge. More corrective room barely moves them: the gear itself has to
   lie closer at the sides (Police_Male_06's vest and holster are in his body mesh, no material of their own).
+  Since: a step starts a frame into its lift with the hips all the way onto the leg that stays in that frame (ten people:
+  F1 8 -> 0, K1 spikes gone); the sway step held to the stance's width (F3w 1 -> 0); the flank correctives make room at
+  the waist for the forearm leaning 10-20° in from the elbow toward the thigh, as a resting arm's does (ten gear-held men:
+  A1 89 -> 78, cap_DM01s A4 13 -> 7). Police_Male_06's right arm is held at the lower third of the upper arm against the
+  vest's side at chest height, swung 10° forward (outside the correctives' sweep): his A1 17 and A4 12 stay. full40 running.
   **Next:** the arms that remain (A1 574, A4 190): the gear-held men (cap_Military, cap_Police, cap_Fire, Medical) and
   the broad-hipped men whose forearm already hangs at its 25° beside the thigh; the jog's W6 23; C1 42.
   Earlier note: the upper arm's
