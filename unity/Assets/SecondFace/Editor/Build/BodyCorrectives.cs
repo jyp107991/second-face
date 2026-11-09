@@ -194,6 +194,8 @@ namespace SecondFace.EditorTools
                         int tb = Mathf.Min(TB - 1, (int)(t * TB)), pb = ((int)Mathf.Floor((phi + 360f) / 15f)) % PB;
                         rA[tb, pb] = Mathf.Max(rA[tb, pb], rv.magnitude);
                     }
+                    var rAMax = new float[TB];
+                    for (var tb0 = 0; tb0 < TB; tb0++) for (var pb0 = 0; pb0 < PB; pb0++) rAMax[tb0] = Mathf.Max(rAMax[tb0], rA[tb0, pb0]);
                     // the forearm's surface about its bone by the elbow, the same way (its first ForeReach of its length)
                     var foreP = s == 0 ? 4 : 5;
                     var W = B(s == 0 ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand).position;
@@ -211,6 +213,8 @@ namespace SecondFace.EditorTools
                         int tb = Mathf.Min(FB - 1, (int)(t2 / ForeReach * FB)), pb = ((int)Mathf.Floor((phi + 360f) / 15f)) % PB;
                         rF[tb, pb] = Mathf.Max(rF[tb, pb], rv.magnitude);
                     }
+                    var rFMax = new float[FB];
+                    for (var tb0 = 0; tb0 < FB; tb0++) for (var pb0 = 0; pb0 < PB; pb0++) rFMax[tb0] = Mathf.Max(rFMax[tb0], rF[tb0, pb0]);
                     // the torso's surface about the spine, level, by height (1.5 cm) and turn (5°), this side only
                     const float YB = 0.015f; const int QB = 72;
                     var yLo = E.y - 0.14f; var yHi = S.y;
@@ -241,7 +245,7 @@ namespace SecondFace.EditorTools
                                 var rv = v - ax * (t * l1);
                                 var phi = Mathf.Atan2(Vector3.Dot(rv, e2), Vector3.Dot(rv, e1)) * Mathf.Rad2Deg;
                                 int tb = Mathf.Clamp((int)(t * TB), 0, TB - 1), pb = ((int)Mathf.Floor((phi + 360f) / 15f)) % PB;
-                                var ra = Mathf.Max(rA[tb, pb], Mathf.Max(rA[tb, (pb + 1) % PB], rA[tb, (pb + PB - 1) % PB]));
+                                var ra = rAMax[tb];   // (the arm's widest at this length, whichever way it is rolled: at rest the upper arm is rolled in up to 65°, TwistMax, and another side of the sleeve faces the chest than the reference's)
                                 if (ra <= 0f) continue;
                                 var oo = ra + Clear - rv.magnitude;
                                 var ee = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.15f, 0.3f, t)) * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(1.05f, 0.9f, t));
@@ -259,7 +263,7 @@ namespace SecondFace.EditorTools
                                 var rv = u - axF * (t2 * l2);
                                 var phi = Mathf.Atan2(Vector3.Dot(rv, f2), Vector3.Dot(rv, f1)) * Mathf.Rad2Deg;
                                 int tb = Mathf.Clamp((int)(t2 / ForeReach * FB), 0, FB - 1), pb = ((int)Mathf.Floor((phi + 360f) / 15f)) % PB;
-                                var ra = Mathf.Max(rF[tb, pb], Mathf.Max(rF[tb, (pb + 1) % PB], rF[tb, (pb + PB - 1) % PB]));
+                                var ra = rFMax[tb];
                                 if (ra <= 0f) continue;
                                 var oo = ra + Clear - rv.magnitude;
                                 var ee = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(ForeReach, 0.6f * ForeReach, t2));
