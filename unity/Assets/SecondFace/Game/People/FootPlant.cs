@@ -80,6 +80,8 @@ namespace SecondFace.Game.People
         /// <summary>Standing, the weight-bearing leg's hip-to-ankle reach as a share of its length (0.998: the knee bent about
         /// 7°; ideal standing has the knees straight, docs/PEOPLE_MOTION.md K1).</summary>
         public float StanceStraight = 0.998f;
+        /// <summary>Standing, how short of its reach a foot is before it is drawn in, and how much further in it is drawn (m).</summary>
+        public float DrawMin = 0.005f, DrawSlack = 0.015f;
         public float LockDown = 0.025f, LockLift = 0.03f, LockReach = 0.12f, LockRelease = 0.12f;   // (down from 2.5 cm, where the gate counts a sole as down: caught at 2, a jogging foot landed sliding 1.2-1.5 m/s through the last half centimetre, W1/W2)
         /// <summary>Moving, a foot faster than this (m/s, along the ground) is in its swing: it is held at least
         /// <see cref="SwingClear"/> off the ground, less as it slows, so it comes down only as it stops (a real heel
@@ -365,9 +367,17 @@ namespace SecondFace.Game.People
                 // a foot its leg cannot reach straight from the hips as set is drawn in toward them along the ground, and its place
                 // moved there once (drawn in afresh every frame as the hips swayed, the foot slid under them, F4 2 -> 133)
                 var inL = InReach(_upL, _loL, _footL, wantL); var inR = InReach(_upR, _loR, _footR, wantR);
-                if (!_l.Stepping && (inL - wantL).sqrMagnitude > 1e-6f) _l.Pin += new Vector3(inL.x - wantL.x, 0f, inL.z - wantL.z);
-                if (!_r.Stepping && (inR - wantR).sqrMagnitude > 1e-6f) _r.Pin += new Vector3(inR.x - wantR.x, 0f, inR.z - wantR.z);
-                wantL = inL; wantR = inR;
+                // (a step in, not a slide: moved only when short by more than DrawMin, and DrawSlack further in, so the hips' sway
+                // does not move it again; moved by the shortfall every frame the foot slid, F4 2 -> 132)
+                Vector3 DrawIn(ref Foot f, Vector3 want, Vector3 inReach)
+                {
+                    var d = new Vector3(inReach.x - want.x, 0f, inReach.z - want.z);
+                    if (f.Stepping || d.magnitude < DrawMin) return want;
+                    var move = d + d.normalized * DrawSlack;
+                    f.Pin += move;
+                    return want + move;
+                }
+                wantL = DrawIn(ref _l, wantL, inL); wantR = DrawIn(ref _r, wantR, inR);
                 Solve(_upL, _loL, _footL, wantL);
                 Solve(_upR, _loR, _footR, wantR);
                 // flat on the ground, turned its way, sole down
