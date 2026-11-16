@@ -72,8 +72,10 @@ namespace SecondFace.EditorTools
                 Keep = (v, j) => ((v.F is Fam.Torso or Fam.Shoulder) && v.P.y >= j.Waist - 0.04f) || v.F == Fam.UpperArm
                                  || (v.F == Fam.Forearm && Vector3.Distance(v.P, v.Side < 0 ? j.WristL : j.WristR) > 0.025f) || (v.F == Fam.Neck && v.P.y <= j.Neck + 0.04f) },
             // a harness vest: torso and shoulders, sleeveless, a round neck at the front, to the waist
-            new() { Id = "vest", Cloth = RbLayerSet.Fabric.Canvas, Colour = RbLayerSet.Dye.Shell, Thick = 0.013f, ThinSides = true,
-                ThickAt = (v, j) => v.F == Fam.Torso ? Mathf.Lerp(0.013f, Mathf.Min(0.013f, BodySkin.SideThick), BodySkin.SideShare(v.N.x)) : 0.013f,
+            // (1 cm off the body, under the belt worn over it: at 1.3 cm the belt's 1.1 lay under it, G2; the belt made thicker
+            // stood the hips' skin out under resting hands instead, A4 1 -> 6 on a man, 2026-11-16)
+            new() { Id = "vest", Cloth = RbLayerSet.Fabric.Canvas, Colour = RbLayerSet.Dye.Shell, Thick = 0.010f, ThinSides = true,
+                ThickAt = (v, j) => v.F == Fam.Torso ? Mathf.Lerp(0.010f, Mathf.Min(0.010f, BodySkin.SideThick), BodySkin.SideShare(v.N.x)) : 0.010f,
                 Keep = (v, j) => (v.F is Fam.Torso or Fam.Shoulder) && v.P.y >= j.Waist - 0.06f && !(v.P.y > j.ChestTop - 0.03f && Mathf.Abs(v.P.x) < 0.075f && v.P.z > 0f)
                                  && Vector3.Distance(v.P, v.P.x < 0 ? j.ShoulderL : j.ShoulderR) > 0.05f },
             // its webbing: two shoulder straps front and back and a band at the waist
@@ -273,9 +275,45 @@ namespace SecondFace.EditorTools
                     for (var i = 0; i < pos.Length; i++) keep[i] = def.Keep(V[i], j);
                     keeps.Add(keep);
                     var kept = new List<int>();
+                    // the border: a triangle the layer's line crosses is cut along it (each crossing edge halved against the layer's
+                    // own rule), not dropped whole: whole triangles left necklines, cuffs and hems in stair-steps across the throat
+                    // and the arms (T30, 2026-11-16)
+                    var xPos = new List<Vector3>(pos); var xNor = new List<Vector3>(nor); var xBw = new List<BoneWeight>(bw); var xV = new List<V>(V);
+                    var xL = flL != null ? new List<Vector3>(flL) : null; var xR = flR != null ? new List<Vector3>(flR) : null;
+                    var cuts = new Dictionary<(int, int), int>();
+                    int Cut(int a, int b)   // a kept, b not
+                    {
+                        if (cuts.TryGetValue((a, b), out var k)) return k;
+                        float lo = 0f, hi = 1f;
+                        for (var it = 0; it < 6; it++) { var m = 0.5f * (lo + hi); if (def.Keep(Mix(V[a], V[b], m), j)) lo = m; else hi = m; }
+                        var t = lo;
+                        k = xPos.Count;
+                        xPos.Add(Vector3.Lerp(pos[a], pos[b], t)); xNor.Add(Vector3.Lerp(nor[a], nor[b], t).normalized); xBw.Add(MixWeights(bw[a], bw[b], t)); xV.Add(Mix(V[a], V[b], t));
+                        if (xL != null && xR != null) { xL.Add(Vector3.Lerp(flL[a], flL[b], t)); xR.Add(Vector3.Lerp(flR[a], flR[b], t)); }
+                        cuts[(a, b)] = k;
+                        return k;
+                    }
                     for (var t = 0; t + 2 < tris.Count; t += 3)
-                        if (keep[tris[t]] && keep[tris[t + 1]] && keep[tris[t + 2]]) { kept.Add(tris[t]); kept.Add(tris[t + 1]); kept.Add(tris[t + 2]); }
-                    WriteLayer(w, def, kept, pos, nor, bw, V, j, meshScale, flL, flR, out var nv, out var yMin, out var yMax);
+                    {
+                        int a = tris[t], b = tris[t + 1], c = tris[t + 2];
+                        var n = (keep[a] ? 1 : 0) + (keep[b] ? 1 : 0) + (keep[c] ? 1 : 0);
+                        if (n == 3) { kept.Add(a); kept.Add(b); kept.Add(c); continue; }
+                        if (n == 0) continue;
+                        if (n == 1)
+                        {
+                            while (!keep[a]) (a, b, c) = (b, c, a);   // (turned, the winding kept)
+                            var ab = Cut(a, b); var ac = Cut(a, c);
+                            kept.Add(a); kept.Add(ab); kept.Add(ac);
+                        }
+                        else
+                        {
+                            while (keep[a]) (a, b, c) = (b, c, a);   // a is the one left out
+                            var ba = Cut(b, a); var ca = Cut(c, a);
+                            kept.Add(b); kept.Add(c); kept.Add(ca);
+                            kept.Add(b); kept.Add(ca); kept.Add(ba);
+                        }
+                    }
+                    WriteLayer(w, def, kept, xPos.ToArray(), xNor.ToArray(), xBw.ToArray(), xV.ToArray(), j, meshScale, xL?.ToArray(), xR?.ToArray(), out var nv, out var yMin, out var yMax);
                     report.Add($"{def.Id} {nv}");
                 }
                 Debug.Log($"RocketboxLayers: {id}: {string.Join(", ", report)}; bare legs {bareLegs}, bare arms {bareArms}");
@@ -809,6 +847,32 @@ namespace SecondFace.EditorTools
         }
 
         private static HumanBodyBones Parse(string name) => (HumanBodyBones)Enum.Parse(typeof(HumanBodyBones), name);
+
+        /// <summary>A point along a body edge from <paramref name="a"/> to <paramref name="b"/>, for a layer's rule: placed and
+        /// faced between them, of the part and side of the nearer end.</summary>
+        private static V Mix(V a, V b, float t) => new V
+        {
+            P = Vector3.Lerp(a.P, b.P, t), N = Vector3.Lerp(a.N, b.N, t).normalized,
+            F = t < 0.5f ? a.F : b.F, Side = t < 0.5f ? a.Side : b.Side, Skin = t < 0.5f ? a.Skin : b.Skin,
+        };
+
+        /// <summary>Two vertices' skinning blended (the four strongest bones kept, renormalised).</summary>
+        private static BoneWeight MixWeights(BoneWeight a, BoneWeight b, float t)
+        {
+            var d = new Dictionary<int, float>();
+            void Add(int i, float wt) { if (wt <= 0f) return; d[i] = (d.TryGetValue(i, out var x) ? x : 0f) + wt; }
+            Add(a.boneIndex0, a.weight0 * (1f - t)); Add(a.boneIndex1, a.weight1 * (1f - t)); Add(a.boneIndex2, a.weight2 * (1f - t)); Add(a.boneIndex3, a.weight3 * (1f - t));
+            Add(b.boneIndex0, b.weight0 * t); Add(b.boneIndex1, b.weight1 * t); Add(b.boneIndex2, b.weight2 * t); Add(b.boneIndex3, b.weight3 * t);
+            var top = d.OrderByDescending(x => x.Value).Take(4).ToList();
+            var sum = top.Sum(x => x.Value);
+            if (sum <= 0f) return a;
+            var r = new BoneWeight();
+            if (top.Count > 0) { r.boneIndex0 = top[0].Key; r.weight0 = top[0].Value / sum; }
+            if (top.Count > 1) { r.boneIndex1 = top[1].Key; r.weight1 = top[1].Value / sum; }
+            if (top.Count > 2) { r.boneIndex2 = top[2].Key; r.weight2 = top[2].Value / sum; }
+            if (top.Count > 3) { r.boneIndex3 = top[3].Key; r.weight3 = top[3].Value / sum; }
+            return r;
+        }
 
         private static void WriteLayer(BinaryWriter w, Def def, List<int> kept, Vector3[] pos, Vector3[] nor, BoneWeight[] bw, V[] V, Joints j, float meshScale,
             Vector3[] flL, Vector3[] flR, out int count, out float yMin, out float yMax)

@@ -397,7 +397,11 @@ namespace SecondFace.Game.People
                     }
                 }
                 var pl = Placed(ref _l, ankleL, out var hl, out var normL);
+                // (no ground under a planted place, a gap in the colliders, kept its height from a frame that had none: not a number, and
+                // the leg's solve asserted every frame after, CI 2026-11-16: the clip's own foot this frame instead)
+                if (!Finite(pl)) { pl = _footL.position; _l.Planted = false; }
                 var pr = Placed(ref _r, ankleR, out var hr, out var normR);
+                if (!Finite(pr)) { pr = _footR.position; _r.Planted = false; }
                 // a planted foot its leg cannot reach (the weight going over to the other leg before it steps) rises straight up
                 // over its place (reached toward, it slid with the hips as the body turned, F4)
                 // (by the standing reach: by the walk's, 5 mm short of the leg, every standing knee stood bent 12.6-12.8°, K1)
@@ -736,7 +740,12 @@ namespace SecondFace.Game.People
 
         private void Plant(ref Foot f, ref Foot other, Vector3 want, float wantYaw, float dt, bool left)
         {
-            if (other.Planted && !other.Stepping) want = Against(want, other.Pin, left);
+            // (a place that is not a number is never planted on, and a foot holding one is let go to plant afresh: a pin taken
+            // in a frame with no ground under it kept a height that was not a number for good, since the ground is looked for
+            // from the pin's own height, and the walker's and townsfolk's legs went unsolved, 2026-11-16)
+            if (f.Planted && (!Finite(f.Pin) || (f.Stepping && (!Finite(f.From) || !Finite(f.To))))) { f.Planted = false; f.Stepping = false; }
+            if (!Finite(want)) return;
+            if (other.Planted && !other.Stepping && Finite(other.Pin)) want = Against(want, other.Pin, left);
             if (!f.Planted) { f.Planted = true; f.Pin = want; f.PinYaw = wantYaw; f.Stepping = false; return; }
             if (f.Stepping)
             {
@@ -822,7 +831,9 @@ namespace SecondFace.Game.People
                 // off the ground and down again quickly (a foot lingering 2.5-3 cm up read as a sole not down, F1): 3 cm
                 // up within the step's first 1.6 %, so already on the first frame at any frame rate under 200 a second
                 // (sin^0.5 left it 2.5-3 cm up a frame each way: F1 at the turn, 2026-11-06)
-                lift = StepLift * Mathf.Pow(Mathf.Sin(t * Mathf.PI), 0.25f);
+                // (the sine held at nought or over: at a step's very end, t clamped to 1 on a long frame, float sin(pi) is a hair under
+                // nought and its quarter power not a number, which went into the foot's place and the leg's solve, CI 2026-11-16)
+                lift = StepLift * Mathf.Pow(Mathf.Max(0f, Mathf.Sin(t * Mathf.PI)), 0.25f);
             }
             else { at = f.Pin; heading = f.PinYaw; }
             var g = GroundAt(at, out normal);
@@ -885,11 +896,21 @@ namespace SecondFace.Game.People
             spine.rotation = spineRot;
         }
 
+        private bool _warnedNaN;
+        private static bool Finite(Vector3 v) => !(float.IsNaN(v.x) || float.IsNaN(v.y) || float.IsNaN(v.z) || float.IsInfinity(v.x) || float.IsInfinity(v.y) || float.IsInfinity(v.z));
+
         private void Solve(Transform up, Transform lo, Transform foot, Vector3 target, Vector3? kneeOver = null)
         {
             var h = up.position; var k = lo.position; var a = foot.position;
             var l1 = (k - h).magnitude; var l2 = (a - k).magnitude;
             if (l1 < 1e-4f || l2 < 1e-4f) return;
+            // (a target or a knee's aim that is not a number is never solved for: on CI's slower frames one reached here and
+            // Quaternion.FromToRotation asserted on every frame after, failing 16 tests by their log, 2026-11-16)
+            if (!Finite(h) || !Finite(k) || !Finite(a) || !Finite(target) || (kneeOver.HasValue && !Finite(kneeOver.Value)))
+            {
+                if (!_warnedNaN) { _warnedNaN = true; Debug.LogWarning($"FootPlant {name}: not solved, an input is not a number (hip {h}, knee {k}, ankle {a}, target {target}, knee aim {kneeOver}; sink {_sink}, plant {_plant})"); }
+                return;
+            }
             var to = target - h;
             var d = Mathf.Clamp(to.magnitude, Mathf.Abs(l1 - l2) + 1e-3f, l1 + l2 - 1e-4f);
             var dir = to.sqrMagnitude > 1e-8f ? to.normalized : (a - h).normalized;
@@ -905,6 +926,7 @@ namespace SecondFace.Game.People
             var y = Mathf.Sqrt(Mathf.Max(0f, l1 * l1 - x * x));
             var knee = h + dir * x + pole * y;
             var end = h + dir * d;
+            if (!Finite(knee) || !Finite(end)) return;
             var keep = foot.rotation;
             up.rotation = Quaternion.FromToRotation(k - h, knee - h) * up.rotation;
             lo.rotation = Quaternion.FromToRotation(foot.position - lo.position, end - lo.position) * lo.rotation;

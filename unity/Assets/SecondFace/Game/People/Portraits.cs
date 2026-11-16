@@ -44,13 +44,57 @@ namespace SecondFace.Game.People
             foreach (var k in gone) { Cache[k].Release(); Object.Destroy(Cache[k]); Cache.Remove(k); }
         }
 
+        private static Mesh _baked;
+
+        /// <summary>The top of the skull as the body is drawn now (its skinned mesh baked; the highest point within 25 cm of
+        /// the head's line, so a raised hand or a hat's brim does not count), world height; null with no skinned body.</summary>
+        private static float? TopOfHead(GameObject person, Vector3 near)
+        {
+            SkinnedMeshRenderer body = null;
+            foreach (var r in person.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                if (r.sharedMesh == null || !r.enabled || r.name.IndexOf("hair", System.StringComparison.OrdinalIgnoreCase) >= 0) continue;
+                if (body == null || r.sharedMesh.vertexCount > body.sharedMesh.vertexCount) body = r;
+            }
+            if (body == null) return null;
+            _baked ??= new Mesh { name = "portrait bake" };
+            body.BakeMesh(_baked, true);
+            var m = Matrix4x4.TRS(body.transform.position, body.transform.rotation, Vector3.one);   // (baked with its scale, in its place and turn)
+            var verts = _baked.vertices;
+            float? top = null;
+            var line = new Vector2(near.x, near.z);
+            foreach (var v in verts)
+            {
+                var w = m.MultiplyPoint3x4(v);
+                if ((new Vector2(w.x, w.z) - line).sqrMagnitude > 0.25f * 0.25f) continue;
+                if (top == null || w.y > top.Value) top = w.y;
+            }
+            return top;
+        }
+
         private static void Render(GameObject person, RenderTexture rt, bool aged)
         {
             var camera = Studio.Camera;
             var animator = person.GetComponentInChildren<Animator>();
+            // the pose as the game shows it (a townsperson's animator is culled off camera: its bones may never have run)
+            if (animator != null && animator.isActiveAndEnabled && animator.runtimeAnimatorController != null)
+            {
+                var mode = animator.cullingMode;
+                animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                animator.Update(0f);
+                animator.cullingMode = mode;
+            }
             var head = animator != null && animator.isHuman ? animator.GetBoneTransform(HumanBodyBones.Head) : null;
             var root = person.transform;
             var at = head != null ? head.position + Vector3.up * 0.05f : root.position + Vector3.up * 1.6f;
+            // checked against the body as drawn (play-ch1 T41: a townsperson's portrait showed her jacket): the face sits about
+            // 13 cm under the top of the skull; a head bone that disagrees by more than 8 cm gives way to the drawn body
+            var top = TopOfHead(person, head != null ? head.position : root.position + Vector3.up * 1.6f);
+            if (top != null && Mathf.Abs(at.y - (top.Value - 0.13f)) > 0.08f)
+            {
+                Debug.Log($"Portraits: {person.name}: the head bone at {at.y - root.position.y:0.00} m, the drawn face at {top.Value - 0.13f - root.position.y:0.00} m: framed on the drawn face");
+                at.y = top.Value - 0.13f;
+            }
             // which way the face looks: from the head to the eyes (a person not yet animated stands in the model's own pose,
             // which faces away from the Humanoid forward the animation turns them to)
             var forward = Vector3.ProjectOnPlane(root.forward, Vector3.up).normalized;

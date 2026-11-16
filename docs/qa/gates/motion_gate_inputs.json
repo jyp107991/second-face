@@ -15,7 +15,9 @@
     "unity/Assets/SecondFace/People/Locomotion.controller",
     "unity/Assets/SecondFace/People/Rocketbox/*/*.prefab",
     "unity/Assets/SecondFace/People/Rocketbox/*/*_layers.bytes",
-    "unity/Assets/SecondFace/People/Rocketbox/*/*_skin.bytes"
+    "unity/Assets/SecondFace/People/Rocketbox/*/*_skin.bytes",
+    "unity/Assets/SecondFace/Editor/Build/BodyCorrectives.cs",
+    "unity/Assets/SecondFace/People/Rocketbox/*/*_flank.bytes"
   ],
   "measures": [
     "unity/Assets/SecondFace/Tests/PlayMode/MotionProbe.cs",
