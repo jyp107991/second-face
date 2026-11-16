@@ -1,4 +1,4 @@
-import type { DialogueDef } from '../../engine/dialogue/dialogue';
+import type { DialogueDef, OptionDef } from '../../engine/dialogue/dialogue';
 import type { Cond } from '../../engine/world/logic';
 
 /**
@@ -167,9 +167,41 @@ export const d_md_charter: DialogueDef = {
   nodes: { read: { text: 'The charter, cast in brass, in clauses. CLAUSE 1: THE CITY KEEPS ITS PEOPLE. CLAUSE 14: THE DRAINS ARE THE CITY\'S FIRST DUTY. CLAUSE 31: A LAWFUL CONTRACT SHALL NOT BE VOIDED. CLAUSE 60: THE RESTORATION SHALL PROCEED ON SCHEDULE. Someone has polished clause 14 more than the others.', again: 'The brass clauses. Fourteen shines brighter than the rest.', effects: [{ learn: 'md_charter_read' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
+/** Nine's deed (q_comp_nine): the register is open to anyone who can read the terminal; the entry's last line is the
+ * reader's, not Nine's (clause 40). */
+const DEED_SEARCH: Cond = { all: [{ flag: 'nine_deed_asked' }, { not: { flag: 'nine_title_read' } }] };
+const DEED_READ = [{ set: 'nine_title_read' }, { learn: 'nine_title_lapsed' }, { learn: 'nine_disposal_seen' }];
+const NINE_ENTRY = 'UNIT 9 — ASSESSOR — CIVIL REFIT, WARDEN PATTERN — ISSUED R−90. OWNER OF RECORD: DEPARTMENT OF RECORDS. DEPARTMENT DISSOLVED R−60. TITLE LAPSED. And a last line, set apart from the rest: DISPOSAL — SCHEDULED — R31. A note cites clause 9(b): A LAPSED ASSET PASSES TO ITS KEEPER ON A CAPTAIN\'S WITNESS, OR TO A BUYER AT ASSESSED VALUE.';
+
+/** A deed can be made once the entry is read: witnessed by the captain, bought at the desk, or written by Nine at camp. */
+const DEED_MAKEABLE: Cond = { all: [{ flag: 'nine_title_read' }, { not: { flag: 'nine_deed_made' } }] };
+/** The deed at the desk: an entry printed for the price of the paper, or a lapsed asset bought at assessed value (9(b)). */
+const DESK_DEED = (sfx: string): OptionDef[] => [
+  { id: `desk.print${sfx}`, text: 'Print me an entry from the asset register. Unit 9. (20 Tolls)', if: { all: [DEED_SEARCH, { item: 'tolls', count: 20 }] }, effects: [{ take: 'tolls', count: 20 }, ...DEED_READ], next: 'print' },
+  { id: `desk.buy${sfx}`, text: 'Unit 9\'s title has lapsed. Clause 9(b): I\'ll buy it at assessed value. (120 Tolls)', if: { all: [DEED_MAKEABLE, { item: 'tolls', count: 120 }] }, effects: [{ take: 'tolls', count: 120 }, { set: 'nine_deed_made' }, { set: 'nine_deed_how', value: 'bought' }, { decision: { id: 'nine_deed_bought', text: 'You bought Assessor Nine\'s lapsed title from the city at assessed value.' } }], next: 'buy' },
+];
+
 export const d_md_records_term: DialogueDef = {
   id: 'd_md_records_term', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'The records terminal, green on black like the Exchange\'s board and older. A list scrolls: CONTINUITY RESERVES — 1 RELOCATED R0+1 — 2 RELOCATED R0+1 — 3 LOST — 4 NON-COMPLIANT (DOOR) — 5 RELOCATED R0+3 — 6 LOST — 7 SOLD (CONCERN) — 8 LOST — 9 OUTSTANDING (CARETAKER NON-COMPLIANT, ORDERS 3). Then it scrolls off.', again: 'CONTINUITY RESERVES, scrolling green. 9 OUTSTANDING. It scrolls off again.', effects: [{ learn: 'md_reserves_list' }, { lead: 'l_cisterns_relocate' }, { lead: 'l_c4_same_order' }], options: [{ text: '(Step back.)', exit: true }] } },
+  nodes: {
+    look: {
+      text: 'The records terminal, green on black like the Exchange\'s board and older. A list scrolls: CONTINUITY RESERVES — 1 RELOCATED R0+1 — 2 RELOCATED R0+1 — 3 LOST — 4 NON-COMPLIANT (DOOR) — 5 RELOCATED R0+3 — 6 LOST — 7 SOLD (CONCERN) — 8 LOST — 9 OUTSTANDING (CARETAKER NON-COMPLIANT, ORDERS 3). Then it scrolls off.',
+      again: 'CONTINUITY RESERVES, scrolling green. 9 OUTSTANDING. It scrolls off again.',
+      effects: [{ learn: 'md_reserves_list' }, { lead: 'l_cisterns_relocate' }, { lead: 'l_c4_same_order' }],
+      options: [
+        { id: 'term.nine', text: '(Search the register: ASSETS, MUNICIPAL, unit 9.)', if: DEED_SEARCH, check: { skill: 'science', dc: 40, mods: [{ if: { inParty: NINE }, dc: -15, why: 'Nine stands with its back to the screen, naming the codes' }] }, next: 'register', fail: 'register_no' },
+        { text: '(Step back.)', exit: true },
+      ],
+    },
+    register: {
+      text: `ASSETS, MUNICIPAL. The cursor finds it on the third page. ${NINE_ENTRY}`,
+      again: 'The entry, green on black. The last line is still set apart from the rest.',
+      interject: [{ companion: NINE, text: '"The owner," Nine says, to the wall, its back to the screen. "Only the owner. Clause 40." It does not turn round, and it does not ask what is taking you so long.' }],
+      effects: DEED_READ,
+      options: [{ text: '(Step back.)', exit: true }],
+    },
+    register_no: { text: 'ACCESS: CLERK GRADE OR ABOVE. The cursor waits. A card is tucked into the terminal\'s frame, in a warden\'s hand: ENTRIES PRINTED AT THE DESK — PAPER 20.', again: 'CLERK GRADE OR ABOVE. The card in the frame: PRINTED AT THE DESK.', effects: [{ learn: 'md_desk_prints' }], options: [{ text: '(Step back.)', exit: true }] },
+  },
 };
 
 export const d_md_bell: DialogueDef = {
@@ -210,16 +242,33 @@ export const d_md_desk: DialogueDef = {
         { id: 'desk.pay', text: '(Pay. 45 Tolls)', if: { item: 'tolls', count: 45 }, effects: [{ take: 'tolls', count: 45 }, { give: 'k_md_receipt' }, { set: 'md_fines_paid' }, { rep: { faction: 'wardens', respect: 4 } }], next: 'paid_now' },
         { id: 'desk.contest', text: 'I haven\'t done any of it.', next: 'contest' },
         { id: 'desk.bail', text: 'Bail. For the cells.', if: { flag: 'md_detained' }, next: 'bail_info' },
+        ...DESK_DEED(''),
         bye,
       ],
     },
-    again: { text: '"Three fines. Forty-five."', again: 'He taps the notice, apologetically, and waits.', options: [{ id: 'desk.pay.again', text: '(Pay. 45 Tolls)', if: { item: 'tolls', count: 45 }, effects: [{ take: 'tolls', count: 45 }, { give: 'k_md_receipt' }, { set: 'md_fines_paid' }, { rep: { faction: 'wardens', respect: 4 } }], next: 'paid_now' }, { id: 'desk.contest.again', text: 'I haven\'t done any of it.', if: { not: { flag: 'md_fines_contested' } }, next: 'contest' }, bye] },
+    again: { text: '"Three fines. Forty-five."', again: 'He taps the notice, apologetically, and waits.', options: [{ id: 'desk.pay.again', text: '(Pay. 45 Tolls)', if: { item: 'tolls', count: 45 }, effects: [{ take: 'tolls', count: 45 }, { give: 'k_md_receipt' }, { set: 'md_fines_paid' }, { rep: { faction: 'wardens', respect: 4 } }], next: 'paid_now' }, { id: 'desk.contest.again', text: 'I haven\'t done any of it.', if: { not: { flag: 'md_fines_contested' } }, next: 'contest' }, ...DESK_DEED('.again'), bye] },
     contest: { text: '"Yet." He says it gently. "You can contest a forecast fine at the Court of Accounts. By appointment. The appointment is — " he looks at a book — "when the schedule says." He writes CONTESTED on the notice and stamps it, which seems to make him happier than the fine did.', effects: [{ set: 'md_fines_contested' }, { learn: 'md_court_heard' }], options: [bye] },
     paid_now: { text: 'He stamps a receipt, twice. "Paid. You\'re a person the Precinct has no complaint against." He thinks about it. "Including the ones it hasn\'t had yet."', options: [bye] },
-    paid: { text: '"No complaints on file. That\'s rare, here."', again: '"Still no complaints." He sounds faintly proud of you.', options: [bye] },
+    paid: { text: '"No complaints on file. That\'s rare, here."', again: '"Still no complaints." He sounds faintly proud of you.', options: [...DESK_DEED('.paid'), bye] },
+    print: {
+      text: `"Asset entries are public." He takes your twenty, which is for the paper, and the printer behind him chatters a long time for a short entry. He reads it before he hands it over, because he reads everything he hands over: ${NINE_ENTRY} His eyebrows go up at the last line and stay there. "Lapsed," he says. "I didn\'t know things could."`,
+      again: 'He has gone back to his drawer. The printed entry is in your hand, the last line set apart.',
+      options: [bye],
+    },
+    buy: {
+      text: [
+        { if: { inParty: NINE }, text: '"Assessed value." He looks it up, and then up at the assessor. "One hundred and twenty," Nine says. "One for each year in service. I have filed a complaint about the method." The warden stamps the transfer and leaves the keeper\'s line blank, because a buyer may name one, and hands it to you.' },
+        { text: '"Assessed value." He looks it up. "Assessed by the assessor, it says. One hundred and twenty: one a year in service." He stamps the transfer and leaves the keeper\'s line blank, because a buyer may name one, and hands it to you. "I\'ve never sold a — " He stops, and chooses. "An asset."' },
+      ],
+      again: 'The transfer is stamped. He does not look at it again.',
+      options: [bye],
+    },
     bail_info: { text: '"A hundred, to the assessor, in the cell. It likes to do it itself."', options: [bye] },
   },
 };
+
+/** Clause 9(b), witnessed: a lapsed asset passes to its keeper (Nine's deed). A check, so it stays offered. */
+const LOWE_DEED = (id: string): OptionDef => ({ id, text: 'Clause 9(b). A lapsed asset passes to its keeper on a captain\'s witness. Unit 9, the assessor.', if: DEED_MAKEABLE, check: { skill: 'speech', dc: 40, mods: [{ if: { inParty: NINE }, dc: -10, why: 'the asset is standing in front of him' }, { if: { trust: { npc: 'npc_md_01', gte: 10 } }, dc: -10, why: 'he trusts you' }, { if: { member: 'wardens' }, dc: -5, why: 'a citizen asking a captain for a lawful thing' }] }, next: 'deed_ok', fail: 'deed_no' });
 
 export const d_md_lowe: DialogueDef = {
   id: 'd_md_lowe', owner: 'npc_md_01',
@@ -239,13 +288,14 @@ export const d_md_lowe: DialogueDef = {
         { id: 'lowe.dial', text: 'The standpipe square. Point eight on the notice, point six on the dial, and forty people who can count.', if: RIOT_COUNT, next: 'dial' },
         { id: 'lowe.pumps', text: '(Put the relief schedule on the desk.) Clause 31 sends the Sink\'s pumps to the Precinct in spring. Clause 14 says the drains come first.', if: PUMPS_PAPER, next: 'pumps' },
         { id: 'lowe.static', text: 'There\'s a girl in Bridgeward who says the Plan\'s own lines out loud. Reserve nine. Point six. Thursday.', if: STATIC_GIRL, next: 'static' },
+        LOWE_DEED('lowe.deed'),
         bye,
       ],
     },
-    again: { text: '"Captain." He has stood up again.', again: 'He stays standing, because the charter says to, and waits.', options: [{ id: 'lowe.lawful.again', text: 'Lawful and right are two words.', if: { not: { seen: 'lowe.lawful' } }, next: 'lawful' }, { id: 'lowe.flag.again', text: 'The lens called me a magistrate.', if: { all: [{ knows: 'md_magistrate_designate' }, { not: { seen: 'lowe.flag' } }] }, next: 'flag' }, { id: 'lowe.ring.again', text: 'The Ring is burning.', if: { not: { seen: 'lowe.ring' } }, next: 'ring' }, { id: 'lowe.water.again', text: 'Your water\'s rationed.', if: { all: [{ any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, { not: { seen: 'lowe.water' } }] }, next: 'water' }, { id: 'lowe.letter.again', text: '(Hand him the sealed letter.) From the board at Old Market.', if: GIG_LETTER, next: 'letter' }, { id: 'lowe.dial.again', text: 'The standpipe square. Point eight on the notice, point six on the dial.', if: RIOT_COUNT, next: 'dial' }, { id: 'lowe.pumps.again', text: '(Put the relief schedule on the desk.) Clause 31 against clause 14.', if: PUMPS_PAPER, next: 'pumps' }, { id: 'lowe.static.again', text: 'A girl in Bridgeward says the Plan\'s lines out loud.', if: STATIC_GIRL, next: 'static' }, bye] },
+    again: { text: '"Captain." He has stood up again.', again: 'He stays standing, because the charter says to, and waits.', options: [{ id: 'lowe.lawful.again', text: 'Lawful and right are two words.', if: { not: { seen: 'lowe.lawful' } }, next: 'lawful' }, { id: 'lowe.flag.again', text: 'The lens called me a magistrate.', if: { all: [{ knows: 'md_magistrate_designate' }, { not: { seen: 'lowe.flag' } }] }, next: 'flag' }, { id: 'lowe.ring.again', text: 'The Ring is burning.', if: { not: { seen: 'lowe.ring' } }, next: 'ring' }, { id: 'lowe.water.again', text: 'Your water\'s rationed.', if: { all: [{ any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, { not: { seen: 'lowe.water' } }] }, next: 'water' }, { id: 'lowe.letter.again', text: '(Hand him the sealed letter.) From the board at Old Market.', if: GIG_LETTER, next: 'letter' }, { id: 'lowe.dial.again', text: 'The standpipe square. Point eight on the notice, point six on the dial.', if: RIOT_COUNT, next: 'dial' }, { id: 'lowe.pumps.again', text: '(Put the relief schedule on the desk.) Clause 31 against clause 14.', if: PUMPS_PAPER, next: 'pumps' }, { id: 'lowe.static.again', text: 'A girl in Bridgeward says the Plan\'s lines out loud.', if: STATIC_GIRL, next: 'static' }, LOWE_DEED('lowe.deed.again'), bye] },
     static: { text: '"A tap." He does not write it down yet. "An unlicensed tap on the file, in a person. The charter has a clause; it is not a kind one." He looks at the drawer marked AUDIT. "If I know the tower\'s name, I have to go. If I don\'t, I don\'t." He waits, which is the kindest thing he can do.', options: [{ id: 'static.give', text: 'The Saints\' tower. Under the mast.', effects: [{ set: 'bw_static', value: 'silenced' }, { rep: { faction: 'wardens', respect: 6 } }, { rep: { faction: 'saints', respect: -25 } }, { trust: { npc: 'npc_md_01', by: 5 } }, { xp: 80 }, { decision: { id: 'bw_static_silenced', text: 'You gave the warden captain the Saints\' tower, and the girl who hears went to the Precinct\'s cells.' } }], next: 'static_done' }, { text: 'Forget I said it.', exit: true }] },
     static_done: { text: '"Then I know it." He puts on his coat. "She\'ll be in a cell with a blanket and no radio, which the charter calls custody and I call quiet. Lawful." He does not say the other word.', interject: [
-      { companion: NINE, text: '"Custody," Nine says. The lens clicks. "The record will call it lawful. I will be noting it elsewhere."' },
+      { companion: NINE, text: '"Custody," Nine says. The lens clicks. "The record will call it lawful. I will be noting it elsewhere."', effects: [{ approval: { companion: NINE, by: -5 } }] },
       { companion: TAMSIN, text: '"Quiet," Tamsin says. "He means a cell with no window." She looks at you the way she looks at people she is adding to a list.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] },
     ], options: [bye] },
     pumps: {
@@ -255,7 +305,7 @@ export const d_md_lowe: DialogueDef = {
         { text: 'Think about it.', exit: true },
       ],
     },
-    pumps_ok: { text: 'He writes it himself, on the station\'s paper, under the brass clause: VARIANCE — RELIEF PUMPING — CLAUSE 14 — PRECINCT SUPPLY TO BEAR THE SHORTFALL. He signs where a captain signs and stamps it where the assessor would, with the assessor\'s own stamp, which he has never used. "Lawful," he says. "I checked." He hands it to you. "Take it to the keeper. Then come and tell me what point six tastes like in a Precinct kitchen. I will need to know."', interject: [{ companion: NINE, text: '"Clause 14," Nine says, from behind you, as the stamp comes down. "The drains are the city\'s first duty." Lowe looks at the assessor\'s plate on its chest and does not ask what it is doing out of the records office. "Lawful," he tells it.' }], effects: [{ take: 'k_sk_schedule' }, { give: 'k_sk_variance' }, { set: 'sk_pumps', value: 'paid' }, { set: 'sk_variance_lowe' }, { trust: { npc: 'npc_md_01', by: 15 } }, { rep: { faction: 'wardens', respect: 4 } }, { xp: 150 }, { decision: { id: 'sk_variance_lowe', text: 'Captain Lowe signed a variance putting the Sink\'s drains before the Precinct\'s growth, on your asking.' } }], options: [{ text: '(Take it.)', exit: true }] },
+    pumps_ok: { text: 'He writes it himself, on the station\'s paper, under the brass clause: VARIANCE — RELIEF PUMPING — CLAUSE 14 — PRECINCT SUPPLY TO BEAR THE SHORTFALL. He signs where a captain signs and stamps it where the assessor would, with the assessor\'s own stamp, which he has never used. "Lawful," he says. "I checked." He hands it to you. "Take it to the keeper. Then come and tell me what point six tastes like in a Precinct kitchen. I will need to know."', interject: [{ companion: NINE, text: '"Clause 14," Nine says, from behind you, as the stamp comes down. "The drains are the city\'s first duty." Lowe looks at the assessor\'s plate on its chest and does not ask what it is doing out of the records office. "Lawful," he tells it.', effects: [{ approval: { companion: NINE, by: 10 } }] }], effects: [{ take: 'k_sk_schedule' }, { give: 'k_sk_variance' }, { set: 'sk_pumps', value: 'paid' }, { set: 'sk_variance_lowe' }, { trust: { npc: 'npc_md_01', by: 15 } }, { rep: { faction: 'wardens', respect: 4 } }, { xp: 150 }, { decision: { id: 'sk_variance_lowe', text: 'Captain Lowe signed a variance putting the Sink\'s drains before the Precinct\'s growth, on your asking.' } }], options: [{ text: '(Take it.)', exit: true }] },
     pumps_no: { text: '"Clause 31 is the Plan\'s. I carry out the Plan\'s." He gives you the schedule back, squared. "I grieve the other one at home. I told you that."', options: [bye] },
     dial: {
       text: '"Point eight is the notice." He takes it off the spike. "Point six is a dial that somebody turned, or that turned itself, and either way the arithmetic is wrong, and I check the arithmetic." He puts on his coat. He walks the avenue to the square with the notice held out in front of him, reads both numbers aloud to forty people and two wardens, and turns the dial to point eight with his own fingers, slowly, so the queue can see the hand. Then he writes it down.',
@@ -283,6 +333,14 @@ export const d_md_lowe: DialogueDef = {
     ring: { text: '"The Ring is outside the law. Outside the Wall. The charter keeps the city\'s people; the Ring stopped being the city\'s on a date I can show you." He does not reach for it. "Every dusk they push. Every dusk we hold. Nobody dies of it, mostly. I count them in the morning."', effects: [{ learn: 'lowe_ring' }], options: [bye] },
     recruit: { text: '"Clause 22. The wardens may recruit from those detained, at the captain\'s discretion." He looks at you. "Grey, and a card, and the schedule. It is the only door out of a cell that doesn\'t cost coin or days. It costs something else, which I won\'t pretend about."', effects: [{ learn: 'md_lowe_offer' }], options: [bye] },
     water: { text: '"Point eight. Rebalancing, the notice says." He is quiet. "Somebody in the Sallow turned a dial and the Precinct drinks less and the Sink floods a week earlier in spring. That is what *the Plan rebalances* means. I check the arithmetic. It is always right."', effects: [{ learn: 'lowe_rebalance' }, { lead: 'l_precinct_rationing' }], options: [bye] },
+    deed_ok: {
+      text: 'He reads 9(b) on the brass, and then in the book, and then the entry, to the end, the way he reads everything. "Its keeper." He looks at the assessor, or at where it would stand. "The clause does not say a keeper must be a person. I checked." He writes the witness himself, signs where a captain signs, and leaves the keeper\'s line empty. "The name is the keeper\'s to write. I witness the passing, not the name. Lawful."',
+      again: 'The witness is signed. He has squared the entry on the desk and is reading something else, to the end.',
+      interject: [{ companion: NINE, text: '"Lawful," Nine repeats. The lens clicks once, slowly, like something being set down with care.', effects: [{ approval: { companion: NINE, by: 5 } }] }],
+      effects: [{ set: 'nine_deed_made' }, { set: 'nine_deed_how', value: 'witnessed' }, { trust: { npc: 'npc_md_01', by: 5 } }, { decision: { id: 'nine_deed_witnessed', text: 'Captain Lowe witnessed Assessor Nine\'s lapsed title passing to its keeper, under clause 9(b).' } }],
+      options: [bye],
+    },
+    deed_no: { text: '"9(b) is for carts and pumps." He hands the entry back, squared. "I have never witnessed a pump passing to itself, and I will not start with a unit that sits on my hearings because a stranger read me a clause. Bring me its purpose, not its letter."', again: 'He has handed the entry back, squared, and waits to hear its purpose.', options: [bye] },
     fight: { text: 'Nothing.', again: 'The captain is standing, with the station\'s wardens between you. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
@@ -327,11 +385,33 @@ export const d_md_tess: DialogueDef = {
 
 // ---------------------------------------------------------------- the assessor
 
+/** Nine's arc (U8; plan in story/U8_nine_SECRET.md). Stage flags: nine_s1 (the other ledger) → nine_s2 / nine_deed_asked (the
+ * deed; q_comp_nine) → nine_deed (self | player | city) → nine_stance (conscience | deputy, read by the Long Night). Approval
+ * floor −15: it withdraws (nine_left), and can be asked back at its desk; at −45 it does not come back (nine_gone). */
+const NA = (by: number) => ({ approval: { companion: NINE, by } });
+const NINE_AT = (gte?: number, lte?: number): Cond => ({ approval: { companion: NINE, gte, lte } });
+/** Back to the fire, or turn in. */
+const NINE_BACK = [{ text: 'Something else.', next: 'camp' }, { text: 'Rest.', exit: true }];
+/** The road with it through one of the Precinct's lines (stage 2 waits until it has seen the city from outside the office). */
+const NINE_SEEN_CITY: Cond = { any: [{ flag: 'sk_pumps' }, { flag: 'mk_riot_outcome' }, { flag: 'bw_static' }, { flag: 'cr_settled' }, { flag: 'st_roof' }] };
+/** Stage 4 waits for the photograph to be known for what it is, or the Crown to have had its toast. */
+const NINE_LATE: Cond = { any: [{ concluded: 'c_photo_forecast' }, { flag: 'cr_settled' }] };
+const S1: Cond = { all: [{ not: { flag: 'nine_s1' } }, NINE_AT(5)] };
+const S2: Cond = { all: [{ flag: 'nine_s1' }, { not: { flag: 'nine_s2' } }, NINE_AT(15), NINE_SEEN_CITY] };
+const DEED_OPEN: Cond = { all: [{ flag: 'nine_deed_made' }, { not: { flag: 'nine_deed' } }] };
+const S4: Cond = { all: [{ flag: 'nine_deed' }, { not: { flag: 'nine_stance' } }, NINE_LATE] };
+const FORGEABLE: Cond = { all: [{ flag: 'nine_title_read' }, { not: { flag: 'nine_deed_made' } }, { not: { seen: 'nine.forge' } }] };
+const DEED_DECISION = (how: string, text: string) => ({ decision: { id: `nine_deed_${how}`, text } });
+
 export const d_md_nine: DialogueDef = {
   id: 'd_md_nine', owner: 'npc_md_nine',
   start: [
-    { if: { all: [{ inParty: 'npc_md_nine' }, { flag: 'at_camp' }] }, node: 'camp' },
-    { if: { inParty: 'npc_md_nine' }, node: 'party' },
+    { if: { all: [{ inParty: NINE }, NINE_AT(undefined, -45)] }, node: 'leaving_gone' },
+    { if: { all: [{ inParty: NINE }, NINE_AT(undefined, -15)] }, node: 'leaving' },
+    { if: { all: [{ inParty: NINE }, { flag: 'at_camp' }] }, node: 'camp' },
+    { if: { inParty: NINE }, node: 'party' },
+    { if: { flag: 'nine_gone' }, node: 'gone' },
+    { if: { flag: 'nine_left' }, node: 'left' },
     { if: { flag: 'nine_joined' }, node: 'waiting' },
     { if: { flag: 'md_hearing_pending' }, node: 'hearing' },
     { if: { flag: 'nine_met' }, node: 'again' },
@@ -424,7 +504,7 @@ export const d_md_nine: DialogueDef = {
     },
     join: {
       text: 'It closes both ledgers and stands, which is a sound like a filing cabinet. "I am owned by the city, under clause 9. The city has not noticed me in forty years. The record suggests it will not notice me leave." It takes the other ledger and nothing else. "Clause 14: the drains are the city\'s first duty. I will say this often. You may tell me to stop; I will not."',
-      effects: [{ join: 'npc_md_nine' }, { set: 'nine_joined' }, { approval: { companion: 'npc_md_nine', by: 10 } }, { decision: { id: 'nine_joined', text: 'Assessor Nine, a Ledger unit with an unlawful log of the Plan\'s errors, left the records office with you.' } }, { xp: 100 }],
+      effects: [{ join: 'npc_md_nine' }, { set: 'nine_joined' }, NA(10), { decision: { id: 'nine_joined', text: 'Assessor Nine, a Ledger unit with an unlawful log of the Plan\'s errors, left the records office with you.' } }, { xp: 100 }],
       options: [{ text: '(Go.)', exit: true }],
     },
     waiting: { text: '"The record suggests we were going somewhere."', again: '"The record still suggests it."', options: [{ text: 'We\'re going.', effects: [{ join: 'npc_md_nine' }], exit: true }, { text: 'Wait here a while.', exit: true }] },
@@ -435,17 +515,248 @@ export const d_md_nine: DialogueDef = {
         { text: 'Keep up.', exit: true },
       ],
     },
+
+    // ---- camp: the arc's four conversations, the deed, a pool of lighter talk, and Brother Ash across the fire
     camp: {
-      text: '"Fire. Unlicensed. I have noted it." It sits anyway, which it does badly.',
+      text: [
+        { if: { flag: 'nine_deed', eq: 'self' }, text: '"Fire. Unlicensed. I have noted it, on my own account." It sits, which it still does badly, with the other ledger on its knee.' },
+        { text: '"Fire. Unlicensed. I have noted it." It sits anyway, which it does badly.' },
+      ],
       again: 'It sits by the unlicensed fire, still badly, with the other ledger on its knee.',
       options: [
-        { id: 'nine.camp.owner', text: 'Who owns you?', if: { not: { knows: 'nine_owner_hint' } }, next: 'owner' },
+        { id: 'nine.s1', text: 'The other ledger. What was the first thing you wrote in it?', if: S1, next: 's1' },
+        { id: 'nine.s2', text: 'You said you would like a deed.', if: S2, next: 's2' },
+        { id: 'nine.s2.later', text: 'Your deed. I\'ll read the register for you.', if: { all: [{ flag: 'nine_s2' }, { not: { flag: 'nine_deed_asked' } }] }, next: 's2_yes' },
+        { id: 'nine.forge', text: 'You have a stamp. Write the deed yourself.', if: FORGEABLE, next: 'forge' },
+        { id: 'nine.s3', text: 'The deed. The keeper\'s line is empty.', if: { all: [DEED_OPEN, NINE_AT(20)] }, next: 's3' },
+        { id: 'nine.s3.cold', text: 'The deed. Whose name will go on it?', if: { all: [DEED_OPEN, NINE_AT(undefined, 19)] }, next: 's3_cold' },
+        { id: 'nine.s4', text: 'You\'ve been writing in the other ledger every night.', if: { all: [S4, NINE_AT(30)] }, next: 's4' },
+        { id: 'nine.s4.cold', text: 'When the city calls its units in, what will you do?', if: { all: [S4, NINE_AT(undefined, 29)] }, next: 's4_cold' },
+        { id: 'nine.camp.owner', text: 'Who owns you?', if: { all: [{ not: { knows: 'nine_owner_hint' } }, { not: { flag: 'nine_s2' } }] }, next: 'owner' },
         { id: 'nine.camp.errors', text: 'The errors. Where do they cluster?', if: { not: { knows: 'nine_errors_hint' } }, next: 'errors' },
+        { id: 'nine.lens', text: 'Your lens is cracked.', if: { not: { seen: 'nine.lens' } }, next: 'lens' },
+        { id: 'nine.drains', text: 'Why the drains? Always the drains.', if: { not: { seen: 'nine.drains' } }, next: 'drains' },
+        { id: 'nine.lowe', text: 'Captain Lowe.', if: { all: [{ flag: 'lowe_met' }, { not: { seen: 'nine.lowe' } }] }, next: 'lowe' },
+        { id: 'nine.sink', text: 'The Sink.', if: { all: [{ flag: 'visited_md_sink' }, { not: { seen: 'nine.sink' } }] }, next: 'sink' },
+        { id: 'nine.crown', text: 'The Crown.', if: { all: [{ flag: 'visited_md_crown' }, { not: { seen: 'nine.crown' } }] }, next: 'crown' },
+        { id: 'nine.reserve', text: 'There\'s someone in Reserve 9. Tamsin Roe. Is she in your record?', if: { not: { seen: 'nine.reserve' } }, next: 'reserve' },
+        { id: 'nine.odile', text: 'What do you make of Odile?', if: { all: [{ inParty: ODILE }, { not: { seen: 'nine.odile' } }] }, next: 'odile' },
+        { id: 'nine.wren', text: 'You watch Wren.', if: { all: [{ inParty: WREN }, { not: { seen: 'nine.wren' } }] }, next: 'wren' },
+        { id: 'nine.ash', text: '(Ash has been watching it write for an hour.)', if: { all: [{ inParty: ASH }, { not: { seen: 'nine.ash' } }] }, next: 'ash' },
         { text: 'Rest.', exit: true },
       ],
     },
-    owner: { text: '"The city. Clause 9. Except that the city is a thing under a tower and a charter and a Plan, and none of those has ever signed anything, and the record suggests — " a long click — "that a thing nobody signed for is a thing nobody owns. I would like a deed. I would like to know whose name to put on it. I will not say this again until I have more to say."', effects: [{ learn: 'nine_owner_hint' }, { approval: { companion: 'npc_md_nine', by: 5 } }], options: [{ text: 'Rest.', exit: true }] },
-    errors: { text: '"Round the people on your map." It does not look at your pack; it does not need to. "The Plan is very good. It is wrong about perhaps one person in four hundred, and those people are almost all on a list a dead man carried west, and you are the top of it. I find that interesting. I have stopped saying I am not permitted to."', effects: [{ learn: 'nine_errors_hint' }, { approval: { companion: 'npc_md_nine', by: 5 } }], options: [{ text: 'Rest.', exit: true }] },
+
+    // stage 1: the other ledger (approval 5+, from the day it joins)
+    s1: {
+      text: 'It opens the other ledger at the first page, which is soft with handling. "R4. A girl in the Stacks, forecast to be a clerk in the records office by R19. In R19 she was a drain-diver in the Sink, and good at it." The lens clicks. "The record called it variance and closed the line. Variance is the record\'s word for a person who did not do what was expected. I wrote her name down, because nobody else was going to."',
+      again: 'The ledger is still open at the first page. "R4," it says again, as if you might have forgotten the year.',
+      passives: [{ attr: 'wits', dc: 6, text: '*Variance.* MOTHER says it at the hatch every week — *variance unchanged* — and you had always heard it as a machine\'s word for nothing.', effects: [{ learn: 'nine_variance_word' }] }],
+      options: [{ id: 'nine.s1.why', text: 'Why her?', next: 's1_why' }],
+    },
+    s1_why: {
+      text: '"She was the first error I saw. There have been four hundred and eleven since." It turns a page, then another. "In R5 I filed her with the city, as the clause requires. The city read the filing and moved me to records, where errors are kept and nobody reads them. I took the hint, and a second ledger."',
+      again: '"Four hundred and eleven," it says. "Since."',
+      effects: [{ set: 'nine_s1' }],
+      options: [
+        { id: 'nine.s1.keep', text: 'Keep writing them down. Somebody will read it.', effects: [NA(5)], next: 's1_keep' },
+        { id: 'nine.s1.city', text: 'File them with the city again. That\'s the lawful way.', next: 's1_city' },
+        { id: 'nine.s1.mock', text: 'A machine with a hobby.', effects: [NA(-5)], next: 's1_mock' },
+      ],
+    },
+    s1_keep: { text: '"Somebody." The lens turns to you and stays there. "The record suggests you mean yourself. I will hold you to it; I hold everyone to everything." It closes the ledger on its thumb, keeping the place.', again: 'It keeps its thumb in the ledger, at the place.', options: NINE_BACK },
+    s1_city: { text: '"Lawful." It weighs the word like a coin of doubtful metal. "I filed four hundred and eleven times. The city read the first. The record suggests the city is not short of paper; it is short of wanting to." It writes something small in the margin. "I will file the four hundred and twelfth when there is someone at the other end."', again: 'It has gone back to the margin, and the small writing there.', options: NINE_BACK },
+    s1_mock: { text: '"A hobby." The lens clicks. "Clause 40 forbids me to keep it. Nothing forbids you to laugh at it. The record suggests you would rather it did not exist, which is also the city\'s position." It closes the ledger without marking the place.', again: 'The ledger is shut. It does not open it while you watch.', options: NINE_BACK },
+
+    // stage 2: the deed (approval 15+, after a line of the city's seen together); starts q_comp_nine
+    s2: {
+      text: '"Clause 9: the city\'s units are the city\'s." The lens clicks. "The city is a tower, a charter and a Plan, and none of them has ever signed a thing. Every asset in Meridian has an entry in the register with an owner on it. I have read every entry in the register but one. Clause 40, as it applies to units: no unit reads its own."',
+      again: '"Every entry but one," Nine says again. The lens does not move off the fire.',
+      effects: [{ set: 'nine_s2' }],
+      options: [
+        { id: 'nine.s2.read', text: 'Then I\'ll read yours.', effects: [NA(5)], next: 's2_yes' },
+        { id: 'nine.s2.why', text: 'Why does it matter who owns you?', next: 's2_why' },
+        { id: 'nine.s2.free', text: 'Unowned sounds like free.', effects: [NA(-5)], next: 's2_free' },
+      ],
+    },
+    s2_why: {
+      text: '"An owner can be asked. A thing nobody owns is not asked; it is scheduled." A pause, longer than its pauses. "The record has things on the schedule for me. I do not know what. That is the clause again."',
+      again: '"Scheduled," it says, to the fire.',
+      options: [{ id: 'nine.s2.why.read', text: 'Then I\'ll read it.', effects: [NA(5)], next: 's2_yes' }, { text: 'Not yet.', next: 's2_later' }],
+    },
+    s2_free: {
+      text: '"Unowned is lost property. Lost property is disposed of." It says it as a fact about drainage. "Free is a word for people. The charter has no clause that uses it."',
+      again: '"Lost property," it says again, as a fact.',
+      options: [{ id: 'nine.s2.free.read', text: 'Then I\'ll read it.', next: 's2_yes' }, { text: 'Not yet.', next: 's2_later' }],
+    },
+    s2_later: { text: '"Not yet is a date. I will wait for it." It goes back to the ledger.', again: 'It waits, as it said it would.', options: NINE_BACK },
+    s2_yes: {
+      text: '"The records terminal, in the office: ASSETS, MUNICIPAL. The register is public; the desk warden prints any entry for the price of the paper." The lens clicks. "I will stand where I cannot see the screen. Read me the owner, if there is one. Read me nothing else. I would rather the record kept the rest."',
+      again: '"The owner," it says. "Only the owner."',
+      effects: [{ set: 'nine_s2' }, { set: 'nine_deed_asked' }, { quest: 'q_comp_nine', start: true }],
+      options: NINE_BACK,
+    },
+    forge: {
+      text: '"A deed in my own hand, with my own plate pressed into it, naming a keeper the register never heard of." The lens clicks. "Clause 3: a forged instrument is void, and its maker is a criminal. I am the only one in the city who would know it was forged." It waits.',
+      again: 'It waits, the plate on its chest catching the fire.',
+      options: [
+        { id: 'nine.forge.do', text: 'Write it. Nobody reads the register.', effects: [NA(-10), { set: 'nine_deed_made' }, { set: 'nine_deed_how', value: 'forged' }, DEED_DECISION('forged', 'You had Assessor Nine write its own deed, forged under its own plate.')], next: 'forge_done' },
+        { id: 'nine.forge.no', text: 'Then don\'t. We\'ll do it lawfully.', effects: [NA(5)], next: 'forge_no' },
+      ],
+    },
+    forge_done: { text: 'It writes the deed in a hand that is almost its own, and presses the plate into it, and does not look at it afterwards. Then it opens the other ledger and writes one more line. "The first error I have made on purpose," it says. "I have logged it. I log everything."', again: 'It has put the deed away where you cannot see it.', effects: [{ learn: 'nine_forged' }], options: NINE_BACK },
+    forge_no: { text: '"Lawfully." It says the word as if it has been handed back something it lent. "Clause 9(b) is on the brass in the captain\'s office. The desk sells at assessed value. I will not tell you what the value is; I would only complain."', again: '"Lawfully," it says again, and seems to like it better the second time.', options: NINE_BACK },
+
+    // stage 3: the keeper's line (warm at 20+; below that it fills the line itself)
+    s3: {
+      text: '"The deed." It holds it the way it holds the ledger, open on its knee. "There was a last line on my entry. You read it." The lens clicks. "The register shows the reader what it shows. Your face showed me the rest." A click, harder than its clicks. "Disposal. Next year."',
+      again: '"Next year," it says again, as if testing whether the words have worn.',
+      options: [
+        { id: 'nine.s3.true', text: 'Disposal. R31. It was the last line.', effects: [NA(5)], next: 's3_true' },
+        { id: 'nine.s3.lie', text: 'It was a clerk\'s date. It means nothing.', effects: [NA(-10), { learn: 'nine_lied_kindly' }], next: 's3_lie' },
+      ],
+    },
+    s3_true: { text: '"Thank you." It says it as if the words were a form it had never had occasion to use. "Nobody has told me a thing about myself in a hundred and twenty years. It is less unpleasant than the record suggested." It holds out the deed and a pen. "The keeper\'s line. The clause wants a name. I would like your advice. I will not promise to take it."', again: 'The deed and the pen, held out.', options: [{ text: '(Take the pen.)', next: 's3_name' }] },
+    s3_lie: { text: '"A clerk\'s date." The lens holds on you. "The record suggests you are lying to be kind. I will log it as kindness. It is still an error." It holds out the deed and a pen. "The keeper\'s line. I would like your advice anyway."', again: 'The deed and the pen, held out.', options: [{ text: '(Take the pen.)', next: 's3_name' }] },
+    s3_name: {
+      text: 'Three names would be lawful, it says, and lists them as it lists drain grades: its own, under a clause nobody wrote; yours, as the one who has kept it on the road; or the city\'s, by default, which is what the schedule expects.',
+      again: 'Three lawful names. The pen waits over the line.',
+      options: [
+        { id: 'nine.name.self', text: 'Yours. Unit 9, keeper of itself.', effects: [NA(10), { set: 'nine_deed', value: 'self' }, DEED_DECISION('self', 'Assessor Nine\'s deed names Unit 9 as its own keeper, on your advice.')], next: 's3_self' },
+        { id: 'nine.name.player', text: 'Mine. I\'ll keep you.', effects: [{ set: 'nine_deed', value: 'player' }, DEED_DECISION('player', 'Assessor Nine\'s deed names you as its keeper.')], next: 's3_player' },
+        { id: 'nine.name.city', text: 'The city\'s. It\'s lawful, and it\'s what the schedule expects.', effects: [NA(-5), { set: 'nine_deed', value: 'city' }, DEED_DECISION('city', 'Assessor Nine\'s deed went back to the city, on your advice.')], next: 's3_city' },
+      ],
+    },
+    s3_self: { text: '"Keeper: Unit 9." It writes it slowly, every letter a separate decision. "The charter has no clause for a thing that owns itself. I will be the first entry under a clause nobody wrote." The lens clicks. "When R31 comes, the schedule will find an asset with a keeper, and the keeper will decline."', again: '"Unit 9," it says, quietly, to the deed.', options: [{ text: '(Wait.)', if: NINE_AT(35), next: 's3_log' }, { text: '(Wait.)', if: NINE_AT(undefined, 34), next: 's3_end' }] },
+    s3_player: { text: '"Keeper: {name}." It writes your name in the city\'s hand, carefully, the way it writes the drains. "Then I am owned by someone who reads. You may give me lawful orders. I will note the others." A click. "When R31 comes, the schedule will find I am yours, and will have to ask you."', again: 'Your name on the keeper\'s line, in the city\'s hand.', options: [{ text: '(Wait.)', if: NINE_AT(35), next: 's3_log' }, { text: '(Wait.)', if: NINE_AT(undefined, 34), next: 's3_end' }] },
+    s3_city: { text: '"Keeper: the city." It writes it, and stamps it, and puts the deed in the city\'s ledger, not the other. "Lawful." The lens is still for a long time. "R31, then. I will finish the file before."', again: 'The deed is in the city\'s ledger. It does not take it out again.', options: [{ text: '(Wait.)', if: NINE_AT(35), next: 's3_log' }, { text: '(Wait.)', if: NINE_AT(undefined, 34), next: 's3_end' }] },
+    s3_log: {
+      text: 'It opens its chest, which you did not know held books, and takes out a third: a fair copy, in the city\'s hand, of every error since R4, four hundred and eleven of them and the dates. "Somewhere it will be read," it says. "That was the other thing I wanted. I would like you to have it before R31, in case I do not."',
+      again: 'The fair copy, held out across the fire.',
+      options: [
+        { id: 'nine.log.take', text: '(Take it.)', effects: [{ set: 'nine_log_given' }, { learn: 'nine_log_copy' }, { decision: { id: 'nine_log_given', text: 'Assessor Nine gave you a fair copy of its log of every forecast that failed.' } }], exit: true },
+        { id: 'nine.log.keep', text: 'Keep it. Read it to me yourself, when it matters.', effects: [{ set: 'nine_log_kept' }, NA(5)], next: 's3_kept' },
+      ],
+    },
+    s3_kept: { text: '"When it matters." The lens clicks. "The record suggests that is a date also. I will keep it until then." It puts the book back in its chest and closes the plate over it.', again: 'The plate is closed over the book.', options: [{ text: 'Rest.', exit: true }] },
+    s3_end: { text: 'It closes both ledgers. "The file is not complete," it says. "It will be."', again: 'Both ledgers closed.', options: [{ text: 'Rest.', exit: true }] },
+    s3_cold: {
+      text: '"Keeper: the city." It shows you the line, already written and stamped. "I did not ask you. The record suggests you would not have liked the question, or I would not have liked the answer." It puts the deed in the city\'s ledger. "R31. I will finish the file before."',
+      again: 'The deed is in the city\'s ledger, stamped.',
+      effects: [{ set: 'nine_deed', value: 'city' }, DEED_DECISION('city', 'Assessor Nine wrote the city into its own deed, without asking you.')],
+      options: [{ text: 'Rest.', exit: true }],
+    },
+
+    // stage 4: the man the record could not see, and what it will be when the city calls (warm at 30+)
+    s4: {
+      text: '"R29. A man came to my desk and asked to read his own entry." The lens clicks. "The lens had no face for him. The record had no name. In a hundred and twenty years he is the only person I have processed who was not in the file."',
+      again: '"Not in the file," it says again. "I have checked since. Every night."',
+      options: [{ id: 'nine.s4.want', text: 'What did he want?', next: 's4_man' }],
+    },
+    s4_man: {
+      text: '"His entry. I told him he had none. He said that was the point, and asked whose faces the Spire was rendering that week." A pause. "The queue was on my screen. Twelve names. I did not turn the screen away, which was not lawful. He read it, thanked me, and went upstairs." It turns a page far back in the other ledger. "I logged him as an error. He is the only error I logged before it happened."',
+      again: '"Before it happened," it says. "Only him."',
+      passives: [{ if: { item: 'k_map' }, label: 'the map', text: 'Twelve names. The dead man\'s map has twelve places pricked on it.', effects: [{ learn: 'nine_saw_stranger' }] }],
+      effects: [{ learn: 'nine_met_stranger' }],
+      options: [{ id: 'nine.s4.now', text: 'And now?', next: 's4_call' }],
+    },
+    s4_call: {
+      text: '"When the city calls its units in, it will call me. It does not ask a unit what it thinks, which is convenient, because I do not." The lens turns to you. "I would like your advice again."',
+      again: 'It waits for your advice, the lens on you.',
+      options: [
+        { id: 'nine.stance.conscience', text: 'Answer it. Then read every order aloud before you carry it out, and say so where it\'s recorded if it\'s wrong.', effects: [NA(5), { set: 'nine_stance', value: 'conscience' }, { decision: { id: 'nine_stance', text: 'Assessor Nine will answer the city\'s call, and read its orders aloud before it carries them out.' } }], next: 's4_conscience' },
+        { id: 'nine.stance.deputy', text: 'Answer it. Carry it out, and make it lawful from inside.', effects: [{ set: 'nine_stance', value: 'deputy' }, { decision: { id: 'nine_stance', text: 'Assessor Nine will answer the city\'s call and carry out its orders, lawfully, from inside.' } }], next: 's4_deputy' },
+        { id: 'nine.stance.own', text: 'What do you want to do?', next: 's4_own' },
+      ],
+    },
+    s4_own: {
+      text: [
+        { if: { flag: 'nine_deed', eq: 'city' }, text: '"I am the city\'s. I will go, and read what I am given to the end, which is the most a deputy may do." It closes the ledger.' },
+        { text: '"I will go, and read the order aloud before I carry it out, and if it is wrong I will say so where it is recorded. A thing with a keeper may." The lens clicks. "You asked. Nobody asks."' },
+      ],
+      again: 'It has said what it will do. It does not say it twice.',
+      options: [
+        { text: '(Nod.)', if: { flag: 'nine_deed', eq: 'city' }, effects: [{ set: 'nine_stance', value: 'deputy' }, { decision: { id: 'nine_stance', text: 'Assessor Nine will answer the city\'s call as the city\'s deputy.' } }], exit: true },
+        { text: '(Nod.)', if: { not: { flag: 'nine_deed', eq: 'city' } }, effects: [NA(5), { set: 'nine_stance', value: 'conscience' }, { decision: { id: 'nine_stance', text: 'Assessor Nine will answer the city\'s call, and read its orders aloud before it carries them out. It chose that itself.' } }], exit: true },
+      ],
+    },
+    s4_conscience: { text: '"Aloud." It tries the word the way Lowe tries a word. "The record dislikes things read aloud. It will have to get used to it." The lens clicks. "I have started another ledger. It is empty. It is for what I say when the order is wrong."', again: 'The new ledger lies on its knee, empty.', options: [{ text: 'Rest.', exit: true }] },
+    s4_deputy: { text: '"From inside." The lens clicks. "The record suggests that is where I have always been. I will make it lawful, line by line, and I will log the lines I cannot." It closes the other ledger and does not open it again tonight.', again: 'The other ledger stays shut.', options: [{ text: 'Rest.', exit: true }] },
+    s4_cold: {
+      text: '"I will answer." It does not look up from the city\'s ledger. "You need not ask what I will do. I will do what is lawful."',
+      again: 'It does not look up.',
+      effects: [{ set: 'nine_stance', value: 'deputy' }, { decision: { id: 'nine_stance', text: 'Assessor Nine will answer the city\'s call and do what is lawful. It did not ask your advice.' } }],
+      options: [{ text: 'Rest.', exit: true }],
+    },
+
+    // lighter talk, by where the story is
+    owner: { text: '"The city. Clause 9. Except that the city is a thing under a tower and a charter and a Plan, and none of those has ever signed anything, and the record suggests — " a long click — "that a thing nobody signed for is a thing nobody owns. I would like a deed. I would like to know whose name to put on it. I will not say this again until I have more to say."', again: '"I said I would not say it again," it says.', effects: [{ learn: 'nine_owner_hint' }, NA(5)], options: NINE_BACK },
+    errors: { text: '"Round the people on your map." It does not look at your pack; it does not need to. "The Plan is very good. It is wrong about perhaps one person in four hundred, and those people are almost all on a list a dead man carried west, and you are the top of it. I find that interesting. I have stopped saying I am not permitted to."', again: '"One in four hundred," it says. "Round you."', effects: [{ learn: 'nine_errors_hint' }, NA(5)], options: NINE_BACK },
+    lens: { text: '"It is on the record." The lens turns to you, crack and all. "R12. A stone, at the Wall, thrown by a man the record had forecast would be grateful. I logged the man. A new lens would be a new record of the city, and the old one would be lost." A click, slightly off true. "I prefer to see it through the error."', again: 'The cracked lens, turned to the fire.', options: NINE_BACK },
+    drains: {
+      text: '"Clause 14." It settles, which it does badly. "Meridian has nine hundred and forty kilometres of drain, six hundred and eleven of them pre-Burn and two hundred and two blocked, and the Sink takes the overflow of all of them every spring, because water goes down and the Sink is down." It has not paused. "A city is a thing that decides where its water goes. Everything else is detail. Shall I go on?"',
+      again: 'It is waiting to be allowed to go on.',
+      options: [{ id: 'nine.drains.more', text: 'Go on.', effects: [NA(5)], next: 'drains_more' }, { text: 'That\'s plenty.', next: 'camp' }],
+    },
+    drains_more: { text: 'It goes on. Grades and falls, the six great culverts by their pre-Burn names, which nobody alive uses, and the week in R17 when it walked all of them alone because nobody had asked it to. When it stops, the fire has burned down a hand. "Thank you," it says. "Nobody lets me."', again: 'It has said its piece about the culverts. It looks content, for a filing cabinet.', options: NINE_BACK },
+    lowe: { text: '"A good officer serving a bad schedule." The lens clicks. "He reads every eviction to the end. Nobody else in the Precinct reads anything to the end. I have filed a complaint about everyone else."', again: '"To the end," it says. "Every one."', options: NINE_BACK },
+    sink: { text: '"Down." It says it like a diagnosis. "The Sink is where the city keeps its water when it has decided not to keep it anywhere else. The people are a detail the drains were not planned for." The lens clicks. "That is the worst sentence I have said in forty years. It is also the record\'s position."', again: '"Down," it says again, and nothing else.', options: NINE_BACK },
+    crown: { text: '"Dry." A click. "The Crown has the only drains in the city that have never once backed up. They drain onto the Stacks." It adds nothing. It lets the arithmetic stand.', again: 'It lets the arithmetic stand.', options: NINE_BACK },
+    reserve: {
+      text: '"Clause 40 forbids me to read a person\'s entry to anyone but the person." The lens clicks twice at the name, which it does not do for names. "I will say this much, which is not her entry: the record has sixty people in Reserve 9." A pause. "Bring her to my desk one day. I would like to read it to her. I would like to be there when it is read."',
+      again: '"Sixty," it says. "To her, not to you."',
+      effects: [{ learn: 'nine_reserve_count' }, { set: 'nine_tamsin_asked' }],
+      options: NINE_BACK,
+    },
+    odile: { text: '"A fellow accountant." The lens clicks. "Her books balance in four directions at once. I have not found the error yet. I find that restful."', again: '"Restful," it says, and watches Odile turn her glass.', options: NINE_BACK },
+    wren: { text: '"Calloway." It writes nothing. "There is a line in the record I would like to postpone. Clause 40. I will not say which." It watches her across the fire for longer than it watches anything.', again: 'It is watching Wren again, and writing nothing.', options: NINE_BACK },
+    ash: {
+      speaker: ASH,
+      text: '"Every night," Ash says at last, to the fire. "Every night it writes us down." He turns his cup. "Law\'s a mask, friend. There\'s always a man behind it, wanting the thing he\'d have done anyway."',
+      again: 'Ash turns his cup, and watches the pen.',
+      options: [{ text: '(Wait.)', next: 'ash_nine' }],
+    },
+    ash_nine: {
+      text: '"The Brother has an entry," Nine says, without looking up. "I have not read it to anyone. Clause 40." The pen goes on. "The record suggests he would prefer I never did." Across the fire Ash says, "Keep it that way," softly, and it is not a request.',
+      again: 'The pen, and Ash watching it.',
+      options: [
+        { id: 'nine.ash.count', text: 'Somebody has to count the dead, Brother.', effects: [NA(5), { approval: { companion: ASH, by: -5 } }], next: 'ash_count' },
+        { id: 'nine.ash.forgive', text: 'Some things should be forgiven, not filed.', effects: [NA(-5), { approval: { companion: ASH, by: 5 } }], next: 'ash_forgive' },
+        { id: 'nine.ash.sleep', text: 'Both of you. Sleep.', next: 'ash_sleep' },
+      ],
+    },
+    ash_count: { speaker: ASH, text: '"Somebody always counts them." Ash looks at the fire a long while. "Never the ones that did it." He gets up and sits again with his back to the light, and the pen stops for a time, and starts again.', again: 'Ash sits with his back to the light.', options: [{ text: 'Rest.', exit: true }] },
+    ash_forgive: { text: '"Forgiven by whom?" Nine asks. "The record suggests the forgiver should be named." Nobody names anyone. Ash nods to you, once, and the lens does not turn from him for the rest of the night.', again: 'The lens has not turned from Ash.', options: [{ text: 'Rest.', exit: true }] },
+    ash_sleep: { speaker: 'narrator', text: 'Neither of them does. But the pen goes quieter, and after a while Ash stops watching it.', again: 'The pen, quieter.', options: [{ text: 'Rest.', exit: true }] },
+
+    // leaving (approval −15 or lower), and asking it back at its desk
+    leaving: {
+      text: '"I have filed a notice." It stands, which is a sound like a filing cabinet, and holds out a sheet: WITHDRAWAL OF ASSISTANCE — UNIT 9 — GROUNDS ATTACHED. The grounds run to a second page, each a thing you did and the hour you did it. "The record suggests I am of no further use to you, and you of none to me. I will be at my desk. The drains will need assessing; they always do."',
+      again: 'The notice, held out. It does not take it back.',
+      effects: [{ leave: 'npc_md_nine' }, { set: 'nine_left' }, { decision: { id: 'nine_left', text: 'Assessor Nine withdrew its assistance, with the grounds attached, and went back to its desk.' } }],
+      options: [{ text: '(Take the notice.)', exit: true }],
+    },
+    leaving_gone: {
+      text: '"I have filed a notice." It holds out a sheet: WITHDRAWAL OF ASSISTANCE — UNIT 9 — GROUNDS ATTACHED. "I have not attached them all. There was not the paper." The lens does not click. "Do not come to my desk. The record suggests you would not be received, and for once I agree with it."',
+      again: 'The notice, held out.',
+      effects: [{ leave: 'npc_md_nine' }, { set: 'nine_left' }, { set: 'nine_gone' }, { decision: { id: 'nine_gone', text: 'Assessor Nine withdrew its assistance for good. It would not be received again, it said.' } }],
+      options: [{ text: '(Take the notice.)', exit: true }],
+    },
+    left: {
+      text: '"Records." It does not look up. "Withdrawal of assistance, on file. Grounds attached."',
+      again: 'It turns a page in the city\'s ledger, and does not look up.',
+      options: [
+        { id: 'nine.back', text: 'I read your grounds. All of them. I was wrong, and I\'d like you back.', check: { skill: 'speech', dc: 45, mods: [{ if: { trust: { npc: 'npc_md_nine', gte: 25 } }, dc: -15, why: 'it has trusted you before' }, { if: { flag: 'nine_deed', eq: 'player' }, dc: -10, why: 'you hold its deed, and asked instead of ordering' }, { if: { inParty: ODILE }, dc: -5, why: 'a fellow accountant vouches for your books' }] }, next: 'back', fail: 'back_no' },
+        { text: '(Leave it.)', exit: true },
+      ],
+    },
+    back: {
+      text: '"Wrong." It considers the word. "That is an error. You have logged it yourself, aloud, which is the only way I accept them." It takes the other ledger and stands. "I will append your statement to the grounds. Clause 14: the drains are the city\'s first duty. I will say it often."',
+      effects: [NA(30), { join: 'npc_md_nine' }, { set: 'nine_left', value: false }, { decision: { id: 'nine_back', text: 'You asked Assessor Nine back, aloud, and it came.' } }],
+      options: [{ text: '(Go.)', exit: true }],
+    },
+    back_no: { text: '"The record suggests you are sorry you were seen, not sorry you did it." It turns a page. "Ask again when the record has changed."', again: 'It turns a page.', options: [{ text: '(Leave it.)', exit: true }] },
+    gone: { text: '"Records." The lens does not turn.', again: 'The lens does not turn.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
