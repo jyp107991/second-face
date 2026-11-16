@@ -745,7 +745,12 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   32° at worst (the left 16-18°): the hand is placed outside what the belt carries on that hip, and the upper arm follows
   it. A cap on the resting direction (`UpperDir`) changed nothing (A1 88 = 88 on the pick) and was taken back. The fix
   belongs in `SkinRest`: the hand rests in front of the hip's gear, or the gear gives (a corrective like the flank's),
-  so the upper arm keeps its hang. The pick with the held-back people fixes: A1 88, A4 22 (full42 23), C1 2 (1), W3 3.
+  so the upper arm keeps its hang. The mechanism: `SkinRest`'s `wantIn` turns the upper arm by the gap `gapE`, the
+  smaller of the upper arm's (`gapU`) and the forearm's by the elbow (`gapF`, within 8 cm of it) to the body's skin; on
+  the gear side `gapF` meets the hip's gear and `wantIn` goes out to `-RestOut`. Every degree out, or forward, counts in
+  A1 (the whole angle off the vertical), so the forearm must clear the gear by the elbow's bend instead (A2 5-35°, A3 to
+  30°): when `gapF` binds, flex the elbow and carry the hand to the thigh's front, the upper arm held within ~17°.
+  The pick with the held-back people fixes: A1 88, A4 22 (full42 23), C1 2 (1), W3 3.
   **Next:** the gate batch (A1 cap + T41 framing + the held-back people fixes): a pick of the eleven gear-held men, then
   the whole cast; commit only with no measure worse than 165. Then W6 (women's jog stance), T43's arrivals, play-ch1.
 - **2026-11-16, the drive to v1 resumed (owner: "finish v1. do not stall.").** Gate: red, 165 (A1 118, A4 21, W6 11,
