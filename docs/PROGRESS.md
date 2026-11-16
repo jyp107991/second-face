@@ -717,6 +717,17 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-16 (late), A1's remainder diagnosed.** Gate: red, 89. A pick of the six worst (Police_Male_06,
+  cap_Police_Male_03n, Construction_Male_02, cap_Military_Male_03n, Business_Male_06, cap_DM01s) with the push's body
+  point traced (`tools/qa/patches/push_diag.py` adds `pbH/pbOff/pbD/pbPart` to the gate trace; apply it, run a pick with
+  GATE_TRACE, take it back before committing — the measures are hashed): the frames past 20° are the elbow (the upper
+  arm's third by it, part 1, or the forearm by the elbow, part 2) pressing 1.5-2.2 cm into the bare waist, 26-37 cm
+  above the hips (clothes there under 1 cm: not gear), and the shoulder's first push turning the arm out 3.5-9°. These
+  are broad-waisted men whose waist stands nearly as far out as the shoulder joint. The flank corrective
+  (`BodyCorrectives`, baked into `_flank.bytes`) already reaches 14 cm under the elbow and gives up to 8 cm, but its
+  reference arm is 6° out (`RestAbd`) while these arms rest at 17°: the waist gives where the elbow would be at 6°, not
+  where it is. **Next for A1:** bake the correctives at the arms' real resting angle (a second reference at ~17°, or
+  `RestAbd` per body from the held angle), re-bake the 79 `_flank.bytes`, a pick, then the whole cast.
 - **2026-11-16 (late), P8 step 1 done: ten more places built and walkable.** Gate: red, 89. Committed (c2947ca4): the
   Sallow's and the Glass Flats' places (tollhouse, signalhill, drywells, orchard, wheel, salt pan, windpumps, Ninebridge,
   Openfield, the Sump + Cistern 4); `PlacePlayTests` 13/13 (every post reached on foot from the arrival with the game's
