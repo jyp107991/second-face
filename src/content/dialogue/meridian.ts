@@ -27,6 +27,15 @@ const RIOT_COUNT: Cond = { all: [{ flag: 'mk_riot_lowe_pending' }, { not: { flag
 const PUMPS_PAPER: Cond = { all: [{ item: 'k_sk_schedule' }, { not: { flag: 'sk_pumps' } }] };
 /** The Saints' girl has been heard and nobody has decided her yet (Static). */
 const STATIC_GIRL: Cond = { all: [{ knows: 'bw_immy_heard' }, { not: { flag: 'bw_static' } }] };
+/** The photograph's date, not yet read for what it is (q_a2_calendar, B3.11). */
+const CAL_OPEN: Cond = { all: [{ item: 'k_photo' }, { not: { knows: 'cal_future' } }] };
+/** The Archive Spire and the Court (B3.11): what Captain Lowe hears of them. */
+const LOWE_SPIRE = (sfx: string): OptionDef[] => [
+  { id: `lowe.cup${sfx}`, text: 'The Crown\'s hostess died at her own toast. The wardens called it lawful.', if: { all: [{ flag: 'cr_celestine_dead' }, { not: { any: [{ seen: 'lowe.cup' }, { seen: 'lowe.cup.again' }] } }] }, next: 'cup' },
+  { id: `lowe.tap${sfx}`, text: 'The girl from the Saints\' tower. What does she say in your cell?', if: { all: [{ flag: 'bw_static', eq: 'silenced' }, { not: { any: [{ seen: 'lowe.tap' }, { seen: 'lowe.tap.again' }] } }] }, next: 'tap' },
+  { id: `lowe.ruling${sfx}`, text: 'The Court of Accounts ruled on my fines.', if: { all: [{ flag: 'prec_forecast_fine' }, { not: { any: [{ seen: 'lowe.ruling' }, { seen: 'lowe.ruling.again' }] } }] }, next: 'ruling' },
+  { id: `lowe.verdict${sfx}`, text: 'I was heard at the top of the Spire.', if: { all: [{ flag: 'ar_verdict' }, { not: { any: [{ seen: 'lowe.verdict' }, { seen: 'lowe.verdict.again' }] } }] }, next: 'verdict' },
+];
 const PAPERS = (status: string) => [{ set: 'md_status', value: status }, { set: 'md_inside' }, { xp: 150 }];
 const CITIZEN = [{ give: 'k_md_papers' }, { enlist: 'wardens', rank: 'citizen' }];
 
@@ -71,7 +80,7 @@ export const d_md_gate: DialogueDef = {
         { companion: WREN, text: '"Nineteen years," Wren says. "Huh." Her eyes go from the sergeant to the clerk to the barrier, counting. "Then nobody shoots you today. That\'s something."' },
         { companion: TAMSIN, text: '"Magistrate," Tamsin says, and laughs, and stops laughing. "That\'s a joke. Tell me that\'s a joke."' },
       ],
-      effects: [{ learn: 'md_magistrate_designate' }, { lead: 'l_photo_light' }],
+      effects: [{ learn: 'md_magistrate_designate' }, { lead: 'l_photo_light' }, { lead: 'l_cal_r49' }],
       options: [
         { id: 'status.accept', text: 'Then admit me on sight.', next: 'flag' },
         { id: 'status.refuse', text: 'I\'ll stand the hearing like anyone.', next: 'hearing_go' },
@@ -107,7 +116,7 @@ export const d_md_gate_board: DialogueDef = {
 
 export const d_md_wall_sign: DialogueDef = {
   id: 'd_md_wall_sign', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'Painted on the Wall in letters a man high, old and renewed: RESTORATION YEAR 30. Beside it, in letters a hand high, newer and not renewed: THE RING BURNS AND YOU COUNT.', again: 'RESTORATION YEAR 30, a man high. THE RING BURNS AND YOU COUNT, a hand high, fading.', effects: [{ learn: 'md_year_seen' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'Painted on the Wall in letters a man high, old and renewed: RESTORATION YEAR 30. Beside it, in letters a hand high, newer and not renewed: THE RING BURNS AND YOU COUNT.', again: 'RESTORATION YEAR 30, a man high. THE RING BURNS AND YOU COUNT, a hand high, fading.', effects: [{ learn: 'md_year_seen' }, { lead: 'l_cal_year' }, { quest: 'q_a2_calendar', start: true }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_md_drain: DialogueDef = {
@@ -189,6 +198,7 @@ export const d_md_records_term: DialogueDef = {
       again: 'CONTINUITY RESERVES, scrolling green. 9 OUTSTANDING. It scrolls off again.',
       effects: [{ learn: 'md_reserves_list' }, { lead: 'l_cisterns_relocate' }, { lead: 'l_c4_same_order' }],
       options: [
+        { id: 'term.render', text: '(Type the code from the photograph\'s margin: 0412/30.)', if: { all: [CAL_OPEN, { knows: 'cal_margin_seen' }] }, check: { skill: 'science', dc: 45, mods: [{ if: { inParty: NINE }, dc: -15, why: 'Nine tells the wall which queue the number belongs to' }] }, next: 'render', fail: 'render_no' },
         { id: 'term.nine', text: '(Search the register: ASSETS, MUNICIPAL, unit 9.)', if: DEED_SEARCH, check: { skill: 'science', dc: 40, mods: [{ if: { inParty: NINE }, dc: -15, why: 'Nine stands with its back to the screen, naming the codes' }] }, next: 'register', fail: 'register_no' },
         { text: '(Step back.)', exit: true },
       ],
@@ -200,6 +210,13 @@ export const d_md_records_term: DialogueDef = {
       effects: DEED_READ,
       options: [{ text: '(Step back.)', exit: true }],
     },
+    render: {
+      text: 'The cursor takes the code and the screen goes blank and then very full. RENDER QUEUE 0412 — SUBJECT: DESIGNATE — RENDERED R30 FROM FORECAST — DEPICTS R49.06.12 — SITE: ARCHIVE SPIRE, PUBLIC STEPS — COPIES: 1 (UNRECORDED). The pencil on the back of the print copied the date and left off the R.',
+      again: 'RENDER QUEUE 0412. DEPICTS R49. The screen holds it.',
+      effects: [{ learn: 'cal_future' }, { set: 'cal_how', value: 'render' }, { learn: 'cal_render' }, { lead: 'l_cal_render' }, { learn: 'ar_known' }, { xp: 60 }],
+      options: [{ text: '(Step back.)', exit: true }],
+    },
+    render_no: { text: 'QUERY NOT UNDERSTOOD. The code means something to the machine; you have not found the door it opens. The cursor waits, patient as the Wall.', again: 'QUERY NOT UNDERSTOOD.', options: [{ text: '(Step back.)', exit: true }] },
     register_no: { text: 'ACCESS: CLERK GRADE OR ABOVE. The cursor waits. A card is tucked into the terminal\'s frame, in a warden\'s hand: ENTRIES PRINTED AT THE DESK — PAPER 20.', again: 'CLERK GRADE OR ABOVE. The card in the frame: PRINTED AT THE DESK.', effects: [{ learn: 'md_desk_prints' }], options: [{ text: '(Step back.)', exit: true }] },
   },
 };
@@ -289,10 +306,11 @@ export const d_md_lowe: DialogueDef = {
         { id: 'lowe.pumps', text: '(Put the relief schedule on the desk.) Clause 31 sends the Sink\'s pumps to the Precinct in spring. Clause 14 says the drains come first.', if: PUMPS_PAPER, next: 'pumps' },
         { id: 'lowe.static', text: 'There\'s a girl in Bridgeward who says the Plan\'s own lines out loud. Reserve nine. Point six. Thursday.', if: STATIC_GIRL, next: 'static' },
         LOWE_DEED('lowe.deed'),
+        ...LOWE_SPIRE(''),
         bye,
       ],
     },
-    again: { text: '"Captain." He has stood up again.', again: 'He stays standing, because the charter says to, and waits.', options: [{ id: 'lowe.lawful.again', text: 'Lawful and right are two words.', if: { not: { seen: 'lowe.lawful' } }, next: 'lawful' }, { id: 'lowe.flag.again', text: 'The lens called me a magistrate.', if: { all: [{ knows: 'md_magistrate_designate' }, { not: { seen: 'lowe.flag' } }] }, next: 'flag' }, { id: 'lowe.ring.again', text: 'The Ring is burning.', if: { not: { seen: 'lowe.ring' } }, next: 'ring' }, { id: 'lowe.water.again', text: 'Your water\'s rationed.', if: { all: [{ any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, { not: { seen: 'lowe.water' } }] }, next: 'water' }, { id: 'lowe.letter.again', text: '(Hand him the sealed letter.) From the board at Old Market.', if: GIG_LETTER, next: 'letter' }, { id: 'lowe.dial.again', text: 'The standpipe square. Point eight on the notice, point six on the dial.', if: RIOT_COUNT, next: 'dial' }, { id: 'lowe.pumps.again', text: '(Put the relief schedule on the desk.) Clause 31 against clause 14.', if: PUMPS_PAPER, next: 'pumps' }, { id: 'lowe.static.again', text: 'A girl in Bridgeward says the Plan\'s lines out loud.', if: STATIC_GIRL, next: 'static' }, LOWE_DEED('lowe.deed.again'), bye] },
+    again: { text: '"Captain." He has stood up again.', again: 'He stays standing, because the charter says to, and waits.', options: [{ id: 'lowe.lawful.again', text: 'Lawful and right are two words.', if: { not: { seen: 'lowe.lawful' } }, next: 'lawful' }, { id: 'lowe.flag.again', text: 'The lens called me a magistrate.', if: { all: [{ knows: 'md_magistrate_designate' }, { not: { seen: 'lowe.flag' } }] }, next: 'flag' }, { id: 'lowe.ring.again', text: 'The Ring is burning.', if: { not: { seen: 'lowe.ring' } }, next: 'ring' }, { id: 'lowe.water.again', text: 'Your water\'s rationed.', if: { all: [{ any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, { not: { seen: 'lowe.water' } }] }, next: 'water' }, { id: 'lowe.letter.again', text: '(Hand him the sealed letter.) From the board at Old Market.', if: GIG_LETTER, next: 'letter' }, { id: 'lowe.dial.again', text: 'The standpipe square. Point eight on the notice, point six on the dial.', if: RIOT_COUNT, next: 'dial' }, { id: 'lowe.pumps.again', text: '(Put the relief schedule on the desk.) Clause 31 against clause 14.', if: PUMPS_PAPER, next: 'pumps' }, { id: 'lowe.static.again', text: 'A girl in Bridgeward says the Plan\'s lines out loud.', if: STATIC_GIRL, next: 'static' }, LOWE_DEED('lowe.deed.again'), ...LOWE_SPIRE('.again'), bye] },
     static: { text: '"A tap." He does not write it down yet. "An unlicensed tap on the file, in a person. The charter has a clause; it is not a kind one." He looks at the drawer marked AUDIT. "If I know the tower\'s name, I have to go. If I don\'t, I don\'t." He waits, which is the kindest thing he can do.', options: [{ id: 'static.give', text: 'The Saints\' tower. Under the mast.', effects: [{ set: 'bw_static', value: 'silenced' }, { rep: { faction: 'wardens', respect: 6 } }, { rep: { faction: 'saints', respect: -25 } }, { trust: { npc: 'npc_md_01', by: 5 } }, { xp: 80 }, { decision: { id: 'bw_static_silenced', text: 'You gave the warden captain the Saints\' tower, and the girl who hears went to the Precinct\'s cells.' } }], next: 'static_done' }, { text: 'Forget I said it.', exit: true }] },
     static_done: { text: '"Then I know it." He puts on his coat. "She\'ll be in a cell with a blanket and no radio, which the charter calls custody and I call quiet. Lawful." He does not say the other word.', interject: [
       { companion: NINE, text: '"Custody," Nine says. The lens clicks. "The record will call it lawful. I will be noting it elsewhere."', effects: [{ approval: { companion: NINE, by: -5 } }] },
@@ -340,6 +358,41 @@ export const d_md_lowe: DialogueDef = {
       effects: [{ set: 'nine_deed_made' }, { set: 'nine_deed_how', value: 'witnessed' }, { trust: { npc: 'npc_md_01', by: 5 } }, { decision: { id: 'nine_deed_witnessed', text: 'Captain Lowe witnessed Assessor Nine\'s lapsed title passing to its keeper, under clause 9(b).' } }],
       options: [bye],
     },
+    cup: {
+      text: '"Celestine Vane took ill at her own toast. Eighty-one; the house\'s own physician; no complaint from anyone." The report is in the drawer marked AUDIT, and he does not take it out. "I signed it lawful, because it was. I know a cup when I see one." He looks at you. "Nobody has ever asked me to. Nobody is asking me now."',
+      interject: [{ companion: ILYA, text: '"Right," Ilya says, and nothing else, and looks at the drawer the way he looks at a range he has already measured.' }],
+      effects: [{ learn: 'lowe_cup' }],
+      options: [
+        { id: 'lowe.cup.mine', text: 'It was my hand.', effects: [{ learn: 'lowe_cup_told' }, { memory: { npc: 'npc_md_01', tag: 'the_cup', valence: -10, strength: 90 } }], next: 'cup_mine' },
+        bye,
+      ],
+    },
+    cup_mine: { text: 'He does not move for a long time. "Then you have told the one man in the city who can do nothing with it." He closes the drawer. "The audit wants a complaint. There is no complaint. There will not be." He stands, because the charter says to. "I will remember it. That is not in the charter either."', options: [bye] },
+    tap: {
+      text: '"She talks in her sleep." He keeps his hands flat on the desk. "The charter says I record what a prisoner says, so I do. Last night, three lines: *designate. Ninety-one. The season closes.*" He looks at you. "The audit came for the page this morning. The audit has never come for a page before." A pause. "I don\'t know what closes. I thought you might."',
+      effects: [{ learn: 'lowe_tap_line' }, { lead: 'l_ar_season' }],
+      options: [bye],
+    },
+    ruling: {
+      text: [
+        { if: { flag: 'prec_forecast_fine', eq: 'void' }, text: '"Void." He takes the list of evictions from under his hand and reads it again. "A forecast is not an act." He puts his finger on two of the four names. "These are forecasts." He does not say what he will do. He folds the list once more, along a new crease.' },
+        { if: { flag: 'prec_forecast_fine', eq: 'priced' }, text: '"Priced at its odds." He writes nothing down. "The Exchange will be pleased. I am not the Exchange."' },
+        { if: { flag: 'prec_forecast_fine', eq: 'designate' }, text: '"For the designate." He says nothing else for long enough that it is something.' },
+        { text: '"Upheld. Forty-five. Lawful." A pause. "I am sorry. That is not in the charter either."' },
+      ],
+      effects: [{ learn: 'lowe_heard_ruling' }],
+      options: [bye],
+    },
+    verdict: {
+      text: [
+        { if: { flag: 'ar_verdict', eq: 'agreed' }, text: '"I heard you were heard." He stands straighter, which he did not think he could. "Agreed. Then one day you will sign what I carry out. I said I would stand for you." He nods once. "I will. I would rather you were someone who knew the two words. I think you might be."' },
+        { if: { flag: 'ar_verdict', eq: 'contested' }, text: '"Contested." He sits down, which the charter does not say to do in front of a citizen. "I have never heard that word used about a file. I have checked." He looks at the brass clause over his desk for a while. "Then the schedule is arguable. I did not know that. I will need to think about what else is."' },
+        { if: { flag: 'ar_verdict', eq: 'refused' }, text: '"Refused." He does not stand. "The lane wardens were told before you were halfway down the stair." He looks at the drawer marked AUDIT. "It will not punish you. It will reroute you. That is worse, and lawful."' },
+        { text: '"The schedule holds," he says, and for once it sounds like a question.' },
+      ],
+      effects: [{ learn: 'lowe_heard_verdict' }],
+      options: [bye],
+    },
     deed_no: { text: '"9(b) is for carts and pumps." He hands the entry back, squared. "I have never witnessed a pump passing to itself, and I will not start with a unit that sits on my hearings because a stranger read me a clause. Bring me its purpose, not its letter."', again: 'He has handed the entry back, squared, and waits to hear its purpose.', options: [bye] },
     fight: { text: 'Nothing.', again: 'The captain is standing, with the station\'s wardens between you. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
   },
@@ -357,7 +410,20 @@ export const d_md_tull: DialogueDef = {
 
 export const d_md_hast: DialogueDef = {
   id: 'd_md_hast', owner: 'npc_md_14', start: [{ node: 'intro' }],
-  nodes: { intro: { text: '"Licensed. It says so on the door." A tall doctor with a careful pen. "Every patient is a line in the file, so I write carefully. What do you need?"', again: 'Dr Hast uncaps the careful pen. "Another line in the file. What is it?"', options: [{ text: 'Patch me up.', effects: [{ event: 'heal' }], exit: true, repeat: true }, { text: 'What have you got?', effects: [{ event: 'barter' }], exit: true, repeat: true }, bye] } },
+  nodes: { intro: { text: '"Licensed. It says so on the door." A tall doctor with a careful pen. "Every patient is a line in the file, so I write carefully. What do you need?"', again: 'Dr Hast uncaps the careful pen. "Another line in the file. What is it?"', options: [{ text: 'Patch me up.', effects: [{ event: 'heal' }], exit: true, repeat: true }, { text: 'What have you got?', effects: [{ event: 'barter' }], exit: true, repeat: true }, { id: 'hast.certify', text: 'There\'s a woman in the Spire the record says drowned in R12. Will you certify that she\'s alive?', if: { all: [{ knows: 'ca_comfort_met' }, { not: { item: 'k_ca_certificate' } }, { not: { flag: 'ca_squatter' } }] }, next: 'certify' }, bye] },
+    certify: {
+      text: '"I certify what I examine." She caps the careful pen. "Up the close, behind the court? A visit above the Precinct line is twenty-five; it is a long way up and I am licensed, which costs." She considers you. "And I will write what I find, whatever the record says. That is the only thing the licence is for."',
+      again: '"Twenty-five for the visit," Dr Hast says, "and I write what I find."',
+      options: [
+        { id: 'hast.pay', text: '(Pay. 25 Tolls)', if: { item: 'tolls', count: 25 }, effects: [{ take: 'tolls', count: 25 }, { give: 'k_ca_certificate' }, { time: 90 }, { set: 'ca_hast_examined' }], next: 'certified' },
+        { id: 'hast.free', text: 'Eighteen years dead on the city\'s word. You\'d be the first doctor to look.', check: { skill: 'speech', dc: 35, mods: [{ if: { member: 'menders' }, dc: -10, why: 'a Mender asking a licensed doctor to do a Mender\'s work' }] }, effects: [{ give: 'k_ca_certificate' }, { time: 90 }, { set: 'ca_hast_examined' }], next: 'certified_free', fail: 'certify_no' },
+        { text: 'Not now.', exit: true },
+      ],
+    },
+    certified: { text: 'An hour and a half later she is back at her counter with her bag, writing. "Pulse seventy, regular. Lungs fair, for a room full of paper dust. Alive." She underlines the word, which the form does not ask for, and hands it to you. "She asked me what year it was. I told her. She said she\'d been copying it right."', again: 'Dr Hast is back at her counter, writing someone else down carefully.', options: [bye] },
+    certified_free: { text: '"The first doctor to look." She takes her bag off the hook. An hour and a half later she is back, writing. "Pulse seventy, regular. Alive." She underlines it, hard. "No charge. I have never once been asked to certify that someone is not dead. I find I wanted to be."', again: 'Dr Hast is back at her counter, writing someone else down carefully.', options: [bye] },
+    certify_no: { text: '"Twenty-five." Not unkindly. "I am a licensed doctor in a licensed city, and the licence has a price on it. That is why it is worth anything."', again: '"Twenty-five," she says again, and waits.', options: [bye] },
+  },
 };
 
 export const d_md_kemp: DialogueDef = {
@@ -429,6 +495,7 @@ export const d_md_nine: DialogueDef = {
         { id: 'nine.order', text: '(Put the Cistern 4 order on the desk.) Door failed. Supply retired. Variance total.', if: { item: 'k_c4_order' }, next: 'order', once: true },
         { id: 'nine.ledger', text: 'The other ledger. The one you don\'t write in while I watch.', if: { knows: 'nine_two_ledgers' }, next: 'ledger', once: true },
         { id: 'nine.join', text: 'Come and see where the errors come from.', if: { flag: 'nine_offer' }, next: 'join' },
+        { id: 'nine.cal', text: '(Show it the back of the photograph.) Read me a date.', if: CAL_OPEN, next: 'cal' },
         bye,
       ],
     },
@@ -442,6 +509,7 @@ export const d_md_nine: DialogueDef = {
         { id: 'nine.order.again', text: '(Put the Cistern 4 order on the desk.)', if: { all: [{ item: 'k_c4_order' }, { not: { seen: 'nine.order' } }] }, next: 'order' },
         { id: 'nine.ledger.again', text: 'The other ledger.', if: { all: [{ knows: 'nine_two_ledgers' }, { not: { seen: 'nine.ledger' } }] }, next: 'ledger' },
         { id: 'nine.join.again', text: 'Come and see where the errors come from.', if: { flag: 'nine_offer' }, next: 'join' },
+        { id: 'nine.cal.again', text: '(Show it the back of the photograph.) Read me a date.', if: CAL_OPEN, next: 'cal' },
         bye,
       ],
     },
@@ -476,7 +544,7 @@ export const d_md_nine: DialogueDef = {
       effects: [...PAPERS('provisional'), { give: 'k_md_pass' }, { set: 'md_hearing_pending', value: false }, { learn: 'md_exam_heard' }],
       options: [{ text: '(Take the pass.)', exit: true }],
     },
-    file: { text: '"Clause 40 forbids me to read a citizen their own forecast." A pause. "You are not yet a citizen in the sense the clause intends, and I am an assessor, not a magistrate, and so I will say this much: the file calls you something it has called nobody else, and the date on it is nineteen years off, and I have never seen the Plan prepare a chair so far ahead." The lens clicks. "I find that interesting. I am not permitted to find things interesting."', effects: [{ learn: 'nine_designate_view' }, { trust: { npc: 'npc_md_nine', by: 5 } }], options: [bye] },
+    file: { text: '"Clause 40 forbids me to read a citizen their own forecast." A pause. "You are not yet a citizen in the sense the clause intends, and I am an assessor, not a magistrate, and so I will say this much: the file calls you something it has called nobody else, and the date on it is nineteen years off, and I have never seen the Plan prepare a chair so far ahead." The lens clicks. "I find that interesting. I am not permitted to find things interesting."', effects: [{ learn: 'nine_designate_view' }, { trust: { npc: 'npc_md_nine', by: 5 } }, { lead: 'l_cal_r49' }], options: [bye] },
     diary: {
       text: 'It reads the whole of it, every page, at the speed a machine reads, and then it reads the last page again at the speed a person does. "*Note that we complied. Note it somewhere that is read.*" The lens clicks. "The city\'s ledger is read by the city, which wrote the order. I will note it there, because the clause requires it." It opens the other ledger, the one under its hand, and writes for a long time. "And there. That one is read by me."',
       interject: [{ companion: TAMSIN, text: '"A fridge with a pen," Tamsin mutters. But she watches it write in the second ledger for a long time, and doesn\'t say anything else.' }],
@@ -485,6 +553,11 @@ export const d_md_nine: DialogueDef = {
     },
     order: { text: '"Reserve 4. Door failed. Supply retired. Variance total." It does not need to read it; it recites. "The record suggests the order was lawful. The record suggests the door failed. The record does not suggest what the city should have done about a lawful order and a failed door, because the city did nothing, on schedule." It writes in the other ledger. "That is an error. I collect them."', interject: [{ companion: ODILE, text: '"Two sets of books," Odile says, delighted, the way one professional greets another. "My dear, I have never trusted anyone more."' }], effects: [{ set: 'nine_offer' }, { learn: 'nine_two_ledgers' }, { lead: 'l_nine_log' }, { trust: { npc: 'npc_md_nine', by: 15 } }, { xp: 60 }], options: [{ text: 'You collect errors.', next: 'ledger' }, bye] },
     ledger: { text: '"Every forecast that failed, since I was issued. Dates, names, the size of the miss." The lens clicks. "It is not lawful. Clause 40. I keep it anyway, which the record would suggest is a malfunction, if the record knew." It closes the ledger. "I would like to know where the errors come from. They are not random. They cluster round people like you. I find that interesting. I am not permitted to."', effects: [{ set: 'nine_offer' }, { lead: 'l_nine_log' }, { learn: 'nine_log_known' }], options: [{ id: 'nine.join.now', text: 'Come and see where they come from.', next: 'join' }, bye] },
+    cal: {
+      text: '"Clause 40 forbids me to read a citizen their own forecast." The lens goes over the pencil once, stops at the margin, and clicks. "It does not forbid me to read a date. Forty-nine, sixth month, twelfth day. That is the Restoration Calendar; the Cistern would write it otherwise. R49 is nineteen years from today." A pause. "The margin is a render number. That is not a photograph. I am not permitted to say what it is a picture of, and I have not said it."',
+      effects: [{ learn: 'cal_future' }, { set: 'cal_how', value: 'nine' }, { learn: 'cal_render' }, { lead: 'l_cal_render' }, { xp: 60 }, NA(3)],
+      options: [bye],
+    },
     exam_offer: {
       text: '"Citizenship by examination. Five questions: the charter, the drains, the calendar. Three correct makes a citizen. The questions have not changed in forty years; I have filed a complaint." The lens clicks. "Begin?"',
       effects: [{ quest: 'q_md_exam', start: true }],
@@ -511,6 +584,7 @@ export const d_md_nine: DialogueDef = {
     party: {
       text: [{ if: { at: 'meridian' }, text: '"Clause 14. The drains." The lens clicks. "I said I would say it often."' }, { text: '"The record suggests the road is unlawful in six respects. I have noted them."' }],
       options: [
+        { id: 'nine.cal.party', text: '(Show it the back of the photograph.) Read me a date.', if: CAL_OPEN, next: 'cal' },
         { id: 'nine.party.wait', text: 'Wait here.', effects: [{ leave: 'npc_md_nine' }], exit: true },
         { text: 'Keep up.', exit: true },
       ],

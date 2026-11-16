@@ -30,15 +30,20 @@ export const d_sk_tally: DialogueDef = {
   id: 'd_sk_tally', owner: 'narrator', start: [{ node: 'wall' }],
   nodes: {
     wall: {
-      text: 'A concrete wall chalked floor to head-height with names, each with a year and a word: STAIR. WALK. SHANTY. CLINIC. Most of the words are STAIR. The oldest are chalked over the newest where the wall ran out; the newest are still white.',
+      text: [
+        { if: { flag: 'sk_flooded' }, text: 'A concrete wall chalked floor to head-height with names, each with a year and a word: STAIR. WALK. SHANTY. CLINIC. At the very top, above all the others, in letters a hand high and still wet-white: OCHO — THE SPRING THE SEASON CLOSED — CLINIC. Somebody has drawn a hand beside it, open.' },
+        { text: 'A concrete wall chalked floor to head-height with names, each with a year and a word: STAIR. WALK. SHANTY. CLINIC. Most of the words are STAIR. The oldest are chalked over the newest where the wall ran out; the newest are still white.' },
+      ],
       again: 'The wall of names. STAIR, mostly. The newest still white.',
       effects: [{ learn: 'sk_tally_seen' }],
       passives: [{ attr: 'senses', dc: 7, text: 'Beside perhaps one name in three, in pencil, in a different hand, a number: the kind the Precinct puts on a card.', effects: [{ learn: 'sk_tally_numbers' }] }],
       options: [
         { id: 'tally.read', text: '(Read the newest.)', next: 'newest', once: true },
+        { id: 'tally.asamoah', text: '(Look for ASAMOAH.)', if: { all: [{ knows: 'ca_comfort_name' }, { not: { knows: 'ca_tally_comfort' } }] }, next: 'asamoah' },
         { text: '(Leave it.)', exit: true },
       ],
     },
+    asamoah: { text: 'Low down, where the oldest names are chalked over by the newer, half under a ROOS: ASAMOAH, C. — R12 — STAIR. A citizen number pencilled beside it in a different hand, the hand that writes the numbers that go up the stair to be sold.', effects: [{ learn: 'ca_tally_comfort' }, { lead: 'l_ca_tally' }], options: [{ text: '(Leave it.)', exit: true }] },
     newest: { text: 'ROOS, H. — the spring before last — STAIR. PENN, D. — the spring before last — STAIR. ODUYA, M. — last spring — WALK. Seven more from last spring, and under them, with no year yet, a space somebody has swept clean.', effects: [{ learn: 'sk_dagny_son' }, { learn: 'sk_tally_read' }], options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
@@ -286,8 +291,14 @@ export const d_sk_tam: DialogueDef = {
 
 export const d_sk_pell: DialogueDef = {
   id: 'd_sk_pell', owner: 'npc_sk_02',
-  start: [{ if: { flag: 'pell_met' }, node: 'again' }, { node: 'intro' }],
+  start: [{ if: { flag: 'sk_flooded' }, node: 'flooded' }, { if: { flag: 'pell_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
+    flooded: {
+      text: 'Anju, at Ocho\'s table, with his sodium lamp turned down to save it and her sleeves tied back. The cots are on bricks now. "Don\'t touch the table," she says, and then, because you have not asked: "He held the door. The water came up the stair a hand over the chalk and he stood in the door so it would come in slow, and it did, and then it was over him." She wrings out a cloth. "I can boil, and stitch, and set. I can\'t fit. The hands come in the third year. This is my second."',
+      again: 'Anju at Ocho\'s table, the lamp turned down. She looks up, and waits.',
+      effects: [{ set: 'pell_met' }, { learn: 'sk_ocho_drowned' }],
+      options: [{ id: 'pell.flood.heal', text: '(Sit. Let her look at you.)', effects: [{ event: 'heal' }], exit: true, repeat: true }, bye],
+    },
     intro: {
       text: 'A young woman with her sleeves tied back and her hands red from boiled water. "Anju. Apprentice. Don\'t touch the shelf; everything on it\'s clean and nothing else down here is." She looks at the cots. "If you\'re sick, sit. If you\'re not, he\'ll find you something to hold."',
       effects: [{ set: 'pell_met' }],

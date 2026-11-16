@@ -24,6 +24,8 @@ import { LANTERN_DIALOGUES } from './md_lantern';
 import { STACKS_DIALOGUES } from './md_stacks';
 import { BRIDGEWARD_DIALOGUES } from './md_bridgeward';
 import { CROWN_DIALOGUES } from './md_crown';
+import { SPIRE_DIALOGUES } from './md_spire';
+import { COURT_DIALOGUES } from './md_court';
 import { d_dw_approach, d_dw_cato, d_dw_clerk, d_dw_console, d_dw_diary_table, d_dw_door, d_dw_juno, d_dw_oriel, d_dw_panel, d_dw_pumps, d_dw_sable, d_dw_valve, d_dw_wick } from './drywells';
 import { d_kn_maud, d_kn_hatch, d_kn_grille, d_kn_linnet, d_kn_buyer, d_kn_factor, d_kn_dace, d_kn_rib, d_kn_mast, d_kn_corin, d_kn_windpump, d_kn_snare, d_kn_postbook, d_kn_door, d_kn_tollsign, d_kn_watch, d_kn_stranger, d_kn_outriders, d_kn_bed } from './knock';
 import { d_c9_archive, d_c9_body, d_c9_bram, d_c9_great_door, d_c9_ines, d_c9_mother, d_c9_pell, d_c9_shaft, d_c9_tamsin, d_c9_teague } from './ch1_cistern';
@@ -37,5 +39,5 @@ export const DIALOGUES: Record<string, DialogueDef> = Object.fromEntries([
   d_dw_approach, d_dw_sable, d_dw_oriel, d_dw_juno, d_dw_cato, d_dw_wick, d_dw_door, d_dw_console, d_dw_panel, d_dw_valve, d_dw_pumps, d_dw_diary_table, d_dw_clerk,
   d_re_patrol, d_re_drifter, d_re_scouts, d_re_wheel, d_re_walker, d_re_caravan, d_re_axle, d_re_shakedown, d_wp_marit, d_wp_pump, d_wp_valvehouse,
   d_sp_hound, d_sp_truck, d_or_anselm, d_or_petra, d_or_dun, d_or_shrine, d_or_well, d_or_leavings, d_or_thieves,
-  ...EXTRA_DIALOGUES, ...WHEEL_DIALOGUES, ...ACT1_SIDE_DIALOGUES, ...NINEBRIDGE_DIALOGUES, ...OPENFIELD_DIALOGUES, ...SUMP_DIALOGUES, ...MERIDIAN_DIALOGUES, ...MARKET_DIALOGUES, ...SINK_DIALOGUES, ...LANTERN_DIALOGUES, ...STACKS_DIALOGUES, ...BRIDGEWARD_DIALOGUES, ...CROWN_DIALOGUES,
+  ...EXTRA_DIALOGUES, ...WHEEL_DIALOGUES, ...ACT1_SIDE_DIALOGUES, ...NINEBRIDGE_DIALOGUES, ...OPENFIELD_DIALOGUES, ...SUMP_DIALOGUES, ...MERIDIAN_DIALOGUES, ...MARKET_DIALOGUES, ...SINK_DIALOGUES, ...LANTERN_DIALOGUES, ...STACKS_DIALOGUES, ...BRIDGEWARD_DIALOGUES, ...CROWN_DIALOGUES, ...SPIRE_DIALOGUES, ...COURT_DIALOGUES,
 ].map((d) => [d.id, d]));

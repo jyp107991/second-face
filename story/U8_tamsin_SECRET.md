@@ -90,7 +90,8 @@ Stages: `why` (find why she was never counted: `tam_why`) → `choice` (`tam_sec
 built: Pell through the Grille at Knock with her there (`d_kn_grille/pell_chart`: the chart, FIT FOR RELOCATION ticked no,
 not on the next count); Nine at the fire (`d_c9_tamsin/why_nine`: clause 40 read to the person, sixty in the record and
 sixty-one in the caretaker's ration returns, the one error it never filed). Planned extras: Odile decoding the ration
-lists; the Spire's census (B3.11). The truth (bible): MOTHER hid her birth because she was born sickly and the city's
+lists. Built (B3.11): the Spire's census on landing ninety-one (`d_ar_reserves/tamsin`, with her there after S3): sets
+`tam_why`, learns `tam_why_spire`, +5. The truth (bible): MOTHER hid her birth because she was born sickly and the city's
 schedule disposed of the unfit; she was never counted. Ending choices: tell MOTHER she knows (letter home through Maud),
 tell Ines (Ines's arc), or keep it (Act 3: the siege's "Tamsin's secret" card is hers to play).
 

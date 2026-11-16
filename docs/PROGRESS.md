@@ -1766,8 +1766,15 @@ mid-range Android phone; deployed to Pages.
             reel. Thirteen named NPCs + wardens, guards and extras. Tests `tests/a2.test.ts` (+9, 240 total). Smoke
             `tools/qa/crown.cjs` all green, evidence `docs/evidence/b310/` (169 draws headless; B8 budget pass). The map is
             lit as an interior (its own ambient under the domes, no weather) so the terraces read at any hour.
-      - [ ] B3.11 **Archive Spire and the Court of Accounts** (~2 h, after the upgrade U1–U5): the archive beats `q_a2_calendar` and `q_a2_spire`;
-            the court (ENGINE: trial as dialogue with evidence; precedent flags); *Court Case: the Squatter*. Smoke.
+      - [x] B3.11 **Archive Spire and the Court of Accounts** DONE 2026-11-16 (content; the Unity place build and the
+            on-device playtest are P10 work): `tools/maps/gen_md_spire.py` → `maps/md_spire.ts` (64×56, north of the
+            Precinct by a lane from the Loop platform: the Spire's steps and works, the Court of Accounts in one wing, the
+            catalogue in the other) and `maps/md_spire_top.ts` (40×32, an upper floor); cast `npcs/md_spire.ts` (ids
+            `npc_ar_*`, seven named + wardens); `dialogue/md_spire.ts` (21 trees) and `dialogue/md_court.ts` (the Court as
+            one tree built by `courtCase()`: claim, evidence offered once each on the rail as modifiers of a check, a ruling
+            that sets precedent flags `prec_*`, `ca_*` that later content reads); quests `q_a2_calendar` (6 routes),
+            `q_a2_spire` (8 routes, none needing violence), `q_ca_court`, `q_ca_squatter` (5 outcomes); 7 items, 12 leads +
+            3 conclusions, 1 world event; companions' interjections; `tests/b311.test.ts` (38). No engine change.
       - [ ] B3.12 **Dead Ring, races, wrap** (~1.5 h): the ruined outer ring; buggy races (segments: push / hold / cut);
             the Loop complete; Meridian end-to-end smoke in `tools/qa/act2.sh`; PROGRESS; a second test version
             (`act1-test-2` → or `act2-test-1`) when the owner's Act 1 notes are folded in.
@@ -1792,7 +1799,7 @@ mid-range Android phone; deployed to Pages.
 | Signal Hill | 1/1 | 3/3 | 7/7 | 2/2 | playable; relay, voice, gully |
 | Dry Wells | 1/1 | 6/6 | 13/13 | 2/2 | playable; the Act 1 finale, the family |
 | Act 1 wilds | 5/5 | 15/15 | 17/17 | 2/2 | playable; ten road encounters, discoveries on foot, hunting and traps, the windpumps, the wreck, the orchard |
-| Meridian | 9/14 | 103/110 | 160/170 | 23/30 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward and the Crown playable; the Loop joins five districts, stairs the Sink, the chain Bridgeward, the invitation car the Crown |
+| Meridian | 11/14 | 113/120 | 185/190 | 27/30 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward, the Crown, the Archive Spire (the close and landing ninety-one) and the Court of Accounts written; the Loop joins five districts, stairs the Sink, the chain Bridgeward, the invitation car the Crown, a lane the Spire close |
 | Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |
 | Act 2 wilds | 4/14 | 38/50 | 64/80 | 9/16 | Ninebridge, Openfield, the Sump and Cistern 4 playable (counts approximate) |
 | Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |

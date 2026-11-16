@@ -147,6 +147,19 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_bw_haunt', label: 'Back for the bridge', text: 'The Rust Dogs were a crew in a Bridgeward garage before the Rustmouths took the bridge; an old Dog keeps a cache under his bench and chalks BACK FOR THE BRIDGE on the wall every spring.' },
   { id: 'l_studio_render', label: 'The renderer', text: 'The Crown\'s studio renders portraits of people as the file expects them to become, from forecasts bought at the Exchange. The photograph is that kind of picture, made by a bigger machine than the studio\'s.' },
   { id: 'l_cr_concern_chair', label: 'The Chair is a sale', text: 'House Vane has promised the Concern the Committee\'s forecasts once it holds the Chair: the Crown\'s futures, sold downriver before the vote.' },
+  // the calendar, the Archive Spire and the Court of Accounts (B3.11)
+  { id: 'l_cal_pencil', label: 'Forty-nine, in pencil', text: 'On the back of the photograph, in pencil, in a hand that is not yours: 49 · VI · 12. A year, a month, a day, and no word for what the year counts from.' },
+  { id: 'l_cal_year', label: 'Restoration Year 30', text: 'Meridian counts its own years. The Wall says RESTORATION YEAR 30: the city\'s calendar starts at the Resumption, sixty years after the Burn, not at the Burn.' },
+  { id: 'l_cal_r49', label: 'R49', text: 'The city\'s file on your face carries a date: MAGISTRATE-DESIGNATE (R49). The clerk at the gate said that was nineteen years off.' },
+  { id: 'l_cal_render', label: 'Render 0412', text: 'The code in the photograph\'s margin is a number in the city\'s render queue: subject, the designate; rendered R30, from forecast; depicts R49.' },
+  { id: 'l_ar_steps', label: 'The steps', text: 'The broad steps at the foot of the Archive Spire are the steps in the photograph, lamp and all. The doors behind them are shut until R49.' },
+  { id: 'l_ar_refusals', label: 'Three replies', text: 'Reserve 9 has a drawer on landing ninety-one: three orders from the city to send its people to the Precinct, and three replies from MOTHER — population variance unchanged; thank you for your continuity. A fourth order is drafted.' },
+  { id: 'l_ar_cast_list', label: 'The twelve', text: 'The list the stranger carried west is a docket under glass at the top of the Spire: twelve names, twelve places, twelve futures, in the city\'s even hand. Yours is the first.' },
+  { id: 'l_ar_season', label: 'The season closes', text: 'A hearing of the designate at the top of the Spire closes the season\'s accounts: every schedule on its docket is entered as final when it ends.' },
+  { id: 'l_ca_chambers', label: 'Chambers for R49', text: 'The works board on the Spire\'s steps: LANDING 3, COPY ROOM — MAGISTRATE\'S CHAMBERS (R49). The room behind the Court is being made ready for a magistrate nineteen years early.' },
+  { id: 'l_ca_petition', label: 'Petition 1187', text: 'Nobody filed the petition against the occupant of the Court\'s copy room. The R30 works schedule filed it, for vacant possession, and the Court has called it eleven times.' },
+  { id: 'l_ca_tally', label: 'Asamoah, C. — Stair', text: 'On the Sink\'s tally wall: ASAMOAH, C. — R12 — STAIR, a citizen number pencilled beside it. The Sink chalked her drowned, and her number went up the stair.' },
+  { id: 'l_ca_register', label: 'The register is a book', text: 'The register of rulings the Court of Accounts reads from every morning is a copyist\'s book, slipped under the bench by the usher before the Court sits.' },
 ] as LeadDef[]).map((l) => [l.id, l]));
 
 export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
@@ -166,4 +179,7 @@ export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
   { id: 'c_static_source', from: ['l_static_forecast', 'l_kiosk_wire'], text: 'The city reads itself its own file on the lamp wire every night at two; a kiosk spliced to it sells the names as fortunes, and a girl who slept against a lift shaft says them as prophecy. Whoever listens right is a forecast.' },
   { id: 'c_photo_forecast', from: ['l_studio_render', 'l_photo_grain'], text: 'The photograph is a forecast: a portrait of who the file expects me to become, rendered, not taken.' },
   { id: 'c_crown_sold', from: ['l_cr_concern_chair', 'l_bw_tenured_road'], text: 'The Crown is selling itself downriver: the bridge\'s near end and the Committee\'s forecasts both go to the Concern by the Long Night, by the same house.' },
+  { id: 'c_cal_future', from: ['l_cal_pencil', 'l_cal_year', 'l_cal_r49'], text: 'The date on the photograph is the city\'s year forty-nine, not ours: nineteen years from now. The picture is of a day that has not happened yet.', effects: [{ learn: 'cal_future' }, { set: 'cal_board' }] },
+  { id: 'c_ar_refusals', from: ['l_ar_refusals', 'l_c4_same_order'], text: 'Three times the city ordered the Cistern\'s people out to it, and three times MOTHER said no and thanked it. A fourth order is written and waiting. Nobody at home knows.' },
+  { id: 'c_ca_for_you', from: ['l_ca_chambers', 'l_ca_petition'], text: 'The Court is clearing an old woman out of the copy room to make chambers for me, nineteen years before I am due to sit in them.', effects: [{ learn: 'ca_squatter_for_you' }] },
 ] as ConclusionDef[]).map((c) => [c.id, c]));

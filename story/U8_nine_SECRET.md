@@ -54,6 +54,10 @@ clause 9(b): a lapsed asset passes to its keeper on a captain's witness, or to a
 - **P10, Court of Accounts (B3.11):** a forged deed (`nine_deed_how` = forged) can be voided by Assessor Three (Nine's
   sibling, strict) if the player brings any case touching Nine; a witnessed or bought deed stands as precedent ("a unit
   may be its own keeper" is the first entry under a clause nobody wrote: an amendment-route seed for ending E).
+  *Built (B3.11, `dialogue/md_court.ts`, case `deed`):* registration of title at the Court, offered once `nine_deed` is set;
+  `ca_deed` = self | citizen | returned | irregular | voided; `prec_unit_keeper`; `nine_deed_void` on a voided forgery. Also
+  built: Nine reads the photograph's date (`d_md_nine/cal`, `d_photo_read/nine`), its records request up the Spire's stair
+  (+5), the census line ("I did not escalate it"), and its reactions to the Spire hearing's verdicts.
 - **P10, the Long Night:** the Ledger calls its units in. `nine_stance` = conscience → Nine answers, reads the eviction
   order aloud at Openfield, logs it as an error where it is recorded, and refuses the line it cannot make lawful (this is
   §11's "Nine freed → Ledger enforcement weaker"); deputy → it carries the order out and makes it lawful line by line (the

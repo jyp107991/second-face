@@ -71,6 +71,8 @@ fill(36, 36, 39, 48, 'c')
 # a back lane south of the tenements, and the drain's inside mouth
 fill(12, 50, 70, 51, 'c')
 fill(40, 52, 41, 53, 'c')   # the stair down to the Sink, off the back lane
+# the lane north between the hearing room and the Loop platform, to the Archive Spire's close
+fill(56, 0, 57, 9, 'a')
 
 rows = [''.join(r) for r in g]
 
@@ -107,6 +109,8 @@ props = [
     # the square: the curfew bell, the notice post, a bench
     {'kind': 'lamp_post', 'x': 37, 'y': 40, 'id': 'md_bell'}, {'kind': 'sign', 'x': 38, 'y': 44, 'rot': 3, 'id': 'md_notice'}, {'kind': 'chair', 'x': 36, 'y': 46, 'rot': 1},
     # the back lane and the drain's inside mouth
+    # the lane north to the Spire close
+    {'kind': 'sign', 'x': 55, 'y': 2, 'rot': 1, 'id': 'md_spire_sign'}, {'kind': 'lamp_post', 'x': 58, 'y': 3},
     {'kind': 'pipe_h', 'x': 14, 'y': 52}, {'kind': 'barrel_rust', 'x': 22, 'y': 50}, {'kind': 'debris', 'x': 30, 'y': 51}, {'kind': 'fire_barrel', 'x': 50, 'y': 51}, {'kind': 'lamp_post', 'x': 40, 'y': 49},
 ]
 
@@ -132,17 +136,18 @@ md_precinct = {
         {'x': 19, 'y': 17, 'height': 2.8, 'color': 'hex:0xe8f0ff', 'intensity': 2, 'range': 8}, {'x': 33, 'y': 17, 'height': 2.8, 'color': 'hex:0xe8f0ff', 'intensity': 2, 'range': 8}, {'x': 48, 'y': 16, 'height': 2.8, 'color': 'hex:0xe8f0ff', 'intensity': 2.2, 'range': 9},
         {'x': 17, 'y': 40, 'height': 2.6, 'color': 'hex:0xffe0b0', 'intensity': 1.8, 'range': 7}, {'x': 30, 'y': 40, 'height': 2.6, 'color': 'hex:0xe8f0ff', 'intensity': 1.8, 'range': 7},
         {'x': 46, 'y': 42, 'height': 2.6, 'color': 'hex:0xffd8a0', 'intensity': 1.4, 'range': 7}, {'x': 62, 'y': 42, 'height': 2.6, 'color': 'hex:0xffd8a0', 'intensity': 1.4, 'range': 7},
-        {'x': 63, 'y': 21, 'height': 2.6, 'color': 'hex:0xe8f0ff', 'intensity': 2, 'range': 8}, {'x': 6, 'y': 41, 'height': 0.6, 'color': 'hex:0xff9a40', 'intensity': 2.0, 'range': 6, 'flicker': 0.35},
+        {'x': 63, 'y': 21, 'height': 2.6, 'color': 'hex:0xe8f0ff', 'intensity': 2, 'range': 8}, {'x': 58, 'y': 3, 'height': 3.4, 'color': 'hex:0xe8f0ff', 'intensity': 2.0, 'range': 9}, {'x': 6, 'y': 41, 'height': 0.6, 'color': 'hex:0xff9a40', 'intensity': 2.0, 'range': 6, 'flicker': 0.35},
     ],
     'spawns': [
         {'id': 'start', 'x': 2, 'y': 29, 'facing': 1}, {'id': 'from_ninebridge', 'x': 2, 'y': 30, 'facing': 1}, {'id': 'from_openfield', 'x': 2, 'y': 29, 'facing': 1}, {'id': 'from_sump', 'x': 2, 'y': 31, 'facing': 1},
         {'id': 'from_riverdock', 'x': 2, 'y': 28, 'facing': 1}, {'id': 'from_halt_w', 'x': 2, 'y': 28, 'facing': 1}, {'id': 'from_hamlet_shore', 'x': 2, 'y': 31, 'facing': 1}, {'id': 'from_rigs', 'x': 2, 'y': 31, 'facing': 1},
-        {'id': 'inside', 'x': 22, 'y': 29, 'facing': 1}, {'id': 'cell', 'x': 16, 'y': 13, 'facing': 2}, {'id': 'drain', 'x': 13, 'y': 52, 'facing': 1}, {'id': 'loop', 'x': 63, 'y': 24, 'facing': 2}, {'id': 'sink_stair', 'x': 40, 'y': 51, 'facing': 0},
+        {'id': 'inside', 'x': 22, 'y': 29, 'facing': 1}, {'id': 'cell', 'x': 16, 'y': 13, 'facing': 2}, {'id': 'drain', 'x': 13, 'y': 52, 'facing': 1}, {'id': 'loop', 'x': 63, 'y': 24, 'facing': 2}, {'id': 'sink_stair', 'x': 40, 'y': 51, 'facing': 0}, {'id': 'from_spire', 'x': 56, 'y': 2, 'facing': 2},
     ],
     'exits': [
         {'x': 0, 'y': 28, 'w': 1, 'h': 4, 'to': {'worldMap': True}, 'label': 'The road out'},
         {'x': 40, 'y': 53, 'w': 2, 'h': 1, 'to': {'location': 'md_sink', 'spawn': 'from_precinct'}, 'label': 'The stair down to the Sink'},
         {'x': 71, 'y': 27, 'w': 1, 'h': 6, 'to': {'location': 'md_market', 'spawn': 'from_precinct'}, 'label': 'The avenue east, to Old Market', 'if': {'flag': 'md_market_open'}},
+        {'x': 56, 'y': 0, 'w': 2, 'h': 1, 'to': {'location': 'md_spire', 'spawn': 'from_precinct'}, 'label': 'The lane north, to the Spire close', 'if': {'flag': 'md_inside'}},
     ],
     'talk': {
         'md_scanner': {'dialogue': 'd_md_scanner', 'name': 'The face scanner'},
@@ -156,6 +161,7 @@ md_precinct = {
         'md_records_term': {'dialogue': 'd_md_records_term', 'name': 'Records terminal'},
         'md_bell': {'dialogue': 'd_md_bell', 'name': 'The curfew bell'},
         'md_cell_cot': {'dialogue': 'd_md_cell', 'name': 'The cell'},
+        'md_spire_sign': {'dialogue': 'd_md_spire_sign', 'name': 'A sign at the lane'},
     },
     'containers': {
         'md_booth_locker': {'name': 'Gate Locker', 'items': [['c_water', 2]], 'tolls': 20, 'lock': 50},
@@ -188,6 +194,8 @@ md_precinct = {
         {'def': 'npc_md_17', 'x': 6, 'y': 29, 'facing': 1},
         {'def': 'npc_md_g1', 'x': 19, 'y': 31, 'facing': 3}, {'def': 'npc_md_g2', 'x': 12, 'y': 29, 'facing': 3}, {'def': 'npc_md_g3', 'x': 40, 'y': 28, 'facing': 1}, {'def': 'npc_md_g4', 'x': 56, 'y': 31, 'facing': 3},
         {'def': 'npc_md_g5', 'x': 19, 'y': 17, 'facing': 2},
+        # the Court's old copyist, put out of the Spire as property when her case was lost (B3.11)
+        {'def': 'npc_ar_04', 'id': 'npc_ar_04_line', 'x': 4, 'y': 46, 'facing': 1, 'schedule': [], 'if': {'flag': 'ca_squatter', 'eq': 'lost'}},
     ],
     'triggers': [
         {'id': 'arrive', 'x': 1, 'y': 25, 'w': 8, 'h': 10, 'text': 'Meridian. Towers first, miles off, grey against grey; then the Wall, poured concrete five storeys high, running out of sight both ways; then, when the road reaches it, a gate the size of a door, a booth, a lamp, and a line of people who have been waiting since before you came over the last rise.', 'effects': [{'learn': 'seen_meridian'}, {'learn': 'loc_meridian'}]},

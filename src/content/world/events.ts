@@ -23,6 +23,18 @@ export const WORLD_EVENTS: Record<string, WorldEventDef> = {
     ],
     preventedEffects: [{ set: 'tribute_day', value: false }],
   },
+  /** The Sink's spring (B3.6 → B3.11): no date resolves it. A hearing of the designate at the top of the Spire closes the
+   * season's accounts and enters every schedule on its docket as final (the plate on its door says so, and lists the
+   * Sink's relief as DIVERTED while it is). At the next dawn after the verdict the spring comes up the stair — unless the
+   * player has already settled the pumps (a variance, the dial, or the Pale), which prevents it. */
+  sink_spring: {
+    id: 'sink_spring', at: { hour: 6 }, armedIf: { flag: 'ar_verdict' }, preventedIf: { flag: 'sk_pumps' },
+    effects: [
+      { set: 'sk_flooded' }, { set: 'ks_ocho', value: 'drowned' }, { set: 'sk_clinic_anju' },
+      { decision: { id: 'sk_flooded', text: 'The Sink flooded in the spring the season closed on, with its relief still diverted to the Precinct. Ocho drowned at his clinic.' } },
+      { news: { tag: 'sink_flooded', text: 'the spring came up the Sink\'s stair a hand higher than last year; the free doctor drowned holding the clinic door', valence: -12, size: 9, at: 'meridian' } },
+    ],
+  },
   /** Tamsin out of the Cistern (U8): once her letter's reply has come, or she has been asked at the Grille, she waits at
    * Mags's (the map places her there); at six the first evening the player is in Shale, she comes up to them. If they have
    * already found her, nothing happens. */

@@ -299,7 +299,7 @@ export const q_a2_precinct: QuestDef = {
     inside: {
       journal: 'Inside the Wall, with a status the Precinct can read off a card — or a storm drain and no card at all. The city knew your face before you gave a name; the file calls you something the clerk had never seen. The records office will know what. So will the assessor who keeps it.',
       end: 'done',
-      onEnter: [{ set: 'a2_precinct_done' }, { decision: { id: 'md_entered', text: 'You got inside Meridian\'s Wall.' } }, { news: { tag: 'stranger_at_gate', text: 'someone from the salt cut came through the Precinct gate and the lens knew their face', valence: 0, size: 5, at: 'meridian' } }],
+      onEnter: [{ set: 'a2_precinct_done' }, { quest: 'q_a2_calendar', start: true }, { decision: { id: 'md_entered', text: 'You got inside Meridian\'s Wall.' } }, { news: { tag: 'stranger_at_gate', text: 'someone from the salt cut came through the Precinct gate and the lens knew their face', valence: 0, size: 5, at: 'meridian' } }],
     },
   },
 };
@@ -421,10 +421,12 @@ export const q_sk_highwater: QuestDef = {
         { if: { flag: 'sk_pumps', eq: 'paid' }, stage: 'paid' },
         { if: { flag: 'sk_pumps', eq: 'retimed' }, stage: 'retimed' },
         { if: { flag: 'sk_pumps', eq: 'seized' }, stage: 'seized' },
+        { if: { flag: 'sk_flooded' }, stage: 'flooded' },
       ],
     },
     paid: { journal: 'A variance under clause 14, the drains being the city\'s first duty: the relief pumps run for the Sink this spring and the Precinct bears the shortfall. Dagny Roos read it twice and turned her own dial, which she has not been allowed to do in eleven years. The Precinct will drink point six and notice.', end: 'done', onEnter: [{ set: 'sk_pumps_running' }, { set: 'sk_saved' }, { decision: { id: 'sk_paid', text: 'You had the Sink\'s relief pumping varied under clause 14; the Precinct bears the shortfall.' } }, { news: { tag: 'sink_variance', text: 'the Sink\'s pumps will run this spring on a variance; the Precinct\'s ration drops to pay for it', valence: 6, size: 7, at: 'meridian' } }] },
     retimed: { journal: 'The relief dial reads what you set it to. Two pumps that were the Precinct\'s in spring are the Sink\'s again, and the seal on the dial is a seal on a dial, which the wardens will find out when they next count. Dagny Roos says she does not know who did it, which is nearly true.', end: 'done', onEnter: [{ set: 'sk_pumps_running' }, { set: 'sk_saved' }, { decision: { id: 'sk_retimed', text: 'You retimed the Sink\'s relief pumps behind the Plan\'s seal.' } }, { news: { tag: 'sink_retimed', text: 'somebody retimed the Sink\'s pumps under the Plan\'s seal; the Precinct\'s pressure dropped overnight', valence: 2, size: 6, at: 'meridian' } }] },
+    flooded: { journal: 'The season closed with the relief still diverted, and the spring came up the stair a hand higher than the chalk. Ocho held the clinic door until the water was over the cots, and then it was over him. His name is at the top of the tally wall, still white. Anju keeps his table with the lamp turned down and does what her hands can do, which is not surgery yet.', end: 'failed' },
     seized: { journal: 'The Pale hold the pump house. The wardens who held it are on the tally wall, by the Pale\'s hand and yours, and the pumps run for the Sink because Saskia Lehto says so. The Precinct will come down the stair for this, in its own time, with its own count.', end: 'done', onEnter: [{ set: 'sk_pumps_running' }, { set: 'sk_saved' }, { set: 'sk_pale_leave' }, { decision: { id: 'sk_seized', text: 'You took the Sink\'s pump house from the Precinct with the Pale.' } }, { news: { tag: 'sink_seized', text: 'the Pale took the Sink\'s pump house from the wardens; a stranger was in it', valence: -8, size: 9, at: 'meridian' } }] },
   },
 };
@@ -443,8 +445,9 @@ export const q_sk_organ: QuestDef = {
         { id: 'heart', text: 'Bring Ocho a heart he can fit', done: { any: [{ item: 'k_sk_heart' }, { item: 'ci_ch_org_heart' }, { flag: 'sk_organ_fitted' }] } },
         { id: 'fit', text: 'See it fitted', done: { flag: 'sk_organ_fitted' } },
       ],
-      next: [{ if: { flag: 'sk_organ_how', eq: 'chrome' }, stage: 'fitted_chrome' }, { if: { flag: 'sk_organ_lied' }, stage: 'fitted_lie' }, { if: { flag: 'sk_organ_fitted' }, stage: 'fitted' }],
+      next: [{ if: { flag: 'sk_organ_how', eq: 'chrome' }, stage: 'fitted_chrome' }, { if: { flag: 'sk_organ_lied' }, stage: 'fitted_lie' }, { if: { flag: 'sk_organ_fitted' }, stage: 'fitted' }, { if: { flag: 'sk_flooded' }, stage: 'drowned' }],
     },
+    drowned: { journal: 'Nobody fits a heart in the Sink now. Ocho drowned at his clinic door in the spring the season closed on, and Baraka Mwangi sits on the end cot with his old heart, listening to it, and to the water.', end: 'failed' },
     fitted: { journal: 'Baraka Mwangi has a heart that beats. Ocho asked where it came from and you told him, and he asked Baraka, and Baraka said yes before the sentence was finished. The Code says the patient decides. It does not say Ocho has to like it.', end: 'done' },
     fitted_chrome: { journal: 'Baraka Mwangi has a Second Heart under his ribs, Mender-built, no leash. It does not skip. He says it ticks, and that he can live with ticking.', end: 'done' },
     fitted_lie: { journal: 'Baraka Mwangi has a heart that beats and a number inked on a bag in Ocho\'s bin, crossed out. Ocho believes it came from under the water. You know whose walk it came off.', end: 'done' },
@@ -457,8 +460,9 @@ export const q_sk_code: QuestDef = {
     hands: {
       journal: 'Ocho does not take apprentices; he takes hands. Hold a clamp steady through one fitting and he will say the words, which are: *fit only what the patient can bear*. Shake, and Anju takes the clamp, and there is always a next time down here.',
       objectives: [{ id: 'assist', text: 'Hold steady through a fitting at Ocho\'s table', done: { member: 'menders' } }],
-      next: [{ if: { member: 'menders' }, stage: 'apprentice' }],
+      next: [{ if: { member: 'menders' }, stage: 'apprentice' }, { if: { flag: 'sk_flooded' }, stage: 'closed' }],
     },
+    closed: { journal: 'Ocho drowned at his clinic door in the spring flood, and the Code has nobody in the Sink to say its words over a table. Anju says the hands come in the third year. She is in her second.', end: 'failed' },
     apprentice: { journal: 'Apprentice, by the Menders\' Code. Ocho said the words over a table with a man still open on it, which Anju says is how he says everything. Menders\' prices are yours now, where there are Menders, and so is the thing the Code asks: fit only what the patient can bear.', end: 'done' },
   },
 };

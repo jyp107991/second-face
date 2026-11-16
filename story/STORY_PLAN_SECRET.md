@@ -334,6 +334,124 @@ Knock's trades; Tamsin becomes the one who steps out of the Cistern for the firs
 - The Kidnapping's `cr_tillie` = row (at the Velvet, placed; Osric gives the reel) / sold / stays (Honora's favour,
   the marriage off; Osric gives the reel). Osric Vane and Ottilie are seeds for a Crown-side ally in Act 3.
 
+## Build notes — B3.11: the Archive Spire and the Court of Accounts (2026-11-16)
+Content: `tools/maps/gen_md_spire.py` → `maps/md_spire.ts` (the close, the steps, the court hall, the catalogue hall) and
+`maps/md_spire_top.ts` (landing ninety-one); `npcs/md_spire.ts` (ids `npc_ar_*`, flags `ar_*`: `sp` is the Sump's prefix); `dialogue/md_spire.ts` (the place, the beats, the
+hearing) and `dialogue/md_court.ts` (the Court: one tree, a case builder); `quests/a2_spire.ts`; items in
+`items/story_a2.ts`; leads/conclusions in `world/leads.ts`; the flood in `world/events.ts`.
+
+**Place.** The Spire close stands north of the Precinct (a lane between the hearing room and the Loop platform). The
+Spire's own base and great doors are shut for the R30 works ("public steps reopen R49"); the public goes in by two
+wings at the foot of the steps: the Court of Accounts (west; Assessor Three on the bench, the Magistrate's chair empty
+behind it; the old copy room behind the hall) and the catalogue (east; Keeper Junko Marwood, the catalogue terminal,
+the stair of ninety-one landings with a porter and a lens on its post). The steps are the steps in the photograph. A
+steel door in the Spire's foot reads VAULT OF ACCOUNTS (the core, Act 3; nothing opens it now). Landing ninety-one
+(`md_spire_top`): the reserve drawers, the keystone docket under glass, the render room (twelve empty hooks: the
+stranger took every face), the sealed drop to the core, a window over the city, and the round hearing room where the
+Ledger speaks through a grille (`npc_ar_voice`, never placed, like MOTHER).
+
+**Beat 14 — `q_a2_calendar` "Forty-Nine"** (critical; starts when the Precinct beat ends, or at the Wall's year sign or
+the Spire's restoration board for older saves). The date on the photo's back is R49, nineteen years ahead, not "forty-one
+years ago". Done when the player knows `cal_future` (`cal_how` says how). Routes: **K board** — leads `l_cal_pencil` (the
+photo, read from the pack: `k_photo` now has `read: d_photo_read`), `l_cal_year` (the Wall: RESTORATION YEAR 30),
+`l_cal_r49` (the lens's file, the clerk, Nine's `file`, the restoration board) → conclusion `c_cal_future`; **T Nine**
+(travelling: from the photo; at its desk: `cal`) — clause 40 forbids reading a forecast, not a date; **T Odile**
+(travelling, from the photo) — a delivery date; **X** — the render code in the print's margin typed into the Precinct's
+records terminal (Science 45) → also `cal_render`, `l_cal_render`; **C** — eyes or neural chrome read the margin's
+microprint; **K wire** — Verity, if the girl who hears was kept (`bw_static` = kept). The photo-is-a-forecast half is an
+optional objective (`c_photo_forecast` / `c_photo_made` / `cal_render`). Ending: `a2_calendar_done`, starts `q_a2_spire`.
+
+**Beat 15 — `q_a2_spire` "Ninety-One Landings"** (critical). Up the stair (`ar_up`, `ar_entry` = designate | nine |
+petition | keeper | slip | paid | stair | lift): **K** the lens on the stair post reads ADMIT ON SIGHT (the designate is
+logged as having come up on the file); **T Nine** a records request under clause 40 (+5); **T petition** the keeper, a
+next-of-kin request for Reserve 9 (Speech 45; citizen, the Cistern 4 order, Tamsin at the counter lower it; an edited
+file raises it); **K keeper** knowing the stranger came down this stair (`l_rev_spire`/`c_rev_last_day`) makes Marwood
+confess she gave him his slip, and she gives one again; **X** the catalogue terminal issues a clerk-grade slip (Science
+45); **B** fifty Tolls in the porter's lamp-oil drawer (no check: every build); **S** past the sleeping porter at night
+(Stealth 45; the reel lowers it); **C** a Gridjack calls the dead service lift. Upstairs: **MOTHER's three refusals** —
+Reserve 9's drawer: three orders (relocate to Precinct), three replies (POPULATION VARIANCE UNCHANGED. THANK YOU FOR
+YOUR CONTINUITY.), stamped NON-COMPLIANT, and a FOURTH ORDER — DRAFTED — ESCALATION ON SCHEDULE (no date: Act 3's
+order is a story milestone) → `ar_refusals`, `md_reserves_list`, `l_ar_refusals` (+ `l_c4_same_order` →
+`c_ar_refusals`); a fair copy `k_ar_refusals` for letters home / Act 3. The census (60 in the record, 61 at the ration
+counter, "discrepancy not escalated — Unit 9") is Tamsin's planned Spire route: with her there after her S3 (`tam_s3`),
+"Let Tamsin read it" sets `tam_why` (`tam_why_spire`). **The list in full** — the keystone docket under glass, twelve
+lines as §9 (the player first: RESERVE 9 (THE MOUTH) — MAGISTRATE — R49), each line with a variant where the player has
+already broken it (Jonah lived; Vane's fate) → `ar_cast_list`, `l_ar_cast_list`, names 1–12 decoded
+(`name1..12_decoded` learned), copy `k_ar_list`; companions read their own lines (chained nodes so two can speak).
+Then **the summons**: the hearing room's plate says a hearing of the designate CLOSES THE SEASON'S ACCOUNTS and lists the
+docket — the Sink's spring relief shows DIVERTED while `sk_pumps` is unset (and Nine says so): the player is warned, and
+chooses when to go in. **The hearing** (the Ledger's first words to the player: wants agreement, not obedience;
+questions once each — why me, MOTHER, the list, the man who kept no likeness, what it wants) → `ar_verdict`:
+`agreed` (the designate's warrant `k_ar_warrant`, wardens +10), `contested` (Speech 55: −10 a forecast-fine void, −10 a
+refused benefit on the record, −5 the record yielding to the living, −10 Nine's log given, −10 Jonah lived, −5 Nine there,
+−5 the copyist's old ruling; +10 the Crown exposed, +10 an edited file) — the first CONTESTED file in its record,
+`noted` (the contest failed), `refused` (wardens −10), `silent`. Every verdict ends the beat (`a2_spire_done`) and arms
+the world event `sink_spring`.
+
+**The flood (B3.6's planned milestone):** `sink_spring` (armed by `ar_verdict`, prevented by `sk_pumps`) fires at the
+next six o'clock: `sk_flooded`, `ks_ocho` = drowned, news; `q_sk_highwater` → `flooded` (failed), `q_sk_organ` →
+`drowned` (failed) if the heart was not fitted, `q_sk_code` → `closed` (failed) if not yet sworn. The Sink map drops
+Ocho and moves Anju to his table; the tally wall carries his name. No surgeon in the Sink afterwards (Act 2 part 2 may
+give Anju the hands in her third year).
+
+**The Court of Accounts** (one tree `d_ca_court`, built by `courtCase()`; the repeatable structure for every later
+case): a case is called at the bench (by the usher), evidence goes on the rail (options, once each; each one a DC
+modifier the player can read), then a ground is argued (a check whose mods name the evidence and the register's
+precedents), and the ruling sets `ca_<case>`, `inc ca_cases_heard`, and a precedent flag. `q_ca_court` tracks two
+rulings and stays open as a docket. Cases built:
+- **Fines** (`md_fines_contested`): grounds — a forecast is not an act (Speech 50; the notice, Jonah, Nine's log, the
+  exam) → `prec_forecast_fine` = void; the arithmetic (Barter 45: charge it at its odds, 27) → priced; the file
+  (designate: no check, always wins) → designate (a privilege, not a principle: Ash/Tamsin dislike it); a failed ground
+  → upheld (fines stand, costs).
+- **Court Case: the Squatter** (`q_ca_squatter`, Witcher standard). Hook: case 1187 on the docket, called eleven times,
+  no speaker; the usher brings the occupant bread. Investigation: Comfort Asamoah, 71, the Court's last hand-copyist,
+  forecast to drown in the Sink in R12; she climbed the Spire's stair instead and has lived eighteen years in the old copy
+  room where no lens looks; the record says DECEASED (FORECAST CONFIRMED) because the Sink's tally wall chalked her
+  STAIR and her number was sold up the stair; she keeps the Court's precedents by hand. **Turn** (two halves): the
+  petition was filed by the R30 works schedule to clear the copy room for the MAGISTRATE'S CHAMBERS (R49) — the Court is
+  evicting her for the player (`ca_squatter_for_you`: the usher's copy of the petition, the catalogue, Nine, or the
+  board + petition → `c_ca_for_you`); and the register Three cites every morning is her book, slipped under its door by
+  the usher (`ca_register_is_book`). **Choice** (`ca_squatter`): `living` (the certificate from Dr Hast or her standing
+  at the rail with her consent; she is restored to the record, keeps the room by occupation, becomes keeper of the
+  register — `prec_unrecorded` = yields, `prec_register` = kept; cost: she is forecast again; Tamsin minds if she was
+  certified without consent) · `outside` (Science: the Court has no jurisdiction over the dead — she stays unseen;
+  `prec_unrecorded` = outside: later the Court can neither protect nor take any unrecorded person, Tamsin included) ·
+  `refused` (the designate refuses the benefit, Speech 40 — `prec_refuse_benefit`; the Ledger hears its designate's
+  first refusal, which lowers the hearing's contest DC) · `catalogued` (sell her book to Marwood for 150 before the
+  hearing: the register becomes the catalogue's — `prec_register` = catalogued; Comfort withdraws and goes down to see
+  her name on the Sink's wall) · `lost` (a failed ground: the room cleared as property, she is put outside the Wall —
+  `prec_unrecorded` = property). Visible outcomes by placement (the court's register desk / the copy room / the Sink's
+  tally wall / the line outside the Wall) and the docket and restoration boards' text.
+- **Registration of title — Unit 9** (`nine_deed` set): Three examines the deed. Witnessed/bought: registered —
+  `prec_unit_keeper` = self (a unit may be its own keeper: the first entry under a clause nobody wrote; ending E's seed) or
+  citizen; city: returned (disposal as scheduled). Forged: Speech 60 ("passes to its keeper; it does not say who writes the
+  paper") → `irregular`; fail → `voided` (`nine_deed_void`: Act 3 treats it as no deed). Registration matters because
+  "the schedule reads the register" (Act 3's recall reads `ca_deed`).
+- Docket flavour for later cases (not callable yet): the Choir's sister of Shale for sedition, LISTED (keystone 7's trial:
+  it reads `prec_forecast_fine`, `prec_unrecorded`, `prec_refuse_benefit`); House Vane v. the Rustmouths (adjourned);
+  Quint v. Precinct (ahead of plan, ruled R29). Marisol Quiroga's eviction "ahead of plan" is decided off-screen by the
+  fines precedent (void → she has gone home; upheld → she is in the line).
+
+**Precedent flags (read later):** `prec_forecast_fine`, `prec_unrecorded`, `prec_refuse_benefit`, `prec_register`,
+`prec_unit_keeper`, counts `ca_precedents`, `ca_cases_heard`; and `ar_verdict`, `ar_entry`. Readers: the hearing (above);
+Calla's sedition hearing (Act 2 part 2); Nine's recall at the Court (Act 3: `ca_deed`, `nine_deed_void`, `nine_log_given`);
+the Long Night's eviction order (`prec_unrecorded`); **ending E** needs a contested or agreed file (`ar_verdict` ∈
+contested | agreed) and two precedents in the register that are the player's (`ca_precedents` ≥ 2) with the register
+kept by the Court (`prec_register` ≠ catalogued) — the amendment is written in the Court's own register.
+
+**Hard choices:** the verdict (agree: the Precinct's doors and the warrant, the companions' trust; contest: the long
+road, no reward now; refuse: the city cools; silence: nothing gained) · the copyist (her consent against her safety; a
+precedent that shields the unrecorded by abandoning them; the money) · registering a forged deed (protection against a
+void) · the fines (principle, arithmetic or privilege). Delayed consequences: the flood (if the Sink was left), the
+precedents above, the warrant in Act 3's lockdown, the copyist forecast again (B4+: a later line can schedule her).
+
+**Companions:** Nine (date, records request, Three its sibling, the deed case, the census "I did not escalate it",
+contest +10 / agreed 0 / refused −5); Tamsin (census, MOTHER's replies, the certificate without consent −5, agreed −10,
+refused +5, the designate privilege −5); Ash (agreed −10, refused +5, the designate's lens −3, Mason's line); Wren (her own
+line, agreed −5, the copyist put outside −5); Odile (the delivery date, the priced fines +5, Sarr's line, contested +5);
+Ilya (Vasha's line, Lowe's cup). Lowe gains lines for the cup (B3.10), the girl in his cell (the wardens' tap line: "the
+season closes"), the fines ruling and the verdict. Verity relays the date and the season line when the girl was kept.
+
 ## 18. The opening, v4 (owner's note 2026-10-29: no shelter-dweller first steps) — supersedes §4 beat 1 and §8
 Built on the common denominators in `docs/OPENINGS.md`. The player character (PC) is **not** from inside Cistern 9.
 

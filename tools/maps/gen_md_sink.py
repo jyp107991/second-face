@@ -176,7 +176,7 @@ md_sink = {
     'containers': {
         'sk_pump_locker': {'name': 'Pump House Locker', 'items': [['t_repair', 1], ['j_wiring', 3], ['c_water', 2]], 'tolls': 10, 'lock': 30},
         'sk_clinic_locker': {'name': 'Clinic Locker', 'items': [['c_bandage', 3], ['c_knitkit', 1], ['c_splint', 1]], 'tolls': 0},
-        'sk_vash_cold': {'name': 'Vash\'s Cold Box', 'items': [['c_knitkit', 1]], 'tolls': 60, 'lock': 50},
+        'sk_vash_cold': {'name': 'Teng\'s Cold Box', 'items': [['c_knitkit', 1]], 'tolls': 60, 'lock': 50},
         'sk_cold': {'name': 'The Pale\'s Cold Store', 'items': [['k_sk_heart', 1], ['c_jerky', 3], ['a_9mm', 10]], 'tolls': 30, 'lock': 45},
     },
     'spots': {
@@ -193,8 +193,13 @@ md_sink = {
         'walk_mid': {'x': 36, 'y': 26}, 'walk_e': {'x': 50, 'y': 27},
     },
     'npcs': [
-        {'def': 'npc_sk_01', 'x': 34, 'y': 47, 'facing': 1},
-        {'def': 'npc_sk_02', 'x': 39, 'y': 46, 'facing': 3},
+        # the spring flood (B3.11): if the Spire's hearing closed the season with the relief still diverted, Ocho is on the
+        # tally wall and Anju keeps his table
+        {'def': 'npc_sk_01', 'x': 34, 'y': 47, 'facing': 1, 'if': {'not': {'flag': 'sk_flooded'}}},
+        {'def': 'npc_sk_02', 'x': 39, 'y': 46, 'facing': 3, 'if': {'not': {'flag': 'sk_flooded'}}},
+        {'def': 'npc_sk_02', 'id': 'npc_sk_02_table', 'x': 34, 'y': 47, 'facing': 1, 'if': {'flag': 'sk_flooded'}},
+        # the Court's old copyist, come down to see her own name on the wall when her book went to the catalogue (B3.11)
+        {'def': 'npc_ar_04', 'id': 'npc_ar_04_tally', 'x': 19, 'y': 3, 'facing': 0, 'schedule': [], 'if': {'flag': 'ca_squatter', 'eq': 'catalogued'}},
         {'def': 'npc_sk_03', 'x': 9, 'y': 24, 'facing': 1},
         {'def': 'npc_sk_04', 'x': 21, 'y': 3, 'facing': 2},
         {'def': 'npc_sk_05', 'x': 55, 'y': 47, 'facing': 3},
@@ -216,7 +221,7 @@ md_sink = {
     ],
     'extras': [
         {'count': 5, 'roles': ['street', 'drifter', 'labourer', 'settler'], 'life': 'hard', 'area': {'x': 1, 'y': 1, 'w': 70, 'h': 9}, 'spots': ['shelf_lean', 'shelf_fire', 'shelf_pair_a', 'shelf_pair_b', 'shelf_sit'], 'barks': ['Line\'s a hand higher this year.', 'Pumps run for the Precinct. We run for the stairs.', 'Ocho\'s free. Ocho\'s always free. Don\'t ask what it costs him.', 'Don\'t go east on the walk. The Pale don\'t like faces.']},
-        {'count': 4, 'roles': ['street', 'drifter', 'settler'], 'life': 'hard', 'area': {'x': 16, 'y': 42, 'w': 54, 'h': 12}, 'spots': ['landing_fire', 'landing_pair_a', 'landing_pair_b', 'chem_sit', 'landing_lean', 'clinic_door'], 'barks': ['Sit. The queue sits.', 'Vash buys. Vash buys anything that was ever warm.', 'Spring\'s coming up the stair this year, you watch.']},
+        {'count': 4, 'roles': ['street', 'drifter', 'settler'], 'life': 'hard', 'area': {'x': 16, 'y': 42, 'w': 54, 'h': 12}, 'spots': ['landing_fire', 'landing_pair_a', 'landing_pair_b', 'chem_sit', 'landing_lean', 'clinic_door'], 'barks': ['Sit. The queue sits.', 'Teng buys. Teng buys anything that was ever warm.', 'Spring\'s coming up the stair this year, you watch.']},
         {'count': 2, 'roles': ['street', 'labourer'], 'life': 'hard', 'area': {'x': 2, 'y': 10, 'w': 13, 'h': 42}, 'spots': ['walk_w', 'walk_s', 'walk_mid', 'walk_e'], 'barks': ['Mind the third board.', 'Water\'s warm. That\'s the worst of it.']},
     ],
     'ambience': {'indoor': True, 'fogColor': 'hex:0x1a2028', 'fogDensity': 0.014, 'dust': 0.12, 'ambient': {'color': 'hex:0x7e8ea4', 'intensity': 1.0}, 'grade': 0.25, 'mood': 'grim'},

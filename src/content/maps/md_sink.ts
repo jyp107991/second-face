@@ -1203,13 +1203,45 @@ export const md_sink: MapDef = {
       def: "npc_sk_01",
       x: 34,
       y: 47,
-      facing: 1
+      facing: 1,
+      if: {
+        not: {
+          flag: "sk_flooded"
+        }
+      }
     },
     {
       def: "npc_sk_02",
       x: 39,
       y: 46,
-      facing: 3
+      facing: 3,
+      if: {
+        not: {
+          flag: "sk_flooded"
+        }
+      }
+    },
+    {
+      def: "npc_sk_02",
+      id: "npc_sk_02_table",
+      x: 34,
+      y: 47,
+      facing: 1,
+      if: {
+        flag: "sk_flooded"
+      }
+    },
+    {
+      def: "npc_ar_04",
+      id: "npc_ar_04_tally",
+      x: 19,
+      y: 3,
+      facing: 0,
+      schedule: [],
+      if: {
+        flag: "ca_squatter",
+        eq: "catalogued"
+      }
     },
     {
       def: "npc_sk_03",

@@ -7,16 +7,16 @@ export const md_precinct: MapDef = {
   seed: 51,
   settlement: "meridian",
   layout: [
-    "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
-    "RrrrrrrrrrHHcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
-    "RrrrrrrrrrHHcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
-    "RrrrrrrrrrHHcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
-    "RrrrrrrrrrHHcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
-    "RrrrrrrrrrHHcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
-    "RrrrrrrrrrHHcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
-    "RrrrrrrrrrHHcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
-    "RrrrrrrrrrHHcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
-    "RrrrrrrrrrHHcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
+    "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRaaRRRRRRRRRRRRRR",
+    "RrrrrrrrrrHHccccccccccccccccccccccccccccccccccccccccccccaacccccccccccccR",
+    "RrrrrrrrrrHHccccccccccccccccccccccccccccccccccccccccccccaacccccccccccccR",
+    "RrrrrrrrrrHHccccccccccccccccccccccccccccccccccccccccccccaacccccccccccccR",
+    "RrrrrrrrrrHHccccccccccccccccccccccccccccccccccccccccccccaacccccccccccccR",
+    "RrrrrrrrrrHHccccccccccccccccccccccccccccccccccccccccccccaacccccccccccccR",
+    "RrrrrrrrrrHHccccccccccccccccccccccccccccccccccccccccccccaacccccccccccccR",
+    "RrrrrrrrrrHHccccccccccccccccccccccccccccccccccccccccccccaacccccccccccccR",
+    "RrrrrrrrrrHHccccccccccccccccccccccccccccccccccccccccccccaacccccccccccccR",
+    "RrrrrrrrrrHHccccccccccccccccccccccccccccccccccccccccccccaacccccccccccccR",
     "RrrrrrrrrrHHcCCCCCCCCCCCCCccccccccccccccccCCCCCCCCCCCCCCcccccccccccccccR",
     "RrrrrrrrrrHHcCFFFFtttttttCccccccccccccccccCttttttttttttCcccccccccccccccR",
     "RrrrrrrrrrHHcCFttFtttttttCccCCCCCCCCCCCCccCttttttttttttCcccccccccccccccR",
@@ -657,6 +657,18 @@ export const md_precinct: MapDef = {
       rot: 1
     },
     {
+      kind: "sign",
+      x: 55,
+      y: 2,
+      rot: 1,
+      id: "md_spire_sign"
+    },
+    {
+      kind: "lamp_post",
+      x: 58,
+      y: 3
+    },
+    {
       kind: "pipe_h",
       x: 14,
       y: 52
@@ -828,6 +840,14 @@ export const md_precinct: MapDef = {
       range: 8
     },
     {
+      x: 58,
+      y: 3,
+      height: 3.4,
+      color: 0xe8f0ff,
+      intensity: 2.0,
+      range: 9
+    },
+    {
       x: 6,
       y: 41,
       height: 0.6,
@@ -915,6 +935,12 @@ export const md_precinct: MapDef = {
       x: 40,
       y: 51,
       facing: 0
+    },
+    {
+      id: "from_spire",
+      x: 56,
+      y: 2,
+      facing: 2
     }
   ],
   exits: [
@@ -951,6 +977,20 @@ export const md_precinct: MapDef = {
       label: "The avenue east, to Old Market",
       if: {
         flag: "md_market_open"
+      }
+    },
+    {
+      x: 56,
+      y: 0,
+      w: 2,
+      h: 1,
+      to: {
+        location: "md_spire",
+        spawn: "from_precinct"
+      },
+      label: "The lane north, to the Spire close",
+      if: {
+        flag: "md_inside"
       }
     }
   ],
@@ -998,6 +1038,10 @@ export const md_precinct: MapDef = {
     md_cell_cot: {
       dialogue: "d_md_cell",
       name: "The cell"
+    },
+    md_spire_sign: {
+      dialogue: "d_md_spire_sign",
+      name: "A sign at the lane"
     }
   },
   containers: {
@@ -1351,6 +1395,18 @@ export const md_precinct: MapDef = {
       x: 19,
       y: 17,
       facing: 2
+    },
+    {
+      def: "npc_ar_04",
+      id: "npc_ar_04_line",
+      x: 4,
+      y: 46,
+      facing: 1,
+      schedule: [],
+      if: {
+        flag: "ca_squatter",
+        eq: "lost"
+      }
     }
   ],
   triggers: [
