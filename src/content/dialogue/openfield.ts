@@ -6,6 +6,14 @@ import type { Cond, Effect } from '../../engine/world/logic';
  * better. The shrine, the hatch under the common hall, the burial ground and the man digging in it.
  */
 
+/** Companions who can come to Openfield with the player in Act 2 (U7 interjections): the three from the Sallow, Odile from
+ * Ninebridge, and Ash once he has left the burial ground with them. */
+const TAMSIN = 'npc_c9_03';
+const WREN = 'npc_rd_03';
+const ILYA = 'npc_sh_17';
+const ODILE = 'npc_nb_03';
+const ASH = 'npc_of_03';
+
 const bye = { text: 'That\'s all.', exit: true };
 const NIGHT = { hour: { from: 0, to: 4 } };
 // The Broker's board at Old Market: two knit kits for the sick hall.
@@ -25,10 +33,11 @@ export const d_of_well: DialogueDef = {
   nodes: {
     day: {
       text: 'The well: a wheel on a timber frame over a shaft, a pipe to two stone troughs, north and south. The north trough feeds the field rows; the south, the halls. Moss on the south trough. The north one is clean as a plate.',
+      again: 'The wheel, the two troughs: moss on the south, the north scoured clean.',
       passives: [{ attr: 'senses', dc: 7, text: 'Clean because it is scoured — nothing grows in it. There is a bitter smell off the north water that the south water does not have.', effects: [{ learn: 'of_well_smell' }] }],
       options: [
-        { id: 'well.test', text: '(Test the two troughs.)', check: { skill: 'science', dc: 40, mods: [{ if: { knows: 'of_well_smell' }, dc: -5, why: 'you know which trough to test' }] }, next: 'test_ok', fail: 'test_no' },
-        { id: 'well.tracks', text: '(Read the ground round the north trough.)', check: { skill: 'survival', dc: 40 }, next: 'tracks_ok', fail: 'tracks_no' },
+        { id: 'well.test', text: '(Test the two troughs.)', if: { not: { knows: 'of_well_dosed' } }, check: { skill: 'science', dc: 40, mods: [{ if: { knows: 'of_well_smell' }, dc: -5, why: 'you know which trough to test' }] }, next: 'test_ok', fail: 'test_no' },
+        { id: 'well.tracks', text: '(Read the ground round the north trough.)', if: { not: KNOWN }, check: { skill: 'survival', dc: 40 }, next: 'tracks_ok', fail: 'tracks_no' },
         { text: '(Leave it.)', exit: true },
       ],
     },
@@ -38,6 +47,7 @@ export const d_of_well: DialogueDef = {
     tracks_no: { text: 'Forty people drink here. The ground is a page everyone has written on.', options: [{ text: '(Leave it.)', exit: true }] },
     night: {
       text: 'The well in the dark. The windpump creaks over the burial ground; the halls are shut. The north trough is a black mouth.',
+      again: 'The north trough, black. Nothing has come to it yet tonight.',
       options: [
         { id: 'well.wait', text: '(Wait in the dark by the north trough.)', check: { skill: 'stealth', dc: 35 }, next: 'caught_well', fail: 'wait_no' },
         { text: '(Go to bed.)', exit: true },
@@ -51,6 +61,7 @@ export const d_of_well: DialogueDef = {
     },
     why: {
       text: 'He takes a paper from his shirt, worn soft as cloth. OPENFIELD — HARVEST ABOVE PLAN — THE LONG NIGHT — BURNS. "The guild sells these. I bought one with a year\'s seed money. If we grow, we burn: that\'s what the city\'s machine has written for us, and the guild knows it, and my father sings." He puts it away. "Every third row. Enough to stay small. Nobody dies of it." He does not look at the sick hall when he says that.',
+      interject: [{ companion: ILYA, text: 'Ilya has gone very still. "If you grow," he says, "you burn." His hand finds the pocket of his jacket where he keeps a letter, and stays there. "Right."' }],
       effects: [{ lead: 'l_openfield_sheet' }, { learn: 'of_tobias_why' }],
       options: [
         { id: 'well.expose', text: 'Your father hears it from you, tonight, or from me in the morning.', effects: EXPOSE, next: 'exposed' },
@@ -62,18 +73,18 @@ export const d_of_well: DialogueDef = {
     exposed: { text: 'He goes grey in the lantern light and nods, once, the way his father nods. "Tonight, then." He walks to the Elder\'s house with the pouch in his hand and does not look back, and the light in that window burns until dawn.', effects: [{ time: 60 }], options: [{ text: '(Leave them to it.)', exit: true }] },
     mercy: { text: 'He gives you the pouch, and the paper, and stands there with his hands empty like a man who has put down something heavier than either. "The north rows will come back in a month," he says. "If we burn, you\'ll know why." He goes to bed. You stand at the well a while.', options: [{ text: '(Go.)', exit: true }] },
     unwritten: { text: 'He looks at the common hall, where the hatch is, and something in him that has been very tired for a year gives up arguing. "Petra." Not a question. He walks there himself. The hatch closes on both of them and the lantern stays on the deck.', options: [{ text: '(Go.)', exit: true }] },
-    clean: { text: 'The well. Both troughs run brown and ordinary now, and the north rows have put out new leaves at the base, small and greedy.', options: [{ text: '(Leave it.)', exit: true }] },
+    clean: { text: 'The well. Both troughs run brown and ordinary now, and the north rows have put out new leaves at the base, small and greedy.', again: 'Two brown troughs, and green coming back in the north rows.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
 export const d_of_board: DialogueDef = {
   id: 'd_of_board', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'The notice post. Chalk, in a careful hand: WATER FROM THE SOUTH TROUGH ONLY. SICK HALL: ASK IMRE. SKY-SONG AT DUSK. And a guild paper nailed under it, wax seal and half-moon: THE EXCHANGE AT NINEBRIDGE WILL BUY OPENFIELD\'S HARVEST IN ADVANCE AT A FUTURE\'S PRICE. ASK FOR VAIL. Somebody has drawn a half-sun over the half-moon.', effects: [{ learn: 'of_guild_offer' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'The notice post. Chalk, in a careful hand: WATER FROM THE SOUTH TROUGH ONLY. SICK HALL: ASK IMRE. SKY-SONG AT DUSK. And a guild paper nailed under it, wax seal and half-moon: THE EXCHANGE AT NINEBRIDGE WILL BUY OPENFIELD\'S HARVEST IN ADVANCE AT A FUTURE\'S PRICE. ASK FOR VAIL. Somebody has drawn a half-sun over the half-moon.', again: 'SOUTH TROUGH ONLY. SKY-SONG AT DUSK. The guild\'s paper under it, with its half-sun drawn over.', effects: [{ learn: 'of_guild_offer' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_of_shrine: DialogueDef = {
   id: 'd_of_shrine', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'A post with a sign on it: half a sun, no ground under it, painted and repainted until the wood under the paint is a different shape. Round it, benches and a fire that is kept in all night. There is nothing else to the shrine. The sky is the rest.', effects: [{ learn: 'sigil_seen' }, { learn: 'of_shrine_seen' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'A post with a sign on it: half a sun, no ground under it, painted and repainted until the wood under the paint is a different shape. Round it, benches and a fire that is kept in all night. There is nothing else to the shrine. The sky is the rest.', again: 'The half-sun on its post, the benches, the fire kept in.', effects: [{ learn: 'sigil_seen' }, { learn: 'of_shrine_seen' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_of_tally: DialogueDef = {
@@ -82,12 +93,14 @@ export const d_of_tally: DialogueDef = {
   nodes: {
     read: {
       text: 'The seed tally, in Doria\'s hand: crates at dusk, crates at dawn, a line between. Fourteen, thirteen. Thirteen, twelve. Twelve, eleven. Every night for a week, one, like a clock.',
+      again: 'Doria\'s tally: dusk, dawn, a line between, and the numbers going down one at a time.',
       effects: [{ quest: 'q_of_seed', start: true }, { learn: 'of_seed_heard' }],
       passives: [{ attr: 'wits', dc: 7, text: 'One crate, every night, never two, never a broken lock: that is not a thief grabbing. That is someone with a key, filling an order.', effects: [{ learn: 'of_seed_key' }] }],
       options: [{ text: '(Leave it.)', exit: true }],
     },
     night: {
       text: 'The store in the dark, the crates in their rows, the tally pale on the table.',
+      again: 'The store, dark. The crates. Nobody yet.',
       options: [{ id: 'tally.wait', text: '(Wait behind the shelves.)', check: { skill: 'stealth', dc: 35 }, next: 'seen', fail: 'seen_no' }, { text: '(Go to bed.)', exit: true }],
     },
     seen: { text: 'An hour past midnight the door opens on a key and Hollin Brannock, the yard hand from the Sump, lifts a crate onto his shoulder as if it were his, and goes out east along the lane toward the guild buyer\'s tent. He does not hurry. Nobody hurries who has done a thing six times.', effects: [{ learn: 'of_seed_hollin' }, { lead: 'l_seed_corso' }, { xp: 60 }], options: [{ text: '(Follow him out.)', exit: true }] },
@@ -101,6 +114,7 @@ export const d_of_cellar: DialogueDef = {
   nodes: {
     hatch: {
       text: 'A hatch in the hall floor at the far west end, iron, with a ring and no lock you can see. Someone has swept round it, carefully, so that the sweeping shows.',
+      again: 'The iron hatch, and the careful sweeping round it.',
       options: [
         { id: 'hatch.word', text: '(Say it to the iron.) "Larkspur."', if: { knows: 'word_larkspur' }, effects: [{ set: 'of_cellar_open' }, { set: 'petra_word' }, { xp: 40 }], next: 'opens' },
         { id: 'hatch.sibling', text: '(Knock the way Petra knocked.)', if: { all: [{ member: 'choir', rank: 'sibling' }, { trust: { npc: 'npc_of_02', gte: 15 } }] }, effects: [{ set: 'of_cellar_open' }, { xp: 40 }], next: 'opens' },
@@ -112,6 +126,7 @@ export const d_of_cellar: DialogueDef = {
     opens: { text: 'A bolt goes back under the floor. The hatch lifts on its own, and under it is a ladder and a lamp and Petra Mason\'s face, looking up, not surprised.', options: [{ text: '(Go down.)', next: 'inside' }] },
     inside: {
       text: 'A cellar cut into the glass, dry and cold. Grey scarves on pegs. No mirror, no drawing, no photograph of anyone; on the wall a board with twelve pins in it and a road between them, like the map in your pack, except that here the names are written plain. Petra waits until you have seen that. "Hollis Dray," she says. "The man who died at your door. He was ours. He took that list out of the city\'s tower so the people on it would know, and the guild shot him for it on the highway, and he walked to you anyway." She lets it sit. "We are the Unwritten. We keep no likeness. The city\'s machine makes its forecasts from faces; a face it has never seen, it cannot write. That is the whole of our religion, and it is not a kind one."',
+      interject: [{ companion: WREN, text: '"Dray." Wren says it under her breath, the way she says a road\'s name to keep it. "Hollis Dray." Her hand has gone to the inside of her jacket, where she keeps paper, and she does not say anything else.' }],
       effects: [{ learn: 'stranger_name' }, { lead: 'l_stranger_unwritten' }, { set: 'unwritten_met' }, { learn: 'unwritten_what' }, { decision: { id: 'unwritten_met', text: 'Petra Mason showed you the cellar under Openfield and told you the stranger\'s name.' } }, { xp: 120 }],
       options: [
         { id: 'cellar.photo', text: 'There\'s a photograph of me. Older. In a city.', if: { item: 'k_photo' }, next: 'photo' },
@@ -121,33 +136,38 @@ export const d_of_cellar: DialogueDef = {
     },
     photo: { text: 'She does not ask to see it. "Then the machine has your face, and has written you, and that is what it wrote. Hollis carried it to you so you would know what they want you to become." She looks at the board. "You are a pin on this. So is my father. So is a boy called Jonah in Shale, if he is still alive." A beat. "Keep it covered. Don\'t let the guild see it. And don\'t ask me yet to burn it; you\'re not ready to hear what I\'d say."', effects: [{ learn: 'unwritten_photo' }], options: [{ text: 'Not a kind one, you said.', next: 'kill' }, { text: '(Go up.)', exit: true }] },
     kill: { text: '"Some of us break a forecast by killing the person it is about." She says it like weather. "If the machine says a man rises, and he is dead, the machine was wrong, and the Plan slips a notch. I don\'t do it. Some of us do. I won\'t tell you which, and you should not tell anyone on that board that you have been down here." She turns the lamp down. "When Openfield has been through its night, come and ask me what we are for. Not before."', effects: [{ lead: 'l_unwritten_kill' }, { learn: 'unwritten_kill' }], options: [{ text: '(Go up.)', exit: true }] },
-    again: { text: 'The cellar. The scarves, the board, the twelve pins. Petra is not here; the lamp is lit anyway, which is how the Unwritten say *welcome*.', options: [{ text: '(Go up.)', exit: true }] },
+    again: { text: 'The cellar. The scarves, the board, the twelve pins. Petra is not here; the lamp is lit anyway, which is how the Unwritten say *welcome*.', again: 'The lamp, lit for nobody. The twelve pins.', options: [{ text: '(Go up.)', exit: true }] },
   },
 };
 
 export const d_of_grave: DialogueDef = {
   id: 'd_of_grave', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'A fresh cairn, small. The stones are still the colour of the ground they came from. No name — the Choir cuts none — but somebody has left a child\'s cup on top, the kind with a chipped lip.', effects: [{ learn: 'of_child_grave' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'A fresh cairn, small. The stones are still the colour of the ground they came from. No name — the Choir cuts none — but somebody has left a child\'s cup on top, the kind with a chipped lip.', again: 'The small cairn, and the cup with the chipped lip.', effects: [{ learn: 'of_child_grave' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_of_burial: DialogueDef = {
   id: 'd_of_burial', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'A sign at the burial ground\'s edge: UNDER THE OPEN SKY. NO NAMES. NO LIKENESS. WHAT IS NOT WRITTEN IS FREE. Rows of cairns under a windpump that turns for no one.', effects: [{ learn: 'sigil_unwritten' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'A sign at the burial ground\'s edge: UNDER THE OPEN SKY. NO NAMES. NO LIKENESS. WHAT IS NOT WRITTEN IS FREE. Rows of cairns under a windpump that turns for no one.', again: 'NO NAMES. NO LIKENESS. WHAT IS NOT WRITTEN IS FREE.', effects: [{ learn: 'sigil_unwritten' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_of_bench: DialogueDef = {
   id: 'd_of_bench', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'A bench of planks in the son\'s hut, with tools on it, and a crate under it pushed back further than tools need. The lamp beside it has been trimmed so often the wick is a stub.', effects: [{ learn: 'of_bench_seen' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'A bench of planks in the son\'s hut, with tools on it, and a crate under it pushed back further than tools need. The lamp beside it has been trimmed so often the wick is a stub.', again: 'The bench, the crate pushed too far under it, the stub of a wick.', effects: [{ learn: 'of_bench_seen' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_of_windpump: DialogueDef = {
   id: 'd_of_windpump', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'A windpump over the burial ground with no pipe under it any more, turning because the wind says so. The Choir left it standing because the dead like a sound, Petra says, and because it is the tallest thing in the glass and the city can see it from the towers.', options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'A windpump over the burial ground with no pipe under it any more, turning because the wind says so. The Choir left it standing because the dead like a sound, Petra says, and because it is the tallest thing in the glass and the city can see it from the towers.', again: 'The windpump turns over the cairns, pumping nothing.', options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_of_sheet_read: DialogueDef = {
-  id: 'd_of_sheet_read', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'OPENFIELD — HARVEST ABOVE PLAN — THE LONG NIGHT — BURNS. Guild paper, seal long broken, the fold worn through. It was under the bench in Tobias Mason\'s hut with a pouch of grey salt and a bottle of iodine to wash his hands after.', effects: [{ learn: 'of_poisoner_known' }, { lead: 'l_openfield_sheet' }, { lead: 'l_tobias_nights' }, { learn: 'of_tobias_why' }, { xp: 60 }], options: [{ text: '(Fold it.)', exit: true }] } },
+  id: 'd_of_sheet_read', owner: 'narrator',
+  // (what the sheet tells is learned once: a later reading is only the paper)
+  start: [{ if: { flag: 'of_sheet_read' }, node: 'reread' }, { node: 'read' }],
+  nodes: {
+    read: { text: 'OPENFIELD — HARVEST ABOVE PLAN — THE LONG NIGHT — BURNS. Guild paper, seal long broken, the fold worn through. It was under the bench in Tobias Mason\'s hut with a pouch of grey salt and a bottle of iodine to wash his hands after.', effects: [{ set: 'of_sheet_read' }, { learn: 'of_poisoner_known' }, { lead: 'l_openfield_sheet' }, { lead: 'l_tobias_nights' }, { learn: 'of_tobias_why' }, { xp: 60 }], options: [{ text: '(Fold it.)', exit: true }] },
+    reread: { text: 'OPENFIELD — HARVEST ABOVE PLAN — THE LONG NIGHT — BURNS. The fold is wearing through in your pack the way it wore through in his.', again: 'BURNS. The fold, wearing through.', options: [{ text: '(Fold it.)', exit: true }] },
+  },
 };
 
 // ---------------------------------------------------------------- people
@@ -170,6 +190,7 @@ export const d_of_mason: DialogueDef = {
     },
     again: {
       text: [{ if: { flag: 'a2_openfield_done' }, text: '"The rows are coming back." He says it to the fields, not to you. "Thank you is a small word. I\'ll say it anyway."' }, { text: '"Friend." He has a row to finish.' }],
+      again: 'He counts a row with his eyes, and comes back to you at the end of it.',
       options: [
         { id: 'mason.blight.again', text: 'The rows.', if: { not: { flag: 'of_blight_told' } }, next: 'blight' },
         { id: 'mason.word.again', text: 'Calla said a man here would know a word. Larkspur.', if: { all: [{ lead: 'l_larkspur_calla' }, { not: { seen: 'mason.word' } }] }, next: 'word' },
@@ -188,18 +209,19 @@ export const d_of_mason: DialogueDef = {
     },
     sick: { text: '"Three in the hall. A child. Shaking hands, bad stomachs, no fever. Imre boils everything now and it\'s stopped, mostly." He does not say what he thinks that means. He has decided not to think it.', effects: [{ learn: 'of_sick_no_fever' }], options: [bye] },
     word: { text: 'He is quiet for a while. "Not me. I\'m a farmer; I don\'t keep that kind of door." He looks toward the shrine, where his daughter is. "My daughter keeps it. Say it to her, not to me, and not where anyone from the bridge can hear."', effects: [{ learn: 'petra_keeps_door' }], options: [bye] },
-    seed: { text: '"She did. Ninety years in the cold under the Cistern and it came up in nine days in the north rows." His face changes. "The north rows." He looks at the fields and the thing he will not think about gets closer. "Tomato and millet. Dying first, with the rest."', effects: [{ learn: 'of_cistern_seed_north' }, { trust: { npc: 'npc_of_01', by: 10 } }], options: [bye] },
+    seed: { text: '"She did. Ninety years in the cold under the Cistern and it came up in nine days in the north rows." His face changes. "The north rows." He looks at the fields and the thing he will not think about gets closer. "Tomato and millet. Dying first, with the rest."', interject: [{ companion: TAMSIN, text: '"Our seed," Tamsin says. "From the cold room. Ninety years and it comes up in nine days and then — " She looks at the north rows and stops talking, which for her is a great deal.' }], effects: [{ learn: 'of_cistern_seed_north' }, { trust: { npc: 'npc_of_01', by: 10 } }], options: [bye] },
     guild: { text: '"Vail. He wants to buy the harvest before it\'s grown, at a price that would feed us through two winters, and the guild would carry the risk." He almost smiles. "I asked him what the guild knows about my fields that I don\'t. He said *the future*, and smiled, and I have not slept well since."', effects: [{ learn: 'mason_guild_doubt' }], options: [bye] },
     son: {
       text: 'He does not say *no*. That is the worst of it: he does not say no, he sits down on the bench by the well and looks at his hands for a long time, and then he says, "Show me," and you do, and he reads the paper his son bought with a year\'s seed money, and reads it again. "Burns," he says. "If we grow." He folds it. "He thought he was keeping us. He was." He stands up, old. "Fetch him to me. I\'ll do the rest myself."',
+      interject: [{ companion: ODILE, text: '"That\'s a floor sheet," Odile says quietly, when he has folded it. "Sealed, at the price of a year\'s seed. I know the hand that writes them out." Nobody thanks her for knowing.' }],
       effects: EXPOSE,
       options: [{ text: '(Fetch him.)', next: 'son_done' }],
     },
     son_done: { text: 'What the Elder says to his son is said in the house with the door shut. When it opens, Tobias walks to the track with a pack and does not look at the fields, and his father stands at the well until the lamp-post comes on, and then goes to the shrine and sits with the fire and does not sing.', effects: [{ time: 120 }], options: [{ text: '(Leave him.)', exit: true }] },
-    after_exposed: { text: 'He is at the well, or the shrine, or in the rows, the way he always was, and he speaks to you kindly, and there is a place behind his eyes where his son was and the door to it is shut. "The rows are coming back," he says. "Thank you is a small word."', options: [{ id: 'mason.ash.ex', text: 'Brother Ash. I\'m going east. I\'d take him.', if: { all: [{ not: { flag: 'ash_blessed' } }, { not: { flag: 'ash_joined' } }] }, next: 'ash' }, { id: 'mason.rite.ex', text: 'Petra says the Choir\'s door is a burial.', if: { all: [{ not: { flag: 'sky_rite' } }, { quest: 'q_of_rite', status: 'none' }] }, next: 'rite' }, bye] },
+    after_exposed: { text: 'He is at the well, or the shrine, or in the rows, the way he always was, and he speaks to you kindly, and there is a place behind his eyes where his son was and the door to it is shut. "The rows are coming back," he says. "Thank you is a small word."', again: 'He nods to you from the rows, kindly, and goes on with the row.', options: [{ id: 'mason.ash.ex', text: 'Brother Ash. I\'m going east. I\'d take him.', if: { all: [{ not: { flag: 'ash_blessed' } }, { not: { flag: 'ash_joined' } }] }, next: 'ash' }, { id: 'mason.rite.ex', text: 'Petra says the Choir\'s door is a burial.', if: { all: [{ not: { flag: 'sky_rite' } }, { quest: 'q_of_rite', status: 'none' }] }, next: 'rite' }, bye] },
     ash: { text: '"Ash came to us with a shotgun and a thing he would not say, and dug for a year before he\'d sing. He\'s the best of us now, which he\'d deny." The Elder looks at the burial ground. "He asked me yesterday whether he should go with you. I said the sky would tell him. The sky told him yes, apparently; it usually agrees with him." He nods. "Take him. Bring him back, or don\'t, but don\'t waste him."', effects: [{ set: 'ash_blessed' }, { trust: { npc: 'npc_of_03', by: 10 } }], options: [bye] },
     rite: { text: '"It is. We bury what we lost under the sky, and say its name once, and never cut it in stone. Then you\'re ours, as much as anyone is anyone\'s." He looks at you. "Everyone has someone. Petra will say the words. Go when you\'re ready; the sky waits."', effects: [{ quest: 'q_of_rite', start: true }], options: [bye] },
-    grief: { text: 'The Elder is at the burial ground, where the newest cairn is, and does not turn round when you come, and will not, and the Choir has stopped singing at dusk for a month.', effects: [{ memory: { npc: 'npc_of_01', tag: 'son_dead', valence: -60, strength: 100 } }], options: [{ text: '(Leave him.)', exit: true }] },
+    grief: { text: 'The Elder is at the burial ground, where the newest cairn is, and does not turn round when you come, and will not, and the Choir has stopped singing at dusk for a month.', again: 'The Elder at the newest cairn, with his back to you. He does not turn round.', effects: [{ memory: { npc: 'npc_of_01', tag: 'son_dead', valence: -60, strength: 100 } }], options: [{ text: '(Leave him.)', exit: true }] },
   },
 };
 
@@ -221,6 +243,7 @@ export const d_of_petra: DialogueDef = {
     },
     again: {
       text: [{ if: { flag: 'of_blight_outcome', eq: 'unwritten' }, text: '"My brother is below, being argued with. He may be ours by spring. He may be nothing." She feeds the fire. "You did a harder thing than telling my father. I noticed."' }, { if: { flag: 'unwritten_met' }, text: '"You\'ve seen the board. Don\'t tell me what you think of it yet."' }, { text: '"The sky\'s still up."' }],
+      again: 'She feeds the fire a stick, and looks at you over the scarf, and waits.',
       options: [
         { id: 'petra.choir.again', text: 'What is the Choir?', if: { not: { seen: 'petra.choir' } }, next: 'choir' },
         { id: 'petra.word.again', text: '"Larkspur."', if: { all: [{ knows: 'word_larkspur' }, { not: { seen: 'petra.word' } }] }, next: 'word' },
@@ -230,7 +253,7 @@ export const d_of_petra: DialogueDef = {
         bye,
       ],
     },
-    choir: { text: '"People who decided the sky was the only thing left worth praying to, because it was the only thing that hadn\'t been written." She says *written* like a curse. "We farm. We heal. We bury without names. The city\'s machine keeps a face for everyone it has seen; we try to give it nothing to keep."', effects: [{ learn: 'choir_what' }], options: [bye] },
+    choir: { text: '"People who decided the sky was the only thing left worth praying to, because it was the only thing that hadn\'t been written." She says *written* like a curse. "We farm. We heal. We bury without names. The city\'s machine keeps a face for everyone it has seen; we try to give it nothing to keep."', interject: [{ companion: TAMSIN, text: '"Nothing to keep," Tamsin says. "The fridge kept everything. Every ration, every name, every cough." She says it like a joke and it does not come out like one.' }], effects: [{ learn: 'choir_what' }], options: [bye] },
     word: { text: 'She goes very still, and then she does a strange thing: she pulls the scarf down and lets you see her whole face, once, the way you would show a wound. "Then he reached you. Then it was worth it." The scarf goes up. "The hatch under the common hall. Say that to the iron. Come alone." ', effects: [{ set: 'petra_word' }, { set: 'of_cellar_open' }, { trust: { npc: 'npc_of_02', by: 25 } }, { learn: 'petra_keeps_door' }], options: [bye] },
     door: { text: '"I keep several. Which one you get depends on what you bring." She looks at the fire. "Bring me the word a dying man said, or bring me a cairn you raised, and we\'ll see."', effects: [{ learn: 'petra_door_terms' }], options: [bye] },
     rite: {
@@ -245,11 +268,12 @@ export const d_of_petra: DialogueDef = {
     },
     cairn: {
       text: 'You carry stones from the glass-crust to the burial ground, one at a time, because that is the rule, and build them under the windpump while the sky goes from white to red. Petra says the words, which are short and not about anyone in particular. You say the name once. The wind takes it. She puts one stone from the cairn in your hand. "Sister," she says, or "brother," and the Choir at the shrine fire sings the sky-song, which has no words at all.',
+      interject: [{ companion: ASH, text: 'Ash carries the last stone up from the glass without being asked, and sets it on with you, and stands back. "There\'s a weight to that," he says. "You\'ll feel it in the morning, friend. It\'s meant."' }],
       effects: [{ set: 'sky_rite' }, { give: 'k_sky_token' }, { enlist: 'choir', rank: 'sibling' }, { promote: { faction: 'choir', rank: 'sibling' } }, { trust: { npc: 'npc_of_02', by: 15 } }, { rep: { faction: 'choir', respect: 15 } }, { approval: { companion: 'npc_of_03', by: 10 } }, { time: 90 }, { xp: 100 }],
       options: [{ text: '(Keep the stone.)', exit: true }],
     },
     rows: { text: '"Blight." She says it the way her father does, and then, because she is not her father: "Blight that counts. Something is being done to us, and I don\'t know by whom, and I would like to." She looks toward the small hut past the store and does not look away quite fast enough.', effects: [{ learn: 'petra_suspects' }], options: [bye] },
-    dead: { text: 'She is at the burial ground, at the newest cairn, with her scarf down, and she looks at you with nothing in her face at all. "Go east," she says. "Don\'t come back through here."', effects: [{ memory: { npc: 'npc_of_02', tag: 'brother_dead', valence: -50, strength: 100 } }], options: [{ text: '(Go.)', exit: true }] },
+    dead: { text: 'She is at the burial ground, at the newest cairn, with her scarf down, and she looks at you with nothing in her face at all. "Go east," she says. "Don\'t come back through here."', again: 'Petra at the cairn, scarf down, looking through you. She has said all she will say.', effects: [{ memory: { npc: 'npc_of_02', tag: 'brother_dead', valence: -50, strength: 100 } }], options: [{ text: '(Go.)', exit: true }] },
   },
 };
 
@@ -278,6 +302,7 @@ export const d_of_ash: DialogueDef = {
     },
     again: {
       text: [{ if: { flag: 'a2_openfield_done' }, text: '"The rows are coming back." He leans on the spade. "You did that. There\'s a weight to that too, friend. A good one."' }, { text: '"Friend." The spade goes in.' }],
+      again: 'He gets out another spade of glass-crust and waits, leaning on the handle.',
       options: [
         { id: 'ash.grave.again', text: 'Whose grave?', if: { not: { seen: 'ash.grave' } }, next: 'grave' },
         { id: 'ash.dog.again', text: 'You were a Dog.', if: { all: [{ knows: 'ash_was_dog' }, { not: { seen: 'ash.dog' } }] }, next: 'dog' },
@@ -288,7 +313,7 @@ export const d_of_ash: DialogueDef = {
       ],
     },
     grave: { text: '"Sem. Six. First the trough took." He does not stop. "The Choir says no names on the stones, so I say them while I dig. Sem, Sem, Sem. The soil doesn\'t mind." He looks up for the first time. "Somebody did that to the water. Soil forgives. I don\'t, yet. I\'m working on it."', effects: [{ learn: 'of_child_grave' }, { learn: 'ash_grief' }], options: [bye] },
-    dog: { text: 'The spade stops. "I was." He does not touch the scarf. "Before the Elder. Before the sky. A long time before I knew what a weight was." He looks at you to see what you will do with it. "I burned the mark off myself with a lamp. Took three nights. If you\'re going to use it, use it now; I\'d rather carry it in daylight."', effects: [{ learn: 'ash_admits_dog' }, { trust: { npc: 'npc_of_03', by: 10 } }], options: [{ text: 'I\'m not going to use it.', effects: [{ trust: { npc: 'npc_of_03', by: 15 } }], exit: true }, bye] },
+    dog: { text: 'The spade stops. "I was." He does not touch the scarf. "Before the Elder. Before the sky. A long time before I knew what a weight was." He looks at you to see what you will do with it. "I burned the mark off myself with a lamp. Took three nights. If you\'re going to use it, use it now; I\'d rather carry it in daylight."', interject: [{ companion: ILYA, text: '"Three nights with a lamp," Ilya says. He looks at his own left hand, at the two fingers that aren\'t there. "Right." Ash looks back at him a while, and nods, as if something has been agreed.' }], effects: [{ learn: 'ash_admits_dog' }, { trust: { npc: 'npc_of_03', by: 10 } }], options: [{ text: 'I\'m not going to use it.', effects: [{ trust: { npc: 'npc_of_03', by: 15 } }], exit: true }, bye] },
     wren: { text: 'Wren looks at the burned place under the scarf for a long time, and he lets her. "I don\'t know you," she says finally. "No," he says. "You were a child. I was with Kessler\'s old man." She says nothing. Then: "Dig, then." And he does, and she stands there, and neither of them explains anything to you.', effects: [{ learn: 'ash_wren_met' }, { approval: { companion: 'npc_rd_03', by: 5 } }], options: [bye] },
     join: {
       text: 'He finishes the row of stones he is on, because you finish a row. Then he picks up the shotgun and puts the spade where the next person will find it. "The Elder said the sky would tell me. The sky doesn\'t talk, friend; that\'s the point of it. I\'m coming because the thing that was done to the water came from the city, and I want to see the city." He touches the scarf. "I count things out loud too, sometimes. Different things from your sniper."',
@@ -296,8 +321,8 @@ export const d_of_ash: DialogueDef = {
       options: [{ text: '(Go.)', exit: true }],
     },
     not_yet: { text: '"Ask the Elder. Or raise a cairn here, so I know what you carry." He goes back to the row. "I don\'t go east with a stranger. I\'ve done that once."', options: [bye] },
-    refuse: { text: 'He is digging a grave that is not Sem\'s, and he does not look up, and the shotgun is not leaned on the cairn; it is across his back. "Not with that on you, friend. Walk on."', options: [{ text: '(Walk on.)', exit: true }] },
-    waiting: { text: '"Well?" The spade is already put away.', options: [{ text: 'We\'re going.', effects: [{ join: 'npc_of_03' }], exit: true }, { text: 'Wait here a while.', exit: true }] },
+    refuse: { text: 'He is digging a grave that is not Sem\'s, and he does not look up, and the shotgun is not leaned on the cairn; it is across his back. "Not with that on you, friend. Walk on."', again: 'The spade goes in and comes out. The shotgun stays across his back. He has said what he will say.', options: [{ text: '(Walk on.)', exit: true }] },
+    waiting: { text: '"Well?" The spade is already put away.', again: '"Still here, friend." He hasn\'t picked the spade back up.', options: [{ text: 'We\'re going.', effects: [{ join: 'npc_of_03' }], exit: true }, { text: 'Wait here a while.', exit: true }] },
     party: {
       text: [{ if: { at: 'openfield' }, text: '"Soil\'s good here. Everything else is what it is."' }, { text: '"There\'s a weight to the road. Good one, so far."' }],
       options: [
@@ -307,6 +332,7 @@ export const d_of_ash: DialogueDef = {
     },
     camp: {
       text: '"Fire\'s honest. Say what you want to say to it and I\'ll listen in."',
+      again: 'Ash feeds the fire a stick. "Still honest," he says, and listens.',
       options: [
         { id: 'ash.camp.weight', text: 'What\'s the weight you carry?', if: { not: { knows: 'ash_gully_hint' } }, next: 'weight' },
         { id: 'ash.camp.sky', text: 'Does the sky answer?', if: { not: { knows: 'ash_sky' } }, next: 'sky' },
@@ -336,11 +362,11 @@ export const d_of_tobias: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Rows don\'t lie."', options: [{ id: 'tobias.dosed.again', text: 'It\'s not blight. The north trough is dosed.', if: { all: [{ knows: 'of_well_dosed' }, { not: { seen: 'tobias.dosed' } }] }, check: { skill: 'speech', dc: 35, mods: [{ if: { lead: 'l_tobias_nights' }, dc: -15, why: 'Benedek saw his light at the well' }] }, next: 'confess', fail: 'deny' }, { id: 'tobias.light.again', text: 'Benedek saw your light at the well.', if: { all: [{ lead: 'l_tobias_nights' }, { not: { knows: 'of_well_dosed' } }, { not: { seen: 'tobias.light' } }] }, check: { skill: 'speech', dc: 45 }, next: 'confess', fail: 'deny' }, { id: 'tobias.sheet.again', text: 'What\'s the guild selling you?', if: { all: [{ knows: 'of_guild_offer' }, { not: { seen: 'tobias.sheet' } }] }, next: 'guild' }, bye] },
+    again: { text: '"Rows don\'t lie."', again: 'The hoe goes on. He waits for you to say it or go.', options: [{ id: 'tobias.dosed.again', text: 'It\'s not blight. The north trough is dosed.', if: { all: [{ knows: 'of_well_dosed' }, { not: { seen: 'tobias.dosed' } }] }, check: { skill: 'speech', dc: 35, mods: [{ if: { lead: 'l_tobias_nights' }, dc: -15, why: 'Benedek saw his light at the well' }] }, next: 'confess', fail: 'deny' }, { id: 'tobias.light.again', text: 'Benedek saw your light at the well.', if: { all: [{ lead: 'l_tobias_nights' }, { not: { knows: 'of_well_dosed' } }, { not: { seen: 'tobias.light' } }] }, check: { skill: 'speech', dc: 45 }, next: 'confess', fail: 'deny' }, { id: 'tobias.sheet.again', text: 'What\'s the guild selling you?', if: { all: [{ knows: 'of_guild_offer' }, { not: { seen: 'tobias.sheet' } }] }, next: 'guild' }, bye] },
     guild: { text: '"Futures." He hoes. "Paper that says what happens. My father thinks it\'s a trick. It isn\'t a trick; that\'s the trouble with it."', effects: [{ learn: 'tobias_believes_sheets' }], options: [bye] },
     deny: { text: '"Blight." The hoe does not stop. "Go and look at the well if you want. Everyone looks at the well."', effects: [{ memory: { npc: 'npc_of_04', tag: 'accused', valence: -10, strength: 40 } }], options: [bye] },
-    confess: { text: 'The hoe stops. He looks at the sick hall, and at the Elder\'s house, and then, strangely, at the sky, the way his sister does. "Not here." He walks you to the hut, and takes a paper from under the bench, and gives it to you to read, and it is OPENFIELD — HARVEST ABOVE PLAN — THE LONG NIGHT — BURNS. "I bought that with a year\'s seed money. If we grow, we burn. So I keep us small. Every third row. Nobody dies of it." He says the last part to the floor.', effects: [...FOUND, { lead: 'l_openfield_sheet' }, { learn: 'of_tobias_why' }, { give: 'k_tobias_sheet' }], options: [{ text: 'Sem died of it.', if: { knows: 'of_child_grave' }, next: 'sem' }, { text: 'What now?', next: 'caught' }] },
-    sem: { text: 'He does not say anything for a long time. "I measured it," he says at last. "For the rows. I didn\'t measure it for a child." And then nothing, and then: "What now?"', effects: [{ memory: { npc: 'npc_of_04', tag: 'sem_named', valence: -20, strength: 80 } }], options: [{ text: 'What now.', next: 'caught' }] },
+    confess: { text: 'The hoe stops. He looks at the sick hall, and at the Elder\'s house, and then, strangely, at the sky, the way his sister does. "Not here." He walks you to the hut, and takes a paper from under the bench, and gives it to you to read, and it is OPENFIELD — HARVEST ABOVE PLAN — THE LONG NIGHT — BURNS. "I bought that with a year\'s seed money. If we grow, we burn. So I keep us small. Every third row. Nobody dies of it." He says the last part to the floor.', interject: [{ companion: ILYA, text: 'Ilya has gone very still. "If you grow," he says, "you burn." His hand finds the pocket of his jacket where he keeps a letter, and stays there. "Right."' }], effects: [...FOUND, { lead: 'l_openfield_sheet' }, { learn: 'of_tobias_why' }, { give: 'k_tobias_sheet' }], options: [{ text: 'Sem died of it.', if: { knows: 'of_child_grave' }, next: 'sem' }, { text: 'What now?', next: 'caught' }] },
+    sem: { text: 'He does not say anything for a long time. "I measured it," he says at last. "For the rows. I didn\'t measure it for a child." And then nothing, and then: "What now?"', interject: [{ companion: TAMSIN, text: '"Sem was six," Tamsin says. Her voice is perfectly level, which is worse than if she had shouted.' }], effects: [{ memory: { npc: 'npc_of_04', tag: 'sem_named', valence: -20, strength: 80 } }], options: [{ text: 'What now.', next: 'caught' }] },
     caught: {
       text: [{ if: { seen: 'tobias.dosed' }, text: 'He stands in the hut with his hands empty, waiting to be told what he is.' }, { if: { seen: 'tobias.light' }, text: 'He stands in the hut with his hands empty, waiting to be told what he is.' }, { text: 'He knows that you know; it is in the way he puts the hoe down. "Say it, then."' }],
       options: [
@@ -354,8 +380,8 @@ export const d_of_tobias: DialogueDef = {
     exposed: { text: '"From me." He goes grey and nods, once, the way his father nods, and walks to the Elder\'s house with the pouch in his hand, and the light in that window burns until dawn.', effects: [{ time: 60 }], options: [{ text: '(Leave them to it.)', exit: true }] },
     mercy: { text: 'He gives you the pouch. His hands are empty and he looks at them. "The north rows will come back in a month," he says. "If we burn, you\'ll know why." He goes back to the hoe, because there is nothing else to go back to.', options: [{ text: '(Go.)', exit: true }] },
     unwritten: { text: 'He looks at the common hall, where the hatch is, and something that has been tired in him for a year stops arguing. "Petra." Not a question. He walks there himself. The hatch closes on both of them.', options: [{ text: '(Go.)', exit: true }] },
-    after_mercy: { text: 'He hoes the rows that are coming back, and does not look at you, and the north trough runs brown and ordinary, and his father sings at dusk and does not know why his son will not.', options: [{ text: '(Leave him.)', exit: true }] },
-    fight: { text: 'The shiv is in his hand and he is crying.', options: [{ text: '(Nothing.)', exit: true }] },
+    after_mercy: { text: 'He hoes the rows that are coming back, and does not look at you, and the north trough runs brown and ordinary, and his father sings at dusk and does not know why his son will not.', again: 'He goes on hoeing, and does not look up.', options: [{ text: '(Leave him.)', exit: true }] },
+    fight: { text: 'The shiv is in his hand and he is crying.', again: 'The shiv, still. He has not stopped crying.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
@@ -368,18 +394,18 @@ export const d_of_imre: DialogueDef = {
       effects: [{ set: 'imre_met' }, { learn: 'of_sick_no_fever' }],
       options: [
         { id: 'imre.sick', text: 'What is it, then?', next: 'sick' },
-        { id: 'imre.heal', text: 'Patch me up.', if: { not: { flag: 'imre_healed_today' } }, next: 'heal' },
-        { id: 'imre.trade', text: 'What have you got?', effects: [{ event: 'barter' }], exit: true },
+        { id: 'imre.heal', text: 'Patch me up.', if: { not: { flag: 'imre_healed_today' } }, next: 'heal', repeat: true },
+        { id: 'imre.trade', text: 'What have you got?', effects: [{ event: 'barter' }], exit: true, repeat: true },
         { id: 'imre.kits', text: '(Hand over two knit kits.) From the board at Old Market. For the hall.', if: GIG_KITS, effects: GIG_KITS_DONE, next: 'kits' },
         bye,
       ],
     },
-    again: { text: '"Boiled water only. Sit or help."', options: [{ id: 'imre.sick.again', text: 'The sick.', if: { not: { knows: 'of_well_dosed' } }, next: 'sick' }, { id: 'imre.heal.again', text: 'Patch me up.', if: { not: { flag: 'imre_healed_today' } }, next: 'heal' }, { id: 'imre.trade.again', text: 'What have you got?', effects: [{ event: 'barter' }], exit: true }, { id: 'imre.kits.again', text: '(Hand over two knit kits.) From the board at Old Market.', if: GIG_KITS, effects: GIG_KITS_DONE, next: 'kits' }, bye] },
+    again: { text: '"Boiled water only. Sit or help."', again: 'She wrings out a cloth and waits, not long.', options: [{ id: 'imre.sick.again', text: 'The sick.', if: { not: { knows: 'of_well_dosed' } }, next: 'sick' }, { id: 'imre.heal.again', text: 'Patch me up.', if: { not: { flag: 'imre_healed_today' } }, next: 'heal', repeat: true }, { id: 'imre.trade.again', text: 'What have you got?', effects: [{ event: 'barter' }], exit: true, repeat: true }, { id: 'imre.kits.again', text: '(Hand over two knit kits.) From the board at Old Market.', if: GIG_KITS, effects: GIG_KITS_DONE, next: 'kits' }, bye] },
     kits: { text: 'She turns one over, reads the pre-Burn print on it, and does not ask what it cost. "Two." They go on the high shelf, out of the children\'s reach, where the empty space was. "The hatch sends these every few months and never a note. Tell them the Choir thanks the sky, and I thank them, and I know the difference."', effects: [{ learn: 'of_imre_hatch' }], options: [bye] },
     sick: {
       text: '"Shaking hands. Bad stomachs. A taste of pennies, the child says. No fever, no rash, nothing passing from one to the next." She folds a cloth. "All three drank from the north trough before I made the rule. That\'s as far as I can take it. I\'m a healer; I\'m not a well."',
       options: [
-        { id: 'imre.diagnose', text: '(Look at the child\'s hands and gums.)', check: { skill: 'medicine', dc: 40 }, next: 'diag_ok', fail: 'diag_no' },
+        { id: 'imre.diagnose', text: '(Look at the child\'s hands and gums.)', if: { not: { knows: 'of_well_dosed' } }, check: { skill: 'medicine', dc: 40 }, next: 'diag_ok', fail: 'diag_no' },
         bye,
       ],
     },
@@ -399,12 +425,12 @@ export const d_of_doria: DialogueDef = {
       passives: [{ attr: 'wits', dc: 7, text: 'One a night, never two, never a broken lock. Not a thief. An order being filled, by someone with a key.', effects: [{ learn: 'of_seed_key' }] }],
       options: [
         { id: 'doria.keys', text: 'Who has keys?', next: 'keys', once: true },
-        { id: 'doria.chaff', text: 'Let them keep stealing. Give them dead seed.', if: { knows: 'of_seed_hollin' }, next: 'chaff' },
+        { id: 'doria.chaff', text: 'Let them keep stealing. Give them dead seed.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { item: 'k_chaff' } }] }, next: 'chaff' },
         { id: 'doria.hollin', text: 'It\'s Hollin. He carries it to the guild\'s man.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, next: 'hollin' },
         bye,
       ],
     },
-    again: { text: '"Counted at dusk." She counts.', options: [{ id: 'doria.keys.again', text: 'Who has keys?', if: { not: { seen: 'doria.keys' } }, next: 'keys' }, { id: 'doria.chaff.again', text: 'Let them keep stealing. Give them dead seed.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, next: 'chaff' }, { id: 'doria.hollin.again', text: 'It\'s Hollin.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, next: 'hollin' }, bye] },
+    again: { text: '"Counted at dusk." She counts.', again: 'She finishes a column on the tally and looks up.', options: [{ id: 'doria.keys.again', text: 'Who has keys?', if: { not: { seen: 'doria.keys' } }, next: 'keys' }, { id: 'doria.chaff.again', text: 'Let them keep stealing. Give them dead seed.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }, { not: { item: 'k_chaff' } }] }, next: 'chaff' }, { id: 'doria.hollin.again', text: 'It\'s Hollin.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, next: 'hollin' }, bye] },
     keys: { text: '"Three. Mine. The Elder\'s. The yard\'s, for the planting mornings." She stops. "Hollin has the yard\'s. He came from the Sump with nothing and the Elder gave him the yard, and I have been not thinking that for six days."', effects: [{ learn: 'of_seed_yard_key' }, { learn: 'of_seed_hollin_hint' }], options: [bye] },
     chaff: {
       text: '"Dead seed." She almost smiles. "Last year\'s, boiled and dried. Looks right, weighs right, grows nothing. Chaff with manners." She looks at the crates. "If the guild is buying our seed for somebody east, I would like that somebody to plant a field of nothing and wait a season for it."',
@@ -418,7 +444,7 @@ export const d_of_doria: DialogueDef = {
     chaff_no: { text: 'The seed boils to glue. Doria looks at the pot and at you and says nothing, which is kind.', options: [bye] },
     hollin: { text: 'She does not look surprised; she looks tired. "Tell the Elder. I can\'t." She turns the tally over. "He\'ll give Hollin the night watch over the store he stole from. That\'s the Choir\'s way. It\'s worse than the track and he\'ll stay, which is the point."', options: [{ id: 'doria.tell', text: '(Tell the Elder.)', effects: [{ set: 'of_seed_outcome', value: 'exposed' }, { xp: 80 }, { decision: { id: 'of_seed_exposed', text: 'You told Openfield that its yard hand was selling the Choir\'s seed to the guild.' } }], next: 'told' }, { text: 'Not yet.', exit: true }] },
     told: { text: 'The Elder hears it, and goes to the yard, and comes back without having raised his voice, and Hollin Brannock stands watch over the seed store every night from then on with a lantern and nobody to talk to. The guild\'s man is gone by morning.', options: [bye] },
-    after: { text: '"Fourteen at dusk. Fourteen at dawn." She sleeps now.', options: [bye] },
+    after: { text: '"Fourteen at dusk. Fourteen at dawn." She sleeps now.', again: '"Fourteen." She says it like a prayer the Choir doesn\'t have.', options: [bye] },
   },
 };
 
@@ -434,7 +460,7 @@ export const d_of_benedek: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Sweet." He is still smelling leaves.', options: [{ id: 'benedek.who.again', text: 'Whose light?', if: { not: { seen: 'benedek.who' } }, check: { skill: 'speech', dc: 30 }, next: 'who_ok', fail: 'who_no' }, bye] },
+    again: { text: '"Sweet." He is still smelling leaves.', again: 'He holds up another leaf for you to smell, and waits.', options: [{ id: 'benedek.who.again', text: 'Whose light?', if: { not: { seen: 'benedek.who' } }, check: { skill: 'speech', dc: 30 }, next: 'who_ok', fail: 'who_no' }, bye] },
     who_ok: { text: 'He looks at the Elder\'s house for a long time. "I\'m seventy-two and I\'ve buried the man who planted the first row here, and I\'m not going to be the one who says it to his father." He looks at you. "The light walked back west. Past the store. To the small hut. It walks like a man heavy on his left foot." He goes back to the rows. "That\'s all an old man saw."', effects: [{ lead: 'l_tobias_nights' }, { learn: 'of_benedek_told' }, { xp: 40 }], options: [{ text: 'Thank you.', exit: true }] },
     who_no: { text: '"A light." He goes back to the rows. "I\'m seventy-two. I see lights."', options: [bye] },
   },
@@ -453,11 +479,12 @@ export const d_of_hollin: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Yard."', options: [{ id: 'hollin.seed.again', text: 'Seed walks out of the store at night. You have the yard key.', if: { all: [{ knows: 'of_seed_yard_key' }, { not: { seen: 'hollin.seed' } }] }, check: { skill: 'speech', dc: 35 }, next: 'confess', fail: 'deny' }, bye] },
+    again: { text: '"Yard."', again: 'He shifts to stand between you and the tent again.', options: [{ id: 'hollin.seed.again', text: 'Seed walks out of the store at night. You have the yard key.', if: { all: [{ knows: 'of_seed_yard_key' }, { not: { seen: 'hollin.seed' } }] }, check: { skill: 'speech', dc: 35 }, next: 'confess', fail: 'deny' }, bye] },
     deny: { text: '"Lots of people have keys." He has stopped standing between you and the tent, which is its own answer, and started standing between you and the lane.', options: [bye] },
     confess: { text: 'He sits down on a crate as if his legs have been cut. "Twelve a crate. He said the Choir had more than it could plant. He said it was going to people who\'d grow it." He looks at the lane, where the guild\'s man stands. "I came from the Sump with nothing. Twelve a crate is more than nothing has ever been."', effects: [{ learn: 'of_seed_hollin' }, { lead: 'l_seed_corso' }, { xp: 50 }], options: [{ text: 'What now.', next: 'caught' }] },
     caught: {
       text: 'He knows that you know. He has his hands flat on his knees like a man waiting for the sum to be read.',
+      again: 'Still on the crate, hands on his knees. The sum is still not read.',
       options: [
         { id: 'hollin.stop', text: 'Stop. Tell the guild\'s man it\'s over. I say nothing.', effects: [{ set: 'of_seed_outcome', value: 'corso_gone' }, { set: 'of_corso_gone' }, { trust: { npc: 'npc_of_08', by: 30 } }, { xp: 80 }, { decision: { id: 'of_hollin_spared', text: 'You let Openfield\'s yard hand stop stealing seed without telling the Choir.' } }], next: 'stopped' },
         { id: 'hollin.cut', text: 'Keep going. A tenth of every crate\'s coin comes to me.', effects: [{ set: 'of_seed_outcome', value: 'cut' }, { give: 'tolls', count: 12 }], next: 'cut' },
@@ -466,10 +493,10 @@ export const d_of_hollin: DialogueDef = {
       ],
     },
     stopped: { text: 'He goes down the lane that evening and says something short to the guild\'s man, and the guild\'s man looks at you across the green, and is gone by morning with his tent and his paper. Hollin keeps the yard, and the key, and the look of a man let off once.', options: [bye] },
-    cut: { text: 'Twelve Tolls, warm from his neck. "A tenth," he says, and the thing that was in his face when he sat down on the crate goes somewhere and does not come back. The crates walk. Doria counts.', options: [bye] },
+    cut: { text: 'Twelve Tolls, warm from his neck. "A tenth," he says, and the thing that was in his face when he sat down on the crate goes somewhere and does not come back. The crates walk. Doria counts.', interject: [{ companion: TAMSIN, text: '"A tenth," Tamsin says. "Of seed. From people who feed the orchard kids first." She doesn\'t laugh, and she doesn\'t look at the coins.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] }], options: [bye] },
     told: { text: 'He does not run. He goes to the Elder himself, which is more than you expected, and the Elder gives him the night watch over the store he stole from, which is the Choir\'s way, and he takes it.', options: [bye] },
-    watch: { text: 'He stands at the store door with a lantern every night now, and nobody talks to him, and he has not left.', options: [{ text: '(Leave him.)', exit: true }] },
-    after: { text: '"Yard." He does not look at you, which is how he thanks you, or doesn\'t.', options: [bye] },
+    watch: { text: 'He stands at the store door with a lantern every night now, and nobody talks to him, and he has not left.', again: 'Hollin, the lantern, the store door. Nobody talks to him.', options: [{ text: '(Leave him.)', exit: true }] },
+    after: { text: '"Yard." He does not look at you, which is how he thanks you, or doesn\'t.', again: 'He doesn\'t look up from the yard.', options: [bye] },
   },
 };
 
@@ -482,15 +509,15 @@ export const d_of_corso: DialogueDef = {
       effects: [{ set: 'corso_met' }],
       options: [
         { id: 'corso.seed', text: 'You\'re buying seed by night. A crate a time.', check: { skill: 'barter', dc: 35, mods: [{ if: { knows: 'of_seed_hollin' }, dc: -15, why: 'you can name his carrier' }, { if: { member: 'tollmen' }, dc: -10, why: 'guild to guild' }] }, next: 'seed_ok', fail: 'seed_no' },
-        { id: 'corso.chaff', text: 'I\'ve a crate for you. Choir seed, the good rows.', if: { item: 'k_chaff' }, next: 'chaff' },
+        { id: 'corso.chaff', text: 'I\'ve a crate for you. Choir seed, the good rows.', if: { all: [{ item: 'k_chaff' }, { not: { flag: 'of_seed_outcome' } }] }, next: 'chaff' },
         { id: 'corso.future', text: 'What does the guild know about this harvest?', next: 'future', once: true },
         bye,
       ],
     },
-    again: { text: '"Factor\'s hand. Still buying."', options: [{ id: 'corso.seed.again', text: 'You\'re buying seed by night.', if: { not: { seen: 'corso.seed' } }, check: { skill: 'barter', dc: 35, mods: [{ if: { knows: 'of_seed_hollin' }, dc: -15, why: 'you can name his carrier' }] }, next: 'seed_ok', fail: 'seed_no' }, { id: 'corso.leave', text: 'Pack the tent. Tonight.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, check: { skill: 'speech', dc: 40, mods: [{ if: { rep: { faction: 'tollmen', fear: 10 } }, dc: -15, why: 'the guild has heard of you' }] }, next: 'leave_ok', fail: 'leave_no' }, { id: 'corso.cut.again', text: 'I want a tenth of what you pay the yard.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, effects: [{ set: 'of_seed_outcome', value: 'cut' }, { give: 'tolls', count: 20 }], next: 'cut' }, { id: 'corso.chaff.again', text: 'I\'ve a crate for you. Choir seed, the good rows.', if: { item: 'k_chaff' }, next: 'chaff' }, { id: 'corso.future.again', text: 'What does the guild know about this harvest?', if: { not: { seen: 'corso.future' } }, next: 'future' }, bye] },
+    again: { text: '"Factor\'s hand. Still buying."', again: 'He turns a page of the ledger and waits, paid by the day.', options: [{ id: 'corso.seed.again', text: 'You\'re buying seed by night.', if: { not: { seen: 'corso.seed' } }, check: { skill: 'barter', dc: 35, mods: [{ if: { knows: 'of_seed_hollin' }, dc: -15, why: 'you can name his carrier' }] }, next: 'seed_ok', fail: 'seed_no' }, { id: 'corso.leave', text: 'Pack the tent. Tonight.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, check: { skill: 'speech', dc: 40, mods: [{ if: { rep: { faction: 'tollmen', fear: 10 } }, dc: -15, why: 'the guild has heard of you' }] }, next: 'leave_ok', fail: 'leave_no' }, { id: 'corso.cut.again', text: 'I want a tenth of what you pay the yard.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, effects: [{ set: 'of_seed_outcome', value: 'cut' }, { give: 'tolls', count: 20 }], next: 'cut' }, { id: 'corso.chaff.again', text: 'I\'ve a crate for you. Choir seed, the good rows.', if: { all: [{ item: 'k_chaff' }, { not: { flag: 'of_seed_outcome' } }] }, next: 'chaff' }, { id: 'corso.future.again', text: 'What does the guild know about this harvest?', if: { not: { seen: 'corso.future' } }, next: 'future' }, bye] },
     seed_ok: { text: 'He does not deny it; the guild never does, it is too dear. "Viable seed is a future in a smaller box. A client of Factor Pike\'s pays very well for it, east of the Teeth, and the yard boy pays very little for carrying it." He opens the ledger. "Twelve a crate. Six crates. If you\'d like a tenth for your silence, that\'s a rate too."', effects: [{ lead: 'l_seed_corso' }, { learn: 'of_seed_hollin' }, { learn: 'of_corso_admits' }], options: [{ id: 'corso.cut', text: 'A tenth, then.', effects: [{ set: 'of_seed_outcome', value: 'cut' }, { give: 'tolls', count: 20 }], next: 'cut' }, { id: 'corso.leave.now', text: 'Pack the tent. Tonight.', check: { skill: 'speech', dc: 40, mods: [{ if: { rep: { faction: 'tollmen', fear: 10 } }, dc: -15, why: 'the guild has heard of you' }] }, next: 'leave_ok', fail: 'leave_no' }, { text: 'I\'ll think about it.', exit: true }] },
     seed_no: { text: '"I buy harvests, friend. In daylight, with paper." He smiles. "Ask the Elder if he\'s sold me one. He hasn\'t. Yet."', options: [bye] },
-    cut: { text: 'Twenty Tolls, counted on the ledger. "A pleasure. The guild likes a quiet lane." The crates walk. Doria counts.', effects: [{ rep: { faction: 'tollmen', respect: 5 } }, { decision: { id: 'of_seed_cut', text: 'You took a cut of the seed stolen from Openfield for the guild.' } }], options: [bye] },
+    cut: { text: 'Twenty Tolls, counted on the ledger. "A pleasure. The guild likes a quiet lane." The crates walk. Doria counts.', interject: [{ companion: TAMSIN, text: '"A tenth," Tamsin says. "Of seed. From people who feed the orchard kids first." She doesn\'t laugh, and she doesn\'t look at the coins.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] }], effects: [{ rep: { faction: 'tollmen', respect: 5 } }, { decision: { id: 'of_seed_cut', text: 'You took a cut of the seed stolen from Openfield for the guild.' } }], options: [bye] },
     leave_ok: { text: 'He looks at you for a long moment, and at the Choir going about its evening behind you, and does the sum. "Six crates is a small future." He closes the ledger. "Tell the Elder the guild\'s offer stands. It always stands; that\'s what makes it an offer." The tent is gone by morning.', effects: [{ set: 'of_corso_gone' }, { set: 'of_seed_outcome', value: 'corso_gone' }, { rep: { faction: 'tollmen', respect: -3 } }, { xp: 80 }], options: [bye] },
     leave_no: { text: '"The lane is the Choir\'s. The tent is mine. The seed is whoever\'s carries it." He opens the ledger again. "Good evening."', options: [bye] },
     chaff: { text: 'He weighs the crate with a factor\'s hand and does not open it, because the guild buys seals, not seed. "The good rows." Sixty Tolls, counted. "A pleasure doing business with the sky."', effects: [{ take: 'k_chaff' }, { give: 'tolls', count: 60 }, { set: 'of_seed_outcome', value: 'chaff' }, { set: 'of_corso_gone' }, { xp: 100 }, { decision: { id: 'of_chaff_sold', text: 'You sold the guild a crate of dead seed at Openfield for sixty Tolls.' } }], options: [bye] },
@@ -500,22 +527,22 @@ export const d_of_corso: DialogueDef = {
 
 export const d_of_wyn: DialogueDef = {
   id: 'd_of_wyn', owner: 'npc_of_09', start: [{ node: 'intro' }],
-  nodes: { intro: { text: 'A girl of twelve on a cot with her hands under the blanket so you cannot see them shake. "I drank from the north one. It tasted of pennies. Imre says don\'t." She looks at the door. "Is the sky still up?"', effects: [{ learn: 'of_wyn_pennies' }], options: [{ text: 'It\'s still up.', effects: [{ trust: { npc: 'npc_of_09', by: 10 } }], exit: true }, { text: '(Leave her.)', exit: true }] } },
+  nodes: { intro: { text: 'A girl of twelve on a cot with her hands under the blanket so you cannot see them shake. "I drank from the north one. It tasted of pennies. Imre says don\'t." She looks at the door. "Is the sky still up?"', again: 'Wyn, with her hands under the blanket. "Still up?" she asks, the way you check a thing you were told.', effects: [{ learn: 'of_wyn_pennies' }], options: [{ id: 'wyn.up', text: 'It\'s still up.', if: { not: { seen: 'wyn.up' } }, effects: [{ trust: { npc: 'npc_of_09', by: 10 } }], exit: true }, { id: 'wyn.up.again', text: 'Still up.', if: { seen: 'wyn.up' }, exit: true }, { text: '(Leave her.)', exit: true }] } },
 };
 
 export const d_of_marta: DialogueDef = {
   id: 'd_of_marta', owner: 'npc_of_10', start: [{ node: 'intro' }],
-  nodes: { intro: { text: 'A woman on a cot, grey and polite. "Marta. Don\'t mind the hands. Imre says it isn\'t fever, and the Elder says it is, and I\'d like one of them to be right." A beat. "Tobias brings me water from the south trough every morning. He\'s a kind boy. Always was."', effects: [{ learn: 'of_marta_tobias' }], options: [{ text: '(Leave her.)', exit: true }] } },
+  nodes: { intro: { text: 'A woman on a cot, grey and polite. "Marta. Don\'t mind the hands. Imre says it isn\'t fever, and the Elder says it is, and I\'d like one of them to be right." A beat. "Tobias brings me water from the south trough every morning. He\'s a kind boy. Always was."', again: '"Marta. Still the hands." She smiles, politely, from the cot.', effects: [{ learn: 'of_marta_tobias' }], options: [{ text: '(Leave her.)', exit: true }] } },
 };
 
 export const d_of_kip: DialogueDef = {
   id: 'd_of_kip', owner: 'npc_or_04', start: [{ node: 'intro' }],
-  nodes: { intro: { text: 'Kip, from the orchard, in a grey scarf two sizes too big, with dirt to the elbows and a face that has eaten every day for a month. "They feed us first. First!" Then, lower: "Hollin goes to the store at night. We don\'t say. We\'ve been thieves; we know what the look is."', effects: [{ learn: 'of_seed_hollin_hint' }, { learn: 'of_seed_yard_key' }], options: [{ text: 'Keep eating.', exit: true }] } },
+  nodes: { intro: { text: 'Kip, from the orchard, in a grey scarf two sizes too big, with dirt to the elbows and a face that has eaten every day for a month. "They feed us first. First!" Then, lower: "Hollin goes to the store at night. We don\'t say. We\'ve been thieves; we know what the look is."', again: 'Kip, eating, with dirt to the elbows. "First," he says again, with her mouth full, as if you might not have believed it.', effects: [{ learn: 'of_seed_hollin_hint' }, { learn: 'of_seed_yard_key' }], options: [{ text: 'Keep eating.', exit: true }] } },
 };
 
 export const d_of_mote: DialogueDef = {
   id: 'd_of_mote', owner: 'npc_or_05', start: [{ node: 'intro' }],
-  nodes: { intro: { text: 'Mote, from the orchard, who has learned the sky-song and sings it under her breath while she works, all of it, wrong. "The Elder says the sky keeps no books." She considers that. "Kessler kept books. I like this better."', options: [{ text: 'Keep singing.', exit: true }] } },
+  nodes: { intro: { text: 'Mote, from the orchard, who has learned the sky-song and sings it under her breath while she works, all of it, wrong. "The Elder says the sky keeps no books." She considers that. "Kessler kept books. I like this better."', again: 'Mote, singing the sky-song under her breath, wrong in all the same places.', options: [{ text: 'Keep singing.', exit: true }] } },
 };
 
 export const OPENFIELD_DIALOGUES: DialogueDef[] = [

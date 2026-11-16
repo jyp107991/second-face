@@ -7,6 +7,13 @@ import type { Cond, Effect } from '../../engine/world/logic';
  * old trader with a tab who knows the hand on the map.
  */
 
+/** Companions who can cross Ninebridge with the player in Act 2 (U7 interjections): the three from the Sallow, and Odile once
+ * she has left the Span with them. */
+const TAMSIN = 'npc_c9_03';
+const WREN = 'npc_rd_03';
+const ILYA = 'npc_sh_17';
+const ODILE = 'npc_nb_03';
+
 const bye = { text: 'That\'s all.', exit: true };
 const NIGHT = { hour: { from: 23, to: 6 } };
 const BLOCK_HOURS = { hour: { from: 9, to: 18 } };
@@ -28,6 +35,7 @@ export const d_nb_toll: DialogueDef = {
         { if: { flag: 'nb_toll_rate', eq: 'fair' }, text: 'The toll-warden lifts a hand from the sandbags without getting up. "Twelve to cross. One of that\'s the porters\' now, so you can feel good about it. Pay, ticket, or courier."' },
         { text: 'The toll-warden steps out from the sandbags with a shotgun on a sling and a face that has said the next sentence ten thousand times. "Ninebridge. Twelve to cross. Pay, ticket, or courier — there\'s no fourth thing."' },
       ],
+      again: '"Twelve," the warden says, as if you had not left. "Pay, ticket, or courier."',
       passives: [
         { skill: 'barter', dc: 30, text: 'The porters sitting under the ramp with their straps off are the reason the warden looks tired. Nothing has moved up the ramp today but people.', effects: [{ learn: 'nb_strike_seen' }] },
       ],
@@ -41,8 +49,8 @@ export const d_nb_toll: DialogueDef = {
         { text: 'I\'ll come back.', exit: true },
       ],
     },
-    stamp_ok: { text: 'He looks at the stamp, and at you, and decides it is not worth the sentence. "Wall\'s stamp. Not the bridge\'s. Eight, and don\'t tell the bridge."', options: [{ id: 'toll.eight', text: '(Pay. 8 Tolls)', if: { item: 'tolls', count: 8 }, effects: [{ take: 'tolls', count: 8 }, { set: 'nb_toll_paid' }, { learn: 'nb_crossed' }, { xp: 20 }], next: 'in' }, { text: 'Twelve, then.', next: 'intro' }] },
-    stamp_no: { text: '"That\'s the wall\'s stamp. This is a bridge. Different thing, same guild, twelve."', options: [{ text: 'Twelve, then.', next: 'intro' }] },
+    stamp_ok: { text: 'He looks at the stamp, and at you, and decides it is not worth the sentence. "Wall\'s stamp. Not the bridge\'s. Eight, and don\'t tell the bridge."', again: '"Eight," he says again, lower. "Before I remember it\'s twelve."', options: [{ id: 'toll.eight', text: '(Pay. 8 Tolls)', if: { item: 'tolls', count: 8 }, effects: [{ take: 'tolls', count: 8 }, { set: 'nb_toll_paid' }, { learn: 'nb_crossed' }, { xp: 20 }], next: 'in' }, { text: 'Twelve, then.', next: 'intro' }] },
+    stamp_no: { text: '"That\'s the wall\'s stamp. This is a bridge. Different thing, same guild, twelve."', again: '"Still the wall\'s stamp," he says. "Still a bridge. Still twelve."', options: [{ text: 'Twelve, then.', next: 'intro' }] },
     strike: {
       text: '"Sitting. Straps off. They want a tenth of the crossing for carrying it up the ramp, which they will not get, because the guild has it in writing that they\'re back on the third day." He says it flatly, like a man reading off a card. "Goods wait. People can walk."',
       passives: [{ attr: 'senses', dc: 7, text: 'In writing. He glanced at his pocket when he said it, where a folded paper makes a square under the cloth.', effects: [{ learn: 'nb_sheet_strike' }, { lead: 'l_strike_forecast' }] }],
@@ -53,12 +61,13 @@ export const d_nb_toll: DialogueDef = {
     in: { text: '"Guild deck past the sandbags. Mind the ninth span — planks on the south side. Block\'s on the far bank if you\'re buying people, Exchange is mid-span if you\'re buying paper, the Span if you\'re buying the other thing."', options: [{ text: '(Cross.)', exit: true }] },
     threat: {
       text: 'The shotgun does not move. A guard you had not seen steps out of the booth behind you. "Then you\'re a loss to the bridge, and we write losses in the river." He waits. "Twelve."',
+      again: 'The guard behind you has not gone back into the booth. "Twelve," the warden says, as if for the first time.',
       options: [
         { id: 'toll.draw', text: '(Draw.)', effects: [{ set: 'nb_fight' }, { set: 'nb_toll_paid' }, { decision: { id: 'nb_fought_toll', text: 'You drew on the guild at the Ninebridge toll.' } }, { rep: { faction: 'tollmen', fear: 10, respect: -25 } }, { event: 'combat' }], exit: true },
         { text: 'Twelve. Fine.', next: 'intro' },
       ],
     },
-    fight: { text: 'The warden has nothing to say to you now that the guns are out.', options: [{ text: '(Nothing.)', exit: true }] },
+    fight: { text: 'The warden has nothing to say to you now that the guns are out.', again: 'The sandbags, the shotgun over them, and nothing said.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
@@ -76,7 +85,7 @@ export const d_nb_toll_warden: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Warden." The count goes on behind his eyes.', options: [{ id: 'esk.job.again', text: 'The job.', if: { not: { flag: 'nb_strike_over' } }, next: 'job' }, { id: 'esk.third.again', text: 'Who says the third day?', if: { all: [{ knows: 'nb_strike_heard' }, { not: { seen: 'esk.third' } }] }, next: 'third' }, { id: 'esk.bridge.again', text: 'The bridge.', if: { not: { seen: 'esk.bridge' } }, next: 'bridge' }, bye] },
+    again: { text: '"Warden." The count goes on behind his eyes.', again: 'He waits, still counting whatever he was counting.', options: [{ id: 'esk.job.again', text: 'The job.', if: { not: { flag: 'nb_strike_over' } }, next: 'job' }, { id: 'esk.third.again', text: 'Who says the third day?', if: { all: [{ knows: 'nb_strike_heard' }, { not: { seen: 'esk.third' } }] }, next: 'third' }, { id: 'esk.bridge.again', text: 'The bridge.', if: { not: { seen: 'esk.bridge' } }, next: 'bridge' }, bye] },
     job: {
       text: '"Forty backs under the ramp. Talk them up the ramp with their straps on, on the guild\'s terms, and the guild pays eighty. I\'d do it myself but they know my face, and I\'m the face." He shrugs. "They\'re back on the third day regardless. You\'d be saving them two days of hungry. Call it charity."',
       effects: [{ set: 'nb_break_offer' }, { quest: 'q_nb_strike', start: true }, { learn: 'nb_strike_heard' }],
@@ -89,7 +98,7 @@ export const d_nb_toll_warden: DialogueDef = {
     },
     bridge: { text: '"Nine spans when it was built. Eight when the river stopped — the ninth went into the bed the same year, with the market on it, and the guild bought the other eight from whoever was standing on them. Planks across the gap. Twelve to cross. That\'s the history."', effects: [{ learn: 'nb_history' }], options: [bye] },
     claim: { text: 'He has heard. "Straps on, terms unchanged, and the Grand Factor asked me who did it." He counts eighty from a belt pouch into your hand without looking at it. "Don\'t drink it here. They\'re watching."', effects: [{ give: 'tolls', count: 80 }, { set: 'nb_break_claim' }, { rep: { faction: 'tollmen', respect: 12 } }], options: [bye] },
-    paid_out: { text: '"Paid. We\'re square." He looks at the ramp, where the goods are moving.', options: [bye] },
+    paid_out: { text: '"Paid. We\'re square." He looks at the ramp, where the goods are moving.', again: '"Still square." He doesn\'t look away from the ramp.', options: [bye] },
     after: {
       text: [
         { if: { flag: 'nb_toll_rate', eq: 'fair' }, text: 'A new line is painted on the rates board, and the warden has a new way of not looking at you. "A tenth to the porters. First time the bridge ever paid for its own legs. The Grand Factor says it\'s a cost."' },
@@ -97,7 +106,7 @@ export const d_nb_toll_warden: DialogueDef = {
       ],
       options: [bye],
     },
-    fight: { text: 'Nothing.', options: [{ text: '(Nothing.)', exit: true }] },
+    fight: { text: 'Nothing.', again: 'He has the shotgun across the sandbags and nothing to say over it.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
@@ -119,7 +128,7 @@ export const d_nb_strike_sign: DialogueDef = {
   id: 'd_nb_strike_sign', owner: 'narrator',
   start: [{ node: 'read' }],
   nodes: {
-    read: { text: 'A plank painted in tar: STRAPS OFF. A TENTH OR NOTHING MOVES. — THE BACKS OF NINEBRIDGE. Under it, smaller and newer: DAY TWO.', effects: [{ quest: 'q_nb_strike', start: true }, { learn: 'nb_strike_heard' }], options: [{ text: '(Leave it.)', exit: true }] },
+    read: { text: 'A plank painted in tar: STRAPS OFF. A TENTH OR NOTHING MOVES. — THE BACKS OF NINEBRIDGE. Under it, smaller and newer: DAY TWO.', again: 'STRAPS OFF. A TENTH OR NOTHING MOVES. The tar has run a little in the sun.', effects: [{ quest: 'q_nb_strike', start: true }, { learn: 'nb_strike_heard' }], options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -140,11 +149,15 @@ export const d_nb_voss: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Still sitting."', options: [{ id: 'voss.what.again', text: 'What do you want?', if: { not: { seen: 'voss.what' } }, next: 'what' }, { id: 'voss.third.again', text: 'The warden says the third day.', if: { all: [{ knows: 'nb_strike_heard' }, { not: { seen: 'voss.third' } }] }, next: 'third' }, { id: 'voss.sheet.again', text: '(Give him the guild\'s sheet.)', if: { item: 'k_strike_sheet' }, next: 'sheet' }, { id: 'voss.carry.again', text: '(Pick up a strap.)', next: 'carry' }, { id: 'voss.pay.again', text: '(Pay the tenth yourself. 60 Tolls)', if: { item: 'tolls', count: 60 }, next: 'pay' }, { id: 'voss.break.again', text: 'You\'ll lose. Go up the ramp.', if: { not: { seen: 'voss.break' } }, check: { skill: 'speech', dc: 40, mods: [{ if: { knows: 'nb_sheet_strike' }, dc: -10, why: 'you have seen the paper' }] }, next: 'break_ok', fail: 'break_no' }, bye] },
+    again: { text: '"Still sitting."', again: 'He turns the coiled strap over in his hands and waits for you to say it.', options: [{ id: 'voss.what.again', text: 'What do you want?', if: { not: { seen: 'voss.what' } }, next: 'what' }, { id: 'voss.third.again', text: 'The warden says the third day.', if: { all: [{ knows: 'nb_strike_heard' }, { not: { seen: 'voss.third' } }] }, next: 'third' }, { id: 'voss.sheet.again', text: '(Give him the guild\'s sheet.)', if: { item: 'k_strike_sheet' }, next: 'sheet' }, { id: 'voss.carry.again', text: '(Pick up a strap.)', next: 'carry' }, { id: 'voss.pay.again', text: '(Pay the tenth yourself. 60 Tolls)', if: { item: 'tolls', count: 60 }, next: 'pay' }, { id: 'voss.break.again', text: 'You\'ll lose. Go up the ramp.', if: { not: { seen: 'voss.break' } }, check: { skill: 'speech', dc: 40, mods: [{ if: { knows: 'nb_sheet_strike' }, dc: -10, why: 'you have seen the paper' }] }, next: 'break_ok', fail: 'break_no' }, bye] },
     what: { text: '"A tenth of the crossing. Twelve Tolls a head comes over this bridge and not one of them goes to the backs that carry the goods up the ramp. One in ten. The guild says the bridge can\'t afford it." He looks up at eight spans of concrete. "The bridge was free when it was built."', effects: [{ learn: 'nb_strike_demand' }], options: [{ text: 'And the guild?', next: 'third' }] },
     third: { text: '"They said that before we sat down. Third day. Like weather." He turns the strap over. "I don\'t know how they know. I know that if a man tells you how a fight ends before it starts, he\'s either lying or he\'s fixed it. And the guild doesn\'t lie; it\'s too dear."', effects: [{ learn: 'nb_voss_suspects' }], options: [bye] },
     sheet: {
       text: 'He reads slowly, lips moving over the guild\'s capitals. NINEBRIDGE — PORTERS\' STOPPAGE — ENDS THIRD DAY, STRAPS ON, TERMS UNCHANGED. Dated the day before they sat down. He reads it twice. Then he stands, which takes a while, and holds it up so the fire can see it. "They wrote our ending before we started," he says, not loudly. "Then we\'re off their page." Forty people put their straps down harder.',
+      interject: [
+        { companion: TAMSIN, text: '"Off their page," Tamsin says under her breath, trying the words for size. Then she grins at the fire, all teeth. "Rust it. Off their page."', effects: [{ approval: { companion: TAMSIN, by: 5 } }] },
+        { companion: ILYA, text: 'Ilya watches the paper go up into the firelight and counts the porters standing, under his breath, to forty. "Right," he says.' },
+      ],
       effects: [{ take: 'k_strike_sheet' }, { set: 'nb_strike_sheet_given' }, { set: 'nb_strike_outcome', value: 'won' }, { set: 'nb_strike_over' }, { learn: 'nb_forecast_broken' }, { decision: { id: 'nb_strike_sheet', text: 'You gave the Ninebridge porters the guild\'s forecast of their defeat. They sat past the third day and won.' } }, { xp: 150 }, { time: 60 }],
       options: [{ text: '(Watch them sit.)', next: 'won_now' }],
     },
@@ -164,12 +177,16 @@ export const d_nb_voss: DialogueDef = {
     pay_done: { text: 'By evening a board comes down the ramp with a rate painted on it, and a guild clerk with a face like a closed drawer to say the guild had always meant to. A tenth. Voss hands you back twelve of your sixty. "The first day\'s. Ours now."', effects: [{ give: 'tolls', count: 12 }], options: [bye] },
     break_ok: {
       text: 'You talk the way the guild talks, in numbers, and you do not raise your voice, and you describe the paper. Something goes out of the fire. Voss looks at the ramp for a long time. "Third day," he says. "Straps on." Forty people stand up slower than they sat down, and none of them look at you, which is its own kind of looking.',
+      interject: [
+        { companion: ILYA, text: 'Ilya says nothing until the last of them is on the ramp. "Right," he says then, and goes to stand at the parapet, where there is something else to count.', effects: [{ approval: { companion: ILYA, by: -5 } }] },
+        { companion: TAMSIN, text: '"They looked at you like you were weather," Tamsin says. "The bad kind." For once it isn\'t a joke.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] },
+      ],
       effects: [{ set: 'nb_strike_outcome', value: 'broken' }, { set: 'nb_strike_over' }, { set: 'nb_strike_broke' }, { decision: { id: 'nb_strike_broken', text: 'You talked the Ninebridge porters back up the ramp on the guild\'s terms.' } }, { rep: { faction: 'tollmen', respect: 8 } }, { memory: { npc: 'npc_nb_05', tag: 'broke_strike', valence: -40, strength: 90 } }, { time: 60 }],
       options: [{ text: '(Go and collect from the warden.)', exit: true }],
     },
     break_no: { text: '"Keep your knees." He says it back to you, slowly. "That\'s what they said to my father when the ninth span fell with him on it. Sit down or go up the ramp, stranger, but don\'t tell a porter about his knees."', effects: [{ memory: { npc: 'npc_nb_05', tag: 'tried_to_break', valence: -15, strength: 50 } }], options: [bye] },
-    broken: { text: 'He is carrying. He does not stop, and he does not look at you, and the forty behind him have learned your face the way porters learn a step that gives.', options: [{ text: '(Nothing.)', exit: true }] },
-    won: { text: 'He is carrying, with his strap on, and when he passes you he lifts two fingers off the strap. A tenth. "Off the page," he says, and goes up the ramp.', options: [{ text: '(Nothing.)', exit: true }] },
+    broken: { text: 'He is carrying. He does not stop, and he does not look at you, and the forty behind him have learned your face the way porters learn a step that gives.', again: 'He goes up the ramp under a load and down it empty, and neither time does he see you.', options: [{ text: '(Nothing.)', exit: true }] },
+    won: { text: 'He is carrying, with his strap on, and when he passes you he lifts two fingers off the strap. A tenth. "Off the page," he says, and goes up the ramp.', again: 'Two fingers off the strap as he passes, and he is gone up the ramp again.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
@@ -177,22 +194,22 @@ export const d_nb_voss: DialogueDef = {
 
 export const d_nb_span_sign: DialogueDef = {
   id: 'd_nb_span_sign', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'THE SPAN — BITTERS · WATER · DUST · BERTHS — NAMED FOR THE ONE THAT\'S MISSING. A hull door in a wall of welded scrap, and lamplight under it.', options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'THE SPAN — BITTERS · WATER · DUST · BERTHS — NAMED FOR THE ONE THAT\'S MISSING. A hull door in a wall of welded scrap, and lamplight under it.', again: 'The Span\'s hull door, and the lamplight under it.', options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_nb_hall_sign: DialogueDef = {
   id: 'd_nb_hall_sign', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'THE EXCHANGE — NINEBRIDGE — PAPER BOUGHT AND SOLD — TICKET-HOLDERS AND COURIERS — THE FLOOR CLOSES AT NINE. The guild\'s half-moon, cast in brass, bolted to a shipping container.', effects: [{ learn: 'nb_hall_seen' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'THE EXCHANGE — NINEBRIDGE — PAPER BOUGHT AND SOLD — TICKET-HOLDERS AND COURIERS — THE FLOOR CLOSES AT NINE. The guild\'s half-moon, cast in brass, bolted to a shipping container.', again: 'The guild\'s brass half-moon on the container. THE FLOOR CLOSES AT NINE.', effects: [{ learn: 'nb_hall_seen' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_nb_planks: DialogueDef = {
   id: 'd_nb_planks', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'Four planks, bolted to the south parapet where the ninth span used to be, over forty feet of air and a riverbed of concrete pieces. A sign: SINGLE FILE. NO GOODS. The guild charges twelve to cross a bridge and will not spend two to mend it.', effects: [{ learn: 'seen_ninth_span' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'Four planks, bolted to the south parapet where the ninth span used to be, over forty feet of air and a riverbed of concrete pieces. A sign: SINGLE FILE. NO GOODS. The guild charges twelve to cross a bridge and will not spend two to mend it.', again: 'Four planks over forty feet of air. SINGLE FILE. NO GOODS.', effects: [{ learn: 'seen_ninth_span' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_nb_dust_table: DialogueDef = {
   id: 'd_nb_dust_table', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'A table scarred with dice-cup rings, three stools, and a chalk tally nobody has rubbed out since the river stopped. Lazlo deals. Ask at the bar.', options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'A table scarred with dice-cup rings, three stools, and a chalk tally nobody has rubbed out since the river stopped. Lazlo deals. Ask at the bar.', again: 'The dice-cup rings, the chalk tally. Lazlo deals, at the bar.', options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_nb_lazlo: DialogueDef = {
@@ -203,15 +220,15 @@ export const d_nb_lazlo: DialogueDef = {
       text: 'The man behind the bar has forearms like bridge cable and a beard with bitters in it. "The Span. Bitters, water, Dust, a berth if you\'re clean and thirty if you\'re not." He nods at the corner table without looking at it. "Don\'t buy her a drink. She\'ll let you."',
       effects: [{ set: 'nb_lazlo_met' }],
       options: [
-        { id: 'lazlo.trade', text: 'Let me see what you\'ve got.', effects: [{ event: 'barter' }], exit: true },
-        { id: 'lazlo.dust', text: 'A game of Dust. (5 Tolls)', if: { item: 'tolls', count: 5 }, effects: [{ event: 'dust', data: { stake: 5 } }], exit: true },
+        { id: 'lazlo.trade', text: 'Let me see what you\'ve got.', effects: [{ event: 'barter' }], exit: true, repeat: true },
+        { id: 'lazlo.dust', text: 'A game of Dust. (5 Tolls)', if: { item: 'tolls', count: 5 }, effects: [{ event: 'dust', data: { stake: 5 } }], exit: true, repeat: true },
         { id: 'lazlo.berth', text: 'The berth. Thirty?', if: { not: { flag: 'nb_berth' } }, next: 'berth' },
         { id: 'lazlo.her', text: 'Who\'s at the corner table?', next: 'her', once: true },
         { id: 'lazlo.news', text: 'What\'s the talk?', next: 'news', once: true },
         bye,
       ],
     },
-    again: { text: '"Bitters, water, Dust." He is already pouring something.', options: [{ id: 'lazlo.trade.again', text: 'Let me see what you\'ve got.', effects: [{ event: 'barter' }], exit: true }, { id: 'lazlo.dust.again', text: 'A game of Dust. (5 Tolls)', if: { item: 'tolls', count: 5 }, effects: [{ event: 'dust', data: { stake: 5 } }], exit: true }, { id: 'lazlo.berth.again', text: 'The berth. Thirty?', if: { not: { flag: 'nb_berth' } }, next: 'berth' }, { id: 'lazlo.her.again', text: 'Who\'s at the corner table?', if: { not: { seen: 'lazlo.her' } }, next: 'her' }, { id: 'lazlo.news.again', text: 'What\'s the talk?', if: { not: { seen: 'lazlo.news' } }, next: 'news' }, bye] },
+    again: { text: '"Bitters, water, Dust." He is already pouring something.', again: 'Lazlo wipes the same yard of bar and waits.', options: [{ id: 'lazlo.trade.again', text: 'Let me see what you\'ve got.', effects: [{ event: 'barter' }], exit: true, repeat: true }, { id: 'lazlo.dust.again', text: 'A game of Dust. (5 Tolls)', if: { item: 'tolls', count: 5 }, effects: [{ event: 'dust', data: { stake: 5 } }], exit: true, repeat: true }, { id: 'lazlo.berth.again', text: 'The berth. Thirty?', if: { not: { flag: 'nb_berth' } }, next: 'berth' }, { id: 'lazlo.her.again', text: 'Who\'s at the corner table?', if: { not: { seen: 'lazlo.her' } }, next: 'her' }, { id: 'lazlo.news.again', text: 'What\'s the talk?', if: { not: { seen: 'lazlo.news' } }, next: 'news' }, bye] },
     berth: {
       text: '"Berth A. A bed, a locker, a door that locks from your side. Thirty, once, and it\'s yours for as long as I\'m alive and you don\'t bring the guild to my door." He puts a brass tag on the bar. "Berth B is hers. Has been for years. Don\'t ask."',
       options: [{ id: 'lazlo.berth.pay', text: '(Pay. 30 Tolls)', if: { item: 'tolls', count: 30 }, effects: [{ take: 'tolls', count: 30 }, { give: 'k_berth_token' }, { set: 'nb_berth' }, { learn: 'nb_berth_rented' }, { xp: 20 }], next: 'berth_done' }, { text: 'Not yet.', exit: true }] },
@@ -232,8 +249,8 @@ export const d_nb_berth: DialogueDef = {
   id: 'd_nb_berth', owner: 'narrator',
   start: [{ if: { flag: 'nb_berth' }, node: 'yours' }, { node: 'not_yours' }],
   nodes: {
-    not_yours: { text: 'Berth A: a shipping container with a bed in it and a bolt on the inside of the door. Lazlo rents it. Thirty, he said.', options: [{ text: '(Leave it.)', exit: true }] },
-    yours: { text: 'Your berth. A bed with a real mattress, a locker, a door that locks from your side, and the river talking under the deck all night though it has been dry for ninety years.', options: [{ text: '(Rest, mend, write.)', effects: [{ event: 'camp' }], exit: true }, { text: '(Leave it.)', exit: true }] },
+    not_yours: { text: 'Berth A: a shipping container with a bed in it and a bolt on the inside of the door. Lazlo rents it. Thirty, he said.', again: 'Berth A, bolted from nobody\'s side yet. Thirty, at the bar.', options: [{ text: '(Leave it.)', exit: true }] },
+    yours: { text: 'Your berth. A bed with a real mattress, a locker, a door that locks from your side, and the river talking under the deck all night though it has been dry for ninety years.', again: 'Your berth: the mattress, the locker, the bolt on your side.', options: [{ text: '(Rest, mend, write.)', effects: [{ event: 'camp' }], exit: true, repeat: true }, { text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -241,8 +258,8 @@ export const d_nb_berth_b: DialogueDef = {
   id: 'd_nb_berth_b', owner: 'narrator',
   start: [{ if: { flag: 'odile_joined' }, node: 'gone' }, { node: 'hers' }],
   nodes: {
-    hers: { text: 'Berth B. The door is bolted from inside though nobody is in it: Odile\'s, Lazlo said, for years. A reading-glasses chain hangs on the handle.', options: [{ text: '(Leave it.)', exit: true }] },
-    gone: { text: 'Berth B. Empty now but for a shabby coat on a nail she did not come back for, and the tab, which Lazlo says the Grand Factor will keep paying because nobody has told her to stop.', options: [{ text: '(Leave it.)', exit: true }] },
+    hers: { text: 'Berth B. The door is bolted from inside though nobody is in it: Odile\'s, Lazlo said, for years. A reading-glasses chain hangs on the handle.', again: 'Berth B, bolted from inside, the glasses chain on the handle.', options: [{ text: '(Leave it.)', exit: true }] },
+    gone: { text: 'Berth B. Empty now but for a shabby coat on a nail she did not come back for, and the tab, which Lazlo says the Grand Factor will keep paying because nobody has told her to stop.', again: 'The shabby coat on its nail, in an empty berth.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -277,6 +294,7 @@ export const d_nb_odile: DialogueDef = {
     },
     again: {
       text: [{ if: { flag: 'odile_offer' }, text: '"My dear." She turns the glass. "The offer stands. Offers are the only things I keep."' }, { text: '"Back. Sit. The bitters are terrible; that\'s why they\'re free."' }],
+      again: 'She turns the glass a quarter-turn with the chrome hand, and waits for the rest of it.',
       options: [
         { id: 'odile.who.again', text: 'Who are you?', if: { not: { seen: 'odile.who' } }, next: 'who' },
         { id: 'odile.exchange.again', text: 'What does the Exchange sell?', if: { not: { seen: 'odile.exchange' } }, next: 'exchange' },
@@ -289,10 +307,11 @@ export const d_nb_odile: DialogueDef = {
     },
     who: {
       text: '"Odile Marchetti. I was the Exchange, before there was a hall to put it in — I wrote the first sheet the guild ever sold, on this bridge, on a crate, and the girl who held the ink is the Grand Factor now." She does not sound bitter; she sounds like someone quoting a contract. "I left. One leaves. There is a trade I made that I would like to unwind, and one cannot unwind a trade from inside the house that holds it."',
+      interject: [{ companion: WREN, text: '"The first sheet," Wren says. She hasn\'t sat down, and doesn\'t. "So you\'re where it starts." Odile inclines her head as if she has been paid a compliment, which Wren did not mean.' }],
       effects: [{ learn: 'odile_history' }],
       options: [{ text: 'What trade?', next: 'trade' }, { text: 'Go on.', exit: true }],
     },
-    trade: { text: '"I shorted a town." She says it plainly. "Bet that it would fail, by a date, and sold the bet. The town is called Shale, and the counterparty is — well. The counterparty is the reason I drink here and not there." She finishes the bitters at last. "You\'ve a Sallow look. Is it still there? Shale?"', effects: [{ learn: 'odile_short' }, { set: 'odile_offer' }], options: [{ text: 'It\'s still there.', next: 'shale_yes' }, { text: 'For now.', next: 'shale_yes' }] },
+    trade: { text: '"I shorted a town." She says it plainly. "Bet that it would fail, by a date, and sold the bet. The town is called Shale, and the counterparty is — well. The counterparty is the reason I drink here and not there." She finishes the bitters at last. "You\'ve a Sallow look. Is it still there? Shale?"', interject: [{ companion: ILYA, text: '"Shale," Ilya says. He looks at her the way he looks down a range. "You bet against it." "I did," she says. "Right," says Ilya, and goes on looking.' }], effects: [{ learn: 'odile_short' }, { set: 'odile_offer' }], options: [{ text: 'It\'s still there.', next: 'shale_yes' }, { text: 'For now.', next: 'shale_yes' }] },
     shale_yes: { text: '"Good." Something in her unclenches by one notch. "Then the trade is still open, and I am still wrong, and that is the best news I have had in a year. Take me with you, my dear, when you go east. I\'ll pay my way. I know what the paper means, and I know the hand on most of it, and I have one chrome hand that has never lost at Dust."', options: [{ id: 'odile.join.now', text: 'Come with me.', next: 'join' }, { text: 'I\'ll think about it.', exit: true }] },
     exchange: {
       text: '"Futures." She taps the table with the chrome finger. "Sealed sheets: a place, a date, a thing that happens. Bought from somebody who knows; sold to somebody who wants to be on the right side of it when it does. The seal is the product — open it and it\'s only news." She watches you work that out. "Yes. Somebody knows. No, I won\'t say who, at this table, for free."',
@@ -325,7 +344,7 @@ export const d_nb_odile: DialogueDef = {
       effects: [{ join: 'npc_nb_03' }, { set: 'odile_joined' }, { give: 'k_odile_note' }, { approval: { companion: 'npc_nb_03', by: 10 } }, { decision: { id: 'odile_joined', text: 'Odile Marchetti, who was the Exchange once, left the Span with you to unwind a trade.' } }, { news: { tag: 'odile_left', text: 'the old trader with the tab left the Span with a stranger from the salt cut', valence: 0, size: 5, at: 'ninebridge' } }, { xp: 100 }],
       options: [{ text: '(Go.)', exit: true }],
     },
-    waiting: { text: '"Well? Are we going, or shall I order?"', options: [{ text: 'We\'re going.', effects: [{ join: 'npc_nb_03' }], exit: true }, { text: 'Wait here a while.', exit: true }] },
+    waiting: { text: '"Well? Are we going, or shall I order?"', again: '"I\'ve ordered." She hasn\'t. "Well?"', options: [{ text: 'We\'re going.', effects: [{ join: 'npc_nb_03' }], exit: true }, { text: 'Wait here a while.', exit: true }] },
     party: {
       text: [{ if: { at: 'ninebridge' }, text: '"Don\'t let me near the floor. I\'ll start pricing things." She says it lightly. She is not joking.' }, { text: '"Weather\'s turning, my dear. I mean the money. I always mean the money."' }],
       options: [
@@ -359,36 +378,45 @@ export const d_nb_odile: DialogueDef = {
 
 export const d_nb_floor_door: DialogueDef = {
   id: 'd_nb_floor_door', owner: 'npc_nb_g2',
+  // (getting onto the floor pays once: after a catch at the ledgers, the way back in is the same check without the XP)
   start: [{ if: { flag: 'nb_fight' }, node: 'fight' }, { if: NIGHT, node: 'night' }, { node: 'intro' }],
   nodes: {
     intro: {
       text: 'A guard in guild grey fills the hall door with a carbine held the easy way. "Floor\'s for ticket-holders and couriers. Day ticket\'s fifteen if you\'ve business and no paper."',
+      again: '"Fifteen," the guard says, not moving out of the door. "Or paper."',
       options: [
         { id: 'floor.ticket', text: '(Show the guild ticket.)', if: { member: 'tollmen' }, effects: [{ set: 'nb_floor_ok' }], next: 'in' },
         { id: 'floor.packet', text: '(Show the sealed packet.) Courier, for the Grand Factor.', if: { item: 'k_packet' }, effects: [{ set: 'nb_floor_ok' }, { set: 'nb_office_ok' }], next: 'courier' },
         { id: 'floor.pay', text: '(Pay. 15 Tolls)', if: { item: 'tolls', count: 15 }, effects: [{ take: 'tolls', count: 15 }, { set: 'nb_floor_ok' }], next: 'in' },
-        { id: 'floor.odile', text: 'Odile Marchetti sent me.', if: { knows: 'odile_history' }, check: { skill: 'speech', dc: 30 }, next: 'odile_ok', fail: 'odile_no' },
-        { id: 'floor.talk', text: 'I\'m expected.', check: { skill: 'speech', dc: 40, mods: [{ if: { knows: 'nb_news_heard' }, dc: -10, why: 'you know the Grand Factor is waiting on a packet from the west' }] }, next: 'talk_ok', fail: 'talk_no' },
+        { id: 'floor.odile', text: 'Odile Marchetti sent me.', if: { all: [{ knows: 'odile_history' }, { not: { flag: 'nb_floor_entered' } }] }, check: { skill: 'speech', dc: 30 }, next: 'odile_ok', fail: 'odile_no' },
+        { id: 'floor.odile.again', text: 'Odile Marchetti sent me.', if: { all: [{ knows: 'odile_history' }, { flag: 'nb_floor_entered' }] }, check: { skill: 'speech', dc: 30 }, next: 'odile_back', fail: 'odile_no' },
+        { id: 'floor.talk', text: 'I\'m expected.', if: { not: { flag: 'nb_floor_entered' } }, check: { skill: 'speech', dc: 40, mods: [{ if: { knows: 'nb_news_heard' }, dc: -10, why: 'you know the Grand Factor is waiting on a packet from the west' }] }, next: 'talk_ok', fail: 'talk_no' },
+        { id: 'floor.talk.again', text: 'I\'m expected.', if: { flag: 'nb_floor_entered' }, check: { skill: 'speech', dc: 40, mods: [{ if: { knows: 'nb_news_heard' }, dc: -10, why: 'you know the Grand Factor is waiting on a packet from the west' }] }, next: 'talk_back', fail: 'talk_no' },
         { text: 'Another time.', exit: true },
       ],
     },
     night: {
       text: 'The night guard at the hall door is asleep on his feet, the way guards learn to be, carbine hooked in an elbow. The door behind him is on a latch.',
+      again: 'The night guard, still asleep on his feet. The latch, still a latch.',
       options: [
-        { id: 'floor.sneak', text: '(Slip past him.)', check: { skill: 'stealth', dc: 40 }, effects: [], next: 'sneak_ok', fail: 'sneak_no' },
+        { id: 'floor.sneak', text: '(Slip past him.)', if: { not: { flag: 'nb_floor_entered' } }, check: { skill: 'stealth', dc: 40 }, effects: [], next: 'sneak_ok', fail: 'sneak_no' },
+        { id: 'floor.sneak.again', text: '(Slip past him.)', if: { flag: 'nb_floor_entered' }, check: { skill: 'stealth', dc: 40 }, next: 'sneak_back', fail: 'sneak_no' },
         { id: 'floor.n.ticket', text: '(Wake him. Show the ticket.)', if: { member: 'tollmen' }, effects: [{ set: 'nb_floor_ok' }], next: 'in' },
         { text: 'Another time.', exit: true },
       ],
     },
-    sneak_ok: { text: 'The latch lifts on a breath and you are in the dark of the hall with the board humming to itself and the clerk asleep over her ledgers.', effects: [{ set: 'nb_floor_ok' }, { set: 'nb_floor_sneaked' }, { xp: 40 }], options: [{ text: '(In.)', exit: true }] },
+    sneak_ok: { text: 'The latch lifts on a breath and you are in the dark of the hall with the board humming to itself and the clerk asleep over her ledgers.', effects: [{ set: 'nb_floor_ok' }, { set: 'nb_floor_entered' }, { set: 'nb_floor_sneaked' }, { xp: 40 }], options: [{ text: '(In.)', exit: true }] },
+    sneak_back: { text: 'The latch lifts on a breath, the same as before, and the hall is dark and humming.', effects: [{ set: 'nb_floor_ok' }, { set: 'nb_floor_sneaked' }], options: [{ text: '(In.)', exit: true }] },
     sneak_no: { text: 'The latch clicks. The guard\'s eyes open without the rest of him moving. "Fifteen. Daylight." The carbine is pointed at the deck, which is a courtesy.', effects: [{ rep: { faction: 'tollmen', respect: -3 } }], options: [{ text: 'Daylight.', exit: true }] },
-    courier: { text: 'He checks the seal against a card and steps aside so fast you feel the draught. "Office is at the east end. She\'s been asking."', options: [{ text: '(In.)', exit: true }] },
-    odile_ok: { text: 'The name does something to his face. "Her." He steps aside. "She still drinks here? Tell her the tab\'s — never mind. In."', effects: [{ set: 'nb_floor_ok' }, { xp: 30 }], options: [{ text: '(In.)', exit: true }] },
-    odile_no: { text: '"Odile Marchetti sends everyone. Fifteen."', options: [{ text: 'Fifteen, then.', next: 'intro' }] },
-    talk_ok: { text: 'You say it the way the guild says things, and he decides that whoever is expecting you outranks him. "In. Don\'t touch the board."', effects: [{ set: 'nb_floor_ok' }, { xp: 40 }], options: [{ text: '(In.)', exit: true }] },
-    talk_no: { text: '"Everyone\'s expected. Fifteen."', options: [{ text: 'Fifteen, then.', next: 'intro' }] },
-    in: { text: 'He steps aside. "Clerk\'s at the desk. Board\'s not for touching. Office at the east end is by appointment, and she makes them."', options: [{ text: '(In.)', exit: true }] },
-    fight: { text: 'Nothing.', options: [{ text: '(Nothing.)', exit: true }] },
+    courier: { text: 'He checks the seal against a card and steps aside so fast you feel the draught. "Office is at the east end. She\'s been asking."', effects: [{ set: 'nb_floor_entered' }], options: [{ text: '(In.)', exit: true }] },
+    odile_ok: { text: 'The name does something to his face. "Her." He steps aside. "She still drinks here? Tell her the tab\'s — never mind. In."', effects: [{ set: 'nb_floor_ok' }, { set: 'nb_floor_entered' }, { xp: 30 }], options: [{ text: '(In.)', exit: true }] },
+    odile_back: { text: '"Her again." He steps aside, slower than the first time. "In."', effects: [{ set: 'nb_floor_ok' }], options: [{ text: '(In.)', exit: true }] },
+    odile_no: { text: '"Odile Marchetti sends everyone. Fifteen."', again: '"She still sends everyone," the guard says. "Still fifteen."', options: [{ text: 'Fifteen, then.', next: 'intro' }] },
+    talk_ok: { text: 'You say it the way the guild says things, and he decides that whoever is expecting you outranks him. "In. Don\'t touch the board."', effects: [{ set: 'nb_floor_ok' }, { set: 'nb_floor_entered' }, { xp: 40 }], options: [{ text: '(In.)', exit: true }] },
+    talk_back: { text: 'He looks at you a long moment, decides again, and steps aside. "In. Don\'t touch the board."', effects: [{ set: 'nb_floor_ok' }], options: [{ text: '(In.)', exit: true }] },
+    talk_no: { text: '"Everyone\'s expected. Fifteen."', again: '"Still expected," the guard says. "Still fifteen."', options: [{ text: 'Fifteen, then.', next: 'intro' }] },
+    in: { text: 'He steps aside. "Clerk\'s at the desk. Board\'s not for touching. Office at the east end is by appointment, and she makes them."', effects: [{ set: 'nb_floor_entered' }], options: [{ text: '(In.)', exit: true }] },
+    fight: { text: 'Nothing.', again: 'The guard has the carbine up now, and the door shut behind him.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
@@ -398,6 +426,7 @@ export const d_nb_office_door: DialogueDef = {
   nodes: {
     door: {
       text: 'A container door with GRAND FACTOR stencilled on it and a brass half-moon for a knocker. From inside, the sound of a pen.',
+      again: 'GRAND FACTOR, and the brass half-moon, and the pen going on behind it.',
       options: [
         { id: 'office.packet', text: '(Knock.) Courier. A packet from Tollhouse 9.', if: { item: 'k_packet' }, effects: [{ set: 'nb_office_ok' }], next: 'open' },
         { id: 'office.ticket', text: '(Knock.) Ticket-holder, with business.', if: { member: 'tollmen' }, effects: [{ set: 'nb_office_ok' }], next: 'open' },
@@ -432,13 +461,17 @@ export const d_nb_clerk: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Lots are on the board."', options: [{ id: 'rook.what.again', text: 'What is it you sell?', if: { not: { seen: 'rook.what' } }, next: 'what' }, { id: 'rook.protection.again', text: 'The protection account.', if: { all: [{ quest: 'q_a2_ninebridge' }, { not: { seen: 'rook.protection' } }] }, next: 'protection' }, { id: 'rook.leak.again', text: 'You\'re copying paper.', if: { all: [{ knows: 'nb_rook_leak' }, { not: { seen: 'rook.leak' } }] }, next: 'leak' }, { id: 'rook.line', text: 'The line. You said you\'d get it.', if: { all: [{ flag: 'nb_rook_deal' }, { not: { item: 'k_exchange_line' } }, { not: { knows: 'nb_paid_truth' } }] }, next: 'line' }, { id: 'rook.sell.again', text: 'I\'ve a debt contract to sell.', if: { item: 'k_sable_contract' }, next: 'sell_contract' }, { id: 'rook.case.again', text: '(Put the sealed case on the desk.) From the board at Old Market.', if: GIG_CASE, effects: GIG_CASE_DONE, next: 'case' }, bye] },
+    again: { text: '"Lots are on the board."', again: 'She writes a line and waits for you to say what you want, the way the floor does.', options: [{ id: 'rook.what.again', text: 'What is it you sell?', if: { not: { seen: 'rook.what' } }, next: 'what' }, { id: 'rook.protection.again', text: 'The protection account.', if: { all: [{ quest: 'q_a2_ninebridge' }, { not: { seen: 'rook.protection' } }] }, next: 'protection' }, { id: 'rook.leak.again', text: 'You\'re copying paper.', if: { all: [{ knows: 'nb_rook_leak' }, { not: { seen: 'rook.leak' } }] }, next: 'leak' }, { id: 'rook.line', text: 'The line. You said you\'d get it.', if: { all: [{ flag: 'nb_rook_deal' }, { not: { item: 'k_exchange_line' } }, { not: { knows: 'nb_paid_truth' } }] }, next: 'line' }, { id: 'rook.sell.again', text: 'I\'ve a debt contract to sell.', if: { item: 'k_sable_contract' }, next: 'sell_contract' }, { id: 'rook.case.again', text: '(Put the sealed case on the desk.) From the board at Old Market.', if: GIG_CASE, effects: GIG_CASE_DONE, next: 'case' }, bye] },
     case: { text: 'She does not open it. She does not ask. A receipt comes across the desk already written, as if the case had been expected since morning: RECEIVED — EXCHANGE FLOOR — ONE CASE, SEALED. "Tell the hatch it still ticks," she says, not looking up. "They like to know."', effects: [{ learn: 'nb_case_received' }], options: [bye] },
     case_new: { text: 'The new clerk weighs it, listens to it, and puts it under the desk without a receipt. "Half-Price\'s," he says, to the board. "Tell the hatch the floor has it."', options: [bye] },
     what: { text: '"Futures. A sealed sheet says what happens at a place on a date. You buy it, you\'re on the right side of the date. You don\'t open it; opened, it\'s news, and news is free." She says it like the rates. "Where they come from is not a floor question."', effects: [{ learn: 'nb_futures' }, { lead: 'l_futures' }], options: [bye] },
     protection: { text: 'Her pen stops for exactly as long as it takes to decide. "Accounts aren\'t lots. Accounts are the Grand Factor\'s." She turns the ledgers a quarter-inch further face down. "The floor closes at nine. I lock them in this desk." It is not clear whether that is a warning or a map.', effects: [{ learn: 'nb_ledgers_desk' }], options: [bye] },
     leak: {
       text: 'The colour goes out of her. "For — " She looks at the hall door, where the guard is, and back. "For people who\'ll be on the wrong side of a date and can\'t afford to know it. The porters. A farmer in Openfield, once." Her hands are flat on the ledgers. "Tell her and I\'m on the block by nine."',
+      interject: [
+        { companion: ODILE, text: '"Good girl," Odile murmurs, to nobody. Then, to you, without any warmth at all: "If you sell her, my dear, do it where I can\'t watch. I taught the girl who taught her."' },
+        { companion: WREN, text: 'At "the block" Wren\'s eyes go to the far bank and stay there.' },
+      ],
       effects: [{ learn: 'nb_rook_confessed' }],
       options: [
         { id: 'rook.deal', text: 'Get me the protection line — two riders, four days — and I never saw a sleeve.', check: { skill: 'speech', dc: 30 }, next: 'deal_ok', fail: 'deal_no' },
@@ -463,9 +496,9 @@ export const d_nb_clerk: DialogueDef = {
       ],
     },
     sold: { text: 'The thumb. The sum. The paper goes into a drawer with others like it. "Lot four," she says to nobody, and writes.', options: [bye] },
-    asleep: { text: 'The clerk is asleep on her folded arms over the two ledgers, ink on her cheek. The floor is dark but for the board\'s green.', options: [{ text: '(Leave her.)', exit: true }] },
-    reported: { text: 'The desk is empty. The ledgers are in the Grand Factor\'s office now, and a new clerk with no ink on him is learning the board. Lot nine on the block this morning was young and knew her numbers.', options: [{ id: 'rook.case.new', text: '(Put the sealed case on the desk.) From the board at Old Market.', if: GIG_CASE, effects: GIG_CASE_DONE, next: 'case_new' }, { text: '(Nothing.)', exit: true }] },
-    fight: { text: 'Nothing.', options: [{ text: '(Nothing.)', exit: true }] },
+    asleep: { text: 'The clerk is asleep on her folded arms over the two ledgers, ink on her cheek. The floor is dark but for the board\'s green.', again: 'Still asleep over the ledgers. The board hums green to itself.', options: [{ text: '(Leave her.)', exit: true }] },
+    reported: { text: 'The desk is empty. The ledgers are in the Grand Factor\'s office now, and a new clerk with no ink on him is learning the board. Lot nine on the block this morning was young and knew her numbers.', again: 'The new clerk, learning the board. He does not know your face, and nobody tells him.', options: [{ id: 'rook.case.new', text: '(Put the sealed case on the desk.) From the board at Old Market.', if: GIG_CASE, effects: GIG_CASE_DONE, next: 'case_new' }, { text: '(Nothing.)', exit: true }] },
+    fight: { text: 'Nothing.', again: 'The desk is empty. The ledgers have gone wherever the guild keeps things in a fight.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
@@ -475,9 +508,10 @@ export const d_nb_board: DialogueDef = {
   nodes: {
     look: {
       text: 'The board: a pre-Burn screen in a brass frame, green on black, lots scrolling — a place, a date, a sum, SEALED. NINEBRIDGE PORTERS 3RD DAY, 40. OPENFIELD HARVEST, 120. SHALE WATER 0.62, 200. A keyboard under a hinged lid, the lid padlocked, the padlock open.',
+      again: 'The lots scroll on, green on black: a place, a date, a sum, SEALED.',
       effects: [{ learn: 'nb_board_seen' }],
       options: [
-        { id: 'board.pull', text: '(Lift the lid. Find the accounts behind the lots.)', check: { skill: 'science', dc: 45, mods: [{ if: { knows: 'nb_ledgers_desk' }, dc: -5, why: 'you know the accounts are kept apart from the lots' }, { if: NIGHT, dc: -10, why: 'nobody is watching the screen but you' }] }, next: 'pull_ok', fail: 'pull_no' },
+        { id: 'board.pull', text: '(Lift the lid. Find the accounts behind the lots.)', if: { not: { knows: 'nb_paid_truth' } }, check: { skill: 'science', dc: 45, mods: [{ if: { knows: 'nb_ledgers_desk' }, dc: -5, why: 'you know the accounts are kept apart from the lots' }, { if: NIGHT, dc: -10, why: 'nobody is watching the screen but you' }] }, next: 'pull_ok', fail: 'pull_no' },
         { id: 'board.shale', text: '(Read the Shale line.)', next: 'shale', once: true },
         { text: '(Leave it.)', exit: true },
       ],
@@ -489,7 +523,7 @@ export const d_nb_board: DialogueDef = {
       options: [{ text: '(Close the lid.)', exit: true }],
     },
     pull_no: { text: 'The screen blinks, thinks, and shows you a single word — LOCKED — and a sum: FIFTEEN, for the clerk to open it again. The guard at the door has turned his head.', effects: [{ set: 'nb_board_locked' }, { rep: { faction: 'tollmen', respect: -4 } }], options: [{ text: '(Step away.)', exit: true }] },
-    locked: { text: 'LOCKED, in green. The clerk will open it for fifteen and a look.', options: [{ id: 'board.unlock', text: '(Pay the clerk. 15 Tolls)', if: { all: [{ item: 'tolls', count: 15 }, { not: NIGHT }] }, effects: [{ take: 'tolls', count: 15 }, { set: 'nb_board_locked', value: false }], next: 'look' }, { text: '(Leave it.)', exit: true }] },
+    locked: { text: 'LOCKED, in green. The clerk will open it for fifteen and a look.', again: 'LOCKED. FIFTEEN.', options: [{ id: 'board.unlock', text: '(Pay the clerk. 15 Tolls)', if: { all: [{ item: 'tolls', count: 15 }, { not: NIGHT }] }, effects: [{ take: 'tolls', count: 15 }, { set: 'nb_board_locked', value: false }], next: 'look' }, { text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -499,6 +533,7 @@ export const d_nb_ledgers: DialogueDef = {
   nodes: {
     day: {
       text: 'Two ledgers under the clerk\'s hands, face down. She does not move them and she does not look up.',
+      again: 'The ledgers, face down, and her hands on them.',
       options: [
         { id: 'ledgers.nose', text: '(Turn one over while she writes.)', check: { skill: 'stealth', dc: 55, mods: [{ if: { knows: 'nb_ledgers_desk' }, dc: -5, why: 'you know which of the two to turn' }] }, next: 'read', fail: 'caught_day' },
         { text: '(Leave them.)', exit: true },
@@ -506,6 +541,7 @@ export const d_nb_ledgers: DialogueDef = {
     },
     night: {
       text: 'The clerk is asleep across the two ledgers with her cheek on the open page. The other is under her elbow.',
+      again: 'She sleeps on. The lower ledger is still under her elbow.',
       options: [
         { id: 'ledgers.night', text: '(Ease the lower one out and read by the board\'s green.)', check: { skill: 'stealth', dc: 40 }, next: 'read', fail: 'caught_night' },
         { text: '(Leave them.)', exit: true },
@@ -518,7 +554,7 @@ export const d_nb_ledgers: DialogueDef = {
     },
     caught_day: { text: 'Her hand comes down flat on the page before yours reaches it. "Accounts aren\'t lots." The guard at the door has turned round. "Floor\'s closed to you today."', effects: [{ set: 'nb_floor_ok', value: false }, { rep: { faction: 'tollmen', respect: -5 } }, { memory: { npc: 'npc_nb_06', tag: 'grabbed_ledger', valence: -15, strength: 60 } }], options: [{ text: '(Go.)', exit: true }] },
     caught_night: { text: 'She wakes the way clerks wake, all at once and quietly. "Don\'t." A whisper. "He\'ll hear. Go out the north door and I never saw you, and don\'t come back tonight."', effects: [{ set: 'nb_floor_ok', value: false }, { memory: { npc: 'npc_nb_06', tag: 'night_ledger', valence: -10, strength: 50 } }], options: [{ text: '(Go.)', exit: true }] },
-    done: { text: 'Two ledgers. You have what was in them.', options: [{ text: '(Leave them.)', exit: true }] },
+    done: { text: 'Two ledgers. You have what was in them.', again: 'Two ledgers, and nothing in them you need now.', options: [{ text: '(Leave them.)', exit: true }] },
   },
 };
 
@@ -527,8 +563,8 @@ export const d_nb_sarr: DialogueDef = {
   start: [{ if: { flag: 'nb_fight' }, node: 'fight' }, { if: { not: { flag: 'nb_office_ok' } }, node: 'closed' }, { if: { flag: 'nb_sarr_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     static: { text: 'The pen stops. "For nothing." She says it the way other people say a death. "A sealed sheet is worth what it is worth because it is sealed. A girl who says the sheet aloud in a gang street is a hole in the floor." She writes a figure and turns it to you: two hundred. "The name of the street, and the tower. Riders will fetch her at dawn, with a sheet of her own, and she will be sealed where sealed things are kept, and fed, and listened to by people who pay."', options: [{ id: 'static.sell', text: 'The Saints\' tower in Bridgeward. Under the mast. (200 Tolls)', effects: [{ give: 'tolls', count: 200 }, { set: 'bw_static', value: 'sold' }, { rep: { faction: 'tollmen', respect: 8 } }, { rep: { faction: 'saints', respect: -30 } }, { xp: 80 }, { decision: { id: 'bw_static_sold', text: 'You sold the Exchange the Saints\' girl who hears the city\'s wire.' } }], next: 'static_sold' }, { text: 'I haven\'t decided.', exit: true }] },
-    static_sold: { text: '"Sealed." The figure goes into the ledger under a line that says nothing about a girl. "The floor thanks you. The floor always thanks you; it is the floor\'s only expense."', options: [bye] },
-    closed: { text: 'The Grand Factor does not look up. "By appointment."', options: [{ text: '(Go.)', exit: true }] },
+    static_sold: { text: '"Sealed." The figure goes into the ledger under a line that says nothing about a girl. "The floor thanks you. The floor always thanks you; it is the floor\'s only expense."', interject: [{ companion: WREN, text: '"Sealed where sealed things are kept," Wren says, outside, on the deck. "Fed. Listened to." She looks at you the way she reads a wall. "You sold her."', effects: [{ approval: { companion: WREN, by: -15 } }] }], options: [bye] },
+    closed: { text: 'The Grand Factor does not look up. "By appointment."', again: 'The pen. "By appointment," she says again, to the page.', options: [{ text: '(Go.)', exit: true }] },
     intro: {
       text: 'A woman of nearly sixty with silver hair swept back and a pen she has not put down since you came in. Clocks on every shelf, none of them agreeing. "Imelda Sarr. Grand Factor." She looks at you once, the way the board looks at a lot. "Everything is for sale. Say what you want and I\'ll say what it costs, and we\'ll save each other the part where you pretend it\'s free."',
       effects: [{ set: 'nb_sarr_met' }, { learn: 'sarr_seen' }],
@@ -549,6 +585,7 @@ export const d_nb_sarr: DialogueDef = {
     },
     again: {
       text: '"Grand Factor." The pen. "What costs?"',
+      again: 'The pen moves. The clocks disagree. She waits for a figure.',
       options: [
         { id: 'sarr.packet.again', text: '(Put the packet on the desk.) Sealed.', if: { all: [{ item: 'k_packet' }, { not: { flag: 'packet_opened' } }] }, next: 'packet_ok' },
         { id: 'sarr.packet.open.again', text: '(Put the packet on the desk.)', if: { all: [{ item: 'k_packet' }, { flag: 'packet_opened' }] }, next: 'packet_opened' },
@@ -593,7 +630,7 @@ export const d_nb_sarr: DialogueDef = {
     },
     paid_free: { text: 'She considers that for longer than she has considered anything since you came in, and then she laughs, once, short. "Yes. All right." She writes the line on a lot card in a hand like a knife and slides it across. "Two riders, four days, the Sarr account, by order of the floor. The floor is me. Remember who told you." The pen goes back to work. "That cost me nothing. Everything after it will cost you."', effects: [{ give: 'k_exchange_line' }, ...TRUTH('talked'), { xp: 60 }, { memory: { npc: 'npc_nb_01', tag: 'talked_the_line', valence: 10, strength: 60 } }], options: [bye] },
     paid_no: { text: '"No." Not unkindly. "Two hundred."', options: [{ text: 'Not at that price.', exit: true }] },
-    paid_told: { text: '"The traveller was carrying paper that was ours, and paper that was ours is the floor\'s business, and the floor protects its business. That is the whole of it. It cost us two riders\' wages and it cost him more, and I would do it again at that price." She looks at you properly. "You came a long way to be told something you knew."', options: [bye] },
+    paid_told: { text: '"The traveller was carrying paper that was ours, and paper that was ours is the floor\'s business, and the floor protects its business. That is the whole of it. It cost us two riders\' wages and it cost him more, and I would do it again at that price." She looks at you properly. "You came a long way to be told something you knew."', interject: [{ companion: ILYA, text: '"Two riders\' wages," Ilya says, half to himself, the way he counts rounds. "Four days." The Grand Factor glances at him as if at a sum she has already paid. "Right," he says.' }], options: [bye] },
     water: { text: '"The city rebalances. We buy the rebalancing." She says it like a rate. "A number for a town\'s water, a date; whoever holds the sheet knows what the town will drink before the town does. Pike sells the water; I sell the knowing. The town has it worst, but the town always does."', effects: [{ learn: 'nb_water_buyer' }, { learn: 'nb_city_source' }], options: [bye] },
     rook: {
       text: 'The pen stops. "Does she." Not a question. "Amity Rook. Six years. Never late." She looks at the door to the floor. "Lot nine tomorrow, then. The floor can\'t have a leak; the whole product is the seal." A beat. "You\'ll have told me for a reason. Name it."',
@@ -603,12 +640,15 @@ export const d_nb_sarr: DialogueDef = {
         { id: 'sarr.rook.back', text: 'Nothing. Forget I said it.', effects: [{ set: 'nb_rook_told_back' }], next: 'rook_back' },
       ],
     },
-    rook_sold: { text: '"Done." She writes a name on a lot card. The clocks go on disagreeing. "Fen will have her by nine. Don\'t be on the east bank; people find it hard to watch."', options: [bye] },
+    rook_sold: { text: '"Done." She writes a name on a lot card. The clocks go on disagreeing. "Fen will have her by nine. Don\'t be on the east bank; people find it hard to watch."', interject: [
+      { companion: ODILE, text: '"Six years," Odile says to the clocks, very pleasantly. "Never late." She does not look at you, and she does not take your arm on the way out.' },
+      { companion: WREN, text: '"By nine," Wren says. "On the block." She walks out ahead of you, and you hear nothing more from her that day.' },
+    ], options: [bye] },
     rook_back: { text: '"The floor doesn\'t forget. It defers." She writes something small. "She\'ll be watched. You\'ve bought her a month, perhaps. That\'s not nothing; months are what we sell."', effects: [{ set: 'nb_rook_watched' }], options: [bye] },
     hand: { text: '"You put the straps back on forty backs with words. That\'s a factor\'s work." She takes a brass ticket with a notch in it from a drawer. "Factor\'s hand. The floor\'s books open to you; the floor\'s enemies too. Don\'t drink at the Span with it in your pocket; Lazlo\'s fond of the porters."', effects: [{ promote: { faction: 'tollmen', rank: 'hand' } }, { decision: { id: 'nb_hand', text: 'The Grand Factor made you a factor\'s hand for breaking the porters\' strike.' } }, { xp: 80 }], options: [bye] },
-    odile: { text: 'The pen stops for the second time. "Does she." Something old crosses her face and is filed. "Her tab is paid. Tell her it will go on being paid. Tell her — " She stops. "Tell her nothing. She hears everything anyway." Then, drier: "Whatever she told you about me is true, and whatever she told you about herself is a trade."', effects: [{ learn: 'sarr_odile' }, { memory: { npc: 'npc_nb_01', tag: 'odile_named', valence: 5, strength: 70 } }], options: [bye] },
+    odile: { text: 'The pen stops for the second time. "Does she." Something old crosses her face and is filed. "Her tab is paid. Tell her it will go on being paid. Tell her — " She stops. "Tell her nothing. She hears everything anyway." Then, drier: "Whatever she told you about me is true, and whatever she told you about herself is a trade."', interject: [{ companion: ODILE, text: '"Hello, Imelda," Odile says from the doorway, mild as milk. The Grand Factor does not look up, and the pen does not move again until Odile has stepped back out of the light.' }], effects: [{ learn: 'sarr_odile' }, { memory: { npc: 'npc_nb_01', tag: 'odile_named', valence: 5, strength: 70 } }], options: [bye] },
     contract: { text: '"The floor pays ninety for lot four. The clerk handles it; I don\'t touch paper that small." She goes back to the pen. "Unless you were going to ask me to tear it up, in which case: not at that price."', options: [bye] },
-    fight: { text: 'She has not moved from the desk. "You\'ll find the guild is credit, and I am the guild. Go on, then."', options: [{ text: '(Nothing.)', exit: true }] },
+    fight: { text: 'She has not moved from the desk. "You\'ll find the guild is credit, and I am the guild. Go on, then."', again: 'She has still not moved from the desk. The clocks go on.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
@@ -626,11 +666,11 @@ export const d_nb_captain: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Captain." His eyes are on the ramps.', options: [{ id: 'dent.strike.again', text: 'The porters.', if: { all: [{ knows: 'nb_strike_heard' }, { not: { seen: 'dent.strike' } }] }, next: 'strike' }, { id: 'dent.block.again', text: 'The block.', if: { not: { seen: 'dent.block' } }, next: 'block' }, { id: 'dent.span.again', text: 'The span.', if: { not: { seen: 'dent.span' } }, next: 'span' }, bye] },
+    again: { text: '"Captain." His eyes are on the ramps.', again: 'He watches a porter cross the deck, and waits.', options: [{ id: 'dent.strike.again', text: 'The porters.', if: { all: [{ knows: 'nb_strike_heard' }, { not: { seen: 'dent.strike' } }] }, next: 'strike' }, { id: 'dent.block.again', text: 'The block.', if: { not: { seen: 'dent.block' } }, next: 'block' }, { id: 'dent.span.again', text: 'The span.', if: { not: { seen: 'dent.span' } }, next: 'span' }, bye] },
     strike: { text: '"Voss is a decent man with ruined knees and the guild will starve him anyway, because it has paper that says it can." He does not lower his voice. "I keep the deck. I don\'t keep the ramp. That\'s Esk\'s, and I thank the river for it."', effects: [{ learn: 'dent_sympathy' }], options: [bye] },
     block: { text: '"Fen sells debt. Somebody has to; the guild is credit and credit has to go somewhere when it goes bad." He watches a porter not carrying. "He hates it, which is why he\'s good at it. The ones who like it get careless."', options: [bye] },
     span: { text: '"Two Tolls of planks against twelve a head to cross one at a time, slow, in sight of the guard." He almost smiles. "The guild doesn\'t mend things that pay better broken."', effects: [{ learn: 'nb_span_reason' }], options: [bye] },
-    fight: { text: 'Nothing.', options: [{ text: '(Nothing.)', exit: true }] },
+    fight: { text: 'Nothing.', again: 'The captain has the deck guard between you and the ramps. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
@@ -654,7 +694,8 @@ export const d_nb_lots: DialogueDef = {
 
 export const d_nb_fen: DialogueDef = {
   id: 'd_nb_fen', owner: 'npc_nb_02',
-  start: [{ if: { flag: 'nb_sable_settled' }, node: 'settled' }, { if: { all: [NIGHT, { flag: 'nb_fen_help' }] }, node: 'night_help' }, { if: { not: BLOCK_HOURS }, node: 'off' }, { if: { flag: 'nb_fen_met' }, node: 'again' }, { node: 'intro' }],
+  // (lot four's paper comes off the block once, bought or taken by night: Fen does not sell or leave out a second copy)
+  start: [{ if: { flag: 'nb_sable_settled' }, node: 'settled' }, { if: { all: [NIGHT, { flag: 'nb_fen_help' }, { not: { flag: 'nb_sable_fen' } }, { not: { flag: 'nb_sable_bought' } }] }, node: 'night_help' }, { if: { not: BLOCK_HOURS }, node: 'off' }, { if: { flag: 'nb_fen_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
       text: 'The auctioneer is young for the voice: a bright, carrying, cheerful voice that does not reach his eyes. "Lots at nine, settled by six, no credit, the guild is credit. Lot four\'s young, if that\'s what you came for. Everyone\'s come for lot four today. I open at sixty."',
@@ -662,14 +703,14 @@ export const d_nb_fen: DialogueDef = {
       passives: [{ attr: 'senses', dc: 6, text: 'His hands are shaking very slightly, and he keeps them on the counter so they don\'t show. He has looked at the cage exactly once.', effects: [{ learn: 'fen_hates_it' }] }],
       options: [
         { id: 'fen.four', text: 'Lot four.', next: 'four', once: true },
-        { id: 'fen.bid', text: '(Bid.) Sixty.', if: { item: 'tolls', count: 60 }, next: 'bid' },
+        { id: 'fen.bid', text: '(Bid.) Sixty.', if: { all: [{ item: 'tolls', count: 60 }, { not: { item: 'k_sable_contract' } }, { not: { flag: 'nb_sable_bought' } }, { not: { flag: 'nb_sable_fen' } }] }, next: 'bid' },
         { id: 'fen.hate', text: 'You hate this.', if: { knows: 'fen_hates_it' }, check: { skill: 'speech', dc: 40 }, next: 'hate_ok', fail: 'hate_no' },
-        { id: 'fen.let', text: '(Let it go. Someone else will buy her.)', next: 'let_go' },
+        { id: 'fen.let', text: '(Let it go. Someone else will buy her.)', if: { all: [{ not: { flag: 'nb_sable_bought' } }, { not: { flag: 'nb_sable_fen' } }] }, next: 'let_go' },
         { id: 'fen.lot7', text: 'Lot seven. The mechanic.', if: GIG_LOT7, next: 'lot7' },
         bye,
       ],
     },
-    again: { text: '"Lot four. Sixty opens it."', options: [{ id: 'fen.four.again', text: 'Lot four.', if: { not: { seen: 'fen.four' } }, next: 'four' }, { id: 'fen.bid.again', text: '(Bid.) Sixty.', if: { item: 'tolls', count: 60 }, next: 'bid' }, { id: 'fen.hate.again', text: 'You hate this.', if: { all: [{ knows: 'fen_hates_it' }, { not: { seen: 'fen.hate' } }] }, check: { skill: 'speech', dc: 40 }, next: 'hate_ok', fail: 'hate_no' }, { id: 'fen.let.again', text: '(Let it go.)', next: 'let_go' }, { id: 'fen.lot7.again', text: 'Lot seven. The mechanic.', if: GIG_LOT7, next: 'lot7' }, bye] },
+    again: { text: [{ if: { any: [{ flag: 'nb_sable_bought' }, { flag: 'nb_sable_fen' }] }, text: '"Lot four\'s off the board." The voice, cheerful. The hands, on the counter. "Lot five, a mechanic."' }, { text: '"Lot four. Sixty opens it."' }], again: 'He says a sum to the crowd and waits for you between lots.', options: [{ id: 'fen.four.again', text: 'Lot four.', if: { not: { seen: 'fen.four' } }, next: 'four' }, { id: 'fen.bid.again', text: '(Bid.) Sixty.', if: { all: [{ item: 'tolls', count: 60 }, { not: { item: 'k_sable_contract' } }, { not: { flag: 'nb_sable_bought' } }, { not: { flag: 'nb_sable_fen' } }] }, next: 'bid' }, { id: 'fen.hate.again', text: 'You hate this.', if: { all: [{ knows: 'fen_hates_it' }, { not: { seen: 'fen.hate' } }] }, check: { skill: 'speech', dc: 40 }, next: 'hate_ok', fail: 'hate_no' }, { id: 'fen.let.again', text: '(Let it go.)', if: { all: [{ not: { flag: 'nb_sable_bought' } }, { not: { flag: 'nb_sable_fen' } }] }, next: 'let_go' }, { id: 'fen.lot7.again', text: 'Lot seven. The mechanic.', if: GIG_LOT7, next: 'lot7' }, bye] },
     lot7: {
       text: '"Lot seven. Bexley, forty-one, a mechanic, forty-eight and interest. Signed for parts he fitted to a truck that then left without him." The voice, and under it: "Nobody comes for mechanics. He\'s been on the board since spring." He looks at you properly for the first time. "Seventy opens it. There is nobody to bid against you. There never is."',
       effects: [{ learn: 'lot7_story' }],
@@ -682,7 +723,7 @@ export const d_nb_fen: DialogueDef = {
     lot7_low: { text: '"Fifty." He writes it in the voice that says sums. "Going — gone, to the stranger at fifty, and the guild can take the twenty out of my cheer." The paper comes across.', effects: [{ take: 'tolls', count: 50 }, ...LOT7_SOLD, { xp: 30 }], options: [{ text: '(Take the paper.)', next: 'lot7_sold' }] },
     lot7_firm: { text: '"Seventy opens it. The guild counts what I open at, not what I close at."', options: [{ id: 'fen.lot7.pay2', text: '(Bid.) Seventy.', if: { item: 'tolls', count: 70 }, effects: [{ take: 'tolls', count: 70 }, ...LOT7_SOLD], next: 'lot7_sold' }, { text: 'Not today.', exit: true }] },
     lot7_sold: { text: '"Lot seven." The thumb-print on the paper is a working man\'s, broad and oil-dark. "He\'s wherever the guild has him working till the paper says otherwise. Whoever you\'re buying for — " He stops himself. "I say the sums."', effects: [{ learn: 'lot7_held' }], options: [bye] },
-    four: { text: '"Sable Calloway, nineteen, fifty-eight and interest. Her brother\'s debt, if you want the story — he signed and ran, and the paper doesn\'t care who signed." The voice does not change. "Service until cleared. Most buyers want a cook or a carrier. Some want nineteen." He looks at the counter. "I say the sums. I don\'t say the rest."', effects: [{ learn: 'sable_story' }], options: [bye] },
+    four: { text: '"Sable Calloway, nineteen, fifty-eight and interest. Her brother\'s debt, if you want the story — he signed and ran, and the paper doesn\'t care who signed." The voice does not change. "Service until cleared. Most buyers want a cook or a carrier. Some want nineteen." He looks at the counter. "I say the sums. I don\'t say the rest."', interject: [{ companion: WREN, text: '"The girl," Wren says, so low it is nearly nothing. Then her face shuts like a door and she is a scout again, counting the guards round the cage.' }], effects: [{ learn: 'sable_story' }], options: [bye] },
     bid: {
       text: '"Sixty from the stranger." The voice rises and the crowd leans. "Seventy from the back. Eighty — the gentleman in the coat, thank you, eighty." He looks at you. He is very slightly, under the voice, on your side.',
       options: [
@@ -702,10 +743,11 @@ export const d_nb_fen: DialogueDef = {
     hate_no: { text: 'The voice does not even flicker. "Everybody hates it, friend. I\'m paid to say the sums." He turns to the crowd. "Lot four, sixty, do I hear sixty."', options: [bye] },
     night_help: {
       text: 'He is by the fire on the east bank, awake, not looking at the block. "Box is open. Paper\'s on top. The cage key\'s under it." He looks into the fire. "If anyone asks, you stole it, and I\'ll say so with my whole chest."',
+      again: 'Still by the fire, still not looking at the block. "It\'s still open," he says.',
       options: [{ id: 'fen.take', text: '(Take the contract.)', effects: [{ give: 'k_sable_contract' }, { set: 'nb_sable_fen' }, { learn: 'sable_held' }, { xp: 60 }], next: 'took' }, { text: 'Not tonight.', exit: true }] },
     took: { text: '"Lot four, stolen in the night," he says to the fire, in the voice, and then not in it: "Thank you."', options: [bye] },
-    let_go: { text: '"Lot four, sixty — seventy — ninety to the gentleman in the coat, going, gone." The cup on the counter. The crowd moves to lot five. Somebody opens the cage.', effects: [{ set: 'nb_sable_outcome', value: 'sold_on' }, { set: 'nb_sable_settled' }], options: [{ text: '(Walk away.)', exit: true }] },
-    off: { text: 'Off the block he is somebody else: smaller, by the fire, with a cup. "Lots at nine. I don\'t sell at night; it\'s the one rule I made myself."', options: [bye] },
+    let_go: { text: '"Lot four, sixty — seventy — ninety to the gentleman in the coat, going, gone." The cup on the counter. The crowd moves to lot five. Somebody opens the cage.', interject: [{ companion: WREN, text: 'Wren watches the coat go with the paper in his pocket. She does not say anything. She does not look at you, then or for a long time after.', effects: [{ approval: { companion: WREN, by: -20 } }] }], effects: [{ set: 'nb_sable_outcome', value: 'sold_on' }, { set: 'nb_sable_settled' }], options: [{ text: '(Walk away.)', exit: true }] },
+    off: { text: 'Off the block he is somebody else: smaller, by the fire, with a cup. "Lots at nine. I don\'t sell at night; it\'s the one rule I made myself."', again: 'He lifts the cup an inch by way of a greeting. "Nine," he says. "Not before."', options: [bye] },
     settled: { text: [{ if: { all: [{ flag: 'nb_sable_outcome', eq: 'freed' }, { not: { flag: 'nb_lot7_sold' } }] }, text: '"Lot four, stolen, lost, mislaid — I\'ve said all three to the guild and they wrote down the one they liked." He almost smiles. "Lot seven\'s a mechanic. Nobody comes for mechanics."' }, { if: { flag: 'nb_lot7_sold' }, text: '"Lot eight. A carrier, thirty." The voice is back, and the board is one card shorter.' }, { text: '"Lot seven. A mechanic, forty-eight." The voice is back.' }], options: [{ id: 'fen.lot7.settled', text: 'Lot seven. The mechanic.', if: GIG_LOT7, next: 'lot7' }, bye] },
   },
 };
@@ -725,7 +767,7 @@ export const d_nb_sable: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Still sixty."', options: [{ id: 'sable.name.again', text: 'Your name?', if: { not: { seen: 'sable.name' } }, next: 'name' }, { id: 'sable.wren.again', text: 'Wren.', if: { all: [{ inParty: 'npc_rd_03' }, { not: { seen: 'sable.wren' } }] }, next: 'wren' }, { id: 'sable.sister.again', text: 'You\'ve a sister.', if: { all: [{ knows: 'sable_is_wren_sister' }, { not: { inParty: 'npc_rd_03' } }, { not: { seen: 'sable.sister' } }] }, next: 'sister' }, bye] },
+    again: { text: '"Still sixty."', again: 'She has her chin on her knees again. "Sixty," she says, to the bars.', options: [{ id: 'sable.name.again', text: 'Your name?', if: { not: { seen: 'sable.name' } }, next: 'name' }, { id: 'sable.wren.again', text: 'Wren.', if: { all: [{ inParty: 'npc_rd_03' }, { not: { seen: 'sable.wren' } }] }, next: 'wren' }, { id: 'sable.sister.again', text: 'You\'ve a sister.', if: { all: [{ knows: 'sable_is_wren_sister' }, { not: { inParty: 'npc_rd_03' } }, { not: { seen: 'sable.sister' } }] }, next: 'sister' }, bye] },
     name: { text: '"Sable. Calloway, if the paper wants it. My brother signed for a bike and rode it away and the paper doesn\'t care who signed." She looks at the chalk board. "I had a sister. Everyone had a sister once."', effects: [{ learn: 'sable_name' }, { learn: 'sable_story' }], options: [bye] },
     wren: {
       text: 'Wren has not said a word since the block came in sight. Now she steps up to the cage and says, "Sable," and the girl on the cot looks up and says nothing at all for a long time, and then, "You left," and Wren says, "I know," and that is all either of them can manage.',
@@ -744,8 +786,14 @@ export const d_nb_sable: DialogueDef = {
         { text: '(Not yet.)', exit: true },
       ],
     },
-    freed: { text: 'She tears it in half and in half again, slowly, as if it might be a trick, and then she is standing outside the cage with four pieces of paper in her fist and nowhere to put them. "I\'m going west," she says. "To Shale. There was a sister." She does not thank you; she has decided not to. Then, at the ramp, she does, without turning round.', options: [{ text: '(Let her go.)', exit: true }] },
-    kept: { text: 'She stands up off the cot and folds the blanket and does not look at you. "Where do you sleep? I\'ll keep it." Her voice is level. Wren, if she is here, has walked away down the deck and will not be found until morning.', options: [{ text: '(Go.)', exit: true }] },
+    freed: { text: 'She tears it in half and in half again, slowly, as if it might be a trick, and then she is standing outside the cage with four pieces of paper in her fist and nowhere to put them. "I\'m going west," she says. "To Shale. There was a sister." She does not thank you; she has decided not to. Then, at the ramp, she does, without turning round.', interject: [
+      { companion: WREN, text: 'Wren watches her all the way to the ramp. "Four pieces," she says at last, to nobody. "She always tore things in four."' },
+      { companion: ODILE, text: '"Paper is only paper," Odile says softly, "until somebody tears it." She looks pleased, and tries not to.' },
+    ], options: [{ text: '(Let her go.)', exit: true }] },
+    kept: { text: 'She stands up off the cot and folds the blanket and does not look at you. "Where do you sleep? I\'ll keep it." Her voice is level. Wren, if she is here, has walked away down the deck and will not be found until morning.', interject: [
+      { companion: TAMSIN, text: '"You bought a person," Tamsin says. It isn\'t a question, and she doesn\'t wait for an answer; she walks off after Wren.', effects: [{ approval: { companion: TAMSIN, by: -10 } }] },
+      { companion: ILYA, text: '"Right," Ilya says, and that is all he says for the rest of the day.', effects: [{ approval: { companion: ILYA, by: -5 } }] },
+    ], options: [{ text: '(Go.)', exit: true }] },
   },
 };
 
@@ -755,7 +803,7 @@ export const d_nb_oyo: DialogueDef = {
   id: 'd_nb_oyo', owner: 'npc_nb_09',
   start: [{ node: 'intro' }],
   nodes: {
-    intro: { text: '"Guns, cells, and things that were somebody\'s." A broad woman behind a counter of oiled steel, a machine pistol slung and a boxed something under the counter she does not mention. "Guild price on the sign; your price on your face."', options: [{ text: 'Let\'s see.', effects: [{ event: 'barter' }], exit: true }, { id: 'oyo.chrome', text: 'What\'s in the box?', next: 'chrome', once: true }, bye] },
+    intro: { text: '"Guns, cells, and things that were somebody\'s." A broad woman behind a counter of oiled steel, a machine pistol slung and a boxed something under the counter she does not mention. "Guild price on the sign; your price on your face."', again: 'Oyo looks you over again and revises the price on your face. "Well?"', options: [{ text: 'Let\'s see.', effects: [{ event: 'barter' }], exit: true, repeat: true }, { id: 'oyo.chrome', text: 'What\'s in the box?', next: 'chrome', once: true }, bye] },
     chrome: { text: '"Chrome. Concern-made, sealed, a leg that doesn\'t tire. I don\'t fit it; the Sink has people for that, or the Mender in Shale if you\'re going back." She does not open the box. "Ask when you\'ve the coin. Everyone asks before."', effects: [{ learn: 'oyo_chrome' }], options: [bye] },
   },
 };
@@ -764,7 +812,7 @@ export const d_nb_pim: DialogueDef = {
   id: 'd_nb_pim', owner: 'npc_nb_10',
   start: [{ node: 'intro' }],
   nodes: {
-    intro: { text: '"Water, jerky, tins. Fruit from Openfield when the Choir sends it, and they haven\'t — blight, they say, or the guild says it for them." An old man with a goatee and a tin cup. "Eat something. You look like a forecast."', effects: [{ learn: 'openfield_blight_heard' }], options: [{ text: 'Let\'s see.', effects: [{ event: 'barter' }], exit: true }, bye] },
+    intro: { text: '"Water, jerky, tins. Fruit from Openfield when the Choir sends it, and they haven\'t — blight, they say, or the guild says it for them." An old man with a goatee and a tin cup. "Eat something. You look like a forecast."', again: '"Still no fruit." Pim rattles the tin cup. "Still tins."', effects: [{ learn: 'openfield_blight_heard' }], options: [{ text: 'Let\'s see.', effects: [{ event: 'barter' }], exit: true, repeat: true }, bye] },
   },
 };
 
@@ -776,6 +824,7 @@ export const d_nb_futures_read: DialogueDef = {
   nodes: {
     look: {
       text: 'Guild paper, wax, the half-moon. On the outside: LOT 3 — NINEBRIDGE — DAY 2. Odile said the seal is the product. Opened, it is only news.',
+      again: 'LOT 3 — NINEBRIDGE — DAY 2, under the half-moon, unbroken.',
       options: [
         { id: 'futures.open', text: '(Break the seal.)', effects: [{ take: 'k_futures_paper' }, { give: 'k_strike_sheet' }, { learn: 'nb_sheet_strike' }, { lead: 'l_strike_forecast' }, { xp: 30 }], next: 'read' },
         { text: '(Keep it sealed.)', exit: true },
@@ -791,12 +840,13 @@ export const d_packet_read: DialogueDef = {
   nodes: {
     sealed: {
       text: 'Oilcloth, wax, the guild\'s half-moon. Lighter than it should be. The clerk at Tollhouse 9 said: opened, the bearer owes a sum nobody has.',
+      again: 'The packet, sealed. Still lighter than it should be.',
       options: [
         { id: 'packet.open', text: '(Break the seal.)', effects: [{ set: 'packet_opened' }, { learn: 'packet_water' }, { lead: 'l_packet_water' }, { decision: { id: 'packet_opened', text: 'You broke the seal on the guild\'s packet and read it.' } }, { xp: 20 }], next: 'opened' },
         { text: '(Leave it sealed.)', exit: true },
       ],
     },
-    opened: { text: 'One sheet. SHALE — WATER — 0.62 — and a date a month after you stood at Dry Wells, and a sum, and no signature, in a hand too even to be a hand. A schedule for a town\'s thirst, sold in advance to whoever wanted to know.', options: [{ text: '(Fold it.)', exit: true }] },
+    opened: { text: 'One sheet. SHALE — WATER — 0.62 — and a date a month after you stood at Dry Wells, and a sum, and no signature, in a hand too even to be a hand. A schedule for a town\'s thirst, sold in advance to whoever wanted to know.', again: 'SHALE — WATER — 0.62, in a hand too even to be a hand.', options: [{ text: '(Fold it.)', exit: true }] },
   },
 };
 

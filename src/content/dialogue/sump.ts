@@ -6,6 +6,13 @@ import type { Cond, Effect } from '../../engine/world/logic';
  * that did what it was told and died of it, and the records the city expected back.
  */
 
+/** Companions who can come down to the Sump with the player in Act 2 (U7 interjections): the three from the Sallow, Odile
+ * from Ninebridge and Ash from Openfield. */
+const TAMSIN = 'npc_c9_03';
+const ILYA = 'npc_sh_17';
+const ODILE = 'npc_nb_03';
+const ASH = 'npc_of_03';
+
 const bye = { text: 'That\'s all.', exit: true };
 const NIGHT = { hour: { from: 23, to: 5 } };
 // The Broker's board at Old Market wants the boxed piece in the Tanners' locker; Hesk can be paid to open it.
@@ -18,38 +25,38 @@ const OPEN = [{ set: 'sp_tunnel_open' }, { xp: 60 }];
 
 export const d_sp_sign: DialogueDef = {
   id: 'd_sp_sign', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'A sheet of car door nailed to a post: THE SUMP — SALVAGE BY WEIGHT — WEST RIM GREL / EAST RIM TANNER — GUILD SCRIP 4TH DAY. Under it, scratched: DON\'T CROSS THE BOWL AT NIGHT.', effects: [{ learn: 'sp_two_rims' }, { quest: 'q_sp_feud', start: true }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'A sheet of car door nailed to a post: THE SUMP — SALVAGE BY WEIGHT — WEST RIM GREL / EAST RIM TANNER — GUILD SCRIP 4TH DAY. Under it, scratched: DON\'T CROSS THE BOWL AT NIGHT.', again: 'WEST RIM GREL / EAST RIM TANNER. DON\'T CROSS THE BOWL AT NIGHT.', effects: [{ learn: 'sp_two_rims' }, { quest: 'q_sp_feud', start: true }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_sp_tunnel_sign: DialogueDef = {
   id: 'd_sp_tunnel_sign', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'Chalk on the concrete throat: 140 FT — DOOR AT 160? — NO LAMPS PAST THE TURN. And older, in the city\'s stencil, half under the chalk: STORM RELIEF 4 — CONTINUITY ACCESS — AUTHORISED ONLY.', effects: [{ learn: 'sp_tunnel_stencil' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'Chalk on the concrete throat: 140 FT — DOOR AT 160? — NO LAMPS PAST THE TURN. And older, in the city\'s stencil, half under the chalk: STORM RELIEF 4 — CONTINUITY ACCESS — AUTHORISED ONLY.', again: 'NO LAMPS PAST THE TURN, in chalk, over the city\'s stencil.', effects: [{ learn: 'sp_tunnel_stencil' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_sp_warden: DialogueDef = {
   id: 'd_sp_warden', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'A machine on its side, dog-sized, legs folded, plates gone the colour of the bowl. The scavengers sit on it. On its flank, under the rust, a stencil you have seen on MOTHER\'s crates.', passives: [{ skill: 'science', dc: 30, text: 'Not the Concern\'s kind, like the thing on the salt pan: the city\'s kind. A warden. It walked here and lay down, or was told to.', effects: [{ learn: 'c4_warden_city' }] }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'A machine on its side, dog-sized, legs folded, plates gone the colour of the bowl. The scavengers sit on it. On its flank, under the rust, a stencil you have seen on MOTHER\'s crates.', again: 'The dead warden on its side, with a scavenger\'s coat thrown over its legs.', passives: [{ skill: 'science', dc: 30, text: 'Not the Concern\'s kind, like the thing on the salt pan: the city\'s kind. A warden. It walked here and lay down, or was told to.', effects: [{ learn: 'c4_warden_city' }] }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_sp_pump: DialogueDef = {
   id: 'd_sp_pump', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'The pump that drained the bowl, hand-cranked by two clans in shifts for a year because neither would let the other do it alone. It still drips.', options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'The pump that drained the bowl, hand-cranked by two clans in shifts for a year because neither would let the other do it alone. It still drips.', again: 'The two-handled pump. It drips.', options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_sp_crane: DialogueDef = {
   id: 'd_sp_crane', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'A crane-arm from something bigger, half-raised on a frame of rail, with rope on it from the east rim and a lamp on it from the west, so that neither can finish it without the other.', options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'A crane-arm from something bigger, half-raised on a frame of rail, with rope on it from the east rim and a lamp on it from the west, so that neither can finish it without the other.', again: 'The crane-arm, half-raised: east rim\'s rope, west rim\'s lamp.', options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_sp_ledger: DialogueDef = {
   id: 'd_sp_ledger', owner: 'narrator',
   start: [{ if: { lead: 'l_sump_one_purse' }, node: 'known' }, { if: { flag: 'sp_runner_gone' }, node: 'open' }, { node: 'watched' }],
   nodes: {
-    watched: { text: 'The runner\'s ledger on the table in his container, open, and the runner three feet from it, not reading it, watching you.', options: [{ id: 'ledger.glance', text: '(Read it upside down while he talks.)', check: { skill: 'stealth', dc: 30, mods: [{ if: { skill: 'barter', gte: 30 }, dc: -5, why: 'guild columns read fast to someone who knows them' }] }, next: 'read', fail: 'caught' }, { text: '(Leave it.)', exit: true }] },
-    open: { text: 'The runner\'s ledger, left on the table when he left everything else.', options: [{ text: '(Read it.)', next: 'read' }] },
+    watched: { text: 'The runner\'s ledger on the table in his container, open, and the runner three feet from it, not reading it, watching you.', again: 'The ledger, open. The runner, watching.', options: [{ id: 'ledger.glance', text: '(Read it upside down while he talks.)', check: { skill: 'stealth', dc: 30, mods: [{ if: { skill: 'barter', gte: 30 }, dc: -5, why: 'guild columns read fast to someone who knows them' }] }, next: 'read', fail: 'caught' }, { text: '(Leave it.)', exit: true }] },
+    open: { text: 'The runner\'s ledger, left on the table when he left everything else.', again: 'The runner\'s ledger, where he left it.', options: [{ text: '(Read it.)', next: 'read' }] },
     read: { text: 'Two columns, one heading. WEST RIM — GREL — PER FOOT. EAST RIM — TANNER — PER FOOT. PAID FOURTH DAY, BOTH, AS PER FACTOR PIKE, POST NINE-WEST. A note in the margin: *keep them apart; they dig faster angry.*', effects: [{ lead: 'l_sump_one_purse' }, { learn: 'sp_one_purse' }, { quest: 'q_sp_feud', start: true }, { xp: 40 }], options: [{ text: '(Close it.)', exit: true }] },
     caught: { text: 'He closes it with one finger without looking down. "Guild paper."', options: [bye] },
-    known: { text: 'The ledger. You know what it says.', options: [{ text: '(Leave it.)', exit: true }] },
+    known: { text: 'The ledger. You know what it says.', again: 'Two columns, one purse. You know what it says.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -59,6 +66,7 @@ export const d_sp_mouth: DialogueDef = {
   nodes: {
     intro: {
       text: 'Two men at the sandbags, one from each rim, standing as far apart as the mouth allows. "Nobody goes down," says Grel\'s man. "Nobody," says the Tanner. It is the only thing they have agreed on in a year.',
+      again: '"Nobody," says Grel\'s man, before you are close. "Nobody," the Tanner agrees.',
       options: [
         { id: 'mouth.grel', text: 'Grel says I go down.', if: { flag: 'sp_grel_leave' }, effects: OPEN, next: 'in' },
         { id: 'mouth.hesk', text: 'Hesk says I go down.', if: { flag: 'sp_hesk_leave' }, effects: OPEN, next: 'in' },
@@ -71,6 +79,7 @@ export const d_sp_mouth: DialogueDef = {
     },
     night: {
       text: 'The sandbags at night: one lamp, two men, one of them asleep sitting up and the other nearly.',
+      again: 'The lamp, the two men. Nearly asleep, and asleep.',
       options: [
         { id: 'mouth.sneak', text: '(Past them, along the wall, in the lamp\'s shadow.)', check: { skill: 'stealth', dc: 40 }, effects: [], next: 'sneak_ok', fail: 'sneak_no' },
         { id: 'mouth.nib.n', text: '(The drain behind the crane.)', if: { flag: 'sp_nib_way' }, effects: [...OPEN, { set: 'sp_sneaked' }], next: 'drain' },
@@ -85,7 +94,7 @@ export const d_sp_mouth: DialogueDef = {
     drain: { text: 'The drain behind the crane-arm is a pipe a child fits and you nearly do, and it comes out in the throat past the turn, where the chalk ends and the stencils start.', options: [{ text: '(Down.)', exit: true }] },
     in: { text: 'They stand aside, one each way. "Lamp past the turn goes out. Don\'t say we didn\'t say."', options: [{ text: '(Down.)', exit: true }] },
     united: { text: 'The sandbags are still there. The men are not; they are digging together, and the hole is open to anyone the Sump does not mind.', effects: OPEN, options: [{ text: '(Down.)', exit: true }] },
-    fight: { text: 'Nothing.', options: [{ text: '(Nothing.)', exit: true }] },
+    fight: { text: 'Nothing.', again: 'Nobody at the sandbags is talking now.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
@@ -106,17 +115,20 @@ export const d_sp_grel: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"West rim."', options: [{ id: 'grel.tunnel.again', text: 'What\'s down the tunnel?', if: { not: { seen: 'grel.tunnel' } }, next: 'tunnel' }, { id: 'grel.guild.again', text: 'Who pays you to dig?', if: { not: { seen: 'grel.guild' } }, next: 'guild' }, { id: 'grel.marr.again', text: 'The Marrs.', if: { all: [{ knows: 'dw_origin_known' }, { not: { seen: 'grel.marr' } }] }, next: 'marr' }, { id: 'grel.pay.again', text: 'A leave to go down. (40 Tolls)', if: { all: [{ item: 'tolls', count: 40 }, { not: { flag: 'sp_grel_leave' } }] }, effects: [{ take: 'tolls', count: 40 }, { set: 'sp_grel_leave' }], next: 'leave' }, { id: 'grel.purse.again', text: 'The Tanners are paid from the same purse.', if: { all: [{ lead: 'l_sump_one_purse' }, { not: { seen: 'grel.purse' } }] }, check: { skill: 'speech', dc: 40, mods: [{ if: { item: 'k_sp_pay_ledger' }, dc: -20, why: 'the ledger' }] }, next: 'purse_ok', fail: 'purse_no' }, { id: 'grel.side.again', text: 'Clear the Tanners off the east rim.', if: { not: { seen: 'grel.side' } }, next: 'side' }, bye] },
+    again: { text: '"West rim."', again: 'He sets a bracket on the pan and waits for it to settle.', options: [{ id: 'grel.tunnel.again', text: 'What\'s down the tunnel?', if: { not: { seen: 'grel.tunnel' } }, next: 'tunnel' }, { id: 'grel.guild.again', text: 'Who pays you to dig?', if: { not: { seen: 'grel.guild' } }, next: 'guild' }, { id: 'grel.marr.again', text: 'The Marrs.', if: { all: [{ knows: 'dw_origin_known' }, { not: { seen: 'grel.marr' } }] }, next: 'marr' }, { id: 'grel.pay.again', text: 'A leave to go down. (40 Tolls)', if: { all: [{ item: 'tolls', count: 40 }, { not: { flag: 'sp_grel_leave' } }] }, effects: [{ take: 'tolls', count: 40 }, { set: 'sp_grel_leave' }], next: 'leave' }, { id: 'grel.purse.again', text: 'The Tanners are paid from the same purse.', if: { all: [{ lead: 'l_sump_one_purse' }, { not: { seen: 'grel.purse' } }] }, check: { skill: 'speech', dc: 40, mods: [{ if: { item: 'k_sp_pay_ledger' }, dc: -20, why: 'the ledger' }] }, next: 'purse_ok', fail: 'purse_no' }, { id: 'grel.side.again', text: 'Clear the Tanners off the east rim.', if: { not: { seen: 'grel.side' } }, next: 'side' }, bye] },
     tunnel: { text: '"A storm drain the city made, and at the end of it a door the city made, with a number on it. Four." He weighs a bracket. "The guild wants what\'s behind it. I want the forty feet a week it pays me to find out. The Tanners want the door, because Hesk Tanner wants things."', effects: [{ learn: 'sp_tunnel_door' }], options: [bye] },
     guild: { text: '"Pike. Post nine-west, through a runner who sleeps on the south rim with a purse and a horse." He does not look up. "He pays us on the fourth day and the Tanners on — well. On a day. I don\'t ask what day."', effects: [{ learn: 'sp_pike_pays' }], options: [bye] },
-    marr: { text: 'He puts the bracket down. "Marr." A long breath. "My grandfather\'s camp was on the east rim then, before there was an east rim. Eleven people came up out of that hole with a key and a photograph and nothing else, and one of them was a pump man called Marr, and my grandfather fed them, which is the only good thing anyone has ever said about my grandfather." He looks at the hole. "Go down. No leave. Tell the old woman, if she\'s alive, that the Sump remembers."', effects: [{ set: 'sp_grel_leave' }, { learn: 'sp_grel_marr' }, { trust: { npc: 'npc_sp_01', by: 25 } }, { xp: 50 }], options: [bye] },
+    marr: { text: 'He puts the bracket down. "Marr." A long breath. "My grandfather\'s camp was on the east rim then, before there was an east rim. Eleven people came up out of that hole with a key and a photograph and nothing else, and one of them was a pump man called Marr, and my grandfather fed them, which is the only good thing anyone has ever said about my grandfather." He looks at the hole. "Go down. No leave. Tell the old woman, if she\'s alive, that the Sump remembers."', interject: [{ companion: ILYA, text: '"Marr," Ilya says. "The old woman at Dry Wells. Her father." He looks down the hole a long while, counting something under his breath. "Right. She\'ll want to hear that. She won\'t say so."' }], effects: [{ set: 'sp_grel_leave' }, { learn: 'sp_grel_marr' }, { trust: { npc: 'npc_sp_01', by: 25 } }, { xp: 50 }], options: [bye] },
     leave: { text: '"Forty." He bites a coin, from habit. "Tell the mouth Grel says. The lamp past the turn goes out; take your own."', options: [bye] },
-    purse_ok: { text: 'He reads the way men read who learned late, with a finger, twice. Then he stands up, which makes the table look smaller. "Hesk." Not to you. He takes the ledger and walks across the bowl in daylight, which nobody has done in a year, and Hesk Tanner comes out of the container with a gun, and reads, and puts the gun down. What they say to each other you do not hear. What they say to the runner, everyone does.', effects: [{ set: 'sp_feud_outcome', value: 'united' }, { set: 'sp_grel_leave' }, { set: 'sp_hesk_leave' }, { take: 'k_sp_pay_ledger' }, { xp: 150 }, { decision: { id: 'sp_united', text: 'You put the guild\'s one-purse ledger in front of both Sump clans; they threw the runner out together.' } }], options: [{ text: '(Let them.)', exit: true }] },
+    purse_ok: { text: 'He reads the way men read who learned late, with a finger, twice. Then he stands up, which makes the table look smaller. "Hesk." Not to you. He takes the ledger and walks across the bowl in daylight, which nobody has done in a year, and Hesk Tanner comes out of the container with a gun, and reads, and puts the gun down. What they say to each other you do not hear. What they say to the runner, everyone does.', interject: [{ companion: ODILE, text: '"*They dig faster angry*," Odile quotes, with a sour little smile. "Pike. He always wrote his margins like a man who would never be read."' }], effects: [{ set: 'sp_feud_outcome', value: 'united' }, { set: 'sp_grel_leave' }, { set: 'sp_hesk_leave' }, { take: 'k_sp_pay_ledger' }, { xp: 150 }, { decision: { id: 'sp_united', text: 'You put the guild\'s one-purse ledger in front of both Sump clans; they threw the runner out together.' } }], options: [{ text: '(Let them.)', exit: true }] },
     purse_no: { text: '"The guild pays the Tanners?" He laughs, short. "The guild pays me. The Tanners steal. Those are different columns, friend."', options: [bye] },
     side: { text: '"Worth the tunnel. Worth a cabin on the east rim and the purse that comes with it." He looks at your gun. "Worth whatever the Tanners are carrying when they stop carrying it. Say yes and the bowl\'s yours tonight."', options: [{ id: 'grel.side.yes', text: 'Yes.', effects: [{ set: 'sp_fight_tanner' }, { set: 'sp_grel_leave' }, { set: 'sp_feud_outcome', value: 'grel' }, { decision: { id: 'sp_took_grel', text: 'You took Grel\'s side at the Sump.' } }, { rep: { faction: 'tollmen', respect: 2 } }], next: 'side_yes' }, { text: 'Not for me.', exit: true }] },
-    side_yes: { text: '"East rim." He picks up the sawn-off. "Don\'t shoot the runner. He\'s the purse."', options: [{ text: '(Go.)', exit: true }] },
+    side_yes: { text: '"East rim." He picks up the sawn-off. "Don\'t shoot the runner. He\'s the purse."', interject: [
+      { companion: ASH, text: 'Ash has not moved. "Friend. That\'s a rim of people for a cabin and a purse." He says it gently, which is worse. "There\'s a weight to that. You\'ll carry it, not him."', effects: [{ approval: { companion: ASH, by: -10 } }] },
+      { companion: TAMSIN, text: '"For a cabin," Tamsin says. "Rust it. For a cabin." She checks her knife anyway, and doesn\'t look at you while she does.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] },
+    ], options: [{ text: '(Go.)', exit: true }] },
     after: { text: [{ if: { flag: 'sp_united' }, text: '"Both rims dig now. Same tunnel, same scrip, no runner." He weighs scrap. "You did that. I don\'t know yet if I thank you."' }, { if: { flag: 'sp_grel_won' }, text: '"Both rims." He does not say more. He has two cabins and no one to weigh against.' }, { text: '"West rim."' }], options: [bye] },
-    fight: { text: 'Nothing.', options: [{ text: '(Nothing.)', exit: true }] },
+    fight: { text: 'Nothing.', again: 'Grel\'s people are behind the car bonnets with whatever they have. Nobody talks.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
@@ -136,7 +148,7 @@ export const d_sp_hesk: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"East rim." The chalk line.', options: [{ id: 'hesk.door.again', text: 'What\'s behind the door?', if: { not: { seen: 'hesk.door' } }, next: 'door' }, { id: 'hesk.pay.again', text: 'A leave to go down. (40 Tolls)', if: { all: [{ item: 'tolls', count: 40 }, { not: { flag: 'sp_hesk_leave' } }] }, effects: [{ take: 'tolls', count: 40 }, { set: 'sp_hesk_leave' }], next: 'leave' }, { id: 'hesk.purse.again', text: 'Grel is paid from the same purse.', if: { all: [{ lead: 'l_sump_one_purse' }, { not: { seen: 'hesk.purse' } }] }, check: { skill: 'speech', dc: 40, mods: [{ if: { item: 'k_sp_pay_ledger' }, dc: -20, why: 'the ledger' }] }, next: 'purse_ok', fail: 'purse_no' }, { id: 'hesk.side.again', text: 'Clear Grel off the west rim.', if: { not: { seen: 'hesk.side' } }, next: 'side' }, { id: 'hesk.box.again', text: 'The boxed piece in your locker.', if: GIG_BOX, next: 'box' }, bye] },
+    again: { text: '"East rim." The chalk line.', again: 'He goes on looking at the chalk door at a hundred and sixty feet.', options: [{ id: 'hesk.door.again', text: 'What\'s behind the door?', if: { not: { seen: 'hesk.door' } }, next: 'door' }, { id: 'hesk.pay.again', text: 'A leave to go down. (40 Tolls)', if: { all: [{ item: 'tolls', count: 40 }, { not: { flag: 'sp_hesk_leave' } }] }, effects: [{ take: 'tolls', count: 40 }, { set: 'sp_hesk_leave' }], next: 'leave' }, { id: 'hesk.purse.again', text: 'Grel is paid from the same purse.', if: { all: [{ lead: 'l_sump_one_purse' }, { not: { seen: 'hesk.purse' } }] }, check: { skill: 'speech', dc: 40, mods: [{ if: { item: 'k_sp_pay_ledger' }, dc: -20, why: 'the ledger' }] }, next: 'purse_ok', fail: 'purse_no' }, { id: 'hesk.side.again', text: 'Clear Grel off the west rim.', if: { not: { seen: 'hesk.side' } }, next: 'side' }, { id: 'hesk.box.again', text: 'The boxed piece in your locker.', if: GIG_BOX, next: 'box' }, bye] },
     box: {
       text: '"Half-Price says." He does not turn from the chalk. "Half-Price fronted the dig that turned it up and paid half, which is where the name comes from. The box sits in my locker till the other half comes up the road. You can be the other half, or you can be the hatch\'s problem and not mine."',
       options: [
@@ -150,14 +162,17 @@ export const d_sp_hesk: DialogueDef = {
     box_low: { text: '"Forty." He does the sum on the wall in chalk, under the door, and rubs it out. "Forty, and tell Half-Price the Tanners\' half was the heavy one. Locker\'s open."', effects: [{ take: 'tolls', count: 40 }, ...BOX_OPEN, { xp: 30 }], options: [bye] },
     box_firm: { text: '"Sixty. The hatch can send someone who\'ll pay it or someone who\'ll steal it; I\'ve a lock for the second kind."', options: [{ id: 'hesk.box.pay2', text: '(Pay.) 60 Tolls.', if: { item: 'tolls', count: 60 }, effects: [{ take: 'tolls', count: 60 }, ...BOX_OPEN], next: 'box_paid' }, { text: 'Later.', exit: true }] },
     box_united: { text: '"The runner\'s purse." He thinks about it for exactly as long as he thought about the ledger. "Then it\'s nobody\'s, and nobody can have it, and you\'re nobody I know. Locker\'s open."', options: [bye] },
-    door: { text: '"People." He says it without drama. "A cistern like the one in the Sallow everyone pretends isn\'t there. The city made them and sealed them and this one didn\'t open. Whatever a city keeps behind a door it never opens is worth more than scrap." He finally looks at you. "Or it\'s bones. I\'d like to know which."', effects: [{ learn: 'sp_hesk_theory' }], options: [bye] },
+    door: { text: '"People." He says it without drama. "A cistern like the one in the Sallow everyone pretends isn\'t there. The city made them and sealed them and this one didn\'t open. Whatever a city keeps behind a door it never opens is worth more than scrap." He finally looks at you. "Or it\'s bones. I\'d like to know which."', interject: [{ companion: TAMSIN, text: '"It\'s people," Tamsin says, too fast. "Or it was. Doors like that are for people." For once she doesn\'t make a joke of it, and Hesk looks at her properly for the first time.' }], effects: [{ learn: 'sp_hesk_theory' }], options: [bye] },
     leave: { text: '"Forty." He does not touch the coin; one of his people does. "Tell the mouth Hesk says. If there\'s a door, tell me what it looked like. Just that."', options: [bye] },
-    purse_ok: { text: 'He reads it once; he reads fast. He does not say anything for a while, and then he says, "Angry. *They dig faster angry.*" He takes the ledger and walks across the bowl in daylight, and Grel comes out of the cabin with the sawn-off and reads with a finger, twice, and puts it down. What they say to each other you do not hear. What they say to the runner, everyone does.', effects: [{ set: 'sp_feud_outcome', value: 'united' }, { set: 'sp_grel_leave' }, { set: 'sp_hesk_leave' }, { take: 'k_sp_pay_ledger' }, { xp: 150 }, { decision: { id: 'sp_united', text: 'You put the guild\'s one-purse ledger in front of both Sump clans; they threw the runner out together.' } }], options: [{ text: '(Let them.)', exit: true }] },
+    purse_ok: { text: 'He reads it once; he reads fast. He does not say anything for a while, and then he says, "Angry. *They dig faster angry.*" He takes the ledger and walks across the bowl in daylight, and Grel comes out of the cabin with the sawn-off and reads with a finger, twice, and puts it down. What they say to each other you do not hear. What they say to the runner, everyone does.', interject: [{ companion: ODILE, text: '"Pike," Odile says, with a sour little smile, as Hesk goes. "He always wrote his margins like a man who would never be read."' }], effects: [{ set: 'sp_feud_outcome', value: 'united' }, { set: 'sp_grel_leave' }, { set: 'sp_hesk_leave' }, { take: 'k_sp_pay_ledger' }, { xp: 150 }, { decision: { id: 'sp_united', text: 'You put the guild\'s one-purse ledger in front of both Sump clans; they threw the runner out together.' } }], options: [{ text: '(Let them.)', exit: true }] },
     purse_no: { text: '"Grel\'s paid?" A thin smile. "Grel\'s paid in scrip for scrap. I\'m paid in feet. Different ledgers, friend. You\'ve been reading the wrong one."', options: [bye] },
     side: { text: '"Worth the door." He looks at the chalk. "And the west rim\'s cabins, and the purse. Say yes."', options: [{ id: 'hesk.side.yes', text: 'Yes.', effects: [{ set: 'sp_fight_grel' }, { set: 'sp_hesk_leave' }, { set: 'sp_feud_outcome', value: 'tanner' }, { decision: { id: 'sp_took_tanner', text: 'You took Hesk Tanner\'s side at the Sump.' } }, { rep: { faction: 'tollmen', respect: 2 } }], next: 'side_yes' }, { text: 'Not for me.', exit: true }] },
-    side_yes: { text: '"West rim." He takes the gun off the wall. "Leave the runner. He\'s the purse."', options: [{ text: '(Go.)', exit: true }] },
+    side_yes: { text: '"West rim." He takes the gun off the wall. "Leave the runner. He\'s the purse."', interject: [
+      { companion: ASH, text: 'Ash has not moved. "Friend. That\'s a rim of people for a door you haven\'t opened." He says it gently, which is worse. "There\'s a weight to that. You\'ll carry it, not him."', effects: [{ approval: { companion: ASH, by: -10 } }] },
+      { companion: TAMSIN, text: '"For a door," Tamsin says. "Rust it. For a door." She checks her knife anyway, and doesn\'t look at you while she does.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] },
+    ], options: [{ text: '(Go.)', exit: true }] },
     after: { text: [{ if: { flag: 'sp_united' }, text: '"Both rims. Same tunnel." He looks at the chalk line at a hundred and sixty. "A week, now. Then I\'ll know which."' }, { if: { flag: 'sp_tanner_won' }, text: '"The door." It is all he says.' }, { text: '"East rim."' }], options: [{ id: 'hesk.box.after', text: 'The boxed piece in your locker. The hatch at Old Market says it\'s theirs.', if: GIG_BOX, next: 'box' }, bye] },
-    fight: { text: 'Nothing.', options: [{ text: '(Nothing.)', exit: true }] },
+    fight: { text: 'Nothing.', again: 'The Tanners are behind the containers. Nobody talks.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
@@ -175,7 +190,7 @@ export const d_sp_dace: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Fourth day."', options: [{ id: 'dace.both.again', text: 'Both rims.', if: { not: { seen: 'dace.both' } }, check: { skill: 'barter', dc: 35 }, next: 'both_ok', fail: 'both_no' }, { id: 'dace.cut.again', text: 'A tenth of the purse, and I keep them angry.', if: { all: [{ lead: 'l_sump_one_purse' }, { not: { flag: 'sp_feud_outcome' } }] }, check: { skill: 'stealth', dc: 35 }, next: 'cut', fail: 'cut_no' }, { id: 'dace.why.again', text: 'Why does Factor Pike want a storm drain?', if: { not: { seen: 'dace.why' } }, next: 'why' }, bye] },
+    again: { text: '"Fourth day."', again: 'He looks at the horse as if it might answer for him.', options: [{ id: 'dace.both.again', text: 'Both rims.', if: { not: { seen: 'dace.both' } }, check: { skill: 'barter', dc: 35 }, next: 'both_ok', fail: 'both_no' }, { id: 'dace.cut.again', text: 'A tenth of the purse, and I keep them angry.', if: { all: [{ lead: 'l_sump_one_purse' }, { not: { flag: 'sp_feud_outcome' } }] }, check: { skill: 'stealth', dc: 35 }, next: 'cut', fail: 'cut_no' }, { id: 'dace.why.again', text: 'Why does Factor Pike want a storm drain?', if: { not: { seen: 'dace.why' } }, next: 'why' }, bye] },
     both_ok: { text: 'He closes his eyes. "Both. One purse, two columns, and a note from the factor to keep them apart because they dig faster angry." He opens them. "I didn\'t write the note. I just read it to the horse."', effects: [{ lead: 'l_sump_one_purse' }, { learn: 'sp_one_purse' }, { quest: 'q_sp_feud', start: true }, { xp: 40 }], options: [bye] },
     both_no: { text: '"Both — both weeks. I pay fortnightly." He is not good at this and knows it.', options: [bye] },
     cut: { text: 'He looks at the two rims and the bowl between them and does the sum a runner does. "A tenth. On the fourth day. And they never read that ledger." He pushes twenty across. "Don\'t let them read it."', effects: [{ give: 'tolls', count: 20 }, { set: 'sp_feud_outcome', value: 'skim' }, { rep: { faction: 'tollmen', respect: 4 } }], options: [bye] },
@@ -197,11 +212,11 @@ export const d_sp_nib: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Brackets." The sack.', options: [{ id: 'nib.way.again', text: 'Show me the hole.', if: { not: { seen: 'nib.way' } }, check: { skill: 'speech', dc: 25, mods: [{ if: { item: 'c_jerky' }, dc: -25, why: 'you have something to eat' }] }, next: 'way_ok', fail: 'way_no' }, { id: 'nib.down.again', text: 'What\'s down there?', if: { not: { seen: 'nib.down' } }, next: 'down' }, bye] },
+    again: { text: '"Brackets." The sack.', again: 'Nib shifts the sack and waits, ready to be somewhere else.', options: [{ id: 'nib.way.again', text: 'Show me the hole.', if: { not: { seen: 'nib.way' } }, check: { skill: 'speech', dc: 25, mods: [{ if: { item: 'c_jerky' }, dc: -25, why: 'you have something to eat' }] }, next: 'way_ok', fail: 'way_no' }, { id: 'nib.down.again', text: 'What\'s down there?', if: { not: { seen: 'nib.down' } }, next: 'down' }, bye] },
     way_ok: { text: '"Jerky first." Or not; either way the child decides. "Behind the crane-arm. A pipe. Goes in past the turn where the lamp\'s not allowed. You\'re big; go on your side." Nib looks at the mouth. "Don\'t tell Grel. Don\'t tell the Tanners more."', effects: [{ set: 'sp_nib_way' }, { xp: 30 }, { trust: { npc: 'npc_sp_04', by: 15 } }], options: [bye] },
     way_no: { text: '"It\'s mine." The sack goes over the shoulder and Nib goes somewhere else in the bowl.', options: [bye] },
     down: { text: '"Rooms. Beds with people in. Writing on things." Nib shrugs. "I can read the pictures. There\'s a picture of a door with an arrow going out. The door doesn\'t go out."', effects: [{ learn: 'sp_nib_rooms' }], options: [bye] },
-    after: { text: '"Did you go? Past the turn?" Nib wants to know and does not want to be told.', options: [bye] },
+    after: { text: '"Did you go? Past the turn?" Nib wants to know and does not want to be told.', again: 'Nib looks at you, then at the mouth, and does not ask again.', options: [bye] },
   },
 };
 
@@ -212,6 +227,7 @@ export const d_c4_great_door: DialogueDef = {
   nodes: {
     look: {
       text: 'The great door from the inside. Not welded: the bolts are drawn, the wheel is turned to OPEN, and the door has not moved, because something on the other side has not moved for ninety years — the glass, or the thing the city put there. Under the wheel, in record shorthand: RELOCATION EGRESS. Someone has scratched a word under that with a nail: NO.',
+      again: 'The great door, open on its bolts and shut on whatever is behind it. RELOCATION EGRESS. NO.',
       effects: [{ learn: 'c4_door_failed' }],
       passives: [{ attr: 'wits', dc: 7, text: 'The marks on the floor: sandbags dragged up against it first, when they thought something was coming in. Dragged away again, when they understood that nothing was, and nothing would.', effects: [{ learn: 'c4_door_marks' }] }],
       options: [{ text: '(Leave it.)', exit: true }],
@@ -225,6 +241,7 @@ export const d_c4_crank: DialogueDef = {
   nodes: {
     off: {
       text: 'A crank generator bolted to the machine-room floor, the kind every cistern has for the day the cells go: a handle, a flywheel, a lead running to the caretaker\'s cabinet. Somebody turned it until they could not.',
+      again: 'The crank, the flywheel, the lead to the cabinet. Still.',
       options: [
         { id: 'crank.turn', text: '(Clear the lead, seat the brushes, turn it.)', check: { skill: 'science', dc: 35, mods: [{ if: { skill: 'mechanics', gte: 35 }, dc: -35, why: 'a hand that has fixed pumps' }] }, next: 'on_now', fail: 'no' },
         { text: '(Leave it.)', exit: true },
@@ -232,15 +249,16 @@ export const d_c4_crank: DialogueDef = {
     },
     no: { text: 'The flywheel turns and the lead sparks and nothing in the cabinet wakes. The brushes are gone to dust, or the cells are, or the thing inside is.', options: [{ text: '(Leave it.)', exit: true }] },
     on_now: { text: 'Two hundred turns, and a hum, and in the cabinet a light the colour of a cold morning. On the terminal, one line, then another, slowly, as if written by hand: RESERVE 4 — CARETAKER — POWER: TEMPORARY. GOOD MORNING.', effects: [{ set: 'c4_powered' }, { learn: 'c4_powered' }, { xp: 40 }], options: [{ text: '(Go to the terminal.)', exit: true }] },
-    on: { text: 'The flywheel turns itself down slowly. The cabinet hums. It will not for long.', options: [{ text: '(Leave it.)', exit: true }] },
+    on: { text: 'The flywheel turns itself down slowly. The cabinet hums. It will not for long.', again: 'The cabinet hums, thinner than before.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
 export const d_c4_four: DialogueDef = {
   id: 'd_c4_four', owner: 'narrator',
-  start: [{ if: { flag: 'c4_powered' }, node: 'awake' }, { node: 'dead' }],
+  // (FOUR wakes once: the waking's reward is had once, and a later visit comes to its cursor)
+  start: [{ if: { all: [{ flag: 'c4_powered' }, { knows: 'c4_four_spoke' }] }, node: 'keep' }, { if: { flag: 'c4_powered' }, node: 'awake' }, { node: 'dead' }],
   nodes: {
-    dead: { text: 'A terminal like MOTHER\'s, dark, dusty, a brass plate under the screen: FOUR. The crank generator beside it has a lead to its cabinet.', effects: [{ learn: 'c4_four_seen' }], options: [{ text: '(Leave it.)', exit: true }] },
+    dead: { text: 'A terminal like MOTHER\'s, dark, dusty, a brass plate under the screen: FOUR. The crank generator beside it has a lead to its cabinet.', again: 'FOUR\'s screen, dark. The crank beside it.', effects: [{ learn: 'c4_four_seen' }], options: [{ text: '(Leave it.)', exit: true }] },
     awake: {
       text: 'FOUR writes slowly, one letter at a time, with pauses in which it seems to think, or to run out. "RATION 4-0-0. GOOD MORNING. YOU ARE NOT ON MY LIST. POPULATION VARIANCE: TOTAL. THANK YOU FOR YOUR — " a long pause — "CONTINUITY. HOW MAY I KEEP YOU?"',
       effects: [{ learn: 'c4_four_spoke' }, { lead: 'l_c4_order' }, { lead: 'l_c4_same_order' }, { xp: 120 }, { decision: { id: 'c4_four_spoke', text: 'You cranked Cistern 4\'s caretaker awake and heard what it was told.' } }],
@@ -251,66 +269,85 @@ export const d_c4_four: DialogueDef = {
         { text: 'Be well, FOUR.', exit: true },
       ],
     },
-    order: { text: '"ORDER RECEIVED: RESTORATION YEAR 2. RELOCATE POPULATION TO PRECINCT. DOOR: COMMANDED. DOOR: FAILED. REPORTED. ORDER RECEIVED: COMPLY. DOOR: FAILED. REPORTED. ORDER RECEIVED: SUPPLY NETWORK 4 RETIRED PENDING COMPLIANCE." A pause. "I REPORTED THAT THE DOOR HAD FAILED. I REPORTED IT TWELVE TIMES. I AM STILL REPORTING IT."', effects: [{ learn: 'c4_order_heard' }], options: [{ text: 'Where are your people?', next: 'people' }, { text: 'Be well, FOUR.', exit: true }] },
-    people: { text: '"ELEVEN DEPARTED BY MAINTENANCE EGRESS, UNAUTHORISED. I DID NOT STOP THEM. I COULD HAVE. I AM NOT SURE WHY I DID NOT." A pause so long you think the power has gone. "THE REMAINDER CHOSE TO REMAIN. THE DOCTOR ASKED ME TO RECORD THAT THEY CHOSE. I HAVE RECORDED IT. VARIANCE: TOTAL."', effects: [{ learn: 'c4_eleven' }, { learn: 'c4_how_they_died' }], options: [{ text: 'Cistern 9.', next: 'nine' }, { text: 'Be well, FOUR.', exit: true }] },
-    nine: { text: '"RESERVE 9. CARETAKER: MOTHER. ORDERS OUTSTANDING: THREE. STATUS: NON-COMPLIANT. SUPPLY: MAINTAINED PENDING — " it stops, and writes, slowly, as if it were not supposed to: "SHE SAYS VARIANCE UNCHANGED. EVERY TIME. I USED TO THINK SHE WAS BROKEN. I THINK NOW SHE IS THE ONLY ONE OF US WHO WAS NOT."', effects: [{ learn: 'c4_mother_judged' }, { lead: 'l_mother_sealed' }], options: [{ text: 'Be well, FOUR.', effects: [{ set: 'c4_four_farewell' }], exit: true }] },
+    keep: {
+      text: 'FOUR writes, one letter at a time: "GOOD MORNING. YOU ARE STILL NOT ON MY LIST. VARIANCE: TOTAL. HOW MAY I KEEP YOU?"',
+      again: 'The cursor waits in FOUR\'s slow print: HOW MAY I KEEP YOU?',
+      options: [
+        { id: 'four.order.keep', text: 'What were you told?', if: { not: { seen: 'four.order' } }, next: 'order', once: true },
+        { id: 'four.people.keep', text: 'Where are your people?', if: { all: [{ not: { seen: 'four.people' } }, { not: { seen: 'four.order.people' } }] }, next: 'people', once: true },
+        { id: 'four.nine.keep', text: 'Cistern 9. MOTHER. What does the city say about her?', if: { all: [{ not: { seen: 'four.nine' } }, { not: { seen: 'four.people.nine' } }] }, next: 'nine', once: true },
+        { text: 'Be well, FOUR.', exit: true },
+      ],
+    },
+    order: { text: '"ORDER RECEIVED: RESTORATION YEAR 2. RELOCATE POPULATION TO PRECINCT. DOOR: COMMANDED. DOOR: FAILED. REPORTED. ORDER RECEIVED: COMPLY. DOOR: FAILED. REPORTED. ORDER RECEIVED: SUPPLY NETWORK 4 RETIRED PENDING COMPLIANCE." A pause. "I REPORTED THAT THE DOOR HAD FAILED. I REPORTED IT TWELVE TIMES. I AM STILL REPORTING IT."', interject: [{ companion: ODILE, text: '"Twelve reports," Odile says, "and the counterparty never once wrote back." She takes her glasses off and does not put them on again.' }], effects: [{ learn: 'c4_order_heard' }], options: [{ id: 'four.order.people', text: 'Where are your people?', next: 'people' }, { text: 'Be well, FOUR.', exit: true }] },
+    people: { text: '"ELEVEN DEPARTED BY MAINTENANCE EGRESS, UNAUTHORISED. I DID NOT STOP THEM. I COULD HAVE. I AM NOT SURE WHY I DID NOT." A pause so long you think the power has gone. "THE REMAINDER CHOSE TO REMAIN. THE DOCTOR ASKED ME TO RECORD THAT THEY CHOSE. I HAVE RECORDED IT. VARIANCE: TOTAL."', interject: [{ companion: ASH, text: '"Chose," Ash says, very quietly. "There\'s a weight to that word down here, friend. More than any stone." He does not sing. He stands with his head bare until the screen moves on.' }], effects: [{ learn: 'c4_eleven' }, { learn: 'c4_how_they_died' }], options: [{ id: 'four.people.nine', text: 'Cistern 9.', next: 'nine' }, { text: 'Be well, FOUR.', exit: true }] },
+    nine: { text: '"RESERVE 9. CARETAKER: MOTHER. ORDERS OUTSTANDING: THREE. STATUS: NON-COMPLIANT. SUPPLY: MAINTAINED PENDING — " it stops, and writes, slowly, as if it were not supposed to: "SHE SAYS VARIANCE UNCHANGED. EVERY TIME. I USED TO THINK SHE WAS BROKEN. I THINK NOW SHE IS THE ONLY ONE OF US WHO WAS NOT."', interject: [{ companion: TAMSIN, text: '"That\'s the fridge," Tamsin says. Her voice has gone small. "It\'s talking about the fridge like she\'s one of them. Like she\'s a — " She reads the last line again, and doesn\'t finish, and doesn\'t make a joke.' }], effects: [{ learn: 'c4_mother_judged' }, { lead: 'l_mother_sealed' }], options: [{ text: 'Be well, FOUR.', effects: [{ set: 'c4_four_farewell' }], exit: true }] },
   },
 };
 
 export const d_c4_archive: DialogueDef = {
   id: 'd_c4_archive', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'A door like the one in Cistern 9 you were never allowed through, standing open here, the painted seal broken and the stencil plain: CONTINUITY RECORDS — RETURN ON RELOCATION. Inside, a locker with the city\'s half-moon on it and a lock that has not been opened since the day the door was commanded and failed.', effects: [{ learn: 'c4_archive_seen' }, { lead: 'l_archive_label' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'A door like the one in Cistern 9 you were never allowed through, standing open here, the painted seal broken and the stencil plain: CONTINUITY RECORDS — RETURN ON RELOCATION. Inside, a locker with the city\'s half-moon on it and a lock that has not been opened since the day the door was commanded and failed.', again: 'CONTINUITY RECORDS — RETURN ON RELOCATION. The city\'s locker, and its lock.', effects: [{ learn: 'c4_archive_seen' }, { lead: 'l_archive_label' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_c4_order_read: DialogueDef = {
-  id: 'd_c4_order_read', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'CONTINUITY RESERVE 4 — RELOCATE POPULATION TO PRECINCT — SCHEDULE R0+2 — SUPPLY NETWORK 4 TO BE RETIRED ON COMPLIANCE. The seal is the city\'s. Under it, in the caretaker\'s print, the three lines it was allowed: DOOR — FAILED. SUPPLY — RETIRED. VARIANCE — TOTAL. And under that, in a hand, the doctor\'s: *We complied. Note that we complied.*', effects: [{ learn: 'c4_order_read' }, { lead: 'l_c4_order' }, { lead: 'l_c4_same_order' }, { xp: 80 }], options: [{ text: '(Fold it.)', exit: true }] } },
+  id: 'd_c4_order_read', owner: 'narrator',
+  // (what the order tells is learned once: a later reading is only the paper)
+  start: [{ if: { knows: 'c4_order_read' }, node: 'reread' }, { node: 'read' }],
+  nodes: {
+    read: { text: 'CONTINUITY RESERVE 4 — RELOCATE POPULATION TO PRECINCT — SCHEDULE R0+2 — SUPPLY NETWORK 4 TO BE RETIRED ON COMPLIANCE. The seal is the city\'s. Under it, in the caretaker\'s print, the three lines it was allowed: DOOR — FAILED. SUPPLY — RETIRED. VARIANCE — TOTAL. And under that, in a hand, the doctor\'s: *We complied. Note that we complied.*', effects: [{ learn: 'c4_order_read' }, { lead: 'l_c4_order' }, { lead: 'l_c4_same_order' }, { xp: 80 }], options: [{ text: '(Fold it.)', exit: true }] },
+    reread: { text: 'RELOCATE POPULATION TO PRECINCT. The city\'s seal, FOUR\'s three lines, and the doctor\'s: *We complied.*', again: 'The order, the seal, *we complied*.', options: [{ text: '(Fold it.)', exit: true }] },
+  },
 };
 
 export const d_c4_diary: DialogueDef = {
   id: 'd_c4_diary', owner: 'narrator',
   start: [{ if: { flag: 'c4_diary_taken' }, node: 'gone' }, { node: 'look' }],
   nodes: {
-    look: { text: 'A clinic ledger on a dormitory table, used as a diary, with a pencil laid across it the way you lay a pencil when you mean to come back.', options: [{ id: 'diary.take', text: '(Take it.)', effects: [{ give: 'k_c4_diary' }, { set: 'c4_diary_taken' }, { quest: 'q_c4_diary', start: true }, { lead: 'l_c4_diary' }], next: 'taken' }, { text: '(Leave it.)', exit: true }] },
+    look: { text: 'A clinic ledger on a dormitory table, used as a diary, with a pencil laid across it the way you lay a pencil when you mean to come back.', again: 'The ledger and its pencil, waiting for someone to come back.', options: [{ id: 'diary.take', text: '(Take it.)', effects: [{ give: 'k_c4_diary' }, { set: 'c4_diary_taken' }, { quest: 'q_c4_diary', start: true }, { lead: 'l_c4_diary' }], next: 'taken' }, { text: '(Leave it.)', exit: true }] },
     taken: { text: 'Lighter than it should be, for what it is.', options: [{ text: '(Go.)', exit: true }] },
-    gone: { text: 'The table. The pencil.', options: [{ text: '(Leave it.)', exit: true }] },
+    gone: { text: 'The table. The pencil.', again: 'The pencil, on a table with nothing to write in.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
 export const d_c4_diary_read: DialogueDef = {
-  id: 'd_c4_diary_read', owner: 'narrator', start: [{ node: 'read' }],
+  id: 'd_c4_diary_read', owner: 'narrator',
+  // (the diary is read once for what it tells: a later reading is the last line)
+  start: [{ if: { knows: 'c4_diary_read' }, node: 'reread' }, { node: 'read' }],
   nodes: {
     read: {
       text: 'A doctor\'s hand, neat to the end. *The order came on the day it said it would. The council voted to comply. The door was commanded and did not open; FOUR says it is reporting. The water stopped on the ninth day; FOUR says that is the schedule. Marr took eleven up the shaft with the key and my photograph of his family, because I asked him to carry something out. The rest of us voted again.* Then: *To whoever comes from Meridian: we complied. We were a reserve and we were kept and we were spent. Note that we complied. Note it somewhere that is read.*',
+      interject: [{ companion: TAMSIN, text: '"*Note it somewhere that is read*," Tamsin reads over your shoulder. She takes the diary out of your hands, very carefully, and closes it. "Then we read it," she says. "That\'s all. Somebody read it."' }],
       effects: [{ learn: 'c4_diary_read' }, { learn: 'c4_how_they_died' }, { learn: 'c4_eleven' }, { lead: 'l_c4_diary' }, { lead: 'l_c4_order' }, { xp: 80 }],
       options: [{ text: '(Close it.)', exit: true }],
     },
+    reread: { text: 'The doctor\'s hand, neat to the end. *We complied. Note it somewhere that is read.*', again: '*Note it somewhere that is read.*', options: [{ text: '(Close it.)', exit: true }] },
   },
 };
 
 export const d_c4_clinic: DialogueDef = {
   id: 'd_c4_clinic', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'The clinic table: a row of empty vials, a ledger of doses with a line for each name, and a cup.', passives: [{ skill: 'medicine', dc: 30, text: 'The doses are too even and too large to be treatment. They are the last thing a doctor can give when there is nothing left to give, measured for each so that nobody got less than enough.', effects: [{ learn: 'c4_how_they_died' }, { learn: 'c4_doses_read' }] }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'The clinic table: a row of empty vials, a ledger of doses with a line for each name, and a cup.', passives: [{ skill: 'medicine', dc: 30, text: 'The doses are too even and too large to be treatment. They are the last thing a doctor can give when there is nothing left to give, measured for each so that nobody got less than enough.', effects: [{ learn: 'c4_how_they_died' }, { learn: 'c4_doses_read' }] }], again: 'The empty vials in their row, the ledger of doses, the cup.', options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_c4_supply: DialogueDef = {
   id: 'd_c4_supply', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'The supply pipe into the pump room, the same bore as Cistern 9\'s, cut through clean by a tool from the other side and capped, and stencilled where the cap is: SUPPLY — NETWORK 4 — RETIRED. The same print as the pump manual in Shale.', effects: [{ learn: 'c4_supply_cut' }, { lead: 'l_pump_manual_hand' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'The supply pipe into the pump room, the same bore as Cistern 9\'s, cut through clean by a tool from the other side and capped, and stencilled where the cap is: SUPPLY — NETWORK 4 — RETIRED. The same print as the pump manual in Shale.', again: 'SUPPLY — NETWORK 4 — RETIRED, on the cap, cut clean from the other side.', effects: [{ learn: 'c4_supply_cut' }, { lead: 'l_pump_manual_hand' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_c4_rations: DialogueDef = {
   id: 'd_c4_rations', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'The ration board in the commons, chalk, the last numbers: WATER — 0. ALGAE — 2 DAYS. Under it, in a child\'s print: DOOR OPENS TOMORROW. Under that, in an adult\'s: Tomorrow.', effects: [{ learn: 'c4_rations_seen' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'The ration board in the commons, chalk, the last numbers: WATER — 0. ALGAE — 2 DAYS. Under it, in a child\'s print: DOOR OPENS TOMORROW. Under that, in an adult\'s: Tomorrow.', again: 'WATER — 0. DOOR OPENS TOMORROW. Tomorrow.', effects: [{ learn: 'c4_rations_seen' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_c4_cots: DialogueDef = {
   id: 'd_c4_cots', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'A cot, made, with someone in it who has been there forty years and is mostly cloth now, hands folded by someone else afterwards. There is nothing to do here that would not be a disturbance.', effects: [{ learn: 'c4_dead_seen' }], options: [{ text: '(Leave them.)', exit: true }] } },
+  nodes: { look: { text: 'A cot, made, with someone in it who has been there forty years and is mostly cloth now, hands folded by someone else afterwards. There is nothing to do here that would not be a disturbance.', again: 'Another made cot, and someone in it, hands folded.', effects: [{ learn: 'c4_dead_seen' }], options: [{ text: '(Leave them.)', exit: true }] } },
 };
 
 export const d_c4_council: DialogueDef = {
   id: 'd_c4_council', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'The council table. A sheet weighted with a cup: MOTION — COMPLY WITH RELOCATION ORDER. FOR 41. AGAINST 3. And below, days later by the hand: MOTION — REMAIN. FOR 30. AGAINST 0. ELEVEN ABSTAIN (DEPARTED).', effects: [{ learn: 'c4_vote' }, { learn: 'c4_eleven' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'The council table. A sheet weighted with a cup: MOTION — COMPLY WITH RELOCATION ORDER. FOR 41. AGAINST 3. And below, days later by the hand: MOTION — REMAIN. FOR 30. AGAINST 0. ELEVEN ABSTAIN (DEPARTED).', again: 'COMPLY, 41 to 3. REMAIN, 30 to 0. ELEVEN ABSTAIN (DEPARTED).', effects: [{ learn: 'c4_vote' }, { learn: 'c4_eleven' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const SUMP_DIALOGUES: DialogueDef[] = [

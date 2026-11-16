@@ -6,6 +6,17 @@ import type { Cond } from '../../engine/world/logic';
  * keeps the file — and a tram platform where the rest of the city starts.
  */
 
+/** Companions who can reach Meridian's Precinct with the player in Act 2 (U7 interjections): the five from the road, and
+ * Nine once it has left the records office with them. */
+const TAMSIN = 'npc_c9_03';
+const WREN = 'npc_rd_03';
+const ILYA = 'npc_sh_17';
+const ODILE = 'npc_nb_03';
+const ASH = 'npc_of_03';
+const NINE = 'npc_md_nine';
+/** Ash, when the file's designation is taken in front of him. */
+const ASH_DESIGNATE = { companion: ASH, text: '"Designate," Ash says, and nothing else. When you look round he is looking at the card in your hand the way he looks at a grave he has not finished digging.' };
+
 const bye = { text: 'That\'s all.', exit: true };
 const NIGHT = { hour: { from: 22, to: 5 } };
 // The Broker's board at Old Market: a sealed letter for the captain, by hand.
@@ -27,6 +38,7 @@ export const d_md_gate: DialogueDef = {
   nodes: {
     intro: {
       text: 'A sergeant in grey at the gate with a carbine and a face that has turned back a thousand people politely. "Face to the lens, then we talk. Everyone. The lens doesn\'t care who you are; it cares whether it has seen you."',
+      again: '"Lens first," the sergeant says, without looking round. "Then we talk."',
       options: [
         { id: 'gate.lens', text: '(Face the lens.)', next: 'scan' },
         { id: 'gate.line', text: 'What\'s the line for?', next: 'line', once: true },
@@ -36,6 +48,7 @@ export const d_md_gate: DialogueDef = {
     },
     after_scan: {
       text: '"The lens has you. Hearing, or whatever the file says."',
+      again: 'The sergeant looks at you, and at the booth, and waits. "Well? Hearing, or the file."',
       options: [
         { id: 'gate.flag', text: 'The file says admit on sight.', if: { knows: 'md_flagged' }, next: 'flag' },
         { id: 'gate.hearing', text: 'I\'ll stand the hearing.', next: 'hearing_go' },
@@ -53,6 +66,11 @@ export const d_md_gate: DialogueDef = {
     },
     status: {
       text: 'He turns the screen. Your face, grey and small, taken from somewhere you have never stood. A number. And under it: ADMIT ON SIGHT — MAGISTRATE-DESIGNATE (R49). The sergeant has come to look. For the first time in a thousand people her face does something. "Magistrate," she says. "Designate." The clerk says, "That\'s nineteen years off." Nobody says anything else for a while.',
+      interject: [
+        { companion: ODILE, text: '"Designate," Odile says softly. "My dear, there are men on the floor at Ninebridge who would pay a year of Tolls to know that one word." She does not say whether she is one of them.' },
+        { companion: WREN, text: '"Nineteen years," Wren says. "Huh." Her eyes go from the sergeant to the clerk to the barrier, counting. "Then nobody shoots you today. That\'s something."' },
+        { companion: TAMSIN, text: '"Magistrate," Tamsin says, and laughs, and stops laughing. "That\'s a joke. Tell me that\'s a joke."' },
+      ],
       effects: [{ learn: 'md_magistrate_designate' }, { lead: 'l_photo_light' }],
       options: [
         { id: 'status.accept', text: 'Then admit me on sight.', next: 'flag' },
@@ -63,6 +81,7 @@ export const d_md_gate: DialogueDef = {
     },
     flag: {
       text: 'The clerk prints a card. The sergeant stamps it without looking at it, which she has never done. CITIZEN — PRECINCT — ENTRY AND RESIDENCE — and, smaller, DESIGNATE. "The avenue\'s straight ahead," she says. "The schedule holds." It sounds, for once, like a question.',
+      interject: [ASH_DESIGNATE],
       effects: [...PAPERS('flagged'), ...CITIZEN, { set: 'md_flag_taken' }, { decision: { id: 'md_flagged_in', text: 'You let the file admit you to Meridian on sight, as its Magistrate-designate.' } }, { rep: { faction: 'wardens', respect: 10 } }],
       options: [{ text: '(Through.)', exit: true }],
     },
@@ -71,24 +90,24 @@ export const d_md_gate: DialogueDef = {
     edit_no: { text: 'The screen flashes red and says so, aloud. The sergeant\'s carbine comes round. "Hands." The cells, then: the Precinct has a procedure.', effects: [{ set: 'md_detained' }, { set: 'md_inside' }, { event: 'goto', data: { location: 'md_precinct', spawn: 'cell' } }], options: [{ text: '(Hands.)', exit: true }] },
     push_ok: { text: 'The crowd goes at the gate at dusk the way it does every dusk, and tonight you are in the front of it with your shoulder down, and the barrier gives, and you are through in the crush with no card and a sergeant\'s voice behind you saying *let them, let them, count them tomorrow*.', effects: [...PAPERS('smuggled'), { set: 'md_pushed' }, { decision: { id: 'md_pushed', text: 'You pushed through Meridian\'s gate with the crowd.' } }, { time: 240 }], options: [{ text: '(Through.)', exit: true }] },
     push_no: { text: 'The crowd goes at the gate and the wardens go at the crowd, and a club finds your head in the second row, and the next thing is tile under your cheek and a fence door.', effects: [{ set: 'md_detained' }, { set: 'md_inside' }, { time: 240 }, { event: 'goto', data: { location: 'md_precinct', spawn: 'cell' } }], options: [{ text: '(Wake up.)', exit: true }] },
-    through: { text: '"Card." She looks, and nods, and the barrier lifts.', options: [{ text: '(Through.)', exit: true }] },
-    fight: { text: 'Nothing.', options: [{ text: '(Nothing.)', exit: true }] },
+    through: { text: '"Card." She looks, and nods, and the barrier lifts.', again: 'The sergeant nods you through before you reach the barrier.', options: [{ text: '(Through.)', exit: true }] },
+    fight: { text: 'Nothing.', again: 'The gate is shut and the Wall has its lamps on you. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
 export const d_md_scanner: DialogueDef = {
   id: 'd_md_scanner', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'A glass eye on a post, a green light under it, a cable into the booth. It has seen more faces than anyone alive, and forgotten none of them.', effects: [{ learn: 'md_scanner_seen' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'A glass eye on a post, a green light under it, a cable into the booth. It has seen more faces than anyone alive, and forgotten none of them.', again: 'The lens on its post, and the green light under it.', effects: [{ learn: 'md_scanner_seen' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_md_gate_board: DialogueDef = {
   id: 'd_md_gate_board', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'PRECINCT OF MERIDIAN — ENTRY BY CARD, HEARING OR LICENCE — CURFEW 21:00 — WATER BY RATION — ALL PERSONS ARE RECORDED. Under it, the Ledger\'s seal, and a smaller line: THE SCHEDULE HOLDS.', effects: [{ learn: 'md_rules_read' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'PRECINCT OF MERIDIAN — ENTRY BY CARD, HEARING OR LICENCE — CURFEW 21:00 — WATER BY RATION — ALL PERSONS ARE RECORDED. Under it, the Ledger\'s seal, and a smaller line: THE SCHEDULE HOLDS.', again: 'ALL PERSONS ARE RECORDED. THE SCHEDULE HOLDS.', effects: [{ learn: 'md_rules_read' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_md_wall_sign: DialogueDef = {
   id: 'd_md_wall_sign', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'Painted on the Wall in letters a man high, old and renewed: RESTORATION YEAR 30. Beside it, in letters a hand high, newer and not renewed: THE RING BURNS AND YOU COUNT.', effects: [{ learn: 'md_year_seen' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'Painted on the Wall in letters a man high, old and renewed: RESTORATION YEAR 30. Beside it, in letters a hand high, newer and not renewed: THE RING BURNS AND YOU COUNT.', again: 'RESTORATION YEAR 30, a man high. THE RING BURNS AND YOU COUNT, a hand high, fading.', effects: [{ learn: 'md_year_seen' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_md_drain: DialogueDef = {
@@ -97,6 +116,7 @@ export const d_md_drain: DialogueDef = {
   nodes: {
     mouth: {
       text: 'A storm drain under the Wall, south of the gate, grated, its grate bent where someone has been through before. A warden walks the top of the Wall above it every quarter-hour.',
+      again: 'The drain, the bent grate, and the warden\'s steps above on the Wall.',
       options: [
         { id: 'drain.go', text: '(Wait for the warden to pass, and go under.)', check: { skill: 'stealth', dc: 40, mods: [{ if: NIGHT, dc: -10, why: 'the Wall\'s lamps do not reach the drain' }] }, next: 'go_ok', fail: 'go_no' },
         { text: '(Leave it.)', exit: true },
@@ -104,7 +124,7 @@ export const d_md_drain: DialogueDef = {
     },
     go_ok: { text: 'Forty feet of pipe on your elbows with the city\'s water a hand deep, and a grate at the far end that lifts, and a back lane behind the tenements with a lamp at the end of it and nobody under the lamp.', effects: [...PAPERS('smuggled'), { set: 'md_drained' }, { decision: { id: 'md_drained', text: 'You went under Meridian\'s Wall by the storm drain.' } }, { event: 'goto', data: { location: 'md_precinct', spawn: 'drain', minutes: 20 } }], options: [{ text: '(Through.)', exit: true }] },
     go_no: { text: 'The grate shrieks on its hinge. On the Wall a lamp swings round and a voice says *stay there*, in the tone of someone who knows you won\'t.', effects: [{ time: 30 }, { rep: { faction: 'wardens', respect: -3 } }], options: [{ text: '(Run.)', exit: true }] },
-    inside: { text: 'The drain\'s inside mouth, in the back lane. It goes out under the Wall to the rubble, if you ever need a way out the lens does not watch.', effects: [{ learn: 'md_drain_known' }], options: [{ text: '(Leave it.)', exit: true }] },
+    inside: { text: 'The drain\'s inside mouth, in the back lane. It goes out under the Wall to the rubble, if you ever need a way out the lens does not watch.', again: 'The drain\'s mouth in the back lane: the way out the lens does not watch.', effects: [{ learn: 'md_drain_known' }], options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -116,13 +136,14 @@ export const d_md_loop: DialogueDef = {
   nodes: {
     board: {
       text: 'THE LOOP — PRECINCT PLATFORM. A board of district names with a fare beside each: OLD MARKET 2 · LANTERN ROW 2 · THE STACKS 3 · BRIDGEWARD 3 · THE DOCKS 4 · THE CROWN (BY INVITATION). The tram on the rail hums with its doors open. Most of the names have a chalk line through them today: WORKS.',
+      again: 'The tram hums with its doors open. WORKS, in chalk, through most of the names.',
       effects: [{ learn: 'md_loop_seen' }],
       options: [
-        { id: 'loop.market', text: 'Old Market. (2 Tolls)', if: { all: [{ flag: 'md_market_open' }, { item: 'tolls', count: 2 }] }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_market', spawn: 'loop', minutes: 15 } }], exit: true },
-        { id: 'loop.lantern', text: 'Lantern Row. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_lantern', spawn: 'loop', minutes: 15 } }], exit: true },
-        { id: 'loop.stacks', text: 'The Stacks. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_stacks', spawn: 'loop', minutes: 20 } }], exit: true },
-        { id: 'loop.bridgeward', text: 'Bridgeward. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_bridgeward', spawn: 'loop', minutes: 20 } }], exit: true },
-        { id: 'loop.crown', text: 'The Crown. (The invitation car.)', if: { any: [{ item: 'k_masque_chit' }, { item: 'k_cr_service_pass' }, { item: 'k_latch_card' }, { wearing: 'r_velvet' }, { knows: 'md_magistrate_designate' }, { member: 'tenured' }, { member: 'tollmen', rank: 'hand' }, { flag: 'cr_entry' }] }, effects: [{ learn: 'cr_car_taken' }, { event: 'goto', data: { location: 'md_crown', spawn: 'lift', minutes: 10 } }], exit: true },
+        { id: 'loop.market', text: 'Old Market. (2 Tolls)', if: { all: [{ flag: 'md_market_open' }, { item: 'tolls', count: 2 }] }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_market', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
+        { id: 'loop.lantern', text: 'Lantern Row. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_lantern', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
+        { id: 'loop.stacks', text: 'The Stacks. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_stacks', spawn: 'loop', minutes: 20 } }], exit: true, repeat: true },
+        { id: 'loop.bridgeward', text: 'Bridgeward. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_bridgeward', spawn: 'loop', minutes: 20 } }], exit: true, repeat: true },
+        { id: 'loop.crown', text: 'The Crown. (The invitation car.)', if: { any: [{ item: 'k_masque_chit' }, { item: 'k_cr_service_pass' }, { item: 'k_latch_card' }, { wearing: 'r_velvet' }, { knows: 'md_magistrate_designate' }, { member: 'tenured' }, { member: 'tollmen', rank: 'hand' }, { flag: 'cr_entry' }] }, effects: [{ learn: 'cr_car_taken' }, { event: 'goto', data: { location: 'md_crown', spawn: 'lift', minutes: 10 } }], exit: true, repeat: true },
         { id: 'loop.works', text: '(The lines through the names.)', next: 'works' },
         { text: '(Leave it.)', exit: true },
       ],
@@ -138,22 +159,22 @@ export const d_md_ration: DialogueDef = {
 
 export const d_md_notice: DialogueDef = {
   id: 'd_md_notice', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'Under glass: EVICTIONS, SCHEDULED (4). HEARINGS, TUESDAY AND FRIDAY. THE SINK: SPRING RELIEF PUMPING WILL BE DIVERTED TO THE PRECINCT AS PER SCHEDULE. CITIZENS ARE REMINDED THAT THE RING IS OUTSIDE THE LAW. And a smaller card: RECORDS OFFICE — CITIZENSHIP BY EXAMINATION — ASK FOR THE ASSESSOR.', effects: [{ learn: 'md_notice_read' }, { learn: 'md_exam_heard' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'Under glass: EVICTIONS, SCHEDULED (4). HEARINGS, TUESDAY AND FRIDAY. THE SINK: SPRING RELIEF PUMPING WILL BE DIVERTED TO THE PRECINCT AS PER SCHEDULE. CITIZENS ARE REMINDED THAT THE RING IS OUTSIDE THE LAW. And a smaller card: RECORDS OFFICE — CITIZENSHIP BY EXAMINATION — ASK FOR THE ASSESSOR.', again: 'EVICTIONS, SCHEDULED (4). The Sink\'s spring pumping, diverted. THE RING IS OUTSIDE THE LAW.', effects: [{ learn: 'md_notice_read' }, { learn: 'md_exam_heard' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_md_charter: DialogueDef = {
   id: 'd_md_charter', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'The charter, cast in brass, in clauses. CLAUSE 1: THE CITY KEEPS ITS PEOPLE. CLAUSE 14: THE DRAINS ARE THE CITY\'S FIRST DUTY. CLAUSE 31: A LAWFUL CONTRACT SHALL NOT BE VOIDED. CLAUSE 60: THE RESTORATION SHALL PROCEED ON SCHEDULE. Someone has polished clause 14 more than the others.', effects: [{ learn: 'md_charter_read' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'The charter, cast in brass, in clauses. CLAUSE 1: THE CITY KEEPS ITS PEOPLE. CLAUSE 14: THE DRAINS ARE THE CITY\'S FIRST DUTY. CLAUSE 31: A LAWFUL CONTRACT SHALL NOT BE VOIDED. CLAUSE 60: THE RESTORATION SHALL PROCEED ON SCHEDULE. Someone has polished clause 14 more than the others.', again: 'The brass clauses. Fourteen shines brighter than the rest.', effects: [{ learn: 'md_charter_read' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_md_records_term: DialogueDef = {
   id: 'd_md_records_term', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'The records terminal, green on black like the Exchange\'s board and older. A list scrolls: CONTINUITY RESERVES — 1 RELOCATED R0+1 — 2 RELOCATED R0+1 — 3 LOST — 4 NON-COMPLIANT (DOOR) — 5 RELOCATED R0+3 — 6 LOST — 7 SOLD (CONCERN) — 8 LOST — 9 OUTSTANDING (CARETAKER NON-COMPLIANT, ORDERS 3). Then it scrolls off.', effects: [{ learn: 'md_reserves_list' }, { lead: 'l_cisterns_relocate' }, { lead: 'l_c4_same_order' }], options: [{ text: '(Step back.)', exit: true }] } },
+  nodes: { look: { text: 'The records terminal, green on black like the Exchange\'s board and older. A list scrolls: CONTINUITY RESERVES — 1 RELOCATED R0+1 — 2 RELOCATED R0+1 — 3 LOST — 4 NON-COMPLIANT (DOOR) — 5 RELOCATED R0+3 — 6 LOST — 7 SOLD (CONCERN) — 8 LOST — 9 OUTSTANDING (CARETAKER NON-COMPLIANT, ORDERS 3). Then it scrolls off.', again: 'CONTINUITY RESERVES, scrolling green. 9 OUTSTANDING. It scrolls off again.', effects: [{ learn: 'md_reserves_list' }, { lead: 'l_cisterns_relocate' }, { lead: 'l_c4_same_order' }], options: [{ text: '(Step back.)', exit: true }] } },
 };
 
 export const d_md_bell: DialogueDef = {
   id: 'd_md_bell', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'The curfew bell on its post, rung by a wire from the station at nine. Old Sabel Quint says it has never once been late, and says it the way other people say a prayer.', options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'The curfew bell on its post, rung by a wire from the station at nine. Old Sabel Quint says it has never once been late, and says it the way other people say a prayer.', again: 'The curfew bell on its post and its wire to the station. Never once late.', options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_md_cell: DialogueDef = {
@@ -172,9 +193,9 @@ export const d_md_cell: DialogueDef = {
     },
     bail: { text: '"Bail is lawful." It writes. "A provisional pass. Three days, it says. Nobody enforces the three; I have filed a complaint." The fence door is open.', options: [{ text: '(Out.)', exit: true }] },
     serve: { text: 'Two days of tile and a cot and water at ration, and the assessor twice a day with the ledger, asking questions it already has the answers to and writing down the differences. On the third morning the fence door is open and a pass is on the cot.', options: [{ text: '(Out.)', exit: true }] },
-    flag: { text: 'It reads it. The lens clicks twice. "ADMIT ON SIGHT. MAGISTRATE-DESIGNATE." A long pause. "The record suggests I should have let you in at the gate. The record suggests a great many things." It prints a card from somewhere inside its chest. "Citizen. Designate. The fence door is open; it was never locked, which I will not be putting in the file."', options: [{ text: '(Out.)', exit: true }] },
+    flag: { text: 'It reads it. The lens clicks twice. "ADMIT ON SIGHT. MAGISTRATE-DESIGNATE." A long pause. "The record suggests I should have let you in at the gate. The record suggests a great many things." It prints a card from somewhere inside its chest. "Citizen. Designate. The fence door is open; it was never locked, which I will not be putting in the file."', interject: [ASH_DESIGNATE], options: [{ text: '(Out.)', exit: true }] },
     lowe: { text: '"Captain Lowe recruits from the cells. It is lawful; clause 22. It is also," the lens clicks, "a thing I would not do. A card, then, and grey, and the schedule." The fence door is open.', options: [{ text: '(Out.)', exit: true }] },
-    open: { text: 'The cell, empty, the fence door open. It was never locked.', options: [{ text: '(Leave it.)', exit: true }] },
+    open: { text: 'The cell, empty, the fence door open. It was never locked.', again: 'Tile, a cot, a fence door standing open.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -192,10 +213,10 @@ export const d_md_desk: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Three fines. Forty-five."', options: [{ id: 'desk.pay.again', text: '(Pay. 45 Tolls)', if: { item: 'tolls', count: 45 }, effects: [{ take: 'tolls', count: 45 }, { give: 'k_md_receipt' }, { set: 'md_fines_paid' }, { rep: { faction: 'wardens', respect: 4 } }], next: 'paid_now' }, { id: 'desk.contest.again', text: 'I haven\'t done any of it.', if: { not: { flag: 'md_fines_contested' } }, next: 'contest' }, bye] },
+    again: { text: '"Three fines. Forty-five."', again: 'He taps the notice, apologetically, and waits.', options: [{ id: 'desk.pay.again', text: '(Pay. 45 Tolls)', if: { item: 'tolls', count: 45 }, effects: [{ take: 'tolls', count: 45 }, { give: 'k_md_receipt' }, { set: 'md_fines_paid' }, { rep: { faction: 'wardens', respect: 4 } }], next: 'paid_now' }, { id: 'desk.contest.again', text: 'I haven\'t done any of it.', if: { not: { flag: 'md_fines_contested' } }, next: 'contest' }, bye] },
     contest: { text: '"Yet." He says it gently. "You can contest a forecast fine at the Court of Accounts. By appointment. The appointment is — " he looks at a book — "when the schedule says." He writes CONTESTED on the notice and stamps it, which seems to make him happier than the fine did.', effects: [{ set: 'md_fines_contested' }, { learn: 'md_court_heard' }], options: [bye] },
     paid_now: { text: 'He stamps a receipt, twice. "Paid. You\'re a person the Precinct has no complaint against." He thinks about it. "Including the ones it hasn\'t had yet."', options: [bye] },
-    paid: { text: '"No complaints on file. That\'s rare, here."', options: [bye] },
+    paid: { text: '"No complaints on file. That\'s rare, here."', again: '"Still no complaints." He sounds faintly proud of you.', options: [bye] },
     bail_info: { text: '"A hundred, to the assessor, in the cell. It likes to do it itself."', options: [bye] },
   },
 };
@@ -221,9 +242,12 @@ export const d_md_lowe: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Captain." He has stood up again.', options: [{ id: 'lowe.lawful.again', text: 'Lawful and right are two words.', if: { not: { seen: 'lowe.lawful' } }, next: 'lawful' }, { id: 'lowe.flag.again', text: 'The lens called me a magistrate.', if: { all: [{ knows: 'md_magistrate_designate' }, { not: { seen: 'lowe.flag' } }] }, next: 'flag' }, { id: 'lowe.ring.again', text: 'The Ring is burning.', if: { not: { seen: 'lowe.ring' } }, next: 'ring' }, { id: 'lowe.water.again', text: 'Your water\'s rationed.', if: { all: [{ any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, { not: { seen: 'lowe.water' } }] }, next: 'water' }, { id: 'lowe.letter.again', text: '(Hand him the sealed letter.) From the board at Old Market.', if: GIG_LETTER, next: 'letter' }, { id: 'lowe.dial.again', text: 'The standpipe square. Point eight on the notice, point six on the dial.', if: RIOT_COUNT, next: 'dial' }, { id: 'lowe.pumps.again', text: '(Put the relief schedule on the desk.) Clause 31 against clause 14.', if: PUMPS_PAPER, next: 'pumps' }, { id: 'lowe.static.again', text: 'A girl in Bridgeward says the Plan\'s lines out loud.', if: STATIC_GIRL, next: 'static' }, bye] },
+    again: { text: '"Captain." He has stood up again.', again: 'He stays standing, because the charter says to, and waits.', options: [{ id: 'lowe.lawful.again', text: 'Lawful and right are two words.', if: { not: { seen: 'lowe.lawful' } }, next: 'lawful' }, { id: 'lowe.flag.again', text: 'The lens called me a magistrate.', if: { all: [{ knows: 'md_magistrate_designate' }, { not: { seen: 'lowe.flag' } }] }, next: 'flag' }, { id: 'lowe.ring.again', text: 'The Ring is burning.', if: { not: { seen: 'lowe.ring' } }, next: 'ring' }, { id: 'lowe.water.again', text: 'Your water\'s rationed.', if: { all: [{ any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, { not: { seen: 'lowe.water' } }] }, next: 'water' }, { id: 'lowe.letter.again', text: '(Hand him the sealed letter.) From the board at Old Market.', if: GIG_LETTER, next: 'letter' }, { id: 'lowe.dial.again', text: 'The standpipe square. Point eight on the notice, point six on the dial.', if: RIOT_COUNT, next: 'dial' }, { id: 'lowe.pumps.again', text: '(Put the relief schedule on the desk.) Clause 31 against clause 14.', if: PUMPS_PAPER, next: 'pumps' }, { id: 'lowe.static.again', text: 'A girl in Bridgeward says the Plan\'s lines out loud.', if: STATIC_GIRL, next: 'static' }, bye] },
     static: { text: '"A tap." He does not write it down yet. "An unlicensed tap on the file, in a person. The charter has a clause; it is not a kind one." He looks at the drawer marked AUDIT. "If I know the tower\'s name, I have to go. If I don\'t, I don\'t." He waits, which is the kindest thing he can do.', options: [{ id: 'static.give', text: 'The Saints\' tower. Under the mast.', effects: [{ set: 'bw_static', value: 'silenced' }, { rep: { faction: 'wardens', respect: 6 } }, { rep: { faction: 'saints', respect: -25 } }, { trust: { npc: 'npc_md_01', by: 5 } }, { xp: 80 }, { decision: { id: 'bw_static_silenced', text: 'You gave the warden captain the Saints\' tower, and the girl who hears went to the Precinct\'s cells.' } }], next: 'static_done' }, { text: 'Forget I said it.', exit: true }] },
-    static_done: { text: '"Then I know it." He puts on his coat. "She\'ll be in a cell with a blanket and no radio, which the charter calls custody and I call quiet. Lawful." He does not say the other word.', options: [bye] },
+    static_done: { text: '"Then I know it." He puts on his coat. "She\'ll be in a cell with a blanket and no radio, which the charter calls custody and I call quiet. Lawful." He does not say the other word.', interject: [
+      { companion: NINE, text: '"Custody," Nine says. The lens clicks. "The record will call it lawful. I will be noting it elsewhere."' },
+      { companion: TAMSIN, text: '"Quiet," Tamsin says. "He means a cell with no window." She looks at you the way she looks at people she is adding to a list.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] },
+    ], options: [bye] },
     pumps: {
       text: 'He reads the schedule the way he reads everything, to the end, and then the clause numbers again. "Clause 31. Growth. Clause 14. The drains." He puts a finger on each. "I have never been asked which comes first. I have assumed the Plan knew." He looks at the finger on 14 for a long time.',
       options: [
@@ -231,7 +255,7 @@ export const d_md_lowe: DialogueDef = {
         { text: 'Think about it.', exit: true },
       ],
     },
-    pumps_ok: { text: 'He writes it himself, on the station\'s paper, under the brass clause: VARIANCE — RELIEF PUMPING — CLAUSE 14 — PRECINCT SUPPLY TO BEAR THE SHORTFALL. He signs where a captain signs and stamps it where the assessor would, with the assessor\'s own stamp, which he has never used. "Lawful," he says. "I checked." He hands it to you. "Take it to the keeper. Then come and tell me what point six tastes like in a Precinct kitchen. I will need to know."', effects: [{ take: 'k_sk_schedule' }, { give: 'k_sk_variance' }, { set: 'sk_pumps', value: 'paid' }, { set: 'sk_variance_lowe' }, { trust: { npc: 'npc_md_01', by: 15 } }, { rep: { faction: 'wardens', respect: 4 } }, { xp: 150 }, { decision: { id: 'sk_variance_lowe', text: 'Captain Lowe signed a variance putting the Sink\'s drains before the Precinct\'s growth, on your asking.' } }], options: [{ text: '(Take it.)', exit: true }] },
+    pumps_ok: { text: 'He writes it himself, on the station\'s paper, under the brass clause: VARIANCE — RELIEF PUMPING — CLAUSE 14 — PRECINCT SUPPLY TO BEAR THE SHORTFALL. He signs where a captain signs and stamps it where the assessor would, with the assessor\'s own stamp, which he has never used. "Lawful," he says. "I checked." He hands it to you. "Take it to the keeper. Then come and tell me what point six tastes like in a Precinct kitchen. I will need to know."', interject: [{ companion: NINE, text: '"Clause 14," Nine says, from behind you, as the stamp comes down. "The drains are the city\'s first duty." Lowe looks at the assessor\'s plate on its chest and does not ask what it is doing out of the records office. "Lawful," he tells it.' }], effects: [{ take: 'k_sk_schedule' }, { give: 'k_sk_variance' }, { set: 'sk_pumps', value: 'paid' }, { set: 'sk_variance_lowe' }, { trust: { npc: 'npc_md_01', by: 15 } }, { rep: { faction: 'wardens', respect: 4 } }, { xp: 150 }, { decision: { id: 'sk_variance_lowe', text: 'Captain Lowe signed a variance putting the Sink\'s drains before the Precinct\'s growth, on your asking.' } }], options: [{ text: '(Take it.)', exit: true }] },
     pumps_no: { text: '"Clause 31 is the Plan\'s. I carry out the Plan\'s." He gives you the schedule back, squared. "I grieve the other one at home. I told you that."', options: [bye] },
     dial: {
       text: '"Point eight is the notice." He takes it off the spike. "Point six is a dial that somebody turned, or that turned itself, and either way the arithmetic is wrong, and I check the arithmetic." He puts on his coat. He walks the avenue to the square with the notice held out in front of him, reads both numbers aloud to forty people and two wardens, and turns the dial to point eight with his own fingers, slowly, so the queue can see the hand. Then he writes it down.',
@@ -254,18 +278,18 @@ export const d_md_lowe: DialogueDef = {
     letter_month: { text: '"It is not much. It is also not mine to give; the schedule is the assessor\'s, and the assessor is the Plan\'s." He looks at the drawer. "Eleven times I have wanted to. That is in the drawer too."', effects: [{ learn: 'lowe_wanted' }, { trust: { npc: 'npc_md_01', by: 8 } }], options: [bye] },
     letter_keep: { text: '"I would know. The drawer would know. The audit would know, when it came, and the audit always comes." He sits. "That is not virtue. That is arithmetic. I told you I check it."', effects: [{ trust: { npc: 'npc_md_01', by: -5 } }], options: [bye] },
     letter_who: { text: '"Four rooms on the Sink side of the Precinct. Six people. Three months behind on the ration levy, which is lawful, and a tram pass stamped on a day a man was carrying his mother to the drain, which is also lawful." He does not look at the list under his hand. "Thursday."', effects: [{ learn: 'quint_eviction' }], options: [bye] },
-    lawful: { text: '"They are." He sits. "I know the difference. I carry out the lawful one and I grieve the other one, at home, where it isn\'t on the record. If you have a third word, I would like to hear it. Nobody has had one yet."', effects: [{ learn: 'lowe_grieves' }, { trust: { npc: 'npc_md_01', by: 10 } }], options: [bye] },
+    lawful: { text: '"They are." He sits. "I know the difference. I carry out the lawful one and I grieve the other one, at home, where it isn\'t on the record. If you have a third word, I would like to hear it. Nobody has had one yet."', interject: [{ companion: ILYA, text: '"At home," Ilya says. "Right." He has the look of a man who did his grieving somewhere else, and not enough of it.' }], effects: [{ learn: 'lowe_grieves' }, { trust: { npc: 'npc_md_01', by: 10 } }], options: [bye] },
     flag: { text: 'He looks at you for a long time. "Then one day you will sit where the assessor sits and sign what I carry out." He does not say it unkindly. "I\'ll stand for you then, too. I\'d rather you were someone who knew the two words."', effects: [{ learn: 'lowe_mirror' }, { memory: { npc: 'npc_md_01', tag: 'designate', valence: 5, strength: 80 } }], options: [bye] },
     ring: { text: '"The Ring is outside the law. Outside the Wall. The charter keeps the city\'s people; the Ring stopped being the city\'s on a date I can show you." He does not reach for it. "Every dusk they push. Every dusk we hold. Nobody dies of it, mostly. I count them in the morning."', effects: [{ learn: 'lowe_ring' }], options: [bye] },
     recruit: { text: '"Clause 22. The wardens may recruit from those detained, at the captain\'s discretion." He looks at you. "Grey, and a card, and the schedule. It is the only door out of a cell that doesn\'t cost coin or days. It costs something else, which I won\'t pretend about."', effects: [{ learn: 'md_lowe_offer' }], options: [bye] },
     water: { text: '"Point eight. Rebalancing, the notice says." He is quiet. "Somebody in the Sallow turned a dial and the Precinct drinks less and the Sink floods a week earlier in spring. That is what *the Plan rebalances* means. I check the arithmetic. It is always right."', effects: [{ learn: 'lowe_rebalance' }, { lead: 'l_precinct_rationing' }], options: [bye] },
-    fight: { text: 'Nothing.', options: [{ text: '(Nothing.)', exit: true }] },
+    fight: { text: 'Nothing.', again: 'The captain is standing, with the station\'s wardens between you. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
 export const d_md_reyes: DialogueDef = {
   id: 'd_md_reyes', owner: 'npc_md_12', start: [{ node: 'intro' }],
-  nodes: { intro: { text: '"Sergeant Reyes. Gate." She does not look away from the line. "Face to the lens at the post, if you haven\'t. If you have, the avenue\'s that way, and the hearing\'s left of it."', options: [bye] } },
+  nodes: { intro: { text: '"Sergeant Reyes. Gate." She does not look away from the line. "Face to the lens at the post, if you haven\'t. If you have, the avenue\'s that way, and the hearing\'s left of it."', again: '"Avenue\'s that way." She is already looking past you at the line.', options: [bye] } },
 };
 
 export const d_md_tull: DialogueDef = {
@@ -275,20 +299,20 @@ export const d_md_tull: DialogueDef = {
 
 export const d_md_hast: DialogueDef = {
   id: 'd_md_hast', owner: 'npc_md_14', start: [{ node: 'intro' }],
-  nodes: { intro: { text: '"Licensed. It says so on the door." A tall doctor with a careful pen. "Every patient is a line in the file, so I write carefully. What do you need?"', options: [{ text: 'Patch me up.', effects: [{ event: 'heal' }], exit: true }, { text: 'What have you got?', effects: [{ event: 'barter' }], exit: true }, bye] } },
+  nodes: { intro: { text: '"Licensed. It says so on the door." A tall doctor with a careful pen. "Every patient is a line in the file, so I write carefully. What do you need?"', again: 'Dr Hast uncaps the careful pen. "Another line in the file. What is it?"', options: [{ text: 'Patch me up.', effects: [{ event: 'heal' }], exit: true, repeat: true }, { text: 'What have you got?', effects: [{ event: 'barter' }], exit: true, repeat: true }, bye] } },
 };
 
 export const d_md_kemp: DialogueDef = {
   id: 'd_md_kemp', owner: 'npc_md_15', start: [{ node: 'intro' }],
-  nodes: { intro: { text: '"Licensed prices." A broad woman behind a clean counter. "The licence costs; so do the prices. No guns over the counter; the wardens sell those, to themselves."', options: [{ text: 'Let\'s see.', effects: [{ event: 'barter' }], exit: true }, bye] } },
+  nodes: { intro: { text: '"Licensed prices." A broad woman behind a clean counter. "The licence costs; so do the prices. No guns over the counter; the wardens sell those, to themselves."', again: '"Licensed prices," Kemp says again, and wipes the clean counter cleaner.', options: [{ text: 'Let\'s see.', effects: [{ event: 'barter' }], exit: true, repeat: true }, bye] } },
 };
 
 export const d_md_quint: DialogueDef = {
   id: 'd_md_quint', owner: 'npc_md_16', start: [{ if: { flag: 'quint_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: { text: 'An old woman at a table by a window with a kettle and a view of the bell. "Sabel Quint. Forty years a citizen. Never once hungry, never once asked." She pours you something. "That\'s the Precinct, dear. You get the one if you give up the other."', effects: [{ set: 'quint_met' }], options: [{ id: 'quint.daughter', text: 'Your daughter went to the Ring, the notice says.', next: 'daughter', once: true }, { id: 'quint.sink', text: 'The Sink floods in spring.', next: 'sink', once: true }, bye] },
-    again: { text: '"Kettle\'s on, dear."', options: [{ id: 'quint.daughter.again', text: 'Your daughter.', if: { not: { seen: 'quint.daughter' } }, next: 'daughter' }, { id: 'quint.sink.again', text: 'The Sink.', if: { not: { seen: 'quint.sink' } }, next: 'sink' }, bye] },
-    daughter: { text: '"Evicted. Scheduled. Clause something." She stirs. "She was ahead of plan, the notice said. I didn\'t know a person could be. She sends word through the drain people, when she can. Don\'t tell the captain I said drain."', effects: [{ learn: 'quint_daughter' }, { learn: 'md_drain_known' }], options: [bye] },
+    again: { text: '"Kettle\'s on, dear."', again: 'She tops up your cup without asking and looks out at the bell.', options: [{ id: 'quint.daughter.again', text: 'Your daughter.', if: { not: { seen: 'quint.daughter' } }, next: 'daughter' }, { id: 'quint.sink.again', text: 'The Sink.', if: { not: { seen: 'quint.sink' } }, next: 'sink' }, bye] },
+    daughter: { text: '"Evicted. Scheduled. Clause something." She stirs. "She was ahead of plan, the notice said. I didn\'t know a person could be. She sends word through the drain people, when she can. Don\'t tell the captain I said drain."', interject: [{ companion: ILYA, text: 'By the window, Ilya has stopped counting the bell\'s wire. "Ahead of plan," he says, as if he has heard the words before, and did not know what they meant then either.' }], effects: [{ learn: 'quint_daughter' }, { learn: 'md_drain_known' }], options: [bye] },
     sink: { text: '"Every spring. They pump it to us instead. We get a notice; they get the water." She looks at the window. "There\'s a doctor down there who doesn\'t charge. Ocho. He\'ll be on a notice one spring. Everybody is."', effects: [{ learn: 'md_ocho_heard' }], options: [bye] },
   },
 };
@@ -296,7 +320,7 @@ export const d_md_quint: DialogueDef = {
 export const d_md_tess: DialogueDef = {
   id: 'd_md_tess', owner: 'npc_md_17', start: [{ node: 'intro' }],
   nodes: {
-    intro: { text: 'A woman in the line with a boy asleep against her leg. "Third day. They said Tuesday." She looks at the lens. "My face isn\'t on their machine. His is; he was born inside, before the eviction. They\'ll let him in and not me, and he\'s six."', effects: [{ learn: 'tess_seen' }], options: [{ id: 'tess.coin', text: '(Give her ten Tolls for the line.)', if: { item: 'tolls', count: 10 }, effects: [{ take: 'tolls', count: 10 }, { trust: { npc: 'npc_md_17', by: 20 } }, { rep: { faction: 'wardens', respect: -1 } }], next: 'coin' }, bye] },
+    intro: { text: 'A woman in the line with a boy asleep against her leg. "Third day. They said Tuesday." She looks at the lens. "My face isn\'t on their machine. His is; he was born inside, before the eviction. They\'ll let him in and not me, and he\'s six."', again: [{ if: { seen: 'tess.coin' }, text: 'She shifts so you can see the boy\'s shoe, and the shape of the coin in it. "Tuesday," she says.' }, { text: '"Still Tuesday," she says. The boy sleeps on against her leg.' }], effects: [{ learn: 'tess_seen' }], options: [{ id: 'tess.coin', text: '(Give her ten Tolls for the line.)', if: { all: [{ item: 'tolls', count: 10 }, { not: { seen: 'tess.coin' } }] }, effects: [{ take: 'tolls', count: 10 }, { trust: { npc: 'npc_md_17', by: 20 } }, { rep: { faction: 'wardens', respect: -1 } }], next: 'coin' }, bye] },
     coin: { text: 'She does not thank you; she puts it in the boy\'s shoe, which is where the Ring keeps things. "Tuesday," she says.', options: [bye] },
   },
 };
@@ -330,6 +354,7 @@ export const d_md_nine: DialogueDef = {
     },
     again: {
       text: [{ if: { flag: 'nine_offer' }, text: '"The record suggests you have not yet asked me the question I am waiting for."' }, { text: '"Records." The lens clicks.' }],
+      again: 'The lens clicks, once. It has turned a page in the city\'s ledger while you were silent, and waits.',
       options: [
         { id: 'nine.file.again', text: 'The lens called me a magistrate.', if: { all: [{ knows: 'md_magistrate_designate' }, { not: { seen: 'nine.file' } }] }, next: 'file' },
         { id: 'nine.exam.again', text: 'The exam.', if: { all: [{ knows: 'md_exam_heard' }, { not: { flag: 'md_exam_passed' } }] }, next: 'exam_offer' },
@@ -349,6 +374,7 @@ export const d_md_nine: DialogueDef = {
     },
     origin: {
       text: '"Reserve 9." The lens clicks twice. "Non-compliant; three orders outstanding. The record suggests you should not exist outside it." It writes. "Purpose?" Lowe is looking at you now. "Evidence?"',
+      interject: [{ companion: TAMSIN, text: '"Should not exist," Tamsin repeats, under her breath, from the benches. "Join the queue."' }],
       options: [
         { id: 'hearing.speak', text: 'I came to see the city that writes people down. Judge me on what I\'ve carried, not what you\'ve written.', check: { skill: 'speech', dc: 45, mods: [{ if: { item: 'k_c4_diary' }, dc: -25, why: 'the last doctor of Cistern 4 wrote to this office; you have the letter' }, { if: { item: 'k_c4_order' }, dc: -15, why: 'the city\'s own order, with its seal' }, { if: { member: 'tollmen' }, dc: -10, why: 'a guild ticket is a lawful contract' }, { if: { member: 'choir', rank: 'sibling' }, dc: 10, why: 'the Choir is sedition here' }, { if: { inParty: 'npc_nb_03' }, dc: -5, why: 'the trader beside you knows the clauses' }, { if: { flag: 'nb_truth_known' }, dc: -5, why: 'you know what the Exchange buys from this city' }] }, next: 'pass', fail: 'fail' },
         { id: 'hearing.flag', text: 'The lens called me Magistrate-designate. Read your own file.', if: { knows: 'md_magistrate_designate' }, next: 'pass_flag' },
@@ -361,6 +387,7 @@ export const d_md_nine: DialogueDef = {
     },
     pass_flag: {
       text: 'The assessor stops writing. Lowe looks at the dais. The lens reads the file it already has, which takes no time, and then the assessor does a thing it has not done in a hundred and twenty years, which is to hesitate. "ADMIT ON SIGHT. MAGISTRATE-DESIGNATE." Lowe says, "The law requires it," more slowly than before. A card comes out. "Citizen. Designate. I will be — " a click — "filing a note about this hearing in a ledger that is not this one."',
+      interject: [ASH_DESIGNATE],
       effects: [...PAPERS('flagged'), ...CITIZEN, { set: 'md_hearing_pending', value: false }, { set: 'md_flag_taken' }, { decision: { id: 'md_flagged_in', text: 'You let the file admit you to Meridian on sight, as its Magistrate-designate.' } }, { learn: 'nine_two_ledgers' }, { trust: { npc: 'npc_md_nine', by: 15 } }],
       options: [{ text: '(Take the card.)', exit: true }],
     },
@@ -372,10 +399,11 @@ export const d_md_nine: DialogueDef = {
     file: { text: '"Clause 40 forbids me to read a citizen their own forecast." A pause. "You are not yet a citizen in the sense the clause intends, and I am an assessor, not a magistrate, and so I will say this much: the file calls you something it has called nobody else, and the date on it is nineteen years off, and I have never seen the Plan prepare a chair so far ahead." The lens clicks. "I find that interesting. I am not permitted to find things interesting."', effects: [{ learn: 'nine_designate_view' }, { trust: { npc: 'npc_md_nine', by: 5 } }], options: [bye] },
     diary: {
       text: 'It reads the whole of it, every page, at the speed a machine reads, and then it reads the last page again at the speed a person does. "*Note that we complied. Note it somewhere that is read.*" The lens clicks. "The city\'s ledger is read by the city, which wrote the order. I will note it there, because the clause requires it." It opens the other ledger, the one under its hand, and writes for a long time. "And there. That one is read by me."',
+      interject: [{ companion: TAMSIN, text: '"A fridge with a pen," Tamsin mutters. But she watches it write in the second ledger for a long time, and doesn\'t say anything else.' }],
       effects: [{ take: 'k_c4_diary' }, { set: 'c4_diary_delivered' }, { set: 'nine_offer' }, { learn: 'nine_two_ledgers' }, { lead: 'l_nine_log' }, { trust: { npc: 'npc_md_nine', by: 25 } }, { xp: 120 }, { decision: { id: 'c4_diary_delivered', text: 'You put the last doctor of Cistern 4\'s diary in front of Assessor Nine, and it noted it somewhere that is read.' } }],
       options: [{ text: 'What is the other one?', next: 'ledger' }, bye],
     },
-    order: { text: '"Reserve 4. Door failed. Supply retired. Variance total." It does not need to read it; it recites. "The record suggests the order was lawful. The record suggests the door failed. The record does not suggest what the city should have done about a lawful order and a failed door, because the city did nothing, on schedule." It writes in the other ledger. "That is an error. I collect them."', effects: [{ set: 'nine_offer' }, { learn: 'nine_two_ledgers' }, { lead: 'l_nine_log' }, { trust: { npc: 'npc_md_nine', by: 15 } }, { xp: 60 }], options: [{ text: 'You collect errors.', next: 'ledger' }, bye] },
+    order: { text: '"Reserve 4. Door failed. Supply retired. Variance total." It does not need to read it; it recites. "The record suggests the order was lawful. The record suggests the door failed. The record does not suggest what the city should have done about a lawful order and a failed door, because the city did nothing, on schedule." It writes in the other ledger. "That is an error. I collect them."', interject: [{ companion: ODILE, text: '"Two sets of books," Odile says, delighted, the way one professional greets another. "My dear, I have never trusted anyone more."' }], effects: [{ set: 'nine_offer' }, { learn: 'nine_two_ledgers' }, { lead: 'l_nine_log' }, { trust: { npc: 'npc_md_nine', by: 15 } }, { xp: 60 }], options: [{ text: 'You collect errors.', next: 'ledger' }, bye] },
     ledger: { text: '"Every forecast that failed, since I was issued. Dates, names, the size of the miss." The lens clicks. "It is not lawful. Clause 40. I keep it anyway, which the record would suggest is a malfunction, if the record knew." It closes the ledger. "I would like to know where the errors come from. They are not random. They cluster round people like you. I find that interesting. I am not permitted to."', effects: [{ set: 'nine_offer' }, { lead: 'l_nine_log' }, { learn: 'nine_log_known' }], options: [{ id: 'nine.join.now', text: 'Come and see where they come from.', next: 'join' }, bye] },
     exam_offer: {
       text: '"Citizenship by examination. Five questions: the charter, the drains, the calendar. Three correct makes a citizen. The questions have not changed in forty years; I have filed a complaint." The lens clicks. "Begin?"',
@@ -399,7 +427,7 @@ export const d_md_nine: DialogueDef = {
       effects: [{ join: 'npc_md_nine' }, { set: 'nine_joined' }, { approval: { companion: 'npc_md_nine', by: 10 } }, { decision: { id: 'nine_joined', text: 'Assessor Nine, a Ledger unit with an unlawful log of the Plan\'s errors, left the records office with you.' } }, { xp: 100 }],
       options: [{ text: '(Go.)', exit: true }],
     },
-    waiting: { text: '"The record suggests we were going somewhere."', options: [{ text: 'We\'re going.', effects: [{ join: 'npc_md_nine' }], exit: true }, { text: 'Wait here a while.', exit: true }] },
+    waiting: { text: '"The record suggests we were going somewhere."', again: '"The record still suggests it."', options: [{ text: 'We\'re going.', effects: [{ join: 'npc_md_nine' }], exit: true }, { text: 'Wait here a while.', exit: true }] },
     party: {
       text: [{ if: { at: 'meridian' }, text: '"Clause 14. The drains." The lens clicks. "I said I would say it often."' }, { text: '"The record suggests the road is unlawful in six respects. I have noted them."' }],
       options: [
@@ -409,6 +437,7 @@ export const d_md_nine: DialogueDef = {
     },
     camp: {
       text: '"Fire. Unlicensed. I have noted it." It sits anyway, which it does badly.',
+      again: 'It sits by the unlicensed fire, still badly, with the other ledger on its knee.',
       options: [
         { id: 'nine.camp.owner', text: 'Who owns you?', if: { not: { knows: 'nine_owner_hint' } }, next: 'owner' },
         { id: 'nine.camp.errors', text: 'The errors. Where do they cluster?', if: { not: { knows: 'nine_errors_hint' } }, next: 'errors' },

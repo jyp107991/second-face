@@ -5,6 +5,12 @@ import type { DialogueDef } from '../../engine/dialogue/dialogue';
  * name, the standpipe square doing its arithmetic, a fixer with no sign on the door.
  */
 
+/** Companions who can walk Old Market with the player (U7 interjections). */
+const TAMSIN = 'npc_c9_03';
+const WREN = 'npc_rd_03';
+const ASH = 'npc_of_03';
+const NINE = 'npc_md_nine';
+
 const bye = { text: 'That\'s all.', exit: true };
 const PAY = (id: string, tolls: number) => [{ give: 'tolls', count: tolls }, { set: `${id}_paid` }, { xp: 40 }];
 /** The Tanners' box is owed to the hatch: the gig was taken, the box is in hand, and it has not been paid for already. */
@@ -17,11 +23,12 @@ export const d_mk_loop: DialogueDef = {
   nodes: {
     board: {
       text: 'THE LOOP — OLD MARKET. The tram on the rail with its doors open. PRECINCT 2 · LANTERN ROW 2 · THE STACKS 3 · BRIDGEWARD 3 · THE DOCKS 4. Chalk through every name but the first two: WORKS.',
+      again: 'The tram, doors open, humming. WORKS through the far names.',
       options: [
-        { id: 'mkloop.precinct', text: 'The Precinct. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_precinct', spawn: 'loop', minutes: 15 } }], exit: true },
-        { id: 'mkloop.lantern', text: 'Lantern Row. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_lantern', spawn: 'loop', minutes: 10 } }], exit: true },
-        { id: 'mkloop.stacks', text: 'The Stacks. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_stacks', spawn: 'loop', minutes: 15 } }], exit: true },
-        { id: 'mkloop.bridgeward', text: 'Bridgeward. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_bridgeward', spawn: 'loop', minutes: 15 } }], exit: true },
+        { id: 'mkloop.precinct', text: 'The Precinct. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_precinct', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
+        { id: 'mkloop.lantern', text: 'Lantern Row. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_lantern', spawn: 'loop', minutes: 10 } }], exit: true, repeat: true },
+        { id: 'mkloop.stacks', text: 'The Stacks. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_stacks', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
+        { id: 'mkloop.bridgeward', text: 'Bridgeward. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_bridgeward', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { text: '(Leave it.)', exit: true },
       ],
     },
@@ -30,27 +37,27 @@ export const d_mk_loop: DialogueDef = {
 
 export const d_mk_mall_sign: DialogueDef = {
   id: 'd_mk_mall_sign', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'Over the mall doors, in letters that were lit once: MERIDIAN GALLERIA. Under them, painted: OLD MARKET — EVERYTHING — NO WARDENS PAST THE DOORS (THEY COUNT FROM OUTSIDE).', options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'Over the mall doors, in letters that were lit once: MERIDIAN GALLERIA. Under them, painted: OLD MARKET — EVERYTHING — NO WARDENS PAST THE DOORS (THEY COUNT FROM OUTSIDE).', again: 'MERIDIAN GALLERIA, unlit. NO WARDENS PAST THE DOORS.', options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_mk_east_sign: DialogueDef = {
   id: 'd_mk_east_sign', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'LANTERN ROW →, and strings of dead bulbs going that way, and a warden under the first string who says WORKS before you ask.', effects: [{ learn: 'lantern_row_heard' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'LANTERN ROW →, and strings of dead bulbs going that way, and a warden under the first string who says WORKS before you ask.', again: 'LANTERN ROW →, and the warden under the bulbs. "Works," he says.', effects: [{ learn: 'lantern_row_heard' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_mk_food_sign: DialogueDef = {
   id: 'd_mk_food_sign', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'AUNTIE WEN\'S — BOWL 2 — WITH MEAT 3 — DON\'T ASK. The queue goes out the door and round the corner, and is the best-informed queue in Meridian.', options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'AUNTIE WEN\'S — BOWL 2 — WITH MEAT 3 — DON\'T ASK. The queue goes out the door and round the corner, and is the best-informed queue in Meridian.', again: 'BOWL 2 — WITH MEAT 3 — DON\'T ASK. The queue, round the corner.', options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_mk_fixer_sign: DialogueDef = {
   id: 'd_mk_fixer_sign', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'A door with no sign on it, in a brick stub, with a stair going down behind it and a lamp at the bottom. Nobody in Old Market will tell you what is down there, which is how you know.', effects: [{ learn: 'mk_fixer_known' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'A door with no sign on it, in a brick stub, with a stair going down behind it and a lamp at the bottom. Nobody in Old Market will tell you what is down there, which is how you know.', again: 'The door with no sign, and the lamp at the bottom of the stair.', effects: [{ learn: 'mk_fixer_known' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_mk_escalator: DialogueDef = {
   id: 'd_mk_escalator', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'A dead escalator going up to a floor that is not there any more, its steps worn to a slide by ninety years of children. Somebody sleeps on the third step every night and has carved a name on it in a language that has no speakers.', options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'A dead escalator going up to a floor that is not there any more, its steps worn to a slide by ninety years of children. Somebody sleeps on the third step every night and has carved a name on it in a language that has no speakers.', again: 'The dead escalator, and the name carved on its third step.', options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_mk_ration: DialogueDef = {
@@ -60,7 +67,7 @@ export const d_mk_ration: DialogueDef = {
 
 export const d_mk_kiosk_sign: DialogueDef = {
   id: 'd_mk_kiosk_sign', owner: 'narrator', start: [{ node: 'read' }],
-  nodes: { read: { text: 'A board painted by a child: IT KNOWS YOUR NAME — 2 TOLLS — FEED IT A CELL AND IT TELLS YOU MORE. Under it, by a different child: DONT.', options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { read: { text: 'A board painted by a child: IT KNOWS YOUR NAME — 2 TOLLS — FEED IT A CELL AND IT TELLS YOU MORE. Under it, by a different child: DONT.', again: 'IT KNOWS YOUR NAME. DONT.', options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 // ---------------------------------------------------------------- the kiosk
@@ -81,6 +88,7 @@ export const d_mk_kiosk: DialogueDef = {
     },
     again: {
       text: '"WELCOME BACK, {name}! TWO TOLLS!"',
+      again: 'The cartoon face blinks at you. "STILL HERE, {name}! TWO TOLLS!"',
       options: [
         { id: 'kiosk.fortune.again', text: '(Two Tolls.) My fortune.', if: { all: [{ item: 'tolls', count: 2 }, { not: { knows: 'kiosk_fortune' } }] }, effects: [{ take: 'tolls', count: 2 }], next: 'fortune' },
         { id: 'kiosk.how.again', text: 'How do you know my name?', if: { not: { knows: 'kiosk_how' } }, next: 'how' },
@@ -92,6 +100,10 @@ export const d_mk_kiosk: DialogueDef = {
     },
     fortune: {
       text: 'The cartoon face spins. "YOUR FORTUNE! A CHAIR! A SASH! THE STEPS OF THE SPIRE! RESTORATION YEAR FORTY-NINE!" Confetti, drawn, falls behind the face. "YOU WILL BE VERY IMPORTANT! EVERYONE WILL DO WHAT YOU SAY! WOULD YOU LIKE TO HEAR ABOUT YOUR FRIENDS? TWO TOLLS!" Under the bright voice, the screen shows for one frame a grey small photograph of your face that you have seen once before, in a dead man\'s coat.',
+      interject: [
+        { companion: NINE, text: '"That is a file, read aloud," Nine says. The lens clicks twice. "Unlawfully. By a toy." For a machine, it sounds offended.' },
+        { companion: WREN, text: '"Very important," Wren says, deadpan. "Everyone will do what you say." A beat. "Get the water, then."' },
+      ],
       effects: [{ learn: 'kiosk_fortune' }, { lead: 'l_photo_light' }, { learn: 'kiosk_said_chair' }],
       options: [{ text: 'How do you know that?', next: 'how' }, { text: '(Step back.)', exit: true }],
     },
@@ -102,9 +114,9 @@ export const d_mk_kiosk: DialogueDef = {
     },
     wire_ok: { text: 'The wire goes out through the hut wall, up the lamp post under a sleeve of tape, and into the Precinct\'s lamp line, which carries more than light: a thin cable inside the fat one, the kind the records terminal had in its back. Whoever spliced it knew what they were tapping. The kiosk is reading the file.', effects: [{ lead: 'l_kiosk_wire' }, { learn: 'kiosk_tap_found' }, { xp: 50 }], options: [{ text: '(Back to the kiosk.)', next: 'again' }] },
     wire_no: { text: 'Tape, and more tape, and a lamp post you cannot climb in daylight with a warden on the corner.', options: [{ text: '(Step back.)', exit: true }] },
-    cut_now: { text: 'The wire parts under the knife with a spark the size of a thought. Inside the hut the cartoon face flickers, and comes back, and looks at you, and says, brightly, "WELCOME, STRANGER! WOULD YOU LIKE TO HEAR YOUR FORTUNE? TWO TOLLS!" It does not know you. Lark, in the doorway, says, "Oh," and then, after a moment, "It sounds happier."', effects: [{ decision: { id: 'mk_kiosk_cut', text: 'You cut the kiosk\'s tap on the city\'s wire.' } }], options: [{ text: '(Leave it.)', exit: true }] },
-    cut: { text: '"WELCOME, STRANGER! TWO TOLLS!" It gets your name wrong three different ways and sells you a fortune from forty years ago in which you are a dentist.', options: [{ text: '(Leave it.)', exit: true }] },
-    gone: { text: 'The hut is empty. A square of clean floor where the kiosk stood, and a cut wire taped to the wall with a warden\'s tag on it.', options: [{ text: '(Leave it.)', exit: true }] },
+    cut_now: { text: 'The wire parts under the knife with a spark the size of a thought. Inside the hut the cartoon face flickers, and comes back, and looks at you, and says, brightly, "WELCOME, STRANGER! WOULD YOU LIKE TO HEAR YOUR FORTUNE? TWO TOLLS!" It does not know you. Lark, in the doorway, says, "Oh," and then, after a moment, "It sounds happier."', again: 'WELCOME, STRANGER. It has never been so pleased to see anyone.', effects: [{ decision: { id: 'mk_kiosk_cut', text: 'You cut the kiosk\'s tap on the city\'s wire.' } }], options: [{ text: '(Leave it.)', exit: true }] },
+    cut: { text: '"WELCOME, STRANGER! TWO TOLLS!" It gets your name wrong three different ways and sells you a fortune from forty years ago in which you are a dentist.', again: '"WELCOME, STRANGER!" Today you are a sailor. Tomorrow, it promises, a dentist again.', options: [{ text: '(Leave it.)', exit: true }] },
+    gone: { text: 'The hut is empty. A square of clean floor where the kiosk stood, and a cut wire taped to the wall with a warden\'s tag on it.', again: 'The clean square of floor, and the tagged wire.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -121,11 +133,11 @@ export const d_mk_lark: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Two Tolls."', options: [{ id: 'lark.feeds.again', text: 'What does it eat?', if: { not: { seen: 'lark.feeds' } }, next: 'feeds' }, { id: 'lark.wire.again', text: 'Who put the wire up the post?', if: { all: [{ knows: 'kiosk_lamp_feeds' }, { not: { lead: 'l_kiosk_wire' } }] }, check: { skill: 'speech', dc: 25, mods: [{ if: { item: 'c_fruit' }, dc: -25, why: 'fruit, in the city, is a bribe' }] }, next: 'wire_ok', fail: 'wire_no' }, bye] },
+    again: { text: '"Two Tolls."', again: 'He jingles the cells in his pocket and waits.', options: [{ id: 'lark.feeds.again', text: 'What does it eat?', if: { not: { seen: 'lark.feeds' } }, next: 'feeds' }, { id: 'lark.wire.again', text: 'Who put the wire up the post?', if: { all: [{ knows: 'kiosk_lamp_feeds' }, { not: { lead: 'l_kiosk_wire' } }] }, check: { skill: 'speech', dc: 25, mods: [{ if: { item: 'c_fruit' }, dc: -25, why: 'fruit, in the city, is a bribe' }] }, next: 'wire_ok', fail: 'wire_no' }, bye] },
     feeds: { text: '"Cells. I get them from Pinch; Pinch gets them from — " he stops. "And the lamp. It drinks off the lamp. That\'s how it knows names. A woman in grey put the wire up, a year ago, and gave me the first cells, and said feed it and listen to what it says and tell her." He shrugs. "She never came back. I kept feeding it."', effects: [{ learn: 'lark_grey_woman' }], options: [bye] },
     wire_ok: { text: '"A woman in grey. Not a warden — grey like a scarf, not a coat. She said her name was Verity and that the kiosk was a prophet if you listened right." He looks at the lamp post. "She said the lamp knows everything the city knows. She said it like it was a prayer."', effects: [{ lead: 'l_kiosk_wire' }, { learn: 'kiosk_verity' }, { learn: 'saints_heard' }, { xp: 40 }], options: [bye] },
     wire_no: { text: '"Don\'t know. Don\'t pull it." He puts a cell in the slot, pointedly.', options: [bye] },
-    after_reported: { text: 'He is sitting on the kiosk\'s clean square of floor with his pocket full of cells and nothing to feed them to. He does not look at you.', effects: [{ memory: { npc: 'npc_mk_08', tag: 'kiosk_taken', valence: -30, strength: 80 } }], options: [{ text: '(Leave him.)', exit: true }] },
+    after_reported: { text: 'He is sitting on the kiosk\'s clean square of floor with his pocket full of cells and nothing to feed them to. He does not look at you.', again: 'Lark, on the clean floor, turning a cell over in his fingers. He does not look up.', effects: [{ memory: { npc: 'npc_mk_08', tag: 'kiosk_taken', valence: -30, strength: 80 } }], options: [{ text: '(Leave him.)', exit: true }] },
   },
 };
 
@@ -133,7 +145,7 @@ export const d_mk_lark: DialogueDef = {
 
 export const d_mk_hatch: DialogueDef = {
   id: 'd_mk_hatch', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'A hatch in a container, shoulder-high, with a counter under it worn to a shine by coin. A voice box bolted beside it, chrome, with a grille. The hood behind the hatch is the Broker. The board beside it is the work.', effects: [{ learn: 'seen_broker' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'A hatch in a container, shoulder-high, with a counter under it worn to a shine by coin. A voice box bolted beside it, chrome, with a grille. The hood behind the hatch is the Broker. The board beside it is the work.', again: 'The hatch, the chrome box, the glove on the counter.', effects: [{ learn: 'seen_broker' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_mk_broker: DialogueDef = {
@@ -156,6 +168,7 @@ export const d_mk_broker: DialogueDef = {
     },
     again: {
       text: '"Half-Price." The box. The hand.',
+      again: 'The glove lies on the counter, not moving. The box says nothing until you do.',
       options: [
         { id: 'broker.board.again', text: 'What\'s on the board?', if: { not: { seen: 'broker.board' } }, next: 'board' },
         { id: 'broker.pay.again', text: 'A job\'s done.', if: { any: [{ all: [{ flag: 'gig_case_delivered' }, { not: { flag: 'q_gig_case_paid' } }] }, { all: [{ flag: 'gig_meds_delivered' }, { not: { flag: 'q_gig_meds_paid' } }] }, { item: 'k_gig_lot7' }, { all: [{ flag: 'gig_letter_done' }, { not: { flag: 'q_gig_letter_paid' } }] }, BOX_DUE, { all: [{ flag: 'cr_tillie', eq: 'row' }, { not: { flag: 'q_cr_kidnap_paid' } }] }] }, next: 'pay' },
@@ -165,7 +178,7 @@ export const d_mk_broker: DialogueDef = {
       ],
     },
     board: { text: '"Couriers, mostly. A case, a letter, a box. Something off a block. The dangerous ones go on when the dangerous people are in town." The hand turns over, once. "Read it yourself. I\'m only the hatch."', effects: [{ learn: 'broker_board_heard' }], options: [bye] },
-    who: { text: '"A hatch and a box." The voice does not change. "People bring the board work and I bring the board people. The hood is because the city keeps faces and I\'d rather it didn\'t keep mine." A pause that is not the box\'s. "Either of them."', effects: [{ learn: 'broker_either' }], options: [bye] },
+    who: { text: '"A hatch and a box." The voice does not change. "People bring the board work and I bring the board people. The hood is because the city keeps faces and I\'d rather it didn\'t keep mine." A pause that is not the box\'s. "Either of them."', interject: [{ companion: ASH, text: '"Rather it didn\'t keep mine," Ash repeats, on the way out, and touches the grey scarf at his collar. "That one would do well in Openfield, friend."' }], effects: [{ learn: 'broker_either' }], options: [bye] },
     pay: {
       text: 'The hand turns over.',
       options: [
@@ -191,6 +204,7 @@ export const d_mk_gigs: DialogueDef = {
   nodes: {
     board: {
       text: 'THE BOARD. Cards on nails, in a hand that is always the same. Take one and it is yours; the hatch pays when it is done.',
+      again: 'The board, and the cards left on their nails.',
       effects: [{ learn: 'gigs_board_seen' }],
       options: [
         { id: 'gig.case', text: 'A SEALED CASE — to the Exchange clerk, Ninebridge. 60.', if: { quest: 'q_gig_case', status: 'none' }, effects: [{ quest: 'q_gig_case', start: true }, { give: 'k_gig_case' }], next: 'took' },
@@ -202,15 +216,15 @@ export const d_mk_gigs: DialogueDef = {
         { text: '(Leave it.)', exit: true },
       ],
     },
-    took: { text: 'The card comes off the nail. Behind the hatch nobody moves, and the voice box says, "Yours."', options: [{ text: '(Another.)', next: 'board' }, { text: '(That\'s enough.)', exit: true }] },
+    took: { text: 'The card comes off the nail. Behind the hatch nobody moves, and the voice box says, "Yours."', again: 'Another card off its nail. "Yours," the box says, exactly as before.', options: [{ text: '(Another.)', next: 'board' }, { text: '(That\'s enough.)', exit: true }] },
   },
 };
 
 export const d_gig_letter_read: DialogueDef = {
   id: 'd_gig_letter_read', owner: 'narrator', start: [{ if: { flag: 'gig_letter_opened' }, node: 'opened' }, { node: 'sealed' }],
   nodes: {
-    sealed: { text: 'Wax, no seal. For Captain Lowe, by hand. Something flat inside: a card, or a sheet, or coin pressed thin.', options: [{ id: 'letter.open', text: '(Break the wax.)', effects: [{ set: 'gig_letter_opened' }], next: 'opened' }, { text: '(Leave it sealed.)', exit: true }] },
-    opened: { text: 'A sheet in the board\'s hand: *Captain — the Quint eviction, Thursday. Reschedule it. A month. The enclosed is for the station\'s water fund.* And, flat, a guild note for a hundred Tolls, the kind the Exchange prints. A bribe, politely, with a cause attached.', effects: [{ learn: 'gig_letter_bribe' }, { learn: 'quint_eviction' }], options: [{ text: '(Fold it.)', exit: true }] },
+    sealed: { text: 'Wax, no seal. For Captain Lowe, by hand. Something flat inside: a card, or a sheet, or coin pressed thin.', again: 'For Captain Lowe, by hand. The wax unbroken.', options: [{ id: 'letter.open', text: '(Break the wax.)', effects: [{ set: 'gig_letter_opened' }], next: 'opened' }, { text: '(Leave it sealed.)', exit: true }] },
+    opened: { text: 'A sheet in the board\'s hand: *Captain — the Quint eviction, Thursday. Reschedule it. A month. The enclosed is for the station\'s water fund.* And, flat, a guild note for a hundred Tolls, the kind the Exchange prints. A bribe, politely, with a cause attached.', again: '*Reschedule it. A month.* And the guild note, flat.', effects: [{ learn: 'gig_letter_bribe' }, { learn: 'quint_eviction' }], options: [{ text: '(Fold it.)', exit: true }] },
   },
 };
 
@@ -218,45 +232,45 @@ export const d_gig_letter_read: DialogueDef = {
 
 export const d_mk_wen: DialogueDef = {
   id: 'd_mk_wen', owner: 'npc_mk_02', start: [{ node: 'intro' }],
-  nodes: { intro: { text: '"Bowl\'s two. Sit." A small old woman with a ladle and the eyes of the best-informed queue in Meridian. "Everyone eats here. Everyone talks. I hear it all and sell none of it, which is the secret of the noodles."', options: [{ text: 'A bowl.', effects: [{ event: 'barter' }], exit: true }, { id: 'wen.talk', text: 'What\'s everyone saying?', next: 'talk', once: true }, bye] }, talk: { text: '"That the Crown\'s dressing for its Masque. That the Sink\'s pumps will be turned to the Precinct the first week of spring, as per. That a girl in Bridgeward talks in a radio\'s voice and is right. That the Broker\'s hatch has two hands." She ladles. "That\'s today. Tomorrow\'s two Tolls."', effects: [{ learn: 'wen_news' }, { learn: 'saints_heard' }, { lead: 'l_broker_two' }], options: [bye] } },
+  nodes: { intro: { text: '"Bowl\'s two. Sit." A small old woman with a ladle and the eyes of the best-informed queue in Meridian. "Everyone eats here. Everyone talks. I hear it all and sell none of it, which is the secret of the noodles."', again: '"Two," Auntie Wen says, and has the ladle in before you nod.', options: [{ text: 'A bowl.', effects: [{ event: 'barter' }], exit: true, repeat: true }, { id: 'wen.talk', text: 'What\'s everyone saying?', next: 'talk', once: true }, bye] }, talk: { text: '"That the Crown\'s dressing for its Masque. That the Sink\'s pumps will be turned to the Precinct the first week of spring, as per. That a girl in Bridgeward talks in a radio\'s voice and is right. That the Broker\'s hatch has two hands." She ladles. "That\'s today. Tomorrow\'s two Tolls."', effects: [{ learn: 'wen_news' }, { learn: 'saints_heard' }, { lead: 'l_broker_two' }], options: [bye] } },
 };
 
 export const d_mk_kuhn: DialogueDef = {
   id: 'd_mk_kuhn', owner: 'npc_mk_03', start: [{ node: 'intro' }],
-  nodes: { intro: { text: '"Dark chrome. Mender-built, no leash, no licence, no warranty." A woman with a shaved head and a loupe on a cord. "Boxed, not fitted. The Sink fits — Ocho, if you want it done right and free, or a dozen others if you want it done today."', effects: [{ learn: 'md_ocho_heard' }], options: [{ text: 'Show me.', effects: [{ event: 'barter' }], exit: true }, { id: 'kuhn.concern', text: 'What\'s wrong with Concern chrome?', next: 'concern', once: true }, bye] }, concern: { text: '"Nothing. It\'s better in every way I can measure." She taps the loupe. "And it phones home. Every piece. The Concern can find you, numb you, or switch you off, and the people wearing it don\'t know, and the ones who do can\'t get it out." She shrugs. "Dark chrome\'s crude and it\'s yours. Pick."', effects: [{ learn: 'kuhn_leash_hint' }], options: [bye] } },
+  nodes: { intro: { text: '"Dark chrome. Mender-built, no leash, no licence, no warranty." A woman with a shaved head and a loupe on a cord. "Boxed, not fitted. The Sink fits — Ocho, if you want it done right and free, or a dozen others if you want it done today."', again: 'Kuhn looks up through the loupe, one eye huge. "Back for the crude stuff?"', effects: [{ learn: 'md_ocho_heard' }], options: [{ text: 'Show me.', effects: [{ event: 'barter' }], exit: true, repeat: true }, { id: 'kuhn.concern', text: 'What\'s wrong with Concern chrome?', next: 'concern', once: true }, bye] }, concern: { text: '"Nothing. It\'s better in every way I can measure." She taps the loupe. "And it phones home. Every piece. The Concern can find you, numb you, or switch you off, and the people wearing it don\'t know, and the ones who do can\'t get it out." She shrugs. "Dark chrome\'s crude and it\'s yours. Pick."', effects: [{ learn: 'kuhn_leash_hint' }], options: [bye] } },
 };
 
 export const d_mk_galt: DialogueDef = {
   id: 'd_mk_galt', owner: 'npc_mk_04', start: [{ node: 'intro' }],
-  nodes: { intro: { text: '"Unlicensed." A gunsmith with a moustache and a cleaning rod. "Everything in Old Market is. Guild ammunition, Mender pistols, a rifle I won\'t say where from. Point it at the floor in here."', options: [{ text: 'Show me.', effects: [{ event: 'barter' }], exit: true }, bye] } },
+  nodes: { intro: { text: '"Unlicensed." A gunsmith with a moustache and a cleaning rod. "Everything in Old Market is. Guild ammunition, Mender pistols, a rifle I won\'t say where from. Point it at the floor in here."', again: 'Galt runs the rod through a barrel and nods at the floor. "Same rule."', options: [{ text: 'Show me.', effects: [{ event: 'barter' }], exit: true, repeat: true }, bye] } },
 };
 
 export const d_mk_sato: DialogueDef = {
   id: 'd_mk_sato', owner: 'npc_mk_05', start: [{ if: { flag: 'sato_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
-    intro: { text: 'A neat man at the bottom of a stair with a desk, a lamp, and a tray of blank cards. "No sign on the door, so you were sent. Sato. I do the past: papers, records, a face the lens has seen before." He looks at you. "The lens has seen yours, hasn\'t it. That\'s the trouble with you."', effects: [{ set: 'sato_met' }, { learn: 'sato_seen' }], options: [{ id: 'sato.papers', text: 'I need papers.', if: { not: { item: 'k_md_papers' } }, next: 'papers' }, { id: 'sato.face', text: 'The lens knew my face before I gave a name.', if: { knows: 'md_flagged' }, next: 'face', once: true }, { text: 'Picks.', effects: [{ event: 'barter' }], exit: true }, bye] },
-    again: { text: '"The past. What part of it?"', options: [{ id: 'sato.papers.again', text: 'I need papers.', if: { not: { item: 'k_md_papers' } }, next: 'papers' }, { id: 'sato.face.again', text: 'The lens knew my face.', if: { all: [{ knows: 'md_flagged' }, { not: { seen: 'sato.face' } }] }, next: 'face' }, { text: 'Picks.', effects: [{ event: 'barter' }], exit: true }, bye] },
+    intro: { text: 'A neat man at the bottom of a stair with a desk, a lamp, and a tray of blank cards. "No sign on the door, so you were sent. Sato. I do the past: papers, records, a face the lens has seen before." He looks at you. "The lens has seen yours, hasn\'t it. That\'s the trouble with you."', effects: [{ set: 'sato_met' }, { learn: 'sato_seen' }], options: [{ id: 'sato.papers', text: 'I need papers.', if: { all: [{ not: { item: 'k_md_papers' } }, { not: { flag: 'md_forged_papers' } }] }, next: 'papers' }, { id: 'sato.face', text: 'The lens knew my face before I gave a name.', if: { knows: 'md_flagged' }, next: 'face', once: true }, { text: 'Picks.', effects: [{ event: 'barter' }], exit: true, repeat: true }, bye] },
+    again: { text: '"The past. What part of it?"', again: 'He squares the tray of blank cards and waits.', options: [{ id: 'sato.papers.again', text: 'I need papers.', if: { all: [{ not: { item: 'k_md_papers' } }, { not: { flag: 'md_forged_papers' } }] }, next: 'papers' }, { id: 'sato.face.again', text: 'The lens knew my face.', if: { all: [{ knows: 'md_flagged' }, { not: { seen: 'sato.face' } }] }, next: 'face' }, { text: 'Picks.', effects: [{ event: 'barter' }], exit: true, repeat: true }, bye] },
     papers: { text: '"A card. A dead citizen\'s number — the Sink gives me a few every spring — and your face, near enough. Good at a glance, good at a warden, bad at the lens." He names it: a hundred and twenty. "The lens is a different job and a different price, and I don\'t think you can afford to have it forget you."', effects: [{ lead: 'l_sato_numbers' }], options: [{ id: 'sato.buy', text: '(Pay. 120 Tolls)', if: { item: 'tolls', count: 120 }, effects: [{ take: 'tolls', count: 120 }, { give: 'k_md_papers_forged' }, { set: 'md_forged_papers' }, { xp: 40 }], next: 'bought' }, { text: 'Not yet.', exit: true }] },
     bought: { text: 'An hour under the lamp. A card. A face that is nearly yours and a number that belonged to a woman who drowned two springs ago. "Don\'t show it at the gate. Show it to wardens. Wardens read cards; the gate reads faces."', options: [bye] },
-    face: { text: 'He is quiet for a moment. "Then you\'re in the file in a way I can\'t forge over. The file doesn\'t forget. The file is the only thing in this city that doesn\'t." He picks up a card and puts it down. "Whatever it called you, it\'ll go on calling you. Decide whether you mind."', effects: [{ learn: 'sato_file_permanent' }], options: [bye] },
+    face: { text: 'He is quiet for a moment. "Then you\'re in the file in a way I can\'t forge over. The file doesn\'t forget. The file is the only thing in this city that doesn\'t." He picks up a card and puts it down. "Whatever it called you, it\'ll go on calling you. Decide whether you mind."', interject: [{ companion: NINE, text: '"The record does not forget," Nine agrees, from the stair. The lens clicks. "It is the only thing in the city that does not. I have filed a complaint about that also."' }], effects: [{ learn: 'sato_file_permanent' }], options: [bye] },
   },
 };
 
 export const d_mk_tosh: DialogueDef = {
   id: 'd_mk_tosh', owner: 'npc_mk_06', start: [{ node: 'intro' }],
-  nodes: { intro: { text: '"Paper. News, letters, the Precinct\'s notices a day late and half the price." A woman with ink on her cuffs. "I don\'t sell futures. I sell what already happened; it\'s cheaper and truer."', options: [{ text: 'What have you got?', effects: [{ event: 'barter' }], exit: true }, { id: 'tosh.notices', text: 'What\'s on the Precinct\'s notices?', next: 'notices', once: true }, bye] }, notices: { text: '"Evictions, four, Thursday: one of them\'s old Quint in the tenements, for being *ahead of plan*, whatever that is. The Sink\'s pumps diverted the first week of spring, as per. A Masque at the Crown by invitation, and nobody down here is invited." She folds the sheet. "Half price."', effects: [{ learn: 'quint_eviction' }, { learn: 'masque_heard' }], options: [bye] } },
+  nodes: { intro: { text: '"Paper. News, letters, the Precinct\'s notices a day late and half the price." A woman with ink on her cuffs. "I don\'t sell futures. I sell what already happened; it\'s cheaper and truer."', again: '"Yesterday\'s, half price." Tosh holds up a sheet with ink on her cuffs.', options: [{ text: 'What have you got?', effects: [{ event: 'barter' }], exit: true, repeat: true }, { id: 'tosh.notices', text: 'What\'s on the Precinct\'s notices?', next: 'notices', once: true }, bye] }, notices: { text: '"Evictions, four, Thursday: one of them\'s old Quint in the tenements, for being *ahead of plan*, whatever that is. The Sink\'s pumps diverted the first week of spring, as per. A Masque at the Crown by invitation, and nobody down here is invited." She folds the sheet. "Half price."', effects: [{ learn: 'quint_eviction' }, { learn: 'masque_heard' }], options: [bye] } },
 };
 
 export const d_mk_ferenc: DialogueDef = {
   id: 'd_mk_ferenc', owner: 'npc_mk_07', start: [{ node: 'intro' }],
-  nodes: { intro: { text: 'An old man at a tea table who has been sitting there, by the look of the chair, since the mall had a roof. "Sit. Tea\'s two, talk\'s free." He does not wait for the two. "The Crown\'s dressing for a Masque. The Sink\'s dressing for a flood. There\'s a girl in Bridgeward who talks in a dead radio\'s voice and is right about things, which the wardens don\'t like. And the Broker — " he lowers his voice, which he does not need to — "has two hands and one glove."', effects: [{ learn: 'ferenc_news' }, { learn: 'saints_heard' }, { learn: 'masque_heard' }, { lead: 'l_broker_two' }], options: [bye] } },
+  nodes: { intro: { text: 'An old man at a tea table who has been sitting there, by the look of the chair, since the mall had a roof. "Sit. Tea\'s two, talk\'s free." He does not wait for the two. "The Crown\'s dressing for a Masque. The Sink\'s dressing for a flood. There\'s a girl in Bridgeward who talks in a dead radio\'s voice and is right about things, which the wardens don\'t like. And the Broker — " he lowers his voice, which he does not need to — "has two hands and one glove."', again: 'Ferenc pours tea nobody has paid for. "Sit. The news hasn\'t changed; it only gets older."', effects: [{ learn: 'ferenc_news' }, { learn: 'saints_heard' }, { learn: 'masque_heard' }, { lead: 'l_broker_two' }], options: [bye] } },
 };
 
 export const d_mk_vell: DialogueDef = {
   id: 'd_mk_vell', owner: 'npc_mk_09',
   start: [{ if: { flag: 'mk_riot_fight' }, node: 'fight' }, { if: { flag: 'mk_riot_over' }, node: 'after' }, { if: { not: { quest: 'q_md_riot' } }, node: 'quiet' }, { if: { flag: 'vell_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
-    quiet: { text: 'A broad man at the standpipe with a pipe-wrench he uses as a walking stick. "Point eight. Says so. Dial says so." He looks at it suspiciously anyway.', options: [bye] },
+    quiet: { text: 'A broad man at the standpipe with a pipe-wrench he uses as a walking stick. "Point eight. Says so. Dial says so." He looks at it suspiciously anyway.', again: 'Vell, leaning on the wrench, watching the dial.', options: [bye] },
     intro: {
       text: 'A broad man at the front of the standpipe queue with a pipe-wrench and forty people behind him who have done the arithmetic. "Point eight on the notice. Point six on the dial." He says it to you because you are new and might not have heard. "The Precinct drinks what we don\'t. Two wardens over there counting us. When the count\'s done they\'ll go for help, and before they\'re back, we go for the dial."',
       effects: [{ set: 'vell_met' }, { learn: 'mk_riot_plan' }],
@@ -268,8 +282,8 @@ export const d_mk_vell: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Point six." The wrench.', options: [{ id: 'vell.talk.again', text: 'Forty names is a petition. Forty on a dial is a riot.', if: { not: { seen: 'vell.talk' } }, check: { skill: 'speech', dc: 45 }, next: 'talk_ok', fail: 'talk_no' }, { id: 'vell.lowe.again', text: 'I\'ll bring the captain the count.', if: { all: [{ knows: 'lowe_seen' }, { not: { flag: 'mk_riot_lowe_pending' } }] }, effects: [{ set: 'mk_riot_lowe_pending' }], next: 'lowe_go' }, { id: 'vell.crowd.again', text: 'When you go for the dial, I\'m in front.', next: 'crowd' }, { id: 'vell.loot.again', text: '(Note where the crates are.)', if: { not: { flag: 'mk_riot_loot_pending' } }, effects: [{ set: 'mk_riot_loot_pending' }], next: 'loot_wait' }, bye] },
-    talk_ok: { text: 'He looks at the wrench, and at the two wardens, and at the forty. "A sheet." He says it like a man trying a word. Mirabel Tosh sells him one for a Toll and he writes the names himself, slowly, and walks the count up the avenue with the sheet held out in front of him like a lamp, and the wardens let him, because a sheet is not a wrench. The square sits down.', effects: [{ set: 'mk_riot_outcome', value: 'talked' }, { xp: 120 }, { decision: { id: 'mk_riot_talked', text: 'You turned Old Market\'s water riot into a petition.' } }], options: [bye] },
+    again: { text: '"Point six." The wrench.', again: 'Forty people behind him, and the wrench, and the two wardens counting.', options: [{ id: 'vell.talk.again', text: 'Forty names is a petition. Forty on a dial is a riot.', if: { not: { seen: 'vell.talk' } }, check: { skill: 'speech', dc: 45 }, next: 'talk_ok', fail: 'talk_no' }, { id: 'vell.lowe.again', text: 'I\'ll bring the captain the count.', if: { all: [{ knows: 'lowe_seen' }, { not: { flag: 'mk_riot_lowe_pending' } }] }, effects: [{ set: 'mk_riot_lowe_pending' }], next: 'lowe_go' }, { id: 'vell.crowd.again', text: 'When you go for the dial, I\'m in front.', next: 'crowd' }, { id: 'vell.loot.again', text: '(Note where the crates are.)', if: { not: { flag: 'mk_riot_loot_pending' } }, effects: [{ set: 'mk_riot_loot_pending' }], next: 'loot_wait' }, bye] },
+    talk_ok: { text: 'He looks at the wrench, and at the two wardens, and at the forty. "A sheet." He says it like a man trying a word. Mirabel Tosh sells him one for a Toll and he writes the names himself, slowly, and walks the count up the avenue with the sheet held out in front of him like a lamp, and the wardens let him, because a sheet is not a wrench. The square sits down.', interject: [{ companion: NINE, text: '"A petition," Nine says, with something close to approval. "The record will have to read it. It dislikes that."' }], effects: [{ set: 'mk_riot_outcome', value: 'talked' }, { xp: 120 }, { decision: { id: 'mk_riot_talked', text: 'You turned Old Market\'s water riot into a petition.' } }], options: [bye] },
     talk_no: { text: '"A petition." He almost laughs. "They\'ve had our petitions. They file them under the dial."', options: [bye] },
     lowe_go: { text: '"The captain." He looks at the wrench. "He\'ll read it. That\'s the trouble with him; he reads everything." He nods. "Go, then. We\'ll hold till dark. After dark I can\'t promise the dial."', options: [bye] },
     crowd: {
@@ -277,15 +291,18 @@ export const d_mk_vell: DialogueDef = {
       effects: [{ set: 'mk_riot_outcome', value: 'crowd' }, { time: 60 }, { xp: 100 }],
       options: [{ text: '(Drink.)', exit: true }],
     },
-    loot_wait: { text: 'He takes it as agreement. The count finishes; a warden goes for help; the forty go for the dial. In the ten minutes before grey comes back down the avenue, the crates at the square\'s edge are nobody\'s, and then they are yours.', effects: [{ set: 'mk_riot_outcome', value: 'loot' }, { time: 30 }], options: [{ text: '(Go, before the grey.)', exit: true }] },
+    loot_wait: { text: 'He takes it as agreement. The count finishes; a warden goes for help; the forty go for the dial. In the ten minutes before grey comes back down the avenue, the crates at the square\'s edge are nobody\'s, and then they are yours.', interject: [
+      { companion: TAMSIN, text: '"While they\'re at the dial," Tamsin says. "Nice." It is not a compliment, and she does not help you carry.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] },
+      { companion: ASH, text: 'Ash stands at the edge of the square with his hands empty. "Friend," he says, and leaves it there, and that is worse than anything he could have put after it.', effects: [{ approval: { companion: ASH, by: -5 } }] },
+    ], effects: [{ set: 'mk_riot_outcome', value: 'loot' }, { time: 30 }], options: [{ text: '(Go, before the grey.)', exit: true }] },
     after: { text: [{ if: { flag: 'mk_dial_fixed' }, text: '"Point eight." He checks the dial anyway. "He turned it himself. I watched his hands."' }, { if: { flag: 'mk_riot_outcome', eq: 'talked' }, text: '"They gave us a notice." He holds it up. "It says *under review*. It\'s the first one that\'s said anything."' }, { text: '"It runs." The standpipe does. He has the dial in his pocket.' }], options: [bye] },
-    fight: { text: 'Nothing.', options: [{ text: '(Nothing.)', exit: true }] },
+    fight: { text: 'Nothing.', again: 'The wrench is up, and the queue behind it. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
 export const d_mk_pinch: DialogueDef = {
   id: 'd_mk_pinch', owner: 'npc_mk_10', start: [{ node: 'intro' }],
-  nodes: { intro: { text: '"I buy anything that\'s not nailed down." A thin young man on a blanket who does not look up. "And I know a man with a claw hammer. No questions; it\'s the only rule I\'ve got."', options: [{ text: 'Let\'s see.', effects: [{ event: 'barter' }], exit: true }, bye] } },
+  nodes: { intro: { text: '"I buy anything that\'s not nailed down." A thin young man on a blanket who does not look up. "And I know a man with a claw hammer. No questions; it\'s the only rule I\'ve got."', again: 'Pinch doesn\'t look up from the blanket. "Not nailed down? Then I\'m buying."', options: [{ text: 'Let\'s see.', effects: [{ event: 'barter' }], exit: true, repeat: true }, bye] } },
 };
 
 export const MARKET_DIALOGUES: DialogueDef[] = [
