@@ -24,6 +24,11 @@ namespace SecondFace.Tests
     /// </summary>
     public class KnockTests
     {
+        /// <summary>The game this test booted, gone after it (left running, its world NavMesh turned every later test's
+        /// places' own off: PlacePlayTests failed after it, 2026-11-16).</summary>
+        [UnityTearDown]
+        public IEnumerator CleanUp() => BootTests.Clear();
+
         private static string SavesDir => Path.Combine(Application.temporaryCachePath, "knock-tests-saves");
 
         private static IEnumerator Wait(float seconds) { var t = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t < seconds) yield return null; }

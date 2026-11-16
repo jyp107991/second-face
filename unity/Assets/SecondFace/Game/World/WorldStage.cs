@@ -93,6 +93,22 @@ namespace SecondFace.Game.World
             return null;
         }
 
+        /// <summary>Where a shown place's life is (play-ch1 T43): the middle of its people's posts and the things they use,
+        /// on the map <paramref name="map"/> (a place may hold two), or null when it has none.</summary>
+        public Vector3? Heart(string place, string map = null)
+        {
+            var go = Streamer?.PlaceSpawner?.Instance(place);
+            if (go == null) return null;
+            var sum = Vector3.zero; var n = 0;
+            foreach (var m in go.GetComponentsInChildren<PlaceMarker>())
+            {
+                if (m.Kind != "npc" && m.Kind != "talk" && m.Kind != "container") continue;
+                if (map != null && m.Map != map) continue;
+                sum += m.transform.position; n++;
+            }
+            return n > 0 ? sum / n : null;
+        }
+
         /// <summary>The world line for the debug overlay.</summary>
         public string Line()
         {

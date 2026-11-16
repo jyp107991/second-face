@@ -23,6 +23,11 @@ namespace SecondFace.Tests
     /// </summary>
     public class KnockPlaythroughTests
     {
+        /// <summary>The game this test booted, gone after it (left running, its world NavMesh turned every later test's
+        /// places' own off: PlacePlayTests failed after it, 2026-11-16).</summary>
+        [UnityTearDown]
+        public IEnumerator CleanUp() => BootTests.Clear();
+
         private static IEnumerator Wait(float seconds) { var t = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t < seconds) yield return null; }
         private static float Flat(Vector3 a, Vector3 b) { a.y = 0; b.y = 0; return Vector3.Distance(a, b); }
 

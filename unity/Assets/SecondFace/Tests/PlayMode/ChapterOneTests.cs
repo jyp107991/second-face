@@ -16,6 +16,11 @@ namespace SecondFace.Tests
     /// </summary>
     public class ChapterOneTests
     {
+        /// <summary>The game this test booted, gone after it (left running, its world NavMesh turned every later test's
+        /// places' own off: PlacePlayTests failed after it, 2026-11-16).</summary>
+        [UnityTearDown]
+        public IEnumerator CleanUp() => BootTests.Clear();
+
         private static IEnumerator Wait(float seconds) { var t = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t < seconds) yield return null; }
 
         private static IEnumerator SetDown(Bootstrap boot, string place)
@@ -66,6 +71,20 @@ namespace SecondFace.Tests
             yield return Wait(0.5f);
         }
 
+        /// <summary>An arrival as the player sees it (play-ch1 T43): the walker faces where the place's life is, and the
+        /// game's own view (not a test's) is captured.</summary>
+        private static IEnumerator Arrival(Bootstrap boot, string place, string capture)
+        {
+            var walk = boot.Walkabout;
+            var heart = boot.Stage.Heart(place);
+            Assert.That(heart.HasValue, Is.True, $"{place} has people and things to face");
+            var to = heart.Value - walk.Walker.transform.position; to.y = 0f;
+            var off = Vector3.Angle(walk.Walker.transform.forward, to);
+            Assert.That(to.magnitude < 4f || off < 60f, Is.True, $"arriving at {place}, the walker faces the place ({off:0}° off, {to.magnitude:0} m away)");
+            yield return Wait(2f);
+            yield return ScreenshotTests.CaptureWithUi(capture, 1920, 1080);
+        }
+
         [UnityTest, Timeout(1800000)]
         public IEnumerator TheRoadToThePaper()
         {
@@ -84,6 +103,7 @@ namespace SecondFace.Tests
             g = walk.Game;
             Assert.That(g.Flags.ContainsKey("visited_shale"), Is.True, "Shale reached");
             Assert.That(g.World.Quests.TryGetValue("q_ch1_shale", out var trace) && trace.Status == "active", Is.True, "the trace is on");
+            yield return Arrival(boot, "shale", "ch1_shale_arrival");
             boot.Stage.Clock.SetHour(11);
             walk.Rig.Follow(walk.Walker.transform);
             walk.Rig.View(30f, 50f, 22f);
@@ -99,6 +119,7 @@ namespace SecondFace.Tests
             g = walk.Game;
             Assert.That(g.Flags.ContainsKey("visited_overpass"), Is.True, "the overpass reached");
             Assert.That(g.World.Quests["q_ch1_shale"].Status, Is.EqualTo("done"));
+            yield return Arrival(boot, "rustdogs", "ch1_overpass_arrival");
             Assert.That(g.World.Quests.TryGetValue("q_ch1_map", out var paper) && paper.Status == "active", Is.True, "the paper's quest");
             boot.Stage.Clock.SetHour(16);
             walk.Rig.Follow(walk.Walker.transform);

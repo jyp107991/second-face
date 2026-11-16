@@ -223,6 +223,14 @@ namespace SecondFace.Game.Play
                 var marker = Stage.Marker(place, "spawn", StartSpawn) ?? Stage.Marker(place, "spawn");
                 at = marker != null ? marker.transform.position : centre;
                 yaw = marker != null ? marker.transform.eulerAngles.y : 0f;
+                // arriving, the walker and the view face where the place's life is, not the map's drawn facing (an arrival
+                // looked out at bare ground beside the road, play-ch1 T43)
+                var heart = Stage.Heart(place, marker != null ? marker.Map : null);
+                if (heart.HasValue)
+                {
+                    var to = heart.Value - at; to.y = 0f;
+                    if (to.sqrMagnitude > 16f) yaw = Mathf.Atan2(to.x, to.z) * Mathf.Rad2Deg;
+                }
             }
             yield return Stage.WaitAround(at, People == null ? (Game.LocationId ?? "shale") : null, LoadTimeout);
             if (ticket != _placing || Stage.Camera == null) yield break;   // left meanwhile, or the camera went with the scene
