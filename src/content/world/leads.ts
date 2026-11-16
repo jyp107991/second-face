@@ -160,6 +160,12 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_ca_petition', label: 'Petition 1187', text: 'Nobody filed the petition against the occupant of the Court\'s copy room. The R30 works schedule filed it, for vacant possession, and the Court has called it eleven times.' },
   { id: 'l_ca_tally', label: 'Asamoah, C. — Stair', text: 'On the Sink\'s tally wall: ASAMOAH, C. — R12 — STAIR, a citizen number pencilled beside it. The Sink chalked her drowned, and her number went up the stair.' },
   { id: 'l_ca_register', label: 'The register is a book', text: 'The register of rulings the Court of Accounts reads from every morning is a copyist\'s book, slipped under the bench by the usher before the Court sits.' },
+  // Act 2 — the Dead Ring (B3.12)
+  { id: 'l_dr_card', label: 'A blank card', text: 'The Crown\'s young people put up a purse for the final at Clover, and a Precinct citizen card with the name line blank. Whoever wins writes in it.' },
+  { id: 'l_dr_fine', label: 'Bello\'s card', text: 'Nkechi Bello\'s citizen card was voided by a forecast fine, AHEAD OF PLAN, for a stall she had not opened. Her brother is still inside the Wall.' },
+  { id: 'l_dr_coat', label: 'The Coat in the pits', text: 'The Crown\'s bookman was in the pits at night, at the Heron\'s back wheel, with a lamp and a little knife.' },
+  { id: 'l_dr_mark', label: 'A ring with a bar', text: 'The chalk mark on Leven\'s door is the salvage yard\'s: every tower on the yard\'s tally that is DONE had it first. A boy is paid in water to chalk it and carry the cans.' },
+  { id: 'l_dr_steel', label: 'Steel for the road', text: 'Ruben Iturbe\'s yard sells dead towers\' steel by the ton for a road to the near end of the Bridgeward bridge, by House Vane\'s arrangement. A tower that burns comes down lawful.' },
 ] as LeadDef[]).map((l) => [l.id, l]));
 
 export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
@@ -182,4 +188,6 @@ export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
   { id: 'c_cal_future', from: ['l_cal_pencil', 'l_cal_year', 'l_cal_r49'], text: 'The date on the photograph is the city\'s year forty-nine, not ours: nineteen years from now. The picture is of a day that has not happened yet.', effects: [{ learn: 'cal_future' }, { set: 'cal_board' }] },
   { id: 'c_ar_refusals', from: ['l_ar_refusals', 'l_c4_same_order'], text: 'Three times the city ordered the Cistern\'s people out to it, and three times MOTHER said no and thanked it. A fourth order is written and waiting. Nobody at home knows.' },
   { id: 'c_ca_for_you', from: ['l_ca_chambers', 'l_ca_petition'], text: 'The Court is clearing an old woman out of the copy room to make chambers for me, nineteen years before I am due to sit in them.', effects: [{ learn: 'ca_squatter_for_you' }] },
+  { id: 'c_dr_fires', from: ['l_dr_mark', 'l_dr_steel'], text: 'The Ring\'s fires are its evictions. The towers that burn are chalked first, emptied by the fire, and cut for steel; nobody inside the Wall counts the dead, because nobody inside the Wall counts the Ring.' },
+  { id: 'c_dr_road', from: ['l_dr_steel', 'l_bw_tenured_road'], text: 'The Crown\'s road to the Docks is being built out of the Ring\'s burned towers: House Vane buys the steel by the ton for the near end of the bridge, and does not ask how it came down.' },
 ] as ConclusionDef[]).map((c) => [c.id, c]));

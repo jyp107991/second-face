@@ -568,8 +568,10 @@ export const q_bw_turf: QuestDef = {
     three: {
       journal: 'Bridgeward: one chain across a bridge to nowhere, three paints on every wall. The Rustmouths hold the chain and collect a Tenured house\'s toll on it; the Gilt want it; the Pale say the bridge is nobody\'s and keep a hatch to the Sink. A woman in a clean coat holds the pen on the arrangement, and a girl at the Saints\' tower says the Crown takes the near end by the Long Night.',
       objectives: [{ id: 'side', text: 'Decide the chain: hold it, take it, or share it', done: { flag: 'bw_turf' } }],
-      next: [{ if: { flag: 'bw_turf', eq: 'rustmouths' }, stage: 'rustmouths' }, { if: { flag: 'bw_turf', eq: 'gilt' }, stage: 'gilt' }, { if: { flag: 'bw_turf', eq: 'peace' }, stage: 'peace' }],
+      next: [{ if: { flag: 'bw_turf', eq: 'rustmouths' }, stage: 'rustmouths' }, { if: { flag: 'bw_turf', eq: 'gilt' }, stage: 'gilt' }, { if: { flag: 'bw_turf', eq: 'peace' }, stage: 'peace' }, { if: { flag: 'bw_dogs_hold' }, stage: 'dogs' }],
     },
+    /** The chain unsettled when the Dogs came back for it (B3.12): it is theirs now. */
+    dogs: { journal: 'Nobody settled the chain before the Rust Dogs came back for it in the night. A dog\'s head is burned over the three paints on the slate and the chain is coiled at the booth\'s foot. The Crown\'s road stops at the Dogs\' paint.', end: 'done', onEnter: [{ set: 'bw_turf_settled' }] },
     rustmouths: { journal: 'The Rustmouths hold the chain and you are a mouth on it, with a cut of a toll that goes nowhere. The Gilt went back to their fire barrel. The Crown\'s paper is the same paper it was.', end: 'done', onEnter: [{ set: 'bw_turf_settled' }] },
     gilt: { journal: 'The chain is on the ground and the slate says STAND — FREE — GILT in gold, and the Rustmouths who held it are on the tally of a street that keeps no tally. Pip Aldous is coming down the Loop to see it. The Crown\'s agent has stopped coming Tuesdays.', end: 'done', onEnter: [{ set: 'bw_turf_settled' }] },
     peace: { journal: 'Two Tolls to stand, split three ways, with a Gilt, a Rustmouth and a white hand at the chain together and nobody liking it. The girl said the Crown takes the near end by the Long Night. Three crews on one chain is the only thing it cannot take.', end: 'done', onEnter: [{ set: 'bw_turf_settled' }, { set: 'bw_three_crews' }] },

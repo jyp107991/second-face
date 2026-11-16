@@ -28,7 +28,7 @@ export const d_st_loop: DialogueDef = {
   id: 'd_st_loop', owner: 'narrator', start: [{ node: 'board' }],
   nodes: {
     board: {
-      text: 'THE LOOP — THE STACKS. A board under Block Eight\'s face: PRECINCT 3 · OLD MARKET 3 · LANTERN ROW 3 · BRIDGEWARD 3 · THE DOCKS 4. Somebody has written under it, in the careful hand of a committee: RESIDENTS HALF FARE — ASK THE DRIVER. There is no driver.',
+      text: 'THE LOOP — THE STACKS. A board under Block Eight\'s face: PRECINCT 3 · OLD MARKET 3 · LANTERN ROW 3 · BRIDGEWARD 3 · CLOVER 4 · THE DOCKS 4 (NO BRIDGE). Somebody has written under it, in the careful hand of a committee: RESIDENTS HALF FARE — ASK THE DRIVER. There is no driver.',
       again: 'RESIDENTS HALF FARE — ASK THE DRIVER. Still no driver.',
       effects: [{ learn: 'st_loop_seen' }],
       options: [
@@ -36,6 +36,7 @@ export const d_st_loop: DialogueDef = {
         { id: 'stloop.market', text: 'Old Market. (3 Tolls)', if: { all: [{ flag: 'md_market_open' }, { item: 'tolls', count: 3 }] }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_market', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { id: 'stloop.lantern', text: 'Lantern Row. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_lantern', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { id: 'stloop.bridgeward', text: 'Bridgeward. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_bridgeward', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
+        { id: 'stloop.clover', text: 'Clover, outside the Wall. (4 Tolls)', if: { item: 'tolls', count: 4 }, effects: [{ take: 'tolls', count: 4 }, { event: 'goto', data: { location: 'md_ring', spawn: 'loop', minutes: 30 } }], exit: true, repeat: true },
         { text: '(Leave it.)', exit: true },
       ],
     },

@@ -15,7 +15,7 @@ const NINE = 'npc_md_nine';
 const bye = { text: 'That\'s all.', exit: true };
 const SMALL_HOURS = { hour: { from: 0, to: 3 } };
 /** The bridge is still three crews' argument. */
-const OPEN: Cond = { not: { flag: 'bw_turf' } };
+const OPEN: Cond = { not: { any: [{ flag: 'bw_turf' }, { flag: 'bw_dogs_hold' }] } };
 /** No chrome in any slot: the Pale's one condition. */
 const NO_CHROME: Cond = { not: { any: [{ chromeSlot: 'eyes' }, { chromeSlot: 'neural' }, { chromeSlot: 'armL' }, { chromeSlot: 'armR' }, { chromeSlot: 'legs' }, { chromeSlot: 'spine' }, { chromeSlot: 'skin' }, { chromeSlot: 'organs' }] } };
 /** The girl has been heard and nothing has been done about her yet. */
@@ -27,7 +27,7 @@ export const d_bw_loop: DialogueDef = {
   id: 'd_bw_loop', owner: 'narrator', start: [{ node: 'board' }],
   nodes: {
     board: {
-      text: 'THE LOOP — BRIDGEWARD. A board with three paints on it and the fares scratched through all three: PRECINCT 3 · OLD MARKET 3 · LANTERN ROW 3 · THE STACKS 3 · THE DOCKS 4. The last is chalked over: NO BRIDGE.',
+      text: 'THE LOOP — BRIDGEWARD. A board with three paints on it and the fares scratched through all three: PRECINCT 3 · OLD MARKET 3 · LANTERN ROW 3 · THE STACKS 3 · CLOVER 4 · THE DOCKS 4. The last is chalked over: NO BRIDGE.',
       again: 'Three paints, the fares scratched through all three. NO BRIDGE.',
       effects: [{ learn: 'bw_loop_seen' }],
       options: [
@@ -35,6 +35,7 @@ export const d_bw_loop: DialogueDef = {
         { id: 'bwloop.market', text: 'Old Market. (3 Tolls)', if: { all: [{ flag: 'md_market_open' }, { item: 'tolls', count: 3 }] }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_market', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { id: 'bwloop.lantern', text: 'Lantern Row. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_lantern', spawn: 'loop', minutes: 10 } }], exit: true, repeat: true },
         { id: 'bwloop.stacks', text: 'The Stacks. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_stacks', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
+        { id: 'bwloop.clover', text: 'Clover, outside the Wall. (4 Tolls)', if: { item: 'tolls', count: 4 }, effects: [{ take: 'tolls', count: 4 }, { event: 'goto', data: { location: 'md_ring', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { text: '(Leave it.)', exit: true },
       ],
     },
@@ -50,7 +51,7 @@ export const d_bw_tower_sign = SIGN('d_bw_tower_sign', 'THE SAINTS OF STATIC —
 export const d_bw_pale_sign = SIGN('d_bw_pale_sign', 'The white hand, palm scored through, over a stair house with one door. The Pale\'s. Under the hand, small: THE SINK IS UNDER YOU.', 'bw_pale_hatch_seen', 'The white hand over the stair house. THE SINK IS UNDER YOU.');
 
 export const d_bw_chain: DialogueDef = {
-  id: 'd_bw_chain', owner: 'narrator', start: [{ if: { flag: 'bw_turf' }, node: 'after' }, { node: 'chain' }],
+  id: 'd_bw_chain', owner: 'narrator', start: [{ if: { any: [{ flag: 'bw_turf' }, { flag: 'bw_raid' }] }, node: 'after' }, { node: 'chain' }],
   nodes: {
     chain: {
       text: 'The toll chain across the deck, with a gap in it the width of a person and a Rustmouth either side of the gap. A slate: STAND — 5. Beyond the chain, the bridge, and the drop, and the view.',
@@ -63,7 +64,7 @@ export const d_bw_chain: DialogueDef = {
     },
     paid: { text: 'Five, into a box with a Crown stamp on the lid. The Rustmouth lifts the chain a hand\'s width, which is a courtesy; you could have stepped over it. The bridge is wider than the street and emptier than anything in Meridian, and from the end of it you can see the Docks.', options: [{ text: '(Walk out.)', exit: true }] },
     ours: { text: 'The Rustmouths nod. The chain does not move; you step over it, which is what the chain is for.', options: [{ text: '(Walk out.)', exit: true }] },
-    after: { text: [{ if: { flag: 'bw_turf', eq: 'gilt' }, text: 'The chain is on the ground and the slate says, in gold: STAND — FREE — GILT. Two Gilt lean where the Rustmouths leaned.' }, { if: { flag: 'bw_turf', eq: 'peace' }, text: 'The chain is up, and beside the slate a second slate, in three paints: STAND — 2 — SPLIT THREE WAYS. Nobody likes it. Everybody pays it.' }, { text: 'The chain is up and the Rustmouths are either side of it, and there is a new coat of rust-red on the booth over the gold.' }], options: [{ text: '(Leave it.)', exit: true }] },
+    after: { text: [{ if: { flag: 'bw_dogs_hold' }, text: 'The chain is down and coiled at the booth\'s foot, and the slate has a fourth paint over the other three: a dog\'s head, burned on with a hot iron, and under it STAND — FREE — DOGS. Two of them lean where the Rustmouths leaned. There is nothing hanging from the booth\'s beam.' }, { if: { flag: 'wren_hanged' }, text: 'The chain is up and its holders are either side of the gap, and from the booth\'s beam a rope hangs, cut off short. Nobody has taken it down. Nobody stands under it.' }, { if: { flag: 'bw_turf', eq: 'gilt' }, text: 'The chain is on the ground and the slate says, in gold: STAND — FREE — GILT. Two Gilt lean where the Rustmouths leaned.' }, { if: { flag: 'bw_turf', eq: 'peace' }, text: 'The chain is up, and beside the slate a second slate, in three paints: STAND — 2 — SPLIT THREE WAYS. Nobody likes it. Everybody pays it.' }, { text: 'The chain is up and the Rustmouths are either side of it, and there is a new coat of rust-red on the booth over the gold.' }], options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -353,14 +354,23 @@ export const d_bw_haunt_wall: DialogueDef = {
       effects: [{ learn: 'bw_wall_wren' }, { learn: 'bw_back_for_bridge' }],
       options: [{ text: '(Leave it.)', exit: true }],
     },
-    names: { text: 'The burned names by the stove under their dog\'s head, WREN low down where a child could reach, and the chalk: BACK FOR THE BRIDGE.', again: 'The names, the dog\'s head, the chalk.', options: [{ text: '(Leave it.)', exit: true }] },
+    names: { text: [{ if: { flag: 'bw_raid', eq: 'won' }, text: 'The burned names by the stove under their dog\'s head, WREN low down where a child could reach, and the chalk, crossed out and written under in a shaking hand: BACK.' }, { if: { flag: 'bw_raid', eq: 'lost' }, text: 'The burned names by the stove under their dog\'s head. Low down, where a child could reach, somebody has put a small stone on the ledge under WREN, the way the Choir does on a cairn. The chalk has been rubbed out.' }, { text: 'The burned names by the stove under their dog\'s head, WREN low down where a child could reach, and the chalk: BACK FOR THE BRIDGE.' }], again: 'The names, the dog\'s head, the chalk.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
 export const d_bw_fenn: DialogueDef = {
   id: 'd_bw_fenn', owner: 'npc_bw_09',
-  start: [{ if: { flag: 'fenn_met' }, node: 'again' }, { node: 'intro' }],
+  start: [{ if: { all: [{ flag: 'bw_raid' }, { flag: 'fenn_met' }, { not: { flag: 'fenn_raid_said' } }] }, node: 'raid' }, { if: { flag: 'fenn_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
+    raid: {
+      text: [
+        { if: { flag: 'bw_raid', eq: 'won' }, text: 'Kibet is at the wall with a stick of chalk, and has crossed out BACK FOR THE BRIDGE, and written under it in letters that shake: BACK. He does not turn round. "Little Calloway kept the bench," he says. "Tell her the bench is hers. Tell her I said so before I said anything else."' },
+        { text: 'Kibet is sitting on the bench with the chalk in his lap, and he has not written anything. "I told you to tell her," he says. "The rope is what the bridge is for." He looks at the wall, at the name down where a child could reach it. "I should have rubbed it out. Nine years, and I should have rubbed it out."' },
+      ],
+      again: 'Kibet, at the wall, the chalk.',
+      effects: [{ set: 'fenn_raid_said' }, { learn: 'bw_fenn_raid' }],
+      options: [bye],
+    },
     intro: {
       text: [{ if: { inParty: 'npc_rd_03' }, text: 'An old man on a bench by a stove who looks past you at Wren and does not say anything for a long moment, and then says, "Little Calloway," and his voice goes, and he has to start again. "Kessler said the Sallow. Perpetua said the Sallow. I said my knees." He pats the bench. "Sit. I\'ve been sitting on it nine years."' }, { text: 'An old man on a bench by a stove, in a garage with a dog\'s head on every wall and a buggy with no seat. "Kibet. I was a Dog. Dogs had this garage before the Rustmouths had the bridge; then they had the Sallow, and I had my knees." He does not get up. "Nobody comes in here. Petrov, for the stove. You\'re not Petrov."' }],
       interject: [{ companion: WREN, text: '"Kibet," Wren says. Just that. Then she sits down on the bench beside him, which is the first time you have seen her sit without being told to.' }],

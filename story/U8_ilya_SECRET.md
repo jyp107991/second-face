@@ -75,3 +75,8 @@ Opt-in only at a fire; he asks every step; any answer allowed; no gifts. Needs `
 3. `r3` (well, stage 4 said): "If there's an after…" → commitment (`committed`, `romance_partner` = npc_sh_17) / no.
 **Fails** (`c_rom_end`) if approval falls to 30 or below while it is on; the relapse pauses it (sober days reset);
 either break ends it. **Changes later:** `ilya_rom`, `ilya_after`, `vasha_fate`, `ilya_left` are epilogue variables.
+
+**Built in B3.12**: Vasha is placed at the Bridgeward booth once the season has closed (`npc_rd_02_booth`, her own tree,
+new nodes `bw_hand`/`bw_after` in overpass.ts); the raid won sets `vasha_cornered`; without any raid, at night, the player
+can walk up to the booth (`vasha_cornered`), so his line ends whether or not Wren's raid ever happens. Still open: the
+bible's "or is killed" third ending (Ilya dies going after her alone) for the epilogue (P11).

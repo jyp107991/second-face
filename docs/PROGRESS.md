@@ -1775,9 +1775,29 @@ mid-range Android phone; deployed to Pages.
             that sets precedent flags `prec_*`, `ca_*` that later content reads); quests `q_a2_calendar` (6 routes),
             `q_a2_spire` (8 routes, none needing violence), `q_ca_court`, `q_ca_squatter` (5 outcomes); 7 items, 12 leads +
             3 conclusions, 1 world event; companions' interjections; `tests/b311.test.ts` (38). No engine change.
-      - [ ] B3.12 **Dead Ring, races, wrap** (~1.5 h): the ruined outer ring; buggy races (segments: push / hold / cut);
-            the Loop complete; Meridian end-to-end smoke in `tools/qa/act2.sh`; PROGRESS; a second test version
-            (`act1-test-2` → or `act2-test-1`) when the owner's Act 1 notes are folded in.
+      - [x] B3.12 **Dead Ring, races, wrap** DONE 2026-11-16 (content; the Unity place build and the on-device playtest are
+            P10 work): `tools/maps/gen_md_ring.py` → `maps/md_ring.ts` (72×56, outside the Wall: the Loop's last halt with a
+            turnstile and a lens, the gate road down the Wall, a circuit on an old interchange's ramps with a cut across its
+            infield, the stands and a slate booth, pit row and a mechanic's shed, a squatted tower, a salvage yard, dead
+            towers), reached on foot north along the Wall from the Precinct's gate road (no papers) and by the Loop. **The Loop
+            complete**: six stops, every board lists them all (the stale chalk is gone; the far bank stays NO BRIDGE); the
+            Ring's turnstile lets back in anyone the city has counted in. Cast `npcs/md_ring.ts` (ids `npc_dr_*`, seven named
+            + a warden + extras). `dialogue/md_ring.ts` (20 trees): **buggy races** as a service (`repeat`): a heat at dusk,
+            one a night, three segments each push / hold / cut (Reflex, no check, Senses; Grit on the last), crash risk, the
+            hired buggy's repairs and tuning (Mechanics or paid), purses in the Act 2 band that shorten for a regular
+            winner; a rivalry that posts a final after two heats (it waits for the player), with a complication to find before
+            it (Mechanics, a witness, or a word) and a prize to decide; a buggy of your own at the end (`dr_buggy`).
+            *Racing at Clover* (`q_dr_clover`, 6 routes) and *Fire at Leven* (`q_dr_leven`, 6 routes, four outcomes).
+            `dialogue/md_raid.ts`: a night scene at Bridgeward's bridgehead that two companions' lines were waiting on (four
+            approaches, the odds a check the player can read from the city's state, two outcomes); its reactions in
+            Bridgeward (the chain, the wall, the old garage, the turf quest).
+            Items 3, leads 5 + 2 conclusions, world event 1 (`leven_fire`, waits for the player). Companions' interjections
+            and approval for visible reasons throughout. Fix: the Precinct's warden station door opened into the gate
+            booth's wall (station sealed in the grid); moved. `tests/b312.test.ts` (34: the places and the Loop, the races
+            and every way the final ends, the tower's four outcomes, the night scene's odds and outcomes, and Meridian end to end from the
+            gate to the Spire's verdict through every district on the Loop). No engine change.
+            Left for later: a second test version (`act2-test-1`) when the owner's Act 1 notes are folded in; the web smoke
+            `tools/qa/act2.sh` is not written (the web runtime is frozen; the headless test stands in for it).
 - [ ] B4 **Halcyon & the Skirts**: arcology, Skirts, the Shift, Contract, Spare Parts, the Leash, the
       Long-Lived; Concern chrome; 7th companion. ~10 h.
 - [ ] B5 **Act 2 wilds**: Glass Flats (Ninebridge, Openfield, the Sump, Cistern 4), Rail Corridor (the
@@ -1799,7 +1819,7 @@ mid-range Android phone; deployed to Pages.
 | Signal Hill | 1/1 | 3/3 | 7/7 | 2/2 | playable; relay, voice, gully |
 | Dry Wells | 1/1 | 6/6 | 13/13 | 2/2 | playable; the Act 1 finale, the family |
 | Act 1 wilds | 5/5 | 15/15 | 17/17 | 2/2 | playable; ten road encounters, discoveries on foot, hunting and traps, the windpumps, the wreck, the orchard |
-| Meridian | 11/14 | 113/120 | 185/190 | 27/30 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward, the Crown, the Archive Spire (the close and landing ninety-one) and the Court of Accounts written; the Loop joins five districts, stairs the Sink, the chain Bridgeward, the invitation car the Crown, a lane the Spire close |
+| Meridian | 12/14 | 121/125 | 206/210 | 29/30 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward, the Crown, the Archive Spire (the close and landing ninety-one), the Court of Accounts and the Dead Ring written; the Loop joins six stops (one outside the Wall), stairs the Sink, the chain Bridgeward, the invitation car the Crown, a lane the Spire close, the gate road the Ring. Loose ends: the far bank (NO BRIDGE) is Act 2 part 2 / B5; Unity sites for the Spire close and the Ring (P10 place build); vehicle travel reading the buggy flag (P12); nothing opens after the Spire beat until B4 |
 | Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |
 | Act 2 wilds | 4/14 | 38/50 | 64/80 | 9/16 | Ninebridge, Openfield, the Sump and Cistern 4 playable (counts approximate) |
 | Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |

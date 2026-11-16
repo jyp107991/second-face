@@ -328,6 +328,19 @@ camp's memory; npc_rd_06 — Brindle (16), scout, Wren's shadow; npc_rd_07 — S
 - **npc_md_10 — the Ledger (voice):** only at the Spire; speaks in forecasts and clauses; wants the player
   to *agree*, not obey.
 
+- **The Dead Ring (B3.12; plan: Build notes — B3.12).** *Dorota Wilk* (56, npc_dr_01, the slate at Clover): want: the
+  races clean, the Ring's one law kept; fear: a fixed race (her son died under a cut line); will not: let a known fix run;
+  changed by: proof she can read out. Says "Nobody jumps my flag twice." *Nkechi Bello* (28, npc_dr_02, Clover's
+  champion): want: back inside the Wall to her brother Kunle (12, a ward); fear: being the Ring's forever; will not: ask
+  for anything; changed by: a fair race, or the Court's ruling on forecast fines. Generous to rivals (teaches the
+  Heron's lean). *Emil Sorensen* (64, npc_dr_03, the pits): want: the races to outlive him; fear: his hands; will not:
+  hire to a fool twice. *Crispin Haverty* (44, npc_dr_04, "the Coat", the Crown bloods' bookman): want: the book to
+  balance; fear: his own house (his card is the stake); will not: touch the Heron himself in daylight. Pleasant, exact,
+  unashamed. *Ha-eun Seo* (62, npc_dr_05, Leven's count): want: nobody dead uncounted; fear: the chalk; will not: leave
+  the count. *Ruben Iturbe* (47, npc_dr_06, the yard): want: sixty families fed; fear: a yard with no buyer; will not: lie
+  about it (his one virtue); changed by: a deal that costs him less than a fight. *Sami* (17, npc_dr_07): a Ring boy who
+  lived in a tower that burned; carries cans for water; wants someone to give him work that is not chalk.
+
 ## G. Halcyon and the Skirts
 - **npc_hc_01 — The Chair, Adair Halverson (~240):** perfect manners; Drift so deep that courtesy is all
   that is left; talks to the player as a future colleague; owns the Scald's authorship and is not sorry.

@@ -7,7 +7,7 @@ export const md_precinct: MapDef = {
   seed: 51,
   settlement: "meridian",
   layout: [
-    "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRaaRRRRRRRRRRRRRR",
+    "RRRrrrrrRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRaaRRRRRRRRRRRRRR",
     "RrrrrrrrrrHHccccccccccccccccccccccccccccccccccccccccccccaacccccccccccccR",
     "RrrrrrrrrrHHccccccccccccccccccccccccccccccccccccccccccccaacccccccccccccR",
     "RrrrrrrrrrHHccccccccccccccccccccccccccccccccccccccccccccaacccccccccccccR",
@@ -27,7 +27,7 @@ export const md_precinct: MapDef = {
     "RrrrrrrrrrHHcCFttFtttttttCccCttttttttttCccCttttttttttttCcccccccccccccccR",
     "RrrrrrrrrrHHcCFttFtttttttCccCttttttttttCccCttttttttttttCccmmmmmmmmmmmmmR",
     "RrrrrrrrrrHHcCFFFFtttttttCccCttttttttttCccCttttttttttttCccmmMMMmMMMmmmmR",
-    "RrrrrrrrrrHHcCCCCCCtCCCCCCccCttttttttttCccCttttttttttttCccmmMmmmmmMmmmmR",
+    "RrrrrrrrrrHHcCCCCCCCCtCCCCccCttttttttttCccCttttttttttttCccmmMmmmmmMmmmmR",
     "RrrrrrrrrrHHccCCCCCCccccccccCttttttttttCccCttttttttttttCccmmMmmmmmMmmmmR",
     "RrrrrrrrrrHHccCccccCccccccccCCCCCtCCCCCCccCCCCCCtCCCCCCCccmmMmmmmmMmmmmR",
     "RrrrrrrrrrHHccCccccCccccccccccccccccccccccccccccccccccccccmmMMMmMMMmmmmR",
@@ -156,6 +156,13 @@ export const md_precinct: MapDef = {
       y: 25,
       rot: 1,
       id: "md_wall_sign"
+    },
+    {
+      kind: "sign",
+      x: 8,
+      y: 2,
+      rot: 3,
+      id: "md_ring_sign"
     },
     {
       kind: "car_wreck",
@@ -941,6 +948,12 @@ export const md_precinct: MapDef = {
       x: 56,
       y: 2,
       facing: 2
+    },
+    {
+      id: "from_ring",
+      x: 5,
+      y: 2,
+      facing: 2
     }
   ],
   exits: [
@@ -992,6 +1005,17 @@ export const md_precinct: MapDef = {
       if: {
         flag: "md_inside"
       }
+    },
+    {
+      x: 3,
+      y: 0,
+      w: 5,
+      h: 1,
+      to: {
+        location: "md_ring",
+        spawn: "from_precinct"
+      },
+      label: "The gate road north along the Wall, to the Ring"
     }
   ],
   talk: {
@@ -1042,6 +1066,10 @@ export const md_precinct: MapDef = {
     md_spire_sign: {
       dialogue: "d_md_spire_sign",
       name: "A sign at the lane"
+    },
+    md_ring_sign: {
+      dialogue: "d_md_ring_sign",
+      name: "Chalk on the Wall"
     }
   },
   containers: {
@@ -1180,7 +1208,7 @@ export const md_precinct: MapDef = {
       y: 17
     },
     station_door: {
-      x: 19,
+      x: 21,
       y: 21
     },
     cell_a: {
@@ -1406,6 +1434,17 @@ export const md_precinct: MapDef = {
       if: {
         flag: "ca_squatter",
         eq: "lost"
+      }
+    },
+    {
+      def: "npc_dr_05",
+      id: "npc_dr_05_line",
+      x: 6,
+      y: 38,
+      facing: 1,
+      schedule: [],
+      if: {
+        flag: "dr_leven_burned"
       }
     }
   ],

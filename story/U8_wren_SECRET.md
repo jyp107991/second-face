@@ -77,3 +77,8 @@ Opt-in only at a fire; she asks at every step; any answer is allowed with no pen
 scene names it if you sold a person. Her leaving ends it too. **Changes later:** `wren_rom`, `wren_after` and
 `wren_rope` are epilogue variables (P11); a committed romance should colour her ending slide and the bridge's.
 Cross-companion: my opt-ins check `romance_partner` (unset or Wren) so a committed romance elsewhere closes hers.
+
+**Built in B3.12** (`dialogue/md_raid.ts`, `d_bw_raid`): the raid as planned above; Vasha Kade is the booth's hand. Odds and
+outcomes: STORY_PLAN_SECRET.md, Build notes — B3.12. A lost raid sets `wren_hanged` and `wren_left` = hanged (she is placed
+nowhere after); a won one keeps her travelling and sets `bw_dogs_hold`. Still open: her `left` node has no text of its own
+for `hanged` (unreachable: she is never placed).

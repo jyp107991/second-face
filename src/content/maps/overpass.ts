@@ -714,7 +714,12 @@ export const overpass: MapDef = {
       def: "npc_rd_02",
       x: 33,
       y: 20,
-      facing: 3
+      facing: 3,
+      if: {
+        not: {
+          flag: "a2_spire_done"
+        }
+      }
     },
     {
       def: "npc_rd_03",
@@ -722,9 +727,18 @@ export const overpass: MapDef = {
       y: 34,
       facing: 2,
       if: {
-        not: {
-          inParty: "npc_rd_03"
-        }
+        all: [
+          {
+            not: {
+              inParty: "npc_rd_03"
+            }
+          },
+          {
+            not: {
+              flag: "wren_hanged"
+            }
+          }
+        ]
       }
     },
     {

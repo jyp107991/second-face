@@ -22,13 +22,14 @@ export const d_mk_loop: DialogueDef = {
   id: 'd_mk_loop', owner: 'narrator', start: [{ node: 'board' }],
   nodes: {
     board: {
-      text: 'THE LOOP — OLD MARKET. The tram on the rail with its doors open. PRECINCT 2 · LANTERN ROW 2 · THE STACKS 3 · BRIDGEWARD 3 · THE DOCKS 4. Chalk through every name but the first two: WORKS.',
-      again: 'The tram, doors open, humming. WORKS through the far names.',
+      text: 'THE LOOP — OLD MARKET. The tram on the rail with its doors open. PRECINCT 2 · LANTERN ROW 2 · THE STACKS 3 · BRIDGEWARD 3 · CLOVER 4 · THE DOCKS 4. The WORKS chalk has been washed off every name but the last, which says NO BRIDGE, and somebody has drawn a buggy beside CLOVER.',
+      again: 'The tram, doors open, humming. NO BRIDGE through the Docks; a buggy drawn beside CLOVER.',
       options: [
         { id: 'mkloop.precinct', text: 'The Precinct. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_precinct', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { id: 'mkloop.lantern', text: 'Lantern Row. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_lantern', spawn: 'loop', minutes: 10 } }], exit: true, repeat: true },
         { id: 'mkloop.stacks', text: 'The Stacks. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_stacks', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { id: 'mkloop.bridgeward', text: 'Bridgeward. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_bridgeward', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
+        { id: 'mkloop.clover', text: 'Clover, outside the Wall. (4 Tolls)', if: { item: 'tolls', count: 4 }, effects: [{ take: 'tolls', count: 4 }, { event: 'goto', data: { location: 'md_ring', spawn: 'loop', minutes: 30 } }], exit: true, repeat: true },
         { text: '(Leave it.)', exit: true },
       ],
     },

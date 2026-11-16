@@ -35,6 +35,16 @@ export const WORLD_EVENTS: Record<string, WorldEventDef> = {
       { news: { tag: 'sink_flooded', text: 'the spring came up the Sink\'s stair a hand higher than last year; the free doctor drowned holding the clinic door', valence: -12, size: 9, at: 'meridian' } },
     ],
   },
+  /** Leven (B3.12): once the player has taken the yard's money to look away, the tower burns at the next three o'clock the
+   * player is in the Ring (the event waits for them; nothing burns behind their back while they are elsewhere). */
+  leven_fire: {
+    id: 'leven_fire', at: { hour: 3, where: 'md_ring' }, armedIf: { flag: 'dr_leven', eq: 'paid' },
+    effects: [
+      { set: 'dr_leven_burned' },
+      { decision: { id: 'dr_leven_burned', text: 'Leven burned in the night after you took the yard\'s money. Two people died on the ninth floor; the count went out of the tower under its keeper\'s arm.' } },
+      { news: { tag: 'dr_leven_burned', text: 'a squatted tower in the Ring burned in the night, floor on floor; its count says two dead on the ninth', valence: -8, size: 6, at: 'meridian' } },
+    ],
+  },
   /** Tamsin out of the Cistern (U8): once her letter's reply has come, or she has been asked at the Grille, she waits at
    * Mags's (the map places her there); at six the first evening the player is in Shale, she comes up to them. If they have
    * already found her, nothing happens. */

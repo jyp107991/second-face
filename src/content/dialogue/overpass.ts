@@ -202,6 +202,9 @@ export const d_rd_vasha: DialogueDef = {
   start: [
     /** Ilya's hunt ends here (U8, q_comp_ilya): the Bridgeward raid (B3.12) puts her at the booth and sets `vasha_cornered`. */
     { if: { all: [{ flag: 'vasha_cornered' }, { not: { flag: 'vasha_fate' } }] }, node: 'cornered' },
+    /** The booth's hand in Bridgeward once the season has closed (B3.12); at night she can be walked up to alone. */
+    { if: { all: [{ at: 'md_bridgeward' }, { flag: 'bw_raid', eq: 'lost' }] }, node: 'bw_after' },
+    { if: { at: 'md_bridgeward' }, node: 'bw_hand' },
     { if: { all: [{ dead: 'npc_rd_01' }, { flag: 'rd_coup' }] }, node: 'after_coup' },
     { if: { flag: 'warned_kessler' }, node: 'betrayed' },
     { if: { flag: 'vasha_coup_agreed', eq: true }, node: 'waiting' },
@@ -263,6 +266,37 @@ export const d_rd_vasha: DialogueDef = {
     },
     raid_yes: { text: '"We leave tonight. Walk the highway like you own it; we\'ll be in the salt. Don\'t pay them. If you pay them I\'ll know what you are."', interject: [{ companion: ILYA, text: '"Riding with Kade." Ilya counts the Dogs round her fire under his breath. "At the gate I stand where I can see her. Not next to her. Right."', effects: [I(-10)] }], options: [{ text: '(Go.)', exit: true }] },
     raid_no: { text: '"Then pay them. Everyone does."', options: [{ text: '(Leave.)', exit: true }] },
+
+    // ---- Bridgeward, once the season has closed (B3.12): the booth's hand, waiting for the night the Dogs come back
+    bw_hand: {
+      text: [
+        { if: { inParty: ILYA }, text: 'Vasha Kade, on the pavement by the toll booth, with a coil of new rope at her feet, the submachine gun on its strap and her thumb on the safety. She sees Ilya before she sees you, and is delighted. "Strand. And {name}. You\'ve both come all this way."' },
+        { if: { flag: 'rd_vasha_met' }, text: '"{name}." Vasha Kade, on the pavement by the toll booth, with a coil of new rope at her feet. "I said people who keep coming back end up staying. Here we both are."' },
+        { text: 'A woman on the pavement by the toll booth with a coil of new rope at her feet, a submachine gun on a strap and her thumb on its safety. "{name}," she says, as if she has been waiting all week to say it. "Vasha. Kade. I hold the rope here now."' },
+      ],
+      again: 'Vasha, by the booth, the rope coiled at her feet. "Say it again," she says. "Your name."',
+      effects: [{ set: 'rd_vasha_met' }, { learn: 'vasha_name' }, { learn: 'vasha_bw_seen' }],
+      interject: [{ companion: ILYA, text: 'Ilya stands very still, the way he stands on a ridge before he lies down on it. "Not here," he says, low, to you and to nobody else. "Not with the Rustmouths round her. At night, when they\'ve gone in. Right."' }],
+      options: [
+        { id: 'vasha.bw.who', text: 'Who hired you?', next: 'bw_who', once: true },
+        { id: 'vasha.bw.wren', text: 'Wren.', if: { flag: 'wren_joined' }, next: 'bw_wren', once: true },
+        { id: 'vasha.bw.read', text: 'You\'ve read your own forecast, and you like it.', next: 'bw_read', once: true },
+        { id: 'vasha.bw.night', text: '(Wait until the Rustmouths have gone in, and walk up to the booth.)', if: { hour: { from: 0, to: 4 } }, effects: [{ set: 'vasha_cornered' }], next: 'cornered' },
+        bye,
+      ],
+    },
+    bw_who: { text: '"The woman in the clean coat. Tuesdays, ten to four." She means the house\'s agent at the booth. "House Vane holds the paper on this bridge, and the near end wants a hand on it when the Dogs come back for it. They will. It\'s written." She smiles. "I read it. I paid a guild factor in the Sallow a month\'s take to read it to me, and then I paid him again to read it twice."', effects: [{ learn: 'vasha_hired' }], options: [{ text: 'Noted.', next: 'bw_hand' }] },
+    bw_wren: { text: '"The scout." Something that is almost fondness. "BRIDGEWARD — A ROPE — THE SCOUT. Mine says EXECUTIONER. I like mine better than she\'ll like hers." She nudges the coil with her boot. "If it\'s written, somebody holds the pen. I\'d rather it was me than some Rustmouth who\'d make a mess of the knot."', effects: [{ learn: 'vasha_wren_line' }], interject: [{ companion: WREN, text: '"Hold it, then," Wren says, from behind you, flat. "See how long you can."' }], options: [{ text: 'Noted.', next: 'bw_hand' }] },
+    bw_read: { text: '"Everybody\'s somebody\'s forecast and doesn\'t know it. I know mine. That\'s the only difference between me and you." She tilts her head, interested. "Have you read yours, {name}? You have. I can see it on you. You didn\'t like it."', effects: [{ learn: 'vasha_read_hers' }], options: [{ text: 'Noted.', next: 'bw_hand' }] },
+    bw_after: {
+      text: 'Vasha, on the booth\'s step, with the rope gone from her feet. She doesn\'t look up at the beam. "It was written," she says. "I only held it." She looks at you, pleased and, under the pleasure, listening. "Somebody has to."',
+      again: 'Vasha on the booth\'s step. She doesn\'t look up at the beam.',
+      interject: [{ companion: ILYA, text: 'Ilya says nothing at all. He looks at the beam, and then at her, and then at the street, and counts the Rustmouths in it under his breath, and gets to four, and stops.' }],
+      options: [
+        { id: 'vasha.after.night', text: '(Wait until the Rustmouths have gone in, and walk up to the booth.)', if: { hour: { from: 0, to: 4 } }, effects: [{ set: 'vasha_cornered' }], next: 'cornered' },
+        bye,
+      ],
+    },
 
     // ---- Ilya's hunt ends at the booth (U8; asleep until the Bridgeward raid sets `vasha_cornered`)
     cornered: {

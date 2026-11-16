@@ -1138,6 +1138,36 @@ export const md_bridgeward: MapDef = {
       x: 33,
       y: 37,
       facing: 0
+    },
+    {
+      def: "npc_rd_02",
+      id: "npc_rd_02_booth",
+      x: 45,
+      y: 23,
+      facing: 1,
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a2_spire_done"
+          },
+          {
+            not: {
+              flag: "vasha_fate"
+            }
+          },
+          {
+            not: {
+              flag: "vasha_dead"
+            }
+          },
+          {
+            not: {
+              dead: "npc_rd_02"
+            }
+          }
+        ]
+      }
     }
   ],
   triggers: [
@@ -1204,6 +1234,56 @@ export const md_bridgeward: MapDef = {
       effects: [
         {
           learn: "seen_tower"
+        }
+      ]
+    },
+    {
+      id: "raid",
+      x: 44,
+      y: 22,
+      w: 5,
+      h: 12,
+      once: false,
+      if: {
+        all: [
+          {
+            inParty: "npc_rd_03"
+          },
+          {
+            flag: "a2_spire_done"
+          },
+          {
+            not: {
+              flag: "bw_raid"
+            }
+          },
+          {
+            hour: {
+              from: 22,
+              to: 4
+            }
+          },
+          {
+            any: [
+              {
+                flag: "wren_bridge",
+                eq: "raid"
+              },
+              {
+                flag: "wren_bridge",
+                eq: "alone"
+              }
+            ]
+          }
+        ]
+      },
+      effects: [
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_bw_raid",
+            name: "The bridge"
+          }
         }
       ]
     },

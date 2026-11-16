@@ -40,6 +40,8 @@ def building(x0, y0, x1, y1, wall, floor, doors):
 fill(0, 0, W - 1, 0, 'R'); fill(0, H - 1, W - 1, H - 1, 'R'); fill(0, 0, 0, H - 1, 'R'); fill(W - 1, 0, W - 1, H - 1, 'R')
 # outside the wall: dirt and rubble, the approach road
 fill(1, 1, 9, H - 2, 'r'); fill(1, 26, 9, 33, 'c'); fill(0, 28, 0, 31, 'c')
+# the gate road north along the Wall, out of the map to the Ring (B3.12)
+fill(3, 0, 7, 0, 'r')
 fill(2, 36, 8, 48, ',')
 # THE WALL: tall concrete, the gate cut through it, a drain under it to the south
 fill(10, 1, 11, H - 2, 'H')
@@ -52,7 +54,7 @@ building(14, 21, 19, 24, 'C', 'c', [(16, 24)])
 fill(12, 27, 70, 32, 'a'); fill(W - 1, 27, W - 1, 32, 'a')   # the avenue runs out of the map east, to Old Market
 fill(58, 26, 70, 26, 'm')
 # the warden station (cells at its west end) and the records office, north of the avenue
-building(13, 10, 25, 20, 'C', 't', [(19, 20)])
+building(13, 10, 25, 20, 'C', 't', [(21, 20)])   # the door clear of the gate booth's wall (B3.12: it opened into it)
 fill(14, 11, 17, 14, 'F'); fill(15, 12, 16, 13, 't'); g[14][16] = 't'   # cell A: a fence ring with its gate at (16,14)
 fill(14, 16, 17, 19, 'F'); fill(15, 17, 16, 18, 't'); g[16][16] = 't'   # cell B, gate at (16,16)
 building(28, 12, 39, 22, 'C', 't', [(33, 22)])
@@ -79,7 +81,7 @@ rows = [''.join(r) for r in g]
 props = [
     # outside: the crowd's camp, sandbags, a sign, a burned-out tram
     {'kind': 'tent', 'x': 3, 'y': 38, 'rot': 1}, {'kind': 'tent', 'x': 3, 'y': 44, 'rot': 1}, {'kind': 'campfire', 'x': 6, 'y': 41}, {'kind': 'blanket', 'x': 7, 'y': 45}, {'kind': 'crate', 'x': 8, 'y': 37, 'id': 'md_refugee_crate'},
-    {'kind': 'sign', 'x': 4, 'y': 25, 'rot': 1, 'id': 'md_wall_sign'}, {'kind': 'car_wreck', 'x': 4, 'y': 10, 'rot': 1}, {'kind': 'debris', 'x': 6, 'y': 16}, {'kind': 'debris', 'x': 3, 'y': 56}, {'kind': 'dead_tree', 'x': 7, 'y': 6},
+    {'kind': 'sign', 'x': 4, 'y': 25, 'rot': 1, 'id': 'md_wall_sign'}, {'kind': 'sign', 'x': 8, 'y': 2, 'rot': 3, 'id': 'md_ring_sign'}, {'kind': 'car_wreck', 'x': 4, 'y': 10, 'rot': 1}, {'kind': 'debris', 'x': 6, 'y': 16}, {'kind': 'debris', 'x': 3, 'y': 56}, {'kind': 'dead_tree', 'x': 7, 'y': 6},
     {'kind': 'sandbags', 'x': 9, 'y': 27}, {'kind': 'sandbags', 'x': 9, 'y': 32}, {'kind': 'fence_post', 'x': 8, 'y': 29}, {'kind': 'fence_post', 'x': 8, 'y': 30},
     {'kind': 'pipe_h', 'x': 5, 'y': 52}, {'kind': 'pipe_h', 'x': 6, 'y': 52}, {'kind': 'sign', 'x': 9, 'y': 54, 'rot': 1, 'id': 'md_drain_sign'},
     # the gate: the scanner, lamps, the barrier, the rates board
@@ -141,13 +143,14 @@ md_precinct = {
     'spawns': [
         {'id': 'start', 'x': 2, 'y': 29, 'facing': 1}, {'id': 'from_ninebridge', 'x': 2, 'y': 30, 'facing': 1}, {'id': 'from_openfield', 'x': 2, 'y': 29, 'facing': 1}, {'id': 'from_sump', 'x': 2, 'y': 31, 'facing': 1},
         {'id': 'from_riverdock', 'x': 2, 'y': 28, 'facing': 1}, {'id': 'from_halt_w', 'x': 2, 'y': 28, 'facing': 1}, {'id': 'from_hamlet_shore', 'x': 2, 'y': 31, 'facing': 1}, {'id': 'from_rigs', 'x': 2, 'y': 31, 'facing': 1},
-        {'id': 'inside', 'x': 22, 'y': 29, 'facing': 1}, {'id': 'cell', 'x': 16, 'y': 13, 'facing': 2}, {'id': 'drain', 'x': 13, 'y': 52, 'facing': 1}, {'id': 'loop', 'x': 63, 'y': 24, 'facing': 2}, {'id': 'sink_stair', 'x': 40, 'y': 51, 'facing': 0}, {'id': 'from_spire', 'x': 56, 'y': 2, 'facing': 2},
+        {'id': 'inside', 'x': 22, 'y': 29, 'facing': 1}, {'id': 'cell', 'x': 16, 'y': 13, 'facing': 2}, {'id': 'drain', 'x': 13, 'y': 52, 'facing': 1}, {'id': 'loop', 'x': 63, 'y': 24, 'facing': 2}, {'id': 'sink_stair', 'x': 40, 'y': 51, 'facing': 0}, {'id': 'from_spire', 'x': 56, 'y': 2, 'facing': 2}, {'id': 'from_ring', 'x': 5, 'y': 2, 'facing': 2},
     ],
     'exits': [
         {'x': 0, 'y': 28, 'w': 1, 'h': 4, 'to': {'worldMap': True}, 'label': 'The road out'},
         {'x': 40, 'y': 53, 'w': 2, 'h': 1, 'to': {'location': 'md_sink', 'spawn': 'from_precinct'}, 'label': 'The stair down to the Sink'},
         {'x': 71, 'y': 27, 'w': 1, 'h': 6, 'to': {'location': 'md_market', 'spawn': 'from_precinct'}, 'label': 'The avenue east, to Old Market', 'if': {'flag': 'md_market_open'}},
         {'x': 56, 'y': 0, 'w': 2, 'h': 1, 'to': {'location': 'md_spire', 'spawn': 'from_precinct'}, 'label': 'The lane north, to the Spire close', 'if': {'flag': 'md_inside'}},
+        {'x': 3, 'y': 0, 'w': 5, 'h': 1, 'to': {'location': 'md_ring', 'spawn': 'from_precinct'}, 'label': 'The gate road north along the Wall, to the Ring'},
     ],
     'talk': {
         'md_scanner': {'dialogue': 'd_md_scanner', 'name': 'The face scanner'},
@@ -162,6 +165,7 @@ md_precinct = {
         'md_bell': {'dialogue': 'd_md_bell', 'name': 'The curfew bell'},
         'md_cell_cot': {'dialogue': 'd_md_cell', 'name': 'The cell'},
         'md_spire_sign': {'dialogue': 'd_md_spire_sign', 'name': 'A sign at the lane'},
+        'md_ring_sign': {'dialogue': 'd_md_ring_sign', 'name': 'Chalk on the Wall'},
     },
     'containers': {
         'md_booth_locker': {'name': 'Gate Locker', 'items': [['c_water', 2]], 'tolls': 20, 'lock': 50},
@@ -174,7 +178,7 @@ md_precinct = {
     'spots': {
         'gate_post': {'x': 16, 'y': 29}, 'gate_booth': {'x': 17, 'y': 23}, 'gate_e': {'x': 19, 'y': 31}, 'gate_w': {'x': 12, 'y': 29},
         'crowd_a': {'x': 6, 'y': 29}, 'crowd_b': {'x': 5, 'y': 31}, 'crowd_pair_a': {'x': 4, 'y': 40}, 'crowd_pair_b': {'x': 5, 'y': 40}, 'crowd_sit': {'x': 7, 'y': 44}, 'crowd_fire': {'x': 5, 'y': 42},
-        'lowe_desk': {'x': 20, 'y': 14}, 'station_counter': {'x': 19, 'y': 17}, 'station_door': {'x': 19, 'y': 21}, 'cell_a': {'x': 16, 'y': 13}, 'cell_b': {'x': 16, 'y': 18},
+        'lowe_desk': {'x': 20, 'y': 14}, 'station_counter': {'x': 19, 'y': 17}, 'station_door': {'x': 21, 'y': 21}, 'cell_a': {'x': 16, 'y': 13}, 'cell_b': {'x': 16, 'y': 18},
         'nine_desk': {'x': 33, 'y': 17}, 'records_counter': {'x': 32, 'y': 20}, 'records_door': {'x': 33, 'y': 23},
         'dais': {'x': 48, 'y': 14}, 'dais_side': {'x': 50, 'y': 14}, 'bench_a': {'x': 44, 'y': 18}, 'bench_b': {'x': 50, 'y': 18}, 'hearing_door': {'x': 48, 'y': 23}, 'rail': {'x': 48, 'y': 17},
         'shop': {'x': 16, 'y': 40}, 'clinic': {'x': 30, 'y': 40}, 'clinic_cot_sit': {'x': 28, 'y': 41},
@@ -196,6 +200,8 @@ md_precinct = {
         {'def': 'npc_md_g5', 'x': 19, 'y': 17, 'facing': 2},
         # the Court's old copyist, put out of the Spire as property when her case was lost (B3.11)
         {'def': 'npc_ar_04', 'id': 'npc_ar_04_line', 'x': 4, 'y': 46, 'facing': 1, 'schedule': [], 'if': {'flag': 'ca_squatter', 'eq': 'lost'}},
+        # Leven's keeper, in the line outside the Wall after the tower burned (B3.12)
+        {'def': 'npc_dr_05', 'id': 'npc_dr_05_line', 'x': 6, 'y': 38, 'facing': 1, 'schedule': [], 'if': {'flag': 'dr_leven_burned'}},
     ],
     'triggers': [
         {'id': 'arrive', 'x': 1, 'y': 25, 'w': 8, 'h': 10, 'text': 'Meridian. Towers first, miles off, grey against grey; then the Wall, poured concrete five storeys high, running out of sight both ways; then, when the road reaches it, a gate the size of a door, a booth, a lamp, and a line of people who have been waiting since before you came over the last rise.', 'effects': [{'learn': 'seen_meridian'}, {'learn': 'loc_meridian'}]},

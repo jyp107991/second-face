@@ -95,7 +95,7 @@ props = [
 ]
 
 overpass = {
-    'id': 'overpass', 'name': 'The Overpass', 'seed': 77, 'settlement': 'rustdogs',
+    'id': 'overpass', 'name': 'Exit Fourteen', 'seed': 77, 'settlement': 'rustdogs',
     'layout': rows,
     'legend': {
         '.': {'floor': 'sand'}, ',': {'floor': 'dirt'}, 'r': {'floor': 'rubble'}, 's': {'floor': 'rubble'}, 'c': {'floor': 'concrete'}, 'm': {'floor': 'metal'},
@@ -148,8 +148,9 @@ overpass = {
     },
     'npcs': [
         {'def': 'npc_rd_01', 'x': 25, 'y': 20, 'facing': 2},
-        {'def': 'npc_rd_02', 'x': 33, 'y': 20, 'facing': 3},
-        {'def': 'npc_rd_03', 'x': 29, 'y': 34, 'facing': 2, 'if': {'not': {'inParty': 'npc_rd_03'}}},
+        # Vasha goes to the city when the season closes there (B3.12: the Bridgeward booth); Wren is nowhere once she has hanged
+        {'def': 'npc_rd_02', 'x': 33, 'y': 20, 'facing': 3, 'if': {'not': {'flag': 'a2_spire_done'}}},
+        {'def': 'npc_rd_03', 'x': 29, 'y': 34, 'facing': 2, 'if': {'all': [{'not': {'inParty': 'npc_rd_03'}}, {'not': {'flag': 'wren_hanged'}}]}},
         {'def': 'npc_rd_05', 'x': 11, 'y': 26, 'facing': 1},
         {'def': 'npc_rd_06', 'x': 29, 'y': 36, 'facing': 2},
         {'def': 'npc_rd_07', 'x': 43, 'y': 19, 'facing': 2},

@@ -22,14 +22,15 @@ export const d_lr_loop: DialogueDef = {
   id: 'd_lr_loop', owner: 'narrator', start: [{ node: 'board' }],
   nodes: {
     board: {
-      text: 'THE LOOP — LANTERN ROW. The tram with its doors open and a tube over the board, pink. PRECINCT 2 · OLD MARKET 2 · THE STACKS 3 · BRIDGEWARD 3 · THE DOCKS 4. Chalk through the last three, and under it in a different chalk: SOON.',
-      again: 'The tram under its pink tube, doors open. SOON, in the second chalk.',
+      text: 'THE LOOP — LANTERN ROW. The tram with its doors open and a tube over the board, pink. PRECINCT 2 · OLD MARKET 2 · THE STACKS 3 · BRIDGEWARD 3 · CLOVER 4 · THE DOCKS 4. Chalk through the Docks: NO BRIDGE. Under CLOVER, in a different chalk: DUSK — 20 TO RUN.',
+      again: 'The tram under its pink tube, doors open. NO BRIDGE; and under CLOVER, DUSK — 20 TO RUN.',
       effects: [{ learn: 'lr_loop_seen' }],
       options: [
         { id: 'lrloop.precinct', text: 'The Precinct. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_precinct', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { id: 'lrloop.market', text: 'Old Market. (2 Tolls)', if: { all: [{ flag: 'md_market_open' }, { item: 'tolls', count: 2 }] }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_market', spawn: 'loop', minutes: 10 } }], exit: true, repeat: true },
         { id: 'lrloop.stacks', text: 'The Stacks. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_stacks', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { id: 'lrloop.bridgeward', text: 'Bridgeward. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_bridgeward', spawn: 'loop', minutes: 10 } }], exit: true, repeat: true },
+        { id: 'lrloop.clover', text: 'Clover, outside the Wall. (4 Tolls)', if: { item: 'tolls', count: 4 }, effects: [{ take: 'tolls', count: 4 }, { event: 'goto', data: { location: 'md_ring', spawn: 'loop', minutes: 25 } }], exit: true, repeat: true },
         { text: '(Leave it.)', exit: true },
       ],
     },

@@ -452,6 +452,109 @@ line, agreed −5, the copyist put outside −5); Odile (the delivery date, the 
 Ilya (Vasha's line, Lowe's cup). Lowe gains lines for the cup (B3.10), the girl in his cell (the wardens' tap line: "the
 season closes"), the fines ruling and the verdict. Verity relays the date and the season line when the girl was kept.
 
+## Build notes — B3.12: the Dead Ring, the races, Bridgeward's raid, the city closed (2026-11-16)
+Content: `tools/maps/gen_md_ring.py` → `maps/md_ring.ts`; `npcs/md_ring.ts` (ids `npc_dr_*`, flags `dr_*`: `dw` is Dry
+Wells'); `dialogue/md_ring.ts` (the Ring, the races, Leven) and `dialogue/md_raid.ts` (Bridgeward's raid); Vasha's
+Bridgeward nodes in her own tree (`d_rd_vasha`, overpass.ts); quests `quests/a2_ring.ts`; items in `items/story_a2.ts`;
+leads in `world/leads.ts`; the Leven fire in `world/events.ts`. Tests `tests/b312.test.ts`.
+
+**Place.** Outside the Wall, north along it from the Precinct's gate road (on foot, no papers: the Ring is outside the
+law) and at the Loop's last halt, where the rail goes under the Wall through a portal with a turnstile and a lens (OUT
+FREE; IN for anyone the lens has counted in once: `md_inside`). Found names: **Clover** (the pre-war cloverleaf where the
+ring road met the city line: the halt and the circuit the buggies race on), **Leven** (Tower Eleven, worn down: a
+squatted tower shell, ninety people), the yard (Ruben Iturbe's salvage yard, cutting dead towers for steel), dead
+towers with nobody in them, and in one of them a dormant hound the Ring's children dare each other to touch (a seed: the
+Concern's machines reached Meridian once; nothing wakes it now). The Wall's THE RING BURNS AND YOU COUNT is paid off
+here: the Ring's fires are its evictions.
+
+**The Loop complete.** Six stops: the Precinct, Old Market, Lantern Row, the Stacks, Bridgeward, Clover (outside the
+Wall). Every board lists them all; the stale WORKS chalk is gone; THE DOCKS stays chalked NO BRIDGE (the far bank is
+Act 2 part 2 / B5); the Crown stays by invitation car; the Spire by its lane, the Sink by its stairs, the Ring also on
+foot from the gate road.
+
+**Cast** (frame narrow for women, broad for men): Dorota Wilk (56, the slate: starter and bookmaker at Clover; the races
+are the Ring's only law everybody keeps, and she keeps them clean because a fixed race is how people die: her son died
+under a cut line twelve years ago; she takes the Crown's money for the final's purse anyway, and knows what it costs) ·
+Nkechi Bello (28, Clover's champion, the rival; her citizen card was voided three years ago by a forecast fine "ahead of
+plan"; her brother Kunle, 12, is a ward in a Precinct school and she sees him through the gate on Fridays; she races for
+the final's prize, a sponsored citizen card, blank on the name line) · Emil Sorensen (64, builds every buggy in the Ring;
+hires out the Mule; his hands shake now; wants the races to outlive him) · Crispin Haverty (44, "the Coat": the Crown
+bloods' bookman, who come down in the invitation car to watch the final "for colour" and bet on it; he owes his own house
+and his card is the stake of his book; the young ones have all backed Bello (a lovely story) and his house's book
+pays them if she wins, so he cuts the Heron's line the night the final is posted)
+· Ha-eun Seo (62, keeps Leven: its rain tank, its count, its door) · Ruben Iturbe (47, the yard: sixty families eat from
+his steel; he buys towers by the ton "however they come down", and the towers that burn are the ones he chalks) · Sami
+(17, a Ring boy paid in water to chalk doors and carry fuel).
+
+**The races (`q_dr_clover`, "Racing at Clover").** An activity, repeatable as a service (`repeat`): a heat at dusk
+(18-23; a heat takes the evening, so one a night), entry 20; the Mule hired from Emil for 10 (crash it and you owe him 25
+before he hires it again), tuned by Emil for 15 or by your own Mechanics 45 (lasts until a crash). Three segments, each a
+choice: **push** (Reflex: +2 places on the straight, +1 at the cloverleaf; fail: the engine coughs and you drop back),
+**hold** (no check: keep your place), **cut** (Senses, through the broken ramp: +2; fail: crash out, the buggy hurt).
+You start fourth of six; first pays 70 (45 once you have won three: "the book pays short on you"), second 30. Rivalry:
+Bello wins every heat you do not; after the first she comes to look at you; after two the slate posts **the final** (it
+waits for the player). Before it: Haverty offers 150 for the Heron not finishing; he cuts the line that night whatever you
+say. Found by the Heron's line (Mechanics 40 at the pits), the pits at night (Senses 7, or Sami if he works the pits), or
+Emil's word; then fixed (Mechanics 40, or 20 to Emil), told to Bello, or carried with the cut line to Dorota, who bars the
+Coat (`dr_haverty` = barred). Taken money and silence = the Heron's brakes go at the cloverleaf (`dr_bello` = crippled:
+she lives, her leg does not). The final: the same three segments one harder, the card and 200 to the winner. After it,
+the card (`dr_card`): given to Bello (she goes in to her brother; she leaves you the Heron: `dr_buggy` = heron), sold back
+to the Coat for 150, or kept (a blank card: a hook for later, e.g. someone in the line). If the Court has voided forecast
+fines (`prec_forecast_fine` = void), telling her lets her contest her own card at the rail (`dr_bello_court`): she goes in
+after the final whatever its result and refuses the card ("give it to someone the Court can't help"). Outcomes:
+`dr_bello` = inside / stays / crippled; `dr_final` = won / bello / other. Emil sells the Mule for 120 after the final
+(`dr_buggy` = mule). `dr_buggy` is the vehicle later travel reads (P12 / B7).
+
+**Fire at Leven (`q_dr_leven`).** Hook: a chalk mark on Leven's door, a ring with a bar; Ha-eun: the towers that get it
+burn, and nobody is ever counted dead in the Ring. Investigation: the same mark on the yard's steel tally (`l_dr_mark`);
+Sami at the door at night with chalk and a can; the yard's book in Ruben's locker (LEVEN — STEEL — FOR THE ROAD, by
+House Vane's arrangement: `l_dr_steel`, which with `l_bw_tenured_road` concludes `c_dr_road_steel`); Ms Harrow, asked
+about the road's steel. Turn: a tower that burns is a tower nobody lives in, and a tower nobody lives in is steel; the
+steel is bread for sixty families in the yard and the Crown's road to the Docks. Choice (`dr_leven`): **barred** (the
+book or Sami's word read out at the slate: the Ring stops buying from Ruben; Leven stands; the yard goes hungry, Ruben
+bitter) · **stripped** (Barter 45 with Ruben, or Speech 50: Leven's people strip their own empty upper floors and sell
+the steel; the tower stands open to the sky; the road gets its steel) · **paid** (60 from Ruben to look away: the world
+event `leven_fire` fires at the next three o'clock the player is in the Ring: `dr_leven_burned`, two dead on the ninth
+floor, Ha-eun in the line outside the Wall) · Sami's own fate (`dr_sami` = pits: Emil takes him on; he then saw the Coat
+in the pits). The two quests touch at Sami and at Dorota's slate, which is the only court the Ring has.
+
+**Bridgeward's raid (B3.9's planned milestone).** Vasha Kade comes to the city when the season closes (`a2_spire_done`):
+House Vane's arrangement hires her as the booth's hand for the night the Dogs come back for the bridge. She has read it
+(her forecast, bought from the guild): BRIDGEWARD — A ROPE — THE SCOUT. Placed at the booth (instance `npc_rd_02_booth`,
+her own tree) until `vasha_fate` or her death; the overpass no longer places her once the season has closed. Her
+Bridgeward nodes: the booth's hand; who hired her; Wren; and at night, with the Rustmouths gone in, the player can walk
+up to the booth (`vasha_cornered`) without any raid, so Ilya's line ends even if Wren's never comes to it.
+The raid (`d_bw_raid`, a trigger at the bridgehead at night once the season has closed, Wren travelling): with
+`wren_bridge` = raid she asks "Tonight?" (the player picks the night: "Not tonight" leaves it); with `alone` she goes on
+the first such night and the player can follow her late (+10) or stay back. Approaches, one check each, DC shown:
+**over the chain** (Firearms 55), **the parapet in the dark** (Stealth 55), **a fourth crew under the mast** (Speech 45,
+only with `bw_three_crews`), or **her call** (no check: the flags decide). Mods: +15 the Rustmouths hold the chain
+(`bw_turf` = rustmouths), +5 blood on it (`bw_held_blood`), −10 the Gilt hold it, −10 three crews, −10 Wren's approval
+≥ 50, −10 a second rifle (`ilya_wren_bridge` with Ilya travelling), −5 Kibet's cache opened, +10 Vasha at the booth, −10
+the player knows the holders' watch (a member; expelled after). Her call wins only if the chain is not the Rustmouths'
+and at least one of (approval ≥ 50, the second rifle, three crews); staying back while she goes alone wins only if the
+Gilt hold the chain and Vasha is gone. **Won** (`bw_raid` = won, `bw_dogs_hold`): the Dogs hold Bridgeward's bridge, the
+Crown's road is blocked at its near end, the booth's rope comes down; Vasha cornered against the booth if she is there
+(`vasha_cornered` → her tree's `cornered`). **Lost** (`bw_raid` = lost, `wren_hanged`, `wren_left` = hanged, she leaves
+the party and is placed nowhere): she hangs from the booth at dawn, by Vasha's hand if Vasha is there; keystone 6 as
+forecast. Kibet chalks the answer either way; the chain and the wall read it. Wren's and Ilya's already-written stages
+(walked / hanged; the booth) are reached by these flags; no dialogue of theirs was rewritten.
+
+**Wrap (Act 2 part 1's city).** Done here: the Loop complete; the raid; the Ring. The hand-off to Halcyon (beat 16,
+`q_a2_halcyon`) is B4's to open: the Spire beat ends the city's critical path and nothing starts after it yet. Left for
+later: the Docks across the river (B5 / Act 2 part 2); the blank card's other takers; the hound in the Ring's tower
+(Act 3, if the Concern wakes machines); vehicle travel reading `dr_buggy`; the Long Night reading `bw_dogs_hold`,
+`dr_leven`, `vasha_fate`; Vasha's fate when Wren never raids and Ilya never comes (she waits at the booth).
+
+**Hard choices:** the card (her brother against the money, or a blank card for someone else); the Coat's 150 (a woman's
+leg); Leven (the squatters' tower against the yard's sixty families, the road's steel either way unless barred); the raid
+(her night against the city's, with odds the player can read; staying back when she goes alone).
+**Companions:** Wren (the Dogs raced; Brindle's buggy; reads the cut like a route; −10 the Coat's money; +5 the card
+given; −5 Leven burned; the raid itself), Ilya (laps and wind; the booth), Odile (reads the Coat's book: written
+backwards; +3 the card sold; +3 stripped), Nine (the Ring is outside the record: listens harder; +2 barred), Tamsin
+(people in towers that are not sealed; −10 the Coat's money, +5 the card given, −10 Leven burned), Ash (the boy who burns
+for water: +5 Sami taken on; −10 Leven burned; −5 the Coat's money).
+
 ## 18. The opening, v4 (owner's note 2026-10-29: no shelter-dweller first steps) — supersedes §4 beat 1 and §8
 Built on the common denominators in `docs/OPENINGS.md`. The player character (PC) is **not** from inside Cistern 9.
 

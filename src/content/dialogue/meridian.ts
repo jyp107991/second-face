@@ -144,20 +144,21 @@ export const d_md_loop: DialogueDef = {
   start: [{ node: 'board' }],
   nodes: {
     board: {
-      text: 'THE LOOP — PRECINCT PLATFORM. A board of district names with a fare beside each: OLD MARKET 2 · LANTERN ROW 2 · THE STACKS 3 · BRIDGEWARD 3 · THE DOCKS 4 · THE CROWN (BY INVITATION). The tram on the rail hums with its doors open. Most of the names have a chalk line through them today: WORKS.',
-      again: 'The tram hums with its doors open. WORKS, in chalk, through most of the names.',
+      text: 'THE LOOP — PRECINCT PLATFORM. A board of district names with a fare beside each: OLD MARKET 2 · LANTERN ROW 2 · THE STACKS 3 · BRIDGEWARD 3 · CLOVER 4 · THE DOCKS 4 · THE CROWN (BY INVITATION). The tram on the rail hums with its doors open. One name still has a chalk line through it: THE DOCKS.',
+      again: 'The tram hums with its doors open. Chalk through THE DOCKS, and nowhere else.',
       effects: [{ learn: 'md_loop_seen' }],
       options: [
         { id: 'loop.market', text: 'Old Market. (2 Tolls)', if: { all: [{ flag: 'md_market_open' }, { item: 'tolls', count: 2 }] }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_market', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { id: 'loop.lantern', text: 'Lantern Row. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { event: 'goto', data: { location: 'md_lantern', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { id: 'loop.stacks', text: 'The Stacks. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_stacks', spawn: 'loop', minutes: 20 } }], exit: true, repeat: true },
         { id: 'loop.bridgeward', text: 'Bridgeward. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_bridgeward', spawn: 'loop', minutes: 20 } }], exit: true, repeat: true },
+        { id: 'loop.clover', text: 'Clover, outside the Wall. (4 Tolls)', if: { item: 'tolls', count: 4 }, effects: [{ take: 'tolls', count: 4 }, { event: 'goto', data: { location: 'md_ring', spawn: 'loop', minutes: 35 } }], exit: true, repeat: true },
         { id: 'loop.crown', text: 'The Crown. (The invitation car.)', if: { any: [{ item: 'k_masque_chit' }, { item: 'k_cr_service_pass' }, { item: 'k_latch_card' }, { wearing: 'r_velvet' }, { knows: 'md_magistrate_designate' }, { member: 'tenured' }, { member: 'tollmen', rank: 'hand' }, { flag: 'cr_entry' }] }, effects: [{ learn: 'cr_car_taken' }, { event: 'goto', data: { location: 'md_crown', spawn: 'lift', minutes: 10 } }], exit: true, repeat: true },
-        { id: 'loop.works', text: '(The lines through the names.)', next: 'works' },
+        { id: 'loop.works', text: '(The chalk through the Docks.)', next: 'works' },
         { text: '(Leave it.)', exit: true },
       ],
     },
-    works: { text: 'WORKS, in chalk, on every line but the Precinct\'s. A citizen waiting on the bench says it has said WORKS since the spring, and that the works are on schedule, and that the schedule is the works.', effects: [{ learn: 'md_loop_works' }], options: [{ text: '(Leave it.)', exit: true }] },
+    works: { text: 'NO BRIDGE, in chalk, through THE DOCKS. A citizen waiting on the bench says the Docks line has said that since before she was born, and that the rest said WORKS all spring, and that the works were on schedule. Clover, she says, is outside the Wall: the tram goes, and comes back, and the Ring is outside the law, and she has never been.', effects: [{ learn: 'md_loop_works' }, { learn: 'dr_ring_heard' }], options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 

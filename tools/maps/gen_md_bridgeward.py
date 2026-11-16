@@ -169,12 +169,16 @@ md_bridgeward = {
         {'def': 'npc_bw_g1', 'x': 3, 'y': 30, 'facing': 1},
         {'def': 'npc_bw_s1', 'x': 42, 'y': 9, 'facing': 0},
         {'def': 'npc_bw_p1', 'x': 33, 'y': 37, 'facing': 0},
+        # the booth's hand once the season has closed (B3.12): Vasha Kade, in her own tree, until her fate is settled
+        {'def': 'npc_rd_02', 'id': 'npc_rd_02_booth', 'x': 45, 'y': 23, 'facing': 1, 'schedule': [], 'if': {'all': [{'flag': 'a2_spire_done'}, {'not': {'flag': 'vasha_fate'}}, {'not': {'flag': 'vasha_dead'}}, {'not': {'dead': 'npc_rd_02'}}]}},
     ],
     'triggers': [
         {'id': 'arrive', 'x': 1, 'y': 24, 'w': 12, 'h': 10, 'text': 'Bridgeward. The chain behind you, and ahead a street of chop-shops and salvage heaps running to a bridge that goes out over nothing and stops. Three kinds of paint on the walls, each over the other. A red light blinks on a mast. Somebody at the bridgehead is charging money to stand on it.', 'effects': [{'learn': 'seen_bridgeward'}, {'set': 'md_bridgeward_open'}, {'quest': 'q_bw_turf', 'start': True}]},
         {'id': 'arrive_loop', 'x': 56, 'y': 3, 'w': 13, 'h': 8, 'text': 'The Loop\'s Bridgeward stop, a metal deck over a street of salvage with a broken bridge at the end of it and a red light blinking on a mast. Three kinds of paint on every wall.', 'effects': [{'learn': 'seen_bridgeward'}, {'set': 'md_bridgeward_open'}, {'quest': 'q_bw_turf', 'start': True}]},
         {'id': 'bridgehead', 'x': 44, 'y': 24, 'w': 5, 'h': 10, 'text': 'The bridgehead: a chain across the deck, a booth, two Rustmouths with shotguns and a slate of prices, and beyond them the bridge going out over the dry river to where it isn\'t any more. A notice on the booth in Crown print.', 'effects': [{'learn': 'seen_toll'}]},
         {'id': 'tower', 'x': 36, 'y': 13, 'w': 9, 'h': 6, 'text': 'The Saints\' tower: a dead relay mast with a red lamp on it that somebody keeps lit, and under it a brick shell full of radios that do not work, arranged like an altar, and people sitting with them, listening.', 'effects': [{'learn': 'seen_tower'}]},
+        # the Dogs come back for the bridge (B3.12): at night, once the season has closed, with Wren travelling and her mind made up
+        {'id': 'raid', 'x': 44, 'y': 22, 'w': 5, 'h': 12, 'once': False, 'if': {'all': [{'inParty': 'npc_rd_03'}, {'flag': 'a2_spire_done'}, {'not': {'flag': 'bw_raid'}}, {'hour': {'from': 22, 'to': 4}}, {'any': [{'flag': 'wren_bridge', 'eq': 'raid'}, {'flag': 'wren_bridge', 'eq': 'alone'}]}]}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_bw_raid', 'name': 'The bridge'}}]},
         {'id': 'drop', 'x': 60, 'y': 24, 'w': 3, 'h': 8, 'once': False, 'text': 'The deck ends in torn rebar and air. Forty feet down, the dry river; across it, the far bank and the Docks\' cranes, close enough to hear and no way to reach.', 'effects': [{'learn': 'seen_drop'}, {'learn': 'docks_seen'}]},
     ],
     'extras': [
