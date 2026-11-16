@@ -37,6 +37,8 @@ export interface OptionDef {
   once?: boolean;
   /** Ends the conversation. */
   exit?: boolean;
+  /** A service asked as often as wanted (trade, travel, a drink): never closed as a spent topic (Unity runtime, U7). */
+  repeat?: boolean;
 }
 
 export interface PassiveDef {
@@ -55,8 +57,14 @@ export interface NodeDef {
   /** Speaker id: an NPC id, 'pc', or 'narrator'. Defaults to the tree's owner. */
   speaker?: string;
   text: Text;
+  /** Said instead of `text` when the conversation comes back here (a hub after a topic); without it the speaker only
+   * waits (Unity runtime, U7: a conversation never says a line twice). */
+  again?: Text;
   effects?: Effect[];
   passives?: PassiveDef[];
+  /** A travelling companion's word on this node (Unity runtime, U7): the first whose companion is with the player and whose
+   * condition holds; its effects apply once in the whole game. */
+  interject?: { companion: string; if?: Cond; text: Text; effects?: Effect[] }[];
   options: OptionDef[];
 }
 

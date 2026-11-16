@@ -24,13 +24,16 @@ import models as M  # noqa: E402  (the library and the meta helpers)
 import assets as A  # noqa: E402  (texture metas)
 import kitlib as K  # noqa: E402  (model metas)
 
-OUT = os.path.join(M.ROOT, 'unity', 'Assets', 'SecondFace', 'Models', 'Nature')
+OUT = os.environ.get('MODELS_BAKE_OUT') or os.path.join(M.ROOT, 'unity', 'Assets', 'SecondFace', 'Models', 'Nature')   # (staged elsewhere while the editor runs; copied in after)
 REL = 'Assets/SecondFace/Models/Nature'
 TEX = 1024
 NORMAL_TEX = 512
 PATCH = 6.0         # a scan wider than this is a ground patch (a rock bed, a stone field): never split, placed deliberately
 
 # Triangle budget per model (None = not baked: needle-geometry trees are rebuilt as card trees, see docs/PORT.md).
+# Files authored at the wrong unit, scaled on import (checked against the real thing's size).
+SCALE = {'steel_frame_shelves_01': 0.1}
+
 BUDGET = {
     'quiver_tree_01': 9000, 'quiver_tree_02': 9000, 'dead_quiver_trunk': 4000, 'dead_tree_trunk': 4500, 'dead_tree_trunk_02': 4500,
     'tree_small_02': 24000,
@@ -41,6 +44,19 @@ BUDGET = {
     'pine_tree_01': None, 'fir_tree_01': None, 'pine_sapling_medium': None, 'fir_sapling_medium': None,
     'tree_stump_01': 3000, 'fern_02': 3000, 'root_cluster_01': 5000,
     'coast_rocks_01': 6000, 'coast_land_rocks_02': 7000,
+    # props for dressing places (a yard holds a dozen: kept small)
+    'barrel_stove': 2500, 'barrel_01': 1500, 'barrel_02': 1500, 'barrel_03': 1500, 'wooden_barrels_01': 4000,
+    'wooden_crate_01': 800, 'wooden_crate_02': 800, 'old_military_crate': 1500, 'wooden_military_crate': 1500, 'ammo_box': 800,
+    'metal_jerrycan': 1200, 'metal_jerrycan_green': 1200, 'plastic_jerrycan': 1200, 'metal_trash_can': 1500,
+    'plastic_crate_01': 1500, 'plastic_crate_03': 1500, 'cardboard_box_01': 600, 'compost_bag_02': 1500,
+    'wicker_basket_01': 2500, 'wicker_basket_02': 2500, 'wooden_bucket_01': 1200, 'watering_can_metal_01': 1500,
+    'planter_box_01': 3000, 'planter_box_02': 3000, 'old_tyre': 2000, 'rusted_wheel_rim_01': 1500,
+    'propane_tank': 1500, 'small_lpg_tank': 1200, 'portable_generator': 3000, 'hand_truck': 2000, 'wooden_ladder': 1200,
+    'concrete_road_barrier': 800, 'utility_box_01': 1200, 'stone_fire_pit': 3000, 'wooden_picnic_table': 2500,
+    'wooden_table_02': 1500, 'wooden_stool_01': 800, 'wooden_stool_02': 800, 'folding_wooden_stool': 1200,
+    'plastic_monobloc_chair_01': 1500, 'painted_wooden_bench': 1500, 'steel_frame_shelves_01': 2500, 'tool_cart': 2500,
+    'metal_tool_chest': 1500, 'bench_vice_01': 1500, 'lantern_01': 1500, 'wooden_lantern_01': 1500,
+    'nettle_plant': 3000, 'weed_plant_02': 3000,
 }
 
 
@@ -58,6 +74,18 @@ def bake(key, src, out, budget):
     reset()
     bpy.ops.import_scene.gltf(filepath=src, merge_vertices=True)  # scans arrive unwelded; collapse needs shared vertices
     meshes = [o for o in bpy.context.scene.objects if o.type == 'MESH']
+    # (decimation needs each mesh its own, and no shape keys: instanced parts are made single, keys dropped)
+    for o in bpy.context.scene.objects: o.select_set(o.type == 'MESH')
+    if meshes:
+        bpy.context.view_layer.objects.active = meshes[0]
+        bpy.ops.object.make_single_user(object=True, obdata=True)
+    for o in meshes:
+        if o.data.shape_keys: o.shape_key_clear()
+        o.select_set(False)
+    scale = SCALE.get(key)
+    if scale:   # a file authored at the wrong unit (the shelving came in ten times too big)
+        for o in bpy.context.scene.objects:
+            if o.parent is None: o.scale = tuple(c * scale for c in o.scale)
     before = sum(tri_count(o) for o in meshes)
     after = before
     # Collapse decimation stops short on scans with many shells or seams; pass again until the budget is met.
@@ -183,7 +211,46 @@ def export_materials(key, meshes):
         assert len(m.name) <= 63, m.name
 
 
-def split_variants(meshes):
+def group_parts(meshes):
+    """A prop's parts joined into whole things: objects whose bounds touch (within 2 cm) are one thing (a box and its
+    lid, a table and its legs); things laid out apart in the file (three barrels side by side) stay separate variants."""
+    import numpy as np
+    boxes = []
+    for o in meshes:
+        co = np.empty(len(o.data.vertices) * 3, np.float32); o.data.vertices.foreach_get('co', co); co = co.reshape(-1, 3)
+        boxes.append((co.min(0) - 0.02, co.max(0) + 0.02) if len(co) else (np.zeros(3), np.zeros(3)))
+    parent = list(range(len(meshes)))
+    def find(i):
+        while parent[i] != i: parent[i] = parent[parent[i]]; i = parent[i]
+        return i
+    for i in range(len(meshes)):
+        for j in range(i + 1, len(meshes)):
+            (alo, ahi), (blo, bhi) = boxes[i], boxes[j]
+            if (alo <= bhi).all() and (blo <= ahi).all(): parent[find(i)] = find(j)
+    groups = {}
+    for i, o in enumerate(meshes): groups.setdefault(find(i), []).append(o)
+    out = []
+    for g in groups.values():
+        if len(g) > 1:
+            for o in bpy.context.scene.objects: o.select_set(False)
+            for o in g: o.select_set(True)
+            bpy.context.view_layer.objects.active = g[0]
+            bpy.ops.object.join()
+        out.append(g[0])
+    # a sliver (a strap, a bolt) left on its own is not a variant: it joins the largest thing
+    sizes = [len(o.data.polygons) for o in out]
+    keep = [o for o, n in zip(out, sizes) if n >= 0.15 * max(sizes)]
+    strays = [o for o in out if o not in keep]
+    if strays:
+        big = max(keep, key=lambda o: len(o.data.polygons))
+        for o in bpy.context.scene.objects: o.select_set(False)
+        for o in strays + [big]: o.select_set(True)
+        bpy.context.view_layer.objects.active = big
+        bpy.ops.object.join()
+    return keep
+
+
+def split_variants(meshes, use=None):
     """One object per variant. Poly Haven ships a scan's variants as separate objects (<key>_a, _b, ... or small_a,
     tall_b ...), so several objects are several variants. A single long, thin object is a row of plants or stones
     (shrub_01: nine seedlings in one mesh): it is cut where the vertices along its length leave an empty stretch, and
@@ -193,8 +260,11 @@ def split_variants(meshes):
     for o in bpy.context.scene.objects: o.select_set(False)
     for o in meshes:
         o.select_set(True); bpy.context.view_layer.objects.active = o
+        # (the glTF's own nodes above the mesh carry its unit scale and turn: kept, then applied)
+        bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
         o.select_set(False)
+    if use == 'prop': return group_parts(meshes) if len(meshes) > 1 else meshes   # (a prop in one piece stays whole: a tyre is not a row)
     if len(meshes) > 1: return meshes
     ob = meshes[0]; me = ob.data
     co = np.empty(len(me.vertices) * 3, np.float32); me.vertices.foreach_get('co', co); co = co.reshape(-1, 3)
@@ -276,7 +346,7 @@ def main():
         if a == '--only': only = set(argv[i + 1].split(','))
         if a == '--force': force = True
     os.makedirs(OUT, exist_ok=True)
-    M.write_meta(os.path.join(M.ROOT, 'unity', 'Assets', 'SecondFace', 'Models'), M.folder_meta('Assets/SecondFace/Models'))
+    if not os.environ.get('MODELS_BAKE_OUT'): M.write_meta(os.path.join(M.ROOT, 'unity', 'Assets', 'SecondFace', 'Models'), M.folder_meta('Assets/SecondFace/Models'))
     M.write_meta(OUT, M.folder_meta('Assets/SecondFace/Models/Nature'))
     manifest_path = os.path.join(OUT, 'models.json')
     manifest = json.load(open(manifest_path)) if os.path.exists(manifest_path) else {}
@@ -301,7 +371,7 @@ def main():
         try:
             before, after, meshes = bake(key, src, None, budget)
             export_materials(key, meshes)
-            variants = split_variants(meshes)
+            variants = split_variants(meshes, use)
             out = []
             for n, ob in enumerate(variants):
                 name = key if len(variants) == 1 else f'{key}_v{n + 1}'

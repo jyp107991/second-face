@@ -11,7 +11,7 @@ import argparse, hashlib, io, json, os, sys, urllib.request, zipfile
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.environ.get('MODELS_DIR') or os.path.join(ROOT, '.scans', 'models')
 API = 'https://api.polyhaven.com/files/'
-RES = '2k'
+RES = os.environ.get('MODELS_RES', '2k')   # (props are fetched at 1k: they bake to a 1K base colour anyway, and disk is tight)
 
 # key: (polyhaven id, use, note)
 LIBRARY = {
@@ -45,6 +45,34 @@ LIBRARY = {
     # the Drowned Shore
     'coast_rocks_01': ('coast_rocks_01', 'rock', 'coast rocks'),
     'coast_land_rocks_02': ('coast_land_rocks_02', 'rock', 'coast rocks'),
+    # places dressed as people live in them (salvaged, patched, reused: the frontier's yards, porches and work corners)
+    'barrel_stove': ('barrel_stove', 'prop', 'barrel stove (a yard\'s fire)'),
+    'barrel_01': ('Barrel_01', 'prop', 'steel drum'), 'barrel_02': ('Barrel_02', 'prop', 'steel drum'), 'barrel_03': ('barrel_03', 'prop', 'steel drum'),
+    'wooden_barrels_01': ('wooden_barrels_01', 'prop', 'wooden barrels'),
+    'wooden_crate_01': ('wooden_crate_01', 'prop', 'crate'), 'wooden_crate_02': ('wooden_crate_02', 'prop', 'crate'),
+    'old_military_crate': ('old_military_crate', 'prop', 'salvaged military crate'), 'wooden_military_crate': ('wooden_military_crate', 'prop', 'military crate'),
+    'ammo_box': ('ammo_box', 'prop', 'ammo box'),
+    'metal_jerrycan': ('metal_jerrycan', 'prop', 'jerrycan'), 'metal_jerrycan_green': ('metal_jerrycan_green', 'prop', 'jerrycan'),
+    'plastic_jerrycan': ('plastic_jerrycan', 'prop', 'water can'),
+    'metal_trash_can': ('metal_trash_can', 'prop', 'bin'),
+    'plastic_crate_01': ('plastic_crate_01', 'prop', 'plastic crate'), 'plastic_crate_03': ('plastic_crate_03', 'prop', 'plastic crate'),
+    'cardboard_box_01': ('cardboard_box_01', 'prop', 'box'), 'compost_bag_02': ('compost_bag_02', 'prop', 'sack'),
+    'wicker_basket_01': ('wicker_basket_01', 'prop', 'basket'), 'wicker_basket_02': ('wicker_basket_02', 'prop', 'basket'),
+    'wooden_bucket_01': ('wooden_bucket_01', 'prop', 'bucket'), 'watering_can_metal_01': ('watering_can_metal_01', 'prop', 'watering can'),
+    'planter_box_01': ('planter_box_01', 'prop', 'planter (a kitchen garden)'), 'planter_box_02': ('planter_box_02', 'prop', 'planter'),
+    'old_tyre': ('old_tyre', 'prop', 'tyre'), 'rusted_wheel_rim_01': ('rusted_wheel_rim_01', 'prop', 'wheel rim'),
+    'propane_tank': ('propane_tank', 'prop', 'gas bottle'), 'small_lpg_tank': ('small_lpg_tank', 'prop', 'gas bottle'),
+    'portable_generator': ('portable_generator', 'prop', 'generator'), 'hand_truck': ('hand_truck', 'prop', 'hand truck'),
+    'wooden_ladder': ('wooden_ladder', 'prop', 'ladder'), 'concrete_road_barrier': ('concrete_road_barrier', 'prop', 'road barrier'),
+    'utility_box_01': ('utility_box_01', 'prop', 'utility box'), 'stone_fire_pit': ('stone_fire_pit', 'prop', 'fire pit'),
+    'wooden_picnic_table': ('wooden_picnic_table', 'prop', 'table and benches'), 'wooden_table_02': ('WoodenTable_02', 'prop', 'table'),
+    'wooden_stool_01': ('wooden_stool_01', 'prop', 'stool'), 'wooden_stool_02': ('wooden_stool_02', 'prop', 'stool'),
+    'folding_wooden_stool': ('folding_wooden_stool', 'prop', 'folding stool'), 'plastic_monobloc_chair_01': ('plastic_monobloc_chair_01', 'prop', 'chair'),
+    'painted_wooden_bench': ('painted_wooden_bench', 'prop', 'bench'),
+    'steel_frame_shelves_01': ('steel_frame_shelves_01', 'prop', 'shelves'), 'tool_cart': ('tool_cart', 'prop', 'tool cart'),
+    'metal_tool_chest': ('metal_tool_chest', 'prop', 'tool chest'), 'bench_vice_01': ('bench_vice_01', 'prop', 'vice'),
+    'lantern_01': ('Lantern_01', 'prop', 'lantern'), 'wooden_lantern_01': ('wooden_lantern_01', 'prop', 'lantern'),
+    'nettle_plant': ('nettle_plant', 'prop', 'weeds'), 'weed_plant_02': ('weed_plant_02', 'prop', 'weeds'),
 }
 
 
@@ -132,7 +160,7 @@ def main():
     a = ap.parse_args()
     only = set(a.only.split(',')) if a.only else None
     os.makedirs(OUT, exist_ok=True)
-    write_meta(os.path.join(ROOT, 'unity', 'Assets', 'External'), folder_meta('Assets/External'))
+    if not os.environ.get('MODELS_NO_UNITY'): write_meta(os.path.join(ROOT, 'unity', 'Assets', 'External'), folder_meta('Assets/External'))
     write_meta(OUT, folder_meta('Assets/External/Models'))
     manifest = {}
     for key, (phid, use, note) in LIBRARY.items():

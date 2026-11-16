@@ -96,7 +96,21 @@ export const q_ch1_outriders: QuestDef = {
     fight: {
       journal: 'I raised my arm to the rise and Corin fired. Knock\'s square is a battlefield.',
       objectives: [{ id: 'win', text: 'Drive off the outriders', done: { all: [{ dead: 'npc_kn_out_lead' }, { dead: 'npc_kn_out_a' }, { dead: 'npc_kn_out_b' }] } }],
-      next: [{ if: { all: [{ dead: 'npc_kn_out_lead' }, { dead: 'npc_kn_out_a' }, { dead: 'npc_kn_out_b' }] }, stage: 'fought' }],
+      next: [
+        { if: { all: [{ dead: 'npc_kn_out_lead' }, { dead: 'npc_kn_out_a' }, { dead: 'npc_kn_out_b' }] }, stage: 'fought' },
+        { if: { flag: 'kn_out_beaten' }, stage: 'beaten' },
+      ],
+    },
+    beaten: {
+      journal: 'They put me in the dust of my own square. When I could stand, the outriders were gone with the stranger\'s notebook, and a rider\'s lamp had gone into the post-house. Maud went in after the post-book.',
+      onEnter: [
+        { take: 'k_notebook' },
+        { set: 'kn_out_choice', value: 'beaten' }, { set: 'kn_posthouse_burned' }, { set: 'kn_maud_hurt' }, { set: 'kn_outriders_gone' },
+        { decision: { id: 'kn_fought_outriders', text: 'You fought the Guild\'s outriders at Knock beside Corin, and lost.' } },
+        { rep: { faction: 'tollmen', respect: -5, fear: 5 } },
+        { news: { tag: 'knock_beaten', text: 'Guild outriders beat a Knock hand in the square and burned the post-house', valence: -8, size: 6, at: 'cistern9' } },
+      ],
+      next: [{ if: { flag: 'kn_outriders_gone' }, stage: 'burned' }],
     },
     fought: {
       journal: 'They are dead in Knock\'s square, and the Guild will hear of it. A rider\'s lamp went into the post-house in the fighting. Maud went in after the post-book.',

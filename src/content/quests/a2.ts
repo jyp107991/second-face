@@ -179,7 +179,7 @@ export const q_of_seed: QuestDef = {
 };
 
 export const q_of_rite: QuestDef = {
-  id: 'q_of_rite', title: 'The Sky Rite', act: 'a2', start: 'asked', xp: 120,
+  id: 'q_of_rite', title: 'Sky Rite', act: 'a2', start: 'asked', xp: 120,
   routes: [{ id: 'bury', kind: 'talk', label: 'Raise a cairn for someone you lost, under the open sky' }],
   stages: {
     asked: {
@@ -196,7 +196,7 @@ export const q_of_rite: QuestDef = {
 const C4_PROOF = { any: [{ item: 'k_c4_order' }, { knows: 'c4_four_spoke' }, { knows: 'c4_diary_read' }] };
 
 export const q_a2_cistern4: QuestDef = {
-  id: 'q_a2_cistern4', title: 'The Fourth Door', act: 'a2', critical: true, start: 'sump', xp: 400,
+  id: 'q_a2_cistern4', title: 'Fourth Door', act: 'a2', critical: true, start: 'sump', xp: 400,
   routes: [
     { id: 'four', kind: 'tech', label: 'Crank the caretaker awake and ask it what it was told', requires: { any: [{ skill: 'science', gte: 35 }, { skill: 'mechanics', gte: 35 }] } },
     { id: 'records', kind: 'knowledge', label: 'The Archive: the order itself, with the city\'s seal' },
@@ -271,7 +271,7 @@ export const q_c4_diary: QuestDef = {
 const MD_IN = { flag: 'md_status' };
 
 export const q_a2_precinct: QuestDef = {
-  id: 'q_a2_precinct', title: 'The Face at the Gate', act: 'a2', critical: true, start: 'wall', xp: 450,
+  id: 'q_a2_precinct', title: 'Face at the Gate', act: 'a2', critical: true, start: 'wall', xp: 450,
   routes: [
     { id: 'hearing', kind: 'talk', label: 'Stand the citizenship hearing and talk your way to papers', requires: { skill: 'speech', gte: 40 } },
     { id: 'paper', kind: 'barter', label: 'The hearing takes evidence: a guild ticket, a reserve\'s records, a dead doctor\'s letter' },
@@ -305,7 +305,7 @@ export const q_a2_precinct: QuestDef = {
 };
 
 export const q_md_exam: QuestDef = {
-  id: 'q_md_exam', title: 'The Citizenship Exam', act: 'a2', start: 'sit', xp: 120,
+  id: 'q_md_exam', title: 'Citizenship Exam', act: 'a2', start: 'sit', xp: 120,
   routes: [{ id: 'sit', kind: 'knowledge', label: 'Five questions on the charter, the drains and the calendar; three right makes a citizen' }],
   stages: {
     sit: {
@@ -337,7 +337,7 @@ export const q_md_fines: QuestDef = {
 // ---------------------------------------------------------------- Old Market: the kiosk, the riot, the Broker's gigs
 
 export const q_md_kiosk: QuestDef = {
-  id: 'q_md_kiosk', title: 'The Haunted Kiosk', act: 'a2', start: 'name', xp: 140,
+  id: 'q_md_kiosk', title: 'Haunted Kiosk', act: 'a2', start: 'name', xp: 140,
   routes: [
     { id: 'wire', kind: 'tech', label: 'Follow the wire from the kiosk to where it drinks', requires: { any: [{ skill: 'mechanics', gte: 30 }, { skill: 'science', gte: 30 }] } },
     { id: 'lark', kind: 'talk', label: 'The boy who feeds it knows what it eats' },
@@ -452,7 +452,7 @@ export const q_sk_organ: QuestDef = {
 };
 
 export const q_sk_code: QuestDef = {
-  id: 'q_sk_code', title: 'The Menders\' Code', act: 'a2', start: 'hands', xp: 100,
+  id: 'q_sk_code', title: 'Menders\' Code', act: 'a2', start: 'hands', xp: 100,
   stages: {
     hands: {
       journal: 'Ocho does not take apprentices; he takes hands. Hold a clamp steady through one fitting and he will say the words, which are: *fit only what the patient can bear*. Shake, and Pell takes the clamp, and there is always a next time down here.',
@@ -466,7 +466,7 @@ export const q_sk_code: QuestDef = {
 // ---------------------------------------------------------------- Lantern Row
 
 export const q_lr_pits: QuestDef = {
-  id: 'q_lr_pits', title: 'The Pit', act: 'a2', start: 'card', xp: 120,
+  id: 'q_lr_pits', title: 'Fight Pits', act: 'a2', start: 'card', xp: 120,
   routes: [
     { id: 'under', kind: 'knowledge', label: 'Read the undercard before the house does' },
     { id: 'comer', kind: 'fight', label: 'Stand against Anvil: hands and iron, nobody dies' },
@@ -594,7 +594,7 @@ export const q_bw_static: QuestDef = {
 };
 
 export const q_bw_haunt: QuestDef = {
-  id: 'q_bw_haunt', title: 'The Old Haunt', act: 'a2', start: 'garage', xp: 100,
+  id: 'q_bw_haunt', title: 'Old Haunt', act: 'a2', start: 'garage', xp: 100,
   stages: {
     garage: {
       journal: 'A garage in Bridgeward with a dog\'s head burned into every wall: the Rust Dogs\' old haunt, before the Rustmouths took the bridge and the Dogs took the Sallow. An old Dog named Fenn has sat on the same bench for nine years, and the bench is a cache.',
@@ -608,7 +608,7 @@ export const q_bw_haunt: QuestDef = {
 // ---------------------------------------------------------------- the Crown
 
 export const q_cr_masque: QuestDef = {
-  id: 'q_cr_masque', title: 'The Masque', act: 'a2', start: 'lift', xp: 300,
+  id: 'q_cr_masque', title: 'Masque', act: 'a2', start: 'lift', xp: 300,
   routes: [
     { id: 'word', kind: 'talk', label: 'Speak for a house at the Committee\'s lectern', requires: { skill: 'speech', gte: 40 } },
     { id: 'duel', kind: 'fight', label: 'Stand for a house on the floor: the Chair follows the duel' },
@@ -634,7 +634,7 @@ export const q_cr_masque: QuestDef = {
 };
 
 export const q_cr_kidnap: QuestDef = {
-  id: 'q_cr_kidnap', title: 'The Kidnapping', act: 'a2', start: 'gig', xp: 150,
+  id: 'q_cr_kidnap', title: 'A Kidnapping', act: 'a2', start: 'gig', xp: 150,
   routes: [
     { id: 'down', kind: 'stealth', label: 'Take her down the service lift as she paid for' },
     { id: 'sell', kind: 'barter', label: 'Sell the house her escape; the house pays better than the hatch' },

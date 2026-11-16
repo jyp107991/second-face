@@ -209,6 +209,10 @@ export function validateContent(c: ContentBundle): string[] {
         if (!o.next && !o.exit) errs.push(`${where}/${nid}#${i}: option needs next or exit`);
         if (o.id) { if (seenIds.has(o.id)) errs.push(`${where}: duplicate option id ${o.id}`); seenIds.add(o.id); }
       });
+      for (const ij of n.interject ?? []) {
+        if (c.npcs && !c.npcs[ij.companion]) errs.push(`${where}/${nid}: interjection by unknown companion ${ij.companion}`);
+        refs(`${where}/${nid}/interject`, ij);
+      }
       refs(`${where}/${nid}`, n);
     }
   }
@@ -237,6 +241,7 @@ export function validateContent(c: ContentBundle): string[] {
     if (c.npcs && !c.npcs[l.to]) errs.push(`letter ${key}: unknown recipient ${l.to}`);
     refs(`letter ${key}`, l.if); refs(`letter ${key}`, l.effects); refs(`letter ${key} reply`, l.reply?.effects);
   }
+  errs.push(...naming(c));
   for (const [key, f] of Object.entries(c.factions ?? {})) {
     if (f.id !== key) errs.push(`faction ${key}: id mismatch`);
     if (!f.ranks.length) errs.push(`faction ${key}: no ranks`);
@@ -246,5 +251,27 @@ export function validateContent(c: ContentBundle): string[] {
     if (f.initiation && c.quests && !c.quests[f.initiation]) errs.push(`faction ${key}: unknown initiation quest ${f.initiation}`);
     for (const r of f.ranks) refs(`faction ${key} rank ${r.id}`, r.requires);
   }
+  return errs;
+}
+
+/** The naming bible's mechanical checks (docs/DESIGN_UNITY.md §8.1, U6): a settlement, map, world location, faction,
+ * quest or item is never named "The" + a noun alone, and no name uses a banned word. Regions (geography keeps its article
+ * as English does) and map props (labels of things, not names) are not checked. */
+export const BANNED_NAME_WORDS = ['wasteland', 'wastelander', 'vault', 'overseer', 'brotherhood', 'enclave', 'doom', 'neo-', 'cyber', 'topia'];
+
+export function naming(c: ContentBundle): string[] {
+  const errs: string[] = [];
+  const check = (where: string, name: string | undefined) => {
+    if (!name) return;
+    if (/^the\s/i.test(name)) errs.push(`${where}: name "${name}" is "the" + a noun (naming bible: a found name)`);
+    const low = name.toLowerCase();
+    for (const w of BANNED_NAME_WORDS) if (low.includes(w)) errs.push(`${where}: name "${name}" uses the banned "${w}"`);
+  };
+  for (const [k, m] of Object.entries(c.maps ?? {})) check(`map ${k}`, (m as { name?: string }).name);
+  for (const [k, st] of Object.entries(c.settlements ?? {})) check(`settlement ${k}`, (st as { name?: string }).name);
+  for (const [k, l] of Object.entries(c.worldMap?.locations ?? {})) check(`location ${k}`, (l as { name?: string }).name);
+  for (const [k, f] of Object.entries(c.factions ?? {})) check(`faction ${k}`, (f as { name?: string }).name);
+  for (const [k, q] of Object.entries(c.quests ?? {})) check(`quest ${k}`, (q as { title?: string }).title);
+  for (const [k, it] of Object.entries(c.items ?? {})) check(`item ${k}`, (it as { name?: string }).name);
   return errs;
 }

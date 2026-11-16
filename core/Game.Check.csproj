@@ -18,6 +18,9 @@
   <ItemGroup>
     <Reference Include="$(UnityManaged)/UnityEngine/*.dll" />
     <!-- package assemblies the editor has compiled (present once the editor has opened the project) -->
+    <Reference Include="../unity/Library/ScriptAssemblies/Unity.Mathematics.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.Mathematics.dll')" />
+    <Reference Include="../unity/Library/ScriptAssemblies/Unity.Burst.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.Burst.dll')" />
+    <Reference Include="../unity/Library/ScriptAssemblies/Unity.Collections.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.Collections.dll')" />
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.Addressables.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.Addressables.dll')" />
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.ResourceManager.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.ResourceManager.dll')" />
     <Reference Include="../unity/Library/ScriptAssemblies/Unity.AI.Navigation.dll" Condition="Exists('../unity/Library/ScriptAssemblies/Unity.AI.Navigation.dll')" />

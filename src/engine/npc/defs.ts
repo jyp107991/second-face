@@ -5,7 +5,7 @@ import type { MerchantDef } from '../inventory/barter';
 import type { ScheduleEntry } from './schedule';
 import type { WeaponDef } from '../inventory/items';
 import type { AttributeId, SkillId } from '../stats/rules';
-import type { Cond } from '../world/logic';
+import type { Cond, Effect } from '../world/logic';
 
 /**
  * NPC definition (content). Personality, memory, schedules and dialogue are added in M2;
@@ -43,6 +43,9 @@ export interface NpcDef {
   hostile?: boolean;
   /** Hostile while this holds (a camp that turns on you once a flag is set). */
   hostileIf?: Cond;
+  /** When they beat the player in a fight, these effects apply and the game goes on, the player left hurt (losing forward:
+   *  a fight the story survives, never a return to the title). Without it a lost fight ends the game. */
+  beaten?: Effect[];
   /** Fights on your side in encounters on their map while this holds (a town's militia on the day). */
   ally?: Cond;
   /** 0..100 */

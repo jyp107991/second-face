@@ -157,6 +157,28 @@ The dialogue engine and its content stay; the delivery is the scene described in
 memory, exhaustion, state-aware greetings, interjections, no loops) is built into the new conversation UI from the
 start, and companions in shot interject.
 
+**The rules in force (U7 part 1, Core `DialogueRunner` and `Greetings`, 2026-11-16).** A conversation never says a line
+twice, by construction, for every tree the content has or will have:
+- **A spent topic closes.** An option asked before, whose effects do the same the second time (a flag, a thing learned,
+  a lead, a memory) and whose every line has been heard (the nodes it opens said before, their own topics spent or
+  leading back), is no longer offered, in this talk or a later one (what has been said to whom is the save's own
+  `seen`/`visited` memory). Exits, services (`repeat: true`: trade, travel, a drink), checks and lines that read the world
+  (text variants) never close. A node whose topics are all spent keeps them rather than strand the talk.
+- **A hub is not said twice.** Coming back to a node the conversation has said (a hub after a topic) shows the node's
+  `again` line, or, without one, a narrated beat ("Maud waits."), never the speech again.
+- **The next talk opens with a greeting, not the same speech.** An opening said in an earlier talk gives way to the
+  node's `again` line, or a greeting from state: how long since the last talk (minutes ago: "Back already?"), how they
+  stand with the player (wary when they distrust them, warm when they trust or like them), the hour. Openings with text
+  variants (they read the world) are said as written.
+- **Companions have their say.** A node may carry `interject`: a travelling companion's word (the first whose companion
+  is with the player, not left waiting in a town, and whose condition holds), drawn under their name beside the line;
+  its effects (an approval that moves for a reason the player sees) apply once in the whole game.
+- Content gains three optional fields (`src/engine/dialogue/dialogue.ts`): `repeat` on an option, `again` and
+  `interject` on a node. EditMode `ConversationTests` walk every conversation in the game from a new game and assert
+  none says a line twice.
+Still to come (U7 part 2): news and weather in greetings, and the content pass that writes `again` lines and companions'
+interjections where they belong (with U8, the characters' pass).
+
 ### 5.4 Inventory, wardrobe, barter, camp
 - Inventory as a grid of drawn items with weight, condition, comparison and the live figure as the paper doll;
   equipping shows on the body at once (visible chrome too).
@@ -209,8 +231,45 @@ Sources are CC0/CC-BY libraries mixed in-project; original music is an owner dec
 - **People**: WORLD §7 is the rule (salvage layered and re-dyed, protection first, uniforms of the dead, city style
   without cleanliness, practical hair, lean weathered bodies). Chrome is the future: segmented matte plating, seams,
   a lit accent line; never bolted scrap.
-- **Names** feel found, not "the [noun]" (the naming bible, U6, is written in this phase of content).
+- **Names** feel found, not "the [noun]": the naming bible below (§8.1, U6).
 - **Type**: two OFL typefaces, a readable grotesque for UI and a book face for the notebook; no cursive.
+
+### 8.1 The naming bible (U6, 2026-11-16)
+How this world names things, ninety years after the Burn. Names are found, not designed: worn down by use, given by the
+people who live with the thing, from what was there before or what happened there. A name a game designer would give
+(a role plus a capital letter) is the failure this bible exists to prevent.
+
+**Places.** A place is named by what it was, what it does, or what happened there, in the speech of the people who use
+it: a pre-war name worn short (a mall's brand cut to a syllable, a route number become a word), a working name (what is
+pumped, sold or mended there), a landmark (the thing you steer by), an event or a person ("where Doss's truck burned"
+said for forty years becomes "Doss's"). Short, often one or two words; a dropped article is normal ("Knock", "Shale",
+"Ninebridge"). Geography keeps its article when English does (a region, a river, a range): "the Sallow", "the Teeth".
+A settlement, a district or a building never takes "the" + a common noun as its whole name ("the Archive", "the
+Market", "the Depot"): it gets the found name, and the common noun stays as what people call it in passing.
+
+**People.** Given names from the mix of peoples who survived here (WORLD §7), shortened, nicknamed and inherited; a
+surname is rare among the poor and a title of the rich. Nicknames come from a trade, a scar, a habit or a joke, never
+from a role the story gives them. No name tells the player what someone will turn out to be.
+
+**Factions and groups.** What outsiders call them, which is rarely what they call themselves: a gang named for a colour,
+a street or a dead founder; a guild for its trade; a faith for its rite. The owner's own names stand (Rust Dogs,
+Tollmen, Choir of the Open Sky, the Ledger). In running text a group takes "the" as English does ("the Tollmen"); its
+display name does not need it.
+
+**Things.** Items are what a scavenger would call them: the object, its maker's worn mark or its use ("tin of beans",
+"Hesper knife", "door-cutter"), never a fantasy epithet. Unique items carry their owner's name or their story in the
+description, not a capitalised title.
+
+**Events and quests.** A quest's title is what the player would write in a notebook: the matter, in their words, not
+a chapter title ("Water for Knock", not "The Water Clock").
+
+**Banned outright:** "Wasteland", "Vault", "Overseer", "Brotherhood", "Enclave", "Wastelander", "Raiders" as a proper
+name, "Doom", "Death" or "Blood" as an adjective in a name, "Neo-" anything, "Cyber" anything, "-topia", and any name
+already used by a well-known post-apocalyptic or cyberpunk game.
+
+**Mechanical checks (the validator, `npm run check`):** the display name of a settlement, map, world location, faction,
+quest or named item may not be "The" + a common noun alone, and may not contain a banned word. Map props (an
+interactable's label: "the windpump", "the grille") are things, not names, and are not checked.
 
 ## 9. Technical architecture
 

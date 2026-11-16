@@ -3,7 +3,7 @@ import type { QuestDef } from '../../engine/quest/quest';
 /** Act 1: the road east. */
 
 export const q_a1_tollhouse: QuestDef = {
-  id: 'q_a1_tollhouse', title: 'The Wall on the Highway', act: 'a1', critical: true, start: 'road', xp: 300,
+  id: 'q_a1_tollhouse', title: 'Wall on the Highway', act: 'a1', critical: true, start: 'road', xp: 300,
   routes: [
     { id: 'pay', kind: 'barter', label: 'Pay the toll (20 Tolls)' },
     { id: 'contract', kind: 'talk', label: 'Carry a sealed guild packet east (free passage, and a catch)' },
@@ -66,7 +66,7 @@ export const q_a1_ledger: QuestDef = {
 };
 
 export const q_a1_signal: QuestDef = {
-  id: 'q_a1_signal', title: 'The Hill with the Mast', act: 'a1', critical: true, start: 'track', xp: 300,
+  id: 'q_a1_signal', title: 'Hill with the Mast', act: 'a1', critical: true, start: 'track', xp: 300,
   routes: [
     { id: 'pay', kind: 'barter', label: 'Pay the Hollow their track toll (or a circuit board)' },
     { id: 'talk', kind: 'talk', label: 'Tell the Hollow the voice is your problem', requires: { skill: 'speech', gte: 40 } },
@@ -125,7 +125,7 @@ export const q_a1_broadcast: QuestDef = {
 
 /** The first name on the map, and the month it comes with. */
 export const q_a1_jonah: QuestDef = {
-  id: 'q_a1_jonah', title: 'The Month', act: 'a1', critical: true, start: 'month', xp: 400,
+  id: 'q_a1_jonah', title: 'Jonah\'s Month', act: 'a1', critical: true, start: 'month', xp: 400,
   routes: [
     { id: 'tower', kind: 'tech', label: 'Change the conditions of the fall (the windpump tower)' },
     { id: 'street', kind: 'talk', label: 'Change the conditions of the fight (drill the militia)' },
@@ -200,7 +200,7 @@ const DW_END = (how: string, text: string) => [
 ];
 
 export const q_a1_drywells: QuestDef = {
-  id: 'q_a1_drywells', title: 'The Water Clock', act: 'a1', critical: true, start: 'track', xp: 500,
+  id: 'q_a1_drywells', title: 'Water Clock', act: 'a1', critical: true, start: 'track', xp: 500,
   routes: [
     { id: 'science', kind: 'tech', label: 'Override the schedule at the console', requires: { skill: 'science', gte: 45 } },
     { id: 'word', kind: 'talk', label: 'The pump man\'s credential: Oriel Marr\'s key and her father\'s word' },
@@ -295,7 +295,7 @@ export const q_dw_ghosts: QuestDef = {
 
 /** The convoy on the white and what sat down beside it. */
 export const q_sw_wreck: QuestDef = {
-  id: 'q_sw_wreck', title: 'The Saltpan Wreck', act: 'a1', start: 'found', xp: 200,
+  id: 'q_sw_wreck', title: 'Saltpan Wreck', act: 'a1', start: 'found', xp: 200,
   routes: [
     { id: 'cab', kind: 'stealth', label: 'Open the cab', requires: { skill: 'security', gte: 45 } },
     { id: 'wake', kind: 'tech', label: 'Wake the machine for Shale', requires: { skill: 'science', gte: 40 } },
@@ -389,7 +389,7 @@ export const q_a1_seed: QuestDef = {
 
 /** Three on cots and one of her. */
 export const q_a1_tents: QuestDef = {
-  id: 'q_a1_tents', title: 'The Choir Tent', act: 'a1', start: 'tend', xp: 150,
+  id: 'q_a1_tents', title: 'Choir Tent', act: 'a1', start: 'tend', xp: 150,
   routes: [{ id: 'tend', kind: 'medicine', label: 'See to the sick in the mission tent' }],
   stages: {
     tend: {

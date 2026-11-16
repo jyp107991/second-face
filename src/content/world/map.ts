@@ -7,39 +7,39 @@ import type { LocationDef, NetworkDef, RouteDef, WorldMap } from '../../engine/w
  */
 const L: LocationDef[] = [
   // The Sallow
-  { id: 'cistern9', name: 'Cistern 9', region: 'sallow', x: 470, y: 382, kind: 'major', settlement: 'cistern9', map: 'c9_mouth' },
+  { id: 'cistern9', name: 'Knock', region: 'sallow', x: 470, y: 382, kind: 'major', settlement: 'cistern9', map: 'c9_mouth' },
   { id: 'shale', name: 'Shale', region: 'sallow', x: 455, y: 360, kind: 'major', settlement: 'shale', map: 'shale' },
   { id: 'drywells', name: 'Dry Wells', region: 'sallow', x: 500, y: 395, kind: 'minor', settlement: 'drywells', map: 'drywells' },
-  { id: 'rustdogs', name: 'the overpass', region: 'sallow', x: 430, y: 335, kind: 'major', settlement: 'rustdogs', map: 'overpass' },
+  { id: 'rustdogs', name: 'Exit Fourteen', region: 'sallow', x: 430, y: 335, kind: 'major', settlement: 'rustdogs', map: 'overpass' },
   { id: 'tollhouse', name: 'Tollhouse 9', region: 'sallow', x: 420, y: 300, kind: 'major', settlement: 'tollhouse', map: 'tollhouse' },
   { id: 'signalhill', name: 'Signal Hill', region: 'sallow', x: 402, y: 286, kind: 'minor', map: 'signalhill' },
   { id: 'lm_sallow_01', name: 'Salt-pan wreck', region: 'sallow', x: 442, y: 372, kind: 'landmark', hidden: true, map: 'saltpan' },
-  { id: 'orchard', name: 'the Burnt Orchard', region: 'sallow', x: 452, y: 349, kind: 'minor', map: 'orchard' },
+  { id: 'orchard', name: 'Burnt Orchard', region: 'sallow', x: 452, y: 349, kind: 'minor', map: 'orchard' },
   // The Wheel: a nomad camp that stands four days at each of its stops round the Sallow, then turns.
-  { id: 'wheel', name: 'the Wheel', region: 'sallow', x: 446, y: 371, kind: 'minor', settlement: 'wheel', map: 'wheel', hidden: true,
+  { id: 'wheel', name: 'Wheel', region: 'sallow', x: 446, y: 371, kind: 'minor', settlement: 'wheel', map: 'wheel', hidden: true,
     moves: { days: 4, route: [{ x: 446, y: 371, near: 'shale' }, { x: 489, y: 384, near: 'drywells' }, { x: 458, y: 338, near: 'orchard' }, { x: 437, y: 349, near: 'rustdogs' }] } },
   { id: 'lm_sallow_02', name: 'Windpump graveyard', region: 'sallow', x: 488, y: 345, kind: 'landmark', hidden: true, map: 'windpumps' },
   // The Glass Flats
   { id: 'ninebridge', name: 'Ninebridge', region: 'glass_flats', x: 320, y: 300, kind: 'major', settlement: 'ninebridge', map: 'ninebridge' },
   { id: 'openfield', name: 'Openfield', region: 'glass_flats', x: 280, y: 340, kind: 'major', settlement: 'openfield', map: 'openfield' },
-  { id: 'sump', name: 'the Sump', region: 'glass_flats', x: 362, y: 382, kind: 'minor', settlement: 'sump', map: 'sump' },
+  { id: 'sump', name: 'Sump', region: 'glass_flats', x: 362, y: 382, kind: 'minor', settlement: 'sump', map: 'sump' },
   { id: 'lm_flats_01', name: 'Stilted freeway', region: 'glass_flats', x: 370, y: 318, kind: 'landmark', hidden: true },
   // The Rail Corridor
-  { id: 'junction', name: 'the Junction', region: 'rail_corridor', x: 380, y: 232, kind: 'major' },
+  { id: 'junction', name: 'Four Ways', region: 'rail_corridor', x: 380, y: 232, kind: 'major' },
   { id: 'halt_e', name: 'East Halt', region: 'rail_corridor', x: 520, y: 220, kind: 'minor' },
   { id: 'halt_w', name: 'West Halt', region: 'rail_corridor', x: 215, y: 238, kind: 'minor' },
-  { id: 'depot', name: 'the Depot', region: 'rail_corridor', x: 300, y: 205, kind: 'minor' },
+  { id: 'depot', name: 'Yard Nine', region: 'rail_corridor', x: 300, y: 205, kind: 'minor' },
   // The Drowned Shore & Meridian
   { id: 'meridian', name: 'Meridian', region: 'meridian', x: 95, y: 340, kind: 'major', settlement: 'meridian', map: 'md_precinct' },
   { id: 'hamlet_shore', name: 'Gull Stilts', region: 'drowned_shore', x: 60, y: 420, kind: 'minor' },
-  { id: 'rigs', name: 'the Rigs', region: 'drowned_shore', x: 22, y: 300, kind: 'landmark' },
+  { id: 'rigs', name: 'Rigs', region: 'drowned_shore', x: 22, y: 300, kind: 'landmark' },
   // The Teeth
-  { id: 'skirts', name: 'the Skirts', region: 'teeth', x: 628, y: 142, kind: 'major' },
+  { id: 'skirts', name: 'Skirts', region: 'teeth', x: 628, y: 142, kind: 'major' },
   { id: 'halcyon', name: 'Halcyon', region: 'teeth', x: 642, y: 118, kind: 'major' },
   { id: 'mine_teeth', name: 'Number Four Pit', region: 'teeth', x: 600, y: 222, kind: 'minor' },
   // The Northern Wet
   { id: 'timber', name: 'Sawtown', region: 'northern_wet', x: 300, y: 92, kind: 'minor' },
-  { id: 'dam', name: 'the Dam', region: 'northern_wet', x: 196, y: 62, kind: 'landmark' },
+  { id: 'dam', name: 'Ashby Dam', region: 'northern_wet', x: 196, y: 62, kind: 'landmark' },
   { id: 'riverdock', name: 'Low Landing', region: 'northern_wet', x: 150, y: 150, kind: 'minor' },
   // The Ashlands
   { id: 'lm_ash_01', name: 'Cratered base', region: 'ashlands', x: 630, y: 402, kind: 'landmark', hidden: true },

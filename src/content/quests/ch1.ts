@@ -3,7 +3,7 @@ import type { QuestDef } from '../../engine/quest/quest';
 /** Chapter One quests. */
 
 export const q_ch1_door: QuestDef = {
-  id: 'q_ch1_door', title: 'The Knock', act: 'ch1', critical: true, start: 'wake', xp: 150,
+  id: 'q_ch1_door', title: 'A Knock at the Door', act: 'ch1', critical: true, start: 'wake', xp: 150,
   routes: [
     { id: 'council', kind: 'talk', label: 'Take Elder Halloran\'s order to Bram' },
     { id: 'mechanics', kind: 'tech', label: 'Talk Bram through a manual cycle', requires: { skill: 'mechanics', gte: 40 } },
@@ -81,7 +81,7 @@ export const q_ch1_shale: QuestDef = {
 };
 
 export const q_ch1_map: QuestDef = {
-  id: 'q_ch1_map', title: 'The Paper', act: 'ch1', critical: true, start: 'camp', xp: 300,
+  id: 'q_ch1_map', title: 'Paper', act: 'ch1', critical: true, start: 'camp', xp: 300,
   routes: [
     { id: 'buy', kind: 'barter', label: 'Buy it from Kessler (80 Tolls or the bolt rifle)' },
     { id: 'wager', kind: 'talk', label: 'Win it at Dust' },
@@ -180,7 +180,7 @@ export const q_ch1_tribute: QuestDef = {
 
 
 export const q_ch1_name: QuestDef = {
-  id: 'q_ch1_name', title: 'The First Name', act: 'ch1', critical: true, start: 'cipher', xp: 300,
+  id: 'q_ch1_name', title: 'A First Name', act: 'ch1', critical: true, start: 'cipher', xp: 300,
   routes: [
     { id: 'science', kind: 'tech', label: 'Work the cipher yourself', requires: { skill: 'science', gte: 50 } },
     { id: 'clerk', kind: 'knowledge', label: 'Read it as record shorthand (Archive Clerk)', requires: { origin: 'archive_clerk' } },

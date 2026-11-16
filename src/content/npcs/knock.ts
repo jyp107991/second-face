@@ -83,16 +83,16 @@ export const KNOCK: NpcDef[] = [
   // day two: the outriders
   {
     id: 'npc_kn_out_lead', name: 'Outrider Brannick Hale', look: { seed: 1241, frame: 'broad', age: 44, ancestry: 'north_european' }, role: 'guard', level: 5, team: 'tollmen', faction: 'tollmen', settlement: 'cistern9', courage: 65, leader: true,
-    dialogue: 'd_kn_outriders', hostileIf: { flag: 'kn_out_fight' }, equip: ['w_revolver38', 'r_duster'], inventory: [['a_38', 18], ['c_bandage', 1]], skills: { firearms: 50, speech: 45 }, tolls: 25, schedule: [],
+    dialogue: 'd_kn_outriders', hostileIf: { flag: 'kn_out_fight' }, beaten: [{ set: 'kn_out_beaten' }], equip: ['w_revolver38', 'r_duster'], inventory: [['a_38', 18], ['c_bandage', 1]], skills: { firearms: 50, speech: 45 }, tolls: 25, schedule: [],
   },
   {
     id: 'npc_kn_out_a', name: 'Outrider Josse', look: { seed: 1242, frame: 'broad', age: 31, ancestry: 'caribbean' }, role: 'guard', level: 3, team: 'tollmen', faction: 'tollmen', settlement: 'cistern9', courage: 50,
-    hostileIf: { flag: 'kn_out_fight' }, equip: ['w_zip38'], inventory: [['a_38', 10]], skills: { firearms: 35 }, tolls: 8, schedule: [],
+    hostileIf: { flag: 'kn_out_fight' }, beaten: [{ set: 'kn_out_beaten' }], equip: ['w_zip38'], inventory: [['a_38', 10]], skills: { firearms: 35 }, tolls: 8, schedule: [],
     barks: ['Stand still and this goes quick.'],
   },
   {
     id: 'npc_kn_out_b', name: 'Outrider Carrow', look: { seed: 1243, frame: 'narrow', age: 27, ancestry: 'east_asian' }, role: 'guard', level: 3, team: 'tollmen', faction: 'tollmen', settlement: 'cistern9', courage: 45,
-    hostileIf: { flag: 'kn_out_fight' }, equip: ['w_machete'], skills: { melee: 40 }, tolls: 6, schedule: [],
+    hostileIf: { flag: 'kn_out_fight' }, beaten: [{ set: 'kn_out_beaten' }], equip: ['w_machete'], skills: { melee: 40 }, tolls: 6, schedule: [],
     barks: ['Hale says the old man came this way. Old men don\'t lie about roads.'],
   },
 ];
