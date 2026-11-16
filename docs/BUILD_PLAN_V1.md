@@ -2633,6 +2633,11 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   showed clearly on the base head lit from above and the side, and not at all in the studio's soft key and fill; at twice
   its size it turned to lumps. Render a shape key on the bare head under a raking light first (`$scratchpad/fy`), then in
   the studio, and size it there, not by what the soft light hides (PEOPLE_REALISM §16 round 39).
+- **Trace a fix to the branch that runs before making it.** Two A1 fixes (a cap on the resting direction, then the elbow's
+  bend for the gear-held arm) went into `ArmClearance.SkinRest` and changed nothing on two hour-long picks: with `RestReach`
+  on, a resting arm is placed by `RestArm` and `SkinRest` (the `!RestReach` branch) never runs. The stage trace
+  (`StageA1`, the trace's `saR0..saR5`) named the step that moved the arm (`SkinClear`'s first push, 17° to 22-25°) the
+  whole time. Read which stage moves a measure, then find where that stage's code is called, before editing.
 
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)
 
