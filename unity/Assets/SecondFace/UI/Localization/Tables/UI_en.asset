@@ -2231,6 +2231,18 @@ MonoBehaviour:
     m_Localized: The rest
     m_Metadata:
       m_Items: []
+  - m_Id: 6581994058530816
+    m_Localized: "{0}% \xB7 {1} AP"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6581994087890944
+    m_Localized: '{0} waits.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6581994087890945
+    m_Localized: They
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

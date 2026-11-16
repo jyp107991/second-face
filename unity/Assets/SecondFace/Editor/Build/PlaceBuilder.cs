@@ -310,6 +310,8 @@ namespace SecondFace.EditorTools
 
             // what people leave against their walls, awnings over street doors, the saloon's porch
             if (!below) Dress(plan, Child(parent, "dressing"), rng.For(5000));
+            // and the yards between, off the ways people walk: the small scenes a lived-in place is made of (play-ch1 T43)
+            if (!below) Yards(plan, Child(parent, "yards"), Stable(prefix + plan.Id));
             if (rocks.Count > 0) Rocks(rocks, Child(parent, "rock"), rng.For(6000));
 
             // lights: realtime points, no shadows (BUILD_PLAN §6.A.6: ≤ 4 visible, the rest emissive)
@@ -648,6 +650,106 @@ namespace SecondFace.EditorTools
                     Put(Furnish + "chair.fbx", at, face + r.Range((int)(o.At * 10) + 35, -25f, 25f));
                 }
             }
+        }
+
+        /// <summary>The baked props (Models/Nature, tools/unity/models_bake.py), by key: their variants' paths.</summary>
+        private static Dictionary<string, List<string>> _baked;
+
+        private static string Baked(string key, int pick)
+        {
+            _baked ??= ModelLibrary.Load().ToDictionary(kv => kv.Key, kv => ModelLibrary.VariantPaths(kv.Value));
+            return _baked.TryGetValue(key, out var v) && v.Count > 0 ? v[((pick % v.Count) + v.Count) % v.Count] : null;
+        }
+
+        /// <summary>The yards' scenes (Core <see cref="PlaceYards"/>), each made of baked props round its anchor, turned to face
+        /// the nearest way; a prop that is not baked is left out.</summary>
+        private static void Yards(PlacePlan plan, Transform parent, int seed)
+        {
+            var scenes = PlaceYards.For(plan, seed);
+            var made = 0;
+            foreach (var v in scenes)
+            {
+                var r = new Hasher(v.Seed);
+                var root = Child(parent, v.Kind).transform;
+                root.SetLocalPositionAndRotation(new Vector3(v.X, 0f, v.Z), Quaternion.Euler(0f, v.Yaw + r.Range(1, -25f, 25f), 0f));
+                var n = 0;
+                void P(string key, float x, float z, float yaw, float y = 0f)
+                {
+                    var path = Baked(key, r.Int(100 + n, 8));
+                    n++;
+                    if (path == null) return;
+                    var go = Instance(path, root);
+                    if (go == null) return;
+                    go.transform.SetLocalPositionAndRotation(new Vector3(x, y, z), Quaternion.Euler(0f, yaw + r.Range(200 + n, -12f, 12f), 0f));
+                    made++;
+                }
+                string Pick(params string[] keys) => keys[r.Int(300 + n, keys.Length)];
+                switch (v.Kind)
+                {
+                    case "cookfire":
+                        P("stone_fire_pit", 0f, 0f, 0f);
+                        for (var k = 0; k < 3; k++)
+                        {
+                            var a = (k * 120f + r.Range(10 + k, -25f, 25f)) * Mathf.Deg2Rad;
+                            P(Pick("wooden_stool_01", "folding_wooden_stool", "wooden_crate_01", "plastic_crate_01"), Mathf.Sin(a) * 1.3f, Mathf.Cos(a) * 1.3f, a * Mathf.Rad2Deg + 180f);
+                        }
+                        P(Pick("wooden_bucket_01", "metal_jerrycan", "plastic_jerrycan"), 1.6f, -0.9f, 30f);
+                        break;
+                    case "workbench":
+                        P("tool_cart", 0f, 0f, 0f);
+                        P("metal_tool_chest", 1.2f, 0.3f, -15f);
+                        P(Pick("steel_frame_shelves_01", "wooden_ladder"), 0.2f, 0.9f, 180f);
+                        P(Pick("wooden_crate_01", "wooden_crate_02", "old_military_crate"), -1.2f, 0.3f, 20f);
+                        P(Pick("metal_jerrycan", "propane_tank", "wooden_ladder"), -0.6f, -1.1f, 75f);
+                        break;
+                    case "garden":
+                        for (var k = 0; k < 3; k++) P(Pick("planter_box_01", "planter_box_02"), (k - 1) * 1.1f, 0f, 90f);
+                        P("watering_can_metal_01", 1.7f, -0.6f, 40f);
+                        P(Pick("nettle_plant", "weed_plant_02"), -1.8f, 0.5f, 0f);
+                        P(Pick("shrub_02", "shrub_03", "wild_rooibos_bush"), 1.4f, 1.1f, 0f);
+                        break;
+                    case "water":
+                        P(Pick("barrel_01", "barrel_02", "barrel_03"), 0f, 0f, 0f);
+                        P(Pick("barrel_01", "barrel_02", "barrel_03"), 0.75f, 0.2f, 60f);
+                        P("plastic_jerrycan", -0.7f, 0.4f, 20f);
+                        P("wooden_bucket_01", 0.2f, -0.8f, 0f);
+                        break;
+                    case "junk":
+                        P("old_tyre", 0f, 0f, 0f);
+                        P("old_tyre", 0.75f, 0.45f, 40f);
+                        P("rusted_wheel_rim_01", -0.8f, 0.6f, 15f);
+                        P("concrete_road_barrier", 0.2f, 1.25f, 0f);
+                        P(Pick("barrel_02", "barrel_03", "metal_trash_can"), -0.5f, -0.9f, 0f);
+                        P(Pick("compost_bag_02", "cardboard_box_01", "wooden_crate_02"), 1.1f, -0.8f, 25f);
+                        break;
+                    case "generator":
+                        P("portable_generator", 0f, 0f, 0f);
+                        P(Pick("propane_tank", "small_lpg_tank"), 0.9f, 0.3f, 0f);
+                        P(Pick("metal_jerrycan", "metal_jerrycan_green"), -0.8f, 0.2f, 15f);
+                        break;
+                    case "stores":
+                        P(Pick("wooden_military_crate", "old_military_crate"), 0f, 0f, 0f);
+                        P("steel_frame_shelves_01", 0f, 1.1f, 180f);
+                        P(Pick("wooden_crate_01", "wooden_crate_02"), 0.9f, 0.1f, 10f);
+                        P(Pick("wicker_basket_01", "wicker_basket_02"), -0.8f, 0.4f, 0f);
+                        P(Pick("cardboard_box_01", "plastic_crate_01", "plastic_crate_03"), 0.3f, -0.9f, -20f);
+                        P(Pick("compost_bag_02", "ammo_box"), -0.7f, -0.7f, 40f);
+                        break;
+                    case "rest":
+                        P(Pick("painted_wooden_bench", "wooden_picnic_table"), 0f, 0f, 0f);
+                        P(Pick("plastic_monobloc_chair_01", "wooden_stool_01"), 1.3f, 0.6f, -30f);
+                        P("wooden_table_02", -1.0f, 0.5f, 0f);
+                        P(Pick("lantern_01", "wooden_lantern_01"), -1.0f, 0.5f, 0f, 0.42f);   // (on the side table)
+                        break;
+                    case "stove":
+                        P("barrel_stove", 0f, 0f, 0f);
+                        P(Pick("plastic_monobloc_chair_01", "folding_wooden_stool"), 1.1f, 0.4f, -110f);
+                        P(Pick("wooden_crate_01", "wooden_stool_01"), -1.0f, 0.5f, 110f);
+                        break;
+                }
+                if (root.childCount == 0) UnityEngine.Object.DestroyImmediate(root.gameObject);
+            }
+            Debug.Log($"PlaceBuilder: {plan.Id}: {scenes.Count} yard scenes, {made} props");
         }
 
         /// <summary>A wall along the room's longer side (vigas poke out of these).</summary>

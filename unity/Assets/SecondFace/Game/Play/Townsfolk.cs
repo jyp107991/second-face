@@ -25,8 +25,17 @@ namespace SecondFace.Game.Play
         public Ambient Ambient;
         /// <summary>Their post when their routine has nothing to say (where the place put them).</summary>
         public Vector3 Post;
-        /// <summary>Held still: talked to, traded with (their routine waits).</summary>
-        public bool Held;
+        /// <summary>Held still: talked to, traded with (their routine waits, and the way they were walking stops there).</summary>
+        public bool Held
+        {
+            get => _held;
+            set
+            {
+                _held = value;
+                if (value && Agent != null && Agent.enabled && Agent.isOnNavMesh) { Agent.ResetPath(); Agent.velocity = Vector3.zero; }
+            }
+        }
+        private bool _held;
 
         public ScheduleEntry Entry { get; set; }
         /// <summary>Out of sight now (gone in to sleep, or away).</summary>

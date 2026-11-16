@@ -30,6 +30,8 @@ namespace SecondFace.Core.Dialogue
         [JsonProperty("failEffects")] public JArray FailEffects;
         [JsonProperty("once")] public bool? Once;
         [JsonProperty("exit")] public bool? Exit;
+        /// <summary>A service asked as often as wanted (trade, travel, a drink): never closed as a spent topic (U7).</summary>
+        [JsonProperty("repeat")] public bool? Repeat;
     }
 
     public sealed class PassiveDef
@@ -43,13 +45,27 @@ namespace SecondFace.Core.Dialogue
         [JsonProperty("effects")] public JArray Effects;
     }
 
+    /// <summary>A companion's word on a node (U7): said when they travel with the player, the first that applies.</summary>
+    public sealed class InterjectDef
+    {
+        [JsonProperty("companion")] public string Companion;
+        [JsonProperty("if")] public JObject If;
+        [JsonProperty("text")] public JToken Text;
+        [JsonProperty("effects")] public JArray Effects;
+    }
+
     public sealed class NodeDef
     {
         /// <summary>Speaker id: an NPC id, 'pc', or 'narrator'. Defaults to the tree's owner.</summary>
         [JsonProperty("speaker")] public string Speaker;
         [JsonProperty("text")] public JToken Text;
+        /// <summary>What is said when the conversation comes back here (a hub after a topic): a string or variants, like
+        /// <see cref="Text"/>. Without it the speaker only waits (U7: a conversation never says a line twice).</summary>
+        [JsonProperty("again")] public JToken Again;
         [JsonProperty("effects")] public JArray Effects;
         [JsonProperty("passives")] public List<PassiveDef> Passives;
+        /// <summary>Companions' words on this node (U7): the first whose companion is present and whose condition holds.</summary>
+        [JsonProperty("interject")] public List<InterjectDef> Interject;
         [JsonProperty("options")] public List<OptionDef> Options = new();
     }
 

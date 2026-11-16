@@ -1525,3 +1525,80 @@
     -unity-text-align: upper-left;
 }
 .sf-camp__foot { flex-direction: row; justify-content: flex-end; margin-top: 10px; flex-shrink: 0; }
+
+/* ---- the fight's HUD (CombatHud, play-ch1 T44): the turn order under the top row, health over heads, the action
+   points and the fight's last lines between the party and the turn's buttons, which stand where the walkabout's do ---- */
+.sf-combat__order {
+    position: absolute;
+    top: 84px;
+    left: 30%;
+    right: 30%;
+    flex-direction: row;
+    justify-content: center;
+}
+.sf-combat__chip {
+    width: 60px;
+    margin: 0 4px;
+    padding: 6px 6px 7px 6px;
+    align-items: center;
+    background-color: var(--plate);
+    border-radius: 6px;
+    border-width: 2px;
+    border-color: rgba(126, 154, 111, 0.65);
+}
+.sf-combat__chip--hostile { border-color: rgba(196, 85, 58, 0.75); }
+.sf-combat__chip--player { border-color: rgba(224, 166, 69, 0.85); }
+.sf-combat__chip--current { scale: 1.12 1.12; border-width: 3px; background-color: rgba(40, 33, 24, 0.92); }
+.sf-combat__chip--down { opacity: 0.35; }
+.sf-combat__chip-name {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-20);
+    color: var(--plate-text);
+    -unity-text-align: middle-center;
+}
+.sf-combat__chip .sf-hud__bar { height: 5px; margin-top: 3px; }
+.sf-combat__float {
+    position: absolute;
+    width: 120px;
+    align-items: center;
+}
+.sf-combat__float-name {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-16);
+    color: var(--plate-text);
+    -unity-text-align: middle-center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.85);
+}
+.sf-combat__float .sf-hud__bar { width: 84px; align-self: center; height: 7px; border-width: 1px; border-color: rgba(0, 0, 0, 0.6); }
+.sf-combat__float--hostile .sf-hud__fill { background-color: #B5523A; }
+.sf-combat__float--hostile .sf-hud__fill--critical { background-color: #7A2A1C; }
+.sf-combat__float--current .sf-combat__float-name { color: #E0A645; }
+.sf-combat__plate {
+    position: absolute;
+    bottom: 20px;
+    left: 30%;
+    right: 372px;
+    padding: 8px 16px 10px 16px;
+    align-items: center;
+}
+.sf-combat__ap {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-22);
+    color: #E0A645;
+}
+.sf-combat__log { font-size: var(--fs-20); margin-top: 2px; color: var(--plate-text); white-space: normal; -unity-text-align: upper-center; }
+.sf-combat .sf-hud__actions:disabled { opacity: 0.5; }
+.sf-radial__verb-note {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-16);
+    margin-top: 0;
+    color: #E0A645;
+}
+
+/* U7: a conversation back at a node it has said: the speaker waits (a narrated beat, not the speech again) */
+.sf-dialogue__line.sf-dialogue__line--beat {
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    color: rgba(36, 32, 27, 0.62);
+    font-size: var(--fs-24);
+}
+.sf-dialogue__passive--companion .sf-dialogue__passive-label { color: #6E8A5E; }

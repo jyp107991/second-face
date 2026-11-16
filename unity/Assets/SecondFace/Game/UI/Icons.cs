@@ -9,7 +9,7 @@ namespace SecondFace.Game.UI
     /// </summary>
     public static class Icons
     {
-        public static readonly string[] Names = { "notebook", "map", "pack", "talk", "look", "take", "use", "steal", "give", "attack", "trade", "menu", "open", "camp", "sit", "sneak", "eye" };
+        public static readonly string[] Names = { "notebook", "map", "pack", "talk", "look", "take", "use", "steal", "give", "attack", "trade", "menu", "open", "camp", "sit", "sneak", "eye", "heal", "reload", "end_turn", "aim_head", "aim_legs", "burst" };
 
         public static VisualElement Make(string name, float size = 40f)
         {
@@ -176,6 +176,56 @@ namespace SecondFace.Game.UI
                     p.MoveTo(P(0.66f, 0.22f)); p.LineTo(P(0.80f, 0.36f)); p.LineTo(P(0.66f, 0.50f));
                     p.MoveTo(P(0.82f, 0.64f)); p.LineTo(P(0.20f, 0.64f));
                     p.MoveTo(P(0.34f, 0.50f)); p.LineTo(P(0.20f, 0.64f)); p.LineTo(P(0.34f, 0.78f));
+                    p.Stroke();
+                    break;
+                case "heal":   // a rolled bandage, its tail loose
+                    p.BeginPath();
+                    p.Arc(P(0.40f, 0.48f), r.width * 0.22f, 0f, 360f);
+                    p.MoveTo(P(0.40f, 0.48f)); p.Arc(P(0.40f, 0.48f), r.width * 0.08f, 0f, 360f);
+                    p.MoveTo(P(0.62f, 0.48f)); p.BezierCurveTo(P(0.72f, 0.62f), P(0.80f, 0.70f), P(0.88f, 0.84f));
+                    p.MoveTo(P(0.40f, 0.70f)); p.BezierCurveTo(P(0.56f, 0.76f), P(0.72f, 0.82f), P(0.80f, 0.90f));
+                    p.Stroke();
+                    break;
+                case "reload":   // a magazine, an arrow round it
+                    p.BeginPath();
+                    p.MoveTo(P(0.40f, 0.26f)); p.LineTo(P(0.60f, 0.26f)); p.LineTo(P(0.66f, 0.76f)); p.LineTo(P(0.46f, 0.76f)); p.ClosePath();
+                    p.MoveTo(P(0.44f, 0.40f)); p.LineTo(P(0.60f, 0.40f));
+                    p.MoveTo(P(0.22f, 0.70f)); p.BezierCurveTo(P(0.10f, 0.40f), P(0.26f, 0.14f), P(0.50f, 0.12f));
+                    p.MoveTo(P(0.18f, 0.56f)); p.LineTo(P(0.22f, 0.70f)); p.LineTo(P(0.34f, 0.62f));
+                    p.Stroke();
+                    break;
+                case "end_turn":   // an hourglass
+                    p.BeginPath();
+                    p.MoveTo(P(0.28f, 0.16f)); p.LineTo(P(0.72f, 0.16f));
+                    p.MoveTo(P(0.28f, 0.84f)); p.LineTo(P(0.72f, 0.84f));
+                    p.MoveTo(P(0.32f, 0.16f)); p.BezierCurveTo(P(0.32f, 0.40f), P(0.50f, 0.44f), P(0.50f, 0.50f));
+                    p.BezierCurveTo(P(0.50f, 0.56f), P(0.32f, 0.60f), P(0.32f, 0.84f));
+                    p.MoveTo(P(0.68f, 0.16f)); p.BezierCurveTo(P(0.68f, 0.40f), P(0.50f, 0.44f), P(0.50f, 0.50f));
+                    p.BezierCurveTo(P(0.50f, 0.56f), P(0.68f, 0.60f), P(0.68f, 0.84f));
+                    p.MoveTo(P(0.40f, 0.78f)); p.LineTo(P(0.60f, 0.78f));   // the sand run through
+                    p.Stroke();
+                    break;
+                case "aim_head":   // a head and shoulders, a ring on the head
+                case "aim_legs":   // the same, the ring on the legs
+                    p.BeginPath();
+                    p.Arc(P(0.50f, 0.24f), r.width * 0.10f, 0f, 360f);
+                    p.MoveTo(P(0.34f, 0.44f)); p.LineTo(P(0.66f, 0.44f)); p.LineTo(P(0.62f, 0.66f)); p.LineTo(P(0.38f, 0.66f)); p.ClosePath();
+                    p.MoveTo(P(0.42f, 0.66f)); p.LineTo(P(0.40f, 0.92f));
+                    p.MoveTo(P(0.58f, 0.66f)); p.LineTo(P(0.60f, 0.92f));
+                    p.Stroke();
+                    p.BeginPath();
+                    var at = name == "aim_head" ? P(0.50f, 0.24f) : P(0.50f, 0.80f);
+                    p.Arc(at, r.width * 0.20f, 0f, 360f);
+                    p.Stroke();
+                    break;
+                case "burst":   // three shots in a row
+                    p.BeginPath();
+                    for (var k = 0; k < 3; k++)
+                    {
+                        var y = 0.30f + k * 0.20f;
+                        p.MoveTo(P(0.18f + k * 0.06f, y)); p.LineTo(P(0.62f + k * 0.06f, y));
+                        p.MoveTo(P(0.62f + k * 0.06f, y - 0.05f)); p.LineTo(P(0.74f + k * 0.06f, y)); p.LineTo(P(0.62f + k * 0.06f, y + 0.05f));
+                    }
                     p.Stroke();
                     break;
                 default:   // a verb with no icon of its own yet

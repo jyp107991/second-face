@@ -41,6 +41,11 @@ namespace SecondFace.Game.Play
 
         private Camera _camera;
         private float _startYaw;
+        /// <summary>The distance this view stands off (more than <see cref="Distance"/> when the two stand far apart across it).</summary>
+        public float ViewDistance { get; private set; } = Distance;
+        private Vector3 _ph, _oh, _goalPos;
+        private Quaternion _goalRot;
+        private bool _easing;
 
         /// <summary>Starts the conversation view on a camera (a brain is added if it has none), from the yaw the game view
         /// has now. blend: seconds to blend in and out (0 cuts).</summary>
@@ -96,16 +101,57 @@ namespace SecondFace.Game.Play
             var tries = new[] { (yaw, Pitch), (yaw + 30f, Pitch), (yaw - 30f, Pitch), (yaw + 55f, Pitch), (yaw - 55f, Pitch), (yaw, OrbitRig.MaxPitch), (yaw, 70f) };
             var pick = tries[0];
             foreach (var t in tries)
+            {
+                ViewDistance = Fit(ph, oh, t.Item1);
                 if (Clear(Place(t.Item1, t.Item2), Subject)) { pick = t; break; }
+            }
             Yaw = pick.Item1; ViewPitch = pick.Item2;
+            ViewDistance = Fit(ph, oh, Yaw);
             var pos = Place(Yaw, ViewPitch);
             var lens = Virtual.Lens;
             lens.FieldOfView = FieldOfView;
             Virtual.Lens = lens;
-            Virtual.transform.SetPositionAndRotation(pos, Aim(pos, Subject));
+            _goalPos = pos; _goalRot = Aim(pos, Subject);
+            if (!_easing) Virtual.transform.SetPositionAndRotation(_goalPos, _goalRot);
+            _ph = ph; _oh = oh;
         }
 
-        private Vector3 Place(float yaw, float pitch) => Subject - Quaternion.Euler(pitch, yaw, 0f) * Vector3.forward * Distance;
+        /// <summary>The distance that keeps both heads, with room round them, inside the free part of the screen (play-ch1 T45:
+        /// at night the stranger stood half under the page): never nearer than <see cref="Distance"/>, never past 18 m.</summary>
+        private float Fit(Vector3 ph, Vector3 oh, float yaw)
+        {
+            var right = Quaternion.Euler(0f, yaw, 0f) * Vector3.right;
+            var across = Mathf.Abs(Vector3.Dot(oh - ph, right)) * 0.5f + 0.7f;   // half the pair across the view, and a shoulder's room
+            var aspect = _camera != null && _camera.aspect > 0f ? _camera.aspect : 16f / 9f;
+            var halfW = Mathf.Tan(FieldOfView * 0.5f * Mathf.Deg2Rad) * aspect * Frame;   // the free part's half width, per metre away
+            var up = Mathf.Abs(oh.y - ph.y) * 0.5f + 0.9f;
+            var halfH = Mathf.Tan(FieldOfView * 0.5f * Mathf.Deg2Rad) * 0.8f;
+            return Mathf.Clamp(Mathf.Max(across / Mathf.Max(0.05f, halfW), up / halfH), Distance, 18f);
+        }
+
+        /// <summary>The pair moved (one still arriving, one turning to the other; play-ch1 T47: the view stayed on bare ground
+        /// where they had been): the one view eases after them, its turn kept, never a cut.</summary>
+        private void LateUpdate()
+        {
+            if (Virtual == null || Virtual.Priority < 0 || Player == null || Other == null) return;
+            var ph = Head(Player); var oh = Head(Other);
+            if ((ph - _ph).sqrMagnitude > 0.25f * 0.25f || (oh - _oh).sqrMagnitude > 0.25f * 0.25f)
+            {
+                _easing = true;
+                Subject = Vector3.Lerp(ph, oh, 0.5f) + Vector3.down * 0.35f;
+                ViewDistance = Fit(ph, oh, Yaw);
+                var pos = Place(Yaw, ViewPitch);
+                _goalPos = pos; _goalRot = Aim(pos, Subject);
+                _ph = ph; _oh = oh;
+            }
+            if (!_easing) return;
+            var k = 1f - Mathf.Exp(-Time.unscaledDeltaTime * 4f);
+            var t = Virtual.transform;
+            t.SetPositionAndRotation(Vector3.Lerp(t.position, _goalPos, k), Quaternion.Slerp(t.rotation, _goalRot, k));
+            if ((t.position - _goalPos).sqrMagnitude < 1e-4f) { t.SetPositionAndRotation(_goalPos, _goalRot); _easing = false; }
+        }
+
+        private Vector3 Place(float yaw, float pitch) => Subject - Quaternion.Euler(pitch, yaw, 0f) * Vector3.forward * ViewDistance;
 
         /// <summary>A rotation that puts the subject at the middle of the free part of the screen, at <see cref="Line"/>.</summary>
         private Quaternion Aim(Vector3 from, Vector3 subject)

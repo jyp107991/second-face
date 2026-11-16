@@ -31,6 +31,9 @@ namespace SecondFace.Game.World
         public readonly StreamingPolicy Policy = new StreamingPolicy();
         /// <summary>After a frame slower than this, no chunk is written the next frame.</summary>
         public float SlowFrameMs = 25f;
+        /// <summary>The longest a wanted chunk waits for a fast frame before it is built anyway (s).</summary>
+        public float StarveSeconds = 0.25f;
+        private float _lastBuild;
 
         private readonly Dictionary<(int cx, int cz), Terrain> _built = new();
         private readonly Dictionary<(int cx, int cz), ChunkTerrain.Prepared> _prepared = new();
@@ -137,8 +140,12 @@ namespace SecondFace.Game.World
             }
             foreach (var c in step.Forget) _prepared.Remove(c);
             foreach (var c in step.Prepare) _preparing[c] = ChunkTerrain.Prepare(World, c.cx, c.cz, Catalog);
-            if (step.Build is { } b && Time.unscaledDeltaTime * 1000f <= SlowFrameMs)
+            // (a slow frame skips the build, but never for long: with a place's people about, every frame of the editor and of a
+            // slower phone ran over the limit, no chunk was ever built, and a journey to another place waited for its ground
+            // forever, ChapterOneTests and CI, 2026-11-16)
+            if (step.Build is { } b && (Time.unscaledDeltaTime * 1000f <= SlowFrameMs || Time.realtimeSinceStartup - _lastBuild > StarveSeconds))
             {
+                _lastBuild = Time.realtimeSinceStartup;
                 var bw = Stopwatch.StartNew();
                 var t = _pool.Count > 0 ? _pool.Pop() : ChunkTerrain.Create(_root, Layers, Details);
                 ChunkTerrain.Apply(t, _prepared[b], Layers);

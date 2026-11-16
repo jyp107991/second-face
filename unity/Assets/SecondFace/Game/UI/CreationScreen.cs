@@ -135,7 +135,8 @@ namespace SecondFace.Game.UI
         private void MakeFigure()
         {
             Figure?.Dispose();
-            if (_m.Rocketbox != null && (Creation.Look.Rb == null || _m.Rocketbox.Get(Creation.Look.Rb) == null)) PickPerson(0);
+            // (and on the first figure: a person of another people than the one shown chosen is replaced by the first of it)
+            if (_m.Rocketbox != null && (Creation.Look.Rb == null || _m.Rocketbox.Get(Creation.Look.Rb) == null || !OfPeople(Creation.Look.Rb))) { Creation.Look.Rb = null; PickPerson(0); }
             var prefab = PlayerBody.Base(Creation.Look, _m.BodyF, _m.BodyM, _m.Rocketbox);
             Figure = Figure.Create(prefab, _m.Idle, 720, 800);   // about the stage's own shape: nothing cropped
             if (Figure == null) return;
@@ -295,6 +296,14 @@ namespace SecondFace.Game.UI
         private List<RbPerson> Choices() =>
             RbPeople.PlayerChoices(Creation.Look.Body == "m", Creation.Look.Heritage).Where(p => _m.Rocketbox != null && _m.Rocketbox.Get(p.Id) != null).ToList();
 
+        /// <summary>Whether a person is of the people chosen, or none of it is among the choices (then any will do).</summary>
+        private bool OfPeople(string rb)
+        {
+            var c = Choices();
+            var own = c.Where(p => p.People == Creation.Look.Heritage).ToList();
+            return own.Count == 0 || own.Any(p => p.Id == rb);
+        }
+
         /// <summary>Steps to the next (or previous) person; 0 keeps the current one if it is still a choice, else the first.
         /// A new person starts from their own photographed face.</summary>
         private void PickPerson(int step)
@@ -319,7 +328,9 @@ namespace SecondFace.Game.UI
                 var chip = Choice(Strings.Get("create.heritage." + id), Creation.Look.Heritage == id, () =>
                 {
                     Creation.Heritage(cluster, _m.Rng);
-                    if (Rb) { PickPerson(0); MakeFigure(); }
+                    // (a person of the people chosen, the first of them: kept as they were, every face of the player's sex being
+                    // a choice, choosing "East Asian" left a North European woman on the stage, 2026-11-16)
+                    if (Rb) { Creation.Look.Rb = null; PickPerson(0); MakeFigure(); }
                     Restyle();
                     Refresh();
                 }, "heritage-" + id);

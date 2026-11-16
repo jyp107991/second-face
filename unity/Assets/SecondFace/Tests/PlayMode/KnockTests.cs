@@ -164,6 +164,20 @@ namespace SecondFace.Tests
             walk.Rig.Follow(lead);
             walk.Rig.View(200f, 45f, 14f);
             yield return Wait(2.5f);
+            // the fight's HUD (T44): the walkabout's buttons give way, the turn order holds everyone, bars over heads in view
+            var ui = UIService.Instance;
+            Assert.That(ui.Root.Q("hud-actions").resolvedStyle.display, Is.EqualTo(DisplayStyle.None), "the walkabout's buttons give way in a fight");
+            var order = ui.Root.Q("combat-order");
+            Assert.That(order, Is.Not.Null, "the turn order is up");
+            var units = order.Children().Count(c => c.resolvedStyle.display == DisplayStyle.Flex);
+            Assert.That(units, Is.GreaterThanOrEqualTo(3), "the turn order holds the player and the riders");
+            var bars = ui.Root.Q("combat-bars").Children().Count(c => c.resolvedStyle.display == DisplayStyle.Flex);
+            Assert.That(bars, Is.GreaterThanOrEqualTo(1), "health over the heads of those in view (the camera follows one rider)");
+            Assert.That(ui.Root.Q<Button>("combat-end_turn"), Is.Not.Null, "the end-turn button");
+            var plate = ui.Root.Q("combat-plate").worldBound;
+            var party = ui.Root.Q("hud-party").worldBound;
+            var buttons = ui.Root.Q("combat-buttons").worldBound;
+            Assert.That(plate.Overlaps(party) || plate.Overlaps(buttons), Is.False, $"the fight's plate {plate} clear of the party {party} and the buttons {buttons}");
             yield return ScreenshotTests.CaptureWithUi("knock_fight", 1920, 1080);
             // the player fights as the allies' AI would (a fair, unskilled player), beside Corin, until the fight ends
             t0 = Time.realtimeSinceStartup;
@@ -176,6 +190,12 @@ namespace SecondFace.Tests
             }
             Debug.Log($"KnockTests: the fight {(walk.Combat.Active ? "still on" : "ended")}; dead: {string.Join(",", g.Npcs.Where(n => n.Value.Dead == true).Select(n => n.Key))}; pc hp {g.Pc.Sheet.Hp}");
             Assert.That(walk.Combat.Active, Is.False, "the fight ended");
+            // (the fight's last line stays a moment, then its HUD goes and the walkabout's buttons come back)
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 6f && UIService.Instance.Root.Q("combat-hud") != null) yield return null;
+            yield return Wait(0.3f);
+            Assert.That(UIService.Instance.Root.Q("combat-hud"), Is.Null, "the fight's HUD is gone after it");
+            Assert.That(UIService.Instance.Root.Q("hud-actions").resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex), "the walkabout's buttons are back");
         }
     }
 }

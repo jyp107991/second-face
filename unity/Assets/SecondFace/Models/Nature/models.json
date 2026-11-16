@@ -1,4 +1,160 @@
 {
+ "ammo_box": {
+  "id": "ammo_box",
+  "licence": "CC0 (Poly Haven)",
+  "note": "ammo box",
+  "path": "Assets/SecondFace/Models/Nature/ammo_box.fbx",
+  "place": "scatter",
+  "size": [
+   0.09,
+   0.18,
+   0.26
+  ],
+  "tris": 796,
+  "tris_src": 4382,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/ammo_box.fbx",
+    "size": [
+     0.09,
+     0.18,
+     0.26
+    ],
+    "tris": 796
+   }
+  ]
+ },
+ "barrel_01": {
+  "id": "Barrel_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "steel drum",
+  "path": "Assets/SecondFace/Models/Nature/barrel_01.fbx",
+  "place": "scatter",
+  "size": [
+   0.56,
+   0.88,
+   0.56
+  ],
+  "tris": 1499,
+  "tris_src": 2682,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/barrel_01.fbx",
+    "size": [
+     0.56,
+     0.88,
+     0.56
+    ],
+    "tris": 1499
+   }
+  ]
+ },
+ "barrel_02": {
+  "id": "Barrel_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "steel drum",
+  "path": "Assets/SecondFace/Models/Nature/barrel_02.fbx",
+  "place": "scatter",
+  "size": [
+   0.49,
+   0.88,
+   0.48
+  ],
+  "tris": 1500,
+  "tris_src": 2688,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/barrel_02.fbx",
+    "size": [
+     0.49,
+     0.88,
+     0.48
+    ],
+    "tris": 1500
+   }
+  ]
+ },
+ "barrel_03": {
+  "id": "barrel_03",
+  "licence": "CC0 (Poly Haven)",
+  "note": "steel drum",
+  "path": "Assets/SecondFace/Models/Nature/barrel_03.fbx",
+  "place": "scatter",
+  "size": [
+   0.63,
+   0.93,
+   0.64
+  ],
+  "tris": 1473,
+  "tris_src": 1473,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/barrel_03.fbx",
+    "size": [
+     0.63,
+     0.93,
+     0.64
+    ],
+    "tris": 1473
+   }
+  ]
+ },
+ "barrel_stove": {
+  "id": "barrel_stove",
+  "licence": "CC0 (Poly Haven)",
+  "note": "barrel stove (a yard's fire)",
+  "path": "Assets/SecondFace/Models/Nature/barrel_stove.fbx",
+  "place": "scatter",
+  "size": [
+   0.59,
+   0.86,
+   0.59
+  ],
+  "tris": 2500,
+  "tris_src": 9216,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/barrel_stove.fbx",
+    "size": [
+     0.59,
+     0.86,
+     0.59
+    ],
+    "tris": 2500
+   }
+  ]
+ },
+ "bench_vice_01": {
+  "id": "bench_vice_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "vice",
+  "path": "Assets/SecondFace/Models/Nature/bench_vice_01.fbx",
+  "place": "scatter",
+  "size": [
+   0.2,
+   0.29,
+   0.4
+  ],
+  "tris": 1495,
+  "tris_src": 2943,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/bench_vice_01.fbx",
+    "size": [
+     0.2,
+     0.29,
+     0.4
+    ],
+    "tris": 1455
+   }
+  ]
+ },
  "boulder_01": {
   "id": "boulder_01",
   "licence": "CC0 (Poly Haven)",
@@ -22,6 +178,32 @@
      1.83
     ],
     "tris": 26474
+   }
+  ]
+ },
+ "cardboard_box_01": {
+  "id": "cardboard_box_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "box",
+  "path": "Assets/SecondFace/Models/Nature/cardboard_box_01.fbx",
+  "place": "scatter",
+  "size": [
+   0.39,
+   0.34,
+   0.52
+  ],
+  "tris": 600,
+  "tris_src": 16952,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/cardboard_box_01.fbx",
+    "size": [
+     0.39,
+     0.34,
+     0.52
+    ],
+    "tris": 600
    }
   ]
  },
@@ -74,6 +256,58 @@
      42.52
     ],
     "tris": 5999
+   }
+  ]
+ },
+ "compost_bag_02": {
+  "id": "compost_bag_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "sack",
+  "path": "Assets/SecondFace/Models/Nature/compost_bag_02.fbx",
+  "place": "scatter",
+  "size": [
+   0.54,
+   0.43,
+   0.47
+  ],
+  "tris": 1500,
+  "tris_src": 12096,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/compost_bag_02.fbx",
+    "size": [
+     0.54,
+     0.43,
+     0.47
+    ],
+    "tris": 1500
+   }
+  ]
+ },
+ "concrete_road_barrier": {
+  "id": "concrete_road_barrier",
+  "licence": "CC0 (Poly Haven)",
+  "note": "road barrier",
+  "path": "Assets/SecondFace/Models/Nature/concrete_road_barrier.fbx",
+  "place": "scatter",
+  "size": [
+   1.54,
+   0.83,
+   0.63
+  ],
+  "tris": 800,
+  "tris_src": 60928,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/concrete_road_barrier.fbx",
+    "size": [
+     1.54,
+     0.83,
+     0.63
+    ],
+    "tris": 800
    }
   ]
  },
@@ -249,6 +483,32 @@
      0.59
     ],
     "tris": 392
+   }
+  ]
+ },
+ "folding_wooden_stool": {
+  "id": "folding_wooden_stool",
+  "licence": "CC0 (Poly Haven)",
+  "note": "folding stool",
+  "path": "Assets/SecondFace/Models/Nature/folding_wooden_stool.fbx",
+  "place": "scatter",
+  "size": [
+   0.53,
+   0.44,
+   0.55
+  ],
+  "tris": 1200,
+  "tris_src": 6324,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/folding_wooden_stool.fbx",
+    "size": [
+     0.53,
+     0.44,
+     0.55
+    ],
+    "tris": 1200
    }
   ]
  },
@@ -484,6 +744,171 @@
    }
   ]
  },
+ "hand_truck": {
+  "id": "hand_truck",
+  "licence": "CC0 (Poly Haven)",
+  "note": "hand truck",
+  "path": "Assets/SecondFace/Models/Nature/hand_truck.fbx",
+  "place": "scatter",
+  "size": [
+   0.59,
+   1.4,
+   0.69
+  ],
+  "tris": 2000,
+  "tris_src": 13220,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/hand_truck.fbx",
+    "size": [
+     0.59,
+     1.4,
+     0.69
+    ],
+    "tris": 2000
+   }
+  ]
+ },
+ "lantern_01": {
+  "id": "Lantern_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "lantern",
+  "path": "Assets/SecondFace/Models/Nature/lantern_01.fbx",
+  "place": "scatter",
+  "size": [
+   0.12,
+   0.29,
+   0.1
+  ],
+  "tris": 1499,
+  "tris_src": 33902,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/lantern_01.fbx",
+    "size": [
+     0.12,
+     0.29,
+     0.1
+    ],
+    "tris": 1499
+   }
+  ]
+ },
+ "metal_jerrycan": {
+  "id": "metal_jerrycan",
+  "licence": "CC0 (Poly Haven)",
+  "note": "jerrycan",
+  "path": "Assets/SecondFace/Models/Nature/metal_jerrycan.fbx",
+  "place": "scatter",
+  "size": [
+   0.35,
+   0.45,
+   0.17
+  ],
+  "tris": 1199,
+  "tris_src": 20022,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/metal_jerrycan.fbx",
+    "size": [
+     0.35,
+     0.45,
+     0.17
+    ],
+    "tris": 1199
+   }
+  ]
+ },
+ "metal_jerrycan_green": {
+  "id": "metal_jerrycan_green",
+  "licence": "CC0 (Poly Haven)",
+  "note": "jerrycan",
+  "path": "Assets/SecondFace/Models/Nature/metal_jerrycan_green.fbx",
+  "place": "scatter",
+  "size": [
+   0.36,
+   0.5,
+   0.17
+  ],
+  "tris": 1195,
+  "tris_src": 9636,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/metal_jerrycan_green.fbx",
+    "size": [
+     0.36,
+     0.5,
+     0.17
+    ],
+    "tris": 1195
+   }
+  ]
+ },
+ "metal_tool_chest": {
+  "id": "metal_tool_chest",
+  "licence": "CC0 (Poly Haven)",
+  "note": "tool chest",
+  "path": "Assets/SecondFace/Models/Nature/metal_tool_chest.fbx",
+  "place": "scatter",
+  "size": [
+   0.69,
+   0.65,
+   0.41
+  ],
+  "tris": 1494,
+  "tris_src": 13360,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/metal_tool_chest.fbx",
+    "size": [
+     0.69,
+     0.65,
+     0.41
+    ],
+    "tris": 1494
+   }
+  ]
+ },
+ "metal_trash_can": {
+  "id": "metal_trash_can",
+  "licence": "CC0 (Poly Haven)",
+  "note": "bin",
+  "path": "Assets/SecondFace/Models/Nature/metal_trash_can_v1.fbx",
+  "place": "scatter",
+  "size": [
+   0.78,
+   0.91,
+   0.57
+  ],
+  "tris": 1494,
+  "tris_src": 13960,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/metal_trash_can_v1.fbx",
+    "size": [
+     0.78,
+     0.91,
+     0.57
+    ],
+    "tris": 687
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/metal_trash_can_v2.fbx",
+    "size": [
+     0.78,
+     0.91,
+     0.56
+    ],
+    "tris": 807
+   }
+  ]
+ },
  "namaqualand_boulder_02": {
   "id": "namaqualand_boulder_02",
   "licence": "CC0 (Poly Haven)",
@@ -686,6 +1111,363 @@
    }
   ]
  },
+ "nettle_plant": {
+  "id": "nettle_plant",
+  "licence": "CC0 (Poly Haven)",
+  "note": "weeds",
+  "path": "Assets/SecondFace/Models/Nature/nettle_plant_v1.fbx",
+  "place": "scatter",
+  "size": [
+   0.08,
+   0.13,
+   0.09
+  ],
+  "tris": 2998,
+  "tris_src": 31304,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/nettle_plant_v1.fbx",
+    "size": [
+     0.08,
+     0.13,
+     0.09
+    ],
+    "tris": 565
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/nettle_plant_v2.fbx",
+    "size": [
+     0.07,
+     0.1,
+     0.07
+    ],
+    "tris": 542
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/nettle_plant_v3.fbx",
+    "size": [
+     0.06,
+     0.06,
+     0.04
+    ],
+    "tris": 344
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/nettle_plant_v4.fbx",
+    "size": [
+     0.1,
+     0.22,
+     0.09
+    ],
+    "tris": 669
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/nettle_plant_v5.fbx",
+    "size": [
+     0.87,
+     0.19,
+     0.09
+    ],
+    "tris": 878
+   }
+  ]
+ },
+ "old_military_crate": {
+  "id": "old_military_crate",
+  "licence": "CC0 (Poly Haven)",
+  "note": "salvaged military crate",
+  "path": "Assets/SecondFace/Models/Nature/old_military_crate_v1.fbx",
+  "place": "scatter",
+  "size": [
+   0.81,
+   0.29,
+   0.54
+  ],
+  "tris": 1494,
+  "tris_src": 20952,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/old_military_crate_v1.fbx",
+    "size": [
+     0.81,
+     0.29,
+     0.54
+    ],
+    "tris": 747
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/old_military_crate_v2.fbx",
+    "size": [
+     0.81,
+     0.25,
+     0.97
+    ],
+    "tris": 747
+   }
+  ]
+ },
+ "old_tyre": {
+  "id": "old_tyre",
+  "licence": "CC0 (Poly Haven)",
+  "note": "tyre",
+  "path": "Assets/SecondFace/Models/Nature/old_tyre.fbx",
+  "place": "scatter",
+  "size": [
+   0.6,
+   0.6,
+   0.17
+  ],
+  "tris": 1998,
+  "tris_src": 2880,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/old_tyre.fbx",
+    "size": [
+     0.6,
+     0.6,
+     0.17
+    ],
+    "tris": 1998
+   }
+  ]
+ },
+ "painted_wooden_bench": {
+  "id": "painted_wooden_bench",
+  "licence": "CC0 (Poly Haven)",
+  "note": "bench",
+  "path": "Assets/SecondFace/Models/Nature/painted_wooden_bench.fbx",
+  "place": "scatter",
+  "size": [
+   1.16,
+   0.89,
+   0.5
+  ],
+  "tris": 630,
+  "tris_src": 630,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/painted_wooden_bench.fbx",
+    "size": [
+     1.16,
+     0.89,
+     0.5
+    ],
+    "tris": 630
+   }
+  ]
+ },
+ "planter_box_01": {
+  "id": "planter_box_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "planter (a kitchen garden)",
+  "path": "Assets/SecondFace/Models/Nature/planter_box_01.fbx",
+  "place": "scatter",
+  "size": [
+   0.91,
+   0.42,
+   0.41
+  ],
+  "tris": 3000,
+  "tris_src": 8094,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/planter_box_01.fbx",
+    "size": [
+     0.91,
+     0.42,
+     0.41
+    ],
+    "tris": 3000
+   }
+  ]
+ },
+ "planter_box_02": {
+  "id": "planter_box_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "planter",
+  "path": "Assets/SecondFace/Models/Nature/planter_box_02.fbx",
+  "place": "scatter",
+  "size": [
+   1.25,
+   0.45,
+   0.47
+  ],
+  "tris": 2999,
+  "tris_src": 10944,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/planter_box_02.fbx",
+    "size": [
+     1.25,
+     0.45,
+     0.47
+    ],
+    "tris": 2999
+   }
+  ]
+ },
+ "plastic_crate_01": {
+  "id": "plastic_crate_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "plastic crate",
+  "path": "Assets/SecondFace/Models/Nature/plastic_crate_01.fbx",
+  "place": "scatter",
+  "size": [
+   0.3,
+   0.26,
+   0.41
+  ],
+  "tris": 1500,
+  "tris_src": 18320,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/plastic_crate_01.fbx",
+    "size": [
+     0.3,
+     0.26,
+     0.41
+    ],
+    "tris": 1500
+   }
+  ]
+ },
+ "plastic_crate_03": {
+  "id": "plastic_crate_03",
+  "licence": "CC0 (Poly Haven)",
+  "note": "plastic crate",
+  "path": "Assets/SecondFace/Models/Nature/plastic_crate_03.fbx",
+  "place": "scatter",
+  "size": [
+   0.48,
+   0.26,
+   0.27
+  ],
+  "tris": 1748,
+  "tris_src": 21740,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/plastic_crate_03.fbx",
+    "size": [
+     0.48,
+     0.26,
+     0.27
+    ],
+    "tris": 1726
+   }
+  ]
+ },
+ "plastic_jerrycan": {
+  "id": "plastic_jerrycan",
+  "licence": "CC0 (Poly Haven)",
+  "note": "water can",
+  "path": "Assets/SecondFace/Models/Nature/plastic_jerrycan.fbx",
+  "place": "scatter",
+  "size": [
+   0.27,
+   0.32,
+   0.34
+  ],
+  "tris": 1199,
+  "tris_src": 7348,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/plastic_jerrycan.fbx",
+    "size": [
+     0.27,
+     0.32,
+     0.34
+    ],
+    "tris": 1199
+   }
+  ]
+ },
+ "plastic_monobloc_chair_01": {
+  "id": "plastic_monobloc_chair_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "chair",
+  "path": "Assets/SecondFace/Models/Nature/plastic_monobloc_chair_01.fbx",
+  "place": "scatter",
+  "size": [
+   0.64,
+   0.88,
+   0.63
+  ],
+  "tris": 1500,
+  "tris_src": 3356,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/plastic_monobloc_chair_01.fbx",
+    "size": [
+     0.64,
+     0.88,
+     0.63
+    ],
+    "tris": 1500
+   }
+  ]
+ },
+ "portable_generator": {
+  "id": "portable_generator",
+  "licence": "CC0 (Poly Haven)",
+  "note": "generator",
+  "path": "Assets/SecondFace/Models/Nature/portable_generator.fbx",
+  "place": "scatter",
+  "size": [
+   0.82,
+   0.58,
+   0.57
+  ],
+  "tris": 2997,
+  "tris_src": 26419,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/portable_generator.fbx",
+    "size": [
+     0.82,
+     0.58,
+     0.57
+    ],
+    "tris": 2997
+   }
+  ]
+ },
+ "propane_tank": {
+  "id": "propane_tank",
+  "licence": "CC0 (Poly Haven)",
+  "note": "gas bottle",
+  "path": "Assets/SecondFace/Models/Nature/propane_tank.fbx",
+  "place": "scatter",
+  "size": [
+   0.33,
+   0.55,
+   0.34
+  ],
+  "tris": 1499,
+  "tris_src": 5238,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/propane_tank.fbx",
+    "size": [
+     0.33,
+     0.55,
+     0.34
+    ],
+    "tris": 1499
+   }
+  ]
+ },
  "quiver_tree_01": {
   "id": "quiver_tree_01",
   "licence": "CC0 (Poly Haven)",
@@ -813,6 +1595,32 @@
      2.68
     ],
     "tris": 4999
+   }
+  ]
+ },
+ "rusted_wheel_rim_01": {
+  "id": "rusted_wheel_rim_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "wheel rim",
+  "path": "Assets/SecondFace/Models/Nature/rusted_wheel_rim_01.fbx",
+  "place": "scatter",
+  "size": [
+   0.41,
+   0.4,
+   0.15
+  ],
+  "tris": 1500,
+  "tris_src": 16440,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/rusted_wheel_rim_01.fbx",
+    "size": [
+     0.41,
+     0.4,
+     0.15
+    ],
+    "tris": 1500
    }
   ]
  },
@@ -1064,6 +1872,110 @@
    }
   ]
  },
+ "small_lpg_tank": {
+  "id": "small_lpg_tank",
+  "licence": "CC0 (Poly Haven)",
+  "note": "gas bottle",
+  "path": "Assets/SecondFace/Models/Nature/small_lpg_tank.fbx",
+  "place": "scatter",
+  "size": [
+   0.41,
+   0.64,
+   0.41
+  ],
+  "tris": 1199,
+  "tris_src": 15042,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/small_lpg_tank.fbx",
+    "size": [
+     0.41,
+     0.64,
+     0.41
+    ],
+    "tris": 1199
+   }
+  ]
+ },
+ "steel_frame_shelves_01": {
+  "id": "steel_frame_shelves_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "shelves",
+  "path": "Assets/SecondFace/Models/Nature/steel_frame_shelves_01.fbx",
+  "place": "scatter",
+  "size": [
+   1.1,
+   2.14,
+   0.5
+  ],
+  "tris": 2500,
+  "tris_src": 4348,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/steel_frame_shelves_01.fbx",
+    "size": [
+     1.1,
+     2.14,
+     0.5
+    ],
+    "tris": 2500
+   }
+  ]
+ },
+ "stone_fire_pit": {
+  "id": "stone_fire_pit",
+  "licence": "CC0 (Poly Haven)",
+  "note": "fire pit",
+  "path": "Assets/SecondFace/Models/Nature/stone_fire_pit.fbx",
+  "place": "scatter",
+  "size": [
+   1.45,
+   0.39,
+   1.43
+  ],
+  "tris": 3000,
+  "tris_src": 3887,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/stone_fire_pit.fbx",
+    "size": [
+     1.45,
+     0.39,
+     1.43
+    ],
+    "tris": 3000
+   }
+  ]
+ },
+ "tool_cart": {
+  "id": "tool_cart",
+  "licence": "CC0 (Poly Haven)",
+  "note": "tool cart",
+  "path": "Assets/SecondFace/Models/Nature/tool_cart.fbx",
+  "place": "scatter",
+  "size": [
+   1.28,
+   0.97,
+   0.76
+  ],
+  "tris": 2500,
+  "tris_src": 29394,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/tool_cart.fbx",
+    "size": [
+     1.28,
+     0.97,
+     0.76
+    ],
+    "tris": 2500
+   }
+  ]
+ },
  "tree_small_02": {
   "id": "tree_small_02",
   "licence": "CC0 (Poly Haven)",
@@ -1113,6 +2025,172 @@
      1.59
     ],
     "tris": 2999
+   }
+  ]
+ },
+ "utility_box_01": {
+  "id": "utility_box_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "utility box",
+  "path": "Assets/SecondFace/Models/Nature/utility_box_01.fbx",
+  "place": "scatter",
+  "size": [
+   0.52,
+   1.12,
+   0.43
+  ],
+  "tris": 1200,
+  "tris_src": 4404,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/utility_box_01.fbx",
+    "size": [
+     0.52,
+     1.12,
+     0.43
+    ],
+    "tris": 1200
+   }
+  ]
+ },
+ "watering_can_metal_01": {
+  "id": "watering_can_metal_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "watering can",
+  "path": "Assets/SecondFace/Models/Nature/watering_can_metal_01.fbx",
+  "place": "scatter",
+  "size": [
+   0.19,
+   0.2,
+   0.45
+  ],
+  "tris": 1500,
+  "tris_src": 11837,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/watering_can_metal_01.fbx",
+    "size": [
+     0.19,
+     0.2,
+     0.45
+    ],
+    "tris": 1500
+   }
+  ]
+ },
+ "weed_plant_02": {
+  "id": "weed_plant_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "weeds",
+  "path": "Assets/SecondFace/Models/Nature/weed_plant_02_v1.fbx",
+  "place": "scatter",
+  "size": [
+   0.22,
+   0.07,
+   0.29
+  ],
+  "tris": 2995,
+  "tris_src": 11116,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/weed_plant_02_v1.fbx",
+    "size": [
+     0.22,
+     0.07,
+     0.29
+    ],
+    "tris": 800
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/weed_plant_02_v2.fbx",
+    "size": [
+     0.19,
+     0.07,
+     0.2
+    ],
+    "tris": 613
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/weed_plant_02_v3.fbx",
+    "size": [
+     0.14,
+     0.05,
+     0.14
+    ],
+    "tris": 475
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/weed_plant_02_v4.fbx",
+    "size": [
+     0.15,
+     0.04,
+     0.11
+    ],
+    "tris": 519
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/weed_plant_02_v5.fbx",
+    "size": [
+     0.12,
+     0.04,
+     0.06
+    ],
+    "tris": 588
+   }
+  ]
+ },
+ "wicker_basket_01": {
+  "id": "wicker_basket_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "basket",
+  "path": "Assets/SecondFace/Models/Nature/wicker_basket_01.fbx",
+  "place": "scatter",
+  "size": [
+   0.4,
+   0.12,
+   0.38
+  ],
+  "tris": 2533,
+  "tris_src": 22276,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/wicker_basket_01.fbx",
+    "size": [
+     0.4,
+     0.12,
+     0.38
+    ],
+    "tris": 2533
+   }
+  ]
+ },
+ "wicker_basket_02": {
+  "id": "wicker_basket_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "basket",
+  "path": "Assets/SecondFace/Models/Nature/wicker_basket_02.fbx",
+  "place": "scatter",
+  "size": [
+   0.35,
+   0.2,
+   0.25
+  ],
+  "tris": 2498,
+  "tris_src": 17850,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/wicker_basket_02.fbx",
+    "size": [
+     0.35,
+     0.2,
+     0.25
+    ],
+    "tris": 2498
    }
   ]
  },
@@ -1175,6 +2253,328 @@
      0.17
     ],
     "tris": 260
+   }
+  ]
+ },
+ "wooden_barrels_01": {
+  "id": "wooden_barrels_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "wooden barrels",
+  "path": "Assets/SecondFace/Models/Nature/wooden_barrels_01_v1.fbx",
+  "place": "scatter",
+  "size": [
+   0.76,
+   0.92,
+   0.76
+  ],
+  "tris": 3991,
+  "tris_src": 33142,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/wooden_barrels_01_v1.fbx",
+    "size": [
+     0.76,
+     0.92,
+     0.76
+    ],
+    "tris": 1348
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/wooden_barrels_01_v2.fbx",
+    "size": [
+     3.8,
+     0.95,
+     3.36
+    ],
+    "tris": 1608
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/wooden_barrels_01_v3.fbx",
+    "size": [
+     0.74,
+     0.36,
+     0.87
+    ],
+    "tris": 502
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/wooden_barrels_01_v4.fbx",
+    "size": [
+     0.57,
+     0.2,
+     0.88
+    ],
+    "tris": 263
+   },
+   {
+    "path": "Assets/SecondFace/Models/Nature/wooden_barrels_01_v5.fbx",
+    "size": [
+     0.58,
+     0.2,
+     0.87
+    ],
+    "tris": 270
+   }
+  ]
+ },
+ "wooden_bucket_01": {
+  "id": "wooden_bucket_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "bucket",
+  "path": "Assets/SecondFace/Models/Nature/wooden_bucket_01.fbx",
+  "place": "scatter",
+  "size": [
+   0.37,
+   0.55,
+   0.34
+  ],
+  "tris": 1199,
+  "tris_src": 5116,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/wooden_bucket_01.fbx",
+    "size": [
+     0.37,
+     0.55,
+     0.34
+    ],
+    "tris": 1199
+   }
+  ]
+ },
+ "wooden_crate_01": {
+  "id": "wooden_crate_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "crate",
+  "path": "Assets/SecondFace/Models/Nature/wooden_crate_01.fbx",
+  "place": "scatter",
+  "size": [
+   0.82,
+   0.35,
+   0.41
+  ],
+  "tris": 798,
+  "tris_src": 6576,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/wooden_crate_01.fbx",
+    "size": [
+     0.82,
+     0.35,
+     0.41
+    ],
+    "tris": 798
+   }
+  ]
+ },
+ "wooden_crate_02": {
+  "id": "wooden_crate_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "crate",
+  "path": "Assets/SecondFace/Models/Nature/wooden_crate_02.fbx",
+  "place": "scatter",
+  "size": [
+   0.53,
+   0.46,
+   1.17
+  ],
+  "tris": 798,
+  "tris_src": 5176,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/wooden_crate_02.fbx",
+    "size": [
+     0.53,
+     0.46,
+     1.17
+    ],
+    "tris": 798
+   }
+  ]
+ },
+ "wooden_ladder": {
+  "id": "wooden_ladder",
+  "licence": "CC0 (Poly Haven)",
+  "note": "ladder",
+  "path": "Assets/SecondFace/Models/Nature/wooden_ladder.fbx",
+  "place": "scatter",
+  "size": [
+   0.96,
+   1.33,
+   0.5
+  ],
+  "tris": 1199,
+  "tris_src": 8492,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/wooden_ladder.fbx",
+    "size": [
+     0.96,
+     1.33,
+     0.5
+    ],
+    "tris": 1199
+   }
+  ]
+ },
+ "wooden_lantern_01": {
+  "id": "wooden_lantern_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "lantern",
+  "path": "Assets/SecondFace/Models/Nature/wooden_lantern_01.fbx",
+  "place": "scatter",
+  "size": [
+   0.22,
+   0.53,
+   0.23
+  ],
+  "tris": 1497,
+  "tris_src": 8321,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/wooden_lantern_01.fbx",
+    "size": [
+     0.22,
+     0.53,
+     0.23
+    ],
+    "tris": 1497
+   }
+  ]
+ },
+ "wooden_military_crate": {
+  "id": "wooden_military_crate",
+  "licence": "CC0 (Poly Haven)",
+  "note": "military crate",
+  "path": "Assets/SecondFace/Models/Nature/wooden_military_crate.fbx",
+  "place": "scatter",
+  "size": [
+   1.24,
+   0.46,
+   0.52
+  ],
+  "tris": 1497,
+  "tris_src": 22986,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/wooden_military_crate.fbx",
+    "size": [
+     1.24,
+     0.46,
+     0.52
+    ],
+    "tris": 1497
+   }
+  ]
+ },
+ "wooden_picnic_table": {
+  "id": "wooden_picnic_table",
+  "licence": "CC0 (Poly Haven)",
+  "note": "table and benches",
+  "path": "Assets/SecondFace/Models/Nature/wooden_picnic_table.fbx",
+  "place": "scatter",
+  "size": [
+   2.24,
+   0.75,
+   3.02
+  ],
+  "tris": 2500,
+  "tris_src": 10210,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/wooden_picnic_table.fbx",
+    "size": [
+     2.24,
+     0.75,
+     3.02
+    ],
+    "tris": 2500
+   }
+  ]
+ },
+ "wooden_stool_01": {
+  "id": "wooden_stool_01",
+  "licence": "CC0 (Poly Haven)",
+  "note": "stool",
+  "path": "Assets/SecondFace/Models/Nature/wooden_stool_01.fbx",
+  "place": "scatter",
+  "size": [
+   0.43,
+   0.44,
+   0.45
+  ],
+  "tris": 800,
+  "tris_src": 10946,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/wooden_stool_01.fbx",
+    "size": [
+     0.43,
+     0.44,
+     0.45
+    ],
+    "tris": 800
+   }
+  ]
+ },
+ "wooden_stool_02": {
+  "id": "wooden_stool_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "stool",
+  "path": "Assets/SecondFace/Models/Nature/wooden_stool_02.fbx",
+  "place": "scatter",
+  "size": [
+   0.26,
+   0.18,
+   0.18
+  ],
+  "tris": 798,
+  "tris_src": 11146,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/wooden_stool_02.fbx",
+    "size": [
+     0.26,
+     0.18,
+     0.18
+    ],
+    "tris": 798
+   }
+  ]
+ },
+ "wooden_table_02": {
+  "id": "WoodenTable_02",
+  "licence": "CC0 (Poly Haven)",
+  "note": "table",
+  "path": "Assets/SecondFace/Models/Nature/wooden_table_02.fbx",
+  "place": "scatter",
+  "size": [
+   0.3,
+   0.42,
+   0.3
+  ],
+  "tris": 1514,
+  "tris_src": 1514,
+  "use": "prop",
+  "variants": [
+   {
+    "path": "Assets/SecondFace/Models/Nature/wooden_table_02.fbx",
+    "size": [
+     0.3,
+     0.42,
+     0.3
+    ],
+    "tris": 1514
    }
   ]
  }

@@ -108,6 +108,27 @@ namespace SecondFace.Tests
         }
 
         [Test]
+        public void LosingTheFightMovesTheStoryOn()
+        {
+            // beaten by the outriders, the player is left hurt and the story goes on as the story plan has it: the post-house
+            // burns, the notebook goes with them, Maud is hurt (never a return to the title)
+            var (g, q) = Weakling();
+            Talk("d_kn_maud", g, q, "On my way.");
+            Inv.AddItem(g.Pc.Inventory, Inv.MakeItem("k_notebook"));
+            q.QuestStart("q_ch1_outriders");
+            g.Flags["kn_outriders"] = true;
+            Talk("d_kn_outriders", g, q, "(Raise your arm to the rise.)", "(Fight.)");
+            Assert.That(g.World.Quests["q_ch1_outriders"].Stage, Is.EqualTo("fight"));
+            Assert.That(Registry.Npcs["npc_kn_out_lead"].Beaten, Is.Not.Null, "the outriders' content says what follows when they win");
+            SecondFace.Core.World.Logic.Apply(Registry.Npcs["npc_kn_out_lead"].Beaten, g);
+            q.Update();
+            Assert.That(g.Flags.ContainsKey("kn_posthouse_burned"), Is.True, "the post-house burns");
+            Assert.That(g.Flags.ContainsKey("kn_outriders_gone"), Is.True, "they leave");
+            Assert.That(Inv.CountItem(g.Pc.Inventory, "k_notebook"), Is.EqualTo(0), "with the notebook");
+            Assert.That(g.World.Quests["q_ch1_outriders"].Stage, Is.EqualTo("burned"));
+        }
+
+        [Test]
         public void TheCotSleepsTheNightThrough()
         {
             // after the stranger, going home to bed is enough (Maud asleep or not): the morning and its riders come

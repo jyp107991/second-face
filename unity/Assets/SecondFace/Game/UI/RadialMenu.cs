@@ -10,7 +10,9 @@ namespace SecondFace.Game.UI
     {
         public readonly string Id;
         public readonly bool Open;
-        public RadialVerb(string id, bool open = true) { Id = id; Open = open; }
+        /// <summary>A short line under the verb's name (a fight's odds and cost: "62% · 4 AP"); null for none.</summary>
+        public readonly string Note;
+        public RadialVerb(string id, bool open = true, string note = null) { Id = id; Open = open; Note = note; }
     }
 
     /// <summary>
@@ -78,6 +80,12 @@ namespace SecondFace.Game.UI
                 label.AddToClassList("sf-radial__verb-label");
                 Strings.Bind(label, "verb." + v.Id);
                 b.Add(label);
+                if (!string.IsNullOrEmpty(v.Note))
+                {
+                    var note = new Label(v.Note) { name = "note-" + v.Id, pickingMode = PickingMode.Ignore };
+                    note.AddToClassList("sf-radial__verb-note");
+                    b.Add(note);
+                }
                 _ring.Add(b);
                 _buttons[v.Id] = b;
             }

@@ -129,6 +129,18 @@ namespace SecondFace.Game.UI
             return b;
         }
 
+        /// <summary>A fight is on: the walkabout's buttons and the eye give way to the fight's own (Combat's HUD); the
+        /// party and the objective stay.</summary>
+        public void Fighting(bool on)
+        {
+            _actions.style.display = on ? DisplayStyle.None : DisplayStyle.Flex;
+            if (on) Eye.style.display = DisplayStyle.None;
+            Fight = on;
+        }
+
+        /// <summary>A fight is on (<see cref="Fighting"/>).</summary>
+        public bool Fight { get; private set; }
+
         /// <summary>What the notebook, map, pack, camp and sneak buttons do; a null hides its button (the screen is not
         /// there yet).</summary>
         public void Actions(Action notebook, Action map, Action pack, Action camp = null, Action sneak = null)
@@ -147,7 +159,7 @@ namespace SecondFace.Game.UI
         public void Watched(bool sneaking, double awareness)
         {
             SneakButton.EnableInClassList("sf-hud__action--on", sneaking);
-            var show = sneaking || awareness >= 0.05;
+            var show = !Fight && (sneaking || awareness >= 0.05);
             Eye.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
             if (!show) return;
             _eyeFill.style.width = Length.Percent((float)Math.Clamp(awareness, 0, 1) * 100f);

@@ -717,6 +717,50 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-16 (later), Chapter One's QA findings worked through; U6 and U7 begun.** Gate: red, 165 committed. The people's part of the morning's fixes (the leg solve's guards, the gate's trace folder, the clothes' layers: gate-hashed files) is held back: the whole cast measured on them (full42) came to 166, A1 118 = 118, A4 21 → 23 (Police_Male_06 after the stretch, cap_Fire_Male_07n talking), C1 8 → 7; it goes in with the next gate batch (A1's hang held under 18° out and back together, the portrait's framing), measured whole. Done:
+  (1) **the fight on the HUD** (T44): `CombatHud`: the turn order under the top row (who acts, how hurt), a health bar over
+  every fighter's head that follows them on screen, the action points and the fight's last lines on a plate between the
+  party and the buttons, the turn's buttons (patch up, reload, end turn, drawn icons) in the action cluster's place while
+  the walkabout's give way; each attack in the ring shows its odds and cost ("62% · 4 AP"); KnockTests asserts it;
+  (2) **places dressed** (T43): `PlaceYards` (Core, seeded) finds open ground off the ways people walk and fills it with
+  small scenes (cook fire and stools, work corner, kitchen garden, water point, junk, generator, stores, a bench, a barrel
+  stove), 26 to a place, built by `PlaceBuilder` from 49 CC0 Poly Haven props baked for the phone (`models_bake.py` now
+  joins a prop's parts, applies the file's own unit scale, and survives instanced parts and shape keys);
+  (3) **cloth without blotches** (T42): the outfit textures kept the photographed original in the gutters round their UV
+  islands and filtering bled it across the seams; `rb_uv_islands.py` + `rb_pad.py` pad colour, dye mask and normal map
+  out from the islands (395 textures, 79 bodies);
+  (4) **the conversation camera** (T45, T47) stands back as far as both heads need to fit beside the page and eases
+  after the pair when they move (never a cut);
+  (5) **U7, conversations that never loop** (DESIGN_UNITY §5.3): spent topics close, a hub is never said twice (its
+  `again` line or "Maud waits."), the next talk opens with a greeting from state, travelling companions interject; four
+  EditMode tests, every conversation in the game walked without a line said twice;
+  (6) **U6, the naming bible** (DESIGN_UNITY §8.1) and its validator rule; 61 display names renamed (ids unchanged);
+  (7) a portrait test that finds a speaker's face from the drawn body (T41's diagnosis).
+  Tests: EditMode 296 passed; PlayMode: the opening played on foot (310 s), Chapter One's road, the conversation camera,
+  the shelter, the UI suite, Boot's town and walker tests pass; a held townsperson now stops where they stand (they
+  finished their walk, 0.66 m); the photo test lets the stick's turn settle before the bumper's quarter turn. Shale's
+  road-to-road NavMesh failed once in the long run and passed alone (order-dependent: watch it in CI).
+  **Next:** the gate batch (A1 cap + T41 framing + the held-back people fixes): a pick of the eleven gear-held men, then
+  the whole cast; commit only with no measure worse than 165. Then W6 (women's jog stance), T43's arrivals, play-ch1.
+- **2026-11-16, the drive to v1 resumed (owner: "finish v1. do not stall.").** Gate: red, 165 (A1 118, A4 21, W6 11,
+  C1 8, W3 3, F1/F2/F5/K1 1). CI's last Android run (42660600365) was red: 22 of 80 PlayMode tests. Found and fixed:
+  (1) 16 tests failed by their log: the leg solve was handed a foot target whose height was not a number (a planted place
+  kept from a frame with no ground under it) and `Quaternion.FromToRotation` asserted every frame after (also seen locally
+  in KnockTests); now the planted place falls back to the clip's foot for that frame and the solve checks its inputs,
+  naming the first bad one in a warning; (2) the gate's trace wrote into a folder CI does not have; (3) the belt (1.1 cm)
+  lay under the vest it is worn over (G2): 1.4 cm; (4) the slope test compared planted feet with the clip's unplanted ones
+  (3-6 cm up): now with the same person planted; (5) the shelter test expected rooms under the mouth: the new opening
+  seals that door (no way down in the content), so Knock's home-to-road path is tested instead; (6) the town is given a
+  minute to stand five people (CI's slower frames); (7) Chapter One's trip from Knock was refused as busy while a
+  trigger's talk was open: the test reads the talk to its end, then asserts the trip. Also: `core/*.Check.csproj` get
+  Unity.Mathematics, Burst and Collections (the compile checks had failed on BodySkin since the Burst job). The gate's
+  inputs gain `BodyCorrectives.cs` and `*_flank.bytes` (they shape how people stand). Chapter One QA (docs/qa/play-ch1.md
+  T28-T36): character creation kept the face on the stage when a people was chosen (T29, fixed), garment edges are cut
+  along whole triangles and show as stair-steps at the throat in close views (T30, border triangles now cut along the
+  layer's own line), the HUD named every place "Shale" (T35, fixed; the world map calls the home Knock), the HUD's portrait
+  was a letter (T36, the player's face). The gear-held men's A1: the armpit's seam (moved by chest and arm together) was
+  the torso's in the game's skin but no part's in the correctives, so it gave no room; now the torso's there too (pick of
+  the eleven men running).
 - **L1 Outfit bake** (`tools/unity/people/rb_outfit.py`): per Rocketbox body, the cloth made neutral (luminance only, its
   prints, insignia, badges, stripes and logos painted out), garment masks (up to four dye groups) and a wear map (knees,
   elbows, hems, shoulders' sun) from each texel's place on the body. Judged on full-body renders with dyes applied.

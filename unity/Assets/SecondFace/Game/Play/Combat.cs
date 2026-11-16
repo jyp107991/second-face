@@ -47,8 +47,9 @@ namespace SecondFace.Game.Play
         private bool _playerDone;
         private Vector3? _pendingMove;
         private LineRenderer _path, _tracer;
-        private VisualElement _bar;
-        private Label _apLabel, _logLabel;
+        private SecondFace.Game.UI.CombatHud _hud;
+        /// <summary>The fight's HUD is up (true) or down (false): the walkabout's own buttons and eye give way to it.</summary>
+        public event System.Action<bool> Shown;
         private float _nextCheck;
 
         private void Update()
@@ -193,10 +194,12 @@ namespace SecondFace.Game.Play
             var ui = UIService.Instance;
             var verbs = new List<RadialVerb>();
             var snap = _battle.Preview(_player, target);
-            verbs.Add(new RadialVerb("attack", snap.Ok));
+            RadialVerb Verb(string id, (bool Ok, string Reason, int Chance, int Ap) pv) =>
+                new(id, pv.Ok, pv.Ok ? Strings.Get("combat.odds", pv.Chance, pv.Ap) : null);
+            verbs.Add(Verb("attack", snap));
             var w = CombatRules.WeaponOf(_player.C).def;
-            if (!CombatRules.IsMelee(w)) { verbs.Add(new RadialVerb("aim_head", _battle.Preview(_player, target, "head").Ok)); verbs.Add(new RadialVerb("aim_legs", _battle.Preview(_player, target, "legL").Ok)); }
-            if (w.Burst != null) verbs.Add(new RadialVerb("burst", _battle.Preview(_player, target, null, true).Ok));
+            if (!CombatRules.IsMelee(w)) { verbs.Add(Verb("aim_head", _battle.Preview(_player, target, "head"))); verbs.Add(Verb("aim_legs", _battle.Preview(_player, target, "legL"))); }
+            if (w.Burst != null) verbs.Add(Verb("burst", _battle.Preview(_player, target, null, true)));
             var title = $"{target.C.Name} · {Strings.Get("combat.chance", Strings.Get("verb.attack"), snap.Chance)}";
             if (!snap.Ok && snap.Reason != null) title += $" · {snap.Reason}";
             if (ui == null) { StartCoroutine(Run(AttackUnit(_player, target, null, false))); return true; }
@@ -379,8 +382,24 @@ namespace SecondFace.Game.Play
             }
             foreach (var p in _people.Values) if (p != null) p.Held = false;
             var outcome = _battle.Outcome ?? "truce";
-            Say(Strings.Get(outcome == "defeat" ? "combat.lost" : outcome == "truce" ? "combat.truce" : "combat.won"));
-            yield return new WaitForSeconds(outcome == "defeat" ? 2.5f : 1f);
+            // losing forward: people whose content says what follows when they beat the player leave them on the ground, hurt,
+            // and the story goes on (the opening's outriders: a lost fight sent the player back to the title, an hour of play
+            // gone, 2026-11-16)
+            if (outcome == "defeat")
+            {
+                var beaten = _battle.Units.Where(u => u != _player && u.Hostile)
+                    .Select(u => Registry.Npcs.TryGetValue(u.C.Id, out var d) ? d : null).Where(d => d?.Beaten != null).Distinct().ToList();
+                if (beaten.Count > 0)
+                {
+                    foreach (var d in beaten) Logic.Apply(d.Beaten, g);
+                    var hp = System.Math.Max(1, Sheet.Derived(g.Pc.Sheet).MaxHp / 4);
+                    g.Pc.Sheet.Hp = hp;
+                    if (_player != null) _player.C.Sheet.Hp = hp;
+                    outcome = "beaten";
+                }
+            }
+            Say(Strings.Get(outcome == "defeat" || outcome == "beaten" ? "combat.lost" : outcome == "truce" ? "combat.truce" : "combat.won"));
+            yield return new WaitForSeconds(outcome == "defeat" || outcome == "beaten" ? 2.5f : 1f);
             ShowBar(false);
             _battle = null;
             Walkabout.Quests.Update();
@@ -389,43 +408,79 @@ namespace SecondFace.Game.Play
 
         // ---- the bar ---------------------------------------------------------------------------------------------------
 
+        // (play-ch1 T44: the turn order along the top, health over every head, the action points and the fight's last lines
+        // beside the party, the turn's buttons in the action cluster's place; the HUD's own buttons give way meanwhile)
         private void ShowBar(bool on)
         {
             var ui = UIService.Instance;
             if (ui == null) return;
-            if (_bar == null)
+            if (on)
             {
-                _bar = new VisualElement { name = "combat-bar" };
-                _bar.AddToClassList("sf-plate");
-                _bar.style.position = Position.Absolute; _bar.style.bottom = 24; _bar.style.left = new Length(30, LengthUnit.Percent); _bar.style.right = new Length(30, LengthUnit.Percent);
-                _bar.style.flexDirection = FlexDirection.Column; _bar.style.alignItems = Align.Center;
-                _apLabel = new Label { name = "combat-ap" }; _apLabel.AddToClassList("sf-hud__quest");
-                _logLabel = new Label { name = "combat-log" }; _logLabel.AddToClassList("sf-hud__line"); _logLabel.style.whiteSpace = WhiteSpace.Normal;
-                var row = new VisualElement(); row.style.flexDirection = FlexDirection.Row;
-                row.Add(Button(Strings.Get("combat.reload"), () => { if (Mine()) { _battle.Reload(_player); Refresh(); } }));
-                row.Add(Button(Strings.Get("combat.heal"), () => { if (Mine() && _battle.UseItem(_player, Battle.HealItem, (int)Walkabout.Game.Minutes)) Refresh(); }));
-                row.Add(Button(Strings.Get("combat.end_turn"), () => { if (Mine()) _playerDone = true; }));
-                _bar.Add(_apLabel); _bar.Add(_logLabel); _bar.Add(row);
+                _hud ??= new SecondFace.Game.UI.CombatHud(ui,
+                    () => { if (Mine()) _playerDone = true; },
+                    () => { if (Mine()) { _battle.Reload(_player); Refresh(); } },
+                    () => { if (Mine() && _battle.UseItem(_player, Battle.HealItem, (int)Walkabout.Game.Minutes)) Refresh(); });
+                if (_hud.Root.parent == null) ui.Hud.Add(_hud.Root);
+                _lines.Clear();
+                Refresh();
             }
-            if (on) { if (_bar.parent == null) ui.Hud.Add(_bar); }
-            else _bar.RemoveFromHierarchy();
+            else _hud?.Close();
+            Shown?.Invoke(on);
         }
+
+        /// <summary>The fight's HUD (null outside a fight's first).</summary>
+        public SecondFace.Game.UI.CombatHud Hud => _hud;
+        /// <summary>The fight's HUD is up (through the fight and its last line, a moment after the battle itself ends).</summary>
+        public bool HudUp => _hud != null && _hud.Root.parent != null;
 
         private bool Mine() => Active && _battle.Current == _player && !_busy;
 
-        private static Button Button(string text, System.Action click)
-        {
-            var b = new Button(click) { text = text };
-            b.AddToClassList("sf-choice");
-            b.style.minWidth = 140; b.style.minHeight = 56; b.style.marginLeft = 6; b.style.marginRight = 6;
-            return b;
-        }
-
         private void Refresh()
         {
-            if (_apLabel == null || _battle == null) return;
+            if (_hud == null || _battle == null) return;
             var cur = _battle.Current;
-            _apLabel.text = cur == _player ? Strings.Get("combat.ap", _player.C.Ap, CombatRules.MaxAp(_player.C)) : Strings.Get("combat.their_turn", cur?.C.Name ?? "");
+            _hud.Status(cur == _player ? Strings.Get("combat.ap", _player.C.Ap, CombatRules.MaxAp(_player.C)) : Strings.Get("combat.their_turn", cur?.C.Name ?? ""), string.Join("\n", _lines));
+            _hud.Mine(cur == _player && !_busy);
+        }
+
+        private readonly List<SecondFace.Game.UI.CombatHud.Fighter> _fighters = new();
+
+        /// <summary>The turn order and the bars over heads, every frame of a fight (people move; the camera turns).</summary>
+        private void LateUpdate()
+        {
+            if (_hud == null || _battle == null || !_battle.Active || _hud.Root.parent == null) return;
+            var cam = Walkabout != null && Walkabout.Stage != null ? Walkabout.Stage.Camera : Camera.main;
+            var ui = UIService.Instance;
+            if (cam == null || ui == null) return;
+            // the order from the one acting on, as the rest of the round and the next will go
+            var order = _battle.Order;
+            var start = Mathf.Max(0, order.IndexOf(_battle.Current));
+            for (var i = 0; i < order.Count; i++)
+            {
+                var u = order[(start + i) % order.Count];
+                if (_fighters.Count <= i) _fighters.Add(new SecondFace.Game.UI.CombatHud.Fighter());
+                var f = _fighters[i];
+                f.Name = u.C.Name; f.Hostile = u.Hostile; f.Player = u == _player; f.Current = u == _battle.Current;
+                f.Down = !u.Alive || u.Fled || u.Surrendered;
+                f.Hp = u.C.Sheet.Hp; f.MaxHp = SecondFace.Core.Stats.Sheet.Derived(u.C.Sheet).MaxHp;
+                f.Over = _bodies.TryGetValue(u, out var body) && body != null ? Over(body) : Vector3.zero;
+            }
+            if (_fighters.Count > order.Count) _fighters.RemoveRange(order.Count, _fighters.Count - order.Count);
+            _hud.Show(_fighters, w =>
+            {
+                if (w == Vector3.zero) return null;
+                var s = cam.WorldToScreenPoint(w);
+                if (s.z <= 0f || s.x < 0 || s.y < 0 || s.x > Screen.width || s.y > Screen.height) return null;
+                return ui.ToPanel(new Vector2(s.x, s.y));
+            });
+        }
+
+        /// <summary>Just over a fighter's head (their head bone when they have one, else their height).</summary>
+        private static Vector3 Over(Transform body)
+        {
+            var anim = body.GetComponentInChildren<Animator>();
+            var head = anim != null && anim.isHuman ? anim.GetBoneTransform(HumanBodyBones.Head) : null;
+            return head != null ? head.position + Vector3.up * 0.32f : body.position + Vector3.up * 2.05f;
         }
 
         private readonly List<string> _lines = new();
@@ -433,7 +488,7 @@ namespace SecondFace.Game.Play
         {
             _lines.Add(line);
             while (_lines.Count > 3) _lines.RemoveAt(0);
-            if (_logLabel != null) _logLabel.text = string.Join("\n", _lines);
+            Refresh();
         }
 
         private void FlushLog(ref int shown)

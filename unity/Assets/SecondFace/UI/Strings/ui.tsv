@@ -535,6 +535,7 @@ combat.reload	Reload
 combat.heal	Patch up
 combat.ap	AP {0}/{1}
 combat.chance	{0}: {1}%
+combat.odds	{0}% · {1} AP
 combat.hit	{0} hits {1} for {2}.
 combat.crit	{0} hits {1} hard: {2}!
 combat.miss	{0} misses {1}.
@@ -553,3 +554,5 @@ create.look_own	Your skin, hair and eyes are your own. Shape the face on the fac
 create.dye.rb_top	Shirt and jacket
 create.dye.rb_legs	Trousers
 create.dye.rb_accent	The rest
+dialogue.waits	{0} waits.
+dialogue.someone	They

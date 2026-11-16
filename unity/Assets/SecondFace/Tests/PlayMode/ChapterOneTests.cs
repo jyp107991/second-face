@@ -32,6 +32,24 @@ namespace SecondFace.Tests
             Debug.Log($"ChapterOne: set down at {at} in {place} (centre {(info != null ? info.Centre[0] + "," + info.Centre[1] : "-")} size {(info != null ? info.Size[0] + "x" + info.Size[1] : "-")}); in: {string.Join(",", boot.Stage.World.Layout.Places.Values.Where(p => p.Centre != null && p.Contains(at.x, at.z, 4f)).Select(p => p.Id))}; visited: {string.Join(",", boot.Walkabout.Game.Flags.Keys.Where(k => k.StartsWith("visited_")))}");
         }
 
+        /// <summary>Sets out as a player would: whatever conversation the moment brought (a trigger, someone come to say a word)
+        /// read to its end first, then the map's trip (on CI's slower frames a trigger's talk was open when the test set out,
+        /// the trip was refused as busy, and the walker stayed in Knock, 2026-11-16).</summary>
+        private static IEnumerator SetOut(Bootstrap boot, string here, string to)
+        {
+            var walk = boot.Walkabout;
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 30f)
+            {
+                yield return Wait(1f);
+                if (walk.Conversation != null && walk.Conversation.IsOpen) { walk.Conversation.Close(); continue; }
+                if (!walk.Busy) break;
+            }
+            Assert.That(walk.Busy, Is.False, "free to set out");
+            boot.TravelTo(here, to);
+            Assert.That(walk.Game.LocationId, Is.EqualTo(to), $"set out for {to}");
+        }
+
         private static IEnumerator Talk(Walkabout walk, string npc, string capture)
         {
             var t0 = Time.realtimeSinceStartup;
@@ -61,7 +79,7 @@ namespace SecondFace.Tests
             walk.Settle();
             Assert.That(g.Flags.ContainsKey("kn_free_to_leave"), Is.True, "free to leave");
             // the road to Shale
-            boot.TravelTo("cistern9", "shale");
+            yield return SetOut(boot, "cistern9", "shale");
             yield return SetDown(boot, "shale");
             g = walk.Game;
             Assert.That(g.Flags.ContainsKey("visited_shale"), Is.True, "Shale reached");
@@ -76,7 +94,7 @@ namespace SecondFace.Tests
             walk.Settle();
             Assert.That(g.World.Quests["q_ch1_shale"].Stage, Is.EqualTo("overpass"), "the sheriff's word sends you to the overpass");
             // the overpass
-            boot.TravelTo("shale", "rustdogs");
+            yield return SetOut(boot, "shale", "rustdogs");
             yield return SetDown(boot, "rustdogs");
             g = walk.Game;
             Assert.That(g.Flags.ContainsKey("visited_overpass"), Is.True, "the overpass reached");

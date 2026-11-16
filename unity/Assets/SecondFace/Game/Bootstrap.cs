@@ -362,6 +362,17 @@ namespace SecondFace.Game
 
         private Hud _hud;
         private HudState _hudState;
+        private GameObject _hudFace;
+
+        /// <summary>A location's name as the player knows it: its map's own name (Knock, not the shelter under it), else the
+        /// world map's.</summary>
+        private string PlaceName(string location)
+        {
+            if (string.IsNullOrEmpty(location)) return "";
+            var loc = Registry.WorldMap != null && Registry.WorldMap.Locations.TryGetValue(location, out var l) ? l : null;
+            var map = loc?.Map ?? location;
+            return Content?.Entry("maps", map)?["name"]?.ToString() ?? loc?.Name ?? location;
+        }
         private float _hudNext;
 
         /// <summary>The HUD over the walkabout (P5.3b): the compass turns with the camera, the clock is the world's.</summary>
@@ -377,8 +388,7 @@ namespace SecondFace.Game
                 _hud.Menu(() => OpenPause());
                 _hud.ObjectiveTapped += () => OpenNotebook(SecondFace.Core.World.Notebook.Tracked(Walkabout.Game));
                 UI.StackChanged += () => _hudNext = 0f;   // a quest tracked in the notebook, or one a conversation began, shows at once
-                var place = Content?.Entry("maps", "shale")?["name"]?.ToString() ?? "Shale";
-                _hudState = new HudState { Place = place, Party = { new HudMember { Name = Strings.Get("hud.you"), Hp = 1, MaxHp = 1, Leader = true } } };
+                _hudState = new HudState { Place = "", Party = { new HudMember { Name = Strings.Get("hud.you"), Hp = 1, MaxHp = 1, Leader = true } } };
             }
             _hud.Root.style.display = Tour != null ? UnityEngine.UIElements.DisplayStyle.None : UnityEngine.UIElements.DisplayStyle.Flex;
             var cam = Stage.Camera;
@@ -387,6 +397,8 @@ namespace SecondFace.Game
                 var f = cam.transform.forward;   // north is +z
                 if (f.x * f.x + f.z * f.z > 1e-4f) _hud.Heading(Mathf.Atan2(f.x, f.z) * Mathf.Rad2Deg);
             }
+            var fighting = Walkabout.Combat != null && (Walkabout.Combat.Active || Walkabout.Combat.HudUp);
+            if (fighting != _hud.Fight) _hud.Fighting(fighting);
             if (Walkabout.Watch != null) _hud.Watched(Walkabout.Walker.Sneaking, Walkabout.Watch.Highest);
             if (Time.unscaledTime < _hudNext || Stage.Clock == null) return;
             _hudNext = Time.unscaledTime + 1f;
@@ -394,6 +406,11 @@ namespace SecondFace.Game
             _hudState.Day = Stage.Clock.Day;
             // the tracked quest's next objective (the walkabout's own game: conversations can start the content's quests)
             var g = Walkabout.Game;
+            // the place the player is in, by its own map's name (it read "Shale" everywhere, Knock's square included, T35)
+            _hudState.Place = PlaceName(g.LocationId);
+            // the player's own face in the party strip (a letter stood there, T36), drawn once a walker
+            var me = Walkabout.Walker.gameObject;
+            if (_hudFace != me && _hudState.Party.Count > 0) { _hudFace = me; _hudState.Party[0].Portrait = SecondFace.Game.People.Portraits.Of(me); }
             var tracked = SecondFace.Core.World.Notebook.Tracked(g);
             var page = tracked == null ? null : SecondFace.Core.World.Notebook.Quests(g, Registry.Quests).Find(e => e.Id == tracked);
             _hudState.Quest = page?.Title;

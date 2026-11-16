@@ -13,6 +13,21 @@ MonoBehaviour:
   m_Name: ScatterCatalog
   m_EditorClassIdentifier: SecondFace.Game::SecondFace.Game.World.ScatterCatalog
   Entries:
+  - Id: ammo_box
+    Addresses:
+    - nature/ammo_box
+  - Id: barrel_01
+    Addresses:
+    - nature/barrel_01
+  - Id: barrel_02
+    Addresses:
+    - nature/barrel_02
+  - Id: barrel_03
+    Addresses:
+    - nature/barrel_03
+  - Id: barrel_stove
+    Addresses:
+    - nature/barrel_stove
   - Id: boulder_01
     Addresses:
     - nature/boulder_01
@@ -21,12 +36,21 @@ MonoBehaviour:
     - kits-trees/broadleaf_1
     - kits-trees/broadleaf_2
     - kits-trees/broadleaf_3
+  - Id: cardboard_box_01
+    Addresses:
+    - nature/cardboard_box_01
   - Id: coast_land_rocks_02
     Addresses:
     - nature/coast_land_rocks_02
   - Id: coast_rocks_01
     Addresses:
     - nature/coast_rocks_01
+  - Id: compost_bag_02
+    Addresses:
+    - nature/compost_bag_02
+  - Id: concrete_road_barrier
+    Addresses:
+    - nature/concrete_road_barrier
   - Id: dead_quiver_trunk
     Addresses:
     - nature/dead_quiver_trunk
@@ -52,6 +76,9 @@ MonoBehaviour:
     - kits-trees/fir_1
     - kits-trees/fir_2
     - kits-trees/fir_3
+  - Id: folding_wooden_stool
+    Addresses:
+    - nature/folding_wooden_stool
   - Id: grass_medium_01
     Addresses:
     - nature/grass_medium_01_v1
@@ -78,6 +105,22 @@ MonoBehaviour:
     - nature/grass_medium_02_v3
     - nature/grass_medium_02_v4
     - nature/grass_medium_02_v5
+  - Id: lantern_01
+    Addresses:
+    - nature/lantern_01
+  - Id: metal_jerrycan
+    Addresses:
+    - nature/metal_jerrycan
+  - Id: metal_jerrycan_green
+    Addresses:
+    - nature/metal_jerrycan_green
+  - Id: metal_tool_chest
+    Addresses:
+    - nature/metal_tool_chest
+  - Id: metal_trash_can
+    Addresses:
+    - nature/metal_trash_can_v1
+    - nature/metal_trash_can_v2
   - Id: namaqualand_boulder_02
     Addresses:
     - nature/namaqualand_boulder_02
@@ -101,11 +144,49 @@ MonoBehaviour:
     - nature/namaqualand_stones_01_v3
     - nature/namaqualand_stones_01_v4
     - nature/namaqualand_stones_01_v5
+  - Id: nettle_plant
+    Addresses:
+    - nature/nettle_plant_v1
+    - nature/nettle_plant_v3
+    - nature/nettle_plant_v4
+  - Id: old_military_crate
+    Addresses:
+    - nature/old_military_crate_v1
+  - Id: old_tyre
+    Addresses:
+    - nature/old_tyre
+  - Id: painted_wooden_bench
+    Addresses:
+    - nature/painted_wooden_bench
   - Id: pine
     Addresses:
     - kits-trees/pine_1
     - kits-trees/pine_2
     - kits-trees/pine_3
+  - Id: planter_box_01
+    Addresses:
+    - nature/planter_box_01
+  - Id: planter_box_02
+    Addresses:
+    - nature/planter_box_02
+  - Id: plastic_crate_01
+    Addresses:
+    - nature/plastic_crate_01
+  - Id: plastic_crate_03
+    Addresses:
+    - nature/plastic_crate_03
+  - Id: plastic_jerrycan
+    Addresses:
+    - nature/plastic_jerrycan
+  - Id: plastic_monobloc_chair_01
+    Addresses:
+    - nature/plastic_monobloc_chair_01
+  - Id: portable_generator
+    Addresses:
+    - nature/portable_generator
+  - Id: propane_tank
+    Addresses:
+    - nature/propane_tank
   - Id: quiver_tree_01
     Addresses:
     - nature/quiver_tree_01
@@ -121,6 +202,9 @@ MonoBehaviour:
   - Id: root_cluster_01
     Addresses:
     - nature/root_cluster_01
+  - Id: rusted_wheel_rim_01
+    Addresses:
+    - nature/rusted_wheel_rim_01
   - Id: shrub_01
     Addresses:
     - nature/shrub_01_v1
@@ -149,12 +233,39 @@ MonoBehaviour:
     - nature/shrub_04_v1
     - nature/shrub_04_v2
     - nature/shrub_04_v3
+  - Id: small_lpg_tank
+    Addresses:
+    - nature/small_lpg_tank
+  - Id: steel_frame_shelves_01
+    Addresses:
+    - nature/steel_frame_shelves_01
+  - Id: stone_fire_pit
+    Addresses:
+    - nature/stone_fire_pit
+  - Id: tool_cart
+    Addresses:
+    - nature/tool_cart
   - Id: tree_small_02
     Addresses:
     - nature/tree_small_02
   - Id: tree_stump_01
     Addresses:
     - nature/tree_stump_01
+  - Id: watering_can_metal_01
+    Addresses:
+    - nature/watering_can_metal_01
+  - Id: weed_plant_02
+    Addresses:
+    - nature/weed_plant_02_v1
+    - nature/weed_plant_02_v2
+    - nature/weed_plant_02_v3
+    - nature/weed_plant_02_v4
+  - Id: wicker_basket_01
+    Addresses:
+    - nature/wicker_basket_01
+  - Id: wicker_basket_02
+    Addresses:
+    - nature/wicker_basket_02
   - Id: wild_rooibos_bush
     Addresses:
     - nature/wild_rooibos_bush_v1
@@ -162,3 +273,30 @@ MonoBehaviour:
     - nature/wild_rooibos_bush_v3
     - nature/wild_rooibos_bush_v4
     - nature/wild_rooibos_bush_v5
+  - Id: wooden_bucket_01
+    Addresses:
+    - nature/wooden_bucket_01
+  - Id: wooden_crate_01
+    Addresses:
+    - nature/wooden_crate_01
+  - Id: wooden_crate_02
+    Addresses:
+    - nature/wooden_crate_02
+  - Id: wooden_ladder
+    Addresses:
+    - nature/wooden_ladder
+  - Id: wooden_lantern_01
+    Addresses:
+    - nature/wooden_lantern_01
+  - Id: wooden_military_crate
+    Addresses:
+    - nature/wooden_military_crate
+  - Id: wooden_picnic_table
+    Addresses:
+    - nature/wooden_picnic_table
+  - Id: wooden_stool_01
+    Addresses:
+    - nature/wooden_stool_01
+  - Id: wooden_table_02
+    Addresses:
+    - nature/wooden_table_02

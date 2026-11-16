@@ -147,6 +147,9 @@ namespace SecondFace.Core.Npc
         [JsonProperty("hostile")] public bool? Hostile;
         /// <summary>Hostile while this holds (a camp that turns on you once a flag is set).</summary>
         [JsonProperty("hostileIf")] public JObject HostileIf;
+        /// <summary>When they beat the player in a fight, these effects apply and the game goes on, the player left hurt (losing
+        /// forward); without it a lost fight ends the game.</summary>
+        [JsonProperty("beaten")] public JArray Beaten;
         /// <summary>Fights on your side in encounters on their map while this holds (a town's militia on the day).</summary>
         [JsonProperty("ally")] public JObject Ally;
         /// <summary>0..100.</summary>

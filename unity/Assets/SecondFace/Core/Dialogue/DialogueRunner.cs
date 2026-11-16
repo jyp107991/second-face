@@ -25,13 +25,23 @@ namespace SecondFace.Core.Dialogue
 
     public sealed class PassiveView { public string Label; public string Text; }
 
+    /// <summary>A companion's word on the node (U7).</summary>
+    public sealed class InterjectView { public string Companion; public string Text; }
+
     public sealed class NodeView
     {
         public string Speaker;
         public string Text;
         /// <summary>This node has been read before (skippable).</summary>
         public bool Seen;
+        /// <summary>The conversation came back to this node (a hub after a topic): <see cref="Text"/> is its `again` line,
+        /// or empty when the speaker only waits (U7).</summary>
+        public bool Returned;
+        /// <summary>An opening heard in an earlier talk: <see cref="Text"/> is a greeting by what has happened since (U7).</summary>
+        public bool Greeting;
         public List<PassiveView> Passives = new();
+        /// <summary>A travelling companion's word on this node (at most one; U7).</summary>
+        public List<InterjectView> Interjections = new();
         public List<OptionView> Options = new();
     }
 
@@ -59,16 +69,32 @@ namespace SecondFace.Core.Dialogue
         public readonly IDialogueHost Host;
         public string Node { get; private set; }
         private readonly HashSet<string> _passivesShown = new();
+        /// <summary>The nodes this conversation has said (U7: a node said again shows its `again` line, or a wait).</summary>
+        private readonly HashSet<string> _said = new();
+        private bool _returned;
+        /// <summary>The greeting said in place of an opening already heard in an earlier talk (null: the opening itself).</summary>
+        private string _greeting;
 
         public DialogueRunner(DialogueDef def, GameState g, IDialogueHost host = null)
         {
             Def = def; G = g; Host = host ?? DialogueHost.None;
             Node = null;
             foreach (var s in def.Start) if (Logic.Test(s.If, g)) { Node = s.Node; break; }
-            if (Node != null) Enter(Node);
+            if (Node == null) return;
+            // (U7: an opening said in an earlier talk is not said again; the speaker greets by what has happened since)
+            g.World.Visited.TryGetValue($"{def.Id}.{Node}", out var before);
+            var opening = def.Nodes.TryGetValue(Node, out var on) ? on : null;
+            _greeting = before > 0 && opening != null && opening.Text is not JArray
+                ? (opening.Again != null ? Render(opening.Again, g) : Greetings.For(g, def.Owner))
+                : null;
+            Greetings.Talked(g, def.Owner);
+            _openedAt = Node;
+            Enter(Node);
+            if (_greeting != null) _returned = false;
         }
 
         public bool Ended => Node == null;
+        private string _openedAt;
 
         private static readonly Regex Token = new(@"\{(\w+)\}", RegexOptions.Compiled);
 
@@ -118,14 +144,16 @@ namespace SecondFace.Core.Dialogue
             var key = $"{Def.Id}.{id}";
             G.World.Visited.TryGetValue(key, out var v);
             G.World.Visited[key] = v + 1;
-            Logic.Apply(n.Effects, G, Host);
+            _returned = !_said.Add(id);
+            if (!_returned) Logic.Apply(n.Effects, G, Host);
         }
 
         public NodeView View()
         {
             if (Node == null) return null;
             var n = Def.Nodes[Node];
-            var view = new NodeView { Speaker = n.Speaker ?? Def.Owner, Text = Render(n.Text, G) };
+            var greet = _greeting != null && Node == _openedAt && !_returned;
+            var view = new NodeView { Speaker = n.Speaker ?? Def.Owner, Text = greet ? _greeting : _returned ? Render(n.Again, G) : Render(n.Text, G), Returned = _returned, Greeting = greet };
             G.World.Visited.TryGetValue($"{Def.Id}.{Node}", out var visits);
             view.Seen = visits > 1;
             if (n.Passives != null)
@@ -146,6 +174,25 @@ namespace SecondFace.Core.Dialogue
                     view.Passives.Add(new PassiveView { Label = label.ToUpperInvariant(), Text = Render(p.Text, G) });
                 }
             }
+            // (U7: a travelling companion's word, the first that applies; its effects once in the whole game)
+            if (n.Interject != null && !_returned)
+                foreach (var ij in n.Interject)
+                {
+                    if (string.IsNullOrEmpty(ij.Companion) || !Travelling(ij.Companion) || (ij.If != null && !Logic.Test(ij.If, G))) continue;
+                    var key = $"interject.{Def.Id}.{Node}.{ij.Companion}";
+                    G.World.Seen.TryGetValue(key, out var said);
+                    if (said == 0) { G.World.Seen[key] = 1; Logic.Apply(ij.Effects, G, Host); }
+                    view.Interjections.Add(new InterjectView { Companion = ij.Companion, Text = Render(ij.Text, G) });
+                    break;
+                }
+            // (U7: a topic heard to its end closes; a node whose topics are all spent keeps them rather than strand the talk)
+            var spent = new HashSet<int>();
+            for (int i = 0; i < n.Options.Count; i++)
+                if (Spent(Node, i, new HashSet<string> { Node })) spent.Add(i);
+            var open = 0;
+            for (int i = 0; i < n.Options.Count; i++)
+                if (!spent.Contains(i) && (Logic.Test(n.Options[i].If, G) || n.Options[i].ShowLocked == true)) open++;
+            if (open == 0) spent.Clear();
             for (int i = 0; i < n.Options.Count; i++)
             {
                 var o = n.Options[i];
@@ -154,6 +201,7 @@ namespace SecondFace.Core.Dialogue
                 if (!ok && o.ShowLocked != true) continue;
                 G.World.Seen.TryGetValue(id, out var seen);
                 if (o.Once == true && seen != 0) continue;
+                if (spent.Contains(i)) continue;
                 var ov = new OptionView { Id = id, Text = Render(o.Text, G), Locked = !ok, Seen = seen != 0, Exit = o.Exit == true && o.Check == null };
                 if (o.Check != null)
                 {
@@ -166,6 +214,61 @@ namespace SecondFace.Core.Dialogue
             }
             return view;
         }
+
+        /// <summary>A companion who travels with the player now (joined and not left waiting somewhere).</summary>
+        private bool Travelling(string id) => G.Companions != null && G.Companions.TryGetValue(id, out var c) && c != null
+                                              && (c.WaitingAt == null || c.WaitingAt.Type == JTokenType.Null);
+
+        /// <summary>Effects that do the same the second time (a flag set, a thing learned, a lead, a memory overwritten): an
+        /// option carrying only these can close as a spent topic; anything else (items, approval, reputation, XP, news,
+        /// quests) is the content's to gate.</summary>
+        private static readonly HashSet<string> Idempotent = new() { "set", "learn", "lead", "memory" };
+
+        private static bool Harmless(JArray effects)
+        {
+            if (effects == null) return true;
+            foreach (var t in effects)
+            {
+                if (t is not JObject e) return false;
+                var known = false;
+                foreach (var p in e.Properties()) if (Idempotent.Contains(p.Name)) { known = true; break; }
+                if (!known) return false;
+            }
+            return true;
+        }
+
+        /// <summary>Option i of a node is a spent topic (U7): asked before, nothing in it changes the world again, and
+        /// everything it opens has been heard (the nodes it leads to said before, their own topics spent or leading back).
+        /// Exits, services (`repeat`), checks and lines that read the world (variants) never close.</summary>
+        private bool Spent(string nodeId, int i, HashSet<string> path)
+        {
+            var o = Def.Nodes[nodeId].Options[i];
+            if (o.Exit == true || o.Repeat == true || o.Check != null || o.Next == null) return false;
+            if (!Logic.Test(o.If, G)) return false;
+            G.World.Seen.TryGetValue(OptionId(i, o, nodeId), out var seen);
+            if (seen == 0 || !Harmless(o.Effects)) return false;
+            return Heard(o.Next, path);
+        }
+
+        private bool Heard(string nodeId, HashSet<string> path)
+        {
+            if (path.Contains(nodeId)) return true;   // (back to where the topic began)
+            if (!Def.Nodes.TryGetValue(nodeId, out var n)) return false;
+            G.World.Visited.TryGetValue($"{Def.Id}.{nodeId}", out var visits);
+            if (visits == 0 || n.Text is JArray || !Harmless(n.Effects)) return false;
+            path.Add(nodeId);
+            for (int k = 0; k < n.Options.Count; k++)
+            {
+                var o = n.Options[k];
+                if (o.Exit == true || o.Repeat == true || o.Next == null || !Logic.Test(o.If, G)) continue;
+                if (path.Contains(o.Next)) continue;
+                if (!Spent(nodeId, k, path)) { path.Remove(nodeId); return false; }
+            }
+            path.Remove(nodeId);
+            return true;
+        }
+
+        private string OptionId(int i, OptionDef o, string nodeId) => o.Id ?? $"{Def.Id}.{nodeId}.{i}";
 
         /// <summary>Choose an option by id. Returns whether a check passed (true when there was none).</summary>
         public bool Choose(string optionId)

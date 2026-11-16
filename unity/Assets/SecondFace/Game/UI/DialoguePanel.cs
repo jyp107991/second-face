@@ -153,6 +153,19 @@ namespace SecondFace.Game.UI
                 row.Add(text);
                 _passives.Add(row);
             }
+            foreach (var ij in _view.Interjections)
+            {
+                var row = new VisualElement();
+                row.AddToClassList("sf-dialogue__passive");
+                row.AddToClassList("sf-dialogue__passive--companion");
+                var label = new Label((_nameOf(ij.Companion) ?? ij.Companion).ToUpperInvariant());
+                label.AddToClassList("sf-dialogue__passive-label");
+                var text = new Label(ij.Text);
+                text.AddToClassList("sf-dialogue__passive-text");
+                row.Add(label);
+                row.Add(text);
+                _passives.Add(row);
+            }
 
             _options.Clear();
             var n = 0;
@@ -181,6 +194,11 @@ namespace SecondFace.Game.UI
             }
 
             _full = _view.Text ?? "";
+            // (U7: back at a node the conversation has said, a speaker with no `again` line only waits: a beat, not the
+            // speech again)
+            var beat = _view.Returned && string.IsNullOrWhiteSpace(_full);
+            if (beat) _full = Strings.Get("dialogue.waits", string.IsNullOrEmpty(name) ? Strings.Get("dialogue.someone") : name);
+            _line.EnableInClassList("sf-dialogue__line--beat", beat);
             Presented?.Invoke(_view);
             if ((_view.Seen && HeardWhole) || CharsPerSecond <= 0f) Finish();
             else

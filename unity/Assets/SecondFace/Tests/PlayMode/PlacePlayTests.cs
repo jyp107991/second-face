@@ -116,6 +116,12 @@ namespace SecondFace.Tests
             Vector3 At(string kind, string id) => markers.Single(m => m.Kind == kind && m.Id == id).transform.position;
             foreach (var (from, to, what) in new[] { (At("spawn", "west"), At("spawn", "east"), "west road to east road"), (At("spawn", "start"), At("spot", "bar"), "the street to the bar") })
             {
+                if (!NavMesh.SamplePosition(from, out var probe, 3f, NavMesh.AllAreas))
+                {
+                    var near = NavMesh.SamplePosition(from, out var far, 30f, NavMesh.AllAreas) ? $"{Vector3.Distance(from, far.position):0.0} m off at {far.position}" : "none in 30 m";
+                    var under = Physics.Raycast(from + Vector3.up * 5f, Vector3.down, out var hitDown, 20f) ? $"{hitDown.collider.name} at {hitDown.point.y:0.00}" : "nothing";
+                    Debug.Log($"PlacePlayTests: {what}: the start {from} (ground {under}); the nearest NavMesh {near}");
+                }
                 Assert.That(NavMesh.SamplePosition(from, out var a, 3f, NavMesh.AllAreas), Is.True, $"{what}: on the NavMesh at the start");
                 Assert.That(NavMesh.SamplePosition(to, out var b, 3f, NavMesh.AllAreas), Is.True, $"{what}: on the NavMesh at the end");
                 var path = new NavMeshPath();
@@ -195,11 +201,32 @@ namespace SecondFace.Tests
             var place = streamer.PlaceSpawner.Instance("cistern9");
             Assert.That(place, Is.Not.Null, "Cistern 9 was not placed");
             var below = place.transform.Find("below");
-            Assert.That(below, Is.Not.Null, "the shelter under the mouth");
-            Assert.That(below.position.y, Is.LessThan(mouth.y - 8f), "ten metres down");
-            Assert.That(place.transform.Find("tunnel"), Is.Not.Null, "the tunnel down to it");
             var markers = place.GetComponentsInChildren<PlaceMarker>();
             Vector3 At(string map, string kind, string id) => markers.Single(m => m.Map == map && m.Kind == kind && m.Id == id).transform.position;
+            if (below == null)
+            {
+                // (the new opening, owner's note D: the mouth is Knock, the hamlet above the Cistern's door, and the door is
+                // sealed: the content has no way down, so nothing is built under it. Knock stands, and its home and the road out
+                // are joined on its NavMesh.)
+                var maps = Newtonsoft.Json.Linq.JObject.Parse(System.IO.File.ReadAllText(System.IO.Path.Combine(Application.streamingAssetsPath, "content", "maps.json")));
+                var down = (maps["c9_mouth"]?["exits"] as Newtonsoft.Json.Linq.JArray)?.Any(e => (string)e["to"]?["location"] == "cistern9") ?? false;
+                Assert.That(down, Is.False, "no shelter under the mouth although the content has a way down to it");
+                sky.Apply();
+                for (var i = 0; i < 10; i++) yield return null;
+                yield return Shot(cam, mouth + new Vector3(0, 0, -6f), 50f, 20f, 48f, "place_c9_mouth");
+                var nav0 = place.GetComponent<PlaceNav>();
+                var m0 = Time.realtimeSinceStartup;
+                while (!nav0.Ready && Time.realtimeSinceStartup - m0 < 120f) yield return null;
+                Assert.That(nav0.Ready, Is.True, "the NavMesh built");
+                Assert.That(NavMesh.SamplePosition(At("c9_mouth", "spawn", "home"), out var h0, 3f, NavMesh.AllAreas), Is.True, "home is on the NavMesh");
+                Assert.That(NavMesh.SamplePosition(At("c9_mouth", "spawn", "road"), out var r0, 3f, NavMesh.AllAreas), Is.True, "the road out is on the NavMesh");
+                var p0 = new NavMeshPath();
+                NavMesh.CalculatePath(h0.position, r0.position, NavMesh.AllAreas, p0);
+                Assert.That(p0.status, Is.EqualTo(NavMeshPathStatus.PathComplete), "home to the road out");
+                yield break;
+            }
+            Assert.That(below.position.y, Is.LessThan(mouth.y - 8f), "ten metres down");
+            Assert.That(place.transform.Find("tunnel"), Is.Not.Null, "the tunnel down to it");
             sky.Apply();
             for (var i = 0; i < 10; i++) yield return null;
             yield return Shot(cam, mouth + new Vector3(0, 0, -6f), 50f, 20f, 48f, "place_c9_mouth");

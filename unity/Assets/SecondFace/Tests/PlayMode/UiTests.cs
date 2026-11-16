@@ -412,7 +412,9 @@ namespace SecondFace.Tests
             var again = _ui.Open(new DialoguePanel(new DialogueRunner(def, g), id => "Teller Vos") { CharsPerSecond = 20f });
             yield return null;
             Assert.That(again.Revealing, Is.False, "a line heard before is shown whole");
-            Assert.That(again.Options.Q<Button>("option-ask").ClassListContains("sf-dialogue__option--seen"), Is.True, "a choice made before is dimmed");
+            // (U7: a topic heard to its end closes; the talk opens with a greeting, not the same speech)
+            Assert.That(again.Options.Q<Button>("option-ask"), Is.Null, "a topic heard to its end is not offered again");
+            Assert.That(again.View.Greeting, Is.True, "the next talk opens with a greeting");
             Assert.That(_ui.Back(), Is.True);
             Assert.That(again.IsOpen, Is.False, "back takes the way out");
             Object.Destroy(face);

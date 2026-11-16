@@ -94,6 +94,9 @@ namespace SecondFace.Tests
             floor.transform.localScale = new Vector3(3f, 0.2f, 3f);
             floor.transform.position = new Vector3(10f, -0.1f, 0);
             var flat = Stand(new Vector3(10f, 0, 0));
+            // (planted too: compared with the clip's own feet on flat ground, which the idles hold 3-6 cm up on these bodies, a
+            // planted foot on the slope read 3.5 cm off, 2026-11-16)
+            flat.gameObject.AddComponent<FootPlant>();
             var bare = Stand(new Vector3(0, 0, -1f));
             var animator = Stand(Vector3.zero);
             var person = animator.gameObject;

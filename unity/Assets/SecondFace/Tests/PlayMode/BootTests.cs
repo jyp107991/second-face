@@ -121,6 +121,10 @@ namespace SecondFace.Tests
             Bootstrap boot = null;
             yield return Boot(b => boot = b);
             var walk = boot.Walkabout;
+            // (people stand up by distance a few a frame once the walker is down: on CI's slower frames four had stood when
+            // the walker was, 2026-11-16; the town is peopled within a minute)
+            var tp = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - tp < 60f && walk.Townsfolk < 5) yield return null;
             Assert.That(walk.Townsfolk, Is.GreaterThanOrEqualTo(5), "people stand about the town");
             // the interface (P5.3): the start card has gone and the HUD is over the walkabout, its compass on the camera
             Assert.That(boot.UI, Is.Not.Null, "the Boot scene holds the UI assets (Second Face/Wire the Boot scene)");
@@ -130,7 +134,9 @@ namespace SecondFace.Tests
             // the walker is the person made: the player's body, their look, their name; the new game saved itself
             Assert.That(walk.Game.Pc.Sheet.Name, Is.EqualTo("Ash Corran"));
             Assert.That(walk.Walker.GetComponentInChildren<FaceSculpt>(), Is.Not.Null, "the player's own body (the sculptor's shapes on it)");
-            Assert.That(walk.Walker.GetComponentInChildren<Wardrobe>().Wearing.Count, Is.GreaterThan(0), "dressed");
+            // (dressed: in our garments, or, a Rocketbox person, in their own re-dyed clothes with the lore-bound layers over them)
+            var wardrobe = walk.Walker.GetComponentInChildren<Wardrobe>();
+            Assert.That((wardrobe != null && wardrobe.Wearing.Count > 0) || walk.Walker.GetComponentInChildren<RbLayerSet>() != null, Is.True, "dressed");
             Assert.That(boot.Session.Read(Session.Auto), Is.Not.Null, "the new game is in the auto slot");
             Assert.That(boot.Hud.MenuButton.resolvedStyle.display, Is.EqualTo(UnityEngine.UIElements.DisplayStyle.Flex), "the menu button is shown");
             var fwd = Camera.main.transform.forward;
@@ -229,6 +235,15 @@ namespace SecondFace.Tests
             Assert.That(boot.Hud.Root.resolvedStyle.display, Is.EqualTo(UnityEngine.UIElements.DisplayStyle.Flex), "the HUD is back");
             // levels of detail (P4.1): the game camera's person is LOD1, about 6 K triangles (they were 95-141 K whole)
             var lod = walk.Walker.GetComponentInChildren<LODGroup>();
+            var rbBody = walk.Walker.GetComponentInChildren<RbLayerSet>()?.Body();
+            if (lod == null && rbBody != null)
+            {
+                // (a Rocketbox person, as every player is now: one skinned body whose mesh carries its own levels of detail,
+                // Mesh LOD on import, RB1; no LODGroup to look at)
+                Assert.That(rbBody.sharedMaterials.All(m => m != null), Is.True, "the walker's body has its materials");
+            }
+            else
+            {
             Assert.That(lod, Is.Not.Null, "the walker's levels of detail");
             var lods = lod.GetLODs();
             Assert.That(lods.Length, Is.EqualTo(3), "LOD0 close-up, LOD1 game camera, LOD2 far");
@@ -237,6 +252,7 @@ namespace SecondFace.Tests
             Assert.That(Tris(lods[1]), Is.LessThan(8000), "LOD1 within the game camera's budget");
             Assert.That(Tris(lods[2]), Is.LessThan(3000), "LOD2 within the far budget");
             Assert.That(lods.All(l => l.renderers.All(r => r.sharedMaterials.All(m => m != null && m.name.Contains("_")))), Is.True, "every level's materials bound");
+            }
             var cam = boot.Stage.Camera;
             for (var i = 0; i < 5; i++) yield return null;
             var d0 = Vector3.Distance(cam.transform.position, walk.Rig.Target.position);
@@ -393,6 +409,8 @@ namespace SecondFace.Tests
             var yaw = walk.Rig.Yaw;
             for (var i = 0; i < 20; i++) { pad.Next = new PadFrame { Look = new Vector2(1f, 0f) }; yield return null; }
             Assert.That(Mathf.DeltaAngle(yaw, walk.Rig.Yaw), Is.GreaterThan(5f), "turned");
+            // (the stick's turn eases out after it is let go: the quarter turn is measured from where it settles)
+            for (var i = 0; i < 60; i++) { pad.Next = new PadFrame(); yield return null; }
             yaw = walk.Rig.Yaw;
             pad.Next = new PadFrame { TurnRight = true };
             for (var i = 0; i < 60; i++) yield return null;
@@ -677,7 +695,9 @@ namespace SecondFace.Tests
             {
                 Assert.That(p.Body, Is.EqualTo(SecondFace.Core.Npc.Routine.Male(p.Def.Look) ? "base_m" : "base_f"), $"{p.Id}: a base of their sex");
                 var w = p.GetComponentInChildren<SecondFace.Game.People.Wardrobe>();
-                Assert.That(w != null && (w.Wearing.ContainsKey("full") || w.Wearing.ContainsKey("top")), Is.True, $"{p.Id}: dressed");
+                // (in our garments, or a Rocketbox person in their own re-dyed clothes)
+                var dyed = p.GetComponentsInChildren<Renderer>().Any(r => r.sharedMaterials.Any(m => m != null && m.HasProperty("_DyeOn") && m.GetFloat("_DyeOn") > 0.5f));
+                Assert.That((w != null && (w.Wearing.ContainsKey("full") || w.Wearing.ContainsKey("top"))) || dyed, Is.True, $"{p.Id}: dressed");
             }
             // a look over the plaza
             walk.Rig.Follow(walk.Walker.transform);
