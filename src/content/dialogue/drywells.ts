@@ -5,6 +5,11 @@ import type { DialogueDef } from '../../engine/dialogue/dialogue';
  * Signal Hill — a locked room, a console that holds Shale at a number, and the four things that can be done to it.
  */
 
+/** Companions who can come down the Dry Wells track with the player in Act 1 (U7 interjections). */
+const WREN = 'npc_rd_03';
+const ILYA = 'npc_sh_17';
+const TAMSIN = 'npc_c9_03';
+
 const bye = { text: 'That\'s all.', exit: true };
 const ADMIT = (how: string, text: string) => [{ set: 'dw_admitted' }, { set: `dw_${how}` }, { decision: { id: `dw_${how}`, text } }, { xp: 40 }];
 
@@ -14,6 +19,7 @@ export const d_dw_approach: DialogueDef = {
   nodes: {
     halt: {
       text: 'A rifle shot takes the top off the sandbag beside you, and then a voice from behind the fire barrel, flat as the ground: "Far enough. That was the one I had to spare." A woman in a hood with a bolt rifle, older than her voice. Somewhere behind her a kid is whistling, and stops.',
+      again: 'The rifle on the fire barrel hasn\'t moved. "Still far enough," the voice says. "Say what you came to say from there."',
       passives: [
         { attr: 'senses', dc: 7, text: 'She worked the bolt and did not chamber. The next one is a bluff or a prayer, and she counted it out loud for a reason.', effects: [{ learn: 'dw_sable_short' }] },
         { skill: 'survival', dc: 30, text: 'Smoke from three shacks, a planter with something green in it, and a line worn in the dust where water has been carried every day for years. People live here, and not many.', effects: [{ learn: 'dw_family_seen' }] },
@@ -42,7 +48,7 @@ export const d_dw_approach: DialogueDef = {
     pumphand: { text: '"Grew up under." She says it twice, trying it. "Under." The rifle goes across her chest. "Then you\'ll know what the clock sounds like. Eleven. Come and tell Grandmother what it sounds like where you\'re from, because she\'s never heard anyone else say it."', options: [{ text: '(Go in.)', next: 'through' }] },
     ilya: { text: '"Sable." Ilya, beside you, not raising his voice. "It\'s Strand. I brought the cartridges in the spring. I brought this one." A silence in which the kid starts whistling again. "Strand," she says. "You still owe me three." The rifle goes down.', options: [{ text: '(Go in.)', next: 'through' }] },
     through: { text: 'She steps out from the barrel without lowering the rifle all the way, which is how she walks everywhere. "The shacks are ours. The station\'s Grandmother\'s. The tower\'s nobody\'s and don\'t climb it; Wick\'s up there and he bites." A nod at the long concrete building. "She\'ll want to see you before you touch anything that hums."', options: [{ text: '(Go in.)', exit: true }] },
-    hostile: { text: 'Nobody is talking.', options: [{ text: '(Fight.)', exit: true }] },
+    hostile: { text: 'Nobody is talking.', again: 'Nobody is talking. The fire barrel is where the shots come from.', options: [{ text: '(Fight.)', exit: true }] },
   },
 };
 
@@ -63,6 +69,7 @@ export const d_dw_sable: DialogueDef = {
     },
     again: {
       text: '"Still counting."',
+      again: 'She runs a thumb along the rounds on her belt. "Six. Go on."',
       options: [
         { id: 'sable.shale.again', text: 'Why shoot at Shale?', if: { not: { seen: 'sable.shale' } }, next: 'why' },
         { id: 'sable.station.again', text: 'What\'s in the station?', if: { not: { seen: 'sable.station' } }, next: 'station' },
@@ -71,7 +78,10 @@ export const d_dw_sable: DialogueDef = {
         bye,
       ],
     },
-    why: { text: '"Because the water under this floor is theirs, and the valve on the line is ours, and Shale has a sheriff who\'d call that a word that ends with a rope." She shrugs. "We take a trickle. A trickle in Shale is a bucket. A bucket here is five people alive."', effects: [{ learn: 'dw_bypass_known' }, { lead: 'l_dw_bypass' }], options: [{ text: 'Noted.', next: 'again' }] },
+    why: { text: '"Because the water under this floor is theirs, and the valve on the line is ours, and Shale has a sheriff who\'d call that a word that ends with a rope." She shrugs. "We take a trickle. A trickle in Shale is a bucket. A bucket here is five people alive."', interject: [
+      { companion: ILYA, text: '"She would," Ilya says. "Ada would hang them for it and then not sleep for a month."' },
+      { companion: WREN, text: 'At "rope" Wren looks away, at nothing, for a moment longer than she needs to.' },
+    ], effects: [{ learn: 'dw_bypass_known' }, { lead: 'l_dw_bypass' }], options: [{ text: 'Noted.', next: 'again' }] },
     station: { text: '"The pumps, and a room at the end with a door that was locked when Grandmother was a girl, and a light that\'s green on the other side of it. Her father had the key. She has it now. She doesn\'t go in." A beat. "It makes a noise before eleven. Every day. You\'ll hear it."', effects: [{ learn: 'dw_control_locked' }, { learn: 'dw_key_oriel' }], options: [{ text: 'Noted.', next: 'again' }] },
     schedule: { text: '"Not us. Not Shale; Shale thinks it\'s the weather, or God, or the Tollmen. Grandmother says the city. I say it doesn\'t matter who, it matters that it\'s on time." She looks east. "Something that\'s been on time for ninety years is a thing I don\'t want to meet."', effects: [{ learn: 'dw_schedule_upstream' }], options: [{ text: 'Noted.', next: 'again' }] },
     east: {
@@ -79,19 +89,24 @@ export const d_dw_sable: DialogueDef = {
         { if: { any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, text: '"The graveyard, then the glass, then a bridge with a town on it. I\'ve walked it twice." She looks at the station, where the pumps are running outside the clock. "You did a thing in there that somebody east will come to look at. I\'ll walk you as far as the glass, so you\'re not the first thing they see. Past that you\'re on your own, and so is everyone."' },
         { text: '"East is east. Don\'t get shot." She goes back to counting.' },
       ],
+      again: [
+        { if: { flag: 'escort_east' }, text: '"Sandbags, when you\'re ready. I said."' },
+        { text: '"Still east." She doesn\'t look up from the rounds.' },
+      ],
       options: [
         { id: 'sable.escort', text: 'To the glass, then.', if: { any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, effects: [{ set: 'escort_east', value: 'sable' }, { decision: { id: 'escort_sable', text: 'Sable Marr will walk you east as far as the glass.' } }, { trust: { npc: 'npc_dw_02', by: 10 } }], next: 'escort' },
         { text: 'Noted.', next: 'again' },
       ],
     },
     escort: { text: '"When you go, come past the sandbags and say so. I\'ll have the rounds I\'ve got."', options: [bye] },
-    hostile: { text: 'She is behind the sandbags with the rifle.', options: [{ text: '(Fight.)', exit: true }] },
+    hostile: { text: 'She is behind the sandbags with the rifle.', again: 'Still behind the sandbags. She is counting again, and not out loud.', options: [{ text: '(Fight.)', exit: true }] },
   },
 };
 
 export const d_dw_oriel: DialogueDef = {
   id: 'd_dw_oriel', owner: 'npc_dw_01',
-  start: [{ if: { flag: 'dw_fight' }, node: 'after_fight' }, { if: { flag: 'dw_oriel_met' }, node: 'again' }, { node: 'intro' }],
+  // (after a fight the key is handed over once: later talks find her in the chair with nothing more to give)
+  start: [{ if: { flag: 'dw_oriel_fight_done' }, node: 'cold' }, { if: { flag: 'dw_fight' }, node: 'after_fight' }, { if: { flag: 'dw_oriel_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
       text: 'An old woman in a chair that was built for sitting, hands folded on a stick, eyes that measured you from the window before you reached the door. "Sable let you by, so you said something true. Sit. I\'m Oriel Marr. My father was the pump man here, and his father before the Burn, and that chair you\'re not sitting in was his." She waits. Under the floor, something clicks, and the pumps begin.',
@@ -114,8 +129,9 @@ export const d_dw_oriel: DialogueDef = {
     },
     again: {
       text: [{ if: { flag: 'dw_key_forced' }, text: 'She does not look at you. The chair is still the only thing in the room built for sitting.' }, { if: { flag: 'dw_outcome' }, text: '"It\'s quiet under the floor, or it isn\'t. Either way, you did it." She looks at the chair, then at you. "Sit, this time."' }, { text: '"The chair\'s still empty."' }],
+      again: 'Under the floor, something clicks. She waits for it to finish before she looks at you again.',
       options: [
-        { id: 'oriel.who.again', text: 'Who are you people?', if: { not: { seen: 'oriel.who' } }, next: 'who' },
+        { id: 'oriel.who.again', text: 'Who are you people?', if: { not: { seen: 'oriel.who' } }, next: 'who', once: true },
         { id: 'oriel.clock.again', text: 'Eleven o\'clock.', if: { not: { seen: 'oriel.clock' } }, next: 'clock' },
         { id: 'oriel.station.again', text: 'The room at the end of the station.', if: { not: { flag: 'dw_has_key' } }, next: 'station' },
         { id: 'oriel.stay.again', text: 'Shale could take you in.', if: { all: [{ knows: 'dw_origin_known' }, { not: { seen: 'oriel.stay' } }, { not: { flag: 'dw_ghosts_decided' } }, { not: { flag: 'ada_ghosts_decided' } }] }, next: 'stay' },
@@ -128,6 +144,7 @@ export const d_dw_oriel: DialogueDef = {
     },
     who: {
       text: '"Ghosts. That\'s what the Tollmen call us, when they call us anything." She smiles with half her face. "We came out of a hole in the ground, same as you by the look of you. Not yours. Another one, east, with a number on it. Its pumps stopped when I was nine and the door didn\'t open, and my father opened it with a bar. Forty of us walked. Five of us are here."',
+      interject: [{ companion: TAMSIN, text: '"Its pumps stopped," Tamsin repeats. She has gone white under the freckles. "And the door didn\'t open. And nobody came." She looks at you. "Nobody came."' }],
       effects: [{ learn: 'dw_origin_known' }, { lead: 'l_dw_ghosts' }, { quest: 'q_dw_ghosts', start: true }, { xp: 40 }],
       options: [{ text: 'Why here?', next: 'why_here' }, { text: 'Noted.', next: 'again' }],
     },
@@ -135,6 +152,7 @@ export const d_dw_oriel: DialogueDef = {
     clock: { text: '"Six, eleven, four, nine. Every day since before I was born, and twice a year the numbers move and nobody here moves them." She taps the floor with the stick. "That\'s Shale drinking. When the numbers moved last spring, Shale got less. Shale thinks it\'s the drought. It isn\'t the drought."', effects: [{ learn: 'dw_schedule_shale' }, { lead: 'l_dw_schedule' }], options: [{ text: 'Noted.', next: 'again' }] },
     station: {
       text: '"My father\'s room. He said whatever was in there wasn\'t ours to touch, and then he died of the same thing I\'m dying of, and I\'ve kept it the way he left it." Her hand goes to the cord. "You want the key. Everybody who gets past Sable wants the key, in the end."',
+      again: 'Her hand is on the cord again. "The key. Yes. Go on, then; say it better this time."',
       options: [
         { id: 'oriel.key.pumphand', text: '(Tell her what the clock sounds like where you come from.)', if: { origin: 'pump_hand' }, next: 'key_pumphand' },
         { id: 'oriel.key.stay', text: 'Give it to me and I\'ll see your family stays. Whatever is in there, I use it for them first.', check: { skill: 'speech', dc: 35, mods: [{ if: { flag: 'dw_oriel_treated' }, dc: -15, why: 'you treated her cough before you asked' }, { if: { knows: 'dw_father_sent' }, dc: -5, why: 'you listened to the whole story' }, { if: { trust: { npc: 'npc_dw_01', gte: 10 } }, dc: -10, why: 'she has decided to like you' }] }, next: 'key_given', fail: 'key_no' },
@@ -144,8 +162,11 @@ export const d_dw_oriel: DialogueDef = {
     },
     key_pumphand: { text: '"Then it\'s the same clock." She lifts the cord over her head as if it weighs what it weighed when she was nine. "He\'d have given it to one of his own. Go and read his gauge." The key is warm. "And if the thing in there asks you for a word, the word is on the first page of his book. He never let me read past it."', effects: [{ give: 'k_station_key' }, { set: 'dw_has_key' }, { set: 'dw_oriel_key' }, { learn: 'dw_override_word' }, { trust: { npc: 'npc_dw_01', by: 15 } }, { decision: { id: 'dw_key_pumphand', text: 'Oriel Marr gave you her father\'s key because you knew his clock.' } }, { xp: 60 }], options: [{ text: '(Take it.)', next: 'again' }] },
     key_given: { text: 'She looks at you for the length of a pump run, and then lifts the cord over her head. "For them first." The key is warm from sixty years of being held. "If the thing in there asks you for a word, the word is on the first page of his book. He never let me read past it."', effects: [{ give: 'k_station_key' }, { set: 'dw_has_key' }, { set: 'dw_oriel_key' }, { set: 'dw_promised_stay' }, { learn: 'dw_override_word' }, { trust: { npc: 'npc_dw_01', by: 15 } }, { decision: { id: 'dw_key_promise', text: 'Oriel Marr gave you her father\'s key on your word that the family comes first.' } }, { xp: 60 }], options: [{ text: '(Take it.)', next: 'again' }] },
-    key_no: { text: '"Everybody says first." Her hand closes on the key. "My father said it, about Shale. Come back when you\'ve done something for us that wasn\'t a sentence."', effects: [{ set: 'dw_key_refused' }], options: [{ text: 'Noted.', next: 'again' }] },
-    key_taken: { text: 'She does not resist, which is worse than if she had. The cord comes over her head; her hair catches in it. "There," she says. "Now you\'re the same as the thing in there."', effects: [{ give: 'k_station_key' }, { set: 'dw_has_key' }, { set: 'dw_key_forced' }, { trust: { npc: 'npc_dw_01', by: -30 } }, { trust: { npc: 'npc_dw_02', by: -20 } }, { memory: { npc: 'npc_dw_01', tag: 'took_key', valence: -40, strength: 100 } }, { decision: { id: 'dw_key_forced', text: 'You took the station key off Oriel Marr\'s neck.' } }], options: [{ text: '(Go.)', exit: true }] },
+    key_no: { text: '"Everybody says first." Her hand closes on the key. "My father said it, about Shale. Come back when you\'ve done something for us that wasn\'t a sentence."', again: 'Her hand stays shut on the key. "Another sentence," she says.', effects: [{ set: 'dw_key_refused' }], options: [{ text: 'Noted.', next: 'again' }] },
+    key_taken: { text: 'She does not resist, which is worse than if she had. The cord comes over her head; her hair catches in it. "There," she says. "Now you\'re the same as the thing in there."', interject: [
+      { companion: TAMSIN, text: '"She\'s dying," Tamsin says. "You took it off a dying woman\'s neck." She doesn\'t say anything else, and she doesn\'t need to.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] },
+      { companion: ILYA, text: '"Right," Ilya says, flat, and goes out to stand where he can\'t see the chair.', effects: [{ approval: { companion: ILYA, by: -5 } }] },
+    ], effects: [{ give: 'k_station_key' }, { set: 'dw_has_key' }, { set: 'dw_key_forced' }, { trust: { npc: 'npc_dw_01', by: -30 } }, { trust: { npc: 'npc_dw_02', by: -20 } }, { memory: { npc: 'npc_dw_01', tag: 'took_key', valence: -40, strength: 100 } }, { decision: { id: 'dw_key_forced', text: 'You took the station key off Oriel Marr\'s neck.' } }], options: [{ text: '(Go.)', exit: true }] },
     stay: { text: '"Under a rope, you mean. The valve\'s a hanging in Shale." She considers it anyway, which is more than you expected. "Juno would go. Wick would go and come back. Cato would stay for the valve and Sable would stay for Cato. Ask your sheriff. If she says yes and means it, I\'ll decide for all of them, which is what I\'m for."', effects: [{ learn: 'dw_oriel_would_go' }], options: [{ text: 'I\'ll ask her.', next: 'again' }] },
     go_shale: { text: '"As townsfolk." She says it like a word in another language. "Then close the valve yourself, so Cato can hate you and not me, and we\'ll walk. I have walked out of one place with less." She stands, which takes a while. "Tell your sheriff: five, and one of them coughs."', effects: [{ set: 'dw_ghosts_decided' }, { set: 'dw_ghosts_shale' }, { set: 'dw_valve_closed' }, { decision: { id: 'dw_ghosts_shale', text: 'The Dry Wells family walked to Shale under Sheriff Vey\'s law.' } }, { news: { tag: 'ghosts_in_shale', text: 'five people out of a dead cistern have come in off the Dry Wells track and the sheriff has given them the old tannery', valence: 5, size: 6, at: 'shale' } }, { trust: { npc: 'npc_dw_01', by: 20 } }, { xp: 100 }], options: [{ text: '(Help her up.)', exit: true }] },
     no_shale: { text: '"No." She nods as if she had bet on it. "Then we stay, and the valve stays, and when Shale comes it comes. It was always going to." A click under the floor.', effects: [{ set: 'dw_ghosts_decided' }, { set: 'dw_ghosts_left' }, { decision: { id: 'dw_ghosts_refused', text: 'Shale refused the Dry Wells family; they stay on their trickle.' } }, { xp: 40 }], options: [{ text: 'Noted.', next: 'again' }] },
@@ -153,8 +174,13 @@ export const d_dw_oriel: DialogueDef = {
     leave_be: { text: '"Then you\'re the first from that direction who didn\'t." She closes her eyes. "Eleven o\'clock. Listen."', effects: [{ set: 'dw_ghosts_decided' }, { set: 'dw_ghosts_left' }, { decision: { id: 'dw_ghosts_left', text: 'You left the Dry Wells family on their trickle and told Shale nothing.' } }, { trust: { npc: 'npc_dw_01', by: 15 } }, { trust: { npc: 'npc_dw_02', by: 10 } }, { xp: 60 }], options: [{ text: 'Noted.', exit: true }] },
     after_fight: {
       text: 'She is in the chair. She has not moved. "You shot at my family from behind a sandbag they filled. Take the key. Take the chair. There\'s nothing in that room worth what you paid for it."',
-      effects: [{ give: 'k_station_key' }, { set: 'dw_has_key' }, { set: 'dw_key_forced' }, { set: 'dw_ghosts_decided' }, { set: 'dw_ghosts_left' }, { memory: { npc: 'npc_dw_01', tag: 'shot_family', valence: -60, strength: 100 } }],
+      effects: [{ give: 'k_station_key' }, { set: 'dw_has_key' }, { set: 'dw_key_forced' }, { set: 'dw_ghosts_decided' }, { set: 'dw_ghosts_left' }, { set: 'dw_oriel_fight_done' }, { memory: { npc: 'npc_dw_01', tag: 'shot_family', valence: -60, strength: 100 } }],
       options: [{ text: '(Take it.)', exit: true }],
+    },
+    cold: {
+      text: 'She is in the chair. She does not look at you, and she does not speak. Under the floor the pumps keep their clock.',
+      again: 'The chair, the stick, the old woman in it, looking at the wall and not at you.',
+      options: [{ text: '(Leave her.)', exit: true }],
     },
   },
 };
@@ -165,6 +191,7 @@ export const d_dw_juno: DialogueDef = {
   nodes: {
     intro: {
       text: '"Beans. In a planter. In Dry Wells." She does not look up from them. "Grandmother says that\'s a joke. I say it\'s beans. They don\'t care what they\'re a joke about."',
+      again: '"Still beans." She doesn\'t look up. "Still not a joke."',
       options: [
         { id: 'juno.cough', text: 'Your grandmother\'s cough. (Give her a knit kit for it.)', if: { all: [{ knows: 'dw_oriel_cough' }, { item: 'c_knitkit' }, { not: { flag: 'dw_oriel_treated' } }] }, effects: [{ take: 'c_knitkit' }, { set: 'dw_oriel_treated' }, { trust: { npc: 'npc_dw_01', by: 15 } }, { trust: { npc: 'npc_dw_03', by: 15 } }, { decision: { id: 'dw_oriel_treated', text: 'You left medicine for Oriel Marr\'s lungs with her granddaughter.' } }, { xp: 40 }], next: 'cough' },
         { id: 'juno.cough.med', text: 'Your grandmother\'s cough. (Show her how to steam the lungs: a bucket, a cloth, the stove.)', if: { all: [{ knows: 'dw_oriel_cough' }, { not: { flag: 'dw_oriel_treated' } }] }, check: { skill: 'medicine', dc: 30 }, effects: [{ set: 'dw_oriel_treated' }, { trust: { npc: 'npc_dw_01', by: 10 } }, { trust: { npc: 'npc_dw_03', by: 15 } }, { decision: { id: 'dw_oriel_treated', text: 'You showed Juno Marr how to ease her grandmother\'s lungs.' } }, { xp: 40 }], next: 'cough', fail: 'cough_no' },
@@ -174,8 +201,8 @@ export const d_dw_juno: DialogueDef = {
     },
     cough: { text: 'She looks up for the first time. "She\'ll say she doesn\'t need it. Give it to me and I\'ll put it in the tea." A pause. "Thank you. Nobody from that way says thank you either, so."', options: [bye] },
     cough_no: { text: 'She listens, and nods, and you can see her deciding it is nonsense.', effects: [{ time: 15 }], options: [bye] },
-    shale: { text: '"Tomorrow." No hesitation at all. "I\'ve never been anywhere with a second street. Don\'t tell Cato I said it. Don\'t tell them about the valve."', options: [bye] },
-    hostile: { text: 'She has a knife and no idea what to do with it.', options: [{ text: '(Leave her.)', exit: true }] },
+    shale: { text: '"Tomorrow." No hesitation at all. "I\'ve never been anywhere with a second street. Don\'t tell Cato I said it. Don\'t tell them about the valve."', interject: [{ companion: TAMSIN, text: '"Never anywhere with a second street." Tamsin grins at the girl like a conspirator. "Me neither, till this year. You\'ll hate it. Go anyway."' }], options: [bye] },
+    hostile: { text: 'She has a knife and no idea what to do with it.', again: 'The knife is still in her hand, still pointed nowhere in particular.', options: [{ text: '(Leave her.)', exit: true }] },
   },
 };
 
@@ -185,6 +212,7 @@ export const d_dw_cato: DialogueDef = {
   nodes: {
     intro: {
       text: '"The valve\'s mine." He says it before you have asked anything. "Grandmother says when, I say how far. A quarter turn at eleven, back at noon. Shale never missed it. Shale never will."',
+      again: '"Still mine." He hasn\'t moved from the valve. "Eleven, a quarter turn. Noon, back."',
       options: [
         { id: 'cato.cut', text: 'Shale is missing it. The schedule has been cut; they\'re drinking at sixty-two parts in a hundred.', if: { knows: 'dw_schedule_shale' }, next: 'cut', once: true },
         { id: 'cato.valve', text: 'What if I closed it?', next: 'close' },
@@ -193,8 +221,8 @@ export const d_dw_cato: DialogueDef = {
     },
     cut: { text: '"Then it was the city cut it, not us." He does not move. "Our quarter turn was there before the cut and after it. You want somebody to blame for Shale, there\'s a room at the end of the station with a green light in it. Go and blame that."', effects: [{ learn: 'dw_cato_blames_room' }], options: [{ text: 'Noted.', exit: true }] },
     close: { text: '"You close it and I open it. You break it and we die here, slow, in front of Grandmother." He picks up the pipe, not to use it, just to have it. "Which do you want to be?"', options: [{ text: 'Neither.', exit: true }] },
-    closed: { text: 'He is standing by the valve with the pipe in both hands and does not look at you. "Noon," he says. "It\'s past noon."', options: [{ text: '(Leave him.)', exit: true }] },
-    hostile: { text: 'He has the pipe up.', options: [{ text: '(Fight.)', exit: true }] },
+    closed: { text: 'He is standing by the valve with the pipe in both hands and does not look at you. "Noon," he says. "It\'s past noon."', again: 'He is still by the shut valve. He has nothing to turn, and he has not put the pipe down.', options: [{ text: '(Leave him.)', exit: true }] },
+    hostile: { text: 'He has the pipe up.', again: 'The pipe is still up.', options: [{ text: '(Fight.)', exit: true }] },
   },
 };
 
@@ -204,6 +232,7 @@ export const d_dw_wick: DialogueDef = {
   nodes: {
     intro: {
       text: 'A kid on the tower ladder, barefoot, with a sling in his belt. "I can hear it. The click. Sable says it\'s the pipe cooling. It isn\'t. It\'s before, not after."',
+      again: '"Listen," Wick says, from the ladder, before you can speak. "There. Before, not after."',
       passives: [{ attr: 'senses', dc: 6, text: 'He is right. A click, then the pumps. Something counts first.', effects: [{ learn: 'dw_pumps_click' }, { lead: 'l_pumps_clock' }] }],
       options: [
         { id: 'wick.east', text: 'What\'s east of here?', next: 'east', once: true },
@@ -213,7 +242,7 @@ export const d_dw_wick: DialogueDef = {
     },
     east: { text: '"The graveyard. Pumps like ours with no water in them, standing up in a line. Past that it shines, all day, and you can\'t look at it." He points. "I went as far as the first one. There was a bird."', effects: [{ learn: 'loc_lm_sallow_02' }, { lead: 'l_windpumps' }], options: [bye] },
     shale: { text: '"I\'ve seen its water go past under the floor." He thinks about it. "Is it big? Does it have a tower?"', options: [{ text: 'It has a tower.', exit: true }, { text: 'It\'s small.', exit: true }] },
-    hostile: { text: 'He is up the tower and has stones.', options: [{ text: '(Leave him.)', exit: true }] },
+    hostile: { text: 'He is up the tower and has stones.', again: 'Still up the tower. Still has stones.', options: [{ text: '(Leave him.)', exit: true }] },
   },
 };
 
@@ -224,6 +253,7 @@ export const d_dw_door: DialogueDef = {
   nodes: {
     locked: {
       text: 'A steel door at the east end of the pump hall, painted with a number worn to a shape: 4. The lock is a good one, pre-Burn, oiled by someone who never opened it. Behind it something hums at a pitch you feel in your teeth.',
+      again: 'The door with the worn 4 on it, and the hum behind it in your teeth.',
       effects: [{ learn: 'dw_control_locked' }],
       options: [
         { id: 'door.key', text: '(Use the brass key.)', if: { item: 'k_station_key' }, effects: [{ set: 'dw_control_open' }, { set: 'dw_door_keyed' }], next: 'opens' },
@@ -236,14 +266,15 @@ export const d_dw_door: DialogueDef = {
     forced: { text: 'The frame goes before the lock does, with a noise the whole of Dry Wells hears. Across the yard, somebody puts a rifle down on a sandbag very carefully.', options: [{ text: '(Go in.)', exit: true }] },
     pick_no: { text: 'The pins are pre-Burn and cut to a tolerance nobody has made since. Twenty minutes, and the pick comes out bent.', effects: [{ time: 20 }], options: [{ text: '(Leave it.)', exit: true }] },
     force_no: { text: 'The door does not care. Your shoulder does.', effects: [{ time: 10 }], options: [{ text: '(Leave it.)', exit: true }] },
-    open: { text: 'The door stands open on the green light.', options: [{ text: '(Go in.)', exit: true }] },
+    open: { text: 'The door stands open on the green light.', again: 'Open, and green, and humming.', options: [{ text: '(Go in.)', exit: true }] },
   },
 };
 
 /** The schedule console: what Shale drinks, and who decides. */
 export const d_dw_console: DialogueDef = {
   id: 'd_dw_console', owner: 'narrator',
-  start: [{ if: { flag: 'dw_outcome' }, node: 'after' }, { node: 'wake' }],
+  // (the console's first reading is had once: a later visit comes straight to the cursor)
+  start: [{ if: { flag: 'dw_outcome' }, node: 'after' }, { if: { flag: 'dw_console_seen' }, node: 'menu' }, { node: 'wake' }],
   nodes: {
     wake: {
       text: 'A console the width of the wall, dust on everything but the screen, which is clean because it has never been off. DW-4 — SUPPLY SCHEDULE — NETWORK 4. Below, a table: downstream nodes, allocations, times. SHALE — 0.62 — 06:00 11:00 16:00 21:00. C9 RESERVE — HELD. UPSTREAM AUTH: LINK UP. LAST CHANGE: 194 DAYS. ORIGIN OF CHANGE: UPSTREAM.',
@@ -262,12 +293,15 @@ export const d_dw_console: DialogueDef = {
     },
     c9: {
       text: 'C9 RESERVE — HELD — INFLOW: NETWORK 4 — SETPOINT: CONSTANT. The reservoir you grew up under is not a reservoir. It is a tank on a line, and the line comes through here, and the needle you watched for twenty years never moved because this console was holding it still.',
+      interject: [{ companion: TAMSIN, text: '"Constant." Tamsin reads it twice. "The needle never moved because something out here held it still. Twenty years I wiped that gauge." Her laugh cracks in the middle. "The fridge never said."' }],
       effects: [{ learn: 'c9_fed_from_outside' }, { lead: 'l_c9_fed' }, { decision: { id: 'pressure_answered', text: 'You found the Cistern on the Dry Wells schedule: its water was never its own.' } }, { xp: 80 }],
       options: [{ text: '(Read on.)', next: 'menu' }],
     },
     menu: {
       text: 'SHALE — 0.62. The cursor waits.',
+      again: 'SHALE — 0.62. The cursor has not moved.',
       options: [
+        { id: 'console.c9.menu', text: '(Find the Cistern on the schedule.)', if: { all: [{ any: [{ origin: 'pump_hand' }, { knows: 'c9_pressure_constant' }] }, { not: { knows: 'c9_fed_from_outside' } }] }, next: 'c9' },
         { id: 'console.word2', text: '(Enter the pump man\'s credential and set Shale\'s allocation by hand.)', if: { knows: 'dw_override_word' }, effects: [{ set: 'dw_how', value: 'word' }], next: 'restored' },
         { id: 'console.restore2', text: '(Override the schedule. Give Shale the full allocation.)', check: { skill: 'science', dc: 45, mods: [{ if: { knows: 'relay_log_read' }, dc: -10, why: 'you have seen the format upstream' }, { if: { origin: 'archive_clerk' }, dc: -10, why: 'the log is in your hand' }, { if: { knows: 'dw_allocation_target' }, dc: -5, why: 'you know what the number is' }] }, effects: [{ set: 'dw_how', value: 'science' }], next: 'restored', fail: 'restore_no' },
         { id: 'console.keep2', text: '(Leave the schedule as it is.)', next: 'keep_sure' },
@@ -279,12 +313,14 @@ export const d_dw_console: DialogueDef = {
         { if: { flag: 'dw_oriel_key' }, text: 'MAINT AUTH: MARR. The console takes the word as if it had been waiting sixty years for someone to say it. SHALE — 1.00. It thinks for the length of a breath, and then, under the floor, both pumps start at once, outside the clock, and keep going. A new line at the bottom of the log: ORIGIN OF CHANGE: DW-4 LOCAL.' },
         { text: 'The table takes the number. SHALE — 1.00. The console thinks about it for the length of a breath, and then, under the floor, both pumps start at once, outside the clock, and keep going. UPSTREAM AUTH: LINK UP. A new line at the bottom of the log: ORIGIN OF CHANGE: DW-4 LOCAL.' },
       ],
+      interject: [{ companion: ILYA, text: 'Ilya counts the pumps up under the floor, both of them, out loud. "Full measure," he says. "Shale drinks tonight. Ada won\'t know who to thank, and she won\'t ask."' }],
       effects: [{ set: 'dw_outcome', value: 'restored' }, { set: 'dw_restored' }, { decision: { id: 'dw_restored', text: 'You set Shale\'s allocation at Dry Wells to the full measure. Something upstream will notice.' } }, { xp: 150 }],
       options: [{ text: '(Step back.)', exit: true }],
     },
     restore_no: { text: 'The console rejects the number twice, and the second time it logs you: a line in shorthand, the hour, the attempt. The screen goes back to the table. Patient.', effects: [{ set: 'dw_restore_failed' }, { time: 30 }], options: [{ text: '(Step back.)', exit: true }] },
     keep_sure: {
       text: 'SHALE — 0.62. The pumps on their clock. Shale thinner every year, in a way nobody there can name. Somewhere upstream, a line in a book stays as it was.',
+      again: 'SHALE — 0.62, and the pumps on their clock. Leave it, or don\'t.',
       options: [
         { id: 'console.keep.yes', text: '(Leave it. It isn\'t yours to change, and whatever changed it can change it back.)', effects: [{ set: 'dw_outcome', value: 'kept' }, { set: 'dw_kept' }, { decision: { id: 'dw_kept', text: 'You left the Dry Wells schedule as you found it: Shale at 0.62.' } }, { xp: 100 }], next: 'kept' },
         { text: '(No. Look again.)', next: 'menu' },
@@ -302,6 +338,7 @@ export const d_dw_console: DialogueDef = {
     },
     c9_after: {
       text: 'C9 RESERVE — HELD — INFLOW: NETWORK 4 — SETPOINT: CONSTANT. The reservoir you grew up under is not a reservoir. It is a tank on a line, and the line comes through here.',
+      interject: [{ companion: TAMSIN, text: '"Constant." Tamsin reads it twice. "Twenty years I wiped that gauge, and it was never ours." Her laugh cracks in the middle. "The fridge never said."' }],
       effects: [{ learn: 'c9_fed_from_outside' }, { lead: 'l_c9_fed' }, { decision: { id: 'pressure_answered', text: 'You found the Cistern on the Dry Wells schedule: its water was never its own.' } }, { xp: 80 }],
       options: [{ text: '(Step back.)', exit: true }],
     },
@@ -315,6 +352,7 @@ export const d_dw_panel: DialogueDef = {
   nodes: {
     look: {
       text: 'A pressure panel, gauges in a row, one needle alive. Under them a governor box with a lead seal, and pressed into the lead a half-moon like the one on everything the Tollmen carry. Older, though. Much older.',
+      again: 'The gauges in their row, one needle alive, and the half-moon pressed into the lead.',
       effects: [{ learn: 'dw_panel_seen' }, { lead: 'l_dw_halfmoon' }],
       passives: [{ skill: 'mechanics', dc: 30, text: 'The governor is what listens to the console. Break it and the pumps run on their own pressure, flat out, until the aquifer or the bearings give up.', effects: [{ learn: 'dw_governor_known' }] }],
       options: [
@@ -328,7 +366,7 @@ export const d_dw_panel: DialogueDef = {
       options: [{ text: '(Step back.)', exit: true }],
     },
     break_no: { text: 'The box is built like the door. You skin a knuckle on the seal and the needle does not so much as tremble.', effects: [{ time: 20 }], options: [{ text: '(Leave it.)', exit: true }] },
-    broken: { text: 'The governor box is in pieces on the floor. The pumps do not stop.', options: [{ text: '(Leave it.)', exit: true }] },
+    broken: { text: 'The governor box is in pieces on the floor. The pumps do not stop.', again: 'The pieces of the governor where they fell. The hall still sings.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -338,6 +376,7 @@ export const d_dw_valve: DialogueDef = {
   nodes: {
     look: {
       text: 'A hand-wheel on the line where it leaves the hall, going north under the floor toward Shale. Off it, a branch, newer, hand-made, running west toward the shacks. The paint on the wheel is gone on exactly one quarter.',
+      again: 'The hand-wheel, the newer branch running west, and the one bare quarter of paint.',
       passives: [{ skill: 'mechanics', dc: 20, text: 'A bypass. The family\'s tap. Whatever Shale gets, this takes a little first.', effects: [{ learn: 'dw_bypass_known' }, { lead: 'l_dw_bypass' }] }],
       options: [
         { id: 'valve.close', text: '(Close the bypass.)', if: { knows: 'dw_bypass_known' }, check: { skill: 'mechanics', dc: 25 }, effects: [{ set: 'dw_valve_closed' }, { set: 'dw_valve_closed_by_you' }, { trust: { npc: 'npc_dw_01', by: -15 } }, { trust: { npc: 'npc_dw_02', by: -15 } }, { trust: { npc: 'npc_dw_04', by: -20 } }, { decision: { id: 'dw_valve_closed', text: 'You closed the family\'s bypass at Dry Wells.' } }, { xp: 30 }], next: 'closed_now', fail: 'close_no' },
@@ -346,7 +385,7 @@ export const d_dw_valve: DialogueDef = {
     },
     closed_now: { text: 'A quarter turn, then another, against sixty years of habit. The branch line ticks as it drains. Across the yard a kid stops whistling.', options: [{ text: '(Step back.)', exit: true }] },
     close_no: { text: 'The wheel is seized at the quarter. Someone has made sure it only goes one way.', effects: [{ time: 10 }], options: [{ text: '(Leave it.)', exit: true }] },
-    closed: { text: 'The wheel is shut. The branch line is dry and quiet.', options: [{ text: '(Leave it.)', exit: true }] },
+    closed: { text: 'The wheel is shut. The branch line is dry and quiet.', again: 'Shut. Dry. Across the yard, nobody whistles.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -368,10 +407,12 @@ export const d_dw_pumps: DialogueDef = {
 
 export const d_dw_diary_table: DialogueDef = {
   id: 'd_dw_diary_table', owner: 'narrator',
-  start: [{ if: { item: 'k_pumpman_diary' }, node: 'gone' }, { node: 'look' }],
+  // (the first page is read once: a later visit finds the book known, and it can still be taken)
+  start: [{ if: { item: 'k_pumpman_diary' }, node: 'gone' }, { if: { knows: 'dw_diary_read' }, node: 'known' }, { node: 'look' }],
   nodes: {
     look: {
       text: 'A table with one book on it, swollen with sixty years of being read: a pump man\'s diary. Gauges, dates, a drawing of a door. The first page is a line of block capitals, underlined twice.',
+      again: 'The pump man\'s diary, swollen on its table. The first page, underlined twice.',
       options: [
         { id: 'diary.read', text: '(Read it.)', next: 'read' },
         { text: '(Leave it.)', exit: true },
@@ -394,7 +435,15 @@ export const d_dw_diary_table: DialogueDef = {
       effects: [{ set: 'dw_diary_taken' }],
       options: [{ text: '(Go.)', exit: true }],
     },
-    gone: { text: 'The table, and the mark where the book was.', options: [{ text: '(Leave it.)', exit: true }] },
+    known: {
+      text: 'The pump man\'s diary, where you left it. MAINT AUTH — MARR — DW4 — "ELEVEN" on the first page, and forty years of gauges after it.',
+      again: 'The diary on its table. It has nothing new to tell you.',
+      options: [
+        { id: 'diary.take.known', text: '(Take it.)', effects: [{ give: 'k_pumpman_diary' }], next: 'take' },
+        { text: '(Leave it.)', exit: true },
+      ],
+    },
+    gone: { text: 'The table, and the mark where the book was.', again: 'The mark where the book was. Dust is already settling into it.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -405,6 +454,7 @@ export const d_dw_clerk: DialogueDef = {
   nodes: {
     intro: {
       text: '"Factor Pike\'s compliments." A guild engineer with a ledger open on the console and a flask of good water beside it. "Allocation is by the measure now, and the measure is posted. Shale will find it reliable. Everyone does, in the end."',
+      again: '"As per." He doesn\'t look up from the ledger. "The measure is posted."',
       options: [{ text: 'As per.', exit: true }],
     },
   },

@@ -19,7 +19,7 @@ export const WHEEL_NPCS: NpcDef[] = [
     barks: ['Shale has a well that never dries. I\'ve seen it.', 'Mother says the road. The road says nothing back.', 'Another four days, another pan.'],
   },
   {
-    id: 'npc_wh_03', name: 'Mirren Kade', look: { seed: 7603, frame: 'narrow', age: 44, ancestry: 'indigenous_american', over: { hair: { style: 'elvs_unkempt_french_braid', color: 0x1a1410 } } }, role: 'nomad',
+    id: 'npc_wh_03', name: 'Mirren Tarrow', look: { seed: 7603, frame: 'narrow', age: 44, ancestry: 'indigenous_american', over: { hair: { style: 'elvs_unkempt_french_braid', color: 0x1a1410 } } }, role: 'nomad',
     level: 4, ...WH, courage: 50, dialogue: 'd_wh_mirren', attrs: { senses: 7, grit: 6 }, skills: { survival: 55, medicine: 30, melee: 30 }, tolls: 25,
     equip: ['w_machete'],
     schedule: [{ from: 5, to: 20, spot: 'mirren_horses_work', activity: 'work' }, { from: 20, to: 23, spot: 'mirren_fire', activity: 'idle' }, { from: 23, to: 5, spot: 'mirren_sleep', activity: 'sleep' }],

@@ -5,6 +5,11 @@ import type { DialogueDef } from '../../engine/dialogue/dialogue';
  * station that reads the same words every night.
  */
 
+/** Companions who can climb Signal Hill with the player in Act 1 (U7 interjections). */
+const WREN = 'npc_rd_03';
+const ILYA = 'npc_sh_17';
+const TAMSIN = 'npc_c9_03';
+
 const bye = { text: 'That\'s all.', exit: true };
 const PASSED = (how: string, text: string) => [{ set: 'sg_camp_passed' }, { set: `sg_${how}` }, { decision: { id: `sg_${how}`, text } }, { xp: 40 }];
 
@@ -14,6 +19,7 @@ export const d_sg_camp: DialogueDef = {
   nodes: {
     intro: {
       text: 'Three of them come off the terrace at once: a big one with a pipe, a kid with something in each hand, and a woman with a zip gun and a hood who does the talking. "Track\'s closed. Hill\'s ours — the copper\'s ours. Whatever you\'re here for, it\'s on the other side of us."',
+      again: 'The three of them are still between you and the hill. "Still closed," the woman says. "Still ours."',
       passives: [
         { attr: 'senses', dc: 7, text: 'They are thin. The copper has not bought much yet.', effects: [{ learn: 'hollow_thin' }] },
         { skill: 'survival', dc: 30, text: 'West of the terrace a crack in the rock runs up past the camp. Goat track. Nobody is watching it.', effects: [{ learn: 'gully_seen' }] },
@@ -29,6 +35,7 @@ export const d_sg_camp: DialogueDef = {
     },
     alert: {
       text: 'They are already standing, and the kid is already holding something. "Heard you in the gully," the woman says. "Track\'s closed. Twice as closed now."',
+      again: '"Twice as closed," the woman says again. The kid hasn\'t put anything down.',
       options: [
         { id: 'camp.alert.pay', text: '(Pay. 30 Tolls)', if: { item: 'tolls', count: 30 }, effects: [{ take: 'tolls', count: 30 }, ...PASSED('paid', 'Caught in the gully, you paid the Hollow double to walk up Signal Hill.')], next: 'through' },
         { id: 'camp.alert.fight', text: '(Draw.)', effects: [{ set: 'sg_fight' }, { set: 'sg_camp_passed' }, { decision: { id: 'sg_fought', text: 'You fought the Hollow on the track up Signal Hill.' } }, { event: 'combat' }], exit: true },
@@ -39,7 +46,7 @@ export const d_sg_camp: DialogueDef = {
     voice: { text: 'The three of them look at each other, and something passes between them that is mostly relief. "Then it\'s yours," the woman says. "Pim went in once. Tell it we\'re only here for the copper."', effects: [{ learn: 'voice_louder_light' }, { trust: { npc: 'npc_sg_01', by: 5 } }], options: [{ text: '(Go up.)', exit: true }] },
     voice_no: { text: '"Everybody\'s here for the voice. Nobody says so." The zip gun doesn\'t move. "Fifteen."', options: [{ id: 'camp.voice.pay', text: '(Pay. 15 Tolls)', if: { item: 'tolls', count: 15 }, effects: [{ take: 'tolls', count: 15 }, ...PASSED('paid', 'You paid the Hollow fifteen Tolls to walk up Signal Hill.')], next: 'through' }, { id: 'camp.voice.fight', text: '(Draw.)', effects: [{ set: 'sg_fight' }, { set: 'sg_camp_passed' }, { event: 'combat' }], exit: true }, { text: '(Back off.)', exit: true }] },
     wren: { text: '"Calloway." The woman lowers the gun a hand\'s width. "She let my brother out of a cage once, for nothing, and then told him never to come back. Track\'s open. For her."', options: [{ text: '(Go up.)', exit: true }] },
-    hostile: { text: 'Nobody is talking.', options: [{ text: '(Fight.)', exit: true }] },
+    hostile: { text: 'Nobody is talking.', again: 'Nobody is talking, and nobody is going to.', options: [{ text: '(Fight.)', exit: true }] },
   },
 };
 
@@ -49,6 +56,7 @@ export const d_sg_gully: DialogueDef = {
   nodes: {
     mouth: {
       text: 'A crack in the rock, dry, a goat\'s width, climbing west of the terrace where the camp is. Loose stone all the way up. The camp is thirty yards off and facing the other way.',
+      again: 'The crack in the rock, the loose stone, and the camp still thirty yards off with its back to you.',
       options: [
         { id: 'gully.climb', text: '(Go up quietly.)', check: { skill: 'stealth', dc: 40, mods: [{ if: { hour: { from: 22, to: 5 } }, dc: -10, why: 'dark' }, { if: { inParty: 'npc_rd_03' }, dc: -10, why: 'Wren picks the stones you don\'t step on' }] }, effects: [{ set: 'sg_camp_passed' }, { set: 'sg_sneaked' }, { decision: { id: 'sg_sneaked', text: 'You went up Signal Hill by the gully, past the Hollow without a word.' } }, { xp: 50 }, { time: 25 }], next: 'up', fail: 'stone' },
         { text: '(Not this way.)', exit: true },
@@ -69,14 +77,14 @@ export const d_sg_tally: DialogueDef = {
       options: [
         { id: 'tally.voice', text: 'The voice in the station.', next: 'voice', once: true },
         { id: 'tally.mask', text: 'An old man came this way three weeks ago. Hurt.', if: { quest: 'q_ch1_name', status: 'done' }, next: 'mask', once: true },
-        { text: 'Trade.', effects: [{ event: 'barter' }], exit: true },
+        { text: 'Trade.', effects: [{ event: 'barter' }], exit: true, repeat: true },
         bye,
       ],
     },
-    again: { text: '"Still here. Still copper."', options: [{ id: 'tally.voice.again', text: 'The voice.', if: { not: { seen: 'tally.voice' } }, next: 'voice' }, { id: 'tally.mask.again', text: 'The old man.', if: { all: [{ quest: 'q_ch1_name', status: 'done' }, { not: { seen: 'tally.mask' } }] }, next: 'mask' }, { text: 'Trade.', effects: [{ event: 'barter' }], exit: true }, bye] },
+    again: { text: '"Still here. Still copper."', again: 'Tally pushes the hood back and waits. The copper isn\'t going anywhere, and neither is she.', options: [{ id: 'tally.voice.again', text: 'The voice.', if: { not: { seen: 'tally.voice' } }, next: 'voice' }, { id: 'tally.mask.again', text: 'The old man.', if: { all: [{ quest: 'q_ch1_name', status: 'done' }, { not: { seen: 'tally.mask' } }] }, next: 'mask' }, { text: 'Trade.', effects: [{ event: 'barter' }], exit: true, repeat: true }, bye] },
     voice: { text: '"Started again three weeks ago. Same words every night, same order — a place, a name, a number. Pim says it\'s a man reading. I say it\'s a thing that learned a man." She looks up the hill. "We don\'t go in. The copper\'s outside."', effects: [{ learn: 'voice_three_weeks' }, { lead: 'l_voice_restarted' }], options: [bye] },
-    mask: { text: '"Sat up there a whole day. Didn\'t pay, didn\'t fight, just walked past Brick like he wasn\'t there, which Brick hasn\'t forgiven." She counts on her fingers. "Three weeks. Came down at night with his hand on the wall like a blind man, and went west." A beat. "That\'s when it started again. The voice."', effects: [{ learn: 'stranger_at_signal' }, { lead: 'l_stranger_signal' }], options: [bye] },
-    hostile: { text: 'She is behind the crate with the zip gun.', options: [{ text: '(Fight.)', exit: true }] },
+    mask: { text: '"Sat up there a whole day. Didn\'t pay, didn\'t fight, just walked past Brick like he wasn\'t there, which Brick hasn\'t forgiven." She counts on her fingers. "Three weeks. Came down at night with his hand on the wall like a blind man, and went west." A beat. "That\'s when it started again. The voice."', interject: [{ companion: ILYA, text: '"Didn\'t pay, didn\'t fight. Walked past." Ilya almost smiles. "Right. That\'s a man who\'d already decided where he was going."' }], effects: [{ learn: 'stranger_at_signal' }, { lead: 'l_stranger_signal' }], options: [bye] },
+    hostile: { text: 'She is behind the crate with the zip gun.', again: 'Still behind the crate. The zip gun hasn\'t wavered.', options: [{ text: '(Fight.)', exit: true }] },
   },
 };
 
@@ -86,11 +94,12 @@ export const d_sg_relay: DialogueDef = {
   nodes: {
     look: {
       text: 'A relay console older than the Burn, dust-grey, one green lamp alive on a panel of dead ones. The screen wakes when you touch the frame: RELAY 7 — LINK UP — UPSTREAM: ACK. A cursor, waiting for something it has waited ninety years for.',
+      again: 'RELAY 7 — LINK UP — UPSTREAM: ACK. The one green lamp, and the cursor, still waiting.',
       passives: [
         { skill: 'science', dc: 25, text: 'Upstream is east. The link is live: this station is still part of something that answers.', effects: [{ learn: 'relay_answers_city' }, { lead: 'l_relay_city' }] },
       ],
       options: [
-        { id: 'relay.log', text: '(Read the traffic log.)', check: { skill: 'science', dc: 35, mods: [{ if: { origin: 'archive_clerk' }, dc: -15, why: 'record formats are your trade' }] }, next: 'log', fail: 'log_no' },
+        { id: 'relay.log', text: '(Read the traffic log.)', if: { not: { knows: 'relay_log_read' } }, check: { skill: 'science', dc: 35, mods: [{ if: { origin: 'archive_clerk' }, dc: -15, why: 'record formats are your trade' }] }, next: 'log', fail: 'log_no' },
         { id: 'relay.link', text: '(Listen through the link.)', if: { chrome: 'ch_neural_link' }, next: 'grid' },
         { id: 'relay.ident', text: '(Type at the cursor.)', next: 'ident' },
         { text: '(Leave it.)', exit: true },
@@ -117,7 +126,7 @@ export const d_sg_relay: DialogueDef = {
     },
     named: { text: 'The cursor eats it. UPSTREAM: ACK. The green lamp blinks once, and then, for the first time, a second lamp beside it comes on and stays on.', options: [{ text: '(Step back.)', exit: true }] },
     declined: { text: 'The cursor waits. It is good at it.', options: [{ text: '(Step back.)', exit: true }] },
-    again: { text: 'RELAY 7 — LINK UP — UPSTREAM: ACK. The cursor, and the lamps.', options: [{ id: 'relay.log.again', text: '(Read the traffic log.)', if: { not: { knows: 'relay_log_read' } }, check: { skill: 'science', dc: 35 }, next: 'log', fail: 'log_no' }, { text: '(Leave it.)', exit: true }] },
+    again: { text: 'RELAY 7 — LINK UP — UPSTREAM: ACK. The cursor, and the lamps.', again: 'The cursor and the lamps. Whatever is upstream has not written back.', options: [{ id: 'relay.log.again', text: '(Read the traffic log.)', if: { not: { knows: 'relay_log_read' } }, check: { skill: 'science', dc: 35 }, next: 'log', fail: 'log_no' }, { text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -128,6 +137,11 @@ export const d_sg_speaker: DialogueDef = {
   nodes: {
     hear: {
       text: 'A horn speaker on a bracket, wire to the relay rack, and a voice in it: calm, male, not quite a man. "— the overpass. Kessler. Day forty-five. Killed, by the hand of Kade. The overpass. Kessler. Day forty-five —" It does not stop. It is reading a list, and it has reached this line.',
+      interject: [
+        { companion: WREN, if: { not: { dead: 'npc_rd_01' } }, text: '"Kade." Wren says it the way you touch a burn to see if it still hurts. "Not Kessler. Not him." Then, lower: "Forty-five days from when?"' },
+        { companion: ILYA, text: '"By the hand of Kade." Ilya has stopped counting. He says the name again under his breath, as if checking it is the same one. "Right."' },
+        { companion: TAMSIN, text: '"It reads it like the fridge reads the ration list," Tamsin says, very quietly. "Name, number, next."' },
+      ],
       effects: [{ learn: 'name2_heard' }, { learn: 'name2_decoded' }, { lead: 'l_broadcast_kessler' }, { quest: 'q_a1_broadcast', start: true }, { xp: 40 }],
       passives: [{ skill: 'science', dc: 30, text: 'The voice is synthesised from a sample. Under it, the carrier hums at the same pitch as the relay\'s green lamp flickers.', effects: [{ learn: 'voice_synthetic' }] }],
       options: [
@@ -138,6 +152,7 @@ export const d_sg_speaker: DialogueDef = {
     },
     again: {
       text: '"— the overpass. Kessler. Day forty-five —"',
+      again: 'The voice reaches the end of its list and begins it again. The overpass. Kessler. Day forty-five.',
       options: [
         { id: 'spk.cut.again', text: '(Cut the speaker wire.)', check: { skill: 'mechanics', dc: 30 }, next: 'cut', fail: 'cut_no' },
         { id: 'spk.amp.again', text: '(Patch the speaker line into the mast feed.)', check: { skill: 'science', dc: 45, mods: [{ if: { knows: 'relay_log_read' }, dc: -10, why: 'you have seen how the lines are routed' }] }, next: 'amp', fail: 'amp_no' },
@@ -148,8 +163,8 @@ export const d_sg_speaker: DialogueDef = {
     cut_no: { text: 'The bracket is rusted to the wall and the wire is armoured. You bleed on it and it keeps reading.', effects: [{ time: 15 }], options: [{ text: '(Leave it.)', exit: true }] },
     amp: { text: 'The mast takes the line like it has been waiting for it. The red light steadies. Out there, in the Sallow, every dead radio with a working speaker says the same five words, and will, every night, until somebody stops it.', effects: [{ set: 'broadcast_amplified' }, { decision: { id: 'broadcast_amplified', text: 'You put Signal Hill\'s voice on the mast: the whole Sallow hears the forecast about Kessler.' } }, { news: { tag: 'broadcast_kessler', text: 'a voice from Signal Hill names Kessler and a day he dies', valence: -15, size: 9, at: 'rustdogs' } }, { news: { tag: 'broadcast_kessler', text: 'a voice on the dead radios names the Rust Dogs\' chief and a day', valence: -5, size: 7, at: 'shale' } }, { memory: { npc: 'npc_rd_01', tag: 'named_on_air', valence: -20, strength: 90 } }, { memory: { npc: 'npc_rd_02', tag: 'named_on_air', valence: -30, strength: 90 } }, { xp: 60 }], options: [{ text: '(Done.)', exit: true }] },
     amp_no: { text: 'You get the feed wrong twice; the second time the mast light goes out for a full minute and the Hollow, below, start shouting. It comes back. So does the voice.', effects: [{ time: 30 }, { learn: 'mast_light_out' }], options: [{ text: '(Leave it.)', exit: true }] },
-    silent: { text: 'The speaker hangs cut on its bracket. The quiet in here is not empty.', options: [{ text: '(Leave it.)', exit: true }] },
-    loud: { text: 'The speaker is quiet now; the mast is not. You can hear the mast through the wall.', options: [{ text: '(Leave it.)', exit: true }] },
+    silent: { text: 'The speaker hangs cut on its bracket. The quiet in here is not empty.', again: 'The cut wire, the bracket, the quiet. Nothing reads.', options: [{ text: '(Leave it.)', exit: true }] },
+    loud: { text: 'The speaker is quiet now; the mast is not. You can hear the mast through the wall.', again: 'Through the wall the mast carries the list out over the Sallow, and hasn\'t stopped.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -159,11 +174,18 @@ export const d_sg_mast: DialogueDef = {
   nodes: {
     look: {
       text: 'Forty metres of lattice, guyed with cable the Hollow have been cutting from the bottom up, a red lamp at the top that blinks slow as a pulse. At the base, a feed cabinet with the station\'s line going in and nothing you can read going out.',
+      again: 'The mast, the slow red lamp, the guy cables cut away from the bottom up.',
       passives: [{ skill: 'mechanics', dc: 30, text: 'The lamp runs off the relay\'s power, not a battery. Something is still paying for this.', effects: [{ learn: 'mast_powered' }] }],
       effects: [{ learn: 'seen_mast' }],
-      options: [{ id: 'mast.climb', text: '(Climb it, to see the Sallow.)', check: { attr: 'brawn', dc: 6 }, next: 'view', fail: 'fall' }, { text: '(Leave it.)', exit: true }],
+      // (the view's reward is had once: a second climb sees the same Sallow for nothing)
+      options: [
+        { id: 'mast.climb', text: '(Climb it, to see the Sallow.)', if: { not: { knows: 'seen_smudge_east' } }, check: { attr: 'brawn', dc: 6 }, next: 'view', fail: 'fall' },
+        { id: 'mast.climb.again', text: '(Climb it again.)', if: { knows: 'seen_smudge_east' }, next: 'view_again' },
+        { text: '(Leave it.)', exit: true },
+      ],
     },
-    view: { text: 'Halfway up, hands black with old grease, the Sallow lays itself out: the highway like a scar, the salt pans white, the windpumps to the south-east in a dead line, and east, past the glass, a smudge on the sky that might be smoke and might be a city.', effects: [{ learn: 'loc_lm_sallow_02' }, { learn: 'loc_drywells' }, { lead: 'l_windpumps' }, { learn: 'seen_smudge_east' }, { xp: 30 }], options: [{ text: '(Come down.)', exit: true }] },
+    view: { text: 'Halfway up, hands black with old grease, the Sallow lays itself out: the highway like a scar, the salt pans white, the windpumps to the south-east in a dead line, and east, past the glass, a smudge on the sky that might be smoke and might be a city.', interject: [{ companion: TAMSIN, text: '"Rust it," Tamsin breathes, somewhere below your boots. "It just keeps going."' }], effects: [{ learn: 'loc_lm_sallow_02' }, { learn: 'loc_drywells' }, { lead: 'l_windpumps' }, { learn: 'seen_smudge_east' }, { xp: 30 }], options: [{ text: '(Come down.)', exit: true }] },
+    view_again: { text: 'The same rungs, the same grease. The Sallow lies where you left it: the highway, the white pans, the dead windpumps in their line, and the smudge in the east that will not decide what it is.', options: [{ text: '(Come down.)', exit: true }] },
     fall: { text: 'Ten metres up a rung lets go. You hit the cabinet, not the rock, which is the difference between a bruise and the Hollow finding you in the morning.', effects: [{ time: 20 }], options: [{ text: '(Come down.)', exit: true }] },
   },
 };
@@ -171,5 +193,5 @@ export const d_sg_mast: DialogueDef = {
 export const d_sg_cot: DialogueDef = {
   id: 'd_sg_cot', owner: 'narrator',
   start: [{ node: 'look' }],
-  nodes: { look: { text: 'A cot somebody has slept on recently, the blanket folded with a care that doesn\'t belong up here. Under it, scratched into the frame with a nail: the half-sun sign, and a tally of days — twenty-six.', effects: [{ learn: 'stranger_slept_here' }, { lead: 'l_stranger_signal' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'A cot somebody has slept on recently, the blanket folded with a care that doesn\'t belong up here. Under it, scratched into the frame with a nail: the half-sun sign, and a tally of days — twenty-six.', again: 'The folded blanket, and twenty-six scratches in the frame under it.', effects: [{ learn: 'stranger_slept_here' }, { lead: 'l_stranger_signal' }], options: [{ text: '(Leave it.)', exit: true }] } },
 };

@@ -2,12 +2,17 @@ import type { DialogueDef } from '../../engine/dialogue/dialogue';
 
 /** The salt-pan wreck: a guild convoy truck on the white, and the thing that sat down beside it. */
 
+/** Companions who can walk out onto the white with the player in Act 1 (U7 interjections). */
+const WREN = 'npc_rd_03';
+const TAMSIN = 'npc_c9_03';
+
 export const d_sp_truck: DialogueDef = {
   id: 'd_sp_truck', owner: 'narrator',
   start: [{ node: 'look' }],
   nodes: {
     look: {
       text: 'A guild truck on its side, the half-moon on the door, the cab crushed where it rolled and the trailer split. The skid behind it runs half a mile straight: it was going fast, in a straight line, away from something, and then it was not going at all. No bodies. Drag marks, two, toward the ring.',
+      again: 'The truck on its side, the half-moon on the door, the long straight skid, and the drag marks going toward the ring and not coming back.',
       effects: [{ learn: 'sp_truck_seen' }, { lead: 'l_wreck_skid' }],
       passives: [
         { skill: 'mechanics', dc: 25, text: 'The engine is whole; the cab is not. The truck did not fail. Something stopped it the way a hand stops a toy.', effects: [{ learn: 'sp_truck_stopped' }] },
@@ -37,6 +42,7 @@ export const d_sp_hound: DialogueDef = {
     },
     again: {
       text: 'The machine sits in its ring. The lens is on you now, and was not before.',
+      again: 'Salt against its flank, legs folded, and the lens on you from the moment you step into the ring.',
       options: [
         { id: 'hound.controller2', text: '(Hold up the controller.)', if: { item: 'k_hound_controller' }, next: 'controller' },
         { id: 'hound.touch2', text: '(Put a hand on it.)', if: { not: { knows: 'sp_hound_touched' } }, next: 'touch' },
@@ -55,6 +61,10 @@ export const d_sp_hound: DialogueDef = {
     },
     woken: {
       text: 'It stands. Four legs unfold with a sound like a gate, salt pouring off the plates, and it is taller than you expected and quieter, and the lens turns once around the whole horizon and comes back to the slab in your hand. It takes a step toward you and stops, exactly where a dog stops. It will walk at your heel to Shale and sit in the sheriff\'s yard and nothing will come into that town at night that it does not look at first.',
+      interject: [
+        { companion: TAMSIN, text: '"It\'s looking at me." Tamsin has put you between her and it and doesn\'t pretend she hasn\'t. "Rust it. Tell it to look somewhere else."' },
+        { companion: WREN, text: '"Shale\'s going to love that," Wren says. "Right up until it looks at them."' },
+      ],
       effects: [{ set: 'hound_outcome', value: 'shale' }, { set: 'hound_for_shale' }, { set: 'hound_awake' }, { take: 'k_hound_controller' }, { decision: { id: 'hound_for_shale', text: 'You woke the machine on the pan and sent it to keep Shale.' } }, { news: { tag: 'hound_in_shale', text: 'a grey machine the size of a dog walked into Shale at the salt-cut stranger\'s heel and sat down in the sheriff\'s yard', valence: 10, size: 9, at: 'shale' } }, { rep: { faction: 'shale_militia', respect: 15 } }, { xp: 150 }],
       options: [{ text: '(Walk.)', exit: true }],
     },

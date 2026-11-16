@@ -4,6 +4,9 @@ import type { DialogueDef } from '../../engine/dialogue/dialogue';
  * The Wheel's camp. Guests are fed first; road-kin are trusted. The caravan-mother holds the ring; her son wants a
  * town; the horse-master counts horses; the trader sells what walked here. The escort job starts here or at Shale.
  */
+/** Companions who can sit at the Wheel's fire with the player in Act 1 (U7 interjections). */
+const TAMSIN = 'npc_c9_03';
+
 const bye = { text: 'Travel well.', exit: true };
 
 export const d_wh_sefa: DialogueDef = {
@@ -26,6 +29,7 @@ export const d_wh_sefa: DialogueDef = {
         { if: { member: 'wheel', rank: 'roadkin' }, text: '"Road-kin." She moves her stick so there is room by the fire. "Sit. What have you brought us from the places that don\'t move?"' },
         { text: '"Guest." The nod again. "Sit. The water\'s been paid for."' },
       ],
+      again: 'Sefa feeds the fire a stick and waits for you to go on.',
       options: [
         { id: 'sefa.wheel2', text: 'What is the Wheel?', if: { not: { knows: 'sefa_wheel' } }, next: 'wheel' },
         { id: 'sefa.turn2', text: 'Where do you go next?', next: 'turn' },
@@ -36,6 +40,7 @@ export const d_wh_sefa: DialogueDef = {
     },
     wheel: {
       text: '"Nine families, seven wagons, four horses, no address." She counts it on her fingers like a thing she has said a thousand times, because she has. "We carry what towns want between towns that don\'t talk. Salt east, water west, letters both ways, people sometimes. We stop four days and move. Anyone who stops longer than four days is a town, and towns get taxed, and towns get Dogs. We don\'t."',
+      interject: [{ companion: TAMSIN, text: '"No address," Tamsin says, as if it is the best word she has heard all year.' }],
       effects: [{ learn: 'sefa_wheel' }],
       options: [
         { text: 'And the Tollmen let you?', next: 'tollmen' },
@@ -52,10 +57,12 @@ export const d_wh_sefa: DialogueDef = {
         { if: { flag: 'wheel_near', eq: 'orchard' }, text: '"West, the overpass side, on the fourth morning. We don\'t go under it; we camp where the Dogs can see us and count us. Then Shale, then the Dry Wells pans, then back here. A ring."' },
         { text: '"Shale, on the fourth morning. Then the Dry Wells pans, then under the orchard, then back here where the Dogs can count us. A ring. It\'s in the name."' },
       ],
+      again: '"Same ring as when you asked," Sefa says. "It\'s in the name."',
       options: [{ text: 'Thanks.', next: 'again' }],
     },
     job: {
       text: '"There\'s always work on the road, and most of it is walking next to a wagon with a gun and not shooting it." She looks you over again. "We\'ve a wagon of salt going to Tollhouse 9 with the Tollmen\'s caravan. The guild\'s guards guard the guild\'s wagons. Ours needs its own. Sixty Tolls at the gate, and the Wheel remembers who rode."',
+      again: '"The salt is still going to Tollhouse 9," she says. "So is the work."',
       options: [
         { id: 'sefa.job.yes', text: 'I\'ll ride with it.', if: { not: { quest: 'q_a1_escort', status: 'active' } }, effects: [{ quest: 'q_a1_escort', start: true }, { set: 'escort_active', value: 'wheel' }], next: 'job_yes' },
         { id: 'sefa.job.have', text: 'I\'m already riding for it.', if: { quest: 'q_a1_escort', status: 'active' }, next: 'job_have' },
@@ -78,6 +85,7 @@ export const d_wh_dario: DialogueDef = {
   nodes: {
     intro: {
       text: '"You\'re the one from Shale." He has been watching the camp the way a man watches a room he wants to leave. "Dario. Hers." A nod at the fire. "Is it true the well there runs all year?"',
+      again: 'Dario has gone back to watching the camp, the way a man watches a room he wants to leave. "Go on."',
       options: [
         { id: 'dario.well', text: 'It runs. The town fights over it.', next: 'well', once: true },
         { id: 'dario.why', text: 'You want to settle.', next: 'town', once: true },
@@ -88,6 +96,7 @@ export const d_wh_dario: DialogueDef = {
     well: { text: '"Everybody fights over everything. At least a well is worth it." He turns a cartridge over in his fingers. "We fight over which pan to stop on."', options: [{ text: 'Fair.', next: 'intro' }] },
     town: {
       text: '"I want a door. One that shuts." He says it quietly, because the ring has ears. "She thinks a door is a cage. She\'s not wrong about the old towns. But the old towns are gone and the salt took them, and Shale is still there." He looks at you. "You\'ve lived in a place with a door. Is it a cage?"',
+      interject: [{ companion: TAMSIN, text: '"It\'s a cage," Tamsin says, before you can answer. "A warm one, with a fridge that counts you." She looks at the fire. "Get a door anyway. Just keep the key yourself."' }],
       effects: [{ learn: 'dario_town' }],
       options: [
         { id: 'dario.town.door', text: 'A door is a door. What you do behind it is yours.', effects: [{ trust: { npc: 'npc_wh_02', by: 6 } }, { learn: 'dario_told_door' }], next: 'door' },
@@ -106,7 +115,8 @@ export const d_wh_mirren: DialogueDef = {
   start: [{ node: 'intro' }],
   nodes: {
     intro: {
-      text: '"Not behind her." Mirren Kade doesn\'t look away from the horse. "Front, slow, hand out. There. Now she knows you." A nod. "Horse-master. I\'m not selling."',
+      text: '"Not behind her." Mirren Tarrow doesn\'t look away from the horse. "Front, slow, hand out. There. Now she knows you." A nod. "Horse-master. I\'m not selling."',
+      again: 'Mirren hasn\'t looked away from the horse. "Still not selling."',
       options: [
         { id: 'mirren.horses', text: 'Four horses for seven wagons?', next: 'horses', once: true },
         { id: 'mirren.ride', text: 'Could I ride one, if I needed to be somewhere fast?', next: 'ride', once: true },
@@ -124,8 +134,9 @@ export const d_wh_tulla: DialogueDef = {
   nodes: {
     intro: {
       text: '"Everything on the blanket walked here." Tulla Oduya spreads her hands over it: water, jerky, cartridges in paper, a lamp, strips of Holdfast. "So did the price. Looking or buying?"',
+      again: '"Still all walked here." Tulla smooths the blanket. "Looking, or buying this time?"',
       options: [
-        { id: 'tulla.trade', text: 'Show me.', effects: [{ event: 'barter' }], exit: true },
+        { id: 'tulla.trade', text: 'Show me.', effects: [{ event: 'barter' }], exit: true, repeat: true },
         { id: 'tulla.letters', text: 'Do you carry letters?', next: 'letters', once: true },
         bye,
       ],

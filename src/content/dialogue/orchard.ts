@@ -5,6 +5,11 @@ import type { DialogueDef } from '../../engine/dialogue/dialogue';
  * wall at night for green fruit (q_orchard, Orchard Thieves).
  */
 
+/** Companions who can walk the orchard rows with the player in Act 1 (U7 interjections). */
+const WREN = 'npc_rd_03';
+const ILYA = 'npc_sh_17';
+const TAMSIN = 'npc_c9_03';
+
 const bye = { text: 'That\'s all.', exit: true };
 
 export const d_or_anselm: DialogueDef = {
@@ -29,16 +34,17 @@ export const d_or_anselm: DialogueDef = {
     },
     again: {
       text: [{ if: { flag: 'or_thieves_caught' }, text: 'He is at the rows again, and the cloth is dry, and he looks up when you come as if he has been waiting to.' }, { text: '"Mind the rows."' }],
+      again: 'He tucks the cloth tighter round a root before he looks up. "Go on."',
       options: [
         { id: 'anselm.trees.again', text: 'How do you keep a tree alive out here?', if: { not: { seen: 'anselm.trees' } }, next: 'trees' },
-        { id: 'anselm.thieves.again', text: 'About what is robbing you.', if: { all: [{ not: { seen: 'anselm.thieves' } }, { not: { seen: 'anselm.thieves.ask' } }] }, next: 'thieves' },
+        { id: 'anselm.thieves.again', text: 'About what is robbing you.', if: { all: [{ not: { seen: 'anselm.thieves' } }, { not: { seen: 'anselm.thieves.ask' } }] }, next: 'thieves', once: true },
         { id: 'anselm.leavings.again', text: 'There\'s a gap in the north wall with a Dog\'s plate dropped in it.', if: { all: [{ knows: 'or_leavings_dog' }, { not: { flag: 'or_stakeout' } }] }, next: 'stakeout' },
         { id: 'anselm.after.again', text: 'About the thieves.', if: { all: [{ flag: 'or_thieves_caught' }, { not: { flag: 'or_anselm_told' } }] }, next: 'after' },
         { id: 'anselm.fruit.again', text: 'Could you spare any fruit?', if: { not: { flag: 'or_fruit_given' } }, next: 'fruit' },
         bye,
       ],
     },
-    trees: { text: '"You don\'t. The tree keeps itself alive; you keep the ground from killing it." He pats the cloth. "Shade the roots, water them at dusk so the sun doesn\'t take it, and bury what dies at the foot of what lives. The Burn didn\'t kill the roots. It killed everything above them and then it killed the people who\'d have waited." A breath. "The Choir waits. That\'s most of what we are."', effects: [{ learn: 'anselm_waits' }], options: [{ text: 'Noted.', next: 'again' }] },
+    trees: { text: '"You don\'t. The tree keeps itself alive; you keep the ground from killing it." He pats the cloth. "Shade the roots, water them at dusk so the sun doesn\'t take it, and bury what dies at the foot of what lives. The Burn didn\'t kill the roots. It killed everything above them and then it killed the people who\'d have waited." A breath. "The Choir waits. That\'s most of what we are."', interject: [{ companion: TAMSIN, text: '"We waited ninety years under a door," Tamsin says, under her breath. "Nobody called it a faith."' }], effects: [{ learn: 'anselm_waits' }], options: [{ text: 'Noted.', next: 'again' }] },
     thieves: { text: '"Twice a week, since the fruit set. They come over the north wall and take the green ones, which nobody takes, because they\'re sour enough to take the skin off your tongue." He stands, finally, slowly. "Petra heard them. Two, small. Dun says the prints are a Dog\'s, and Dun would know." He looks at the rows. "I don\'t want them hurt. I want them to stop. Those are two different things and I only know how to ask for one."', effects: [{ learn: 'or_thefts' }, { quest: 'q_orchard', start: true }, { lead: 'l_orchard_thieves' }], options: [{ text: 'I\'ll look at the wall.', next: 'again' }] },
     stakeout: { text: '"A Dog\'s plate." He turns it over in his hand as if it might be a seed. "Then it\'s what Dun said. Small, and from the overpass, and hungry enough for green fruit." He gives it back. "Wait for them, if you will. By the beds, after the lamps are out. I\'ll tell the novices to sleep through it." A pause. "Don\'t hurt them."', effects: [{ set: 'or_stakeout' }, { decision: { id: 'or_stakeout', text: 'You agreed to wait for the orchard thieves by the seedbeds at night.' } }], options: [{ text: 'After the lamps.', next: 'again' }] },
     after: {
@@ -66,6 +72,7 @@ export const d_or_petra: DialogueDef = {
   nodes: {
     intro: {
       text: 'A girl with her braid full of dust, thinning seedlings in a bed with a knife no longer than her thumb. "You\'re not Choir. You walk like a wall." She says it as a fact, not a complaint.',
+      again: '"Still a wall." She doesn\'t stop thinning the seedlings.',
       options: [
         { id: 'petra.heard', text: 'Brother Anselm says you heard the thieves.', if: { knows: 'or_thefts' }, next: 'heard', once: true },
         { id: 'petra.choir', text: 'Why the Choir?', next: 'choir', once: true },
@@ -83,6 +90,7 @@ export const d_or_dun: DialogueDef = {
   nodes: {
     intro: {
       text: 'A big young man hauling at the well rope, with the look of someone who was built for something else and is working at this one. "Dun. I draw the water. The well\'s forty feet and the bucket\'s thirty-nine, so I draw it twice."',
+      again: 'Dun lets the bucket down the first time. "Twice," he reminds you, and keeps hauling.',
       options: [
         { id: 'dun.prints', text: 'Anselm says you know a Dog\'s footprint.', if: { knows: 'or_thefts' }, next: 'prints', once: true },
         { id: 'dun.dog', text: 'You were a Dog?', next: 'dog', once: true },
@@ -90,16 +98,18 @@ export const d_or_dun: DialogueDef = {
       ],
     },
     prints: { text: '"Scrap-plate sole, two straps, the left one mended with wire. Kids\' size." He lets the bucket down. "Kessler doesn\'t send kids over walls. Kids go over walls when there\'s nothing on the right side of them." He looks north. "Catch them and don\'t take them back. That\'s all I\'ll say."', effects: [{ learn: 'or_prints_kids' }, { learn: 'dun_was_dog' }], options: [bye] },
-    dog: { text: '"Till I was twelve, and then Perpetua said I had a face for walls and gave me to the Choir with a sack of salt, as a trade." He draws the bucket up. "I don\'t go back. I don\'t say why."', effects: [{ learn: 'dun_was_dog' }], options: [bye] },
+    dog: { text: '"Till I was twelve, and then Perpetua said I had a face for walls and gave me to the Choir with a sack of salt, as a trade." He draws the bucket up. "I don\'t go back. I don\'t say why."', interject: [{ companion: WREN, text: '"Perpetua traded a boy for salt," Wren says, flat. "Sounds like her. She\'d call it a kindness, and she\'d be right."' }], effects: [{ learn: 'dun_was_dog' }], options: [bye] },
   },
 };
 
 export const d_or_shrine: DialogueDef = {
   id: 'd_or_shrine', owner: 'narrator',
-  start: [{ node: 'look' }],
+  // (the two fruit on the ledge are taken once: after that the ledge is bare)
+  start: [{ if: { flag: 'or_shrine_taken' }, node: 'bare' }, { node: 'look' }],
   nodes: {
     look: {
       text: 'A post with a board on it, and on the board, burned in with a wire: an open circle, and under it, THE SKY IS OPEN. Below that, smaller, in another hand: and the wall is low. Someone has left two green fruit on the ledge.',
+      again: 'THE SKY IS OPEN, and the wall is low, and the two green fruit are still on the ledge.',
       effects: [{ learn: 'or_shrine_seen' }],
       options: [
         { id: 'shrine.take', text: '(Take the fruit.)', effects: [{ give: 'c_fruit', count: 2 }, { set: 'or_shrine_taken' }, { memory: { npc: 'npc_or_01', tag: 'took_from_shrine', valence: -8, strength: 50 } }], next: 'taken' },
@@ -107,6 +117,7 @@ export const d_or_shrine: DialogueDef = {
       ],
     },
     taken: { text: 'They are very sour.', options: [{ text: '(Go.)', exit: true }] },
+    bare: { text: 'THE SKY IS OPEN. And the wall is low. The ledge under the board is bare where the fruit was.', again: 'The board, the burned circle, the bare ledge.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -116,8 +127,9 @@ export const d_or_well: DialogueDef = {
   nodes: {
     look: {
       text: 'A well with a windlass and a rope that has been spliced four times. The water, when the bucket comes up, is clear and tastes of stone, not pipe: this is not the network\'s water. It is the orchard\'s own.',
+      again: 'The windlass, the four-times-spliced rope, and water that tastes of stone.',
       effects: [{ learn: 'or_well_own' }, { lead: 'l_orchard_well' }],
-      options: [{ id: 'well.fill', text: '(Fill your bottles.)', if: { item: 'c_dirtywater' }, effects: [{ take: 'c_dirtywater' }, { give: 'c_water' }], next: 'filled' }, { text: '(Step back.)', exit: true }],
+      options: [{ id: 'well.fill', text: '(Fill your bottles.)', if: { item: 'c_dirtywater' }, effects: [{ take: 'c_dirtywater' }, { give: 'c_water' }], next: 'filled', repeat: true }, { text: '(Step back.)', exit: true }],
     },
     filled: { text: 'Clean water, for once, for nothing.', options: [{ text: '(Step back.)', exit: true }] },
   },
@@ -129,12 +141,16 @@ export const d_or_leavings: DialogueDef = {
   nodes: {
     look: {
       text: 'A gap in the north wall where the stones have been taken down a course and put back wrong. In the rubble on the orchard side, scuffs, and a scrap of something that glints.',
+      again: [
+        { if: { seen: 'wall.plate' }, text: 'The gap in the north wall, the stones put back wrong. Nothing glints in the rubble now.' },
+        { text: 'The gap in the north wall, and the glint still in the rubble.' },
+      ],
       passives: [
         { skill: 'survival', dc: 20, text: 'Two sets of prints, small, scrap-plate soles. They come at night and go the same way, north-west, toward the overpass road.', effects: [{ learn: 'or_prints_kids' }] },
         { attr: 'senses', dc: 6, text: 'The glint is a Rust Dog\'s plate, the little kind they wear on a cord, snapped off its wire.', effects: [{ learn: 'or_leavings_dog' }] },
       ],
       effects: [{ learn: 'or_wall_seen' }],
-      options: [{ id: 'wall.plate', text: '(Pick up the plate.)', if: { knows: 'or_leavings_dog' }, effects: [{ give: 'k_dog_plate' }], next: 'plate' }, { text: '(Step back.)', exit: true }],
+      options: [{ id: 'wall.plate', text: '(Pick up the plate.)', if: { all: [{ knows: 'or_leavings_dog' }, { not: { seen: 'wall.plate' } }] }, effects: [{ give: 'k_dog_plate' }], next: 'plate' }, { text: '(Step back.)', exit: true }],
     },
     plate: { text: 'A thumb-sized scrap of plate with a dog\'s head scratched on it, the way the overpass marks its own. A child\'s cord through it.', effects: [{ lead: 'l_orchard_thieves' }], options: [{ text: '(Pocket it.)', exit: true }] },
   },
@@ -147,6 +163,7 @@ export const d_or_thieves: DialogueDef = {
   nodes: {
     beds: {
       text: 'Two shapes at the beds in the dark, filling a sack with green fruit, so intent that you are three steps away before one of them looks up. A boy with a shiv and a girl with the sack, neither of them sixteen, both of them all eyes. "Mote," the boy says. "Run."',
+      again: 'The two of them again, at the beds, with the sack. The boy sees you first this time. "Mote," he says. "Run."',
       options: [
         { id: 'thieves.stop', text: 'Don\'t. Nobody here is going to hurt you. Put the sack down and sit.', check: { skill: 'speech', dc: 30, mods: [{ if: { knows: 'dun_was_dog' }, dc: -10, why: 'you can say Dun\'s name' }, { if: { rep: { faction: 'rust_dogs', respect: 15 } }, dc: -10, why: 'the Dogs have heard of you' }] }, next: 'sat', fail: 'ran' },
         { id: 'thieves.wren', text: '(Let Wren speak.)', if: { inParty: 'npc_rd_03' }, effects: [{ approval: { companion: 'npc_rd_03', by: 5 } }], next: 'wren' },
@@ -158,6 +175,10 @@ export const d_or_thieves: DialogueDef = {
     grabbed: { text: 'You have him by the collar before the shiv is up, and he goes limp the way a kid goes limp who has been grabbed before. The girl does not run. She will not leave him.', options: [{ text: 'Sit. Both of you.', next: 'sat' }] },
     sat: {
       text: 'They sit. The story comes out of the girl in pieces, with the sack in her lap: the overpass has been short since the tithe, the little ones eat last, the orchard has fruit on trees and nobody shoots at you here. "They\'re sour," she says, as if that were the crime. "We only take the sour ones."',
+      interject: [
+        { companion: ILYA, text: '"They eat last," Ilya repeats. He has turned his back on the children to watch the wall, which is the kindest thing anyone has done for them tonight.' },
+        { companion: TAMSIN, text: '"The sour ones," Tamsin says, and has to look away. "Rust it. Give them the sack."' },
+      ],
       effects: [{ set: 'or_thieves_caught' }, { learn: 'or_thieves_hungry' }],
       options: [
         { id: 'thieves.choir', text: 'Stay. The Choir feeds you first and asks after. Ask for Dun; he was one of you.', effects: [{ set: 'or_thieves_choir' }, { set: 'or_outcome', value: 'choir' }, { decision: { id: 'or_thieves_choir', text: 'The two Rust Dog children who robbed the orchard stayed with the Choir.' } }, { rep: { faction: 'choir', respect: 10 } }, { memory: { npc: 'npc_rd_05', tag: 'kept_kids', valence: -10, strength: 60 } }, { news: { tag: 'dog_kids_choir', text: 'two Rust Dog children are sleeping in the Choir\'s tents at the orchard', valence: 5, size: 5, at: 'shale' } }, { news: { tag: 'dog_kids_choir', text: 'two of the overpass\'s children went to the Choir and did not come back', valence: -5, size: 5, at: 'rustdogs' } }, { xp: 80 }], next: 'choir' },
@@ -168,7 +189,7 @@ export const d_or_thieves: DialogueDef = {
     },
     choir: { text: 'The boy looks at the tents as if they were a trap with the teeth showing. The girl looks at the trees. "They\'ve got fruit on them," she says, and that decides it.', options: [{ text: '(Wake Petra.)', exit: true }] },
     returned: { text: 'Four hours in the dark, the girl asleep on your back for the last one, and a lamp at the overpass gate that knows you. Whoever is short there will be shorter. But they are home, and the Dogs will remember who walked them.', options: [{ text: '(Go.)', exit: true }] },
-    cell: { text: 'Ada does not ask you what they did. She looks at their feet and sends Jonah for blankets, and the boy says one word, which is a Dog\'s word for a cage.', options: [{ text: '(Go.)', exit: true }] },
+    cell: { text: 'Ada does not ask you what they did. She looks at their feet and sends Jonah for blankets, and the boy says one word, which is a Dog\'s word for a cage.', interject: [{ companion: WREN, text: '"A cage," Wren says, after, and nothing else all the way back.', effects: [{ approval: { companion: WREN, by: -5 } }] }], options: [{ text: '(Go.)', exit: true }] },
     go: { text: 'They are over the wall before you have finished the sentence. The sack goes over first. In the morning Anselm will find two green fruit left on the shrine, which is a kind of receipt.', options: [{ text: '(Go.)', exit: true }] },
     ran: { text: 'They are gone over the north wall with the sack, and the stones come down behind them. You will not catch them tonight, and tomorrow they will know the beds are watched.', effects: [{ set: 'or_thieves_fled' }], options: [{ text: '(Go.)', exit: true }] },
   },
