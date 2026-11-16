@@ -201,6 +201,8 @@ shale = {
         {'def': 'npc_sh_20', 'x': 11, 'y': 36, 'facing': 2}, {'def': 'npc_sh_21', 'x': 14, 'y': 36, 'facing': 2, 'if': {'not': {'knows': 'pip_reported'}}}, {'def': 'npc_sh_22', 'x': 12, 'y': 38, 'facing': 2},
         {'def': 'npc_sh_14', 'x': 12, 'y': 25, 'facing': 1}, {'def': 'npc_sh_07', 'x': 16, 'y': 18, 'facing': 0, 'if': {'flag': 'teo_freed'}},
         {'def': 'npc_sh_17', 'x': 43, 'y': 6, 'facing': 2, 'if': {'all': [{'flag': 'drills_started'}, {'not': {'flag': 'ilya_gone'}}, {'not': {'flag': 'ilya_recruited'}}]}},
+        # Tamsin, out of the Cistern (U8): at Mags's while she is out and not on the road with the player.
+        {'def': 'npc_c9_03', 'x': 17, 'y': 16, 'facing': 2, 'schedule': [], 'if': {'all': [{'any': [{'knows': 'tamsin_replied'}, {'flag': 'tam_out'}]}, {'not': {'inParty': 'npc_c9_03'}}, {'not': {'flag': 'tam_home'}}]}},
         {'def': 'npc_rd_02', 'id': 'tribute_vasha', 'x': 32, 'y': 22, 'facing': 2, 'dialogue': 'd_tribute', 'schedule': [], 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}]}},
         {'def': 'npc_rd_t1', 'id': 'tribute_t1', 'x': 30, 'y': 23, 'facing': 2, 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}]}},
         {'def': 'npc_rd_t2', 'id': 'tribute_t2', 'x': 34, 'y': 23, 'facing': 2, 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}]}},

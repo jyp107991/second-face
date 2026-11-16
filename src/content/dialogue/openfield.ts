@@ -1,5 +1,6 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
 import type { Cond, Effect } from '../../engine/world/logic';
+import { QUESTS } from '../quests';
 
 /**
  * Openfield: the Choir's farms in the glass, every third row dying. The Elder calls it blight; the well knows
@@ -277,11 +278,31 @@ export const d_of_petra: DialogueDef = {
   },
 };
 
+// Ash's arc (U8): four talks at the fire, a telling at Openfield's seed store, a red line, a break and a floor.
+// Stages read the flags his own talks set; plan and approval ladder in story/U8_ash_SECRET.md.
+const ASH_IN: Cond = { inParty: ASH };
+const ASH_FLOOR: Cond = { approval: { companion: ASH, lte: -30 } };
+const ASH_BAND = (gte: number): Cond => ({ approval: { companion: ASH, gte } });
+/** Turning on the Choir before its long night: a cut of its seed taken in his sight, or, after the vow at the windpump,
+ * service with its enemies above the bottom rank (a factor's hand, a warden's grey). He says so before it happens. */
+const ASH_REDLINE: Cond = { any: [{ flag: 'ash_saw_cut' }, { all: [{ flag: 'sky_rite' }, { any: [{ member: 'tollmen', rank: 'hand' }, { member: 'wardens', rank: 'warden' }] }] }] };
+/** One of Meridian's own lines settled (the Masque, High Water, Turf): the city has shown what it costs. */
+const MD_LINE: Cond = { any: [{ quest: 'q_cr_masque', status: 'done' }, { quest: 'q_sk_highwater', status: 'done' }, { quest: 'q_bw_turf', status: 'done' }] };
+/** His line's journal (q_comp_ash) once that quest is registered; the flags carry the arc either way. */
+const ASH_JOURNAL: Effect[] = QUESTS.q_comp_ash ? [{ quest: 'q_comp_ash', start: true }] : [];
+const ORDERS_KNOWN: Cond = { all: [{ knows: 'md_magistrate_designate' }, { flag: 'ash_gully_outcome' }, { not: { flag: 'ash_orders_known' } }] };
+
 export const d_of_ash: DialogueDef = {
   id: 'd_of_ash', owner: 'npc_of_03',
   start: [
-    { if: { all: [{ inParty: 'npc_of_03' }, { flag: 'at_camp' }] }, node: 'camp' },
-    { if: { inParty: 'npc_of_03' }, node: 'party' },
+    { if: { all: [ASH_IN, ASH_REDLINE] }, node: 'redline' },
+    { if: { all: [ASH_IN, { flag: 'cr_celestine_dead' }, { not: { flag: 'ash_cup_done' } }] }, node: 'cup' },
+    { if: { all: [ASH_IN, ASH_FLOOR, { flag: 'ash_won_back' }] }, node: 'floor_final' },
+    { if: { all: [ASH_IN, ASH_FLOOR] }, node: 'floor' },
+    { if: { all: [ASH_IN, { flag: 'at_camp' }] }, node: 'camp' },
+    { if: ASH_IN, node: 'party' },
+    { if: { flag: 'ash_gone' }, node: 'gone' },
+    { if: { all: [{ flag: 'ash_left' }, { not: { flag: 'ash_won_back' } }] }, node: 'left' },
     { if: { flag: 'ash_joined' }, node: 'waiting' },
     { if: { flag: 'of_tobias_dead' }, node: 'refuse' },
     { if: { flag: 'ash_met' }, node: 'again' },
@@ -296,7 +317,8 @@ export const d_of_ash: DialogueDef = {
         { id: 'ash.grave', text: 'Whose grave?', next: 'grave', once: true },
         { id: 'ash.dog', text: 'You were a Dog.', if: { knows: 'ash_was_dog' }, next: 'dog', once: true },
         { id: 'ash.wren', text: '(Let Wren speak.)', if: { all: [{ inParty: 'npc_rd_03' }, { knows: 'ash_was_dog' }] }, next: 'wren', once: true },
-        { id: 'ash.join', text: 'Come east.', if: { all: [{ flag: 'a2_openfield_done' }, { any: [{ flag: 'ash_blessed' }, { flag: 'sky_rite' }] }] }, next: 'join' },
+        { id: 'ash.join', text: 'Come east.', if: { all: [{ flag: 'a2_openfield_done' }, { any: [{ flag: 'ash_blessed' }, { flag: 'sky_rite' }] }, { not: ASH_REDLINE }] }, next: 'join' },
+        { id: 'ash.join.turned', text: 'Come east.', if: { all: [{ flag: 'a2_openfield_done' }, ASH_REDLINE] }, next: 'turned' },
         bye,
       ],
     },
@@ -307,8 +329,9 @@ export const d_of_ash: DialogueDef = {
         { id: 'ash.grave.again', text: 'Whose grave?', if: { not: { seen: 'ash.grave' } }, next: 'grave' },
         { id: 'ash.dog.again', text: 'You were a Dog.', if: { all: [{ knows: 'ash_was_dog' }, { not: { seen: 'ash.dog' } }] }, next: 'dog' },
         { id: 'ash.wren.again', text: '(Let Wren speak.)', if: { all: [{ inParty: 'npc_rd_03' }, { knows: 'ash_was_dog' }, { not: { seen: 'ash.wren' } }] }, next: 'wren' },
-        { id: 'ash.join.again', text: 'Come east.', if: { all: [{ flag: 'a2_openfield_done' }, { any: [{ flag: 'ash_blessed' }, { flag: 'sky_rite' }] }] }, next: 'join' },
-        { id: 'ash.join.no', text: 'Come east.', if: { all: [{ flag: 'a2_openfield_done' }, { not: { flag: 'ash_blessed' } }, { not: { flag: 'sky_rite' } }] }, next: 'not_yet' },
+        { id: 'ash.join.again', text: 'Come east.', if: { all: [{ flag: 'a2_openfield_done' }, { any: [{ flag: 'ash_blessed' }, { flag: 'sky_rite' }] }, { not: ASH_REDLINE }] }, next: 'join' },
+        { id: 'ash.join.turned.again', text: 'Come east.', if: { all: [{ flag: 'a2_openfield_done' }, ASH_REDLINE] }, next: 'turned' },
+        { id: 'ash.join.no', text: 'Come east.', if: { all: [{ flag: 'a2_openfield_done' }, { not: { flag: 'ash_blessed' } }, { not: { flag: 'sky_rite' } }, { not: ASH_REDLINE }] }, next: 'not_yet' },
         bye,
       ],
     },
@@ -320,27 +343,391 @@ export const d_of_ash: DialogueDef = {
       effects: [{ join: 'npc_of_03' }, { set: 'ash_joined' }, { approval: { companion: 'npc_of_03', by: 10 } }, { decision: { id: 'ash_joined', text: 'Brother Ash of the Choir left Openfield\'s burial ground with you.' } }, { xp: 100 }],
       options: [{ text: '(Go.)', exit: true }],
     },
-    not_yet: { text: '"Ask the Elder. Or raise a cairn here, so I know what you carry." He goes back to the row. "I don\'t go east with a stranger. I\'ve done that once."', options: [bye] },
+    not_yet: { text: '"Ask the Elder. Or raise a cairn here, so I know what you carry." He goes back to the row. "I don\'t go east with a stranger. I\'ve done that once."', again: '"Ask the Elder," he says, digging.', options: [bye] },
+    turned: { text: '"You put a stone on a cairn at the windpump, and took the other side after." He doesn\'t stop digging. "I don\'t go east with that, friend."', again: 'He doesn\'t stop digging.', options: [bye] },
     refuse: { text: 'He is digging a grave that is not Sem\'s, and he does not look up, and the shotgun is not leaned on the cairn; it is across his back. "Not with that on you, friend. Walk on."', again: 'The spade goes in and comes out. The shotgun stays across his back. He has said what he will say.', options: [{ text: '(Walk on.)', exit: true }] },
     waiting: { text: '"Well?" The spade is already put away.', again: '"Still here, friend." He hasn\'t picked the spade back up.', options: [{ text: 'We\'re going.', effects: [{ join: 'npc_of_03' }], exit: true }, { text: 'Wait here a while.', exit: true }] },
     party: {
       text: [{ if: { at: 'openfield' }, text: '"Soil\'s good here. Everything else is what it is."' }, { text: '"There\'s a weight to the road. Good one, so far."' }],
       options: [
+        { id: 'ash.party.doria', text: 'The seed store. Now, while she\'s counting.', if: { all: [{ at: 'openfield' }, { flag: 'ash_quest' }, { not: { flag: 'ash_gully_outcome' } }, { not: { dead: 'npc_of_06' } }] }, next: 'store' },
+        { id: 'ash.party.doria.dead', text: 'Doria\'s cairn.', if: { all: [{ at: 'openfield' }, { flag: 'ash_quest' }, { not: { flag: 'ash_gully_outcome' } }, { dead: 'npc_of_06' }] }, next: 'store_grave' },
         { id: 'ash.party.wait', text: 'Wait here.', effects: [{ leave: 'npc_of_03' }], exit: true },
         { text: 'Keep up.', exit: true },
       ],
     },
     camp: {
-      text: '"Fire\'s honest. Say what you want to say to it and I\'ll listen in."',
+      text: [
+        { if: { flag: 'ash_orders', eq: 'refused' }, text: '"{name}." He says it the way he says a row is finished. "Sit. Fire\'s honest."' },
+        { if: { all: [{ knows: 'ash_gully_hint' }, { flag: 'a2_cistern4_done' }, { not: { flag: 'ash_s2_done' } }, { approval: { companion: ASH, lte: 14 } }] }, text: 'He feeds the fire and doesn\'t look at you. Whatever he owes you the telling of, he hasn\'t decided yet that you\'re owed it.' },
+        { text: '"Fire\'s honest. Say what you want to say to it and I\'ll listen in."' },
+      ],
       again: 'Ash feeds the fire a stick. "Still honest," he says, and listens.',
       options: [
+        { id: 'ash.camp.vow', text: 'You clean that shotgun every night.', if: { not: { flag: 'ash_s1_done' } }, next: 'vow' },
         { id: 'ash.camp.weight', text: 'What\'s the weight you carry?', if: { not: { knows: 'ash_gully_hint' } }, next: 'weight' },
         { id: 'ash.camp.sky', text: 'Does the sky answer?', if: { not: { knows: 'ash_sky' } }, next: 'sky' },
+        { id: 'ash.camp.gully', text: 'The Gully. You said you\'d tell me.', if: { all: [{ knows: 'ash_gully_hint' }, { flag: 'a2_cistern4_done' }, { not: { flag: 'ash_s2_done' } }, ASH_BAND(15)] }, next: 'gully' },
+        { id: 'ash.camp.orders', text: 'Something\'s been sitting on you since the gate.', if: { all: [ORDERS_KNOWN, ASH_BAND(35)] }, next: 'orders' },
+        { id: 'ash.camp.scarf', text: '(His scarf is drying on a stick by the fire. Something stiff is sewn into the lining.)', if: { all: [ORDERS_KNOWN, { approval: { companion: ASH, lte: 34 } }, { not: { flag: 'ash_scarf_left' } }] }, next: 'scarf' },
+        { id: 'ash.camp.choice', text: 'You\'ve been somewhere else all evening.', if: { all: [{ flag: 'ash_orders_known' }, MD_LINE, { not: { flag: 'ash_orders' } }] }, next: 'choice' },
+        { id: 'ash.camp.card', text: 'You keep looking at my papers.', if: { all: [{ flag: 'sky_rite' }, { any: [{ member: 'wardens' }, { member: 'tollmen' }] }, { not: { flag: 'ash_card_done' } }] }, next: 'card' },
+        { id: 'ash.camp.soil', text: 'What makes good soil?', if: { not: { flag: 'ash_soil_done' } }, next: 'soil' },
+        { id: 'ash.camp.mason', text: 'Elder Mason. What is he to you?', if: { not: { flag: 'ash_mason_done' } }, next: 'mason' },
+        { id: 'ash.camp.tobias.ex', text: 'Tobias.', if: { all: [{ flag: 'of_blight_outcome', eq: 'exposed' }, { not: { flag: 'ash_tobias_done' } }] }, next: 'tobias_exposed' },
+        { id: 'ash.camp.tobias.mercy', text: 'Tobias.', if: { all: [{ flag: 'of_blight_outcome', eq: 'mercy' }, { not: { flag: 'ash_tobias_done' } }] }, next: 'tobias_mercy' },
+        { id: 'ash.camp.tobias.unw', text: 'Tobias.', if: { all: [{ flag: 'of_blight_outcome', eq: 'unwritten' }, { not: { flag: 'ash_tobias_done' } }] }, next: 'tobias_unwritten' },
+        { id: 'ash.camp.kessler', text: 'Kessler. Did you know him?', if: { all: [{ knows: 'ash_admits_dog' }, { not: { flag: 'ash_kessler_done' } }] }, next: 'kessler' },
+        { id: 'ash.camp.sem', text: 'Sem. The boy in the grave you were digging.', if: { all: [{ knows: 'of_child_grave' }, { not: { flag: 'ash_sem_done' } }] }, next: 'sem' },
+        { id: 'ash.camp.city', text: 'Meridian. What do you make of it?', if: { all: [{ flag: 'a2_precinct_done' }, { not: { flag: 'ash_city_done' } }] }, next: 'city' },
+        { id: 'ash.camp.close', text: '(Sit closer to him.)', if: { all: [{ flag: 'ash_s2_done' }, ASH_BAND(30), { not: { flag: 'ash_close_done' } }] }, next: 'close' },
         { text: 'Rest.', exit: true },
       ],
     },
-    weight: { text: 'He is quiet for long enough that you think he will not answer. "A place called the Gully. I\'ll tell you when we\'re nearer to it, because I\'ll have to, and because I\'d rather you heard it from me than from somebody standing in it." He feeds the fire. "That\'s all tonight, friend. That was a lot."', effects: [{ learn: 'ash_gully_hint' }, { approval: { companion: 'npc_of_03', by: 5 } }], options: [{ text: 'Rest.', exit: true }] },
-    sky: { text: '"No." He says it kindly. "That\'s what I like about it. Everything else out here answers, and most of what it says is written down somewhere by something that wants a thing from you. The sky wants nothing. It\'s the only honest thing I\'ve met, bar soil." He looks at you. "And a couple of people. Rest, friend."', effects: [{ learn: 'ash_sky' }, { approval: { companion: 'npc_of_03', by: 5 } }], options: [{ text: 'Rest.', exit: true }] },
+
+    // Stage 1 (he has joined): the promise he keeps, and the weight he names but won't open yet.
+    vow: {
+      text: 'He cleans the shotgun at the fire, which he does every night whether it needs it or not. "You\'ll want to know what this is for, travelling with a Choir man." He works the rag down the barrel. "I made a promise to the sky, which doesn\'t hear promises, so it\'s only to me. I don\'t fire first. Not at a man with his hand on his gun. Not at a dog with its lip up. Not ever." He closes the breech. "Sometimes somebody has to go first, friend. When it\'s needed, it\'ll have to be you. I\'m telling you so you know what you\'ve got."',
+      again: 'The shotgun across his knees, clean, closed. He waits.',
+      effects: [{ set: 'ash_s1_done' }],
+      options: [
+        { id: 'ash.vow.why', text: 'Why that promise?', effects: [{ approval: { companion: ASH, by: 5 } }], next: 'vow_why' },
+        { id: 'ash.vow.risk', text: 'That could get us killed.', next: 'vow_risk' },
+        { id: 'ash.vow.first', text: 'Then I\'ll go first.', effects: [{ approval: { companion: ASH, by: 5 } }], next: 'vow_first' },
+      ],
+    },
+    vow_why: { text: '"Because I liked it." He says it to the barrel. "Going first. Being quick. There\'s a weight to saying that out loud, friend, and I\'ve said it twice in my life, both times to a fire." He puts the rag away. "That\'s enough for one night."', again: '"Twice," he says. "Both times to a fire."', effects: [{ learn: 'ash_liked_it' }], options: [{ text: 'Rest.', exit: true }] },
+    vow_risk: { text: '"It could. It\'s nearly got me killed twice." He doesn\'t seem troubled. "Both times I was glad of it after. Being alive isn\'t the only thing I\'m trying to be."', again: '"Glad of it after," he says again.', options: [{ text: 'Rest.', exit: true }] },
+    vow_first: { text: '"Good." He nods once, as if a price had been agreed. "Then we\'ve a deal, and I\'ll be right behind you, which is a place I\'m good at."', again: '"Right behind you," he says.', options: [{ text: 'Rest.', exit: true }] },
+    weight: { text: 'He is quiet for long enough that you think he will not answer. "A place called the Gully. I\'ll tell you when I can say it without making a speech of it, because I\'ll have to, and because I\'d rather you heard it from me than from somebody who was standing in it." He feeds the fire. "That\'s all tonight, friend. That was a lot."', again: '"The Gully," he says. "Not tonight."', effects: [{ learn: 'ash_gully_hint' }, { approval: { companion: ASH, by: 5 } }], options: [{ text: 'Rest.', exit: true }] },
+    sky: { text: '"No." He says it kindly. "That\'s what I like about it. Everything else out here answers, and most of what it says is written down somewhere by something that wants a thing from you. The sky wants nothing. It\'s the only honest thing I\'ve met, bar soil." He looks at you. "And a couple of people. Rest, friend."', again: '"Nothing," he says again, about the sky, and seems glad of it.', effects: [{ learn: 'ash_sky' }, { approval: { companion: ASH, by: 5 } }], options: [{ text: 'Rest.', exit: true }] },
+
+    // Stage 2 (after the dead reserve under the Sump): the Gully, told once, and his line opened.
+    gully: {
+      text: 'He waits until the fire is down to coals, which is how you know it\'s coming. "The Gully was a well-cut north of the Sallow. Nineteen people, a windpump, goats. It wouldn\'t pay Kessler\'s father, and he wanted the places that were watching to see what not paying cost." He looks at his hands. "We went in at night. I was twenty."',
+      again: 'The coals. His hands. "Twenty," he says again, as if it were an excuse he has tried and found too small.',
+      effects: [{ set: 'ash_s2_done' }],
+      options: [
+        { id: 'ash.gully.on', text: '(Let him go on.)', next: 'gully_fire' },
+        { id: 'ash.gully.stop', text: 'You don\'t have to tell me.', next: 'gully_must' },
+      ],
+    },
+    gully_must: { text: '"I do, friend. That\'s the whole of it."', again: '"I do," he says again.', options: [{ id: 'ash.gully.must.on', text: '(Let him go on.)', next: 'gully_fire' }] },
+    gully_fire: {
+      text: '"I set the first fire. Nobody told me to. I was quick, and I liked being quick." He says it to the coals. "That\'s the part I don\'t say at the shrine. I liked it — the noise, the running, being first. I\'ve been trying to unlike it for fifteen years with a spade."',
+      again: '"Being first," he says, to the coals.',
+      options: [
+        { id: 'ash.gully.fire.on', text: '(Say nothing.)', next: 'gully_well' },
+        { id: 'ash.gully.young', text: 'You were twenty.', next: 'gully_young' },
+      ],
+    },
+    gully_young: { text: '"Twenty\'s old enough to strike a match, friend. Don\'t hand me that; I\'ve tried it on myself and it doesn\'t fit."', again: '"Old enough," he says.', options: [{ id: 'ash.gully.young.on', text: '(Let him go on.)', next: 'gully_well' }] },
+    gully_well: {
+      text: '"There was a woman at the well who counted us as we came in. Out loud: one, two, three. She was still counting when we left." He looks up. "She counts seed at Openfield now. Doria. She doesn\'t know my face; it was dark, and I was a boy with a dog on his neck. That\'s why Openfield. Four years I\'ve dug the Choir\'s graves fifty yards from her store, and never said it."',
+      again: '"Fifty yards," he says. "Four years."',
+      effects: [{ learn: 'ash_gully_doria' }],
+      options: [{ id: 'ash.gully.want', text: 'What do you want to do?', next: 'gully_want' }],
+    },
+    gully_want: {
+      text: '"Tell her. With somebody beside me, so I don\'t make it a speech, and so I don\'t make it about me." He turns a coal with a stick. "Next time the road goes back through Openfield, friend. If you\'ll stand there."',
+      again: '"If you\'ll stand there," he says again, and waits.',
+      effects: [{ set: 'ash_quest' }, ...ASH_JOURNAL],
+      options: [
+        { id: 'ash.gully.stand', text: 'I\'ll stand with you.', effects: [{ approval: { companion: ASH, by: 10 } }], next: 'gully_yes' },
+        { id: 'ash.gully.hurt', text: 'It\'ll only hurt her.', next: 'gully_hurt' },
+        { id: 'ash.gully.judge', text: 'You burned nineteen people.', next: 'gully_judge' },
+      ],
+    },
+    gully_yes: { text: '"Then that\'s the weight shared out." He breathes out, long. "Openfield, then. While she\'s counting."', again: '"While she\'s counting," he says.', options: [{ text: 'Rest.', exit: true }] },
+    gully_hurt: {
+      text: '"It will. It\'s hers to be hurt by. I took everything else from her; I\'m not taking that too."',
+      again: '"Hers to be hurt by," he says again.',
+      options: [
+        { id: 'ash.gully.hurt.yes', text: 'All right. I\'ll come.', effects: [{ approval: { companion: ASH, by: 5 } }], exit: true },
+        { id: 'ash.gully.self', text: 'I think you want it for yourself.', effects: [{ approval: { companion: ASH, by: 5 } }], next: 'gully_self' },
+      ],
+    },
+    gully_self: { text: '"I do." He doesn\'t look away. "That\'s the worst of it, friend. Come anyway."', again: '"Come anyway," he says.', options: [{ text: 'Rest.', exit: true }] },
+    gully_judge: { text: '"Some of them ran." He doesn\'t flinch. "Not enough. Yes." He waits to see whether you\'ll get up and sit somewhere else. "Come or don\'t. I\'m going to say it either way."', again: '"Either way," he says.', options: [{ text: 'Rest.', exit: true }] },
+
+    // The seed store at Openfield (his line, with Ash in the party).
+    store: {
+      speaker: 'narrator',
+      text: 'Doria is at the store door with the tally board, counting the crates in out loud, one, two, the way she does. Ash stops at the edge of the yard and hands you the shotgun without being asked. He does not go in.',
+      again: 'Doria, counting. Ash at the edge of the yard with empty hands.',
+      options: [
+        { id: 'ash.store.wait', text: '(Wait. Let him find it.)', if: ASH_BAND(25), next: 'store_spoken' },
+        { id: 'ash.store.wait.low', text: '(Wait. Let him find it.)', if: { approval: { companion: ASH, lte: 24 } }, next: 'store_stuck' },
+        { id: 'ash.store.say', text: '(Say it for him.)', next: 'store_told' },
+        { id: 'ash.store.away', text: 'Not today. Come away.', next: 'store_away' },
+      ],
+    },
+    store_stuck: {
+      speaker: 'narrator',
+      text: 'He doesn\'t. The counting goes on, one, two, and he stands in it like a man in cold water, and then he looks at you, and you understand that whatever he has of you isn\'t enough yet to walk him the last ten yards.',
+      again: 'Ash in the counting, like a man in cold water, looking at you.',
+      options: [
+        { id: 'ash.store.stuck.say', text: '(Say it for him.)', next: 'store_told' },
+        { id: 'ash.store.stuck.away', text: '(Take his arm. Walk him away.)', next: 'store_away' },
+      ],
+    },
+    store_spoken: {
+      speaker: 'narrator',
+      text: 'He walks the ten yards. "Doria." She stops at fourteen. "The Gully. I was there. I was with the Dogs, under Kessler\'s father. I set the first fire." She doesn\'t drop the board. She looks at him a long time, the whole of his face, as if she were counting that too.',
+      again: 'Doria, looking at the whole of his face.',
+      options: [{ id: 'ash.store.spoken.on', text: '(Wait.)', next: 'store_names' }],
+    },
+    store_names: {
+      speaker: 'npc_of_06',
+      text: '"Nineteen," she says. "Say them." He can\'t; he never knew them. So she does, one at a time, and makes him say each one back to her: Ottla. Ren Haskell. Ren\'s two boys. The twins from the top house. Old Sefton, who kept the goats. Maro, who was her husband. Pia, who was four. Ten more, and he says every one, and she checks him. "Dig, then," she says. "You dig here, you dig them. I\'ll check your count." She goes back to the crates. Fifteen. Sixteen.',
+      again: 'Doria at the crates, counting, and not losing her place.',
+      effects: [{ set: 'ash_gully_outcome', value: 'spoken' }, { approval: { companion: ASH, by: 15 } }, { learn: 'ash_gully_names' }, { memory: { npc: 'npc_of_06', tag: 'ash_gully', valence: -20, strength: 100 } }, { decision: { id: 'ash_gully', text: 'Brother Ash told Openfield\'s seed-keeper what he did at the Gully, with you beside him.' } }, { xp: 150 }],
+      options: [{ id: 'ash.store.names.on', text: '(Walk back with him.)', next: 'store_after' }],
+    },
+    store_after: { text: '"She didn\'t forgive me." He takes the shotgun back from you. "No. She gave me the names. I didn\'t know I wanted them more." He looks at the burial ground, at the row he left half-dug. "There\'s a weight to that, friend. The right kind."', again: '"The right kind," he says.', options: [{ text: '(Go.)', exit: true }] },
+    store_told: {
+      speaker: 'narrator',
+      text: 'You say it for him: the Gully, the Dogs, the first fire. Doria looks past you at Ash, and he nods, once, and that is all he manages. "Get him off my count," she says, and goes back to the crates, one, two, and doesn\'t lose her place.',
+      again: 'Doria counting, with her back to both of you.',
+      effects: [{ set: 'ash_gully_outcome', value: 'told' }, { approval: { companion: ASH, by: -10 } }, { memory: { npc: 'npc_of_06', tag: 'ash_gully', valence: -30, strength: 100 } }, { decision: { id: 'ash_gully', text: 'You told Openfield\'s seed-keeper, for Brother Ash, what he did at the Gully.' } }, { xp: 80 }],
+      options: [{ id: 'ash.store.told.on', text: '(Go.)', next: 'store_told_after' }],
+    },
+    store_told_after: { text: '"You meant it kindly." He doesn\'t look at you. "It was mine to say, friend. Now it\'s nobody\'s."', again: '"Nobody\'s," he says.', options: [{ text: '(Go.)', exit: true }] },
+    store_away: {
+      speaker: 'narrator',
+      text: 'You take his arm. He lets you. Behind you the counting goes on, one, two, and doesn\'t miss a crate. "Next time," he says at the edge of the lane, and you both know there won\'t be one.',
+      again: 'The lane, and the counting behind you.',
+      effects: [{ set: 'ash_gully_outcome', value: 'unsaid' }, { approval: { companion: ASH, by: -5 } }, { decision: { id: 'ash_gully', text: 'You walked Brother Ash away from Openfield\'s seed store with the Gully unsaid.' } }],
+      options: [{ text: '(Go.)', exit: true }],
+    },
+    store_grave: {
+      speaker: 'narrator',
+      text: 'Doria\'s cairn has no name on it; the Choir cuts none. Ash kneels at it with his hands empty and says it to the stones: the Gully, the Dogs, the first fire. The stones take it the way stones do. "Too late, friend," he says, getting up. "I\'m good at too late."',
+      again: 'The cairn with no name on it.',
+      effects: [{ set: 'ash_gully_outcome', value: 'grave' }, { decision: { id: 'ash_gully', text: 'Brother Ash said what he did at the Gully to a seed-keeper\'s cairn.' } }],
+      options: [{ text: '(Go.)', exit: true }],
+    },
+
+    // Stage 3 (the city's lens has named the player): what else he carries, told or found.
+    orders: {
+      text: [
+        { if: { flag: 'unwritten_met' }, text: 'He takes off the grey scarf — you have never seen him without it — and unpicks the lining with his knife, and there is a fold of paper in it. "You went down Petra\'s ladder. You saw the board." He turns the paper over and over. "I\'m one of the ones she won\'t name. Sworn: no name, no likeness."' },
+        { text: 'He takes off the grey scarf — you have never seen him without it — and unpicks the lining with his knife, and there is a fold of paper in it. "Under Openfield there\'s a cellar, and a board in it with twelve pins, and people who keep no likeness." He turns the paper over and over. "I\'m one of them. Sworn: no name, no likeness."' },
+      ],
+      again: 'The scarf off, on his knee. The fold of paper in his hand.',
+      effects: [{ set: 'ash_orders_known' }, { set: 'ash_orders_how', value: 'told' }, { learn: 'ash_unwritten' }, { approval: { companion: ASH, by: 5 } }],
+      options: [{ id: 'ash.orders.on', text: '(Let him go on.)', next: 'orders_standing' }],
+    },
+    orders_standing: {
+      text: '"We keep standing orders. When a name on that board takes its forecast like a coat — puts it on, wants it, wears it out in the street — one of us sees it doesn\'t get to finish." He holds out the paper. "This came to Openfield the week before you did."',
+      again: 'The paper, held out.',
+      options: [{ id: 'ash.orders.read', text: '(Read it.)', next: 'orders_letter' }],
+    },
+    orders_letter: {
+      speaker: 'narrator',
+      text: 'Pencil, no seal, no name, one line: IF THE ONE FROM THE CISTERN\'S HATCH TAKES THE SASH, THE SKY IS OWED.',
+      again: 'One line in pencil. THE SKY IS OWED.',
+      options: [
+        { id: 'ash.letter.will', text: 'Will you do it?', next: 'letter_will' },
+        { id: 'ash.letter.since', text: 'You\'ve known since Openfield.', next: 'letter_since' },
+        { id: 'ash.letter.burn', text: 'Burn it.', next: 'letter_burn' },
+      ],
+    },
+    letter_will: { text: '"I don\'t know." He folds it. "That\'s the truth, and it\'s the worst thing I\'ve said to you, friend."', again: '"I don\'t know," he says again.', options: [{ id: 'ash.letter.will.on', text: '(Wait.)', next: 'stance' }] },
+    letter_since: { text: '"Since before I met you. I said I came east to see the city. That was true. I came to see you too."', again: '"To see you too," he says.', options: [{ id: 'ash.letter.since.on', text: '(Wait.)', next: 'stance' }] },
+    letter_burn: { text: '"Not yet. If I burn it, I\'m pretending I\'m not what I am. I\'d rather you knew what I am."', again: '"Not yet," he says.', options: [{ id: 'ash.letter.burn.on', text: '(Wait.)', next: 'stance' }] },
+    scarf: {
+      speaker: 'narrator',
+      text: 'He has gone down to the water to wash. The grey scarf is drying on a stick by the fire, and something stiff is sewn into the lining.',
+      again: 'The scarf on its stick. The stiff fold in the lining.',
+      options: [
+        { id: 'ash.scarf.read', text: '(Unpick it and read it.)', next: 'scarf_read' },
+        { id: 'ash.scarf.leave', text: '(Leave it.)', effects: [{ set: 'ash_scarf_left' }], exit: true },
+      ],
+    },
+    scarf_read: {
+      speaker: 'narrator',
+      text: 'Pencil, no seal, no name, one line: IF THE ONE FROM THE CISTERN\'S HATCH TAKES THE SASH, THE SKY IS OWED. When you look up he is at the edge of the light with the water still on his hands.',
+      again: 'The paper in your hand. Ash at the edge of the light.',
+      effects: [{ set: 'ash_orders_known' }, { set: 'ash_orders_how', value: 'found' }, { learn: 'ash_unwritten' }, { approval: { companion: ASH, by: -10 } }],
+      options: [
+        { id: 'ash.scarf.should', text: 'You should have told me.', next: 'scarf_should' },
+        { id: 'ash.scarf.sorry', text: 'I\'m sorry. I had to know.', next: 'scarf_sorry' },
+      ],
+    },
+    scarf_should: { text: '"I should." He sits, and takes the paper out of your hand, gently. "There\'s a weight to being found out, friend. It\'s lighter than I thought, and worse."', again: '"Lighter, and worse," he says.', options: [{ id: 'ash.scarf.should.on', text: '(Wait.)', next: 'scarf_explain' }] },
+    scarf_sorry: { text: '"You\'re not. You had to know. That I\'ll take."', again: '"That I\'ll take," he says.', options: [{ id: 'ash.scarf.sorry.on', text: '(Wait.)', next: 'scarf_explain' }] },
+    scarf_explain: {
+      text: '"I\'m Unwritten. Sworn: no name, no likeness. When a name on Petra\'s board takes its forecast like a coat, one of us sees it doesn\'t get to finish." He holds the paper up to the fire, and doesn\'t put it in. "That came to Openfield the week before you did."',
+      again: 'The paper held to the fire, and not put in.',
+      options: [{ id: 'ash.scarf.explain.on', text: '(Wait.)', next: 'stance' }],
+    },
+    stance: {
+      text: '"So." He puts the paper back in the lining. "The city has a sash with your face on it, and I have a letter with your face on it. What are you going to do about yours?"',
+      again: '"What are you going to do about yours?" he says again.',
+      options: [
+        { id: 'ash.stance.never', text: 'I won\'t wear it.', effects: [{ set: 'ash_stance', value: 'never' }, { approval: { companion: ASH, by: 5 } }], next: 'stance_never' },
+        { id: 'ash.stance.knowing', text: 'If I wear it, I\'ll wear it knowing what it is.', effects: [{ set: 'ash_stance', value: 'knowing' }], next: 'stance_knowing' },
+        { id: 'ash.stance.clean', text: 'If it comes to that, make it clean.', effects: [{ set: 'ash_stance', value: 'clean' }, { approval: { companion: ASH, by: -10 } }], next: 'stance_clean' },
+      ],
+    },
+    stance_never: { text: '"Then the letter\'s only paper." He sews the lining shut with three stitches. "I\'ll keep it anyway. Paper has a way of coming true round here."', again: '"Only paper," he says.', options: [{ text: 'Rest.', exit: true }] },
+    stance_knowing: { text: '"That\'s the answer of somebody who might." He nods. "Honest. I\'ll take honest."', again: '"Honest," he says again.', options: [{ text: 'Rest.', exit: true }] },
+    stance_clean: { text: 'He is quiet for a long time. "Don\'t ever say that to me again, friend," he says at last. "I might listen."', again: 'He is still quiet. He has not forgiven you the sentence.', options: [{ text: 'Rest.', exit: true }] },
+
+    // Stage 4 (one of the city's own lines has run its course): what he chooses.
+    choice: {
+      text: [
+        { if: { flag: 'ash_cup_lied' }, text: '"I asked the sky about you last night." He has the letter out of the lining; he has had it out for days. "It didn\'t answer. It never does; that\'s why I trust it. So I\'ll ask you, and you lied to me once about a cup, so I\'ll be listening hard." He holds the letter over the coals. "If the city gives you the sash, will you wear it?"' },
+        { text: '"I asked the sky about you last night." He has the letter out of the lining; he has had it out for days. "It didn\'t answer. It never does; that\'s why I trust it. So I\'ll ask you, and whatever you say I\'ll believe, because you\'ve not lied to me yet." He holds the letter over the coals. "If the city gives you the sash, will you wear it?"' },
+      ],
+      again: 'The letter over the coals. He is waiting for an answer.',
+      options: [
+        { id: 'ash.choice.no', text: 'No. Burn it.', if: ASH_BAND(40), next: 'choice_friend' },
+        { id: 'ash.choice.no.low', text: 'No. Burn it.', if: { approval: { companion: ASH, lte: 39 } }, next: 'choice_doubt' },
+        { id: 'ash.choice.unsure', text: 'I don\'t know yet. I won\'t lie to you about it.', next: 'choice_warned' },
+        { id: 'ash.choice.inside', text: 'If it\'s the only way to change it from inside, yes.', next: 'choice_inside' },
+        { id: 'ash.choice.other', text: 'There are names on Petra\'s board who wear theirs gladly. Let it fall on them.', next: 'choice_other' },
+      ],
+    },
+    choice_friend: {
+      text: 'He puts the letter in the fire and watches it go, the whole of it, until the pencil is gone and the paper is gone and there is only the fire, which is honest. "{name}," he says. It is the first time he has used it. "I chose. Not the sky; it doesn\'t. Me. That\'s the first thing I\'ve chosen since the Gully that wasn\'t a match or a spade." He sits back. "Whatever they send next, they send through me."',
+      again: 'Only the fire, where the letter was.',
+      effects: [{ set: 'ash_orders', value: 'refused' }, { approval: { companion: ASH, by: 10 } }, { decision: { id: 'ash_orders', text: 'Brother Ash burned the letter with your face in it, and called you by your name.' } }, { xp: 150 }],
+      options: [{ text: 'Rest.', exit: true }],
+    },
+    choice_doubt: {
+      text: '"I want to believe that." He keeps the letter. "Ask me again when I do. Until then, if it ever comes to it, I\'ll come to you first, to your face. That I can promise."',
+      again: '"To your face," he says. "That I can promise."',
+      effects: [{ set: 'ash_orders', value: 'warned' }, { decision: { id: 'ash_orders', text: 'Brother Ash kept the letter, and promised to come to you first if it ever came to it.' } }],
+      options: [{ text: 'Rest.', exit: true }],
+    },
+    choice_warned: {
+      text: '"Then if it comes to it, I\'ll come to you first, to your face, before I do anything at all." He puts the letter away. "That\'s the most I can promise, friend. It\'s more than I promised them."',
+      again: '"More than I promised them," he says.',
+      effects: [{ set: 'ash_orders', value: 'warned' }, { approval: { companion: ASH, by: 5 } }, { decision: { id: 'ash_orders', text: 'Brother Ash kept the letter, and promised to come to you first if it ever came to it.' } }],
+      options: [{ text: 'Rest.', exit: true }],
+    },
+    choice_inside: {
+      text: '"From inside." He turns that over the way he turns soil. "Then I\'ll be there when you put it on. Whether I\'m there as your friend or as theirs, I\'ll know by then. So will you."',
+      again: '"I\'ll know by then," he says. "So will you."',
+      effects: [{ set: 'ash_orders', value: 'undecided' }, { decision: { id: 'ash_orders', text: 'Brother Ash kept the letter: he will be there if you take the sash, as your friend or as theirs.' } }],
+      options: [{ text: 'Rest.', exit: true }],
+    },
+    choice_other: {
+      text: 'He looks at you a long time. "You\'re asking me to pick one of them and do it, so I don\'t have to do it to you." The letter goes back in the lining. "I might, friend. That\'s what frightens me. That I might, and like it."',
+      again: '"That I might," he says, "and like it."',
+      effects: [{ set: 'ash_orders', value: 'other' }, { approval: { companion: ASH, by: -10 } }, { decision: { id: 'ash_orders', text: 'You told Brother Ash to let his orders fall on other names. He did not say no.' } }],
+      options: [{ text: 'Rest.', exit: true }],
+    },
+
+    // The red line, said out loud before it is crossed.
+    card: {
+      text: [
+        { if: { member: 'tollmen' }, text: '"The guild\'s ticket." He has it in his fingers by the fire; you didn\'t see him pick it up. "A ticket\'s a door, friend. I don\'t mind doors." He hands it back. "The notch they cut in it for a hand is a side. So is the city\'s grey. You put a stone on a cairn at the windpump. If you take either of those after it, I walk. I\'m telling you now so it isn\'t a trick later."' },
+        { text: '"A city card." He has it in his fingers by the fire; you didn\'t see him pick it up. "A card\'s a door, friend. I don\'t mind doors." He hands it back. "Their grey is a side. So is the notch the guild cuts in a ticket for a hand. You put a stone on a cairn at the windpump. If you take either of those after it, I walk. I\'m telling you now so it isn\'t a trick later."' },
+      ],
+      again: 'Your papers back in your hand. He has said it.',
+      effects: [{ set: 'ash_card_done' }],
+      options: [
+        { id: 'ash.card.ok', text: 'Understood.', exit: true },
+        { id: 'ash.card.threat', text: 'That sounds like a threat.', next: 'card_threat' },
+      ],
+    },
+    card_threat: { text: '"It\'s a weather report." He feeds the fire. "Threats are for people who want something from you. I only want to know where I\'m standing."', again: '"A weather report," he says.', options: [{ text: 'Rest.', exit: true }] },
+
+    // Lighter talk at the fire: soil, Mason, the boy, the city.
+    soil: {
+      text: '"Depends what you\'re asking it for." He picks up a handful of whatever you\'re camped on and smells it. "This is glass-crust over old clay. Sour. You\'d want ash in it — wood ash, not the other kind — and blood meal if you\'d a goat to spare, and honestly three years of somebody pissing on the same corner, which is what Openfield\'s north field was before it was a field — "',
+      again: 'The handful of soil, still in his fist.',
+      effects: [{ set: 'ash_soil_done' }],
+      options: [
+        { id: 'ash.soil.on', text: '(Let him go on.)', effects: [{ approval: { companion: ASH, by: 3 } }], next: 'soil_on' },
+        { id: 'ash.soil.stop', text: 'Ash. You\'re doing it again.', next: 'soil_stop' },
+      ],
+    },
+    soil_on: { text: 'He goes on. Worms, and what the Burn did to them, and the year the Choir tried pigeon dung, and why you never plant tomato where tomato was. It takes the rest of the fire, and at the end of it he looks almost young. "Mason says it\'s the only time I\'m happy," he says, "and he hasn\'t the heart to stop me."', again: 'He has stopped. He looks almost young.', options: [{ id: 'ash.soil.on.on', text: '(Go on.)', next: 'camp' }] },
+    soil_stop: { text: '"I am." He grins, which you have not seen him do. "Mason says the same."', again: 'The grin, going.', options: [{ id: 'ash.soil.stop.on', text: '(Go on.)', next: 'camp' }] },
+    mason: { text: '"He gave me a spade and didn\'t ask what the other thing was." Ash looks west. "A year before I sang, and he never once asked me to. Whatever I am now that\'s worth anything, he dug out of me a row at a time." A beat. "He loves that blight more than he should. Something to solve that isn\'t a person."', again: '"A row at a time," he says.', effects: [{ set: 'ash_mason_done' }], options: [{ id: 'ash.mason.on', text: '(Go on.)', next: 'camp' }] },
+    tobias_exposed: { text: '"You told his father." He nods slowly. "That\'s the hard honest way. The old man will hate you for it a season. Then he won\'t."', again: '"A season," he says.', effects: [{ set: 'ash_tobias_done' }], options: [{ id: 'ash.tobias.ex.on', text: '(Go on.)', next: 'camp' }] },
+    tobias_mercy: { text: '"You let a boy stop without a crowd watching." He turns a coal. "That\'s how soil does it, friend. Quiet, and the next year something grows."', again: '"Quiet," he says.', effects: [{ set: 'ash_tobias_done' }, { approval: { companion: ASH, by: 5 } }], options: [{ id: 'ash.tobias.mercy.on', text: '(Go on.)', next: 'camp' }] },
+    tobias_unwritten: { text: '"You gave him to Petra\'s cellar." He doesn\'t look up. "I know what they ask a man down there. They ask whether he can kill. If he says yes, they keep him."', again: '"If he says yes," he says, and leaves it.', effects: [{ set: 'ash_tobias_done' }, { approval: { companion: ASH, by: -5 } }], options: [{ id: 'ash.tobias.unw.on', text: '(Go on.)', next: 'camp' }] },
+    kessler: {
+      text: [
+        { if: { dead: 'npc_rd_01' }, text: '"Kessler\'s dead, they say." He is quiet a while. "I knew him when his father ran the Dogs and he was the boy who did the sums. He was at the Gully. Not in it; on the ridge, counting. He never looked at me after. I never made him."' },
+        { text: '"I knew him when his father ran the Dogs and he was the boy who did the sums. He was at the Gully. Not in it; on the ridge, counting." He feeds the fire. "He won\'t look at me. I won\'t make him."' },
+      ],
+      again: '"On the ridge, counting," he says.',
+      effects: [{ set: 'ash_kessler_done' }],
+      options: [{ id: 'ash.kessler.on', text: '(Go on.)', next: 'camp' }],
+    },
+    sem: { text: '"His mother brings water to the stones still. Pours it out where he is." He looks at his hands. "Six. First the trough took. The trough\'s clean now; you did that. It doesn\'t bring him up, and she knows it, and she pours it anyway." A beat. "I say his name while I dig. The Choir says no names on stones. It doesn\'t say anything about spades."', again: '"Sem," he says, once, under his breath.', effects: [{ set: 'ash_sem_done' }], options: [{ id: 'ash.sem.on', text: '(Go on.)', next: 'camp' }] },
+    city: { text: '"A city that writes everyone down and calls it keeping them." He looks toward the Wall. "Every name in a book, and not one of them buried right."', again: '"Not one of them buried right," he says.', effects: [{ set: 'ash_city_done' }], options: [{ id: 'ash.city.on', text: '(Go on.)', next: 'camp' }] },
+    close: { text: '"Friend." He doesn\'t move away, and he doesn\'t move closer. "I made a promise to a sky that doesn\'t hear promises. That one\'s in it too. It isn\'t you." He passes you the water. "Sit there. That\'s near enough to be a good thing."', again: 'The water between you. Near enough.', effects: [{ set: 'ash_close_done' }], options: [{ id: 'ash.close.on', text: '(Stay where you are.)', next: 'camp' }] },
+
+    // The break, the red line and the floor: scenes where he leaves; below the floor, once, digging brings him back.
+    cup: {
+      text: [
+        { if: { flag: 'ash_saw_cup' }, text: '"I saw your sleeve at the toast, friend." He has not said a word to you since the terrace; now he does, to the fire. "I know what was in the cup. I want to hear why."' },
+        { text: '"The woman in the Crown took ill at her own toast." He is looking at the fire, not at you. "Was it you, friend?"' },
+      ],
+      again: 'He is still looking at the fire. He is still waiting.',
+      effects: [{ set: 'ash_cup_done' }],
+      options: [
+        { id: 'ash.cup.chair', text: 'Yes. It settled the Chair.', next: 'cup_leave' },
+        { id: 'ash.cup.asked', text: 'Yes. Someone wanted it done, and I did it.', next: 'cup_leave' },
+        { id: 'ash.cup.reason', text: 'Yes. She was selling the city\'s forecasts to the Concern.', effects: [{ set: 'ash_cup_reason' }, { approval: { companion: ASH, by: -20 } }], next: 'cup_reason' },
+        { id: 'ash.cup.lie', text: 'No.', effects: [{ set: 'ash_cup_lied' }, { approval: { companion: ASH, by: -25 } }], next: 'cup_lie' },
+      ],
+    },
+    cup_leave: {
+      text: 'He says it back to you slowly, as if he were counting it. "A name off Petra\'s board, in a cup, for that." He stands and takes the shotgun. "I\'ve carried the wish to do that for four years and been afraid of how easy it would be. Now I\'ve seen how easy it looks from outside. I can\'t walk next to it, friend. I\'d start to learn it." He goes west, walking, and does not come back.',
+      again: 'The place by the fire where he sat.',
+      effects: [{ leave: ASH }, { set: 'ash_gone' }, { set: 'ash_broke' }, { approval: { companion: ASH, by: -40 } }, { decision: { id: 'ash_left', text: 'Brother Ash left you over what was in Celestine Vane\'s cup.' } }],
+      options: [{ text: '(Let him go.)', exit: true }],
+    },
+    cup_reason: { text: '"That\'s the Unwritten\'s sum," he says, "in your mouth." He is quiet a long time. "I know that sum. I\'ve carried it four years, waiting to be asked to do it. You did it at a party." He feeds the fire a stick. "I\'m staying. Don\'t ask me what for; I don\'t know yet."', again: '"I don\'t know yet," he says, to the fire.', options: [{ text: 'Rest.', exit: true }] },
+    cup_lie: { text: '"The fire heard that, friend." He feeds it a stick, and doesn\'t say anything else, and doesn\'t need to.', again: 'He feeds the fire. He doesn\'t say anything.', options: [{ text: 'Rest.', exit: true }] },
+    redline: {
+      text: [
+        { if: { flag: 'ash_saw_cut' }, text: '"A tenth," he says. "Of the Choir\'s seed. Out of the store the orchard kids are fed from first." He picks up the shotgun. "I said I don\'t go east with a stranger. I did once. I won\'t twice." He goes west, toward Openfield, walking, and does not come back.' },
+        { text: '"You put a stone on a cairn at the windpump," he says, "and now you\'ve taken their side of it. I told you I\'d walk." He picks up the shotgun. "I said I don\'t go east with a stranger. I did once. I won\'t twice." He goes west, toward Openfield, walking, and does not come back.' },
+      ],
+      again: 'The place by the fire where he sat.',
+      effects: [{ leave: ASH }, { set: 'ash_gone' }, { set: 'ash_redline' }, { approval: { companion: ASH, by: -50 } }, { decision: { id: 'ash_left', text: 'Brother Ash left you for turning on the Choir.' } }],
+      options: [{ text: '(Let him go.)', exit: true }],
+    },
+    floor: {
+      text: '"There\'s a weight to walking with you, friend, and it\'s the wrong kind." He says it without heat. "I\'m going back to the burial ground. There\'s always digging. If you want me, you know which end of the spade I\'ll be on."',
+      again: 'He is already shouldering the shotgun.',
+      effects: [{ leave: ASH }, { set: 'ash_left' }, { decision: { id: 'ash_left', text: 'Brother Ash went back to Openfield\'s burial ground: walking with you had become the wrong kind of weight.' } }],
+      options: [{ text: '(Let him go.)', exit: true }],
+    },
+    floor_final: {
+      text: '"Twice, friend." He shoulders the shotgun. "The sky forgives everything. I\'m not the sky." He goes, and that is the last of it.',
+      again: 'The road west, and nobody on it.',
+      effects: [{ leave: ASH }, { set: 'ash_gone' }, { decision: { id: 'ash_gone', text: 'Brother Ash left you a second time, and will not walk with you again.' } }],
+      options: [{ text: '(Let him go.)', exit: true }],
+    },
+    left: {
+      text: 'He is digging. He doesn\'t stop. "Friend."',
+      again: 'The spade goes in and comes out. He doesn\'t stop.',
+      options: [
+        { id: 'ash.left.dig', text: '(Pick up the other spade and dig the row with him.)', effects: [{ time: 120 }], next: 'left_dig' },
+        { text: '(Leave him to it.)', exit: true },
+      ],
+    },
+    left_dig: {
+      text: 'Two hours, and a row of cairn-stones set straight, and neither of you says anything, because you finish a row. At the end of it he leans on the spade.',
+      again: 'The row is finished. He leans on the spade and waits for whatever you came to say.',
+      options: [
+        { id: 'ash.left.ask', text: 'Come east again.', check: { skill: 'speech', dc: 40, mods: [{ if: { flag: 'ash_gully_outcome', eq: 'spoken' }, dc: -10, why: 'you stood beside him at the seed store' }, { if: { flag: 'sky_rite' }, dc: -5, why: 'you raised a cairn here' }] }, effects: [{ join: ASH }, { set: 'ash_won_back' }, { set: 'ash_left', value: false }, { approval: { companion: ASH, by: 40 } }], next: 'left_back', fail: 'left_no' },
+        { text: '(Go.)', exit: true },
+      ],
+    },
+    left_back: { text: '"Once more." He puts the spade where the next person will find it. "That\'s the most I\'ve got, friend. Use it well."', again: '"Once more," he says.', options: [{ text: '(Go.)', exit: true }] },
+    left_no: { text: '"Not yet." He goes back to the row. "Dig with me again some time. It\'s the only argument I listen to."', again: '"Not yet," he says, digging.', options: [{ text: '(Go.)', exit: true }] },
+    gone: { text: 'He is digging, and does not look up, and the shotgun is across his back.', again: 'He does not look up.', options: [{ text: '(Walk on.)', exit: true }] },
   },
 };
 
@@ -430,7 +817,11 @@ export const d_of_doria: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Counted at dusk." She counts.', again: 'She finishes a column on the tally and looks up.', options: [{ id: 'doria.keys.again', text: 'Who has keys?', if: { not: { seen: 'doria.keys' } }, next: 'keys' }, { id: 'doria.chaff.again', text: 'Let them keep stealing. Give them dead seed.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }, { not: { item: 'k_chaff' } }] }, next: 'chaff' }, { id: 'doria.hollin.again', text: 'It\'s Ishan.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, next: 'hollin' }, bye] },
+    again: { text: [
+      { if: { flag: 'ash_gully_outcome', eq: 'spoken' }, text: '"Counted at dusk." She counts. Then, without looking up: "Nineteen. He said every one back to me. When he comes through again, I\'ll check his count."' },
+      { if: { flag: 'ash_gully_outcome', eq: 'told' }, text: '"Counted at dusk." She counts, and does not look toward the burial ground, where somebody is digging.' },
+      { text: '"Counted at dusk." She counts.' },
+    ], again: 'She finishes a column on the tally and looks up.', options: [{ id: 'doria.keys.again', text: 'Who has keys?', if: { not: { seen: 'doria.keys' } }, next: 'keys' }, { id: 'doria.chaff.again', text: 'Let them keep stealing. Give them dead seed.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }, { not: { item: 'k_chaff' } }] }, next: 'chaff' }, { id: 'doria.hollin.again', text: 'It\'s Ishan.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, next: 'hollin' }, bye] },
     keys: { text: '"Three. Mine. The Elder\'s. The yard\'s, for the planting mornings." She stops. "Ishan has the yard\'s. He came from the Sump with nothing and the Elder gave him the yard, and I have been not thinking that for six days."', effects: [{ learn: 'of_seed_yard_key' }, { learn: 'of_seed_hollin_hint' }], options: [bye] },
     chaff: {
       text: '"Dead seed." She almost smiles. "Last year\'s, boiled and dried. Looks right, weighs right, grows nothing. Chaff with manners." She looks at the crates. "If the guild is buying our seed for somebody east, I would like that somebody to plant a field of nothing and wait a season for it."',
@@ -440,11 +831,18 @@ export const d_of_doria: DialogueDef = {
       ],
     },
     chaff_made: { text: 'Three hours over the stove, and a crate of seed that will fool anyone but the ground. "Put it in the row he takes from," Doria says. "Or sell it to the guild\'s man yourself and keep the coin; I don\'t mind which, as long as it\'s ours they plant nothing with."', options: [{ id: 'doria.chaff.place', text: '(Put it where Ishan takes from.)', effects: [{ take: 'k_chaff' }, { set: 'of_seed_outcome', value: 'chaff' }, { time: 60 }, { xp: 100 }], next: 'chaff_done' }, { text: 'I\'ll sell it to him myself.', exit: true }] },
-    chaff_done: { text: 'Over the next nights the crates walk as before, and the guild\'s man pays as before, and on the seventh morning he leaves with six crates on a mule and a receipt, going east to a client who will plant a field of manners and wait. Doria laughs, once, and then sits down and sleeps in the store for the first time in a fortnight.', options: [bye] },
+    chaff_done: { interject: [
+      { companion: ODILE, text: '"A field of manners," Odile says, delighted, "planted by a client east of the Teeth, at a future\'s price." She lifts a glass she hasn\'t got to Doria. "I\'ve never seen the floor short itself so beautifully."', effects: [{ approval: { companion: ODILE, by: 10 } }] },
+      { companion: ASH, text: '"Chaff with manners," Ash says. "The ground\'ll have the last word. It usually does."', effects: [{ approval: { companion: ASH, by: 5 } }] },
+    ], text: 'Over the next nights the crates walk as before, and the guild\'s man pays as before, and on the seventh morning he leaves with six crates on a mule and a receipt, going east to a client who will plant a field of manners and wait. Doria laughs, once, and then sits down and sleeps in the store for the first time in a fortnight.', options: [bye] },
     chaff_no: { text: 'The seed boils to glue. Doria looks at the pot and at you and says nothing, which is kind.', options: [bye] },
     hollin: { text: 'She does not look surprised; she looks tired. "Tell the Elder. I can\'t." She turns the tally over. "He\'ll give Ishan the night watch over the store he stole from. That\'s the Choir\'s way. It\'s worse than the track and he\'ll stay, which is the point."', options: [{ id: 'doria.tell', text: '(Tell the Elder.)', effects: [{ set: 'of_seed_outcome', value: 'exposed' }, { xp: 80 }, { decision: { id: 'of_seed_exposed', text: 'You told Openfield that its yard hand was selling the Choir\'s seed to the guild.' } }], next: 'told' }, { text: 'Not yet.', exit: true }] },
     told: { text: 'The Elder hears it, and goes to the yard, and comes back without having raised his voice, and Ishan Kadam stands watch over the seed store every night from then on with a lantern and nobody to talk to. The guild\'s man is gone by morning.', options: [bye] },
-    after: { text: '"Fourteen at dusk. Fourteen at dawn." She sleeps now.', again: '"Fourteen." She says it like a prayer the Choir doesn\'t have.', options: [bye] },
+    after: { text: [
+      { if: { flag: 'ash_gully_outcome', eq: 'spoken' }, text: '"Fourteen at dusk. Fourteen at dawn." She sleeps now. "And nineteen, the other count," she says. "When he comes through, I check it."' },
+      { if: { flag: 'ash_gully_outcome', eq: 'told' }, text: '"Fourteen at dusk. Fourteen at dawn." She does not look toward the burial ground. She does not ask after the man who digs there.' },
+      { text: '"Fourteen at dusk. Fourteen at dawn." She sleeps now.' },
+    ], again: '"Fourteen." She says it like a prayer the Choir doesn\'t have.', options: [bye] },
   },
 };
 
@@ -487,13 +885,18 @@ export const d_of_hollin: DialogueDef = {
       again: 'Still on the crate, hands on his knees. The sum is still not read.',
       options: [
         { id: 'hollin.stop', text: 'Stop. Tell the guild\'s man it\'s over. I say nothing.', effects: [{ set: 'of_seed_outcome', value: 'corso_gone' }, { set: 'of_corso_gone' }, { trust: { npc: 'npc_of_08', by: 30 } }, { xp: 80 }, { decision: { id: 'of_hollin_spared', text: 'You let Openfield\'s yard hand stop stealing seed without telling the Choir.' } }], next: 'stopped' },
-        { id: 'hollin.cut', text: 'Keep going. A tenth of every crate\'s coin comes to me.', effects: [{ set: 'of_seed_outcome', value: 'cut' }, { give: 'tolls', count: 12 }], next: 'cut' },
+        { id: 'hollin.cut', text: 'Keep going. A tenth of every crate\'s coin comes to me.', if: { not: ASH_IN }, effects: [{ set: 'of_seed_outcome', value: 'cut' }, { give: 'tolls', count: 12 }], next: 'cut' },
+        { id: 'hollin.cut.ash', text: 'Keep going. A tenth of every crate\'s coin comes to me.', if: ASH_IN, effects: [{ set: 'of_seed_outcome', value: 'cut' }, { give: 'tolls', count: 12 }, { set: 'ash_saw_cut' }], next: 'cut' },
         { id: 'hollin.tell', text: 'The Elder hears it.', effects: [{ set: 'of_seed_outcome', value: 'exposed' }, { set: 'of_corso_gone' }, { decision: { id: 'of_seed_exposed', text: 'You told Openfield that its yard hand was selling the Choir\'s seed to the guild.' } }, { xp: 80 }], next: 'told' },
         { text: '(Not yet.)', exit: true },
       ],
     },
     stopped: { text: 'He goes down the lane that evening and says something short to the guild\'s man, and the guild\'s man looks at you across the green, and is gone by morning with his tent and his paper. Ishan keeps the yard, and the key, and the look of a man let off once.', options: [bye] },
-    cut: { text: 'Twelve Tolls, warm from his neck. "A tenth," he says, and the thing that was in his face when he sat down on the crate goes somewhere and does not come back. The crates walk. Doria counts.', interject: [{ companion: TAMSIN, text: '"A tenth," Tamsin says. "Of seed. From people who feed the orchard kids first." She doesn\'t laugh, and she doesn\'t look at the coins.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] }], options: [bye] },
+    cut: { text: 'Twelve Tolls, warm from his neck. "A tenth," he says, and the thing that was in his face when he sat down on the crate goes somewhere and does not come back. The crates walk. Doria counts.', interject: [
+      { companion: TAMSIN, text: '"A tenth," Tamsin says. "Of seed. From people who feed the orchard kids first." She doesn\'t laugh, and she doesn\'t look at the coins.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] },
+      { companion: ASH, text: 'Ash says nothing at all. He looks at the coins, and at the store where Doria counts, and at you, and puts it somewhere you will hear about later.' },
+      { companion: ODILE, text: '"A tenth of a crate," Odile says. "I\'ve been paid worse for worse, my dear, but never by a farm."', effects: [{ approval: { companion: ODILE, by: -5 } }] },
+    ], options: [bye] },
     told: { text: 'He does not run. He goes to the Elder himself, which is more than you expected, and the Elder gives him the night watch over the store he stole from, which is the Choir\'s way, and he takes it.', options: [bye] },
     watch: { text: 'He stands at the store door with a lantern every night now, and nobody talks to him, and he has not left.', again: 'Ishan, the lantern, the store door. Nobody talks to him.', options: [{ text: '(Leave him.)', exit: true }] },
     after: { text: '"Yard." He does not look at you, which is how he thanks you, or doesn\'t.', again: 'He doesn\'t look up from the yard.', options: [bye] },
@@ -515,12 +918,19 @@ export const d_of_corso: DialogueDef = {
       ],
     },
     again: { text: '"Factor\'s hand. Still buying."', again: 'He turns a page of the ledger and waits, paid by the day.', options: [{ id: 'corso.seed.again', text: 'You\'re buying seed by night.', if: { not: { seen: 'corso.seed' } }, check: { skill: 'barter', dc: 35, mods: [{ if: { knows: 'of_seed_hollin' }, dc: -15, why: 'you can name his carrier' }] }, next: 'seed_ok', fail: 'seed_no' }, { id: 'corso.leave', text: 'Pack the tent. Tonight.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, check: { skill: 'speech', dc: 40, mods: [{ if: { rep: { faction: 'tollmen', fear: 10 } }, dc: -15, why: 'the guild has heard of you' }] }, next: 'leave_ok', fail: 'leave_no' }, { id: 'corso.cut.again', text: 'I want a tenth of what you pay the yard.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, effects: [{ set: 'of_seed_outcome', value: 'cut' }, { give: 'tolls', count: 20 }], next: 'cut' }, { id: 'corso.chaff.again', text: 'I\'ve a crate for you. Choir seed, the good rows.', if: { all: [{ item: 'k_chaff' }, { not: { flag: 'of_seed_outcome' } }] }, next: 'chaff' }, { id: 'corso.future.again', text: 'What does the guild know about this harvest?', if: { not: { seen: 'corso.future' } }, next: 'future' }, bye] },
-    seed_ok: { text: 'He does not deny it; the guild never does, it is too dear. "Viable seed is a future in a smaller box. A client of Factor Pike\'s pays very well for it, east of the Teeth, and the yard boy pays very little for carrying it." He opens the ledger. "Twelve a crate. Six crates. If you\'d like a tenth for your silence, that\'s a rate too."', effects: [{ lead: 'l_seed_corso' }, { learn: 'of_seed_hollin' }, { learn: 'of_corso_admits' }], options: [{ id: 'corso.cut', text: 'A tenth, then.', effects: [{ set: 'of_seed_outcome', value: 'cut' }, { give: 'tolls', count: 20 }], next: 'cut' }, { id: 'corso.leave.now', text: 'Pack the tent. Tonight.', check: { skill: 'speech', dc: 40, mods: [{ if: { rep: { faction: 'tollmen', fear: 10 } }, dc: -15, why: 'the guild has heard of you' }] }, next: 'leave_ok', fail: 'leave_no' }, { text: 'I\'ll think about it.', exit: true }] },
+    seed_ok: { text: 'He does not deny it; the guild never does, it is too dear. "Viable seed is a future in a smaller box. A client of Factor Pike\'s pays very well for it, east of the Teeth, and the yard boy pays very little for carrying it." He opens the ledger. "Twelve a crate. Six crates. If you\'d like a tenth for your silence, that\'s a rate too."', effects: [{ lead: 'l_seed_corso' }, { learn: 'of_seed_hollin' }, { learn: 'of_corso_admits' }], options: [{ id: 'corso.cut', text: 'A tenth, then.', if: { not: ASH_IN }, effects: [{ set: 'of_seed_outcome', value: 'cut' }, { give: 'tolls', count: 20 }], next: 'cut' }, { id: 'corso.cut.ash', text: 'A tenth, then.', if: ASH_IN, effects: [{ set: 'of_seed_outcome', value: 'cut' }, { give: 'tolls', count: 20 }, { set: 'ash_saw_cut' }], next: 'cut' }, { id: 'corso.leave.now', text: 'Pack the tent. Tonight.', check: { skill: 'speech', dc: 40, mods: [{ if: { rep: { faction: 'tollmen', fear: 10 } }, dc: -15, why: 'the guild has heard of you' }] }, next: 'leave_ok', fail: 'leave_no' }, { text: 'I\'ll think about it.', exit: true }] },
     seed_no: { text: '"I buy harvests, friend. In daylight, with paper." He smiles. "Ask the Elder if he\'s sold me one. He hasn\'t. Yet."', options: [bye] },
-    cut: { text: 'Twenty Tolls, counted on the ledger. "A pleasure. The guild likes a quiet lane." The crates walk. Doria counts.', interject: [{ companion: TAMSIN, text: '"A tenth," Tamsin says. "Of seed. From people who feed the orchard kids first." She doesn\'t laugh, and she doesn\'t look at the coins.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] }], effects: [{ rep: { faction: 'tollmen', respect: 5 } }, { decision: { id: 'of_seed_cut', text: 'You took a cut of the seed stolen from Openfield for the guild.' } }], options: [bye] },
+    cut: { text: 'Twenty Tolls, counted on the ledger. "A pleasure. The guild likes a quiet lane." The crates walk. Doria counts.', interject: [
+      { companion: TAMSIN, text: '"A tenth," Tamsin says. "Of seed. From people who feed the orchard kids first." She doesn\'t laugh, and she doesn\'t look at the coins.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] },
+      { companion: ASH, text: 'Ash says nothing at all. He looks at the coins, and at the store where Doria counts, and at you, and puts it somewhere you will hear about later.' },
+      { companion: ODILE, text: '"A tenth of a crate," Odile says. "I\'ve been paid worse for worse, my dear, but never by a farm."', effects: [{ approval: { companion: ODILE, by: -5 } }] },
+    ], effects: [{ rep: { faction: 'tollmen', respect: 5 } }, { decision: { id: 'of_seed_cut', text: 'You took a cut of the seed stolen from Openfield for the guild.' } }], options: [bye] },
     leave_ok: { text: 'He looks at you for a long moment, and at the Choir going about its evening behind you, and does the sum. "Six crates is a small future." He closes the ledger. "Tell the Elder the guild\'s offer stands. It always stands; that\'s what makes it an offer." The tent is gone by morning.', effects: [{ set: 'of_corso_gone' }, { set: 'of_seed_outcome', value: 'corso_gone' }, { rep: { faction: 'tollmen', respect: -3 } }, { xp: 80 }], options: [bye] },
     leave_no: { text: '"The lane is the Choir\'s. The tent is mine. The seed is whoever\'s carries it." He opens the ledger again. "Good evening."', options: [bye] },
-    chaff: { text: 'He weighs the crate with a factor\'s hand and does not open it, because the guild buys seals, not seed. "The good rows." Sixty Tolls, counted. "A pleasure doing business with the sky."', effects: [{ take: 'k_chaff' }, { give: 'tolls', count: 60 }, { set: 'of_seed_outcome', value: 'chaff' }, { set: 'of_corso_gone' }, { xp: 100 }, { decision: { id: 'of_chaff_sold', text: 'You sold the guild a crate of dead seed at Openfield for sixty Tolls.' } }], options: [bye] },
+    chaff: { text: 'He weighs the crate with a factor\'s hand and does not open it, because the guild buys seals, not seed. "The good rows." Sixty Tolls, counted. "A pleasure doing business with the sky."', interject: [
+      { companion: ODILE, text: 'Odile waits until the factor\'s hand is out of earshot, and then laughs until she has to take her glasses off. "He bought the seal," she says. "Oh, my dear. He bought the seal."', effects: [{ approval: { companion: ODILE, by: 10 } }] },
+      { companion: ASH, text: '"Chaff with manners," Ash says. "The ground\'ll have the last word. It usually does."', effects: [{ approval: { companion: ASH, by: 5 } }] },
+    ], effects: [{ take: 'k_chaff' }, { give: 'tolls', count: 60 }, { set: 'of_seed_outcome', value: 'chaff' }, { set: 'of_corso_gone' }, { xp: 100 }, { decision: { id: 'of_chaff_sold', text: 'You sold the guild a crate of dead seed at Openfield for sixty Tolls.' } }], options: [bye] },
     future: { text: '"That it will be large. The guild is seldom wrong about harvests." He says it pleasantly. "Which is why we\'d like to own it before it is."', effects: [{ learn: 'corso_harvest_large' }], options: [bye] },
   },
 };

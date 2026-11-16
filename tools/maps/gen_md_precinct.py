@@ -179,7 +179,7 @@ md_precinct = {
     },
     'npcs': [
         {'def': 'npc_md_01', 'x': 20, 'y': 14, 'facing': 0},
-        {'def': 'npc_md_nine', 'x': 33, 'y': 17, 'facing': 0, 'if': {'not': {'flag': 'nine_joined'}}},
+        {'def': 'npc_md_nine', 'x': 33, 'y': 17, 'facing': 0, 'if': {'any': [{'not': {'flag': 'nine_joined'}}, {'all': [{'flag': 'nine_left'}, {'not': {'inParty': 'npc_md_nine'}}]}]}},
         {'def': 'npc_md_12', 'x': 16, 'y': 29, 'facing': 3},
         {'def': 'npc_md_13', 'x': 17, 'y': 23, 'facing': 0},
         {'def': 'npc_md_14', 'x': 30, 'y': 40, 'facing': 0},

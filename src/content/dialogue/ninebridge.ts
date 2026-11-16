@@ -1,5 +1,6 @@
-import type { DialogueDef } from '../../engine/dialogue/dialogue';
+import type { DialogueDef, NodeDef } from '../../engine/dialogue/dialogue';
 import type { Cond, Effect } from '../../engine/world/logic';
+import { QUESTS } from '../quests';
 
 /**
  * Ninebridge: the guild's Exchange on the broken bridge. The toll at the sandbags, the porters sitting down
@@ -7,12 +8,13 @@ import type { Cond, Effect } from '../../engine/world/logic';
  * old trader with a tab who knows the hand on the map.
  */
 
-/** Companions who can cross Ninebridge with the player in Act 2 (U7 interjections): the three from the Sallow, and Odile once
- * she has left the Span with them. */
+/** Companions who can cross Ninebridge with the player in Act 2 (U7 interjections): the three from the Sallow, Odile once
+ * she has left the Span with them, and Ash on the road back west. */
 const TAMSIN = 'npc_c9_03';
 const WREN = 'npc_rd_03';
 const ILYA = 'npc_sh_17';
 const ODILE = 'npc_nb_03';
+const ASH = 'npc_of_03';
 
 const bye = { text: 'That\'s all.', exit: true };
 const NIGHT = { hour: { from: 23, to: 6 } };
@@ -157,6 +159,8 @@ export const d_nb_voss: DialogueDef = {
       interject: [
         { companion: TAMSIN, text: '"Off their page," Tamsin says under her breath, trying the words for size. Then she grins at the fire, all teeth. "Rust it. Off their page."', effects: [{ approval: { companion: TAMSIN, by: 5 } }] },
         { companion: ILYA, text: 'Ilya watches the paper go up into the firelight and counts the porters standing, under his breath, to forty. "Right," he says.' },
+        { companion: ODILE, text: '"Read aloud, a sealed sheet is worth nothing," Odile murmurs. "You\'ve just bankrupted a lot, my dear, in front of forty witnesses." She sounds as if she would like to buy you a drink.', effects: [{ approval: { companion: ODILE, by: 10 } }] },
+        { companion: ASH, text: '"Off their page," Ash says, and the porters\' fire is in his face. "There\'s a weight to that, friend. A good one."', effects: [{ approval: { companion: ASH, by: 5 } }] },
       ],
       effects: [{ take: 'k_strike_sheet' }, { set: 'nb_strike_sheet_given' }, { set: 'nb_strike_outcome', value: 'won' }, { set: 'nb_strike_over' }, { learn: 'nb_forecast_broken' }, { decision: { id: 'nb_strike_sheet', text: 'You gave the Ninebridge porters the guild\'s forecast of their defeat. They sat past the third day and won.' } }, { xp: 150 }, { time: 60 }],
       options: [{ text: '(Watch them sit.)', next: 'won_now' }],
@@ -174,12 +178,14 @@ export const d_nb_voss: DialogueDef = {
     pay: {
       text: 'He looks at the coin for a long time. "That\'s a day\'s tenth. One day." He does not take it yet. "If the guild sees a stranger pay what the bridge won\'t, either they match it or they\'re shamed in front of their own deck. The Grand Factor doesn\'t like to be seen. Try it."',
       options: [{ id: 'voss.pay.do', text: '(Put it in his hand.)', effects: [{ take: 'tolls', count: 60 }, { set: 'nb_strike_paid' }, { set: 'nb_strike_outcome', value: 'paid' }, { set: 'nb_strike_over' }, { time: 240 }, { decision: { id: 'nb_strike_paid', text: 'You paid the Ninebridge porters a day\'s tenth out of your own pocket and shamed the guild into matching it.' } }, { xp: 90 }], next: 'pay_done' }, { text: 'Keep it. For now.', exit: true }] },
-    pay_done: { text: 'By evening a board comes down the ramp with a rate painted on it, and a guild clerk with a face like a closed drawer to say the guild had always meant to. A tenth. Voss hands you back twelve of your sixty. "The first day\'s. Ours now."', effects: [{ give: 'tolls', count: 12 }], options: [bye] },
+    pay_done: { text: 'By evening a board comes down the ramp with a rate painted on it, and a guild clerk with a face like a closed drawer to say the guild had always meant to. A tenth. Voss hands you back twelve of your sixty. "The first day\'s. Ours now."', interject: [{ companion: ODILE, text: '"You paid a debt that wasn\'t yours," Odile says. "That\'s either saintly or very bad business. I\'ve never been able to tell the two apart."', effects: [{ approval: { companion: ODILE, by: 5 } }] }], effects: [{ give: 'tolls', count: 12 }], options: [bye] },
     break_ok: {
       text: 'You talk the way the guild talks, in numbers, and you do not raise your voice, and you describe the paper. Something goes out of the fire. Voss looks at the ramp for a long time. "Third day," he says. "Straps on." Forty people stand up slower than they sat down, and none of them look at you, which is its own kind of looking.',
       interject: [
         { companion: ILYA, text: 'Ilya says nothing until the last of them is on the ramp. "Right," he says then, and goes to stand at the parapet, where there is something else to count.', effects: [{ approval: { companion: ILYA, by: -5 } }] },
         { companion: TAMSIN, text: '"They looked at you like you were weather," Tamsin says. "The bad kind." For once it isn\'t a joke.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] },
+        { companion: ODILE, text: '"You talked like the floor," Odile says afterwards, not looking at you. "In numbers, without raising your voice. I taught a girl to do that once. I didn\'t like it then, either."', effects: [{ approval: { companion: ODILE, by: -10 } }] },
+        { companion: ASH, text: '"Friend," Ash says, watching the last of them go up the ramp, and nothing after it.', effects: [{ approval: { companion: ASH, by: -10 } }] },
       ],
       effects: [{ set: 'nb_strike_outcome', value: 'broken' }, { set: 'nb_strike_over' }, { set: 'nb_strike_broke' }, { decision: { id: 'nb_strike_broken', text: 'You talked the Ninebridge porters back up the ramp on the guild\'s terms.' } }, { rep: { faction: 'tollmen', respect: 8 } }, { memory: { npc: 'npc_nb_05', tag: 'broke_strike', valence: -40, strength: 90 } }, { time: 60 }],
       options: [{ text: '(Go and collect from the warden.)', exit: true }],
@@ -265,11 +271,107 @@ export const d_nb_berth_b: DialogueDef = {
 
 // ---------------------------------------------------------------- Odile
 
+// Odile's arc (U8): four talks at the fire, her sheet in the Grand Factor's paper room, a red line, a break and a floor.
+// Stages read the flags her own talks set; plan and approval ladder in story/U8_odile_SECRET.md.
+const OD_IN: Cond = { inParty: ODILE };
+const OD_FLOOR: Cond = { approval: { companion: ODILE, lte: -30 } };
+const OD_BAND = (gte: number): Cond => ({ approval: { companion: ODILE, gte } });
+/** Her sheet is still in the paper room and she is with you to fetch it. */
+const ROOM_ASK: Cond = { all: [OD_IN, { flag: 'odile_quest' }, { not: { flag: 'odile_room_done' } }] };
+/** The Grand Factor sleeps in her chair (her schedule: 21 to 8); the night route waits for her to be well under. */
+const SARR_ASLEEP = { hour: { from: 22, to: 7 } };
+/** One of Meridian's own lines settled (the Masque, High Water, Turf): the city has shown what it costs. */
+const MD_LINE: Cond = { any: [{ quest: 'q_cr_masque', status: 'done' }, { quest: 'q_sk_highwater', status: 'done' }, { quest: 'q_bw_turf', status: 'done' }] };
+/** Her line's journal (q_comp_odile) once that quest is registered; the flags carry the arc either way. */
+const ODILE_JOURNAL: Effect[] = QUESTS.q_comp_odile ? [{ quest: 'q_comp_odile', start: true }] : [];
+const SHEET_KEPT: Effect[] = [{ set: 'odile_sheet_held' }, { set: 'odile_archive', value: 'stands' }, { decision: { id: 'odile_sheet_held', text: 'Odile took her sheet on Shale out of the paper room at Ninebridge and left the room standing.' } }, { xp: 100 }];
+
+/** The paper room behind the Grand Factor's office, reached by day through her desk or by night past her chair. */
+const PAPER_ROOM: Record<string, NodeDef> = {
+  odroom: {
+    speaker: 'narrator',
+    text: 'The paper room is a second container welded behind the first, cold as a cellar, lined to the roof with pigeonholes of wax and paper in the order Odile taught the floor: by place, then by date. She goes to the S row without a lamp, and her hand finds it first time. SHALE — FAILS — and a date two springs off, in her own hand from when her hand was younger. She turns it over.',
+    again: 'The pigeonholes, by place, by date. Odile with the sheet turned over in the chrome hand.',
+    effects: [{ set: 'odile_room_done' }],
+    options: [{ id: 'odroom.back', text: '(Look at the back.)', next: 'odroom_back' }],
+  },
+  odroom_back: {
+    speaker: 'narrator',
+    text: [
+      { if: { knows: 'packet_water' }, text: 'Under the floor\'s stamp, BOUGHT FOR A CLIENT, the client has signed acceptance, and it is not a signature: a line of letters too even to be a hand, every one the same as the last. You have seen that hand once before, on a water schedule under the guild\'s wax. "Oh," Odile says. Only that.' },
+      { text: 'Under the floor\'s stamp, BOUGHT FOR A CLIENT, the client has signed acceptance, and it is not a signature: a line of letters too even to be a hand, every one the same as the last. "Oh," Odile says. Only that.' },
+    ],
+    again: 'BOUGHT FOR A CLIENT, and under it the hand that is not a hand.',
+    effects: [{ learn: 'odile_counterparty_seen' }],
+    options: [{ id: 'odroom.wait', text: '(Wait for her.)', next: 'odroom_lamp' }],
+  },
+  odroom_lamp: {
+    speaker: 'narrator',
+    text: 'She does not explain it. She puts the sheet inside her coat and looks up the rows instead, every town on the road filed by place and date, until her eyes stop at a frame by the door: NB-1, the first sheet the guild ever sold, in a younger hand that is also hers. A lamp hangs on the hook beside it. "One match, my dear," she says, quite lightly. "And nobody reads my name again. Or anybody else\'s."',
+    again: 'NB-1 in its frame. The lamp on its hook. Odile, not touching either.',
+    options: [
+      { id: 'odroom.stand', text: 'Leave it standing. It\'s the only record of who buys.', effects: [...SHEET_KEPT, { approval: { companion: ODILE, by: 10 } }], next: 'odroom_stand' },
+      { id: 'odroom.yours', text: 'It\'s your name. Your call.', if: OD_BAND(20), effects: [...SHEET_KEPT, { approval: { companion: ODILE, by: 5 } }], next: 'odroom_trust' },
+      { id: 'odroom.yours.low', text: 'It\'s your name. Your call.', if: { approval: { companion: ODILE, lte: 19 } }, effects: [...SHEET_KEPT, { set: 'odile_first_burned' }], next: 'odroom_first' },
+      { id: 'odroom.burn', text: 'Burn it. Every sheet in here is somebody sold.', next: 'odroom_no' },
+    ],
+  },
+  odroom_stand: {
+    speaker: 'narrator',
+    text: 'She hangs the lamp back on its hook without ever having lifted it. "You\'re right, and I hate it. That is the whole of good advice." NB-1 stays in its frame and the rest in their rows, and she walks out ahead of you with her own sheet against her ribs.',
+    again: 'The lamp back on its hook. NB-1 in its frame.',
+    options: [{ text: '(Go.)', exit: true }],
+  },
+  odroom_trust: {
+    speaker: 'narrator',
+    text: 'She looks at you for a moment as if you had paid her in a coin she did not recognise. Then she hangs the lamp back on its hook. "Nobody has ever let me choose a thing I was owed a say in. I\'d forgotten how heavy it is." NB-1 stays in its frame. Her sheet goes inside her coat.',
+    again: 'The lamp on its hook, unlit. NB-1 where it was.',
+    options: [{ text: '(Go.)', exit: true }],
+  },
+  odroom_first: {
+    speaker: 'narrator',
+    text: 'She takes NB-1 out of its frame, glass and tin and a sheet no bigger than a hand, folds it once, and feeds it to the lamp\'s chimney. It goes brown, and then it goes. Only that one. "That one was mine," she says. "The rest belong to the people on them." She hangs the lamp up. Her own sheet goes inside her coat.',
+    again: 'An empty frame by the door. The rest in their rows.',
+    options: [{ text: '(Go.)', exit: true }],
+  },
+  odroom_no: {
+    speaker: 'narrator',
+    text: '"No." She does not raise her voice; she puts her hand, the one that is hers, flat over the lamp\'s hook. "Not with my hand, my dear. Every sheet in here is somebody sold, yes. Every sheet in here also says who bought them. Burn the room and the buyers were never here." She does not move her hand.',
+    again: 'Her hand flat over the lamp\'s hook. She has not moved it.',
+    options: [
+      { id: 'odroom.leave', text: 'Then leave it.', effects: [...SHEET_KEPT, { approval: { companion: ODILE, by: -5 } }], next: 'odroom_left' },
+      { id: 'odroom.take', text: '(Take the lamp past her hand.)', next: 'odroom_burned' },
+    ],
+  },
+  odroom_left: {
+    speaker: 'narrator',
+    text: '"You asked. That is a cost; I\'ll carry it." She takes her hand off the hook. Her sheet goes inside her coat, and she walks out of the room ahead of you and does not look at the rows again.',
+    again: 'The rows, standing. Odile already outside.',
+    options: [{ text: '(Go.)', exit: true }],
+  },
+  odroom_burned: {
+    speaker: 'narrator',
+    text: 'Lamp oil on dry paper goes the way the Sallow goes in a dry year, all at once and then row by row, by place, by date. Odile stands in the doorway with her sheet in the chrome hand and watches the whole road burn, and does not try to stop you again. When the roof of the container begins to tick with the heat she says, "That was a cost," quite pleasantly, and walks down the deck toward the Span without looking back to see whether you follow.',
+    again: 'Smoke out of the welded seams, and the smell of wax.',
+    effects: [
+      { set: 'nb_archive_burned' }, { set: 'odile_archive', value: 'burned' }, { set: 'odile_gone' }, { leave: ODILE }, { approval: { companion: ODILE, by: -50 } },
+      { rep: { faction: 'tollmen', respect: -15, fear: 10 } }, { memory: { npc: 'npc_nb_01', tag: 'burned_my_room', valence: -60, strength: 100 } },
+      { decision: { id: 'nb_archive_burned', text: 'You burned the paper room behind the Grand Factor\'s office at Ninebridge, every sheet in it. Odile walked back to the Span without you.' } },
+      { news: { tag: 'nb_paper_burned', text: 'the paper room behind the Grand Factor\'s office burned with every sheet in it, and the floor sold nothing for a week', valence: 5, size: 8, at: 'ninebridge' } },
+    ],
+    options: [{ text: '(Let her go.)', exit: true }],
+  },
+};
+
 export const d_nb_odile: DialogueDef = {
   id: 'd_nb_odile', owner: 'npc_nb_03',
   start: [
-    { if: { all: [{ inParty: 'npc_nb_03' }, { flag: 'at_camp' }] }, node: 'camp' },
-    { if: { inParty: 'npc_nb_03' }, node: 'party' },
+    { if: { all: [OD_IN, OD_FLOOR, { flag: 'odile_won_back' }] }, node: 'floor_final' },
+    { if: { all: [OD_IN, OD_FLOOR] }, node: 'floor' },
+    { if: { all: [OD_IN, { flag: 'at_camp' }] }, node: 'camp' },
+    { if: OD_IN, node: 'party' },
+    { if: { flag: 'odile_gone' }, node: 'gone' },
+    { if: { all: [{ flag: 'odile_left' }, { not: { flag: 'odile_won_back' } }] }, node: 'left' },
     { if: { flag: 'odile_joined' }, node: 'waiting' },
     { if: { flag: 'odile_met' }, node: 'again' },
     { node: 'intro' },
@@ -356,21 +458,260 @@ export const d_nb_odile: DialogueDef = {
     },
     party_trade: { text: '"Not here. At a fire, with the map out, and nobody\'s ledger within a day\'s walk." She looks east. "I\'ll read you two names a night. You\'ll wish I read slower."', options: [{ text: 'Keep up.', exit: true }] },
     camp: {
-      text: [{ if: { knows: 'odile_read_two' }, text: 'She has the glasses on and the fire at her back, so the light falls on the cloth and not in her eyes. "The next two, then. Or let me rest them."' }, { text: 'She has the glasses on and your map weighted flat with a tin. "Two a night. Sit; this is slow, and I want you to see how it\'s done so that when I\'m gone you can do it badly yourself."' }],
+      text: [
+        { if: { flag: 'odile_price' }, text: 'She has the glasses off and the fire at her back, and for once she is not reading anything. "Sit, my dear. Nothing tonight costs."' },
+        { if: { all: [{ flag: 'odile_sheet_held' }, { not: { flag: 'odile_s2_done' } }, { approval: { companion: ODILE, lte: 14 } }] }, text: 'She has the sheet inside her coat and her hand flat on the coat, and she does not take it out while you are looking. "Sit. We\'ll talk about the weather. The ordinary kind."' },
+        { if: { knows: 'odile_read_two' }, text: 'She has the glasses on and the fire at her back, so the light falls on the cloth and not in her eyes. "The next two, then. Or let me rest them."' },
+        { text: 'She has the glasses on and your map weighted flat with a tin. "Two a night. Sit; this is slow, and I want you to see how it\'s done so that when I\'m gone you can do it badly yourself."' },
+      ],
+      again: 'She turns the chrome hand over on her knee, the way she turns a glass at the Span, and waits for the next thing.',
       options: [
         { id: 'odile.camp.read', text: '(Read two blocks with her.)', if: { all: [{ item: 'k_map' }, { not: { knows: 'odile_read_two' } }] }, next: 'read_two' },
-        { id: 'odile.camp.more', text: '(Read on.)', if: { knows: 'odile_read_two' }, next: 'read_more' },
+        { id: 'odile.camp.more', text: '(Read on.)', if: { all: [{ knows: 'odile_read_two' }, { not: { seen: 'odile.camp.more' } }] }, next: 'read_more' },
         { id: 'odile.camp.trade', text: 'The trade. Tell me now.', if: { not: { knows: 'odile_trade_told' } }, next: 'camp_trade' },
+        { id: 'odile.camp.hand', text: 'The back of the sheet. You haven\'t said a word about it.', if: { all: [{ flag: 'odile_sheet_held' }, { not: { flag: 'odile_s2_done' } }, OD_BAND(15)] }, next: 'hand' },
+        { id: 'odile.camp.city', text: 'You\'ve read the city\'s paper now. What is the sheet for?', if: { all: [{ flag: 'odile_s2_done' }, { flag: 'a2_precinct_done' }, { not: { flag: 'odile_sheet' } }, OD_BAND(20)] }, next: 'city' },
+        { id: 'odile.camp.price', text: 'You said once you had a price.', if: { all: [{ flag: 'odile_sheet' }, MD_LINE, { not: { flag: 'odile_price' } }, OD_BAND(25)] }, next: 'her_price' },
+        { id: 'odile.camp.shale.sold', text: 'Shale. You asked at the Span whether it was still there.', if: { all: [{ flag: 'dw_sold' }, { not: { flag: 'odile_shale_done' } }] }, next: 'shale_sold' },
+        { id: 'odile.camp.shale.drinks', text: 'Shale. You asked at the Span whether it was still there.', if: { all: [{ any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, { not: { flag: 'odile_shale_done' } }] }, next: 'shale_drinks' },
+        { id: 'odile.camp.shale.kept', text: 'Shale. You asked at the Span whether it was still there.', if: { all: [{ flag: 'dw_kept' }, { not: { flag: 'odile_shale_done' } }] }, next: 'shale_kept' },
+        { id: 'odile.camp.sarr', text: 'Imelda Sarr. Tell me about her.', if: { all: [{ flag: 'nb_sarr_met' }, { not: { flag: 'odile_sarr_done' } }] }, next: 'sarr' },
+        { id: 'odile.camp.chrome', text: 'The hand. Where did it come from?', if: { not: { flag: 'odile_chrome_done' } }, next: 'chrome' },
+        { id: 'odile.camp.bridge', text: 'What was Ninebridge before the Exchange?', if: { not: { flag: 'odile_bridge_done' } }, next: 'bridge' },
+        { id: 'odile.camp.farms', text: 'Openfield. What did you make of it?', if: { all: [{ flag: 'of_mason_met' }, { not: { flag: 'odile_farms_done' } }] }, next: 'farms' },
+        { id: 'odile.camp.close', text: '(Sit closer.) We\'d make a good trade, you and I.', if: { all: [{ flag: 'odile_s2_done' }, OD_BAND(30), { not: { flag: 'odile_close_done' } }] }, next: 'close' },
         { text: 'Rest your eyes.', exit: true },
       ],
     },
     read_two: {
       text: 'She reads the way a surveyor walks: the first block, the second, back to the road. "The second lot: KESSLER, the overpass, day forty-five — *by Kade\'s hand*. The third: VEY, ADA, Shale, four months — *resigns; a company town*." She takes the glasses off and presses the bridge of her nose. "That\'s two. Your sheriff and your raider. Both written on the same cloth as your deputy." She folds the map for you. "The eyes go. Tomorrow."',
+      again: 'The map folded on her knee, two blocks read. "The eyes go," she says again.',
       effects: [{ learn: 'name2_decoded' }, { learn: 'name3_decoded' }, { lead: 'l_broadcast_kessler' }, { lead: 'l_name_vey' }, { learn: 'odile_read_two' }, { xp: 80 }, { time: 60 }, { decision: { id: 'odile_read_names', text: 'Odile read the second and third names on the stranger\'s map by firelight.' } }],
       options: [{ text: '(Fold it.)', exit: true }],
     },
-    read_more: { text: '"The next blocks are east of here — names from the farms and the city, and I\'d rather read them with the places under our feet; the notation leans on the place." She closes the glasses. "Get us east, my dear. I\'ll read as we go."', options: [{ text: 'East, then.', exit: true }] },
-    camp_trade: { text: '"I shorted Shale: sold a sheet that said the town fails by a date, to a buyer who wanted it to. The buyer was the city\'s machine, through the guild — it buys its own forecasts back when they go against it, to see who\'s selling. I didn\'t know that then. I know it now, and the sheet is in the Exchange archive with my name on it, and I would like to tear it up with the hand I have left." She looks at the chrome one. "That is the whole of the trade."', effects: [{ learn: 'odile_trade_told' }, { approval: { companion: 'npc_nb_03', by: 5 } }], options: [{ text: 'We\'ll get it.', effects: [{ approval: { companion: 'npc_nb_03', by: 5 } }], exit: true }, { text: 'Rest your eyes.', exit: true }] },
+    read_more: { text: '"The next blocks are east of here — names from the farms and the city, and I\'d rather read them with the places under our feet; the notation leans on the place." She closes the glasses. "Get us east, my dear. I\'ll read as we go."', again: '"East," she says again, and keeps the glasses folded.', options: [{ text: 'East, then.', exit: true }] },
+
+    // Stage 1 (she has joined): the trade, told once, and her line opened.
+    camp_trade: {
+      text: '"I shorted Shale." She takes the glasses off to say it, which is how you know it costs. "Wrote a sheet that says the town fails by a date — its water, its debts, its roofs — and sold it to the floor, who bought it for a client and never told me who. A sheet like that is a deed to a ruin, my dear. Whoever holds it gets the town at a dead town\'s price, the day the date comes round."',
+      again: 'She has the glasses folded in the chrome hand. "Shale," she says again, as if you might have misheard the price.',
+      effects: [{ learn: 'odile_trade_told' }, { approval: { companion: ODILE, by: 5 } }],
+      options: [
+        { id: 'odile.trade.why', text: 'Why bet against a town?', next: 'trade_why' },
+        { id: 'odile.trade.want', text: 'What do you want with the sheet now?', next: 'trade_want' },
+      ],
+    },
+    trade_why: {
+      text: '"Because I had read its water." She says it plainly. "Every spring the pumps at Dry Wells gave Shale a little less, on a schedule nobody in Shale could see, and I could see it, and a town that drinks a little less every spring fails on a date you can write down. So I wrote it down." She looks at the fire. "I was right about the water. I should very much like to have been wrong about the town."',
+      again: '"Right about the water," she says. "I keep saying it, as if it were a defence."',
+      options: [{ id: 'odile.trade.why.want', text: 'And now? What do you want with it?', next: 'trade_want' }],
+    },
+    trade_want: {
+      text: '"The date hasn\'t come. The sheet is still open — in the paper room behind Imelda\'s office, in a pigeonhole under S, where I filed it myself." She holds out the chrome hand, palm up, empty. "I want it in this. Then I\'ll know who bought a town I said would die, and I\'ll decide what a sheet like that is for."',
+      again: 'The chrome hand, palm up, still empty.',
+      effects: [{ set: 'odile_quest' }, ...ODILE_JOURNAL],
+      options: [
+        { id: 'odile.trade.yes', text: 'We\'ll get it.', effects: [{ approval: { companion: ODILE, by: 5 } }], next: 'trade_yes' },
+        { id: 'odile.trade.challenge', text: 'You bet on a town going dry. Why should I help you get it back?', next: 'trade_challenge' },
+        { id: 'odile.trade.cut', text: 'What\'s in it for me?', effects: [{ approval: { companion: ODILE, by: 2 } }], next: 'trade_cut' },
+      ],
+    },
+    trade_yes: { text: '"Good." She folds the glasses. "Imelda will want something for it. She always does, and she\'ll want it from you, not me, because she knows my credit. Ninebridge, then, when the road takes us past. I\'ll be the one not looking at the floor."', again: '"Ninebridge," she says. "When the road takes us past."', options: [{ text: 'Rest your eyes.', exit: true }] },
+    trade_challenge: {
+      text: '"Because I\'m asking you, and not the floor." She does not look away. "That is the whole of my credit, my dear. Spend it or don\'t."',
+      again: '"Spend it or don\'t," she says again, and waits.',
+      options: [
+        { id: 'odile.trade.spend', text: 'All right. We\'ll get it.', effects: [{ approval: { companion: ODILE, by: 5 } }], exit: true },
+        { text: 'We\'ll see.', exit: true },
+      ],
+    },
+    trade_cut: { text: '"There it is." She is delighted. "Two names a night, a woman who knows where the floor keeps its knives, and my good opinion, which is not for sale and is therefore the only thing I own outright. Fairly priced."', again: '"Fairly priced," she says, pleased with it.', options: [{ text: 'Rest your eyes.', exit: true }] },
+
+    // Stage 2 (the sheet is out of the paper room): who bought it, and the line she says once.
+    hand: {
+      text: 'She has the sheet out on her knee with the back turned up to the fire, where the light can get at the buyer\'s line. "Every water schedule the floor ever sold was written in that hand. I sold dozens, and never once asked who wrote them, because the floor only asks who buys." She smooths it flat with the chrome thumb. "Now I know who bought Shale\'s failure. The same thing that sets Shale\'s water."',
+      again: 'The sheet on her knee, back side up. The hand that is not a hand.',
+      effects: [{ set: 'odile_s2_done' }, { learn: 'odile_counterparty' }],
+      options: [
+        { id: 'odile.hand.bet', text: 'Then it was never a bet.', next: 'hand_order' },
+        { id: 'odile.hand.knew', text: 'Did you know, when you wrote it?', next: 'hand_knew' },
+      ],
+    },
+    hand_order: {
+      text: '"No. It was an order, written up as a bet so the floor could sell the paper, and I took the fee for writing it." She does not look at you. "I was right about Shale, my dear, because the buyer could make me right. That is the thing I have been afraid of for twenty years without letting it have a name."',
+      again: '"Because the buyer could make me right," she says, quieter.',
+      options: [{ id: 'odile.hand.order.on', text: '(Let her finish.)', next: 'hand_wells' }],
+    },
+    hand_knew: {
+      text: '"No." Then, because she has decided to stop lying and is still bad at it: "I knew enough not to ask. That\'s a trade too. It\'s the oldest one on the floor."',
+      again: '"Enough not to ask," she says again.',
+      options: [{ id: 'odile.hand.knew.on', text: '(Let her finish.)', next: 'hand_wells' }],
+    },
+    hand_wells: {
+      text: [
+        { if: { knows: 'packet_water' }, text: '"There\'s one line more, and I\'ll say it once." The chrome hand is still. "The year I left the floor, I sold Imelda the Dry Wells schedule: every spring\'s number, worked out from the pumps. My going-away present. The packet you carried — 0.62 — was my arithmetic first, in somebody else\'s hand."' },
+        { text: '"There\'s one line more, and I\'ll say it once." The chrome hand is still. "The year I left the floor, I sold Imelda the Dry Wells schedule: every spring\'s number, worked out from the pumps. My going-away present. Every water sheet the floor has sold since is my arithmetic in somebody else\'s hand."' },
+      ],
+      again: 'She has said it once. She does not say it again.',
+      effects: [{ learn: 'odile_sold_schedule' }],
+      options: [
+        { id: 'odile.wells.cost', text: 'It was a cost. Shale paid it.', effects: [{ approval: { companion: ODILE, by: 5 } }], next: 'wells_cost' },
+        { id: 'odile.wells.comfort', text: 'You couldn\'t have known what they\'d do with it.', effects: [{ approval: { companion: ODILE, by: -5 } }], next: 'wells_comfort' },
+        { id: 'odile.wells.use', text: 'Then you know where the floor\'s water paper is weak. That\'s worth something.', effects: [{ set: 'odile_s2_use' }], next: 'wells_use' },
+      ],
+    },
+    wells_cost: { text: '"Yes." She lets out a breath she has been holding since the Span. "Say it like that, my dear. Nobody ever has. They either hang you for it or tell you it wasn\'t your fault, and both are cheaper than the truth."', again: '"Like that," she says. "Nobody ever has."', options: [{ text: 'Rest your eyes.', exit: true }] },
+    wells_comfort: { text: '"I could. I priced it." Quite gently. "Don\'t sell me comfort at that rate. I know what it\'s worth, and it isn\'t worth you."', again: '"I priced it," she says again, gently.', options: [{ text: 'Rest your eyes.', exit: true }] },
+    wells_use: { text: 'She laughs, short and real. "You\'d make a factor, if you had the patience. Yes. I know where every one of those sheets is weak." A beat. "I\'ll want to be asked nicely."', again: '"Nicely," she says, still amused.', options: [{ text: 'Rest your eyes.', exit: true }] },
+
+    // Stage 3 (inside Meridian's Wall): what the sheet is for, now she has seen whose paper it is.
+    city: {
+      text: '"I read the gate today. Every form, every notice, the lens\'s little card: all of it in that hand." She has the sheet on her knee. "I came east to tear this up. Now that I\'ve seen whose desk it would be torn in front of, I can\'t tell whether tearing it is unwinding a trade or burning a witness."',
+      again: 'The sheet on her knee. She is waiting for you to say which.',
+      effects: [{ set: 'odile_s3_seen' }],
+      options: [
+        { id: 'odile.city.tear', text: 'Tear it. You came all this way to unwind it.', next: 'city_tear' },
+        { id: 'odile.city.keep', text: 'Keep it. It\'s the only proof of who bought Shale.', next: 'city_keep' },
+        { id: 'odile.city.give', text: 'Give it to me. I\'ll carry it where it\'s needed.', if: OD_BAND(35), next: 'city_give' },
+        { id: 'odile.city.give.low', text: 'Give it to me. I\'ll carry it where it\'s needed.', if: { approval: { companion: ODILE, lte: 34 } }, next: 'city_not_yet' },
+        { id: 'odile.city.nine', text: 'The assessor keeps a second ledger the city doesn\'t read. Put it in that.', if: { knows: 'nine_two_ledgers' }, next: 'city_nine' },
+      ],
+    },
+    city_tear: {
+      text: 'She looks at you for a long moment. Then she tears it across, once, and again, and feeds the pieces to the fire one at a time and watches each go. "Shale is nobody\'s ruin on paper tonight." What the pumps will do she does not say; pumps cannot read. "That is a cost, my dear. I\'ve wanted to pay it for twenty years."',
+      again: 'Ash in the fire where the sheet was.',
+      effects: [{ set: 'odile_sheet', value: 'torn' }, { approval: { companion: ODILE, by: 5 } }, { decision: { id: 'odile_sheet', text: 'Odile tore up her sheet on Shale by a fire in sight of Meridian.' } }],
+      options: [{ text: 'Rest your eyes.', exit: true }],
+    },
+    city_keep: {
+      text: '"Then I\'m still short a town." She folds it back inside her coat, against the lining, where she can feel it. "I\'ll carry it. I\'ve carried worse in this coat, and less honest."',
+      again: 'The sheet back inside her coat, where she can feel it.',
+      effects: [{ set: 'odile_sheet', value: 'kept' }, { approval: { companion: ODILE, by: 5 } }, { decision: { id: 'odile_sheet', text: 'Odile kept her sheet on Shale as proof of who bought it.' } }],
+      options: [{ text: 'Rest your eyes.', exit: true }],
+    },
+    city_give: {
+      text: 'She holds it out a long time before she lets go of it. "The only honest thing I ever wrote, and the name on it is mine." The chrome hand opens. "Don\'t lose it, and don\'t sell it, and if you must do one of those, my dear, lose it."',
+      again: 'Her hand, empty now, on her knee.',
+      effects: [{ set: 'odile_sheet', value: 'player' }, { approval: { companion: ODILE, by: 5 } }, { decision: { id: 'odile_sheet', text: 'Odile gave you her sheet on Shale to carry.' } }],
+      options: [{ text: 'Rest your eyes.', exit: true }],
+    },
+    city_not_yet: {
+      text: '"No." Kindly. "Not yet. I don\'t lend the only honest thing I ever wrote to anyone I\'ve known less than a season." She waits. "Tear it or keep it. Which?"',
+      again: '"Tear it or keep it," she says again.',
+      options: [
+        { id: 'odile.city.tear2', text: 'Tear it.', next: 'city_tear' },
+        { id: 'odile.city.keep2', text: 'Keep it.', next: 'city_keep' },
+      ],
+    },
+    city_nine: {
+      text: '"Litigate." She smiles at the fire. "Of course. It\'s what I\'ve always done instead of paying." But she does not say no. "A sheet in a book the city doesn\'t read is a sheet nobody can sell." She folds it away for the assessor.',
+      again: 'The sheet folded away, for the assessor\'s other book.',
+      effects: [{ set: 'odile_sheet', value: 'nine' }, { decision: { id: 'odile_sheet', text: 'Odile set her sheet on Shale aside for Assessor Nine\'s second ledger.' } }],
+      options: [{ text: 'Rest your eyes.', exit: true }],
+    },
+
+    // Stage 4 (one of the city's own lines has run its course): her price for what comes.
+    her_price: {
+      text: '"The guild buys Openfield\'s harvest before it\'s grown. The city buys Shale\'s failure. Somebody in the Crown sells the Committee\'s forecasts by the season." She counts them off on the chrome fingers. "When the floor and the farms come to blows — and they will, my dear; it\'s on a sheet somewhere — I\'d like to be standing where you stand. For a price."',
+      again: 'The chrome fingers, three of them folded down. She is waiting to be asked.',
+      options: [{ id: 'odile.price.name', text: 'Name it.', next: 'price_name' }],
+    },
+    price_name: {
+      text: '"Imelda walks out of it alive." She does not dress it up. "She paid the riders who shot your stranger. She held my ink the night I wrote the first sheet. Both are true, and I would like her alive to be ashamed of the first." A beat. "That\'s all. Nothing for me."',
+      again: '"Alive," she says again. "That\'s all."',
+      options: [
+        { id: 'odile.price.yes', text: 'If I can help it, she lives.', effects: [{ set: 'odile_price', value: 'sarr' }, { approval: { companion: ODILE, by: 10 } }, { decision: { id: 'odile_price', text: 'You told Odile that, if you could help it, Imelda Sarr would live.' } }], next: 'price_yes' },
+        { id: 'odile.price.never', text: 'I won\'t price a life in advance. Not hers, not anyone\'s.', effects: [{ set: 'odile_price', value: 'none' }, { approval: { companion: ODILE, by: 5 } }], next: 'price_never' },
+        { id: 'odile.price.no', text: 'She bought a man\'s death. I\'ll promise her nothing.', effects: [{ set: 'odile_price', value: 'refused' }, { approval: { companion: ODILE, by: -5 } }], next: 'price_no' },
+      ],
+    },
+    price_yes: {
+      text: 'She nods once, a trader closing. Then, because nothing tonight costs, she tells you about Ninebridge with nine spans — the market on the ninth, the lamps on the water, the night she was born on the deck between two bales of salt — and this time you let her finish, and it takes an hour, and she does not apologise for it. "There," she says at the end. "Now somebody else has it."',
+      again: 'The fire, and the nine spans she put in it for you.',
+      options: [{ text: 'Rest your eyes.', exit: true }],
+    },
+    price_never: { text: '"Then you\'re better than me, my dear, and worse at business." She looks pleased. "I\'ll stand where you stand anyway. Call it credit."', again: '"Credit," she says, and seems to like the word tonight.', options: [{ text: 'Rest your eyes.', exit: true }] },
+    price_no: { text: '"Fair." She doesn\'t argue. "I taught her that too: a promise is a sheet, and you don\'t write one you can\'t cover." She turns the chrome hand over. "I\'ll stand where you stand. I\'ll just stand a little in front of her."', again: '"A little in front of her," she says again.', options: [{ text: 'Rest your eyes.', exit: true }] },
+
+    // Lighter talk at the fire: places, people, the hand, the bridge.
+    shale_sold: {
+      text: '"Sold." She has heard; the Span hears everything. "Its water, by the measure, to the guild. To the people who hold my paper, my dear, and it was your hand on the console." She does not raise her voice. "My sheet is worth a great deal more tonight. I\'d congratulate you, but I\'ve been on that end of a deal and it doesn\'t want congratulating."',
+      again: '"Sold," she says again, without heat.',
+      effects: [{ set: 'odile_shale_done' }, { approval: { companion: ODILE, by: -10 } }],
+      options: [{ id: 'odile.shale.sold.on', text: '(Let it sit.)', next: 'camp' }],
+    },
+    shale_drinks: {
+      text: '"Drinking the full measure." Something in her face unclenches by a notch, the way it did at the Span. "Ahead of the sheet. Every spring it drinks like that, my paper on it is worth a little less." She lifts a glass she hasn\'t got. "That is the best trade anybody has made on my behalf in twenty years, and I didn\'t even have to be there."',
+      again: '"The full measure," she says, and almost smiles.',
+      effects: [{ set: 'odile_shale_done' }, { approval: { companion: ODILE, by: 10 } }],
+      options: [{ id: 'odile.shale.drinks.on', text: '(Go on.)', next: 'camp' }],
+    },
+    shale_kept: {
+      text: '"At 0.62. As written." She nods slowly. "You stood at the console and left it as you found it. I\'d like to say I don\'t understand that, but I made my living off people who did exactly that."',
+      again: '"As written," she says again.',
+      effects: [{ set: 'odile_shale_done' }],
+      options: [{ id: 'odile.shale.kept.on', text: '(Go on.)', next: 'camp' }],
+    },
+    sarr: {
+      text: '"Imelda held the ink the night I wrote the first sheet, on a crate on this bridge, with the river still under it. Clever, and frightened of nothing, and she wanted to know why the market was kinder than a plan." Odile turns the hand over. "I told her: because you can bargain with it. She learned it better than I did. Now she is the market, and nobody bargains with her at all."',
+      again: '"Nobody bargains with her," she says again.',
+      effects: [{ set: 'odile_sarr_done' }],
+      options: [{ id: 'odile.sarr.on', text: '(Go on.)', next: 'camp' }],
+    },
+    chrome: {
+      text: '"Gyro work, from before the Burn. A Mender in the Teeth rebuilt it, and he\'s dead now." She flexes it; every joint shows, the way it was meant to. "I lost the one I was born with at a Dust table on the bridge, when it had eight spans and I had more nerve than sense. I bet it." She turns it to the fire. "I bought this out of the next night\'s winnings. Everything is borrowed, my dear. Some of it you get to keep."',
+      again: 'She flexes the chrome hand, and every joint shows.',
+      effects: [{ set: 'odile_chrome_done' }],
+      options: [{ id: 'odile.chrome.on', text: '(Go on.)', next: 'camp' }],
+    },
+    bridge: {
+      text: '"Oh — before the Exchange. When the bridge still had all nine spans and the ninth had the market on it, salt and fish and rope, and lamps on the water at night so the barges could see where to tie, and the family who sold eels in vinegar — terrible, wonderful — and the bell they rang for the tide, though there\'d been no tide in sixty years, because somebody\'s grandmother always had — " She stops. "I\'m doing it."',
+      again: 'She has stopped herself, and is waiting to see if you\'ll let her start again.',
+      effects: [{ set: 'odile_bridge_done' }],
+      options: [
+        { id: 'odile.bridge.on', text: '(Let her go on.)', effects: [{ approval: { companion: ODILE, by: 3 } }], next: 'bridge_on' },
+        { id: 'odile.bridge.stop', text: 'You\'re doing it.', next: 'bridge_stop' },
+      ],
+    },
+    bridge_on: { text: 'She does. It takes the rest of the fire. The ninth span fell in her ninth year, at night, with the market on it; she remembers the bell going down. "And after that there was nothing left on the bridge to sell," she says at last, "so we sold what hadn\'t happened yet." She does not say anything for a while.', again: 'The bell going down, at night, with the market on it. She has finished.', options: [{ id: 'odile.bridge.on.on', text: '(Go on.)', next: 'camp' }] },
+    bridge_stop: { text: 'She laughs. "I am. Lazlo used to charge me a Toll a story. He did very well out of it."', again: '"A Toll a story," she says, still amused.', options: [{ id: 'odile.bridge.stop.on', text: '(Go on.)', next: 'camp' }] },
+    farms: {
+      text: '"Mason keeps no books, he says." She smiles. "Every farmer keeps books, my dear; he keeps his in his head, where the guild can\'t buy them. I\'ve never admired anything more, and I couldn\'t afford to do it myself for a week."',
+      again: '"In his head," she says, admiring it again.',
+      effects: [{ set: 'odile_farms_done' }],
+      options: [{ id: 'odile.farms.on', text: '(Go on.)', next: 'camp' }],
+    },
+    close: {
+      text: '"Oh, my dear." She is not offended; she is delighted, and then kind. "I\'m fifty-five, I\'ve read your contract, and you\'d be the one paying. Sit there and be my friend. It\'s the better rate, and I don\'t offer it often." She pats your hand with the one that is hers.',
+      again: 'She pats your hand again, with the one that is hers.',
+      effects: [{ set: 'odile_close_done' }],
+      options: [{ id: 'odile.close.on', text: '(Stay where you are.)', next: 'camp' }],
+    },
+
+    // Leaving and coming back: below the floor she settles up; once, a closed tab brings her back.
+    floor: {
+      text: '"My dear." She has her coat buttoned, which she never does. "I keep a tab on everyone. It\'s a habit. Yours has run past what I can carry." She doesn\'t make a speech of it. "I\'m going back to the Span. If you ever want me, you know where the bitters are terrible."',
+      again: 'Her coat buttoned. She is already going.',
+      effects: [{ leave: ODILE }, { set: 'odile_left' }, { decision: { id: 'odile_left', text: 'Odile went back to the Span: your tab with her had run past what she would carry.' } }],
+      options: [{ text: '(Let her go.)', exit: true }],
+    },
+    floor_final: {
+      text: '"Twice." She buttons the coat. "I don\'t extend credit twice, my dear. Nobody on this bridge would, and they\'re right." She goes, and that is the last of it.',
+      again: 'She is gone down the road with her coat buttoned.',
+      effects: [{ leave: ODILE }, { set: 'odile_gone' }, { decision: { id: 'odile_gone', text: 'Odile left you a second time, and did not offer a third.' } }],
+      options: [{ text: '(Let her go.)', exit: true }],
+    },
+    left: {
+      text: '"Sit, if you\'re paying." She has her glass, and her tab, and the look of a woman who has been right about something and isn\'t enjoying it.',
+      again: 'She turns the glass a quarter-turn and does not ask what you want.',
+      options: [
+        { id: 'odile.left.tab', text: '(Close her tab with Lazlo, out of your own pocket. 60 Tolls) Come back.', if: { item: 'tolls', count: 60 }, check: { skill: 'speech', dc: 45, mods: [{ if: { flag: 'odile_s2_done' }, dc: -10, why: 'she told you the worst of it, and you stayed' }] }, effects: [{ take: 'tolls', count: 60 }, { join: ODILE }, { set: 'odile_won_back' }, { set: 'odile_left', value: false }, { approval: { companion: ODILE, by: 40 } }], next: 'left_back', fail: 'left_no' },
+        { text: 'Another time.', exit: true },
+      ],
+    },
+    left_back: { text: '"Imelda has paid that for years." She watches Lazlo strike it out. "You\'ve just bought my debt off the Grand Factor, my dear. That\'s either a kindness or a very good trade." She stands. "Two names a night. Let\'s go."', again: '"Let\'s go," she says, already standing.', options: [{ text: '(Go.)', exit: true }] },
+    left_no: { text: '"That\'s money." She doesn\'t touch it. "I\'ve never been short of people paying for me. Come back when it isn\'t only money."', again: '"Only money," she says again, and turns the glass.', options: [{ text: 'Another time.', exit: true }] },
+    gone: { text: '"No, my dear." She does not look up from the glass. "Some trades don\'t unwind."', again: 'She does not look up from the glass.', options: [{ text: '(Leave her.)', exit: true }] },
   },
 };
 
@@ -422,8 +763,23 @@ export const d_nb_floor_door: DialogueDef = {
 
 export const d_nb_office_door: DialogueDef = {
   id: 'd_nb_office_door', owner: 'narrator',
-  start: [{ node: 'door' }],
+  start: [{ if: { all: [SARR_ASLEEP, ROOM_ASK] }, node: 'night' }, { node: 'door' }],
   nodes: {
+    night: {
+      text: 'GRAND FACTOR, and no pen. Through the slot, the lamp turned low and the Grand Factor asleep upright in her chair with the pen still in her hand. The paper room is the door behind her. Odile looks at its latch the way she looks at a contract she drafted. "It sticks on the second notch," she breathes. "It always did."',
+      again: 'The slot, the low lamp, the Grand Factor asleep upright. The latch behind her that sticks on the second notch.',
+      options: [
+        { id: 'office.night.in', text: '(Ease both latches, and go past her.)', check: { skill: 'stealth', dc: 45, mods: [{ if: OD_IN, dc: -10, why: 'Odile knows the latch and the boards that talk' }] }, effects: [{ set: 'odile_room_by', value: 'night' }, { xp: 40 }], next: 'odroom', fail: 'night_woke' },
+        { text: '(Leave it.)', exit: true },
+      ],
+    },
+    night_woke: {
+      text: 'The second notch goes like a shot. "Odile." The Grand Factor has not opened her eyes. "By appointment." Then she opens them. "Come back in daylight, both of you, and we\'ll discuss what it costs to wake me."',
+      again: 'The Grand Factor, awake in her chair, writing again as if she had never stopped.',
+      effects: [{ rep: { faction: 'tollmen', respect: -4 } }, { memory: { npc: 'npc_nb_01', tag: 'woke_me', valence: -10, strength: 50 } }],
+      options: [{ text: '(Go.)', exit: true }],
+    },
+    ...PAPER_ROOM,
     door: {
       text: 'A container door with GRAND FACTOR stencilled on it and a brass half-moon for a knocker. From inside, the sound of a pen.',
       again: 'GRAND FACTOR, and the brass half-moon, and the pen going on behind it.',
@@ -490,12 +846,27 @@ export const d_nb_clerk: DialogueDef = {
     },
     sell_contract: {
       text: '"Lot four. Sable Calloway, fifty-eight and interest." She reads the paper, not the person. "The floor pays ninety; it takes its tenth off the buyer\'s end, not yours. Thumb here." She does not ask where the debtor is. The floor never does.',
+      interject: [{ companion: ODILE, text: '"Ninety is the floor\'s price, my dear," Odile says, before she can stop herself. "I know a buyer at a hundred and thirty." Then she hears what she has said, and looks at the paper, and does not take it back.' }],
       options: [
+        { id: 'rook.sell.odile', text: '(Let Odile sell it. 130 Tolls)', if: OD_IN, next: 'odile_sells' },
         { id: 'rook.sell.do', text: '(Sell. 90 Tolls)', effects: [{ take: 'k_sable_contract' }, { give: 'tolls', count: 90 }, { set: 'nb_sable_outcome', value: 'resold' }, { set: 'nb_sable_settled' }, { set: 'nb_sable_resold' }, { approval: { companion: 'npc_rd_03', by: -40 } }, { approval: { companion: 'npc_nb_03', by: -20 } }, { rep: { faction: 'tollmen', respect: 4 } }], next: 'sold' },
         { text: 'Not today.', exit: true },
       ],
     },
-    sold: { text: 'The thumb. The sum. The paper goes into a drawer with others like it. "Lot four," she says to nobody, and writes.', options: [bye] },
+    sold: { text: 'The thumb. The sum. The paper goes into a drawer with others like it. "Lot four," she says to nobody, and writes.', interject: [
+      { companion: ODILE, text: '"Ninety," Odile says on the deck afterwards, to nobody. "I\'d have got one-thirty." She puts her glasses away. "Don\'t ever ask me how I know."' },
+      { companion: ASH, text: '"Ninety," Ash says on the deck, the way he says a name over a grave. "Friend." Nothing after it.', effects: [{ approval: { companion: ASH, by: -10 } }] }, { companion: ILYA, text: '"Ninety," Ilya says, flat. "Right." He walks out ahead of you.', effects: [{ approval: { companion: ILYA, by: -10 } }] }], options: [bye] },
+    odile_sells: {
+      speaker: 'narrator',
+      text: 'She takes the paper out of your hand and is, for ten minutes at the end of the desk, the woman who wrote the first sheet on this bridge: a buyer fetched from the Span, a figure, a smaller figure, a thumb. A hundred and thirty, counted into your palm by the chrome hand. Then she takes her glasses off. "That was somebody\'s sister," she says. "Everybody had one once. I sold her for you, and I was good at it." She buttons her coat, which she never does. "That is a cost I won\'t carry next to you, my dear." She walks back down the deck to the Span, and she does not come with you again.',
+      again: 'The drawer, shut. Odile gone down the deck.',
+      effects: [
+        { take: 'k_sable_contract' }, { give: 'tolls', count: 130 }, { set: 'nb_sable_outcome', value: 'resold' }, { set: 'nb_sable_settled' }, { set: 'nb_sable_resold' },
+        { set: 'odile_sold_sable' }, { set: 'odile_gone' }, { leave: ODILE }, { approval: { companion: ODILE, by: -40 } }, { approval: { companion: WREN, by: -40 } }, { rep: { faction: 'tollmen', respect: 4 } },
+        { decision: { id: 'odile_sold_sable', text: 'You let Odile sell lot four\'s contract on for a hundred and thirty. She went back to the Span without you.' } },
+      ],
+      options: [{ text: '(Let her go.)', exit: true }],
+    },
     asleep: { text: 'The clerk is asleep on her folded arms over the two ledgers, ink on her cheek. The floor is dark but for the board\'s green.', again: 'Still asleep over the ledgers. The board hums green to itself.', options: [{ text: '(Leave her.)', exit: true }] },
     reported: { text: 'The desk is empty. The ledgers are in the Grand Factor\'s office now, and a new clerk with no ink on him is learning the board. Lot nine on the block this morning was young and knew her numbers.', again: 'The new clerk, learning the board. He does not know your face, and nobody tells him.', options: [{ id: 'rook.case.new', text: '(Put the sealed case on the desk.) From the board at Old Market.', if: GIG_CASE, effects: GIG_CASE_DONE, next: 'case_new' }, { text: '(Nothing.)', exit: true }] },
     fight: { text: 'Nothing.', again: 'The desk is empty. The ledgers have gone wherever the guild keeps things in a fight.', options: [{ text: '(Nothing.)', exit: true }] },
@@ -563,7 +934,10 @@ export const d_nb_sarr: DialogueDef = {
   start: [{ if: { flag: 'nb_fight' }, node: 'fight' }, { if: { not: { flag: 'nb_office_ok' } }, node: 'closed' }, { if: { flag: 'nb_sarr_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     static: { text: 'The pen stops. "For nothing." She says it the way other people say a death. "A sealed sheet is worth what it is worth because it is sealed. A girl who says the sheet aloud in a gang street is a hole in the floor." She writes a figure and turns it to you: two hundred. "The name of the street, and the tower. Riders will fetch her at dawn, with a sheet of her own, and she will be sealed where sealed things are kept, and fed, and listened to by people who pay."', options: [{ id: 'static.sell', text: 'The Saints\' tower in Bridgeward. Under the mast. (200 Tolls)', effects: [{ give: 'tolls', count: 200 }, { set: 'bw_static', value: 'sold' }, { rep: { faction: 'tollmen', respect: 8 } }, { rep: { faction: 'saints', respect: -30 } }, { xp: 80 }, { decision: { id: 'bw_static_sold', text: 'You sold the Exchange the Saints\' girl who hears the city\'s wire.' } }], next: 'static_sold' }, { text: 'I haven\'t decided.', exit: true }] },
-    static_sold: { text: '"Sealed." The figure goes into the ledger under a line that says nothing about a girl. "The floor thanks you. The floor always thanks you; it is the floor\'s only expense."', interject: [{ companion: WREN, text: '"Sealed where sealed things are kept," Wren says, outside, on the deck. "Fed. Listened to." She looks at you the way she reads a wall. "You sold her."', effects: [{ approval: { companion: WREN, by: -15 } }] }], options: [bye] },
+    static_sold: { text: '"Sealed." The figure goes into the ledger under a line that says nothing about a girl. "The floor thanks you. The floor always thanks you; it is the floor\'s only expense."', interject: [
+      { companion: WREN, text: '"Sealed where sealed things are kept," Wren says, outside, on the deck. "Fed. Listened to." She looks at you the way she reads a wall. "You sold her."', effects: [{ approval: { companion: WREN, by: -15 } }] },
+      { companion: ODILE, text: '"Sealed where sealed things are kept," Odile repeats on the deck, very pleasantly, the way she says a bad price back to a buyer. "I wrote that phrase, my dear. It was meant for paper."', effects: [{ approval: { companion: ODILE, by: -15 } }] },
+      { companion: ASH, text: '"A girl who says things for nothing," Ash says, outside. "And you got two hundred for her." He does not say friend.', effects: [{ approval: { companion: ASH, by: -10 } }] }, { companion: 'npc_md_nine', text: '"Sealed," Nine says, outside. "Fed. Listened to." The lens clicks. "The record has a word for a person kept so that others may hear her: an asset. I did not know it could be done to people."', effects: [{ approval: { companion: 'npc_md_nine', by: -10 } }] }], options: [bye] },
     closed: { text: 'The Grand Factor does not look up. "By appointment."', again: 'The pen. "By appointment," she says again, to the page.', options: [{ text: '(Go.)', exit: true }] },
     intro: {
       text: 'A woman of nearly sixty with silver hair swept back and a pen she has not put down since you came in. Clocks on every shelf, none of them agreeing. "Imelda Sarr. Grand Factor." She looks at you once, the way the board looks at a lot. "Everything is for sale. Say what you want and I\'ll say what it costs, and we\'ll save each other the part where you pretend it\'s free."',
@@ -578,6 +952,8 @@ export const d_nb_sarr: DialogueDef = {
         { id: 'sarr.rook', text: 'Your clerk copies paper for the porters.', if: { all: [{ knows: 'nb_rook_confessed' }, { not: { flag: 'nb_rook_reported' } }, { not: { flag: 'nb_rook_kept' } }] }, next: 'rook' },
         { id: 'sarr.hand', text: 'I broke your strike. I\'d like more than eighty.', if: { all: [{ flag: 'nb_strike_outcome', eq: 'broken' }, { member: 'tollmen' }, { not: { member: 'tollmen', rank: 'hand' } }] }, next: 'hand' },
         { id: 'sarr.odile', text: 'Odile Marchetti sends her regards.', if: { knows: 'odile_history' }, next: 'odile', once: true },
+        { id: 'sarr.sheet', text: 'Odile\'s sheet. The one on Shale.', if: ROOM_ASK, next: 'sheet' },
+        { id: 'sarr.sheet.alone', text: 'Odile\'s sheet. The one on Shale.', if: { all: [{ flag: 'odile_quest' }, { not: OD_IN }, { not: { flag: 'odile_room_done' } }, { not: { flag: 'odile_gone' } }] }, next: 'sheet_alone', once: true },
         { id: 'sarr.static', text: 'I know where your forecasts leak. A girl in Bridgeward hears them off the city\'s wire and says them for nothing.', if: { all: [{ knows: 'bw_immy_heard' }, { not: { flag: 'bw_static' } }] }, next: 'static' },
         { id: 'sarr.sell', text: 'I\'ve a debt contract. Lot four.', if: { item: 'k_sable_contract' }, next: 'contract' },
         bye,
@@ -595,6 +971,8 @@ export const d_nb_sarr: DialogueDef = {
         { id: 'sarr.rook.again', text: 'Your clerk copies paper for the porters.', if: { all: [{ knows: 'nb_rook_confessed' }, { not: { flag: 'nb_rook_reported' } }, { not: { flag: 'nb_rook_kept' } }] }, next: 'rook' },
         { id: 'sarr.hand.again', text: 'I broke your strike. I\'d like more than eighty.', if: { all: [{ flag: 'nb_strike_outcome', eq: 'broken' }, { member: 'tollmen' }, { not: { member: 'tollmen', rank: 'hand' } }] }, next: 'hand' },
         { id: 'sarr.odile.again', text: 'Odile Marchetti sends her regards.', if: { all: [{ knows: 'odile_history' }, { not: { seen: 'sarr.odile' } }] }, next: 'odile' },
+        { id: 'sarr.sheet.again', text: 'Odile\'s sheet. The one on Shale.', if: ROOM_ASK, next: 'sheet' },
+        { id: 'sarr.sheet.alone.again', text: 'Odile\'s sheet. The one on Shale.', if: { all: [{ flag: 'odile_quest' }, { not: OD_IN }, { not: { flag: 'odile_room_done' } }, { not: { flag: 'odile_gone' } }, { not: { seen: 'sarr.sheet.alone' } }] }, next: 'sheet_alone' },
         { id: 'sarr.static.again', text: 'A girl in Bridgeward says your forecasts for nothing.', if: { all: [{ knows: 'bw_immy_heard' }, { not: { flag: 'bw_static' } }] }, next: 'static' },
         { id: 'sarr.sell.again', text: 'I\'ve a debt contract. Lot four.', if: { item: 'k_sable_contract' }, next: 'contract' },
         { id: 'sarr.service', text: 'About the broken seal. The service.', if: { all: [{ flag: 'nb_packet_debt' }, { flag: 'nb_strike_outcome', eq: 'broken' }] }, next: 'service_done' },
@@ -643,10 +1021,34 @@ export const d_nb_sarr: DialogueDef = {
     rook_sold: { text: '"Done." She writes a name on a lot card. The clocks go on disagreeing. "Fen will have her by nine. Don\'t be on the east bank; people find it hard to watch."', interject: [
       { companion: ODILE, text: '"Six years," Odile says to the clocks, very pleasantly. "Never late." She does not look at you, and she does not take your arm on the way out.' },
       { companion: WREN, text: '"By nine," Wren says. "On the block." She walks out ahead of you, and you hear nothing more from her that day.' },
+      { companion: ASH, text: '"Six years," Ash says on the deck, as if he were reading it off a stone. He does not look at you.', effects: [{ approval: { companion: ASH, by: -10 } }] },
     ], options: [bye] },
     rook_back: { text: '"The floor doesn\'t forget. It defers." She writes something small. "She\'ll be watched. You\'ve bought her a month, perhaps. That\'s not nothing; months are what we sell."', effects: [{ set: 'nb_rook_watched' }], options: [bye] },
     hand: { text: '"You put the straps back on forty backs with words. That\'s a factor\'s work." She takes a brass ticket with a notch in it from a drawer. "Factor\'s hand. The floor\'s books open to you; the floor\'s enemies too. Don\'t drink at the Span with it in your pocket; Lazlo\'s fond of the porters."', effects: [{ promote: { faction: 'tollmen', rank: 'hand' } }, { decision: { id: 'nb_hand', text: 'The Grand Factor made you a factor\'s hand for breaking the porters\' strike.' } }, { xp: 80 }], options: [bye] },
     odile: { text: 'The pen stops for the second time. "Does she." Something old crosses her face and is filed. "Her tab is paid. Tell her it will go on being paid. Tell her — " She stops. "Tell her nothing. She hears everything anyway." Then, drier: "Whatever she told you about me is true, and whatever she told you about herself is a trade."', interject: [{ companion: ODILE, text: '"Hello, Imelda," Odile says from the doorway, mild as milk. The Grand Factor does not look up, and the pen does not move again until Odile has stepped back out of the light.' }], effects: [{ learn: 'sarr_odile' }, { memory: { npc: 'npc_nb_01', tag: 'odile_named', valence: 5, strength: 70 } }], options: [bye] },
+    sheet: {
+      text: '"Her sheet." The pen stops. Odile stands in the doorway with her hands in her coat. "SHALE, FAILS, two springs off. Bought by the floor for a client, held in the room behind me, and the only paper in Ninebridge with her name on it twice." The Grand Factor looks at Odile at last. "You taught me never to sell a thing back to the one who wrote it, Odile. They know what it\'s worth." Then, to you: "Two hundred."',
+      again: '"Two hundred," the Grand Factor says again, to Odile and not to you.',
+      options: [
+        { id: 'sarr.sheet.pay', text: '(Pay. 200 Tolls)', if: { item: 'tolls', count: 200 }, effects: [{ take: 'tolls', count: 200 }, { set: 'odile_room_by', value: 'bought' }], next: 'sheet_key' },
+        { id: 'sarr.sheet.weather', text: 'It\'s paper on a town that hasn\'t failed. You\'re holding a bet on the weather.', check: { skill: 'speech', dc: 50, mods: [{ if: { any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, dc: -15, why: 'Shale drinks the full measure now; the sheet is losing' }, { if: { flag: 'dw_sold' }, dc: 15, why: 'Shale\'s water is the guild\'s now; the sheet is winning' }, { if: { knows: 'odile_history' }, dc: -5, why: 'you know who taught her to price' }] }, effects: [{ set: 'odile_room_by', value: 'talked' }, { xp: 40 }], next: 'sheet_weather', fail: 'sheet_firm' },
+        { id: 'sarr.sheet.hand', text: 'A factor\'s hand may draw on the floor\'s paper.', if: { member: 'tollmen', rank: 'hand' }, effects: [{ set: 'odile_room_by', value: 'hand' }], next: 'sheet_hand' },
+        { text: 'Not at that price.', exit: true },
+      ],
+    },
+    sheet_firm: {
+      text: '"Two hundred." Not unkindly. "The weather has a price too."',
+      again: '"Two hundred," she says, to the page.',
+      options: [
+        { id: 'sarr.sheet.pay2', text: '(Pay. 200 Tolls)', if: { item: 'tolls', count: 200 }, effects: [{ take: 'tolls', count: 200 }, { set: 'odile_room_by', value: 'bought' }], next: 'sheet_key' },
+        { text: 'Not at that price.', exit: true },
+      ],
+    },
+    sheet_key: { text: '"Sold." She takes a key from a cord round her own neck without looking at it and holds it out: not to you; to Odile. "The S row. You filed it." Odile takes the key with the chrome hand.', again: 'The key in Odile\'s chrome hand. The door behind the desk.', options: [{ id: 'sarr.sheet.in', text: '(Go through.)', next: 'odroom' }] },
+    sheet_weather: { text: '"A bet on the weather." She considers it with the pen still. "Yes. A sheet that is losing is a sheet I pay to keep dry." She takes a key from a cord round her own neck and holds it out: not to you; to Odile. "The S row. You filed it. Take nothing else; I\'ll know."', again: 'The key in Odile\'s chrome hand. The door behind the desk.', options: [{ id: 'sarr.sheet.in2', text: '(Go through.)', next: 'odroom' }] },
+    sheet_hand: { text: '"So a hand may." She takes the key from her neck and holds it out to Odile, not to you. "The S row. You filed it."', again: 'The key in Odile\'s chrome hand. The door behind the desk.', options: [{ id: 'sarr.sheet.in3', text: '(Go through.)', next: 'odroom' }] },
+    sheet_alone: { text: '"Odile\'s paper goes to Odile, or nowhere." The pen moves again. "Bring her, and we\'ll talk about what it costs."', again: '"Bring her," the Grand Factor says, to the page.', options: [bye] },
+    ...PAPER_ROOM,
     contract: { text: '"The floor pays ninety for lot four. The clerk handles it; I don\'t touch paper that small." She goes back to the pen. "Unless you were going to ask me to tear it up, in which case: not at that price."', options: [bye] },
     fight: { text: 'She has not moved from the desk. "You\'ll find the guild is credit, and I am the guild. Go on, then."', again: 'She has still not moved from the desk. The clocks go on.', options: [{ text: '(Nothing.)', exit: true }] },
   },
@@ -746,7 +1148,10 @@ export const d_nb_fen: DialogueDef = {
       again: 'Still by the fire, still not looking at the block. "It\'s still open," he says.',
       options: [{ id: 'fen.take', text: '(Take the contract.)', effects: [{ give: 'k_sable_contract' }, { set: 'nb_sable_fen' }, { learn: 'sable_held' }, { xp: 60 }], next: 'took' }, { text: 'Not tonight.', exit: true }] },
     took: { text: '"Lot four, stolen in the night," he says to the fire, in the voice, and then not in it: "Thank you."', options: [bye] },
-    let_go: { text: '"Lot four, sixty — seventy — ninety to the gentleman in the coat, going, gone." The cup on the counter. The crowd moves to lot five. Somebody opens the cage.', interject: [{ companion: WREN, text: 'Wren watches the coat go with the paper in his pocket. She does not say anything. She does not look at you, then or for a long time after.', effects: [{ approval: { companion: WREN, by: -20 } }] }], effects: [{ set: 'nb_sable_outcome', value: 'sold_on' }, { set: 'nb_sable_settled' }], options: [{ text: '(Walk away.)', exit: true }] },
+    let_go: { text: '"Lot four, sixty — seventy — ninety to the gentleman in the coat, going, gone." The cup on the counter. The crowd moves to lot five. Somebody opens the cage.', interject: [
+      { companion: WREN, text: 'Wren watches the coat go with the paper in his pocket. She does not say anything. She does not look at you, then or for a long time after.', effects: [{ approval: { companion: WREN, by: -20 } }] },
+      { companion: ODILE, text: 'Odile watches the coat take the paper, and you can see her price it, and see her hate that she did.', effects: [{ approval: { companion: ODILE, by: -5 } }] },
+      { companion: ASH, text: 'Ash looks at the cage a long time after it is empty.', effects: [{ approval: { companion: ASH, by: -5 } }] }, { companion: ILYA, text: 'Ilya counts the cup coming down on the counter. "Right," he says, and nothing else.', effects: [{ approval: { companion: ILYA, by: -5 } }] }], effects: [{ set: 'nb_sable_outcome', value: 'sold_on' }, { set: 'nb_sable_settled' }], options: [{ text: '(Walk away.)', exit: true }] },
     off: { text: 'Off the block he is somebody else: smaller, by the fire, with a cup. "Lots at nine. I don\'t sell at night; it\'s the one rule I made myself."', again: 'He lifts the cup an inch by way of a greeting. "Nine," he says. "Not before."', options: [bye] },
     settled: { text: [{ if: { all: [{ flag: 'nb_sable_outcome', eq: 'freed' }, { not: { flag: 'nb_lot7_sold' } }] }, text: '"Lot four, stolen, lost, mislaid — I\'ve said all three to the guild and they wrote down the one they liked." He almost smiles. "Lot seven\'s a mechanic. Nobody comes for mechanics."' }, { if: { flag: 'nb_lot7_sold' }, text: '"Lot eight. A carrier, thirty." The voice is back, and the board is one card shorter.' }, { text: '"Lot seven. A mechanic, forty-eight." The voice is back.' }], options: [{ id: 'fen.lot7.settled', text: 'Lot seven. The mechanic.', if: GIG_LOT7, next: 'lot7' }, bye] },
   },
@@ -759,7 +1164,7 @@ export const d_nb_sable: DialogueDef = {
     intro: {
       text: 'A young woman on a cot in a cage, knees up, who looks at you the way the lots look at the crowd: as a sum. "Sixty. I heard him. If you\'ve sixty, don\'t stand there being sorry about it."',
       effects: [{ set: 'nb_sable_met' }],
-      passives: [{ if: { knows: 'wren_met' }, attr: 'senses', dc: 7, text: 'A burn scar on the inside of her left forearm, old, the shape of a hand that grabbed. Wren has one like it, on the right.', effects: [{ lead: 'l_sable' }, { learn: 'sable_is_wren_sister' }] }],
+      passives: [{ if: { knows: 'wren_met' }, attr: 'senses', dc: 7, text: 'A burn scar on the inside of her left forearm, old, the shape of a hand that grabbed. Wren has one like it, on her left hand.', effects: [{ lead: 'l_sable' }, { learn: 'sable_is_wren_sister' }] }],
       options: [
         { id: 'sable.name', text: 'Your name?', next: 'name', once: true },
         { id: 'sable.wren', text: 'Wren.', if: { inParty: 'npc_rd_03' }, next: 'wren', once: true },
@@ -789,10 +1194,12 @@ export const d_nb_sable: DialogueDef = {
     freed: { text: 'She tears it in half and in half again, slowly, as if it might be a trick, and then she is standing outside the cage with four pieces of paper in her fist and nowhere to put them. "I\'m going west," she says. "To Shale. There was a sister." She does not thank you; she has decided not to. Then, at the ramp, she does, without turning round.', interject: [
       { companion: WREN, text: 'Wren watches her all the way to the ramp. "Four pieces," she says at last, to nobody. "She always tore things in four."' },
       { companion: ODILE, text: '"Paper is only paper," Odile says softly, "until somebody tears it." She looks pleased, and tries not to.' },
+      { companion: ASH, text: '"Good," Ash says, the way he says it to a row that came up.', effects: [{ approval: { companion: ASH, by: 5 } }] },
     ], options: [{ text: '(Let her go.)', exit: true }] },
     kept: { text: 'She stands up off the cot and folds the blanket and does not look at you. "Where do you sleep? I\'ll keep it." Her voice is level. Wren, if she is here, has walked away down the deck and will not be found until morning.', interject: [
       { companion: TAMSIN, text: '"You bought a person," Tamsin says. It isn\'t a question, and she doesn\'t wait for an answer; she walks off after Wren.', effects: [{ approval: { companion: TAMSIN, by: -10 } }] },
       { companion: ILYA, text: '"Right," Ilya says, and that is all he says for the rest of the day.', effects: [{ approval: { companion: ILYA, by: -5 } }] },
+      { companion: ASH, text: '"You bought a person, friend," Ash says. "Hold the paper, then. Feel what it weighs."', effects: [{ approval: { companion: ASH, by: -10 } }] },
     ], options: [{ text: '(Go.)', exit: true }] },
   },
 };

@@ -1448,6 +1448,37 @@ export const shale: MapDef = {
       }
     },
     {
+      def: "npc_c9_03",
+      x: 17,
+      y: 16,
+      facing: 2,
+      schedule: [],
+      if: {
+        all: [
+          {
+            any: [
+              {
+                knows: "tamsin_replied"
+              },
+              {
+                flag: "tam_out"
+              }
+            ]
+          },
+          {
+            not: {
+              inParty: "npc_c9_03"
+            }
+          },
+          {
+            not: {
+              flag: "tam_home"
+            }
+          }
+        ]
+      }
+    },
+    {
       def: "npc_rd_02",
       id: "tribute_vasha",
       x: 32,

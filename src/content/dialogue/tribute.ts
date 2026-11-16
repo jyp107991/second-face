@@ -103,6 +103,7 @@ export const d_tribute: DialogueDef = {
       interject: [
         { companion: ILYA, text: '"Kade\'s mine." Ilya is already moving, counting under his breath, fast and level. "Whatever else happens."' },
         { companion: WREN, text: '"Midge\'s on his first tithe," Wren says, and lifts her weapon anyway. "I told him to keep his mouth shut. I should have told him to stay home."' },
+        { companion: 'npc_c9_03', text: '"Rust it. Finally." Tamsin is grinning, and her hands are shaking, and she doesn\'t let either of them stop her.', effects: [{ approval: { companion: 'npc_c9_03', by: 5 } }] },
       ],
       effects: [{ set: 'tribute_fight' }, { decision: { id: 'tribute_fight', text: 'Shale fought the Rust Dogs at the wells on Tribute Day, on your word.' } }, { event: 'fight' }],
       options: [{ text: '(—)', exit: true }],

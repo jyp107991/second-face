@@ -23,4 +23,14 @@ export const WORLD_EVENTS: Record<string, WorldEventDef> = {
     ],
     preventedEffects: [{ set: 'tribute_day', value: false }],
   },
+  /** Tamsin out of the Cistern (U8): once her letter's reply has come, or she has been asked at the Grille, she waits at
+   * Mags's (the map places her there); at six the first evening the player is in Shale, she comes up to them. If they have
+   * already found her, nothing happens. */
+  tamsin_out: {
+    id: 'tamsin_out', at: { hour: 18, where: 'shale' }, armedIf: { any: [{ knows: 'tamsin_replied' }, { flag: 'tam_out' }] }, preventedIf: { flag: 'tam_met' },
+    effects: [
+      { set: 'tam_out' }, { event: 'talk', data: { npc: 'npc_c9_03' } },
+      { news: { tag: 'cistern_out', text: 'somebody came out of the Cistern at Knock, the first in living memory, and walked down to Shale', valence: 1, size: 5, at: 'shale' } },
+    ],
+  },
 };

@@ -242,9 +242,13 @@ export const d_kn_hatch: DialogueDef = {
 };
 
 // ---- the Grille: Tamsin, Pell, Ines, Bram, by voice ----------------------------------------------------------------
+/** Tamsin is out of the Cistern (U8: her letter's reply, or asked here); the Grille is somebody else's voice now. */
+const TAM_OUT = { any: [{ knows: 'tamsin_replied' }, { flag: 'tam_out' }] };
+
 export const d_kn_grille: DialogueDef = {
   id: 'd_kn_grille', owner: 'npc_c9_03',
   start: [
+    { if: TAM_OUT, node: 'later_out' },
     { if: { all: [{ flag: 'kn_free_to_leave' }, { not: { flag: 'kn_tamsin_farewell' } }] }, node: 'farewell' },
     { if: { all: [{ flag: 'kn_maud_hurt' }, { not: { flag: 'kn_ines_refused' } }] }, node: 'ines_plea' },
     { if: { flag: 'kn_free_to_leave' }, node: 'later' },
@@ -356,8 +360,35 @@ export const d_kn_grille: DialogueDef = {
       options: [
         { id: 'grille.bram', text: 'Is Bram there? Anything he wants carried out?', if: { quest: 'q_a1_bram', status: 'none' }, next: 'bram' },
         { id: 'grille.seed', text: 'Ines — Shale\'s factor would pay for viable seed. The Cistern keeps a bank.', if: { all: [{ quest: 'q_a1_seed', status: 'active' }, { not: { item: 'k_seed_case' } }] }, next: 'seed' },
+        { id: 'grille.tam.ask', text: 'Come out, Tam. I\'ve seen Shale. Come and see it.', if: { flag: 'visited_shale' }, next: 'tam_ask' },
         { text: '(Step back.)', exit: true },
       ],
+    },
+    tam_ask: {
+      text: '"Out." A long silence behind the holes. "You know I\'ve measured the hatch? Since I was eighteen. I fit. I\'ve always fit." Another silence, and her breathing, close. "Hatch day. MOTHER opens at six. If it holds the hatch for me, I\'ll climb. Don\'t wait for me here; I\'ve been waited for through a wall my whole life. Go to Shale. I\'ll find you at Mags\'s."',
+      again: '"Mags\'s," she says through the holes. "Go on."',
+      effects: [{ set: 'tam_out' }, { set: 'tam_asked' }, { decision: { id: 'tam_asked', text: 'You asked Tamsin to come out of the Cistern, through the Grille.' } }],
+      options: [{ text: 'Mags\'s. I\'ll be there.', exit: true }],
+    },
+    later_out: {
+      text: [
+        { if: { inParty: 'npc_c9_03' }, text: 'The Grille. Tamsin stands in front of it with her hands in her pockets, looking at the holes from the wrong side for the first time in her life. "It\'s smaller," she says. "From out here."' },
+        { text: 'The Grille. Behind the holes, somebody else\'s breathing now. Tamsin isn\'t on the other side of it any more.' },
+      ],
+      again: 'The plate of holes, worn smooth by sixty years of hands.',
+      options: [
+        { id: 'grille.pell.chart', text: '(Tamsin puts her mouth to the holes.) "Pell. It\'s me. My chart. Before I was six."', if: { all: [{ inParty: 'npc_c9_03' }, { flag: 'tam_s3' }, { not: { flag: 'tam_why' } }] }, next: 'pell_chart' },
+        { id: 'grille.bram.out', text: 'Is Bram there? Anything he wants carried out?', if: { quest: 'q_a1_bram', status: 'none' }, next: 'bram' },
+        { id: 'grille.seed.out', text: 'Ines — Shale\'s factor would pay for viable seed. The Cistern keeps a bank.', if: { all: [{ quest: 'q_a1_seed', status: 'active' }, { not: { item: 'k_seed_case' } }] }, next: 'seed' },
+        { text: '(Step back.)', exit: true },
+      ],
+    },
+    pell_chart: {
+      speaker: 'npc_c9_02',
+      text: 'A long breath through the holes. "Tamsin. You\'re out. Of course you\'re out." Then plainly, because he is Pell: "Your chart before six is in my hand and on the city\'s form. Born at thirty weeks. Lungs like wet paper. The form has a box on it, FIT FOR RELOCATION, and I ticked no, because it was true, and gave it to MOTHER for the quarterly return." A pause. "You weren\'t on the next count. Or any count. I thought it was a clerk\'s error for six years. Then I thought it wasn\'t, and I didn\'t ask, because I was afraid of the answer. That\'s the truth. I\'m sorry, Tam."',
+      again: 'Pell\'s breathing behind the holes, waiting to be forgiven or not.',
+      effects: [{ set: 'tam_why' }, { learn: 'tam_why_pell' }, { approval: { companion: 'npc_c9_03', by: 5 } }],
+      options: [{ text: '(Tamsin puts her hand flat on the Grille, and says nothing for a long time.)', exit: true }],
     },
     bram: {
       speaker: 'npc_c9_04',

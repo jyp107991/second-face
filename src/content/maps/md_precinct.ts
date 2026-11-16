@@ -1265,9 +1265,25 @@ export const md_precinct: MapDef = {
       y: 17,
       facing: 0,
       if: {
-        not: {
-          flag: "nine_joined"
-        }
+        any: [
+          {
+            not: {
+              flag: "nine_joined"
+            }
+          },
+          {
+            all: [
+              {
+                flag: "nine_left"
+              },
+              {
+                not: {
+                  inParty: "npc_md_nine"
+                }
+              }
+            ]
+          }
+        ]
       }
     },
     {

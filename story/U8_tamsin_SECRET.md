@@ -5,40 +5,40 @@ Sources: `CHARACTERS_SECRET.md` §A comp_tamsin; `STORY_PLAN_SECRET.md` §7 (*No
 first letter home and joins in Shale"). Content read: `dialogue/knock.ts` (`d_kn_grille`), `dialogue/ch1_cistern.ts`
 (`d_c9_tamsin`), `world/letters.ts` (`let_tamsin_inside`), every Tamsin interjection in `src/content/dialogue/*`.
 
-## 0. Finding: she cannot join in the current story (2026-11-16)
-- Her only `join` is `d_c9_tamsin/come`, in the retired shelter opening. The Cistern's interior (`maps/cistern9`) has no
-  way in: `c9_mouth`'s exits do not lead down (Unity's `PlacePlayTests` asserts it), and her NpcDef is placed only there.
-- In the Knock opening she is a voice at the Grille (`d_kn_grille`: morning riddles, the farewell's fingertips; the
-  farewell sets `c9_tamsin_inside`). From Shale the player can write `let_tamsin_inside`; her reply ("Come back or I'm
-  coming out") teaches `tamsin_replied`, and nothing follows it. The escape §18 plans is not built.
-- So her ~54 interjections and ~20 approval effects already written across Act 1 and Act 2 never fire, and nothing can
-  be built for her camp, quest or romance that a player could reach. **Built in U8 for her: only what is reachable** —
-  the seed of stage 3 inside Nine's camp (`d_md_nine/reserve`: clause 40, "the record has sixty people in Reserve 9…
-  bring her to my desk one day"; sets `nine_tamsin_asked`, `nine_reserve_count`). Everything below is the plan, with the
-  scenes drafted so they can be transcribed into `d_c9_tamsin` as soon as the join is wired.
+## 0. Status (2026-11-16, second pass): built and joinable
+The first pass found she could not join (her only `join` was in the retired shelter opening, whose interior has no way
+in; in Knock she is a voice at the Grille, and her letter's reply led nowhere). The second pass, on the coordinator's
+go, wired the join for the Unity runtime and built her arc. Built:
+- **The join.** `maps/shale.ts` (and its generator `tools/maps/gen_shale.py`) places `npc_c9_03` at Mags's (17,16,
+  `schedule: []`) while she is out (`tamsin_replied` known, or `tam_out`), not travelling with the player, and not gone
+  home (`tam_home`). `world/events.ts` `tamsin_out`: at six in the evening, the first time the player is in Shale once she
+  is out, `{ event: 'talk', data: { npc: 'npc_c9_03' } }` walks her up to them; prevented if they have already met
+  (`tam_met`). The Grille (`d_kn_grille`): after Shale, "Come out, Tam" (`tam_ask`: sets `tam_out`, `tam_asked`) for a
+  player who never wrote; once she is out the Grille opens on `later_out` (somebody else's breathing; with her beside the
+  player, "It's smaller from out here"), which also carries Bram's letter, the seed and Pell's chart.
+- **`d_c9_tamsin`** (ch1_cistern.ts): the meeting (`meet` → `meet_photo` / `meet_out` / `meet_home` → `meet_join`: come
+  with me, or stay at Mags's a while), `waiting`, `party` (she waits at Mags's in Shale, always: no ghost of her elsewhere),
+  the camp hub with the four stages, the romance, the list, the quest's Nine route and the choice, 7 lighter topics, the
+  Ash and Nine exchanges, leaving (−20 to Mags's; −50 home), the win-back at Mags's, and the break. The retired shelter
+  opening's nodes are kept as they were, after the new start entries.
+- **`q_comp_tamsin` "Not Written Down"** (quests/comp_tamsin.ts): `why` → `choice` → `mother` | `ines` | `kept`.
+- **Interjections applied:** Tribute Day fought +5 (`d_tribute/fight`), Jonah off the tower +5 (`d_sh_jonah/careful`),
+  Dry Wells restored +10 (`d_dw_console/restored`), Dry Wells sold −10 (`d_sh_pike/station_sold`). Still a proposal:
+  helping Vasha's coup −10 (`d_rd_vasha/coup_yes`, overpass.ts).
+- Checked headless (scratch script): both routes out, placement and event conditions, every stage warm and cold, both
+  quest routes and the choice, the romance opened, together and stopped (shared partner set and cleared), blocked while
+  another companion's romance is in hand, two lies and the list, the break, the floor and the win-back, home.
 
-## 1. Where she joins (the plan) and the wiring it needs
-**The point:** the first time the player is in Shale after her reply (`tamsin_replied`) — or, for a player who never
-writes, the first time they come back to the Grille after Shale (`visited_shale`) and ask her. No date, no deadline: the
-event waits for the player (`WorldEventDef.at: { hour, where }`). If neither happens, she stays inside until Act 3, where
-she is at the door.
+## 1. Where she joins and why there
+**The point:** the first time the player is in Shale after her reply (`tamsin_replied`), or after asking her at the
+Grille. No date, no deadline: she waits at Mags's, and the event waits for the player. If neither happens she stays
+inside until Act 3, where she is at the door.
 **How she gets out (story):** on a hatch day MOTHER opens the drop-hatch out of turn and holds it while she climbs out
 ("variance", MOTHER logs; Ines learns afterwards). She is narrow, light, and has been measuring the hatch for six years.
-Corin walks her down the track to Shale because Maud makes him. First person out of the Cistern in living memory.
-**The scene:** they have never seen each other's faces. The joining conversation is that (§3, J).
-**Wiring (outside the U8 files; to do when the join is scheduled):**
-1. `src/content/world/events.ts`: `{ id: 'ev_tamsin_out', at: { hour: 18, where: 'shale' }, armedIf: { all: [{ knows:
-   'tamsin_replied' }, { not: { flag: 'tam_joined' } }] }, effects: [{ set: 'tam_out' }, { event: 'dialogue', data: { tree:
-   'd_c9_tamsin', name: 'Tamsin Roe' } }] }` (the TS host opens a conversation on `event: 'dialogue'`; the Unity runtime
-   needs the same, or a conditional placement of `npc_c9_03` at Mags's).
-2. `src/content/dialogue/knock.ts` `d_kn_grille/later`: an option "Come out. I'll walk you down." if `visited_shale` and
-   not `tam_out` → a node where she says "Hatch day. Be there." and sets `tam_out` and `tam_at_hatch` (the J scene then
-   happens at the hatch instead of Shale; same nodes, one text variant).
-3. `src/content/dialogue/ch1_cistern.ts` `d_c9_tamsin`: new start entries before the retired ones, in this order:
-   leaving (approval floor) → camp (`inParty` + `at_camp`) → party (`inParty`) → left (`tam_left`) → J (`tam_out` and not
-   `tam_joined`) → the retired entries. Nodes as drafted in §3.
-4. A quest file `src/content/quests/comp_tamsin.ts` (`q_comp_tamsin`, "Not Written Down", §4) and its registration.
-5. `npc_c9_03`'s outfit outside: the Cistern coveralls first, then "whatever she loots first" (the wardrobe rule).
+Corin walks her down the track to Shale. First person out of the Cistern in living memory.
+**The scene:** they have never seen each other's faces. The joining conversation is that.
+**Open wiring (outside the U8 files):** `let_tamsin_inside` should not be offered once she is out
+(`if` + `{ not: { flag: 'tam_out' } }`, letters.ts); her NpcDef's barks are the Cistern's and could be given road lines.
 
 ## 2. The four stages
 | # | Stage | Milestone (flags) | Band | Conversation | Sets |
@@ -46,8 +46,8 @@ Corin walks her down the track to Shale because Maud makes him. First person out
 | J | **Faces** (the join) | `tam_out` (above) | — | J: first sight of each other; the photo held next to the player's face | `tam_joined`, `join` |
 | 1 | **Out the door, reckless** | first camp after joining | ≥ 0 | S1 "The sky" | `tam_s1` |
 | 2 | **People die of being brave** | Jonah's month over: `jonah_dead` or `jonah_lived` | ≥ 15 (cold below: she does not talk about it, `tam_s2` set by a one-line node) | S2 "Brave" | `tam_s2`; romance R1 offered |
-| 3 | **Not written down** | in Meridian (`a2_precinct_done`) with her: Nine reads her entry to her at its desk (`nine_tamsin_asked` and Nine met), or the records terminal's reserve list read with her (`md_reserves_list`), or Odile decodes Reserve 9's ration lists | ≥ 25 warm; cold below | S3 "No entry" → personal quest | `tam_s3`; `q_comp_tamsin` |
-| 4 | **The person MOTHER protected** | Act 3: `q_a3_order` (the city orders Reserve 9 relocated by force) | ≥ 40 warm; cold below | S4 "Home" | `tam_stance` = door / with_you / mother |
+| 3 | **Not written down** | in Meridian (`a2_precinct_done`): she asks the records office for her own entry herself (a person may) | ≥ 25 warm; cold below | S3 "No entry" (`s3` → `s3_ask` → `s3_why`) | `tam_s3`, `tam_uncounted`; starts `q_comp_tamsin` |
+| 4 | **The person MOTHER protected** | built as her pledge: `tam_secret` and the city's orders for Reserve 9 known (`md_reserves_list`, or `c_cisterns_city` / `c_mother_answers`); acted out in Act 3 (`q_a3_order`) | ≥ 40 warm; cold below | S4 "Three orders" | `tam_s4`; `tam_pledge` = door / lives / city (Act 3 reads it; she stands in the door whatever it is) |
 
 What changes her: what the player tells her (truth or lies, counted), how the player treats people who can't pay (Act 1
 and 2 interjections), Jonah's month, and whether the player decides things for her.
@@ -85,11 +85,12 @@ Starts `q_comp_tamsin`. Romance R1 offered again if deflected.
 choice; she decides by approval and what the player has done: stand in the door (`door`), stand with the player
 wherever they stand (`with_you`, only at ≥ 60 and not the red line), or go inside to MOTHER (`mother`).
 
-## 4. Personal quest: `q_comp_tamsin` "Not Written Down" (planned, compact)
-Stages: `no_entry` (find why she is not in the record) → `why` → `told` (end). Routes: Nine reads the census against the
-ration counter (knowledge; needs Nine); Odile decodes Reserve 9's ration lists from the Exchange's archive (barter/
-knowledge); the Spire's census (tech, B3.11); Pell by letter (medicine; the Bonesetter origin reads his charts: "unfit for
-relocation" in the city's form). The truth (bible): MOTHER hid her birth because she was born sickly and the city's
+## 4. Personal quest: `q_comp_tamsin` "Not Written Down" (built, compact)
+Stages: `why` (find why she was never counted: `tam_why`) → `choice` (`tam_secret`) → `mother` | `ines` | `kept`. Routes
+built: Pell through the Grille at Knock with her there (`d_kn_grille/pell_chart`: the chart, FIT FOR RELOCATION ticked no,
+not on the next count); Nine at the fire (`d_c9_tamsin/why_nine`: clause 40 read to the person, sixty in the record and
+sixty-one in the caretaker's ration returns, the one error it never filed). Planned extras: Odile decoding the ration
+lists; the Spire's census (B3.11). The truth (bible): MOTHER hid her birth because she was born sickly and the city's
 schedule disposed of the unfit; she was never counted. Ending choices: tell MOTHER she knows (letter home through Maud),
 tell Ines (Ines's arc), or keep it (Act 3: the siege's "Tamsin's secret" card is hers to play).
 
@@ -100,7 +101,7 @@ robbing the dying; deciding things for people; calling her fragile; paying for v
 Existing (reachable now): Knock — the sky +5 (`d_kn_grille/sky`), the riddle "you" +10 and affection +5
 (`riddle_you`), the riddle "Knock" +10 (`riddle_knock`), the fingertips +10 and affection +10 (`farewell` option), the
 post-book's hawk +5 (`d_kn_postbook/write`, option `post.w.hawk`); letters +10/+5 (`let_tamsin_inside` and its reply).
-Existing (unreachable until she joins): Act 1 — the dying woman's key −5 (`d_dw_oriel/key_taken`), the robbed drifter −5
+Existing (reachable now that she joins): Act 1 — the dying woman's key −5 (`d_dw_oriel/key_taken`), the robbed drifter −5
 (`d_re_drifter/robbed`); Act 2 — "off their page" +5 (`d_nb_voss/sheet`), "weather" −5 (`d_nb_voss/break_ok`), Sable kept
 −10 (`d_nb_sable/kept`), the seed tithe −5 ×2 (`d_of_hollin/cut`, `d_of_corso/cut`), the Sump sides −5 ×2
 (`d_sp_grel/side_yes`, `d_sp_hesk/side_yes`), the market loot −5 (`d_mk_vell/loot_wait`), the Sink lie −5
@@ -108,10 +109,10 @@ Existing (unreachable until she joins): Act 1 — the dying woman's key −5 (`d
 Stacks fire −15 (`d_st_ren/burned`), the cup −15 (`d_cr_cup/poured`), Tillie sold −10 (`d_cr_honora/tillie_sold`),
 Tillie freed +5 (`d_cr_honora/tillie_free`), Verity kept +5 (`d_bw_verity/keep`). Retired shelter opening (unreachable,
 leave as is): `d_c9_ines/refuse_send` −15, `d_c9_tamsin` +5/+10/+5/−10.
-Proposed (in the U8 report, for when she joins): Tribute Day fought +5 (`d_tribute/fight`); Jonah off the tower +5
-(`d_sh_jonah/careful`); Dry Wells restored +10 (`d_dw_console/restored`); Dry Wells sold to the guild −10
-(`d_sh_pike/station_sold`); helping Vasha's coup −10 (`d_rd_vasha/coup_yes`).
-Camp (drafted above): S1 +5/+5/0, S2 +10/−10/+5, S3 +5, lies −5 each and counted.
+Applied (second pass): Tribute Day fought +5 (`d_tribute/fight`); Jonah off the tower +5 (`d_sh_jonah/careful`); Dry
+Wells restored +10 (`d_dw_console/restored`); Dry Wells sold to the guild −10 (`d_sh_pike/station_sold`). Proposed still:
+helping Vasha's coup −10 (`d_rd_vasha/coup_yes`, overpass.ts).
+Camp (built): meeting +5 / −10, join +10 or wait −5; S1 +5 +5; S2 +10 / −10 / +5; S3 +5 (honest) / −30 (the break); the quest +5 (Pell or Nine), "yours to decide" +10; S4 +10 / −15; Ash and Nine exchanges ±5; R1 +5, R2 +5; the list −10; asked back +30. Lies cost nothing at the time: they are counted.
 
 ## 6. Conflicts (at most two)
 - **Tamsin ↔ Ash (home vs sky)** — camp, when both travel with the player (from Openfield): ASH: "There's a weight to
@@ -131,7 +132,10 @@ stood in, on a roof in the Stacks or a bridge at Ninebridge: "Tell me what the s
 and she asks, explicitly ("I'm asking. I always ask. You can say no and I'll still be here tomorrow"); the player can say
 not tonight (no penalty) or yes; fade before anything explicit; morning line. R3 (Act 3, before the door): what they will
 be after it; epilogue: together in Shale (she deputy), on the road with the Wheel, or apart and still writing.
-**Fails:** two lies (`tam_lies` ≥ 2; lie points L1, L2, and any later "did you know" beat) → the list scene: "You're on
+**Shared convention (built):** accepting her riddle sets `romance_partner` = `npc_c9_03`; every step needs it unset or
+hers; declining after opting in, stopping, the list, the break and leaving clear it.
+**Fails:** two lies (`tam_lies` ≥ 2; lie points L1 `s1_photo` "Yes, I know who made it", L2 `s3_ask` "No" after Nine's
+hint, and any later "did you know" beat) → the list scene: "You're on
 the list. Under Ines." Romance ends for good (`tam_romance` = ended), approval −10, she stays a companion. Being told she
 was hidden "for her own good" (the break) ends it too. Never unlocked by gifts: no item or payment moves `tam_romance`.
 

@@ -313,7 +313,10 @@ export const d_dw_console: DialogueDef = {
         { if: { flag: 'dw_oriel_key' }, text: 'MAINT AUTH: MARR. The console takes the word as if it had been waiting sixty years for someone to say it. SHALE — 1.00. It thinks for the length of a breath, and then, under the floor, both pumps start at once, outside the clock, and keep going. A new line at the bottom of the log: ORIGIN OF CHANGE: DW-4 LOCAL.' },
         { text: 'The table takes the number. SHALE — 1.00. The console thinks about it for the length of a breath, and then, under the floor, both pumps start at once, outside the clock, and keep going. UPSTREAM AUTH: LINK UP. A new line at the bottom of the log: ORIGIN OF CHANGE: DW-4 LOCAL.' },
       ],
-      interject: [{ companion: ILYA, text: 'Ilya counts the pumps up under the floor, both of them, out loud. "Full measure," he says. "Shale drinks tonight. Ada won\'t know who to thank, and she won\'t ask."' }],
+      interject: [
+        { companion: ILYA, text: 'Ilya counts the pumps up under the floor, both of them, out loud. "Full measure," he says. "Shale drinks tonight. Ada won\'t know who to thank, and she won\'t ask."', effects: [{ approval: { companion: ILYA, by: 5 } }] },
+        { companion: TAMSIN, text: '"Both pumps," Tamsin says. "Outside the clock." She puts her palm flat on the floor to feel them. "Rust it. That\'s what a door opening sounds like."', effects: [{ approval: { companion: TAMSIN, by: 10 } }] },
+      ],
       effects: [{ set: 'dw_outcome', value: 'restored' }, { set: 'dw_restored' }, { decision: { id: 'dw_restored', text: 'You set Shale\'s allocation at Dry Wells to the full measure. Something upstream will notice.' } }, { xp: 150 }],
       options: [{ text: '(Step back.)', exit: true }],
     },

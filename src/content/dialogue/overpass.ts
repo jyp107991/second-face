@@ -242,7 +242,7 @@ export const d_rd_vasha: DialogueDef = {
         { id: 'vasha.coup.no', text: 'No.', effects: [{ memory: { npc: 'npc_rd_02', tag: 'refused_coup', valence: -15 } }], next: 'coup_no' },
       ],
     },
-    coup_yes: { text: '"After the fires. Don\'t be clever; clever is Kessler\'s."', interject: [{ companion: ILYA, text: '"You\'d give her his chair." Ilya says it outside, to the road, not to you. He says nothing else that night, and sleeps with the rifle.', effects: [I(-20)] }], options: [{ text: '(Nod.)', exit: true }] },
+    coup_yes: { text: '"After the fires. Don\'t be clever; clever is Kessler\'s."', interject: [{ companion: ILYA, text: '"You\'d give her his chair." Ilya says it outside, to the road, not to you. He says nothing else that night, and sleeps with the rifle.', effects: [I(-20)] }, { companion: 'npc_c9_03', text: '"She enjoys it," Tamsin says, very low, when Vasha has gone. "You gave it to the one who enjoys it."', effects: [{ approval: { companion: 'npc_c9_03', by: -10 } }] }], options: [{ text: '(Nod.)', exit: true }] },
     coup_no: { text: '"Then you\'re Kessler\'s. That\'s a shorter list than you think."', options: [{ text: 'We\'ll see.', exit: true }] },
     waiting: { text: [{ if: NIGHT, text: 'The fires are down. She tilts her head toward the coach. "Go on."' }, { text: 'After the fires. Not before.' }], options: [{ text: '(Go.)', exit: true }] },
     after_coup: {
