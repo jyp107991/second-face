@@ -740,6 +740,12 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   the shelter, the UI suite, Boot's town and walker tests pass; a held townsperson now stops where they stand (they
   finished their walk, 0.66 m); the photo test lets the stick's turn settle before the bumper's quarter turn. Shale's
   road-to-road NavMesh failed once in the long run and passed alone (order-dependent: watch it in CI).
+  **A1 diagnosed (pick of the 12 worst, the stage trace of Police_Male_06):** the arm held from the frames before hangs
+  15-17° off the vertical; `SkinRest` (the hand set beside the thigh) then stands the gear side's arm out to 22-24° mean,
+  32° at worst (the left 16-18°): the hand is placed outside what the belt carries on that hip, and the upper arm follows
+  it. A cap on the resting direction (`UpperDir`) changed nothing (A1 88 = 88 on the pick) and was taken back. The fix
+  belongs in `SkinRest`: the hand rests in front of the hip's gear, or the gear gives (a corrective like the flank's),
+  so the upper arm keeps its hang. The pick with the held-back people fixes: A1 88, A4 22 (full42 23), C1 2 (1), W3 3.
   **Next:** the gate batch (A1 cap + T41 framing + the held-back people fixes): a pick of the eleven gear-held men, then
   the whole cast; commit only with no measure worse than 165. Then W6 (women's jog stance), T43's arrivals, play-ch1.
 - **2026-11-16, the drive to v1 resumed (owner: "finish v1. do not stall.").** Gate: red, 165 (A1 118, A4 21, W6 11,
