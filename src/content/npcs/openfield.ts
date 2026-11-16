@@ -45,7 +45,7 @@ export const OPENFIELD_NPCS: NpcDef[] = [
     barks: ['Fever has a smell. This isn\'t it.', 'Boil the north trough. Boil everything.', 'Lie down. The sky can see you lying down.'],
   },
   {
-    id: 'npc_of_06', name: 'Keeper Doria Vance', look: { seed: 7106, frame: 'narrow', age: 52, ancestry: 'latin_american', over: { hair: { style: 'elvs_unkempt_french_braid', color: 0x5a4a3a }, weathering: 0.6 } }, role: 'settler',
+    id: 'npc_of_06', name: 'Keeper Doria Ruiz', look: { seed: 7106, frame: 'narrow', age: 52, ancestry: 'latin_american', over: { hair: { style: 'elvs_unkempt_french_braid', color: 0x5a4a3a }, weathering: 0.6 } }, role: 'settler',
     level: 3, ...OF, courage: 40, dialogue: 'd_of_doria', attrs: { wits: 8, senses: 6, presence: 5 }, skills: { barter: 40, survival: 45, science: 25 }, tolls: 16,
     inventory: [['c_fruit', 1]],
     schedule: [{ from: 6, to: 20, spot: 'store', activity: 'work' }, sleep('hall_cot_d', 20, 6)],
@@ -58,7 +58,7 @@ export const OPENFIELD_NPCS: NpcDef[] = [
     barks: ['Forty years in the glass. Thirty of them green.', 'I saw a light at the well. Lights at wells aren\'t good.', 'The young ones sing. We used to work.'],
   },
   {
-    id: 'npc_of_08', name: 'Hollin Brannock', look: { seed: 7108, frame: 'broad', age: 26, ancestry: 'south_asian', over: { hair: { style: 'cut_crop', color: 0x1a1410 }, weathering: 0.7 } }, role: 'labourer',
+    id: 'npc_of_08', name: 'Ishan Kadam', look: { seed: 7108, frame: 'broad', age: 26, ancestry: 'south_asian', over: { hair: { style: 'cut_crop', color: 0x1a1410 }, weathering: 0.7 } }, role: 'labourer',
     level: 2, ...OF, team: 'neutral', courage: 35, dialogue: 'd_of_hollin', attrs: { brawn: 7, reflex: 6, wits: 5 }, skills: { stealth: 35, survival: 30 }, tolls: 22,
     inventory: [['c_jerky', 1]],
     schedule: [{ from: 6, to: 19, spot: 'yard_work', activity: 'work' }, { from: 19, to: 23, spot: 'camp_fire', activity: 'idle' }, sleep('camp_tent_c', 23, 6)],
@@ -75,7 +75,7 @@ export const OPENFIELD_NPCS: NpcDef[] = [
     barks: ['My hands shake. Imre says it\'s not the fever.', 'Tobias brought me water. Kind of him.'],
   },
   {
-    id: 'npc_of_11', name: 'Corso Vail', look: { seed: 7111, frame: 'narrow', age: 38, ancestry: 'east_asian', over: { hair: { style: 'cut_sidepart', color: 0x1a1410 } } }, role: 'trader',
+    id: 'npc_of_11', name: 'Daichi Nakai', look: { seed: 7111, frame: 'broad', age: 38, ancestry: 'east_asian', over: { hair: { style: 'cut_sidepart', color: 0x1a1410 } } }, role: 'trader',
     level: 3, team: 'neutral', settlement: 'openfield', faction: 'tollmen', courage: 35, dialogue: 'd_of_corso', attrs: { wits: 7, presence: 6 }, skills: { barter: 55, speech: 40 }, tolls: 180,
     equip: ['w_pistol9'], inventory: [['a_9mm', 10], ['c_water', 2]],
     schedule: [{ from: 7, to: 21, spot: 'lane_e', activity: 'idle' }, sleep('camp_tent_c', 21, 7)],

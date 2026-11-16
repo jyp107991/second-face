@@ -26,7 +26,7 @@ export const WHEEL_NPCS: NpcDef[] = [
     barks: ['Don\'t walk behind her. She\'s asked you nicely once.', 'Four horses. Last year, six.', 'A horse drinks what three people drink. Think about that before you ask the price.'],
   },
   {
-    id: 'npc_wh_04', name: 'Tulla Oduya', look: { seed: 7604, frame: 'narrow', age: 35, ancestry: 'west_african', over: { hair: { style: 'coily_afro', color: 0x2a2020 } } }, role: 'trader',
+    id: 'npc_wh_04', name: 'Bisi Oduya', look: { seed: 7604, frame: 'narrow', age: 35, ancestry: 'west_african', over: { hair: { style: 'coily_afro', color: 0x2a2020 } } }, role: 'trader',
     level: 3, ...WH, courage: 40, dialogue: 'd_wh_tulla', attrs: { presence: 6, wits: 6 }, skills: { barter: 50, speech: 35 }, tolls: 120,
     merchant: { buys: ['junk', 'misc', 'ammo', 'consumable', 'tool'], cash: 140, restockDays: 4, faction: 'wheel', markup: 1.25, stock: [['c_water', 6], ['c_jerky', 6], ['c_fruit', 3], ['a_9mm', 16], ['a_38', 12], ['a_12ga', 8], ['c_bandage', 3], ['t_lamp', 1], ['j_cloth', 3], ['j_scrap', 4], ['r_hood', 1], ['u_holdfast', 2], ['u_powercell', 1]] },
     schedule: [{ from: 7, to: 20, spot: 'tulla_stall_work', activity: 'trade' }, { from: 20, to: 23, spot: 'tulla_fire', activity: 'idle' }, { from: 23, to: 7, spot: 'tulla_sleep', activity: 'sleep' }],

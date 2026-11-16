@@ -10,13 +10,13 @@ const sleep = (spot: string, from = 22, to = 6) => ({ from, to, spot, activity: 
 
 export const STACKS_NPCS: NpcDef[] = [
   {
-    id: 'npc_st_01', name: 'Hester Quill', look: { seed: 9501, frame: 'narrow', age: 63, ancestry: 'north_european', over: { hair: { style: 'bob02', color: 0xc8c0b0 }, weathering: 0.4 } }, role: 'settler',
+    id: 'npc_st_01', name: 'Gudrun Pruett', look: { seed: 9501, frame: 'narrow', age: 63, ancestry: 'north_european', over: { hair: { style: 'bob02', color: 0xc8c0b0 }, weathering: 0.4 } }, role: 'settler',
     level: 4, ...ST, courage: 55, dialogue: 'd_st_hester', attrs: { wits: 8, presence: 8 }, skills: { speech: 60, barter: 45 }, tolls: 180,
     schedule: [{ from: 8, to: 20, spot: 'office_desk', activity: 'work' }, { from: 20, to: 8, spot: 'office_desk', activity: 'away' }],
-    barks: ['Committee meets when the committee meets. Sit.', 'Nine\'s dry, Twelve\'s pumping, and the Plan says the lifts run. Three things that are true.', '9-14\'s empty. Key money\'s two-fifty. The Marrs left the kettle.'],
+    barks: ['Committee meets when the committee meets. Sit.', 'Nine\'s dry, Twelve\'s pumping, and the Plan says the lifts run. Three things that are true.', '9-14\'s empty. Key money\'s two-fifty. The Ostrows left the kettle.'],
   },
   {
-    id: 'npc_st_02', name: 'Oskar Vey', look: { seed: 9502, frame: 'broad', age: 50, ancestry: 'mediterranean', over: { hair: { style: 'short04', color: 0x4a4038 }, facialHair: 'short_beard', weathering: 0.5 } }, role: 'tech',
+    id: 'npc_st_02', name: 'Oskar Rinaldi', look: { seed: 9502, frame: 'broad', age: 50, ancestry: 'mediterranean', over: { hair: { style: 'short04', color: 0x4a4038 }, facialHair: 'short_beard', weathering: 0.5 } }, role: 'tech',
     level: 5, ...ST, courage: 50, dialogue: 'd_st_oskar', attrs: { wits: 8, mechanics: 7 } as never, skills: { mechanics: 55, science: 35 }, tolls: 60,
     schedule: [{ from: 6, to: 22, spot: 'tank_keeper', activity: 'work' }, sleep('tank_chair')],
     barks: ['Tank fills at night off the Precinct main. What comes out after is politics.', 'I keep the valve. I don\'t set it. Everyone says that; I mean it.', 'Twelve pumps at two. Nine wakes at six to a dry bed. I\'ve a log.'],
@@ -66,7 +66,7 @@ export const STACKS_NPCS: NpcDef[] = [
     barks: ['A third of the crop. Nutrient and the pump. Fair.', 'The Concern believes in growth. So does a tray.', 'Nobody has to decide anything today. That\'s the Concern\'s whole offer.'],
   },
   {
-    id: 'npc_st_10', name: 'Ren Ashby', look: { seed: 9510, frame: 'broad', age: 24, ancestry: 'east_african', over: { hair: { style: 'paint_shaved', color: 0x151210 }, weathering: 0.3 } }, role: 'labourer',
+    id: 'npc_st_10', name: 'Kimani Okello', look: { seed: 9510, frame: 'broad', age: 24, ancestry: 'east_african', over: { hair: { style: 'paint_shaved', color: 0x151210 }, weathering: 0.3 } }, role: 'labourer',
     level: 4, ...ST, courage: 70, dialogue: 'd_st_ren', attrs: { grit: 7, brawn: 7 }, skills: { melee: 45, survival: 35 }, tolls: 15,
     equip: ['w_pipe'],
     schedule: [{ from: 6, to: 23, spot: 'beds_c', activity: 'work' }, { from: 23, to: 6, spot: 'beds_c', activity: 'away' }],

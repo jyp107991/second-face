@@ -25,7 +25,7 @@ export const MARKET_NPCS: NpcDef[] = [
     barks: ['Two Tolls a bowl. Three with meat. Don\'t ask which.', 'Everyone eats here. Everyone talks here. I hear it all and sell none of it.', 'Sit. You look like a forecast.'],
   },
   {
-    id: 'npc_mk_03', name: 'Dessa Kuhn', look: { seed: 9203, frame: 'narrow', age: 37, ancestry: 'north_european', over: { hair: { style: 'paint_shaved', color: 0x3a3230 }, scars: ['brow_cut'] } }, role: 'tech',
+    id: 'npc_mk_03', name: 'Liesel Kuhn', look: { seed: 9203, frame: 'narrow', age: 37, ancestry: 'north_european', over: { hair: { style: 'paint_shaved', color: 0x3a3230 }, scars: ['brow_cut'] } }, role: 'tech',
     level: 4, ...MK, courage: 45, dialogue: 'd_mk_kuhn', attrs: { wits: 8, senses: 7 }, skills: { science: 50, barter: 45, medicine: 30 }, tolls: 320,
     merchant: { buys: ['misc', 'junk', 'tool'], cash: 320, restockDays: 5, markup: 1.6, stock: [['ci_ch_arm_steady', 1], ['ci_ch_legs_spring', 1], ['ci_ch_skin_plate', 1], ['j_electronics', 3], ['j_wiring', 4], ['t_repair', 2]] },
     schedule: [{ from: 8, to: 21, spot: 'chrome_stall', activity: 'trade' }, sleep('chrome_cot', 21, 8)],

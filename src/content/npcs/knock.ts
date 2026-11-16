@@ -39,28 +39,28 @@ export const KNOCK: NpcDef[] = [
     barks: ['Cards out. Faces up.', 'Water\'s two Tolls the measure on the road, love. One here.', 'The Guild remembers every face. It\'s the job.'],
   },
   {
-    id: 'npc_kn_buyer', name: 'Teague Varro', look: { seed: 1206, frame: 'broad', age: 33, ancestry: 'latin_american' }, role: 'raider', level: 3, team: 'road', faction: 'tollmen', settlement: 'cistern9', courage: 50,
+    id: 'npc_kn_buyer', name: 'Tiago Varro', look: { seed: 1206, frame: 'broad', age: 33, ancestry: 'latin_american' }, role: 'raider', level: 3, team: 'road', faction: 'tollmen', settlement: 'cistern9', courage: 50,
     dialogue: 'd_kn_buyer', hostileIf: { flag: 'kn_buyer_fight' }, equip: ['w_pipe'], skills: { melee: 35 }, tolls: 12,
     barks: ['Six measures. She said six.', 'Girl owes me water, I take it in water or in teeth.'],
   },
   // Knock's own
   {
-    id: 'npc_kn_r1', name: 'Hesper Lusk', look: { seed: 1211, frame: 'narrow', age: 46, ancestry: 'west_african' }, role: 'settler', level: 1, ...KN, courage: 35,
+    id: 'npc_kn_r1', name: 'Afua Danso', look: { seed: 1211, frame: 'narrow', age: 46, ancestry: 'west_african' }, role: 'settler', level: 1, ...KN, courage: 35,
     schedule: [{ from: 6, to: 19, spot: 'pen', activity: 'work' }, sleep('home_a')],
     barks: ['My boy\'s chest rattles. MOTHER had better send the blue tablets.', 'Goats don\'t care whose water it is.', 'Your Maud fed half this slope the winter the hatch went quiet.'],
   },
   {
-    id: 'npc_kn_r2', name: 'Sim Haddad', look: { seed: 1212, frame: 'broad', age: 52, ancestry: 'mediterranean' }, role: 'labourer', level: 1, ...KN, courage: 40,
+    id: 'npc_kn_r2', name: 'Sim Nassar', look: { seed: 1212, frame: 'broad', age: 52, ancestry: 'mediterranean' }, role: 'labourer', level: 1, ...KN, courage: 40,
     schedule: [{ from: 7, to: 18, spot: 'wash', activity: 'work' }, sleep('home_b')],
     barks: ['Three lockdowns in my life. Three. Each time she said "continuity".', 'Wash water\'s grey water. Don\'t drink it.', 'The road takes more than it brings.'],
   },
   {
-    id: 'npc_kn_r3', name: 'Ruth Okafor', look: { seed: 1213, frame: 'narrow', age: 34, ancestry: 'west_african' }, role: 'settler', level: 1, ...KN, courage: 50,
+    id: 'npc_kn_r3', name: 'Binta Diop', look: { seed: 1213, frame: 'narrow', age: 34, ancestry: 'west_african' }, role: 'settler', level: 1, ...KN, courage: 50,
     schedule: [{ from: 7, to: 18, spot: 'square_a', activity: 'idle' }, sleep('home_c')],
     barks: ['Tamsin asked me what rain smells like. I told her: wet dust.', 'Ines says no. Ines always says no.', 'Hatch day, then nothing for a week. That\'s Knock.'],
   },
   {
-    id: 'npc_kn_r4', name: 'Abel Tarrow', look: { seed: 1214, frame: 'broad', age: 71, ancestry: 'north_european' }, role: 'drifter', level: 1, ...KN, courage: 20,
+    id: 'npc_kn_r4', name: 'Amos Crofts', look: { seed: 1214, frame: 'broad', age: 71, ancestry: 'north_european' }, role: 'drifter', level: 1, ...KN, courage: 20,
     schedule: [{ from: 8, to: 17, spot: 'home_c', activity: 'idle' }, sleep('home_d')],
     barks: ['I came up that road sixty years back. Never went down it again.', 'They\'ve a face for you in the city, you know. On a card.', 'Don\'t you knock on that door. Nobody knocks on that door.'],
   },
@@ -68,10 +68,10 @@ export const KNOCK: NpcDef[] = [
   {
     id: 'npc_kn_rib_a', name: 'Abner Rusk', look: { seed: 1221, frame: 'broad', age: 39, ancestry: 'north_european' }, role: 'drifter', level: 2, team: 'rib', settlement: 'cistern9', courage: 45,
     dialogue: 'd_kn_rib', hostileIf: { flag: 'kn_rib_fight' }, equip: ['w_pipe'], skills: { melee: 30 }, tolls: 6, inventory: [['j_wiring', 2]],
-    barks: ['Copper don\'t belong to anybody, friend.', 'Nell, mind the cable.'],
+    barks: ['Copper don\'t belong to anybody, friend.', 'Hattie, mind the cable.'],
   },
   {
-    id: 'npc_kn_rib_b', name: 'Nell Rusk', look: { seed: 1222, frame: 'narrow', age: 35, ancestry: 'north_european' }, role: 'drifter', level: 2, team: 'rib', settlement: 'cistern9', courage: 40,
+    id: 'npc_kn_rib_b', name: 'Hattie Rusk', look: { seed: 1222, frame: 'narrow', age: 35, ancestry: 'north_european' }, role: 'drifter', level: 2, team: 'rib', settlement: 'cistern9', courage: 40,
     hostileIf: { flag: 'kn_rib_fight' }, equip: ['w_shiv'], skills: { melee: 30, stealth: 30 }, tolls: 4, inventory: [['c_dirtywater', 1]],
     barks: ['We was here first.', 'Abner. Abner, they\'ve a knife.'],
   },

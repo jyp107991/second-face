@@ -95,13 +95,13 @@ export const SHALE_NPCS: NpcDef[] = [
     barks: ['Letters go out with the next wagon. Pay in something a wagon wants.', 'Road\'s bad east. Road\'s worse west.', 'The Wheel owes nobody. The Wheel is owed by everyone.'],
   },
   {
-    id: 'npc_sh_14', name: 'Hesper Vale', look: { seed: 2114, frame: 'narrow', age: 40 }, role: 'settler', level: 1, ...SH, courage: 30,
+    id: 'npc_sh_14', name: 'Hesper Lockett', look: { seed: 2114, frame: 'narrow', age: 40 }, role: 'settler', level: 1, ...SH, courage: 30,
     dialogue: 'd_sh_hesper',
     schedule: [{ from: 7, to: 10, spot: 'wells_b', activity: 'work' }, { from: 10, to: 18, spot: 'street_w', activity: 'idle' }, { from: 18, to: 21, spot: 'saloon_table', activity: 'drink' }, home('home_c')],
     barks: ['Two cups a day. Two. For a family.', 'You from the salt cut? Nobody\'s from the salt cut.', 'The Choir girl fixed my boy\'s arm for nothing. Nothing. I don\'t trust it.'],
   },
   {
-    id: 'npc_sh_15', name: 'Kit Doran', look: { seed: 2115, frame: 'broad', age: 25 }, role: 'labourer', level: 2, ...SH, courage: 45,
+    id: 'npc_sh_15', name: 'Lew Doran', look: { seed: 2115, frame: 'broad', age: 25 }, role: 'labourer', level: 2, ...SH, courage: 45,
     schedule: [{ from: 6, to: 12, spot: 'plaza', activity: 'work' }, { from: 12, to: 20, spot: 'wells_b', activity: 'work' }, { from: 20, to: 23, spot: 'saloon_table', activity: 'drink' }, home('home_c', 23, 6)],
     barks: ['Tribute\'s due. Everybody knows it, nobody says it.', 'I carried water for the Dogs once. Once.', 'Pike pays in Tolls. Mags pays in drink. Guess who I work for.'],
   },
@@ -120,15 +120,15 @@ export const SHALE_NPCS: NpcDef[] = [
   },
   // The Choir tent's three cots (q_a1_tents): a dust-lung, a broken arm, a fever.
   {
-    id: 'npc_sh_20', name: 'Old Teodor', look: { seed: 2120, frame: 'narrow', age: 71, over: { hair: { style: 'none', color: 0x3a3030 }, facialHair: 'full_beard' } }, role: 'settler', level: 1, ...SH, courage: 10,
+    id: 'npc_sh_20', name: 'Old Anton', look: { seed: 2120, frame: 'narrow', age: 71, over: { hair: { style: 'none', color: 0x3a3030 }, facialHair: 'full_beard' } }, role: 'settler', level: 1, ...SH, courage: 10,
     dialogue: 'd_sh_tent_a', attrs: { grit: 3 }, schedule: [{ from: 0, to: 24, spot: 'cot_a_sit', activity: 'idle' }], barks: ['Don\'t fuss.', 'Forty years of dust.'],
   },
   {
-    id: 'npc_sh_21', name: 'Pip', look: { seed: 2121, frame: 'narrow', age: 15, over: { hair: { style: 'cut_messy', color: 0x3a2a1a } } }, role: 'settler', level: 1, ...SH, courage: 30,
+    id: 'npc_sh_21', name: 'Birdie', look: { seed: 2121, frame: 'narrow', age: 15, over: { hair: { style: 'cut_messy', color: 0x3a2a1a } } }, role: 'settler', level: 1, ...SH, courage: 30,
     dialogue: 'd_sh_tent_b', attrs: { reflex: 6 }, schedule: [{ from: 0, to: 24, spot: 'cot_b_sit', activity: 'idle' }], barks: ['It\'s fine. Calla did it.', 'I fell off the deck. That\'s all.'],
   },
   {
-    id: 'npc_sh_22', name: 'Abel Marsh', look: { seed: 2122, frame: 'broad', age: 38, ancestry: 'west_african', over: { hair: { style: 'cut_crop', color: 0x1a1410 } } }, role: 'labourer', level: 2, ...SH, courage: 35,
+    id: 'npc_sh_22', name: 'Kojo Asante', look: { seed: 2122, frame: 'broad', age: 38, ancestry: 'west_african', over: { hair: { style: 'cut_crop', color: 0x1a1410 } } }, role: 'labourer', level: 2, ...SH, courage: 35,
     dialogue: 'd_sh_tent_c', attrs: { brawn: 7 }, schedule: [{ from: 0, to: 24, spot: 'cot_c_sit', activity: 'idle' }], barks: ['Kit? The rope.', 'Sorry. Thought you were —'],
   },
 ];

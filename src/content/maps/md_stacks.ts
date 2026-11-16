@@ -611,7 +611,7 @@ export const md_stacks: MapDef = {
       barks: [
         "Nine's dry again. Twelve's pumping.",
         "Forty floors and the lift says *as per schedule*.",
-        "Committee meets in the lobby. Everyone shouts; Hester writes.",
+        "Committee meets in the lobby. Everyone shouts; Gudrun writes.",
         "Don't rent above twenty. The water doesn't."
       ]
     },

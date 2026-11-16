@@ -76,7 +76,7 @@ export const d_nb_toll_warden: DialogueDef = {
   start: [{ if: { flag: 'nb_fight' }, node: 'fight' }, { if: { flag: 'nb_break_claim' }, node: 'paid_out' }, { if: { all: [{ flag: 'nb_strike_outcome', eq: 'broken' }, { not: { flag: 'nb_break_claim' } }] }, node: 'claim' }, { if: { flag: 'nb_strike_over' }, node: 'after' }, { if: { flag: 'nb_warden_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
-      text: '"Esk Varga. Toll-warden, Ninebridge west." He does not offer a hand; he has a count going. "If it\'s about the rate, the rate\'s on the sign. If it\'s about the porters, I\'ve a job going."',
+      text: '"Bors Varga. Toll-warden, Ninebridge west." He does not offer a hand; he has a count going. "If it\'s about the rate, the rate\'s on the sign. If it\'s about the porters, I\'ve a job going."',
       effects: [{ set: 'nb_warden_met' }],
       options: [
         { id: 'esk.job', text: 'What job?', next: 'job' },
@@ -616,7 +616,7 @@ export const d_nb_sarr: DialogueDef = {
       ],
     },
     debt_paid: { text: '"Square." The number is crossed out with one line. "Most people choose the service. I\'ll remember that you didn\'t."', options: [bye] },
-    service: { text: [{ if: { flag: 'nb_strike_over' }, text: '"There was a stoppage under my ramp. It\'s over, one way or the other, so that\'s gone. There\'ll be another thing. There always is." She writes DEFERRED beside the number. "I\'ll send."' }, { text: '"Forty porters under my ramp with their straps off. Put the straps on them. Esk will pay you the eighty he pays anyone; the debt is what I\'ll forgive." She goes back to the pen. "Go on."' }], effects: [{ set: 'nb_sarr_service' }, { quest: 'q_nb_strike', start: true }], options: [bye] },
+    service: { text: [{ if: { flag: 'nb_strike_over' }, text: '"There was a stoppage under my ramp. It\'s over, one way or the other, so that\'s gone. There\'ll be another thing. There always is." She writes DEFERRED beside the number. "I\'ll send."' }, { text: '"Forty porters under my ramp with their straps off. Put the straps on them. Bors will pay you the eighty he pays anyone; the debt is what I\'ll forgive." She goes back to the pen. "Go on."' }], effects: [{ set: 'nb_sarr_service' }, { quest: 'q_nb_strike', start: true }], options: [bye] },
     service_done: { text: '"Straps on. The number\'s gone." She crosses it out. "You\'d make a factor, if you had the patience. You don\'t."', effects: [{ set: 'nb_packet_debt', value: false }, { set: 'nb_packet_served' }, { xp: 50 }], options: [bye] },
     what: { text: '"Certainty." She does not smile. "Sealed sheets: a place, a date, what happens. Most people want to be on the right side of a date. Some want to be the date. Both pay." The pen moves. "Where the certainty comes from is a floor matter and the floor is me."', effects: [{ learn: 'nb_futures' }, { lead: 'l_futures' }], options: [bye] },
     paid: {
@@ -633,7 +633,7 @@ export const d_nb_sarr: DialogueDef = {
     paid_told: { text: '"The traveller was carrying paper that was ours, and paper that was ours is the floor\'s business, and the floor protects its business. That is the whole of it. It cost us two riders\' wages and it cost him more, and I would do it again at that price." She looks at you properly. "You came a long way to be told something you knew."', interject: [{ companion: ILYA, text: '"Two riders\' wages," Ilya says, half to himself, the way he counts rounds. "Four days." The Grand Factor glances at him as if at a sum she has already paid. "Right," he says.' }], options: [bye] },
     water: { text: '"The city rebalances. We buy the rebalancing." She says it like a rate. "A number for a town\'s water, a date; whoever holds the sheet knows what the town will drink before the town does. Pike sells the water; I sell the knowing. The town has it worst, but the town always does."', effects: [{ learn: 'nb_water_buyer' }, { learn: 'nb_city_source' }], options: [bye] },
     rook: {
-      text: 'The pen stops. "Does she." Not a question. "Amity Rook. Six years. Never late." She looks at the door to the floor. "Lot nine tomorrow, then. The floor can\'t have a leak; the whole product is the seal." A beat. "You\'ll have told me for a reason. Name it."',
+      text: 'The pen stops. "Does she." Not a question. "Amity Sethi. Six years. Never late." She looks at the door to the floor. "Lot nine tomorrow, then. The floor can\'t have a leak; the whole product is the seal." A beat. "You\'ll have told me for a reason. Name it."',
       options: [
         { id: 'sarr.rook.hand', text: 'A hand\'s ticket. I\'d like to be more than a bearer.', if: { member: 'tollmen' }, effects: [{ set: 'nb_rook_reported' }, { promote: { faction: 'tollmen', rank: 'hand' } }, { decision: { id: 'nb_rook_sold', text: 'You gave the Exchange\'s clerk to the Grand Factor for a factor\'s hand\'s ticket. She went on the block.' } }, { rep: { faction: 'tollmen', respect: 15 } }, { approval: { companion: 'npc_nb_03', by: -25 } }, { approval: { companion: 'npc_rd_03', by: -15 } }, { xp: 60 }], next: 'rook_sold' },
         { id: 'sarr.rook.coin', text: 'Coin.', effects: [{ set: 'nb_rook_reported' }, { give: 'tolls', count: 100 }, { decision: { id: 'nb_rook_sold', text: 'You sold the Exchange\'s clerk to the Grand Factor for a hundred Tolls. She went on the block.' } }, { rep: { faction: 'tollmen', respect: 6 } }, { approval: { companion: 'npc_nb_03', by: -25 } }, { approval: { companion: 'npc_rd_03', by: -15 } }], next: 'rook_sold' },
@@ -667,7 +667,7 @@ export const d_nb_captain: DialogueDef = {
       ],
     },
     again: { text: '"Captain." His eyes are on the ramps.', again: 'He watches a porter cross the deck, and waits.', options: [{ id: 'dent.strike.again', text: 'The porters.', if: { all: [{ knows: 'nb_strike_heard' }, { not: { seen: 'dent.strike' } }] }, next: 'strike' }, { id: 'dent.block.again', text: 'The block.', if: { not: { seen: 'dent.block' } }, next: 'block' }, { id: 'dent.span.again', text: 'The span.', if: { not: { seen: 'dent.span' } }, next: 'span' }, bye] },
-    strike: { text: '"Voss is a decent man with ruined knees and the guild will starve him anyway, because it has paper that says it can." He does not lower his voice. "I keep the deck. I don\'t keep the ramp. That\'s Esk\'s, and I thank the river for it."', effects: [{ learn: 'dent_sympathy' }], options: [bye] },
+    strike: { text: '"Voss is a decent man with ruined knees and the guild will starve him anyway, because it has paper that says it can." He does not lower his voice. "I keep the deck. I don\'t keep the ramp. That\'s Bors\'s, and I thank the river for it."', effects: [{ learn: 'dent_sympathy' }], options: [bye] },
     block: { text: '"Fen sells debt. Somebody has to; the guild is credit and credit has to go somewhere when it goes bad." He watches a porter not carrying. "He hates it, which is why he\'s good at it. The ones who like it get careless."', options: [bye] },
     span: { text: '"Two Tolls of planks against twelve a head to cross one at a time, slow, in sight of the guard." He almost smiles. "The guild doesn\'t mend things that pay better broken."', effects: [{ learn: 'nb_span_reason' }], options: [bye] },
     fight: { text: 'Nothing.', again: 'The captain has the deck guard between you and the ramps. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
@@ -812,7 +812,7 @@ export const d_nb_pim: DialogueDef = {
   id: 'd_nb_pim', owner: 'npc_nb_10',
   start: [{ node: 'intro' }],
   nodes: {
-    intro: { text: '"Water, jerky, tins. Fruit from Openfield when the Choir sends it, and they haven\'t — blight, they say, or the guild says it for them." An old man with a goatee and a tin cup. "Eat something. You look like a forecast."', again: '"Still no fruit." Pim rattles the tin cup. "Still tins."', effects: [{ learn: 'openfield_blight_heard' }], options: [{ text: 'Let\'s see.', effects: [{ event: 'barter' }], exit: true, repeat: true }, bye] },
+    intro: { text: '"Water, jerky, tins. Fruit from Openfield when the Choir sends it, and they haven\'t — blight, they say, or the guild says it for them." An old man with a goatee and a tin cup. "Eat something. You look like a forecast."', again: '"Still no fruit." Gunnar rattles the tin cup. "Still tins."', effects: [{ learn: 'openfield_blight_heard' }], options: [{ text: 'Let\'s see.', effects: [{ event: 'barter' }], exit: true, repeat: true }, bye] },
   },
 };
 

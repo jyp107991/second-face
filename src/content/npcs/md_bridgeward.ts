@@ -13,7 +13,7 @@ const sleep = (spot: string, from = 23, to = 6) => ({ from, to, spot, activity: 
 
 export const BRIDGEWARD_NPCS: NpcDef[] = [
   {
-    id: 'npc_bw_01', name: 'Dagmar Holt', look: { seed: 9601, frame: 'narrow', age: 58, ancestry: 'north_european', over: { hair: { style: 'short04', color: 0xa89888 }, weathering: 0.55, scars: ['cheek_slash'] } },
+    id: 'npc_bw_01', name: 'Solveig Holt', look: { seed: 9601, frame: 'narrow', age: 58, ancestry: 'north_european', over: { hair: { style: 'short04', color: 0xa89888 }, weathering: 0.55, scars: ['cheek_slash'] } },
     level: 7, ...rust, dialogue: 'd_bw_dagmar', attrs: { presence: 9, wits: 8, grit: 7 }, skills: { speech: 60, barter: 60, firearms: 45 }, tolls: 500, leader: true,
     equip: ['w_sawnoff'], inventory: [['a_12ga', 10]],
     schedule: [{ from: 8, to: 23, spot: 'boss', activity: 'work' }, sleep('hall_cot')],
@@ -52,7 +52,7 @@ export const BRIDGEWARD_NPCS: NpcDef[] = [
     barks: ['Three years listening. I heard my own name once. Nothing since.', 'She hears it in words. I hear it in weather.'],
   },
   {
-    id: 'npc_bw_07', name: 'Nell', look: { seed: 9607, frame: 'narrow', age: 35, ancestry: 'north_european', over: { skinTone: 0.05, hair: { style: 'paint_shaved', color: 0xe0d8c8 }, weathering: 0.3 } },
+    id: 'npc_bw_07', name: 'Kersti', look: { seed: 9607, frame: 'narrow', age: 35, ancestry: 'north_european', over: { skinTone: 0.05, hair: { style: 'paint_shaved', color: 0xe0d8c8 }, weathering: 0.3 } },
     level: 5, ...pale, dialogue: 'd_bw_nell', attrs: { grit: 8, senses: 7 }, skills: { melee: 50, speech: 40 }, tolls: 30,
     equip: ['w_machete'],
     schedule: [{ from: 0, to: 24, spot: 'hatch_chair', activity: 'idle' }],
@@ -66,7 +66,7 @@ export const BRIDGEWARD_NPCS: NpcDef[] = [
     barks: ['Chain says works. Chain means ours, as far as the fire barrel.', 'Pip says the bridge is next. Pip says.', 'Rustmouths charge the Crown\'s toll and keep the Crown\'s money. Somebody should tell the Crown.'],
   },
   {
-    id: 'npc_bw_09', name: 'Old Fenn', look: { seed: 9609, frame: 'broad', age: 66, ancestry: 'east_african', over: { hair: { style: 'short04', color: 0xb8b0a8 }, facialHair: 'full_beard', weathering: 0.65 } }, role: 'drifter',
+    id: 'npc_bw_09', name: 'Old Kibet', look: { seed: 9609, frame: 'broad', age: 66, ancestry: 'east_african', over: { hair: { style: 'short04', color: 0xb8b0a8 }, facialHair: 'full_beard', weathering: 0.65 } }, role: 'drifter',
     level: 3, ...BW, courage: 40, dialogue: 'd_bw_fenn', attrs: { wits: 7, grit: 7 }, skills: { survival: 45, firearms: 40 }, tolls: 12,
     schedule: [{ from: 0, to: 24, spot: 'haunt_table', activity: 'idle' }],
     barks: ['Dogs had this garage. I was a Dog. I stayed; the garage stayed.', 'Kessler said the Sallow. Perpetua said the Sallow. I said my knees.', 'The cache is where it always was. Nobody\'s asked in nine years.'],

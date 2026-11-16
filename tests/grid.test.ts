@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { Grid } from '../src/engine/scene/grid';
 import type { MapDef } from '../src/engine/data/types';
-import { ITEMS, MAPS, NPCS, PERKS, TRAITS } from '../src/content';
-import { validateContent } from '../src/engine/data/validate';
+import { FAMILIES, ITEMS, MAPS, NPCS, PERKS, TRAITS } from '../src/content';
+import { peopleNames, personName, validateContent } from '../src/engine/data/validate';
+import type { NpcDef } from '../src/engine/npc/defs';
 import { Rng } from '../src/engine/core/rng';
 
 const map: MapDef = {
@@ -47,6 +48,25 @@ describe('Rng', () => {
 
 describe('Content', () => {
   it('validates', () => {
-    expect(validateContent({ maps: MAPS, items: ITEMS, perks: PERKS, traits: TRAITS, npcs: NPCS })).toEqual([]);
+    expect(validateContent({ maps: MAPS, items: ITEMS, perks: PERKS, traits: TRAITS, npcs: NPCS, families: FAMILIES })).toEqual([]);
+  });
+
+  it('keeps a surname to one family and a given name to one person in a region', () => {
+    expect(personName('Sergeant Freya Brecht')).toEqual(['Freya', 'Brecht']);
+    expect(personName('Rust Dog (Burr)')).toEqual(['Burr']);
+    expect(personName('Girma of the Wheel')).toEqual(['Girma']);
+    expect(personName('Guild Guard')).toBeNull();
+    expect(personName('Passer-by 3')).toBeNull();
+    const npc = (id: string, name: string, settlement: string): NpcDef => ({ id, name, settlement, look: { seed: 1 }, level: 1, team: 'neutral' });
+    const run = (npcs: NpcDef[], families: Record<string, string[]> = {}) => peopleNames({
+      maps: {}, families, npcs: Object.fromEntries(npcs.map((n) => [n.id, n])),
+      settlements: { a: { id: 'a', roads: {}, region: 'north' }, b: { id: 'b', roads: {}, region: 'south' } },
+    });
+    expect(run([npc('x', 'Sheriff Ada Vey', 'a'), npc('y', 'Oskar Vey', 'b')])).toHaveLength(1);
+    expect(run([npc('x', 'Sheriff Ada Vey', 'a'), npc('y', 'Oskar Vey', 'b')], { Vey: ['x', 'y'] })).toEqual([]);
+    expect(run([npc('x', 'Marlow Dent', 'a'), npc('y', 'Tess Marlow', 'b')])).toHaveLength(1);
+    expect(run([npc('x', 'Nell Durrow', 'a'), npc('y', 'Nell Rusk', 'a')])).toHaveLength(1);
+    expect(run([npc('x', 'Nell Durrow', 'a'), npc('y', 'Nell Rusk', 'b')])).toEqual([]);
+    expect(run([npc('x', 'Ada Vey', 'a')], { Vey: ['x', 'gone'] })).toHaveLength(1);
   });
 });

@@ -29,6 +29,8 @@ export interface ContentBundle {
   factions?: Record<string, FactionDef>;
   letters?: Record<string, { id: string; to: string; if?: unknown; effects?: unknown; reply?: { effects?: unknown } }>;
   chrome?: Record<string, ChromeDef>;
+  /** Kin who share a surname: surname → npc ids of that one family (content/rules/families.ts). */
+  families?: Record<string, string[]>;
 }
 
 /**
@@ -241,7 +243,7 @@ export function validateContent(c: ContentBundle): string[] {
     if (c.npcs && !c.npcs[l.to]) errs.push(`letter ${key}: unknown recipient ${l.to}`);
     refs(`letter ${key}`, l.if); refs(`letter ${key}`, l.effects); refs(`letter ${key} reply`, l.reply?.effects);
   }
-  errs.push(...naming(c));
+  errs.push(...naming(c), ...peopleNames(c));
   for (const [key, f] of Object.entries(c.factions ?? {})) {
     if (f.id !== key) errs.push(`faction ${key}: id mismatch`);
     if (!f.ranks.length) errs.push(`faction ${key}: no ranks`);
@@ -273,5 +275,62 @@ export function naming(c: ContentBundle): string[] {
   for (const [k, f] of Object.entries(c.factions ?? {})) check(`faction ${k}`, (f as { name?: string }).name);
   for (const [k, q] of Object.entries(c.quests ?? {})) check(`quest ${k}`, (q as { title?: string }).title);
   for (const [k, it] of Object.entries(c.items ?? {})) check(`item ${k}`, (it as { name?: string }).name);
+  return errs;
+}
+
+/** Words that open a display name without being part of the person's name: titles, ranks and trades worn as titles
+ * ("Sergeant", "Mother", "Cutter"), and the role words of a crowd ("Guild Guard", "Pale Sworn"). A display name made
+ * only of these labels a role, not a person. */
+export const NAME_TITLES = ['Assessor', 'Auctioneer', 'Auntie', 'Boss', 'Brother', 'Captain', 'Caravan', 'Carter', 'Clerk', 'Corporal', 'Cutter', 'Deputy', 'Desk', 'Digger', 'Doc', 'Dog-mother', 'Dr', 'Elder', 'Engineer', 'Factor', 'Gilt', 'Grand', 'Guard', 'Guild', 'Hand', 'House', 'Keeper', 'Lift', 'Listener', 'Madame', 'Mama', 'Mender', 'Mother', 'Mr', 'Mrs', 'Ms', 'Nines', 'Novice', 'Old', 'Outrider', 'Pale', 'Pit', 'Quartermaster', 'Rustmouth', 'Scrap', 'Scrapper', 'Sergeant', 'Sheriff', 'Sister', 'Steward', 'Sworn', 'Tanner', 'Toll-warden', 'Twelves', 'Warden', 'Watch'];
+
+/** The person's own name in a display name, titles dropped: "Sergeant Freya Brecht" → [Freya, Brecht], "Rust Dog
+ * (Burr)" → [Burr], "Girma of the Wheel" → [Girma]. Null for a role or a description ("Guild Guard", "A walker",
+ * "Passer-by 3", "Grel's Man"). The first word is the given name; the last of two or more is the surname. */
+export function personName(display: string): string[] | null {
+  let s = display.trim();
+  const nick = /\(([^)]+)\)$/.exec(s);
+  if (nick) s = nick[1];
+  s = s.replace(/\s+of\s.*$/, '');
+  const words = s.split(/\s+/);
+  if (words.some((w) => !/^[A-Z][A-Za-z'-]*$/.test(w) || /'s$/.test(w))) return null;
+  while (words.length && NAME_TITLES.includes(words[0])) words.shift();
+  return words.length ? words : null;
+}
+
+/** One name per person (naming bible, docs/DESIGN_UNITY.md §8.1): a surname belongs to one family, so two people share
+ * it, or one's given name is another's surname, only when all of them are listed as kin under it in `families`; and no
+ * two people in the same region share a given name. A person's region is their settlement's, else their map's. */
+export function peopleNames(c: ContentBundle): string[] {
+  const errs: string[] = [];
+  if (!c.npcs) return errs;
+  const families = c.families ?? {};
+  const placedOn: Record<string, string> = {};
+  for (const [mk, m] of Object.entries(c.maps)) for (const p of m.npcs ?? []) placedOn[p.def] ??= mk;
+  const settlementRegion = (s?: string) => (s ? c.settlements?.[s]?.region : undefined);
+  const regionOf = (n: NpcDef): string | undefined => {
+    const mk = placedOn[n.id];
+    return settlementRegion(n.settlement) ?? (mk ? settlementRegion(c.maps[mk].settlement) ?? Object.values(c.worldMap?.locations ?? {}).find((l) => l.map === mk)?.region : undefined);
+  };
+  const label = (id: string) => `${id} ("${c.npcs![id].name}")`;
+  const people = Object.values(c.npcs).flatMap((n) => {
+    const words = personName(n.name);
+    return words ? [{ id: n.id, given: words[0], surname: words.length > 1 ? words[words.length - 1] : undefined, region: regionOf(n) }] : [];
+  });
+  const kin = (surname: string, ids: string[]) => ids.every((id) => families[surname]?.includes(id));
+  const bySurname: Record<string, string[]> = {};
+  for (const p of people) if (p.surname) (bySurname[p.surname] ??= []).push(p.id);
+  for (const [s, ids] of Object.entries(bySurname)) if (ids.length > 1 && !kin(s, ids)) errs.push(`surname "${s}": ${ids.map(label).join(', ')} share it but are not listed as one family (content/rules/families.ts)`);
+  for (const p of people) {
+    const holders = (bySurname[p.given] ?? []).filter((id) => id !== p.id);
+    if (holders.length && !kin(p.given, [p.id, ...holders])) errs.push(`npc ${label(p.id)}: name "${p.given}" is also the surname of ${holders.map(label).join(', ')}`);
+  }
+  const byGiven: Record<string, Record<string, string[]>> = {};
+  for (const p of people) if (p.region) ((byGiven[p.region] ??= {})[p.given] ??= []).push(p.id);
+  for (const [r, names] of Object.entries(byGiven)) for (const [g, ids] of Object.entries(names)) if (ids.length > 1) errs.push(`region ${r}: ${ids.map(label).join(', ')} share the given name "${g}"`);
+  for (const [s, ids] of Object.entries(families)) for (const id of ids) {
+    const words = c.npcs[id] && personName(c.npcs[id].name);
+    if (!c.npcs[id]) errs.push(`families ${s}: unknown npc ${id}`);
+    else if (!words || words[words.length - 1] !== s) errs.push(`families ${s}: ${label(id)} does not carry that surname`);
+  }
   return errs;
 }

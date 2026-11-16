@@ -181,7 +181,7 @@ export const d_sp_dace: DialogueDef = {
   start: [{ if: { flag: 'dace_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
-      text: 'A neat young man in a container on the south rim with a ledger, a horse, and a face that is trying not to be here. "Dace. Guild runner. Fourth day, scrip, both — " he stops. "I carry the paying. I don\'t go down. Nobody from the guild goes down."',
+      text: 'A neat young man in a container on the south rim with a ledger, a horse, and a face that is trying not to be here. "Khoa. Guild runner. Fourth day, scrip, both — " he stops. "I carry the paying. I don\'t go down. Nobody from the guild goes down."',
       effects: [{ set: 'dace_met' }, { learn: 'sp_pike_pays' }],
       options: [
         { id: 'dace.both', text: 'Both rims. You were going to say both.', check: { skill: 'barter', dc: 35, mods: [{ if: { knows: 'sp_two_rims' }, dc: -5, why: 'you have seen the two camps' }, { if: { member: 'tollmen' }, dc: -10, why: 'guild to guild' }] }, next: 'both_ok', fail: 'both_no' },

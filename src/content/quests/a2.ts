@@ -171,10 +171,10 @@ export const q_of_seed: QuestDef = {
         { if: { flag: 'of_seed_outcome', eq: 'corso_gone' }, stage: 'gone' },
       ],
     },
-    exposed: { journal: 'Hollin Brannock, who came from the Sump with nothing and was given the yard, carried a crate a night to the guild\'s hand for twelve Tolls each. Doria wanted him gone. The Elder gave him the yard back and the night watch, which is a Choir punishment and worse than the track.', end: 'done', onEnter: [{ set: 'of_corso_gone' }, { rep: { faction: 'choir', respect: 6 } }, { rep: { faction: 'tollmen', respect: -4 } }] },
+    exposed: { journal: 'Ishan Kadam, who came from the Sump with nothing and was given the yard, carried a crate a night to the guild\'s hand for twelve Tolls each. Doria wanted him gone. The Elder gave him the yard back and the night watch, which is a Choir punishment and worse than the track.', end: 'done', onEnter: [{ set: 'of_corso_gone' }, { rep: { faction: 'choir', respect: 6 } }, { rep: { faction: 'tollmen', respect: -4 } }] },
     chaff: { journal: 'The guild\'s hand left Openfield with six crates of seed that will grow nothing anywhere, bought at a future\'s price, and a receipt. Doria laughed for the first time in a month. Somewhere east of the Teeth a client will plant it and wait.', end: 'done', onEnter: [{ set: 'of_corso_gone' }, { set: 'guild_chaff' }, { decision: { id: 'of_chaff', text: 'You let the Tollmen buy dead seed from Openfield at a living price.' } }, { rep: { faction: 'choir', respect: 8 } }, { news: { tag: 'guild_chaff', text: 'the guild bought Choir seed by night at Openfield and got chaff with manners', valence: 10, size: 5, at: 'openfield' } }] },
     cut: { journal: 'A crate a night still walks, and a tenth of each walks to you. Doria counts, and the Elder calls it blight of a different kind, and nobody says your name.', end: 'done', onEnter: [{ set: 'of_seed_cut' }, { decision: { id: 'of_seed_cut', text: 'You took a cut of the seed stolen from Openfield for the guild.' } }, { rep: { faction: 'tollmen', respect: 5 } }] },
-    gone: { journal: 'Corso Vail took his coin and his future-paper back down the track to Ninebridge. The store is whole at dawn. Hollin keeps the yard and his tent and the look of a man who has been let off once.', end: 'done', onEnter: [{ rep: { faction: 'choir', respect: 5 } }, { rep: { faction: 'tollmen', respect: -3 } }] },
+    gone: { journal: 'Daichi Nakai took his coin and his future-paper back down the track to Ninebridge. The store is whole at dawn. Ishan keeps the yard and his tent and the look of a man who has been let off once.', end: 'done', onEnter: [{ rep: { faction: 'choir', respect: 5 } }, { rep: { faction: 'tollmen', respect: -3 } }] },
   },
 };
 
@@ -425,29 +425,29 @@ export const q_sk_highwater: QuestDef = {
     },
     paid: { journal: 'A variance under clause 14, the drains being the city\'s first duty: the relief pumps run for the Sink this spring and the Precinct bears the shortfall. Dagny Roos read it twice and turned her own dial, which she has not been allowed to do in eleven years. The Precinct will drink point six and notice.', end: 'done', onEnter: [{ set: 'sk_pumps_running' }, { set: 'sk_saved' }, { decision: { id: 'sk_paid', text: 'You had the Sink\'s relief pumping varied under clause 14; the Precinct bears the shortfall.' } }, { news: { tag: 'sink_variance', text: 'the Sink\'s pumps will run this spring on a variance; the Precinct\'s ration drops to pay for it', valence: 6, size: 7, at: 'meridian' } }] },
     retimed: { journal: 'The relief dial reads what you set it to. Two pumps that were the Precinct\'s in spring are the Sink\'s again, and the seal on the dial is a seal on a dial, which the wardens will find out when they next count. Dagny Roos says she does not know who did it, which is nearly true.', end: 'done', onEnter: [{ set: 'sk_pumps_running' }, { set: 'sk_saved' }, { decision: { id: 'sk_retimed', text: 'You retimed the Sink\'s relief pumps behind the Plan\'s seal.' } }, { news: { tag: 'sink_retimed', text: 'somebody retimed the Sink\'s pumps under the Plan\'s seal; the Precinct\'s pressure dropped overnight', valence: 2, size: 6, at: 'meridian' } }] },
-    seized: { journal: 'The Pale hold the pump house. The wardens who held it are on the tally wall, by the Pale\'s hand and yours, and the pumps run for the Sink because Saskia Dray says so. The Precinct will come down the stair for this, in its own time, with its own count.', end: 'done', onEnter: [{ set: 'sk_pumps_running' }, { set: 'sk_saved' }, { set: 'sk_pale_leave' }, { decision: { id: 'sk_seized', text: 'You took the Sink\'s pump house from the Precinct with the Pale.' } }, { news: { tag: 'sink_seized', text: 'the Pale took the Sink\'s pump house from the wardens; a stranger was in it', valence: -8, size: 9, at: 'meridian' } }] },
+    seized: { journal: 'The Pale hold the pump house. The wardens who held it are on the tally wall, by the Pale\'s hand and yours, and the pumps run for the Sink because Saskia Lehto says so. The Precinct will come down the stair for this, in its own time, with its own count.', end: 'done', onEnter: [{ set: 'sk_pumps_running' }, { set: 'sk_saved' }, { set: 'sk_pale_leave' }, { decision: { id: 'sk_seized', text: 'You took the Sink\'s pump house from the Precinct with the Pale.' } }, { news: { tag: 'sink_seized', text: 'the Pale took the Sink\'s pump house from the wardens; a stranger was in it', valence: -8, size: 9, at: 'meridian' } }] },
   },
 };
 
 export const q_sk_organ: QuestDef = {
   id: 'q_sk_organ', title: 'Organ Run', act: 'a2', start: 'need', xp: 160,
   routes: [
-    { id: 'buy', kind: 'barter', label: 'Buy one from Vash\'s cold box, and don\'t ask' },
+    { id: 'buy', kind: 'barter', label: 'Buy one from Teng\'s cold box, and don\'t ask' },
     { id: 'take', kind: 'stealth', label: 'Take it from the Pale\'s cold store', requires: { any: [{ skill: 'security', gte: 40 }, { skill: 'stealth', gte: 40 }] } },
     { id: 'chrome', kind: 'barter', label: 'A dark-chrome Second Heart instead, and Ocho to fit it' },
   ],
   stages: {
     need: {
-      journal: 'Tam Oduya pumped the Sink for the Precinct for eleven years and the wet got into his heart. Ocho can fit a new one — a real one, chilled, or a dark-chrome Second Heart — if one comes through the clinic door. Vash sells hearts. Nobody says whose.',
+      journal: 'Baraka Mwangi pumped the Sink for the Precinct for eleven years and the wet got into his heart. Ocho can fit a new one — a real one, chilled, or a dark-chrome Second Heart — if one comes through the clinic door. Teng sells hearts. Nobody says whose.',
       objectives: [
         { id: 'heart', text: 'Bring Ocho a heart he can fit', done: { any: [{ item: 'k_sk_heart' }, { item: 'ci_ch_org_heart' }, { flag: 'sk_organ_fitted' }] } },
         { id: 'fit', text: 'See it fitted', done: { flag: 'sk_organ_fitted' } },
       ],
       next: [{ if: { flag: 'sk_organ_how', eq: 'chrome' }, stage: 'fitted_chrome' }, { if: { flag: 'sk_organ_lied' }, stage: 'fitted_lie' }, { if: { flag: 'sk_organ_fitted' }, stage: 'fitted' }],
     },
-    fitted: { journal: 'Tam Oduya has a heart that beats. Ocho asked where it came from and you told him, and he asked Tam, and Tam said yes before the sentence was finished. The Code says the patient decides. It does not say Ocho has to like it.', end: 'done' },
-    fitted_chrome: { journal: 'Tam Oduya has a Second Heart under his ribs, Mender-built, no leash. It does not skip. He says it ticks, and that he can live with ticking.', end: 'done' },
-    fitted_lie: { journal: 'Tam Oduya has a heart that beats and a number inked on a bag in Ocho\'s bin, crossed out. Ocho believes it came from under the water. You know whose walk it came off.', end: 'done' },
+    fitted: { journal: 'Baraka Mwangi has a heart that beats. Ocho asked where it came from and you told him, and he asked Baraka, and Baraka said yes before the sentence was finished. The Code says the patient decides. It does not say Ocho has to like it.', end: 'done' },
+    fitted_chrome: { journal: 'Baraka Mwangi has a Second Heart under his ribs, Mender-built, no leash. It does not skip. He says it ticks, and that he can live with ticking.', end: 'done' },
+    fitted_lie: { journal: 'Baraka Mwangi has a heart that beats and a number inked on a bag in Ocho\'s bin, crossed out. Ocho believes it came from under the water. You know whose walk it came off.', end: 'done' },
   },
 };
 
@@ -455,11 +455,11 @@ export const q_sk_code: QuestDef = {
   id: 'q_sk_code', title: 'Menders\' Code', act: 'a2', start: 'hands', xp: 100,
   stages: {
     hands: {
-      journal: 'Ocho does not take apprentices; he takes hands. Hold a clamp steady through one fitting and he will say the words, which are: *fit only what the patient can bear*. Shake, and Pell takes the clamp, and there is always a next time down here.',
+      journal: 'Ocho does not take apprentices; he takes hands. Hold a clamp steady through one fitting and he will say the words, which are: *fit only what the patient can bear*. Shake, and Anju takes the clamp, and there is always a next time down here.',
       objectives: [{ id: 'assist', text: 'Hold steady through a fitting at Ocho\'s table', done: { member: 'menders' } }],
       next: [{ if: { member: 'menders' }, stage: 'apprentice' }],
     },
-    apprentice: { journal: 'Apprentice, by the Menders\' Code. Ocho said the words over a table with a man still open on it, which Pell says is how he says everything. Menders\' prices are yours now, where there are Menders, and so is the thing the Code asks: fit only what the patient can bear.', end: 'done' },
+    apprentice: { journal: 'Apprentice, by the Menders\' Code. Ocho said the words over a table with a man still open on it, which Anju says is how he says everything. Menders\' prices are yours now, where there are Menders, and so is the thing the Code asks: fit only what the patient can bear.', end: 'done' },
   },
 };
 
@@ -474,7 +474,7 @@ export const q_lr_pits: QuestDef = {
   ],
   stages: {
     card: {
-      journal: 'Lantern Row\'s pit: Teague against Doubt on the undercard at two to one, and Anvil against all comers — thirty to enter, ninety if you are standing at the end. Nobody has stood since spring. Mab Corrigan keeps the slate and the guns.',
+      journal: 'Lantern Row\'s pit: Kariuki against Doubt on the undercard at two to one, and Anvil against all comers — thirty to enter, ninety if you are standing at the end. Nobody has stood since spring. Mab Corrigan keeps the slate and the guns.',
       objectives: [
         { id: 'under', text: 'Bet on the undercard', done: { flag: 'lr_under_paid' }, optional: true },
         { id: 'comer', text: 'Stand against Anvil, or fall for the house', done: { any: [{ flag: 'lr_bout_paid' }, { flag: 'lr_dive_done' }] } },
@@ -495,7 +495,7 @@ export const q_lr_reverie: QuestDef = {
   ],
   stages: {
     shelf: {
-      journal: 'The Lantern\'s evidence shelf holds a reel a Rustmouth took off a warden: a man with no face in it recorded his last day in the city, start to end, a season ago, and went west before dawn. Ysolde Marr wants two hundred for it, or something of yours.',
+      journal: 'The Lantern\'s evidence shelf holds a reel a Rustmouth took off a warden: a man with no face in it recorded his last day in the city, start to end, a season ago, and went west before dawn. Ysolde Nwosu wants two hundred for it, or something of yours.',
       objectives: [{ id: 'reel', text: 'Get the reel', done: { item: 'k_lr_reel' } }, { id: 'play', text: 'Live his day, on a cot in the Lantern', done: { flag: 'lr_reel_seen' } }],
       next: [{ if: { flag: 'lr_reel_seen' }, stage: 'seen' }],
     },
@@ -514,7 +514,7 @@ export const q_st_flat: QuestDef = {
   ],
   stages: {
     offer: {
-      journal: 'Flat 9-14 in Block Seven: two rooms, a stove, a bed the Marrs left, a window on the canyon. The committee wants two hundred and fifty in key money, or the roof settled so Nine is not dry at six. The door has a seal on it.',
+      journal: 'Flat 9-14 in Block Seven: two rooms, a stove, a bed the Ostrows left, a window on the canyon. The committee wants two hundred and fifty in key money, or the roof settled so Nine is not dry at six. The door has a seal on it.',
       objectives: [{ id: 'key', text: 'Get the flat, one way or another', done: { flag: 'st_flat' } }],
       next: [{ if: { flag: 'st_flat' }, stage: 'home' }],
     },
@@ -528,7 +528,7 @@ export const q_st_gardens: QuestDef = {
     { id: 'shared', kind: 'talk', label: 'A schedule: hours for the beds, hours for the trays (the committee, or the valve)' },
     { id: 'nines', kind: 'stealth', label: 'The beds: pull the pump\'s fuse, or turn the valve west', requires: { any: [{ skill: 'stealth', gte: 30 }, { skill: 'mechanics', gte: 35 }] } },
     { id: 'twelves', kind: 'talk', label: 'The trays: argue the committee into giving them the tank', requires: { skill: 'speech', gte: 40 } },
-    { id: 'burned', kind: 'fight', label: 'Burn the trays with Ren, and fight the Twelves' },
+    { id: 'burned', kind: 'fight', label: 'Burn the trays with Kimani, and fight the Twelves' },
   ],
   stages: {
     roof: {
@@ -547,7 +547,7 @@ export const q_st_gardens: QuestDef = {
     shared: { journal: 'Five to two for the beds, two to five for the trays, in the keeper\'s log in capitals and in the committee\'s ledger with a date. Nine is wet at six and Twelve is green at eight. Nobody is happy and everybody is fed.', end: 'done', onEnter: [{ set: 'st_roof_settled' }, { news: { tag: 'stacks_schedule', text: 'Block Seven\'s roof got a water schedule after three springs; the committee signed it', valence: 7, size: 5, at: 'meridian' } }] },
     nines: { journal: 'The pump is dead, or the valve is wired west; either way the tank is the beds\' all night and the trays are drying. Sixty people will carry buckets. Lio Brand will remember the sum.', end: 'done', onEnter: [{ set: 'st_roof_settled' }, { news: { tag: 'stacks_beds', text: 'the Twelves\' pump on Block Seven stopped; the Nines\' beds are wet for the first time in three springs', valence: 2, size: 5, at: 'meridian' } }] },
     twelves: { journal: 'The committee gave the tank to the trays, out loud, in the ledger. Nine carries buckets from the laundry. Mama Deel has stopped coming to committee. A man in a clean coat was pleased, which should worry someone.', end: 'done', onEnter: [{ set: 'st_roof_settled' }, { news: { tag: 'stacks_trays', text: 'Block Seven\'s committee gave the roof tank to the hydroponic deck', valence: -3, size: 5, at: 'meridian' } }] },
-    burned: { journal: 'The trays burned at two in the morning with the pump loud, and sixty dinners with them, and Nessa Kord\'s hands. The Twelves came across the deck with pipes. Ren Ashby is sitting in the dirt with an empty can. The committee has written your name beside his.', end: 'done', onEnter: [{ set: 'st_roof_settled' }, { rep: { faction: 'wardens', respect: -4 } }] },
+    burned: { journal: 'The trays burned at two in the morning with the pump loud, and sixty dinners with them, and Nessa Kord\'s hands. The Twelves came across the deck with pipes. Kimani Okello is sitting in the dirt with an empty can. The committee has written your name beside his.', end: 'done', onEnter: [{ set: 'st_roof_settled' }, { rep: { faction: 'wardens', respect: -4 } }] },
   },
 };
 
@@ -597,11 +597,11 @@ export const q_bw_haunt: QuestDef = {
   id: 'q_bw_haunt', title: 'Old Haunt', act: 'a2', start: 'garage', xp: 100,
   stages: {
     garage: {
-      journal: 'A garage in Bridgeward with a dog\'s head burned into every wall: the Rust Dogs\' old haunt, before the Rustmouths took the bridge and the Dogs took the Sallow. An old Dog named Fenn has sat on the same bench for nine years, and the bench is a cache.',
-      objectives: [{ id: 'cache', text: 'Open the cache under Fenn\'s bench', done: { any: [{ flag: 'unlocked:md_bridgeward/bw_haunt_cache' }, { item: 'k_bw_dog_mark' }] } }],
+      journal: 'A garage in Bridgeward with a dog\'s head burned into every wall: the Rust Dogs\' old haunt, before the Rustmouths took the bridge and the Dogs took the Sallow. An old Dog named Kibet has sat on the same bench for nine years, and the bench is a cache.',
+      objectives: [{ id: 'cache', text: 'Open the cache under Kibet\'s bench', done: { any: [{ flag: 'unlocked:md_bridgeward/bw_haunt_cache' }, { item: 'k_bw_dog_mark' }] } }],
       next: [{ if: { any: [{ flag: 'unlocked:md_bridgeward/bw_haunt_cache' }, { item: 'k_bw_dog_mark' }] }, stage: 'cache' }],
     },
-    cache: { journal: 'The cache under Fenn\'s bench: a revolver, cartridges, eighty Tolls and a strip of cloth with a dog\'s head on it, from when the Dogs were a crew. BACK FOR THE BRIDGE, the wall says, every spring. Fenn says the rope is what the bridge is for, and the Rustmouths keep one on the booth.', end: 'done' },
+    cache: { journal: 'The cache under Kibet\'s bench: a revolver, cartridges, eighty Tolls and a strip of cloth with a dog\'s head on it, from when the Dogs were a crew. BACK FOR THE BRIDGE, the wall says, every spring. Kibet says the rope is what the bridge is for, and the Rustmouths keep one on the booth.', end: 'done' },
   },
 };
 

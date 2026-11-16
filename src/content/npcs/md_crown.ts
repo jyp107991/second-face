@@ -24,7 +24,7 @@ export const CROWN_NPCS: NpcDef[] = [
     barks: ['Vane sells. That is all one needs to know about Vane.', 'A duel is a vote with the arithmetic shown.', 'My daughter is at the window again. The window is the only thing up here she likes.'],
   },
   {
-    id: 'npc_cr_03', name: 'Aurel Dace', look: { seed: 9703, frame: 'broad', age: 34, ancestry: 'mediterranean', over: { hair: { style: 'short04', color: 0x1a1410 }, weathering: 0.1, scars: ['cheek_slash'] } },
+    id: 'npc_cr_03', name: 'Ettore Mancuso', look: { seed: 9703, frame: 'broad', age: 34, ancestry: 'mediterranean', over: { hair: { style: 'short04', color: 0x1a1410 }, weathering: 0.1, scars: ['cheek_slash'] } },
     level: 7, ...house, role: 'gilded', courage: 85, dialogue: 'd_cr_dace', attrs: { reflex: 9, brawn: 7, presence: 7 }, skills: { melee: 75, speech: 40 }, tolls: 150,
     equip: ['w_sabre'],
     schedule: stand('dace_door'),
@@ -48,7 +48,7 @@ export const CROWN_NPCS: NpcDef[] = [
     barks: ['I see everything from up here. It is what up here is for.', 'My son is at the Row, feeling something. I can see the Row from this chair.', 'Tea. Sit. Everyone sits eventually.'],
   },
   {
-    id: 'npc_cr_07', name: 'Steward Pell', look: { seed: 9707, frame: 'broad', age: 48, ancestry: 'south_asian', over: { hair: { style: 'none', color: 0x202020 }, weathering: 0.1 } }, role: 'corp',
+    id: 'npc_cr_07', name: 'Steward Bhatt', look: { seed: 9707, frame: 'broad', age: 48, ancestry: 'south_asian', over: { hair: { style: 'none', color: 0x202020 }, weathering: 0.1 } }, role: 'corp',
     level: 4, ...CR, courage: 35, dialogue: 'd_cr_pell', faction: 'tenured', attrs: { wits: 9 }, skills: { barter: 55, medicine: 40 }, tolls: 200,
     schedule: stand('pell'),
     barks: ['The house\'s steward. The house\'s hands, when the house would rather not look.', 'A cup, at the toast. Nobody up here asks what was in a cup.'],
@@ -78,16 +78,16 @@ export const CROWN_NPCS: NpcDef[] = [
     barks: ['The Concern does not usually attend. This season warranted it.', 'Futures are the only thing the Crown still makes. We buy what is made.', 'Nobody has to decide anything tonight. The Chair will.'],
   },
   {
-    id: 'npc_cr_12', name: 'Cutter Mabe', look: { seed: 9712, frame: 'broad', age: 33, ancestry: 'west_african', over: { hair: { style: 'paint_buzz', color: 0x101010 }, weathering: 0.4, scars: ['brow_cut'] } }, role: 'street',
+    id: 'npc_cr_12', name: 'Cutter Chidi', look: { seed: 9712, frame: 'broad', age: 33, ancestry: 'west_african', over: { hair: { style: 'paint_buzz', color: 0x101010 }, weathering: 0.4, scars: ['brow_cut'] } }, role: 'street',
     level: 6, ...CR, courage: 75, dialogue: 'd_cr_mabe', attrs: { brawn: 9, reflex: 7, grit: 8 }, skills: { melee: 70 }, tolls: 40,
     equip: ['w_machete'],
     schedule: stand('mabe'),
-    barks: ['Borrowed shoes. Pinch like a debt.', 'Honora pays by the bout. Up here they pay by the season.', 'Dace has never been hit by anyone who meant it.'],
+    barks: ['Borrowed shoes. Pinch like a debt.', 'Honora pays by the bout. Up here they pay by the season.', 'Mancuso has never been hit by anyone who meant it.'],
   },
   // the lift wardens and the houses' guards
   { id: 'npc_cr_w1', name: 'Lift Warden', look: { seed: 9713, frame: 'broad', age: 30, ancestry: 'mediterranean' }, ...warden, level: 5, minor: true, equip: ['w_pistol9'], inventory: [['a_9mm', 12]], schedule: stand('w1'), barks: ['Face to the lens.', 'The help goes round.'] },
   { id: 'npc_cr_w2', name: 'Lift Warden', look: { seed: 9714, frame: 'narrow', age: 27, ancestry: 'south_asian' }, ...warden, level: 5, minor: true, equip: ['w_pistol9'], inventory: [['a_9mm', 12]], schedule: stand('w2'), barks: ['Chit, pass or standing.'] },
-  { id: 'npc_cr_hg1', name: 'House Guard', look: { seed: 9715, frame: 'broad', age: 35, ancestry: 'north_european' }, ...house, level: 5, minor: true, equip: ['w_pistol9'], inventory: [['a_9mm', 12]], schedule: stand('hg1'), barks: ['Vane\'s door. Dace decides.'] },
+  { id: 'npc_cr_hg1', name: 'House Guard', look: { seed: 9715, frame: 'broad', age: 35, ancestry: 'north_european' }, ...house, level: 5, minor: true, equip: ['w_pistol9'], inventory: [['a_9mm', 12]], schedule: stand('hg1'), barks: ['Vane\'s door. Mancuso decides.'] },
   { id: 'npc_cr_hg2', name: 'House Guard', look: { seed: 9716, frame: 'broad', age: 38, ancestry: 'east_african' }, ...house, level: 5, minor: true, equip: ['w_pistol9'], inventory: [['a_9mm', 12]], barks: ['Back door\'s staff. Staff is Brisk\'s.'] },
   { id: 'npc_cr_hg3', name: 'House Guard', look: { seed: 9717, frame: 'narrow', age: 31, ancestry: 'south_asian' }, ...house, level: 5, minor: true, equip: ['w_pistol9'], inventory: [['a_9mm', 12]], schedule: stand('hg3'), barks: ['Ashby-Crane\'s. The old crest.'] },
 ];

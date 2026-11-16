@@ -46,7 +46,7 @@ export const d_dw_approach: DialogueDef = {
     shale_no: { text: '"Shale doesn\'t send people who don\'t know what the valve is." The bolt goes back, and this time it comes forward. "Go home. Tell them the pressure drop is the drought."', options: [{ id: 'dw.shale.pay2', text: '(Ten Tolls.)', if: { item: 'tolls', count: 10 }, effects: [{ take: 'tolls', count: 10 }, ...ADMIT('paid', 'You paid the rifle at Dry Wells ten Tolls to walk through.')], next: 'through' }, { id: 'dw.shale.fight2', text: '(Draw.)', effects: [{ set: 'dw_fight' }, { set: 'dw_admitted' }, { event: 'combat' }], exit: true }, { text: '(Back off.)', exit: true }] },
     hill: { text: '"DW-4." The rifle comes down slowly, like something being put back where it lives. "Nobody\'s called it that since Grandmother\'s father. He had it painted on the door." She looks at you a long moment. "Then you know more than Shale does. Come and tell her what you know."', options: [{ text: '(Go in.)', next: 'through' }] },
     pumphand: { text: '"Grew up under." She says it twice, trying it. "Under." The rifle goes across her chest. "Then you\'ll know what the clock sounds like. Eleven. Come and tell Grandmother what it sounds like where you\'re from, because she\'s never heard anyone else say it."', options: [{ text: '(Go in.)', next: 'through' }] },
-    ilya: { text: '"Sable." Ilya, beside you, not raising his voice. "It\'s Strand. I brought the cartridges in the spring. I brought this one." A silence in which the kid starts whistling again. "Strand," she says. "You still owe me three." The rifle goes down.', options: [{ text: '(Go in.)', next: 'through' }] },
+    ilya: { text: '"Luz." Ilya, beside you, not raising his voice. "It\'s Strand. I brought the cartridges in the spring. I brought this one." A silence in which the kid starts whistling again. "Strand," she says. "You still owe me three." The rifle goes down.', options: [{ text: '(Go in.)', next: 'through' }] },
     through: { text: 'She steps out from the barrel without lowering the rifle all the way, which is how she walks everywhere. "The shacks are ours. The station\'s Grandmother\'s. The tower\'s nobody\'s and don\'t climb it; Wick\'s up there and he bites." A nod at the long concrete building. "She\'ll want to see you before you touch anything that hums."', options: [{ text: '(Go in.)', exit: true }] },
     hostile: { text: 'Nobody is talking.', again: 'Nobody is talking. The fire barrel is where the shots come from.', options: [{ text: '(Fight.)', exit: true }] },
   },
@@ -57,7 +57,7 @@ export const d_dw_sable: DialogueDef = {
   start: [{ if: { flag: 'dw_fight' }, node: 'hostile' }, { if: { flag: 'dw_sable_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
-      text: '"Sable. I shoot things for the family and I count what I shoot with." The rifle lies across her knees on the sandbags. "Seven rounds. Six, now. I don\'t spend one on Shale unless Shale brings a wagon."',
+      text: '"Luz. I shoot things for the family and I count what I shoot with." The rifle lies across her knees on the sandbags. "Seven rounds. Six, now. I don\'t spend one on Shale unless Shale brings a wagon."',
       effects: [{ set: 'dw_sable_met' }],
       options: [
         { id: 'sable.shale', text: 'Why shoot at Shale?', next: 'why', once: true },
@@ -94,7 +94,7 @@ export const d_dw_sable: DialogueDef = {
         { text: '"Still east." She doesn\'t look up from the rounds.' },
       ],
       options: [
-        { id: 'sable.escort', text: 'To the glass, then.', if: { any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, effects: [{ set: 'escort_east', value: 'sable' }, { decision: { id: 'escort_sable', text: 'Sable Marr will walk you east as far as the glass.' } }, { trust: { npc: 'npc_dw_02', by: 10 } }], next: 'escort' },
+        { id: 'sable.escort', text: 'To the glass, then.', if: { any: [{ flag: 'dw_restored' }, { flag: 'dw_freed' }] }, effects: [{ set: 'escort_east', value: 'sable' }, { decision: { id: 'escort_sable', text: 'Luz Marr will walk you east as far as the glass.' } }, { trust: { npc: 'npc_dw_02', by: 10 } }], next: 'escort' },
         { text: 'Noted.', next: 'again' },
       ],
     },
@@ -109,7 +109,7 @@ export const d_dw_oriel: DialogueDef = {
   start: [{ if: { flag: 'dw_oriel_fight_done' }, node: 'cold' }, { if: { flag: 'dw_fight' }, node: 'after_fight' }, { if: { flag: 'dw_oriel_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
-      text: 'An old woman in a chair that was built for sitting, hands folded on a stick, eyes that measured you from the window before you reached the door. "Sable let you by, so you said something true. Sit. I\'m Oriel Marr. My father was the pump man here, and his father before the Burn, and that chair you\'re not sitting in was his." She waits. Under the floor, something clicks, and the pumps begin.',
+      text: 'An old woman in a chair that was built for sitting, hands folded on a stick, eyes that measured you from the window before you reached the door. "Luz let you by, so you said something true. Sit. I\'m Oriel Marr. My father was the pump man here, and his father before the Burn, and that chair you\'re not sitting in was his." She waits. Under the floor, something clicks, and the pumps begin.',
       effects: [{ set: 'dw_oriel_met' }, { learn: 'dw_oriel_met' }],
       passives: [
         { skill: 'medicine', dc: 25, text: 'The cough she is holding in is wet. Lungs, not dust. She has been holding it in for a long time.', effects: [{ learn: 'dw_oriel_cough' }] },
@@ -117,8 +117,8 @@ export const d_dw_oriel: DialogueDef = {
       ],
       options: [
         { id: 'oriel.who', text: 'Who are you people? Nobody in Shale knows you.', next: 'who', once: true },
-        { id: 'oriel.clock', text: 'Eleven o\'clock. Sable said you\'d say listen.', next: 'clock', once: true },
-        { id: 'oriel.station', text: 'The station. Sable says it\'s yours, and that there\'s a room at the end nobody goes in.', next: 'station' },
+        { id: 'oriel.clock', text: 'Eleven o\'clock. Luz said you\'d say listen.', next: 'clock', once: true },
+        { id: 'oriel.station', text: 'The station. Luz says it\'s yours, and that there\'s a room at the end nobody goes in.', next: 'station' },
         { id: 'oriel.stay', text: 'Shale could take you in. Five people, under the sheriff\'s law.', if: { all: [{ knows: 'dw_origin_known' }, { not: { flag: 'dw_ghosts_decided' } }, { not: { flag: 'ada_ghosts_decided' } }] }, next: 'stay', once: true },
         { id: 'oriel.shale.yes', text: 'Sheriff Vey says yes. Under her law, as townsfolk, and the valve closes.', if: { all: [{ flag: 'ada_ghosts_ok' }, { not: { flag: 'dw_ghosts_decided' } }] }, next: 'go_shale' },
         { id: 'oriel.shale.no', text: 'Sheriff Vey says no.', if: { all: [{ flag: 'ada_ghosts_decided' }, { not: { flag: 'ada_ghosts_ok' } }, { not: { flag: 'dw_ghosts_decided' } }] }, next: 'no_shale' },
@@ -151,7 +151,7 @@ export const d_dw_oriel: DialogueDef = {
     why_here: { text: '"Because it was the only building on the road my father knew the inside of. He\'d been sent here once, before, to read a gauge. He read it again and said: this one still answers to somebody, and somebody is feeding Shale through it, and Shale will never come looking at the thing that feeds it." A click under the floor. "He was right for sixty years."', effects: [{ learn: 'dw_father_sent' }], options: [{ text: 'Noted.', next: 'again' }] },
     clock: { text: '"Six, eleven, four, nine. Every day since before I was born, and twice a year the numbers move and nobody here moves them." She taps the floor with the stick. "That\'s Shale drinking. When the numbers moved last spring, Shale got less. Shale thinks it\'s the drought. It isn\'t the drought."', effects: [{ learn: 'dw_schedule_shale' }, { lead: 'l_dw_schedule' }], options: [{ text: 'Noted.', next: 'again' }] },
     station: {
-      text: '"My father\'s room. He said whatever was in there wasn\'t ours to touch, and then he died of the same thing I\'m dying of, and I\'ve kept it the way he left it." Her hand goes to the cord. "You want the key. Everybody who gets past Sable wants the key, in the end."',
+      text: '"My father\'s room. He said whatever was in there wasn\'t ours to touch, and then he died of the same thing I\'m dying of, and I\'ve kept it the way he left it." Her hand goes to the cord. "You want the key. Everybody who gets past Luz wants the key, in the end."',
       again: 'Her hand is on the cord again. "The key. Yes. Go on, then; say it better this time."',
       options: [
         { id: 'oriel.key.pumphand', text: '(Tell her what the clock sounds like where you come from.)', if: { origin: 'pump_hand' }, next: 'key_pumphand' },
@@ -167,10 +167,10 @@ export const d_dw_oriel: DialogueDef = {
       { companion: TAMSIN, text: '"She\'s dying," Tamsin says. "You took it off a dying woman\'s neck." She doesn\'t say anything else, and she doesn\'t need to.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] },
       { companion: ILYA, text: '"Right," Ilya says, flat, and goes out to stand where he can\'t see the chair.', effects: [{ approval: { companion: ILYA, by: -5 } }] },
     ], effects: [{ give: 'k_station_key' }, { set: 'dw_has_key' }, { set: 'dw_key_forced' }, { trust: { npc: 'npc_dw_01', by: -30 } }, { trust: { npc: 'npc_dw_02', by: -20 } }, { memory: { npc: 'npc_dw_01', tag: 'took_key', valence: -40, strength: 100 } }, { decision: { id: 'dw_key_forced', text: 'You took the station key off Oriel Marr\'s neck.' } }], options: [{ text: '(Go.)', exit: true }] },
-    stay: { text: '"Under a rope, you mean. The valve\'s a hanging in Shale." She considers it anyway, which is more than you expected. "Juno would go. Wick would go and come back. Cato would stay for the valve and Sable would stay for Cato. Ask your sheriff. If she says yes and means it, I\'ll decide for all of them, which is what I\'m for."', effects: [{ learn: 'dw_oriel_would_go' }], options: [{ text: 'I\'ll ask her.', next: 'again' }] },
+    stay: { text: '"Under a rope, you mean. The valve\'s a hanging in Shale." She considers it anyway, which is more than you expected. "Juno would go. Wick would go and come back. Cato would stay for the valve and Luz would stay for Cato. Ask your sheriff. If she says yes and means it, I\'ll decide for all of them, which is what I\'m for."', effects: [{ learn: 'dw_oriel_would_go' }], options: [{ text: 'I\'ll ask her.', next: 'again' }] },
     go_shale: { text: '"As townsfolk." She says it like a word in another language. "Then close the valve yourself, so Cato can hate you and not me, and we\'ll walk. I have walked out of one place with less." She stands, which takes a while. "Tell your sheriff: five, and one of them coughs."', effects: [{ set: 'dw_ghosts_decided' }, { set: 'dw_ghosts_shale' }, { set: 'dw_valve_closed' }, { decision: { id: 'dw_ghosts_shale', text: 'The Dry Wells family walked to Shale under Sheriff Vey\'s law.' } }, { news: { tag: 'ghosts_in_shale', text: 'five people out of a dead cistern have come in off the Dry Wells track and the sheriff has given them the old tannery', valence: 5, size: 6, at: 'shale' } }, { trust: { npc: 'npc_dw_01', by: 20 } }, { xp: 100 }], options: [{ text: '(Help her up.)', exit: true }] },
     no_shale: { text: '"No." She nods as if she had bet on it. "Then we stay, and the valve stays, and when Shale comes it comes. It was always going to." A click under the floor.', effects: [{ set: 'dw_ghosts_decided' }, { set: 'dw_ghosts_left' }, { decision: { id: 'dw_ghosts_refused', text: 'Shale refused the Dry Wells family; they stay on their trickle.' } }, { xp: 40 }], options: [{ text: 'Noted.', next: 'again' }] },
-    move_on: { text: 'She looks at the Tolls a long time before she takes them. "The graveyard, then the glass. My father walked it the other way." She puts the money in the stick, which is hollow. "Sable will say no and come anyway. Give us a week."', effects: [{ take: 'tolls', count: 40 }, { set: 'dw_ghosts_decided' }, { set: 'dw_ghosts_moved' }, { decision: { id: 'dw_ghosts_moved', text: 'You paid the Dry Wells family to move on east.' } }, { trust: { npc: 'npc_dw_01', by: 5 } }, { xp: 60 }], options: [{ text: 'Noted.', exit: true }] },
+    move_on: { text: 'She looks at the Tolls a long time before she takes them. "The graveyard, then the glass. My father walked it the other way." She puts the money in the stick, which is hollow. "Luz will say no and come anyway. Give us a week."', effects: [{ take: 'tolls', count: 40 }, { set: 'dw_ghosts_decided' }, { set: 'dw_ghosts_moved' }, { decision: { id: 'dw_ghosts_moved', text: 'You paid the Dry Wells family to move on east.' } }, { trust: { npc: 'npc_dw_01', by: 5 } }, { xp: 60 }], options: [{ text: 'Noted.', exit: true }] },
     leave_be: { text: '"Then you\'re the first from that direction who didn\'t." She closes her eyes. "Eleven o\'clock. Listen."', effects: [{ set: 'dw_ghosts_decided' }, { set: 'dw_ghosts_left' }, { decision: { id: 'dw_ghosts_left', text: 'You left the Dry Wells family on their trickle and told Shale nothing.' } }, { trust: { npc: 'npc_dw_01', by: 15 } }, { trust: { npc: 'npc_dw_02', by: 10 } }, { xp: 60 }], options: [{ text: 'Noted.', exit: true }] },
     after_fight: {
       text: 'She is in the chair. She has not moved. "You shot at my family from behind a sandbag they filled. Take the key. Take the chair. There\'s nothing in that room worth what you paid for it."',
@@ -231,7 +231,7 @@ export const d_dw_wick: DialogueDef = {
   start: [{ if: { flag: 'dw_fight' }, node: 'hostile' }, { node: 'intro' }],
   nodes: {
     intro: {
-      text: 'A kid on the tower ladder, barefoot, with a sling in his belt. "I can hear it. The click. Sable says it\'s the pipe cooling. It isn\'t. It\'s before, not after."',
+      text: 'A kid on the tower ladder, barefoot, with a sling in his belt. "I can hear it. The click. Luz says it\'s the pipe cooling. It isn\'t. It\'s before, not after."',
       again: '"Listen," Wick says, from the ladder, before you can speak. "There. Before, not after."',
       passives: [{ attr: 'senses', dc: 6, text: 'He is right. A click, then the pumps. Something counts first.', effects: [{ learn: 'dw_pumps_click' }, { lead: 'l_pumps_clock' }] }],
       options: [

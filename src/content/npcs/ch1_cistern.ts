@@ -40,12 +40,12 @@ export const CH1_CISTERN: NpcDef[] = [
     barks: ['Weld it. Weld the thing shut.', 'Continuity is a duty, not a comfort.'],
   },
   {
-    id: 'npc_c9_r1', name: 'Ola Marr', look: { seed: 1107, frame: 'narrow', age: 38 }, outfit: C9_SUIT_F, level: 1, ...C9, courage: 30,
+    id: 'npc_c9_r1', name: 'Ola Fairley', look: { seed: 1107, frame: 'narrow', age: 38 }, outfit: C9_SUIT_F, level: 1, ...C9, courage: 30,
     schedule: [{ from: 6, to: 21, spot: 'hydro_b', activity: 'work' }, sleep('bunk_r1')],
     barks: ['Ninety years, and then a knock.', 'The algae don\'t care who knocks. Somebody has to feed them.', 'Was he… all right? Before, I mean.'],
   },
   {
-    id: 'npc_c9_r2', name: 'Jory Benn', look: { seed: 1108, frame: 'broad', age: 29 }, outfit: C9_SUIT, level: 1, ...C9, courage: 40,
+    id: 'npc_c9_r2', name: 'Wes Benn', look: { seed: 1108, frame: 'broad', age: 29 }, outfit: C9_SUIT, level: 1, ...C9, courage: 40,
     schedule: [{ from: 7, to: 12, spot: 'commons_b', activity: 'idle' }, { from: 12, to: 20, spot: 'machine_bench', activity: 'work' }, sleep('bunk_r2')],
     barks: ['Bram says the seal\'s older than the door. How does that work?', 'If you go out there, bring back something that isn\'t algae.', 'My grandmother said the sky was blue. I never believed her.'],
   },
@@ -55,7 +55,7 @@ export const CH1_CISTERN: NpcDef[] = [
     barks: ['Soup\'s at six. It\'s always at six.', 'Teague wants it welded. Teague wanted the last one welded too, and there wasn\'t a last one.', 'He had a photograph. Of you. I don\'t like it.'],
   },
   {
-    id: 'npc_c9_r4', name: 'Pim Oyelaran', look: { seed: 1110, frame: 'narrow', age: 19 }, outfit: C9_SUIT_F, level: 1, ...C9, courage: 50,
+    id: 'npc_c9_r4', name: 'Effie Calder', look: { seed: 1110, frame: 'narrow', age: 19 }, outfit: C9_SUIT_F, level: 1, ...C9, courage: 50,
     schedule: [{ from: 6, to: 22, spot: 'corridor_e', activity: 'patrol' }, sleep('bunk_r4')],
     barks: ['Tamsin says she\'s going out. She says that every year.', 'I counted the door bolts once. Forty-one.', 'MOTHER thanked us for our continuity. What does that even mean?'],
   },

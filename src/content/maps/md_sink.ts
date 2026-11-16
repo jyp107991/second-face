@@ -994,7 +994,7 @@ export const md_sink: MapDef = {
       tolls: 0
     },
     sk_vash_cold: {
-      name: "Vash's Cold Box",
+      name: "Teng's Cold Box",
       items: [
         [
           "c_knitkit",
@@ -1457,7 +1457,7 @@ export const md_sink: MapDef = {
       ],
       barks: [
         "Sit. The queue sits.",
-        "Vash buys. Vash buys anything that was ever warm.",
+        "Teng buys. Teng buys anything that was ever warm.",
         "Spring's coming up the stair this year, you watch."
       ]
     },

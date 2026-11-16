@@ -33,7 +33,7 @@ export const NINEBRIDGE_NPCS: NpcDef[] = [
     barks: ['Money is weather, my dear. You dress for it.', 'I sold a man his own funeral once. He haggled.', 'Everything is borrowed. That is not a complaint; it is a price.'],
   },
   {
-    id: 'npc_nb_04', name: 'Toll-warden Esk Varga', look: { seed: 6104, frame: 'broad', age: 44, ancestry: 'north_european', over: { hair: { style: 'cut_crop', color: 0x6a5a48 }, facialHair: 'moustache' } }, role: 'guard',
+    id: 'npc_nb_04', name: 'Toll-warden Bors Varga', look: { seed: 6104, frame: 'broad', age: 44, ancestry: 'north_european', over: { hair: { style: 'cut_crop', color: 0x6a5a48 }, facialHair: 'moustache' } }, role: 'guard',
     level: 5, ...NB, hostileIf: { flag: 'nb_fight' }, courage: 70, dialogue: 'd_nb_toll_warden', attrs: { brawn: 7, presence: 6, grit: 6 }, skills: { firearms: 40, melee: 35, barter: 30 }, tolls: 90,
     equip: ['w_pump', 'r_riot'], inventory: [['a_12ga', 10], ['c_water', 1]],
     schedule: [{ from: 6, to: 22, spot: 'toll_post', activity: 'work' }, sleep('toll_desk')],
@@ -47,7 +47,7 @@ export const NINEBRIDGE_NPCS: NpcDef[] = [
     barks: ['Forty backs. The guild has none.', 'They say we lose on the third day. They said it before we started.', 'Sit down. Straps off. That\'s the whole speech.'],
   },
   {
-    id: 'npc_nb_06', name: 'Clerk Amity Rook', look: { seed: 6106, frame: 'narrow', age: 27, ancestry: 'south_asian', over: { hair: { style: 'bob02', color: 0x1a1410 } } }, role: 'trader',
+    id: 'npc_nb_06', name: 'Clerk Amity Sethi', look: { seed: 6106, frame: 'narrow', age: 27, ancestry: 'south_asian', over: { hair: { style: 'bob02', color: 0x1a1410 } } }, role: 'trader',
     level: 2, ...NB, courage: 25, dialogue: 'd_nb_clerk', attrs: { wits: 8, senses: 7, presence: 4 }, skills: { barter: 40, science: 35, speech: 30 }, tolls: 40,
     inventory: [['c_water', 1]],
     schedule: [{ from: 7, to: 21, spot: 'hall_desk', activity: 'work' }, sleep('hall_desk', 21, 7)],
@@ -67,7 +67,7 @@ export const NINEBRIDGE_NPCS: NpcDef[] = [
     barks: ['Don\'t look at me like a sum.', 'Sixty. I heard him. Sixty.', 'I had a sister once. Everyone had a sister once.'],
   },
   {
-    id: 'npc_nb_09', name: 'Marguerite Oyo', look: { seed: 6109, frame: 'broad', age: 48, ancestry: 'west_african', over: { hair: { style: 'coily_afro', color: 0x1a1410 } } }, role: 'trader',
+    id: 'npc_nb_09', name: 'Folake Oyo', look: { seed: 6109, frame: 'narrow', age: 48, ancestry: 'west_african', over: { hair: { style: 'coily_afro', color: 0x1a1410 } } }, role: 'trader',
     level: 4, ...NB, team: 'neutral', courage: 50, dialogue: 'd_nb_oyo', attrs: { presence: 6, wits: 6, brawn: 6 }, skills: { barter: 55, firearms: 30 }, tolls: 220,
     merchant: { buys: ['weapon', 'armor', 'ammo', 'tool', 'junk'], cash: 220, restockDays: 4, markup: 1.5, faction: 'tollmen', stock: [['a_9mm', 30], ['a_38', 20], ['a_12ga', 14], ['a_556', 20], ['a_308', 8], ['w_pistol9', 1], ['w_smg9', 1], ['w_sawnoff', 1], ['r_duster', 1], ['r_helmet', 1], ['t_picks', 1], ['t_repair', 2], ['j_electronics', 2]] },
     equip: ['w_smg9', 'r_duster'], inventory: [['a_9mm', 20]],
@@ -75,14 +75,14 @@ export const NINEBRIDGE_NPCS: NpcDef[] = [
     barks: ['Guns, cells, and things that were somebody\'s.', 'Guild price on the sign. Your price is on your face.', 'The Concern makes it; the Menders fit it; I just sell it.'],
   },
   {
-    id: 'npc_nb_10', name: 'Pim Haddow', look: { seed: 6110, frame: 'narrow', age: 61, ancestry: 'north_european', over: { hair: { style: 'none', color: 0x8a8070 }, facialHair: 'goatee', weathering: 0.7 } }, role: 'trader',
+    id: 'npc_nb_10', name: 'Gunnar Haddow', look: { seed: 6110, frame: 'narrow', age: 61, ancestry: 'north_european', over: { hair: { style: 'none', color: 0x8a8070 }, facialHair: 'goatee', weathering: 0.7 } }, role: 'trader',
     level: 2, ...NB, team: 'neutral', courage: 30, dialogue: 'd_nb_pim', attrs: { presence: 5, wits: 5 }, skills: { barter: 40 }, tolls: 60,
     merchant: { buys: ['consumable', 'junk', 'misc'], cash: 60, restockDays: 2, markup: 1.4, stock: [['c_water', 6], ['c_jerky', 5], ['c_tin', 3], ['c_algae', 4], ['c_fruit', 2], ['c_bandage', 2], ['c_bitters', 2]] },
     schedule: [{ from: 7, to: 21, spot: 'stall_food', activity: 'trade' }, sleep('stall_blanket_sit', 21, 7)],
     barks: ['Water\'s guild water. Tastes of the bridge.', 'Fruit from Openfield, when the Choir sends it. They haven\'t.', 'Eat something. You look like a forecast.'],
   },
   {
-    id: 'npc_nb_11', name: 'Lazlo Brand', look: { seed: 6111, frame: 'broad', age: 52, ancestry: 'mediterranean', over: { hair: { style: 'cut_crew', color: 0x4a403a }, facialHair: 'full_beard', weathering: 0.6 } }, role: 'trader',
+    id: 'npc_nb_11', name: 'Lazlo Kovach', look: { seed: 6111, frame: 'broad', age: 52, ancestry: 'mediterranean', over: { hair: { style: 'cut_crew', color: 0x4a403a }, facialHair: 'full_beard', weathering: 0.6 } }, role: 'trader',
     level: 4, team: 'neutral', settlement: 'ninebridge', courage: 55, dialogue: 'd_nb_lazlo', attrs: { presence: 7, grit: 6, brawn: 6 }, skills: { barter: 45, speech: 40, melee: 30 }, tolls: 140,
     merchant: { buys: ['consumable', 'junk', 'misc'], cash: 90, restockDays: 3, markup: 1.4, stock: [['c_bitters', 6], ['c_water', 3], ['c_jerky', 3], ['c_stillwater', 1]] },
     equip: ['w_sawnoff'], inventory: [['a_12ga', 8]],

@@ -347,7 +347,7 @@ export const d_th_caravan: DialogueDef = {
   start: [{ if: { flag: 'th_caravan_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
-      text: '"Oduya. I run the guild\'s caravan from Shale to the bridge and back, which means I run it from here to the bridge and back, because Shale can\'t pay for the other leg." She pours you something from a kettle without asking. "Walking east? Everyone is. It\'s where the road goes."',
+      text: '"Kamara. I run the guild\'s caravan from Shale to the bridge and back, which means I run it from here to the bridge and back, because Shale can\'t pay for the other leg." She pours you something from a kettle without asking. "Walking east? Everyone is. It\'s where the road goes."',
       effects: [{ set: 'th_caravan_met' }, { learn: 'loc_ninebridge' }],
       options: [
         { id: 'car.east', text: 'What\'s east?', next: 'east', once: true },
@@ -356,7 +356,7 @@ export const d_th_caravan: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Kettle\'s on."', again: 'Oduya fills a second cup without asking. "Still walking east?"', options: [{ id: 'car.east.again', text: 'What\'s east?', if: { not: { seen: 'car.east' } }, next: 'east' }, { id: 'car.ride.again', text: 'Riding with you.', if: { not: { seen: 'car.ride' } }, next: 'ride' }, bye] },
+    again: { text: '"Kettle\'s on."', again: 'Kamara fills a second cup without asking. "Still walking east?"', options: [{ id: 'car.east.again', text: 'What\'s east?', if: { not: { seen: 'car.east' } }, next: 'east' }, { id: 'car.ride.again', text: 'Riding with you.', if: { not: { seen: 'car.ride' } }, next: 'ride' }, bye] },
     east: { text: '"A day of highway, then the track north to the hill with the mast — don\'t — then the glass, then Ninebridge, which is a bridge with a town on it and a market where they sell things that haven\'t happened yet." She lets that sit. "Then the city. I don\'t go to the city."', effects: [{ learn: 'loc_signalhill' }, { learn: 'loc_ninebridge' }, { learn: 'signal_mast' }], options: [bye] },
     ride: { text: '"Twelve to ride, or work your passage: guard, cook, carry. Leaves when the guild says, every three days, from the gate." She nods at the wall. "Stamp first. The caravan doesn\'t argue with the wall either."', effects: [{ learn: 'caravan_fare' }], options: [bye] },
     stranger: { text: '"Saw where he\'d been. Blood on the salt pan a day west, going the wrong way — toward the salt cut, not away from it." She looks into her cup. "The outriders came back that night with the bikes very clean."', interject: [{ companion: TAMSIN, text: '"Toward the salt cut," Tamsin says. "Toward us. With that in him."' }], effects: [{ learn: 'caravan_saw_blood' }, { lead: 'l_outriders' }], options: [bye] },

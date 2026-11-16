@@ -158,11 +158,11 @@ describe('the salt-pan wreck and the burnt orchard', () => {
     talk('d_or_anselm', s.g, s.q, ['There\'s a gap in the north wall', 'After the lamps.', 'That\'s all.']);
     expect(s.g.flags.or_stakeout).toBe(true);
     s.g.pc.sheet.skillBought.speech = 60;
-    talk('d_or_thieves', s.g, s.q, ['Don\'t. Nobody here', 'Stay. The Choir feeds you first', '(Wake Petra.)']);
+    talk('d_or_thieves', s.g, s.q, ['Don\'t. Nobody here', 'Stay. The Choir feeds you first', '(Wake Hanne.)']);
     expect(s.g.flags.or_outcome).toBe('choir');
     expect(s.g.world.quests.q_orchard.stage).toBe('choir');
     const r = talk('d_or_anselm', s.g, s.q, ['About the thieves.']);
-    expect(r.view()!.text).toContain('Petra\'s tent');
+    expect(r.view()!.text).toContain('Hanne\'s tent');
     // Wren knows their names; the cell and the road are the other ways.
     s = onRoad(); s.g.locationId = 'orchard'; s.g.flags.or_stakeout = true; s.g.world.party.push('npc_rd_03'); s.q.questStart('q_orchard');
     talk('d_or_thieves', s.g, s.q, ['(Let Wren speak.)', 'Sit. Both of you.', 'I\'ll walk you back to the overpass.', '(Go.)']);

@@ -7,6 +7,7 @@ import { ITEMS } from './items';
 import { PERKS } from './rules/perks';
 import { TRAITS } from './rules/traits';
 import { ORIGINS } from './rules/origins';
+import { FAMILIES } from './rules/families';
 import type { NpcDef } from '../engine/npc/defs';
 import { DEV_NPCS } from './npcs/dev_enemies';
 import { CH1_CISTERN } from './npcs/ch1_cistern';
@@ -85,7 +86,7 @@ export const MAPS: Record<string, MapDef> = {
 
 export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...KNOCK, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...TOLLHOUSE_NPCS, ...SIGNALHILL_NPCS, ...DRYWELLS_NPCS, ...WILDS_NPCS, ...LANDMARK_NPCS, ...ORCHARD_NPCS, ...WHEEL_NPCS, ...NINEBRIDGE_NPCS, ...OPENFIELD_NPCS, ...SUMP_NPCS, ...MERIDIAN_NPCS, ...MARKET_NPCS, ...SINK_NPCS, ...LANTERN_NPCS, ...STACKS_NPCS, ...BRIDGEWARD_NPCS, ...CROWN_NPCS, ...BENCH_NPCS].map((n) => [n.id, n]));
 
-export { LETTERS, FACTIONS, WORLD_MAP, REGIONS, TRAITS, PERKS, CHROME, ITEMS, ORIGINS, DIALOGUES, QUESTS, SETTLEMENTS, LEADS, CONCLUSIONS, WORLD_EVENTS, ROAD_ENCOUNTERS };
+export { FAMILIES, LETTERS, FACTIONS, WORLD_MAP, REGIONS, TRAITS, PERKS, CHROME, ITEMS, ORIGINS, DIALOGUES, QUESTS, SETTLEMENTS, LEADS, CONCLUSIONS, WORLD_EVENTS, ROAD_ENCOUNTERS };
 registerRules({ traits: TRAITS, perks: PERKS });
 registerChrome(CHROME);
 registerFactions(FACTIONS);

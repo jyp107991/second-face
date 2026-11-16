@@ -10,7 +10,7 @@ const bunk = (spot: string, from = 22, to = 6) => ({ from, to, spot, activity: '
 
 export const TOLLHOUSE_NPCS: NpcDef[] = [
   {
-    id: 'npc_th_01', name: 'Sergeant Halla Brecht', look: { seed: 4101, frame: 'broad', age: 41, ancestry: 'north_european', over: { hair: { style: 'cut_crop', color: 0x8a7a60 } } }, role: 'guard',
+    id: 'npc_th_01', name: 'Sergeant Freya Brecht', look: { seed: 4101, frame: 'narrow', age: 41, ancestry: 'north_european', over: { hair: { style: 'cut_crop', color: 0x8a7a60 } } }, role: 'guard',
     level: 7, ...TH, hostileIf: { flag: 'th_fight' }, courage: 80, dialogue: 'd_th_sergeant', attrs: { brawn: 7, presence: 7, grit: 7 }, skills: { firearms: 45, melee: 35, speech: 30 },
     equip: ['w_pump', 'r_riot'], inventory: [['a_12ga', 12], ['c_water', 1]], tolls: 40,
     schedule: [{ from: 6, to: 22, spot: 'gate_post', activity: 'work' }, bunk('bunk_1')],
@@ -38,7 +38,7 @@ export const TOLLHOUSE_NPCS: NpcDef[] = [
     barks: ['Contracts don\'t have faces. That\'s what makes them contracts.', 'Four days out, three back. The road gets longer every year.', 'Don\'t touch the bike.'],
   },
   {
-    id: 'npc_th_05', name: 'Nikko Vance', look: { seed: 4105, frame: 'narrow', age: 26, ancestry: 'mediterranean', over: { hair: { style: 'cut_messy', color: 0x3a2a1c }, scars: ['cheek_slash'] } }, role: 'raider',
+    id: 'npc_th_05', name: 'Nikko Bracco', look: { seed: 4105, frame: 'broad', age: 26, ancestry: 'mediterranean', over: { hair: { style: 'cut_messy', color: 0x3a2a1c }, scars: ['cheek_slash'] } }, role: 'raider',
     level: 4, ...TH, hostileIf: { any: [{ flag: 'th_fight' }, { flag: 'th_outriders_hostile' }] }, courage: 60, dialogue: 'd_th_outrider_b', attrs: { reflex: 7, senses: 6 }, skills: { firearms: 40, stealth: 30 },
     equip: ['w_revolver38', 'r_duster'], inventory: [['a_38', 12]], tolls: 20,
     schedule: [{ from: 10, to: 20, spot: 'yard_b', activity: 'idle' }, { from: 20, to: 1, spot: 'yard_fire', activity: 'drink' }, { from: 1, to: 5, spot: 'bunk_5', activity: 'sleep' }, { from: 5, to: 10, spot: 'yard_b', activity: 'away' }],
@@ -50,7 +50,7 @@ export const TOLLHOUSE_NPCS: NpcDef[] = [
     barks: ['Thirty-one days. I keep the count; they keep the other one.', 'I fixed their pump. That\'s how I got here.', 'Don\'t stand too close. They count that too.'],
   },
   {
-    id: 'npc_th_07', name: 'Bettany Oduya', look: { seed: 4107, frame: 'broad', age: 38, ancestry: 'west_african', over: { hair: { style: 'coily_afro', color: 0x1a1410 } } }, role: 'nomad',
+    id: 'npc_th_07', name: 'Bettany Kamara', look: { seed: 4107, frame: 'narrow', age: 38, ancestry: 'west_african', over: { hair: { style: 'coily_afro', color: 0x1a1410 } } }, role: 'nomad',
     level: 4, ...TH, team: 'neutral', courage: 60, dialogue: 'd_th_caravan', attrs: { presence: 7, wits: 6, grit: 6 }, skills: { survival: 45, barter: 35, firearms: 30 }, tolls: 70,
     equip: ['w_sawnoff', 'r_jumpsuit'], inventory: [['a_12ga', 6], ['c_water', 3], ['c_jerky', 3]],
     schedule: [{ from: 6, to: 22, spot: 'camp_fire', activity: 'idle' }, { from: 22, to: 6, spot: 'camp_tent', activity: 'sleep' }],

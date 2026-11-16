@@ -95,7 +95,7 @@ describe('The opening at Knock', () => {
   });
 
   it('each origin has its own morning and its own way through', () => {
-    for (const [origin, line] of [['pump_hand', 'wool won'], ['clinic_aide', 'Hesper\'s boy'], ['door_watch', 'Off the watch'], ['archive_clerk', 'factor\'s already']]) {
+    for (const [origin, line] of [['pump_hand', 'wool won'], ['clinic_aide', 'Afua\'s boy'], ['door_watch', 'Off the watch'], ['archive_clerk', 'factor\'s already']]) {
       const { g } = weakling(origin);
       const r = new DialogueRunner(DIALOGUES.d_kn_maud, g);
       expect(r.view()!.text, origin).toContain(line);

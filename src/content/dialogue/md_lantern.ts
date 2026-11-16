@@ -95,15 +95,15 @@ export const d_lr_mab: DialogueDef = {
       ],
     },
     under: {
-      text: '"Teague or Doubt." She has the slip written before you answer; she writes both and tears one.',
+      text: '"Kariuki or Doubt." She has the slip written before you answer; she writes both and tears one.',
       options: [
-        { id: 'under.teague', text: 'Teague.', effects: [{ take: 'tolls', count: 20 }, { set: 'lr_under_pick', value: 'teague' }], next: 'bell' },
+        { id: 'under.teague', text: 'Kariuki.', effects: [{ take: 'tolls', count: 20 }, { set: 'lr_under_pick', value: 'teague' }], next: 'bell' },
         { id: 'under.doubt', text: 'Doubt.', effects: [{ take: 'tolls', count: 20 }, { set: 'lr_under_pick', value: 'doubt' }], next: 'bell' },
         { text: 'Neither.', exit: true },
       ],
     },
     bell: {
-      text: 'An hour, and the bell. Teague is the small one and fights like it, in and out; Doubt is the big one and fights like a man with somewhere to be. In the second, Doubt walks onto a left that a child would have seen coming and goes down, carefully, like a man checking the floor for coins. The crowd knows. The crowd always knows. The house pays anyway.',
+      text: 'An hour, and the bell. Kariuki is the small one and fights like it, in and out; Doubt is the big one and fights like a man with somewhere to be. In the second, Doubt walks onto a left that a child would have seen coming and goes down, carefully, like a man checking the floor for coins. The crowd knows. The crowd always knows. The house pays anyway.',
       effects: [{ time: 60 }, { learn: 'lr_doubt_fixed' }, { learn: 'lr_under_seen' }],
       options: [
         { id: 'bell.collect', text: '(Collect. Forty.)', if: { flag: 'lr_under_pick', eq: 'teague' }, effects: [{ give: 'tolls', count: 40 }, { set: 'lr_under_paid' }, { xp: 30 }], next: 'collected' },
@@ -159,12 +159,12 @@ export const d_lr_anvil: DialogueDef = {
 
 export const d_lr_sunny: DialogueDef = {
   id: 'd_lr_sunny', owner: 'npc_lr_03', start: [{ node: 'intro' }],
-  nodes: { intro: { text: 'A small fighter wrapping her hands with the care of someone who has broken them before. "Teague. I\'m the small one. Bet on the small one; the big one\'s got somewhere to be." She looks at Doubt across the ring, and at Mab\'s shack, and back at her hands.', again: 'Teague, wrapping her hands again. "The small one," she says.', effects: [{ learn: 'sunny_seen' }], options: [{ id: 'sunny.doubt', text: 'Somewhere to be?', next: 'doubt', once: true }, bye] }, doubt: { text: '"Mab\'s shack, after. With a slip in his hand and a limp he hasn\'t got." She ties off the wrap. "Everyone on the Row knows. Everyone bets anyway. That\'s the Row."', effects: [{ learn: 'lr_doubt_fixed' }], options: [bye] } },
+  nodes: { intro: { text: 'A small fighter wrapping her hands with the care of someone who has broken them before. "Kariuki. I\'m the small one. Bet on the small one; the big one\'s got somewhere to be." She looks at Doubt across the ring, and at Mab\'s shack, and back at her hands.', again: 'Kariuki, wrapping her hands again. "The small one," she says.', effects: [{ learn: 'sunny_seen' }], options: [{ id: 'sunny.doubt', text: 'Somewhere to be?', next: 'doubt', once: true }, bye] }, doubt: { text: '"Mab\'s shack, after. With a slip in his hand and a limp he hasn\'t got." She ties off the wrap. "Everyone on the Row knows. Everyone bets anyway. That\'s the Row."', effects: [{ learn: 'lr_doubt_fixed' }], options: [bye] } },
 };
 
 export const d_lr_doubt: DialogueDef = {
   id: 'd_lr_doubt', owner: 'npc_lr_04', start: [{ node: 'intro' }],
-  nodes: { intro: { text: 'A big man with a beard and bolt knuckles, looking at the pit floor as if it owed him. "Doubt. They call me Doubt. Nobody\'s sure why." He does not look at Teague. "Second round. Could go either way."', again: '"Could go either way," Doubt says to the floor.', passives: [{ attr: 'senses', dc: 8, text: 'He is counting something on his fingers inside his coat, and it is not rounds.', effects: [{ learn: 'lr_doubt_fixed' }] }], options: [bye] } },
+  nodes: { intro: { text: 'A big man with a beard and bolt knuckles, looking at the pit floor as if it owed him. "Doubt. They call me Doubt. Nobody\'s sure why." He does not look at Kariuki. "Second round. Could go either way."', again: '"Could go either way," Doubt says to the floor.', passives: [{ attr: 'senses', dc: 8, text: 'He is counting something on his fingers inside his coat, and it is not rounds.', effects: [{ learn: 'lr_doubt_fixed' }] }], options: [bye] } },
 };
 
 // ---------------------------------------------------------------- the Lantern: reveries
@@ -174,7 +174,7 @@ export const d_lr_ysolde: DialogueDef = {
   start: [{ if: { flag: 'ysolde_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
-      text: 'A woman at a desk between three cots with headsets on hooks over them, and a locker behind her with a violet tube on it. "Ysolde Marr. The Lantern. Yours or better." She taps the hooks. "A Summer in the Crown. The Race. Five an hour, either. And the evidence shelf, which isn\'t for sale, and which you\'ll ask about anyway."',
+      text: 'A woman at a desk between three cots with headsets on hooks over them, and a locker behind her with a violet tube on it. "Ysolde Nwosu. The Lantern. Yours or better." She taps the hooks. "A Summer in the Crown. The Race. Five an hour, either. And the evidence shelf, which isn\'t for sale, and which you\'ll ask about anyway."',
       effects: [{ set: 'ysolde_met' }, { learn: 'ysolde_seen' }],
       options: [
         { id: 'ysolde.crown', text: 'A Summer in the Crown. (5 Tolls)', if: { item: 'tolls', count: 5 }, effects: [{ take: 'tolls', count: 5 }, { event: 'reverie', data: { tree: 'd_lr_rev_crown', name: 'A Summer in the Crown' } }], exit: true, repeat: true },
@@ -317,7 +317,7 @@ export const d_lr_madame: DialogueDef = {
   start: [{ if: { flag: 'madame_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
-      text: 'A woman behind a long counter in a room that is warmer than the Row and smells of oil and oranges, who has seen everyone who has ever come through the door and let most of them in. "The Velvet. Madame Oyelaran; the Madame does, if you\'re shy. Company, conversation, the hour. In that order, if you\'re wise." She takes you in. "You\'re not shy. You\'re tired."',
+      text: 'A woman behind a long counter in a room that is warmer than the Row and smells of oil and oranges, who has seen everyone who has ever come through the door and let most of them in. "The Velvet. Madame Adeyemi; the Madame does, if you\'re shy. Company, conversation, the hour. In that order, if you\'re wise." She takes you in. "You\'re not shy. You\'re tired."',
       effects: [{ set: 'madame_met' }, { learn: 'madame_seen' }],
       options: [
         { id: 'madame.hour', text: 'The hour. (20 Tolls)', if: { all: [{ item: 'tolls', count: 20 }, { not: { flag: 'velvet_hour_today' } }] }, effects: [{ take: 'tolls', count: 20 }, { time: 60 }, { event: 'heal' }, { set: 'velvet_hour_today' }, { after: { minutes: 1440, id: 'velvet_hour_reset', effects: [{ set: 'velvet_hour_today', value: false }] } }, { learn: 'velvet_hour' }], next: 'hour', repeat: true },

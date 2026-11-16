@@ -717,9 +717,9 @@ export const md_stacks_9: MapDef = {
       ],
       barks: [
         "Nine's dry. Twelve's pumping. Same every night.",
-        "Hester says the committee's meeting. Hester's been saying.",
+        "Gudrun says the committee's meeting. Gudrun's been saying.",
         "Ulla hears the lifts. Ulla hears everything that's stopped.",
-        "9-14's been empty since the Marrs went to the Ring."
+        "9-14's been empty since the Ostrows went to the Ring."
       ]
     }
   ],

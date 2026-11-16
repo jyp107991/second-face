@@ -19,7 +19,7 @@ export const SIGNALHILL_NPCS: NpcDef[] = [
     barks: ['Track\'s closed.', 'Tally does the talking. I do the track.'],
   },
   {
-    id: 'npc_sg_03', name: 'Pim', look: { seed: 5103, frame: 'narrow', age: 19, ancestry: 'southeast_asian', over: { hair: { style: 'cut_messy', color: 0x1a1410 } } }, role: 'drifter',
+    id: 'npc_sg_03', name: 'Thanh', look: { seed: 5103, frame: 'narrow', age: 19, ancestry: 'southeast_asian', over: { hair: { style: 'cut_messy', color: 0x1a1410 } } }, role: 'drifter',
     level: 2, ...SG, courage: 35, attrs: { reflex: 7 }, skills: { stealth: 35, mechanics: 25 }, equip: ['w_knife_throw'], inventory: [['j_wiring', 2]], tolls: 3,
     schedule: [{ from: 6, to: 23, spot: 'camp_pipes', activity: 'work' }, { from: 23, to: 6, spot: 'camp_tent_b', activity: 'sleep' }],
     barks: ['Forty metres of copper in that mast, Tally says. Tally says a lot.', 'I went in the station once. I don\'t go in now.'],

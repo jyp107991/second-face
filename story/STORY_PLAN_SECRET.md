@@ -294,7 +294,7 @@ Knock's trades; Tamsin becomes the one who steps out of the Cistern for the firs
   `paid` (a clause-14 variance from Nine or Lowe) · `retimed` (the dial) · `seized` (the Pale hold the house); all
   three set `sk_saved`. No day limit: if the player leaves the schedule alone, the spring flood and Ocho's drowning
   fire on a STORY MILESTONE, not a date — planned trigger: the Spire hearing's verdict (B3.11), with a news item and
-  the clinic closed afterwards (`sk_flooded`, Ocho dead, Pell runs the clinic). Write that resolution in B3.11.
+  the clinic closed afterwards (`sk_flooded`, Ocho dead, Anju runs the clinic). Write that resolution in B3.11.
 - `sk_saved` → the Precinct riots over water later (modifier list §Act 2); `sk_pumps = seized` → the wardens come down
   the stair in the Long Night; Dagny stays at the panel either way.
 - The Pale remember the Scald (chrome woke and held still while the fire came): their hostility to chrome is the
@@ -303,8 +303,8 @@ Knock's trades; Tamsin becomes the one who steps out of the Cistern for the firs
 
 ## Build notes — Bridgeward (B3.9, 2026-10-27)
 - Keystone 6 (Wren Calloway, "hanged for the Bridgeward raid") is seeded, not fired: the Saints' girl says the line
-  (`bw_wren_foretold`) when Wren has joined or led the exodus; Fenn's wall says BACK FOR THE BRIDGE; the cache under
-  his bench holds the Dogs' mark; Fenn names the rope on the Rustmouths' booth. The raid itself is a STORY MILESTONE
+  (`bw_wren_foretold`) when Wren has joined or led the exodus; Kibet's wall says BACK FOR THE BRIDGE; the cache under
+  his bench holds the Dogs' mark; Kibet names the rope on the Rustmouths' booth. The raid itself is a STORY MILESTONE
   (plan: the Act 2 part-1 close, B3.12, after the Spire hearing's verdict), never a day count: Wren (in party, or in
   Shale) asks to take the bridge; outcomes raid won (Dogs hold Bridgeward; the Crown's road is blocked) / raid lost
   (Wren hanged from the booth: the keystone as forecast) / talked out of it (Wren stays; the Dogs stay a crew). Wren's
@@ -394,7 +394,7 @@ days; reads city shorthand; *Copyist*: the toll cards' likenesses go to the city
 **Avoided by design:** no shelter emergence, no amnesia, no chosen one, no kidnapped kin as the motive.
 
 ### §18 as built (2026-11-05, content: `src/content/{maps/c9_mouth,npcs/knock,dialogue/knock,quests/knock}.ts`)
-- Built as designed, with these changes: the Rib's threat is two road strippers, Abner and Nell Rusk, not wild dogs (the
+- Built as designed, with these changes: the Rib's threat is two road strippers, Abner and Hattie Rusk, not wild dogs (the
   Unity build has no animal models yet; people also give the chore a talk/barter/stealth/fight choice). The stranger is
   unnamed in Knock ("a man in a dust mask"); only the Night Watch hears *Larkspur*. Kessler still has the map.
 - MOTHER's hatch is taught by dialogue (a valuation, a haggle that MOTHER logs as "diligence", which later lowers the

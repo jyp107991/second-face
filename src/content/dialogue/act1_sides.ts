@@ -1,6 +1,6 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
 
-/** Act 1 side lines: the Dry Well's books, the three in the Choir tent, and Edda Vale's daughter. */
+/** Act 1 side lines: the Dry Well's books, the three in the Choir tent, and Edda Lockett's daughter. */
 
 /** Companions who can be in Shale with the player in Act 1 (U7 interjections). */
 const WREN = 'npc_rd_03';
@@ -77,7 +77,7 @@ export const d_sh_tent_b: DialogueDef = {
       ],
     },
     kept: { text: '"Okay." She breathes. "Okay." The flap stops being the only thing in the tent.', options: [tentBye] },
-    warned: { text: '"Then I\'ll be gone before you get there." She is already working at the strap with her teeth. Calla, from the other cot: "Pip. Lie down." Pip lies down. Nobody looks at you.', effects: [{ learn: 'pip_warned' }], options: [tentBye] },
+    warned: { text: '"Then I\'ll be gone before you get there." She is already working at the strap with her teeth. Calla, from the other cot: "Birdie. Lie down." Birdie lies down. Nobody looks at you.', effects: [{ learn: 'pip_warned' }], options: [tentBye] },
     done: { text: 'She is watching the flap again, but less.', again: 'She glances at you, and back at the flap.', options: [{ id: 'tent_b.dog2', text: 'You\'re from the overpass.', if: { all: [{ knows: 'pip_is_dog' }, { not: { knows: 'pip_kept' } }, { not: { knows: 'pip_warned' } }] }, next: 'dog' }, tentBye] },
     gone: { text: 'The cot is empty and stripped. Calla has not said a word to you since.', again: 'The stripped cot. Calla is busy at the far end of the tent, and stays busy.', options: [{ text: '(Leave.)', exit: true }] },
   },
@@ -108,10 +108,10 @@ export const d_sh_hesper: DialogueDef = {
   start: [{ if: { knows: 'edda_found' }, node: 'after' }, { node: 'intro' }],
   nodes: {
     intro: {
-      text: '"Two cups a day." She says it before you have asked anything, the way the whole town says the price of water. "Hesper Vale. If you\'re selling, I\'m not buying, and if you\'re buying, it\'s two a measure like everyone."',
+      text: '"Two cups a day." She says it before you have asked anything, the way the whole town says the price of water. "Hesper Lockett. If you\'re selling, I\'m not buying, and if you\'re buying, it\'s two a measure like everyone."',
       again: '"Two a measure," she says again, before you can ask. "Still."',
       options: [
-        { id: 'hesper.letter', text: 'I\'ve a letter for Edda Vale.', if: { item: 'k_bram_letter' }, next: 'letter' },
+        { id: 'hesper.letter', text: 'I\'ve a letter for Edda Lockett.', if: { item: 'k_bram_letter' }, next: 'letter' },
         { text: 'Just passing.', exit: true },
       ],
     },

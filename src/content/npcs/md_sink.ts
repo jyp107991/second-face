@@ -19,7 +19,7 @@ export const SINK_NPCS: NpcDef[] = [
     barks: ['Sit. The queue sits.', 'Fit only what the patient can bear. The rest is vanity with a scar.', 'Free means free. Don\'t make me say it again.', 'Hold that. No — hold it like you mean it.'],
   },
   {
-    id: 'npc_sk_02', name: 'Pell', look: { seed: 9302, frame: 'narrow', age: 24, ancestry: 'south_asian', over: { hair: { style: 'bob02', color: 0x1a1410 } } }, role: 'medic',
+    id: 'npc_sk_02', name: 'Anju', look: { seed: 9302, frame: 'narrow', age: 24, ancestry: 'south_asian', over: { hair: { style: 'bob02', color: 0x1a1410 } } }, role: 'medic',
     level: 3, ...SK, courage: 40, dialogue: 'd_sk_pell', faction: 'menders', attrs: { wits: 7, senses: 7 }, skills: { medicine: 45, science: 30 }, tolls: 12,
     schedule: [{ from: 7, to: 23, spot: 'clinic_shelf', activity: 'work' }, sleep('clinic_cot_pell', 23, 7)],
     barks: ['Boiled. Everything\'s boiled. Don\'t touch the shelf.', 'He hasn\'t slept since the line went up. Don\'t tell him I said.', 'Apprentice. Two years. He says the hands come in the third.'],
@@ -38,21 +38,21 @@ export const SINK_NPCS: NpcDef[] = [
     barks: ['Name, year, where the water took them. That\'s all a wall needs.', 'The Precinct has a file. We have a wall. The wall\'s truer.', 'Chalk\'s a Toll. Names are free.'],
   },
   {
-    id: 'npc_sk_05', name: 'Vash', look: { seed: 9305, frame: 'broad', age: 44, ancestry: 'east_asian', over: { hair: { style: 'paint_buzz', color: 0x1a1a1a }, facialHair: 'none', weathering: 0.3 } }, role: 'trader',
+    id: 'npc_sk_05', name: 'Teng', look: { seed: 9305, frame: 'broad', age: 44, ancestry: 'east_asian', over: { hair: { style: 'paint_buzz', color: 0x1a1a1a }, facialHair: 'none', weathering: 0.3 } }, role: 'trader',
     level: 5, ...SK, courage: 50, dialogue: 'd_sk_vash', attrs: { wits: 8, presence: 6, senses: 7 }, skills: { barter: 70, medicine: 35, speech: 45 }, tolls: 400,
     merchant: { buys: ['consumable', 'misc', 'junk'], cash: 400, restockDays: 7, markup: 1.8, stock: [['ci_ch_org_heart', 1], ['ci_ch_org_lungs', 1], ['c_knitkit', 2], ['c_bandage', 4], ['c_bitters', 3]] },
     schedule: [{ from: 8, to: 24, spot: 'vash_counter', activity: 'trade' }, sleep('vash_cot', 0, 8)],
     barks: ['Anything that was ever warm. Fair price. No questions, which is also a price.', 'Cold box is cold. That\'s the whole business.', 'Menders fit. I supply. Ask Ocho where he thinks the supply comes from.'],
   },
   {
-    id: 'npc_sk_06', name: 'Saskia Dray', look: { seed: 9306, frame: 'narrow', age: 39, ancestry: 'north_european', over: { hair: { style: 'paint_shaved', color: 0xe8e0d0 }, skinTone: 0.04, scars: ['brow_cut'], weathering: 0.35 } },
+    id: 'npc_sk_06', name: 'Saskia Lehto', look: { seed: 9306, frame: 'narrow', age: 39, ancestry: 'north_european', over: { hair: { style: 'paint_shaved', color: 0xe8e0d0 }, skinTone: 0.04, scars: ['brow_cut'], weathering: 0.35 } },
     level: 7, ...pale, dialogue: 'd_sk_dray', attrs: { grit: 8, presence: 8, reflex: 7 }, skills: { speech: 50, stealth: 45, barter: 35 }, tolls: 90, leader: true,
     equip: ['w_hand44'], inventory: [['a_38', 12]],
     schedule: [{ from: 0, to: 24, spot: 'pale_chair', activity: 'idle' }],
     barks: ['No chrome. Ever. We remember the Scald.', 'The pumps are ours by water. The Precinct has them by paper.', 'You\'ve a face the water hasn\'t had yet. Keep it.'],
   },
   {
-    id: 'npc_sk_07', name: 'Tam Oduya', look: { seed: 9307, frame: 'broad', age: 33, ancestry: 'east_african', over: { hair: { style: 'none', color: 0x151210 }, weathering: 0.5 } }, role: 'labourer',
+    id: 'npc_sk_07', name: 'Baraka Mwangi', look: { seed: 9307, frame: 'broad', age: 33, ancestry: 'east_african', over: { hair: { style: 'none', color: 0x151210 }, weathering: 0.5 } }, role: 'labourer',
     level: 2, ...SK, courage: 30, dialogue: 'd_sk_tam', attrs: { grit: 4 }, tolls: 4,
     schedule: [{ from: 0, to: 24, spot: 'clinic_cot_a_sit', activity: 'idle' }],
     barks: ['It skips. Ocho says it skips.', 'Pumped for the Precinct eleven years. The wet got in.', 'Don\'t let him pay for it. He\'ll pay for it.'],
@@ -73,7 +73,7 @@ export const SINK_NPCS: NpcDef[] = [
     id: 'npc_sk_10', name: 'Kye', look: { seed: 9310, frame: 'broad', age: 15, ancestry: 'east_asian', over: { hair: { style: 'paint_buzz', color: 0x1a1a1a }, weathering: 0.3 } }, role: 'street',
     level: 1, ...SK, courage: 30, dialogue: 'd_sk_kye', attrs: { reflex: 7, senses: 7 }, skills: { stealth: 40 }, tolls: 6,
     schedule: [{ from: 7, to: 24, spot: 'kye_lean', activity: 'idle' }, sleep('shelf_sit', 0, 7)],
-    barks: ['Run anything. Two Tolls. Not east.', 'Vash pays by the pound. I don\'t ask of what.', 'Pale took a man off the walk last week. Owed them. He walked back lighter.'],
+    barks: ['Run anything. Two Tolls. Not east.', 'Teng pays by the pound. I don\'t ask of what.', 'Pale took a man off the walk last week. Owed them. He walked back lighter.'],
   },
   // the Pale: sworn kin on the east bank, no chrome, skin that has not seen sun
   { id: 'npc_sk_p1', name: 'Pale Sworn', look: { seed: 9311, frame: 'broad', age: 27, ancestry: 'north_european', over: { skinTone: 0.05, hair: { style: 'paint_shaved', color: 0xd8d0c0 } } }, ...pale, level: 4, minor: true, equip: ['w_hand44'], inventory: [['a_38', 6]], schedule: [{ from: 0, to: 24, spot: 'pale_door', activity: 'patrol' }], barks: ['Turn round.', 'Not east. Not you.'] },

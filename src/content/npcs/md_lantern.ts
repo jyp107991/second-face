@@ -24,7 +24,7 @@ export const LANTERN_NPCS: NpcDef[] = [
     barks: ['Hands and iron. I don\'t go for the head unless you do.', 'Nobody\'s standing since spring.', 'Bastien Roque. Anvil\'s what they shout.'],
   },
   {
-    id: 'npc_lr_03', name: 'Sunny Teague', look: { seed: 9403, frame: 'narrow', age: 26, ancestry: 'east_african', over: { hair: { style: 'paint_shaved', color: 0x1a1410 }, weathering: 0.3 } }, role: 'labourer',
+    id: 'npc_lr_03', name: 'Sunny Kariuki', look: { seed: 9403, frame: 'narrow', age: 26, ancestry: 'east_african', over: { hair: { style: 'paint_shaved', color: 0x1a1410 }, weathering: 0.3 } }, role: 'labourer',
     level: 4, ...LR, courage: 70, dialogue: 'd_lr_sunny', attrs: { reflex: 8, grit: 6 }, skills: { melee: 45 }, tolls: 10,
     equip: ['w_pipe'],
     schedule: [{ from: 14, to: 4, spot: 'ring_a', activity: 'idle' }, sleep('house_cot_b')],
@@ -38,7 +38,7 @@ export const LANTERN_NPCS: NpcDef[] = [
     barks: ['They call me Doubt. Nobody\'s sure why.', 'Second round. Could go either way. Could.'],
   },
   {
-    id: 'npc_lr_05', name: 'Ysolde Marr', look: { seed: 9405, frame: 'narrow', age: 45, ancestry: 'west_african', over: { hair: { style: 'bob02', color: 0x120e0b }, weathering: 0.25 } }, role: 'tech',
+    id: 'npc_lr_05', name: 'Ysolde Nwosu', look: { seed: 9405, frame: 'narrow', age: 45, ancestry: 'west_african', over: { hair: { style: 'bob02', color: 0x120e0b }, weathering: 0.25 } }, role: 'tech',
     level: 5, ...LR, courage: 45, dialogue: 'd_lr_ysolde', attrs: { wits: 9, presence: 7, senses: 7 }, skills: { science: 55, barter: 55, speech: 50 }, tolls: 300,
     schedule: [{ from: 14, to: 4, spot: 'den_desk', activity: 'work' }, sleep('den_cot')],
     barks: ['Yours or better.', 'Don\'t buy one you can\'t put down. I mean it; I\'ve seen the cots after.', 'The evidence shelf isn\'t for sale. Ask anyway; everyone does.'],
@@ -58,7 +58,7 @@ export const LANTERN_NPCS: NpcDef[] = [
     barks: ['Dust. Ten the hand, thirty the high table.', 'The house wins. I am the house. Sit.', 'Fenwick lost a Crown chit at this table and cried. Crown kids cry beautifully.'],
   },
   {
-    id: 'npc_lr_08', name: 'Madame Oyelaran', look: { seed: 9408, frame: 'narrow', age: 52, ancestry: 'west_african', over: { hair: { style: 'bob02', color: 0x201810 }, weathering: 0.15 } }, role: 'gilded',
+    id: 'npc_lr_08', name: 'Madame Adeyemi', look: { seed: 9408, frame: 'narrow', age: 52, ancestry: 'west_african', over: { hair: { style: 'bob02', color: 0x201810 }, weathering: 0.15 } }, role: 'gilded',
     level: 4, ...LR, courage: 55, dialogue: 'd_lr_madame', attrs: { presence: 9, wits: 8, senses: 7 }, skills: { speech: 65, barter: 50 }, tolls: 260,
     schedule: [{ from: 0, to: 24, spot: 'velvet', activity: 'work' }],
     barks: ['The Velvet. Company, conversation, the hour. In that order, if you\'re wise.', 'The Crown sends its girls to me to be dressed. I send them back dressed.', 'No chrome on the premises. Not for the Pale\'s reasons; for mine.'],
@@ -82,7 +82,7 @@ export const LANTERN_NPCS: NpcDef[] = [
     barks: ['Lit the first tube on this row. Pink. Still pink.', 'Every tube on the Row\'s mine. Every one that\'s dark is the Gilt\'s.', 'Canal was a street. I remember the street.'],
   },
   {
-    id: 'npc_lr_12', name: 'Kit Halloran', look: { seed: 9412, frame: 'narrow', age: 17, ancestry: 'south_asian', over: { hair: { style: 'paint_buzz', color: 0x1a1410 }, weathering: 0.3 } }, role: 'street',
+    id: 'npc_lr_12', name: 'Kit Basu', look: { seed: 9412, frame: 'narrow', age: 17, ancestry: 'south_asian', over: { hair: { style: 'paint_buzz', color: 0x1a1410 }, weathering: 0.3 } }, role: 'street',
     level: 2, ...LR, courage: 30, dialogue: 'd_lr_kit', attrs: { reflex: 8, senses: 7 }, skills: { stealth: 55, speech: 35 }, tolls: 22,
     schedule: [{ from: 10, to: 2, spot: 'street_lean', activity: 'idle' }, sleep('kit_cot', 2, 10)],
     barks: ['Lost? I\'m not. Two Tolls and you\'re not either.', 'Mind your purse. Not from me. From everyone.'],

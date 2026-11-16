@@ -23,7 +23,7 @@ export const SUMP_NPCS: NpcDef[] = [
     barks: ['There\'s a door down there that never opened. I\'d like to be the one who opens it.', 'Grel digs. We think.', 'The guild pays us to clear a tunnel. Nobody asked what\'s at the end of it.'],
   },
   {
-    id: 'npc_sp_03', name: 'Dace', look: { seed: 8103, frame: 'narrow', age: 31, ancestry: 'southeast_asian', over: { hair: { style: 'cut_sidepart', color: 0x1a1410 } } }, role: 'trader',
+    id: 'npc_sp_03', name: 'Khoa', look: { seed: 8103, frame: 'broad', age: 31, ancestry: 'southeast_asian', over: { hair: { style: 'cut_sidepart', color: 0x1a1410 } } }, role: 'trader',
     level: 3, ...SP, team: 'neutral', faction: 'tollmen', courage: 30, dialogue: 'd_sp_dace', attrs: { wits: 7, presence: 5, reflex: 6 }, skills: { barter: 45, speech: 35, stealth: 25 }, tolls: 90,
     equip: ['w_zip38'], inventory: [['a_38', 6], ['c_water', 2]],
     schedule: [{ from: 7, to: 21, spot: 'runner', activity: 'idle' }, sleep('runner_cot', 21, 7)],

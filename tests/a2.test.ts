@@ -697,14 +697,14 @@ describe('The Sink: high water, the clinic, the Pale', () => {
     const { g, q } = atSink();
     talk('d_sk_pell', g, q, ['The big man on the end cot.', 'That\'s all.']);
     expect(g.world.knowledge.ocho_tam).toBe(true);
-    talk('d_sk_ocho', g, q, ['Tam Oduya. The heart.', 'Then let me bring one. You don\'t ask me where.', 'That\'s all.']);
+    talk('d_sk_ocho', g, q, ['Baraka Mwangi. The heart.', 'Then let me bring one. You don\'t ask me where.', 'That\'s all.']);
     expect(g.world.quests.q_sk_organ?.stage).toBe('need');
     g.pc.inventory.tolls = 200;
     talk('d_sk_vash', g, q, ['A heart. For Ocho\'s patient.', '(Pay. 150 Tolls)', 'That\'s all.']);
     expect(countItem(g.pc.inventory, 'k_sk_heart')).toBe(1);
     expect(g.pc.inventory.tolls).toBe(50);
     g.pc.sheet.skillBought.medicine = 90;
-    talk('d_sk_ocho', g, q, ['(Put the cooler on the table.)', 'Vash. He says the water.', '(The clamp.)', '(Hold it steady.)', '(Wash.)']);
+    talk('d_sk_ocho', g, q, ['(Put the cooler on the table.)', 'Teng. He says the water.', '(The clamp.)', '(Hold it steady.)', '(Wash.)']);
     expect(g.flags.sk_organ_fitted).toBe(true);
     expect(countItem(g.pc.inventory, 'k_sk_heart')).toBe(0);
     expect(cond({ member: 'menders', rank: 'apprentice' }, g)).toBe(true);
@@ -715,7 +715,7 @@ describe('The Sink: high water, the clinic, the Pale', () => {
   it('a Second Heart instead; a shaking clamp loses the words, and the next table wins them', () => {
     const { g, q } = atSink();
     g.world.knowledge.ocho_tam = true;
-    talk('d_sk_ocho', g, q, ['Tam Oduya. The heart.', 'That\'s all.']);
+    talk('d_sk_ocho', g, q, ['Baraka Mwangi. The heart.', 'That\'s all.']);
     addItem(g.pc.inventory, makeItem('ci_ch_org_heart', 1));
     g.pc.sheet.skillBought.medicine = 0;
     talk('d_sk_ocho', g, q, ['(Put the boxed Second Heart on the table.)', '(The clamp.)', '(Hold it steady.)', '(Wash.)']);
@@ -733,7 +733,7 @@ describe('The Sink: high water, the clinic, the Pale', () => {
   it('the Pale sell the cold store open; Ocho hears the truth and asks the patient', () => {
     const { g, q } = atSink();
     g.pc.sheet.skillBought.speech = 90;
-    talk('d_sk_kye', g, q, ['Vash\'s cold box. Where does it fill from?', 'That\'s all.']);
+    talk('d_sk_kye', g, q, ['Teng\'s cold box. Where does it fill from?', 'That\'s all.']);
     expect(cond({ lead: 'l_pale_harvest' }, g)).toBe(true);
     g.pc.inventory.tolls = 80;
     talk('d_sk_dray', g, q, ['There\'s a heart in your cold store with a number crossed out.', '(Pay. 80 Tolls)', 'That\'s all.']);
@@ -742,7 +742,7 @@ describe('The Sink: high water, the clinic, the Pale', () => {
     addItem(g.pc.inventory, makeItem('k_sk_heart', 1));
     talk('d_sk_tam', g, q, ['If a heart came. From the Pale. Off somebody who owed them.', 'That\'s all.']);
     expect(g.flags.sk_tam_yes).toBe(true);
-    talk('d_sk_ocho', g, q, ['Tam Oduya. The heart.', 'That\'s all.']);
+    talk('d_sk_ocho', g, q, ['Baraka Mwangi. The heart.', 'That\'s all.']);
     g.pc.sheet.skillBought.medicine = 90;
     talk('d_sk_ocho', g, q, ['(Put the cooler on the table.)', 'The Pale\'s cold store. Off a man who owed them. He\'s alive.', '(The clamp.)', '(Hold it steady.)', '(Wash.)']);
     expect(g.world.knowledge.sk_organ_pale_told).toBe(true);
@@ -790,7 +790,7 @@ describe('Lantern Row: the pit, the Lantern, the Row', () => {
   it('the undercard is fixed and the small one wins at two to one', () => {
     const { g, q } = atLantern();
     g.pc.inventory.tolls = 50;
-    talk('d_lr_mab', g, q, ['Twenty on the undercard.', 'Teague.', '(Collect. Forty.)', 'That\'s all.']);
+    talk('d_lr_mab', g, q, ['Twenty on the undercard.', 'Kariuki.', '(Collect. Forty.)', 'That\'s all.']);
     expect(g.pc.inventory.tolls).toBe(70);
     expect(g.flags.lr_under_paid).toBe(true);
     expect(g.world.knowledge.lr_doubt_fixed).toBe(true);
@@ -977,11 +977,11 @@ describe('The Stacks: the flat and the roof', () => {
     expect(countItem(g.pc.inventory, 'k_latch_card')).toBe(1);
   });
 
-  it('Ren is talked down with Mama Deel\'s word; or the trays burn', () => {
+  it('Kimani is talked down with Mama Deel\'s word; or the trays burn', () => {
     const { g, q } = atStacks();
     q.questStart('q_st_gardens');
     talk('d_st_ren', g, q, ['That\'s all.']);
-    talk('d_st_deel', g, q, ['Ren has a jerry-can.', 'That\'s all.']);
+    talk('d_st_deel', g, q, ['Kimani has a jerry-can.', 'That\'s all.']);
     expect(g.world.knowledge.st_deel_no_burn).toBe(true);
     g.pc.sheet.skillBought.speech = 90;
     talk('d_st_ren', g, q, ['Dirt remembers.', 'That\'s all.']);
@@ -1100,7 +1100,7 @@ describe('Bridgeward: the chain, the tower, the old haunt', () => {
     expect(g.world.knowledge.bw_vane_toll).toBe(true);
     talk('d_bw_dagmar', g, q, ['A sit-down, at the tower.', 'That\'s all.']);
     expect(g.flags.bw_dagmar_sitdown).toBe(true);
-    talk('d_bw_jax', g, q, ['A sit-down, at the tower. Dagmar will come.', 'That\'s all.']);
+    talk('d_bw_jax', g, q, ['A sit-down, at the tower. Solveig will come.', 'That\'s all.']);
     talk('d_bw_nell', g, q, ['A sit-down, at the tower. The three crews.', 'That\'s all.']);
     expect(g.flags.bw_jax_sitdown).toBe(true);
     expect(g.flags.bw_nell_sitdown).toBe(true);
@@ -1174,7 +1174,7 @@ describe('Bridgeward: the chain, the tower, the old haunt', () => {
     expect(r.view()?.options.some((o) => o.text.startsWith('(Sit with a radio until'))).toBe(false);
   });
 
-  it('the old haunt: Fenn lifts the bench for Wren; the Crown\'s agent buys the ledger', () => {
+  it('the old haunt: Kibet lifts the bench for Wren; the Crown\'s agent buys the ledger', () => {
     const { g, q } = atBridgeward();
     g.world.party.push('npc_rd_03'); g.flags.wren_joined = true;
     talk('d_rd_wren', g, q, ['Show me the garage.', 'Go on, then.']);

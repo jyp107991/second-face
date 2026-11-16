@@ -174,7 +174,7 @@ export const d_md_records_term: DialogueDef = {
 
 export const d_md_bell: DialogueDef = {
   id: 'd_md_bell', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'The curfew bell on its post, rung by a wire from the station at nine. Old Sabel Quint says it has never once been late, and says it the way other people say a prayer.', again: 'The curfew bell on its post and its wire to the station. Never once late.', options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { look: { text: 'The curfew bell on its post, rung by a wire from the station at nine. Old Agata Quint says it has never once been late, and says it the way other people say a prayer.', again: 'The curfew bell on its post and its wire to the station. Never once late.', options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_md_cell: DialogueDef = {
@@ -310,7 +310,7 @@ export const d_md_kemp: DialogueDef = {
 export const d_md_quint: DialogueDef = {
   id: 'd_md_quint', owner: 'npc_md_16', start: [{ if: { flag: 'quint_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
-    intro: { text: 'An old woman at a table by a window with a kettle and a view of the bell. "Sabel Quint. Forty years a citizen. Never once hungry, never once asked." She pours you something. "That\'s the Precinct, dear. You get the one if you give up the other."', effects: [{ set: 'quint_met' }], options: [{ id: 'quint.daughter', text: 'Your daughter went to the Ring, the notice says.', next: 'daughter', once: true }, { id: 'quint.sink', text: 'The Sink floods in spring.', next: 'sink', once: true }, bye] },
+    intro: { text: 'An old woman at a table by a window with a kettle and a view of the bell. "Agata Quint. Forty years a citizen. Never once hungry, never once asked." She pours you something. "That\'s the Precinct, dear. You get the one if you give up the other."', effects: [{ set: 'quint_met' }], options: [{ id: 'quint.daughter', text: 'Your daughter went to the Ring, the notice says.', next: 'daughter', once: true }, { id: 'quint.sink', text: 'The Sink floods in spring.', next: 'sink', once: true }, bye] },
     again: { text: '"Kettle\'s on, dear."', again: 'She tops up your cup without asking and looks out at the bell.', options: [{ id: 'quint.daughter.again', text: 'Your daughter.', if: { not: { seen: 'quint.daughter' } }, next: 'daughter' }, { id: 'quint.sink.again', text: 'The Sink.', if: { not: { seen: 'quint.sink' } }, next: 'sink' }, bye] },
     daughter: { text: '"Evicted. Scheduled. Clause something." She stirs. "She was ahead of plan, the notice said. I didn\'t know a person could be. She sends word through the drain people, when she can. Don\'t tell the captain I said drain."', interject: [{ companion: ILYA, text: 'By the window, Ilya has stopped counting the bell\'s wire. "Ahead of plan," he says, as if he has heard the words before, and did not know what they meant then either.' }], effects: [{ learn: 'quint_daughter' }, { learn: 'md_drain_known' }], options: [bye] },
     sink: { text: '"Every spring. They pump it to us instead. We get a notice; they get the water." She looks at the window. "There\'s a doctor down there who doesn\'t charge. Ocho. He\'ll be on a notice one spring. Everybody is."', effects: [{ learn: 'md_ocho_heard' }], options: [bye] },

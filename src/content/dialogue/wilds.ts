@@ -70,8 +70,8 @@ export const d_re_drifter: DialogueDef = {
       ],
     },
     kite: { text: '"A kite." He watches you not believe it. "Big wings, no bird in them. It came down on the pan at dusk and sat, and I went to look, because I\'m a fool, and something on it opened and I ran, and I fell on my own blade. I know. I know how it sounds." A shrug. "It\'s still out there. South, on the white."', effects: [{ learn: 'drifter_kite' }, { lead: 'l_kite_seen' }, { lead: 'l_kite_on_the_pan' }], options: [{ text: 'Noted.', next: 'fire' }] },
-    treated: { text: 'He makes a noise through his teeth while the knitkit does its work, and then another, different noise. "Amory," he says. "Pell Amory. I don\'t forget a face. I\'ll be in Shale if the leg holds and at the overpass if it doesn\'t, and either way I owe you a thing I can\'t name yet." He gives you the machete. "I\'ll get another."', interject: [{ companion: ILYA, text: '"Right," Ilya says, quietly, when the man can bend the knee. It sounds like the good kind.', effects: [{ approval: { companion: ILYA, by: 5 } }] }], effects: [{ give: 'w_machete' }, { lead: 'l_drifter_owes' }], options: [on] },
-    water: { text: 'He drinks half and stops himself, which is the hardest thing you have seen anyone do this week. "Amory. Pell." He looks at the leg. "If you\'ve got anything for this, I\'m listening. If you haven\'t, go on, and don\'t look back, I hate that."', options: [{ id: 'drifter.treat2', text: '(Treat the leg. A knitkit, a bandage.)', if: { all: [{ item: 'c_knitkit' }, { item: 'c_bandage' }] }, effects: [{ take: 'c_knitkit' }, { take: 'c_bandage' }, { set: 're_drifter_done' }, { set: 'drifter_saved' }, { trust: { npc: 'npc_w_drifter', by: 40 } }, { decision: { id: 'drifter_saved', text: 'You treated a dying drifter\'s leg on the road.' } }, { xp: 60 }], next: 'treated' }, { text: '(Leave him.)', effects: [{ set: 're_drifter_done' }], exit: true }] },
+    treated: { text: 'He makes a noise through his teeth while the knitkit does its work, and then another, different noise. "Amory," he says. "Ignacio Amory. I don\'t forget a face. I\'ll be in Shale if the leg holds and at the overpass if it doesn\'t, and either way I owe you a thing I can\'t name yet." He gives you the machete. "I\'ll get another."', interject: [{ companion: ILYA, text: '"Right," Ilya says, quietly, when the man can bend the knee. It sounds like the good kind.', effects: [{ approval: { companion: ILYA, by: 5 } }] }], effects: [{ give: 'w_machete' }, { lead: 'l_drifter_owes' }], options: [on] },
+    water: { text: 'He drinks half and stops himself, which is the hardest thing you have seen anyone do this week. "Amory. Ignacio." He looks at the leg. "If you\'ve got anything for this, I\'m listening. If you haven\'t, go on, and don\'t look back, I hate that."', options: [{ id: 'drifter.treat2', text: '(Treat the leg. A knitkit, a bandage.)', if: { all: [{ item: 'c_knitkit' }, { item: 'c_bandage' }] }, effects: [{ take: 'c_knitkit' }, { take: 'c_bandage' }, { set: 're_drifter_done' }, { set: 'drifter_saved' }, { trust: { npc: 'npc_w_drifter', by: 40 } }, { decision: { id: 'drifter_saved', text: 'You treated a dying drifter\'s leg on the road.' } }, { xp: 60 }], next: 'treated' }, { text: '(Leave him.)', effects: [{ set: 're_drifter_done' }], exit: true }] },
     robbed: { text: 'He does not fight you for it. "Fine," he says, to the fire that is out. "Fine."', interject: [
       { companion: TAMSIN, text: '"He was dying," Tamsin says. She doesn\'t say anything else for a mile.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] },
       { companion: ILYA, text: 'Ilya doesn\'t look at the machete, or at you. He counts something under his breath all the way back to the track.', effects: [{ approval: { companion: ILYA, by: -5 } }] },
@@ -198,7 +198,7 @@ export const d_re_axle: DialogueDef = {
   start: [{ node: 'wheel' }],
   nodes: {
     wheel: {
-      text: 'The wagon stops the way a wagon stops when it has decided to: a crack, a lurch, and the left rear wheel leaning out from the axle like a drunk from a doorway. Ansel is already under it. "Pin\'s sheared. I\'ve a spare pin and no spare hands. Lift, or wait for somebody who can."',
+      text: 'The wagon stops the way a wagon stops when it has decided to: a crack, a lurch, and the left rear wheel leaning out from the axle like a drunk from a doorway. Girma is already under it. "Pin\'s sheared. I\'ve a spare pin and no spare hands. Lift, or wait for somebody who can."',
       effects: [{ set: 're_escort_axle_seen' }],
       options: [
         { id: 'axle.fix', text: '(Set the pin yourself.)', check: { skill: 'mechanics', dc: 30, mods: [{ if: { origin: 'pump_hand' }, dc: -10, why: 'you have had your hands in worse' }] }, next: 'fixed', fail: 'fail' },
@@ -206,10 +206,10 @@ export const d_re_axle: DialogueDef = {
         { id: 'axle.wait', text: '(Wait for help on the road.)', effects: [{ time: 240 }], next: 'waited' },
       ],
     },
-    fixed: { text: 'The pin goes in on the second try and the wheel comes true. Ansel wipes his hands on the salt sacks. "Kin would have charged me for that." He looks at you. "I\'ll tell her you didn\'t."', effects: [{ time: 40 }, { rep: { faction: 'wheel', respect: 4 } }, { learn: 'axle_fixed' }, { xp: 30 }], options: [{ text: 'On we go.', exit: true }] },
-    lifted: { text: 'You take the corner of the bed on your shoulder and the world goes red at the edges for the length of a held breath, and then the pin is in and Ansel is saying "down, down, down." He does not thank you. He hands you the water first, which is the same thing.', effects: [{ time: 30 }, { rep: { faction: 'wheel', respect: 4 } }, { learn: 'axle_lifted' }, { xp: 30 }], options: [{ text: 'On we go.', exit: true }] },
-    fail: { text: 'The pin goes in crooked and comes out again, and the second time it bends. Ansel says nothing, which is worse. In the end it is a Tollmen guard off the guild\'s wagon who sets it, and writes something in a book.', effects: [{ time: 150 }, { rep: { faction: 'wheel', respect: -1 } }, { learn: 'axle_failed' }], options: [{ text: 'On we go.', exit: true }] },
-    waited: { text: 'Four hours of salt and sky. A guild guard comes back down the line at last, sets the pin in a minute with a tool made for it, and tells Ansel the Wheel owes the guild a favour. Ansel says the Wheel owes nobody. The guard writes it down anyway.', effects: [{ learn: 'axle_waited' }], options: [{ text: 'On we go.', exit: true }] },
+    fixed: { text: 'The pin goes in on the second try and the wheel comes true. Girma wipes his hands on the salt sacks. "Kin would have charged me for that." He looks at you. "I\'ll tell her you didn\'t."', effects: [{ time: 40 }, { rep: { faction: 'wheel', respect: 4 } }, { learn: 'axle_fixed' }, { xp: 30 }], options: [{ text: 'On we go.', exit: true }] },
+    lifted: { text: 'You take the corner of the bed on your shoulder and the world goes red at the edges for the length of a held breath, and then the pin is in and Girma is saying "down, down, down." He does not thank you. He hands you the water first, which is the same thing.', effects: [{ time: 30 }, { rep: { faction: 'wheel', respect: 4 } }, { learn: 'axle_lifted' }, { xp: 30 }], options: [{ text: 'On we go.', exit: true }] },
+    fail: { text: 'The pin goes in crooked and comes out again, and the second time it bends. Girma says nothing, which is worse. In the end it is a Tollmen guard off the guild\'s wagon who sets it, and writes something in a book.', effects: [{ time: 150 }, { rep: { faction: 'wheel', respect: -1 } }, { learn: 'axle_failed' }], options: [{ text: 'On we go.', exit: true }] },
+    waited: { text: 'Four hours of salt and sky. A guild guard comes back down the line at last, sets the pin in a minute with a tool made for it, and tells Girma the Wheel owes the guild a favour. Girma says the Wheel owes nobody. The guard writes it down anyway.', effects: [{ learn: 'axle_waited' }], options: [{ text: 'On we go.', exit: true }] },
   },
 };
 
@@ -219,7 +219,7 @@ export const d_re_shakedown: DialogueDef = {
   start: [{ if: { flag: 're_scouts_fight' }, node: 'hostile' }, { node: 'halt' }],
   nodes: {
     halt: {
-      text: 'Two of them, on foot, from behind the cut where the road bends: scrap plates, one carbine between them, and the easy manner of people who have done this before. "Salt." Hale nods at the wagon as if introducing it. "Salt pays. Forty, and the road\'s yours."',
+      text: 'Two of them, on foot, from behind the cut where the road bends: scrap plates, one carbine between them, and the easy manner of people who have done this before. "Salt." Thistle nods at the wagon as if introducing it. "Salt pays. Forty, and the road\'s yours."',
       options: [
         { id: 'shake.kin', text: 'Kessler counts you. Does Kessler know you\'re out here collecting?', if: { rep: { faction: 'rust_dogs', respect: 20 } }, next: 'kin' },
         { id: 'shake.talk', text: 'The Wheel feeds Dogs when the tribute\'s late. You want to be the one who ended that?', check: { skill: 'speech', dc: 35 }, next: 'talked', fail: 'talk_no' },
@@ -227,13 +227,13 @@ export const d_re_shakedown: DialogueDef = {
         { id: 'shake.fight', text: '(Draw.)', effects: [{ set: 're_scouts_fight' }, { rep: { faction: 'rust_dogs', fear: 5, respect: -6 } }, { event: 'combat' }], exit: true },
       ],
     },
-    kin: { text: 'Hale\'s manner goes somewhere else. "He doesn\'t." Nettle has already stepped off the road. "Didn\'t see a wagon. Didn\'t see you." They are gone into the cut before Ansel has finished reaching for the gun under the seat.', effects: [{ learn: 'shakedown_kin' }, { rep: { faction: 'wheel', respect: 3 } }, { xp: 30 }], options: [{ text: 'On we go.', exit: true }] },
-    talked: { text: 'It lands. Nettle looks at Hale; Hale looks at the salt; the salt does not look back. "Go on, then." He steps aside with a flourish that costs him something. "Tell the old woman the Dogs let her through."', effects: [{ learn: 'shakedown_talked' }, { rep: { faction: 'wheel', respect: 3 } }, { rep: { faction: 'rust_dogs', respect: 2 } }, { xp: 30 }], options: [{ text: 'On we go.', exit: true }] },
-    talk_no: { text: '"Forty," Hale says, as if you had not spoken, and Nettle\'s hand finds the carbine\'s strap.', options: [
+    kin: { text: 'Thistle\'s manner goes somewhere else. "He doesn\'t." Nettle has already stepped off the road. "Didn\'t see a wagon. Didn\'t see you." They are gone into the cut before Girma has finished reaching for the gun under the seat.', effects: [{ learn: 'shakedown_kin' }, { rep: { faction: 'wheel', respect: 3 } }, { xp: 30 }], options: [{ text: 'On we go.', exit: true }] },
+    talked: { text: 'It lands. Nettle looks at Thistle; Thistle looks at the salt; the salt does not look back. "Go on, then." He steps aside with a flourish that costs him something. "Tell the old woman the Dogs let her through."', effects: [{ learn: 'shakedown_talked' }, { rep: { faction: 'wheel', respect: 3 } }, { rep: { faction: 'rust_dogs', respect: 2 } }, { xp: 30 }], options: [{ text: 'On we go.', exit: true }] },
+    talk_no: { text: '"Forty," Thistle says, as if you had not spoken, and Nettle\'s hand finds the carbine\'s strap.', options: [
       { id: 'shake.pay2', text: '(Pay the forty.)', if: { item: 'tolls', count: 40 }, effects: [{ take: 'tolls', count: 40 }, { learn: 'shakedown_paid' }], next: 'paid' },
       { id: 'shake.fight2', text: '(Draw.)', effects: [{ set: 're_scouts_fight' }, { rep: { faction: 'rust_dogs', fear: 5, respect: -6 } }, { event: 'combat' }], exit: true },
     ] },
-    paid: { text: 'The Tolls go into a plate pocket. "Pleasure." They are off the road and gone. Ansel, from the seat: "That\'s the Wheel\'s forty. Tell her, not me."', effects: [{ rep: { faction: 'wheel', respect: -1 } }], options: [{ text: 'On we go.', exit: true }] },
-    hostile: { text: 'Hale spits. "Should have paid."', effects: [{ event: 'combat' }], options: [{ text: '(Fight.)', exit: true }] },
+    paid: { text: 'The Tolls go into a plate pocket. "Pleasure." They are off the road and gone. Girma, from the seat: "That\'s the Wheel\'s forty. Tell her, not me."', effects: [{ rep: { faction: 'wheel', respect: -1 } }], options: [{ text: 'On we go.', exit: true }] },
+    hostile: { text: 'Thistle spits. "Should have paid."', effects: [{ event: 'combat' }], options: [{ text: '(Fight.)', exit: true }] },
   },
 };

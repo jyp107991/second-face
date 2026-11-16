@@ -1626,7 +1626,7 @@ export const c9_mouth: MapDef = {
       barks: [
         "Hatch day. Wool for water, same as my mother did.",
         "MOTHER says thank you. MOTHER always says thank you.",
-        "Get your goats off the apron, Hesper!"
+        "Get your goats off the apron, Afua!"
       ]
     },
     {

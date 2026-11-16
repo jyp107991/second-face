@@ -449,16 +449,16 @@ export const q_a1_bram: QuestDef = {
   ],
   stages: {
     carry: {
-      journal: 'Bram gave you a letter sealed with machine grease, for a woman called Edda Vale in Shale. He asked you not to read it. He did not say how he knows her.',
-      objectives: [{ id: 'find', text: 'Find Edda Vale in Shale', done: { knows: 'edda_found' } }],
+      journal: 'Bram gave you a letter sealed with machine grease, for a woman called Edda Lockett in Shale. He asked you not to read it. He did not say how he knows her.',
+      objectives: [{ id: 'find', text: 'Find Edda Lockett in Shale', done: { knows: 'edda_found' } }],
       next: [{ if: { knows: 'edda_found' }, stage: 'answer' }],
     },
     answer: {
-      journal: 'Edda Vale has been under the salt six years. Her daughter Hesper read the letter and went quiet for a long time. Something has to go back to the Cistern.',
+      journal: 'Edda Lockett has been under the salt six years. Her daughter Hesper read the letter and went quiet for a long time. Something has to go back to the Cistern.',
       objectives: [{ id: 'back', text: 'Take an answer back to Bram', done: { any: [{ knows: 'bram_answered_truth' }, { knows: 'bram_answered_kind' }, { knows: 'bram_answered_told' }] } }],
       next: [{ if: { knows: 'bram_answered_kind' }, stage: 'kind' }, { if: { any: [{ knows: 'bram_answered_truth' }, { knows: 'bram_answered_told' }] }, stage: 'truth' }],
     },
     truth: { journal: 'Bram knows. He thanked you, which was worse than if he had not.', end: 'done' },
-    kind: { journal: 'Bram has a letter from Edda Vale that Edda Vale did not write. He reads it at the machine when he thinks nobody is looking. He is happier than he was. You will have to live with the rest.', end: 'done' },
+    kind: { journal: 'Bram has a letter from Edda Lockett that Edda Lockett did not write. He reads it at the machine when he thinks nobody is looking. He is happier than he was. You will have to live with the rest.', end: 'done' },
   },
 };

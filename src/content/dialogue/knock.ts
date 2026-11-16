@@ -26,10 +26,10 @@ export const d_kn_maud: DialogueDef = {
   nodes: {
     wake: {
       text: [
-        { if: { origin: 'pump_hand' }, text: 'Up. Up, love, the wool won\'t carry itself and MOTHER opens at seven whether we\'re there or not. Bale\'s by the door. Knock\'s post is in the satchel — mind Hesper\'s, she\'s sealed it with goat fat again.' },
-        { if: { origin: 'clinic_aide' }, text: 'You were up with Hesper\'s boy half the night, I know. Doesn\'t matter. Hatch day. Bale\'s by the door, the post\'s in the satchel, and Pell will want to hear about that chest of his through the Grille.' },
+        { if: { origin: 'pump_hand' }, text: 'Up. Up, love, the wool won\'t carry itself and MOTHER opens at seven whether we\'re there or not. Bale\'s by the door. Knock\'s post is in the satchel — mind Afua\'s, she\'s sealed it with goat fat again.' },
+        { if: { origin: 'clinic_aide' }, text: 'You were up with Afua\'s boy half the night, I know. Doesn\'t matter. Hatch day. Bale\'s by the door, the post\'s in the satchel, and Pell will want to hear about that chest of his through the Grille.' },
         { if: { origin: 'door_watch' }, text: 'Off the watch and straight into the hatch line — that\'s Knock for you. Bale\'s by the door, the post\'s in the satchel. Eat something first. You\'re grey.' },
-        { if: { origin: 'archive_clerk' }, text: 'The factor\'s already at the stand, so you\'ll want your book after the hatch. First things first: bale\'s by the door, the post\'s in the satchel, and I want the Cistern\'s letters back before Ruth starts asking.' },
+        { if: { origin: 'archive_clerk' }, text: 'The factor\'s already at the stand, so you\'ll want your book after the hatch. First things first: bale\'s by the door, the post\'s in the satchel, and I want the Cistern\'s letters back before Binta starts asking.' },
         { text: 'Up, love. Hatch day. Bale\'s by the door, Knock\'s post is in the satchel, and MOTHER opens at seven whether we\'re there or not.' },
       ],
       again: 'Well? Bale, post, hatch. Three things, love. Go.',
@@ -41,7 +41,7 @@ export const d_kn_maud: DialogueDef = {
       ],
     },
     how: {
-      text: 'Same as every week. Wool and post in the tray. MOTHER weighs it, MOTHER says thank you for your continuity, and she pushes out what the week buys — water first, always water. If there\'s medicine going, Hesper\'s boy needs it more than we need extra. You decide; you\'ve watched me do it often enough. Then bring me the Cistern\'s post. I\'ll want to sort it before the factor sniffs at it.',
+      text: 'Same as every week. Wool and post in the tray. MOTHER weighs it, MOTHER says thank you for your continuity, and she pushes out what the week buys — water first, always water. If there\'s medicine going, Afua\'s boy needs it more than we need extra. You decide; you\'ve watched me do it often enough. Then bring me the Cistern\'s post. I\'ll want to sort it before the factor sniffs at it.',
       options: [{ text: 'Water first, medicine if it\'s going, post back to you.', next: 'how_ok' }],
     },
     how_ok: { text: 'Good. And talk to Tamsin at the Grille if she\'s there. She sulks if you don\'t, and when she sulks she sends riddles.', options: [{ text: 'On my way.', exit: true }] },
@@ -59,7 +59,7 @@ export const d_kn_maud: DialogueDef = {
     chores: {
       text: 'Now? Dace has been at the Rib gate since dawn wanting a second pair of hands — there\'s copper still on the mast and the Rusks have been at it. And Corin\'s windpump is coughing again; he won\'t ask, so I\'m asking for him. Do both before dark and you\'ve earned your supper.',
       again: [
-        { if: { flag: 'kn_supper' }, text: 'The lamp\'s filled and Abel\'s chest still won\'t take the cold. Go on, love. The hatch won\'t watch itself.' },
+        { if: { flag: 'kn_supper' }, text: 'The lamp\'s filled and Amos\'s chest still won\'t take the cold. Go on, love. The hatch won\'t watch itself.' },
         { if: { flag: 'kn_rib_done' }, text: 'Rib\'s done. That\'s not nothing. Now Corin\'s pump, before he takes it apart out of spite.' },
         { if: { flag: 'kn_corin_done' }, text: 'I can hear that pump drawing from here. That\'s not nothing. Now the Rib, before the Rusks have the lot.' },
         { text: 'Rib and windpump, love. Two things. Dark comes early this time of year.' },
@@ -110,7 +110,7 @@ export const d_kn_maud: DialogueDef = {
     faces: { text: 'Not one. Tamsin\'s voice is the closest thing I know to a granddaughter I\'ve never looked at. Strange world. Eat.', options: [{ text: '(Eat.)', next: 'watch' }] },
     supper_linnet: { text: 'Linnet\'s fork stops. Maud doesn\'t look up. "Everyone wants to leave at seventeen. I wanted to. I stayed because somebody had to keep the hatch honest." She looks up. "Somebody still does."', effects: [{ memory: { npc: 'npc_kn_linnet', tag: 'spoke_for_her', valence: 10 } }], options: [{ text: '(Eat.)', next: 'watch' }] },
     watch: {
-      text: 'Maud wipes the bowl with bread. "You\'re on the watch tonight; Abel\'s chest won\'t take the cold. Lamp\'s filled. If anyone comes up the road, you ring and you don\'t go down to them alone." She smiles a little. "Nobody comes up the road."',
+      text: 'Maud wipes the bowl with bread. "You\'re on the watch tonight; Amos\'s chest won\'t take the cold. Lamp\'s filled. If anyone comes up the road, you ring and you don\'t go down to them alone." She smiles a little. "Nobody comes up the road."',
       effects: [{ set: 'kn_supper' }, { xp: 25 }],
       options: [
         { id: 'maud.postbook', text: 'I\'ll write in the post-book first.', if: { not: { flag: 'kn_wrote_post' } }, exit: true },
@@ -184,7 +184,7 @@ export const d_kn_hatch: DialogueDef = {
       ],
       options: [
         { id: 'hatch.water', text: 'Four measures of water.', effects: [{ give: 'c_water', count: 4 }, { set: 'kn_hatch_traded' }, { set: 'kn_hatch_water' }], next: 'post' },
-        { id: 'hatch.meds', text: 'Two of water and the medicine, for Hesper\'s boy.', effects: [{ give: 'c_water', count: 2 }, { give: 'c_knitkit' }, { set: 'kn_hatch_traded' }, { set: 'kn_hatch_meds' }, { memory: { npc: 'npc_kn_r1', tag: 'medicine_for_boy', valence: 20 } }], next: 'post' },
+        { id: 'hatch.meds', text: 'Two of water and the medicine, for Afua\'s boy.', effects: [{ give: 'c_water', count: 2 }, { give: 'c_knitkit' }, { set: 'kn_hatch_traded' }, { set: 'kn_hatch_meds' }, { memory: { npc: 'npc_kn_r1', tag: 'medicine_for_boy', valence: 20 } }], next: 'post' },
         { id: 'hatch.haggle', text: 'Last month this bale was worth five. Recheck the valuation.', if: { knows: 'kn_hatch_cheaper' }, check: { skill: 'barter', dc: 35, mods: [{ if: { origin: 'pump_hand' }, dc: -15, why: 'you know this hatch' }] }, next: 'haggled', fail: 'haggle_fail' },
       ],
     },
@@ -262,7 +262,7 @@ export const d_kn_grille: DialogueDef = {
         { id: 'tam.sky', text: 'White at the edges. Dust coming up from the south. A hawk.', if: { not: { flag: 'kn_tamsin_morning' } }, next: 'sky' },
         { id: 'tam.riddle', text: 'Give me a riddle, then.', if: { not: { seen: 'tam.riddle' } }, next: 'riddle' },
         { id: 'tam.inside', text: 'How is it in there? Really?', next: 'inside', once: true },
-        { id: 'tam.pell', text: 'Is Pell there? I need to ask about Hesper\'s boy.', if: { not: { flag: 'pell_met' } }, next: 'pell_boy' },
+        { id: 'tam.pell', text: 'Is Pell there? I need to ask about Afua\'s boy.', if: { not: { flag: 'pell_met' } }, next: 'pell_boy' },
         { text: 'I\'ve the hatch to do. Later, Tam.', exit: true },
       ],
     },
@@ -283,10 +283,10 @@ export const d_kn_grille: DialogueDef = {
     riddle_close: { text: 'Close. Wrong, but close. You always go for the obvious one first. It\'s sweet. It\'s why you\'d be terrible in here.', effects: [{ set: 'kn_tamsin_morning' }], options: [{ text: 'Later, Tam.', exit: true }] },
     riddle_you: { text: 'A long silence. Then, quietly: "Fingertips. Twice. When we were eleven." Another silence. "That one wasn\'t a riddle, was it."', effects: [{ set: 'kn_tamsin_morning' }, { approval: { companion: 'npc_c9_03', by: 10 } }, { affection: { npc: 'npc_c9_03', by: 5 } }, { xp: 15 }], options: [{ text: 'No.', exit: true }] },
     riddle_knock: { text: '"...Huh." You can hear her grin. "That\'s the right answer to a question I didn\'t ask. Which is the best kind. Ines says the Cistern feeds Knock. Pell says Knock feeds the Cistern. Nobody asks MOTHER."', effects: [{ set: 'kn_tamsin_morning' }, { approval: { companion: 'npc_c9_03', by: 10 }, }, { learn: 'tamsin_feeds_question' }, { xp: 15 }], options: [{ text: 'Later, Tam.', exit: true }] },
-    inside: { text: 'Same as always. Algae, the hum, sixty people pretending sixty people is a world. Ines says the door stays shut because of what\'s out there. I say what\'s out there is you and Hesper\'s goats. Nobody laughs. Nobody\'s laughed at that in years either.', options: [{ text: 'I\'m sorry.', next: 'morning' }] },
+    inside: { text: 'Same as always. Algae, the hum, sixty people pretending sixty people is a world. Ines says the door stays shut because of what\'s out there. I say what\'s out there is you and Afua\'s goats. Nobody laughs. Nobody\'s laughed at that in years either.', options: [{ text: 'I\'m sorry.', next: 'morning' }] },
     pell_boy: {
       speaker: 'npc_c9_02',
-      text: 'A man\'s voice, close to the holes, dry and tired: "Hesper\'s boy. The cough is wet or dry? ... Wet. Then the blue tablets, one at night, and keep him off the goats\' straw. If MOTHER has them this week. Tell Hesper I asked after him. Tell her I\'m sorry I can\'t see him." He means it.',
+      text: 'A man\'s voice, close to the holes, dry and tired: "Afua\'s boy. The cough is wet or dry? ... Wet. Then the blue tablets, one at night, and keep him off the goats\' straw. If MOTHER has them this week. Tell Afua I asked after him. Tell her I\'m sorry I can\'t see him." He means it.',
       effects: [{ set: 'pell_met' }, { learn: 'pell_seen' }],
       options: [{ text: 'I\'ll tell her.', next: 'morning' }],
     },
@@ -361,7 +361,7 @@ export const d_kn_grille: DialogueDef = {
     },
     bram: {
       speaker: 'npc_c9_04',
-      text: 'A heavy man\'s voice: "Coyle. Door-keeper, for what that\'s worth to a door that doesn\'t move." A pause. "There\'s a woman. Hesper. Not Knock\'s Hesper — another. Went up the road forty years back. If you\'re going that way." An envelope comes through the hatch\'s slot, folded small.',
+      text: 'A heavy man\'s voice: "Coyle. Door-keeper, for what that\'s worth to a door that doesn\'t move." A pause. "There\'s a woman. Edda Lockett. Went up the road forty years back. If you\'re going that way." An envelope comes through the hatch\'s slot, folded small.',
       effects: [{ give: 'k_bram_letter' }, { quest: 'q_a1_bram', start: true }, { learn: 'bram_letter' }],
       options: [{ text: 'I\'ll find her.', exit: true }],
     },
@@ -528,7 +528,7 @@ export const d_kn_dace: DialogueDef = {
   ],
   nodes: {
     intro: {
-      text: 'Dace Moro, leaning on the rock at the Rib\'s gap with a pry bar over his shoulders like a yoke. "There\'s my second pair of hands. The Rusks have been at the mast three days — Abner and Nell, road people. If they strip the last of the copper there\'s nothing left in the Rib worth the walk." He grins. "Mine was going to be the last load. I\'ve a debt to clear."',
+      text: 'Dace Moro, leaning on the rock at the Rib\'s gap with a pry bar over his shoulders like a yoke. "There\'s my second pair of hands. The Rusks have been at the mast three days — Abner and Hattie, road people. If they strip the last of the copper there\'s nothing left in the Rib worth the walk." He grins. "Mine was going to be the last load. I\'ve a debt to clear."',
       again: '"Ready? I\'ll carry the heavy end." A pause. "Most of it. Some of it."',
       options: [
         { id: 'dace.debt', text: 'Who do you owe?', next: 'debt', once: true },
@@ -575,7 +575,7 @@ export const d_kn_rib: DialogueDef = {
   start: [{ if: { flag: 'kn_rib_done' }, node: 'done' }, { node: 'intro' }],
   nodes: {
     intro: {
-      text: 'Abner Rusk straightens from the mast with a coil of stripped copper over his arm. Behind him, Nell has a shiv out before you\'ve said anything. "Knock," Abner says, as if it were a smell. "This is a dead mast on dead ground. Copper don\'t belong to anybody."',
+      text: 'Abner Rusk straightens from the mast with a coil of stripped copper over his arm. Behind him, Hattie has a shiv out before you\'ve said anything. "Knock," Abner says, as if it were a smell. "This is a dead mast on dead ground. Copper don\'t belong to anybody."',
       passives: [{ attr: 'senses', dc: 6, text: 'The relay box at the mast head is still bolted shut. They haven\'t got into it.' }],
       options: [
         { id: 'rib.share', text: 'Then share it. You take the copper, we take the box. Nobody bleeds.', check: { skill: 'barter', dc: 30 }, next: 'share', fail: 'share_fail' },
@@ -584,11 +584,11 @@ export const d_kn_rib: DialogueDef = {
         { id: 'rib.fight', text: 'Get off Knock\'s mast.', effects: [{ set: 'kn_rib_fight' }], next: 'fight' },
       ],
     },
-    share: { text: 'Abner looks at the box, then at the copper, then at Nell. "Box is welded. You\'ll want luck." He shrugs. "Copper\'s ours, then." They drag their coils off down the cut, arguing.', effects: [{ set: 'kn_rib_shared' }, { set: 'kn_rib_clear' }, { xp: 30 }, { decision: { id: 'kn_rib_shared', text: 'You split the Rib with the Rusks: their copper, Knock\'s box.' } }], options: [{ text: '(Go to the box.)', exit: true }] },
-    scared: { text: 'Abner looks up at the rise. Nell already has. "Not worth a hole," she says, and they go, leaving half a coil behind them.', effects: [{ set: 'kn_rib_scared' }, { set: 'kn_rib_clear' }, { give: 'j_wiring', count: 2 }, { xp: 30 }], options: [{ text: '(Go to the box.)', exit: true }] },
+    share: { text: 'Abner looks at the box, then at the copper, then at Hattie. "Box is welded. You\'ll want luck." He shrugs. "Copper\'s ours, then." They drag their coils off down the cut, arguing.', effects: [{ set: 'kn_rib_shared' }, { set: 'kn_rib_clear' }, { xp: 30 }, { decision: { id: 'kn_rib_shared', text: 'You split the Rib with the Rusks: their copper, Knock\'s box.' } }], options: [{ text: '(Go to the box.)', exit: true }] },
+    scared: { text: 'Abner looks up at the rise. Hattie already has. "Not worth a hole," she says, and they go, leaving half a coil behind them.', effects: [{ set: 'kn_rib_scared' }, { set: 'kn_rib_clear' }, { give: 'j_wiring', count: 2 }, { xp: 30 }], options: [{ text: '(Go to the box.)', exit: true }] },
     sneak: { text: 'Dace starts an argument about whose grandfather put the mast up. While Abner shouts, you are round the back, at the box, with your bar in its seam. By the time they look round the lid is off and you are gone.', effects: [{ set: 'kn_rib_sneak' }, { set: 'kn_rib_clear' }, { give: 'j_electronics', count: 1 }, { xp: 40 }], options: [{ text: '(Go.)', exit: true }] },
-    share_fail: { text: '"No." Abner drops the copper. Nell steps round him. "Our mast now."', options: [{ text: 'Then we do this the other way.', effects: [{ set: 'kn_rib_fight' }], next: 'fight' }, { text: '(Back off.)', next: 'back_off' }] },
-    sneak_fail: { text: 'A stone turns under your boot. Nell is between you and the box with her shiv out. "Thief," she says, delighted.', options: [{ text: '(Fight.)', effects: [{ set: 'kn_rib_fight' }], next: 'fight' }, { text: '(Back off.)', next: 'back_off' }] },
+    share_fail: { text: '"No." Abner drops the copper. Hattie steps round him. "Our mast now."', options: [{ text: 'Then we do this the other way.', effects: [{ set: 'kn_rib_fight' }], next: 'fight' }, { text: '(Back off.)', next: 'back_off' }] },
+    sneak_fail: { text: 'A stone turns under your boot. Hattie is between you and the box with her shiv out. "Thief," she says, delighted.', options: [{ text: '(Fight.)', effects: [{ set: 'kn_rib_fight' }], next: 'fight' }, { text: '(Back off.)', next: 'back_off' }] },
     back_off: { text: 'You back off. Dace swears quietly. "Fine. Their mast." You walk home with what the crates near the gap gave you.', effects: [{ set: 'kn_rib_done' }, { set: 'kn_rib_backed_off' }], options: [{ text: '(Leave.)', exit: true }] },
     fight: { text: 'Abner swings the coil off his arm. Dace steps up beside you with his length of pipe. Nobody says anything else.', options: [{ text: '(Fight.)', exit: true }] },
     done: { text: 'The Rib is quiet.', again: 'Wind in the mast wires. Nobody else.', options: [{ text: '(Leave.)', exit: true }] },
@@ -659,7 +659,7 @@ export const d_kn_corin: DialogueDef = {
     },
     rode: { text: '"I said once." That\'s all. His thumb is on the bolt.', options: [{ text: '(Go down to the square.)', exit: true }] },
     rifle: {
-      text: 'Corin holds out the rifle. "Take it. No — take it. I\'ve the snares and Hesper\'s goats and nobody I need to shoot." He presses a twist of rounds into your hand. "Point it right. And when you get to the Tollhouse, ask nobody about me."',
+      text: 'Corin holds out the rifle. "Take it. No — take it. I\'ve the snares and Afua\'s goats and nobody I need to shoot." He presses a twist of rounds into your hand. "Point it right. And when you get to the Tollhouse, ask nobody about me."',
       effects: [{ give: 'w_bolt308' }, { give: 'a_308', count: 8 }, { set: 'kn_corin_rifle' }, { decision: { id: 'kn_corin_rifle', text: 'Corin gave you his rifle.' } }],
       options: [{ text: 'Thank you, Corin.', exit: true }],
     },
@@ -853,7 +853,7 @@ export const d_kn_outriders: DialogueDef = {
       options: [{ text: 'What due?', next: 'due' }],
     },
     lie: {
-      text: '"Buried." Hale weighs it. Weighs you. "With his things." He looks at the fresh earth by the door where Abel and Sim worked half the night. "Then the Guild will take its due for the trouble, and the dead can keep what they stole."',
+      text: '"Buried." Hale weighs it. Weighs you. "With his things." He looks at the fresh earth by the door where Amos and Sim worked half the night. "Then the Guild will take its due for the trouble, and the dead can keep what they stole."',
       effects: [{ set: 'kn_out_choice', value: 'lied' }, { decision: { id: 'kn_lied_hale', text: 'You lied to the outriders: the stranger was buried with his things.' } }, { xp: 50 }],
       options: [{ text: 'What due?', next: 'due' }],
     },

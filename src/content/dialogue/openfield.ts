@@ -103,7 +103,7 @@ export const d_of_tally: DialogueDef = {
       again: 'The store, dark. The crates. Nobody yet.',
       options: [{ id: 'tally.wait', text: '(Wait behind the shelves.)', check: { skill: 'stealth', dc: 35 }, next: 'seen', fail: 'seen_no' }, { text: '(Go to bed.)', exit: true }],
     },
-    seen: { text: 'An hour past midnight the door opens on a key and Hollin Brannock, the yard hand from the Sump, lifts a crate onto his shoulder as if it were his, and goes out east along the lane toward the guild buyer\'s tent. He does not hurry. Nobody hurries who has done a thing six times.', effects: [{ learn: 'of_seed_hollin' }, { lead: 'l_seed_corso' }, { xp: 60 }], options: [{ text: '(Follow him out.)', exit: true }] },
+    seen: { text: 'An hour past midnight the door opens on a key and Ishan Kadam, the yard hand from the Sump, lifts a crate onto his shoulder as if it were his, and goes out east along the lane toward the guild buyer\'s tent. He does not hurry. Nobody hurries who has done a thing six times.', effects: [{ learn: 'of_seed_hollin' }, { lead: 'l_seed_corso' }, { xp: 60 }], options: [{ text: '(Follow him out.)', exit: true }] },
     seen_no: { text: 'A shelf board creaks under your hand. Footsteps outside stop, and go away, and nothing walks tonight.', effects: [{ time: 60 }], options: [{ text: '(Go to bed.)', exit: true }] },
   },
 };
@@ -210,7 +210,7 @@ export const d_of_mason: DialogueDef = {
     sick: { text: '"Three in the hall. A child. Shaking hands, bad stomachs, no fever. Imre boils everything now and it\'s stopped, mostly." He does not say what he thinks that means. He has decided not to think it.', effects: [{ learn: 'of_sick_no_fever' }], options: [bye] },
     word: { text: 'He is quiet for a while. "Not me. I\'m a farmer; I don\'t keep that kind of door." He looks toward the shrine, where his daughter is. "My daughter keeps it. Say it to her, not to me, and not where anyone from the bridge can hear."', effects: [{ learn: 'petra_keeps_door' }], options: [bye] },
     seed: { text: '"She did. Ninety years in the cold under the Cistern and it came up in nine days in the north rows." His face changes. "The north rows." He looks at the fields and the thing he will not think about gets closer. "Tomato and millet. Dying first, with the rest."', interject: [{ companion: TAMSIN, text: '"Our seed," Tamsin says. "From the cold room. Ninety years and it comes up in nine days and then — " She looks at the north rows and stops talking, which for her is a great deal.' }], effects: [{ learn: 'of_cistern_seed_north' }, { trust: { npc: 'npc_of_01', by: 10 } }], options: [bye] },
-    guild: { text: '"Vail. He wants to buy the harvest before it\'s grown, at a price that would feed us through two winters, and the guild would carry the risk." He almost smiles. "I asked him what the guild knows about my fields that I don\'t. He said *the future*, and smiled, and I have not slept well since."', effects: [{ learn: 'mason_guild_doubt' }], options: [bye] },
+    guild: { text: '"Nakai. He wants to buy the harvest before it\'s grown, at a price that would feed us through two winters, and the guild would carry the risk." He almost smiles. "I asked him what the guild knows about my fields that I don\'t. He said *the future*, and smiled, and I have not slept well since."', effects: [{ learn: 'mason_guild_doubt' }], options: [bye] },
     son: {
       text: 'He does not say *no*. That is the worst of it: he does not say no, he sits down on the bench by the well and looks at his hands for a long time, and then he says, "Show me," and you do, and he reads the paper his son bought with a year\'s seed money, and reads it again. "Burns," he says. "If we grow." He folds it. "He thought he was keeping us. He was." He stands up, old. "Fetch him to me. I\'ll do the rest myself."',
       interject: [{ companion: ODILE, text: '"That\'s a floor sheet," Odile says quietly, when he has folded it. "Sealed, at the price of a year\'s seed. I know the hand that writes them out." Nobody thanks her for knowing.' }],
@@ -426,12 +426,12 @@ export const d_of_doria: DialogueDef = {
       options: [
         { id: 'doria.keys', text: 'Who has keys?', next: 'keys', once: true },
         { id: 'doria.chaff', text: 'Let them keep stealing. Give them dead seed.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { item: 'k_chaff' } }] }, next: 'chaff' },
-        { id: 'doria.hollin', text: 'It\'s Hollin. He carries it to the guild\'s man.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, next: 'hollin' },
+        { id: 'doria.hollin', text: 'It\'s Ishan. He carries it to the guild\'s man.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, next: 'hollin' },
         bye,
       ],
     },
-    again: { text: '"Counted at dusk." She counts.', again: 'She finishes a column on the tally and looks up.', options: [{ id: 'doria.keys.again', text: 'Who has keys?', if: { not: { seen: 'doria.keys' } }, next: 'keys' }, { id: 'doria.chaff.again', text: 'Let them keep stealing. Give them dead seed.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }, { not: { item: 'k_chaff' } }] }, next: 'chaff' }, { id: 'doria.hollin.again', text: 'It\'s Hollin.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, next: 'hollin' }, bye] },
-    keys: { text: '"Three. Mine. The Elder\'s. The yard\'s, for the planting mornings." She stops. "Hollin has the yard\'s. He came from the Sump with nothing and the Elder gave him the yard, and I have been not thinking that for six days."', effects: [{ learn: 'of_seed_yard_key' }, { learn: 'of_seed_hollin_hint' }], options: [bye] },
+    again: { text: '"Counted at dusk." She counts.', again: 'She finishes a column on the tally and looks up.', options: [{ id: 'doria.keys.again', text: 'Who has keys?', if: { not: { seen: 'doria.keys' } }, next: 'keys' }, { id: 'doria.chaff.again', text: 'Let them keep stealing. Give them dead seed.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }, { not: { item: 'k_chaff' } }] }, next: 'chaff' }, { id: 'doria.hollin.again', text: 'It\'s Ishan.', if: { all: [{ knows: 'of_seed_hollin' }, { not: { flag: 'of_seed_outcome' } }] }, next: 'hollin' }, bye] },
+    keys: { text: '"Three. Mine. The Elder\'s. The yard\'s, for the planting mornings." She stops. "Ishan has the yard\'s. He came from the Sump with nothing and the Elder gave him the yard, and I have been not thinking that for six days."', effects: [{ learn: 'of_seed_yard_key' }, { learn: 'of_seed_hollin_hint' }], options: [bye] },
     chaff: {
       text: '"Dead seed." She almost smiles. "Last year\'s, boiled and dried. Looks right, weighs right, grows nothing. Chaff with manners." She looks at the crates. "If the guild is buying our seed for somebody east, I would like that somebody to plant a field of nothing and wait a season for it."',
       options: [
@@ -439,11 +439,11 @@ export const d_of_doria: DialogueDef = {
         { text: 'Not yet.', exit: true },
       ],
     },
-    chaff_made: { text: 'Three hours over the stove, and a crate of seed that will fool anyone but the ground. "Put it in the row he takes from," Doria says. "Or sell it to the guild\'s man yourself and keep the coin; I don\'t mind which, as long as it\'s ours they plant nothing with."', options: [{ id: 'doria.chaff.place', text: '(Put it where Hollin takes from.)', effects: [{ take: 'k_chaff' }, { set: 'of_seed_outcome', value: 'chaff' }, { time: 60 }, { xp: 100 }], next: 'chaff_done' }, { text: 'I\'ll sell it to him myself.', exit: true }] },
+    chaff_made: { text: 'Three hours over the stove, and a crate of seed that will fool anyone but the ground. "Put it in the row he takes from," Doria says. "Or sell it to the guild\'s man yourself and keep the coin; I don\'t mind which, as long as it\'s ours they plant nothing with."', options: [{ id: 'doria.chaff.place', text: '(Put it where Ishan takes from.)', effects: [{ take: 'k_chaff' }, { set: 'of_seed_outcome', value: 'chaff' }, { time: 60 }, { xp: 100 }], next: 'chaff_done' }, { text: 'I\'ll sell it to him myself.', exit: true }] },
     chaff_done: { text: 'Over the next nights the crates walk as before, and the guild\'s man pays as before, and on the seventh morning he leaves with six crates on a mule and a receipt, going east to a client who will plant a field of manners and wait. Doria laughs, once, and then sits down and sleeps in the store for the first time in a fortnight.', options: [bye] },
     chaff_no: { text: 'The seed boils to glue. Doria looks at the pot and at you and says nothing, which is kind.', options: [bye] },
-    hollin: { text: 'She does not look surprised; she looks tired. "Tell the Elder. I can\'t." She turns the tally over. "He\'ll give Hollin the night watch over the store he stole from. That\'s the Choir\'s way. It\'s worse than the track and he\'ll stay, which is the point."', options: [{ id: 'doria.tell', text: '(Tell the Elder.)', effects: [{ set: 'of_seed_outcome', value: 'exposed' }, { xp: 80 }, { decision: { id: 'of_seed_exposed', text: 'You told Openfield that its yard hand was selling the Choir\'s seed to the guild.' } }], next: 'told' }, { text: 'Not yet.', exit: true }] },
-    told: { text: 'The Elder hears it, and goes to the yard, and comes back without having raised his voice, and Hollin Brannock stands watch over the seed store every night from then on with a lantern and nobody to talk to. The guild\'s man is gone by morning.', options: [bye] },
+    hollin: { text: 'She does not look surprised; she looks tired. "Tell the Elder. I can\'t." She turns the tally over. "He\'ll give Ishan the night watch over the store he stole from. That\'s the Choir\'s way. It\'s worse than the track and he\'ll stay, which is the point."', options: [{ id: 'doria.tell', text: '(Tell the Elder.)', effects: [{ set: 'of_seed_outcome', value: 'exposed' }, { xp: 80 }, { decision: { id: 'of_seed_exposed', text: 'You told Openfield that its yard hand was selling the Choir\'s seed to the guild.' } }], next: 'told' }, { text: 'Not yet.', exit: true }] },
+    told: { text: 'The Elder hears it, and goes to the yard, and comes back without having raised his voice, and Ishan Kadam stands watch over the seed store every night from then on with a lantern and nobody to talk to. The guild\'s man is gone by morning.', options: [bye] },
     after: { text: '"Fourteen at dusk. Fourteen at dawn." She sleeps now.', again: '"Fourteen." She says it like a prayer the Choir doesn\'t have.', options: [bye] },
   },
 };
@@ -471,7 +471,7 @@ export const d_of_hollin: DialogueDef = {
   start: [{ if: { flag: 'of_seed_outcome', eq: 'exposed' }, node: 'watch' }, { if: { flag: 'of_seed_outcome' }, node: 'after' }, { if: { knows: 'of_seed_hollin' }, node: 'caught' }, { if: { flag: 'hollin_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
-      text: 'A young man in the threshing yard with the kind of shoulders the Sump builds and a way of standing between you and his tent. "Hollin. Yard." He does not offer more. "Came from the Sump. They gave me work. That\'s the whole story."',
+      text: 'A young man in the threshing yard with the kind of shoulders the Sump builds and a way of standing between you and his tent. "Ishan. Yard." He does not offer more. "Came from the Sump. They gave me work. That\'s the whole story."',
       effects: [{ set: 'hollin_met' }],
       passives: [{ attr: 'senses', dc: 6, text: 'A guild Toll, new-minted, on a cord round his neck under the shirt. Nobody in Openfield wears coin.', effects: [{ learn: 'of_hollin_coin' }] }],
       options: [
@@ -492,10 +492,10 @@ export const d_of_hollin: DialogueDef = {
         { text: '(Not yet.)', exit: true },
       ],
     },
-    stopped: { text: 'He goes down the lane that evening and says something short to the guild\'s man, and the guild\'s man looks at you across the green, and is gone by morning with his tent and his paper. Hollin keeps the yard, and the key, and the look of a man let off once.', options: [bye] },
+    stopped: { text: 'He goes down the lane that evening and says something short to the guild\'s man, and the guild\'s man looks at you across the green, and is gone by morning with his tent and his paper. Ishan keeps the yard, and the key, and the look of a man let off once.', options: [bye] },
     cut: { text: 'Twelve Tolls, warm from his neck. "A tenth," he says, and the thing that was in his face when he sat down on the crate goes somewhere and does not come back. The crates walk. Doria counts.', interject: [{ companion: TAMSIN, text: '"A tenth," Tamsin says. "Of seed. From people who feed the orchard kids first." She doesn\'t laugh, and she doesn\'t look at the coins.', effects: [{ approval: { companion: TAMSIN, by: -5 } }] }], options: [bye] },
     told: { text: 'He does not run. He goes to the Elder himself, which is more than you expected, and the Elder gives him the night watch over the store he stole from, which is the Choir\'s way, and he takes it.', options: [bye] },
-    watch: { text: 'He stands at the store door with a lantern every night now, and nobody talks to him, and he has not left.', again: 'Hollin, the lantern, the store door. Nobody talks to him.', options: [{ text: '(Leave him.)', exit: true }] },
+    watch: { text: 'He stands at the store door with a lantern every night now, and nobody talks to him, and he has not left.', again: 'Ishan, the lantern, the store door. Nobody talks to him.', options: [{ text: '(Leave him.)', exit: true }] },
     after: { text: '"Yard." He does not look at you, which is how he thanks you, or doesn\'t.', again: 'He doesn\'t look up from the yard.', options: [bye] },
   },
 };
@@ -505,7 +505,7 @@ export const d_of_corso: DialogueDef = {
   start: [{ if: { flag: 'corso_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
-      text: 'A neat man in a guild coat on the lane with a ledger under his arm and a tent behind him, waiting with the patience of someone who is paid by the day. "Corso Vail, factor\'s hand, Ninebridge. I buy harvests before they happen. The Choir doesn\'t sell." He smiles. "Yet."',
+      text: 'A neat man in a guild coat on the lane with a ledger under his arm and a tent behind him, waiting with the patience of someone who is paid by the day. "Daichi Nakai, factor\'s hand, Ninebridge. I buy harvests before they happen. The Choir doesn\'t sell." He smiles. "Yet."',
       effects: [{ set: 'corso_met' }],
       options: [
         { id: 'corso.seed', text: 'You\'re buying seed by night. A crate a time.', check: { skill: 'barter', dc: 35, mods: [{ if: { knows: 'of_seed_hollin' }, dc: -15, why: 'you can name his carrier' }, { if: { member: 'tollmen' }, dc: -10, why: 'guild to guild' }] }, next: 'seed_ok', fail: 'seed_no' },
@@ -537,7 +537,7 @@ export const d_of_marta: DialogueDef = {
 
 export const d_of_kip: DialogueDef = {
   id: 'd_of_kip', owner: 'npc_or_04', start: [{ node: 'intro' }],
-  nodes: { intro: { text: 'Kip, from the orchard, in a grey scarf two sizes too big, with dirt to the elbows and a face that has eaten every day for a month. "They feed us first. First!" Then, lower: "Hollin goes to the store at night. We don\'t say. We\'ve been thieves; we know what the look is."', again: 'Kip, eating, with dirt to the elbows. "First," he says again, with her mouth full, as if you might not have believed it.', effects: [{ learn: 'of_seed_hollin_hint' }, { learn: 'of_seed_yard_key' }], options: [{ text: 'Keep eating.', exit: true }] } },
+  nodes: { intro: { text: 'Kip, from the orchard, in a grey scarf two sizes too big, with dirt to the elbows and a face that has eaten every day for a month. "They feed us first. First!" Then, lower: "Ishan goes to the store at night. We don\'t say. We\'ve been thieves; we know what the look is."', again: 'Kip, eating, with dirt to the elbows. "First," he says again, with her mouth full, as if you might not have believed it.', effects: [{ learn: 'of_seed_hollin_hint' }, { learn: 'of_seed_yard_key' }], options: [{ text: 'Keep eating.', exit: true }] } },
 };
 
 export const d_of_mote: DialogueDef = {

@@ -12,7 +12,7 @@ export const ORCHARD_NPCS: NpcDef[] = [
     barks: ['Twelve. Last year it was nine.', 'The sky is open. Everything under it is ours to mend.', 'They take the green ones. Who takes green ones?'],
   },
   {
-    id: 'npc_or_02', name: 'Novice Petra Lund', look: { seed: 7302, frame: 'narrow', age: 20, ancestry: 'caucasian', over: { hair: { style: 'elvs_unkempt_french_braid', color: 0x8a6a3a } } }, role: 'pilgrim',
+    id: 'npc_or_02', name: 'Novice Hanne Berg', look: { seed: 7302, frame: 'narrow', age: 20, ancestry: 'caucasian', over: { hair: { style: 'elvs_unkempt_french_braid', color: 0x8a6a3a } } }, role: 'pilgrim',
     level: 1, ...OR, courage: 30, dialogue: 'd_or_petra', attrs: { senses: 6 }, skills: { medicine: 20 }, tolls: 2,
     schedule: [{ from: 6, to: 20, spot: 'novice_beds', activity: 'work' }, { from: 20, to: 6, spot: 'tent_a', activity: 'sleep' }],
     barks: ['Sister Calla says water the roots, not the leaves.', 'I heard them last night. Two. Small.'],

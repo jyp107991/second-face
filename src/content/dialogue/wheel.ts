@@ -133,8 +133,8 @@ export const d_wh_tulla: DialogueDef = {
   start: [{ node: 'intro' }],
   nodes: {
     intro: {
-      text: '"Everything on the blanket walked here." Tulla Oduya spreads her hands over it: water, jerky, cartridges in paper, a lamp, strips of Holdfast. "So did the price. Looking or buying?"',
-      again: '"Still all walked here." Tulla smooths the blanket. "Looking, or buying this time?"',
+      text: '"Everything on the blanket walked here." Bisi Oduya spreads her hands over it: water, jerky, cartridges in paper, a lamp, strips of Holdfast. "So did the price. Looking or buying?"',
+      again: '"Still all walked here." Bisi smooths the blanket. "Looking, or buying this time?"',
       options: [
         { id: 'tulla.trade', text: 'Show me.', effects: [{ event: 'barter' }], exit: true, repeat: true },
         { id: 'tulla.letters', text: 'Do you carry letters?', next: 'letters', once: true },

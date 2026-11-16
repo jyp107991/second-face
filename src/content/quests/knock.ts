@@ -7,7 +7,7 @@ export const q_ch1_knock: QuestDef = {
   id: 'q_ch1_knock', title: 'Hatch Day', act: 'ch1', critical: true, start: 'hatch', xp: 100,
   routes: [
     { id: 'water', kind: 'barter', label: 'Take MOTHER\'s water' },
-    { id: 'meds', kind: 'barter', label: 'Take the medicine for Hesper\'s boy' },
+    { id: 'meds', kind: 'barter', label: 'Take the medicine for Afua\'s boy' },
     { id: 'haggle', kind: 'barter', label: 'Make MOTHER recheck her valuation', requires: { knows: 'kn_hatch_cheaper' } },
   ],
   stages: {

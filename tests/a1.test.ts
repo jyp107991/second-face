@@ -440,12 +440,12 @@ describe('The Water Clock: Dry Wells', () => {
     expect(s.g.world.knowledge.dw_override_word).toBe(true);
     s = atDryWells();
     s.g.flags.dw_admitted = true; s.g.origin = 'pump_hand'; s.g.world.knowledge.dw_control_locked = true;
-    talk('d_dw_oriel', s.g, s.q, ['The station. Sable says', '(Tell her what the clock sounds like', '(Take it.)']);
+    talk('d_dw_oriel', s.g, s.q, ['The station. Luz says', '(Tell her what the clock sounds like', '(Take it.)']);
     expect(s.g.flags.dw_oriel_key).toBe(true);
     // Or it is taken, and the family remembers.
     s = atDryWells();
     s.g.flags.dw_admitted = true; s.g.world.knowledge.dw_control_locked = true;
-    talk('d_dw_oriel', s.g, s.q, ['The station. Sable says', '(Take it off her neck.)', '(Go.)']);
+    talk('d_dw_oriel', s.g, s.q, ['The station. Luz says', '(Take it off her neck.)', '(Go.)']);
     expect(s.g.flags.dw_key_forced).toBe(true);
     expect(countItem(s.g.pc.inventory, 'k_station_key')).toBe(1);
   });
@@ -554,7 +554,7 @@ describe('The Water Clock: Dry Wells', () => {
     s.q.questStart('q_dw_ghosts');
     talk('d_dw_oriel', s.g, s.q, ['Stay, then.', 'Noted.']);
     expect(s.g.world.quests.q_dw_ghosts.stage).toBe('left');
-    // Sable walks you east only if the water runs.
+    // Luz walks you east only if the water runs.
     s = atDryWells();
     s.g.flags.dw_outcome = 'restored'; s.g.flags.dw_restored = true; s.g.flags.dw_sable_met = true;
     talk('d_dw_sable', s.g, s.q, ['East. What\'s past the windpumps?', 'To the glass, then.', 'That\'s all.']);

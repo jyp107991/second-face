@@ -492,11 +492,11 @@ export const d_sh_calla: DialogueDef = {
         bye,
       ],
     },
-    help: { text: '"Would you." It is not a question; she is already pointing. "The old man can\'t breathe, the girl\'s arm needs the board checked, and Abel\'s burning. Water\'s in the crate. Don\'t be clever; be slow."', options: [{ text: 'Slow it is.', next: 'menu' }] },
+    help: { text: '"Would you." It is not a question; she is already pointing. "The old man can\'t breathe, the girl\'s arm needs the board checked, and Kojo\'s burning. Water\'s in the crate. Don\'t be clever; be slow."', options: [{ text: 'Slow it is.', next: 'menu' }] },
     tents_done: {
       text: [
         { if: { knows: 'pip_reported' }, text: '"Seen to." She does not look up from what she is doing. "And the girl is in the sheriff\'s cell, so one of the three is seen to twice." She finishes the knot. "The Choir says lay healer. The Choir is kinder than I am."' },
-        { if: { knows: 'pip_kept' }, text: '"Seen to." She looks at you properly for the first time. "All three. And you looked at Pip\'s arm and saw an arm." She puts a grey scarf in your hands. "Lay healer. It means the sky trusts your hands, and so do I."' },
+        { if: { knows: 'pip_kept' }, text: '"Seen to." She looks at you properly for the first time. "All three. And you looked at Birdie\'s arm and saw an arm." She puts a grey scarf in your hands. "Lay healer. It means the sky trusts your hands, and so do I."' },
         { text: '"Seen to." She puts a grey scarf in your hands. "Lay healer. It means the sky trusts your hands. Try to deserve it."' },
       ],
       effects: [{ learn: 'tents_thanked' }, { enlist: 'choir', rank: 'lay' }, { rep: { faction: 'choir', respect: 8 } }, { trust: { npc: 'npc_sh_05', by: 8 } }],
