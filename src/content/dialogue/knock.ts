@@ -32,6 +32,7 @@ export const d_kn_maud: DialogueDef = {
         { if: { origin: 'archive_clerk' }, text: 'The factor\'s already at the stand, so you\'ll want your book after the hatch. First things first: bale\'s by the door, the post\'s in the satchel, and I want the Cistern\'s letters back before Ruth starts asking.' },
         { text: 'Up, love. Hatch day. Bale\'s by the door, Knock\'s post is in the satchel, and MOTHER opens at seven whether we\'re there or not.' },
       ],
+      again: 'Well? Bale, post, hatch. Three things, love. Go.',
       effects: [{ give: 'k_kn_wool' }, { give: 'k_kn_post' }, { set: 'kn_maud_woke' }],
       options: [
         { id: 'maud.wake.how', text: 'How do you want it done?', next: 'how' },
@@ -47,7 +48,7 @@ export const d_kn_maud: DialogueDef = {
     linnet_where: { text: 'Out. Since before light. She says she\'s "walking". Seventeen and walking.' + ' She\'ll be back for food, she always is.', effects: [{ learn: 'kn_linnet_walks' }], options: [{ text: 'I\'ll keep an eye out.', next: 'wake' }] },
     hatch_again: {
       text: [{ if: { flag: 'kn_hatch_traded' }, text: 'Traded? Then where\'s the Cistern\'s post? MOTHER puts it in the tray after the goods.' }, { text: 'The hatch, love. Wool and post in the tray before MOTHER closes.' }],
-      options: [{ id: 'maud.trade', text: 'Let me see what you\'ve got. (Trade)', effects: [{ event: 'barter' }], exit: true }, bye],
+      options: [{ id: 'maud.trade', text: 'Let me see what you\'ve got. (Trade)', effects: [{ event: 'barter' }], exit: true, repeat: true }, bye],
     },
     post_back: {
       text: 'She hands you nothing, holds out her hand. You give her the Cistern\'s post and she weighs it like MOTHER weighs the wool. "Nine letters. Ines writes like she\'s paying by the word. Thank you, love."',
@@ -57,10 +58,16 @@ export const d_kn_maud: DialogueDef = {
     },
     chores: {
       text: 'Now? Dace has been at the Rib gate since dawn wanting a second pair of hands — there\'s copper still on the mast and the Rusks have been at it. And Corin\'s windpump is coughing again; he won\'t ask, so I\'m asking for him. Do both before dark and you\'ve earned your supper.',
+      again: [
+        { if: { flag: 'kn_supper' }, text: 'The lamp\'s filled and Abel\'s chest still won\'t take the cold. Go on, love. The hatch won\'t watch itself.' },
+        { if: { flag: 'kn_rib_done' }, text: 'Rib\'s done. That\'s not nothing. Now Corin\'s pump, before he takes it apart out of spite.' },
+        { if: { flag: 'kn_corin_done' }, text: 'I can hear that pump drawing from here. That\'s not nothing. Now the Rib, before the Rusks have the lot.' },
+        { text: 'Rib and windpump, love. Two things. Dark comes early this time of year.' },
+      ],
       options: [
         { id: 'maud.chores.dace', text: 'Dace still owes the Guild, doesn\'t he?', next: 'dace_debt', once: true },
         { id: 'maud.chores.corin', text: 'Corin never asks for anything.', next: 'corin_ask', once: true },
-        { id: 'maud.trade2', text: 'Let me see the stores. (Trade)', effects: [{ event: 'barter' }], exit: true },
+        { id: 'maud.trade2', text: 'Let me see the stores. (Trade)', effects: [{ event: 'barter' }], exit: true, repeat: true },
         { text: 'Rib, then the windpump.', exit: true },
       ],
     },
@@ -79,6 +86,7 @@ export const d_kn_maud: DialogueDef = {
     find_her: { text: 'Try the square, then the road. If she\'s on the road — bring her home first. Shout at her after.', options: [{ text: 'I will.', exit: true }] },
     linnet_gone: {
       text: 'Is she...? No. Go. The stand on the road, if she isn\'t in the square.',
+      again: 'Why are you still in my door? The stand. Go.',
       options: [{ text: 'Going.', exit: true }],
     },
     supper: {
@@ -118,10 +126,12 @@ export const d_kn_maud: DialogueDef = {
     },
     hurt: {
       text: 'Maud on Sim\'s door, laid across two trestles, her leg wrong below the knee and her hands still black from the post-book. "Pell," she says, through her teeth. "Get Pell. They\'ll have to open for Pell." Everyone in the square has the same thought, and nobody says it: they never have.',
+      again: 'Her eyes are shut and her lips are moving: counting something, under the pain. "Pell," she says, to nobody.',
       options: [{ text: '(Go to the Grille.)', exit: true }, { text: '(Try the hatch.)', exit: true }],
     },
     morning2: {
       text: 'Horses on the road. She\'s at the window before you\'re awake. "Guild colours," she says. "Outriders. They don\'t come up the slope for water." She looks at the pack on the table, the stranger\'s pack. "Whatever you\'re going to do, do it before they reach the square."',
+      again: 'They\'re at the tank. Go, love. Whatever it is, go.',
       options: [{ text: 'I\'ll talk to them.', exit: true }],
     },
     after: {
@@ -144,7 +154,7 @@ export const d_kn_maud: DialogueDef = {
       ],
       options: [
         { id: 'maud.letters', text: 'I\'ll write.', effects: [{ set: 'kn_promised_write' }], exit: true },
-        { id: 'maud.trade3', text: 'Before I go — what can you spare? (Trade)', effects: [{ event: 'barter' }], exit: true },
+        { id: 'maud.trade3', text: 'Before I go — what can you spare? (Trade)', effects: [{ event: 'barter' }], exit: true, repeat: true },
       ],
     },
   },
@@ -247,6 +257,7 @@ export const d_kn_grille: DialogueDef = {
         { if: { flag: 'kn_tamsin_morning' }, text: 'Still here? I\'ve run out of riddles. That\'s a lie. I never run out of riddles.' },
         { text: 'The Grille is a plate of steel the size of a door\'s window, drilled with holes, worn smooth by sixty years of hands. Behind it, the dark, and a voice you have known since you were six: "There you are. Tell me what the sky is doing. Don\'t say blue. You always say blue."' },
       ],
+      again: 'Go on, then. What else? I\'ve got all morning. I\'ve got all of every morning.',
       options: [
         { id: 'tam.sky', text: 'White at the edges. Dust coming up from the south. A hawk.', if: { not: { flag: 'kn_tamsin_morning' } }, next: 'sky' },
         { id: 'tam.riddle', text: 'Give me a riddle, then.', if: { not: { seen: 'tam.riddle' } }, next: 'riddle' },
@@ -341,6 +352,7 @@ export const d_kn_grille: DialogueDef = {
     },
     later: {
       text: 'Tamsin\'s voice, then: "Is that you? Tell me something about the road."',
+      again: 'Back already? Rust it, I\'d nearly made up a whole road for you. Go on.',
       options: [
         { id: 'grille.bram', text: 'Is Bram there? Anything he wants carried out?', if: { quest: 'q_a1_bram', status: 'none' }, next: 'bram' },
         { id: 'grille.seed', text: 'Ines — Shale\'s factor would pay for viable seed. The Cistern keeps a bank.', if: { all: [{ quest: 'q_a1_seed', status: 'active' }, { not: { item: 'k_seed_case' } }] }, next: 'seed' },
@@ -378,6 +390,7 @@ export const d_kn_linnet: DialogueDef = {
   nodes: {
     square: {
       text: 'Your sister, sitting on the edge of the tank with her boots on the rim, which Maud has told her not to do since she was four. "Have you seen the print? The new one, over my cot. The Spire. It\'s got lights all night. All night!" She doesn\'t wait for an answer. "One day."',
+      again: 'Still not getting off the tank. Before you ask.',
       options: [
         { id: 'lin.print', text: 'Where did you get a print of Meridian?', next: 'print', once: true },
         { id: 'lin.walk', text: 'Maud says you go "walking".', next: 'walk', once: true },
@@ -388,6 +401,7 @@ export const d_kn_linnet: DialogueDef = {
     walk: { text: '"I walk. People walk. Is it a crime now?" She swings her boots. "You walked at my age. Maud said."', options: [{ text: 'Not to the road.', next: 'square' }] },
     caught: {
       text: 'Linnet at the toll stand with Maud\'s three water skins at her feet and a road buyer\'s hand round her wrist. She sees you and goes white, then red. "Don\'t," she says. "Don\'t you dare tell her."',
+      again: 'Don\'t just stand there looking at me. Talk to him. And don\'t tell Maud.',
       options: [{ text: 'Talk to the buyer.', exit: true }],
     },
     home: {
@@ -461,14 +475,15 @@ export const d_kn_buyer: DialogueDef = {
       options: [{ text: '(Follow her home.)', exit: true }],
     },
     fight: { text: 'He shoves Linnet away and the pipe comes out of his belt. "Your choice, friend."', options: [{ text: '(Fight.)', exit: true }] },
-    done: { text: '"We\'re square. Don\'t make me sorry."', options: [bye] },
+    done: { text: '"We\'re square. Don\'t make me sorry."', again: '"Square means square. Walk on."', options: [bye] },
   },
 };
 
 // ---- the factor --------------------------------------------------------------------------------------------------------
 export const d_kn_factor: DialogueDef = {
   id: 'd_kn_factor', owner: 'npc_kn_factor',
-  start: [{ node: 'intro' }],
+  // (the card is handed back once: the desk is the hub after it, so a later talk or a topic's return gives no second card)
+  start: [{ if: { knows: 'kn_toll_cards' }, node: 'desk' }, { node: 'intro' }],
   nodes: {
     intro: {
       text: [
@@ -480,14 +495,25 @@ export const d_kn_factor: DialogueDef = {
         { id: 'fac.card', text: 'Why does the Guild need our faces on the cards?', next: 'card', once: true },
         { id: 'fac.rate', text: 'What\'s water worth on the road these days?', next: 'rate', once: true },
         { id: 'fac.ledger', text: 'The caravans this week — anything odd?', if: { origin: 'archive_clerk' }, next: 'ledger', once: true },
-        { id: 'fac.trade', text: 'What are you selling? (Trade)', effects: [{ event: 'barter' }], exit: true },
+        { id: 'fac.trade', text: 'What are you selling? (Trade)', effects: [{ event: 'barter' }], exit: true, repeat: true },
+        bye,
+      ],
+    },
+    desk: {
+      text: 'Factor Orme looks up from the stand\'s ledger long enough to see who it is. "Card\'s still good. What is it?"',
+      again: 'Anything else? The caravans don\'t wait on talk, love, and neither does the book.',
+      options: [
+        { id: 'fac.desk.card', text: 'Why does the Guild need our faces on the cards?', if: { not: { seen: 'fac.card' } }, next: 'card', once: true },
+        { id: 'fac.desk.rate', text: 'What\'s water worth on the road these days?', if: { not: { seen: 'fac.rate' } }, next: 'rate', once: true },
+        { id: 'fac.desk.ledger', text: 'The caravans this week — anything odd?', if: { all: [{ origin: 'archive_clerk' }, { not: { seen: 'fac.ledger' } }] }, next: 'ledger', once: true },
+        { id: 'fac.desk.trade', text: 'What are you selling? (Trade)', effects: [{ event: 'barter' }], exit: true, repeat: true },
         bye,
       ],
     },
     card: { text: '"So the road knows who walks it. Nobody walks the toll road the Guild doesn\'t know." She taps the card. "Faces are cheap to copy and hard to fake. The Guild sends copies south with the forecasts. Everybody wants to know who\'s coming."', effects: [{ learn: 'kn_cards_copied' }, { lead: 'l_toll_faces' }], options: [{ text: 'South? To whom?', next: 'card_who' }] },
-    card_who: { text: '"Whoever pays for forecasts." She returns to her ledger. "Not my end of it, love."', options: [{ text: 'Right.', next: 'intro' }] },
-    rate: { text: '"On the road? Two Tolls the measure in a good week, four in a bad one. Here, one. Knock\'s water is the cleanest on the Sallow and the Guild pays Knock a fair price for it." She says "fair" as if she has heard it argued.', effects: [{ learn: 'kn_factor_rate' }], options: [{ text: 'Right.', next: 'intro' }] },
-    ledger: { text: 'You read down the week\'s lines in the Guild shorthand you learned at this stand. Three caravans north, two south. And a note in another hand: "Outriders north from the Tollhouse, asking after an old man, wounded, masked." Dated four days ago.', effects: [{ learn: 'kn_outriders_asking' }, { lead: 'l_outriders_asking' }, { xp: 15 }], options: [{ text: '(Close the book.)', next: 'intro' }] },
+    card_who: { text: '"Whoever pays for forecasts." She returns to her ledger. "Not my end of it, love."', options: [{ text: 'Right.', next: 'desk' }] },
+    rate: { text: '"On the road? Two Tolls the measure in a good week, four in a bad one. Here, one. Knock\'s water is the cleanest on the Sallow and the Guild pays Knock a fair price for it." She says "fair" as if she has heard it argued.', effects: [{ learn: 'kn_factor_rate' }], options: [{ text: 'Right.', next: 'desk' }] },
+    ledger: { text: 'You read down the week\'s lines in the Guild shorthand you learned at this stand. Three caravans north, two south. And a note in another hand: "Outriders north from the Tollhouse, asking after an old man, wounded, masked." Dated four days ago.', effects: [{ learn: 'kn_outriders_asking' }, { lead: 'l_outriders_asking' }, { xp: 15 }], options: [{ text: '(Close the book.)', next: 'desk' }] },
   },
 };
 
@@ -503,6 +529,7 @@ export const d_kn_dace: DialogueDef = {
   nodes: {
     intro: {
       text: 'Dace Moro, leaning on the rock at the Rib\'s gap with a pry bar over his shoulders like a yoke. "There\'s my second pair of hands. The Rusks have been at the mast three days — Abner and Nell, road people. If they strip the last of the copper there\'s nothing left in the Rib worth the walk." He grins. "Mine was going to be the last load. I\'ve a debt to clear."',
+      again: '"Ready? I\'ll carry the heavy end." A pause. "Most of it. Some of it."',
       options: [
         { id: 'dace.debt', text: 'Who do you owe?', next: 'debt', once: true },
         { id: 'dace.plan', text: 'What\'s the plan?', next: 'plan' },
@@ -515,7 +542,7 @@ export const d_kn_dace: DialogueDef = {
       effects: [{ set: 'kn_rib_open' }],
       options: [{ text: 'Lead on.', exit: true }],
     },
-    go: { text: '"The mast head\'s at the back. Rusks are camped by it. Your call how we play it."', options: [bye] },
+    go: { text: '"The mast head\'s at the back. Rusks are camped by it. Your call how we play it."', again: '"Still your call. I\'m right behind you. Mostly."', options: [bye] },
     done: {
       text: [
         { if: { flag: 'kn_rib_fight' }, text: 'Dace is shaking, a little, and grinning, a lot. "We did that. We actually — Maud\'s going to kill me." He splits the copper with you without being asked.' },
@@ -530,6 +557,7 @@ export const d_kn_dace: DialogueDef = {
         { if: { knows: 'kn_dace_told' }, text: 'Dace can\'t look at you. "I told Orme about the old man. Last night, at the stand, for two Tolls off. I didn\'t think — I didn\'t think they\'d ride." He is crying. "I didn\'t think."' },
         { text: 'Dace sits on the tank with his head in his hands. "They knew which house. Somebody told them which house."' },
       ],
+      again: 'He wipes his face with the back of his wrist and doesn\'t get up. He is waiting for whatever you say next.',
       options: [
         { id: 'dace.after.ask', text: 'Did you tell the Guild about him, Dace?', if: { not: { knows: 'kn_dace_told' } }, check: { attr: 'wits', dc: 6 }, next: 'confess', fail: 'deny' },
         { id: 'dace.after.forgive', text: 'You didn\'t know. Help Maud. That\'s how you pay it back.', if: { knows: 'kn_dace_told' }, effects: [{ memory: { npc: 'npc_kn_dace', tag: 'forgiven', valence: 30, strength: 90 } }, { decision: { id: 'kn_dace_forgiven', text: 'You forgave Dace for bringing the outriders.' } }], exit: true },
@@ -563,7 +591,7 @@ export const d_kn_rib: DialogueDef = {
     sneak_fail: { text: 'A stone turns under your boot. Nell is between you and the box with her shiv out. "Thief," she says, delighted.', options: [{ text: '(Fight.)', effects: [{ set: 'kn_rib_fight' }], next: 'fight' }, { text: '(Back off.)', next: 'back_off' }] },
     back_off: { text: 'You back off. Dace swears quietly. "Fine. Their mast." You walk home with what the crates near the gap gave you.', effects: [{ set: 'kn_rib_done' }, { set: 'kn_rib_backed_off' }], options: [{ text: '(Leave.)', exit: true }] },
     fight: { text: 'Abner swings the coil off his arm. Dace steps up beside you with his length of pipe. Nobody says anything else.', options: [{ text: '(Fight.)', exit: true }] },
-    done: { text: 'The Rib is quiet.', options: [{ text: '(Leave.)', exit: true }] },
+    done: { text: 'The Rib is quiet.', again: 'Wind in the mast wires. Nobody else.', options: [{ text: '(Leave.)', exit: true }] },
   },
 };
 
@@ -571,7 +599,7 @@ export const d_kn_mast: DialogueDef = {
   id: 'd_kn_mast', owner: 'npc_kn_dace',
   start: [{ if: { flag: 'kn_rib_done' }, node: 'empty' }, { if: { any: [{ flag: 'kn_rib_clear' }, { dead: 'npc_kn_rib_a' }] }, node: 'box' }, { node: 'busy' }],
   nodes: {
-    busy: { speaker: 'narrator', text: 'The mast head: a drum of rusted steel with a relay box bolted to it. The Rusks are between you and it.', options: [{ text: '(Leave it.)', exit: true }] },
+    busy: { speaker: 'narrator', text: 'The mast head: a drum of rusted steel with a relay box bolted to it. The Rusks are between you and it.', again: 'The Rusks are still at the mast head, and still between you and the box.', options: [{ text: '(Leave it.)', exit: true }] },
     box: {
       speaker: 'narrator',
       text: 'The relay box is welded at one seam and bolted at three. Inside, if you can get inside, the old electronics the mast was built to carry.',
@@ -582,7 +610,7 @@ export const d_kn_mast: DialogueDef = {
     },
     opened: { speaker: 'narrator', text: 'Four bolts, the seam cracked with a tap, the lid off whole. Dace whistles. "Clean. Orme will pay double for clean."', effects: [{ set: 'kn_rib_done' }, { xp: 25 }], options: [{ text: '(Pack it.)', exit: true }] },
     forced: { speaker: 'narrator', text: 'The lid shrieks and folds. Half of what\'s inside cracks with it. What\'s left goes in your pack.', effects: [{ set: 'kn_rib_done' }, { xp: 10 }], options: [{ text: '(Pack it.)', exit: true }] },
-    empty: { speaker: 'narrator', text: 'An empty box on a dead mast.', options: [{ text: '(Leave it.)', exit: true }] },
+    empty: { speaker: 'narrator', text: 'An empty box on a dead mast.', again: 'The box hangs open. The Rib has nothing left to give.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -590,6 +618,7 @@ export const d_kn_mast: DialogueDef = {
 export const d_kn_corin: DialogueDef = {
   id: 'd_kn_corin', owner: 'npc_kn_corin',
   start: [
+    { if: { flag: 'kn_corin_rifle' }, node: 'done' },
     { if: { flag: 'kn_told_to_go' }, node: 'rifle' },
     { if: { flag: 'kn_outriders' }, node: 'outriders' },
     { if: { flag: 'kn_corin_done' }, node: 'done' },
@@ -621,9 +650,10 @@ export const d_kn_corin: DialogueDef = {
     leather: { text: 'You and Corin pull the cylinder and replace leathers that weren\'t worn. The pump still coughs. Corin grunts, pulls the valve, scrapes it clean, and seats it. It draws. "Valve," he says. "Always look where it stops." It is the most he has said to you in a year.', effects: [{ set: 'kn_corin_done' }, { xp: 25 }, { learn: 'kn_valve' }], options: [bye] },
     snares: { text: '"Three on the scrub line, east, below the rise. Bring what\'s in them. Reset them if you know how. Don\'t if you don\'t." He goes back under the gearbox.', effects: [{ set: 'kn_snares_given' }, { set: 'kn_corin_done' }], options: [{ text: 'Right.', exit: true }] },
     mother: { text: 'He doesn\'t answer for a while. "Everybody knew everybody," he says. "Road fever took her and your father the same week. Maud took you. Took Linnet too, a baby." He goes back under the pump.', effects: [{ learn: 'kn_parents' }], options: [bye] },
-    done: { text: 'The pump draws behind him, steady. "Road\'s for people with somewhere to be," Corin says, apropos of nothing. "Remember that."', options: [bye] },
+    done: { text: 'The pump draws behind him, steady. "Road\'s for people with somewhere to be," Corin says, apropos of nothing. "Remember that."', again: 'He is whistling to the windpump, low, and doesn\'t stop for you. He nods, which is more than most get.', options: [bye] },
     outriders: {
       text: 'Corin is at his door with the rifle across his arms, watching the square. "Guild outriders. Three. That\'s Hale in front, I\'d know him in the dark." He doesn\'t look at you. "I rode with him once. Twenty years ago. Whatever you do down there — if it goes bad, I\'ll be on the rise."',
+      again: '"Go on down. I\'ve got the rise."',
       effects: [{ learn: 'corin_rode_with_hale' }, { lead: 'l_corin_outrider' }],
       options: [{ text: 'You rode with the Guild?', next: 'rode' }, { text: 'I\'ll remember.', exit: true }],
     },
@@ -646,7 +676,7 @@ export const d_kn_snare: DialogueDef = {
   id: 'd_kn_snare', owner: 'npc_kn_corin',
   start: [{ if: { flag: 'kn_snares_done' }, node: 'empty' }, { if: { flag: 'kn_snares_given' }, node: 'check' }, { node: 'not_yours' }],
   nodes: {
-    not_yours: { speaker: 'narrator', text: 'One of Corin\'s snares: a wire loop staked low on a run through the scrub. Not yours to check.', options: [{ text: '(Leave it.)', exit: true }] },
+    not_yours: { speaker: 'narrator', text: 'One of Corin\'s snares: a wire loop staked low on a run through the scrub. Not yours to check.', again: 'Corin\'s wire, Corin\'s run. Still not yours.', options: [{ text: '(Leave it.)', exit: true }] },
     check: {
       speaker: 'narrator',
       text: 'A wire loop on a run through the scrub. Something has been in it.',
@@ -658,7 +688,7 @@ export const d_kn_snare: DialogueDef = {
     reset: { speaker: 'narrator', text: 'Two hares from the three loops, and the loops reset low and true on the runs, where Corin sets them. He\'ll notice.', effects: [{ set: 'kn_snares_done' }, { xp: 30 }, { trust: { npc: 'npc_kn_corin', by: 5 } }], options: [{ text: '(Go.)', exit: true }] },
     botched: { speaker: 'narrator', text: 'You get one hare out and the wire kinks in your hands. The loop won\'t sit right. Corin will notice that too.', effects: [{ set: 'kn_snares_done' }, { give: 'c_meat', count: 1 }, { xp: 10 }], options: [{ text: '(Go.)', exit: true }] },
     taken: { speaker: 'narrator', text: 'One hare. The loops hang slack behind you.', effects: [{ set: 'kn_snares_done' }, { xp: 10 }], options: [{ text: '(Go.)', exit: true }] },
-    empty: { speaker: 'narrator', text: 'An empty loop.', options: [{ text: '(Leave it.)', exit: true }] },
+    empty: { speaker: 'narrator', text: 'An empty loop.', again: 'Nothing in it. Nothing will be before dusk.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -670,9 +700,10 @@ export const d_kn_bed: DialogueDef = {
     night: {
       speaker: 'narrator',
       text: 'Your cot behind the partition, the blanket folded back the way Maud leaves it. The photograph is still in your hand. You don\'t remember deciding to keep holding it.',
+      again: 'The cot. The photograph, still in your hand. Sleep, or don\'t.',
       options: [{ id: 'bed.sleep', text: '(Sleep until morning.)', effects: [{ until: 7 }, { set: 'kn_outriders' }], exit: true }, { text: '(Not yet.)', exit: true }],
     },
-    day: { speaker: 'narrator', text: 'Your cot behind the partition. Not now; there is the day to get through first.', options: [{ text: '(Leave it.)', exit: true }] },
+    day: { speaker: 'narrator', text: 'Your cot behind the partition. Not now; there is the day to get through first.', again: 'Not yet. The day isn\'t done with you.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -684,6 +715,7 @@ export const d_kn_postbook: DialogueDef = {
     book: {
       speaker: 'narrator',
       text: 'The post-book: sixty years of Knock\'s letters in and out, in Maud\'s hand and her mother\'s before her. Every name, every date, every "thank you for your continuity". The last line is today\'s, in your hand.',
+      again: 'The post-book, heavy on its shelf. Sixty years of Knock in one spine.',
       options: [
         { id: 'post.write', text: '(Write a line of your own in the margin, as Maud lets you.)', if: { not: { flag: 'kn_wrote_post' } }, next: 'write' },
         { id: 'post.read', text: '(Read back through it.)', next: 'read', once: true },
@@ -702,7 +734,7 @@ export const d_kn_postbook: DialogueDef = {
     },
     written: { speaker: 'narrator', text: 'The ink takes a while to dry. Maud will read it tonight, and pretend she didn\'t.', options: [{ text: '(Close it.)', exit: true }] },
     read: { speaker: 'narrator', text: 'Three times in sixty years a line reads only "Hatch closed." Three weeks, nine weeks, a winter. Then the lines begin again as if nothing had happened, and in the margin by the last, in Maud\'s hand at your age: "I sold a letter."', effects: [{ learn: 'kn_three_lockdowns' }, { learn: 'kn_maud_sold_letter' }], options: [{ text: '(Close it.)', exit: true }] },
-    burned: { speaker: 'narrator', text: 'Ash, and the spine of a book, and a smell that will be in your clothes for a week.', options: [{ text: '(Leave it.)', exit: true }] },
+    burned: { speaker: 'narrator', text: 'Ash, and the spine of a book, and a smell that will be in your clothes for a week.', again: 'The wind has had most of the ash now. The spine is still there.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -713,6 +745,7 @@ export const d_kn_door: DialogueDef = {
     door: {
       speaker: 'narrator',
       text: 'The Cistern door: a slab the colour of the rock, three times your height, without a handle on this side. Children put their ears to it for the hum. You did. Nobody alive in Knock has seen it move.',
+      again: 'The door. Still shut. Still humming, if you put your ear to it.',
       passives: [{ skill: 'mechanics', dc: 40, text: 'Along the seam, under ninety years of grime, a bead of weld. From the inside.', effects: [{ learn: 'kn_door_welded' }] }],
       options: [{ id: 'door.knock', text: '(Knock.)', next: 'knock', once: true }, { text: '(Leave it.)', exit: true }],
     },
@@ -723,16 +756,16 @@ export const d_kn_door: DialogueDef = {
 export const d_kn_tollsign: DialogueDef = {
   id: 'd_kn_tollsign', owner: 'npc_kn_factor',
   start: [{ node: 'sign' }],
-  nodes: { sign: { speaker: 'narrator', text: 'A painted board: TOLL ROAD — CARDS SHOWN — FACES UP. Under it, smaller, in a different paint: WATER 1 HERE. And under that, scratched: "the Guild remembers".', options: [{ text: '(Leave it.)', exit: true }] } },
+  nodes: { sign: { speaker: 'narrator', text: 'A painted board: TOLL ROAD — CARDS SHOWN — FACES UP. Under it, smaller, in a different paint: WATER 1 HERE. And under that, scratched: "the Guild remembers".', again: 'FACES UP. Somebody has scratched over the scratching, and given up.', options: [{ text: '(Leave it.)', exit: true }] } },
 };
 
 export const d_kn_watch: DialogueDef = {
   id: 'd_kn_watch', owner: 'npc_kn_maud',
   start: [{ if: { all: [{ flag: 'kn_supper' }, { not: { flag: 'kn_night' } }] }, node: 'take' }, { node: 'stool' }],
   nodes: {
-    take: { speaker: 'narrator', text: 'The watch stool by the hatch lamp. Knock keeps one person awake at the door every night, for sixty years, for nothing.', options: [{ id: 'watch.sit', text: '(Take the night watch.)', effects: [{ until: 22 }, { set: 'kn_night' }], next: 'sat' }, { text: '(Not yet.)', exit: true }] },
+    take: { speaker: 'narrator', text: 'The watch stool by the hatch lamp. Knock keeps one person awake at the door every night, for sixty years, for nothing.', again: 'The stool, the lamp. The night isn\'t going anywhere without you.', options: [{ id: 'watch.sit', text: '(Take the night watch.)', effects: [{ until: 22 }, { set: 'kn_night' }], next: 'sat' }, { text: '(Not yet.)', exit: true }] },
     sat: { speaker: 'narrator', text: 'The lamp hisses. The wind drops. Stars, more than anyone could count, and the dark road coming down past the stand. Hours. Then, far up the road, something that is not the wind.', options: [{ text: '(Watch the road.)', exit: true }] },
-    stool: { speaker: 'narrator', text: 'The watch stool, worn to the shape of sixty years of Knock.', options: [{ text: '(Leave it.)', exit: true }] },
+    stool: { speaker: 'narrator', text: 'The watch stool, worn to the shape of sixty years of Knock.', again: 'The stool, empty, waiting for whoever has the watch.', options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
 
@@ -849,6 +882,6 @@ export const d_kn_outriders: DialogueDef = {
       text: 'Hale sees your arm, and looks up at the rise, and sighs like a man who expected nothing better. "Corin Asch," he says. "Twenty years." His hand goes to his revolver. Behind you, Dace comes out of the lane with his pipe.',
       options: [{ text: '(Fight.)', exit: true }],
     },
-    again: { text: '"We\'re done talking."', options: [{ text: '(Step back.)', exit: true }] },
+    again: { text: '"We\'re done talking."', again: 'Hale doesn\'t look round. He is watching the post-house.', options: [{ text: '(Step back.)', exit: true }] },
   },
 };

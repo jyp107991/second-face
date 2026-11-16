@@ -6,6 +6,9 @@ import type { DialogueDef } from '../../engine/dialogue/dialogue';
  */
 
 const ADA = 'npc_sh_01';
+/** Companions who can stand at the wells with the player (U7 interjections). */
+const WREN = 'npc_rd_03';
+const ILYA = 'npc_sh_17';
 const SETTLE = (outcome: string, text: string) => [{ set: 'tribute_resolved' }, { set: 'tribute_outcome', value: outcome }, { decision: { id: `tribute_${outcome}`, text } }, { xp: 60 }];
 
 export const d_tribute: DialogueDef = {
@@ -16,6 +19,10 @@ export const d_tribute: DialogueDef = {
       text: [
         { if: { flag: 'truck_sabotaged' }, text: 'Sheriff. Twice a year, and you still make me ask.\n\nWe walked. Somebody cut the truck\'s fuel line in the night, so we walked, with a cart, and I am not in a mood.' },
         { text: 'Sheriff. Twice a year, and you still make me ask.' },
+      ],
+      interject: [
+        { companion: ILYA, text: 'Ilya takes his hand off the rifle one finger at a time. "Kade," he says, low, and nothing else for a while. Then: "Not here. Not in Ada\'s street."' },
+        { companion: WREN, text: '"Gant\'s slow to lift that sawn-off and quick once it\'s up," Wren says, low. "The boy with the pipe is on his first tithe. Let him run, if it comes to it."' },
       ],
       effects: [{ set: 'tribute_opened' }],
       options: [{ text: '(Listen.)', next: 'ada_asks' }],
@@ -31,6 +38,7 @@ export const d_tribute: DialogueDef = {
     },
     menu: {
       text: 'Well?',
+      again: 'Still waiting, salt cut.',
       options: [
         { id: 'trib.terms.ok', text: 'Kessler\'s terms were half of last time, in water. The sheriff has agreed to them. Take it and go.', if: { flag: 'ada_terms_accepted' }, next: 'terms_ok' },
         { id: 'trib.terms', text: 'Kessler\'s terms were half, in water. I carried them. Sheriff — half.', if: { all: [{ flag: 'rd_terms_carried' }, { not: { flag: 'ada_terms_accepted' } }] }, check: { skill: 'speech', dc: 35, mods: [{ if: { trust: { npc: 'npc_sh_01', gte: 10 } }, dc: -10, why: 'the sheriff trusts you' }] }, next: 'terms_ok', fail: 'terms_fail' },
@@ -43,12 +51,17 @@ export const d_tribute: DialogueDef = {
     },
     terms_ok: {
       text: '"Kessler\'s terms." She laughs, once, without anything in it. "Half, then, if the sheriff says and Kessler says and the salt cut says. Count it, Sheriff. I\'ll be counting too." The Dogs load twenty measures onto the cart. She looks at you the whole time.',
+      interject: [{ companion: WREN, text: '"Half, and nobody dead." Wren says it like a route that came out shorter than she drew it. "That\'s all Kessler ever wanted to be."' }],
       effects: [...SETTLE('negotiated', 'Shale paid the Dogs half, on Kessler\'s terms you carried; Vasha Kade left with less than she came for.'), { set: 'ada_terms_accepted' }, { memory: { npc: 'npc_rd_02', tag: 'humiliated_on_tribute', valence: -25, strength: 90 } }, { trust: { npc: 'npc_sh_01', by: 10 } }, { rep: { faction: 'rust_dogs', respect: 5 } }, { news: { tag: 'tribute_halved', text: 'the Dogs took half the tithe this year, on the chief\'s own terms', valence: 15, size: 6, at: 'shale' } }],
       options: [{ text: '(Watch them go.)', exit: true }],
     },
     terms_fail: { speaker: ADA, text: '"I said nothing about half." Flat, in front of the town. "Say the number, Vasha."', effects: [{ trust: { npc: 'npc_sh_01', by: -5 } }], options: [{ text: '(Answer.)', next: 'menu' }] },
     zero: {
       text: 'A long silence. The Dogs look at her; the town looks at the Dogs. "…Then it\'s on you," Vasha says, very quietly, and takes only the drink. "Say your name again, salt cut. I want it right."',
+      interject: [
+        { companion: WREN, text: '"Nobody has done that to her in front of the Dogs. Not once." Wren doesn\'t sound pleased; she sounds careful. "She\'ll come back for it. Sleep where there are two doors."', effects: [{ approval: { companion: WREN, by: 5 } }] },
+        { companion: ILYA, text: '"Right," Ilya says, very quietly, watching her go. For once it sounds like only one thing.', effects: [{ approval: { companion: ILYA, by: 5 } }] },
+      ],
       effects: [...SETTLE('negotiated', 'You talked Vasha Kade down to nothing on Tribute Day. The Dogs went home with drink and no water.'), { set: 'tribute_zero' }, { memory: { npc: 'npc_rd_02', tag: 'humiliated_on_tribute', valence: -40, strength: 100 } }, { trust: { npc: 'npc_sh_01', by: 15 } }, { rep: { faction: 'rust_dogs', fear: 10 } }, { news: { tag: 'tribute_refused', text: 'Shale paid the Dogs nothing this year and the Dogs walked', valence: 25, size: 8, at: 'shale' } }],
       options: [{ text: '(Watch them go.)', exit: true }],
     },
@@ -77,6 +90,7 @@ export const d_tribute: DialogueDef = {
         { if: { knows: 'ada_would_fight' }, text: '"Noted." She looks at Issa on the roof, and at Jonah, and at you. "We pay." Jonah\'s face does something. "Forty measures. Load it, and get out of my town."' },
         { text: '"We pay." She doesn\'t look at Jonah. "Forty measures. Load it, and get out of my town."' },
       ],
+      interject: [{ companion: ILYA, text: 'Ilya counts the measures onto the cart under his breath, every one of the forty. He doesn\'t look at Ada once.' }],
       effects: [...SETTLE('paid', 'Shale paid the Dogs\' tithe in full on Tribute Day, on the sheriff\'s word.'), { memory: { npc: 'npc_sh_02', tag: 'paid_again', valence: -10 } }, { news: { tag: 'tribute_paid', text: 'Shale paid the Dogs\' tithe in full', valence: -5, size: 5, at: 'shale' } }],
       options: [{ text: '(Watch them load the cart.)', exit: true }],
     },
@@ -86,10 +100,14 @@ export const d_tribute: DialogueDef = {
         { if: { knows: 'ada_would_fight' }, text: '"…Noted." The word she promised. "Issa."' },
         { text: '"You don\'t speak for Shale —" and then Issa, from the roof: "They do now." Ada closes her eyes for exactly one second. "Issa."' },
       ],
+      interject: [
+        { companion: ILYA, text: '"Kade\'s mine." Ilya is already moving, counting under his breath, fast and level. "Whatever else happens."' },
+        { companion: WREN, text: '"Pell\'s on his first tithe," Wren says, and lifts her weapon anyway. "I told him to keep his mouth shut. I should have told him to stay home."' },
+      ],
       effects: [{ set: 'tribute_fight' }, { decision: { id: 'tribute_fight', text: 'Shale fought the Rust Dogs at the wells on Tribute Day, on your word.' } }, { event: 'fight' }],
       options: [{ text: '(—)', exit: true }],
     },
-    done: { text: 'It\'s settled. For now.', options: [{ text: '(Nod.)', exit: true }] },
+    done: { text: 'It\'s settled. For now.', again: 'Settled. Don\'t make me unsettle it.', options: [{ text: '(Nod.)', exit: true }] },
   },
 };
 
@@ -112,6 +130,6 @@ export const d_rd_truck: DialogueDef = {
     },
     fail: { text: 'You get a hand on the line and the pier shifts: Lute, turning over. You let go and walk away slowly, and nobody says anything, and you don\'t try again tonight.', effects: [{ set: 'truck_attempt_failed' }, { time: 15 }], options: [{ text: '(Walk away.)', exit: true }] },
     done: { text: 'Done, and nothing to show for it but a wet thumb. They\'ll find out when they try to start it.', options: [{ text: '(Walk away.)', exit: true }] },
-    cut: { text: 'The truck. It won\'t be going anywhere.', options: [{ text: '(Walk away.)', exit: true }] },
+    cut: { text: 'The truck. It won\'t be going anywhere.', again: 'Still dead on its wheels.', options: [{ text: '(Walk away.)', exit: true }] },
   },
 };

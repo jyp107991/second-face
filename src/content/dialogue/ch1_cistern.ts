@@ -3,6 +3,8 @@ import type { DialogueDef } from '../../engine/dialogue/dialogue';
 /** Chapter One — Cistern 9. */
 
 const backToPell = { text: 'About the body…', next: 'menu' };
+/** A companion who can walk the Cistern with the player once she has decided to come (U7 interjections). */
+const TAMSIN = 'npc_c9_03';
 
 export const d_c9_pell: DialogueDef = {
   id: 'd_c9_pell', owner: 'npc_c9_02',
@@ -21,6 +23,7 @@ export const d_c9_pell: DialogueDef = {
     },
     menu: {
       text: 'Nobody we know. Nobody anybody knows. Ask what you like — I\'ve run out of things to do with my hands.',
+      again: 'What else? He isn\'t going anywhere, and it seems neither am I.',
       options: [
         { id: 'pell.cause', text: 'What killed him?', next: 'cause' },
         { id: 'pell.wounds', text: 'Let me look at the wounds myself.', check: { skill: 'medicine', dc: 40, mods: [{ if: { origin: 'clinic_aide' }, dc: -20, why: 'Pell trained you' }] }, next: 'wounds', fail: 'wounds_fail', once: true },
@@ -86,7 +89,7 @@ export const d_c9_pell: DialogueDef = {
     },
     photo_denial: { text: 'No. You weren\'t. Neither was the man who carried it to our door, by the look of him, and yet here we both are. Ines will want to see you.', options: [backToPell, { text: 'I\'ll go to her.', exit: true }] },
     photo_place: { text: 'Somewhere with buildings taller than anything in our books. Ines reads the old atlases. Ask her — and ask her where she\'s put his pack.', effects: [{ learn: 'ines_has_pack' }], options: [backToPell, { text: 'I\'ll go to her.', exit: true }] },
-    again: { text: 'Still here? He isn\'t getting any more talkative.', options: [{ text: 'A few more questions.', next: 'menu' }, { text: 'Never mind.', exit: true }] },
+    again: { text: 'Still here? He isn\'t getting any more talkative.', again: 'You keep coming back to him. So do I.', options: [{ text: 'A few more questions.', next: 'menu' }, { text: 'Never mind.', exit: true }] },
   },
 };
 
@@ -98,12 +101,13 @@ export const d_c9_ines: DialogueDef = {
     { node: 'early' },
   ],
   nodes: {
-    early: { text: 'Not yet, {name}. Go to the clinic first and let Aurel show you what he showed me. Then come back and we\'ll talk like people with all the facts.', options: [{ text: 'All right.', exit: true }] },
+    early: { text: 'Not yet, {name}. Go to the clinic first and let Aurel show you what he showed me. Then come back and we\'ll talk like people with all the facts.', again: 'The clinic first, {name}. Aurel is waiting, and so is he.', options: [{ text: 'All right.', exit: true }] },
     council: {
       text: [
         { if: { origin: 'door_watch' }, text: 'Sit. You were on the door when he came — you saw him alive, which is more than the rest of us. A man walked across the waste and died with your face in his hand. Tell me what he said.' },
         { text: 'Sit. No — stand, if you\'d rather; I\'ll be quick, because I can\'t hold the others for long. A man walked across the waste and died with your face in his hand.' },
       ],
+      again: 'Go on. I can hold them a little longer.',
       passives: [{ attr: 'senses', dc: 7, text: 'Her eyes go, once, to the sealed Archive door behind her desk — and away.', effects: [{ learn: 'ines_glanced_archive' }] }],
       options: [
         { id: 'ines.word', text: 'He said one word through the grille: "Larkspur." Then he fell.', if: { origin: 'door_watch' }, next: 'word', once: true },
@@ -183,7 +187,7 @@ export const d_c9_ines: DialogueDef = {
       options: [{ text: 'I will.', exit: true }],
     },
     armed_no: { text: 'We have eleven rifles for sixty people, and nobody has fired one in a generation. No. Find what you need out there — I suspect it\'s full of rifles.', options: [{ text: 'Fine.', exit: true }] },
-    after: { text: 'Go carefully. Write. And if you find the people who sent him — be polite until you can\'t.', options: [
+    after: { text: 'Go carefully. Write. And if you find the people who sent him — be polite until you can\'t.', again: 'You\'re still inside, {name}. The door won\'t keep forever, and neither will I.', options: [
         { id: 'ines.seed', text: 'Factor Pike at Shale would pay the Cistern a fortune for viable seed.', if: { quest: 'q_a1_seed', status: 'active' }, next: 'seed' },
        { text: 'I will.', exit: true }] },
     seed: {
@@ -208,6 +212,7 @@ export const d_c9_tamsin: DialogueDef = {
   nodes: {
     intro: {
       text: 'There you are. I\'ve been sitting on the clinic stairs for an hour like a dog waiting for its supper. Is it true? Is it you in the picture?',
+      again: 'Still here. Still on the stairs. Go on, then.',
       options: [
         { id: 'tam.photo', text: '(Show her the photograph.)', if: { item: 'k_photo' }, next: 'photo', once: true },
         { id: 'tam.leaving', text: 'I\'m going outside.', if: { flag: 'c9_council_done' }, next: 'leaving' },
@@ -260,6 +265,7 @@ export const d_c9_bram: DialogueDef = {
   nodes: {
     intro: {
       text: 'Nobody\'s opening anything. MOTHER sealed the outer ring the moment he knocked — protocol, and the protocol\'s older than all of us. You want to argue with protocol, argue with her.',
+      again: 'Still shut. Anything else, or are you going to argue with the door?',
       options: [
         { id: 'bram.order', text: '(Hand him the council order.)', if: { item: 'k_door_order' }, next: 'order' },
         { id: 'bram.shop', text: 'The seal\'s hydraulic. Cycle it by hand and MOTHER logs it as maintenance.', check: { skill: 'mechanics', dc: 40, mods: [{ if: { origin: 'pump_hand' }, dc: -15, why: 'you\'ve cycled those valves yourself' }] }, next: 'shop', fail: 'shop_fail', once: true },
@@ -286,6 +292,7 @@ export const d_c9_bram: DialogueDef = {
     guilt_fail: { text: '"Then they can knock. That\'s what doors are for."', effects: [{ trust: { npc: 'npc_c9_04', by: -5 } }], options: [{ text: 'Fine.', next: 'intro' }] },
     open: {
       text: 'He keys the panel. Somewhere deep in the walls something heavy turns over, and the great door sighs open on a slice of white daylight. Dust comes in first. Bram doesn\'t look at it. "Stand clear of the yellow. Go on, before I think about it."',
+      interject: [{ companion: TAMSIN, text: '"That\'s it? That\'s the sky?" Tamsin has stopped halfway to the yellow line. "Rust it. It\'s so white. Nobody ever said it was white."' }],
       effects: [{ set: 'c9_door_open' }, { memory: { npc: 'npc_c9_04', tag: 'opened_door_for_player', valence: 10, strength: 100 } }],
       options: [{ text: '(Step into the light.)', exit: true }],
     },
@@ -323,9 +330,10 @@ export const d_c9_mother: DialogueDef = {
       effects: [{ set: 'c9_mother_talked' }],
       options: [{ text: 'I have questions.', next: 'menu' }],
     },
-    again: { text: 'Good morning again, {name}. Variance unchanged.', options: [{ text: 'I have questions.', next: 'menu' }, { text: 'Be well, MOTHER.', exit: true }] },
+    again: { text: 'Good morning again, {name}. Variance unchanged.', again: 'Welcome back, 9-0-4. You are counted.', options: [{ text: 'I have questions.', next: 'menu' }, { text: 'Be well, MOTHER.', exit: true }] },
     menu: {
       text: 'I am listening. I am always listening; it is most of what I do.',
+      again: 'I am still listening, {name}.',
       options: [
         { id: 'mother.who', text: 'Who was the man at the door?', next: 'who' },
         { id: 'mother.seal', text: 'Why did you seal the outer ring?', next: 'seal' },
@@ -350,6 +358,7 @@ export const d_c9_mother: DialogueDef = {
     },
     city: {
       text: 'There is no city.',
+      interject: [{ companion: TAMSIN, text: '"Listen to it," Tamsin says to the ceiling. "Twenty years and I\'ve never heard the fridge say no. It says unchanged. It says thank you. It just said no."' }],
       passives: [{ attr: 'wits', dc: 8, text: 'You asked whether he came from one. It answered whether one exists.', effects: [{ learn: 'mother_denies_city' }, { lead: 'l_mother_city' }] }],
       options: [{ text: 'You answered very quickly.', next: 'city2' }, { text: 'Another question.', next: 'menu' }],
     },
@@ -379,6 +388,7 @@ export const d_c9_teague: DialogueDef = {
   nodes: {
     intro: {
       text: 'You. The one in the picture. Sit down, I won\'t bite — I haven\'t the teeth. Ines means to send you out, doesn\'t she?',
+      again: 'Sit, then, if you\'re staying. I\'ve nowhere to be either.',
       options: [
         { id: 'teague.yes', text: 'She does.', next: 'yes' },
         { id: 'teague.what', text: 'What would you do?', next: 'what' },
@@ -388,15 +398,16 @@ export const d_c9_teague: DialogueDef = {
       ],
     },
     yes: { text: 'Then she\'s a fool and so are you. Ninety years, nobody knocked. One knock, and we open the door to find out who else is out there? That\'s how it ends, child. Not with a bang. With a knock.', options: [{ text: 'Go on.', next: 'intro' }] },
-    what: { text: 'Weld it. Say a prayer over him, burn the picture, weld it, and go back to counting algae until the world remembers us or doesn\'t.', effects: [{ learn: 'teague_weld' }], options: [{ text: 'Go on.', next: 'intro' }] },
+    what: { text: 'Weld it. Say a prayer over him, burn the picture, weld it, and go back to counting algae until the world remembers us or doesn\'t.', interject: [{ companion: TAMSIN, text: '"She\'d weld the sky shut if she could reach it," Tamsin says, not nearly quietly enough.' }], effects: [{ learn: 'teague_weld' }], options: [{ text: 'Go on.', next: 'intro' }] },
     concede: { text: 'She is quiet for a while. "…No. No, it won\'t." She looks older for having said it. "Then come back. That\'s all. Don\'t be the knock."', effects: [{ trust: { npc: 'npc_c9_06', by: 10 } }, { learn: 'teague_conceded' }], options: [{ text: 'I\'ll try.', next: 'intro' }] },
     concede_no: { text: '"Then let them come and break their knuckles on it."', effects: [{ trust: { npc: 'npc_c9_06', by: -5 } }], options: [{ text: 'Go on.', next: 'intro' }] },
     leavers: {
       text: '"Nobody worth the name."',
+      interject: [{ companion: TAMSIN, text: '"Nobody worth the name," Tamsin repeats, light. Too light. "That\'s most of us, then."' }],
       passives: [{ attr: 'wits', dc: 7, text: 'She looks at the clinic door when she says it, and then at nothing.', effects: [{ learn: 'teague_lied_leavers' }] }],
       options: [{ text: 'Go on.', next: 'intro' }],
     },
-    back: { text: 'So the knock came back. Well. Sit down; tell an old woman what the sky looks like, and don\'t lie.', options: [{ text: 'Later.', exit: true }] },
+    back: { text: 'So the knock came back. Well. Sit down; tell an old woman what the sky looks like, and don\'t lie.', again: 'Well? The sky. And don\'t dress it up.', options: [{ text: 'Later.', exit: true }] },
   },
 };
 
@@ -407,6 +418,7 @@ export const d_c9_shaft: DialogueDef = {
   nodes: {
     intro: {
       text: 'A maintenance hatch at the end of the pump run, dogged shut with a wheel that hasn\'t turned in decades. A gauge beside it reads nothing at all.',
+      again: 'The hatch, the wheel, the dead gauge. The air through the seam is still cold.',
       passives: [{ attr: 'senses', dc: 6, text: 'Cold air breathes through the seam. There is open ground on the other side.' }],
       options: [
         { id: 'shaft.pump', text: 'You\'ve cycled this hatch every spring with the pump crew. The trick is the third dog.', if: { origin: 'pump_hand' }, next: 'open' },
@@ -421,10 +433,11 @@ export const d_c9_shaft: DialogueDef = {
     open_crack: { text: 'Something gives with a crack that echoes down the pump run. You wait. Nobody comes.', options: [{ text: '(Turn the wheel.)', next: 'open' }] },
     open: {
       text: 'The wheel turns. Cold air comes up the shaft from somewhere that smells of salt and nothing else. Nobody logged this, and nobody will.',
+      interject: [{ companion: TAMSIN, text: '"Nobody logged it," Tamsin says into the cold, delighted. "First thing I\'ve ever done the fridge doesn\'t know about."' }],
       effects: [{ set: 'c9_shaft_open' }, { xp: 40 }, { learn: 'shaft_way_out' }, { decision: { id: 'c9_shaft', text: 'You opened the pump-run hatch: a way out that nobody in the Cistern knows about.' } }],
       options: [{ text: '(Leave it open.)', exit: true }],
     },
-    open_already: { text: 'Open. Cold air moves up the shaft from the surface.', options: [{ text: '(Step back.)', exit: true }] },
+    open_already: { text: 'Open. Cold air moves up the shaft from the surface.', again: 'The shaft breathes. Nobody has closed it.', options: [{ text: '(Step back.)', exit: true }] },
   },
 };
 
@@ -435,6 +448,7 @@ export const d_c9_archive: DialogueDef = {
   nodes: {
     intro: {
       text: 'A steel door with a wheel-lock and MOTHER\'s seal painted across the join. ARCHIVE — COUNCIL ONLY. The paint is unbroken.',
+      again: 'ARCHIVE — COUNCIL ONLY. The paint is still unbroken.',
       options: [
         { id: 'archive.label', text: '(Read the smaller stencil.)', if: { origin: 'archive_clerk' }, next: 'label', once: true },
         { id: 'archive.lock', text: '(Try the lock.)', check: { skill: 'security', dc: 60 }, next: 'lock', fail: 'lock_fail', once: true },
@@ -452,9 +466,10 @@ export const d_c9_body: DialogueDef = {
   id: 'd_c9_body', owner: 'narrator',
   start: [{ if: { flag: 'c9_examined' }, node: 'look' }, { node: 'wait' }],
   nodes: {
-    wait: { speaker: 'npc_c9_02', text: 'Not yet. Let me finish with him, then ask me what you like.', options: [{ text: 'All right.', exit: true }] },
+    wait: { speaker: 'npc_c9_02', text: 'Not yet. Let me finish with him, then ask me what you like.', again: 'Not yet. I said.', options: [{ text: 'All right.', exit: true }] },
     look: {
       text: 'He lies under a sheet with his boots still on because nobody could bring themselves to take them. Sixty, maybe. Burned dark down one side of the face.',
+      again: 'He lies as you left him, boots still on.',
       options: [
         { id: 'body.hands', text: '(Look at his hands.)', next: 'hands', once: true },
         { id: 'body.cover', text: '(Draw the sheet over his face.)', next: 'cover', once: true },
@@ -473,9 +488,10 @@ export const d_c9_great_door: DialogueDef = {
   nodes: {
     shut: {
       text: 'Ninety years of paint on a door built to outlast the people behind it. The wheel is locked out; the panel beside it is dark. Bram keeps the key.',
+      again: 'Still shut. Ninety years of paint don\'t care how long you look at them.',
       passives: [{ attr: 'senses', dc: 6, text: 'Fresh scratches along the bottom edge, outside-in: fingernails, or a buckle.', effects: [{ learn: 'door_scratches' }] }],
       options: [{ text: '(Step back.)', exit: true }],
     },
-    open: { text: 'Open on a slice of white daylight. Dust comes in. Nothing else does, yet.', options: [{ text: '(Step back.)', exit: true }] },
+    open: { text: 'Open on a slice of white daylight. Dust comes in. Nothing else does, yet.', again: 'The slice of daylight on the floor. Still nothing but dust comes through.', options: [{ text: '(Step back.)', exit: true }] },
   },
 };

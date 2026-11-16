@@ -3,6 +3,8 @@ import type { DialogueDef } from '../../engine/dialogue/dialogue';
 /** Act 1 in Shale: the man who drinks behind the militia yard. */
 
 const bye = { text: 'That\'s all.', exit: true };
+/** A companion who can be with the player at the yard fence (U7 interjections). */
+const WREN = 'npc_rd_03';
 
 export const d_sh_ilya: DialogueDef = {
   id: 'd_sh_ilya', owner: 'npc_sh_17',
@@ -10,6 +12,7 @@ export const d_sh_ilya: DialogueDef = {
   nodes: {
     intro: {
       text: 'A broad man with a shaved head sits on the yard fence with a long rifle across his knees and a bottle beside him, counting the militia\'s shots under his breath as they miss. "Six. Seven. Right." He looks at you with eyes that are clearer than the rest of him. "You the one drilling them? Right."',
+      interject: [{ companion: WREN, text: '"Strand." Wren has stopped well back from the fence. "He put a round through my water can at four hundred paces, the summer I scouted the east road. I was holding it."' }],
       effects: [{ set: 'ilya_met' }, { learn: 'ilya_seen' }, { lead: 'l_ilya' }],
       passives: [
         { attr: 'senses', dc: 7, text: 'Two fingers gone on the left hand. The rifle is cleaner than the man.', effects: [{ learn: 'ilya_fingers' }] },
@@ -23,7 +26,7 @@ export const d_sh_ilya: DialogueDef = {
         bye,
       ],
     },
-    again: { text: '"Eight. Right." The bottle is lower.', options: [
+    again: { text: '"Eight. Right." The bottle is lower.', again: 'He counts something you didn\'t see. "Right."', options: [
       { id: 'ilya.who.again', text: 'Who are you?', if: { not: { seen: 'ilya.who' } }, next: 'who' },
       { id: 'ilya.show.again', text: 'Show them. One shot.', if: { not: { seen: 'ilya.show' } }, next: 'show' },
       { id: 'ilya.shame.again', text: 'You\'re drunk in front of boys who\'d follow you if you stood up.', if: { not: { seen: 'ilya.shame' } }, check: { skill: 'speech', dc: 45 }, next: 'shamed', fail: 'shame_no' },
@@ -44,8 +47,8 @@ export const d_sh_ilya: DialogueDef = {
         { text: 'Forget it.', next: 'again' },
       ],
     },
-    joins: { text: '"Right." He puts the bottle on the far side of the fence. He picks up the rifle. "I count things. Out loud. You\'ll get used to it or you won\'t." He looks east, where the road is, and his face does something you weren\'t meant to see.', effects: [{ join: 'npc_sh_17' }, { set: 'ilya_recruited' }, { set: 'ilya_sober_days', value: 0 }, { approval: { companion: 'npc_sh_17', by: 10 } }, { decision: { id: 'ilya_recruited', text: 'Ilya Strand came with you, east, toward Vasha Kade.' } }, { news: { tag: 'ilya_left', text: 'Ilya Strand walked out of Shale with the salt-cut stranger, sober', valence: 10, size: 6, at: 'shale' } }, { memory: { npc: 'npc_sh_01', tag: 'took_ilya', valence: 10, strength: 70 } }, { xp: 80 }], options: [{ text: 'Keep up.', exit: true }] },
-    joins_shot: { text: 'The bottle goes. He watches the glass fall for a second longer than anyone else. "Right." He picks up the rifle. "I count things. Out loud." He doesn\'t look east. He doesn\'t have to.', effects: [{ join: 'npc_sh_17' }, { set: 'ilya_recruited' }, { set: 'ilya_sober_days', value: 0 }, { approval: { companion: 'npc_sh_17', by: 15 } }, { decision: { id: 'ilya_recruited', text: 'You outshot Ilya Strand\'s bottle and he came east with you.' } }, { news: { tag: 'ilya_left', text: 'Ilya Strand walked out of Shale with the salt-cut stranger, sober', valence: 10, size: 6, at: 'shale' } }, { memory: { npc: 'npc_sh_01', tag: 'took_ilya', valence: 10, strength: 70 } }, { xp: 80 }], options: [{ text: 'Keep up.', exit: true }] },
+    joins: { text: '"Right." He puts the bottle on the far side of the fence. He picks up the rifle. "I count things. Out loud. You\'ll get used to it or you won\'t." He looks east, where the road is, and his face does something you weren\'t meant to see.', interject: [{ companion: WREN, text: '"Right," Wren says, in his voice exactly, and doesn\'t smile. "Long road, then."' }], effects: [{ join: 'npc_sh_17' }, { set: 'ilya_recruited' }, { set: 'ilya_sober_days', value: 0 }, { approval: { companion: 'npc_sh_17', by: 10 } }, { decision: { id: 'ilya_recruited', text: 'Ilya Strand came with you, east, toward Vasha Kade.' } }, { news: { tag: 'ilya_left', text: 'Ilya Strand walked out of Shale with the salt-cut stranger, sober', valence: 10, size: 6, at: 'shale' } }, { memory: { npc: 'npc_sh_01', tag: 'took_ilya', valence: 10, strength: 70 } }, { xp: 80 }], options: [{ text: 'Keep up.', exit: true }] },
+    joins_shot: { text: 'The bottle goes. He watches the glass fall for a second longer than anyone else. "Right." He picks up the rifle. "I count things. Out loud." He doesn\'t look east. He doesn\'t have to.', interject: [{ companion: WREN, text: '"Right," Wren says, in his voice exactly, and doesn\'t smile. "Long road, then."' }], effects: [{ join: 'npc_sh_17' }, { set: 'ilya_recruited' }, { set: 'ilya_sober_days', value: 0 }, { approval: { companion: 'npc_sh_17', by: 15 } }, { decision: { id: 'ilya_recruited', text: 'You outshot Ilya Strand\'s bottle and he came east with you.' } }, { news: { tag: 'ilya_left', text: 'Ilya Strand walked out of Shale with the salt-cut stranger, sober', valence: 10, size: 6, at: 'shale' } }, { memory: { npc: 'npc_sh_01', tag: 'took_ilya', valence: 10, strength: 70 } }, { xp: 80 }], options: [{ text: 'Keep up.', exit: true }] },
     refuses: { text: '"Right." He drinks. "Ten."', effects: [{ set: 'ilya_refused' }, { memory: { npc: 'npc_sh_17', tag: 'refused_you', valence: -5 } }], options: [{ text: '(Leave him.)', exit: true }] },
     refuses_shot: { text: 'You miss. He doesn\'t say anything, which is worse. Then he shoots the bottle, from the fence, sitting down. "Right."', effects: [{ set: 'ilya_refused' }, { memory: { npc: 'npc_sh_17', tag: 'missed_bottle', valence: -5 } }], options: [{ text: '(Leave him.)', exit: true }] },
     party: {

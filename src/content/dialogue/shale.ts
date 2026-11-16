@@ -6,6 +6,9 @@ import type { DialogueDef } from '../../engine/dialogue/dialogue';
  */
 
 const bye = { text: 'Later.', exit: true };
+/** Companions who can be on the road with the player in Shale during Chapter One (U7 interjections). */
+const WREN = 'npc_rd_03';
+const ILYA = 'npc_sh_17';
 
 export const d_sh_mags: DialogueDef = {
   id: 'd_sh_mags', owner: 'npc_sh_03',
@@ -45,12 +48,13 @@ export const d_sh_mags: DialogueDef = {
     help_no: { text: 'You try, and an hour in you have made it worse, and she takes the pencil out of your hand very gently. "Leave it. Leave it, love." She pours. "Just don\'t tell anyone."', effects: [{ take: 'k_mags_books' }, { time: 60 }, { learn: 'mags_help_failed' }], options: [{ id: 'mags.expose2', text: 'The town should know.', next: 'expose_warn' }, { text: 'I won\'t.', effects: [{ learn: 'mags_helped' }, { trust: { npc: 'npc_sh_03', by: 5 } }], exit: true }] },
     menu: {
       text: 'Drink\'s on the house — the first one. Water\'s two. The back room\'s ten a night, and nobody\'ll touch your things because nobody wants to find out what I\'d do. And there\'s always a game on.',
+      again: 'Anything else, love, or are you just holding up my bar?',
       options: [
         { id: 'mags.drink', text: 'The free one, then.', next: 'drink', once: true },
-        { id: 'mags.room', text: 'The room. (10 Tolls)', if: { all: [{ not: { flag: 'shale_room' } }, { item: 'tolls', count: 10 }] }, effects: [{ take: 'tolls', count: 10 }, { set: 'shale_room' }, { learn: 'shale_room' }], next: 'room' },
+        { id: 'mags.room', text: 'The room. (10 Tolls)', if: { all: [{ not: { flag: 'shale_room' } }, { item: 'tolls', count: 10 }] }, effects: [{ take: 'tolls', count: 10 }, { set: 'shale_room' }, { learn: 'shale_room' }], next: 'room', repeat: true },
         { id: 'mags.room.broke', text: 'The room — I\'ll owe you.', if: { all: [{ not: { flag: 'shale_room' } }, { not: { item: 'tolls', count: 10 } }] }, check: { skill: 'speech', dc: 35 }, effects: [{ set: 'shale_room' }, { set: 'shale_room_owed' }, { memory: { npc: 'npc_sh_03', tag: 'owes_mags', valence: -5 } }], next: 'room_owed', fail: 'room_no' },
-        { id: 'mags.dust', text: 'A game of Dust. (5 Tolls)', if: { item: 'tolls', count: 5 }, effects: [{ event: 'dust', data: { stake: 5 } }], exit: true },
-        { id: 'mags.trade', text: 'Let me see what you\'re selling.', effects: [{ event: 'barter' }], exit: true },
+        { id: 'mags.dust', text: 'A game of Dust. (5 Tolls)', if: { item: 'tolls', count: 5 }, effects: [{ event: 'dust', data: { stake: 5 } }], exit: true, repeat: true },
+        { id: 'mags.trade', text: 'Let me see what you\'re selling.', effects: [{ event: 'barter' }], exit: true, repeat: true },
         { id: 'mags.town', text: 'Tell me about Shale.', next: 'town' },
         { id: 'mags.books', text: 'You look like someone with a problem.', if: { all: [{ quest: 'q_a1_books', status: 'none' }, { any: [{ flag: 'shale_room' }, { flag: 'teo_freed' }, { trust: { npc: 'npc_sh_03', gte: 5 } }] }] }, next: 'books' },
         { id: 'mags.books.cooked', text: 'About your books.', if: { all: [{ quest: 'q_a1_books', stage: 'decide' }, { knows: 'mags_cooked' }] }, next: 'books_back' },
@@ -96,11 +100,12 @@ export const d_sh_room: DialogueDef = {
   id: 'd_sh_room', owner: 'narrator',
   start: [{ if: { flag: 'shale_room' }, node: 'yours' }, { node: 'not_yours' }],
   nodes: {
-    not_yours: { text: 'The back room. A bed with a real mattress, a locker, a bolt on the door. Mags rents it; nobody sleeps here for free.', options: [{ text: '(Leave it.)', exit: true }] },
+    not_yours: { text: 'The back room. A bed with a real mattress, a locker, a bolt on the door. Mags rents it; nobody sleeps here for free.', again: 'Mags\'s back room, bolt and all. Still not yours.', options: [{ text: '(Leave it.)', exit: true }] },
     yours: {
       text: 'Your room, for now. The bolt is heavy and the mattress smells of someone else\'s years, and it is the first door you have ever been able to lock from the inside.',
+      again: 'Your room, as you left it. The bolt still works.',
       options: [
-        { text: '(Rest, mend, write.)', effects: [{ event: 'camp' }], exit: true },
+        { text: '(Rest, mend, write.)', effects: [{ event: 'camp' }], exit: true, repeat: true },
         { text: '(Leave it.)', exit: true },
       ],
     },
@@ -133,6 +138,7 @@ export const d_sh_nell: DialogueDef = {
   nodes: {
     intro: {
       text: 'Hi. Nell. Mags is my aunt, which means I pour and she talks. You\'re the one from the salt cut? Everyone says there\'s a bunker out there with people in it. Everyone says a lot.',
+      again: 'You again. Pour, or talk? I can do both. She says I can\'t.',
       options: [
         { id: 'nell.wheel', text: 'You mentioned the Wheel.', next: 'wheel', once: true },
         { id: 'nell.leave', text: 'You want to leave Shale.', if: { attr: 'wits', gte: 6 }, next: 'leave', once: true },
@@ -261,12 +267,17 @@ export const d_sh_ada: DialogueDef = {
     },
     tribute: {
       text: '"I\'m going to pay, and hate it, and count the rifles while I do." She says it like a verdict. "Unless somebody gives me a reason not to that doesn\'t end with Jonah in the dirt."',
+      interject: [
+        { companion: ILYA, text: 'Ilya, by the door, has stopped counting. "Kade comes herself," he says, to Ada and not to you. "She always does."' },
+        { companion: WREN, text: '"Vasha won\'t count your rifles," Wren says. "She\'ll count who looks at the ground."' },
+      ],
       effects: [{ learn: 'ada_will_pay' }],
       options: [{ id: 'ada.tribute.fight', text: 'The militia would fight if you let them.', next: 'tribute_fight', once: true }, { text: 'Noted.', exit: true }],
     },
     tribute_fight: { text: '"Issa would. Jonah would, which is why I won\'t." A breath. "If it comes to it, and you\'re standing there, I\'ll say the word and you\'ll hear it. Don\'t make it come to it."', effects: [{ learn: 'ada_would_fight' }], options: [{ text: 'Understood.', exit: true }] },
     terms: {
       text: '"Half." She doesn\'t say it twice. "Half of forty is twenty measures I don\'t have, from a man who\'s never once asked for less than everything." She looks at you. "Why would he?"',
+      interject: [{ companion: WREN, text: '"He means half," Wren says. "Kessler only asks for less when he\'s afraid of what Vasha would ask for."' }],
       options: [
         { id: 'ada.terms.yes', text: 'Because he keeps a list of who he hasn\'t robbed, and he\'d like you on it. He doesn\'t take lives; Vasha would.', check: { skill: 'speech', dc: 40, mods: [{ if: { knows: 'kessler_no_lives' }, dc: -15, why: 'you know what Kessler says of himself' }, { if: { knows: 'vasha_would_be_chief' }, dc: -10, why: 'you know what Shale fighting would make of Vasha' }] }, next: 'terms_yes', fail: 'terms_no' },
         { text: 'I don\'t know. I carried the message.', next: 'terms_no' },
@@ -276,6 +287,7 @@ export const d_sh_ada: DialogueDef = {
     terms_no: { text: '"Then I\'ll hear it from Vasha on the day, and decide then." The cup goes back on the letter.', effects: [{ set: 'ada_terms_decided' }, { set: 'ada_terms_refused' }], options: [{ text: 'Fine.', exit: true }] },
     exodus: {
       text: '"Rust Dogs. In my town." She lets the words sit. "Under my law? If one of them steals a cup of water, I hang the lot, and they\'d know it. Would they still come?"',
+      interject: [{ companion: WREN, text: '"Hang the lot for one cup." Wren doesn\'t blink. "Good. A rule I can see. The camp only ever had Kessler."', effects: [{ approval: { companion: WREN, by: 5 } }] }],
       options: [
         { id: 'ada.exodus.yes', text: 'Wren would. She keeps her word to the letter and expects the same. That\'s more than you get from most of Shale.', check: { skill: 'speech', dc: 45, mods: [{ if: { knows: 'wren_wanted_release' }, dc: -10, why: 'you know she argued to let the stranger go' }] }, next: 'exodus_yes', fail: 'exodus_no' },
         { text: 'I don\'t know.', next: 'exodus_no' },
@@ -301,7 +313,7 @@ export const d_sh_jonah: DialogueDef = {
         { text: 'Something else.', next: 'intro' },
       ],
     },
-    month_again: { text: '"Sir. Ma\'am." He catches himself. "Sorry."', options: [
+    month_again: { text: '"Sir. Ma\'am." He catches himself. "Sorry."', again: 'He waits to be told something else, hands behind his back the way the sheriff stands.', options: [
       { id: 'jonah.week.again', text: 'What does a deputy do with his week?', if: { not: { seen: 'jonah.week' } }, next: 'week' },
       { id: 'jonah.night.again', text: 'Who walks the street at night?', if: { not: { seen: 'jonah.night' } }, next: 'night' },
       { id: 'jonah.water.again', text: 'Where do you drink?', if: { not: { seen: 'jonah.water' } }, next: 'water' },
@@ -314,17 +326,22 @@ export const d_sh_jonah: DialogueDef = {
     water: { text: '"East cistern, by the yard. It\'s gone a bit green." A shrug. "The deputy drinks last. Everybody else gets the pumps."', effects: [{ learn: 'jonah_drinks' }, { lead: 'l_jonah_water' }], options: [{ text: 'Noted.', next: 'month_again' }] },
     name: {
       text: 'He goes very still, and then he laughs, because he is twenty-two. "A list. Of — what, people who are going to —" He doesn\'t finish it. "Who wrote it?" You tell him you don\'t know. "Then it\'s not true till someone makes it true." He puts his hand on the badge without noticing.',
+      interject: [
+        { companion: WREN, text: '"Don\'t give him a day," Wren says, low, to you. "Give him a road to keep off. A man can keep off a road."' },
+        { companion: ILYA, text: '"Somebody wrote it down." Ilya turns his left hand over and looks at the gaps in it. "Somebody always does."' },
+      ],
       effects: [{ set: 'jonah_told' }, { decision: { id: 'jonah_told', text: 'You told Jonah Reese his name was on the stranger\'s list.' } }, { trust: { npc: 'npc_sh_02', by: 5 } }],
       options: [
         { id: 'jonah.name.careful', text: 'Then don\'t help them. Stay off the tower. Walk the street with someone. Drink from the pumps.', check: { skill: 'speech', dc: 40, mods: [{ if: { trust: { npc: 'npc_sh_02', gte: 10 } }, dc: -10, why: 'he wants to believe you' }] }, next: 'careful', fail: 'careful_no' },
         { text: 'Then don\'t.', next: 'month_again' },
       ],
     },
-    careful: { text: 'He nods, slowly, the way he reads. "Off the tower." It costs him something; you can see it being paid. "I\'ll tell Dad it\'s the sheriff\'s order. He\'ll like that less than the tower."', effects: [{ set: 'jonah_fall_blocked' }, { decision: { id: 'jonah_off_tower', text: 'You talked Jonah Reese off the windpump tower.' } }, { xp: 40 }], options: [{ text: 'Good.', next: 'month_again' }] },
+    careful: { text: 'He nods, slowly, the way he reads. "Off the tower." It costs him something; you can see it being paid. "I\'ll tell Dad it\'s the sheriff\'s order. He\'ll like that less than the tower."', interject: [{ companion: ILYA, text: 'Ilya watches the boy take his hand off the badge. "Right," he says, and nods to you, once.', effects: [{ approval: { companion: ILYA, by: 5 } }] }], effects: [{ set: 'jonah_fall_blocked' }, { decision: { id: 'jonah_off_tower', text: 'You talked Jonah Reese off the windpump tower.' } }, { xp: 40 }], options: [{ text: 'Good.', next: 'month_again' }] },
     careful_no: { text: '"I\'m not going to hide from a list." He stands straighter. It is exactly what the list would want him to say.', options: [{ text: 'Noted.', next: 'month_again' }] },
-    lived: { text: 'He is sitting on the office step with both books open on his knees, alive, and looks up like a man who has heard a door close somewhere far away. "A month." He says it quietly. "Dad counted too. He pretended not to." A breath. "Whatever you did — I don\'t know what you did." He goes back to the books, and then doesn\'t.', effects: [{ trust: { npc: 'npc_sh_02', by: 15 } }, { learn: 'jonah_knows_lived' }], options: [{ text: 'Read your books, deputy.', exit: true }] },
+    lived: { text: 'He is sitting on the office step with both books open on his knees, alive, and looks up like a man who has heard a door close somewhere far away. "A month." He says it quietly. "Dad counted too. He pretended not to." A breath. "Whatever you did — I don\'t know what you did." He goes back to the books, and then doesn\'t.', again: '"Still here," he says, before you can ask. He sounds as if he is trying the words out.', effects: [{ trust: { npc: 'npc_sh_02', by: 15 } }, { learn: 'jonah_knows_lived' }], options: [{ text: 'Read your books, deputy.', exit: true }] },
     intro: {
       text: [{ if: { pronouns: 'she' }, text: 'Ma\'am. Deputy Reese. Sheriff\'s inside if you need the sheriff. If you need a deputy, that\'s — that\'s me.' }, { if: { pronouns: 'he' }, text: 'Sir. Deputy Reese. Sheriff\'s inside if you need the sheriff. If you need a deputy, that\'s — that\'s me.' }, { text: 'Deputy Reese. Sheriff\'s inside if you need the sheriff. If you need a deputy, that\'s — that\'s me.' }],
+      again: 'Anything else? Sheriff\'s still inside, if it\'s sheriff business.',
       options: [
         { id: 'jonah.job', text: 'How long have you been deputy?', next: 'job', once: true },
         { id: 'jonah.read', text: 'Somebody told me you read.', next: 'read', once: true },
@@ -344,6 +361,11 @@ export const d_sh_issa: DialogueDef = {
   nodes: {
     intro: {
       text: 'Corporal Lind. Militia — eleven of us, nine rifles, four that shoot. If you can shoot, I want to know. If you can\'t, stay off the street when the Dogs come.',
+      again: [
+        { if: { flag: 'militia_drilled' }, text: 'Nine that shoot. Say what you need; they\'re waiting on me.' },
+        { if: { flag: 'drills_started' }, text: 'Dawn and dusk, the yard. What is it?' },
+        { text: 'Still nine rifles and four that shoot. What is it?' },
+      ],
       options: [
         { id: 'issa.shoot', text: 'I can shoot.', if: { skill: 'firearms', gte: 35 }, next: 'shoot', once: true },
         { id: 'issa.dogs', text: 'When do the Dogs come?', next: 'dogs', once: true },
@@ -371,11 +393,12 @@ export const d_sh_pike: DialogueDef = {
   nodes: {
     intro: {
       text: 'Good day. Factor Pike, Tollmen post nine-west. Rates are posted; delivery is guaranteed between posts; water is sold by the measure and I do not haggle, as it wastes the time of the person who would have paid.',
+      again: 'Something further? Rates are as posted.',
       effects: [{ set: 'sh_pike_met' }],
       passives: [{ attr: 'wits', dc: 8, text: 'A list on the wall behind him: SEED — ANY VARIETY — ANY QUANTITY — PAID IN TOLLS OR SCRIP. The prices are absurd.', effects: [{ learn: 'pike_buys_seed' }] }],
-      options: [{ text: 'Let\'s see the stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed', text: 'You\'re buying seed.', if: { knows: 'pike_buys_seed' }, next: 'seed', once: true }, { id: 'pike.who', text: 'Who are the Tollmen?', next: 'who', once: true }, { id: 'pike.stranger', text: 'An old man came through three weeks ago, hurt. You spoke with him.', if: { quest: 'q_ch1_shale' }, next: 'stranger', once: true }, bye],
+      options: [{ text: 'Let\'s see the stock.', effects: [{ event: 'barter' }], exit: true, repeat: true }, { id: 'pike.seed', text: 'You\'re buying seed.', if: { knows: 'pike_buys_seed' }, next: 'seed', once: true }, { id: 'pike.who', text: 'Who are the Tollmen?', next: 'who', once: true }, { id: 'pike.stranger', text: 'An old man came through three weeks ago, hurt. You spoke with him.', if: { quest: 'q_ch1_shale' }, next: 'stranger', once: true }, bye],
     },
-    again: { text: 'As per. Stock, or something else?', options: [{ id: 'pike.seed.sell', text: '(Put the seed case on the counter.)', if: { all: [{ item: 'k_seed_case' }, { quest: 'q_a1_seed', status: 'active' }] }, next: 'seed_sell' }, { text: 'Stock.', effects: [{ event: 'barter' }], exit: true }, { id: 'pike.seed.again', text: 'About the seed.', if: { all: [{ knows: 'pike_buys_seed' }, { not: { seen: 'pike.seed' } }] }, next: 'seed' }, { id: 'pike.stranger.again', text: 'About the old man.', if: { all: [{ quest: 'q_ch1_shale' }, { not: { seen: 'pike.stranger' } }] }, next: 'stranger' }, { id: 'pike.key', text: 'Do the Tollmen read this hand?', if: { all: [{ item: 'k_map' }, { not: { item: 'k_cipher_key' } }] }, next: 'key' }, { id: 'pike.ledger', text: '(Put the Tollhouse ledger page on the counter.)', if: { item: 'k_ledger_page' }, next: 'ledger_page' }, { id: 'pike.station', text: 'The console at Dry Wells. The guild would pay to hold what it holds.', if: { all: [{ flag: 'dw_console_seen' }, { not: { flag: 'dw_outcome' } }] }, next: 'station' }, { id: 'pike.controller', text: '(Put the grey slab from the pan on the counter.)', if: { all: [{ item: 'k_hound_controller' }, { not: { flag: 'hound_outcome' } }] }, next: 'controller' }, bye] },
+    again: { text: 'As per. Stock, or something else?', again: 'Good day. The rates have not moved since you last read them.', options: [{ id: 'pike.seed.sell', text: '(Put the seed case on the counter.)', if: { all: [{ item: 'k_seed_case' }, { quest: 'q_a1_seed', status: 'active' }] }, next: 'seed_sell' }, { text: 'Stock.', effects: [{ event: 'barter' }], exit: true, repeat: true }, { id: 'pike.seed.again', text: 'About the seed.', if: { all: [{ knows: 'pike_buys_seed' }, { not: { seen: 'pike.seed' } }] }, next: 'seed' }, { id: 'pike.stranger.again', text: 'About the old man.', if: { all: [{ quest: 'q_ch1_shale' }, { not: { seen: 'pike.stranger' } }] }, next: 'stranger' }, { id: 'pike.key', text: 'Do the Tollmen read this hand?', if: { all: [{ item: 'k_map' }, { not: { item: 'k_cipher_key' } }] }, next: 'key' }, { id: 'pike.ledger', text: '(Put the Tollhouse ledger page on the counter.)', if: { item: 'k_ledger_page' }, next: 'ledger_page' }, { id: 'pike.station', text: 'The console at Dry Wells. The guild would pay to hold what it holds.', if: { all: [{ flag: 'dw_console_seen' }, { not: { flag: 'dw_outcome' } }] }, next: 'station' }, { id: 'pike.controller', text: '(Put the grey slab from the pan on the counter.)', if: { all: [{ item: 'k_hound_controller' }, { not: { flag: 'hound_outcome' } }] }, next: 'controller' }, bye] },
     station: {
       text: '"Post nine-west has known about DW-4 for eleven years, and been unable to get a man past the rifle." He does not blink. "One hundred and fifty Tolls. A guild engineer walks in behind you, and Shale\'s water is sold by the measure, as per: reliably. There is a word for what Shale has now, and it is not reliable."',
       options: [
@@ -405,6 +428,7 @@ export const d_sh_pike: DialogueDef = {
     ledger_keep: { text: '"Then we both know what it says." He goes back to his rates. "Good day."', options: [bye] },
     key: {
       text: 'He looks at the map for exactly as long as it takes to see what it is, and then not at all. "Not here. But the post sells the key to it — a cipher wheel, forty Tolls, as per. The Tollmen sell keys to everything, {name}. It is how we know what is locked."',
+      interject: [{ companion: WREN, text: '"You just showed a Tollman what you carry." Wren says it to the shelf behind him, not quietly. "It\'ll be in his book before we\'re out the door."', effects: [{ approval: { companion: WREN, by: -3 } }] }],
       effects: [{ learn: 'pike_sells_key' }, { lead: 'l_pike_saw_map' }, { memory: { npc: 'npc_sh_04', tag: 'saw_the_map', valence: 0, strength: 100 } }, { news: { tag: 'map_seen_by_tollmen', text: 'the salt-cut stranger showed a Tollman a map covered in cipher', valence: -5, size: 4, at: 'shale' } }],
       options: [{ id: 'pike.key.buy', text: '(Buy the wheel. 40 Tolls)', if: { item: 'tolls', count: 40 }, effects: [{ take: 'tolls', count: 40 }, { give: 'k_cipher_key' }], next: 'key_bought' }, { text: 'Not today.', next: 'intro' }],
     },
@@ -451,15 +475,16 @@ export const d_sh_calla: DialogueDef = {
       passives: [{ attr: 'senses', dc: 7, text: 'Painted small on the tent-pole behind her, faded: half a sun with no ground under it.', effects: [{ learn: 'calla_sigil' }, { lead: 'l_sigil_shale' }] }],
       options: [{ text: 'What do you have?', next: 'menu' }],
     },
-    again: { text: 'The sky\'s still up. What do you need?', options: [{ text: 'Let me see.', next: 'menu' }] },
+    again: { text: 'The sky\'s still up. What do you need?', again: 'Still standing like you expect to be hit. Sit, or ask.', options: [{ text: 'Let me see.', next: 'menu' }] },
     menu: {
       text: 'Ask.',
+      again: 'Anything else? The cots don\'t empty themselves.',
       options: [
-        { id: 'calla.heal', text: 'Patch me up.', if: { not: { flag: 'calla_healed_today' } }, next: 'heal' },
+        { id: 'calla.heal', text: 'Patch me up.', if: { not: { flag: 'calla_healed_today' } }, next: 'heal', repeat: true },
         { id: 'calla.help', text: 'You\'ve three on cots and one of you. Let me help.', if: { quest: 'q_a1_tents', status: 'none' }, effects: [{ quest: 'q_a1_tents', start: true }], next: 'help' },
         { id: 'calla.tents', text: 'The three are seen to.', if: { quest: 'q_a1_tents', stage: 'tended' }, next: 'tents_done' },
         { id: 'calla.seed', text: '(Give her the Cistern\'s seed case.)', if: { all: [{ item: 'k_seed_case' }, { quest: 'q_a1_seed', status: 'active' }] }, next: 'seed_given' },
-        { id: 'calla.trade', text: 'Supplies.', effects: [{ event: 'barter' }], exit: true },
+        { id: 'calla.trade', text: 'Supplies.', effects: [{ event: 'barter' }], exit: true, repeat: true },
         { id: 'calla.choir', text: 'What is the Choir?', next: 'choir', once: true },
         { id: 'calla.orchard', text: 'The trees north of town, with leaves on. Yours?', next: 'orchard', once: true },
         { id: 'calla.word', text: '"Larkspur."', if: { knows: 'word_larkspur' }, next: 'larkspur', once: true },
@@ -505,6 +530,7 @@ export const d_sh_hollis: DialogueDef = {
   nodes: {
     intro: {
       text: 'Pup. You\'ve got salt on you. Sit, I don\'t bite, haven\'t the — well. Hollis Crane, oldest living thing in Shale after the pumps. Spare a pull of something?',
+      again: 'Pup. Back for more of the oldest company in Shale? Bring a bottle next time.',
       options: [
         { id: 'hollis.still', text: '(Give him the stillwater.)', if: { item: 'c_stillwater' }, effects: [{ take: 'c_stillwater' }, { trust: { npc: 'npc_sh_06', by: 15 } }, { memory: { npc: 'npc_sh_06', tag: 'player_gave_still', valence: 15 } }], next: 'gift', once: true },
         { id: 'hollis.bitters', text: '(Give him the bitters.)', if: { item: 'c_bitters' }, effects: [{ take: 'c_bitters' }, { trust: { npc: 'npc_sh_06', by: 5 } }], next: 'gift_b', once: true },
@@ -529,6 +555,10 @@ export const d_sh_hollis: DialogueDef = {
     which: { text: '"The only one that counts, pup. West, past the glass, where it rains." He won\'t say the name; he mouths it and looks at the Tollmen post. "Forty years. They don\'t let you out, you know. You leave."', effects: [{ learn: 'hollis_was_in_city' }], options: [{ text: 'Thanks, old man.', exit: true }] },
     map: {
       text: 'He holds it a long way from his face, then very close. "Boards hand," he says. "City hand. Blocks of five and a turn of the wheel each name — they taught us that so we couldn\'t read our own files." His finger finds the nearest pin. "Reese. Jonah. Shale. A month." The next. "Vey. Ada. Shale. Four months." He stops reading. "That\'s two I know. Don\'t show me the rest, pup. I\'m old; I\'d like to stay surprised."',
+      interject: [
+        { companion: ILYA, text: 'Ilya has gone still at the second name. "Vey," he says, and doesn\'t count anything. "Four months. Right."' },
+        { companion: WREN, text: '"Boards hand," Wren repeats under her breath. "He reads it like a man who\'s been on a board."' },
+      ],
       effects: [{ learn: 'hollis_read_map' }, { learn: 'name1_decoded' }, { learn: 'name3_decoded' }, { set: 'jonah_named' }, { lead: 'l_name_jonah' }, { lead: 'l_name_vey' }, { xp: 80 }, { trust: { npc: 'npc_sh_06', by: 10 } }, { decision: { id: 'read_first_name', text: 'Hollis Crane read the first names on the stranger\'s map for you: Jonah Reese within the month; Ada Vey in four.' } }, { after: { minutes: 30 * 1440, id: 'jonah_month', effects: [{ set: 'jonah_month_over' }] } }, { quest: 'q_ch1_name', stage: 'read' }, { event: 'title', data: { text: 'CHAPTER ONE\nTHE KNOCK' } }],
       options: [{ text: '(Fold the map.)', exit: true }],
     },
@@ -542,11 +572,12 @@ export const d_sh_yusra: DialogueDef = {
   nodes: {
     intro: {
       text: 'Hold still — no, you\'re fine. Yusra Hadid, Mender. I fix what\'s broken and fit what fits. You don\'t wear any work, do you? Clean as a Choir baby. Rare.',
+      again: 'Back. Sit or don\'t; I don\'t charge for looking.',
       options: [
         { id: 'yusra.work', text: 'The work?', next: 'work', once: true },
-        { id: 'yusra.trade', text: 'What do you sell?', effects: [{ event: 'barter' }], exit: true },
+        { id: 'yusra.trade', text: 'What do you sell?', effects: [{ event: 'barter' }], exit: true, repeat: true },
         { id: 'yusra.fit', text: 'Could you fit something in me?', if: { all: [{ knows: 'yusra_work' }, { not: { knows: 'yusra_fits' } }] }, next: 'fit' },
-        { id: 'yusra.table', text: 'I\'ll sit for the work.', if: { knows: 'yusra_fits' }, effects: [{ event: 'surgery' }], exit: true },
+        { id: 'yusra.table', text: 'I\'ll sit for the work.', if: { knows: 'yusra_fits' }, effects: [{ event: 'surgery' }], exit: true, repeat: true },
         { id: 'yusra.filter', text: 'The east cistern. Could you build a filter for it?', if: { all: [{ knows: 'jonah_drinks' }, { not: { flag: 'jonah_fever_blocked' } }] }, next: 'filter' },
         bye,
       ],
@@ -554,8 +585,9 @@ export const d_sh_yusra: DialogueDef = {
     work: { text: '"Chrome. Bionics. Eyes that see heat, a hand that doesn\'t shake, a spine-link. Rare out here; the city makes the good pieces and the Concern makes the better ones and both of them keep a hand on the leash." She wipes a blade. "I fit what people bring me. I take it out again when it goes wrong, and it does."', effects: [{ learn: 'yusra_work' }], options: [{ text: 'Could you fit something in me?', next: 'fit' }, bye] },
     fit: {
       text: '"With what? I\'ve a Gyro Hand — a pre-Burn surgical hand, steady as a table — and a pair of Ember Eyes I built myself, and either costs more than you\'ve got on you. Bring me a piece and the Tolls for the surgery, or the Tolls for the piece and the surgery both, and I\'ll fit it. It goes in or it doesn\'t; I don\'t promise. Sit down when you\'re ready."',
+      interject: [{ companion: WREN, text: '"Ember Eyes." Wren says it the way other people name a town they will never see. "Not at that price. Not yet."' }],
       effects: [{ learn: 'yusra_fits' }],
-      options: [{ id: 'yusra.fit.sit', text: '(Sit down.)', effects: [{ event: 'surgery' }], exit: true }, { text: 'Not today.', exit: true }],
+      options: [{ id: 'yusra.fit.sit', text: '(Sit down.)', effects: [{ event: 'surgery' }], exit: true, repeat: true }, { text: 'Not today.', exit: true }],
     },
     filter: { text: '"Ceramic and charcoal, a day\'s work, and thirty Tolls for the ceramic, which I don\'t make." She wipes her hands. "The deputy drinks from it. I know. Everyone knows and nobody\'s asked."', options: [{ id: 'yusra.filter.pay', text: '(Pay. 30 Tolls)', if: { item: 'tolls', count: 30 }, effects: [{ take: 'tolls', count: 30 }, { set: 'jonah_fever_blocked' }, { set: 'east_cistern_filtered' }, { decision: { id: 'jonah_water_mender', text: 'You paid the Mender to build a filter for the east cistern.' } }, { trust: { npc: 'npc_sh_08', by: 8 } }, { xp: 40 }], next: 'filter_done' }, { text: 'Not now.', exit: true }] },
     filter_done: { text: '"Tomorrow. Tell the deputy it\'s for the whole east street. He\'ll drink from it if it isn\'t for him."', options: [{ text: 'Done.', exit: true }] },
@@ -568,6 +600,7 @@ export const d_sh_dov: DialogueDef = {
   nodes: {
     intro: {
       text: 'You\'re in the light. — Dov Reese. Pumps. If you\'re here about my boy, Ada\'s got him, go ask her what she\'s doing with him.',
+      again: 'Still in my light.',
       effects: [{ learn: 'dov_met' }],
       options: [
         { id: 'dov.pumps', text: 'Who runs the pumps?', next: 'pumps', once: true },
@@ -605,8 +638,9 @@ export const d_sh_pardo: DialogueDef = {
   nodes: {
     intro: {
       text: 'Water? Two a measure, one if you carry your own cup, nothing if you\'re dying and I believe you. Pardo. I sit here. That\'s the job.',
+      again: 'Water? Same price as last time. It\'s always the same price.',
       options: [
-        { text: 'Water.', effects: [{ event: 'barter' }], exit: true },
+        { text: 'Water.', effects: [{ event: 'barter' }], exit: true, repeat: true },
         { id: 'pardo.clock', text: 'Six, eleven, four, nine?', if: { any: [{ knows: 'pumps_on_a_clock' }, { knows: 'dov_pumps_schedule' }] }, next: 'clock', once: true },
         { id: 'pardo.stranger', text: 'A tall old man bought water from you. With a ring.', if: { knows: 'ada_saw_stranger' }, next: 'stranger', once: true },
         bye,
@@ -625,9 +659,10 @@ export const d_sh_ruth: DialogueDef = {
   nodes: {
     intro: {
       text: 'Caravan post. Ruth Avel; I ride with the Wheel when they pass and sit here when they don\'t. Goods, ammunition, and letters — a wagon leaves when a wagon leaves. Pay in Tolls or in something a wagon wants.',
+      again: 'Wagon\'s not left yet. What do you need?',
       options: [
-        { text: 'Let me see your goods.', effects: [{ event: 'barter' }], exit: true },
-        { id: 'ruth.wheel_where', text: 'Where is the Wheel camped?', next: 'wheel_where' },
+        { text: 'Let me see your goods.', effects: [{ event: 'barter' }], exit: true, repeat: true },
+        { id: 'ruth.wheel_where', text: 'Where is the Wheel camped?', next: 'wheel_where', repeat: true },
         { id: 'ruth.escort', text: 'Any work riding beside a wagon?', if: { not: { quest: 'q_a1_escort', status: 'done' } }, next: 'escort' },
         { id: 'ruth.letters', text: 'How do letters work?', next: 'letters', once: true },
         { id: 'ruth.wheel', text: 'The Wheel?', next: 'wheel', once: true },
@@ -667,6 +702,7 @@ export const d_sh_tracks: DialogueDef = {
   nodes: {
     look: {
       text: 'A board on a post: SHALE — WATER BY THE CUP — NO DOGS. The road runs west into hardpan, toward the salt cut and, further, the line of a dead highway against the sky.',
+      again: 'The board, the ruts, the dead highway on the sky. The west road keeps what it keeps.',
       passives: [
         { skill: 'survival', dc: 40, text: 'Old prints in the crust at the road\'s edge, kept by three dry weeks: one man, boots worn on the outer edge, a long drag on the right leg. He went west — not toward the salt cut, but north-west, toward the highway. And he was alone.', effects: [{ learn: 'tracks_read' }, { lead: 'l_tracks_overpass' }, { learn: 'loc_rustdogs' }, { xp: 30 }] },
         { attr: 'senses', dc: 8, text: 'Scuffs where somebody sat down hard against the post, and a dark stain in the dust that the wind hasn\'t taken yet.', effects: [{ learn: 'tracks_blood' }] },

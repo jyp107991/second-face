@@ -16,6 +16,7 @@ export const d_rd_gate: DialogueDef = {
   nodes: {
     intro: {
       text: 'Hold it. Hands out, palms up — that\'s the rule. Wren\'s rule. She\'s got you from the deck right now and she doesn\'t miss, so smile.',
+      again: 'Hands out, palms up. Same rule as last time. Same deck, too.',
       options: [
         { id: 'gate.kessler', text: 'I\'m here to talk to Kessler.', effects: [{ set: 'rd_admitted' }], next: 'in' },
         { id: 'gate.teo', text: 'I\'ve come about Teo Marsh.', if: { knows: 'teo_prisoner' }, effects: [{ set: 'rd_admitted' }, { learn: 'teo_seen' }], next: 'in_teo' },
@@ -37,6 +38,7 @@ export const d_rd_brindle: DialogueDef = {
   nodes: {
     intro: {
       text: 'Brindle. Gate. Nine years a Dog; I was seven. Wren says I talk too much, so I\'m not talking.',
+      again: 'Still not talking. Mostly. What?',
       options: [
         { id: 'brindle.wren', text: 'Wren taught you?', next: 'wren', once: true },
         { id: 'brindle.before', text: 'Where were you before the Dogs?', next: 'before', once: true },
@@ -76,6 +78,7 @@ export const d_rd_kessler: DialogueDef = {
     },
     menu: {
       text: 'Ask. I\'ll answer what\'s free. The rest has a price, like water.',
+      again: 'What else? Free or priced, ask.',
       options: [
         { id: 'kessler.map', text: 'The map he carried. I want it.', if: { all: [{ not: HAVE_MAP }, { any: [{ knows: 'kessler_has_map' }, { knows: 'kessler_map_seen' }, { knows: 'map_sold' }, { knows: 'kessler_met_stranger' }] }] }, next: 'map' },
         { id: 'kessler.teo', text: 'You\'re holding Teo Marsh.', if: { all: [{ knows: 'teo_prisoner' }, { not: { flag: 'teo_freed' } }] }, next: 'teo' },
@@ -86,6 +89,7 @@ export const d_rd_kessler: DialogueDef = {
     },
     map: {
       text: 'Water for a paper. He said the paper was worth more than my camp, and I believed him, because a dying man doesn\'t lie about prices. I can\'t read it. Nobody here can. Vasha wants to sell it to the Tollmen. The Tollmen have already asked, which is why I haven\'t.',
+      again: '"The paper." He has not moved. "Well?"',
       effects: [{ learn: 'kessler_has_map' }],
       options: [
         { id: 'kessler.price', text: 'Name a price.', next: 'price' },
@@ -145,8 +149,8 @@ export const d_rd_kessler: DialogueDef = {
     },
     tribute_fight: { text: '"Then I\'d lose Dogs, and they\'d lose a town, and Vasha would be chief by morning. And you\'d have done that." He looks at you. "Fair?"', effects: [{ learn: 'vasha_would_be_chief' }], options: [{ text: 'Noted.', next: 'menu' }] },
     who: { text: '"Forty people the road dropped, under a road the sky dropped. We take the tithe; we don\'t take lives. That\'s mine. It\'s the only thing that is, and it\'s why Vasha counts."', effects: [{ learn: 'kessler_no_lives' }], options: [{ text: 'Noted.', next: 'menu' }] },
-    again: { text: 'Back. Ask.', options: [{ text: 'A few things.', next: 'menu' }] },
-    after: { text: 'You\'ve got your paper. Don\'t read it here, and don\'t tell Vasha what it says if you ever find out.', options: [{ text: 'A few things.', next: 'menu' }, { text: 'I\'ll be going.', exit: true }] },
+    again: { text: 'Back. Ask.', again: 'Sit, then. Or stand. You know the rule about prices.', options: [{ text: 'A few things.', next: 'menu' }] },
+    after: { text: 'You\'ve got your paper. Don\'t read it here, and don\'t tell Vasha what it says if you ever find out.', again: '"Still in my camp?" He doesn\'t look up from the list. "Ask, then."', options: [{ text: 'A few things.', next: 'menu' }, { text: 'I\'ll be going.', exit: true }] },
     intro_or_coup: {
       text: [{ if: NIGHT, text: 'One lamp. The shotgun across his knees, where it always is. "Late," Kessler says. "Vasha sent you. She sends everyone, in the end."' }, { text: 'He looks at you, and then past you, to where Vasha stands by the fire. "Not yet, I think," he says, to nobody.' }],
       options: [
@@ -176,9 +180,10 @@ export const d_rd_vasha: DialogueDef = {
       passives: [{ attr: 'senses', dc: 7, text: 'A pistol-grip submachine gun on a strap, and her thumb never leaves the safety.' }],
       options: [{ text: 'What do you want from me?', next: 'menu' }],
     },
-    again: { text: 'Say it again. Your name. I like how it sounds when you\'re careful.', options: [{ text: 'What do you want?', next: 'menu' }] },
+    again: { text: 'Say it again. Your name. I like how it sounds when you\'re careful.', again: 'You keep coming back. People who keep coming back end up staying.', options: [{ text: 'What do you want?', next: 'menu' }] },
     menu: {
       text: 'Everything, eventually. Today I\'ll settle for a conversation.',
+      again: 'Go on. I\'m enjoying this.',
       options: [
         { id: 'vasha.map', text: 'The paper Kessler took off the old man.', if: { all: [{ not: HAVE_MAP }, { any: [{ knows: 'kessler_has_map' }, { knows: 'kessler_met_stranger' }] }] }, next: 'map' },
         { id: 'vasha.shale', text: 'What do you want with Shale?', next: 'shale', once: true },
@@ -209,7 +214,7 @@ export const d_rd_vasha: DialogueDef = {
       effects: [...MAP_EFFECTS('coup', 'Kessler died in his hall. Vasha leads the Rust Dogs and gave you the map.'), { set: 'rd_leader', value: 'vasha' }, { rep: { faction: 'rust_dogs', fear: 25 } }, { news: { tag: 'kessler_dead', text: 'Kessler of the Rust Dogs was killed in his own hall; Vasha Kade leads now', valence: -25, size: 8, at: 'rustdogs' } }],
       options: [{ text: '(Take it.)', exit: true }],
     },
-    betrayed: { text: 'She looks at you the way she looks at the pens. "You told him." Nothing else. The thumb is on the safety.', options: [{ text: '(Leave.)', exit: true }] },
+    betrayed: { text: 'She looks at you the way she looks at the pens. "You told him." Nothing else. The thumb is on the safety.', again: 'She doesn\'t speak. The thumb hasn\'t moved.', options: [{ text: '(Leave.)', exit: true }] },
     shale: { text: '"A well with people around it. I\'m going to take the well. The people can stay if they\'re useful."', effects: [{ learn: 'vasha_wants_shale' }], options: [{ text: 'Noted.', next: 'menu' }] },
     kessler: { text: '"He keeps a list of who he hasn\'t robbed. I keep count of who\'s hungry. Guess which list is longer."', options: [{ text: 'Noted.', next: 'menu' }] },
     raid: {
@@ -241,9 +246,10 @@ export const d_rd_wren: DialogueDef = {
     },
     said: { text: '"That he\'d been shot by people who were paid to shoot him, and that he\'d rather give the paper to a thief than to a bank. He meant Kessler. He meant it as a compliment."', effects: [{ learn: 'wren_found_stranger' }, { lead: 'l_wren_found' }], options: [{ text: 'You brought him in?', next: 'brought' }, { text: 'More.', next: 'menu' }] },
     brought: { text: '"Across a dog. He weighed nothing." She looks west. "I wanted to let him go east, where he was pointed. Kessler wanted the paper. Kessler got the paper, the old man got water, and he walked west to die on your step. Everybody got what they wanted. That\'s the camp."', effects: [{ learn: 'wren_wanted_release' }, { trust: { npc: 'npc_rd_03', by: 5 } }], options: [{ text: 'More.', next: 'menu' }] },
-    again: { text: 'Skyline. — What?', options: [{ text: 'A few things.', next: 'menu' }] },
+    again: { text: 'Skyline. — What?', again: 'West track\'s quiet. What?', options: [{ text: 'A few things.', next: 'menu' }] },
     menu: {
       text: 'Ask. Quietly.',
+      again: 'What else. Keep it low.',
       options: [
         { id: 'wren.map', text: 'The paper. I want it. Help me.', if: { all: [{ not: HAVE_MAP }, { any: [{ knows: 'kessler_has_map' }, { knows: 'kessler_met_stranger' }] }, { not: { flag: 'wren_deal' } }] }, next: 'steal' },
         { id: 'wren.exodus', text: 'Come to Shale. You and whoever follows you. Sheriff Vey will take you in, under her law.', if: { all: [{ flag: 'shale_exodus_ok' }, { not: { flag: 'wren_exodus' } }] }, next: 'exodus' },
@@ -262,7 +268,7 @@ export const d_rd_wren: DialogueDef = {
     },
     steal_yes: { text: '"After the fires. Find me here. Don\'t be near the hall."', options: [{ text: '(Nod.)', exit: true }] },
     girl: { text: '"That\'s asking." She goes back to watching the road, and the conversation is over for now.', options: [{ text: '(Leave it.)', next: 'menu' }] },
-    deal_wait: { text: 'After the fires. Not before.', options: [{ text: '(Wait.)', exit: true }] },
+    deal_wait: { text: 'After the fires. Not before.', again: 'Still not after the fires. Go and be seen somewhere else.', options: [{ text: '(Wait.)', exit: true }] },
     steal_now: {
       text: '"Wait here. Watch the road for me — it\'s the one thing nobody else does." She is gone an hour, and comes back with the paper and no expression at all. "Kessler sleeps like a man with a list. Let\'s go, before he reads it."',
       effects: [...MAP_EFFECTS('stolen', 'Wren stole the stranger\'s map from Kessler\'s hall. She leaves with you.'), { time: 60 }, { join: 'npc_rd_03' }, { set: 'wren_joined' }, { approval: { companion: 'npc_rd_03', by: 10 } }, { news: { tag: 'map_stolen', text: 'something was taken from Kessler\'s coach in the night', valence: -10, size: 4, at: 'rustdogs' } }, { memory: { npc: 'npc_rd_01', tag: 'map_vanished', valence: -20, strength: 80 } }],
@@ -293,6 +299,7 @@ export const d_rd_teo: DialogueDef = {
   nodes: {
     home: {
       text: '"Home." He says it like a sum that finally came out. "Mags shouted for an hour and then fed me for two. I owe you a count, and I keep my counts." He is already behind the bar, where the books are.',
+      again: '"Count\'s still right." He doesn\'t look up from the books, but he smiles at them.',
       options: [
         { id: 'teo.pass', text: 'The Tollmen\'s wall on the highway. Could you write a pass the gate would take?', if: { all: [{ quest: 'q_a1_tollhouse' }, { not: { item: 'k_pass_forged' } }, { not: { flag: 'th_passed' } }] }, next: 'pass' },
         { text: 'Keep your counts.', exit: true },
@@ -301,6 +308,7 @@ export const d_rd_teo: DialogueDef = {
     pass: { text: '"I kept Kessler\'s books and Kessler keeps the guild\'s waybills, because he can\'t read them and likes the paper." He takes a sheet from under the bar, and writes for a minute in a hand that isn\'t his. "Bearer and goods. Hold it like you\'ve had it for years."', effects: [{ give: 'k_pass_forged' }, { learn: 'teo_forged' }, { lead: 'l_pass_hands' }, { trust: { npc: 'npc_sh_07', by: 5 } }], options: [{ text: '(Take it.)', exit: true }] },
     intro: {
       text: 'You\'re not a Dog. You\'re — are you from Shale? Did Mags send you? Tell her I\'m fine. Tell her it\'s forty, not sixty, and I can prove it, I\'ve got the whole thing in my head —',
+      again: 'You came back. Forty, not sixty. I\'ve counted it again since, twice.',
       effects: [{ learn: 'teo_seen' }],
       options: [
         { id: 'teo.mags', text: 'Mags sent me. She\'s running the bar alone.', if: { knows: 'promised_mags_teo' }, effects: [{ trust: { npc: 'npc_sh_07', by: 10 } }], next: 'mags' },
@@ -312,7 +320,7 @@ export const d_rd_teo: DialogueDef = {
     mags: { text: 'He puts his face in his hands for a moment. "She\'ll kill me. She\'ll kill me and then she\'ll feed me. Tell her the count was right. The brother\'s debt was forty and it was never mine."', options: [{ text: 'How did you end up in here?', next: 'how' }, { text: 'I\'ll get you out.', next: 'out' }] },
     how: { text: '"Mags\'s brother ran salt east and owed the Dogs for passage. He died owing. The Dogs say debts are family. I say I\'m not family, I\'m a partner, and nobody out here can tell the difference." He laughs, badly. "I taught Perpetua to keep books. She likes me. It doesn\'t help."', effects: [{ learn: 'teo_debt_story' }], options: [{ text: 'I\'ll get you out.', next: 'out' }, bye] },
     out: { text: '"Kessler wants sixty. Perpetua would take forty, if you ask her like she\'s a person. And the lock on this gate is Jack\'s work, and Jack\'s work is bad — but there are eyes on it all day."', effects: [{ learn: 'cage_lock' }, { learn: 'teo_price' }], options: [bye] },
-    free: { text: '"They let me out. They actually —" He stops, breathes. "I\'m going home. Walk with me as far as the road? I don\'t trust my legs."', effects: [{ set: 'teo_walking_home' }], options: [{ text: 'Go. I\'ll see you in Shale.', exit: true }] },
+    free: { text: '"They let me out. They actually —" He stops, breathes. "I\'m going home. Walk with me as far as the road? I don\'t trust my legs."', again: '"Still here. So am I. My legs keep forgetting which way Shale is."', effects: [{ set: 'teo_walking_home' }], options: [{ text: 'Go. I\'ll see you in Shale.', exit: true }] },
   },
 };
 
@@ -330,7 +338,7 @@ export const d_rd_cage: DialogueDef = {
     },
     picked: { text: 'The second padlock gives the way Jack\'s work gives. Teo is already standing.', options: [{ text: '(Go.)', exit: true }] },
     pick_fail: { text: 'Jack\'s work is bad, but it is bad in two places at once. You get the chain off and not the lock, and put it back before anyone turns over.', effects: [{ time: 20 }], options: [{ text: '(Leave it.)', exit: true }] },
-    open: { text: 'The cage stands open. The cot still holds the shape of a man who counted to stay sane.', options: [{ text: '(Go.)', exit: true }] },
+    open: { text: 'The cage stands open. The cot still holds the shape of a man who counted to stay sane.', again: 'The cage, open. Nobody has bothered to shut it.', options: [{ text: '(Go.)', exit: true }] },
   },
 };
 
@@ -347,7 +355,7 @@ export const d_rd_table: DialogueDef = {
     },
     lifted: { text: 'The shell rolls a quarter turn and stops. Kessler does not. You are out of the coach before you breathe.', options: [{ text: '(Go.)', exit: true }] },
     caught: { text: 'The shell rolls off the table. "Fair," Kessler says from the cot, without moving, and the shotgun is in his hands.', effects: [{ set: 'rustdogs_hostile' }, { decision: { id: 'caught_at_table', text: 'Kessler caught you at his table in the night.' } }, { event: 'combat' }], options: [{ text: '(—)', exit: true }] },
-    bare: { text: 'Kessler\'s table. The shotgun shell, and nothing under it.', options: [{ text: '(Step back.)', exit: true }] },
+    bare: { text: 'Kessler\'s table. The shotgun shell, and nothing under it.', again: 'The table, the shell, the empty place under the lamp.', options: [{ text: '(Step back.)', exit: true }] },
   },
 };
 
@@ -357,6 +365,7 @@ export const d_rd_perpetua: DialogueDef = {
   nodes: {
     intro: {
       text: 'Dog-mother. Forty years in this camp; the dogs are mine, the races are mine, the memory\'s mine. The dogs say you\'re not afraid, which means you don\'t know enough yet.',
+      again: 'The dogs remember you. So do I. What?',
       options: [
         { id: 'perp.stranger', text: 'The old man from the salt cut.', if: { any: [{ knows: 'kessler_met_stranger' }, { knows: 'wren_found_stranger' }, { knows: 'kessler_has_map' }] }, next: 'stranger', once: true },
         { id: 'perp.teo', text: 'Teo Marsh.', if: { all: [{ knows: 'teo_prisoner' }, { not: { flag: 'teo_freed' } }] }, next: 'teo' },
@@ -388,8 +397,9 @@ export const d_rd_jack: DialogueDef = {
   nodes: {
     intro: {
       text: 'Sallow Jack. Everything shoots; nothing shoots straight. Brass is money, powder is money, a bolt rifle is a month\'s money. What are you carrying?',
+      again: 'Back. Still nothing shoots straight. What are you after?',
       options: [
-        { text: 'Let\'s see what you\'ve got.', effects: [{ event: 'barter' }], exit: true },
+        { text: 'Let\'s see what you\'ve got.', effects: [{ event: 'barter' }], exit: true, repeat: true },
         { id: 'jack.tollmen', text: 'Who buys from you?', next: 'tollmen', once: true },
         { id: 'jack.bolt', text: 'You\'ve mentioned a bolt rifle.', if: { item: 'w_bolt308' }, next: 'bolt', once: true },
         bye,
@@ -406,6 +416,7 @@ export const d_rd_tank: DialogueDef = {
   nodes: {
     look: {
       text: 'A road tanker\'s tank on blocks, SHALE WATER CO-OP still stencilled on the side under a painted dog. It is three-quarters full. A Dog with a revolver sits on the sandbags.',
+      again: 'The tank on its blocks, the Dog on the sandbags. Neither has moved.',
       passives: [{ skill: 'mechanics', dc: 35, text: 'The outlet valve is a bad weld on a good fitting. It would take a wrench and a minute, and it would drain into sand.', effects: [{ learn: 'tank_valve' }] }],
       options: [{ text: '(Step back.)', exit: true }],
     },
@@ -416,6 +427,6 @@ export const d_rd_chest: DialogueDef = {
   id: 'd_rd_chest', owner: 'narrator',
   start: [{ node: 'look' }],
   nodes: {
-    look: { text: 'Kessler\'s chest: a locker with a padlock, and on the lid in chalk a list of names with lines through most of them. The paper isn\'t in here. It\'s under the lamp.', effects: [{ learn: 'kessler_list' }], options: [{ text: '(Leave it.)', exit: true }] },
+    look: { text: 'Kessler\'s chest: a locker with a padlock, and on the lid in chalk a list of names with lines through most of them. The paper isn\'t in here. It\'s under the lamp.', again: 'Kessler\'s locker and its chalk list. The lines through the names haven\'t changed.', effects: [{ learn: 'kessler_list' }], options: [{ text: '(Leave it.)', exit: true }] },
   },
 };
