@@ -717,6 +717,33 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-16 (night), gate 165 → 89; U7 and U8 done in content; ten places built.** Gate: red, 89 (A1 50, A4 13,
+  C1 8, W6 11, W3 3, F1/F2/F5/K1 1), committed with its verdict (4020fea5, full43). Done and committed:
+  (1) **the gate batch** (A1's upper arm keeps its hang; leg-solve guards; layers; portrait framing) measured whole;
+  (2) **U7 part 2 over the whole game**: Chapter One, Act 1 and Act 2 conversations have `again` lines (~550), companions'
+  interjections (~190), services `repeat`; ~30 rewards that paid again on each talk now pay once;
+  (3) **one name per person**: 66 display names renamed (ids unchanged), `src/content/rules/families.ts` + a validator
+  rule (shared surnames only for kin, no given name that is someone's surname, no shared given name in a region); ten
+  bodies drawn as the wrong sex fixed (frame matches the text);
+  (4) **U8, all six companions + the seventh in the opening**: camp stages by milestone and approval, approval with
+  visible reasons, conflicts between companions, romances (opt-in, ask every step, can fail, `romance_partner` one at a
+  time, never gifts), red lines/breaks/floors with ways back, personal quests `q_comp_{nine,wren,ilya,odile,ash,tamsin}`;
+  Tamsin now joins (a letter answered or asked at the Grille; she waits at Mags's in Shale; event `tamsin_out`); plans in
+  `story/U8_*_SECRET.md`; exported, EditMode 257 pass (every conversation walked);
+  (5) **arrivals face the place** (T43; ChapterOneTests asserts it); tests that boot the game now tear it down (they left
+  WorldNav on, which turned off every later test's place NavMesh: the cause of Shale's intermittent CI failure).
+  **In hand (uncommitted, on `wip/gate-batch`):** `PlaceBuilder.Ids` + 10 places built (tollhouse, signalhill, drywells,
+  orchard, wheel, lm_sallow_01/02, ninebridge, openfield, sump+cistern4); `PlacePlayTests.EachPlaceStandsAndIsWalkable`
+  (on its pad, NavMesh, every post reached from the arrival, captures + a top-down NavMesh picture `place_<id>_nav.png`).
+  Openfield passes; the others have posts cut off. PlaceYardsTests proves the yards are not the cause (the maps' grids
+  connect). The pictures show: Tollhouse's raised building floors and fenced yards do not join the road (doorways /
+  gates); Signal Hill's arrival strip is cut off from the rest; Ninebridge's asphalt / wood / metal outdoor floors carry
+  no NavMesh. **Next:** fix those in PlaceBuilder (thresholds and gates as ramps the NavMesh crosses; outdoor hard floors
+  as meshes or terrain the NavMesh reads), rerun the test, commit the places. Then A1 (diagnostic patch ready:
+  `$scratchpad/patches/push_diag.py` adds the push's body point to the trace; a pick of the gear-held men with
+  GATE_TRACE), W6 (traces of two jogging women in full43), A4, C1. Also: `Core/Npc/Extras.cs` crowd names must leave out
+  the cast's names; a companion who leaves for good should despawn (it still waits where left); B3.12 must place Vasha
+  and set `bw_raid` (two companions' beats wait on it); `q_a2_longnight` should read the companions' stage flags.
 - **2026-11-16 (evening), A1's real cause found; Chapter One's conversations to U7.** Gate: red, 165 committed. The
   stage trace (`saR0..5`) showed the resting arm placed at 17° by `RestArm` and pushed to 22-25° by `SkinClear`'s first
   turn: the whole upper arm was kept out of the chest's side, a contact C1 itself leaves out. The two earlier fixes went
