@@ -717,6 +717,22 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-16 (evening), A1's real cause found; Chapter One's conversations to U7.** Gate: red, 165 committed. The
+  stage trace (`saR0..5`) showed the resting arm placed at 17° by `RestArm` and pushed to 22-25° by `SkinClear`'s first
+  turn: the whole upper arm was kept out of the chest's side, a contact C1 itself leaves out. The two earlier fixes went
+  into `SkinRest`, which resting arms never run (`RestReach` on): taken back (pitfall in BUILD_PLAN §8). Fix: at rest the
+  upper arm above its third by the elbow may press `UpperGive` (2.5 cm) into the chest's side before the shoulder turns it
+  out. Pick of the 12 worst: A1 88 → 44, A4 22 → 13, C1 2, W3 3 (115 → 62). The trace now names what each push is for
+  (`pushPart`, `pushDeg`). The gate batch (leg solve guards, layers, trace folder, portrait framing, this) is parked on
+  branch `wip/gate-batch` and measured whole (full43) before it can go to main.
+  Content: U7 part 2 for Chapter One (93 `again` lines, 30 interjections from Wren, Ilya and Tamsin, 19 services
+  `repeat`; two gifts that came again on every talk now come once), exported; ConversationTests pass. Act 1's files next.
+  Ready, waiting on the editor: arrivals face where the place's people are (`WorldStage.Heart`, `Walkabout.Place`;
+  `ChapterOneTests` asserts it and captures the game's own arrival view, T43); ten more places built (`PlaceBuilder.Ids`:
+  the Sallow's tollhouse, signal hill, Dry Wells, orchard, the Wheel, the salt pan, the windpumps; the Glass Flats'
+  Ninebridge, Openfield, the Sump with Cistern 4 below) — P8's first step.
+  **Next:** full43's verdict (commit the batch if no measure is worse than 165); the places built and captured at the
+  game camera; ChapterOneTests; then the rest of A1 (the gear side's forearm and lower upper arm, by `pushPart`), W6.
 - **2026-11-16 (later), Chapter One's QA findings worked through; U6 and U7 begun.** Gate: red, 165 committed. The people's part of the morning's fixes (the leg solve's guards, the gate's trace folder, the clothes' layers: gate-hashed files) is held back: the whole cast measured on them (full42) came to 166, A1 118 = 118, A4 21 → 23 (Police_Male_06 after the stretch, cap_Fire_Male_07n talking), C1 8 → 7; it goes in with the next gate batch (A1's hang held under 18° out and back together, the portrait's framing), measured whole. Done:
   (1) **the fight on the HUD** (T44): `CombatHud`: the turn order under the top row (who acts, how hurt), a health bar over
   every fighter's head that follows them on screen, the action points and the fight's last lines on a plate between the
