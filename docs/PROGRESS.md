@@ -717,6 +717,14 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-16 (late), P8 step 1 done: ten more places built and walkable.** Gate: red, 89. Committed (c2947ca4): the
+  Sallow's and the Glass Flats' places (tollhouse, signalhill, drywells, orchard, wheel, salt pan, windpumps, Ninebridge,
+  Openfield, the Sump + Cistern 4); `PlacePlayTests` 13/13 (every post reached on foot from the arrival with the game's
+  NavMesh) and Chapter One's road pass. Causes found and fixed: (a) a place's NavMesh was built before its pad was in the
+  terrain (PlaceNav now waits; WorldNav rebuilds when ground or a place comes in under it, which also protects the
+  walker in play); (b) scrap and metal walls stood a frame post in their doorways (PlaceBuilder). Critic's notes on the
+  captures (P8 polish, next): Ninebridge's empty tiles ('V', the river) render as flat grey slabs (should be water or a
+  drop); the arrival view at 22 m looks at bare ground before the place (Tollhouse) — frame the place, not the feet.
 - **2026-11-16 (night), gate 165 → 89; U7 and U8 done in content; ten places built.** Gate: red, 89 (A1 50, A4 13,
   C1 8, W6 11, W3 3, F1/F2/F5/K1 1), committed with its verdict (4020fea5, full43). Done and committed:
   (1) **the gate batch** (A1's upper arm keeps its hang; leg-solve guards; layers; portrait framing) measured whole;
