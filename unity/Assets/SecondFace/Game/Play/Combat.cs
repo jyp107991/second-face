@@ -398,6 +398,8 @@ namespace SecondFace.Game.Play
                     outcome = "beaten";
                 }
             }
+            // (a fight that did not end in a win is not taken up again by itself at once: the beaten get up, a truce holds)
+            if (outcome != "victory") _quietUntil = Mathf.Max(_quietUntil, Time.unscaledTime + 120f);
             Say(Strings.Get(outcome == "defeat" || outcome == "beaten" ? "combat.lost" : outcome == "truce" ? "combat.truce" : "combat.won"));
             yield return new WaitForSeconds(outcome == "defeat" || outcome == "beaten" ? 2.5f : 1f);
             ShowBar(false);
@@ -466,12 +468,15 @@ namespace SecondFace.Game.Play
                 f.Over = _bodies.TryGetValue(u, out var body) && body != null ? Over(body) : Vector3.zero;
             }
             if (_fighters.Count > order.Count) _fighters.RemoveRange(order.Count, _fighters.Count - order.Count);
+            // (placed from the camera's own view, not the window's pixels: a camera drawing to another size, a capture,
+            // put the bars in the top corner)
+            var area = _hud.Area;
             _hud.Show(_fighters, w =>
             {
-                if (w == Vector3.zero) return null;
-                var s = cam.WorldToScreenPoint(w);
-                if (s.z <= 0f || s.x < 0 || s.y < 0 || s.x > Screen.width || s.y > Screen.height) return null;
-                return ui.ToPanel(new Vector2(s.x, s.y));
+                if (w == Vector3.zero || area.x <= 0f) return null;
+                var v = cam.WorldToViewportPoint(w);
+                if (v.z <= 0f || v.x < 0f || v.y < 0f || v.x > 1f || v.y > 1f) return null;
+                return new Vector2(v.x * area.x, (1f - v.y) * area.y);
             });
         }
 
@@ -487,7 +492,7 @@ namespace SecondFace.Game.Play
         private void Say(string line)
         {
             _lines.Add(line);
-            while (_lines.Count > 3) _lines.RemoveAt(0);
+            while (_lines.Count > 2) _lines.RemoveAt(0);
             Refresh();
         }
 

@@ -85,6 +85,9 @@ namespace SecondFace.Game.UI
 
         public Button EndTurnButton => _buttons.Q<Button>("combat-end_turn");
 
+        /// <summary>The size of the panel the bars over heads are placed in (panel units).</summary>
+        public Vector2 Area => _bars.layout.size;
+
         /// <summary>The player's action points (null while it is not their turn) and the last line of the fight.</summary>
         public void Status(string ap, string log)
         {

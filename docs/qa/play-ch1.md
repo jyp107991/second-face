@@ -76,6 +76,7 @@ no S1/S2 open at hand-over). Spoiler rule: story beats are named, never explaine
 | T45 | S3 | At night the stranger stands half under the page in the conversation's framing; the speaker's portrait is a letter | `ConversationCamera`, `DialoguePanel` | fixed: the view stands back as far as both heads need to fit beside the page; portraits per T41 |
 | T46 | S1 | The story's time jumps never reached the world: a choice that moves the clock and ends the conversation ("I'll take the lamp", "Sleep until morning", the cot) left the clock where it was, so the watch began at seven in the morning and the night never passed (found by the new play-through, KnockPlaythroughTests) | `Walkabout.TimeFollows` | fixed (the clock read before a conversation, followed after each line and at its end, for people and talking things) |
 | T47 | S2 | At the Rib the conversation camera framed bare ground: neither speaker in view | `ConversationCamera` | fixed: the one view eases after the pair when they move (it stayed where they had been) |
+| T48 | S1 | Losing the outriders' fight started it again, and again: the losing-forward stood the player up at a quarter of their health beside riders still hostile (the fight's condition never read the loss), four fights in a row | `npcs/knock.ts`, `Combat.Finish` | fixed: the riders are hostile only until they have beaten the player; a fight that ends without a win is not taken up again by itself for two minutes |
 
 ## 3. Pass one: player
 
