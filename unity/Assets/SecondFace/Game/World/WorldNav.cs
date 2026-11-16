@@ -14,6 +14,13 @@ namespace SecondFace.Game.World
     public sealed class WorldNav : MonoBehaviour
     {
         public Transform Target;
+        /// <summary>The streamer whose ground and places the mesh is built on: when ground comes in or a place is set down
+        /// (its pad flattened into the terrain) after a build, the mesh is built again round the same middle, or the walker
+        /// meets ground the mesh never saw until they near its edge (the new places' tests: a mesh built before a pad was
+        /// stamped lay on the old ground, posts inside buildings cut off, 2026-11-16).</summary>
+        public WorldStreamer Streamer;
+        private int _seen = -1;
+        private float _lastBuild;
         public float Size = 160f, Height = 120f, Margin = 40f, Voxel = 0.15f;
 
         public bool Ready { get; private set; }
@@ -47,9 +54,18 @@ namespace SecondFace.Game.World
             }
             var p = Target.position;
             var inner = Size / 2 - Margin;
-            if (Builds > 0 && Mathf.Abs(p.x - Area.center.x) < inner && Mathf.Abs(p.z - Area.center.z) < inner) return;
+            if (Builds > 0 && Mathf.Abs(p.x - Area.center.x) < inner && Mathf.Abs(p.z - Area.center.z) < inner)
+            {
+                // (at most every two seconds: a place's pieces come in over a few frames)
+                if (Streamer == null || Seen() == _seen || Time.unscaledTime - _lastBuild < 2f) return;
+                Rebuild(Area.center);
+                return;
+            }
             Rebuild(p);
         }
+
+        /// <summary>What the streamer has standing: its built chunks and its places set down.</summary>
+        private int Seen() => Streamer == null ? -1 : Streamer.Built.Count * 1000 + (Streamer.PlaceSpawner != null ? Streamer.PlaceSpawner.LiveCount : 0);
 
         /// <summary>Builds round a point now (also when the walker is set down somewhere new).</summary>
         public void Rebuild(Vector3 centre)
@@ -63,6 +79,7 @@ namespace SecondFace.Game.World
                 _instance = NavMesh.AddNavMeshData(_data);
             }
             _pending = new Bounds(new Vector3(centre.x, centre.y, centre.z), new Vector3(Size, Height, Size));
+            _seen = Seen(); _lastBuild = Time.unscaledTime;
             _build = NavMeshBuilder.UpdateNavMeshDataAsync(_data, settings, PlaceNav.Collect(_pending), _pending);
         }
     }

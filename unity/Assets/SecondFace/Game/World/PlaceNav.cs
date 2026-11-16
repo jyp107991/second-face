@@ -33,9 +33,15 @@ namespace SecondFace.Game.World
 
         private void Awake() => Live.Add(this);
 
-        private void Start()
+        private System.Collections.IEnumerator Start()
         {
-            if (Disabled) { Ready = true; return; }
+            if (Disabled) { Ready = true; yield break; }
+            // not before the place's pad is in the terrain: built at once, the mesh lay on the ground as it was before the
+            // pad was flattened, and rooms and yards were cut off from the street (2026-11-16); ten seconds at most
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 10f && !PadIn()) yield return null;
+            yield return null;
+            if (Disabled) { Ready = true; yield break; }
             var world = new Bounds(transform.TransformPoint(Centre), Size);
             var sources = Collect(world);
             Sources = sources.Count;
@@ -43,6 +49,26 @@ namespace SecondFace.Game.World
             var data = new NavMeshData(settings.agentTypeID);
             _instance = NavMesh.AddNavMeshData(data);
             _build = NavMeshBuilder.UpdateNavMeshDataAsync(data, settings, sources, world);
+        }
+
+        /// <summary>The terrain under the place's middle and four points round it stands at the place's level (its pad is in).</summary>
+        private bool PadIn()
+        {
+            var y = transform.position.y;
+            var c = transform.TransformPoint(Centre);
+            foreach (var (dx, dz) in new[] { (0f, 0f), (0.3f, 0.3f), (-0.3f, 0.3f), (0.3f, -0.3f), (-0.3f, -0.3f) })
+            {
+                var p = c + new Vector3(dx * Size.x, 0f, dz * Size.z);
+                Terrain under = null;
+                foreach (var t in Terrain.activeTerrains)
+                {
+                    var o = t.transform.position; var s = t.terrainData.size;
+                    if (p.x >= o.x && p.z >= o.z && p.x < o.x + s.x && p.z < o.z + s.z) { under = t; break; }
+                }
+                if (under == null) return false;
+                if (Mathf.Abs(under.SampleHeight(p) + under.transform.position.y - y) > 0.25f) return false;
+            }
+            return true;
         }
 
         /// <summary>The build settings for a person (the default agent type, a person's radius and height).</summary>

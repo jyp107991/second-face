@@ -241,6 +241,7 @@ namespace SecondFace.Game.Play
             _down = ticket;
             if (body != null) PlayerBody.Apply(Walker.gameObject, Game.Pc);
             if (Nav == null) Nav = gameObject.AddComponent<WorldNav>();
+            Nav.Streamer = Stage.Streamer;
             Nav.Target = Walker.transform;
             if (Rig == null) Rig = OrbitRig.Create(Stage.Camera, Walker.transform);
             Rig.Follow(Walker.transform);

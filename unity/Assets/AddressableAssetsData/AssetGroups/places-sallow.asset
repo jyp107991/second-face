@@ -15,8 +15,43 @@ MonoBehaviour:
   m_GroupName: places-sallow
   m_GUID: 6453e6d55a955e3c3934fee481035ed2
   m_SerializeEntries:
+  - m_GUID: 497ad8391b939a40aa380382e3e19918
+    m_Address: places/signalhill
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5041dad9d4cc0529cbec43ea04b8676b
+    m_Address: places/lm_sallow_01
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 591a04bb0a43c4fe4b74a6497596ba7c
+    m_Address: places/orchard
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6e5c7421fd4608c1fa68d19655e7793e
+    m_Address: places/tollhouse
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7253600c7bba80d628fdcbdb2de65243
+    m_Address: places/wheel
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ace0cb559909fdf8785e197b1345961f
+    m_Address: places/drywells
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b76b78f97a22a9d14a9607babdad80ae
     m_Address: places/cistern9
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bd627980a56ecf98e91cdaf6f2ea5be7
+    m_Address: places/lm_sallow_02
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

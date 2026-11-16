@@ -19,3 +19,23 @@ MonoBehaviour:
     Address: places/cistern9
   - Id: rustdogs
     Address: places/rustdogs
+  - Id: tollhouse
+    Address: places/tollhouse
+  - Id: signalhill
+    Address: places/signalhill
+  - Id: drywells
+    Address: places/drywells
+  - Id: orchard
+    Address: places/orchard
+  - Id: wheel
+    Address: places/wheel
+  - Id: lm_sallow_01
+    Address: places/lm_sallow_01
+  - Id: lm_sallow_02
+    Address: places/lm_sallow_02
+  - Id: ninebridge
+    Address: places/ninebridge
+  - Id: openfield
+    Address: places/openfield
+  - Id: sump
+    Address: places/sump

@@ -33,10 +33,16 @@ namespace SecondFace.EditorTools
         public const string Dir = "Assets/SecondFace/Prefabs/places";
         public const string SetPath = "Assets/SecondFace/World/PlaceSet.asset";
         /// <summary>The places built so far; the rest stand as bare pads until their kits are made.</summary>
-        public static readonly string[] Ids = { "shale", "cistern9", "rustdogs" };
+        public static readonly string[] Ids =
+        {
+            // the Sallow (Act 1)
+            "shale", "cistern9", "rustdogs", "tollhouse", "signalhill", "drywells", "orchard", "wheel", "lm_sallow_01", "lm_sallow_02",
+            // the Glass Flats (Act 2's way in)
+            "ninebridge", "openfield", "sump",
+        };
 
         /// <summary>A place's interior map under the ground (step 21b), reached from its surface map's main exit to it.</summary>
-        private static readonly Dictionary<string, string> Below = new() { ["cistern9"] = "cistern9" };
+        private static readonly Dictionary<string, string> Below = new() { ["cistern9"] = "cistern9", ["sump"] = "cistern4" };
 
         private const string Frontier = "Assets/SecondFace/Kits/Frontier/", Furnish = "Assets/SecondFace/Kits/Furnish/", Shelter = "Assets/SecondFace/Kits/Shelter/";
 
@@ -470,8 +476,17 @@ namespace SecondFace.EditorTools
             Body(cur, len + t / 2, 0, h);
             if (scrap)
             {
-                // the timber frame behind the sheets
-                for (var s = 0f; s <= len + 0.01f; s += 2f) Solid(s - 0.05f, s + 0.05f, 0, h, "planks", 0.1f, -0.08f);
+                // the timber frame behind the sheets: a post every two metres, never in a doorway (a post stood in the middle of
+                // the scrap and metal rooms' doors and cut them off, the people inside out of reach, 2026-11-16), and one each
+                // side of a door or gate as its frame
+                bool InDoor(float at) => openings.Any(o => o.Kind != PlacePlan.OpeningKind.Window && Mathf.Abs(o.At - at) < o.Width / 2 + 0.12f);
+                for (var s = 0f; s <= len + 0.01f; s += 2f) if (!InDoor(s)) Solid(s - 0.05f, s + 0.05f, 0, h, "planks", 0.1f, -0.08f);
+                foreach (var o in openings.Where(o => o.Kind != PlacePlan.OpeningKind.Window))
+                    foreach (var side in new[] { -1f, 1f })
+                    {
+                        var at = o.At + side * (o.Width / 2 + 0.06f);
+                        if (at > 0.05f && at < len - 0.05f) Solid(at - 0.05f, at + 0.05f, 0, h, "planks", 0.1f, -0.08f);
+                    }
                 Solid(-t / 2, len + t / 2, h - 0.12f, h - 0.02f, "planks", 0.1f, -0.08f);
             }
 

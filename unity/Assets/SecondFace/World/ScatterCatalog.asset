@@ -147,11 +147,13 @@ MonoBehaviour:
   - Id: nettle_plant
     Addresses:
     - nature/nettle_plant_v1
+    - nature/nettle_plant_v2
     - nature/nettle_plant_v3
     - nature/nettle_plant_v4
   - Id: old_military_crate
     Addresses:
     - nature/old_military_crate_v1
+    - nature/old_military_crate_v2
   - Id: old_tyre
     Addresses:
     - nature/old_tyre
