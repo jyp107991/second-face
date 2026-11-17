@@ -223,6 +223,8 @@ npcs = [
     {'def': 'npc_hs_09', 'x': 71, 'y': 26, 'facing': 3, 'schedule': [], 'if': {'not': {'flag': 'hs_nils'}}},
     {'def': 'npc_hs_09', 'id': 'npc_hs_09_free', 'x': 22, 'y': 34, 'facing': 2, 'schedule': [], 'if': {'flag': 'hs_nils', 'eq': 'freed'}},
     {'def': 'npc_hs_10', 'x': 40, 'y': 19, 'facing': 0},
+    # B4b: Dawit Mekonnen (9-1182) home from Halcyon's floor nine, outside his own shack, when the service ward was emptied in time
+    {'def': 'npc_hc_20', 'id': 'npc_hc_20_home', 'x': 7, 'y': 31, 'facing': 2, 'schedule': [], 'if': {'all': [{'any': [{'flag': 'hc_clinic', 'eq': 'freed'}, {'flag': 'hc_clinic', 'eq': 'closed'}]}, {'not': {'flag': 'hs_parts', 'eq': 'exposed'}}]}},
     {'def': 'npc_hs_11', 'x': 50, 'y': 48, 'facing': 2},
     {'def': 'npc_hs_12', 'x': 52, 'y': 52, 'facing': 0, 'schedule': [], 'if': {'not': {'any': [{'flag': 'hs_scrip', 'eq': 'par'}, {'flag': 'hs_scrip', 'eq': 'paid'}, {'flag': 'hs_scrip', 'eq': 'forged'}]}}},
     {'def': 'npc_hs_13', 'x': 63, 'y': 54, 'facing': 0, 'schedule': [], 'if': {'all': [{'flag': 'hs_scabs_here'}, {'not': {'flag': 'hs_scabs'}}]}},

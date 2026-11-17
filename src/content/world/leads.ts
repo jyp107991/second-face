@@ -3,6 +3,7 @@ import { DS_CONCLUSIONS, DS_LEADS } from './ds_shore';
 import { DK_CONCLUSIONS, DK_LEADS } from './md_docks';
 import { B5C_CONCLUSIONS, B5C_LEADS } from './b5c_wilds';
 import { B5D_CONCLUSIONS, B5D_LEADS } from './b5d_ashlands';
+import { HC_CONCLUSIONS, HC_LEADS } from './hc_halcyon';
 
 /** Clues for the notebook's leads board, and the conclusions they support. */
 export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
@@ -215,6 +216,8 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   ...B5C_LEADS,
   // B5d — the Ashlands and the Long Night (b5d_ashlands.ts)
   ...B5D_LEADS,
+  // B4b — Halcyon (hc_halcyon.ts)
+  ...HC_LEADS,
 ] as LeadDef[]).map((l) => [l.id, l]));
 
 export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
@@ -259,4 +262,6 @@ export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
   ...B5C_CONCLUSIONS,
   // B5d — the Ashlands and the Long Night (b5d_ashlands.ts)
   ...B5D_CONCLUSIONS,
+  // B4b — Halcyon (hc_halcyon.ts)
+  ...HC_CONCLUSIONS,
 ] as ConclusionDef[]).map((c) => [c.id, c]));

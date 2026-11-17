@@ -52,6 +52,8 @@ export const SITES: Record<string, SiteDef> = {
   md_ring: { kind: 'open', beside: { site: 'md_precinct', side: 'w' }, rim: 'keep' },
   // the Teeth: the Skirts under Halcyon (B4a)
   hs_skirts: { kind: 'open', at: 'skirts', rim: 'strip' },
+  // Halcyon on the rim above it (B4b): the arcology's wall is kept
+  hc_terrace: { kind: 'open', at: 'halcyon', rim: 'keep' },
   // the Rail Corridor (B5a)
   rc_fourways: { kind: 'open', at: 'junction', rim: 'strip' },
   rc_halt_w: { kind: 'open', at: 'halt_w', rim: 'strip' },
@@ -83,6 +85,9 @@ export const SITES: Record<string, SiteDef> = {
   md_crown: { kind: 'cell' },
   md_spire_top: { kind: 'cell' },
   hs_six: { kind: 'cell' },
+  hc_clinic: { kind: 'cell' },
+  hc_board: { kind: 'cell' },
+  hc_works: { kind: 'cell' },
   dev_yard: { kind: 'cell' },
   dev_bunker: { kind: 'cell' },
   bench_crowd: { kind: 'cell' },

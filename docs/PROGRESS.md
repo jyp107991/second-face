@@ -1931,7 +1931,7 @@ mid-range Android phone; deployed to Pages.
             gate to the Spire's verdict through every district on the Loop). No engine change.
             Left for later: a second test version (`act2-test-1`) when the owner's Act 1 notes are folded in; the web smoke
             `tools/qa/act2.sh` is not written (the web runtime is frozen; the headless test stands in for it).
-- [~] B4 **Halcyon & the Skirts**: arcology, Skirts, the Shift, Contract, Spare Parts, the Leash, the
+- [x] B4 **Halcyon & the Skirts**: arcology, Skirts, the Shift, Contract, Spare Parts, the Leash, the
       Long-Lived; Concern chrome; 7th companion. ~10 h. Built in two halves; the plan for both is in the story plan's
       "Build notes — B4".
       - [x] B4a **the Skirts** DONE 2026-11-17 (content; the Unity place build and the on-device playtest are P10 work;
@@ -1952,15 +1952,24 @@ mid-range Android phone; deployed to Pages.
             player. Activities: Dust, bouts, a shack to rent (safehouse), two surgeons (dark and Concern chrome), a company
             store. Faction `the_shift` has its initiation quest. Companions' interjections throughout.
             `tests/b4a.test.ts` (45). No engine change.
-      - [ ] B4b **Halcyon** (planned in the build notes: maps `hc_*`, cast `npc_hc_*`, flags `hc_*`; the Contract, the
-            Leash, the Long-Lived and the side quests inside; it continues `q_a2_halcyon` from its `car`/`road` stages,
-            replaces its `inside` stub, and sets `hc_inside` on first entering).
-      - [ ] B4b **Halcyon** (the arcology; beat 16 inside; the Contract, the Leash, the Long-Lived; four side quests;
-            Kes inside): maps (`hc_terrace`, `hc_clinic`, `hc_board`, `hc_works` via `tools/maps/gen_hc_halcyon.py`), the
-            cast and the beat's stages are drafted on branch `wip/b4b-halcyon` (not on main: nothing registered, the
-            conversations not written). The writing of its first conversation file was stopped by the model's safety
-            system on 2026-11-17 and not regenerated; how the rest is written is open (see the story plan's B4 notes).
-            Main keeps B4a's `inside` stub for the beat.
+      - [x] B4b **Halcyon** DONE 2026-11-17 (content; the Unity place build and the on-device playtest are P10 work;
+            `npm run export` has not been run for it): `tools/maps/gen_hc_halcyon.py` → `maps/hc_terrace.ts` (72×56, open,
+            at the Teeth's `halcyon` location: the top station and the gate, the service yard and the gardeners' tunnel, the
+            concourse and the registry, the gardens under glass, the citizens' terraces, the lifts), `hc_clinic.ts`,
+            `hc_board.ts`, `hc_works.ts` (cells, reached by the lifts). Settlement `halcyon` (road to the Skirts), the world
+            location bound to its map, four sites. Cast `npcs/hc_halcyon.ts` (ids `npc_hc_*`: 18 named + 9 security; flags
+            `hc_*`); people from earlier places appear by what the player did there. Dialogue `dialogue/hc_halcyon.ts`,
+            `hc_clinic.ts`, `hc_board.ts` (58 trees, every node with a return line, all seven companions speak), and a few
+            lines added to the Skirts' trees (the car up, the Contract Office's terms, the Window's exchange, two people's
+            reactions). Quests `quests/b4_halcyon.ts`: beat 16 inside the gate (`q_a2_halcyon`'s `inside` stub replaced by
+            its stages: four ways in, the offer, three answers; entering sets `hc_inside`, which arms the strike's default),
+            the Contract (`q_hc_contract`, 5 routes; the Concern's initiation), the Leash (`q_hc_leash`, 6 routes), the
+            Long-Lived (`q_hc_longlived`, 7 routes), and four side quests: *Clinic Floor Nine* (6 routes), *A Contract for
+            Kes* (4), *Garden Heist* (6; the naming rule drops the article), *Funicular Pass* (6). Kes inside (her own hub
+            in the arcology). Two Concern chrome pieces; items in `items/story_b4.ts` (16 more); 10 leads + 3 conclusions
+            (`world/hc_halcyon.ts`). Nothing resolves on a date: the one milestone up the hill waits for the player.
+            `tests/b4b.test.ts` (48: every route, each refusal, a save round-trip, Act 3's reads); `tests/a3_fixture.ts`
+            finishes the beat at its new end stages. No engine change.
 - [x] B5 **Act 2 wilds**: Glass Flats (Ninebridge, Openfield, the Sump, Cistern 4), Rail Corridor (the
       Line, Junction, halts, rail bandits), Drowned Shore (stilt villages, Rigs, salvage dives), Teeth
       mines, Northern Wet (barges, Dam, timber), Ashlands (remnant machines); Long Night alliance. ~12 h.
@@ -2133,6 +2142,24 @@ mid-range Android phone; deployed to Pages.
             for the player, one paper, Knock's map (placements and three triggers; its generator first confirmed to reproduce the
             committed map) and one condition on another place's map (likewise confirmed). `tests/b6g.test.ts` (33).
             Next: B6h.
+      - [x] B6h **inside, for the first time** DONE 2026-11-17 (content; no engine change; not exported; built alongside
+            B6i): `dialogue/a3_cistern.ts` (18 conversations, about 109 nodes, every node with a return line, all seven
+            companions speak): five ways into the interior from the home hamlet, each with its refusals (two talked or
+            technical, one survival, one a companion's knack, one an old favour repaid), the first meeting face to face, a
+            caretaker's question, a letter, a record room, the residents; the interior's map (its people in Act 3, its props'
+            Act 3 trees, a way in and out; its generator first confirmed to reproduce the committed map); an Act 1 side
+            quest's open end closed. `tests/b6h.test.ts` (40).
+      - [x] B6i **the council inside** DONE 2026-11-17 (content; no engine change; not exported; built alongside B6h):
+            `dialogue/a3_ring.ts` (one conversation at a council table, 32 nodes, every node with a return line, all seven
+            companions speak): the residents decide what they will do, with four ways to move them and a vote; one talk prop
+            on the interior's map (its generator first confirmed to reproduce the committed map). `tests/b6i.test.ts` (31).
+      - [x] B6j **the door** DONE 2026-11-17 (content; no engine change; not exported): `dialogue/a3_door.ts` (two
+            conversations, 60 nodes, about 13,000 words as written, every node with a return line, all seven companions
+            speak): the act's standoff at the home hamlet settled with the player present, by about a dozen roads (talked, by
+            the record, technical, medical, fought, bargained, and the residents' own choice), each with its refusals and
+            failed checks, and nothing settling until the player says so; companions' existing leaving rules honoured in their
+            own trees; four people; the home hamlet's map (placements and five triggers) and one condition on another town's
+            map, each generator first confirmed to reproduce the committed map. `tests/b6j.test.ts` (37). Next: B6k.
       - [x] B6n **the last night before the final climb** DONE 2026-11-17 (content; no engine change; not exported; built
             ahead of B6f–B6m in a second lane, needing nothing from them): `dialogue/a3_fire.ts` (one tree at a fire on the
             Spire close, 99 nodes, every node with a return line, all seven companions speak): a last conversation with each
@@ -2161,7 +2188,7 @@ mid-range Android phone; deployed to Pages.
 | Dry Wells | 1/1 | 6/6 | 13/13 | 2/2 | playable; the Act 1 finale, the family |
 | Act 1 wilds | 5/5 | 15/15 | 17/17 | 2/2 | playable; ten road encounters, discoveries on foot, hunting and traps, the windpumps, the wreck, the orchard |
 | Meridian | 13/14 | 142/145 | 250/255 | 32/33 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward, the Crown, the Archive Spire (the close and landing ninety-one), the Court of Accounts and the Dead Ring written; the Docks across the dry river written (B5b, Carrick: the Line's end, the tide boat's and the barges' landing, the district's line and two side lines); the Loop joins six stops (one outside the Wall), stairs the Sink, the chain Bridgeward, the invitation car the Crown, a lane the Spire close, the gate road the Ring, the river road and the quay tram the Docks, and every board answers NO BRIDGE. Loose ends: Unity sites for the Spire close, the Ring and the Docks (P10 place build); vehicle travel reading the buggy flag (P12); the Spire beat's end now opens beat 16 (B4a) |
-| Halcyon/Skirts | 2/6 | 22/40 | 40/55 | 6/12 | the Skirts written (B4a): the town under the arcology and a gallery under its pit; the Line's last stop; beat 16 opened; the seventh companion joins here. The arcology itself is B4b |
+| Halcyon/Skirts | 6/6 | 49/40 | 98/55 | 13/12 | the Skirts written (B4a): the town under the arcology and a gallery under its pit; the Line's last stop; beat 16 opened; the seventh companion joins here. Halcyon written (B4b): the top station and gate, the gardens and terraces, the Clinic floors, the Board's floor, the works; beat 16 inside and the offer; the Contract, the Leash, the Long-Lived; four side quests; Kes inside. Loose ends: Unity place builds and export (P10); the Long Night's envoy reading the offer (B5d hook, not wired) |
 | Act 2 wilds | 28/28 | 137/137 | 322/322 | 28/28 | Ninebridge, Openfield, the Sump and Cistern 4 playable; the Rail Corridor written (B5a): Four Ways, both halts, Yard Nine and Kettle Cut, the Line ridden from every stop, the rail bandits' line and four side lines; the Drowned Shore written (B5b): Gull Stilts, the Rigs, Blackcap and the dike road, the tide boat, the shore's line, two side lines and the dives in three bands; the Teeth mines and the Northern Wet written (B5c): Number Four and its old level, Sawtown, Ashby Dam and its gallery, Low Landing, two roadside maps, the barges from every river stop, the north track, the ropeway, the mines' line and the Wet's line and three side lines, activities in bands; the Ashlands and the Long Night written (B5d): Spindle, Kelso and its hall, Pemberton, Saddleback and a roadside map, the remnant machines on the glass, the Ashlands' line and two side lines, picking runs in bands, the act's alliance at Openfield and a side line on the Line. Act 2's wilds complete in content (counts approximate; Meridian's Docks are counted under Meridian) |
 | Act 3/endings | 0/1 (+5 reused; +6 with Act 3 placements) | 21 | 43/~50 (+2 Court cases) | 10/10 skeletons (3 side quests and 1 critical quest playable) | B6a: the act's groundwork (shared conditions, quest skeletons, papers, events, the shared test fixture); B6b: the Precinct and the Court in Act 3 (a courier, two wardens, a side quest with eight answers, two Court cases); B6d: Signal Hill in Act 3 (a side quest with six routes and four ends, a letter by post); B6c: the road home (three rides offered by post and the player's own buggy, five road encounters with one more ride among them, five people, sixteen letters); B6e: Shale in Act 3 (a side quest with seven routes and five ends, four people); B6n: the last night before the final climb (a fire on the Spire close, four companions' last conversations); B6o: the same fire, the other three companions' last conversations, and one quarrel between two companions in the home hamlet; B6f: Knock in Act 3 (the home hamlet's people, the newcomers camped by the stand, the Grille; nine people, fifteen conversations); B6g: Knock at night (the night visitors and the guild's people written in full: seven conversations, a side quest with four ends, one world event, one paper) |
 | Companions | — | 7/7 | 0/7 arcs | 0/7 | Tamsin, Wren, Ilya, Odile, Ash, Nine can join; Kes joins in the Skirts (B4a, with her arc and quest); arcs later |

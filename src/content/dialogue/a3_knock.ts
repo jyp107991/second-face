@@ -6,6 +6,8 @@ import {
 } from '../world/a3_conds';
 import { d_kn_grille } from './knock';
 import { GRILLE_BURNED, GRILLE_BURNED_NODES } from './a3_forces';
+import { MAUD_INSIDE_NODES, MAUD_INSIDE_OPTIONS } from './a3_cistern';
+import { LOWE_GO, LOWE_GO_NODES, REYES_GO } from './a3_door';
 
 /**
  * Knock under the column (B6f, Act 3 beat 20a): the home hamlet with the hatch shut and the city's column camped on the toll
@@ -163,6 +165,8 @@ export const d_a3_maud: DialogueDef = {
         { id: 'maud.a3.door', text: 'What do you want, Maud? At the door.', once: true, next: 'door' },
         { id: 'maud.a3.margin', text: 'You wrote "I sold a letter" in the post-book. What letter?', if: ALL({ knows: 'kn_maud_sold_letter' }, NOT(MAUD_TRUSTS), NOT(F('a3_maud_secret'))), once: true, next: 'not_today' },
         { id: 'maud.a3.secret', text: '(Wait. She has something to say.)', if: ALL(MAUD_TRUSTS, NOT(F('a3_maud_secret'))), next: 'secret' },
+        // B6h: what the player brings back from inside (who wrote the letter she sold; the residents' faces)
+        ...MAUD_INSIDE_OPTIONS,
         { id: 'maud.a3.trade', text: 'Let me see the stores. (Trade)', effects: [{ event: 'barter' }], exit: true, repeat: true },
         { text: 'Later, Maud.', exit: true },
       ],
@@ -280,6 +284,7 @@ export const d_a3_maud: DialogueDef = {
       again: 'Maud\'s hand in yours, cold, holding on.',
       options: [MAUD_BACK],
     },
+    ...MAUD_INSIDE_NODES,
   },
 };
 
@@ -727,6 +732,7 @@ export const d_a3_lowe: DialogueDef = {
         { id: 'lowe.a3.stand', text: 'You said you\'d stand for me, when I sat where the assessor sits.', if: REMEMBERS(LOWE, 'designate'), once: true, next: 'stand' },
         { id: 'lowe.a3.cadet', text: 'Linnet Ferrow is in your column.', if: F('kn_linnet_will_run'), once: true, next: 'cadet' },
         { id: 'lowe.a3.guild', text: 'The guild is here.', if: F('a3_guild_in'), once: true, next: 'guild' },
+        LOWE_GO,
         { text: 'Later, Captain.', exit: true },
       ],
     },
@@ -813,6 +819,7 @@ export const d_a3_lowe: DialogueDef = {
           { if: KNOCK_WATERED, dc: 10, why: 'Knock is not dying of thirst' },
         ] }, effects: COLUMN_WATER, next: 'r_water_yes', fail: 'r_water_no' },
         { id: 'reyes.a3.cadet', text: 'Linnet Ferrow is in your column.', if: F('kn_linnet_will_run'), once: true, next: 'r_cadet' },
+        REYES_GO,
         { text: 'Later, Sergeant.', exit: true },
       ],
     },
@@ -842,6 +849,8 @@ export const d_a3_lowe: DialogueDef = {
       effects: [{ learn: 'a3_cadet_charter' }],
       options: [REYES_BACK],
     },
+    // B6j: "bring the column down" (a3_door.ts)
+    ...LOWE_GO_NODES,
   },
 };
 

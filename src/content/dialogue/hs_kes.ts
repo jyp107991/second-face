@@ -4,6 +4,7 @@ import { LEASHED } from '../chrome/catalogue';
 import { QUESTS } from '../quests';
 import { A, ASH, ILYA, K, KES, KES_IN, NINE, ODILE, PROOF, SCABS_GONE, TAMSIN, WREN, bye } from './hs_skirts';
 import { KES_GUILD_NODES, KES_GUILD_START } from './a3_fire';
+import { KES_HC_NODES, KES_HC_START } from './hc_halcyon';
 
 /**
  * Kes Oyelaran (npc_hs_01), the seventh companion (U8; story/U8_kes_SECRET.md): a grid-hand at the Window with a Concern
@@ -50,6 +51,8 @@ export const d_hs_kes: DialogueDef = {
     { if: { all: [KES_IN, CAMP, FLOOR] }, node: 'c_floor' },
     { if: { all: [KES_IN, CAMP, ROM_ON, { approval: { companion: KES, lte: 30 } }] }, node: 'c_rom_end' },
     { if: { all: [KES_IN, CAMP] }, node: 'camp' },
+    // inside Halcyon (B4b): the gardens, the door's other end, the Concern's contract
+    KES_HC_START,
     { if: KES_IN, node: 'party' },
     { if: { flag: 'kes_left' }, node: 'left' },
     { if: { all: [{ not: { flag: 'kes_joined' } }, { any: [{ flag: 'kes_refused' }, SOLD_STRIKE, SOLD_NAME] }] }, node: 'refused' },
@@ -428,6 +431,7 @@ export const d_hs_kes: DialogueDef = {
     left_no: { text: '"No." She plugs the cable back in. "Go on."', again: 'Kes, plugged in.', options: [{ text: '(Leave her be.)', exit: true }] },
     // Act 3 (B6n): her red line after a guild night she was not at (a3_fire.ts)
     ...KES_GUILD_NODES,
+    ...KES_HC_NODES,
   },
 };
 

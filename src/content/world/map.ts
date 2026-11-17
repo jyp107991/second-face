@@ -39,7 +39,7 @@ const L: LocationDef[] = [
   { id: 'lm_shore_01', name: 'Blackcap', region: 'drowned_shore', x: 68, y: 414, kind: 'landmark', hidden: true, map: 'ds_terminal' },
   // The Teeth
   { id: 'skirts', name: 'Skirts', region: 'teeth', x: 628, y: 142, kind: 'major', settlement: 'skirts', map: 'hs_skirts' },
-  { id: 'halcyon', name: 'Halcyon', region: 'teeth', x: 642, y: 118, kind: 'major' },
+  { id: 'halcyon', name: 'Halcyon', region: 'teeth', x: 642, y: 118, kind: 'major', settlement: 'halcyon', map: 'hc_terrace' },
   { id: 'mine_teeth', name: 'Number Four Pit', region: 'teeth', x: 600, y: 222, kind: 'minor', settlement: 'number_four', map: 'tm_pit' },
   // The Northern Wet (B5c: the logging town, the dam and its keepers, the barge port)
   { id: 'timber', name: 'Sawtown', region: 'northern_wet', x: 300, y: 92, kind: 'minor', settlement: 'sawtown', map: 'nw_sawtown' },

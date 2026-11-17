@@ -54,7 +54,7 @@ const F: FactionDef[] = [
   { id: 'the_shift', name: 'Shift', desc: 'The Skirts\' miners\' union, and the nearest thing the Skirts has to a gang.', home: 'skirts', initiation: 'q_hs_cavein',
     ranks: [{ id: 'member', title: 'Member', access: ['shift_hall'] }, { id: 'steward', title: 'Shop Steward', flags: ['shift_voice'], priceMul: 0.9 }, { id: 'committee', title: 'Committee', flags: ['shift_command'] }],
     conflicts: ['concern', 'tollmen'] },
-  { id: 'concern', name: 'Concern', desc: 'The last corporation. A contract, a clinic, a leash.', home: 'halcyon',
+  { id: 'concern', name: 'Concern', desc: 'The last corporation. A contract, a clinic, a leash.', home: 'halcyon', initiation: 'q_hc_contract',
     ranks: [{ id: 'probationary', title: 'Probationary', access: ['halcyon_gate'] }, { id: 'contract', title: 'Contract Citizen', priceMul: 0.85, access: ['halcyon_gardens', 'halcyon_clinic'] }, { id: 'tenure', title: 'Tenure', flags: ['board_audience'], access: ['halcyon_board'] }],
     conflicts: ['the_shift', 'choir'] },
   { id: 'wheel', name: 'Wheel', desc: 'Nomad caravan families. Guests are fed; road-kin are trusted.',

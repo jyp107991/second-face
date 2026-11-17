@@ -104,7 +104,7 @@ export const MAST_BOARDS: { item: string; settles: { set: string; value: string 
   { item: 'j_controller', settles: [] }, { item: 'j_tm_controller', settles: [] }, { item: 'k_an_board', settles: [{ set: 'an_board', value: 'mast' }] },
 ];
 
-// ---------------------------------------------------------------- §1.2 the arcology slice (B4b, parked): its flags, read only here
+// ---------------------------------------------------------------- §1.2 the arcology slice (B4b, built): its flags, read only here
 
 export const B4B = {
   inside: F('hc_inside'),
@@ -144,7 +144,8 @@ export const GUILD_IN_PLAY: Cond = ANY(LN('guild'), C_BUYER_B4B, F('rc_line', 'g
 export const HOUNDS_IN_PLAY: Cond = ALL(GUILD_IN_PLAY, ANY(F('nw_controllers', 'guild'), LN('guild'), HOUNDS_CONCERN));
 /** Who leads the column: Lowe, or his sergeant if he is dead. Who leads the Unwritten: Petra, or `npc_a3_u1`. */
 export const LOWE = 'npc_md_01', REYES = 'npc_md_12', PETRA = 'npc_of_02', HALE = 'npc_kn_out_lead', QUILL = 'npc_cr_11';
-export const LOWE_DEAD: Cond = { dead: LOWE };
+/** Lowe dead: before Act 3, or at the door (B6j: on the apron he stands as `npc_md_01_apron`, which `{ dead: LOWE }` does not see). */
+export const LOWE_DEAD: Cond = ANY({ dead: LOWE }, { dead: `${LOWE}_apron` });
 export const PETRA_DEAD: Cond = { dead: PETRA };
 export const HALE_ALIVE: Cond = NOT({ dead: HALE });
 /** The reserve's case at the Court won by a principle (20e: −30 to Lowe's stand-down). */
@@ -319,6 +320,62 @@ export const PETRA_TAKEN: Cond = F('ln_petra_taken');
 export const PETRA_DOWN: Cond = F('ln_petra_down');
 export const PETRA_KNIFE: Cond = F('ln_knife_blessed');
 export const ASH_WITH_UNWRITTEN: Cond = F('ash_unwritten');
+/** B6h: inside the Cistern (20c). The player has been inside (by any way: `a3_in_how`); MOTHER dark (her panel burned by the
+ * Unwritten, or put to sleep by Bram); Tamsin still inside, never out and never joined (she meets the player there, and
+ * counts as in the room at the ring); Bram's letter answered (Act 1's `q_a1_bram`, finished at the hatch's slot or in person). */
+export const INSIDE: Cond = F('a3_inside');
+export const MOTHER_DARK: Cond = ANY(F('a3_mother', 'burned'), F('a3_mother', 'asleep'));
+export const TAM_INSIDE: Cond = ALL(F('c9_tamsin_inside'), NOT(ANY(F('tam_out'), { knows: 'tamsin_replied' })), NOT(F('tam_joined')));
+export const BRAM_ANSWERED: Cond = ANY({ knows: 'bram_answered_truth' }, { knows: 'bram_answered_kind' }, { knows: 'bram_answered_told' });
+/** B6i: the ring (20d). Ines is ready for what the ring learns at her table when she already knew MOTHER refused the city or
+ * Tamsin's secret: the Archive promised (B6c's letter, or the Grille), Tamsin told her (Act 2), the Archive opened (B6h), the
+ * replies' copy read to the ring in her own voice, or her own telling at the table. Unready, Tamsin's card breaks her
+ * (`a3_ines` = falls) and Rosalind Teague leads the ring (`TEAGUE_LEADS`: she wants the door welded, and MOTHER asleep). */
+export const INES_PREPARED: Cond = ANY(F('a3_archive_promise'), F('tam_secret', 'ines'), F('a3_archive', 'open'), { knows: 'a3_ring_refusals' }, F('a3_ines', 'opens'));
+export const TEAGUE_LEADS: Cond = F('a3_ines', 'falls');
+/** What striking Reserve 9 off the record makes of its people (Pell's unfit charts; B6j's struck door; slide 3), by the
+ * Court's Act 2 ruling on the unrecorded: written down as living people the Court will hear (`yields`); claimed on the spot
+ * as abandoned property by the guild's factor at Knock (`claimed`: the trap, the guild there and Orme alive); abandoned
+ * property for the next buyer who reads the register (`property`); or nobody's, with no court to hear them (`outside`, or no
+ * ruling). `STRUCK_TRAP`: the trap is set; `STRUCK_CLAIMED`: Pell signed into it. */
+export const STRUCK_TRAP: Cond = ANY(F('a3_claim', 'held'), ALL(F('prec_unrecorded', 'property'), F('a3_guild_in'), ORME_HERE, NOT(F('a3_claim'))));
+export const STRUCK_AS: Mod = { id: 'struck', values: [
+  { id: 'yields', if: F('prec_unrecorded', 'yields') },
+  { id: 'claimed', if: STRUCK_TRAP },
+  { id: 'property', if: F('prec_unrecorded', 'property') },
+  { id: 'outside' },
+] };
+export const STRUCK_CLAIMED: Cond = ALL(F('a3_pell', 'unfit'), STRUCK_TRAP);
+/** B6j: the door (20e). The column comes down to the apron (`a3_column_apron`: the door cycled from outside, B6h, or the
+ * designate's word to its captain at the camp) and holds at the yellow line for the designate's word; there it stands as
+ * `<id>_apron` placements. Who leads it at the line is fixed before it comes down (a death on the apron hands nothing on):
+ * Lowe, his sergeant Reyes if he died before, or the senior warden Kress if both did. A fight at the door (`a3_door_fight`)
+ * ends when the lead falls (`DOOR_BROKEN`) or yields with two of the four wardens down (`DOOR_YIELDS`): the map's triggers. */
+export const KRESS = 'npc_a3_g3';
+export const COLUMN_WARDENS = ['npc_a3_g3', 'npc_a3_g4', 'npc_a3_g5', 'npc_a3_g6'];
+export const APRON_ID = (id: string): string => `${id}_apron`;
+export const COLUMN_APRON: Cond = ALL(COLUMN_HERE, F('a3_column_apron'));
+export const LED_BY_LOWE: Cond = NOT({ dead: LOWE });
+export const LED_BY_REYES: Cond = ALL({ dead: LOWE }, NOT({ dead: REYES }));
+export const LED_BY_KRESS: Cond = ALL({ dead: LOWE }, { dead: REYES });
+export const DOOR_FIGHTING: Cond = ALL(F('a3_door_fight'), NOT(F('a3_c9')));
+export const DOOR_LEAD_DOWN: Cond = ANY(
+  ALL(LED_BY_LOWE, { dead: APRON_ID(LOWE) }), ALL(LED_BY_REYES, { dead: APRON_ID(REYES) }), ALL(LED_BY_KRESS, { dead: APRON_ID(KRESS) }),
+);
+const WARDEN_DOWN = (id: string): Cond => ANY({ dead: id }, { dead: APRON_ID(id) });
+export const DOOR_TWO_DOWN: Cond = ANY(...COLUMN_WARDENS.flatMap((a, i) => COLUMN_WARDENS.slice(i + 1).map((b) => ALL(WARDEN_DOWN(a), WARDEN_DOWN(b)))));
+export const DOOR_BROKEN: Cond = ALL(DOOR_FIGHTING, DOOR_LEAD_DOWN);
+export const DOOR_YIELDS: Cond = ALL(DOOR_FIGHTING, NOT(DOOR_LEAD_DOWN), DOOR_TWO_DOWN);
+/** Tamsin can stand in the door: travelling with the player, or behind it (never out, or gone home into it), and alive. */
+export const TAM_CAN_STAND: Cond = ALL(NOT(F('a3_tamsin_dead')), ANY(IN(TAMSIN), TAM_INSIDE, F('tam_home')));
+/** What the door left of MOTHER, read whether or not her line after it was heard: `a3_mother` once set (kept | knock |
+ * asleep | burned), else by the door (sealed → kept; opened or relocated → knock); unsettled, `lockdown`. */
+export const MOTHER_AFTER: Mod = { id: 'mother', values: [
+  { id: 'burned', if: F('a3_mother', 'burned') }, { id: 'asleep', if: F('a3_mother', 'asleep') },
+  { id: 'knock', if: ANY(F('a3_mother', 'knock'), ALL(NOT(F('a3_mother')), ANY(F('a3_c9', 'opened'), F('a3_c9', 'relocated')))) },
+  { id: 'kept', if: ANY(F('a3_mother', 'kept'), ALL(NOT(F('a3_mother')), F('a3_c9', 'sealed'))) },
+  { id: 'lockdown' },
+] };
 
 /** The readiness hub's eight acts at the close (`d_a3_ready`, B6m): each adds 1 to `a3_ready`, once (`a3_ready_<id>`). */
 export const READY_ACTS: { id: string; needs: Cond }[] = [
@@ -587,6 +644,126 @@ export const EP_SLIDES = ['steps', 'ledger', 'cistern', 'knock', 'shale', 'dogs'
  *                            a3_hale_boards, a3_handlers_met / a3_hounds_for / a3_hounds_whose;  memories npc_kn_maud
  *                            a3_judged_hale, npc_kn_factor a3_paper_refused / a3_paper_torn / a3_told_weighhouse, npc_c9_02
  *                            a3_told_burning
+ * B6h (built; dialogue/a3_cistern.ts: the ways in (d_a3_way, its nodes spread into Knock's d_kn_hatch and d_kn_door), the faces,
+ *      MOTHER at her panel and the letter, the Archive, the residents, the inside props; map cistern9 via tools/maps/gen_ch1.py):
+ *   a3_inside                true            the player has been inside the Cistern (any way)
+ *   a3_in_how                hatch | shaft | door | tamsin | bram   the first way in (never rewritten): MOTHER held the tray lift
+ *                                            (Speech 40 / Science 45) | down the grate and the pump run | the great door's
+ *                                            manual cycle from outside (Mechanics 50; q_a3_cistern goes straight to its door
+ *                                            stage) | Tamsin's service phrase at the hatch | Bram lifted the grate from below
+ *   a3_lift                  hatch | tamsin  MOTHER holds the tray lift for the player (and by whose asking); the hatch is then
+ *                                            a ladder both ways while she is up
+ *   a3_shaft_open            true            the pump run open (down the grate, Bram's ladder, or the wheel turned from inside)
+ *   a3_door_cycled           true            the great door opened from outside on its manual cycle: it stands open (B6j)
+ *   a3_column_apron          true            with the door open, the column came down the lane to the apron and holds at the
+ *                                            yellow line for the designate's word (B6j's door scene starts from here)
+ *   a3_lowe_held             asked | silence   what the player did at the line: told the column to hold, or said nothing
+ *                                            (it holds either way: "silence is not a word")
+ *   a3_slip_read             true            MOTHER's own slip read back to her at the hatch (−10 to the hatch)
+ *   a3_bram_coming           true            Bram answered at the slot and is coming up the intake (the grate offers his lamp)
+ *   a3_faces                 true            the faces scene (cistern9 trigger a3_faces, the first step inside)
+ *   a3_tam_inside_join       true            Tamsin, never out, met the player inside and came (with U8's tam_met, tam_out,
+ *                                            tam_joined and join); met and asked to stay, she waits among the beds (TAM_INSIDE)
+ *   a3_mother_met            true            MOTHER at her panel (or her dark panel, with Bram) met inside
+ *   a3_letter_read           true            the Ledger's first letter opened (at the panel, or later from the pack:
+ *                                            d_a3_first_letter); item k_a3_first_letter given unopened (knowledge a3_letter_given)
+ *   a3_mother_ask            open | sealed | ring | unsure   MOTHER's one question, "Should I open the door?", and the answer
+ *                                            (B6i/B6j may read; it decides nothing by itself)
+ *   a3_archive               open | sealed   Ines at the Archive: open (on her promise and the replies' copy, no check; or Speech
+ *                                            50); sealed (the check failed, or the player told her it was hers to keep shut)
+ *   a3_ines_met / a3_pell_met / a3_bram_met / a3_teague_met  true   first met face to face inside
+ *   U8 / Act 1 flags written tam_met, tam_out, tam_joined (the inside join); knowledge bram_answered_truth | kind | told
+ *                            (q_a1_bram finished at the hatch's slot or in person)
+ *   knowledge: a3_letter_given, a3_maud_letter_who (MOTHER: Elspeth Halloran wrote the letter Maud sold), a3_ines_beans (Ines's
+ *                            message for Maud), a3_faces_for_maud (the residents told the player their faces, for Maud; told
+ *                            her in d_a3_maud), a3_archive_told, a3_archive_orders (the city's four orders seen),
+ *                            a3_mother_printed (MOTHER printed her own replies into the Archive's folder), a3_ines_remembers
+ *                            (the Archive burned; Ines remembers every word), a3_ines_ring (Ines: sit at the table and she
+ *                            calls the ring; B6i's a3_ring_called is the ring sitting), a3_mother_why_ring, a3_pell_hungry,
+ *                            a3_bram_spares, a3_teague_weld (Bram could weld the seam properly: B6j's welded route), tam_seen;
+ *                            memories npc_c9_01 a3_door_cycled / a3_archive_opened / a3_archive_asked, npc_c9_04
+ *                            a3_door_cycled, npc_kn_maud a3_door_cycled / a3_letter_who / a3_faces_told, npc_md_01
+ *                            a3_door_held / a3_door_silent, npc_c9_03 a3_service_phrase
+ * B6i (built; dialogue/a3_ring.ts, d_a3_council at the council table (talk prop council_table on cistern9, via
+ *      tools/maps/gen_ch1.py): the ring sits once a3_inside and the door is unsettled; the vote, Tamsin's card, Pell, Bram):
+ *   a3_tam_card              true            Tamsin told the ring MOTHER hid her (Tamsin travelling, tam_secret kept | mother)
+ *   a3_ines                  opens | seals | falls   Ines at the ring: opens = she has told the room what she knows (the copy
+ *                                            read aloud, her own telling, the Archive opened, or ready when the card came);
+ *                                            seals = she would keep the door (her word failed, or no Archive at the vote);
+ *                                            falls = the card came and she was not ready (INES_PREPARED): Teague leads
+ *                                            (TEAGUE_LEADS). Set at the latest when the vote is asked for
+ *   a3_pell                  unfit | fit | refused   Pell's sixty charts: FIT FOR RELOCATION ticked no (Speech 40; no check for
+ *                                            clinic_aide), the truth (fit, all but Sayer Quist), or the lie refused (he sends
+ *                                            nothing; last quarter's FIT stands). STRUCK_AS reads what striking means (yields |
+ *                                            claimed | property | outside); STRUCK_CLAIMED = unfit and the trap live (B6j)
+ *   a3_bram_cut              true            Bram told how a caretaker of MOTHER's make is fed: couriers' paper, one trunk, two
+ *                                            couplings, the first never wakes (B_MEANS with Mechanics 50). Open even with
+ *                                            MOTHER burned; also from the table after the vote or the door
+ *   a3_ring                  sealed | open | city   the vote: the leader's default (Teague or a sealing Ines: sealed; an opening
+ *                                            Ines: open), or the player's one speech against it (checks)
+ *   a3_ring_word             shut | open | city | yours   what the player said at the vote (whatever the room did with it)
+ *   a3_mother                asleep          Teague's order after a sealed vote under her, Bram at the coupling (never under
+ *                                            Ines; never with MOTHER burned); a3_bram_stopped  true  the player stopped him
+ *   knowledge: a3_ring_called (the ring sitting), a3_ring_heard, a3_ring_teague, a3_ring_sayer, a3_ring_refusals (the copy
+ *                            read aloud by Ines), a3_ines_told (her own telling), a3_ring_hatch (Ines's story of the two at the
+ *                            hatch; Teague named as the one who told), a3_pell_forms, a3_pell_struck (what striking means, told),
+ *                            a3_caretaker_sleep, a3_trunk;  memories npc_c9_01 a3_stood_with_tamsin / a3_fell / a3_told_hatch /
+ *                            a3_ring_copy, npc_c9_06 a3_leads / a3_named_informer / a3_crossed, npc_c9_02 a3_unfit_signed,
+ *                            npc_c9_04 a3_told_trunk / a3_stopped / a3_put_her_down, npc_c9_03 a3_card_told
+ * B6j (built; dialogue/a3_door.ts: d_a3_door at the yellow line on Knock's apron (the column's lead, its apron placements and the
+ *      map's trigger a3_door_line open it), d_a3_tam_door (Tamsin in the door); "bring the column down" spread into d_a3_lowe;
+ *      the hatch and door props' after-door entries spread into knock.ts; Wren's and Tamsin's red lines in their own trees; npcs
+ *      npc_a3_g15..g18 (A3_SLOPE_NPCS); map c9_mouth via tools/maps/gen_knock.py; map shale via gen_shale.py, Tamsin's placement):
+ *   a3_c9                    sealed | opened | relocated   the door settled (q_a3_cistern ends on it; a3_summons is armed by it)
+ *   a3_c9_how                lowe | welded | struck | fought | ines | order | forced | sold | consent   how: lowe = the column
+ *                                            stood down (Speech 60, or the formal declining under prec_reserve = attendance);
+ *                                            welded from inside (Mechanics 40); struck = Pell's charts UNFIT (read STRUCK_AS);
+ *                                            fought = the column broken (the map's four after-triggers); ines = opened by the
+ *                                            ring's vote once the column had gone (a3_c9_by says how it went); order = the
+ *                                            designate's word; forced = the word, then force over Tamsin in the door; sold =
+ *                                            the guild's paper signed (forced over her too: how stays sold, a3_door_forced);
+ *                                            consent = the ring voted to go, and walked out (added: the plan had no value for it)
+ *   a3_c9_by                 lowe | struck | fought   with a3_c9 = opened: the sealed route that cleared the column first
+ *   a3_lowe                  stood_down | withdrawn | yielded | dead | carried   the column's lead at the door (Lowe, or Reyes or
+ *                                            Kress leading in his place): withdrawn (added) = the order could not execute
+ *                                            (welded, struck) and the column went home without standing down; carried = the
+ *                                            order executed (order, forced, sold, consent). Lowe dead at the door: LOWE_DEAD sees
+ *                                            his apron instance (npc_md_01_apron); read a3_lowe for who led
+ *   a3_column_apron          true            (B6h's flag, also set here) the column down the lane at the yellow line: by
+ *                                            "bring the column down" at the camp (d_a3_lowe), or the door cycled from outside
+ *   a3_door_word             order | sold | false   the designate's word or signature given and not yet carried out (Tamsin in
+ *                                            the door); false once carried out or taken back ("not over her")
+ *   a3_tam_door              true | false    Tamsin went into the door over the word or the signature (her red line); false
+ *                                            once Nine carried her out of it (a3_tam_carried true)
+ *   tam_left                 door | reserve  U8's flag: door = she left the player at the door to stand in it (placed at
+ *                                            tam_door, d_a3_tam_door, while it is unsettled; never at Mags's again); reserve =
+ *                                            on the player's side elsewhere, she heard of the reserve relocated; her own tree
+ *                                            opens on a3_red, no asking her back. A Tamsin broken in Act 2 is won back by a
+ *                                            sealed or opened door (tam_broken false)
+ *   a3_tamsin_dead           true            she died in the door, only when the designate told the column to force it while
+ *                                            she stood in it;  a3_door_forced  true  the door forced over her
+ *   a3_nine_asked            true            the captain ordered Unit 9 to take her out of the door (Nine's break, once)
+ *   nine_left / nine_gone    door / true     the player's unit ordered by its keeper to take her out: it refused and left for
+ *                                            good;  a3_nine_struck  true (+ nine_gone)  the city's conscience unit refused
+ *                                            and the wardens struck it off;  a3_nine_spared  true  the designate talked the
+ *                                            captain out of it (Speech 45);  a3_nine_countermand  true  a deputy told to refuse
+ *   a3_door_fight            true            the column drawn on at the door (its hostileIf; Lowe's, Reyes's; Corin's and the
+ *                                            slope's ally): settled by c9_mouth's a3_door_{broken|yields}_{open|shut}
+ *   a3_claim                 off | paid | held   Orme's book of claims at the struck door (STRUCK_TRAP): talked down, paid
+ *                                            her stake (120), or let her write: held = sealed and struck, and the sixty the
+ *                                            guild's salvage the moment they step out (STRUCK_AS reads claimed)
+ *   a3_guild                 signed          (B6g's flag) the paper signed at the door; also paper_held | refused there
+ *   wren_left                sold            her red line: travelling, at the door (wren_sold); waiting, at her next word
+ *   a3_mother                kept | knock    MOTHER's first words after the door (sealed: kept; opened or relocated: knock),
+ *                                            unless asleep or burned. MOTHER_AFTER reads it whether or not her line was heard
+ *   a3_kes_numbed            true            Kes numbed at the line by the Concern's leash (travelling, kes_link kept, the guild
+ *                                            or the Concern in play)
+ *   knowledge: a3_door_line (the line seen), a3_door_declined, a3_attending, a3_door_fought_seen, a3_intake_terms;  memories
+ *                            npc_md_01 a3_stood_down / a3_declined / a3_drawn_on / a3_forced / a3_attended, npc_kn_maud a3_carried /
+ *                            a3_sold / a3_opened / a3_forced / a3_tam_door, npc_c9_01 a3_carried / a3_sold / a3_opened / a3_forced,
+ *                            npc_c9_03 a3_in_the_door / a3_door_held / a3_reserve_taken, npc_md_nine a3_ordered_arrest /
+ *                            a3_not_ordered / a3_stood_with / a3_told_refuse / a3_told_obey, npc_rd_03 sold_the_reserve,
+ *                            npc_c9_05 a3_emptied, npc_kn_factor a3_claim_off / a3_claim_paid / a3_signed, npc_hs_01 a3_numbed_at_door
  * Planned (the slice named sets it; values as the plan fixes them):
  *   a3_recall                declined | stayed | handed | court | bought | hidden | fought | taken          B6b
  *   nine_disposed            true                                                                        B6b

@@ -75,8 +75,36 @@ export const d_hs_notice: DialogueDef = {
 
 export const d_hs_saba: DialogueDef = {
   id: 'd_hs_saba', owner: 'npc_hs_10',
-  start: [{ if: EXPOSED, node: 'exposed' }, { if: { flag: 'hs_saba_met' }, node: 'again' }, { node: 'intro' }],
+  start: [
+    // B4b: what the player found on Halcyon's floor nine comes home to her
+    { if: { all: [{ any: [{ flag: 'hc_clinic', eq: 'freed' }, { flag: 'hc_clinic', eq: 'closed' }] }, { not: EXPOSED }] }, node: 'hc_home' },
+    { if: { all: [EXPOSED, { knows: 'hc_cold_seen' }, { not: { flag: 'hc_saba_told' } }] }, node: 'hc_dead' },
+    { if: EXPOSED, node: 'exposed' }, { if: { flag: 'hs_saba_met' }, node: 'again' }, { node: 'intro' },
+  ],
   nodes: {
+    hc_home: {
+      text: 'Saba is not at the wall. Her notice is gone; there is a nail where it was. You find her outside the shack on Nursery with a bowl of beans to shell, and Dawit beside her on a crate with a patch over one eye, humming. She looks at you for a long time. "They carried him up Cascade on a door," she says. "Nobody would let me help. They said I\'d drop him laughing." She goes back to the beans. "I would have."',
+      again: 'Saba, shelling beans beside Dawit.',
+      options: [{ text: '(Leave them be.)', exit: true }],
+    },
+    hc_dead: {
+      text: 'Saba at her wall, straightening a notice that has no reason to be straight any more: the Weighhouse is shut and nobody goes up. "You\'ve been up the hill," she says. "Everybody says. Did you see him? Dawit. He\'s tall. He hums."',
+      again: '"Did you see him?"',
+      options: [
+        { id: 'saba.hc.tell', text: '(Tell her what you found on floor nine.)', effects: [{ set: 'hc_saba_told', value: 'truth' }], next: 'hc_told' },
+        { id: 'saba.hc.lie', text: '(Tell her you didn\'t find him.)', effects: [{ set: 'hc_saba_told', value: 'lied' }], next: 'hc_lied' },
+      ],
+    },
+    hc_told: {
+      text: 'You tell her: a cold room, a column of labels with his number on every one, and what the Clinic floors did when the Skirts stopped sending. She listens with her hand flat on the notice. When you finish she takes it down, folds it in four, and puts it in her apron. "So it was us," she says. "Shutting the Weighhouse. That\'s what did it." She doesn\'t cry. "I\'d shut it again. I want you to know that. I\'d shut it again."',
+      again: '"I\'d shut it again."',
+      options: [{ text: '(Leave her.)', exit: true }],
+    },
+    hc_lied: {
+      text: '"No." She straightens the notice. "No, well. It\'s a big hill." She will be standing at this wall for years. You know it, and you walk away anyway.',
+      again: 'Saba at her wall.',
+      options: [{ text: '(Leave her.)', exit: true }],
+    },
     intro: {
       text: 'A woman straightening a notice on the wall that does not need straightening. "Have you been up the hill?" she says, before anything else. "Dawit. He\'s tall. He hums when he works. He went to the Weighhouse to clear his paper and they wrote that he\'s in service."',
       again: 'Saba, straightening her notice.',
@@ -585,6 +613,7 @@ export const d_hs_grid: DialogueDef = {
       options: [
         { id: 'grid.kes.order', text: 'Number Six\'s work orders. Dysart\'s.', if: { all: [{ not: { item: 'k_hs_order' } }, { knows: 'hs_six_story' }] }, once: true, effects: [{ give: 'k_hs_order' }, { learn: 'hs_robbed' }, K(2)], next: 'kes_order' },
         { id: 'grid.kes.book', text: 'The Weighhouse\'s book.', if: { all: [{ not: { item: 'k_hs_weighbook' } }, { knows: 'hs_service' }] }, once: true, effects: [{ give: 'k_hs_weighbook' }, K(2)], next: 'kes_book' },
+        { id: 'grid.kes.citizen', text: 'Write me a citizen\'s contract. One the hill will believe.', if: { not: { flag: 'hc_contract' } }, effects: [{ give: 'k_hc_contract_forged' }, { set: 'hc_contract', value: 'infiltrator' }, { quest: 'q_hc_contract', start: true }, { decision: { id: 'hc_contract', text: 'Kes wrote you into the Window as a citizen who does not exist.' } }, K(3)], next: 'kes_citizen' },
         { id: 'grid.kes.prices', text: 'Provision\'s board. What does it read?', if: { not: { knows: 'hs_price_overlay' } }, effects: [{ learn: 'hs_price_overlay' }, { lead: 'l_hs_overlay' }], next: 'kes_prices' },
         { id: 'grid.kes.dark', text: 'Your link. Turn it dark for good, from in here.', if: { all: [KES_Q, NIGHT, { not: { flag: 'kes_dark_failed' } }] }, check: { skill: 'science', dc: 50, mods: [{ if: GRID_CHROME, dc: -15, why: 'your own port: you can ride in beside her' }, { if: { approval: { companion: KES, gte: 50 } }, dc: -5, why: 'she trusts your hands in her head' }] }, effects: LINK('dark', 'You and Kes turned the Concern\'s backdoor on her own port for good, from the Window\'s exchange. She is dark to Halcyon, and keeps her sight.', [K(10)]), next: 'kes_dark', fail: 'kes_dark_fail', failEffects: [{ set: 'kes_dark_failed' }, { set: 'hs_window_alert' }] },
         leave,
@@ -594,6 +623,7 @@ export const d_hs_grid: DialogueDef = {
     kes_book: { text: '"Weighhouse." Her face goes still. "I keep that board too." The printer hums for a long time. She hands you the pages without reading them and doesn\'t look at you while you do.', again: 'Pages, warm from the printer.', options: [{ text: 'Something else.', next: 'kes' }] },
     kes_prices: { text: '"Provision reads your Window balance off your lamp tag when you step up to the counter and moves the price a few points. Deeper paper, dearer bread." She says it flat. "I keep it running. If I don\'t, they send someone who\'ll keep it running worse."', again: '"Deeper paper, dearer bread."', options: [{ text: 'Something else.', next: 'kes' }] },
     kes_dark: { text: 'You go in beside her, or she takes you in; there is no telling. The Window\'s grid like a field at night, and in it a single channel, lit, running up the hill: hers. She takes it in both hands, so to speak, and turns it round, and the light goes out of it. When you are back in the cabinet\'s hum she is crying without noticing. "Nobody," she says. "Nobody\'s looking. For good." Then: "Obviously I\'m not crying."', again: 'Kes, not crying.', options: [{ text: 'Something else.', next: 'kes' }] },
+    kes_citizen: { text: '"Citizen." Kes\'s fingers go into the cabinet\'s guts. "Face. A number nobody\'s got. Fitted last spring at the gate, very brave, no complications." The printer under the counter hums for a long time and gives you forty pages, warm, the Window\'s own print on the Window\'s own stock. "Every lens on the hill will believe that," she says. "Obviously don\'t let a person read it."', again: 'Forty warm pages.', options: [{ text: 'Something else.', next: 'kes' }] },
     kes_dark_fail: { text: 'Halfway round, something on the hill notices. Kes rips out of the cabinet so fast she cuts her hand on its edge. "Bricked," she says. "They\'ve put a watch on the Window. That door\'s shut." She sucks the cut. "Other doors."', again: '"That door\'s shut."', options: [{ text: 'Something else.', next: 'kes' }] },
   },
 };

@@ -28,6 +28,8 @@ export const FAMILIES: Record<string, string[]> = {
   // foreman and his daughter; the Bottoms' foreman and his daughter
   Nnadi: ['npc_tm_06', 'npc_tm_07'],
   Wexford: ['npc_nw_01', 'npc_nw_02'],
+  // the Skirts and Halcyon (B4a/B4b): Saba Mekonnen and her husband Dawit, 9-1182
+  Mekonnen: ['npc_hs_10', 'npc_hc_20'],
   Brandvold: ['npc_nw_06', 'npc_nw_07'],
   Huaman: ['npc_nw_09', 'npc_nw_10'],
   // the Ashlands (B5d): Spindle's weigher and her grandson

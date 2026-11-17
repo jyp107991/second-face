@@ -1949,6 +1949,36 @@ export const hs_skirts: MapDef = {
       facing: 0
     },
     {
+      def: "npc_hc_20",
+      id: "npc_hc_20_home",
+      x: 7,
+      y: 31,
+      facing: 2,
+      schedule: [],
+      if: {
+        all: [
+          {
+            any: [
+              {
+                flag: "hc_clinic",
+                eq: "freed"
+              },
+              {
+                flag: "hc_clinic",
+                eq: "closed"
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "hs_parts",
+              eq: "exposed"
+            }
+          }
+        ]
+      }
+    },
+    {
       def: "npc_hs_11",
       x: 50,
       y: 48,

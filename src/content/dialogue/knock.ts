@@ -1,4 +1,6 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
+import { A3_DOOR_START, A3_HATCH_START, A3_WAY_NODES } from './a3_cistern';
+import { A3X_DOOR_START, A3X_HATCH_START, A3X_NODES } from './a3_door';
 
 /** Knock: the opening (a hatch day, a night watch, the morning after). Flags kn_*; the old opening's flags the later
  * chapters read (c9_examined, c9_council_done, c9_tamsin_*, pell_met) are set here where their meaning still holds. */
@@ -164,6 +166,10 @@ export const d_kn_maud: DialogueDef = {
 export const d_kn_hatch: DialogueDef = {
   id: 'd_kn_hatch', owner: 'npc_c9_05',
   start: [
+    // Act 3 (B6j): once the door is settled, the hatch as the door left it (a3_door.ts)
+    A3X_HATCH_START,
+    // Act 3 (B6h): in the lockdown the hatch is one of the ways in (a3_cistern.ts)
+    A3_HATCH_START,
     { if: { all: [{ flag: 'kn_maud_hurt' }, { not: { flag: 'kn_mother_decided' } }] }, node: 'plea' },
     { if: { flag: 'kn_hatch_traded' }, node: 'closed' },
     { if: { item: 'k_kn_wool' }, node: 'open' },
@@ -238,6 +244,8 @@ export const d_kn_hatch: DialogueDef = {
       effects: [{ set: 'kn_maud_scarred' }, { set: 'kn_mother_decided' }, { decision: { id: 'kn_mother_refused', text: 'The hatch stayed shut. Maud will walk crooked.' } }],
       options: [{ text: '(Leave it.)', exit: true }],
     },
+    ...A3_WAY_NODES,
+    ...A3X_NODES,
   },
 };
 
@@ -771,7 +779,8 @@ export const d_kn_postbook: DialogueDef = {
 
 export const d_kn_door: DialogueDef = {
   id: 'd_kn_door', owner: 'npc_c9_05',
-  start: [{ node: 'door' }],
+  // Act 3 (B6h): in the lockdown the door is one of the ways in (a3_cistern.ts); (B6j) once settled, the door as it was left
+  start: [A3X_DOOR_START, A3_DOOR_START, { node: 'door' }],
   nodes: {
     door: {
       speaker: 'narrator',
@@ -781,6 +790,8 @@ export const d_kn_door: DialogueDef = {
       options: [{ id: 'door.knock', text: '(Knock.)', next: 'knock', once: true }, { text: '(Leave it.)', exit: true }],
     },
     knock: { speaker: 'narrator', text: 'Your knuckles make no sound at all on it. Somewhere in Knock, someone laughs at you, kindly. Everyone does it once.', options: [{ text: '(Leave it.)', exit: true }] },
+    ...A3_WAY_NODES,
+    ...A3X_NODES,
   },
 };
 

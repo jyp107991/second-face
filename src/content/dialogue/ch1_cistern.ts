@@ -251,6 +251,8 @@ export const d_c9_tamsin: DialogueDef = {
     KNOCK_CAMP_START,
     { if: { all: [IN, { flag: 'at_camp' }] }, node: 'camp' },
     { if: IN, node: 'party' },
+    // Act 3 (B6j): her red line, the reserve relocated on the player's word or signature (a3_door.ts): no asking her back
+    { if: { any: [{ flag: 'tam_left', eq: 'door' }, { flag: 'tam_left', eq: 'reserve' }] }, node: 'a3_red' },
     { if: { flag: 'tam_broken' }, node: 'broken' },
     { if: { flag: 'tam_left' }, node: 'left' },
     { if: { flag: 'tam_met' }, node: 'waiting' },
@@ -616,6 +618,15 @@ export const d_c9_tamsin: DialogueDef = {
     },
     back_no: { text: '"You\'re sorry I left. That\'s not the same thing." She picks up another clean glass.', again: 'She picks up another clean glass.', options: [{ text: '(Leave it.)', exit: true }] },
     broken: { text: '"Not you," Tamsin says, without looking up from the bar. "Not now."', again: 'She doesn\'t look up.', options: [{ text: '(Leave it.)', exit: true }] },
+    a3_red: {
+      text: [
+        { if: { flag: 'tam_left', eq: 'reserve' }, text: 'Tamsin, behind Mags\'s bar, wiping a glass that is already clean. She knows you are there; she knew from the door. "They came up the track with it," she says, without looking up. "The Cistern\'s door, open, and the car, and your name on the foot of the paper." She puts the glass down. "I\'m not asking you why. I don\'t want to know what it sounds like when you say it."' },
+        { if: { all: [{ flag: 'a3_c9' }, { not: { flag: 'a3_c9', eq: 'relocated' } }] }, text: '"You said carry on." Tamsin does not look round. "And then you didn\'t. I know. I was there, I was in the door, I heard you not say it." She is quiet a moment. "It doesn\'t go back in, though, does it. The first thing you said. I heard that too."' },
+        { text: '"Don\'t." Tamsin does not look round. "Whatever it is. Don\'t."' },
+      ],
+      again: 'She does not look round.',
+      options: [{ text: '(Leave it.)', exit: true }],
+    },
 
     // ---- the retired shelter opening (kept as written; unreachable in the Knock opening)
     intro: {
