@@ -770,6 +770,7 @@ Saints' girl if sold to the Concern; reads `hs_parts`, `hs_lisle_favour`, `hs_ni
 *A Contract for Kes* (the Concern offers her a contract for her backdoor: her red line tested), *The Garden Heist* (the
 gardens' seed and fruit for the Skirts or Openfield), *Funicular Pass* (the car's crew and a citizen's pass; reads
 `hs_shift`, `hs_car_down`).
+**Owner decision (2026-11-17): full brutal realism.** Halcyon is written as unflinching as the rest of the game: the Clinic floors, the cold store, the contracts that sign bodies away, deaths on the ward, the Board's comfort and its excuses are on the page, not implied, with no softening of the system or its people. The one hard limit is the model's own: the first conversation's draft was stopped by its safety system and is not retried or rephrased to get past it. Every victim harmed on the page is an adult (the Saints' girl on floor nine is a young woman, 19 or older, stated where her age shows); no sexual content with anyone under 18; children's harm, where the world holds it, is a fact told, never a scene. A passage the safety system stops again is left unwritten and noted here for the coordinator, never rephrased.
 **B4b must:** set `hc_inside` when the player first stands inside the gate (arms the strike's default); replace
 `q_a2_halcyon`'s `inside` end with its stages; read `hs_marked`, `hs_gate_shut`, `hs_car_down`, `hs_parts`, `hs_nils`,
 `hs_lisle_favour`, `hs_leash_sold`, `kes_link`, `kes_lineage`, `kes_backdoor`, `k_hc_invitation`, `hs_bell_met`.
