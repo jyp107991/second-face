@@ -68,7 +68,13 @@ Used modified (refit to the game's bodies, re-dyed, weathered, resampled texture
   rebuilt by `tools/unity/people/mh_build.py`. No MakeHuman program code is used.
 - **Motion**: the CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu; free for all uses; "The data used in
   this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217."),
-  converted by `tools/unity/motion/cmu2fbx.py` (trials listed in that file).
+  converted by `tools/unity/motion/cmu2fbx.py` (trials listed in that file; with 07_03, 70_10, 104_02, 113_25, 141_02,
+  141_03, 143_30 added and 141_13 re-exported at its true frame rate, motion sets v2-v4, 2026-11-17).
+- **Motion (ACCAD)**: "Open Motion Project by ACCAD/The Ohio State University is licensed under a Creative Commons
+  Attribution 3.0 Unported License." Female1 takes A01 Stand, B02 Walk to Stand, B03 Walk 1, B13 Walk Turn Right 45, D2
+  Wait; Male1 A1 Stand, B3 Walk; Male2 A1 Stand, B3 Walk, C3 Run. Used modified (cut to one stride or a quiet stretch,
+  looped, resampled to 30 fps, Male1/Male2 re-solved onto a T-pose skeleton, retargeted), by
+  `tools/unity/motion/accad2fbx.py`.
 - **Kits**: built from scratch by `tools/unity/kits/*.py` in Blender (GPL program; its output is ours).
 - **Typefaces** (`unity/Assets/SecondFace/UI/Fonts/`, licences beside them): **Barlow** by Jeremy Tribby (The Barlow
   Project Authors, https://github.com/jpt/barlow) for the interface, and **Literata** by TypeTogether for Google (The
@@ -118,3 +124,17 @@ Used modified (refit to the game's bodies, re-dyed, weathered, resampled texture
 - **Microsoft Rocketbox Avatar Library** (Microsoft, MIT; github.com/microsoft/Microsoft-Rocketbox): rigged people with
   photographed faces, under evaluation as the base for the game's people (`unity/Assets/ThirdParty/Rocketbox`, licence
   beside them; `docs/PEOPLE_RESEARCH.md` §7).
+
+## The fight's motion and weapons (COMBAT.md WP2, 2026-11-17; `Assets/SecondFace/Combat/`)
+- **ACCAD Open Motion Project** — "Open Motion Project by ACCAD/The Ohio State University is licensed under a Creative
+  Commons Attribution 3.0 Unported License." Takes used (modified: cut, looped, resampled to 30 fps, Male2 re-solved onto a
+  T-pose skeleton, retargeted): Male2 A7, A10, B25, C26, C27, D1, D4, E1, E4–E8, E13, E19–E21; Female1 A07, A10, B24, B25,
+  C26, C27.
+- **CMU Graphics Lab Motion Capture Database** (mocap.cs.cmu.edu; free for all uses, not to be resold as data): trials 22_12,
+  76_04, 77_03, 77_09, 79_01, 79_96, 80_03, 91_59, 113_08, 113_13, 113_24, 140_01, 140_03, 140_08, 141_14, 144_13, 144_26.
+- **Quaternius** — Universal Animation Library and Universal Animation Library 2 (Standard), CC0 1.0.
+- **Poly Haven** (CC0): bolt-action rifle 7.62, service pistol and fish knife by Mateusz Sadek; machete by Ulan Cabanilla;
+  hatchet by Ulan Cabanilla and James Ray Cock; crowbar by Alexander Otterbeck; pipe wrench by Will Evarts; baseball bat by
+  Enrique Martín; stick grenade by singaii; wine bottle by Rico Cilliers.
+- **OpenGameArt** (CC0): "AKM" by LonesomeDucky, "Old Revolver" by Lucian Pavel, "Double Barrel Shotgun" by Jean PFP; used
+  modified (reduced, re-oriented, re-textured to the lore).

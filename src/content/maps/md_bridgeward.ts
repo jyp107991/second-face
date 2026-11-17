@@ -1059,7 +1059,19 @@ export const md_bridgeward: MapDef = {
       def: "npc_bw_04",
       x: 40,
       y: 14,
-      facing: 0
+      facing: 0,
+      if: {
+        not: {
+          all: [
+            {
+              flag: "a3_summoned"
+            },
+            {
+              flag: "a3_ally_saints"
+            }
+          ]
+        }
+      }
     },
     {
       def: "npc_bw_05",

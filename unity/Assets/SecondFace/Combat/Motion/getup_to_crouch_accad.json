@@ -1,0 +1,37 @@
+{
+ "name": "getup_to_crouch_accad",
+ "src": "ACCAD Male2_A10_LieToCrouch",
+ "loop": false,
+ "speed": 0.0,
+ "root": true,
+ "hip": 0.9082,
+ "fps": 30,
+ "frames": 138,
+ "src_fps": 30.0,
+ "sex": "m",
+ "sex_source": "ACCAD names its subjects by sex (Male2)",
+ "set": "m",
+ "licence": "ACCAD Open Motion Project (Ohio State University), CC BY 3.0",
+ "source": "https://accad.osu.edu/research/motion-lab/mocap-system-and-data (Male2_bvh.zip: Male2_A10_LieToCrouch.bvh)",
+ "kind": "A8 from lying to a crouch",
+ "weapon": "none",
+ "two_hands": false,
+ "authoring": "captured (optical mocap, no fingers)",
+ "range": [
+  0,
+  4.57
+ ],
+ "facing": "last",
+ "travel_m": [
+  0.148,
+  -0.472
+ ],
+ "root_note": "travels 0.49 m: apply as root motion, or bake into the pose",
+ "closed": false,
+ "cycle": null,
+ "flips_repaired": null,
+ "inbetween": null,
+ "resolved": true,
+ "floor_shift_m": 0.0,
+ "group": "use"
+}

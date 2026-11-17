@@ -1,0 +1,71 @@
+{
+ "name": "grenade_stick",
+ "kind": "stick grenade (throwable)",
+ "source": "https://polyhaven.com/a/stick_grenade",
+ "license": "CC0 1.0",
+ "author": "singaii (Poly Haven)",
+ "file": "grenade_stick.fbx",
+ "units": "metres",
+ "frame": "Unity: +Z forward (muzzle/tip), +Y up, +X right; origin = grip_main",
+ "triangles": {
+  "body": 900,
+  "source_body": 4612
+ },
+ "size_m": [
+  0.081,
+  0.081,
+  0.38
+ ],
+ "points_unity": {
+  "grip_main": [
+   -0.0,
+   0.0,
+   -0.0
+  ],
+  "tip": [
+   -0.0,
+   -0.0113,
+   0.3194
+  ]
+ },
+ "materials": {
+  "stick_grenade": {
+   "BaseColor": "grenade_stick_BaseColor.jpg",
+   "Normal": "grenade_stick_Normal.png",
+   "Mask": "grenade_stick_Mask.png"
+  }
+ },
+ "texture_size": 512,
+ "notes": [
+  "grip points are palm centres; the hand socket aligns its palm frame to the weapon frame (forward along the barrel/blade, up along the top/spine)",
+  "lore pass done: olive-drab head, chipped and rusting, duct tape at the joint; variant v2: improvised tin-can head bound in wire, madder tape"
+ ],
+ "variants": {
+  "v1": {
+   "label": "olive-drab head, chipped and rusting, duct tape at the joint",
+   "materials": {
+    "stick_grenade": {
+     "BaseColor": "grenade_stick_BaseColor.jpg",
+     "Normal": "grenade_stick_Normal.png",
+     "Mask": "grenade_stick_Mask.png"
+    }
+   }
+  },
+  "v2": {
+   "label": "improvised tin-can head bound in wire, madder tape",
+   "materials": {
+    "stick_grenade": {
+     "BaseColor": "grenade_stick_v2_BaseColor.jpg",
+     "Normal": "grenade_stick_v2_Normal.png",
+     "Mask": "grenade_stick_v2_Mask.png"
+    }
+   }
+  }
+ },
+ "lore": {
+  "pass": "2026-11-17, tools/lore/lore.py (recipes in the weapon frame; bakes by tools/lore/bake_maps.py)",
+  "originals": "raw/weapons_pre_lore/grenade_stick/",
+  "painted_out": "the stencilled fuse-time lettering on the handle",
+  "mask_occlusion": "G now carries the mesh AO and cavities where the staged mask had none"
+ }
+}

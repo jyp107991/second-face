@@ -1,0 +1,67 @@
+{
+ "name": "fist_jab_f_cmu",
+ "src": "CMU 144_13",
+ "loop": false,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.8688,
+ "fps": 30,
+ "frames": 35,
+ "src_fps": 120,
+ "sex": "f",
+ "sex_source": "CMU subject title: punching female",
+ "set": "f",
+ "licence": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses, may not be resold as data",
+ "source": "http://mocap.cs.cmu.edu/search.php?subjectnumber=144 (trial 144_13)",
+ "kind": "A4 jab (left), from the guard back to it (woman)",
+ "weapon": "none",
+ "two_hands": false,
+ "authoring": "captured (optical mocap, no fingers)",
+ "range": [
+  1.1,
+  2.25
+ ],
+ "facing": "strike_L",
+ "travel_m": [
+  -0.073,
+  0.068
+ ],
+ "root_note": "in place",
+ "closed": false,
+ "cycle": null,
+ "flips_repaired": null,
+ "inbetween": {
+  "Neck2": {
+   "into": [
+    "Neck",
+    "Head"
+   ],
+   "parent_swung_max_deg": 9.25,
+   "child_joint_moved_max_mm": 2.72
+  },
+  "LeftWristTwist": {
+   "into": [
+    "LeftLowerArm",
+    "LeftHand"
+   ],
+   "parent_swung_max_deg": 0.0,
+   "child_joint_moved_max_mm": 0.0
+  },
+  "RightWristTwist": {
+   "into": [
+    "RightLowerArm",
+    "RightHand"
+   ],
+   "parent_swung_max_deg": 0.0,
+   "child_joint_moved_max_mm": 0.0
+  }
+ },
+ "resolved": false,
+ "floor_shift_m": 0.0,
+ "group": "use",
+ "events": {
+  "impact": [
+   23
+  ]
+ }
+}

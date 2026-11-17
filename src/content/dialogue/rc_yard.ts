@@ -24,6 +24,11 @@ export const ENGINE_DARK: Effect[] = ENGINE('dark', 'Dorcas\'s board was woken w
 export const ENGINE_SPARE: Effect[] = ENGINE('spare', 'Dorcas runs on Halina Wrona\'s last spare board, pre-war silicon with nobody else in it. Four Ways\' signal box has no spare now.', [
   { take: 'k_rc_spare' }, { set: 'rc_box_nospare' }, { xp: 150 }, A(NINE, 3), A(KES, 5),
 ]);
+/** B5d: the army board out of Kelso's shunter, in the Ashlands: pre-Scald, of the army's own makers, no channel, and Four
+ * Ways keeps its last spare (`q_an_board`). */
+export const ENGINE_ASHLANDS: Effect[] = ENGINE('ashlands', 'Dorcas runs on an army board out of a shunter at Kelso, in the Ashlands: pre-war, pre-Scald, with nobody in it. Four Ways keeps its spare.', [
+  { take: 'k_an_board' }, { set: 'an_board', value: 'ida' }, { quest: 'q_an_board', start: true }, { rep: { faction: 'concern', respect: -5 } }, { xp: 200 }, A(NINE, 3), A(KES, 8),
+]);
 
 // ---------------------------------------------------------------- Dorcas, Sixty, the slate
 
@@ -41,6 +46,7 @@ export const d_rc_dorcas: DialogueDef = {
         { id: 'dorcas.sci', text: '(Read the board\'s lamps.)', if: { not: { lead: 'l_rc_asleep' } }, check: { skill: 'science', dc: 45 }, effects: [{ lead: 'l_rc_asleep' }], next: 'board', fail: 'blank' },
         { id: 'dorcas.kes', text: '(Kes: wake her without the channel.)', if: { all: [IN(KES), { knows: 'rc_leashed_known' }] }, effects: ENGINE_DARK, next: 'woke_dark' },
         { id: 'dorcas.jack', text: '(Go into the board through your own link and wake it without its channel.)', if: { all: [GRID_CHROME, { knows: 'rc_leashed_known' }, { not: IN(KES) }] }, check: { skill: 'science', dc: 55 }, effects: ENGINE_DARK, next: 'woke_dark', fail: 'jack_no' },
+        { id: 'dorcas.army', text: '(Fit the army board out of Kelso\'s shunter.)', if: { item: 'k_an_board' }, check: { skill: 'mechanics', dc: 30, mods: [{ if: { flag: 'rc_ida_helps' }, dc: -30, why: 'Ida fits it with you' }] }, effects: ENGINE_ASHLANDS, next: 'woke_army', fail: 'spare_no' },
         { id: 'dorcas.spare', text: '(Fit Halina Wrona\'s spare board.)', if: { item: 'k_rc_spare' }, check: { skill: 'mechanics', dc: 30, mods: [{ if: { flag: 'rc_ida_helps' }, dc: -30, why: 'Ida fits it with you' }] }, effects: ENGINE_SPARE, next: 'woke_spare', fail: 'spare_no' },
         leave,
       ],
@@ -59,6 +65,7 @@ export const d_rc_dorcas: DialogueDef = {
     },
     jack_no: { text: 'You go in, and the board is not empty: something on the far end of its channel turns, slowly, toward you. You pull out with a headache like a nail and the lamp still blinking.', again: 'The lamp, still blinking.', options: [leave] },
     woke_spare: { text: 'The old board goes in where the new one came out, its connectors fitted with shims Ida cuts from a tin. Dorcas starts on the third try with a bang that empties the shed of pigeons, and runs, roughly, like an old woman walking, and keeps running.', again: 'Dorcas, running roughly.', options: [leave] },
+    woke_army: { text: 'The army board goes in where the Concern\'s came out, its old connectors a size too large; Ida shims them with strips cut from a ration tin and swears at them in a language you do not know. Dorcas coughs, catches, and runs, smoother than she has any right to, with one amber lamp steady under her cab floor and nothing on the other end of it at all.', again: 'Dorcas, running on the army board.', interject: [{ companion: KES, text: 'Kes puts her ear to the plate for a long time. "Nobody," she says at last, and laughs out loud. "Nobody in there at all. She\'s just an engine."', effects: [A(KES, 2)] }], options: [leave] },
     spare_no: { text: 'The old board will not seat without shims, and you do not know which. Ida comes and looks over your shoulder. "Give it here," she says.', again: '"Give it here."', effects: [{ set: 'rc_ida_helps' }], options: [leave] },
     runs: {
       text: [
@@ -116,6 +123,7 @@ export const d_rc_ida: DialogueDef = {
       options: [
         { id: 'ida.dorcas2', text: 'What\'s wrong with Dorcas?', if: { not: { seen: 'ida.dorcas' } }, next: 'dorcas' },
         { id: 'ida.letter', text: 'When did she die?', if: { all: [{ seen: 'ida.dorcas' }, { not: { lead: 'l_rc_timing' } }] }, next: 'letter' },
+        { id: 'ida.other', text: 'Is there a board anywhere with nobody else in it?', if: { all: [{ seen: 'ida.dorcas' }, { not: RUNS }, { not: { seen: 'ida.other' } }] }, next: 'other' },
         { id: 'ida.sign', text: 'Sign Whitlock\'s paper. The Line needs two engines.', if: { all: [{ item: 'k_rc_offer' }, { not: RUNS }] }, next: 'sign' },
         { id: 'ida.pass', text: 'Dorcas runs.', if: { all: [RUNS, { not: { item: 'k_rc_pass' } }] }, effects: [{ give: 'k_rc_pass' }], next: 'pass' },
         { id: 'ida.trade2', text: '(Buy parts.)', effects: [{ event: 'barter' }], exit: true, repeat: true },
@@ -125,6 +133,12 @@ export const d_rc_ida: DialogueDef = {
     dorcas: {
       text: '"Her controller. The board under the cab that tells everything else what to do." She puts down the injector at last. "It isn\'t burned. It isn\'t anything. One day she ran and the next she didn\'t. And a man in a clean coat came up from the Concern a week later with a new board in a box and a contract to go with it." She points with a screwdriver at the yard office. "He\'s still here. He\'s patient. They\'re all patient up there."',
       again: '"They\'re all patient up there."',
+      options: [{ text: 'Something else.', next: 'again' }],
+    },
+    other: {
+      text: '"Two." She holds up two oily fingers. "Halina\'s last spare in Four Ways\' box, which she won\'t give up and shouldn\'t, because if one of her instruments goes it stays gone." One finger down. "And the army\'s. Before the war the army ran a spur off the Line out east to its depot on the March, Kelso, and it had a yard engine there, a shunter, bought from somebody who wasn\'t the Concern. Crown and gear on the plate." She shrugs. "If the shed\'s standing. If the board\'s in it. If you want to walk into the Ashlands for an engine that isn\'t yours." She goes back to the injector. "Pickers at Spindle would know."',
+      again: '"Pickers at Spindle would know."',
+      effects: [{ lead: 'l_an_shunter' }, { quest: 'q_an_board', start: true }, { learn: 'loc_spindle' }],
       options: [{ text: 'Something else.', next: 'again' }],
     },
     letter: {

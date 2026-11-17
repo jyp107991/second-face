@@ -640,6 +640,20 @@ export const openfield: MapDef = {
       y: 24
     },
     {
+      kind: "sign",
+      x: 33,
+      y: 24,
+      rot: 0,
+      id: "ln_order_post"
+    },
+    {
+      kind: "sign",
+      x: 22,
+      y: 24,
+      rot: 0,
+      id: "ln_store_notice"
+    },
+    {
       kind: "campfire",
       x: 32,
       y: 15,
@@ -802,7 +816,8 @@ export const openfield: MapDef = {
     {
       kind: "table",
       x: 22,
-      y: 35
+      y: 35,
+      id: "of_hall_table"
     },
     {
       kind: "table",
@@ -1358,6 +1373,18 @@ export const openfield: MapDef = {
     of_windpump: {
       dialogue: "d_of_windpump",
       name: "The dead windpump"
+    },
+    ln_order_post: {
+      dialogue: "d_ln_order",
+      name: "The well post"
+    },
+    ln_store_notice: {
+      dialogue: "d_ln_notice",
+      name: "The store door"
+    },
+    of_hall_table: {
+      dialogue: "d_ln_table",
+      name: "The long table"
     }
   },
   containers: {
@@ -1662,13 +1689,107 @@ export const openfield: MapDef = {
       def: "npc_of_01",
       x: 42,
       y: 21,
-      facing: 0
+      facing: 0,
+      if: {
+        all: [
+          {
+            not: {
+              all: [
+                {
+                  flag: "ln_called"
+                },
+                {
+                  not: {
+                    flag: "ln_done"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            not: {
+              any: [
+                {
+                  flag: "ks_mason",
+                  eq: "dead"
+                },
+                {
+                  flag: "ks_mason",
+                  eq: "exiled"
+                }
+              ]
+            }
+          },
+          {
+            not: {
+              any: [
+                {
+                  flag: "ln_openfield",
+                  eq: "evicted"
+                },
+                {
+                  flag: "ln_openfield",
+                  eq: "guild"
+                }
+              ]
+            }
+          }
+        ]
+      }
     },
     {
       def: "npc_of_02",
       x: 32,
       y: 17,
-      facing: 2
+      facing: 2,
+      if: {
+        all: [
+          {
+            not: {
+              all: [
+                {
+                  flag: "ln_called"
+                },
+                {
+                  not: {
+                    flag: "ln_done"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            not: {
+              flag: "ln_petra_taken"
+            }
+          },
+          {
+            not: {
+              any: [
+                {
+                  flag: "ln_openfield",
+                  eq: "evicted"
+                },
+                {
+                  flag: "ln_openfield",
+                  eq: "guild"
+                }
+              ]
+            }
+          },
+          {
+            not: {
+              dead: "npc_of_02"
+            }
+          },
+          {
+            not: {
+              flag: "a3_unwritten",
+              eq: "with_you"
+            }
+          }
+        ]
+      }
     },
     {
       def: "npc_of_03",
@@ -1708,25 +1829,81 @@ export const openfield: MapDef = {
       def: "npc_of_04",
       x: 10,
       y: 9,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          any: [
+            {
+              flag: "ln_people",
+              eq: "removed"
+            },
+            {
+              flag: "ln_people",
+              eq: "relocated"
+            }
+          ]
+        }
+      }
     },
     {
       def: "npc_of_05",
       x: 41,
       y: 36,
-      facing: 0
+      facing: 0,
+      if: {
+        not: {
+          any: [
+            {
+              flag: "ln_people",
+              eq: "removed"
+            },
+            {
+              flag: "ln_people",
+              eq: "relocated"
+            }
+          ]
+        }
+      }
     },
     {
       def: "npc_of_06",
       x: 21,
       y: 20,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          any: [
+            {
+              flag: "ln_people",
+              eq: "removed"
+            },
+            {
+              flag: "ln_people",
+              eq: "relocated"
+            }
+          ]
+        }
+      }
     },
     {
       def: "npc_of_07",
       x: 22,
       y: 7,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          any: [
+            {
+              flag: "ln_people",
+              eq: "removed"
+            },
+            {
+              flag: "ln_people",
+              eq: "relocated"
+            }
+          ]
+        }
+      }
     },
     {
       def: "npc_of_08",
@@ -1738,13 +1915,41 @@ export const openfield: MapDef = {
       def: "npc_of_09",
       x: 37,
       y: 34,
-      facing: 1
+      facing: 1,
+      if: {
+        not: {
+          any: [
+            {
+              flag: "ln_people",
+              eq: "removed"
+            },
+            {
+              flag: "ln_people",
+              eq: "relocated"
+            }
+          ]
+        }
+      }
     },
     {
       def: "npc_of_10",
       x: 45,
       y: 34,
-      facing: 3
+      facing: 3,
+      if: {
+        not: {
+          any: [
+            {
+              flag: "ln_people",
+              eq: "removed"
+            },
+            {
+              flag: "ln_people",
+              eq: "relocated"
+            }
+          ]
+        }
+      }
     },
     {
       def: "npc_of_11",
@@ -1786,6 +1991,506 @@ export const openfield: MapDef = {
       dialogue: "d_of_kip",
       if: {
         flag: "or_thieves_choir"
+      }
+    },
+    {
+      def: "npc_of_01",
+      id: "ln_mason",
+      x: 22,
+      y: 25,
+      facing: 2,
+      schedule: [],
+      dialogue: "d_ln_mason",
+      if: {
+        all: [
+          {
+            flag: "ln_called"
+          },
+          {
+            not: {
+              flag: "ln_done"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_of_02",
+      id: "ln_petra",
+      x: 31,
+      y: 16,
+      facing: 2,
+      schedule: [],
+      dialogue: "d_ln_petra",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "ln_called"
+              },
+              {
+                not: {
+                  flag: "ln_done"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "ln_petra_taken"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_nb_01",
+      id: "ln_sarr",
+      x: 53,
+      y: 27,
+      facing: 3,
+      schedule: [],
+      dialogue: "d_ln_sarr",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "ln_called"
+              },
+              {
+                not: {
+                  flag: "ln_done"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "ln_sarr",
+              eq: "dead"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_dk_05",
+      id: "ln_roux",
+      x: 53,
+      y: 29,
+      facing: 3,
+      schedule: [],
+      dialogue: "d_ln_roux",
+      if: {
+        all: [
+          {
+            flag: "ln_called"
+          },
+          {
+            not: {
+              flag: "ln_done"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_ln_r1",
+      x: 57,
+      y: 26,
+      facing: 3,
+      if: {
+        any: [
+          {
+            all: [
+              {
+                flag: "ln_called"
+              },
+              {
+                not: {
+                  flag: "ln_done"
+                }
+              }
+            ]
+          },
+          {
+            any: [
+              {
+                flag: "ln_openfield",
+                eq: "guild"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_ln_r2",
+      x: 57,
+      y: 28,
+      facing: 3,
+      if: {
+        any: [
+          {
+            all: [
+              {
+                flag: "ln_called"
+              },
+              {
+                not: {
+                  flag: "ln_done"
+                }
+              }
+            ]
+          },
+          {
+            any: [
+              {
+                flag: "ln_openfield",
+                eq: "guild"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_ln_r3",
+      x: 58,
+      y: 27,
+      facing: 3,
+      if: {
+        all: [
+          {
+            flag: "ln_called"
+          },
+          {
+            not: {
+              flag: "ln_done"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_md_01",
+      id: "ln_lowe",
+      x: 31,
+      y: 25,
+      facing: 1,
+      schedule: [],
+      dialogue: "d_ln_lowe",
+      if: {
+        all: [
+          {
+            flag: "ln_called"
+          },
+          {
+            not: {
+              flag: "ln_done"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_ln_w1",
+      x: 8,
+      y: 26,
+      facing: 1,
+      if: {
+        any: [
+          {
+            all: [
+              {
+                flag: "ln_called"
+              },
+              {
+                not: {
+                  flag: "ln_done"
+                }
+              }
+            ]
+          },
+          {
+            any: [
+              {
+                flag: "ln_openfield",
+                eq: "evicted"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_ln_w2",
+      x: 8,
+      y: 28,
+      facing: 1,
+      if: {
+        any: [
+          {
+            all: [
+              {
+                flag: "ln_called"
+              },
+              {
+                not: {
+                  flag: "ln_done"
+                }
+              }
+            ]
+          },
+          {
+            any: [
+              {
+                flag: "ln_openfield",
+                eq: "evicted"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_ln_w3",
+      x: 9,
+      y: 27,
+      facing: 1,
+      if: {
+        all: [
+          {
+            flag: "ln_called"
+          },
+          {
+            not: {
+              flag: "ln_done"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_rc_02",
+      id: "ln_chela",
+      x: 16,
+      y: 28,
+      facing: 1,
+      schedule: [],
+      dialogue: "d_ln_chela",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "ln_called"
+                  },
+                  {
+                    not: {
+                      flag: "ln_done"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "ln_came_halts"
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "rc_kettle_fight"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_rc_11",
+      id: "ln_yaw",
+      x: 19,
+      y: 24,
+      facing: 2,
+      schedule: [],
+      dialogue: "d_ln_yaw",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "ln_called"
+              },
+              {
+                not: {
+                  flag: "ln_done"
+                }
+              }
+            ]
+          },
+          {
+            flag: "ln_came_twelve"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_tm_02",
+      id: "ln_desmond",
+      x: 24,
+      y: 28,
+      facing: 0,
+      schedule: [],
+      dialogue: "d_ln_desmond",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "ln_called"
+              },
+              {
+                not: {
+                  flag: "ln_done"
+                }
+              }
+            ]
+          },
+          {
+            flag: "ln_came_four"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_hs_02",
+      id: "ln_maren",
+      x: 26,
+      y: 27,
+      facing: 0,
+      schedule: [],
+      dialogue: "d_ln_maren",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "ln_called"
+              },
+              {
+                not: {
+                  flag: "ln_done"
+                }
+              }
+            ]
+          },
+          {
+            flag: "ln_came_shift"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_hs_03",
+      id: "ln_rafe",
+      x: 12,
+      y: 30,
+      facing: 1,
+      schedule: [],
+      dialogue: "d_ln_rafe",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "ln_called"
+              },
+              {
+                not: {
+                  flag: "ln_done"
+                }
+              }
+            ]
+          },
+          {
+            flag: "ln_came_shift_armed"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_rd_02",
+      id: "ln_vasha",
+      x: 59,
+      y: 28,
+      facing: 3,
+      schedule: [],
+      dialogue: "d_ln_vasha",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "ln_called"
+              },
+              {
+                not: {
+                  flag: "ln_done"
+                }
+              }
+            ]
+          },
+          {
+            any: [
+              {
+                flag: "ln_came_vasha"
+              },
+              {
+                flag: "ln_against_vasha"
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "rustdogs_hostile"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_sh_05",
+      id: "ln_calla_of",
+      x: 33,
+      y: 16,
+      facing: 2,
+      schedule: [],
+      dialogue: "d_ln_calla",
+      if: {
+        all: [
+          {
+            flag: "ln_calla",
+            eq: "freed"
+          },
+          {
+            not: {
+              any: [
+                {
+                  flag: "ln_openfield",
+                  eq: "evicted"
+                },
+                {
+                  flag: "ln_openfield",
+                  eq: "guild"
+                }
+              ]
+            }
+          }
+        ]
       }
     },
     {
@@ -1878,6 +2583,387 @@ export const openfield: MapDef = {
           learn: "seen_burial_ground"
         }
       ]
+    },
+    {
+      id: "ln_arrive",
+      x: 1,
+      y: 18,
+      w: 62,
+      h: 14,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "ln_called"
+              },
+              {
+                not: {
+                  flag: "ln_calla_taken"
+                }
+              },
+              {
+                not: {
+                  flag: "ln_done"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              all: [
+                {
+                  flag: "rc_line",
+                  eq: "guild"
+                },
+                {
+                  not: {
+                    flag: "rc_pilot"
+                  }
+                },
+                {
+                  not: {
+                    flag: "rc_box_nospare"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      text: "Openfield, on the eve of its Long Night. On the lane east, the guild's wagons drawn up in a line with their beds empty, riders on bikes, and in the lee of them a folding chair with an old woman on it under a rug. At the west end, a line of wardens in the Precinct's grey, very straight, and a captain by the well, where a paper with the city's seal is nailed to the post. And on the green, as you come, the wardens reading the first name off the paper aloud, CALLA, SISTER, OF SHALE, and two of them walking a woman in a grey scarf out of the shrine with her bag still on her shoulder, toward a cart on the west track. She sees you and shakes her head, once: don't. The Choir is sitting down in front of the seed store, the old ones in front.",
+      effects: [
+        {
+          set: "ln_car",
+          value: "west_halt"
+        },
+        {
+          set: "ln_calla_taken"
+        },
+        {
+          set: "ln_at_openfield"
+        },
+        {
+          quest: "q_a2_longnight",
+          start: true
+        },
+        {
+          quest: "q_ln_calla",
+          start: true
+        },
+        {
+          learn: "ln_calla_west"
+        },
+        {
+          decision: {
+            id: "ln_calla_taken_first",
+            text: "At Openfield, on the eve of its Long Night, the city's wardens read Sister Calla's name off their order first and took her west to the Line."
+          }
+        }
+      ]
+    },
+    {
+      id: "ln_arrive_through",
+      x: 1,
+      y: 18,
+      w: 62,
+      h: 14,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "ln_called"
+              },
+              {
+                not: {
+                  flag: "ln_calla_taken"
+                }
+              },
+              {
+                not: {
+                  flag: "ln_done"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "rc_line",
+                eq: "guild"
+              },
+              {
+                not: {
+                  flag: "rc_pilot"
+                }
+              },
+              {
+                not: {
+                  flag: "rc_box_nospare"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      text: "Openfield, on the eve of its Long Night. On the lane east, the guild's wagons drawn up in a line with their beds empty, riders on bikes, and in the lee of them a folding chair with an old woman on it under a rug. At the west end, a line of wardens in the Precinct's grey, very straight, and a captain by the well, where a paper with the city's seal is nailed to the post. And on the green, as you come, the wardens reading the first name off the paper aloud, CALLA, SISTER, OF SHALE, and two of them walking a woman in a grey scarf out of the shrine with her bag still on her shoulder, toward a cart on the west track. She sees you and shakes her head, once: don't. The Choir is sitting down in front of the seed store, the old ones in front.",
+      effects: [
+        {
+          set: "ln_car",
+          value: "carrick"
+        },
+        {
+          set: "ln_calla_taken"
+        },
+        {
+          set: "ln_at_openfield"
+        },
+        {
+          quest: "q_a2_longnight",
+          start: true
+        },
+        {
+          quest: "q_ln_calla",
+          start: true
+        },
+        {
+          learn: "ln_calla_west"
+        },
+        {
+          decision: {
+            id: "ln_calla_taken_first",
+            text: "At Openfield, on the eve of its Long Night, the city's wardens read Sister Calla's name off their order first and took her west to the Line."
+          }
+        }
+      ]
+    },
+    {
+      id: "ln_back",
+      x: 1,
+      y: 18,
+      w: 62,
+      h: 14,
+      once: false,
+      if: {
+        all: [
+          {
+            flag: "ln_called"
+          },
+          {
+            flag: "ln_calla_taken"
+          },
+          {
+            not: {
+              flag: "ln_at_openfield"
+            }
+          }
+        ]
+      },
+      effects: [
+        {
+          set: "ln_at_openfield"
+        }
+      ]
+    },
+    {
+      id: "ln_night",
+      x: 1,
+      y: 1,
+      w: 62,
+      h: 54,
+      once: false,
+      if: {
+        all: [
+          {
+            flag: "ln_mustered"
+          },
+          {
+            not: {
+              flag: "ln_done"
+            }
+          },
+          {
+            hour: {
+              from: 21,
+              to: 5
+            }
+          },
+          {
+            any: [
+              {
+                not: {
+                  flag: "ln_midnight_fought"
+                }
+              },
+              {
+                all: [
+                  {
+                    flag: "ln_riders_fight"
+                  },
+                  {
+                    all: [
+                      {
+                        dead: "npc_ln_r1"
+                      },
+                      {
+                        dead: "npc_ln_r2"
+                      },
+                      {
+                        dead: "npc_ln_r3"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                all: [
+                  {
+                    flag: "ln_wardens_fight"
+                  },
+                  {
+                    all: [
+                      {
+                        dead: "npc_ln_w1"
+                      },
+                      {
+                        dead: "npc_ln_w2"
+                      },
+                      {
+                        dead: "npc_ln_w3"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      effects: [
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_ln_night",
+            name: "The Long Night"
+          }
+        }
+      ]
+    },
+    {
+      id: "ln_after_stands",
+      x: 1,
+      y: 18,
+      w: 62,
+      h: 14,
+      if: {
+        all: [
+          {
+            flag: "ln_done"
+          },
+          {
+            any: [
+              {
+                flag: "ln_openfield",
+                eq: "stands"
+              }
+            ]
+          }
+        ]
+      },
+      text: "Openfield after its Long Night: the rows green, the store's door with the Choir's tally board back on it, the order still nailed to the well where nobody has bothered to take it down, and children playing a game on the green in which half of them sit and the other half ride round them."
+    },
+    {
+      id: "ln_after_scorched",
+      x: 1,
+      y: 18,
+      w: 62,
+      h: 14,
+      if: {
+        all: [
+          {
+            flag: "ln_done"
+          },
+          {
+            any: [
+              {
+                flag: "ln_openfield",
+                eq: "scorched"
+              }
+            ]
+          }
+        ]
+      },
+      text: "Openfield after its Long Night: half its rows black to the root where they were burned, the other half green, the halls standing, and people on their knees in the ash already, turning it in."
+    },
+    {
+      id: "ln_after_guild",
+      x: 1,
+      y: 18,
+      w: 62,
+      h: 14,
+      if: {
+        all: [
+          {
+            flag: "ln_done"
+          },
+          {
+            any: [
+              {
+                flag: "ln_openfield",
+                eq: "guild"
+              }
+            ]
+          }
+        ]
+      },
+      text: "Openfield after its Long Night: the guild's half-moon on the store, the Concern's stencil on every crate in the yard, guild riders on the lane, and the young ones working the rows in new grey with a number on the back."
+    },
+    {
+      id: "ln_after_evicted",
+      x: 1,
+      y: 18,
+      w: 62,
+      h: 14,
+      if: {
+        all: [
+          {
+            flag: "ln_done"
+          },
+          {
+            any: [
+              {
+                flag: "ln_openfield",
+                eq: "evicted"
+              }
+            ]
+          }
+        ]
+      },
+      text: "Openfield after its Long Night: empty. The store under the city's seal, the halls shut, the green trodden flat by carts, two wardens at the west end keeping a holding that has nobody on it to keep."
+    },
+    {
+      id: "ln_after_burned",
+      x: 1,
+      y: 18,
+      w: 62,
+      h: 14,
+      if: {
+        all: [
+          {
+            flag: "ln_done"
+          },
+          {
+            any: [
+              {
+                flag: "ln_openfield",
+                eq: "burned"
+              }
+            ]
+          }
+        ]
+      },
+      text: "Openfield after its Long Night: the store and the long hall burned to their footings, the rows black, the well standing in the middle of it with the city's order still on its post, exactly right."
     },
     {
       id: "hatch",

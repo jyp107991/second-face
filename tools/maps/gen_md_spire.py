@@ -71,6 +71,8 @@ props = [
     {'kind': 'fence_post', 'x': 23, 'y': 17}, {'kind': 'fence_post', 'x': 23, 'y': 20}, {'kind': 'fence_post', 'x': 40, 'y': 17}, {'kind': 'fence_post', 'x': 40, 'y': 20},
     {'kind': 'crate', 'x': 39, 'y': 23}, {'kind': 'crate', 'x': 40, 'y': 23}, {'kind': 'machine', 'x': 38, 'y': 18, 'rot': 3}, {'kind': 'barrel', 'x': 24, 'y': 23},
     {'kind': 'lamp_post', 'x': 33, 'y': 18, 'id': 'ar_steps'}, {'kind': 'sign', 'x': 27, 'y': 25, 'rot': 2, 'id': 'ar_board'},
+    # the works' fire barrel at the foot of the steps (Act 3, B6n: the fire the close gathers at, the night before the steps)
+    {'kind': 'fire_barrel', 'x': 29, 'y': 28, 'id': 'a3_fire'},
     # the square: lamps, an empty plinth, benches, the works' stone
     {'kind': 'lamp_post', 'x': 12, 'y': 30}, {'kind': 'lamp_post', 'x': 51, 'y': 30}, {'kind': 'lamp_post', 'x': 20, 'y': 44}, {'kind': 'lamp_post', 'x': 43, 'y': 44},
     {'kind': 'sign', 'x': 31, 'y': 36, 'rot': 2, 'id': 'ar_plinth'}, {'kind': 'planter', 'x': 29, 'y': 34}, {'kind': 'planter', 'x': 34, 'y': 34}, {'kind': 'planter', 'x': 29, 'y': 38}, {'kind': 'planter', 'x': 34, 'y': 38},
@@ -94,6 +96,147 @@ props = [
     {'kind': 'terminal', 'x': 59, 'y': 18, 'rot': 3, 'id': 'ar_catalogue'}, {'kind': 'shelf', 'x': 60, 'y': 22, 'rot': 3}, {'kind': 'shelf', 'x': 60, 'y': 24, 'rot': 3},
     {'kind': 'sign', 'x': 57, 'y': 7, 'rot': 0, 'id': 'ar_stair'}, {'kind': 'terminal', 'x': 56, 'y': 8, 'rot': 1, 'id': 'ar_stair_lens'}, {'kind': 'machine', 'x': 60, 'y': 8, 'rot': 3, 'id': 'ar_lift'},
     {'kind': 'table', 'x': 55, 'y': 11, 'id': 'ar_porter_desk'}, {'kind': 'locker', 'x': 54, 'y': 11, 'id': 'ar_porter_drawer'},
+    # the catalogue's acquisitions drawer behind the keeper's counter (Act 3, B6l: where the Court's sold register is kept)
+    {'kind': 'locker', 'x': 53, 'y': 12, 'id': 'ar_acquisitions'},
+]
+
+# ---------------------------------------------------------------------------------------------- Act 3 (B6l): the close, who came
+# Mirrors src/content/world/a3_conds.ts (B6l block: AT_CLOSE, WITH_YOU, SOTO_COMES, QUILL_COMES, LOWE_CLOSE, REYES_CLOSE, UW_CLOSE,
+# NINE_WALKIN); tests/b6l.test.ts checks the mirror. From the Ledger's card (a3_summoned) until the steps (a3_pnr).
+def F(flag, eq=None):
+    return {'flag': flag} if eq is None else {'flag': flag, 'eq': eq}
+def ALL(*c):
+    return {'all': list(c)}
+def ANY(*c):
+    return {'any': list(c)}
+def NOT(c):
+    return {'not': c}
+AT_CLOSE = ALL(F('a3_summoned'), NOT(F('a3_pnr')))
+# the companions on the player's side (joined, not left, not gone; a Tamsin broken in Act 2 is not), waiting round the fire barrel
+COMPANION_DEFS = {
+    'tamsin': ('npc_c9_03', 'tam_joined', 'tam_left', [F('tam_home'), F('a3_tamsin_dead')], [F('tam_broken')]),
+    'wren': ('npc_rd_03', 'wren_joined', 'wren_left', [F('wren_hanged')], []),
+    'ilya': ('npc_sh_17', 'ilya_recruited', 'ilya_left', [], []),
+    'odile': ('npc_nb_03', 'odile_joined', 'odile_left', [F('odile_gone')], []),
+    'ash': ('npc_of_03', 'ash_joined', 'ash_left', [F('ash_gone'), F('a3_ash', 'self')], []),
+    'nine': ('npc_md_nine', 'nine_joined', 'nine_left', [F('nine_gone'), F('nine_disposed'), F('a3_nine_struck')], []),
+    'kes': ('npc_hs_01', 'kes_joined', 'kes_left', [], []),
+}
+def WITH_YOU(key):
+    cid, joined, left, gone, broken = COMPANION_DEFS[key]
+    return ALL(F(joined), NOT(F(left)), *([NOT(ANY(*gone))] if gone else []), *[NOT(b) for b in broken])
+def WAITING(key):
+    return ALL(AT_CLOSE, WITH_YOU(key), NOT({'inParty': COMPANION_DEFS[key][0]}))
+NINE_HIDDEN = ALL(F('a3_nine_hid'), NOT(F('a3_nine_fetched')))
+FIRE_RING = {'tamsin': (27, 27, 1), 'wren': (31, 27, 3), 'ilya': (27, 29, 1), 'odile': (31, 29, 3), 'ash': (28, 30, 0), 'nine': (30, 30, 0), 'kes': (29, 26, 2)}
+# the Concern's officer: Director Soto if the player met her at Halcyon, else Mr Quill
+SOTO_COMES = ALL(F('hc_soto_met'), NOT({'dead': 'npc_hc_02'}))
+QUILL_COMES = ALL(NOT(SOTO_COMES), NOT({'dead': 'npc_cr_11'}))
+# the column's lead: Lowe while he lives (before the door or on its apron), else Reyes
+LOWE_DEAD = ANY({'dead': 'npc_md_01'}, {'dead': 'npc_md_01_apron'})
+LOWE_CLOSE = ALL(AT_CLOSE, NOT(LOWE_DEAD))
+REYES_CLOSE = ALL(AT_CLOSE, LOWE_DEAD, NOT({'dead': 'npc_md_12'}), NOT({'dead': 'npc_md_12_apron'}))
+# the Unwritten turned at Knock to the city's book: Petra, or Juniper Lowry leading if Petra is dead, and the other two
+UW_CLOSE = ALL(AT_CLOSE, F('a3_unwritten', 'with_you'))
+ALLY_CLOSE = lambda a: ALL(AT_CLOSE, F(f'a3_ally_{a}'))
+A3_CLOSE_NPCS = [
+    *[{'def': cid, 'x': FIRE_RING[k][0], 'y': FIRE_RING[k][1], 'facing': FIRE_RING[k][2], 'schedule': [],
+       'if': ALL(WAITING(k), NOT(NINE_HIDDEN)) if k == 'nine' else WAITING(k)} for k, (cid, *_rest) in COMPANION_DEFS.items()],
+    # a Nine hidden from the recall and never fetched walks in written off (B6b's suggestion)
+    {'def': 'npc_md_nine', 'id': 'npc_md_nine_walkin', 'x': 30, 'y': 30, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_nine_walkin', 'if': ALL(WAITING('nine'), NINE_HIDDEN)},
+    {'def': 'npc_hc_02', 'x': 46, 'y': 34, 'facing': 3, 'schedule': [], 'dialogue': 'd_a3_quill', 'if': ALL(AT_CLOSE, SOTO_COMES)},
+    {'def': 'npc_cr_11', 'x': 46, 'y': 34, 'facing': 3, 'schedule': [], 'dialogue': 'd_a3_quill', 'if': ALL(AT_CLOSE, QUILL_COMES)},
+    {'def': 'npc_md_01', 'x': 35, 'y': 27, 'facing': 2, 'schedule': [], 'dialogue': 'd_a3_lowe_close', 'if': LOWE_CLOSE},
+    {'def': 'npc_md_12', 'x': 35, 'y': 27, 'facing': 2, 'schedule': [], 'dialogue': 'd_a3_lowe_close', 'if': REYES_CLOSE},
+    {'def': 'npc_of_02', 'x': 17, 'y': 41, 'facing': 1, 'schedule': [], 'dialogue': 'd_a3_petra_close', 'if': ALL(UW_CLOSE, NOT({'dead': 'npc_of_02'}))},
+    {'def': 'npc_a3_u1', 'x': 17, 'y': 41, 'facing': 1, 'schedule': [], 'dialogue': 'd_a3_petra_close', 'if': ALL(UW_CLOSE, {'dead': 'npc_of_02'}, NOT({'dead': 'npc_a3_u1'}))},
+    {'def': 'npc_a3_u2', 'x': 18, 'y': 42, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_thaddeus_close', 'if': ALL(UW_CLOSE, NOT({'dead': 'npc_a3_u2'}))},
+    {'def': 'npc_a3_u3', 'x': 16, 'y': 42, 'facing': 1, 'schedule': [], 'dialogue': 'd_a3_rhoda_close', 'if': ALL(UW_CLOSE, NOT({'dead': 'npc_a3_u3'}))},
+    # the allies the muster called who count at the close: their envoys, and the two readers in person
+    {'def': 'npc_a3_31', 'x': 24, 'y': 33, 'facing': 0, 'schedule': [], 'if': ALLY_CLOSE('choir')},
+    {'def': 'npc_a3_32', 'x': 48, 'y': 38, 'facing': 3, 'schedule': [], 'if': ALLY_CLOSE('wheel')},
+    {'def': 'npc_a3_33', 'x': 52, 'y': 35, 'facing': 3, 'schedule': [], 'if': ALLY_CLOSE('stand')},
+    {'def': 'npc_a3_34', 'x': 11, 'y': 34, 'facing': 1, 'schedule': [], 'if': ALLY_CLOSE('gangs')},
+    {'def': 'npc_bw_04', 'x': 38, 'y': 33, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_verity_close', 'if': ALL(ALLY_CLOSE('saints'), NOT({'dead': 'npc_bw_04'}))},
+    {'def': 'npc_nw_04', 'x': 20, 'y': 27, 'facing': 1, 'schedule': [], 'dialogue': 'd_a3_seventeen_close', 'if': ALL(ALLY_CLOSE('seventeen'), NOT({'dead': 'npc_nw_04'}))},
+]
+A3_CLOSE_TRIGGERS = [
+    # the first time on the close after the card: who came (d_a3_close)
+    {'id': 'a3_close', 'x': 1, 'y': 27, 'w': 62, 'h': 27, 'if': AT_CLOSE, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_close', 'name': 'The close'}}]},
+]
+
+# ---------------------------------------------------------------------------------------------- Act 3 (B6m): readiness, the charge, the steps
+# Mirrors src/content/world/a3_conds.ts (B6m block: RAFE_WIRES, PNR_OPEN = AT_CLOSE); tests/b6m.test.ts checks the mirror.
+# Faulk's works trestle beside the fire barrel: the readiness hub (d_a3_ready), where a charge is also made up (d_a3_charge)
+A3_READY_PROPS = [{'kind': 'table', 'x': 36, 'y': 30, 'id': 'a3_ready'}]
+RAFE_WIRES = ALL(F('a3_ally_shift'), NOT(F('hs_rafe_dead')), NOT({'dead': 'npc_hs_03'}))
+A3_READY_NPCS = [
+    # the Shift's shot-firer, on the two powder cases the Shift sent up the Line, at the trestle's end (gen_hs_skirts.py: away from home)
+    {'def': 'npc_hs_03', 'id': 'npc_hs_03_close', 'x': 37, 'y': 31, 'facing': 3, 'schedule': [], 'dialogue': 'd_a3_charge', 'if': ALL(AT_CLOSE, RAFE_WIRES)},
+]
+A3_READY_TRIGGERS = [
+    # the first time on the steps after the card, from any side: the point of no return (d_a3_pnr); after it the lamp and the doors carry it
+    {'id': 'a3_pnr', 'x': 22, 'y': 16, 'w': 20, 'h': 10, 'if': AT_CLOSE, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_pnr', 'name': 'The steps'}}]},
+]
+
+# ---------------------------------------------------------------------------------------------- Act 3 (B6p): the steps
+# Mirrors src/content/world/a3_conds.ts (B6p block: STEPS_OPEN, STEPS_WORN, ON_STEPS, THADDEUS_DEAD, BLADE_SENT) and a3_steps.ts
+# (the blade's fight); tests/b6p.test.ts checks the mirror. From the point of no return (a3_pnr) on: Three with the sash on the
+# steps (its bench placement steps aside), the ones who waited at the close on the steps round the photograph's step, the column's
+# lead at the foot, and the Unwritten's blade while the sky is owed.
+PNR = F('a3_pnr')
+STEPS_OPEN = ALL(PNR, NOT(F('a3_sash')))
+STEPS_WORN = F('a3_steps_sash', 'worn')
+def ON_STEPS(key):
+    c = WITH_YOU(key)
+    return ALL(c, ANY({'inParty': 'npc_md_nine'}, NOT(NINE_HIDDEN))) if key == 'nine' else c
+STEPS_RING = {'tamsin': (31, 25, 0), 'wren': (34, 23, 0), 'ilya': (27, 23, 0), 'odile': (33, 25, 0), 'ash': (28, 25, 0), 'nine': (29, 24, 0), 'kes': (35, 24, 0)}
+ASH_REFUSED = ANY(F('ash_orders', 'refused'), F('ash_orders', 'refused_late'))
+THADDEUS_DEAD = ANY(F('a3_uw_how', 'fought'), {'dead': 'npc_a3_u2'}, {'dead': 'npc_a3_u2_steps'})
+BLADE_SENT = ANY(F('a3_unwritten', 'with_you'), ASH_REFUSED)
+A3_STEPS_NPCS = [
+    # Assessor Three on the steps with the sash (d_a3_steps: talking to it resumes the scene)
+    {'def': 'npc_ar_01', 'id': 'npc_ar_01_steps', 'x': 31, 'y': 17, 'facing': 2, 'schedule': [], 'dialogue': 'd_a3_steps', 'if': PNR},
+    *[{'def': cid, 'id': f'{cid}_steps', 'x': STEPS_RING[k][0], 'y': STEPS_RING[k][1], 'facing': STEPS_RING[k][2], 'schedule': [],
+       'if': ALL(PNR, ON_STEPS(k), NOT({'inParty': cid}))} for k, (cid, *_rest) in COMPANION_DEFS.items()],
+    {'def': 'npc_md_01', 'id': 'npc_md_01_steps', 'x': 35, 'y': 27, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_steps_lowe', 'if': ALL(PNR, NOT(LOWE_DEAD))},
+    {'def': 'npc_md_12', 'id': 'npc_md_12_steps', 'x': 35, 'y': 27, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_steps_lowe',
+     'if': ALL(PNR, LOWE_DEAD, NOT({'dead': 'npc_md_12'}), NOT({'dead': 'npc_md_12_apron'}))},
+    # the Unwritten's blade: with the ones who came east from the card on, or out of the crowd once the sash is on and Ash burned his letter
+    {'def': 'npc_a3_u2', 'id': 'npc_a3_u2_steps', 'x': 26, 'y': 26, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_steps',
+     'if': ALL(STEPS_OPEN, NOT(THADDEUS_DEAD), NOT(F('a3_blade', 'wardens')), ANY(F('a3_unwritten', 'with_you'), ALL(BLADE_SENT, STEPS_WORN)))},
+]
+A3_STEPS_TRIGGERS = [
+    # the steps' scene, if it was ever left before the sash was answered (the point of no return's "(Go up.)" opens it first)
+    {'id': 'a3_steps', 'x': 22, 'y': 16, 'w': 20, 'h': 10, 'if': STEPS_OPEN, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_steps', 'name': 'The steps'}}]},
+    # the blade fought on the steps: the scene goes on once he is down
+    {'id': 'a3_blade_after', 'x': 20, 'y': 16, 'w': 24, 'h': 14, 'if': ALL(F('a3_blade_fight'), {'dead': 'npc_a3_u2_steps'}, NOT(F('a3_blade'))),
+     'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_steps', 'name': 'The steps'}}]},
+]
+
+# ---------------------------------------------------------------------------------------------- Act 3 (B6r): the close after the vault
+# Mirrors src/content/world/a3_conds.ts (B6r block: CRATES_BLADE, THAD_CRATES, CRATES_FIGHTING, SKY_GUARDS, SKY_BURNING, SKY_FIGHTING,
+# SKY_GUARDS_DOWN) and a3_ends.ts; tests/b6r.test.ts checks the mirror. The night the core is signed over: the courier at the lane's
+# mouth with the signed paper, and the Unwritten's blade coming for her while he lives and was not given to the wardens. The dawn
+# after every forecast is read out, at its worst price: a Crown house's three men at the empty plinth, waiting for the voice.
+CRATES_BLADE = ALL(NOT(THADDEUS_DEAD), NOT(F('a3_blade', 'wardens')))
+CRATES_NIGHT = ALL(F('a3_end', 'concern'), F('a3_sold_up'), NOT(F('a3_crates')))
+SKY_BURNING = NOT({'flag': 'a3_ready', 'gte': 2})
+SKY_GUARDS = [('npc_a3_g23', 30, 40, 0), ('npc_a3_g24', 32, 40, 0), ('npc_a3_g25', 31, 41, 0)]
+SKY_DAWN = ALL(F('a3_end', 'opensky'), F('a3_read_up'), SKY_BURNING, NOT(F('ep_sky')))
+A3_ENDS_NPCS = [
+    {'def': 'npc_a3_01', 'id': 'npc_a3_01_crates', 'x': 31, 'y': 47, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_end_concern', 'if': CRATES_NIGHT},
+    {'def': 'npc_a3_u2', 'id': 'npc_a3_u2_crates', 'x': 29, 'y': 44, 'facing': 1, 'schedule': [], 'dialogue': 'd_a3_end_concern', 'if': ALL(CRATES_NIGHT, CRATES_BLADE)},
+    *[{'def': d, 'x': x, 'y': y, 'facing': f, 'schedule': [], 'dialogue': 'd_a3_end_opensky', 'if': SKY_DAWN} for d, x, y, f in SKY_GUARDS],
+]
+A3_ENDS_TRIGGERS = [
+    # the blade fought on the close: the night goes on once he is down
+    {'id': 'a3_crates_after', 'x': 1, 'y': 26, 'w': 62, 'h': 28, 'if': ALL(F('a3_crates_fight'), {'dead': 'npc_a3_u2_crates'}, NOT(F('a3_crates'))),
+     'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_end_concern', 'name': 'The close'}}]},
+    # the house's men fought at dawn: the morning goes on once they are down, or once they have left the player on the steps
+    {'id': 'a3_sky_after', 'x': 1, 'y': 16, 'w': 62, 'h': 38,
+     'if': ALL(F('a3_sky_fight'), NOT(F('ep_sky')), ANY(ALL(*[{'dead': d} for d, *_ in SKY_GUARDS]), F('a3_sky_beaten'))),
+     'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_end_opensky', 'name': 'The close'}}]},
 ]
 
 md_spire = {
@@ -106,7 +249,7 @@ md_spire = {
         'C': {'wall': 'concrete', 'floor': 'tile', 'wallHeight': 3.6, 'roof': 'flat'},
         'B': {'wall': 'brick', 'floor': 'wood', 'wallHeight': 2.8, 'roof': 'flat'},
     },
-    'props': props,
+    'props': props + A3_READY_PROPS,
     'lights': [
         L(12, 30, '0xe8f0ff', 2.4, 10, 3.4), L(51, 30, '0xe8f0ff', 2.4, 10, 3.4), L(20, 44, '0xe8f0ff', 2.2, 10, 3.4), L(43, 44, '0xe8f0ff', 2.2, 10, 3.4),
         L(33, 18, '0xffe8c0', 2.2, 9, 3.4), L(31, 17, '0xe8f0ff', 1.6, 8, 4.0), L(20, 17, '0xa0c8ff', 1.0, 4, 1.6, 0.1),
@@ -117,6 +260,8 @@ md_spire = {
     'spawns': [
         {'id': 'start', 'x': 31, 'y': 53, 'facing': 0}, {'id': 'from_precinct', 'x': 31, 'y': 53, 'facing': 0}, {'id': 'from_top', 'x': 58, 'y': 9, 'facing': 2},
         {'id': 'court', 'x': 14, 'y': 22, 'facing': 3}, {'id': 'steps', 'x': 31, 'y': 24, 'facing': 0},
+        # Act 3 (B6q): up the vault's stair, out of the steel door in the Spire's foot (md_vault's exit)
+        {'id': 'from_vault', 'x': 20, 'y': 17, 'facing': 2},
     ],
     'exits': [
         {'x': 30, 'y': H - 1, 'w': 4, 'h': 1, 'to': {'location': 'md_precinct', 'spawn': 'from_spire'}, 'label': 'The lane south, to the Precinct'},
@@ -127,6 +272,7 @@ md_spire = {
         'ar_vault': {'dialogue': 'd_ar_vault', 'name': 'A steel door'},
         'ar_steps': {'dialogue': 'd_ar_steps', 'name': 'A lamp on the steps'},
         'ar_board': {'dialogue': 'd_ar_board', 'name': 'The works board'},
+        'a3_fire': {'dialogue': 'd_a3_fire', 'name': 'A fire barrel'},
         'ar_plinth': {'dialogue': 'd_ar_plinth', 'name': 'An empty plinth'},
         'ar_close_sign': {'dialogue': 'd_ar_close_sign', 'name': 'A sign on the post'},
         'ca_chair': {'dialogue': 'd_ca_chair', 'name': 'The chair behind the bench'},
@@ -138,6 +284,8 @@ md_spire = {
         'ar_stair': {'dialogue': 'd_ar_stair', 'name': 'The stair'},
         'ar_stair_lens': {'dialogue': 'd_ar_stair', 'name': 'The stair'},
         'ar_lift': {'dialogue': 'd_ar_stair', 'name': 'The stair'},
+        'ar_acquisitions': {'dialogue': 'd_a3_acquisitions', 'name': 'A drawer marked ACQUISITIONS'},
+        'a3_ready': {'dialogue': 'd_a3_ready', 'name': 'The works\' trestle'},
     },
     'containers': {
         'ar_slips': {'name': 'Slips Locker', 'items': [['k_ar_slip', 1]], 'lock': 45},
@@ -152,7 +300,7 @@ md_spire = {
         'court_door': {'x': 18, 'y': 22}, 'lane_post': {'x': 31, 'y': 50},
     },
     'npcs': [
-        {'def': 'npc_ar_01', 'x': 8, 'y': 8, 'facing': 2},
+        {'def': 'npc_ar_01', 'x': 8, 'y': 8, 'facing': 2, 'if': NOT(F('a3_pnr'))},
         {'def': 'npc_ar_02', 'x': 13, 'y': 23, 'facing': 3},
         {'def': 'npc_ar_03', 'x': 51, 'y': 13, 'facing': 2},
         {'def': 'npc_ar_04', 'x': 6, 'y': 4, 'facing': 2, 'if': {'not': COPYIST_MOVED}},
@@ -161,14 +309,14 @@ md_spire = {
         {'def': 'npc_ar_06', 'x': 37, 'y': 21, 'facing': 2},
         {'def': 'npc_ar_07', 'x': 6, 'y': 18, 'facing': 0, 'if': {'not': {'flag': 'prec_forecast_fine', 'eq': 'void'}}},
         {'def': 'npc_ar_g1', 'x': 18, 'y': 22, 'facing': 1}, {'def': 'npc_ar_g2', 'x': 31, 'y': 50, 'facing': 2},
-    ],
+    ] + A3_CLOSE_NPCS + A3_READY_NPCS + A3_STEPS_NPCS + A3_ENDS_NPCS,
     'triggers': [
         {'id': 'arrive', 'x': 26, 'y': 46, 'w': 12, 'h': 9, 'text': 'The Spire close. A square of clean paving behind the Precinct, lamps that work, and at its north end the Archive Spire going up into the haze until you lose it: the city\'s records, ninety-odd floors of them, its doors shut behind scaffolding. The Crown\'s glass catches the light on its shoulders. Broad steps run up to the doors, and the steps are familiar the way a word on the tip of your tongue is familiar.', 'effects': [{'learn': 'seen_spire'}, {'quest': 'q_a2_calendar', 'start': True}, {'quest': 'q_a2_spire', 'start': True}]},
         {'id': 'steps', 'x': 27, 'y': 17, 'w': 10, 'h': 5, 'if': {'item': 'k_photo'}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_ar_steps', 'name': 'The steps'}}]},
         {'id': 'court', 'x': 3, 'y': 14, 'w': 13, 'h': 12, 'text': 'The Court of Accounts. A long hall with a bench at the far end, a rail across the middle, benches for the public, and on the bench a grey unit with a brass plate and two ledgers, very still. Behind it, against the wall, a second chair, dark wood, with dust on the seat. Nobody sits in the public benches who does not have to.', 'effects': [{'learn': 'seen_court'}, {'quest': 'q_ca_court', 'start': True}]},
         {'id': 'catalogue', 'x': 48, 'y': 15, 'w': 13, 'h': 11, 'text': 'The catalogue: shelves of bound indexes to the ceiling, reading tables with green-shaded lamps, a terminal, a counter with a keeper behind it, and in the far corner a stair going up into the dark with a lens on a post at its foot and a porter at a desk beside it.', 'effects': [{'learn': 'seen_catalogue'}]},
         {'id': 'copyroom', 'x': 3, 'y': 2, 'w': 7, 'h': 4, 'text': 'A room behind the court that smells of ink and a stove. Shelves of bound copies, a desk with a lamp, a cot made with corners. Somebody lives here, and has for a long time.', 'effects': [{'learn': 'seen_copyroom'}]},
-    ],
+    ] + A3_CLOSE_TRIGGERS + A3_READY_TRIGGERS + A3_STEPS_TRIGGERS + A3_ENDS_TRIGGERS,
     'extras': [
         {'count': 4, 'roles': ['corp', 'settler', 'trader'], 'faction': 'wardens', 'area': {'x': 10, 'y': 28, 'w': 44, 'h': 20}, 'spots': ['close_pair_a', 'close_pair_b', 'close_sit', 'close_lean', 'close_e', 'close_w', 'steps_sit'], 'hours': {'from': 7, 'to': 21}, 'barks': ['The steps reopen R49. It says so on the board.', 'Don\'t stand on the scaffold. They count the planks.', 'My sister had a case. Eleven times called. Then they stopped calling.', 'Ninety-one floors. Nobody\'s been to the top that came down to say.']},
         {'count': 3, 'roles': ['settler', 'street', 'labourer'], 'life': 'hard', 'area': {'x': 3, 'y': 15, 'w': 12, 'h': 9}, 'spots': ['court_sit', 'court_pair_a', 'court_pair_b', 'court_lean'], 'hours': {'from': 8, 'to': 18}, 'barks': ['Case four hundred and something. They said today.', 'It reads everything. Bring everything.', 'Nobody speaks for you unless you bring them.']},

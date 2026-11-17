@@ -173,6 +173,14 @@ md_ring = {
         {'def': 'npc_dr_07', 'x': 49, 'y': 34, 'facing': 1, 'if': {'not': {'flag': 'dr_sami', 'eq': 'pits'}}},
         {'def': 'npc_dr_07', 'id': 'npc_dr_07_pits', 'x': 15, 'y': 51, 'facing': 0, 'schedule': [], 'if': {'flag': 'dr_sami', 'eq': 'pits'}},
         {'def': 'npc_dr_g1', 'x': 60, 'y': 6, 'facing': 2},
+        # Act 3 (B6b): Nine hidden from its recall on the halt's bench, its back to the turnstile's lens, until fetched; (B6l) it
+        # steps off the bench once the Ledger's card has come (a3_summoned, AT_CLOSE's flag in src/content/world/a3_conds.ts) and
+        # walks in to the close instead (gen_md_spire.py npc_md_nine_walkin), as the Hulls' Nine does (gen_md_docks.py, B6k).
+        # tests/b6l.test.ts checks Nine stands in one place.
+        {'def': 'npc_md_nine', 'id': 'npc_md_nine_clover', 'x': 58, 'y': 6, 'facing': 2, 'schedule': [], 'dialogue': 'd_a3_nine_hid',
+         'if': {'all': [{'flag': 'a3_nine_hid', 'eq': 'clover'}, {'not': {'inParty': 'npc_md_nine'}}, {'not': {'flag': 'a3_nine_fetched'}},
+                        {'not': {'any': [{'flag': 'nine_left'}, {'flag': 'nine_gone'}, {'flag': 'nine_disposed'}, {'flag': 'a3_nine_struck'}]}},
+                        {'not': {'flag': 'a3_summoned'}}]}},
     ],
     'triggers': [
         {'id': 'arrive', 'x': 58, 'y': 46, 'w': 9, 'h': 9, 'text': 'The Ring. North along the Wall the road runs between the Wall\'s grey face on one side and, on the other, towers with nothing in them, a salvage yard, smoke, and somewhere ahead the sound of engines. Nobody here has a card. Nobody here is counted, except by each other.', 'effects': [{'learn': 'seen_ring'}, {'set': 'md_ring_open'}, {'learn': 'dead_ring_heard'}]},

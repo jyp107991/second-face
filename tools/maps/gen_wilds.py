@@ -40,7 +40,7 @@ fill(g, 0, 10, W - 1, 13, ',')
 fill(g, 4, 3, 9, 5, 's'); fill(g, 28, 17, 36, 20, 's')
 rows = [''.join(r) for r in g]
 track = {
-    'id': 'wild_track', 'name': 'The track', 'seed': 71,
+    'id': 'wild_track', 'name': 'Long Track', 'seed': 71,
     'layout': rows,
     'legend': {
         '.': {'floor': 'sand'}, ',': {'floor': 'dirt'}, 's': {'floor': 'rubble'},

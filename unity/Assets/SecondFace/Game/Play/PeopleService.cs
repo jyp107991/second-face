@@ -376,7 +376,9 @@ namespace SecondFace.Game.Play
                 LookView.Apply(go, r.Look);
             }
             var anim = go.GetComponentInChildren<Animator>();
-            if (anim != null) Animate(anim, Locomotion, r.Id);
+            // (their sex's captures: a Rocketbox person's own, else their base's or cast body's)
+            var male = r.Rb != null ? r.Rb.Male : r.Look != null ? r.Male : Bodies.FirstOrDefault(b => b.Id == r.Body)?.Male ?? r.Male;
+            if (anim != null) Animate(anim, Locomotion, r.Id, male);
             var def = r.Def;
             var name = string.IsNullOrEmpty(def.Name) ? Bootstrap.Content?.Entry("npcs", def.Id)?["name"]?.ToString() : def.Name;
             var verbs = def.Merchant != null ? new[] { "talk", "trade", "look" } : new[] { "talk", "look" };
@@ -393,9 +395,10 @@ namespace SecondFace.Game.Play
         /// <summary>A resident's animation as the game gives it (P4 step 4): the locomotion controller without root motion,
         /// their own idle and now and then a gesture (one in three talks more), feet on the ground, their gaze, arms clear of
         /// the body, hands at rest. The motion and posture gate (docs/PEOPLE_MOTION.md) makes its people with this.</summary>
-        public static Ambient Animate(Animator anim, RuntimeAnimatorController locomotion, string id)
+        public static Ambient Animate(Animator anim, RuntimeAnimatorController locomotion, string id, bool male)
         {
             anim.runtimeAnimatorController = locomotion;
+            Pace.SetSex(anim, male, id);
             anim.applyRootMotion = false;
             anim.cullingMode = AnimatorCullingMode.CullCompletely;
             var ambient = anim.gameObject.AddComponent<Ambient>();

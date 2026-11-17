@@ -18,6 +18,10 @@ namespace SecondFace.Game.Play
         /// the pack (north; I), the map (west; M), the notebook (view; Tab or J), the pause (start), photo mode (P),
         /// quicksave and quickload (F5, F9), the view back on the walker (right stick press; C), camp (the d-pad down; K).</summary>
         public bool TurnLeft, TurnRight, Act, Pack, Map, Notebook, Pause, Photo, QuickSave, QuickLoad, Recentre, Camp, Sneak;
+        /// <summary>A fight's (COMBAT.md B10, read only while one is on): the next and the last fighter (the d-pad's right
+        /// and left; ] and [), take back a preview (east; X), undo the last walk (the d-pad up; Z or Backspace), end the
+        /// turn (west; Enter).</summary>
+        public bool Next, Prev, Cancel, Undo, EndTurn;
     }
 
     /// <summary>
@@ -38,6 +42,10 @@ namespace SecondFace.Game.Play
         public bool CameraOnly;
         /// <summary>Instead of the devices (tests): the frame to apply next, once.</summary>
         public PadFrame? Next;
+        /// <summary>While set (a fight), the sticks and buttons beyond the camera's are the fight's (a cursor on the ground,
+        /// act, end turn, undo, the next fighter): it gets each frame and returns true when it took it (the walker is then
+        /// not steered and the walkabout's buttons do nothing).</summary>
+        public Func<PadFrame, float, bool> Fight;
 
         public event Action Act, Pack, Map, Notebook, Pause, Photo, QuickSave, QuickLoad, Camp, Sneak;
 
@@ -62,6 +70,11 @@ namespace SecondFace.Game.Play
                 f.Recentre = g.rightStickButton.wasPressedThisFrame;
                 f.Camp = g.dpad.down.wasPressedThisFrame;
                 f.Sneak = g.leftStickButton.wasPressedThisFrame;
+                f.Next = g.dpad.right.wasPressedThisFrame;
+                f.Prev = g.dpad.left.wasPressedThisFrame;
+                f.Cancel = g.buttonEast.wasPressedThisFrame;
+                f.Undo = g.dpad.up.wasPressedThisFrame;
+                f.EndTurn = g.buttonWest.wasPressedThisFrame;
             }
             var k = Keyboard.current;
             if (k != null)
@@ -83,6 +96,11 @@ namespace SecondFace.Game.Play
                 f.Recentre |= k.cKey.wasPressedThisFrame;
                 f.Camp |= k.kKey.wasPressedThisFrame;
                 f.Sneak |= k.leftCtrlKey.wasPressedThisFrame || k.rightCtrlKey.wasPressedThisFrame;
+                f.Next |= k.rightBracketKey.wasPressedThisFrame;
+                f.Prev |= k.leftBracketKey.wasPressedThisFrame;
+                f.Cancel |= k.xKey.wasPressedThisFrame;
+                f.Undo |= k.zKey.wasPressedThisFrame || k.backspaceKey.wasPressedThisFrame;
+                f.EndTurn |= k.enterKey.wasPressedThisFrame || k.numpadEnterKey.wasPressedThisFrame;
             }
             return f;
         }
@@ -119,6 +137,11 @@ namespace SecondFace.Game.Play
             if (f.TurnLeft) Rig.TurnTo(Rig.Yaw - 90f);
             if (f.TurnRight) Rig.TurnTo(Rig.Yaw + 90f);
             if (f.Recentre) Rig.Recentre();
+            if (!CameraOnly && Fight != null && Fight(f, dt))
+            {
+                if (Walker != null && Walker.Steering) Walker.Steer(Vector3.zero, 0f);
+                return;
+            }
             var cam = Camera != null ? Camera.transform : null;
             var amount = Mathf.Clamp01(f.Move.magnitude);
             var dir = Vector3.zero;

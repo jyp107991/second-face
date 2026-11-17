@@ -1538,41 +1538,70 @@
 }
 .sf-camp__foot { flex-direction: row; justify-content: flex-end; margin-top: 10px; flex-shrink: 0; }
 
-/* ---- the fight's HUD (CombatHud, play-ch1 T44): the turn order under the top row, health over heads, the action
-   points and the fight's last lines between the party and the turn's buttons, which stand where the walkabout's do ---- */
+/* ---- the fight's HUD (CombatHud; COMBAT.md B2-B11): the turn order as portraits under the top row, health and marks over
+   heads, numbers that float up, the shot card on the right, a card over a previewed point, the AP as pips with the
+   log over the turn's actions (two rows of four, where the walkabout's cluster stands), a banner, the end in words ---- */
 .sf-combat__order {
     position: absolute;
     top: 84px;
-    left: 30%;
-    right: 30%;
+    left: 22%;
+    right: 22%;
     flex-direction: row;
     justify-content: center;
+    align-items: flex-start;
 }
 .sf-combat__chip {
-    width: 60px;
+    width: 72px;
     margin: 0 4px;
-    padding: 6px 6px 7px 6px;
+    padding: 5px 5px 6px 5px;
     align-items: center;
     background-color: var(--plate);
     border-radius: 6px;
     border-width: 2px;
     border-color: rgba(126, 154, 111, 0.65);
 }
-.sf-combat__chip--hostile { border-color: rgba(196, 85, 58, 0.75); }
+.sf-combat__chip--hostile { border-color: rgba(196, 85, 58, 0.8); }
 .sf-combat__chip--player { border-color: rgba(224, 166, 69, 0.85); }
-.sf-combat__chip--current { scale: 1.12 1.12; border-width: 3px; background-color: rgba(40, 33, 24, 0.92); }
+.sf-combat__chip--current { scale: 1.12 1.12; border-width: 3px; background-color: rgba(40, 33, 24, 0.94); }
 .sf-combat__chip--down { opacity: 0.35; }
+.sf-combat__chip--next-round { margin-left: 18px; }
+.sf-combat__face {
+    width: 58px;
+    height: 58px;
+    border-radius: 4px;
+    background-color: rgba(92, 84, 73, 0.9);
+    -unity-background-scale-mode: scale-and-crop;
+    justify-content: center;
+}
 .sf-combat__chip-name {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
-    font-size: var(--fs-20);
+    font-size: var(--fs-22);
     color: var(--plate-text);
     -unity-text-align: middle-center;
 }
-.sf-combat__chip .sf-hud__bar { height: 5px; margin-top: 3px; }
+.sf-combat__chip .sf-hud__bar { height: 5px; margin-top: 4px; }
+.sf-combat__statuses { flex-direction: row; justify-content: center; height: 18px; margin-top: 3px; }
+.sf-combat__status { color: #E0A645; margin: 0 1px; }
+.sf-combat__chip--hostile .sf-combat__status { color: #E8A08A; }
+
 .sf-combat__float {
     position: absolute;
-    width: 120px;
+    width: 140px;
     align-items: center;
+}
+.sf-combat__marks { flex-direction: row; justify-content: center; align-items: center; height: 24px; }
+.sf-combat__mark { margin: 0 1px; color: var(--plate-text); }
+.sf-combat__mark--cover { color: #8EC9F0; }
+.sf-combat__mark--flank { color: #F2C14E; }
+.sf-combat__mark--eye { color: #F08A6E; }
+.sf-combat__mark--watch { color: #E06A50; }
+.sf-combat__mark--caught { color: #FFB13B; }
+.sf-combat__mark--intent { color: #E05A44; }
+.sf-combat__intent {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-16);
+    color: #F0B8A8;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
 }
 .sf-combat__float-name {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
@@ -1585,21 +1614,158 @@
 .sf-combat__float--hostile .sf-hud__fill { background-color: #B5523A; }
 .sf-combat__float--hostile .sf-hud__fill--critical { background-color: #7A2A1C; }
 .sf-combat__float--current .sf-combat__float-name { color: #E0A645; }
+
+/* numbers and words that float up from a hit (B7) */
+.sf-combat__num {
+    position: absolute;
+    width: 120px;
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-28);
+    -unity-text-align: middle-center;
+    color: #FFFFFF;
+    text-shadow: 1px 2px 3px rgba(0, 0, 0, 0.95);
+}
+.sf-combat__num--miss { color: #D8D2C6; font-size: var(--fs-24); }
+.sf-combat__num--graze { color: #F2D9A0; font-size: var(--fs-24); }
+.sf-combat__num--hit { color: #FFE2D0; }
+.sf-combat__num--crit { color: #FFB13B; font-size: var(--fs-36); }
+.sf-combat__num--heal { color: #A8E09A; }
+.sf-combat__num--down { color: #FF7A60; font-size: var(--fs-30); }
+.sf-combat__num--status { color: #E0A645; font-size: var(--fs-21); }
+.sf-combat__num--break { color: #F2C14E; font-size: var(--fs-24); }
+.sf-combat__num--yield { color: #CFE6F5; font-size: var(--fs-24); }
+.sf-combat__num--surprised { color: #F2C14E; font-size: var(--fs-24); }
+
+/* the cover at a previewed point (B4) */
+.sf-combat__shield { color: #8EC9F0; }
+.sf-combat__shield--full { color: #CFE9FA; }
+
+/* a card over a previewed walk's end or a throw's landing (B2, B5) */
+.sf-combat__point {
+    position: absolute;
+    max-width: 300px;
+    padding: 8px 12px 9px 12px;
+    border-left-width: 4px;
+    border-color: rgba(178, 228, 255, 0.9);
+}
+.sf-combat__point--blocked { border-color: rgba(236, 92, 70, 0.95); }
+.sf-combat__point-head {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-22);
+    color: var(--plate-text);
+    white-space: normal;
+}
+.sf-combat__point-body { font-size: var(--fs-18); margin-top: 3px; color: var(--plate-dim); white-space: normal; }
+
+/* the shot card (B3): the odds and every reason behind them */
+.sf-combat__card {
+    position: absolute;
+    right: 20px;
+    top: 90px;
+    width: 380px;
+    max-height: 370px;
+    overflow: hidden;
+    padding: 10px 14px 12px 14px;
+}
+.sf-combat__card--blocked { border-left-width: 4px; border-color: rgba(236, 92, 70, 0.95); }
+.sf-combat__card-title { font-size: var(--fs-20); color: var(--plate-dim); }
+.sf-combat__card-head { flex-direction: row; align-items: flex-end; justify-content: space-between; margin-top: 2px; }
+.sf-combat__card-chance {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-36);
+    color: #E0A645;
+}
+.sf-combat__card-cost { font-size: var(--fs-22); color: var(--plate-text); margin-bottom: 4px; }
+.sf-combat__card-facts { flex-direction: row; flex-wrap: wrap; margin-top: 2px; }
+.sf-combat__card-fact { font-size: var(--fs-18); color: var(--plate-text); margin-right: 12px; }
+.sf-combat__card-reasons { margin-top: 6px; border-top-width: 1px; border-color: rgba(242, 234, 219, 0.2); padding-top: 4px; }
+.sf-combat__reason { flex-direction: row; align-items: center; height: 22px; }
+.sf-combat__reason-label { font-size: var(--fs-18); color: var(--plate-text); }
+.sf-combat__reason-note { font-size: var(--fs-16); color: var(--plate-dim); margin-left: 6px; flex-grow: 1; flex-shrink: 1; overflow: hidden; }
+.sf-combat__reason-value { -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset"); font-size: var(--fs-18); color: var(--plate-text); -unity-text-align: middle-right; min-width: 44px; }
+.sf-combat__reason--minus .sf-combat__reason-value { color: #F08A6E; }
+.sf-combat__reason--plus .sf-combat__reason-value { color: #A8E09A; }
+.sf-combat__reason--warn .sf-combat__reason-label { color: #FFB13B; white-space: normal; }
+.sf-combat__card-why { font-size: var(--fs-20); margin-top: 6px; color: #F08A6E; white-space: normal; }
+
+/* the plate over the actions: AP pips (the preview's cost lit), the AP, the fight's last lines */
 .sf-combat__plate {
     position: absolute;
-    bottom: 20px;
-    left: 30%;
-    right: 372px;
-    padding: 8px 16px 10px 16px;
+    right: 20px;
+    bottom: 254px;
+    width: 448px;
+    padding: 8px 14px 10px 14px;
     align-items: center;
 }
+.sf-combat__pips { flex-direction: row; justify-content: center; margin-bottom: 4px; }
+.sf-combat__pip {
+    width: 16px;
+    height: 16px;
+    margin: 0 3px;
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgba(224, 166, 69, 0.55);
+    background-color: rgba(0, 0, 0, 0.35);
+}
+.sf-combat__pip--on { background-color: #E0A645; border-color: #E0A645; }
+.sf-combat__pip--spend { background-color: #FFF1D2; border-color: #FFFFFF; }
+.sf-combat__pip--short { border-color: #EC5C46; }
 .sf-combat__ap {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
     font-size: var(--fs-22);
     color: #E0A645;
 }
 .sf-combat__log { font-size: var(--fs-20); margin-top: 2px; color: var(--plate-text); white-space: normal; -unity-text-align: upper-center; }
-.sf-combat .sf-hud__actions:disabled { opacity: 0.5; }
+
+/* the turn's actions: two rows of four, 100 units each (B10) */
+.sf-combat__actions { position: absolute; right: 20px; bottom: 20px; flex-direction: column; align-items: flex-end; }
+.sf-combat__actions:disabled { opacity: 0.5; }
+.sf-combat__action-row { flex-direction: row; justify-content: flex-end; margin-top: 10px; }
+.sf-combat__action:disabled { opacity: 0.4; }
+.sf-combat__action-note {
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    right: 0;
+    font-size: var(--fs-16);
+    color: var(--plate-dim);
+    -unity-text-align: middle-center;
+}
+.sf-combat__action .sf-hud__action-label { margin-bottom: 14px; }
+.sf-combat__action--armed { background-color: rgba(161, 64, 42, 0.92); border-width: 3px; border-color: #FFB13B; }
+.sf-combat__action--armed:enabled:hover { background-color: rgba(181, 80, 47, 0.95); }
+
+/* a banner as a turn begins; the fight's end in words (B11) */
+.sf-combat__banner {
+    position: absolute;
+    top: 200px;
+    left: 30%;
+    right: 30%;
+    align-items: center;
+    padding: 10px 18px;
+}
+.sf-combat__banner-text {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-30);
+    color: #E0A645;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+.sf-combat__summary {
+    position: absolute;
+    top: 30%;
+    left: 28%;
+    right: 28%;
+    align-items: center;
+    padding: 18px 24px 20px 24px;
+}
+.sf-combat__summary-title {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: var(--fs-42);
+    color: #E0A645;
+    -unity-text-align: middle-center;
+}
+.sf-combat__summary-body { font-size: var(--fs-24); margin-top: 8px; color: var(--plate-text); white-space: normal; -unity-text-align: upper-center; }
 .sf-radial__verb-note {
     -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
     font-size: var(--fs-16);

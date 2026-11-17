@@ -18,10 +18,7 @@ ModelImporter:
     removeConstantScaleCurves: 1
     motionNodeName: 
     animationImportErrors: 
-    animationImportWarnings: "\nClip 'Scene' has import animation warnings that might
-      lower retargeting quality:\nNote: Activate translation DOF on avatar to improve
-      retargeting quality.\n\t'Neck2' is inbetween humanoid transforms and has rotation
-      animation that will be discarded.\n"
+    animationImportWarnings: 
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
@@ -39,7 +36,7 @@ ModelImporter:
       takeName: Scene
       internalID: -623603649343465320
       firstFrame: 1
-      lastFrame: 216
+      lastFrame: 204
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -50,7 +47,7 @@ ModelImporter:
       loopBlend: 1
       loopBlendOrientation: 0
       loopBlendPositionY: 1
-      loopBlendPositionXZ: 0
+      loopBlendPositionXZ: 1
       keepOriginalOrientation: 0
       keepOriginalPositionY: 0
       keepOriginalPositionXZ: 0

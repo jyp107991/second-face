@@ -816,7 +816,7 @@ export const c9_mouth: MapDef = {
       name: "The drop-hatch"
     },
     grille: {
-      dialogue: "d_kn_grille",
+      dialogue: "d_a3_grille",
       name: "The Grille"
     },
     great_door: {
@@ -1146,6 +1146,106 @@ export const c9_mouth: MapDef = {
     out_b: {
       x: 30,
       y: 17
+    },
+    lowe_camp: {
+      x: 22,
+      y: 5
+    },
+    camp_tent_a: {
+      x: 16,
+      y: 3
+    },
+    camp_tent_b: {
+      x: 17,
+      y: 6
+    },
+    camp_tent_c: {
+      x: 15,
+      y: 9
+    },
+    ward_camp: {
+      x: 19,
+      y: 4
+    },
+    ward_stand: {
+      x: 31,
+      y: 5
+    },
+    ward_road: {
+      x: 24,
+      y: 9
+    },
+    ward_apron: {
+      x: 34,
+      y: 40
+    },
+    cadet_post: {
+      x: 21,
+      y: 7
+    },
+    linnet_hatch: {
+      x: 25,
+      y: 39
+    },
+    dace_boards: {
+      x: 17,
+      y: 19
+    },
+    guild_hale: {
+      x: 42,
+      y: 2
+    },
+    guild_hand_a: {
+      x: 45,
+      y: 2
+    },
+    guild_hand_b: {
+      x: 47,
+      y: 3
+    },
+    dace_guild: {
+      x: 43,
+      y: 1
+    },
+    corin_slope: {
+      x: 42,
+      y: 9
+    },
+    dogs_slope: {
+      x: 47,
+      y: 33
+    },
+    uw_lead: {
+      x: 19,
+      y: 39
+    },
+    uw_a: {
+      x: 18,
+      y: 41
+    },
+    uw_b: {
+      x: 20,
+      y: 42
+    },
+    tam_door: {
+      x: 27,
+      y: 42
+    },
+    apron_1: {
+      x: 25,
+      y: 40
+    },
+    apron_2: {
+      x: 30,
+      y: 40
+    },
+    apron_3: {
+      x: 26,
+      y: 38
+    },
+    apron_4: {
+      x: 31,
+      y: 38
     }
   },
   npcs: [
@@ -1155,18 +1255,27 @@ export const c9_mouth: MapDef = {
       y: 18,
       facing: 2,
       if: {
-        not: {
-          all: [
-            {
-              flag: "kn_stranger_dead"
-            },
-            {
-              not: {
-                flag: "kn_outriders"
-              }
+        all: [
+          {
+            not: {
+              all: [
+                {
+                  flag: "kn_stranger_dead"
+                },
+                {
+                  not: {
+                    flag: "kn_outriders"
+                  }
+                }
+              ]
             }
-          ]
-        }
+          },
+          {
+            not: {
+              flag: "a3_open"
+            }
+          }
+        ]
       }
     },
     {
@@ -1179,11 +1288,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_stranger_dead"
+            all: [
+              {
+                flag: "kn_stranger_dead"
+              },
+              {
+                not: {
+                  flag: "kn_outriders"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_outriders"
+              flag: "a3_open"
             }
           }
         ]
@@ -1195,14 +1313,23 @@ export const c9_mouth: MapDef = {
       y: 21,
       facing: 1,
       if: {
-        any: [
+        all: [
           {
-            not: {
-              flag: "kn_linnet_away"
-            }
+            any: [
+              {
+                not: {
+                  flag: "kn_linnet_away"
+                }
+              },
+              {
+                flag: "kn_linnet_home"
+              }
+            ]
           },
           {
-            flag: "kn_linnet_home"
+            not: {
+              flag: "a3_open"
+            }
           }
         ]
       }
@@ -1217,11 +1344,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_linnet_away"
+            all: [
+              {
+                flag: "kn_linnet_away"
+              },
+              {
+                not: {
+                  flag: "kn_linnet_home"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_linnet_home"
+              flag: "a3_open"
             }
           }
         ]
@@ -1233,18 +1369,27 @@ export const c9_mouth: MapDef = {
       y: 8,
       facing: 3,
       if: {
-        not: {
-          all: [
-            {
-              flag: "kn_rib_open"
-            },
-            {
-              not: {
-                flag: "kn_rib_done"
-              }
+        all: [
+          {
+            not: {
+              all: [
+                {
+                  flag: "kn_rib_open"
+                },
+                {
+                  not: {
+                    flag: "kn_rib_done"
+                  }
+                }
+              ]
             }
-          ]
-        }
+          },
+          {
+            not: {
+              flag: "a3_open"
+            }
+          }
+        ]
       }
     },
     {
@@ -1257,11 +1402,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_rib_open"
+            all: [
+              {
+                flag: "kn_rib_open"
+              },
+              {
+                not: {
+                  flag: "kn_rib_done"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_rib_done"
+              flag: "a3_open"
             }
           }
         ]
@@ -1271,13 +1425,23 @@ export const c9_mouth: MapDef = {
       def: "npc_kn_corin",
       x: 44,
       y: 8,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_kn_factor",
       x: 36,
       y: 4,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_kn_buyer",
@@ -1287,11 +1451,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_linnet_away"
+            all: [
+              {
+                flag: "kn_linnet_away"
+              },
+              {
+                not: {
+                  flag: "kn_linnet_settled"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_linnet_settled"
+              flag: "a3_open"
             }
           }
         ]
@@ -1301,25 +1474,45 @@ export const c9_mouth: MapDef = {
       def: "npc_kn_r1",
       x: 14,
       y: 37,
-      facing: 0
+      facing: 0,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_kn_r2",
       x: 24,
       y: 30,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_kn_r3",
       x: 20,
       y: 21,
-      facing: 1
+      facing: 1,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_kn_r4",
       x: 45,
       y: 29,
-      facing: 3
+      facing: 3,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_kn_rib_a",
@@ -1328,19 +1521,28 @@ export const c9_mouth: MapDef = {
       facing: 2,
       schedule: [],
       if: {
-        not: {
-          any: [
-            {
-              flag: "kn_rib_shared"
-            },
-            {
-              flag: "kn_rib_scared"
-            },
-            {
-              flag: "kn_rib_done"
+        all: [
+          {
+            not: {
+              any: [
+                {
+                  flag: "kn_rib_shared"
+                },
+                {
+                  flag: "kn_rib_scared"
+                },
+                {
+                  flag: "kn_rib_done"
+                }
+              ]
             }
-          ]
-        }
+          },
+          {
+            not: {
+              flag: "a3_open"
+            }
+          }
+        ]
       }
     },
     {
@@ -1350,19 +1552,28 @@ export const c9_mouth: MapDef = {
       facing: 1,
       schedule: [],
       if: {
-        not: {
-          any: [
-            {
-              flag: "kn_rib_shared"
-            },
-            {
-              flag: "kn_rib_scared"
-            },
-            {
-              flag: "kn_rib_done"
+        all: [
+          {
+            not: {
+              any: [
+                {
+                  flag: "kn_rib_shared"
+                },
+                {
+                  flag: "kn_rib_scared"
+                },
+                {
+                  flag: "kn_rib_done"
+                }
+              ]
             }
-          ]
-        }
+          },
+          {
+            not: {
+              flag: "a3_open"
+            }
+          }
+        ]
       }
     },
     {
@@ -1373,11 +1584,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_night"
+            all: [
+              {
+                flag: "kn_night"
+              },
+              {
+                not: {
+                  flag: "kn_stranger_dead"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_stranger_dead"
+              flag: "a3_open"
             }
           }
         ]
@@ -1391,11 +1611,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_outriders"
+            all: [
+              {
+                flag: "kn_outriders"
+              },
+              {
+                not: {
+                  flag: "kn_outriders_gone"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_outriders_gone"
+              flag: "a3_open"
             }
           }
         ]
@@ -1409,11 +1638,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_outriders"
+            all: [
+              {
+                flag: "kn_outriders"
+              },
+              {
+                not: {
+                  flag: "kn_outriders_gone"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_outriders_gone"
+              flag: "a3_open"
             }
           }
         ]
@@ -1427,11 +1665,1798 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_outriders"
+            all: [
+              {
+                flag: "kn_outriders"
+              },
+              {
+                not: {
+                  flag: "kn_outriders_gone"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_outriders_gone"
+              flag: "a3_open"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_maud",
+      id: "npc_kn_maud_a3",
+      x: 24,
+      y: 39,
+      facing: 0,
+      dialogue: "d_a3_maud",
+      schedule: [
+        {
+          from: 6,
+          to: 12,
+          spot: "maud_hatch",
+          activity: "idle"
+        },
+        {
+          from: 12,
+          to: 18,
+          spot: "maud_post",
+          activity: "work"
+        },
+        {
+          from: 18,
+          to: 22,
+          spot: "maud_fire",
+          activity: "idle"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "maud_bed",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        flag: "a3_open"
+      }
+    },
+    {
+      def: "npc_kn_linnet",
+      id: "npc_kn_linnet_a3",
+      x: 25,
+      y: 39,
+      facing: 0,
+      dialogue: "d_a3_linnet",
+      schedule: [
+        {
+          from: 6,
+          to: 12,
+          spot: "linnet_hatch",
+          activity: "work"
+        },
+        {
+          from: 12,
+          to: 18,
+          spot: "linnet_square",
+          activity: "work"
+        },
+        {
+          from: 18,
+          to: 22,
+          spot: "linnet_fire",
+          activity: "idle"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "linnet_cot",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            any: [
+              {
+                flag: "a3_linnet_down"
+              },
+              {
+                all: [
+                  {
+                    not: {
+                      flag: "kn_linnet_will_run"
+                    }
+                  },
+                  {
+                    not: {
+                      flag: "kn_linnet_to_shale"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_linnet",
+      id: "npc_kn_linnet_column",
+      x: 21,
+      y: 7,
+      facing: 1,
+      dialogue: "d_a3_linnet",
+      schedule: [
+        {
+          from: 6,
+          to: 22,
+          spot: "cadet_post",
+          activity: "work"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "camp_tent_c",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                not: {
+                  flag: "a3_column_apron"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "kn_linnet_will_run"
+              },
+              {
+                not: {
+                  flag: "a3_linnet_down"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_linnet",
+      id: "npc_kn_linnet_dogs",
+      x: 47,
+      y: 33,
+      facing: 3,
+      dialogue: "d_a3_linnet",
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "kn_linnet_to_shale"
+                  },
+                  {
+                    not: {
+                      flag: "kn_linnet_will_run"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_ally_dogs"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_dace",
+      id: "npc_kn_dace_a3",
+      x: 17,
+      y: 19,
+      facing: 3,
+      dialogue: "d_a3_dace",
+      schedule: [
+        {
+          from: 7,
+          to: 14,
+          spot: "dace_boards",
+          activity: "work"
+        },
+        {
+          from: 14,
+          to: 19,
+          spot: "dace_square",
+          activity: "idle"
+        },
+        {
+          from: 19,
+          to: 23,
+          spot: "dace_shack",
+          activity: "idle"
+        },
+        {
+          from: 23,
+          to: 7,
+          spot: "dace_shack",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              all: [
+                {
+                  flag: "a3_guild_in"
+                },
+                {
+                  not: {
+                    any: [
+                      {
+                        flag: "a3_dace",
+                        eq: "square"
+                      },
+                      {
+                        flag: "a3_dace",
+                        eq: "quit"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_dace",
+      id: "npc_kn_dace_guild",
+      x: 43,
+      y: 1,
+      facing: 2,
+      dialogue: "d_a3_dace",
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            flag: "a3_guild_in"
+          },
+          {
+            not: {
+              any: [
+                {
+                  flag: "a3_dace",
+                  eq: "square"
+                },
+                {
+                  flag: "a3_dace",
+                  eq: "quit"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_corin",
+      id: "npc_kn_corin_a3",
+      x: 42,
+      y: 9,
+      facing: 3,
+      dialogue: "d_a3_corin",
+      schedule: [
+        {
+          from: 5,
+          to: 21,
+          spot: "corin_slope",
+          activity: "work"
+        },
+        {
+          from: 21,
+          to: 5,
+          spot: "corin_bed",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_corin",
+              eq: "down"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_corin",
+      id: "npc_kn_corin_down",
+      x: 45,
+      y: 15,
+      facing: 2,
+      dialogue: "d_a3_corin",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            flag: "a3_corin",
+            eq: "down"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_factor",
+      id: "npc_kn_factor_a3",
+      x: 36,
+      y: 4,
+      facing: 2,
+      dialogue: "d_a3_orme",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            all: [
+              {
+                not: {
+                  dead: "npc_kn_factor"
+                }
+              },
+              {
+                not: {
+                  dead: "npc_kn_factor_a3"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_r1",
+      id: "npc_kn_r1_a3",
+      x: 14,
+      y: 37,
+      facing: 0,
+      dialogue: "d_a3_kn_r1",
+      if: {
+        flag: "a3_open"
+      }
+    },
+    {
+      def: "npc_kn_r2",
+      id: "npc_kn_r2_a3",
+      x: 24,
+      y: 30,
+      facing: 2,
+      dialogue: "d_a3_kn_r2",
+      if: {
+        flag: "a3_open"
+      }
+    },
+    {
+      def: "npc_kn_r3",
+      id: "npc_kn_r3_a3",
+      x: 20,
+      y: 21,
+      facing: 1,
+      dialogue: "d_a3_kn_r3",
+      if: {
+        flag: "a3_open"
+      }
+    },
+    {
+      def: "npc_kn_r4",
+      id: "npc_kn_r4_a3",
+      x: 45,
+      y: 29,
+      facing: 3,
+      dialogue: "d_a3_kn_r4",
+      if: {
+        flag: "a3_open"
+      }
+    },
+    {
+      def: "npc_md_01",
+      x: 22,
+      y: 5,
+      facing: 1,
+      dialogue: "d_a3_lowe",
+      schedule: [
+        {
+          from: 6,
+          to: 22,
+          spot: "lowe_camp",
+          activity: "work"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "camp_tent_a",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                not: {
+                  flag: "a3_column_apron"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_md_01"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_md_12",
+      x: 22,
+      y: 5,
+      facing: 1,
+      dialogue: "d_a3_lowe",
+      schedule: [
+        {
+          from: 6,
+          to: 22,
+          spot: "lowe_camp",
+          activity: "work"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "camp_tent_a",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                not: {
+                  flag: "a3_column_apron"
+                }
+              }
+            ]
+          },
+          {
+            dead: "npc_md_01"
+          },
+          {
+            not: {
+              dead: "npc_md_12"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g3",
+      x: 19,
+      y: 4,
+      facing: 1,
+      schedule: [
+        {
+          from: 6,
+          to: 22,
+          spot: "ward_camp",
+          activity: "work"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "camp_tent_b",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_column_apron"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g4",
+      x: 31,
+      y: 5,
+      facing: 3,
+      schedule: [
+        {
+          from: 6,
+          to: 22,
+          spot: "ward_stand",
+          activity: "work"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "camp_tent_b",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_column_apron"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g5",
+      x: 24,
+      y: 9,
+      facing: 2,
+      schedule: [
+        {
+          from: 6,
+          to: 22,
+          spot: "ward_road",
+          activity: "patrol"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "camp_tent_c",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_column_apron"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g6",
+      x: 34,
+      y: 40,
+      facing: 0,
+      schedule: [
+        {
+          from: 6,
+          to: 22,
+          spot: "ward_apron",
+          activity: "work"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "camp_tent_a",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_column_apron"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_out_lead",
+      id: "npc_kn_out_lead_a3",
+      x: 42,
+      y: 2,
+      facing: 2,
+      dialogue: "d_a3_hale",
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            flag: "a3_guild_in"
+          },
+          {
+            all: [
+              {
+                not: {
+                  dead: "npc_kn_out_lead"
+                }
+              },
+              {
+                not: {
+                  dead: "npc_kn_out_lead_a3"
+                }
+              },
+              {
+                not: {
+                  flag: "a3_hale",
+                  eq: "gone"
+                }
+              },
+              {
+                not: {
+                  flag: "a3_hale",
+                  eq: "dead"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_hale",
+              eq: "answered"
+            }
+          },
+          {
+            not: {
+              all: [
+                {
+                  flag: "a3_c9_how",
+                  eq: "sold"
+                },
+                {
+                  not: {
+                    flag: "a3_hale"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_out_lead",
+      id: "npc_kn_out_lead_boards",
+      x: 18,
+      y: 18,
+      facing: 2,
+      dialogue: "d_a3_hale",
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            all: [
+              {
+                not: {
+                  dead: "npc_kn_out_lead"
+                }
+              },
+              {
+                not: {
+                  dead: "npc_kn_out_lead_a3"
+                }
+              },
+              {
+                not: {
+                  flag: "a3_hale",
+                  eq: "gone"
+                }
+              },
+              {
+                not: {
+                  flag: "a3_hale",
+                  eq: "dead"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_hale",
+            eq: "answered"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g11",
+      x: 45,
+      y: 2,
+      facing: 2,
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            flag: "a3_hounds_in"
+          },
+          {
+            not: {
+              flag: "a3_c9_how",
+              eq: "sold"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g12",
+      x: 47,
+      y: 3,
+      facing: 3,
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            flag: "a3_hounds_in"
+          },
+          {
+            not: {
+              flag: "a3_c9_how",
+              eq: "sold"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_of_02",
+      x: 19,
+      y: 39,
+      facing: 1,
+      dialogue: "d_a3_petra",
+      schedule: [],
+      if: {
+        all: [
+          {
+            any: [
+              {
+                all: [
+                  {
+                    all: [
+                      {
+                        flag: "a3_open"
+                      },
+                      {
+                        hour: {
+                          from: 21,
+                          to: 4
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            not: {
+                              flag: "a3_unwritten"
+                            }
+                          },
+                          {
+                            all: [
+                              {
+                                flag: "a3_unwritten",
+                                eq: "burning"
+                              },
+                              {
+                                not: {
+                                  event: "a3_burning"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        not: {
+                          any: [
+                            {
+                              flag: "a3_c9",
+                              eq: "opened"
+                            },
+                            {
+                              flag: "a3_c9",
+                              eq: "relocated"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                all: [
+                  {
+                    flag: "a3_uw_fight"
+                  },
+                  {
+                    not: {
+                      flag: "a3_unwritten"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_of_02"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_u1",
+      x: 19,
+      y: 39,
+      facing: 1,
+      schedule: [],
+      if: {
+        all: [
+          {
+            any: [
+              {
+                all: [
+                  {
+                    all: [
+                      {
+                        flag: "a3_open"
+                      },
+                      {
+                        hour: {
+                          from: 21,
+                          to: 4
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            not: {
+                              flag: "a3_unwritten"
+                            }
+                          },
+                          {
+                            all: [
+                              {
+                                flag: "a3_unwritten",
+                                eq: "burning"
+                              },
+                              {
+                                not: {
+                                  event: "a3_burning"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        not: {
+                          any: [
+                            {
+                              flag: "a3_c9",
+                              eq: "opened"
+                            },
+                            {
+                              flag: "a3_c9",
+                              eq: "relocated"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                all: [
+                  {
+                    flag: "a3_uw_fight"
+                  },
+                  {
+                    not: {
+                      flag: "a3_unwritten"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            dead: "npc_of_02"
+          },
+          {
+            not: {
+              flag: "a3_uw_fight",
+              eq: "petra"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_u2",
+      x: 18,
+      y: 41,
+      facing: 1,
+      schedule: [],
+      if: {
+        any: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    hour: {
+                      from: 21,
+                      to: 4
+                    }
+                  }
+                ]
+              },
+              {
+                all: [
+                  {
+                    any: [
+                      {
+                        not: {
+                          flag: "a3_unwritten"
+                        }
+                      },
+                      {
+                        all: [
+                          {
+                            flag: "a3_unwritten",
+                            eq: "burning"
+                          },
+                          {
+                            not: {
+                              event: "a3_burning"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    not: {
+                      any: [
+                        {
+                          flag: "a3_c9",
+                          eq: "opened"
+                        },
+                        {
+                          flag: "a3_c9",
+                          eq: "relocated"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "a3_uw_fight"
+              },
+              {
+                not: {
+                  flag: "a3_unwritten"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_u3",
+      x: 20,
+      y: 42,
+      facing: 1,
+      schedule: [],
+      if: {
+        any: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    hour: {
+                      from: 21,
+                      to: 4
+                    }
+                  }
+                ]
+              },
+              {
+                all: [
+                  {
+                    any: [
+                      {
+                        not: {
+                          flag: "a3_unwritten"
+                        }
+                      },
+                      {
+                        all: [
+                          {
+                            flag: "a3_unwritten",
+                            eq: "burning"
+                          },
+                          {
+                            not: {
+                              event: "a3_burning"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    not: {
+                      any: [
+                        {
+                          flag: "a3_c9",
+                          eq: "opened"
+                        },
+                        {
+                          flag: "a3_c9",
+                          eq: "relocated"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "a3_uw_fight"
+              },
+              {
+                not: {
+                  flag: "a3_unwritten"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_md_01",
+      id: "npc_md_01_apron",
+      x: 28,
+      y: 37,
+      facing: 2,
+      dialogue: "d_a3_door",
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_column_apron"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_md_01"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_md_12",
+      id: "npc_md_12_apron",
+      x: 28,
+      y: 37,
+      facing: 2,
+      dialogue: "d_a3_door",
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_column_apron"
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                dead: "npc_md_01"
+              },
+              {
+                not: {
+                  dead: "npc_md_12"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g3",
+      id: "npc_a3_g3_apron",
+      x: 26,
+      y: 37,
+      facing: 2,
+      dialogue: "d_a3_door",
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_column_apron"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_a3_g3"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g4",
+      id: "npc_a3_g4_apron",
+      x: 30,
+      y: 37,
+      facing: 2,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_column_apron"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_a3_g4"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g5",
+      id: "npc_a3_g5_apron",
+      x: 24,
+      y: 37,
+      facing: 2,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_column_apron"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_a3_g5"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g6",
+      id: "npc_a3_g6_apron",
+      x: 32,
+      y: 37,
+      facing: 2,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_column_apron"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_a3_g6"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_linnet",
+      id: "npc_kn_linnet_apron",
+      x: 34,
+      y: 38,
+      facing: 3,
+      dialogue: "d_a3_linnet",
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_column_apron"
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "kn_linnet_will_run"
+              },
+              {
+                not: {
+                  flag: "a3_linnet_down"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_03",
+      id: "npc_c9_03_door",
+      x: 27,
+      y: 42,
+      facing: 0,
+      dialogue: "d_a3_tam_door",
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_tam_door"
+          },
+          {
+            flag: "tam_left",
+            eq: "door"
+          },
+          {
+            not: {
+              flag: "a3_tamsin_dead"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g15",
+      x: 21,
+      y: 36,
+      facing: 0,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_ally_shale"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g16",
+      x: 23,
+      y: 36,
+      facing: 0,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_ally_shale"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g17",
+      x: 42,
+      y: 35,
+      facing: 3,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_ally_dogs"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g18",
+      x: 44,
+      y: 34,
+      facing: 3,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_ally_dogs"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_01",
+      id: "npc_c9_01_apron",
+      x: 26,
+      y: 38,
+      facing: 0,
+      dialogue: "d_a3_ap_ines",
+      schedule: [],
+      if: {
+        flag: "a3_c9",
+        eq: "opened"
+      }
+    },
+    {
+      def: "npc_c9_r2",
+      id: "npc_c9_r2_apron",
+      x: 30,
+      y: 40,
+      facing: 2,
+      dialogue: "d_a3_ap_wes",
+      schedule: [],
+      if: {
+        flag: "a3_c9",
+        eq: "opened"
+      }
+    },
+    {
+      def: "npc_c9_r1",
+      id: "npc_c9_r1_apron",
+      x: 15,
+      y: 37,
+      facing: 3,
+      dialogue: "d_a3_ap_ola",
+      schedule: [],
+      if: {
+        flag: "a3_c9",
+        eq: "opened"
+      }
+    },
+    {
+      def: "npc_c9_r4",
+      id: "npc_c9_r4_apron",
+      x: 27,
+      y: 7,
+      facing: 0,
+      dialogue: "d_a3_ap_effie",
+      schedule: [],
+      if: {
+        flag: "a3_c9",
+        eq: "opened"
+      }
+    },
+    {
+      def: "npc_c9_03",
+      id: "npc_c9_03_after",
+      x: 27,
+      y: 42,
+      facing: 0,
+      dialogue: "d_a3_tam_after",
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "tam_left",
+                eq: "door"
+              },
+              {
+                not: {
+                  flag: "a3_tamsin_dead"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_c9"
+          },
+          {
+            not: {
+              all: [
+                {
+                  all: [
+                    {
+                      flag: "tam_left",
+                      eq: "door"
+                    },
+                    {
+                      not: {
+                        flag: "a3_tamsin_dead"
+                      }
+                    }
+                  ]
+                },
+                {
+                  all: [
+                    {
+                      all: [
+                        {
+                          flag: "a3_c9",
+                          eq: "relocated"
+                        },
+                        {
+                          any: [
+                            {
+                              flag: "a3_c9_how",
+                              eq: "order"
+                            },
+                            {
+                              flag: "a3_c9_how",
+                              eq: "forced"
+                            },
+                            {
+                              flag: "a3_c9_how",
+                              eq: "consent"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      not: {
+                        flag: "a3_c9_after"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            not: {
+              all: [
+                {
+                  all: [
+                    {
+                      flag: "tam_left",
+                      eq: "door"
+                    },
+                    {
+                      not: {
+                        flag: "a3_tamsin_dead"
+                      }
+                    }
+                  ]
+                },
+                {
+                  all: [
+                    {
+                      flag: "a3_c9",
+                      eq: "relocated"
+                    },
+                    {
+                      any: [
+                        {
+                          flag: "a3_c9_how",
+                          eq: "order"
+                        },
+                        {
+                          flag: "a3_c9_how",
+                          eq: "forced"
+                        },
+                        {
+                          flag: "a3_c9_how",
+                          eq: "consent"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  flag: "a3_c9_after",
+                  eq: "walked"
+                }
+              ]
             }
           }
         ]
@@ -1601,6 +3626,1241 @@ export const c9_mouth: MapDef = {
           }
         }
       ]
+    },
+    {
+      id: "a3_guild",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 26,
+      if: {
+        all: [
+          {
+            flag: "a3_order_read"
+          },
+          {
+            any: [
+              {
+                flag: "ln_alliance",
+                eq: "guild"
+              },
+              {
+                flag: "hc_offer",
+                eq: "accepted"
+              },
+              {
+                flag: "hc_offer",
+                eq: "feigned"
+              },
+              {
+                flag: "rc_line",
+                eq: "guild"
+              },
+              {
+                flag: "nw_controllers",
+                eq: "guild"
+              }
+            ]
+          }
+        ]
+      },
+      effects: [
+        {
+          set: "a3_guild_in"
+        }
+      ]
+    },
+    {
+      id: "a3_hounds",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 26,
+      if: {
+        all: [
+          {
+            flag: "a3_order_read"
+          },
+          {
+            all: [
+              {
+                any: [
+                  {
+                    flag: "ln_alliance",
+                    eq: "guild"
+                  },
+                  {
+                    flag: "hc_offer",
+                    eq: "accepted"
+                  },
+                  {
+                    flag: "hc_offer",
+                    eq: "feigned"
+                  },
+                  {
+                    flag: "rc_line",
+                    eq: "guild"
+                  },
+                  {
+                    flag: "nw_controllers",
+                    eq: "guild"
+                  }
+                ]
+              },
+              {
+                any: [
+                  {
+                    flag: "nw_controllers",
+                    eq: "guild"
+                  },
+                  {
+                    flag: "ln_alliance",
+                    eq: "guild"
+                  },
+                  {
+                    flag: "an_reserve",
+                    eq: "concern"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      effects: [
+        {
+          set: "a3_hounds_in"
+        }
+      ]
+    },
+    {
+      id: "a3_arrive",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 26,
+      if: {
+        flag: "a3_order_read"
+      },
+      effects: [
+        {
+          set: "a3_at_knock"
+        },
+        {
+          set: "a3_in_sallow"
+        },
+        {
+          learn: "loc_cistern9"
+        },
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_home",
+            name: "Knock"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_camp",
+      x: 13,
+      y: 1,
+      w: 11,
+      h: 12,
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_c9"
+            }
+          }
+        ]
+      },
+      text: "The column's camp: grey tents in a row, pegged square to the wind; a table under a canvas fly with a lamp on it and the order under a stone; water barrels stencilled PRECINCT SUPPLY under a tarp, more than four wardens could drink in a month. Nobody is cleaning a rifle. That is the first thing you notice, and the thing you keep noticing.",
+      effects: [
+        {
+          learn: "a3_column_seen"
+        }
+      ]
+    },
+    {
+      id: "a3_chalk",
+      x: 18,
+      y: 37,
+      w: 21,
+      h: 4,
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            hour: {
+              from: 5,
+              to: 21
+            }
+          },
+          {
+            all: [
+              {
+                any: [
+                  {
+                    not: {
+                      flag: "a3_unwritten"
+                    }
+                  },
+                  {
+                    all: [
+                      {
+                        flag: "a3_unwritten",
+                        eq: "burning"
+                      },
+                      {
+                        not: {
+                          event: "a3_burning"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                not: {
+                  any: [
+                    {
+                      flag: "a3_c9",
+                      eq: "opened"
+                    },
+                    {
+                      flag: "a3_c9",
+                      eq: "relocated"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_unwritten"
+            }
+          }
+        ]
+      },
+      text: "Chalk on the apron's concrete by the door, big enough to read from the lane: an open eye, struck through with one hard line. Somebody has tried to scuff it out with a boot and given up. The Choir paints an open eye on its barrels and its doors. The line through it is the Unwritten's, and it is not a blessing.",
+      effects: [
+        {
+          learn: "a3_uw_chalk"
+        },
+        {
+          quest: "q_a3_unwritten",
+          start: true
+        }
+      ]
+    },
+    {
+      id: "a3_uw_after",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 44,
+      once: false,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_uw_fight"
+              },
+              {
+                not: {
+                  flag: "a3_unwritten"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                any: [
+                  {
+                    all: [
+                      {
+                        flag: "a3_uw_fight",
+                        eq: "petra"
+                      },
+                      {
+                        dead: "npc_of_02"
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        flag: "a3_uw_fight",
+                        eq: "juniper"
+                      },
+                      {
+                        dead: "npc_a3_u1"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                dead: "npc_a3_u2"
+              },
+              {
+                dead: "npc_a3_u3"
+              }
+            ]
+          }
+        ]
+      },
+      text: "They are down, all three, at the dark end of the apron by the grate, with the oil cans where they left them. Up the lane the doors are open and nobody is coming out of them. In the morning somebody carries them up the road under canvas, and Maud scrubs the apron where they lay, and nobody chalks anything on it again.",
+      effects: [
+        {
+          set: "a3_unwritten",
+          value: "stopped"
+        },
+        {
+          set: "a3_uw_how",
+          value: "fought"
+        },
+        {
+          xp: 100
+        },
+        {
+          news: {
+            tag: "a3_uw_fought",
+            text: "the designate killed three of the Choir's grey people on Knock's apron, who had come in the night to burn the Cistern",
+            valence: 5,
+            size: 6,
+            at: "cistern9"
+          }
+        },
+        {
+          decision: {
+            id: "a3_unwritten",
+            text: "At Knock I fought the Unwritten on the apron in the dark, and none of them went down the grate."
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_door_line",
+      x: 18,
+      y: 37,
+      w: 21,
+      h: 6,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_column_apron"
+          }
+        ]
+      },
+      effects: [
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_door",
+            name: "The yellow line"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_door_broken_open",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 44,
+      once: false,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_door_fight"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                any: [
+                  {
+                    all: [
+                      {
+                        not: {
+                          dead: "npc_md_01"
+                        }
+                      },
+                      {
+                        dead: "npc_md_01_apron"
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        all: [
+                          {
+                            dead: "npc_md_01"
+                          },
+                          {
+                            not: {
+                              dead: "npc_md_12"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        dead: "npc_md_12_apron"
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        all: [
+                          {
+                            dead: "npc_md_01"
+                          },
+                          {
+                            dead: "npc_md_12"
+                          }
+                        ]
+                      },
+                      {
+                        dead: "npc_a3_g3_apron"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            flag: "a3_ring",
+            eq: "open"
+          }
+        ]
+      },
+      effects: [
+        {
+          set: "a3_c9",
+          value: "opened"
+        },
+        {
+          set: "a3_c9_how",
+          value: "ines"
+        },
+        {
+          set: "a3_c9_by",
+          value: "fought"
+        },
+        {
+          set: "a3_lowe",
+          value: "dead"
+        },
+        {
+          xp: 300
+        },
+        {
+          news: {
+            tag: "a3_door_fought",
+            text: "the designate broke the city's column on Knock's apron in front of the Cistern's door",
+            valence: 4,
+            size: 9,
+            at: "cistern9"
+          }
+        },
+        {
+          decision: {
+            id: "a3_c9",
+            text: "I broke the city's column on Knock's apron, and its lead died there. The Cistern's people opened their own door and walked out of it, as their ring had voted."
+          }
+        },
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_door",
+            name: "The apron"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_door_broken_shut",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 44,
+      once: false,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_door_fight"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                any: [
+                  {
+                    all: [
+                      {
+                        not: {
+                          dead: "npc_md_01"
+                        }
+                      },
+                      {
+                        dead: "npc_md_01_apron"
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        all: [
+                          {
+                            dead: "npc_md_01"
+                          },
+                          {
+                            not: {
+                              dead: "npc_md_12"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        dead: "npc_md_12_apron"
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        all: [
+                          {
+                            dead: "npc_md_01"
+                          },
+                          {
+                            dead: "npc_md_12"
+                          }
+                        ]
+                      },
+                      {
+                        dead: "npc_a3_g3_apron"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_ring",
+              eq: "open"
+            }
+          }
+        ]
+      },
+      effects: [
+        {
+          set: "a3_c9",
+          value: "sealed"
+        },
+        {
+          set: "a3_c9_how",
+          value: "fought"
+        },
+        {
+          set: "a3_lowe",
+          value: "dead"
+        },
+        {
+          xp: 300
+        },
+        {
+          news: {
+            tag: "a3_door_fought",
+            text: "the designate broke the city's column on Knock's apron in front of the Cistern's door",
+            valence: 4,
+            size: 9,
+            at: "cistern9"
+          }
+        },
+        {
+          decision: {
+            id: "a3_c9",
+            text: "I broke the city's column on Knock's apron, and its lead died there. The door stayed shut."
+          }
+        },
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_door",
+            name: "The apron"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_door_yields_open",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 44,
+      once: false,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_door_fight"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                not: {
+                  any: [
+                    {
+                      all: [
+                        {
+                          not: {
+                            dead: "npc_md_01"
+                          }
+                        },
+                        {
+                          dead: "npc_md_01_apron"
+                        }
+                      ]
+                    },
+                    {
+                      all: [
+                        {
+                          all: [
+                            {
+                              dead: "npc_md_01"
+                            },
+                            {
+                              not: {
+                                dead: "npc_md_12"
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          dead: "npc_md_12_apron"
+                        }
+                      ]
+                    },
+                    {
+                      all: [
+                        {
+                          all: [
+                            {
+                              dead: "npc_md_01"
+                            },
+                            {
+                              dead: "npc_md_12"
+                            }
+                          ]
+                        },
+                        {
+                          dead: "npc_a3_g3_apron"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                any: [
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g3"
+                          },
+                          {
+                            dead: "npc_a3_g3_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g4"
+                          },
+                          {
+                            dead: "npc_a3_g4_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g3"
+                          },
+                          {
+                            dead: "npc_a3_g3_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g5"
+                          },
+                          {
+                            dead: "npc_a3_g5_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g3"
+                          },
+                          {
+                            dead: "npc_a3_g3_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g6"
+                          },
+                          {
+                            dead: "npc_a3_g6_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g4"
+                          },
+                          {
+                            dead: "npc_a3_g4_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g5"
+                          },
+                          {
+                            dead: "npc_a3_g5_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g4"
+                          },
+                          {
+                            dead: "npc_a3_g4_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g6"
+                          },
+                          {
+                            dead: "npc_a3_g6_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g5"
+                          },
+                          {
+                            dead: "npc_a3_g5_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g6"
+                          },
+                          {
+                            dead: "npc_a3_g6_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            flag: "a3_ring",
+            eq: "open"
+          }
+        ]
+      },
+      effects: [
+        {
+          set: "a3_c9",
+          value: "opened"
+        },
+        {
+          set: "a3_c9_how",
+          value: "ines"
+        },
+        {
+          set: "a3_c9_by",
+          value: "fought"
+        },
+        {
+          set: "a3_lowe",
+          value: "yielded"
+        },
+        {
+          xp: 300
+        },
+        {
+          news: {
+            tag: "a3_door_fought",
+            text: "the designate broke the city's column on Knock's apron in front of the Cistern's door",
+            valence: 4,
+            size: 9,
+            at: "cistern9"
+          }
+        },
+        {
+          decision: {
+            id: "a3_c9",
+            text: "I broke the city's column on Knock's apron, and its lead yielded with two of the wardens down. The Cistern's people opened their own door and walked out of it, as their ring had voted."
+          }
+        },
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_door",
+            name: "The apron"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_door_yields_shut",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 44,
+      once: false,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_door_fight"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                not: {
+                  any: [
+                    {
+                      all: [
+                        {
+                          not: {
+                            dead: "npc_md_01"
+                          }
+                        },
+                        {
+                          dead: "npc_md_01_apron"
+                        }
+                      ]
+                    },
+                    {
+                      all: [
+                        {
+                          all: [
+                            {
+                              dead: "npc_md_01"
+                            },
+                            {
+                              not: {
+                                dead: "npc_md_12"
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          dead: "npc_md_12_apron"
+                        }
+                      ]
+                    },
+                    {
+                      all: [
+                        {
+                          all: [
+                            {
+                              dead: "npc_md_01"
+                            },
+                            {
+                              dead: "npc_md_12"
+                            }
+                          ]
+                        },
+                        {
+                          dead: "npc_a3_g3_apron"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                any: [
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g3"
+                          },
+                          {
+                            dead: "npc_a3_g3_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g4"
+                          },
+                          {
+                            dead: "npc_a3_g4_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g3"
+                          },
+                          {
+                            dead: "npc_a3_g3_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g5"
+                          },
+                          {
+                            dead: "npc_a3_g5_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g3"
+                          },
+                          {
+                            dead: "npc_a3_g3_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g6"
+                          },
+                          {
+                            dead: "npc_a3_g6_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g4"
+                          },
+                          {
+                            dead: "npc_a3_g4_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g5"
+                          },
+                          {
+                            dead: "npc_a3_g5_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g4"
+                          },
+                          {
+                            dead: "npc_a3_g4_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g6"
+                          },
+                          {
+                            dead: "npc_a3_g6_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g5"
+                          },
+                          {
+                            dead: "npc_a3_g5_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g6"
+                          },
+                          {
+                            dead: "npc_a3_g6_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_ring",
+              eq: "open"
+            }
+          }
+        ]
+      },
+      effects: [
+        {
+          set: "a3_c9",
+          value: "sealed"
+        },
+        {
+          set: "a3_c9_how",
+          value: "fought"
+        },
+        {
+          set: "a3_lowe",
+          value: "yielded"
+        },
+        {
+          xp: 300
+        },
+        {
+          news: {
+            tag: "a3_door_fought",
+            text: "the designate broke the city's column on Knock's apron in front of the Cistern's door",
+            valence: 4,
+            size: 9,
+            at: "cistern9"
+          }
+        },
+        {
+          decision: {
+            id: "a3_c9",
+            text: "I broke the city's column on Knock's apron, and its lead yielded with two of the wardens down. The door stayed shut."
+          }
+        },
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_door",
+            name: "The apron"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_tam_line",
+      x: 18,
+      y: 37,
+      w: 21,
+      h: 6,
+      if: {
+        all: [
+          {
+            flag: "a3_c9"
+          },
+          {
+            flag: "a3_tamsin_dead"
+          }
+        ]
+      },
+      text: "Inside the yellow line, where the door swung out over the concrete, the white arc it scraped has been scrubbed clean, and in the middle of it somebody has chalked a name and keeps it chalked: TAMSIN. Beside it, every morning, a cup of water, full, as if it were hatch day.",
+      effects: [
+        {
+          learn: "a3k_tam_line"
+        }
+      ]
+    },
+    {
+      id: "a3_hale_after",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 44,
+      once: false,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_hale_fight"
+              },
+              {
+                not: {
+                  flag: "a3_hale"
+                }
+              }
+            ]
+          },
+          {
+            dead: "npc_kn_out_lead_a3"
+          }
+        ]
+      },
+      text: "Brannick Hale lies on the guild's ground east of the stand, his hat on the saddle where he put it. The handlers have their leads wrapped twice round their fists and have not moved. Orme comes out from behind her counter and looks, and goes back in. Down the lane Knock is at its doors, and nobody says anything at all.",
+      effects: [
+        {
+          set: "a3_hale",
+          value: "dead"
+        },
+        {
+          rep: {
+            faction: "tollmen",
+            respect: -5,
+            fear: 5
+          }
+        },
+        {
+          xp: 60
+        },
+        {
+          decision: {
+            id: "a3_hale",
+            text: "At Knock I killed Brannick Hale, the outrider who burned the post-house, on the guild's own ground."
+          }
+        }
+      ]
     }
   ],
   extras: [
@@ -1624,7 +4884,7 @@ export const c9_mouth: MapDef = {
         to: 18
       },
       barks: [
-        "Hatch day. Wool for water, same as my mother did.",
+        "Wool for water. Same as my mother did, and hers.",
         "MOTHER says thank you. MOTHER always says thank you.",
         "Get your goats off the apron, Afua!"
       ]

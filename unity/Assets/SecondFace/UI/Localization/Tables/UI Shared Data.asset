@@ -2555,6 +2555,658 @@ MonoBehaviour:
     m_Key: dust.they_short
     m_Metadata:
       m_Items: []
+  - m_Id: 6961751270998016
+    m_Key: combat.reason.skill
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358144
+    m_Key: combat.reason.aim_mods
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358145
+    m_Key: combat.reason.crippled_arm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358146
+    m_Key: combat.reason.range
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358147
+    m_Key: combat.reason.close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358148
+    m_Key: combat.reason.height
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358149
+    m_Key: combat.reason.height_denies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358150
+    m_Key: combat.reason.cover
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358151
+    m_Key: combat.reason.flanked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358152
+    m_Key: combat.reason.target_stance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358153
+    m_Key: combat.reason.stance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358154
+    m_Key: combat.reason.smoke
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358155
+    m_Key: combat.reason.obstructed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358156
+    m_Key: combat.reason.reflex
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358157
+    m_Key: combat.reason.evasion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358158
+    m_Key: combat.reason.heavy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358159
+    m_Key: combat.reason.aimed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358160
+    m_Key: combat.reason.burst
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358161
+    m_Key: combat.reason.dark
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358162
+    m_Key: combat.reason.traits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358163
+    m_Key: combat.reason.eyes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358164
+    m_Key: combat.reason.status
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358165
+    m_Key: combat.reason.reaction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358166
+    m_Key: combat.reason.inspired
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358167
+    m_Key: combat.reason.difficulty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358168
+    m_Key: combat.status.bleeding
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358169
+    m_Key: combat.status.burning
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358170
+    m_Key: combat.status.blinded
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358171
+    m_Key: combat.status.suppressed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358172
+    m_Key: combat.status.choking
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358173
+    m_Key: combat.status.shocked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358174
+    m_Key: combat.status.adrenaline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358175
+    m_Key: combat.status.stunned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358176
+    m_Key: combat.status.prone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358177
+    m_Key: combat.status.crouch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358178
+    m_Key: combat.status.crippled_arm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358179
+    m_Key: combat.status.crippled_leg
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358180
+    m_Key: combat.status.crippled_eyes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358181
+    m_Key: combat.cover.none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358182
+    m_Key: combat.cover.half
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358183
+    m_Key: combat.cover.full
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358184
+    m_Key: combat.flanked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358185
+    m_Key: combat.intent
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358186
+    m_Key: combat.watching
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358187
+    m_Key: verb.overwatch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358188
+    m_Key: verb.cover_fire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358189
+    m_Key: verb.suppress
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358190
+    m_Key: verb.throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358191
+    m_Key: verb.crouch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358192
+    m_Key: verb.prone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358193
+    m_Key: verb.stand
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358194
+    m_Key: verb.take_prisoner
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358195
+    m_Key: verb.shoot_prop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358196
+    m_Key: verb.swap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358197
+    m_Key: combat.part.head
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358198
+    m_Key: combat.part.eyes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358199
+    m_Key: combat.part.torso
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358200
+    m_Key: combat.part.armL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358201
+    m_Key: combat.part.armR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358202
+    m_Key: combat.part.legL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358203
+    m_Key: combat.part.legR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358204
+    m_Key: combat.part.groin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358205
+    m_Key: combat.part.weapon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358206
+    m_Key: combat.card.chance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358207
+    m_Key: combat.card.ap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358208
+    m_Key: combat.card.free
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358209
+    m_Key: combat.card.damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358210
+    m_Key: combat.card.damage_rounds
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358211
+    m_Key: combat.card.crit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358212
+    m_Key: combat.card.kill
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358213
+    m_Key: combat.card.flank_crit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358214
+    m_Key: combat.card.capped_high
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358215
+    m_Key: combat.card.capped_low
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358216
+    m_Key: combat.card.in_the_way
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358217
+    m_Key: combat.card.answered
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358218
+    m_Key: combat.why.cannot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358219
+    m_Key: combat.why.needs_ap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358220
+    m_Key: combat.why.no_sight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358221
+    m_Key: combat.why.out_of_reach
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358222
+    m_Key: combat.why.out_of_fight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358223
+    m_Key: combat.why.no_burst
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358224
+    m_Key: combat.why.pit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358225
+    m_Key: combat.why.broken
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358226
+    m_Key: combat.why.heavy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358227
+    m_Key: combat.why.no_ammo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358228
+    m_Key: combat.why.needs_gun
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358229
+    m_Key: combat.why.rounds
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358230
+    m_Key: combat.why.out_of_range
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358231
+    m_Key: combat.why.too_far_throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358232
+    m_Key: combat.why.no_clear_throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358233
+    m_Key: combat.why.nothing_to_throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358234
+    m_Key: combat.why.no_way
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358235
+    m_Key: combat.why.no_heal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358236
+    m_Key: combat.why.walk_closer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358237
+    m_Key: combat.move.act
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358238
+    m_Key: combat.move.dash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358239
+    m_Key: combat.move.unseen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358240
+    m_Key: combat.move.open_to
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358241
+    m_Key: combat.move.flanks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358242
+    m_Key: combat.move.draws
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358243
+    m_Key: combat.move.hazard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358244
+    m_Key: combat.move.near_blast
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358245
+    m_Key: combat.move.tap_again
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358246
+    m_Key: combat.move.cancelled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358247
+    m_Key: combat.ground.fire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358248
+    m_Key: combat.ground.chem
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358249
+    m_Key: combat.ground.shock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358250
+    m_Key: combat.ground.smoke
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358251
+    m_Key: combat.ground.oil
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358252
+    m_Key: combat.ground.water
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358253
+    m_Key: combat.throw.headline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358254
+    m_Key: combat.throw.caught
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358255
+    m_Key: combat.throw.allies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358256
+    m_Key: combat.throw.scatter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358257
+    m_Key: combat.throw.aim
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358258
+    m_Key: combat.throw.cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358259
+    m_Key: combat.float.miss
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358260
+    m_Key: combat.float.graze
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358261
+    m_Key: combat.float.damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358262
+    m_Key: combat.float.crit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358263
+    m_Key: combat.float.heal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358264
+    m_Key: combat.float.down
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358265
+    m_Key: combat.float.yields
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358266
+    m_Key: combat.float.breaks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358267
+    m_Key: combat.float.prisoner
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358268
+    m_Key: combat.float.surprised
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358269
+    m_Key: combat.undo.ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358270
+    m_Key: combat.undo.seen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358271
+    m_Key: combat.undo.shot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358272
+    m_Key: combat.undo.ground
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358273
+    m_Key: combat.undo.dice
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358274
+    m_Key: combat.undo.away
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358275
+    m_Key: combat.undo.done
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358276
+    m_Key: combat.hold.ends_turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358277
+    m_Key: combat.end_turn.ap_left
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358278
+    m_Key: combat.end_turn.confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358279
+    m_Key: combat.end.victory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358280
+    m_Key: combat.end.fled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358281
+    m_Key: combat.end.truce
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358282
+    m_Key: combat.end.defeat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358283
+    m_Key: combat.end.beaten
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358284
+    m_Key: combat.end.tally_down
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358285
+    m_Key: combat.end.tally_prisoners
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358286
+    m_Key: combat.end.tally_fled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358287
+    m_Key: combat.end.tally_escaped
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358288
+    m_Key: combat.end.tally_ours_down
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358289
+    m_Key: combat.end.tally_xp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358290
+    m_Key: combat.surprise
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358291
+    m_Key: combat.intent_throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358292
+    m_Key: combat.intent_hold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358293
+    m_Key: combat.stance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358294
+    m_Key: combat.throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358295
+    m_Key: combat.swap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358296
+    m_Key: combat.undo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358297
+    m_Key: combat.overwatch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358298
+    m_Key: combat.focus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358299
+    m_Key: verb.demand
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358300
+    m_Key: verb.heal_ally
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358301
+    m_Key: verb.stance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358302
+    m_Key: verb.undo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358303
+    m_Key: settings.combat_skip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358304
+    m_Key: settings.combat_skip_on
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358305
+    m_Key: settings.combat_skip_off
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

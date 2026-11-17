@@ -1,0 +1,103 @@
+{
+ "name": "bottle",
+ "kind": "glass bottle (fire bottle); label and wine removed",
+ "source": "https://polyhaven.com/a/wine_bottles_01",
+ "license": "CC0 1.0",
+ "author": "Rico Cilliers (model), Jurita Burger (labels; not used) (Poly Haven)",
+ "file": "bottle.fbx",
+ "units": "metres",
+ "frame": "Unity: +Z forward (muzzle/tip), +Y up, +X right; origin = grip_main",
+ "triangles": {
+  "body": 600,
+  "source_body": 5448,
+  "wick": 84
+ },
+ "size_m": [
+  0.074,
+  0.087,
+  0.322
+ ],
+ "points_unity": {
+  "grip_main": [
+   -0.0,
+   0.0,
+   -0.0
+  ],
+  "tip": [
+   -0.0,
+   0.0005,
+   0.238
+  ]
+ },
+ "materials": {
+  "wine_bottles_01_glass_orange": {
+   "BaseColor": "bottle_0_BaseColor.png",
+   "Normal": "bottle_0_Normal.png",
+   "Mask": "bottle_0_Mask.png",
+   "material": "glass",
+   "surface": "transparent",
+   "blend": "premultiply",
+   "alpha": "BaseColor.a",
+   "note": "URP Lit, Surface Type Transparent, Blend Premultiply (keeps the highlights on clear glass), alpha from the base map; the rag band at the neck is opaque (alpha 1)"
+  },
+  "wine_bottles_01_seal_cork": {
+   "BaseColor": "bottle_1_BaseColor.jpg",
+   "Normal": "bottle_1_Normal.png",
+   "Mask": "bottle_1_Mask.png",
+   "material": "cloth",
+   "role": "rag wick: the old capsule painted as cloth, and the wick mesh (bottle_wick) uses the same map"
+  }
+ },
+ "texture_size": 512,
+ "notes": [
+  "grip points are palm centres; the hand socket aligns its palm frame to the weapon frame (forward along the barrel/blade, up along the top/spine)",
+  "wick: child mesh bottle_wick (a twisted rag tail out of the mouth, 84 triangles) on the rag material; the FBX was re-exported with the staging settings, round trip checked (verts 0.0e+00 m, nulls 0.0e+00 m)",
+  "lore pass done: amber glass, bone rag wick; variant v2: green glass, madder rag wick"
+ ],
+ "variants": {
+  "v1": {
+   "label": "amber glass, bone rag wick",
+   "materials": {
+    "wine_bottles_01_glass_orange": {
+     "BaseColor": "bottle_0_BaseColor.png",
+     "Normal": "bottle_0_Normal.png",
+     "Mask": "bottle_0_Mask.png",
+     "material": "glass",
+     "surface": "transparent",
+     "blend": "premultiply",
+     "alpha": "BaseColor.a",
+     "note": "URP Lit, Surface Type Transparent, Blend Premultiply (keeps the highlights on clear glass), alpha from the base map; the rag band at the neck is opaque (alpha 1)"
+    },
+    "wine_bottles_01_seal_cork": {
+     "BaseColor": "bottle_1_BaseColor.jpg",
+     "Normal": "bottle_1_Normal.png",
+     "Mask": "bottle_1_Mask.png",
+     "material": "cloth",
+     "role": "rag wick: the old capsule painted as cloth, and the wick mesh (bottle_wick) uses the same map"
+    }
+   }
+  },
+  "v2": {
+   "label": "green glass, madder rag wick",
+   "materials": {
+    "wine_bottles_01_glass_orange": {
+     "BaseColor": "bottle_v2_0_BaseColor.png",
+     "Normal": "bottle_v2_0_Normal.png",
+     "Mask": "bottle_v2_0_Mask.png",
+     "material": "glass"
+    },
+    "wine_bottles_01_seal_cork": {
+     "BaseColor": "bottle_v2_1_BaseColor.jpg",
+     "Normal": "bottle_v2_1_Normal.png",
+     "Mask": "bottle_v2_1_Mask.png"
+    }
+   }
+  }
+ },
+ "lore": {
+  "pass": "2026-11-17, tools/lore/lore.py (recipes in the weapon frame; bakes by tools/lore/bake_maps.py)",
+  "originals": "raw/weapons_pre_lore/bottle/",
+  "painted_out": "no marks left (the label was dropped at staging); glass and capsule repainted whole",
+  "mask_occlusion": "G now carries the mesh AO and cavities where the staged mask had none"
+ }
+}

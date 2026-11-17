@@ -12,7 +12,10 @@ namespace SecondFace.Game.UI
         public readonly bool Open;
         /// <summary>A short line under the verb's name (a fight's odds and cost: "62% · 4 AP"); null for none.</summary>
         public readonly string Note;
-        public RadialVerb(string id, bool open = true, string note = null) { Id = id; Open = open; Note = note; }
+        /// <summary>The verb's name in place of <c>verb.&lt;id&gt;</c>'s (a throwable's own name), and its icon in place of the
+        /// id's; null for the usual.</summary>
+        public readonly string Label, Icon;
+        public RadialVerb(string id, bool open = true, string note = null, string label = null, string icon = null) { Id = id; Open = open; Note = note; Label = label; Icon = icon; }
     }
 
     /// <summary>
@@ -51,6 +54,10 @@ namespace SecondFace.Game.UI
         public Vector2 Centre { get; private set; }
         public VisualElement Ring => _ring;
         public Button VerbButton(string id) => _buttons.TryGetValue(id, out var b) ? b : null;
+        /// <summary>A verb is pointed at or focused by the pad (the fight's card follows it).</summary>
+        public event Action<string> Focused;
+        /// <summary>The ring is closed (by a choice, a tap elsewhere or back).</summary>
+        public event Action Gone;
 
         protected internal override VisualElement Build()
         {
@@ -75,11 +82,15 @@ namespace SecondFace.Game.UI
                 b.style.left = Extent + Mathf.Cos(a) * Radius - Button * 0.5f;
                 b.style.top = Extent + Mathf.Sin(a) * Radius - Button * 0.5f;
                 b.SetEnabled(v.Open);
-                b.Add(Icons.Make(v.Id, 40f));
+                b.Add(Icons.Make(v.Icon ?? v.Id, 40f));
                 var label = new Label { pickingMode = PickingMode.Ignore };
                 label.AddToClassList("sf-radial__verb-label");
-                Strings.Bind(label, "verb." + v.Id);
+                if (v.Label != null) label.text = v.Label;
+                else Strings.Bind(label, "verb." + v.Id);
                 b.Add(label);
+                var id = v.Id;
+                b.RegisterCallback<FocusInEvent>(_ => Focused?.Invoke(id));
+                b.RegisterCallback<PointerEnterEvent>(_ => Focused?.Invoke(id));
                 if (!string.IsNullOrEmpty(v.Note))
                 {
                     var note = new Label(v.Note) { name = "note-" + v.Id, pickingMode = PickingMode.Ignore };
@@ -112,7 +123,11 @@ namespace SecondFace.Game.UI
             Root.schedule.Execute(() => Root.AddToClassList("sf-radial--open"));
         }
 
-        protected internal override void Hidden() => UI.InsetsChanged -= OnInsets;
+        protected internal override void Hidden()
+        {
+            UI.InsetsChanged -= OnInsets;
+            Gone?.Invoke();
+        }
 
         private void OnInsets(Vector4 _) => Place();
 

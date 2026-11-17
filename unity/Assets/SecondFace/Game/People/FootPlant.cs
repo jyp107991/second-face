@@ -28,6 +28,12 @@ namespace SecondFace.Game.People
         public float Reach = 0.45f;
         /// <summary>Below this speed a person stands (m/s).</summary>
         public float StandSpeed = 0.12f;
+        /// <summary>A body that was moving and goes slower than this (m/s) two frames running has halted: it stands.</summary>
+        public float HaltSpeed = 0.03f;
+        private bool _halted;
+        private int _haltFrames;
+        /// <summary>Was moving and has halted (it stands, though its stride's pace may still be easing down).</summary>
+        public bool Halted => _halted;
         /// <summary>The widest a standing person's heels stand apart, m (the preferred quiet stance is 0.17 m; McIlroy &amp; Maki).</summary>
         public float MaxStance = 0.27f;
         /// <summary>The farthest one standing foot is ahead of the other, m.</summary>
@@ -64,6 +70,12 @@ namespace SecondFace.Game.People
         // (the planted feet were blended back to the clip's over 0.15 s and dragged at 1 m/s, 2026-11-06)
         private readonly Vector3[] _endL = new Vector3[3], _endR = new Vector3[3];
         private Quaternion _endRotL = Quaternion.identity, _endRotR = Quaternion.identity;
+        // each foot where it ended the last frame (its ankle) and its heading then; coming to a stop, the feet settle from
+        // there (_stopL/_stopR) and their turn as it was (_fromRotL/_fromRotR)
+        private Vector3 _endPosL, _endPosR, _fromL, _fromR;
+        private float _endYawL, _endYawR;
+        private Quaternion _fromRotL = Quaternion.identity, _fromRotR = Quaternion.identity;
+        private bool _stopL, _stopR;
         private float _endDipL = 1f, _endDipR = 1f;
         private bool _wasStanding = true, _haveEnd;
         private Vector3 _was;
@@ -274,11 +286,17 @@ namespace SecondFace.Game.People
             var ankleL = _ankleL * scale; var ankleR = _ankleR * scale;
             _ankleNowL = ankleL; _ankleNowR = ankleR;
             var speed = _hasSpeed ? _animator.GetFloat(SpeedId) : 0f;
-            var standing = speed < StandSpeed;
             // a body set down somewhere else lifts its feet from where they were
             var moved = new Vector2(transform.position.x - _was.x, transform.position.z - _was.z).magnitude / dt;
-            if ((transform.position - _was).sqrMagnitude > 0.25f) { _l = default; _r = default; _sink = 0f; _haveEnd = false; _lockL = default; _lockR = default; moved = 0f; _shownFrames = 0; _haveSoleL = _haveSoleR = false; }
+            var teleported = (transform.position - _was).sqrMagnitude > 0.25f;
+            if (teleported) { _l = default; _r = default; _sink = 0f; _haveEnd = false; _lockL = default; _lockR = default; moved = 0f; _shownFrames = 0; _haveSoleL = _haveSoleR = false; }
             _was = transform.position;
+            // a body that was moving and has come to a halt stands, its stride's pace still easing down (an agent stops on its
+            // spot in a frame: a companion halted at their slot strode on in place for 0.25 s, the held feet dragged and slid,
+            // W1 in the follow state, 2026-11-17); it moves again once it does
+            if (teleported || moved > HaltSpeed) { _halted = false; _haltFrames = 0; }
+            else if (!_halted && _bodySpeed > 0.1f && ++_haltFrames >= 2) _halted = true;
+            var standing = speed < StandSpeed || _halted;
             // the body's own pace over the ground (the locomotion's "Speed" is a clip's, not the body's: Pace)
             var bodyWas = _bodySpeed;
             _bodySpeed = Mathf.Lerp(_bodySpeed, moved, 1f - Mathf.Exp(-10f * dt));
@@ -287,8 +305,21 @@ namespace SecondFace.Game.People
             // setting off: no blend back to the clip (it slid the feet); the feet that were down are held where they stood
             _plant = standing ? Mathf.MoveTowards(_plant, 1f, dt / 0.15f) : 0f;
             var setOff = !standing && _wasStanding && _haveEnd;
-            if (!standing) { _l.Planted = _r.Planted = false; _l.Stepping = _r.Stepping = false; _bear = -1; _bearT = 0f; }
+            if (!standing) { _l.Planted = _r.Planted = false; _l.Stepping = _r.Stepping = false; _bear = -1; _bearT = 0f; _stopL = _stopR = false; }
             else { _haveLast = false; _lockL = default; _lockR = default; _shownFrames = 0; _haveSoleL = _haveSoleR = false; }
+            // coming to a stop: the feet go on from where they were shown, not from the clip's places (a foot held on the ground
+            // as the body stopped jumped 5-9 cm in a frame to where the walking clip had it, then slid to its plant over the
+            // blend, W1 in the follow state, 2026-11-17): a foot that was down is planted where it stood, turned as it stood,
+            // and one in the air comes down from where it was
+            if (standing && !_wasStanding && _haveEnd && _plant < 1f)
+            {
+                _stopL = _stopR = true;
+                _fromL = _endPosL; _fromR = _endPosR; _fromRotL = _endRotL; _fromRotR = _endRotR;
+                // (a foot in the air too: pinned where the clip had it, it was carried along the ground to its place as it came
+                // down, W1 in the follow state's stop; where it is, it comes straight down, and steps after if it must)
+                if (Finite(_endPosL)) { _l.Planted = true; _l.Stepping = false; _l.Pin = _endPosL; _l.PinYaw = _endYawL; }
+                if (Finite(_endPosR)) { _r.Planted = true; _r.Stepping = false; _r.Pin = _endPosR; _r.PinYaw = _endYawR; }
+            }
 
             // the ground under each foot as the clip has it
             var gL = GroundAt(_footL.position, out var nL); var gR = GroundAt(_footR.position, out var nR);
@@ -408,8 +439,8 @@ namespace SecondFace.Game.People
                 if (!_l.Stepping) pl = Reachable(_upL, _loL, _footL, pl, StanceStraight);
                 if (!_r.Stepping) pr = Reachable(_upR, _loR, _footR, pr, StanceStraight);
 
-                wantL = Vector3.Lerp(wantL, pl, _plant);
-                wantR = Vector3.Lerp(wantR, pr, _plant);
+                wantL = Vector3.Lerp(_stopL ? _fromL : wantL, pl, _plant);
+                wantR = Vector3.Lerp(_stopR ? _fromR : wantR, pr, _plant);
                 // (standing, the knee bent over its foot: kept in the clip's own plane, a relaxed knee turned in 20-35°, K5, the
                 // owner's 'other knee turned in', 2026-11-09)
                 // (over the foot as it is planted, turned its planted way: by the clip's own foot's turn, the knee pointed 15-29°
@@ -417,8 +448,9 @@ namespace SecondFace.Game.People
                 Solve(_upL, _loL, _footL, wantL, Vector3.Lerp(FlatDir(Ahead(_footL, _toeL)), Toward(hl), _plant));
                 Solve(_upR, _loR, _footR, wantR, Vector3.Lerp(FlatDir(Ahead(_footR, _toeR)), Toward(hr), _plant));
                 // flat on the ground, turned its way, sole down
-                _footL.rotation = Quaternion.Slerp(_footL.rotation, Flat(_restL, _headingL, hl, normL), _plant);
-                _footR.rotation = Quaternion.Slerp(_footR.rotation, Flat(_restR, _headingR, hr, normR), _plant);
+                _footL.rotation = Quaternion.Slerp(_stopL ? _fromRotL : _footL.rotation, Flat(_restL, _headingL, hl, normL), _plant);
+                _footR.rotation = Quaternion.Slerp(_stopR ? _fromRotR : _footR.rotation, Flat(_restR, _headingR, hr, normR), _plant);
+                if (_plant >= 1f) _stopL = _stopR = false;
             }
             else
             {
@@ -498,6 +530,8 @@ namespace SecondFace.Game.People
             GoalError = new Vector2(Vector3.Distance(_footL.position, wantL), Vector3.Distance(_footR.position, wantR));
             End(_footL, _toeL, _heelL, _ballL, _tipL, _endL, gL, out _endDipL); _endRotL = _footL.rotation;
             End(_footR, _toeR, _heelR, _ballR, _tipR, _endR, gR, out _endDipR); _endRotR = _footR.rotation;
+            _endPosL = _footL.position; _endPosR = _footR.position;
+            _endYawL = Heading(Ahead(_footL, _toeL)); _endYawR = Heading(Ahead(_footR, _toeR));
             _haveEnd = true;
             _wasStanding = standing;
         }

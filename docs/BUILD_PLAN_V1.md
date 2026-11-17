@@ -2651,6 +2651,26 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   arm's sleeve too, but at rest only the body's side was given back (`ClothGive`): elbows whose bare skin cleared the waist
   were held 1-2 cm off it through a shirt and were pushed out at the shoulder. Count what the measure counts (C1 is skin on
   skin) before deciding what may press.
+- **A state the gate drives itself hides what the game's own movers do.** The gate's walks set the body's speed and stop
+  measuring the frame the body stops; the game moves its people on NavMeshAgents. A companion following the player (the
+  party's own agent and step, measured to their halt and the stand after) showed what no walk state could: the agents stood
+  on polygons 5-6 cm over flat ground (no height mesh: the hips sank that far and the bent strides slid the held feet), a
+  halt in one frame with the stride's eased pace running on 0.25 s, the stop's plant taking the walking clip's foot places
+  5-9 cm from where the feet stood, the arms coming to rest only when the pace had run down, a jogging companion aimed a
+  metre past their slot. Measure a mover as the game moves it, and to its end.
+- **A look turns the eyes and the head; a body share of it turns the chest, and the arms with it.** At a quarter of a 20°
+  look the resting upper arms rose about 3° across the cast (A1 p98 12.5° looking ahead, 15.3-15.5° aside: 13 of 25 A1 and
+  2 of 4 A4). At a tenth they hung in, and 13 new C1 contacts appeared where the game's skin points read the arm 1-2.5 cm
+  clear of a body the mesh had it 0.5-0.8 cm into (the chest's side at 1.23 m, the top of the thigh at 1.01 m): fix the
+  skin's coverage first, or the gain in one measure is paid in another.
+- **A capture's frame rate is the database's, not the tool's.** CMU lists each trial's rate (most 120 fps, subject 77 at
+  60); read at 120, the standing idle (77_02) played at twice its speed in every standing state. Check each source's listed
+  rate (`cmu2fbx.py` RATES) before trusting a clip's timing; the re-export at the true rate is the same motion and holds its
+  extremes twice as long, which the measures see.
+- **A real-time test that reads whoever is in view is a sample, not a measure.** `BootTests.ArmsStayOutOfTheBody` read 0.7
+  to 1.9 cm on the same code over six runs: it takes the deepest of whoever stands in view for three seconds of real time.
+  Before blaming the last change, read what the failing reading was (`ArmClearance.DepthWhere`: the arm's part, its sleeve,
+  the body's clothes) and measure the same reading in the gate's fixed states (`tools/qa/patches/arm_depth_diag.py`).
 
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)
 

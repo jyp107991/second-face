@@ -7,9 +7,10 @@ using UnityEngine;
 namespace SecondFace.EditorTools
 {
     /// <summary>
-    /// The locomotion controller people share (step 25, P4 step 4). Base layer: a 1D blend on "Speed" (m/s) over the
-    /// captured clips at their own speeds (Motion/&lt;clip&gt;.json): idle, walk_slow, walk, walk_brisk, jog, run, so the
-    /// feet keep pace; the idle is itself a blend on "Idle" over four captured idles (each person stands their own way);
+    /// The locomotion controller people share (step 25, P4 step 4). Base layer: by sex ("Sex") and the person's gait set
+    /// ("Gait", Pace.MenSets / WomenSets), a 1D blend on "Speed" (m/s) over the captured clips at their own speeds
+    /// (Motion/&lt;clip&gt;.json), so the feet keep pace; the idle is itself a blend on "Idle" over the sex's captured idles
+    /// (each person stands their own way);
     /// the base layer runs the IK pass (<see cref="SecondFace.Game.People.FootPlant"/>). "Gesture" layer: an upper-body
     /// mask (People/UpperBody.mask) over states played by name (talk, talk_b, argue, drink, wave, stretch, yawn, yawn_b),
     /// each going back to the empty "none" at its end; the layer weighs 0 at rest (<see cref="SecondFace.Game.People.Ambient"/>
@@ -26,20 +27,21 @@ namespace SecondFace.EditorTools
         public const string ControllerPath = "Assets/SecondFace/People/Locomotion.controller";
         public const string MaskPath = "Assets/SecondFace/People/UpperBody.mask";
         /// <summary>Bump when the layout changes; the controller carries it as the parameter "v&lt;Version&gt;".</summary>
-        public const int Version = 9;
+        public const int Version = 11;
         /// <summary>The pickup clip (CMU 26_09, 6 s) stands still for its first 0.9 s, is lowest at 2.3 s and upright
         /// again by 3.7 s: it is played from 0.7 s in, 1.4 times as fast, and leaves for the locomotion at 62 %.</summary>
         public const float PickupFrom = 0.7f, PickupSpeed = 1.4f, PickupExit = 0.62f;
         public static readonly string[] Sits = { "sit", "sit_stool", "sit_ground" };
         public const string GestureLayer = "Gesture";
-        private static readonly string[] Moving = { "walk_slow", "walk", "walk_brisk", "jog", "run" };
-        /// <summary>The idles (idle_c, CMU 111_28, out 2026-11-05: its hands held up in front of the body, an idle no town's
-        /// people share; docs/PEOPLE_MOTION.md A2). Ambient.IdleCount follows this list.</summary>
-        public static readonly string[] Idles = { "idle", "idle_b", "idle_d" };
+        /// <summary>The idles by sex (Ambient.MenIdles, WomenIdles: motion set v2, 2026-11-17).</summary>
+        public static string[] Idles => SecondFace.Game.People.Ambient.MenIdles;
+        public static string[] IdlesF => SecondFace.Game.People.Ambient.WomenIdles;
         public static readonly string[] Gestures = { "talk", "talk_b", "argue", "drink", "wave", "stretch", "yawn", "yawn_b" };
 
         [MenuItem("Second Face/Build locomotion controller")]
         public static RuntimeAnimatorController Build() => Build(false);
+        /// <summary>For the command line (tools/unity/editor.sh run): built again whatever its version.</summary>
+        public static void Rebuild() => Build(true);
 
         public static RuntimeAnimatorController Build(bool force)
         {
@@ -56,6 +58,10 @@ namespace SecondFace.EditorTools
                 ctl.AddLayer("Base Layer");
             }
             ctl.AddParameter("Speed", AnimatorControllerParameterType.Float);
+            // 0 a man, 1 a woman: each plays their own sex's captures (Pace.SetSex)
+            ctl.AddParameter("Sex", AnimatorControllerParameterType.Float);
+            // the person's own gait set among their sex's (Pace.SetSex: by a hash of who they are)
+            ctl.AddParameter("Gait", AnimatorControllerParameterType.Float);
             ctl.AddParameter("Idle", AnimatorControllerParameterType.Float);
             ctl.AddParameter("Sneak", AnimatorControllerParameterType.Bool);
             ctl.AddParameter(new AnimatorControllerParameter { name = "SneakRate", type = AnimatorControllerParameterType.Float, defaultFloat = 1f });
@@ -70,23 +76,45 @@ namespace SecondFace.EditorTools
             state.iKOnFeet = true;
             state.speedParameterActive = true;
             state.speedParameter = "LocoRate";
+            // by sex ("Sex" 0 or 1: one tree plays), then by the person's gait set ("Gait": Pace.MenSets, WomenSets), each a
+            // blend on "Speed" over its sex's idles and the set's moving clips
             tree.blendType = BlendTreeType.Simple1D;
-            tree.blendParameter = "Speed";
+            tree.blendParameter = "Sex";
             tree.useAutomaticThresholds = false;
-            var idle = tree.CreateBlendTreeChild(0f);
-            idle.name = "Idle";
-            idle.blendType = BlendTreeType.Simple1D;
-            idle.blendParameter = "Idle";
-            idle.useAutomaticThresholds = false;
-            for (var i = 0; i < Idles.Length; i++)
+            foreach (var (sexAt, idles, sets, label) in new[]
+                     {
+                         (0f, Idles, SecondFace.Game.People.Pace.MenSets, "Men"),
+                         (1f, IdlesF, SecondFace.Game.People.Pace.WomenSets, "Women"),
+                     })
             {
-                var clip = Clip(Idles[i]);
-                if (clip != null) idle.AddChild(clip, i);
-            }
-            foreach (var name in Moving)
-            {
-                var clip = Clip(name);
-                if (clip != null) tree.AddChild(clip, Speed(name));
+                var bySet = tree.CreateBlendTreeChild(sexAt);
+                bySet.name = label;
+                bySet.blendType = BlendTreeType.Simple1D;
+                bySet.blendParameter = "Gait";
+                bySet.useAutomaticThresholds = false;
+                for (var g = 0; g < sets.Length; g++)
+                {
+                    var byPace = bySet.CreateBlendTreeChild(g);
+                    byPace.name = $"{label} {g}";
+                    byPace.blendType = BlendTreeType.Simple1D;
+                    byPace.blendParameter = "Speed";
+                    byPace.useAutomaticThresholds = false;
+                    var idle = byPace.CreateBlendTreeChild(0f);
+                    idle.name = "Idle";
+                    idle.blendType = BlendTreeType.Simple1D;
+                    idle.blendParameter = "Idle";
+                    idle.useAutomaticThresholds = false;
+                    for (var i = 0; i < idles.Length; i++)
+                    {
+                        var clip = Clip(idles[i]);
+                        if (clip != null) idle.AddChild(clip, i);
+                    }
+                    foreach (var (name, _, _) in sets[g])
+                    {
+                        var clip = Clip(name);
+                        if (clip != null) byPace.AddChild(clip, Speed(name));
+                    }
+                }
             }
             ctl.layers[0].stateMachine.defaultState = state;
             // whole-body states played by name: the pickup goes back to walking as the body straightens; a sit holds

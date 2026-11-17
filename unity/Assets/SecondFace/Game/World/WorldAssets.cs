@@ -31,6 +31,9 @@ namespace SecondFace.Game.World
         public CastEntry[] Cast;
         /// <summary>The game's Rocketbox people (L3): everyone the library has a person for stands as that person.</summary>
         public SecondFace.Game.People.RocketboxCatalog Rocketbox;
+        /// <summary>The fight's motion and weapons (COMBAT.md A1–A8: Editor/Build/CombatAnimatorBuild.cs); null: the
+        /// placeholder bodies.</summary>
+        public SecondFace.Game.Fighting.CombatSet Combat;
 
         [System.Serializable]
         public sealed class CastEntry

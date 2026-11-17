@@ -2,6 +2,9 @@ import type { WorldEventDef } from '../../engine/world/frontier';
 import { DS_EVENTS } from './ds_shore';
 import { DK_EVENTS } from './md_docks';
 import { B5C_EVENTS } from './b5c_wilds';
+import { B5D_EVENTS } from './b5d_ashlands';
+import { A3_EVENTS } from './a3_events';
+import { A3_ROAD_EVENTS } from './a3_roads';
 
 /**
  * Scheduled world events. There are no day limits in this game: an event waits for the player (it fires at its
@@ -144,3 +147,9 @@ Object.assign(WORLD_EVENTS, DS_EVENTS);
 Object.assign(WORLD_EVENTS, DK_EVENTS);
 // the Teeth mines' and the Northern Wet's events (B5c) live in b5c_wilds.ts
 Object.assign(WORLD_EVENTS, B5C_EVENTS);
+// the Ashlands' and the Long Night's events (B5d) live in b5d_ashlands.ts
+Object.assign(WORLD_EVENTS, B5D_EVENTS);
+// Act 3's events (B6) live in a3_events.ts; the shared conditions they read in a3_conds.ts
+Object.assign(WORLD_EVENTS, A3_EVENTS);
+// Act 3's road home (B6c): the offers of a ride by post, and the player home at Knock, in a3_roads.ts
+Object.assign(WORLD_EVENTS, A3_ROAD_EVENTS);

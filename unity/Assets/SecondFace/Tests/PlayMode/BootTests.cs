@@ -1097,12 +1097,16 @@ namespace SecondFace.Tests
             Assert.That(sneaking, Is.LessThan(0.01f), "sneaking");
             Assert.That(walking, Is.LessThan(0.01f), "walking");
             // the townsfolk seen in full
-            var folk = walk.People.Residents.Where(r => r.Person != null && r.Person.Full && r.Person.gameObject.activeInHierarchy)
-                .Select(r => r.Person.Animator != null ? r.Person.Animator.GetComponent<ArmClearance>() : null).Where(c => c != null && c.Ready && c.enabled).ToList();
+            var seen = walk.People.Residents.Where(r => r.Person != null && r.Person.Full && r.Person.gameObject.activeInHierarchy)
+                .Select(r => (Who: r.Rb?.Id ?? r.Body, C: r.Person.Animator != null ? r.Person.Animator.GetComponent<ArmClearance>() : null))
+                .Where(x => x.C != null && x.C.Ready && x.C.enabled).ToList();
+            var folk = seen.Select(x => x.C).ToList();
             Assert.That(folk.Count, Is.GreaterThan(0), "townsfolk near enough to be seen in full");
             var townsfolk = 0f;
-            yield return Deepest(3f, () => folk.Max(c => c.Depth()), v => townsfolk = v);
-            Debug.Log($"BootTests: {folk.Count} townsfolk, their arms at most {townsfolk * 100f:0.0} cm in");
+            // (each one's deepest, for the log: who is in, and how far)
+            var each = new float[folk.Count]; var where = new string[folk.Count];
+            yield return Deepest(3f, () => { var m = 0f; for (var i = 0; i < folk.Count; i++) { var d = folk[i].Depth(); if (d > each[i]) { each[i] = d; where[i] = folk[i].DepthWhere; } m = Mathf.Max(m, d); } return m; }, v => townsfolk = v);
+            Debug.Log($"BootTests: {folk.Count} townsfolk, their arms at most {townsfolk * 100f:0.0} cm in: " + string.Join(", ", seen.Select((x, i) => $"{x.Who} {each[i] * 100f:0.0}" + (each[i] >= 0.008f ? $" ({where[i]})" : ""))));
             Assert.That(townsfolk, Is.LessThan(0.012f), "the townsfolk's arms clear of their bodies");
         }
 

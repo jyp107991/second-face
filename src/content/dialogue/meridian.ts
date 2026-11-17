@@ -1,6 +1,7 @@
 import type { DialogueDef, OptionDef } from '../../engine/dialogue/dialogue';
 import type { Cond } from '../../engine/world/logic';
 import { DOCKS_ANSWER, DOCKS_ASK } from './md_docks';
+import { LOWE_CAR_NODES, LOWE_CAR_START, REYES_CAR_NODES, REYES_CAR_START } from './a3_road';
 
 /**
  * Meridian, the Precinct: the gate and the lens, the hearing, the cells, the records office and the assessor who
@@ -44,7 +45,7 @@ const CITIZEN = [{ give: 'k_md_papers' }, { enlist: 'wardens', rank: 'citizen' }
 
 export const d_md_gate: DialogueDef = {
   id: 'd_md_gate', owner: 'npc_md_12',
-  start: [{ if: { flag: 'md_fight' }, node: 'fight' }, { if: { flag: 'md_status' }, node: 'through' }, { if: { flag: 'md_scanned' }, node: 'after_scan' }, { node: 'intro' }],
+  start: [{ if: { flag: 'md_status' }, node: 'through' }, { if: { flag: 'md_scanned' }, node: 'after_scan' }, { node: 'intro' }],
   nodes: {
     intro: {
       text: 'A sergeant in grey at the gate with a carbine and a face that has turned back a thousand people politely. "Face to the lens, then we talk. Everyone. The lens doesn\'t care who you are; it cares whether it has seen you."',
@@ -101,7 +102,6 @@ export const d_md_gate: DialogueDef = {
     push_ok: { text: 'The crowd goes at the gate at dusk the way it does every dusk, and tonight you are in the front of it with your shoulder down, and the barrier gives, and you are through in the crush with no card and a sergeant\'s voice behind you saying *let them, let them, count them tomorrow*.', effects: [...PAPERS('smuggled'), { set: 'md_pushed' }, { decision: { id: 'md_pushed', text: 'You pushed through Meridian\'s gate with the crowd.' } }, { time: 240 }], options: [{ text: '(Through.)', exit: true }] },
     push_no: { text: 'The crowd goes at the gate and the wardens go at the crowd, and a club finds your head in the second row, and the next thing is tile under your cheek and a fence door.', effects: [{ set: 'md_detained' }, { set: 'md_inside' }, { time: 240 }, { event: 'goto', data: { location: 'md_precinct', spawn: 'cell' } }], options: [{ text: '(Wake up.)', exit: true }] },
     through: { text: '"Card." She looks, and nods, and the barrier lifts.', again: 'The sergeant nods you through before you reach the barrier.', options: [{ text: '(Through.)', exit: true }] },
-    fight: { text: 'Nothing.', again: 'The gate is shut and the Wall has its lamps on you. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
@@ -293,7 +293,7 @@ const LOWE_DEED = (id: string): OptionDef => ({ id, text: 'Clause 9(b). A lapsed
 
 export const d_md_lowe: DialogueDef = {
   id: 'd_md_lowe', owner: 'npc_md_01',
-  start: [{ if: { flag: 'md_fight' }, node: 'fight' }, { if: { flag: 'lowe_met' }, node: 'again' }, { node: 'intro' }],
+  start: [LOWE_CAR_START, { if: { flag: 'lowe_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
       text: 'A broad man in grey at a desk under a brass clause, who stands when you come in because the charter says to stand. "Captain Lowe. Precinct wardens." He looks at your card, if you have one, and at you if you don\'t. "Everything inside the Wall is lawful. I check. Every eviction, every ration, every fine. I have never found one that wasn\'t."',
@@ -398,13 +398,14 @@ export const d_md_lowe: DialogueDef = {
       options: [bye],
     },
     deed_no: { text: '"9(b) is for carts and pumps." He hands the entry back, squared. "I have never witnessed a pump passing to itself, and I will not start with a unit that sits on my hearings because a stranger read me a clause. Bring me its purpose, not its letter."', again: 'He has handed the entry back, squared, and waits to hear its purpose.', options: [bye] },
-    fight: { text: 'Nothing.', again: 'The captain is standing, with the station\'s wardens between you. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
+    // Act 3 (B6c): the car for Reserve 9 (a3_road.ts)
+    ...LOWE_CAR_NODES,
   },
 };
 
 export const d_md_reyes: DialogueDef = {
-  id: 'd_md_reyes', owner: 'npc_md_12', start: [{ node: 'intro' }],
-  nodes: { intro: { text: '"Sergeant Reyes. Gate." She does not look away from the line. "Face to the lens at the post, if you haven\'t. If you have, the avenue\'s that way, and the hearing\'s left of it."', again: '"Avenue\'s that way." She is already looking past you at the line.', options: [bye] } },
+  id: 'd_md_reyes', owner: 'npc_md_12', start: [REYES_CAR_START, { node: 'intro' }],
+  nodes: { intro: { text: '"Sergeant Reyes. Gate." She does not look away from the line. "Face to the lens at the post, if you haven\'t. If you have, the avenue\'s that way, and the hearing\'s left of it."', again: '"Avenue\'s that way." She is already looking past you at the line.', options: [bye] }, ...REYES_CAR_NODES },
 };
 
 export const d_md_tull: DialogueDef = {

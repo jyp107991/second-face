@@ -32,6 +32,13 @@ export const SHIFT_BROKEN: Cond = { flag: 'hs_shift', eq: 'broken' };
 export const SHIFT_REVOLT: Cond = { flag: 'hs_shift', eq: 'revolt' };
 /** The car runs once the strike is over, unless the cable house is gone. */
 export const CAR_RUNS: Cond = { any: [SHIFT_WON, SHIFT_BROKEN] };
+/** Paper for the car up the hill (B4b): the Board's card, a citizen's contract (earned or forged), a guest's pass, or the Concern's work. */
+export const UP_PAPER: Cond = { any: [{ item: 'k_hc_invitation' }, { item: 'k_hc_contract' }, { item: 'k_hc_contract_forged' }, { item: 'k_hc_guest_pass' }, LEASHED] };
+/** A citizen's contract earned at Bell's counter (B4b's Contract line): probationary in the Concern until fitted at the gate. */
+export const CITIZEN = (how: string, text: string): Effect[] => [
+  { give: 'k_hc_contract' }, { set: 'hc_contract', value: 'citizen' }, { set: 'hc_contract_how', value: how }, { enlist: 'concern', rank: 'probationary' },
+  { quest: 'q_hc_contract', start: true }, { decision: { id: 'hc_contract', text } },
+];
 /** The scabs off the Line will not dig: talked round, or their paper bought out. */
 export const SCABS_GONE: Cond = { any: [{ flag: 'hs_scabs', eq: 'turned' }, { flag: 'hs_scabs', eq: 'sent' }] };
 /** Rafe still has his six cases and his plan. */
@@ -503,6 +510,8 @@ export const d_hs_bell: DialogueDef = {
         { id: 'bell.nils', text: 'Nils Haber\'s paper. What does it cost?', if: { all: [{ knows: 'hs_nils_queued' }, { not: { flag: 'hs_nils' } }] }, next: 'nils' },
         { id: 'bell.leash', text: 'I know how the leash in your chrome comes off. I\'ll sell it to you.', if: { all: [{ knows: 'kes_backdoor' }, { not: { inParty: KES } }, { not: { flag: 'hs_leash_sold' } }] }, next: 'leash' },
         { id: 'bell.apply', text: 'I want a contract.', if: { not: { seen: 'bell.apply' } }, next: 'apply' },
+        { id: 'bell.term', text: 'A citizen\'s contract, for a season\'s term.', if: { all: [CAR_RUNS, { not: { flag: 'hc_contract' } }, { seen: 'bell.apply' }] }, next: 'term' },
+        { id: 'bell.price', text: 'They say you take one bribe.', if: { all: [CAR_RUNS, { not: { flag: 'hc_contract' } }, { seen: 'bell.apply' }] }, next: 'price' },
         bye,
       ],
     },
@@ -571,7 +580,30 @@ export const d_hs_bell: DialogueDef = {
     },
     leash_sold: { text: 'She counts it out in Halcyon notes, clean ones. "The Concern thanks you," she says, and it sounds exactly like the clause it is.', again: 'Clean notes on the counter.', options: [{ text: '(Leave.)', exit: true }] },
     leash_no: { text: '"As you like." She doesn\'t write anything down. You are fairly sure she doesn\'t need to.', again: 'Bell, writing nothing down.', effects: [{ set: 'hs_bell_heard_leash' }], options: [{ text: 'Something else.', next: 'again' }] },
-    apply: { text: '"Applications are taken when the car runs." She slides a card across: CONTRACTS — TERMS ON REQUEST. "Labour, service, citizen. Or the Board\'s guest, which you are, which is not a contract. Nobody has to decide anything today."', again: '"When the car runs."', effects: [{ learn: 'hs_contract_kinds' }], options: [{ text: 'Something else.', next: 'again' }] },
+    apply: { text: '"Applications are taken when the car runs." She slides a card across: CONTRACTS — TERMS ON REQUEST. "Labour, service, citizen. Or the Board\'s guest, which you are, which is not a contract. Nobody has to decide anything today."', again: '"When the car runs."', effects: [{ learn: 'hs_contract_kinds' }, { quest: 'q_hc_contract', start: true }], options: [{ text: 'Something else.', next: 'again' }] },
+    // B4b, the Contract: a citizen's paper earned at this counter, for a season's term or for her one price
+    term: {
+      text: '"A citizen\'s contract, for a season\'s term." She lays it on the counter and turns to Clause 31 without looking for it. "A season of labour or of service, at the Concern\'s call and at the Concern\'s discretion, at any time within ten years of signing. The term is the holder\'s to serve when called, and not before." She caps her pen and uncaps it. "Most citizens are never called. Some are. Service discharges the term in full, as it discharges any balance. As written."',
+      again: '"At the Concern\'s call and at the Concern\'s discretion."',
+      interject: [{ companion: ODILE, text: '"Labour or service, at their discretion," Odile reads over your shoulder. "My dear, that is a blank cheque drawn on your body. I would not sign it for a kingdom."', effects: [A(ODILE, -2)] }],
+      options: [
+        { id: 'bell.term.sign', text: '(Sign.)', effects: [...CITIZEN('term', 'You signed a citizen\'s contract at the Contract Office for a season\'s term, to be served at the Concern\'s call.'), { set: 'hc_term', value: 'owed' }, K(-5)], next: 'signed' },
+        { text: '(Not that.)', next: 'again' },
+      ],
+    },
+    price: {
+      text: '"Something true." She doesn\'t look up. "Everyone on this slope lies to this counter, clause by clause, because the clauses are written to be lied to. The truth is the one thing the Concern can\'t buy, so it is the one thing I take. Say something true about yourself that you would rather I didn\'t know, and I will know it, and you will have your contract." She waits, pen uncapped, as written.',
+      again: '"Something true."',
+      options: [
+        { id: 'bell.true.sash', text: 'The city wants me for its Magistrate. I don\'t know if I want to be anything it wants.', once: true, check: { skill: 'speech', dc: 40 }, effects: [...CITIZEN('confess', 'You told Agnes Bell something true, and she gave you a citizen\'s contract for it.'), { set: 'hc_confessed', value: 'sash' }], next: 'confessed', fail: 'lie' },
+        { id: 'bell.true.map', text: 'I carry a dead man\'s list of names. When I read them, people die on the dates.', once: true, check: { skill: 'speech', dc: 40 }, effects: [...CITIZEN('confess', 'You told Agnes Bell something true, and she gave you a citizen\'s contract for it.'), { set: 'hc_confessed', value: 'map' }], next: 'confessed', fail: 'lie' },
+        { id: 'bell.true.face', text: 'There\'s a photograph of me, older, in a ruined city. I\'m afraid of becoming the person in it.', once: true, check: { skill: 'speech', dc: 40 }, effects: [...CITIZEN('confess', 'You told Agnes Bell something true, and she gave you a citizen\'s contract for it.'), { set: 'hc_confessed', value: 'face' }], next: 'confessed', fail: 'lie' },
+        { text: '(Say nothing.)', next: 'again' },
+      ],
+    },
+    confessed: { text: 'Bell writes it down. Every word, in her small square hand, in a file with your name on it, and files it in a drawer with a lock. Then she stamps a contract CITIZEN — BY ARRANGEMENT and slides it across. "Thank you," she says, and for the first time it doesn\'t sound like a clause. "Nobody on this slope has told me anything true in four years."', again: 'CITIZEN — BY ARRANGEMENT.', options: [{ text: 'Something else.', next: 'again' }] },
+    lie: { text: '"That is a true thing said to get something," Bell says. "It is not the same." She doesn\'t write it down.', again: '"It is not the same."', options: [{ text: '(Try again.)', next: 'price' }, { text: 'Something else.', next: 'again' }] },
+    signed: { text: 'Bell stamps it CITIZEN — TERM OWED and files the counterfoil. "Welcome," she says. "The lens at the arch will read it. You will be fitted at the gate, when you choose; until then you are probationary." As written.', again: 'CITIZEN — TERM OWED.', options: [{ text: 'Something else.', next: 'again' }] },
   },
 };
 
@@ -777,8 +809,14 @@ export const d_hs_car: DialogueDef = {
       again: [{ if: { flag: 'hs_car_down' }, text: 'The car, hanging, the cable down the station.' }, { text: 'The car, and its board.' }],
       effects: [{ learn: 'hs_car_seen' }],
       interject: [{ companion: KES, text: '"The Express," Kes says. "I rode it once, up and down, at sixteen. The gardens at the top smell like rain that came out of a pipe." She stops. "Obviously I don\'t think about it."' }],
-      options: [leave],
+      options: [
+        // B4b: up the hill on paper (the Board's card, a contract, a forgery, a guest's pass) or on the Concern's work in the body
+        { id: 'hs.car.up', text: '(Show the clerk your paper and ride up to Halcyon.)', if: { all: [CAR_RUNS, UP_PAPER] }, effects: [{ event: 'goto', data: { location: 'hc_terrace', spawn: 'car', minutes: 12 } }], exit: true, repeat: true },
+        { id: 'hs.car.nopaper', text: '(Ride up.)', if: { all: [CAR_RUNS, { not: UP_PAPER }] }, next: 'nopaper' },
+        leave,
+      ],
     },
+    nopaper: { text: 'The clerk at the doors runs a finger down the list without looking up. "Contracts and the Board\'s guests." The finger stops at the bottom. "You are neither." The car\'s crew do not look at you either. Through the glass, the forgotten scarf on the seat.', again: '"Contracts and the Board\'s guests."', options: [leave] },
   },
 };
 

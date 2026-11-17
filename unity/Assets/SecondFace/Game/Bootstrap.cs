@@ -103,6 +103,10 @@ namespace SecondFace.Game
             Apply(Session.Settings);
             Session.SettingsChanged += Apply;
             Play.Combat.Difficulty = () => Session?.Settings != null ? Session.Settings.Mods : (0, 1.0);
+            Play.Combat.DifficultyName = () => Session?.Settings?.Difficulty ?? "normal";
+            Play.Combat.Pace = () => Session?.Settings != null ? new SecondFace.Core.Combat.CombatPace(Session.Settings.CombatSpeed, Session.Settings.CombatSkip) : SecondFace.Core.Combat.CombatPace.Normal;
+            // the fight's bodies: captured motion and weapons in hands (COMBAT.md A1–A8) where the set is built
+            Fighting.CombatViews.Install(World != null ? World.Combat : null);
             if (UI != null) UI.BackUnhandled += () => { if (Walkabout != null && Walkabout.Walker != null && Tour == null) OpenPause(); };
             var overlay = DebugOverlay.Ensure();
             if (World == null) yield break;

@@ -1,6 +1,6 @@
 import type { ItemDef } from '../../engine/inventory/items';
 
-/** Story items for B4: the Skirts under Halcyon (B4a). Story notes: story/STORY_PLAN_SECRET.md, Build notes — B4. */
+/** Story items for B4: the Skirts under Halcyon (B4a) and Halcyon itself (B4b). Story notes: story/STORY_PLAN_SECRET.md, Build notes — B4. */
 export const STORY_B4: ItemDef[] = [
   // beat 16's opening
   { id: 'k_hc_invitation', icon: 'card', name: 'Concern Invitation', desc: 'Heavy white card with one line of print and a mark like a closed eye: THE BOARD OF THE CONCERN WOULD BE PLEASED TO RECEIVE THE DESIGNATE AT HALCYON. And on the back, by hand: The Line runs to the Skirts. The Contract Office at Footgate has your name. Nobody has to decide anything today.', category: 'key', weight: 0, value: 0 },
@@ -15,4 +15,24 @@ export const STORY_B4: ItemDef[] = [
   // Scrip
   { id: 'k_hs_ratebook', icon: 'book', name: 'Changer\'s Ledger', desc: 'Cosmin Vulpe\'s book: every change at the booth for two years, scrip in, Tolls out, at the week\'s rate. And down the margin, ruled off in red, a column headed PAR that never moves: one to one.', category: 'note', weight: 0.3, value: 0 },
   { id: 'k_hs_savings', icon: 'tin', name: 'A Tin of Scrip', desc: 'A tea tin with a hundred Concern scrip in it, counted into tens with string: two years of somebody\'s savings, worth a hundred at the Window and sixteen at the booth.', category: 'key', weight: 0.2, value: 0 },
+  // B4b — Halcyon: the gate and the paper for the hill
+  { id: 'k_hc_guest_pass', icon: 'card', name: 'Board Guest\'s Pass', desc: 'A white card with the closed eye on it and one word under your face: GUEST. On the back, in clean print, which floors it opens and which it does not.', category: 'key', weight: 0, value: 0 },
+  { id: 'k_hc_contract', icon: 'book', name: 'Citizen\'s Contract', desc: 'Forty pages, your face printed on the first, a number under it, and a schedule of everything the Concern owes you and everything you owe the Concern. As written.', category: 'key', weight: 0.2, value: 0 },
+  { id: 'k_hc_contract_forged', icon: 'book', name: 'Citizen\'s Contract, Window Copy', desc: 'Forty pages the Window printed for a citizen it has never met: your face, a number nobody else has, and a fitting that was never done. Every lens on the hill believes it.', category: 'key', weight: 0.2, value: 0 },
+  { id: 'k_hc_daypass', icon: 'card', name: 'Gardener\'s Day Pass', desc: 'A strip of card stamped for one day in the gardens, one scrip off somebody\'s Window balance. The lens at the tunnel reads the stamp, not the face.', category: 'key', weight: 0, value: 0 },
+  { id: 'k_hc_seat', icon: 'letter', name: 'Seat in Waiting', desc: 'The Board\'s letter on heavy card: a seat at its table, held for the designate from the day the designate takes the sash. Signed in a hand that has not changed in a very long time.', category: 'key', weight: 0, value: 0 },
+  // the Clinic floors and the Board
+  { id: 'k_hc_coldtag', icon: 'page', name: 'Cold Store Label', desc: 'A label off a cabinet in the cold store on floor nine, white plastic, printed: 9-1182 — K (L) — MATCH 1 — HELD FOR RENEWAL. The number is a Weighhouse number.', category: 'key', weight: 0, value: 0 },
+  { id: 'k_hc_renewal_list', icon: 'page', name: 'Renewal List', desc: 'Dr Qadir\'s list for the season\'s renewals, a column of Board names and against each a donor number off the service ward. Against the Chair\'s, in pencil: WHOLE — BEFORE THE BALL.', category: 'key', weight: 0, value: 0 },
+  { id: 'k_hc_portrait', icon: 'photo', name: 'Board Photograph', desc: 'A small photograph out of a gold frame on the Board\'s floor: twelve people on a terrace in front of a ski lodge with snow on its roof, captioned in ink THE BOARD OF THE HALVERSON CONCERN — WINTER MEETING — YEAR OF THE CHARTER. Every face is a face from the hall.', category: 'key', weight: 0, value: 0 },
+  { id: 'k_hc_minutes', icon: 'book', name: 'Board Minutes', desc: 'Ten years of the Board\'s minutes in a leather binder. At every meeting the Chair says the same sentence, word for word, and the clerk has stopped writing it out and writes only: THE CHAIR\'S COURTESY, AS BEFORE.', category: 'key', weight: 0.4, value: 0 },
+  { id: 'k_hc_controller', icon: 'wiring', name: 'Reserve Controller', desc: 'A Concern controller the size of a hand, with a closed eye stamped on it and a code engraved on the back: RESERVE — ASHLANDS. Whoever holds it can tell what is asleep out there to wake.', category: 'key', weight: 0.3, value: 0 },
+  // the works and the Leash
+  { id: 'k_hc_leash_key', icon: 'key', name: 'Keeper\'s Key', desc: 'A lattice token warm to the touch, cut from the keeper\'s chair in the grid core. Every Concern piece in the Reach answers to whoever holds it: to see, to numb, to stop.', category: 'key', weight: 0.1, value: 0 },
+  { id: 'k_hc_kes_contract', icon: 'book', name: 'Contract for a Keeper', desc: 'Sealed Concern paper made out to Kestrel Oyelaran: tenure, a flat on the terraces, her two years void, and a citizen\'s contract for anyone she names. The clause that matters is on page thirty.', category: 'key', weight: 0.2, value: 0 },
+  // the gardens and the car
+  { id: 'k_hc_seedcase', icon: 'tin', name: 'Seed Case', desc: 'A steel case of foil packets out of the seed vault, each stamped with the closed eye: CONCERN LINE, a crop, a number, and F1 — DO NOT SAVE. And a bundle in coarser paper: OPENFIELD — GUILD LOT.', category: 'key', weight: 1.5, value: 0 },
+  { id: 'k_hc_jars', icon: 'tin', name: 'Keeper\'s Seed Jars', desc: 'Twenty-two jam jars out from under a bench, each with a twist of seed and a label in pencil: a bean, a squash, a tomato, a wheat, and the year somebody first saved it. Some of the years are before the Burn.', category: 'key', weight: 3, value: 0 },
+  { id: 'k_hc_oranges', icon: 'bundle', name: 'Net of Oranges', desc: 'Oranges off the one tree in the gardens, in a string net. They smell of a colour.', category: 'key', weight: 1, value: 0 },
+  { id: 'k_hc_linh_pass', icon: 'card', name: 'Pass Down', desc: 'A citizen\'s pass for the car to Footgate and back, made out to Hoang, L., with the registry\'s stamp. It does not say what she is.', category: 'key', weight: 0, value: 0 },
 ];

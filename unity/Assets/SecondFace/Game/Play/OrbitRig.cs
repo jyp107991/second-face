@@ -37,6 +37,10 @@ namespace SecondFace.Game.Play
 
         private CinemachineOrbitalFollow _orbit;
         private float _yawGoal, _pitchGoal, _distanceGoal;
+        // the fight's framing (COMBAT.md A9): a point looked at in the leader's place, eased to and from, never cut to
+        private Vector3? _focus;
+        private Vector3 _focusAt, _focusVel;
+        private float _focusWeight, _focusWeightVel, _focusGoal, _distanceEase = Smoothing;
         private float _yawFling, _pitchFling;   // degrees a second, from the last drag
         private bool _held;
         private Vector3 _lastLeader;
@@ -100,8 +104,38 @@ namespace SecondFace.Game.Play
         public void Zoom(float ratio)
         {
             if (ratio <= 0) return;
+            _distanceEase = Smoothing;
             _distanceGoal = Mathf.Clamp(_distanceGoal / ratio, DistanceMin, DistanceMax);
         }
+
+        /// <summary>How long the camera takes to ease to a new focus (the fight's; divided by the combat speed).</summary>
+        public float FocusSeconds = 0.45f;
+        /// <summary>The point the camera looks at in the leader's place (null: the leader), and how far it has eased there.</summary>
+        public Vector3? Focus => _focus;
+        public float FocusWeight => _focusWeight;
+        /// <summary>The distance the camera is easing to.</summary>
+        public float DistanceGoal => _distanceGoal;
+
+        /// <summary>Looks at a point instead of the leader (the one acting in a fight, the middle of a shot), eased there
+        /// over <see cref="FocusSeconds"/> from wherever the view is now: never a cut. With a distance the camera eases out
+        /// or in to it as slowly (within its limits; the pitch is the player's).</summary>
+        public void FocusOn(Vector3 point, float? distance = null)
+        {
+            if (_focus == null && _focusWeight < 1e-3f) { _focusAt = point; _focusVel = Vector3.zero; }
+            _focus = point;
+            _focusGoal = 1f;
+            if (distance is { } d) { _distanceEase = FocusSeconds; _distanceGoal = Mathf.Clamp(d, DistanceMin, DistanceMax); }
+        }
+
+        /// <summary>Eases a distance in as slowly as a focus (the fight puts the player's own back after framing a shot).</summary>
+        public void EaseDistance(float distance)
+        {
+            _distanceEase = FocusSeconds;
+            _distanceGoal = Mathf.Clamp(distance, DistanceMin, DistanceMax);
+        }
+
+        /// <summary>Back to the leader, eased.</summary>
+        public void ClearFocus() => _focusGoal = 0f;
 
         /// <summary>The look target moved over the ground by this much (kept within <see cref="PanLimit"/> m).</summary>
         public void PanBy(Vector3 world)
@@ -193,7 +227,11 @@ namespace SecondFace.Game.Play
             var k = 1f - Mathf.Exp(-dt / Smoothing);
             Yaw = Mathf.LerpAngle(Yaw, _yawGoal, k);
             Pitch = Mathf.Lerp(Pitch, _pitchGoal, k);
-            Distance = Mathf.Lerp(Distance, _distanceGoal, k);
+            Distance = Mathf.Lerp(Distance, _distanceGoal, 1f - Mathf.Exp(-dt / Mathf.Max(0.01f, _distanceEase)));
+            // the focus: critically damped to its point and its weight (no jump, no overshoot)
+            if (_focus is { } f) _focusAt = Vector3.SmoothDamp(_focusAt, f, ref _focusVel, Mathf.Max(0.02f, FocusSeconds * 0.5f), Mathf.Infinity, dt);
+            _focusWeight = Mathf.Clamp01(Mathf.SmoothDamp(_focusWeight, _focusGoal, ref _focusWeightVel, Mathf.Max(0.02f, FocusSeconds * 0.5f), Mathf.Infinity, dt));
+            if (_focusGoal <= 0f && _focusWeight < 1e-3f) { _focusWeight = 0f; _focus = null; }
             var velocity = Leader != null && dt > 0 ? (Leader.position - _lastLeader) / dt : Vector3.zero;
             if (Leader != null) _lastLeader = Leader.position;
             velocity.y = 0;
@@ -202,7 +240,12 @@ namespace SecondFace.Game.Play
 
         private void Apply(Vector3 lead)
         {
-            if (Leader != null) Target.position = Leader.position + Vector3.up * TargetHeight + lead + Pan;
+            if (Leader != null)
+            {
+                var look = Leader.position + Vector3.up * TargetHeight + lead + Pan;
+                if (_focusWeight > 0f) look = Vector3.Lerp(look, _focusAt + Vector3.up * TargetHeight + Pan, _focusWeight);
+                Target.position = look;
+            }
             if (_orbit == null) return;
             _orbit.Radius = Distance;
             _orbit.HorizontalAxis.Value = Mathf.DeltaAngle(0f, Yaw);

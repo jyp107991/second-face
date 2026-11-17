@@ -31,6 +31,9 @@ import { RAID_DIALOGUES } from './md_raid';
 import { SKIRTS_DIALOGUES } from './hs_skirts';
 import { PARTS_DIALOGUES } from './hs_parts';
 import { KES_DIALOGUES } from './hs_kes';
+import { HC_TERRACE_DIALOGUES } from './hc_halcyon';
+import { HC_CLINIC_DIALOGUES } from './hc_clinic';
+import { HC_BOARD_DIALOGUES } from './hc_board';
 import { LINE_DIALOGUES } from './rc_line';
 import { FOURWAYS_DIALOGUES } from './rc_fourways';
 import { HALTS_DIALOGUES } from './rc_halts';
@@ -43,6 +46,26 @@ import { PIT_DIALOGUES } from './tm_pit';
 import { DAM_DIALOGUES } from './nw_dam';
 import { SAWTOWN_DIALOGUES } from './nw_sawtown';
 import { LANDING_DIALOGUES } from './nw_landing';
+import { SPINDLE_DIALOGUES } from './an_spindle';
+import { KELSO_DIALOGUES } from './an_kelso';
+import { LONGNIGHT_DIALOGUES } from './ln_longnight';
+import { A3_ORDER_DIALOGUES } from './a3_order';
+import { A3_MAST_DIALOGUES } from './a3_mast';
+import { A3_ROAD_DIALOGUES } from './a3_road';
+import { A3_SHALE_DIALOGUES } from './a3_shale';
+import { A3_KNOCK_DIALOGUES } from './a3_knock';
+import { A3_FORCES_DIALOGUES } from './a3_forces';
+import { A3_FIRE_DIALOGUES } from './a3_fire';
+import { A3_CISTERN_DIALOGUES } from './a3_cistern';
+import { A3_RING_DIALOGUES } from './a3_ring';
+import { A3_DOOR_DIALOGUES } from './a3_door';
+import { A3_AFTER_DIALOGUES } from './a3_after';
+import { A3_CLOSE_DIALOGUES } from './a3_close';
+import { A3_READY_DIALOGUES } from './a3_ready';
+import { A3_STEPS_DIALOGUES } from './a3_steps';
+import { A3_EPILOGUE_DIALOGUES } from './a3_epilogue';
+import { A3_VAULT_DIALOGUES } from './a3_vault';
+import { A3_END_DIALOGUES } from './a3_ends';
 import { d_dw_approach, d_dw_cato, d_dw_clerk, d_dw_console, d_dw_diary_table, d_dw_door, d_dw_juno, d_dw_oriel, d_dw_panel, d_dw_pumps, d_dw_sable, d_dw_valve, d_dw_wick } from './drywells';
 import { d_kn_maud, d_kn_hatch, d_kn_grille, d_kn_linnet, d_kn_buyer, d_kn_factor, d_kn_dace, d_kn_rib, d_kn_mast, d_kn_corin, d_kn_windpump, d_kn_snare, d_kn_postbook, d_kn_door, d_kn_tollsign, d_kn_watch, d_kn_stranger, d_kn_outriders, d_kn_bed } from './knock';
 import { d_c9_archive, d_c9_body, d_c9_bram, d_c9_great_door, d_c9_ines, d_c9_mother, d_c9_pell, d_c9_shaft, d_c9_tamsin, d_c9_teague } from './ch1_cistern';
@@ -59,4 +82,23 @@ export const DIALOGUES: Record<string, DialogueDef> = Object.fromEntries([
   ...EXTRA_DIALOGUES, ...WHEEL_DIALOGUES, ...ACT1_SIDE_DIALOGUES, ...NINEBRIDGE_DIALOGUES, ...OPENFIELD_DIALOGUES, ...SUMP_DIALOGUES, ...MERIDIAN_DIALOGUES, ...MARKET_DIALOGUES, ...SINK_DIALOGUES, ...LANTERN_DIALOGUES, ...STACKS_DIALOGUES, ...BRIDGEWARD_DIALOGUES, ...CROWN_DIALOGUES, ...SPIRE_DIALOGUES, ...COURT_DIALOGUES, ...RING_DIALOGUES, ...RAID_DIALOGUES, ...SKIRTS_DIALOGUES, ...PARTS_DIALOGUES, ...KES_DIALOGUES, ...LINE_DIALOGUES, ...FOURWAYS_DIALOGUES, ...HALTS_DIALOGUES, ...YARD_DIALOGUES,
   ...STILTS_DIALOGUES, ...RIGS_DIALOGUES, ...DOCKS_DIALOGUES,
   ...RIVER_DIALOGUES, ...PIT_DIALOGUES, ...DAM_DIALOGUES, ...SAWTOWN_DIALOGUES, ...LANDING_DIALOGUES,
+  ...SPINDLE_DIALOGUES, ...KELSO_DIALOGUES, ...LONGNIGHT_DIALOGUES,
+  ...A3_ORDER_DIALOGUES,
+  ...A3_MAST_DIALOGUES,
+  ...A3_ROAD_DIALOGUES,
+  ...A3_SHALE_DIALOGUES,
+  ...A3_KNOCK_DIALOGUES,
+  ...A3_FORCES_DIALOGUES,
+  ...A3_FIRE_DIALOGUES,
+  ...A3_CISTERN_DIALOGUES,
+  ...A3_RING_DIALOGUES,
+  ...A3_DOOR_DIALOGUES,
+  ...A3_AFTER_DIALOGUES,
+  ...A3_CLOSE_DIALOGUES,
+  ...A3_READY_DIALOGUES,
+  ...A3_STEPS_DIALOGUES,
+  ...A3_EPILOGUE_DIALOGUES,
+  ...A3_VAULT_DIALOGUES,
+  ...A3_END_DIALOGUES,
+  ...HC_TERRACE_DIALOGUES, ...HC_CLINIC_DIALOGUES, ...HC_BOARD_DIALOGUES,
 ].map((d) => [d.id, d]));

@@ -187,7 +187,7 @@ namespace SecondFace.Tests
 
             var poses = new (string label, float speed, float idle, float t)[]
             {
-                ("idle", 0f, 0f, 0.3f), ("idle_c", 0f, 2f, 0.5f), ("walk 0", walk, 0f, 0f), ("walk 0.5", walk, 0f, 0.5f), ("jog 0.25", jog, 0f, 0.25f),
+                ("idle", 0f, 0f, 0.3f), ("idle 1", 0f, 1f, 0.5f), ("walk 0", walk, 0f, 0f), ("walk 0.5", walk, 0f, 0.5f), ("jog 0.25", jog, 0f, 0.25f),
             };
             const int w = 1600, h = 600;
             var problems = new List<string>();

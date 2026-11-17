@@ -70,7 +70,7 @@ props += [
 ]
 
 orchard = {
-    'id': 'orchard', 'name': 'The Burnt Orchard', 'seed': 53, 'settlement': 'shale',
+    'id': 'orchard', 'name': 'Burnt Orchard', 'seed': 53, 'settlement': 'shale',
     'layout': rows,
     'legend': {
         '.': {'floor': 'sand'}, ',': {'floor': 'dirt'}, 'd': {'floor': 'dirt'}, 'r': {'floor': 'rubble'}, 'w': {'floor': 'wood'},

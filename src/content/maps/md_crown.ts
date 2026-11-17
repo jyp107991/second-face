@@ -1000,10 +1000,37 @@ export const md_crown: MapDef = {
       y: 5,
       facing: 3,
       if: {
-        not: {
-          flag: "cr_concern",
-          eq: "exposed"
-        }
+        all: [
+          {
+            not: {
+              flag: "cr_concern",
+              eq: "exposed"
+            }
+          },
+          {
+            not: {
+              all: [
+                {
+                  flag: "a3_summoned"
+                },
+                {
+                  not: {
+                    all: [
+                      {
+                        flag: "hc_soto_met"
+                      },
+                      {
+                        not: {
+                          dead: "npc_hc_02"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
       }
     },
     {

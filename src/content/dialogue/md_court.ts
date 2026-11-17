@@ -1,5 +1,7 @@
 import type { CheckDef, DialogueDef, NodeDef, OptionDef, Text } from '../../engine/dialogue/dialogue';
 import type { Cond, Effect } from '../../engine/world/logic';
+import { recallCase, reserveCase } from './a3_court';
+import { callaCase, DOCKET_A3 } from './a3_close';
 
 /**
  * The Court of Accounts, at the foot of the Archive Spire (B3.11). One tree, owned by Assessor Three on the bench, holds
@@ -303,9 +305,16 @@ const DEED = courtCase({
   },
 });
 
+// ---------------------------------------------------------------- Act 3 (B6b): Reserve 9 against the fourth order; Unit 9's recall (specs: a3_court.ts)
+
+const RESERVE = courtCase(reserveCase(onRail));
+const RECALL = courtCase(recallCase(onRail));
+// Act 3 (B6l): keystone 7's trial, only while Sister Calla is held (spec: a3_close.ts)
+const CALLA = courtCase(callaCase(onRail));
+
 // ---------------------------------------------------------------- the bench
 
-const CALLS = (sfx: string) => [FINES.open(sfx), SQUATTER.open(sfx), DEED.open(sfx)];
+const CALLS = (sfx: string) => [FINES.open(sfx), SQUATTER.open(sfx), DEED.open(sfx), RESERVE.open(sfx), RECALL.open(sfx), CALLA.open(sfx)];
 const NOT_SEEN = (id: string): Cond => ({ not: { any: [{ seen: id }, { seen: `${id}.again` }] } });
 const BENCH_TOPICS = (sfx: string): OptionDef[] => [
   { id: `three.chair${sfx}`, text: 'The chair behind you. Who sits in it?', if: NOT_SEEN('three.chair'), next: 'chair' },
@@ -315,7 +324,7 @@ const BENCH_TOPICS = (sfx: string): OptionDef[] => [
 
 export const d_ca_court: DialogueDef = {
   id: 'd_ca_court', owner: THREE,
-  start: [{ if: { flag: 'md_fight' }, node: 'shut' }, { if: { knows: 'ca_three_met' }, node: 'bench' }, { node: 'intro' }],
+  start: [{ if: { knows: 'ca_three_met' }, node: 'bench' }, { node: 'intro' }],
   nodes: {
     intro: {
       text: 'The unit on the bench has Nine\'s pattern without Nine\'s wear: grey plating, a brass plate polished to a mirror, a lens with no crack in it at all. It does not turn its head; the lens turns. "Assessor Three. Accounts." Two ledgers on the bench, squared to its edge. "The Court sits when a case is called. Fines, titles, petitions, debts. The Court reads what is on the rail, and nothing else."',
@@ -347,10 +356,12 @@ export const d_ca_court: DialogueDef = {
       effects: [{ learn: 'ca_clause12' }],
       options: [{ text: '(Back to the bench.)', next: 'bench' }],
     },
-    shut: { text: 'Nothing.', again: 'The bench is empty and the hall\'s doors are shut on the wardens\' side. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
     ...FINES.nodes,
     ...SQUATTER.nodes,
     ...DEED.nodes,
+    ...RESERVE.nodes,
+    ...RECALL.nodes,
+    ...CALLA.nodes,
   },
 };
 
@@ -369,7 +380,7 @@ export const d_ca_docket: DialogueDef = {
   id: 'd_ca_docket', owner: 'narrator', start: [{ node: 'read' }],
   nodes: {
     read: {
-      text: 'THE COURT OF ACCOUNTS — DOCKET. Cards in brass slots, a dozen of them, most yellowed: 1190 PRECINCT v. QUIROGA — EVICTION, AHEAD OF PLAN — LISTED. 1201 HOUSE VANE v. RUSTMOUTHS — TOLL, BRIDGEWARD — ADJOURNED. 1204 PRECINCT v. A SISTER OF THE CHOIR, OF SHALE — SEDITION — LISTED, NOT CALLED. And one card whiter than the others, near the top.',
+      text: [...DOCKET_A3, { text: 'THE COURT OF ACCOUNTS — DOCKET. Cards in brass slots, a dozen of them, most yellowed: 1190 PRECINCT v. QUIROGA — EVICTION, AHEAD OF PLAN — LISTED. 1201 HOUSE VANE v. RUSTMOUTHS — TOLL, BRIDGEWARD — ADJOURNED. 1204 PRECINCT v. A SISTER OF THE CHOIR, OF SHALE — SEDITION — LISTED, NOT CALLED. And one card whiter than the others, near the top.' }],
       again: 'The docket: cards in brass slots, most yellowed, one whiter than the others near the top.',
       effects: [{ learn: 'ca_docket_read' }, { learn: 'ca_calla_listed' }],
       options: [

@@ -1,0 +1,76 @@
+{
+ "name": "bat",
+ "kind": "bat (two-handed club)",
+ "source": "https://polyhaven.com/a/baseball_bat",
+ "license": "CC0 1.0",
+ "author": "Enrique Mart\u00edn (Poly Haven)",
+ "file": "bat.fbx",
+ "units": "metres",
+ "frame": "Unity: +Z forward (muzzle/tip), +Y up, +X right; origin = grip_main",
+ "triangles": {
+  "body": 800,
+  "source_body": 2672
+ },
+ "size_m": [
+  0.065,
+  0.064,
+  0.913
+ ],
+ "points_unity": {
+  "grip_main": [
+   -0.0,
+   0.0,
+   -0.0
+  ],
+  "tip": [
+   -0.0008,
+   0.0007,
+   0.8532
+  ],
+  "grip_off": [
+   -0.0001,
+   0.0008,
+   0.09
+  ]
+ },
+ "materials": {
+  "baseball_bat": {
+   "BaseColor": "bat_BaseColor.jpg",
+   "Normal": "bat_Normal.png",
+   "Mask": "bat_Mask.png"
+  }
+ },
+ "texture_size": 512,
+ "notes": [
+  "grip points are palm centres; the hand socket aligns its palm frame to the weapon frame (forward along the barrel/blade, up along the top/spine)",
+  "lore pass done: grey duct tape on the handle, dents and dark stains; variant v2: chipped signal-red paint, black tape"
+ ],
+ "variants": {
+  "v1": {
+   "label": "grey duct tape on the handle, dents and dark stains",
+   "materials": {
+    "baseball_bat": {
+     "BaseColor": "bat_BaseColor.jpg",
+     "Normal": "bat_Normal.png",
+     "Mask": "bat_Mask.png"
+    }
+   }
+  },
+  "v2": {
+   "label": "chipped signal-red paint, black tape",
+   "materials": {
+    "baseball_bat": {
+     "BaseColor": "bat_v2_BaseColor.jpg",
+     "Normal": "bat_v2_Normal.png",
+     "Mask": "bat_v2_Mask.png"
+    }
+   }
+  }
+ },
+ "lore": {
+  "pass": "2026-11-17, tools/lore/lore.py (recipes in the weapon frame; bakes by tools/lore/bake_maps.py)",
+  "originals": "raw/weapons_pre_lore/bat/",
+  "painted_out": "nothing found (every map checked by eye and by a high-pass of the normal map)",
+  "mask_occlusion": "G now carries the mesh AO and cavities where the staged mask had none"
+ }
+}

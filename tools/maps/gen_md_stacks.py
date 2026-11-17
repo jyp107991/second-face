@@ -127,7 +127,7 @@ md_stacks = {
         {'id': 'lobby', 'x': 29, 'y': 31, 'w': 7, 'h': 4, 'text': 'Block Seven\'s lobby: a concrete hall the height of three floors with a market in it, a board of floor notices, a committee office with a door, and a stairwell in a cage. The lifts are dead; there is a panel beside them that says so in the Plan\'s own words.', 'effects': [{'learn': 'seen_lobby'}]},
     ],
     'extras': [
-        {'count': 6, 'roles': ['settler', 'labourer', 'street', 'tech', 'trader'], 'area': {'x': 1, 'y': 11, 'w': 48, 'h': 18}, 'spots': ['street_fire', 'street_pair_a', 'street_pair_b', 'street_lean', 'yard_sit', 'deck_wait'], 'hours': {'from': 6, 'to': 24}, 'barks': ['Nine\'s dry again. Twelve\'s pumping.', 'Forty floors and the lift says *as per schedule*.', 'Committee meets in the lobby. Everyone shouts; Hester writes.', 'Don\'t rent above twenty. The water doesn\'t.']},
+        {'count': 6, 'roles': ['settler', 'labourer', 'street', 'tech', 'trader'], 'area': {'x': 1, 'y': 11, 'w': 48, 'h': 18}, 'spots': ['street_fire', 'street_pair_a', 'street_pair_b', 'street_lean', 'yard_sit', 'deck_wait'], 'hours': {'from': 6, 'to': 24}, 'barks': ['Nine\'s dry again. Twelve\'s pumping.', 'Forty floors and the lift says *as per schedule*.', 'Committee meets in the lobby. Everyone shouts; Gudrun writes.', 'Don\'t rent above twenty. The water doesn\'t.']},
         {'count': 5, 'roles': ['settler', 'labourer', 'street', 'trader'], 'area': {'x': 15, 'y': 31, 'w': 34, 'h': 14}, 'spots': ['stall_sit', 'lobby_bench_a', 'lobby_bench_b', 'lobby_pair_a', 'lobby_pair_b', 'board_read'], 'barks': ['Fitch has water. Fitch always has water; ask him whose.', 'The board says Nine, Twelve and the roof. The board always says that.', 'Stairs. Nine floors. I count them every night.']},
     ],
     'ambience': {'indoor': False, 'fogColor': 'hex:0x8a8e94', 'fogDensity': 0.014, 'dust': 0.2, 'grade': 0.35, 'mood': 'bustling', 'sound': 'murmur'},
@@ -225,7 +225,7 @@ md_stacks_9 = {
         {'id': 'arrive', 'x': 19, 'y': 22, 'w': 9, 'h': 3, 'text': 'Floor nine. A corridor of doors round a dead core, lit by lamps on cables that somebody keeps lit; washing on lines between the lamps; the smell of a hundred stoves. Every door has a number and most have a name chalked under it. 9-14 has neither.', 'effects': [{'learn': 'seen_nine'}]},
     ],
     'extras': [
-        {'count': 5, 'roles': ['settler', 'labourer', 'street'], 'area': {'x': 4, 'y': 4, 'w': 40, 'h': 32}, 'spots': ['corr_n', 'corr_s', 'bench_a', 'bench_b', 'corr_lean', 'corr_e', 'corr_w'], 'barks': ['Nine\'s dry. Twelve\'s pumping. Same every night.', 'Hester says the committee\'s meeting. Hester\'s been saying.', 'Ulla hears the lifts. Ulla hears everything that\'s stopped.', '9-14\'s been empty since the Marrs went to the Ring.']},
+        {'count': 5, 'roles': ['settler', 'labourer', 'street'], 'area': {'x': 4, 'y': 4, 'w': 40, 'h': 32}, 'spots': ['corr_n', 'corr_s', 'bench_a', 'bench_b', 'corr_lean', 'corr_e', 'corr_w'], 'barks': ['Nine\'s dry. Twelve\'s pumping. Same every night.', 'Gudrun says the committee\'s meeting. Gudrun\'s been saying.', 'Ulla hears the lifts. Ulla hears everything that\'s stopped.', '9-14\'s been empty since the Ostrows went to the Ring.']},
     ],
     'ambience': {'indoor': True, 'fogColor': 'hex:0x3a3630', 'fogDensity': 0.02, 'dust': 0.15, 'ambient': {'color': 'hex:0x9a9080', 'intensity': 0.85}, 'grade': 0.4, 'mood': 'peaceful'},
 }

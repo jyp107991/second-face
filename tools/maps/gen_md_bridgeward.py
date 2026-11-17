@@ -157,7 +157,8 @@ md_bridgeward = {
         {'def': 'npc_bw_01', 'x': 52, 'y': 45, 'facing': 3},
         {'def': 'npc_bw_02', 'x': 50, 'y': 46, 'facing': 1},
         {'def': 'npc_bw_03', 'x': 25, 'y': 15, 'facing': 1},
-        {'def': 'npc_bw_04', 'x': 40, 'y': 14, 'facing': 0},
+        # B6l: at the Spire's close to read, once the Saints answered the muster and the Ledger's card has come
+        {'def': 'npc_bw_04', 'x': 40, 'y': 14, 'facing': 0, 'if': {'not': {'all': [{'flag': 'a3_summoned'}, {'flag': 'a3_ally_saints'}]}}},
         {'def': 'npc_bw_05', 'x': 40, 'y': 9, 'facing': 0},
         {'def': 'npc_bw_06', 'x': 38, 'y': 9, 'facing': 0},
         {'def': 'npc_bw_07', 'x': 31, 'y': 41, 'facing': 1},

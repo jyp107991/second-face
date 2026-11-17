@@ -1,5 +1,8 @@
 import type { DialogueDef, OptionDef, Text } from '../../engine/dialogue/dialogue';
 import type { Cond, Effect } from '../../engine/world/logic';
+import { COMFORT_TALLY_BACK, COMFORT_WORD_NODES, COMFORT_WORD_OPTION, MARWOOD_BACK_NODES, MARWOOD_BACK_OPTION } from './a3_close';
+import { PNR_NODES, PNR_START } from './a3_ready';
+import { VAULT_DOOR_NODES, VAULT_DOOR_START } from './a3_vault';
 
 /**
  * Meridian, the Archive Spire (B3.11): the photograph read from the pack (beat 14, the date), the close and its steps,
@@ -103,10 +106,12 @@ export const d_ar_board: DialogueDef = {
   nodes: {
     read: {
       text: [
+        // Act 3 (B6l): the Ledger has brought the steps forward to R30 (the fourth order)
+        { if: { flag: 'a3_open' }, text: 'A works board on the scaffold, relettered: ARCHIVE SPIRE — RESTORATION — R30 WORKS — BROUGHT FORWARD. PUBLIC STEPS AND GREAT DOORS: REOPEN R30. The 30 is fresh white paint over a 49 that still shows through when the light is low. Below it, by landing, the same list as before, every date on it struck through and written again nineteen years sooner.' },
         { if: { flag: 'prec_refuse_benefit' }, text: 'A works board on the scaffold, freshly lettered: ARCHIVE SPIRE — RESTORATION — R30 WORKS — ON SCHEDULE. PUBLIC STEPS AND GREAT DOORS: REOPEN R49. Below, by landing: 1 — FAÇADE. 2 — HALL OF RECORDS. 3 — COPY ROOM: MAGISTRATE\'S CHAMBERS — REROUTED. The last word is new paint over old.' },
         { text: 'A works board on the scaffold, freshly lettered: ARCHIVE SPIRE — RESTORATION — R30 WORKS — ON SCHEDULE. PUBLIC STEPS AND GREAT DOORS: REOPEN R49. Below, by landing: 1 — FAÇADE. 2 — HALL OF RECORDS. 3 — COPY ROOM: MAGISTRATE\'S CHAMBERS (R49). And so on up, past where the board runs out of room.' },
       ],
-      again: 'R30 WORKS — ON SCHEDULE. REOPEN R49. Landing three, the copy room, and what it is to be.',
+      again: [{ if: { flag: 'a3_open' }, text: 'REOPEN R30, in fresh white over the 49.' }, { text: 'R30 WORKS — ON SCHEDULE. REOPEN R49. Landing three, the copy room, and what it is to be.' }],
       effects: [{ learn: 'ar_board_read' }, { lead: 'l_cal_r49' }, { lead: 'l_ca_chambers' }, { quest: 'q_a2_calendar', start: true }],
       options: [{ text: '(Leave it.)', exit: true }],
     },
@@ -114,7 +119,8 @@ export const d_ar_board: DialogueDef = {
 };
 
 export const d_ar_steps: DialogueDef = {
-  id: 'd_ar_steps', owner: 'narrator', start: [{ if: { knows: 'ar_steps_known' }, node: 'again' }, { node: 'scene' }],
+  // Act 3 (B6m): from the Ledger's card until the steps are climbed, the lamp is the point of no return (a3_ready.ts)
+  id: 'd_ar_steps', owner: 'narrator', start: [...PNR_START, { if: { knows: 'ar_steps_known' }, node: 'again' }, { node: 'scene' }],
   nodes: {
     scene: {
       text: 'You stop on the fourth step without deciding to. The lamp behind your left shoulder. The doors above. The Crown\'s glass going up out of sight on either side. The wind off the canal, in your face, making you squint. It is the photograph. The angle is wrong by a stride, and the steps are cracked where the print has them whole, but it was made here, of you, standing about where you are standing now.',
@@ -139,16 +145,19 @@ export const d_ar_steps: DialogueDef = {
       again: 'The steps, and the lamp.',
       options: [{ text: '(Go on.)', exit: true }],
     },
+    ...PNR_NODES,
   },
 };
 
 export const d_ar_doors: DialogueDef = {
-  id: 'd_ar_doors', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'The great doors: bronze, four storeys, green at the seams, chained through the handles with a chain that has been oiled. A card in a sleeve on the chain: CLOSED FOR WORKS — REOPEN R49. Through the gap at the hinge, a hall of records going back into the dark, and a smell of paper.', again: 'The bronze doors, chained and oiled. REOPEN R49.', effects: [{ learn: 'ar_doors_seen' }, { lead: 'l_cal_r49' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  // Act 3 (B6m): from the Ledger's card until the steps are climbed, the doors are the point of no return too (a3_ready.ts)
+  id: 'd_ar_doors', owner: 'narrator', start: [...PNR_START, { node: 'look' }],
+  nodes: { look: { text: 'The great doors: bronze, four storeys, green at the seams, chained through the handles with a chain that has been oiled. A card in a sleeve on the chain: CLOSED FOR WORKS — REOPEN R49. Through the gap at the hinge, a hall of records going back into the dark, and a smell of paper.', again: 'The bronze doors, chained and oiled. REOPEN R49.', effects: [{ learn: 'ar_doors_seen' }, { lead: 'l_cal_r49' }], options: [{ text: '(Leave it.)', exit: true }] }, ...PNR_NODES },
 };
 
 export const d_ar_vault: DialogueDef = {
-  id: 'd_ar_vault', owner: 'narrator', start: [{ node: 'look' }],
+  // Act 3 (B6q): once the steps are done the door stands open on the stair down to the vault (a3_vault.ts)
+  id: 'd_ar_vault', owner: 'narrator', start: [...VAULT_DOOR_START, { node: 'look' }],
   nodes: {
     look: {
       text: 'A steel door set low in the Spire\'s foot, west of the steps, with no handle on this side: VAULT OF ACCOUNTS — NO ENTRY — NO EXIT. It is warm under your palm, the only warm thing in the close, and through it, far down, something hums at one note and does not stop.',
@@ -157,6 +166,7 @@ export const d_ar_vault: DialogueDef = {
       interject: [{ companion: NINE, text: '"Below us," Nine says, "the city." It does not put its hand on the door. "I have never been sent down. Nobody is sent down. Things are sent down."' }],
       options: [{ text: '(Leave it.)', exit: true }],
     },
+    ...VAULT_DOOR_NODES,
   },
 };
 
@@ -340,10 +350,11 @@ export const d_ar_copyist: DialogueDef = {
       options: [{ id: 'copy.return.after', text: '(Give the book back.)', if: { item: 'k_ca_copybook' }, effects: [{ take: 'k_ca_copybook' }, { set: 'ca_book_returned' }, { trust: { npc: 'npc_ar_04', by: 15 } }], next: 'returned' }, bye],
     },
     tally: {
-      text: 'At the foot of the Sink\'s tally wall with her hand flat over a name: ASAMOAH, C. — R12 — STAIR. "It\'s true, you know," she says, without turning. "I was on a stair." She takes her hand away. "You sold it. I lent it to you, and you sold it to the catalogue, and now the city keeps its own precedents, which is to say it keeps none." A long breath. "I came down to see if they\'d spelled it right. They have."',
+      text: [COMFORT_TALLY_BACK, { text: 'At the foot of the Sink\'s tally wall with her hand flat over a name: ASAMOAH, C. — R12 — STAIR. "It\'s true, you know," she says, without turning. "I was on a stair." She takes her hand away. "You sold it. I lent it to you, and you sold it to the catalogue, and now the city keeps its own precedents, which is to say it keeps none." A long breath. "I came down to see if they\'d spelled it right. They have."' }],
       again: 'She stands at the wall in front of her own name, and does not turn round.',
-      options: [bye],
+      options: [COMFORT_WORD_OPTION, bye],
     },
+    ...COMFORT_WORD_NODES,
     line: {
       text: 'Outside the Wall, in the line, on a blanket somebody gave her, with the book under her coat and her back very straight. "Property," she says. "Held." She does not say it to blame you. She says it the way she says everything, so it will be remembered right. "They let me keep the book. Nobody thought it was worth anything."',
       again: 'In the line outside the Wall, the book under her coat, copying in the margins of someone\'s notice.',
@@ -367,11 +378,12 @@ const KEEPER_TOPICS = (sfx: string): OptionDef[] => [
   { id: `keeper.stranger${sfx}`, text: 'A man came down your stair at dawn with twelve faces under his coat.', if: { all: [{ any: [{ lead: 'l_rev_spire' }, { concluded: 'c_rev_last_day' }, { knows: 'ar_faulk_stranger' }] }, NOT_SEEN('keeper.stranger')] }, next: 'stranger' },
   { id: `keeper.filed${sfx}`, text: 'Petition 1187. Who filed it?', if: { all: [{ quest: 'q_ca_squatter' }, { not: { knows: 'ca_squatter_for_you' } }, { not: { flag: 'ca_squatter' } }] }, next: 'filed' },
   { id: `keeper.book${sfx}`, text: '(Put the copyist\'s book on the counter.)', if: { all: [{ item: 'k_ca_copybook' }, { not: { flag: 'ca_squatter' } }] }, next: 'book' },
+  MARWOOD_BACK_OPTION(sfx), // Act 3 (B6l): the Court's register asked back
   bye,
 ];
 
 export const d_ar_keeper: DialogueDef = {
-  id: 'd_ar_keeper', owner: 'npc_ar_03', start: [{ if: { flag: 'md_fight' }, node: 'shut' }, { if: { knows: 'ar_keeper_met' }, node: 'again' }, { node: 'intro' }],
+  id: 'd_ar_keeper', owner: 'npc_ar_03', start: [{ if: { knows: 'ar_keeper_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
       text: 'A small woman behind the catalogue counter with grey hair dragged back into a braid that has given up, reading glasses pushed up into it, and ink on the side of her right hand from forty years of the same habit. "Keeper Marwood. The catalogue." She does not stop writing in the index. "Everything written in this city is written once and kept here. Kept is not the same as read. That is what I am for."',
@@ -423,7 +435,7 @@ export const d_ar_keeper: DialogueDef = {
       options: [bye],
     },
     book_no: { text: 'She takes her hands off the cover. "No," she agrees. "It\'s hers." She goes back to the index. "If she ever wants it kept somewhere safer than a back room, tell her the catalogue has a shelf. It wouldn\'t be the same. I know that."', again: 'She has gone back to the index. The offer of a shelf stands, unrepeated.', effects: [{ learn: 'ca_keeper_declined' }], options: [bye] },
-    shut: { text: 'Nothing.', again: 'The catalogue counter is shut, the keeper gone behind it. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
+    ...MARWOOD_BACK_NODES,
   },
 };
 
@@ -463,7 +475,7 @@ const STAIR_ROUTES = (sfx: string): OptionDef[] => [
 
 export const d_ar_stair: DialogueDef = {
   id: 'd_ar_stair', owner: 'npc_ar_05',
-  start: [{ if: { flag: 'md_fight' }, node: 'shut' }, { if: { flag: 'ar_up' }, node: 'open' }, { if: NIGHT, node: 'night' }, { node: 'day' }],
+  start: [{ if: { flag: 'ar_up' }, node: 'open' }, { if: NIGHT, node: 'night' }, { node: 'day' }],
   nodes: {
     day: {
       text: '"Slip, or the lens." The porter at the desk at the foot of the stair is a big man with lamp-black worked into the creases of his fingers, and behind him the stair goes up into a dark that a lamp on every landing does nothing about. A lens on a post at his elbow; a lift beside it with its cage rusted shut. "Hemant. I light the landings. All ninety-one."',
@@ -501,7 +513,6 @@ export const d_ar_stair: DialogueDef = {
       again: 'The porter holds the lamp out, and waits.',
       options: [{ id: 'stair.climb', text: '(Climb.)', effects: [GOTO_TOP], exit: true, repeat: true }, { text: '(Not now.)', exit: true }],
     },
-    shut: { text: 'Nothing.', again: 'The stair door is chained and the porter gone. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 

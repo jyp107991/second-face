@@ -1,0 +1,37 @@
+{
+ "name": "fist_guard_accad",
+ "src": "ACCAD Male2_D4_ReadyToRelax",
+ "loop": true,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.9082,
+ "fps": 30,
+ "frames": 22,
+ "src_fps": 30.0,
+ "sex": "m",
+ "sex_source": "ACCAD names its subjects by sex (Male2)",
+ "set": "m",
+ "licence": "ACCAD Open Motion Project (Ohio State University), CC BY 3.0",
+ "source": "https://accad.osu.edu/research/motion-lab/mocap-system-and-data (Male2_bvh.zip: Male2_D4_ReadyToRelax.bvh)",
+ "kind": "A2 unarmed guard (fighting stance), held",
+ "weapon": "none",
+ "two_hands": false,
+ "authoring": "captured (optical mocap, no fingers)",
+ "range": [
+  0.0,
+  1.7
+ ],
+ "facing": "mean",
+ "travel_m": [
+  0.0,
+  0.0
+ ],
+ "root_note": "in place",
+ "closed": true,
+ "cycle": "near",
+ "flips_repaired": null,
+ "inbetween": null,
+ "resolved": true,
+ "floor_shift_m": 0.0,
+ "group": "use"
+}

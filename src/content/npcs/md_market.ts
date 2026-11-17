@@ -2,10 +2,10 @@ import type { NpcDef } from '../../engine/npc/defs';
 
 /**
  * Meridian, Old Market — the bazaar in the dead mall (Act 2). Nobody here is anyone's; the wardens on the ring
- * street turn only if the market comes to a fight (`md_fight`).
+ * street keep the count and never turn: the square's riot is settled in words (`q_md_riot`).
  */
 const MK = { team: 'neutral', settlement: 'meridian' } as const;
-const warden = { team: 'wardens', settlement: 'meridian', faction: 'wardens', role: 'guard' as const, hostileIf: { flag: 'md_fight' }, courage: 70 };
+const warden = { team: 'wardens', settlement: 'meridian', faction: 'wardens', role: 'guard' as const, courage: 70 };
 const sleep = (spot: string, from = 23, to = 6) => ({ from, to, spot, activity: 'sleep' as const });
 
 export const MARKET_NPCS: NpcDef[] = [

@@ -1,6 +1,8 @@
 import type { RoadEncounterDef } from '../../engine/world/roads';
 import { DS_ENCOUNTERS } from './ds_shore';
 import { B5C_ENCOUNTERS } from './b5c_wilds';
+import { B5D_ENCOUNTERS } from './b5d_ashlands';
+import { A3_ENCOUNTERS } from './a3_roads';
 
 /**
  * Road encounters, by region. A leg of a trip rolls its risk; on a hit one of these that fits the place, the hour and
@@ -111,4 +113,8 @@ export const ROAD_ENCOUNTERS: Record<string, RoadEncounterDef> = Object.fromEntr
   ...DS_ENCOUNTERS,
   // --- the Teeth mines and the Northern Wet (B5c): b5c_wilds.ts
   ...B5C_ENCOUNTERS,
+  // --- the Ashlands' remnant machines and the Long Night's roads (B5d): b5d_ashlands.ts
+  ...B5D_ENCOUNTERS,
+  // --- Act 3's road home (B6c): a3_roads.ts
+  ...A3_ENCOUNTERS,
 ] as RoadEncounterDef[]).map((e) => [e.id, e]));

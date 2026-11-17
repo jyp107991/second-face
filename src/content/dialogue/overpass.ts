@@ -1,6 +1,7 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
 import type { Cond, Effect } from '../../engine/world/logic';
 import { QUESTS } from '../quests';
+import { WREN_GUILD_NODES, WREN_GUILD_START } from './a3_fire';
 
 /**
  * The Rust Dogs' overpass — Chapter One. The camp is a place, not a dungeon: you can walk in with your hands
@@ -382,6 +383,9 @@ export const d_rd_wren: DialogueDef = {
     { if: { all: [W_IN, CAMP, W_SOLD] }, node: 'c_sold' },
     { if: { all: [W_IN, CAMP, W_BLOCK] }, node: 'c_block' },
     { if: { all: [W_IN, CAMP, W_FLOOR] }, node: 'c_floor' },
+    WREN_GUILD_START,
+    // Act 3 (B6j): her red line, the Cistern's people signed over to the guild at Knock's door, heard where she waited
+    { if: { all: [{ flag: 'wren_joined' }, { flag: 'a3_c9_how', eq: 'sold' }, { not: { flag: 'wren_left' } }, { not: { flag: 'wren_hanged' } }] }, node: 'a3_sold' },
     { if: { all: [W_IN, CAMP, W_ROM_ON, { approval: { companion: WREN, lte: 30 } }] }, node: 'c_rom_end' },
     { if: { all: [W_IN, CAMP] }, node: 'camp' },
     { if: W_IN, node: 'party' },
@@ -858,6 +862,18 @@ export const d_rd_wren: DialogueDef = {
       again: 'The place where her pack was.',
       effects: [{ set: 'wren_left', value: 'away' }, { decision: { id: 'wren_left', text: 'Wren went east after the girl\'s paper, on her own.' } }],
       options: [{ text: '(Let her go.)', exit: true }],
+    },
+    // Act 3 (B6n): her red line after a guild night she was not at (a3_fire.ts)
+    ...WREN_GUILD_NODES,
+    // Act 3 (B6j): her red line after the Cistern was sold at Knock's door (travelling, she went at the door: a3_door.ts)
+    a3_sold: {
+      text: '"Forty a head." She is packed; she has been packed since the news came down the road. "Sixty people out of a door, up the guild\'s road, at forty a head, with your name at the foot of it." She does not raise her voice. "I kept my count on you a long time. It\'s done." She shoulders the pack and goes, and does not look back, because she cannot stand to.',
+      again: 'The place where her pack was.',
+      effects: [...W_GONE('sold', 'Wren left me when she heard I had signed the Cistern\'s people over to the guild at Knock.'), { memory: { npc: WREN, tag: 'sold_the_reserve', valence: -100, strength: 100 } }],
+      options: [
+        { text: '(Let her go.)', if: { not: { flag: 'romance_partner', eq: WREN } }, exit: true },
+        { text: '(Let her go.)', if: { flag: 'romance_partner', eq: WREN }, effects: [{ set: 'wren_rom', value: 'ended' }, { set: 'romance_partner', value: false }], exit: true },
+      ],
     },
   },
 };

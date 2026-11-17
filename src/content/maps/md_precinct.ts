@@ -1355,6 +1355,18 @@ export const md_precinct: MapDef = {
     lane: {
       x: 30,
       y: 50
+    },
+    recall_a: {
+      x: 14,
+      y: 28
+    },
+    recall_b: {
+      x: 14,
+      y: 31
+    },
+    courier_post: {
+      x: 57,
+      y: 12
     }
   },
   npcs: [
@@ -1362,7 +1374,19 @@ export const md_precinct: MapDef = {
       def: "npc_md_01",
       x: 20,
       y: 14,
-      facing: 0
+      facing: 0,
+      if: {
+        not: {
+          any: [
+            {
+              flag: "a3_summoned"
+            },
+            {
+              dead: "npc_md_01_apron"
+            }
+          ]
+        }
+      }
     },
     {
       def: "npc_md_nine",
@@ -1395,7 +1419,33 @@ export const md_precinct: MapDef = {
       def: "npc_md_12",
       x: 16,
       y: 29,
-      facing: 3
+      facing: 3,
+      if: {
+        not: {
+          any: [
+            {
+              dead: "npc_md_12_apron"
+            },
+            {
+              all: [
+                {
+                  flag: "a3_summoned"
+                },
+                {
+                  any: [
+                    {
+                      dead: "npc_md_01"
+                    },
+                    {
+                      dead: "npc_md_01_apron"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
     },
     {
       def: "npc_md_13",
@@ -1478,6 +1528,119 @@ export const md_precinct: MapDef = {
       schedule: [],
       if: {
         flag: "dr_leven_burned"
+      }
+    },
+    {
+      def: "npc_a3_01",
+      x: 57,
+      y: 12,
+      facing: 2,
+      if: {
+        flag: "a3_open"
+      }
+    },
+    {
+      def: "npc_a3_g1",
+      x: 14,
+      y: 28,
+      facing: 3,
+      if: {
+        any: [
+          {
+            all: [
+              {
+                flag: "a3_recall_due"
+              },
+              {
+                not: {
+                  flag: "a3_recall"
+                }
+              },
+              {
+                all: [
+                  {
+                    flag: "nine_joined"
+                  },
+                  {
+                    not: {
+                      flag: "nine_left"
+                    }
+                  },
+                  {
+                    not: {
+                      any: [
+                        {
+                          flag: "nine_gone"
+                        },
+                        {
+                          flag: "nine_disposed"
+                        },
+                        {
+                          flag: "a3_nine_struck"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            flag: "a3_recall_fight"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g2",
+      x: 14,
+      y: 31,
+      facing: 3,
+      if: {
+        any: [
+          {
+            all: [
+              {
+                flag: "a3_recall_due"
+              },
+              {
+                not: {
+                  flag: "a3_recall"
+                }
+              },
+              {
+                all: [
+                  {
+                    flag: "nine_joined"
+                  },
+                  {
+                    not: {
+                      flag: "nine_left"
+                    }
+                  },
+                  {
+                    not: {
+                      any: [
+                        {
+                          flag: "nine_gone"
+                        },
+                        {
+                          flag: "nine_disposed"
+                        },
+                        {
+                          flag: "a3_nine_struck"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            flag: "a3_recall_fight"
+          }
+        ]
       }
     }
   ],
@@ -1612,6 +1775,74 @@ export const md_precinct: MapDef = {
           data: {
             tree: "d_md_cell",
             name: "The cell"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_recall",
+      x: 12,
+      y: 27,
+      w: 1,
+      h: 6,
+      once: false,
+      if: {
+        all: [
+          {
+            inParty: "npc_md_nine"
+          },
+          {
+            all: [
+              {
+                flag: "a3_recall_due"
+              },
+              {
+                not: {
+                  flag: "a3_recall"
+                }
+              },
+              {
+                all: [
+                  {
+                    flag: "nine_joined"
+                  },
+                  {
+                    not: {
+                      flag: "nine_left"
+                    }
+                  },
+                  {
+                    not: {
+                      any: [
+                        {
+                          flag: "nine_gone"
+                        },
+                        {
+                          flag: "nine_disposed"
+                        },
+                        {
+                          flag: "a3_nine_struck"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_recall_stay"
+            }
+          }
+        ]
+      },
+      effects: [
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_recall",
+            name: "Recall wardens"
           }
         }
       ]

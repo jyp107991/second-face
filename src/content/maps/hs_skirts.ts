@@ -1873,9 +1873,30 @@ export const hs_skirts: MapDef = {
       y: 8,
       facing: 2,
       if: {
-        not: {
-          flag: "hs_rafe_dead"
-        }
+        all: [
+          {
+            not: {
+              flag: "hs_rafe_dead"
+            }
+          },
+          {
+            not: {
+              all: [
+                {
+                  flag: "a3_summoned"
+                },
+                {
+                  not: {
+                    flag: "a3_pnr"
+                  }
+                },
+                {
+                  flag: "a3_ally_shift"
+                }
+              ]
+            }
+          }
+        ]
       }
     },
     {
@@ -1947,6 +1968,36 @@ export const hs_skirts: MapDef = {
       x: 40,
       y: 19,
       facing: 0
+    },
+    {
+      def: "npc_hc_20",
+      id: "npc_hc_20_home",
+      x: 7,
+      y: 31,
+      facing: 2,
+      schedule: [],
+      if: {
+        all: [
+          {
+            any: [
+              {
+                flag: "hc_clinic",
+                eq: "freed"
+              },
+              {
+                flag: "hc_clinic",
+                eq: "closed"
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "hs_parts",
+              eq: "exposed"
+            }
+          }
+        ]
+      }
     },
     {
       def: "npc_hs_11",

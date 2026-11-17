@@ -717,6 +717,56 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-17 (evening), gate batch: stride Pace, motion set v5's jogs, the combat merge; the whole cast committed.**
+  Gate: red, 6460 (the states measured before: W3 2, A4 1, C1 1; the fight's states 6456), whole cast on this commit; against the committed 55: A1 25 → 0, W6 11 → 0, C1 8 → 1, A4 4 → 1, W3 3 → 2, F1/F2/F5/K1 1 → 0, W1 0, no measure worse. The fight's states
+  (side/combat's §2.7, merged here, head 33d77dc0) are measured for the first time and keyed apart in the verdict
+  ("<measure> combat:<set>"): aim 1923, strike 1748, aim_pistol 675, ready 510, crouch 342, throw 289, guard 254, reload 227, hit 183, yield 157, carry 144, rise 4 (docs/MOTION_ROOT_CAUSE.md §7, by measure). What went in: (1) `Pace` plays each clip at the rate its own stride on the body needs
+  (`Pace.StrideMen`/`StrideWomen`, measured in the game by `PaceCalibrationTests`: the same to three decimals on every body of a
+  sex); the women's W1 13 was that mismatch. (2) Motion set v5 for the jogs, runs, idles and gestures (open loops, Neck2 at
+  rest: no in-between warning left); men jog on v5's `jog`/`jog_b` (`jog_v1` retired for them), women on `jog_f` (a woman's
+  capture) with `jog_v1` only past its RateMax; `jog_f_b` out. The walks stay set v4's cut: v5's open walks failed W1 on three
+  women and W6 on two men in a pick where v4's passed. (3) cap_Police_Male_03n's sleeve slimmed (`BodySlim`, his files only;
+  least hang 17.5 → 16.7°): it does not fix his W3, whose cause is the arm held out (abduction p50 16-21° against real
+  walkers' 6.7°): the next item for T3. (4) FootPlant's swing clearance kept exactly as committed: removed, W1 went 0 → 14 on
+  a pick, from the clips' own touchdown skim (docs/MOTION_ROOT_CAUSE.md §7, the frames); it goes with motion set v6, which
+  plants each stance foot in the converter (staged, READY). (5) side/combat merged (rules, AI, presentation, the fight's
+  motion and weapons): `CombatAnimatorBuild` run (47 states, 53 clips, 13 weapons), localization built (798 strings), merge
+  fixes: `Fighter.OffHand` null guard, the weapons' material remap by the FBX's own names, the test's sex argument. Tests:
+  CombatMotionTests + CombatBuildTests 15/16 (bat's grip_off 12.8 cm from its sidecar: fixed on side/combat since);
+  CombatMotionPlayTests 2/5 and CombatQolTests 1/3 before the localization build (states left hanging, the off hand off the
+  carbine: fixed on side/combat since). **Next:** the v6 batch with side/combat 28d6d776 (one whole cast for both), the
+  clearance retired, the coordinator's gate items (a)-(d) for the fight's states.
+- **2026-11-17 (late), the motion gate's root causes, and a plan by cause.** Gate: red, 55. The owner asked why the
+  gate is still red after 26 rounds. The answer is that the method is wrong, not the tuning. `docs/MOTION_ROOT_CAUSE.md`
+  sets out the evidence (3,173 lines of post-animation corrections fighting each other; 21 of A1's 25 on three broad-waisted
+  men; all W6 women jogging on men's captures; a pregnant woman's idle on every man; `idle` at double speed from a misread
+  60 fps; a gate never run on real people), five root causes (R1-R5) and seven tracks (T1-T7: calibrate the gate on real
+  captures; a clip QA gate and sex-matched source motion; one contact-preserving retarget baked per body in place of the
+  heuristic stack; derived soft-tissue contact; a geometry audit against ANSUR II; measures of speed, cadence and gait by sex;
+  a fast offline loop), with contingencies and what "done" means. Owners: an offline helper (T1, T2, T5 measures, T6
+  offline) and the gate agent in the editor (T3, T4, T6 in-gate, imports).
+- **2026-11-17 (later), where everything is (read this to resume).** Gate: red, 55 (63a0e244: A1 25, W6 11, C1 8,
+  A4 4, W3 3, F1/F2/F5/K1 1). On main: `side/core`'s first part merged (e3b3aefd: party followers, crowd names, the
+  content's eight events — PlayMode PartyTests + ContentEventsTests 7/7) and a fight held active until wholly over
+  (d08b2157); Act 2 content complete but the parked arcology slice (B5a–d, the Docks; exported 509c1181); B6 plan
+  (`story/B6_NOTES_SECRET.md`) and B6a–B6e written. **Branches not yet on main (merge each when the editor is free,
+  then run its checks):** `side/core` after e3b3aefd — the megacity kit (`CityKit`, `PlaceBuilder.City`, City shader,
+  `PlaceReveal`; head 1eb8539a); `side/combat` — combat rules and AI (WP1, 0d7dc82e) and presentation/QoL (WP3,
+  c0bf48c3), `docs/COMBAT.md` status; `wip/gate-batch` — the gate helper's work in progress (followers' pacing, arm
+  depth, a "following" gate state; commit only after a whole-cast run with no measure worse). Combat assets staged
+  outside the repo in `/home/user/second-face-staging/combat/` (69 clips, 13 weapons re-textured to the lore;
+  `docs/COMBAT_ASSETS.md`). **The editor queue, in order:** (1) the gate to green (helper running); (2) merge
+  `side/combat`, run ContentEvents/Knock/Party tests, captures of a fight (overlay, cards, shields, camera), CombatQolTests;
+  (3) merge the megacity kit: `ShaderTests`, Build places, PlacePlayTests for the five districts, captures; (4) world
+  layout: `npm run export` then `python3 -I tools/unity/world.py` (adds the Spire close, the Dead Ring, B5 places; tested in
+  a side checkout: 37 places, no overlap) and PlaceBuilder ids for every new place (frontier kit for B5, city kit for
+  districts; cells as interiors); (5) WP2 combat animation integration (weapons in hands, clips, combat states in the
+  gate with limits from real fighters, per-clip root-motion flags in the importer, a procedural directional hit); (6)
+  combat content (throwables and loadouts, archetype fields, props/exits for the field); (7) CI: put the place tests in
+  a job of their own (PlayMode limit raised to 330 min meanwhile); the BootTests arm regression (with the gate);
+  Ninebridge's empty tiles and grey concrete; the arrival view. Content lanes: B6f (lane 1, then B6g–B6k in order) and
+  an independent later slice (lane 2). B6s needs a "met" condition for people. The parked arcology slice waits for the
+  owner's decision on its darkest material.
 - **2026-11-17, B5a and B5b in; the Unity runtime's gaps found and being filled on `side/core`.** Gate: red, 89. The
   editor is held by the A1 work (flank correctives re-baked at the real resting angle; WIP on `wip/gate-batch`, committed
   only after a whole-cast run with no measure worse than 89). Meanwhile Unity-side code is written and compile-checked in a
@@ -740,6 +790,56 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   "the Depot" where the content has Four Ways and Yard Nine); PlaceBuilder for the new places (Meridian's districts need a
   city kit); Ninebridge's empty tiles (`V`, a gap in the bridge deck) read as flat ground: lower the pad there and put water
   below; its concrete roads read as flat grey slabs; the arrival view frames bare ground; CI's six failures above.
+- **2026-11-17 (day), the companion's following measured; agents stand on the ground; the gaze's and the idle's findings.**
+  Gate: red, 55 (A1 25, W6 11, C1 8, A4 4, W3 3, F1/F2/F5/K1 1), the whole cast measured again on this commit: every
+  measure as it was. Committed: `PartyFollowers.cs`, `Townsfolk.cs` and `World/PlaceNav.cs` are
+  gate inputs (they decide how people move); the fixes below; `BootTests` and `ArmClearance.DepthWhere` name the deepest arm
+  point (its part, sleeve and the body's clothes). **The following state** (`follow:walk`, `follow:jog`: a walk, a jog, from
+  the companion's first step to their halt; `after:follow_walk`, `after:follow_jog`: standing from 0.6 s after it) is written
+  and measured on picks but **not yet in the gate**: its jog still slides the soles at the stop (W1 5-10 % of frames over
+  15 cm/s on most people picked, against 5 %), and a state that fails cannot go in without making W1 worse than the
+  committed verdict. It is on branch `wip/follow-state` (`HumanMotionGateTests.Following`): the companion on the party's own
+  NavMeshAgent (`PartyFollowers.Configure`), paced as the townsfolk are (`Townsperson`), sent by the party's own step (the
+  follow logic made static and shared: `PartyFollowers.Pursue`, `Stand`, `SlotPoint`, `Heading`). What it found, fixed and
+  committed: (1) **the agents stood on polygons 5-6 cm over flat ground** (no height mesh): their hips sank that far and the
+  bent strides slid the held feet (W1 8-10 % of a jog's frames for most men): `PlaceNav.Settings` builds the height mesh
+  (the places' NavMeshes and the world's); (2) **a halt in one frame** while the stride's eased pace ran on 0.25 s: a body
+  that was moving and has halted stands (`FootPlant.HaltSpeed`, `Halted`), and its arms come to rest from then
+  (`ArmClearance.Resting`: the hands hung 6.4-7.9 cm off the thighs a second after a stop, A4); (3) **the stop's plant took
+  the walking clip's foot places**, 5-9 cm from where the feet stood: the feet settle from where they were shown, each
+  straight down; (4) **a jogging companion aimed a metre past their slot** ran past it as the player stopped, turned about
+  and walked back: they aim ahead by the player's own pace; (5) an agent's pace is eased over 0.06 s, not the walker's 0.12
+  (`Townsperson.AgentDamp`; 0.03 slid the women's jog stops more). Tried and taken back: easing the pace faster as it slows
+  (the gate's jog stops skated), the cadence matched to the clips blended (the women's jog starts skated, W1 2.8 → 13 %), the
+  resting push tried straight back and forward of the waist (no gain for the two men it was for, a C1 contact for another).
+  **Open, the follow jog:** at the stop a held foot is let go by its reach while the body slows from a jog (the stride runs
+  0.06 s behind the agent) and slides 1-2 m/s for 2-3 frames, and the landing foot glides in 0.5-2 cm up at 0.5 m/s.
+  **`BootTests.ArmsStayOutOfTheBody`** (townsfolk's arms ≤ 1.2 cm into their bodies, real time, whoever is in view): on the
+  same code it read 0.7, 1.3, 1.0, 1.1, 1.9 and 1.3 cm over six runs. The failing readings: Female_Adult_07 (the upper arm by
+  the elbow against a 1.9 cm garment, no sleeve there), Female_Adult_11 (the upper arm by the elbow, no sleeve, the body's
+  clothes 1.0 cm: 1.9 cm, past anything the clearance allows there), Construction_Male_03 and Male_Adult_05 (the forearm, no
+  sleeve, 0.6-1.1 cm of clothes). Not caused by `SleeveGive` (no sleeve at any failing contact) nor by `OutMax` (none of them
+  is one of its seven bodies). Measured in the gate's fixed states (`tools/qa/patches/arm_depth_diag.py`) the same reading is
+  0.7-0.9 cm for Female_Adult_07 and 1.2-4.5 cm for broad men, almost all at the upper arm's top against the chest's side at
+  armpit height (120-133 cm), where a resting arm may press 2.5 cm (`UpperGive`, 4020fea5) and which the gate's C1 leaves
+  out; the elbow and forearm readings past their allowance are the game's skin points reading a contact the mesh does not
+  (as the gaze's C1 below). Fixed in part: `KeepHang`'s turn at the shoulder may no longer take the arm back into the body
+  the clearance had just cleared. **Still red; the fixes that cost no A1:** the flank correctives baked up to the armpit, and
+  the skin's coverage where it misreads (next).
+  **Measured, not committed:** (6) **the look's chest turn holds the arms out**: the resting upper arm's p98 is 12.5° looking
+  ahead and 15.3-15.5° looking 45-135° aside across the cast (the gaze gives the body a quarter of its 20°): 13 of the 25 A1
+  and 2 of the 4 A4. `Gaze.BodyWeight` 0.25 → 0.1 fixed 10 A1, 3 A4, 1 F5, 3 C1 in three batches of a whole-cast run but
+  brought 13 new C1 (0.5-0.8 cm: arms hanging nearer met the body where the game's skin points read them 1-2.5 cm clear: an
+  upper arm against the chest's side at 1.23 m, a forearm against the top of the thigh at 1.01 m) and two W6 spikes in a jog:
+  the skin's coverage there first, then the gaze. (7) **The idle played at twice its speed** (CMU 77 at 60 fps, read at 120): re-exported at its true rate it holds the
+  weight shifts' extremes twice as long, and on a pick of ten A1 +5, K1 +3, C1 +1, A4 +1; the motion tool and the clips now
+  belong to the offline helper (T2, `docs/MOTION_ROOT_CAUSE.md` §7), staged for import.
+  **Next (the root-cause plan, `docs/MOTION_ROOT_CAUSE.md`, binding):** no more rounds of caps, gives, shares or pushes;
+  import the helper's sex-matched clips (LocomotionBuild and `Pace.Clips` by sex, the ACCAD mapping, the new `idle`'s
+  length, credits); slim the five broad bases' baked sleeves and gear to a real garment's stand-off (T5's remedy); the
+  limit decisions of §7 in the gate's code and `docs/PEOPLE_MOTION.md` together; picks, then a whole-cast run; T3 (one
+  contact-preserving solve baked per body, design in §8) prototyped on the remaining contact failures; the following
+  state into the gate once its jog's stop passes.
 - **2026-11-17, gate 89 → 55: A1's remainder was two false readings, not too little room.** Gate: red, 55 (A1 25, A4 4,
   C1 8, W6 11, W3 3, F1/F2/F5/K1 1), committed with its verdict (full44). The diagnosis's plan (bake the flank correctives at
   the arms' real 17°) was tried and taken back: the sweep widened to 17° added almost nothing (the 3-10° poses already
@@ -1850,7 +1950,7 @@ mid-range Android phone; deployed to Pages.
             gate to the Spire's verdict through every district on the Loop). No engine change.
             Left for later: a second test version (`act2-test-1`) when the owner's Act 1 notes are folded in; the web smoke
             `tools/qa/act2.sh` is not written (the web runtime is frozen; the headless test stands in for it).
-- [~] B4 **Halcyon & the Skirts**: arcology, Skirts, the Shift, Contract, Spare Parts, the Leash, the
+- [x] B4 **Halcyon & the Skirts**: arcology, Skirts, the Shift, Contract, Spare Parts, the Leash, the
       Long-Lived; Concern chrome; 7th companion. ~10 h. Built in two halves; the plan for both is in the story plan's
       "Build notes — B4".
       - [x] B4a **the Skirts** DONE 2026-11-17 (content; the Unity place build and the on-device playtest are P10 work;
@@ -1871,19 +1971,29 @@ mid-range Android phone; deployed to Pages.
             player. Activities: Dust, bouts, a shack to rent (safehouse), two surgeons (dark and Concern chrome), a company
             store. Faction `the_shift` has its initiation quest. Companions' interjections throughout.
             `tests/b4a.test.ts` (45). No engine change.
-      - [ ] B4b **Halcyon** (planned in the build notes: maps `hc_*`, cast `npc_hc_*`, flags `hc_*`; the Contract, the
-            Leash, the Long-Lived and the side quests inside; it continues `q_a2_halcyon` from its `car`/`road` stages,
-            replaces its `inside` stub, and sets `hc_inside` on first entering).
-      - [ ] B4b **Halcyon** (the arcology; beat 16 inside; the Contract, the Leash, the Long-Lived; four side quests;
-            Kes inside): maps (`hc_terrace`, `hc_clinic`, `hc_board`, `hc_works` via `tools/maps/gen_hc_halcyon.py`), the
-            cast and the beat's stages are drafted on branch `wip/b4b-halcyon` (not on main: nothing registered, the
-            conversations not written). The writing of its first conversation file was stopped by the model's safety
-            system on 2026-11-17 and not regenerated; how the rest is written is open (see the story plan's B4 notes).
-            Main keeps B4a's `inside` stub for the beat.
-- [~] B5 **Act 2 wilds**: Glass Flats (Ninebridge, Openfield, the Sump, Cistern 4), Rail Corridor (the
+      - [x] B4b **Halcyon** DONE 2026-11-17 (content; the Unity place build and the on-device playtest are P10 work;
+            `npm run export` has not been run for it): `tools/maps/gen_hc_halcyon.py` → `maps/hc_terrace.ts` (72×56, open,
+            at the Teeth's `halcyon` location: the top station and the gate, the service yard and the gardeners' tunnel, the
+            concourse and the registry, the gardens under glass, the citizens' terraces, the lifts), `hc_clinic.ts`,
+            `hc_board.ts`, `hc_works.ts` (cells, reached by the lifts). Settlement `halcyon` (road to the Skirts), the world
+            location bound to its map, four sites. Cast `npcs/hc_halcyon.ts` (ids `npc_hc_*`: 18 named + 9 security; flags
+            `hc_*`); people from earlier places appear by what the player did there. Dialogue `dialogue/hc_halcyon.ts`,
+            `hc_clinic.ts`, `hc_board.ts` (58 trees, every node with a return line, all seven companions speak), and a few
+            lines added to the Skirts' trees (the car up, the Contract Office's terms, the Window's exchange, two people's
+            reactions). Quests `quests/b4_halcyon.ts`: beat 16 inside the gate (`q_a2_halcyon`'s `inside` stub replaced by
+            its stages: four ways in, the offer, three answers; entering sets `hc_inside`, which arms the strike's default),
+            the Contract (`q_hc_contract`, 5 routes; the Concern's initiation), the Leash (`q_hc_leash`, 6 routes), the
+            Long-Lived (`q_hc_longlived`, 7 routes), and four side quests: *Clinic Floor Nine* (6 routes), *A Contract for
+            Kes* (4), *Garden Heist* (6; the naming rule drops the article), *Funicular Pass* (6). Kes inside (her own hub
+            in the arcology). Two Concern chrome pieces; items in `items/story_b4.ts` (16 more); 10 leads + 3 conclusions
+            (`world/hc_halcyon.ts`). Nothing resolves on a date: the one milestone up the hill waits for the player.
+            `tests/b4b.test.ts` (48: every route, each refusal, a save round-trip, Act 3's reads); `tests/a3_fixture.ts`
+            finishes the beat at its new end stages. No engine change.
+- [x] B5 **Act 2 wilds**: Glass Flats (Ninebridge, Openfield, the Sump, Cistern 4), Rail Corridor (the
       Line, Junction, halts, rail bandits), Drowned Shore (stilt villages, Rigs, salvage dives), Teeth
       mines, Northern Wet (barges, Dam, timber), Ashlands (remnant machines); Long Night alliance. ~12 h.
       Built in four parts (the Glass Flats were B3.1–B3.3); the plan for all four is in the story plan's "Build notes — B5".
+      All four parts DONE 2026-11-17 in content (Unity place builds, `npm run export` and the on-device playtest are P10 work).
       - [x] B5a **the Rail Corridor** DONE 2026-11-17 (content; the Unity place build and the on-device playtest are P10
             work; `npm run export` has not been run for it): `tools/maps/gen_rc_corridor.py` (walkability and reachability
             checked) → `maps/rc_fourways.ts` (80×60, Four Ways, the Junction: the station under its clock, the ticket hall,
@@ -1973,9 +2083,187 @@ mid-range Android phone; deployed to Pages.
             drive, the winch, eels at the tailrace; three rooms to rent (safehouses); five merchants; hunting 0.7/0.6.
             Reads `hs_shift`, `ks_maren`, `hs_gate_shut`, `hs_car_down`, `hs_parts`, `sk_pumps`, `rc_engine`.
             `tests/b5c.test.ts` (43). No engine change.
-      - [ ] B5d **the Ashlands and the Long Night** (planned: the Ashlands' sites and beat 17, the act's alliance; ids
-            `an_*`, `ln_*`; reads the corridor's `rc_*` flags listed in the build notes).
-- [ ] B6 **Act 3 + endings**: return, lockdown, Spire, finale, endings A–E + modifiers, epilogue slides.
+      - [x] B5d **the Ashlands and the Long Night** DONE 2026-11-17 (content; the Unity place build and the on-device
+            playtest are P10 work; `npm run export` has not been run for it; build notes `story/B5d_NOTES_SECRET.md`):
+            `tools/maps/gen_an_ashlands.py` (walkability and reachability checked) → `maps/an_spindle.ts` (64×48, Spindle:
+            a pickers' camp in a pre-war school and a laager of dead convoy trucks under a bladeless turbine tower, the
+            weigher's table and the board, the doctor's shack, a hound-keeper's yard), `an_kelso.ts` (72×52, Kelso: a
+            cratered army depot, its apron, tower, hangar, motor pool and engine shed), `an_hall.ts` (40×24 cell, the hall
+            under its apron), `an_pemberton.ts` (56×40, Pemberton: a solar farm on the glass and its inverter house),
+            `an_saddleback.ts` (44×28, a ridge and a spotter's hide) and `an_glass.ts` (40×26 roadside cell). `lm_ash_01`
+            renamed Kelso and bound to its map; three new locations (`spindle`, `lm_ash_02`, `lm_ash_03`) and five routes
+            from Dry Wells onto the glass; settlement `spindle` (gossip two-way to Dry Wells); four open sites, two cells.
+            Cast `npcs/an_ashlands.ts` (9 named, 2 hired guns; one family), `npcs/ln_longnight.ts` (8 wardens and guild
+            riders); the Long Night also places 12 people from earlier slices at Openfield, West Halt and Carrick
+            (`gen_openfield.py`, `gen_rc_corridor.py`, `gen_md_docks.py`, each regenerated). Dialogue `an_spindle.ts`,
+            `an_kelso.ts`, `ln_longnight.ts` (65 trees, 284 nodes, every node with a return line; 102 companion
+            interjections, all seven). Quests `quests/b5d_ashlands.ts`: the Ashlands' line `q_an_kelso` (four ends:
+            talk, tech, fight, barter; two without violence; plus three ways with the man who wants the job done), side
+            lines `q_an_kite` (four ends) and `q_an_board` (three ends; finishes Yard Nine's open route, `rc_engine` =
+            ashlands, a stage added to `q_rc_engine` and a line to Ida at Yard Nine), **beat 17 `q_a2_longnight`**
+            (critical; the act's exclusive alliance: four sides or none, a table that needs two favours owed and Speech 75,
+            who comes at dusk read from Act 2's flags across every region (26 world events that wait for the player at
+            Openfield), the night as one chain with the player's own act at midnight, eleven ends by side and strength,
+            companions' red lines) and a side line on the Line itself (eight ways, by who holds which section). Act 2 closes at the night's dawn
+            (`act2_done`). Items `items/b5d_ashlands.ts` (8); 16 leads + 6 conclusions (`world/b5d_ashlands.ts`); 29 world
+            events; 12 road encounters (remnant machines on the glass: 7 passing, 3 on the roadside cell; 2 on the Flats'
+            roads while the Long Night is called). Activities: picking runs in three bands, a room to rent (safehouse), four
+            merchants. The flags B6 reads are listed in the notes. `tests/b5d.test.ts` (32: the places, every end of every
+            Ashlands line, and the alliance played strong, mixed, thin, as a truce, failed and as none). No engine change.
+- [x] B6 **Act 3 + endings**: return, lockdown, Spire, finale, endings A–E + modifiers, epilogue slides.
+      - [x] B6a **Act 3's groundwork** DONE 2026-11-17 (content; no engine change; not exported): `world/a3_conds.ts` (the
+            shared conditions every Act 3 slice reads: the Long Night read only through aliases, now reconciled to the flags
+            B5d writes; the arcology slice's flags read only here, each with an Act 3 alternate; the five gates and their
+            keys; seven modifiers with `modValue()`; the muster's needs, the readiness acts, the clauses; the registry of
+            Act 3's flags), `quests/a3.ts` (10 quest skeletons, 4 critical with routes, build coverage at level 24),
+            `items/story_a3.ts` (6), `world/a3_events.ts` (3 world events, each armed by a flag and waiting for its hour,
+            none on a date), `dialogue/a3_order.ts` (1 read tree: every node with a return line, all seven companions
+            speak). The shared fixture `tests/a3_fixture.ts` (`actThree(preset, over)`: 7 presets, the night's three bands,
+            8 companion states and 3 company sets, the arcology hook on or off, three points into the act, save and load
+            through the real codec, the B5 tests' headless helpers). `tests/b6a.test.ts` (40). Next: B6b.
+      - [x] B6b **the Precinct and the Court in Act 3** DONE 2026-11-17 (content; no engine change; not exported):
+            `npcs/a3.ts` (3: a courier, two wardens), `dialogue/a3_order.ts` (+3 trees: 27 nodes, every one with a return
+            line), `dialogue/a3_court.ts` (2 cases on the Court's existing bench, built by `courtCase()`: 7 grounds, 6
+            rulings), placements and a gate trigger in the Precinct, one placement each at the Ring and the Docks
+            (generators re-run: additions only). A side quest with eight answers (most need no check, one is a fight),
+            playable at the gate, by post or at the Court. `tests/b6b.test.ts` (32). Next: B6c.
+      - [x] B6d **Signal Hill in Act 3** DONE 2026-11-17 (content; no engine change; not exported; built alongside B6b,
+            ahead of B6c): `dialogue/a3_mast.ts` (5 trees, every node with a return line, all seven companions speak; the
+            hill's two props keep their Act 1 scenes before Act 3), Signal Hill's map (Act 3 placements for the camp, a new
+            prop, an arrival trigger; generator re-run), the Wheel's map (one placement condition; its generator first made
+            to reproduce the committed map), one world event (a letter by post, armed by a flag, on no date). A side quest
+            with six routes (none violent, three with no check), four ends. `tests/b6d.test.ts` (24). Next: B6c, then B6e.
+      - [x] B6c **the road home and the muster** DONE 2026-11-17 (content; no engine change; no map change; not
+            exported): `dialogue/a3_road.ts` (8 trees: four rides home and four meetings on the road, one of them a fifth ride; every node with a
+            return line, all seven companions speak), `world/a3_letters.ts` (16 letters: one or more per ally the player
+            can call by post, each offered only with that ally's own local need, the reply a duration, never a deadline),
+            `world/a3_roads.ts` (6 world events, each armed by a flag and waiting for its hour; 5 road encounters), 5 people.
+            Each ride is offered by post and taken from someone the player can always find (one small hook each in four
+            existing trees); every way home, the player's own feet included, ends at home. `tests/b6c.test.ts` (29). Next:
+            B6e.
+      - [x] B6e **Shale in Act 3** DONE 2026-11-17 (content; no engine change; not exported; built alongside B6c):
+            `dialogue/a3_shale.ts` (10 trees, every node with a return line, all seven companions speak; Shale's own trees
+            carried whole after their Act 3 entries, so nothing changes before Act 3), 4 people, 1 item, Shale's map (Act 3
+            placements, two new props, four triggers; its generator first made to reproduce the committed map). A side quest
+            that waits for the player, with seven routes (five without a fight) and five ends, each shown in the town.
+            `tests/b6e.test.ts` (21). Next: B6f.
+      - [x] B6f **Knock in Act 3** DONE 2026-11-17 (content; no engine change; not exported): `dialogue/a3_knock.ts` (12
+            trees, every node with a return line, all seven companions speak; the Grille's opening scenes carried whole after
+            its Act 3 entries, so nothing changes before Act 3), `dialogue/a3_forces.ts` (three first meetings the next slice
+            fills), 9 people (`npcs/a3_knock.ts`), Knock's map (the opening's people step aside in Act 3 and their Act 3
+            selves take their places, newcomers by the stand, three triggers on the walk home; its generator first made to
+            reproduce the committed map). The first walk home plays however the player came. `tests/b6f.test.ts` (34).
+            Next: B6g.
+      - [x] B6g **Knock at night** DONE 2026-11-17 (content; no engine change; not exported): `dialogue/a3_forces.ts`
+            written whole over the three first meetings (7 conversations, 81 nodes, every node with a return line, all seven
+            companions speak): the night visitors at the home hamlet and the guild's people at the stand; a side quest with
+            four ends and five ways to reach them (two talked, one sneaked, one fought, one allowed), one world event that waits
+            for the player, one paper, Knock's map (placements and three triggers; its generator first confirmed to reproduce the
+            committed map) and one condition on another place's map (likewise confirmed). `tests/b6g.test.ts` (33).
+            Next: B6h.
+      - [x] B6h **inside, for the first time** DONE 2026-11-17 (content; no engine change; not exported; built alongside
+            B6i): `dialogue/a3_cistern.ts` (18 conversations, about 109 nodes, every node with a return line, all seven
+            companions speak): five ways into the interior from the home hamlet, each with its refusals (two talked or
+            technical, one survival, one a companion's knack, one an old favour repaid), the first meeting face to face, a
+            caretaker's question, a letter, a record room, the residents; the interior's map (its people in Act 3, its props'
+            Act 3 trees, a way in and out; its generator first confirmed to reproduce the committed map); an Act 1 side
+            quest's open end closed. `tests/b6h.test.ts` (40).
+      - [x] B6i **the council inside** DONE 2026-11-17 (content; no engine change; not exported; built alongside B6h):
+            `dialogue/a3_ring.ts` (one conversation at a council table, 32 nodes, every node with a return line, all seven
+            companions speak): the residents decide what they will do, with four ways to move them and a vote; one talk prop
+            on the interior's map (its generator first confirmed to reproduce the committed map). `tests/b6i.test.ts` (31).
+      - [x] B6j **the door** DONE 2026-11-17 (content; no engine change; not exported): `dialogue/a3_door.ts` (two
+            conversations, 60 nodes, about 13,000 words as written, every node with a return line, all seven companions
+            speak): the act's standoff at the home hamlet settled with the player present, by about a dozen roads (talked, by
+            the record, technical, medical, fought, bargained, and the residents' own choice), each with its refusals and
+            failed checks, and nothing settling until the player says so; companions' existing leaving rules honoured in their
+            own trees; four people; the home hamlet's map (placements and five triggers) and one condition on another town's
+            map, each generator first confirmed to reproduce the committed map. `tests/b6j.test.ts` (37). Next: B6k.
+      - [x] B6k **after the door** DONE 2026-11-17 (content; no engine change; not exported; first lane, alongside B6l):
+            `dialogue/a3_after.ts` (eight conversations plus after-the-door nodes in the home hamlet's and the interior's
+            existing trees, every node with a return line, all seven companions speak): a scene at the docks' railhead with
+            three ways through and a refusal, waiting on the player and settling nothing unasked; the home hamlet and the
+            interior after the standoff, by how it was settled; people placed where it left them; one Act 2 conversation now
+            reads an earlier answer. Two maps' placements and triggers (each generator first confirmed to reproduce the
+            committed map). `tests/b6k.test.ts` (33). Next: B6m.
+      - [x] B6n **the last night before the final climb** DONE 2026-11-17 (content; no engine change; not exported; built
+            ahead of B6f–B6m in a second lane, needing nothing from them): `dialogue/a3_fire.ts` (one tree at a fire on the
+            Spire close, 99 nodes, every node with a return line, all seven companions speak): a last conversation with each
+            of four companions, by where things stand between them and the player; two companions' existing leaving rules
+            carried into Act 3 in their own trees; one prop on the Spire close (its generator first confirmed to reproduce
+            the committed map). `tests/b6n.test.ts` (29). Next in this lane: B6o.
+      - [x] B6o **the last night before the final climb, II** DONE 2026-11-17 (content; no engine change; no map change; not
+            exported; second lane, alongside the Knock lane): `dialogue/a3_fire_ii.ts` (69 nodes, every node with a return
+            line, built into B6n's fire tree): a last conversation with each of the other three companions, by where things
+            stand between them and the player; a quarrel between two companions at the first camp in the home hamlet, once;
+            two more companions' existing leaving rules carried into Act 3 in their own trees and at the fire.
+            `tests/b6o.test.ts` (26). Next in this lane: the first slice whose reads are met.
+      - [x] B6l **the gathering before the final climb** DONE 2026-11-17 (content; no engine change; not exported; second
+            lane, alongside B6k): `dialogue/a3_close.ts` (14 conversations plus nodes in four existing trees, 97 nodes, about
+            11,000 words counting every variant, every node with a return line, all seven companions speak): who gathers on the
+            Spire close, each by what the player's road decided (companions, an officer with an offer, a captain, envoys of
+            the allies called, and others who were asked); an offer that can be taken, carried or refused, with a second
+            chance elsewhere; a lost book recoverable three ways; one Court case that opens only when it should; four new
+            people; placements, one trigger and one prop on the Spire close, and five other maps' placements stepped aside
+            while their people are on the close (each generator first confirmed to reproduce the committed map).
+            `tests/b6l.test.ts` (37). Next in this lane: B6m.
+      - [x] B6m **readiness and the last step before the final climb** DONE 2026-11-17 (content; no engine change; not exported):
+            `dialogue/a3_ready.ts` (three conversations, every node with a return line, all seven companions speak): a table on
+            the Spire close where the people who came are each asked once for the night after; an item made from what the player
+            carries, three ways; a set of letters with their replies; the notebook's tracker page filled with what the player holds
+            (never naming a way to finish); and the point of no return at the foot of the steps, signposted three ways, warned once
+            in plain words, with a named save kept before it and nothing changing on "not yet". One prop, one placement and one
+            trigger on the Spire close and one placement condition elsewhere (each generator first confirmed to reproduce the
+            committed map). `tests/b6m.test.ts` (28). Next: B6p.
+      - [x] B6p **the final climb** DONE 2026-11-17 (content; no engine change; not exported): `dialogue/a3_steps.ts` (two
+            conversations, every node with a return line, all seven companions speak): the scene on the Spire's steps that the
+            point of no return now opens, a choice offered there, one more hearing, a question from a companion, and a
+            companion's and a stranger's beats that play out by earlier choices, each with several routes and one fight; nothing
+            resolves unasked. Placements and two triggers on the Spire close from the climb on (the generator first confirmed to
+            reproduce the committed map). `tests/b6p.test.ts` (32). Next: B6q.
+      - [x] B6s **the epilogue's builder and its first six pages** DONE 2026-11-17 (content; no engine change; no map change; not
+            exported; built alongside B6p): the closing sequence is now built from slide data (`dialogue/a3_epilogue_kit.ts`, a
+            builder later slices add pages to without engine changes; `dialogue/a3_epilogue.ts`, the assembly) and its first six
+            pages are written (`dialogue/a3_epilogue_open.ts`): each page a still in the world and a short text by what the player
+            did, shown only for subjects the player met, skippable, ending in the credits. `tests/b6s.test.ts` (15). Next: B6q.
+      - [x] B6t **the epilogue's pages seven to twelve** DONE 2026-11-17 (content; no engine change; no map change; not exported;
+            built alongside B6q and B6v): six more pages, each a still and a short text in several versions by what the player did
+            and the end reached (`dialogue/a3_epilogue_city.ts`: the merchant guild's bridge town, the Choir's farm, the city's
+            court, the under-city, the hill houses and the streets, the city's edges), each shown only if the player met it, with
+            short lines for the people of each place and its word on the player. `tests/b6t.test.ts` (14) and a shared test helper
+            for the epilogue (`tests/epilogue_fixture.ts`). Next: B6u.
+      - [x] B6q **the last room and the last choice** DONE 2026-11-17 (content; no engine change; not exported; built alongside
+            B6t and B6v): a new interior under a city landmark (`tools/maps/gen_md_vault.py`, checked for reachability; one spawn added
+            on the square above), a door on that square that opens on it once the climb is done, and `dialogue/a3_vault.ts` (three
+            conversations, every node with a return line, all seven companions speak): a last conversation where each question is
+            asked once, the cost of each choice told before it is made, and a choice offering exactly the ways the player's road has
+            earned, each asked twice and each refusable; nothing resolves unasked. `tests/b6q.test.ts` (24). Next: B6r.
+      - [x] B6u **the epilogue's pages thirteen to nineteen** DONE 2026-11-17 (content; no engine change; no map change; not
+            exported; built alongside B6r and B6v): seven more pages (`dialogue/a3_epilogue_wilds.ts`: the arcology and the town
+            under it, the railway and its halts, the shore village, the hill mine, the dam and the river, the travelling caravan,
+            the eastern wastes), each a still and a short text in several versions by what the player did and the end reached,
+            shown only if the player met it, with short lines for the people of each place and its word on the player; pages that
+            read an optional earlier slice show its lines only when it was played. The pass also finished B6t (a still's people
+            never depend on the end; two pages made to agree with the first pages). `tests/b6u.test.ts` (12). Next: B6r, B6v, B6w.
+      - [x] B6v **the epilogue's last eight pages** DONE 2026-11-17 (content; no engine change; no map change; not exported;
+            built alongside B6t and B6u): a page for each companion by where their life went, and a closing page
+            (`dialogue/a3_epilogue_people.ts`), each a still and a short text in several versions by what the player did and the
+            end reached, shown only for companions the player met, with short lines for what was between them and their last
+            evening. `tests/b6v.test.ts` (11). Next: B6r, B6w.
+      - [x] B6r **the ends played out** DONE 2026-11-17 (content; no engine change; not exported; not committed): what happens
+            after the last choice, for every way it can go (`dialogue/a3_ends.ts`: five conversations, every node with a return
+            line, all seven companions speak), each ending in the closing pages and the credits; three fights, each with a way
+            round it; companions leaving where the choice breaks their line; nothing resolves unasked and every beat can be
+            left and resumed. Seven new background people, placements and triggers on the last room and the square above (both
+            generators first confirmed to reproduce the committed maps); two earlier pages and one line made to agree with the
+            new scenes. `tests/b6r.test.ts` (32). Next: B6w.
+      - [x] B6w **the ending playtests and the no-lockout proof: Act 3 complete** DONE 2026-11-17 (tests; three small content fixes;
+            no engine change; not exported; not committed): every ending played headless from the earliest Act 3 save through the
+            act's own scenes to the named save before the final climb, then from the loaded save through its climax and every closing
+            page to the credits, on a thorough game and on the worst plausible one, every route and failed check, a save at every
+            beat; the "no ending locked out by earlier choices" promise checked key by key (one gap found in one rare history,
+            reported in the story notes); no conversation in the game that cannot be left; every flag read is written.
+            `tests/b6w.test.ts` (16), `tests/b6w_routes.test.ts` (22 + 1 known gap), `tests/b6w_fixture.ts`. Next: B7.
 - [ ] B7 **Systemic depth + presentation**: ruins templates, bounty/gig templates, rare encounters, music
       and ambience, title art, menus, credits, settings, tips.
 - [ ] B8 **Balance, performance, deploy**: economy sim pass, difficulty, accessibility, Android perf
@@ -1992,9 +2280,9 @@ mid-range Android phone; deployed to Pages.
 | Dry Wells | 1/1 | 6/6 | 13/13 | 2/2 | playable; the Act 1 finale, the family |
 | Act 1 wilds | 5/5 | 15/15 | 17/17 | 2/2 | playable; ten road encounters, discoveries on foot, hunting and traps, the windpumps, the wreck, the orchard |
 | Meridian | 13/14 | 142/145 | 250/255 | 32/33 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward, the Crown, the Archive Spire (the close and landing ninety-one), the Court of Accounts and the Dead Ring written; the Docks across the dry river written (B5b, Carrick: the Line's end, the tide boat's and the barges' landing, the district's line and two side lines); the Loop joins six stops (one outside the Wall), stairs the Sink, the chain Bridgeward, the invitation car the Crown, a lane the Spire close, the gate road the Ring, the river road and the quay tram the Docks, and every board answers NO BRIDGE. Loose ends: Unity sites for the Spire close, the Ring and the Docks (P10 place build); vehicle travel reading the buggy flag (P12); the Spire beat's end now opens beat 16 (B4a) |
-| Halcyon/Skirts | 2/6 | 22/40 | 40/55 | 6/12 | the Skirts written (B4a): the town under the arcology and a gallery under its pit; the Line's last stop; beat 16 opened; the seventh companion joins here. The arcology itself is B4b |
-| Act 2 wilds | 22/26 | 118/140 | 257/300 | 23/28 | Ninebridge, Openfield, the Sump and Cistern 4 playable; the Rail Corridor written (B5a): Four Ways, both halts, Yard Nine and Kettle Cut, the Line ridden from every stop, the rail bandits' line and four side lines; the Drowned Shore written (B5b): Gull Stilts, the Rigs, Blackcap and the dike road, the tide boat, the shore's line, two side lines and the dives in three bands; the Teeth mines and the Northern Wet written (B5c): Number Four and its old level, Sawtown, Ashby Dam and its gallery, Low Landing, two roadside maps, the barges from every river stop, the north track, the ropeway, the mines' line and the Wet's line and three side lines, activities in bands. B5d planned (counts approximate; Meridian's Docks are counted under Meridian) |
-| Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |
+| Halcyon/Skirts | 6/6 | 49/40 | 98/55 | 13/12 | the Skirts written (B4a): the town under the arcology and a gallery under its pit; the Line's last stop; beat 16 opened; the seventh companion joins here. Halcyon written (B4b): the top station and gate, the gardens and terraces, the Clinic floors, the Board's floor, the works; beat 16 inside and the offer; the Contract, the Leash, the Long-Lived; four side quests; Kes inside. Loose ends: Unity place builds and export (P10); the Long Night's envoy reading the offer (B5d hook, not wired) |
+| Act 2 wilds | 28/28 | 137/137 | 322/322 | 28/28 | Ninebridge, Openfield, the Sump and Cistern 4 playable; the Rail Corridor written (B5a): Four Ways, both halts, Yard Nine and Kettle Cut, the Line ridden from every stop, the rail bandits' line and four side lines; the Drowned Shore written (B5b): Gull Stilts, the Rigs, Blackcap and the dike road, the tide boat, the shore's line, two side lines and the dives in three bands; the Teeth mines and the Northern Wet written (B5c): Number Four and its old level, Sawtown, Ashby Dam and its gallery, Low Landing, two roadside maps, the barges from every river stop, the north track, the ropeway, the mines' line and the Wet's line and three side lines, activities in bands; the Ashlands and the Long Night written (B5d): Spindle, Kelso and its hall, Pemberton, Saddleback and a roadside map, the remnant machines on the glass, the Ashlands' line and two side lines, picking runs in bands, the act's alliance at Openfield and a side line on the Line. Act 2's wilds complete in content (counts approximate; Meridian's Docks are counted under Meridian) |
+| Act 3/endings | 0/1 (+5 reused; +6 with Act 3 placements) | 21 | 43/~50 (+2 Court cases) | 10/10 skeletons (3 side quests and 1 critical quest playable) | B6a: the act's groundwork (shared conditions, quest skeletons, papers, events, the shared test fixture); B6b: the Precinct and the Court in Act 3 (a courier, two wardens, a side quest with eight answers, two Court cases); B6d: Signal Hill in Act 3 (a side quest with six routes and four ends, a letter by post); B6c: the road home (three rides offered by post and the player's own buggy, five road encounters with one more ride among them, five people, sixteen letters); B6e: Shale in Act 3 (a side quest with seven routes and five ends, four people); B6n: the last night before the final climb (a fire on the Spire close, four companions' last conversations); B6o: the same fire, the other three companions' last conversations, and one quarrel between two companions in the home hamlet; B6f: Knock in Act 3 (the home hamlet's people, the newcomers camped by the stand, the Grille; nine people, fifteen conversations); B6g: Knock at night (the night visitors and the guild's people written in full: seven conversations, a side quest with four ends, one world event, one paper) |
 | Companions | — | 7/7 | 0/7 arcs | 0/7 | Tamsin, Wren, Ilya, Odile, Ash, Nine can join; Kes joins in the Skirts (B4a, with her arc and quest); arcs later |
 | Factions joinable | — | — | — | 0/9 | design pending |
 

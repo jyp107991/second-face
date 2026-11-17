@@ -75,6 +75,32 @@ for (x0, y0) in [(4, 8), (12, 4), (48, 4)]:
 
 rows = [''.join(r) for r in g]
 
+# Act 3 (B6e, Sheriff's Last Ride): the buyout of Shale comes due once Act 3 is open; content in dialogue/a3_shale.ts.
+A3 = {'flag': 'a3_open'}
+NOT_A3 = {'not': A3}
+def alive(npc):
+    return {'not': {'dead': npc}}
+def ada(v):
+    return {'flag': 'ks_ada', 'eq': v}
+def shale_is(v):
+    return {'flag': 'a3_shale', 'eq': v}
+# the buyout open: Act 3, Ada and Pike alive, nothing settled (the guild's two hands keep the sheriff's door)
+RIDE = {'all': [A3, {'not': {'flag': 'ks_ada'}}, alive('npc_sh_01'), alive('npc_sh_04')]}
+# the hands drawn on, and the street not yet told how it ended (Ada is out in the street, not at her desk)
+FIGHTING = {'all': [{'flag': 'a3_sh_fight'}, {'not': {'flag': 'a3_sh_after'}}]}
+HANDS_DOWN = {'all': [{'dead': 'npc_a3_g7'}, {'dead': 'npc_a3_g8'}]}
+A3_ARRIVE = 'Shale again. The pumps, the saloon, the flag that was a sheet once; and two guild hands at the sheriff\'s door, standing the way people stand who are paid by the day, and a new paper nailed over the old ones.'
+A3_DUE = [{'set': 'a3_buyout'}, {'quest': 'q_a3_ride', 'start': True}]
+
+# Sister Calla in the mission (B5d, keystone 7): taken on the eve of the Long Night (ln_calla_taken: on the warden car west, then
+# held by the city: ln_calla = taken, ks_calla = imprisoned, or the night over with nothing set, CALLA_HELD's default), she is
+# not here until she is free (CALLA_FREE, mirrored from src/content/world/a3_conds.ts); freed on the Line she stays at Openfield
+# (gen_openfield.py ln_calla_of) unless the night left it the city's or the guild's. tests/b5d.test.ts checks one place each.
+CALLA_TAKEN = {'any': [{'flag': 'ln_calla_taken'}, {'flag': 'ln_calla'}, {'flag': 'ks_calla'}, {'flag': 'ln_done'}]}
+CALLA_FREE = {'all': [{'not': {'dead': 'npc_sh_05'}}, {'any': [{'flag': 'ks_calla', 'eq': 'free'}, {'flag': 'ln_calla', 'eq': 'freed'}]}]}
+CALLA_AT_OPENFIELD = {'all': [{'flag': 'ln_calla', 'eq': 'freed'}, {'not': {'any': [{'flag': 'ln_openfield', 'eq': 'evicted'}, {'flag': 'ln_openfield', 'eq': 'guild'}]}}]}
+CALLA_HOME = {'all': [{'any': [{'not': CALLA_TAKEN}, CALLA_FREE]}, {'not': CALLA_AT_OPENFIELD}]}
+
 props = [
     # wells plaza
     {'kind': 'pump', 'x': 31, 'y': 19, 'id': 'pump_a'}, {'kind': 'pump', 'x': 33, 'y': 19, 'id': 'pump_b'}, {'kind': 'tank', 'x': 35, 'y': 20},
@@ -91,11 +117,12 @@ props = [
     # sheriff's office
     {'kind': 'table', 'x': 44, 'y': 15}, {'kind': 'chair', 'x': 44, 'y': 16, 'rot': 0}, {'kind': 'chair', 'x': 43, 'y': 15, 'rot': 1},
     {'kind': 'locker', 'x': 41, 'y': 13, 'id': 'militia_locker'}, {'kind': 'locker', 'x': 42, 'y': 13}, {'kind': 'shelf', 'x': 49, 'y': 13, 'rot': 3},
-    {'kind': 'cot', 'x': 48, 'y': 19}, {'kind': 'terminal', 'x': 41, 'y': 19, 'rot': 1}, {'kind': 'sandbags', 'x': 39, 'y': 21}, {'kind': 'sign', 'x': 46, 'y': 21},
+    {'kind': 'cot', 'x': 48, 'y': 19}, {'kind': 'terminal', 'x': 41, 'y': 19, 'rot': 1}, {'kind': 'sandbags', 'x': 39, 'y': 21}, {'kind': 'sign', 'x': 46, 'y': 21, 'id': 'office_notice'},
     # Tollmen post
     *[{'kind': 'counter', 'x': x, 'y': 32} for x in range(44, 49)], {'kind': 'shelf', 'x': 51, 'y': 31, 'rot': 3}, {'kind': 'shelf', 'x': 51, 'y': 33, 'rot': 3},
     {'kind': 'crate', 'x': 41, 'y': 36}, {'kind': 'crate', 'x': 42, 'y': 36, 'id': 'toll_crate'}, {'kind': 'table', 'x': 47, 'y': 35}, {'kind': 'chair', 'x': 46, 'y': 35, 'rot': 1},
     {'kind': 'terminal', 'x': 50, 'y': 36, 'rot': 3}, {'kind': 'sign', 'x': 45, 'y': 28}, {'kind': 'lamp_post', 'x': 48, 'y': 28}, {'kind': 'barrel', 'x': 53, 'y': 30},
+    {'kind': 'locker', 'x': 50, 'y': 34, 'rot': 3, 'id': 'pike_safe'},
     # Mender's shed
     {'kind': 'table', 'x': 57, 'y': 16}, {'kind': 'machine', 'x': 60, 'y': 15}, {'kind': 'shelf', 'x': 55, 'y': 14, 'rot': 1, 'id': 'mender_shelf'}, {'kind': 'cot', 'x': 60, 'y': 19},
     {'kind': 'locker', 'x': 55, 'y': 19}, {'kind': 'sign', 'x': 58, 'y': 21}, {'kind': 'fire_barrel', 'x': 56, 'y': 22},
@@ -167,10 +194,12 @@ shale = {
         'pump_a': {'dialogue': 'd_sh_pumps', 'name': 'The pumps'},
         'pump_b': {'dialogue': 'd_sh_pumps', 'name': 'The pumps'},
         'west_sign': {'dialogue': 'd_sh_tracks', 'name': 'The west road'},
+        'office_notice': {'dialogue': 'd_a3_notice', 'name': 'Sheriff\'s door'},
+        'pike_safe': {'dialogue': 'd_a3_safe', 'name': 'Guild strongbox'},
     },
     'containers': {
         'bar_shelf': {'name': 'Bar Shelf', 'items': [['c_bitters', 2], ['c_dirtywater', 2], ['j_glass', 3]], 'lock': 15},
-        'room_locker': {'name': 'Room Locker', 'items': []},
+        'room_locker': {'name': 'Room Locker', 'items': [], 'yoursIf': {'flag': 'shale_room'}},
         'militia_locker': {'name': 'Militia Locker', 'items': [['a_38', 10], ['c_bandage', 1], ['w_zip38', 1]], 'lock': 45},
         'toll_crate': {'name': 'Tollmen Crate', 'items': [['c_tin', 2], ['j_fuel', 1]], 'lock': 50},
         'mender_shelf': {'name': 'Mender\'s Shelf', 'items': [['c_bandage', 2], ['c_splint', 1], ['t_repair', 1]], 'lock': 30},
@@ -191,29 +220,52 @@ shale = {
         'street_w': {'x': 12, 'y': 25}, 'street_e': {'x': 50, 'y': 25}, 'street_c': {'x': 31, 'y': 29}, 'street_n': {'x': 31, 'y': 12},
         'home_a': {'x': 5, 'y': 44}, 'home_b': {'x': 13, 'y': 44}, 'home_c': {'x': 23, 'y': 44}, 'home_d': {'x': 39, 'y': 44}, 'home_e': {'x': 48, 'y': 44}, 'home_f': {'x': 56, 'y': 44},
         'home_g': {'x': 6, 'y': 10}, 'home_h': {'x': 14, 'y': 6}, 'home_i': {'x': 50, 'y': 6},
+        'office_step': {'x': 42, 'y': 22},
     },
     'npcs': [
-        {'def': 'npc_sh_01', 'x': 45, 'y': 16, 'facing': 2}, {'def': 'npc_sh_02', 'x': 43, 'y': 18, 'facing': 1, 'if': {'not': {'flag': 'jonah_dead'}}}, {'def': 'npc_sh_11', 'x': 40, 'y': 7, 'facing': 2},
-        {'def': 'npc_sh_03', 'x': 12, 'y': 14, 'facing': 2}, {'def': 'npc_sh_10', 'x': 14, 'y': 14, 'facing': 2}, {'def': 'npc_sh_06', 'x': 6, 'y': 23, 'facing': 1},
-        {'def': 'npc_sh_04', 'x': 46, 'y': 33, 'facing': 0}, {'def': 'npc_sh_05', 'x': 13, 'y': 35, 'facing': 2}, {'def': 'npc_sh_08', 'x': 57, 'y': 17, 'facing': 2},
+        {'def': 'npc_sh_01', 'x': 45, 'y': 16, 'facing': 2, 'if': NOT_A3}, {'def': 'npc_sh_02', 'x': 43, 'y': 18, 'facing': 1, 'if': {'all': [{'not': {'flag': 'jonah_dead'}}, NOT_A3]}}, {'def': 'npc_sh_11', 'x': 40, 'y': 7, 'facing': 2, 'if': NOT_A3},
+        {'def': 'npc_sh_03', 'x': 12, 'y': 14, 'facing': 2, 'if': NOT_A3}, {'def': 'npc_sh_10', 'x': 14, 'y': 14, 'facing': 2}, {'def': 'npc_sh_06', 'x': 6, 'y': 23, 'facing': 1},
+        {'def': 'npc_sh_04', 'x': 46, 'y': 33, 'facing': 0, 'if': NOT_A3}, {'def': 'npc_sh_05', 'x': 13, 'y': 35, 'facing': 2, 'if': CALLA_HOME}, {'def': 'npc_sh_08', 'x': 57, 'y': 17, 'facing': 2},
         {'def': 'npc_sh_09', 'x': 26, 'y': 9, 'facing': 2}, {'def': 'npc_sh_12', 'x': 30, 'y': 20, 'facing': 1}, {'def': 'npc_sh_13', 'x': 57, 'y': 34, 'facing': 0},
         # the Choir tent's cots (q_a1_tents): they stay on them until seen to; the girl is gone if reported
         {'def': 'npc_sh_20', 'x': 11, 'y': 36, 'facing': 2}, {'def': 'npc_sh_21', 'x': 14, 'y': 36, 'facing': 2, 'if': {'not': {'knows': 'pip_reported'}}}, {'def': 'npc_sh_22', 'x': 12, 'y': 38, 'facing': 2},
         {'def': 'npc_sh_14', 'x': 12, 'y': 25, 'facing': 1}, {'def': 'npc_sh_07', 'x': 16, 'y': 18, 'facing': 0, 'if': {'flag': 'teo_freed'}},
         {'def': 'npc_sh_17', 'x': 43, 'y': 6, 'facing': 2, 'if': {'all': [{'flag': 'drills_started'}, {'not': {'flag': 'ilya_gone'}}, {'not': {'flag': 'ilya_recruited'}}]}},
-        # Tamsin, out of the Cistern (U8): at Mags's while she is out and not on the road with the player.
-        {'def': 'npc_c9_03', 'x': 17, 'y': 16, 'facing': 2, 'schedule': [], 'if': {'all': [{'any': [{'knows': 'tamsin_replied'}, {'flag': 'tam_out'}]}, {'not': {'inParty': 'npc_c9_03'}}, {'not': {'flag': 'tam_home'}}]}},
+        # Tamsin, out of the Cistern (U8): at Mags's while she is out and not on the road with the player. (B6j) Not once she has
+        # gone to stand in the Cistern's door at Knock (tam_left = door), or died in it.
+        {'def': 'npc_c9_03', 'x': 17, 'y': 16, 'facing': 2, 'schedule': [], 'if': {'all': [{'any': [{'knows': 'tamsin_replied'}, {'flag': 'tam_out'}]}, {'not': {'inParty': 'npc_c9_03'}}, {'not': {'flag': 'tam_home'}},
+                                                                                       {'not': {'flag': 'tam_left', 'eq': 'door'}}, {'not': {'flag': 'a3_tamsin_dead'}}]}},
         {'def': 'npc_rd_02', 'id': 'tribute_vasha', 'x': 32, 'y': 22, 'facing': 2, 'dialogue': 'd_tribute', 'schedule': [], 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}]}},
         {'def': 'npc_rd_t1', 'id': 'tribute_t1', 'x': 30, 'y': 23, 'facing': 2, 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}]}},
         {'def': 'npc_rd_t2', 'id': 'tribute_t2', 'x': 34, 'y': 23, 'facing': 2, 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}]}},
         {'def': 'npc_rd_t3', 'id': 'tribute_t3', 'x': 33, 'y': 24, 'facing': 2, 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}]}},
         {'def': 'npc_rd_t4', 'id': 'tribute_t4', 'x': 31, 'y': 24, 'facing': 2, 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}]}}, {'def': 'npc_sh_15', 'x': 34, 'y': 21, 'facing': 3}, {'def': 'npc_sh_16', 'x': 50, 'y': 25, 'facing': 3},
+        # Act 3 (B6e): Ada at her desk while she is sheriff (out in the street while the guild's hands are fought); on her step,
+        # a pensioner, if she signed and the guild holds the town; gone west if the Dogs took it or it is emptying
+        {'def': 'npc_sh_01', 'id': 'npc_sh_01_a3', 'x': 45, 'y': 16, 'facing': 2, 'dialogue': 'd_a3_ada', 'if': {'all': [A3, alive('npc_sh_01'), {'not': ada('dead')}, {'not': ada('resigns')}, {'not': FIGHTING}]}},
+        {'def': 'npc_sh_01', 'id': 'npc_sh_01_step', 'x': 42, 'y': 22, 'facing': 2, 'dialogue': 'd_a3_ada', 'schedule': [{'from': 7, 'to': 19, 'spot': 'office_step', 'activity': 'idle'}, {'from': 19, 'to': 23, 'spot': 'saloon_table', 'activity': 'drink'}, {'from': 23, 'to': 7, 'spot': 'home_e', 'activity': 'sleep'}], 'if': {'all': [ada('resigns'), shale_is('company'), alive('npc_sh_01')]}},
+        {'def': 'npc_sh_02', 'id': 'npc_sh_02_a3', 'x': 43, 'y': 18, 'facing': 1, 'dialogue': 'd_a3_jonah', 'if': {'all': [A3, {'not': {'flag': 'jonah_dead'}}, alive('npc_sh_02'), {'not': shale_is('abandoned')}]}},
+        {'def': 'npc_sh_11', 'id': 'npc_sh_11_a3', 'x': 40, 'y': 7, 'facing': 2, 'dialogue': 'd_a3_militia', 'if': {'all': [A3, alive('npc_sh_11'), {'not': shale_is('abandoned')}]}},
+        {'def': 'npc_sh_03', 'id': 'npc_sh_03_a3', 'x': 12, 'y': 14, 'facing': 2, 'dialogue': 'd_a3_mags', 'if': {'all': [A3, alive('npc_sh_03')]}},
+        {'def': 'npc_sh_04', 'id': 'npc_sh_04_a3', 'x': 46, 'y': 33, 'facing': 0, 'dialogue': 'd_a3_pike', 'if': {'all': [A3, alive('npc_sh_04')]}},
+        # Pike's two hands, witnesses at the sheriff's door while the buyout is open; one at her desk if she signed
+        {'def': 'npc_a3_g7', 'x': 44, 'y': 21, 'facing': 2, 'schedule': [], 'if': RIDE},
+        {'def': 'npc_a3_g8', 'x': 47, 'y': 21, 'facing': 2, 'schedule': [], 'if': RIDE},
+        {'def': 'npc_a3_g7', 'id': 'npc_a3_g7_desk', 'x': 45, 'y': 16, 'facing': 2, 'schedule': [], 'if': shale_is('company')},
+        {'def': 'npc_a3_g8', 'id': 'npc_a3_g8_door', 'x': 47, 'y': 21, 'facing': 2, 'schedule': [], 'if': shale_is('company')},
+        # the Dogs on the sheriff's bench, if the Dogs took the office
+        {'def': 'npc_a3_g13', 'x': 44, 'y': 21, 'facing': 2, 'schedule': [], 'if': shale_is('dogs')},
+        {'def': 'npc_a3_g14', 'x': 47, 'y': 21, 'facing': 2, 'schedule': [], 'if': shale_is('dogs')},
     ],
     'triggers': [
         {'id': 'arrive_w', 'x': 1, 'y': 23, 'w': 4, 'h': 5, 'text': 'Shale. Mud-brick and scrap around two pumps, a saloon, a flag that was a sheet once. Twenty-odd houses and a lot of empty ones.', 'effects': [{'learn': 'seen_shale'}, {'learn': 'loc_orchard'}]},
         {'id': 'arrive_e', 'x': 59, 'y': 23, 'w': 4, 'h': 5, 'text': 'Shale. Mud-brick and scrap around two pumps, a saloon, a flag that was a sheet once. Twenty-odd houses and a lot of empty ones.', 'effects': [{'learn': 'seen_shale'}, {'learn': 'loc_orchard'}]},
         {'id': 'pumps', 'x': 28, 'y': 17, 'w': 10, 'h': 6, 'text': 'The pumps run in short bursts, then stop, then run — on a clock nobody in Shale set.', 'effects': [{'learn': 'pumps_on_a_clock'}]},
         {'id': 'tribute', 'x': 24, 'y': 16, 'w': 16, 'h': 14, 'once': False, 'if': {'all': [{'flag': 'tribute_day'}, {'not': {'flag': 'tribute_resolved'}}, {'not': {'flag': 'tribute_opened'}}]}, 'effects': [{'event': 'talk', 'data': {'npc': 'tribute_vasha'}}]},
+        {'id': 'a3_arrive_w', 'x': 1, 'y': 23, 'w': 4, 'h': 5, 'if': {'all': [RIDE, {'not': {'flag': 'a3_buyout'}}]}, 'text': A3_ARRIVE, 'effects': A3_DUE},
+        {'id': 'a3_arrive_e', 'x': 59, 'y': 23, 'w': 4, 'h': 5, 'if': {'all': [RIDE, {'not': {'flag': 'a3_buyout'}}]}, 'text': A3_ARRIVE, 'effects': A3_DUE},
+        {'id': 'a3_arrive_c', 'x': 26, 'y': 23, 'w': 12, 'h': 5, 'if': {'all': [RIDE, {'not': {'flag': 'a3_buyout'}}]}, 'text': A3_ARRIVE, 'effects': A3_DUE},
+        {'id': 'a3_street_after', 'x': 24, 'y': 17, 'w': 32, 'h': 12, 'once': False, 'if': {'all': [{'flag': 'a3_sh_fight'}, {'not': {'flag': 'a3_sh_after'}}, {'not': {'flag': 'ks_ada'}}, HANDS_DOWN]}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_street', 'name': 'Shale'}}]},
     ],
     'extras': [
         {'count': 7, 'roles': ['settler', 'settler', 'labourer', 'trader', 'drifter'], 'life': 'hard', 'area': {'x': 26, 'y': 14, 'w': 16, 'h': 12}, 'hours': {'from': 7, 'to': 19}},
@@ -225,6 +277,8 @@ shale = {
 }
 
 HEADER = "import type { MapDef } from '../../engine/data/types';\n\n// Generated by tools/maps/gen_shale.py — edit the generator, then re-run it.\n"
+# the committed map writes the room's ownership on one line (hand-set when the locker became the room's); keep it so
+out = ts(shale).replace('yoursIf: {\n        flag: "shale_room"\n      }', 'yoursIf: { flag: "shale_room" }')
 with open(os.path.join(ROOT, 'src', 'content', 'maps', 'shale.ts'), 'w') as f:
-    f.write(f"{HEADER}export const shale: MapDef = {ts(shale)};\n")
+    f.write(f"{HEADER}export const shale: MapDef = {out};\n")
 print('shale', W, 'x', H)

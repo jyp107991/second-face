@@ -77,6 +77,10 @@ namespace SecondFace.Game.World
             var settings = NavMesh.GetSettingsByID(0);
             settings.agentRadius = AgentRadius;
             settings.agentHeight = AgentHeight;
+            // the mesh's heights as the ground's, not the voxels': without it the polygons stood 5-6 cm over flat ground,
+            // the people walking on them sank their hips that far to put their feet down, and their strides, bent, slid the
+            // held feet (a companion's jog, W1 10 %, the motion gate's follow state, 2026-11-17)
+            settings.buildHeightMesh = true;
             return settings;
         }
 

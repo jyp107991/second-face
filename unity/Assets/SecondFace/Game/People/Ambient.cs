@@ -14,9 +14,24 @@ namespace SecondFace.Game.People
     {
         public static readonly string[] Talk = { "talk", "talk_b", "argue" };
         public static readonly string[] Idle = { "drink", "stretch", "yawn", "yawn_b", "wave" };
+        /// <summary>The gestures captured from a woman only (CMU 141, 111, 113): a man does not play them.</summary>
+        public static readonly string[] WomenOnly = { "stretch", "yawn", "yawn_b" };
+        /// <summary>The gestures captured from a man only. **Open (2026-11-17):** `stretch_m` (CMU 143_30, its take naming its
+        /// subject Male1) is imported but not played: its actor raises the shoulders 24° (S1's cap for a stretch is 20), on
+        /// every man the gate measured; men have no stretch or yawn until a man's take passes.</summary>
+        public static readonly string[] MenOnly = { "stretch_m" };
         public const string GestureLayer = "Gesture";
-        /// <summary>How many idles the controller blends between on "Idle" (LocomotionBuild.Idles).</summary>
-        public const int IdleCount = 3;
+        /// <summary>The idles by sex, blended on "Idle" (LocomotionBuild builds them; motion set v3, the helper's README and
+        /// MANIFEST): from documented men (ACCAD Male2 and Male1 standing) and a woman (ACCAD Female1 waiting and standing),
+        /// each with the knee-solve correction (the captures' knee centres read 8-24° on a straight leg; K1 0-5° after, feet
+        /// kept) and the head level. Out: CMU 77_02, 82_08, 111_28, 113_21 (knees 20-24°, heads down to −58°).</summary>
+        public static readonly string[] MenIdles = { "idle_m", "idle_m_b" }, WomenIdles = { "idle_f", "idle_f_c" };
+        /// <summary>How many idles the controller blends between on "Idle" at most.</summary>
+        public static readonly int IdleCount = Mathf.Max(MenIdles.Length, WomenIdles.Length);
+        /// <summary>How many idles this body's sex has.</summary>
+        public static int IdlesOf(Animator a) => (Pace.Female(a) ? WomenIdles : MenIdles).Length;
+        /// <summary>Whether this body plays a gesture (its sex's captures).</summary>
+        public static bool Can(Animator a, string gesture) => Pace.Female(a) ? System.Array.IndexOf(MenOnly, gesture) < 0 : System.Array.IndexOf(WomenOnly, gesture) < 0;
 
         public float MinGap = 7f, MaxGap = 20f;
         /// <summary>Talks more than the others (set by whoever places them).</summary>
@@ -41,7 +56,7 @@ namespace SecondFace.Game.People
             _seed = Hash(name);
             if (_animator == null || _animator.runtimeAnimatorController == null) return;
             _layer = _animator.GetLayerIndex(GestureLayer);
-            _animator.SetFloat(IdleId, _seed % IdleCount);
+            _animator.SetFloat(IdleId, _seed % (uint)IdlesOf(_animator));
             _animator.Play(0, 0, Random01());
             _next = Time.time + Mathf.Lerp(MinGap * 0.3f, MaxGap, Random01());
         }
@@ -58,6 +73,10 @@ namespace SecondFace.Game.People
             _next = Time.time + Mathf.Lerp(MinGap, MaxGap, Random01());
             if (_animator.GetFloat(SpeedId) > 0.1f) return;
             var pool = Pool != null && Pool.Length > 0 ? Pool : Talker && Random01() < 0.7f ? Talk : Idle;
+            pool = System.Array.FindAll(pool, g => Can(_animator, g));
+            // (an activity's gestures all a woman's captures, a man's patrol: his own mix instead)
+            if (pool.Length == 0) pool = System.Array.FindAll(Idle, g => Can(_animator, g));
+            if (pool.Length == 0) return;
             Gesture(pool[(int)(Random01() * pool.Length) % pool.Length]);
         }
 
@@ -66,7 +85,7 @@ namespace SecondFace.Game.People
         {
             if (_animator == null) _animator = GetComponent<Animator>();
             if (_layer < 0) _layer = _animator.GetLayerIndex(GestureLayer);
-            if (_layer < 0 || !_animator.HasState(_layer, Animator.StringToHash(state))) return false;
+            if (_layer < 0 || !_animator.HasState(_layer, Animator.StringToHash(state)) || !Can(_animator, state)) return false;
             _animator.CrossFadeInFixedTime(state, 0.3f, _layer);
             if (_animator.GetLayerWeight(_layer) < 0.05f) _animator.SetLayerWeight(_layer, 0.05f);   // the fade in starts now
             Last = state;

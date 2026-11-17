@@ -1,6 +1,8 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
 import type { Cond, Effect } from '../../engine/world/logic';
 import { QUESTS } from '../quests';
+import { DORIA_CARTS_NODES, DORIA_CARTS_START } from './a3_road';
+import { ASH_LN_NODES, ASH_LN_START, KNOCK_CAMP_NODES, KNOCK_CAMP_START } from './a3_fire_ii';
 
 /**
  * Openfield: the Choir's farms in the glass, every third row dying. The Elder calls it blight; the well knows
@@ -299,6 +301,8 @@ export const d_of_ash: DialogueDef = {
     { if: { all: [ASH_IN, { flag: 'cr_celestine_dead' }, { not: { flag: 'ash_cup_done' } }] }, node: 'cup' },
     { if: { all: [ASH_IN, ASH_FLOOR, { flag: 'ash_won_back' }] }, node: 'floor_final' },
     { if: { all: [ASH_IN, ASH_FLOOR] }, node: 'floor' },
+    ...ASH_LN_START,
+    KNOCK_CAMP_START,
     { if: { all: [ASH_IN, { flag: 'at_camp' }] }, node: 'camp' },
     { if: ASH_IN, node: 'party' },
     { if: { flag: 'ash_gone' }, node: 'gone' },
@@ -728,6 +732,8 @@ export const d_of_ash: DialogueDef = {
     left_back: { text: '"Once more." He puts the spade where the next person will find it. "That\'s the most I\'ve got, friend. Use it well."', again: '"Once more," he says.', options: [{ text: '(Go.)', exit: true }] },
     left_no: { text: '"Not yet." He goes back to the row. "Dig with me again some time. It\'s the only argument I listen to."', again: '"Not yet," he says, digging.', options: [{ text: '(Go.)', exit: true }] },
     gone: { text: 'He is digging, and does not look up, and the shotgun is across his back.', again: 'He does not look up.', options: [{ text: '(Walk on.)', exit: true }] },
+    ...ASH_LN_NODES,
+    ...KNOCK_CAMP_NODES,
   },
 };
 
@@ -804,7 +810,7 @@ export const d_of_imre: DialogueDef = {
 
 export const d_of_doria: DialogueDef = {
   id: 'd_of_doria', owner: 'npc_of_06',
-  start: [{ if: { flag: 'of_seed_outcome' }, node: 'after' }, { if: { flag: 'doria_met' }, node: 'again' }, { node: 'intro' }],
+  start: [DORIA_CARTS_START, { if: { flag: 'of_seed_outcome' }, node: 'after' }, { if: { flag: 'doria_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
       text: 'The seed-keeper is a thin woman with ink on her fingers and a tally board she holds like a shield. "Doria. Keeper. Counted at dusk, counted at dawn, and every dawn there\'s one fewer." She shows you the board without being asked. "A crate a night. Six nights. No lock broken. I\'ve stopped sleeping, which hasn\'t helped."',
@@ -843,6 +849,8 @@ export const d_of_doria: DialogueDef = {
       { if: { flag: 'ash_gully_outcome', eq: 'told' }, text: '"Fourteen at dusk. Fourteen at dawn." She does not look toward the burial ground. She does not ask after the man who digs there.' },
       { text: '"Fourteen at dusk. Fourteen at dawn." She sleeps now.' },
     ], again: '"Fourteen." She says it like a prayer the Choir doesn\'t have.', options: [bye] },
+    // Act 3 (B6c): the carts for Knock (a3_road.ts)
+    ...DORIA_CARTS_NODES,
   },
 };
 

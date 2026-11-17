@@ -45,7 +45,7 @@ namespace SecondFace.Game.Play
         public Vector3? Goal { get; private set; }
 
         /// <summary>Makes a walker from a person model with the locomotion controller, standing at a point.</summary>
-        public static Walker Create(GameObject model, RuntimeAnimatorController locomotion, Vector3 at, float yaw)
+        public static Walker Create(GameObject model, RuntimeAnimatorController locomotion, Vector3 at, float yaw, bool male)
         {
             var go = Instantiate(model, at, Quaternion.Euler(0, yaw, 0));
             go.name = "Walker";
@@ -57,7 +57,7 @@ namespace SecondFace.Game.Play
             var w = go.AddComponent<Walker>();
             w.Agent = agent;
             w.Animator = go.GetComponentInChildren<Animator>();
-            if (w.Animator != null) Animate(w.Animator, locomotion);
+            if (w.Animator != null) Animate(w.Animator, locomotion, male);
             return w;
         }
 
@@ -65,9 +65,11 @@ namespace SecondFace.Game.Play
         /// animated (the player is always in view, and photo mode, portraits, the IK and a sit read the pose; culled, a body
         /// nothing has rendered yet keeps a stale pose), feet on the ground, gaze, arms clear of the body, hands at rest.
         /// The motion and posture gate (docs/PEOPLE_MOTION.md) makes the player's body with this.</summary>
-        public static void Animate(Animator animator, RuntimeAnimatorController locomotion)
+        public static void Animate(Animator animator, RuntimeAnimatorController locomotion, bool male)
         {
             animator.runtimeAnimatorController = locomotion;
+            // their sex's captures (the player keeps the walker's speeds whatever their sex: Pace's women's set reaches 1.4 m/s)
+            SecondFace.Game.People.Pace.SetSex(animator, male);
             animator.applyRootMotion = false;
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             animator.gameObject.AddComponent<SecondFace.Game.People.FootPlant>();

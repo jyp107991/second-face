@@ -2,6 +2,7 @@ import type { DialogueDef, NodeDef, OptionDef } from '../../engine/dialogue/dial
 import type { Cond, Effect } from '../../engine/world/logic';
 import { A, ASH, ILYA, KES, NINE, ODILE, TAMSIN, TOLLS, WREN, bye, leave, lineBoard } from './rc_line';
 import { bargeBoard } from './nw_river';
+import { FIRST_CLASS_OPTION } from './a3_road';
 
 /**
  * Carrick, Meridian's docks across the dry river (B5b, the last piece). The Line's terminus (its ticket point is the Line's own
@@ -99,6 +100,8 @@ export const d_dk_line = lineBoard('d_dk_line', 'meridian', 'npc_dk_12',
   'Femi Adebayo, behind the grille, with the punch.',
   [
     { id: 'dk.line.through', text: 'What about the through?', if: NOT(SEEN('dk.line.through')), next: 'through' },
+    // Act 3 (B6c): the guild's first class on the through, home (a3_road.ts)
+    FIRST_CLASS_OPTION,
   ],
   {
     through: {

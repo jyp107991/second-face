@@ -50,6 +50,8 @@ namespace SecondFace.Game.Play
         public bool Short { get; set; }
         /// <summary>Near enough to be seen up close: their gestures, gaze and feet on the ground (<see cref="PeopleService"/>).</summary>
         public bool Full { get; set; } = true;
+        /// <summary>How long the pace is eased over for a body its agent moves (s).</summary>
+        public const float AgentDamp = 0.06f;
         /// <summary>How aware of the walker they are (P6.3, Core <see cref="SecondFace.Core.World.Stealth"/>): 0 not at
         /// all; past Suspicious they look; at Noticed they have seen them.</summary>
         public double Awareness { get; set; }
@@ -57,8 +59,10 @@ namespace SecondFace.Game.Play
         private void Update()
         {
             if (Agent == null || !Agent.enabled) return;
-            // the pace as the walker and the gate set it (by this body's legs, one clip at a time: PEOPLE_MOTION W1, W2)
-            if (Animator != null) SecondFace.Game.People.Pace.Set(Animator, Agent.velocity.magnitude);
+            // the pace as the walker and the gate set it (by this body's legs, one clip at a time: PEOPLE_MOTION W1, W2), eased
+            // over AgentDamp: an agent's speed changes as smoothly as its acceleration lets it, and eased as the walker's, a
+            // companion's stride ran 0.12 s behind their agent's stop from a jog and slid the held foot (W1, the follow state)
+            if (Animator != null) SecondFace.Game.People.Pace.Set(Animator, Agent.velocity.magnitude, false, AgentDamp);
             if (Agent.isOnNavMesh && !Agent.pathPending && Agent.hasPath && Agent.pathStatus == NavMeshPathStatus.PathPartial && Agent.remainingDistance < 0.3f) Short = true;
         }
     }

@@ -1,0 +1,71 @@
+{
+ "name": "knife",
+ "kind": "knife (blade)",
+ "source": "https://polyhaven.com/a/fish_knife",
+ "license": "CC0 1.0",
+ "author": "Mateusz Sadek (Poly Haven)",
+ "file": "knife.fbx",
+ "units": "metres",
+ "frame": "Unity: +Z forward (muzzle/tip), +Y up, +X right; origin = grip_main",
+ "triangles": {
+  "body": 799,
+  "source_body": 2736
+ },
+ "size_m": [
+  0.016,
+  0.029,
+  0.216
+ ],
+ "points_unity": {
+  "grip_main": [
+   -0.0,
+   0.0,
+   -0.0
+  ],
+  "tip": [
+   -0.0,
+   0.002,
+   0.1707
+  ]
+ },
+ "materials": {
+  "fish_knife": {
+   "BaseColor": "knife_BaseColor.jpg",
+   "Normal": "knife_Normal.png",
+   "Mask": "knife_Mask.png"
+  }
+ },
+ "texture_size": 512,
+ "notes": [
+  "grip points are palm centres; the hand socket aligns its palm frame to the weapon frame (forward along the barrel/blade, up along the top/spine)",
+  "lore pass done: handle wrapped in madder cord, patinated blade; variant v2: handle wrapped in black tape"
+ ],
+ "variants": {
+  "v1": {
+   "label": "handle wrapped in madder cord, patinated blade",
+   "materials": {
+    "fish_knife": {
+     "BaseColor": "knife_BaseColor.jpg",
+     "Normal": "knife_Normal.png",
+     "Mask": "knife_Mask.png"
+    }
+   }
+  },
+  "v2": {
+   "label": "handle wrapped in black tape",
+   "materials": {
+    "fish_knife": {
+     "BaseColor": "knife_v2_BaseColor.jpg",
+     "Normal": "knife_v2_Normal.png",
+     "Mask": "knife_v2_Mask.png"
+    }
+   }
+  }
+ },
+ "lore": {
+  "pass": "2026-11-17, tools/lore/lore.py (recipes in the weapon frame; bakes by tools/lore/bake_maps.py)",
+  "originals": "raw/weapons_pre_lore/knife/",
+  "painted_out": "the maker's lettering on both blade faces (the fish-carved handle is covered by the wrap)",
+  "mask_occlusion": "G now carries the mesh AO and cavities where the staged mask had none"
+ }
+}

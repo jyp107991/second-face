@@ -1,0 +1,71 @@
+{
+ "name": "crowbar",
+ "kind": "crowbar (club)",
+ "source": "https://polyhaven.com/a/crowbar_01",
+ "license": "CC0 1.0",
+ "author": "Alexander Otterbeck (Poly Haven)",
+ "file": "crowbar.fbx",
+ "units": "metres",
+ "frame": "Unity: +Z forward (muzzle/tip), +Y up, +X right; origin = grip_main",
+ "triangles": {
+  "body": 900,
+  "source_body": 2300
+ },
+ "size_m": [
+  0.04,
+  0.128,
+  0.555
+ ],
+ "points_unity": {
+  "grip_main": [
+   -0.0,
+   0.0,
+   -0.0
+  ],
+  "tip": [
+   0.0044,
+   -0.062,
+   0.4754
+  ]
+ },
+ "materials": {
+  "crowbar_01": {
+   "BaseColor": "crowbar_BaseColor.jpg",
+   "Normal": "crowbar_Normal.png",
+   "Mask": "crowbar_Mask.png"
+  }
+ },
+ "texture_size": 512,
+ "notes": [
+  "grip points are palm centres; the hand socket aligns its palm frame to the weapon frame (forward along the barrel/blade, up along the top/spine)",
+  "lore pass done: chipped signal-red paint over rust, bone cloth tape grip; variant v2: chipped hi-vis yellow paint, black tape grip"
+ ],
+ "variants": {
+  "v1": {
+   "label": "chipped signal-red paint over rust, bone cloth tape grip",
+   "materials": {
+    "crowbar_01": {
+     "BaseColor": "crowbar_BaseColor.jpg",
+     "Normal": "crowbar_Normal.png",
+     "Mask": "crowbar_Mask.png"
+    }
+   }
+  },
+  "v2": {
+   "label": "chipped hi-vis yellow paint, black tape grip",
+   "materials": {
+    "crowbar_01": {
+     "BaseColor": "crowbar_v2_BaseColor.jpg",
+     "Normal": "crowbar_v2_Normal.png",
+     "Mask": "crowbar_v2_Mask.png"
+    }
+   }
+  }
+ },
+ "lore": {
+  "pass": "2026-11-17, tools/lore/lore.py (recipes in the weapon frame; bakes by tools/lore/bake_maps.py)",
+  "originals": "raw/weapons_pre_lore/crowbar/",
+  "painted_out": "nothing found (every map checked by eye and by a high-pass of the normal map)",
+  "mask_occlusion": "G now carries the mesh AO and cavities where the staged mask had none"
+ }
+}

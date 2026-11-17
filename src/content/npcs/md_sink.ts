@@ -2,12 +2,12 @@ import type { NpcDef } from '../../engine/npc/defs';
 
 /**
  * Meridian, the Sink — the flooded under-city (Act 2). Nobody down here is the city's. The two wardens at the pump
- * house are the Precinct's and turn only if the pumps are fought for (`sk_fight_pumps`) or the city does
- * (`md_fight`); the Pale turn if crossed (`sk_fight_pale`) and stand with you if you go for the pumps.
+ * house are the Precinct's and turn only if the pumps are fought for (`sk_fight_pumps`); the Pale turn if crossed
+ * (`sk_fight_pale`) and stand with you if you go for the pumps.
  */
 const SK = { team: 'neutral', settlement: 'meridian' } as const;
 const pale = { team: 'pale', settlement: 'meridian', faction: 'pale', role: 'street' as const, hostileIf: { flag: 'sk_fight_pale' }, ally: { flag: 'sk_fight_pumps' }, courage: 75 };
-const warden = { team: 'wardens', settlement: 'meridian', faction: 'wardens', role: 'guard' as const, hostileIf: { any: [{ flag: 'md_fight' }, { flag: 'sk_fight_pumps' }] }, courage: 70 };
+const warden = { team: 'wardens', settlement: 'meridian', faction: 'wardens', role: 'guard' as const, hostileIf: { flag: 'sk_fight_pumps' }, courage: 70 };
 const sleep = (spot: string, from = 23, to = 6) => ({ from, to, spot, activity: 'sleep' as const });
 
 export const SINK_NPCS: NpcDef[] = [

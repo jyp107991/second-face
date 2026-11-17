@@ -55,5 +55,5 @@ export const RING_NPCS: NpcDef[] = [
     barks: ['Water first. Then talk.', 'I carry what I\'m given.', 'Chalk\'s free. Everything else costs.'],
   },
   // the turnstile's man at the halt: the Wall's, not the Ring's
-  { id: 'npc_dr_g1', name: 'Warden', look: { seed: 9921, frame: 'broad', age: 39, ancestry: 'mediterranean', over: { hair: { style: 'cut_crop', color: 0x1a1410 } } }, team: 'wardens', settlement: 'meridian', faction: 'wardens', role: 'guard', hostileIf: { flag: 'md_fight' }, courage: 60, level: 5, minor: true, equip: ['w_pistol9', 'r_riot'], inventory: [['a_9mm', 12]], schedule: [{ from: 0, to: 24, spot: 'halt', activity: 'work' }], barks: ['Out is free. In is counted.', 'The Ring is outside the law. Mind you stay inside it.'] },
+  { id: 'npc_dr_g1', name: 'Warden', look: { seed: 9921, frame: 'broad', age: 39, ancestry: 'mediterranean', over: { hair: { style: 'cut_crop', color: 0x1a1410 } } }, team: 'wardens', settlement: 'meridian', faction: 'wardens', role: 'guard', courage: 60, level: 5, minor: true, equip: ['w_pistol9', 'r_riot'], inventory: [['a_9mm', 12]], schedule: [{ from: 0, to: 24, spot: 'halt', activity: 'work' }], barks: ['Out is free. In is counted.', 'The Ring is outside the law. Mind you stay inside it.'] },
 ];

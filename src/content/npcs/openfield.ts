@@ -18,6 +18,8 @@ export const OPENFIELD_NPCS: NpcDef[] = [
   {
     id: 'npc_of_02', name: 'Petra Mason', look: { seed: 7102, frame: 'narrow', age: 29, ancestry: 'north_european', over: { hair: { style: 'cut_pixie', color: 0x6a5a40 }, weathering: 0.5 } }, role: 'pilgrim',
     level: 6, ...OF, courage: 75, dialogue: 'd_of_petra', attrs: { reflex: 7, wits: 7, presence: 7, grit: 7 }, skills: { stealth: 45, melee: 40, speech: 40, survival: 40 }, tolls: 20,
+    // B6g: hostile only once drawn on at Knock's apron, until the map's after-trigger settles it
+    hostileIf: { all: [{ flag: 'a3_uw_fight' }, { not: { flag: 'a3_unwritten' } }] },
     equip: ['w_machete'], inventory: [['c_water', 1], ['c_bandage', 2]],
     schedule: [{ from: 6, to: 12, spot: 'shrine', activity: 'idle' }, { from: 12, to: 18, spot: 'field_c_work', activity: 'work' }, { from: 18, to: 23, spot: 'shrine', activity: 'idle' }, sleep('hall_cot_c', 23, 6)],
     barks: ['Don\'t paint me. Don\'t draw me. Don\'t remember my face if you can help it.', 'The sky is enough.', 'My father counts rows. I count other things.'],

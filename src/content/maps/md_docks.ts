@@ -2090,6 +2090,809 @@ export const md_docks: MapDef = {
         flag: "ds_thorne",
         eq: "fled"
       }
+    },
+    {
+      def: "npc_sh_05",
+      id: "ln_calla_dk",
+      x: 61,
+      y: 9,
+      facing: 3,
+      schedule: [],
+      dialogue: "d_ln_carrick",
+      if: {
+        all: [
+          {
+            flag: "ln_car",
+            eq: "carrick"
+          },
+          {
+            not: {
+              flag: "ln_calla"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_ln_e1",
+      x: 62,
+      y: 10,
+      facing: 3,
+      if: {
+        all: [
+          {
+            flag: "ln_car",
+            eq: "carrick"
+          },
+          {
+            not: {
+              flag: "ln_calla"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_ln_e2",
+      x: 64,
+      y: 9,
+      facing: 3,
+      if: {
+        all: [
+          {
+            flag: "ln_car",
+            eq: "carrick"
+          },
+          {
+            not: {
+              flag: "ln_calla"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_md_nine",
+      id: "npc_md_nine_hulls",
+      x: 10,
+      y: 5,
+      facing: 1,
+      schedule: [],
+      dialogue: "d_a3_nine_hid",
+      if: {
+        all: [
+          {
+            flag: "a3_nine_hid",
+            eq: "hulls"
+          },
+          {
+            not: {
+              inParty: "npc_md_nine"
+            }
+          },
+          {
+            not: {
+              flag: "a3_nine_fetched"
+            }
+          },
+          {
+            not: {
+              any: [
+                {
+                  flag: "nine_left"
+                },
+                {
+                  flag: "nine_gone"
+                },
+                {
+                  flag: "nine_disposed"
+                },
+                {
+                  flag: "a3_nine_struck"
+                }
+              ]
+            }
+          },
+          {
+            not: {
+              flag: "a3_summoned"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_md_01",
+      id: "npc_md_01_buffer",
+      x: 59,
+      y: 8,
+      facing: 3,
+      schedule: [],
+      dialogue: "d_a3_platform",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_c9",
+                    eq: "relocated"
+                  },
+                  {
+                    any: [
+                      {
+                        flag: "a3_c9_how",
+                        eq: "order"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "forced"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "consent"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                not: {
+                  flag: "a3_c9_after"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_md_01"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_md_12",
+      id: "npc_md_12_buffer",
+      x: 59,
+      y: 8,
+      facing: 3,
+      schedule: [],
+      dialogue: "d_a3_platform",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_c9",
+                    eq: "relocated"
+                  },
+                  {
+                    any: [
+                      {
+                        flag: "a3_c9_how",
+                        eq: "order"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "forced"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "consent"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                not: {
+                  flag: "a3_c9_after"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                dead: "npc_md_01"
+              },
+              {
+                not: {
+                  dead: "npc_md_12"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g3",
+      id: "npc_a3_g3_buffer",
+      x: 61,
+      y: 8,
+      facing: 3,
+      schedule: [],
+      dialogue: "d_a3_platform",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_c9",
+                    eq: "relocated"
+                  },
+                  {
+                    any: [
+                      {
+                        flag: "a3_c9_how",
+                        eq: "order"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "forced"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "consent"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                not: {
+                  flag: "a3_c9_after"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              any: [
+                {
+                  dead: "npc_a3_g3"
+                },
+                {
+                  dead: "npc_a3_g3_apron"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g4",
+      id: "npc_a3_g4_buffer",
+      x: 57,
+      y: 8,
+      facing: 3,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_c9",
+                    eq: "relocated"
+                  },
+                  {
+                    any: [
+                      {
+                        flag: "a3_c9_how",
+                        eq: "order"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "forced"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "consent"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                not: {
+                  flag: "a3_c9_after"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              any: [
+                {
+                  dead: "npc_a3_g4"
+                },
+                {
+                  dead: "npc_a3_g4_apron"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_01",
+      id: "npc_c9_01_buffer",
+      x: 62,
+      y: 6,
+      facing: 2,
+      schedule: [],
+      dialogue: "d_a3_platform",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_c9",
+                eq: "relocated"
+              },
+              {
+                any: [
+                  {
+                    flag: "a3_c9_how",
+                    eq: "order"
+                  },
+                  {
+                    flag: "a3_c9_how",
+                    eq: "forced"
+                  },
+                  {
+                    flag: "a3_c9_how",
+                    eq: "consent"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_c9_after"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_r4",
+      id: "npc_c9_r4_buffer",
+      x: 64,
+      y: 6,
+      facing: 2,
+      schedule: [],
+      dialogue: "d_a3_platform",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_c9",
+                eq: "relocated"
+              },
+              {
+                any: [
+                  {
+                    flag: "a3_c9_how",
+                    eq: "order"
+                  },
+                  {
+                    flag: "a3_c9_how",
+                    eq: "forced"
+                  },
+                  {
+                    flag: "a3_c9_how",
+                    eq: "consent"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_c9_after"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_03",
+      id: "npc_c9_03_buffer",
+      x: 63,
+      y: 10,
+      facing: 0,
+      schedule: [],
+      dialogue: "d_a3_tam_after",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "tam_left",
+                eq: "door"
+              },
+              {
+                not: {
+                  flag: "a3_tamsin_dead"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_c9",
+                    eq: "relocated"
+                  },
+                  {
+                    any: [
+                      {
+                        flag: "a3_c9_how",
+                        eq: "order"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "forced"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "consent"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                not: {
+                  flag: "a3_c9_after"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_01",
+      id: "npc_c9_01_carrick",
+      x: 66,
+      y: 35,
+      facing: 2,
+      schedule: [],
+      dialogue: "d_a3_ck_ines",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_c9",
+                    eq: "relocated"
+                  },
+                  {
+                    any: [
+                      {
+                        flag: "a3_c9_how",
+                        eq: "order"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "forced"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "consent"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                flag: "a3_c9_after",
+                eq: "walked"
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_buffer_how",
+              eq: "cradle"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_r4",
+      id: "npc_c9_r4_carrick",
+      x: 48,
+      y: 47,
+      facing: 2,
+      schedule: [],
+      dialogue: "d_a3_ck_effie",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_c9",
+                    eq: "relocated"
+                  },
+                  {
+                    any: [
+                      {
+                        flag: "a3_c9_how",
+                        eq: "order"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "forced"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "consent"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                flag: "a3_c9_after",
+                eq: "walked"
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_buffer_how",
+              eq: "cradle"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_03",
+      id: "npc_c9_03_carrick",
+      x: 68,
+      y: 35,
+      facing: 2,
+      schedule: [],
+      dialogue: "d_a3_tam_after",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "tam_left",
+                eq: "door"
+              },
+              {
+                not: {
+                  flag: "a3_tamsin_dead"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_c9",
+                    eq: "relocated"
+                  },
+                  {
+                    any: [
+                      {
+                        flag: "a3_c9_how",
+                        eq: "order"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "forced"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "consent"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                flag: "a3_c9_after",
+                eq: "walked"
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_buffer_how",
+              eq: "cradle"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_01",
+      id: "npc_c9_01_hulls",
+      x: 9,
+      y: 7,
+      facing: 1,
+      schedule: [],
+      dialogue: "d_a3_ck_ines",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_c9",
+                    eq: "relocated"
+                  },
+                  {
+                    any: [
+                      {
+                        flag: "a3_c9_how",
+                        eq: "order"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "forced"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "consent"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                flag: "a3_c9_after",
+                eq: "walked"
+              }
+            ]
+          },
+          {
+            flag: "a3_buffer_how",
+            eq: "cradle"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_r4",
+      id: "npc_c9_r4_hulls",
+      x: 13,
+      y: 4,
+      facing: 2,
+      schedule: [],
+      dialogue: "d_a3_ck_effie",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_c9",
+                    eq: "relocated"
+                  },
+                  {
+                    any: [
+                      {
+                        flag: "a3_c9_how",
+                        eq: "order"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "forced"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "consent"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                flag: "a3_c9_after",
+                eq: "walked"
+              }
+            ]
+          },
+          {
+            flag: "a3_buffer_how",
+            eq: "cradle"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_03",
+      id: "npc_c9_03_hulls",
+      x: 11,
+      y: 9,
+      facing: 0,
+      schedule: [],
+      dialogue: "d_a3_tam_after",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "tam_left",
+                eq: "door"
+              },
+              {
+                not: {
+                  flag: "a3_tamsin_dead"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_c9",
+                    eq: "relocated"
+                  },
+                  {
+                    any: [
+                      {
+                        flag: "a3_c9_how",
+                        eq: "order"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "forced"
+                      },
+                      {
+                        flag: "a3_c9_how",
+                        eq: "consent"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                flag: "a3_c9_after",
+                eq: "walked"
+              }
+            ]
+          },
+          {
+            flag: "a3_buffer_how",
+            eq: "cradle"
+          }
+        ]
+      }
     }
   ],
   triggers: [
@@ -2261,6 +3064,59 @@ export const md_docks: MapDef = {
           data: {
             tree: "d_dk_breakers",
             name: "The Stand"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_buffer",
+      x: 55,
+      y: 5,
+      w: 11,
+      h: 6,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_c9",
+                eq: "relocated"
+              },
+              {
+                any: [
+                  {
+                    flag: "a3_c9_how",
+                    eq: "order"
+                  },
+                  {
+                    flag: "a3_c9_how",
+                    eq: "forced"
+                  },
+                  {
+                    flag: "a3_c9_how",
+                    eq: "consent"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_c9_after"
+            }
+          }
+        ]
+      },
+      effects: [
+        {
+          quest: "q_a3_platform",
+          start: true
+        },
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_platform",
+            name: "The buffer"
           }
         }
       ]

@@ -1094,6 +1094,56 @@ export const md_ring: MapDef = {
       x: 60,
       y: 6,
       facing: 2
+    },
+    {
+      def: "npc_md_nine",
+      id: "npc_md_nine_clover",
+      x: 58,
+      y: 6,
+      facing: 2,
+      schedule: [],
+      dialogue: "d_a3_nine_hid",
+      if: {
+        all: [
+          {
+            flag: "a3_nine_hid",
+            eq: "clover"
+          },
+          {
+            not: {
+              inParty: "npc_md_nine"
+            }
+          },
+          {
+            not: {
+              flag: "a3_nine_fetched"
+            }
+          },
+          {
+            not: {
+              any: [
+                {
+                  flag: "nine_left"
+                },
+                {
+                  flag: "nine_gone"
+                },
+                {
+                  flag: "nine_disposed"
+                },
+                {
+                  flag: "a3_nine_struck"
+                }
+              ]
+            }
+          },
+          {
+            not: {
+              flag: "a3_summoned"
+            }
+          }
+        ]
+      }
     }
   ],
   triggers: [

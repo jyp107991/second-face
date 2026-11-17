@@ -368,7 +368,8 @@ export const shale: MapDef = {
     {
       kind: "sign",
       x: 46,
-      y: 21
+      y: 21,
+      id: "office_notice"
     },
     {
       kind: "counter",
@@ -449,6 +450,13 @@ export const shale: MapDef = {
       kind: "barrel",
       x: 53,
       y: 30
+    },
+    {
+      kind: "locker",
+      x: 50,
+      y: 34,
+      rot: 3,
+      id: "pike_safe"
     },
     {
       kind: "table",
@@ -998,6 +1006,14 @@ export const shale: MapDef = {
     west_sign: {
       dialogue: "d_sh_tracks",
       name: "The west road"
+    },
+    office_notice: {
+      dialogue: "d_a3_notice",
+      name: "Sheriff's door"
+    },
+    pike_safe: {
+      dialogue: "d_a3_safe",
+      name: "Guild strongbox"
     }
   },
   containers: {
@@ -1306,6 +1322,10 @@ export const shale: MapDef = {
     home_i: {
       x: 50,
       y: 6
+    },
+    office_step: {
+      x: 42,
+      y: 22
     }
   },
   npcs: [
@@ -1313,7 +1333,12 @@ export const shale: MapDef = {
       def: "npc_sh_01",
       x: 45,
       y: 16,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_sh_02",
@@ -1321,22 +1346,41 @@ export const shale: MapDef = {
       y: 18,
       facing: 1,
       if: {
-        not: {
-          flag: "jonah_dead"
-        }
+        all: [
+          {
+            not: {
+              flag: "jonah_dead"
+            }
+          },
+          {
+            not: {
+              flag: "a3_open"
+            }
+          }
+        ]
       }
     },
     {
       def: "npc_sh_11",
       x: 40,
       y: 7,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_sh_03",
       x: 12,
       y: 14,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_sh_10",
@@ -1354,13 +1398,89 @@ export const shale: MapDef = {
       def: "npc_sh_04",
       x: 46,
       y: 33,
-      facing: 0
+      facing: 0,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_sh_05",
       x: 13,
       y: 35,
-      facing: 2
+      facing: 2,
+      if: {
+        all: [
+          {
+            any: [
+              {
+                not: {
+                  any: [
+                    {
+                      flag: "ln_calla_taken"
+                    },
+                    {
+                      flag: "ln_calla"
+                    },
+                    {
+                      flag: "ks_calla"
+                    },
+                    {
+                      flag: "ln_done"
+                    }
+                  ]
+                }
+              },
+              {
+                all: [
+                  {
+                    not: {
+                      dead: "npc_sh_05"
+                    }
+                  },
+                  {
+                    any: [
+                      {
+                        flag: "ks_calla",
+                        eq: "free"
+                      },
+                      {
+                        flag: "ln_calla",
+                        eq: "freed"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            not: {
+              all: [
+                {
+                  flag: "ln_calla",
+                  eq: "freed"
+                },
+                {
+                  not: {
+                    any: [
+                      {
+                        flag: "ln_openfield",
+                        eq: "evicted"
+                      },
+                      {
+                        flag: "ln_openfield",
+                        eq: "guild"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
     },
     {
       def: "npc_sh_08",
@@ -1474,6 +1594,17 @@ export const shale: MapDef = {
             not: {
               flag: "tam_home"
             }
+          },
+          {
+            not: {
+              flag: "tam_left",
+              eq: "door"
+            }
+          },
+          {
+            not: {
+              flag: "a3_tamsin_dead"
+            }
           }
         ]
       }
@@ -1586,6 +1717,298 @@ export const shale: MapDef = {
       x: 50,
       y: 25,
       facing: 3
+    },
+    {
+      def: "npc_sh_01",
+      id: "npc_sh_01_a3",
+      x: 45,
+      y: 16,
+      facing: 2,
+      dialogue: "d_a3_ada",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              dead: "npc_sh_01"
+            }
+          },
+          {
+            not: {
+              flag: "ks_ada",
+              eq: "dead"
+            }
+          },
+          {
+            not: {
+              flag: "ks_ada",
+              eq: "resigns"
+            }
+          },
+          {
+            not: {
+              all: [
+                {
+                  flag: "a3_sh_fight"
+                },
+                {
+                  not: {
+                    flag: "a3_sh_after"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_sh_01",
+      id: "npc_sh_01_step",
+      x: 42,
+      y: 22,
+      facing: 2,
+      dialogue: "d_a3_ada",
+      schedule: [
+        {
+          from: 7,
+          to: 19,
+          spot: "office_step",
+          activity: "idle"
+        },
+        {
+          from: 19,
+          to: 23,
+          spot: "saloon_table",
+          activity: "drink"
+        },
+        {
+          from: 23,
+          to: 7,
+          spot: "home_e",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            flag: "ks_ada",
+            eq: "resigns"
+          },
+          {
+            flag: "a3_shale",
+            eq: "company"
+          },
+          {
+            not: {
+              dead: "npc_sh_01"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_sh_02",
+      id: "npc_sh_02_a3",
+      x: 43,
+      y: 18,
+      facing: 1,
+      dialogue: "d_a3_jonah",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "jonah_dead"
+            }
+          },
+          {
+            not: {
+              dead: "npc_sh_02"
+            }
+          },
+          {
+            not: {
+              flag: "a3_shale",
+              eq: "abandoned"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_sh_11",
+      id: "npc_sh_11_a3",
+      x: 40,
+      y: 7,
+      facing: 2,
+      dialogue: "d_a3_militia",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              dead: "npc_sh_11"
+            }
+          },
+          {
+            not: {
+              flag: "a3_shale",
+              eq: "abandoned"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_sh_03",
+      id: "npc_sh_03_a3",
+      x: 12,
+      y: 14,
+      facing: 2,
+      dialogue: "d_a3_mags",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              dead: "npc_sh_03"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_sh_04",
+      id: "npc_sh_04_a3",
+      x: 46,
+      y: 33,
+      facing: 0,
+      dialogue: "d_a3_pike",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              dead: "npc_sh_04"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g7",
+      x: 44,
+      y: 21,
+      facing: 2,
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "ks_ada"
+            }
+          },
+          {
+            not: {
+              dead: "npc_sh_01"
+            }
+          },
+          {
+            not: {
+              dead: "npc_sh_04"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g8",
+      x: 47,
+      y: 21,
+      facing: 2,
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "ks_ada"
+            }
+          },
+          {
+            not: {
+              dead: "npc_sh_01"
+            }
+          },
+          {
+            not: {
+              dead: "npc_sh_04"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g7",
+      id: "npc_a3_g7_desk",
+      x: 45,
+      y: 16,
+      facing: 2,
+      schedule: [],
+      if: {
+        flag: "a3_shale",
+        eq: "company"
+      }
+    },
+    {
+      def: "npc_a3_g8",
+      id: "npc_a3_g8_door",
+      x: 47,
+      y: 21,
+      facing: 2,
+      schedule: [],
+      if: {
+        flag: "a3_shale",
+        eq: "company"
+      }
+    },
+    {
+      def: "npc_a3_g13",
+      x: 44,
+      y: 21,
+      facing: 2,
+      schedule: [],
+      if: {
+        flag: "a3_shale",
+        eq: "dogs"
+      }
+    },
+    {
+      def: "npc_a3_g14",
+      x: 47,
+      y: 21,
+      facing: 2,
+      schedule: [],
+      if: {
+        flag: "a3_shale",
+        eq: "dogs"
+      }
     }
   ],
   triggers: [
@@ -1663,6 +2086,194 @@ export const shale: MapDef = {
           event: "talk",
           data: {
             npc: "tribute_vasha"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_arrive_w",
+      x: 1,
+      y: 23,
+      w: 4,
+      h: 5,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "ks_ada"
+                }
+              },
+              {
+                not: {
+                  dead: "npc_sh_01"
+                }
+              },
+              {
+                not: {
+                  dead: "npc_sh_04"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_buyout"
+            }
+          }
+        ]
+      },
+      text: "Shale again. The pumps, the saloon, the flag that was a sheet once; and two guild hands at the sheriff's door, standing the way people stand who are paid by the day, and a new paper nailed over the old ones.",
+      effects: [
+        {
+          set: "a3_buyout"
+        },
+        {
+          quest: "q_a3_ride",
+          start: true
+        }
+      ]
+    },
+    {
+      id: "a3_arrive_e",
+      x: 59,
+      y: 23,
+      w: 4,
+      h: 5,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "ks_ada"
+                }
+              },
+              {
+                not: {
+                  dead: "npc_sh_01"
+                }
+              },
+              {
+                not: {
+                  dead: "npc_sh_04"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_buyout"
+            }
+          }
+        ]
+      },
+      text: "Shale again. The pumps, the saloon, the flag that was a sheet once; and two guild hands at the sheriff's door, standing the way people stand who are paid by the day, and a new paper nailed over the old ones.",
+      effects: [
+        {
+          set: "a3_buyout"
+        },
+        {
+          quest: "q_a3_ride",
+          start: true
+        }
+      ]
+    },
+    {
+      id: "a3_arrive_c",
+      x: 26,
+      y: 23,
+      w: 12,
+      h: 5,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "ks_ada"
+                }
+              },
+              {
+                not: {
+                  dead: "npc_sh_01"
+                }
+              },
+              {
+                not: {
+                  dead: "npc_sh_04"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_buyout"
+            }
+          }
+        ]
+      },
+      text: "Shale again. The pumps, the saloon, the flag that was a sheet once; and two guild hands at the sheriff's door, standing the way people stand who are paid by the day, and a new paper nailed over the old ones.",
+      effects: [
+        {
+          set: "a3_buyout"
+        },
+        {
+          quest: "q_a3_ride",
+          start: true
+        }
+      ]
+    },
+    {
+      id: "a3_street_after",
+      x: 24,
+      y: 17,
+      w: 32,
+      h: 12,
+      once: false,
+      if: {
+        all: [
+          {
+            flag: "a3_sh_fight"
+          },
+          {
+            not: {
+              flag: "a3_sh_after"
+            }
+          },
+          {
+            not: {
+              flag: "ks_ada"
+            }
+          },
+          {
+            all: [
+              {
+                dead: "npc_a3_g7"
+              },
+              {
+                dead: "npc_a3_g8"
+              }
+            ]
+          }
+        ]
+      },
+      effects: [
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_street",
+            name: "Shale"
           }
         }
       ]

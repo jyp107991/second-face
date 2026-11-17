@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { DIALOGUES, QUESTS } from '../src/content';
+import { DIALOGUES, MAPS, NPCS, QUESTS } from '../src/content';
 import { newGameState } from '../src/engine/core/state';
 import { DialogueRunner } from '../src/engine/dialogue/dialogue';
 import { addItem, countItem, equip, makeItem } from '../src/engine/inventory/inventory';
 import { QuestEngine } from '../src/engine/quest/quest';
 import { test as cond } from '../src/engine/world/logic';
+import { regenerate } from './map_gen';
 
 /** Play a conversation by choosing options whose text starts with the given prefixes, in order. */
 function talk(id: string, g: ReturnType<typeof newGameState>, q: QuestEngine, picks: string[]): DialogueRunner {
@@ -684,7 +685,9 @@ describe('The Sink: high water, the clinic, the Pale', () => {
     g.world.knowledge.sk_schedule_known = true;
     talk('d_sk_dray', g, q, ['The pumps. Spring. You want them.', 'With me in front. Now.', '(Go.)']);
     expect(g.flags.sk_fight_pumps).toBe(true);
-    expect(cond({ hostileIf: { any: [{ flag: 'md_fight' }, { flag: 'sk_fight_pumps' }] } } as never, g)).toBe(false);
+    // the pump house's two wardens turn on the walk to the pumps, and only they: the Precinct's other wardens do not
+    for (const w of ['npc_sk_w1', 'npc_sk_w2']) expect(cond(NPCS[w].hostileIf!, g), w).toBe(true);
+    expect(NPCS.npc_md_01.hostileIf && cond(NPCS.npc_md_01.hostileIf, g)).toBeFalsy();
     g.npcs['md_sink/npc_sk_w1'] = { dead: true } as never;
     g.npcs['md_sink/npc_sk_w2'] = { dead: true } as never;
     talk('d_sk_dray', g, q, ['(Leave them to it.)']);
@@ -1005,6 +1008,15 @@ describe('The Stacks: the flat and the roof', () => {
     talk('d_st_hester', g, q, ['(Pay. 150 Tolls)', 'That\'s all.']);
     expect(g.flags.st_flat).toBe('paid');
     expect(g.pc.inventory.tolls).toBe(50);
+  });
+
+  it('the Stacks\' three maps are their generator\'s, byte for byte, and the street\'s barks name the committee by its own name', () => {
+    const maps = regenerate('gen_md_stacks.py');
+    expect(maps.map((m) => m.map)).toEqual(['md_stacks', 'md_stacks_9', 'md_stacks_roof']);
+    for (const m of maps) expect(m.generated, m.map).toBe(m.committed);
+    const barks = ['md_stacks', 'md_stacks_9'].flatMap((id) => (MAPS[id].extras ?? []).flatMap((e) => e.barks ?? []));
+    const chair = NPCS.npc_st_01.name.split(' ')[0];
+    expect(barks.filter((b) => /committee/i.test(b) && b.includes(chair))).toHaveLength(2);
   });
 });
 

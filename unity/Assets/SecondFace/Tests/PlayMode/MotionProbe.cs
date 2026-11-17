@@ -484,8 +484,14 @@ namespace SecondFace.Tests
                     {
                         var kd = Flat(kn - 0.5f * (h + an)); var fd = Flat(toe - an);
                         if (kd.sqrMagnitude < 1e-4f || fd.sqrMagnitude < 1e-6f) return 0f;
-                        // + in: the knee pointing inside the foot's line
-                        return Vector3.SignedAngle(fd, kd, Vector3.up) * -side;
+                        // + in: the knee pointing inside whichever of the body's front and its foot's line is further in, so it
+                        // may point anywhere between the two (K5 ≤ F3s + 10° on a turned-out foot's line). Against the foot's own
+                        // line only until 2026-11-17: a real relaxed knee points ahead while the foot turns out 10-28°, so real
+                        // people read "in" by their toe-out and 8 of 13 quiet-standing captures failed it
+                        // (docs/qa/motion_calibration.md §4)
+                        var knee = Vector3.SignedAngle(fwd, kd, Vector3.up) * -side;
+                        var foot = Vector3.SignedAngle(fwd, fd, Vector3.up) * -side;
+                        return knee - Mathf.Max(0f, foot);
                     }
                     if (flexL >= 10f) Add("K5", Track(hipL, kneeL, ankleL, toeL, -1f));
                     if (flexR >= 10f) Add("K5", Track(hipR, kneeR, ankleR, toeR, 1f));
@@ -580,6 +586,9 @@ namespace SecondFace.Tests
             return $"{d[12]:0},{d[13]:0},{d[14]:0.0},{d[15]:0.0},{d[4]:0.0},{d[10]:0.0},{d[5]:0.0},{d[11]:0.0},{d[1]:0.000},{d[3]:0.000}";
         }
         private readonly float[] _footLow = new float[2];
+        /// <summary>Each foot's lowest sole height's vertical speed this sample (m/s): a foot bears weight only while its sole
+        /// neither rises nor falls (W6).</summary>
+        private readonly float[] _footLowV = new float[2];
         /// <summary>Each hand's deepest point in the game's skin at each step of the arm clearance (cm; ArmClearance.HandDepth).</summary>
         private string HoldTrace()
         {
@@ -694,17 +703,29 @@ namespace SecondFace.Tests
                     var low = float.MaxValue;
                     for (var i = 0; i < v.Length; i++) if (_seg[i] == (byte)part) low = Mathf.Min(low, v[i].y);
                     if (low < float.MaxValue && low - g < lowest) { lowest = low - g; lowestSide = side; }
-                    if (low < float.MaxValue) _footLow[side] = low - g;
+                    if (low < float.MaxValue)
+                    {
+                        _footLowV[side] = _soleT > 0f && _clock > _soleT ? (low - g - _footLow[side]) / (_clock - _soleT) : 0f;
+                        _footLow[side] = low - g;
+                    }
                     // the skate on fixed points of the sole (its heel and its ball: a rolling foot's lowest point moves along
-                    // the foot as a real one's does, a fixed point down on the ground does not move)
+                    // the foot as a real one's does, a fixed point down on the ground does not move), counted only while the
+                    // foot bears weight, as W6 is (its slowest sole point under 0.5 m/s): a swing passes 1-2 cm over the floor
+                    // at 3-5 m/s (Winter 1992; Moosabhoy et al. 2006), and a real walker failed W1 by that alone
+                    // (docs/qa/motion_calibration.md §4, 2026-11-17)
+                    if (_soleT > 0f && _clock > _soleT)
+                        for (var q = 0; q < 2; q++)
+                        {
+                            var j = _solePoint[side * 2 + q];
+                            if (j >= 0) still[side] = Mathf.Min(still[side], Flat(v[j] - _sole[side * 2 + q]).magnitude / (_clock - _soleT));
+                        }
                     for (var q = 0; q < 2; q++)
                     {
                         var j = _solePoint[side * 2 + q];
                         if (j < 0) continue;
                         var h = v[j].y - g;
                         var slot = side * 2 + q;
-                        if (_soleT > 0f && _clock > _soleT) still[side] = Mathf.Min(still[side], Flat(v[j] - _sole[slot]).magnitude / (_clock - _soleT));
-                        if (h < 0.025f && _soleH[slot] < 0.025f && _soleT > 0f && _clock > _soleT)
+                        if (h < 0.025f && _soleH[slot] < 0.025f && _soleT > 0f && _clock > _soleT && still[side] < 0.5f)
                         {
                             var speed = Flat(v[j] - _sole[slot]).magnitude / (_clock - _soleT);
                             Add("W1", speed * 100f);
@@ -713,9 +734,12 @@ namespace SecondFace.Tests
                         _sole[slot] = v[j]; _soleH[slot] = h;
                     }
                 }
-                // the stance's height: the lower foot's sole, while it bears weight (nearly still: not a swing, not a jog's
-                // flight, when both feet are off the ground and moving)
-                if (lowestSide >= 0 && still[lowestSide] < 0.5f) Add("W6", lowest * 100f);
+                // the stance's height: the lower foot's sole, while it bears weight: nearly still (not a swing, not a jog's
+                // flight, when both feet are off the ground and moving) and neither rising nor falling (not a toe-off: real
+                // joggers' feet pass under 0.5 m/s across the ground as the heel and then the ball lift, and read 3.1-4.5 cm at
+                // p98 under the stillness alone, on their own skeletons; 0.2-1.4 cm with the sole's vertical speed under
+                // 0.2 m/s as well, and real walkers 0.7-1.3 either way: docs/PEOPLE_MOTION.md W6, 2026-11-17)
+                if (lowestSide >= 0 && still[lowestSide] < 0.5f && Mathf.Abs(_footLowV[lowestSide]) < 0.2f) Add("W6", lowest * 100f);
                 // the soles' trace (the gate's own heel and ball points, over the ground, and how fast each moves) beside
                 // what the foot plant saw, frame by frame
                 if (TracePath != null && State != null && TraceState != null && State.StartsWith(TraceState))

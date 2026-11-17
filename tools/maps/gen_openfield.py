@@ -80,6 +80,8 @@ props += [
     # the well on its pad; the green: a wagon, a water barrel, a notice post
     {'kind': 'pump', 'x': 32, 'y': 22, 'id': 'of_well'}, {'kind': 'barrel', 'x': 34, 'y': 23}, {'kind': 'barrel', 'x': 30, 'y': 23}, {'kind': 'sign', 'x': 27, 'y': 20, 'rot': 1, 'id': 'of_board'},
     {'kind': 'wagon', 'x': 36, 'y': 19, 'rot': 0}, {'kind': 'crate', 'x': 28, 'y': 24}, {'kind': 'blanket', 'x': 35, 'y': 24},
+    # the well post (the city's order is nailed to it on the Long Night) and the store's door board (the guild's notice over it)
+    {'kind': 'sign', 'x': 33, 'y': 24, 'rot': 0, 'id': 'ln_order_post'}, {'kind': 'sign', 'x': 22, 'y': 24, 'rot': 0, 'id': 'ln_store_notice'},
     # the sky-shrine: the fire, benches, the sign of the open sky
     {'kind': 'campfire', 'x': 32, 'y': 15, 'id': 'of_sky_fire'}, {'kind': 'chair', 'x': 30, 'y': 16, 'rot': 1}, {'kind': 'chair', 'x': 34, 'y': 16, 'rot': 3}, {'kind': 'chair', 'x': 30, 'y': 14, 'rot': 1}, {'kind': 'chair', 'x': 34, 'y': 14, 'rot': 3},
     {'kind': 'sign', 'x': 32, 'y': 13, 'rot': 2, 'id': 'of_shrine_sign'},
@@ -92,7 +94,7 @@ props += [
     # the son's hut: a cot, a bench, and under the bench what he keeps
     {'kind': 'cot', 'x': 9, 'y': 20, 'rot': 1}, {'kind': 'table', 'x': 12, 'y': 21, 'id': 'of_tobias_bench'}, {'kind': 'crate', 'x': 12, 'y': 22, 'id': 'of_tobias_crate'}, {'kind': 'barrel', 'x': 9, 'y': 23},
     # the common hall: long tables, benches, cots at the west end, the stove, the hatch to the cellar at the far west
-    {'kind': 'table', 'x': 22, 'y': 35}, {'kind': 'table', 'x': 23, 'y': 35}, {'kind': 'table', 'x': 24, 'y': 35}, {'kind': 'table', 'x': 25, 'y': 35},
+    {'kind': 'table', 'x': 22, 'y': 35, 'id': 'of_hall_table'}, {'kind': 'table', 'x': 23, 'y': 35}, {'kind': 'table', 'x': 24, 'y': 35}, {'kind': 'table', 'x': 25, 'y': 35},
     {'kind': 'chair', 'x': 22, 'y': 34, 'rot': 2}, {'kind': 'chair', 'x': 24, 'y': 34, 'rot': 2}, {'kind': 'chair', 'x': 23, 'y': 36, 'rot': 0}, {'kind': 'chair', 'x': 25, 'y': 36, 'rot': 0},
     {'kind': 'cot', 'x': 14, 'y': 33, 'rot': 1}, {'kind': 'cot', 'x': 14, 'y': 36, 'rot': 1}, {'kind': 'cot', 'x': 17, 'y': 33, 'rot': 1}, {'kind': 'cot', 'x': 17, 'y': 36, 'rot': 1},
     {'kind': 'stove', 'x': 27, 'y': 33}, {'kind': 'barrel', 'x': 27, 'y': 38}, {'kind': 'shelf', 'x': 28, 'y': 36, 'rot': 3},
@@ -116,6 +118,24 @@ props += [
     {'kind': 'sign', 'x': 3, 'y': 25, 'rot': 1}, {'kind': 'sign', 'x': 60, 'y': 30, 'rot': 3}, {'kind': 'lamp_post', 'x': 30, 'y': 25}, {'kind': 'lamp_post', 'x': 20, 'y': 30}, {'kind': 'lamp_post', 'x': 41, 'y': 30},
     {'kind': 'dead_tree', 'x': 5, 'y': 16}, {'kind': 'cactus', 'x': 2, 'y': 40}, {'kind': 'rock', 'x': 61, 'y': 50}, {'kind': 'rock_small', 'x': 3, 'y': 6},
 ]
+
+# the Long Night (B5d): from the call to its dawn the envoys are here and the usual day is not; after it, Openfield is what
+# the night left (dialogue/ln_longnight.ts; story/B5d_NOTES_SECRET.md)
+LN_ON = {'all': [{'flag': 'ln_called'}, {'not': {'flag': 'ln_done'}}]}
+OF_IS = lambda *v: {'any': [{'flag': 'ln_openfield', 'eq': x} for x in v]}
+# after an eviction that took the Choir's people away (relocated on schedule, or removed as property), their houses are empty
+CHOIR_STAYS = {'not': {'any': [{'flag': 'ln_people', 'eq': 'removed'}, {'flag': 'ln_people', 'eq': 'relocated'}]}}
+MASON_HERE = {'all': [{'not': LN_ON}, {'not': {'any': [{'flag': 'ks_mason', 'eq': 'dead'}, {'flag': 'ks_mason', 'eq': 'exiled'}]}}, {'not': OF_IS('evicted', 'guild')}]}
+PETRA_HERE = {'all': [{'not': LN_ON}, {'not': {'flag': 'ln_petra_taken'}}, {'not': OF_IS('evicted', 'guild')}, {'not': {'dead': 'npc_of_02'}}, {'not': {'flag': 'a3_unwritten', 'eq': 'with_you'}}]}  # B6g: not once killed at Knock; B6l: gone east to the Spire once turned
+CAR_CARRICK = {'all': [{'flag': 'rc_line', 'eq': 'guild'}, {'not': {'flag': 'rc_pilot'}}, {'not': {'flag': 'rc_box_nospare'}}]}
+LN_ARRIVE = {'all': [{'flag': 'ln_called'}, {'not': {'flag': 'ln_calla_taken'}}, {'not': {'flag': 'ln_done'}}]}
+CAME = lambda f: {'all': [LN_ON, {'flag': f}]}
+# the night goes on after a fight at midnight once the other side's three are down (the trigger must not reopen the night mid-fight)
+DEAD3 = lambda a, b, c: {'all': [{'dead': a}, {'dead': b}, {'dead': c}]}
+LN_FIGHT_OVER = {'any': [{'not': {'flag': 'ln_midnight_fought'}}, {'all': [{'flag': 'ln_riders_fight'}, DEAD3('npc_ln_r1', 'npc_ln_r2', 'npc_ln_r3')]}, {'all': [{'flag': 'ln_wardens_fight'}, DEAD3('npc_ln_w1', 'npc_ln_w2', 'npc_ln_w3')]}]}
+LN_ARRIVE_TEXT = 'Openfield, on the eve of its Long Night. On the lane east, the guild\'s wagons drawn up in a line with their beds empty, riders on bikes, and in the lee of them a folding chair with an old woman on it under a rug. At the west end, a line of wardens in the Precinct\'s grey, very straight, and a captain by the well, where a paper with the city\'s seal is nailed to the post. And on the green, as you come, the wardens reading the first name off the paper aloud, CALLA, SISTER, OF SHALE, and two of them walking a woman in a grey scarf out of the shrine with her bag still on her shoulder, toward a cart on the west track. She sees you and shakes her head, once: don\'t. The Choir is sitting down in front of the seed store, the old ones in front.'
+LN_ARRIVE_FX = [{'set': 'ln_calla_taken'}, {'set': 'ln_at_openfield'}, {'quest': 'q_a2_longnight', 'start': True}, {'quest': 'q_ln_calla', 'start': True}, {'learn': 'ln_calla_west'},
+                {'decision': {'id': 'ln_calla_taken_first', 'text': 'At Openfield, on the eve of its Long Night, the city\'s wardens read Sister Calla\'s name off their order first and took her west to the Line.'}}]
 
 openfield = {
     'id': 'openfield', 'name': 'Openfield', 'seed': 37, 'settlement': 'openfield',
@@ -152,6 +172,9 @@ openfield = {
         'of_burial_sign': {'dialogue': 'd_of_burial', 'name': 'The burial ground'},
         'of_tobias_bench': {'dialogue': 'd_of_bench', 'name': 'The bench'},
         'of_windpump': {'dialogue': 'd_of_windpump', 'name': 'The dead windpump'},
+        'ln_order_post': {'dialogue': 'd_ln_order', 'name': 'The well post'},
+        'ln_store_notice': {'dialogue': 'd_ln_notice', 'name': 'The store door'},
+        'of_hall_table': {'dialogue': 'd_ln_table', 'name': 'The long table'},
     },
     'containers': {
         'of_seed_crate': {'name': 'Seed Crate', 'items': [['c_fruit', 2]], 'lock': 30},
@@ -178,19 +201,39 @@ openfield = {
         'lane_w': {'x': 8, 'y': 27}, 'lane_e': {'x': 56, 'y': 28},
     },
     'npcs': [
-        {'def': 'npc_of_01', 'x': 42, 'y': 21, 'facing': 0},
-        {'def': 'npc_of_02', 'x': 32, 'y': 17, 'facing': 2},
+        {'def': 'npc_of_01', 'x': 42, 'y': 21, 'facing': 0, 'if': MASON_HERE},
+        {'def': 'npc_of_02', 'x': 32, 'y': 17, 'facing': 2, 'if': PETRA_HERE},
         {'def': 'npc_of_03', 'x': 55, 'y': 21, 'facing': 1, 'if': {'any': [{'not': {'flag': 'ash_joined'}}, {'all': [{'any': [{'flag': 'ash_left'}, {'flag': 'ash_gone'}]}, {'not': {'inParty': 'npc_of_03'}}]}]}},
-        {'def': 'npc_of_04', 'x': 10, 'y': 9, 'facing': 2},
-        {'def': 'npc_of_05', 'x': 41, 'y': 36, 'facing': 0},
-        {'def': 'npc_of_06', 'x': 21, 'y': 20, 'facing': 2},
-        {'def': 'npc_of_07', 'x': 22, 'y': 7, 'facing': 2},
+        {'def': 'npc_of_04', 'x': 10, 'y': 9, 'facing': 2, 'if': CHOIR_STAYS},
+        {'def': 'npc_of_05', 'x': 41, 'y': 36, 'facing': 0, 'if': CHOIR_STAYS},
+        {'def': 'npc_of_06', 'x': 21, 'y': 20, 'facing': 2, 'if': CHOIR_STAYS},
+        {'def': 'npc_of_07', 'x': 22, 'y': 7, 'facing': 2, 'if': CHOIR_STAYS},
         {'def': 'npc_of_08', 'x': 18, 'y': 48, 'facing': 0},
-        {'def': 'npc_of_09', 'x': 37, 'y': 34, 'facing': 1},
-        {'def': 'npc_of_10', 'x': 45, 'y': 34, 'facing': 3},
+        {'def': 'npc_of_09', 'x': 37, 'y': 34, 'facing': 1, 'if': CHOIR_STAYS},
+        {'def': 'npc_of_10', 'x': 45, 'y': 34, 'facing': 3, 'if': CHOIR_STAYS},
         {'def': 'npc_of_11', 'x': 56, 'y': 28, 'facing': 3, 'if': {'not': {'flag': 'of_corso_gone'}}},
         # the orchard's two thieves, if they went to the Choir (q_orchard), live in the tents now
         {'def': 'npc_or_04', 'id': 'of_kip', 'x': 54, 'y': 44, 'facing': 0, 'schedule': [{'from': 7, 'to': 18, 'spot': 'field_d_work', 'activity': 'work'}, {'from': 18, 'to': 22, 'spot': 'camp_sit', 'activity': 'idle'}, {'from': 22, 'to': 7, 'spot': 'camp_tent_a', 'activity': 'sleep'}], 'dialogue': 'd_of_kip', 'if': {'flag': 'or_thieves_choir'}},
+        # the Long Night (B5d): the Elder at the store's door, his daughter at the shrine, the guild and the Concern on the lane, the
+        # city at the well and the west end, and whoever came for the player's side
+        {'def': 'npc_of_01', 'id': 'ln_mason', 'x': 22, 'y': 25, 'facing': 2, 'schedule': [], 'dialogue': 'd_ln_mason', 'if': LN_ON},
+        {'def': 'npc_of_02', 'id': 'ln_petra', 'x': 31, 'y': 16, 'facing': 2, 'schedule': [], 'dialogue': 'd_ln_petra', 'if': {'all': [LN_ON, {'not': {'flag': 'ln_petra_taken'}}]}},
+        {'def': 'npc_nb_01', 'id': 'ln_sarr', 'x': 53, 'y': 27, 'facing': 3, 'schedule': [], 'dialogue': 'd_ln_sarr', 'if': {'all': [LN_ON, {'not': {'flag': 'ln_sarr', 'eq': 'dead'}}]}},
+        {'def': 'npc_dk_05', 'id': 'ln_roux', 'x': 53, 'y': 29, 'facing': 3, 'schedule': [], 'dialogue': 'd_ln_roux', 'if': LN_ON},
+        {'def': 'npc_ln_r1', 'x': 57, 'y': 26, 'facing': 3, 'if': {'any': [LN_ON, OF_IS('guild')]}},
+        {'def': 'npc_ln_r2', 'x': 57, 'y': 28, 'facing': 3, 'if': {'any': [LN_ON, OF_IS('guild')]}},
+        {'def': 'npc_ln_r3', 'x': 58, 'y': 27, 'facing': 3, 'if': LN_ON},
+        {'def': 'npc_md_01', 'id': 'ln_lowe', 'x': 31, 'y': 25, 'facing': 1, 'schedule': [], 'dialogue': 'd_ln_lowe', 'if': LN_ON},
+        {'def': 'npc_ln_w1', 'x': 8, 'y': 26, 'facing': 1, 'if': {'any': [LN_ON, OF_IS('evicted')]}},
+        {'def': 'npc_ln_w2', 'x': 8, 'y': 28, 'facing': 1, 'if': {'any': [LN_ON, OF_IS('evicted')]}},
+        {'def': 'npc_ln_w3', 'x': 9, 'y': 27, 'facing': 1, 'if': LN_ON},
+        {'def': 'npc_rc_02', 'id': 'ln_chela', 'x': 16, 'y': 28, 'facing': 1, 'schedule': [], 'dialogue': 'd_ln_chela', 'if': {'all': [CAME('ln_came_halts'), {'not': {'flag': 'rc_kettle_fight'}}]}},
+        {'def': 'npc_rc_11', 'id': 'ln_yaw', 'x': 19, 'y': 24, 'facing': 2, 'schedule': [], 'dialogue': 'd_ln_yaw', 'if': CAME('ln_came_twelve')},
+        {'def': 'npc_tm_02', 'id': 'ln_desmond', 'x': 24, 'y': 28, 'facing': 0, 'schedule': [], 'dialogue': 'd_ln_desmond', 'if': CAME('ln_came_four')},
+        {'def': 'npc_hs_02', 'id': 'ln_maren', 'x': 26, 'y': 27, 'facing': 0, 'schedule': [], 'dialogue': 'd_ln_maren', 'if': CAME('ln_came_shift')},
+        {'def': 'npc_hs_03', 'id': 'ln_rafe', 'x': 12, 'y': 30, 'facing': 1, 'schedule': [], 'dialogue': 'd_ln_rafe', 'if': CAME('ln_came_shift_armed')},
+        {'def': 'npc_rd_02', 'id': 'ln_vasha', 'x': 59, 'y': 28, 'facing': 3, 'schedule': [], 'dialogue': 'd_ln_vasha', 'if': {'all': [LN_ON, {'any': [{'flag': 'ln_came_vasha'}, {'flag': 'ln_against_vasha'}]}, {'not': {'flag': 'rustdogs_hostile'}}]}},
+        {'def': 'npc_sh_05', 'id': 'ln_calla_of', 'x': 33, 'y': 16, 'facing': 2, 'schedule': [], 'dialogue': 'd_ln_calla', 'if': {'all': [{'flag': 'ln_calla', 'eq': 'freed'}, {'not': OF_IS('evicted', 'guild')}]}},
         {'def': 'npc_or_05', 'id': 'of_mote', 'x': 56, 'y': 45, 'facing': 0, 'schedule': [{'from': 7, 'to': 18, 'spot': 'field_d_work', 'activity': 'work'}, {'from': 18, 'to': 22, 'spot': 'camp_fire', 'activity': 'idle'}, {'from': 22, 'to': 7, 'spot': 'camp_tent_b', 'activity': 'sleep'}], 'dialogue': 'd_of_mote', 'if': {'flag': 'or_thieves_choir'}},
     ],
     'triggers': [
@@ -198,6 +241,15 @@ openfield = {
         {'id': 'arrive_e', 'x': 57, 'y': 24, 'w': 6, 'h': 8, 'text': 'Openfield, from the east: a burial ground of cairns under a dead windpump, and past it the green rows the Choir has coaxed out of the glass.', 'effects': [{'learn': 'seen_openfield'}, {'learn': 'loc_openfield'}]},
         {'id': 'fields', 'x': 6, 'y': 3, 'w': 51, 'h': 11, 'text': 'The fields. Every third row is grey: leaves curled and spotted, stalks gone soft at the root, the smell of something sweet going wrong. The rows between are green and do not know yet.', 'effects': [{'learn': 'seen_blight'}]},
         {'id': 'burial', 'x': 49, 'y': 12, 'w': 12, 'h': 13, 'text': 'The burial ground: cairns in rows under the open sky, no names on them, a dead windpump turning for nobody. One grave is new.', 'effects': [{'learn': 'seen_burial_ground'}]},
+        {'id': 'ln_arrive', 'x': 1, 'y': 18, 'w': 62, 'h': 14, 'if': {'all': [LN_ARRIVE, {'not': CAR_CARRICK}]}, 'text': LN_ARRIVE_TEXT, 'effects': [{'set': 'ln_car', 'value': 'west_halt'}] + LN_ARRIVE_FX},
+        {'id': 'ln_arrive_through', 'x': 1, 'y': 18, 'w': 62, 'h': 14, 'if': {'all': [LN_ARRIVE, CAR_CARRICK]}, 'text': LN_ARRIVE_TEXT, 'effects': [{'set': 'ln_car', 'value': 'carrick'}] + LN_ARRIVE_FX},
+        {'id': 'ln_back', 'x': 1, 'y': 18, 'w': 62, 'h': 14, 'once': False, 'if': {'all': [{'flag': 'ln_called'}, {'flag': 'ln_calla_taken'}, {'not': {'flag': 'ln_at_openfield'}}]}, 'effects': [{'set': 'ln_at_openfield'}]},
+        {'id': 'ln_night', 'x': 1, 'y': 1, 'w': 62, 'h': 54, 'once': False, 'if': {'all': [{'flag': 'ln_mustered'}, {'not': {'flag': 'ln_done'}}, {'hour': {'from': 21, 'to': 5}}, LN_FIGHT_OVER]}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_ln_night', 'name': 'The Long Night'}}]},
+        {'id': 'ln_after_stands', 'x': 1, 'y': 18, 'w': 62, 'h': 14, 'if': {'all': [{'flag': 'ln_done'}, OF_IS('stands')]}, 'text': 'Openfield after its Long Night: the rows green, the store\'s door with the Choir\'s tally board back on it, the order still nailed to the well where nobody has bothered to take it down, and children playing a game on the green in which half of them sit and the other half ride round them.'},
+        {'id': 'ln_after_scorched', 'x': 1, 'y': 18, 'w': 62, 'h': 14, 'if': {'all': [{'flag': 'ln_done'}, OF_IS('scorched')]}, 'text': 'Openfield after its Long Night: half its rows black to the root where they were burned, the other half green, the halls standing, and people on their knees in the ash already, turning it in.'},
+        {'id': 'ln_after_guild', 'x': 1, 'y': 18, 'w': 62, 'h': 14, 'if': {'all': [{'flag': 'ln_done'}, OF_IS('guild')]}, 'text': 'Openfield after its Long Night: the guild\'s half-moon on the store, the Concern\'s stencil on every crate in the yard, guild riders on the lane, and the young ones working the rows in new grey with a number on the back.'},
+        {'id': 'ln_after_evicted', 'x': 1, 'y': 18, 'w': 62, 'h': 14, 'if': {'all': [{'flag': 'ln_done'}, OF_IS('evicted')]}, 'text': 'Openfield after its Long Night: empty. The store under the city\'s seal, the halls shut, the green trodden flat by carts, two wardens at the west end keeping a holding that has nobody on it to keep.'},
+        {'id': 'ln_after_burned', 'x': 1, 'y': 18, 'w': 62, 'h': 14, 'if': {'all': [{'flag': 'ln_done'}, OF_IS('burned')]}, 'text': 'Openfield after its Long Night: the store and the long hall burned to their footings, the rows black, the well standing in the middle of it with the city\'s order still on its post, exactly right.'},
         {'id': 'hatch', 'x': 13, 'y': 38, 'w': 2, 'h': 1, 'once': False, 'if': {'not': {'flag': 'of_cellar_open'}}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_of_cellar', 'name': 'The hatch'}}]},
     ],
     'extras': [
