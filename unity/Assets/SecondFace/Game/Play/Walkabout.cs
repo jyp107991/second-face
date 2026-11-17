@@ -643,7 +643,9 @@ namespace SecondFace.Game.Play
         /// What opens a screen or moves the player waits for the conversation to close first.</summary>
         private void OnEvent(string name, Newtonsoft.Json.Linq.JToken data)
         {
-            var who = _speaking;
+            // the person being talked to: only while their conversation is open (a quest's or a trigger's effect later has
+            // nobody across from the player, as the web game's dialogue host had it)
+            var who = Conversation != null && Conversation.IsOpen ? _speaking : null;
             switch (name)
             {
                 case "camp": StartCoroutine(AfterTalk(() => OpenCamp(true))); break;
