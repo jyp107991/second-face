@@ -2264,6 +2264,23 @@ mid-range Android phone; deployed to Pages.
             beat; the "no ending locked out by earlier choices" promise checked key by key (one gap found in one rare history,
             reported in the story notes); no conversation in the game that cannot be left; every flag read is written.
             `tests/b6w.test.ts` (16), `tests/b6w_routes.test.ts` (22 + 1 known gap), `tests/b6w_fixture.ts`. Next: B7.
+      - [x] B6 **runtime** (Unity, branch side/core, 2026-11-17; mechanisms only): the content exported (every registry, Act 3
+            included); after a fight the fallen are dead under their placements, a lost fight's distinct `beaten` outcomes apply
+            once and the map's triggers under the player are tested at once (Core `FightAftermath`, `Triggers.CheckNow`); a
+            conversation asked with a move opens after the arrival; the light turns with a conversation's jumps of the clock
+            (Core `SkyTurn`; a first line's own jump was lost before); a place's dressing by the story (Core `Dressing`, the
+            optional `dressing.json` registry, Game `PlaceDressing` with stand-ins, the city shader's `_SF_CityDark`, smoke over
+            the sky); the closing pages on their own screen with a still beside each page, a save at each page turned and a
+            resume on load, the credits from `Game/Resources/credits.txt` (a copy of this repository's docs/CREDITS.md, held
+            equal by EditMode `StoryRuntimeTests`), then the title offering the story's named save first (Core `NamedSave`,
+            slot `steps`). A room's keeper now counts across act-gated placements (Core `Owners`). EditMode `StoryRuntimeTests`
+            (9, pass under dotnet test), PlayMode `StoryRuntimePlayTests` (6, compiled, not yet run). Editor queue: run the
+            PlayMode suite; build the places the last act needs (the Spire close and its new interior stamped into the world,
+            so their triggers, spots and dressing anchors stand); rebuild the UI string table (three new keys); let the editor
+            import the new scripts, the credits text asset and the city shader's new global. Not done: the slides' own people
+            posed in their end states and the player aged in a still, the photo-mode stills of the first and last pages, the
+            steps' `photo` event; a content gap: `an_hall` (its door's goto) has no world place (EditMode
+            `EveryGotoInTheContentLandsOnARealMapSpawnAndPlace`).
 - [ ] B7 **Systemic depth + presentation**: ruins templates, bounty/gig templates, rare encounters, music
       and ambience, title art, menus, credits, settings, tips.
 - [ ] B8 **Balance, performance, deploy**: economy sim pass, difficulty, accessibility, Android perf
