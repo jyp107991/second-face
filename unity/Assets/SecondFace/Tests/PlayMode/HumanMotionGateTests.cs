@@ -872,12 +872,14 @@ namespace SecondFace.Tests
                 if (arms is "rifle" or "pistol")
                 {
                     var aim = arms == "rifle" ? "aim" : "aim_pistol";
-                    foreach (var v in views) if (v != null) runner.StartCoroutine(v.OnAim(v.Body.position + ahead));
+                    // the aim held as the game holds it (a held shot: overwatch), then turned onto a target and fired
+                    foreach (var v in views) if (v != null) { v.Unit.Watch = new Watch(); v.OnHold(Watch.Overwatch); runner.StartCoroutine(v.OnAim(v.Body.position + ahead)); }
                     yield return Wait(1.6f);
                     yield return Measure($"combat:{aim}:{arms}", 2.5f, null);
                     yield return Shot("aim_" + arms, 0);
                     yield return Measure($"combat:{aim}:{arms}_shot", 0f, v => Shoot(v, 1));
                     yield return Measure($"combat:{aim}:{arms}_burst", 0f, v => Shoot(v, 3));
+                    foreach (var v in views) if (v != null) v.Unit.Watch = null;
                     yield return Wait(2f);
                     yield return Measure($"combat:reload:{arms}", 0f, v => v.OnReload());
                     if (arms == "rifle")

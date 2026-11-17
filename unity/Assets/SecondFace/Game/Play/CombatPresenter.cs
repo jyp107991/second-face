@@ -204,6 +204,9 @@ namespace SecondFace.Game.Play
         public CombatPace Pace { get; set; } = CombatPace.Normal;
         public bool Theirs { get; }
         public bool Moving => _walking;
+        /// <summary>The pace a walk goes at (m/s; null: the fight's jog). The animation package walks a crouched fighter at
+        /// the captured sneak's pace, so its feet keep to the ground.</summary>
+        public float? Speed { get; set; }
 
         public PlaceholderUnitView(BattleUnit unit, Transform body, MonoBehaviour host, CombatFx fx, Walker walker, Townsperson person, bool theirs)
         {
@@ -241,13 +244,13 @@ namespace SecondFace.Game.Play
             if (_walker != null)
             {
                 _walker.GoTo(goal);
-                _walker.Agent.speed = Mathf.Max(_walker.Agent.speed, Walker.JogSpeed);
+                _walker.Agent.speed = Speed ?? Mathf.Max(_walker.Agent.speed, Walker.JogSpeed);
                 while (_walker != null && _walker.Goal != null && Time.time - t0 < 6f) yield return null;
             }
             else if (_person != null && _person.Agent != null && _person.Agent.enabled && _person.Agent.isOnNavMesh)
             {
                 var pace = _person.Agent.speed;
-                _person.Agent.speed = Walker.JogSpeed;
+                _person.Agent.speed = Speed ?? Walker.JogSpeed;
                 _person.Agent.SetDestination(goal);
                 yield return null;
                 while (_person != null && _person.Agent.pathPending && Time.time - t0 < 2f) yield return null;

@@ -459,7 +459,8 @@ namespace SecondFace.Game.Fighting
         public void Kick(float strength = 1f)
         {
             _kickV += 520f * strength;
-            _hitV += new Vector3(14f, 0f, 0f) * strength * (Held.Arms == Arms.Rifle ? 1.4f : 0.7f);
+            // (the chest rocked back 1-3°: an impulse of ω0 · degrees / 0.6)
+            _hitV += new Vector3(60f, 0f, 0f) * strength * (Held.Arms == Arms.Rifle ? 1.4f : 0.7f);
         }
 
         /// <summary>Struck (A5): the spine, chest and head turned away from where it came from, by where it struck and how
@@ -764,11 +765,8 @@ namespace SecondFace.Game.Fighting
             turn.ToAngleAxis(out var angle, out var axis);
             if (angle > 180f) angle -= 360f;
             angle = Mathf.Clamp(angle, -12f, 12f) * w;
-            var pivot = _right.CentreNow;
-            var bone = _right.Bone;
-            var r = Quaternion.AngleAxis(angle, axis);
-            bone.rotation = r * bone.rotation;
-            bone.position = pivot + r * (bone.position - pivot);
+            // (turned at the wrist itself: the hand stays on the forearm, the grip moves a centimetre at most)
+            _right.Bone.rotation = Quaternion.AngleAxis(angle, axis) * _right.Bone.rotation;
         }
 
         // ------------------------------------------------------------------------------------------- the end

@@ -245,11 +245,15 @@ namespace SecondFace.Tests
                     var done = false;
                     IEnumerator Act()
                     {
+                        // (the aim held as the game holds it between shots: a held shot)
+                        v.Unit.Watch = new Watch();
+                        v.OnHold(Watch.Overwatch);
                         yield return v.OnAim(target);
                         yield return Wait(1.5f);
                         yield return v.OnFire(target + Vector3.up * 1.1f, true, 0, 1);
                         for (var i = 0; i < 3; i++) yield return v.OnFire(target + Vector3.up * 1.1f, true, i, 3);
                         yield return Wait(0.3f);
+                        v.Unit.Watch = null;
                         done = true;
                     }
                     _host.StartCoroutine(Act());
@@ -364,6 +368,13 @@ namespace SecondFace.Tests
                     if (clip.keepOriginalPositionY != (c.Y == RootY.Keep)) wrong.Add($"{c.Name}: Y as captured {clip.keepOriginalPositionY}, the table {c.Y}");
                     if (clip.lockRootRotation == (c.Turn || c.DropTurn)) wrong.Add($"{c.Name}: turn baked {clip.lockRootRotation}");
                 }
+                // the whole take its sidecar describes, at its capture's own rate
+                var frames = side.Value<int?>("frames") ?? 0; var fps = side.Value<float?>("fps") ?? 30f;
+                var imported = AssetDatabase.LoadAllAssetsAtPath(path).OfType<AnimationClip>().FirstOrDefault(x => !x.name.StartsWith("__preview"));
+                if (imported == null) wrong.Add(c.Name + ": no clip imported");
+                else if (frames > 1 && Mathf.Abs(imported.length - (frames - 1) / fps) > 1.5f / fps && Mathf.Abs(imported.length - frames / fps) > 1.5f / fps)
+                    wrong.Add($"{c.Name}: {imported.length:0.00} s long, its sidecar says {frames} frames ({frames / fps:0.00} s)");
+                else if (imported.isLooping != loop) wrong.Add($"{c.Name}: the clip loops {imported.isLooping}, its sidecar {loop}");
             }
             Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
             var ctl = set.Controller as UnityEditor.Animations.AnimatorController;

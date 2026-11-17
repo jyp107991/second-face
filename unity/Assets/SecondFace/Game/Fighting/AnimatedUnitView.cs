@@ -40,7 +40,7 @@ namespace SecondFace.Game.Fighting
 
         private bool _down, _yielded, _holding, _aiming, _rising, _ended, _walking;
         private float _quietFor;   // since the last shot or aim (s), for lowering the weapon
-        private int _blows, _misses;
+        private int _blows, _misses, _moves;
         private string _stance = "stand";
         private string _heldItem;
         private Coroutine _tick;
@@ -149,6 +149,7 @@ namespace SecondFace.Game.Fighting
         public IEnumerator OnMove(Vector3 goal, IReadOnlyList<Vector3> path, bool wait = true)
         {
             if (Body == null) yield break;
+            _moves++;
             Rate();
             _aiming = false; Fighter.ClearAim();
             if (_down || _yielded) { yield return _walk.OnMove(goal, path, wait); yield break; }
@@ -169,6 +170,8 @@ namespace SecondFace.Game.Fighting
                 yield return Fighter.Until("rise_crouch", 0.8f, 4f);
             }
             Fighter.Locomote(true, crouched);
+            // (crouched: at the captured sneak's own pace for this body, so its feet keep to the ground)
+            _walk.Speed = crouched ? (float)SecondFace.Core.World.Stealth.SneakSpeed : (float?)null;
             _walking = !wait;
             yield return _walk.OnMove(goal, path, wait);
             if (wait)
@@ -382,8 +385,17 @@ namespace SecondFace.Game.Fighting
             else
             {
                 if (was == "prone") Fighter.Play("rise_front");
+                else if (was == "crouch" && _host != null && _host.isActiveAndEnabled) _host.StartCoroutine(RiseUnlessMoving(_moves));
                 else Fighter.Play(CombatMotion.Idle(Fighter.Arms), 0.45f);
             }
+        }
+
+        /// <summary>Up out of a crouch: a moment's wait, so a walk that follows at once breaks from the crouch at a run (the
+        /// captured break, OnMove); otherwise up into the stance.</summary>
+        private IEnumerator RiseUnlessMoving(int moves)
+        {
+            yield return Wait(Mathf.Max(0.15f, Secs(0.3f)));
+            if (_moves == moves && !_down && !_yielded && _stance == "stand") Fighter.Play(CombatMotion.Idle(Fighter.Arms), 0.45f);
         }
 
         public IEnumerator OnThrow(IReadOnlyList<Vector3> arc, string item = null)
