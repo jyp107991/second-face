@@ -162,7 +162,7 @@ the game's walk (1.25-1.4 m/s) asks them to be sped up 15-50 %, the edge of `Pac
 (two women walking straight, three men) to set sex-specific limits; the clips' sex is now recorded, so the editor can play
 each sex its own.
 
-## 7. Combat states on real fighters (2026-11-17; proposals, not applied)
+## 7. Combat states on real fighters (2026-11-17; limits accepted for WP2, not applied yet)
 
 COMBAT_ASSETS doubt 3: the gate has no combat states, and fighting stances break quiet standing's limits. Measured here are
 the same measures on real people fighting, by `tools/qa/calibration/combat_states.py` (`motion_calibration_combat.json`).
@@ -204,16 +204,27 @@ What this says against doubt 3 ("both knees bent 14-42°, the head turned 45-90�
 - **Aim**: legs straight (K1 ≤ 2°), the head down to the sights only relative to the chest. It is turned 15-22° and rolled
   11-17° by the cheek on the stock. That is 2 actors with a mimed gun, so it is the thinnest evidence here.
 
-Proposals for the gate (never by loosening quiet standing's limits; applied only while the game shows that state), as
-p2 lower / p98 upper (cap):
-1. **Guard**: K1 p98 ≤ 60 (cap 70), no lower bound; K more bent ≤ 75 (cap 85); H1 ≥ −35 (cap −45), ≤ +12 (cap +18); H2 p98 ≤ 55
-   (cap 65); H3 ≤ 20 (cap 25); F2 heel lift ≤ 10 cm (cap 14); stance width 30-70 cm (cap 20-80); A2 ≥ 100 (cap 90).
-2. **Strike** (transient, caps only): K1 cap 85, K more bent cap 95; H1 −45 to +20; H2 cap 60; H3 cap 25; F2 cap 15 cm.
-3. **Aim** (long gun): K1 p98 ≤ 5 (cap 10); H1 −10 to +5 against the chest's line; H2 ≤ 25 (cap 30); H3 ≤ 20 (cap 25);
-   stance width 20-35 cm; A2 115-145. Thin evidence: to be revisited when a captured rifle take with a real weapon is found.
-4. **Crouch / cover**: K1 p2 ≥ 15, p98 ≤ 150 (cap 155); H1 −50 to +35; H2 p98 ≤ 60 held (a crouch about to leave cover looks
-   round to 93: cap 95 there); F2 ≤ 18 cm (cap 22); stance width 15-55 cm.
-5. The combat set's own stance values are in each clip's `stance` (combat v2 `clip_qa.json`), for the same comparison.
+**Accepted (2026-11-17) as the combat-state limits for WP2** (the editor owner applies them when combat states are added to
+the gate; not applied now). Each limit is the real fighters' p98 (and p2 where a lower bound applies), each cap their max
+(and min), from all the trials of the state pooled. They apply only while the game shows that state, and quiet standing's
+limits are never loosened for them. Values: limit p2 … p98 (cap min … max):
+
+| Measure | Guard (14 trials) | Strike (18, caps matter most) | Aim, long gun (**provisional**: 2 actors, mimed gun) | Crouch / cover (12) |
+|---|---|---|---|---|
+| K1 straighter knee ° | ≤ 67 (81); no lower bound | ≤ 82 (89) | ≤ 2.2 (2.5) | 16.7 … 147 (16.1 … 148) |
+| K more bent ° | ≤ 75.5 (94.5) | ≤ 90.5 (97.1) | ≤ 20.4 (20.7) | ≤ 148 (148) |
+| H1 head pitch ° | −26.9 … +10.3 (−33.0 … +14.0) | −41.9 … +16.8 (−53.3 … +22.9) | −3.0 … +1.2 (−3.0 … +1.6) | −44.7 … +33.8 (−53.3 … +35.4) |
+| H2 head yaw on chest ° | ≤ 55.9 (59.5) | ≤ 56.8 (65.9) | 15.2 … 22.2 (15.1 … 22.9) | ≤ 92.1 (93.2) |
+| H3 head roll ° | ≤ 19.5 (21.5) | ≤ 22.1 (25.7) | 10.6 … 16.6 (10.4 … 16.7) | ≤ 36.7 (45.6) |
+| F2 heel lift, cm | ≤ 9.8 (14.4) | ≤ 13.2 (14.7) | ≤ 1.9 (1.9) | ≤ 17.1 (17.2) |
+| F3w stance width, cm | 21.2 … 70.4 (3.9 … 79.2) | 16.4 … 83.2 (1.3 … 90.5) | 23.3 … 32.8 (23.3 … 33.0) | 18.9 … 50.6 (16.0 … 51.0) |
+| A1 upper arm from hanging ° | ≤ 103 (119) | ≤ 88.5 (112) | 53.2 … 88.8 (50.2 … 90.5) | ≤ 134 (135) |
+| A2 elbow bend ° | 112.8 … 146.9 (109.3 … 149.9) | 83.9 … 140.5 (41.1 … 145.7) | 119.6 … 143.0 (119.5 … 146.6) | ≤ 140.7 (141.5) |
+
+The aim column rests on two actors miming a gun (CMU 79_96, 80_03; the head only from 79_96): it is to be replaced when a
+captured long-gun take with a real weapon is found. The by-sex numbers above show where the pooled limits come from (the
+women's bladed guard sets the guard's K1 bound, the men's tucked chin its H1). The combat set's own stance values are in
+each clip's `stance` (combat `clip_qa.json`) for the same comparison.
 
 ## 8. Sources
 

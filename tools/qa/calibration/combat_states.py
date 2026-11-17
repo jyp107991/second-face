@@ -103,7 +103,7 @@ def per_frame(m, base=None, cmu=False):
 def stats(x):
     x = x[np.isfinite(x)]
     if len(x) < 5: return None
-    return [round(float(np.percentile(x, q)), 1) for q in (2, 50, 98)]
+    return [round(float(np.percentile(x, q)), 1) for q in (2, 50, 98)] + [round(float(x.min()), 1), round(float(x.max()), 1)]   # p2 p50 p98 min max
 
 
 def main():

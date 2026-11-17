@@ -46,7 +46,7 @@ CLIPS = [
     # at their natural cadence (104_35's 74 steps/min out); carry from 70_10 (12.5 lb, 94 steps/min), not 70_01 (75)
     {'name': 'walk', 'src': '07_01', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_b', 'src': '08_01', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_slow', 'src': '07_03', 'loop': 'gait', 'set': 'm'},
     {'name': 'walk_brisk', 'src': '07_12', 'loop': 'gait', 'set': 'm'}, {'name': 'jog', 'src': '35_17', 'loop': 'gait', 'set': 'm'}, {'name': 'jog_b', 'src': '16_35', 'loop': 'gait', 'set': 'm'},
-    {'name': 'run', 'src': '09_01', 'loop': 'gait', 'set': 'm'}, {'name': 'carry', 'src': '70_10', 'loop': 'gait', 'set': 'both'}, {'name': 'sneak', 'src': '136_09', 'loop': 'gait', 'set': 'both'},
+    {'name': 'run', 'src': '09_01', 'loop': 'gait', 'set': 'm'}, {'name': 'carry', 'src': '70_10', 'loop': 'gait', 'set': 'both', 'sex': 'm', 'sex_source': "the take's own file names its subject Male1 (\\\\sashay\\E\\Suitcase\\...\\Male1.ASF); CMU's title records no sex", 'stature_est_m': 1.67}, {'name': 'sneak', 'src': '136_09', 'loop': 'gait', 'set': 'both', 'sex': 'm', 'sex_source': "the take's own file names its subject male (G:\\JayActor3\\...\\male.ASF); CMU's title records no sex", 'stature_est_m': 1.68},
     {'name': 'walk_c', 'src': '104_19', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_slow_b', 'src': '104_02', 'loop': 'gait', 'set': 'm'},
     {'name': 'jog_c', 'src': '104_01', 'loop': 'gait', 'set': 'm'}, {'name': 'run_b', 'src': '104_37', 'loop': 'gait', 'set': 'm'},
     # the standing idle at its real speed (77 at 60 fps: the same frames as before, now 11.2 s, not 5.6). Both fail the
@@ -57,9 +57,10 @@ CLIPS = [
     {'name': 'idle_c', 'src': '111_28', 'loop': 'seam', 'range': (2, 10), 'seam': 1.2, 'set': 'f'}, {'name': 'idle_d', 'src': '113_21', 'loop': 'seam', 'range': (2, 10), 'seam': 1.2, 'set': 'f'},
     {'name': 'walk_f_c', 'src': '113_25', 'loop': 'gait', 'set': 'f'}, {'name': 'jog_f', 'src': '141_02', 'loop': 'gait', 'set': 'f'}, {'name': 'jog_f_b', 'src': '141_03', 'loop': 'gait', 'set': 'f'},
     {'name': 'stretch', 'src': '141_13', 'loop': False, 'range': (0, 6), 'set': 'f'},
-    # the men's stretch and yawn: CMU 143 "Stretch And Yawn" (sex not recorded; 60 fps, listed 120: its jumps fit 58-61; its
-    # skeleton puts the actor at about 1.51 m), for want of any from a man (docs: staging README, v3)
-    {'name': 'stretch_m', 'src': '143_30', 'loop': False, 'range': (0.3, 6.1), 'set': 'm', 'sex': 'unrecorded'}, {'name': 'yawn', 'src': '111_32', 'loop': False, 'range': (0, 6.2), 'set': 'f'},
+    # the men's stretch and yawn: CMU 143 "Stretch And Yawn" (60 fps, listed 120: its C3D header and its jumps say 60). Its own
+    # file labels its subject Male1; its skeleton puts him at about 1.51 m (short for a man: CMU 141, a woman, 1.55; 104 and 07,
+    # men, 1.67 and 1.64): back in the men's set on the label (2026-11-17). carry and sneak: their files label men too
+    {'name': 'stretch_m', 'src': '143_30', 'loop': False, 'range': (0.3, 6.1), 'set': 'm', 'sex': 'm', 'sex_source': "the take's own file names its subject Male1 (H:\\Male1\\Project 1\\Capture day 1\\Session 1\\Male1.ASF); CMU's title records no sex", 'stature_est_m': 1.51}, {'name': 'yawn', 'src': '111_32', 'loop': False, 'range': (0, 6.2), 'set': 'f'},
     {'name': 'yawn_b', 'src': '113_23', 'loop': False, 'range': (0, 8.4), 'set': 'f'}, {'name': 'sit', 'src': '114_05', 'loop': 'seam', 'range': (4, 14), 'seam': 1.2, 'set': 'f'},
     # everyone (sex not recorded; gestures and work): to be split by sex when captures of both are found
     {'name': 'sit_stool', 'src': '13_04', 'loop': 'seam', 'range': (3, 9), 'seam': 1.0}, {'name': 'sit_ground', 'src': '82_05', 'loop': 'seam', 'range': (4, 14), 'seam': 1.2, 'max_rate': 600.0},
@@ -575,6 +576,7 @@ def export_clip(d, bones, rows, speed, hip):
                    'fps': OUT_FPS, 'frames': len(rows), 'src_fps': d.get('src_fps', SRC_FPS), 'sex': d.get('sex', SEX.get(subj, 'u')), 'set': d.get('set', 'both'),
                    'licence': d.get('licence', 'CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses'), 'cycle': REFINE, 'seam_share': SEAM if d.get('loop') == 'gait' else None, 'closed': bool(d.get('loop')),
                    'flips_repaired': d.get('_flips') or None, 'inbetween': d.get('_inbetween') or None,
+                   'sex_source': d.get('sex_source'), 'stature_est_m': d.get('stature_est_m'),
                    'range': list(d['range']) if d.get('range') else None}, f)
     print(f'clip {d["name"]}: {len(rows)} frames, speed {speed:.2f} m/s')
 
