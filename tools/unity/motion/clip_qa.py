@@ -348,6 +348,29 @@ def load_source(src, cmu_dirs, accad_dir, fps=None):
     return None
 
 
+def w6_stance(m):
+    """W6 on the clip's own skeleton (tools/qa/w6_source.py's rule; docs/PEOPLE_MOTION.md W6): the clip with its travel added,
+    each foot's sole points (the ankle and ball joints, each over its own lowest height); the lower foot's height while it is
+    still both ways (under 0.5 m/s across the ground and 0.2 m/s up or down) for 3 samples running (cm)."""
+    np = _np()
+    pts = {s: (m.P[s + 'Foot'], m.P[s + 'Toes']) for s in ('Left', 'Right')}
+    lo = {s: (a[:, 1].min(), b[:, 1].min()) for s, (a, b) in pts.items()}
+    run = {'Left': 0, 'Right': 0}; out = []
+    for i in range(1, m.n):
+        h, ok = {}, {}
+        for s, (a, b) in pts.items():
+            low = np.minimum(a[i, 1] - lo[s][0], b[i, 1] - lo[s][1]); low0 = np.minimum(a[i - 1, 1] - lo[s][0], b[i - 1, 1] - lo[s][1])
+            still = min(np.linalg.norm(a[i, [0, 2]] - a[i - 1, [0, 2]]), np.linalg.norm(b[i, [0, 2]] - b[i - 1, [0, 2]])) * m.fps
+            vy = abs(low - low0) * m.fps
+            run[s] = run[s] + 1 if (still < 0.5 and vy < 0.2) else 0
+            h[s] = low
+        s = 'Left' if h['Left'] < h['Right'] else 'Right'
+        if run[s] >= 3: out.append(float(h[s]) * 100)
+    if not out: return None
+    out = np.sort(out)
+    return {'n': len(out), 'p98': round(float(out[int(0.98 * (len(out) - 1))]), 2), 'max': round(float(out[-1]), 2)}
+
+
 def combat_checks(m, meta, r, fails, source):
     """The combat set's own checks (COMBAT_ASSETS: doubts 2-4; the combat brief's integration order)."""
     np = _np()
@@ -496,6 +519,11 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False):
             g.update({k: round(gp[k], 3) for k in ('cadence', 'duty', 'flight', 'step_width', 'pelvis_rot', 'pelvis_obl', 'pelvis_vert', 'arm_swing') if gp.get(k) is not None and k != 'cadence'})
             g['cadence_contacts'] = round(gp['cadence'], 1) if gp.get('cadence') else None
             r['gait'] = g
+            # W6: the stance foot down while it is still both ways (in game v3's jogs lifted it 4-9 cm, 2026-11-17; on the
+            # actors' own skeletons they read 0.2-1.4 cm, so this catches a cut that lifts it, not a lift made in retargeting)
+            w6 = w6_stance(mt); r['checks']['w6_cm'] = w6
+            if w6 is None: fails.append('W6: no stance foot holds still both ways for 3 samples at the clip\'s speed (its stance foot slides against its pace)')
+            elif w6['p98'] > 2.5 or w6['max'] > 4.0: fails.append(f"W6: the still stance foot stands {w6['p98']:.1f} cm up (p98; {w6['max']:.1f} at most; limit 2.5, cap 4)")
             run = sp > 2.0
             lo, hi = NORMS['run_cadence' if run else 'walk_cadence']
             if not lo <= g['cadence'] <= hi: fails.append(f"cadence {g['cadence']:.0f} steps/min outside {lo}-{hi} for a {'run' if run else 'walk'} at {sp:.2f} m/s")

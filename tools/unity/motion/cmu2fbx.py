@@ -194,7 +194,7 @@ def slerp(a, b, t):
 
 MAX_RATE = 2000.0    # deg/s: no joint of these clips turns faster (a thrown arm's peak); a capture's faster step is its solver's flip
 
-def repair_flips(rows, fps, log=None, max_rate=None):
+def repair_flips(rows, fps, log=None, max_rate=None, skip=()):
     """A capture's solver now and then turns a joint over for a few frames and back (a foot or a hand flipped up to 180°
     and back within 2-3 frames at 30 fps: jog_c, run_b, sit_ground, 2026-11-17): for each joint, a step faster than
     MAX_RATE opens a flip, and the first later frame that a joint moving at MAX_RATE could reach from the frame before it
@@ -206,6 +206,7 @@ def repair_flips(rows, fps, log=None, max_rate=None):
     fixed = {}
     keys = list(rows[0]['loc'].keys())
     for k in keys:
+        if k in skip: continue
         n = len(rows); i = 0
         while i < n - 1:
             a = rows[i]['loc'][k]; b = rows[i + 1]['loc'][k]
@@ -346,7 +347,9 @@ def build_clip(d):
     f0 = min(n - 2, round(d['range'][0] * SRC_FPS)) if d.get('range') else 0
     f1 = min(n, round(d['range'][1] * SRC_FPS)) if d.get('range') else n
     d['_flips'] = {}
-    rows = repair_flips(continuous(build_rows(bones, frames, f0, f1)), SRC_FPS, d['_flips'], d.get('max_rate', MAX_RATE))
+    # (SF_NO_TOE_REPAIR: test cuts that leave the toes' solver flips as captured, docs: staging motion/jog_test)
+    skip = ('ltoes', 'rtoes') if os.environ.get('SF_NO_TOE_REPAIR') else ()
+    rows = repair_flips(continuous(build_rows(bones, frames, f0, f1)), SRC_FPS, d['_flips'], d.get('max_rate', MAX_RATE), skip)
     if d['_flips']: print(f"  {d['name']}: solver flips repaired: {d['_flips']}")
     # the direction of travel in the capture's own frame (the feet are measured in it: canonical turns only the root)
     a0, b0 = rows[0]['pos'], rows[-1]['pos']
@@ -380,8 +383,11 @@ def build_clip(d):
         mx = sum(r['pos'].x for r in cyc) / len(cyc); mz = sum(r['pos'].z for r in cyc) / len(cyc)
         for r in cyc: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, r['pos'].z - mz))
         surge = max(r['pos'].z for r in cyc) - min(r['pos'].z for r in cyc); sway = max(r['pos'].x for r in cyc) - min(r['pos'].x for r in cyc)
-        out = resample_loop(cyc, OUT_FPS)
-        speed = dv.length / ((len(out) - 1) / OUT_FPS)     # the pace at which the loop as played lays one stride
+        if os.environ.get('SF_OPEN_LOOP'):   # test cuts: v1's open loop, fixed-step resample
+            out = resample(cyc, OUT_FPS); speed = dv.length / (P / SRC_FPS); d['_open'] = True
+        else:
+            out = resample_loop(cyc, OUT_FPS)
+            speed = dv.length / ((len(out) - 1) / OUT_FPS)     # the pace at which the loop as played lays one stride
         print(f'  {d["name"]}: stride {dv.length:.2f} m over {P / SRC_FPS:.3f} s ({len(out) - 1} frames at {OUT_FPS}, closed), off the trial line by {math.degrees(math.atan2(dv.x, dv.z)):.1f} deg, surge {surge * 100:.1f} cm, sway {sway * 100:.1f} cm')
     elif d.get('loop') == 'seam':
         seam = round(d.get('seam', 1.0) * SRC_FPS); P = len(rows) - seam
@@ -490,6 +496,13 @@ def straighten_inbetweens(arm, last):
     never turns (lhipjoint) is the same in the bind and the take and stays as it is."""
     act = arm.animation_data.action
     rec = {}
+    # the convention for an in-between bone with a swing (Neck2), SF_INBETWEEN (test sets, staging motion/neck_test):
+    # 'straight' (v4: identity in the bind and the take, the parent aimed, the child's world kept), 'none' (as captured, v1-v3),
+    # 'rest' (held at its rest bend in the bind and the take, the parent aimed, the child's world kept), 'head' (held at its
+    # rest bend, the child takes the turn, the parent as captured), 'share' (the parent and it each take half of their turn,
+    # the child as captured). A pure twist (the wrists') goes into the hand in every mode but 'none'.
+    mode = os.environ.get('SF_INBETWEEN', 'straight')
+    if mode == 'none': return {'mode': 'none'}
 
     def curves(name):
         fcs = [act.fcurves.find(f'pose.bones["{name}"].rotation_quaternion', index=i) for i in range(4)]
@@ -528,7 +541,10 @@ def straighten_inbetweens(arm, last):
             rec[b.name] = {'kept': 'never turned by the take: its bind and take rotations are one'}
             continue
         rrP, _ = rest_local(P); rrb, ob = rest_local(b); rrH, oH = rest_local(H)
-        straight = ob + oH
+        twist = 'Wrist' in b.name
+        m = 'straight' if twist else mode
+        qb_new = Quaternion() if m in ('rest', 'head') else rrb.inverted()
+        straight = ob + (rrb @ qb_new) @ oH
         turned, moved = 0.0, 0.0
         prev = {}
         for f in range(0, last + 1):
@@ -536,17 +552,25 @@ def straighten_inbetweens(arm, last):
             gP = rrP @ qP
             gb = gP @ rrb @ qb
             t = gP @ ob + gb @ oH                                   # the captured child joint, from the parent's joint
-            S = (gP @ straight).rotation_difference(t)
-            gP2 = S @ gP
-            new = {P.name: rrP.inverted() @ gP2, b.name: rrb.inverted(), H.name: rrH.inverted() @ gP2.inverted() @ gb @ rrH @ qH}
+            if m == 'share':
+                X = qP @ rrb @ qb @ rrb.inverted(); half = Quaternion().slerp(X if X.w >= 0 else -X, 0.5)
+                S = Quaternion()
+                new = {P.name: half, b.name: rrb.inverted() @ half @ rrb, H.name: qH}
+            elif m == 'head':
+                S = Quaternion(); gP2 = gP
+                new = {P.name: qP, b.name: qb_new, H.name: rrH.inverted() @ (gP @ rrb @ qb_new).inverted() @ gb @ rrH @ qH}
+            else:
+                S = (gP @ straight).rotation_difference(t)
+                gP2 = S @ gP
+                new = {P.name: rrP.inverted() @ gP2, b.name: qb_new, H.name: rrH.inverted() @ (gP2 @ rrb @ qb_new).inverted() @ gb @ rrH @ qH}
             for n, q in new.items():
                 q = q.normalized()
                 if n in prev and prev[n].dot(q) < 0.0: q = Quaternion((-q.w, -q.x, -q.y, -q.z))
                 prev[n] = q
             write(cP, kP, f, prev[P.name]); write(cb, kb, f, prev[b.name]); write(cH, kH, f, prev[H.name])
-            turned = max(turned, math.degrees(S.angle)); moved = max(moved, abs(t.length - straight.length))
+            turned = max(turned, math.degrees(min(S.angle, 2 * math.pi - S.angle))); moved = max(moved, abs(t.length - straight.length)) if m not in ('share', 'head') else moved
         for fc in cP + cb + cH: fc.update()
-        rec[b.name] = {'into': [P.name, H.name], 'parent_swung_max_deg': round(turned, 2), 'child_joint_moved_max_mm': round(moved * 1000.0, 2)}
+        rec[b.name] = {'mode': m, 'into': [P.name, H.name], 'parent_swung_max_deg': round(turned, 2), 'child_joint_moved_max_mm': round(moved * 1000.0, 2)}
     bpy.context.scene.frame_set(0)    # the FBX's default skeleton is the pose at the current frame: the new bind
     return rec
 
@@ -574,7 +598,7 @@ def export_clip(d, bones, rows, speed, hip):
         subj = d['src'].split('_')[0]
         json.dump({'name': d['name'], 'src': d.get('src_label', 'CMU ' + d['src']), 'loop': bool(d.get('loop')), 'speed': round(speed, 3), 'root': bool(d.get('root')), 'hip': round(hip, 4),
                    'fps': OUT_FPS, 'frames': len(rows), 'src_fps': d.get('src_fps', SRC_FPS), 'sex': d.get('sex', SEX.get(subj, 'u')), 'set': d.get('set', 'both'),
-                   'licence': d.get('licence', 'CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses'), 'cycle': REFINE, 'seam_share': SEAM if d.get('loop') == 'gait' else None, 'closed': bool(d.get('loop')),
+                   'licence': d.get('licence', 'CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses'), 'cycle': REFINE, 'seam_share': SEAM if d.get('loop') == 'gait' else None, 'closed': bool(d.get('loop')) and not d.get('_open'),
                    'flips_repaired': d.get('_flips') or None, 'inbetween': d.get('_inbetween') or None,
                    'sex_source': d.get('sex_source'), 'stature_est_m': d.get('stature_est_m'),
                    'range': list(d['range']) if d.get('range') else None}, f)
