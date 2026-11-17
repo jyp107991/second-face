@@ -245,4 +245,18 @@ if __name__ == '__main__' and '--summary' in sys.argv:
     S = summarize(rows)
     for st in ('quiet', 'stand', 'look', 'walk', 'jog'):
         print(f'\n### {st}\n'); print(table(S, st))
-    json.dump(S, open(sys.argv[sys.argv.index('--summary') + 2], 'w'), indent=1) if len(sys.argv) > sys.argv.index('--summary') + 2 else None
+    if len(sys.argv) > sys.argv.index('--summary') + 2:
+        # the committed record (docs/qa/motion_calibration.json): every segment's verdict per measure and its gait, no frames
+        segs = [{k: v for k, v in r.items() if k not in ('frames', 'frames_game')} for r in rows]
+        for r in segs:
+            for side in ('native', 'game'):
+                r[side] = {k: {q: (round(x, 2) if isinstance(x, float) else x) for q, x in v.items()} for k, v in r[side].items()}
+        def rnd(o):
+            if isinstance(o, float): return round(o, 2)
+            if isinstance(o, dict): return {k: rnd(v) for k, v in o.items()}
+            if isinstance(o, list): return [rnd(v) for v in o]
+            return o
+        json.dump({'about': 'The motion gate\'s skeleton-readable measures on real people\'s captures, on their own skeletons at their real '
+                            'frame rates (docs/qa/motion_calibration.md; tools/qa/calibration/calibrate.py). Posture measures at the '
+                            'capture\'s rate (native); speeds and soles at the game\'s (game: 30 fps keys sampled at 60 Hz).',
+                   'summary': rnd(S), 'segments': rnd(segs)}, open(sys.argv[sys.argv.index('--summary') + 2], 'w'), indent=0)
