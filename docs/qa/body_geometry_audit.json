@@ -1,0 +1,7448 @@
+{
+ "bases": [
+  {
+   "base": "Business_Female_01",
+   "sex": "f",
+   "stature_cm": 174.03591044130735,
+   "sx_cm": 17.212551832199097,
+   "upper_arm_cm": 25.267677610132978,
+   "elbow_height_cm": 112.78722144048834,
+   "waist_at_elbow_cm": 27.964176467845615,
+   "waist_omphalion_cm": 31.951419648527207,
+   "chest_breadth_cm": 30.515531067942312,
+   "chest_depth_cm": 25.88687492872645,
+   "skin_over_joint_cm": 6.058824062347412,
+   "hip_at_wrist_cm": 38.30078270222329,
+   "forearm_cm": 24.0157863101704,
+   "upper_arm_radius_cm": 4.7,
+   "upper_arm_radius_p90_cm": 5.6,
+   "deltoid_beyond_joint_cm": 6.6,
+   "margin_waist_cm": 3.2304635982762893,
+   "margin_chest_cm": 1.9547862982279405,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.6,
+     "real_p50": 17.4,
+     "real_p98": 19.1,
+     "z": -0.22,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 32.0,
+     "real_p2": 26.0,
+     "real_p50": 31.9,
+     "real_p98": 39.7,
+     "z": -0.03,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 28.0,
+     "real_p2": 26.0,
+     "real_p50": 31.9,
+     "real_p98": 39.7,
+     "z": -1.21,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 30.5,
+     "real_p2": 25.2,
+     "real_p50": 28.7,
+     "real_p98": 32.9,
+     "z": 0.89,
+     "out": false
+    },
+    "chest depth": {
+     "value": 25.9,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 32.7,
+     "z": -0.2,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.2,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 1.17,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.6,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.29,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 2.0,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": -0.86,
+     "out": false
+    }
+   },
+   "least_hang_deg": -0.5,
+   "least_hang_sleeve_deg": 2.8,
+   "least_hang_wrist_deg": 5.2,
+   "flags": []
+  },
+  {
+   "base": "Business_Female_02",
+   "sex": "f",
+   "stature_cm": 172.8752092953073,
+   "sx_cm": 17.212552577257156,
+   "upper_arm_cm": 25.26767174241879,
+   "elbow_height_cm": 112.72011046128998,
+   "waist_at_elbow_cm": 27.246194507523285,
+   "waist_omphalion_cm": 30.815945481424272,
+   "chest_breadth_cm": 28.86649010338433,
+   "chest_depth_cm": 25.727642719516336,
+   "skin_over_joint_cm": 5.580234527587891,
+   "hip_at_wrist_cm": 36.56708390582938,
+   "forearm_cm": 24.01576737852742,
+   "upper_arm_radius_cm": 5.5,
+   "upper_arm_radius_p90_cm": 6.6,
+   "deltoid_beyond_joint_cm": 6.8,
+   "margin_waist_cm": 3.589455323495514,
+   "margin_chest_cm": 2.7793075255649917,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.5,
+     "real_p50": 17.3,
+     "real_p98": 19.0,
+     "z": -0.08,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 30.8,
+     "real_p2": 25.9,
+     "real_p50": 31.6,
+     "real_p98": 39.5,
+     "z": -0.31,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 27.2,
+     "real_p2": 25.9,
+     "real_p50": 31.6,
+     "real_p98": 39.5,
+     "z": -1.36,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 28.9,
+     "real_p2": 25.0,
+     "real_p50": 28.5,
+     "real_p98": 32.7,
+     "z": 0.14,
+     "out": false
+    },
+    "chest depth": {
+     "value": 25.7,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 32.5,
+     "z": -0.19,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.6,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 1.39,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.8,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.46,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 2.8,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": -0.02,
+     "out": false
+    }
+   },
+   "least_hang_deg": -1.3,
+   "least_hang_sleeve_deg": 3.8,
+   "least_hang_wrist_deg": 4.2,
+   "flags": []
+  },
+  {
+   "base": "Business_Female_03",
+   "sex": "f",
+   "stature_cm": 174.30564741953276,
+   "sx_cm": 17.21256598830223,
+   "upper_arm_cm": 25.26771517968871,
+   "elbow_height_cm": 112.7871502269046,
+   "waist_at_elbow_cm": 28.716129384164663,
+   "waist_omphalion_cm": 32.273809660195475,
+   "chest_breadth_cm": 30.964811247474287,
+   "chest_depth_cm": 26.43373541958689,
+   "skin_over_joint_cm": 5.588436126708984,
+   "hip_at_wrist_cm": 36.629939985281936,
+   "forearm_cm": 24.015772209944796,
+   "upper_arm_radius_cm": 6.0,
+   "upper_arm_radius_p90_cm": 6.8,
+   "deltoid_beyond_joint_cm": 7.0,
+   "margin_waist_cm": 2.8545012962198992,
+   "margin_chest_cm": 1.7301603645650871,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.6,
+     "real_p50": 17.4,
+     "real_p98": 19.1,
+     "z": -0.25,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 32.3,
+     "real_p2": 26.1,
+     "real_p50": 31.9,
+     "real_p98": 39.8,
+     "z": 0.05,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 28.7,
+     "real_p2": 26.1,
+     "real_p50": 31.9,
+     "real_p98": 39.8,
+     "z": -1.0,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 31.0,
+     "real_p2": 25.2,
+     "real_p50": 28.7,
+     "real_p98": 33.0,
+     "z": 1.1,
+     "out": false
+    },
+    "chest depth": {
+     "value": 26.4,
+     "real_p2": 20.9,
+     "real_p50": 26.3,
+     "real_p98": 32.8,
+     "z": -0.02,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.9,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 0.95,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 7.0,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.63,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 1.7,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": -1.08,
+     "out": false
+    }
+   },
+   "least_hang_deg": 0.3,
+   "least_hang_sleeve_deg": 5.9,
+   "least_hang_wrist_deg": 4.2,
+   "flags": []
+  },
+  {
+   "base": "Business_Female_04",
+   "sex": "f",
+   "stature_cm": 173.33344917278737,
+   "sx_cm": 17.212552577257156,
+   "upper_arm_cm": 25.26767174241879,
+   "elbow_height_cm": 113.08903873903861,
+   "waist_at_elbow_cm": 25.195426702835412,
+   "waist_omphalion_cm": 29.112840846503,
+   "chest_breadth_cm": 27.28169248542369,
+   "chest_depth_cm": 24.436053115782087,
+   "skin_over_joint_cm": 6.216084957122803,
+   "hip_at_wrist_cm": 33.1403083816404,
+   "forearm_cm": 24.01576737852742,
+   "upper_arm_radius_cm": 4.8,
+   "upper_arm_radius_p90_cm": 5.2,
+   "deltoid_beyond_joint_cm": 7.0,
+   "margin_waist_cm": 4.61483922583945,
+   "margin_chest_cm": 3.5717063345453113,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.5,
+     "real_p50": 17.3,
+     "real_p98": 19.0,
+     "z": -0.13,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 29.1,
+     "real_p2": 25.9,
+     "real_p50": 31.7,
+     "real_p98": 39.6,
+     "z": -0.83,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 25.2,
+     "real_p2": 25.9,
+     "real_p50": 31.7,
+     "real_p98": 39.6,
+     "z": -1.99,
+     "out": true
+    },
+    "chest breadth": {
+     "value": 27.3,
+     "real_p2": 25.1,
+     "real_p50": 28.6,
+     "real_p98": 32.8,
+     "z": -0.73,
+     "out": false
+    },
+    "chest depth": {
+     "value": 24.4,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 32.6,
+     "z": -0.67,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.6,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 2.0,
+     "out": true
+    },
+    "shoulder skin beyond the joint": {
+     "value": 7.0,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.63,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 3.6,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": 0.78,
+     "out": false
+    }
+   },
+   "least_hang_deg": -3.7,
+   "least_hang_sleeve_deg": -1.0,
+   "least_hang_wrist_deg": 2.2,
+   "flags": [
+    "waist breadth at the elbow outside real people"
+   ]
+  },
+  {
+   "base": "Business_Male_01",
+   "sex": "m",
+   "stature_cm": 180.64527165843174,
+   "sx_cm": 21.037093549966812,
+   "upper_arm_cm": 28.580130197727517,
+   "elbow_height_cm": 114.32380225400867,
+   "waist_at_elbow_cm": 33.70991491387358,
+   "waist_omphalion_cm": 34.3982307160764,
+   "chest_breadth_cm": 39.7230635290804,
+   "chest_depth_cm": 27.85300495361831,
+   "skin_over_joint_cm": 6.245821714401245,
+   "hip_at_wrist_cm": 39.115069342193266,
+   "forearm_cm": 27.091925545410632,
+   "upper_arm_radius_cm": 6.7,
+   "upper_arm_radius_p90_cm": 9.0,
+   "deltoid_beyond_joint_cm": 3.1,
+   "margin_waist_cm": 4.182136093030021,
+   "margin_chest_cm": 1.1755617854266127,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.2,
+     "z": 1.97,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 34.4,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": 0.23,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 33.7,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": 0.03,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 39.7,
+     "real_p2": 26.1,
+     "real_p50": 29.7,
+     "real_p98": 33.7,
+     "z": 5.39,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.9,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 31.6,
+     "z": 0.65,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.2,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 1.07,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.1,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -3.09,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.2,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -3.64,
+     "out": true
+    }
+   },
+   "least_hang_deg": -1.4,
+   "least_hang_sleeve_deg": 6.1,
+   "least_hang_wrist_deg": 1.1,
+   "flags": []
+  },
+  {
+   "base": "Business_Male_02",
+   "sex": "m",
+   "stature_cm": 182.328447222244,
+   "sx_cm": 21.037107706069946,
+   "upper_arm_cm": 28.580154275108594,
+   "elbow_height_cm": 114.32378413709205,
+   "waist_at_elbow_cm": 33.82528592121483,
+   "waist_omphalion_cm": 34.16591571992016,
+   "chest_breadth_cm": 38.20110702889222,
+   "chest_depth_cm": 28.15305121822704,
+   "skin_over_joint_cm": 6.162905693054199,
+   "hip_at_wrist_cm": 39.31270388655465,
+   "forearm_cm": 27.091939245342438,
+   "upper_arm_radius_cm": 4.9,
+   "upper_arm_radius_p90_cm": 8.9,
+   "deltoid_beyond_joint_cm": 4.1,
+   "margin_waist_cm": 4.124464745462532,
+   "margin_chest_cm": 1.9365541916238378,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.8,
+     "real_p50": 19.5,
+     "real_p98": 21.4,
+     "z": 1.75,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 34.2,
+     "real_p2": 27.3,
+     "real_p50": 33.9,
+     "real_p98": 41.6,
+     "z": 0.07,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 33.8,
+     "real_p2": 27.3,
+     "real_p50": 33.9,
+     "real_p98": 41.6,
+     "z": -0.02,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.2,
+     "real_p2": 26.4,
+     "real_p50": 30.0,
+     "real_p98": 34.1,
+     "z": 4.38,
+     "out": true
+    },
+    "chest depth": {
+     "value": 28.2,
+     "real_p2": 21.0,
+     "real_p50": 26.4,
+     "real_p98": 31.9,
+     "z": 0.66,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.1,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 1.03,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 4.1,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.24,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.9,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.76,
+     "out": true
+    }
+   },
+   "least_hang_deg": -1.3,
+   "least_hang_sleeve_deg": 6.0,
+   "least_hang_wrist_deg": 1.2,
+   "flags": []
+  },
+  {
+   "base": "Business_Male_03",
+   "sex": "m",
+   "stature_cm": 181.91577947582118,
+   "sx_cm": 21.03709653019905,
+   "upper_arm_cm": 28.580155981030448,
+   "elbow_height_cm": 114.32378148238533,
+   "waist_at_elbow_cm": 36.57887533175324,
+   "waist_omphalion_cm": 36.99953268508217,
+   "chest_breadth_cm": 38.06175266187651,
+   "chest_depth_cm": 27.2617535907278,
+   "skin_over_joint_cm": 6.336402893066406,
+   "hip_at_wrist_cm": 39.464942061294266,
+   "forearm_cm": 27.091908541342523,
+   "upper_arm_radius_cm": 8.1,
+   "upper_arm_radius_p90_cm": 8.8,
+   "deltoid_beyond_joint_cm": 4.4,
+   "margin_waist_cm": 2.747658864322432,
+   "margin_chest_cm": 2.0062201992607953,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.7,
+     "real_p50": 19.4,
+     "real_p98": 21.3,
+     "z": 1.8,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 37.0,
+     "real_p2": 27.3,
+     "real_p50": 33.8,
+     "real_p98": 41.6,
+     "z": 0.9,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 36.6,
+     "real_p2": 27.3,
+     "real_p50": 33.8,
+     "real_p98": 41.6,
+     "z": 0.78,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.1,
+     "real_p2": 26.3,
+     "real_p50": 30.0,
+     "real_p98": 34.0,
+     "z": 4.35,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.3,
+     "real_p2": 21.0,
+     "real_p50": 26.3,
+     "real_p98": 31.8,
+     "z": 0.35,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.7,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.18,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 4.4,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -1.99,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.0,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.68,
+     "out": true
+    }
+   },
+   "least_hang_deg": 1.5,
+   "least_hang_sleeve_deg": 8.6,
+   "least_hang_wrist_deg": 1.2,
+   "flags": [
+    "a hanging arm must stand 9 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Business_Male_04",
+   "sex": "m",
+   "stature_cm": 180.09333265945315,
+   "sx_cm": 21.03711888194084,
+   "upper_arm_cm": 28.58017097126767,
+   "elbow_height_cm": 114.32376745257451,
+   "waist_at_elbow_cm": 35.109027918200084,
+   "waist_omphalion_cm": 35.394376521084546,
+   "chest_breadth_cm": 38.23597177227479,
+   "chest_depth_cm": 26.582666293460655,
+   "skin_over_joint_cm": 6.280660629272461,
+   "hip_at_wrist_cm": 37.305580919125525,
+   "forearm_cm": 27.091951329341203,
+   "upper_arm_radius_cm": 6.5,
+   "upper_arm_radius_p90_cm": 9.1,
+   "deltoid_beyond_joint_cm": 3.5,
+   "margin_waist_cm": 3.4826049228407996,
+   "margin_chest_cm": 1.919132995803448,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.5,
+     "real_p50": 19.2,
+     "real_p98": 21.1,
+     "z": 2.05,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 35.4,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.1,
+     "z": 0.55,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 35.1,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.1,
+     "z": 0.47,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.2,
+     "real_p2": 26.0,
+     "real_p50": 29.7,
+     "real_p98": 33.6,
+     "z": 4.65,
+     "out": true
+    },
+    "chest depth": {
+     "value": 26.6,
+     "real_p2": 20.8,
+     "real_p50": 26.0,
+     "real_p98": 31.5,
+     "z": 0.2,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.5,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.63,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.5,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.75,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.9,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.78,
+     "out": true
+    }
+   },
+   "least_hang_deg": 0.0,
+   "least_hang_sleeve_deg": 7.6,
+   "least_hang_wrist_deg": 0.1,
+   "flags": []
+  },
+  {
+   "base": "Business_Male_05",
+   "sex": "m",
+   "stature_cm": 180.18039119197056,
+   "sx_cm": 21.03711888194084,
+   "upper_arm_cm": 28.580168996748473,
+   "elbow_height_cm": 114.32376941545219,
+   "waist_at_elbow_cm": 34.61530326014884,
+   "waist_omphalion_cm": 35.0653583144655,
+   "chest_breadth_cm": 38.627441956601224,
+   "chest_depth_cm": 27.301585431091812,
+   "skin_over_joint_cm": 6.53766393661499,
+   "hip_at_wrist_cm": 39.396709306527775,
+   "forearm_cm": 27.09194907071972,
+   "upper_arm_radius_cm": 7.0,
+   "upper_arm_radius_p90_cm": 8.9,
+   "deltoid_beyond_joint_cm": 4.0,
+   "margin_waist_cm": 3.7294672518664207,
+   "margin_chest_cm": 1.7233979036402296,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.1,
+     "z": 2.04,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 35.1,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 0.45,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 34.6,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 0.32,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.6,
+     "real_p2": 26.0,
+     "real_p50": 29.7,
+     "real_p98": 33.7,
+     "z": 4.85,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.3,
+     "real_p2": 20.8,
+     "real_p50": 26.0,
+     "real_p98": 31.5,
+     "z": 0.47,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.7,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.79,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 4.0,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.33,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.7,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -3.0,
+     "out": true
+    }
+   },
+   "least_hang_deg": -0.5,
+   "least_hang_sleeve_deg": 6.8,
+   "least_hang_wrist_deg": 1.2,
+   "flags": []
+  },
+  {
+   "base": "Business_Male_06",
+   "sex": "m",
+   "stature_cm": 181.02203262387775,
+   "sx_cm": 21.037103980779648,
+   "upper_arm_cm": 28.580162301621847,
+   "elbow_height_cm": 114.32377015593511,
+   "waist_at_elbow_cm": 35.59614515191402,
+   "waist_omphalion_cm": 35.41346301519809,
+   "chest_breadth_cm": 38.562520479150386,
+   "chest_depth_cm": 25.894225773068936,
+   "skin_over_joint_cm": 6.433957815170288,
+   "hip_at_wrist_cm": 36.24668990868425,
+   "forearm_cm": 27.091944822290838,
+   "upper_arm_radius_cm": 6.6,
+   "upper_arm_radius_p90_cm": 8.8,
+   "deltoid_beyond_joint_cm": 3.3,
+   "margin_waist_cm": 3.2390314048226365,
+   "margin_chest_cm": 1.7558437412044547,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.2,
+     "z": 1.92,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 35.4,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": 0.5,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 35.6,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": 0.55,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.6,
+     "real_p2": 26.2,
+     "real_p50": 29.8,
+     "real_p98": 33.8,
+     "z": 4.72,
+     "out": true
+    },
+    "chest depth": {
+     "value": 25.9,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 31.7,
+     "z": -0.11,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.2,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.48,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.3,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.92,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.8,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.97,
+     "out": true
+    }
+   },
+   "least_hang_deg": 0.5,
+   "least_hang_sleeve_deg": 7.6,
+   "least_hang_wrist_deg": -0.4,
+   "flags": []
+  },
+  {
+   "base": "Business_Male_07",
+   "sex": "m",
+   "stature_cm": 179.59031712962314,
+   "sx_cm": 21.03709653019905,
+   "upper_arm_cm": 28.580155981030448,
+   "elbow_height_cm": 114.3237824311702,
+   "waist_at_elbow_cm": 38.70723591654956,
+   "waist_omphalion_cm": 39.954487134649405,
+   "chest_breadth_cm": 38.37847799576497,
+   "chest_depth_cm": 29.481771858560386,
+   "skin_over_joint_cm": 5.740678310394287,
+   "hip_at_wrist_cm": 40.34268437495913,
+   "forearm_cm": 27.091908541342523,
+   "upper_arm_radius_cm": 6.8,
+   "upper_arm_radius_p90_cm": 8.9,
+   "deltoid_beyond_joint_cm": -8.6,
+   "margin_waist_cm": 1.6834785719242724,
+   "margin_chest_cm": 1.8478575323165671,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.5,
+     "real_p50": 19.2,
+     "real_p98": 21.1,
+     "z": 2.12,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 40.0,
+     "real_p2": 26.9,
+     "real_p50": 33.4,
+     "real_p98": 41.0,
+     "z": 1.89,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 38.7,
+     "real_p2": 26.9,
+     "real_p50": 33.4,
+     "real_p98": 41.0,
+     "z": 1.53,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.4,
+     "real_p2": 26.0,
+     "real_p50": 29.6,
+     "real_p98": 33.5,
+     "z": 4.79,
+     "out": true
+    },
+    "chest depth": {
+     "value": 29.5,
+     "real_p2": 20.7,
+     "real_p50": 26.0,
+     "real_p98": 31.4,
+     "z": 1.33,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 1.7,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": -0.48,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": -8.6,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -13.03,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.8,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.86,
+     "out": true
+    }
+   },
+   "least_hang_deg": 3.6,
+   "least_hang_sleeve_deg": 11.0,
+   "least_hang_wrist_deg": 1.7,
+   "flags": [
+    "a hanging arm must stand 11 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Construction_Female_01",
+   "sex": "f",
+   "stature_cm": 177.24325703456998,
+   "sx_cm": 17.212556302547455,
+   "upper_arm_cm": 25.267691812132657,
+   "elbow_height_cm": 112.82272246235125,
+   "waist_at_elbow_cm": 33.1897487396017,
+   "waist_omphalion_cm": 33.63303441191003,
+   "chest_breadth_cm": 34.858032099576185,
+   "chest_depth_cm": 25.101095770808445,
+   "skin_over_joint_cm": 6.663000583648682,
+   "hip_at_wrist_cm": 37.868438345812216,
+   "forearm_cm": 24.01577804798617,
+   "upper_arm_radius_cm": 5.5,
+   "upper_arm_radius_p90_cm": 6.6,
+   "deltoid_beyond_joint_cm": 6.8,
+   "margin_waist_cm": 0.6176819327466063,
+   "margin_chest_cm": -0.21645974724063777,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.9,
+     "real_p50": 17.7,
+     "real_p98": 19.4,
+     "z": -0.6,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 33.6,
+     "real_p2": 26.5,
+     "real_p50": 32.4,
+     "real_p98": 40.5,
+     "z": 0.28,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 33.2,
+     "real_p2": 26.5,
+     "real_p50": 32.4,
+     "real_p98": 40.5,
+     "z": 0.16,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 34.9,
+     "real_p2": 25.6,
+     "real_p50": 29.2,
+     "real_p98": 33.5,
+     "z": 2.83,
+     "out": true
+    },
+    "chest depth": {
+     "value": 25.1,
+     "real_p2": 21.3,
+     "real_p50": 26.7,
+     "real_p98": 33.3,
+     "z": -0.63,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 0.6,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": -0.39,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.8,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.46,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": -0.2,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": -3.05,
+     "out": true
+    }
+   },
+   "least_hang_deg": 5.4,
+   "least_hang_sleeve_deg": 10.6,
+   "least_hang_wrist_deg": 4.9,
+   "flags": []
+  },
+  {
+   "base": "Construction_Male_02",
+   "sex": "m",
+   "stature_cm": 184.23815354472026,
+   "sx_cm": 21.037113666534424,
+   "upper_arm_cm": 28.58016103681059,
+   "elbow_height_cm": 114.32376280019176,
+   "waist_at_elbow_cm": 41.54037929572293,
+   "waist_omphalion_cm": 41.56778116397726,
+   "chest_breadth_cm": 42.53458584076735,
+   "chest_depth_cm": 29.509680196335385,
+   "skin_over_joint_cm": -14.77975845336914,
+   "hip_at_wrist_cm": 39.76273746917668,
+   "forearm_cm": 27.091950627272187,
+   "upper_arm_radius_cm": 7.5,
+   "upper_arm_radius_p90_cm": 10.2,
+   "deltoid_beyond_joint_cm": 6.5,
+   "margin_waist_cm": 0.26692401867295956,
+   "margin_chest_cm": -0.23017925384925064,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.9,
+     "real_p50": 19.7,
+     "real_p98": 21.6,
+     "z": 1.5,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 41.6,
+     "real_p2": 27.6,
+     "real_p50": 34.2,
+     "real_p98": 42.1,
+     "z": 2.06,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 41.5,
+     "real_p2": 27.6,
+     "real_p50": 34.2,
+     "real_p98": 42.1,
+     "z": 2.05,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 42.5,
+     "real_p2": 26.6,
+     "real_p50": 30.3,
+     "real_p98": 34.4,
+     "z": 6.47,
+     "out": true
+    },
+    "chest depth": {
+     "value": 29.5,
+     "real_p2": 21.3,
+     "real_p50": 26.6,
+     "real_p98": 32.3,
+     "z": 1.05,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 0.3,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": -1.36,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.5,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -0.2,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": -0.2,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -5.27,
+     "out": true
+    }
+   },
+   "least_hang_deg": 6.5,
+   "least_hang_sleeve_deg": 16.0,
+   "least_hang_wrist_deg": 1.4,
+   "flags": [
+    "a hanging arm must stand 16 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Construction_Male_03",
+   "sex": "m",
+   "stature_cm": 184.77449455531314,
+   "sx_cm": 21.037130057811737,
+   "upper_arm_cm": 28.580208369743527,
+   "elbow_height_cm": 114.32071788913711,
+   "waist_at_elbow_cm": 34.01339157623981,
+   "waist_omphalion_cm": 36.3908722795644,
+   "chest_breadth_cm": 38.801995478725125,
+   "chest_depth_cm": 27.93464220123465,
+   "skin_over_joint_cm": -13.942354917526245,
+   "hip_at_wrist_cm": 43.8634410399055,
+   "forearm_cm": 27.091954118629662,
+   "upper_arm_radius_cm": 7.4,
+   "upper_arm_radius_p90_cm": 9.6,
+   "deltoid_beyond_joint_cm": 6.5,
+   "margin_waist_cm": 4.030434269691831,
+   "margin_chest_cm": 1.6361323184491745,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 18.0,
+     "real_p50": 19.7,
+     "real_p98": 21.7,
+     "z": 1.43,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 36.4,
+     "real_p2": 27.7,
+     "real_p50": 34.3,
+     "real_p98": 42.2,
+     "z": 0.57,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 34.0,
+     "real_p2": 27.7,
+     "real_p50": 34.3,
+     "real_p98": 42.2,
+     "z": -0.1,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.8,
+     "real_p2": 26.7,
+     "real_p50": 30.4,
+     "real_p98": 34.5,
+     "z": 4.42,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.9,
+     "real_p2": 21.3,
+     "real_p50": 26.7,
+     "real_p98": 32.3,
+     "z": 0.44,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.0,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.97,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.5,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -0.2,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 1.6,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -3.1,
+     "out": true
+    }
+   },
+   "least_hang_deg": -1.1,
+   "least_hang_sleeve_deg": 7.3,
+   "least_hang_wrist_deg": 3.5,
+   "flags": []
+  },
+  {
+   "base": "Construction_Male_05",
+   "sex": "m",
+   "stature_cm": 184.2237457531155,
+   "sx_cm": 21.037105470895767,
+   "upper_arm_cm": 28.580157293779585,
+   "elbow_height_cm": 114.24280420526183,
+   "waist_at_elbow_cm": 37.094440798151766,
+   "waist_omphalion_cm": 37.15404045397147,
+   "chest_breadth_cm": 40.5203266283886,
+   "chest_depth_cm": 28.37303906307517,
+   "skin_over_joint_cm": -5.053883790969849,
+   "hip_at_wrist_cm": 36.447309884596606,
+   "forearm_cm": 27.091962432923587,
+   "upper_arm_radius_cm": 5.3,
+   "upper_arm_radius_p90_cm": 9.9,
+   "deltoid_beyond_joint_cm": 6.1,
+   "margin_waist_cm": 2.4898850718198844,
+   "margin_chest_cm": 0.776942156701466,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.9,
+     "real_p50": 19.7,
+     "real_p98": 21.6,
+     "z": 1.5,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 37.2,
+     "real_p2": 27.6,
+     "real_p50": 34.2,
+     "real_p98": 42.1,
+     "z": 0.82,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 37.1,
+     "real_p2": 27.6,
+     "real_p50": 34.2,
+     "real_p98": 42.1,
+     "z": 0.8,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 40.5,
+     "real_p2": 26.6,
+     "real_p50": 30.3,
+     "real_p98": 34.4,
+     "z": 5.4,
+     "out": true
+    },
+    "chest depth": {
+     "value": 28.4,
+     "real_p2": 21.3,
+     "real_p50": 26.6,
+     "real_p98": 32.3,
+     "z": 0.64,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.5,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.02,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.1,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -0.54,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 0.8,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -4.1,
+     "out": true
+    }
+   },
+   "least_hang_deg": 2.0,
+   "least_hang_sleeve_deg": 11.0,
+   "least_hang_wrist_deg": -0.3,
+   "flags": [
+    "a hanging arm must stand 11 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Construction_Male_06",
+   "sex": "m",
+   "stature_cm": 185.1869648671709,
+   "sx_cm": 21.03711888194084,
+   "upper_arm_cm": 28.580168996748473,
+   "elbow_height_cm": 114.32376750624091,
+   "waist_at_elbow_cm": 35.05963307830125,
+   "waist_omphalion_cm": 36.60193491843346,
+   "chest_breadth_cm": 40.4838570474063,
+   "chest_depth_cm": 28.6333951212962,
+   "skin_over_joint_cm": -14.079070091247559,
+   "hip_at_wrist_cm": 43.93177800145283,
+   "forearm_cm": 27.09194907071972,
+   "upper_arm_radius_cm": 6.7,
+   "upper_arm_radius_p90_cm": 9.8,
+   "deltoid_beyond_joint_cm": 6.5,
+   "margin_waist_cm": 3.507302342790215,
+   "margin_chest_cm": 0.79519035823769,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 18.0,
+     "real_p50": 19.8,
+     "real_p98": 21.7,
+     "z": 1.38,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 36.6,
+     "real_p2": 27.8,
+     "real_p50": 34.4,
+     "real_p98": 42.3,
+     "z": 0.61,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 35.1,
+     "real_p2": 27.8,
+     "real_p50": 34.4,
+     "real_p98": 42.3,
+     "z": 0.17,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 40.5,
+     "real_p2": 26.8,
+     "real_p50": 30.5,
+     "real_p98": 34.6,
+     "z": 5.27,
+     "out": true
+    },
+    "chest depth": {
+     "value": 28.6,
+     "real_p2": 21.4,
+     "real_p50": 26.8,
+     "real_p98": 32.4,
+     "z": 0.68,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.5,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.65,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.5,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -0.2,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 0.8,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -4.08,
+     "out": true
+    }
+   },
+   "least_hang_deg": -0.0,
+   "least_hang_sleeve_deg": 8.7,
+   "least_hang_wrist_deg": 3.5,
+   "flags": [
+    "a hanging arm must stand 9 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Construction_Male_07",
+   "sex": "m",
+   "stature_cm": 183.88389309402555,
+   "sx_cm": 21.037116646766663,
+   "upper_arm_cm": 28.580158741918282,
+   "elbow_height_cm": 114.32077269744418,
+   "waist_at_elbow_cm": 38.43506014757402,
+   "waist_omphalion_cm": 38.51641669435186,
+   "chest_breadth_cm": 40.85901306648775,
+   "chest_depth_cm": 29.178122597772237,
+   "skin_over_joint_cm": 6.892299652099609,
+   "hip_at_wrist_cm": 36.44730692127564,
+   "forearm_cm": 27.091956045991537,
+   "upper_arm_radius_cm": 5.8,
+   "upper_arm_radius_p90_cm": 9.9,
+   "deltoid_beyond_joint_cm": 6.1,
+   "margin_waist_cm": 1.8195865729796523,
+   "margin_chest_cm": 0.6076101135227887,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.9,
+     "real_p50": 19.7,
+     "real_p98": 21.6,
+     "z": 1.55,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 38.5,
+     "real_p2": 27.6,
+     "real_p50": 34.2,
+     "real_p98": 42.0,
+     "z": 1.22,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 38.4,
+     "real_p2": 27.6,
+     "real_p50": 34.2,
+     "real_p98": 42.0,
+     "z": 1.2,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 40.9,
+     "real_p2": 26.6,
+     "real_p50": 30.3,
+     "real_p98": 34.3,
+     "z": 5.62,
+     "out": true
+    },
+    "chest depth": {
+     "value": 29.2,
+     "real_p2": 21.2,
+     "real_p50": 26.6,
+     "real_p98": 32.2,
+     "z": 0.95,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 1.8,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": -0.4,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.1,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -0.54,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 0.6,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -4.3,
+     "out": true
+    }
+   },
+   "least_hang_deg": 3.4,
+   "least_hang_sleeve_deg": 12.3,
+   "least_hang_wrist_deg": -0.3,
+   "flags": [
+    "a hanging arm must stand 12 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Construction_Male_08",
+   "sex": "m",
+   "stature_cm": 183.29514974029735,
+   "sx_cm": 21.03712633252144,
+   "upper_arm_cm": 28.58018619737533,
+   "elbow_height_cm": 114.32038317869473,
+   "waist_at_elbow_cm": 38.434912291707555,
+   "waist_omphalion_cm": 38.57763003553111,
+   "chest_breadth_cm": 40.66726935648498,
+   "chest_depth_cm": 29.366992625416422,
+   "skin_over_joint_cm": 6.892663240432739,
+   "hip_at_wrist_cm": 37.70390534533974,
+   "forearm_cm": 27.0919729184963,
+   "upper_arm_radius_cm": 6.2,
+   "upper_arm_radius_p90_cm": 9.7,
+   "deltoid_beyond_joint_cm": 8.1,
+   "margin_waist_cm": 1.8196701866676612,
+   "margin_chest_cm": 0.7034916542789489,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.9,
+     "real_p50": 19.6,
+     "real_p98": 21.5,
+     "z": 1.62,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 38.6,
+     "real_p2": 27.5,
+     "real_p50": 34.1,
+     "real_p98": 41.9,
+     "z": 1.27,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 38.4,
+     "real_p2": 27.5,
+     "real_p50": 34.1,
+     "real_p98": 41.9,
+     "z": 1.23,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 40.7,
+     "real_p2": 26.5,
+     "real_p50": 30.2,
+     "real_p98": 34.2,
+     "z": 5.59,
+     "out": true
+    },
+    "chest depth": {
+     "value": 29.4,
+     "real_p2": 21.1,
+     "real_p50": 26.5,
+     "real_p98": 32.1,
+     "z": 1.06,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 1.8,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": -0.4,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 8.1,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": 1.16,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 0.7,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -4.19,
+     "out": true
+    }
+   },
+   "least_hang_deg": 3.4,
+   "least_hang_sleeve_deg": 12.0,
+   "least_hang_wrist_deg": 0.3,
+   "flags": [
+    "a hanging arm must stand 12 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Female_Adult_01",
+   "sex": "f",
+   "stature_cm": 174.3347114417702,
+   "sx_cm": 17.212551832199097,
+   "upper_arm_cm": 25.26768885910815,
+   "elbow_height_cm": 113.19468834079498,
+   "waist_at_elbow_cm": 24.938326707293516,
+   "waist_omphalion_cm": 28.54734239734561,
+   "chest_breadth_cm": 28.439595718853955,
+   "chest_depth_cm": 23.07203123273547,
+   "skin_over_joint_cm": 5.528116226196289,
+   "hip_at_wrist_cm": 34.67753282101882,
+   "forearm_cm": 24.015776524144783,
+   "upper_arm_radius_cm": 4.8,
+   "upper_arm_radius_p90_cm": 5.6,
+   "deltoid_beyond_joint_cm": 6.8,
+   "margin_waist_cm": 4.743388478552339,
+   "margin_chest_cm": 2.9927539727721193,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.6,
+     "real_p50": 17.4,
+     "real_p98": 19.1,
+     "z": -0.25,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 28.5,
+     "real_p2": 26.1,
+     "real_p50": 31.9,
+     "real_p98": 39.8,
+     "z": -1.05,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 24.9,
+     "real_p2": 26.1,
+     "real_p50": 31.9,
+     "real_p98": 39.8,
+     "z": -2.11,
+     "out": true
+    },
+    "chest breadth": {
+     "value": 28.4,
+     "real_p2": 25.2,
+     "real_p50": 28.8,
+     "real_p98": 33.0,
+     "z": -0.21,
+     "out": false
+    },
+    "chest depth": {
+     "value": 23.1,
+     "real_p2": 20.9,
+     "real_p50": 26.3,
+     "real_p98": 32.8,
+     "z": -1.19,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.7,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 2.08,
+     "out": true
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.8,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.46,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 3.0,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": 0.19,
+     "out": false
+    }
+   },
+   "least_hang_deg": -4.0,
+   "least_hang_sleeve_deg": -0.6,
+   "least_hang_wrist_deg": 3.1,
+   "flags": [
+    "waist breadth at the elbow outside real people"
+   ]
+  },
+  {
+   "base": "Female_Adult_02",
+   "sex": "f",
+   "stature_cm": 173.51620867848396,
+   "sx_cm": 17.212551832199097,
+   "upper_arm_cm": 25.26768885910815,
+   "elbow_height_cm": 113.19925419628316,
+   "waist_at_elbow_cm": 27.071757592503644,
+   "waist_omphalion_cm": 31.223141704069203,
+   "chest_breadth_cm": 28.78328755375319,
+   "chest_depth_cm": 22.87206447010447,
+   "skin_over_joint_cm": 5.859494209289551,
+   "hip_at_wrist_cm": 36.04002752276469,
+   "forearm_cm": 24.015776524144783,
+   "upper_arm_radius_cm": 4.7,
+   "upper_arm_radius_p90_cm": 5.2,
+   "deltoid_beyond_joint_cm": 6.9,
+   "margin_waist_cm": 3.6766730359472746,
+   "margin_chest_cm": 2.8209080553225014,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.5,
+     "real_p50": 17.4,
+     "real_p98": 19.0,
+     "z": -0.15,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 31.2,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.6,
+     "z": -0.22,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 27.1,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.6,
+     "z": -1.44,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 28.8,
+     "real_p2": 25.1,
+     "real_p50": 28.6,
+     "real_p98": 32.8,
+     "z": 0.04,
+     "out": false
+    },
+    "chest depth": {
+     "value": 22.9,
+     "real_p2": 20.8,
+     "real_p50": 26.2,
+     "real_p98": 32.6,
+     "z": -1.22,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.7,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 1.44,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.9,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.55,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 2.8,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": 0.02,
+     "out": false
+    }
+   },
+   "least_hang_deg": -1.5,
+   "least_hang_sleeve_deg": 1.1,
+   "least_hang_wrist_deg": 3.8,
+   "flags": []
+  },
+  {
+   "base": "Female_Adult_03",
+   "sex": "f",
+   "stature_cm": 173.8893342007941,
+   "sx_cm": 17.212548106908798,
+   "upper_arm_cm": 25.267677974899648,
+   "elbow_height_cm": 112.74509601471281,
+   "waist_at_elbow_cm": 25.92829539603605,
+   "waist_omphalion_cm": 28.255686831310033,
+   "chest_breadth_cm": 25.80137560707533,
+   "chest_depth_cm": 21.959236850662116,
+   "skin_over_joint_cm": 5.834484100341797,
+   "hip_at_wrist_cm": 35.52718066541301,
+   "forearm_cm": 24.015751421404985,
+   "upper_arm_radius_cm": 3.6,
+   "upper_arm_radius_p90_cm": 4.4,
+   "deltoid_beyond_joint_cm": 4.9,
+   "margin_waist_cm": 4.248400408890774,
+   "margin_chest_cm": 4.311860303371134,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.6,
+     "real_p50": 17.4,
+     "real_p98": 19.1,
+     "z": -0.2,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 28.3,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.7,
+     "z": -1.11,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 25.9,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.7,
+     "z": -1.8,
+     "out": true
+    },
+    "chest breadth": {
+     "value": 25.8,
+     "real_p2": 25.1,
+     "real_p50": 28.7,
+     "real_p98": 32.9,
+     "z": -1.55,
+     "out": false
+    },
+    "chest depth": {
+     "value": 22.0,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 32.7,
+     "z": -1.56,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.2,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 1.78,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 4.9,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": -1.13,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 4.3,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": 1.53,
+     "out": false
+    }
+   },
+   "least_hang_deg": -2.8,
+   "least_hang_sleeve_deg": -1.7,
+   "least_hang_wrist_deg": 3.5,
+   "flags": [
+    "waist breadth at the elbow outside real people"
+   ]
+  },
+  {
+   "base": "Female_Adult_04",
+   "sex": "f",
+   "stature_cm": 176.59245571121573,
+   "sx_cm": 17.212548106908798,
+   "upper_arm_cm": 25.267695620484364,
+   "elbow_height_cm": 113.10851491632341,
+   "waist_at_elbow_cm": 27.949978414739142,
+   "waist_omphalion_cm": 28.12947099982639,
+   "chest_breadth_cm": 29.020376913517467,
+   "chest_depth_cm": 24.511497022459228,
+   "skin_over_joint_cm": 5.508381128311157,
+   "hip_at_wrist_cm": 32.67762698433904,
+   "forearm_cm": 24.015780239995827,
+   "upper_arm_radius_cm": 4.7,
+   "upper_arm_radius_p90_cm": 5.3,
+   "deltoid_beyond_joint_cm": 6.8,
+   "margin_waist_cm": 3.237558899539227,
+   "margin_chest_cm": 2.702359650150065,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.8,
+     "real_p50": 17.7,
+     "real_p98": 19.4,
+     "z": -0.52,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 28.1,
+     "real_p2": 26.4,
+     "real_p50": 32.3,
+     "real_p98": 40.3,
+     "z": -1.28,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 27.9,
+     "real_p2": 26.4,
+     "real_p50": 32.3,
+     "real_p98": 40.3,
+     "z": -1.33,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 29.0,
+     "real_p2": 25.5,
+     "real_p50": 29.1,
+     "real_p98": 33.4,
+     "z": -0.1,
+     "out": false
+    },
+    "chest depth": {
+     "value": 24.5,
+     "real_p2": 21.2,
+     "real_p50": 26.6,
+     "real_p98": 33.2,
+     "z": -0.8,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.2,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 1.18,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.8,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.46,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 2.7,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": -0.1,
+     "out": false
+    }
+   },
+   "least_hang_deg": -0.5,
+   "least_hang_sleeve_deg": 2.3,
+   "least_hang_wrist_deg": 1.9,
+   "flags": []
+  },
+  {
+   "base": "Female_Adult_05",
+   "sex": "f",
+   "stature_cm": 173.6178347695386,
+   "sx_cm": 17.212551832199097,
+   "upper_arm_cm": 25.26768885910815,
+   "elbow_height_cm": 112.77033934419205,
+   "waist_at_elbow_cm": 27.159700632961925,
+   "waist_omphalion_cm": 29.587151423301865,
+   "chest_breadth_cm": 29.975351057405675,
+   "chest_depth_cm": 25.539195280004545,
+   "skin_over_joint_cm": 6.055021286010742,
+   "hip_at_wrist_cm": 35.04951896356317,
+   "forearm_cm": 24.015776524144783,
+   "upper_arm_radius_cm": 5.5,
+   "upper_arm_radius_p90_cm": 6.6,
+   "deltoid_beyond_joint_cm": 5.4,
+   "margin_waist_cm": 3.632701515718134,
+   "margin_chest_cm": 2.2248763034962593,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.6,
+     "real_p50": 17.4,
+     "real_p98": 19.0,
+     "z": -0.17,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 29.6,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.6,
+     "z": -0.71,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 27.2,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.6,
+     "z": -1.42,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 30.0,
+     "real_p2": 25.1,
+     "real_p50": 28.6,
+     "real_p98": 32.8,
+     "z": 0.65,
+     "out": false
+    },
+    "chest depth": {
+     "value": 25.5,
+     "real_p2": 20.8,
+     "real_p50": 26.2,
+     "real_p98": 32.6,
+     "z": -0.3,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.6,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 1.41,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 5.4,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": -0.71,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 2.2,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": -0.58,
+     "out": false
+    }
+   },
+   "least_hang_deg": -1.4,
+   "least_hang_sleeve_deg": 3.7,
+   "least_hang_wrist_deg": 3.3,
+   "flags": []
+  },
+  {
+   "base": "Female_Adult_07",
+   "sex": "f",
+   "stature_cm": 172.2571407095529,
+   "sx_cm": 17.212553322315216,
+   "upper_arm_cm": 25.267700999962305,
+   "elbow_height_cm": 112.78871176998489,
+   "waist_at_elbow_cm": 25.72109310187302,
+   "waist_omphalion_cm": 31.301183050262914,
+   "chest_breadth_cm": 27.307736983288876,
+   "chest_depth_cm": 24.112670185973506,
+   "skin_over_joint_cm": 6.118208169937134,
+   "hip_at_wrist_cm": 34.46155146029408,
+   "forearm_cm": 24.01579723904588,
+   "upper_arm_radius_cm": 5.4,
+   "upper_arm_radius_p90_cm": 5.9,
+   "deltoid_beyond_joint_cm": 7.2,
+   "margin_waist_cm": 4.352006771378706,
+   "margin_chest_cm": 3.558684830670778,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.4,
+     "real_p50": 17.2,
+     "real_p98": 18.9,
+     "z": -0.0,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 31.3,
+     "real_p2": 25.8,
+     "real_p50": 31.5,
+     "real_p98": 39.3,
+     "z": -0.13,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 25.7,
+     "real_p2": 25.8,
+     "real_p50": 31.5,
+     "real_p98": 39.3,
+     "z": -1.79,
+     "out": true
+    },
+    "chest breadth": {
+     "value": 27.3,
+     "real_p2": 24.9,
+     "real_p50": 28.4,
+     "real_p98": 32.6,
+     "z": -0.63,
+     "out": false
+    },
+    "chest depth": {
+     "value": 24.1,
+     "real_p2": 20.7,
+     "real_p50": 26.0,
+     "real_p98": 32.4,
+     "z": -0.73,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.4,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 1.84,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 7.2,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.8,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 3.6,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": 0.77,
+     "out": false
+    }
+   },
+   "least_hang_deg": -3.1,
+   "least_hang_sleeve_deg": 0.8,
+   "least_hang_wrist_deg": 2.9,
+   "flags": [
+    "waist breadth at the elbow outside real people"
+   ]
+  },
+  {
+   "base": "Female_Adult_08",
+   "sex": "f",
+   "stature_cm": 173.4915750217624,
+   "sx_cm": 17.212553322315216,
+   "upper_arm_cm": 25.267700999962305,
+   "elbow_height_cm": 112.77513210895829,
+   "waist_at_elbow_cm": 24.914178451906405,
+   "waist_omphalion_cm": 26.643654525804866,
+   "chest_breadth_cm": 26.092929988471237,
+   "chest_depth_cm": 22.977344541436217,
+   "skin_over_joint_cm": 5.854547023773193,
+   "hip_at_wrist_cm": 33.72729121956775,
+   "forearm_cm": 24.01579723904588,
+   "upper_arm_radius_cm": 3.6,
+   "upper_arm_radius_p90_cm": 4.4,
+   "deltoid_beyond_joint_cm": 4.5,
+   "margin_waist_cm": 4.755464096362013,
+   "margin_chest_cm": 4.1660883280795975,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.5,
+     "real_p50": 17.3,
+     "real_p98": 19.0,
+     "z": -0.15,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 26.6,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.6,
+     "z": -1.57,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 24.9,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.6,
+     "z": -2.08,
+     "out": true
+    },
+    "chest breadth": {
+     "value": 26.1,
+     "real_p2": 25.1,
+     "real_p50": 28.6,
+     "real_p98": 32.8,
+     "z": -1.37,
+     "out": false
+    },
+    "chest depth": {
+     "value": 23.0,
+     "real_p2": 20.8,
+     "real_p50": 26.2,
+     "real_p98": 32.6,
+     "z": -1.19,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.8,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 2.09,
+     "out": true
+    },
+    "shoulder skin beyond the joint": {
+     "value": 4.5,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": -1.47,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 4.2,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": 1.38,
+     "out": false
+    }
+   },
+   "least_hang_deg": -4.0,
+   "least_hang_sleeve_deg": -2.8,
+   "least_hang_wrist_deg": 2.5,
+   "flags": [
+    "waist breadth at the elbow outside real people"
+   ]
+  },
+  {
+   "base": "Female_Adult_09",
+   "sex": "f",
+   "stature_cm": 173.54096089547966,
+   "sx_cm": 17.212548106908798,
+   "upper_arm_cm": 25.267687600793575,
+   "elbow_height_cm": 112.77338463616253,
+   "waist_at_elbow_cm": 26.390888222855263,
+   "waist_omphalion_cm": 30.00926072417197,
+   "chest_breadth_cm": 26.296740506036265,
+   "chest_depth_cm": 23.17014228458109,
+   "skin_over_joint_cm": 5.317169427871704,
+   "hip_at_wrist_cm": 37.455539178511074,
+   "forearm_cm": 24.015762382019055,
+   "upper_arm_radius_cm": 4.7,
+   "upper_arm_radius_p90_cm": 4.9,
+   "deltoid_beyond_joint_cm": 6.6,
+   "margin_waist_cm": 4.0171039954811665,
+   "margin_chest_cm": 4.064177853890666,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.5,
+     "real_p50": 17.4,
+     "real_p98": 19.0,
+     "z": -0.16,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 30.0,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.6,
+     "z": -0.58,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 26.4,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.6,
+     "z": -1.65,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 26.3,
+     "real_p2": 25.1,
+     "real_p50": 28.6,
+     "real_p98": 32.8,
+     "z": -1.27,
+     "out": false
+    },
+    "chest depth": {
+     "value": 23.2,
+     "real_p2": 20.8,
+     "real_p50": 26.2,
+     "real_p98": 32.6,
+     "z": -1.12,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.0,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 1.64,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.6,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.29,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 4.1,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": 1.28,
+     "out": false
+    }
+   },
+   "least_hang_deg": -2.3,
+   "least_hang_sleeve_deg": -0.2,
+   "least_hang_wrist_deg": 4.7,
+   "flags": []
+  },
+  {
+   "base": "Female_Adult_11",
+   "sex": "f",
+   "stature_cm": 173.64204978512134,
+   "sx_cm": 17.212551832199097,
+   "upper_arm_cm": 25.26768885910815,
+   "elbow_height_cm": 112.77515900836488,
+   "waist_at_elbow_cm": 25.54817109261338,
+   "waist_omphalion_cm": 29.4734508139893,
+   "chest_breadth_cm": 26.033390591462297,
+   "chest_depth_cm": 22.836198272777153,
+   "skin_over_joint_cm": 5.641388893127441,
+   "hip_at_wrist_cm": 36.679846260052244,
+   "forearm_cm": 24.015776524144783,
+   "upper_arm_radius_cm": 4.6,
+   "upper_arm_radius_p90_cm": 5.0,
+   "deltoid_beyond_joint_cm": 3.8,
+   "margin_waist_cm": 4.438466285892407,
+   "margin_chest_cm": 4.195856536467948,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.6,
+     "real_p50": 17.4,
+     "real_p98": 19.0,
+     "z": -0.17,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 29.5,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.6,
+     "z": -0.74,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 25.5,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.6,
+     "z": -1.9,
+     "out": true
+    },
+    "chest breadth": {
+     "value": 26.0,
+     "real_p2": 25.1,
+     "real_p50": 28.6,
+     "real_p98": 32.8,
+     "z": -1.41,
+     "out": false
+    },
+    "chest depth": {
+     "value": 22.8,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 32.6,
+     "z": -1.24,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.4,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 1.9,
+     "out": true
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.8,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": -2.06,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 4.2,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": 1.41,
+     "out": false
+    }
+   },
+   "least_hang_deg": -3.3,
+   "least_hang_sleeve_deg": -1.0,
+   "least_hang_wrist_deg": 4.2,
+   "flags": [
+    "waist breadth at the elbow outside real people"
+   ]
+  },
+  {
+   "base": "Female_Adult_12",
+   "sex": "f",
+   "stature_cm": 172.67288472503424,
+   "sx_cm": 17.21256747841835,
+   "upper_arm_cm": 25.267726469799484,
+   "elbow_height_cm": 112.7878355719004,
+   "waist_at_elbow_cm": 28.51964113263714,
+   "waist_omphalion_cm": 32.109980169557936,
+   "chest_breadth_cm": 29.16085413072671,
+   "chest_depth_cm": 24.166044969630345,
+   "skin_over_joint_cm": 5.16202449798584,
+   "hip_at_wrist_cm": 35.049540245261234,
+   "forearm_cm": 24.01578856671331,
+   "upper_arm_radius_cm": 5.0,
+   "upper_arm_radius_p90_cm": 5.5,
+   "deltoid_beyond_joint_cm": 6.8,
+   "margin_waist_cm": 2.95274691209978,
+   "margin_chest_cm": 2.6321404130549944,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.5,
+     "real_p50": 17.3,
+     "real_p98": 18.9,
+     "z": -0.05,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 32.1,
+     "real_p2": 25.8,
+     "real_p50": 31.6,
+     "real_p98": 39.4,
+     "z": 0.09,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 28.5,
+     "real_p2": 25.8,
+     "real_p50": 31.6,
+     "real_p98": 39.4,
+     "z": -0.98,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 29.2,
+     "real_p2": 25.0,
+     "real_p50": 28.5,
+     "real_p98": 32.7,
+     "z": 0.31,
+     "out": false
+    },
+    "chest depth": {
+     "value": 24.2,
+     "real_p2": 20.7,
+     "real_p50": 26.0,
+     "real_p98": 32.5,
+     "z": -0.73,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.0,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 1.01,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.8,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.46,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 2.6,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": -0.17,
+     "out": false
+    }
+   },
+   "least_hang_deg": 0.1,
+   "least_hang_sleeve_deg": 3.3,
+   "least_hang_wrist_deg": 3.3,
+   "flags": []
+  },
+  {
+   "base": "Female_Adult_13",
+   "sex": "f",
+   "stature_cm": 175.15695852926,
+   "sx_cm": 17.212555557489395,
+   "upper_arm_cm": 25.267692759741077,
+   "elbow_height_cm": 112.77105736116322,
+   "waist_at_elbow_cm": 25.98926564266352,
+   "waist_omphalion_cm": 30.04925621776944,
+   "chest_breadth_cm": 27.397525407027278,
+   "chest_depth_cm": 23.440618232587703,
+   "skin_over_joint_cm": 5.521082878112793,
+   "hip_at_wrist_cm": 35.09342126582548,
+   "forearm_cm": 24.01577982277409,
+   "upper_arm_radius_cm": 3.6,
+   "upper_arm_radius_p90_cm": 4.4,
+   "deltoid_beyond_joint_cm": 6.1,
+   "margin_waist_cm": 4.217922736157636,
+   "margin_chest_cm": 3.5137928539757564,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.7,
+     "real_p50": 17.5,
+     "real_p98": 19.2,
+     "z": -0.35,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 30.0,
+     "real_p2": 26.2,
+     "real_p50": 32.1,
+     "real_p98": 40.0,
+     "z": -0.65,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 26.0,
+     "real_p2": 26.2,
+     "real_p50": 32.1,
+     "real_p98": 40.0,
+     "z": -1.84,
+     "out": true
+    },
+    "chest breadth": {
+     "value": 27.4,
+     "real_p2": 25.3,
+     "real_p50": 28.9,
+     "real_p98": 33.1,
+     "z": -0.82,
+     "out": false
+    },
+    "chest depth": {
+     "value": 23.4,
+     "real_p2": 21.0,
+     "real_p50": 26.4,
+     "real_p98": 32.9,
+     "z": -1.1,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.2,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 1.76,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.1,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": -0.12,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 3.5,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": 0.72,
+     "out": false
+    }
+   },
+   "least_hang_deg": -2.8,
+   "least_hang_sleeve_deg": -1.6,
+   "least_hang_wrist_deg": 3.3,
+   "flags": [
+    "waist breadth at the elbow outside real people"
+   ]
+  },
+  {
+   "base": "Female_Adult_14",
+   "sex": "f",
+   "stature_cm": 174.38104269094765,
+   "sx_cm": 17.212552577257156,
+   "upper_arm_cm": 25.26767174241879,
+   "elbow_height_cm": 113.19474773952922,
+   "waist_at_elbow_cm": 27.17206146019099,
+   "waist_omphalion_cm": 31.419113559011176,
+   "chest_breadth_cm": 28.895893556131835,
+   "chest_depth_cm": 25.385529436068826,
+   "skin_over_joint_cm": 6.324094533920288,
+   "hip_at_wrist_cm": 35.52222444272221,
+   "forearm_cm": 24.01576737852742,
+   "upper_arm_radius_cm": 4.6,
+   "upper_arm_radius_p90_cm": 5.0,
+   "deltoid_beyond_joint_cm": 3.0,
+   "margin_waist_cm": 3.626521847161662,
+   "margin_chest_cm": 2.764605799191239,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.6,
+     "real_p50": 17.4,
+     "real_p98": 19.1,
+     "z": -0.26,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 31.4,
+     "real_p2": 26.1,
+     "real_p50": 31.9,
+     "real_p98": 39.8,
+     "z": -0.21,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 27.2,
+     "real_p2": 26.1,
+     "real_p50": 31.9,
+     "real_p98": 39.8,
+     "z": -1.45,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 28.9,
+     "real_p2": 25.2,
+     "real_p50": 28.8,
+     "real_p98": 33.0,
+     "z": 0.02,
+     "out": false
+    },
+    "chest depth": {
+     "value": 25.4,
+     "real_p2": 20.9,
+     "real_p50": 26.3,
+     "real_p98": 32.8,
+     "z": -0.39,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.6,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 1.41,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.0,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": -2.73,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.8,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": -0.04,
+     "out": false
+    }
+   },
+   "least_hang_deg": -1.4,
+   "least_hang_sleeve_deg": 0.8,
+   "least_hang_wrist_deg": 3.5,
+   "flags": []
+  },
+  {
+   "base": "Female_Adult_15",
+   "sex": "f",
+   "stature_cm": 173.8994521641871,
+   "sx_cm": 17.212551832199097,
+   "upper_arm_cm": 25.26768885910815,
+   "elbow_height_cm": 112.77516468943259,
+   "waist_at_elbow_cm": 26.441074043134893,
+   "waist_omphalion_cm": 30.7305829404952,
+   "chest_breadth_cm": 28.48543219086278,
+   "chest_depth_cm": 24.27944984050162,
+   "skin_over_joint_cm": 8.046954870223999,
+   "hip_at_wrist_cm": 34.46700493818234,
+   "forearm_cm": 24.015776524144783,
+   "upper_arm_radius_cm": 4.1,
+   "upper_arm_radius_p90_cm": 5.3,
+   "deltoid_beyond_joint_cm": 6.8,
+   "margin_waist_cm": 3.99201481063165,
+   "margin_chest_cm": 2.969835736767706,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.6,
+     "real_p50": 17.4,
+     "real_p98": 19.1,
+     "z": -0.2,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 30.7,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.7,
+     "z": -0.38,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 26.4,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.7,
+     "z": -1.65,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 28.5,
+     "real_p2": 25.1,
+     "real_p50": 28.7,
+     "real_p98": 32.9,
+     "z": -0.15,
+     "out": false
+    },
+    "chest depth": {
+     "value": 24.3,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 32.7,
+     "z": -0.75,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.0,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 1.63,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.8,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.46,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 3.0,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": 0.17,
+     "out": false
+    }
+   },
+   "least_hang_deg": -2.3,
+   "least_hang_sleeve_deg": 0.6,
+   "least_hang_wrist_deg": 2.9,
+   "flags": []
+  },
+  {
+   "base": "Female_Adult_17",
+   "sex": "f",
+   "stature_cm": 175.09975543653127,
+   "sx_cm": 17.212556302547455,
+   "upper_arm_cm": 25.267691812132657,
+   "elbow_height_cm": 112.74658412648905,
+   "waist_at_elbow_cm": 23.657130526172615,
+   "waist_omphalion_cm": 26.853018390559768,
+   "chest_breadth_cm": 24.89010143244241,
+   "chest_depth_cm": 21.76859485182091,
+   "skin_over_joint_cm": 5.873554944992065,
+   "hip_at_wrist_cm": 34.308239823277894,
+   "forearm_cm": 24.01577804798617,
+   "upper_arm_radius_cm": 4.2,
+   "upper_arm_radius_p90_cm": 5.1,
+   "deltoid_beyond_joint_cm": 6.6,
+   "margin_waist_cm": 5.383991039461147,
+   "margin_chest_cm": 4.76750558632625,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.7,
+     "real_p50": 17.5,
+     "real_p98": 19.2,
+     "z": -0.35,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 26.9,
+     "real_p2": 26.2,
+     "real_p50": 32.1,
+     "real_p98": 40.0,
+     "z": -1.58,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 23.7,
+     "real_p2": 26.2,
+     "real_p50": 32.1,
+     "real_p98": 40.0,
+     "z": -2.51,
+     "out": true
+    },
+    "chest breadth": {
+     "value": 24.9,
+     "real_p2": 25.3,
+     "real_p50": 28.9,
+     "real_p98": 33.1,
+     "z": -2.12,
+     "out": true
+    },
+    "chest depth": {
+     "value": 21.8,
+     "real_p2": 21.0,
+     "real_p50": 26.4,
+     "real_p98": 32.9,
+     "z": -1.68,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 5.4,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 2.46,
+     "out": true
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.6,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.29,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 4.8,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": 1.99,
+     "out": true
+    }
+   },
+   "least_hang_deg": -5.4,
+   "least_hang_sleeve_deg": -3.0,
+   "least_hang_wrist_deg": 2.8,
+   "flags": [
+    "waist breadth at the elbow outside real people"
+   ]
+  },
+  {
+   "base": "Gardener_Male_01",
+   "sex": "m",
+   "stature_cm": 181.24371495796368,
+   "sx_cm": 21.03709802031517,
+   "upper_arm_cm": 28.58014969887704,
+   "elbow_height_cm": 114.32379541884616,
+   "waist_at_elbow_cm": 37.72545172589578,
+   "waist_omphalion_cm": 38.805460168974726,
+   "chest_breadth_cm": 39.61647716407535,
+   "chest_depth_cm": 29.10231887043811,
+   "skin_over_joint_cm": -5.053901672363281,
+   "hip_at_wrist_cm": 37.44652712410276,
+   "forearm_cm": 27.091935630886177,
+   "upper_arm_radius_cm": 5.3,
+   "upper_arm_radius_p90_cm": 9.9,
+   "deltoid_beyond_joint_cm": 6.1,
+   "margin_waist_cm": 2.17437215736728,
+   "margin_chest_cm": 1.228859438277496,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.7,
+     "real_p50": 19.4,
+     "real_p98": 21.2,
+     "z": 1.89,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 38.8,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 1.46,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 37.7,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 1.15,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 39.6,
+     "real_p2": 26.2,
+     "real_p50": 29.8,
+     "real_p98": 33.9,
+     "z": 5.26,
+     "out": true
+    },
+    "chest depth": {
+     "value": 29.1,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 31.7,
+     "z": 1.08,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.2,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": -0.18,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.1,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -0.54,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 1.2,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -3.58,
+     "out": true
+    }
+   },
+   "least_hang_deg": 2.7,
+   "least_hang_sleeve_deg": 11.6,
+   "least_hang_wrist_deg": 0.2,
+   "flags": [
+    "a hanging arm must stand 12 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Male_Adult_01",
+   "sex": "m",
+   "stature_cm": 182.3678329878021,
+   "sx_cm": 21.037113666534424,
+   "upper_arm_cm": 28.58015362540105,
+   "elbow_height_cm": 114.32377784262566,
+   "waist_at_elbow_cm": 34.744218949166154,
+   "waist_omphalion_cm": 35.2556924668118,
+   "chest_breadth_cm": 36.03529866093699,
+   "chest_depth_cm": 27.53390833679076,
+   "skin_over_joint_cm": 4.308825731277466,
+   "hip_at_wrist_cm": 39.78476238595374,
+   "forearm_cm": 27.09194788788567,
+   "upper_arm_radius_cm": 6.3,
+   "upper_arm_radius_p90_cm": 8.3,
+   "deltoid_beyond_joint_cm": 3.0,
+   "margin_waist_cm": 3.665004191951347,
+   "margin_chest_cm": 3.01946433606593,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.8,
+     "real_p50": 19.5,
+     "real_p98": 21.4,
+     "z": 1.74,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 35.3,
+     "real_p2": 27.3,
+     "real_p50": 33.9,
+     "real_p98": 41.7,
+     "z": 0.38,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 34.7,
+     "real_p2": 27.3,
+     "real_p50": 33.9,
+     "real_p98": 41.7,
+     "z": 0.24,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 36.0,
+     "real_p2": 26.4,
+     "real_p50": 30.0,
+     "real_p98": 34.1,
+     "z": 3.21,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.5,
+     "real_p2": 21.0,
+     "real_p50": 26.4,
+     "real_p98": 31.9,
+     "z": 0.43,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.7,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.75,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.0,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -3.18,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 3.0,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -1.5,
+     "out": false
+    }
+   },
+   "least_hang_deg": -0.3,
+   "least_hang_sleeve_deg": 6.0,
+   "least_hang_wrist_deg": 1.4,
+   "flags": []
+  },
+  {
+   "base": "Male_Adult_02",
+   "sex": "m",
+   "stature_cm": 182.27451695129275,
+   "sx_cm": 21.03709504008293,
+   "upper_arm_cm": 28.5801262204881,
+   "elbow_height_cm": 114.3238062428896,
+   "waist_at_elbow_cm": 34.71124726172279,
+   "waist_omphalion_cm": 36.69274595417997,
+   "chest_breadth_cm": 35.03733675467958,
+   "chest_depth_cm": 26.103596308522604,
+   "skin_over_joint_cm": 2.5155186653137207,
+   "hip_at_wrist_cm": 37.45994383741682,
+   "forearm_cm": 27.091920368917915,
+   "upper_arm_radius_cm": 6.3,
+   "upper_arm_radius_p90_cm": 8.8,
+   "deltoid_beyond_joint_cm": 1.6,
+   "margin_waist_cm": 3.681471409221537,
+   "margin_chest_cm": 3.518426662743142,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.8,
+     "real_p50": 19.5,
+     "real_p98": 21.4,
+     "z": 1.76,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 36.7,
+     "real_p2": 27.3,
+     "real_p50": 33.9,
+     "real_p98": 41.6,
+     "z": 0.8,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 34.7,
+     "real_p2": 27.3,
+     "real_p50": 33.9,
+     "real_p98": 41.6,
+     "z": 0.23,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 35.0,
+     "real_p2": 26.3,
+     "real_p50": 30.0,
+     "real_p98": 34.0,
+     "z": 2.68,
+     "out": true
+    },
+    "chest depth": {
+     "value": 26.1,
+     "real_p2": 21.0,
+     "real_p50": 26.3,
+     "real_p98": 31.9,
+     "z": -0.1,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.7,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.76,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 1.6,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -4.37,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 3.5,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -0.92,
+     "out": false
+    }
+   },
+   "least_hang_deg": -0.4,
+   "least_hang_sleeve_deg": 6.7,
+   "least_hang_wrist_deg": 0.2,
+   "flags": []
+  },
+  {
+   "base": "Male_Adult_03",
+   "sex": "m",
+   "stature_cm": 180.72467622114345,
+   "sx_cm": 21.037113666534424,
+   "upper_arm_cm": 28.58015995587133,
+   "elbow_height_cm": 114.32377175080678,
+   "waist_at_elbow_cm": 35.59942591386457,
+   "waist_omphalion_cm": 36.63308758378203,
+   "chest_breadth_cm": 39.887120187046975,
+   "chest_depth_cm": 27.939025079825452,
+   "skin_over_joint_cm": 5.650794506072998,
+   "hip_at_wrist_cm": 39.96458606649112,
+   "forearm_cm": 27.09193961273083,
+   "upper_arm_radius_cm": 4.7,
+   "upper_arm_radius_p90_cm": 9.6,
+   "deltoid_beyond_joint_cm": 3.4,
+   "margin_waist_cm": 3.237400709602138,
+   "margin_chest_cm": 1.0935535730109365,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.2,
+     "z": 1.96,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 36.6,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": 0.87,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 35.6,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": 0.57,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 39.9,
+     "real_p2": 26.1,
+     "real_p50": 29.8,
+     "real_p98": 33.8,
+     "z": 5.47,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.9,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 31.6,
+     "z": 0.68,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.2,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.48,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.4,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.84,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.1,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -3.73,
+     "out": true
+    }
+   },
+   "least_hang_deg": 0.5,
+   "least_hang_sleeve_deg": 8.9,
+   "least_hang_wrist_deg": 1.5,
+   "flags": [
+    "a hanging arm must stand 9 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Male_Adult_04",
+   "sex": "m",
+   "stature_cm": 186.857503419742,
+   "sx_cm": 21.037112921476364,
+   "upper_arm_cm": 28.580182811261786,
+   "elbow_height_cm": 114.30151437221312,
+   "waist_at_elbow_cm": 38.796577268536424,
+   "waist_omphalion_cm": 38.81884099571218,
+   "chest_breadth_cm": 45.09190308666876,
+   "chest_depth_cm": 27.893593191781278,
+   "skin_over_joint_cm": 5.276376008987427,
+   "hip_at_wrist_cm": 37.255116502675115,
+   "forearm_cm": 27.091936479318424,
+   "upper_arm_radius_cm": 6.5,
+   "upper_arm_radius_p90_cm": 9.0,
+   "deltoid_beyond_joint_cm": 6.4,
+   "margin_waist_cm": 1.638824287208152,
+   "margin_chest_cm": -1.5088386218580148,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 18.2,
+     "real_p50": 20.0,
+     "real_p98": 21.9,
+     "z": 1.17,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 38.8,
+     "real_p2": 28.0,
+     "real_p50": 34.7,
+     "real_p98": 42.7,
+     "z": 1.13,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 38.8,
+     "real_p2": 28.0,
+     "real_p50": 34.7,
+     "real_p98": 42.7,
+     "z": 1.12,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 45.1,
+     "real_p2": 27.0,
+     "real_p50": 30.8,
+     "real_p98": 34.9,
+     "z": 7.49,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.9,
+     "real_p2": 21.6,
+     "real_p50": 27.0,
+     "real_p98": 32.7,
+     "z": 0.32,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 1.6,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": -0.51,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.4,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -0.29,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": -1.5,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -6.75,
+     "out": true
+    }
+   },
+   "least_hang_deg": 3.7,
+   "least_hang_sleeve_deg": 11.2,
+   "least_hang_wrist_deg": 0.1,
+   "flags": [
+    "a hanging arm must stand 11 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Male_Adult_05",
+   "sex": "m",
+   "stature_cm": 181.24370231525972,
+   "sx_cm": 21.037107706069946,
+   "upper_arm_cm": 28.580154275108594,
+   "elbow_height_cm": 114.32378416037511,
+   "waist_at_elbow_cm": 42.128804134726536,
+   "waist_omphalion_cm": 42.48638642749613,
+   "chest_breadth_cm": 40.78005556190868,
+   "chest_depth_cm": 29.885721326036062,
+   "skin_over_joint_cm": 6.821393966674805,
+   "hip_at_wrist_cm": 44.13987665626061,
+   "forearm_cm": 27.091939245342438,
+   "upper_arm_radius_cm": 5.4,
+   "upper_arm_radius_p90_cm": 8.9,
+   "deltoid_beyond_joint_cm": 3.7,
+   "margin_waist_cm": -0.027294361293321856,
+   "margin_chest_cm": 0.6470799251156052,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.7,
+     "real_p50": 19.4,
+     "real_p98": 21.2,
+     "z": 1.89,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 42.5,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 2.51,
+     "out": true
+    },
+    "waist breadth at the elbow": {
+     "value": 42.1,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 2.41,
+     "out": true
+    },
+    "chest breadth": {
+     "value": 40.8,
+     "real_p2": 26.2,
+     "real_p50": 29.8,
+     "real_p98": 33.9,
+     "z": 5.89,
+     "out": true
+    },
+    "chest depth": {
+     "value": 29.9,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 31.7,
+     "z": 1.38,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": -0.0,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": -1.55,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.7,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.58,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 0.6,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -4.25,
+     "out": true
+    }
+   },
+   "least_hang_deg": 7.1,
+   "least_hang_sleeve_deg": 14.5,
+   "least_hang_wrist_deg": 3.6,
+   "flags": [
+    "waist breadth at the elbow outside real people",
+    "a hanging arm must stand 14 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Male_Adult_06",
+   "sex": "m",
+   "stature_cm": 183.13210805063136,
+   "sx_cm": 21.03711888194084,
+   "upper_arm_cm": 28.580168996748473,
+   "elbow_height_cm": 114.3127062753337,
+   "waist_at_elbow_cm": 33.541702647292546,
+   "waist_omphalion_cm": 33.67370070305843,
+   "chest_breadth_cm": 39.395247289115,
+   "chest_depth_cm": 26.719208459895995,
+   "skin_over_joint_cm": 4.906320571899414,
+   "hip_at_wrist_cm": 36.35730542050711,
+   "forearm_cm": 27.09194907071972,
+   "upper_arm_radius_cm": 6.4,
+   "upper_arm_radius_p90_cm": 8.4,
+   "deltoid_beyond_joint_cm": 4.9,
+   "margin_waist_cm": 4.266267558294569,
+   "margin_chest_cm": 1.3394952373833426,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.8,
+     "real_p50": 19.6,
+     "real_p98": 21.5,
+     "z": 1.64,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 33.7,
+     "real_p2": 27.4,
+     "real_p50": 34.0,
+     "real_p98": 41.8,
+     "z": -0.11,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 33.5,
+     "real_p2": 27.4,
+     "real_p50": 34.0,
+     "real_p98": 41.8,
+     "z": -0.15,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 39.4,
+     "real_p2": 26.5,
+     "real_p50": 30.2,
+     "real_p98": 34.2,
+     "z": 4.92,
+     "out": true
+    },
+    "chest depth": {
+     "value": 26.7,
+     "real_p2": 21.1,
+     "real_p50": 26.5,
+     "real_p98": 32.1,
+     "z": 0.09,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.3,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 1.12,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 4.9,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -1.56,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 1.3,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -3.45,
+     "out": true
+    }
+   },
+   "least_hang_deg": -1.5,
+   "least_hang_sleeve_deg": 4.9,
+   "least_hang_wrist_deg": -0.4,
+   "flags": []
+  },
+  {
+   "base": "Male_Adult_07",
+   "sex": "m",
+   "stature_cm": 182.0528944779653,
+   "sx_cm": 21.03709653019905,
+   "upper_arm_cm": 28.580155981030448,
+   "elbow_height_cm": 114.29054640976139,
+   "waist_at_elbow_cm": 36.66434796358047,
+   "waist_omphalion_cm": 37.92046158243028,
+   "chest_breadth_cm": 39.42153629963629,
+   "chest_depth_cm": 27.905199179660578,
+   "skin_over_joint_cm": 6.163680553436279,
+   "hip_at_wrist_cm": 41.2635944098639,
+   "forearm_cm": 27.091908541342523,
+   "upper_arm_radius_cm": 6.9,
+   "upper_arm_radius_p90_cm": 8.8,
+   "deltoid_beyond_joint_cm": 4.3,
+   "margin_waist_cm": 2.704922548408817,
+   "margin_chest_cm": 1.3263283803809074,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.7,
+     "real_p50": 19.5,
+     "real_p98": 21.3,
+     "z": 1.79,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 37.9,
+     "real_p2": 27.3,
+     "real_p50": 33.8,
+     "real_p98": 41.6,
+     "z": 1.16,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 36.7,
+     "real_p2": 27.3,
+     "real_p50": 33.8,
+     "real_p98": 41.6,
+     "z": 0.8,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 39.4,
+     "real_p2": 26.3,
+     "real_p50": 30.0,
+     "real_p98": 34.0,
+     "z": 5.06,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.9,
+     "real_p2": 21.0,
+     "real_p50": 26.3,
+     "real_p98": 31.9,
+     "z": 0.59,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.7,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.15,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 4.3,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.07,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.3,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -3.46,
+     "out": true
+    }
+   },
+   "least_hang_deg": 1.6,
+   "least_hang_sleeve_deg": 8.7,
+   "least_hang_wrist_deg": 2.2,
+   "flags": [
+    "a hanging arm must stand 9 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Male_Adult_08",
+   "sex": "m",
+   "stature_cm": 182.5721606030129,
+   "sx_cm": 21.03711888194084,
+   "upper_arm_cm": 28.58017097126767,
+   "elbow_height_cm": 114.32376935014426,
+   "waist_at_elbow_cm": 32.43989700186118,
+   "waist_omphalion_cm": 32.34486792000797,
+   "chest_breadth_cm": 40.670715052320716,
+   "chest_depth_cm": 26.81715790445749,
+   "skin_over_joint_cm": 5.518162250518799,
+   "hip_at_wrist_cm": 34.87517362919322,
+   "forearm_cm": 27.091951329341203,
+   "upper_arm_radius_cm": 6.3,
+   "upper_arm_radius_p90_cm": 8.5,
+   "deltoid_beyond_joint_cm": 2.9,
+   "margin_waist_cm": 4.81717038101025,
+   "margin_chest_cm": 0.7017613557804836,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.8,
+     "real_p50": 19.5,
+     "real_p98": 21.4,
+     "z": 1.72,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 32.3,
+     "real_p2": 27.4,
+     "real_p50": 33.9,
+     "real_p98": 41.7,
+     "z": -0.46,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 32.4,
+     "real_p2": 27.4,
+     "real_p50": 33.9,
+     "real_p98": 41.7,
+     "z": -0.43,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 40.7,
+     "real_p2": 26.4,
+     "real_p50": 30.1,
+     "real_p98": 34.1,
+     "z": 5.67,
+     "out": true
+    },
+    "chest depth": {
+     "value": 26.8,
+     "real_p2": 21.1,
+     "real_p50": 26.4,
+     "real_p98": 32.0,
+     "z": 0.15,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.8,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 1.46,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 2.9,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -3.26,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 0.7,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -4.19,
+     "out": true
+    }
+   },
+   "least_hang_deg": -2.6,
+   "least_hang_sleeve_deg": 4.0,
+   "least_hang_wrist_deg": -1.1,
+   "flags": []
+  },
+  {
+   "base": "Male_Adult_09",
+   "sex": "m",
+   "stature_cm": 182.21761798486114,
+   "sx_cm": 21.03711888194084,
+   "upper_arm_cm": 28.58017097126767,
+   "elbow_height_cm": 114.31295479748323,
+   "waist_at_elbow_cm": 34.200140210314856,
+   "waist_omphalion_cm": 35.56417471642524,
+   "chest_breadth_cm": 37.79982209227811,
+   "chest_depth_cm": 26.25922715858826,
+   "skin_over_joint_cm": 3.60298752784729,
+   "hip_at_wrist_cm": 37.20212273038865,
+   "forearm_cm": 27.091951329341203,
+   "upper_arm_radius_cm": 5.8,
+   "upper_arm_radius_p90_cm": 7.3,
+   "deltoid_beyond_joint_cm": 3.9,
+   "margin_waist_cm": 3.9370487767834135,
+   "margin_chest_cm": 2.137207835801785,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.8,
+     "real_p50": 19.5,
+     "real_p98": 21.4,
+     "z": 1.76,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 35.6,
+     "real_p2": 27.3,
+     "real_p50": 33.9,
+     "real_p98": 41.6,
+     "z": 0.48,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 34.2,
+     "real_p2": 27.3,
+     "real_p50": 33.9,
+     "real_p98": 41.6,
+     "z": 0.09,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 37.8,
+     "real_p2": 26.3,
+     "real_p50": 30.0,
+     "real_p98": 34.0,
+     "z": 4.17,
+     "out": true
+    },
+    "chest depth": {
+     "value": 26.3,
+     "real_p2": 21.0,
+     "real_p50": 26.3,
+     "real_p98": 31.9,
+     "z": -0.04,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.9,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.92,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.9,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.41,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.1,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.52,
+     "out": true
+    }
+   },
+   "least_hang_deg": -0.9,
+   "least_hang_sleeve_deg": 3.8,
+   "least_hang_wrist_deg": 0.1,
+   "flags": []
+  },
+  {
+   "base": "Male_Adult_10",
+   "sex": "m",
+   "stature_cm": 183.13007070682943,
+   "sx_cm": 21.037118136882782,
+   "upper_arm_cm": 28.580170714943176,
+   "elbow_height_cm": 114.46273654355252,
+   "waist_at_elbow_cm": 35.496347068375755,
+   "waist_omphalion_cm": 36.12310696342404,
+   "chest_breadth_cm": 36.34001298157603,
+   "chest_depth_cm": 26.556551307004028,
+   "skin_over_joint_cm": 4.3976545333862305,
+   "hip_at_wrist_cm": 36.18054670255715,
+   "forearm_cm": 27.09196976516926,
+   "upper_arm_radius_cm": 6.7,
+   "upper_arm_radius_p90_cm": 8.4,
+   "deltoid_beyond_joint_cm": 3.2,
+   "margin_waist_cm": 3.2889446026949045,
+   "margin_chest_cm": 2.8671116460947665,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.8,
+     "real_p50": 19.6,
+     "real_p98": 21.5,
+     "z": 1.64,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 36.1,
+     "real_p2": 27.4,
+     "real_p50": 34.0,
+     "real_p98": 41.8,
+     "z": 0.59,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 35.5,
+     "real_p2": 27.4,
+     "real_p50": 34.0,
+     "real_p98": 41.8,
+     "z": 0.41,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 36.3,
+     "real_p2": 26.5,
+     "real_p50": 30.2,
+     "real_p98": 34.2,
+     "z": 3.29,
+     "out": true
+    },
+    "chest depth": {
+     "value": 26.6,
+     "real_p2": 21.1,
+     "real_p50": 26.5,
+     "real_p98": 32.1,
+     "z": 0.03,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.3,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.51,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.2,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -3.01,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.9,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -1.68,
+     "out": false
+    }
+   },
+   "least_hang_deg": 0.4,
+   "least_hang_sleeve_deg": 6.9,
+   "least_hang_wrist_deg": -0.5,
+   "flags": []
+  },
+  {
+   "base": "Male_Adult_11",
+   "sex": "m",
+   "stature_cm": 180.26792658492923,
+   "sx_cm": 21.03712260723114,
+   "upper_arm_cm": 28.580172528272985,
+   "elbow_height_cm": 114.32375993510473,
+   "waist_at_elbow_cm": 32.46525822028551,
+   "waist_omphalion_cm": 33.51097320791705,
+   "chest_breadth_cm": 34.90142456491506,
+   "chest_depth_cm": 25.562303663240606,
+   "skin_over_joint_cm": 3.101503849029541,
+   "hip_at_wrist_cm": 35.4016367027229,
+   "forearm_cm": 27.091965167612344,
+   "upper_arm_radius_cm": 5.6,
+   "upper_arm_radius_p90_cm": 7.7,
+   "deltoid_beyond_joint_cm": 3.5,
+   "margin_waist_cm": 4.804493497088384,
+   "margin_chest_cm": 3.5864103247736097,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.1,
+     "z": 2.03,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 33.5,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": -0.0,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 32.5,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": -0.3,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 34.9,
+     "real_p2": 26.1,
+     "real_p50": 29.7,
+     "real_p98": 33.7,
+     "z": 2.81,
+     "out": true
+    },
+    "chest depth": {
+     "value": 25.6,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 31.6,
+     "z": -0.19,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.8,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 1.45,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.5,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.75,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 3.6,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -0.84,
+     "out": false
+    }
+   },
+   "least_hang_deg": -2.6,
+   "least_hang_sleeve_deg": 2.7,
+   "least_hang_wrist_deg": -0.9,
+   "flags": []
+  },
+  {
+   "base": "Male_Adult_12",
+   "sex": "m",
+   "stature_cm": 180.68528926814906,
+   "sx_cm": 21.037106961011887,
+   "upper_arm_cm": 28.5801421383298,
+   "elbow_height_cm": 114.32380128555046,
+   "waist_at_elbow_cm": 36.45815230513809,
+   "waist_omphalion_cm": 36.07537113577946,
+   "chest_breadth_cm": 36.81740666341619,
+   "chest_depth_cm": 28.973078837395523,
+   "skin_over_joint_cm": 4.994094371795654,
+   "hip_at_wrist_cm": 36.76723197049304,
+   "forearm_cm": 27.091949525805948,
+   "upper_arm_radius_cm": 5.9,
+   "upper_arm_radius_p90_cm": 8.6,
+   "deltoid_beyond_joint_cm": 2.0,
+   "margin_waist_cm": 2.8080308084428403,
+   "margin_chest_cm": 2.62840362930379,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.2,
+     "z": 1.97,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 36.1,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": 0.71,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 36.5,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": 0.82,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 36.8,
+     "real_p2": 26.1,
+     "real_p50": 29.7,
+     "real_p98": 33.7,
+     "z": 3.81,
+     "out": true
+    },
+    "chest depth": {
+     "value": 29.0,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 31.6,
+     "z": 1.07,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.8,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.21,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 2.0,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -4.03,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.6,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -1.95,
+     "out": false
+    }
+   },
+   "least_hang_deg": 1.4,
+   "least_hang_sleeve_deg": 8.2,
+   "least_hang_wrist_deg": -0.2,
+   "flags": [
+    "a hanging arm must stand 8 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Male_Adult_13",
+   "sex": "m",
+   "stature_cm": 180.5881226900965,
+   "sx_cm": 21.037106961011887,
+   "upper_arm_cm": 28.580143235366606,
+   "elbow_height_cm": 114.32380110237395,
+   "waist_at_elbow_cm": 34.22946011003165,
+   "waist_omphalion_cm": 34.1835035432342,
+   "chest_breadth_cm": 37.37460889717228,
+   "chest_depth_cm": 28.44878486796698,
+   "skin_over_joint_cm": 4.44909930229187,
+   "hip_at_wrist_cm": 36.09197597759548,
+   "forearm_cm": 27.091946042211113,
+   "upper_arm_radius_cm": 5.6,
+   "upper_arm_radius_p90_cm": 8.9,
+   "deltoid_beyond_joint_cm": 2.9,
+   "margin_waist_cm": 3.9223769059960603,
+   "margin_chest_cm": 2.3498025124257467,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.2,
+     "z": 1.98,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 34.2,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.2,
+     "z": 0.17,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 34.2,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.2,
+     "z": 0.19,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 37.4,
+     "real_p2": 26.1,
+     "real_p50": 29.7,
+     "real_p98": 33.7,
+     "z": 4.12,
+     "out": true
+    },
+    "chest depth": {
+     "value": 28.4,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 31.6,
+     "z": 0.88,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.9,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.91,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 2.9,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -3.26,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.3,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.28,
+     "out": true
+    }
+   },
+   "least_hang_deg": -0.8,
+   "least_hang_sleeve_deg": 6.4,
+   "least_hang_wrist_deg": -0.5,
+   "flags": []
+  },
+  {
+   "base": "Male_Adult_14",
+   "sex": "m",
+   "stature_cm": 179.6111424046103,
+   "sx_cm": 21.03711888194084,
+   "upper_arm_cm": 28.58017426439121,
+   "elbow_height_cm": 114.32376355991207,
+   "waist_at_elbow_cm": 34.659589066716734,
+   "waist_omphalion_cm": 35.19496273291818,
+   "chest_breadth_cm": 38.90638175506684,
+   "chest_depth_cm": 25.041546886492416,
+   "skin_over_joint_cm": 6.265193223953247,
+   "hip_at_wrist_cm": 37.45214706357211,
+   "forearm_cm": 27.09196841642117,
+   "upper_arm_radius_cm": 6.9,
+   "upper_arm_radius_p90_cm": 8.4,
+   "deltoid_beyond_joint_cm": 3.1,
+   "margin_waist_cm": 3.7073243485824747,
+   "margin_chest_cm": 1.5839280044074222,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.5,
+     "real_p50": 19.2,
+     "real_p98": 21.1,
+     "z": 2.11,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 35.2,
+     "real_p2": 26.9,
+     "real_p50": 33.4,
+     "real_p98": 41.0,
+     "z": 0.52,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 34.7,
+     "real_p2": 26.9,
+     "real_p50": 33.4,
+     "real_p98": 41.0,
+     "z": 0.36,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.9,
+     "real_p2": 26.0,
+     "real_p50": 29.6,
+     "real_p98": 33.5,
+     "z": 5.07,
+     "out": true
+    },
+    "chest depth": {
+     "value": 25.0,
+     "real_p2": 20.7,
+     "real_p50": 26.0,
+     "real_p98": 31.4,
+     "z": -0.35,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.7,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.77,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.1,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -3.09,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.6,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -3.17,
+     "out": true
+    }
+   },
+   "least_hang_deg": -0.4,
+   "least_hang_sleeve_deg": 6.1,
+   "least_hang_wrist_deg": 0.2,
+   "flags": []
+  },
+  {
+   "base": "Male_Adult_16",
+   "sex": "m",
+   "stature_cm": 180.90169272036292,
+   "sx_cm": 21.037113666534424,
+   "upper_arm_cm": 28.580168355644687,
+   "elbow_height_cm": 114.24667332864647,
+   "waist_at_elbow_cm": 32.404976171369526,
+   "waist_omphalion_cm": 32.932916079682876,
+   "chest_breadth_cm": 36.93209949944995,
+   "chest_depth_cm": 26.296573649416764,
+   "skin_over_joint_cm": 3.3112406730651855,
+   "hip_at_wrist_cm": 36.96948212136181,
+   "forearm_cm": 27.09193899333733,
+   "upper_arm_radius_cm": 6.3,
+   "upper_arm_radius_p90_cm": 8.7,
+   "deltoid_beyond_joint_cm": 3.5,
+   "margin_waist_cm": 4.834625580849661,
+   "margin_chest_cm": 2.5710639168094502,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.2,
+     "z": 1.94,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 32.9,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": -0.2,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 32.4,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": -0.35,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 36.9,
+     "real_p2": 26.1,
+     "real_p50": 29.8,
+     "real_p98": 33.8,
+     "z": 3.85,
+     "out": true
+    },
+    "chest depth": {
+     "value": 26.3,
+     "real_p2": 20.9,
+     "real_p50": 26.1,
+     "real_p98": 31.7,
+     "z": 0.05,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.8,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 1.47,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.5,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.75,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.6,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.02,
+     "out": false
+    }
+   },
+   "least_hang_deg": -2.7,
+   "least_hang_sleeve_deg": 4.3,
+   "least_hang_wrist_deg": -0.1,
+   "flags": []
+  },
+  {
+   "base": "Male_Adult_20",
+   "sex": "m",
+   "stature_cm": 180.48930429213215,
+   "sx_cm": 21.037093549966812,
+   "upper_arm_cm": 28.580130197727517,
+   "elbow_height_cm": 114.27025950929111,
+   "waist_at_elbow_cm": 36.1552362358933,
+   "waist_omphalion_cm": 36.66698240432512,
+   "chest_breadth_cm": 38.271075072457585,
+   "chest_depth_cm": 27.088216339587902,
+   "skin_over_joint_cm": 5.428904294967651,
+   "hip_at_wrist_cm": 35.9683184060778,
+   "forearm_cm": 27.091925545410632,
+   "upper_arm_radius_cm": 6.7,
+   "upper_arm_radius_p90_cm": 9.2,
+   "deltoid_beyond_joint_cm": 3.6,
+   "margin_waist_cm": 2.959475432020163,
+   "margin_chest_cm": 1.9015560137380199,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.2,
+     "z": 2.0,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 36.7,
+     "real_p2": 27.1,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 0.89,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 36.2,
+     "real_p2": 27.1,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 0.74,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.3,
+     "real_p2": 26.1,
+     "real_p50": 29.7,
+     "real_p98": 33.7,
+     "z": 4.62,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.1,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 31.6,
+     "z": 0.37,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.0,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.31,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.6,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.67,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.9,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.8,
+     "out": true
+    }
+   },
+   "least_hang_deg": 1.1,
+   "least_hang_sleeve_deg": 8.9,
+   "least_hang_wrist_deg": -0.6,
+   "flags": [
+    "a hanging arm must stand 9 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Medical_Female_01",
+   "sex": "f",
+   "stature_cm": 173.88071666937321,
+   "sx_cm": 17.21254661679268,
+   "upper_arm_cm": 25.267686574107696,
+   "elbow_height_cm": 113.01384009854615,
+   "waist_at_elbow_cm": 31.449261941439083,
+   "waist_omphalion_cm": 34.62206307827458,
+   "chest_breadth_cm": 30.849168170253606,
+   "chest_depth_cm": 25.361495177046468,
+   "skin_over_joint_cm": 5.436825752258301,
+   "hip_at_wrist_cm": 38.511048198240836,
+   "forearm_cm": 24.015782308552318,
+   "upper_arm_radius_cm": 4.7,
+   "upper_arm_radius_p90_cm": 6.9,
+   "deltoid_beyond_joint_cm": 7.5,
+   "margin_waist_cm": 1.4879156460731373,
+   "margin_chest_cm": 1.787962531665876,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.6,
+     "real_p50": 17.4,
+     "real_p98": 19.1,
+     "z": -0.2,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 34.6,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.7,
+     "z": 0.76,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 31.4,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.7,
+     "z": -0.17,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 30.8,
+     "real_p2": 25.1,
+     "real_p50": 28.7,
+     "real_p98": 32.9,
+     "z": 1.08,
+     "out": false
+    },
+    "chest depth": {
+     "value": 25.4,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 32.7,
+     "z": -0.37,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 1.5,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 0.13,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 7.5,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 1.05,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 1.8,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": -1.03,
+     "out": false
+    }
+   },
+   "least_hang_deg": 3.4,
+   "least_hang_sleeve_deg": 9.2,
+   "least_hang_wrist_deg": 5.3,
+   "flags": []
+  },
+  {
+   "base": "Medical_Female_02",
+   "sex": "f",
+   "stature_cm": 173.33346107043326,
+   "sx_cm": 17.212548106908798,
+   "upper_arm_cm": 25.267677974899648,
+   "elbow_height_cm": 113.0890026809523,
+   "waist_at_elbow_cm": 31.923871499078455,
+   "waist_omphalion_cm": 32.44053153045217,
+   "chest_breadth_cm": 32.25475438426314,
+   "chest_depth_cm": 25.432832144076993,
+   "skin_over_joint_cm": 5.155211687088013,
+   "hip_at_wrist_cm": 35.47627401105662,
+   "forearm_cm": 24.015751421404985,
+   "upper_arm_radius_cm": 5.4,
+   "upper_arm_radius_p90_cm": 7.0,
+   "deltoid_beyond_joint_cm": 7.4,
+   "margin_waist_cm": 1.2506123573695707,
+   "margin_chest_cm": 1.0851709147772297,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.5,
+     "real_p50": 17.3,
+     "real_p98": 19.0,
+     "z": -0.13,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 32.4,
+     "real_p2": 25.9,
+     "real_p50": 31.7,
+     "real_p98": 39.6,
+     "z": 0.15,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 31.9,
+     "real_p2": 25.9,
+     "real_p50": 31.7,
+     "real_p98": 39.6,
+     "z": -0.0,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 32.3,
+     "real_p2": 25.1,
+     "real_p50": 28.6,
+     "real_p98": 32.8,
+     "z": 1.87,
+     "out": false
+    },
+    "chest depth": {
+     "value": 25.4,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 32.6,
+     "z": -0.32,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 1.3,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": -0.01,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 7.4,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.97,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 1.1,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": -1.74,
+     "out": false
+    }
+   },
+   "least_hang_deg": 4.0,
+   "least_hang_sleeve_deg": 9.9,
+   "least_hang_wrist_deg": 3.5,
+   "flags": []
+  },
+  {
+   "base": "Medical_Female_03",
+   "sex": "f",
+   "stature_cm": 173.4201452927664,
+   "sx_cm": 17.21257045865059,
+   "upper_arm_cm": 25.267712559464073,
+   "elbow_height_cm": 112.65255599570771,
+   "waist_at_elbow_cm": 33.457772736837384,
+   "waist_omphalion_cm": 32.50227532214831,
+   "chest_breadth_cm": 34.005187782257806,
+   "chest_depth_cm": 27.894242434008,
+   "skin_over_joint_cm": 6.0367584228515625,
+   "hip_at_wrist_cm": 36.61185240714967,
+   "forearm_cm": 24.0158122382393,
+   "upper_arm_radius_cm": 6.2,
+   "upper_arm_radius_p90_cm": 7.4,
+   "deltoid_beyond_joint_cm": 8.2,
+   "margin_waist_cm": 0.48368409023189685,
+   "margin_chest_cm": 0.2099765675216858,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.5,
+     "real_p50": 17.3,
+     "real_p98": 19.0,
+     "z": -0.14,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 32.5,
+     "real_p2": 26.0,
+     "real_p50": 31.7,
+     "real_p98": 39.6,
+     "z": 0.16,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 33.5,
+     "real_p2": 26.0,
+     "real_p50": 31.7,
+     "real_p98": 39.6,
+     "z": 0.45,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 34.0,
+     "real_p2": 25.1,
+     "real_p50": 28.6,
+     "real_p98": 32.8,
+     "z": 2.78,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.9,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 32.6,
+     "z": 0.54,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 0.5,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": -0.47,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 8.2,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 1.64,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 0.2,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": -2.62,
+     "out": true
+    }
+   },
+   "least_hang_deg": 5.7,
+   "least_hang_sleeve_deg": 12.4,
+   "least_hang_wrist_deg": 4.2,
+   "flags": [
+    "a hanging arm must stand 12 deg out to clear the waist or hips (real people of the sex: at most 11, p98)"
+   ]
+  },
+  {
+   "base": "Medical_Male_01",
+   "sex": "m",
+   "stature_cm": 180.64527169335634,
+   "sx_cm": 21.03712409734726,
+   "upper_arm_cm": 28.58018619166338,
+   "elbow_height_cm": 114.32375821592635,
+   "waist_at_elbow_cm": 36.87484808111578,
+   "waist_omphalion_cm": 37.1718550843289,
+   "chest_breadth_cm": 39.38873021989955,
+   "chest_depth_cm": 27.482474212531017,
+   "skin_over_joint_cm": 5.025392770767212,
+   "hip_at_wrist_cm": 40.3517876169229,
+   "forearm_cm": 27.091976740137635,
+   "upper_arm_radius_cm": 7.4,
+   "upper_arm_radius_p90_cm": 9.1,
+   "deltoid_beyond_joint_cm": 4.5,
+   "margin_waist_cm": 2.59970005678937,
+   "margin_chest_cm": 1.3427589873974846,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.2,
+     "z": 1.97,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 37.2,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": 1.03,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 36.9,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": 0.94,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 39.4,
+     "real_p2": 26.1,
+     "real_p50": 29.7,
+     "real_p98": 33.7,
+     "z": 5.21,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.5,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 31.6,
+     "z": 0.51,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.6,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.09,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 4.5,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -1.9,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.3,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -3.45,
+     "out": true
+    }
+   },
+   "least_hang_deg": 1.8,
+   "least_hang_sleeve_deg": 9.4,
+   "least_hang_wrist_deg": 1.7,
+   "flags": [
+    "a hanging arm must stand 9 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Medical_Male_02",
+   "sex": "m",
+   "stature_cm": 183.06220541198854,
+   "sx_cm": 21.037113666534424,
+   "upper_arm_cm": 28.580153651562256,
+   "elbow_height_cm": 114.24281302141262,
+   "waist_at_elbow_cm": 39.11729966107721,
+   "waist_omphalion_cm": 37.27612968518409,
+   "chest_breadth_cm": 41.523844447258426,
+   "chest_depth_cm": 30.54377048607374,
+   "skin_over_joint_cm": 4.765963554382324,
+   "hip_at_wrist_cm": 41.51874148993777,
+   "forearm_cm": 27.091947509366303,
+   "upper_arm_radius_cm": 8.2,
+   "upper_arm_radius_p90_cm": 10.5,
+   "deltoid_beyond_joint_cm": 6.5,
+   "margin_waist_cm": 1.478463835995818,
+   "margin_chest_cm": 0.2751914429052107,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.8,
+     "real_p50": 19.6,
+     "real_p98": 21.5,
+     "z": 1.65,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 37.3,
+     "real_p2": 27.4,
+     "real_p50": 34.0,
+     "real_p98": 41.8,
+     "z": 0.92,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 39.1,
+     "real_p2": 27.4,
+     "real_p50": 34.0,
+     "real_p98": 41.8,
+     "z": 1.44,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 41.5,
+     "real_p2": 26.5,
+     "real_p50": 30.1,
+     "real_p98": 34.2,
+     "z": 6.07,
+     "out": true
+    },
+    "chest depth": {
+     "value": 30.5,
+     "real_p2": 21.1,
+     "real_p50": 26.5,
+     "real_p98": 32.0,
+     "z": 1.51,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 1.5,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": -0.61,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.5,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -0.2,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 0.3,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -4.68,
+     "out": true
+    }
+   },
+   "least_hang_deg": 4.1,
+   "least_hang_sleeve_deg": 14.0,
+   "least_hang_wrist_deg": 2.3,
+   "flags": [
+    "a hanging arm must stand 14 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Medical_Male_03",
+   "sex": "m",
+   "stature_cm": 179.63533056899905,
+   "sx_cm": 21.037112921476364,
+   "upper_arm_cm": 28.580182811261786,
+   "elbow_height_cm": 114.32376157304489,
+   "waist_at_elbow_cm": 36.874851808336096,
+   "waist_omphalion_cm": 37.19419793285555,
+   "chest_breadth_cm": 39.292869658622905,
+   "chest_depth_cm": 27.434301037966268,
+   "skin_over_joint_cm": 5.025404691696167,
+   "hip_at_wrist_cm": 40.351787049466004,
+   "forearm_cm": 27.091936479318424,
+   "upper_arm_radius_cm": 7.4,
+   "upper_arm_radius_p90_cm": 9.1,
+   "deltoid_beyond_joint_cm": 4.5,
+   "margin_waist_cm": 2.599687017308316,
+   "margin_chest_cm": 1.3906780921649116,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.5,
+     "real_p50": 19.2,
+     "real_p98": 21.1,
+     "z": 2.11,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 37.2,
+     "real_p2": 26.9,
+     "real_p50": 33.4,
+     "real_p98": 41.0,
+     "z": 1.09,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 36.9,
+     "real_p2": 26.9,
+     "real_p50": 33.4,
+     "real_p98": 41.0,
+     "z": 1.0,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 39.3,
+     "real_p2": 26.0,
+     "real_p50": 29.6,
+     "real_p98": 33.6,
+     "z": 5.28,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.4,
+     "real_p2": 20.7,
+     "real_p50": 26.0,
+     "real_p98": 31.4,
+     "z": 0.55,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.6,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.09,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 4.5,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -1.9,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.4,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -3.39,
+     "out": true
+    }
+   },
+   "least_hang_deg": 1.8,
+   "least_hang_sleeve_deg": 9.4,
+   "least_hang_wrist_deg": 1.7,
+   "flags": [
+    "a hanging arm must stand 9 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Police_Male_06",
+   "sex": "m",
+   "stature_cm": 181.1499142961111,
+   "sx_cm": 21.03711888194084,
+   "upper_arm_cm": 28.58017426439121,
+   "elbow_height_cm": 114.29052255010672,
+   "waist_at_elbow_cm": 39.15774904608953,
+   "waist_omphalion_cm": 38.889389336584514,
+   "chest_breadth_cm": 37.14208245556284,
+   "chest_depth_cm": 29.824141733551123,
+   "skin_over_joint_cm": 8.748769760131836,
+   "hip_at_wrist_cm": 34.56917173817655,
+   "forearm_cm": 27.09196841642117,
+   "upper_arm_radius_cm": 6.9,
+   "upper_arm_radius_p90_cm": 10.0,
+   "deltoid_beyond_joint_cm": 3.8,
+   "margin_waist_cm": 1.4582443588960778,
+   "margin_chest_cm": 2.4660776541594203,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.4,
+     "real_p98": 21.2,
+     "z": 1.91,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 38.9,
+     "real_p2": 27.1,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 1.49,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 39.2,
+     "real_p2": 27.1,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 1.57,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 37.1,
+     "real_p2": 26.2,
+     "real_p50": 29.8,
+     "real_p98": 33.8,
+     "z": 3.94,
+     "out": true
+    },
+    "chest depth": {
+     "value": 29.8,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 31.7,
+     "z": 1.36,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 1.5,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": -0.62,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.8,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.5,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.5,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.14,
+     "out": true
+    }
+   },
+   "least_hang_deg": 4.1,
+   "least_hang_sleeve_deg": 13.2,
+   "least_hang_wrist_deg": -1.3,
+   "flags": [
+    "a hanging arm must stand 13 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Police_Male_07",
+   "sex": "m",
+   "stature_cm": 181.75290430081077,
+   "sx_cm": 21.03711888194084,
+   "upper_arm_cm": 28.58017426439121,
+   "elbow_height_cm": 114.32376367632739,
+   "waist_at_elbow_cm": 36.42002851397835,
+   "waist_omphalion_cm": 36.934169102780984,
+   "chest_breadth_cm": 37.234569637240014,
+   "chest_depth_cm": 28.821355760683126,
+   "skin_over_joint_cm": 7.03275203704834,
+   "hip_at_wrist_cm": 36.24668920658892,
+   "forearm_cm": 27.09196841642117,
+   "upper_arm_radius_cm": 6.6,
+   "upper_arm_radius_p90_cm": 8.7,
+   "deltoid_beyond_joint_cm": 3.3,
+   "margin_waist_cm": 2.827104624951666,
+   "margin_chest_cm": 2.4198340633208346,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.7,
+     "real_p50": 19.4,
+     "real_p98": 21.3,
+     "z": 1.83,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 36.9,
+     "real_p2": 27.2,
+     "real_p50": 33.8,
+     "real_p98": 41.5,
+     "z": 0.89,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 36.4,
+     "real_p2": 27.2,
+     "real_p50": 33.8,
+     "real_p98": 41.5,
+     "z": 0.75,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 37.2,
+     "real_p2": 26.3,
+     "real_p50": 29.9,
+     "real_p98": 33.9,
+     "z": 3.92,
+     "out": true
+    },
+    "chest depth": {
+     "value": 28.8,
+     "real_p2": 21.0,
+     "real_p50": 26.3,
+     "real_p98": 31.8,
+     "z": 0.95,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.8,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.23,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.3,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.92,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.4,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.2,
+     "out": true
+    }
+   },
+   "least_hang_deg": 1.3,
+   "least_hang_sleeve_deg": 8.3,
+   "least_hang_wrist_deg": -0.4,
+   "flags": [
+    "a hanging arm must stand 8 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "Sports_Female_02",
+   "sex": "f",
+   "stature_cm": 173.74965650960803,
+   "sx_cm": 17.212557047605515,
+   "upper_arm_cm": 25.26769686987949,
+   "elbow_height_cm": 113.19466882818985,
+   "waist_at_elbow_cm": 23.403105692716274,
+   "waist_omphalion_cm": 27.526359343843936,
+   "chest_breadth_cm": 25.61527205418215,
+   "chest_depth_cm": 20.86394597814094,
+   "skin_over_joint_cm": 5.834484100341797,
+   "hip_at_wrist_cm": 33.67148646921484,
+   "forearm_cm": 24.01577619230844,
+   "upper_arm_radius_cm": 3.6,
+   "upper_arm_radius_p90_cm": 4.4,
+   "deltoid_beyond_joint_cm": 4.9,
+   "margin_waist_cm": 5.511004201247378,
+   "margin_chest_cm": 4.40492102051444,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.6,
+     "real_p50": 17.4,
+     "real_p98": 19.1,
+     "z": -0.18,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 27.5,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.7,
+     "z": -1.32,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 23.4,
+     "real_p2": 26.0,
+     "real_p50": 31.8,
+     "real_p98": 39.7,
+     "z": -2.54,
+     "out": true
+    },
+    "chest breadth": {
+     "value": 25.6,
+     "real_p2": 25.1,
+     "real_p50": 28.7,
+     "real_p98": 32.9,
+     "z": -1.64,
+     "out": false
+    },
+    "chest depth": {
+     "value": 20.9,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 32.7,
+     "z": -1.94,
+     "out": true
+    },
+    "joint outside the waist": {
+     "value": 5.5,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 2.54,
+     "out": true
+    },
+    "shoulder skin beyond the joint": {
+     "value": 4.9,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": -1.13,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 4.4,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": 1.62,
+     "out": false
+    }
+   },
+   "least_hang_deg": -5.7,
+   "least_hang_sleeve_deg": -4.5,
+   "least_hang_wrist_deg": 2.5,
+   "flags": [
+    "waist breadth at the elbow outside real people",
+    "chest depth outside real people"
+   ]
+  },
+  {
+   "base": "Sports_Male_04",
+   "sex": "m",
+   "stature_cm": 180.42442426085472,
+   "sx_cm": 21.037089824676514,
+   "upper_arm_cm": 28.580134104864495,
+   "elbow_height_cm": 113.96795834980735,
+   "waist_at_elbow_cm": 32.088344052295916,
+   "waist_omphalion_cm": 31.806542320018004,
+   "chest_breadth_cm": 36.12603911442543,
+   "chest_depth_cm": 25.82522190070081,
+   "skin_over_joint_cm": 2.8984367847442627,
+   "hip_at_wrist_cm": 34.72925943739196,
+   "forearm_cm": 27.09194273099767,
+   "upper_arm_radius_cm": 5.9,
+   "upper_arm_radius_p90_cm": 8.3,
+   "deltoid_beyond_joint_cm": 3.8,
+   "margin_waist_cm": 4.9929177985285556,
+   "margin_chest_cm": 2.974070267463798,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.2,
+     "z": 2.0,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 31.8,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": -0.5,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 32.1,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": -0.42,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 36.1,
+     "real_p2": 26.1,
+     "real_p50": 29.7,
+     "real_p98": 33.7,
+     "z": 3.46,
+     "out": true
+    },
+    "chest depth": {
+     "value": 25.8,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 31.6,
+     "z": -0.1,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 5.0,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 1.57,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.8,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.5,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 3.0,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -1.55,
+     "out": false
+    }
+   },
+   "least_hang_deg": -3.0,
+   "least_hang_sleeve_deg": 3.3,
+   "least_hang_wrist_deg": -1.2,
+   "flags": []
+  },
+  {
+   "base": "Wood_Male_01",
+   "sex": "m",
+   "stature_cm": 181.38221082044765,
+   "sx_cm": 21.037112176418304,
+   "upper_arm_cm": 28.58015797732525,
+   "elbow_height_cm": 114.3237677688884,
+   "waist_at_elbow_cm": 35.21042489428704,
+   "waist_omphalion_cm": 36.417915494099596,
+   "chest_breadth_cm": 41.05968026158373,
+   "chest_depth_cm": 26.792608093871618,
+   "skin_over_joint_cm": 4.9864113330841064,
+   "hip_at_wrist_cm": 36.44958440541813,
+   "forearm_cm": 27.09194750837551,
+   "upper_arm_radius_cm": 6.2,
+   "upper_arm_radius_p90_cm": 8.5,
+   "deltoid_beyond_joint_cm": 3.7,
+   "margin_waist_cm": 3.431899729274786,
+   "margin_chest_cm": 0.5072720456264399,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.7,
+     "real_p50": 19.4,
+     "real_p98": 21.3,
+     "z": 1.88,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 36.4,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 0.77,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 35.2,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 0.42,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 41.1,
+     "real_p2": 26.2,
+     "real_p50": 29.9,
+     "real_p98": 33.9,
+     "z": 6.03,
+     "out": true
+    },
+    "chest depth": {
+     "value": 26.8,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 31.8,
+     "z": 0.21,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.4,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.6,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.7,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.58,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 0.5,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -4.41,
+     "out": true
+    }
+   },
+   "least_hang_deg": 0.1,
+   "least_hang_sleeve_deg": 6.8,
+   "least_hang_wrist_deg": -0.3,
+   "flags": []
+  },
+  {
+   "base": "cap_DM01s",
+   "sex": "m",
+   "stature_cm": 181.41860583564267,
+   "sx_cm": 21.037137508392334,
+   "upper_arm_cm": 28.58022354515124,
+   "elbow_height_cm": 114.3236668573707,
+   "waist_at_elbow_cm": 36.70243098747929,
+   "waist_omphalion_cm": 37.20228764104438,
+   "chest_breadth_cm": 38.889282238129084,
+   "chest_depth_cm": 27.841727098852797,
+   "skin_over_joint_cm": 6.395113468170166,
+   "hip_at_wrist_cm": 41.17647682806571,
+   "forearm_cm": 27.091994031957935,
+   "upper_arm_radius_cm": 7.8,
+   "upper_arm_radius_p90_cm": 10.6,
+   "deltoid_beyond_joint_cm": 10.0,
+   "margin_waist_cm": 2.6859220146526894,
+   "margin_chest_cm": 1.592496389327792,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.7,
+     "real_p50": 19.4,
+     "real_p98": 21.3,
+     "z": 1.87,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 37.2,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 0.99,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 36.7,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 0.85,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.9,
+     "real_p2": 26.2,
+     "real_p50": 29.9,
+     "real_p98": 33.9,
+     "z": 4.85,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.8,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 31.8,
+     "z": 0.6,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.7,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.14,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 10.0,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": 2.77,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.6,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -3.16,
+     "out": true
+    }
+   },
+   "least_hang_deg": 1.6,
+   "least_hang_sleeve_deg": 11.7,
+   "least_hang_wrist_deg": 2.1,
+   "flags": [
+    "the shoulder joint sits too far in for its mesh (skin beyond it past real people)",
+    "a hanging arm must stand 12 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "cap_Fire_Male_07n",
+   "sex": "m",
+   "stature_cm": 181.04274166980758,
+   "sx_cm": 21.037110686302185,
+   "upper_arm_cm": 28.580159314116592,
+   "elbow_height_cm": 114.32374573345282,
+   "waist_at_elbow_cm": 35.43774041193046,
+   "waist_omphalion_cm": 38.51854495276352,
+   "chest_breadth_cm": 43.40238008434859,
+   "chest_depth_cm": 41.745066575609236,
+   "skin_over_joint_cm": 5.518531799316406,
+   "hip_at_wrist_cm": 38.0504851421551,
+   "forearm_cm": 27.09196462214286,
+   "upper_arm_radius_cm": 8.5,
+   "upper_arm_radius_p90_cm": 11.3,
+   "deltoid_beyond_joint_cm": 6.5,
+   "margin_waist_cm": 3.3182404803369536,
+   "margin_chest_cm": -0.6640793558721114,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.4,
+     "real_p98": 21.2,
+     "z": 1.92,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 38.5,
+     "real_p2": 27.1,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 1.39,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 35.4,
+     "real_p2": 27.1,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 0.51,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 43.4,
+     "real_p2": 26.2,
+     "real_p50": 29.8,
+     "real_p98": 33.8,
+     "z": 7.34,
+     "out": true
+    },
+    "chest depth": {
+     "value": 41.7,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 31.7,
+     "z": 5.83,
+     "out": true
+    },
+    "joint outside the waist": {
+     "value": 3.3,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.53,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 6.5,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -0.2,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": -0.7,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -5.77,
+     "out": true
+    }
+   },
+   "least_hang_deg": 0.4,
+   "least_hang_sleeve_deg": 11.5,
+   "least_hang_wrist_deg": 0.5,
+   "flags": [
+    "chest depth outside real people",
+    "a hanging arm must stand 12 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "cap_MA17k",
+   "sex": "m",
+   "stature_cm": 180.18036735011265,
+   "sx_cm": 21.037088334560394,
+   "upper_arm_cm": 28.580126571254503,
+   "elbow_height_cm": 114.32380588048167,
+   "waist_at_elbow_cm": 34.615306281229124,
+   "waist_omphalion_cm": 35.06535863573933,
+   "chest_breadth_cm": 38.62744286150517,
+   "chest_depth_cm": 27.301587301618248,
+   "skin_over_joint_cm": 6.537646055221558,
+   "hip_at_wrist_cm": 39.39670572446721,
+   "forearm_cm": 27.091924317551037,
+   "upper_arm_radius_cm": 7.0,
+   "upper_arm_radius_p90_cm": 8.9,
+   "deltoid_beyond_joint_cm": 4.0,
+   "margin_waist_cm": 3.7294351939458323,
+   "margin_chest_cm": 1.7233669038078077,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.1,
+     "z": 2.04,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 35.1,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 0.45,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 34.6,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 0.32,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.6,
+     "real_p2": 26.0,
+     "real_p50": 29.7,
+     "real_p98": 33.7,
+     "z": 4.85,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.3,
+     "real_p2": 20.8,
+     "real_p50": 26.0,
+     "real_p98": 31.5,
+     "z": 0.47,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.7,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.79,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 4.0,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.33,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.7,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -3.0,
+     "out": true
+    }
+   },
+   "least_hang_deg": -0.5,
+   "least_hang_sleeve_deg": 6.8,
+   "least_hang_wrist_deg": 1.2,
+   "flags": []
+  },
+  {
+   "base": "cap_Military_Male_02n",
+   "sex": "m",
+   "stature_cm": 180.1940939622,
+   "sx_cm": 21.037117391824722,
+   "upper_arm_cm": 28.580198507540533,
+   "elbow_height_cm": 114.57041934992311,
+   "waist_at_elbow_cm": 35.159570254806695,
+   "waist_omphalion_cm": 35.9423952683802,
+   "chest_breadth_cm": 36.78689673644912,
+   "chest_depth_cm": 36.66381230998678,
+   "skin_over_joint_cm": 7.478243112564087,
+   "hip_at_wrist_cm": 40.11038506357964,
+   "forearm_cm": 27.09193672695287,
+   "upper_arm_radius_cm": 7.9,
+   "upper_arm_radius_p90_cm": 10.7,
+   "deltoid_beyond_joint_cm": 9.9,
+   "margin_waist_cm": 3.4573322644213746,
+   "margin_chest_cm": 2.643669023600161,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.1,
+     "z": 2.04,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 35.9,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 0.7,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 35.2,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 0.47,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 36.8,
+     "real_p2": 26.0,
+     "real_p50": 29.7,
+     "real_p98": 33.7,
+     "z": 3.85,
+     "out": true
+    },
+    "chest depth": {
+     "value": 36.7,
+     "real_p2": 20.8,
+     "real_p50": 26.0,
+     "real_p98": 31.5,
+     "z": 3.99,
+     "out": true
+    },
+    "joint outside the waist": {
+     "value": 3.5,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.62,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 9.9,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": 2.69,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.6,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -1.94,
+     "out": false
+    }
+   },
+   "least_hang_deg": 0.1,
+   "least_hang_sleeve_deg": 10.3,
+   "least_hang_wrist_deg": 1.6,
+   "flags": [
+    "the shoulder joint sits too far in for its mesh (skin beyond it past real people)",
+    "chest depth outside real people",
+    "a hanging arm must stand 10 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "cap_Military_Male_03n",
+   "sex": "m",
+   "stature_cm": 180.3159257862717,
+   "sx_cm": 21.03712409734726,
+   "upper_arm_cm": 28.580171401248933,
+   "elbow_height_cm": 114.57039274218523,
+   "waist_at_elbow_cm": 39.94045784216581,
+   "waist_omphalion_cm": 38.65473367676954,
+   "chest_breadth_cm": 36.70486734123192,
+   "chest_depth_cm": 39.58953876608094,
+   "skin_over_joint_cm": 7.325798273086548,
+   "hip_at_wrist_cm": 43.13356878023896,
+   "forearm_cm": 27.091992223383215,
+   "upper_arm_radius_cm": 7.3,
+   "upper_arm_radius_p90_cm": 10.1,
+   "deltoid_beyond_joint_cm": 5.3,
+   "margin_waist_cm": 1.066895176264353,
+   "margin_chest_cm": 2.6846904267313008,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.1,
+     "z": 2.02,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 38.7,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 1.47,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 39.9,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 1.84,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 36.7,
+     "real_p2": 26.1,
+     "real_p50": 29.7,
+     "real_p98": 33.7,
+     "z": 3.79,
+     "out": true
+    },
+    "chest depth": {
+     "value": 39.6,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 31.6,
+     "z": 5.09,
+     "out": true
+    },
+    "joint outside the waist": {
+     "value": 1.1,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": -0.87,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 5.3,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -1.22,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 2.7,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -1.89,
+     "out": false
+    }
+   },
+   "least_hang_deg": 4.9,
+   "least_hang_sleeve_deg": 14.2,
+   "least_hang_wrist_deg": 3.1,
+   "flags": [
+    "chest depth outside real people",
+    "a hanging arm must stand 14 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "cap_Military_Male_05n",
+   "sex": "m",
+   "stature_cm": 181.41861775657162,
+   "sx_cm": 21.0371196269989,
+   "upper_arm_cm": 28.580172375154756,
+   "elbow_height_cm": 114.32374186922509,
+   "waist_at_elbow_cm": 36.70242550250183,
+   "waist_omphalion_cm": 37.20228815059252,
+   "chest_breadth_cm": 38.889277285476915,
+   "chest_depth_cm": 27.841727805694838,
+   "skin_over_joint_cm": 6.395101547241211,
+   "hip_at_wrist_cm": 41.17645677220578,
+   "forearm_cm": 27.091967595597332,
+   "upper_arm_radius_cm": 7.8,
+   "upper_arm_radius_p90_cm": 10.6,
+   "deltoid_beyond_joint_cm": 10.0,
+   "margin_waist_cm": 2.6859068757479854,
+   "margin_chest_cm": 1.592480984260444,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.7,
+     "real_p50": 19.4,
+     "real_p98": 21.3,
+     "z": 1.87,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 37.2,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 0.99,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 36.7,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 0.85,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.9,
+     "real_p2": 26.2,
+     "real_p50": 29.9,
+     "real_p98": 33.9,
+     "z": 4.85,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.8,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 31.8,
+     "z": 0.6,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.7,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.14,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 10.0,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": 2.77,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.6,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -3.16,
+     "out": true
+    }
+   },
+   "least_hang_deg": 1.6,
+   "least_hang_sleeve_deg": 11.7,
+   "least_hang_wrist_deg": 2.1,
+   "flags": [
+    "the shoulder joint sits too far in for its mesh (skin beyond it past real people)",
+    "a hanging arm must stand 12 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "cap_PM01i",
+   "sex": "m",
+   "stature_cm": 181.3113645359408,
+   "sx_cm": 21.03712558746338,
+   "upper_arm_cm": 28.58021446055404,
+   "elbow_height_cm": 114.32372896332623,
+   "waist_at_elbow_cm": 36.5788804027233,
+   "waist_omphalion_cm": 37.02347845099013,
+   "chest_breadth_cm": 38.09962419087667,
+   "chest_depth_cm": 27.34578756705076,
+   "skin_over_joint_cm": 6.336385011672974,
+   "hip_at_wrist_cm": 39.4649542359194,
+   "forearm_cm": 27.091960408800563,
+   "upper_arm_radius_cm": 8.1,
+   "upper_arm_radius_p90_cm": 8.8,
+   "deltoid_beyond_joint_cm": 4.4,
+   "margin_waist_cm": 2.747685386101729,
+   "margin_chest_cm": 1.987313492025045,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.7,
+     "real_p50": 19.4,
+     "real_p98": 21.3,
+     "z": 1.89,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 37.0,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 0.95,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 36.6,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 0.82,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.1,
+     "real_p2": 26.2,
+     "real_p50": 29.9,
+     "real_p98": 33.9,
+     "z": 4.44,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.3,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 31.7,
+     "z": 0.42,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.7,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.18,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 4.4,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -1.99,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.0,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.7,
+     "out": true
+    }
+   },
+   "least_hang_deg": 1.5,
+   "least_hang_sleeve_deg": 8.6,
+   "least_hang_wrist_deg": 1.2,
+   "flags": [
+    "a hanging arm must stand 9 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "cap_PM02m",
+   "sex": "m",
+   "stature_cm": 179.69598422641866,
+   "sx_cm": 21.03714719414711,
+   "upper_arm_cm": 28.58022660920997,
+   "elbow_height_cm": 114.32370582506391,
+   "waist_at_elbow_cm": 42.12882761979979,
+   "waist_omphalion_cm": 42.44474982199311,
+   "chest_breadth_cm": 41.623285987151434,
+   "chest_depth_cm": 30.264432004139895,
+   "skin_over_joint_cm": 6.821388006210327,
+   "hip_at_wrist_cm": 44.13987402137296,
+   "forearm_cm": 27.091968986858344,
+   "upper_arm_radius_cm": 5.4,
+   "upper_arm_radius_p90_cm": 8.9,
+   "deltoid_beyond_joint_cm": 3.7,
+   "margin_waist_cm": -0.02726661575278655,
+   "margin_chest_cm": 0.2255042005713932,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.5,
+     "real_p50": 19.2,
+     "real_p98": 21.1,
+     "z": 2.1,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 42.4,
+     "real_p2": 26.9,
+     "real_p50": 33.4,
+     "real_p98": 41.0,
+     "z": 2.61,
+     "out": true
+    },
+    "waist breadth at the elbow": {
+     "value": 42.1,
+     "real_p2": 26.9,
+     "real_p50": 33.4,
+     "real_p98": 41.0,
+     "z": 2.51,
+     "out": true
+    },
+    "chest breadth": {
+     "value": 41.6,
+     "real_p2": 26.0,
+     "real_p50": 29.6,
+     "real_p98": 33.6,
+     "z": 6.54,
+     "out": true
+    },
+    "chest depth": {
+     "value": 30.3,
+     "real_p2": 20.7,
+     "real_p50": 26.0,
+     "real_p98": 31.5,
+     "z": 1.61,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": -0.0,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": -1.55,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.7,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.58,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 0.2,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -4.74,
+     "out": true
+    }
+   },
+   "least_hang_deg": 7.1,
+   "least_hang_sleeve_deg": 14.5,
+   "least_hang_wrist_deg": 3.6,
+   "flags": [
+    "waist breadth at the elbow outside real people",
+    "a hanging arm must stand 14 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "cap_Pilot_Male_03n",
+   "sex": "m",
+   "stature_cm": 181.58183925552294,
+   "sx_cm": 21.03709578514099,
+   "upper_arm_cm": 28.580155498943416,
+   "elbow_height_cm": 114.32380060838616,
+   "waist_at_elbow_cm": 34.860631580337596,
+   "waist_omphalion_cm": 35.64222324066487,
+   "chest_breadth_cm": 37.16104510544628,
+   "chest_depth_cm": 26.6444063814676,
+   "skin_over_joint_cm": 7.186710834503174,
+   "hip_at_wrist_cm": 36.271100079410594,
+   "forearm_cm": 27.091912010162535,
+   "upper_arm_radius_cm": 6.9,
+   "upper_arm_radius_p90_cm": 9.6,
+   "deltoid_beyond_joint_cm": 3.9,
+   "margin_waist_cm": 3.606779994972193,
+   "margin_chest_cm": 2.4565732324178526,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.7,
+     "real_p50": 19.4,
+     "real_p98": 21.3,
+     "z": 1.85,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 35.6,
+     "real_p2": 27.2,
+     "real_p50": 33.8,
+     "real_p98": 41.5,
+     "z": 0.54,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 34.9,
+     "real_p2": 27.2,
+     "real_p50": 33.8,
+     "real_p98": 41.5,
+     "z": 0.31,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 37.2,
+     "real_p2": 26.2,
+     "real_p50": 29.9,
+     "real_p98": 33.9,
+     "z": 3.9,
+     "out": true
+    },
+    "chest depth": {
+     "value": 26.6,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 31.8,
+     "z": 0.14,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.6,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.71,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.9,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.41,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.5,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.15,
+     "out": true
+    }
+   },
+   "least_hang_deg": -0.2,
+   "least_hang_sleeve_deg": 8.2,
+   "least_hang_wrist_deg": -0.4,
+   "flags": [
+    "a hanging arm must stand 8 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "cap_Police_Male_01n",
+   "sex": "m",
+   "stature_cm": 180.60315467882901,
+   "sx_cm": 21.037154644727707,
+   "upper_arm_cm": 28.580236335179766,
+   "elbow_height_cm": 114.57030403624569,
+   "waist_at_elbow_cm": 37.65989272961866,
+   "waist_omphalion_cm": 38.16808326195118,
+   "chest_breadth_cm": 38.40115953832156,
+   "chest_depth_cm": 27.925249789133606,
+   "skin_over_joint_cm": 6.376659870147705,
+   "hip_at_wrist_cm": 37.99842064740962,
+   "forearm_cm": 27.092032258874283,
+   "upper_arm_radius_cm": 7.2,
+   "upper_arm_radius_p90_cm": 9.4,
+   "deltoid_beyond_joint_cm": 3.6,
+   "margin_waist_cm": 2.207208279918376,
+   "margin_chest_cm": 1.836574875566928,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.2,
+     "z": 1.98,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 38.2,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": 1.32,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 37.7,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": 1.17,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.4,
+     "real_p2": 26.1,
+     "real_p50": 29.7,
+     "real_p98": 33.7,
+     "z": 4.68,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.9,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 31.6,
+     "z": 0.68,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.2,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": -0.16,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.6,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.67,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.8,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.87,
+     "out": true
+    }
+   },
+   "least_hang_deg": 2.6,
+   "least_hang_sleeve_deg": 10.7,
+   "least_hang_wrist_deg": 0.5,
+   "flags": [
+    "a hanging arm must stand 11 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "cap_Police_Male_03n",
+   "sex": "m",
+   "stature_cm": 181.37640901841223,
+   "sx_cm": 21.037116646766663,
+   "upper_arm_cm": 28.580180000059574,
+   "elbow_height_cm": 114.45888508715454,
+   "waist_at_elbow_cm": 41.05842287647403,
+   "waist_omphalion_cm": 39.93763581505989,
+   "chest_breadth_cm": 42.49361836741431,
+   "chest_depth_cm": 29.722226222295,
+   "skin_over_joint_cm": 6.7583441734313965,
+   "hip_at_wrist_cm": 36.9872079246888,
+   "forearm_cm": 27.091956518992806,
+   "upper_arm_radius_cm": 8.8,
+   "upper_arm_radius_p90_cm": 11.2,
+   "deltoid_beyond_joint_cm": 7.3,
+   "margin_waist_cm": 0.507905208529646,
+   "margin_chest_cm": -0.20969253694049073,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.7,
+     "real_p50": 19.4,
+     "real_p98": 21.3,
+     "z": 1.88,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 39.9,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 1.78,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 41.1,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 2.1,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 42.5,
+     "real_p2": 26.2,
+     "real_p50": 29.9,
+     "real_p98": 33.9,
+     "z": 6.8,
+     "out": true
+    },
+    "chest depth": {
+     "value": 29.7,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 31.8,
+     "z": 1.31,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 0.5,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": -1.21,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 7.3,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": 0.48,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": -0.2,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -5.25,
+     "out": true
+    }
+   },
+   "least_hang_deg": 6.0,
+   "least_hang_sleeve_deg": 17.2,
+   "least_hang_wrist_deg": -0.0,
+   "flags": [
+    "a hanging arm must stand 17 deg out to clear the waist or hips (real people of the sex: at most 8, p98)",
+    "upper arm with its sleeve 8.8 cm round the bone, a real arm in a jacket at most 8.5"
+   ]
+  },
+  {
+   "base": "cap_Police_Male_04n",
+   "sex": "m",
+   "stature_cm": 180.17550074728206,
+   "sx_cm": 21.037106215953827,
+   "upper_arm_cm": 28.58017895555014,
+   "elbow_height_cm": 114.32376851376256,
+   "waist_at_elbow_cm": 36.07960018314652,
+   "waist_omphalion_cm": 36.84191897456171,
+   "chest_breadth_cm": 37.29120601521899,
+   "chest_depth_cm": 27.17992115492368,
+   "skin_over_joint_cm": 7.528173923492432,
+   "hip_at_wrist_cm": 39.113448487165655,
+   "forearm_cm": 27.091958217269184,
+   "upper_arm_radius_cm": 6.1,
+   "upper_arm_radius_p90_cm": 9.5,
+   "deltoid_beyond_joint_cm": 3.7,
+   "margin_waist_cm": 2.997306124380568,
+   "margin_chest_cm": 2.391503208344332,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.1,
+     "z": 2.04,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 36.8,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 0.96,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 36.1,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 0.74,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 37.3,
+     "real_p2": 26.0,
+     "real_p50": 29.7,
+     "real_p98": 33.7,
+     "z": 4.13,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.2,
+     "real_p2": 20.8,
+     "real_p50": 26.0,
+     "real_p98": 31.5,
+     "z": 0.42,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.0,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.33,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.7,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.58,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.4,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.23,
+     "out": true
+    }
+   },
+   "least_hang_deg": 1.0,
+   "least_hang_sleeve_deg": 9.3,
+   "least_hang_wrist_deg": 1.0,
+   "flags": [
+    "a hanging arm must stand 9 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "cap_Police_Male_05n",
+   "sex": "m",
+   "stature_cm": 181.43343579722568,
+   "sx_cm": 21.037118136882782,
+   "upper_arm_cm": 28.580188747494383,
+   "elbow_height_cm": 114.32377350656418,
+   "waist_at_elbow_cm": 37.504318339924644,
+   "waist_omphalion_cm": 38.468162877501356,
+   "chest_breadth_cm": 37.15077051887623,
+   "chest_depth_cm": 28.0566364649247,
+   "skin_over_joint_cm": 7.585000991821289,
+   "hip_at_wrist_cm": 36.622598234022284,
+   "forearm_cm": 27.09193508699662,
+   "upper_arm_radius_cm": 6.9,
+   "upper_arm_radius_p90_cm": 10.1,
+   "deltoid_beyond_joint_cm": 4.2,
+   "margin_waist_cm": 2.2849589669204597,
+   "margin_chest_cm": 2.4617328774446676,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.7,
+     "real_p50": 19.4,
+     "real_p98": 21.3,
+     "z": 1.87,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 38.5,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 1.35,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 37.5,
+     "real_p2": 27.2,
+     "real_p50": 33.7,
+     "real_p98": 41.4,
+     "z": 1.08,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 37.2,
+     "real_p2": 26.2,
+     "real_p50": 29.9,
+     "real_p98": 33.9,
+     "z": 3.91,
+     "out": true
+    },
+    "chest depth": {
+     "value": 28.1,
+     "real_p2": 20.9,
+     "real_p50": 26.2,
+     "real_p98": 31.8,
+     "z": 0.68,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.3,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": -0.11,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 4.2,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.16,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.5,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.15,
+     "out": true
+    }
+   },
+   "least_hang_deg": 2.4,
+   "least_hang_sleeve_deg": 11.7,
+   "least_hang_wrist_deg": -0.2,
+   "flags": [
+    "a hanging arm must stand 12 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "cap_Security_Male_01n",
+   "sex": "m",
+   "stature_cm": 180.82421579165384,
+   "sx_cm": 21.037136018276215,
+   "upper_arm_cm": 28.580184180091138,
+   "elbow_height_cm": 114.32371753800008,
+   "waist_at_elbow_cm": 37.65987678359382,
+   "waist_omphalion_cm": 38.01691917462283,
+   "chest_breadth_cm": 38.30704914307752,
+   "chest_depth_cm": 28.450394226538567,
+   "skin_over_joint_cm": 6.22362494468689,
+   "hip_at_wrist_cm": 37.99841898464788,
+   "forearm_cm": 27.09201886591426,
+   "upper_arm_radius_cm": 7.2,
+   "upper_arm_radius_p90_cm": 9.4,
+   "deltoid_beyond_joint_cm": 3.6,
+   "margin_waist_cm": 2.207197626479303,
+   "margin_chest_cm": 1.8836114467374543,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.2,
+     "z": 1.95,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 38.0,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": 1.26,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 37.7,
+     "real_p2": 27.1,
+     "real_p50": 33.6,
+     "real_p98": 41.3,
+     "z": 1.16,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.3,
+     "real_p2": 26.1,
+     "real_p50": 29.8,
+     "real_p98": 33.8,
+     "z": 4.6,
+     "out": true
+    },
+    "chest depth": {
+     "value": 28.5,
+     "real_p2": 20.9,
+     "real_p50": 26.1,
+     "real_p98": 31.7,
+     "z": 0.86,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.2,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": -0.16,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.6,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.67,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.9,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.82,
+     "out": true
+    }
+   },
+   "least_hang_deg": 2.6,
+   "least_hang_sleeve_deg": 10.7,
+   "least_hang_wrist_deg": 0.5,
+   "flags": [
+    "a hanging arm must stand 11 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "rel_FA06k",
+   "sex": "f",
+   "stature_cm": 173.33346703089774,
+   "sx_cm": 17.21254661679268,
+   "upper_arm_cm": 25.267687545667748,
+   "elbow_height_cm": 113.08893350553943,
+   "waist_at_elbow_cm": 31.92387414271569,
+   "waist_omphalion_cm": 32.44053415854695,
+   "chest_breadth_cm": 32.25475784772252,
+   "chest_depth_cm": 25.432831435491217,
+   "skin_over_joint_cm": 5.155271291732788,
+   "hip_at_wrist_cm": 35.47630418136693,
+   "forearm_cm": 24.015787125818832,
+   "upper_arm_radius_cm": 5.4,
+   "upper_arm_radius_p90_cm": 7.0,
+   "deltoid_beyond_joint_cm": 7.4,
+   "margin_waist_cm": 1.250609545434834,
+   "margin_chest_cm": 1.0851676929314173,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.5,
+     "real_p50": 17.3,
+     "real_p98": 19.0,
+     "z": -0.13,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 32.4,
+     "real_p2": 25.9,
+     "real_p50": 31.7,
+     "real_p98": 39.6,
+     "z": 0.15,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 31.9,
+     "real_p2": 25.9,
+     "real_p50": 31.7,
+     "real_p98": 39.6,
+     "z": -0.0,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 32.3,
+     "real_p2": 25.1,
+     "real_p50": 28.6,
+     "real_p98": 32.8,
+     "z": 1.87,
+     "out": false
+    },
+    "chest depth": {
+     "value": 25.4,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 32.6,
+     "z": -0.32,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 1.3,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": -0.01,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 7.4,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.97,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 1.1,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": -1.74,
+     "out": false
+    }
+   },
+   "least_hang_deg": 4.0,
+   "least_hang_sleeve_deg": 9.9,
+   "least_hang_wrist_deg": 3.5,
+   "flags": []
+  },
+  {
+   "base": "rel_FA10k",
+   "sex": "f",
+   "stature_cm": 173.33342526108027,
+   "sx_cm": 17.21256524324417,
+   "upper_arm_cm": 25.26770096988537,
+   "elbow_height_cm": 113.08896175800702,
+   "waist_at_elbow_cm": 25.195428661616802,
+   "waist_omphalion_cm": 29.112831147502217,
+   "chest_breadth_cm": 27.28169028926158,
+   "chest_depth_cm": 24.436048689107956,
+   "skin_over_joint_cm": 6.216108798980713,
+   "hip_at_wrist_cm": 33.14033241156887,
+   "forearm_cm": 24.01580204673341,
+   "upper_arm_radius_cm": 4.8,
+   "upper_arm_radius_p90_cm": 5.2,
+   "deltoid_beyond_joint_cm": 7.0,
+   "margin_waist_cm": 4.61485091243577,
+   "margin_chest_cm": 3.5717200986133815,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 17.2,
+     "real_p2": 15.5,
+     "real_p50": 17.3,
+     "real_p98": 19.0,
+     "z": -0.13,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 29.1,
+     "real_p2": 25.9,
+     "real_p50": 31.7,
+     "real_p98": 39.6,
+     "z": -0.83,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 25.2,
+     "real_p2": 25.9,
+     "real_p50": 31.7,
+     "real_p98": 39.6,
+     "z": -1.99,
+     "out": true
+    },
+    "chest breadth": {
+     "value": 27.3,
+     "real_p2": 25.1,
+     "real_p50": 28.6,
+     "real_p98": 32.8,
+     "z": -0.73,
+     "out": false
+    },
+    "chest depth": {
+     "value": 24.4,
+     "real_p2": 20.8,
+     "real_p50": 26.1,
+     "real_p98": 32.6,
+     "z": -0.67,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 4.6,
+     "real_p2": -2.6,
+     "real_p50": 1.4,
+     "real_p98": 4.4,
+     "z": 2.0,
+     "out": true
+    },
+    "shoulder skin beyond the joint": {
+     "value": 7.0,
+     "real_p2": 4.2,
+     "real_p50": 6.2,
+     "real_p98": 9.0,
+     "z": 0.63,
+     "out": false
+    },
+    "joint outside the chest": {
+     "value": 3.6,
+     "real_p2": 0.6,
+     "real_p50": 2.8,
+     "real_p98": 4.7,
+     "z": 0.78,
+     "out": false
+    }
+   },
+   "least_hang_deg": -3.7,
+   "least_hang_sleeve_deg": -1.0,
+   "least_hang_wrist_deg": 2.2,
+   "flags": [
+    "waist breadth at the elbow outside real people"
+   ]
+  },
+  {
+   "base": "rel_MA15s",
+   "sex": "m",
+   "stature_cm": 180.1940939622,
+   "sx_cm": 21.037152409553528,
+   "upper_arm_cm": 28.58025869849603,
+   "elbow_height_cm": 114.57033531710972,
+   "waist_at_elbow_cm": 35.159576031717094,
+   "waist_omphalion_cm": 35.9423952683802,
+   "chest_breadth_cm": 36.78689590748314,
+   "chest_depth_cm": 36.66381081987066,
+   "skin_over_joint_cm": 7.478266954421997,
+   "hip_at_wrist_cm": 40.11041034800929,
+   "forearm_cm": 27.091991577334696,
+   "upper_arm_radius_cm": 7.9,
+   "upper_arm_radius_p90_cm": 10.7,
+   "deltoid_beyond_joint_cm": 9.9,
+   "margin_waist_cm": 3.4573643936949807,
+   "margin_chest_cm": 2.6437044558119567,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.1,
+     "z": 2.04,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 35.9,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 0.7,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 35.2,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 0.47,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 36.8,
+     "real_p2": 26.0,
+     "real_p50": 29.7,
+     "real_p98": 33.7,
+     "z": 3.85,
+     "out": true
+    },
+    "chest depth": {
+     "value": 36.7,
+     "real_p2": 20.8,
+     "real_p50": 26.0,
+     "real_p98": 31.5,
+     "z": 3.99,
+     "out": true
+    },
+    "joint outside the waist": {
+     "value": 3.5,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.62,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 9.9,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": 2.69,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.6,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -1.94,
+     "out": false
+    }
+   },
+   "least_hang_deg": 0.1,
+   "least_hang_sleeve_deg": 10.3,
+   "least_hang_wrist_deg": 1.6,
+   "flags": [
+    "the shoulder joint sits too far in for its mesh (skin beyond it past real people)",
+    "chest depth outside real people",
+    "a hanging arm must stand 10 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "rel_MA19k",
+   "sex": "m",
+   "stature_cm": 181.75285659963265,
+   "sx_cm": 21.037084609270096,
+   "upper_arm_cm": 28.5801377659324,
+   "elbow_height_cm": 114.32379419685942,
+   "waist_at_elbow_cm": 36.42003789632294,
+   "waist_omphalion_cm": 36.934168182831826,
+   "chest_breadth_cm": 37.2345693746074,
+   "chest_depth_cm": 28.821349308942267,
+   "skin_over_joint_cm": 7.032710313796997,
+   "hip_at_wrist_cm": 36.24668571839759,
+   "forearm_cm": 27.09191317650473,
+   "upper_arm_radius_cm": 6.6,
+   "upper_arm_radius_p90_cm": 8.7,
+   "deltoid_beyond_joint_cm": 3.3,
+   "margin_waist_cm": 2.8270656611086267,
+   "margin_chest_cm": 2.419799921966394,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.7,
+     "real_p50": 19.4,
+     "real_p98": 21.3,
+     "z": 1.83,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 36.9,
+     "real_p2": 27.2,
+     "real_p50": 33.8,
+     "real_p98": 41.5,
+     "z": 0.89,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 36.4,
+     "real_p2": 27.2,
+     "real_p50": 33.8,
+     "real_p98": 41.5,
+     "z": 0.75,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 37.2,
+     "real_p2": 26.3,
+     "real_p50": 29.9,
+     "real_p98": 33.9,
+     "z": 3.92,
+     "out": true
+    },
+    "chest depth": {
+     "value": 28.8,
+     "real_p2": 21.0,
+     "real_p50": 26.3,
+     "real_p98": 31.8,
+     "z": 0.95,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 2.8,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.23,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 3.3,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.92,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 2.4,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -2.2,
+     "out": true
+    }
+   },
+   "least_hang_deg": 1.3,
+   "least_hang_sleeve_deg": 8.3,
+   "least_hang_wrist_deg": -0.4,
+   "flags": [
+    "a hanging arm must stand 8 deg out to clear the waist or hips (real people of the sex: at most 8, p98)"
+   ]
+  },
+  {
+   "base": "rel_MA21pk",
+   "sex": "m",
+   "stature_cm": 180.18036735011265,
+   "sx_cm": 21.037088334560394,
+   "upper_arm_cm": 28.580126571254503,
+   "elbow_height_cm": 114.32380588048167,
+   "waist_at_elbow_cm": 34.615306281229124,
+   "waist_omphalion_cm": 35.06535863573933,
+   "chest_breadth_cm": 38.62744286150517,
+   "chest_depth_cm": 27.301587301618248,
+   "skin_over_joint_cm": 6.537646055221558,
+   "hip_at_wrist_cm": 39.39670572446721,
+   "forearm_cm": 27.091924317551037,
+   "upper_arm_radius_cm": 7.0,
+   "upper_arm_radius_p90_cm": 8.9,
+   "deltoid_beyond_joint_cm": 4.0,
+   "margin_waist_cm": 3.7294351939458323,
+   "margin_chest_cm": 1.7233669038078077,
+   "vs": {
+    "sx (GH offset)": {
+     "value": 21.0,
+     "real_p2": 17.6,
+     "real_p50": 19.3,
+     "real_p98": 21.1,
+     "z": 2.04,
+     "out": false
+    },
+    "waist breadth (omphalion)": {
+     "value": 35.1,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 0.45,
+     "out": false
+    },
+    "waist breadth at the elbow": {
+     "value": 34.6,
+     "real_p2": 27.0,
+     "real_p50": 33.5,
+     "real_p98": 41.2,
+     "z": 0.32,
+     "out": false
+    },
+    "chest breadth": {
+     "value": 38.6,
+     "real_p2": 26.0,
+     "real_p50": 29.7,
+     "real_p98": 33.7,
+     "z": 4.85,
+     "out": true
+    },
+    "chest depth": {
+     "value": 27.3,
+     "real_p2": 20.8,
+     "real_p50": 26.0,
+     "real_p98": 31.5,
+     "z": 0.47,
+     "out": false
+    },
+    "joint outside the waist": {
+     "value": 3.7,
+     "real_p2": -0.9,
+     "real_p50": 2.5,
+     "real_p98": 5.6,
+     "z": 0.79,
+     "out": false
+    },
+    "shoulder skin beyond the joint": {
+     "value": 4.0,
+     "real_p2": 4.5,
+     "real_p50": 6.7,
+     "real_p98": 9.3,
+     "z": -2.33,
+     "out": true
+    },
+    "joint outside the chest": {
+     "value": 1.7,
+     "real_p2": 2.5,
+     "real_p50": 4.3,
+     "real_p98": 6.1,
+     "z": -3.0,
+     "out": true
+    }
+   },
+   "least_hang_deg": -0.5,
+   "least_hang_sleeve_deg": 6.8,
+   "least_hang_wrist_deg": 1.2,
+   "flags": []
+  }
+ ],
+ "ansur_cm_p2_p50_p98": {
+  "m": {
+   "stature": [
+    162.1,
+    175.5,
+    190.4
+   ],
+   "biacromial": [
+    37.7,
+    41.5,
+    45.7
+   ],
+   "bideltoid": [
+    44.7,
+    50.9,
+    58.3
+   ],
+   "chestbreadth": [
+    25.4,
+    28.9,
+    32.9
+   ],
+   "chestdepth": [
+    20.2,
+    25.3,
+    30.9
+   ],
+   "waistbreadth": [
+    26.2,
+    32.5,
+    40.1
+   ],
+   "waistdepth": [
+    18.0,
+    23.4,
+    31.8
+   ],
+   "hipbreadth": [
+    30.0,
+    34.4,
+    40.1
+   ],
+   "chestheight": [
+    118.0,
+    128.9,
+    141.5
+   ],
+   "waistheight": [
+    95.5,
+    105.5,
+    116.9
+   ],
+   "acromialheight": [
+    131.2,
+    143.9,
+    157.7
+   ],
+   "shoulderelbow": [
+    32.7,
+    36.3,
+    40.2
+   ],
+   "forearm": [
+    23.8,
+    26.7,
+    30.2
+   ],
+   "biceps": [
+    29.1,
+    35.7,
+    43.5
+   ],
+   "sx_est": [
+    16.9,
+    18.8,
+    20.9
+   ],
+   "margin_waist": [
+    -0.9,
+    2.5,
+    5.6
+   ],
+   "margin_chest": [
+    2.5,
+    4.3,
+    6.1
+   ],
+   "deltoid_beyond": [
+    4.5,
+    6.7,
+    9.3
+   ]
+  },
+  "f": {
+   "stature": [
+    149.9,
+    162.6,
+    176.5
+   ],
+   "biacromial": [
+    32.9,
+    36.5,
+    40.3
+   ],
+   "bideltoid": [
+    39.6,
+    45.0,
+    51.4
+   ],
+   "chestbreadth": [
+    23.5,
+    26.8,
+    30.9
+   ],
+   "chestdepth": [
+    19.7,
+    24.5,
+    30.7
+   ],
+   "waistbreadth": [
+    24.0,
+    29.8,
+    37.5
+   ],
+   "waistdepth": [
+    16.3,
+    20.9,
+    28.8
+   ],
+   "hipbreadth": [
+    30.1,
+    35.3,
+    41.3
+   ],
+   "chestheight": [
+    105.9,
+    116.9,
+    129.0
+   ],
+   "waistheight": [
+    88.1,
+    97.8,
+    108.3
+   ],
+   "acromialheight": [
+    121.9,
+    133.2,
+    145.9
+   ],
+   "shoulderelbow": [
+    29.9,
+    33.4,
+    36.9
+   ],
+   "forearm": [
+    21.2,
+    24.1,
+    27.5
+   ],
+   "biceps": [
+    25.1,
+    30.4,
+    37.6
+   ],
+   "sx_est": [
+    14.5,
+    16.2,
+    18.2
+   ],
+   "margin_waist": [
+    -2.6,
+    1.4,
+    4.4
+   ],
+   "margin_chest": [
+    0.6,
+    2.8,
+    4.7
+   ],
+   "deltoid_beyond": [
+    4.2,
+    6.2,
+    9.0
+   ]
+  }
+ },
+ "real_least_hang_deg_p2_p50_p98": {
+  "m": {
+   "elbow_past_waist": [
+    -3.7,
+    1.8,
+    7.9
+   ],
+   "wrist_past_hips": [
+    -1.3,
+    1.0,
+    3.4
+   ],
+   "either": [
+    -1.2,
+    1.9,
+    7.9
+   ],
+   "arm_radius_flexed_cm": [
+    4.6,
+    5.7,
+    6.9
+   ]
+  },
+  "f": {
+   "elbow_past_waist": [
+    -2.7,
+    3.1,
+    11.0
+   ],
+   "wrist_past_hips": [
+    1.3,
+    4.2,
+    7.7
+   ],
+   "either": [
+    1.3,
+    4.4,
+    11.0
+   ],
+   "arm_radius_flexed_cm": [
+    4.0,
+    4.8,
+    6.0
+   ]
+  }
+ }
+}
