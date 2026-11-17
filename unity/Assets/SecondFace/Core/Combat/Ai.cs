@@ -136,11 +136,12 @@ namespace SecondFace.Core.Combat
                 }
                 var (wd, it) = CombatRules.WeaponOf(u.C);
                 // a dry gun and nothing to load: the other hand (a sidearm, a blade, or bare fists)
-                if (wd.Magazine != null && it != null && (it.Loaded ?? 0) == 0 && !HasAmmo(u.C, wd) && u.C.Ap >= CombatRules.SwapAp(u.C))
+                // (and a gun in the pit, where only fists and blades go)
+                if (((wd.Magazine != null && it != null && (it.Loaded ?? 0) == 0 && !HasAmmo(u.C, wd)) || (_b.Pit && !x.Melee)) && u.C.Ap >= CombatRules.SwapAp(u.C))
                 {
                     var other = u.C.Inv.EquippedAt(u.C.Inv.Active == "primary" ? "secondary" : "primary");
                     var ow = other != null && Items.Has(other.Def) ? Items.Def(other.Def).Weapon : null;
-                    var usable = ow == null || ow.Magazine == null || (other.Loaded ?? 0) > 0 || HasAmmo(u.C, ow);
+                    var usable = _b.Pit ? ow == null || CombatRules.IsMelee(ow) : ow == null || ow.Magazine == null || (other.Loaded ?? 0) > 0 || HasAmmo(u.C, ow);
                     if (usable) acts.Add(new AiStep { Kind = "swap", Score = 30, Why = ow == null ? "fists" : other.Def });
                 }
                 if (wd.Magazine != null && it != null && u.C.Ap >= CombatRules.ReloadAp(u.C) && HasAmmo(u.C, wd))

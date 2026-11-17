@@ -367,8 +367,12 @@ namespace SecondFace.Core.Combat
         {
             if (Geometry != null)
             {
+                var k = (Pt(u.PX, u.PZ), Pt(x, z));
+                if (_walks.TryGetValue(k, out var cached)) return cached;
                 var p = Geometry.Path(u, x, z);
-                if (p != null && p.Count > 0) return p;
+                if (_walks.Count > 20000) _walks.Clear();
+                if (p != null && p.Count > 0) return _walks[k] = p;
+                return _walks[k] = new[] { (u.PX, u.PZ), (x, z) };
             }
             return new[] { (u.PX, u.PZ), (x, z) };
         }

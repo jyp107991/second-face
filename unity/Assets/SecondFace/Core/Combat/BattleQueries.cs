@@ -73,12 +73,13 @@ namespace SecondFace.Core.Combat
         private readonly Dictionary<(long, long), bool> _los = new();
         private readonly Dictionary<(long, long), bool> _sight = new();
         private readonly Dictionary<(long, long), double> _paths = new();
+        private readonly Dictionary<(long, long), IReadOnlyList<(double X, double Z)>> _walks = new();
 
         private static long Pt(double x, double z) => ((long)Math.Round(x * 8) << 32) ^ (uint)(int)Math.Round(z * 8);
 
         private void ClearCaches() { _cover.Clear(); _height.Clear(); ClearTurnCaches(); }
         /// <summary>Forget sight lines and paths (someone moved, a cloud rose): the next questions go to the field.</summary>
-        public void ClearTurnCaches() { _los.Clear(); _sight.Clear(); _paths.Clear(); }
+        public void ClearTurnCaches() { _los.Clear(); _sight.Clear(); _paths.Clear(); _walks.Clear(); }
 
         internal IReadOnlyList<CoverPiece> CoverCached(double x, double z)
         {
