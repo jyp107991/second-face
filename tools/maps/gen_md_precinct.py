@@ -203,9 +203,11 @@ md_precinct = {
         'recall_a': {'x': 14, 'y': 28}, 'recall_b': {'x': 14, 'y': 31}, 'courier_post': {'x': 57, 'y': 12},
     },
     'npcs': [
-        {'def': 'npc_md_01', 'x': 20, 'y': 14, 'facing': 0},
+        # B6l: off his desk once the Ledger's card has come (he keeps the Spire's close), and never at it once killed on Knock's apron
+        {'def': 'npc_md_01', 'x': 20, 'y': 14, 'facing': 0, 'if': {'not': {'any': [{'flag': 'a3_summoned'}, {'dead': 'npc_md_01_apron'}]}}},
         {'def': 'npc_md_nine', 'x': 33, 'y': 17, 'facing': 0, 'if': {'any': [{'not': {'flag': 'nine_joined'}}, {'all': [{'flag': 'nine_left'}, {'not': {'inParty': 'npc_md_nine'}}]}]}},
-        {'def': 'npc_md_12', 'x': 16, 'y': 29, 'facing': 3},
+        # B6l: at the Spire's close in Lowe's place once the card has come and he is dead; never here once killed on Knock's apron
+        {'def': 'npc_md_12', 'x': 16, 'y': 29, 'facing': 3, 'if': {'not': {'any': [{'dead': 'npc_md_12_apron'}, {'all': [{'flag': 'a3_summoned'}, {'any': [{'dead': 'npc_md_01'}, {'dead': 'npc_md_01_apron'}]}]}]}}},
         {'def': 'npc_md_13', 'x': 17, 'y': 23, 'facing': 0},
         {'def': 'npc_md_14', 'x': 30, 'y': 40, 'facing': 0},
         {'def': 'npc_md_15', 'x': 16, 'y': 40, 'facing': 0},

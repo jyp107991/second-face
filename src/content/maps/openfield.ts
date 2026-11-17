@@ -1781,6 +1781,12 @@ export const openfield: MapDef = {
             not: {
               dead: "npc_of_02"
             }
+          },
+          {
+            not: {
+              flag: "a3_unwritten",
+              eq: "with_you"
+            }
           }
         ]
       }

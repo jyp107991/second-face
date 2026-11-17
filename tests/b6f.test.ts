@@ -411,9 +411,13 @@ describe('B6f: the Grille in lockdown', () => {
     expect(appr(inside.g, TAMSIN)).toBe(5);
   });
 
-  it('with the door settled, the Grille is the opening\'s again', () => {
+  it('with the door settled, the Grille is B6k\'s after-the-door Grille (MOTHER by what the door left), not the lockdown\'s', () => {
     const a = game('prepared', { flags: { a3_c9: 'sealed' } });
-    expect(new DialogueRunner(DIALOGUES.d_a3_grille, a.g, a.q).node).toBe(new DialogueRunner(DIALOGUES.d_kn_grille, a.g, a.q).node);
+    expect(new DialogueRunner(DIALOGUES.d_a3_grille, a.g, a.q).node).toBe('a3k_grille');
+    // before Act 3 it is still the opening's Grille, whole
+    const b = game('prepared', { point: 'eve' });
+    b.g.flags.a3_open = false;
+    expect(new DialogueRunner(DIALOGUES.d_a3_grille, b.g, b.q).node).toBe(new DialogueRunner(DIALOGUES.d_kn_grille, b.g, b.q).node);
   });
 });
 

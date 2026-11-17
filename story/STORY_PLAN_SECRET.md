@@ -823,7 +823,7 @@ Tests `tests/b4b.test.ts` (48); `tests/a3_fixture.ts` finishes the beat at `hc_o
   `hc_listener`, `hc_immy`, `hc_saba_told` (truth | lied); `hc_garden` (skirts | openfield | sold | caught), `hc_garden_how`
   (guest | freight | tunnel), `hc_yaw` = review; `hc_funicular` (down | stayed | reported), `hc_funicular_how` (crew | freight |
   pass | road); `hc_alarm` (the Clean on the hill hostile). Act 3 reads them through `world/a3_conds.ts` (`B4B`), unchanged.
-- **Hooks left:** B5d's Long Night envoy reading `hc_offer` (noted in B5d's notes, not wired); `hc_term` owed; the Concern's
+- **Hooks left:** B5d's Long Night envoy reading `hc_offer`: **wired in B6k (2026-11-17)**: Lucien Roux at his camp desk on the eve (`d_ln_roux`) greets the designate by the Board's answer (accepted, feigned, refused; the weighbridge's memory still comes first) and says once what the seat means tonight (`ln_roux_seat`); a line and a branch, no mechanical change to the night (`tests/b4b.test.ts`, the Long Night's describe). Still open: `hc_term` owed; the Concern's
   memory of `hc_alarm`; Linh in the Skirts and Sela at the Saints' tower are placed nowhere yet (P10/P11 people pass).
 
 ## Build notes — B5: the Act 2 wilds and the Long Night (2026-11-17; B5a built, B5b–d planned)

@@ -2,6 +2,7 @@ import type { DialogueDef, NodeDef } from '../../engine/dialogue/dialogue';
 import type { Cond, Effect } from '../../engine/world/logic';
 import { QUESTS } from '../quests';
 import { ODILE_PRICE_NODES, ODILE_PRICE_START } from './a3_fire_ii';
+import { SARR_TERMS_NODES, SARR_TERMS_START } from './a3_close';
 
 /**
  * Ninebridge: the guild's Exchange on the broken bridge. The toll at the sandbags, the porters sitting down
@@ -934,7 +935,7 @@ export const d_nb_ledgers: DialogueDef = {
 
 export const d_nb_sarr: DialogueDef = {
   id: 'd_nb_sarr', owner: 'npc_nb_01',
-  start: [{ if: { flag: 'nb_fight' }, node: 'fight' }, { if: { not: { flag: 'nb_office_ok' } }, node: 'closed' }, { if: { flag: 'nb_sarr_met' }, node: 'again' }, { node: 'intro' }],
+  start: [{ if: { flag: 'nb_fight' }, node: 'fight' }, SARR_TERMS_START, { if: { not: { flag: 'nb_office_ok' } }, node: 'closed' }, { if: { flag: 'nb_sarr_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     static: { text: 'The pen stops. "For nothing." She says it the way other people say a death. "A sealed sheet is worth what it is worth because it is sealed. A girl who says the sheet aloud in a gang street is a hole in the floor." She writes a figure and turns it to you: two hundred. "The name of the street, and the tower. Riders will fetch her at dawn, with a sheet of her own, and she will be sealed where sealed things are kept, and fed, and listened to by people who pay."', options: [{ id: 'static.sell', text: 'The Saints\' tower in Bridgeward. Under the mast. (200 Tolls)', effects: [{ give: 'tolls', count: 200 }, { set: 'bw_static', value: 'sold' }, { rep: { faction: 'tollmen', respect: 8 } }, { rep: { faction: 'saints', respect: -30 } }, { xp: 80 }, { decision: { id: 'bw_static_sold', text: 'You sold the Exchange the Saints\' girl who hears the city\'s wire.' } }], next: 'static_sold' }, { text: 'I haven\'t decided.', exit: true }] },
     static_sold: { text: '"Sealed." The figure goes into the ledger under a line that says nothing about a girl. "The floor thanks you. The floor always thanks you; it is the floor\'s only expense."', interject: [
@@ -1053,6 +1054,7 @@ export const d_nb_sarr: DialogueDef = {
     sheet_alone: { text: '"Odile\'s paper goes to Odile, or nowhere." The pen moves again. "Bring her, and we\'ll talk about what it costs."', again: '"Bring her," the Grand Factor says, to the page.', options: [bye] },
     ...PAPER_ROOM,
     contract: { text: '"The floor pays ninety for lot four. The clerk handles it; I don\'t touch paper that small." She goes back to the pen. "Unless you were going to ask me to tear it up, in which case: not at that price."', options: [bye] },
+    ...SARR_TERMS_NODES, // Act 3 (B6l): the guild's copy of the Concern's paper
     fight: { text: 'She has not moved from the desk. "You\'ll find the guild is credit, and I am the guild. Go on, then."', again: 'She has still not moved from the desk. The clocks go on.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };

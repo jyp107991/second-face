@@ -799,7 +799,7 @@ The default shared files touched by a content slice are the registries: `quests/
   stands in the door; Nine's three break variants; the default never fires unasked.
 - **Estimate** 1.25 h.
 
-### B6k — After the door, the summons, the platform
+### B6k — After the door, the summons, the platform — BUILT 2026-11-17 (deviations under "As built")
 - **Create** `dialogue/a3_after.ts` (Knock's people after, by outcome; MOTHER opening to Knock; `d_a3_platform` at Carrick's
   buffer with the Harbour court, the Stand and the cradle).
 - **Touch** `tools/maps/gen_md_docks.py` → `maps/md_docks.ts` (the wardens' car at the buffer and the sixty `if: a3_c9_how ∈
@@ -809,7 +809,7 @@ The default shared files touched by a content slice are the registries: `quests/
 - **Tests**: the platform only after relocation to the Precinct; each route; the summons arrives anywhere.
 - **Estimate** 1 h.
 
-### B6l — The close: who came
+### B6l — The close: who came — BUILT 2026-11-17 (deviations under "As built")
 - **Create** `dialogue/a3_close.ts` (`d_a3_quill` (or Soto [B4B]) with the Concern's terms and `k_a3_transfer`;
   `d_a3_marwood_back` for the register; `d_a3_lowe_close`; the gathered allies' lines; Petra at the close; the
   companions' placements as waiting people) · case `calla` in `md_court.ts` **only if** `CALLA_HELD` [B5d?] (precedent
@@ -2008,6 +2008,227 @@ B6h asked).
 - **B6m:** the readiness act `lowe` (above). **B6s (slides 3–4):** `a3_c9*`, `STRUCK_AS` (claimed when `a3_claim` = held),
   `MOTHER_AFTER`, `a3_kes_numbed` is B6n's. **B6v:** Tamsin's `door` end is `a3_tamsin_dead`; Nine's `struck` end is
   `a3_nine_struck`; Wren's `gone_sold` reads `wren_left` = sold (the door's, or Act 2's Sable sale: both write sold).
+
+### B6l (built 2026-11-17, in the second lane, alongside B6k)
+**Done, all of the slice:** `dialogue/a3_close.ts` (14 trees: who came `d_a3_close`; the Concern's officer `d_a3_quill` with Quill's
+`q_*` and Soto's `s_*` nodes; the acquisitions drawer `d_a3_acquisitions`; `d_a3_lowe_close` with Reyes's `r_*`; the Unwritten
+`d_a3_petra_close` (Petra's `p_*`, Juniper's `j_*`), `d_a3_thaddeus_close`, `d_a3_rhoda_close`; `d_a3_nine_walkin`; the allies'
+`d_a3_keziah`, `d_a3_lucan`, `d_a3_ifeoma`, `d_a3_tuan`, `d_a3_verity_close`, `d_a3_seventeen_close`; plus the nodes spread into
+four existing trees and the case spec `callaCase`; 97 nodes, about 11,000 words counting every variant; every node with a return
+line; all seven companions speak) · `npcs/a3_close.ts` (**its own file**: the envoys `npc_a3_31` Sister Keziah Abernethy (the
+Choir), `npc_a3_32` Lucan Begay (the Wheel), `npc_a3_33` Ifeoma Okonjo (the Stand), `npc_a3_34` Tuan Dinh (the chain); ids from
+31 to stay clear of B6k; names checked against the cast; women narrow, men broad) · `tools/maps/gen_md_spire.py` →
+`maps/md_spire.ts` (confirmed byte-identical first; additions only: the close's placements on `AT_CLOSE`, trigger `a3_close`, prop
+`ar_acquisitions` and its talk entry) · `tests/b6l.test.ts` (37). No engine change. `npm run check`: see the report.
+**Shared touches (small, local):** `a3_conds.ts` (a B6l block after B6j's `MOTHER_AFTER`: `AT_CLOSE`, `SOTO`, `SOTO_COMES`,
+`QUILL_COMES`, `OFFICER_HERE`, `NINE_WALKIN`, `LOWE_CLOSE`, `REYES_CLOSE`, `UW_CLOSE`, `TERMS_WORSE`, `SARR_OFFERS`, `REGISTER_ASK`,
+`CALLA_CASE_OPEN`; the registry's B6l block) · `md_court.ts` (an import; `CALLA = courtCase(callaCase(onRail))` on the bench's CALLS
+and its nodes; the docket's read text gains three Act 3 variants first, `DOCKET_A3`) · `md_spire.ts` (an import; Marwood's topic
+`MARWOOD_BACK_OPTION` and nodes `mb_*` in `d_ar_keeper`; Comfort's tally node gains the register-back text first and one option,
+`COMFORT_WORD_*`; **the works board reads REOPEN R30 once Act 3 is open**: nobody had relettered it) · `ninebridge.ts` (an import;
+one start entry `SARR_TERMS_START` after the fight's, nodes `a3_sarr*` spread into `d_nb_sarr`) · the dialogue and content indexes ·
+five generators, each confirmed byte-identical first, one condition each (below).
+
+**How it plays (and where it differs from §2.3 21a and §8 B6l):**
+- **Who came** (`AT_CLOSE` = `a3_summoned` ∧ ¬`a3_pnr`; the map mirrors the conditions, tested over many states). Companions by
+  `WITH_YOU` and not travelling, round B6n's fire barrel (their own defs and trees: each tree's `waiting` node takes them back into
+  the party; a broken Tamsin does not come; a left one comes once won back). **A hidden, unfetched Nine walks in written off**
+  (B6b's suggestion taken): its own placement and `d_a3_nine_walkin` ("NOT FOUND... I have assumed an omission"); come along, or
+  wait by the fire; both set `a3_nine_fetched`. The first time on the close after the card, trigger `a3_close` opens `d_a3_close`:
+  the close (the works hurried, the board's 49 painted out) and one passive per group who came (labels: the ones who walked with
+  you, Unit 9, the Concern, the column's captain, the Unwritten, the Choir, the Wheel, Carrick's Stand, the chain, the Saints, an
+  assessor of the Wet; plus the catalogue (the register sold) and the docket (Calla held), as pointers to the two side matters).
+- **The Concern's officer: Soto if `hc_soto_met` (and alive), else Quill (alive)** — the plan's "Soto replaces him when hc_soto_met".
+  Its first words read the night (`LN('guild')`: "the first instalment"), the terrace (`hc_offer` accepted/feigned: SEAT IN WAITING;
+  refused: "the Board does not usually ask twice"), the Crown (`cr_concern` exposed: "It did not cost us interest"; kept: "a settled
+  thing"), the Weighhouse (`a3_c9_how` = sold). Soto in the Chair (`hc_longlived` = soto) has her own lines. Topics, each once:
+  what the Board is buying (the core "and the schedules attaching: a guess with wardens"), **why it needs the player's name (made
+  concrete: the charter's reserved act — the Ledger may void any transfer of the city's property but the first act of its own
+  Magistrate; this is why C needs the worn sash and the paper)**, what happens to the city (said truthfully: clinics, the Line,
+  Spare Parts, the hounds, the Leash with a city on it), what is in it for the player (a seat, the gardens, the Board's season;
+  **`TERMS_WORSE` = `hs_marked` ∧ `hs_gate_shut`: the seat withdrawn, an annuity at Ninebridge and care at the end**, also a line on
+  the paper), and "if I say no" ("then we wait for the next face"). The paper (`k_a3_transfer`, "consideration already paid"):
+  **taken** ("I'll sign it at the core"), **carried** ("That's all I'll promise": accepted all the same, `a3_terms_how` = carried),
+  or **refused**; given back later from the hub → refused (`a3_terms_returned`). Approvals in effects (the act's convention): Kes
+  −10/−6, Wren −8/−5, Ash, Tamsin −5, Ilya −4, Nine −3, Odile +2; a refusal the other way. **The officer never asks twice** and
+  names the Grand Factor's copy (`a3_sarr_holds`).
+- **Sarr's second chance** (`SARR_OFFERS`: at the close, Sarr alive, no paper held, not yet answered by her, and the officer refused
+  **or no officer alive** (added: so the paper is never lost to a death)): her own tree opens on `a3_sarr` ahead of her appointment
+  gate; the guild's copy with green ink: the floor's tenth, and **"a line on the floor's book, for life"** instead of a seat. Taken or
+  carried (`a3_terms_from` = sarr, `a3_sarr_terms` = accepted), or "No. Not from you either." (`refused`, final: "Get out of my office
+  before I find out what you are worth"). "(Something else.)" falls through to her own hubs.
+- **The register back** (`REGISTER_ASK`: Act 3 open, `prec_register` = catalogued, not back, before the steps; from the order on, not
+  only at the close). **Deviation: `d_a3_marwood_back` is not a tree**: its nodes `mb_*` are in Marwood's own `d_ar_keeper` (she is
+  already at her counter on the close's map), behind one topic. Three routes (the plan named two): **B** 200 Tolls ("a hundred and
+  fifty, and fifty for the binding"; the porter carries it across) · **T** Speech 50, offered only with **Comfort's word**
+  (`a3_comfort_word`), which she gives at the Sink's tally wall ("a person does not sell their own case"), once; mods −10 Marwood's
+  confession heard (`ar_keeper_confessed`), −10 the designate's warrant, −5 two precedents, −5 Nine; a failure leaves the price ·
+  **S (added)** the ACQUISITIONS drawer behind her counter at night (21–7, she sleeps on the index): Security 45 (−10 an archive
+  clerk, +5 Tamsin travelling), once; a failure wakes her (`a3_acq_woken`: she sleeps facing it, the route is spent). Each sets
+  `a3_register_back`, `a3_register_how`; `prec_register` is never rewritten (E_REG reads the alternate). The book goes back to the
+  desk under the bench; Comfort's tally line knows it.
+- **Lowe at the close** (`LOWE_CLOSE`; Reyes if he died before the door or on its apron, `REYES_CLOSE`; nobody if both did: Kress,
+  who led only when both were dead, went back to the ranks). First words by `a3_lowe`: stood_down ("given a square to stand in"),
+  withdrawn ("a pin through it... I am learning it from the order"), yielded (the strapped arm, the letters home), carried ("thirty-two
+  doors"; over Tamsin: "I knelt by one of them"). Topics: what happens to him (stood down: "Order is a habit before it is a
+  schedule": the readiness act's voice), the sixty by the door, the steps (**stood down ∧ trust ≥ 25: "If you come down them in a
+  hurry, I will be a slow reader"**, B's climax foreshadowed), the third word (B6f's memory), and **his folded eviction list**
+  (thirty-one names and KNOCK: knowledge `a3_lowe_list`, "read this before you sign anything"). Reyes: Lowe's death and the steps.
+- **The Unwritten** (`UW_CLOSE` = with_you): Petra, or Juniper leading when she is dead, Thaddeus and Rhoda, at the close's west end.
+  "We came east. Not for you. For the book." Topics: what they will do (wait: "you're the only book we allow"), **the sash** ("Then
+  you're not going down to the book. You're the book. I can't promise you Thaddeus then... I'll say it to you first"), Petra's
+  father by `ks_mason`. Said to the face, never sprung; B6p's blade is foreshadowed, not resolved.
+- **The allies who count at the close** (`ALLIES_AT_CLOSE` and Seventeen). **Deviation: envoys, not the named leaders**: the muster's
+  own replies put Connie on the quays, Holt on Bridgeward's streets and Sefa on the roads the night of the steps, so each sends one
+  of its own to say so (Keziah for the Choir, by who answered the letter, and with Sister Calla's case while she is held; Lucan, with
+  Dario at the mast; Ifeoma, on the Harbour Act; Tuan, on three crews and one chain). The two readers come in person (Verity, who
+  will read "the ones that have already happened" first; Seventeen, "ENTERED: ATTENDING"). Each sets knowledge `a3_close_<ally>`;
+  none sets readiness (B6m's hub does).
+- **Case `calla`** (`CALLA_CASE_OPEN` = `ln_done` ∧ `CALLA_HELD`): "Twelve-oh-four", from the bench; the docket's card moves to the
+  top (AWAITING A SPEAKER). Evidence: the particulars (one sentence), **Calla brought up to the rail to speak for herself (clause 12)**
+  ("If that is sedition, so is a splint"), the docket's card (listed two months before the words), the FINES heading, the Choir on
+  the benches, Nine's log (the ninety in a hundred that she would recant). Grounds: **speech** (Speech 55, six mods) → `speech`:
+  HELD: SPEECH IS NOT SEDITION, `prec_sedition` = speech, a precedent (CLAUSES' `speech`) · **forecast** (no check, with the FINES
+  heading void and the card on the rail) → `void`, no new precedent ("Void. Not *held*.") · **privilege** → a courtesy, no precedent
+  · a failed speech → `upheld` (she stays held; the case is closed). **Every release writes `ks_calla` = free** (B5d's keystone flag:
+  `CALLA_FREE` reads it, so D_PEOPLE and the Choir's letter to her follow); she goes home to Shale's mission.
+
+**Map touches beyond md_spire (each generator confirmed byte-identical first, one condition each):** Quill off the Crown
+(`gen_md_crown.py`) and Soto off the Board's floor (`gen_hc_halcyon.py`) once the card has come and they are the officer; **Lowe off
+his Precinct desk once the card has come, and never there once killed on Knock's apron** (a B6j leftover fixed: he stayed at his desk
+dead), Reyes likewise in his place (`gen_md_precinct.py`); Verity out of the Saints' tower yard once the card has come and the Saints
+answered (`gen_md_bridgeward.py`); Petra not at Openfield once turned (`gen_openfield.py`: she has gone east). Seventeen needs none
+(no placement after the dam's truth). **Not done:** Nine's hideouts (md_ring's Clover bench, md_docks's hulls: md_docks is B6k's lane):
+a hidden Nine is placed at the close and at its hideout until fetched at either (both read `a3_nine_fetched`). `gen_md_stacks.py` does
+not reproduce its committed maps (an extras bark's name), so Mr Latch was not used as a third officer.
+
+**Noted, not changed:** B5d places Sister Calla in Shale's mission unconditionally (`gen_shale.py`), so she is there even while held;
+after the Court's release that is right, before it it is not (a B5d/people-pass matter).
+
+**For later slices (what to read).**
+- **B6m:** the close's placements end at `a3_pnr` (place the steps' people from it); `a3_lowe_close` (heard), Lowe's "habit" line for
+  the readiness act `lowe`; the Shift's powder is **not** placed at the close (the charge reads `a3_ally_shift`). The envoys and
+  readers say what their ally will do; none sets `a3_ready`.
+- **B6p:** the waiting companions leave the close at the PNR: place them on the steps; Thaddeus is at the close with Petra under
+  with_you, and Petra's warning (`seen a3uc.sash.*`) has been said to the face if asked.
+- **B6q/B6r:** C reads `k_a3_transfer` with `a3_terms_how` (taken | carried) and `a3_terms_from` (officer | sarr); the officer is at
+  the close (Soto or Quill) for "the transfer guarded"; the paper's clause is the reserved act (the first act of the chair). B's
+  "Lowe lets you pass" was foreshadowed (`seen a3lc.steps*` with stood_down ∧ trust ≥ 25). D's readers are at the close (Verity,
+  Seventeen). E: `a3_register_back` / `a3_register_how`, `prec_sedition`, `a3_lowe_list` (Lowe's thirty-one names, for the chair).
+- **B6s–B6v:** slide 7 (the guild) can read `a3_terms_from` = sarr; slide 8 (the Choir) reads `CALLA_*` (free after the Court) and
+  `ca_calla`; slide 9 (the Precinct) `a3_register_how` and `a3_lowe`; slide 11 `a3_ally_gangs`.
+
+### B6k (built 2026-11-17, in the first lane, alongside B6l)
+**Done, all of the slice:** `dialogue/a3_after.ts` (8 trees: `d_a3_platform` at Carrick's buffer, 17 nodes; `d_a3_tam_after`;
+`d_a3_ck_ines`/`_effie` (Carrick after); `d_a3_ap_ines`/`_ola`/`_wes`/`_effie` (Knock's apron after an opened door); plus the
+after-the-door nodes spread into B6f's and B6h's trees; every node with a return line; all seven companions speak) ·
+`tools/maps/gen_md_docks.py` → `maps/md_docks.ts` and `tools/maps/gen_knock.py` → `maps/c9_mouth.ts` (both confirmed byte-identical
+first) · world event `a3_buffer_post` · `tests/b6k.test.ts` (33). Extra item: B4b's open hook (the Long Night's envoy reads
+`hc_offer`), in `ln_longnight.ts` and `tests/b4b.test.ts` (+2). No engine change. `npm run check`: see the report.
+**Shared touches (small, local):** `a3_conds.ts` (`CARRIED_WEST`, `PLATFORM_OPEN`, `TAM_STOOD`, `TAM_FOLLOWED`, `TAM_AT_BUFFER`,
+`TAM_IN_CARRICK`, `TAM_AT_KNOCK_AFTER` after B6l's block; the registry's B6k block) · `quests/a3.ts` (`q_a3_platform` only: routes'
+`requires` as built, the journal, an optional objective, a new end stage `went`) · `a3_events.ts` · the dialogue index ·
+`a3_knock.ts` (an import; Maud's after start entry, her after options and nodes; her lockdown topics (the hatch, the water, the
+wardens, Linnet in the column, the seven o'clock sit, the door) and Corin's door question and Linnet's column and "when this is
+done" gated by `LOCKDOWN_ONLY`; Corin's hub text, option and node; Linnet's option and node; Knock's others' start entries and
+nodes; the Grille's after start entry and nodes) · `a3_cistern.ts` (an import; Ines, Pell, Bram and Teague get one after-word
+start entry each after their first meeting; the ring's question, Pell's "how are they" and Teague's weld gated by
+`LOCKDOWN_ONLY`; the `resident()` helper puts each resident's after greeting first under a sealed door) · `tests/b6f.test.ts` (its
+"with the door settled, the Grille is the opening's again" now expects B6k's after-the-door Grille, as B6j did for B6h).
+
+**How it plays (and where it differs from §2.3 20f and §8 B6k):**
+- **Why Carrick, made concrete.** The wardens' car is a road lorry (B6c), so it does not come to the Line's buffer by rail: Precinct
+  Supply receives what the city takes in where everything is received, on the quay at Carrick, so the lorry goes round by the river
+  road and backs up to the buffer under the freight shed beside Sixty (the engine: the quest's title is both). A trestle under the
+  shed's last lamp, PRECINCT SUPPLY — RECEIVING, a clerk's stool, two vans on the river road.
+- **Why it waits (no time limit).** The order has one line left, RECEIVED, and the receiving is the chair's too; Lowe reads "the
+  designate's attendance" as the designate's word ("Silence is not a word": B6h's line), Supply's clerk will not take delivery
+  without the designate's name, and the lead will not sign for them. The car stands at the buffer, fed and watered, for as long as
+  the player likes; days at Carrick or anywhere settle nothing (tested). The designate cannot simply unsay "carry on" here: the
+  order executed at Knock. The ways off it are other jurisdictions, other powers, or the dark.
+- **Which relocations reach it (B6j's question).** `CARRIED_WEST` = order | forced | **consent** (by their own vote: the tailboard
+  down, their names on their bundles; Ines says at the buffer what they want: "We did not want to be graded"; Sayer goes in by his
+  own choice either way). **Sold never reaches Carrick**: the guild's road goes to the Weighhouse. Consent received ends the quest
+  `went` (done), not `held` (failed).
+- **The post.** `a3_buffer_post`: the Ledger's receipt slip at the next seven o'clock anywhere (the same morning as its card), with
+  the column's pencilled note ("Nobody is in a hurry but me"); starts `q_a3_platform`. The map's trigger `a3_buffer` (the platform's
+  east end, once) and the scene also start it.
+- **At the tailboard** (`car`): why the column waits; what the receipt is (the vans, the Hospice block, graded by morning) and, from
+  the lead, the hint: on this side of the dry river the Ledger enforces one book, and it is not the order; the faces through the
+  slats (by order, forced, consent; Tamsin there if she followed); under consent, what they want. Cadet Ferrow reads the names at
+  the car when Linnet stayed in the column.
+- **The Harbour court** (T): at six on the Customs House steps (`until: 18`). With `dk_prec_passenger` no check: Dahl does not find a
+  thing twice, she reads it (Mirela's finding, or Calla's, named when it was). Without: Speech 45 (−10 Dahl's trust ≥ 20, −10 Nine,
+  −10 the Act read under the glass, −5 her rulings for the player (`dk_crane` bond / weighbridge on), −5 `prec_unrecorded` yields, −5
+  the Court of Accounts stayed this order). **The argument (added): the order calls them supply, and the Act already has the word:
+  Schedule 2's "a ship's stores"; these are nobody's ship's; and a person carried on the Precinct's own road has had her fare paid
+  by the Precinct** (no fare to pay; the court's earlier findings cost 125 / 25). The lead folds the trestle: "The Ledger enforces
+  the Harbour Act on this quay, and nothing else." Sets `dk_prec_passenger` (E's clause `passenger`). A failure adjourns and is
+  spent (`a3_buffer_court`); the other ways stay.
+- **The Stand** (F, as the plan: no shot fired): `dk_stand_owed` **or** `a3_ally_stand` (added: the Stand owes the player in
+  person, written to or not), Connie alive. The cranes stop; two hundred dockers stand along the platform's edge; "We don't load
+  people." The lead stands back (Lowe: "I am not going to shoot dockers on a quay for the Hospice block"; Reyes: "I've four
+  rifles." "And I've the quay."). Wardens −10, tollmen −5.
+- **The cradle and the Hulls** (S): at night (20–4), the cable running and the bed not cleared, Kobby alive, the cradle known.
+  **Deviation, made concrete:** the cradle is the cover, not the carriage: Abena rides the basket out over the bed with its lamp
+  swinging and every warden watches it, while the residents go along the river wall and down the stairs into the Hulls, and Kobby
+  writes them into the Benguela Star's crew book: crew under Schedule 3, whom nobody moves. Stealth 45 (−10 Lowe at trust ≥ 25
+  looks at the engine for an hour, −10 the Hulls owe you, −5 the basket ridden, −5 Wren; +10 Reyes walking the car). In the morning
+  the lead writes NOT FOUND AT RECEIPT, clause twenty-two (B6b's written-off). Caught: "Go to bed, designate"; spent. By day the
+  option is Kobby's "come back when the Bond's lights are the only lights".
+- **Received** (`held`): asked twice ("Say it, or don't"); the clerk reads the names, each says "Here" as MOTHER taught them, the
+  vans go round by the river road. A Tamsin who followed is "Not listed": the van's door shuts a foot from her face.
+- **Walked**: where they go: the Boxes (court, Stand: Connie's people find them boxes, Espe feeds them) or the Star (cradle); the
+  lead writes NOT RECEIVED and goes home. Placements after: Ines and Effie (with their own trees) in front of the Boxes / on the fish
+  steps, or aboard the Star by the crew books. The buffer after: PASSENGERS chalked on the shed's last pillar; RESERVE 9 — STOOD on
+  the Stand's board; CREW on the river wall; or the trestle folded with its board to the brick.
+- **Tamsin, placed after the door (B6j's note 1).** `TAM_STOOD` = `tam_left` = door, alive. She is in exactly one place (tested over
+  every state): on Knock's apron by the door (`npc_c9_03_after`) after a sealed door, an opened one, the sale (Nine carried her out:
+  she sits in the empty door and means to go up the guild's road), or a reception without her; **behind the car at the buffer** when
+  Nine carried her out and the reserve went west (added: she walked all the way behind it; not on the sheet, so nobody may stop her:
+  "Get them off this car. If you can't, go away."); with them in Carrick or the Hulls after they walked ("Don't think it makes us
+  square... Thank you."). Never won back (B6j's rule: she heard the word first), each state with its own first words and one honest
+  answer each to "come back", "what will you do", "I'm sorry"; her plans by `tam_pledge` (door, lives) where the door was kept. Dead,
+  nowhere: Knock's trigger `a3_tam_line` marks where she died (TAMSIN chalked, a cup of water every morning); her grave is on the
+  rise by the windpump (Corin dug it); MOTHER prints RESIDENT ROE. SIXTY-ONE. CONTINUITY ENDED. THANK YOU. into the tray (Maud's
+  telling, MOTHER awake).
+- **Knock after the door.** Maud's first word by outcome (lowe, welded, struck by `STRUCK_AS` and the claim, fought, opened, order,
+  consent, sold, forced; MOTHER dark), then her hub without the lockdown's topics and with the after's: **the hatch at seven, MOTHER
+  opening to Knock** (kept: thanks, and Maud says it back; opened: "Good morning, Maud Ferrow", five days' practice; relocated: the
+  Cistern's stores, seed and blue tablets, surplus to continuity, "They are Knock's"), Tamsin, Linnet gone with the column, what Knock
+  does now. Corin (the bolt out of the rifle), Linnet ("It's done, Lin", by `a3_linnet_after`), Afua, Sim, Binta, Amos one word each
+  (always the after, so nothing loops). **The Grille after** by what the door left: put through to Effie (sealed), good morning
+  (opened), "There is nobody to put you through to... I am the one who is here" and what MOTHER will do now (relocated), Bram's chalk
+  (asleep), B6g's dark Grille (burned). **The residents on the apron after an opened door** (B6f's spots): Ines at the apron's edge
+  ("Everything out here is a different size from its voice"; she stepped round the city's dead after a fought door), Wes facing south
+  for rain, Ola on Afua's goat pen, Effie at the head of the lane asking how far Shale is. **Inside after a sealed door**: Ines writing
+  to Maud, Pell, Bram, Teague, and the four residents each a first word by how it was sealed (the weld, the claim, struck) and MOTHER's
+  state, then their own talk.
+- **Amos and the mast (B6d's suggestion taken):** with `a3_mast_keeper` = knock, after the door, Amos goes up the hill with the
+  switch's handle (`a3_mast_handle` = amos).
+- **Fixes in passing:** the guild's Hale (alive, unanswered) and the hound handlers are not placed at Knock after the sale (they
+  walked the sixty up the guild's road; B6j's sold text says so); a Nine hidden in the Hulls steps out of its hold once the Ledger's
+  card has come (B6l's walk-in; **md_ring's Clover bench is still placed alongside the walk-in until fetched: B6l's lane, not
+  changed**).
+- **The summons** (`a3_summons`) is unchanged: confirmed (tested) at the next seven o'clock anywhere once `a3_c9` is set, for every
+  outcome, once, starting `q_a3_spire` at close and `q_a3_hold`.
+
+**The B4b hook (STORY_PLAN's B4b "As built", "Hooks left").** The Long Night's Concern envoy, Lucien Roux at his camp desk on the
+eve (`d_ln_roux`), reads `hc_offer`: his first words by the Board's answer (accepted: he stands and shakes the designate's hand;
+feigned: "Director Soto writes separately"; refused: "It is noted. It is not held against you") after the weighbridge's memory,
+which still comes first; and once, "The Board's seat." (`ln_roux_seat`): what the seat means tonight (accepted: "A seat is not a
+leash. Not yet."; feigned: "If you did not, I will know by morning... The Board never withdraws an offer. It lets it cost more.";
+refused: "You will hear from it again, at a worse price, on the day you take the sash"). No mechanical change to the night.
+
+**For later slices (what to read).**
+- **B6l/B6m (the close):** `a3_c9_after` (walked: Ines, Effie and the residents in Carrick; held: received), `a3_buffer_how`; Tamsin
+  `TAM_IN_CARRICK` / `TAM_AT_KNOCK_AFTER` (she is not at the close: she left over the word).
+- **B6r (D's climax):** `a3_mast_handle` = amos (Knock's keeper throws the switch, not the player).
+- **B6s (slides 3–4):** M4 already reads `a3_c9_after` = walked; also `a3_buffer_how` (passengers / stood / crew), `a3k_hatch_seven`
+  (the stores given to Knock), the apron after an opened door, `a3k_tam_line`. **B6v (Tamsin's slide):** `TAM_*` for where she ended
+  (Knock's door, Carrick with them, or at the Hospice gate saying their names: her held plan), `tam_pledge`.
+- **Runtime (§9.5):** the relocation lorry at the buffer and the trestle board while `PLATFORM_OPEN`; the chalk after it (PASSENGERS,
+  STOOD, CREW); TAMSIN chalked inside the yellow line at Knock and her stone on the rise.
 
 ## Defaults taken for the open questions (coordinator, 2026-11-17; the owner may override)
 1. After the ending: epilogue, credits, then the title screen; the named autosave at the point of no return stays

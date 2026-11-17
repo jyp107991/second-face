@@ -69,6 +69,18 @@ DOOR_TWO_DOWN = {'any': [{'all': [_down(a), _down(b)]} for k, a in enumerate(COL
 DOOR_BROKEN = {'all': [DOOR_FIGHTING, DOOR_LEAD_DOWN]}
 DOOR_YIELDS = {'all': [DOOR_FIGHTING, {'not': DOOR_LEAD_DOWN}, DOOR_TWO_DOWN]}
 RING_OPEN = {'flag': 'a3_ring', 'eq': 'open'}
+# B6k (after the door): the reserve carried west to Carrick, the platform there still open, and Tamsin, who walked into the
+# door over the designate's word and lives, placed where the door left her (a3_conds.ts: CARRIED_WEST, TAM_AT_KNOCK_AFTER)
+SETTLED = {'flag': 'a3_c9'}
+OPENED = {'flag': 'a3_c9', 'eq': 'opened'}
+CARRIED_WEST = {'all': [{'flag': 'a3_c9', 'eq': 'relocated'}, {'any': [{'flag': 'a3_c9_how', 'eq': v} for v in ('order', 'forced', 'consent')]}]}
+PLATFORM_OPEN = {'all': [CARRIED_WEST, {'not': {'flag': 'a3_c9_after'}}]}
+TAM_STOOD = {'all': [{'flag': 'tam_left', 'eq': 'door'}, {'not': {'flag': 'a3_tamsin_dead'}}]}
+TAM_AT_BUFFER = {'all': [TAM_STOOD, PLATFORM_OPEN]}
+TAM_IN_CARRICK = {'all': [TAM_STOOD, CARRIED_WEST, {'flag': 'a3_c9_after', 'eq': 'walked'}]}
+TAM_AT_KNOCK_AFTER = {'all': [TAM_STOOD, SETTLED, {'not': TAM_AT_BUFFER}, {'not': TAM_IN_CARRICK}]}
+# the guild's paper signed: Hale (alive, unanswered) and the handlers walked the sixty up the guild's road
+SOLD_WALKED = {'flag': 'a3_c9_how', 'eq': 'sold'}
 
 
 def ts(obj):
@@ -235,11 +247,11 @@ A3_NPCS = [
     {'def': 'npc_a3_g6', 'x': 34, 'y': 40, 'facing': 0, 'schedule': sched((6, 22, 'ward_apron', 'work'), (22, 6, 'camp_tent_a', 'sleep')), 'if': COLUMN_CAMP},
     # the guild's party when the guild is in play: Hale if he lives, the handlers when it brought hounds (the hounds are the
     # runtime's stand-ins until a live hound exists)
-    {'def': 'npc_kn_out_lead', 'id': 'npc_kn_out_lead_a3', 'x': 42, 'y': 2, 'facing': 2, 'dialogue': 'd_a3_hale', 'schedule': [], 'if': {'all': [A3, GUILD_IN, HALE_HERE, {'not': HALE_ANSWERED}]}},
+    {'def': 'npc_kn_out_lead', 'id': 'npc_kn_out_lead_a3', 'x': 42, 'y': 2, 'facing': 2, 'dialogue': 'd_a3_hale', 'schedule': [], 'if': {'all': [A3, GUILD_IN, HALE_HERE, {'not': HALE_ANSWERED}, {'not': {'all': [SOLD_WALKED, {'not': {'flag': 'a3_hale'}}]}}]}},
     # (B6g) Hale answered for the post-house on Maud's word: at its new frame with a hammer, out of the guild's green
     {'def': 'npc_kn_out_lead', 'id': 'npc_kn_out_lead_boards', 'x': 18, 'y': 18, 'facing': 2, 'dialogue': 'd_a3_hale', 'schedule': [], 'if': {'all': [A3, HALE_HERE, HALE_ANSWERED]}},
-    {'def': 'npc_a3_g11', 'x': 45, 'y': 2, 'facing': 2, 'schedule': [], 'if': {'all': [A3, HOUNDS_IN]}},
-    {'def': 'npc_a3_g12', 'x': 47, 'y': 3, 'facing': 3, 'schedule': [], 'if': {'all': [A3, HOUNDS_IN]}},
+    {'def': 'npc_a3_g11', 'x': 45, 'y': 2, 'facing': 2, 'schedule': [], 'if': {'all': [A3, HOUNDS_IN, {'not': SOLD_WALKED}]}},
+    {'def': 'npc_a3_g12', 'x': 47, 'y': 3, 'facing': 3, 'schedule': [], 'if': {'all': [A3, HOUNDS_IN, {'not': SOLD_WALKED}]}},
     # the Unwritten by night: Petra, or the first of them if she is dead (not one who steps in when Petra falls in a fight), and
     # two more (B6g: what they came for)
     {'def': 'npc_of_02', 'x': 19, 'y': 39, 'facing': 1, 'dialogue': 'd_a3_petra', 'schedule': [], 'if': {'all': [UNWRITTEN_HERE, {'not': PETRA_DEAD}]}},
@@ -262,6 +274,15 @@ A3_NPCS = [
     {'def': 'npc_a3_g16', 'x': 23, 'y': 36, 'facing': 0, 'schedule': [], 'if': {'all': [COLUMN_HERE, {'flag': 'a3_ally_shale'}]}},
     {'def': 'npc_a3_g17', 'x': 42, 'y': 35, 'facing': 3, 'schedule': [], 'if': {'all': [COLUMN_HERE, {'flag': 'a3_ally_dogs'}]}},
     {'def': 'npc_a3_g18', 'x': 44, 'y': 34, 'facing': 3, 'schedule': [], 'if': {'all': [COLUMN_HERE, {'flag': 'a3_ally_dogs'}]}},
+    # (B6k) after an opened door, the residents out on the apron and the slope (the rest of the sixty are the runtime's crowd):
+    # Ines at the apron's edge, Wes facing south for rain, Ola at Afua's goat pen, Effie at the head of the lane
+    {'def': 'npc_c9_01', 'id': 'npc_c9_01_apron', 'x': 26, 'y': 38, 'facing': 0, 'dialogue': 'd_a3_ap_ines', 'schedule': [], 'if': OPENED},
+    {'def': 'npc_c9_r2', 'id': 'npc_c9_r2_apron', 'x': 30, 'y': 40, 'facing': 2, 'dialogue': 'd_a3_ap_wes', 'schedule': [], 'if': OPENED},
+    {'def': 'npc_c9_r1', 'id': 'npc_c9_r1_apron', 'x': 15, 'y': 37, 'facing': 3, 'dialogue': 'd_a3_ap_ola', 'schedule': [], 'if': OPENED},
+    {'def': 'npc_c9_r4', 'id': 'npc_c9_r4_apron', 'x': 27, 'y': 7, 'facing': 0, 'dialogue': 'd_a3_ap_effie', 'schedule': [], 'if': OPENED},
+    # (B6k) Tamsin, who walked into the door over the designate's word and lives, on the apron by the door once it is settled
+    # (unless she went after the car to Carrick: md_docks places her there)
+    {'def': 'npc_c9_03', 'id': 'npc_c9_03_after', 'x': 27, 'y': 42, 'facing': 0, 'dialogue': 'd_a3_tam_after', 'schedule': [], 'if': TAM_AT_KNOCK_AFTER},
 ]
 
 # Act 3's triggers on the north half of the hamlet (the toll road in, the camp, the stand, the square): the guild and its
@@ -298,6 +319,10 @@ A3_TRIGGERS = [
                      {'decision': {'id': 'a3_c9', 'text': ('I broke the city\'s column on Knock\'s apron, ' + ('and its lead died there' if end == 'broken' else 'and its lead yielded with two of the wardens down') + ('. The Cistern\'s people opened their own door and walked out of it, as their ring had voted.' if door == 'open' else '. The door stayed shut.'))}},
                      {'event': 'dialogue', 'data': {'tree': 'd_a3_door', 'name': 'The apron'}}]}
       for end in ('broken', 'yields') for door in ('open', 'shut')],
+    # B6k: where Tamsin died in the door, once the door is settled (her grave is on the rise: Maud's and Corin's words)
+    {'id': 'a3_tam_line', 'x': 18, 'y': 37, 'w': 21, 'h': 6, 'if': {'all': [SETTLED, {'flag': 'a3_tamsin_dead'}]},
+     'text': 'Inside the yellow line, where the door swung out over the concrete, the white arc it scraped has been scrubbed clean, and in the middle of it somebody has chalked a name and keeps it chalked: TAMSIN. Beside it, every morning, a cup of water, full, as if it were hatch day.',
+     'effects': [{'learn': 'a3k_tam_line'}]},
     {'id': 'a3_hale_after', 'x': 1, 'y': 1, 'w': 54, 'h': 44, 'once': False, 'if': {'all': [HALE_FIGHTING, HALE_DOWN]},
      'text': 'Brannick Hale lies on the guild\'s ground east of the stand, his hat on the saddle where he put it. The handlers have their leads wrapped twice round their fists and have not moved. Orme comes out from behind her counter and looks, and goes back in. Down the lane Knock is at its doors, and nobody says anything at all.',
      'effects': [{'set': 'a3_hale', 'value': 'dead'}, {'rep': {'faction': 'tollmen', 'respect': -5, 'fear': 5}}, {'xp': 60},
@@ -430,6 +455,10 @@ for sid, sp in A3_SPOTS.items():
 for p_ in A3_NPCS:
     if p_.get('id', '').endswith(('_apron', '_door')) or p_['def'] in ('npc_a3_g15', 'npc_a3_g16', 'npc_a3_g17', 'npc_a3_g18'):
         assert rows[p_['y']][p_['x']] in '.,rsc' and (p_['x'], p_['y']) not in _taken, f"{p_.get('id', p_['def'])} on {rows[p_['y']][p_['x']]!r}"
+# B6k: the residents after an opened door and Tamsin after it stand on open ground, off the props
+for p_ in A3_NPCS:
+    if p_.get('id', '') in ('npc_c9_01_apron', 'npc_c9_r2_apron', 'npc_c9_r1_apron', 'npc_c9_r4_apron', 'npc_c9_03_after'):
+        assert rows[p_['y']][p_['x']] in '.,rsc' and (p_['x'], p_['y']) not in _taken, f"{p_['id']} on {rows[p_['y']][p_['x']]!r}"
 # B6g: Hale at the post-house's new frame stands on open ground
 for p_ in A3_NPCS:
     if p_.get('id') == 'npc_kn_out_lead_boards':

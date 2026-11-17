@@ -1,6 +1,6 @@
 import type { WorldEventDef } from '../../engine/world/frontier';
 import type { Cond } from '../../engine/world/logic';
-import { A3_OPEN, LN_DONE, ON_SIDE, ORDER_READ } from './a3_conds';
+import { A3_OPEN, LN_DONE, ON_SIDE, ORDER_READ, PLATFORM_OPEN } from './a3_conds';
 
 /**
  * Act 3's world events (B6). Each is armed by a flag and resolves at the next seven o'clock wherever the player is, once
@@ -66,6 +66,16 @@ export const A3_EVENTS: Record<string, WorldEventDef> = {
       { give: 'k_a3_summons' },
       { quest: 'q_a3_spire', start: true }, { quest: 'q_a3_hold', start: true },
       { decision: { id: 'a3_summoned', text: 'With the Cistern\'s door settled, the Ledger sent its card: the designate will attend the steps.' } },
+    ],
+  },
+  /** 20f (B6k): the reserve carried west in the wardens' car (the word, forced, or by its own vote) is received by Precinct
+   * Supply at Carrick's buffer, on the designate's word. The Ledger's receipt slip comes at the next seven o'clock anywhere (the
+   * same morning as its card), with the column's note under it: the car waits at the buffer until the designate comes. */
+  a3_buffer_post: {
+    id: 'a3_buffer_post', at: { hour: 7 }, armedIf: { all: [PLATFORM_OPEN, { quest: 'q_a3_platform', status: 'none' }] },
+    effects: [
+      { post: { from: 'npc_ar_voice', text: 'PRECINCT SUPPLY — RESERVE 9 (THE MOUTH) — IN TRANSIT BY THE RIVER ROAD TO CARRICK — TO BE RECEIVED AT THE BUFFER ON THE DESIGNATE\'S ATTENDANCE. Under the type, in pencil, in a hand from the column\'s table: Fed and watered, and sleeping under the canvas. The car will stand at the buffer until you come and say a word to it. Nobody is in a hurry but me.' } },
+      { quest: 'q_a3_platform', start: true },
     ],
   },
 };

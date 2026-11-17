@@ -4,6 +4,7 @@ import {
   ASH, BRAM_ANSWERED, COLUMN_HERE, IN, ILYA, INSIDE, KES, LOWE, LOWE_DEAD, MOTHER_DARK, NINE, ODILE, REYES, TAM_INSIDE, TAMSIN, WREN,
 } from '../world/a3_conds';
 import { d_c9_archive, d_c9_body, d_c9_bram, d_c9_great_door, d_c9_mother, d_c9_shaft } from './ch1_cistern';
+import { INSIDE_AFTER, LOCKDOWN_ONLY, RESIDENT_AFTER } from './a3_after';
 
 /**
  * Inside, for the first time (B6h, Act 3 beat 20c). The player has never been inside the Cistern, and its people have never
@@ -875,8 +876,10 @@ export const d_a3_archive: DialogueDef = {
 const I_HUB: OptionDef = { text: '(Go on.)', next: 'i_hub' };
 export const d_a3_ines: DialogueDef = {
   id: 'd_a3_ines', owner: INES,
-  start: [{ if: NOT(F('a3_ines_met')), node: 'i_first' }, { node: 'i_hub' }],
+  // B6k: one word after a sealed door, then the hub
+  start: [{ if: NOT(F('a3_ines_met')), node: 'i_first' }, INSIDE_AFTER.ines.start, { node: 'i_hub' }],
   nodes: {
+    ...INSIDE_AFTER.ines.nodes,
     i_first: {
       text: [
         { if: IN_HOW('door'), text: `${INES_FIRST} She looks at you a long time before she says anything. "So that is what you look like," she says. Her voice does not rise. It never has. "You have opened my mother's door."` },
@@ -897,7 +900,7 @@ export const d_a3_ines: DialogueDef = {
         { id: 'ines.a3.archive.open', text: 'The Archive.', if: ARCHIVE('open'), next: 'ar3_open_state' },
         { id: 'ines.a3.archive.sealed', text: 'The Archive.', if: ARCHIVE('sealed'), next: 'ar3_sealed_state' },
         { id: 'ines.a3.archive.burned', text: 'The Archive.', if: ARCHIVE('burned'), next: 'ar3_burned_state' },
-        { id: 'ines.a3.ring', text: 'What will the ring do?', once: true, next: 'i_ring' },
+        { id: 'ines.a3.ring', text: 'What will the ring do?', if: LOCKDOWN_ONLY, once: true, next: 'i_ring' },
         { id: 'ines.a3.call', text: 'Call the ring.', if: ALL(F('a3_inside'), NOT(F('a3_c9')), NOT(F('a3_ring'))), effects: [{ event: 'dialogue', data: { tree: 'd_a3_council', name: 'The council table' } }], exit: true, repeat: true },
         { id: 'ines.a3.mother', text: 'Your mother wrote to Maud\'s. Every week, MOTHER says.', if: KNOWS('a3_maud_letter_who'), once: true, next: 'i_mother' },
         { id: 'ines.a3.maud', text: 'Maud.', once: true, next: 'i_maud' },
@@ -932,8 +935,10 @@ export const d_a3_ines: DialogueDef = {
 const P_HUB: OptionDef = { text: '(Go on.)', next: 'p_hub' };
 export const d_a3_pell: DialogueDef = {
   id: 'd_a3_pell', owner: PELL,
-  start: [{ if: NOT(F('a3_pell_met')), node: 'p_first' }, { node: 'p_hub' }],
+  // B6k: one word after a sealed door, then the hub
+  start: [{ if: NOT(F('a3_pell_met')), node: 'p_first' }, INSIDE_AFTER.pell.start, { node: 'p_hub' }],
   nodes: {
+    ...INSIDE_AFTER.pell.nodes,
     p_first: {
       text: [
         { if: { origin: 'clinic_aide' }, text: 'Doc Aurel Pell\'s clinic: white tile, two cots, a table, a shelf of bandages kept in an order nobody but him understands. He is fifty-eight, broad, with a short grey beard, and he knows you before you are through the door. "Hands," he says. You hold them out. He turns them over, the palms, the backs, the nails, and you let him. "Steady," he says. "I taught those through a plate, with my mouth against the holes, for six years, and I never once saw them." He lets go. "They\'re better than mine."' },
@@ -949,7 +954,7 @@ export const d_a3_pell: DialogueDef = {
       again: '"Well?" Pell says, and squares the forms.',
       options: [
         { id: 'pell.a3.boy', text: 'Afua Danso\'s boy.', once: true, next: 'p_boy' },
-        { id: 'pell.a3.how', text: 'How are they? Really.', once: true, next: 'p_how' },
+        { id: 'pell.a3.how', text: 'How are they? Really.', if: LOCKDOWN_ONLY, once: true, next: 'p_how' },
         { id: 'pell.a3.heal', text: '(Let him look you over.)', effects: [{ event: 'heal' }], next: 'p_healed', repeat: true },
         { text: '(Leave him to it.)', exit: true },
       ],
@@ -979,8 +984,10 @@ const B_HUB: OptionDef = { text: '(Go on.)', next: 'b_hub' };
 const inPerson = (n: NodeDef, again: string): NodeDef => ({ ...n, again, options: [B_HUB] });
 export const d_a3_bram: DialogueDef = {
   id: 'd_a3_bram', owner: BRAM,
-  start: [{ if: NOT(F('a3_bram_met')), node: 'b_first' }, { node: 'b_hub' }],
+  // B6k: one word after a sealed door, then the hub
+  start: [{ if: NOT(F('a3_bram_met')), node: 'b_first' }, INSIDE_AFTER.bram.start, { node: 'b_hub' }],
   nodes: {
+    ...INSIDE_AFTER.bram.nodes,
     b_first: {
       text: [
         { if: IN_HOW('door'), text: 'Bram Coyle is in the machine-room door with a wrench in his hand, and his face is white. "You opened it," he says. "Nobody touches the door. Nobody." He looks at the cabinets, at MOTHER\'s screen, as if she might have done it herself. "That weld was Elspeth Halloran\'s. She laid it with a hand torch, by lamplight, the night they came through. And you cycled it from outside like a pump."' },
@@ -1023,8 +1030,10 @@ export const d_a3_bram: DialogueDef = {
 const T_HUB: OptionDef = { text: '(Go on.)', next: 't_hub' };
 export const d_a3_teague: DialogueDef = {
   id: 'd_a3_teague', owner: TEAGUE,
-  start: [{ if: NOT(F('a3_teague_met')), node: 't_first' }, { node: 't_hub' }],
+  // B6k: one word after a sealed door, then the hub
+  start: [{ if: NOT(F('a3_teague_met')), node: 't_first' }, INSIDE_AFTER.teague.start, { node: 't_hub' }],
   nodes: {
+    ...INSIDE_AFTER.teague.nodes,
     t_first: {
       text: [
         { if: IN_HOW('door'), text: 'Elder Rosalind Teague at her table in the commons, seventy-two, her white hair cropped short with the kitchen scissors, a cup of something that is not tea in front of her. She does not get up. "Ninety years," she says. "Ninety years and it\'s you that opens it. The face on their card." She drinks. "Sit down. I won\'t bite; I haven\'t the teeth."' },
@@ -1038,7 +1047,7 @@ export const d_a3_teague: DialogueDef = {
       text: 'Teague at her table, the cup in both hands.',
       again: '"Well?" Teague says.',
       options: [
-        { id: 'teague.a3.weld', text: 'You want it welded.', once: true, next: 't_weld' },
+        { id: 'teague.a3.weld', text: 'You want it welded.', if: LOCKDOWN_ONLY, once: true, next: 't_weld' },
         { id: 'teague.a3.cont', text: 'Continuity. You all say it. What does it mean?', once: true, next: 't_cont' },
         { text: '(Leave her be.)', exit: true },
       ],
@@ -1062,12 +1071,17 @@ export const d_a3_teague: DialogueDef = {
 
 /** Ola, Wes, Sayer and Effie: a greeting each, and the one thing each of them wants from a face from outside. */
 function resident(id: string, owner: string, hi: string, again: string, topic: { id: string; text: string; reply: string; replyAgain: string; effects?: Effect[] }): DialogueDef {
+  // B6k: inside after a sealed door, their own word first (RESIDENT_AFTER), and the topic comes back to it
+  const after = RESIDENT_AFTER[owner], sealed: Cond = F('a3_c9', 'sealed');
+  const ask: OptionDef = { id: topic.id, text: topic.text, once: true, next: 'topic' };
+  const bye: OptionDef = { text: '(Leave them to it.)', exit: true };
   return {
     id, owner,
-    start: [{ node: 'hi' }],
+    start: [...(after ? [{ if: sealed, node: 'a3k_hi' }] : []), { node: 'hi' }],
     nodes: {
-      hi: { text: hi, again, options: [{ id: topic.id, text: topic.text, once: true, next: 'topic' }, { text: '(Leave them to it.)', exit: true }] },
-      topic: { text: topic.reply, again: topic.replyAgain, effects: topic.effects, options: [{ text: '(Go on.)', next: 'hi' }] },
+      hi: { text: hi, again, options: [ask, bye] },
+      ...(after ? { a3k_hi: { text: after, again, options: [{ ...ask, id: `${topic.id}.after`, if: { not: { seen: topic.id } } }, bye] } } : {}),
+      topic: { text: topic.reply, again: topic.replyAgain, effects: topic.effects, options: after ? [{ text: '(Go on.)', if: NOT(sealed), next: 'hi' }, { text: '(Go on.)', if: sealed, next: 'a3k_hi' }] : [{ text: '(Go on.)', next: 'hi' }] },
     },
   };
 }

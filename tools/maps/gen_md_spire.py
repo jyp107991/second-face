@@ -96,6 +96,73 @@ props = [
     {'kind': 'terminal', 'x': 59, 'y': 18, 'rot': 3, 'id': 'ar_catalogue'}, {'kind': 'shelf', 'x': 60, 'y': 22, 'rot': 3}, {'kind': 'shelf', 'x': 60, 'y': 24, 'rot': 3},
     {'kind': 'sign', 'x': 57, 'y': 7, 'rot': 0, 'id': 'ar_stair'}, {'kind': 'terminal', 'x': 56, 'y': 8, 'rot': 1, 'id': 'ar_stair_lens'}, {'kind': 'machine', 'x': 60, 'y': 8, 'rot': 3, 'id': 'ar_lift'},
     {'kind': 'table', 'x': 55, 'y': 11, 'id': 'ar_porter_desk'}, {'kind': 'locker', 'x': 54, 'y': 11, 'id': 'ar_porter_drawer'},
+    # the catalogue's acquisitions drawer behind the keeper's counter (Act 3, B6l: where the Court's sold register is kept)
+    {'kind': 'locker', 'x': 53, 'y': 12, 'id': 'ar_acquisitions'},
+]
+
+# ---------------------------------------------------------------------------------------------- Act 3 (B6l): the close, who came
+# Mirrors src/content/world/a3_conds.ts (B6l block: AT_CLOSE, WITH_YOU, SOTO_COMES, QUILL_COMES, LOWE_CLOSE, REYES_CLOSE, UW_CLOSE,
+# NINE_WALKIN); tests/b6l.test.ts checks the mirror. From the Ledger's card (a3_summoned) until the steps (a3_pnr).
+def F(flag, eq=None):
+    return {'flag': flag} if eq is None else {'flag': flag, 'eq': eq}
+def ALL(*c):
+    return {'all': list(c)}
+def ANY(*c):
+    return {'any': list(c)}
+def NOT(c):
+    return {'not': c}
+AT_CLOSE = ALL(F('a3_summoned'), NOT(F('a3_pnr')))
+# the companions on the player's side (joined, not left, not gone; a Tamsin broken in Act 2 is not), waiting round the fire barrel
+COMPANION_DEFS = {
+    'tamsin': ('npc_c9_03', 'tam_joined', 'tam_left', [F('tam_home'), F('a3_tamsin_dead')], [F('tam_broken')]),
+    'wren': ('npc_rd_03', 'wren_joined', 'wren_left', [F('wren_hanged')], []),
+    'ilya': ('npc_sh_17', 'ilya_recruited', 'ilya_left', [], []),
+    'odile': ('npc_nb_03', 'odile_joined', 'odile_left', [F('odile_gone')], []),
+    'ash': ('npc_of_03', 'ash_joined', 'ash_left', [F('ash_gone'), F('a3_ash', 'self')], []),
+    'nine': ('npc_md_nine', 'nine_joined', 'nine_left', [F('nine_gone'), F('nine_disposed'), F('a3_nine_struck')], []),
+    'kes': ('npc_hs_01', 'kes_joined', 'kes_left', [], []),
+}
+def WITH_YOU(key):
+    cid, joined, left, gone, broken = COMPANION_DEFS[key]
+    return ALL(F(joined), NOT(F(left)), *([NOT(ANY(*gone))] if gone else []), *[NOT(b) for b in broken])
+def WAITING(key):
+    return ALL(AT_CLOSE, WITH_YOU(key), NOT({'inParty': COMPANION_DEFS[key][0]}))
+NINE_HIDDEN = ALL(F('a3_nine_hid'), NOT(F('a3_nine_fetched')))
+FIRE_RING = {'tamsin': (27, 27, 1), 'wren': (31, 27, 3), 'ilya': (27, 29, 1), 'odile': (31, 29, 3), 'ash': (28, 30, 0), 'nine': (30, 30, 0), 'kes': (29, 26, 2)}
+# the Concern's officer: Director Soto if the player met her at Halcyon, else Mr Quill
+SOTO_COMES = ALL(F('hc_soto_met'), NOT({'dead': 'npc_hc_02'}))
+QUILL_COMES = ALL(NOT(SOTO_COMES), NOT({'dead': 'npc_cr_11'}))
+# the column's lead: Lowe while he lives (before the door or on its apron), else Reyes
+LOWE_DEAD = ANY({'dead': 'npc_md_01'}, {'dead': 'npc_md_01_apron'})
+LOWE_CLOSE = ALL(AT_CLOSE, NOT(LOWE_DEAD))
+REYES_CLOSE = ALL(AT_CLOSE, LOWE_DEAD, NOT({'dead': 'npc_md_12'}), NOT({'dead': 'npc_md_12_apron'}))
+# the Unwritten turned at Knock to the city's book: Petra, or Juniper Lowry leading if Petra is dead, and the other two
+UW_CLOSE = ALL(AT_CLOSE, F('a3_unwritten', 'with_you'))
+ALLY_CLOSE = lambda a: ALL(AT_CLOSE, F(f'a3_ally_{a}'))
+A3_CLOSE_NPCS = [
+    *[{'def': cid, 'x': FIRE_RING[k][0], 'y': FIRE_RING[k][1], 'facing': FIRE_RING[k][2], 'schedule': [],
+       'if': ALL(WAITING(k), NOT(NINE_HIDDEN)) if k == 'nine' else WAITING(k)} for k, (cid, *_rest) in COMPANION_DEFS.items()],
+    # a Nine hidden from the recall and never fetched walks in written off (B6b's suggestion)
+    {'def': 'npc_md_nine', 'id': 'npc_md_nine_walkin', 'x': 30, 'y': 30, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_nine_walkin', 'if': ALL(WAITING('nine'), NINE_HIDDEN)},
+    {'def': 'npc_hc_02', 'x': 46, 'y': 34, 'facing': 3, 'schedule': [], 'dialogue': 'd_a3_quill', 'if': ALL(AT_CLOSE, SOTO_COMES)},
+    {'def': 'npc_cr_11', 'x': 46, 'y': 34, 'facing': 3, 'schedule': [], 'dialogue': 'd_a3_quill', 'if': ALL(AT_CLOSE, QUILL_COMES)},
+    {'def': 'npc_md_01', 'x': 35, 'y': 27, 'facing': 2, 'schedule': [], 'dialogue': 'd_a3_lowe_close', 'if': LOWE_CLOSE},
+    {'def': 'npc_md_12', 'x': 35, 'y': 27, 'facing': 2, 'schedule': [], 'dialogue': 'd_a3_lowe_close', 'if': REYES_CLOSE},
+    {'def': 'npc_of_02', 'x': 17, 'y': 41, 'facing': 1, 'schedule': [], 'dialogue': 'd_a3_petra_close', 'if': ALL(UW_CLOSE, NOT({'dead': 'npc_of_02'}))},
+    {'def': 'npc_a3_u1', 'x': 17, 'y': 41, 'facing': 1, 'schedule': [], 'dialogue': 'd_a3_petra_close', 'if': ALL(UW_CLOSE, {'dead': 'npc_of_02'}, NOT({'dead': 'npc_a3_u1'}))},
+    {'def': 'npc_a3_u2', 'x': 18, 'y': 42, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_thaddeus_close', 'if': ALL(UW_CLOSE, NOT({'dead': 'npc_a3_u2'}))},
+    {'def': 'npc_a3_u3', 'x': 16, 'y': 42, 'facing': 1, 'schedule': [], 'dialogue': 'd_a3_rhoda_close', 'if': ALL(UW_CLOSE, NOT({'dead': 'npc_a3_u3'}))},
+    # the allies the muster called who count at the close: their envoys, and the two readers in person
+    {'def': 'npc_a3_31', 'x': 24, 'y': 33, 'facing': 0, 'schedule': [], 'if': ALLY_CLOSE('choir')},
+    {'def': 'npc_a3_32', 'x': 48, 'y': 38, 'facing': 3, 'schedule': [], 'if': ALLY_CLOSE('wheel')},
+    {'def': 'npc_a3_33', 'x': 52, 'y': 35, 'facing': 3, 'schedule': [], 'if': ALLY_CLOSE('stand')},
+    {'def': 'npc_a3_34', 'x': 11, 'y': 34, 'facing': 1, 'schedule': [], 'if': ALLY_CLOSE('gangs')},
+    {'def': 'npc_bw_04', 'x': 38, 'y': 33, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_verity_close', 'if': ALL(ALLY_CLOSE('saints'), NOT({'dead': 'npc_bw_04'}))},
+    {'def': 'npc_nw_04', 'x': 20, 'y': 27, 'facing': 1, 'schedule': [], 'dialogue': 'd_a3_seventeen_close', 'if': ALL(ALLY_CLOSE('seventeen'), NOT({'dead': 'npc_nw_04'}))},
+]
+A3_CLOSE_TRIGGERS = [
+    # the first time on the close after the card: who came (d_a3_close)
+    {'id': 'a3_close', 'x': 1, 'y': 27, 'w': 62, 'h': 27, 'if': AT_CLOSE, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_close', 'name': 'The close'}}]},
 ]
 
 md_spire = {
@@ -141,6 +208,7 @@ md_spire = {
         'ar_stair': {'dialogue': 'd_ar_stair', 'name': 'The stair'},
         'ar_stair_lens': {'dialogue': 'd_ar_stair', 'name': 'The stair'},
         'ar_lift': {'dialogue': 'd_ar_stair', 'name': 'The stair'},
+        'ar_acquisitions': {'dialogue': 'd_a3_acquisitions', 'name': 'A drawer marked ACQUISITIONS'},
     },
     'containers': {
         'ar_slips': {'name': 'Slips Locker', 'items': [['k_ar_slip', 1]], 'lock': 45},
@@ -164,14 +232,14 @@ md_spire = {
         {'def': 'npc_ar_06', 'x': 37, 'y': 21, 'facing': 2},
         {'def': 'npc_ar_07', 'x': 6, 'y': 18, 'facing': 0, 'if': {'not': {'flag': 'prec_forecast_fine', 'eq': 'void'}}},
         {'def': 'npc_ar_g1', 'x': 18, 'y': 22, 'facing': 1}, {'def': 'npc_ar_g2', 'x': 31, 'y': 50, 'facing': 2},
-    ],
+    ] + A3_CLOSE_NPCS,
     'triggers': [
         {'id': 'arrive', 'x': 26, 'y': 46, 'w': 12, 'h': 9, 'text': 'The Spire close. A square of clean paving behind the Precinct, lamps that work, and at its north end the Archive Spire going up into the haze until you lose it: the city\'s records, ninety-odd floors of them, its doors shut behind scaffolding. The Crown\'s glass catches the light on its shoulders. Broad steps run up to the doors, and the steps are familiar the way a word on the tip of your tongue is familiar.', 'effects': [{'learn': 'seen_spire'}, {'quest': 'q_a2_calendar', 'start': True}, {'quest': 'q_a2_spire', 'start': True}]},
         {'id': 'steps', 'x': 27, 'y': 17, 'w': 10, 'h': 5, 'if': {'item': 'k_photo'}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_ar_steps', 'name': 'The steps'}}]},
         {'id': 'court', 'x': 3, 'y': 14, 'w': 13, 'h': 12, 'text': 'The Court of Accounts. A long hall with a bench at the far end, a rail across the middle, benches for the public, and on the bench a grey unit with a brass plate and two ledgers, very still. Behind it, against the wall, a second chair, dark wood, with dust on the seat. Nobody sits in the public benches who does not have to.', 'effects': [{'learn': 'seen_court'}, {'quest': 'q_ca_court', 'start': True}]},
         {'id': 'catalogue', 'x': 48, 'y': 15, 'w': 13, 'h': 11, 'text': 'The catalogue: shelves of bound indexes to the ceiling, reading tables with green-shaded lamps, a terminal, a counter with a keeper behind it, and in the far corner a stair going up into the dark with a lens on a post at its foot and a porter at a desk beside it.', 'effects': [{'learn': 'seen_catalogue'}]},
         {'id': 'copyroom', 'x': 3, 'y': 2, 'w': 7, 'h': 4, 'text': 'A room behind the court that smells of ink and a stove. Shelves of bound copies, a desk with a lamp, a cot made with corners. Somebody lives here, and has for a long time.', 'effects': [{'learn': 'seen_copyroom'}]},
-    ],
+    ] + A3_CLOSE_TRIGGERS,
     'extras': [
         {'count': 4, 'roles': ['corp', 'settler', 'trader'], 'faction': 'wardens', 'area': {'x': 10, 'y': 28, 'w': 44, 'h': 20}, 'spots': ['close_pair_a', 'close_pair_b', 'close_sit', 'close_lean', 'close_e', 'close_w', 'steps_sit'], 'hours': {'from': 7, 'to': 21}, 'barks': ['The steps reopen R49. It says so on the board.', 'Don\'t stand on the scaffold. They count the planks.', 'My sister had a case. Eleven times called. Then they stopped calling.', 'Ninety-one floors. Nobody\'s been to the top that came down to say.']},
         {'count': 3, 'roles': ['settler', 'street', 'labourer'], 'life': 'hard', 'area': {'x': 3, 'y': 15, 'w': 12, 'h': 9}, 'spots': ['court_sit', 'court_pair_a', 'court_pair_b', 'court_lean'], 'hours': {'from': 8, 'to': 18}, 'barks': ['Case four hundred and something. They said today.', 'It reads everything. Bring everything.', 'Nobody speaks for you unless you bring them.']},

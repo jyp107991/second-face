@@ -969,3 +969,44 @@ describe('Halcyon end to end', () => {
     expect(cond(B4B.contract('guest'), g)).toBe(true);
   });
 });
+
+// ---------------------------------------------------------------- the Long Night reads the Board's answer (B6k, B4b's open hook)
+
+describe('The Long Night reads the Board\'s answer: Roux, the Concern\'s envoy at Openfield (beat 17)', () => {
+  /** The night's eve at Openfield, the Board answered on the hill (or not at all). */
+  function eve(offer?: 'accepted' | 'refused' | 'feigned') {
+    const g = newGameState('openfield', 0, 0);
+    g.minutes = 160 * 1440 + 20 * 60;
+    g.locationId = 'openfield';
+    Object.assign(g.flags, { ch1_done: true, a2_spire_done: true, ln_called: true, ln_at_openfield: true });
+    if (offer) Object.assign(g.flags, { hc_inside: true, hc_soto_met: true, hc_offer: offer });
+    return { g, q: new QuestEngine(QUESTS, g) };
+  }
+  it('his first word is the Board\'s answer (accepted, feigned, refused), and he says once what it means tonight', () => {
+    const cases: ['accepted' | 'refused' | 'feigned', string, string][] = [
+      ['accepted', 'The Board wrote that you had taken its seat', 'A seat is not a leash. Not yet.'],
+      ['feigned', 'The Board writes that you have a seat in waiting', 'If you did not, I will know by morning'],
+      ['refused', 'The Board writes that you declined its seat', 'at a worse price, on the day you take the sash'],
+    ];
+    for (const [offer, first, seat] of cases) {
+      const { g, q } = eve(offer);
+      const r = talk('d_ln_roux', g, q);
+      expect(r.view()!.text, offer).toContain(first);
+      expect(talk('d_ln_roux', g, q, ['The Board\'s seat.']).view()!.text, offer).toContain(seat);
+      const s = talk('d_ln_roux', g, q);
+      expect(s.view()!.options.map((o) => o.text), offer).not.toContain('The Board\'s seat.');
+      expect(g.world.knowledge.ln_roux_seat, offer).toBe(true);
+    }
+  });
+  it('without the arcology\'s answer, Roux is as he was, and there is no seat to talk about', () => {
+    const { g, q } = eve();
+    const r = talk('d_ln_roux', g, q);
+    expect(r.view()!.text).toContain('The Concern backs the guild\'s claim. I am here to see it honoured.');
+    expect(talk('d_ln_roux', g, q).view()!.options.map((o) => o.text)).not.toContain('The Board\'s seat.');
+    // the Weighbridge memory still comes first when the player billed the Bond
+    const b = eve('accepted');
+    b.g.flags.dk_concern_billed = true;
+    expect(talk('d_ln_roux', b.g, b.q).view()!.text).toContain('Every box to the plate');
+    expect(talk('d_ln_roux', b.g, b.q).view()!.options.map((o) => o.text)).toContain('The Board\'s seat.');
+  });
+});

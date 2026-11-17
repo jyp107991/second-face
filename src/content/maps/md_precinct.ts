@@ -1374,7 +1374,19 @@ export const md_precinct: MapDef = {
       def: "npc_md_01",
       x: 20,
       y: 14,
-      facing: 0
+      facing: 0,
+      if: {
+        not: {
+          any: [
+            {
+              flag: "a3_summoned"
+            },
+            {
+              dead: "npc_md_01_apron"
+            }
+          ]
+        }
+      }
     },
     {
       def: "npc_md_nine",
@@ -1407,7 +1419,33 @@ export const md_precinct: MapDef = {
       def: "npc_md_12",
       x: 16,
       y: 29,
-      facing: 3
+      facing: 3,
+      if: {
+        not: {
+          any: [
+            {
+              dead: "npc_md_12_apron"
+            },
+            {
+              all: [
+                {
+                  flag: "a3_summoned"
+                },
+                {
+                  any: [
+                    {
+                      dead: "npc_md_01"
+                    },
+                    {
+                      dead: "npc_md_01_apron"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
     },
     {
       def: "npc_md_13",

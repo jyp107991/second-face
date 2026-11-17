@@ -2160,6 +2160,13 @@ mid-range Android phone; deployed to Pages.
             failed checks, and nothing settling until the player says so; companions' existing leaving rules honoured in their
             own trees; four people; the home hamlet's map (placements and five triggers) and one condition on another town's
             map, each generator first confirmed to reproduce the committed map. `tests/b6j.test.ts` (37). Next: B6k.
+      - [x] B6k **after the door** DONE 2026-11-17 (content; no engine change; not exported; first lane, alongside B6l):
+            `dialogue/a3_after.ts` (eight conversations plus after-the-door nodes in the home hamlet's and the interior's
+            existing trees, every node with a return line, all seven companions speak): a scene at the docks' railhead with
+            three ways through and a refusal, waiting on the player and settling nothing unasked; the home hamlet and the
+            interior after the standoff, by how it was settled; people placed where it left them; one Act 2 conversation now
+            reads an earlier answer. Two maps' placements and triggers (each generator first confirmed to reproduce the
+            committed map). `tests/b6k.test.ts` (33). Next: B6m.
       - [x] B6n **the last night before the final climb** DONE 2026-11-17 (content; no engine change; not exported; built
             ahead of B6f–B6m in a second lane, needing nothing from them): `dialogue/a3_fire.ts` (one tree at a fire on the
             Spire close, 99 nodes, every node with a return line, all seven companions speak): a last conversation with each
@@ -2172,6 +2179,15 @@ mid-range Android phone; deployed to Pages.
             stand between them and the player; a quarrel between two companions at the first camp in the home hamlet, once;
             two more companions' existing leaving rules carried into Act 3 in their own trees and at the fire.
             `tests/b6o.test.ts` (26). Next in this lane: the first slice whose reads are met.
+      - [x] B6l **the gathering before the final climb** DONE 2026-11-17 (content; no engine change; not exported; second
+            lane, alongside B6k): `dialogue/a3_close.ts` (14 conversations plus nodes in four existing trees, 97 nodes, about
+            11,000 words counting every variant, every node with a return line, all seven companions speak): who gathers on the
+            Spire close, each by what the player's road decided (companions, an officer with an offer, a captain, envoys of
+            the allies called, and others who were asked); an offer that can be taken, carried or refused, with a second
+            chance elsewhere; a lost book recoverable three ways; one Court case that opens only when it should; four new
+            people; placements, one trigger and one prop on the Spire close, and five other maps' placements stepped aside
+            while their people are on the close (each generator first confirmed to reproduce the committed map).
+            `tests/b6l.test.ts` (37). Next in this lane: B6m.
 - [ ] B7 **Systemic depth + presentation**: ruins templates, bounty/gig templates, rare encounters, music
       and ambience, title art, menus, credits, settings, tips.
 - [ ] B8 **Balance, performance, deploy**: economy sim pass, difficulty, accessibility, Android perf

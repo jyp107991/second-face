@@ -8,6 +8,10 @@ import { d_kn_grille } from './knock';
 import { GRILLE_BURNED, GRILLE_BURNED_NODES } from './a3_forces';
 import { MAUD_INSIDE_NODES, MAUD_INSIDE_OPTIONS } from './a3_cistern';
 import { LOWE_GO, LOWE_GO_NODES, REYES_GO } from './a3_door';
+import {
+  CORIN_AFTER_NODES, CORIN_AFTER_OPTIONS, CORIN_AFTER_TEXT, GRILLE_AFTER_NODES, GRILLE_AFTER_START, KNOCK_R_AFTER, LINNET_AFTER_NODES, LINNET_AFTER_OPTIONS,
+  LOCKDOWN_ONLY, MAUD_AFTER_NODES, MAUD_AFTER_OPTIONS, MAUD_AFTER_START,
+} from './a3_after';
 
 /**
  * Knock under the column (B6f, Act 3 beat 20a): the home hamlet with the hatch shut and the city's column camped on the toll
@@ -125,7 +129,8 @@ const MAUD_CLOSE = (p: string): OptionDef[] => [
 
 export const d_a3_maud: DialogueDef = {
   id: 'd_a3_maud', owner: MAUD,
-  start: [{ if: NOT(F('a3_maud_home')), node: 'home' }, { node: 'hub' }],
+  // B6k: her first word after the door, once she is home
+  start: [{ if: NOT(F('a3_maud_home')), node: 'home' }, MAUD_AFTER_START, { node: 'hub' }],
   nodes: {
     home: {
       text: mix([
@@ -153,20 +158,22 @@ export const d_a3_maud: DialogueDef = {
       ],
       again: '"Go on, love. I\'m not going anywhere. Nor\'s the hatch."',
       options: [
-        { id: 'maud.a3.hatch', text: 'The hatch.', once: true, next: 'hatch' },
-        { id: 'maud.a3.water', text: 'How is Knock for water?', once: true, next: 'water' },
-        { id: 'maud.a3.column', text: 'The wardens.', once: true, next: 'column' },
-        { id: 'maud.a3.lin.column', text: 'Linnet is in that column, Maud.', if: LINNET_COLUMN, once: true, next: 'lin_column' },
+        { id: 'maud.a3.hatch', text: 'The hatch.', if: LOCKDOWN_ONLY, once: true, next: 'hatch' },
+        { id: 'maud.a3.water', text: 'How is Knock for water?', if: LOCKDOWN_ONLY, once: true, next: 'water' },
+        { id: 'maud.a3.column', text: 'The wardens.', if: LOCKDOWN_ONLY, once: true, next: 'column' },
+        { id: 'maud.a3.lin.column', text: 'Linnet is in that column, Maud.', if: ALL(LINNET_COLUMN, LOCKDOWN_ONLY), once: true, next: 'lin_column' },
         { id: 'maud.a3.lin.dogs', text: 'Linnet came with the Dogs.', if: LINNET_DOGS, once: true, next: 'lin_dogs' },
         { id: 'maud.a3.lin.shale', text: 'Has Linnet written?', if: LINNET_SHALE, once: true, next: 'lin_shale' },
         { id: 'maud.a3.lin.knock', text: 'Where\'s Linnet?', if: ALL(LINNET_KNOCK, NOT(F('a3_linnet_down'))), once: true, next: 'lin_knock' },
         { id: 'maud.a3.lin.home', text: 'Linnet\'s out of the grey.', if: F('a3_linnet_down'), once: true, next: 'lin_home' },
-        { id: 'maud.a3.sit', text: '(Be at the hatch with her at seven.)', once: true, effects: [{ until: 7 }, TRUST(MAUD, 5), { memory: { npc: MAUD, tag: 'a3_sat_hatch', valence: 10, strength: 70 } }], next: 'sit' },
-        { id: 'maud.a3.door', text: 'What do you want, Maud? At the door.', once: true, next: 'door' },
+        { id: 'maud.a3.sit', text: '(Be at the hatch with her at seven.)', if: LOCKDOWN_ONLY, once: true, effects: [{ until: 7 }, TRUST(MAUD, 5), { memory: { npc: MAUD, tag: 'a3_sat_hatch', valence: 10, strength: 70 } }], next: 'sit' },
+        { id: 'maud.a3.door', text: 'What do you want, Maud? At the door.', if: LOCKDOWN_ONLY, once: true, next: 'door' },
         { id: 'maud.a3.margin', text: 'You wrote "I sold a letter" in the post-book. What letter?', if: ALL({ knows: 'kn_maud_sold_letter' }, NOT(MAUD_TRUSTS), NOT(F('a3_maud_secret'))), once: true, next: 'not_today' },
         { id: 'maud.a3.secret', text: '(Wait. She has something to say.)', if: ALL(MAUD_TRUSTS, NOT(F('a3_maud_secret'))), next: 'secret' },
         // B6h: what the player brings back from inside (who wrote the letter she sold; the residents' faces)
         ...MAUD_INSIDE_OPTIONS,
+        // B6k: after the door
+        ...MAUD_AFTER_OPTIONS,
         { id: 'maud.a3.trade', text: 'Let me see the stores. (Trade)', effects: [{ event: 'barter' }], exit: true, repeat: true },
         { text: 'Later, Maud.', exit: true },
       ],
@@ -285,6 +292,7 @@ export const d_a3_maud: DialogueDef = {
       options: [MAUD_BACK],
     },
     ...MAUD_INSIDE_NODES,
+    ...MAUD_AFTER_NODES,
   },
 };
 
@@ -430,8 +438,9 @@ export const d_a3_linnet: DialogueDef = {
       again: '"Ask, then," Linnet says. "The water won\'t carry itself. That\'s Maud\'s line. I hate that it\'s mine now."',
       options: [
         { id: 'lin.knock.maud', text: 'How\'s Maud, really?', once: true, next: 'maud_really' },
-        { id: 'lin.knock.column', text: 'There\'s a column on the road, Lin.', once: true, next: 'k_column' },
-        { id: 'lin.knock.after', text: 'When this is done...', if: NOT(F('a3_linnet_after')), once: true, next: 'after' },
+        { id: 'lin.knock.column', text: 'There\'s a column on the road, Lin.', if: LOCKDOWN_ONLY, once: true, next: 'k_column' },
+        { id: 'lin.knock.after', text: 'When this is done...', if: ALL(NOT(F('a3_linnet_after')), LOCKDOWN_ONLY), once: true, next: 'after' },
+        ...LINNET_AFTER_OPTIONS,
         LIN_LATER,
       ],
     },
@@ -483,6 +492,7 @@ export const d_a3_linnet: DialogueDef = {
       again: 'Linnet on the apron beside the stool.',
       options: [{ text: '(Leave them to it.)', exit: true }],
     },
+    ...LINNET_AFTER_NODES,
   },
 };
 
@@ -580,16 +590,18 @@ export const d_a3_corin: DialogueDef = {
     },
     hub: {
       text: [
+        CORIN_AFTER_TEXT,
         { if: F('a3_corin', 'down'), text: 'Corin, in his workshop, the rifle on the shelf behind him where he can see it and not reach it.' },
         { text: 'Corin, on the rise, watching the tents.' },
       ],
       again: 'Corin waits. He has always been better at it than you.',
       options: [
         { id: 'corin.a3.well', text: 'The windpump\'s stopped.', once: true, next: 'well' },
-        { id: 'corin.a3.door', text: 'What will you do when I go to the door?', once: true, next: 'door' },
+        { id: 'corin.a3.door', text: 'What will you do when I go to the door?', if: LOCKDOWN_ONLY, once: true, next: 'door' },
         { id: 'corin.a3.hale', text: 'Hale is with the guild.', if: ALL(F('a3_guild_in'), HALE_HERE), once: true, next: 'hale' },
         { id: 'corin.a3.left', text: 'Why did you leave the outriders?', if: { knows: 'corin_rode_with_hale' }, once: true, next: 'left' },
         { id: 'corin.a3.rifle', text: 'Where did that rifle come from?', if: F('kn_corin_rifle'), once: true, next: 'rifle' },
+        ...CORIN_AFTER_OPTIONS,
         { text: 'Later, Corin.', exit: true },
       ],
     },
@@ -672,6 +684,7 @@ export const d_a3_corin: DialogueDef = {
       again: '"The other one," Corin says.',
       options: [CORIN_BACK],
     },
+    ...CORIN_AFTER_NODES,
   },
 };
 
@@ -884,8 +897,9 @@ export const d_a3_warden: DialogueDef = {
 
 export const d_a3_kn_r1: DialogueDef = {
   id: 'd_a3_kn_r1', owner: 'npc_kn_r1',
-  start: [{ node: 'pen' }],
+  start: [KNOCK_R_AFTER.r1.start, { node: 'pen' }],
   nodes: {
+    ...KNOCK_R_AFTER.r1.nodes,
     pen: {
       text: [
         { if: KNOCK_WATERED, text: 'Afua Danso at the goat pen with a full bucket, which she keeps looking at as if it might leave. "Your Maud," she says, before hello. "Sitting at that hatch every morning like it owes her money." Then: "My boy\'s coughing again. No blue tablets since it shut."' },
@@ -913,8 +927,9 @@ export const d_a3_kn_r1: DialogueDef = {
 
 export const d_a3_kn_r2: DialogueDef = {
   id: 'd_a3_kn_r2', owner: 'npc_kn_r2',
-  start: [{ node: 'lines' }],
+  start: [KNOCK_R_AFTER.r2.start, { node: 'lines' }],
   nodes: {
+    ...KNOCK_R_AFTER.r2.nodes,
     lines: {
       text: 'Sim Nassar at the wash lines with nothing to wash in, wringing out a dry shirt from habit. "Three in my life," he says. "Maud\'s had four. Every one before, MOTHER said continuity through the panel, out loud, so the whole apron heard. This one she printed it on a slip, for you, and then the tray just stopped."',
       again: '"Three," Sim says. "Maud\'s four. I keep count. Somebody has to."',
@@ -933,8 +948,9 @@ export const d_a3_kn_r2: DialogueDef = {
 
 export const d_a3_kn_r3: DialogueDef = {
   id: 'd_a3_kn_r3', owner: 'npc_kn_r3',
-  start: [{ node: 'tank' }],
+  start: [KNOCK_R_AFTER.r3.start, { node: 'tank' }],
   nodes: {
+    ...KNOCK_R_AFTER.r3.nodes,
     tank: {
       text: [
         { if: IN(TAMSIN), text: 'Binta Diop by the dry tank with a stub of chalk, adding the day\'s stroke. She sees who is with you and the chalk stops. "Is that her?" she whispers, staring past you. "Tamsin? She\'s tall. I always thought she\'d be little. Voices are little."' },
@@ -957,8 +973,9 @@ export const d_a3_kn_r3: DialogueDef = {
 
 export const d_a3_kn_r4: DialogueDef = {
   id: 'd_a3_kn_r4', owner: 'npc_kn_r4',
-  start: [{ node: 'bench' }],
+  start: [KNOCK_R_AFTER.r4.start, { node: 'bench' }],
   nodes: {
+    ...KNOCK_R_AFTER.r4.nodes,
     bench: {
       text: 'Amos Crofts on his bench at the east end of the slope, a blanket on his knees in the heat. "Told you," he says. "A face for you in the city, on a card. Now they\'ve sent a car for the sixty to match."',
       again: '"Told you," Amos says, and pulls the blanket up.',
@@ -1089,11 +1106,13 @@ export const d_a3_grille: DialogueDef = {
   start: [
     // B6g: MOTHER's panel burned by the Unwritten: the Grille is dark from then on
     { if: GRILLE_BURNED, node: 'a3_burned' },
+    // B6k: once the door is settled, MOTHER at the Grille by what the door left of her
+    GRILLE_AFTER_START,
     { if: ALL(LOCKDOWN, NOT({ knows: 'a3_mother_named' })), node: 'a3_lock' },
     { if: LOCKDOWN, node: 'a3_hub' },
     ...d_kn_grille.start,
   ],
-  nodes: { ...d_kn_grille.nodes, ...A3_GRILLE_NODES, ...GRILLE_BURNED_NODES },
+  nodes: { ...d_kn_grille.nodes, ...A3_GRILLE_NODES, ...GRILLE_BURNED_NODES, ...GRILLE_AFTER_NODES },
 };
 
 export const A3_KNOCK_DIALOGUES: DialogueDef[] = [d_a3_home, d_a3_maud, d_a3_linnet, d_a3_dace, d_a3_corin, d_a3_lowe, d_a3_warden, d_a3_kn_r1, d_a3_kn_r2, d_a3_kn_r3, d_a3_kn_r4, d_a3_grille];

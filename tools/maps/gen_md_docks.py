@@ -279,9 +279,43 @@ npcs = [
     {'def': 'npc_ln_e1', 'x': 62, 'y': 10, 'facing': 3, 'if': ALL(F('ln_car', 'carrick'), NOT(F('ln_calla')))},
     {'def': 'npc_ln_e2', 'x': 64, 'y': 9, 'facing': 3, 'if': ALL(F('ln_car', 'carrick'), NOT(F('ln_calla')))},
     # Act 3 (B6b): Nine hidden from its recall in the forward hold of the north hull, the cradle's people keeping it, until fetched
+    # (B6k: or until the Ledger's card has come, when it walks in to the Spire's close written off: B6l's NINE_WALKIN)
     {'def': 'npc_md_nine', 'id': 'npc_md_nine_hulls', 'x': 10, 'y': 5, 'facing': 1, 'schedule': [], 'dialogue': 'd_a3_nine_hid',
-     'if': ALL(F('a3_nine_hid', 'hulls'), NOT({'inParty': 'npc_md_nine'}), NOT(F('a3_nine_fetched')), NOT(ANY(F('nine_left'), F('nine_gone'), F('nine_disposed'), F('a3_nine_struck'))))},
+     'if': ALL(F('a3_nine_hid', 'hulls'), NOT({'inParty': 'npc_md_nine'}), NOT(F('a3_nine_fetched')), NOT(ANY(F('nine_left'), F('nine_gone'), F('nine_disposed'), F('a3_nine_struck'))), NOT(F('a3_summoned')))},
 ]
+
+# Act 3 (B6k): Sixty at the Buffer. The reserve carried west in the wardens' car (the word, forced, or its own vote) is received by
+# Precinct Supply at the Line's buffer under the freight shed, on the designate's word; the column holds the car there until the
+# designate comes (the car itself is the runtime's to build: props have no conditions). Then where they went: the Boxes (the
+# Harbour court, the Stand) or the Star in the Hulls (the cradle's night). Mirrors src/content/world/a3_conds.ts (B6k block).
+CARRIED_WEST = ALL(F('a3_c9', 'relocated'), ANY(F('a3_c9_how', 'order'), F('a3_c9_how', 'forced'), F('a3_c9_how', 'consent')))
+PLATFORM_OPEN = ALL(CARRIED_WEST, NOT(F('a3_c9_after')))
+WALKED = ALL(CARRIED_WEST, F('a3_c9_after', 'walked'))
+BY_CRADLE = F('a3_buffer_how', 'cradle')
+LED_BY_LOWE = NOT({'dead': 'npc_md_01'})
+LED_BY_REYES = ALL({'dead': 'npc_md_01'}, NOT({'dead': 'npc_md_12'}))
+WARDEN_UP = lambda i: NOT(ANY({'dead': i}, {'dead': i + '_apron'}))
+TAM_STOOD = ALL(F('tam_left', 'door'), NOT(F('a3_tamsin_dead')))
+B6K_NPCS = [
+    # the column's lead at the tailboard (Lowe, or Reyes; Kress leads when both are dead, and is always at the car), a warden
+    {'def': 'npc_md_01', 'id': 'npc_md_01_buffer', 'x': 59, 'y': 8, 'facing': 3, 'schedule': [], 'dialogue': 'd_a3_platform', 'if': ALL(PLATFORM_OPEN, LED_BY_LOWE)},
+    {'def': 'npc_md_12', 'id': 'npc_md_12_buffer', 'x': 59, 'y': 8, 'facing': 3, 'schedule': [], 'dialogue': 'd_a3_platform', 'if': ALL(PLATFORM_OPEN, LED_BY_REYES)},
+    {'def': 'npc_a3_g3', 'id': 'npc_a3_g3_buffer', 'x': 61, 'y': 8, 'facing': 3, 'schedule': [], 'dialogue': 'd_a3_platform', 'if': ALL(PLATFORM_OPEN, WARDEN_UP('npc_a3_g3'))},
+    {'def': 'npc_a3_g4', 'id': 'npc_a3_g4_buffer', 'x': 57, 'y': 8, 'facing': 3, 'schedule': [], 'if': ALL(PLATFORM_OPEN, WARDEN_UP('npc_a3_g4'))},
+    # through the slats (or on the platform's edge, by their own vote): Ines and Effie
+    {'def': 'npc_c9_01', 'id': 'npc_c9_01_buffer', 'x': 62, 'y': 6, 'facing': 2, 'schedule': [], 'dialogue': 'd_a3_platform', 'if': PLATFORM_OPEN},
+    {'def': 'npc_c9_r4', 'id': 'npc_c9_r4_buffer', 'x': 64, 'y': 6, 'facing': 2, 'schedule': [], 'dialogue': 'd_a3_platform', 'if': PLATFORM_OPEN},
+    # Tamsin, who walked behind the car from Knock, against its wheel
+    {'def': 'npc_c9_03', 'id': 'npc_c9_03_buffer', 'x': 63, 'y': 10, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_tam_after', 'if': ALL(TAM_STOOD, PLATFORM_OPEN)},
+    # walked: in front of the Boxes (the court, the Stand), or aboard the Benguela Star by its crew books (the cradle)
+    {'def': 'npc_c9_01', 'id': 'npc_c9_01_carrick', 'x': 66, 'y': 35, 'facing': 2, 'schedule': [], 'dialogue': 'd_a3_ck_ines', 'if': ALL(WALKED, NOT(BY_CRADLE))},
+    {'def': 'npc_c9_r4', 'id': 'npc_c9_r4_carrick', 'x': 48, 'y': 47, 'facing': 2, 'schedule': [], 'dialogue': 'd_a3_ck_effie', 'if': ALL(WALKED, NOT(BY_CRADLE))},
+    {'def': 'npc_c9_03', 'id': 'npc_c9_03_carrick', 'x': 68, 'y': 35, 'facing': 2, 'schedule': [], 'dialogue': 'd_a3_tam_after', 'if': ALL(TAM_STOOD, WALKED, NOT(BY_CRADLE))},
+    {'def': 'npc_c9_01', 'id': 'npc_c9_01_hulls', 'x': 9, 'y': 7, 'facing': 1, 'schedule': [], 'dialogue': 'd_a3_ck_ines', 'if': ALL(WALKED, BY_CRADLE)},
+    {'def': 'npc_c9_r4', 'id': 'npc_c9_r4_hulls', 'x': 13, 'y': 4, 'facing': 2, 'schedule': [], 'dialogue': 'd_a3_ck_effie', 'if': ALL(WALKED, BY_CRADLE)},
+    {'def': 'npc_c9_03', 'id': 'npc_c9_03_hulls', 'x': 11, 'y': 9, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_tam_after', 'if': ALL(TAM_STOOD, WALKED, BY_CRADLE)},
+]
+npcs += B6K_NPCS
 
 spawns = [
     {'id': 'start', 'x': 22, 'y': 2, 'facing': 2}, {'id': 'from_precinct', 'x': 22, 'y': 2, 'facing': 2},
@@ -377,6 +411,8 @@ md_docks = {
         {'id': 'customs', 'x': 61, 'y': 19, 'w': 3, 'h': 5, 'text': 'The Customs House: stone, four storeys of it, the only building on the quay with every window glazed. CUSTOMS on the lintel in letters cut for a thousand years, and under it, painted for ninety: HARBOUR MASTER — BY THE ACT. The steps are worn hollow in the middle. A guild guard sits on them with a shotgun across his knees as if the steps were a chair he had been given.', 'effects': [{'learn': 'dk_customs_seen'}]},
         # the hired men the guild sends for when the Stand blacks the Bond: they wait on the Stand at dawn until it is settled
         {'id': 'breakers', 'x': 40, 'y': 35, 'w': 18, 'h': 6, 'once': False, 'if': ALL(F('dk_crane', 'black'), NOT(F('dk_black')), HOURS(4, 10)), 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_dk_breakers', 'name': 'The Stand'}}]},
+        # B6k: the first step onto the platform's end with the relocation car at the buffer opens its scene
+        {'id': 'a3_buffer', 'x': 55, 'y': 5, 'w': 11, 'h': 6, 'if': PLATFORM_OPEN, 'effects': [{'quest': 'q_a3_platform', 'start': True}, {'event': 'dialogue', 'data': {'tree': 'd_a3_platform', 'name': 'The buffer'}}]},
     ],
     'extras': [
         {'count': 8, 'roles': ['labourer', 'labourer', 'labourer', 'street', 'trader'], 'life': 'hard', 'area': {'x': 20, 'y': 34, 'w': 44, 'h': 12}, 'spots': ['stand_a', 'stand_b', 'stand_c', 'stand_d', 'stand_fire_sit', 'quay_work', 'box_lean'], 'hours': {'from': 4, 'to': 22}, 'talk': 'd_dk_x_docker',

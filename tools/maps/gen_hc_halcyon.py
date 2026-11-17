@@ -441,7 +441,8 @@ spots3 = {
     'hall_lean': {'x': 46, 'y': 29}, 'gallery_lean': {'x': 20, 'y': 17}, 'hall_guard': {'x': 26, 'y': 17}, 'lobby_guard': {'x': 6, 'y': 18},
 }
 npcs3 = [
-    {'def': 'npc_hc_02', 'x': 14, 'y': 6, 'facing': 2},
+    # B6l: down at the Spire's close as the Concern's officer from the Ledger's card
+    {'def': 'npc_hc_02', 'x': 14, 'y': 6, 'facing': 2, 'if': {'not': {'all': [{'flag': 'a3_summoned'}, {'flag': 'hc_soto_met'}]}}},
     {'def': 'npc_hc_01', 'x': 37, 'y': 11, 'facing': 2, 'if': AT_BALL},
     {'def': 'npc_hc_01', 'id': 'npc_hc_01_room', 'x': 45, 'y': 4, 'facing': 3, 'schedule': [], 'if': IN_ROOM},
     {'def': 'npc_hc_17', 'x': 30, 'y': 15, 'facing': 1},

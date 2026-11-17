@@ -1,5 +1,6 @@
 import type { DialogueDef, OptionDef, Text } from '../../engine/dialogue/dialogue';
 import type { Cond, Effect } from '../../engine/world/logic';
+import { COMFORT_TALLY_BACK, COMFORT_WORD_NODES, COMFORT_WORD_OPTION, MARWOOD_BACK_NODES, MARWOOD_BACK_OPTION } from './a3_close';
 
 /**
  * Meridian, the Archive Spire (B3.11): the photograph read from the pack (beat 14, the date), the close and its steps,
@@ -103,10 +104,12 @@ export const d_ar_board: DialogueDef = {
   nodes: {
     read: {
       text: [
+        // Act 3 (B6l): the Ledger has brought the steps forward to R30 (the fourth order)
+        { if: { flag: 'a3_open' }, text: 'A works board on the scaffold, relettered: ARCHIVE SPIRE — RESTORATION — R30 WORKS — BROUGHT FORWARD. PUBLIC STEPS AND GREAT DOORS: REOPEN R30. The 30 is fresh white paint over a 49 that still shows through when the light is low. Below it, by landing, the same list as before, every date on it struck through and written again nineteen years sooner.' },
         { if: { flag: 'prec_refuse_benefit' }, text: 'A works board on the scaffold, freshly lettered: ARCHIVE SPIRE — RESTORATION — R30 WORKS — ON SCHEDULE. PUBLIC STEPS AND GREAT DOORS: REOPEN R49. Below, by landing: 1 — FAÇADE. 2 — HALL OF RECORDS. 3 — COPY ROOM: MAGISTRATE\'S CHAMBERS — REROUTED. The last word is new paint over old.' },
         { text: 'A works board on the scaffold, freshly lettered: ARCHIVE SPIRE — RESTORATION — R30 WORKS — ON SCHEDULE. PUBLIC STEPS AND GREAT DOORS: REOPEN R49. Below, by landing: 1 — FAÇADE. 2 — HALL OF RECORDS. 3 — COPY ROOM: MAGISTRATE\'S CHAMBERS (R49). And so on up, past where the board runs out of room.' },
       ],
-      again: 'R30 WORKS — ON SCHEDULE. REOPEN R49. Landing three, the copy room, and what it is to be.',
+      again: [{ if: { flag: 'a3_open' }, text: 'REOPEN R30, in fresh white over the 49.' }, { text: 'R30 WORKS — ON SCHEDULE. REOPEN R49. Landing three, the copy room, and what it is to be.' }],
       effects: [{ learn: 'ar_board_read' }, { lead: 'l_cal_r49' }, { lead: 'l_ca_chambers' }, { quest: 'q_a2_calendar', start: true }],
       options: [{ text: '(Leave it.)', exit: true }],
     },
@@ -340,10 +343,11 @@ export const d_ar_copyist: DialogueDef = {
       options: [{ id: 'copy.return.after', text: '(Give the book back.)', if: { item: 'k_ca_copybook' }, effects: [{ take: 'k_ca_copybook' }, { set: 'ca_book_returned' }, { trust: { npc: 'npc_ar_04', by: 15 } }], next: 'returned' }, bye],
     },
     tally: {
-      text: 'At the foot of the Sink\'s tally wall with her hand flat over a name: ASAMOAH, C. — R12 — STAIR. "It\'s true, you know," she says, without turning. "I was on a stair." She takes her hand away. "You sold it. I lent it to you, and you sold it to the catalogue, and now the city keeps its own precedents, which is to say it keeps none." A long breath. "I came down to see if they\'d spelled it right. They have."',
+      text: [COMFORT_TALLY_BACK, { text: 'At the foot of the Sink\'s tally wall with her hand flat over a name: ASAMOAH, C. — R12 — STAIR. "It\'s true, you know," she says, without turning. "I was on a stair." She takes her hand away. "You sold it. I lent it to you, and you sold it to the catalogue, and now the city keeps its own precedents, which is to say it keeps none." A long breath. "I came down to see if they\'d spelled it right. They have."' }],
       again: 'She stands at the wall in front of her own name, and does not turn round.',
-      options: [bye],
+      options: [COMFORT_WORD_OPTION, bye],
     },
+    ...COMFORT_WORD_NODES,
     line: {
       text: 'Outside the Wall, in the line, on a blanket somebody gave her, with the book under her coat and her back very straight. "Property," she says. "Held." She does not say it to blame you. She says it the way she says everything, so it will be remembered right. "They let me keep the book. Nobody thought it was worth anything."',
       again: 'In the line outside the Wall, the book under her coat, copying in the margins of someone\'s notice.',
@@ -367,6 +371,7 @@ const KEEPER_TOPICS = (sfx: string): OptionDef[] => [
   { id: `keeper.stranger${sfx}`, text: 'A man came down your stair at dawn with twelve faces under his coat.', if: { all: [{ any: [{ lead: 'l_rev_spire' }, { concluded: 'c_rev_last_day' }, { knows: 'ar_faulk_stranger' }] }, NOT_SEEN('keeper.stranger')] }, next: 'stranger' },
   { id: `keeper.filed${sfx}`, text: 'Petition 1187. Who filed it?', if: { all: [{ quest: 'q_ca_squatter' }, { not: { knows: 'ca_squatter_for_you' } }, { not: { flag: 'ca_squatter' } }] }, next: 'filed' },
   { id: `keeper.book${sfx}`, text: '(Put the copyist\'s book on the counter.)', if: { all: [{ item: 'k_ca_copybook' }, { not: { flag: 'ca_squatter' } }] }, next: 'book' },
+  MARWOOD_BACK_OPTION(sfx), // Act 3 (B6l): the Court's register asked back
   bye,
 ];
 
@@ -423,6 +428,7 @@ export const d_ar_keeper: DialogueDef = {
       options: [bye],
     },
     book_no: { text: 'She takes her hands off the cover. "No," she agrees. "It\'s hers." She goes back to the index. "If she ever wants it kept somewhere safer than a back room, tell her the catalogue has a shelf. It wouldn\'t be the same. I know that."', again: 'She has gone back to the index. The offer of a shelf stands, unrepeated.', effects: [{ learn: 'ca_keeper_declined' }], options: [bye] },
+    ...MARWOOD_BACK_NODES,
     shut: { text: 'Nothing.', again: 'The catalogue counter is shut, the keeper gone behind it. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };

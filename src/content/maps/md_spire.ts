@@ -587,6 +587,12 @@ export const md_spire: MapDef = {
       x: 54,
       y: 11,
       id: "ar_porter_drawer"
+    },
+    {
+      kind: "locker",
+      x: 53,
+      y: 12,
+      id: "ar_acquisitions"
     }
   ],
   lights: [
@@ -845,6 +851,10 @@ export const md_spire: MapDef = {
     ar_lift: {
       dialogue: "d_ar_stair",
       name: "The stair"
+    },
+    ar_acquisitions: {
+      dialogue: "d_a3_acquisitions",
+      name: "A drawer marked ACQUISITIONS"
     }
   },
   containers: {
@@ -1091,6 +1101,930 @@ export const md_spire: MapDef = {
       x: 31,
       y: 50,
       facing: 2
+    },
+    {
+      def: "npc_c9_03",
+      x: 27,
+      y: 27,
+      facing: 1,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_summoned"
+              },
+              {
+                not: {
+                  flag: "a3_pnr"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "tam_joined"
+              },
+              {
+                not: {
+                  flag: "tam_left"
+                }
+              },
+              {
+                not: {
+                  any: [
+                    {
+                      flag: "tam_home"
+                    },
+                    {
+                      flag: "a3_tamsin_dead"
+                    }
+                  ]
+                }
+              },
+              {
+                not: {
+                  flag: "tam_broken"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              inParty: "npc_c9_03"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_rd_03",
+      x: 31,
+      y: 27,
+      facing: 3,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_summoned"
+              },
+              {
+                not: {
+                  flag: "a3_pnr"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "wren_joined"
+              },
+              {
+                not: {
+                  flag: "wren_left"
+                }
+              },
+              {
+                not: {
+                  any: [
+                    {
+                      flag: "wren_hanged"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              inParty: "npc_rd_03"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_sh_17",
+      x: 27,
+      y: 29,
+      facing: 1,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_summoned"
+              },
+              {
+                not: {
+                  flag: "a3_pnr"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "ilya_recruited"
+              },
+              {
+                not: {
+                  flag: "ilya_left"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              inParty: "npc_sh_17"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_nb_03",
+      x: 31,
+      y: 29,
+      facing: 3,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_summoned"
+              },
+              {
+                not: {
+                  flag: "a3_pnr"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "odile_joined"
+              },
+              {
+                not: {
+                  flag: "odile_left"
+                }
+              },
+              {
+                not: {
+                  any: [
+                    {
+                      flag: "odile_gone"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              inParty: "npc_nb_03"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_of_03",
+      x: 28,
+      y: 30,
+      facing: 0,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_summoned"
+              },
+              {
+                not: {
+                  flag: "a3_pnr"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "ash_joined"
+              },
+              {
+                not: {
+                  flag: "ash_left"
+                }
+              },
+              {
+                not: {
+                  any: [
+                    {
+                      flag: "ash_gone"
+                    },
+                    {
+                      flag: "a3_ash",
+                      eq: "self"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              inParty: "npc_of_03"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_md_nine",
+      x: 30,
+      y: 30,
+      facing: 0,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_summoned"
+                  },
+                  {
+                    not: {
+                      flag: "a3_pnr"
+                    }
+                  }
+                ]
+              },
+              {
+                all: [
+                  {
+                    flag: "nine_joined"
+                  },
+                  {
+                    not: {
+                      flag: "nine_left"
+                    }
+                  },
+                  {
+                    not: {
+                      any: [
+                        {
+                          flag: "nine_gone"
+                        },
+                        {
+                          flag: "nine_disposed"
+                        },
+                        {
+                          flag: "a3_nine_struck"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                not: {
+                  inParty: "npc_md_nine"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              all: [
+                {
+                  flag: "a3_nine_hid"
+                },
+                {
+                  not: {
+                    flag: "a3_nine_fetched"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_hs_01",
+      x: 29,
+      y: 26,
+      facing: 2,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_summoned"
+              },
+              {
+                not: {
+                  flag: "a3_pnr"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "kes_joined"
+              },
+              {
+                not: {
+                  flag: "kes_left"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              inParty: "npc_hs_01"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_md_nine",
+      id: "npc_md_nine_walkin",
+      x: 30,
+      y: 30,
+      facing: 0,
+      schedule: [],
+      dialogue: "d_a3_nine_walkin",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_summoned"
+                  },
+                  {
+                    not: {
+                      flag: "a3_pnr"
+                    }
+                  }
+                ]
+              },
+              {
+                all: [
+                  {
+                    flag: "nine_joined"
+                  },
+                  {
+                    not: {
+                      flag: "nine_left"
+                    }
+                  },
+                  {
+                    not: {
+                      any: [
+                        {
+                          flag: "nine_gone"
+                        },
+                        {
+                          flag: "nine_disposed"
+                        },
+                        {
+                          flag: "a3_nine_struck"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                not: {
+                  inParty: "npc_md_nine"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "a3_nine_hid"
+              },
+              {
+                not: {
+                  flag: "a3_nine_fetched"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_hc_02",
+      x: 46,
+      y: 34,
+      facing: 3,
+      schedule: [],
+      dialogue: "d_a3_quill",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_summoned"
+              },
+              {
+                not: {
+                  flag: "a3_pnr"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "hc_soto_met"
+              },
+              {
+                not: {
+                  dead: "npc_hc_02"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_cr_11",
+      x: 46,
+      y: 34,
+      facing: 3,
+      schedule: [],
+      dialogue: "d_a3_quill",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_summoned"
+              },
+              {
+                not: {
+                  flag: "a3_pnr"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                not: {
+                  all: [
+                    {
+                      flag: "hc_soto_met"
+                    },
+                    {
+                      not: {
+                        dead: "npc_hc_02"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                not: {
+                  dead: "npc_cr_11"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_md_01",
+      x: 35,
+      y: 27,
+      facing: 2,
+      schedule: [],
+      dialogue: "d_a3_lowe_close",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_summoned"
+              },
+              {
+                not: {
+                  flag: "a3_pnr"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              any: [
+                {
+                  dead: "npc_md_01"
+                },
+                {
+                  dead: "npc_md_01_apron"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_md_12",
+      x: 35,
+      y: 27,
+      facing: 2,
+      schedule: [],
+      dialogue: "d_a3_lowe_close",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_summoned"
+              },
+              {
+                not: {
+                  flag: "a3_pnr"
+                }
+              }
+            ]
+          },
+          {
+            any: [
+              {
+                dead: "npc_md_01"
+              },
+              {
+                dead: "npc_md_01_apron"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_md_12"
+            }
+          },
+          {
+            not: {
+              dead: "npc_md_12_apron"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_of_02",
+      x: 17,
+      y: 41,
+      facing: 1,
+      schedule: [],
+      dialogue: "d_a3_petra_close",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_summoned"
+                  },
+                  {
+                    not: {
+                      flag: "a3_pnr"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_unwritten",
+                eq: "with_you"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_of_02"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_u1",
+      x: 17,
+      y: 41,
+      facing: 1,
+      schedule: [],
+      dialogue: "d_a3_petra_close",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_summoned"
+                  },
+                  {
+                    not: {
+                      flag: "a3_pnr"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_unwritten",
+                eq: "with_you"
+              }
+            ]
+          },
+          {
+            dead: "npc_of_02"
+          },
+          {
+            not: {
+              dead: "npc_a3_u1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_u2",
+      x: 18,
+      y: 42,
+      facing: 0,
+      schedule: [],
+      dialogue: "d_a3_thaddeus_close",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_summoned"
+                  },
+                  {
+                    not: {
+                      flag: "a3_pnr"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_unwritten",
+                eq: "with_you"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_a3_u2"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_u3",
+      x: 16,
+      y: 42,
+      facing: 1,
+      schedule: [],
+      dialogue: "d_a3_rhoda_close",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_summoned"
+                  },
+                  {
+                    not: {
+                      flag: "a3_pnr"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_unwritten",
+                eq: "with_you"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_a3_u3"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_31",
+      x: 24,
+      y: 33,
+      facing: 0,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_summoned"
+              },
+              {
+                not: {
+                  flag: "a3_pnr"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_ally_choir"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_32",
+      x: 48,
+      y: 38,
+      facing: 3,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_summoned"
+              },
+              {
+                not: {
+                  flag: "a3_pnr"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_ally_wheel"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_33",
+      x: 52,
+      y: 35,
+      facing: 3,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_summoned"
+              },
+              {
+                not: {
+                  flag: "a3_pnr"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_ally_stand"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_34",
+      x: 11,
+      y: 34,
+      facing: 1,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_summoned"
+              },
+              {
+                not: {
+                  flag: "a3_pnr"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_ally_gangs"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_bw_04",
+      x: 38,
+      y: 33,
+      facing: 0,
+      schedule: [],
+      dialogue: "d_a3_verity_close",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_summoned"
+                  },
+                  {
+                    not: {
+                      flag: "a3_pnr"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_ally_saints"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_bw_04"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_nw_04",
+      x: 20,
+      y: 27,
+      facing: 1,
+      schedule: [],
+      dialogue: "d_a3_seventeen_close",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_summoned"
+                  },
+                  {
+                    not: {
+                      flag: "a3_pnr"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_ally_seventeen"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_nw_04"
+            }
+          }
+        ]
+      }
     }
   ],
   triggers: [
@@ -1174,6 +2108,34 @@ export const md_spire: MapDef = {
       effects: [
         {
           learn: "seen_copyroom"
+        }
+      ]
+    },
+    {
+      id: "a3_close",
+      x: 1,
+      y: 27,
+      w: 62,
+      h: 27,
+      if: {
+        all: [
+          {
+            flag: "a3_summoned"
+          },
+          {
+            not: {
+              flag: "a3_pnr"
+            }
+          }
+        ]
+      },
+      effects: [
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_close",
+            name: "The close"
+          }
         }
       ]
     }

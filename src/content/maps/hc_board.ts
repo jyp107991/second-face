@@ -565,7 +565,19 @@ export const hc_board: MapDef = {
       def: "npc_hc_02",
       x: 14,
       y: 6,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          all: [
+            {
+              flag: "a3_summoned"
+            },
+            {
+              flag: "hc_soto_met"
+            }
+          ]
+        }
+      }
     },
     {
       def: "npc_hc_01",

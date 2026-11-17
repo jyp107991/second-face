@@ -146,7 +146,9 @@ md_crown = {
         {'def': 'npc_cr_03', 'id': 'npc_cr_03_side', 'x': 29, 'y': 15, 'facing': 1, 'if': {'flag': 'cr_hall_open'}},
         {'def': 'npc_cr_01', 'x': 26, 'y': 7, 'facing': 2, 'if': {'not': {'flag': 'cr_celestine_dead'}}},
         {'def': 'npc_cr_10', 'x': 40, 'y': 11, 'facing': 3},
-        {'def': 'npc_cr_11', 'x': 43, 'y': 5, 'facing': 3, 'if': {'not': {'flag': 'cr_concern', 'eq': 'exposed'}}},
+        {'def': 'npc_cr_11', 'x': 43, 'y': 5, 'facing': 3, 'if': {'all': [{'not': {'flag': 'cr_concern', 'eq': 'exposed'}},
+         # B6l: at the Spire's close as the Concern's officer from the Ledger's card (unless Director Soto came instead)
+         {'not': {'all': [{'flag': 'a3_summoned'}, {'not': {'all': [{'flag': 'hc_soto_met'}, {'not': {'dead': 'npc_hc_02'}}]}}]}}]}},
         {'def': 'npc_cr_06', 'x': 38, 'y': 25, 'facing': 3},
         {'def': 'npc_cr_02', 'x': 10, 'y': 23, 'facing': 1},
         {'def': 'npc_cr_07', 'x': 6, 'y': 27, 'facing': 0},

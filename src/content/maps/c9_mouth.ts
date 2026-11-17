@@ -2417,6 +2417,21 @@ export const c9_mouth: MapDef = {
               flag: "a3_hale",
               eq: "answered"
             }
+          },
+          {
+            not: {
+              all: [
+                {
+                  flag: "a3_c9_how",
+                  eq: "sold"
+                },
+                {
+                  not: {
+                    flag: "a3_hale"
+                  }
+                }
+              ]
+            }
           }
         ]
       }
@@ -2480,6 +2495,12 @@ export const c9_mouth: MapDef = {
           },
           {
             flag: "a3_hounds_in"
+          },
+          {
+            not: {
+              flag: "a3_c9_how",
+              eq: "sold"
+            }
           }
         ]
       }
@@ -2497,6 +2518,12 @@ export const c9_mouth: MapDef = {
           },
           {
             flag: "a3_hounds_in"
+          },
+          {
+            not: {
+              flag: "a3_c9_how",
+              eq: "sold"
+            }
           }
         ]
       }
@@ -3251,6 +3278,186 @@ export const c9_mouth: MapDef = {
           },
           {
             flag: "a3_ally_dogs"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_01",
+      id: "npc_c9_01_apron",
+      x: 26,
+      y: 38,
+      facing: 0,
+      dialogue: "d_a3_ap_ines",
+      schedule: [],
+      if: {
+        flag: "a3_c9",
+        eq: "opened"
+      }
+    },
+    {
+      def: "npc_c9_r2",
+      id: "npc_c9_r2_apron",
+      x: 30,
+      y: 40,
+      facing: 2,
+      dialogue: "d_a3_ap_wes",
+      schedule: [],
+      if: {
+        flag: "a3_c9",
+        eq: "opened"
+      }
+    },
+    {
+      def: "npc_c9_r1",
+      id: "npc_c9_r1_apron",
+      x: 15,
+      y: 37,
+      facing: 3,
+      dialogue: "d_a3_ap_ola",
+      schedule: [],
+      if: {
+        flag: "a3_c9",
+        eq: "opened"
+      }
+    },
+    {
+      def: "npc_c9_r4",
+      id: "npc_c9_r4_apron",
+      x: 27,
+      y: 7,
+      facing: 0,
+      dialogue: "d_a3_ap_effie",
+      schedule: [],
+      if: {
+        flag: "a3_c9",
+        eq: "opened"
+      }
+    },
+    {
+      def: "npc_c9_03",
+      id: "npc_c9_03_after",
+      x: 27,
+      y: 42,
+      facing: 0,
+      dialogue: "d_a3_tam_after",
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "tam_left",
+                eq: "door"
+              },
+              {
+                not: {
+                  flag: "a3_tamsin_dead"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_c9"
+          },
+          {
+            not: {
+              all: [
+                {
+                  all: [
+                    {
+                      flag: "tam_left",
+                      eq: "door"
+                    },
+                    {
+                      not: {
+                        flag: "a3_tamsin_dead"
+                      }
+                    }
+                  ]
+                },
+                {
+                  all: [
+                    {
+                      all: [
+                        {
+                          flag: "a3_c9",
+                          eq: "relocated"
+                        },
+                        {
+                          any: [
+                            {
+                              flag: "a3_c9_how",
+                              eq: "order"
+                            },
+                            {
+                              flag: "a3_c9_how",
+                              eq: "forced"
+                            },
+                            {
+                              flag: "a3_c9_how",
+                              eq: "consent"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      not: {
+                        flag: "a3_c9_after"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            not: {
+              all: [
+                {
+                  all: [
+                    {
+                      flag: "tam_left",
+                      eq: "door"
+                    },
+                    {
+                      not: {
+                        flag: "a3_tamsin_dead"
+                      }
+                    }
+                  ]
+                },
+                {
+                  all: [
+                    {
+                      flag: "a3_c9",
+                      eq: "relocated"
+                    },
+                    {
+                      any: [
+                        {
+                          flag: "a3_c9_how",
+                          eq: "order"
+                        },
+                        {
+                          flag: "a3_c9_how",
+                          eq: "forced"
+                        },
+                        {
+                          flag: "a3_c9_how",
+                          eq: "consent"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  flag: "a3_c9_after",
+                  eq: "walked"
+                }
+              ]
+            }
           }
         ]
       }
@@ -4579,6 +4786,29 @@ export const c9_mouth: MapDef = {
             tree: "d_a3_door",
             name: "The apron"
           }
+        }
+      ]
+    },
+    {
+      id: "a3_tam_line",
+      x: 18,
+      y: 37,
+      w: 21,
+      h: 6,
+      if: {
+        all: [
+          {
+            flag: "a3_c9"
+          },
+          {
+            flag: "a3_tamsin_dead"
+          }
+        ]
+      },
+      text: "Inside the yellow line, where the door swung out over the concrete, the white arc it scraped has been scrubbed clean, and in the middle of it somebody has chalked a name and keeps it chalked: TAMSIN. Beside it, every morning, a cup of water, full, as if it were hatch day.",
+      effects: [
+        {
+          learn: "a3k_tam_line"
         }
       ]
     },

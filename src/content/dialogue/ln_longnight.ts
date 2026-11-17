@@ -291,6 +291,10 @@ export const d_ln_roux: DialogueDef = {
     intro: {
       text: [
         { if: F('dk_concern_billed'), text: 'Lucien Roux, the Concern\'s bond officer from Carrick, at a camp desk in the next wagon, in a clean coat, writing. He recognises you and finishes his line before he looks up. "The weighbridge," he says. "Every box to the plate, now. That was you." No heat in it. "The Concern backs the guild tonight. It also remembers."' },
+        // the Board's answer at Halcyon (B4b's hc_offer), heard down the hill before the night
+        { if: F('hc_offer', 'accepted'), text: 'A man in a clean coat at a camp desk in the next wagon along, writing in a ledger by a hooded lamp: Lucien Roux, the Concern\'s bond officer from Carrick. He sees you, and for the first time since you have known him he stands up before he has finished the line. "Designate. The Board wrote that you had taken its seat." He offers his hand, and holds yours a moment longer than a hand needs. "Then tonight we are on the same side of a fence, whichever side of it you stand on. You will forgive me for hoping it is ours."' },
+        { if: F('hc_offer', 'feigned'), text: 'A man in a clean coat at a camp desk in the next wagon along, writing in a ledger by a hooded lamp: Lucien Roux, the Concern\'s bond officer from Carrick. He finishes his line before he looks up, and then he looks at you for exactly as long as the lens over Director Soto\'s door did. "Designate. The Board writes that you have a seat in waiting." He sets the pen down. "Director Soto writes separately, as she always does."' },
+        { if: F('hc_offer', 'refused'), text: 'A man in a clean coat at a camp desk in the next wagon along, writing in a ledger by a hooded lamp: Lucien Roux, the Concern\'s bond officer from Carrick. He finishes his line before he looks up. "Designate. The Board writes that you declined its seat." No heat in it. "It is noted. It is not held against you. Tonight is a farm, not a chair."' },
         { text: 'A man in a clean coat at a camp desk in the next wagon along, writing in a ledger by a hooded lamp: Lucien Roux, the Concern\'s bond officer from Carrick, here because the guild\'s claim on Openfield\'s seed is underwritten by Halcyon. He finishes his line before he looks up. "Good evening. The Concern backs the guild\'s claim. I am here to see it honoured."' },
       ],
       again: 'Roux, at the camp desk.',
@@ -304,6 +308,7 @@ export const d_ln_roux: DialogueDef = {
         { id: 'ln.roux.vault', text: 'Why does the Concern want seed?', if: { not: { seen: 'ln.roux.go' } }, next: 'vault' },
         { id: 'ln.roux.people', text: 'And the Choir\'s people?', if: { not: { seen: 'ln.roux.people' } }, next: 'people' },
         { id: 'ln.roux.dogs', text: 'What have you brought for the night?', if: { not: { seen: 'ln.roux.dogs' } }, next: 'dogs' },
+        { id: 'ln.roux.seat', text: 'The Board\'s seat.', if: F('hc_offer'), once: true, next: 'seat' },
         { id: 'ln.roux.pledge', text: 'I\'ll stand with the guild.', if: OPEN, effects: [...PLEDGE_GUILD, { give: 'tolls', count: 250 }], next: 'pledged' },
         bye,
       ],
@@ -330,6 +335,17 @@ export const d_ln_roux: DialogueDef = {
       ],
       again: 'What the Concern has brought.',
       effects: [{ learn: 'ln_roux_dogs' }],
+      options: [{ text: 'Something else.', next: 'hub' }],
+    },
+    seat: {
+      text: [
+        { if: F('hc_offer', 'accepted'), text: '"Is a seat at the table that decides what the Reach eats in ten years." He turns the ledger so you can see a page already written in his clean hand: your name under the Board\'s, and a date left blank. "Tonight is not that day. Tonight the guild holds a farm\'s seed on paper and the Concern underwrites the paper. If you stand with the guild, the Board will hear it was done by one of its own." He lets that sit. "If you do not, it will hear that too, and it will not be surprised. A seat is not a leash. Not yet."' },
+        { if: F('hc_offer', 'feigned'), text: '"A seat in waiting." He says it as if tasting it. "Director Soto believes about half of what she is told and writes down all of it. She wrote that you were very gracious." He meets your eye. "Whatever you meant on the hill, tonight is a farm. If you meant it, stand with the guild. If you did not, I will know by morning, and so will she, and the seat will still be waiting. The Board never withdraws an offer. It lets it cost more."' },
+        { text: '"Was declined." He nods, as if confirming an entry. "The Board never withdraws an offer; it lets it cost more. You will hear from it again, at a worse price, on the day you take the sash." He closes the ledger. "Tonight I am only a man who underwrites a farmer\'s debt, and you are only someone standing between me and the farm. That is a simpler thing, and I prefer it."' },
+      ],
+      again: 'What the Board\'s seat means tonight.',
+      effects: [{ learn: 'ln_roux_seat' }],
+      interject: [{ companion: KES, text: 'Kes has gone very still at your shoulder. "He means it kindly," she says afterward, low. "That\'s the bit that gets you. They always mean it kindly."', effects: [A(KES, -1)] }],
       options: [{ text: 'Something else.', next: 'hub' }],
     },
     pledged: { text: 'Roux writes a line, blots it, and turns the ledger so you can see your name in it in a clean hand under the day\'s date. "The Concern remembers its friends," he says, "in writing." Two wagons down, Sarr\'s purse comes open.', again: 'Your name in the Concern\'s ledger.', options: [bye] },

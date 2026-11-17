@@ -270,19 +270,24 @@ export const q_a3_unwritten: QuestDef = {
 const AFTER = (v: string): Cond => F('a3_c9_after', v);
 export const q_a3_platform: QuestDef = {
   id: 'q_a3_platform', title: 'Sixty at the Buffer', act: 'a3', start: 'buffer', xp: 300,
+  // B6k: the car stands at the buffer until the designate gives Supply a word or gets them off it (nothing resolves unasked)
   routes: [
-    { id: 'harbour', kind: 'talk', label: 'At the Harbour court: a person landed on the quay is a passenger', requires: { any: [F('dk_prec_passenger'), { skill: 'speech', gte: 45 }] } },
-    { id: 'stand', kind: 'fight', label: 'Have the Stand black the wardens\' car', requires: ALLY('stand') },
-    { id: 'cradle', kind: 'stealth', label: 'Take them over the dry river in the cradle at night', requires: { not: F('dk_cradle', 'cut') } },
+    { id: 'harbour', kind: 'talk', label: 'At the Harbour court: a person landed on the quay is a passenger, never the city\'s supply', requires: { any: [F('dk_prec_passenger'), { skill: 'speech', gte: 45 }] } },
+    { id: 'stand', kind: 'fight', label: 'Have the Stand black the car until the wardens stand back', requires: { any: [ALLY('stand'), F('dk_stand_owed')] } },
+    { id: 'cradle', kind: 'stealth', label: 'Down the river stairs to the Hulls at night, with the cradle\'s lamp for cover', requires: { all: [{ not: { any: [F('dk_cradle', 'cut'), F('dk_hulls_empty')] } }, { skill: 'stealth', gte: 45 }] } },
   ],
   stages: {
     buffer: {
-      journal: 'The wardens\' car with the Cistern\'s people in it has come to the Line\'s buffer at Carrick.',
-      objectives: [{ id: 'quay', text: 'Get them off the car', done: F('a3_c9_after') }],
-      next: [{ if: AFTER('walked'), stage: 'walked' }, { if: AFTER('held'), stage: 'held' }],
+      journal: 'The wardens\' car with the Cistern\'s people in it stands at the Line\'s buffer at Carrick, where the city receives what it takes in. Supply will receive them on my word, and the column will hold them there until I give it.',
+      objectives: [
+        { id: 'why', text: 'Hear the column out at the tailboard', done: { knows: 'a3_buffer_receipt' }, optional: true },
+        { id: 'quay', text: 'Get them off the car, or let Supply receive them', done: F('a3_c9_after') },
+      ],
+      next: [{ if: AFTER('walked'), stage: 'walked' }, { if: { all: [AFTER('held'), F('a3_c9_how', 'consent')] }, stage: 'went' }, { if: AFTER('held'), stage: 'held' }],
     },
     walked: { journal: 'The Cistern\'s people walked off the wardens\' car at Carrick, free in the city.', end: 'done' },
-    held: { journal: 'The Cistern\'s people went from the buffer into the Precinct\'s keeping.', end: 'failed' },
+    went: { journal: 'The Cistern\'s people went from the buffer into the Precinct\'s keeping, on their own feet, as they had chosen at their ring.', end: 'done' },
+    held: { journal: 'The Cistern\'s people went from the buffer into the Precinct\'s keeping, on my word.', end: 'failed' },
   },
 };
 

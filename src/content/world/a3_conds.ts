@@ -376,6 +376,45 @@ export const MOTHER_AFTER: Mod = { id: 'mother', values: [
   { id: 'kept', if: ANY(F('a3_mother', 'kept'), ALL(NOT(F('a3_mother')), F('a3_c9', 'sealed'))) },
   { id: 'lockdown' },
 ] };
+/** B6l: the Spire's close (21a), from the Ledger's card until the designate goes up the steps: who came (the map's placements,
+ * gen_md_spire.py mirrors these). The companions on the player's side and not on the road with them wait round the fire barrel
+ * (`WITH_YOU`, B6n's rule); a Nine hidden from the recall and never fetched walks in written off (`NINE_WALKIN`). The Concern's
+ * officer: Director Soto if the player met her at Halcyon (B4b), else Mr Quill. The column's lead: Lowe while he lives, else his
+ * sergeant Reyes. The Unwritten turned at Knock (`with_you`). The allies who count at the close send their own. */
+export const AT_CLOSE: Cond = ALL(F('a3_summoned'), NOT(F('a3_pnr')));
+export const SOTO = 'npc_hc_02';
+export const SOTO_COMES: Cond = ALL(B4B.sotoMet, NOT({ dead: SOTO }));
+export const QUILL_COMES: Cond = ALL(NOT(SOTO_COMES), NOT({ dead: QUILL }));
+export const OFFICER_HERE: Cond = ANY(SOTO_COMES, QUILL_COMES);
+export const NINE_WALKIN: Cond = ALL(F('a3_nine_hid'), NOT(F('a3_nine_fetched')));
+export const LOWE_CLOSE: Cond = ALL(AT_CLOSE, NOT(LOWE_DEAD));
+export const REYES_CLOSE: Cond = ALL(AT_CLOSE, LOWE_DEAD, NOT({ dead: REYES }), NOT({ dead: `${REYES}_apron` }));
+export const UW_CLOSE: Cond = ALL(AT_CLOSE, F('a3_unwritten', 'with_you'));
+/** The Concern's terms are worse for a designate the Shift marked and the Clean's gate was shut on (B4a). */
+export const TERMS_WORSE: Cond = ALL(F('hs_marked'), F('hs_gate_shut'));
+/** C_BUYER's second chance (§3): the officer's paper refused at the close (or no officer left alive to offer it), the Grand
+ * Factor at Ninebridge holds the same paper for the guild, while she lives and until she has been answered once. */
+export const SARR_OFFERS: Cond = ALL(AT_CLOSE, SARR_ALIVE, NOT({ item: 'k_a3_transfer' }), NOT(F('a3_sarr_terms')), ANY(F('a3_concern_terms', 'refused'), NOT(OFFICER_HERE)));
+/** E_REG's alternate (§3): the Court's register sold to the catalogue in Act 2, asked back of Keeper Marwood in Act 3. */
+export const REGISTER_ASK: Cond = ALL(A3_OPEN, F('prec_register', 'catalogued'), NOT(F('a3_register_back')), NOT(F('a3_pnr')));
+/** Keystone 7's trial (case `calla` at the Court): only while Sister Calla is held by the city (B5d's `ks_calla` = imprisoned, or
+ * the safe default); her release writes `ks_calla` = free, so `CALLA_FREE` reads it. */
+export const CALLA_CASE_OPEN: Cond = ALL(LN_DONE, CALLA_HELD);
+
+/** B6k: after the door (20f). The reserve carried west to the city in the wardens' car (the designate's word, the word forced
+ * over the door, or the ring's own vote to go; the guild's paper takes them up the guild's own road instead, and never to
+ * Carrick): Precinct Supply receives it at Carrick's buffer, on the designate's word, and the column holds it there until the
+ * designate comes (`PLATFORM_OPEN`). `a3_c9_after` = walked (off the car, free in the city) | held (received). */
+export const CARRIED_WEST: Cond = ALL(F('a3_c9', 'relocated'), ANY(F('a3_c9_how', 'order'), F('a3_c9_how', 'forced'), F('a3_c9_how', 'consent')));
+export const PLATFORM_OPEN: Cond = ALL(CARRIED_WEST, NOT(F('a3_c9_after')));
+/** Tamsin walked into the door over the designate's word (`tam_left` = door) and lives: placed where the door left her. She
+ * followed the car west when it carried the reserve (Nine took her out of the door): at the buffer while it waits, with them in
+ * Carrick if they walked, home at Knock if they were received; otherwise on Knock's apron by the door. */
+export const TAM_STOOD: Cond = ALL(F('tam_left', 'door'), NOT(F('a3_tamsin_dead')));
+export const TAM_FOLLOWED: Cond = ALL(TAM_STOOD, CARRIED_WEST);
+export const TAM_AT_BUFFER: Cond = ALL(TAM_STOOD, PLATFORM_OPEN);
+export const TAM_IN_CARRICK: Cond = ALL(TAM_FOLLOWED, F('a3_c9_after', 'walked'));
+export const TAM_AT_KNOCK_AFTER: Cond = ALL(TAM_STOOD, F('a3_c9'), NOT(TAM_AT_BUFFER), NOT(TAM_IN_CARRICK));
 
 /** The readiness hub's eight acts at the close (`d_a3_ready`, B6m): each adds 1 to `a3_ready`, once (`a3_ready_<id>`). */
 export const READY_ACTS: { id: string; needs: Cond }[] = [
@@ -764,6 +803,73 @@ export const EP_SLIDES = ['steps', 'ledger', 'cistern', 'knock', 'shale', 'dogs'
  *                            npc_c9_03 a3_in_the_door / a3_door_held / a3_reserve_taken, npc_md_nine a3_ordered_arrest /
  *                            a3_not_ordered / a3_stood_with / a3_told_refuse / a3_told_obey, npc_rd_03 sold_the_reserve,
  *                            npc_c9_05 a3_emptied, npc_kn_factor a3_claim_off / a3_claim_paid / a3_signed, npc_hs_01 a3_numbed_at_door
+ * B6k (built; dialogue/a3_after.ts: d_a3_platform at Carrick's buffer (the column's lead, Kress, Ines and Effie at the car, and the
+ *      map's trigger a3_buffer open it), d_a3_tam_after (Tamsin after the door), d_a3_ck_ines/_effie (the residents in Carrick after
+ *      they walked), d_a3_ap_ines/_ola/_wes/_effie (on Knock's apron after an opened door); after-the-door nodes spread into B6f's
+ *      Maud, Corin, Linnet, Knock's others and the Grille, and B6h's Ines, Pell, Bram, Teague and the residents; maps md_docks via
+ *      gen_md_docks.py, c9_mouth via gen_knock.py; world event a3_buffer_post, the receipt slip; CARRIED_WEST, PLATFORM_OPEN, TAM_*):
+ *   a3_c9_after              walked | held   the reserve carried west (CARRIED_WEST: order | forced | consent; never sold) and held at
+ *                                            Carrick's buffer for the designate's word (PLATFORM_OPEN): walked = off the car, free in
+ *                                            the city; held = received by Precinct Supply on the designate's word (consent and held:
+ *                                            q_a3_platform ends `went`, done; otherwise `held`, failed). Nothing sets it unasked
+ *   a3_buffer_how            court | stand | cradle   how they walked: the Harbour court at six (passengers; no check with
+ *                                            dk_prec_passenger, else Speech 45), the Stand blacking the car (dk_stand_owed or
+ *                                            a3_ally_stand), down the river stairs into the Hulls by night (Stealth 45; they are crew in
+ *                                            the Star's crew book). Where they are after: the Boxes (court, stand) or the Star (cradle)
+ *   a3_buffer_found          true            the Harbour court found the passenger ruling at the buffer for the first time
+ *   a3_buffer_court          adjourned       the court's argument failed: spent; the other ways stay
+ *   a3_buffer_watched        true            the cradle's night tried and caught: spent
+ *   dk_prec_passenger        true            (B5b's flag) also set by the court at the buffer: E's clause `passenger`
+ *   a3_mast_handle           amos            Signal Hill's switch handle given to Amos Crofts of Knock, who keeps the hill (only with
+ *                                            a3_mast_keeper = knock, after the door; B6r: who throws the switch)
+ *   a3_summoned              true            (B6a) the Ledger's card, at the next seven o'clock anywhere once a3_c9 is set, whatever
+ *                                            the door; the same morning as the receipt slip (world event a3_buffer_post) when the
+ *                                            reserve was carried west
+ *   q_a3_platform            buffer -> walked | went | held   started by the slip, the map's trigger or the scene
+ *   Tamsin after the door    TAM_STOOD (tam_left = door, alive): TAM_AT_BUFFER (behind the car, md_docks npc_c9_03_buffer),
+ *                                            TAM_IN_CARRICK (with them after: _carrick / _hulls), TAM_AT_KNOCK_AFTER (on the apron by
+ *                                            the door: c9_mouth npc_c9_03_after; also when they were received without her). One place
+ *                                            only; dead, nowhere (trigger a3_tam_line marks where she died)
+ *   knowledge: a3_buffer_seen, a3_buffer_receipt (the Harbour Act hint), a3_buffer_asked (consent: what they want), a3k_maud,
+ *                            a3k_hatch_seven (MOTHER opening the hatch to Knock: the stores given under relocation), a3k_grille,
+ *                            a3k_r1..r4, a3k_tam_line, a3k_tam_<sealed|opened|sold|held|buffer|carrick>, a3k_in_<ines|pell|bram|teague>;
+ *                            memories npc_c9_01 a3_walked_off / a3_received, npc_md_01 a3_received, npc_c9_03 a3_got_them_off,
+ *                            npc_kn_maud a3k_seven, npc_kn_r4 a3k_hill, npc_c9_05 a3k_asked
+ *   placements:              Knock (opened): npc_c9_01_apron, npc_c9_r1/_r2/_r4_apron; the guild's Hale and handlers are not
+ *                            placed after a3_c9_how = sold (they walked the sixty up the guild's road)
+ * B6l (built; dialogue/a3_close.ts: who came to the Spire's close (d_a3_close, opened once by md_spire's trigger a3_close), the
+ *      Concern's officer d_a3_quill (Soto's nodes s_*, Quill's q_*), the Grand Factor's copy (SARR_* into d_nb_sarr), the register
+ *      back (MARWOOD_* into d_ar_keeper, d_a3_acquisitions at the drawer prop ar_acquisitions, COMFORT_* into d_ar_copyist), Lowe or
+ *      Reyes (d_a3_lowe_close), the Unwritten (d_a3_petra_close, _thaddeus_close, _rhoda_close), a hidden Nine (d_a3_nine_walkin), the
+ *      allies' envoys and readers (d_a3_keziah, _lucan, _ifeoma, _tuan, _verity_close, _seventeen_close), case calla on the Court's
+ *      bench (callaCase in md_court.ts); npcs npc_a3_31..34 (npcs/a3_close.ts); map md_spire via gen_md_spire.py (placements on
+ *      AT_CLOSE), and home placements stepped aside via gen_md_crown / gen_hc_halcyon / gen_md_precinct / gen_md_bridgeward / gen_openfield):
+ *   a3_concern_terms         accepted | refused   the Concern's instrument of transfer for the core (item k_a3_transfer): taken or
+ *                                            carried (accepted, the paper given; C_BUYER), refused at the close, or given back
+ *                                            (refused). The officer never offers twice; SARR_OFFERS opens the Grand Factor's copy
+ *   a3_terms_how             taken | carried   "I'll sign it at the core" or "I'll carry it, that's all I'll promise"
+ *   a3_terms_from            officer | sarr   whose copy the paper in the pack is
+ *   a3_terms_returned        true            the paper given back to the officer, unsigned (a3_concern_terms = refused)
+ *   a3_sarr_terms            accepted | refused   the Grand Factor answered at Ninebridge (refused: final, nobody offers again)
+ *   a3_register_back         true            the Court's register (sold to the catalogue in Act 2: prec_register = catalogued, never
+ *                                            rewritten) back on the desk under the bench (E_REG's alternate)
+ *   a3_register_how          bought | word | lifted   200 Tolls to Keeper Marwood; Speech 50 on Comfort Asamoah's word that it was
+ *                                            lent (knowledge a3_comfort_word); lifted from the acquisitions drawer at night (Security 45)
+ *   a3_acq_woken             true            the drawer tried and Marwood woke: the S route is spent (she sleeps facing it)
+ *   a3_lowe_close            true            the column's lead (Lowe, or Reyes) spoken to at the close
+ *   a3_nine_fetched          true            (B6b's flag) also set by a hidden Nine walking in at the close (d_a3_nine_walkin)
+ *   ca_calla                 speech | void | privilege | upheld   case calla (only while CALLA_HELD): speech = HELD: speech is not
+ *                                            sedition (a precedent: prec_sedition, ca_precedents +1); void = the listing lay on a
+ *                                            forecast and the register's FINES heading voids it (no new precedent); privilege = a
+ *                                            courtesy to the designate (no precedent); upheld = she stays held
+ *   prec_sedition            speech          the Court's new heading (CLAUSES' `speech`)
+ *   ks_calla                 free            (B5d's keystone 7) written by her release at the Court (speech | void | privilege), so
+ *                                            CALLA_FREE reads it and CALLA_HELD stops
+ *   knowledge: a3_close_seen, a3_officer_met, a3_sarr_holds (told the Grand Factor holds the guild's copy), a3_comfort_word,
+ *                            a3_lowe_close_met, a3_reyes_close_met, a3_lowe_list (Lowe's folded eviction list: thirty-one names and
+ *                            KNOCK), a3_uw_close_met, a3_calla_told, a3_calla_freed, a3_close_choir / _wheel / _stand / _gangs /
+ *                            _saints / _seventeen (each envoy or reader heard);  memories npc_ar_03 a3_book_lifted / a3_drawer_tried,
+ *                            npc_md_01 a3_gave_list
  * Planned (the slice named sets it; values as the plan fixes them):
  *   a3_recall                declined | stayed | handed | court | bought | hidden | fought | taken          B6b
  *   nine_disposed            true                                                                        B6b
