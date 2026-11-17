@@ -1822,6 +1822,12 @@ mid-range Android phone; deployed to Pages.
       - [ ] B4b **Halcyon** (planned in the build notes: maps `hc_*`, cast `npc_hc_*`, flags `hc_*`; the Contract, the
             Leash, the Long-Lived and the side quests inside; it continues `q_a2_halcyon` from its `car`/`road` stages,
             replaces its `inside` stub, and sets `hc_inside` on first entering).
+      - [ ] B4b **Halcyon** (the arcology; beat 16 inside; the Contract, the Leash, the Long-Lived; four side quests;
+            Kes inside): maps (`hc_terrace`, `hc_clinic`, `hc_board`, `hc_works` via `tools/maps/gen_hc_halcyon.py`), the
+            cast and the beat's stages are drafted on branch `wip/b4b-halcyon` (not on main: nothing registered, the
+            conversations not written). The writing of its first conversation file was stopped by the model's safety
+            system on 2026-11-17 and not regenerated; how the rest is written is open (see the story plan's B4 notes).
+            Main keeps B4a's `inside` stub for the beat.
 - [ ] B5 **Act 2 wilds**: Glass Flats (Ninebridge, Openfield, the Sump, Cistern 4), Rail Corridor (the
       Line, Junction, halts, rail bandits), Drowned Shore (stilt villages, Rigs, salvage dives), Teeth
       mines, Northern Wet (barges, Dam, timber), Ashlands (remnant machines); Long Night alliance. ~12 h.
