@@ -366,9 +366,12 @@ namespace SecondFace.Game.Fighting
             var length = Set != null ? Set.Length(state, Female) : 1f;
             _a.CrossFadeInFixedTime(s.AnimName(Female), f, layer, (from ?? s.From) * length);
             Bring(layer, f);
-            if (layer == _full) Current = state; else Carrying = state;
+            if (layer == _full) { Current = state; _askedFull = Time.frameCount; } else { Carrying = state; _askedArms = Time.frameCount; }
             return true;
         }
+
+        // the frame a crossfade was last asked on each layer (the Animator takes it at its next update)
+        private int _askedFull = -1, _askedArms = -1;
 
         /// <summary>Plays a state at once, its first frame written now (after a fall: the get-up from where the body lies).</summary>
         public void PlayNow(string state)
@@ -433,8 +436,24 @@ namespace SecondFace.Game.Fighting
 
         public void SetRate(float rate) { Rate = rate; if (_a != null && _a.runtimeAnimatorController != null) _a.SetFloat(RateId, rate); }
 
-        /// <summary>Whether the whole-body (or carry) layer is in this state or crossfading into it.</summary>
-        public bool Is(string state) => Progress(state) >= 0f;
+        /// <summary>Whether the whole-body (or carry) layer is in this state or crossfading into it: where the layer is going,
+        /// never a state it is crossfading out of (that one is being left: a gun being lowered is not aimed, and a loop being
+        /// left is crossfaded back into by <see cref="Play"/>, not kept). A crossfade asked this frame counts at once (the
+        /// Animator takes it at its next update; until then its current state is the one being left).
+        /// (Counting the state being left, a shot asked while the gun was being lowered found it "aimed", raised nothing and
+        /// fired on the lowering gun, and asking for the hold again was ignored: CombatMotionPlayTests, 2026-11-17.)</summary>
+        public bool Is(string state)
+        {
+            if (_a == null || !_a.isActiveAndEnabled) return false;
+            var s = CombatMotion.State(state);
+            if (s == null) return false;
+            var arms = s.Layer == CombatMotion.ArmsLayer;
+            var layer = arms ? _armsLayer : _full;
+            if (layer < 0) return false;
+            if ((arms ? _askedArms : _askedFull) == Time.frameCount) return (arms ? Carrying : Current) == state;
+            var info = _a.IsInTransition(layer) ? _a.GetNextAnimatorStateInfo(layer) : _a.GetCurrentAnimatorStateInfo(layer);
+            return info.shortNameHash == Animator.StringToHash(s.AnimName(Female));
+        }
 
         /// <summary>A state's normalized time now (its own layer's current state, or the one being crossfaded into); -1: not playing.</summary>
         public float Progress(string state)

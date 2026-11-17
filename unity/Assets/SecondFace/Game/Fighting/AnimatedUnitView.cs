@@ -39,7 +39,7 @@ namespace SecondFace.Game.Fighting
         public bool Down => _down;
 
         private bool _down, _yielded, _holding, _aiming, _rising, _ended, _walking;
-        private float _quietFor;   // since the last shot or aim (s), for lowering the weapon
+        private float _quietFor;   // the aim held with nothing done (s): since it was reached or the last round; lowers the weapon
         private int _blows, _misses, _moves;
         private string _stance = "stand";
         private string _heldItem;
@@ -99,7 +99,12 @@ namespace SecondFace.Game.Fighting
                     }
                     if (_walking && !_walk.Moving) { _walking = false; Fighter.Locomote(false, _stance == "crouch"); }
                     if (_holding && Unit.Watch == null) { _holding = false; _quietFor = 99f; }
-                    _quietFor += Time.deltaTime;
+                    // the quiet that lowers a raised weapon counts only while the aim is held: from the moment it is reached
+                    // (and from each round), never through the raise, the turn and the facing learnt before it. Counted from
+                    // the aim's start, a first long-gun aim (the raise 0.94 s, the crossfade, the facing 0.2 s) was past the
+                    // delay as it was reached and came down at once; the shot that followed fired on the lowering gun
+                    // (CombatMotionPlayTests: "a shot played rifle_lower", 2026-11-17)
+                    _quietFor = _aiming ? _quietFor + Time.deltaTime : 0f;
                     if (_aiming && !_holding && _quietFor > Mathf.Max(0.6f, Secs(1.1f))) Lower();
                 }
                 yield return null;
@@ -258,6 +263,8 @@ namespace SecondFace.Game.Fighting
                 yield break;
             }
             yield return Wait(Secs(round + 1 < rounds ? 0.02f : 0.18f));
+            // (the quiet before the weapon comes down counts from the round, not from the start of its beat)
+            _quietFor = 0f;
         }
 
         /// <summary>A round leaves the muzzle: its flash, a spent case, the kick, the tracer to where it went.</summary>

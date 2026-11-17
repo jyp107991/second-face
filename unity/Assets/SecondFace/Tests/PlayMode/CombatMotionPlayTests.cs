@@ -232,6 +232,54 @@ namespace SecondFace.Tests
             Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
         }
 
+        /// <summary>A long gun's aim is held from the moment it is reached until it has been quiet for the lowering delay, however
+        /// long the aim took (a wide turn onto a target at the side, the raise, the facing learnt: longer than the delay); and a
+        /// shot asked while the gun is coming down raises it again before the round leaves it. (The quiet was counted from the
+        /// aim's start, so a long aim came down the frame it was reached; and the layer crossfading out of the hold still read
+        /// as aimed, so the shot fired on the lowering gun: "a shot played rifle_lower", 2026-11-17.)</summary>
+        [UnityTest, Timeout(600000)]
+        public IEnumerator TheAimHoldsUntilQuietAndAShotNeverLeavesALoweringGun()
+        {
+            yield return Arena();
+            var wrong = new List<string>();
+            foreach (var id in new[] { Man, Woman })
+            {
+                var v = Person(id, Vector3.zero, "w_carbine556");
+                var f = v.Fighter;
+                yield return Wait(1.2f);
+                var side = v.Body.position + v.Body.right * 8f;
+                var delay = Mathf.Max(0.6f, v.Pace.Seconds(1.1f, v.Theirs));
+                yield return v.OnAim(side);
+                if (!f.Is("rifle_aim")) wrong.Add($"{id}: aimed into {f.Current}, not rifle_aim");
+                // held, untouched, for most of the delay from the moment the aim is reached
+                for (var t = 0f; t < 0.8f * delay; t += Time.deltaTime)
+                {
+                    if (f.Current != "rifle_aim" || !f.Is("rifle_aim")) { wrong.Add($"{id}: the aim left for {f.Current} {t:0.00} s after it was reached (the delay {delay:0.00} s)"); break; }
+                    yield return null;
+                }
+                // left alone, it comes down ...
+                var lowering = false;
+                for (var t = 0f; t < delay + 2f && !lowering; t += Time.deltaTime) { lowering = f.Current == "rifle_lower"; if (!lowering) yield return null; }
+                if (!lowering) { wrong.Add($"{id}: the aim never came down ({f.Current})"); }
+                else
+                {
+                    // ... and a shot asked as it comes down raises it first: the round leaves a gun held at the aim
+                    var kicks = new List<string>(); var was = f.RecoilNow;
+                    IEnumerator Kicks() { while (true) { if (f.RecoilNow > was + 1f) kicks.Add(f.Is("rifle_aim") ? f.Current : f.Current + " (the layer leaving rifle_aim)"); was = f.RecoilNow; yield return null; } }
+                    var watcher = _host.StartCoroutine(Kicks());
+                    yield return v.OnFire(side + Vector3.up * 1.1f, true, 0, 1);
+                    yield return null;
+                    _host.StopCoroutine(watcher);
+                    if (kicks.Count != 1 || kicks[0] != "rifle_aim") wrong.Add($"{id}: a shot asked as the gun came down fired on {(kicks.Count == 0 ? "nothing" : string.Join(",", kicks))}");
+                }
+                v.OnEnd();
+                yield return Wait(0.6f);
+                Object.Destroy(v.Body.gameObject);
+                yield return null;
+            }
+            Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
+        }
+
         /// <summary>COMBAT.md A1: the weapon stays in the hand (its main grip within 1 cm of the palm's centre) in every frame,
         /// and the off hand on the weapon's grip_off (a pistol's support beside its grip) within 2 cm through the aim, the shot
         /// and the burst, and through the carry over a walk.</summary>
