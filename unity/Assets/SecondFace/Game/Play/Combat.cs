@@ -52,6 +52,8 @@ namespace SecondFace.Game.Play
         private readonly HashSet<BattleUnit> _controlled = new();
         private readonly HashSet<BattleUnit> _companions = new();
         private BattleUnit _acting;
+        /// <summary>The terms of the pit bout on now (null in a real fight).</summary>
+        private PitTerms _pit;
         private bool _playerDone;
         private Vector3? _pendingMove;
         private LineRenderer _path, _tracer;
@@ -82,15 +84,81 @@ namespace SecondFace.Game.Play
             if (Active || Walkabout?.Walker == null || People == null) return false;
             if (People.Settling || Time.unscaledTime < _quietUntil) return false;
             if (Walkabout.Game?.Pc?.Sheet != null && Walkabout.Game.Pc.Sheet.Hp <= 0) return false;   // (down: the defeat is under way)   // (the people the story just moved are still being stood up: looked at again soon)
-            var g = Walkabout.Game;
-            var at = Walkabout.Walker.transform.position;
-            var hostile = People.StandingPeople.Where(p => p.Def?.HostileIf != null && (at - p.transform.position).sqrMagnitude < Reach * Reach
-                                                           && Logic.Test(p.Def.HostileIf, g) && !Dead(g, p) && !WithPlayer(g, p)).ToList();
+            var hostile = Turned();
             if (hostile.Count == 0) return false;
             Starting?.Invoke();   // (saved first: a fight lost goes back to just before it)
             StartCoroutine(Fight(hostile, Time.unscaledTime - _talkAt < 5f));
             return true;
         }
+
+        /// <summary>Everyone standing near the walker who is hostile now (and alive, and not travelling with them).</summary>
+        private List<Townsperson> Turned()
+        {
+            var g = Walkabout.Game;
+            var at = Walkabout.Walker.transform.position;
+            return People.StandingPeople.Where(p => p.Def != null && (at - p.transform.position).sqrMagnitude < Reach * Reach
+                                                    && Hostile(g, p) && !Dead(g, p) && !WithPlayer(g, p)).ToList();
+        }
+
+        /// <summary>Hostile now: their content's condition holds (a camp that turns on the player once a flag is set), or a
+        /// word came to blows (the content's <c>fight</c>: their save says so, as the web game kept it).</summary>
+        public static bool Hostile(GameState g, Townsperson p) =>
+            p.Def != null && ((p.Def.HostileIf != null && Logic.Test(p.Def.HostileIf, g)) || (g.Npcs.TryGetValue(p.Def.Id, out var s) && s.Hostile == true));
+
+        /// <summary>A fight the story asks for (the content's <c>combat</c> and <c>fight</c> events, port of the web game's
+        /// refreshHostility + startCombat): once the people the story just moved are standing (a few seconds at most), the
+        /// hostility is tested again and the fight starts with whoever has turned, the player's side first. With a
+        /// <paramref name="target"/> (the person being talked to) they turn hostile and are in it; with
+        /// <paramref name="pit"/> it is a pit bout with them alone (<see cref="Pit"/>: fists and blades, nobody dies, the
+        /// terms pay by the outcome). A truce that held after a lost fight does not stop it: the story asked.</summary>
+        public IEnumerator Provoke(Townsperson target = null, PitTerms pit = null)
+        {
+            var t0 = Time.unscaledTime;
+            while (People != null && People.Settling && Time.unscaledTime - t0 < 5f) yield return null;
+            Begin(target, pit);
+        }
+
+        /// <summary>Starts the fight <see cref="Provoke"/> asks for at once: false when there is none to have (nobody has
+        /// turned, the opponent is dead, a fight is on).</summary>
+        public bool Begin(Townsperson target = null, PitTerms pit = null)
+        {
+            if (Active || Walkabout?.Walker == null || People == null) return false;
+            var g = Walkabout.Game;
+            if (g?.Pc?.Sheet == null || g.Pc.Sheet.Hp <= 0) return false;
+            List<Townsperson> hostile;
+            if (pit != null)
+            {
+                if (target == null || target.Def == null || Dead(g, target)) return false;
+                hostile = new List<Townsperson> { target };
+            }
+            else
+            {
+                Turn(target);
+                hostile = Turned();
+                if (target != null && target.Def != null && !Dead(g, target) && !hostile.Contains(target)) hostile.Insert(0, target);
+            }
+            if (hostile.Count == 0) return false;
+            _quietUntil = -100f;
+            _talkAt = Time.unscaledTime;
+            Starting?.Invoke();
+            StartCoroutine(Fight(hostile, true, pit));
+            return true;
+        }
+
+        /// <summary>Someone turns on the player (a word that came to blows): their save says hostile from now on, as the web
+        /// game kept it, so a fight near them takes them in.</summary>
+        public void Turn(Townsperson person)
+        {
+            var g = Walkabout != null ? Walkabout.Game : null;
+            if (g == null || person == null || person.Def == null || Dead(g, person)) return;
+            if (!g.Npcs.TryGetValue(person.Def.Id, out var save)) g.Npcs[person.Def.Id] = save = new NpcSave();
+            save.Hostile = true;
+        }
+
+        /// <summary>The bout on now is a pit bout (null otherwise).</summary>
+        public PitTerms Bout => Active ? _pit : null;
+        /// <summary>How the last pit bout ended: "won", "lost" or "called" (null before any).</summary>
+        public string LastBout { get; private set; }
 
         private static bool Dead(GameState g, Townsperson p) => p.Def != null && g.Npcs.TryGetValue(p.Def.Id, out var n) && n.Dead == true;
 
@@ -139,11 +207,12 @@ namespace SecondFace.Game.Play
             return u;
         }
 
-        private IEnumerator Fight(List<Townsperson> hostiles, bool ourMove = false)
+        private IEnumerator Fight(List<Townsperson> hostiles, bool ourMove = false, PitTerms pit = null)
         {
             var g = Walkabout.Game;
             _bodies.Clear(); _people.Clear(); _controlled.Clear(); _companions.Clear();
             _acting = null;
+            _pit = pit;
             var units = new List<BattleUnit>();
             var pc = new Combatant
             {
@@ -157,17 +226,21 @@ namespace SecondFace.Game.Play
             _controlled.Add(_player);
             units.Add(_player);
             foreach (var h in hostiles) units.Add(UnitOf(h, true));
-            // the party: every companion following the player, under the player's hand
-            if (Walkabout.Party != null)
-                foreach (var (id, body) in Walkabout.Party.Fighters()) units.Add(CompanionUnit(id, body));
-            // allies: anyone near whose ally condition holds
-            foreach (var p in People.StandingPeople)
-                if (p.Def?.Ally != null && !hostiles.Contains(p) && (wp - p.transform.position).sqrMagnitude < AllyReach * AllyReach && Logic.Test(p.Def.Ally, g) && !Dead(g, p) && !WithPlayer(g, p))
-                    units.Add(UnitOf(p, false));
+            // (a pit bout is the two of them: no party, no allies)
+            if (pit == null)
+            {
+                // the party: every companion following the player, under the player's hand
+                if (Walkabout.Party != null)
+                    foreach (var (id, body) in Walkabout.Party.Fighters()) units.Add(CompanionUnit(id, body));
+                // allies: anyone near whose ally condition holds
+                foreach (var p in People.StandingPeople)
+                    if (p.Def?.Ally != null && !hostiles.Contains(p) && (wp - p.transform.position).sqrMagnitude < AllyReach * AllyReach && Logic.Test(p.Def.Ally, g) && !Dead(g, p) && !WithPlayer(g, p))
+                        units.Add(UnitOf(p, false));
+            }
             _battle = new Battle(new NavField(this), new Rng(g.RngState != 0 ? g.RngState : 7u));
             var (hitMod, dmgMul) = Difficulty != null ? Difficulty() : (0, 1.0);
             _battle.EnemyHitMod = hitMod; _battle.EnemyDmgMul = dmgMul;
-            _battle.Start(units, false, ourMove);
+            _battle.Start(units, pit != null, ourMove);
             Debug.Log("Combat: " + string.Join(", ", units.Select(x => $"{x.C.Name} ({(x == _player ? "you" : x.Hostile ? "hostile" : "ally")}, hp {x.C.Sheet.Hp})")));
             Walkabout.Walker.GoTo(Walkabout.Walker.transform.position);
             ShowBar(true);
@@ -262,6 +335,9 @@ namespace SecondFace.Game.Play
 
         /// <summary>Everyone on the player's side in the fight on now, by id ("pc" for the player; empty outside a fight).</summary>
         public List<string> Allies => _battle == null ? new List<string>() : _battle.Units.Where(u => !u.Hostile).Select(u => u.C.Id).ToList();
+
+        /// <summary>Everyone on the other side in the fight on now, by id (empty outside a fight).</summary>
+        public List<string> Enemies => _battle == null ? new List<string>() : _battle.Units.Where(u => u.Hostile).Select(u => u.C.Id).ToList();
 
         /// <summary>The turn under the player's hand played as the allies' AI would play it (the playthrough tests; later an
         /// auto-turn).</summary>
@@ -422,6 +498,7 @@ namespace SecondFace.Game.Play
             var g = Walkabout.Game;
             if (Walkabout.Input != null) Walkabout.Input.GroundTap = null;
             ClearPath();
+            if (_pit != null) { yield return FinishBout(g); yield break; }
             // what the fight did to the world: the dead stay dead, the living keep their wounds
             foreach (var u in _battle.Units)
             {
@@ -455,10 +532,41 @@ namespace SecondFace.Game.Play
             if (outcome != "victory") _quietUntil = Mathf.Max(_quietUntil, Time.unscaledTime + 120f);
             Say(Strings.Get(outcome == "defeat" || outcome == "beaten" ? "combat.lost" : outcome == "truce" ? "combat.truce" : "combat.won"));
             yield return new WaitForSeconds(outcome == "defeat" || outcome == "beaten" ? 2.5f : 1f);
+            // (beaten, the player gets up off the ground and the story goes on: left lying, the walker stayed a ragdoll)
+            if (outcome == "beaten" && _player != null && _bodies.TryGetValue(_player, out var me)) StandUp(me);
             ShowBar(false);
             _battle = null;
             Walkabout.Quests.Update();
             Ended?.Invoke(outcome);
+        }
+
+        /// <summary>A body that went down gets back on its feet (its ragdoll blended back into the animation).</summary>
+        private static void StandUp(Transform body)
+        {
+            var anim = body != null ? body.GetComponentInChildren<Animator>() : null;
+            var rag = anim != null ? anim.GetComponent<Ragdoll>() : null;
+            if (rag != null && rag.Fallen) rag.StandUp();
+        }
+
+        /// <summary>The end of a pit bout (port of the web game's): both fighters get back up off the floor, the loser hurt;
+        /// the opponent goes back to what they were doing, nobody's enemy; the terms pay by the outcome (Core
+        /// <see cref="Pit.Settle"/>); the game goes on whoever won.</summary>
+        private IEnumerator FinishBout(GameState g)
+        {
+            var terms = _pit;
+            var opponent = _battle.Units.FirstOrDefault(u => u != _player && u.Hostile);
+            var result = Pit.Settle(g, opponent?.C.Sheet, opponent?.C.Id, _battle.Outcome ?? "truce", terms, Walkabout.Quests);
+            LastBout = result;
+            if (_player != null) _player.C.Sheet.Hp = g.Pc.Sheet.Hp;
+            Say(Strings.Get(result == "won" ? "combat.pit_won" : result == "lost" ? "combat.pit_lost" : "combat.pit_called"));
+            yield return new WaitForSeconds(result == "lost" ? 2f : 1f);
+            foreach (var body in _bodies.Values) StandUp(body);
+            foreach (var p in _people.Values) if (p != null) p.Held = false;
+            ShowBar(false);
+            _battle = null;
+            _pit = null;
+            Walkabout.Quests.Update();
+            Ended?.Invoke("pit_" + result);
         }
 
         // ---- the bar ---------------------------------------------------------------------------------------------------

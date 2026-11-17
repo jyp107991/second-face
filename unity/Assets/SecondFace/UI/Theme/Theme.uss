@@ -182,6 +182,18 @@
     -unity-text-align: middle-center;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
 }
+/* the story's title cards (TitleCard.Chapter: a chapter begins, an act ends): a lighter veil, the first line small and
+   spaced over the rest in the book face, fading in and out over the world */
+.sf-title-card--chapter {
+    background-color: rgba(14, 12, 9, 0.3);
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.8s;
+    transition-timing-function: ease-in-out;
+}
+.sf-title-card--chapter.sf-title-card--shown { opacity: 1; }
+.sf-title-card--chapter .sf-title-card__name { font-size: var(--fs-48); letter-spacing: 8px; max-width: 86%; white-space: normal; }
+.sf-title-card--chapter .sf-title-card__over { margin-top: 0; margin-bottom: 14px; letter-spacing: 6px; color: var(--plate-dim); }
 
 /* ---- modal questions ---- */
 .sf-modal { justify-content: center; align-items: center; background-color: var(--scrim); }
@@ -1594,6 +1606,10 @@
     margin-top: 0;
     color: #E0A645;
 }
+
+/* a recorded memory (the content's reverie): the page goes cold with the picture */
+.sf-dialogue--reverie .sf-dialogue__page { background-color: #DCE2E3; border-left-color: #9DAAB0; }
+.sf-dialogue--reverie .sf-dialogue__speaker { color: #3B4A52; }
 
 /* U7: a conversation back at a node it has said: the speaker waits (a narrated beat, not the speech again) */
 .sf-dialogue__line.sf-dialogue__line--beat {

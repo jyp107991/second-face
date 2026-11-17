@@ -229,6 +229,17 @@ namespace SecondFace.Game.UI
             StackChanged?.Invoke();
         }
 
+        /// <summary>Takes one screen off the stack and leaves those opened over it (a card that goes by itself: closing it
+        /// must not close a conversation opened over it meanwhile).</summary>
+        public void Dismiss(UIScreen screen)
+        {
+            if (!_stack.Remove(screen)) return;
+            screen.Root?.RemoveFromHierarchy();
+            screen.Hidden();
+            Refresh();
+            StackChanged?.Invoke();
+        }
+
         public void CloseAll()
         {
             if (_stack.Count > 0) Close(_stack[0]);

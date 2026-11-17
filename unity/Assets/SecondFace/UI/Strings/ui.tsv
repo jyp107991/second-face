@@ -556,3 +556,8 @@ create.dye.rb_legs	Trousers
 create.dye.rb_accent	The rest
 dialogue.waits	{0} waits.
 dialogue.someone	They
+dialogue.you	You
+reverie.title	A memory
+combat.pit_won	The pit is yours.
+combat.pit_lost	You wake on the pit floor.
+combat.pit_called	The bout is called off.

@@ -47,6 +47,14 @@ namespace SecondFace.Game.UI
             _portraitOf = portraitOf ?? (_ => null);
         }
 
+        /// <summary>A recorded memory (the content's <c>reverie</c>): the page goes cold with the picture.</summary>
+        public bool Reverie
+        {
+            get => _reverie;
+            set { _reverie = value; Root?.EnableInClassList("sf-dialogue--reverie", value); }
+        }
+        private bool _reverie;
+
         public NodeView View => _view;
         /// <summary>The line is still being written out.</summary>
         public bool Revealing => _reveal != null && _reveal.isActive;
@@ -59,6 +67,7 @@ namespace SecondFace.Game.UI
         {
             var root = new VisualElement();
             root.AddToClassList("sf-dialogue");
+            root.EnableInClassList("sf-dialogue--reverie", _reverie);
             var page = new VisualElement { name = "dialogue-page" };
             page.AddToClassList("sf-dialogue__page");
             page.RegisterCallback<PointerDownEvent>(_ => { if (Revealing) Finish(); });

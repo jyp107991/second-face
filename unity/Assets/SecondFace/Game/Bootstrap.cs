@@ -125,6 +125,15 @@ namespace SecondFace.Game
                 Autosave();
             };
             Walkabout.Asked += (name, _) => { if (name == "map") OpenMap(); };
+            // a move the content asked for (a lift, a district's transit): the place's name over the world until the walker
+            // stands there
+            Walkabout.Moving += where =>
+            {
+                if (UI == null) return;
+                _awaitingSetDown = true;
+                if (_card != null && _card.IsOpen) _card.Close();
+                _card = UI.Open(TitleCard.Chapter((where ?? "").ToUpperInvariant()));
+            };
             overlay.World = () => Tour != null ? Tour.WorldLine() : Walkabout.Line();
             overlay.Report = () => _lastTour;
             overlay.ButtonLabel = () => Tour != null ? "walk" : "measure (tour)";
