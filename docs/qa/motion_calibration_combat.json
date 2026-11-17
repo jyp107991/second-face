@@ -1,0 +1,1126 @@
+{
+ "trials": [
+  {
+   "trial": "ACCAD Male2_D1_StandToReady",
+   "sex": "m",
+   "what": "into the guard",
+   "fps": 30.0,
+   "frames": {
+    "guard": 0,
+    "strike": 0
+   }
+  },
+  {
+   "trial": "ACCAD Male2_D2_WalkToReady",
+   "sex": "m",
+   "what": "walk into the guard",
+   "fps": 30.0,
+   "frames": {
+    "guard": 0,
+    "strike": 15
+   }
+  },
+  {
+   "trial": "ACCAD Male2_D4_ReadyToRelax",
+   "sex": "m",
+   "what": "guard, out of it",
+   "fps": 30.0,
+   "frames": {
+    "guard": 0,
+    "strike": 0
+   }
+  },
+  {
+   "trial": "ACCAD Male2_E1_JabLeft",
+   "sex": "m",
+   "what": "jab",
+   "fps": 30.0,
+   "frames": {
+    "guard": 15,
+    "strike": 5
+   }
+  },
+  {
+   "trial": "ACCAD Male2_E2_JabRight",
+   "sex": "m",
+   "what": "jab",
+   "fps": 30.0,
+   "frames": {
+    "guard": 35,
+    "strike": 6
+   }
+  },
+  {
+   "trial": "ACCAD Male2_E3_CrossLeft",
+   "sex": "m",
+   "what": "cross",
+   "fps": 30.0,
+   "frames": {
+    "guard": 59,
+    "strike": 7
+   }
+  },
+  {
+   "trial": "ACCAD Male2_E4_CrossRight",
+   "sex": "m",
+   "what": "cross",
+   "fps": 30.0,
+   "frames": {
+    "guard": 42,
+    "strike": 8
+   }
+  },
+  {
+   "trial": "ACCAD Male2_E5_HookLeft",
+   "sex": "m",
+   "what": "hook",
+   "fps": 30.0,
+   "frames": {
+    "guard": 49,
+    "strike": 12
+   }
+  },
+  {
+   "trial": "ACCAD Male2_E6_HookRight",
+   "sex": "m",
+   "what": "hook",
+   "fps": 30.0,
+   "frames": {
+    "guard": 41,
+    "strike": 9
+   }
+  },
+  {
+   "trial": "ACCAD Male2_E7_UppercutLeft",
+   "sex": "m",
+   "what": "uppercut",
+   "fps": 30.0,
+   "frames": {
+    "guard": 52,
+    "strike": 6
+   }
+  },
+  {
+   "trial": "ACCAD Male2_E8_UppercutRight",
+   "sex": "m",
+   "what": "uppercut",
+   "fps": 30.0,
+   "frames": {
+    "guard": 58,
+    "strike": 7
+   }
+  },
+  {
+   "trial": "ACCAD Male2_E13_BlockRightHigh",
+   "sex": "m",
+   "what": "block",
+   "fps": 30.0,
+   "frames": {
+    "guard": 0,
+    "strike": 7
+   }
+  },
+  {
+   "trial": "ACCAD Male2_E19_DodgeLeft",
+   "sex": "m",
+   "what": "dodge",
+   "fps": 30.0,
+   "frames": {
+    "guard": 0,
+    "strike": 0
+   }
+  },
+  {
+   "trial": "ACCAD Male2_E20_DodgeRight",
+   "sex": "m",
+   "what": "dodge",
+   "fps": 30.0,
+   "frames": {
+    "guard": 0,
+    "strike": 0
+   }
+  },
+  {
+   "trial": "ACCAD Male2_E21_DuckLeft",
+   "sex": "m",
+   "what": "duck",
+   "fps": 30.0,
+   "frames": {
+    "crouch": 0
+   }
+  },
+  {
+   "trial": "ACCAD Male2_A7_Crouch",
+   "sex": "m",
+   "what": "crouch",
+   "fps": 120.0,
+   "frames": {
+    "crouch": 209
+   }
+  },
+  {
+   "trial": "ACCAD Male2_C26_RunToCrouch",
+   "sex": "m",
+   "what": "run to crouch",
+   "fps": 30.0,
+   "frames": {
+    "crouch": 14
+   }
+  },
+  {
+   "trial": "ACCAD Male2_C27_CrouchToRun",
+   "sex": "m",
+   "what": "crouch to run",
+   "fps": 30.0,
+   "frames": {
+    "crouch": 19
+   }
+  },
+  {
+   "trial": "ACCAD Male2_B25_CrouchToWalk",
+   "sex": "m",
+   "what": "crouch to walk",
+   "fps": 30.0,
+   "frames": {
+    "crouch": 27
+   }
+  },
+  {
+   "trial": "ACCAD Male2_A10_LieToCrouch",
+   "sex": "m",
+   "what": "lie to crouch",
+   "fps": 30.0,
+   "frames": {
+    "crouch": 31
+   }
+  },
+  {
+   "trial": "ACCAD Female1_A07_Crouch",
+   "sex": "f",
+   "what": "crouch",
+   "fps": 30.0,
+   "frames": {
+    "crouch": 61
+   }
+  },
+  {
+   "trial": "ACCAD Female1_B24_WalkToCrouch",
+   "sex": "f",
+   "what": "walk to crouch",
+   "fps": 30.0,
+   "frames": {
+    "crouch": 66
+   }
+  },
+  {
+   "trial": "ACCAD Female1_C26_RunToCrouch",
+   "sex": "f",
+   "what": "run to crouch",
+   "fps": 30.0,
+   "frames": {
+    "crouch": 27
+   }
+  },
+  {
+   "trial": "ACCAD Female1_C27_CrouchToRun1",
+   "sex": "f",
+   "what": "crouch to run",
+   "fps": 30.0,
+   "frames": {
+    "crouch": 16
+   }
+  },
+  {
+   "trial": "ACCAD Female1_B25_CrouchToWalk",
+   "sex": "f",
+   "what": "crouch to walk",
+   "fps": 30.0,
+   "frames": {
+    "crouch": 45
+   }
+  },
+  {
+   "trial": "ACCAD Female1_A10_LieToCrouch",
+   "sex": "f",
+   "what": "lie to crouch",
+   "fps": 30.0,
+   "frames": {
+    "crouch": 36
+   }
+  },
+  {
+   "trial": "CMU 144_13",
+   "sex": "f",
+   "what": "left punches",
+   "fps": 120.0,
+   "frames": {
+    "guard": 340,
+    "strike": 344
+   }
+  },
+  {
+   "trial": "CMU 144_20",
+   "sex": "f",
+   "what": "right punches",
+   "fps": 120.0,
+   "frames": {
+    "guard": 285,
+    "strike": 608
+   }
+  },
+  {
+   "trial": "CMU 144_21",
+   "sex": "f",
+   "what": "right punches",
+   "fps": 120.0,
+   "frames": {
+    "guard": 225,
+    "strike": 441
+   }
+  },
+  {
+   "trial": "CMU 144_07",
+   "sex": "f",
+   "what": "left blocks",
+   "fps": 120.0,
+   "frames": {
+    "guard": 157,
+    "strike": 119
+   }
+  },
+  {
+   "trial": "CMU 144_26",
+   "sex": "f",
+   "what": "right blocks",
+   "fps": 120.0,
+   "frames": {
+    "guard": 39,
+    "strike": 197
+   }
+  },
+  {
+   "trial": "CMU 141_14",
+   "sex": "f",
+   "what": "punch and kick",
+   "fps": 60.0,
+   "frames": {
+    "guard": 0,
+    "strike": 23
+   }
+  },
+  {
+   "trial": "CMU 113_13",
+   "sex": "f",
+   "what": "punch and kick",
+   "fps": 120.0,
+   "frames": {
+    "guard": 2,
+    "strike": 124
+   }
+  },
+  {
+   "trial": "CMU 13_17",
+   "sex": "u",
+   "what": "boxing",
+   "fps": 120.0,
+   "frames": {
+    "guard": 794,
+    "strike": 473
+   }
+  },
+  {
+   "trial": "CMU 79_96",
+   "sex": "u",
+   "what": "shooting a gun",
+   "fps": 60.0,
+   "frames": {
+    "aim": 168
+   }
+  },
+  {
+   "trial": "CMU 80_03",
+   "sex": "u",
+   "what": "shooting a gun",
+   "fps": 60.0,
+   "frames": {
+    "aim": 138
+   }
+  },
+  {
+   "trial": "CMU 77_03",
+   "sex": "u",
+   "what": "ready stance (crouched)",
+   "fps": 60.0,
+   "frames": {
+    "crouch": 0
+   }
+  },
+  {
+   "trial": "CMU 77_09",
+   "sex": "u",
+   "what": "duck",
+   "fps": 60.0,
+   "frames": {
+    "crouch": 306
+   }
+  }
+ ],
+ "states": {
+  "aim/all": {
+   "trials": [
+    "79_96",
+    "80_03"
+   ],
+   "seconds": null,
+   "K1": [
+    0.0,
+    0.0,
+    2.2
+   ],
+   "Kmax": [
+    3.9,
+    18.5,
+    20.4
+   ],
+   "H1": [
+    -3.0,
+    -1.5,
+    1.2
+   ],
+   "H2": [
+    15.2,
+    20.0,
+    22.2
+   ],
+   "H3": [
+    10.6,
+    14.3,
+    16.6
+   ],
+   "F2h": [
+    -0.5,
+    1.4,
+    1.9
+   ],
+   "F3w": [
+    23.3,
+    29.9,
+    32.8
+   ],
+   "A1": [
+    53.2,
+    68.2,
+    88.8
+   ],
+   "A2": [
+    119.6,
+    134.6,
+    143.0
+   ]
+  },
+  "aim/u": {
+   "trials": [
+    "79_96",
+    "80_03"
+   ],
+   "seconds": null,
+   "K1": [
+    0.0,
+    0.0,
+    2.2
+   ],
+   "Kmax": [
+    3.9,
+    18.5,
+    20.4
+   ],
+   "H1": [
+    -3.0,
+    -1.5,
+    1.2
+   ],
+   "H2": [
+    15.2,
+    20.0,
+    22.2
+   ],
+   "H3": [
+    10.6,
+    14.3,
+    16.6
+   ],
+   "F2h": [
+    -0.5,
+    1.4,
+    1.9
+   ],
+   "F3w": [
+    23.3,
+    29.9,
+    32.8
+   ],
+   "A1": [
+    53.2,
+    68.2,
+    88.8
+   ],
+   "A2": [
+    119.6,
+    134.6,
+    143.0
+   ]
+  },
+  "crouch/all": {
+   "trials": [
+    "77_09",
+    "Female1_A07_Crouch",
+    "Female1_A10_LieToCrouch",
+    "Female1_B24_WalkToCrouch",
+    "Female1_B25_CrouchToWalk",
+    "Female1_C26_RunToCrouch",
+    "Female1_C27_CrouchToRun1",
+    "Male2_A10_LieToCrouch",
+    "Male2_A7_Crouch",
+    "Male2_B25_CrouchToWalk",
+    "Male2_C26_RunToCrouch",
+    "Male2_C27_CrouchToRun"
+   ],
+   "seconds": null,
+   "K1": [
+    16.7,
+    126.1,
+    147.3
+   ],
+   "Kmax": [
+    24.9,
+    133.7,
+    147.8
+   ],
+   "H1": [
+    -44.7,
+    -12.6,
+    33.8
+   ],
+   "H2": [
+    3.5,
+    25.6,
+    92.1
+   ],
+   "H3": [
+    0.7,
+    5.8,
+    36.7
+   ],
+   "F2h": [
+    -0.5,
+    0.5,
+    17.1
+   ],
+   "F3w": [
+    18.9,
+    42.3,
+    50.6
+   ],
+   "A1": [
+    9.2,
+    49.5,
+    134.1
+   ],
+   "A2": [
+    5.9,
+    40.8,
+    140.7
+   ]
+  },
+  "crouch/f": {
+   "trials": [
+    "Female1_A07_Crouch",
+    "Female1_A10_LieToCrouch",
+    "Female1_B24_WalkToCrouch",
+    "Female1_B25_CrouchToWalk",
+    "Female1_C26_RunToCrouch",
+    "Female1_C27_CrouchToRun1"
+   ],
+   "seconds": null,
+   "K1": [
+    16.5,
+    136.0,
+    147.6
+   ],
+   "Kmax": [
+    24.6,
+    137.3,
+    147.9
+   ],
+   "H1": [
+    -48.6,
+    -22.3,
+    -7.3
+   ],
+   "H2": [
+    1.6,
+    7.2,
+    92.9
+   ],
+   "H3": [
+    1.0,
+    6.7,
+    34.4
+   ],
+   "F2h": [
+    -0.6,
+    0.3,
+    17.2
+   ],
+   "F3w": [
+    20.6,
+    42.3,
+    43.3
+   ],
+   "A1": [
+    7.3,
+    13.4,
+    109.1
+   ],
+   "A2": [
+    2.9,
+    13.6,
+    137.0
+   ]
+  },
+  "crouch/m": {
+   "trials": [
+    "Male2_A10_LieToCrouch",
+    "Male2_A7_Crouch",
+    "Male2_B25_CrouchToWalk",
+    "Male2_C26_RunToCrouch",
+    "Male2_C27_CrouchToRun"
+   ],
+   "seconds": null,
+   "K1": [
+    25.4,
+    129.0,
+    129.6
+   ],
+   "Kmax": [
+    27.0,
+    143.9,
+    144.4
+   ],
+   "H1": [
+    -17.1,
+    -11.9,
+    33.9
+   ],
+   "H2": [
+    22.7,
+    25.8,
+    56.0
+   ],
+   "H3": [
+    0.7,
+    2.8,
+    36.8
+   ],
+   "F2h": [
+    0.0,
+    0.4,
+    1.4
+   ],
+   "F3w": [
+    17.2,
+    27.5,
+    30.3
+   ],
+   "A1": [
+    79.9,
+    86.4,
+    134.6
+   ],
+   "A2": [
+    29.2,
+    38.8,
+    135.4
+   ]
+  },
+  "crouch/u": {
+   "trials": [
+    "77_09"
+   ],
+   "seconds": null,
+   "K1": [
+    115.3,
+    120.4,
+    126.8
+   ],
+   "Kmax": [
+    119.5,
+    127.4,
+    132.2
+   ],
+   "H1": null,
+   "H2": null,
+   "H3": null,
+   "F2h": [
+    0.5,
+    0.8,
+    1.3
+   ],
+   "F3w": [
+    42.4,
+    49.5,
+    50.7
+   ],
+   "A1": [
+    23.9,
+    44.7,
+    60.6
+   ],
+   "A2": [
+    129.7,
+    133.8,
+    141.3
+   ]
+  },
+  "guard/all": {
+   "trials": [
+    "13_17",
+    "144_07",
+    "144_13",
+    "144_20",
+    "144_21",
+    "144_26",
+    "Male2_E1_JabLeft",
+    "Male2_E2_JabRight",
+    "Male2_E3_CrossLeft",
+    "Male2_E4_CrossRight",
+    "Male2_E5_HookLeft",
+    "Male2_E6_HookRight",
+    "Male2_E7_UppercutLeft",
+    "Male2_E8_UppercutRight"
+   ],
+   "seconds": null,
+   "K1": [
+    0.0,
+    27.6,
+    67.0
+   ],
+   "Kmax": [
+    26.9,
+    49.4,
+    75.5
+   ],
+   "H1": [
+    -26.9,
+    -5.8,
+    10.3
+   ],
+   "H2": [
+    0.8,
+    22.4,
+    55.9
+   ],
+   "H3": [
+    0.5,
+    9.4,
+    19.5
+   ],
+   "F2h": [
+    -1.2,
+    1.1,
+    9.8
+   ],
+   "F3w": [
+    21.2,
+    46.0,
+    70.4
+   ],
+   "A1": [
+    20.2,
+    40.6,
+    103.0
+   ],
+   "A2": [
+    112.8,
+    136.5,
+    146.9
+   ]
+  },
+  "guard/f": {
+   "trials": [
+    "144_07",
+    "144_13",
+    "144_20",
+    "144_21",
+    "144_26"
+   ],
+   "seconds": null,
+   "K1": [
+    0.0,
+    15.4,
+    56.6
+   ],
+   "Kmax": [
+    25.4,
+    46.1,
+    70.4
+   ],
+   "H1": [
+    -19.0,
+    -3.9,
+    10.6
+   ],
+   "H2": [
+    0.5,
+    24.1,
+    57.8
+   ],
+   "H3": [
+    0.8,
+    11.8,
+    19.9
+   ],
+   "F2h": [
+    -1.6,
+    0.3,
+    6.5
+   ],
+   "F3w": [
+    34.4,
+    44.4,
+    54.6
+   ],
+   "A1": [
+    28.4,
+    41.8,
+    112.9
+   ],
+   "A2": [
+    119.8,
+    138.2,
+    145.4
+   ]
+  },
+  "guard/m": {
+   "trials": [
+    "Male2_E1_JabLeft",
+    "Male2_E2_JabRight",
+    "Male2_E3_CrossLeft",
+    "Male2_E4_CrossRight",
+    "Male2_E5_HookLeft",
+    "Male2_E6_HookRight",
+    "Male2_E7_UppercutLeft",
+    "Male2_E8_UppercutRight"
+   ],
+   "seconds": null,
+   "K1": [
+    14.6,
+    25.9,
+    41.8
+   ],
+   "Kmax": [
+    27.8,
+    39.6,
+    53.3
+   ],
+   "H1": [
+    -32.2,
+    -18.2,
+    5.1
+   ],
+   "H2": [
+    7.3,
+    20.6,
+    49.8
+   ],
+   "H3": [
+    0.4,
+    3.2,
+    15.3
+   ],
+   "F2h": [
+    -1.2,
+    0.2,
+    7.6
+   ],
+   "F3w": [
+    38.6,
+    51.4,
+    66.9
+   ],
+   "A1": [
+    23.6,
+    38.7,
+    50.4
+   ],
+   "A2": [
+    112.4,
+    121.4,
+    135.4
+   ]
+  },
+  "guard/u": {
+   "trials": [
+    "13_17"
+   ],
+   "seconds": null,
+   "K1": [
+    40.1,
+    53.4,
+    69.5
+   ],
+   "Kmax": [
+    44.6,
+    61.5,
+    82.4
+   ],
+   "H1": null,
+   "H2": null,
+   "H3": null,
+   "F2h": [
+    -0.5,
+    3.2,
+    11.5
+   ],
+   "F3w": [
+    8.5,
+    50.7,
+    73.2
+   ],
+   "A1": [
+    16.3,
+    40.0,
+    60.8
+   ],
+   "A2": [
+    122.2,
+    136.1,
+    147.5
+   ]
+  },
+  "strike/all": {
+   "trials": [
+    "113_13",
+    "13_17",
+    "141_14",
+    "144_07",
+    "144_13",
+    "144_20",
+    "144_21",
+    "144_26",
+    "Male2_D2_WalkToReady",
+    "Male2_E13_BlockRightHigh",
+    "Male2_E1_JabLeft",
+    "Male2_E2_JabRight",
+    "Male2_E3_CrossLeft",
+    "Male2_E4_CrossRight",
+    "Male2_E5_HookLeft",
+    "Male2_E6_HookRight",
+    "Male2_E7_UppercutLeft",
+    "Male2_E8_UppercutRight"
+   ],
+   "seconds": null,
+   "K1": [
+    0.0,
+    17.2,
+    82.1
+   ],
+   "Kmax": [
+    21.8,
+    47.1,
+    90.5
+   ],
+   "H1": [
+    -41.9,
+    -3.9,
+    16.8
+   ],
+   "H2": [
+    0.7,
+    21.3,
+    56.8
+   ],
+   "H3": [
+    0.4,
+    12.8,
+    22.1
+   ],
+   "F2h": [
+    -0.3,
+    0.8,
+    13.2
+   ],
+   "F3w": [
+    16.4,
+    49.2,
+    83.2
+   ],
+   "A1": [
+    19.0,
+    46.9,
+    88.5
+   ],
+   "A2": [
+    83.9,
+    133.1,
+    140.5
+   ]
+  },
+  "strike/f": {
+   "trials": [
+    "113_13",
+    "141_14",
+    "144_07",
+    "144_13",
+    "144_20",
+    "144_21",
+    "144_26"
+   ],
+   "seconds": null,
+   "K1": [
+    0.0,
+    10.3,
+    82.7
+   ],
+   "Kmax": [
+    21.0,
+    45.2,
+    91.9
+   ],
+   "H1": [
+    -42.0,
+    -3.9,
+    17.0
+   ],
+   "H2": [
+    0.7,
+    22.0,
+    56.8
+   ],
+   "H3": [
+    0.4,
+    12.9,
+    22.1
+   ],
+   "F2h": [
+    -0.3,
+    0.4,
+    8.7
+   ],
+   "F3w": [
+    14.3,
+    47.5,
+    56.0
+   ],
+   "A1": [
+    23.2,
+    46.6,
+    82.0
+   ],
+   "A2": [
+    88.4,
+    133.5,
+    138.1
+   ]
+  },
+  "strike/m": {
+   "trials": [
+    "Male2_D2_WalkToReady",
+    "Male2_E13_BlockRightHigh",
+    "Male2_E1_JabLeft",
+    "Male2_E2_JabRight",
+    "Male2_E3_CrossLeft",
+    "Male2_E4_CrossRight",
+    "Male2_E5_HookLeft",
+    "Male2_E6_HookRight",
+    "Male2_E7_UppercutLeft",
+    "Male2_E8_UppercutRight"
+   ],
+   "seconds": null,
+   "K1": [
+    5.4,
+    23.6,
+    37.3
+   ],
+   "Kmax": [
+    20.5,
+    37.4,
+    49.7
+   ],
+   "H1": [
+    -30.6,
+    -11.8,
+    11.9
+   ],
+   "H2": [
+    1.2,
+    16.3,
+    41.6
+   ],
+   "H3": [
+    0.0,
+    3.7,
+    20.9
+   ],
+   "F2h": [
+    0.4,
+    3.5,
+    9.7
+   ],
+   "F3w": [
+    5.5,
+    57.7,
+    70.5
+   ],
+   "A1": [
+    23.6,
+    56.4,
+    91.1
+   ],
+   "A2": [
+    43.7,
+    111.7,
+    137.3
+   ]
+  },
+  "strike/u": {
+   "trials": [
+    "13_17"
+   ],
+   "seconds": null,
+   "K1": [
+    32.7,
+    47.7,
+    70.3
+   ],
+   "Kmax": [
+    40.0,
+    56.6,
+    73.7
+   ],
+   "H1": null,
+   "H2": null,
+   "H3": null,
+   "F2h": [
+    0.2,
+    6.2,
+    14.4
+   ],
+   "F3w": [
+    54.1,
+    75.0,
+    87.9
+   ],
+   "A1": [
+    9.0,
+    46.2,
+    93.9
+   ],
+   "A2": [
+    83.7,
+    128.0,
+    143.5
+   ]
+  }
+ }
+}

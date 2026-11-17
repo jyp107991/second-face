@@ -80,7 +80,7 @@ NORMS = {'walk_cadence': (80, 135), 'walk_ratio_m': (0.0046, 0.0074), 'walk_rati
 SEX = {  # the database's own record of the source person's sex (CMU records none but in a subject's title)
     '111': 'f (pregnant)', '113': 'f (after pregnancy)', '114': 'f (pregnant)', '106': 'f', '141': 'f (= 106, "Female General Subject")',
     '104': 'm', '144': 'f'}
-FPS_LISTED = {'77': 60, '75': 60}
+FPS_LISTED = {'77': 60, '75': 60, '79': 60, '80': 60}   # the index; every CMU trial used confirmed by its C3D header
 FPS_TRUE = {'141': 60, '106': 60, '143': 60}   # listed 120; their own jumps fit 56-61 (docs/qa/motion_calibration.md)
 
 
@@ -343,11 +343,57 @@ def load_source(src, cmu_dirs, accad_dir, fps=None):
             if os.path.exists(os.path.join(d, s, tid + '.amc')):
                 return skel.load_amc(os.path.join(d, s, s + '.asf'), os.path.join(d, s, tid + '.amc'), fps or FPS_TRUE.get(s, FPS_LISTED.get(s, 120)))
         return None
-    if accad_dir and os.path.exists(os.path.join(accad_dir, tid + '.bvh')): return skel.load_bvh(os.path.join(accad_dir, tid + '.bvh'))
+    for d in ([accad_dir] if isinstance(accad_dir, str) else (accad_dir or [])):
+        if os.path.exists(os.path.join(d, tid + '.bvh')): return skel.load_bvh(os.path.join(d, tid + '.bvh'))
     return None
 
 
-def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None):
+def combat_checks(m, meta, r, fails, source):
+    """The combat set's own checks (COMBAT_ASSETS: doubts 2-4; the combat brief's integration order)."""
+    np = _np()
+    import measures as M
+    # planted feet: a combat one-shot keeps its travel in the pose, so its planted feet must stand still in the clip; held to
+    # the capture it came from (+3 cm/s), a hand-keyed clip to the gate's F4 mean (3 cm/s)
+    sl = foot_slide(m); r['checks']['slide'] = {k: round(v, 2) for k, v in sl.items()}
+    if source is not None:
+        ss = foot_slide(source.resample(30.0).resample(60.0) if source.fps > 30.5 else source.resample(60.0))
+        r['checks']['slide_source'] = {k: round(v, 2) for k, v in ss.items()}
+        if sl['mean'] > ss['mean'] + 3.0:
+            fails.append(f"slide: planted feet slide {sl['mean']:.1f} cm/s on average, {sl['mean'] - ss['mean']:.1f} more than the capture's {ss['mean']:.1f}")
+    elif sl['mean'] > 3.0:
+        fails.append(f"slide: planted feet slide {sl['mean']:.1f} cm/s on average (F4: 3)")
+    # the root's travel (doubt 4): the hips' horizontal way from the first frame to the last, the farthest they get, and their
+    # height's range; a one-shot that travels over 15 cm must say so (root: true), or the importer bakes it into the pose
+    h = m.P['Hips']; d = h[:, [0, 2]] - h[0, [0, 2]]
+    end, far = float(np.linalg.norm(d[-1])), float(np.linalg.norm(d, axis=1).max())
+    r['checks']['travel_m'] = {'end': round(end, 3), 'farthest': round(far, 3), 'hips_y': [round(float(h[:, 1].min()), 3), round(float(h[:, 1].max()), 3)]}
+    if not meta.get('loop') and end > 0.15 and not meta.get('root'):
+        fails.append(f'travel: travels {end:.2f} m with root off (baked into the pose, the body leaves its place)')
+    if meta.get('loop') and end > 0.03 and not float(meta.get('speed') or 0) > 0.3:   # (a gait travels by its speed)
+        fails.append(f'travel: a loop that ends {end * 100:.0f} cm from where it began')
+    # two-handed grips: both hands on one rigid weapon keep their distance; a mimed take's hands drift apart and need IK
+    # (a reload takes the support hand off the weapon by design)
+    if (meta.get('two_hands') or 'two hand' in str(meta.get('weapon', ''))) and 'reload' not in str(meta.get('kind', '')):
+        dh = np.linalg.norm(m.P['LeftHand'] - m.P['RightHand'], axis=1) * 100
+        spread = float(np.percentile(dh, 98) - np.percentile(dh, 2))
+        r['checks']['hands_cm'] = {'mean': round(float(dh.mean()), 1), 'spread_p2_p98': round(spread, 1), 'min': round(float(dh.min()), 1), 'max': round(float(dh.max()), 1)}
+        if spread > 2.0:
+            fails.append(f'two hands: the hands\' distance varies {spread:.1f} cm (p2-p98; {dh.min():.0f}-{dh.max():.0f} cm): the grip needs IK onto the weapon')
+    # the set against the source's sex: women fight with women's captures where they exist
+    use, sex = meta.get('set', 'both'), str(r['sex'])
+    if use == 'f' and not sex.startswith('f'): fails.append(f"sex: a take of {sex} sex in the women's set")
+    if use == 'm' and sex.startswith('f'): fails.append("sex: a woman's take in the men's set")
+    # the stance as the gate measures it (for the combat-state limits proposed in docs/qa/motion_calibration.md §7; not judged)
+    try:
+        v = M.stand_measures(m)
+        r['stance'] = {k: [round(float(np.nanpercentile(v[k], q)), 1) for q in (2, 50, 98)] for k in ('K1', 'H1', 'H2', 'H3', 'F2', 'F3w', 'A1', 'A2') if len(v[k])}
+    except Exception as e:
+        r['stance'] = {'error': str(e)[:80]}
+
+
+def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False):
+    """combat: the combat set's checks besides (every clip's planted feet, each one-shot's travel against its root flag, a
+    two-handed grip's hands at a near-constant distance, the clip's set against its source's sex, the stance measures)."""
     np = _np()
     sys.path.insert(0, os.path.join(HERE, '..', '..', 'qa', 'calibration'))
     import measures as M
@@ -421,7 +467,9 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None):
         if source is not None and meta.get('range') and not sp > 0.3:
             # a gesture or an idle against the stretch of its capture it was cut from (not the whole take)
             source = source.slice(meta['range'][0], meta['range'][1])
-        if not meta.get('root'):
+        if combat:
+            combat_checks(mt, meta, r, fails, source)
+        elif not meta.get('root'):
             # a fixed heel or ball point of a rolling real foot moves too (and capture noise): the clip is held to its own
             # capture at the game's rate (30 fps keys, 60 Hz), not to zero
             sl = foot_slide(mt); r['checks']['slide'] = {k: round(v, 2) for k, v in sl.items()}
@@ -465,8 +513,8 @@ if __name__ == '__main__':
         dump(a[1], a[2:])
     elif a[0] == 'qa':
         cmu = a[a.index('--cmu') + 1].split(',') if '--cmu' in a else []
-        accad = a[a.index('--accad') + 1] if '--accad' in a else None
-        rows = qa_clips(a[1], a[2], cmu, accad)
+        accad = a[a.index('--accad') + 1].split(',') if '--accad' in a else None
+        rows = qa_clips(a[1], a[2], cmu, accad, combat='--combat' in a)
         json.dump(rows, open(a[3], 'w'), indent=1)
         for r in rows:
             print(f"{r['clip']:11s} {'PASS' if r['pass'] else 'FAIL'} {r['src']:12s} {r['sex']:14s} " + ('; '.join(r['fail']) if r['fail'] else ''))

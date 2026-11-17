@@ -162,7 +162,60 @@ the game's walk (1.25-1.4 m/s) asks them to be sped up 15-50 %, the edge of `Pac
 (two women walking straight, three men) to set sex-specific limits; the clips' sex is now recorded, so the editor can play
 each sex its own.
 
-## 7. Sources
+## 7. Combat states on real fighters (2026-11-17; proposals, not applied)
+
+COMBAT_ASSETS doubt 3: the gate has no combat states, and fighting stances break quiet standing's limits. Measured here are
+the same measures on real people fighting, by `tools/qa/calibration/combat_states.py` (`motion_calibration_combat.json`).
+The people are mocap actors, not competitive fighters: ACCAD Male2 (a man; the martial-arts series E1-E21, D1-D4, crouches
+A7/A10/B25/C26/C27), ACCAD Female1 (a woman; crouches A07/A10/B24/B25/C26/C27), CMU 144 ("punching female": left and right
+punch sequences, left and right blocks), CMU 141_14 and 113_13 (women: punch and kick), CMU 13_17 (boxing, sex not
+recorded), CMU 79_96 and 80_03 (a long gun mimed, sex not recorded) and CMU 77_03/77_09 (wary crouch, duck). Every rate comes
+from the capture itself: the CMU trials' C3D headers (60 fps for 77, 79, 80, 141; 120 for the rest), ACCAD's BVH frame times.
+
+States are found frame by frame within the trials captured for them (thresholds on the trial's own standing hip height h0):
+**guard** (hips ≥ 0.85 h0, both wrists up by the head, both hands under 1 m/s, both feet down), **strike** (hips ≥ 0.75 h0,
+a hand over 2 m/s, both feet down), **crouch** (hips ≤ 0.70 h0, hips under 0.2 m/s, both feet down), **aim** (the aim-hold
+stretches). CMU's head segment carries a per-subject offset (its quiet stance reads 20-26° down and 17-31° turned on the
+chest), so a CMU trial's head is measured against the actor's own relaxed stance at the take's start (13_17 and 80_03 have
+none and give no head measures). Head yaw (H2) is not counted while the face or the chest points within 30° of straight down.
+
+Real fighters, p2 / p50 / p98 (K: knee flexion °; H1 pitch, H2 yaw on the chest, H3 roll °; F2h the more lifted weight-bearing
+heel over its ball, cm; F3w stance width, cm; A1 upper arm from hanging °; A2 elbow bend °):
+
+| State | Who (trials, frames) | K1 straighter knee | K more bent | H1 | H2 | H3 | F2h | F3w | A2 |
+|---|---|---|---|---|---|---|---|---|---|
+| guard | men (8, 351) | 15 / 26 / 42 | 28 / 40 / 53 | −32 / −18 / +5 | 7 / 21 / 50 | 0 / 3 / 15 | −1 / 0 / 7.6 | 39 / 51 / 67 | 112 / 121 / 135 |
+| guard | women (5, 1048) | 0 / 15 / 57 | 25 / 46 / 70 | −19 / −4 / +11 | 1 / 24 / 58 | 1 / 12 / 20 | −2 / 0 / 6.5 | 34 / 44 / 55 | 120 / 138 / 145 |
+| guard | all (14, 2193) | 0 / 28 / 67 | 27 / 49 / 76 | −27 / −6 / +10 | 1 / 22 / 56 | 1 / 9 / 20 | −1 / 1 / 9.8 | 21 / 46 / 70 | 113 / 137 / 147 |
+| strike | men (10, 82) | 5 / 24 / 37 | 21 / 37 / 50 | −31 / −12 / +12 | 1 / 16 / 42 | 0 / 4 / 21 | 0 / 4 / 9.7 | 6 / 58 / 71 | 44 / 112 / 137 |
+| strike | women (7, 1856) | 0 / 10 / 83 | 21 / 45 / 92 | −42 / −4 / +17 | 1 / 22 / 57 | 0 / 13 / 22 | 0 / 0 / 8.7 | 14 / 48 / 56 | 88 / 134 / 138 |
+| aim | not recorded (2, 306) | 0 / 0 / 2 | 4 / 19 / 20 | −3 / −2 / +1 | 15 / 20 / 22 | 11 / 14 / 17 | −1 / 1 / 1.9 | 23 / 30 / 33 | 120 / 135 / 143 |
+| crouch | men (5, 300) | 25 / 129 / 130 | 27 / 144 / 144 | −17 / −12 / +34 | 23 / 26 / 56 | 1 / 3 / 37 | 0 / 0 / 1.4 | 17 / 28 / 30 | 29 / 39 / 135 |
+| crouch | women (6, 251) | 17 / 136 / 148 | 25 / 137 / 148 | −49 / −22 / −7 | 2 / 7 / 93 | 1 / 7 / 34 | −1 / 0 / 17 | 21 / 42 / 43 | 3 / 14 / 137 |
+
+What this says against doubt 3 ("both knees bent 14-42°, the head turned 45-90° on the chest, heels lifted"):
+- **Knees**: the man's guard bends both knees (K1 15-42°, as doubt 3 says), but the women's does not have to: in a bladed
+  stance one leg is straight (K1 p2 0°), the other bent 25-70°. A guard limit must allow a straight leg and a bent one.
+- **Head**: real fighters turn the head on the chest up to 50-58° (p98), not 90°. A guard turns the head 21-24° (median)
+  because the stance blades the chest away from the opponent while the eyes stay on them. The man tucks his chin (H1 −32
+  to +5°, median −18°).
+- **Heels**: a weight-bearing heel rises up to 7-10 cm over its ball in the guard (the rear foot on its ball), up to 13 in a
+  strike, and up to 17 in a deep crouch. Quiet standing's F2 (±2 cm, cap 4) cannot hold there.
+- **Aim**: legs straight (K1 ≤ 2°), the head down to the sights only relative to the chest. It is turned 15-22° and rolled
+  11-17° by the cheek on the stock. That is 2 actors with a mimed gun, so it is the thinnest evidence here.
+
+Proposals for the gate (never by loosening quiet standing's limits; applied only while the game shows that state), as
+p2 lower / p98 upper (cap):
+1. **Guard**: K1 p98 ≤ 60 (cap 70), no lower bound; K more bent ≤ 75 (cap 85); H1 ≥ −35 (cap −45), ≤ +12 (cap +18); H2 p98 ≤ 55
+   (cap 65); H3 ≤ 20 (cap 25); F2 heel lift ≤ 10 cm (cap 14); stance width 30-70 cm (cap 20-80); A2 ≥ 100 (cap 90).
+2. **Strike** (transient, caps only): K1 cap 85, K more bent cap 95; H1 −45 to +20; H2 cap 60; H3 cap 25; F2 cap 15 cm.
+3. **Aim** (long gun): K1 p98 ≤ 5 (cap 10); H1 −10 to +5 against the chest's line; H2 ≤ 25 (cap 30); H3 ≤ 20 (cap 25);
+   stance width 20-35 cm; A2 115-145. Thin evidence: to be revisited when a captured rifle take with a real weapon is found.
+4. **Crouch / cover**: K1 p2 ≥ 15, p98 ≤ 150 (cap 155); H1 −50 to +35; H2 p98 ≤ 60 held (a crouch about to leave cover looks
+   round to 93: cap 95 there); F2 ≤ 18 cm (cap 22); stance width 15-55 cm.
+5. The combat set's own stance values are in each clip's `stance` (combat v2 `clip_qa.json`), for the same comparison.
+
+## 8. Sources
 
 - Winter DA (1992) Foot trajectory in human gait: a precise and multifactorial motor control task. Phys Ther 72:45-56
   (minimum toe clearance 1.29 cm). https://consensus.app/papers/details/w:233e28a0-4591-4a8b-9b7e-0ceb2f9be716/
@@ -177,5 +230,7 @@ each sex its own.
 - Bohannon RW, Williams Andrews A (2011) Normal walking speed: a descriptive meta-analysis. Physiotherapy 97:182-189.
 - Kendall FP et al. (2005) Muscles: Testing and Function with Posture and Pain, 5th ed. (`docs/PEOPLE_MOTION.md` [16]).
 - Drillis R, Contini R (1966) Body segment parameters (segment lengths as shares of stature).
-- CMU Graphics Lab Motion Capture Database, mocap.cs.cmu.edu (the FAQ's units; the subject index's frame rates).
+- CMU Graphics Lab Motion Capture Database, mocap.cs.cmu.edu (the FAQ's units; the subject index's frame rates; each trial's
+  C3D header, 1 KB read, for its capture rate: 60 fps for 77, 79, 80, 106, 141, 143, 120 for every other trial used, which
+  confirms §2's gravity fits).
 - ACCAD Open Motion Project, accad.osu.edu (CC BY 3.0; the subjects' take lists).
