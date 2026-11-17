@@ -413,6 +413,7 @@ def export(d, joints, order, rows, speed, hip, out_dir, src_fps):
     arm.name = d['name']
     if arm.animation_data and arm.animation_data.action: arm.animation_data.action.name = d['name']
     C.t_pose_key(arm, sc)
+    d['_inbetween'] = C.straighten_inbetweens(arm, len(rows))
     path = os.path.join(out_dir, d['name'] + '.fbx')
     bpy.ops.object.select_all(action='DESELECT'); arm.select_set(True); bpy.context.view_layer.objects.active = arm
     bpy.ops.export_scene.fbx(filepath=path, use_selection=True, apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y', object_types={'ARMATURE'},
@@ -426,7 +427,7 @@ def export(d, joints, order, rows, speed, hip, out_dir, src_fps):
                    'resolved': bool(d.get('resolve')), 'cycle': C.REFINE,
                    'seam_share': C.SEAM if d.get('loop') == 'gait' and not d.get('mirror') else None, 'range': list(d['range']) if d.get('range') else None,
                    'knee_correction': d.get('_knees'), 'mirrored': bool(d.get('mirror')), 'joins': d.get('_joins'), 'closed': bool(d.get('loop')),
-                   'flips_repaired': d.get('_flips') or None}, f)
+                   'flips_repaired': d.get('_flips') or None, 'inbetween': d.get('_inbetween') or None}, f)
     print(f'clip {d["name"]}: {len(rows)} frames, speed {speed:.2f} m/s')
 
 

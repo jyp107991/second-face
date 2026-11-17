@@ -9,6 +9,9 @@ Checks, per clip (the converter's FBX + json) and per source trial (CMU ASF/AMC,
   slide     a planted foot's slide (cm/s): the in-place gaits against their own speed, the idles against zero
   bones     bone lengths constant (cm, largest deviation of any parent-child distance)
   sex       the source person's sex as the database records it, against the set the clip is used for
+  flips     the largest rotation of any joint between two keys, from the FBX's own curves (fails above 60°)
+  inbetween each in-between bone (between two Humanoid bones: Neck2, the wrists' twist bones, the hip joints): the angle
+            between its bind rotation and the take's mean, which Unity's Humanoid loses on import (fails above 2°)
 
     # 1. dump the clips' joints (Blender, the converter's output)
     blender -b --factory-startup --python tools/unity/motion/clip_qa.py -- dump <out_dir> <clip.fbx> [...]
@@ -96,10 +99,8 @@ def load_dump(path):
     return skel.Motion(P, R, float(d['fps']), {'src': os.path.basename(path)})
 
 
-def fbx_rotation_curves(path):
-    """Every node's local rotation curves as the FBX file stores them (what Unity reads): {name: (N, 3) Euler degrees}.
-    A small reader of binary FBX 7.x (nodes, properties, zlib arrays; AnimationCurve -> AnimationCurveNode 'Lcl Rotation'
-    -> Model connections)."""
+def _fbx_tree(path):
+    """A small reader of binary FBX 7.x (nodes, properties, zlib arrays): the Objects and Connections sections."""
     import struct, zlib
     np = _np()
     b = open(path, 'rb').read()
@@ -142,6 +143,14 @@ def fbx_rotation_curves(path):
         if n is None: break
         top.append(n); o = o2
     objs = [n for n in top if n[0] == 'Objects'][0][2]; conns = [n for n in top if n[0] == 'Connections'][0][2]
+    return objs, conns
+
+
+def fbx_rotation_curves(path):
+    """Every node's local rotation curves as the FBX file stores them (what Unity reads): {name: (N, 3) Euler degrees}
+    (AnimationCurve -> AnimationCurveNode 'Lcl Rotation' -> Model connections)."""
+    np = _np()
+    objs, conns = _fbx_tree(path)
     models = {n[1][0]: n[1][1].split('\x00')[0] for n in objs if n[0] == 'Model'}
     curves = {n[1][0]: n for n in objs if n[0] == 'AnimationCurve'}
     cnodes = {n[1][0] for n in objs if n[0] == 'AnimationCurveNode'}
@@ -155,6 +164,64 @@ def fbx_rotation_curves(path):
             if d == cn and s_ in curves: ax[p] = [k for k in curves[s_][2] if k[0] == 'KeyValueFloat'][0][1][0]
         if all(k in ax for k in ('d|X', 'd|Y', 'd|Z')) and len(set(len(ax[k]) for k in ax)) == 1:
             out[models[tgt[0][0]]] = np.stack([ax['d|X'], ax['d|Y'], ax['d|Z']], 1).astype(float)
+    return out
+
+
+def _euler_R(E):
+    """FBX Euler XYZ (degrees, R = Rz Ry Rx) -> rotation matrices (N, 3, 3)."""
+    np = _np()
+    E = np.radians(np.atleast_2d(np.asarray(E, float))); x, y, z = E[:, 0], E[:, 1], E[:, 2]
+    cx, sx, cy, sy, cz, sz = np.cos(x), np.sin(x), np.cos(y), np.sin(y), np.cos(z), np.sin(z)
+    return np.stack([np.stack([cz * cy, cz * sy * sx - sz * cx, cz * sy * cx + sz * sx], 1),
+                     np.stack([sz * cy, sz * sy * sx + cz * cx, sz * sy * cx - cz * sx], 1),
+                     np.stack([-sy, cy * sx, cy * cx], 1)], 1)
+
+
+# Unity's Humanoid bones by their Mecanim names (cmu2fbx.HUMAN): a node between two of them is an in-between bone
+HUMAN = {'Hips', 'Spine', 'Chest', 'UpperChest', 'Neck', 'Head', 'Jaw', 'LeftEye', 'RightEye'} | {
+    s + b for s in ('Left', 'Right') for b in ('Shoulder', 'UpperArm', 'LowerArm', 'Hand', 'UpperLeg', 'LowerLeg', 'Foot', 'Toes')} | {
+    s + f + p for s in ('Left', 'Right') for f in ('Thumb', 'Index', 'Middle', 'Ring', 'Little') for p in ('Proximal', 'Intermediate', 'Distal')}
+
+
+def inbetween_errors(path):
+    """Unity's in-between check, read from the FBX: for each in-between bone (a node between two Humanoid bones, which the
+    avatar holds at its bind rotation), the angle between its bind rotation (the Model's default Lcl Rotation, with any
+    Pre/PostRotation: the pose Unity builds the avatar from) and the take's mean rotation (the chordal mean of its curve),
+    and the largest over the take's frames. {bone: (mean_deg, max_deg)}. Unity's own figure is computed its own way
+    (walk_slow_b v3: Unity 24.5°, this 32.0°): this is the plain angle, and 0 when bind and take agree."""
+    np = _np()
+    objs, conns = _fbx_tree(path)
+    props, names = {}, {}
+    for n in objs:
+        if n[0] != 'Model': continue
+        nm = n[1][1].split('\x00')[0]; names[n[1][0]] = nm; P = {}
+        for k in n[2]:
+            if k[0] == 'Properties70':
+                for p in k[2]:
+                    if p[0] == 'P' and p[1][0] in ('Lcl Rotation', 'PreRotation', 'PostRotation'): P[p[1][0]] = [float(v) for v in p[1][4:7]]
+        props[nm] = P
+    parent = {}
+    for c in conns:
+        if c[1][0] == 'OO' and c[1][1] in names and c[1][2] in names: parent[names[c[1][1]]] = names[c[1][2]]
+    kids = {}
+    for ch, pa in parent.items(): kids.setdefault(pa, []).append(ch)
+    def has_human_below(n):
+        return any(k in HUMAN or has_human_below(k) for k in kids.get(n, []))
+    def has_human_above(n):
+        while n in parent:
+            n = parent[n]
+            if n in HUMAN: return True
+        return False
+    curves = fbx_rotation_curves(path)
+    out = {}
+    for nm, P in props.items():
+        if nm in HUMAN or not has_human_above(nm) or not has_human_below(nm): continue
+        pre = _euler_R(P.get('PreRotation', [0, 0, 0]))[0]; post = _euler_R(P.get('PostRotation', [0, 0, 0]))[0]
+        bind = pre @ _euler_R(P.get('Lcl Rotation', [0, 0, 0]))[0] @ post.T
+        take = np.einsum('ij,njk,kl->nil', pre, _euler_R(curves[nm]), post.T) if nm in curves else bind[None]
+        U, _, Vt = np.linalg.svd(take.sum(0)); D = np.eye(3); D[2, 2] = np.sign(np.linalg.det(U @ Vt)); mean = U @ D @ Vt
+        def ang(A, B): return np.degrees(np.arccos(np.clip((np.einsum('...ij,...ij->...', A, B) - 1) / 2, -1, 1)))
+        out[nm] = (float(ang(bind, mean)), float(ang(bind[None], take).max()))
     return out
 
 
@@ -339,6 +406,13 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None):
             ebone, (_, emax) = max(st.items(), key=lambda kv: kv[1][1]) if st else ('', (0.0, 0.0))
             r['checks']['rot_step_deg'] = {'max': round(step, 1), 'bone': bone, 'euler_max': round(emax, 1), 'euler_bone': ebone}
             if step > 60.0: fails.append(f'flip: {bone} turns {step:.0f}° between two frames')
+            # in-between bones (Neck2, the wrists' twist): Unity's Humanoid holds them at the bind rotation, and a take
+            # that turns them away from it loses the turn ("Inbetween bone rotation in configuration does not match
+            # rotation in animation file", 2026-11-17)
+            ib = inbetween_errors(fbx)
+            r['checks']['inbetween_deg'] = {k: {'mean': round(v[0], 2), 'max': round(v[1], 2)} for k, v in sorted(ib.items())}
+            for k, v in sorted(ib.items()):
+                if v[0] > 2.0: fails.append(f'in-between: {k} holds {v[0]:.1f}° (mean; {v[1]:.1f}° at most) off its bind rotation')
             if emax > 90.0 and emax > 2 * step + 30: fails.append(f'euler: {ebone}\'s angles jump {emax:.0f}° between keys (near gimbal lock)')
         if r['checks']['bones_cm'] > 0.5: fails.append('bones: lengths vary by %.1f cm' % r['checks']['bones_cm'])
         sp = float(meta.get('speed') or 0)

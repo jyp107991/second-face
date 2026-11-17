@@ -467,6 +467,88 @@ def t_pose_key(arm, sc):
             foot.matrix = Matrix.Translation(foot.head) @ foot.bone.matrix_local.to_quaternion().to_matrix().to_4x4()
             key(foot); sc.frame_set(0)
 
+# Unity's Humanoid bones by their Mecanim names; any other bone between two of them is an in-between bone, which the
+# avatar holds at its bind rotation whatever the take does (CMU's upperneck -> Neck2, lwrist -> Left/RightWristTwist,
+# lhipjoint -> Left/RightHipJoint)
+HUMAN = {'Hips', 'Spine', 'Chest', 'UpperChest', 'Neck', 'Head', 'Jaw', 'LeftEye', 'RightEye'} | {
+    s + b for s in ('Left', 'Right') for b in ('Shoulder', 'UpperArm', 'LowerArm', 'Hand', 'UpperLeg', 'LowerLeg', 'Foot', 'Toes')} | {
+    s + f + p for s in ('Left', 'Right') for f in ('Thumb', 'Index', 'Middle', 'Ring', 'Little') for p in ('Proximal', 'Intermediate', 'Distal')}
+
+def straighten_inbetweens(arm, last):
+    """Every in-between bone straight along its chain, in the bind pose and in every frame of the take (frames 0..last):
+    its local rotation identity, as the people's rigs hold theirs. Unity's Humanoid cannot animate an in-between bone: it
+    holds it at the bind rotation, so a take that turns it lost that turn on import ("Inbetween bone rotation in
+    configuration does not match rotation in animation file: 'Neck2' : rotation error = 24.5 deg", walk_slow_b,
+    2026-11-17: the capture's base pose bends upperneck 24° against lowerneck; the takes bend it back). Straightening the
+    bind alone leaves the take's own turn of the bone as the error (Neck2 up to 28°, the wrists' twist up to 36°), so the
+    turn is carried over to the bone's human neighbours instead: the human parent is swung (least rotation) to point the
+    straight chain at the captured joint of the human child, and the child keeps its captured world rotation. The head and
+    the hands turn exactly as captured; the Neck points from the neck's base at the head's joint (a pure twist, the
+    wrists', leaves the forearm as it was and goes into the hand, where the avatar reads it as the forearm's twist); the
+    child's joint moves only by the chain's straightening (along the same line, a few millimetres). A bone the capture
+    never turns (lhipjoint) is the same in the bind and the take and stays as it is."""
+    act = arm.animation_data.action
+    rec = {}
+
+    def curves(name):
+        fcs = [act.fcurves.find(f'pose.bones["{name}"].rotation_quaternion', index=i) for i in range(4)]
+        return fcs if all(fcs) else None
+
+    def keys(fcs):
+        m = {}
+        for i, fc in enumerate(fcs):
+            for kp in fc.keyframe_points: m.setdefault(int(round(kp.co[0])), [None] * 4)[i] = kp
+        return m
+
+    def read(fcs, km, f):
+        return Quaternion([km[f][i].co[1] if f in km and km[f][i] is not None else fcs[i].evaluate(f) for i in range(4)]).normalized()
+
+    def write(fcs, km, f, q):
+        for i in range(4):
+            kp = km.get(f, [None] * 4)[i]
+            if kp is None: fcs[i].keyframe_points.insert(f, q[i], options={'REPLACE', 'FAST'})
+            else:
+                kp.co[1] = q[i]; kp.handle_left[1] = q[i]; kp.handle_right[1] = q[i]
+
+    def rest_local(bone):
+        M = bone.parent.matrix_local.inverted() @ bone.matrix_local
+        return M.to_quaternion(), M.to_translation()
+
+    for b in arm.data.bones:
+        if b.name in HUMAN or b.parent is None or b.parent.name not in HUMAN or b.parent.parent is None: continue
+        kids = [c for c in b.children if c.name in HUMAN]
+        if len(kids) != 1: continue
+        P, H = b.parent, kids[0]
+        cP, cb, cH = curves(P.name), curves(b.name), curves(H.name)
+        if not (cP and cb and cH): continue
+        kP, kb, kH = keys(cP), keys(cb), keys(cH)
+        qbs = [read(cb, kb, f) for f in range(0, last + 1)]
+        if max(math.degrees(q.angle) for q in qbs) < 0.01:
+            rec[b.name] = {'kept': 'never turned by the take: its bind and take rotations are one'}
+            continue
+        rrP, _ = rest_local(P); rrb, ob = rest_local(b); rrH, oH = rest_local(H)
+        straight = ob + oH
+        turned, moved = 0.0, 0.0
+        prev = {}
+        for f in range(0, last + 1):
+            qP, qb, qH = read(cP, kP, f), qbs[f], read(cH, kH, f)
+            gP = rrP @ qP
+            gb = gP @ rrb @ qb
+            t = gP @ ob + gb @ oH                                   # the captured child joint, from the parent's joint
+            S = (gP @ straight).rotation_difference(t)
+            gP2 = S @ gP
+            new = {P.name: rrP.inverted() @ gP2, b.name: rrb.inverted(), H.name: rrH.inverted() @ gP2.inverted() @ gb @ rrH @ qH}
+            for n, q in new.items():
+                q = q.normalized()
+                if n in prev and prev[n].dot(q) < 0.0: q = Quaternion((-q.w, -q.x, -q.y, -q.z))
+                prev[n] = q
+            write(cP, kP, f, prev[P.name]); write(cb, kb, f, prev[b.name]); write(cH, kH, f, prev[H.name])
+            turned = max(turned, math.degrees(S.angle)); moved = max(moved, abs(t.length - straight.length))
+        for fc in cP + cb + cH: fc.update()
+        rec[b.name] = {'into': [P.name, H.name], 'parent_swung_max_deg': round(turned, 2), 'child_joint_moved_max_mm': round(moved * 1000.0, 2)}
+    bpy.context.scene.frame_set(0)    # the FBX's default skeleton is the pose at the current frame: the new bind
+    return rec
+
 def export_clip(d, bones, rows, speed, hip):
     K.reset()
     bvh = os.path.join(OUT, '_tmp', d['name'] + '.bvh'); os.makedirs(os.path.dirname(bvh), exist_ok=True)
@@ -479,6 +561,7 @@ def export_clip(d, bones, rows, speed, hip):
     arm.name = d['name']
     if arm.animation_data and arm.animation_data.action: arm.animation_data.action.name = d['name']
     t_pose_key(arm, sc)
+    d['_inbetween'] = straighten_inbetweens(arm, len(rows))
     path = os.path.join(OUT, d['name'] + '.fbx')
     bpy.ops.object.select_all(action='DESELECT'); arm.select_set(True); bpy.context.view_layer.objects.active = arm
     bpy.ops.export_scene.fbx(filepath=path, use_selection=True, apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y', object_types={'ARMATURE'},
@@ -491,7 +574,7 @@ def export_clip(d, bones, rows, speed, hip):
         json.dump({'name': d['name'], 'src': d.get('src_label', 'CMU ' + d['src']), 'loop': bool(d.get('loop')), 'speed': round(speed, 3), 'root': bool(d.get('root')), 'hip': round(hip, 4),
                    'fps': OUT_FPS, 'frames': len(rows), 'src_fps': d.get('src_fps', SRC_FPS), 'sex': d.get('sex', SEX.get(subj, 'u')), 'set': d.get('set', 'both'),
                    'licence': d.get('licence', 'CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses'), 'cycle': REFINE, 'seam_share': SEAM if d.get('loop') == 'gait' else None, 'closed': bool(d.get('loop')),
-                   'flips_repaired': d.get('_flips') or None,
+                   'flips_repaired': d.get('_flips') or None, 'inbetween': d.get('_inbetween') or None,
                    'range': list(d['range']) if d.get('range') else None}, f)
     print(f'clip {d["name"]}: {len(rows)} frames, speed {speed:.2f} m/s')
 
