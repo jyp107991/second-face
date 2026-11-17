@@ -45,6 +45,37 @@ export const WORLD_EVENTS: Record<string, WorldEventDef> = {
       { news: { tag: 'dr_leven_burned', text: 'a squatted tower in the Ring burned in the night, floor on floor; its count says two dead on the ninth', valence: -8, size: 6, at: 'meridian' } },
     ],
   },
+  /** The Skirts (B4a): the Concern's answer to the strike comes up the Line at the first seven o'clock the player is in the
+   * Skirts after meeting Maren: twenty debtors bought off the Ninebridge block. A claim already upheld prevents it. */
+  hs_scab_train: {
+    id: 'hs_scab_train', at: { hour: 7, where: 'hs_skirts' }, armedIf: { flag: 'hs_maren_met' }, preventedIf: { flag: 'hs_shift' },
+    effects: [
+      { set: 'hs_scabs_here' }, { learn: 'hs_scabs_here' },
+      { news: { tag: 'hs_scabs_here', text: 'twenty debtors came up the Line to the Skirts on Concern paper, to dig Number Six past the Shift\'s picket', valence: -3, size: 5, at: 'skirts' } },
+    ],
+  },
+  /** The strike's default (keystone 12 as forecast): if the player goes up the hill (B4b sets `hc_inside`) with the strike
+   * unsettled, the men off the Line go down, the Window starves the picket, and at the next dawn the player is back in the
+   * Skirts the Clean take Maren Okafor. A story milestone, never a date: it waits for the player. */
+  hs_strike_breaks: {
+    id: 'hs_strike_breaks', at: { hour: 6, where: 'hs_skirts' }, armedIf: { all: [{ flag: 'hc_inside' }, { not: { flag: 'hs_shift' } }] }, preventedIf: { flag: 'hs_shift' },
+    effects: [
+      { set: 'hs_shift', value: 'broken' }, { set: 'hs_shift_how', value: 'default' }, { set: 'ks_maren', value: 'hanged' },
+      { approval: { companion: 'npc_hs_01', by: -20 } }, { rep: { faction: 'the_shift', respect: -10 } },
+      { decision: { id: 'hs_shift', text: 'While you were up the hill the strike at Number Six broke, and the Concern hanged Maren Okafor at Footgate, as the city wrote.' } },
+      { news: { tag: 'hs_shift_broken', text: 'the strike at Number Six was broken; the Concern hanged the Shift\'s leader from the post at Footgate', valence: -8, size: 8, at: 'skirts' } },
+    ],
+  },
+  /** Spare Parts (B4a): once the player has settled the Weighhouse without getting Nils Haber out, he goes up on the next
+   * freight at two the player is in the Skirts. Freeing him first prevents it. */
+  hs_freight: {
+    id: 'hs_freight', at: { hour: 2, where: 'hs_skirts' }, armedIf: { all: [{ flag: 'hs_parts' }, { not: { flag: 'hs_nils' } }] }, preventedIf: { flag: 'hs_nils' },
+    effects: [
+      { set: 'hs_nils', value: 'up' },
+      { decision: { id: 'hs_nils', text: 'Nils Haber went up the hill on the Weighhouse\'s freight at two, asleep, with a tag on his wrist.' } },
+      { news: { tag: 'hs_nils_up', text: 'Joran Haber\'s boy went up on the freight at two; the Window wrote DISCHARGED IN SERVICE', valence: -4, size: 3, at: 'skirts' } },
+    ],
+  },
   /** Tamsin out of the Cistern (U8): once her letter's reply has come, or she has been asked at the Grille, she waits at
    * Mags's (the map places her there); at six the first evening the player is in Shale, she comes up to them. If they have
    * already found her, nothing happens. */

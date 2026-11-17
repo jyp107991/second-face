@@ -166,6 +166,24 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_dr_coat', label: 'The Coat in the pits', text: 'The Crown\'s bookman was in the pits at night, at the Heron\'s back wheel, with a lamp and a little knife.' },
   { id: 'l_dr_mark', label: 'A ring with a bar', text: 'The chalk mark on Leven\'s door is the salvage yard\'s: every tower on the yard\'s tally that is DONE had it first. A boy is paid in water to chalk it and carry the cans.' },
   { id: 'l_dr_steel', label: 'Steel for the road', text: 'Ruben Iturbe\'s yard sells dead towers\' steel by the ton for a road to the near end of the Bridgeward bridge, by House Vane\'s arrangement. A tower that burns comes down lawful.' },
+  // the Skirts (B4a)
+  { id: 'l_hc_invitation', label: 'A card from Halcyon', text: 'The Board of the Concern would be pleased to receive the designate at Halcyon. The Contract Office at Footgate, in the Skirts, has my name.' },
+  { id: 'l_hs_geological', label: '"Geological"', text: 'Number Six\'s east gallery came down on eleven miners. The Window\'s notice says geological, recovery not economic, and passes the dead\'s debts to their kin.' },
+  { id: 'l_hs_log', label: 'The pillar log', text: 'On the survey board in Six East, the widths of pillars fourteen to twenty-two go down week by week, four paces to one, and somebody chalked RETREAT — D. over them.' },
+  { id: 'l_hs_robbed', label: 'Pillars cut to a waist', text: 'Pillars fourteen to twenty-two in Six East were cut back to a waist with fresh pick marks: retreat mining, done with a crew still working beyond them.' },
+  { id: 'l_hs_pim', label: 'The trapper\'s word', text: 'Pim Rasul worked the door in Six East. A man from the pit office chalked RETREAT on the pillars; the roof talked for a day; the steward said so and was told to get on.' },
+  { id: 'l_hs_fall', label: 'Eleven lamps', text: 'The fall in Six East runs wall to wall. The eleven\'s lamps are at its edge.' },
+  { id: 'l_hs_clause', label: 'Clause 11', text: 'Every miner\'s contract says the Concern warrants the workings: where a working fails by the Concern\'s order, the debts of those harmed are void and their kin compensated.' },
+  { id: 'l_hs_powder', label: 'Six cases', text: 'Six cases of blasting powder are missing from Number Six\'s magazine. Rafe Ansel means the car\'s cable house.' },
+  { id: 'l_hs_boots', label: '9-1182', text: 'Dawit Mekonnen went to the Weighhouse to clear his paper. His boots came back cleaned, with a tag in the tongue: 9-1182 — EFFECTS — RETURN TO KIN.' },
+  { id: 'l_hs_book', label: 'The Weighhouse book', text: 'The Weighhouse keeps a book: NAME — DEBT — YIELD — SERVICE. Yield is four letters, K L C H, graded. Service is CLINIC 9.' },
+  { id: 'l_hs_yield', label: 'K, L, C, H', text: 'Kidney, liver, cornea, heart, graded for match: the Weighhouse grades debtors\' organs before it sends them up for service.' },
+  { id: 'l_hs_floor_nine', label: 'Floor nine', text: 'Clinic service is on the Clinic floors up the hill, floor nine. Those who go up go asleep, on the freight at two.' },
+  { id: 'l_hs_freight', label: 'The freight at two', text: 'At two in the morning the Clean carry sleepers on stretchers from the Weighhouse into the freight car, and a bag of effects comes down the other way.' },
+  { id: 'l_hs_seal', label: 'The Exchange\'s seal', text: 'The changer\'s rate board at Two-Twelve comes up the Line every week under the Exchange\'s seal from Ninebridge. Six scrip to the Toll.' },
+  { id: 'l_hs_par', label: 'Par', text: 'The changer\'s ledger has a column headed PAR that never moves: the guild takes the Concern\'s scrip at one to one on its own floor.' },
+  { id: 'l_hs_overlay', label: 'Deeper paper, dearer bread', text: 'Provision\'s price board reads each customer\'s Window balance and moves the price a few points: the deeper the debt, the dearer the bread.' },
+  { id: 'l_hs_numbed', label: 'Baek\'s arm', text: 'Jun Baek\'s company arm goes dead to the shoulder whenever he falls behind on the Window, and wakes when he pays. Nobody touches it.' },
 ] as LeadDef[]).map((l) => [l.id, l]));
 
 export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
@@ -190,4 +208,8 @@ export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
   { id: 'c_ca_for_you', from: ['l_ca_chambers', 'l_ca_petition'], text: 'The Court is clearing an old woman out of the copy room to make chambers for me, nineteen years before I am due to sit in them.', effects: [{ learn: 'ca_squatter_for_you' }] },
   { id: 'c_dr_fires', from: ['l_dr_mark', 'l_dr_steel'], text: 'The Ring\'s fires are its evictions. The towers that burn are chalked first, emptied by the fire, and cut for steel; nobody inside the Wall counts the dead, because nobody inside the Wall counts the Ring.' },
   { id: 'c_dr_road', from: ['l_dr_steel', 'l_bw_tenured_road'], text: 'The Crown\'s road to the Docks is being built out of the Ring\'s burned towers: House Vane buys the steel by the ton for the near end of the bridge, and does not ask how it came down.' },
+  { id: 'c_hs_robbed', from: ['l_hs_log', 'l_hs_robbed', 'l_hs_pim'], text: 'Six East did not fall. It was robbed: its pillars cut for a quarter\'s tonnage on a written order, with eleven people beyond them.' },
+  { id: 'c_hs_parts', from: ['l_hs_yield', 'l_hs_freight', 'l_hs_boots'], text: 'The Weighhouse grades debtors for parts and sends them up the hill asleep. The boots come home. Clinic service is being taken apart.' },
+  { id: 'c_hs_toll_paper', from: ['l_hs_par', 'l_hs_seal'], text: 'The Toll is Halcyon\'s paper. The guild takes the Concern\'s scrip at par and gives the Skirts six to one; the spread is the guild\'s tithe on every miner\'s savings.', effects: [{ learn: 'hs_toll_paper' }] },
+  { id: 'c_hs_window', from: ['l_hs_numbed', 'l_hs_overlay'], text: 'The Window reaches into everything it fits and everything it sells: it prices bread by your debt and switches off the arm it put on you. Its chrome works for it first.' },
 ] as ConclusionDef[]).map((c) => [c.id, c]));

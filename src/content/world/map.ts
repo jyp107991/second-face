@@ -34,7 +34,7 @@ const L: LocationDef[] = [
   { id: 'hamlet_shore', name: 'Gull Stilts', region: 'drowned_shore', x: 60, y: 420, kind: 'minor' },
   { id: 'rigs', name: 'Rigs', region: 'drowned_shore', x: 22, y: 300, kind: 'landmark' },
   // The Teeth
-  { id: 'skirts', name: 'Skirts', region: 'teeth', x: 628, y: 142, kind: 'major' },
+  { id: 'skirts', name: 'Skirts', region: 'teeth', x: 628, y: 142, kind: 'major', settlement: 'skirts', map: 'hs_skirts' },
   { id: 'halcyon', name: 'Halcyon', region: 'teeth', x: 642, y: 118, kind: 'major' },
   { id: 'mine_teeth', name: 'Number Four Pit', region: 'teeth', x: 600, y: 222, kind: 'minor' },
   // The Northern Wet

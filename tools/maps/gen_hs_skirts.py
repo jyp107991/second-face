@@ -1,0 +1,401 @@
+#!/usr/bin/env python3
+"""Generates src/content/maps/hs_skirts.ts and src/content/maps/hs_six.ts — the Skirts under Halcyon (B4a).
+
+The Skirts: the debtors' town on the old ski runs below the caldera's rim (WORLD §3.2). North is uphill: the rim's rock
+face runs along the top, with the funicular going up through it at Footgate (the valley station, the Contract Office, the
+fence and its gate). North-west, Number Six: the pithead on the old car park (the lamp room, the pit office, the
+powder magazine, the headframe and its cage), and Lampblack, a bar in a container under the headframe. North middle, the
+Lodge: the old ski lodge, the Shift's hall. Down the middle, Cascade: the stepped street of the old main run, the
+market. East of it the Window (the pay office) and Provision (the company store), and the Weighhouse (the Concern's intake
+clinic) with a freight lane up to the station's freight gate. West, Nursery: shacks on the beginners' slope. South-west the
+Pond, the dry snowmaking reservoir where the bouts are. Along the south, Two-Twelve: the Line's last halt.
+
+hs_six: the east gallery under Number Six (a cell): the cage's bottom, the main heading, the trapper's door, the survey
+board, the room-and-pillar workings, and the fall.
+    python3 tools/maps/gen_hs_skirts.py
+"""
+import json, os, re, sys
+from collections import deque
+
+ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
+
+
+def ts(obj):
+    s = json.dumps(obj, indent=2)
+    s = re.sub(r'"([A-Za-z_][A-Za-z0-9_]*)":', r'\1:', s)
+    s = re.sub(r'"hex:(0x[0-9a-fA-F]+)"', r'\1', s)
+    return s
+
+
+SOLID = {'crate', 'barrel', 'barrel_rust', 'locker', 'table', 'chair', 'bed', 'terminal', 'pipe_h', 'lamp_post', 'car_wreck', 'rock',
+         'rock_small', 'tire_pile', 'tank', 'vault_door', 'dead_tree', 'sandbags', 'shelf', 'stove', 'fire_barrel', 'campfire', 'cactus',
+         'counter', 'planter', 'machine', 'cot', 'tent', 'fence_post', 'pump', 'wagon', 'horse'}
+
+
+def check(name, rows, legend, props, spawns, npcs, spots, start_spawn):
+    """Fail loudly on anything the validator would reject, and on places nobody can walk to."""
+    H, W = len(rows), len(rows[0])
+    solid = {(p['x'], p['y']) for p in props if p['kind'] in SOLID}
+    errs = []
+    wall = lambda x, y: 'wall' in legend[rows[y][x]] or legend[rows[y][x]].get('blocks')
+    for p in props:
+        if wall(p['x'], p['y']):
+            errs.append(f"prop {p['kind']} {p.get('id', '')} at {p['x']},{p['y']} is inside a wall")
+    free = lambda x, y: 0 <= x < W and 0 <= y < H and not wall(x, y) and (x, y) not in solid
+    sx, sy = next((s['x'], s['y']) for s in spawns if s['id'] == start_spawn)
+    seen = {(sx, sy)}
+    q = deque([(sx, sy)])
+    while q:
+        x, y = q.popleft()
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            n = (x + dx, y + dy)
+            if n not in seen and free(*n):
+                seen.add(n)
+                q.append(n)
+    for s in spawns:
+        if not free(s['x'], s['y']): errs.append(f"spawn {s['id']} at {s['x']},{s['y']} not free")
+        elif (s['x'], s['y']) not in seen: errs.append(f"spawn {s['id']} unreachable")
+    for n in npcs:
+        if not free(n['x'], n['y']): errs.append(f"npc {n.get('id', n['def'])} at {n['x']},{n['y']} not free")
+        elif (n['x'], n['y']) not in seen: errs.append(f"npc {n.get('id', n['def'])} unreachable")
+    for k, v in spots.items():
+        if not free(v['x'], v['y']): errs.append(f"spot {k} at {v['x']},{v['y']} not free")
+        elif (v['x'], v['y']) not in seen: errs.append(f"spot {k} unreachable")
+    # every talk prop must have a free tile beside it to stand on
+    for p in props:
+        if p.get('id') and not any((p['x'] + dx, p['y'] + dy) in seen for dx, dy in ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1))):
+            errs.append(f"prop {p['id']} cannot be reached")
+    if errs:
+        print(name, 'FAILED:\n  ' + '\n  '.join(errs))
+        sys.exit(1)
+
+
+# ---------------------------------------------------------------- the Skirts
+W, H = 80, 60
+g = [['d'] * W for _ in range(H)]
+
+
+def fill(x0, y0, x1, y1, ch, grid=None):
+    grid = grid or g
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            grid[y][x] = ch
+
+
+def building(x0, y0, x1, y1, wall, floor, doors, grid=None):
+    grid = grid or g
+    fill(x0, y0, x1, y1, wall, grid)
+    fill(x0 + 1, y0 + 1, x1 - 1, y1 - 1, floor, grid)
+    for (x, y) in doors:
+        grid[y][x] = floor
+
+
+# the rim's rock face along the top; rock at the sides; the Line's embankment along the bottom
+fill(0, 0, W - 1, 2, 'R'); fill(0, 0, 0, H - 1, 'R'); fill(W - 1, 0, W - 1, H - 1, 'R'); fill(0, H - 1, W - 1, H - 1, 'R')
+# Number Six: the pithead on the old car park
+fill(1, 3, 25, 19, 'k'); fill(10, 9, 25, 10, 'a')
+building(3, 3, 10, 8, 'B', 'c', [(7, 8)])            # the lamp room
+building(12, 3, 18, 8, 'C', 'c', [(15, 8)])          # the pit office
+building(21, 3, 24, 6, 'C', 'c', [(22, 6)])          # the powder magazine
+building(4, 11, 9, 16, 'Z', 'g', [(9, 14)])          # the headframe's cage house
+building(14, 11, 22, 16, 'M', 'm', [(18, 16)])       # Lampblack, a bar in a container
+# the Lodge: the old ski lodge, the Shift's hall
+building(27, 4, 45, 15, 'W', 'w', [(36, 15), (27, 9)])
+# the Contract Office and Footgate (the funicular's valley station), the fence and its two gates
+building(48, 4, 56, 11, 'C', 't', [(52, 11)])
+building(59, 3, 76, 14, 'C', 'c', [(66, 14), (76, 11)])
+fill(64, 4, 67, 13, 'g')                              # the track in the station, going up into the rock
+fill(70, 4, 70, 9, 'C'); g[8][70] = 'c'               # the cable house's wall and door
+fill(77, 4, 78, 15, 'c')                              # the freight dock behind the station
+fill(57, 16, 78, 16, 'F'); g[16][66] = 'd'; g[16][67] = 'd'; g[16][77] = 'd'
+# the Window, Provision, the Weighhouse
+building(47, 19, 56, 26, 'C', 'c', [(47, 23)])
+building(47, 28, 56, 36, 'C', 'c', [(47, 32)])
+building(60, 20, 76, 32, 'C', 't', [(60, 26), (76, 28)])
+fill(68, 21, 68, 31, 'C'); g[26][68] = 't'            # the wall between the front room and the ward
+fill(77, 17, 78, 32, 'c')                             # the freight lane
+# Cascade: the stepped street down the old main run
+fill(37, 17, 45, 51, 'c')
+# Nursery: shacks on the beginners' slope, three rows
+for (x0, x1, door) in [(3, 8, 5), (11, 18, 14), (22, 27, 24), (30, 34, 32)]:
+    building(x0, 21, x1, 25 if x1 != 18 else 26, 'S', 'w', [(door, 25 if x1 != 18 else 26)])
+for (x0, x1, door) in [(3, 8, 5), (11, 16, 13), (19, 24, 21), (28, 33, 30)]:
+    building(x0, 29, x1, 33, 'S', 'w', [(door, 33)])
+for (x0, x1, door) in [(3, 8, 5), (11, 16, 13), (19, 24, 21), (28, 34, 31)]:
+    building(x0, 37, x1, 41, 'S', 'w', [(door, 41)])
+# the Pond: the dry snowmaking reservoir, a low wall round it, a gap on the north side
+fill(3, 46, 23, 57, 'P'); fill(4, 47, 22, 56, 'c'); g[46][12] = 'c'; g[46][13] = 'c'
+# Two-Twelve: the Line's last halt, a platform along the south and the rails below it
+fill(26, 52, 77, 56, 'm'); fill(26, 57, 78, 58, 'g'); fill(47, 47, 54, 51, 'c')
+rows = [''.join(r) for r in g]
+
+props = [
+    # Number Six: the lamp board, the lamp room's racks, the office and its lockbox, the magazine, the cage, the winding engine
+    {'kind': 'sign', 'x': 5, 'y': 9, 'rot': 0, 'id': 'hs_lampboard'}, {'kind': 'shelf', 'x': 4, 'y': 4, 'rot': 1}, {'kind': 'shelf', 'x': 4, 'y': 6, 'rot': 1}, {'kind': 'shelf', 'x': 9, 'y': 4, 'rot': 3},
+    {'kind': 'table', 'x': 7, 'y': 5}, {'kind': 'table', 'x': 14, 'y': 4}, {'kind': 'chair', 'x': 14, 'y': 5, 'rot': 0}, {'kind': 'terminal', 'x': 13, 'y': 7, 'rot': 1}, {'kind': 'locker', 'x': 17, 'y': 4, 'id': 'hs_dysart_box'},
+    {'kind': 'locker', 'x': 23, 'y': 4, 'id': 'hs_magazine'}, {'kind': 'crate', 'x': 22, 'y': 4},
+    {'kind': 'terminal', 'x': 6, 'y': 13, 'rot': 1, 'id': 'hs_cage'}, {'kind': 'machine', 'x': 12, 'y': 12, 'rot': 3}, {'kind': 'pipe_h', 'x': 11, 'y': 12}, {'kind': 'pipe_h', 'x': 10, 'y': 12},
+    {'kind': 'barrel_rust', 'x': 2, 'y': 17}, {'kind': 'rock', 'x': 23, 'y': 18}, {'kind': 'rock_small', 'x': 24, 'y': 13}, {'kind': 'debris', 'x': 21, 'y': 9}, {'kind': 'fire_barrel', 'x': 12, 'y': 18},
+    {'kind': 'sign', 'x': 6, 'y': 18, 'rot': 0, 'id': 'hs_graves'}, {'kind': 'lamp_post', 'x': 11, 'y': 10},
+    # Lampblack: the counter, the Dust table, chairs, the stove
+    {'kind': 'counter', 'x': 15, 'y': 13, 'rot': 0}, {'kind': 'counter', 'x': 16, 'y': 13, 'rot': 0}, {'kind': 'counter', 'x': 17, 'y': 13, 'rot': 0}, {'kind': 'shelf', 'x': 15, 'y': 12, 'rot': 2},
+    {'kind': 'table', 'x': 20, 'y': 13}, {'kind': 'chair', 'x': 21, 'y': 13, 'rot': 3}, {'kind': 'chair', 'x': 20, 'y': 12, 'rot': 2}, {'kind': 'stove', 'x': 21, 'y': 15},
+    # the Lodge: the strike board, long tables and benches, the stove, the cellar hatch
+    {'kind': 'sign', 'x': 30, 'y': 5, 'rot': 2, 'id': 'hs_strikeboard'}, {'kind': 'stove', 'x': 44, 'y': 13}, {'kind': 'locker', 'x': 43, 'y': 5, 'id': 'hs_rafe_cache'},
+    {'kind': 'table', 'x': 31, 'y': 9}, {'kind': 'table', 'x': 32, 'y': 9}, {'kind': 'table', 'x': 33, 'y': 9}, {'kind': 'chair', 'x': 31, 'y': 8, 'rot': 2}, {'kind': 'chair', 'x': 33, 'y': 10, 'rot': 0},
+    {'kind': 'table', 'x': 38, 'y': 11}, {'kind': 'table', 'x': 39, 'y': 11}, {'kind': 'table', 'x': 40, 'y': 11}, {'kind': 'chair', 'x': 38, 'y': 12, 'rot': 0}, {'kind': 'chair', 'x': 40, 'y': 10, 'rot': 2},
+    {'kind': 'crate', 'x': 28, 'y': 14}, {'kind': 'barrel', 'x': 29, 'y': 14}, {'kind': 'blanket', 'x': 42, 'y': 9}, {'kind': 'blanket', 'x': 29, 'y': 6},
+    # the Contract Office
+    {'kind': 'counter', 'x': 50, 'y': 7, 'rot': 0}, {'kind': 'counter', 'x': 51, 'y': 7, 'rot': 0}, {'kind': 'counter', 'x': 53, 'y': 7, 'rot': 0}, {'kind': 'counter', 'x': 54, 'y': 7, 'rot': 0},
+    {'kind': 'terminal', 'x': 55, 'y': 5, 'rot': 3}, {'kind': 'chair', 'x': 50, 'y': 9, 'rot': 0}, {'kind': 'chair', 'x': 54, 'y': 9, 'rot': 0}, {'kind': 'planter', 'x': 49, 'y': 5},
+    # Footgate: the car, the track, the cable house, the freight dock, the fence, the post
+    {'kind': 'machine', 'x': 65, 'y': 5, 'rot': 0, 'id': 'hs_car'}, {'kind': 'lamp_post', 'x': 62, 'y': 12}, {'kind': 'chair', 'x': 61, 'y': 11, 'rot': 1},
+    {'kind': 'machine', 'x': 73, 'y': 5, 'rot': 2, 'id': 'hs_cablehouse'}, {'kind': 'pipe_h', 'x': 72, 'y': 7}, {'kind': 'pipe_h', 'x': 74, 'y': 7},
+    {'kind': 'crate', 'x': 77, 'y': 9}, {'kind': 'crate', 'x': 78, 'y': 9}, {'kind': 'crate', 'x': 78, 'y': 12}, {'kind': 'sign', 'x': 77, 'y': 18, 'rot': 0, 'id': 'hs_freight'},
+    {'kind': 'sign', 'x': 62, 'y': 18, 'rot': 0, 'id': 'hs_post'}, {'kind': 'lamp_post', 'x': 64, 'y': 17}, {'kind': 'lamp_post', 'x': 69, 'y': 17},
+    # the Window: the counter, the exchange; Provision: the counter, the shelves, the price board
+    {'kind': 'counter', 'x': 50, 'y': 21, 'rot': 0}, {'kind': 'counter', 'x': 51, 'y': 21, 'rot': 0}, {'kind': 'counter', 'x': 52, 'y': 21, 'rot': 0}, {'kind': 'terminal', 'x': 55, 'y': 20, 'rot': 3, 'id': 'hs_grid'}, {'kind': 'shelf', 'x': 48, 'y': 25, 'rot': 1},
+    {'kind': 'counter', 'x': 51, 'y': 30, 'rot': 1}, {'kind': 'counter', 'x': 51, 'y': 31, 'rot': 1}, {'kind': 'counter', 'x': 51, 'y': 32, 'rot': 1},
+    {'kind': 'shelf', 'x': 55, 'y': 29, 'rot': 3}, {'kind': 'shelf', 'x': 55, 'y': 31, 'rot': 3}, {'kind': 'shelf', 'x': 55, 'y': 33, 'rot': 3}, {'kind': 'crate', 'x': 54, 'y': 35}, {'kind': 'sign', 'x': 49, 'y': 29, 'rot': 1, 'id': 'hs_prices'},
+    # the Weighhouse: the front room (the fittings chair, the queue bench), the ward's cots, the office locker, the door
+    {'kind': 'table', 'x': 63, 'y': 22}, {'kind': 'chair', 'x': 64, 'y': 22, 'rot': 3}, {'kind': 'bed', 'x': 66, 'y': 22, 'rot': 1}, {'kind': 'shelf', 'x': 61, 'y': 21, 'rot': 1}, {'kind': 'chair', 'x': 62, 'y': 30, 'rot': 1}, {'kind': 'chair', 'x': 63, 'y': 30, 'rot': 1}, {'kind': 'chair', 'x': 64, 'y': 30, 'rot': 1},
+    {'kind': 'cot', 'x': 70, 'y': 22, 'rot': 0}, {'kind': 'cot', 'x': 72, 'y': 22, 'rot': 0}, {'kind': 'cot', 'x': 74, 'y': 22, 'rot': 0}, {'kind': 'cot', 'x': 70, 'y': 30, 'rot': 2}, {'kind': 'cot', 'x': 72, 'y': 30, 'rot': 2}, {'kind': 'cot', 'x': 74, 'y': 30, 'rot': 2},
+    {'kind': 'locker', 'x': 75, 'y': 21, 'id': 'hs_weigh_box'}, {'kind': 'sign', 'x': 59, 'y': 25, 'rot': 1, 'id': 'hs_weighdoor'},
+    # Cascade: stalls, planters, lamps, the notice wall
+    {'kind': 'sign', 'x': 41, 'y': 18, 'rot': 0, 'id': 'hs_notice'}, {'kind': 'table', 'x': 38, 'y': 22}, {'kind': 'table', 'x': 44, 'y': 24}, {'kind': 'table', 'x': 38, 'y': 28}, {'kind': 'table', 'x': 44, 'y': 31},
+    {'kind': 'counter', 'x': 38, 'y': 35, 'rot': 1}, {'kind': 'counter', 'x': 44, 'y': 38, 'rot': 3}, {'kind': 'table', 'x': 38, 'y': 42}, {'kind': 'table', 'x': 44, 'y': 45},
+    {'kind': 'planter', 'x': 37, 'y': 25}, {'kind': 'planter', 'x': 45, 'y': 27}, {'kind': 'planter', 'x': 37, 'y': 39}, {'kind': 'lamp_post', 'x': 37, 'y': 19}, {'kind': 'lamp_post', 'x': 45, 'y': 33}, {'kind': 'lamp_post', 'x': 37, 'y': 47}, {'kind': 'fire_barrel', 'x': 45, 'y': 49},
+    # Nursery: Kes's shack, Lev's table, the shack to rent, gardens between the rows, washing, stoves
+    {'kind': 'cot', 'x': 4, 'y': 22, 'rot': 1}, {'kind': 'table', 'x': 7, 'y': 22}, {'kind': 'shelf', 'x': 7, 'y': 24, 'rot': 3},
+    {'kind': 'bed', 'x': 16, 'y': 22, 'rot': 1, 'id': 'hs_lev_table'}, {'kind': 'shelf', 'x': 12, 'y': 22, 'rot': 1}, {'kind': 'cot', 'x': 17, 'y': 25, 'rot': 3}, {'kind': 'table', 'x': 12, 'y': 25},
+    {'kind': 'bed', 'x': 23, 'y': 22, 'rot': 1, 'id': 'hs_shack_bed'}, {'kind': 'locker', 'x': 26, 'y': 22, 'id': 'hs_shack_locker'}, {'kind': 'sign', 'x': 25, 'y': 26, 'rot': 0, 'id': 'hs_shack_sign'},
+    {'kind': 'cot', 'x': 31, 'y': 22, 'rot': 1}, {'kind': 'cot', 'x': 4, 'y': 30, 'rot': 1}, {'kind': 'cot', 'x': 12, 'y': 30, 'rot': 1}, {'kind': 'cot', 'x': 20, 'y': 30, 'rot': 1}, {'kind': 'cot', 'x': 29, 'y': 30, 'rot': 1},
+    {'kind': 'cot', 'x': 4, 'y': 38, 'rot': 1}, {'kind': 'cot', 'x': 12, 'y': 38, 'rot': 1}, {'kind': 'cot', 'x': 20, 'y': 38, 'rot': 1}, {'kind': 'cot', 'x': 29, 'y': 38, 'rot': 1},
+    {'kind': 'planter', 'x': 10, 'y': 27}, {'kind': 'planter', 'x': 20, 'y': 27}, {'kind': 'planter', 'x': 28, 'y': 35}, {'kind': 'planter', 'x': 9, 'y': 43}, {'kind': 'stove', 'x': 2, 'y': 27}, {'kind': 'stove', 'x': 26, 'y': 43},
+    {'kind': 'blanket', 'x': 18, 'y': 35}, {'kind': 'blanket', 'x': 34, 'y': 27}, {'kind': 'fire_barrel', 'x': 17, 'y': 43}, {'kind': 'barrel', 'x': 33, 'y': 35},
+    # the Pond: wrecks piled for stands, fire barrels, the ring
+    {'kind': 'fire_barrel', 'x': 6, 'y': 49}, {'kind': 'fire_barrel', 'x': 20, 'y': 54}, {'kind': 'chair', 'x': 5, 'y': 52, 'rot': 1}, {'kind': 'chair', 'x': 21, 'y': 50, 'rot': 3}, {'kind': 'tire_pile', 'x': 5, 'y': 55}, {'kind': 'tire_pile', 'x': 21, 'y': 48},
+    {'kind': 'sign', 'x': 13, 'y': 48, 'rot': 0, 'id': 'hs_pond_slate'},
+    # Two-Twelve: the Line board, the changer's booth and rate board, lamps, the old ticket hut
+    {'kind': 'sign', 'x': 34, 'y': 53, 'rot': 0, 'id': 'hs_board'}, {'kind': 'counter', 'x': 49, 'y': 49, 'rot': 0}, {'kind': 'counter', 'x': 50, 'y': 49, 'rot': 0}, {'kind': 'counter', 'x': 51, 'y': 49, 'rot': 0},
+    {'kind': 'sign', 'x': 53, 'y': 50, 'rot': 0, 'id': 'hs_rates'}, {'kind': 'locker', 'x': 48, 'y': 47, 'id': 'hs_vulpe_box'}, {'kind': 'chair', 'x': 52, 'y': 48, 'rot': 2},
+    {'kind': 'lamp_post', 'x': 30, 'y': 52}, {'kind': 'lamp_post', 'x': 45, 'y': 52}, {'kind': 'lamp_post', 'x': 60, 'y': 52}, {'kind': 'lamp_post', 'x': 75, 'y': 52}, {'kind': 'crate', 'x': 70, 'y': 53}, {'kind': 'crate', 'x': 71, 'y': 53}, {'kind': 'barrel', 'x': 27, 'y': 55},
+]
+
+spots = {
+    # Number Six
+    'picket': {'x': 13, 'y': 17}, 'picket_b': {'x': 15, 'y': 18}, 'picket_sit': {'x': 10, 'y': 18}, 'picket_pair_a': {'x': 17, 'y': 18}, 'picket_pair_b': {'x': 18, 'y': 18},
+    'cage_man': {'x': 11, 'y': 14}, 'clean_cage': {'x': 11, 'y': 16}, 'clean_cage_night': {'x': 13, 'y': 15},
+    'dysart': {'x': 15, 'y': 5}, 'lamp_room': {'x': 7, 'y': 7}, 'pim_pithead': {'x': 7, 'y': 10}, 'pithead_work': {'x': 18, 'y': 9}, 'pithead_work_b': {'x': 9, 'y': 17},
+    'rosa': {'x': 16, 'y': 12}, 'lampblack_kes': {'x': 19, 'y': 14}, 'lampblack_sit': {'x': 19, 'y': 15}, 'lampblack_pair_a': {'x': 16, 'y': 15}, 'lampblack_pair_b': {'x': 17, 'y': 15},
+    # the Lodge
+    'lodge_maren': {'x': 36, 'y': 7}, 'lodge_rafe': {'x': 41, 'y': 8}, 'lodge_kes': {'x': 34, 'y': 7}, 'lodge_nowak': {'x': 30, 'y': 12}, 'lodge_sit': {'x': 32, 'y': 11}, 'lodge_sit_b': {'x': 39, 'y': 9},
+    'lodge_pair_a': {'x': 34, 'y': 13}, 'lodge_pair_b': {'x': 35, 'y': 13}, 'lodge_lean': {'x': 44, 'y': 10},
+    # Footgate
+    'bell': {'x': 52, 'y': 6}, 'office_wait': {'x': 52, 'y': 9}, 'gate_a': {'x': 65, 'y': 17}, 'gate_b': {'x': 68, 'y': 17}, 'freight_gate': {'x': 77, 'y': 17}, 'station': {'x': 63, 'y': 9},
+    # the Window, Provision, the Weighhouse
+    'window_grid': {'x': 54, 'y': 22}, 'window_clerk': {'x': 51, 'y': 20}, 'window_queue': {'x': 50, 'y': 24}, 'window_queue_b': {'x': 51, 'y': 24},
+    'mercy': {'x': 52, 'y': 31}, 'provision_shop': {'x': 49, 'y': 33}, 'provision_shop_b': {'x': 50, 'y': 34},
+    'lisle': {'x': 63, 'y': 24}, 'weigh_queue': {'x': 63, 'y': 29}, 'weigh_queue_b': {'x': 64, 'y': 29}, 'ward_nils': {'x': 71, 'y': 26}, 'ward_b': {'x': 73, 'y': 24}, 'weigh_door': {'x': 58, 'y': 26},
+    # Cascade
+    'notice': {'x': 40, 'y': 19}, 'market_a': {'x': 39, 'y': 22}, 'market_b': {'x': 43, 'y': 24}, 'market_c': {'x': 39, 'y': 28}, 'market_d': {'x': 43, 'y': 31},
+    'market_pair_a': {'x': 40, 'y': 36}, 'market_pair_b': {'x': 41, 'y': 36}, 'market_lean': {'x': 45, 'y': 40}, 'market_sit': {'x': 39, 'y': 43},
+    # Nursery
+    'kes_shack': {'x': 5, 'y': 23}, 'lev': {'x': 15, 'y': 23}, 'lev_cot': {'x': 16, 'y': 25}, 'shack': {'x': 24, 'y': 23}, 'saba_shack': {'x': 6, 'y': 31}, 'pim_shack': {'x': 14, 'y': 31},
+    'nursery_fire': {'x': 17, 'y': 44}, 'nursery_sit': {'x': 18, 'y': 34}, 'nursery_pair_a': {'x': 10, 'y': 35}, 'nursery_pair_b': {'x': 11, 'y': 35}, 'nursery_work': {'x': 21, 'y': 27}, 'nils_free': {'x': 22, 'y': 34},
+    # the Pond
+    'pond_ring': {'x': 13, 'y': 52}, 'pond_sit': {'x': 6, 'y': 52}, 'pond_sit_b': {'x': 20, 'y': 51}, 'pond_lean': {'x': 9, 'y': 55}, 'pond_pair_a': {'x': 15, 'y': 55}, 'pond_pair_b': {'x': 16, 'y': 55},
+    # Two-Twelve
+    'changer': {'x': 50, 'y': 48}, 'ama': {'x': 52, 'y': 52}, 'platform_a': {'x': 33, 'y': 54}, 'platform_b': {'x': 58, 'y': 54}, 'platform_lean': {'x': 44, 'y': 55}, 'platform_sit': {'x': 69, 'y': 54},
+    'scabs_a': {'x': 63, 'y': 54}, 'scabs_b': {'x': 66, 'y': 55}, 'scabs_c': {'x': 68, 'y': 53},
+}
+
+KES, MAREN = 'npc_hs_01', 'npc_hs_02'
+npcs = [
+    {'def': KES, 'x': 54, 'y': 22, 'facing': 2, 'if': {'not': {'inParty': KES}}},
+    {'def': MAREN, 'x': 36, 'y': 7, 'facing': 2, 'if': {'not': {'flag': 'ks_maren', 'eq': 'hanged'}}},
+    {'def': 'npc_hs_03', 'x': 41, 'y': 8, 'facing': 2, 'if': {'not': {'flag': 'hs_rafe_dead'}}},
+    {'def': 'npc_hs_04', 'x': 52, 'y': 6, 'facing': 2},
+    {'def': 'npc_hs_05', 'x': 15, 'y': 5, 'facing': 2, 'if': {'not': {'flag': 'hs_dysart_gone'}}},
+    {'def': 'npc_hs_06', 'x': 7, 'y': 10, 'facing': 2},
+    {'def': 'npc_hs_07', 'x': 63, 'y': 24, 'facing': 3, 'if': {'not': {'flag': 'hs_lisle_gone'}}},
+    {'def': 'npc_hs_08', 'x': 15, 'y': 23, 'facing': 2},
+    {'def': 'npc_hs_09', 'x': 71, 'y': 26, 'facing': 3, 'schedule': [], 'if': {'not': {'flag': 'hs_nils'}}},
+    {'def': 'npc_hs_09', 'id': 'npc_hs_09_free', 'x': 22, 'y': 34, 'facing': 2, 'schedule': [], 'if': {'flag': 'hs_nils', 'eq': 'freed'}},
+    {'def': 'npc_hs_10', 'x': 40, 'y': 19, 'facing': 0},
+    {'def': 'npc_hs_11', 'x': 50, 'y': 48, 'facing': 2},
+    {'def': 'npc_hs_12', 'x': 52, 'y': 52, 'facing': 0, 'schedule': [], 'if': {'not': {'any': [{'flag': 'hs_scrip', 'eq': 'par'}, {'flag': 'hs_scrip', 'eq': 'paid'}, {'flag': 'hs_scrip', 'eq': 'forged'}]}}},
+    {'def': 'npc_hs_13', 'x': 63, 'y': 54, 'facing': 0, 'schedule': [], 'if': {'all': [{'flag': 'hs_scabs_here'}, {'not': {'flag': 'hs_scabs'}}]}},
+    {'def': 'npc_hs_13', 'id': 'npc_hs_13_lodge', 'x': 30, 'y': 12, 'facing': 1, 'schedule': [], 'if': {'flag': 'hs_scabs', 'eq': 'turned'}},
+    {'def': 'npc_hs_13', 'id': 'npc_hs_13_pit', 'x': 18, 'y': 9, 'facing': 2, 'schedule': [], 'if': {'flag': 'hs_scabs', 'eq': 'through'}},
+    {'def': 'npc_hs_14', 'x': 11, 'y': 14, 'facing': 3},
+    {'def': 'npc_hs_15', 'x': 16, 'y': 12, 'facing': 2},
+    {'def': 'npc_hs_16', 'x': 13, 'y': 52, 'facing': 0},
+    {'def': 'npc_hs_17', 'x': 52, 'y': 31, 'facing': 3},
+    # the Clean: the cage while the pit is shut, the station's gate, the freight gate by night, the Weighhouse door
+    {'def': 'npc_hs_g1', 'x': 11, 'y': 16, 'facing': 2, 'if': {'not': {'flag': 'hs_shift'}}},
+    {'def': 'npc_hs_g2', 'x': 65, 'y': 17, 'facing': 2},
+    {'def': 'npc_hs_g3', 'x': 77, 'y': 17, 'facing': 2},
+    {'def': 'npc_hs_g4', 'x': 58, 'y': 26, 'facing': 3, 'if': {'not': {'flag': 'hs_lisle_gone'}}},
+    {'def': 'npc_hs_g5', 'x': 68, 'y': 17, 'facing': 2, 'if': {'flag': 'hs_shift', 'eq': 'revolt'}},
+]
+
+spawns = [
+    {'id': 'start', 'x': 40, 'y': 54, 'facing': 0}, {'id': 'from_meridian', 'x': 40, 'y': 54, 'facing': 0}, {'id': 'from_halt_e', 'x': 40, 'y': 54, 'facing': 0},
+    {'id': 'from_mine_teeth', 'x': 1, 'y': 35, 'facing': 1}, {'id': 'from_halcyon', 'x': 66, 'y': 18, 'facing': 2},
+    {'id': 'cage', 'x': 10, 'y': 14, 'facing': 1}, {'id': 'lodge', 'x': 36, 'y': 12, 'facing': 0}, {'id': 'shack', 'x': 24, 'y': 23, 'facing': 2},
+]
+
+hs_skirts = {
+    'id': 'hs_skirts', 'name': 'Skirts — Two-Twelve', 'seed': 412, 'settlement': 'skirts',
+    'layout': rows,
+    'legend': {
+        'd': {'floor': 'dirt'}, 'k': {'floor': 'rubble'}, 'a': {'floor': 'asphalt'}, 'c': {'floor': 'concrete'}, 'm': {'floor': 'metal'}, 't': {'floor': 'tile'}, 'g': {'floor': 'grate'}, 'w': {'floor': 'wood'},
+        'R': {'wall': 'rock', 'floor': 'rubble', 'wallHeight': 9},
+        'B': {'wall': 'brick', 'floor': 'concrete', 'wallHeight': 3.2, 'roof': 'flat'},
+        'C': {'wall': 'concrete', 'floor': 'concrete', 'wallHeight': 3.6, 'roof': 'flat'},
+        'Z': {'wall': 'metal', 'floor': 'grate', 'wallHeight': 7, 'roof': 'none'},
+        'M': {'wall': 'metal', 'floor': 'metal', 'wallHeight': 2.8, 'roof': 'flat'},
+        'W': {'wall': 'wood', 'floor': 'wood', 'wallHeight': 3.4, 'roof': 'pitched'},
+        'S': {'wall': 'scrap', 'floor': 'wood', 'wallHeight': 2.6, 'roof': 'tin'},
+        'F': {'wall': 'fence', 'floor': 'dirt', 'wallHeight': 2.2},
+        'P': {'wall': 'concrete', 'floor': 'concrete', 'wallHeight': 1.0},
+    },
+    'props': props,
+    'lights': [
+        {'x': 11, 'y': 10, 'height': 3.6, 'color': 'hex:0xffd8a0', 'intensity': 2.2, 'range': 10}, {'x': 12, 'y': 18, 'height': 0.8, 'color': 'hex:0xff9a40', 'intensity': 1.6, 'range': 6, 'flicker': 0.35},
+        {'x': 18, 'y': 13, 'height': 2.4, 'color': 'hex:0xffb070', 'intensity': 1.8, 'range': 7, 'flicker': 0.15}, {'x': 36, 'y': 9, 'height': 2.8, 'color': 'hex:0xffc890', 'intensity': 2.0, 'range': 10}, {'x': 44, 'y': 13, 'height': 0.8, 'color': 'hex:0xff9a40', 'intensity': 1.4, 'range': 6, 'flicker': 0.3},
+        {'x': 52, 'y': 8, 'height': 3.0, 'color': 'hex:0xf0f6ff', 'intensity': 2.0, 'range': 8}, {'x': 65, 'y': 8, 'height': 3.4, 'color': 'hex:0xe8f4ff', 'intensity': 2.4, 'range': 12}, {'x': 64, 'y': 17, 'height': 3.6, 'color': 'hex:0xf4f8ff', 'intensity': 2.4, 'range': 10}, {'x': 69, 'y': 17, 'height': 3.6, 'color': 'hex:0xf4f8ff', 'intensity': 2.4, 'range': 10},
+        {'x': 52, 'y': 23, 'height': 3.0, 'color': 'hex:0xe8f0ff', 'intensity': 1.8, 'range': 8}, {'x': 52, 'y': 32, 'height': 3.0, 'color': 'hex:0xfff0d8', 'intensity': 1.8, 'range': 8}, {'x': 64, 'y': 25, 'height': 3.0, 'color': 'hex:0xf0f8ff', 'intensity': 2.0, 'range': 8}, {'x': 72, 'y': 26, 'height': 3.0, 'color': 'hex:0xd8e8ff', 'intensity': 1.2, 'range': 7},
+        {'x': 37, 'y': 19, 'height': 3.4, 'color': 'hex:0xffb060', 'intensity': 2.0, 'range': 9, 'flicker': 0.2}, {'x': 45, 'y': 33, 'height': 3.4, 'color': 'hex:0xffb060', 'intensity': 2.0, 'range': 9, 'flicker': 0.2}, {'x': 37, 'y': 47, 'height': 3.4, 'color': 'hex:0xffb060', 'intensity': 2.0, 'range': 9, 'flicker': 0.2}, {'x': 45, 'y': 49, 'height': 0.8, 'color': 'hex:0xff9a40', 'intensity': 1.4, 'range': 5, 'flicker': 0.35},
+        {'x': 2, 'y': 27, 'height': 0.8, 'color': 'hex:0xff9a40', 'intensity': 1.2, 'range': 5, 'flicker': 0.35}, {'x': 17, 'y': 43, 'height': 0.8, 'color': 'hex:0xff9a40', 'intensity': 1.4, 'range': 6, 'flicker': 0.35}, {'x': 15, 'y': 23, 'height': 2.2, 'color': 'hex:0xfff0e0', 'intensity': 1.6, 'range': 5},
+        {'x': 6, 'y': 49, 'height': 0.8, 'color': 'hex:0xff9a40', 'intensity': 1.6, 'range': 6, 'flicker': 0.35}, {'x': 20, 'y': 54, 'height': 0.8, 'color': 'hex:0xff9a40', 'intensity': 1.6, 'range': 6, 'flicker': 0.35},
+        {'x': 30, 'y': 52, 'height': 3.6, 'color': 'hex:0xffd8a0', 'intensity': 2.0, 'range': 10}, {'x': 45, 'y': 52, 'height': 3.6, 'color': 'hex:0xffd8a0', 'intensity': 2.0, 'range': 10}, {'x': 60, 'y': 52, 'height': 3.6, 'color': 'hex:0xffd8a0', 'intensity': 2.0, 'range': 10}, {'x': 75, 'y': 52, 'height': 3.6, 'color': 'hex:0xffd8a0', 'intensity': 2.0, 'range': 10},
+        {'x': 50, 'y': 49, 'height': 2.4, 'color': 'hex:0xfff0c0', 'intensity': 1.6, 'range': 6},
+        # Halcyon's gardens over the rim: a cold green glow along the rock face
+        {'x': 20, 'y': 1, 'height': 9.5, 'color': 'hex:0x9fe8c0', 'intensity': 1.4, 'range': 18}, {'x': 50, 'y': 1, 'height': 9.5, 'color': 'hex:0x9fe8c0', 'intensity': 1.4, 'range': 18}, {'x': 72, 'y': 1, 'height': 9.5, 'color': 'hex:0xb8f0d0', 'intensity': 1.6, 'range': 18},
+    ],
+    'spawns': spawns,
+    'talk': {
+        'hs_board': {'dialogue': 'd_hs_board', 'name': 'The Line board'},
+        'hs_rates': {'dialogue': 'd_hs_rates', 'name': 'The rate board'},
+        'hs_lampboard': {'dialogue': 'd_hs_lampboard', 'name': 'The lamp board'},
+        'hs_cage': {'dialogue': 'd_hs_cage', 'name': 'The cage'},
+        'hs_graves': {'dialogue': 'd_hs_graves', 'name': 'The slope'},
+        'hs_strikeboard': {'dialogue': 'd_hs_strikeboard', 'name': 'The strike board'},
+        'hs_notice': {'dialogue': 'd_hs_notice', 'name': 'The wall on Cascade'},
+        'hs_grid': {'dialogue': 'd_hs_grid', 'name': 'The Window\'s exchange'},
+        'hs_prices': {'dialogue': 'd_hs_prices', 'name': 'Provision\'s price board'},
+        'hs_car': {'dialogue': 'd_hs_car', 'name': 'The car'},
+        'hs_cablehouse': {'dialogue': 'd_hs_cablehouse', 'name': 'The cable house'},
+        'hs_freight': {'dialogue': 'd_hs_freight', 'name': 'The freight gate'},
+        'hs_post': {'dialogue': 'd_hs_post', 'name': 'The post at Footgate'},
+        'hs_weighdoor': {'dialogue': 'd_hs_weighdoor', 'name': 'The Weighhouse door'},
+        'hs_lev_table': {'dialogue': 'd_hs_lev', 'name': 'Lev\'s table'},
+        'hs_shack_sign': {'dialogue': 'd_hs_shack', 'name': 'A shack to let'},
+        'hs_shack_bed': {'dialogue': 'd_hs_shack', 'name': 'The shack'},
+        'hs_pond_slate': {'dialogue': 'd_hs_pond_slate', 'name': 'The Pond\'s slate'},
+    },
+    'containers': {
+        'hs_dysart_box': {'name': 'Pit Office Lockbox', 'items': [['k_hs_order', 1], ['c_bitters', 1]], 'tolls': 60, 'lock': 45},
+        'hs_magazine': {'name': 'Powder Magazine', 'items': [['j_powder', 2]], 'lock': 50},
+        'hs_rafe_cache': {'name': 'Lodge Cellar', 'items': [['k_hs_powder', 1]], 'lock': 45},
+        'hs_weigh_box': {'name': 'Weighhouse Locker', 'items': [['k_hs_weighbook', 1], ['u_holdfast', 2]], 'tolls': 40, 'lock': 50},
+        'hs_shack_locker': {'name': 'Shack Locker', 'items': [], 'yoursIf': {'flag': 'hs_shack_rented'}},
+        'hs_vulpe_box': {'name': 'Changer\'s Cash Box', 'items': [['k_hs_ratebook', 1]], 'tolls': 80, 'lock': 40},
+    },
+    'spots': spots,
+    'npcs': npcs,
+    'triggers': [
+        {'id': 'arrive', 'x': 26, 'y': 52, 'w': 52, 'h': 5, 'text': 'Two-Twelve: the Line\'s last halt, a platform of plate steel under the Teeth with the rails running out into nothing beyond it. Above, the town climbs the mountain in steps of tin and timber all the way up to a wall of rock, and over the rock, faint even by day, a green glow. Somebody has painted on the platform\'s edge, in letters a yard high: NO LAMPS DOWN.', 'effects': [{'learn': 'seen_skirts'}, {'set': 'hs_open'}, {'learn': 'hs_strike_heard'}, {'quest': 'q_a2_halcyon', 'start': True}]},
+        {'id': 'hail', 'x': 30, 'y': 52, 'w': 10, 'h': 5, 'if': {'not': {'flag': 'kes_hailed'}}, 'text': 'The Line board over the platform, which has said ARRIVALS — NONE since you stepped off, flickers. The letters run, stop, and run again: DESIGNATE. YOU\'RE LIT UP LIKE THE GARDENS. LODGE, AFTER DARK. — K. Then: ARRIVALS — NONE. Nobody else on the platform looks up.', 'effects': [{'set': 'kes_hailed'}, {'learn': 'kes_hail'}]},
+        {'id': 'pithead', 'x': 2, 'y': 9, 'w': 23, 'h': 10, 'text': 'Number Six: a headframe of riveted girders over a cage house, a winding engine gone cold, and a lamp room with every lamp on its rack. People sit along the spoil heaps in their work clothes, not working. Two of the Concern\'s security stand at the cage in clean grey with nothing on their boots. Nobody in the Skirts calls them anything but the Clean.', 'effects': [{'learn': 'hs_six_seen'}, {'quest': 'q_hs_cavein', 'start': True}]},
+        {'id': 'lodge', 'x': 28, 'y': 5, 'w': 17, 'h': 10, 'text': 'The Lodge: a ski lodge from before the Burn, its beams black with ninety winters of stove smoke, long tables, and a board of names. It smells of wet wool and soup. Whoever is here is the Shift.', 'effects': [{'learn': 'hs_lodge_seen'}]},
+        {'id': 'footgate', 'x': 57, 'y': 17, 'w': 20, 'h': 3, 'text': 'Footgate. A fence, a gate, the Clean, and behind them the valley station where the funicular goes up into the rock on a track as steep as a ladder. The car sits at the bottom with its doors shut. A board on the station says, in clean print, SERVICE SUSPENDED — INDUSTRIAL ACTION. Somebody has chalked under it: NO LAMPS DOWN, NO CAR UP.', 'effects': [{'learn': 'hs_footgate_seen'}, {'learn': 'hs_car_stopped_seen'}]},
+        {'id': 'weighhouse', 'x': 57, 'y': 21, 'w': 3, 'h': 10, 'text': 'The Weighhouse: a long concrete shed that weighed ore before the Burn, with the scale\'s iron deck still set in its floor by the door. A queue on a bench inside. A woman in clinic white writes on a board. Nobody in the queue is talking.', 'effects': [{'learn': 'hs_weighhouse_seen'}]},
+        {'id': 'cascade', 'x': 37, 'y': 17, 'w': 9, 'h': 5, 'text': 'Cascade: the old main run, stepped with concrete and lined with stalls from the Lodge down to the Line. Everything is priced in scrip. Halfway up, a wall of notices: lost, found, for sale, gone.', 'effects': [{'learn': 'hs_cascade_seen'}]},
+        {'id': 'pond', 'x': 4, 'y': 47, 'w': 19, 'h': 10, 'text': 'The Pond: a dry reservoir where the old resort made its snow, cracked concrete with a low wall round it and wrecks piled for seats. Blood and sawdust on the floor. A slate on a post.', 'effects': [{'learn': 'hs_pond_seen'}]},
+        {'id': 'nursery', 'x': 1, 'y': 26, 'w': 35, 'h': 2, 'text': 'Nursery: shacks on the old beginners\' slope, tin and pallet and the doors of pre-war cars, three rows deep, with gardens in every gap. Children, smoke, washing, a cough in every third doorway.', 'effects': [{'learn': 'hs_nursery_seen'}]},
+    ],
+    'extras': [
+        {'count': 5, 'roles': ['labourer', 'labourer', 'tech'], 'life': 'hard', 'faction': 'the_shift', 'area': {'x': 6, 'y': 16, 'w': 16, 'h': 3}, 'spots': ['picket_sit', 'picket_pair_a', 'picket_pair_b', 'pithead_work_b'], 'hours': {'from': 6, 'to': 19},
+         'barks': ['No lamps down.', 'Eleven. Say the number.', 'The Window cut the ration again. Let it.', 'Maren says hold. We hold.', 'The Clean don\'t get their boots dirty. Look at them.']},
+        {'count': 6, 'roles': ['labourer', 'trader', 'street', 'tech'], 'life': 'hard', 'area': {'x': 37, 'y': 20, 'w': 9, 'h': 30}, 'spots': ['market_a', 'market_b', 'market_c', 'market_d', 'market_pair_a', 'market_pair_b', 'market_lean', 'market_sit'], 'hours': {'from': 6, 'to': 22},
+         'barks': ['Scrip only. Tolls at the changer.', 'Turnip, two scrip. Two. It\'s a good turnip.', 'Provision\'s up again. Everybody\'s up again.', 'You can see the gardens from the top of Cascade, at night. Green. Like a lamp left on.', 'Nobody comes back from the Weighhouse. Nobody comes back from the hill. Same thing.']},
+        {'count': 5, 'roles': ['settler', 'labourer', 'street'], 'life': 'starved', 'ages': [5, 70], 'area': {'x': 1, 'y': 26, 'w': 35, 'h': 18}, 'spots': ['nursery_fire', 'nursery_sit', 'nursery_pair_a', 'nursery_pair_b', 'nursery_work'],
+         'barks': ['Mind the cough. It\'s catching, or it isn\'t. Nobody knows.', 'Cabbage again.', 'My father dug Six for thirty years. Six dug him back.', 'There\'s an orange tree up there. Kes says. Kes has seen it.']},
+        {'count': 4, 'roles': ['labourer', 'street', 'drifter'], 'life': 'hard', 'area': {'x': 4, 'y': 47, 'w': 19, 'h': 10}, 'spots': ['pond_sit', 'pond_sit_b', 'pond_lean', 'pond_pair_a', 'pond_pair_b'], 'hours': {'from': 18, 'to': 24},
+         'barks': ['Baek. Baek. Always Baek.', 'No chrome in the Pond. The Pond\'s rule.', 'Two scrip on the stranger. For the colour.']},
+        {'count': 3, 'roles': ['trader', 'drifter', 'labourer'], 'life': 'hard', 'area': {'x': 26, 'y': 52, 'w': 50, 'h': 5}, 'spots': ['platform_a', 'platform_b', 'platform_lean', 'platform_sit'],
+         'barks': ['The Line\'s late. The Line\'s always late.', 'Six to one at the booth. Six to one.', 'Whatever comes up the Line is for the Window.']},
+        {'count': 3, 'roles': ['labourer', 'settler'], 'life': 'starved', 'area': {'x': 61, 'y': 28, 'w': 6, 'h': 3}, 'spots': ['weigh_queue', 'weigh_queue_b'], 'hours': {'from': 8, 'to': 20},
+         'barks': ['Over the line. That\'s all. Over the line.', 'They say you go up to the gardens. Service.', 'My paper\'s heavier than I am.']},
+        {'count': 3, 'roles': ['labourer', 'settler', 'tech'], 'life': 'hard', 'area': {'x': 15, 'y': 12, 'w': 7, 'h': 4}, 'spots': ['lampblack_sit', 'lampblack_pair_a', 'lampblack_pair_b'], 'hours': {'from': 16, 'to': 24},
+         'barks': ['Rosa\'s pour. Rosa\'s rules.', 'Dust\'s for people with something to lose. Deal me in.', 'Six East. Say it again and I\'ll drink to it again.']},
+    ],
+    'ambience': {'indoor': False, 'fogColor': 'hex:0x8c949c', 'fogDensity': 0.011, 'dust': 0.2, 'grade': 0.3, 'mood': 'bustling', 'sound': 'wind'},
+}
+check('hs_skirts', rows, hs_skirts['legend'], props, spawns, npcs, spots, 'start')
+
+# ---------------------------------------------------------------- the east gallery under Number Six
+W6, H6 = 48, 32
+s6 = [['R'] * W6 for _ in range(H6)]
+fill(2, 13, 6, 17, 'g', s6)                          # the cage's bottom
+fill(7, 14, 30, 16, 'k', s6)                         # the main heading
+fill(12, 13, 12, 13, 'k', s6); fill(15, 13, 15, 13, 'k', s6)   # niches: the survey board, the trapper's stool
+fill(8, 17, 11, 20, 'k', s6); s6[20][10] = 'w'       # the sump and its puddle
+fill(24, 3, 45, 28, 'k', s6)                          # the room-and-pillar workings
+for px in (26, 31, 36, 41):
+    for py in (5, 9, 19, 24):
+        if px >= 36 and py in (5, 9):
+            s6[py][px] = 'Q'                          # pillars fourteen to twenty-two, robbed to a waist
+        else:
+            fill(px, py, px + 1, py + 1, 'Q', s6)
+fill(41, 12, 45, 18, 'X', s6)                         # the fall
+rows6 = [''.join(r) for r in s6]
+props6 = [
+    {'kind': 'terminal', 'x': 3, 'y': 15, 'rot': 1, 'id': 'hs_six_cage'}, {'kind': 'pipe_h', 'x': 6, 'y': 13}, {'kind': 'barrel_rust', 'x': 2, 'y': 17},
+    {'kind': 'sign', 'x': 12, 'y': 13, 'rot': 2, 'id': 'hs_six_board'}, {'kind': 'chair', 'x': 15, 'y': 13, 'rot': 2}, {'kind': 'sign', 'x': 16, 'y': 14, 'rot': 1, 'id': 'hs_six_door'},
+    {'kind': 'pump', 'x': 9, 'y': 19}, {'kind': 'debris', 'x': 20, 'y': 16}, {'kind': 'crate', 'x': 25, 'y': 14}, {'kind': 'lamp_post', 'x': 28, 'y': 13},
+    {'kind': 'sign', 'x': 37, 'y': 8, 'rot': 0, 'id': 'hs_six_pillars'}, {'kind': 'debris', 'x': 37, 'y': 6}, {'kind': 'debris', 'x': 42, 'y': 6}, {'kind': 'debris', 'x': 38, 'y': 10}, {'kind': 'debris', 'x': 43, 'y': 9},
+    {'kind': 'sign', 'x': 40, 'y': 15, 'rot': 1, 'id': 'hs_six_fall'}, {'kind': 'debris', 'x': 39, 'y': 13}, {'kind': 'debris', 'x': 39, 'y': 17}, {'kind': 'rock_small', 'x': 34, 'y': 22}, {'kind': 'crate', 'x': 28, 'y': 26},
+]
+spots6 = {'cage_bottom': {'x': 5, 'y': 15}, 'heading': {'x': 22, 'y': 15}, 'fall_dig': {'x': 39, 'y': 15}, 'fall_dig_b': {'x': 38, 'y': 14}, 'pillars': {'x': 37, 'y': 7}}
+spawns6 = [{'id': 'start', 'x': 5, 'y': 15, 'facing': 1}, {'id': 'cage', 'x': 5, 'y': 15, 'facing': 1}]
+hs_six = {
+    'id': 'hs_six', 'name': 'Number Six — East Gallery', 'seed': 413, 'settlement': 'skirts', 'interior': True,
+    'layout': rows6,
+    'legend': {
+        'k': {'floor': 'rubble'}, 'g': {'floor': 'grate'}, 'w': {'floor': 'water'},
+        'R': {'wall': 'rock', 'floor': 'rubble', 'wallHeight': 3.4},
+        'Q': {'wall': 'rock', 'floor': 'rubble', 'wallHeight': 3.0},
+        'X': {'wall': 'rock', 'floor': 'rubble', 'wallHeight': 2.4},
+    },
+    'props': props6,
+    'lights': [
+        {'x': 4, 'y': 15, 'height': 2.6, 'color': 'hex:0xffe0a8', 'intensity': 1.6, 'range': 6}, {'x': 13, 'y': 15, 'height': 2.4, 'color': 'hex:0xffd090', 'intensity': 1.2, 'range': 6, 'flicker': 0.2},
+        {'x': 28, 'y': 13, 'height': 2.6, 'color': 'hex:0xffd090', 'intensity': 1.4, 'range': 8, 'flicker': 0.25}, {'x': 38, 'y': 15, 'height': 1.2, 'color': 'hex:0xffb060', 'intensity': 1.0, 'range': 6, 'flicker': 0.4},
+    ],
+    'spawns': spawns6,
+    'talk': {
+        'hs_six_cage': {'dialogue': 'd_hs_six_cage', 'name': 'The cage'},
+        'hs_six_board': {'dialogue': 'd_hs_six_board', 'name': 'The survey board'},
+        'hs_six_door': {'dialogue': 'd_hs_six_door', 'name': 'The trapper\'s door'},
+        'hs_six_pillars': {'dialogue': 'd_hs_six_pillars', 'name': 'Pillars fourteen to twenty-two'},
+        'hs_six_fall': {'dialogue': 'd_hs_six_fall', 'name': 'The fall'},
+    },
+    'spots': spots6,
+    'npcs': [],
+    'triggers': [
+        {'id': 'down', 'x': 2, 'y': 13, 'w': 5, 'h': 5, 'text': 'The cage stops with a jolt that goes up your spine, and the dark comes in at the gate. Cold, and the smell of wet stone and old powder. A lamp on a hook. A heading going east, and a long way off down it, nothing.', 'effects': [{'learn': 'hs_six_down'}]},
+        {'id': 'workings', 'x': 24, 'y': 3, 'w': 22, 'h': 26, 'text': 'The workings open out: a room cut out of the seam, the roof held up by pillars of coal left standing in rows like the legs of a table. The rows go east into the dark, and the pillars there are thinner than the ones you passed.', 'effects': [{'learn': 'hs_six_workings'}]},
+    ],
+    'ambience': {'indoor': True, 'fogColor': 'hex:0x14110e', 'fogDensity': 0.05, 'dust': 0.5, 'ambient': {'color': 'hex:0x302820', 'intensity': 0.25}, 'grade': 0.4, 'mood': 'grim', 'sound': 'drip'},
+}
+check('hs_six', rows6, hs_six['legend'], props6, spawns6, [], spots6, 'start')
+
+HEADER = "import type { MapDef } from '../../engine/data/types';\n\n// Generated by tools/maps/gen_hs_skirts.py — edit the generator, then re-run it.\n"
+for m in (hs_skirts, hs_six):
+    with open(os.path.join(ROOT, 'src', 'content', 'maps', f"{m['id']}.ts"), 'w') as f:
+        f.write(f"{HEADER}export const {m['id']}: MapDef = {ts(m)};\n")
+    print(m['id'], len(m['layout'][0]), 'x', len(m['layout']))

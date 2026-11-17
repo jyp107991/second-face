@@ -51,7 +51,7 @@ const F: FactionDef[] = [
     ranks: [{ id: 'runner', title: 'Sworn' }, { id: 'crew', title: 'Kin', flags: ['pale_kin'] }, { id: 'captain', title: 'Elder', flags: ['gang_command'] }] },
   { id: 'rustmouths', name: 'Rustmouths', desc: 'A salvage union that became a mob. Bridgeward is theirs.', home: 'meridian', group: 'meridian_gangs',
     ranks: [{ id: 'runner', title: 'Hauler' }, { id: 'crew', title: 'Mouth', priceMul: 0.9, flags: ['rustmouth_tolls'] }, { id: 'captain', title: 'Boss\'s Hand', flags: ['gang_command'] }] },
-  { id: 'the_shift', name: 'Shift', desc: 'The Skirts\' miners\' union, and the nearest thing the Skirts has to a gang.', home: 'skirts',
+  { id: 'the_shift', name: 'Shift', desc: 'The Skirts\' miners\' union, and the nearest thing the Skirts has to a gang.', home: 'skirts', initiation: 'q_hs_cavein',
     ranks: [{ id: 'member', title: 'Member', access: ['shift_hall'] }, { id: 'steward', title: 'Shop Steward', flags: ['shift_voice'], priceMul: 0.9 }, { id: 'committee', title: 'Committee', flags: ['shift_command'] }],
     conflicts: ['concern', 'tollmen'] },
   { id: 'concern', name: 'Concern', desc: 'The last corporation. A contract, a clinic, a leash.', home: 'halcyon',

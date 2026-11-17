@@ -47,6 +47,8 @@ export const SITES: Record<string, SiteDef> = {
   md_lantern: { kind: 'open', beside: { site: 'md_market', side: 'e' }, rim: 'keep' },
   md_bridgeward: { kind: 'open', beside: { site: 'md_lantern', side: 'e' }, rim: 'keep' },
   md_stacks: { kind: 'open', beside: { site: 'md_market', side: 's' }, rim: 'keep' },
+  // the Teeth: the Skirts under Halcyon (B4a)
+  hs_skirts: { kind: 'open', at: 'skirts', rim: 'strip' },
   // cells: enclosed places, entered through their doors
   cistern9: { kind: 'cell' },
   cistern4: { kind: 'cell' },
@@ -54,6 +56,7 @@ export const SITES: Record<string, SiteDef> = {
   md_stacks_9: { kind: 'cell' },
   md_stacks_roof: { kind: 'cell' },
   md_crown: { kind: 'cell' },
+  hs_six: { kind: 'cell' },
   dev_yard: { kind: 'cell' },
   dev_bunker: { kind: 'cell' },
   bench_crowd: { kind: 'cell' },

@@ -555,6 +555,207 @@ backwards; +3 the card sold; +3 stripped), Nine (the Ring is outside the record:
 (people in towers that are not sealed; −10 the Coat's money, +5 the card given, −10 Leven burned), Ash (the boy who burns
 for water: +5 Sami taken on; −10 Leven burned; −5 the Coat's money).
 
+## Build notes — B4: Halcyon & the Skirts (2026-11-17; B4a built, B4b planned)
+B4 is beat 16 (`q_a2_halcyon`) and §6.2's five lines, in two halves. **B4a — the Skirts** (built): the debtor sprawl under
+the arcology as a place, its people and economy; the seventh companion (Kes, `npc_hs_01`, arc in `story/U8_kes_SECRET.md`);
+the two Concern lines that live in the Skirts (**the Shift**, opened by *The Cave-In*; **Spare Parts**, its Skirts half) and
+the side quest *Scrip*; the opening of beat 16. **B4b — Halcyon** (planned below): the arcology interior and its lines
+(the Contract inside, the Leash, the Long-Lived) and the side quests that live inside (*Clinic Floor Nine*, *A Contract for
+Kes*, *The Garden Heist*, *Funicular Pass*). Ids: the Skirts are `hs_*` (maps `hs_skirts`, `hs_six`; NPCs `npc_hs_NN`;
+flags `hs_*`); Halcyon is `hc_*` (maps `hc_*`, NPCs `npc_hc_NN`, flags `hc_*`); Kes's flags `kes_*`. The bible's §G ids
+`npc_hc_03/04/06` (Maren, the militant, the contract officer) live in the Skirts and are built as `npc_hs_02/03/04`.
+Renames for the one-name rule: the militant is **Rafe Ansel** (Shale has Dov Reese); the Clinic floors' doctor is **Dr Noor
+Qadir** (Cistern 9 has Elder Ines); the contract officer is **Agnes Bell**.
+
+**Found history (coherent, used in the text).** Before the Burn the caldera was the Halverson Concern's chip works and,
+on its outer slopes, a winter resort for the people who owned it: ski runs, a lodge, a snowmaking pond, and a funicular
+from the valley station to the rim. The Skirts are the debtors' town that grew on the old runs: **Two-Twelve** (the Line's
+last halt, milepost 212), **Cascade** (the stepped street down the old main run, the market), **Nursery** (shacks on the
+beginners' slope), **the Lodge** (the old ski lodge, the Shift's hall), **Number Six** (the Shift's pit, its headframe on
+the old car park; the east gallery below is `hs_six`), **Lampblack** (a bar in a container under the headframe), **the
+Pond** (the dry snowmaking reservoir: bouts on Fridays and most other nights), **the Window** (the Concern's pay office:
+scrip in, debt read out), **Provision** (the company store), **the Weighhouse** (the old ore weigh-house, now the
+Concern's intake clinic: debtors are "weighed" there), **Footgate** (the funicular's valley station, the Contract Office
+beside it, and the gate). Halcyon's gardens glow over the rim at night. Miners are paid in Concern scrip; the changer at
+Two-Twelve is the only place scrip and Tolls meet.
+
+### B4a — the Skirts (built)
+Content: `tools/maps/gen_hs_skirts.py` → `maps/hs_skirts.ts` (80×60) and `maps/hs_six.ts` (48×32, a cell under Number
+Six); `npcs/hs_skirts.ts`; `dialogue/hs_skirts.ts` (the place, the Cave-In, the Shift, the gallery, Footgate),
+`dialogue/hs_parts.ts` (Spare Parts, Scrip, the services, Lev's table and the Window's exchange) and `dialogue/hs_kes.ts` (Kes);
+`quests/b4_skirts.ts` (`q_a2_halcyon` opening, `q_hs_cavein`, `q_hs_shift`, `q_hs_parts`, `q_hs_scrip`) and
+`quests/comp_kes.ts` (`q_comp_kes`); items `items/story_b4.ts`; two Concern chrome pieces and the `LEASHED` condition in
+`chrome/catalogue.ts`; leads and conclusions in `world/leads.ts`; events in `world/events.ts`; settlement `skirts`.
+Tests `tests/b4a.test.ts`.
+
+**Beat 16 opens — `q_a2_halcyon` "Halcyon's Offer"** (critical). Started when the Spire beat ends (`a2_spire_done`; also by
+the Skirts' arrival trigger for older saves). `invite`: a letter in the post and a card (`k_hc_invitation`): the Board of
+the Concern would be pleased to receive the designate at Halcyon; the Line runs to the Skirts; the Contract Office at
+Footgate has the name. (The Concern wants the future Magistrate: B4b says why.) → `skirts` (arrived): **the car is
+stopped by the strike** (the funicular's cable crew are the Shift's: "no lamps down, no car up"), so the way up the hill
+runs through the Shift's strike: objectives meet Bell (`hs_bell_met`), the car runs again (`hs_shift` set). → `car` (won or
+broken: the car runs; Bell keeps the designate's appointment) or `road` (revolt: the cable house is gone; only the road and
+the Clean's gate) → objective `hc_inside` (**B4b sets it**) → `inside` (an end stage B4b replaces with the Board's beat).
+
+**The Cave-In — `q_hs_cavein` "Six East"** (side quest, Witcher standard; opens the Shift). *Hook:* Number Six's lamp board:
+eleven tags hung back on dead men's pegs, chalked STILL DOWN, and the Window's notice beside them: SIX EAST — CLOSED —
+GEOLOGICAL — RECOVERY NOT ECONOMIC; DEBTS OF THE DECEASED TRANSFER TO NEXT OF KIN PER CONTRACT §9. *Investigation:* the
+gallery itself (`hs_six`: down the cage with Maren's leave and Orrin at the winch, by night past the Clean (Stealth 45) and
+the winch yourself (Mechanics 35), forty Tolls or Speech 50 to the Clean, or Kes from the grid): the pillar log on the
+survey board (`k_hs_log`), pillars fourteen to twenty-two cut back to a waist with fresh pick marks and chalk RETREAT —
+D. (`hs_robbed`), the fall, the eleven's lamps at its edge (`k_hs_tags`, Survival 40 to dig to them safely); Pim Rasul, the
+fifteen-year-old trapper who ran when the roof talked and whose mother's rations the Window pays on condition he says
+"geological" (`hs_pim_word`: Speech 45, the Shift's word to feed his family, or the log in his hands); the pit manager
+Corwin Dysart's signed retreat order in his office lockbox (`k_hs_order`: Security 45, Kes from the Window's own files, or
+Speech 55 to Dysart himself: put the hanging on the order, not on him). *Turn:* the gallery did not fall; it was robbed.
+Dysart cut the east gallery's pillars on his own written order to make the quarter's tonnage, after the steward who refused
+to work them was told his debt would double; the eleven went in because the Window cut their families' rations; then the
+Concern billed the families. *Choice* (`hs_cavein`): the proof to Maren (`shift`), sold back to Dysart for 200 (`sold`: he
+burns it), or kept for the Contract Office yourself (`claim`: it becomes the Shift's claim either way). Optional and
+visible: **the eleven brought up** (`hs_dead_up`: the Shift goes down with the player at night and digs; that is "a shift
+in the mine", the Shift's initiation, `enlist the_shift`): eleven graves on the slope above Nursery and the tags taken down.
+
+**The Shift — `q_hs_shift` "No Lamps Down"** (the line; keystone 12, Maren Okafor: STRIKE BROKEN; HANGED (THE CONCERN)).
+Maren's demands: the eleven brought up, the dead's debts void, a steward with a stop (the right to stop work on bad
+ground). The Concern's answer arrives as a world event that waits for the player (`hs_scab_train`: the first seven o'clock
+the player is in the Skirts after meeting Maren): twenty debtors off the Tollmen's block at Ninebridge, on Concern paper,
+with a foreman (Bartek Nowak) at Two-Twelve. Rafe Ansel has six cases of blasting powder out of the pit magazine and a plan:
+blow the car's cable house at Footgate, "and Halcyon starves in a week". Fronts (each read by the end):
+- **The claim** (`hs_claim`): Clause 11 of every miner's contract — THE CONCERN WARRANTS THE WORKINGS; WHERE A WORKING FAILS BY
+  THE CONCERN'S ORDER, THE DEBTS OF THOSE HARMED ARE VOID AND THEIR KIN COMPENSATED. Agnes Bell keeps contracts to the
+  letter (the Concern's one religion). Filed at the Contract Office for the kin (Maren's leave, `hs_claim_ok`): Speech 45 with
+  the order (−15), the log (−5), Pim's word (−10), the tags (−5); without the order DC 60. Upheld → the Concern concedes in
+  full by contract: `hs_shift` = won at once. Denied → refile once when you hold the order.
+- **The scabs** (`hs_scabs`): `turned` (Speech 50 to Nowak and his twenty: the robbed pillars −10, the log in their hands
+  −10, Wren's word −10, the tags −5: they sit down on the platform and the Shift feeds them), `sent` (their twenty
+  contracts bought at Bell's desk, 160 Tolls; Odile talks her to 80), `through` (Dysart pays 60 to walk them past the
+  picket to the cage: strike-breaking), `fought` (Rafe's men go down the platform with pick handles; two dead).
+- **Rafe** (`hs_rafe`): `told` (Maren takes the powder), `stood_down` (Speech 55), `disarmed` (the cache in the Lodge
+  cellar, Security 45 at night: `k_hs_powder`), `joined` (the player is in on it). Any but `joined` takes the car off the
+  table at the vote.
+- **The vote** (`d_hs_vote`, the Lodge at night, called by the player from Maren's tree once the scabs have come; it waits
+  for the player): speak for holding (Speech 45; the scabs turned or sent −15, the eleven up −10, Kes speaks −10, the
+  Weighhouse exposed −5, the scabs walked through +20; no check if Rafe is disarmed), for the car (only while Rafe has the
+  powder), or say nothing. `hs_vote` = hold | car.
+- **Outcomes** (`hs_shift`): **won** — the claim upheld, or the vote to hold with the scabs turned or sent: Dysart comes to
+  the Lodge door at dawn with the Concern's terms (the eleven up by the Concern's crew if not already, the debts void, a
+  steward's stop); lamps go down again; Dysart is recalled up the hill (`hs_dysart_gone`); `ks_maren` = lives,
+  `forecast_broken`; the Concern marks the player (`hs_marked`: §11 "Maren saved → the Shift arms; Halcyon's gates close to
+  you", B4b reads it). **broken** — the vote to hold with the scabs walked through or fought (the scabs work Six and the
+  Window starves the strike), or the strike sold (`hs_sold_out`: Dysart pays 250 for where the committee sits), or left
+  unsettled when the player first goes inside Halcyon (world event `hs_strike_breaks`, armed by B4b's `hc_inside`):
+  the Clean take Maren at dawn and hang her from the post at Footgate (`ks_maren` = hanged: keystone 12 as forecast).
+  **revolt** — the vote for the car: the cable house blown at night (`hs_car_down`), the car stopped for good, the Clean
+  fire into Cascade, Rafe dead in the blast (`hs_rafe_dead`), five others; Maren lives and leads an armed Shift
+  (`ks_maren` = lives, `forecast_broken`); Halcyon's gate shut (`hs_gate_shut`). With the player at the charge (Explosives
+  40) the crew get out first (`hs_revolt_clean`: three dead, not five).
+- Faction: the Shift's initiation is the eleven brought up (member); steward on `won`; committee is for the Long Night.
+  The Shift conflicts with the Concern and the Tollmen (existing faction table).
+
+**Spare Parts — `q_hs_parts` "Spare Parts"** (the Skirts half; Clinic Floor Nine is B4b's). *Hook:* Saba Mekonnen's notice
+on Cascade's wall: her husband Dawit went to the Weighhouse to clear his paper; the Window wrote DISCHARGED IN SERVICE; his
+boots came down with the settlement, and inside the tongue a Concern tag, 9-1182 — EFFECTS — RETURN TO KIN (`k_hs_boots`).
+*Investigation:* Dr Teodora Lisle at the Weighhouse (she weighs debtors whose paper has crossed the line and offers them
+"Clinic service": the paper discharged, the family a settlement; Speech 50: service is the Clinic floors, and she has never
+been up); her book (`k_hs_weighbook`: NAME — DEBT — YIELD K/L/C/H — SERVICE; in the office locker, Security 50, or Kes from
+the grid); reading the yield (Medicine 40, Science 45, or Lev Ostrander the ripper, who carried holdfast on the Clinic
+floors for nine years: "Nobody up there needs a whole Skirts body"); the freight car at two (the Concern runs its own
+freight on its own crew through the strike: "service" goes up asleep, effects come down). *Turn:* the Weighhouse grades
+debtors by their organs; Clinic service is being taken apart; and the Cave-In's transfer clause feeds it — the eleven's debts
+pushed their kin over the line, and Nils Haber, twenty-two, whose father is under the fall, is in the Weighhouse's ward,
+queued. *Choice* (`hs_parts`): **exposed** (the book's page on the wall and the boots at the Window: the Skirts stops
+going; a crowd shuts the Weighhouse; Lisle goes up the hill, `hs_lisle_gone`; Provision's prices rise after,
+`hs_prices_up`), **covered** (Lisle's case: the only door out of the Skirts, families fed; 150 from her, or her favour
+`hs_lisle_favour`, which B4b's Clinic reads), **profit** (her finder's fee: a name for 100 — the companions' worst). **Nils**
+(`hs_nils`): freed by the claim upheld (his father's debt is void: automatic), by paying his paper at Bell's desk (90), by
+walking him out of the ward at night (Stealth 45), or as Lisle's one-off-the-list in a covered deal; otherwise, once the
+line is settled, he goes up on the next freight at two the player is in the Skirts (`hs_freight`: `hs_nils` = up).
+
+**Scrip — `q_hs_scrip` "Scrip"** (side quest, Witcher standard). *Hook:* Ama Owusu at the changer's booth on Two-Twelve with
+two children and a tin of a hundred scrip saved over two years: three fares down the Line to Meridian are seventy-five Tolls;
+Cosmin Vulpe changes scrip at six to one, which is sixteen. *Investigation:* the rate board comes up the Line every week
+under the Exchange's seal (`l_hs_seal`); the changer's own ledger has a column headed PAR, and par is one to one
+(`l_hs_par`; Barter 40 to read it off him, Security 40 at night, or Odile, who priced the spread once); Provision's price
+board reads each miner's balance off the Window and charges the deep more (Kes, or Clearsight). *Turn:* the Toll is
+Halcyon's paper: the guild takes the Concern's scrip at par and gives the Skirts six to one, and the spread is the guild's
+tithe on every miner's savings (`c_hs_toll_paper`). *Choice* (`hs_scrip`): **par** (made to change at par: Barter 50 with the
+ledger, Speech 45 with the Shift behind you, or Odile: the family goes down the Line; Vulpe is docked by the guild for the
+week, a debtor on a guild ticket himself), **paid** (the difference out of your pocket: kind, and nothing changes), **forged**
+(the board re-sealed at par for a day, Science 50 or Kes: a run on the booth, the guild's man sent up the Line, Vulpe
+ruined, and Provision's prices go up after), **cut** (Vulpe's cut for sending travellers his way: Ama goes without).
+
+**Kes** (seventh companion; `story/U8_kes_SECRET.md`): hailed on the Line board at Two-Twelve (`kes_hailed`), met at the Lodge
+after dark or at the Window by day; joins once the player has done one thing for the Shift (or Speech 50 at first meeting,
+or after the line if she has not); never if the strike was sold or the finder's fee taken. Four camp stages, approval,
+conflicts with Nine and Odile, a romance, her red line (handing the leash to anyone; selling it breaks her), leaving and one
+win-back, and her own quest `q_comp_kes` "Slack" (her link cut at Lev Ostrander's table, turned dark from the Window's
+grid, or kept; or sold to Bell, which ends her for good).
+
+**Activities in the Skirts:** Dust at Lampblack (Rosa Iqbal); bouts at the Pond against Jun Baek (fists, no chrome: the
+Pond's rule, and his company arm goes dead if the Window says so); a shack on Nursery to rent (safehouse, 30 Tolls); Lev
+Ostrander's table (dark chrome); the Weighhouse's fittings (Concern chrome on contract: `ch_spine_hauler`,
+`ch_neural_lattice` and the catalogue's Concern pieces; anything fitted there is networked, `LEASHED`); Provision (Mercy
+Adjei); the changer.
+
+**Visible outcomes by placement:** Maren at the Lodge (lives) or the post at Footgate (hanged); Rafe gone (dead); Dysart's
+office empty (recalled); the Clean doubled at Footgate (revolt); Nowak's men on the platform (turned), at the pithead
+(through) or gone (sent); Lisle gone (exposed); Nils on Nursery (freed); Ama gone down the Line (par, paid, forged); the
+Lodge's strike board, the lamp board, the notice wall, the Weighhouse door and the car's board all read the state.
+
+**Delayed consequences (seeded):** `ks_maren` and `hs_shift` in the Long Night (the Shift armed after a win or a revolt; the
+Concern's labour short); `hs_marked` and `hs_gate_shut` at Halcyon's gate; `hs_parts` at the Clinic floors; `hs_scrip` =
+forged makes the Tollmen's floor send a man up the Line (`hs_guild_man`, a hook for B5/the Long Night); the eleven's graves
+on the slope in the epilogue; Kes's `kes_link` in the Leash line.
+
+**Hard choices:** the proof (the Shift's case against two hundred and a man who will burn it); the scabs (debtors like
+the strikers: turned with the truth, bought free, walked through for pay, or beaten off the platform); the vote (holding is
+starving unless the scabs are gone; the car is a war); the Weighhouse (exposure costs the Skirts its only door out;
+covering keeps it open on other people's bodies); the scrip (par ruins a man who is himself in debt).
+
+**Companions in the Skirts:** Wren (the scabs came off the block she knows: −10 walked through, +5 turned, −30 the
+finder's fee, +5 Nils freed); Odile (the scrip and the spread: she priced it once; the scabs' paper bought at 80; +5 par,
+−5 cut); Nine (the first place it has been with no file: "the record has no Skirts"; Maren's line; logs the claim's
+clause; +5 the claim, −5 the car); Ash (a man who cut his own link: Kes's quest, +10 he tells her how; −10 the car, −20
+the finder's fee); Tamsin (Kes: sisters in a day; "the Fridge" catches on; −10 the scabs walked through, −30 the fee);
+Ilya (the Clean's rifles; reads the Footgate post; −5 the car).
+
+### B4b — Halcyon (planned; continue from B4a's flags)
+**Place.** Up the funicular (or the road through the Clean's gate) to the rim: maps `hc_terrace` (the top station's
+concourse and the gardens under glass: silence, fruit trees, nobody old who looks old), `hc_clinic` (the Clinic floors,
+floor nine: the recovery wards, the cold store, Dr Noor Qadir), `hc_board` (the Board's floor and the hall of the
+rejuvenation ball), `hc_works` (the chip line's gallery and the grid core where the Leash's backdoor lives). Cast
+`npc_hc_*`: the Chair Adair Halverson (`npc_hc_01`), Director Pilar Soto (`npc_hc_02`), Dr Noor Qadir (`npc_hc_05`), the
+gardens' keeper, contract citizens, the Concern's officers from Meridian (Mr Quill, Mr Latch) if their lines ran; the
+Saints' girl wired on floor nine if `bw_static` = concern.
+**Beat 16 continued** (`q_a2_halcyon` from `car`/`road`): **the gate** — in by **B** a contract (the Contract line), **S** the
+road and the gardeners' tunnel, **T** the Board's guest (`k_hc_invitation`; Bell's appointment; `cr_concern` = kept or
+`concern_favour` make it warmer, `hs_marked` colder), **C** Concern chrome (`LEASHED`: the gate reads the wearer as a
+citizen); sets `hc_inside` (which also arms `hs_strike_breaks` if the strike is unsettled) and `hc_entry`. **The offer** —
+the Board (Soto, then the Chair) offers the designate a seat: the Concern wants the forecasting core and a Magistrate who will
+sign it over ("Nobody has to decide anything today"); what the Board wants is said in full once (`hc_board_wants`).
+Outcome `hc_offer` = accepted | refused | feigned; ends the beat; the Long Night (beat 17) reads it.
+**The Contract** (`q_hc_contract`): earned (Bell's work: a season's term, or a true confession, her one bribe), forged (Kes's
+backdoor writes a citizen into the Window; or a Skirts forger), gifted (the Board's guest) → `hc_contract` = citizen |
+infiltrator | guest; joining the Concern (`enlist concern`: probationary; contract citizen needs Concern chrome, which is
+the Leash).
+**The Leash** (`q_hc_leash`): Kes finds the backdoor's source in the grid core (her `kes_backdoor`, `kes_link`): **cut** (every
+networked piece in the Reach loses its channel at once: mass Drift fits; the Concern loses control of its chromed; Kes may
+die if her own link is still in her — `kes_link` = kept or dark raises the risk; cut out lowers it), **sell** (to Soto, the
+Chair or the Tollmen: Kes's red line, she leaves), **keep** (the player holds it: `leash_holder` = player; Kes's red line
+if handed on). If `hs_leash_sold` (Kes's backdoor sold in B4a) the Concern has patched her door: the cut needs the core
+itself. Modifier for the endings: the Leash cut / kept / seized.
+**The Long-Lived** (`q_hc_longlived`): the rejuvenation ball (the Board's ages; the Chair's Drift; the Ashlands reserve
+of dormant hounds and kites, waking controllers on the Board's floor); Kes can speak to the house in its own lineage
+(`kes_lineage` = speak); ties into ending C and the Long Night; `hs_parts` sets what the Clinic floors are short of.
+**Side quests inside:** *Clinic Floor Nine* (the recovery wards: who the parts go to; Dawit 9-1182 found or his bed; the
+Saints' girl if sold to the Concern; reads `hs_parts`, `hs_lisle_favour`, `hs_nils` = up: he is on the ward, alive or not),
+*A Contract for Kes* (the Concern offers her a contract for her backdoor: her red line tested), *The Garden Heist* (the
+gardens' seed and fruit for the Skirts or Openfield), *Funicular Pass* (the car's crew and a citizen's pass; reads
+`hs_shift`, `hs_car_down`).
+**B4b must:** set `hc_inside` when the player first stands inside the gate (arms the strike's default); replace
+`q_a2_halcyon`'s `inside` end with its stages; read `hs_marked`, `hs_gate_shut`, `hs_car_down`, `hs_parts`, `hs_nils`,
+`hs_lisle_favour`, `hs_leash_sold`, `kes_link`, `kes_lineage`, `kes_backdoor`, `k_hc_invitation`, `hs_bell_met`.
+
 ## 18. The opening, v4 (owner's note 2026-10-29: no shelter-dweller first steps) — supersedes §4 beat 1 and §8
 Built on the common denominators in `docs/OPENINGS.md`. The player character (PC) is **not** from inside Cistern 9.
 

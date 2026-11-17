@@ -1798,8 +1798,30 @@ mid-range Android phone; deployed to Pages.
             gate to the Spire's verdict through every district on the Loop). No engine change.
             Left for later: a second test version (`act2-test-1`) when the owner's Act 1 notes are folded in; the web smoke
             `tools/qa/act2.sh` is not written (the web runtime is frozen; the headless test stands in for it).
-- [ ] B4 **Halcyon & the Skirts**: arcology, Skirts, the Shift, Contract, Spare Parts, the Leash, the
-      Long-Lived; Concern chrome; 7th companion. ~10 h.
+- [~] B4 **Halcyon & the Skirts**: arcology, Skirts, the Shift, Contract, Spare Parts, the Leash, the
+      Long-Lived; Concern chrome; 7th companion. ~10 h. Built in two halves; the plan for both is in the story plan's
+      "Build notes — B4".
+      - [x] B4a **the Skirts** DONE 2026-11-17 (content; the Unity place build and the on-device playtest are P10 work;
+            `npm run export` has not been run for it): `tools/maps/gen_hs_skirts.py` → `maps/hs_skirts.ts` (80×60, the
+            town under the arcology's rim at the Teeth's `skirts` location: the Line's last halt, a stepped market street,
+            a pithead with a cage, a union hall, the funicular's valley station with a contract office and a fence, a pay
+            office, a company store, an intake clinic, three rows of shacks, a dry reservoir for bouts) and `maps/hs_six.ts`
+            (48×32, a cell under the pithead, reached by the cage). Settlement `skirts` (gossip road to Meridian), the world
+            location bound to its map, sites `hs_skirts` (open) and `hs_six` (cell). Cast `npcs/hs_skirts.ts` (ids
+            `npc_hs_*`: 17 named + 5 security; flags `hs_*`) and 7 extras groups. Dialogue `dialogue/hs_skirts.ts`,
+            `hs_parts.ts`, `hs_kes.ts` (40 trees, every node with a return line). Quests `quests/b4_skirts.ts`: beat 16
+            opened (`q_a2_halcyon`, started when the Spire beat ends or on arrival; its last stage is a stub B4b replaces),
+            `q_hs_cavein` (side, 5 routes), `q_hs_shift` (6 routes, three endings), `q_hs_parts` (7 routes, three endings),
+            `q_hs_scrip` (side, 5 routes). The seventh companion `npc_hs_01` (U8: four camp stages, approval, exchanges with
+            two companions, a romance on the shared `romance_partner` flag, a red line, leaving and one win-back) and her
+            own quest `q_comp_kes` (4 routes, registered). Two Concern chrome pieces and a `LEASHED` condition in
+            `chrome/catalogue.ts`; items `items/story_b4.ts` (9); 17 leads + 4 conclusions; 3 world events that wait for the
+            player. Activities: Dust, bouts, a shack to rent (safehouse), two surgeons (dark and Concern chrome), a company
+            store. Faction `the_shift` has its initiation quest. Companions' interjections throughout.
+            `tests/b4a.test.ts` (45). No engine change.
+      - [ ] B4b **Halcyon** (planned in the build notes: maps `hc_*`, cast `npc_hc_*`, flags `hc_*`; the Contract, the
+            Leash, the Long-Lived and the side quests inside; it continues `q_a2_halcyon` from its `car`/`road` stages,
+            replaces its `inside` stub, and sets `hc_inside` on first entering).
 - [ ] B5 **Act 2 wilds**: Glass Flats (Ninebridge, Openfield, the Sump, Cistern 4), Rail Corridor (the
       Line, Junction, halts, rail bandits), Drowned Shore (stilt villages, Rigs, salvage dives), Teeth
       mines, Northern Wet (barges, Dam, timber), Ashlands (remnant machines); Long Night alliance. ~12 h.
@@ -1819,11 +1841,11 @@ mid-range Android phone; deployed to Pages.
 | Signal Hill | 1/1 | 3/3 | 7/7 | 2/2 | playable; relay, voice, gully |
 | Dry Wells | 1/1 | 6/6 | 13/13 | 2/2 | playable; the Act 1 finale, the family |
 | Act 1 wilds | 5/5 | 15/15 | 17/17 | 2/2 | playable; ten road encounters, discoveries on foot, hunting and traps, the windpumps, the wreck, the orchard |
-| Meridian | 12/14 | 121/125 | 206/210 | 29/30 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward, the Crown, the Archive Spire (the close and landing ninety-one), the Court of Accounts and the Dead Ring written; the Loop joins six stops (one outside the Wall), stairs the Sink, the chain Bridgeward, the invitation car the Crown, a lane the Spire close, the gate road the Ring. Loose ends: the far bank (NO BRIDGE) is Act 2 part 2 / B5; Unity sites for the Spire close and the Ring (P10 place build); vehicle travel reading the buggy flag (P12); nothing opens after the Spire beat until B4 |
-| Halcyon/Skirts | 0/6 | 0/30 | 0/30 | 0/12 | — |
+| Meridian | 12/14 | 121/125 | 206/210 | 29/30 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward, the Crown, the Archive Spire (the close and landing ninety-one), the Court of Accounts and the Dead Ring written; the Loop joins six stops (one outside the Wall), stairs the Sink, the chain Bridgeward, the invitation car the Crown, a lane the Spire close, the gate road the Ring. Loose ends: the far bank (NO BRIDGE) is Act 2 part 2 / B5; Unity sites for the Spire close and the Ring (P10 place build); vehicle travel reading the buggy flag (P12); the Spire beat's end now opens beat 16 (B4a) |
+| Halcyon/Skirts | 2/6 | 22/40 | 40/55 | 6/12 | the Skirts written (B4a): the town under the arcology and a gallery under its pit; the Line's last stop; beat 16 opened; the seventh companion joins here. The arcology itself is B4b |
 | Act 2 wilds | 4/14 | 38/50 | 64/80 | 9/16 | Ninebridge, Openfield, the Sump and Cistern 4 playable (counts approximate) |
 | Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |
-| Companions | — | 6/7 | 0/7 arcs | 0/7 | Tamsin, Wren, Ilya, Odile, Ash, Nine can join; arcs later |
+| Companions | — | 7/7 | 0/7 arcs | 0/7 | Tamsin, Wren, Ilya, Odile, Ash, Nine can join; Kes joins in the Skirts (B4a, with her arc and quest); arcs later |
 | Factions joinable | — | — | — | 0/9 | design pending |
 
 ## 4. Conventions and tools (keep current)

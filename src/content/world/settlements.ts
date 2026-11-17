@@ -11,5 +11,7 @@ export const SETTLEMENTS: Record<string, SettlementDef> = Object.fromEntries(([
   { id: 'ninebridge', name: 'Ninebridge', roads: { tollhouse: 4, openfield: 2, meridian: 3, sump: 2 }, traffic: 1, type: 'trade_town', region: 'glass_flats', prosperity: 0.6, kit: 'wreck', owner: 'tollmen' },
   { id: 'openfield', name: 'Openfield', roads: { ninebridge: 2, meridian: 3, sump: 2 }, traffic: 0.5, type: 'commune', region: 'glass_flats', prosperity: 0.55, kit: 'timber', owner: 'choir' },
   { id: 'sump', name: 'Sump', roads: { ninebridge: 2, openfield: 2 }, traffic: 0.3, type: 'salvage_camp', region: 'glass_flats', prosperity: 0.2, kit: 'scrap' },
-  { id: 'meridian', name: 'Meridian', roads: { ninebridge: 3, openfield: 3 }, traffic: 0.8, type: 'bastion', region: 'meridian', prosperity: 0.5, kit: 'concrete' },
+  { id: 'meridian', name: 'Meridian', roads: { ninebridge: 3, openfield: 3, skirts: 5 }, traffic: 0.8, type: 'bastion', region: 'meridian', prosperity: 0.5, kit: 'concrete' },
+  // the debtors' town under Halcyon (B4a): the Line brings its news to Meridian in a few days
+  { id: 'skirts', name: 'Skirts', roads: { meridian: 5 }, traffic: 0.6, type: 'bastion', region: 'teeth', prosperity: 0.15, kit: 'scrap', crisis: 'strike' },
 ] as SettlementDef[]).map((s) => [s.id, s]));

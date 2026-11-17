@@ -1,4 +1,5 @@
 import type { ChromeDef } from '../../engine/stats/chrome';
+import type { Cond } from '../../engine/world/logic';
 
 /**
  * The chrome a playthrough can find or buy (~10–14 placed in the world; DESIGN §2c.1). Prices are street
@@ -27,7 +28,11 @@ const C: ChromeDef[] = [
     mods: [{ target: 'derived:ap', add: 1 }], abilities: ['chrome_spring_legs'], upkeep: { item: 'u_holdfast', everyDays: 7 }, surgery: { hours: 12, difficulty: 55 } },
   { id: 'ch_legs_strider', name: 'Strider Frames', desc: 'Concern carbon frames. Carry a mule’s load; walk all day.', slot: 'legs', grade: 'concern', drift: 9, price: 2800, visible: false, networked: true,
     mods: [{ target: 'derived:carry', add: 50 }, { target: 'derived:ap', add: 1 }], surgery: { hours: 10, difficulty: 70 } },
+  { id: 'ch_neural_lattice', name: 'Lattice Port', desc: 'Concern work: a port at the nape and a lattice down the top of the spine, the kind the Window fits its grid-hands. Halcyon’s grid answers when you think at it, and so does Halcyon.', slot: 'neural', grade: 'concern', drift: 9, price: 3000, visible: true, networked: true,
+    mods: [{ target: 'skill:science', add: 8 }, { target: 'skill:security', add: 5 }], abilities: ['chrome_grid_link'], surgery: { hours: 6, difficulty: 65 } },
   // Spine
+  { id: 'ch_spine_hauler', name: 'Hauler Spine', desc: 'Company issue for the pits: a braced spine with a lift-assist at the hips. It carries a cart’s load, never tires, and reports every load to the Window.', slot: 'spine', grade: 'concern', drift: 7, price: 1600, visible: true, networked: true,
+    mods: [{ target: 'derived:carry', add: 45 }, { target: 'derived:maxHp', add: 5 }], abilities: ['chrome_heavy_bearer'], surgery: { hours: 8, difficulty: 55 } },
   { id: 'ch_spine_load', name: 'Loadbearer Spine', desc: 'A braced spine from a dead labour gang. Heavy weapons stop being heavy.', slot: 'spine', grade: 'old', drift: 8, price: 1300, visible: true,
     mods: [{ target: 'derived:carry', add: 40 }, { target: 'derived:maxHp', add: 5 }], abilities: ['chrome_heavy_bearer'], surgery: { hours: 12, difficulty: 60 } },
   // Skin
@@ -45,3 +50,7 @@ const C: ChromeDef[] = [
 ];
 
 export const CHROME: Record<string, ChromeDef> = Object.fromEntries(C.map((c) => [c.id, c]));
+
+/** Wearing any Concern piece (networked): the Leash can see you (B4). A flag-free expression of the backdoor in every
+ * Concern implant, read by the Skirts' and Halcyon's content (the Clean's lens, Kes, the gate). */
+export const LEASHED: Cond = { any: C.filter((c) => c.networked).map((c) => ({ chrome: c.id })) };

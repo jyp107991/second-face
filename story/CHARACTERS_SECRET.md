@@ -128,7 +128,8 @@ would actually say to this person, now.
   **Romance:** late, quiet, only sober; a scene at a well.
 
 ### comp_kes — Kestrel "Kes" Oyelaran (26, Skirts grid-rider)
-- **Look:** west-African+south-Asian, narrow frame, wiry, undercut with a bleached crown, a Concern
+- **Look:** west-African+south-Asian, narrow frame, wiry, short coils kept close (was "undercut with a bleached crown": a styled
+  cut, against the hair and grooming rules; built as npc_hs_01, story/U8_kes_SECRET.md), a Concern
   spine-link visible at the nape (port and cable), goggles, a miner's jacket cut down, tech-wear straps.
 - **Want:** slack: a day without the Leash in her neck. **Fear:** that cutting it kills her; that keeping it
   makes her theirs.
@@ -346,12 +347,35 @@ camp's memory; npc_rd_06 — Brindle (16), scout, Wren's shadow; npc_rd_07 — S
   that is left; talks to the player as a future colleague; owns the Scald's authorship and is not sorry.
 - **npc_hc_02 — Director Pilar Soto (120, looks 40), Board:** the younger faction; wants the Ledger's core
   by purchase, not war; the Concern's human face; can be an ally against the Chair.
-- **npc_hc_03 — Maren Okafor (44), the Shift:** keystone (hanged, D+160); steward turned leader; calm,
-  funny, sick from the mine; Kes's mentor. Says "we go up together".
-- **npc_hc_04 — Dov Ansel (31), the Shift's militant:** wants the revolt; honest; will get people killed.
-- **npc_hc_05 — Dr Ines Qadir (70), Clinic floors:** Spare Parts; believes she is saving the only people who
-  can rebuild the world; the line's moral weight.
-- **npc_hc_06 — Contract Officer Bell (38):** the gatekeeper; by-the-book; bribable with a true confession.
+- **npc_hs_02 (bible npc_hc_03) — Maren Okafor (44), the Shift:** keystone 12 (STRIKE BROKEN; HANGED (THE CONCERN));
+  steward turned leader; calm, funny, sick from the mine (the cough; she spits into a rag and folds it); Kes's mentor. Says
+  "we go up together". Never raises her voice; puts a hand flat on a table when she has decided. Want: the eleven up and
+  buried, their debts void, a steward with a stop. Fear: a revolt that hangs everyone instead of her. Will not: let the Shift
+  break someone else's strike (she feeds the scabs). Changed by: the eleven up (grief turns to nerve), the claim (she learns
+  the Concern's law can be used), the car (she stops arguing and leads).
+- **npc_hs_03 (bible npc_hc_04) — Rafe Ansel (31), the Shift's militant:** renamed from "Dov" (Shale has Dov Reese). Wants the
+  revolt; honest; will get people killed. Lost his brother under Six East. Says what he will do and then does it. Six cases
+  of powder in the Lodge's cellar. Changed by: the claim upheld (he does not believe it until the lamps go down), Maren's
+  hand on the table.
+- **npc_hc_05 — Dr Noor Qadir (70), Clinic floors** (B4b; renamed from "Ines": Cistern 9 has Elder Ines): Spare Parts' weight;
+  believes she is saving the only people who can rebuild the world.
+- **npc_hs_04 (bible npc_hc_06) — Agnes Bell (38), Contract Officer at Footgate:** the gatekeeper; by-the-book; the
+  Concern's law in the Skirts, and she keeps it to the letter, which is why a claim under Clause 11 can win; bribable only
+  with a true confession (B4b: the Contract). Says "As written." Never says "I'm afraid".
+- **The Skirts (B4a, `npc_hs_*`):** *Corwin Dysart* (52, npc_hs_05), Number Six's pit manager, a contract citizen with his own
+  tenure review hanging on the quarter's tonnage; signed the retreat order; not a monster, a man doing a sum; recalled up
+  the hill if the Shift wins. *Pim Rasul* (15, npc_hs_06), the trapper who ran when the roof talked; his brother Yusuf is
+  under the fall; says "geological" because his mother's rations depend on it. *Dr Teodora Lisle* (58, npc_hs_07), the
+  Weighhouse's examiner and fitter: she weighs debtors and believes she is giving them the only door out; has never been
+  up the hill. *Lev Ostrander* (61, npc_hs_08), the ripper on Nursery: nine years an orderly on the Clinic floors carrying
+  holdfast; left when he understood; fits dark chrome now and drinks less than he did. *Nils Haber* (22, npc_hs_09), in the
+  Weighhouse's ward; his father Joran is under the fall and his father's debt pushed him over the line. *Saba Mekonnen*
+  (34, npc_hs_10): her husband Dawit went into Clinic service and his boots came back. *Cosmin Vulpe* (49, npc_hs_11), the
+  changer at Two-Twelve, a Tollmen ticket-holder in debt to the guild himself. *Ama Owusu* (37, npc_hs_12), two children
+  and a tin of scrip. *Bartek Nowak* (45, npc_hs_13), the scabs' foreman: a Sallow debtor bought off the Ninebridge block.
+  *Orrin Yazzie* (63, npc_hs_14), Number Six's cage-man for thirty years. *Rosa Iqbal* (46, npc_hs_15), Lampblack's keeper
+  and its Dust table. *Jun Baek* (29, npc_hs_16), the Pond's champion; a company arm the Window can switch off. *Mercy
+  Adjei* (41, npc_hs_17), Provision's counter: a debtor selling to debtors.
 
 ## H. The road
 - **npc_wh_01 — Caravan-Mother Sefa Dale (61), the Wheel:** neutral, shrewd, moves portraits for the

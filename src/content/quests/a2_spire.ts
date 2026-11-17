@@ -10,7 +10,8 @@ import type { Cond } from '../../engine/world/logic';
 const NINE = 'npc_md_nine';
 const ODILE = 'npc_nb_03';
 const VERDICT = (v: string): Cond => ({ flag: 'ar_verdict', eq: v });
-const SPIRE_DONE = [{ set: 'a2_spire_done' }];
+/** Ends the city's critical path and opens beat 16 (B4: the Concern's letter, the Line east to the Skirts). */
+const SPIRE_DONE = [{ set: 'a2_spire_done' }, { quest: 'q_a2_halcyon', start: true }];
 
 // ---------------------------------------------------------------- beat 14: the date
 

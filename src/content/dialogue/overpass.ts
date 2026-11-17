@@ -33,7 +33,7 @@ const W_FREED: Cond = { any: [{ flag: 'nb_sable_outcome', eq: 'freed' }, { flag:
 const W_PAST_ROPE: Cond = { any: [{ flag: 'wren_bridge', eq: 'stood_down' }, { flag: 'bw_raid', eq: 'won' }] };
 const W_ROM_ON: Cond = { any: ['yes', 'later_roof', 'roof', 'committed'].map((v) => ({ flag: 'wren_rom', eq: v })) };
 const W_ROM_FREE: Cond = { any: [{ not: { flag: 'romance_partner' } }, { flag: 'romance_partner', eq: WREN }] };
-const W_SOLD_SOMEONE: Cond = { any: [{ flag: 'cr_tillie', eq: 'sold' }, { flag: 'nb_lot7_sold' }, { flag: 'bw_static', eq: 'sold' }, { flag: 'bw_static', eq: 'concern' }, { flag: 'nb_rook_reported' }] };
+const W_SOLD_SOMEONE: Cond = { any: [{ flag: 'cr_tillie', eq: 'sold' }, { flag: 'nb_lot7_sold' }, { flag: 'bw_static', eq: 'sold' }, { flag: 'bw_static', eq: 'concern' }, { flag: 'nb_rook_reported' }, { flag: 'hs_parts', eq: 'profit' }] };
 const W_PROMISE: Effect[] = [{ set: 'wren_promise_sable' }, W(5), { decision: { id: 'wren_promise', text: 'You promised Wren you would buy the girl\'s paper back at Ninebridge.' } }];
 const W_HONEST: Effect[] = [{ set: 'wren_s1_honest' }, W(3)];
 const W_RAID: Effect[] = [{ set: 'wren_bridge', value: 'raid' }, W(5), { decision: { id: 'wren_bridge_raid', text: 'You told Wren you would take the bridge with her, on a night the two of you choose.' } }];
