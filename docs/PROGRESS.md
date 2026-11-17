@@ -717,6 +717,28 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-17 (later), where everything is (read this to resume).** Gate: red, 55 (63a0e244: A1 25, W6 11, C1 8,
+  A4 4, W3 3, F1/F2/F5/K1 1). On main: `side/core`'s first part merged (e3b3aefd: party followers, crowd names, the
+  content's eight events — PlayMode PartyTests + ContentEventsTests 7/7) and a fight held active until wholly over
+  (d08b2157); Act 2 content complete but the parked arcology slice (B5a–d, the Docks; exported 509c1181); B6 plan
+  (`story/B6_NOTES_SECRET.md`) and B6a–B6e written. **Branches not yet on main (merge each when the editor is free,
+  then run its checks):** `side/core` after e3b3aefd — the megacity kit (`CityKit`, `PlaceBuilder.City`, City shader,
+  `PlaceReveal`; head 1eb8539a); `side/combat` — combat rules and AI (WP1, 0d7dc82e) and presentation/QoL (WP3,
+  c0bf48c3), `docs/COMBAT.md` status; `wip/gate-batch` — the gate helper's work in progress (followers' pacing, arm
+  depth, a "following" gate state; commit only after a whole-cast run with no measure worse). Combat assets staged
+  outside the repo in `/home/user/second-face-staging/combat/` (69 clips, 13 weapons re-textured to the lore;
+  `docs/COMBAT_ASSETS.md`). **The editor queue, in order:** (1) the gate to green (helper running); (2) merge
+  `side/combat`, run ContentEvents/Knock/Party tests, captures of a fight (overlay, cards, shields, camera), CombatQolTests;
+  (3) merge the megacity kit: `ShaderTests`, Build places, PlacePlayTests for the five districts, captures; (4) world
+  layout: `npm run export` then `python3 -I tools/unity/world.py` (adds the Spire close, the Dead Ring, B5 places; tested in
+  a side checkout: 37 places, no overlap) and PlaceBuilder ids for every new place (frontier kit for B5, city kit for
+  districts; cells as interiors); (5) WP2 combat animation integration (weapons in hands, clips, combat states in the
+  gate with limits from real fighters, per-clip root-motion flags in the importer, a procedural directional hit); (6)
+  combat content (throwables and loadouts, archetype fields, props/exits for the field); (7) CI: put the place tests in
+  a job of their own (PlayMode limit raised to 330 min meanwhile); the BootTests arm regression (with the gate);
+  Ninebridge's empty tiles and grey concrete; the arrival view. Content lanes: B6f (lane 1, then B6g–B6k in order) and
+  an independent later slice (lane 2). B6s needs a "met" condition for people. The parked arcology slice waits for the
+  owner's decision on its darkest material.
 - **2026-11-17, B5a and B5b in; the Unity runtime's gaps found and being filled on `side/core`.** Gate: red, 89. The
   editor is held by the A1 work (flank correctives re-baked at the real resting angle; WIP on `wip/gate-batch`, committed
   only after a whole-cast run with no measure worse than 89). Meanwhile Unity-side code is written and compile-checked in a
