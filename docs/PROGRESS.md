@@ -717,6 +717,18 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-17 (night), the v6.1 batch: measured, not committed (WIP `wip/gate-batch` 5e87de78).** Gate: red, 6460
+  (dfc732a4; the tree unmeasured). In the batch: motion set v6.1 imported (38 clips, same GUIDs); `MotionImportPostprocessor`
+  v12 builds each clip's avatar configuration from its own file's T-pose (first import without the take, then the explicit
+  mapping with the hands on `LeftHand`/`RightHand`), checked by the new EditMode `MotionImportTests` (2/2); `Pace`'s strides
+  re-measured on it; side/combat's runtime fixes (9c8d1db0) applied file by file. Found (docs/MOTION_ROOT_CAUSE.md §7): Unity
+  fills a clip's configuration from the take's first key, so every clip had been retargeted from wherever its cut began;
+  the T-pose reference reproduces the captures on the bodies (A1 within 0.7°), and the 14-person pick's 87 failures
+  (against 4) are the runtime's compensations tuned on the old reference: ArmClearance's legitimate push on the broad men
+  (hands 2.8-4.0 cm inside the hip, T4) and FootPlant's flat-foot ankle rule (jog soles 0.6-1.5 cm in the ground). Also open:
+  the jog's touchdown frame (W1 without the lift-and-drop) until W1 is calibrated on ≥ 3 real joggers. **Next:** FootPlant's
+  moving rule on the soles' own points, ArmClearance against real penetration only (T4 for the broad men), the pick, chunk 0
+  against dfc732a4 (no measure worse), the whole cast, then combat v4 (staged, READY).
 - **2026-11-17 (evening), gate batch: stride Pace, motion set v5's jogs, the combat merge; the whole cast committed.**
   Gate: red, 6460 (the states measured before: W3 2, A4 1, C1 1; the fight's states 6456), whole cast on this commit; against the committed 55: A1 25 → 0, W6 11 → 0, C1 8 → 1, A4 4 → 1, W3 3 → 2, F1/F2/F5/K1 1 → 0, W1 0, no measure worse. The fight's states
   (side/combat's §2.7, merged here, head 33d77dc0) are measured for the first time and keyed apart in the verdict
