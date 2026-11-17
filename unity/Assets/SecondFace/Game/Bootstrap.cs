@@ -103,6 +103,7 @@ namespace SecondFace.Game
             Apply(Session.Settings);
             Session.SettingsChanged += Apply;
             Play.Combat.Difficulty = () => Session?.Settings != null ? Session.Settings.Mods : (0, 1.0);
+            Play.Combat.DifficultyName = () => Session?.Settings?.Difficulty ?? "normal";
             if (UI != null) UI.BackUnhandled += () => { if (Walkabout != null && Walkabout.Walker != null && Tour == null) OpenPause(); };
             var overlay = DebugOverlay.Ensure();
             if (World == null) yield break;

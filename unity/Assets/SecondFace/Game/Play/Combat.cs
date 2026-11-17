@@ -75,6 +75,9 @@ namespace SecondFace.Game.Play
 
         /// <summary>The game's difficulty (enemy aim and damage; the settings' choice), read as each fight starts.</summary>
         public static System.Func<(int HitMod, double DmgMul)> Difficulty;
+        /// <summary>The settings' difficulty by id (story, normal, hard): how the hostile side's AI plays (Core
+        /// <see cref="CombatDifficulty"/>), read as each fight starts.</summary>
+        public static System.Func<string> DifficultyName;
 
         private float _talkAt = -100f;
         private float _quietUntil = -100f;   // (a fight that broke off: not taken up again at once)
@@ -213,7 +216,7 @@ namespace SecondFace.Game.Play
         private IEnumerator Fight(List<Townsperson> hostiles, bool ourMove = false, PitTerms pit = null)
         {
             var g = Walkabout.Game;
-            _bodies.Clear(); _people.Clear(); _controlled.Clear(); _companions.Clear();
+            _bodies.Clear(); _people.Clear(); _controlled.Clear(); _companions.Clear(); _fallen.Clear();
             _acting = null;
             _pit = pit;
             var units = new List<BattleUnit>();
@@ -242,6 +245,7 @@ namespace SecondFace.Game.Play
             }
             _battle = new Battle(new NavField(this), new Rng(g.RngState != 0 ? g.RngState : 7u));
             var (hitMod, dmgMul) = Difficulty != null ? Difficulty() : (0, 1.0);
+            _battle.Difficulty = CombatDifficulty.For(DifficultyName != null ? DifficultyName() : "normal");
             _battle.EnemyHitMod = hitMod; _battle.EnemyDmgMul = dmgMul;
             _battle.Start(units, pit != null, ourMove);
             Debug.Log("Combat: " + string.Join(", ", units.Select(x => $"{x.C.Name} ({(x == _player ? "you" : x.Hostile ? "hostile" : "ally")}, hp {x.C.Sheet.Hp})")));
@@ -260,7 +264,7 @@ namespace SecondFace.Game.Play
                 if (_controlled.Contains(u)) yield return PlayerTurn(u);
                 else yield return AiTurn(u);
                 quiet = u.C.Ap >= CombatRules.MaxAp(u.C) && _battle.Log.Count == logged ? quiet + 1 : 0;
-                if (quiet >= _battle.Order.Count * 3) { _battle.Standoff(); _quietUntil = Time.unscaledTime + 60f; }
+                if (quiet >= _battle.Order.Count * 3 || _battle.Stalemate) { _battle.Standoff(); _quietUntil = Time.unscaledTime + 60f; }
                 _battle.EndTurn();
                 FlushLog(ref shown);
                 yield return null;
@@ -370,25 +374,42 @@ namespace SecondFace.Game.Play
         {
             Say(Strings.Get("combat.their_turn", u.C.Name));
             yield return new WaitForSeconds(0.35f);
-            for (var step = 0; step < 10 && _battle.Active && u.Alive && !u.Fled && u.C.Ap > 0; step++)
+            for (var step = 0; step < 12 && _battle.Active && u.Alive && !u.Fled && u.C.Ap > 0; step++)
             {
-                var ap = u.C.Ap;
+                var ap = u.C.Ap; var minor = u.C.MinorUsed; var stance = u.C.Stance;
                 var a = _battle.Choose(u);
-                Debug.Log($"Combat AI: {u.C.Name} ({u.C.Ap} AP) {a.Kind}{(a.Target != null ? " " + a.Target.C.Name : "")} at {Time.realtimeSinceStartup:0.0}s");
+                Debug.Log($"Combat AI: {u.C.Name} ({u.C.Ap} AP) {a} at {Time.realtimeSinceStartup:0.0}s ({_battle.LastDecisionMs:0.0} ms)");
                 switch (a.Kind)
                 {
                     case "wait": step = 99; break;
-                    case "attack": case "burst": yield return AttackUnit(u, a.Target, null, a.Kind == "burst"); break;
+                    case "attack": case "burst": yield return AttackUnit(u, a.Target, a.Aimed, a.Kind == "burst"); break;
                     case "move": yield return MoveUnit(u, new Vector3((float)a.X, 0f, (float)a.Z)); break;
-                    case "reload": _battle.Reload(u); yield return new WaitForSeconds(0.3f); break;
-                    case "heal": _battle.UseItem(u, Battle.HealItem, (int)Walkabout.Game.Minutes); yield return new WaitForSeconds(0.3f); break;
                     case "surrender":
-                        u.Fled = true; u.Surrendered = true; Say(Strings.Get("combat.surrender", u.C.Name)); step = 99; break;
+                        _battle.Surrender(u); Say(Strings.Get("combat.surrender", u.C.Name)); step = 99; break;
                     case "flee":
+                        _battle.Flee(u);
                         yield return MoveUnit(u, new Vector3((float)a.X, 0f, (float)a.Z));
-                        u.Fled = true; Say(Strings.Get("combat.fled", u.C.Name)); step = 99; break;
+                        // (no exits known to the field: out of the fight at the move, as before)
+                        if (!u.Fled && !_battle.HasExits(u)) u.Fled = true;
+                        if (u.Fled) { Say(Strings.Get("combat.fled", u.C.Name)); step = 99; }
+                        break;
+                    default:
+                    {
+                        // throws, held shots, suppression, stances, items, prisoners, a shout (Core carries them out; a
+                        // tracer for what flies)
+                        var r = _battle.Execute(u, a, (int)Walkabout.Game.Minutes);
+                        if (r.Throw != null && _bodies.TryGetValue(u, out var tb) && tb != null)
+                            yield return Tracer(tb.position + Vector3.up * 1.6f, new Vector3((float)r.Throw.X, tb.position.y + 0.2f, (float)r.Throw.Z));
+                        foreach (var h in r.Hits)
+                            if (h.Defender != null && _bodies.TryGetValue(u, out var ab) && ab != null && _bodies.TryGetValue(h.Defender, out var db) && db != null)
+                                yield return Tracer(ab.position + Vector3.up * 1.35f, db.position + Vector3.up * 1.1f);
+                        foreach (var x in _battle.Units) if (!x.Alive && _bodies.TryGetValue(x, out var xb) && xb != null && !_fallen.Contains(x)) Fell(x, xb.position + Vector3.forward);
+                        if (!r.Done) step = 99;
+                        yield return new WaitForSeconds(0.3f);
+                        break;
+                    }
                 }
-                if (u.C.Ap == ap) break;
+                if (u.C.Ap == ap && u.C.MinorUsed == minor && u.C.Stance == stance) break;
                 Refresh();
             }
         }
@@ -426,7 +447,16 @@ namespace SecondFace.Game.Play
             }
             else { body.position = goal; yield return null; }
             var end = body.position;
-            _battle.Moved(u, end.x, end.z, Mathf.Max(0.5f, metres));
+            var moved = _battle.Moved(u, end.x, end.z, Mathf.Max(0.5f, metres));
+            // the shots held for the walk (overwatch, cover fire, a suppressor): a tracer each, a fall where it ended
+            foreach (var r in moved.Reactions)
+                if (_bodies.TryGetValue(r.Attacker, out var wb) && wb != null)
+                {
+                    var hitIt = r.Result != null && r.Result.Hits.Any(h => h.Hit);
+                    yield return Tracer(wb.position + Vector3.up * 1.35f, body.position + Vector3.up * 1.1f + (hitIt ? Vector3.zero : Random.insideUnitSphere * 0.9f));
+                    if (hitIt) Flinch(u);
+                }
+            if (!u.Alive && !_fallen.Contains(u)) Fell(u, body.position + body.forward);
         }
 
         private IEnumerator AttackUnit(BattleUnit att, BattleUnit def, string aimed, bool burst)
@@ -441,6 +471,10 @@ namespace SecondFace.Game.Play
             }
             var hit = _battle.Attack(att, def, aimed, burst);
             if (hit == null) yield break;
+            // cover fire answered first
+            foreach (var r in hit.Interrupts)
+                if (_bodies.TryGetValue(r.Attacker, out var cb) && cb != null)
+                    yield return Tracer(cb.position + Vector3.up * 1.35f, a.position + Vector3.up * 1.1f);
             var melee = CombatRules.IsMelee(hit.Weapon);
             var shots = Mathf.Max(1, hit.Result.RoundsFired);
             for (var i = 0; i < shots; i++)
@@ -453,8 +487,9 @@ namespace SecondFace.Game.Play
             var any = hit.Result.Hits.Where(h => h.Hit).ToList();
             if (any.Count == 0) Say(Strings.Get("combat.miss", att.C.Name, def.C.Name));
             else Say(Strings.Get(any.Any(h => h.Crit) ? "combat.crit" : "combat.hit", att.C.Name, def.C.Name, hit.Result.Damage));
-            foreach (var u in new[] { def }.Concat(hit.Splash.Select(s => s.Unit)))
-                if (!u.Alive) Fell(u, a.position);
+            // (the dead of it all: the target, the splash, a cover fire's answer, a stray, a riposte)
+            foreach (var u in _battle.Units)
+                if (!u.Alive && !_fallen.Contains(u)) Fell(u, a.position);
             yield return new WaitForSeconds(0.35f);
         }
 
@@ -465,8 +500,11 @@ namespace SecondFace.Game.Play
             if (amb != null) amb.Gesture("wave");
         }
 
+        private readonly HashSet<BattleUnit> _fallen = new();
+
         private void Fell(BattleUnit u, Vector3 from)
         {
+            if (!_fallen.Add(u)) return;
             Say(Strings.Get("combat.down", u.C.Name));
             if (!_bodies.TryGetValue(u, out var body) || body == null) return;
             var anim = body.GetComponentInChildren<Animator>();
@@ -718,10 +756,62 @@ namespace SecondFace.Game.Play
 
         // ---- the world as the battle sees it -------------------------------------------------------------------------------
 
-        private sealed class NavField : IBattleField
+        private sealed class NavField : IBattleField, IBattleGeometry
         {
             private readonly Combat _c;
             public NavField(Combat c) { _c = c; }
+
+            // ---- the geometry (Core IBattleGeometry: heights and walks from the NavMesh, cover around a point by raycasts
+            // at waist and head height in eight directions; no surfaces or exits from the world yet) ---------------------
+
+            /// <summary>A height to look for the ground from: the walker's (a fight is local).</summary>
+            private float HintY => _c.Walkabout != null && _c.Walkabout.Walker != null ? _c.Walkabout.Walker.transform.position.y : 0f;
+
+            public double Height(double x, double z)
+            {
+                var p = new Vector3((float)x, HintY, (float)z);
+                return NavMesh.SamplePosition(p, out var hit, 6f, NavMesh.AllAreas) ? hit.position.y : HintY;
+            }
+
+            private static readonly Vector3[] Dirs =
+            {
+                new(1, 0, 0), new(-1, 0, 0), new(0, 0, 1), new(0, 0, -1),
+                new(0.7071f, 0, 0.7071f), new(0.7071f, 0, -0.7071f), new(-0.7071f, 0, 0.7071f), new(-0.7071f, 0, -0.7071f),
+            };
+
+            public IReadOnlyList<CoverPiece> CoverAround(double x, double z)
+            {
+                var g = Ground(x, z, HintY);
+                var l = new List<CoverPiece>();
+                bool Blocked(Vector3 dir, float h) =>
+                    Physics.Raycast(g + Vector3.up * h, dir, out var hit, 1.2f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) && hit.collider.GetComponentInParent<Animator>() == null;
+                foreach (var d in Dirs)
+                {
+                    var lvl = Blocked(d, 1.45f) ? "full" : Blocked(d, 0.7f) ? "half" : null;
+                    if (lvl != null) l.Add(new CoverPiece(d.x, d.z, lvl));
+                }
+                return l;
+            }
+
+            public IReadOnlyList<(double X, double Z)> Path(BattleUnit u, double x, double z)
+            {
+                var from = Ground(u.PX, u.PZ, YOf(u)); var to = Ground(x, z, YOf(u));
+                var path = new NavMeshPath();
+                if (!NavMesh.CalculatePath(from, to, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete) return System.Array.Empty<(double, double)>();
+                var l = new List<(double X, double Z)>(path.corners.Length + 1) { (u.PX, u.PZ) };
+                for (var i = 1; i < path.corners.Length; i++) l.Add((path.corners[i].x, path.corners[i].z));
+                return l;
+            }
+
+            public bool SightBetween(double ax, double az, double bx, double bz)
+            {
+                var y = HintY;
+                return Clear(Ground(ax, az, y) + Vector3.up * 1.5f, Ground(bx, bz, y) + Vector3.up * 1.1f);
+            }
+
+            public string GroundAt(double x, double z) => null;
+
+            public IReadOnlyList<(double X, double Z)> Exits(BattleUnit u) => System.Array.Empty<(double, double)>();
 
             private Vector3 Ground(double x, double z, float y)
             {

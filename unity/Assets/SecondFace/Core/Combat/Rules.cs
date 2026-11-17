@@ -28,6 +28,16 @@ namespace SecondFace.Core.Combat
         public bool IsPlayer;
         /// <summary>Personality courage 0..100 (NPCs).</summary>
         public double? Courage;
+        /// <summary>stand, crouch or prone (<see cref="Stances"/>).</summary>
+        public string Stance = Stances.Stand;
+        /// <summary>Statuses with their turns left (<see cref="Status"/>).</summary>
+        public List<StatusEffect> Statuses = new();
+        /// <summary>The turn's free minor action (a stance change, a shout) is spent.</summary>
+        public bool MinorUsed;
+        /// <summary>Once-a-fight perks already used (not_today, cripple_shrug).</summary>
+        public HashSet<string> Used = new();
+        /// <summary>It is this fighter's turn (a status put on now is not counted down at its end).</summary>
+        public bool InTurn;
     }
 
     public sealed class CombatContext
@@ -47,9 +57,29 @@ namespace SecondFace.Core.Combat
         /// <summary>Damage multiplier (difficulty).</summary>
         public double DmgMul = 1;
         public bool Burst;
-        /// <summary>none, half or full.</summary>
+        /// <summary>none, half or full: the cover the defender has against this attacker (after flanking; stances and
+        /// height are applied by the rules).</summary>
         public string Cover = "none";
         public CombatContext Ctx;
+        /// <summary>Metres between the two (null: the tiles between their X/Y, as the web game counted).</summary>
+        public double? Distance;
+        /// <summary>The defender has cover by them but none facing this attacker.</summary>
+        public bool Flanked;
+        /// <summary>The attacker's ground above the defender's (metres; negative below).</summary>
+        public double Height;
+        /// <summary>A reaction shot (overwatch, cover fire, a suppression's answer): <see cref="Tactics.ReactionPenalty"/>
+        /// unless <see cref="Steady"/>.</summary>
+        public bool Reaction;
+        /// <summary>A reaction without the penalty (the overwatch perk, an ambush's held shot).</summary>
+        public bool Steady;
+        /// <summary>The line passes through smoke or the defender stands in it.</summary>
+        public bool Smoke;
+        /// <summary>Someone stands in the line of fire.</summary>
+        public bool Obstructed;
+        /// <summary>The attacker fights beside an inspiring leader.</summary>
+        public bool Inspired;
+        /// <summary>Every hit is a critical (an attack from hiding with Shadow Strike).</summary>
+        public bool SureCrit;
     }
 
     public sealed class HitResult
@@ -62,6 +92,10 @@ namespace SecondFace.Core.Combat
         public bool Killed;
         public bool Stunned;
         public bool BypassedArmour;
+        /// <summary>The wound bleeds (a blade's crit or deep cut).</summary>
+        public bool Bleeding;
+        /// <summary>A perk kept them up (not_today) or shrugged a cripple off (cripple_shrug).</summary>
+        public string Saved;
     }
 
     public sealed class AttackResult
@@ -134,45 +168,128 @@ namespace SecondFace.Core.Combat
             return new Permission { Ok = true };
         }
 
-        public static int HitChance(Combatant att, Combatant def, AttackOpts opts = null)
+        public static int HitChance(Combatant att, Combatant def, AttackOpts opts = null) => Breakdown(att, def, opts).Chance;
+
+        /// <summary>Melee reach in metres (a weapon's tiles at an arm's length and a step, 1.6 m a tile).</summary>
+        public static double MeleeReach(WeaponDef w) => w.Range * 1.6 + 0.2;
+
+        /// <summary>
+        /// The hit chance with every term itemised (COMBAT.md B3, C1, C2, C6): the skill and its modifiers, range, cover
+        /// (half −20, full −40; a ricochet makes full −25), flanking (cover ignored, +15 crit), height (+10 and no low
+        /// cover), the target's reflex and banked evasion, heavy weapons, the aimed part, a burst, darkness, traits,
+        /// stances (a crouch or prone behind low cover makes it full; in the open a crouch is −10 and prone −20 beyond a
+        /// few metres; prone is +20 to be hit in melee; shooting prone is braced +10, crouched +5), statuses (blinded,
+        /// suppressed, choking), a reaction shot (−15), smoke (−20), someone in the way (−15), an inspiring leader (+10),
+        /// the difficulty. Without <see cref="AttackOpts.Distance"/> the distance is the tiles between X/Y as before.
+        /// </summary>
+        public static HitBreakdown Breakdown(Combatant att, Combatant def, AttackOpts opts = null)
         {
             opts ??= new AttackOpts();
+            var b = new HitBreakdown();
             var w = WeaponOf(att).def;
             var s = att.Sheet;
-            int dist = Chebyshev(att.X, att.Y, def.X, def.Y);
+            var mods = Sheet.AllMods(s);
             bool melee = IsMelee(w);
-            if (melee && dist > w.Range) return 0;
-            double chance = Sheet.Skill(s, w.Skill);
-            if (melee) chance += Sheet.ModSum(s, "hit_melee");
+            b.Melee = melee;
+            double dist = opts.Distance ?? Chebyshev(att.X, att.Y, def.X, def.Y);
+            if (melee && (opts.Distance != null ? dist > MeleeReach(w) : dist > w.Range)) { b.OutOfReach = true; b.Chance = 0; return b; }
+            void Add(string key, double v, string note = null) { if (Math.Abs(v) < 1e-9) return; b.Raw += v; b.Reasons.Add(new HitReason { Key = key, Value = Num.RoundInt(v), Note = note }); }
+            Add("skill", Sheet.Skill(s, w.Skill, mods), w.Skill);
+            var armCrip = s.IsCrippled("armL") || s.IsCrippled("armR");
+            if (melee)
+            {
+                var m = Sheet.ModValue(mods, "hit_melee", 0);
+                if (armCrip) { Add("crippled_arm", -10); m += 10; }
+                Add("aim_mods", m);
+            }
             else
             {
-                chance += Sheet.ModSum(s, "hit_ranged");
+                var m = Sheet.ModValue(mods, "hit_ranged", 0);
+                if (armCrip) { Add("crippled_arm", -15); m += 15; }
+                Add("aim_mods", m);
                 int sight = Sheet.Derived(s).SightRange;
-                chance -= Math.Max(0, dist - sight) * 4;
-                chance -= Math.Max(0, dist - w.Range) * 8;
-                var cov = opts.Cover ?? "none";
-                chance -= cov == "full" ? 40 : cov == "half" ? 20 : 0;
-                if (w.Kind == "shotgun" && dist <= 3) chance += 10;
+                var over = Math.Max(0, dist - sight) * 4 + Math.Max(0, dist - w.Range) * 8;
+                Add("range", -over, $"{dist:0.#} m");
+                if (w.Kind == "shotgun" && dist <= 3) Add("close", 10);
+                var cover = opts.Cover ?? "none";
+                b.HighGround = opts.Height >= Tactics.HighGround;
+                b.Flanked = opts.Flanked;
+                if (b.HighGround) Add("height", Tactics.HighGroundAim, $"{opts.Height:0.#} m");
+                if (cover == "half" && b.HighGround) { cover = "none"; b.Reasons.Add(new HitReason { Key = "height_denies", Value = 0, Note = "half" }); }
+                var low = def.Stance == Stances.Crouch || def.Stance == Stances.Prone;
+                if (cover == "half" && low) cover = "full";
+                b.Cover = cover;
+                if (cover == "full") Add("cover", Sheet.HasFlag(s, "ricochet") ? -25 : -40, low && opts.Cover == "half" ? "half, " + def.Stance : "full");
+                else if (cover == "half") Add("cover", -20, "half");
+                else if (opts.Flanked) b.Reasons.Add(new HitReason { Key = "flanked", Value = 0, Note = $"+{Tactics.FlankCrit} crit" });
+                if (cover == "none")
+                {
+                    if (def.Stance == Stances.Prone && dist > 4) Add("target_stance", -20, "prone");
+                    else if (def.Stance == Stances.Crouch && dist > 3) Add("target_stance", -10, "crouch");
+                }
+                if (att.Stance == Stances.Prone) Add("stance", 10, "prone");
+                else if (att.Stance == Stances.Crouch) Add("stance", 5, "crouch");
+                if (opts.Smoke) Add("smoke", -Tactics.SmokePenalty);
+                if (opts.Obstructed) Add("obstructed", -Tactics.ObstructedPenalty);
             }
-            chance -= Sheet.Attr(def.Sheet, "reflex") + def.Evasion;
-            if (w.MinBrawn != null) chance -= Math.Max(0, w.MinBrawn.Value - Sheet.Attr(s, "brawn")) * 15;
-            if (opts.Aimed == "weapon") chance -= AimWeaponPenalty;
-            else if (opts.Aimed != null) chance -= AimPenalty[opts.Aimed];
-            if (opts.Burst) chance -= 10;
+            if (melee)
+            {
+                if (def.Stance == Stances.Prone) Add("target_stance", 20, "prone");
+                if (att.Stance == Stances.Prone) Add("stance", -20, "prone");
+            }
+            Add("reflex", -Sheet.Attr(def.Sheet, "reflex"));
+            Add("evasion", -def.Evasion);
+            if (w.MinBrawn != null) Add("heavy", -Math.Max(0, w.MinBrawn.Value - Sheet.Attr(s, "brawn", mods)) * 15);
+            if (opts.Aimed == "weapon") Add("aimed", -AimWeaponPenalty, "weapon");
+            else if (opts.Aimed != null) Add("aimed", -AimPenalty[opts.Aimed], opts.Aimed);
+            if (opts.Burst) Add("burst", -10);
             var ctx = opts.Ctx;
             if (ctx != null && ctx.Darkness > 0)
             {
-                double pen = 25 * ctx.Darkness - Sheet.Attr(s, "senses");
+                double pen = 25 * ctx.Darkness - Sheet.Attr(s, "senses", mods);
                 if (Inv.CountItem(att.Inv, "t_lamp") > 0) pen *= 0.5;
-                chance -= Math.Max(0, pen);
+                if (Sheet.HasFlag(s, "night_walker")) pen *= 0.5;
+                Add("dark", -Math.Max(0, pen));
             }
-            if (Sheet.HasFlag(s, "one_hand")) chance += w.Hands == 1 ? 15 : -40;
-            if (Sheet.HasFlag(s, "hesitant") && def.Morale < 20) chance -= 10;
-            if (ctx != null && Sheet.HasFlag(s, "cistern_pale")) chance += ctx.Indoor ? 10 : !ctx.Night ? -5 : 0;
-            if (Sheet.HasFlag(s, "last_stand") && s.Hp < Sheet.Derived(s).MaxHp * 0.25) chance += 10;
-            if (s.IsCrippled("eyes")) chance -= 15;
-            chance += opts.HitMod;
-            return Num.RoundInt(Math.Max(5, Math.Min(95, chance)));
+            double traits = 0;
+            if (Sheet.HasFlag(s, "one_hand")) traits += w.Hands == 1 ? 15 : -40;
+            if (Sheet.HasFlag(s, "hesitant") && def.Morale < 20) traits -= 10;
+            if (ctx != null && Sheet.HasFlag(s, "cistern_pale")) traits += ctx.Indoor ? 10 : !ctx.Night ? -5 : 0;
+            if (Sheet.HasFlag(s, "last_stand") && s.Hp < Sheet.Derived(s).MaxHp * 0.25) traits += 10;
+            Add("traits", traits);
+            if (s.IsCrippled("eyes")) Add("eyes", -15);
+            Add("status", -Status.AimPenalty(att, melee));
+            if (opts.Reaction && !opts.Steady) Add("reaction", -Tactics.ReactionPenalty);
+            if (opts.Inspired) Add("inspired", 10);
+            Add("difficulty", opts.HitMod);
+            b.Chance = Num.RoundInt(Math.Max(5, Math.Min(95, b.Raw)));
+            b.Crit = CritChance(att, opts) + (opts.Flanked && !melee ? Tactics.FlankCrit : 0);
+            b.Crit = Math.Max(0, Math.Min(90, b.Crit));
+            return b;
+        }
+
+        /// <summary>The damage one hit would do to this defender after their armour (min, max, a critical's max), as the
+        /// UI shows it (COMBAT.md B3).</summary>
+        public static (int Min, int Max, int CritMax) DamageRange(Combatant att, Combatant def, AttackOpts opts = null)
+        {
+            opts ??= new AttackOpts();
+            var (w, item) = WeaponOf(att);
+            var mods = Sheet.AllMods(att.Sheet);
+            var ammo = item?.LoadedAmmo != null && Items.Has(item.LoadedAmmo) ? Items.Def(item.LoadedAmmo).Ammo : null;
+            double Raw(double d)
+            {
+                if (IsMelee(w)) d = Sheet.ModValue(mods, "dmg_melee", d + Math.Max(0, Sheet.Attr(att.Sheet, "brawn", mods) - 5));
+                else { d = Sheet.ModValue(mods, "dmg_ranged", d); if (ammo != null) d *= ammo.DmgMult; }
+                return d * opts.DmgMul;
+            }
+            var dd = Sheet.Derived(def.Sheet);
+            double dt = Math.Max(0, dd.Dt - (ammo?.DtPen ?? 0)) + (Sheet.HasFlag(def.Sheet, "cover_dt") && (opts.Cover ?? "none") != "none" ? 3 : 0);
+            double dr = Math.Max(0, Math.Min(90, dd.Dr + (ammo?.DrMod ?? 0)));
+            int After(double d, double t) => Math.Max(0, Num.RoundInt((d - t) * (1 - dr / 100)));
+            var k = opts.Aimed == "weapon" ? 0.3 : 1;
+            var lo = After(Raw(w.Dmg[0]), dt); var hi = After(Raw(w.Dmg[1]), dt);
+            var crit = Math.Max(1, After(Raw(w.Dmg[1]) * (w.CritMult ?? 1.5) * Sheet.ModValue(mods, "crit_dmg", 1), 0));
+            return (Num.RoundInt(lo * k), Num.RoundInt(hi * k), Num.RoundInt(crit * k));
         }
 
         public static int CritChance(Combatant att, AttackOpts opts = null)
@@ -207,8 +324,9 @@ namespace SecondFace.Core.Combat
                 return res;
             }
 
-            int chance = HitChance(att, def, opts);
-            int crit = CritChance(att, opts);
+            var bd = Breakdown(att, def, opts);
+            int chance = bd.Chance;
+            int crit = bd.Crit;
             for (int r = 0; r < rounds && def.Sheet.Hp > 0; r++)
             {
                 double roll = rng.Next() * 100;
@@ -219,9 +337,9 @@ namespace SecondFace.Core.Combat
                         res.Fumble = IsMelee(w) ? (rng.Chance(0.5) ? "drop" : "hurt_self") : rng.Chance(0.6) ? "jam" : "drop";
                     continue;
                 }
-                bool isCrit = roll < chance * (crit / 100.0);
+                bool isCrit = opts.SureCrit || roll < chance * (crit / 100.0);
                 string part = opts.Aimed != null && opts.Aimed != "weapon" ? opts.Aimed : rng.Pick(RandomParts);
-                var h = ApplyHit(rng, att, def, w, item, part, isCrit, opts.Aimed == "weapon", opts.DmgMul);
+                var h = ApplyHit(rng, att, def, w, item, part, isCrit, opts.Aimed == "weapon", opts.DmgMul, (opts.Cover ?? "none") != "none");
                 res.Hits.Add(h);
                 res.Damage += h.Damage;
                 if (h.Killed) res.Killed = true;
@@ -254,7 +372,7 @@ namespace SecondFace.Core.Combat
             return res;
         }
 
-        private static HitResult ApplyHit(Rng rng, Combatant att, Combatant def, WeaponDef w, ItemInst item, string part, bool isCrit, bool atWeapon, double dmgMul)
+        private static HitResult ApplyHit(Rng rng, Combatant att, Combatant def, WeaponDef w, ItemInst item, string part, bool isCrit, bool atWeapon, double dmgMul, bool inCover)
         {
             var aSheet = att.Sheet; var ds = def.Sheet;
             var mods = Sheet.AllMods(aSheet);
@@ -274,7 +392,8 @@ namespace SecondFace.Core.Combat
             var dd = Sheet.Derived(ds);
             double dt = Math.Max(0, dd.Dt - (ammo?.DtPen ?? 0));
             double dr = Math.Max(0, Math.Min(90, dd.Dr + (ammo?.DrMod ?? 0)));
-            if (Sheet.HasFlag(ds, "cover_dt")) dt += 3;
+            // (Hold the Line: in cover only, as the perk says; it counted everywhere before 2026-11-17)
+            if (inCover && Sheet.HasFlag(ds, "cover_dt")) dt += 3;
             bool bypassed = false, stunned = false;
             string crippled = null;
             if (isCrit)
@@ -302,12 +421,19 @@ namespace SecondFace.Core.Combat
                 if (target != null && Sheet.HasFlag(aSheet, "jam_shot")) Inv.Wear(target, final * 4);
                 final = Num.RoundInt(final * 0.3);
             }
+            string saved = null;
+            if (crippled != null && !ds.IsCrippled(crippled) && Sheet.HasFlag(ds, "cripple_shrug") && def.Used.Add("cripple_shrug")) { saved = "cripple_shrug"; crippled = null; }
             ds.Hp -= final;
             if (crippled != null) ds.Crippled[crippled] = true;
             if (stunned) def.Stunned = true;
+            // a blade's crit, or a cut deep enough, bleeds until bound
+            var bleeding = w.DmgType == "blade" && final > 0 && (isCrit || final >= dd.MaxHp * 0.2);
+            if (bleeding) Status.Add(def, Status.Bleeding, 3, isCrit ? 3 : 2, att.Id);
+            if (final > 0 && Sheet.HasFlag(ds, "adrenaline")) { var a = Status.Add(def, Status.Adrenaline, 1); a.Power = Math.Min(2, a.Power + 1); }
+            if (ds.Hp <= 0 && Sheet.HasFlag(ds, "not_today") && def.Used.Add("not_today")) { ds.Hp = 1; saved = "not_today"; }
             bool killed = ds.Hp <= 0;
             if (killed) ds.Hp = 0;
-            return new HitResult { Hit = true, Crit = isCrit, Damage = final, Part = part, Crippled = crippled, Killed = killed, Stunned = stunned, BypassedArmour = bypassed };
+            return new HitResult { Hit = true, Crit = isCrit, Damage = final, Part = part, Crippled = crippled, Killed = killed, Stunned = stunned, BypassedArmour = bypassed, Bleeding = bleeding, Saved = saved };
         }
 
         public static List<Combatant> TurnOrder(Rng rng, IEnumerable<Combatant> cs)
@@ -316,11 +442,11 @@ namespace SecondFace.Core.Combat
                 .OrderByDescending(x => x.k).Select(x => x.c).ToList();
         }
 
-        /// <summary>ally_down, leader_down, hurt, badly_hurt, scored_kill, enemy_fled, outnumbered.</summary>
+        /// <summary>ally_down, leader_down, hurt, badly_hurt, scored_kill, enemy_fled, outnumbered, suppressed, demand.</summary>
         public static void MoraleEvent(Combatant c, string e, bool attackerTerrifying = false)
         {
             double brave = (c.Courage ?? 50) / 100;
-            double d = e switch { "ally_down" => -20, "leader_down" => -35, "hurt" => -8, "badly_hurt" => -20, "scored_kill" => 10, "enemy_fled" => 8, "outnumbered" => -10, _ => 0 };
+            double d = e switch { "ally_down" => -20, "leader_down" => -35, "hurt" => -8, "badly_hurt" => -20, "scored_kill" => 10, "enemy_fled" => 8, "outnumbered" => -10, "suppressed" => -8, "demand" => -8, _ => 0 };
             if (d < 0) d *= 1.4 - brave * 0.8;
             if (d < 0 && attackerTerrifying) d *= 1.5;
             c.Morale = Math.Max(0, Math.Min(100, c.Morale + d));
