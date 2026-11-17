@@ -98,3 +98,30 @@ camera the game does not use.
 - Editor owner (the gate agent): finish the current run, then T3 and T4, the gate's new T6 measures, and the import of T2's
   clips when Unity is idle.
 - Status lines go in `docs/PROGRESS.md`, each starting with the gate's state.
+
+## 7. Findings and decisions (2026-11-17, after T1, T2 and T5's first pass)
+Gate: red, 55. Evidence: `docs/qa/motion_calibration.md` (104 segments of real captures, women and men, at their true
+frame rates), `/home/user/second-face-staging/motion/README.md` (clip QA, clips by sex), `docs/qa/body_geometry_audit.md`.
+- **A1's cause is the clothes' geometry, not the motion.** Bare, the five broad-waisted men's trunks need 5-7° of arm hang
+  (real men ≤ 7.9°); with their own baked sleeves and waist gear the arm must stand 14-17° out to clear them, against about
+  11° for a real man in a jacket. cap_Police_Male_03n's sleeve stands 8.8 cm round the bone; baked gear makes two chests
+  37-42 cm deep (real p98 ~32). The skeleton fit is right (shoulder joints at real men's and women's p98). Remedy: slim the
+  baked sleeves and gear of those bases to a real garment's stand-off, keeping Rocketbox's own textures (T5).
+- **The clips were wrong in ways the gate could not see.** 21 of the 28 clips fail the new clip QA: `idle` and `stretch`
+  played at twice their speed (CMU 141 is 60 fps, not the listed 120; it is subject 106, a woman); six clips from women
+  played on men, every gait of unrecorded sex on women; slides and seam pops. 41 sex-matched clips are staged (25 pass).
+- **A1's limit agrees with real people** (quiet-standing p98 median 13.6°, 1 of 14 over 20°): it stays.
+- **Limit decisions** (coordinator, each from real captures and the literature, none of which removes any of the 55):
+  K1 stays ≤ 8° (anatomy 0-5°, Kendall) and is applied to the clips too (an idle whose own actor bends the knee past it is
+  not used); K5 measured against the body's front, allowing toe-out (K5 ≤ F3s + 10°); W1 counts a sole as on the ground only
+  while its foot bears weight (a swing passes 1-2 cm over the floor: Winter 1992, Moosabhoy 2006); W3 jog sourced at p98 ≤ 55,
+  cap 65 (real joggers 39-52°); W4's lower bound −25, cap −32 (real walkers glance down to −25…−34°); **F3a tightened** to
+  p98 ≤ 12 cm, cap 20 (real quiet standing ≤ 6.9 cm); playback speed and cadence per clip added (T6). The gate's code and
+  `docs/PEOPLE_MOTION.md` change together, with these sources, in the editor owner's next gate change.
+- **Order now:** import the sex-matched clips and the speed fixes; slim the five bases' baked sleeves and gear; the limit
+  changes; then a whole-cast run. T3 (one contact-preserving solve) is prototyped in parallel and replaces the correction
+  stack state by state as before; T4 where contact remains.
+- **Still open (offline helper):** men's idles, stretch, yawn and sit from documented men (ACCAD Male1/Male2 need a
+  position-based re-solve); faster women's walks (the staged ones are 0.86-1.08 m/s, so 1.4 m/s would need a playback rate
+  past `RateMax`); idles whose actors stand straight (K1) and hold the head level (the game's `idle` looks 35-42° down: H1);
+  the staged clips' remaining seams and slides.
