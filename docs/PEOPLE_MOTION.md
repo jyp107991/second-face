@@ -207,7 +207,10 @@ Which limits each state is held to (`HumanMotionGateTests.CombatLimits`), and C1
 
 While the fight's own stance plays, the standing systems that hold quiet standing's own limits give way to the fight's, as the
 foot plant gives way to a fall: the foot plant (it keeps quiet standing's stance width and straight bearing leg) is paused and
-the fighter keeps the clip's stance on the ground under each foot, a planted foot held where it was put down; the gaze clamps
+the fighter keeps the clip's stance on the ground: the lower foot's lowest sole point on its ground through the hips and a foot
+the clip has down on its own ground by the leg (the clips as retargeted stand 2.5-4 cm up), the clip's own planted foot
+followed as it creeps (held, a straight standing knee bent 14-22° on a centimetre), and a foot a crossfade between two stances
+would slide stepped to its new place, one foot at a time (COMBAT.md, WP2 review, 2026-11-17); the gaze clamps
 the head within the stance's own limits (real fighters' p98, a little less); the arms are still kept out of the body
 (`ArmClearance`, told the arms hold something: neither rested at the side nor swung); idle gestures wait. The weapon walk
 (`combat:carry`) is the people's own locomotion with the fight's arms over it. The gate's captures add the fight at the game
