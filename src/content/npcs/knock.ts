@@ -27,7 +27,8 @@ export const KNOCK: NpcDef[] = [
   },
   {
     id: 'npc_kn_corin', name: 'Corin Asch', look: { seed: 1204, frame: 'broad', age: 58, ancestry: 'east_african' }, role: 'labourer', level: 4, ...KN, courage: 65,
-    dialogue: 'd_kn_corin', ally: { flag: 'kn_out_fight' }, attrs: { senses: 7, grit: 7 }, skills: { firearms: 55, mechanics: 50, survival: 45 }, equip: ['w_bolt308'], inventory: [['a_308', 10]],
+    // (B6j) and at the Cistern's door in Act 3, unless he came down off the rise (a3_corin = down)
+    dialogue: 'd_kn_corin', ally: { any: [{ flag: 'kn_out_fight' }, { all: [{ flag: 'a3_door_fight' }, { not: { flag: 'a3_c9' } }, { not: { flag: 'a3_corin', eq: 'down' } }] }] }, attrs: { senses: 7, grit: 7 }, skills: { firearms: 55, mechanics: 50, survival: 45 }, equip: ['w_bolt308'], inventory: [['a_308', 10]],
     schedule: [{ from: 6, to: 12, spot: 'corin_pump', activity: 'work' }, { from: 12, to: 19, spot: 'corin_bench', activity: 'work' }, { from: 19, to: 21, spot: 'corin_square', activity: 'idle' }, sleep('corin_bed', 21, 5)],
     barks: ['Wind\'s backing south. Pump\'ll sulk.', 'Road\'s for people with somewhere to be.', 'Keep your thumb off the bolt.'],
   },

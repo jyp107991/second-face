@@ -1,9 +1,10 @@
 import type { QuestDef } from '../../engine/quest/quest';
 import type { Cond } from '../../engine/world/logic';
 import { LEASHED } from '../chrome/catalogue';
+import { HALCYON_STAGES } from './b4_halcyon';
 
 /**
- * Act 2, B4a: the Skirts under Halcyon. Beat 16's opening (`q_a2_halcyon`, continued inside the arcology by B4b), the
+ * Act 2, B4a: the Skirts under Halcyon. Beat 16's opening (`q_a2_halcyon`, continued inside the arcology by B4b's stages), the
  * Cave-In that opens the Shift's line, the Shift's strike (keystone 12), Spare Parts' Skirts half, and Scrip. Every end
  * is set by the player's hand; the one default (the strike left unsettled) waits for a story milestone B4b sets
  * (`hc_inside`). Story notes: story/STORY_PLAN_SECRET.md, Build notes — B4.
@@ -23,6 +24,9 @@ export const q_a2_halcyon: QuestDef = {
     { id: 'contract', kind: 'barter', label: 'A contract from the Contract Office at Footgate' },
     { id: 'road', kind: 'stealth', label: 'The road up past the Clean\'s gate, when the car is down', requires: { skill: 'stealth', gte: 45 } },
     { id: 'chrome', kind: 'chrome', label: 'Concern chrome: the gate\'s lens reads the wearer as a citizen', requires: LEASHED },
+    { id: 'tunnel', kind: 'stealth', label: 'Up the road to the service yard and in through the gardeners\' tunnel at dawn', requires: { skill: 'stealth', gte: 45 } },
+    { id: 'daypass', kind: 'barter', label: 'Buy a gardener\'s day pass off the dawn line in the yard and go in with them' },
+    { id: 'kes', kind: 'tech', label: 'Kes puts her hand on the tunnel\'s lens' },
   ],
   stages: {
     invite: {
@@ -56,11 +60,8 @@ export const q_a2_halcyon: QuestDef = {
       objectives: [{ id: 'up', text: 'Find a way up the hill to Halcyon', done: INSIDE }],
       next: [{ if: INSIDE, stage: 'inside' }],
     },
-    // B4b replaces this end with the Board's beat (the gate, the offer, what the Board wants).
-    inside: {
-      journal: 'Inside Halcyon\'s gate: silence, gardens under glass, and nobody old who looks old.',
-      end: 'done',
-    },
+    // B4b: inside the gate, the Board's floor and the offer (quests/b4_halcyon.ts).
+    ...HALCYON_STAGES,
   },
 };
 

@@ -1,0 +1,1 @@
+{"name": "jog_f", "src": "CMU 141_02", "loop": true, "speed": 2.374, "root": false, "hip": 0.8433, "fps": 30, "frames": 23, "src_fps": 60, "sex": "f", "set": "f", "licence": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses", "cycle": "off", "seam_share": 0.25, "closed": true, "flips_repaired": {"rtoes": [[38, 38], [87, 87]]}, "range": null}

@@ -1,1 +1,1 @@
-{"name": "sweep", "src": "CMU 13_23", "loop": true, "speed": 0.0, "root": false, "hip": 1.0289, "fps": 30, "frames": 216}
+{"name": "sweep", "src": "CMU 13_23", "loop": true, "speed": 0.0, "root": false, "hip": 1.0289, "fps": 30, "frames": 205, "src_fps": 120, "sex": "u", "set": "both", "licence": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses", "cycle": "off", "seam_share": null, "closed": true, "flips_repaired": {"lhand": [[521, 521], [529, 529]], "lthumb": [[520, 523], [529, 529]]}, "range": [12, 20]}

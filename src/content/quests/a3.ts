@@ -194,6 +194,16 @@ export const q_a3_cistern: QuestDef = {
     { id: 'welded', kind: 'tech', label: 'Weld the great door from inside', requires: { skill: 'mechanics', gte: 40 } },
     { id: 'fought', kind: 'fight', label: 'Break the column at the apron' },
     { id: 'word', kind: 'talk', label: 'Give the designate\'s word at the door' },
+    // B6j: the door's other settlings (20e)
+    { id: 'open', kind: 'talk', label: 'The residents open their own door once the column has gone, as their ring voted' },
+    { id: 'consent', kind: 'talk', label: 'The residents walk out to the city\'s car on their own vote' },
+    { id: 'sold', kind: 'barter', label: 'Sign the guild\'s paper at the door', requires: { item: 'k_a3_intake' } },
+    // B6h: the ways in (20c), the first of them recorded as a3_in_how
+    { id: 'in_hatch', kind: 'talk', label: 'Ask MOTHER to hold the hatch\'s tray lift', requires: { any: [{ skill: 'speech', gte: 40 }, { skill: 'science', gte: 45 }] } },
+    { id: 'in_shaft', kind: 'survival', label: 'Down the grate and along the pump run', requires: { any: [{ origin: 'pump_hand' }, { skill: 'mechanics', gte: 45 }, { skill: 'survival', gte: 40 }] } },
+    { id: 'in_door', kind: 'tech', label: 'Open the great door from outside on its manual cycle', requires: { skill: 'mechanics', gte: 50 } },
+    { id: 'in_tamsin', kind: 'knowledge', label: 'Tamsin\'s service phrase at the hatch', requires: { inParty: 'npc_c9_03' } },
+    { id: 'in_bram', kind: 'talk', label: 'Bram lifts the grate from below, once his letter has come back', requires: { any: [{ item: 'k_hesper_reply' }, { item: 'k_hesper_reply_forged' }, { knows: 'bram_tell' }, { quest: 'q_a1_bram', status: 'done' }] } },
   ],
   stages: {
     knock: {
@@ -210,20 +220,20 @@ export const q_a3_cistern: QuestDef = {
     inside: {
       journal: 'I am inside the Cistern for the first time in my life, and its people are looking at a face from Knock for the first time in theirs.',
       objectives: [
-        { id: 'mother', text: 'Speak with MOTHER at her panel', done: F('a3_letter_read'), optional: true },
+        { id: 'mother', text: 'Speak with MOTHER at her panel', done: { any: [F('a3_mother_met'), F('a3_letter_read')] }, optional: true },
         { id: 'archive', text: 'Ask Ines about the Archive', done: F('a3_archive'), optional: true },
         { id: 'ring', text: 'Sit with the ring', done: F('a3_ring') },
       ],
       next: [...C9_ENDS, { if: F('a3_ring'), stage: 'door' }],
     },
     door: {
-      journal: 'The ring has decided what it wants. Now the door: the column on the apron, Knock behind it, the residents behind the steel, and me between.',
+      journal: 'It comes down to the door: the column on the apron, Knock behind it, the residents behind the steel, and me between.',
       objectives: [{ id: 'door', text: 'Settle the door', done: F('a3_c9') }],
       next: C9_ENDS,
     },
     sealed: { journal: 'The Cistern\'s door stays shut, and the city\'s fourth order is not carried out.', end: 'done' },
     opened: { journal: 'The Cistern\'s door is open, and its people walked out of it by their own choice.', end: 'done' },
-    relocated: { journal: 'The Cistern\'s people were taken east on the city\'s order.', end: 'done' },
+    relocated: { journal: 'The Cistern\'s people are gone from behind their door, and the door stands open on an empty hall.', end: 'done' },
   },
 };
 

@@ -15,7 +15,12 @@ import type { NpcDef } from '../../engine/npc/defs';
  *   dead: the Choir's undyed homespun gone grey on the road, hoods down, faces bare to the lamp (they keep no likeness by
  *   refusing lenses and portraits, never by masking). What they came to do, and their trees, are B6g's (`dialogue/a3_forces.ts`).
  */
-const COLUMN = { team: 'wardens', faction: 'wardens', settlement: 'meridian', role: 'guard' as const, courage: 70, hostileIf: { any: [{ flag: 'a3_door_fight' }, { flag: 'md_fight' }] } };
+/** B6j: hostile while the door comes to a fight (`a3_door_fight`, until the map's after-triggers settle it), or the Precinct's. */
+const DOOR_FIGHTING = { all: [{ flag: 'a3_door_fight' }, { not: { flag: 'a3_c9' } }] };
+const COLUMN = { team: 'wardens', faction: 'wardens', settlement: 'meridian', role: 'guard' as const, courage: 70, hostileIf: { any: [DOOR_FIGHTING, { flag: 'md_fight' }] } };
+/** B6j: the allies the muster called to Knock's slope (Shale's militia, the Dogs), who fight beside the player at the door. */
+const SLOPE_SHALE = { team: 'shale', faction: 'shale_militia', settlement: 'shale', role: 'guard' as const, courage: 70, ally: DOOR_FIGHTING };
+const SLOPE_DOGS = { team: 'rustdogs', faction: 'rust_dogs', settlement: 'rustdogs', role: 'raider' as const, courage: 60, ally: DOOR_FIGHTING };
 const HANDLERS = { team: 'tollmen', faction: 'tollmen', settlement: 'ninebridge', role: 'guard' as const, courage: 55, dialogue: 'd_a3_handlers' };
 /** B6g: hostile only once drawn on at the apron (`a3_uw_fight`), until the map's after-trigger settles it (`a3_unwritten`). */
 const UNWRITTEN = { team: 'unwritten', faction: 'choir', settlement: 'openfield', role: 'pilgrim' as const, courage: 80, hostileIf: { all: [{ flag: 'a3_uw_fight' }, { not: { flag: 'a3_unwritten' } }] } };
@@ -74,5 +79,31 @@ export const A3_KNOCK_NPCS: NpcDef[] = [
     id: 'npc_a3_u3', name: 'Rhoda Kalder', look: { seed: 9399, frame: 'narrow', age: 27, ancestry: 'mediterranean', over: { hair: { style: 'elvs_unkempt_french_braid', color: 0x2a1c12 }, weathering: 0.6 } }, ...UNWRITTEN,
     level: 5, dialogue: 'd_a3_rhoda', attrs: { reflex: 7, senses: 7 }, skills: { stealth: 50, survival: 45 }, equip: ['w_shiv'], inventory: [['j_cloth', 2], ['j_fuel', 1]], tolls: 3,
     barks: ['Lamp oil weighs more than you\'d think.', 'Ninety years of counting. Somebody has to stop.'],
+  },
+];
+
+/** B6j: the slope above the door, once the muster's letters are answered: two of Shale's militia, two of the Dogs. */
+export const A3_SLOPE_NPCS: NpcDef[] = [
+  {
+    // a pump-yard foreman in Shale who joined the militia the spring the Dogs came for the tithe
+    id: 'npc_a3_g15', name: 'Ruta Hesketh', look: { seed: 9401, frame: 'narrow', age: 37, ancestry: 'north_european', over: { hair: { style: 'ponytail01', color: 0x6a5236 }, weathering: 0.55 } }, ...SLOPE_SHALE,
+    level: 5, attrs: { grit: 7, senses: 6 }, skills: { firearms: 45 }, equip: ['w_bolt308', 'r_scrap'], inventory: [['a_308', 10], ['c_water', 1]], tolls: 6,
+    barks: ['Ada said be seen. We\'re being seen.', 'Knock\'s water came up our road forty years. Least we can do.', 'Nobody shoots first. Ada said.'],
+  },
+  {
+    // a tanner, the militia's oldest volunteer, who has not been this far down the track since his wedding
+    id: 'npc_a3_g16', name: 'Tobiah Mabry', look: { seed: 9402, frame: 'broad', age: 46, ancestry: 'west_african', over: { hair: { style: 'paint_buzz', color: 0x1a1410 }, facialHair: 'stubble', weathering: 0.6 } }, ...SLOPE_SHALE,
+    level: 5, attrs: { brawn: 7, grit: 7 }, skills: { firearms: 40, melee: 35 }, equip: ['w_bolt308', 'r_scrap'], inventory: [['a_308', 8]], tolls: 4,
+    barks: ['Grey coats. Polite. I don\'t trust polite.', 'Sheriff\'s compliments, designate.', 'Last time I came down this track I was getting married.'],
+  },
+  {
+    id: 'npc_a3_g17', name: 'Rust Dog (Gristle)', look: { seed: 9403, frame: 'broad', age: 34, ancestry: 'mediterranean', over: { hair: { style: 'cut_messy', color: 0x2a1c12 }, facialHair: 'stubble_heavy', weathering: 0.65 } }, ...SLOPE_DOGS,
+    level: 5, attrs: { brawn: 7, reflex: 6 }, skills: { firearms: 40, melee: 45 }, equip: ['w_revolver38', 'r_scrap'], inventory: [['a_38', 10]], tolls: 5,
+    barks: ['We sit. We look ugly. It\'s a skill.', 'Count us, warden. Go on. Twice.'],
+  },
+  {
+    id: 'npc_a3_g18', name: 'Rust Dog (Yarrow)', look: { seed: 9404, frame: 'narrow', age: 24, ancestry: 'latin_american', over: { hair: { style: 'elvs_unkempt_french_braid', color: 0x1a1410 }, weathering: 0.5 } }, ...SLOPE_DOGS,
+    level: 4, attrs: { reflex: 7 }, skills: { firearms: 40, stealth: 40 }, equip: ['w_zip38', 'r_scrap'], inventory: [['a_38', 6]], tolls: 3,
+    barks: ['Pack looks after its own. Apparently that\'s you now.', 'Somebody tell the wardens we don\'t bite. Much.'],
   },
 ];

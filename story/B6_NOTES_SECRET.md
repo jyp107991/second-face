@@ -763,7 +763,7 @@ The default shared files touched by a content slice are the registries: `quests/
   is in play; Hale only if alive.
 - **Estimate** 1 h.
 
-### B6h — Inside, for the first time
+### B6h — Inside, for the first time — BUILT 2026-11-17 (deviations under "As built")
 - **Create** `dialogue/a3_cistern.ts` (`d_a3_way` with the five ways in, `d_a3_faces`, `d_a3_mother`, `d_a3_archive`, `d_a3_ines`,
   `d_a3_pell`, `d_a3_bram`, `d_a3_teague`, the residents' barks).
 - **Touch** `tools/maps/gen_ch1.py` → `maps/cistern9.ts` (Act 3 instances `npc_c9_0N_a3` with `dialogue` overrides; Tamsin's
@@ -777,7 +777,7 @@ The default shared files touched by a content slice are the registries: `quests/
   promise and by check.
 - **Estimate** 1 h.
 
-### B6i — The ring
+### B6i — The ring — BUILT 2026-11-17 (deviations under "As built")
 - **Create** `dialogue/a3_ring.ts` (`d_a3_council` with Tamsin's card, Pell's certificate and the three precedent readings,
   Bram's power, the vote).
 - **Reads** `tam_secret`, `inParty TAMSIN`, `a3_archive_promise`, `origin clinic_aide`, `prec_unrecorded`, `a3_guild_in`,
@@ -1700,6 +1700,199 @@ Act 3 clause; the opening's fight unchanged, tested).
 - **B6l (the close):** with_you places **Petra, or Juniper (`npc_a3_u1`) if Petra is dead**, and Thaddeus and Rhoda.
   **B6p:** the blade is Thaddeus (`npc_a3_u2`); he is dead after `a3_uw_how` = fought, and with Petra's people when with_you.
 - **B6w:** `a3_unwritten` = with_you from the hostile fixture: Speech 40 is enough there (the poisoner given to the cellar).
+
+### B6i (built 2026-11-17, alongside B6h)
+**Done, all of the slice:** `dialogue/a3_ring.ts` (one tree, `d_a3_council`: 32 nodes, about 7,500 words as written, each
+variant once; every node with a return line; all seven companions speak) · `tools/maps/gen_ch1.py` → `maps/cistern9.ts` (confirmed
+byte-identical first; additions only: the council room's table gets the id `council_table`, and a talk entry "The council
+table" → `d_a3_council`) · `tests/b6i.test.ts` (31). No engine change. `npm run check`: validate, the tests (855) and the people
+gate (red/stale as before) pass; the typecheck fails only in B6h's `a3_cistern.ts`, in progress alongside.
+**Shared touches (small, local, new lines only):** `a3_conds.ts` (`INES_PREPARED`, `TEAGUE_LEADS`, `STRUCK_TRAP`, mod
+`STRUCK_AS`, `STRUCK_CLAIMED` after `ASH_WITH_UNWRITTEN`; the registry's B6i block) · `dialogue/index.ts` (registration).
+`quests/a3.ts` untouched: `q_a3_cistern`'s `inside` objective "Sit with the ring" and its move to `door` on `a3_ring` were
+already B6a's.
+
+**How it plays (and where it differs from §2.3 20d and §8 B6i):**
+- **Where it sits.** Props have no conditions, so the council table is a talk prop in every act: a plain look before Act 3 or
+  before the player is inside; the ring once `a3_inside` (B6h) and while neither `a3_c9` nor `a3_ring` is set; after the vote
+  (or a door settled without one) the table's after-scene. **B6h may also point Ines's own tree at the ring** (a "call the
+  ring" option opening `d_a3_council`); nothing in B6i needs it. The ring: Ines, Teague, Pell, Bram and the four the residents
+  sent (Ola Fairley, Wes Benn, Sayer Quist, Effie Calder); the rest of the sixty in the doorways; the designate in the ninth
+  chair, "kept for the city's assessor, in case he ever came to a meeting" (added, a found detail). The player has no hand,
+  only one speech at the vote. Getting up leaves the ring sitting; it resumes at the hub (`a3_ring_called`).
+- **What they want** (round the table, oldest first; each a rational motive): Teague, weld it (she held the lamp for Ines's
+  mother's weld, at fifteen; "The ones who wanted the door open are not here to argue with me"); Ines will say hers at the
+  vote; Sayer, the column (a mass under his ribs Pell cannot name; the city's clinics; Nine says the form would find him unfit);
+  Pell does not know; Bram, MOTHER kept; Ola, out and back ("Is that allowed?"); Wes, the sky's colour; Effie, what continuity
+  means (once the replies are known: "It meant no").
+- **Tamsin's card** (`a3_tam_card`; Tamsin travelling, `tam_secret` kept | mother; the player says it is hers to tell): her
+  thirty-week birth, Pell's one true "no", sixty in the city's book and sixty-one at MOTHER's ration counter since she was six.
+  MOTHER owns it at the grille ("I am sorry I did not tell you"); burned, the grille is dark and Tamsin says it for her. Then
+  "Ines. Did you know?" **`INES_PREPARED` is wider than the plan** (promise ∨ `tam_secret` = ines): also the Archive opened
+  (B6h), the replies' copy read aloud in her own voice at the ring, or her own telling at the table (each is her telling the
+  room herself, so the residents are not "learning from someone else"). Ready → she stands with Tamsin (`a3_ines` = opens).
+  Not ready → **falls**: Effie asks what the Archive was for, Teague answers (the city's letters, "told us the hatch shut for
+  maintenance"), and takes the head of the table; Ines sits on a stool by the wall. A failed telling (`seals`) does not
+  protect her: the card still breaks her.
+- **Added: Tamsin's other question** (after the card, Tamsin travelling): her mother. Ines tells it: the winter before Tamsin
+  was born two of the young ones went down the pump run to the hatch at night; Tamsin's mother was one; Ines talked them back;
+  "by the spring I knew what I had done"; "Rosalind told me." Teague: "I did my duty." (The bible's two secrets, Ines's and
+  Teague's, said at the ring; the mother's name and fate are left unsaid: **B6h/B6v should not contradict "talked back, the
+  winter before"**.) Knowledge `a3_ring_hatch`; it lowers the open vote against Teague.
+- **Ines's own telling** (the plan's T route at the ring; Speech 50: −10 the Archive promised, −10 the faces, −5 Knock's
+  standing ≥ 20, +10 the Archive sealed against the player): the three orders in the Archive drawer, "the first when I was
+  twelve, the last when I was not much older than you" (Maud's lockdowns: Ines is two years older), maintenance. Success →
+  `opens`; failure → `seals` ("We keep the door"). **Or the copy** (`k_ar_refusals` in the pack, no check): she reads MOTHER's
+  three replies aloud, POPULATION VARIANCE UNCHANGED. THANK YOU FOR YOUR CONTINUITY, and the room hears its own goodnight as a
+  refusal → `opens`, `a3_ring_refusals`. Neither writes `a3_archive` (B6h's).
+- **Pell's certificate.** Pell always knew whose boxes they were (bible); he ticks FIT FOR RELOCATION sixty times a quarter;
+  Nine: "Schedule 4: a reserve is assessed fit or it is not carried. It has never been tested on a whole reserve." **The three
+  readings** (`STRUCK_AS`, new mod): `yields` (written down as living people outside any reserve; the Court will hear them) ·
+  `outside`, or no ruling (nobody's; no court; the text differs for "nobody has ever asked") · `property` (salvage: the next
+  buyer who reads the register) · **`claimed`, the trap**: property ∧ `a3_guild_in` ∧ Orme alive: "a factor at the stand with a
+  book of claims... she would only have to write their names down first"; Tamsin: "That's what it did to me. You don't get to
+  be free. You get to be nobody's. And then you're anybody's." The trap is said before the pen is uncapped (fair). Answers:
+  unfit (Speech 40: −10 the card, −10 MOTHER burned, +15 the ring voted for the city; **no check for a clinic aide**) · fit
+  ("write what's true": fit, all but Sayer, whose "no" is true: **B6j/B6k: under a relocation Sayer is the one not carried**) ·
+  refused (the word fails: he sends nothing; last quarter's FIT stands) · "not yet" (pending at the ring and after the vote,
+  until the door is settled). `STRUCK_CLAIMED` = unfit ∧ the trap: **B6j's struck door reads it (Orme claims them on the
+  spot)**.
+- **Bram** (the X route): asked if she could be put to sleep, "No... I've read page forty every night since I was nine"; asked
+  about the core under the Spire (Speech 40: −15 his letter carried, −10 MOTHER burned, −10 the card, −5 pump hand, −10 he was
+  stopped, +10 he put her to sleep tonight): same make, two things eaten, couriers' paper and one trunk with two couplings; the
+  second sleeps, the first, under load, never wakes ("page forty-one, in red, with a line round it that says don't") →
+  `a3_bram_cut` (B_MEANS with Mechanics 50). A failure is spent. **Deviation from B6g's note:** with MOTHER burned the cut of
+  MOTHER is moot, but **Bram's telling is not**: he still knows the make ("They brought oil"), so B's alternate stays open.
+  Never asked at the ring, he can be asked at the table after the vote or the door.
+- **The vote** (`a3_ring`, and `a3_ring_word` = shut | open | city | yours, added): `a3_ines` is fixed when the vote is asked for
+  if nothing set it (the Archive open → opens, else seals). The leader's default: Teague or a sealing Ines → sealed; an opening
+  Ines → open. The player speaks once: the default needs no check; against it, checks read what the room knows (passives "The
+  room": the refusals, the card, the faces, Pell's charts, the hatch). Shut against Ines: Speech 40 (+10 faces, +10 refusals,
+  +10 burned, −10 Pell's charts). Open: Speech 50 against a sealing Ines, 55 against Teague (−10 faces, −10 refusals, −5 card,
+  −10 struck and heard, −10 burned, −10 the hatch told, +10 the Archive sealed). City: Speech 55 always (+15 refusals, +10 card,
+  +15 Teague, −10 Pell's FIT, −10 burned, −10 no faces, −5 the Court upheld the order). A failed speech is the leader's
+  default; what was said is kept. **`city` means the ring's own consent to go with the column** ("on our feet, with our names...
+  somebody tell the captain"): **B6j decides how it meets the door** (suggested: the residents walk to the car of their own will;
+  Tamsin's red line reads order | forced | sold, which this is not, but her approval takes −15 for the player's arguing it).
+- **Teague's order** (only after a sealed vote under Teague, MOTHER not burned): "Put her to sleep. A machine that decides who
+  to keep will decide who to let in." MOTHER: "Resident Coyle. You have the manual open at page forty." Stop him (Speech 45: −15
+  his letter, −10 the card, −10 he told you he won't) → `a3_bram_stopped`, MOTHER awake and thanking him by name; say nothing or
+  fail → `a3_mother` = asleep (the second coupling: the fans and lights on, the click gone; "page forty-one is how you wake her").
+  Never under Ines, never with MOTHER burned, never after an open or city vote.
+- **For later slices.** **B6j (the door):** `a3_ring` (sealed | open | city) and `a3_ring_word`; `a3_pell` (unfit → the struck
+  route; `STRUCK_AS` for what it means; `STRUCK_CLAIMED` → Orme claims them); `a3_mother` = asleep (no MOTHER to open or hold
+  the door; Bram by her cabinet); `a3_bram_stopped` (Bram sits up with her); `TEAGUE_LEADS` (Teague, not Ines, speaks for the
+  residents at the door and wants the weld: the welded route's Teague). **B6k (Knock after) / slide 3:** `a3_ines` (falls →
+  Teague), `a3_ring`, `a3_mother` asleep, `a3_pell`, knowledge `a3_ring_hatch`. **B6q/B6r (B's climax):** `a3_bram_cut` (the first
+  coupling at the core's trunk; the couriers' slot matches B6b's `a3_drop_heard`). **B6v (Tamsin's slide):** `a3_tam_card`, and
+  her mother's story told (`a3_ring_hatch`).
+
+### B6h (built 2026-11-17, alongside B6i)
+**Done, all of the slice:** `dialogue/a3_cistern.ts` (18 trees: the ways in `d_a3_way`, the faces `d_a3_faces`, Tamsin inside
+`d_a3_tamsin`, MOTHER `d_a3_mother` and the letter `d_a3_first_letter`, the Archive `d_a3_archive`, Ines, Pell, Bram, Teague,
+`d_a3_c9_r1..r4`, and the inside props `d_a3_lift`, `d_a3_pumprun`, `d_a3_inner_door`, `d_a3_cot`; about 109 nodes of its own
+and 11,400 words counting every text variant; every node with a return line; all seven companions speak) ·
+`tools/maps/gen_ch1.py` → `maps/cistern9.ts` (confirmed byte-identical first, B6i's table included; then an appended Act 3
+pass) · `tests/b6h.test.ts` (40). No engine change, no Knock map change. `npm run check` was green (894 tests) until the
+arcology lane's work in progress broke the shared fixture (see the report); B6h's own tests pass.
+**Shared touches (small, local):** `knock.ts` (an import; one start entry each at the top of `d_kn_hatch` and `d_kn_door`, on
+`COLUMN_HERE`; the ways' nodes spread at the end of both) · `a3_knock.ts` (an import; two options after Maud's secret and two
+nodes at the end of `d_a3_maud`) · `a3_conds.ts` (`INSIDE`, `MOTHER_DARK`, `TAM_INSIDE`, `BRAM_ANSWERED` after B6g's block; the
+registry's B6h block) · `quests/a3.ts` (`q_a3_cistern` only: five `in_*` routes, the `mother` objective done on meeting her,
+the `door` journal no longer assumes a ring) · `items/story_a3.ts` (`k_a3_first_letter` gets `read: d_a3_first_letter` and a
+desc that stays true once opened) · `npcs/ch1_cistern.ts` (three barks of the retired opening that were untrue in Act 3: Pell's
+"die on my floor", Wes's "if you go out there", Effie's "Tamsin says she's going out"; looks untouched) · the dialogue index.
+
+**How it plays (and where it differs from §2.3 20c and §8 B6h):**
+- **Where the ways in start.** Knock's own props: the hatch and the door open their Act 3 nodes during the lockdown (start
+  entries in `d_kn_hatch`/`d_kn_door`, not a map change: B6g was in `gen_knock.py`); from either, "the other ways in" is the
+  apron hub (`d_a3_way`), which also reaches the grate (no prop: B6g's text puts it at the dark west end). After `a3_c9` both
+  props fall back to the opening's nodes ("The tray is shut..."): **B6j/B6k should add their own entries** (MOTHER opening the
+  hatch to Knock under `knock`; the door open under `opened`).
+- **hatch** (MOTHER holds the tray lift: the tray runs out on its rails and there are rungs behind it). Speech 40 with the plan's
+  three modifiers, the slip as an option at the hatch (read back once, `a3_slip_read`), **plus −10 Ines's word at the Grille
+  (`a3_hatch_offered`, B6f's suggestion)**; the argument is the clause itself ("The order executes at the door. This is the
+  hatch."). Science 45 is the exchange menu: the player books themselves in as one heavy item ("Addressed to?" "Reserve 9."
+  "Received."); −10 pump hand, −10 archive clerk. A refusal: "I would like to be persuaded. I do not know how to be."
+- **shaft = B6g's grate** (the intake, and the pump run behind it): a pump hand waits for the fan's hourly stop (free; the
+  spring screen-cleaning); Mechanics 45 finds the fan's SERVICE STOP — NOT DURING OCCUPANCY (an hour); Survival 40 goes down
+  between the beats on a rope. After the Unwritten's fire it stands open with their bar beside it and the fan dead: free.
+  The pump-run hatch's wheel is the opening's ("the third dog first").
+- **door**: Mechanics 50 at a painted-over RESCUE ACCESS — MANUAL CYCLE plate (−10 pump hand; −5 `kn_door_welded`, the weld
+  noticed in the opening; the Act 3 passive shows the weld but teaches nothing, so the plan's 50 stands). The warning is the
+  plan's. **Deviation:** not "as forced unless the player stops Lowe": the column comes down the lane behind Lowe (Reyes if he
+  is dead, Kress if both are) and **holds at the yellow line whatever the player says** (told to hold → `a3_lowe_held` = asked;
+  silence → silence: "Silence is not a word, designate. I will wait for one"), because the clause wants a word, not a door, and
+  nothing may resolve unasked. Sets `a3_door_cycled`, `a3_column_apron`; never `a3_c9`. The quest goes straight to `door`
+  (B6a's transition). Knock sees the door move for the first time (Maud on her feet; Corin standing up with his rifle when he
+  holds the slope); Ines −10 and memories on Ines, Bram, Maud, Lowe.
+- **tamsin**: her "override phrase" is **Bram Coyle's service phrase in his own voice**, which she has had since she was nine;
+  MOTHER knows exactly who it is ("You used it on this panel at nineteen, and at twenty-two, and at twenty-three... The last
+  time, you did not ask, and I held it anyway") and grants the hold. No check; Tamsin travelling, MOTHER awake; +5.
+- **bram**: **Deviation, a fix:** in the new origin `q_a1_bram` could never be finished (its answer had no way back: the
+  interior was unreachable). Now the answer from Shale goes through the hatch's slot (Hesper's reply, the forged one, or her
+  word carried by mouth, each with the opening's flags and trust), or into Bram's hand inside (`d_a3_bram` reuses the opening's
+  in-person nodes, which were written for exactly that). The plan's condition (the letter came back) holds: Bram then stops
+  the fan, comes up the intake with a lamp and lifts the grate from below ("Mind the third rung"). A player who walks off
+  between the slot and the grate finds his lamp waiting there (`a3_bram_coming`).
+- **`a3_in_how` is the first way only.** After it the lift (while MOTHER is up), the pump run (its wheel can also be turned from
+  inside, free) and the open door carry the player both ways; the interior's exits back to Knock are new Act 3 exits beside the
+  opening's own (`c9_door_open`/`c9_shaft_open` are never written in Act 3).
+- **The faces** (trigger `a3_faces`, the first step inside): by the way in (the light down the hall through the open door; the
+  lift's rungs; the pump-run hatch under a red lamp, Bram saying "It's all right" to nobody) and by the fire (smoke, emergency
+  lamps, a hand pump). Let them look (a girl of six with dust on her hand; pale, thin, good teeth, issued grey) · say your name
+  (Maud's: they know her voice) · **added: "Maud wanted to see one of your faces"**: they come one at a time and tell the player
+  their faces for her (`a3_faces_for_maud`), which the player can carry back to Maud (`d_a3_maud`, once). Ines comes last: "So
+  that is what you look like" (by the door: "You have opened my mother's door"), and asks the player to the table.
+- **Tamsin, never out** (`TAM_INSIDE`): she comes through the faces first. U8's J, inside: "Your nose is worse than your voice";
+  the photograph; "You never came out" → "You never asked... and I was scared. Both" (the consequence of never asking, said
+  without blame); her palm against the player's. "Come with me" joins her (U8's `tam_met`, `tam_joined`, `join`, +10, and
+  `tam_out` so every "out" reader and her Shale walk-up behave; `a3_tam_inside_join`), or "stay with them, they'll need you in
+  the room": she waits among the beds (`d_a3_tamsin`) and comes when asked. **B6i:** a Tamsin still inside is in the room at the
+  ring, but has no card (she never did her quest).
+- **MOTHER** (`d_a3_mother` carries `d_c9_mother` whole): no ration number in her field for the player ("I have never counted
+  you. I have only ever thanked you"); the letter from the returns drawer, given unopened (open it there, or later from the pack:
+  `d_a3_first_letter`); "Why didn't you give it to me?" ("A letter that asks a child to agree is not correspondence. It is a
+  form... I have kept others from the count, when the count would have taken them" — Tamsin not named); then **her one
+  question, asked once: "Should I open the door?"** (`a3_mother_ask` = open | sealed | ring | unsure; "What do you want?" first if
+  asked: kept when she is not, her spares counted by Bram). Hub: why she never told the ring ("A refusal by a caretaker is a
+  fault... scheduling my repair for fifty-four years"). **Maud's letter, decided here (not plot-bearing):** the sold letter was
+  the last of nineteen years of weekly letters from **Elspeth Halloran** (Ines's mother, the welder: she began writing to Knock
+  the week after the weld) to **Orla Ferrow** (Maud's mother, the hatch-keeper before her); no reply came; she asked MOTHER every
+  hatch day for a year. Ines: "About the beans, mostly. About me." Both carried back to Maud (`a3_maud_letter_who`,
+  `a3_ines_beans`). New names, checked against the cast.
+- **MOTHER dark:** burned → Bram on the floor before the black panel has the letter out of the steel returns drawer; asleep
+  (B6i) → the fans and lights on, her click gone, "Page forty-one is how you wake her" (B6i's manual). No question then; if she
+  wakes, the question waits for her.
+- **The Archive** (`d_a3_archive` at its door; the same nodes in Ines's tree): the plan's routes exactly (promise + the copy, no
+  check; Speech 50 with the plan's five modifiers; "the PC never wrote" = no letter memory on Ines). **Added:** the player may
+  tell her it is hers to keep shut (`sealed`; Tamsin's −5 is a runtime interjection). Opened: sixty grey boxes and a folder of
+  the city's four orders, the first two stamped by the key-holder before her, the third and fourth by Ines (the first when she
+  was twelve; she took the key at twenty-seven, the winter of the third lockdown: B6i's "the last when I was not much older than
+  you" agrees); **MOTHER, if awake, prints her own replies into the folder** (`a3_mother_printed`), so an opened Archive always
+  gives the ring the refusals (B6i's `R_REFUSALS` reads `a3_archive` = open). Burned: Ines in the doorway of a black room, "I
+  find that I remember every word" (`a3_ines_remembers`, for B6i/B6k).
+- **The residents.** Kept clear of B6i's ring: Wes's question here is rain, not the sky's colour (B6i's); Pell's charts are the
+  ring's ("Ask me at the table"); Teague says here what continuity means to her and how Bram could weld the seam properly
+  (`a3_teague_weld`), and keeps the why of it (the lamp she held) for the ring; Ines's "sit down at this table and I will call
+  them in" is knowledge `a3_ines_ring` (B6i's `a3_ring_called` is the ring sitting), and **Ines can call the ring from her own
+  tree** (B6i's suggestion: opens `d_a3_council` while `RING_CAN_SIT`). Pell sends a blue box for Afua's boy (B6f's Afua can
+  take it) and mends the player as often as asked. Ola: goats; Sayer: an onion described slowly, for six o'clock; Effie: one step
+  past the yellow line.
+- **The map.** `npc_c9_0N_a3` / `npc_c9_rN_a3` with the Act 3 trees while `a3_open` ∧ `a3_c9` ∉ {opened, relocated} (the opening's
+  placements step aside on `a3_open`); `npc_c9_03_a3` among the beds while `TAM_INSIDE`. Talk props `mother_term`,
+  `archive_door`, `shaft_hatch`, `great_door`, `stranger_cot` (label now "A clinic cot") open Act 3 trees that carry the opening's
+  whole (tested node for node before Act 3); new prop `hatch_lift` (a terminal stand-in, the lift's inside end, hall's west wall)
+  and spawn `from_hatch`; Act 3 exits "The apron" (door cycled) and "The pump run" (open); `hall_first` not after the cycle.
+- **For later slices.** **B6j:** `a3_door_cycled` + `a3_column_apron` (the column is at the yellow line, the door already open;
+  place the column on the apron for it, and start Lowe's door scene there); `a3_lowe_held`; `a3_mother_ask`; `a3_teague_weld`
+  (the welded route: Bram "properly"); `TAM_INSIDE` (a Tamsin who stayed is behind the door); B6i's ring can still sit with the
+  door open (its `RING_CAN_SIT` does not read the cycle, and its text has an open-door variant): decide whether the door way
+  skips the ring (suggested: no; the column holds for the word). **B6k:** the residents' placements end on opened/relocated;
+  their apron trees can reuse `d_a3_c9_r1..r4`'s voices. **B6s (slides 3–4):** `a3_faces_for_maud` (Maud has faces on her hatch
+  days), `a3_maud_letter_who`, `a3_archive`, `a3_mother_ask`. **B6q:** the Ledger's last conversation can quote the first letter
+  (`a3_letter_read`: "YOU WILL BE ASKED"). **B6v:** Tamsin's slide reads `a3_tam_inside_join`. **Runtime (§9.5):** the lift's
+  inside end, the door open on `a3_door_cycled`, the grate lifted on `a3_shaft_open` (props have no conditions).
 
 ## Defaults taken for the open questions (coordinator, 2026-11-17; the owner may override)
 1. After the ending: epilogue, credits, then the title screen; the named autosave at the point of no return stays

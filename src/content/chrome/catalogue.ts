@@ -21,6 +21,8 @@ const C: ChromeDef[] = [
   // Arms
   { id: 'ch_arm_breaker', name: 'Breaker Arm', desc: 'A hydraulic forearm. Doors, plating and bones are all just resistance.', slot: 'armR', grade: 'dark', drift: 14, price: 1800, visible: true,
     mods: [{ target: 'dmg_melee', add: 6 }, { target: 'attr:brawn', add: 2 }], abilities: ['chrome_breaker_arm'], upkeep: { item: 'u_powercell', everyDays: 7 }, surgery: { hours: 9, difficulty: 50 } },
+  { id: 'ch_arm_contract', name: 'Contract Arm', desc: 'Company issue fitted at Halcyon’s gate: a carbon forearm with a lift at the elbow, the kind the Window puts on debtors who carry. Strong and tireless, and switched off from the hill if the Window says so.', slot: 'armR', grade: 'concern', drift: 8, price: 2200, visible: true, networked: true,
+    mods: [{ target: 'dmg_melee', add: 4 }, { target: 'attr:brawn', add: 1 }, { target: 'derived:carry', add: 15 }], abilities: ['chrome_breaker_arm'], surgery: { hours: 7, difficulty: 60 } },
   { id: 'ch_arm_steady', name: 'Gyro Hand', desc: 'A stabilised pre-Burn surgical hand. Never shakes, never tires.', slot: 'armL', grade: 'old', drift: 7, price: 1100, visible: true,
     mods: [{ target: 'skill:medicine', add: 10 }, { target: 'skill:mechanics', add: 5 }, { target: 'hit_ranged', add: 4 }], surgery: { hours: 7, difficulty: 50 } },
   // Legs
@@ -30,6 +32,8 @@ const C: ChromeDef[] = [
     mods: [{ target: 'derived:carry', add: 50 }, { target: 'derived:ap', add: 1 }], surgery: { hours: 10, difficulty: 70 } },
   { id: 'ch_neural_lattice', name: 'Lattice Port', desc: 'Concern work: a port at the nape and a lattice down the top of the spine, the kind the Window fits its grid-hands. Halcyon’s grid answers when you think at it, and so does Halcyon.', slot: 'neural', grade: 'concern', drift: 9, price: 3000, visible: true, networked: true,
     mods: [{ target: 'skill:science', add: 8 }, { target: 'skill:security', add: 5 }], abilities: ['chrome_grid_link'], surgery: { hours: 6, difficulty: 65 } },
+  { id: 'ch_neural_regent', name: 'Board Lattice', desc: 'The Board’s own work, never sold below the rim: a lattice down the whole of the spine that runs a second, faster mind beside yours. A moment comes apart into steps you can choose between. It is the best chrome in the Reach, and it reports everything.', slot: 'neural', grade: 'concern', drift: 18, price: 7800, visible: true, networked: true,
+    mods: [{ target: 'derived:ap', add: 2 }, { target: 'derived:initiative', add: 8 }, { target: 'skill:science', add: 10 }, { target: 'skill:speech', add: 5 }], abilities: ['chrome_reflex_burst', 'chrome_grid_link'], surgery: { hours: 16, difficulty: 85 } },
   // Spine
   { id: 'ch_spine_hauler', name: 'Hauler Spine', desc: 'Company issue for the pits: a braced spine with a lift-assist at the hips. It carries a cart’s load, never tires, and reports every load to the Window.', slot: 'spine', grade: 'concern', drift: 7, price: 1600, visible: true, networked: true,
     mods: [{ target: 'derived:carry', add: 45 }, { target: 'derived:maxHp', add: 5 }], abilities: ['chrome_heavy_bearer'], surgery: { hours: 8, difficulty: 55 } },

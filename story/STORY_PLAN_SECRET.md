@@ -573,7 +573,7 @@ backwards; +3 the card sold; +3 stripped), Nine (the Ring is outside the record:
 (people in towers that are not sealed; −10 the Coat's money, +5 the card given, −10 Leven burned), Ash (the boy who burns
 for water: +5 Sami taken on; −10 Leven burned; −5 the Coat's money).
 
-## Build notes — B4: Halcyon & the Skirts (2026-11-17; B4a built, B4b planned)
+## Build notes — B4: Halcyon & the Skirts (2026-11-17; B4a and B4b built)
 B4 is beat 16 (`q_a2_halcyon`) and §6.2's five lines, in two halves. **B4a — the Skirts** (built): the debtor sprawl under
 the arcology as a place, its people and economy; the seventh companion (Kes, `npc_hs_01`, arc in `story/U8_kes_SECRET.md`);
 the two Concern lines that live in the Skirts (**the Shift**, opened by *The Cave-In*; **Spare Parts**, its Skirts half) and
@@ -737,7 +737,7 @@ clause; +5 the claim, −5 the car); Ash (a man who cut his own link: Kes's ques
 the finder's fee); Tamsin (Kes: sisters in a day; "the Fridge" catches on; −10 the scabs walked through, −30 the fee);
 Ilya (the Clean's rifles; reads the Footgate post; −5 the car).
 
-### B4b — Halcyon (planned; continue from B4a's flags)
+### B4b — Halcyon (built 2026-11-17; the plan below, then "As built")
 **Place.** Up the funicular (or the road through the Clean's gate) to the rim: maps `hc_terrace` (the top station's
 concourse and the gardens under glass: silence, fruit trees, nobody old who looks old), `hc_clinic` (the Clinic floors,
 floor nine: the recovery wards, the cold store, Dr Noor Qadir), `hc_board` (the Board's floor and the hall of the
@@ -774,6 +774,57 @@ gardens' seed and fruit for the Skirts or Openfield), *Funicular Pass* (the car'
 **B4b must:** set `hc_inside` when the player first stands inside the gate (arms the strike's default); replace
 `q_a2_halcyon`'s `inside` end with its stages; read `hs_marked`, `hs_gate_shut`, `hs_car_down`, `hs_parts`, `hs_nils`,
 `hs_lisle_favour`, `hs_leash_sold`, `kes_link`, `kes_lineage`, `kes_backdoor`, `k_hc_invitation`, `hs_bell_met`.
+
+**As built (B4b, 2026-11-17).** Content: `tools/maps/gen_hc_halcyon.py` → `maps/hc_terrace.ts` (open, at `halcyon`, rim kept),
+`hc_clinic.ts`, `hc_board.ts`, `hc_works.ts` (cells); `npcs/hc_halcyon.ts`; `dialogue/hc_halcyon.ts` (gate, station, yard,
+tunnel, registry, gardens, lifts, the terrace's people, Kes's hub `KES_HC_NODES` spread into `d_hs_kes`), `dialogue/hc_clinic.ts`
+(floor nine), `dialogue/hc_board.ts` (the Board's floor and the works); `quests/b4_halcyon.ts`; leads `world/hc_halcyon.ts`;
+items in `items/story_b4.ts`; chrome `ch_arm_contract`, `ch_neural_regent`; settlement `halcyon`; the Concern's initiation is
+`q_hc_contract`. B4a trees touched: `d_hs_car` (ride up on paper: `UP_PAPER`), `d_hs_bell` (a season's term, or her price:
+something true; both enlist `concern` probationary, which costs a Shift membership), `d_hs_grid` (Kes forges a citizen),
+`d_hs_saba` (Dawit home; or told the truth about the cold store, or lied to), `gen_hs_skirts.py` (Dawit at home on Nursery).
+Tests `tests/b4b.test.ts` (48); `tests/a3_fixture.ts` finishes the beat at `hc_offer`'s end stage.
+- **Deviations.** (1) *The Saints' girl on floor nine:* Immy is sixteen in Bridgeward's canon, so she is never on the ward. The
+  wired person in the listening room is **Sela Brandt** (`npc_hc_21`, twenty, stated on the page), the Saints' Listener before
+  Immy, who went up at nineteen; she is there in every game and listens to the Ledger's leak for the Concern's Exchange desk
+  ("a keyhole: that's why they want the whole book"). With `bw_static` = concern, Immy is held in the terraces' school "until
+  nineteen, as the contract says" (told, never shown) and can be sent home: Kes prints a pass at the registry, or Soto sells
+  her paper back for 300 (`hc_immy` = home). Sela comes off the wire by Science 45 or Kes (`hc_listener` = free). (2) *Renames
+  for the one-name rule against slices built after the draft:* the gardens' keeper is **Kojo Frimpong** (draft Yaw Boateng),
+  the Clean's captain **Ingrid Saar** (Kask), the counting girl **Linh Hoang** (Tran); her mother Hoang Mai. (3) Quest title
+  *Garden Heist* (the validator refuses "The" + noun). (4) **Dawit** (9-1182) lives on the ward unless the Weighhouse was
+  exposed: when the Skirts stopped sending, nine drew him to the end (the cold store's column; Qadir says so; Saba can be told).
+  He goes home when the ward is emptied in time. (5) **Nils**, if up, is reserved WHOLE for the Chair "before the ball"; the
+  ball begins when the player goes to the Chair (a gardener and the narrator warn), so going to it with Nils still on the ward
+  kills him (`hc_nils` = dead); walking him out first (Stealth 45) or emptying the ward saves him (`hc_nils` = freed,
+  `hs_nils` = freed). (6) **Dysart**, recalled after a won strike, is on the ward, reviewed; told to stay or to go down with the
+  rest (`hc_dysart`). (7) **Dr Lisle**, up the hill after an exposed Weighhouse, sees the ward for the first time and helps
+  (`hc_lisle_turned`: −10 to wake, −10 at Qadir). (8) **Kes's ride:** port cut out — by hand, safe; dark — Science 50 or fits;
+  kept/unset — Science 60 or she dies (`kes_left` = dead, `kes_dead`). Any other cut gives her fits if her port is still live.
+  Her route and the keeper's own burn save Femi Lawal (`hc_lawal` = free); the console and the blown trunk kill him (`dead`).
+  (9) **The ball** is the Board's season: Soto first, then the Chair at the lectern (`hc_ball`); after it he keeps to his room
+  with a dormant hound by the fire and the reserve console; retired, he sits on the bench FOR THE CHAIR by the orange tree.
+  (10) The gate: `hc_entry` records the latest way through (guest | contract | chrome | tunnel). Marked by the Shift (or the
+  gate shut), the guest is received cold and watched by Saar, and the "nobody searches the guest" route of the heist closes.
+  After the revolt the guest still comes up by road, walked from the post. Contracts from the slope are suspended after the
+  revolt (Bell's terms need the car running). (11) The seed vault is a container (lock 50); the shelves are a separate talk
+  point. (12) Qadir's case is heard only after the player has looked (the ward, the charts or the cold store).
+- **The safety system** stopped no node in this pass; every conversation is written.
+- **Flags later content reads:** `hc_inside`, `hc_entry`, `hc_soto_met`, `hc_ball`, `hc_board_wants`, `hc_offer` (accepted |
+  refused | feigned), `a2_halcyon_done`, `k_hc_seat`; `hc_contract` (citizen | infiltrator | guest), `hc_contract_how` (term |
+  confess), `hc_term` = owed (**a season at the Concern's call, labour or service: a hook for later content to call in**),
+  `hc_confessed` (sash | map | face: Bell has it on file), Concern membership (probationary → contract when fitted:
+  `hc_fitted`); `hc_leash` (cut | seized | sold | left), `hc_leash_how` (keeper | kes | console | blow | key), `leash_holder`
+  (player | soto | guild | chair), `hc_lawal` (free | dead), `hc_drift_fits`, `k_hc_leash_key`; `hc_kes_contract` (refused |
+  turned | urged), `hc_core_door`, `kes_left` (contract | leash | dead), `kes_dead`, `kes_fits`, `hc_kes_rode`; `hc_longlived`
+  (exposed | soto | kept), `hc_chair` = retired, knows `hc_ages` / `hc_chair_drift` / `hc_house_heard` / `hc_scald_owned`,
+  `hc_reserve` (taken | burned; `an_reserve` is not changed), `k_hc_controller`; `hc_clinic` (freed | closed | left),
+  `hc_clinic_how` (freight | tunnel | force), `hc_wake` (clean | hard), `hc_chart_open`, `hc_nils`, `hc_dysart` (down | stays),
+  `hc_listener`, `hc_immy`, `hc_saba_told` (truth | lied); `hc_garden` (skirts | openfield | sold | caught), `hc_garden_how`
+  (guest | freight | tunnel), `hc_yaw` = review; `hc_funicular` (down | stayed | reported), `hc_funicular_how` (crew | freight |
+  pass | road); `hc_alarm` (the Clean on the hill hostile). Act 3 reads them through `world/a3_conds.ts` (`B4B`), unchanged.
+- **Hooks left:** B5d's Long Night envoy reading `hc_offer` (noted in B5d's notes, not wired); `hc_term` owed; the Concern's
+  memory of `hc_alarm`; Linh in the Skirts and Sela at the Saints' tower are placed nowhere yet (P10/P11 people pass).
 
 ## Build notes — B5: the Act 2 wilds and the Long Night (2026-11-17; B5a built, B5b–d planned)
 B5 is the country between the two cities and beat 17 (`q_a2_longnight`), in four parts so each ends playable: **B5a the Rail

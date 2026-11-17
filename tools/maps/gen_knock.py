@@ -49,6 +49,26 @@ UW_DOWN = {'all': [{'any': [{'all': [{'flag': 'a3_uw_fight', 'eq': 'petra'}, {'d
 HALE_FIGHTING = {'all': [{'flag': 'a3_hale_fight'}, {'not': {'flag': 'a3_hale'}}]}
 HALE_DOWN = {'dead': 'npc_kn_out_lead_a3'}
 HALE_ANSWERED = {'flag': 'a3_hale', 'eq': 'answered'}
+# B6j (mirrors src/content/world/a3_conds.ts: COLUMN_APRON, LED_BY_*, DOOR_*; tests/b6j.test.ts checks them on hand-made states):
+# the column at its camp until it comes down the lane to the apron (the door cycled from outside, or the designate's word to its
+# captain), then at the yellow line as `<id>_apron`; who leads it there is fixed by who died before (Lowe, Reyes, Kress); a fight at
+# the door ends when the lead falls, or yields with two of the four wardens down, sealing or opening the door by the ring's vote.
+APRON_ON = {'flag': 'a3_column_apron'}
+COLUMN_CAMP = {'all': [COLUMN_HERE, {'not': APRON_ON}]}
+COLUMN_APRON = {'all': [COLUMN_HERE, APRON_ON]}
+LED_BY_LOWE = {'not': {'dead': 'npc_md_01'}}
+LED_BY_REYES = {'all': [{'dead': 'npc_md_01'}, {'not': {'dead': 'npc_md_12'}}]}
+LED_BY_KRESS = {'all': [{'dead': 'npc_md_01'}, {'dead': 'npc_md_12'}]}
+COLUMN_WARDENS = ['npc_a3_g3', 'npc_a3_g4', 'npc_a3_g5', 'npc_a3_g6']
+DOOR_FIGHTING = {'all': [{'flag': 'a3_door_fight'}, {'not': {'flag': 'a3_c9'}}]}
+DOOR_LEAD_DOWN = {'any': [{'all': [LED_BY_LOWE, {'dead': 'npc_md_01_apron'}]}, {'all': [LED_BY_REYES, {'dead': 'npc_md_12_apron'}]},
+                          {'all': [LED_BY_KRESS, {'dead': 'npc_a3_g3_apron'}]}]}
+def _down(i):
+    return {'any': [{'dead': i}, {'dead': i + '_apron'}]}
+DOOR_TWO_DOWN = {'any': [{'all': [_down(a), _down(b)]} for k, a in enumerate(COLUMN_WARDENS) for b in COLUMN_WARDENS[k + 1:]]}
+DOOR_BROKEN = {'all': [DOOR_FIGHTING, DOOR_LEAD_DOWN]}
+DOOR_YIELDS = {'all': [DOOR_FIGHTING, {'not': DOOR_LEAD_DOWN}, DOOR_TWO_DOWN]}
+RING_OPEN = {'flag': 'a3_ring', 'eq': 'open'}
 
 
 def ts(obj):
@@ -190,7 +210,7 @@ A3_NPCS = [
     {'def': 'npc_kn_linnet', 'id': 'npc_kn_linnet_a3', 'x': 25, 'y': 39, 'facing': 0, 'dialogue': 'd_a3_linnet',
      'schedule': sched((6, 12, 'linnet_hatch', 'work'), (12, 18, 'linnet_square', 'work'), (18, 22, 'linnet_fire', 'idle'), (22, 6, 'linnet_cot', 'sleep')), 'if': {'all': [A3, LINNET_KNOCK]}},
     {'def': 'npc_kn_linnet', 'id': 'npc_kn_linnet_column', 'x': 21, 'y': 7, 'facing': 1, 'dialogue': 'd_a3_linnet',
-     'schedule': sched((6, 22, 'cadet_post', 'work'), (22, 6, 'camp_tent_c', 'sleep')), 'if': {'all': [COLUMN_HERE, LINNET_COLUMN]}},
+     'schedule': sched((6, 22, 'cadet_post', 'work'), (22, 6, 'camp_tent_c', 'sleep')), 'if': {'all': [COLUMN_CAMP, LINNET_COLUMN]}},
     {'def': 'npc_kn_linnet', 'id': 'npc_kn_linnet_dogs', 'x': 47, 'y': 33, 'facing': 3, 'dialogue': 'd_a3_linnet', 'schedule': [], 'if': {'all': [A3, LINNET_DOGS]}},
     {'def': 'npc_kn_dace', 'id': 'npc_kn_dace_a3', 'x': 17, 'y': 19, 'facing': 3, 'dialogue': 'd_a3_dace',
      'schedule': sched((7, 14, 'dace_boards', 'work'), (14, 19, 'dace_square', 'idle'), (19, 23, 'dace_shack', 'idle'), (23, 7, 'dace_shack', 'sleep')),
@@ -206,13 +226,13 @@ A3_NPCS = [
     {'def': 'npc_kn_r4', 'id': 'npc_kn_r4_a3', 'x': 45, 'y': 29, 'facing': 3, 'dialogue': 'd_a3_kn_r4', 'if': A3},
     # the column: Captain Lowe (or Sergeant Reyes if he is dead) and four wardens, until the door is settled
     {'def': 'npc_md_01', 'x': 22, 'y': 5, 'facing': 1, 'dialogue': 'd_a3_lowe', 'schedule': sched((6, 22, 'lowe_camp', 'work'), (22, 6, 'camp_tent_a', 'sleep')),
-     'if': {'all': [COLUMN_HERE, {'not': LOWE_DEAD}]}},
+     'if': {'all': [COLUMN_CAMP, {'not': LOWE_DEAD}]}},
     {'def': 'npc_md_12', 'x': 22, 'y': 5, 'facing': 1, 'dialogue': 'd_a3_lowe', 'schedule': sched((6, 22, 'lowe_camp', 'work'), (22, 6, 'camp_tent_a', 'sleep')),
-     'if': {'all': [COLUMN_HERE, LOWE_DEAD, {'not': {'dead': 'npc_md_12'}}]}},
-    {'def': 'npc_a3_g3', 'x': 19, 'y': 4, 'facing': 1, 'schedule': sched((6, 22, 'ward_camp', 'work'), (22, 6, 'camp_tent_b', 'sleep')), 'if': COLUMN_HERE},
-    {'def': 'npc_a3_g4', 'x': 31, 'y': 5, 'facing': 3, 'schedule': sched((6, 22, 'ward_stand', 'work'), (22, 6, 'camp_tent_b', 'sleep')), 'if': COLUMN_HERE},
-    {'def': 'npc_a3_g5', 'x': 24, 'y': 9, 'facing': 2, 'schedule': sched((6, 22, 'ward_road', 'patrol'), (22, 6, 'camp_tent_c', 'sleep')), 'if': COLUMN_HERE},
-    {'def': 'npc_a3_g6', 'x': 34, 'y': 40, 'facing': 0, 'schedule': sched((6, 22, 'ward_apron', 'work'), (22, 6, 'camp_tent_a', 'sleep')), 'if': COLUMN_HERE},
+     'if': {'all': [COLUMN_CAMP, LOWE_DEAD, {'not': {'dead': 'npc_md_12'}}]}},
+    {'def': 'npc_a3_g3', 'x': 19, 'y': 4, 'facing': 1, 'schedule': sched((6, 22, 'ward_camp', 'work'), (22, 6, 'camp_tent_b', 'sleep')), 'if': COLUMN_CAMP},
+    {'def': 'npc_a3_g4', 'x': 31, 'y': 5, 'facing': 3, 'schedule': sched((6, 22, 'ward_stand', 'work'), (22, 6, 'camp_tent_b', 'sleep')), 'if': COLUMN_CAMP},
+    {'def': 'npc_a3_g5', 'x': 24, 'y': 9, 'facing': 2, 'schedule': sched((6, 22, 'ward_road', 'patrol'), (22, 6, 'camp_tent_c', 'sleep')), 'if': COLUMN_CAMP},
+    {'def': 'npc_a3_g6', 'x': 34, 'y': 40, 'facing': 0, 'schedule': sched((6, 22, 'ward_apron', 'work'), (22, 6, 'camp_tent_a', 'sleep')), 'if': COLUMN_CAMP},
     # the guild's party when the guild is in play: Hale if he lives, the handlers when it brought hounds (the hounds are the
     # runtime's stand-ins until a live hound exists)
     {'def': 'npc_kn_out_lead', 'id': 'npc_kn_out_lead_a3', 'x': 42, 'y': 2, 'facing': 2, 'dialogue': 'd_a3_hale', 'schedule': [], 'if': {'all': [A3, GUILD_IN, HALE_HERE, {'not': HALE_ANSWERED}]}},
@@ -226,6 +246,22 @@ A3_NPCS = [
     {'def': 'npc_a3_u1', 'x': 19, 'y': 39, 'facing': 1, 'schedule': [], 'if': {'all': [UNWRITTEN_HERE, PETRA_DEAD, {'not': {'flag': 'a3_uw_fight', 'eq': 'petra'}}]}},
     {'def': 'npc_a3_u2', 'x': 18, 'y': 41, 'facing': 1, 'schedule': [], 'if': UNWRITTEN_HERE},
     {'def': 'npc_a3_u3', 'x': 20, 'y': 42, 'facing': 1, 'schedule': [], 'if': UNWRITTEN_HERE},
+    # (B6j) the column at the yellow line, once it has come down to the apron; the lead opens the door's scene, and so does Kress
+    {'def': 'npc_md_01', 'id': 'npc_md_01_apron', 'x': 28, 'y': 37, 'facing': 2, 'dialogue': 'd_a3_door', 'schedule': [], 'if': {'all': [COLUMN_APRON, LED_BY_LOWE]}},
+    {'def': 'npc_md_12', 'id': 'npc_md_12_apron', 'x': 28, 'y': 37, 'facing': 2, 'dialogue': 'd_a3_door', 'schedule': [], 'if': {'all': [COLUMN_APRON, LED_BY_REYES]}},
+    {'def': 'npc_a3_g3', 'id': 'npc_a3_g3_apron', 'x': 26, 'y': 37, 'facing': 2, 'dialogue': 'd_a3_door', 'schedule': [], 'if': {'all': [COLUMN_APRON, {'not': {'dead': 'npc_a3_g3'}}]}},
+    {'def': 'npc_a3_g4', 'id': 'npc_a3_g4_apron', 'x': 30, 'y': 37, 'facing': 2, 'schedule': [], 'if': {'all': [COLUMN_APRON, {'not': {'dead': 'npc_a3_g4'}}]}},
+    {'def': 'npc_a3_g5', 'id': 'npc_a3_g5_apron', 'x': 24, 'y': 37, 'facing': 2, 'schedule': [], 'if': {'all': [COLUMN_APRON, {'not': {'dead': 'npc_a3_g5'}}]}},
+    {'def': 'npc_a3_g6', 'id': 'npc_a3_g6_apron', 'x': 32, 'y': 37, 'facing': 2, 'schedule': [], 'if': {'all': [COLUMN_APRON, {'not': {'dead': 'npc_a3_g6'}}]}},
+    {'def': 'npc_kn_linnet', 'id': 'npc_kn_linnet_apron', 'x': 34, 'y': 38, 'facing': 3, 'dialogue': 'd_a3_linnet', 'schedule': [], 'if': {'all': [COLUMN_APRON, LINNET_COLUMN]}},
+    # (B6j) Tamsin in the door, when she left the player there over the designate's word, until the door is settled
+    {'def': 'npc_c9_03', 'id': 'npc_c9_03_door', 'x': 27, 'y': 42, 'facing': 0, 'dialogue': 'd_a3_tam_door', 'schedule': [],
+     'if': {'all': [COLUMN_HERE, {'flag': 'a3_tam_door'}, {'flag': 'tam_left', 'eq': 'door'}, {'not': {'flag': 'a3_tamsin_dead'}}]}},
+    # (B6j) the slope above the door, once the muster's letters are answered: Shale's militia on the west bank, the Dogs on the east
+    {'def': 'npc_a3_g15', 'x': 21, 'y': 36, 'facing': 0, 'schedule': [], 'if': {'all': [COLUMN_HERE, {'flag': 'a3_ally_shale'}]}},
+    {'def': 'npc_a3_g16', 'x': 23, 'y': 36, 'facing': 0, 'schedule': [], 'if': {'all': [COLUMN_HERE, {'flag': 'a3_ally_shale'}]}},
+    {'def': 'npc_a3_g17', 'x': 42, 'y': 35, 'facing': 3, 'schedule': [], 'if': {'all': [COLUMN_HERE, {'flag': 'a3_ally_dogs'}]}},
+    {'def': 'npc_a3_g18', 'x': 44, 'y': 34, 'facing': 3, 'schedule': [], 'if': {'all': [COLUMN_HERE, {'flag': 'a3_ally_dogs'}]}},
 ]
 
 # Act 3's triggers on the north half of the hamlet (the toll road in, the camp, the stand, the square): the guild and its
@@ -250,6 +286,18 @@ A3_TRIGGERS = [
      'effects': [{'set': 'a3_unwritten', 'value': 'stopped'}, {'set': 'a3_uw_how', 'value': 'fought'}, {'xp': 100},
                  {'news': {'tag': 'a3_uw_fought', 'text': 'the designate killed three of the Choir\'s grey people on Knock\'s apron, who had come in the night to burn the Cistern', 'valence': 5, 'size': 6, 'at': 'cistern9'}},
                  {'decision': {'id': 'a3_unwritten', 'text': 'At Knock I fought the Unwritten on the apron in the dark, and none of them went down the grate.'}}]},
+    # B6j: the door. The first step onto the apron with the column at the yellow line opens its scene (the lead opens it after)
+    {'id': 'a3_door_line', 'x': 18, 'y': 37, 'w': 21, 'h': 6, 'if': COLUMN_APRON,
+     'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_door', 'name': 'The yellow line'}}]},
+    *[{'id': f'a3_door_{end}_{door}', 'x': 1, 'y': 1, 'w': 54, 'h': 44, 'once': False,
+       'if': {'all': [DOOR_BROKEN if end == 'broken' else DOOR_YIELDS, RING_OPEN if door == 'open' else {'not': RING_OPEN}]},
+       'effects': ([{'set': 'a3_c9', 'value': 'opened'}, {'set': 'a3_c9_how', 'value': 'ines'}, {'set': 'a3_c9_by', 'value': 'fought'}] if door == 'open'
+                   else [{'set': 'a3_c9', 'value': 'sealed'}, {'set': 'a3_c9_how', 'value': 'fought'}])
+                  + [{'set': 'a3_lowe', 'value': 'dead' if end == 'broken' else 'yielded'}, {'xp': 300},
+                     {'news': {'tag': 'a3_door_fought', 'text': 'the designate broke the city\'s column on Knock\'s apron in front of the Cistern\'s door', 'valence': 4, 'size': 9, 'at': 'cistern9'}},
+                     {'decision': {'id': 'a3_c9', 'text': ('I broke the city\'s column on Knock\'s apron, ' + ('and its lead died there' if end == 'broken' else 'and its lead yielded with two of the wardens down') + ('. The Cistern\'s people opened their own door and walked out of it, as their ring had voted.' if door == 'open' else '. The door stayed shut.'))}},
+                     {'event': 'dialogue', 'data': {'tree': 'd_a3_door', 'name': 'The apron'}}]}
+      for end in ('broken', 'yields') for door in ('open', 'shut')],
     {'id': 'a3_hale_after', 'x': 1, 'y': 1, 'w': 54, 'h': 44, 'once': False, 'if': {'all': [HALE_FIGHTING, HALE_DOWN]},
      'text': 'Brannick Hale lies on the guild\'s ground east of the stand, his hat on the saddle where he put it. The handlers have their leads wrapped twice round their fists and have not moved. Orme comes out from behind her counter and looks, and goes back in. Down the lane Knock is at its doors, and nobody says anything at all.',
      'effects': [{'set': 'a3_hale', 'value': 'dead'}, {'rep': {'faction': 'tollmen', 'respect': -5, 'fear': 5}}, {'xp': 60},
@@ -378,6 +426,10 @@ knock['talk']['grille'] = {'dialogue': 'd_a3_grille', 'name': 'The Grille'}
 for sid, sp in A3_SPOTS.items():
     assert rows[sp['y']][sp['x']] in '.,rsc', f'spot {sid} at {sp} on {rows[sp["y"]][sp["x"]]!r}'
     assert (sp['x'], sp['y']) not in _taken, f'spot {sid} at {sp} on a prop'
+# B6j: the column at the line, Tamsin in the door and the slope's allies stand on open ground, off the props
+for p_ in A3_NPCS:
+    if p_.get('id', '').endswith(('_apron', '_door')) or p_['def'] in ('npc_a3_g15', 'npc_a3_g16', 'npc_a3_g17', 'npc_a3_g18'):
+        assert rows[p_['y']][p_['x']] in '.,rsc' and (p_['x'], p_['y']) not in _taken, f"{p_.get('id', p_['def'])} on {rows[p_['y']][p_['x']]!r}"
 # B6g: Hale at the post-house's new frame stands on open ground
 for p_ in A3_NPCS:
     if p_.get('id') == 'npc_kn_out_lead_boards':

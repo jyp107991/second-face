@@ -645,7 +645,7 @@ namespace SecondFace.Game.Play
             Ambient ambient = null;
             if (anim != null && people.Locomotion != null)
             {
-                ambient = PeopleService.Animate(anim, people.Locomotion, id);
+                ambient = PeopleService.Animate(anim, people.Locomotion, id, male);
                 // always animated, as the player's body is: the party is always about the player, and the HUD's portrait
                 // and the IK read the pose (culled, a body nothing has drawn yet keeps a stale one: PITFALL P6.1)
                 anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;

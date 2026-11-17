@@ -13,7 +13,9 @@ export const SETTLEMENTS: Record<string, SettlementDef> = Object.fromEntries(([
   { id: 'sump', name: 'Sump', roads: { ninebridge: 2, openfield: 2 }, traffic: 0.3, type: 'salvage_camp', region: 'glass_flats', prosperity: 0.2, kit: 'scrap' },
   { id: 'meridian', name: 'Meridian', roads: { ninebridge: 3, openfield: 3, skirts: 5, west_halt: 2, hamlet_shore: 3, low_landing: 2 }, traffic: 0.8, type: 'bastion', region: 'meridian', prosperity: 0.5, kit: 'concrete' },
   // the debtors' town under Halcyon (B4a): the Line brings its news to Meridian in a few days
-  { id: 'skirts', name: 'Skirts', roads: { meridian: 5, east_halt: 2, number_four: 2 }, traffic: 0.6, type: 'bastion', region: 'teeth', prosperity: 0.15, kit: 'scrap', crisis: 'strike' },
+  { id: 'skirts', name: 'Skirts', roads: { meridian: 5, east_halt: 2, number_four: 2, halcyon: 1 }, traffic: 0.6, type: 'bastion', region: 'teeth', prosperity: 0.15, kit: 'scrap', crisis: 'strike' },
+  // the arcology over it (B4b): its news goes down the car to the Skirts and nowhere else
+  { id: 'halcyon', name: 'Halcyon', roads: { skirts: 1 }, traffic: 0.2, type: 'bastion', region: 'teeth', prosperity: 0.95, kit: 'arcology' },
   // the Rail Corridor (B5a): towns that exist because a train stops there, and news that rides the Line
   { id: 'fourways', name: 'Four Ways', roads: { tollhouse: 2, yard_nine: 1, east_halt: 2 }, traffic: 0.8, type: 'rail_halt', region: 'rail_corridor', prosperity: 0.5, kit: 'timber' },
   { id: 'yard_nine', name: 'Yard Nine', roads: { fourways: 1, west_halt: 1, sawtown: 2 }, traffic: 0.6, type: 'rail_halt', region: 'rail_corridor', prosperity: 0.4, kit: 'containers', owner: 'tollmen' },

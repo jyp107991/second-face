@@ -11,7 +11,8 @@ const sleep = (spot: string, from = 22, to = 6) => ({ from, to, spot, activity: 
 export const MERIDIAN_NPCS: NpcDef[] = [
   {
     id: 'npc_md_01', name: 'Captain Idris Lowe', look: { seed: 9101, frame: 'broad', age: 45, ancestry: 'east_african', over: { hair: { style: 'cut_crop', color: 0x2a2420 }, facialHair: 'short_beard', weathering: 0.4 } }, role: 'guard',
-    level: 8, ...MD, hostileIf: { flag: 'md_fight' }, courage: 85, dialogue: 'd_md_lowe', attrs: { brawn: 7, grit: 8, presence: 8, wits: 7 }, skills: { firearms: 55, melee: 45, speech: 45 }, tolls: 60,
+    // (B6j) also hostile while the Cistern's door at Knock comes to a fight (a3_door_fight, until the door is settled)
+    level: 8, ...MD, hostileIf: { any: [{ flag: 'md_fight' }, { all: [{ flag: 'a3_door_fight' }, { not: { flag: 'a3_c9' } }] }] }, courage: 85, dialogue: 'd_md_lowe', attrs: { brawn: 7, grit: 8, presence: 8, wits: 7 }, skills: { firearms: 55, melee: 45, speech: 45 }, tolls: 60,
     equip: ['w_pump', 'r_riot'], inventory: [['a_12ga', 12], ['c_water', 1], ['c_bandage', 1]],
     schedule: [{ from: 6, to: 22, spot: 'lowe_desk', activity: 'work' }, sleep('lowe_desk')],
     barks: ['The schedule holds.', 'Every eviction is lawful. I have checked.', 'Nobody in the Precinct goes hungry. Outside the wall is outside the law.'],
@@ -28,7 +29,7 @@ export const MERIDIAN_NPCS: NpcDef[] = [
   },
   {
     id: 'npc_md_12', name: 'Sergeant Paloma Reyes', look: { seed: 9112, frame: 'narrow', age: 38, ancestry: 'latin_american', over: { hair: { style: 'cut_crop', color: 0x1a1410 } } }, role: 'guard',
-    level: 6, ...MD, hostileIf: { flag: 'md_fight' }, courage: 75, dialogue: 'd_md_reyes', attrs: { presence: 7, grit: 7, reflex: 6 }, skills: { firearms: 45, melee: 40, speech: 35 }, tolls: 30,
+    level: 6, ...MD, hostileIf: { any: [{ flag: 'md_fight' }, { all: [{ flag: 'a3_door_fight' }, { not: { flag: 'a3_c9' } }] }] }, courage: 75, dialogue: 'd_md_reyes', attrs: { presence: 7, grit: 7, reflex: 6 }, skills: { firearms: 45, melee: 40, speech: 35 }, tolls: 30,
     equip: ['w_carbine556', 'r_riot'], inventory: [['a_556', 16]],
     schedule: [{ from: 6, to: 22, spot: 'gate_post', activity: 'work' }, sleep('gate_booth')],
     barks: ['Face to the lens. Then we talk.', 'Hearings are Tuesdays and Fridays. Today is neither. It is never either.', 'The line is the line.'],

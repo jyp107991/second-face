@@ -1523,6 +1523,17 @@ export const shale: MapDef = {
             not: {
               flag: "tam_home"
             }
+          },
+          {
+            not: {
+              flag: "tam_left",
+              eq: "door"
+            }
+          },
+          {
+            not: {
+              flag: "a3_tamsin_dead"
+            }
           }
         ]
       }

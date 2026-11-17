@@ -1,1 +1,1 @@
-{"name": "sit", "src": "CMU 114_05", "loop": true, "speed": 0.0, "root": false, "hip": 0.961, "fps": 30, "frames": 264}
+{"name": "sit", "src": "CMU 114_05", "loop": true, "speed": 0.0, "root": false, "hip": 0.961, "fps": 30, "frames": 265, "src_fps": 120, "sex": "f", "set": "f", "licence": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses", "cycle": "off", "seam_share": null, "closed": true, "flips_repaired": null, "range": [4, 14]}

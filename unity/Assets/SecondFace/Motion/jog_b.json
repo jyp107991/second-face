@@ -1,1 +1,1 @@
-{"name": "jog_b", "src": "CMU 16_35", "loop": true, "speed": 2.815, "root": false, "hip": 0.9684, "fps": 30, "frames": 24}
+{"name": "jog_b", "src": "CMU 16_35", "loop": true, "speed": 2.785, "root": false, "hip": 0.9684, "fps": 30, "frames": 25, "src_fps": 120, "sex": "u", "set": "m", "licence": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses", "cycle": "off", "seam_share": 0.12, "closed": true, "flips_repaired": null, "range": null}

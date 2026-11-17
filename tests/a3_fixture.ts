@@ -93,7 +93,7 @@ const PREPARED: History = {
   members: { wheel: 'roadkin', shale_militia: 'volunteer' },
   company: { tamsin: 'party', nine: 'party', ash: 'waiting', wren: 'waiting', ilya: 'waiting', odile: 'waiting', kes: 'waiting' },
   approval: 40,
-  b4b: { hc_inside: true, a2_halcyon_done: true, hc_soto_met: true, hc_offer: 'feigned', hc_contract: 'infiltrator', hc_leash: 'cut', hc_longlived: 'exposed', hc_clinic: true, hc_garden: 'skirts', hc_funicular: 'down' },
+  b4b: { hc_inside: true, a2_halcyon_done: true, hc_soto_met: true, hc_ball: true, hc_board_wants: true, hc_offer: 'feigned', hc_contract: 'infiltrator', hc_leash: 'cut', hc_longlived: 'exposed', hc_clinic: 'freed', hc_garden: 'skirts', hc_funicular: 'down' },
 };
 
 const HOSTILE: History = {
@@ -119,7 +119,7 @@ const HOSTILE: History = {
   members: {},
   company: { tamsin: 'party', wren: 'never', ilya: 'left', odile: 'never', ash: 'gone', nine: 'gone', kes: 'never' },
   approval: 15,
-  b4b: { hc_inside: true, a2_halcyon_done: true, hc_offer: 'refused', hc_contract: 'guest', hc_leash: 'left', hc_longlived: 'kept', hc_garden: 'sold', hc_funicular: 'reported' },
+  b4b: { hc_inside: true, a2_halcyon_done: true, hc_ball: true, hc_board_wants: true, hc_offer: 'refused', hc_contract: 'guest', hc_leash: 'left', hc_longlived: 'kept', hc_garden: 'sold', hc_funicular: 'reported' },
 };
 
 const MIDDLING: History = {
@@ -145,7 +145,7 @@ const MIDDLING: History = {
   members: {},
   company: { tamsin: 'party', nine: 'party', ash: 'waiting', wren: 'waiting', ilya: 'waiting', odile: 'waiting', kes: 'waiting' },
   approval: 25,
-  b4b: { hc_inside: true, a2_halcyon_done: true, hc_soto_met: true, hc_offer: 'accepted', hc_contract: 'citizen', hc_leash: 'sold', hc_longlived: 'soto', hc_garden: 'openfield', hc_funicular: 'stayed' },
+  b4b: { hc_inside: true, a2_halcyon_done: true, hc_soto_met: true, hc_ball: true, hc_board_wants: true, hc_offer: 'accepted', hc_contract: 'citizen', hc_leash: 'sold', hc_longlived: 'soto', hc_garden: 'openfield', hc_funicular: 'stayed' },
 };
 
 /** What the Long Night left at its dawn, by side and band (B5d's table, as its own dawn sets them). */
@@ -243,7 +243,8 @@ export function actThree(preset: Preset = 'prepared', over: Over = {}): A3 {
     q_a2_ninebridge: 'paid', q_a2_openfield: String(g.flags.of_blight_outcome), q_a2_cistern4: 'proof', q_a2_precinct: 'inside', q_a2_calendar: 'future', q_a2_spire: String(g.flags.ar_verdict),
     q_a2_longnight: NIGHT_END[side].any ?? NIGHT_END[side][band]!,
     ...(preset === 'prepared' ? { q_a1_bram: 'truth' } : {}),
-    ...(g.flags.hc_inside ? { q_a2_halcyon: 'inside' } : {}),
+    // beat 16 finished at the Board's answer (B4b: accepted | refused | feigned are its end stages)
+    ...(g.flags.hc_inside ? { q_a2_halcyon: String(g.flags.hc_offer ?? 'refused') } : {}),
   })) questDone(g, id, stage);
   // the events of Acts 1–2 that the history has already settled
   Object.assign(g.world.events, { tribute_day: 'happened', tribute_settled: 'happened', ln_call: 'happened', ln_dusk: 'happened', sink_spring: g.flags.sk_pumps ? 'prevented' : 'happened' });

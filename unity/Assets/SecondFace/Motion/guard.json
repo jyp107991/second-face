@@ -1,1 +1,1 @@
-{"name": "guard", "src": "CMU 13_17", "loop": true, "speed": 0.0, "root": false, "hip": 1.0289, "fps": 30, "frames": 156}
+{"name": "guard", "src": "CMU 13_17", "loop": true, "speed": 0.0, "root": false, "hip": 1.0289, "fps": 30, "frames": 157, "src_fps": 120, "sex": "u", "set": "both", "licence": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses", "cycle": "off", "seam_share": null, "closed": true, "flips_repaired": {"ltoes": [[645, 645], [680, 682], [711, 711]], "rhumerus": [[1, 1], [475, 476]], "rwrist": [[1, 2]]}, "range": [2, 8]}

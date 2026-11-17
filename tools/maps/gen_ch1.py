@@ -91,7 +91,7 @@ cistern9 = {
         {'kind': 'cot', 'x': 3, 'y': 13, 'id': 'stranger_cot'}, {'kind': 'cot', 'x': 3, 'y': 17}, {'kind': 'table', 'x': 7, 'y': 15},
         {'kind': 'shelf', 'x': 10, 'y': 13, 'rot': 3, 'id': 'clinic_shelf'}, {'kind': 'chair', 'x': 6, 'y': 15, 'rot': 1}, {'kind': 'locker', 'x': 1, 'y': 18},
         # council room: a table, chairs, the Archive door set into the east wall
-        {'kind': 'table', 'x': 18, 'y': 15}, {'kind': 'chair', 'x': 17, 'y': 15, 'rot': 1}, {'kind': 'chair', 'x': 19, 'y': 15, 'rot': 3},
+        {'kind': 'table', 'x': 18, 'y': 15, 'id': 'council_table'}, {'kind': 'chair', 'x': 17, 'y': 15, 'rot': 1}, {'kind': 'chair', 'x': 19, 'y': 15, 'rot': 3},
         {'kind': 'chair', 'x': 18, 'y': 14, 'rot': 2}, {'kind': 'shelf', 'x': 15, 'y': 12, 'rot': 1}, {'kind': 'shelf', 'x': 16, 'y': 12, 'rot': 1},
         {'kind': 'vault_door', 'x': 22, 'y': 15, 'rot': 1, 'id': 'archive_door'},
         # dormitory: bunks and lockers; the player's is the one by the east wall
@@ -142,6 +142,8 @@ cistern9 = {
         'shaft_hatch': {'dialogue': 'd_c9_shaft', 'name': 'The pump-run hatch'},
         'stranger_cot': {'dialogue': 'd_c9_body', 'name': 'The stranger'},
         'great_door': {'dialogue': 'd_c9_great_door', 'name': 'The great door'},
+        # Act 3 (B6i): the ring sits here once the player is inside; before that, a plain look at the table
+        'council_table': {'dialogue': 'd_a3_council', 'name': 'The council table'},
     },
     'containers': {
         'locker_pc': {'name': 'Your Locker', 'items': [['c_bandage', 1], ['j_cloth', 2], ['c_algae', 2]]},
@@ -248,6 +250,59 @@ c9_mouth = {
     ],
     'ambience': {'indoor': False, 'fogColor': 'hex:0xd8c4a0', 'fogDensity': 0.02, 'dust': 0.9, 'grade': 0.7, 'mood': 'bright', 'sound': 'wind'},
 }
+
+# ------------------------------------------------------------------------------------------------
+# Act 3 (B6h, inside for the first time): the opening's residents step aside once Act 3 is open (their interior was never
+# reachable from Knock) and their Act 3 selves take the same places with Act 3 trees, until the door is opened or the reserve
+# carried off; Tamsin among the beds while she is still inside and has never been out. MOTHER's panel, the Archive door, the
+# pump-run hatch, the great door and the clinic cot open Act 3 trees that carry the opening's whole; the tray lift's inside
+# end is a new prop in the great-door hall, with its landing spawn. The ways back up (the lift, the pump run, the open door)
+# open on the Act 3 flags, beside the opening's own exits. The faces scene plays on the first step inside.
+# Conditions mirrored from src/content/world/a3_conds.ts (tests/b6h.test.ts checks them on the fixture's states).
+# ------------------------------------------------------------------------------------------------
+A3 = {'flag': 'a3_open'}
+NOT_A3 = {'not': A3}
+RESIDENTS_IN = {'all': [A3, {'not': {'flag': 'a3_c9', 'eq': 'opened'}}, {'not': {'flag': 'a3_c9', 'eq': 'relocated'}}]}
+TAM_INSIDE = {'all': [{'flag': 'c9_tamsin_inside'}, {'not': {'any': [{'flag': 'tam_out'}, {'knows': 'tamsin_replied'}]}}, {'not': {'flag': 'tam_joined'}}]}
+for p_ in cistern9['npcs']:
+    p_['if'] = {'all': [p_['if'], NOT_A3]} if 'if' in p_ else NOT_A3
+cistern9['npcs'] += [
+    {'def': 'npc_c9_01', 'id': 'npc_c9_01_a3', 'x': 18, 'y': 16, 'facing': 0, 'dialogue': 'd_a3_ines', 'if': RESIDENTS_IN},
+    {'def': 'npc_c9_02', 'id': 'npc_c9_02_a3', 'x': 5, 'y': 15, 'facing': 1, 'dialogue': 'd_a3_pell', 'if': RESIDENTS_IN},
+    {'def': 'npc_c9_03', 'id': 'npc_c9_03_a3', 'x': 34, 'y': 4, 'facing': 2, 'dialogue': 'd_a3_tamsin', 'if': {'all': [RESIDENTS_IN, TAM_INSIDE]}},
+    {'def': 'npc_c9_04', 'id': 'npc_c9_04_a3', 'x': 18, 'y': 3, 'facing': 0, 'dialogue': 'd_a3_bram', 'if': RESIDENTS_IN},
+    {'def': 'npc_c9_06', 'id': 'npc_c9_06_a3', 'x': 7, 'y': 26, 'facing': 1, 'dialogue': 'd_a3_teague', 'if': RESIDENTS_IN},
+    {'def': 'npc_c9_r1', 'id': 'npc_c9_r1_a3', 'x': 40, 'y': 5, 'facing': 2, 'dialogue': 'd_a3_c9_r1', 'if': RESIDENTS_IN},
+    {'def': 'npc_c9_r2', 'id': 'npc_c9_r2_a3', 'x': 11, 'y': 26, 'facing': 3, 'dialogue': 'd_a3_c9_r2', 'if': RESIDENTS_IN},
+    {'def': 'npc_c9_r3', 'id': 'npc_c9_r3_a3', 'x': 3, 'y': 25, 'facing': 2, 'dialogue': 'd_a3_c9_r3', 'if': RESIDENTS_IN},
+    {'def': 'npc_c9_r4', 'id': 'npc_c9_r4_a3', 'x': 25, 'y': 15, 'facing': 0, 'dialogue': 'd_a3_c9_r4', 'if': RESIDENTS_IN},
+]
+cistern9['props'].append({'kind': 'terminal', 'x': 1, 'y': 3, 'rot': 1, 'id': 'hatch_lift'})
+cistern9['spawns'].append({'id': 'from_hatch', 'x': 2, 'y': 3, 'facing': 1})
+cistern9['talk'].update({
+    'mother_term': {'dialogue': 'd_a3_mother', 'name': 'MOTHER'},
+    'archive_door': {'dialogue': 'd_a3_archive', 'name': 'The Archive door'},
+    'shaft_hatch': {'dialogue': 'd_a3_pumprun', 'name': 'The pump-run hatch'},
+    'great_door': {'dialogue': 'd_a3_inner_door', 'name': 'The great door'},
+    'stranger_cot': {'dialogue': 'd_a3_cot', 'name': 'A clinic cot'},
+    'hatch_lift': {'dialogue': 'd_a3_lift', 'name': 'The tray lift'},
+})
+cistern9['exits'] += [
+    {'x': 5, 'y': 1, 'w': 3, 'h': 1, 'to': {'location': 'c9_mouth', 'spawn': 'door'}, 'label': 'The apron',
+     'if': {'all': [{'flag': 'a3_door_cycled'}, {'not': {'flag': 'c9_door_open'}}]}},
+    {'x': 43, 'y': 29, 'to': {'location': 'c9_mouth', 'spawn': 'shaft'}, 'label': 'The pump run',
+     'if': {'all': [{'flag': 'a3_shaft_open'}, {'not': {'flag': 'c9_shaft_open'}}]}},
+]
+for t_ in cistern9['triggers']:
+    if t_['id'] == 'hall_first':
+        t_['if'] = {'not': {'flag': 'a3_door_cycled'}}
+cistern9['triggers'].append({'id': 'a3_faces', 'x': 1, 'y': 1, 'w': 44, 'h': 29, 'if': {'all': [A3, {'flag': 'a3_inside'}, {'not': {'flag': 'a3_faces'}}]},
+                             'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_faces', 'name': 'Cistern 9'}}]})
+_cl = rows(g)
+for sid in ('from_hatch',):
+    sp = next(s for s in cistern9['spawns'] if s['id'] == sid)
+    assert _cl[sp['y']][sp['x']] in '.mtg', f'spawn {sid} on {_cl[sp["y"]][sp["x"]]!r}'
+    assert not any(p['x'] == sp['x'] and p['y'] == sp['y'] for p in cistern9['props']), f'spawn {sid} on a prop'
 
 HEADER = "import type { MapDef } from '../../engine/data/types';\n\n// Generated by tools/maps/gen_ch1.py — edit the generator, then re-run it.\n"
 # (c9_mouth is Knock now, tools/maps/gen_knock.py: the opening, owner's note 2026-10-29)

@@ -103,14 +103,14 @@ every frame. Angles are degrees, distances centimetres. "Down" and "horizon" are
 | H3 | Head upright | roll of the face from vertical | ≤ 10 | 15 | a level head; a tilt is an expression, not a rest pose |
 | F1 | Soles on the ground | height of the lowest heel and ball skin above the ground under each (baked mesh), for a foot with some of its sole down (a foot 3 cm up or more is stepping: F5) | −1.5 to +2.5 | −3 to +4 | standing feet bear weight: no floating, no sinking |
 | F2 | Heels down | heel height minus ball height | −2 to +2 | −4 to +4 | quiet standing is flat-footed (no tiptoe, no toes in the air) |
-| F3 | Stance | heels' width across the body (F3w); one foot ahead of the other (F3a); each foot's turn out from the body's front (F3s) | 8–32; ≤ 28; ≤ 25 | 5–40; 35; 35 | preferred quiet stance: 17 cm between heel centres, 14° between the feet [6]; self-selected widths 16–18 ± 4–5 cm [7][8]; a relaxed stagger is under a foot's length |
+| F3 | Stance | heels' width across the body (F3w); one foot ahead of the other (F3a); each foot's turn out from the body's front (F3s) | 8–32; ≤ 12; ≤ 25 | 5–40; 20; 35 | preferred quiet stance: 17 cm between heel centres, 14° between the feet [6]; self-selected widths 16–18 ± 4–5 cm [7][8]; F3a tightened from ≤ 28 (cap 35) on 2026-11-17: real quiet standing staggers ≤ 6.9 cm at p98 in every one of 14 captured segments (median 2.5) [17] |
 | F4 | Standing still | a foot bearing weight (its sole within 2 cm of the lowest it has been in that state, the whole state: a foot still in the air, mid-step, when the state begins is not bearing weight, 2026-11-07): its horizontal speed | mean ≤ 3 cm/s; frames > 10 cm/s ≤ 2 % | — | foot skate is counted above 10 cm/s at contact [9] |
 | F5 | Feet down | the share of the standing time a foot is off the ground (a sole 3 cm up or more: a step) | mean ≤ 0.12 | — | quiet standing shifts weight and now and then steps; it does not keep a foot in the air |
 | K1 | Standing on straight legs | the straighter knee's bend (the angle between thigh and shin) | ≤ 8 | 12 | in standing the knees are straight, neither bent nor locked back [16]; one leg may rest bent, never both: two bent knees are a crouch (the owner, 2026-11-09: "looks like he needs to urinate") |
 | K2 | Straight knees over the feet | a straight leg's (bent under 10°) knee turned in from its hip-to-ankle line, seen from the front (+ in) | ≤ 6 | 10 | the kneecaps face forward over the feet [16]; knees falling in read as a collapse |
 | K3 | Pelvis level | the line between the hip joints from the horizontal | ≤ 5 | 8 | in standing the pelvis is level [16]; a weight shift drops it a little, a hip hitched or dropped far is a pose |
 | K4 | Hips over the feet | the pelvis's middle past the outer foot across the body (cm, + beyond) | ≤ 2 | 4 | a weight shift brings the hips over the standing foot, not past it: a hip thrown out is a pose (the owner, 2026-11-09) |
-| K5 | A bent knee over its foot | a bent leg's (10° or more) knee, seen from above: where it points (from the middle of its hip and ankle) against where its foot points (+ in) | ≤ 15 | 25 | a resting leg's knee bends the way its toes point [16]; a knee turned in across its foot reads as the owner's 'other knee turned in' (2026-11-09) |
+| K5 | A bent knee over its foot | a bent leg's (10° or more) knee, seen from above: where it points (from the middle of its hip and ankle) against the body's front (+ in); so it may point anywhere from its foot's line (turned out) to 10° inside the front: K5 ≤ F3s + 10 measured on the foot's line | ≤ 10 | 20 | a resting leg's knee bends the way its toes point [16]; a knee turned in across its foot reads as the owner's 'other knee turned in' (2026-11-09). Measured against the foot's own line (≤ 15, cap 25) until 2026-11-17: a real relaxed knee points ahead while the foot turns out 10–28°, so 8 of 13 real quiet-standing captures failed by their toe-out alone [17] |
 | C1 | Nothing clips | depth of a hand, forearm or lower upper-arm vertex (the upper arm's third nearest the elbow, which hangs clear of the waist; higher, the arm rests on the side of the chest, a contact both soft tissues take) inside the torso, hip or thigh skin (baked mesh: behind the three nearest skin points' planes, and inside by ray parity, two of three level rays crossing the skin an odd number of times; the planes alone call a point beside the top of a shoulder or below a hem inside) | ≤ 0.5 | 1.5 | the owner's rule: arms, hands and clothing never sink into a body (CLAUDE.md §2) |
 
 ### 2.2 Gestures
@@ -128,14 +128,32 @@ F1 and F2 apply to the planted foot, and at the end the chest faces the partner 
 
 | Id | Measure | How it is measured | Limit | Basis |
 |---|---|---|---|---|
-| W1 | No foot skate | a foot whose lowest skin is within 2.5 cm of the ground (baked mesh, every frame, from the second frame of a state: the gate sets the person down at the start of each walk, a teleport, not a step): its sole's horizontal speed | mean ≤ 8 cm/s; frames > 15 cm/s ≤ 5 % | foot-skate measures in motion research count sliding above 10 cm/s at contact heights of 2.5–10 cm [9][10] |
+| W1 | No foot skate | a sole point (the heel's, the ball's) within 2.5 cm of the ground two samples running, while its foot bears weight (the foot's slowest sole point under 0.5 m/s, as W6; baked mesh, every frame, from the second frame of a state: the gate sets the person down at the start of each walk, a teleport, not a step): its horizontal speed | mean ≤ 8 cm/s; frames > 15 cm/s ≤ 5 % | foot-skate measures in motion research count sliding above 10 cm/s at contact heights of 2.5–10 cm [9][10]. Weight-bearing only since 2026-11-17: a swing passes 1.3–1.9 cm over the floor at 3–5 m/s (Winter 1992; Moosabhoy et al. 2006), and a real walker failed the old form by that alone [17] |
 | W2 | Stride matches speed | a planted foot's speed as a share of the body's (0 when the stride fits the speed) | mean ≤ 0.10 | a stride is the body's speed divided by its cadence; a mismatch slides the planted foot (gliding or treading) |
-| W3 | Arm swing | upper arm from down; opposite to the legs | walking ≤ 35 (p98), cap 45; jogging ≤ 45, cap 55 (no sourced limit yet: reviewed by eye) | |
-| W4 | Head level | face pitch | −20 to +8 | looking where they go |
+| W3 | Arm swing | upper arm from down; opposite to the legs | walking ≤ 35 (p98), cap 45; jogging ≤ 55, cap 65 | real walkers 11.5–38.3° at p98 (median 25.2); real joggers at the game's jog pace (2.7–3.4 m/s) 39–52°, runners 43–90° [17] (jogging was ≤ 45, cap 55, unsourced, until 2026-11-17) |
+| W4 | Head level | face pitch | −25 to +8 (cap −32 to +12) | looking where they go; real walkers glance down to −25…−34° for moments: −25 agrees with 33 of 34 captured walks' p2 [17] (−20, cap −25, until 2026-11-17) |
 | W5 | Head on the body | face yaw on the chest | ≤ 25 | |
 | W6 | Stance foot on the ground | the lower sole's height while that foot bears weight (its sole nearly still, under 0.5 m/s: not in a swing or a jog's flight) | −1.5 to +2.5 (cap −3 to +4) | as F1 |
 | A6 | Palms not forward | as §2.1 | as §2.1 | |
 | C1 | Nothing clips | as §2.1 | as §2.1 | |
+| P1 | Played at a natural rate | for each person, the rate their gait set's clip is played at to move at the game's speeds (the townsfolk's 1.25 and the walker's 1.4 m/s: "pace:walk"; the jog's 3.2: "pace:jog"), as `Pace` sets it: the clip's speed scaled by the body's hip height over its actor's | 0.8–1.25 | a stride is as long as the legs that take it; a clip hurried or slowed further changes the actor's own cadence past what people do at that speed (T6, 2026-11-17) |
+| P2 | Cadence | the steps a minute that rate gives (each gait clip is one stride: two steps) | walking 80–135; jogging 145–200 | comfortable walking 100–125 steps/min, women 5–8 faster [18]; running and jogging 2.2–4.5 m/s, 150–190 [19]; the clip QA's norms (`tools/unity/motion/clip_qa.py`) |
+
+Every captured clip also plays in its capture's own time: the gate checks each clip's length and sampling rate against
+its sidecar, and that the sidecar records the source's frame rate (a source read at twice its rate played `idle` and
+`stretch` at double speed, found 2026-11-17). K1 applies to the clips themselves as well as to the game: an idle whose
+own actor stands with the straighter knee past 8° is not used as an idle (`tools/unity/motion/clip_qa.py`, at staging).
+
+**The clips in use (motion set v2, 2026-11-17; each person plays their own sex's captures, and their own gait set among
+them by a hash of who they are, `Pace.MenSets` / `WomenSets`):** men's walks `walk_slow`, `walk_slow_b`, `walk_d`, `walk`,
+`walk_b`, `walk_brisk_b`; jogs `jog`, `jog_b`, `jog_c`; runs `run`, `run_b`, `run_c`; women's walk `walk_f_b` (the
+player's 1.4 m/s plays it at about 1.2, a brisk 120 steps a minute: game speed never depends on sex); jogs `jog_f`,
+`jog_f_b`; women's idles `idle_f`, `idle_f_c`. **Out:** `walk_brisk` (138 steps/min, past real walkers), `walk_c` (walk
+ratio), `walk_f_n` (its planted feet slide), `run_f` (its loop's seam), `sweep` (slide), the women's slower walks `walk_f`,
+`walk_f_c`, `walk_f_long` (they would be played past a natural cadence at the townsfolk's pace), `idle_c`, `idle_d` and
+`idle_f_b` (knees bent 24°). **Open:** no man's idle passes K1 on its own actor yet (`idle` 20.2°, also looking 58° down;
+`idle_b` 22.1°; `idle_m` 8.4°): the men keep `idle` and `idle_b` until the helper's v3 corrects the knee solve; no woman's
+run (above the jogs' range the faster jog plays).
 
 ### 2.5 Two people talking
 
@@ -203,5 +221,13 @@ review finds becomes a measure here before it is fixed, so it cannot come back u
 16. Kendall, McCreary, Provance, Rodgers & Romani, Muscles: Testing and Function with Posture and Pain (5th ed., 2005), ideal
     alignment in standing: knees in neutral (neither flexed nor hyperextended), kneecaps facing forward, pelvis level. The
     limits' numbers are this standard's, set against the owner's review of the captures (2026-11-09), not a measured norm.
+17. `docs/qa/motion_calibration.md` (2026-11-17): the gate's own measures on 104 segments of real captures (CMU, ACCAD
+    Open Motion Project), women and men, at their true frame rates; §3 by measure, §4 what the evidence says.
+18. Hollman JH et al. (2011) Normative spatiotemporal gait parameters in older adults, Gait Posture 34:111-118; Frimenko R,
+    Goodyear C, Bruening D (2015) Interactions of sex and aging on spatiotemporal metrics in non-pathological gait: a
+    descriptive meta-analysis, Physiotherapy 101:266-272.
+19. Cavanagh PR, Kram R (1989) Stride length in distance running: velocity, body dimensions, and added mass effects, Med Sci
+    Sports Exerc 21:467-479; Heiderscheit BC et al. (2011) Effects of step rate manipulation on joint mechanics during
+    running, Med Sci Sports Exerc 43:296-302.
 15. Elbow carrying angle in healthy adults (600 students, full extension): 10.97 ± 4.27° in men, 15.07 ± 4.95° in women; young adults 9.77 ± 2.82° and 13.94 ± 3.97°. https://mjiri.iums.ac.ir/article-1-1044-en.pdf ; https://svuijm.journals.ekb.eg/article_360976.html
     https://www.threadsmagazine.com/forum/sufficient-ease

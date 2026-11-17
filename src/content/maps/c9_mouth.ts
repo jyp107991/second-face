@@ -1809,11 +1809,20 @@ export const c9_mouth: MapDef = {
           {
             all: [
               {
-                flag: "a3_open"
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
               },
               {
                 not: {
-                  flag: "a3_c9"
+                  flag: "a3_column_apron"
                 }
               }
             ]
@@ -2117,11 +2126,20 @@ export const c9_mouth: MapDef = {
           {
             all: [
               {
-                flag: "a3_open"
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
               },
               {
                 not: {
-                  flag: "a3_c9"
+                  flag: "a3_column_apron"
                 }
               }
             ]
@@ -2159,11 +2177,20 @@ export const c9_mouth: MapDef = {
           {
             all: [
               {
-                flag: "a3_open"
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
               },
               {
                 not: {
-                  flag: "a3_c9"
+                  flag: "a3_column_apron"
                 }
               }
             ]
@@ -2201,11 +2228,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "a3_open"
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "a3_c9"
+              flag: "a3_column_apron"
             }
           }
         ]
@@ -2233,11 +2269,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "a3_open"
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "a3_c9"
+              flag: "a3_column_apron"
             }
           }
         ]
@@ -2265,11 +2310,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "a3_open"
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "a3_c9"
+              flag: "a3_column_apron"
             }
           }
         ]
@@ -2297,11 +2351,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "a3_open"
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "a3_c9"
+              flag: "a3_column_apron"
             }
           }
         ]
@@ -2777,6 +2840,417 @@ export const c9_mouth: MapDef = {
                 }
               }
             ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_md_01",
+      id: "npc_md_01_apron",
+      x: 28,
+      y: 37,
+      facing: 2,
+      dialogue: "d_a3_door",
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_column_apron"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_md_01"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_md_12",
+      id: "npc_md_12_apron",
+      x: 28,
+      y: 37,
+      facing: 2,
+      dialogue: "d_a3_door",
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_column_apron"
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                dead: "npc_md_01"
+              },
+              {
+                not: {
+                  dead: "npc_md_12"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g3",
+      id: "npc_a3_g3_apron",
+      x: 26,
+      y: 37,
+      facing: 2,
+      dialogue: "d_a3_door",
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_column_apron"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_a3_g3"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g4",
+      id: "npc_a3_g4_apron",
+      x: 30,
+      y: 37,
+      facing: 2,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_column_apron"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_a3_g4"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g5",
+      id: "npc_a3_g5_apron",
+      x: 24,
+      y: 37,
+      facing: 2,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_column_apron"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_a3_g5"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g6",
+      id: "npc_a3_g6_apron",
+      x: 32,
+      y: 37,
+      facing: 2,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_column_apron"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_a3_g6"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_linnet",
+      id: "npc_kn_linnet_apron",
+      x: 34,
+      y: 38,
+      facing: 3,
+      dialogue: "d_a3_linnet",
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_column_apron"
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "kn_linnet_will_run"
+              },
+              {
+                not: {
+                  flag: "a3_linnet_down"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_03",
+      id: "npc_c9_03_door",
+      x: 27,
+      y: 42,
+      facing: 0,
+      dialogue: "d_a3_tam_door",
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_tam_door"
+          },
+          {
+            flag: "tam_left",
+            eq: "door"
+          },
+          {
+            not: {
+              flag: "a3_tamsin_dead"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g15",
+      x: 21,
+      y: 36,
+      facing: 0,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_ally_shale"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g16",
+      x: 23,
+      y: 36,
+      facing: 0,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_ally_shale"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g17",
+      x: 42,
+      y: 35,
+      facing: 3,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_ally_dogs"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g18",
+      x: 44,
+      y: 34,
+      facing: 3,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_ally_dogs"
           }
         ]
       }
@@ -3265,6 +3739,845 @@ export const c9_mouth: MapDef = {
           decision: {
             id: "a3_unwritten",
             text: "At Knock I fought the Unwritten on the apron in the dark, and none of them went down the grate."
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_door_line",
+      x: 18,
+      y: 37,
+      w: 21,
+      h: 6,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_column_apron"
+          }
+        ]
+      },
+      effects: [
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_door",
+            name: "The yellow line"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_door_broken_open",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 44,
+      once: false,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_door_fight"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                any: [
+                  {
+                    all: [
+                      {
+                        not: {
+                          dead: "npc_md_01"
+                        }
+                      },
+                      {
+                        dead: "npc_md_01_apron"
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        all: [
+                          {
+                            dead: "npc_md_01"
+                          },
+                          {
+                            not: {
+                              dead: "npc_md_12"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        dead: "npc_md_12_apron"
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        all: [
+                          {
+                            dead: "npc_md_01"
+                          },
+                          {
+                            dead: "npc_md_12"
+                          }
+                        ]
+                      },
+                      {
+                        dead: "npc_a3_g3_apron"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            flag: "a3_ring",
+            eq: "open"
+          }
+        ]
+      },
+      effects: [
+        {
+          set: "a3_c9",
+          value: "opened"
+        },
+        {
+          set: "a3_c9_how",
+          value: "ines"
+        },
+        {
+          set: "a3_c9_by",
+          value: "fought"
+        },
+        {
+          set: "a3_lowe",
+          value: "dead"
+        },
+        {
+          xp: 300
+        },
+        {
+          news: {
+            tag: "a3_door_fought",
+            text: "the designate broke the city's column on Knock's apron in front of the Cistern's door",
+            valence: 4,
+            size: 9,
+            at: "cistern9"
+          }
+        },
+        {
+          decision: {
+            id: "a3_c9",
+            text: "I broke the city's column on Knock's apron, and its lead died there. The Cistern's people opened their own door and walked out of it, as their ring had voted."
+          }
+        },
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_door",
+            name: "The apron"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_door_broken_shut",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 44,
+      once: false,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_door_fight"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                any: [
+                  {
+                    all: [
+                      {
+                        not: {
+                          dead: "npc_md_01"
+                        }
+                      },
+                      {
+                        dead: "npc_md_01_apron"
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        all: [
+                          {
+                            dead: "npc_md_01"
+                          },
+                          {
+                            not: {
+                              dead: "npc_md_12"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        dead: "npc_md_12_apron"
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        all: [
+                          {
+                            dead: "npc_md_01"
+                          },
+                          {
+                            dead: "npc_md_12"
+                          }
+                        ]
+                      },
+                      {
+                        dead: "npc_a3_g3_apron"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_ring",
+              eq: "open"
+            }
+          }
+        ]
+      },
+      effects: [
+        {
+          set: "a3_c9",
+          value: "sealed"
+        },
+        {
+          set: "a3_c9_how",
+          value: "fought"
+        },
+        {
+          set: "a3_lowe",
+          value: "dead"
+        },
+        {
+          xp: 300
+        },
+        {
+          news: {
+            tag: "a3_door_fought",
+            text: "the designate broke the city's column on Knock's apron in front of the Cistern's door",
+            valence: 4,
+            size: 9,
+            at: "cistern9"
+          }
+        },
+        {
+          decision: {
+            id: "a3_c9",
+            text: "I broke the city's column on Knock's apron, and its lead died there. The door stayed shut."
+          }
+        },
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_door",
+            name: "The apron"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_door_yields_open",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 44,
+      once: false,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_door_fight"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                not: {
+                  any: [
+                    {
+                      all: [
+                        {
+                          not: {
+                            dead: "npc_md_01"
+                          }
+                        },
+                        {
+                          dead: "npc_md_01_apron"
+                        }
+                      ]
+                    },
+                    {
+                      all: [
+                        {
+                          all: [
+                            {
+                              dead: "npc_md_01"
+                            },
+                            {
+                              not: {
+                                dead: "npc_md_12"
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          dead: "npc_md_12_apron"
+                        }
+                      ]
+                    },
+                    {
+                      all: [
+                        {
+                          all: [
+                            {
+                              dead: "npc_md_01"
+                            },
+                            {
+                              dead: "npc_md_12"
+                            }
+                          ]
+                        },
+                        {
+                          dead: "npc_a3_g3_apron"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                any: [
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g3"
+                          },
+                          {
+                            dead: "npc_a3_g3_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g4"
+                          },
+                          {
+                            dead: "npc_a3_g4_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g3"
+                          },
+                          {
+                            dead: "npc_a3_g3_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g5"
+                          },
+                          {
+                            dead: "npc_a3_g5_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g3"
+                          },
+                          {
+                            dead: "npc_a3_g3_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g6"
+                          },
+                          {
+                            dead: "npc_a3_g6_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g4"
+                          },
+                          {
+                            dead: "npc_a3_g4_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g5"
+                          },
+                          {
+                            dead: "npc_a3_g5_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g4"
+                          },
+                          {
+                            dead: "npc_a3_g4_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g6"
+                          },
+                          {
+                            dead: "npc_a3_g6_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g5"
+                          },
+                          {
+                            dead: "npc_a3_g5_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g6"
+                          },
+                          {
+                            dead: "npc_a3_g6_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            flag: "a3_ring",
+            eq: "open"
+          }
+        ]
+      },
+      effects: [
+        {
+          set: "a3_c9",
+          value: "opened"
+        },
+        {
+          set: "a3_c9_how",
+          value: "ines"
+        },
+        {
+          set: "a3_c9_by",
+          value: "fought"
+        },
+        {
+          set: "a3_lowe",
+          value: "yielded"
+        },
+        {
+          xp: 300
+        },
+        {
+          news: {
+            tag: "a3_door_fought",
+            text: "the designate broke the city's column on Knock's apron in front of the Cistern's door",
+            valence: 4,
+            size: 9,
+            at: "cistern9"
+          }
+        },
+        {
+          decision: {
+            id: "a3_c9",
+            text: "I broke the city's column on Knock's apron, and its lead yielded with two of the wardens down. The Cistern's people opened their own door and walked out of it, as their ring had voted."
+          }
+        },
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_door",
+            name: "The apron"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_door_yields_shut",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 44,
+      once: false,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_door_fight"
+                  },
+                  {
+                    not: {
+                      flag: "a3_c9"
+                    }
+                  }
+                ]
+              },
+              {
+                not: {
+                  any: [
+                    {
+                      all: [
+                        {
+                          not: {
+                            dead: "npc_md_01"
+                          }
+                        },
+                        {
+                          dead: "npc_md_01_apron"
+                        }
+                      ]
+                    },
+                    {
+                      all: [
+                        {
+                          all: [
+                            {
+                              dead: "npc_md_01"
+                            },
+                            {
+                              not: {
+                                dead: "npc_md_12"
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          dead: "npc_md_12_apron"
+                        }
+                      ]
+                    },
+                    {
+                      all: [
+                        {
+                          all: [
+                            {
+                              dead: "npc_md_01"
+                            },
+                            {
+                              dead: "npc_md_12"
+                            }
+                          ]
+                        },
+                        {
+                          dead: "npc_a3_g3_apron"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                any: [
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g3"
+                          },
+                          {
+                            dead: "npc_a3_g3_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g4"
+                          },
+                          {
+                            dead: "npc_a3_g4_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g3"
+                          },
+                          {
+                            dead: "npc_a3_g3_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g5"
+                          },
+                          {
+                            dead: "npc_a3_g5_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g3"
+                          },
+                          {
+                            dead: "npc_a3_g3_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g6"
+                          },
+                          {
+                            dead: "npc_a3_g6_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g4"
+                          },
+                          {
+                            dead: "npc_a3_g4_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g5"
+                          },
+                          {
+                            dead: "npc_a3_g5_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g4"
+                          },
+                          {
+                            dead: "npc_a3_g4_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g6"
+                          },
+                          {
+                            dead: "npc_a3_g6_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g5"
+                          },
+                          {
+                            dead: "npc_a3_g5_apron"
+                          }
+                        ]
+                      },
+                      {
+                        any: [
+                          {
+                            dead: "npc_a3_g6"
+                          },
+                          {
+                            dead: "npc_a3_g6_apron"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_ring",
+              eq: "open"
+            }
+          }
+        ]
+      },
+      effects: [
+        {
+          set: "a3_c9",
+          value: "sealed"
+        },
+        {
+          set: "a3_c9_how",
+          value: "fought"
+        },
+        {
+          set: "a3_lowe",
+          value: "yielded"
+        },
+        {
+          xp: 300
+        },
+        {
+          news: {
+            tag: "a3_door_fought",
+            text: "the designate broke the city's column on Knock's apron in front of the Cistern's door",
+            valence: 4,
+            size: 9,
+            at: "cistern9"
+          }
+        },
+        {
+          decision: {
+            id: "a3_c9",
+            text: "I broke the city's column on Knock's apron, and its lead yielded with two of the wardens down. The door stayed shut."
+          }
+        },
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_door",
+            name: "The apron"
           }
         }
       ]

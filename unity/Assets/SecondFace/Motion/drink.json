@@ -1,1 +1,1 @@
-{"name": "drink", "src": "CMU 13_09", "loop": false, "speed": 0.0, "root": false, "hip": 1.0289, "fps": 30, "frames": 240}
+{"name": "drink", "src": "CMU 13_09", "loop": false, "speed": 0.0, "root": false, "hip": 1.0289, "fps": 30, "frames": 240, "src_fps": 120, "sex": "u", "set": "both", "licence": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses", "cycle": "near", "seam_share": null, "closed": false, "flips_repaired": null, "range": [0, 8]}

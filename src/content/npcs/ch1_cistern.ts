@@ -17,7 +17,7 @@ export const CH1_CISTERN: NpcDef[] = [
     id: 'npc_c9_02', name: 'Doc Aurel Pell', look: { seed: 1102, frame: 'broad', age: 58, over: { facialHair: 'short_beard', hair: { style: 'cut_sidepart', color: 0x8a8782 } } },
     outfit: C9_SUIT, level: 3, ...C9, courage: 40, dialogue: 'd_c9_pell',
     schedule: [{ from: 5, to: 23, spot: 'clinic', activity: 'work' }, sleep('bunk_pell')],
-    barks: ['Wash your hands before you come in here.', 'He walked a long way to die on my floor.'],
+    barks: ['Wash your hands before you come in here.', 'Seventy percent. I can make seventy percent last. Not for ever.'],
   },
   {
     id: 'npc_c9_03', name: 'Tamsin Roe', look: { seed: 1103, frame: 'narrow', age: 24, over: { hair: { style: 'cut_pixie', color: 0x7a3418 }, freckles: 0.5 } },
@@ -47,7 +47,7 @@ export const CH1_CISTERN: NpcDef[] = [
   {
     id: 'npc_c9_r2', name: 'Wes Benn', look: { seed: 1108, frame: 'broad', age: 29 }, outfit: C9_SUIT, level: 1, ...C9, courage: 40,
     schedule: [{ from: 7, to: 12, spot: 'commons_b', activity: 'idle' }, { from: 12, to: 20, spot: 'machine_bench', activity: 'work' }, sleep('bunk_r2')],
-    barks: ['Bram says the seal\'s older than the door. How does that work?', 'If you go out there, bring back something that isn\'t algae.', 'My grandmother said the sky was blue. I never believed her.'],
+    barks: ['Bram says the seal\'s older than the door. How does that work?', 'If they move us, do you think there are windows?', 'My grandmother said the sky was blue. I never believed her.'],
   },
   {
     id: 'npc_c9_r3', name: 'Sayer Quist', look: { seed: 1109, frame: 'broad', age: 63, over: { facialHair: 'full_beard' } }, outfit: C9_SUIT, level: 1, ...C9, courage: 25,
@@ -57,6 +57,6 @@ export const CH1_CISTERN: NpcDef[] = [
   {
     id: 'npc_c9_r4', name: 'Effie Calder', look: { seed: 1110, frame: 'narrow', age: 19 }, outfit: C9_SUIT_F, level: 1, ...C9, courage: 50,
     schedule: [{ from: 6, to: 22, spot: 'corridor_e', activity: 'patrol' }, sleep('bunk_r4')],
-    barks: ['Tamsin says she\'s going out. She says that every year.', 'I counted the door bolts once. Forty-one.', 'MOTHER thanked us for our continuity. What does that even mean?'],
+    barks: ['Is it true there\'s no ceiling out there? None at all?', 'I counted the door bolts once. Forty-one.', 'MOTHER thanked us for our continuity. What does that even mean?'],
   },
 ];

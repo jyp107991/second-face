@@ -62,9 +62,9 @@ namespace SecondFace.Tests
         {
             L("A1", -Inf, 20f, -Inf, 28f), L("A2", 5f, 35f, 0f, 50f), L("A3", -Inf, 30f, -Inf, 40f), L("A4", -Inf, 6f, -Inf, 10f),
             L("A5", 8f, 55f, 3f, 75f), L("S1", -Inf, 6f, -Inf, 10f), L("H1", -15f, 8f, -25f, 12f), L("H2", -Inf, 30f, -Inf, 45f),
-            L("H3", -Inf, 10f, -Inf, 15f), F1, F2, L("F3w", 8f, 32f, 5f, 40f), L("F3a", -Inf, 28f, -Inf, 35f), L("F3s", -Inf, 25f, -Inf, 35f), F4, C1,
+            L("H3", -Inf, 10f, -Inf, 15f), F1, F2, L("F3w", 8f, 32f, 5f, 40f), L("F3a", -Inf, 12f, -Inf, 20f), L("F3s", -Inf, 25f, -Inf, 35f), F4, C1,
             new() { M = "F5", MeanMax = 0.12f }, A6,
-            L("K1", -Inf, 8f, -Inf, 12f), L("K2", -Inf, 6f, -Inf, 10f), L("K3", -Inf, 5f, -Inf, 8f), L("K4", -Inf, 2f, -Inf, 4f), L("K5", -Inf, 15f, -Inf, 25f),
+            L("K1", -Inf, 8f, -Inf, 12f), L("K2", -Inf, 6f, -Inf, 10f), L("K3", -Inf, 5f, -Inf, 8f), L("K4", -Inf, 2f, -Inf, 4f), L("K5", -Inf, 10f, -Inf, 20f),
         };
 
         private static Lim[] GestureLimits(string g) => new[]
@@ -78,17 +78,28 @@ namespace SecondFace.Tests
         private static readonly Lim[] WalkLimits =
         {
             new() { M = "W1", MeanMax = 8f, Over = 15f, OverFrac = 0.05f }, new() { M = "W2", MeanMax = 0.10f }, L("W6", -1.5f, 2.5f, -3f, 4f),
-            L("W3", -Inf, 35f, -Inf, 45f), L("W4", -20f, 8f, -25f, 12f), L("W5", -Inf, 25f, -Inf, 35f), C1, A6,
+            L("W3", -Inf, 35f, -Inf, 45f), L("W4", -25f, 8f, -32f, 12f), L("W5", -Inf, 25f, -Inf, 35f), C1, A6,
         };
 
-        /// <summary>Jogging swings the arms further than walking (no sourced limit yet: held at 45° and reviewed by eye).</summary>
-        private static readonly Lim[] JogLimits = WalkLimits.Select(l => l.M == "W3" ? L("W3", -Inf, 45f, -Inf, 55f) : l).ToArray();
+        /// <summary>Jogging swings the arms further than walking: real joggers at the game's jog pace (CMU 35, 16; 2.7-3.4 m/s)
+        /// swing the upper arm 39-52° at p98 (docs/qa/motion_calibration.md §3.2, 2026-11-17).</summary>
+        private static readonly Lim[] JogLimits = WalkLimits.Select(l => l.M == "W3" ? L("W3", -Inf, 55f, -Inf, 65f) : l).ToArray();
+
+        /// <summary>The pace each gait is played at for this body at the game's speeds (P1: the playback rate, the clip's own
+        /// cadence times it; Pace keeps it within its RateMin-RateMax) and the cadence that gives (P2, steps a minute: walking
+        /// 80-135, Hollman et al. 2011, Frimenko et al. 2015; jogging and running 145-200, Cavanagh &amp; Kram 1989, Heiderscheit et
+        /// al. 2011; the clip QA's norms, tools/unity/motion/clip_qa.py). A clip played past its natural cadence (a misread frame
+        /// rate, a woman's slow walk hurried to the player's pace) reads here (T6, docs/MOTION_ROOT_CAUSE.md §7).</summary>
+        private static readonly Lim[] PaceWalkLimits = { L("P1", 0.8f, 1.25f, 0.8f, 1.25f), L("P2", 80f, 135f, 80f, 135f) };
+        private static readonly Lim[] PaceJogLimits = { L("P1", 0.8f, 1.25f, 0.8f, 1.25f), L("P2", 145f, 200f, 145f, 200f) };
 
         private static readonly Lim[] TalkLimits = StandLimits.Concat(new[] { L("T2", -Inf, 20f, -Inf, 20f), L("T3", 0.9f, 1.6f, 0.9f, 1.6f) }).ToArray();
 
         private static Lim[] LimitsFor(string state)
         {
             if (state.StartsWith("gesture:")) return GestureLimits(state.Substring(8));
+            if (state == "pace:walk") return PaceWalkLimits;
+            if (state == "pace:jog") return PaceJogLimits;
             if (state == "turn") return TurnLimits;
             if (state.EndsWith(":jog")) return JogLimits;
             if (state.StartsWith("walk:") || state.StartsWith("bend:")) return WalkLimits;
@@ -124,7 +135,7 @@ namespace SecondFace.Tests
                 var p = RbPeople.Of(ids[i]);
                 RbDress.Apply(go, RbPeople.DyesFor(p, "feet_" + ids[i], p?.Roles?.FirstOrDefault() ?? "settler", null));
                 var a = go.GetComponentInChildren<Animator>();
-                var amb = PeopleService.Animate(a, assets.Locomotion, ids[i]); amb.MinGap = amb.MaxGap = 1e6f;
+                var amb = PeopleService.Animate(a, assets.Locomotion, ids[i], p?.Male ?? true); amb.MinGap = amb.MaxGap = 1e6f;
                 a.cullingMode = AnimatorCullingMode.AlwaysAnimate;
                 made.Add((ids[i], go));
             }
@@ -236,6 +247,10 @@ namespace SecondFace.Tests
                     var frames = side.Value<int?>("frames"); var fps = side.Value<float?>("fps") ?? 30f;
                     if (frames is { } f && f > 1 && Mathf.Abs(clip.length - (f - 1) / fps) > 1.5f / fps && Mathf.Abs(clip.length - f / fps) > 1.5f / fps)
                         wrong.Add($"{Path.GetFileName(path)}: {clip.length:0.00} s long, its sidecar says {f} frames ({f / fps:0.00} s)");
+                    // and plays in its capture's own time: sampled at the sidecar's rate, from a source whose frame rate is
+                    // recorded (a source read at twice its rate played `idle` and `stretch` at double speed, T6, 2026-11-17)
+                    if (Mathf.Abs(clip.frameRate - fps) > 0.5f) wrong.Add($"{Path.GetFileName(path)}: sampled at {clip.frameRate} fps, its sidecar says {fps}");
+                    if ((side.Value<float?>("src_fps") ?? 0f) <= 0f) wrong.Add($"{Path.GetFileName(path)}: its source's frame rate is not recorded (src_fps)");
                 }
                 // the pace's table of the moving clips (Pace.Clips) as the sidecars have them
                 var name = Path.GetFileNameWithoutExtension(json);
@@ -381,8 +396,8 @@ namespace SecondFace.Tests
                 Assert.That(a, Is.Not.Null, ids[i] + "'s animator");
                 var asPlayer = ids.Length > 1 && i == ids.Length - 1 && report == "motion_gate";
                 Ambient amb = null;
-                if (asPlayer) Walker.Animate(a, assets.Locomotion);
-                else amb = PeopleService.Animate(a, assets.Locomotion, ids[i]);
+                if (asPlayer) Walker.Animate(a, assets.Locomotion, p?.Male ?? true);
+                else amb = PeopleService.Animate(a, assets.Locomotion, ids[i], p?.Male ?? true);
                 a.cullingMode = AnimatorCullingMode.AlwaysAnimate;   // measured every frame, seen or not
                 if (amb != null) { amb.MinGap = amb.MaxGap = 1e6f; }   // the gestures are played by the gate, each in turn
                 var probe = a.gameObject.AddComponent<MotionProbe>();
@@ -424,12 +439,28 @@ namespace SecondFace.Tests
                 }
             }
 
-            // 1. standing: the four idles on the flat
+            // 0. the pace each gait plays at for this body at the game's speeds, and the cadence it gives (P1, P2)
+            foreach (var s in people)
+            {
+                var hip = Pace.Hip(s.A); var set = Pace.ClipsOf(s.A);
+                foreach (var (state, v) in new[] { ("pace:walk", Townsfolk.WalkSpeed), ("pace:walk", Walker.WalkSpeed), ("pace:jog", Walker.JogSpeed) })
+                {
+                    var (speed, rate) = Pace.For(v, hip, set);
+                    var gait = set.FirstOrDefault(c => Mathf.Abs(c.Speed - speed) < 1e-4f).Name;
+                    var clip = gait == null ? null : s.A.runtimeAnimatorController.animationClips.FirstOrDefault(c => c.name == gait);
+                    Add(s.Probe, state, "P1", rate);
+                    // (each gait clip is one stride, two steps: the converters cut one)
+                    if (clip != null && clip.length > 0f) Add(s.Probe, state, "P2", 2f * 60f * rate / clip.length);
+                }
+            }
+
+            // 1. standing: each of their sex's idles on the flat (Ambient.IdlesOf)
             for (var idle = 0; idle < Ambient.IdleCount; idle++)
             {
-                foreach (var s in people) s.A.SetFloat("Idle", idle);
+                foreach (var s in people) s.A.SetFloat("Idle", Mathf.Min(idle, Ambient.IdlesOf(s.A) - 1));
                 yield return Wait(1.2f);
                 Record("idle" + idle, MotionProbe.K.Stand);
+                foreach (var s in people) if (idle >= Ambient.IdlesOf(s.A)) s.Probe.Kind = null;
                 yield return Wait(6f);
                 Stop();
             }
@@ -469,11 +500,14 @@ namespace SecondFace.Tests
             {
                 foreach (var s in people) if (s.Ambient != null) s.Ambient.Gesture(g);
                 Record("gesture:" + g, MotionProbe.K.Gesture);
+                // (only those whose sex's captures hold it: a woman's stretch and yawns are not played by men)
+                foreach (var s in people) if (!Ambient.Can(s.A, g)) s.Probe.Kind = null;
                 yield return Wait(0.5f);
                 for (int n = Frames(15f), f0 = 0; f0 < n && people.Any(s => Playing(s.A)); f0++) yield return null;
                 Stop();
                 yield return Wait(0.6f);
                 Record("after:" + g, MotionProbe.K.Stand);
+                foreach (var s in people) if (!Ambient.Can(s.A, g)) s.Probe.Kind = null;
                 yield return Wait(2f);
                 Stop();
             }
@@ -502,24 +536,29 @@ namespace SecondFace.Tests
                 foreach (var s in people) { s.A.SetBool("Sneak", sneak); s.A.SetFloat("Speed", 0f); }
                 yield return Wait(1.2f);
                 Record("walk:" + name, MotionProbe.K.Walk);
-                var speed = 0f;
-                var travelled = 0f;
+                // each at the game's pace for the state, whoever walks it (the same for both sexes)
+                var vOf = people.Select(s => v).ToArray();
+                var speedOf = new float[people.Count]; var travelledOf = new float[people.Count];
+                var lengthOf = vOf.Select(x => Mathf.Min(45f, x * 7f)).ToArray();
                 var frames = 0; var nextFrame = 0f;
-                var length = Mathf.Min(45f, v * 7f);
-                while (travelled < length)
+                while (Enumerable.Range(0, people.Count).Any(i => travelledOf[i] < lengthOf[i]))
                 {
                     var dt = Time.deltaTime;
-                    var left = length - travelled;
-                    var stopping = speed * speed / (2f * accel);
-                    speed = left <= stopping ? Mathf.Max(0.05f, speed - accel * dt) : Mathf.Min(v, speed + accel * dt);
-                    var step = Mathf.Min(left, speed * dt);
-                    travelled += step;
-                    foreach (var s in people)
+                    for (var i = 0; i < people.Count; i++)
                     {
+                        var s = people[i];
+                        if (travelledOf[i] >= lengthOf[i]) continue;
+                        var left = lengthOf[i] - travelledOf[i];
+                        var stopping = speedOf[i] * speedOf[i] / (2f * accel);
+                        speedOf[i] = left <= stopping ? Mathf.Max(0.05f, speedOf[i] - accel * dt) : Mathf.Min(vOf[i], speedOf[i] + accel * dt);
+                        var step = Mathf.Min(left, speedOf[i] * dt);
+                        travelledOf[i] += step;
                         s.Go.transform.position += Vector3.forward * step;
-                        Pace.Set(s.A, speed, sneak, 0.12f, dt);   // as the game's walker sets it
+                        Pace.Set(s.A, speedOf[i], sneak, 0.12f, dt);   // as the game's walker sets it
+                        if (travelledOf[i] >= lengthOf[i]) { s.A.SetFloat("Speed", 0f); s.Probe.Kind = null; }   // (each stops as the walk's end does)
                     }
-                    if (captures && (name is "walk" or "jog") && travelled > length * 0.45f && frames < 10 && Time.time >= nextFrame)
+                    var travelled = travelledOf[0]; var length = lengthOf[0];
+                    if (captures && (name is "walk" or "jog") && travelled > length * 0.45f && travelled < length && frames < 10 && Time.time >= nextFrame)
                     {
                         nextFrame = Time.time + (name == "jog" ? 0.06f : 0.1f);
                         var s0 = people[0].Go.transform;
@@ -540,24 +579,25 @@ namespace SecondFace.Tests
                 yield return Wait(1f);
                 if (name is "walk" or "jog")
                 {
-                    // round a bend of 3 m radius, at speed
+                    // round a bend of 3 m radius, at speed (each at their own, as on the straight)
                     Place(new Vector3(0f, 0f, -10f), -90f);
                     var centres = people.Select(s => s.Go.transform.position + Vector3.forward * 3f).ToList();
-                    var theta = 0f;
-                    foreach (var s in people) Pace.Set(s.A, v, false, 0f);
+                    var thetaOf = new float[people.Count];
+                    for (var i = 0; i < people.Count; i++) Pace.Set(people[i].A, vOf[i], false, 0f);
                     yield return Wait(0.8f);
                     Record("bend:" + name, MotionProbe.K.Walk);
                     for (int n1 = Frames(6f), f1 = 0; f1 < n1; f1++)
                     {
                         var dt = Time.deltaTime;
-                        theta += v / 3f * dt;
                         for (var i = 0; i < people.Count; i++)
                         {
                             var s = people[i];
+                            thetaOf[i] += vOf[i] / 3f * dt;
+                            var theta = thetaOf[i];
                             var pos = centres[i] + new Vector3(-Mathf.Sin(theta), 0f, -Mathf.Cos(theta)) * 3f;
                             var tangent = new Vector3(-Mathf.Cos(theta), 0f, Mathf.Sin(theta));
                             s.Go.transform.SetPositionAndRotation(pos, Quaternion.LookRotation(tangent, Vector3.up));
-                            Pace.Set(s.A, v, false, 0.12f, dt);
+                            Pace.Set(s.A, vOf[i], false, 0.12f, dt);
                         }
                         yield return null;
                     }
@@ -576,7 +616,7 @@ namespace SecondFace.Tests
             {
                 var pp = Object.Instantiate(cat.Get(partnerId), s.Go.transform.position + Vector3.forward * 1.3f + Vector3.right * 0.25f, Quaternion.Euler(0f, 180f, 0f), root.transform);
                 var pa = pp.GetComponentInChildren<Animator>();
-                var pam = PeopleService.Animate(pa, assets.Locomotion, "partner_" + s.Id);
+                var pam = PeopleService.Animate(pa, assets.Locomotion, "partner_" + s.Id, RbPeople.Of(partnerId)?.Male ?? true);
                 pam.MinGap = pam.MaxGap = 1e6f;
                 pa.cullingMode = AnimatorCullingMode.AlwaysAnimate;
                 s.Partner = pp;

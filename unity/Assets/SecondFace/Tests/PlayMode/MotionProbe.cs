@@ -482,10 +482,13 @@ namespace SecondFace.Tests
                     if (flexR < 10f) Add("K2", valR);
                     float Track(Vector3 h, Vector3 kn, Vector3 an, Vector3 toe, float side)
                     {
-                        var kd = Flat(kn - 0.5f * (h + an)); var fd = Flat(toe - an);
-                        if (kd.sqrMagnitude < 1e-4f || fd.sqrMagnitude < 1e-6f) return 0f;
-                        // + in: the knee pointing inside the foot's line
-                        return Vector3.SignedAngle(fd, kd, Vector3.up) * -side;
+                        var kd = Flat(kn - 0.5f * (h + an));
+                        if (kd.sqrMagnitude < 1e-4f) return 0f;
+                        // + in: the knee pointing inside the body's front. (Against the foot's own line until 2026-11-17: a real
+                        // relaxed knee points ahead while the foot turns out 10-28°, so real people read "in" by their toe-out
+                        // and 8 of 13 quiet-standing captures failed it; docs/qa/motion_calibration.md §4. Against the front, a
+                        // knee may point anywhere from the foot's line to 10° inside the front: K5 ≤ F3s + 10° on the foot's.)
+                        return Vector3.SignedAngle(fwd, kd, Vector3.up) * -side;
                     }
                     if (flexL >= 10f) Add("K5", Track(hipL, kneeL, ankleL, toeL, -1f));
                     if (flexR >= 10f) Add("K5", Track(hipR, kneeR, ankleR, toeR, 1f));
@@ -696,15 +699,23 @@ namespace SecondFace.Tests
                     if (low < float.MaxValue && low - g < lowest) { lowest = low - g; lowestSide = side; }
                     if (low < float.MaxValue) _footLow[side] = low - g;
                     // the skate on fixed points of the sole (its heel and its ball: a rolling foot's lowest point moves along
-                    // the foot as a real one's does, a fixed point down on the ground does not move)
+                    // the foot as a real one's does, a fixed point down on the ground does not move), counted only while the
+                    // foot bears weight, as W6 is (its slowest sole point under 0.5 m/s): a swing passes 1-2 cm over the floor
+                    // at 3-5 m/s (Winter 1992; Moosabhoy et al. 2006), and a real walker failed W1 by that alone
+                    // (docs/qa/motion_calibration.md §4, 2026-11-17)
+                    if (_soleT > 0f && _clock > _soleT)
+                        for (var q = 0; q < 2; q++)
+                        {
+                            var j = _solePoint[side * 2 + q];
+                            if (j >= 0) still[side] = Mathf.Min(still[side], Flat(v[j] - _sole[side * 2 + q]).magnitude / (_clock - _soleT));
+                        }
                     for (var q = 0; q < 2; q++)
                     {
                         var j = _solePoint[side * 2 + q];
                         if (j < 0) continue;
                         var h = v[j].y - g;
                         var slot = side * 2 + q;
-                        if (_soleT > 0f && _clock > _soleT) still[side] = Mathf.Min(still[side], Flat(v[j] - _sole[slot]).magnitude / (_clock - _soleT));
-                        if (h < 0.025f && _soleH[slot] < 0.025f && _soleT > 0f && _clock > _soleT)
+                        if (h < 0.025f && _soleH[slot] < 0.025f && _soleT > 0f && _clock > _soleT && still[side] < 0.5f)
                         {
                             var speed = Flat(v[j] - _sole[slot]).magnitude / (_clock - _soleT);
                             Add("W1", speed * 100f);

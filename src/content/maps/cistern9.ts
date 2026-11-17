@@ -316,7 +316,8 @@ export const cistern9: MapDef = {
     {
       kind: "table",
       x: 18,
-      y: 15
+      y: 15,
+      id: "council_table"
     },
     {
       kind: "chair",
@@ -641,6 +642,13 @@ export const cistern9: MapDef = {
       y: 29,
       rot: 3,
       id: "shaft_hatch"
+    },
+    {
+      kind: "terminal",
+      x: 1,
+      y: 3,
+      rot: 1,
+      id: "hatch_lift"
     }
   ],
   lights: [
@@ -780,6 +788,12 @@ export const cistern9: MapDef = {
       x: 42,
       y: 28,
       facing: 3
+    },
+    {
+      id: "from_hatch",
+      x: 2,
+      y: 3,
+      facing: 1
     }
   ],
   exits: [
@@ -821,28 +835,80 @@ export const cistern9: MapDef = {
           set: "c9_left_by_shaft"
         }
       ]
+    },
+    {
+      x: 5,
+      y: 1,
+      w: 3,
+      h: 1,
+      to: {
+        location: "c9_mouth",
+        spawn: "door"
+      },
+      label: "The apron",
+      if: {
+        all: [
+          {
+            flag: "a3_door_cycled"
+          },
+          {
+            not: {
+              flag: "c9_door_open"
+            }
+          }
+        ]
+      }
+    },
+    {
+      x: 43,
+      y: 29,
+      to: {
+        location: "c9_mouth",
+        spawn: "shaft"
+      },
+      label: "The pump run",
+      if: {
+        all: [
+          {
+            flag: "a3_shaft_open"
+          },
+          {
+            not: {
+              flag: "c9_shaft_open"
+            }
+          }
+        ]
+      }
     }
   ],
   talk: {
     mother_term: {
-      dialogue: "d_c9_mother",
+      dialogue: "d_a3_mother",
       name: "MOTHER"
     },
     archive_door: {
-      dialogue: "d_c9_archive",
+      dialogue: "d_a3_archive",
       name: "The Archive door"
     },
     shaft_hatch: {
-      dialogue: "d_c9_shaft",
+      dialogue: "d_a3_pumprun",
       name: "The pump-run hatch"
     },
     stranger_cot: {
-      dialogue: "d_c9_body",
-      name: "The stranger"
+      dialogue: "d_a3_cot",
+      name: "A clinic cot"
     },
     great_door: {
-      dialogue: "d_c9_great_door",
+      dialogue: "d_a3_inner_door",
       name: "The great door"
+    },
+    council_table: {
+      dialogue: "d_a3_council",
+      name: "The council table"
+    },
+    hatch_lift: {
+      dialogue: "d_a3_lift",
+      name: "The tray lift"
     }
   },
   containers: {
@@ -1105,55 +1171,371 @@ export const cistern9: MapDef = {
       def: "npc_c9_02",
       x: 5,
       y: 15,
-      facing: 1
+      facing: 1,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_c9_01",
       x: 18,
       y: 16,
-      facing: 0
+      facing: 0,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_c9_03",
       x: 34,
       y: 4,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_c9_04",
       x: 18,
       y: 3,
-      facing: 0
+      facing: 0,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_c9_06",
       x: 7,
       y: 26,
-      facing: 1
+      facing: 1,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_c9_r1",
       x: 40,
       y: 5,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_c9_r2",
       x: 11,
       y: 26,
-      facing: 3
+      facing: 3,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_c9_r3",
       x: 3,
       y: 25,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_c9_r4",
       x: 25,
       y: 15,
-      facing: 0
+      facing: 0,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
+    },
+    {
+      def: "npc_c9_01",
+      id: "npc_c9_01_a3",
+      x: 18,
+      y: 16,
+      facing: 0,
+      dialogue: "d_a3_ines",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "opened"
+            }
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "relocated"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_02",
+      id: "npc_c9_02_a3",
+      x: 5,
+      y: 15,
+      facing: 1,
+      dialogue: "d_a3_pell",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "opened"
+            }
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "relocated"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_03",
+      id: "npc_c9_03_a3",
+      x: 34,
+      y: 4,
+      facing: 2,
+      dialogue: "d_a3_tamsin",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9",
+                  eq: "opened"
+                }
+              },
+              {
+                not: {
+                  flag: "a3_c9",
+                  eq: "relocated"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "c9_tamsin_inside"
+              },
+              {
+                not: {
+                  any: [
+                    {
+                      flag: "tam_out"
+                    },
+                    {
+                      knows: "tamsin_replied"
+                    }
+                  ]
+                }
+              },
+              {
+                not: {
+                  flag: "tam_joined"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_04",
+      id: "npc_c9_04_a3",
+      x: 18,
+      y: 3,
+      facing: 0,
+      dialogue: "d_a3_bram",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "opened"
+            }
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "relocated"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_06",
+      id: "npc_c9_06_a3",
+      x: 7,
+      y: 26,
+      facing: 1,
+      dialogue: "d_a3_teague",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "opened"
+            }
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "relocated"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_r1",
+      id: "npc_c9_r1_a3",
+      x: 40,
+      y: 5,
+      facing: 2,
+      dialogue: "d_a3_c9_r1",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "opened"
+            }
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "relocated"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_r2",
+      id: "npc_c9_r2_a3",
+      x: 11,
+      y: 26,
+      facing: 3,
+      dialogue: "d_a3_c9_r2",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "opened"
+            }
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "relocated"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_r3",
+      id: "npc_c9_r3_a3",
+      x: 3,
+      y: 25,
+      facing: 2,
+      dialogue: "d_a3_c9_r3",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "opened"
+            }
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "relocated"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_c9_r4",
+      id: "npc_c9_r4_a3",
+      x: 25,
+      y: 15,
+      facing: 0,
+      dialogue: "d_a3_c9_r4",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "opened"
+            }
+          },
+          {
+            not: {
+              flag: "a3_c9",
+              eq: "relocated"
+            }
+          }
+        ]
+      }
     }
   ],
   triggers: [
@@ -1167,6 +1549,42 @@ export const cistern9: MapDef = {
       effects: [
         {
           learn: "seen_great_door"
+        }
+      ],
+      if: {
+        not: {
+          flag: "a3_door_cycled"
+        }
+      }
+    },
+    {
+      id: "a3_faces",
+      x: 1,
+      y: 1,
+      w: 44,
+      h: 29,
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            flag: "a3_inside"
+          },
+          {
+            not: {
+              flag: "a3_faces"
+            }
+          }
+        ]
+      },
+      effects: [
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_faces",
+            name: "Cistern 9"
+          }
         }
       ]
     }
